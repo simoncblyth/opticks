@@ -1,7 +1,8 @@
-// name=TreeNodeRePlacementNewTest ; gcc $name.cc -I. -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name
+// ./tree.sh 
 
 #include <cassert>
 #include <cstring>
+#include <cstdlib>
 #include <cstdio>
 #include <vector>
 #include <map>
@@ -90,6 +91,94 @@ bool nd::is_mixed() const {   return cls == MIXED ; }
 bool nd::is_cut_right() const {   return is_boolean() && left->cls == INCLUDE && right->cls == EXCLUDE ; }
 bool nd::is_cut_left()  const {   return is_boolean() && left->cls == EXCLUDE && right->cls == INCLUDE ; }
 bool nd::is_crux() const {        return is_cut_right() ^ is_cut_left() ; }  // XOR : is_cut_right OR is_cut_left BUT not both 
+
+
+/**
+
+NTreeAnalyse height 7 count 15::
+
+                                                     [un]    
+
+                                              un         [cy]  
+
+                                      un          cy        
+
+                              un          zs                
+
+                      un          cy                        
+
+              un          co                                
+
+      un          zs                                        
+
+  zs      cy                                                
+
+
+Could kludge cut unbalanced trees like the above simply by changing the root.
+But how to cut more generally such as with a balanced tree.
+
+When left and right child are EXCLUDED that exclusion 
+needs to spread upwards to the parent. 
+
+When the right child of a union gets EXCLUDED [cy] need to 
+pullup the left child to replace the parent node.::
+
+
+           un                              un
+                                  
+                    un                              cy
+                                 -->               /
+               cy      [cy]                    ..         .. 
+
+
+More generally when the right subtree of a union *un* 
+is all excluded need to pullup the left subtree ^un^ to replace the *un*::
+
+
+                             (un)                            
+
+              un                             *un*            
+                                           ^ 
+      un              un             ^un^            [un]   
+
+  zs      cy      zs      co      cy      zs     [cy]    [cy]
+
+
+How to do that exactly ? 
+
+* get parent of *un* -> (un)
+* change right child of (un) from *un* to ^un^
+
+* j/PMTSim/ZSolid.cc
+* BUT there is no G4BooleanSolid::SetConstituentSolid so ZSolid::SetRight ZSolid::SetLeft using placement new
+
+
+When the right subtree of root is all excluded need to 
+do the same in principal : pullup the left subtree to replace root *un*.
+In practice this is simpler because can just change the root pointer::
+
+
+                             *un*                           
+
+             ^un^                            [un]           
+
+      un              un             [un]            [un]   
+
+  zs      cy      zs      co     [cy]    [zs]    [cy]    [cy]
+
+
+
+How to detect can just shift the root pointer ? 
+
+
+Hmm if exclusions were scattered all over would be easier to 
+just rebuild. 
+ 
+
+
+**/
+
+
 
 struct tree
 {
@@ -194,11 +283,11 @@ tree* tree::make_unbalanced(int numprim, int valueorder) // static
 
 tree::tree(nd* root_)
     :
-    verbose(false),
+    verbose(getenv("VERBOSE")!=nullptr),
     root(root_),
     width(num_node_r(root)),
     height(maxdepth_r(root,0)),
-    canvas(new SCanvas(width,height,5,3))
+    canvas(new SCanvas(width,height+1,5,3))  // +1 as a height 0 tree is still 1 node
 {
     instrument();
     initvalue_r(root, PRE);   // must be after instrument, as uses n.pre
@@ -223,6 +312,10 @@ void tree::instrument()
     parent_r(root, 0 ); 
 
     depth_r(root, 0); 
+
+    width = num_node_r(root) ; 
+    height = maxdepth_r(root,0) ; 
+    canvas->resize(width, height+1);   // +1 as a height 0 tree is still 1 node
 }
 
 
@@ -409,7 +502,7 @@ int tree::classify_r( nd* n, int cut )
     n->cls = UNDEFINED ; 
     if( n->left && n->right )
     {
-        n->cls |= classify_r( n->left , cut ) ;   // dont do on one line, as then order is unclear
+        n->cls |= classify_r( n->left , cut ) ; 
         n->cls |= classify_r( n->right, cut ) ;  
 
         if( n->is_crux() ) 
@@ -631,10 +724,10 @@ void tree::draw_r( nd* n )
     int x = n->in ; 
     int y = n->depth  ; 
 
-    canvas->draw( x, y, 0,   n->value ); 
-    //canvas->draw( x, y, 1,   n->cls   ); 
-    canvas->drawch( x, y, 1, pcls(n->cls) ); 
-    canvas->drawch( x, y, 2, n->mkr ); 
+    canvas->draw( x, y,   0,0,   n->value ); 
+    //canvas->draw( x, y, 0,1,   n->cls   ); 
+    canvas->drawch( x, y, 0,1, pcls(n->cls) ); 
+    canvas->drawch( x, y, 0,2, n->mkr ); 
 }
 
 void test_flip( nd* n )
@@ -668,10 +761,6 @@ void test_unbalanced(int numprim0)
 {
     tree* t = tree::make_unbalanced(numprim0, POST) ; 
     t->draw(); 
-
-    
-
-
 }
 
 void test_cuts_unbalanced(int numprim0)
@@ -710,10 +799,10 @@ void test_no_remaining_nodes()
 int main(int argc, char**argv )
 {
     //test_cuts(4); 
-    //test_cuts(3); 
+    test_cuts(3); 
     //test_no_remaining_nodes();
 
-    test_unbalanced(8); 
+    //test_unbalanced(8); 
 
     //test_cuts_unbalanced(8); 
 

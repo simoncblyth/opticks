@@ -25,8 +25,8 @@ EOU
 #geochaintest=BoxMinusTubs0
 #geochaintest=BoxMinusTubs1
 #geochaintest=PMTSim_Z
-geochaintest=PMTSim_Zclone
-zcut=-400
+#geochaintest=PMTSim_Zclone
+geochaintest=PMTSim_Z-400
 
 export GGeo=INFO
 export CSGSolid=INFO
@@ -44,7 +44,7 @@ export NTREEPROCESS_LVLIST=0
 export NNODENUDGER_LVLIST=0
 
 export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
-export PMTSIM_ZCUT=${PMTSIM_ZCUT:-$zcut}
+#export PMTSIM_ZCUT=${PMTSIM_ZCUT:-$zcut}  now from name not evar 
 
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
 
