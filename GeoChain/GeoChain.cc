@@ -32,7 +32,7 @@ GeoChain::GeoChain(Opticks* ok_)
 void GeoChain::convert(const G4VSolid* const solid, const std::string& meta_)
 {
     const char* meta = meta_.empty() ? nullptr : meta_.c_str() ; 
-    LOG(info) << " meta " << meta ; 
+    LOG(info) << "[ meta " << meta ; 
 
     int lvIdx = 0 ; 
     int soIdx = 0 ; 
@@ -53,7 +53,9 @@ void GeoChain::convert(const G4VSolid* const solid, const std::string& meta_)
     ggeo->deferredCreateGParts(); 
 
     CSG_GGeo_Convert conv(fd, ggeo, meta ) ; 
-    conv.convert(); 
+    conv.convert();
+
+    LOG(info) << "]" ;  
 }
 
 void GeoChain::save(const char* name) const 

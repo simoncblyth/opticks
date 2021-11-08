@@ -15,8 +15,6 @@ Usage::
    cd ~/opticks/GeoChain
    ./run.sh 
 
-   PMTSIM_ZCUT=-1000 ./run.sh 
-
 EOU
 }
 
@@ -28,27 +26,24 @@ EOU
 #geochaintest=PMTSim_Zclone
 geochaintest=PMTSim_Z-400
 
-export GGeo=INFO
-export CSGSolid=INFO
-export CSG_GGeo_Convert=INFO
 
-export NTreeProcess=INFO
-export NNodeNudger=INFO
-export NTreeBalance=INFO
-export NTreeBuilder=INFO
 
+#export GGeo=INFO
+#export CSGSolid=INFO
+#export CSG_GGeo_Convert=INFO
+
+#export NTreeProcess=INFO
+#export NNodeNudger=INFO
+#export NTreeBalance=INFO
+#export NTreeBuilder=INFO
 export X4Solid=INFO
 
-export DUMP_RIDX=0
-export NTREEPROCESS_LVLIST=0
-export NNODENUDGER_LVLIST=0
+#export DUMP_RIDX=0
+#export NTREEPROCESS_LVLIST=0
+#export NNODENUDGER_LVLIST=0
 
 export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
-#export PMTSIM_ZCUT=${PMTSIM_ZCUT:-$zcut}  now from name not evar 
-
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
-
-
 unset OPTICKS_KEY 
 
 cd $OPTICKS_HOME/GeoChain

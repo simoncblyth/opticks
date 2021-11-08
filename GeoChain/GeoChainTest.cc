@@ -123,7 +123,7 @@ const G4VSolid* const make_BoxMinusTubs1(const char* name)
 
 const G4VSolid* const make_solid(const char* name, std::string& meta)
 {
-    LOG(info) << name ; 
+    LOG(info) << "[ " << name ; 
     const G4VSolid* solid = nullptr ; 
     if(strcmp(name, "default") == 0)                     solid = make_default(name);  
     if(strcmp(name,"AdditionAcrylicConstruction") == 0 ) solid = make_AdditionAcrylicConstruction(name); 
@@ -131,7 +131,9 @@ const G4VSolid* const make_solid(const char* name, std::string& meta)
     if(strcmp(name,"BoxMinusTubs1") == 0 )               solid = make_BoxMinusTubs1(name); 
     if(SStr::StartsWith(name, "PMTSim"))                 solid = make_PMTSim(name, meta) ;  
     assert(solid); 
-    G4cout << *solid << G4endl ; 
+    //G4cout << *solid << G4endl ; 
+
+    LOG(info) << "] " << name ; 
     return solid ; 
 }
 
@@ -148,7 +150,7 @@ int main(int argc, char** argv)
     const char* argforced = "--allownokey" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
-    for(int lvIdx=-1 ; lvIdx < 10 ; lvIdx+= 1 ) LOG(info) << " lvIdx " << lvIdx << " ok.isX4TubsNudgeSkip(lvIdx) " << ok.isX4TubsNudgeSkip(lvIdx)  ; 
+    //for(int lvIdx=-1 ; lvIdx < 10 ; lvIdx+= 1 ) LOG(info) << " lvIdx " << lvIdx << " ok.isX4TubsNudgeSkip(lvIdx) " << ok.isX4TubsNudgeSkip(lvIdx)  ; 
 
     GeoChain chain(&ok); 
     chain.convert(solid, meta);  

@@ -114,6 +114,9 @@ elif [ "$cxs" == "200" -o "$cxs" == "201" ]; then
     isel=0
     unset CXS_OVERRIDE_CE
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
+
+    export ZZ="190,0,-5,-162,-195,-210,-275,-350,-365,-400,-420,-450"
+
 fi 
 
 if [ ! -d "$cfbase/CSGFoundry" ]; then
