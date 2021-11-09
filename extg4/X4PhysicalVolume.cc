@@ -242,54 +242,6 @@ bool X4PhysicalVolume::hasEfficiency(const G4Material* mat)
 X4PhysicalVolume::convertMaterials
 -----------------------------------
 
-Populates the GGeo/GMaterialLib 
-
-**/
-
-void X4PhysicalVolume::convertMaterials_old()
-{
-    OK_PROFILE("_X4PhysicalVolume::convertMaterials");
-    LOG(verbose) << "[" ;
-
-    size_t num_materials0 = m_mlib->getNumMaterials() ;
-    assert( num_materials0 == 0 );
-
-    assert( m_material_with_efficiency.size() == 0 );
-    
-
-    std::vector<G4Material*> all_materials ; 
-    X4MaterialTable::CollectAllMaterials(all_materials); 
-
-    X4MaterialTable::Convert(m_mlib, m_material_with_efficiency, all_materials );
-    size_t num_material_with_efficiency = m_material_with_efficiency.size() ;
-
-    size_t num_materials = m_mlib->getNumMaterials() ;
-    assert( num_materials > 0 );
-
-    // Adding test materials only at Opticks level is a standardization
-    // problem : TODO: implement creation of test materials at G4 level
-    // then they will be present at all levels.
-    // 
-    //m_mlib->addTestMaterials() ;
-
-    m_mlib->close();   // may change order if prefs dictate
-
-    LOG(verbose) << "]" ;
-    LOG(info)
-          << " num_materials " << num_materials
-          << " num_material_with_efficiency " << num_material_with_efficiency
-          ; 
-
-    m_mlib->dumpSensitiveMaterials("X4PhysicalVolume::convertMaterials");
-
-    OK_PROFILE("X4PhysicalVolume::convertMaterials");
-}
-
-
-/**
-X4PhysicalVolume::convertMaterials
------------------------------------
-
 1. recursive traverse collecting actively used material pointers into m_mtlist vector 
 2. X4MaterialTable::Convert via X4MaterialTable::init populates GMaterialLib with the methods::
 
@@ -545,7 +497,7 @@ void X4PhysicalVolume::convertMaterials_r(const G4VPhysicalVolume* const pv, int
     }
 
     G4Material* mt = lv->GetMaterial() ; 
-    if(std::find(m_mtlist.begin(), m_mtlist.end(), mt) == m_mtlist.end()) m_mtlist.push_back(mt);  
+    if(mt && std::find(m_mtlist.begin(), m_mtlist.end(), mt) == m_mtlist.end()) m_mtlist.push_back(mt);  
 }
 
 

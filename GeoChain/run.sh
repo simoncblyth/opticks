@@ -18,14 +18,22 @@ Usage::
 EOU
 }
 
+#name=GeoChainSolidTest
+name=GeoChainVolumeTest
 
-#geochaintest=AdditionAcrylicConstruction
-#geochaintest=BoxMinusTubs0
-#geochaintest=BoxMinusTubs1
-#geochaintest=PMTSim_Z
-#geochaintest=PMTSim_Zclone
-geochaintest=PMTSim_Z-400
-
+if [ "$name" == "GeoChainSolidTest" ]; then
+    #geochaintest=AdditionAcrylicConstruction
+    #geochaintest=BoxMinusTubs0
+    #geochaintest=BoxMinusTubs1
+    #geochaintest=PMTSim_Z
+    #geochaintest=PMTSim_Zclone
+    geochaintest=PMTSim_Z-400
+elif [ "$name" == "GeoChainVolumeTest" ]; then
+    geochaintest=PMTSimLV
+else
+    echo ERROR unexpected executable name $name 
+    exit 1 
+fi 
 
 
 #export GGeo=INFO
@@ -43,21 +51,30 @@ geochaintest=PMTSim_Z-400
 #export NNODENUDGER_LVLIST=0
 
 export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
+
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
+export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
+
 unset OPTICKS_KEY 
 
 cd $OPTICKS_HOME/GeoChain
-rm GeoChainTest.log 
 
-which GeoChainTest
+rm $name.log 
+which $name
 
 opts="--x4tubsnudgeskip 0"
 
+DEBUG=1
 
-if [ "$(uname)" == "Darwin" ]; then 
-    lldb__ GeoChainTest $opts 
-else
-    gdb -ex r --args GeoChainTest $opts 
-fi 
+if [ -n "$DEBUG" ]; then 
+    if [ "$(uname)" == "Darwin" ]; then 
+        lldb__ $name $opts 
+    else
+        gdb -ex r --args $name $opts 
+    fi
+else 
+    $name $opts
+fi
+
 
 

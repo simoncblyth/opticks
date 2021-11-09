@@ -29,7 +29,7 @@ GeoChain::GeoChain(Opticks* ok_)
 {
 }
 
-void GeoChain::convert(const G4VSolid* const solid, const std::string& meta_)
+void GeoChain::convertSolid(const G4VSolid* so, const std::string& meta_)
 {
     const char* meta = meta_.empty() ? nullptr : meta_.c_str() ; 
     LOG(info) << "[ meta " << meta ; 
@@ -37,9 +37,9 @@ void GeoChain::convert(const G4VSolid* const solid, const std::string& meta_)
     int lvIdx = 0 ; 
     int soIdx = 0 ; 
 
-    std::string lvname = solid->GetName(); 
+    std::string lvname = so->GetName(); 
 
-    mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, solid, lvname ) ; 
+    mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, so, lvname ) ; 
     LOG(info) << " mesh " << mesh ; 
 
     ggeo->add(mesh); 
@@ -58,6 +58,29 @@ void GeoChain::convert(const G4VSolid* const solid, const std::string& meta_)
     LOG(info) << "]" ;  
 }
 
+/**
+GeoChain::convertPV
+---------------------
+
+see okg4/tests/OKX4Test.cc as its doing much the same thing, maybe 
+avoid duplication with some static methods 
+
+**/
+
+void GeoChain::convertPV( const G4VPhysicalVolume* top, const std::string& meta_ )
+{
+    const char* meta = meta_.empty() ? nullptr : meta_.c_str() ; 
+    std::cout << "[ GeoChain::convertPV meta " << meta << std::endl ; 
+    std::cout << "GeoChain::convertPV top " << top << std::endl ; 
+
+    X4PhysicalVolume xtop(ggeo, top) ; 
+
+    CSG_GGeo_Convert conv(fd, ggeo, meta ) ;   // populate fd:CSGFoundry 
+    conv.convert();
+
+    std::cout << "] GeoChain::convert " << std::endl ; 
+}
+
 void GeoChain::save(const char* name) const 
 {
     int create_dirs = 2 ; // 2: dirpath
@@ -70,6 +93,4 @@ void GeoChain::save(const char* name) const
     CSGFoundry* lfd = CSGFoundry::Load(cfbase, rel);  // load foundary and check identical bytes
     assert( 0 == CSGFoundry::Compare(fd, lfd ) );  
 }
-
-
 

@@ -1,8 +1,8 @@
 /**
-GeoChainTest.cc : testing the full chain of geometry conversions
-===================================================================
+GeoChainSolidTest.cc : testing the full chain of geometry conversions for single solids
+==========================================================================================
 
-The geometry to create is controlled by the name string obtained from envvar *GEOCHAINTEST* 
+The solid to create is controlled by the name string obtained from envvar *GEOCHAINTEST* 
 
 1. creates G4VSolid directly here or using functionality from other libs such as j/PMTSim(ZSolid)
 2. invokes GeoChain::convert
@@ -13,18 +13,9 @@ The geometry to create is controlled by the name string obtained from envvar *GE
 
 3. save the CSGFoundry geometry under directory named by the *GEOCHAINTEST* name
 
-
 Subsequently can render this geometry, eg with CSGOptiX/cxs.sh using 
 just the path to the CSGFoundry directory. 
 
-
-TODO : expand from single solid conversions to G4VPhysicalVolume of small collections of solids (eg PMT)
-----------------------------------------------------------------------------------------------------------
-
-Note that CSG_GGeo is already able to convert full geometries, so all functionality 
-is already available it just needs to be used from this testing environment.
-This will probably entail modifications to make it easier to do so (eg rearranging functionality
-into static methods). 
 
 **/
 
@@ -86,7 +77,7 @@ int main(int argc, char** argv)
     //for(int lvIdx=-1 ; lvIdx < 10 ; lvIdx+= 1 ) LOG(info) << " lvIdx " << lvIdx << " ok.isX4TubsNudgeSkip(lvIdx) " << ok.isX4TubsNudgeSkip(lvIdx)  ; 
 
     GeoChain chain(&ok); 
-    chain.convert(solid, meta);  
+    chain.convertSolid(solid, meta);  
     chain.save(name); 
 
     return 0 ; 

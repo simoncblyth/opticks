@@ -36,10 +36,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR} 
 )
 
-
 set(SOURCES)
 set(HEADERS)
-
 
 list(APPEND SOURCES
    GeoChain.cc
@@ -50,7 +48,6 @@ list(APPEND HEADERS
    GeoChain.hh
    GeoMaker.hh
 )
-
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
@@ -63,25 +60,17 @@ target_link_libraries( ${name} PUBLIC
    Opticks::CSG_GGeo
 )
 
-
 if(PMTSim_FOUND)
    target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
    target_compile_definitions( ${name} PUBLIC WITH_PMTSIM )
 endif()
 
-
-add_executable(${name}Test ${name}Test.cc )
-target_link_libraries( ${name}Test PUBLIC
-   ${name} 
-)
-
 target_compile_definitions( ${name} PUBLIC OPTICKS_GEOCHAIN )
-
-install(TARGETS ${name}Test DESTINATION lib)
-
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+add_subdirectory(tests)
 
 
 
