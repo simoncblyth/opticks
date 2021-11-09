@@ -26,8 +26,9 @@ const G4VSolid* const make_PMTSim(const char* name, std::string& meta)
     ss << "creator:make_PMTSim" << std::endl ; 
     const G4VSolid* solid = nullptr ;  
 #ifdef WITH_PMTSIM
-    LOG(info) << "PMTSim::GetSolid " ; 
+    LOG(info) << "[ PMTSim::GetSolid name " << name ; 
     solid = PMTSim::GetSolid(name) ;   // for zcut include integer in name eg "PMTSim_Z-400" 
+    LOG(info) << "] PMTSim::GetSolid GetName " << solid->GetName()  ; 
 #endif
     meta = ss.str();   
     return solid ; 
