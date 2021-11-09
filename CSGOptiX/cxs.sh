@@ -103,7 +103,7 @@ elif [ "$cxs" == "101" ]; then
 elif [ "$cxs" == "200" -o "$cxs" == "201" ]; then
     case $cxs in 
       200) name=PMTSim_Z      ;; 
-      201) name=PMTSim_ZCut-400 ;; 
+      201) name=PMTSim_Z-400 ;; 
     esac
     cfbase=$TMP/GeoChain/$name
     moi=0

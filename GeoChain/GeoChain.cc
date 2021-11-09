@@ -1,6 +1,6 @@
 #include "G4VSolid.hh"
 
-#include "GeoChain.h"
+#include "GeoChain.hh"
 
 #include <cstring>
 

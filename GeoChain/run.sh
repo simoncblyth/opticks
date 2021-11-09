@@ -36,7 +36,7 @@ geochaintest=PMTSim_Z-400
 #export NNodeNudger=INFO
 #export NTreeBalance=INFO
 #export NTreeBuilder=INFO
-export X4Solid=INFO
+#export X4Solid=INFO
 
 #export DUMP_RIDX=0
 #export NTREEPROCESS_LVLIST=0

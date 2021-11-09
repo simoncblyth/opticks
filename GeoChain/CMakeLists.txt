@@ -43,10 +43,12 @@ set(HEADERS)
 
 list(APPEND SOURCES
    GeoChain.cc
+   GeoMaker.cc
 )
 
 list(APPEND HEADERS
-   GeoChain.h
+   GeoChain.hh
+   GeoMaker.hh
 )
 
 
