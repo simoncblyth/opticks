@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     ok.configure(); 
     GeoChain chain(&ok); 
     chain.convertPV(pv, meta);  
-    //chain.save(name); 
+    chain.save(name); 
 
     return 0 ; 
 }

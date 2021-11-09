@@ -75,7 +75,14 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top, const std::string& meta_
 
     X4PhysicalVolume xtop(ggeo, top) ; 
 
+    // ggeo->postDirectTranslation();  tries to save which fails with no idpath 
+
+    ggeo->prepareVolumes();
+    ggeo->deferredCreateGParts();
+
+
     CSG_GGeo_Convert conv(fd, ggeo, meta ) ;   // populate fd:CSGFoundry 
+
     conv.convert();
 
     std::cout << "] GeoChain::convert " << std::endl ; 

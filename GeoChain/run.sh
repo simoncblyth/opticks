@@ -54,6 +54,7 @@ export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
 
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
+export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    # when defined : dont intersect chop the PMT 
 
 unset OPTICKS_KEY 
 
