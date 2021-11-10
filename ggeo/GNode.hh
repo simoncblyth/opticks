@@ -72,6 +72,7 @@ class GGEO_API GNode {
       bool isSelected() const ;
       void setCSGSkip(bool csgskip);
       bool isCSGSkip() const ;
+      bool isX4SkipSolid() const ; 
 
       virtual ~GNode();
   private:

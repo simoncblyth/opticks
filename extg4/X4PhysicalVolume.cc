@@ -924,20 +924,38 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
     }  
 }
 
+/**
+X4PhysicalVolume::convertSolid
+-------------------------------
+
+Hmm : how to do early x4skipsolid ?
+
+* proceed normally adding to GGeo but set skip flag on the GMesh for checking later in convertStructure, 
+  that gets propagated to the GNode tree : that might be workable as GInstancer already partitions the 
+  GNodes according to ridx so should be easy to do the actual skip at that point 
+  
+**/
+
 void X4PhysicalVolume::convertSolid( const G4LogicalVolume* lv )
 {
+    const G4VSolid* const solid = lv->GetSolid(); 
+    const std::string& lvname = lv->GetName() ; 
+    const std::string& soname = solid->GetName() ; 
+    bool x4skipsolid = m_ok->isX4SkipSolidName(soname.c_str()); 
+
+    LOG(info) 
+        << " lvname " << lvname 
+        << " soname " << soname 
+        << " [--x4skipsolidname] " << ( x4skipsolid ? "YES" : "n" )
+        ;
+
     int lvIdx = m_lvlist.size();  
     int soIdx = lvIdx ; // when converting in postorder soIdx is the same as lvIdx
     m_lvidx[lv] = lvIdx ;  
     m_lvlist.push_back(lv);  
 
-    const G4VSolid* const solid = lv->GetSolid(); 
-    const std::string& lvname = lv->GetName() ; 
-    const std::string& soname = solid->GetName() ; 
-
-    LOG(info) << " soname " << soname ; 
-
     GMesh* mesh = ConvertSolid(m_ok, lvIdx, soIdx, solid, lvname ); 
+    mesh->setX4SkipSolid(x4skipsolid); 
 
     m_lvname.push_back( lvname ); 
     m_soname.push_back( soname ); 

@@ -737,7 +737,7 @@ void GInstancer::visitNode( GNode* node, unsigned ridx )
     unsigned lvidx = node->getMeshIndex();  
     m_meshset[ridx].insert( lvidx ) ; 
 
-    if(ridx == 0 ) return ;
+    //if(ridx == 0 ) return ;  // TRYING TO SKIP GLOBALS 
 
 
     bool csgskiplv = m_ok->isCSGSkipLV(lvidx) ; // --csgskiplv

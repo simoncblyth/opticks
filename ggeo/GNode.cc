@@ -80,6 +80,11 @@ void GNode::setCSGSkip(bool csgskip)
     m_csgskip = csgskip ; 
 }
 
+bool GNode::isX4SkipSolid() const 
+{
+    return m_mesh->isX4SkipSolid(); 
+}
+
 
 void GNode::setIndex(unsigned int index)
 {

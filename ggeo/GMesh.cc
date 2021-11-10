@@ -127,6 +127,15 @@ bool GMesh::isEmpty() const
 }
 
 
+void GMesh::setX4SkipSolid(bool x4skipsolid)
+{
+    m_x4skipsolid = x4skipsolid ; 
+}
+bool GMesh::isX4SkipSolid() const 
+{
+    return m_x4skipsolid ; 
+}
+
 
 /**
 GMesh::GMesh
@@ -137,7 +146,6 @@ which uses GMeshMaker::Make to go from NPY arrays into gfloat and calculates the
 
 
 **/
-
 
 GMesh::GMesh(unsigned int index, 
              gfloat3* vertices, 
@@ -223,7 +231,8 @@ GMesh::GMesh(unsigned int index,
 
       m_x4src_vtx(NULL), 
       m_x4src_idx(NULL),
-      m_g4vsolid(NULL)  
+      m_g4vsolid(NULL),
+      m_x4skipsolid(false)
 
 {
      init(vertices, faces, normals, texcoords);

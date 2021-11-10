@@ -1140,7 +1140,7 @@ void OpticksCfg<Listener>::init()
 
 
    char x4skipsolidname[256];
-   snprintf(x4skipsolidname,256, "comma delimited string listing solid names to skip in X4PhysicalVolume::convertSolid etc.. Default %s", m_x4skipsolidname.c_str() );
+   snprintf(x4skipsolidname,256, "NOT FULLY IMPLEMENTED : comma delimited string listing solid names to skip, see X4PhysicalVolume::convertSolid Default %s", m_x4skipsolidname.c_str() );
    m_desc.add_options()
        ("x4skipsolidname",  boost::program_options::value<std::string>(&m_x4skipsolidname), x4skipsolidname );
 

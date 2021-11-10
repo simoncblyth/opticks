@@ -570,6 +570,9 @@ class GGEO_API GMesh : public GDrawable {
       void stealIdentity(GMesh* other);
 
   public:
+      void setX4SkipSolid(bool x4skipsolid); 
+      bool isX4SkipSolid() const ; 
+  public:
       template <typename T> void setMeta(const char* key, T value);
       template <typename T> T getMeta(const char* key, const char* fallback) const ;
 
@@ -679,6 +682,9 @@ class GGEO_API GMesh : public GDrawable {
   public:
       // expedient recording source solid in X4PhysicalVolume::convertSolid X4Mesh::Convert X4Mesh::Placeholder
       const void*    m_g4vsolid ; 
+  private:
+      bool           m_x4skipsolid ; 
+
 
 
 };
