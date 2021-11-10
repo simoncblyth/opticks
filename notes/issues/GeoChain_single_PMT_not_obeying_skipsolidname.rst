@@ -20,6 +20,15 @@ Issue : cxs render shows outer PMT solid only that appears to not have the horiz
     # run GeoChain with GeoChainVolumeTest creating the PV and running it through the conversions
     ./run.sh 
 
+    # cxs 2d intersect render
+    cx 
+    ./b7
+    ./cxs.sh 
+
+    # grap intersects and display locally 
+    laptop> cx ; ./grab.sh ; ./cxs.sh 
+
+
 
 Possible cause of why --skipsolidname not working
 -----------------------------------------------------
@@ -30,7 +39,10 @@ Possible cause of why --skipsolidname not working
 * moved skipping logic in GInstancer into GInstancer::visitNode so can 
   call from labelRepeat_r or labelGlobals_r however the notes in 
   why cannot do global level solid skips at such a late stage seem to 
-  suggest its not worth pursuing 
+  suggest its not worth pursuing. 
+
+* BUT considering alternatives GInstancer seems like the natural place to skip
+  because the volumes are already partitioned there 
 
 * instead look at X4PhysicalVolume::convertStructure that grabs the 
   GMesh created in X4PhysicalVolume::convertSolid 

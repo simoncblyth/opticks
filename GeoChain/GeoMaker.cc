@@ -14,6 +14,17 @@ using CLHEP::pi ;
 
 const plog::Severity GeoMaker::LEVEL = PLOG::EnvLevel("GeoMaker", "DEBUG"); 
 
+const G4VSolid* GeoMaker::Make(const char* name)  // static
+{
+    const G4VSolid* solid = nullptr ; 
+    if(     strcmp(name,"default") == 0)                      solid = GeoMaker::make_default(name);  
+    else if(strcmp(name,"AdditionAcrylicConstruction") == 0 ) solid = GeoMaker::make_AdditionAcrylicConstruction(name); 
+    else if(strcmp(name,"BoxMinusTubs0") == 0 )               solid = GeoMaker::make_BoxMinusTubs0(name); 
+    else if(strcmp(name,"BoxMinusTubs1") == 0 )               solid = GeoMaker::make_BoxMinusTubs1(name); 
+    assert(solid); 
+    return solid ; 
+}
+
 const G4VSolid* GeoMaker::make_default(const char* name)
 {
     return new G4Orb(name, 100.) ; 

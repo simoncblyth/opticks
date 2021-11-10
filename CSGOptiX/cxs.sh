@@ -50,7 +50,7 @@ EOU
 }
 
 msg="=== $BASH_SOURCE : "
-cxs=${CXS:-202}         # collect sets of config underneath CXS
+cxs=${CXS:-303}         # collect sets of config underneath CXS
 cfbase=$TMP/CSG_GGeo   # default CSGFoundry dir is within cfbase 
 isel=
 
@@ -117,6 +117,24 @@ elif [ "$cxs" == "200" -o "$cxs" == "201" -o "$cxs" == "202" ]; then
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
 
     #export ZZ="190,0,-5,-162,-195,-210,-275,-350,-365,-400,-420,-450"
+elif [ "$cxs" == "300" -o "$cxs" == "301" -o "$cxs" == "302" -o "$cxs" == "303" -o "$cxs" == "304" ]; then
+
+    case $cxs in 
+      300) name=pmt_solid  ;; 
+      301) name=body_solid  ;; 
+      302) name=inner_solid  ;; 
+      303) name=inner1_solid  ;; 
+      304) name=inner2_solid  ;; 
+    esac
+    cfbase=$TMP/GeoChain/$name
+    moi=0
+    dz=-4
+    num_pho=100
+    cegs=16:0:9:0:0:$dz:$num_pho
+    gridscale=0.15
+    isel=0
+    unset CXS_OVERRIDE_CE
+    export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
 
 fi 
 

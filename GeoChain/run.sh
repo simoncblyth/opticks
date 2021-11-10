@@ -18,8 +18,8 @@ Usage::
 EOU
 }
 
-#name=GeoChainSolidTest
-name=GeoChainVolumeTest
+name=GeoChainSolidTest
+#name=GeoChainVolumeTest
 
 if [ "$name" == "GeoChainSolidTest" ]; then
     #geochaintest=AdditionAcrylicConstruction
@@ -27,7 +27,14 @@ if [ "$name" == "GeoChainSolidTest" ]; then
     #geochaintest=BoxMinusTubs1
     #geochaintest=PMTSim_Z
     #geochaintest=PMTSim_Zclone
-    geochaintest=PMTSim_Z-400
+    #geochaintest=PMTSim_Z-400
+
+    #geochaintest=pmt_solid
+    #geochaintest=body_solid 
+    #geochaintest=inner_solid 
+    geochaintest=inner1_solid 
+    #geochaintest=inner2_solid 
+
 elif [ "$name" == "GeoChainVolumeTest" ]; then
     geochaintest=PMTSimLV
 else
