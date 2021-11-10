@@ -678,31 +678,7 @@ void GInstancer::labelRepeats_r( GNode* node, unsigned ridx, unsigned pidx, int 
         }    
     } 
 
-    unsigned lvidx = node->getMeshIndex();  
-    m_meshset[ridx].insert( lvidx ) ; 
-
-    bool csgskiplv = m_ok->isCSGSkipLV(lvidx) ; // --csgskiplv
-    bool skipsolidname = m_ok->isSkipSolidIdx(lvidx); //   --skipsolidname 
-    bool skip = csgskiplv || skipsolidname ;
-    if(skip)  
-    {
-        //LOG(LEVEL) << " lvidx " << lvidx << " csgskiplv " << csgskiplv << " skipsolidname " << skipsolidname ; 
-        vol->setCSGSkip(true);  // this setting changes the selection used in GMergedMesh::traverse_r 
-
-        m_csgskiplv[lvidx].push_back( node->getIndex() ); 
-        m_csgskiplv_count += 1 ; 
-    }
-
-    if(ridx > 0)
-    {
-         LOG(debug)
-             << " ridx " << std::setw(5) << ridx
-             << " n " << node->getName()
-             ;
-         m_labels++ ; 
-    }
-
-
+    visitNode( node, ridx ); 
 
     for(unsigned i = 0; i < node->getNumChildren(); i++) labelRepeats_r(node->getChild(i), ridx, pidx, outernode_copyNumber, outer_volume );
 }
@@ -714,16 +690,6 @@ GInstancer::labelGlobals_r
 
 Only recurses whilst in global territory with ridx == 0, as soon as hit a repeated 
 volume, with ridx > 0, stop recursing. 
-
-Skipping of an instanced LV is done here by setting a flag.
-
-Currently trying to skip a global lv at this rather late juncture 
-leads to inconsistencies manifesting in a corrupted color buffer 
-(i recall that all global volumes are retained for index consistency in the merge of GMergedMesh GGeoLib)
-so moved to simply editing the input GDML
-Presumably could also do this by moving the skip earlier to the Geant4 X4 traverse
-see notes/issues/torus_replacement_on_the_fly.rst
-
 
 **/
 
@@ -740,25 +706,62 @@ void GInstancer::labelGlobals_r( GNode* node, unsigned depth )
  
     m_globals_count += 1 ; 
 
+    visitNode( node, ridx ); 
+
+    for(unsigned i = 0; i < node->getNumChildren(); i++) labelGlobals_r(node->getChild(i), depth + 1 );
+}
+
+
+/**
+GInstancer::visitNode
+-------------------------
+
+NB skipping of global (ridx=0) volumes is disabled 
+as found that trying to skip a global lv at this rather late juncture 
+leads to inconsistencies manifesting in a corrupted color buffer 
+
+(i recall that all global volumes are retained for index consistency in the merge of GMergedMesh GGeoLib)
+so moved to simply editing the input GDML.
+
+Presumably could also do this by moving the skip earlier to the Geant4 X4 traverse
+see notes/issues/torus_replacement_on_the_fly.rst which shows the vertex inconsistencies which 
+cause segv when try to skip at this late stage.
+
+TODO: implement --x4skipsolidname and change the skip options implemented here to --ggskipsolidname/--ggcsgskiplv 
+
+**/
+
+void GInstancer::visitNode( GNode* node, unsigned ridx )
+{
+    GVolume* vol = dynamic_cast<GVolume*>(node); 
     unsigned lvidx = node->getMeshIndex();  
     m_meshset[ridx].insert( lvidx ) ; 
 
-/*
-    if( m_ok->isCSGSkipLV(lvidx) )   // --csgskiplv
-    {
-        assert(0 && "skipping of LV used globally, ie non-instanced, is not currently working "); 
+    if(ridx == 0 ) return ;
 
-        GVolume* vol = dynamic_cast<GVolume*>(node); 
-        vol->setCSGSkip(true);      
+
+    bool csgskiplv = m_ok->isCSGSkipLV(lvidx) ; // --csgskiplv
+    bool skipsolidname = m_ok->isSkipSolidIdx(lvidx); //   --skipsolidname 
+    bool skip = csgskiplv || skipsolidname ;
+
+    if(skip)  
+    {
+        LOG(LEVEL) << " lvidx " << lvidx << " csgskiplv " << csgskiplv << " skipsolidname " << skipsolidname ; 
+        vol->setCSGSkip(true);  // this setting changes the selection used in GMergedMesh::traverse_r 
 
         m_csgskiplv[lvidx].push_back( node->getIndex() ); 
         m_csgskiplv_count += 1 ; 
     }
-*/  
- 
-    for(unsigned i = 0; i < node->getNumChildren(); i++) labelGlobals_r(node->getChild(i), depth + 1 );
-}
 
+    if(ridx > 0)
+    {
+         LOG(LEVEL)
+             << " ridx " << std::setw(5) << ridx
+             << " n " << node->getName()
+             ;
+         m_labels++ ; 
+    }
+}
 
 
 /**

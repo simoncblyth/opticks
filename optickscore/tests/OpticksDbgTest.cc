@@ -21,12 +21,11 @@
 // OpticksDbgTest --OKCORE trace
 
 #include <cassert>
+#include <cstdlib>
 
 #include "NPY.hpp"
 #include "Opticks.hh"
-
-#include "PLOG.hh"
-#include "OKCORE_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 void test_isDbgPhoton_string(int argc, char** argv)
@@ -69,16 +68,29 @@ void test_getMaskBuffer(int argc, char** argv)
     msk->dump("msk");
 }
 
+void test_postconfigure_strings(int argc, char** argv)
+{
+    unsetenv("OPTICKS_KEY"); 
+    Opticks ok(argc, argv, "--allownokey --x4skipsolidname one,two,three") ; 
+    ok.configure();
+
+    assert( ok.isX4SkipSolidName("one") == true ); 
+    assert( ok.isX4SkipSolidName("two") == true ); 
+    assert( ok.isX4SkipSolidName("three") == true ); 
+    assert( ok.isX4SkipSolidName("four") == false ); 
+
+}
+
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-    OKCORE_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     //test_isDbgPhoton_string(argc, argv);
     //test_isDbgPhoton_path(argc, argv);
-    test_getMaskBuffer(argc, argv);
+    //test_getMaskBuffer(argc, argv);
+
+    test_postconfigure_strings(argc, argv) ; 
 
     return 0 ; 
 }

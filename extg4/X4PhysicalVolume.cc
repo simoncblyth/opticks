@@ -920,31 +920,38 @@ void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int de
     // for newly encountered lv record the tail/postorder idx for the lv
     if(std::find(m_lvlist.begin(), m_lvlist.end(), lv) == m_lvlist.end())
     {
-        int lvIdx = m_lvlist.size();  
-        int soIdx = lvIdx ; // when converting in postorder soIdx is the same as lvIdx
-        m_lvidx[lv] = lvIdx ;  
-        m_lvlist.push_back(lv);  
-
-        const G4VSolid* const solid = lv->GetSolid(); 
-        const std::string& lvname = lv->GetName() ; 
-        const std::string& soname = solid->GetName() ; 
-
-        GMesh* mesh = ConvertSolid(m_ok, lvIdx, soIdx, solid, lvname ); 
-
-        m_lvname.push_back( lvname ); 
-        m_soname.push_back( soname ); 
- 
-        const nnode* root = mesh->getRoot(); 
-        if( root->has_torus() )
-        {
-            LOG(fatal) << " has_torus lvIdx " << lvIdx << " " << lvname ;  
-            m_lv_with_torus.push_back( lvIdx ); 
-            m_lvname_with_torus.push_back( lvname ); 
-            m_soname_with_torus.push_back( soname ); 
-        }
-
-        m_ggeo->add( mesh ) ; 
+        convertSolid( lv );  
     }  
+}
+
+void X4PhysicalVolume::convertSolid( const G4LogicalVolume* lv )
+{
+    int lvIdx = m_lvlist.size();  
+    int soIdx = lvIdx ; // when converting in postorder soIdx is the same as lvIdx
+    m_lvidx[lv] = lvIdx ;  
+    m_lvlist.push_back(lv);  
+
+    const G4VSolid* const solid = lv->GetSolid(); 
+    const std::string& lvname = lv->GetName() ; 
+    const std::string& soname = solid->GetName() ; 
+
+    LOG(info) << " soname " << soname ; 
+
+    GMesh* mesh = ConvertSolid(m_ok, lvIdx, soIdx, solid, lvname ); 
+
+    m_lvname.push_back( lvname ); 
+    m_soname.push_back( soname ); 
+
+    const nnode* root = mesh->getRoot(); 
+    if( root->has_torus() )
+    {
+        LOG(fatal) << " has_torus lvIdx " << lvIdx << " " << lvname ;  
+        m_lv_with_torus.push_back( lvIdx ); 
+        m_lvname_with_torus.push_back( lvname ); 
+        m_soname_with_torus.push_back( soname ); 
+    }
+
+    m_ggeo->add( mesh ) ; 
 }
 
 
@@ -1316,6 +1323,9 @@ but thats too soon for tripletIdentity, so instead the GVolume
 are just held in the tree of GVolume until collected 
 into GGeo/GNodeLib by a traversal by GInstancer. 
 
+G4LogicalVolume::GetNoDaughters return type change 1042:G4int, 1062:size_t
+
+
 **/
 
 GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select )
@@ -1333,7 +1343,6 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
 
      const G4LogicalVolume* const lv = pv->GetLogicalVolume();
   
-    // G4LogicalVolume::GetNoDaughters returns 1042:G4int, 1062:size_t
      for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ )
      {
          const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);

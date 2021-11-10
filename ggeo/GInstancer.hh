@@ -118,6 +118,7 @@ class GGEO_API GInstancer {
         void           labelTree();
         void           labelRepeats_r( GNode* node, unsigned ridx, unsigned pidx, int outernode_copyNo, const GVolume* outer_volume  );  // recursive labelling starting from the placements
         void           labelGlobals_r( GNode* node, unsigned depth );  // recursive labelling starting from root of only ridx 0 nodes
+        void           visitNode( GNode* node, unsigned ridx ) ; 
    private:
         // output side, operates via GGeo::makeMergedMesh, GGeoLib::makeMergedMesh, GMergedMesh::create
         //   GMergedMesh::traverse uses the repeat index ridx labels written into the node tree

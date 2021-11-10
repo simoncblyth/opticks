@@ -529,6 +529,7 @@ class OKCORE_API Opticks {
 
        bool isSkipSolidIdx(unsigned lvIdx) const ;   // --skipsolidname
 
+       bool isX4SkipSolidName(const char* soname) const;   // --x4skipsolidname  : EARLIER SKIPPING THAT ABOVE 
 
        unsigned long long getEMM() const ;
        bool isEnabledMergedMesh(unsigned mm) const ;

@@ -56,6 +56,11 @@ export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
 export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    # when defined : dont intersect chop the PMT 
 
+# checking that --skipsolidname is working 
+export OpticksDbg=INFO  
+export GInstancer=INFO
+
+
 unset OPTICKS_KEY 
 
 cd $OPTICKS_HOME/GeoChain
@@ -63,7 +68,10 @@ cd $OPTICKS_HOME/GeoChain
 rm $name.log 
 which $name
 
-opts="--x4tubsnudgeskip 0"
+opts=""
+opts="$opts --x4tubsnudgeskip 0"
+opts="$opts --skipsolidname ${GEOCHAINTEST}_body_solid_1_9   " 
+
 
 DEBUG=1
 

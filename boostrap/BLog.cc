@@ -275,7 +275,7 @@ std::string BLog::makeCutString(unsigned i, bool ) const
         int idx = ick.first ; 
         assert( icv.first == idx );  
 
-        if( idx != i ) continue ;  
+        if( idx != int(i) ) continue ;  
 
         const std::string& ck = ick.second ;    
         const double&      cv = icv.second ;    
@@ -310,7 +310,7 @@ std::string BLog::makeNoteString(unsigned i, bool ) const
         int idx = ink.first ; 
         assert( inv.first == idx );  
 
-        if( idx != i ) continue ;  
+        if( idx != int(i) ) continue ;  
 
         const std::string& nk = ink.second ;    
         const int&         nv = inv.second ;    

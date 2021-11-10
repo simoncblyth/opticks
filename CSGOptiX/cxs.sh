@@ -100,7 +100,7 @@ elif [ "$cxs" == "101" ]; then
     cegs=16:0:9:100
     gridscale=0.1
     isel=0
-elif [ "$cxs" == "200" -o "$cxs" == "201" ]; then
+elif [ "$cxs" == "200" -o "$cxs" == "201" -o "$cxs" == "202" ]; then
     case $cxs in 
       200) name=PMTSim_Z      ;; 
       201) name=PMTSim_Z-400  ;; 
@@ -116,7 +116,7 @@ elif [ "$cxs" == "200" -o "$cxs" == "201" ]; then
     unset CXS_OVERRIDE_CE
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
 
-    export ZZ="190,0,-5,-162,-195,-210,-275,-350,-365,-400,-420,-450"
+    #export ZZ="190,0,-5,-162,-195,-210,-275,-350,-365,-400,-420,-450"
 
 fi 
 

@@ -43,7 +43,7 @@ OpticksDbg::OpticksDbg(Opticks* ok)
    :
    m_ok(ok),
    m_cfg(NULL),
-   m_geo(NULL),
+   m_geo(NULL),        // SGeo
    m_mask_buffer(NULL)
 {
 }
@@ -170,7 +170,7 @@ void OpticksDbg::postconfigure()
    const std::string& csgskiplv = m_cfg->getCSGSkipLV() ;
    const std::string& deferredcsgskiplv = m_cfg->getDeferredCSGSkipLV() ;
    const std::string& enabledmm = m_cfg->getEnabledMergedMesh() ;
-
+   const std::string& x4skipsolidname = m_cfg->getX4SkipSolidName() ;
 
    postconfigure( dindex, m_debug_photon );
    postconfigure( oindex, m_other_photon );
@@ -185,6 +185,7 @@ void OpticksDbg::postconfigure()
    postconfigure( csgskiplv, m_csgskiplv );
    postconfigure( deferredcsgskiplv, m_deferredcsgskiplv );
    postconfigure( enabledmm, m_enabledmergedmesh );
+   postconfigure( x4skipsolidname, m_x4skipsolidname, ',' );
 
 
    LOG(debug) << " m_csgskiplv  " << m_csgskiplv.size() ; 
@@ -202,11 +203,19 @@ void OpticksDbg::postconfigure()
 
 
    const std::string& arglist  = m_cfg->getArgList();    // --arglist 
-   postconfigure( arglist, m_arglist ); 
+   postconfigure( arglist, m_arglist, '\n' ); 
 
 
    LOG(debug) << "OpticksDbg::postconfigure" << description() ; 
 }
+
+/**
+OpticksDbg::postgeometry
+-------------------------
+
+Invoked from Opticks::postgeometry.
+
+**/
 
 void OpticksDbg::postgeometry()
 {
@@ -227,6 +236,7 @@ bool OpticksDbg::isSkipSolidIdx(unsigned lvIdx) const   // --skipsolidname
     return IsListed(lvIdx, m_skipsolididx, false); 
 }
 
+
 /**
 OpticksDbg::postgeometrySkipSolidName
 -----------------------------------------
@@ -235,6 +245,12 @@ Looks for solids within the geometry with names starting with the
 comma delimited names from the --skipsolidname argument and adds 
 the midx (mesh indices) of them to m_skipsolididx
 for later querying with OpticksDbg::isSkipSolidIdx.
+
+
+X4 solid skipping happens much earlier in X4 conversion so cannot
+rely on having a list of names to match against to convert names
+into indices.  Must instead just simply compare strings. 
+
 
 **/
 
@@ -287,6 +303,7 @@ void OpticksDbg::postgeometrySkipSolidName()
         << " --skipsolidname " << skipsolidname 
         << " solidname.size " << solidname.size() 
         << " soidx.size " << soidx.size()
+        << " (soidx list used by Opticks::isSkipSolidIdx / GInstancer::labelRepeats_r ) "
         << " notfound " << notfound 
         ;
 
@@ -295,15 +312,22 @@ void OpticksDbg::postgeometrySkipSolidName()
 }
 
 
-void OpticksDbg::postconfigure(const std::string&  path, std::vector<std::string>& lines )
+
+
+void OpticksDbg::postconfigure(const std::string&  path, std::vector<std::string>& lines, char delim  )
 {
     if(path.empty()) return ; 
 
-    if(SPath::LooksLikePath(path.c_str()))
+    if(SPath::LooksLikePath(path.c_str()) && delim == '\n' )  // eg starts with slash
     {
         std::ifstream ifs(path.c_str());
         std::string line;
         while(std::getline(ifs, line)) lines.push_back(line) ; 
+    }
+    else if( delim == ',' )
+    {
+        SStr::Split( path.c_str(),  delim, lines );           
+        LOG(LEVEL) << " split " << path << " into " << lines.size() ; 
     }
     else
     {
@@ -364,6 +388,8 @@ bool OpticksDbg::IsListed(unsigned idx, const std::vector<unsigned>& ls, bool em
     return ls.size() == 0 ? emptylistdefault : std::find(ls.begin(), ls.end(), idx ) != ls.end() ; 
 }
 
+
+
 bool OpticksDbg::isDbgPhoton(unsigned record_id) const 
 {
     return IsListed(record_id, m_debug_photon,  false); 
@@ -403,6 +429,17 @@ bool OpticksDbg::isX4PointSkip(unsigned lvIdx) const
     return IsListed(lvIdx, m_x4pointskip, false); 
 }
 
+
+
+bool OpticksDbg::IsStringListed( const char* str, const std::vector<std::string>& ls, bool emptylistdefault )
+{
+    return ls.size() == 0 ? emptylistdefault : std::find(ls.begin(), ls.end(), str ) != ls.end() ; 
+}
+
+bool OpticksDbg::isX4SkipSolidName(const char* soname) const 
+{
+    return IsStringListed(soname, m_x4skipsolidname, false); 
+}
 
 
 bool OpticksDbg::isCSGSkipLV(unsigned lvIdx) const   // --csgskiplv

@@ -70,6 +70,8 @@ class OKCORE_API OpticksDbg
        unsigned getMaskIndex(unsigned idx) const ;
     public:
        static bool IsListed(unsigned idx, const std::vector<unsigned>& ls, bool emptylistdefault);
+       static bool IsStringListed( const char* str, const std::vector<std::string>& ls, bool emptylistdefault ); 
+
        bool isDbgPhoton(unsigned record_id) const ;
        bool isOtherPhoton(unsigned record_id) const ;
        bool isGenPhoton(unsigned record_id) const ;
@@ -79,6 +81,9 @@ class OKCORE_API OpticksDbg
        bool isX4NudgeSkip(unsigned lvIdx) const ;
        bool isX4TubsNudgeSkip(unsigned lvIdx) const ;
        bool isX4PointSkip(unsigned lvIdx) const ;
+
+       bool isX4SkipSolidName(const char* soname) const ;   // --x4skipsolidname
+
        bool isCSGSkipLV(unsigned lvIdx) const ;   // --csgskiplv
        bool isDeferredCSGSkipLV(unsigned lvIdx) const ;   // --deferredcsgskiplv
        bool isSkipSolidIdx(unsigned lvIdx) const ;  // --skipsolidname 
@@ -97,7 +102,7 @@ class OKCORE_API OpticksDbg
        std::string description();
    private:
        void postconfigure();
-       void postconfigure(const std::string& path, std::vector<std::string>& lines ); 
+       void postconfigure(const std::string& path, std::vector<std::string>& lines, char delim ); 
        void postconfigure(const std::string& spec, unsigned long long& bitfield);
        void postconfigure(const std::string& spec, std::vector<unsigned>& ls);
        void postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs ) ;
@@ -122,6 +127,7 @@ class OKCORE_API OpticksDbg
        std::vector<unsigned> m_csgskiplv ; 
        std::vector<unsigned> m_deferredcsgskiplv ; 
        std::vector<unsigned> m_skipsolididx ;        // from --skipsolidname 
+       std::vector<std::string> m_x4skipsolidname ; 
        unsigned long long    m_enabledmergedmesh ;   // limited to 64 
        std::vector<std::pair<int,int> > m_instancemodulo ;   // (1,5),(2,10)  modulo scaledown for each mergedmesh index 
 

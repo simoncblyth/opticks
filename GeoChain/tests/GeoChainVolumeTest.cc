@@ -64,6 +64,7 @@ int main(int argc, char** argv)
     const char* argforced = "--allownokey" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
+
     GeoChain chain(&ok); 
     chain.convertPV(pv, meta);  
     chain.save(name); 

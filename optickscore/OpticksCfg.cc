@@ -1139,6 +1139,12 @@ void OpticksCfg<Listener>::init()
        ("skipsolidname",  boost::program_options::value<std::string>(&m_skipsolidname), skipsolidname );
 
 
+   char x4skipsolidname[256];
+   snprintf(x4skipsolidname,256, "comma delimited string listing solid names to skip in X4PhysicalVolume::convertSolid etc.. Default %s", m_x4skipsolidname.c_str() );
+   m_desc.add_options()
+       ("x4skipsolidname",  boost::program_options::value<std::string>(&m_x4skipsolidname), x4skipsolidname );
+
+
 
    m_desc.add_options()
        ("accel",        boost::program_options::value<std::string>(&m_accel), "OptiX Accel structure builder, comma delimited list. See OGeo. CAUTION case sensitive Bvh/Trbvh/Sbvh/NoAccel  ");
@@ -1992,6 +1998,12 @@ template <class Listener>
 const std::string& OpticksCfg<Listener>::getSkipSolidName() const   // --skipsolidname
 {
     return m_skipsolidname ; 
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getX4SkipSolidName() const   // --x4skipsolidname
+{
+    return m_x4skipsolidname ; 
 }
 
 

@@ -77,7 +77,9 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top, const std::string& meta_
 
     // ggeo->postDirectTranslation();  tries to save which fails with no idpath 
 
-    ggeo->prepareVolumes();
+    //ggeo->prepareVolumes();   // just prepareVolumes  misses prepareOpticks which prevcents --skipsolidname from working 
+    ggeo->prepare(); 
+
     ggeo->deferredCreateGParts();
 
 

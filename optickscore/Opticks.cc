@@ -808,6 +808,10 @@ bool Opticks::isSkipSolidIdx(unsigned lvIdx) const  // --skipsolidname
     return m_dbg->isSkipSolidIdx(lvIdx); 
 }
 
+bool Opticks::isX4SkipSolidName(const char* soname) const  // --x4skipsolidname
+{
+    return m_dbg->isX4SkipSolidName(soname); 
+}
 
 unsigned Opticks::getNumCSGSkipLV() const 
 {
