@@ -56,6 +56,9 @@ set(SOURCES
 
     X4Gen.cc
     X4.cc
+    X4geomdefs.cc
+    X4Intersect.cc
+
     X4Named.cc
     X4NameOrder.cc
     X4Entity.cc
@@ -120,6 +123,9 @@ set(HEADERS
 
     X4Gen.hh
     X4.hh
+    X4geomdefs.hh
+    X4Intersect.hh
+
     X4Named.hh
     X4NameOrder.hh
     X4Entity.hh

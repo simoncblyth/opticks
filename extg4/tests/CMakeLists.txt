@@ -47,6 +47,7 @@ set(TEST_SOURCES
     X4PhysicalConstantsTest.cc
 
     X4SurfaceTest.cc
+    X4IntersectTest.cc 
     CLHEPVersionInteger.cc
 )
 

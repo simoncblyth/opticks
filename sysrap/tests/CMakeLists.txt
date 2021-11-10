@@ -79,6 +79,8 @@ set(TEST_SOURCES
    SDiceTest.cc
 
    stranTest.cc
+
+   SEventTest.cc
 )
 
 

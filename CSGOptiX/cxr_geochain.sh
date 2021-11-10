@@ -22,7 +22,18 @@ EOU
 msg="=== $BASH_SOURCE :"
 
 #geometry=default
-geometry=AdditionAcrylicConstruction
+#geometry=AdditionAcrylicConstruction
+
+geometry=pmt_solid
+#geometry=body_solid
+#geometry=inner_solid
+#geometry=inner1_solid
+#geometry=inner2_solid
+
+#geometry=body_phys
+#geometry=inner1_phys
+#geometry=inner2_phys
+
 
 export GEOMETRY=${GEOMETRY:-$geometry}
 cfname=GeoChain/$GEOMETRY            # picks the CSGFoundry geometry to load
@@ -36,7 +47,7 @@ else
    moi=-1 
    eye=-2,0,0,1        
    tmin=1
-   cam=0         
+   cam=1     # 0:perspective  1:ortho        
 fi 
 
 emm=t0    # default to no solid skips with GeoChain, which is typically single solid geometry 

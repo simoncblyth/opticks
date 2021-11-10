@@ -26,6 +26,7 @@ CFBASE
 
 #include <algorithm>
 #include <iterator>
+#include <cstdlib>
 
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
@@ -43,10 +44,13 @@ int main(int argc, char** argv)
 
     OPTICKS_LOG(argc, argv); 
 
+
+
     bool overwrite = false ;  // allows commandline and envvars to override this default setting, see Opticks::getOutDir
     SSys::setenvvar("OPTICKS_OUTDIR", "$TMP/CSGOptiX", overwrite );
 
-    Opticks ok(argc, argv); 
+    unsetenv("OPTICKS_KEY"); 
+    Opticks ok(argc, argv, "--allownokey"); 
     ok.configure(); 
     ok.setRaygenMode(0);             // override --raygenmode option 
 

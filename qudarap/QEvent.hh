@@ -5,7 +5,9 @@ struct quad4 ;
 struct qat4 ; 
 struct quad6 ;
 struct NP ; 
-template <typename T> struct Tran ; 
+
+
+//template <typename T> struct Tran ; 
 template <typename T> struct QBuf ; 
 
 #include <vector>
@@ -23,12 +25,6 @@ TODO: follow OEvent technique of initial allocation and resizing at each event
 
 struct QUDARAP_API QEvent
 {
-    static NP* MakeGensteps(const std::vector<quad6>& gs ); 
-    static void StandardizeCEGS(        const float4& ce,       std::vector<int>& cegs, float gridscale ); 
-    static NP* MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran ) ; 
-    static NP* MakeCountGensteps(); 
-    static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep); 
-
     static const plog::Severity LEVEL ; 
     static const QEvent* INSTANCE ; 
     static const QEvent* Get(); 

@@ -147,7 +147,6 @@ set(HEADERS
     GlobalStyle.hh
 
     OpticksPhoton.h
-    OpticksGenstep.h
     OpticksQuadrant.h
 
     IntersectSDF.hh

@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 """
-QEventTest.py
+SEventTest.py
 =================
 
 ::
 
-    ipython -i tests/QEventTest.py 
+    ipython -i tests/SEventTest.py 
+    ./SEventTest.sh 
 
 """
 
@@ -18,8 +19,8 @@ except ImportError:
 pass
 
 
-class QEventTest(object):
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/qudarap/QEventTest")
+class SEventTest(object):
+    FOLD = os.path.expandvars("/tmp/$USER/opticks/sysrap/SEventTest")
     def __init__(self, fold=FOLD):
         names = os.listdir(fold)
         stems = []
@@ -55,7 +56,7 @@ def test_transform():
 
 
 if __name__ == '__main__':
-    t = QEventTest()
+    t = SEventTest()
     t.dump()
 
     pos = ppa[:,0,:3]

@@ -15,11 +15,21 @@ Usage::
    cd ~/opticks/GeoChain
    ./run.sh 
 
+To render the resulting geometry use eg::
+
+   cx
+   ./b7     # OptiX 7
+   om       # for pre-7
+  
+   ./cxs.sh              # 2d python intersect render, using center-extent-gensteps
+   ./cxr_geochain.sh     # 3d rendered view 
+
+
 EOU
 }
 
-name=GeoChainSolidTest
-#name=GeoChainVolumeTest
+#name=GeoChainSolidTest
+name=GeoChainVolumeTest
 
 if [ "$name" == "GeoChainSolidTest" ]; then
     #geochaintest=AdditionAcrylicConstruction
@@ -31,16 +41,22 @@ if [ "$name" == "GeoChainSolidTest" ]; then
 
     #geochaintest=pmt_solid
     #geochaintest=body_solid 
-    #geochaintest=inner_solid 
-    geochaintest=inner1_solid 
+    geochaintest=inner_solid 
+    #geochaintest=inner1_solid 
+    #geochaintest=inner2_solid 
     #geochaintest=inner2_solid 
 
 elif [ "$name" == "GeoChainVolumeTest" ]; then
-    geochaintest=PMTSimLV
+    #geochaintest=PMTSimLV
+    geochaintest=body_phys
+    #geochaintest=inner1_phys   # upper hemi 
+    #geochaintest=inner2_phys   # everything but the upper hemi 
+    #geochaintest=dynode_phys   # NOT CHECKED
 else
     echo ERROR unexpected executable name $name 
     exit 1 
 fi 
+export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
 
 
 #export GGeo=INFO
@@ -57,7 +73,6 @@ fi
 #export NTREEPROCESS_LVLIST=0
 #export NNODENUDGER_LVLIST=0
 
-export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
 
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
@@ -66,7 +81,6 @@ export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    # when defined : dont inte
 # checking that --skipsolidname is working 
 export OpticksDbg=INFO  
 export GInstancer=INFO
-
 
 unset OPTICKS_KEY 
 
@@ -78,7 +92,6 @@ which $name
 opts=""
 opts="$opts --x4tubsnudgeskip 0"
 opts="$opts --skipsolidname ${GEOCHAINTEST}_body_solid_1_9   " 
-
 
 DEBUG=1
 

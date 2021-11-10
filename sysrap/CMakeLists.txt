@@ -79,6 +79,8 @@ set(SOURCES
 
     SGLM.cc
     SLabelCache.cc
+
+    SEvent.cc
 ) 
     
 
@@ -160,6 +162,8 @@ set(HEADERS
     strided_range.h 
     iexpand.h 
 
+    SEvent.hh
+    OpticksGenstep.h
 )
 
 

@@ -4,6 +4,7 @@
 #include "QBuf.hh"
 #include "QSeed.hh"
 #include "QEvent.hh"
+#include "SEvent.hh"
 
 int main(int argc, char** argv)
 {
@@ -12,7 +13,7 @@ int main(int argc, char** argv)
     unsigned xtotal ; 
     QSeed::ExpectedSeeds(xseeds, xtotal, photon_counts_per_genstep); 
 
-    const NP* gs = QEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
+    const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
 
     QEvent qe ; 
     qe.setGensteps(gs); 

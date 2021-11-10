@@ -30,6 +30,23 @@ Issue : cxs render shows outer PMT solid only that appears to not have the horiz
 
 
 
+Possible nudge issue with body_phys
+-------------------------------------
+
+* looks like an equatorial sombrero 
+
+::
+
+   gc
+   ./run.sh   # volume test with body_phys 
+
+   cx
+   om
+   ./cxr_geochain.sh   # with body_phys    
+
+
+
+
 Possible cause of why --skipsolidname not working
 -----------------------------------------------------
 

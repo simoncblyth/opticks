@@ -36,6 +36,7 @@ is to be able to see the exact same geometry that the simulation is using.
 
 #include "QSim.hh"
 #include "QEvent.hh"
+#include "SEvent.hh"
 
 
 
@@ -88,7 +89,7 @@ int main(int argc, char** argv)
     if( strcmp(moi, "FAKE") == 0 )
     { 
         std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
-        gs = QEvent::MakeCountGensteps(photon_counts_per_genstep) ;
+        gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ;
     }
     else
     {
@@ -110,7 +111,7 @@ int main(int argc, char** argv)
         SSys::getenvintvec("CXS_CEGS", cegs, ':', "5:0:5:1000" ); 
         // expect 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
 
-        QEvent::StandardizeCEGS(ce, cegs, gridscale ); 
+        SEvent::StandardizeCEGS(ce, cegs, gridscale ); 
         assert( cegs.size() == 7 ); 
 
         std::vector<int> override_ce ; 
@@ -126,7 +127,7 @@ int main(int argc, char** argv)
         } 
 
 
-        gs = QEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran ); 
+        gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran ); 
         cx.setCE(ce); 
         cx.setCEGS(cegs); 
         cx.setMetaTran(geotran); 
