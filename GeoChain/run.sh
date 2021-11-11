@@ -24,7 +24,6 @@ To render the resulting geometry use eg::
    ./cxs.sh              # 2d python intersect render, using center-extent-gensteps
    ./cxr_geochain.sh     # 3d rendered view 
 
-
 EOU
 }
 
@@ -39,9 +38,9 @@ if [ "$name" == "GeoChainSolidTest" ]; then
     #geochaintest=PMTSim_Zclone
     #geochaintest=PMTSim_Z-400
 
-    #geochaintest=pmt_solid
+    geochaintest=pmt_solid
     #geochaintest=body_solid 
-    geochaintest=inner_solid 
+    #geochaintest=inner_solid 
     #geochaintest=inner1_solid 
     #geochaintest=inner2_solid 
     #geochaintest=inner2_solid 

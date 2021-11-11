@@ -21,8 +21,8 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     //const char* name_default = "AdditionAcrylicConstruction"  ;   
-    const char* name_default = "PMTSim_inner_solid_1_9" ; 
     //const char* name_default = "orb" ; 
+    const char* name_default = "pmt_solid" ; 
     const char* name = SSys::getenvvar("CXS", name_default );  
 
     std::stringstream ss ; 

@@ -8,6 +8,7 @@ struct GEOCHAIN_API GeoMaker
 {
     static const plog::Severity LEVEL ; 
 
+    static bool  CanMake(const char* name); 
     static const G4VSolid* Make(const char* name); 
     static const G4VSolid* make_default(const char* name); 
     static const G4VSolid* make_AdditionAcrylicConstruction(const char* name);

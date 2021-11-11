@@ -14,6 +14,27 @@ using CLHEP::pi ;
 
 const plog::Severity GeoMaker::LEVEL = PLOG::EnvLevel("GeoMaker", "DEBUG"); 
 
+bool GeoMaker::CanMake(const char* name) // static 
+{
+    std::vector<std::string> names = {
+       "default",
+       "AdditionAcrylicConstruction",
+       "BoxMinusTubs0",
+       "BoxMinusTubs1"
+    } ; 
+
+    bool found = std::find(names.begin(), names.end(), name) != names.end() ; 
+
+    std::cout 
+         << "GeoMaker::CanMake"
+         << " name " << name
+         << " found " << found
+         << std::endl 
+         ;
+  
+    return found ; 
+}
+
 const G4VSolid* GeoMaker::Make(const char* name)  // static
 {
     const G4VSolid* solid = nullptr ; 

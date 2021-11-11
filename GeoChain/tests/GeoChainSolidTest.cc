@@ -26,9 +26,9 @@ just the path to the CSGFoundry directory.
 #include "Opticks.hh"
 #include "GeoChain.hh"
 #include "GeoMaker.hh"
-#include "X4Intersect.hh"
 
 #include "G4VSolid.hh"
+#include "X4Intersect.hh"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -43,17 +43,31 @@ int main(int argc, char** argv)
     std::stringstream ss ; 
     ss << "creator:GeoChainSolidTest" << std::endl ; 
     ss << "name:" << name << std::endl ; 
+#ifdef WITH_PMTSIM
+    ss << "info:WITH_PMTSIM " << std::endl ; 
+#else
+    ss << "info:noPMTSIM " << std::endl ; 
+#endif
     std::string meta = ss.str(); 
+    LOG(info) << meta ; 
+
 
     const G4VSolid* solid = nullptr ; 
+
+    if(GeoMaker::CanMake(name))
+    {
+        solid = GeoMaker::Make(name); 
+    }
+    else
+    {
 #ifdef WITH_PMTSIM
-    PMTSim ps ; 
-    solid = ps.getSolid(name); 
+        solid = PMTSim::GetSolid(name); 
 #endif
-    if(solid == nullptr) solid = GeoMaker::Make(name); 
+    }
     assert( solid ); 
 
-    X4Intersect::Scan(solid, "$TMP/GeoChainSolidTest"); 
+    // X4Intersect .npy land as siblings to the CSGFoundry dir 
+    X4Intersect::Scan(solid, name, "$TMP/GeoChain", meta ); 
 
     const char* argforced = "--allownokey" ; 
     Opticks ok(argc, argv, argforced); 

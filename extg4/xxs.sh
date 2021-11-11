@@ -20,7 +20,13 @@ cxs=pmt_solid
 
 export CXS=${CXS:-$cxs}
 reldir=extg4/X4IntersectTest
+#reldir=GeoChain
+fold=/tmp/$USER/opticks/$reldir 
 
+if [ ! -d "$fold" ]; then
+    echo reldir $reldir fold $fold MUST EXIST 
+    exit 1 
+fi 
 
 if [ "$CXS" == "orb" ]; then
 
