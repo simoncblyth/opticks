@@ -38,7 +38,7 @@ X,Y,Z = 0,1,2
 
 
 class X4IntersectTest(object):
-    CXS = os.environ.get("CXS", "PMTSim_inner_solid_1_9")
+    CXS = os.environ.get("CXS", "pmt_solid")
     CXS_RELDIR = os.environ.get("CXS_RELDIR", "extg4/X4IntersectTest" )
     #"GeoChainSolidTest"
 
