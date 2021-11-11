@@ -26,6 +26,7 @@ just the path to the CSGFoundry directory.
 #include "Opticks.hh"
 #include "GeoChain.hh"
 #include "GeoMaker.hh"
+#include "X4Intersect.hh"
 
 #include "G4VSolid.hh"
 
@@ -50,6 +51,9 @@ int main(int argc, char** argv)
     solid = ps.getSolid(name); 
 #endif
     if(solid == nullptr) solid = GeoMaker::Make(name); 
+    assert( solid ); 
+
+    X4Intersect::Scan(solid, "$TMP/GeoChainSolidTest"); 
 
     const char* argforced = "--allownokey" ; 
     Opticks ok(argc, argv, argforced); 

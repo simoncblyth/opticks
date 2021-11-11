@@ -28,8 +28,8 @@ To render the resulting geometry use eg::
 EOU
 }
 
-#name=GeoChainSolidTest
-name=GeoChainVolumeTest
+name=GeoChainSolidTest
+#name=GeoChainVolumeTest
 
 if [ "$name" == "GeoChainSolidTest" ]; then
     #geochaintest=AdditionAcrylicConstruction

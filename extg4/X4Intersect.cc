@@ -8,8 +8,10 @@
 #include "stran.h"
 #include "squad.h"
 
+#include "SPath.hh"
 #include "SEvent.hh"
 #include "SSys.hh"
+#include "NP.hh"
 
 #include "X4geomdefs.hh"
 #include "X4Intersect.hh"
@@ -19,7 +21,7 @@ X4Intersect::X4Intersect( const G4VSolid* solid_  )
     :
     solid(solid_), 
     gs(nullptr),
-    gridscale(1.),
+    gridscale(SSys::getenvfloat("GRIDSCALE", 1.0 )),
     dump(true)
 {
     init(); 
@@ -27,6 +29,8 @@ X4Intersect::X4Intersect( const G4VSolid* solid_  )
 
 void X4Intersect::init()
 {
+    LOG(info) << "[ gridscale " << gridscale  ; 
+
     ce = make_float4(0.f, 0.f, 0.f, 100.f ); 
 
     SSys::getenvintvec("CXS_CEGS", cegs, ':', "16:0:9:10" );  
@@ -51,6 +55,8 @@ void X4Intersect::init()
     gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran );  
    
     SEvent::GenerateCenterExtentGenstepsPhotons( pp, gs );  
+
+    LOG(info) << "]" ; 
 }
 
 
@@ -95,10 +101,12 @@ void X4Intersect::scan()
            G4ThreeVector ipos = pos + dir*t ;  
 
            quad4 s ; 
-           s.q0.f.x = ipos.x() ;  
-           s.q0.f.y = ipos.y() ;  
-           s.q0.f.z = ipos.z() ;  
-           s.q0.f.z = t ; 
+           s.zero(); 
+
+           s.q0.f.x = float(ipos.x()) ;  
+           s.q0.f.y = float(ipos.y()) ;  
+           s.q0.f.z = float(ipos.z()) ;  
+           s.q0.f.w = float(t) ; 
 
            ss.push_back(s); 
 
@@ -115,5 +123,33 @@ void X4Intersect::scan()
         }
     } 
 }
+
+void X4Intersect::save(const char* dir) const 
+{
+    LOG(info) << "[ ss.size " << ss.size() ; 
+    NP* a = NP::Make<float>(ss.size(), 4, 4); 
+    LOG(info) << a->sstr() ;    
+    float* data = (float*)ss.data(); 
+    a->read<float>(data); 
+    a->save(dir, "isect.npy");  
+    gs->save(dir, "gs.npy" ); 
+
+    LOG(info) << "]" ; 
+}
+
+
+void X4Intersect::Scan(const G4VSolid* solid, const char* basedir )  // static
+{
+    X4Intersect* x4i = new X4Intersect(solid); 
+    x4i->scan(); 
+
+    const std::string& name = solid->GetName() ; 
+    int createdirs = 2 ; // 2:dirpath 
+    const char* outdir = SPath::Resolve(basedir, name.c_str(), createdirs);
+    LOG(info) << " outdir " << outdir ; 
+
+    x4i->save(outdir); 
+}
+
 
 

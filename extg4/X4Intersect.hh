@@ -14,9 +14,12 @@ struct NP ;
 
 struct X4_API X4Intersect
 {
+    static void Scan(const G4VSolid* solid, const char* basedir ); 
+
     X4Intersect( const G4VSolid* solid_ ); 
     void init(); 
     void scan(); 
+    void save(const char* dir) const ;
 
     const G4VSolid* solid ; 
     const NP* gs ;

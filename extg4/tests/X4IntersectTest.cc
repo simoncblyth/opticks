@@ -8,9 +8,7 @@ int main(int argc, char** argv)
 
     G4VSolid* solid = new G4Orb( "orb", 100. ); 
 
-    X4Intersect isect(solid); 
-    isect.scan(); 
-    //isect.save(); 
+    X4Intersect::Scan(solid,  "$TMP/extg4/X4IntersectTest" ); 
 
     return 0 ; 
 }

@@ -25,7 +25,7 @@ GeoChain::GeoChain(Opticks* ok_)
     ggeo(new GGeo(ok, true)),  // live=true to initLibs and not load from cache
     mesh(nullptr),
     volume(nullptr),
-    fd(new CSGFoundry) 
+    fd(new CSGFoundry)
 {
 }
 
