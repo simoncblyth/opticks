@@ -25,10 +25,10 @@ just the path to the CSGFoundry directory.
 #include "SStr.hh"
 #include "Opticks.hh"
 #include "GeoChain.hh"
-#include "GeoMaker.hh"
 
 #include "G4VSolid.hh"
 #include "X4Intersect.hh"
+#include "X4GeometryMaker.hh"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -54,9 +54,9 @@ int main(int argc, char** argv)
 
     const G4VSolid* solid = nullptr ; 
 
-    if(GeoMaker::CanMake(name))
+    if(X4GeometryMaker::CanMake(name))
     {
-        solid = GeoMaker::Make(name); 
+        solid = X4GeometryMaker::Make(name); 
     }
     else
     {
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     // X4Intersect .npy land as siblings to the CSGFoundry dir 
     X4Intersect::Scan(solid, name, "$TMP/GeoChain", meta ); 
 
-    const char* argforced = "--allownokey" ; 
+    const char* argforced = "--allownokey --gparts_transform_offset" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
     //for(int lvIdx=-1 ; lvIdx < 10 ; lvIdx+= 1 ) LOG(info) << " lvIdx " << lvIdx << " ok.isX4TubsNudgeSkip(lvIdx) " << ok.isX4TubsNudgeSkip(lvIdx)  ; 

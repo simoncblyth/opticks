@@ -6,15 +6,15 @@ Used from script x4.sh
 
 **/
 #include "G4Orb.hh"
-
-#include "SSys.hh"
-#include "X4Intersect.hh"
 #include "OPTICKS_LOG.hh"
+#include "SSys.hh"
+
+#include "X4Intersect.hh"
+#include "X4GeometryMaker.hh"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
 #endif
-
 
 int main(int argc, char** argv)
 {
@@ -38,9 +38,14 @@ int main(int argc, char** argv)
 
     const G4VSolid* solid = nullptr ; 
 
+
     if( strcmp(name, "orb") == 0 )
     {
         solid = new G4Orb( name, 100. );
+    }
+    else if(X4GeometryMaker::CanMake(name))
+    {
+        solid = X4GeometryMaker::Make(name); 
     }
     else
     {

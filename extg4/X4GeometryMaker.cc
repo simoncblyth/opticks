@@ -1,3 +1,4 @@
+#include <cstring>
 #include "G4SystemOfUnits.hh"
 #include "G4Polycone.hh"
 #include "G4Sphere.hh"
@@ -6,28 +7,48 @@
 #include "G4SubtractionSolid.hh"
 #include "G4ThreeVector.hh"
 #include "G4Orb.hh"
+#include "G4UnionSolid.hh"
+#include "G4Ellipsoid.hh"
 
 using CLHEP::pi ;
 
-#include "GeoMaker.hh"
+#include "X4GeometryMaker.hh"
 #include "PLOG.hh"
 
-const plog::Severity GeoMaker::LEVEL = PLOG::EnvLevel("GeoMaker", "DEBUG"); 
+const plog::Severity X4GeometryMaker::LEVEL = PLOG::EnvLevel("X4GeometryMaker", "DEBUG"); 
 
-bool GeoMaker::CanMake(const char* name) // static 
+bool X4GeometryMaker::StartsWith( const char* n, const char* q ) // static
+{
+    return strlen(q) >= strlen(n) && strncmp(q, n, strlen(n)) == 0 ; 
+}
+
+bool X4GeometryMaker::CanMake(const char* qname) // static 
 {
     std::vector<std::string> names = {
        "default",
        "AdditionAcrylicConstruction",
        "BoxMinusTubs0",
-       "BoxMinusTubs1"
+       "BoxMinusTubs1",
+       "UnionOfHemiEllipsoids"
     } ; 
 
-    bool found = std::find(names.begin(), names.end(), name) != names.end() ; 
+    //bool found = std::find(names.begin(), names.end(), name) != names.end() ; 
+
+    bool found = false ; 
+    for( unsigned i=0 ; i < names.size() ; i++)
+    {
+        const std::string& n = names[i]; 
+        const char* name = n.c_str(); 
+        if(StartsWith(name, qname))
+        {
+            found = true ; 
+            break ; 
+        } 
+    }
 
     std::cout 
-         << "GeoMaker::CanMake"
-         << " name " << name
+         << "X4GeometryMaker::CanMake"
+         << " qname " << qname
          << " found " << found
          << std::endl 
          ;
@@ -35,23 +56,24 @@ bool GeoMaker::CanMake(const char* name) // static
     return found ; 
 }
 
-const G4VSolid* GeoMaker::Make(const char* name)  // static
+const G4VSolid* X4GeometryMaker::Make(const char* qname)  // static
 {
     const G4VSolid* solid = nullptr ; 
-    if(     strcmp(name,"default") == 0)                      solid = GeoMaker::make_default(name);  
-    else if(strcmp(name,"AdditionAcrylicConstruction") == 0 ) solid = GeoMaker::make_AdditionAcrylicConstruction(name); 
-    else if(strcmp(name,"BoxMinusTubs0") == 0 )               solid = GeoMaker::make_BoxMinusTubs0(name); 
-    else if(strcmp(name,"BoxMinusTubs1") == 0 )               solid = GeoMaker::make_BoxMinusTubs1(name); 
+    if(     StartsWith("default",qname))                      solid = X4GeometryMaker::make_default(qname);  
+    else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4GeometryMaker::make_AdditionAcrylicConstruction(qname); 
+    else if(StartsWith("BoxMinusTubs0",qname))                solid = X4GeometryMaker::make_BoxMinusTubs0(qname); 
+    else if(StartsWith("BoxMinusTubs1",qname))                solid = X4GeometryMaker::make_BoxMinusTubs1(qname); 
+    else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = X4GeometryMaker::make_UnionOfHemiEllipsoids(qname); 
     assert(solid); 
     return solid ; 
 }
 
-const G4VSolid* GeoMaker::make_default(const char* name)
+const G4VSolid* X4GeometryMaker::make_default(const char* name)
 {
     return new G4Orb(name, 100.) ; 
 }
 
-const G4VSolid* GeoMaker::make_AdditionAcrylicConstruction(const char* name)
+const G4VSolid* X4GeometryMaker::make_AdditionAcrylicConstruction(const char* name)
 {
     G4VSolid*   simple             = nullptr ;
     G4VSolid*   solidAddition_down = nullptr ;
@@ -115,7 +137,7 @@ const G4VSolid* GeoMaker::make_AdditionAcrylicConstruction(const char* name)
     return uni_acrylic2_initial ; 
 }
 
-const G4VSolid* GeoMaker::make_BoxMinusTubs0(const char* name)  // is afflicted
+const G4VSolid* X4GeometryMaker::make_BoxMinusTubs0(const char* name)  // is afflicted
 {
     double tubs_hz = 15.2*mm ;   
     double zshift = 0*mm ; 
@@ -125,7 +147,7 @@ const G4VSolid* GeoMaker::make_BoxMinusTubs0(const char* name)  // is afflicted
     return box_minus_tubs ; 
 }
 
-const G4VSolid* GeoMaker::make_BoxMinusTubs1(const char* name) 
+const G4VSolid* X4GeometryMaker::make_BoxMinusTubs1(const char* name) 
 {
     double tubs_hz = 15.2*mm ;   
     G4VSolid* box   = new G4Box("box",  250*mm, 250*mm, 100*mm ); 
@@ -133,5 +155,62 @@ const G4VSolid* GeoMaker::make_BoxMinusTubs1(const char* name)
     G4VSolid* box_minus_tubs = new G4SubtractionSolid(name,box,tubs);  
     return box_minus_tubs ; 
 }
+
+const G4VSolid* X4GeometryMaker::make_UnionOfHemiEllipsoids(const char* name )
+{
+    assert( strstr( name, "UnionOfHemiEllipsoids" ) != nullptr ); 
+
+    std::vector<long> vals ; 
+    Extract(vals, name); 
+    long iz = vals.size() > 0 ? vals[0] : 0 ; 
+
+    std::cout 
+        << "X4GeometryMaker::make_UnionOfHemiEllipsoids"
+        << " name " << name 
+        << " vals.size " << vals.size()
+        << " iz " << iz
+        << std::endl 
+        ; 
+
+
+    double rx = 150. ; 
+    double ry = 150. ; 
+    double rz = 100. ; 
+
+    double z2 = rz ; 
+    double z1 = 0. ; 
+    double z0 = -rz ; 
+
+    G4VSolid* upper = new G4Ellipsoid("upper", rx, ry, rz, z1, z2 );  
+    G4VSolid* lower = new G4Ellipsoid("lower", rx, ry, rz, z0, z1 );  
+
+    G4VSolid* solid = nullptr ; 
+    if( iz == 0 )
+    {
+        solid = new G4UnionSolid(name, upper, lower );   
+    }
+    else
+    {
+        double zoffset = double(iz) ; 
+        G4ThreeVector tlate(0., 0., zoffset) ; 
+        solid = new G4UnionSolid(name, upper, lower, nullptr, tlate );   
+    }
+    return solid ; 
+}
+
+
+void X4GeometryMaker::Extract( std::vector<long>& vals, const char* s )  // static
+{
+    char* s0 = strdup(s); 
+    char* p = s0 ; 
+    while (*p) 
+    {   
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtol(p, &p, 10)) ; 
+        else p++ ;
+    }   
+    free(s0); 
+}
+
+
 
 

@@ -41,12 +41,10 @@ set(HEADERS)
 
 list(APPEND SOURCES
    GeoChain.cc
-   GeoMaker.cc
 )
 
 list(APPEND HEADERS
    GeoChain.hh
-   GeoMaker.hh
 )
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )

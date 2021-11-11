@@ -11,6 +11,8 @@ set(PMTSIM_TEST_SOURCES
 
 set(TEST_SOURCES
 
+    X4GeometryMakerTest.cc
+
     X4Test.cc
     X4EntityTest.cc
     X4SolidTest.cc

@@ -1303,7 +1303,7 @@ void GParts::add(GParts* other)
 
     if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
     {
-        LOG(LEVEL) << " --gparts_transform_offset " ; 
+        LOG(info) << " --gparts_transform_offset IS ENABLED " ; 
         bool preserve_zero = true ; 
         bool preserve_signbit = true ; 
         other_part_buffer->addOffset(GTRANSFORM_J, GTRANSFORM_K, tranOffset, preserve_zero, preserve_signbit );  
@@ -1311,7 +1311,7 @@ void GParts::add(GParts* other)
     }
     else
     {
-        LOG(LEVEL) << " NOT --gparts_transform_offset " ; 
+        LOG(info) << " NOT ENABLED --gparts_transform_offset " ; 
     }
 
     m_idx_buffer->add(other_idx_buffer);

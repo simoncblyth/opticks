@@ -12,7 +12,6 @@ The volume to create is controlled by the name string obtained from envvar *GEOC
 #include "SStr.hh"
 #include "Opticks.hh"
 #include "GeoChain.hh"
-#include "GeoMaker.hh"
 
 #include "G4VPhysicalVolume.hh"
 

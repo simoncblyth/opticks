@@ -50,7 +50,7 @@ EOU
 }
 
 msg="=== $BASH_SOURCE : "
-cxs=${CXS:-III}        # collect sets of config underneath CXS which are integers or PMT solid names
+cxs=${CXS:-1_3}        # collect sets of config underneath CXS which are integers or PMT solid names
 cfbase=$TMP/CSG_GGeo   # default CSGFoundry dir is within cfbase 
 isel=
 
@@ -119,11 +119,14 @@ else
     xx=-254,254,-190,190
 fi 
 
+
+if [ "$(uname)" == "Linux" ]; then
 if [ ! -d "$cfbase/CSGFoundry" ]; then
    echo $msg : ERROR : cfbase directory $cfbase MUST contain CSGFoundry subfolder 
    echo $msg : TIPS : run GeoChain first to create the geometry and use b7 to build CSGOptiX 
    exit 1 
 fi 
+fi
 
 
 export MOI=${MOI:-$moi}

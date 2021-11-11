@@ -12,6 +12,10 @@ set(_TESTS_FAILING_TO_INVESTIGATE_WHEN_IN_CONTEXT
 
 set(_TEST_SOURCES
 
+
+nmat4tripleTest.cc 
+
+
 TorchStepNPYTest.cc
 FabStepTest.cc
 NPriTest.cc

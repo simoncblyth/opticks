@@ -29,6 +29,7 @@
 class G4VSolid ; 
 class Opticks ; 
 struct nnode ; 
+struct nmat4triple ; 
 
 /**
 X4Solid
@@ -94,6 +95,7 @@ class X4_API X4Solid : public X4SolidBase
         static unsigned fVerbosity ; 
     private:
         void convertDisplacedSolid();
+        static void DumpTransform( const char* msg, const nmat4triple* transform ); 
         void convertUnionSolid();
         void convertIntersectionSolid();
         void convertSubtractionSolid();

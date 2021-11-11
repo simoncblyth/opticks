@@ -25,6 +25,11 @@ msg="=== $BASH_SOURCE :"
 #geometry=AdditionAcrylicConstruction
 
 geometry=pmt_solid
+#geometry=1_3
+
+#geometry=UnionOfHemiEllipsoids        # looks fine, like full ellipsoid
+#geometry=UnionOfHemiEllipsoids-50    # lower hemi-ellipsoid is smaller than upper : looks like the translation transform stomps on the scale transform
+
 #geometry=body_solid
 #geometry=inner_solid
 #geometry=inner1_solid

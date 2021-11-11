@@ -19,7 +19,7 @@ is no point to do that here and bake it into the
 persisted CSGFoundry geometry. As would then need
 to manage lots of different directories of CF geometry.
 
---gparts_tranform_offset
+--gparts_transform_offset
 --------------------------
 
 Hmm without "--gparts_transform_offset" get messed up geometry 

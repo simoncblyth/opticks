@@ -38,8 +38,12 @@ if [ "$name" == "GeoChainSolidTest" ]; then
     #geochaintest=PMTSim_Zclone
     #geochaintest=PMTSim_Z-400
 
-    #geochaintest=pmt_solid
-    geochaintest=III
+    #geochaintest=UnionOfHemiEllipsoids
+    #geochaintest=UnionOfHemiEllipsoids-50
+
+    geochaintest=pmt_solid
+    #geochaintest=III
+    #geochaintest=1_3
 
     #geochaintest=body_solid 
     #geochaintest=inner_solid 
@@ -68,7 +72,8 @@ export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
 #export NNodeNudger=INFO
 #export NTreeBalance=INFO
 #export NTreeBuilder=INFO
-#export X4Solid=INFO
+
+export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
 
 #export DUMP_RIDX=0
 #export NTREEPROCESS_LVLIST=0

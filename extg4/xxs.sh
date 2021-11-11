@@ -15,11 +15,13 @@ export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
 
 
 #cxs=orb
+cxs=UnionOfHemiEllipsoids
+#cxs=UnionOfHemiEllipsoids-50
 #cxs=pmt_solid
 #cxs=I
 #cxs=III
 #cxs=1_2
-cxs=1_3
+#cxs=1_3
 
 export CXS=${CXS:-$cxs}
 reldir=extg4/X4IntersectTest

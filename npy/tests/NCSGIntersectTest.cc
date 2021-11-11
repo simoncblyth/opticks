@@ -23,16 +23,14 @@ lldb NCSGIntersectTest  /tmp/blyth/opticks/tboolean-zsphere1--
 
 */
 
-#include "NPY_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 #include "NCSGList.hpp"
 #include "NCSG.hpp"
 #include "NCSGIntersect.hpp"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
+    OPTICKS_LOG(argc, argv);
 
     const char* csgpath = argc > 1 ? argv[1] : NULL ; 
     unsigned verbosity = 0 ; 
