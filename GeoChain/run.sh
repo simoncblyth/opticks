@@ -38,7 +38,9 @@ if [ "$name" == "GeoChainSolidTest" ]; then
     #geochaintest=PMTSim_Zclone
     #geochaintest=PMTSim_Z-400
 
-    geochaintest=pmt_solid
+    #geochaintest=pmt_solid
+    geochaintest=III
+
     #geochaintest=body_solid 
     #geochaintest=inner_solid 
     #geochaintest=inner1_solid 

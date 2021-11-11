@@ -15,8 +15,9 @@ export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
 
 
 #cxs=orb
-cxs=pmt_solid
+#cxs=pmt_solid
 #cxs=I
+cxs=III
 
 export CXS=${CXS:-$cxs}
 reldir=extg4/X4IntersectTest
