@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "scuda.h"
 #include "squad.h"
 
@@ -14,15 +15,19 @@ struct NP ;
 
 struct X4_API X4Intersect
 {
-    static void Scan(const G4VSolid* solid, const char* basedir ); 
+    static void Scan(const G4VSolid* solid, const char* name, const char* basedir, const std::string& meta ); 
 
     X4Intersect( const G4VSolid* solid_ ); 
+    const char* desc() const ; 
+
+    static G4double Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump); 
+
     void init(); 
     void scan(); 
     void save(const char* dir) const ;
 
     const G4VSolid* solid ; 
-    const NP* gs ;
+    NP* gs ;    // not const as need to externally set the meta 
     float gridscale ;  
     bool dump ; 
 
@@ -30,6 +35,6 @@ struct X4_API X4Intersect
     std::vector<int> cegs ; 
     std::vector<int> override_ce ;  
     std::vector<quad4> pp ;
-    std::vector<quad4> ss ;
+    std::vector<quad4> ii ;
 }; 
 

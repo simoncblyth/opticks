@@ -3,6 +3,11 @@ set(name ExtG4Test)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+find_package(PMTSim CONFIG)
+
+set(PMTSIM_TEST_SOURCES
+   X4IntersectTest.cc 
+)
 
 set(TEST_SOURCES
 
@@ -47,9 +52,10 @@ set(TEST_SOURCES
     X4PhysicalConstantsTest.cc
 
     X4SurfaceTest.cc
-    X4IntersectTest.cc 
     CLHEPVersionInteger.cc
 )
+
+
 
 
 foreach(TEST_CC_SRC ${TEST_SOURCES})
@@ -59,9 +65,33 @@ foreach(TEST_CC_SRC ${TEST_SOURCES})
     set(testname ${name}.${TGT})
     add_test(${testname} ${TGT})
 
-    target_link_libraries(${TGT} ExtG4 )
+    target_link_libraries(${TGT} PUBLIC ExtG4 )
+
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
+
+
+
+foreach(TEST_CC_SRC ${PMTSIM_TEST_SOURCES})
+    get_filename_component(TGT ${TEST_CC_SRC} NAME_WE)
+    add_executable(${TGT} ${TEST_CC_SRC})
+
+    set(testname ${name}.${TGT})
+    add_test(${testname} ${TGT})
+
+    target_link_libraries(${TGT} PUBLIC ExtG4 )
+
+    if(PMTSim_FOUND)
+       target_link_libraries( ${TGT} PUBLIC Opticks::PMTSim )
+       target_compile_definitions( ${TGT} PUBLIC WITH_PMTSIM )
+    endif()
+
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
+
+
+
+
 
 
 

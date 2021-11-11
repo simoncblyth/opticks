@@ -17,15 +17,69 @@
 #include "X4Intersect.hh"
 #include "PLOG.hh"
 
+
+void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* basedir, const std::string& meta )  // static
+{
+    assert( solid && "X4Intersect::Scan requires solid"); 
+
+    X4Intersect* x4i = new X4Intersect(solid); 
+    x4i->scan(); 
+
+    const std::string& solidname = solid->GetName() ; 
+
+    int createdirs = 2 ; // 2:dirpath 
+    const char* outdir = SPath::Resolve(basedir, name, createdirs);
+
+    LOG(info) 
+        << "x4i.desc " << x4i->desc() 
+        << " solidname " << solidname.c_str() 
+        << " name " << name 
+        << " outdir " << outdir 
+        ; 
+
+    x4i->gs->meta = meta ; 
+    x4i->save(outdir); 
+}
+
+
+
+
+
+
 X4Intersect::X4Intersect( const G4VSolid* solid_  )
     :
     solid(solid_), 
     gs(nullptr),
     gridscale(SSys::getenvfloat("GRIDSCALE", 1.0 )),
-    dump(true)
+    dump(false)
 {
     init(); 
 }
+
+const char* X4Intersect::desc() const 
+{
+    std::stringstream ss ; 
+    ss << " CXS_CEGS (" ; 
+    for(unsigned i=0 ; i < cegs.size() ; i++ ) ss << cegs[i] << " " ; 
+    ss << ")" ; 
+
+    ss << " GRIDSCALE " << gridscale ; 
+    ss << " CE (" 
+       << ce.x << " " 
+       << ce.y << " " 
+       << ce.z << " " 
+       << ce.w 
+       << ") " 
+       ;
+
+    ss << " gs " << gs->sstr() ; 
+    ss << " pp " << pp.size() ; 
+    ss << " ii " << ii.size() ; 
+
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
+
 
 void X4Intersect::init()
 {
@@ -38,6 +92,7 @@ void X4Intersect::init()
 
     SEvent::StandardizeCEGS(ce, cegs, gridscale );  
     assert( cegs.size() == 7 );  
+
 
     SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" );  
 
@@ -60,20 +115,22 @@ void X4Intersect::init()
 }
 
 
-void X4Intersect::scan()
+
+G4double X4Intersect::Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ) // static
 {
-    for(unsigned i=0 ; i < pp.size() ; i++)
+    EInside in =  solid->Inside(pos) ; 
+    G4double t = kInfinity ; 
+    switch( in )
     {
-        const quad4& p = pp[i]; 
+        case kInside:  t = solid->DistanceToOut( pos, dir ) ; break ; 
+        case kSurface: t = solid->DistanceToOut( pos, dir ) ; break ; 
+        case kOutside: t = solid->DistanceToIn(  pos, dir ) ; break ; 
+        default:  assert(0) ; 
+    }
 
-        G4ThreeVector pos(p.q0.f.x, p.q0.f.y, p.q0.f.z); 
-        G4ThreeVector dir(p.q1.f.x, p.q1.f.y, p.q1.f.z); 
-
-        EInside in =  solid->Inside(pos) ; 
-        G4double t = ( in == kInside || in == kSurface ) ? solid->DistanceToOut( pos, dir ) : solid->DistanceToIn( pos, dir ) ; 
-        if( t == kInfinity ) continue ; 
-
-        if(dump) std::cout 
+    if(dump && t != kInfinity)
+    {
+        std::cout 
             << " pos " 
             << "(" 
             << std::fixed << std::setw(10) << std::setprecision(3) << pos.x() << " "
@@ -91,7 +148,7 @@ void X4Intersect::scan()
 
        if( t == kInfinity)
        {  
-            if(dump) std::cout 
+            std::cout 
                 << " t " << std::setw(10) << "kInfinity" 
                 << std::endl 
                 ; 
@@ -99,18 +156,7 @@ void X4Intersect::scan()
        else
        {
            G4ThreeVector ipos = pos + dir*t ;  
-
-           quad4 s ; 
-           s.zero(); 
-
-           s.q0.f.x = float(ipos.x()) ;  
-           s.q0.f.y = float(ipos.y()) ;  
-           s.q0.f.z = float(ipos.z()) ;  
-           s.q0.f.w = float(t) ; 
-
-           ss.push_back(s); 
-
-           if(dump) std::cout 
+           std::cout 
                 << " t " << std::fixed << std::setw(10) << std::setprecision(3) << t 
                 << " ipos " 
                 << "(" 
@@ -120,35 +166,61 @@ void X4Intersect::scan()
                 << ")"
                 << std::endl 
                 ; 
-        }
+       }
+    }
+    return t ; 
+}
+
+
+/**
+X4Intersect::scan
+------------------
+
+Using the *pp* vector of "photon" positions and directions
+calulate distances to the solid.  Collect intersections
+into *ss* vector. 
+
+TODO: collect surface normals 
+
+**/
+
+void X4Intersect::scan()
+{
+    for(unsigned i=0 ; i < pp.size() ; i++)
+    {
+        const quad4& p = pp[i]; 
+
+        G4ThreeVector pos(p.q0.f.x, p.q0.f.y, p.q0.f.z); 
+        G4ThreeVector dir(p.q1.f.x, p.q1.f.y, p.q1.f.z); 
+
+        G4double t = Distance( solid, pos, dir, dump );  
+
+        if( t == kInfinity ) continue ; 
+        G4ThreeVector ipos = pos + dir*t ;  
+
+        quad4 isect ; 
+        isect.zero(); 
+
+        isect.q0.f.x = float(ipos.x()) ;  
+        isect.q0.f.y = float(ipos.y()) ;  
+        isect.q0.f.z = float(ipos.z()) ;  
+        isect.q0.f.w = float(t) ; 
+        // TODO: normals, flags, ...
+
+        ii.push_back(isect); 
     } 
 }
 
 void X4Intersect::save(const char* dir) const 
 {
-    LOG(info) << "[ ss.size " << ss.size() ; 
-    NP* a = NP::Make<float>(ss.size(), 4, 4); 
+    LOG(info) << "[ ii.size " << ii.size() ; 
+    NP* a = NP::Make<float>(ii.size(), 4, 4); 
     LOG(info) << a->sstr() ;    
-    float* data = (float*)ss.data(); 
-    a->read<float>(data); 
+    a->read<float>((float*)ii.data()); 
     a->save(dir, "isect.npy");  
     gs->save(dir, "gs.npy" ); 
 
     LOG(info) << "]" ; 
-}
-
-
-void X4Intersect::Scan(const G4VSolid* solid, const char* basedir )  // static
-{
-    X4Intersect* x4i = new X4Intersect(solid); 
-    x4i->scan(); 
-
-    const std::string& name = solid->GetName() ; 
-    int createdirs = 2 ; // 2:dirpath 
-    const char* outdir = SPath::Resolve(basedir, name.c_str(), createdirs);
-    LOG(info) << " outdir " << outdir ; 
-
-    x4i->save(outdir); 
 }
 
 
