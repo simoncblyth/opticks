@@ -194,18 +194,8 @@ add_custom_target(PythonPH ALL DEPENDS ${IPH} )
 # default build target so that it will be run every time.
 
 
+# OpticksGenstep.h moved to sysrap
 
-set(HGS ${CMAKE_CURRENT_SOURCE_DIR}/OpticksGenstep.h)
-set(IGS ${CMAKE_CURRENT_BINARY_DIR}/OpticksGenstep_Enum.ini)
-add_custom_command(
-   OUTPUT 
-         ${IGS}
-   COMMAND 
-          ${ANADIR}/enum_.py ${HGS} --quiet --simple --inipath ${IGS}
-   DEPENDS 
-         ${HGS}
-)
-add_custom_target(PythonGS ALL DEPENDS ${IGS} )
 
 
 set(CCFL ${CMAKE_CURRENT_SOURCE_DIR}/OpticksFlags.cc)

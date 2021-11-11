@@ -168,6 +168,28 @@ set(HEADERS
 
 
 
+
+# using absolute ANADIR avoids build environment requiring it in PATH 
+get_filename_component(ANADIR ../ana ABSOLUTE)
+
+set(HGS ${CMAKE_CURRENT_SOURCE_DIR}/OpticksGenstep.h)
+set(IGS ${CMAKE_CURRENT_BINARY_DIR}/OpticksGenstep_Enum.ini)
+add_custom_command(
+   OUTPUT 
+         ${IGS}
+   COMMAND 
+          ${ANADIR}/enum_.py ${HGS} --quiet --simple --inipath ${IGS}
+   DEPENDS 
+         ${HGS}
+)
+add_custom_target(PythonGS ALL DEPENDS ${IGS} )
+
+
+
+
+
+
+
 if(NLJSON_FOUND)  
    message(STATUS "SYSRAP.NLJSON_FOUND")
    list(APPEND SOURCES  SMeta.cc)

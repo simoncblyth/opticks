@@ -54,6 +54,11 @@ cxs=${CXS:-303}         # collect sets of config underneath CXS
 cfbase=$TMP/CSG_GGeo   # default CSGFoundry dir is within cfbase 
 isel=
 
+
+# TODO: invert to base off the geomtry names not arbitray ints
+cfbases="$TMP/CSG_GGeo $TMP/CSGDemoTest $TMP/GeoChain"
+
+
 if [ "$cxs" == "1" ]; then
     moi=Hama
     #cegs=16:0:9:1000:18700:0:0:100
