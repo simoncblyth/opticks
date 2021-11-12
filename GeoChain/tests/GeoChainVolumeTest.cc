@@ -25,20 +25,22 @@ int main(int argc, char** argv)
     const char* name_default = "body_phys"  ; 
     const char* name = SSys::getenvvar("GEOM", name_default ); 
 
-    std::stringstream ss ; 
-    ss << "creator:GeoChainVolumeTest" << std::endl ; 
-    ss << "name:" << name << std::endl ; 
-    std::string meta = ss.str(); 
-
     const G4VPhysicalVolume* pv = nullptr ; 
 #ifdef WITH_PMTSIM
     pv = PMTSim::GetPV(name);  
 #endif
     assert( pv ); 
 
-    const char* argforced = "--allownokey --gparts_transform_offset" ; 
+    //const char* argforced = "--allownokey --gparts_transform_offset" ; 
+    const char* argforced = "--allownokey " ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
+
+    std::stringstream ss ; 
+    ss << "creator:GeoChainVolumeTest" << std::endl ; 
+    ss << "name:" << name << std::endl ; 
+    ss << "gparts_transform_offset:" << ( ok.isGPartsTransformOffset() ? "YES" : "NO" ) << std::endl ; 
+    std::string meta = ss.str(); 
 
     GeoChain chain(&ok); 
     chain.convertPV(pv, meta);  
