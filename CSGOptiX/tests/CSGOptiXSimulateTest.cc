@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 
     OPTICKS_LOG(argc, argv); 
 
-    const char* cxs = SSys::getenvvar("CXS", "0" ); 
+    const char* cxs = SSys::getenvvar("GEOM", "0" ); 
     int create_dirs = 0 ;  
     const char* default_outdir = SPath::Resolve("$TMP/CSGOptiX/CSGOptiXSimulateTest",  cxs, create_dirs );  
     SSys::setenvvar("OPTICKS_OUTDIR", default_outdir , false );  // change default, but allow override by evar
