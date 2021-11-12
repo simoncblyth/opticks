@@ -1,5 +1,9 @@
-GeoChain_single_PMT_not_obeying_skipsolidname
-================================================
+PMT_body_phys_bizarre_innards_confirmed_fixed_by_using_gparts_transform_offset_option
+============================================================================================
+
+Tbis was formerly titled : "GeoChain_single_PMT_not_obeying_skipsolidname" 
+but now changed. 
+
 
 Issue : cxs render shows outer PMT solid only that appears to not have the horizontals
 ----------------------------------------------------------------------------------------
@@ -13,7 +17,10 @@ Issue : cxs render shows outer PMT solid only that appears to not have the horiz
 * following the fix the intersects with body_phys follow the expected shape, BUT only 
   one solid showing : want to see the multiple offset layers 
 
-* the one solid was pilot error, need to ISEL select, showing multiple layers, but with impinging sombrero::
+* the one solid showing was pilot error from over complicates tests/CSGOptiXSimulateTest.py 
+  need to ISEL select, showing multiple layers, but with impinging sombrero
+
+* the innards and sombrero issue now confimed fixed with "--gparts_transform_offset"
 
 
 ::
@@ -43,8 +50,8 @@ Issue : cxs render shows outer PMT solid only that appears to not have the horiz
     GEOM=body_phys ISEL=0,1,2,3,4,5 ./cxs.sh  
 
 
-Mysterious innards : maybe from lack of --gparts_transform_offset in GeoChainVolumeTest.cc
-----------------------------------------------------------------------------------------------
+Mysterious innards : maybe from lack of --gparts_transform_offset in GeoChainVolumeTest.cc : YEP CONFIRMED
+---------------------------------------------------------------------------------------------------------------
 
 * /tmp/blyth/opticks/CSGOptiX/CSGOptiXSimulateTest/body_phys/figs/positions_plt_0,1,2,3,4,5.png
 
@@ -88,6 +95,8 @@ Force add the option::
 Need G4 ground truth to compare against for volumes as well as solids
 ------------------------------------------------------------------------
 
+* hmm it would be useful, but it is much more difficult than with single solids 
+
 ::
 
    g4-
@@ -111,7 +120,9 @@ Possible nudge issue with body_phys
 -------------------------------------
 
 * looks like an equatorial sombrero : this was fixed following avoiding of stomping on ellipsoid scaling transform
-* now suspect the dynode solids ?
+* now suspect the dynode solids ? Nope those are disabled it was caused by not using "--gparts_transform_offset" and 
+  using CSGFoundry OptiX 7 rendering : THOSE MUST BE USED TOGETHER OTHERWISE GET THE WRONG TRANSFORMS BEING APPLIED 
+  LEADING TO UNPREDICTABLE OUTCOMES
 
 ::
 
@@ -146,6 +157,10 @@ Possible cause of why --skipsolidname not working
     which is used from the GNode, which boils down to the same skip in 
     GInstancer... so need to face whats going wrong with global skips 
    
+
+Actually using "body_phys" subverts the need to skip anything as that is
+the Pyrex slightly in from the outermost.
+
 
 
 
