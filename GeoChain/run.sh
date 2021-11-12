@@ -24,44 +24,39 @@ To render the resulting geometry use eg::
    ./cxs.sh              # 2d python intersect render, using center-extent-gensteps
    ./cxr_geochain.sh     # 3d rendered view 
 
+
+Hmm : to consolidate to single executable would need to do the below switch in PMTSim 
+
 EOU
 }
+msg="=== $BASH_SOURCE :"
+bin=GeoChainSolidTest   # default may be changed below
 
-name=GeoChainSolidTest
-#name=GeoChainVolumeTest
-
-if [ "$name" == "GeoChainSolidTest" ]; then
-    #geochaintest=AdditionAcrylicConstruction
-    #geochaintest=BoxMinusTubs0
-    #geochaintest=BoxMinusTubs1
-    #geochaintest=PMTSim_Z
-    #geochaintest=PMTSim_Zclone
-    #geochaintest=PMTSim_Z-400
-
-    #geochaintest=UnionOfHemiEllipsoids
-    #geochaintest=UnionOfHemiEllipsoids-50
-
-    geochaintest=pmt_solid
-    #geochaintest=III
-    #geochaintest=1_3
-
-    #geochaintest=body_solid 
-    #geochaintest=inner_solid 
-    #geochaintest=inner1_solid 
-    #geochaintest=inner2_solid 
-    #geochaintest=inner2_solid 
-
-elif [ "$name" == "GeoChainVolumeTest" ]; then
-    #geochaintest=PMTSimLV
-    geochaintest=body_phys
-    #geochaintest=inner1_phys   # upper hemi 
-    #geochaintest=inner2_phys   # everything but the upper hemi 
-    #geochaintest=dynode_phys   # NOT CHECKED
-else
-    echo ERROR unexpected executable name $name 
-    exit 1 
-fi 
+geochaintest=body_phys
 export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
+
+# pick the Solid or Volume binary depending on GEOCHAINTEST
+
+case $GEOCHAINTEST in 
+   AdditionAcrylicConstruction) bin=GeoChainSolidTest ;;
+   BoxMinusTubs0)               bin=GeoChainSolidTest ;;
+   BoxMinusTubs1)               bin=GeoChainSolidTest ;;
+   UnionOfHemiEllipsoids*)      bin=GeoChainSolidTest ;;
+   pmt_solid*)                  bin=GeoChainSolidTest ;;
+   body_solid*)                 bin=GeoChainSolidTest ;;
+   inner_solid*)                bin=GeoChainSolidTest ;;
+   inner1_solid*)               bin=GeoChainSolidTest ;;
+   inner2_solid*)               bin=GeoChainSolidTest ;;
+   III*)                        bin=GeoChainSolidTest ;;
+   1_3*)                        bin=GeoChainSolidTest ;;
+
+   body_phys)                   bin=GeoChainVolumeTest ;;
+   inner1_phys)                 bin=GeoChainVolumeTest ;; 
+   inner2_phys)                 bin=GeoChainVolumeTest ;; 
+   dynode_phys)                 bin=GeoChainVolumeTest ;; 
+esac
+
+echo $msg GEOCHAINTEST $GEOCHAINTEST bin $bin
 
 
 #export GGeo=INFO
@@ -79,7 +74,6 @@ export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
 #export NTREEPROCESS_LVLIST=0
 #export NNODENUDGER_LVLIST=0
 
-
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
 export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    # when defined : dont intersect chop the PMT 
@@ -92,8 +86,8 @@ unset OPTICKS_KEY
 
 cd $OPTICKS_HOME/GeoChain
 
-rm $name.log 
-which $name
+rm $bin.log 
+which $bin
 
 opts=""
 opts="$opts --x4tubsnudgeskip 0"
@@ -103,13 +97,12 @@ DEBUG=1
 
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Darwin" ]; then 
-        lldb__ $name $opts 
+        lldb__ $bin $opts 
     else
-        gdb -ex r --args $name $opts 
+        gdb -ex r --args $bin $opts 
     fi
 else 
-    $name $opts
+    $bin $opts
 fi
-
 
 

@@ -62,7 +62,8 @@ struct GEOCHAIN_API GeoChain
     CSGFoundry* fd ;  
  
     GeoChain(Opticks* ok ); 
-
+    
+    void init(); 
     void convertSolid(const G4VSolid*          so , const std::string& meta); 
     void convertPV(   const G4VPhysicalVolume* pv , const std::string& meta); 
 

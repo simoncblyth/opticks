@@ -27,6 +27,13 @@ GeoChain::GeoChain(Opticks* ok_)
     volume(nullptr),
     fd(new CSGFoundry)
 {
+    init()
+}
+
+void GeoChain::init()
+{
+    //for(int lvIdx=-1 ; lvIdx < 10 ; lvIdx+= 1 ) LOG(info) << " lvIdx " << lvIdx << " ok.isX4TubsNudgeSkip(lvIdx) " << ok->isX4TubsNudgeSkip(lvIdx)  ; 
+
 }
 
 void GeoChain::convertSolid(const G4VSolid* so, const std::string& meta_)
