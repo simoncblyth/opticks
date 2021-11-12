@@ -27,7 +27,7 @@ GeoChain::GeoChain(Opticks* ok_)
     volume(nullptr),
     fd(new CSGFoundry)
 {
-    init()
+    init();
 }
 
 void GeoChain::init()
