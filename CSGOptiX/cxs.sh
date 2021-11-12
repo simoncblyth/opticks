@@ -113,8 +113,10 @@ else
     unset CXS_OVERRIDE_CE
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
 
-    zz=190,0,-5,-162,-195,-210,-275,-350,-365,-400,-420,-450
-    xx=-254,254,-190,190
+    #zz=190,0,-5,-162,-195,-210,-275,-350,-365,-400,-420,-450
+    #xx=-254,254,-190,190
+    zz=
+    xx=
 fi 
 
 if [ "$(uname)" == "Linux" ]; then

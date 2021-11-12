@@ -156,6 +156,8 @@ def make_colors():
     pass
     return colors
 
+COLORS = make_colors()
+
 
 def parse_isel():
     isel = list(map(int, list(filter(None,os.environ.get("ISEL", "").split(","))) ))
@@ -207,82 +209,50 @@ def shorten_bname(bname):
     return bn
 
 
-class PH(object):
-    """
-    Photon wrapper for re-usable photon data handling 
-    """
-    def __init__(self, cxs):
+class Photons(object):
+    def __init__(self, p, cf=None):
 
-        self.cxs = cxs 
-        self.p = cxs.photons  # could be cxs.fphotons too
-        self.gs = cxs.genstep
-        self.cf = None
-        self.mtr = cxs.metatran
-        self.peta = cxs.peta
-        self.fdmeta = cxs.fdmeta
+        self.cf = cf
 
-        # cxs.photons, cxs.genstep, cf, cxs.metatran, cxs.peta, cxs.fdmeta )
-
-        self.ce = tuple(self.peta[0,2])
-        self.sce = ("%7.2f" * 4 ) % self.ce
-
-        self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
-        self.botline = os.environ.get("BOTLINE", "cxs") 
-        self.thirdline = " ce: " + self.sce + " fdmeta: " + " ".join(self.fdmeta) 
-
-        outdir = os.path.join(cxs.base, "figs")
-        if not os.path.isdir(outdir):
-            os.makedirs(outdir)
+        if p.ndim == 3:
+            bnd = p[:,2,3].view(np.int32)
+            ids = p[:,3,3].view(np.int32) 
+        elif p.ndim == 4:
+            bnd = p.view(np.int32)[:,:,2,3]
+            ids = p.view(np.int32)[:,:,3,3] 
         pass
-        self.outdir = outdir
 
-        if self.p.ndim == 3:
-            bnd,ids = self.Photons(self.p) 
-        elif self.p.ndim == 4:
-            bnd,ids = self.FramePhotons(self.p) 
-        pass
-        self.metadata(self.peta)
         self.boundaries(bnd)
         self.identities(ids)
-        self.gensteps(self.gs, self.mtr)
 
-        self.colors = make_colors()
-        self.size = np.array([1280, 720])
+        self.p = p 
+        self.bnd = bnd
 
-    @classmethod
-    def Photons(cls, p):
-        log.info("Photons : %s " % str(p.shape)) 
-        assert p.ndim == 3
-        bnd = p[:,2,3].view(np.int32)
-        ids = p[:,3,3].view(np.int32) 
-        return bnd, ids
+        
+        if cf is not None:
+            ubnd = np.unique(bnd)
+            bnd_namedict = [cf.bndname[b] for b in ubnd]
+        else:
+            bnd_namedict = {}
+        pass
+        bndfeat = Feature("bnd", bnd, bnd_namedict)
 
-    @classmethod
-    def FramePhotons(cls, p):
-        log.info("FramePhotons : %s " % str(p.shape)) 
-        assert p.ndim == 4
-        bnd = p.view(np.int32)[:,:,2,3]
-        ids = p.view(np.int32)[:,:,3,3] 
-        return bnd, ids
+        pid = ids >> 16
+        pid_namedict = {}
+        pidfeat = Feature("pid", pid, pid_namedict)
 
-    def metadata(self, peta):
-        ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
-        iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
+        self.bndfeat = bndfeat
+        self.pidfeat = pidfeat
+        self.ids = ids
 
-        assert photons_per_genstep > 0
-        assert zero == 0 
-        nx = (ix1 - ix0)//2 
-        ny = (iy1 - iy0)//2  
-        nz = (iz1 - iz0)//2  
-
-        log.info(" ix0 %d ix1 %d nx %d  " % (ix0, ix1, nx)) 
-        log.info(" iy0 %d iy1 %d ny %d  " % (iy0, iy1, ny)) 
-        log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
- 
-        self.nx = nx
-        self.ny = ny
-        self.nz = nz
-        self.photons_per_genstep = photons_per_genstep
+    def __repr__(self):
+        return "\n".join([
+               "p %s" % str(self.p.shape), 
+               "ubnd %s" % str(self.ubnd),
+               "ubnd_counts %s" % str(self.ubnd_counts),
+               "uids %s" % str(self.uids),
+               "uids_counts %s" % str(self.uids_counts),
+               ])
 
     def boundaries(self, bnd):
         cf = self.cf
@@ -304,6 +274,129 @@ class PH(object):
         print( "ISEL: [%s] isel: [%s] sisel [%s] " % (ISEL, str(isel), sisel))
         copyref( locals(), globals(), self, "bnd ubnd isel sisel" ) 
 
+    def identities(self, ids):
+        uids, uids_counts = np.unique(ids, return_counts=True)    
+        iids = ids[ids>0]     
+        i_pr = ids >> 16    
+        i_in = ids & 0xffff   
+        i_global = i_in == 0 
+        i_instance = i_in > 0 
+        uipr, uipr_counts = np.unique(i_pr, return_counts=True)
+        copyref( locals(), globals(), self, "i_ uids iids uipr" ) 
+
+
+class Feature(object):
+    """
+    Trying to generalize feature handling 
+    """
+    def __init__(self, name, val, vname={}):
+        """
+        :param name: string eg "bnd" or "primIdx"
+        :param val: large array of integer feature values 
+        :param namedict: dict relating feature integers to string names 
+
+        The is an implicit assumption that the number of unique feature values is not enormous,
+        for example boundary values or prim identity values.
+        """
+        uval, ucount = np.unique(val, return_counts=True)
+        if len(vname) == 0:
+            nn = ["%s%d" % (name,i) for i in uval]
+            vname = dict(zip(uval,nn)) 
+        pass
+        pass 
+        idxdesc = np.argsort(ucount)[::-1] # indices of counts to place into descending count order
+        onames = [vname[j] for j in idxdesc]
+        ocount = [ucount[j] for j in idxdesc]
+        ouval  = [uval[j] for j in idxdesc]
+
+        self.name = name
+        self.val = val
+        self.vname = vname
+
+        self.uval = uval
+        self.ucount = ucount
+        self.idxdesc = idxdesc
+        self.onames = onames
+        self.ocount = ocount
+        self.ouval = ouval
+
+    def __call__(self, idesc, idx):
+        fname = self.onames[idx]
+        uval = self.ouval[idx] 
+        count = self.ocount[idx] 
+        label = "%s:%s" % (idesc, fname)
+        color = COLORS[idesc % len(COLORS)]  # gives the more frequent boundary the easy_color names 
+        msg = " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, uval, count, color, fname, label )
+        selector = self.val == uval
+        return uval, selector, label, color, msg 
+
+
+    def __repr__(self):
+        return "\n".join([
+            "Feature name %s val %s" % (self.name, str(self.val.shape)),
+            "uval %s " % str(self.uval),
+            "ucount %s " % str(self.ucount),
+            "idxdesc %s " % str(self.idxdesc),
+            "onames %s " % " ".join(self.onames),
+            "ocount %s " % str(self.ocount),
+            "ouval %s " % " ".join(self.ouval),
+            ])
+
+
+class Plt(object):
+    def __init__(self, cxs, ph):
+        self.cxs = cxs 
+        self.ph = ph
+        self.gs = cxs.genstep
+        self.cf = None
+        self.mtr = cxs.metatran
+        self.peta = cxs.peta
+        self.fdmeta = cxs.fdmeta
+
+        # feat contriols how to select positions, eg  via boundary or identity 
+        # allow plotting of subsets with different colors
+        #self.feat = ph.bndfeat
+        self.feat = ph.pidfeat
+
+
+        #self.split = "ubnd"
+        self.split = "uipr"
+
+        self.ce = tuple(self.peta[0,2])
+        self.sce = ("%7.2f" * 4 ) % self.ce
+
+        self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
+        self.botline = os.environ.get("BOTLINE", "cxs") 
+        self.thirdline = " ce: " + self.sce + " fdmeta: " + " ".join(self.fdmeta) 
+
+        outdir = os.path.join(cxs.base, "figs")
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir)
+        pass
+        self.outdir = outdir
+        self.metadata(self.peta)
+        self.gensteps(self.gs, self.mtr)
+        self.size = np.array([1280, 720])
+
+    def metadata(self, peta):
+        ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
+        iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
+
+        assert photons_per_genstep > 0
+        assert zero == 0 
+        nx = (ix1 - ix0)//2 
+        ny = (iy1 - iy0)//2  
+        nz = (iz1 - iz0)//2  
+
+        log.info(" ix0 %d ix1 %d nx %d  " % (ix0, ix1, nx)) 
+        log.info(" iy0 %d iy1 %d ny %d  " % (iy0, iy1, ny)) 
+        log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
+ 
+        self.nx = nx
+        self.ny = ny
+        self.nz = nz
+        self.photons_per_genstep = photons_per_genstep
+
     def gensteps(self, gs, mtr):
         """
         Transform enabled gensteps:
@@ -322,24 +415,13 @@ class PH(object):
 
         copyref( locals(), globals(), self, "gs_" ) 
       
-    def identities(self, ids):
-        uids, uids_counts = np.unique(ids, return_counts=True)    
-        iids = ids[ids>0]     
-        i_pr = ids >> 16    
-        i_in = ids & 0xffff   
-        i_global = i_in == 0 
-        i_instance = i_in > 0 
-
-        copyref( locals(), globals(), self, "i_" ) 
-
     def positions(self, local=True):
         self.local = local
 
-        p = self.p
         gs_centers = self.gs_centers 
         gs_centers_local = self.gs_centers_local 
         mtr = self.mtr
-
+        p = self.ph.p
 
         gpos = p[:,0].copy()            # global frame intersect positions
         gpos[:,3] = 1  
@@ -351,7 +433,6 @@ class PH(object):
         ylim = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
         zlim = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
         # with global frame gs_centers this will lead to a non-straight-on view as its tilted
-
 
         nx = self.nx
         ny = self.ny
@@ -379,16 +460,14 @@ class PH(object):
         self.zoom = float(os.environ.get("ZOOM","3.0"))
         self.look = np.array( list(map(float, os.environ.get("LOOK","0.,0.,0.").split(","))) )
 
+
+    def outpath_(self, stem="positions", ptype="pvplt"):
+        return os.path.join(self.outdir,"%s_%s_%s.png" % (stem, ptype, self.ph.sisel)) 
+
     def positions_mpplt(self):
         """
         """
-        bnd = self.bnd
-        ubnd = self.ubnd
-        ubnd_descending = self.ubnd_descending
-        ubnd_onames = self.ubnd_onames
-        isel = self.isel
-        colors = self.colors
-
+        isel = self.ph.isel
         upos = self.upos
         ugsc = self.ugsc
 
@@ -396,6 +475,7 @@ class PH(object):
         ylim = self.ylim 
         zlim = self.zlim 
 
+        feat = self.feat
         sz = self.sz
 
         igs = slice(None) if len(ugsc) > 1 else 0
@@ -405,20 +485,15 @@ class PH(object):
         fig, ax = mp.subplots(figsize=self.size/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
 
-        print("positions_plt")
-        for idesc,ubx in enumerate(ubnd_descending): 
-            if len(isel) > 0 and not idesc in isel: continue 
-            bname = ubnd_onames[idesc] 
-            label = "%s:%s" % (idesc, shorten_bname(bname))
-            ub = ubnd[ubx]
-            ub_count = ubnd_counts[ubx] 
-            color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
-            print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
-            if ub==0 and not 0 in isel: continue # for frame photons, empty pixels give zero 
+        print("positions_plt feat.name %s " % feat.name )
 
-            pos = upos[bnd==ub] 
+        for idesc,idx in enumerate(feat.idxdesc):
+            uval, selector, label, color, msg = feat(idesc, idx)
+            if uval==0 and not 0 in isel: continue # for frame photons, empty pixels give zero : so not including 0 in ISEL allows to skip
+            pos = upos[selector] 
             ax.scatter( pos[:,X], pos[:,Z], label=label, color=color, s=sz )
         pass
+
         log.info(" xlim[0] %8.4f xlim[1] %8.4f " % (xlim[0], xlim[1]) )
         log.info(" ylim[0] %8.4f ylim[1] %8.4f " % (ylim[0], ylim[1]) )
         log.info(" zlim[0] %8.4f zlim[1] %8.4f " % (zlim[0], zlim[1]) )
@@ -431,15 +506,13 @@ class PH(object):
         pass
         ax.scatter( ugsc[igs, X], ugsc[igs,Z], label="gs_center XZ", s=sz )
 
-        ## hmm follow look like pvplt does ?
-
         ax.set_xlim( xlim )
         ax.set_ylim( zlim )  # zlim -> ylim 
 
         ax.set_aspect('equal')
         ax.legend(loc="upper right", markerscale=4)
         fig.show()
-        outpath = os.path.join(self.outdir,"positions_plt_%s.png" % self.sisel) 
+        outpath = self.outpath_("positions","mpplt")
         print(outpath)
         fig.savefig(outpath)
 
@@ -472,14 +545,8 @@ class PH(object):
         In parallel mode, decrease the parallel scale by the specified factor.
         A value greater than 1 is a zoom-in, a value less than 1 is a zoom-out.       
         """
-        colors = self.colors
-        bnd = self.bnd
-        ubnd = self.ubnd
-        ubnd_descending = self.ubnd_descending
-        ubnd_counts = self.ubnd_counts
-        ubnd_onames = self.ubnd_onames
-        isel = self.isel
         size = self.size
+        isel = self.ph.isel
 
         xlim = self.xlim
         ylim = self.ylim
@@ -489,6 +556,7 @@ class PH(object):
         ugsc = self.ugsc
         grid = True if self.ny == 0 else False   # grid is too obscuring with 3D
 
+        feat = self.feat 
         zoom = self.zoom
         look = self.look if self.local else peta[0,1,:3]
 
@@ -504,26 +572,14 @@ class PH(object):
         pl.add_text(self.topline, position="upper_left")
         pl.add_text(self.botline, position="lower_left")
         pl.add_text(self.thirdline, position="lower_right")
-        print("positions_pvplt")
+        print("positions_pvplt feat.name %s " % feat.name )
 
-        ## select positions with each boundary to allow plotting with different colors
-        intersects = True
-        if intersects:
-            for idesc,ubx in enumerate(ubnd_descending): 
-                if len(isel) > 0 and not idesc in isel: continue 
-
-                ub = ubnd[ubx]
-                ub_count = ubnd_counts[ubx] 
-                bname = ubnd_onames[idesc]
-                label = "%s:%s" % (idesc,shorten_bname(bname))
-                color = colors[idesc % len(colors)]   # gives the more frequent boundary the easy_color names 
-
-                print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
-                if ub==0 and not 0 in isel: continue # for frame photons, empty pixels give zero 
-
-                pos = upos[bnd==ub]   
-                pl.add_points( pos[:,:3], color=color )
-            pass
+        for idesc,idx in enumerate(feat.idxdesc):
+            uval, selector, label, color, msg = feat(idesc, idx)
+            if uval==0 and not 0 in isel: continue # for frame photons, empty pixels give zero : so not including 0 in ISEL allows to skip
+            pos = upos[selector] 
+            print(msg)
+            pl.add_points( pos[:,:3], color=color )
         pass
 
         grid = True 
@@ -549,7 +605,7 @@ class PH(object):
         pl.set_position( eye, reset=True )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
         pl.camera.Zoom(2)
 
-        outpath = os.path.join(self.outdir,"positions_pvplt_%s.png" % self.sisel) 
+        outpath = self.outpath_("positions","pvplt")
         print(outpath)
         cp = pl.show(screenshot=outpath)
         return cp
@@ -571,18 +627,20 @@ if __name__ == '__main__':
     f = cxs.fphoton
     mtr = cxs.metatran
 
-    ph = PH(cxs)
 
-    ph.positions(local=True)
+    ph = Photons(cxs.photons)
+
+    plt = Plt(cxs, ph)
+    plt.positions(local=True)
 
     if not mp is None:
-        ph.positions_mpplt()
+        plt.positions_mpplt()
     pass
     if not pv is None:
         if pv_simple:
-            ph.positions_pvplt_simple()
+            plt.positions_pvplt_simple()
         else: 
-            ph.positions_pvplt()
+            plt.positions_pvplt()
         pass
     pass
 
