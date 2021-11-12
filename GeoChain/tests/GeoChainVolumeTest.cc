@@ -31,8 +31,8 @@ int main(int argc, char** argv)
 #endif
     assert( pv ); 
 
-    //const char* argforced = "--allownokey --gparts_transform_offset" ; 
-    const char* argforced = "--allownokey " ; 
+    const char* argforced = "--allownokey --gparts_transform_offset" ; 
+    // see notes/issues/PMT_body_phys_bizarre_innards_confirmed_fixed_by_using_gparts_transform_offset_option.rst
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
 
