@@ -22,8 +22,8 @@ The volume to create is controlled by the name string obtained from envvar *GEOC
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    const char* name_default = "PMTSimLV"  ; 
-    const char* name = SSys::getenvvar("GEOCHAINTEST", name_default ); 
+    const char* name_default = "body_phys"  ; 
+    const char* name = SSys::getenvvar("GEOM", name_default ); 
 
     std::stringstream ss ; 
     ss << "creator:GeoChainVolumeTest" << std::endl ; 
@@ -32,12 +32,11 @@ int main(int argc, char** argv)
 
     const G4VPhysicalVolume* pv = nullptr ; 
 #ifdef WITH_PMTSIM
-    PMTSim ps ; 
-    pv = ps.getPV(name); 
+    pv = PMTSim::GetPV(name);  
 #endif
     assert( pv ); 
 
-    const char* argforced = "--allownokey" ; 
+    const char* argforced = "--allownokey --gparts_transform_offset" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
 

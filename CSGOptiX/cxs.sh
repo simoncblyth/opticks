@@ -9,19 +9,15 @@ cxs.sh : hybrid rendering/simulation machinery, eg creating 2D ray trace cross s
 
     XX=-208,208 ZZ=-15.2,15.2 ./cxs.sh 
 
-
 Two envvars MOI and CEGS configure the gensteps.
 
 The MOI string has form meshName:meshOrdinal:instanceIdx 
 and is used to lookup the center extent from the CSGFoundry 
 geometry. Examples::
 
-
     MOI=Hama
     MOI=Hama:0:0   
-
     CEGS=16:0:9:200                 # nx:ny:nz:num_photons
-
     CEGS=16:0:9:200:17700:0:0:200   # nx:ny:nz:num_photons:cx:cy:cz:ew
 
 The CEGS envvar configures an *(nx,ny,nz)* grid from -nx->nx -ny->ny -nz->nz
@@ -50,52 +46,55 @@ EOU
 }
 
 msg="=== $BASH_SOURCE : "
-cxs=${CXS:-pmt_solid}        # collect sets of config underneath CXS which are integers or PMT solid names
+
+# GEOM collect sets of config underneath CXS which are integers or PMT solid names
+
+geom=body_phys
 cfbase=$TMP/CSG_GGeo   # default CSGFoundry dir is within cfbase 
 isel=
 
 # hmm the name should enable the cfbase to be determined by directory existance
 
-if [ "$cxs" == "1" ]; then
+if [ "$geom" == "1" ]; then
     moi=Hama
     #cegs=16:0:9:1000:18700:0:0:100
     cegs=16:0:9:500
     gridscale=0.05
-elif [ "$cxs" == "2" ]; then
+elif [ "$geom" == "2" ]; then
     moi=uni_acrylic3
     cegs=16:0:9:100
     #cegs=0:0:0:1000
     #cegs=16:4:9:100
     gridscale=0.05
-elif [ "$cxs" == "4" ]; then
+elif [ "$geom" == "4" ]; then
     moi=uni_acrylic3
     cegs=32:0:18:100
     gridscale=0.025
-elif [ "$cxs" == "20" ]; then
+elif [ "$geom" == "20" ]; then
     note="very tight grid to get into close corners"
     moi=uni_acrylic3
     cegs=16:0:9:100
     gridscale=0.025
-elif [ "$cxs" == "25" ]; then
+elif [ "$geom" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    
     moi=0
     cegs=16:0:9:100
     gridscale=0.025
     isel=0                           # setting isel to zero, prevents skipping bnd 0 
-elif [ "$cxs" == "30" ]; then
+elif [ "$geom" == "30" ]; then
     note="HMM : box minus sub-sub cylinder NOT showing the spurious intersects, maybe nice round demo numbers effect"
     cfbase=$TMP/CSGDemoTest/bssc    
     moi=0
     cegs=16:0:9:100
     gridscale=0.025
     isel=0                           # setting isel to zero, prevents skipping bnd 0 
-elif [ "$cxs" == "100" ]; then
+elif [ "$geom" == "100" ]; then
     cfbase=$TMP/GeoChain/AdditionAcrylicConstruction  
     moi=0
     cegs=16:0:9:100
     gridscale=0.1
     isel=0
-elif [ "$cxs" == "101" ]; then
+elif [ "$geom" == "101" ]; then
     #cfbase=$TMP/GeoChain/BoxMinusTubs0
     cfbase=$TMP/GeoChain/BoxMinusTubs1
     moi=0
@@ -104,14 +103,13 @@ elif [ "$cxs" == "101" ]; then
     isel=0
 else
     # everything else assume single PMT dimensions
-    name=$cxs
-    cfbase=$TMP/GeoChain/$name
+    cfbase=$TMP/GeoChain/$geom
     moi=0
     dz=-4
     num_pho=100
     cegs=16:0:9:0:0:$dz:$num_pho
     gridscale=0.15
-    isel=0
+    isel=
     unset CXS_OVERRIDE_CE
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
 
@@ -119,20 +117,18 @@ else
     xx=-254,254,-190,190
 fi 
 
-
 if [ "$(uname)" == "Linux" ]; then
-if [ ! -d "$cfbase/CSGFoundry" ]; then
-   echo $msg : ERROR : cfbase directory $cfbase MUST contain CSGFoundry subfolder 
-   echo $msg : TIPS : run GeoChain first to create the geometry and use b7 to build CSGOptiX 
-   exit 1 
-fi 
+    if [ ! -d "$cfbase/CSGFoundry" ]; then
+       echo $msg : ERROR : cfbase directory $cfbase MUST contain CSGFoundry subfolder 
+       echo $msg : TIPS : run GeoChain first to create the geometry and use b7 to build CSGOptiX 
+       exit 1 
+    fi 
 fi
-
 
 export MOI=${MOI:-$moi}
 export CXS_CEGS=${CXS_CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
-export CXS=${CXS:-$cxs}
+export GEOM=${GEOM:-$geom}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
 export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX"
 export CFBASE=${CFBASE:-$cfbase}

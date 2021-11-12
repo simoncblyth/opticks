@@ -7,6 +7,8 @@ np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 class Fold(object):
     @classmethod
     def Load(cls, *args, **kwa):
+        relbase = os.path.join(*args[1:]) if len(args) > 1 else args[0]
+        kwa["relbase"] = relbase   # relbase is the dir path excluding the first element 
         base = os.path.join(*args)
         base = os.path.expandvars(base) 
         return cls(base, **kwa) if os.path.isdir(base) else None
@@ -14,6 +16,7 @@ class Fold(object):
     def __init__(self, base, **kwa):
         self.base = base
         self.kwa = kwa 
+        self.relbase = kwa.get("relbase")
         self.globals = kwa.get("globals", False) == True
         self.globals_prefix = kwa.get("globals_prefix", "") 
         print("Fold : loading from base %s setting globals %s globals_prefix %s " % (base, self.globals, self.globals_prefix)) 

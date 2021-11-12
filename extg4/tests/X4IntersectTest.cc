@@ -20,10 +20,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    //const char* name_default = "AdditionAcrylicConstruction"  ;   
-    //const char* name_default = "orb" ; 
     const char* name_default = "pmt_solid" ; 
-    const char* name = SSys::getenvvar("CXS", name_default );  
+    const char* name = SSys::getenvvar("GEOM", name_default );  
 
     std::stringstream ss ; 
     ss << "creator:X4IntersectTest" << std::endl ; 
@@ -37,7 +35,6 @@ int main(int argc, char** argv)
     LOG(info) << meta ; 
 
     const G4VSolid* solid = nullptr ; 
-
 
     if( strcmp(name, "orb") == 0 )
     {
@@ -53,9 +50,7 @@ int main(int argc, char** argv)
         solid = PMTSim::GetSolid(name); 
 #endif
     }
-
     X4Intersect::Scan(solid, name, "$TMP/extg4/X4IntersectTest", meta ); 
     return 0 ; 
 }
-
 

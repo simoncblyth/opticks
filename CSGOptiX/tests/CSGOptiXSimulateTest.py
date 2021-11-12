@@ -112,7 +112,14 @@ import os, logging, numpy as np
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 from opticks.CSG.CSGFoundry import CSGFoundry 
-import matplotlib.pyplot as plt
+from opticks.ana.fold import Fold
+
+try:
+    import matplotlib.pyplot as mp
+except ImportError:
+    mp = None
+pass
+#mp=None
 
 try:
     import pyvista as pv
@@ -128,25 +135,6 @@ except ImportError:
 pass
 
 X,Y,Z = 0,1,2
-
-
-class CSGOptiXSimulateTest(object):
-    CXS = os.environ.get("CXS", "1")
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest" )
-    def __init__(self, cxs=CXS):
-        base = os.path.join(self.FOLD, str(cxs))
-        print("CXS : %s : loading from : %s " % (cxs,base) )
-        names = os.listdir(base)
-        for name in filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),names):
-            path = os.path.join(base, name)
-            is_npy = name.endswith(".npy")
-            is_txt = name.endswith(".txt")
-            stem = name[:-4]
-            a = np.load(path) if is_npy else list(map(str.strip,open(path).readlines())) 
-            print(" %10s : %15s : %s " % (stem, str(a.shape) if is_npy else len(a), path )) 
-            #globals()[stem] = a
-            setattr(self, stem, a )
-        pass
 
 
 def make_colors():
@@ -223,36 +211,40 @@ class PH(object):
     """
     Photon wrapper for re-usable photon data handling 
     """
-    def __init__(self, p, gs, cf, mtr, peta, fdmeta):
+    def __init__(self, cxs):
 
-        self.p = p 
-        self.gs = gs
-        self.cf = cf
-        self.mtr = mtr
-        self.peta = peta
+        self.cxs = cxs 
+        self.p = cxs.photons  # could be cxs.fphotons too
+        self.gs = cxs.genstep
+        self.cf = None
+        self.mtr = cxs.metatran
+        self.peta = cxs.peta
+        self.fdmeta = cxs.fdmeta
 
-        self.ce = tuple(peta[0,2])
+        # cxs.photons, cxs.genstep, cf, cxs.metatran, cxs.peta, cxs.fdmeta )
+
+        self.ce = tuple(self.peta[0,2])
         self.sce = ("%7.2f" * 4 ) % self.ce
 
         self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
         self.botline = os.environ.get("BOTLINE", "cxs") 
-        self.thirdline = " ce: " + self.sce + " fdmeta: " + " ".join(fdmeta) 
+        self.thirdline = " ce: " + self.sce + " fdmeta: " + " ".join(self.fdmeta) 
 
-        outdir = os.path.join(CSGOptiXSimulateTest.FOLD, "figs")
+        outdir = os.path.join(cxs.base, "figs")
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
         pass
         self.outdir = outdir
 
-        if p.ndim == 3:
-            bnd,ids = self.Photons(p) 
-        elif p.ndim == 4:
-            bnd,ids = self.FramePhotons(p) 
+        if self.p.ndim == 3:
+            bnd,ids = self.Photons(self.p) 
+        elif self.p.ndim == 4:
+            bnd,ids = self.FramePhotons(self.p) 
         pass
-        self.metadata(peta)
+        self.metadata(self.peta)
         self.boundaries(bnd)
         self.identities(ids)
-        self.gensteps(gs, mtr)
+        self.gensteps(self.gs, self.mtr)
 
         self.colors = make_colors()
         self.size = np.array([1280, 720])
@@ -304,10 +296,12 @@ class PH(object):
 
         ubnd_descending = np.argsort(ubnd_counts)[::-1]
         ubnd_onames = [ubnd_names[j] for j in ubnd_descending]
-        isel = CSGFoundry.parse_ISEL(os.environ.get("ISEL",""), ubnd_onames) 
+
+        ISEL = os.environ.get("ISEL","")  
+        isel = CSGFoundry.parse_ISEL(ISEL, ubnd_onames) 
         sisel = ",".join(map(str, isel))
 
-        print( "isel: %s sisel %s " % (str(isel), sisel))
+        print( "ISEL: [%s] isel: [%s] sisel [%s] " % (ISEL, str(isel), sisel))
         copyref( locals(), globals(), self, "bnd ubnd isel sisel" ) 
 
     def gensteps(self, gs, mtr):
@@ -385,7 +379,7 @@ class PH(object):
         self.zoom = float(os.environ.get("ZOOM","3.0"))
         self.look = np.array( list(map(float, os.environ.get("LOOK","0.,0.,0.").split(","))) )
 
-    def positions_plt(self):
+    def positions_mpplt(self):
         """
         """
         bnd = self.bnd
@@ -408,7 +402,7 @@ class PH(object):
 
         title = [self.topline, self.botline, self.thirdline]
 
-        fig, ax = plt.subplots(figsize=self.size/100.)  # mpl uses dpi 100
+        fig, ax = mp.subplots(figsize=self.size/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
 
         print("positions_plt")
@@ -462,13 +456,14 @@ class PH(object):
 
     def positions_pvplt(self):
         """
+        * actually better to use set_position reset=True after adding points to auto get into ballpark 
+
         * previously always starts really zoomed in, requiring two-finger upping to see the intersects
         * following hint from https://github.com/pyvista/pyvista/issues/863 now set an adhoc zoom factor
  
         Positioning the eye with a simple global frame y-offset causes distortion 
         and apparent untrue overlaps due to the tilt of the geometry.
         Need to apply the central transform to the gaze vector to get straight on view.
-
 
         https://docs.pyvista.org/api/core/_autosummary/pyvista.Camera.zoom.html?highlight=zoom
 
@@ -506,18 +501,12 @@ class PH(object):
 
         pl.view_xz() 
         pl.camera.ParallelProjectionOn()  
-        pl.camera.Zoom(zoom/1000.)
         pl.add_text(self.topline, position="upper_left")
         pl.add_text(self.botline, position="lower_left")
         pl.add_text(self.thirdline, position="lower_right")
-        pl.set_position( eye, reset=False )
-        pl.set_focus(    look )
-        pl.set_viewup(   up )
-
         print("positions_pvplt")
 
-        ##  TODO SPLIT BELOW INTO SEPARATE METHOD : FOR COMPARISON
-
+        ## select positions with each boundary to allow plotting with different colors
         intersects = True
         if intersects:
             for idesc,ubx in enumerate(ubnd_descending): 
@@ -532,7 +521,7 @@ class PH(object):
                 print( " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, ub, ub_count, color, bname, label ))            
                 if ub==0 and not 0 in isel: continue # for frame photons, empty pixels give zero 
 
-                pos = upos[bnd==ub] 
+                pos = upos[bnd==ub]   
                 pl.add_points( pos[:,:3], color=color )
             pass
         pass
@@ -541,7 +530,6 @@ class PH(object):
         if grid:
             pl.add_points( ugsc[:,:3], color="white" )           # genstep grid
         pass   
-
 
         for z in self.zz:  # ZZ horizontals
             xhi = np.array( [xlim[1], 0, z] )  # RHS
@@ -555,6 +543,12 @@ class PH(object):
             line = pv.Line(zlo, zhi)
             pl.add_mesh(line, color="w")
         pass
+
+        pl.set_focus(    look )
+        pl.set_viewup(   up )
+        pl.set_position( eye, reset=True )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
+        pl.camera.Zoom(2)
+
         outpath = os.path.join(self.outdir,"positions_pvplt_%s.png" % self.sisel) 
         print(outpath)
         cp = pl.show(screenshot=outpath)
@@ -564,23 +558,32 @@ class PH(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-
     #cf = CSGFoundry()
     cf = None
-    cxs = CSGOptiXSimulateTest()
+    pv_simple = False
+
+    GEOM = os.environ.get("GEOM", "1")
+    FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest" )
+    cxs = Fold.Load( FOLD, GEOM, globals=True ) 
 
     g = cxs.genstep
     p = cxs.photons
     f = cxs.fphoton
     mtr = cxs.metatran
 
-    ph = PH(cxs.photons, cxs.genstep, cf, cxs.metatran, cxs.peta, cxs.fdmeta )
+    ph = PH(cxs)
 
     ph.positions(local=True)
-    ph.positions_plt()
-    ph.positions_pvplt()
-    #ph.positions_pvplt_simple()
 
-
+    if not mp is None:
+        ph.positions_mpplt()
+    pass
+    if not pv is None:
+        if pv_simple:
+            ph.positions_pvplt_simple()
+        else: 
+            ph.positions_pvplt()
+        pass
+    pass
 
 

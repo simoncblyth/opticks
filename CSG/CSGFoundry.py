@@ -54,6 +54,9 @@ class CSGFoundry(object):
         eg use Hama or NNVT to yield the list of frequency order indices 
         with corresponding bounary names containing those strings. 
         """
+        if ISEL == "":
+            ISEL = "0,1,2,3,4,5"
+        pass
         ISELS = list(filter(None,ISEL.split(",")))
 
         isels = []

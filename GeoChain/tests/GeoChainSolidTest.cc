@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     const char* name_default = "AdditionAcrylicConstruction"  ; 
-    const char* name = SSys::getenvvar("GEOCHAINTEST", name_default ); 
+    const char* name = SSys::getenvvar("GEOM", name_default ); 
 
     std::stringstream ss ; 
     ss << "creator:GeoChainSolidTest" << std::endl ; 

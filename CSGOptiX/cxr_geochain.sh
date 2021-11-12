@@ -21,29 +21,29 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-#geometry=default
-#geometry=AdditionAcrylicConstruction
+#geom=default
+#geom=AdditionAcrylicConstruction
 
-geometry=pmt_solid
-#geometry=1_3
+#geom=pmt_solid
+#geom=1_3
 
-#geometry=UnionOfHemiEllipsoids        # looks fine, like full ellipsoid
-#geometry=UnionOfHemiEllipsoids-50    # lower hemi-ellipsoid is smaller than upper : looks like the translation transform stomps on the scale transform
+#geom=UnionOfHemiEllipsoids        # looks fine, like full ellipsoid
+#geom=UnionOfHemiEllipsoids-50    # lower hemi-ellipsoid is smaller than upper : looks like the translation transform stomps on the scale transform
 
-#geometry=body_solid
-#geometry=inner_solid
-#geometry=inner1_solid
-#geometry=inner2_solid
+#geom=body_solid
+#geom=inner_solid
+#geom=inner1_solid
+#geom=inner2_solid
 
-#geometry=body_phys
-#geometry=inner1_phys
-#geometry=inner2_phys
+geom=body_phys
+#geom=inner1_phys
+#geom=inner2_phys
 
 
-export GEOMETRY=${GEOMETRY:-$geometry}
-cfname=GeoChain/$GEOMETRY            # picks the CSGFoundry geometry to load
+export GEOM=${GEOM:-$geom}
+cfname=GeoChain/$GEOM            # picks the CSGFoundry geometry to load
 
-if [ "$GEOMETRY" == "default" ]; then  
+if [ "$GEOM" == "default" ]; then  
    moi=-1
    eye=-1,0,1,1 
    tmin=0.5
@@ -66,11 +66,11 @@ export TMIN=${TMIN:-$tmin}
 export EYE=${EYE:-$eye}
 export CAM=${CAM:-$cam}    # 0:perspective 1:ortho
 
-export NAMEPREFIX=cxr_geochain_${GEOMETRY}_   # MOI is appended by tests/CSGOptiXRender.cc when --solid_label yields no solids
+export NAMEPREFIX=cxr_geochain_${GEOM}_   # MOI is appended by tests/CSGOptiXRender.cc when --solid_label yields no solids
 export RELDIR=cxr_geochain/cam_${CAM}
-export TOPLINE="./cxr_geochain.sh $MOI      # EYE $EYE  $stamp  $version $GEOMETRY   " 
+export TOPLINE="./cxr_geochain.sh $MOI      # EYE $EYE  $stamp  $version $GEOM   " 
 
-vars="GEOMETRY MOI CFNAME EMM TMIN EYE CAM NAMEPREFIX RELDIR TOPLINE"
+vars="GEOM MOI CFNAME EMM TMIN EYE CAM NAMEPREFIX RELDIR TOPLINE"
 echo $msg 
 for var in $vars ; do printf "%-20s : %s \n" $var "${!var}" ; done  
 

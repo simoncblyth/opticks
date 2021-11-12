@@ -29,15 +29,13 @@ Hmm : to consolidate to single executable would need to do the below switch in P
 
 EOU
 }
-msg="=== $BASH_SOURCE :"
-bin=GeoChainSolidTest   # default may be changed below
 
-geochaintest=body_phys
-export GEOCHAINTEST=${GEOCHAINTEST:-$geochaintest}
+geom=body_phys
+export GEOM=${GEOM:-$geom}
+# pick the Solid or Volume binary depending on GEOM
 
-# pick the Solid or Volume binary depending on GEOCHAINTEST
-
-case $GEOCHAINTEST in 
+bin=
+case $GEOM in 
    AdditionAcrylicConstruction) bin=GeoChainSolidTest ;;
    BoxMinusTubs0)               bin=GeoChainSolidTest ;;
    BoxMinusTubs1)               bin=GeoChainSolidTest ;;
@@ -56,7 +54,13 @@ case $GEOCHAINTEST in
    dynode_phys)                 bin=GeoChainVolumeTest ;; 
 esac
 
-echo $msg GEOCHAINTEST $GEOCHAINTEST bin $bin
+msg="=== $BASH_SOURCE :"
+echo $msg GEOM $GEOM bin $bin
+
+if [ "$bin" == "" ]; then
+   echo $msg ERROR do not know which executable to use for GEOM $GEOM
+   exit 1 
+fi
 
 
 #export GGeo=INFO
@@ -68,7 +72,7 @@ echo $msg GEOCHAINTEST $GEOCHAINTEST bin $bin
 #export NTreeBalance=INFO
 #export NTreeBuilder=INFO
 
-export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
+#export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
 
 #export DUMP_RIDX=0
 #export NTREEPROCESS_LVLIST=0
@@ -91,7 +95,7 @@ which $bin
 
 opts=""
 opts="$opts --x4tubsnudgeskip 0"
-opts="$opts --skipsolidname ${GEOCHAINTEST}_body_solid_1_9   " 
+#opts="$opts --skipsolidname ${GEOM}_body_solid_1_9   " 
 
 DEBUG=1
 
@@ -104,5 +108,3 @@ if [ -n "$DEBUG" ]; then
 else 
     $bin $opts
 fi
-
-

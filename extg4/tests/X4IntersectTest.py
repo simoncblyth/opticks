@@ -52,12 +52,12 @@ efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").s
 
 if __name__ == '__main__':
 
-    CXS = os.environ.get("CXS", "pmt_solid")
+    GEOM = os.environ.get("GEOM", "pmt_solid")
     CXS_RELDIR = os.environ.get("CXS_RELDIR", "extg4/X4IntersectTest" ) 
     CXS_OTHER_RELDIR = os.environ.get("CXS_OTHER_RELDIR", "CSGOptiX/CSGOptiXSimulateTest" ) 
 
-    test = Fold.Load("/tmp/$USER/opticks",CXS_RELDIR,CXS, globals=True, globals_prefix="a_" )
-    other = Fold.Load("/tmp/$USER/opticks",CXS_OTHER_RELDIR,CXS, globals=True, globals_prefix="b_" )
+    test = Fold.Load("/tmp/$USER/opticks",CXS_RELDIR,GEOM, globals=True, globals_prefix="a_" )
+    other = Fold.Load("/tmp/$USER/opticks",CXS_OTHER_RELDIR,GEOM, globals=True, globals_prefix="b_" )
 
     outdir = os.path.join(test.base, "figs")
     if not os.path.isdir(outdir):
@@ -68,8 +68,8 @@ if __name__ == '__main__':
     print("outdir %s " % outdir)
 
     default_topline = "xxs.sh X4IntersectTest.py"
-    default_botline = "/".join([CXS_RELDIR,CXS])
-    default_thirdline = "/".join([CXS_OTHER_RELDIR,CXS])
+    default_botline = test.relbase    # base excluding first element
+    default_thirdline = other.relbase if not other is None else "thirdline"
 
     topline = os.environ.get("TOPLINE", default_topline)
     botline = os.environ.get("BOTLINE", default_botline) 

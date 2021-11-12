@@ -10,27 +10,25 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
 export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
 
+#geom=orb
+#geom=UnionOfHemiEllipsoids
+geom=UnionOfHemiEllipsoids-50
+#geom=pmt_solid
+#geom=I
+#geom=III
+#geom=1_2
+#geom=1_3
 
-#cxs=orb
-#cxs=UnionOfHemiEllipsoids
-#cxs=UnionOfHemiEllipsoids-50
-cxs=pmt_solid
-#cxs=I
-#cxs=III
-#cxs=1_2
-#cxs=1_3
+export GEOM=${GEOM:-$geom}
 
 tmp=/tmp/$USER/opticks
-
-
-export CXS=${CXS:-$cxs}
 reldir=extg4/X4IntersectTest
 fold=$tmp/$reldir 
+
 echo $msg reldir $reldir fold $fold 
 
 #other_reldir=GeoChain
@@ -50,7 +48,7 @@ fi
 echo $msg other_reldir $other_reldir other_fold $other_fold other_exists $other_exists
 
 
-if [ "$CXS" == "orb" ]; then
+if [ "$GEOM" == "orb" ]; then
 
     dz=0
     num_pho=10
@@ -73,9 +71,7 @@ else
     unset CXS_OVERRIDE_CE
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
     # -320-130 = -450  320-130 = 190 
-
 fi 
-
 
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS_CEGS=${CXS_CEGS:-$cegs}
@@ -93,7 +89,6 @@ if [ "${arg/exit}" != "$arg" ]; then
    echo $msg early exit 
    exit 0 
 fi
-
 
 if [ "${arg/run}" != "$arg" ]; then
     $GDB X4IntersectTest
