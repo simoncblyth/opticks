@@ -6,6 +6,9 @@ Reproduce
 
 ::
 
+    ## update the PMTSim lib used by the below : PMTSim is standalone provider of test G4VSolid
+    jps       # cd ~/j/PMTSim   
+    om
 
     ## check the Geant4 intersects using X4IntersectTest  
 
@@ -22,7 +25,7 @@ Reproduce
 
     ./run.sh # using UnionOfHemiEllipsoids 
     ./run.sh # using UnionOfHemiEllipsoids-50 
-
+    ./run.sh # using pmt_solid    (creates /tmp/blyth/opticks/GeoChain/pmt_solid/CSGFoundry/)
 
     ## try OptiX pre-7 render
 
@@ -32,15 +35,33 @@ Reproduce
     ./cxr_geochain.sh     ## of UnionOfHemiEllipsoids  and UnionOfHemiEllipsoids-50 
 
 
+    ## try OptiX 7 2D render
+    cx
+    ./b7    # OptiX 7 build not yet standardly done by the "om" build
+
+    CXS=pmt_solid ./cxs.sh 
+
+    ## view the OptiX 7 2D render in laptop
+
+    cx
+    ./grab.sh 
+    CXS=pmt_solid ./cxs.sh 
+
+
+    
 
 UnionOfHemiEllipsoids        
    looks fine, like full ellipsoid
 
 UnionOfHemiEllipsoids-50   
    lower hemi-ellipsoid becomes smaller than upper 
- 
+
    * looks like the translation transform is stomping on the scale transform
 
+pmt_solid
+   before fix : lower side of bulb smaller than upper, after fix : looks correct
+
+ 
 
 
 X4Solid::convertBooleanSolid

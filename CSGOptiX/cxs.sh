@@ -50,7 +50,7 @@ EOU
 }
 
 msg="=== $BASH_SOURCE : "
-cxs=${CXS:-1_3}        # collect sets of config underneath CXS which are integers or PMT solid names
+cxs=${CXS:-pmt_solid}        # collect sets of config underneath CXS which are integers or PMT solid names
 cfbase=$TMP/CSG_GGeo   # default CSGFoundry dir is within cfbase 
 isel=
 

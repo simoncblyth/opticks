@@ -8,6 +8,8 @@ Provides 2D cross section plots of G4VSolid provided from j/PMTSim
 EOU
 }
 
+msg="=== $BASH_SOURCE :"
+
 
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
@@ -15,23 +17,38 @@ export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
 
 
 #cxs=orb
-cxs=UnionOfHemiEllipsoids
+#cxs=UnionOfHemiEllipsoids
 #cxs=UnionOfHemiEllipsoids-50
-#cxs=pmt_solid
+cxs=pmt_solid
 #cxs=I
 #cxs=III
 #cxs=1_2
 #cxs=1_3
 
+tmp=/tmp/$USER/opticks
+
+
 export CXS=${CXS:-$cxs}
 reldir=extg4/X4IntersectTest
-#reldir=GeoChain
-fold=/tmp/$USER/opticks/$reldir 
+fold=$tmp/$reldir 
+echo $msg reldir $reldir fold $fold 
+
+#other_reldir=GeoChain
+other_reldir=CSGOptiX/CSGOptiXSimulateTest
+other_fold=$tmp/$other_reldir
 
 if [ ! -d "$fold" ]; then
-    echo reldir $reldir fold $fold MUST EXIST 
+    echo $msg reldir $reldir fold $fold MUST EXIST 
     exit 1 
-fi 
+fi
+
+if [ -d "$other_fold" ]; then
+    other_exists=YES
+else
+    other_exists=NO
+fi  
+echo $msg other_reldir $other_reldir other_fold $other_fold other_exists $other_exists
+
 
 if [ "$CXS" == "orb" ]; then
 
@@ -63,10 +80,20 @@ fi
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS_CEGS=${CXS_CEGS:-$cegs}
 export CXS_RELDIR=${CXS_RELDIR:-$reldir} 
+export CXS_OTHER_RELDIR=${CXS_OTHER_RELDIR:-$other_reldir} 
+
+env | grep CXS
+
 export XX=${XX:-$xx}
 export ZZ=${ZZ:-$zz}
 
 arg=${1:-runana}
+
+if [ "${arg/exit}" != "$arg" ]; then
+   echo $msg early exit 
+   exit 0 
+fi
+
 
 if [ "${arg/run}" != "$arg" ]; then
     $GDB X4IntersectTest
