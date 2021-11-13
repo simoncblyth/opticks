@@ -3,7 +3,13 @@
 usage(){ cat << EOU
 
 When envvar GEOM is defined the grab is restricted to just that subdir 
-making it a bit faster.
+making it a bit faster.::
+
+    GEOM=body_phys ./grab.sh 
+
+Note that the grab also pull back associated info such as
+the results from CSGOptiXSimulateTest 
+
 
 EOU
 }

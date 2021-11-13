@@ -107,16 +107,19 @@ else
     moi=0
     dz=-4
     num_pho=100
-    cegs=16:0:9:0:0:$dz:$num_pho
-    gridscale=0.15
+    #cegs=16:0:9:0:0:$dz:$num_pho
+    cegs=9:0:16:0:0:$dz:$num_pho
+    #gridscale=0.15
+    gridscale=0.10
     isel=
     unset CXS_OVERRIDE_CE
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
 
     #zz=190,0,-5,-162,-195,-210,-275,-350,-365,-400,-420,-450
     #xx=-254,254,-190,190
-    zz=
-    xx=
+    zz=190,-450
+    xx=250,-250
+
 fi 
 
 if [ "$(uname)" == "Linux" ]; then

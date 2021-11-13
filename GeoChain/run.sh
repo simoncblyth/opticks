@@ -5,15 +5,33 @@ GeoChain/run.sh
 
 Performs full geometry translation chain:
 
-1. Geant4 C++ G4VSolid definition
-2. NNode
-3. GGeo/GPts/GParts/GMesh/GMergedMesh
-4. CSGFoundry 
+1. Geant4 C++ G4VSolid OR G4VPhysicalVolume/G4LogicalVolume definition
+2. X4PhysicalVolume steered conversion into NNode
+3. X4PhysicalVolume steered loading into GGeo/GPts/GParts/GMesh/GMergedMesh
+4. CSG_GGeo convertion of GGeo into CSGFoundry 
+
+NB currently two executables are used, with the split decided by this
+script based on the GEOM name:
+
+GeoChainSolidTest
+   for single G4VSolid
+
+GeoChainVolumeTest
+   for volumes 
+
+HMM : consolidating to a single executable would need to implement
+the below name switch in the main. But that would hardcode specific 
+geometry names into code, so just stick to doing it in the script for now.
+Doing this in PMTSim which is JUNO specific might be a solution.
 
 Usage::
 
-   cd ~/opticks/GeoChain
-   ./run.sh 
+   gc                          # cd ~/opticks/GeoChain  
+   GEOM=body_solid ./run.sh 
+   GEOM=body_phys  ./run.sh 
+
+   GEOM=body_phys ./grab.sh    # grab from remote node 
+
 
 To render the resulting geometry use eg::
 
@@ -24,8 +42,6 @@ To render the resulting geometry use eg::
    ./cxs.sh              # 2d python intersect render, using center-extent-gensteps
    ./cxr_geochain.sh     # 3d rendered view 
 
-
-Hmm : to consolidate to single executable would need to do the below switch in PMTSim 
 
 EOU
 }

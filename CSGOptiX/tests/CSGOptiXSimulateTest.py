@@ -133,6 +133,7 @@ except ImportError:
     pv = None
     hexcolors = None
 pass
+#pv=None
 
 X,Y,Z = 0,1,2
 
@@ -350,37 +351,34 @@ class Plt(object):
         self.gs = cxs.genstep
         self.cf = None
         self.mtr = cxs.metatran
-        self.peta = cxs.peta
-        self.fdmeta = cxs.fdmeta
 
         # feat contriols how to select positions, eg  via boundary or identity 
         # allow plotting of subsets with different colors
         #self.feat = ph.bndfeat
         self.feat = ph.pidfeat
 
-
-        #self.split = "ubnd"
-        self.split = "uipr"
-
-        self.ce = tuple(self.peta[0,2])
-        self.sce = ("%7.2f" * 4 ) % self.ce
-
         self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
         self.botline = os.environ.get("BOTLINE", "cxs") 
-        self.thirdline = " ce: " + self.sce + " fdmeta: " + " ".join(self.fdmeta) 
 
         outdir = os.path.join(cxs.base, "figs")
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
         pass
         self.outdir = outdir
-        self.metadata(self.peta)
+        self.metadata(cxs)
+
         self.gensteps(self.gs, self.mtr)
         self.size = np.array([1280, 720])
 
-    def metadata(self, peta):
+    def metadata(self, cxs):
+
+        peta = cxs.peta
+        fdmeta = cxs.fdmeta
+
         ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
         iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
+        ce = tuple(peta[0,2])
+        sce = ("%7.2f" * 4 ) % ce
 
         assert photons_per_genstep > 0
         assert zero == 0 
@@ -388,9 +386,28 @@ class Plt(object):
         ny = (iy1 - iy0)//2  
         nz = (iz1 - iz0)//2  
 
+        nx_over_nz = float(nx)/float(nz)
+        if nx_over_nz > 1.:
+            axes = X,Z 
+        else:
+            axes = Z,X
+        pass
+        print("axes %s " % str(axes))
+        # expecting 2D with no action in ny
+
         log.info(" ix0 %d ix1 %d nx %d  " % (ix0, ix1, nx)) 
         log.info(" iy0 %d iy1 %d ny %d  " % (iy0, iy1, ny)) 
         log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
+        log.info(" nx_over_nz %s axes %s X %d Y %d Z %d" % (nx_over_nz,str(axes), X,Y,Z) )
+
+        self.fdmeta = fdmeta
+        self.peta = peta
+        self.ce = ce
+        self.sce = sce
+        self.thirdline = " ce: " + sce + " fdmeta: " + " ".join(fdmeta) 
+
+        self.nx_over_nz = nx_over_nz   
+        self.axes = axes 
  
         self.nx = nx
         self.ny = ny
@@ -429,16 +446,18 @@ class Plt(object):
         upos = lpos if local else gpos
         ugsc = gs_centers_local if local else gs_centers  
 
-        xlim = np.array([ugsc[:,X].min(), ugsc[:,X].max()])
-        ylim = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
-        zlim = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
+        
+        lim = {}
+        lim[X] = np.array([ugsc[:,X].min(), ugsc[:,X].max()])
+        lim[Y] = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
+        lim[Z] = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
         # with global frame gs_centers this will lead to a non-straight-on view as its tilted
 
         nx = self.nx
         ny = self.ny
         nz = self.nz
 
-        bins = (np.linspace(*xlim, 2*nx+1), np.linspace(*ylim, max(2*ny+1,2) ), np.linspace(*zlim, 2*nz+2))
+        bins = (np.linspace(*lim[X], 2*nx+1), np.linspace(*lim[Y], max(2*ny+1,2) ), np.linspace(*lim[Z], 2*nz+2))
         h3d, bins2 = np.histogramdd(upos[:,:3], bins=bins )   
         ## TODO: use the 3d histo to sparse-ify gensteps positions, to avoiding shooting rays from big voids 
 
@@ -448,9 +467,7 @@ class Plt(object):
 
         self.upos = upos
         self.ugsc = ugsc
-        self.xlim = xlim 
-        self.ylim = ylim 
-        self.zlim = zlim 
+        self.lim = lim 
 
         efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
         self.xx = efloatlist_("XX")
@@ -471,9 +488,10 @@ class Plt(object):
         upos = self.upos
         ugsc = self.ugsc
 
-        xlim = self.xlim
-        ylim = self.ylim 
-        zlim = self.zlim 
+        lim = self.lim
+        xlim = lim[X]
+        ylim = lim[Y]
+        zlim = lim[Z]
 
         feat = self.feat
         sz = self.sz
@@ -487,27 +505,49 @@ class Plt(object):
 
         print("positions_plt feat.name %s " % feat.name )
 
+        axes = self.axes
+        H,V = axes      ## traditionally H,V = X,Z  but are now generalizing 
+
         for idesc,idx in enumerate(feat.idxdesc):
             uval, selector, label, color, msg = feat(idesc, idx)
             if uval==0 and not 0 in isel: continue # for frame photons, empty pixels give zero : so not including 0 in ISEL allows to skip
             pos = upos[selector] 
-            ax.scatter( pos[:,X], pos[:,Z], label=label, color=color, s=sz )
+            ax.scatter( pos[:,H], pos[:,V], label=label, color=color, s=sz )
         pass
 
         log.info(" xlim[0] %8.4f xlim[1] %8.4f " % (xlim[0], xlim[1]) )
         log.info(" ylim[0] %8.4f ylim[1] %8.4f " % (ylim[0], ylim[1]) )
         log.info(" zlim[0] %8.4f zlim[1] %8.4f " % (zlim[0], zlim[1]) )
 
-        for z in self.zz:   # ZZ horizontals 
-            ax.plot( xlim, [z,z], label="z:%8.4f" % z )
-        pass
-        for x in self.xx:    # XX verticals 
-            ax.plot( [x, x], zlim, label="x:%8.4f" % x ) 
-        pass
-        ax.scatter( ugsc[igs, X], ugsc[igs,Z], label="gs_center XZ", s=sz )
 
-        ax.set_xlim( xlim )
-        ax.set_ylim( zlim )  # zlim -> ylim 
+        ## ZZ=190,-450 XX=250,-250 ./cxs.sh 
+
+        ## (H,V) are the plotting axes 
+        ## (X,Y,Z) = (0,1,2) correspond to absolute axes which can be mapped to plotting axes in various ways 
+        ##
+        ## when Z is vertical lines of constant Z appear horizontal 
+        ## when Z is horizontal lines of constant Z appear vertical 
+
+        if H == X and V == Z:   
+            for z in self.zz:   # ZZ horizontals 
+                ax.plot( lim[H], [z,z], label="z:%8.4f" % z )
+            pass
+            for x in self.xx:    # XX verticals 
+                ax.plot( [x, x], lim[V], label="x:%8.4f" % x ) 
+            pass
+        elif H == Z and V == X:  ## ZZ verticals 
+            for z in self.zz:   
+                ax.plot( [z, z], lim[V], label="z:%8.4f" % z )
+            pass
+            for x in self.xx:    # XX horizontals
+                ax.plot( lim[H], [x, x], label="x:%8.4f" % x ) 
+            pass
+        pass
+
+        ax.scatter( ugsc[igs, H], ugsc[igs,V], label="gs_center XZ", s=sz )
+
+        ax.set_xlim( lim[H] )
+        ax.set_ylim( lim[V] )  # zlim -> ylim 
 
         ax.set_aspect('equal')
         ax.legend(loc="upper right", markerscale=4)
@@ -544,13 +584,19 @@ class Plt(object):
 
         In parallel mode, decrease the parallel scale by the specified factor.
         A value greater than 1 is a zoom-in, a value less than 1 is a zoom-out.       
+
+
         """
         size = self.size
         isel = self.ph.isel
 
-        xlim = self.xlim
-        ylim = self.ylim
-        zlim = self.zlim   
+        lim = self.lim
+        xlim = lim[X]
+        ylim = lim[Y]
+        zlim = lim[Z]
+
+        axes = self.axes
+        H,V = axes      ## traditionally H,V = X,Z  but are now generalizing 
  
         upos = self.upos
         ugsc = self.ugsc
@@ -562,12 +608,20 @@ class Plt(object):
 
         yoffset = -1000.       ## with parallel projection are rather insensitive to eye position distance
         eye = look + np.array([ 0, yoffset, 0 ])    
-        up = (0,0,1)                               
 
         pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
         self.pl = pl 
 
-        pl.view_xz() 
+        if H == X and V == Z:
+            up = (0,0,1)                               
+            pl.view_xz() 
+        elif H == Z and V == X:
+            up = (-1,0,0)                               
+            pl.view_xz() 
+        else:
+            assert 0
+        pass
+
         pl.camera.ParallelProjectionOn()  
         pl.add_text(self.topline, position="upper_left")
         pl.add_text(self.botline, position="lower_left")
@@ -620,6 +674,7 @@ if __name__ == '__main__':
 
     GEOM = os.environ.get("GEOM", "1")
     FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest" )
+
     cxs = Fold.Load( FOLD, GEOM, globals=True ) 
 
     g = cxs.genstep
