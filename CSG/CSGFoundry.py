@@ -5,9 +5,17 @@ log = logging.getLogger(__name__)
 class CSGFoundry(object):
     FOLD = os.path.expandvars("$TMP/CSG_GGeo/CSGFoundry")
     FMT = "   %10s : %20s  : %s "
+
+    @classmethod
+    def namelist_to_namedict(cls, namelist):
+        return dict(zip(range(len(namelist)),list(map(str,namelist)))) 
  
     def __init__(self, fold=FOLD):
         self.load(fold)
+        self.meshnamedict = self.namelist_to_namedict(self.meshname)
+        self.bndnamedict = self.namelist_to_namedict(self.bndname)
+        self.mokname = "zero one two three four five six seven eight nine".split()
+        self.moknamedict = self.namelist_to_namedict(self.mokname)
 
     def load(self, fold):
         log.info("load %s " % fold)
@@ -19,15 +27,29 @@ class CSGFoundry(object):
         pass
 
         names = os.listdir(fold)
+        stems = []
         for name in filter(lambda name:name.endswith(".npy") or name.endswith(".txt"), names):
             path = os.path.join(fold, name)
             stem = name[:-4]
             a = np.load(path) if name.endswith(".npy") else np.loadtxt(path, dtype=np.object)
             if name == "bnd.txt": stem = "bndname"  ## TODO: avoid clash of stems between bnd.npy and bnd.txt ?
             setattr(self, stem, a)
-            globals()[stem] = a 
+            stems.append(stem)
+            #globals()[stem] = a 
             print(self.FMT % (stem, str(a.shape), path))
         pass
+        self.stems = stems
+        self.fold = fold
+
+    def desc(self, stem):
+        a = getattr(self, stem)
+        ext = ".txt" if a.dtype == 'O' else ",npy"
+        pstem = "bnd" if stem == "bndname" else stem 
+        path = os.path.join(self.fold, "%s%s" % (pstem, ext))
+        return self.FMT % (stem, str(a.shape), path) 
+
+    def __repr__(self):
+        return "\n".join(map(lambda stem:self.desc(stem),self.stems))
 
     def dump_node_boundary(self):
         logging.info("dump_node_boundary") 
@@ -40,38 +62,6 @@ class CSGFoundry(object):
         for ub, ub_count in zip(ubs, ubs_count):
             print(" %4d : %6d : %s " % (ub, ub_count, bndname[ub]))
         pass 
-
-    @classmethod
-    def parse_ISEL(cls, ISEL, obndnames):
-        """
-        :param ISEL: comma delimited list of strings or integers 
-        :param obndnames: boundary names in descending frequency order
-        :return isels: list of frequency order indices 
-
-        Integers in the ISEL are interpreted as frequency order indices. 
-
-        Strings are interpreted as fragments to look for in the ordered boundary names, 
-        eg use Hama or NNVT to yield the list of frequency order indices 
-        with corresponding bounary names containing those strings. 
-        """
-        if ISEL == "":
-            ISEL = "0,1,2,3,4,5"
-        pass
-        ISELS = list(filter(None,ISEL.split(",")))
-
-        isels = []
-        for i in ISELS:
-            if i.isnumeric(): 
-                isels.append(int(i))
-            else:
-                for idesc, bn in enumerate(obndnames):
-                    if i in bn:
-                        isels.append(idesc)
-                    pass
-                pass
-            pass
-        pass         
-        return isels 
 
 
 

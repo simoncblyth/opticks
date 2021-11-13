@@ -15,23 +15,12 @@ the fphoton.npy intersects
 * the problem is especially acute when multiple geometries are in use
   and geometries are changed frequently 
 
-
-TODO: enable comparison of two sets of cxs
----------------------------------------------
-
-
-TODO: Use the identity info in analogous way to the boundary info
---------------------------------------------------------------------
-
-* allow selection by frequency index of hitting identity codes just like ISEL 
-* ISEL needs to become IBND or smth, and IID can select identities
-
+* for comparison of two sets of cxs see x4/xxs.sh 
 
 TODO : identity info improvements
 ------------------------------------
 
-* retaining the sign of the boundary would be helpful also b=0 is swamped
-
+* retaining the sign of the boundary would be helpful also b=0 is swamped when using FramePhotons
 
 FramePhotons vs Photons
 ---------------------------
@@ -43,8 +32,6 @@ the maximumm number of photons to handle.
 
 pyvista interaction
 ----------------------
-
-The plot tends to start in a very zoomed in position. 
 
 * to zoom out/in : slide two fingers up/down on trackpad. 
 * to pan : hold down shift and one finger tap-lock, then move finger around  
@@ -61,13 +48,13 @@ plotting a selection of boundaries only, picked by descending frequency index
 
     cx ; ipython -i tests/CSGOptiXSimulateTest.py   # all boundaries
 
-    ISEL=0,1         ipython -i tests/CSGOptiXSimulateTest.py    # just the 2 most frequent boundaries
-    ISEL=0,1,2,3,4   ipython -i tests/CSGOptiXSimulateTest.py 
+    ISEL=0,1         ./cxs.sh    # just the 2 most frequent boundaries
+    ISEL=0,1,2,3,4   ./cxs.sh 
 
-    ISEL=Hama        ipython -i tests/CSGOptiXSimulateTest.py    # select boundaries via strings in the bndnames
-    ISEL=NNVT        ipython -i tests/CSGOptiXSimulateTest.py 
-    ISEL=Pyrex       ipython -i tests/CSGOptiXSimulateTest.py 
-    ISEL=Pyrex,Water ipython -i tests/CSGOptiXSimulateTest.py 
+    ISEL=Hama        ./cxs.sh    # select boundaries via strings in the bndnames
+    ISEL=NNVT        ./cxs.sh 
+    ISEL=Pyrex       ./cxs.sh 
+    ISEL=Pyrex,Water ./cxs.sh 
 
 
 AVOIDING INCORRECT IDENTITY INFO ?
@@ -160,11 +147,6 @@ def make_colors():
 COLORS = make_colors()
 
 
-def parse_isel():
-    isel = list(map(int, list(filter(None,os.environ.get("ISEL", "").split(","))) ))
-    return isel 
-
-
 def copyref( l, g, s, kps ):
     """
     Copy selected references between scopes::
@@ -211,10 +193,41 @@ def shorten_bname(bname):
 
 
 class Photons(object):
-    def __init__(self, p, cf=None):
+    """
+    feat contriols how to select positions, eg  via boundary or identity 
+    allow plotting of subsets with different colors
+    """
+    @classmethod
+    def SubMock(cls, i, num):
+        p = np.zeros([num, 4, 4], dtype=np.float32)  
+        offset = i*100
+        for j in range(10):
+            for k in range(10): 
+                idx = j*10+k
+                if idx < num:
+                    p[idx,0,0] = float(offset+j*10)
+                    p[idx,0,1] = 0
+                    p[idx,0,2] = float(offset+k*10)
+                    p.view(np.int32)[idx,3,3] = i << 16
+                pass
+            pass
+        pass
+        return p
 
-        self.cf = cf
+    @classmethod
+    def Mock(cls):
+        """
+        Random number of items between 50 and 100 for each of 10 categories 
+        """
+        aa = []
+        for i in range(10):
+            aa.append(cls.SubMock(i, np.random.randint(0,100)))
+        pass
+        return np.concatenate(tuple(aa))
 
+    def __init__(self, p, cf=None, feat="pid"):
+
+        assert feat in ["pid", "bnd", "mok"]
         if p.ndim == 3:
             bnd = p[:,2,3].view(np.int32)
             ids = p[:,3,3].view(np.int32) 
@@ -222,68 +235,41 @@ class Photons(object):
             bnd = p.view(np.int32)[:,:,2,3]
             ids = p.view(np.int32)[:,:,3,3] 
         pass
+        pid = ids >> 16
+        ins = ids & 0xffff   # ridx?    
 
-        self.boundaries(bnd)
-        self.identities(ids)
-
-        self.p = p 
-        self.bnd = bnd
-
-        
-        if cf is not None:
-            ubnd = np.unique(bnd)
-            bnd_namedict = [cf.bndname[b] for b in ubnd]
-        else:
-            bnd_namedict = {}
-        pass
+        bnd_namedict = {} if cf is None else cf.bndnamedict 
         bndfeat = Feature("bnd", bnd, bnd_namedict)
 
-        pid = ids >> 16
-        pid_namedict = {}
+        pid_namedict = {} if cf is None else cf.meshnamedict 
         pidfeat = Feature("pid", pid, pid_namedict)
 
+        mok_namedict = {} if cf is None else cf.moknamedict 
+        mokfeat = Feature("mok", pid, mok_namedict)
+
+        if feat=="pid":
+            feat = pidfeat
+        elif feat == "bnd":
+            feat = bndfeat
+        elif feat == "mok":
+            feat = mokfeat
+        else:
+            feat = None
+        pass
+
+        self.cf = cf
+        self.p = p 
+        self.bnd = bnd
+        self.ids = ids
         self.bndfeat = bndfeat
         self.pidfeat = pidfeat
-        self.ids = ids
+        self.mokfeat = mokfeat
+        self.feat = feat
 
     def __repr__(self):
         return "\n".join([
                "p %s" % str(self.p.shape), 
-               "ubnd %s" % str(self.ubnd),
-               "ubnd_counts %s" % str(self.ubnd_counts),
-               "uids %s" % str(self.uids),
-               "uids_counts %s" % str(self.uids_counts),
                ])
-
-    def boundaries(self, bnd):
-        cf = self.cf
-        ubnd, ubnd_counts = np.unique(bnd, return_counts=True) 
-
-        if cf is None:
-           ubnd_names = [str(b) for b in ubnd]
-        else: 
-           ubnd_names = [cf.bndname[b] for b in ubnd]
-        pass
-
-        ubnd_descending = np.argsort(ubnd_counts)[::-1]
-        ubnd_onames = [ubnd_names[j] for j in ubnd_descending]
-
-        ISEL = os.environ.get("ISEL","")  
-        isel = CSGFoundry.parse_ISEL(ISEL, ubnd_onames) 
-        sisel = ",".join(map(str, isel))
-
-        print( "ISEL: [%s] isel: [%s] sisel [%s] " % (ISEL, str(isel), sisel))
-        copyref( locals(), globals(), self, "bnd ubnd isel sisel" ) 
-
-    def identities(self, ids):
-        uids, uids_counts = np.unique(ids, return_counts=True)    
-        iids = ids[ids>0]     
-        i_pr = ids >> 16    
-        i_in = ids & 0xffff   
-        i_global = i_in == 0 
-        i_instance = i_in > 0 
-        uipr, uipr_counts = np.unique(i_pr, return_counts=True)
-        copyref( locals(), globals(), self, "i_ uids iids uipr" ) 
 
 
 class Feature(object):
@@ -315,22 +301,92 @@ class Feature(object):
         self.vname = vname
 
         self.uval = uval
+        self.unum = len(uval) 
         self.ucount = ucount
         self.idxdesc = idxdesc
         self.onames = onames
         self.ocount = ocount
         self.ouval = ouval
 
-    def __call__(self, idesc, idx):
-        fname = self.onames[idx]
-        uval = self.ouval[idx] 
-        count = self.ocount[idx] 
-        label = "%s:%s" % (idesc, fname)
+        ISEL = os.environ.get("ISEL","")  
+        isel = self.parse_ISEL(ISEL, onames) 
+        sisel = ",".join(map(str, isel))
+
+        print( "ISEL: [%s] isel: [%s] sisel [%s] " % (ISEL, str(isel), sisel))
+
+        self.isel = isel 
+        self.sisel = sisel 
+
+    @classmethod
+    def parse_ISEL(cls, ISEL, onames):
+        """ 
+        :param ISEL: comma delimited list of strings or integers 
+        :param onames: names ordered in descending frequency order
+        :return isels: list of frequency order indices 
+
+        Integers in the ISEL are interpreted as frequency order indices. 
+
+        Strings are interpreted as fragments to look for in the ordered names,
+        (which could be boundary names or prim names for example) 
+        eg use Hama or NNVT to yield the list of frequency order indices 
+        with corresponding names containing those strings. 
+        """
+        ISELS = list(filter(None,ISEL.split(",")))
+        isels = []
+        for i in ISELS:
+            if i.isnumeric(): 
+                isels.append(int(i))
+            else:
+                for idesc, nam in enumerate(onames):
+                    if i in nam: 
+                        isels.append(idesc)
+                    pass
+                pass
+            pass
+        pass    
+        return isels 
+
+    def __call__(self, idesc):
+        """
+        :param idesc: zero based index less than unum
+
+        for frame photons, empty pixels give zero : so not including 0 in ISEL allows to skip
+        if uval==0 and not 0 in isel: continue 
+
+        """
+        assert idesc > -1 and idesc < self.unum
+        fname = self.onames[idesc]
+        uval = self.ouval[idesc] 
+        count = self.ocount[idesc] 
+        isel = self.isel  
+
+        if fname[0] == "_":
+            fname = fname[1:]
+        pass
+        #label = "%s:%s" % (idesc, fname)
+        label = "%s" % (fname)
+        label = label.replace("solid","s")
         color = COLORS[idesc % len(COLORS)]  # gives the more frequent boundary the easy_color names 
         msg = " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, uval, count, color, fname, label )
         selector = self.val == uval
-        return uval, selector, label, color, msg 
 
+        if len(isel) == 0:
+            skip = False
+        else:
+            skip = idesc not in isel
+        pass 
+        return uval, selector, label, color, skip, msg 
+
+    def __str__(self):
+        lines = []
+        lines.append(self.desc)  
+        for idesc in range(self.unum):
+            uval, selector, label, color, skip, msg = self(idesc)
+            lines.append(msg)
+        pass
+        return "\n".join(lines)
+
+    desc = property(lambda self:"ph.%sfeat : %s " % (self.name, str(self.val.shape)))
 
     def __repr__(self):
         return "\n".join([
@@ -340,7 +396,7 @@ class Feature(object):
             "idxdesc %s " % str(self.idxdesc),
             "onames %s " % " ".join(self.onames),
             "ocount %s " % str(self.ocount),
-            "ouval %s " % " ".join(self.ouval),
+            "ouval %s " % " ".join(map(str,self.ouval)),
             ])
 
 
@@ -352,10 +408,7 @@ class Plt(object):
         self.cf = None
         self.mtr = cxs.metatran
 
-        # feat contriols how to select positions, eg  via boundary or identity 
-        # allow plotting of subsets with different colors
-        #self.feat = ph.bndfeat
-        self.feat = ph.pidfeat
+        self.feat = ph.feat
 
         self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
         self.botline = os.environ.get("BOTLINE", "cxs") 
@@ -446,11 +499,19 @@ class Plt(object):
         upos = lpos if local else gpos
         ugsc = gs_centers_local if local else gs_centers  
 
-        
+        gslim = False if self.feat.name == "mok" else True
         lim = {}
-        lim[X] = np.array([ugsc[:,X].min(), ugsc[:,X].max()])
-        lim[Y] = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
-        lim[Z] = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
+        if gslim:
+            lim[X] = np.array([ugsc[:,X].min(), ugsc[:,X].max()])
+            lim[Y] = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
+            lim[Z] = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
+        else:
+            lim[X] = np.array([upos[:,X].min(), upos[:,X].max()])
+            lim[Y] = np.array([upos[:,Y].min(), upos[:,Y].max()])  
+            lim[Z] = np.array([upos[:,Z].min(), upos[:,Z].max()])  
+        pass
+
+
         # with global frame gs_centers this will lead to a non-straight-on view as its tilted
 
         nx = self.nx
@@ -479,12 +540,11 @@ class Plt(object):
 
 
     def outpath_(self, stem="positions", ptype="pvplt"):
-        return os.path.join(self.outdir,"%s_%s_%s.png" % (stem, ptype, self.ph.sisel)) 
+        return os.path.join(self.outdir,"%s_%s_%s_%s.png" % (stem, ptype, self.feat.name, self.feat.sisel)) 
 
     def positions_mpplt(self):
         """
         """
-        isel = self.ph.isel
         upos = self.upos
         ugsc = self.ugsc
 
@@ -508,9 +568,9 @@ class Plt(object):
         axes = self.axes
         H,V = axes      ## traditionally H,V = X,Z  but are now generalizing 
 
-        for idesc,idx in enumerate(feat.idxdesc):
-            uval, selector, label, color, msg = feat(idesc, idx)
-            if uval==0 and not 0 in isel: continue # for frame photons, empty pixels give zero : so not including 0 in ISEL allows to skip
+        for idesc in range(feat.unum):
+            uval, selector, label, color, skip, msg = feat(idesc)
+            if skip: continue
             pos = upos[selector] 
             ax.scatter( pos[:,H], pos[:,V], label=label, color=color, s=sz )
         pass
@@ -530,21 +590,26 @@ class Plt(object):
 
         if H == X and V == Z:   
             for z in self.zz:   # ZZ horizontals 
-                ax.plot( lim[H], [z,z], label="z:%8.4f" % z )
+                label = "z:%8.4f" % z
+                ax.plot( lim[H], [z,z], label=None )
             pass
             for x in self.xx:    # XX verticals 
-                ax.plot( [x, x], lim[V], label="x:%8.4f" % x ) 
+                label = "x:%8.4f" % x
+                ax.plot( [x, x], lim[V], label=None ) 
             pass
         elif H == Z and V == X:  ## ZZ verticals 
             for z in self.zz:   
-                ax.plot( [z, z], lim[V], label="z:%8.4f" % z )
+                label = "z:%8.4f" % z
+                ax.plot( [z, z], lim[V], label=None )
             pass
             for x in self.xx:    # XX horizontals
-                ax.plot( lim[H], [x, x], label="x:%8.4f" % x ) 
+                label = "x:%8.4f" % x
+                ax.plot( lim[H], [x, x], label=None ) 
             pass
         pass
 
-        ax.scatter( ugsc[igs, H], ugsc[igs,V], label="gs_center XZ", s=sz )
+        label = "gs_center XZ"
+        ax.scatter( ugsc[igs, H], ugsc[igs,V], label=None, s=sz )
 
         ax.set_xlim( lim[H] )
         ax.set_ylim( lim[V] )  # zlim -> ylim 
@@ -585,10 +650,8 @@ class Plt(object):
         In parallel mode, decrease the parallel scale by the specified factor.
         A value greater than 1 is a zoom-in, a value less than 1 is a zoom-out.       
 
-
         """
         size = self.size
-        isel = self.ph.isel
 
         lim = self.lim
         xlim = lim[X]
@@ -614,7 +677,7 @@ class Plt(object):
 
         if H == X and V == Z:
             up = (0,0,1)                               
-            pl.view_xz() 
+            pl.view_xz()   ## TODO: see if view_xz is doing anything when subsequently set_focus/viewup/position 
         elif H == Z and V == X:
             up = (-1,0,0)                               
             pl.view_xz() 
@@ -628,9 +691,9 @@ class Plt(object):
         pl.add_text(self.thirdline, position="lower_right")
         print("positions_pvplt feat.name %s " % feat.name )
 
-        for idesc,idx in enumerate(feat.idxdesc):
-            uval, selector, label, color, msg = feat(idesc, idx)
-            if uval==0 and not 0 in isel: continue # for frame photons, empty pixels give zero : so not including 0 in ISEL allows to skip
+        for idesc in range(feat.unum):
+            uval, selector, label, color, skip, msg = feat(idesc)
+            if skip: continue
             pos = upos[selector] 
             print(msg)
             pl.add_points( pos[:,:3], color=color )
@@ -638,16 +701,16 @@ class Plt(object):
 
         grid = True 
         if grid:
-            pl.add_points( ugsc[:,:3], color="white" )           # genstep grid
+            pl.add_points( ugsc[:,:3], color="white" )   # genstep grid
         pass   
 
-        for z in self.zz:  # ZZ horizontals
+        for z in self.zz:  # ZZ horizontals (when using traditional XZ axes)
             xhi = np.array( [xlim[1], 0, z] )  # RHS
             xlo = np.array( [xlim[0], 0, z] )  # LHS
             line = pv.Line(xlo, xhi)
             pl.add_mesh(line, color="w")
         pass
-        for x in self.xx:    # XX verticals 
+        for x in self.xx:    # XX verticals (when using traditional XZ axes)
             zhi = np.array( [x, 0, zlim[1]] )  # TOP
             zlo = np.array( [x, 0, zlim[0]] )  # BOT
             line = pv.Line(zlo, zhi)
@@ -665,26 +728,30 @@ class Plt(object):
         return cp
 
 
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    #cf = CSGFoundry()
-    cf = None
+    FOLD = os.path.expandvars("/tmp/$USER/opticks/GeoChain/$GEOM" )
+    cf = CSGFoundry(os.path.join(FOLD, "CSGFoundry"))
+    cxs = Fold.Load( FOLD, "CSGOptiXSimulateTest", globals=True ) 
+
+    feat = "pid"  #  mok/pid/bnd   
+
+    if feat == "mok":
+        mock_photons = Photons.Mock()
+        ph = Photons(mock_photons, cf, feat=feat)
+        print(ph.mokfeat)
+    else:
+        ph = Photons(cxs.photons, cf, feat=feat)
+        print(ph.bndfeat)
+        print(ph.pidfeat)
+    pass
+   
+if 1:
     pv_simple = False
-
-    GEOM = os.environ.get("GEOM", "1")
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest" )
-
-    cxs = Fold.Load( FOLD, GEOM, globals=True ) 
-
-    g = cxs.genstep
-    p = cxs.photons
-    f = cxs.fphoton
-    mtr = cxs.metatran
-
-
-    ph = Photons(cxs.photons)
-
     plt = Plt(cxs, ph)
     plt.positions(local=True)
 
@@ -698,5 +765,4 @@ if __name__ == '__main__':
             plt.positions_pvplt()
         pass
     pass
-
 
