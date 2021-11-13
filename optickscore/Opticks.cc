@@ -1039,18 +1039,24 @@ void Opticks::initResource()
 }
 
 
-int Opticks::getArgc()
+int Opticks::getArgc() const 
 {
     return m_argc ; 
 }
-char** Opticks::getArgv()
+char** Opticks::getArgv() const 
 {
     return m_argv ; 
 }
-char* Opticks::getArgv0()
+char* Opticks::getArgv0() const 
 {
     return m_argc > 0 && m_argv ? m_argv[0] : NULL ; 
 }
+void Opticks::dumpArgv(const char* msg) const 
+{
+    LOG(info) << msg ;  
+    for(int i=0 ; i < m_argc ; i++ ) std::cout << m_argv[i] << std::endl; 
+}
+
 
 
 /**

@@ -699,9 +699,10 @@ class OKCORE_API Opticks {
        bool hasArg(const char* arg) const ;
        bool isExit();
    public:
-       int    getArgc();
-       char** getArgv();
-       char*  getArgv0();
+       int    getArgc() const ;
+       char** getArgv() const ;
+       char*  getArgv0() const ;
+       void   dumpArgv(const char* msg="Opticks::dumpArgv") const ; 
    public:
        bool isRemoteSession() const ;
        // attempt to follow request,  but constrain to compute when remote session

@@ -54,6 +54,7 @@ struct CSGFoundry ;
 struct GEOCHAIN_API GeoChain
 {
     static const plog::Severity LEVEL ; 
+    static const char* BASE ; 
 
     Opticks* ok ; 
     GGeo* ggeo ; 
@@ -67,7 +68,7 @@ struct GEOCHAIN_API GeoChain
     void convertSolid(const G4VSolid*          so , const std::string& meta); 
     void convertPV(   const G4VPhysicalVolume* pv , const std::string& meta); 
 
-    void save(const char* name) const ; 
+    void save(const char* base, const char* name) const ; 
 }; 
 
 

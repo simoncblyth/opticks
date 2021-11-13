@@ -2,7 +2,7 @@
 GeoChainSolidTest.cc : testing the full chain of geometry conversions for single solids
 ==========================================================================================
 
-The solid to create is controlled by the name string obtained from envvar *GEOCHAINTEST* 
+The solid to create is controlled by the name string obtained from envvar *GEOM* 
 
 1. creates G4VSolid directly here or using functionality from other libs such as j/PMTSim(ZSolid)
 2. invokes GeoChain::convert
@@ -11,7 +11,7 @@ The solid to create is controlled by the name string obtained from envvar *GEOCH
    * (this) using placeholder GVolume the GMesh is added to a test GGeo
    * (cg) CSG_GGeo_Convert GGeo -> CSGFoundry  
 
-3. save the CSGFoundry geometry under directory named by the *GEOCHAINTEST* name
+3. saves geometry to $TMP/GeoChain/$GEOM/CSGFoundry/ 
 
 Subsequently can render this geometry, eg with CSGOptiX/cxs.sh using 
 just the path to the CSGFoundry directory. 
@@ -37,8 +37,7 @@ just the path to the CSGFoundry directory.
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    const char* name_default = "AdditionAcrylicConstruction"  ; 
-    const char* name = SSys::getenvvar("GEOM", name_default ); 
+    const char* name = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ); 
 
     std::stringstream ss ; 
     ss << "creator:GeoChainSolidTest" << std::endl ; 
@@ -66,8 +65,10 @@ int main(int argc, char** argv)
     }
     assert( solid ); 
 
+
+    const char* base = GeoChain::BASE ; 
+    X4Intersect::Scan(solid, name, base, meta ); 
     // X4Intersect .npy land as siblings to the CSGFoundry dir 
-    X4Intersect::Scan(solid, name, "$TMP/GeoChain", meta ); 
 
     const char* argforced = "--allownokey --gparts_transform_offset" ; 
     Opticks ok(argc, argv, argforced); 
@@ -75,7 +76,8 @@ int main(int argc, char** argv)
 
     GeoChain chain(&ok); 
     chain.convertSolid(solid, meta);  
-    chain.save(name); 
+
+    chain.save(base, name); 
 
     return 0 ; 
 }

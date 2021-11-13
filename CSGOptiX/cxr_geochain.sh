@@ -30,18 +30,19 @@ msg="=== $BASH_SOURCE :"
 #geom=UnionOfHemiEllipsoids        # looks fine, like full ellipsoid
 #geom=UnionOfHemiEllipsoids-50    # lower hemi-ellipsoid is smaller than upper : looks like the translation transform stomps on the scale transform
 
-#geom=body_solid
+geom=body_solid
 #geom=inner_solid
 #geom=inner1_solid
 #geom=inner2_solid
 
-geom=body_phys
+#geom=body_phys
 #geom=inner1_phys
 #geom=inner2_phys
 
 
 export GEOM=${GEOM:-$geom}
 cfname=GeoChain/$GEOM            # picks the CSGFoundry geometry to load
+#cfname=GeoChain_Darwin/$GEOM            # picks the CSGFoundry geometry to load
 
 if [ "$GEOM" == "default" ]; then  
    moi=-1

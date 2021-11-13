@@ -28,7 +28,7 @@ void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* base
     const std::string& solidname = solid->GetName() ; 
 
     int createdirs = 2 ; // 2:dirpath 
-    const char* outdir = SPath::Resolve(basedir, name, createdirs);
+    const char* outdir = SPath::Resolve(basedir, name, "X4Intersect", createdirs);
 
     LOG(info) 
         << "x4i.desc " << x4i->desc() 

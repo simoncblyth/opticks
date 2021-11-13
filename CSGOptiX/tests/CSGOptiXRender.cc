@@ -40,11 +40,7 @@ CFBASE
 
 int main(int argc, char** argv)
 {
-    for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
-
     OPTICKS_LOG(argc, argv); 
-
-
 
     bool overwrite = false ;  // allows commandline and envvars to override this default setting, see Opticks::getOutDir
     SSys::setenvvar("OPTICKS_OUTDIR", "$TMP/CSGOptiX", overwrite );

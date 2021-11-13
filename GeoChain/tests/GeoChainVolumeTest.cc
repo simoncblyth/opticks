@@ -44,7 +44,8 @@ int main(int argc, char** argv)
 
     GeoChain chain(&ok); 
     chain.convertPV(pv, meta);  
-    chain.save(name); 
+
+    chain.save(GeoChain::BASE, name); 
 
     return 0 ; 
 }

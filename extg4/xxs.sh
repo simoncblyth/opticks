@@ -13,6 +13,7 @@ msg="=== $BASH_SOURCE :"
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
 export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
+#export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED    ## xxs restricted to single solids so this not so useful
 
 #geom=orb
 #geom=UnionOfHemiEllipsoids

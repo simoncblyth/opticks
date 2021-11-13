@@ -19,6 +19,14 @@
 
 const plog::Severity GeoChain::LEVEL = PLOG::EnvLevel("GeoChain", "DEBUG") ; 
 
+
+#ifdef __APPLE__
+const char* GeoChain::BASE = "$TMP/GeoChain_Darwin" ; 
+#else
+const char* GeoChain::BASE = "$TMP/GeoChain" ; 
+#endif
+
+
 GeoChain::GeoChain(Opticks* ok_)
     :
     ok(ok_), 
@@ -97,10 +105,10 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top, const std::string& meta_
     std::cout << "] GeoChain::convert " << std::endl ; 
 }
 
-void GeoChain::save(const char* name) const 
+void GeoChain::save(const char* base, const char* name) const 
 {
     int create_dirs = 2 ; // 2: dirpath
-    const char* fold = SPath::Resolve("$TMP/GeoChain", name, create_dirs );   
+    const char* fold = SPath::Resolve(base, name, create_dirs );   
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );
     const char* rel = "CSGFoundry" ; 
 

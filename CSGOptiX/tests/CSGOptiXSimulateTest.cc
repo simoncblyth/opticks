@@ -42,30 +42,42 @@ is to be able to see the exact same geometry that the simulation is using.
 
 int main(int argc, char** argv)
 {
-    for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
-
+    //for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
     OPTICKS_LOG(argc, argv); 
 
-    const char* cxs = SSys::getenvvar("GEOM", "0" ); 
+    const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );  // $CFBASE/CSGFoundry must exist 
+    // eg $TMP/GeoChain/$geom
+    
+#ifdef OLD_LAYOUT
+    const char* geom = SSys::getenvvar("GEOM", "0" ); 
     int create_dirs = 0 ;  
-    const char* default_outdir = SPath::Resolve("$TMP/CSGOptiX/CSGOptiXSimulateTest",  cxs, create_dirs );  
+    const char* default_outdir = SPath::Resolve("$TMP/CSGOptiX/CSGOptiXSimulateTest",  geom, create_dirs );  
+#else
+    // new layout : save outputs within $CFBASE/CSGOptiXSimulateTest 
+    // to keep intersects more closely to geometry for cross node access to identity info 
+    // by forcing that geometry gets synced together with intersects 
+    int create_dirs = 2 ;  
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", create_dirs );  
+#endif
+
     SSys::setenvvar("OPTICKS_OUTDIR", default_outdir , false );  // change default, but allow override by evar
 
     const char* argforced = "--allownokey" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
+    ok.dumpArgv("CSGOptiXSimulateTest"); 
 
     const char* outdir = ok.getOutDir(); 
+    LOG(info) << " outdir " << outdir ; 
+
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
-    const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );  // CFBASE dir must contain CSGFoundry subdir 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
     float gridscale = SSys::getenvfloat("GRIDSCALE", 1.0 ); 
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
 
-    LOG(info) << " cxs " << cxs << " outdir " << outdir << " gridscale " << gridscale ; 
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
@@ -157,8 +169,8 @@ int main(int argc, char** argv)
     std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
     cx.snap(outpath, bottom_line.c_str(), topline  );   
     cx.writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
-    cx.savePeta(outdir, "peta.npy");   
-    cx.saveMetaTran(outdir, "metatran.npy"); 
+    cx.savePeta(        outdir, "peta.npy");   
+    cx.saveMetaTran(    outdir, "metatran.npy"); 
 
 
     cudaDeviceSynchronize(); 

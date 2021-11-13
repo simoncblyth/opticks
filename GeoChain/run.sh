@@ -30,7 +30,10 @@ Hmm : to consolidate to single executable would need to do the below switch in P
 EOU
 }
 
-geom=body_phys
+#geom=body_phys
+geom=body_solid
+
+
 export GEOM=${GEOM:-$geom}
 # pick the Solid or Volume binary depending on GEOM
 
@@ -81,6 +84,7 @@ fi
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
 export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    # when defined : dont intersect chop the PMT 
+export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED   # switch on dynode without new optical model
 
 # checking that --skipsolidname is working 
 export OpticksDbg=INFO  

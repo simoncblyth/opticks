@@ -57,6 +57,17 @@ void CSG_GGeo_Convert::init()
 {
     ggeo->getMeshNames(foundry->meshname); 
     LOG(LEVEL) << " foundry.meshname.size " << foundry->meshname.size() ; 
+
+    bool gparts_transform_offset = ok->isGPartsTransformOffset() ; 
+    if(!gparts_transform_offset)
+    {
+        LOG(fatal) 
+            << " GParts geometry requires use of --gparts_transform_offset "
+            << " for interoperation with the CSGFoundry single array of transforms approach "
+            << " failing to use this results in incorrect transforms "
+            ;
+    }
+    assert(gparts_transform_offset); 
 }
 
 void CSG_GGeo_Convert::convert()
