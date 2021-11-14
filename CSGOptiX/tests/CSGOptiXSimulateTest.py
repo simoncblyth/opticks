@@ -241,7 +241,7 @@ class Photons(object):
         bnd_namedict = {} if cf is None else cf.bndnamedict 
         bndfeat = Feature("bnd", bnd, bnd_namedict)
 
-        pid_namedict = {} if cf is None else cf.meshnamedict 
+        pid_namedict = {} if cf is None else cf.primIdx_meshname_dict()
         pidfeat = Feature("pid", pid, pid_namedict)
 
         mok_namedict = {} if cf is None else cf.moknamedict 

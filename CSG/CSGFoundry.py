@@ -17,6 +17,27 @@ class CSGFoundry(object):
         self.mokname = "zero one two three four five six seven eight nine".split()
         self.moknamedict = self.namelist_to_namedict(self.mokname)
 
+    def meshIdx(self, primIdx):
+        """
+        """
+        assert primIdx < len(self.prim)
+        midx = self.prim[primIdx].view(np.uint32)[1,1]
+        return midx 
+
+    def primIdx_meshname_dict(self):
+        """
+        See notes/issues/cxs_2d_plotting_labels_suggest_meshname_order_inconsistency.rst
+        """
+        d = {}
+        for primIdx in range(len(self.prim)):
+            midx = self.meshIdx (primIdx) 
+            assert midx < len(self.meshname)
+            mnam = self.meshname[midx]
+            d[primIdx] = mnam
+            print("primIdx %5d midx %5d meshname %s " % (primIdx, midx, mnam))
+        pass
+        return d
+
     def load(self, fold):
         log.info("load %s " % fold)
 
@@ -68,7 +89,15 @@ class CSGFoundry(object):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    cf = CSGFoundry()
+
+    geom = os.environ.get("GEOM", "body_phys")
+    #rel = "GeoChain" 
+    rel = "GeoChain_Darwin" 
+    base = os.path.expandvars("/tmp/$USER/opticks/%s/%s" %(rel, geom) ) 
+    cf = CSGFoundry(os.path.join(base, "CSGFoundry"))
     cf.dump_node_boundary()
+
+    d = cf.primIdx_meshname_dict()
+    print(d)    
 
 

@@ -22,6 +22,8 @@ extern "C" { __constant__ Params params ;  }
 trace : pure function, with no use of params, everything via args
 -------------------------------------------------------------------
 
+See below __closesthit__ch to see where the payload p0-p7 comes from.
+
 **/
 
 static __forceinline__ __device__ void trace(

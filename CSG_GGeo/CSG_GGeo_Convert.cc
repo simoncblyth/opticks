@@ -333,7 +333,8 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     bool positive = CSG::IsPositiveMask( mask ); 
 
     LOG(info)
-        << " primIdx " << primIdx
+        << " primIdx " << std::setw(4) << primIdx
+        << " meshIdx " << std::setw(4) << meshIdx
         << " comp.getTypeMask " << mask 
         << " CSG::TypeMask " << CSG::TypeMask(mask)
         << " CSG::IsPositiveMask " << positive
