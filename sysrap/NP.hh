@@ -176,8 +176,7 @@ struct NP
     int load(const char* dir, const char* name);   
     int load(const char* path);   
     int load_meta( const char* path ); 
-
-
+    void save_meta(const char* path) const ;  
 
     static std::string form_name(const char* stem, const char* ext); 
     static std::string form_path(const char* dir, const char* name);   
@@ -186,6 +185,7 @@ struct NP
     void save_header(const char* path);   
     void old_save(const char* path) ;  // formerly the *save* methods could not be const because of update_headers
     void save(const char* path) const ;  // *save* methods now can be const due to dynamic creation of header
+
     void save(const char* dir, const char* name) const ;   
     void save(const char* dir, const char* reldir, const char* name) const ;   
 
@@ -2645,7 +2645,7 @@ inline int NP::load(const char* path)
 
 inline int NP::load_meta( const char* path )
 {
-    std::string metapath = U::ChangeExt(path, ".npy", ".txt"); 
+    std::string metapath = U::ChangeExt(path, ".npy", "_meta.txt"); 
     std::ifstream fp(metapath.c_str(), std::ios::in);
     if(fp.fail()) return 1 ; 
 
@@ -2659,6 +2659,14 @@ inline int NP::load_meta( const char* path )
     return 0 ; 
 }
 
+inline void NP::save_meta(const char* path) const 
+{
+    if(meta.empty()) return ; 
+    std::string metapath = U::ChangeExt(path, ".npy", "_meta.txt"); 
+    std::cout << "NP::save_meta metapath [" << metapath  << "]" << std::endl ; 
+    std::ofstream fpm(metapath.c_str(), std::ios::out);
+    fpm << meta ;  
+}
 
 
 
@@ -2687,13 +2695,7 @@ inline void NP::save(const char* path) const
     fpa << hdr ; 
     fpa.write( bytes(), arr_bytes() );
 
-    if( not meta.empty() )
-    {
-        std::string metapath = U::ChangeExt(path, ".npy", ".txt"); 
-        std::cout << "NP::save metapath [" << metapath  << "]" << std::endl ; 
-        std::ofstream fpm(metapath.c_str(), std::ios::out);
-        fpm << meta ;  
-    }  
+    save_meta(path); 
 }
 
 inline void NP::save(const char* dir, const char* reldir, const char* name) const 

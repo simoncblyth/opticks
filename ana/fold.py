@@ -22,15 +22,17 @@ class Fold(object):
         print("Fold : loading from base %s setting globals %s globals_prefix %s " % (base, self.globals, self.globals_prefix)) 
 
         names = os.listdir(base)
+        stems = []
         for name in filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),names):
             path = os.path.join(base, name)
             is_npy = name.endswith(".npy")
             is_txt = name.endswith(".txt")
             stem = name[:-4]
-            a = np.load(path) if is_npy else list(map(str.strip,open(path).readlines())) 
+            stems.append(stem)
+            a = np.load(path) if is_npy else np.loadtxt(path, dtype=np.object)
+            #list(map(str.strip,open(path).readlines())) 
             setattr(self, stem, a ) 
             ashape = str(a.shape) if is_npy else len(a)    
-
             if self.globals:
                 gstem = self.globals_prefix + stem
                 globals()[gstem] = a 
@@ -39,6 +41,17 @@ class Fold(object):
                 print(" %10s : %15s : %s " % (stem, ashape, path ))  
             pass
         pass
+        self.stems = stems
+
+    def desc(self, stem):
+        a = getattr(self, stem)
+        ext = ".txt" if a.dtype == 'O' else ".npy"
+        path = os.path.join(self.base, "%s%s" % (stem,ext))
+        return " %15s : %15s : %s " % ( stem, str(a.shape), path )
+
+    def __repr__(self):
+        return "\n".join(self.desc(stem) for stem in self.stems)    
+  
 
 if __name__  == '__main__':
     pass

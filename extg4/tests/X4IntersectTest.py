@@ -52,14 +52,48 @@ efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").s
 
 if __name__ == '__main__':
 
-    GEOM = os.environ.get("GEOM", "pmt_solid")
     CXS_RELDIR = os.environ.get("CXS_RELDIR", "extg4/X4IntersectTest" ) 
     CXS_OTHER_RELDIR = os.environ.get("CXS_OTHER_RELDIR", "CSGOptiX/CSGOptiXSimulateTest" ) 
 
-    test = Fold.Load("/tmp/$USER/opticks",CXS_RELDIR,GEOM, globals=True, globals_prefix="a_" )
-    other = Fold.Load("/tmp/$USER/opticks",CXS_OTHER_RELDIR,GEOM, globals=True, globals_prefix="b_" )
+    GEOM = os.environ.get("GEOM", "pmt_solid")
+    geoms = GEOM.split(",")
 
-    outdir = os.path.join(test.base, "figs")
+    colors = "red green blue cyan magenta yellow".split()
+
+    tests = []
+    others = []
+    for i,geom in enumerate(geoms):
+        test = Fold.Load("/tmp/$USER/opticks",CXS_RELDIR,geom, "X4Intersect", globals=True, globals_prefix=geom )
+        tests.append(test)
+        test.color = colors[i]
+        #other = Fold.Load("/tmp/$USER/opticks",CXS_OTHER_RELDIR,geom, globals=True, globals_prefix="other_" + geom )
+        #others.append(other)
+    pass
+
+    test = tests[0]
+    peta = test.peta 
+    ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
+    iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
+
+    ce = tuple(peta[0,2])
+    sce = ("%7.2f" * 4 ) % ce
+
+    assert photons_per_genstep > 0
+    assert zero == 0
+    nx = (ix1 - ix0)//2
+    ny = (iy1 - iy0)//2
+    nz = (iz1 - iz0)//2
+
+    nx_over_nz = float(nx)/float(nz)
+    if nx_over_nz > 1.:
+        axes = X,Z
+    else:
+        axes = Z,X
+    pass
+    print("axes %s " % str(axes))
+    H,V = axes      ## traditionally H,V = X,Z  but are now generalizing 
+
+    outdir = os.path.join(tests[0].base, "figs")
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
     pass
@@ -67,9 +101,11 @@ if __name__ == '__main__':
     figname = "isect"
     print("outdir %s " % outdir)
 
+
+if 1:
     default_topline = "xxs.sh X4IntersectTest.py"
-    default_botline = test.relbase    # base excluding first element
-    default_thirdline = other.relbase if not other is None else "thirdline"
+    default_botline = tests[0].relbase    # base excluding first element
+    default_thirdline = others[0].relbase if len(others) > 0 else "thirdline"
 
     topline = os.environ.get("TOPLINE", default_topline)
     botline = os.environ.get("BOTLINE", default_botline) 
@@ -77,16 +113,17 @@ if __name__ == '__main__':
 
     X,Y,Z = 0,1,2 
 
-    ipos = test.isect[:,0,:3]
-    gpos = test.gs[:,5,:3]    # last line of the transform is translation
-    other_ipos = other.photons[:,0,:3] if not other is None else None  
- 
-    xlim = np.array([gpos[:,X].min(), gpos[:,X].max()])
-    ylim = np.array([gpos[:,Y].min(), gpos[:,Y].max()])
-    zlim = np.array([gpos[:,Z].min(), gpos[:,Z].max()])
+    ipos = tests[0].isect[:,0,:3]
+    gpos = tests[0].gs[:,5,:3]    # last line of the transform is translation
+
+    lim = {}
+    lim[X] = np.array([gpos[:,X].min(), gpos[:,X].max()])
+    lim[Y] = np.array([gpos[:,Y].min(), gpos[:,Y].max()])
+    lim[Z] = np.array([gpos[:,Z].min(), gpos[:,Z].max()])
 
     xx = efloatlist_("XX")
     zz = efloatlist_("ZZ")
+    zzd = efloatlist_("ZZD")
 
     icol = "red"
     other_icol = "blue"
@@ -102,19 +139,50 @@ if __name__ == '__main__':
         fig.suptitle("\n".join([topline,botline,thirdline]))
 
         ax.set_aspect('equal')
-        ax.scatter( ipos[:,0], ipos[:,2], s=sz, color=icol ) 
-        ax.scatter( gpos[:,0], gpos[:,2], s=sz, color=gcol ) 
 
-        if not other is None:
-            ax.scatter( other_ipos[:,0]+other_offset[0], other_ipos[:,2]+other_offset[2], s=sz, color=other_icol ) 
+        for test in tests:
+            geom = test.base.split("/")[-2]
+            ipos = test.isect[:,0,:3]
+            gpos = test.gs[:,5,:3]    # last line of the transform is translation
+            ax.scatter( ipos[:,H], ipos[:,V], s=sz, color=test.color, label=geom ) 
+            ax.scatter( gpos[:,H], gpos[:,V], s=sz, color=gcol ) 
         pass
 
-        for z in zz:   # ZZ horizontals 
-            ax.plot( xlim, [z,z], label="z:%8.4f" % z )
+        for other in others:
+            other_ipos = other.photons[:,0,:3] 
+            ax.scatter( other_ipos[:,H]+other_offset[H], other_ipos[:,V]+other_offset[V], s=sz, color=other_icol ) 
         pass
-        for x in xx:    # XX verticals 
-            ax.plot( [x, x], zlim, label="x:%8.4f" % x )
+
+        zlabel = True 
+        xlabel = False
+
+        if H == X and V == Z:
+            for z in zz:   # ZZ horizontals 
+                label = "z:%8.4f" % z if zlabel else None
+                ax.plot( lim[H], [z,z], label=label )
+            pass
+            for z in zzd:   # ZZ horizontals 
+                ax.plot( lim[H], [z,z], label=label, linestyle="dashed" )
+            pass
+            for x in xx:    # XX verticals 
+                label = "x:%8.4f" % x if xlabel else None
+                ax.plot( [x, x], lim[V], label=label )
+            pass
+        elif H == Z and V == X:  ## ZZ verticals 
+            for z in zz:
+                label = "z:%8.4f" % z if zlabel else None
+                ax.plot( [z, z], lim[V], label=label )
+            pass
+            for z in zzd:
+                label = "z:%8.4f" % z if zlabel else None
+                ax.plot( [z, z], lim[V], label=label, linestyle="dashed" )
+            pass
+            for x in xx:    # XX horizontals
+                label = "x:%8.4f" % x if xlabel else None
+                ax.plot( lim[H], [x, x], label=label )
+            pass
         pass
+
 
         ax.legend(loc="upper right")
         fig.show()
@@ -128,7 +196,17 @@ if __name__ == '__main__':
 
     if pv:
         yoffset = -50.  ## with parallel projection are rather insensitive to eye position distance
-        up = (0,0,1)       
+
+
+        if H == X and V == Z:
+            up = (0,0,1)       
+        elif H == Z and V == X:
+            up = (-1,0,0)       
+        else:
+            assert 0
+        pass
+
+
         look = (0,0,0)
         eye = look + np.array([ 0, yoffset, 0 ])    
 
@@ -136,9 +214,16 @@ if __name__ == '__main__':
         pl.view_xz()
         pl.camera.ParallelProjectionOn()  
 
-        pl.add_points( ipos, color=icol )
-        pl.add_points( gpos, color=gcol )
-        if not other is None:
+        for test in tests:
+            geom = test.base.split("/")[-2]
+            ipos = test.isect[:,0,:3]
+            gpos = test.gs[:,5,:3]    # last line of the transform is translation
+            pl.add_points( ipos, color=test.color )
+            pl.add_points( gpos, color=gcol )
+        pass
+
+        for other in others:
+            other_ipos = other.photons[:,0,:3] 
             pl.add_points( other_ipos+other_offset, color=other_icol )
         pass
 
@@ -153,14 +238,14 @@ if __name__ == '__main__':
         pl.camera.Zoom(zoom)
 
         for z in zz:  # ZZ horizontals
-            xhi = np.array( [xlim[1], 0, z] )  # RHS
-            xlo = np.array( [xlim[0], 0, z] )  # LHS
+            xhi = np.array( [lim[X][1], 0, z] )  # RHS
+            xlo = np.array( [lim[X][0], 0, z] )  # LHS
             line = pv.Line(xlo, xhi)
             pl.add_mesh(line, color="w")
         pass
         for x in xx:    # XX verticals 
-            zhi = np.array( [x, 0, zlim[1]] )  # TOP
-            zlo = np.array( [x, 0, zlim[0]] )  # BOT
+            zhi = np.array( [x, 0, lim[Z][1]] )  # TOP
+            zlo = np.array( [x, 0, lim[Z][0]] )  # BOT
             line = pv.Line(zlo, zhi)
             pl.add_mesh(line, color="w")
         pass

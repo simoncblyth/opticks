@@ -51,6 +51,7 @@ X4Intersect::X4Intersect( const G4VSolid* solid_  )
     solid(solid_), 
     gs(nullptr),
     gridscale(SSys::getenvfloat("GRIDSCALE", 1.0 )),
+    peta(new quad4),
     dump(false)
 {
     init(); 
@@ -80,9 +81,10 @@ const char* X4Intersect::desc() const
     return strdup(s.c_str()); 
 }
 
-
 void X4Intersect::init()
 {
+    peta->zero(); 
+
     LOG(info) << "[ gridscale " << gridscale  ; 
 
     ce = make_float4(0.f, 0.f, 0.f, 100.f ); 
@@ -92,6 +94,16 @@ void X4Intersect::init()
 
     SEvent::StandardizeCEGS(ce, cegs, gridscale );  
     assert( cegs.size() == 7 );  
+
+    peta->q0.i.x = cegs[0] ;
+    peta->q0.i.y = cegs[1] ;
+    peta->q0.i.z = cegs[2] ;
+    peta->q0.i.w = cegs[3] ;
+
+    peta->q1.i.x = cegs[4] ;
+    peta->q1.i.y = cegs[5] ;
+    peta->q1.i.z = cegs[6] ;
+    peta->q1.i.w = 0 ;
 
 
     SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" );  
@@ -106,6 +118,11 @@ void X4Intersect::init()
         ce.w = float(override_ce[3]); 
         LOG(info) << "override ce with CXS_OVERRIDE_CE (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;   
     }   
+
+    peta->q2.f.x = ce.x ;   // moved from q1
+    peta->q2.f.y = ce.y ;
+    peta->q2.f.z = ce.z ;
+    peta->q2.f.w = ce.w ;
 
     gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran );  
    
@@ -220,8 +237,10 @@ void X4Intersect::save(const char* dir) const
     a->save(dir, "isect.npy");  
     gs->save(dir, "gs.npy" ); 
 
+    int create_dirs = 1 ; // 1:filepath
+    const char* peta_path = SPath::Resolve(dir, "peta.npy", create_dirs) ;
+    NP::Write(peta_path, (float*)(&peta->q0.f.x), 1, 4, 4 );
+
     LOG(info) << "]" ; 
 }
-
-
 

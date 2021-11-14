@@ -29,6 +29,7 @@ struct X4_API X4Intersect
     const G4VSolid* solid ; 
     NP* gs ;    // not const as need to externally set the meta 
     float gridscale ;  
+    quad4* peta ; 
     bool dump ; 
 
     float4 ce ; 

@@ -127,8 +127,9 @@ void CSGOptiX::init()
 
 void CSGOptiX::initPeta()
 { 
-    unsigned* ptr = &(peta->q0.u.x) ;  
-    for(unsigned i=0 ; i < 16 ; i++ ) *(ptr + i) = 0u ; 
+    peta->zero(); 
+    //unsigned* ptr = &(peta->q0.u.x) ;  
+    //for(unsigned i=0 ; i < 16 ; i++ ) *(ptr + i) = 0u ; 
 }
 
 void CSGOptiX::setMetaTran(const Tran<double>* metatran_ )

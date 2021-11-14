@@ -64,7 +64,7 @@ class CSGFoundry(object):
 
     def desc(self, stem):
         a = getattr(self, stem)
-        ext = ".txt" if a.dtype == 'O' else ",npy"
+        ext = ".txt" if a.dtype == 'O' else ".npy"
         pstem = "bnd" if stem == "bndname" else stem 
         path = os.path.join(self.fold, "%s%s" % (pstem, ext))
         return self.FMT % (stem, str(a.shape), path) 

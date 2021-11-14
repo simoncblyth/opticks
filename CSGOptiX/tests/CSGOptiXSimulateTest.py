@@ -677,13 +677,12 @@ class Plt(object):
 
         if H == X and V == Z:
             up = (0,0,1)                               
-            pl.view_xz()   ## TODO: see if view_xz is doing anything when subsequently set_focus/viewup/position 
         elif H == Z and V == X:
             up = (-1,0,0)                               
-            pl.view_xz() 
         else:
             assert 0
         pass
+        pl.view_xz()   ## TODO: see if view_xz is doing anything when subsequently set_focus/viewup/position 
 
         pl.camera.ParallelProjectionOn()  
         pl.add_text(self.topline, position="upper_left")
