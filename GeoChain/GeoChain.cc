@@ -102,6 +102,16 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top, const std::string& meta_
 
     conv.convert();
 
+    std::cout 
+        << "[ fd.descPrimSpec " << std::endl 
+        << fd->descPrimSpec()
+        << "] fd.descPrimSpec " << std::endl 
+        << "[ fd.descMeshName " << std::endl 
+        << fd->descMeshName()
+        << "] fd.descMeshName " << std::endl 
+        ; 
+
+
     std::cout << "] GeoChain::convert " << std::endl ; 
 }
 

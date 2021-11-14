@@ -55,6 +55,7 @@ struct CSG_API CSGFoundry
 
 
     std::string desc() const ;
+    std::string descMeshName() const ; 
     std::string descGAS() const ;
 
     void summary(const char* msg="CSGFoundry::summary") const ;
@@ -71,6 +72,10 @@ struct CSG_API CSGFoundry
     void dumpPrim(unsigned solidIdx ) const ;
     std::string descPrim() const ;
     std::string descPrim(unsigned solidIdx) const  ;
+
+    std::string descPrimSpec() const ; 
+    std::string descPrimSpec(unsigned solidIdx) const ; 
+
 
     void dumpNode() const ;
     void dumpNode(unsigned solidIdx ) const ;
@@ -185,7 +190,7 @@ struct CSG_API CSGFoundry
     void kludgeScalePrimBBox( const char* label, float dscale );
     void kludgeScalePrimBBox( unsigned solidIdx, float dscale );
 
-    std::vector<std::string> meshname ;  // meshNames from GGeo/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
+    std::vector<std::string> meshname ;  // meshNames from GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
 
     std::vector<CSGSolid>  solid ;   
     std::vector<CSGPrim>   prim ; 

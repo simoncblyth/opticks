@@ -75,6 +75,23 @@ void CSGPrimSpec::dump(const char* msg) const
     }   
 }
 
+
+std::string CSGPrimSpec::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "CSGPrimSpec"
+       << " primitiveIndexOffset " << std::setw(4) << primitiveIndexOffset
+       << " num_prim " << std::setw(4) << num_prim 
+       << " stride_in_bytes " << std::setw(5) << stride_in_bytes 
+       << " device " << std::setw(2) << device
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 /**
 CSGPrimSpec::downloadDump
 ---------------------------

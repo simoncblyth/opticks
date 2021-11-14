@@ -3,6 +3,7 @@
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 #include <vector>
+#include <string>
 #include "CSG_API_EXPORT.hh"
 #endif
 
@@ -37,6 +38,7 @@ struct CSG_API CSGPrimSpec
     void gather(std::vector<float>& out) const ;
     static void Dump(std::vector<float>& out);
     void dump(const char* msg="CSGPrimSpec::dump") const ; 
+    std::string desc() const ; 
 #endif
 };
 

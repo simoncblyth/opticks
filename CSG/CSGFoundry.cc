@@ -90,6 +90,20 @@ std::string CSGFoundry::desc() const
     return ss.str(); 
 }
 
+std::string CSGFoundry::descMeshName() const 
+{
+    std::stringstream ss ; 
+
+    ss << "CSGFoundry::descMeshName"
+       << " meshname.size " << meshname.size()
+       << std::endl ;
+    for(unsigned i=0 ; i < meshname.size() ; i++)
+        ss << std::setw(5) << i << " : " << meshname[i] << std::endl ;
+    
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
 {
@@ -199,6 +213,11 @@ std::string CSGFoundry::descInst(unsigned ias_idx_, unsigned long long emm ) con
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+
+
 
 
 /**
@@ -441,6 +460,35 @@ std::string CSGFoundry::descPrim(unsigned solidIdx) const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+std::string CSGFoundry::descPrimSpec() const 
+{
+    unsigned num_solids = getNumSolid(); 
+    std::stringstream ss ; 
+    ss 
+        << "CSGFoundry::descPrimSpec"
+        << " num_solids " << num_solids 
+        << std::endl
+        ;
+
+    for(unsigned i=0 ; i < num_solids ; i++) ss << descPrimSpec(i) << std::endl ;
+ 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string CSGFoundry::descPrimSpec(unsigned solidIdx) const 
+{
+    unsigned gas_idx = solidIdx ; 
+    CSGPrimSpec ps = getPrimSpec(gas_idx);
+    return ps.desc() ; 
+}
+
+
+
+
 
 
 void CSGFoundry::dumpPrim(unsigned solidIdx) const 
