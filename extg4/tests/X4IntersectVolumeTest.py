@@ -44,7 +44,8 @@ if __name__ == '__main__':
     reldir = os.environ.get("CXS_RELDIR", "extg4/X4IntersectVolumeTest" ) 
     geom = os.environ.get("GEOM", "body_phys")
 
-    colors = "red green blue cyan magenta yellow".split()
+    colors = "red green blue cyan magenta yellow pink orange purple lightgreen".split()
+    gcol = "grey"
 
     basedir = os.path.expandvars(os.path.join("/tmp/$USER/opticks",reldir, geom ))
     transforms = np.load(os.path.join(basedir, "transforms.npy"))
@@ -71,6 +72,11 @@ if __name__ == '__main__':
         fig, ax = mp.subplots(figsize=size/100.) # 100 dpi 
         fig.suptitle("\n".join([topline,botline,thirdline]))
         ax.set_aspect('equal')
+       
+        soname0 = transforms_meta[0]
+        isect0 = isects[soname0]
+        gpos = isect0.gs[:,5,:3]    # last line of the transform is translation
+        ax.scatter( gpos[:,H], gpos[:,V], s=sz, color=gcol ) 
 
         for i, soname in enumerate(transforms_meta):
             isect = isects[soname]
@@ -78,10 +84,11 @@ if __name__ == '__main__':
             ipos = isect.isect[:,0,:3] + tran[3,:3]
             color = colors[ i % len(colors)]
             label = str(soname[1:])   # seems labels starting "_" have special meaning 
+            label = label.replace("solid","s")
 
             ax.scatter( ipos[:,H], ipos[:,V], s=sz, color=color, label=label ) 
         pass
-        ax.legend(loc="upper right")
+        ax.legend(loc="lower left",  markerscale=4)
         fig.show()
     pass
 

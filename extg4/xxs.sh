@@ -126,20 +126,16 @@ if [ "${arg/exit}" != "$arg" ]; then
    echo $msg early exit 
    exit 0 
 fi
-
-#type=Volume
-type=Solid
-
 if [ "${arg/run}" != "$arg" ]; then
-    $GDB X4Intersect${type}Test
+    $GDB X4IntersectSolidTest
     [ $? -ne 0 ] && echo run error && exit 1 
 fi  
 if [ "${arg/dbg}" != "$arg" ]; then
-    lldb__ X4Intersect${type}Test
+    lldb__ X4IntersectSolidTest
     [ $? -ne 0 ] && echo run error && exit 1 
 fi  
 if [ "${arg/ana}"  != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i tests/X4Intersect${type}Test.py 
+    ${IPYTHON:-ipython} --pdb -i tests/X4IntersectSolidTest.py 
     [ $? -ne 0 ] && echo ana error && exit 2
 fi 
 

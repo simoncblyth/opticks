@@ -2,7 +2,7 @@
 X4IntersectVolumeTest
 ========================
 
-Used from script extg4/xxs.sh 
+Used from script extg4/xxv.sh 
 
 **/
 
@@ -22,10 +22,12 @@ Used from script extg4/xxs.sh
 
 int main(int argc, char** argv)
 {
+    /*
     setenv("JUNO_PMT20INCH_POLYCONE_NECK","ENABLED",1); 
     setenv("JUNO_PMT20INCH_SIMPLIFY_CSG","ENABLED",1);
     setenv("JUNO_PMT20INCH_NOT_USE_REAL_SURFACE", "ENABLED", 1); 
     setenv("JUNO_PMT20INCH_PLUS_DYNODE", "ENABLED", 1); 
+    */
 
     OPTICKS_LOG(argc, argv); 
 
