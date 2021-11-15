@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-X4IntersectTest.py : 2D scatter plots of geometry intersect positions
-========================================================================
+X4IntersectSolidTest.py : 2D scatter plots of geometry intersect positions
+============================================================================
 
 * typically used from xxs.sh 
 * provides comparison of intersect positions loaded from two input Fold 
@@ -44,7 +44,7 @@ except ImportError:
 pass
 
 #mp = None
-#pv = None
+pv = None
 
 X,Y,Z = 0,1,2
 
@@ -103,7 +103,7 @@ if __name__ == '__main__':
 
 
 if 1:
-    default_topline = "xxs.sh X4IntersectTest.py"
+    default_topline = "xxs.sh X4IntersectSolidTest.py"
     default_botline = tests[0].relbase    # base excluding first element
     default_thirdline = others[0].relbase if len(others) > 0 else "thirdline"
 

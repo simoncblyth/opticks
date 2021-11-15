@@ -52,19 +52,17 @@ export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED    ## xxs restricted to single solids 
 #geom=maker_body_solid_zcut+100.0
 #geom=maker_body_solid_zcut-0.0
 #geom=maker_body_solid_zcut-100.0
+#geom=maker_body_solid_zcut-183.25
 #geom=maker_body_solid_zcut-200.0
 #geom=maker_body_solid_zcut-300.0
+geom=maker_body_solid_zcut-350.0
 #geom=maker_body_solid_zcut-400.0
 #geom=maker_body_solid_zcut-500.0
-geom=maker_body_solid_zcut-183.25
 
 export GEOM=${GEOM:-$geom}
 zcut=${geom#*zcut}
 [ "$geom" != "$zcut" ] && zzd=$zcut 
-
 echo geom $geom zcut $geom zzd $zzd
-
-
 
 tmp=/tmp/$USER/opticks
 reldir=extg4/X4IntersectTest
@@ -88,9 +86,7 @@ else
 fi  
 echo $msg other_reldir $other_reldir other_fold $other_fold other_exists $other_exists
 
-
 if [ "$GEOM" == "orb" ]; then
-
     dz=0
     num_pho=10
     cegs=16:0:9:0:0:$dz:$num_pho
@@ -98,9 +94,7 @@ if [ "$GEOM" == "orb" ]; then
 
     zz=-100,100
     xx=-100,100
-
 else
-
     dz=-4
     num_pho=10
     #cegs=16:0:9:0:0:$dz:$num_pho
@@ -116,20 +110,15 @@ else
     # -320-130 = -450  320-130 = 190 
 fi 
 
-
-
-
-
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS_CEGS=${CXS_CEGS:-$cegs}
 export CXS_RELDIR=${CXS_RELDIR:-$reldir} 
 export CXS_OTHER_RELDIR=${CXS_OTHER_RELDIR:-$other_reldir} 
-
-env | grep CXS
-
 export XX=${XX:-$xx}
 export ZZ=${ZZ:-$zz}
 export ZZD=${ZZD:-$zzd}
+
+env | grep CXS
 
 arg=${1:-runana}
 
@@ -138,20 +127,19 @@ if [ "${arg/exit}" != "$arg" ]; then
    exit 0 
 fi
 
+#type=Volume
+type=Solid
+
 if [ "${arg/run}" != "$arg" ]; then
-    $GDB X4IntersectTest
+    $GDB X4Intersect${type}Test
     [ $? -ne 0 ] && echo run error && exit 1 
 fi  
-
 if [ "${arg/dbg}" != "$arg" ]; then
-    lldb__ X4IntersectTest
+    lldb__ X4Intersect${type}Test
     [ $? -ne 0 ] && echo run error && exit 1 
 fi  
-
-
-
 if [ "${arg/ana}"  != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i tests/X4IntersectTest.py 
+    ${IPYTHON:-ipython} --pdb -i tests/X4Intersect${type}Test.py 
     [ $? -ne 0 ] && echo ana error && exit 2
 fi 
 

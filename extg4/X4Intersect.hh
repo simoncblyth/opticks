@@ -20,7 +20,7 @@ struct X4_API X4Intersect
     X4Intersect( const G4VSolid* solid_ ); 
     const char* desc() const ; 
 
-    static G4double Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump); 
+    static double Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump); 
 
     void init(); 
     void scan(); 

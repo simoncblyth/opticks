@@ -19,9 +19,19 @@ And CSGOptiX/pub.sh::
 
 Leading to destination base folder ~/simoncblyth.bitbucket.io/env/presentation/CSGOptiXSimulateTest/
 
+And extg4/pub.sh::
+
+    #!/bin/bash -l 
+    export SRC_BASE=$TMP/extg4/X4IntersectTest
+    pub.py $*  
+
+Leading to destination base folder ~/simoncblyth.bitbucket.io/env/presentation/X4IntersectTest/
+
 Usage::
 
     ./pub.sh sp   #  list source paths : use this to find obsolete ones for deletion 
+    ./pub.sh dp   #  list destination paths 
+    ./pub.sh xdp   #  list existing destination paths 
 
     ./pub.sh cp   # emit to stdout the commands to copy png to publication area preserving relative path info
     ./pub.sh cp | sh    # pipe to shell to make copies 
@@ -115,6 +125,16 @@ class Pub(object):
         pass
         return dpl
 
+    def existing_dpaths(self):
+        dpl = self.dpaths()
+        xdp = []
+        for dp in dpl:
+            if os.path.exists(dp):
+                xdp.append(dp)
+            pass
+        pass
+        return xdp
+
     def s5_titles(self): 
         lines = []
         for i in range(len(self.s5ti)):
@@ -152,6 +172,8 @@ if __name__ == '__main__':
      p = Pub()
      if arg == "cp":
          print(p)
+     elif arg == "help":
+         print(__doc__)
      elif arg == "s5":
          print(repr(p))
      elif arg == "t5":
@@ -160,6 +182,8 @@ if __name__ == '__main__':
          print("\n".join(p.spaths()))
      elif arg == "dp":
          print("\n".join(p.dpaths()))
+     elif arg == "xdp":
+         print("\n".join(p.existing_dpaths()))
      else:
          print(p)
          print(repr(p))

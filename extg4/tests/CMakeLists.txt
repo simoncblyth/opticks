@@ -6,7 +6,8 @@ include(OpticksBuildOptions)
 find_package(PMTSim CONFIG)
 
 set(PMTSIM_TEST_SOURCES
-   X4IntersectTest.cc 
+   X4IntersectSolidTest.cc 
+   X4IntersectVolumeTest.cc 
 )
 
 set(TEST_SOURCES
