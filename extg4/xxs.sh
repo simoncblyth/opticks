@@ -32,19 +32,39 @@ export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED    ## xxs restricted to single solids 
 #geom=III
 #geom=1_2
 #geom=1_3
-
 #geom=_pmt_cut_solid
 #geom=pmt_solid
-geom=body_solid
+#geom=body_solid
 #geom=body_solid_zcut
 #geom=body_solid_zcut,body_solid
 #geom=inner2_solid_zcut
 #geom=pmt_solid_zcut
 #geom=body_solid,inner2_solid   
-
 #geom=CutTail_HamaPMT_Solid,inner2_solid
 
+#geom=polycone
+#geom=polycone_zcut-150
+#geom=two_tubs_union
+#geom=three_tubs_union
+#geom=three_tubs_union_zcut-700
+#geom=ten_tubs_union
+
+#geom=maker_body_solid_zcut+100.0
+#geom=maker_body_solid_zcut-0.0
+#geom=maker_body_solid_zcut-100.0
+#geom=maker_body_solid_zcut-200.0
+#geom=maker_body_solid_zcut-300.0
+#geom=maker_body_solid_zcut-400.0
+#geom=maker_body_solid_zcut-500.0
+geom=maker_body_solid_zcut-183.25
+
 export GEOM=${GEOM:-$geom}
+zcut=${geom#*zcut}
+[ "$geom" != "$zcut" ] && zzd=$zcut 
+
+echo geom $geom zcut $geom zzd $zzd
+
+
 
 tmp=/tmp/$USER/opticks
 reldir=extg4/X4IntersectTest
@@ -88,9 +108,7 @@ else
     cegs=9:0:16:0:0:$dz:$num_pho
     gridscale=0.10
 
-    #zz=190,0,-5,-162,-195,-210,-275,-350,-365,-400,-420,-450
-    zz=190,-162,-195,-210,-275,-350,-365,-420,-450
-    zzd=-183.2246  
+    #zz=190,-162,-195,-210,-275,-350,-365,-420,-450
     xx=-254,254
 
     unset CXS_OVERRIDE_CE
@@ -124,6 +142,13 @@ if [ "${arg/run}" != "$arg" ]; then
     $GDB X4IntersectTest
     [ $? -ne 0 ] && echo run error && exit 1 
 fi  
+
+if [ "${arg/dbg}" != "$arg" ]; then
+    lldb__ X4IntersectTest
+    [ $? -ne 0 ] && echo run error && exit 1 
+fi  
+
+
 
 if [ "${arg/ana}"  != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i tests/X4IntersectTest.py 

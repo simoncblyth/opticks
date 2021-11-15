@@ -37,7 +37,6 @@ const G4VSolid* MakeSolid(const char* name)
     return solid ; 
 }
 
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
