@@ -8,6 +8,12 @@ The solid to create is controlled by the name string obtained from envvar *GEOM*
 2. invokes GeoChain::convert
 
    * (x4) X4PhysicalVolume::ConvertSolid : G4VSolid -> nnode -> GMesh/GPts
+
+     * X4Solid::Convert converts G4VSolid into npy/nnode tree
+     * NTreeProcess<nnode>::Process balances the nnode tree when that is configured
+     * NCSG::Adopt wrap nnode tree enabling it to travel 
+     * X4Mesh::Convert converts G4VSolid into GMesh which has above created NCSG associated 
+
    * (this) using placeholder GVolume the GMesh is added to a test GGeo
    * (cg) CSG_GGeo_Convert GGeo -> CSGFoundry  
 

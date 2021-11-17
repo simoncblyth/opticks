@@ -50,7 +50,15 @@ if __name__ == '__main__':
     basedir = os.path.expandvars(os.path.join("/tmp/$USER/opticks",reldir, geom ))
     transforms = np.load(os.path.join(basedir, "transforms.npy"))
     transforms_meta = np.loadtxt( os.path.join(basedir, "transforms_meta.txt"), dtype=np.object ) 
-   
+
+    figsdir = os.path.join(basedir, "figs")
+    if not os.path.isdir(figsdir):
+        os.makedirs(figsdir)
+    pass
+    savefig = True
+    figname = "isect"
+    print("figsdir %s " % figsdir)
+
     topline = "X4IntersectVolumeTest.py"
     botline = "%s/%s " % (reldir, geom)
     thirdline = "thirdline"
@@ -90,6 +98,12 @@ if __name__ == '__main__':
         pass
         ax.legend(loc="lower left",  markerscale=4)
         fig.show()
+
+        if savefig:
+            figpath = os.path.join(figsdir,figname+"_mpplt.png")
+            print("saving %s " % figpath)
+            fig.savefig(figpath)
+        pass 
     pass
 
 

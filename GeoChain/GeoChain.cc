@@ -41,7 +41,6 @@ GeoChain::GeoChain(Opticks* ok_)
 void GeoChain::init()
 {
     //for(int lvIdx=-1 ; lvIdx < 10 ; lvIdx+= 1 ) LOG(info) << " lvIdx " << lvIdx << " ok.isX4TubsNudgeSkip(lvIdx) " << ok->isX4TubsNudgeSkip(lvIdx)  ; 
-
 }
 
 void GeoChain::convertSolid(const G4VSolid* so, const std::string& meta_)
@@ -91,16 +90,14 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top, const std::string& meta_
     X4PhysicalVolume xtop(ggeo, top) ; 
 
     // ggeo->postDirectTranslation();  tries to save which fails with no idpath 
-
-    //ggeo->prepareVolumes();   // just prepareVolumes  misses prepareOpticks which prevcents --skipsolidname from working 
+    // ggeo->prepareVolumes();   // just prepareVolumes  misses prepareOpticks which prevcents --skipsolidname from working 
     ggeo->prepare(); 
 
     ggeo->deferredCreateGParts();
 
+    CSG_GGeo_Convert conv(fd, ggeo, meta ) ;  
 
-    CSG_GGeo_Convert conv(fd, ggeo, meta ) ;   // populate fd:CSGFoundry 
-
-    conv.convert();
+    conv.convert();   // populates fd:CSGFoundry 
 
     std::cout 
         << "[ fd.descPrimSpec " << std::endl 

@@ -19,11 +19,6 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED
-export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
-#export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
-export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED    ## xxs restricted to single solids so this not so useful
-
 #geom=orb
 #geom=UnionOfHemiEllipsoids
 #geom=UnionOfHemiEllipsoids-50
@@ -55,9 +50,24 @@ export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED    ## xxs restricted to single solids 
 #geom=maker_body_solid_zcut-183.25
 #geom=maker_body_solid_zcut-200.0
 #geom=maker_body_solid_zcut-300.0
-geom=maker_body_solid_zcut-350.0
+#geom=maker_body_solid_zcut-350.0
 #geom=maker_body_solid_zcut-400.0
 #geom=maker_body_solid_zcut-500.0
+
+#geom=maker_body_solid
+#geom=body_solid_pcnk_scsg_nurs_pdyn
+#geom=body_solid
+#geom=body_solid_pcnk
+geom=body_solid_nurs
+#geom=body_solid_nurs_pcnk
+
+
+# moved to env setup in PMTSim::SetEnvironmentSwitches
+#export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED
+#export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
+#export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
+#export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED    ## xxs restricted to single solids so this not so useful
+
 
 export GEOM=${GEOM:-$geom}
 zcut=${geom#*zcut}

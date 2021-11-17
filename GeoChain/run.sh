@@ -32,7 +32,6 @@ Usage::
 
    GEOM=body_phys ./grab.sh    # grab from remote node 
 
-
 To render the resulting geometry use eg::
 
    cx
@@ -46,9 +45,9 @@ To render the resulting geometry use eg::
 EOU
 }
 
-geom=body_phys
+#geom=body_phys
+geom=body_phys_pcnk_pdyn
 #geom=body_solid
-
 
 export GEOM=${GEOM:-$geom}
 # pick the Solid or Volume binary depending on GEOM
@@ -67,7 +66,7 @@ case $GEOM in
    III*)                        bin=GeoChainSolidTest ;;
    1_3*)                        bin=GeoChainSolidTest ;;
 
-   body_phys)                   bin=GeoChainVolumeTest ;;
+   body_phys*)                  bin=GeoChainVolumeTest ;;
    inner1_phys)                 bin=GeoChainVolumeTest ;; 
    inner2_phys)                 bin=GeoChainVolumeTest ;; 
    dynode_phys)                 bin=GeoChainVolumeTest ;; 
@@ -81,6 +80,7 @@ if [ "$bin" == "" ]; then
    exit 1 
 fi
 
+############### logging control ###################
 
 #export GGeo=INFO
 #export CSGSolid=INFO
@@ -93,24 +93,34 @@ fi
 
 #export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
 
+# checking that --skipsolidname is working 
+export OpticksDbg=INFO  
+export GInstancer=INFO
+
 #export DUMP_RIDX=0
 #export NTREEPROCESS_LVLIST=0
 #export NNODENUDGER_LVLIST=0
+
+
+################# geometry options #########################
 
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
 export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    # when defined : dont intersect chop the PMT 
 export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED   # switch on dynode without new optical model
 
-# checking that --skipsolidname is working 
-export OpticksDbg=INFO  
-export GInstancer=INFO
+################# mechanics ###############
 
-unset OPTICKS_KEY 
+unset OPTICKS_KEY      # TODO: do this inside executables, as kinda important 
+
+#####################################################
 
 cd $OPTICKS_HOME/GeoChain
 
-rm $bin.log 
+if [ -f "$bin.log" ]; then 
+    rm $bin.log 
+fi 
+
 which $bin
 
 opts=""
@@ -118,7 +128,6 @@ opts="$opts --x4tubsnudgeskip 0"
 #opts="$opts --skipsolidname ${GEOM}_body_solid_1_9   " 
 
 DEBUG=1
-
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Darwin" ]; then 
         lldb__ $bin $opts 
@@ -128,3 +137,6 @@ if [ -n "$DEBUG" ]; then
 else 
     $bin $opts
 fi
+
+exit 0
+

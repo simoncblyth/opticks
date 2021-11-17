@@ -1289,6 +1289,12 @@ Updating
 
 Use *git-;git-month n* (from env-) to review commits for the numbered month, 
 negative n eg -12 for December of last year.
+To see diff details of a commit listed by git-month::
+
+    git log -n1 -p ab5f1feb3
+
+
+
 For SVN see svn-offline-blyth using::
 
    svn log -v --search $USER

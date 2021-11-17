@@ -25,7 +25,7 @@ Stages of the Geometry Chain
    * NCSG::Adopt wrap nnode tree enabling it to travel 
    * X4Mesh::Convert converts G4VSolid into GMesh which has above created NCSG associated 
 
-3. CSG 
+3. CSG_ 
 
 
 While the initial focus on single G4VSolid shapes, do not want to 

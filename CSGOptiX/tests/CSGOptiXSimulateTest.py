@@ -540,7 +540,8 @@ class Plt(object):
 
 
     def outpath_(self, stem="positions", ptype="pvplt"):
-        return os.path.join(self.outdir,"%s_%s_%s_%s.png" % (stem, ptype, self.feat.name, self.feat.sisel)) 
+        sisel = self.feat.sisel
+        return os.path.join(self.outdir,"%s_%s_%s.png" % (stem, ptype, self.feat.name)) 
 
     def positions_mpplt(self):
         """

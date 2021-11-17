@@ -2,7 +2,7 @@
 GeoChainVolumeTest.cc : testing the full chain of geometry conversions
 =========================================================================
 
-The volume to create is controlled by the name string obtained from envvar *GEOCHAINTEST* 
+The volume to create is controlled by the name string obtained from envvar *GEOM* 
 
 **/
 

@@ -11,12 +11,21 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED
-export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
-export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
-export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED    ## xxs restricted to single solids so this not so useful
 
-geom=body_phys
+# moved to setting in code based on name suffixes  
+#
+#export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED
+#export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
+#export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
+#export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED    ## xxs restricted to single solids so this not so useful
+
+#geom=body_phys
+#geom=body_phys_nurs
+#geom=body_phys_nurs_pcnk
+#geom=body_phys_nurs_pcnk_pdyn
+#geom=body_phys_nurs_pdyn
+#geom=body_phys_pdyn
+geom=body_phys_pdyn_pcnk
 
 export GEOM=${GEOM:-$geom}
 zcut=${geom#*zcut}
