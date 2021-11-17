@@ -3,16 +3,24 @@ usage(){ cat << EOU
 xxs.sh : Geant4 equivalent to OptiX cxs.sh 
 ===============================================
 
-Provides 2D cross section plots of G4VSolid provided from j/PMTSim 
+Provides 2D cross section plots of G4VSolid provided from j/PMTSim. 
 
-0.0             -2.5            -5.0            -179.2          -242.5          -275.0          -385.0          -420.0  zdelta  
-                                                                                                                                
-190.0           0.0             -5.0            -162.0          -210.0          -275.0          -350.0          -420.0  az1     
-0.0             -5.0            -195.0          -210.0          -275.0          -365.0          -420.0          -450.0  az0     
+The configuration of solid/volume modelling is controlled by 
+envvars that are now set by PMTSim::SetEnvironmentSwitches
+based on string suffixes to the requested solid or volume names. 
+This simplifies bookeeping during development.  
 
-   190,0,-5,-195,-162,-210,-275,-365,-350,-420,-450
+These name suffix opts should perhaps be moved to a separate opts argument
+once developments are nearly finalized. 
 
-
++--------+------------------------------------------------+----------------------------------------------+
+| suffix | key                                            | note                                         | 
++========+================================================+==============================================+
+| _pcnk  | JUNO_PMT20INCH_POLYCONE_NECK=ENABLED           |                                              | 
+| _scsg  | JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED            |                                              |
+| _nurs  | JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    |                                              |
+| _pdyn  | JUNO_PMT20INCH_PLUS_DYNODE=ENABLED             | xxs is for single solids, so not useful here |
++--------+------------------------------------------------+----------------------------------------------+
 
 EOU
 }
@@ -42,7 +50,8 @@ msg="=== $BASH_SOURCE :"
 #geom=two_tubs_union
 #geom=three_tubs_union
 #geom=three_tubs_union_zcut-700
-#geom=ten_tubs_union
+#geom=ten_tubs_union_zcut-630
+geom=ten_tubs_union_zcut-420
 
 #geom=maker_body_solid_zcut+100.0
 #geom=maker_body_solid_zcut-0.0
@@ -58,21 +67,14 @@ msg="=== $BASH_SOURCE :"
 #geom=body_solid_pcnk_scsg_nurs_pdyn
 #geom=body_solid
 #geom=body_solid_pcnk
-geom=body_solid_nurs
+#geom=body_solid_nurs
 #geom=body_solid_nurs_pcnk
 
 
-# moved to env setup in PMTSim::SetEnvironmentSwitches
-#export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED
-#export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
-#export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED
-#export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED    ## xxs restricted to single solids so this not so useful
-
-
 export GEOM=${GEOM:-$geom}
-zcut=${geom#*zcut}
-[ "$geom" != "$zcut" ] && zzd=$zcut 
-echo geom $geom zcut $geom zzd $zzd
+zcut=${GEOM#*zcut}
+[ "$GEOM" != "$zcut" ] && zzd=$zcut 
+echo geom $geom GEOM $GEOM zcut $zcut zzd $zzd
 
 tmp=/tmp/$USER/opticks
 reldir=extg4/X4IntersectTest
@@ -80,14 +82,8 @@ fold=$tmp/$reldir
 
 echo $msg reldir $reldir fold $fold 
 
-#other_reldir=GeoChain
 other_reldir=CSGOptiX/CSGOptiXSimulateTest
 other_fold=$tmp/$other_reldir
-
-#if [ ! -d "$fold" ]; then
-#    echo $msg reldir $reldir fold $fold MUST EXIST 
-#    exit 1 
-#fi
 
 if [ -d "$other_fold" ]; then
     other_exists=YES
@@ -119,6 +115,12 @@ else
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
     # -320-130 = -450  320-130 = 190 
 fi 
+
+
+case ${GEOM} in
+   ten_tubs_union*) zz=0,-70,-140,-210,-280,-350,-420,-490,-560,-630 ;  zzd=-605,-630  ;;
+esac
+
 
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CXS_CEGS=${CXS_CEGS:-$cegs}

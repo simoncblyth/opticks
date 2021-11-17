@@ -55,6 +55,8 @@ int main(int argc, char** argv)
 
     G4VPhysicalVolume* pv = PMTSim::GetPV(geom, tr, so );
     assert(pv); 
+    assert( tr->size() % 16 == 0 ); 
+    assert( tr->size() == 16*so->size() );  // expect 16 doubles of the transform matrix for every solid
 
     int create_dirs = 2 ; // 2:dirpath 
     const char* base = SPath::Resolve("$TMP/extg4/X4IntersectVolumeTest", geom, create_dirs) ; 

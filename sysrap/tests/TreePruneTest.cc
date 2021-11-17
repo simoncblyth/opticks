@@ -18,10 +18,52 @@ enum {
 };  
 
 enum {
-  PRE, 
   IN,
-  POST
+  RIN,
+  PRE, 
+  RPRE, 
+  POST,
+  RPOST
 };
+
+
+struct u
+{
+    static const char* IN_ ; 
+    static const char* RIN_ ;
+    static const char* PRE_ ; 
+    static const char* RPRE_ ;
+    static const char* POST_ ;
+    static const char* RPOST_ ;
+    static const char* OrderName(int order);
+};
+
+const char* u::IN_ = "IN" ; 
+const char* u::RIN_ = "RIN" ; 
+const char* u::PRE_ = "PRE" ; 
+const char* u::RPRE_ = "RPRE" ; 
+const char* u::POST_ = "POST" ; 
+const char* u::RPOST_ = "RPOST" ; 
+
+const char* u::OrderName(int order) // static
+{
+    const char* s = nullptr ; 
+    switch(order)
+    {    
+        case IN:    s = IN_    ; break ; 
+        case RIN:   s = RIN_   ; break ; 
+        case PRE:   s = PRE_   ; break ; 
+        case RPRE:  s = RPRE_  ; break ; 
+        case POST:  s = POST_  ; break ; 
+        case RPOST: s = RPOST_ ; break ;  
+    }    
+    return s ;  
+}
+
+
+
+
+
 
 char pcls( int cls ) // static
 {
@@ -56,12 +98,36 @@ struct nd
 
     int cls ; 
     int depth ; 
+
     int in ; 
+    int rin ; 
     int pre ; 
+    int rpre ; 
     int post ; 
+    int rpost ;
+
+    int index(int order) const ; 
+ 
     char mkr ; 
 
 }; 
+
+
+int nd::index(int order) const 
+{
+    int idx = -1 ; 
+    switch(order)
+    {
+       case IN:    idx=in   ; break ;   
+       case RIN:   idx=rin  ; break ;   
+       case PRE:   idx=pre  ; break ;   
+       case RPRE:  idx=rpre ; break ;   
+       case POST:  idx=post  ; break ;   
+       case RPOST: idx=rpost ; break ;   
+    }
+    return idx ; 
+}
+
 
 nd::nd(int value_, nd* left_, nd* right_)
     :
@@ -71,9 +137,12 @@ nd::nd(int value_, nd* left_, nd* right_)
     cls(UNDEFINED),
     depth(UNDEFINED),
     in(UNDEFINED),
+    rin(UNDEFINED),
     pre(UNDEFINED),
+    rpre(UNDEFINED),
     post(UNDEFINED),
-    mkr(' ')
+    rpost(UNDEFINED),
+    mkr('_')
 {
 }
 
@@ -174,11 +243,7 @@ How to detect can just shift the root pointer ?
 Hmm if exclusions were scattered all over would be easier to 
 just rebuild. 
  
-
-
 **/
-
-
 
 struct tree
 {
@@ -188,27 +253,35 @@ struct tree
     static nd* build_r(int h, int& count ); 
     static void initvalue_r( nd* n, int order ); 
 
-
     bool verbose ; 
     nd* root ; 
     int width ; 
     int height ; 
     SCanvas* canvas ; 
+    int order ; 
 
     std::vector<nd*> inorder ; 
+    std::vector<nd*> rinorder ; 
     std::vector<nd*> preorder ; 
+    std::vector<nd*> rpreorder ; 
     std::vector<nd*> postorder ; 
+    std::vector<nd*> rpostorder ; 
+
     std::vector<nd*> crux ; 
     std::map<nd*, nd*> parentmap ; 
 
     tree( nd* root ); 
 
-     
     void instrument();
     void initvalue(int order) ; 
+
     void inorder_r( nd* n ); 
+    void rinorder_r( nd* n ); 
     void preorder_r( nd* n ); 
+    void rpreorder_r( nd* n ); 
     void postorder_r( nd* n ); 
+    void rpostorder_r( nd* n ); 
+
     void parent_r( nd* n, int depth ); 
     void depth_r( nd* n, int depth ); 
     void clear_mkr(); 
@@ -242,8 +315,6 @@ struct tree
 
     void prune( bool act ); 
     void prune( nd* n, bool act ); 
-
-
 };
 
 
@@ -287,7 +358,8 @@ tree::tree(nd* root_)
     root(root_),
     width(num_node_r(root)),
     height(maxdepth_r(root,0)),
-    canvas(new SCanvas(width,height+1,5,3))  // +1 as a height 0 tree is still 1 node
+    canvas(new SCanvas(width,height+1,5,4)),  // +1 as a height 0 tree is still 1 node
+    order(-1)
 {
     instrument();
     initvalue_r(root, PRE);   // must be after instrument, as uses n.pre
@@ -298,14 +370,25 @@ void tree::instrument()
     if(!root) return ; 
     clear_mkr();   
 
+
     inorder.clear();
     inorder_r(root); 
+
+    rinorder.clear();
+    rinorder_r(root); 
 
     preorder.clear();
     preorder_r(root); 
 
+    rpreorder.clear();
+    rpreorder_r(root); 
+
     postorder.clear();
     postorder_r(root); 
+
+    rpostorder.clear();
+    rpostorder_r(root); 
+
 
     parentmap.clear();
     parentmap[root] = nullptr ; 
@@ -319,8 +402,9 @@ void tree::instrument()
 }
 
 
-void tree::initvalue(int order )
+void tree::initvalue(int order_ )
 {
+   order = order_ ;  
    initvalue_r(root, order);  
 }
 
@@ -329,14 +413,7 @@ void tree::initvalue_r( nd* n, int order ) // static
     if( n == nullptr ) return ; 
     initvalue_r( n->left, order ); 
     initvalue_r( n->right, order ); 
-
-    switch(order)
-    {
-        case PRE:  n->value = n->pre  ; break ; 
-        case IN:   n->value = n->in   ; break ; 
-        case POST: n->value = n->post ; break ; 
-        default:   n->value = -1     ; break ;  
-    } 
+    n->value = n->index(order); 
 }
 
 int tree::maxdepth_r(nd* n, int depth) const 
@@ -399,8 +476,6 @@ const char* tree::desc() const
     return strdup(tmp); 
 }
 
-
-
 nd* tree::parent( nd* n ) const 
 {
     return parentmap.count(n) == 1 ? parentmap.at(n) : nullptr ;
@@ -439,6 +514,15 @@ void tree::parent_r( nd* n, int depth )
     }
 } 
 
+
+/**
+
+This is taking too many passes dealing with excluded parents... 
+In an unbalanced tree, should be able to directly find the new root 
+avoiding reconnections to excluded parent nodes. 
+
+**/
+
 void tree::apply_cut(int cut)
 {
     if(verbose) 
@@ -464,6 +548,8 @@ void tree::apply_cut(int cut)
 
         pass++ ; 
     }
+
+    printf("tree::apply_cut pass %d \n", pass); 
 }
 
 
@@ -563,6 +649,11 @@ Mechanics of root prune:
 
 * find surviving side of the crux and promote it to root
 
+
+ISSUE : are ignoring the exclude status of parent causing 
+many pointless passes before get to all include
+
+
 Following tree changes need to update tree instrumentation.
 
 **/
@@ -652,12 +743,12 @@ void tree::prune( nd* x, bool act )
             root = survivor ;  
         }
     }
-
     if(act)
     {
         instrument(); 
     }
 }
+
 
 void tree::inorder_r( nd* n )
 {
@@ -669,6 +760,17 @@ void tree::inorder_r( nd* n )
 
     inorder_r(n->right) ; 
 }
+void tree::rinorder_r( nd* n )
+{
+    if( n == nullptr ) return ; 
+
+    rinorder_r(n->right) ; 
+
+    n->rin = rinorder.size() ; rinorder.push_back(n);  
+
+    rinorder_r(n->left) ; 
+}
+
 
 void tree::preorder_r( nd* n )
 {
@@ -678,6 +780,15 @@ void tree::preorder_r( nd* n )
     preorder_r(n->left) ; 
     preorder_r(n->right) ; 
 }
+void tree::rpreorder_r( nd* n )
+{
+    if( n == nullptr ) return ; 
+    n->rpre = rpreorder.size() ; rpreorder.push_back(n);  
+
+    rpreorder_r(n->right) ; 
+    rpreorder_r(n->left) ; 
+}
+
 
 void tree::postorder_r( nd* n )
 {
@@ -688,9 +799,15 @@ void tree::postorder_r( nd* n )
 
     n->post = postorder.size() ; postorder.push_back(n);  
 }
+void tree::rpostorder_r( nd* n )
+{
+    if( n == nullptr ) return ; 
 
+    rpostorder_r(n->right) ; 
+    rpostorder_r(n->left) ; 
 
-
+    n->rpost = rpostorder.size() ; rpostorder.push_back(n);  
+}
 
 void tree::dump( const char* msg ) const 
 {
@@ -711,6 +828,9 @@ void tree::draw(const char* msg, int meta)
     if(!root) return ; 
     if(msg) printf("%s [%d] \n", msg, meta ); 
     canvas->clear(); 
+
+    printf("%s \n", u::OrderName(order) ); 
+
     draw_r(root); 
     canvas->print(); 
 }
@@ -724,10 +844,10 @@ void tree::draw_r( nd* n )
     int x = n->in ; 
     int y = n->depth  ; 
 
-    canvas->draw( x, y,   0,0,   n->value ); 
-    //canvas->draw( x, y, 0,1,   n->cls   ); 
-    canvas->drawch( x, y, 0,1, pcls(n->cls) ); 
-    canvas->drawch( x, y, 0,2, n->mkr ); 
+    canvas->draw(     x, y, 0,0, n->index(RPRE) ); 
+    canvas->draw(     x, y, 0,1, n->index(POST) ); 
+    //canvas->drawch( x, y, 0,1, pcls(n->cls) ); 
+    //canvas->drawch( x, y, 0,2, n->mkr ); 
 }
 
 void test_flip( nd* n )
@@ -757,11 +877,41 @@ void test_cuts(int height0)
     }
 }
 
-void test_unbalanced(int numprim0)
+void test_unbalanced(int numprim0, int order, const char* msg=nullptr)
 {
-    tree* t = tree::make_unbalanced(numprim0, POST) ; 
-    t->draw(); 
+    tree* t = tree::make_unbalanced(numprim0, order) ; 
+    t->draw(msg); 
 }
+void test_unbalanced(int numprim)
+{
+    test_unbalanced(numprim, POST); 
+    test_unbalanced(numprim, RPRE,  "RPRE is opposite order to POST" ); 
+
+    test_unbalanced(numprim, PRE); 
+    test_unbalanced(numprim, RPOST, "RPOST is opposite order to PRE"); 
+
+    test_unbalanced(numprim, IN); 
+    test_unbalanced(numprim, RIN,   "RIN is opposite order to IN"); 
+}
+
+void test_complete(int numprim0, int order, const char* msg=nullptr)
+{
+    tree* t = tree::make_complete(numprim0, order) ; 
+    t->draw(msg); 
+}
+void test_complete(int numprim)
+{
+    test_complete(numprim, POST); 
+    test_complete(numprim, RPRE,  "RPRE is opposite order to POST" ); 
+
+    test_complete(numprim, PRE); 
+    test_complete(numprim, RPOST, "RPOST is opposite order to PRE"); 
+
+    test_complete(numprim, IN); 
+    test_complete(numprim, RIN,   "RIN is opposite order to IN"); 
+
+}
+
 
 void test_cuts_unbalanced(int numprim0)
 {
@@ -780,6 +930,16 @@ void test_cuts_unbalanced(int numprim0)
     }
 }
 
+void test_cut_unbalanced(int numprim0, int cut)
+{
+    printf("test_cut_unbalanced numprim0 %d cut %d \n", numprim0, cut ); 
+
+    tree* t = tree::make_unbalanced(numprim0, POST) ; 
+    t->draw("before cut"); 
+    t->apply_cut(cut); 
+    t->draw("after cut"); 
+}
+
 void test_no_remaining_nodes()
 {
     int height0 = 3 ; 
@@ -796,17 +956,24 @@ void test_no_remaining_nodes()
     t->draw(); 
 }
 
+
+
 int main(int argc, char**argv )
 {
-    //test_cuts(4); 
+    /*
+    test_complete(4); 
+    test_unbalanced(8); 
+
+    test_cuts(4); 
     test_cuts(3); 
-    //test_no_remaining_nodes();
+    test_no_remaining_nodes();
 
-    //test_unbalanced(8); 
-
-    //test_cuts_unbalanced(8); 
-
-
-
+    test_cut_unbalanced(8, 8); 
+    test_cuts_unbalanced(8); 
+    */
+    
+    tree* t = tree::make_complete(4, POST) ;
+    t->draw(); 
+ 
     return 0 ; 
 }
