@@ -15,6 +15,77 @@ Progress
 ------------
 
 * compiletime -> runtime control for way data and angular efficiencies 
+* create orientation docs for NVIDIA + LZ colleagues : https://simoncblyth.bitbucket.io/opticks/docs/orientation.html
+
+2021 Feb
+-----------
+
+* OptiX 7 learning 
+* Opticks leak checking revealed some significant ones
+* SIMG compressed jpg, png rather than uncompressed ppm, for easier remote OptiX 7 work 
+
+2021 Mar
+---------
+
+* curand skipahead
+
+
+
+2021 : Review of Opticks with OptiX 7 Development History
+----------------------------------------------------------
+
+As of the end of 2021 the Opticks packages directly relevant to NVIDIA OptiX 7 are:
+
+CSG
+    designed from scratch shared GPU/CPU geometry model  
+
+CSG_GGeo
+    conversion of Opticks/GGeo geometries into CSG model 
+
+QUDARap
+    simulation building blocks, depending on CUDA : no OptiX dependency 
+
+CSGOptiX
+    rendering and simulation with CSG model geometries, drawing on functionality from QUDARap
+
+    Guiding principals:
+
+    * minimize code in CSGOptiX : everything that can be implemented in QUDARap or CSG should be 
+
+
+Development of these packages started in early 2021 and progressed
+through multiple repositories in the first half of 2021 before being 
+incorporated into sub-packages of the Opticks repository in summer 2021.
+
+
+Initial OptiX 7 Expts : 2021/02/04 -> 2021/02/28
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Starting from scratch, learning the all new NVIDIA OptiX 7 API by simple geometry experiments 
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/examples/UseOptiX7GeometryStandalone/ 2019/11/19
+* https://bitbucket.org/simoncblyth/opticks/src/master/examples/UseOptiX7/   2021/02/04 common CMake infrastructure for OptiX pre 7 + 7
+* https://bitbucket.org/simoncblyth/opticks/src/master/examples/UseOptiX7GeometryModular/  2021/02/04
+* https://bitbucket.org/simoncblyth/opticks/src/master/examples/UseOptiX7GeometryInstanced/  2021/02/04-05
+* https://bitbucket.org/simoncblyth/opticks/src/master/examples/UseOptiX7GeometryInstancedGAS/ 2021/02/06-07
+* https://bitbucket.org/simoncblyth/opticks/src/master/examples/UseOptiX7GeometryInstancedGASComp/ 2021/02/07-08
+* https://bitbucket.org/simoncblyth/opticks/src/master/examples/UseOptiX7GeometryInstancedGASCompDyn/ 2021/02/08-28 
+* IAS, GAS, AS, GAS_Builder, IAS_Builder 
+
+OptiXTest : 2021/03/11 -> 2021/05/07
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://github.com/simoncblyth/OptiXTest/commits/main
+* Geo, Grid, IAS, GAS, Shape, Foundry, Ctx, BI, PIP, PrimSpec
+
+CSG : 2021-04-27 -> 2021-08-19 : after which incorporated into Opticks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://github.com/simoncblyth/CSG 
+* CSGFoundry, CSGNode, CSGPrim, CSGPrimSpec, CSGView, CSGTarget, CSGScan
+ 
+
+
 
 
 
