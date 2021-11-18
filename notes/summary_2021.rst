@@ -1,0 +1,13 @@
+JUNO Opticks Progress Summary 2021
+
+From scratch development of a shared GPU+CPU geometry model enabling 
+state-of-the-art NVIDIA OptiX 7 ray tracing of CSG based detector geometries, 
+flattened into a two-level structure for optimal performance harnessing ray trace 
+dedicated NVIDIA GPU hardware. Development was guided by frequent consultation with NVIDIA engineers. 
+
+Opticks simulation validation and performance tests revealed issues with PMT 
+and Fastener geometry, Cerenkov photon generation and PMT parameter services.
+These have led to improved geometry modelling Cerenkov numerical integration 
+and sampling and services resulting in substantial improvements to the correctness 
+and performance of both Geant4 and Opticks simulations. 
+
