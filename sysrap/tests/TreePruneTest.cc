@@ -70,8 +70,8 @@ char pcls( int cls ) // static
     char pcl = '_' ; 
     switch( cls )
     {
-        case UNDEFINED: pcl = ' ' ; break ; 
-        case INCLUDE:   pcl = ' ' ; break ; 
+        case UNDEFINED: pcl = 'U' ; break ; 
+        case INCLUDE:   pcl = 'I' ; break ; 
         case EXCLUDE:   pcl = 'E' ; break ; 
         case MIXED:     pcl = 'X' ; break ; 
         default:        pcl = '?' ; break ; 
@@ -247,9 +247,12 @@ just rebuild.
 
 struct tree
 {
+    static const int ORDER1 ; 
+    static const int ORDER2 ; 
+
     static int NumNode(int height); 
-    static tree* make_complete(int height, int valueorder); 
-    static tree* make_unbalanced(int numprim, int valueorder); 
+    static tree* make_complete(int height); 
+    static tree* make_unbalanced(int numprim); 
     static nd* build_r(int h, int& count ); 
     static void initvalue_r( nd* n, int order ); 
 
@@ -257,8 +260,11 @@ struct tree
     nd* root ; 
     int width ; 
     int height ; 
+    int xscale ; 
+    int yscale ; 
+
     SCanvas* canvas ; 
-    int order ; 
+    int value_order ; 
 
     std::vector<nd*> inorder ; 
     std::vector<nd*> rinorder ; 
@@ -313,8 +319,8 @@ struct tree
     void classify( int cut );
     int classify_r( nd* n, int cut );
 
-    void prune( bool act ); 
-    void prune( nd* n, bool act ); 
+    void prune( bool act, int pass ); 
+    void prune_crux( nd* n, bool act, int pass ); 
 };
 
 
@@ -328,16 +334,15 @@ nd* tree::build_r(int h, int& count)  // static
     return new nd( count++, l, r) ; 
 }
 
-tree* tree::make_complete(int height, int valueorder) // static
+tree* tree::make_complete(int height) // static
 {
     int count = 0 ; 
     nd* root = build_r(height, count ); 
     tree* t = new tree(root); 
-    t->initvalue(valueorder); 
     return t ; 
 }
 
-tree* tree::make_unbalanced(int numprim, int valueorder) // static
+tree* tree::make_unbalanced(int numprim) // static
 {
     nd* root = new nd(0) ; 
     for(unsigned i=1 ; i < numprim ; i++) 
@@ -346,7 +351,6 @@ tree* tree::make_unbalanced(int numprim, int valueorder) // static
         root = new nd(i, root, right) ;          
     }
     tree* t = new tree(root); 
-    t->initvalue(valueorder); 
     return t ; 
 }
 
@@ -358,8 +362,10 @@ tree::tree(nd* root_)
     root(root_),
     width(num_node_r(root)),
     height(maxdepth_r(root,0)),
-    canvas(new SCanvas(width,height+1,5,4)),  // +1 as a height 0 tree is still 1 node
-    order(-1)
+    xscale(5),
+    yscale(4),
+    canvas(new SCanvas(width,height+1,xscale,yscale)),  // +1 as a height 0 tree is still 1 node
+    value_order(-1)
 {
     instrument();
     initvalue_r(root, PRE);   // must be after instrument, as uses n.pre
@@ -404,8 +410,8 @@ void tree::instrument()
 
 void tree::initvalue(int order_ )
 {
-   order = order_ ;  
-   initvalue_r(root, order);  
+   value_order = order_ ;  
+   initvalue_r(root, value_order);  
 }
 
 void tree::initvalue_r( nd* n, int order ) // static 
@@ -499,7 +505,7 @@ void tree::clear_mkr_r( nd* n )
     if( n == nullptr ) return ; 
     clear_mkr_r( n->left  ); 
     clear_mkr_r( n->right ); 
-    n->mkr = ' ' ; 
+    n->mkr = '_' ; 
 }
 
 void tree::parent_r( nd* n, int depth )
@@ -534,12 +540,13 @@ void tree::apply_cut(int cut)
     while( root != nullptr && root->cls != INCLUDE && pass < maxpass )
     {
         classify(cut);   // set n.cls n.mkr
-        prune(false); 
+        prune(false, pass); 
 
         if(verbose)
         draw("tree::apply_cut before prune", pass ); 
 
-        prune(true); 
+        prune(true, pass ); 
+
         classify(cut); 
         instrument();
 
@@ -638,27 +645,9 @@ Gets pruned to a tree of 3 prim::
     4         5                   
     I         I                   
 
-Mechanics of non-root prune:
-
-* find parent of crux node (if no parent it is root so see below)  
-* find left/right child status of crux node
-* change the child slot occupied by the crux node in its parent 
-  with the surviving child node or subtree
-
-Mechanics of root prune:
-
-* find surviving side of the crux and promote it to root
-
-
-ISSUE : are ignoring the exclude status of parent causing 
-many pointless passes before get to all include
-
-
-Following tree changes need to update tree instrumentation.
-
 **/
 
-void tree::prune(bool act)
+void tree::prune(bool act, int pass)
 {
     int num_include = num_node(INCLUDE) ; 
 
@@ -683,10 +672,33 @@ void tree::prune(bool act)
     assert(crux.size() == 1) ;  // more than one crux node not expected
 
     nd* x = crux[0] ; 
-    prune(x, act); 
+    prune_crux(x, act, pass); 
 }
 
 /**
+tree::prune_crux
+----------------------
+
+For *act:false* no tree surgery actions are taken, this is convenient for 
+seeing the classification of the tree immediately prior to taking action.   
+
+Mechanics of non-root prune:
+
+* find parent of crux node (if no parent it is root so see below)  
+* find left/right child status of crux node
+* change the child slot occupied by the crux node in its parent 
+  with the surviving child node or subtree
+
+Mechanics of root prune:
+
+* find surviving side of the crux and promote it to root
+
+ISSUE : are ignoring the exclude status of parent causing 
+many pointless passes before get to all include
+
+Following tree changes need to update tree instrumentation.
+
+
 
 
                 p
@@ -699,7 +711,7 @@ void tree::prune(bool act)
 
 **/
 
-void tree::prune( nd* x, bool act )
+void tree::prune_crux( nd* x, bool act, int pass )
 {
     assert( x && x->is_crux() ); 
     bool cut_left = x->is_cut_left() ; 
@@ -709,7 +721,13 @@ void tree::prune( nd* x, bool act )
     nd* survivor = cut_right ? x->left : x->right ; 
     assert( survivor ); 
     survivor->mkr = 'S' ; 
-    nd* p = parent(x); 
+    nd* p = parent(x);   
+
+    if( p->cls != INCLUDE )
+    {
+        printf("tree::prune_crux act:%d pass:%d parent disqualified as not INCLUDE : handle as root(of the new tree) prune \n", act, pass);
+        p = nullptr ;  
+    }
 
     if( p != nullptr )   // non-root prune
     {
@@ -720,7 +738,7 @@ void tree::prune( nd* x, bool act )
             if(act) 
             {
                 if(verbose)
-                printf("tree:prune setting p->left %s to survivor %s \n", p->left->desc(), survivor->desc() ); 
+                printf("tree::prune_crux act:%d pass:%d setting p->left %s to survivor %s \n", act, pass, p->left->desc(), survivor->desc() ); 
                 p->left = survivor ; 
             }
         }
@@ -729,7 +747,7 @@ void tree::prune( nd* x, bool act )
             if(act) 
             {
                 if(verbose)
-                printf("tree:prune setting p->right %s to survivor %s \n", p->right->desc(), survivor->desc() ); 
+                printf("tree::prune_crux act:%d pass:%d setting p->right %s to survivor %s \n", act, pass, p->right->desc(), survivor->desc() ); 
                 p->right = survivor ; 
             }
         }
@@ -739,7 +757,7 @@ void tree::prune( nd* x, bool act )
         if( act )
         { 
             if(verbose)
-            printf("tree::prune changing root to survivor\n"); 
+            printf("tree::prune_crux act:%d pass:%d changing root to survivor\n", act, pass); 
             root = survivor ;  
         }
     }
@@ -823,13 +841,19 @@ void tree::dump_r( nd* n ) const
     printf(" value %2d depth %2d mkr %c cls %c\n", n->value, n->depth, n->mkr, pcls(n->cls) ) ; 
 }
 
+
+const int tree::ORDER1 = RPRE ; 
+const int tree::ORDER2 = POST ; 
+
 void tree::draw(const char* msg, int meta)
 {
     if(!root) return ; 
     if(msg) printf("%s [%d] \n", msg, meta ); 
     canvas->clear(); 
 
-    printf("%s \n", u::OrderName(order) ); 
+    printf("vorder : %s \n", u::OrderName(value_order) ); 
+    printf("order1 : %s \n", u::OrderName(ORDER1) ); 
+    //printf("order2 : %s \n", u::OrderName(ORDER2) ); 
 
     draw_r(root); 
     canvas->print(); 
@@ -844,10 +868,11 @@ void tree::draw_r( nd* n )
     int x = n->in ; 
     int y = n->depth  ; 
 
-    canvas->draw(     x, y, 0,0, n->index(RPRE) ); 
-    canvas->draw(     x, y, 0,1, n->index(POST) ); 
-    //canvas->drawch( x, y, 0,1, pcls(n->cls) ); 
-    //canvas->drawch( x, y, 0,2, n->mkr ); 
+    canvas->draw(     x, y, 0,0, n->value ); 
+    canvas->draw(     x, y, 0,1, n->index(ORDER1)); 
+    //canvas->draw(     x, y, 0,2, n->index(ORDER2)); 
+    canvas->drawch(   x, y, 0,2, pcls(n->cls) ); 
+    canvas->drawch(   x, y, 0,3, n->mkr ); 
 }
 
 void test_flip( nd* n )
@@ -869,7 +894,9 @@ void test_cuts(int height0)
 
     for( int cut=count0 ; cut > 0 ; cut-- )
     {
-        tree* t = tree::make_complete(height0, PRE) ;
+        tree* t = tree::make_complete(height0) ;
+        t->initvalue(PRE); 
+
         int count0 = t->num_node() ; 
         t->apply_cut(cut); 
         printf("count0 %d cut %d t.desc %s\n", count0, cut, t->desc() ); 
@@ -879,7 +906,8 @@ void test_cuts(int height0)
 
 void test_unbalanced(int numprim0, int order, const char* msg=nullptr)
 {
-    tree* t = tree::make_unbalanced(numprim0, order) ; 
+    tree* t = tree::make_unbalanced(numprim0) ;
+    t->initvalue(order); 
     t->draw(msg); 
 }
 void test_unbalanced(int numprim)
@@ -896,7 +924,8 @@ void test_unbalanced(int numprim)
 
 void test_complete(int numprim0, int order, const char* msg=nullptr)
 {
-    tree* t = tree::make_complete(numprim0, order) ; 
+    tree* t = tree::make_complete(numprim0) ; 
+    t->initvalue(order); 
     t->draw(msg); 
 }
 void test_complete(int numprim)
@@ -917,7 +946,8 @@ void test_cuts_unbalanced(int numprim0)
 {
     for(int i=0 ; i < 20 ; i++)
     {
-        tree* t = tree::make_unbalanced(numprim0, POST) ; 
+        tree* t = tree::make_unbalanced(numprim0) ; 
+        t->initvalue(POST); 
         //t->draw(); 
 
         int count0 = t->num_node() ; 
@@ -934,7 +964,8 @@ void test_cut_unbalanced(int numprim0, int cut)
 {
     printf("test_cut_unbalanced numprim0 %d cut %d \n", numprim0, cut ); 
 
-    tree* t = tree::make_unbalanced(numprim0, POST) ; 
+    tree* t = tree::make_unbalanced(numprim0) ; 
+    t->initvalue(POST); 
     t->draw("before cut"); 
     t->apply_cut(cut); 
     t->draw("after cut"); 
@@ -943,7 +974,8 @@ void test_cut_unbalanced(int numprim0, int cut)
 void test_no_remaining_nodes()
 {
     int height0 = 3 ; 
-    tree* t = tree::make_complete(height0, PRE) ;
+    tree* t = tree::make_complete(height0) ;
+    t->initvalue(PRE); 
     t->draw(); 
     t->verbose = true ; 
 
@@ -961,8 +993,8 @@ void test_no_remaining_nodes()
 int main(int argc, char**argv )
 {
     /*
-    test_complete(4); 
     test_unbalanced(8); 
+    test_complete(4); 
 
     test_cuts(4); 
     test_cuts(3); 
@@ -970,10 +1002,18 @@ int main(int argc, char**argv )
 
     test_cut_unbalanced(8, 8); 
     test_cuts_unbalanced(8); 
-    */
     
-    tree* t = tree::make_complete(4, POST) ;
+    tree* t = tree::make_complete(4) ;
+    t->initvalue(POST); 
     t->draw(); 
+    */
+
+    tree* t = tree::make_unbalanced(8) ;
+    t->initvalue(POST); 
+    t->draw("before cut"); 
+
+    t->apply_cut(8); 
+    t->draw("after cut"); 
  
     return 0 ; 
 }
