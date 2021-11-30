@@ -5,7 +5,6 @@ X4IntersectTest
 Used from script extg4/xxs.sh 
 
 **/
-#include "G4Orb.hh"
 #include "OPTICKS_LOG.hh"
 #include "SSys.hh"
 #include "SStr.hh"
@@ -17,14 +16,10 @@ Used from script extg4/xxs.sh
 #include "PMTSim.hh"
 #endif
 
-const G4VSolid* MakeSolid(const char* name)
+const G4VSolid* GetSolid(const char* name)
 {
     const G4VSolid* solid = nullptr ; 
-    if( strcmp(name, "orb") == 0 )
-    {
-        solid = new G4Orb( name, 100. );
-    }
-    else if(X4GeometryMaker::CanMake(name))
+    if(X4GeometryMaker::CanMake(name))
     {
         solid = X4GeometryMaker::Make(name); 
     }
@@ -63,11 +58,13 @@ int main(int argc, char** argv)
 
     for(unsigned i=0 ; i < names.size() ; i++)
     {
-        const std::string& name = names[i]; 
-        const G4VSolid* solid = MakeSolid(name.c_str()); 
-        X4Intersect::Scan(solid, name.c_str(), "$TMP/extg4/X4IntersectTest", meta ); 
+        const std::string& name_ = names[i]; 
+        const char* name = name_.c_str() ; 
+        const G4VSolid* solid = GetSolid(name); 
+        if( solid == nullptr ) LOG(fatal) << "failed to GetSolid for name " << name ; 
+        assert( solid );   
+        X4Intersect::Scan(solid, name, "$TMP/extg4/X4IntersectTest", meta ); 
     }
-
     return 0 ; 
 }
 

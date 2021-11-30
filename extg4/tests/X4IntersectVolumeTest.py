@@ -65,7 +65,9 @@ if __name__ == '__main__':
 
     print(basedir)
     print(transforms)
-    print(transforms_meta)
+    print("transforms_meta:", transforms_meta)
+    soname_prefix = os.path.commonprefix(list(map(str, transforms_meta))) 
+    print("soname_prefix:%s" % soname_prefix)
 
     isects = {}
     for soname in transforms_meta:
@@ -86,12 +88,15 @@ if __name__ == '__main__':
         gpos = isect0.gs[:,5,:3]    # last line of the transform is translation
         ax.scatter( gpos[:,H], gpos[:,V], s=sz, color=gcol ) 
 
+
         for i, soname in enumerate(transforms_meta):
             isect = isects[soname]
             tran = np.float32(transforms[i])
             ipos = isect.isect[:,0,:3] + tran[3,:3]
             color = colors[ i % len(colors)]
-            label = str(soname[1:])   # seems labels starting "_" have special meaning 
+
+            label = str(soname)[len(soname_prefix):]
+            if label[0] == "_": label = label[1:]   # seems labels starting "_" have special meaning to mpl, causing problems
             label = label.replace("solid","s")
 
             ax.scatter( ipos[:,H], ipos[:,V], s=sz, color=color, label=label ) 

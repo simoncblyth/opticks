@@ -22,13 +22,6 @@ Used from script extg4/xxv.sh
 
 int main(int argc, char** argv)
 {
-    /*
-    setenv("JUNO_PMT20INCH_POLYCONE_NECK","ENABLED",1); 
-    setenv("JUNO_PMT20INCH_SIMPLIFY_CSG","ENABLED",1);
-    setenv("JUNO_PMT20INCH_NOT_USE_REAL_SURFACE", "ENABLED", 1); 
-    setenv("JUNO_PMT20INCH_PLUS_DYNODE", "ENABLED", 1); 
-    */
-
     OPTICKS_LOG(argc, argv); 
 
     const char* geom_default = "body_phys" ; 
@@ -46,7 +39,6 @@ int main(int argc, char** argv)
     LOG(info) << meta ; 
 
 #ifdef WITH_PMTSIM
-
     typedef std::vector<double> VD ; 
     typedef std::vector<G4VSolid*> VS ; 
 

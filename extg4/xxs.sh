@@ -8,7 +8,7 @@ Provides 2D cross section plots of G4VSolid provided from j/PMTSim.
 The configuration of solid/volume modelling is controlled by 
 envvars that are now set by PMTSim::SetEnvironmentSwitches
 based on string suffixes to the requested solid or volume names. 
-This simplifies bookeeping during development.  
+This simplifies bookkeeping during development.  
 
 These name suffix opts should perhaps be moved to a separate opts argument
 once developments are nearly finalized. 
@@ -27,9 +27,41 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
+
+## X4GeometryMaker debug solids
+
 #geom=orb
+#geom=AdditionAcrylicConstruction
+#geom=BoxMinusTubs0
+#geom=BoxMinusTubs1
 #geom=UnionOfHemiEllipsoids
-#geom=UnionOfHemiEllipsoids-50
+
+## PMTSim debug solids 
+
+#geom=polycone
+#geom=polycone_zcut-150
+#geom=two_tubs_union
+#geom=three_tubs_union
+#geom=three_tubs_union_zcut-700
+#geom=ten_tubs_union_zcut-630
+#geom=ten_tubs_union_zcut-420
+
+## PMTSim *maker* solids, always give same solid for each maker
+
+#geom=nnvt_maker_zcut-183.25
+#geom=nnvt_maker_zcut-300.0
+#geom=nnvt_maker_zcut-350.0
+#geom=nnvt_maker_zcut-400.0
+#geom=nnvt_maker_zcut-500.0
+
+#geom=hama_maker_zcut-183.25
+#geom=hama_maker_zcut-300.0
+#geom=hama_maker_zcut-350.0
+#geom=hama_maker_zcut-400.0
+#geom=hama_maker_zcut-500.0
+
+
+
 #geom=pmt_solid
 #geom=I
 #geom=III
@@ -43,32 +75,26 @@ msg="=== $BASH_SOURCE :"
 #geom=inner2_solid_zcut
 #geom=pmt_solid_zcut
 #geom=body_solid,inner2_solid   
-#geom=CutTail_HamaPMT_Solid,inner2_solid
 
-#geom=polycone
-#geom=polycone_zcut-150
-#geom=two_tubs_union
-#geom=three_tubs_union
-#geom=three_tubs_union_zcut-700
-#geom=ten_tubs_union_zcut-630
-geom=ten_tubs_union_zcut-420
 
-#geom=maker_body_solid_zcut+100.0
-#geom=maker_body_solid_zcut-0.0
-#geom=maker_body_solid_zcut-100.0
-#geom=maker_body_solid_zcut-183.25
-#geom=maker_body_solid_zcut-200.0
-#geom=maker_body_solid_zcut-300.0
-#geom=maker_body_solid_zcut-350.0
-#geom=maker_body_solid_zcut-400.0
-#geom=maker_body_solid_zcut-500.0
+## *manager* solids yield different shapes depending on the string between prefix and options
+## _nurs "not-use-real-surface" option switches off manager level z-cutting 
+## _pdyn adds dynode volumes inside inner2_log so need volume level xxv.sh to see effect 
+## _pcnk and _scsg are in process of becoming the defaults 
 
-#geom=maker_body_solid
-#geom=body_solid_pcnk_scsg_nurs_pdyn
-#geom=body_solid
+#geom=nnvt_body_solid
+#geom=nnvt_body_solid_nurs
+
+#geom=hama_body_solid
+geom=hama_body_solid_nurs
+
+#geom=body_solid_nurs_pdyn
 #geom=body_solid_pcnk
 #geom=body_solid_nurs
 #geom=body_solid_nurs_pcnk
+
+
+
 
 
 export GEOM=${GEOM:-$geom}
@@ -118,7 +144,7 @@ fi
 
 
 case ${GEOM} in
-   ten_tubs_union*) zz=0,-70,-140,-210,-280,-350,-420,-490,-560,-630 ;  zzd=-605,-630  ;;
+   ten_tubs_union*) zz=0,-70,-140,-210,-280,-350,-420,-490,-560,-630  ;;
 esac
 
 

@@ -25,14 +25,12 @@ bool X4GeometryMaker::StartsWith( const char* n, const char* q ) // static
 bool X4GeometryMaker::CanMake(const char* qname) // static 
 {
     std::vector<std::string> names = {
-       "default",
+       "orb",
        "AdditionAcrylicConstruction",
        "BoxMinusTubs0",
        "BoxMinusTubs1",
        "UnionOfHemiEllipsoids"
     } ; 
-
-    //bool found = std::find(names.begin(), names.end(), name) != names.end() ; 
 
     bool found = false ; 
     for( unsigned i=0 ; i < names.size() ; i++)
@@ -59,7 +57,7 @@ bool X4GeometryMaker::CanMake(const char* qname) // static
 const G4VSolid* X4GeometryMaker::Make(const char* qname)  // static
 {
     const G4VSolid* solid = nullptr ; 
-    if(     StartsWith("default",qname))                      solid = X4GeometryMaker::make_default(qname);  
+    if(     StartsWith("orb",qname))                          solid = X4GeometryMaker::make_orb(qname); 
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4GeometryMaker::make_AdditionAcrylicConstruction(qname); 
     else if(StartsWith("BoxMinusTubs0",qname))                solid = X4GeometryMaker::make_BoxMinusTubs0(qname); 
     else if(StartsWith("BoxMinusTubs1",qname))                solid = X4GeometryMaker::make_BoxMinusTubs1(qname); 
@@ -68,7 +66,7 @@ const G4VSolid* X4GeometryMaker::Make(const char* qname)  // static
     return solid ; 
 }
 
-const G4VSolid* X4GeometryMaker::make_default(const char* name)
+const G4VSolid* X4GeometryMaker::make_orb(const char* name)
 {
     return new G4Orb(name, 100.) ; 
 }
