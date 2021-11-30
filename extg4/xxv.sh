@@ -14,12 +14,14 @@ msg="=== $BASH_SOURCE :"
 
 #geom=hama_body_phys_nurs
 #geom=hama_body_phys_nurs_pdyn
+#geom=hama_body_phys_nurs_pdyn_prtc_obto
 #geom=hama_body_phys_pdyn
 #geom=hama_body_phys
 
 #geom=nnvt_body_phys_nurs
-#geom=nnvt_body_phys_nurs_pdyn
-geom=nnvt_body_phys_pdyn
+geom=nnvt_body_phys_nurs_pdyn
+#geom=nnvt_body_phys_nurs_pdyn_prtc_obto
+#geom=nnvt_body_phys_pdyn
 #geom=nnvt_body_phys
 
 

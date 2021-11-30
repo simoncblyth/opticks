@@ -13,20 +13,21 @@ This simplifies bookkeeping during development.
 These name suffix opts should perhaps be moved to a separate opts argument
 once developments are nearly finalized. 
 
-+--------+------------------------------------------------+----------------------------------------------+
-| suffix | key                                            | note                                         | 
-+========+================================================+==============================================+
-| _pcnk  | JUNO_PMT20INCH_POLYCONE_NECK=ENABLED           |                                              | 
-| _scsg  | JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED            |                                              |
-| _nurs  | JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    |                                              |
-| _pdyn  | JUNO_PMT20INCH_PLUS_DYNODE=ENABLED             | xxs is for single solids, so not useful here |
-+--------+------------------------------------------------+----------------------------------------------+
++--------+------------------------------------------------+-----------------------------------------------------------------------------------+
+| suffix | key                                            | note                                                                              | 
++========+================================================+===================================================================================+
+| _pcnk  | JUNO_PMT20INCH_POLYCONE_NECK=ENABLED           | switch now removed, as is now the default                                         | 
+| _obto  | JUNO_PMT20INCH_OBSOLETE_TORUS_NECK=ENABLED     | obsolete torus neck, fails without also _prtc                                     |
+| _prtc  | JUNO_PMT20INCH_PROFLIGATE_TAIL_CUT=ENABLED     | profligate tail cut                                                               |
+| _scsg  | JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED            |                                                                                   |
+| _nurs  | JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    | switch off manager level z-cutting                                                |
+| _pdyn  | JUNO_PMT20INCH_PLUS_DYNODE=ENABLED             | adds dynode volumes inside inner2_log so need to look at xxv.sh to see effect     |
++--------+------------------------------------------------+-----------------------------------------------------------------------------------+
 
 EOU
 }
 
 msg="=== $BASH_SOURCE :"
-
 
 ## X4GeometryMaker debug solids
 
@@ -60,8 +61,6 @@ msg="=== $BASH_SOURCE :"
 #geom=hama_maker_zcut-400.0
 #geom=hama_maker_zcut-500.0
 
-
-
 #geom=pmt_solid
 #geom=I
 #geom=III
@@ -78,23 +77,16 @@ msg="=== $BASH_SOURCE :"
 
 
 ## *manager* solids yield different shapes depending on the string between prefix and options
-## _nurs "not-use-real-surface" option switches off manager level z-cutting 
-## _pdyn adds dynode volumes inside inner2_log so need volume level xxv.sh to see effect 
-## _pcnk and _scsg are in process of becoming the defaults 
 
 #geom=nnvt_body_solid
 #geom=nnvt_body_solid_nurs
 
 #geom=hama_body_solid
-geom=hama_body_solid_nurs
-
+#geom=hama_body_solid_nurs
+#geom=hama_body_solid_prtc
+geom=hama_body_solid_prtc_obto
 #geom=body_solid_nurs_pdyn
-#geom=body_solid_pcnk
 #geom=body_solid_nurs
-#geom=body_solid_nurs_pcnk
-
-
-
 
 
 export GEOM=${GEOM:-$geom}

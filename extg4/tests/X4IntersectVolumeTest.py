@@ -59,15 +59,17 @@ if __name__ == '__main__':
     figname = "isect"
     print("figsdir %s " % figsdir)
 
-    topline = "X4IntersectVolumeTest.py"
-    botline = "%s/%s " % (reldir, geom)
-    thirdline = "thirdline"
-
     print(basedir)
     print(transforms)
     print("transforms_meta:", transforms_meta)
     soname_prefix = os.path.commonprefix(list(map(str, transforms_meta))) 
     print("soname_prefix:%s" % soname_prefix)
+
+
+    topline = "X4IntersectVolumeTest.py"
+    botline = "%s/%s " % (reldir, geom)
+    thirdline = soname_prefix
+
 
     isects = {}
     for soname in transforms_meta:
@@ -87,7 +89,6 @@ if __name__ == '__main__':
         isect0 = isects[soname0]
         gpos = isect0.gs[:,5,:3]    # last line of the transform is translation
         ax.scatter( gpos[:,H], gpos[:,V], s=sz, color=gcol ) 
-
 
         for i, soname in enumerate(transforms_meta):
             isect = isects[soname]
