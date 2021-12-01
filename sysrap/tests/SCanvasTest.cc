@@ -1,4 +1,4 @@
-// name=SCanvasTest ; gcc $name.cc -std=c++11 -I.. -lstdc++ -o /tmp/$name && VERBOSE=1 /tmp/$name
+// name=SCanvasTest ; gcc $name.cc -std=c++11 -I.. -lstdc++ -Wsign-compare -o /tmp/$name && VERBOSE=1 /tmp/$name
 #include "SCanvas.hh"
 
 void test_draw_int()

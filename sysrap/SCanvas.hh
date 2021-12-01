@@ -73,11 +73,11 @@ inline void SCanvas::clear()
 
 inline void SCanvas::drawtest()
 {
-    for(int ix=0 ; ix < width ;  ix++ )
-    for(int iy=0 ; iy < height ; iy++ )
+    for(int ix=0 ; ix < int(width) ;  ix++ )
+    for(int iy=0 ; iy < int(height) ; iy++ )
     {
-        for(int dx=0 ; dx < xscale ; dx++)
-        for(int dy=0 ; dy < yscale ; dy++)
+        for(int dx=0 ; dx < int(xscale) ; dx++)
+        for(int dy=0 ; dy < int(yscale) ; dy++)
         {
             draw(ix,iy,dx,dy, dx);
         }
@@ -106,16 +106,16 @@ inline void SCanvas::draw(int ix, int iy, int dx, int dy, const char* txt)
 
 inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   // 0,0 is at top left 
 {
-    assert( ix < width  ); 
-    assert( iy < height  ); 
-    assert( dx < xscale ); 
-    assert( dy < yscale ); 
+    assert( ix < int(width)  ); 
+    assert( iy < int(height)  ); 
+    assert( dx < int(xscale) ); 
+    assert( dy < int(yscale) ); 
 
     int x = ix*xscale + dx ; 
     int y = iy*yscale + dy ; 
     int l = strlen(txt) ; 
 
-    if(!( x + l < nx && y < ny ))
+    if(!( x + l < int(nx) && y < int(ny) ))
     {
         printf("SCanvas::_draw error out of range x+l %d  nx %d  y %d ny %d \n", x+l, nx, y, ny ); 
         return ; 
@@ -123,7 +123,7 @@ inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   //
 
     int offset = y*nx + x ;  
 
-    if(!(offset + l < nx*ny ))
+    if(!(offset + l < int(nx*ny) ))
     {
         printf("SCanvas::_draw error out of range offset+l %d  nx*ny %d \n", offset+l, nx*ny ); 
         return ; 
