@@ -49,17 +49,18 @@ msg="=== $BASH_SOURCE :"
 
 ## PMTSim *maker* solids, always give same solid for each maker
 
-#geom=nnvt_maker_zcut-183.25
-#geom=nnvt_maker_zcut-300.0
-#geom=nnvt_maker_zcut-350.0
-#geom=nnvt_maker_zcut-400.0
 #geom=nnvt_maker_zcut-500.0
+#geom=nnvt_maker_zcut-400.0
+#geom=nnvt_maker_zcut-350.0
+#geom=nnvt_maker_zcut-300.0
+geom=nnvt_maker_zcut-200.0
+#geom=nnvt_maker_zcut-183.25
 
-#geom=hama_maker_zcut-183.25
-#geom=hama_maker_zcut-300.0
-#geom=hama_maker_zcut-350.0
-#geom=hama_maker_zcut-400.0
 #geom=hama_maker_zcut-500.0
+#geom=hama_maker_zcut-400.0
+#geom=hama_maker_zcut-350.0
+#geom=hama_maker_zcut-300.0
+#geom=hama_maker_zcut-183.25
 
 #geom=pmt_solid
 #geom=I
@@ -84,7 +85,7 @@ msg="=== $BASH_SOURCE :"
 #geom=hama_body_solid
 #geom=hama_body_solid_nurs
 #geom=hama_body_solid_prtc
-geom=hama_body_solid_prtc_obto
+#geom=hama_body_solid_prtc_obto
 #geom=body_solid_nurs_pdyn
 #geom=body_solid_nurs
 
@@ -165,8 +166,14 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo run error && exit 1 
 fi  
 if [ "${arg/ana}"  != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i tests/X4IntersectSolidTest.py 
-    [ $? -ne 0 ] && echo ana error && exit 2
+
+    if [ -n "$SCANNER" ]; then 
+        ${IPYTHON:-ipython} --pdb tests/X4IntersectSolidTest.py 
+        [ $? -ne 0 ] && echo ana noninteractive error && exit 2
+    else
+        ${IPYTHON:-ipython} --pdb -i tests/X4IntersectSolidTest.py 
+        [ $? -ne 0 ] && echo ana interactive error && exit 2
+    fi
 fi 
 
 exit 0 

@@ -4,7 +4,8 @@ usage(){ cat << EOU
 xxv.sh : Volume equivalent of xxs.sh 
 ===============================================
 
-Provides 2D cross section plots of the G4VSolid in a PV tree of solids with structure transforms applied to intersects
+Provides 2D cross section plots of the G4VSolid in a PV tree of solids with structure transforms applied to intersects.
+To run over all the commented and uncommented geom listed in xxv.sh below use ./xxv_scan.sh 
 
 EOU
 }
@@ -70,8 +71,15 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo run error && exit 1 
 fi  
 if [ "${arg/ana}"  != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i tests/X4IntersectVolumeTest.py 
-    [ $? -ne 0 ] && echo ana error && exit 2
+
+    if [ -n "$SCANNER" ]; then 
+        ${IPYTHON:-ipython} --pdb  tests/X4IntersectVolumeTest.py 
+        [ $? -ne 0 ] && echo ana noninteractive error && exit 2
+    else
+        ${IPYTHON:-ipython} --pdb -i tests/X4IntersectVolumeTest.py 
+        [ $? -ne 0 ] && echo ana interactive error && exit 2
+    fi
+
 fi 
 
 exit 0 

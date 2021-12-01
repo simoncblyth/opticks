@@ -42,7 +42,7 @@ Usage::
     ./pub.sh      # emit to stdout both the above
 
 """
-import os, sys, logging
+import os, sys, logging, argparse
 log = logging.getLogger(__name__) 
 
 class Pub(object):
@@ -164,28 +164,43 @@ class Pub(object):
         return "\n".join(self.cmds)
         #return "\n".join(self.res)
 
+
+def parse_args(doc, **kwa):
+    parser = argparse.ArgumentParser(doc)
+    parser.add_argument( "--level", default="info", help="logging level" ) 
+    parser.add_argument( "args", nargs="*", help="arg" )
+    args = parser.parse_args()
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+    return args  
+
+
+
 if __name__ == '__main__':
      logging.basicConfig(level=logging.INFO)
 
-     arg = sys.argv[1] if len(sys.argv) > 1 else None
+     pargs = parse_args(__doc__)
+     args = pargs.args 
 
      p = Pub()
-     if arg == "cp":
-         print(p)
-     elif arg == "help":
-         print(__doc__)
-     elif arg == "s5":
-         print(repr(p))
-     elif arg == "t5":
-         print(p.s5_titles())
-     elif arg == "sp":
-         print("\n".join(p.spaths()))
-     elif arg == "dp":
-         print("\n".join(p.dpaths()))
-     elif arg == "xdp":
-         print("\n".join(p.existing_dpaths()))
-     else:
-         print(p)
-         print(repr(p))
+     for arg in args:
+         if arg == "cp":
+             print(p)
+         elif arg == "help":
+             print(__doc__)
+         elif arg == "s5":
+             print(repr(p))
+         elif arg == "t5":
+             print(p.s5_titles())
+         elif arg == "sp":
+             print("\n".join(p.spaths()))
+         elif arg == "dp":
+             print("\n".join(p.dpaths()))
+         elif arg == "xdp":
+             print("\n".join(p.existing_dpaths()))
+         else:
+             print(p)
+             print(repr(p))
+         pass
      pass
 
