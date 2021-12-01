@@ -2,7 +2,7 @@
 
 name=TreePruneTest 
 
-gcc $name.cc -g -I. -std=c++11 -lstdc++ -o /tmp/$name 
+gcc $name.cc -g -I.. -std=c++11 -lstdc++ -o /tmp/$name 
 [ $? -ne 0 ] && echo compile fail && exit 1
 
 

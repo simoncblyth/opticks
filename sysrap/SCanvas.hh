@@ -1,4 +1,13 @@
 #pragma once
+
+/**
+SCanvas : ascii "painting"
+==============================
+
+Used for rendering CSG trees by ZSolid::Draw 
+
+**/
+
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
@@ -19,16 +28,18 @@ struct SCanvas
     void resize(unsigned width, unsigned height);
     void clear(); 
     void drawtest(); 
+
     void draw(   int ix, int iy, int dx, int dy, int val); 
     void drawch( int ix, int iy, int dx, int dy, char ch); 
     void draw(   int ix, int iy, int dx, int dy, const char* txt);
     void _draw(  int ix, int iy, int dx, int dy, const char* txt);      // 0,0 is at top left 
 
     void print(const char* msg=nullptr) const ; 
+    const char* desc() const ; 
 };
 
 
-SCanvas::SCanvas(unsigned width_, unsigned height_, unsigned xscale_, unsigned yscale_)
+inline SCanvas::SCanvas(unsigned width_, unsigned height_, unsigned xscale_, unsigned yscale_)
     :
     verbose(getenv("VERBOSE")!=nullptr),
     xscale(xscale_), 
@@ -130,5 +141,10 @@ inline void SCanvas::print(const char* msg) const
         printf("\n%s",c);
 }
 
-
+inline const char* SCanvas::desc() const 
+{
+    char msg[200] ; 
+    snprintf(msg, 200, "SCanvas::desc width %d height %d xscale %d yscale %d nx %d ny %d", width, height, xscale, yscale, nx, ny ); 
+    return strdup(msg); 
+}
 
