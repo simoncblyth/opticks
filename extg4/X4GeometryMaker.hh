@@ -14,6 +14,7 @@ struct X4_API X4GeometryMaker
     static const G4VSolid* Make(const char* name); 
 
     static const G4VSolid* make_orb(const char* name); 
+    static const G4VSolid* make_SphereWithPhiSegment(const char* name); 
     static const G4VSolid* make_AdditionAcrylicConstruction(const char* name);
     static const G4VSolid* make_BoxMinusTubs0(const char* name);
     static const G4VSolid* make_BoxMinusTubs1(const char* name); 

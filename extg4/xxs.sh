@@ -46,6 +46,7 @@ msg="=== $BASH_SOURCE :"
 #geom=three_tubs_union_zcut-700
 #geom=ten_tubs_union_zcut-630
 #geom=ten_tubs_union_zcut-420
+geom=SphereWithPhiSegment 
 
 ## PMTSim *maker* solids, always give same solid for each maker
 
@@ -53,7 +54,7 @@ msg="=== $BASH_SOURCE :"
 #geom=nnvt_maker_zcut-400.0
 #geom=nnvt_maker_zcut-350.0
 #geom=nnvt_maker_zcut-300.0
-geom=nnvt_maker_zcut-200.0
+#geom=nnvt_maker_zcut-200.0
 #geom=nnvt_maker_zcut-183.25
 
 #geom=hama_maker_zcut-500.0

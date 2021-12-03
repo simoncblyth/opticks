@@ -26,6 +26,7 @@ bool X4GeometryMaker::CanMake(const char* qname) // static
 {
     std::vector<std::string> names = {
        "orb",
+       "SphereWithPhiSegment",
        "AdditionAcrylicConstruction",
        "BoxMinusTubs0",
        "BoxMinusTubs1",
@@ -58,6 +59,7 @@ const G4VSolid* X4GeometryMaker::Make(const char* qname)  // static
 {
     const G4VSolid* solid = nullptr ; 
     if(     StartsWith("orb",qname))                          solid = X4GeometryMaker::make_orb(qname); 
+    else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4GeometryMaker::make_SphereWithPhiSegment(qname); 
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4GeometryMaker::make_AdditionAcrylicConstruction(qname); 
     else if(StartsWith("BoxMinusTubs0",qname))                solid = X4GeometryMaker::make_BoxMinusTubs0(qname); 
     else if(StartsWith("BoxMinusTubs1",qname))                solid = X4GeometryMaker::make_BoxMinusTubs1(qname); 
@@ -70,6 +72,24 @@ const G4VSolid* X4GeometryMaker::make_orb(const char* name)  // static
 {
     return new G4Orb(name, 100.) ; 
 }
+
+const G4VSolid* X4GeometryMaker::make_SphereWithPhiSegment(const char* name)  // static
+{
+    //double phi_fraction = 2.0 ; 
+    double phi_fraction = 0.2 ; 
+
+    assert( phi_fraction <= 2.0 );    
+    G4String pName = name ; 
+    G4double pRmin = 0. ; 
+    G4double pRmax = 100. ; 
+    G4double pSPhi = 0. ;  
+    G4double pDPhi = phi_fraction*2.*pi ; 
+    G4double pSTheta = 0. ; 
+    G4double pDTheta = pi ;   // pi/2 gives hemi
+
+    return new G4Sphere(pName, pRmin, pRmax, pSPhi, pDPhi, pSTheta, pDTheta ); 
+}
+
 
 const G4VSolid* X4GeometryMaker::make_AdditionAcrylicConstruction(const char* name)
 {
