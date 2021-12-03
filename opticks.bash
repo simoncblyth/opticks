@@ -1555,7 +1555,7 @@ opticks-full-externals()
 
     echo $msg config-ing the foreign
     opticks-foreign
-    opticks-foreign-pc
+    #opticks-foreign-pc
     rc=$?
     [ $rc -ne 0 ] && return $rc
 

@@ -68,6 +68,7 @@ foreach(TEST_CC_SRC ${TEST_SOURCES})
     set(testname ${name}.${TGT})
     add_test(${testname} ${TGT})
 
+    #target_compile_definitions( ${TGT} PUBLIC G4MULTITHREADED G4USE_STD11 )
     target_link_libraries(${TGT} PUBLIC ExtG4 )
 
     install(TARGETS ${TGT} DESTINATION lib)

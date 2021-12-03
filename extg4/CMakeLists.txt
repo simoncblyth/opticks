@@ -33,6 +33,7 @@ find_package(GGeo       REQUIRED CONFIG)
 set(OpticksXercesC_VERBOSE ON)
 find_package(OpticksXercesC REQUIRED MODULE)
 
+message(STATUS "Geant4_DEFINITIONS:${Geant4_DEFINITIONS} ")
 
 
 find_package(CLHEP      REQUIRED CONFIG) #   Geant4 should have found it already
@@ -203,8 +204,24 @@ target_link_libraries( ${name} PUBLIC
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
 )
+target_compile_definitions( ${name} PUBLIC OPTICKS_X4 )  
 
-target_compile_definitions( ${name} PUBLIC OPTICKS_X4 ) 
+#target_compile_definitions( ${name} PUBLIC G4MULTITHREADED G4USE_STD11 ) 
+#target_compile_definitions( ${name} PUBLIC G4MULTITHREADED ) 
+target_compile_definitions( ${name} PUBLIC G4USE_STD11 )  
+
+#[=[
+without G4USE_STD11 in use for compilation of the lib many of the tests fail to link 
+when using the shared cvmfs Geant4 external with error:
+
+   undefined reference to `G4MTHepRandom::getTheEngine()'
+
+The error shows up when linking the executables but the problem is with the lib. 
+Fragility comes from a big switch in the  Randomize.hh header 
+
+#]=]
+
+
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
