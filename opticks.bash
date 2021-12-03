@@ -19,11 +19,11 @@
 
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
 
-o(){ opticks- ; cd $(opticks-home) ; git status ; } 
-oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ;  }
-oot(){ oo ; opticks-t ; }
-t(){ typeset -f $* ; } 
-rc(){ local RC=$?; echo RC $RC; return $RC ; }
+o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  } 
+oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
+oot(){ oo ; opticks-t ; : opticks.bash ; }
+t(){ typeset -f $*    ; : opticks.bash ; } 
+rc(){ local RC=$?; echo RC $RC; return $RC ; : opticks.bash ;  }
 
 
 opticks-source(){   echo $BASH_SOURCE ; }

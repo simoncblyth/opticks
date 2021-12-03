@@ -66,7 +66,7 @@ const G4VSolid* X4GeometryMaker::Make(const char* qname)  // static
     return solid ; 
 }
 
-const G4VSolid* X4GeometryMaker::make_orb(const char* name)
+const G4VSolid* X4GeometryMaker::make_orb(const char* name)  // static
 {
     return new G4Orb(name, 100.) ; 
 }

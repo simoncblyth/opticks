@@ -6,6 +6,7 @@
 #include "squad.h"
 
 #include "X4_API_EXPORT.hh"
+#include "G4ThreeVector.hh"
 
 struct quad4 ; 
 struct quad6 ; 
