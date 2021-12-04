@@ -42,6 +42,8 @@ struct CSG_GGEO_API CSG_GGeo_Convert
 
     CSGPrim*  convertPrim(const GParts* comp, unsigned primIdx );
     CSGNode*  convertNode(const GParts* comp, unsigned primIdx, unsigned partIdxRel );
+    static std::vector<float4>* GetPlanes(const GParts* comp, unsigned primIdx, unsigned partIdxRel ); 
+    static void DumpPlanes( const std::vector<float4>& planes , const char* msg="CSG_GGeo_Convert::DumpPlanes" ); 
 
 
     // below is called non-standardly during debugging when envvar ONE_PRIM_SOLID is defined 

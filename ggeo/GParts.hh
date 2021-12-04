@@ -281,8 +281,8 @@ class GGEO_API GParts {
         unsigned getBoundary(unsigned partIdx) const ;
 
         // plane accessors 
-        unsigned getPlaneIdx(unsigned partIdx) const ; 
-        unsigned getPlaneNum(unsigned partIdx) const ; 
+        unsigned getPlanIdx(unsigned partIdx) const ; 
+        unsigned getPlanNum(unsigned partIdx) const ; 
 
 
         unsigned  getNumTran() const ; 
@@ -306,6 +306,7 @@ class GGEO_API GParts {
         int          getNumParts(unsigned primIdx) const ;
         unsigned     getTypeMask(unsigned primIdx, bool operators_only) const ; 
 
+    public:
         int          getTranOffset(unsigned primIdx) const ; 
         int          getPlanOffset(unsigned primIdx) const ;
    public:

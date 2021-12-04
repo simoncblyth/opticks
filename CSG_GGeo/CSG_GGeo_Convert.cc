@@ -494,25 +494,12 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     bool complement = comp->getComplement(partIdx);
 
     bool has_planes = CSG::HasPlanes(tc); 
-
-    if(has_planes)
-    {
-        unsigned planeIdx = comp->getPlaneIdx(partIdx); 
-        unsigned planeNum = comp->getPlaneNum(partIdx); 
-        LOG(info)
-            << " has_planes " << has_planes 
-            << " planeIdx " << planeIdx
-            << " planeNum " << planeNum
-            ;
-    }
-
+    std::vector<float4>* planes = has_planes ? GetPlanes(comp, primIdx, partIdxRel) : nullptr ; 
 
     const float* aabb = nullptr ;  
 
     CSGNode nd = CSGNode::Make(tc, param, aabb ) ; 
-    const std::vector<float4>* pl=nullptr ; 
-
-    CSGNode* n = foundry->addNode(nd, pl);
+    CSGNode* n = foundry->addNode(nd, planes );
     n->setIndex(partIdx); 
 
     if( tc == CSG_CONVEXPOLYHEDRON )
@@ -550,10 +537,63 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     }
 
     return n ; 
-
 }
 
 
+std::vector<float4>* CSG_GGeo_Convert::GetPlanes(const GParts* comp, unsigned primIdx, unsigned partIdxRel ) // static
+{
+    unsigned partOffset = comp->getPartOffset(primIdx) ;
+    unsigned partIdx = partOffset + partIdxRel ;
+ 
+    unsigned tc = comp->getTypeCode(partIdx);
+    bool has_planes = CSG::HasPlanes(tc); 
+    assert(has_planes); 
+
+    unsigned planIdx = comp->getPlanIdx(partIdx); 
+    unsigned planNum = comp->getPlanNum(partIdx); 
+    NPY<float>* pl_buf = comp->getPlanBuffer(); 
+
+    bool pl_expect = pl_buf->hasShape(planNum, 4) ; 
+    if(!pl_expect)
+        LOG(fatal)
+           << " unexpected pl_buf " << pl_buf->getShapeString()
+           ;
+
+    assert( pl_expect ); 
+
+    std::vector<float4>* planes = new std::vector<float4>(planNum) ; 
+    unsigned num_bytes = sizeof(float)*4*planNum ; 
+
+    memcpy( (char*)planes->data(),  pl_buf->getBytes(),  num_bytes );  
+
+    LOG(info)
+        << " has_planes " << has_planes 
+        << " planIdx " << planIdx
+        << " planNum " << planNum
+        ;
+
+    if(planes) DumpPlanes(*planes, "CSG_GGeo_Convert::GetPlanes" ); 
+
+    return planes ; 
+}
+
+void CSG_GGeo_Convert::DumpPlanes( const std::vector<float4>& planes , const char* msg ) // static
+{
+    std::cout << msg << std::endl ; 
+    for(unsigned i=0 ; i < planes.size() ; i++)
+    {
+        const float4& p = planes[i] ; 
+        std::cout 
+            << " i " << std::setw(4) << i 
+            << " p ( " << std::setw(10) << std::fixed << std::setprecision(3) << p.x  
+            << " " << std::setw(10) << std::fixed << std::setprecision(3) << p.y
+            << " " << std::setw(10) << std::fixed << std::setprecision(3) << p.z  
+            << " " << std::setw(10) << std::fixed << std::setprecision(3) << p.w
+            << " )"
+            << std::endl
+            ;   
+    }
+}
 
 /**
 CSG_GGeo_Convert::addOnePrimSolid
@@ -569,8 +609,6 @@ code paths to do this, just reusing the existing machinery applied to the extra 
 Note that repeatIdx/solidIdx/gasIdx are mostly referring to the same thing 
 with nuances of which stage they are at. 
 **/
-
-
 
 void CSG_GGeo_Convert::addOnePrimSolid(unsigned solidIdx)
 {

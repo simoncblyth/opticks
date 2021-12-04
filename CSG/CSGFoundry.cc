@@ -746,6 +746,11 @@ CSGSolid* CSGFoundry::make(const char* name)
 CSGFoundry::addNode
 --------------------
 
+Note that the planeIdx and planeNum of the CSGNode are 
+rewritten based on the number of planes for this nd 
+and the number of planes collected already into
+the global plan vector. 
+
 **/
 
 CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl )

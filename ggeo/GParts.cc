@@ -2098,7 +2098,7 @@ unsigned GParts::getBoundary(unsigned partIdx) const
 
 
 /**
-GParts::getPlaneIdx GParts::getPlaneNum
+GParts::getPlanIdx GParts::getPlanNum
 -----------------------------------------
 
 Plane related accessors, to understand where this content 
@@ -2106,11 +2106,11 @@ comes from see NCSG::export_planes
 
 **/
 
-unsigned GParts::getPlaneIdx(unsigned partIdx) const 
+unsigned GParts::getPlanIdx(unsigned partIdx) const 
 {
     return getUInt(partIdx, PLANEIDX_J, PLANEIDX_K);       // (0,0) q0.u.x
 }
-unsigned GParts::getPlaneNum(unsigned partIdx) const 
+unsigned GParts::getPlanNum(unsigned partIdx) const 
 {
     return getUInt(partIdx, PLANENUM_J, PLANENUM_K);       // (0,1) q0.u.y
 }
