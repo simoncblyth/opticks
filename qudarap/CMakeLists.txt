@@ -67,6 +67,7 @@ set(SOURCES
 SET(HEADERS
     QUDARAP_LOG.hh
     QUDARAP_API_EXPORT.hh
+    QUDA_CHECK.h
 
     QSim.hh
     qsim.h
