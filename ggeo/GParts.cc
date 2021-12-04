@@ -1937,14 +1937,14 @@ std::string GParts::getTag(unsigned partIdx) const
     return CSG::Tag((OpticksCSG_t)tc);
 }
      
-float* GParts::getValues(unsigned int i, unsigned int j, unsigned int k)
+float* GParts::getValues(unsigned int i, unsigned int j, unsigned int k) const 
 {
     float* data = m_part_buffer->getValues();
     float* ptr = data + i*NJ*NK+j*NJ+k ;
     return ptr ; 
 }
      
-gfloat3 GParts::getGfloat3(unsigned int i, unsigned int j, unsigned int k)
+gfloat3 GParts::getGfloat3(unsigned int i, unsigned int j, unsigned int k) const 
 {
     float* ptr = getValues(i,j,k);
     return gfloat3( *ptr, *(ptr+1), *(ptr+2) ); 
@@ -1991,12 +1991,14 @@ Suspect this is only valid for old partlist which carry the bbox
 rather than the CSG node tree which needs to call bounds methods
 with the analytic parameters to get the bbox.
 
+However nconvexpolyhedron should normally have this set..
+
 **/
 
-nbbox GParts::getBBox(unsigned int i)
+nbbox GParts::getBBox(unsigned int i) const 
 {
-   gfloat3 min = getGfloat3(i, BBMIN_J, BBMIN_K );  
-   gfloat3 max = getGfloat3(i, BBMAX_J, BBMAX_K );  
+   gfloat3 min = getGfloat3(i, BBMIN_J, BBMIN_K );  // (2,0)
+   gfloat3 max = getGfloat3(i, BBMAX_J, BBMAX_K );  // (3,0) 
    nbbox bb = make_bbox(min.x, min.y, min.z, max.x, max.y, max.z);  
    return bb ; 
 }
@@ -2051,41 +2053,66 @@ void GParts::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned in
 }
 
 
-
-
 unsigned GParts::getNodeIndex(unsigned partIdx) const    
 {
     return getUInt(partIdx, NODEINDEX_J, NODEINDEX_K);  // hmm NODEINDEX slot is used for GTRANSFORM 
 }
 
+
+
+/**
+GParts::getGTransform GParts::getComplement GParts::getTypeCode
+------------------------------------------------------------------
+
+partIdx accessors (ie single node level)
+
+* see npy/NPart.h 
+* 
+
+
+**/
+
 unsigned GParts::getGTransform(unsigned partIdx) const 
 {
-    unsigned q3_u_w = getUInt(partIdx, GTRANSFORM_J, GTRANSFORM_K);
+    unsigned q3_u_w = getUInt(partIdx, GTRANSFORM_J, GTRANSFORM_K);   // (3,3) q3.u.w
     return q3_u_w & 0x7fffffff ; 
 }
 bool GParts::getComplement(unsigned partIdx) const 
 {
-    unsigned q3_u_w = getUInt(partIdx, GTRANSFORM_J, GTRANSFORM_K);
+    unsigned q3_u_w = getUInt(partIdx, GTRANSFORM_J, GTRANSFORM_K);   // (3,3) q3.u.w
     return q3_u_w & 0x80000000  ; 
 }
-
-
-
-
-
-
-
 unsigned GParts::getTypeCode(unsigned partIdx) const 
 {
-    return getUInt(partIdx, TYPECODE_J, TYPECODE_K);
+    return getUInt(partIdx, TYPECODE_J, TYPECODE_K);       // (2,3) q2.u.w
 }
-unsigned GParts::getIndex(unsigned partIdx) const 
+unsigned GParts::getIndex(unsigned partIdx) const          // (1,3) q1.u.w 
 {
     return getUInt(partIdx, INDEX_J, INDEX_K);
 }
+
 unsigned GParts::getBoundary(unsigned partIdx) const 
 {
-    return getUInt(partIdx, BOUNDARY_J, BOUNDARY_K);
+    return getUInt(partIdx, BOUNDARY_J, BOUNDARY_K);       // (1,2) q1.u.z
+}
+
+
+/**
+GParts::getPlaneIdx GParts::getPlaneNum
+-----------------------------------------
+
+Plane related accessors, to understand where this content 
+comes from see NCSG::export_planes
+
+**/
+
+unsigned GParts::getPlaneIdx(unsigned partIdx) const 
+{
+    return getUInt(partIdx, PLANEIDX_J, PLANEIDX_K);       // (0,0) q0.u.x
+}
+unsigned GParts::getPlaneNum(unsigned partIdx) const 
+{
+    return getUInt(partIdx, PLANENUM_J, PLANENUM_K);       // (0,1) q0.u.y
 }
 
 

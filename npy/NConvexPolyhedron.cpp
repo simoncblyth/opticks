@@ -514,20 +514,20 @@ From ../analytic/prism.py:make_segment
 :: 
 
            5 
-          / \
-         /   \
-     sr /     \
-       /       \
-      /         \
-     3-----------4       top plane at z = sz/2
-          sr
-
-           2 
-          / \
-         /   \
-     sr /     \
-       /       \
-      /         \
+          /.\
+         / . \
+       sr  .  \
+       /   .   \
+      /    .    \
+     3----sr-----4       top plane at z = sz/2
+     .     .     .
+     .     .     .
+     .     2     .
+     .    / \    .
+     .   /   \   .
+     .  sr    \  .
+     . /       \ .
+     ./         \.
      0-----------1        base plane at z = -sz/2
           sr   (x1,y1)
                                                  

@@ -432,7 +432,6 @@ partIdxRel
     relative part(aka node) index 0:numPart-1 within the Prim, used together with 
     the partOffset of the Prim to yield the absolute partIdx within the composite
 
-
 Recall that GParts are concatenated to form the composite.
 
 Note that repeatedly getting the same gtran for different part(aka node) 
@@ -442,8 +441,31 @@ So this is profligate in duplicated transforms.
 Observing many complemented nodes that appear should not be complemented, even in some 
 single node Prim such as "r1/4" and 31 node "r8/0".
 
-**/
 
+CSG_CONVEXPOLYHEDRON bbox special casing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Although access to the original nconvexpolyhedron to get the bbox 
+can not be assumed as may be postcache for example, what is possible is 
+accessing the bbox param. Tracing where the bbox goes when nconvexpolyhedron 
+NNode gets packed into GParts reveals that can just use GParts::getBBox
+for CSG_CONVEXPOLYHEDRON. 
+
+* X4Solid::Convert from G4VSolid to NNode tree
+* NCSG::Adopt packs the NNode tree into an array using NNode::part 
+
+
+TODO: CSG_CONVEXPOLYHEDRON and others need planes to be propagated too
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Compare with the old pre-7 workflow in OGeo::makeAnalyticGeometry
+where the planes from GParts are passes into optix::Buffer planBuffer.
+
+HMM: will have to rejig the plane indexing as it probably is currently using per MM buffers
+HMM: how does the plane data get concatenated with GParts, and are the planIdx in the nodes 
+     updated accordingly ?
+
+**/
 
 CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, unsigned partIdxRel )
 {
@@ -471,10 +493,39 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     const float* param = comp->getPartValues(partIdx, 0, 0 );  
     bool complement = comp->getComplement(partIdx);
 
+    bool has_planes = CSG::HasPlanes(tc); 
+
+    if(has_planes)
+    {
+        unsigned planeIdx = comp->getPlaneIdx(partIdx); 
+        unsigned planeNum = comp->getPlaneNum(partIdx); 
+        LOG(info)
+            << " has_planes " << has_planes 
+            << " planeIdx " << planeIdx
+            << " planeNum " << planeNum
+            ;
+    }
+
+
     const float* aabb = nullptr ;  
-    CSGNode* n = foundry->addNode(CSGNode::Make(tc, param, aabb ));
+
+    CSGNode nd = CSGNode::Make(tc, param, aabb ) ; 
+    const std::vector<float4>* pl=nullptr ; 
+
+    CSGNode* n = foundry->addNode(nd, pl);
     n->setIndex(partIdx); 
-    n->setAABBLocal(); 
+
+    if( tc == CSG_CONVEXPOLYHEDRON )
+    {
+        nbbox bb = comp->getBBox(partIdx); 
+        LOG(info) << "special cased handling of CSG_CONVEXPOLYHEDRON bbox bb.desc " << bb.desc() ; 
+        n->setAABB( bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z ); 
+    }
+    else
+    {
+        n->setAABBLocal();  
+    }
+
     n->setTransform(tranIdx); 
     n->setComplement(complement); 
     n->setBoundary(boundary);       // EXPT

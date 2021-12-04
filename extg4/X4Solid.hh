@@ -102,7 +102,8 @@ class X4_API X4Solid : public X4SolidBase
     private:
         void convertBooleanSolid();
         void convertSphere();
-        static const bool convertSphere_duplicate_py_segment_omission ; 
+        static const bool convertSphere_enable_phi_segment ;  
+ 
         void convertOrb();
         void convertBox();
         void convertTubs();

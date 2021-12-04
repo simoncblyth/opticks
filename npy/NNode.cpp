@@ -914,6 +914,16 @@ npart nnode::srcpart() const
     return pt ; 
 }
 
+/**
+nnode::part
+-------------
+
+This is canonically invoked from NCSG::export_node
+as the node tree is packed into the node buffer. 
+
+
+**/
+
 npart nnode::part() const 
 {
     // this is invoked by NCSG::export_r to totally re-write the nodes buffer 

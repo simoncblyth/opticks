@@ -32,13 +32,17 @@ Usage::
 
    GEOM=body_phys ./grab.sh    # grab from remote node 
 
-To render the resulting geometry use eg::
+To render the resulting CSG geometry on GPU node use eg::
 
    cx
    ./b7     # OptiX 7
    om       # for pre-7
   
-   ./cxs.sh              # 2d python intersect render, using center-extent-gensteps
+   ./cxs.sh              # 2D python intersect render, using center-extent-gensteps 
+                         # set GEOM/geom and edit cxs.sh to configure the planar grid 
+                         # of center-extent-gensteps to probe the shape in YZ XZ or XY planes
+                         #
+
    ./cxr_geochain.sh     # 3d rendered view 
 
 
@@ -46,14 +50,16 @@ EOU
 }
 
 #geom=body_phys
-geom=body_phys_pcnk_pdyn
+#geom=body_phys_pcnk_pdyn
 #geom=body_solid
+geom=SphereWithPhiSegment
 
 export GEOM=${GEOM:-$geom}
 # pick the Solid or Volume binary depending on GEOM
 
 bin=
 case $GEOM in 
+   SphereWithPhiSegment*)       bin=GeoChainSolidTest ; export X4Solid_convertSphere_enable_phi_segment=1 ;;
    AdditionAcrylicConstruction) bin=GeoChainSolidTest ;;
    BoxMinusTubs0)               bin=GeoChainSolidTest ;;
    BoxMinusTubs1)               bin=GeoChainSolidTest ;;
@@ -102,8 +108,12 @@ export GInstancer=INFO
 #export NNODENUDGER_LVLIST=0
 
 
+
+
+
 ################# geometry options #########################
 
+## TODO: these now handled internally within PMTSim ?
 export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
 export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
 export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    # when defined : dont intersect chop the PMT 

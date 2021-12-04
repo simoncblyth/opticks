@@ -965,7 +965,7 @@ void NCSG::export_r(nnode* node, unsigned idx)
 
     if(node->left && node->right)
     {
-        export_r(node->left,  2*idx + 1);
+        export_r(node->left,  2*idx + 1);  // complete binary tree indexing 
         export_r(node->right, 2*idx + 2);
     }  
 }
@@ -977,6 +977,10 @@ NCSG::export_node
 
 NB this now writes nodes to the transport nodes buffer, which 
 is separate from the srcnodes buffer 
+
+Note the critical importance of the NNode::part method
+which converts the node into npart instance 
+of which 4 quads get written to the transport nodes buffer.   
 
 In the case of adopted nnode the src buffers are also populated, 
 to enable subsequent loading to be just like loading from python written trees 
@@ -1010,6 +1014,25 @@ void NCSG::export_node(nnode* node, unsigned idx)
     //LOG(error) << "export_node DONE  " ; 
 }
 
+
+/**
+NCSG::export_planes
+----------------------
+
+Adds the planes from the node into the _planes buffer argument
+and documents the 1-based planeIdx and number of planes into the 
+node param.  
+
+NCSG::export_planes is invoked from NCSG::export_node which 
+is called from the recursive NCSG::export_r 
+
+NCSG::export_node gets the _planes buffer with m_csgdata->getPlaneBuffer
+
+With CSGFoundry a single global planes (and transforms) buffer is 
+used unlike with the old pre-7 model where separate buffers (and indexing)
+for each GMergedMesh are used.  
+
+**/
 
 void NCSG::export_planes(nnode* node, NPY<float>* _planes)
 {

@@ -75,6 +75,8 @@ Argh getting a clash for convexpolyhedron between bbmax.x and the gtransform
 
 
 enum { PARAM_J  = 0, PARAM_K   = 0  };  // q0.f.xyzw
+enum { PLANEIDX_J = 0 , PLANEIDX_K = 0 } ; // q0.u.x 
+enum { PLANENUM_J = 0 , PLANENUM_K = 1 } ; // q0.u.y 
 
 
 enum { PARAM1_J   = 1, PARAM1_K   = 0  };  // q1.f.xyzw

@@ -280,7 +280,9 @@ class GGEO_API GParts {
 
         unsigned getBoundary(unsigned partIdx) const ;
 
-
+        // plane accessors 
+        unsigned getPlaneIdx(unsigned partIdx) const ; 
+        unsigned getPlaneNum(unsigned partIdx) const ; 
 
 
         unsigned  getNumTran() const ; 
@@ -294,10 +296,10 @@ class GGEO_API GParts {
         std::string  getBoundaryName(unsigned partIdx) const ;
         std::string  getTag(unsigned partIdx) const ;
         const char*  getTypeName(unsigned partIdx) const ;
+        nbbox        getBBox(unsigned i) const ;  // CAUTION: NOT AVAILABLE FOR ALL TYPECODE
    private:
-        nbbox        getBBox(unsigned i);
-        gfloat3      getGfloat3(unsigned i, unsigned j, unsigned k);
-        float*       getValues(unsigned i, unsigned j, unsigned k);
+        gfloat3      getGfloat3(unsigned i, unsigned j, unsigned k) const ;
+        float*       getValues(unsigned i, unsigned j, unsigned k) const ;
     public:
         nivec4       getPrimInfo(unsigned iprim) const ;
         int          getPartOffset(unsigned primIdx) const ;

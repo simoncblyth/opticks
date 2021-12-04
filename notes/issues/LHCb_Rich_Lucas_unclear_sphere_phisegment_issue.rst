@@ -1,6 +1,69 @@
 LHCb_Rich_Lucas_unclear_sphere_phisegment_issue
 ==================================================
 
+Commits
+---------
+
+
+* https://bitbucket.org/simoncblyth/opticks/commits/96579e4c6
+
+::
+
+    epsilon:opticks blyth$ git commit -m "generalize the handling of planar center-extent-gensteps allowing to slice other axes, use XY slice to look at G4Sphere phi segment with xxs.sh "
+    [master 96579e4c6] generalize the handling of planar center-extent-gensteps allowing to slice other axes, use XY slice to look at G4Sphere phi segment with xxs.sh
+     9 files changed, 501 insertions(+), 65 deletions(-)
+
+
+
+
+
+CSG_GGeo_Convert::convertNode failing for lack of CSGNode::setAABBLocal with convexpolyhedron
+------------------------------------------------------------------------------------------------
+
+* FIXED : by special casing convexpolyhedron bbox setup as unlike other prim cannot easily get bbox just from the param 
+
+* unlike other primitives it is not so easy to get the bbox from just the planes
+  of the nconvexpolyhedron (would have to reconstruct vertices by intersecting all the planes with each other to do that) 
+
+* but nconvexpolyhedron::make_segment sets the bbox into the nconvexpolyhedron 
+  object at creation as the starting point is essentially the vertices 
+
+  * TODO: use this in the cg conversion establishing communication from NConvexPolyhedron to CSGNode 
+    without CSGNode having the NConvexPolyhedron header
+  
+
+::
+
+    2021-12-04 16:06:09.265 INFO  [2922416] [GParts::getTypeMask@1507]  primIdx 0 partOffset 0 numParts 3
+     partIdx    0 tc    2 tm          4 tag   in
+     partIdx    1 tc    5 tm         32 tag   sp
+     partIdx    2 tc   19 tm     524288 tag   co
+    2021-12-04 16:06:09.265 INFO  [2922416] [*CSG_GGeo_Convert::convertPrim@335]  primIdx    0 meshIdx    0 comp.getTypeMask 4 CSG::TypeMask in  CSG::IsPositiveMask 1
+    2021-12-04 16:06:09.265 FATAL [2922416] [CSGNode::setAABBLocal@363]  not implemented for tc 19 CSG::Name(tc) convexpolyhedron
+    Assertion failed: (0), function setAABBLocal, file /Users/blyth/opticks/CSG/CSGNode.cc, line 364.
+
+    Process 58616 launched: '/usr/local/opticks/lib/GeoChainSolidTest' (x86_64)
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff69ccab66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff69e95080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff69c261ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff69bee1ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x0000000101cc415e libCSG.dylib`CSGNode::setAABBLocal(this=0x000000010b000080) at CSGNode.cc:364
+        frame #5: 0x000000010070463a libCSG_GGeo.dylib`CSG_GGeo_Convert::convertNode(this=0x00007ffeefbfda60, comp=0x000000010871be60, primIdx=0, partIdxRel=2) at CSG_GGeo_Convert.cc:477
+        frame #6: 0x0000000100704f7b libCSG_GGeo.dylib`CSG_GGeo_Convert::convertPrim(this=0x00007ffeefbfda60, comp=0x000000010871be60, primIdx=0) at CSG_GGeo_Convert.cc:372
+        frame #7: 0x00000001007058f6 libCSG_GGeo.dylib`CSG_GGeo_Convert::convertSolid(this=0x00007ffeefbfda60, repeatIdx=0) at CSG_GGeo_Convert.cc:264
+        frame #8: 0x0000000100706069 libCSG_GGeo.dylib`CSG_GGeo_Convert::convertAllSolid(this=0x00007ffeefbfda60) at CSG_GGeo_Convert.cc:133
+        frame #9: 0x0000000100703ef0 libCSG_GGeo.dylib`CSG_GGeo_Convert::convertGeometry(this=0x00007ffeefbfda60, repeatIdx=-1, primIdx=-1, partIdxRel=-1) at CSG_GGeo_Convert.cc:120
+        frame #10: 0x0000000100703835 libCSG_GGeo.dylib`CSG_GGeo_Convert::convert(this=0x00007ffeefbfda60) at CSG_GGeo_Convert.cc:75
+        frame #11: 0x00000001000ddc87 libGeoChain.dylib`GeoChain::convertSolid(this=0x00007ffeefbfe010, so=0x0000000108500400, meta_="creator:GeoChainSolidTest\nname:SphereWithPhiSegment\ninfo:WITH_PMTSIM \n") at GeoChain.cc:70
+        frame #12: 0x000000010000e85b GeoChainSolidTest`main(argc=3, argv=0x00007ffeefbfe718) at GeoChainSolidTest.cc:84
+        frame #13: 0x00007fff69b7a015 libdyld.dylib`start + 1
+        frame #14: 0x00007fff69b7a015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
 
 Issue
 ------

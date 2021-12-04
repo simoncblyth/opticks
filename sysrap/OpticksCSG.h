@@ -178,6 +178,10 @@ struct CSG
         return t ; 
     }
 
+    static const char* Name( unsigned type )
+    {
+        return Name((OpticksCSG_t)type); 
+    }
     static const char* Name( OpticksCSG_t type )
     {
         const char* s = NULL ; 
@@ -295,6 +299,12 @@ struct CSG
     {
         return (type == CSG_TRAPEZOID || type == CSG_CONVEXPOLYHEDRON || type == CSG_SEGMENT ) ; 
     }
+
+    static bool HasPlanes(unsigned type)
+    {
+         return HasPlanes((OpticksCSG_t)type); 
+    }
+
 };
 
 

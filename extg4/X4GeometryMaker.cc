@@ -74,6 +74,22 @@ const G4VSolid* X4GeometryMaker::orb(const char* name)  // static
     return new G4Orb(name, 100.) ; 
 }
 
+/**
+X4GeometryMaker::SphereWithPhiSegment
+--------------------------------------
+
+Best way to view phi segment is with XY cross section 
+
+phi_start:0 phi_delta:2 
+    full sphere in phi 
+
+phi_start:0 phi_delta:0.5 
+    cheese shape : suspect position of the cheese 
+    may differ between Opticks and Geant4
+
+
+**/
+
 const G4VSolid* X4GeometryMaker::SphereWithPhiSegment(const char* name)  // static
 {
     double phi_start = SSys::getenvfloat("X4GeometryMaker_SphereWithPhiSegment_phi_start", 0.f) ;  // units of pi
@@ -92,10 +108,10 @@ const G4VSolid* X4GeometryMaker::SphereWithPhiSegment(const char* name)  // stat
     G4String pName = name ; 
     G4double pRmin = 0. ; 
     G4double pRmax = 100. ; 
-    G4double pSPhi = phi_start*pi ;  
+    G4double pSPhi = phi_start*pi ;    
     G4double pDPhi = phi_delta*pi ; 
     G4double pSTheta = 0. ; 
-    G4double pDTheta = pi ;   
+    G4double pDTheta = pi ;     // pi: full in theta
 
     return new G4Sphere(pName, pRmin, pRmax, pSPhi, pDPhi, pSTheta, pDTheta ); 
 }

@@ -19,6 +19,14 @@
 
 #pragma once
 
+/**
+npart
+=======
+
+
+**/
+
+
 #include "OpticksCSG.h"
 #include "NPart.h"
 #include "NQuad.hpp"
@@ -35,7 +43,7 @@ struct NPY_API npart
 
     nquad qx ;  // <- CPU only 
  
-    static unsigned VERSION ;  // 0:with bbox, 1:without bbox and with GTransforms
+    static unsigned VERSION ;  // 0:with bbox, 1:without bbox and with GTransforms (*1* in use, some prim like convexpolyhedron have bbox)
 
     void zero();
     void dump(const char* msg) const ;

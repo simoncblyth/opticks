@@ -360,7 +360,7 @@ void CSGNode::setAABBLocal()
     }
     else
     {
-        LOG(fatal) << " not implemented for tc " << tc ; 
+        LOG(fatal) << " not implemented for tc " << tc << " CSG::Name(tc) " << CSG::Name(tc) ; 
         assert(0); 
         setAABB( 0.f );  
     }

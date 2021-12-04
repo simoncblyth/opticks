@@ -45,6 +45,7 @@
 #include "X4.hh"
 
 #include "SId.hh"
+#include "SSys.hh"
 #include "BStr.hh"
 #include "OpticksCSG.h"
 #include "GLMFormat.hpp"
@@ -92,7 +93,6 @@ X4Solid::Convert
 -----------------
 
 Canonicaly used from X4PhysicalVolume::convertSolid
-
 
 Doing prepTree here triggers assert regarding not expected to change parent links
 with geocache-tds.
@@ -446,7 +446,9 @@ void X4Solid::convertBooleanSolid()
 
 
 
-const bool X4Solid::convertSphere_duplicate_py_segment_omission = true ; 
+
+const bool X4Solid::convertSphere_enable_phi_segment = SSys::getenvbool("X4Solid_convertSphere_enable_phi_segment"); 
+
 
 nnode* X4Solid::convertSphere_(bool only_inner)
 {
@@ -509,18 +511,11 @@ nnode* X4Solid::convertSphere_(bool only_inner)
     float deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
     bool has_deltaPhi = deltaPhi < 360.f ; 
     
-    //assert( startPhi >= 0.f && !has_deltaPhi ); 
-    // CAUTION : deltaphi_slab_segment_enabled is switched off in the python
-
-    // phi segment radius segR rotates around origin in x-y plane,
-    //  z limited +- segZ/2 
-
-
-    bool omit = convertSphere_duplicate_py_segment_omission ; 
+    bool enable_phi_segment = convertSphere_enable_phi_segment ; 
     
-    if(has_deltaPhi && omit)
+    if(has_deltaPhi && !enable_phi_segment )
     {
-        LOG(error) << " convertSphere_duplicate_py_segment_omission " << omit 
+        LOG(error) << " convertSphere_enable_phi_segment " << convertSphere_enable_phi_segment
                    << " has_deltaPhi " << has_deltaPhi
                    << " startPhi " << startPhi 
                    << " deltaPhi " << deltaPhi 
@@ -528,12 +523,10 @@ nnode* X4Solid::convertSphere_(bool only_inner)
                    ;
     }
 
-    bool deltaPhi_segment_enabled = !omit ; 
-
     float segZ = radius*1.01 ; 
     float segR = radius*1.5 ;   
 
-    nnode* result =  has_deltaPhi && deltaPhi_segment_enabled 
+    nnode* result =  has_deltaPhi && enable_phi_segment
                   ?
                      intersectWithPhiSegment(ret, startPhi, deltaPhi, segZ, segR ) 
                   :
@@ -827,7 +820,13 @@ void X4Solid::convertTubs()
 X4Solid::intersectWithPhiSegment
 ---------------------------------
 
-* suffers degeneracy collapse from segment to a plane when deltaPhi = 180 
+* intersects with a cheesy wedge convexpolyhedron 
+
+* CAUTION : THIS CODE HAS SEEN LITTLE REAL WORLD USE AND IS POORLY TESTED
+
+* suffers degeneracy collapse from segment to a plane when deltaPhi = 180, 
+  in an attempt to cope with this a box in used rather than the convexpolyhedron  
+  
 
 **/
 
