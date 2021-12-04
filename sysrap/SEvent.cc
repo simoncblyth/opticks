@@ -183,9 +183,22 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     int iz1 = cegs[5] ;
     int photons_per_genstep = cegs[6] ;
 
+    int nx = (ix1 - ix0)/2 ; 
+    int ny = (iy1 - iy0)/2 ; 
+    int nz = (iz1 - iz0)/2 ; 
+    int gridaxes = GridAxes(nx, ny, nz); 
+
+    LOG(LEVEL) 
+        << " nx " << nx 
+        << " ny " << ny 
+        << " nz " << nz 
+        << " GridAxes " << gridaxes
+        << " GridAxesName " << GridAxesName(gridaxes)
+        ;
+
     gs.q0.i.x = OpticksGenstep_TORCH ;
-    gs.q0.i.y = 0 ; // could plant enum for XZ planar etc.. here 
-    gs.q0.i.z = 0 ; // 
+    gs.q0.i.y = gridaxes ; 
+    gs.q0.i.z = 0 ; 
     gs.q0.i.w = photons_per_genstep ;
 
     gs.q1.f.x = 0.f ;  // local frame position : currently origin, same for all gensteps : only the transform is changed   
@@ -202,7 +215,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
         double tx = double(ix)*gridscale*ce.w ;
         double ty = double(iy)*gridscale*ce.w ;
         double tz = double(iz)*gridscale*ce.w ;
-        const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz );   // TODO: stack not heap ?
+        const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz ); 
 
         bool reverse = false ;
         const Tran<double>* transform = Tran<double>::product( geotran, local_translate, reverse );
@@ -216,6 +229,42 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     LOG(LEVEL) << " gensteps.size " << gensteps.size() ;
 
     return MakeGensteps(gensteps);
+}
+
+const char* SEvent::XYZ_ = "XYZ" ; 
+const char* SEvent::YZ_  = "YZ" ; 
+const char* SEvent::XZ_  = "XZ" ; 
+const char* SEvent::XY_  = "XY" ; 
+
+const char* SEvent::GridAxesName( int gridaxes)  // static 
+{
+    const char* s = nullptr ; 
+    switch( gridaxes )
+    {
+        case XYZ: s = XYZ_ ; break ; 
+        case YZ:  s = YZ_  ; break ; 
+        case XZ:  s = XZ_  ; break ; 
+        case XY:  s = XY_  ; break ; 
+    }
+    return s ;
+}
+
+int SEvent::GridAxes(int nx, int ny, int nz)  // static
+{
+    int gridaxes = XYZ ;  
+    if( nx == 0 && ny > 0 && nz > 0 )
+    {
+        gridaxes = YZ ;  
+    }
+    else if( nx > 0 && ny == 0 && nz > 0 )
+    {
+        gridaxes = XZ ;  
+    }
+    else if( nx > 0 && ny > 0 && nz == 0 )
+    {
+        gridaxes = XY ;  
+    }
+    return gridaxes ; 
 }
 
 
@@ -265,6 +314,7 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
         qat4 qt(gs) ;  // transform from last 4 quads of genstep 
         
         unsigned num_photons = gs.q0.u.w ; 
+        int gridaxes = gs.q0.i.y ; 
         //std::cout << " i " << i << " num_photons " << num_photons << std::endl ;
         
         double u, phi, sinPhi, cosPhi ;
@@ -279,10 +329,42 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
             
             p.q0.f = gs.q1.f ;
             
-            p.q1.f.x = cosPhi ;   // direction
-            p.q1.f.y = 0.f    ;
-            p.q1.f.z = sinPhi ;   
-            p.q1.f.w = 1.f    ;   // weight
+            // direction
+            // TODO: probably need some minus signs in the below for consistency 
+            if( gridaxes == YZ )
+            {    
+                p.q1.f.x = 0.f ;  
+                p.q1.f.y = cosPhi ;
+                p.q1.f.z = sinPhi ;   
+                p.q1.f.w = 1.f    ;   
+            }
+            else if( gridaxes == XZ )
+            {    
+                p.q1.f.x = cosPhi ;   
+                p.q1.f.y = 0.f    ;
+                p.q1.f.z = sinPhi ;   
+                p.q1.f.w = 1.f    ;   
+            }
+            else if( gridaxes == XY )
+            {    
+                p.q1.f.x = cosPhi ;   
+                p.q1.f.y = sinPhi ;
+                p.q1.f.z = 0.     ;   
+                p.q1.f.w = 1.f    ;   
+            }
+            else if( gridaxes == XYZ )
+            {    
+               // TODO: really need two random angles to direct the photon in 3D
+                p.q1.f.x = cosPhi ;   
+                p.q1.f.y = 0.f    ;
+                p.q1.f.z = sinPhi ;   
+                p.q1.f.w = 1.f    ;   
+            }
+            else
+            {
+                LOG(fatal) << " invalid gridaxes value " << gridaxes ; 
+                assert(0);  
+            }
             
             qt.right_multiply_inplace( p.q0.f, 1.f );   // position 
             qt.right_multiply_inplace( p.q1.f, 0.f );   // direction 

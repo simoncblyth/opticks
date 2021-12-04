@@ -63,7 +63,9 @@ const char* X4Intersect::desc() const
     ss << " CXS_CEGS (" ; 
     for(unsigned i=0 ; i < cegs.size() ; i++ ) ss << cegs[i] << " " ; 
     ss << ")" ; 
-
+    ss << " nx " << nx ; 
+    ss << " ny " << ny ; 
+    ss << " nz " << nz ; 
     ss << " GRIDSCALE " << gridscale ; 
     ss << " CE (" 
        << ce.x << " " 
@@ -95,15 +97,38 @@ void X4Intersect::init()
     SEvent::StandardizeCEGS(ce, cegs, gridscale );  
     assert( cegs.size() == 7 );  
 
-    peta->q0.i.x = cegs[0] ;
-    peta->q0.i.y = cegs[1] ;
-    peta->q0.i.z = cegs[2] ;
-    peta->q0.i.w = cegs[3] ;
+    int ix0 = cegs[0] ;
+    int ix1 = cegs[1] ;
+    int iy0 = cegs[2] ;
+    int iy1 = cegs[3] ;
+    int iz0 = cegs[4] ; 
+    int iz1 = cegs[5] ; 
+    int photons_per_genstep = cegs[6] ; 
+    int zero = 0 ;  
 
-    peta->q1.i.x = cegs[4] ;
-    peta->q1.i.y = cegs[5] ;
-    peta->q1.i.z = cegs[6] ;
-    peta->q1.i.w = 0 ;
+    nx = (ix1 - ix0)/2 ; 
+    ny = (iy1 - iy0)/2 ; 
+    nz = (iz1 - iz0)/2 ; 
+    int gridaxes = SEvent::GridAxes(nx, ny, nz); 
+
+    LOG(info)
+        << " nx " << nx
+        << " ny " << ny
+        << " nz " << nz
+        << " GridAxes " << gridaxes
+        << " GridAxesName " << SEvent::GridAxesName(gridaxes)
+        ; 
+
+
+    peta->q0.i.x = ix0 ;
+    peta->q0.i.y = ix1 ;
+    peta->q0.i.z = iy0 ;
+    peta->q0.i.w = iy1 ;
+
+    peta->q1.i.x = iz0 ;
+    peta->q1.i.y = iz1 ;
+    peta->q1.i.z = photons_per_genstep ;
+    peta->q1.i.w = zero ;
 
 
     SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" );  

@@ -120,6 +120,16 @@ if [ "$GEOM" == "orb" ]; then
 
     zz=-100,100
     xx=-100,100
+
+elif [ "$GEOM" == "SphereWithPhiSegment" ]; then
+
+    export X4GeometryMaker_SphereWithPhiSegment_phi_start=1.0    # inputs are multiples of pi 
+    export X4GeometryMaker_SphereWithPhiSegment_phi_delta=0.25 
+
+    num_pho=10
+    cegs=16:9:0:0:0:$dz:$num_pho
+    gridscale=0.15
+
 else
     dz=-4
     num_pho=10

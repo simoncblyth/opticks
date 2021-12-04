@@ -46,11 +46,72 @@ pass
 #mp = None
 pv = None
 
-X,Y,Z = 0,1,2
-
 efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
 
+X,Y,Z = 0,1,2
+
+_axes = {}
+_axes[X] = "X"
+_axes[Y] = "Y"
+_axes[Z] = "Z"
+
+class GridSpec(object):
+    def __init__(self, peta):
+
+        ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
+        iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
+
+        ce = tuple(peta[0,2])
+        sce = ("%7.2f" * 4 ) % ce
+
+        assert photons_per_genstep > 0
+        assert zero == 0
+        nx = (ix1 - ix0)//2
+        ny = (iy1 - iy0)//2
+        nz = (iz1 - iz0)//2
+
+        axes = self.determine_planar_axes(nx, ny, nz)
+
+        self.peta = peta 
+        self.axes = axes
+        self.nx = nx
+        self.ny = ny
+        self.nz = nz
+        self.ce = ce
+
+
+    def determine_planar_axes(self, nx, ny, nz):
+        """
+        :param nx:
+        :param nx:
+        :param nx:
+
+        """
+        if nx == 0 and ny > 0 and nz > 0:
+            ny_over_nz = float(ny)/float(nz)
+            axes = (Y,Z) if nx_over_nz > 1 else (Z,Y)
+        elif nx > 0 and ny == 0 and nz > 0:
+            nx_over_nz = float(nx)/float(nz)
+            axes = (X,Z) if nx_over_nz > 1 else (Z,X)
+        elif nx > 0 and ny > 0 and nz == 0:
+            nx_over_ny = float(nx)/float(ny)
+            axes = (X,Y) if nx_over_ny > 1 else (Y,X)
+        else:
+            axes = None
+        pass
+        if axes is None:
+            msg = "non-planar grid in use : will need 3D handling "
+        else:
+            msg = "planar grid in use : axes %s %s " % ( _axes[axes[0]], _axes[axes[1]]) 
+        pass
+        print(" nx %d ny %d nz %d : %s " % (nx, ny, nz, msg))
+        print("axes %s " % str(axes))
+        return axes
+
+
+
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
 
     CXS_RELDIR = os.environ.get("CXS_RELDIR", "extg4/X4IntersectTest" ) 
     CXS_OTHER_RELDIR = os.environ.get("CXS_OTHER_RELDIR", "CSGOptiX/CSGOptiXSimulateTest" ) 
@@ -71,27 +132,14 @@ if __name__ == '__main__':
     pass
 
     test = tests[0]
-    peta = test.peta 
-    ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
-    iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
+    gridspec = GridSpec(test.peta)
 
-    ce = tuple(peta[0,2])
-    sce = ("%7.2f" * 4 ) % ce
-
-    assert photons_per_genstep > 0
-    assert zero == 0
-    nx = (ix1 - ix0)//2
-    ny = (iy1 - iy0)//2
-    nz = (iz1 - iz0)//2
-
-    nx_over_nz = float(nx)/float(nz)
-    if nx_over_nz > 1.:
-        axes = X,Z
-    else:
-        axes = Z,X
+    if gridspec.axes is None:
+        log.fatal("only planar grids are handled by this script, not 3D ones" )
+        assert 0 
     pass
-    print("axes %s " % str(axes))
-    H,V = axes      ## traditionally H,V = X,Z  but are now generalizing 
+
+    H,V = gridspec.axes     ## traditionally H,V = X,Z  but are now generalizing 
 
     outdir = os.path.join(tests[0].base, "figs")
     if not os.path.isdir(outdir):
@@ -110,8 +158,6 @@ if 1:
     topline = os.environ.get("TOPLINE", default_topline)
     botline = os.environ.get("BOTLINE", default_botline) 
     thirdline = os.environ.get("THIRDLINE", default_thirdline) 
-
-    X,Y,Z = 0,1,2 
 
     ipos = tests[0].isect[:,0,:3]
     gpos = tests[0].gs[:,5,:3]    # last line of the transform is translation

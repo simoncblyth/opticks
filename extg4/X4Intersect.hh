@@ -35,8 +35,14 @@ struct X4_API X4Intersect
 
     float4 ce ; 
     std::vector<int> cegs ; 
+    int nx ; 
+    int ny ; 
+    int nz ; 
+
     std::vector<int> override_ce ;  
     std::vector<quad4> pp ;
     std::vector<quad4> ii ;
+
+
 }; 
 

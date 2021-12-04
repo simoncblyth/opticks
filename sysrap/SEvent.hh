@@ -11,6 +11,14 @@ template <typename T> struct Tran ;
 struct SYSRAP_API SEvent
 {
     static const plog::Severity LEVEL ; 
+    enum { XYZ, YZ, XZ, XY } ;   
+
+    static const char* XYZ_ ; 
+    static const char* YZ_  ; 
+    static const char* XZ_  ; 
+    static const char* XY_  ; 
+    static const char* GridAxesName( int gridaxes ); 
+    static int GridAxes(int nx, int ny, int nz); 
 
     static NP* MakeGensteps(const std::vector<quad6>& gs ); 
     static void StandardizeCEGS(        const float4& ce,       std::vector<int>& cegs, float gridscale );
