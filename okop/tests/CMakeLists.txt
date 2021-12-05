@@ -6,8 +6,8 @@ include(OpticksBuildOptions)
 set(TEST_SOURCES
     OpIndexerTest.cc
     OpSeederTest.cc
-    dirtyBufferTest
-    compactionTest
+    dirtyBufferTest.cc
+    compactionTest.cc
     OpSnapTest.cc
     OpFlightPathTest.cc
 )
