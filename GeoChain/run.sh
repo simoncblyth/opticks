@@ -53,13 +53,14 @@ EOU
 #geom=body_phys_pcnk_pdyn
 #geom=body_solid
 geom=SphereWithPhiSegment
+#geom=Orb
 
 export GEOM=${GEOM:-$geom}
 # pick the Solid or Volume binary depending on GEOM
 
 bin=
 case $GEOM in 
-   SphereWithPhiSegment*)       bin=GeoChainSolidTest ; export X4Solid_convertSphere_enable_phi_segment=1 ;;
+   SphereWithPhiSegment*)       bin=GeoChainSolidTest ;; 
    AdditionAcrylicConstruction) bin=GeoChainSolidTest ;;
    BoxMinusTubs0)               bin=GeoChainSolidTest ;;
    BoxMinusTubs1)               bin=GeoChainSolidTest ;;
@@ -76,7 +77,28 @@ case $GEOM in
    inner1_phys)                 bin=GeoChainVolumeTest ;; 
    inner2_phys)                 bin=GeoChainVolumeTest ;; 
    dynode_phys)                 bin=GeoChainVolumeTest ;; 
+
+   *)                           bin=GeoChainSolidTest  ;;    # default : assume solid
 esac
+
+
+if [ "${GEOM/SphereWithPhiSegment}" != "$GEOM" ] ; then
+
+  
+   export X4Solid_convertSphere_enable_phi_segment=1 
+
+   #return_segment=1
+   #return_union=2
+   #return_difference=3
+   #return_intersect=4
+   #return_intersect_old=14  
+   #export X4Solid_intersectWithPhiSegment_debug_mode=$return_intersect_old
+
+   env | grep X4Solid
+fi 
+
+
+
 
 msg="=== $BASH_SOURCE :"
 echo $msg GEOM $GEOM bin $bin

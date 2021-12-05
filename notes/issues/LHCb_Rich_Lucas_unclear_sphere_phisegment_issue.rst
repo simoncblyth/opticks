@@ -16,6 +16,95 @@ Commits
 
 
 
+Added Debug modes to X4Solid::intersectWithPhiSegment
+--------------------------------------------------------
+
+::
+
+     867     int debug_mode = intersectWithPhiSegment_debug_mode ;
+     868     LOG(error)
+     869         << " startPhi " << startPhi
+     870         << " deltaPhi " << deltaPhi
+     871         << " segZ " << segZ
+     872         << " segR " << segR
+     873         << " debug_mode " << debug_mode
+     874         ;
+     875
+     876     if( debug_mode == 1 )
+     877     {
+     878         LOG(error) << "X4Solid_intersectWithPhiSegment_debug_mode " << debug_mode << " RETURNING SEGMENT " ;
+     879         result = segment ;
+     880         result->label = BStr::concat(m_name, "_debug_segment", NULL);
+     881     }
+     882     else if( debug_mode == 2 )
+     883     {
+     884         LOG(error) << "X4Solid_intersectWithPhiSegment_debug_mode " << debug_mode << " RETURNING UNION " ;
+     885         result = nnode::make_operator(CSG_UNION, whole, segment);
+     886         result->label = BStr::concat(m_name, "_debug_union", NULL);
+     887     }
+     888     else if( debug_mode == 3 )
+     889     {
+     890         LOG(error) << "X4Solid_intersectWithPhiSegment_debug_mode " << debug_mode << " RETURNING DIFFERENCE " ;
+     891         result = nnode::make_operator(CSG_DIFFERENCE, whole, segment);
+     892         result->label = BStr::concat(m_name, "_debug_difference", NULL);
+     893     }
+     894 
+     895 
+     896     return result ;
+     897 }
+
+
+GeoChain/run.sh::
+
+     85 if [ "${GEOM/SphereWithPhiSegment}" != "$GEOM" ] ; then
+     86 
+     87 
+     88    export X4Solid_convertSphere_enable_phi_segment=1
+     89 
+     90    return_segment=1
+     91    return_union=2
+     92    return_difference=3
+     93    export X4Solid_intersectWithPhiSegment_debug_mode=$return_difference
+     94 
+     95    env | grep X4Solid
+     96 fi
+
+
+::
+
+    gc ; ./run.sh 
+    cx ; ./cxr_geochain.sh   # need to edit for pick up _Darwin geometries
+    
+
+    EYE=1,1,1 TMIN=0.1 ./cxr_geochain.sh        
+
+    ## adjust viewpoint to see the segment in difference mode 
+    ## it looks like the z-extent of the wedge is at least half what it should be 
+
+
+::
+
+    2021-12-05 15:45:32.397 ERROR [3803680] [*X4Solid::intersectWithPhiSegment@868]  startPhi 0 deltaPhi 90 segZ 101 segR 150 debug_mode 3
+    2021-12-05 15:45:32.397 ERROR [3803680] [*X4Solid::intersectWithPhiSegment@890] X4Solid_intersectWithPhiSegment_debug_mode 3 RETURNING DIFFERENCE 
+
+::
+
+     525 
+     526     float segZ = radius*1.01 ;
+     527     float segR = radius*1.5 ;
+     528 
+     529     nnode* result =  has_deltaPhi && enable_phi_segment
+     530                   ?
+     531                      intersectWithPhiSegment(ret, startPhi, deltaPhi, segZ, segR )
+     532                   :
+     533                      ret
+     534                   ;
+     535 
+
+
+
+
+
 
 CSG_GGeo_Convert::convertNode failing for lack of CSGNode::setAABBLocal with convexpolyhedron
 ------------------------------------------------------------------------------------------------
@@ -239,226 +328,179 @@ G4Sphere : ePhi end-phi cPhi center-phi
 
 
 
-Hi Simon,
+Hi Lucas
 
-Thanks for your fast response. I'll try to answer the concerns you've raised as
-succinctly as possible.
+I do not think your idea is workable (comments on that below), 
+however thank you for communicating about the issue as it motivated 
+me to look into X4Solid::convertSphere and allowed me to fix a problem 
+with the phi segmenting, and to realise a discrepancy between Opticks and
+Geant4 in theta segmenting that is unresolved.
 
-There is not need to "interact", the primitives are put together within CSG
-intersection so all that needs to happen is for the phi segment shape to
-provide ray trace intersects and be in the correct position to cut into the
-other primitive.  The most probable bugs are for the Opticks shape not to match
-the Geant4 one due to the Opticks idea of what the phi segment parameters mean
-not matching the Geant4 idea.
+In order to debug phi segments I switched from intersection 
+with the segment to difference with it. The two below renders are before 
+and after fixing the z-extent of the segment wedge. 
+The segment what half the size it needed to be in z.
 
-Apologies, when I said interact I should have said intersect, I think I used
-that word because I was considering the problem in terms of what I have suspect
-may be happening - I.E. that the polyhedron may be being translated
-incorrectly, due to something like a mismatch between G4 and OK like you said. 
-
-Such specifics are vital to identifying the cause of the bug.
-
-It's a little tangential to say but it's refreshing to hear you affirm this,
-others on the team I'm on have been treating it as though the smaller details
-do not matter; as such I didn't want to bore you with the details initially,
-but if required I could explain what I did to arrive at my suggestions. 
-
-You can help by creating a test that demonstrates the issue.
-
-I understand this would be helpful to show how I know the current system is
-malfunctioning, but unfortunately I don't think I'd be able to do this in a
-format that I could send for you to trial yourself. My current mode of testing
-has been by performing modifications to the geometry of our simulated detector
-and recording the location of registered hits, giving myself a very rudimentary
-way of visualising changes in geometry under different parameters and changes
-to the sphere function. It's not ideal I know, but with enough trials it has
-revealed a lot of small details which would otherwise have been missed.
-
-An interesting idea, but my intuition suggests that could only model a very
-small subset of possible phi-segments.
-
-That is what I had initially thought also, which is why I ignored it at first
-and tried to see if I could fix the polyhedral implementation. However, just by
-chance I showed my supervisor the inputs for the NZSphere class and he said
-something I hadn't originally considered.  The sphere only takes inputs between
-the angles of 0 and 180 degrees, and therefore it technically has no way of
-knowing (besides convention) which side of the sphere you want the solid to be
-generated on. He suggested that since it doesn't know that, there's every
-chance that the theta segments generated are mirrored down the sphere's centre.
-I assumed this couldn't be the case, but when I went on to check in our own
-geometry, sure enough it was there. 
-
-Apologies for not being able to give code as proof, but I feel with a little
-explanation the rather crude image attached to this email should suffice to
-explain at least a little of how I have found this.  In this setup there's only
-two surfaces being interacted with, both of which are totally efficient in
-Opticks, so all photons impacting will be absorbed. Both surfaces are spheres
-segmented in theta but not phi, one large (top left), one small (bottom right),
-and the source of photons is a positron emitting via the Cerenkov process. The
-particle passes through both surfaces before the stepping process halts.
-Ignoring the large sphere to begin with, there is a small collection of hits
-just above the expected distribution of hits on the small sphere. In the
-default version of this geometry the two spheres are mirrors, and having
-checked repeatedly it is definitely the case that the lower side of the sphere
-is correctly oriented (if required I can provide evidence that I have
-absolutely confirmed this is correct for the case being tested). That small dot
-of points just above the expected surface on the lower sphere absolutely should
-not be there, and is a result of this mirroring effect.  The reason we don't
-see it from the other sphere is because its radius is large enough that its
-opposite side is outside of the extent of the detector, and therefore never
-intersects the path - something which is normally true of the opposing side of
-the smaller sphere when it is at its correct scale.
-
-I digress, the point of mentioning this was to explain why this would enable my
-original idea to work.  Using the aforementioned make_zsphere( x, y, z, radius,
-zmin, zmax ) function, if we automatically set maxz = radius, this corresponds
-to an angle of Phi = 0, thus giving no separation between the two mirrored
-halves. From here, we could set minz = radius * cos( 0.5 * deltaPhi ), halving
-the angle of the mirror generated on each side. No angle between them with two
-mirrored halves of angle 0 to 180 gives us an easy way of making a whole
-sphere, which we can then account for the rotation of afterwards. In Geant4 the
-phi angle of spheres is defined between +-180 degrees, thus putting the zero
-point in the same place between the two geometries. All we'd have to do to
-account for the difference now is add to the angle of startPhi to correct for
-the fact that under normal circumstances the angle has to account for the
-centring of the mirror (that is, we change startPhi += 0.5 * deltaPhi).
-Perform one rotation to align phi with the correct axis, then another to rotate
-the now correctly aligned phi to set startPhi correctly (although I expect in
-many cases this angle will be zero anyway).  Finally, take the intersection
-with the existing segment in theta and boom, we now have a working spherical
-segmentation that matches between Geant4 and Opticks - one which may also be
-able to replace the current segmenting function that doesn't appear to be
-working (and which would already be rather limited, effectively only working as
-far as 90 degrees). 
-
-It would also save a lot more time performing trial and error on the polyhedron
-class to work out where it's going wrong; I'm sure it'd be useful to know, but
-if it can be avoided I'd say its worth a try.
-
-I understand this all sounds very Optimistic and that the result I've shown as
-evidence of this having the possibility of working looks like the computer
-generated equivalent of a drawing in crayons, but so long as there is no
-problem caused during the rotation, this should work.  
-
-You need to support your words with working code in order to convince me.
-
-Again, I cannot support them with any finished code since I'm not sure on
-performing a rotation which is the current problem; I can however offer you
-what I have so far. This can at least show that the code may be used to
-generate a full sphere, and that the two spheres generated (for theta and phi
-respectively) are generated from the same point, thus meaning they already
-intersect without having to be moved (can be observed by generating one as a
-full sphere and the other with a lower angle). Here is my version of the
-convertSphere_() function, most lines are identical to your own but I figured
-I'd send the whole thing incase I missed something.
-
-::
-
-    nnode* X4Solid::convertSphere_(bool only_inner)
-    {
-       const G4Sphere* const solid = static_cast<const G4Sphere*>(m_solid);
-
-       float rmin = solid->GetInnerRadius()/mm ; 
-       float rmax = solid->GetOuterRadius()/mm ; 
-
-       bool has_inner = !only_inner && rmin > 0.f ; 
-       nnode* inner = has_inner ? convertSphere_(true) : NULL ;  
-       float radius = only_inner ? rmin : rmax ;   
-
-       LOG(verbose) 
-                 << " radius : " << radius 
-                 << " only_inner : " << only_inner
-                 << " has_inner : " << has_inner 
-                 ;
-
-       float startThetaAngle = solid->GetStartThetaAngle()/degree ; 
-       float deltaThetaAngle = solid->GetDeltaThetaAngle()/degree ; 
-
-       // z to the right, theta   0 -> z=r, theta 180 -> z=-r
-       float rTheta = startThetaAngle ;
-       float lTheta = startThetaAngle + deltaThetaAngle ;
-       assert( rTheta >= 0.f && rTheta <= 180.f) ; 
-       assert( lTheta >= 0.f && lTheta <= 180.f) ; 
-
-       bool zslice = startThetaAngle > 0.f || deltaThetaAngle < 180.f ; 
-
-       LOG(verbose) 
-                 << " rTheta : " << rTheta
-                 << " lTheta : " << lTheta
-                 << " zslice : " << zslice
-                 ;
-
-       float x = 0.f ; 
-       float y = 0.f ; 
-       float z = 0.f ; 
-
-       nnode* cn = NULL ; 
-       if(zslice)
-       {
-           double zmin = radius*std::cos(lTheta*CLHEP::pi/180.) ;
-           double zmax = radius*std::cos(rTheta*CLHEP::pi/180.) ;
-           assert( zmax > zmin ) ; 
-           cn = make_zsphere( x, y, z, radius, zmin, zmax ) ;
-           cn->label = BStr::concat(m_name, "_nzsphere", NULL) ; 
-       }
-       else
-       {
-           cn = make_sphere( x, y, z, radius );
-           cn->label = BStr::concat(m_name, "_nsphere", NULL ) ; 
-       }
-
-       nnode* ret = has_inner ? nnode::make_operator(CSG_DIFFERENCE, cn, inner) : cn ; 
-       if(has_inner) ret->label = BStr::concat(m_name, "_ndifference", NULL ) ; 
+https://simoncblyth.bitbucket.io/env/presentation/CSGOptiXRender/GeoChain_Darwin/SphereWithPhiSegment/cvd0/50001/cxr_geochain/cam_1/cxr_geochain_SphereWithPhiSegment_difference_old.jpg
+https://simoncblyth.bitbucket.io/env/presentation/CSGOptiXRender/GeoChain_Darwin/SphereWithPhiSegment/cvd0/50001/cxr_geochain/cam_1/cxr_geochain_SphereWithPhiSegment_difference_new.jpg
 
 
-       float startPhi = solid->GetStartPhiAngle()/degree ; 
-       float deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
-       bool has_deltaPhi = deltaPhi < 360.f ; 
+> I understand this would be helpful to show how I know the current system is
+> malfunctioning, but unfortunately I don't think I'd be able to do this in a
+> format that I could send for you to trial yourself. My current mode of testing
+> has been by performing modifications to the geometry of our simulated detector
+> and recording the location of registered hits, giving myself a very rudimentary
+> way of visualising changes in geometry under different parameters and changes
+> to the sphere function. It's not ideal I know, but with enough trials it has
+> revealed a lot of small details which would otherwise have been missed.
+
+To make progress in development it is vital to learn to create small focussed 
+test executables (effectively "unit tests") that exercise one feature/issue. 
+This allows you to communicate with precision using executable code, rather than 
+with vast swathes of text, that most potential readers will not have the 
+patience to read in depth.
+
+Also critically it gives you a fast development cycle for investigations.
+
+> That is what I had initially thought also, which is why I ignored it at first
+> and tried to see if I could fix the polyhedral implementation. However, just by
+> chance I showed my supervisor the inputs for the NZSphere class and he said
+> something I hadn't originally considered.  
+
+NZSphere does "flat" z-cuts, restricting the z-range of the sphere.
+Thats very different shape to G4Sphere thetaStar thetaDelta.  
+This difference is the unresolved discrepancy between Opticks and Geant4
+wrt theta segments.
+
+> The sphere only takes inputs between
+> the angles of 0 and 180 degrees, 
+
+G4Sphere theta is 0->180,  phi is 0->360
+
+> and therefore it technically has no way of
+> knowing (besides convention) which side of the sphere you want the solid to be
+> generated on. He suggested that since it doesn't know that, there's every
+> chance that the theta segments generated are mirrored down the sphere's centre.
+> I assumed this couldn't be the case, but when I went on to check in our own
+> geometry, sure enough it was there. 
+
+I do not follow this argument, to explain you will need to draw some diagrams, 
+or make some renders.   
+
+G4Sphere phiStart phiDelta results in "vertical" chops parallel to the z-axis   
+
+> Apologies for not being able to give code as proof, but I feel with a little
+> explanation the rather crude image attached to this email should suffice to
+> explain at least a little of how I have found this.  In this setup there's only
+> two surfaces being interacted with, both of which are totally efficient in
+> Opticks, so all photons impacting will be absorbed. Both surfaces are spheres
+> segmented in theta but not phi, one large (top left), one small (bottom right),
+> and the source of photons is a positron emitting via the Cerenkov process. The
+> particle passes through both surfaces before the stepping process halts.
+> Ignoring the large sphere to begin with, there is a small collection of hits
+> just above the expected distribution of hits on the small sphere. In the
+> default version of this geometry the two spheres are mirrors, and having
+> checked repeatedly it is definitely the case that the lower side of the sphere
+> is correctly oriented (if required I can provide evidence that I have
+> absolutely confirmed this is correct for the case being tested). That small dot
+> of points just above the expected surface on the lower sphere absolutely should
+> not be there, and is a result of this mirroring effect.  The reason we don't
+> see it from the other sphere is because its radius is large enough that its
+> opposite side is outside of the extent of the detector, and therefore never
+> intersects the path - something which is normally true of the opposing side of
+> the smaller sphere when it is at its correct scale.
+
+Trying to debug something in such a contorted way is not practical.
+You need a simple situation and simple code path in order to have any chance of 
+identifying causes of bugs. 
+
+> I digress, the point of mentioning this was to explain why this would enable my
+> original idea to work.  Using the aforementioned make_zsphere( x, y, z, radius,
+> zmin, zmax ) function, if we automatically set maxz = radius, this corresponds
+> to an angle of Phi = 0, thus giving no separation between the two mirrored
+> halves. From here, we could set minz = radius * cos( 0.5 * deltaPhi ), halving
+> the angle of the mirror generated on each side. 
+
+I think you have wrong idea about the shape of NZSphere. 
+But thank you for raising this : as it made me realise that 
+the Opticks theta segmenting does not match Geant4.
+
+NZSphere simply takes a sphere and chops it in z. 
+It is not an appropriate shape for making phi segments, other than
+making a hemispeher and using it as a chopping plane : which is what 
+the nconvexpolyhedron segment is doing anyhow.
+
+>  No angle between them with two
+> mirrored halves of angle 0 to 180 gives us an easy way of making a whole
+> sphere, which we can then account for the rotation of afterwards. In Geant4 the
+> phi angle of spheres is defined between +-180 degrees, thus putting the zero
+> point in the same place between the two geometries. All we'd have to do to
+> account for the difference now is add to the angle of startPhi to correct for
+> the fact that under normal circumstances the angle has to account for the
+> centring of the mirror (that is, we change startPhi += 0.5 * deltaPhi).
+> Perform one rotation to align phi with the correct axis, then another to rotate
+> the now correctly aligned phi to set startPhi correctly (although I expect in
+> many cases this angle will be zero anyway).  
+>
+> Finally, take the intersection
+> with the existing segment in theta and boom, we now have a working spherical
+> segmentation that matches between Geant4 and Opticks - one which may also be
+> able to replace the current segmenting function that doesn't appear to be
+> working (and which would already be rather limited, effectively only working as
+> far as 90 degrees).
+
+Intersecting with a wedge shape to phi-segment is not restricted to 90 degrees
+because you can just increase the "radius" extent of the segment. 
+But I do see this as problematic as it needs to be very large in order to get to 180 
+and going beyond 180 would not work.
+A solution for that problem would be to implement an unbounded CSG_SEGMENT shape 
+which comprises just two planes that intersect on the z-axis.   
+
+Using unbounded shapes works fine so long as they are always intersected with 
+or subtracted. There are already implementations of unbounded primitives
+CSG_PLANE and CSG_SLAB (two parallel planes).
+
+
+> It would also save a lot more time performing trial and error on the polyhedron
+> class to work out where it's going wrong; I'm sure it'd be useful to know, but
+> if it can be avoided I'd say its worth a try.
+>
+> I understand this all sounds very Optimistic and that the result I've shown as
+> evidence of this having the possibility of working looks like the computer
+> generated equivalent of a drawing in crayons, but so long as there is no
+> problem caused during the rotation, this should work.  
+>
+>
+> Again, I cannot support them with any finished code since I'm not sure on
+> performing a rotation which is the current problem; I can however offer you
+> what I have so far. This can at least show that the code may be used to
+> generate a full sphere, and that the two spheres generated (for theta and phi
+> respectively) are generated from the same point, thus meaning they already
+> intersect without having to be moved (can be observed by generating one as a
+> full sphere and the other with a lower angle). Here is my version of the
+> convertSphere_() function, most lines are identical to your own but I figured
+> I'd send the whole thing incase I missed something.
+
+I think you idea is a non-starter as it is based on a mis-understanding 
+of the Opticks NZSphere shape. 
+
+To convince me otherwise you will need to make a better argument with 
+diagrams and preferably with renders of geometry. 
+
+Of course this raises the question of how to implement in Opticks an 
+equivalent for the G4Sphere theta segment functionality. The way it 
+is done currently with NZSphere is wrong.   
+An immediate idea is to subtract cones from the sphere. 
+
+If you need that functionality feel free to try to implement it. 
+I may be able to incorporate your work into Opticks.
+
+Simon
+
+For notes on my investigations of the issues you pointed out see
+
+https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/LHCb_Rich_Lucas_unclear_sphere_phisegment_issue.rst
 
 
 
-       nnode* result = NULL;
 
-       if(has_deltaPhi)
-         {
-    //if has phi
-
-           double zminPhi = radius*std::cos(0.5 * deltaPhi * CLHEP::pi/180.) ;
-           double zmaxPhi = radius;
-        /*
-    sets maximum and minimum z in cylindrical coordinates. here we exploit the mirrored generation of the cylindrical coords with zero angle between the two sections of half length to create a single sliced wheel of the correct size at their intersection. from here we may rotate this new wedge into the correct position.
-         */
-        
-          double startPhiAdjust = startPhi + 0.5 * deltaPhi; //adjusts for centre
-
-           assert( zmaxPhi > zminPhi ) ; //checks for deltaPhi<0 
-        
-           //Rotation of root here maybe?
-
-        nnode* segmentPhi = NULL ; //create nnode
-
-           segmentPhi = make_zsphere( x, y, z, 1.01 * radius, zminPhi, zmaxPhi ) ;
-        //generates segment
-
-           segmentPhi->label = BStr::concat(m_name, "_nzsphere", NULL) ; 
-        //labels segment
-
-           //Counter rotation of root here, or rotation of segment if root not rotated. 
-
-        result = nnode::make_operator(CSG_INTERSECTION, ret, segmentPhi);
-       } else {
-
-         result = ret;
-
-       }
-
-       return result ; 
-    }
-
-I hope that this may at least convince you there is a possibility this would
-work. I await your response, but will continue looking for a solution to this
-in the meantime. I hope you are doing well, and thank you again for your
-correspondence.
-
-Many thanks,
-Lucas 

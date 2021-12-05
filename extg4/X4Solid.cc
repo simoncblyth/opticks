@@ -829,9 +829,25 @@ X4Solid::intersectWithPhiSegment
   
 
 **/
+const int X4Solid::intersectWithPhiSegment_debug_mode = SSys::getenvint("X4Solid_intersectWithPhiSegment_debug_mode", 0); 
 
 nnode* X4Solid::intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR )  
 {
+    int debug_mode = intersectWithPhiSegment_debug_mode  ;
+    int debug_minor = debug_mode % 10 ; 
+    int debug_major = debug_mode / 10 ; 
+ 
+    LOG(error)
+        << " startPhi " << startPhi
+        << " deltaPhi " << deltaPhi
+        << " segZ " << segZ
+        << " segR " << segR
+        << " debug_mode " << debug_mode
+        << " debug_minor " << debug_minor
+        << " debug_major " << debug_major
+        ;
+
+
     bool has_deltaphi = deltaPhi < 360.f ; 
     assert( has_deltaphi ) ; 
 
@@ -856,14 +872,55 @@ nnode* X4Solid::intersectWithPhiSegment(nnode* whole, float startPhi, float delt
     {
         float phi0 = startPhi ; 
         float phi1 = startPhi + deltaPhi ; 
-        segment = nconvexpolyhedron::make_segment(phi0, phi1, segZ, segR );  
+        float u_segZ = segZ ;  
+
+        if( debug_major == 1 )
+        {
+            u_segZ = segZ/2. ; 
+ 
+            LOG(error) 
+                << " reproduce segZ half sized bug "
+                << " segZ " << segZ 
+                << " u_segZ " << u_segZ 
+                ; 
+        } 
+
+        segment = nconvexpolyhedron::make_segment(phi0, phi1, u_segZ, segR );  
         segment->label = BStr::concat(m_name, "_segment_wedge", NULL); 
     }
 
     nnode* result = nnode::make_operator(CSG_INTERSECTION, whole, segment); 
     result->label = BStr::concat(m_name, "_intersection", NULL); 
 
-    return result ;   
+
+
+    if( debug_minor == 1 ) 
+    {
+        LOG(error) << "X4Solid_intersectWithPhiSegment_debug_mode debug_minor " << debug_minor << " RETURNING SEGMENT " ; 
+        result = segment ; 
+        result->label = BStr::concat(m_name, "_debug_segment", NULL); 
+    }
+    else if( debug_minor == 2 ) 
+    {
+        LOG(error) << "X4Solid_intersectWithPhiSegment_debug_mode debug_minor " << debug_minor << " RETURNING UNION " ; 
+        result = nnode::make_operator(CSG_UNION, whole, segment); 
+        result->label = BStr::concat(m_name, "_debug_union", NULL); 
+    }
+    else if( debug_minor == 3 ) 
+    {
+        LOG(error) << "X4Solid_intersectWithPhiSegment_debug_mode debug_minor " << debug_minor << " RETURNING DIFFERENCE " ; 
+        result = nnode::make_operator(CSG_DIFFERENCE, whole, segment); 
+        result->label = BStr::concat(m_name, "_debug_difference", NULL); 
+    }
+    else if( debug_minor == 4 ) 
+    {
+        LOG(error) << "X4Solid_intersectWithPhiSegment_debug_mode debug_minor " << debug_minor << " RETURNING INTERSECT " ; 
+        result = nnode::make_operator(CSG_INTERSECTION, whole, segment); 
+        result->label = BStr::concat(m_name, "_debug_intersect", NULL); 
+    }
+
+
+    return result ; 
 }
 
 void X4Solid::convertTrd()

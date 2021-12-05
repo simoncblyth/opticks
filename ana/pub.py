@@ -50,7 +50,7 @@ class Pub(object):
     DEST_BASE = os.path.join(DEST_ROOT, "env/presentation")
     INDENT = "    "
 
-    def __init__(self, base=None, ext=".png"):
+    def __init__(self, base=None, exts=[".png", ".jpg"]):
         if base is None:
             base = os.environ.get("SRC_BASE", "$TMP/NonExisting")
         pass
@@ -62,7 +62,7 @@ class Pub(object):
         name = os.path.basename(base)
         dest = os.path.join(self.DEST_BASE, name)
 
-        self.find(base, ext)
+        self.find(base, exts)
 
         cmds, s5ps, s5ti = self.copy_cmds(dest)
 
@@ -71,7 +71,7 @@ class Pub(object):
         self.s5ps = s5ps
         self.s5ti = s5ti
 
-    def find(self, base, ext):
+    def find(self, base, exts):
         """
         Collect base relative paths to files with extension *ext*
         """
@@ -79,9 +79,12 @@ class Pub(object):
         res = []
         for root, dirs, files in os.walk(base):
             for name in files:
-                if name.endswith(ext): 
-                    path = os.path.join(root, name)
-                    res.append(path[len(base)+1:])
+
+                for ext in exts:
+                    if name.endswith(ext): 
+                        path = os.path.join(root, name)
+                        res.append(path[len(base)+1:])
+                    pass
                 pass
             pass
         pass

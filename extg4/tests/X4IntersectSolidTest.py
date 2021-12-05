@@ -141,6 +141,10 @@ if __name__ == '__main__':
 
     H,V = gridspec.axes     ## traditionally H,V = X,Z  but are now generalizing 
 
+    _H = _axes[H]
+    _V = _axes[V]
+
+
     outdir = os.path.join(tests[0].base, "figs")
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
@@ -185,6 +189,9 @@ if 1:
         fig.suptitle("\n".join([topline,botline,thirdline]))
 
         ax.set_aspect('equal')
+
+        ax.set_xlabel(_H)
+        ax.set_ylabel(_V)
 
         for test in tests:
             geom = test.base.split("/")[-2]

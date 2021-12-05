@@ -25,42 +25,30 @@ bool X4GeometryMaker::StartsWith( const char* n, const char* q ) // static
 
 bool X4GeometryMaker::CanMake(const char* qname) // static 
 {
-    std::vector<std::string> names = {
-       "orb",
-       "SphereWithPhiSegment",
-       "AdditionAcrylicConstruction",
-       "BoxMinusTubs0",
-       "BoxMinusTubs1",
-       "UnionOfHemiEllipsoids"
-    } ; 
-
     bool found = false ; 
-    for( unsigned i=0 ; i < names.size() ; i++)
-    {
-        const std::string& n = names[i]; 
-        const char* name = n.c_str(); 
-        if(StartsWith(name, qname))
-        {
-            found = true ; 
-            break ; 
-        } 
-    }
-
-    std::cout 
-         << "X4GeometryMaker::CanMake"
-         << " qname " << qname
-         << " found " << found
-         << std::endl 
-         ;
-  
+    std::stringstream ss(NAMES) ;    
+    std::string name ; 
+    while (!found && std::getline(ss, name)) if(!name.empty() && StartsWith(name.c_str(), qname)) found = true ;
+    LOG(LEVEL) << " qname " << qname << " found " << found ; 
     return found ; 
 }
+
+const char* X4GeometryMaker::NAMES = R"LITERAL(
+Orb
+SphereWithPhiSegment
+SphereWithThetaSegment
+AdditionAcrylicConstruction
+BoxMinusTubs0
+BoxMinusTubs1
+UnionOfHemiEllipsoids
+)LITERAL"; 
 
 const G4VSolid* X4GeometryMaker::Make(const char* qname)  // static
 {
     const G4VSolid* solid = nullptr ; 
-    if(     StartsWith("orb",qname))                          solid = X4GeometryMaker::orb(qname); 
+    if(     StartsWith("Orb",qname))                          solid = X4GeometryMaker::Orb(qname); 
     else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4GeometryMaker::SphereWithPhiSegment(qname); 
+    else if(StartsWith("SphereWithThetaSegment",qname))       solid = X4GeometryMaker::SphereWithThetaSegment(qname); 
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4GeometryMaker::AdditionAcrylicConstruction(qname); 
     else if(StartsWith("BoxMinusTubs0",qname))                solid = X4GeometryMaker::BoxMinusTubs0(qname); 
     else if(StartsWith("BoxMinusTubs1",qname))                solid = X4GeometryMaker::BoxMinusTubs1(qname); 
@@ -69,7 +57,7 @@ const G4VSolid* X4GeometryMaker::Make(const char* qname)  // static
     return solid ; 
 }
 
-const G4VSolid* X4GeometryMaker::orb(const char* name)  // static
+const G4VSolid* X4GeometryMaker::Orb(const char* name)  // static
 {
     return new G4Orb(name, 100.) ; 
 }
@@ -112,6 +100,33 @@ const G4VSolid* X4GeometryMaker::SphereWithPhiSegment(const char* name)  // stat
     G4double pDPhi = phi_delta*pi ; 
     G4double pSTheta = 0. ; 
     G4double pDTheta = pi ;     // pi: full in theta
+
+    return new G4Sphere(pName, pRmin, pRmax, pSPhi, pDPhi, pSTheta, pDTheta ); 
+}
+
+
+const G4VSolid* X4GeometryMaker::SphereWithThetaSegment(const char* name)  // static
+{
+    double theta_start = SSys::getenvfloat("X4GeometryMaker_SphereWithThetaSegment_theta_start", 0.f) ;  // units of pi
+    double theta_delta = SSys::getenvfloat("X4GeometryMaker_SphereWithThetaSegment_theta_delta", 0.5f) ; // units of pi
+
+    LOG(info)
+        << " (inputs are scaled by pi) "
+        << " theta_start  " << theta_start
+        << " theta_delta  " << theta_delta
+        << " theta_start+theta_delta  " << theta_start+theta_delta
+        << " theta_start*pi " << theta_start*pi
+        << " theta_delta*pi " << theta_delta*pi
+        << " (theta_start+theta_delta)*pi " << (theta_start+theta_delta)*pi
+        ;
+
+    G4String pName = name ; 
+    G4double pRmin = 0. ; 
+    G4double pRmax = 100. ; 
+    G4double pSPhi = 0.*pi ;    
+    G4double pDPhi = 2.*pi ; 
+    G4double pSTheta = theta_start*pi ; 
+    G4double pDTheta = theta_delta*pi ;  // theta_delta 1. : full in theta  
 
     return new G4Sphere(pName, pRmin, pRmax, pSPhi, pDPhi, pSTheta, pDTheta ); 
 }

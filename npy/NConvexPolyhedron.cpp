@@ -507,7 +507,7 @@ nconvexpolyhedron::make_segment
 ==================================
 
 Prism intended for deltaphi intersecting with
-vertices 0 and 3 on the z-axis at -sz/2 and sz/2
+vertices 0 and 3 on the z-axis at -sz and sz
 
 From ../analytic/prism.py:make_segment
 
@@ -519,7 +519,7 @@ From ../analytic/prism.py:make_segment
        sr  .  \
        /   .   \
       /    .    \
-     3----sr-----4       top plane at z = sz/2
+     3----sr-----4       top plane at z = sz
      .     .     .
      .     .     .
      .     2     .
@@ -528,7 +528,7 @@ From ../analytic/prism.py:make_segment
      .  sr    \  .
      . /       \ .
      ./         \.
-     0-----------1        base plane at z = -sz/2
+     0-----------1        base plane at z = -sz
           sr   (x1,y1)
                                                  
                                    Z    
@@ -536,10 +536,19 @@ From ../analytic/prism.py:make_segment
                                    | /
                                    |/
                                    +------ X
+
+
+NB FORMERLY USED -sz/2 and sz/2 planes 
+see notes/issues/LHCb_Rich_Lucas_unclear_sphere_phisegment_issue.rst
+
 **/
 
 nconvexpolyhedron* nconvexpolyhedron::make_segment(float phi0, float phi1, float sz, float sr ) // static
 {
+    float z0 = -sz ; 
+    float z1 = sz ;
+    assert( z1 > z0 );  
+
     const float pi = glm::pi<float>() ;
    
     float x0 = 0.f ;
@@ -553,13 +562,13 @@ nconvexpolyhedron* nconvexpolyhedron::make_segment(float phi0, float phi1, float
  
     std::vector<glm::vec3> v(6) ; 
 
-    v[0] = {    x0,     y0 , -sz/2. } ;  //
-    v[1] = {    x1,     y1 , -sz/2. } ;  //
-    v[2] = {    x2,     y2 , -sz/2. } ;  //
+    v[0] = { x0, y0, z0 } ;
+    v[1] = { x1, y1, z0 } ;
+    v[2] = { x2, y2, z0 } ;
 
-    v[3] = {    x0,     y0 ,  sz/2. } ;  //
-    v[4] = {    x1,     y1 ,  sz/2. } ;  // 
-    v[5] = {    x2,     y2 ,  sz/2. } ;  //
+    v[3] = { x0, y0, z1 } ;
+    v[4] = { x1, y1, z1 } ;
+    v[5] = { x2, y2, z1 } ;
 
     std::vector<glm::vec4> p(5) ; 
 

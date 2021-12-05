@@ -120,6 +120,8 @@ class X4_API X4Solid : public X4SolidBase
         nnode* convertTubs_cylinder(bool do_nudge_inner);
     private:
         nnode* intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR );
+        static const int intersectWithPhiSegment_debug_mode ; 
+
         void booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot );
         G4ThreeVector GetAngles(const G4RotationMatrix& mtx);
         nnode* convertSphere_(bool only_inner);

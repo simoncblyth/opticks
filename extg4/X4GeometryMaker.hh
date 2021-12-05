@@ -9,12 +9,14 @@ class G4VSolid ;
 struct X4_API X4GeometryMaker
 {
     static const plog::Severity LEVEL ; 
+    static const char* NAMES ; 
 
     static bool  CanMake(const char* name); 
     static const G4VSolid* Make(const char* name); 
 
-    static const G4VSolid* orb(const char* name); 
+    static const G4VSolid* Orb(const char* name); 
     static const G4VSolid* SphereWithPhiSegment(const char* name); 
+    static const G4VSolid* SphereWithThetaSegment(const char* name); 
     static const G4VSolid* AdditionAcrylicConstruction(const char* name);
     static const G4VSolid* BoxMinusTubs0(const char* name);
     static const G4VSolid* BoxMinusTubs1(const char* name); 
