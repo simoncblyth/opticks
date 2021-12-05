@@ -31,6 +31,14 @@ if(OBO_VERBOSE)
 message(STATUS "OpticksBuildOptions.cmake Configuring ${name} [")
 endif()
 
+# for policy to be felt by includer need to : include(OpticksBuildOptions NO_POLICY_SCOPE)  
+if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+    #cmake_policy(SET CMP0077 OLD)
+    cmake_policy(SET CMP0077 NEW)
+endif()
+
+
+
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
    message(STATUS " CMAKE_SOURCE_DIR : ${CMAKE_SOURCE_DIR} ")

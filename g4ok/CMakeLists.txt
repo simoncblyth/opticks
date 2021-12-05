@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name G4OK)
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)
+include(OpticksBuildOptions NO_POLICY_SCOPE)
 
-if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
-    message(STATUS "with-policy-CMP0077") 
-    cmake_policy(SET CMP0077 OLD)
-    #cmake_policy(SET CMP0077 NEW)
-else()
-    message(STATUS "no-policy-CMP0077") 
-endif()
+#if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+#    message(STATUS "with-policy-CMP0077") 
+#    cmake_policy(SET CMP0077 OLD)
+#    #cmake_policy(SET CMP0077 NEW)
+#else()
+#    message(STATUS "no-policy-CMP0077") 
+#endif()
 
 
 find_package(CFG4   REQUIRED CONFIG)   

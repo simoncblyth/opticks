@@ -28,10 +28,10 @@ found in the PATH.
 
 
 
-if(POLICY CMP0077)  # see note/issues/cmake-3.13.4-FindCUDA-warnings.rst
+if(POLICY CMP0077)  # see notes/issues/cmake-3.13.4-FindCUDA-warnings.rst
     message(STATUS "FindOpticksCUDA.cmake:with-policy-CMP0077") 
-    cmake_policy(SET CMP0077 OLD)
-    #cmake_policy(SET CMP0077 NEW)
+    #cmake_policy(SET CMP0077 OLD)
+    cmake_policy(SET CMP0077 NEW)
 else()
     message(STATUS "FindOpticksCUDA.cmake:no-policy-CMP0077") 
 endif()

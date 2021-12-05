@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name SysRap)
 set(desc "System Level Utilities depending")
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)
+include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 
 #[=[
@@ -20,7 +20,11 @@ Fortunately thats easy to do by linking with Opticks::OKConf.
 find_package(OKConf REQUIRED CONFIG)
 find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
-#find_package(OpticksCUDA REQUIRED MODULE)
+
+#if(POLICY CMP0077)  # see notes/issues/cmake-3.13.4-FindCUDA-warnings.rst
+#   cmake_policy(SET CMP0077 NEW)
+#endif()
+
 find_package(CUDA REQUIRED)
 
 set(WITH_PLOG YES)

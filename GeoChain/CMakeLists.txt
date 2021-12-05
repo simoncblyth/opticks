@@ -15,7 +15,7 @@ See notes in GeoChain.cc.
 
 
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)
+include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 find_package(CUDA REQUIRED)  # CUDA headers for vector types like float4, not the CUDA runtime
 find_package(CSG_GGeo REQUIRED)

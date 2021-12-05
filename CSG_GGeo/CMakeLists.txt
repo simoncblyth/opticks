@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CSG_GGeo)
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)
+include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 find_package(CUDA REQUIRED)  # CSG_GGeo uses CUDA headers for vector types like float4, it does not use CUDA runtime
 find_package(CSG REQUIRED)
