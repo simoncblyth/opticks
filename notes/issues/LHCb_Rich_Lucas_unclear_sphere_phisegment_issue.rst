@@ -7,11 +7,20 @@ Commits
 
 * https://bitbucket.org/simoncblyth/opticks/commits/96579e4c6
 
+* https://bitbucket.org/simoncblyth/opticks/commits/466cee37f
+
 ::
 
     epsilon:opticks blyth$ git commit -m "generalize the handling of planar center-extent-gensteps allowing to slice other axes, use XY slice to look at G4Sphere phi segment with xxs.sh "
     [master 96579e4c6] generalize the handling of planar center-extent-gensteps allowing to slice other axes, use XY slice to look at G4Sphere phi segment with xxs.sh
      9 files changed, 501 insertions(+), 65 deletions(-)
+
+
+    epsilon:opticks blyth$ git commit -m "add X4Solid_intersectWithPhiSegment_debug_mode for debug variations in the intersectWithPhiSegment geometry "
+    [master 466cee37f] add X4Solid_intersectWithPhiSegment_debug_mode for debug variations in the intersectWithPhiSegment geometry
+     13 files changed, 472 insertions(+), 279 deletions(-)
+     create mode 100755 CSGOptiX/cxr_pub.sh
+    epsilon:opticks blyth$ git push 
 
 
 
@@ -339,7 +348,7 @@ Geant4 in theta segmenting that is unresolved.
 In order to debug phi segments I switched from intersection 
 with the segment to difference with it. The two below renders are before 
 and after fixing the z-extent of the segment wedge. 
-The segment what half the size it needed to be in z.
+The segment was half the size it needed to be in z.
 
 https://simoncblyth.bitbucket.io/env/presentation/CSGOptiXRender/GeoChain_Darwin/SphereWithPhiSegment/cvd0/50001/cxr_geochain/cam_1/cxr_geochain_SphereWithPhiSegment_difference_old.jpg
 https://simoncblyth.bitbucket.io/env/presentation/CSGOptiXRender/GeoChain_Darwin/SphereWithPhiSegment/cvd0/50001/cxr_geochain/cam_1/cxr_geochain_SphereWithPhiSegment_difference_new.jpg
@@ -470,7 +479,6 @@ CSG_PLANE and CSG_SLAB (two parallel planes).
 > generated equivalent of a drawing in crayons, but so long as there is no
 > problem caused during the rotation, this should work.  
 >
->
 > Again, I cannot support them with any finished code since I'm not sure on
 > performing a rotation which is the current problem; I can however offer you
 > what I have so far. This can at least show that the code may be used to
@@ -500,7 +508,4 @@ Simon
 For notes on my investigations of the issues you pointed out see
 
 https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/LHCb_Rich_Lucas_unclear_sphere_phisegment_issue.rst
-
-
-
 

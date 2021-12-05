@@ -283,3 +283,37 @@ g4ok om-cleaninstall gives the above warnings with cmake 3.13.4 but not with 3.1
 
 
 
+with cmake 
+
+
+    -- Configuring SysRap
+    CMake Warning (dev) at /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc830/Pre-Release/J21v2r0-branch/ExternalLibs/Cmake/3.21.2/share/cmake-3.21/Modules/FindCUDA.cmake:723 (option):
+      Policy CMP0077 is not set: option() honors normal variables.  Run "cmake
+      --help-policy CMP0077" for policy details.  Use the cmake_policy command to
+      set the policy and suppress this warning.
+
+      For compatibility with older versions of CMake, option is clearing the
+      normal variable 'CUDA_PROPAGATE_HOST_FLAGS'.
+    Call Stack (most recent call first):
+      CMakeLists.txt:24 (find_package)
+    This warning is for project developers.  Use -Wno-dev to suppress it.
+
+    CMake Warning (dev) at /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc830/Pre-Release/J21v2r0-branch/ExternalLibs/Cmake/3.21.2/share/cmake-3.21/Modules/FindCUDA.cmake:729 (option):
+      Policy CMP0077 is not set: option() honors normal variables.  Run "cmake
+      --help-policy CMP0077" for policy details.  Use the cmake_policy command to
+      set the policy and suppress this warning.
+
+      For compatibility with older versions of CMake, option is clearing the
+      normal variable 'CUDA_VERBOSE_BUILD'.
+    Call Stack (most recent call first):
+      CMakeLists.txt:24 (find_package)
+    This warning is for project developers.  Use -Wno-dev to suppress it.
+
+    -- Looking for pthread.h
+
+
+
+CAUTION : Have switched to policy NEW so there is potential for changed CUDA flags 
+-------------------------------------------------------------------------------------
+
+
