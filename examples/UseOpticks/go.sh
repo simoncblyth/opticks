@@ -68,6 +68,15 @@ cmake_no_prefix_path()
         -DOPTICKS_PREFIX=$(opticks-prefix) 
 }
 
+cmake_check()
+{
+    : succeeds as the full prefix path is coming in via envvar anyhow 
+    echo $FUNCNAME
+    cmake $sdir \
+        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+        -DCMAKE_BUILD_TYPE=Debug 
+}
+
 
 om_cmake()
 {
@@ -80,9 +89,9 @@ om_cmake()
 #cmake_
 #cmake_no_module
 #cmake_no_opticks_prefix
-cmake_no_prefix_path
+#cmake_no_prefix_path
 #om_cmake
-
+cmake_check
 
 
 

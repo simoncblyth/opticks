@@ -8,16 +8,21 @@ the flexibility to access other "COMPONENTS" currently.
 Testing this from ~/opticks/examples/UseOpticks/go.sh 
 
 
-https://stackoverflow.com/questions/3221996/set-target-properties-called-with-incorrect-number-of-arguments/3222126
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+-DCMAKE_MODULE_PATH=$JUNOTOP/opticks/cmake/Modules
 
 
 #]=]
 
 set(Opticks_MODULE  "${CMAKE_CURRENT_LIST_FILE}")
 include(GNUInstallDirs)
+set(OPTICKS_PREFIX $ENV{OPTICKS_PREFIX})
 
 if(Opticks_VERBOSE)
-    message(STATUS "${Opticks_MODULE} : Opticks_VERBOSE : ${Opticks_VERBOSE} ")
+    message(STATUS "${Opticks_MODULE} : Opticks_VERBOSE     : ${Opticks_VERBOSE} ")
+    message(STATUS "${Opticks_MODULE} : ENV(OPTICKS_PREFIX) : $ENV{OPTICKS_PREFIX} ")
+    message(STATUS "${Opticks_MODULE} : OPTICKS_PREFIX      : ${OPTICKS_PREFIX} ")
 
     foreach(_dir ${CMAKE_MODULE_PATH})
         message(STATUS "${Opticks_MODULE} : CMAKE_MODULE_PATH _dir : ${_dir} ")
