@@ -192,6 +192,8 @@ set(HEADERS
     X4_TAIL.hh
 )
 
+# note that X4PhysicsOrderedFreeVector.hh is missing 
+
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_link_libraries( ${name} PUBLIC 
