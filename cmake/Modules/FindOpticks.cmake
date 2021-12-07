@@ -8,9 +8,19 @@ the flexibility to access other "COMPONENTS" currently.
 Testing this from ~/opticks/examples/UseOpticks/go.sh 
 
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+Used from cmake/JUNODependencies.cmake::
 
--DCMAKE_MODULE_PATH=$JUNOTOP/opticks/cmake/Modules
+    ## Opticks
+    if(DEFINED ENV{OPTICKS_PREFIX})
+       set(Opticks_VERBOSE YES)
+       set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{JUNOTOP}/opticks/cmake/Modules")
+       find_package(Opticks QUIET MODULE)
+       message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Opticks_FOUND:${Opticks_FOUND}" )
+    endif()
+
+Then subsequently packages needing Opticks headers must add dependency line::
+
+    $<$<BOOL:${Opticks_FOUND}>:${Opticks_TARGET}> 
 
 
 #]=]
@@ -46,6 +56,7 @@ if(G4OK_FOUND)
 
     include_directories(${PLog_INCLUDE_DIR})  ## WHY NOT AUTOMATIC ? Maybe because plog is header only ?
 
+    set(Opticks_TARGET "Opticks::G4OK")   
     set(Opticks_FOUND "YES") 
 else()
     set(Opticks_FOUND "NO")
