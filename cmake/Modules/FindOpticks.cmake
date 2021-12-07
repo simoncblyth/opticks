@@ -51,19 +51,20 @@ if(G4OK_FOUND)
     add_compile_definitions(WITH_G4OPTICKS)
 
     if(Opticks_VERBOSE)
-        message(STATUS "${Opticks_MODULE} : PLog_INCLUDE_DIR:${PLog_INCLUDE_DIR} ")
+        message(STATUS "${Opticks_MODULE} : PLog_INCLUDE_DIR :${PLog_INCLUDE_DIR} ")
     endif()
-
     include_directories(${PLog_INCLUDE_DIR})  ## WHY NOT AUTOMATIC ? Maybe because plog is header only ?
 
     set(Opticks_TARGET "Opticks::G4OK")   
     set(Opticks_FOUND "YES") 
+
 else()
     set(Opticks_FOUND "NO")
 endif()
 
 
 if(Opticks_VERBOSE)
-    message(STATUS "${Opticks_MODULE} : Opticks_FOUND   : ${Opticks_FOUND} ")
+    message(STATUS "${Opticks_MODULE} : Opticks_TARGET   :${Opticks_TARGET} ")
+    message(STATUS "${Opticks_MODULE} : Opticks_FOUND    :${Opticks_FOUND} ")
 endif()
 
