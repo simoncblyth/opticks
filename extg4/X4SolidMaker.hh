@@ -6,7 +6,7 @@ class G4VSolid ;
 #include "X4_API_EXPORT.hh"
 #include "plog/Severity.h"
 
-struct X4_API X4GeometryMaker
+struct X4_API X4SolidMaker
 {
     static const plog::Severity LEVEL ; 
     static const char* NAMES ; 

@@ -50,6 +50,7 @@ class GGeo ;
 class GMesh ; 
 class GVolume ; 
 struct CSGFoundry ; 
+struct nnode ; 
 
 struct GEOCHAIN_API GeoChain
 {
@@ -66,6 +67,7 @@ struct GEOCHAIN_API GeoChain
     
     void init(); 
     void convertSolid(const G4VSolid*          so , const std::string& meta); 
+    void convertNodeTree( nnode*             root , const std::string& meta); 
     void convertPV(   const G4VPhysicalVolume* pv , const std::string& meta); 
 
     void save(const char* base, const char* name) const ; 

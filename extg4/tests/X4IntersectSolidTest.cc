@@ -10,7 +10,7 @@ Used from script extg4/xxs.sh
 #include "SStr.hh"
 
 #include "X4Intersect.hh"
-#include "X4GeometryMaker.hh"
+#include "X4SolidMaker.hh"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -19,9 +19,9 @@ Used from script extg4/xxs.sh
 const G4VSolid* GetSolid(const char* name)
 {
     const G4VSolid* solid = nullptr ; 
-    if(X4GeometryMaker::CanMake(name))
+    if(X4SolidMaker::CanMake(name))
     {
-        solid = X4GeometryMaker::Make(name); 
+        solid = X4SolidMaker::Make(name); 
     }
     else
     {

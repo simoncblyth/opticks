@@ -29,7 +29,7 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-## X4GeometryMaker debug solids
+## X4SolidMaker debug solids
 
 #geom=Orb
 #geom=SphereWithPhiSegment 
@@ -114,9 +114,12 @@ fi
 echo $msg other_reldir $other_reldir other_fold $other_fold other_exists $other_exists
 
 if [ "$GEOM" == "Orb" ]; then
+
+    dx=0
+    dy=0
     dz=0
-    num_pho=10
-    cegs=16:0:9:0:0:$dz:$num_pho
+    numpho=10
+    cegs=16:0:9:$dx:$dy:$dz:$numpho
     gridscale=0.15
 
     zz=-100,100
@@ -124,20 +127,20 @@ if [ "$GEOM" == "Orb" ]; then
 
 elif [ "$GEOM" == "SphereWithPhiSegment" ]; then
 
-    export X4GeometryMaker_SphereWithPhiSegment_phi_start=1.0    # inputs are multiples of pi 
-    export X4GeometryMaker_SphereWithPhiSegment_phi_delta=0.25 
+    export X4SolidMaker_SphereWithPhiSegment_phi_start=1.0    # inputs are multiples of pi 
+    export X4SolidMaker_SphereWithPhiSegment_phi_delta=0.25 
 
     # NB *debug_return_segment* is not relevant here, its only relevant when converting from Geant4
     #export X4Solid_intersectWithPhiSegment_debug_return_segment=1 
 
-    num_pho=10
-    cegs=16:9:0:0:0:$dz:$num_pho    ## XY is the relevant cross-section 
+    numpho=10
+    cegs=16:9:0:0:0:$dz:$numpho    ## XY is the relevant cross-section 
     gridscale=0.15
 
 elif [ "$GEOM" == "SphereWithThetaSegment" ]; then
 
-    export X4GeometryMaker_SphereWithThetaSegment_theta_start=0.75    # inputs are multiples of pi 
-    export X4GeometryMaker_SphereWithThetaSegment_theta_delta=0.25 
+    export X4SolidMaker_SphereWithThetaSegment_theta_start=0.75    # inputs are multiples of pi 
+    export X4SolidMaker_SphereWithThetaSegment_theta_delta=0.25 
 
     ## theta_start:0    theta_delta:0.25    upwards 90 degree fan centered on +ve Z-axis
     ## theta_start:0.25 theta_delta:0.25    bow-tie above the z=0 plane
@@ -145,15 +148,14 @@ elif [ "$GEOM" == "SphereWithThetaSegment" ]; then
     ## theta_start:0.75 theta_delta:0.25    downwards 90 degree fan centered on -ve Z-axis
     ## theta_start:1    theta_delta:0.25    some kinda mess : just a radial line 
 
-    num_pho=10
-    cegs=16:0:9:0:0:$dz:$num_pho    # XZ or YZ are the relevant planes to look at 
-    gridscale=0.15
-
+    numpho=10
+    cegs=10:10:10:0:0:0:$numpho    ## nx:ny:nz:dx:dy:dz:numpho
+    gridscale=0.1
 
 else
     dz=-4
-    num_pho=10
-    #cegs=16:0:9:0:0:$dz:$num_pho
+    numpho=10
+    #cegs=16:0:9:0:0:$dz:$numpho
     #gridscale=0.15
     cegs=9:0:16:0:0:$dz:$num_pho
     gridscale=0.10

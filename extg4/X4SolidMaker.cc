@@ -13,17 +13,17 @@
 using CLHEP::pi ;
 
 #include "SSys.hh"
-#include "X4GeometryMaker.hh"
+#include "X4SolidMaker.hh"
 #include "PLOG.hh"
 
-const plog::Severity X4GeometryMaker::LEVEL = PLOG::EnvLevel("X4GeometryMaker", "DEBUG"); 
+const plog::Severity X4SolidMaker::LEVEL = PLOG::EnvLevel("X4SolidMaker", "DEBUG"); 
 
-bool X4GeometryMaker::StartsWith( const char* n, const char* q ) // static
+bool X4SolidMaker::StartsWith( const char* n, const char* q ) // static
 {
     return strlen(q) >= strlen(n) && strncmp(q, n, strlen(n)) == 0 ; 
 }
 
-bool X4GeometryMaker::CanMake(const char* qname) // static 
+bool X4SolidMaker::CanMake(const char* qname) // static 
 {
     bool found = false ; 
     std::stringstream ss(NAMES) ;    
@@ -33,7 +33,7 @@ bool X4GeometryMaker::CanMake(const char* qname) // static
     return found ; 
 }
 
-const char* X4GeometryMaker::NAMES = R"LITERAL(
+const char* X4SolidMaker::NAMES = R"LITERAL(
 Orb
 SphereWithPhiSegment
 SphereWithThetaSegment
@@ -43,27 +43,27 @@ BoxMinusTubs1
 UnionOfHemiEllipsoids
 )LITERAL"; 
 
-const G4VSolid* X4GeometryMaker::Make(const char* qname)  // static
+const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
 {
     const G4VSolid* solid = nullptr ; 
-    if(     StartsWith("Orb",qname))                          solid = X4GeometryMaker::Orb(qname); 
-    else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4GeometryMaker::SphereWithPhiSegment(qname); 
-    else if(StartsWith("SphereWithThetaSegment",qname))       solid = X4GeometryMaker::SphereWithThetaSegment(qname); 
-    else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4GeometryMaker::AdditionAcrylicConstruction(qname); 
-    else if(StartsWith("BoxMinusTubs0",qname))                solid = X4GeometryMaker::BoxMinusTubs0(qname); 
-    else if(StartsWith("BoxMinusTubs1",qname))                solid = X4GeometryMaker::BoxMinusTubs1(qname); 
-    else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = X4GeometryMaker::UnionOfHemiEllipsoids(qname); 
+    if(     StartsWith("Orb",qname))                          solid = X4SolidMaker::Orb(qname); 
+    else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4SolidMaker::SphereWithPhiSegment(qname); 
+    else if(StartsWith("SphereWithThetaSegment",qname))       solid = X4SolidMaker::SphereWithThetaSegment(qname); 
+    else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4SolidMaker::AdditionAcrylicConstruction(qname); 
+    else if(StartsWith("BoxMinusTubs0",qname))                solid = X4SolidMaker::BoxMinusTubs0(qname); 
+    else if(StartsWith("BoxMinusTubs1",qname))                solid = X4SolidMaker::BoxMinusTubs1(qname); 
+    else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = X4SolidMaker::UnionOfHemiEllipsoids(qname); 
     assert(solid); 
     return solid ; 
 }
 
-const G4VSolid* X4GeometryMaker::Orb(const char* name)  // static
+const G4VSolid* X4SolidMaker::Orb(const char* name)  // static
 {
     return new G4Orb(name, 100.) ; 
 }
 
 /**
-X4GeometryMaker::SphereWithPhiSegment
+X4SolidMaker::SphereWithPhiSegment
 --------------------------------------
 
 Best way to view phi segment is with XY cross section 
@@ -78,10 +78,10 @@ phi_start:0 phi_delta:0.5
 
 **/
 
-const G4VSolid* X4GeometryMaker::SphereWithPhiSegment(const char* name)  // static
+const G4VSolid* X4SolidMaker::SphereWithPhiSegment(const char* name)  // static
 {
-    double phi_start = SSys::getenvfloat("X4GeometryMaker_SphereWithPhiSegment_phi_start", 0.f) ;  // units of pi
-    double phi_delta = SSys::getenvfloat("X4GeometryMaker_SphereWithPhiSegment_phi_delta", 0.5f) ; // units of pi
+    double phi_start = SSys::getenvfloat("X4SolidMaker_SphereWithPhiSegment_phi_start", 0.f) ;  // units of pi
+    double phi_delta = SSys::getenvfloat("X4SolidMaker_SphereWithPhiSegment_phi_delta", 0.5f) ; // units of pi
 
     LOG(info)
         << " (inputs are scaled by pi) "
@@ -105,10 +105,10 @@ const G4VSolid* X4GeometryMaker::SphereWithPhiSegment(const char* name)  // stat
 }
 
 
-const G4VSolid* X4GeometryMaker::SphereWithThetaSegment(const char* name)  // static
+const G4VSolid* X4SolidMaker::SphereWithThetaSegment(const char* name)  // static
 {
-    double theta_start = SSys::getenvfloat("X4GeometryMaker_SphereWithThetaSegment_theta_start", 0.f) ;  // units of pi
-    double theta_delta = SSys::getenvfloat("X4GeometryMaker_SphereWithThetaSegment_theta_delta", 0.5f) ; // units of pi
+    double theta_start = SSys::getenvfloat("X4SolidMaker_SphereWithThetaSegment_theta_start", 0.f) ;  // units of pi
+    double theta_delta = SSys::getenvfloat("X4SolidMaker_SphereWithThetaSegment_theta_delta", 0.5f) ; // units of pi
 
     LOG(info)
         << " (inputs are scaled by pi) "
@@ -132,7 +132,7 @@ const G4VSolid* X4GeometryMaker::SphereWithThetaSegment(const char* name)  // st
 }
 
 
-const G4VSolid* X4GeometryMaker::AdditionAcrylicConstruction(const char* name)
+const G4VSolid* X4SolidMaker::AdditionAcrylicConstruction(const char* name)
 {
     G4VSolid*   simple             = nullptr ;
     G4VSolid*   solidAddition_down = nullptr ;
@@ -196,7 +196,7 @@ const G4VSolid* X4GeometryMaker::AdditionAcrylicConstruction(const char* name)
     return uni_acrylic2_initial ; 
 }
 
-const G4VSolid* X4GeometryMaker::BoxMinusTubs0(const char* name)  // is afflicted
+const G4VSolid* X4SolidMaker::BoxMinusTubs0(const char* name)  // is afflicted
 {
     double tubs_hz = 15.2*mm ;   
     double zshift = 0*mm ; 
@@ -206,7 +206,7 @@ const G4VSolid* X4GeometryMaker::BoxMinusTubs0(const char* name)  // is afflicte
     return box_minus_tubs ; 
 }
 
-const G4VSolid* X4GeometryMaker::BoxMinusTubs1(const char* name) 
+const G4VSolid* X4SolidMaker::BoxMinusTubs1(const char* name) 
 {
     double tubs_hz = 15.2*mm ;   
     G4VSolid* box   = new G4Box("box",  250*mm, 250*mm, 100*mm ); 
@@ -215,7 +215,7 @@ const G4VSolid* X4GeometryMaker::BoxMinusTubs1(const char* name)
     return box_minus_tubs ; 
 }
 
-const G4VSolid* X4GeometryMaker::UnionOfHemiEllipsoids(const char* name )
+const G4VSolid* X4SolidMaker::UnionOfHemiEllipsoids(const char* name )
 {
     assert( strstr( name, "UnionOfHemiEllipsoids" ) != nullptr ); 
 
@@ -224,7 +224,7 @@ const G4VSolid* X4GeometryMaker::UnionOfHemiEllipsoids(const char* name )
     long iz = vals.size() > 0 ? vals[0] : 0 ; 
 
     std::cout 
-        << "X4GeometryMaker::UnionOfHemiEllipsoids"
+        << "X4SolidMaker::UnionOfHemiEllipsoids"
         << " name " << name 
         << " vals.size " << vals.size()
         << " iz " << iz
@@ -258,7 +258,7 @@ const G4VSolid* X4GeometryMaker::UnionOfHemiEllipsoids(const char* name )
 }
 
 
-void X4GeometryMaker::Extract( std::vector<long>& vals, const char* s )  // static
+void X4SolidMaker::Extract( std::vector<long>& vals, const char* s )  // static
 {
     char* s0 = strdup(s); 
     char* p = s0 ; 

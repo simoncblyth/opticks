@@ -34,7 +34,7 @@ just the path to the CSGFoundry directory.
 
 #include "G4VSolid.hh"
 #include "X4Intersect.hh"
-#include "X4GeometryMaker.hh"
+#include "X4SolidMaker.hh"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -59,9 +59,9 @@ int main(int argc, char** argv)
 
     const G4VSolid* solid = nullptr ; 
 
-    if(X4GeometryMaker::CanMake(name))
+    if(X4SolidMaker::CanMake(name))
     {
-        solid = X4GeometryMaker::Make(name); 
+        solid = X4SolidMaker::Make(name); 
     }
     else
     {

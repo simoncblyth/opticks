@@ -5,6 +5,7 @@ project(${name} VERSION 0.1.0)
 set(TEST_SOURCES
     GeoChainSolidTest.cc
     GeoChainVolumeTest.cc
+    GeoChainNodeTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

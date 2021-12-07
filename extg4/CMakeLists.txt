@@ -59,7 +59,7 @@ set(SOURCES
     X4.cc
     X4geomdefs.cc
     X4Intersect.cc
-    X4GeometryMaker.cc
+    X4SolidMaker.cc
 
     X4Named.cc
     X4NameOrder.cc
@@ -127,7 +127,7 @@ set(HEADERS
     X4.hh
     X4geomdefs.hh
     X4Intersect.hh
-    X4GeometryMaker.hh
+    X4SolidMaker.hh
 
 
     X4Named.hh

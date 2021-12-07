@@ -1,25 +1,25 @@
 #include "OPTICKS_LOG.hh"
-#include "X4GeometryMaker.hh"
+#include "X4SolidMaker.hh"
 
 void test_CanMake()
 {
-    bool default_ = X4GeometryMaker::CanMake("default") ; 
+    bool default_ = X4SolidMaker::CanMake("default") ; 
     assert( default_ == true ); 
 
-    bool uohe = X4GeometryMaker::CanMake("UnionOfHemiEllipsoids") ; 
+    bool uohe = X4SolidMaker::CanMake("UnionOfHemiEllipsoids") ; 
     assert( uohe == true ); 
 
-    bool uohe100 = X4GeometryMaker::CanMake("UnionOfHemiEllipsoids100") ; 
+    bool uohe100 = X4SolidMaker::CanMake("UnionOfHemiEllipsoids100") ; 
     assert( uohe100 == true ); 
 
-    bool other = X4GeometryMaker::CanMake("other") ; 
+    bool other = X4SolidMaker::CanMake("other") ; 
     assert( other == false ); 
 }
 
 void test_Make()
 {
     const char* qname = "UnionOfHemiEllipsoids-10" ; 
-    const G4VSolid* solid = X4GeometryMaker::Make( qname ); 
+    const G4VSolid* solid = X4SolidMaker::Make( qname ); 
     assert( solid ); 
 }
 

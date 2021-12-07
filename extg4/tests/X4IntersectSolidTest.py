@@ -16,6 +16,9 @@ Confirmed this by observation that gentstep points inside solids
 never change color as it is impossible to miss from inside. 
 
 TODO: select on flags to avoid the miscoloring 
+
+TODO: avoid duplication between this and ~/opticks/CSGOptiX/tests/CSGOptiXSimulateTest.py
+
 """
 
 import os, logging, numpy as np
@@ -44,7 +47,7 @@ except ImportError:
 pass
 
 #mp = None
-pv = None
+#pv = None
 
 efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
 
@@ -109,6 +112,19 @@ class GridSpec(object):
         return axes
 
 
+class Plt(object):
+    def __init__(self, folds):
+        self.size = np.array([1280, 720])
+
+    def pv_simple3d(self, pos):
+        size = self.size
+
+        pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
+        pl.add_points( pos, color="white" )    
+        cp = pl.show()
+        return cp
+
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -121,31 +137,30 @@ if __name__ == '__main__':
 
     colors = "red green blue cyan magenta yellow".split()
 
-    tests = []
+    folds = []
     others = []
     for i,geom in enumerate(geoms):
-        test = Fold.Load("/tmp/$USER/opticks",CXS_RELDIR,geom, "X4Intersect", globals=True, globals_prefix=geom )
-        tests.append(test)
-        test.color = colors[i]
+        fold = Fold.Load("/tmp/$USER/opticks",CXS_RELDIR,geom, "X4Intersect", globals=True, globals_prefix=geom )
+        folds.append(fold)
+        fold.color = colors[i]
         #other = Fold.Load("/tmp/$USER/opticks",CXS_OTHER_RELDIR,geom, globals=True, globals_prefix="other_" + geom )
         #others.append(other)
     pass
 
-    test = tests[0]
-    gridspec = GridSpec(test.peta)
+    fold0 = folds[0]
+    gridspec = GridSpec(fold0.peta)
+    is_planar = not gridspec.axes is None
 
-    if gridspec.axes is None:
-        log.fatal("only planar grids are handled by this script, not 3D ones" )
-        assert 0 
+    if is_planar:
+        H,V = gridspec.axes     ## traditionally H,V = X,Z  but are now generalizing 
+        _H = _axes[H]
+        _V = _axes[V]
+    else:
+        log.info("non-planar 3D grids detected" )
+        H,V,_H,_V = None, None, None, None
     pass
 
-    H,V = gridspec.axes     ## traditionally H,V = X,Z  but are now generalizing 
-
-    _H = _axes[H]
-    _V = _axes[V]
-
-
-    outdir = os.path.join(tests[0].base, "figs")
+    outdir = os.path.join(fold0.base, "figs")
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
     pass
@@ -156,15 +171,15 @@ if __name__ == '__main__':
 
 if 1:
     default_topline = "xxs.sh X4IntersectSolidTest.py"
-    default_botline = tests[0].relbase    # base excluding first element
+    default_botline = fold0.relbase    # base excluding first element
     default_thirdline = others[0].relbase if len(others) > 0 else "thirdline"
 
     topline = os.environ.get("TOPLINE", default_topline)
     botline = os.environ.get("BOTLINE", default_botline) 
     thirdline = os.environ.get("THIRDLINE", default_thirdline) 
 
-    ipos = tests[0].isect[:,0,:3]
-    gpos = tests[0].gs[:,5,:3]    # last line of the transform is translation
+    ipos = fold0.isect[:,0,:3]
+    gpos = fold0.gs[:,5,:3]    # last line of the transform is translation
 
     lim = {}
     lim[X] = np.array([gpos[:,X].min(), gpos[:,X].max()])
@@ -181,11 +196,17 @@ if 1:
 
     #other_offset = np.array( [10.,0.,0.] )
     other_offset = np.array( [0.,0.,0.] )
-    size = np.array([1280, 720])
 
-    if mp: 
+
+    plt = Plt(folds)
+
+    if pv and not is_planar:
+        ipos = fold0.isect[:,0,:3]
+        plt.pv_simple3d(ipos)
+
+    elif mp and is_planar: 
         sz = 0.1
-        fig, ax = mp.subplots(figsize=size/100.) # 100 dpi 
+        fig, ax = mp.subplots(figsize=plt.size/100.) # 100 dpi 
         fig.suptitle("\n".join([topline,botline,thirdline]))
 
         ax.set_aspect('equal')
@@ -193,11 +214,11 @@ if 1:
         ax.set_xlabel(_H)
         ax.set_ylabel(_V)
 
-        for test in tests:
-            geom = test.base.split("/")[-2]
-            ipos = test.isect[:,0,:3]
-            gpos = test.gs[:,5,:3]    # last line of the transform is translation
-            ax.scatter( ipos[:,H], ipos[:,V], s=sz, color=test.color, label=geom ) 
+        for fold in folds:
+            geom = fold.base.split("/")[-2]
+            ipos = fold.isect[:,0,:3]
+            gpos = fold.gs[:,5,:3]    # last line of the transform is translation
+            ax.scatter( ipos[:,H], ipos[:,V], s=sz, color=fold.color, label=geom ) 
             ax.scatter( gpos[:,H], gpos[:,V], s=sz, color=gcol ) 
         pass
 
@@ -247,7 +268,7 @@ if 1:
         pass
     pass
 
-    if pv:
+    if pv and is_planar and 0:
         yoffset = -50.  ## with parallel projection are rather insensitive to eye position distance
 
 

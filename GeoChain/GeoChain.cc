@@ -7,6 +7,9 @@
 #include "SSys.hh"
 #include "SPath.hh"
 
+#include "NNode.hpp"
+#include "NCSG.hpp"
+
 #include "GMesh.hh"
 #include "GGeo.hh"
 #include "X4PhysicalVolume.hh"
@@ -71,6 +74,25 @@ void GeoChain::convertSolid(const G4VSolid* so, const std::string& meta_)
 
     LOG(info) << "]" ;  
 }
+
+
+/**
+GeoChain::convertNodeTree
+---------------------------
+
+TODO: "const nnode* nd" argument prevented by NCSG::Adopt,  
+       maybe need to clone the node tree to support const argument  ?
+
+**/
+
+void GeoChain::convertNodeTree(nnode* root, const std::string& meta_ )
+{
+    NCSG* csg = NCSG::Adopt(root) ; 
+    assert(csg); 
+
+}
+
+
 
 /**
 GeoChain::convertPV
