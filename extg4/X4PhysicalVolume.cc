@@ -1055,73 +1055,116 @@ GMesh* X4PhysicalVolume::ConvertSolid( const Opticks* ok, int lvIdx, int soIdx, 
 }
 
 
-GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname, bool balance_deep_tree ) // static
+/**
+X4PhysicalVolume::ConvertSolid_
+----------------------------------
+
+
+**/
+
+GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname_, bool balance_deep_tree ) // static
 {
-     assert( lvIdx == soIdx );  
-     bool dbglv = lvIdx == ok->getDbgLV() ; 
-     const std::string& soname = solid->GetName() ; 
+    assert( lvIdx == soIdx );  
+    bool dbglv = lvIdx == ok->getDbgLV() ; 
 
-     LOG(LEVEL)
-          << "[ "  
-          << lvIdx
-          << ( dbglv ? " --dbglv " : "" ) 
-          << " soname " << soname
-          << " lvname " << lvname
-          ;
+    bool is_x4balanceskip = ok->isX4BalanceSkip(lvIdx) ; 
+    if( is_x4balanceskip ) LOG(fatal) << " is_x4balanceskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
+    bool is_x4nudgeskip = ok->isX4NudgeSkip(lvIdx) ; 
+    if( is_x4nudgeskip ) LOG(fatal) << " is_x4nudgeskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
-     bool is_x4balanceskip = ok->isX4BalanceSkip(lvIdx) ; 
-     if( is_x4balanceskip ) LOG(fatal) << " is_x4balanceskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+    bool is_x4pointskip = ok->isX4PointSkip(lvIdx) ; 
+    if( is_x4pointskip ) LOG(fatal) << " is_x4pointskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
-     bool is_x4nudgeskip = ok->isX4NudgeSkip(lvIdx) ; 
-     if( is_x4nudgeskip ) LOG(fatal) << " is_x4nudgeskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+    const char* lvname = lvname_.c_str() ; 
+    const char* soname = nullptr ; 
+    if(solid)
+    {
+        const std::string& soname_ = solid->GetName() ; 
+        soname = soname_.c_str(); 
+    }
 
-     bool is_x4pointskip = ok->isX4PointSkip(lvIdx) ; 
-     if( is_x4pointskip ) LOG(fatal) << " is_x4pointskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
-      
+    LOG(LEVEL)
+        << "[ "  
+        << lvIdx
+        << ( dbglv ? " --dbglv " : "" ) 
+        << " soname " << soname
+        << " lvname " << lvname
+        ;
 
-     X4Solid::Banner( lvIdx, soIdx, lvname, soname ); 
+    X4Solid::Banner( lvIdx, soIdx, lvname, soname ); 
  
-     const char* boundary = nullptr ; 
-     nnode* raw = X4Solid::Convert(solid, ok, boundary, lvIdx )  ; 
-     raw->set_nudgeskip( is_x4nudgeskip );   
-     raw->set_pointskip( is_x4pointskip );  
-     raw->set_treeidx( lvIdx ); 
+    const char* boundary = nullptr ; 
+    nnode* raw = X4Solid::Convert(solid, ok, boundary, lvIdx )  ; 
+    raw->set_nudgeskip( is_x4nudgeskip );   
+    raw->set_pointskip( is_x4pointskip );  
+    raw->set_treeidx( lvIdx ); 
 
-     // At first glance these settings might look too late to do anything, but that 
-     // is not the case as for example the *nudgeskip* setting is acted upon by the NCSG::NCSG(nnode*) cto, 
-     // which is invoked from NCSG::Adopt below which branches in NCSG::MakeNudger based on the setting.
+    // At first glance these settings might look too late to do anything, but that 
+    // is not the case as for example the *nudgeskip* setting is acted upon by the NCSG::NCSG(nnode*) cto, 
+    // which is invoked from NCSG::Adopt below which branches in NCSG::MakeNudger based on the setting.
 
-     bool g4codegen = ok->isG4CodeGen() ; 
+    bool g4codegen = ok->isG4CodeGen() ; 
 
-     if(g4codegen) GenerateTestG4Code(ok, lvIdx, solid, raw); 
+    if(g4codegen) GenerateTestG4Code(ok, lvIdx, solid, raw); 
 
-     nnode* root = balance_deep_tree && !is_x4balanceskip ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw ;  
+    GMesh* mesh = ConvertSolid_FromRawNode( ok, lvIdx, soIdx, solid, balance_deep_tree, raw, soname, lvname ); 
 
-     root->other = raw ; 
-     root->set_nudgeskip( is_x4nudgeskip ); 
-     root->set_pointskip( is_x4pointskip );  
-     root->set_treeidx( lvIdx ); 
+    return mesh ; 
+}
 
-     const NSceneConfig* config = NULL ; 
-     NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
-     assert( csg ) ; 
-     assert( csg->isUsedGlobally() );
-     csg->set_soname( soname.c_str() ) ; 
-     csg->set_lvname( lvname.c_str() ) ; 
+/**
+X4PhysicalVolume::ConvertSolid_FromRawNode
+--------------------------------------------
 
-     bool is_balanced = root != raw ; 
-     if(is_balanced) assert( balance_deep_tree == true );  
-     csg->set_balanced(is_balanced) ;  
+This was split from X4PhysicalVolume::ConvertSolid_ in order to enable geochain starting from nnode
 
-     bool is_x4polyskip = ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
-     if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+**/
 
-     GMesh* mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid, lvIdx) ; 
-     mesh->setCSG( csg ); 
+GMesh* X4PhysicalVolume::ConvertSolid_FromRawNode( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, bool balance_deep_tree, nnode* raw, 
+    const char* soname, const char* lvname ) 
+{
+    bool is_x4balanceskip = ok->isX4BalanceSkip(lvIdx) ; 
+    bool is_x4polyskip = ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232
+    bool is_x4nudgeskip = ok->isX4NudgeSkip(lvIdx) ; 
+    bool is_x4pointskip = ok->isX4PointSkip(lvIdx) ; 
+    bool do_balance = balance_deep_tree && !is_x4balanceskip ; 
 
-     LOG(LEVEL) << "] " << lvIdx ; 
-     return mesh ; 
+    nnode* root = do_balance ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw ;  
+
+    root->other = raw ; 
+    root->set_nudgeskip( is_x4nudgeskip ); 
+    root->set_pointskip( is_x4pointskip );  
+    root->set_treeidx( lvIdx ); 
+
+    const NSceneConfig* config = NULL ; 
+    NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
+    assert( csg ) ; 
+    assert( csg->isUsedGlobally() );
+
+    bool is_balanced = root != raw ; 
+    if(is_balanced) assert( balance_deep_tree == true );  
+
+    csg->set_balanced(is_balanced) ;  
+    csg->set_soname( soname ) ; 
+    csg->set_lvname( lvname ) ; 
+
+    if( is_x4polyskip ) LOG(fatal) << " is_x4polyskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
+
+    GMesh* mesh = nullptr ; 
+    if(solid)
+    {
+        mesh =  is_x4polyskip ? X4Mesh::Placeholder(solid ) : X4Mesh::Convert(solid, lvIdx) ; 
+    }
+    else
+    {
+        mesh =  X4Mesh::Placeholder(raw) ; 
+    } 
+
+    mesh->setCSG( csg ); 
+
+    LOG(LEVEL) << "] " << lvIdx ; 
+    return mesh ; 
 }
 
 

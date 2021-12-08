@@ -111,6 +111,8 @@ nnode* convertSphereTest::convertSphereLucas()  //
 
     nnode* globalMask = NULL; //initialises resultant holder for theta-phi mask
 
+
+
     if(cutTheta)
     {
         float rTheta = startTheta ;
@@ -118,6 +120,8 @@ nnode* convertSphereTest::convertSphereLucas()  //
 
         double zmin = radius*std::cos(lTheta*CLHEP::pi/180.) ;
         double zmax = radius*std::cos(rTheta*CLHEP::pi/180.) ;
+
+        // WARNING SHAPE DOES NOT MATCH THE G4Sphere THETA SEGMENT CONES 
 
         nnode* thetaMask = make_zsphere( 0.f, 0.f, 0.f, radius, zmin, zmax ) ;
         thetaMask->label = BStr::concat(m_name, "_nzsphere", NULL) ; 

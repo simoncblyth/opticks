@@ -41,6 +41,7 @@
 #include "BStr.hh"
 #include "SDirect.hh"
 
+#include "NNode.hpp"
 #include "NBBox.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NPY.hpp"
@@ -59,33 +60,42 @@ solid name is prefixed with "PLACEHOLDER_" to make this clear.
 
 GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
 {
-
-/*
-    G4VisExtent ve = solid->GetExtent();
-    //LOG(info) << " visExtent " << ve ; 
- 
-    nbbox bb = make_bbox( 
-                   ve.GetXmin(), ve.GetYmin(), ve.GetZmin(), 
-                   ve.GetXmax(), ve.GetYmax(), ve.GetZmax(),  false );  
-*/
-
     nbbox* bb = X4SolidExtent::Extent(solid) ; 
 
+    GMesh* mesh = Placeholder(bb) ; 
+    mesh->m_g4vsolid = (void*)solid ; 
+
+    const std::string& soName = solid->GetName(); 
+    const char* name = BStr::concat("PLACEHOLDER_", soName.c_str(), NULL );  
+    mesh->setName(name); 
+
+    return mesh ; 
+}
+
+GMesh* X4Mesh::Placeholder(const nnode* raw )
+{
+    nbbox bb = raw->bbox(); 
+    GMesh* mesh = Placeholder(&bb) ; 
+
+    const char* csgname_ = raw->csgname(); 
+    const char* name = BStr::concat("PLACEHOLDER_", csgname_ , NULL );  
+    mesh->setName(name); 
+
+    return mesh ; 
+}
+
+GMesh* X4Mesh::Placeholder(const nbbox* bb )
+{
     NTrianglesNPY* tris = NTrianglesNPY::box(*bb) ;     
     GMesh* mesh = GMeshMaker::Make(tris->getTris());
 
-    NVtxIdx vtxidx ;
+    NVtxIdx vtxidx ;       // simple struct of two arrays from NTrianglesNPY.hpp
     tris->to_vtxidx(vtxidx);
 
     vtxidx.idx->reshape(-1,1); // YOGMaker expects this shape for indices
 
     mesh->m_x4src_vtx = vtxidx.vtx ; 
     mesh->m_x4src_idx = vtxidx.idx ; 
-    mesh->m_g4vsolid = (void*)solid ; 
-
-    const std::string& soName = solid->GetName(); 
-    const char* name = BStr::concat("PLACEHOLDER_", soName.c_str(), NULL );  
-    mesh->setName(name); 
 
     return mesh ; 
 }

@@ -43,7 +43,6 @@ int main(int argc, char** argv)
 
     GeoChain chain(&ok); 
     chain.convertNodeTree(root, meta);  
-
     chain.save(base, name); 
 
     return 0 ; 

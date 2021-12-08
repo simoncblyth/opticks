@@ -26,6 +26,8 @@ class G4Polyhedron ;
 
 template <typename T> class NPY ;
 class GMesh ; 
+struct nnode ; 
+struct nbbox ; 
 
 /**
 X4Mesh
@@ -40,6 +42,9 @@ class X4_API X4Mesh
 {
     public:
         static GMesh* Placeholder(const G4VSolid* solid );
+        static GMesh* Placeholder(const nnode* raw );
+        static GMesh* Placeholder(const nbbox* bb ); 
+    public:
         static GMesh* Convert(const G4VSolid* solid, int lvIdx );
     public:
         X4Mesh(const G4VSolid* solid, int lvIdx); 

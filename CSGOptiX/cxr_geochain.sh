@@ -39,9 +39,9 @@ msg="=== $BASH_SOURCE :"
 #geom=inner1_phys
 #geom=inner2_phys
 
-geom=SphereWithPhiSegment
+#geom=SphereWithPhiSegment
 #geom=Orb
-
+geom=sphere
 
 export GEOM=${GEOM:-$geom}
 #cfname=GeoChain/$GEOM            # picks the CSGFoundry geometry to load

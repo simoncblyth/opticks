@@ -283,6 +283,9 @@ const NCSG* GMesh::getCSG() const
 {
     return m_csg ; 
 }
+
+
+
 const nnode* GMesh::getRoot() const 
 {
     return m_csg ? m_csg->getRoot() : NULL  ; 

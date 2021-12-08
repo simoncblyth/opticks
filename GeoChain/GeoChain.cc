@@ -36,7 +36,9 @@ GeoChain::GeoChain(Opticks* ok_)
     ggeo(new GGeo(ok, true)),  // live=true to initLibs and not load from cache
     mesh(nullptr),
     volume(nullptr),
-    fd(new CSGFoundry)
+    fd(new CSGFoundry),
+    lvIdx(0),  
+    soIdx(0)  
 {
     init();
 }
@@ -48,16 +50,45 @@ void GeoChain::init()
 
 void GeoChain::convertSolid(const G4VSolid* so, const std::string& meta_)
 {
-    const char* meta = meta_.empty() ? nullptr : meta_.c_str() ; 
-    LOG(info) << "[ meta " << meta ; 
-
-    int lvIdx = 0 ; 
-    int soIdx = 0 ; 
-
+    LOG(info) << "[ meta " << meta_ ; 
     std::string lvname = so->GetName(); 
 
     mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, so, lvname ) ; 
     LOG(info) << " mesh " << mesh ; 
+    convertMesh(mesh, meta_); 
+
+    LOG(info) << "]" ;  
+}
+
+
+/**
+GeoChain::convertNodeTree
+---------------------------
+
+TODO: "const nnode* nd" argument prevented by NCSG::Adopt,  
+       maybe need to clone the node tree to support const argument  ?
+
+TODO: factorise X4PhysicalVolume::ConvertSolid_ in order to 
+      kick off the geochain with nnode and GMesh placeholder 
+      without adding much code
+
+**/
+
+void GeoChain::convertNodeTree(nnode* raw, const std::string& meta_ )
+{
+    const G4VSolid* const solid = nullptr ; 
+    bool balance_deep_tree = false ;  
+    const char* soname = "convertNodeTree" ; 
+    const char* lvname = "convertNodeTree" ; 
+
+    mesh = X4PhysicalVolume::ConvertSolid_FromRawNode(ok, lvIdx, soIdx, solid, balance_deep_tree, raw, soname, lvname ); 
+
+    convertMesh(mesh, meta_); 
+}
+
+void GeoChain::convertMesh(GMesh* mesh, const std::string& meta_ )
+{
+    const char* meta = meta_.empty() ? nullptr : meta_.c_str() ; 
 
     ggeo->add(mesh); 
 
@@ -71,27 +102,7 @@ void GeoChain::convertSolid(const G4VSolid* so, const std::string& meta_)
 
     CSG_GGeo_Convert conv(fd, ggeo, meta ) ; 
     conv.convert();
-
-    LOG(info) << "]" ;  
 }
-
-
-/**
-GeoChain::convertNodeTree
----------------------------
-
-TODO: "const nnode* nd" argument prevented by NCSG::Adopt,  
-       maybe need to clone the node tree to support const argument  ?
-
-**/
-
-void GeoChain::convertNodeTree(nnode* root, const std::string& meta_ )
-{
-    NCSG* csg = NCSG::Adopt(root) ; 
-    assert(csg); 
-
-}
-
 
 
 /**
