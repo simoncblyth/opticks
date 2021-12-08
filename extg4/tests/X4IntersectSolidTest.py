@@ -113,16 +113,36 @@ class GridSpec(object):
 
 
 class Plt(object):
-    def __init__(self, folds):
+    def __init__(self, folds, others):
+
+        self.folds = folds
+        self.fold0 = folds[0]
+        self.others = others
+
         self.size = np.array([1280, 720])
+        default_topline = "xxs.sh X4IntersectSolidTest.py"
+        default_botline = self.folds[0].relbase    # base excluding first element
+        default_thirdline = self.others[0].relbase if len(self.others) > 0 else "thirdline"
+
+        self.topline = os.environ.get("TOPLINE", default_topline)
+        self.botline = os.environ.get("BOTLINE", default_botline) 
+        self.thirdline = os.environ.get("THIRDLINE", default_thirdline) 
+
 
     def pv_simple3d(self, pos):
         size = self.size
 
         pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
+        self.anno(pl)
         pl.add_points( pos, color="white" )    
         cp = pl.show()
         return cp
+
+    def anno(self, pl): 
+        pl.add_text(self.topline, position="upper_left")
+        pl.add_text(self.botline, position="lower_left")
+        pl.add_text(self.thirdline, position="lower_right")
+
 
 
 
@@ -170,14 +190,6 @@ if __name__ == '__main__':
 
 
 if 1:
-    default_topline = "xxs.sh X4IntersectSolidTest.py"
-    default_botline = fold0.relbase    # base excluding first element
-    default_thirdline = others[0].relbase if len(others) > 0 else "thirdline"
-
-    topline = os.environ.get("TOPLINE", default_topline)
-    botline = os.environ.get("BOTLINE", default_botline) 
-    thirdline = os.environ.get("THIRDLINE", default_thirdline) 
-
     ipos = fold0.isect[:,0,:3]
     gpos = fold0.gs[:,5,:3]    # last line of the transform is translation
 
@@ -198,7 +210,7 @@ if 1:
     other_offset = np.array( [0.,0.,0.] )
 
 
-    plt = Plt(folds)
+    plt = Plt(folds, others)
 
     if pv and not is_planar:
         ipos = fold0.isect[:,0,:3]
@@ -207,7 +219,7 @@ if 1:
     elif mp and is_planar: 
         sz = 0.1
         fig, ax = mp.subplots(figsize=plt.size/100.) # 100 dpi 
-        fig.suptitle("\n".join([topline,botline,thirdline]))
+        fig.suptitle("\n".join([plt.topline,plt.botline,plt.thirdline]))
 
         ax.set_aspect('equal')
 
@@ -301,9 +313,10 @@ if 1:
             pl.add_points( other_ipos+other_offset, color=other_icol )
         pass
 
-        pl.add_text(topline, position="upper_left")
-        pl.add_text(botline, position="lower_left")
-        pl.add_text(thirdline, position="lower_right")
+        pl.add_text(plt.topline, position="upper_left")
+        pl.add_text(plt.botline, position="lower_left")
+        pl.add_text(plt.thirdline, position="lower_right")
+
         pl.set_focus(    look )
         pl.set_viewup(   up )
         pl.set_position( eye, reset=True )  # reset=False is default

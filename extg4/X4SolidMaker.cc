@@ -105,6 +105,10 @@ const G4VSolid* X4SolidMaker::SphereWithPhiSegment(const char* name)  // static
 }
 
 
+
+
+
+
 const G4VSolid* X4SolidMaker::SphereWithThetaSegment(const char* name)  // static
 {
     double theta_start = SSys::getenvfloat("X4SolidMaker_SphereWithThetaSegment_theta_start", 0.f) ;  // units of pi

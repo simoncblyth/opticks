@@ -188,17 +188,22 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     int nz = (iz1 - iz0)/2 ; 
     int gridaxes = GridAxes(nx, ny, nz); 
 
+    int dirmode = gridaxes == XYZ ? DIMENSION_3 : DIMENSION_2 ; 
+
+
     LOG(LEVEL) 
         << " nx " << nx 
         << " ny " << ny 
         << " nz " << nz 
         << " GridAxes " << gridaxes
         << " GridAxesName " << GridAxesName(gridaxes)
+        << " DirMode " << dirmode
+        << " DirModeName " << DirModeName(dirmode)
         ;
 
     gs.q0.i.x = OpticksGenstep_TORCH ;
     gs.q0.i.y = gridaxes ; 
-    gs.q0.i.z = 0 ; 
+    gs.q0.i.z = dirmode ; 
     gs.q0.i.w = photons_per_genstep ;
 
     gs.q1.f.x = 0.f ;  // local frame position : currently origin, same for all gensteps : only the transform is changed   
@@ -231,6 +236,23 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     return MakeGensteps(gensteps);
 }
 
+
+
+const char* SEvent::DIMENSION_3_ = "3D" ; 
+const char* SEvent::DIMENSION_2_ = "2D" ; 
+const char* SEvent::DirModeName( int dirmode )  // static 
+{
+    const char* s = nullptr ; 
+    switch( dirmode )
+    {
+        case DIMENSION_3: s = DIMENSION_3_ ; break ; 
+        case DIMENSION_2: s = DIMENSION_2_ ; break ; 
+    }
+    return s ;
+}
+
+
+
 const char* SEvent::XYZ_ = "XYZ" ; 
 const char* SEvent::YZ_  = "YZ" ; 
 const char* SEvent::XZ_  = "XZ" ; 
@@ -248,6 +270,22 @@ const char* SEvent::GridAxesName( int gridaxes)  // static
     }
     return s ;
 }
+
+/**
+SEvent::GridAxes
+-----------------
+
+The nx:ny:nz dimensions of the grid are used to classify it into::
+
+    YZ 
+    XZ  
+    XY 
+    XYZ
+
+For a planar grid one of the nx:ny:nz grid dimensions is zero.
+XYZ is a catch all for non-planar grids.
+
+**/
 
 int SEvent::GridAxes(int nx, int ny, int nz)  // static
 {
@@ -315,59 +353,44 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
         
         unsigned num_photons = gs.q0.u.w ; 
         int gridaxes = gs.q0.i.y ; 
+        int dirmode = gs.q0.i.z ; 
         //std::cout << " i " << i << " num_photons " << num_photons << std::endl ;
         
-        double u, phi, sinPhi, cosPhi ;
+        double u0, phi  , sinPhi,   cosPhi ; 
+        double u1, sinTheta, cosTheta ; 
         
         for(unsigned j=0 ; j < num_photons ; j++)
         {   
-            //u = rng(); 
-            u = double(j)/double(num_photons-1) ;
-            
-            phi = 2.*M_PIf*u ;   
-            ssincos(phi,sinPhi,cosPhi);
-            
-            p.q0.f = gs.q1.f ;
-            
-            // direction
-            // TODO: probably need some minus signs in the below for consistency 
-            if( gridaxes == YZ )
-            {    
-                p.q1.f.x = 0.f ;  
-                p.q1.f.y = cosPhi ;
-                p.q1.f.z = sinPhi ;   
-                p.q1.f.w = 1.f    ;   
-            }
-            else if( gridaxes == XZ )
-            {    
-                p.q1.f.x = cosPhi ;   
-                p.q1.f.y = 0.f    ;
-                p.q1.f.z = sinPhi ;   
-                p.q1.f.w = 1.f    ;   
-            }
-            else if( gridaxes == XY )
-            {    
-                p.q1.f.x = cosPhi ;   
-                p.q1.f.y = sinPhi ;
-                p.q1.f.z = 0.     ;   
-                p.q1.f.w = 1.f    ;   
-            }
-            else if( gridaxes == XYZ )
-            {    
-               // TODO: really need two random angles to direct the photon in 3D
-                p.q1.f.x = cosPhi ;   
-                p.q1.f.y = 0.f    ;
-                p.q1.f.z = sinPhi ;   
-                p.q1.f.w = 1.f    ;   
-            }
-            else
+            u0 = rng();
+            //u0 = double(j)/double(num_photons-1) ;
+
+            u1 = rng(); 
+
+            phi = 2.*M_PIf*u0 ;     // azimuthal 0->2pi 
+            ssincos(phi,sinPhi,cosPhi);  
+
+            cosTheta = u1 ; 
+            sinTheta = sqrtf(1.0-u1*u1);
+
+
+            p.q0.f = gs.q1.f ;  // position 
+ 
+            if( dirmode == DIMENSION_2 )
             {
-                LOG(fatal) << " invalid gridaxes value " << gridaxes ; 
-                assert(0);  
+                SetGridPlaneDirection( p.q1.f, gridaxes, cosPhi, sinPhi ); 
+            } 
+            else if( dirmode == DIMENSION_3 )
+            {
+                p.q1.f.x =  sinTheta * cosPhi  ; 
+                p.q1.f.y =  sinTheta * sinPhi  ; 
+                p.q1.f.z =  cosTheta ; 
+                p.q1.f.w =  1.   ; 
             }
-            
-            qt.right_multiply_inplace( p.q0.f, 1.f );   // position 
-            qt.right_multiply_inplace( p.q1.f, 0.f );   // direction 
+
+            // tranforming photon position and direction into the desired frame
+ 
+            qt.right_multiply_inplace( p.q0.f, 1.f );   
+            qt.right_multiply_inplace( p.q1.f, 0.f );
             
             pp.push_back(p) ;
         }
@@ -377,3 +400,48 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
 }
 
 
+/**
+SEvent::SetGridPlaneDirection
+------------------------------
+
+TODO: probably need some minus signs in the below for consistency 
+TODO: for gridaxes XYZ an adhoc choice is made for the plane of the direction 
+
+**/
+
+void SEvent::SetGridPlaneDirection( float4& dir, int gridaxes, float cosPhi, float sinPhi ) // static 
+{
+    if( gridaxes == YZ )
+    {    
+        dir.x = 0.f ;  
+        dir.y = cosPhi ;
+        dir.z = sinPhi ;   
+        dir.w = 1.f    ;   
+    }
+    else if( gridaxes == XZ )
+    {    
+        dir.x = cosPhi ;   
+        dir.y = 0.f    ;
+        dir.z = sinPhi ;   
+        dir.w = 1.f    ;   
+    }
+    else if( gridaxes == XY )
+    {    
+        dir.x = cosPhi ;   
+        dir.y = sinPhi ;
+        dir.z = 0.     ;   
+        dir.w = 1.f    ;   
+    }
+    else if( gridaxes == XYZ )
+    {    
+        dir.x = cosPhi ;   
+        dir.y = 0.f    ;
+        dir.z = sinPhi ;   
+        dir.w = 1.f    ;   
+    } 
+    else
+    {
+        LOG(fatal) << " invalid gridaxes value " << gridaxes ; 
+        assert(0);  
+    }
+}

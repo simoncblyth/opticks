@@ -24,6 +24,155 @@ Commits
 
 
 
+Idea for implementing G4Sphere theta and phi segments using unbounded primitives CSG_PHICUT CSG_THETACUT
+----------------------------------------------------------------------------------------------------------
+
+
+Hi Lucas, 
+
+I took at look at your code with:
+
+    https://bitbucket.org/simoncblyth/opticks/src/master/extg4/tests/convertSphereTest.sh
+
+    https://bitbucket.org/simoncblyth/opticks/src/master/extg4/tests/convertSphereTest.hh
+
+    https://bitbucket.org/simoncblyth/opticks/src/master/extg4/tests/convertSphereTest.cc
+
+
+
+epsilon:tests blyth$ ./convertSphereTest.sh
+...
+
+NTreeAnalyse height 3 count 9
+              in                    
+
+      di              in            
+
+  sp      sp      zs          in    
+
+                          zs      zs
+
+
+
+I note that your theta segment has the wrong idea of the shape of G4Sphere theta segments.
+Lines of constant theta result in cones as opposed to lines of constant phi which 
+result in vertical plane chops.
+
+If you install pyvista you can visualize in 3D the Geant4 intersects onto solids using 
+
+    cd ~/opticks/extg4
+    ./xxs.sh 
+
+For example using theta_start 0.25 theta_delta 0.5  (units of pi)
+creates a sphere with both sides of a z-axial cone through zero removed.
+
+https://simoncblyth.bitbucket.io/env/presentation/xxs/G4Sphere_theta_segment_0_half.png
+
+
+Your theta mask based on zsphere has no chance of matching Geant4.
+You will need to create cone masks to do that.
+
+However I think the approach you are taking is a very expensive 
+way to do things, especially if the segmented sphere had to be used 
+in CSG combination with other solids. 
+
+For fast ray tracing you want the CSG trees to be a simple as possible.
+So how to make things simpler...
+
+For one, you are using zsphere hemispheres just for their endcaps to act as chopping planes. 
+It is simpler and cheaper just to use planes. 
+But planes by themselves are rather low level to work with. 
+
+So, actually I think the way to do this is start by implementing 
+two new primitives:
+
+
+    CSG_PHICUT
+          phi_start
+          phi_delta
+
+          Simply two rotatable half-planes attached “vertically” to the z-axis
+
+
+
+    CSG_THETACUT
+          theta_start
+          theta_delta  
+
+          theta_start = 0,         theta_delta < 0.5 pi     1 cone on +z   
+          theta_start = 0, 0.5 pi < theta_delta < pi        complemented cone on -z
+       
+          additional cones might be needed or a symmetrical cone is a possibility 
+
+
+
+The starting point for implementing those is to understand existing 
+primitive implementations in opticks/CSG/csg_intersect_node.h
+
+  
+
+ 298 INTERSECT_FUNC
+ 299 bool intersect_node_cone( float4& isect, const quad& q0, const float t_min , const float3& ray_origin, const float3& ray_direction )
+ 300 {
+ 301     float r1 = q0.f.x ;
+ 302     float z1 = q0.f.y ;
+ 303     float r2 = q0.f.z ;
+ 304     float z2 = q0.f.w ;   // z2 > z1
+ 305 
+ 306     float tth = (r2-r1)/(z2-z1) ;
+ 307     float tth2 = tth*tth ;
+ 308     float z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
+ 309 
+ 310 #ifdef DEBUG
+ 311     printf("//intersect_node.h:cone r1 %10.4f z1 %10.4f r2 %10.4f z2 %10.4f : z0 %10.4f \n", r1, z1, r2, z2, z0 );
+ 312 #endif
+ 313 
+ 314     float r1r1 = r1*r1 ;
+ 315     float r2r2 = r2*r2 ;
+ 316 
+ 317     const float3& o = ray_origin ;
+ 318     const float3& d = ray_direction ;
+ 319 
+ 320     //  cone with apex at [0,0,z0]  and   r1/(z1-z0) = tanth  for any r1,z1 on the cone
+ 321     //
+ 322     //     x^2 + y^2  - (z - z0)^2 tanth^2 = 0 
+ 323     //     x^2 + y^2  - (z^2 -2z0 z - z0^2) tanth^2 = 0 
+ 324     //
+ 325     //   Gradient:    [2x, 2y, (-2z tanth^2) + 2z0 tanth^2 ] 
+ 326     //
+ 327     //   (o.x+ t d.x)^2 + (o.y + t d.y)^2 - (o.z - z0 + t d.z)^2 tth2 = 0 
+ 328     // 
+ 329     // quadratic in t :    c2 t^2 + 2 c1 t + c0 = 0 
+ 330 
+ 331     float c2 = d.x*d.x + d.y*d.y - d.z*d.z*tth2 ;
+ 332     float c1 = o.x*d.x + o.y*d.y - (o.z-z0)*d.z*tth2 ;
+ 333     float c0 = o.x*o.x + o.y*o.y - (o.z-z0)*(o.z-z0)*tth2 ;
+ 334     float disc = c1*c1 - c0*c2 ;
+ 335 
+ 336 #ifdef DEBUG
+ 337     printf("//intersect_node.h:cone c2 %10.4f c1 %10.4f c0 %10.4f disc %10.4f : tth %10.4f \n", c2, c1, c0, disc, tth  );
+ 338 #endif
+ 339 
+ 340 
+
+...
+
+
+If you want to try to implement an “intersect_node_thetacut”, 
+I suggest you start by restricting yourself to theta_start = 0. 
+as then there is just one cone to worry about so it will be very similar to the above “intersect_node_cone”, 
+the only difference being that its simpler because an infinite cone is needed, so there is no endcap to implement
+and the parameters will need to be changed to theta_start, delta_theta.
+
+Does your LHCb RICH geometry actually need the theta cut ? 
+
+Implementing “intersect_node_phicut” will be simpler as it should be 
+similar to “intersect_node_plane” and “intersect_node_slab”.
+
+
+Simon
+
+
 
 Added Debug modes to X4Solid::intersectWithPhiSegment
 --------------------------------------------------------

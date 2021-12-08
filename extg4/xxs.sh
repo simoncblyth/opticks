@@ -139,8 +139,11 @@ elif [ "$GEOM" == "SphereWithPhiSegment" ]; then
 
 elif [ "$GEOM" == "SphereWithThetaSegment" ]; then
 
-    export X4SolidMaker_SphereWithThetaSegment_theta_start=0.75    # inputs are multiples of pi 
-    export X4SolidMaker_SphereWithThetaSegment_theta_delta=0.25 
+    export X4SolidMaker_SphereWithThetaSegment_theta_start=0.25    # inputs are multiples of pi 
+    export X4SolidMaker_SphereWithThetaSegment_theta_delta=0.50
+
+    export THIRDLINE="theta_start $X4SolidMaker_SphereWithThetaSegment_theta_start theta_delta $X4SolidMaker_SphereWithThetaSegment_theta_delta "
+
 
     ## theta_start:0    theta_delta:0.25    upwards 90 degree fan centered on +ve Z-axis
     ## theta_start:0.25 theta_delta:0.25    bow-tie above the z=0 plane
