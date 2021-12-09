@@ -68,8 +68,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_convert_save(); 
-    test_placeholder();
+    test_convert_save(); 
+    //test_placeholder();
 
 
     return 0 ; 

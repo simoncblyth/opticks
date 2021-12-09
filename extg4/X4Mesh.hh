@@ -65,9 +65,9 @@ class X4_API X4Mesh
         const G4VSolid* m_solid ;  
         int             m_lvIdx ; 
         G4Polyhedron*   m_polyhedron ;
-        NPY<float>*     m_vtx ; 
-        NPY<unsigned>*  m_raw ; // tris or quads
-        NPY<unsigned>*  m_tri ; // tris by splitting quads  
+        NPY<float>*     m_vtx ; // (num_vtx,3)
+        NPY<unsigned>*  m_raw ; // (num_face,4)  tris or quads
+        NPY<unsigned>*  m_tri ; // (num_tris,3)  all tris by splitting quads  
         GMesh*          m_mesh ; 
         int             m_verbosity ; 
 
