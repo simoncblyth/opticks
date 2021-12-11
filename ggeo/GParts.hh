@@ -204,6 +204,7 @@ class GGEO_API GParts {
 
        static int DEBUG ; 
        static void SetDEBUG(int dbg); 
+       static int COUNT ; 
 
        static const plog::Severity LEVEL ; 
        // conventional names for interfacing

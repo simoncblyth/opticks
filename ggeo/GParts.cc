@@ -223,6 +223,10 @@ void GParts::SetDEBUG(int dbg)
     DEBUG = dbg ; 
 }
 
+int GParts::COUNT = 0 ; 
+
+
+
 
 GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned* num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
 {
@@ -1275,6 +1279,8 @@ should not be used.
 
 void GParts::add(GParts* other)
 {
+    COUNT += 1 ; 
+
     m_subs.push_back(other); 
 
     if(getBndLib() == NULL)
@@ -1301,9 +1307,12 @@ void GParts::add(GParts* other)
     NPY<float>* other_plan_buffer = other->getPlanBuffer() ;
 
 
+    bool dump = COUNT < 10 || COUNT % 1000 == 0 ; 
+
     if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
-    {
-        LOG(info) << " --gparts_transform_offset IS ENABLED " ; 
+    { 
+        if(dump) LOG(info) << " --gparts_transform_offset IS ENABLED, COUNT  " << COUNT  ; 
+
         bool preserve_zero = true ; 
         bool preserve_signbit = true ; 
         other_part_buffer->addOffset(GTRANSFORM_J, GTRANSFORM_K, tranOffset, preserve_zero, preserve_signbit );  
@@ -1311,7 +1320,7 @@ void GParts::add(GParts* other)
     }
     else
     {
-        LOG(info) << " NOT ENABLED --gparts_transform_offset " ; 
+        if(dump) LOG(info) << " NOT ENABLED --gparts_transform_offset, COUNT  " << COUNT  ; 
     }
 
     m_idx_buffer->add(other_idx_buffer);
