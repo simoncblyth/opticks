@@ -3,8 +3,8 @@
 
 void test_CanMake()
 {
-    bool default_ = X4SolidMaker::CanMake("default") ; 
-    assert( default_ == true ); 
+    bool orb_ = X4SolidMaker::CanMake("Orb") ; 
+    assert( orb_ == true ); 
 
     bool uohe = X4SolidMaker::CanMake("UnionOfHemiEllipsoids") ; 
     assert( uohe == true ); 

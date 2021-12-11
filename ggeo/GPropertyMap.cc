@@ -942,8 +942,9 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
    std::vector< GProperty<T>* > gprops ; 
    std::vector< std::string > gtitles ; 
 
-
-
+   // Partition prop into 5 piles of constans : "c" "d" "e" "f" "g" 
+   // with a maximum of 5 prop in each and one pile "v" of non-constant prop. 
+ 
    unsigned int clim = 5 ; 
 
    unsigned int nprop = getNumProperties() ;
@@ -954,7 +955,7 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
        assert(prop);
        if(strlen(name.c_str()) == 0)
            LOG(warning) << "GPropertyMap<T>::make_table " << getName() << " property " << i << " has blank name " ;  
-      
+     
        if(prop->isConstant()) 
        {
            if(cprops.size() < clim)
@@ -1010,21 +1011,6 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
    if(fprops.size() > 0) ss << GProperty<T>::make_table( cfw, dscale, dreciprocal, true ,fprops, ftitles )  ;
    if(gprops.size() > 0) ss << GProperty<T>::make_table( cfw, dscale, dreciprocal, true ,gprops, gtitles )  ;
    return ss.str();
-
-/*
-   return GProperty<T>::make_table( 
-                           fw, dscale, dreciprocal, 
-                           getPropertyByIndex(0), getPropertyNameByIndex(0),
-                           getPropertyByIndex(1), getPropertyNameByIndex(1),
-                           getPropertyByIndex(2), getPropertyNameByIndex(2),
-                           getPropertyByIndex(3), getPropertyNameByIndex(3),
-                           getPropertyByIndex(4), getPropertyNameByIndex(4),
-                           getPropertyByIndex(5), getPropertyNameByIndex(5),
-                           getPropertyByIndex(6), getPropertyNameByIndex(6),
-                           getPropertyByIndex(7), getPropertyNameByIndex(7)
-                           );
-
-*/
 
 }
 
