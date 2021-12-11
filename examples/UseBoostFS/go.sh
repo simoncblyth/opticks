@@ -31,7 +31,9 @@ om-cmake $sdir
 make
 make install   
 
-UseBoostFS
+path=$(which UseBoostFS)
+
+$path
 
 # boost before 1.70 does not have the CMake scripts, so find_package.py doesnt see it 
 

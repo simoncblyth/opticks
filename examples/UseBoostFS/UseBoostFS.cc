@@ -38,6 +38,7 @@ struct API UseBoostFS
    static const char* concat_path( int argc, char** argv );
    static void dump_file_size(const char* path);
    static void dump_version();
+   static void test_parent_path(const char* path); 
 
 };
 
@@ -65,6 +66,20 @@ const char* UseBoostFS::concat_path(int argc, char** argv)
     return strdup(x.c_str());
 }
 
+void UseBoostFS::test_parent_path(const char* path)
+{
+    fs::path p(path) ;
+    fs::path pp(p.parent_path()) ; 
+    std::cout 
+       << " path " << path 
+       << " p " << p.string()
+       << " pp " << pp.string()
+       << std::endl 
+      ;
+}
+
+
+
 
 void UseBoostFS::dump_version()
 {
@@ -84,6 +99,7 @@ int main(int argc, char** argv)
 
    UseBoostFS::dump_file_size(path);
    UseBoostFS::dump_version();
+   UseBoostFS::test_parent_path(path);
 
    return 0;
 
