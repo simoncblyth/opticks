@@ -36,7 +36,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* geom_default = "pmt_solid" ; 
+    //const char* geom_default = "pmt_solid" ; // not appropriate for default to require j/PMTSim 
+    const char* geom_default = "Orb" ; 
     const char* geom = SSys::getenvvar("GEOM", geom_default );  
 
     std::stringstream ss ; 
