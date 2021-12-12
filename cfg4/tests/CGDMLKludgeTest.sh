@@ -43,6 +43,7 @@ if [ $build -eq 1 ]; then
 
     gcc $main \
           -std=c++11 \
+          -fvisibility=hidden \
           -I.. \
           -DOPTICKS_SYSRAP \
           -I/usr/local/opticks/include/SysRap \
@@ -56,23 +57,33 @@ if [ $build -eq 1 ]; then
           -o $bin
     [ $? -ne 0 ] && echo main compile error && exit 2
 
-    #      -DOPTICKS_CFG4 \
-    # $(opticks-config --cflags SysRap) \
-    # $(opticks-config --libs SysRap) \
-
-    # something about this standalone build prevents the logging level control from 
-    # working and resulting in all logging being emitted 
-    # maybe it needs its own equivalent of CFG4_LOG.hh
-    # see sysrap/PLOG_review.rst
-
 else
     echo using preexisting binary $bin
 fi
 
 
-srcdefault=$HOME/origin2.gdml
+notes_about_logging(){ cat << EON
+
+Note that the "-fvisibility=hidden" is necessary for PLOG logging level control to work. 
+Without it get all logging being emitted see sysrap/PLOG_review.rst
+
+EON
+}
+
+
+
+srcdefault=$OPTICKS_PREFIX/origin_11dec2021.gdml
+
+msg="=== $BASH_SOURCE :"
+
 src=${1:-$srcdefault}
-dst=${src/.gdml}_CGDMLKludge.gdml
+dst=${src/.gdml}_CGDMLKludge.gdml   # this name change is hardcoded
+
+echo $msg src $src
+echo $msg dst $dst
+
+
+[ ! -f "$src" ] && echo $msg src ERROR $src does not exist && exit 1 
 
 cmd="$bin $src"
 echo $cmd

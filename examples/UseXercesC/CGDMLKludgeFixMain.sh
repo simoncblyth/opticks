@@ -32,6 +32,7 @@ fi
 
 
 srcdefault=$HOME/origin2.gdml
+
 src=${1:-$srcdefault}
 dst=${src/.gdml}_CGDMLKludgeFix.gdml
 

@@ -9,8 +9,18 @@
 #include "PLOG.hh"
 #include "CGDMLKludgeErrorHandler.hh"
 
-
-
+std::string Matrix::desc() const 
+{
+    std::stringstream ss ; 
+    ss 
+        << " repeat_index " << std::setw(5) << repeat_index
+        << " matrixElement " << std::setw(10) << matrixElement
+        << " name " << std::setw(25) << name 
+        << " values " << values
+        ; 
+    std::string s = ss.str(); 
+    return s ;  
+}
 
 double atod_( const char* a ) 
 {
@@ -117,7 +127,7 @@ CGDMLKludgeRead::CGDMLKludgeRead( const char* path, bool kludge_truncated_matrix
           }
        */
 
-       }
+    }
 }
 
 
@@ -149,6 +159,19 @@ void CGDMLKludgeRead::MatrixRead( const xercesc::DOMElement* const matrixElement
         if (attName=="values") { values = attValue; }
     }   
 
+
+
+    // collecting matrix to check for issue of repeated matrix names 
+    // that causes GDML read error
+    Matrix m = {} ; 
+    m.name = name ; 
+    m.values = values ; 
+    m.matrixElement = const_cast<xercesc::DOMElement*>(matrixElement) ;   
+    m.repeat_index = -1 ; 
+
+    matrix.push_back(m) ; 
+
+
     std::vector<double> valueList;
     std::stringstream ss; 
     ss.str(values.c_str())  ;
@@ -157,14 +180,14 @@ void CGDMLKludgeRead::MatrixRead( const xercesc::DOMElement* const matrixElement
     while (std::getline(ss, s, delim)) valueList.push_back(atod_(s.c_str())) ; 
 
 
-   truncated_values = false ; 
-   if(values.length() >= 9999 || valueList.size() % 2 != 0) truncated_values = true ; 
-   if(truncated_values) 
-   {
-       xercesc::DOMElement* me = const_cast<xercesc::DOMElement*>(matrixElement);  
-       truncated_matrixElement.push_back(me); 
-       if(kludge_truncated_matrix) KludgeTruncatedMatrix(me); 
-   }
+    truncated_values = false ; 
+    if(values.length() >= 9999 || valueList.size() % 2 != 0) truncated_values = true ; 
+    if(truncated_values) 
+    {
+        xercesc::DOMElement* me = const_cast<xercesc::DOMElement*>(matrixElement);  
+        truncated_matrixElement.push_back(me); 
+        if(kludge_truncated_matrix) KludgeTruncatedMatrix(me); 
+    }
 
     LOG(LEVEL)
         << " " << ( truncated_values ? "**" : "  " )
@@ -174,6 +197,88 @@ void CGDMLKludgeRead::MatrixRead( const xercesc::DOMElement* const matrixElement
         << " " << ( truncated_values ? "**" : "  " )
         << " name " << name 
         ; 
+}
+
+/**
+CGDMLKludgeRead::checkDuplicatedMatrix
+----------------------------------------
+
+**/
+
+int CGDMLKludgeRead::checkDuplicatedMatrix()
+{
+    unsigned num_matrix =  matrix.size() ; 
+    LOG(info) << " num_matrix " << num_matrix ; 
+    int total_duplicated_matrix = 0 ;  
+
+    for(unsigned i=0 ; i < num_matrix ; i++)
+    {
+        Matrix& im = matrix[i]  ;  
+
+        std::vector<unsigned> dupes ; 
+        for(unsigned j=0 ; j < num_matrix ; j++)
+        {
+            Matrix& jm = matrix[j]  ;  
+            if( j > i && jm.repeat_index == -1 )   // avoid comparing twice 
+            {  
+                if( im == jm ) 
+                {
+                    dupes.push_back(j) ; 
+                    jm.repeat_index = dupes.size() ; 
+
+                    bool expect = im.values.compare(jm.values) == 0 ; 
+                    assert(expect) ;  
+                } 
+            }
+        }
+
+        if(dupes.size() > 0 )
+        {
+            std::cout << std::endl << " i " << std::setw(5) << i << " : " << matrix[i].desc() << std::endl ; 
+            for(unsigned k=0 ; k < dupes.size() ; k++)
+            {
+                unsigned j = dupes[k] ; 
+                std::cout << " j " << std::setw(5) << j << " : " << matrix[j].desc() << std::endl ; 
+            }
+        }
+
+        total_duplicated_matrix += dupes.size() ; 
+    } 
+
+    std::cout
+        << " num_matrix " << num_matrix 
+        << " total_duplicated__matrix " << total_duplicated_matrix 
+        << std::endl
+        ; 
+
+    return total_duplicated_matrix ; 
+}
+
+
+int CGDMLKludgeRead::pruneDuplicatedMatrix()
+{
+    assert(the_defineElement);
+    unsigned num_matrix =  matrix.size() ; 
+    LOG(info) << " num_matrix " << num_matrix ; 
+
+    unsigned prune_count = 0 ;
+    for(unsigned i=0 ; i < num_matrix ; i++)
+    {
+        Matrix& im = matrix[i]  ;  
+        if( im.repeat_index > -1 )
+        {
+            std::cout << "pruning i " << std::setw(5) << i << " im.desc " << im.desc() << std::endl ; 
+            the_defineElement->removeChild(im.matrixElement) ; 
+            prune_count += 1 ; 
+        }
+    }
+    std::cout 
+        << "CGDMLKludgeRead::pruneDuplicatedMatrix"
+        << " prune_count " << prune_count 
+        << std::endl 
+        ;
+
+    return prune_count ; 
 }
 
 

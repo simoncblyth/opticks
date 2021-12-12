@@ -30,6 +30,9 @@ struct CFG4_API CGDMLKludge
     xercesc::DOMDocument*   doc  ; 
     xercesc::DOMElement*    defineElement ; 
 
+    unsigned                num_duplicated_matrixElement ;  
+    unsigned                num_pruned_matrixElement ;  
+
     unsigned                num_truncated_matrixElement ;  
     unsigned                num_constants ; 
 

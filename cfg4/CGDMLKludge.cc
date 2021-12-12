@@ -53,6 +53,8 @@ CGDMLKludge::CGDMLKludge(const char* srcpath_)
     reader(new CGDMLKludgeRead(srcpath, kludge_truncated_matrix)), 
     doc(const_cast<xercesc::DOMDocument*>(reader->doc)), 
     defineElement(reader->the_defineElement), 
+    num_duplicated_matrixElement(reader->checkDuplicatedMatrix()),
+    num_pruned_matrixElement(reader->pruneDuplicatedMatrix()),
     num_truncated_matrixElement(reader->truncated_matrixElement.size()),
     num_constants(reader->constants.size()), 
     writer(new CGDMLKludgeWrite(doc)),

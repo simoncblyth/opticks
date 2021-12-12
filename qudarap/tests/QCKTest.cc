@@ -154,31 +154,40 @@ int main(int argc, char** argv)
        ;
     bis->meta = ss.str();   // metadata about this test, used for annotations from python 
   
+
+    int nbis =  bis->shape[0] ; 
+    unsigned num_gen = 1000000 ; 
+
+    LOG(info)
+        << " num_gen " << num_gen
+        << " nbis " << nbis
+        ;
+
+
     double emin, emax ; 
-    for(int i=0 ; i < bis->shape[0] ; i++)
+    for(int i=0 ; i < nbis ; i++)
     {
         double BetaInverse = bis->get<double>(i) ; 
         //qck->energy_range_s2cn( emin, emax, BetaInverse, true ); 
         qck->energy_range_avph( emin, emax, BetaInverse, true ); 
     }
 
-    unsigned num_gen = 1000000 ; 
 
-    for(int i=0 ; i < bis->shape[0] ; i++)
+    for(int i=0 ; i < nbis ; i++)
     {
         double BetaInverse = bis->get<double>(i) ; 
         LOG(info) << " lookup BetaInverse icdf:1 " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse ;
         test_energy_lookup_many( qck, BetaInverse, num_gen, sample_base, true ); 
     }
 
-    for(int i=0 ; i < bis->shape[0] ; i++)
+    for(int i=0 ; i < nbis ; i++)
     {
         double BetaInverse = bis->get<double>(i) ; 
         LOG(info) << " lookup BetaInverse icdf:0 " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse ;
         test_energy_lookup_many( qck, BetaInverse, num_gen, sample_base, false ); 
     }
 
-    for(int i=0 ; i < bis->shape[0] ; i++)
+    for(int i=0 ; i < nbis ; i++)
     {
         double BetaInverse = bis->get<double>(i) ; 
         LOG(info) << " sampling BetaInverse " << std::fixed << std::setw(10) << std::setprecision(4) << BetaInverse ;
