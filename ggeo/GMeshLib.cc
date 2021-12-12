@@ -584,16 +584,22 @@ void GMeshLib::saveMeshes(const char* idpath) const
     {
         unsigned idx = i ;               // <-- with the "alt" mesh index doesnt always match library index 
         LOG(LEVEL) << " idx " << idx ;  
+
         const GMesh* mesh = m_meshes[idx] ; 
         const char* sidx = BStr::itoa(idx);
 
+        LOG(LEVEL) << "[ saving GMesh sidx " << sidx ; 
         mesh->save(idpath, m_reldir, sidx); 
+        LOG(LEVEL) << "] saving GMesh sidx " << sidx ; 
 
         const NCSG* csg = mesh->getCSG(); 
         if(!csg) continue ; 
         //assert(csg);   <-- tripped by legacy route, 
+        assert(csg); 
 
+        LOG(LEVEL) << "[ saving NCSG sidx " << sidx ; 
         csg->savesrc(idpath, m_reldir_solids, sidx); 
+        LOG(LEVEL) << "] saving NCSG sidx " << sidx ; 
     }
 
     LOG(LEVEL) << "]" ; 
