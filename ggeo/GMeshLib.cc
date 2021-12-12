@@ -38,7 +38,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity GMeshLib::LEVEL = debug ; 
+const plog::Severity GMeshLib::LEVEL = PLOG::EnvLevel("GMeshLib", "DEBUG") ; 
 
 const unsigned GMeshLib::MAX_MESH = 300 ;   // <-- hmm 500 too large ? it means a lot of filesystem checking 
 /**
