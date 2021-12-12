@@ -433,18 +433,36 @@ void GMeshLib::replace(unsigned index, GMesh* replacement )
 
 void GMeshLib::removeDirs(const char* idpath ) const 
 {
+   LOG(LEVEL) << "[" ; 
+   LOG(LEVEL) 
+       << "  MAX_MESH " << MAX_MESH 
+       << " idpath " << idpath  
+       << " m_reldir " << m_reldir
+       << " m_reldir_solids " << m_reldir_solids
+       ;  
+
    for(unsigned int idx=0 ; idx < MAX_MESH ; ++idx)
    {   
         const char* sidx = BStr::itoa(idx);
-        if(BFile::ExistsDir(idpath, m_reldir, sidx))
+
+        bool exists_0 = BFile::ExistsDir(idpath, m_reldir, sidx) ; 
+        bool exists_1 = BFile::ExistsDir(idpath, m_reldir_solids, sidx) ; 
+
+        LOG(LEVEL) << " sidx " << sidx << " exists_0 " << exists_0 << " exists_1 " << exists_1 ; 
+
+        if(exists_0)
         { 
+            LOG(LEVEL) << " exists_0 RemoveDir " ; 
             BFile::RemoveDir(idpath, m_reldir, sidx); 
         }
-        if(BFile::ExistsDir(idpath, m_reldir_solids, sidx))
+
+        if(exists_1)
         { 
+            LOG(LEVEL) << " exists_1 RemoveDir " ; 
             BFile::RemoveDir(idpath, m_reldir_solids, sidx); 
         }
    } 
+   LOG(LEVEL) << "]" ;  
 }
 
 /**
@@ -557,23 +575,28 @@ logging levels in GGeoLib::
 
 void GMeshLib::saveMeshes(const char* idpath) const 
 {
+    LOG(LEVEL) << "[" ; 
     removeDirs(idpath); // clean old meshes to avoid duplication when repeat counts go down 
 
-    for(unsigned i=0 ; i < m_meshes.size() ; i++)
+    unsigned num_meshes = m_meshes.size() ; 
+    LOG(LEVEL) << " num_meshes " << num_meshes ; 
+    for(unsigned i=0 ; i < num_meshes ; i++)
     {
         unsigned idx = i ;               // <-- with the "alt" mesh index doesnt always match library index 
+        LOG(LEVEL) << " idx " << idx ;  
         const GMesh* mesh = m_meshes[idx] ; 
         const char* sidx = BStr::itoa(idx);
 
         mesh->save(idpath, m_reldir, sidx); 
 
-        const NCSG* solid = mesh->getCSG(); 
-        if(!solid) continue ; 
-        //assert(solid);   <-- tripped by legacy route, 
+        const NCSG* csg = mesh->getCSG(); 
+        if(!csg) continue ; 
+        //assert(csg);   <-- tripped by legacy route, 
 
-        solid->savesrc(idpath, m_reldir_solids, sidx); 
+        csg->savesrc(idpath, m_reldir_solids, sidx); 
     }
 
+    LOG(LEVEL) << "]" ; 
     // meshindex persisted first, up in GMeshLib::save
 }
 
