@@ -23,6 +23,17 @@ int main(int argc, char** argv)
 
     SIMG img(ipath, desired_channels);
     std::cout << img.desc() << std::endl ;
+
+    if( img.channels == 0 )
+    {
+        std::cout 
+            << argv[0]
+            << " failed to open input path to png image with 4 channels  " << ipath 
+            << std::endl 
+            ;
+        return 0 ; 
+    }
+
     assert( img.channels == 4 );
 
     char filterMode = 'P' ; // cudaFilterModePoint : no interpolation, necessary with uchar4 

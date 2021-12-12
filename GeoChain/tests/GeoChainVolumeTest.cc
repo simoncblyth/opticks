@@ -22,14 +22,18 @@ The volume to create is controlled by the name string obtained from envvar *GEOM
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    const char* name_default = "body_phys"  ; 
+    const char* name_default = "hama_body_phys"  ; 
     const char* name = SSys::getenvvar("GEOM", name_default ); 
 
     const G4VPhysicalVolume* pv = nullptr ; 
 #ifdef WITH_PMTSIM
     pv = PMTSim::GetPV(name);  
 #endif
-    assert( pv ); 
+    if( pv == nullptr ) 
+    {
+        LOG(fatal) << " failed to get pv with name " << name ;  
+        return 0 ; 
+    }
 
     const char* argforced = "--allownokey --gparts_transform_offset" ; 
     // see notes/issues/PMT_body_phys_bizarre_innards_confirmed_fixed_by_using_gparts_transform_offset_option.rst

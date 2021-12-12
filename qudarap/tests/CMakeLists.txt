@@ -11,7 +11,6 @@ set(TEST_SOURCES
    QScintTest.cc
    QCerenkovIntegralTest.cc
    QCerenkovTest.cc
-   QCKTest.cc
    QPolyTest.cc
    QSimTest.cc
    QBndTest.cc 
@@ -25,6 +24,11 @@ set(TEST_SOURCES
    QBufTest.cc
 
 )
+
+set(OTHER_TEST_SOURCES
+   QCKTest.cc
+)
+
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)

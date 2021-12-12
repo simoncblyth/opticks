@@ -29,9 +29,21 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* path = SPath::Resolve("$TMP/sysrap/SEventTest/cegs.npy", 0); 
+    const char* path_ = "$TMP/sysrap/SEventTest/cegs.npy" ;
+    const char* path = SPath::Resolve(path_, 0); 
     const NP* gs0 = NP::Load(path); 
-    assert( gs0 ); 
+
+    if( gs0 == nullptr )
+    {
+        LOG(fatal) 
+            << "failed to load from"
+            << " path_ " << path_
+            << " path " << path 
+            ;
+        return 0 ; 
+    }
+
+
     gs0->dump(); 
 
     test_QEvent(gs0); 

@@ -742,6 +742,7 @@ inline NP* NP::MakeNarrow(const NP* a) // static
 
     NP* b = new NP(b_dtype.c_str()); 
     b->set_shape( a->shape ); 
+    b->meta = a->meta ;  // pass along the metadata 
 
     assert( a->num_values() == b->num_values() ); 
     unsigned nv = a->num_values(); 

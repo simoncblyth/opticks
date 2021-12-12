@@ -44,7 +44,7 @@ struct QUDARAP_API QCerenkov
     QTexLookup<float4>*     look ; 
 
     QCerenkov(const char* fold=nullptr); 
-
+    void init(); 
     std::string desc() const ; 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );

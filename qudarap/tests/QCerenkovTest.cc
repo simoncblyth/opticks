@@ -35,7 +35,9 @@ int main(int argc, char** argv)
     char t = argc > 1 ? argv[1][0] : d  ; 
     LOG(info) << " t " << t ; 
 
+    LOG(info) << "[ QCerenkov " ; 
     QCerenkov ck ;  
+    LOG(info) << "] QCerenkov " ; 
 
     if( t == 'L' )
     {

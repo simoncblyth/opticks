@@ -31,6 +31,13 @@ NP* QCerenkov::Load(const char* fold, const char* name)  // static
     int create_dirs = 0 ;  // 0:nop
     const char* path = SPath::Resolve(fold, name, create_dirs);  
     NP* a = NP::Load(path); 
+
+    if( a == nullptr )
+    {
+        LOG(fatal)
+            << " failed to load array from path " << path 
+            ; 
+    }
     return a ; 
 }
 
@@ -43,7 +50,10 @@ QCerenkov::MakeTex
 
 QTex<float4>* QCerenkov::MakeTex(const NP* icdf, char filterMode ) // static
 {
-    return QTexMaker::Make2d_f4(icdf, filterMode ); 
+    LOG(info) << " icdf " << icdf << " icdf.sstr " << icdf->sstr() << " filterMode " << filterMode ; 
+    QTex<float4>* tex = QTexMaker::Make2d_f4(icdf, filterMode ); 
+    LOG(info) << " tex " << tex ; 
+    return tex ; 
 }
 
 
@@ -60,13 +70,46 @@ TODO: formalize icdf creation into the pre-cache geometry conversion and icdf lo
 QCerenkov::QCerenkov(const char* fold_ )
     :
     fold( fold_ ? fold_ : DEFAULT_FOLD ),
-    icdf_(Load(fold, "icdf.npy")),
-    icdf( icdf_->ebyte == 4 ? icdf_ : NP::MakeNarrow(icdf_)),
+    icdf_( nullptr ),
+    icdf( nullptr ),
     filterMode('P'), 
-    tex(MakeTex(icdf, filterMode )),
-    look(new QTexLookup<float4>( tex ))
+    tex(nullptr),
+    look(nullptr)
+{
+    init(); 
+}
+
+void QCerenkov::init()
 {
     INSTANCE = this ; 
+    icdf_ = Load(fold, "icdf.npy"); 
+    if( icdf_ == nullptr )
+    {
+        LOG(fatal) << "failed to load icdf.npy from fold " << fold ; 
+        return ;  
+    }
+
+    LOG(info) 
+        << " icdf_ " << icdf_ 
+        << " icdf_.sstr " << icdf_->sstr() 
+        << " icdf_.meta " << icdf_->meta 
+        ; 
+
+    icdf = icdf_->ebyte == 4 ? icdf_ : NP::MakeNarrow(icdf_) ; 
+
+    LOG(info) 
+        << " icdf " << icdf 
+        << " icdf.sstr " << icdf->sstr()
+        << " icdf.meta " << icdf->meta 
+        ; 
+
+    tex = MakeTex(icdf, filterMode ) ; 
+
+    LOG(info) << " tex " << tex ; 
+
+    look = new QTexLookup<float4>( tex ) ; 
+
+    LOG(info) << " look " << look ; 
 }
 
 
