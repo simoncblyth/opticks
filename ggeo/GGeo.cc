@@ -710,6 +710,7 @@ void GGeo::save()
     std::string s = m_geolib->summary("GGeo::save");
     LOG(info) << std::endl << s ; 
 
+    LOG(LEVEL) << " before saves " ; 
 
     m_geolib->save(); // in here GGeoLib::saveConstituents invokes the save of both triangulated GMergedMesh and analytic GParts 
     m_meshlib->save();
@@ -720,6 +721,8 @@ void GGeo::save()
     m_sourcelib->save();
     m_bndlib->save();  
 
+    LOG(LEVEL) << " after saves " ; 
+
     saveCacheMeta();
 
     LOG(LEVEL) << "]" ;  
@@ -728,6 +731,7 @@ void GGeo::save()
 
 void GGeo::saveCacheMeta() const 
 {
+    LOG(LEVEL) << "[" ; 
     if(m_gdmlauxmeta)
     {
          const char* gdmlauxmetapath = m_ok->getGDMLAuxMetaPath(); 
@@ -746,6 +750,8 @@ void GGeo::saveCacheMeta() const
 
     m_ok->dumpCacheMeta("GGeo::saveCacheMeta"); 
     m_ok->saveCacheMeta(); 
+
+    LOG(LEVEL) << "]" ; 
 }
 
 
