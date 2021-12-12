@@ -75,12 +75,31 @@ void G4OpticksRecorder::setGeometry(const GGeo* ggeo_)
 void G4OpticksRecorder::BeginOfRunAction(const G4Run* run)
 {
     LOG(LEVEL); 
-    m_manager->BeginOfRunAction(run); 
+
+    if(m_manager == nullptr)
+    {
+        LOG(fatal) 
+            << " m_manager null indicates that G4OpticksRecorder::setGeometry has not been called " 
+            ; 
+    } 
+    else
+    {
+        m_manager->BeginOfRunAction(run); 
+    }
 }
 void G4OpticksRecorder::EndOfRunAction(const G4Run* run)
 {
     LOG(LEVEL); 
-    m_manager->EndOfRunAction(run); 
+    if(m_manager == nullptr)
+    {
+        LOG(fatal) 
+            << " m_manager null indicates that G4OpticksRecorder::setGeometry has not been called " 
+            ; 
+    } 
+    else
+    {
+        m_manager->EndOfRunAction(run); 
+    }
 
 }
 
