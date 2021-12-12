@@ -83,6 +83,8 @@ void GMeshLib::loadFromCache()
 
 void GMeshLib::save() 
 {
+    LOG(LEVEL) << "[" ; 
+
     addAltMeshes(); 
 
     const char* idpath = m_ok->getIdPath() ;
@@ -94,6 +96,8 @@ void GMeshLib::save()
 
     saveMeshes(idpath);
     saveMeshUsage(idpath);
+
+    LOG(LEVEL) << "]" ; 
 }
 
 

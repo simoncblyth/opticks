@@ -712,13 +712,21 @@ void GGeo::save()
 
     LOG(LEVEL) << " before saves " ; 
 
+    LOG(LEVEL) << " m_geolib.save " ; 
     m_geolib->save(); // in here GGeoLib::saveConstituents invokes the save of both triangulated GMergedMesh and analytic GParts 
+    LOG(LEVEL) << " m_meshlib.save " ; 
     m_meshlib->save();
+    LOG(LEVEL) << " m_nodelib.save " ; 
     m_nodelib->save();
+    LOG(LEVEL) << " m_materiallib.save " ; 
     m_materiallib->save();
+    LOG(LEVEL) << " m_surfacelib.save " ; 
     m_surfacelib->save();
+    LOG(LEVEL) << " m_scintillatorlib.save " ; 
     m_scintillatorlib->save();
+    LOG(LEVEL) << " m_sourcelib.save " ; 
     m_sourcelib->save();
+    LOG(LEVEL) << " m_bndlib.save " ; 
     m_bndlib->save();  
 
     LOG(LEVEL) << " after saves " ; 
