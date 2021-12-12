@@ -85,16 +85,22 @@ void GMeshLib::save()
 {
     LOG(LEVEL) << "[" ; 
 
+    LOG(LEVEL) << "addAltMeshes" ; 
     addAltMeshes(); 
 
     const char* idpath = m_ok->getIdPath() ;
 
+    LOG(LEVEL) << "m_meshnames.save idpath " << idpath ; 
     assert( m_meshnames ); 
     m_meshnames->save(idpath );
 
+    LOG(LEVEL) << "saveAltReferences " ; 
     saveAltReferences();  
 
+    LOG(LEVEL) << "saveMeshes" ; 
     saveMeshes(idpath);
+
+    LOG(LEVEL) << "saveMeshUsage" ; 
     saveMeshUsage(idpath);
 
     LOG(LEVEL) << "]" ; 
@@ -119,6 +125,7 @@ This gets invoked by GMeshLib::save
 
 void GMeshLib::addAltMeshes()
 {
+    LOG(LEVEL) << "[" ; 
     std::vector<unsigned> indices_with_alt ; 
     getMeshIndicesWithAlt(indices_with_alt) ; 
  
@@ -138,6 +145,7 @@ void GMeshLib::addAltMeshes()
     }
  
     dump("addAltMeshes"); 
+    LOG(LEVEL) << "]" ; 
 }
 
 const std::vector<const NCSG*>& GMeshLib::getSolids() const { return m_solids ; }
