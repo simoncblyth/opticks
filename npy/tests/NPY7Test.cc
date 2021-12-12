@@ -119,6 +119,21 @@ void test_interp()
     LOG(info) << " saved to " << FOLD ; 
 }
 
+void test_getNumValues()
+{
+
+    NPY<float>* a = NPY<float>::make(100,4,4) ; 
+    a->zero(); 
+
+    LOG(info) << " a.shape " << a->getShapeString() ; 
+
+    for(int from_dim=0 ; from_dim < 5 ; from_dim++)
+    {
+        unsigned nv = a->getNumValues(from_dim) ; 
+        std::cout << " a->getNumValues(" << from_dim << ") = " << nv << std::endl ; 
+    }
+}
+
 
 
 int main(int argc, char** argv)
@@ -131,7 +146,9 @@ int main(int argc, char** argv)
     //test_setAllValue(); 
 
     //test_MakeFloat(); 
-    test_interp(); 
+    //test_interp(); 
+
+    test_getNumValues(); 
 
     return 0 ; 
 }
