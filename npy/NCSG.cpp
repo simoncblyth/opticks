@@ -354,6 +354,7 @@ void NCSG::savesrc(const char* idpath, const char* rela, const char* relb ) cons
 {
     std::string treedir_ = BFile::FormPath( idpath, rela, relb ); 
     const char* treedir = treedir_.c_str(); 
+
     savesrc(treedir);  
 }
 
@@ -365,10 +366,15 @@ void NCSG::savesrc(const char* treedir_ ) const
     assert( !same_dir) ; 
     assert( treedir_ ) ; 
 
-    LOG(LEVEL) << " treedir_ " << treedir_ ; 
+    LOG(LEVEL) << "[ treedir_ " << treedir_ ; 
 
+    LOG(LEVEL) << "m_csgdata" ; 
     m_csgdata->savesrc( treedir_ ) ;  
+
+    LOG(LEVEL) << "m_meta" ; 
     m_meta->save( treedir_ ); 
+
+    LOG(LEVEL) << "] treedir_ " << treedir_ ; 
 }
 
 void NCSG::loadsrc()

@@ -2111,6 +2111,8 @@ GMesh* GMesh::load(const char* dir, const char* typedir, const char* instancedir
 
 void GMesh::save(const char* dir, const char* typedir, const char* instancedir) const 
 {
+    LOG(LEVEL) << "[ instancedir " << instancedir  ; 
+
     std::string cachedir = BFile::CreateDir(dir, typedir, instancedir);
 
     if(!cachedir.empty())
@@ -2127,6 +2129,8 @@ void GMesh::save(const char* dir, const char* typedir, const char* instancedir) 
                     << " -> cachedir " << cachedir 
                     ;
     }
+
+    LOG(LEVEL) << "] instancedir " << instancedir  ; 
 }
 
 
@@ -2156,6 +2160,7 @@ void GMesh::loadBuffers(const char* dir)
 
 void GMesh::saveBuffers(const char* dir) const 
 {
+    LOG(LEVEL) << "[" ; 
     for(unsigned int i=0 ; i<m_names.size() ; i++)
     {
         std::string name = m_names[i];
@@ -2167,6 +2172,7 @@ void GMesh::saveBuffers(const char* dir) const
 
         saveBuffer(bufpath.string().c_str(), name.c_str(), buffer);  
     } 
+    LOG(LEVEL) << "]" ; 
 }
 
 
