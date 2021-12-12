@@ -81,7 +81,7 @@ class X4_API X4Solid : public X4SolidBase
     public:
         static const plog::Severity  LEVEL ; 
         static void SetVerbosity(unsigned verbosity);
-        static void Banner( int lvIdx, int soIdx, const std::string& lvname, const std::string& soname ); 
+        static void Banner( int lvIdx, int soIdx, const char* lvname, const char* soname ); 
         static nnode* Convert(const G4VSolid* solid, const Opticks* ok, const char* boundary=NULL, int lvIdx=-1 );
         static nnode* Balance(nnode* raw, int soIdx=-1 , int lvIdx=-1 );  // cannot be const due to inplace positivization
     public:

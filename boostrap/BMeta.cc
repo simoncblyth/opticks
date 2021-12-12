@@ -516,7 +516,7 @@ void BMeta::write(const char* path0, const char* path1) const
 
     BFile::CreateDir(pdir.c_str()); 
 
-    LOG(LEVEL) << "write to " << path ; 
+    LOG(LEVEL) << "[ write to " << path ; 
 
     std::ofstream out(path.c_str(), std::ios::out);
 
@@ -528,11 +528,12 @@ void BMeta::write(const char* path0, const char* path1) const
 
     LOG(LEVEL) << "[ stream m_js to " << path ; 
     out << m_js ; 
+    LOG(LEVEL) << "] stream m_js to " << path ; 
 
     out.close();
 
-    LOG(LEVEL) << "] stream m_js to " << path ; 
 
+    LOG(LEVEL) << "] write to " << path ; 
 }
 
 

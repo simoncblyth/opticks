@@ -414,6 +414,15 @@ EON
 }
 
 
+
+geocache-11dec2021-gdmlpath(){ echo $(opticks-prefix)/origin_CGDMLKludge_11dec2021.gdml ; }
+geocache-11dec2021(){  geocache-create- --gdmlpath $(geocache-11dec2021-gdmlpath) -D --noviz  ; }
+
+geocache-12dec2021-gdmlpath(){ echo $(opticks-prefix)/origin_CGDMLKludge_12dec2021.gdml ; }
+geocache-12dec2021(){  geocache-create- --gdmlpath $(geocache-12dec2021-gdmlpath) -D --noviz  ; }
+
+
+
 geocache-gdml-scp(){ 
    #local digest=${1:-fe48b4d359786b95505117280fb5aac1}
    #local label=${2:-jun28}

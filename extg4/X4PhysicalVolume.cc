@@ -939,9 +939,14 @@ Hmm : how to do early x4skipsolid ?
 void X4PhysicalVolume::convertSolid( const G4LogicalVolume* lv )
 {
     const G4VSolid* const solid = lv->GetSolid(); 
-    const std::string& lvname = lv->GetName() ; 
-    const std::string& soname = solid->GetName() ; 
-    bool x4skipsolid = m_ok->isX4SkipSolidName(soname.c_str()); 
+
+    G4String  lvname_ = lv->GetName() ;      // returns by reference, but take a copied value 
+    G4String  soname_ = solid->GetName() ;   // returns by value, not reference
+
+    const char* lvname = strdup(lvname_.c_str());  // may need these names beyond this scope, so strdup     
+    const char* soname = strdup(soname_.c_str()); 
+
+    bool x4skipsolid = m_ok->isX4SkipSolidName(soname); 
 
     LOG(info) 
         << " lvname " << lvname 
@@ -954,7 +959,7 @@ void X4PhysicalVolume::convertSolid( const G4LogicalVolume* lv )
     m_lvidx[lv] = lvIdx ;  
     m_lvlist.push_back(lv);  
 
-    GMesh* mesh = ConvertSolid(m_ok, lvIdx, soIdx, solid, lvname ); 
+    GMesh* mesh = ConvertSolid(m_ok, lvIdx, soIdx, solid, soname, lvname ); 
     mesh->setX4SkipSolid(x4skipsolid); 
 
     m_lvname.push_back( lvname ); 
@@ -1004,10 +1009,10 @@ used instead of he real shape.
 
 **/
 
-GMesh* X4PhysicalVolume::ConvertSolid( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname ) // static
+GMesh* X4PhysicalVolume::ConvertSolid( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const char* soname, const char* lvname ) // static
 {
     bool balance_deep_tree = true ;  
-    GMesh* mesh = ConvertSolid_( ok, lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
+    GMesh* mesh = ConvertSolid_( ok, lvIdx, soIdx, solid, soname, lvname, balance_deep_tree ) ;  
 
     mesh->setIndex( lvIdx ) ;   
 
@@ -1034,7 +1039,7 @@ GMesh* X4PhysicalVolume::ConvertSolid( const Opticks* ok, int lvIdx, int soIdx, 
         if( can_export_unbalanced )
         {  
             balance_deep_tree = false ;  
-            GMesh* rawmesh = ConvertSolid_( ok, lvIdx, soIdx, solid, lvname, balance_deep_tree ) ;  
+            GMesh* rawmesh = ConvertSolid_( ok, lvIdx, soIdx, solid, soname, lvname, balance_deep_tree ) ;  
             rawmesh->setIndex( lvIdx ) ;   
 
             const NCSG* rawcsg = rawmesh->getCSG(); 
@@ -1062,7 +1067,7 @@ X4PhysicalVolume::ConvertSolid_
 
 **/
 
-GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname_, bool balance_deep_tree ) // static
+GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const char* soname, const char* lvname, bool balance_deep_tree ) // static
 {
     assert( lvIdx == soIdx );  
     bool dbglv = lvIdx == ok->getDbgLV() ; 
@@ -1076,13 +1081,6 @@ GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx,
     bool is_x4pointskip = ok->isX4PointSkip(lvIdx) ; 
     if( is_x4pointskip ) LOG(fatal) << " is_x4pointskip " << " soIdx " << soIdx  << " lvIdx " << lvIdx ;  
 
-    const char* lvname = lvname_.c_str() ; 
-    const char* soname = nullptr ; 
-    if(solid)
-    {
-        const std::string& soname_ = solid->GetName() ; 
-        soname = soname_.c_str(); 
-    }
 
     LOG(LEVEL)
         << "[ "  
@@ -1108,7 +1106,7 @@ GMesh* X4PhysicalVolume::ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx,
 
     if(g4codegen) GenerateTestG4Code(ok, lvIdx, solid, raw); 
 
-    GMesh* mesh = ConvertSolid_FromRawNode( ok, lvIdx, soIdx, solid, balance_deep_tree, raw, soname, lvname ); 
+    GMesh* mesh = ConvertSolid_FromRawNode( ok, lvIdx, soIdx, solid, soname, lvname, balance_deep_tree, raw ); 
 
     return mesh ; 
 }
@@ -1121,8 +1119,8 @@ This was split from X4PhysicalVolume::ConvertSolid_ in order to enable geochain 
 
 **/
 
-GMesh* X4PhysicalVolume::ConvertSolid_FromRawNode( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, bool balance_deep_tree, nnode* raw, 
-    const char* soname, const char* lvname ) 
+GMesh* X4PhysicalVolume::ConvertSolid_FromRawNode( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const char* soname, const char* lvname, bool balance_deep_tree,
+     nnode* raw) 
 {
     bool is_x4balanceskip = ok->isX4BalanceSkip(lvIdx) ; 
     bool is_x4polyskip = ok->isX4PolySkip(lvIdx);   // --x4polyskip 211,232

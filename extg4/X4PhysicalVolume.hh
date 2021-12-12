@@ -146,10 +146,9 @@ class X4_API X4PhysicalVolume : public X4Named
         void dumpTorusLV() const ;
 
     public:
-        static GMesh* ConvertSolid( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname );
-        static GMesh* ConvertSolid_( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const std::string& lvname, bool balancetree );
-        static GMesh* ConvertSolid_FromRawNode( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, bool balance_deep_tree, nnode* raw,
-             const char* soname, const char* lvname ) ; 
+        static GMesh* ConvertSolid(             const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const char* soname, const char* lvname );
+        static GMesh* ConvertSolid_(            const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const char* soname, const char* lvname, bool balancetree );
+        static GMesh* ConvertSolid_FromRawNode( const Opticks* ok, int lvIdx, int soIdx, const G4VSolid* const solid, const char* soname, const char* lvname, bool balance_deep_tree, nnode* raw );
 
         static void GenerateTestG4Code( const Opticks* ok, int lvIdx, const G4VSolid* const solid, const nnode* raw); 
     private:

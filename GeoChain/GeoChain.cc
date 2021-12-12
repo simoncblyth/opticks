@@ -51,9 +51,12 @@ void GeoChain::init()
 void GeoChain::convertSolid(const G4VSolid* so, const std::string& meta_)
 {
     LOG(info) << "[ meta " << meta_ ; 
-    std::string lvname = so->GetName(); 
 
-    mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, so, lvname ) ; 
+    G4String solidname = so->GetName(); 
+    const char* soname = strdup(solidname.c_str()); 
+    const char* lvname = strdup(solidname.c_str()); 
+
+    mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, so, soname, lvname ) ; 
     LOG(info) << " mesh " << mesh ; 
     convertMesh(mesh, meta_); 
 
@@ -81,7 +84,7 @@ void GeoChain::convertNodeTree(nnode* raw, const std::string& meta_ )
     const char* soname = "convertNodeTree" ; 
     const char* lvname = "convertNodeTree" ; 
 
-    mesh = X4PhysicalVolume::ConvertSolid_FromRawNode(ok, lvIdx, soIdx, solid, balance_deep_tree, raw, soname, lvname ); 
+    mesh = X4PhysicalVolume::ConvertSolid_FromRawNode(ok, lvIdx, soIdx, solid, soname, lvname, balance_deep_tree, raw ); 
 
     convertMesh(mesh, meta_); 
 }

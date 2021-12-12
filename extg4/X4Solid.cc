@@ -76,7 +76,7 @@ void X4Solid::SetVerbosity(unsigned verbosity) // static
 }
 
 
-void X4Solid::Banner( int lvIdx, int soIdx, const std::string& lvname, const std::string& soname ) // static 
+void X4Solid::Banner( int lvIdx, int soIdx, const char* lvname, const char* soname ) // static 
 {
     LOG(LEVEL)
          << " lvIdx " << std::setw(5) << lvIdx 
