@@ -24,6 +24,7 @@
 
 class BMeta ; 
 
+#include "plog/Severity.h"
 #include "NPY_API_EXPORT.hh"
 
 /**
@@ -37,6 +38,7 @@ providing per-node metadata for the trees.
 
 class NPY_API NPYMeta
 {
+        static const plog::Severity LEVEL ; 
     public:
         static BMeta*       LoadMetadata(const char* treedir, int item=-1);
         static bool         ExistsMeta(const char* treedir, int item=-1);

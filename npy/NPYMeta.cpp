@@ -25,6 +25,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity NPYMeta::LEVEL = PLOG::EnvLevel("NPYMeta", "DEBUG"); 
+
 const char* NPYMeta::META = "meta.json" ;
 const char* NPYMeta::ITEM_META = "item_meta.json" ;
 
@@ -91,6 +93,7 @@ void NPYMeta::load(const char* dir, int num_item)
 }
 void NPYMeta::save(const char* dir) const 
 {
+    LOG(LEVEL) << "[ " << dir ; 
     typedef std::map<int, BMeta*> MIP ; 
     for(MIP::const_iterator it=m_meta.begin() ; it != m_meta.end() ; it++)
     {
@@ -98,8 +101,13 @@ void NPYMeta::save(const char* dir) const
         BMeta* meta = it->second ; 
         std::string metapath = MetaPath(dir, item) ;
         assert(meta); 
-        meta->save(metapath.c_str()); 
+
+        const char* path = metapath.c_str() ; 
+        LOG(LEVEL) << "[ path " << path ; 
+        meta->save(path); 
+        LOG(LEVEL) << "] path " << path ; 
     }    
+    LOG(LEVEL) << "] " << dir ; 
 }
 
 template NPY_API void NPYMeta::setValue<double>(const char*, double, int);

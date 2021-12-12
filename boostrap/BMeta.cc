@@ -111,7 +111,9 @@ void BMeta::loadTxt(const char* txt)
 
 void BMeta::save(const char* path) const 
 {
+    LOG(LEVEL) << "[ " << path ; 
     write(path);
+    LOG(LEVEL) << "] " << path ; 
 }
 void BMeta::save(const char* dir, const char* name) const
 {
@@ -514,7 +516,7 @@ void BMeta::write(const char* path0, const char* path1) const
 
     BFile::CreateDir(pdir.c_str()); 
 
-    LOG(debug) << "write to " << path ; 
+    LOG(LEVEL) << "write to " << path ; 
 
     std::ofstream out(path.c_str(), std::ios::out);
 
@@ -524,9 +526,13 @@ void BMeta::write(const char* path0, const char* path1) const
         return ;
     }   
 
+    LOG(LEVEL) << "[ stream m_js to " << path ; 
     out << m_js ; 
 
     out.close();
+
+    LOG(LEVEL) << "] stream m_js to " << path ; 
+
 }
 
 

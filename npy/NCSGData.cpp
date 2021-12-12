@@ -167,6 +167,8 @@ void NCSGData::import_src_identity()
 
 void NCSGData::savesrc(const char* treedir ) const 
 {
+    LOG(LEVEL) << "[" ; 
+
     m_npy->saveBuffer( treedir,(int)SRC_NODES ); 
     m_npy->saveBuffer( treedir,(int)SRC_TRANSFORMS ); 
     m_npy->saveBuffer( treedir,(int)SRC_PLANES ); 
@@ -174,6 +176,8 @@ void NCSGData::savesrc(const char* treedir ) const
 
     m_npy->saveBuffer( treedir,(int)SRC_VERTS ); 
     m_npy->saveBuffer( treedir,(int)SRC_FACES ); 
+
+    LOG(LEVEL) << "]" ; 
 }
 
 /**

@@ -371,8 +371,9 @@ void NCSG::savesrc(const char* treedir_ ) const
     LOG(LEVEL) << "m_csgdata" ; 
     m_csgdata->savesrc( treedir_ ) ;  
 
-    LOG(LEVEL) << "m_meta" ; 
+    LOG(LEVEL) << "[ m_meta" ; 
     m_meta->save( treedir_ ); 
+    LOG(LEVEL) << "] m_meta" ; 
 
     LOG(LEVEL) << "] treedir_ " << treedir_ ; 
 }
