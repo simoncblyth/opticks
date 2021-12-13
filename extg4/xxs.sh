@@ -33,10 +33,11 @@ msg="=== $BASH_SOURCE :"
 
 #geom=Orb
 #geom=SphereWithPhiSegment 
-geom=SphereWithThetaSegment 
+#geom=SphereWithThetaSegment 
 #geom=AdditionAcrylicConstruction
 #geom=BoxMinusTubs0
 #geom=BoxMinusTubs1
+geom=BoxMinusOrb
 #geom=UnionOfHemiEllipsoids
 
 ## PMTSim debug solids 
@@ -155,12 +156,28 @@ elif [ "$GEOM" == "SphereWithThetaSegment" ]; then
     cegs=10:10:10:0:0:0:$numpho    ## nx:ny:nz:dx:dy:dz:numpho
     gridscale=0.1
 
+elif [ "$GEOM" == "BoxMinusOrb" ]; then
+
+    export X4SolidMaker_BoxMinusOrb_radius=110.0
+
+    export X4SolidMaker_BoxMinusOrb_sx=100.0
+    export X4SolidMaker_BoxMinusOrb_sy=100.0
+    export X4SolidMaker_BoxMinusOrb_sz=80.0
+
+    export X4SolidMaker_BoxMinusOrb_dx=0.0
+    export X4SolidMaker_BoxMinusOrb_dy=0.0
+    export X4SolidMaker_BoxMinusOrb_dz=50.0
+
+    numpho=100
+    cegs=9:0:16:0:0:0:$numpho
+    gridscale=0.12
+
 else
     dz=-4
     numpho=10
     #cegs=16:0:9:0:0:$dz:$numpho
     #gridscale=0.15
-    cegs=9:0:16:0:0:$dz:$num_pho
+    cegs=9:0:16:0:0:$dz:$numpho
     gridscale=0.10
 
     #zz=190,-162,-195,-210,-275,-350,-365,-420,-450

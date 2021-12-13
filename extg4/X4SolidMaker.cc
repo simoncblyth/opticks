@@ -40,6 +40,7 @@ SphereWithThetaSegment
 AdditionAcrylicConstruction
 BoxMinusTubs0
 BoxMinusTubs1
+BoxMinusOrb
 UnionOfHemiEllipsoids
 )LITERAL"; 
 
@@ -52,6 +53,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4SolidMaker::AdditionAcrylicConstruction(qname); 
     else if(StartsWith("BoxMinusTubs0",qname))                solid = X4SolidMaker::BoxMinusTubs0(qname); 
     else if(StartsWith("BoxMinusTubs1",qname))                solid = X4SolidMaker::BoxMinusTubs1(qname); 
+    else if(StartsWith("BoxMinusOrb",qname))                  solid = X4SolidMaker::BoxMinusOrb(qname); 
     else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = X4SolidMaker::UnionOfHemiEllipsoids(qname); 
     assert(solid); 
     return solid ; 
@@ -218,6 +220,26 @@ const G4VSolid* X4SolidMaker::BoxMinusTubs1(const char* name)
     G4VSolid* box_minus_tubs = new G4SubtractionSolid(name,box,tubs);  
     return box_minus_tubs ; 
 }
+
+const G4VSolid* X4SolidMaker::BoxMinusOrb(const char* name) 
+{
+    double radius = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_radius", 100.f) ; 
+
+    double sx     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_sx", 100.f) ; 
+    double sy     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_sy", 100.f) ; 
+    double sz     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_sz", 100.f) ; 
+
+    double dx     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dx", 0.f) ;  
+    double dy     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dy", 0.f) ;  
+    double dz     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dz", 0.f) ;  
+
+    G4VSolid* box = new G4Box("box",  sx, sy, sz ); 
+    G4VSolid* orb = new G4Orb("orb",  radius ); 
+
+    G4VSolid* box_minus_orb = new G4SubtractionSolid(name,box,orb,nullptr, G4ThreeVector(dx, dy, dz) );  
+    return box_minus_orb ; 
+}
+
 
 const G4VSolid* X4SolidMaker::UnionOfHemiEllipsoids(const char* name )
 {
