@@ -40,7 +40,7 @@ class CMakeLists(object):
    NAME = "CMakeLists.txt"
    name_ptn = re.compile("^set\(name (?P<name>\S*)\).*")
    find_ptn = re.compile("^find_package\((?P<findargs>.*)\).*")
-   obo_txt = "include(OpticksBuildOptions)"
+   obo_txt = "include(OpticksBuildOptions"
 
    @classmethod
    def HasOpticksBuildOptions(cls, lines): 

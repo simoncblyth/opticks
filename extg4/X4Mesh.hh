@@ -41,6 +41,8 @@ a G4VSolid into a GMesh.
 class X4_API X4Mesh
 {
     public:
+        static void Save(const G4VSolid* solid, const char* path );
+    public:
         static GMesh* Placeholder(const G4VSolid* solid );
         static GMesh* Placeholder(const nnode* raw );
         static GMesh* Placeholder(const nbbox* bb ); 

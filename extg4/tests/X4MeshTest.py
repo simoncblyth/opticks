@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-X4MeshTest.py
-=============
+X4MeshTest.py : NB use the script to use the correct python
+================================================================
 
 Usage::
 
@@ -11,6 +11,8 @@ Usage::
 """
 import logging, numpy 
 from opticks.ana.fold import Fold
+
+efloatlist_ = lambda ekey,edef:list(map(float, filter(None, os.environ.get(ekey,edef).split(","))))
 
 try:
     import pyvista as pv
@@ -49,14 +51,49 @@ class X4Mesh(object):
         self.surf = surf
 
 
+class Plt(object):
+    size = np.array([1280, 720])
+
+    @classmethod
+    def anno(cls, pl): 
+        default_topline = "X4MeshTest.py"
+        default_botline = "BOTLINE"
+        default_thirdline = "THIRDLINE"
+
+        topline = os.environ.get("TOPLINE", default_topline)
+        botline = os.environ.get("BOTLINE", default_botline) 
+        thirdline = os.environ.get("THIRDLINE", default_thirdline) 
+
+        pl.add_text(topline, position="upper_left")
+        pl.add_text(botline, position="lower_left")
+        pl.add_text(thirdline, position="lower_right")
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    mesh = X4Mesh.Load("/tmp/X4MeshTest")
-    mesh.surf.plot(cpos=[-1,-1,0.5])
+    cpos = efloatlist_("CPOS", "-1,-1,2" )
+    geom = os.environ.get("GEOM", "BoxMinusOrb")
+    fold = os.path.expandvars("/tmp/$USER/opticks/extg4/X4IntersectTest/%s/X4Mesh" % geom ) 
 
-  
+    os.environ["TOPLINE"] = "GEOM=%s ~/opticks/extg4/X4MeshTest.sh" % geom 
+    os.environ["BOTLINE"] = fold 
+    os.environ["THIRDLINE"] = "CPOS=%s" % str(cpos) 
+
+    mesh = X4Mesh.Load(fold)
+
+    #mesh.surf.plot(cpos=cpos)
+
+    size = np.array([1280, 720])
+    pl = pv.Plotter(window_size=size*2 )
+    pl.add_mesh(mesh.surf)
+
+    Plt.anno(pl)
+    pl.show_grid()
+ 
+    outpath = os.path.join(fold, "pvplot.png")
+    log.info("screenshot %s " % outpath)
+    pl.show(cpos=cpos, screenshot=outpath)
 
 
 

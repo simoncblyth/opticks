@@ -49,6 +49,15 @@
 #include "PLOG.hh"
 
 
+void X4Mesh::Save( const G4VSolid* solid, const char* path)  // static 
+{
+    X4Mesh* xm = new X4Mesh(solid, -1) ; 
+    LOG(info) << xm->desc() ; 
+    xm->save(path); 
+}
+
+
+
 /**
 X4Mesh::Placeholder
 --------------------
@@ -360,6 +369,7 @@ void X4Mesh::collect_tri()
 
     */
 }
+
 
 
 void X4Mesh::save(const char* path) const 

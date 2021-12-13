@@ -8,9 +8,11 @@ Used from script extg4/xxs.sh
 #include "OPTICKS_LOG.hh"
 #include "SSys.hh"
 #include "SStr.hh"
+#include "SPath.hh"
 
 #include "X4Intersect.hh"
 #include "X4SolidMaker.hh"
+#include "X4Mesh.hh"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -57,6 +59,9 @@ int main(int argc, char** argv)
 
     LOG(info) << " geom " << geom << " names.size " << names.size() ; 
 
+
+    const char* base = "$TMP/extg4/X4IntersectTest" ; 
+
     for(unsigned i=0 ; i < names.size() ; i++)
     {
         const std::string& name_ = names[i]; 
@@ -64,7 +69,14 @@ int main(int argc, char** argv)
         const G4VSolid* solid = GetSolid(name); 
         if( solid == nullptr ) LOG(fatal) << "failed to GetSolid for name " << name ; 
         assert( solid );   
-        X4Intersect::Scan(solid, name, "$TMP/extg4/X4IntersectTest", meta ); 
+
+
+        X4Intersect::Scan(solid, name, base, meta ); 
+
+        int create_dirs = 1 ; // 1:filepath 
+        const char* meshpath = SPath::Resolve(base, name, "X4Mesh", "mesh.gltf", create_dirs ); 
+        X4Mesh::Save(solid, meshpath ); 
+
     }
     return 0 ; 
 }

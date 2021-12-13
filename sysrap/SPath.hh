@@ -44,6 +44,7 @@ class SYSRAP_API SPath {
       static const char* Resolve(const char* path, int create_dirs); 
       static const char* Resolve(const char* dir, const char* name, int create_dirs);
       static const char* Resolve(const char* dir, const char* reldir, const char* name, int create_dirs);
+      static const char* Resolve(const char* dir, const char* reldir, const char* rel2dir, const char* name, int create_dirs);
 
       // mode:(0 do nothing, 1:assume file path, 2:assume dir path) 
       static void CreateDirs(const char* path, int mode); 

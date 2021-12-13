@@ -204,29 +204,50 @@ export ZZD=${ZZD:-$zzd}
 
 env | grep CXS
 
-arg=${1:-runana}
+arg=${1:-run_ana_mesh}
 
 if [ "${arg/exit}" != "$arg" ]; then
    echo $msg early exit 
    exit 0 
 fi
+
 if [ "${arg/run}" != "$arg" ]; then
     $GDB X4IntersectSolidTest
     [ $? -ne 0 ] && echo run error && exit 1 
 fi  
+
 if [ "${arg/dbg}" != "$arg" ]; then
     lldb__ X4IntersectSolidTest
     [ $? -ne 0 ] && echo run error && exit 1 
 fi  
+
+dir=$(dirname $BASH_SOURCE)
+
 if [ "${arg/ana}"  != "$arg" ]; then 
 
     if [ -n "$SCANNER" ]; then 
-        ${IPYTHON:-ipython} --pdb tests/X4IntersectSolidTest.py 
+        ${IPYTHON:-ipython} --pdb $dir/tests/X4IntersectSolidTest.py 
         [ $? -ne 0 ] && echo ana noninteractive error && exit 2
     else
-        ${IPYTHON:-ipython} --pdb -i tests/X4IntersectSolidTest.py 
+        ${IPYTHON:-ipython} --pdb -i $dir/tests/X4IntersectSolidTest.py 
         [ $? -ne 0 ] && echo ana interactive error && exit 2
     fi
 fi 
+
+
+if [ "${arg/mesh}"  != "$arg" ]; then 
+
+    if [ -n "$SCANNER" ]; then 
+        ${IPYTHON:-ipython} --pdb $dir/tests/X4MeshTest.py 
+        [ $? -ne 0 ] && echo ana noninteractive error && exit 2
+    else
+        ${IPYTHON:-ipython} --pdb -i $dir/tests/X4MeshTest.py 
+        [ $? -ne 0 ] && echo ana interactive error && exit 2
+    fi
+fi 
+
+
+
+
 
 exit 0 

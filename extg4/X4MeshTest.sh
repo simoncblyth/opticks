@@ -1,5 +1,10 @@
 #!/bin/bash -l 
 
-${IPYTHON:-ipython} --pdb tests/X4MeshTest.py
+dir=$(dirname $BASH_SOURCE)
+path=$dir/tests/X4MeshTest.py
+
+echo BASH_SOURCE $BASH_SOURCE path $path 
+
+${IPYTHON:-ipython} --pdb $path
 
 

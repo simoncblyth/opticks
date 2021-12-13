@@ -227,6 +227,31 @@ const char* SPath::Resolve(const char* dir, const char* reldir, const char* name
 }
 
 
+
+const char* SPath::Resolve(const char* dir, const char* reldir, const char* rel2dir, const char* name, int create_dirs)
+{
+    LOG(LEVEL) 
+        << " dir [" << dir << "]"
+        << " reldir [" << reldir << "]"
+        << " rel2dir [" << rel2dir << "]"
+        << " name [" << name << "]"
+        << " create_dirs [" << create_dirs << "]"
+        ;
+
+    std::stringstream ss ; 
+    ss << dir << "/" ; 
+    if(reldir) ss << reldir << "/" ; 
+    if(rel2dir) ss << rel2dir << "/" ; 
+    ss << name ; 
+
+    std::string s = ss.str(); 
+    return Resolve(s.c_str(), create_dirs); 
+}
+
+
+
+
+
 bool SPath::LooksLikePath(const char* path)
 {
     if(!path) return false ;
