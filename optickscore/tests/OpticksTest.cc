@@ -246,21 +246,31 @@ void test_getArgList(const Opticks* ok)
     for(unsigned i=0 ; i < arglist.size() ; i++) LOG(info) << "[" << arglist[i] << "]" ; 
 }
 
+void test_getIdPath(const Opticks* ok)
+{
+    const char* idpath = ok->getIdPath(); 
+    const char* geocachedir = ok->getGeocacheDir(); 
+    LOG(info) << " idpath      " << idpath ; 
+    LOG(info) << " geocachedir " << geocachedir ; 
+}
+
+void test_writeGeocacheScript(const Opticks* ok)
+{
+    ok->writeGeocacheScript(); 
+}
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc,argv);
-    
     LOG(info) << argv[0] ;
 
     Opticks ok(argc, argv);
     ok.configure();
 
+    /*
     ok.Summary();
 
-    LOG(info) << "OpticksTest::main aft configure" ;
-
-    /*
     test_MaterialSequence();  
     test_getDAEPath(&ok);  
     test_getMaterialMap(&ok);  
@@ -269,22 +279,25 @@ int main(int argc, char** argv)
     test_getGDMLPath(&ok);  
     test_loadCacheMeta(&ok);  
     test_getCurrentGDMLPath(&ok); 
-    */
 
-    //OpticksTest okt(&ok); 
-    //okt.test_getGenstepPath();  
-    //okt.test_getDirectGenstepPath();  
+    OpticksTest okt(&ok); 
+    okt.test_getGenstepPath();  
+    okt.test_getDirectGenstepPath();  
 
-    //test_getEventFold(&ok); 
-    //test_findGDMLAuxMetaEntries(&ok); 
-    //test_findGDMLAuxValues(&ok); 
-    //test_getGDMLAuxTargetLVName(&ok); 
+    test_getEventFold(&ok); 
+    test_findGDMLAuxMetaEntries(&ok); 
+    test_findGDMLAuxValues(&ok); 
+    test_getGDMLAuxTargetLVName(&ok); 
 
-    //test_OriginGDMLPath(); 
-    //test_isEnabledMergedMesh(&ok); 
-    //test_getFlightInputDir(&ok); 
+    test_OriginGDMLPath(); 
+    test_isEnabledMergedMesh(&ok); 
+    test_getFlightInputDir(&ok); 
 
     test_getArgList(&ok); 
+    test_getIdPath(&ok); 
+
+    */
+    test_writeGeocacheScript(&ok); 
 
     return 0 ;
 }

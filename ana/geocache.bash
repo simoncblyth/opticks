@@ -336,6 +336,43 @@ geocache-create-()
     cd $iwd
 }
 
+geocache-sh-notes(){ cat << EON
+geocache-sh-notes
+===================
+
+The OKX4Test executable that is invoked by geocache-create- writes the geocacheScript 
+using Opticks::writeGeocacheScript
+
+
+EON
+}
+
+geocache-sh-path(){ 
+    local opticks_geocache_prefix=~/.opticks 
+    echo ${OPTICKS_GEOCACHE_PREFIX:-$opticks_geocache_prefix}/geocache/geocache.sh 
+}
+
+geocache-sh-cat(){
+    local geocache_sh=$(geocache-sh-path)
+    cat $geocache_sh 
+} 
+
+geocache-sh()
+{
+    local msg="=== $FUNCNAME :"
+    local geocache_sh=$(geocache-sh-path)
+
+    if [ -f "$geocache_sh" ]; then
+        echo $msg geocache_sh $geocache_sh : sourcing  
+        source $geocache_sh 
+    else
+        echo $msg geocache_sh $geocache_sh : does not exist 
+    fi 
+
+}
+
+
+
 geocache-create-notes(){ cat << EON
 $FUNCNAME
 ----------------------

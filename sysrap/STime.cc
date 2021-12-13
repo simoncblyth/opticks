@@ -43,8 +43,10 @@ std::string STime::Format(int epochseconds, const char* fmt)
 }
 
 
-
-
+std::string STime::Stamp()
+{
+    return STime::Format(0, nullptr); 
+}
 
 
 

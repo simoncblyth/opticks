@@ -258,6 +258,9 @@ class OKCORE_API Opticks {
    public:
        bool        hasGeocache() const ; 
        const char* getIdPath() const ;
+       const char* getGeocacheDir() const ; // eg ~/.opticks/geocache 
+       const char* getGeocacheScriptPath() const ; // eg ~/.opticks/geocache/geocache.sh 
+
        bool        hasIdPath() const ; 
        const char* getKeyDir() const ;
        const char* getIdFold() const ;
@@ -459,7 +462,11 @@ class OKCORE_API Opticks {
        bool                 canDeleteGeoCache() const ; 
        void                 deleteGeoCache() const ; 
        void                 enforceNoGeoCache() const ; 
+   public:
+       std::string          reportKeyString() const ; 
        void                 reportKey(const char* msg="Opticks::reportKey") const ; 
+       std::string          geocacheScriptString(const char* msg) const ; 
+       void                 writeGeocacheScript(const char* msg="Opticks::writeGeocacheScript") const ; 
    public:
        const char*          getDbgIndex() const ;
        const char*          getDbgCSGPath();

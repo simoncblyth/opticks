@@ -522,7 +522,9 @@ std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, 
 
 void BOpticksResource::initTopDownDirs()
 { 
-    m_geocache_dir         = GeocacheDir() ;      // eg ~/.opticks/geocache
+    m_geocache_dir         = GeocacheDir() ;         // eg ~/.opticks/geocache
+    m_geocache_shpath      = GeocacheScriptPath() ;  // eg ~/.opticks/geocache/geocache.sh 
+
     m_runcache_dir         = RuncacheDir() ;      // eg ~/.opticks/runcache
     m_rngcache_dir         = RNGCacheDir() ;      // eg ~/.opticks/rngcache
     m_rng_dir              = RNGDir() ;           // eg ~/.opticks/rngcache/RNG
@@ -542,11 +544,12 @@ void BOpticksResource::initTopDownDirs()
     m_optixcachedefault_dir  = OptiXCachePathDefault() ;   // eg /var/tmp/simon/OptiXCache
 
 
-
     m_res->addDir("opticksdata_dir", m_opticksdata_dir);
     m_res->addDir("opticksaux_dir",  m_opticksaux_dir);
 
-    m_res->addDir("geocache_dir",    m_geocache_dir );
+    m_res->addDir( "geocache_dir",    m_geocache_dir );
+    m_res->addPath("geocache_shpath", m_geocache_shpath );
+
     m_res->addDir("rngcache_dir",    m_rngcache_dir );
     m_res->addDir("runcache_dir",    m_runcache_dir );
 
@@ -560,7 +563,6 @@ void BOpticksResource::initTopDownDirs()
     m_res->addDir("rng_dir", m_rng_dir );
 
     //m_res->addDir("okc_installcache_dir", m_okc_installcache_dir );
-
 
     m_tmpuser_dir = MakeTmpUserDir("opticks", NULL) ;  // now usurped with $TMP
     m_res->addDir( "tmpuser_dir", m_tmpuser_dir ); 
@@ -581,9 +583,6 @@ void BOpticksResource::initDebuggingIDPATH()
     m_debugging_idfold = strdup(idfold.c_str());
 
 }
-
-
-
 
 const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 {
@@ -610,7 +609,10 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 }
 
 
-const char* BOpticksResource::GeocacheDir(){    return MakePath(ResolveGeoCachePrefix(), "geocache",  NULL); }
+const char* BOpticksResource::GeocacheDir(){        return MakePath(ResolveGeoCachePrefix(), "geocache", NULL); }
+const char* BOpticksResource::GeocacheScriptPath(){ return MakePath(ResolveGeoCachePrefix(), "geocache", "geocache.sh" ); }
+
+
 const char* BOpticksResource::RNGCacheDir(){    return MakePath(ResolveRngCachePrefix(), "rngcache",  NULL); }
 const char* BOpticksResource::RNGDir(){         return MakePath(RNGCacheDir(), "RNG", NULL); }
 
@@ -636,6 +638,8 @@ const char* BOpticksResource::ResultsDir(){     return MakePath(ResolveResultsPr
 const char* BOpticksResource::getInstallDir() {         return m_install_prefix ; }   
 const char* BOpticksResource::getOpticksDataDir() {     return m_opticksdata_dir ; }   
 const char* BOpticksResource::getGeocacheDir() {        return m_geocache_dir ; }   
+const char* BOpticksResource::getGeocacheScriptPath() { return m_geocache_shpath ; }   
+
 const char* BOpticksResource::getRuncacheDir() {        return m_runcache_dir ; }   
 const char* BOpticksResource::getResultsDir() {         return m_results_dir ; }   
 const char* BOpticksResource::getResourceDir() {        return m_resource_dir ; } 

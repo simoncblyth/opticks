@@ -135,6 +135,7 @@ int main(int argc, char** argv)
     m_ok->postgeocache(); 
 
     m_ok->reportKey("OKX4Test"); 
+    m_ok->writeGeocacheScript("OKX4Test Opticks::writeGeocacheScript")
 
     return mgr.rc() ;
 }

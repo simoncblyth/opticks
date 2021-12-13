@@ -63,6 +63,29 @@ void SStr::Save(const char* path_, const std::vector<std::string>& a, char delim
 }
 
 
+void SStr::Save(const char* path_, const char* txt )
+{
+    int create_dirs = 1 ; // 1:filepath
+    const char* path = SPath::Resolve(path_, create_dirs);  // 
+    LOG(info) << "SPath::Resolve " << path_ << " to " << path ; 
+    std::ofstream fp(path);
+    fp << txt ;  
+}
+
+const char* SStr::Load(const char* path_ )
+{
+    int create_dirs = 0 ; // 0:do nothing
+    const char* path = SPath::Resolve(path_, create_dirs);  // 
+    LOG(info) << "SPath::Resolve " << path_ << " to " << path ; 
+    std::ifstream fp(path);
+
+    std::stringstream ss ; 
+    ss << fp.rdbuf() ; 
+    std::string txt = ss.str(); 
+    return strdup(txt.c_str()) ; 
+}
+
+
 
 
 void SStr::FillFromULL( char* dest, unsigned long long value, char unprintable)

@@ -206,6 +206,31 @@ void test_Save()
     SStr::Save(path, v ); 
 }
 
+
+const char* TXT = R"LITERAL(
+red
+green
+blue
+cyan
+magenta
+yellow
+)LITERAL" ; 
+
+void test_Save_Load()
+{
+    const char* path = "$TMP/SStrTest/test_Save_Load.txt" ; 
+    SStr::Save(path, TXT );
+
+    const char* txt = SStr::Load(path); 
+
+    LOG(info) << " TXT [" << TXT << "]"  ; 
+    LOG(info) << " txt [" << txt << "]"  ; 
+
+    assert( strcmp(txt, TXT) == 0 );  
+}
+
+
+
 void test_Split()
 {
     std::vector<std::string> elem ; 
@@ -517,9 +542,10 @@ int main(int argc , char** argv )
     test_TrimPointerSuffix(); 
     test_ReplaceChars(); 
     test_ato_(); 
-    */
     test_Extract(); 
+    */
 
+    test_Save_Load(); 
 
     return 0  ; 
 }

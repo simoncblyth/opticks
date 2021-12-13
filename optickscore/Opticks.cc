@@ -41,6 +41,7 @@
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"
+#include "STime.hh"
 #include "SRngSpec.hh"
 
 
@@ -1262,25 +1263,10 @@ void Opticks::enforceNoGeoCache() const
 }
 
 
-void Opticks::reportKey(const char* msg) const
+std::string Opticks::reportKeyString() const 
 {
-    const Opticks* ok = this ; 
-    LOG(info) << msg ; 
-
-    const char* kspec = ok->getKeySpec() ; 
+    const char* kspec = getKeySpec() ; 
     const char* espec = SSys::getenvvar("OPTICKS_KEY", "NONE" ); 
-
-    std::cout 
-        << std::endl << GEOCACHE_CODE_VERSION_KEY << " " << GEOCACHE_CODE_VERSION
-        << std::endl << "KEYDIR  " << ok->getIdPath() 
-        << std::endl << "KEY     " << kspec  
-        << std::endl << " "    
-        << std::endl << "To reuse this geometry include below export in ~/.opticks_config::" 
-        << std::endl << " "   
-        << std::endl << "    export OPTICKS_KEY=" << kspec 
-        << std::endl  
-        << std::endl  
-        ;   
 
     if(strcmp(kspec, espec) == 0) 
     {
@@ -1292,10 +1278,64 @@ void Opticks::reportKey(const char* msg) const
         LOG(info) << " (envvar) OPTICKS_KEY=" <<  espec ; 
         LOG(info) << " (live)   OPTICKS_KEY=" <<  kspec ; 
     }
+
+    std::stringstream ss ; 
+    ss
+        << std::endl << GEOCACHE_CODE_VERSION_KEY << " " << GEOCACHE_CODE_VERSION
+        << std::endl << "KEYDIR  " << getIdPath() 
+        << std::endl << "KEY     " << kspec  
+        << std::endl << " "    
+        << std::endl << "To reuse this geometry include below export in ~/.opticks_config::" 
+        << std::endl << " "   
+        << std::endl << "    export OPTICKS_KEY=" << kspec 
+        << std::endl  
+        << std::endl  
+        ;   
+
+    std::string s = ss.str(); 
+    return s ; 
 }
 
+void Opticks::reportKey(const char* msg) const
+{
+    std::string rep = reportKeyString(); 
+    LOG(info) << msg << rep ; 
+}
 
+std::string Opticks::geocacheScriptString(const char* msg) const 
+{
+    std::stringstream ss ; 
+    ss
+        << "# " << msg  
+        << std::endl 
+        << "# " << STime::Stamp()   
+        << std::endl 
+        << "export OPTICKS_KEY=" << getKeySpec()
+        << std::endl 
+        << "export OPTICKS_KEYDIR=" << getIdPath() 
+        << std::endl  
+        << "# "    
+        << std::endl 
+        ;   
 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+void Opticks::writeGeocacheScript(const char* msg) const
+{
+    const char* sh_path = getGeocacheScriptPath() ; 
+    std::string sh = geocacheScriptString(msg); 
+
+    LOG(info) 
+        << "writing sh_path " << sh_path << std::endl
+        << "sh [" << std::endl
+        << sh  
+        << "]" 
+        ;
+
+    SStr::Save(sh_path, sh.c_str()) ; 
+}
 
 
 
@@ -4442,7 +4482,8 @@ Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 
 const char*     Opticks::getKeyDir() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
 const char*     Opticks::getIdPath() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
-
+const char*     Opticks::getGeocacheDir() const { return m_rsc ? m_rsc->getGeocacheDir() : NULL ; } 
+const char*     Opticks::getGeocacheScriptPath() const { return m_rsc ? m_rsc->getGeocacheScriptPath() : NULL ; }
 
 const char*     Opticks::getIdFold() const { return m_rsc ? m_rsc->getIdFold() : NULL ; }
 

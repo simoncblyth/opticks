@@ -1,11 +1,8 @@
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
-
 #include "Opticks.hh"
 #include "GGeo.hh"
-
 #include "CSGFoundry.h"
-
 #include "CSG_GGeo_Convert.h"
 
 int main(int argc, char** argv)

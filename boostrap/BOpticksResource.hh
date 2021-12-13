@@ -160,6 +160,8 @@ class BRAP_API  BOpticksResource {
         static const char* OpticksDataDir();
         static const char* OpticksAuxDir();
         static const char* GeocacheDir();
+        static const char* GeocacheScriptPath(); 
+
         static const char* RNGCacheDir();
         static const char* RNGDir();
         static const char* RuncacheDir();
@@ -183,6 +185,8 @@ class BRAP_API  BOpticksResource {
 
         const char* getOpticksDataDir();
         const char* getGeocacheDir();
+        const char* getGeocacheScriptPath(); 
+
         const char* getRuncacheDir();
         const char* getResultsDir();
         const char* getInstallCacheDir();
@@ -311,6 +315,8 @@ class BRAP_API  BOpticksResource {
         const char* m_opticksdata_dir ; 
         const char* m_opticksaux_dir ; 
         const char* m_geocache_dir ; 
+        const char* m_geocache_shpath ;    
+
         const char* m_rngcache_dir ; 
         const char* m_runcache_dir ; 
         const char* m_results_dir ; 
