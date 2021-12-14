@@ -184,7 +184,7 @@ struct NP
 
     void save_header(const char* path);   
     void old_save(const char* path) ;  // formerly the *save* methods could not be const because of update_headers
-    void save(const char* path) const ;  // *save* methods now can be const due to dynamic creation of header
+    void save(const char* path, bool verbose=false) const ;  // *save* methods now can be const due to dynamic creation of header
 
     void save(const char* dir, const char* name) const ;   
     void save(const char* dir, const char* reldir, const char* name) const ;   
@@ -2688,9 +2688,11 @@ inline void NP::old_save(const char* path)  // non-const due to update_headers
     stream.write( bytes(), arr_bytes() );
 }
 
-inline void NP::save(const char* path) const 
+inline void NP::save(const char* path, bool verbose) const 
 {
+    if(verbose)
     std::cout << "NP::save path [" << path  << "]" << std::endl ; 
+
     std::string hdr = make_header(); 
     std::ofstream fpa(path, std::ios::out|std::ios::binary);
     fpa << hdr ; 
@@ -3038,60 +3040,23 @@ template <typename T> NP* NP::Make( int ni_, int nj_, int nk_, int nl_, int nm_ 
 
 
 
-template <typename T> void NP::Write(const char* dir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_ ) // static
-{
-    std::string dtype = descr_<T>::dtype() ; 
-
-    std::cout 
-        << "xNP::Write"
-        << " dtype " << dtype
-        << " ni  " << std::setw(7) << ni_
-        << " nj  " << nj_
-        << " nk  " << nk_
-        << " nl  " << nl_
-        << " nm  " << nm_
-        << " dir " << std::setw(50) << dir
-        << " name " << name
-        << std::endl 
-        ;   
-
-    NP a(dtype.c_str(), ni_,nj_,nk_,nl_,nm_) ;    
-    a.read(data); 
-    a.save(dir, name); 
-}
-
-// TODO: eliminate duplication between these methods
-
 template <typename T> void NP::Write(const char* dir, const char* reldir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_ ) // static
 {
-    std::string dtype = descr_<T>::dtype() ; 
-
-    std::cout 
-        << "xNP::Write"
-        << " dtype " << dtype
-        << " ni  " << std::setw(7) << ni_
-        << " nj  " << nj_
-        << " nk  " << nk_
-        << " nl  " << nl_
-        << " nm  " << nm_
-        << " dir " << std::setw(50) << ( dir ? dir : "-" )
-        << " reldir " << std::setw(50) << ( reldir ? reldir : "-" )
-        << " name " << name
-        << std::endl 
-        ;   
-
-    NP a(dtype.c_str(), ni_,nj_,nk_,nl_,nm_) ;    
-    a.read(data); 
-    a.save(dir, reldir, name); 
+    std::string path = form_path(dir, reldir, name); 
+    Write( path.c_str(), data, ni_, nj_, nk_, nl_, nm_ ); 
 }
 
-
+template <typename T> void NP::Write(const char* dir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_ ) // static
+{
+    std::string path = form_path(dir, name); 
+    Write( path.c_str(), data, ni_, nj_, nk_, nl_, nm_ ); 
+}
 
 template <typename T> void NP::Write(const char* path, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_ ) // static
 {
     std::string dtype = descr_<T>::dtype() ; 
     std::cout 
-        << "xNP::Write"
+        << "NP::Write"
         << " dtype " << dtype
         << " ni  " << std::setw(7) << ni_
         << " nj  " << nj_

@@ -208,6 +208,7 @@ class BRAP_API  BOpticksResource {
         std::string getGeocachePath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
         std::string getResultsPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
         std::string getPropertyLibDir(const char* name) const ;
+        std::string getCSG_GGeoDir() const ; 
 
         std::string getObjectPath(const char* name, unsigned int index) const ;
         std::string getObjectPath(const char* name) const ;

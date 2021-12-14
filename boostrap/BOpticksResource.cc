@@ -980,6 +980,14 @@ std::string BOpticksResource::getPropertyLibDir(const char* name) const
     return BFile::FormPath( idpath, name ) ;
 }
 
+std::string BOpticksResource::getCSG_GGeoDir() const // aka CFBASE
+{
+    const char* idpath = getIdPath(); 
+    return BFile::FormPath( idpath, "CSG_GGeo" ) ;
+}
+
+
+
 
 std::string BOpticksResource::getObjectPath(const char* name, unsigned int index) const
 {

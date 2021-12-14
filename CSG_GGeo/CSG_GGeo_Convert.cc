@@ -72,9 +72,11 @@ void CSG_GGeo_Convert::init()
 
 void CSG_GGeo_Convert::convert()
 {
+    LOG(LEVEL) << "[" ; 
     convertGeometry(); 
     convertBndLib(); 
     convertScintillatorLib(); 
+    LOG(LEVEL) << "]" ; 
 }
 
 /**
@@ -86,7 +88,7 @@ CSG_GGeo_Convert::convertGeometry
 
 void CSG_GGeo_Convert::convertGeometry(int repeatIdx,  int primIdx, int partIdxRel ) // all -1 is the default that calls convertAllSolid
 {
-
+    LOG(LEVEL) << "[" ; 
     if( repeatIdx > -1 || primIdx > -1 || partIdxRel > -1 )
     {
         LOG(info) 
@@ -119,12 +121,13 @@ void CSG_GGeo_Convert::convertGeometry(int repeatIdx,  int primIdx, int partIdxR
         LOG(info) << "convert all solids (default)" ; 
         convertAllSolid();
     }
+    LOG(LEVEL) << "]" ; 
 } 
 
 void CSG_GGeo_Convert::convertAllSolid()  // default 
 {
     unsigned numRepeat = ggeo->getNumMergedMesh(); 
-    LOG(LEVEL) << "numRepeat " << numRepeat ; 
+    LOG(LEVEL) << "[ numRepeat " << numRepeat ; 
     for(unsigned repeatIdx=0 ; repeatIdx < numRepeat ; repeatIdx++)
     {
         if(ok->isEnabledMergedMesh(repeatIdx))
@@ -137,10 +140,12 @@ void CSG_GGeo_Convert::convertAllSolid()  // default
             LOG(error) << "skipping convert for repeatIdx " << repeatIdx ;  
         }
     }
+    LOG(LEVEL) << "] numRepeat " << numRepeat ; 
 }
 
 void CSG_GGeo_Convert::convertBndLib() 
 {
+    LOG(LEVEL) << "[" ; 
     GBndLib* blib = ggeo->getBndLib(); 
 
     bool can_create = blib->canCreateBuffer() ; 
@@ -159,6 +164,7 @@ void CSG_GGeo_Convert::convertBndLib()
     }
 
     foundry->bnd = bnd ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 void CSG_GGeo_Convert::convertScintillatorLib() 
@@ -332,7 +338,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     unsigned mask = comp->getTypeMask(primIdx, operators_only); 
     bool positive = CSG::IsPositiveMask( mask ); 
 
-    LOG(info)
+    LOG(LEVEL)
         << " primIdx " << std::setw(4) << primIdx
         << " meshIdx " << std::setw(4) << meshIdx
         << " comp.getTypeMask " << mask 
@@ -354,15 +360,13 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     AABB bb = {} ;
 
     if(dump) 
-        std::cout 
-            << "CSG_GGeo_Convert::convertPrim" 
+        LOG(LEVEL)
             << " primIdx " << primIdx 
             << " numPrim " << numPrim
             << " numParts " << numParts 
             << " meshIdx " << meshIdx 
             << " last_ridx " << last_ridx
             << " dump " << dump
-            << std::endl
             ; 
    
     CSGNode* root = nullptr ; 
@@ -391,12 +395,11 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         bool bbskip = negated ; 
 
         if(dump || bbskip) 
-            std::cout 
+            LOG(LEVEL)
                 << std::setw(3) << partIdxRel 
                 << " " << n->desc() 
                 << " negated " << negated
                 << " bbskip " << bbskip 
-                << std::endl
                 ;
 
         float* naabb = n->AABB();  
@@ -406,12 +409,10 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
     const float* bb_data = bb.data(); 
 
-    std::cout 
-        << "CSG_GGeo_Convert::convertPrim " 
+    LOG(LEVEL)
         << " ridx " << std::setw(2) << last_ridx
         << " primIdx " << std::setw(3) << primIdx 
         << " AABB " << AABB::Desc(bb_data) 
-        << std::endl
         ; 
 
     prim->setAABB( bb_data ); 

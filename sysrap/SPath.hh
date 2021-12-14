@@ -51,6 +51,8 @@ class SYSRAP_API SPath {
 
       static bool LooksLikePath(const char* path);
       static int MakeDirs( const char* path, int mode=0 ) ; 
+      static void chdir(const char* path, int create_dirs=2 ); 
+      static const char* getcwd() ; 
 
       template<typename T> static const char* MakePath( const char* prefix, const char* reldir, const T real, const char* name); 
 

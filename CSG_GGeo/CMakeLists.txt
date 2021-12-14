@@ -21,31 +21,25 @@ set(SOURCES)
 set(HEADERS)
 
 list(APPEND SOURCES
-    ${name}_Convert.cc
+    CSG_GGeo_Convert.cc
     CSG_GGEO_LOG.cc
 )
 
 list(APPEND HEADERS
-    ${name}_Convert.h
+    CSG_GGeo_Convert.h
     CSG_GGEO_API_EXPORT.hh
     CSG_GGEO_LOG.hh
 )
 
-
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
-add_executable(${name}Test ${name}Test.cc)
-
 target_link_libraries(${name} PUBLIC Opticks::GGeo Opticks::CSG)
-
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG_GGEO )
-
-target_link_libraries(${name}Test PUBLIC Opticks::GGeo Opticks::CSG ${name})
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-
+add_subdirectory(tests)
 
 

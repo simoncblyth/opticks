@@ -1,7 +1,7 @@
 CSG_GGeo
 ==========
 
-CSG_GGeo.cc
+tests/CSG_GGeoTest.cc
     main that loads GGeo geometry and converts it to CSGFoundry model 
     using CSG_GGeo_Convert
 

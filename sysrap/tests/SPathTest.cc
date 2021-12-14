@@ -183,10 +183,19 @@ void test_Resolve_createdirs()
     fp.close(); 
 }
 
+void test_getcwd()
+{
+    const char* cwd = SPath::getcwd() ; 
+    LOG(info) << " after SPath::chdir SPath::getcwd " << cwd  ; 
+} 
+
 
 
 int main(int argc , char** argv )
 {
+    SPath::chdir("$TMP/red/green/blue/logs");  
+    // chdir before OPTICKS_LOG succeeds to write logfile named after executable into that directory 
+
     OPTICKS_LOG(argc, argv);
 
 /*
@@ -200,8 +209,9 @@ int main(int argc , char** argv )
     test_ChangeName(); 
     test_MakeDirs(); 
     test_MakePath(); 
-*/
     test_Resolve_createdirs(); 
+*/
+    test_getcwd(); 
 
     return 0  ; 
 }

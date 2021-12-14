@@ -1513,7 +1513,7 @@ unsigned GParts::getTypeMask(unsigned primIdx, bool operators_only) const
     unsigned partOffset = getPartOffset(primIdx) ;
     unsigned numParts = getNumParts(primIdx) ;
 
-    LOG(info)
+    LOG(LEVEL)
         << " primIdx " << primIdx
         << " partOffset " << partOffset
         << " numParts " << numParts 
@@ -1536,12 +1536,11 @@ unsigned GParts::getTypeMask(unsigned primIdx, bool operators_only) const
         }
 
         std::string tag = getTag(partIdx); 
-        std::cout 
+        LOG(LEVEL)
             << " partIdx " << std::setw(4) << partIdx
             << " tc " << std::setw(4) << tc     
             << " tm " << std::setw(10) << tm     
             << " tag " << std::setw(4) << tag
-            << std::endl 
            ;      
     }   
     return mask ; 

@@ -1322,6 +1322,23 @@ std::string Opticks::geocacheScriptString(const char* msg) const
     return s ; 
 }
 
+/**
+Opticks::writeGeocacheScript
+-----------------------------
+
+Initially was thinking to use this script to connect the 
+CSG_GGeo conversion with the geocache-create- at bash level 
+but it is actually easier to do that at C++ level within 
+CSG_GGeo/tests/CSG_GGeoTest.cc simply setting the cfbase_default  
+to idpath/CSG_GGeo so creating::
+
+    idpath/CSG_GGeo/CSGFoundry 
+
+HMM: better to formalize that location by doing it
+at BOpticksResource level 
+
+**/
+
 void Opticks::writeGeocacheScript(const char* msg) const
 {
     const char* sh_path = getGeocacheScriptPath() ; 
@@ -4482,6 +4499,8 @@ Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 
 const char*     Opticks::getKeyDir() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
 const char*     Opticks::getIdPath() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
+std::string     Opticks::getCSG_GGeoDir() const { return m_rsc ? m_rsc->getCSG_GGeoDir() : "" ; }
+
 const char*     Opticks::getGeocacheDir() const { return m_rsc ? m_rsc->getGeocacheDir() : NULL ; } 
 const char*     Opticks::getGeocacheScriptPath() const { return m_rsc ? m_rsc->getGeocacheScriptPath() : NULL ; }
 

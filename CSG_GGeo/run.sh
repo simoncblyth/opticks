@@ -1,6 +1,8 @@
 #!/bin/bash -l
 
 usage(){ cat << EOU
+run.sh : Loads current GGeo identified by OPTICKS_KEY, converts into CSGFoundry and saves  
+===========================================================================================
 
 ::
 
@@ -83,27 +85,54 @@ EOU
 }
 
 msg="=== $BASH_SOURCE :"
-sdir=$(pwd)
-name=$(basename $sdir) 
+bin=CSG_GGeoTest
 
 #export ONE_PRIM_SOLID=1 # adds extra debugging solids that reuse existing prim one-by-one
-
 export DUMP_RIDX=${DUMP_RIDX:-8} 
 
-export CFBASE=/tmp/$USER/opticks/CSG_GGeo
-outdir=${CFBASE}/CSGFoundry
-logdir=${CFBASE}/logs
+#export CFBASE=/tmp/$USER/opticks/CSG_GGeo
+#export CFBASE=/tmp/$USER/opticks/red/green/blue/CSG_GGeo
 
-mkdir -p $outdir 
-mkdir -p $logdir 
+opticks_geocache_prefix=~/.opticks
+geocache_sh=${OPTICKS_GEOCACHE_PREFIX:-$opticks_geocache_prefix}/geocache/geocache.sh  
 
+if [ -f "$geocache_sh" ]; then 
+    echo $msg geocache_sh $geocache_sh sourcing
+    cat $geocache_sh
+    source $geocache_sh
+else
+    echo $msg geocache_sh $geocache_sh does not exist 
+    exit 1
+fi 
+
+cfbase=${OPTICKS_KEYDIR}/CSG_GGeo
+logdir=$cfbase/logs  # matches the chdir done in tests/CSG_GGeoTest.cc
+outdir=$cfbase/CSGFoundry
+
+logdir_notes(){ cat << EON
+
+HMM: moved to getting the CFBASE at C++ level 
+making the below logdir innapropriate 
+
+Despite adding SPath::chdir it is problematic 
+to use as the logfile setup is done very early within
+OPTICKS_LOG ... so need a way to define the logs directory 
+within the CSG_GGeo dir of the idpath exceedingly early.
+
+Actually a logs directory within the idpath would be OK also.
+So can use OPTICKS_KEY which is a known to be existing envvar so can 
+create a static function that rustles up the idpath just from 
+that : without all the other processing. 
+
+EON
+}
 
 GDBDIV=""
 [ -n "$GDB" ] && GDBDIV="--"
 
-cd $logdir
-which $name
-$GDB $name $GDBDIV --gparts_transform_offset $*
+which $bin
+
+$GDB $bin $GDBDIV --gparts_transform_offset $*
 
 echo $msg outdir:$outdir
 ls -l $outdir/

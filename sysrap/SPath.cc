@@ -29,8 +29,11 @@
 #include <cstdlib>
 #include <cstdio>
 #include <errno.h>
+
 // Linux specific, but works on Darwin via some compat presumably  
 #include <sys/stat.h>
+#include <unistd.h>    // for chdir
+
 
 #include "SStr.hh"
 #include "SPath.hh"
@@ -289,6 +292,27 @@ int SPath::MakeDirs( const char* path_, int mode_ )
     free(path);
     return rc ;
 }
+
+void SPath::chdir(const char* path, int create_dirs)  // static
+{
+    assert( create_dirs == 0 || create_dirs == 2 );   // 0:do nothing OR 2:dirpath
+
+    const char* p = SPath::Resolve(path, create_dirs);  
+
+    std::cout << "SPath::chdir " << p << std::endl ; 
+
+    int rc = ::chdir(p) ; 
+
+    assert( rc == 0 ); 
+}
+
+const char* SPath::getcwd()  // static
+{
+    char path[100] ; 
+    char* ret = ::getcwd(path, 100); 
+    return ret == nullptr ? nullptr : strdup(path); 
+}
+
 
 
 template<typename T>

@@ -258,6 +258,9 @@ class OKCORE_API Opticks {
    public:
        bool        hasGeocache() const ; 
        const char* getIdPath() const ;
+       std::string getCSG_GGeoDir() const ;
+
+
        const char* getGeocacheDir() const ; // eg ~/.opticks/geocache 
        const char* getGeocacheScriptPath() const ; // eg ~/.opticks/geocache/geocache.sh 
 
