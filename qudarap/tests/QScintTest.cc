@@ -2,10 +2,7 @@
 #include "SPath.hh"
 #include "NP.hh"
 
-#ifdef OLD_WAY
 #include "Opticks.hh"
-#include "GScintillatorLib.hh"
-#endif
 
 #include "QScint.hh"
 #include "scuda.h"
@@ -31,18 +28,18 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-#ifdef OLD_WAY
     Opticks ok(argc, argv); 
     ok.configure(); 
+
+#ifdef OLD_WAY
     GScintillatorLib* slib = GScintillatorLib::load(&ok);
     slib->dump();
     NP* icdf = slib->getBuf(); 
 #else
-    int create_dirs = 0 ; // 0:nop
-    const char* cfbase = SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), create_dirs );
+    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
     NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); // HMM: this needs a more destinctive name/location  
-    //icdf->dump(); 
 #endif
+    //icdf->dump(); 
 
     unsigned hd_factor = 0u ; 
 

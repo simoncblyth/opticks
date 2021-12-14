@@ -8,19 +8,11 @@ set(TEST_SOURCES
 )
 
 
-
-
-#add_executable(${name}Test ${name}Test.cc)
-#target_link_libraries(${name}Test PUBLIC Opticks::GGeo Opticks::CSG ${name})
-
-
-
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
 
-    add_test(${name}.${TGT} ${TGT})
-    #add_dependencies(check ${TGT})
+    #add_test(${name}.${TGT} ${TGT})   ## prevent from running as standard with tests
 
     target_link_libraries(${TGT} CSG_GGeo)
     install(TARGETS ${TGT} DESTINATION lib)

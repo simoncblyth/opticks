@@ -90,20 +90,14 @@ bin=CSG_GGeoTest
 #export ONE_PRIM_SOLID=1 # adds extra debugging solids that reuse existing prim one-by-one
 export DUMP_RIDX=${DUMP_RIDX:-8} 
 
-
-
 GDBDIV=""
 [ -n "$GDB" ] && GDBDIV="--"
 
 which $bin
 
-$GDB $bin $GDBDIV --gparts_transform_offset $*
+$GDB $bin $GDBDIV $*
 
-
-
-
-
-
+## $GDB $bin $GDBDIV --gparts_transform_offset $*   ## moved the --gparts_transform_offset into argforced 
 
 
 logdir_notes(){ cat << EON

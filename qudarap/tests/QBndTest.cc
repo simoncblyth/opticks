@@ -4,9 +4,9 @@
 #include "SSys.hh"
 #include "SPath.hh"
 #include "NP.hh"
+#include "Opticks.hh"
 
 #ifdef OLD_WAY
-#include "Opticks.hh"
 #include "GGeo.hh"
 #include "GBndLib.hh"
 #endif
@@ -92,16 +92,16 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-#ifdef OLD_WAY
     Opticks ok(argc, argv); 
     ok.configure(); 
+
+#ifdef OLD_WAY
     GGeo* gg = GGeo::Load(&ok); 
     GBndLib* blib = gg->getBndLib(); 
     blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
     NP* bnd = blib->getBuf(); 
 #else
-    int create_dirs = 0 ; // 0:nop
-    const char* cfbase = SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo"), create_dirs ); // 
+    const char* cfbase = ok.getFoundryBase("CFBASE"); 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 #endif
 

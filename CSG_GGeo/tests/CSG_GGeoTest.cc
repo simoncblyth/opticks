@@ -15,7 +15,8 @@ int main(int argc, char** argv)
 
     OPTICKS_LOG(argc, argv);
 
-    Opticks ok(argc, argv);
+    const char* argforced = "--gparts_transform_offset" ; 
+    Opticks ok(argc, argv, argforced );
     ok.configure(); 
 
     const char* idpath = ok.getIdPath() ; 

@@ -1,7 +1,9 @@
 #include "OPTICKS_LOG.hh"
+
 #include "SSys.hh"
 #include "SPath.hh"
 #include "NP.hh"
+#include "Opticks.hh"
 
 #include <cuda_runtime.h>
 #include "scuda.h"
@@ -14,7 +16,12 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase =  SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), 0) ; 
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
+    const char* cfbase = ok.getFoundryBase("CFBASE");  
+    LOG(info) << " cfbase " << cfbase ; 
+
     NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 

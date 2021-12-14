@@ -1,4 +1,6 @@
+#include "SPath.hh"
 #include "NP.hh"
+#include "Opticks.hh"
 #include "QProp.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -32,13 +34,25 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
+    const char* idpath = ok.getIdPath(); 
+    int create_dirs = 0 ; 
+    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs ); 
+    LOG(info) << " rindexpath " << rindexpath ; 
+
+
+
     unsigned nx = 1601u ; 
     //unsigned nx = 161u ; 
 
-    //QProp<float> qpf ; 
+    //QProp<float> qpf(rindexpath) ; 
     //test_lookup<float>(qpf, 0.f, 16.f, nx , "float" );
 
-    QProp<double> qpd ; 
+    
+
+    QProp<double> qpd(rindexpath) ; 
     test_lookup<double>(qpd, 0., 16., nx , "double" );
 
 

@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include "OPTICKS_LOG.hh"
+#include "Opticks.hh"
 #include "scuda.h"
 #include "squad.h"
 #include "SSys.hh"
@@ -344,11 +345,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    // TODO: this needs formalization, ie not in the test, and inclusion of QCerenkovIntegral prep 
+    Opticks ok(argc, argv); 
+    ok.configure(); 
 
-    int create_dirs = 0 ; // 0:nop
-    const char* cfbase =  SPath::Resolve(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), create_dirs ) ; 
-    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy");  // need better naming, see CSG_GGeo_Convert::convertScintillatorLib 
+    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
+    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy");  // TODO: need better naming now that can do both scint and ck with icdf, see CSG_GGeo_Convert::convertScintillatorLib 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 
     if(icdf == nullptr || bnd == nullptr)
