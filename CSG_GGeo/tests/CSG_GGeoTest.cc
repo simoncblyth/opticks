@@ -70,5 +70,7 @@ int main(int argc, char** argv)
 
     assert( 0 == CSGFoundry::Compare(&foundry, fd ) );  
 
+    std::cout << "CSGFoundry saved to cfbase " << cfbase << std::endl ; 
+    std::cout << "logs are written to logdir " << logdir << std::endl ; 
     return 0 ; 
 }
