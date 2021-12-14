@@ -21,6 +21,8 @@ opticks-(){         source $(opticks-source) && opticks-env $* ; }
 
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  } 
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
+b7(){  opticks-build7 ; }
+
 oot(){ oo ; opticks-t ; : opticks.bash ; }
 t(){ typeset -f $*    ; : opticks.bash ; } 
 rc(){ local RC=$?; echo RC $RC; return $RC ; : opticks.bash ;  }
@@ -2831,4 +2833,76 @@ opticks-set-optix-prefix()
         echo $msg OPTICKS_OPTIX_PREFIX $OPTICKS_OPTIX_PREFIX : is changed from $opticks_optix_prefix
     fi
 }
+
+opticks-chkvar()
+{
+    local msg="=== $FUNCNAME :"
+    local var ; 
+    for var in $* ; do  
+        if [ -z "${!var}" -o ! -d "${!var}" ]; then 
+            echo $msg missing required envvar $var ${!var} OR non-existing directory
+            return 1
+        fi  
+        printf "%20s : %s \n" $var ${!var}
+    done
+    return 0   
+} 
+
+
+opticks-build7-notes(){ cat << EON
+opticks-build7-notes
+======================
+
+Builds CSGOptiX with environment modified to use NVIDIA OptiX 7 
+rather then the default of NVIDIA OptiX 6 
+
+Although what opticks-build7 does looks exceedingly 
+similar to what om would do, there is a crucial difference
+in that the om environment setup is not invoked. 
+
+This function attempts to move away from using scripts to 
+build for OptiX 7 because using scripts would force the jre 
+environment setup to be repeated in the script but that is 
+installation specific ... hence doing it in a function 
+allows the existing environment to be used. 
+
+EON
+}
+
+opticks-build7()
+{
+    export OPTICKS_HOME=$(opticks-home)  ## TODO: include OPTICKS_HOME in the opticks-setup
+    opticks-set-optix-prefix 7
+
+    opticks-chkvar OPTICKS_PREFIX OPTICKS_HOME OPTICKS_OPTIX_PREFIX
+    [ $? -ne 0 ] && echo $msg checkvar FAIL && return 1 
+
+    cd $(opticks-home)/CSGOptiX
+    local sdir=$(pwd)
+    local name=$(basename $sdir)
+
+    local bdir=/tmp/$USER/opticks/${name}.build
+    rm -rf $bdir && mkdir -p $bdir 
+    [ ! -d $bdir ] && exit 1
+    cd $bdir && pwd 
+
+    cmake $sdir \
+         -DCMAKE_BUILD_TYPE=Debug \
+         -DOPTICKS_PREFIX=${OPTICKS_PREFIX} \
+         -DCMAKE_MODULE_PATH=${OPTICKS_HOME}/cmake/Modules \
+         -DCMAKE_INSTALL_PREFIX=${OPTICKS_PREFIX}
+
+    [ $? -ne 0 ] && echo $msg conf FAIL && return 1 
+
+    make
+    [ $? -ne 0 ] && echo $msg make FAIL && return 2
+
+    make install   
+    [ $? -ne 0 ] && echo $msg install FAIL && return 3
+
+    opticks-set-optix-prefix 6
+    cd $sdir && pwd
+    return 0
+}
+
 

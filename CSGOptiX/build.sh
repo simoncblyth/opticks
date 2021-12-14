@@ -24,7 +24,10 @@ in different pkgs.
 EON
 }
 
+msg="=== $BASH_SOURCE :"
 
+echo $msg dont use this, use opticks-build7 or b7 shortcut 
+exit 1 
 
 
 
@@ -40,7 +43,6 @@ esac
 
 echo ver $ver OPTICKS_OPTIX_PREFIX ${OPTICKS_OPTIX_PREFIX}
 
-msg="=== $BASH_SOURCE :"
 sdir=$(pwd)
 name=$(basename $sdir)
 
