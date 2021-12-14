@@ -468,6 +468,12 @@ void SSys::split(std::vector<std::string>& elem, const char* str, char delim )
     } 
 }
 
+
+bool SSys::hasenvvar( const char* ekey )
+{
+    return getenv(ekey) != nullptr ;
+}
+
 /**
 SSys::getenvvar
 ------------------

@@ -45,31 +45,33 @@ int main(int argc, char** argv)
     //for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );  // $CFBASE/CSGFoundry must exist 
-    // eg $TMP/GeoChain/$geom
-    
-#ifdef OLD_LAYOUT
-    const char* geom = SSys::getenvvar("GEOM", "0" ); 
-    int create_dirs = 0 ;  
-    const char* default_outdir = SPath::Resolve("$TMP/CSGOptiX/CSGOptiXSimulateTest",  geom, create_dirs );  
-#else
-    // new layout : save outputs within $CFBASE/CSGOptiXSimulateTest 
-    // to keep intersects more closely to geometry for cross node access to identity info 
-    // by forcing that geometry gets synced together with intersects 
-    int create_dirs = 2 ;  
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", create_dirs );  
-#endif
-
-    SSys::setenvvar("OPTICKS_OUTDIR", default_outdir , false );  // change default, but allow override by evar
-
     const char* argforced = "--allownokey" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
-    ok.dumpArgv("CSGOptiXSimulateTest"); 
 
-    const char* outdir = ok.getOutDir(); 
-    LOG(info) << " outdir " << outdir ; 
+
+    // new layout : save outputs within $CFBASE/CSGOptiXSimulateTest 
+    // to keep intersects more closely to geometry for cross node access to identity info 
+    // by forcing that geometry gets synced together with intersects 
+    const char* cfbase = ok.getFoundryBase("CFBASE");  // envvar CFBASE can override 
+
+    int create_dirs = 2 ;  
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", create_dirs );  
+    const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
+
+    ok.setOutDir(outdir); 
+
+    const char* outdir2 = ok.getOutDir(); 
+    assert( strcmp(outdir2, outdir) == 0 ); 
+
+    LOG(info) 
+        << " cfbase " << cfbase 
+        << " default_outdir " << default_outdir
+        << " outdir " << outdir
+        ; 
+
+    ok.dumpArgv("CSGOptiXSimulateTest"); 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 

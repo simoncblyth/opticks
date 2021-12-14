@@ -18,15 +18,19 @@ the arglist all from a single load of the geometry.
 So a single run creates multiple different snaps of different
 parts of a geometry.
 
+
 EOU
 }
 
 msg="=== $BASH_SOURCE :"
 
-export CFNAME=${CFNAME:-CSG_GGeo}
-export CFBASE=/tmp/$USER/opticks/${CFNAME} 
-[ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
-
+if [ -n "$CFNAME" ]; then
+    export CFBASE=/tmp/$USER/opticks/${CFNAME}    ## override envvar only used when CFNAME defined, eg for demo geometry
+    echo $msg CFNAME $CFNAME CFBASE $CFBASE OVERRIDING 
+    [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
+else
+    CFNAME=CSG_GGeo
+fi 
 
 pkg=CSGOptiX
 bin=CSGOptiXRender
@@ -57,6 +61,7 @@ export CAMERATYPE=$CAM    # okc/Camera::Camera default
 
 vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
+
 
 export BASEDIR=/tmp/$USER/opticks/$pkg/$bin/${CFNAME}/cvd${CVD}/$(CSGOptiXVersion)
 
@@ -111,6 +116,7 @@ render()
 make_arglist()
 {
     local arglist=$1
+    ## TODO: needs rethink dont have CFBASE here at bash level 
     local mname=$CFBASE/CSGFoundry/name.txt  # /tmp/$USER/opticks/CSG_GGeo/CSGFoundry/name.txt  # mesh names
     ls -l $mname
     #cat $mname | grep -v Flange | grep -v _virtual | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' -  > $arglist

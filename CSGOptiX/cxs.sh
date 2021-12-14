@@ -53,29 +53,26 @@ export GEOM=${GEOM:-$geom}
 
 
 isel=
+cfbase=
 
 # hmm the name should enable the cfbase to be determined by directory existance
 
 if [ "$GEOM" == "1" ]; then
-    cfbase=$TMP/CSG_GGeo   
     moi=Hama
     #cegs=16:0:9:1000:18700:0:0:100
     cegs=16:0:9:500
     gridscale=0.05
 elif [ "$GEOM" == "2" ]; then
-    cfbase=$TMP/CSG_GGeo
     moi=uni_acrylic3
     cegs=16:0:9:100
     #cegs=0:0:0:1000
     #cegs=16:4:9:100
     gridscale=0.05
 elif [ "$GEOM" == "4" ]; then
-    cfbase=$TMP/CSG_GGeo
     moi=uni_acrylic3
     cegs=32:0:18:100
     gridscale=0.025
 elif [ "$GEOM" == "20" ]; then
-    cfbase=$TMP/CSG_GGeo
     note="very tight grid to get into close corners"
     moi=uni_acrylic3
     cegs=16:0:9:100
@@ -139,7 +136,7 @@ else
 fi 
 
 if [ "$(uname)" == "Linux" ]; then
-    if [ ! -d "$cfbase/CSGFoundry" ]; then
+    if [ -n "$cfbase" -a ! -d "$cfbase/CSGFoundry" ]; then
        echo $msg : ERROR : cfbase directory $cfbase MUST contain CSGFoundry subfolder 
        echo $msg : TIPS : run GeoChain first to create the geometry and use b7 to build CSGOptiX 
        exit 1 
@@ -151,7 +148,12 @@ export CXS_CEGS=${CXS_CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
 export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX"
-export CFBASE=${CFBASE:-$cfbase}   ## CRITICAL CONTROL OF THE GEOMETRY TO LOAD  
+
+if [ -n "$cfbase" ]; then 
+    echo $msg cfbase $cfbase defined setting CFBASE to override standard geometry default 
+    export CFBASE=${CFBASE:-$cfbase}   ## setting CFBASE only appropriate for non-standard geometry 
+fi 
+
 export ISEL=${ISEL:-$isel}
 export XX=${XX:-$xx}
 export ZZ=${ZZ:-$zz}

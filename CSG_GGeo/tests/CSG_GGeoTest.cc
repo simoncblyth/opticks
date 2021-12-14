@@ -47,17 +47,7 @@ int main(int argc, char** argv)
     if(ksb) conv.kludgeScalePrimBBox();  
 
 
-    // formerly set CFBASE in run.sh script to /tmp/$USER/opticks/CSG_GGeo
-    // now defining default cfbase to be idpath/CSG_GGeo
-    // hence the below creates idpath/CSG_GGeo/CSGFoundry
-
-    const char* cfbase = SSys::getenvvar("CFBASE" ); 
-    if( cfbase == nullptr )
-    {
-        std::string csg_ggeo_dir = ok.getCSG_GGeoDir() ; 
-        int create_dirs = 2 ; // 2:dirpath  
-        cfbase = SPath::Resolve( csg_ggeo_dir.c_str(), create_dirs ) ; 
-    }
+    const char* cfbase = ok.getFoundryBase("CFBASE"); 
     const char* rel = "CSGFoundry" ; 
 
     LOG(error) << "[ write foundry to CFBASE " << cfbase << " rel " << rel  ; 
@@ -70,7 +60,7 @@ int main(int argc, char** argv)
 
     assert( 0 == CSGFoundry::Compare(&foundry, fd ) );  
 
-    std::cout << "CSGFoundry saved to cfbase " << cfbase << std::endl ; 
-    std::cout << "logs are written to logdir " << logdir << std::endl ; 
+    LOG(info) << "CSGFoundry saved to cfbase " << cfbase ; 
+    LOG(info) << "logs are written to logdir " << logdir ; 
     return 0 ; 
 }

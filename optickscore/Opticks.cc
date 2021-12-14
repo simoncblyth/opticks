@@ -4501,6 +4501,38 @@ const char*     Opticks::getKeyDir() const { return m_rsc ? m_rsc->getIdPath() :
 const char*     Opticks::getIdPath() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
 std::string     Opticks::getCSG_GGeoDir() const { return m_rsc ? m_rsc->getCSG_GGeoDir() : "" ; }
 
+
+/**
+Opticks::getFoundryBase
+--------------------------
+
+Formerly controlled the location of CSGFoundry via the CFBASE envvar set in scripts such as::
+
+   CSG_GGeo/run.sh 
+
+Are now migrating to CFBASE default being defined in C++ to a location within the idpath.
+For example with cfbase of idpath/CSG_GGeo the foundary dir becomes idpath/CSG_GGeo/CSGFoundry
+
+**/
+
+const char* Opticks::getFoundryBase(const char* ekey) const 
+{
+    const char* cfbase = SSys::getenvvar(ekey);  
+    if( cfbase != nullptr )
+    {
+        LOG(fatal) << "WARNING : are overriding cfbase " << cfbase << " via envvar " << ekey ;  
+    }
+    else if( cfbase == nullptr )
+    {   
+        std::string csg_ggeo_dir = getCSG_GGeoDir() ; 
+        int create_dirs = 2 ; // 2:dirpath  
+        cfbase = SPath::Resolve( csg_ggeo_dir.c_str(), create_dirs ) ; 
+    }   
+    return cfbase ; 
+}
+
+
+
 const char*     Opticks::getGeocacheDir() const { return m_rsc ? m_rsc->getGeocacheDir() : NULL ; } 
 const char*     Opticks::getGeocacheScriptPath() const { return m_rsc ? m_rsc->getGeocacheScriptPath() : NULL ; }
 

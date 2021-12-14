@@ -74,6 +74,7 @@ class SYSRAP_API SSys {
 
      static void split(std::vector<std::string>& elem, const char* str, char delim );
 
+     static bool hasenvvar( const char* ekey ); 
      static const char* getenvvar( const char* envkey, const char* fallback );
      static const char* getenvvar( const char* envkey );
      static const char* username(); 

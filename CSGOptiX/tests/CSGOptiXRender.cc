@@ -45,13 +45,24 @@ int main(int argc, char** argv)
     bool overwrite = false ;  // allows commandline and envvars to override this default setting, see Opticks::getOutDir
     SSys::setenvvar("OPTICKS_OUTDIR", "$TMP/CSGOptiX", overwrite );
 
-    unsetenv("OPTICKS_KEY"); 
-    Opticks ok(argc, argv, "--allownokey"); 
+    // hmm maybe outdir should be inside cfbase ?
+
+    bool override_cfbase =  SSys::hasenvvar("CFBASE") ; 
+    const char* argforce = override_cfbase ? "--allownokey" : nullptr  ; 
+    if( override_cfbase )
+    {
+        unsetenv("OPTICKS_KEY"); 
+    }
+    // placing CFBASE inside idpath means that in default situation with standard geocache geometry 
+    // cannot --allownokey but when the CFBASE override envvvar exists then there is 
+    // no need for OPTICKS_KEY  
+
+    Opticks ok(argc, argv, argforce ); 
     ok.configure(); 
     ok.setRaygenMode(0);             // override --raygenmode option 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
-    const char* cfbase = SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" );
+    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
 
 
     const char* solid_label = ok.getSolidLabel();  // --solid_label   used for selecting solids from the geometry 
