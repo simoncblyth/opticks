@@ -90,24 +90,21 @@ bin=CSG_GGeoTest
 #export ONE_PRIM_SOLID=1 # adds extra debugging solids that reuse existing prim one-by-one
 export DUMP_RIDX=${DUMP_RIDX:-8} 
 
-#export CFBASE=/tmp/$USER/opticks/CSG_GGeo
-#export CFBASE=/tmp/$USER/opticks/red/green/blue/CSG_GGeo
 
-opticks_geocache_prefix=~/.opticks
-geocache_sh=${OPTICKS_GEOCACHE_PREFIX:-$opticks_geocache_prefix}/geocache/geocache.sh  
 
-if [ -f "$geocache_sh" ]; then 
-    echo $msg geocache_sh $geocache_sh sourcing
-    cat $geocache_sh
-    source $geocache_sh
-else
-    echo $msg geocache_sh $geocache_sh does not exist 
-    exit 1
-fi 
+GDBDIV=""
+[ -n "$GDB" ] && GDBDIV="--"
 
-cfbase=${OPTICKS_KEYDIR}/CSG_GGeo
-logdir=$cfbase/logs  # matches the chdir done in tests/CSG_GGeoTest.cc
-outdir=$cfbase/CSGFoundry
+which $bin
+
+$GDB $bin $GDBDIV --gparts_transform_offset $*
+
+
+
+
+
+
+
 
 logdir_notes(){ cat << EON
 
@@ -124,21 +121,35 @@ So can use OPTICKS_KEY which is a known to be existing envvar so can
 create a static function that rustles up the idpath just from 
 that : without all the other processing. 
 
+HMM: could avoid needing logdir and outdir in this script
+by listing from the C++ see sysrap/tests/dirent.cc 
+
 EON
 }
 
-GDBDIV=""
-[ -n "$GDB" ] && GDBDIV="--"
+opticks_geocache_prefix=~/.opticks
+geocache_sh=${OPTICKS_GEOCACHE_PREFIX:-$opticks_geocache_prefix}/geocache/geocache.sh  
 
-which $bin
+if [ -f "$geocache_sh" ]; then 
+    echo $msg geocache_sh $geocache_sh sourcing
+    cat $geocache_sh
+    source $geocache_sh
 
-$GDB $bin $GDBDIV --gparts_transform_offset $*
+    cfbase=${OPTICKS_KEYDIR}/CSG_GGeo
+    logdir=$cfbase/logs  # matches the chdir done in tests/CSG_GGeoTest.cc
+    outdir=$cfbase/CSGFoundry
 
-echo $msg outdir:$outdir
-ls -l $outdir/
+    echo $msg outdir:$outdir
+    ls -l $outdir/
 
-echo $msg logdir:$logdir
-ls -l $logdir/
+    echo $msg logdir:$logdir
+    ls -l $logdir/
 
-pwd
+else
+    echo $msg geocache_sh $geocache_sh does not exist 
+    exit 0
+fi 
+
+exit 0 
+
 
