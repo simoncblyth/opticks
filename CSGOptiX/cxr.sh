@@ -25,10 +25,11 @@ EOU
 msg="=== $BASH_SOURCE :"
 
 if [ -n "$CFNAME" ]; then
-    export CFBASE=/tmp/$USER/opticks/${CFNAME}    ## override envvar only used when CFNAME defined, eg for demo geometry
+    export CFBASE=/tmp/$USER/opticks/${CFNAME}    ## override CFBASE envvar only used when CFNAME defined, eg for demo geometry
     echo $msg CFNAME $CFNAME CFBASE $CFBASE OVERRIDING 
     [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
 else
+    unset CFBASE
     CFNAME=CSG_GGeo
 fi 
 

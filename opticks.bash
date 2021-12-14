@@ -2811,3 +2811,24 @@ opticks-u(){
    open $url 
 }
 
+
+opticks-set-optix-prefix()
+{
+    local ver=${1:-6}
+    [ "$(uname)" == "Darwin" ] && ver=5
+
+    local opticks_optix_prefix=$OPTICKS_OPTIX_PREFIX
+    case $ver in
+        5) export OPTICKS_OPTIX_PREFIX=${OPTICKS_OPTIX5_PREFIX} ;;
+        6) export OPTICKS_OPTIX_PREFIX=${OPTICKS_OPTIX6_PREFIX} ;;
+        7) export OPTICKS_OPTIX_PREFIX=${OPTICKS_OPTIX7_PREFIX} ;;
+        *) export OPTICKS_OPTIX_PREFIX=${OPTICKS_OPTIX6_PREFIX} ;;
+    esac
+
+    if [ "$OPTICKS_OPTIX_PREFIX" == "$opticks_optix_prefix" ]; then
+        echo $msg OPTICKS_OPTIX_PREFIX $OPTICKS_OPTIX_PREFIX : is unchanged 
+    else
+        echo $msg OPTICKS_OPTIX_PREFIX $OPTICKS_OPTIX_PREFIX : is changed from $opticks_optix_prefix
+    fi
+}
+
