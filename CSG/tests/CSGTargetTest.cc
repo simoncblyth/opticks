@@ -18,6 +18,7 @@ CSGTargetTest
 
 **/
 #include "SSys.hh"
+#include "Opticks.hh"
 #include "OPTICKS_LOG.hh"
 
 #include "scuda.h"
@@ -29,7 +30,13 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    CSGFoundry* fd = CSGFoundry::Load(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), "CSGFoundry"); 
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
+    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
+    LOG(info) << "cfbase " << cfbase ; 
+
+    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 

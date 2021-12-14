@@ -37,7 +37,7 @@ struct CSG_API CSGPrimSpec
     void downloadDump(const char* msg="CSGPrimSpec::downloadDump") const ; 
     void gather(std::vector<float>& out) const ;
     static void Dump(std::vector<float>& out);
-    void dump(const char* msg="CSGPrimSpec::dump") const ; 
+    void dump(const char* msg="CSGPrimSpec::dump", int modulo=100) const ; 
     std::string desc() const ; 
 #endif
 };

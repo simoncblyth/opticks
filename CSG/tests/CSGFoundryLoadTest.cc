@@ -1,4 +1,5 @@
 #include "SSys.hh"
+#include "Opticks.hh"
 #include "scuda.h"
 #include "CSGFoundry.h"
 
@@ -137,14 +138,23 @@ void test_findSolidIdx(const CSGFoundry* fd, int argc, char** argv)
              LOG(info) << fd->descTran(solidIdx) ;  
          }
     }
-    LOG(info) << "]" ; 
+    LOG(info) << "]"  ;
+    if( argc == 1 ) LOG(error) << " enter args such as r0/r1/r2/r3/... to select and dump solids " ; 
+ 
 }
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    CSGFoundry* fd = CSGFoundry::Load(SSys::getenvvar("CFBASE", "$TMP/CSG_GGeo" ), "CSGFoundry"); 
+    Opticks ok(argc, argv); 
+    ok.configure(); 
+
+    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
+    LOG(info) << "cfbase " << cfbase ; 
+
+    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+ 
     LOG(info) << "foundry " << fd->desc() ; 
     fd->summary(); 
 
