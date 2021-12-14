@@ -2853,18 +2853,29 @@ opticks-build7-notes(){ cat << EON
 opticks-build7-notes
 ======================
 
+NB opticks-build7 or b7 shortcut is currently restricted to the CSGOptiX package.
+
 Builds CSGOptiX with environment modified to use NVIDIA OptiX 7 
 rather then the default of NVIDIA OptiX 6 
 
-Although what opticks-build7 does looks exceedingly 
-similar to what om would do, there is a crucial difference
-in that the om environment setup is not invoked. 
+Switching between OptiX versions is achieved by setting the 
+OPTICKS_OPTIX_PREFIX envvar which is used for example by 
+cmake/Modules/FindOpticksOptiX.cmake
 
-This function attempts to move away from using scripts to 
-build for OptiX 7 because using scripts would force the jre 
-environment setup to be repeated in the script but that is 
-installation specific ... hence doing it in a function 
-allows the existing environment to be used. 
+Attempting to discern the OPTIX_VERSION by sourcing a 
+buildenv.sh script generated at config time is an 
+inherently flawed approach. Are now using the CSGOptiXVersion 
+executable that is built and installed together with the library, 
+so can get the version in scripts by capturing the output from that executable.
+
+Although what opticks-build7 does looks exceedingly similar to what om would do, 
+there is a crucial difference in that **the om environment setup is not invoked**. 
+
+This function avoids a problem with using scripts to do similar because using 
+scripts forces the jre environment setup to be repeated in the script (or done in 
+.bash_profile/.bashrc)  but as the environment setup is installation specific 
+it should not be in the opticks repository and doing in login scripts feels dirty.
+Doing in a function is equivalent to sourcing, hence the existing environment is reused.
 
 EON
 }
