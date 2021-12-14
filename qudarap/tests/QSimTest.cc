@@ -348,6 +348,10 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
 
+    int create_dirs = 0 ; 
+    const char* idpath = ok.getIdPath(); 
+    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs );  
+
     const char* cfbase = ok.getFoundryBase("CFBASE") ; 
     NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy");  // TODO: need better naming now that can do both scint and ck with icdf, see CSG_GGeo_Convert::convertScintillatorLib 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
@@ -371,14 +375,16 @@ int main(int argc, char** argv)
 
     if( type == 'F')
     { 
-        QSim<float>::UploadComponents(icdf, bnd); 
+        LOG(error) << "[ QSim<float>::UploadComponents" ; 
+        QSim<float>::UploadComponents(icdf, bnd, rindexpath ); 
+        LOG(error) << "] QSim<float>::UploadComponents" ; 
         QSim<float> qs ; 
         QSimTest<float> qst(qs) ; 
         qst.main( argc, argv, test ); 
     }
     else if( type == 'D' )
     {
-        QSim<double>::UploadComponents(icdf, bnd); 
+        QSim<double>::UploadComponents(icdf, bnd, rindexpath ); 
         QSim<double> qs ; 
         QSimTest<double> qst(qs) ; 
         qst.main( argc, argv, test ); 

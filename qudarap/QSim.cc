@@ -43,7 +43,7 @@ instanciation collects together.
 **/
 
 template <typename T>
-void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd )
+void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const char* rindexpath  )
 {
     // on heap, to avoid dtors
 
@@ -76,8 +76,12 @@ void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd )
         LOG(LEVEL) << qbnd->desc(); 
     }
 
+    LOG(error) << "[ QProp " ; 
+    QProp<T>* qprop = new QProp<T>(rindexpath) ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
+    LOG(error) << "] QProp " ; 
 
-    QProp<T>* qprop = new QProp<T> ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
+
+
     LOG(LEVEL) << qprop->desc(); 
 
 }

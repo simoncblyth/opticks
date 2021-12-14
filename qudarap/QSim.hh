@@ -45,7 +45,7 @@ struct QUDARAP_API QSim
     static const QSim* INSTANCE ; 
     static const QSim* Get(); 
 
-    static void UploadComponents(const NP* icdf, const NP* bnd );   
+    static void UploadComponents(const NP* icdf, const NP* bnd, const char* rindexpath );   
 
     const QRng*    rng ;     // need to template these too ?
     const QScint*  scint ; 

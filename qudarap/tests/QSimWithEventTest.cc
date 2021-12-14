@@ -19,6 +19,10 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
 
+    int create_dirs = 0 ; 
+    const char* idpath = ok.getIdPath(); 
+    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs );  
+
     const char* cfbase = ok.getFoundryBase("CFBASE");  
     LOG(info) << " cfbase " << cfbase ; 
 
@@ -37,7 +41,7 @@ int main(int argc, char** argv)
         return 1 ; 
     }
 
-    QSim<float>::UploadComponents(icdf, bnd); 
+    QSim<float>::UploadComponents(icdf, bnd, rindexpath ); 
     QSim<float> qs ; 
 
     QEvent qe ; 

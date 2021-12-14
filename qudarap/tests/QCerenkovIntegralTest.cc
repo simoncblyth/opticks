@@ -9,6 +9,7 @@ in order to construct an ICDF that is saved into $TMP/QCerenkovIntegralTest
 
 #include "SPath.hh"
 #include "NP.hh"
+#include "Opticks.hh"
 #include "QCerenkovIntegral.hh"
 #include "QCK.hh"
 
@@ -186,11 +187,20 @@ void test_makeICDF_SplitBin(const QCerenkovIntegral& ck, unsigned ny, unsigned m
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+
+    Opticks ok(argc, argv); 
+    ok.configure() ; 
+
+    const char* idpath = ok.getIdPath(); 
+    int create_dirs = 0 ; // 0:do-nothing
+    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs ); 
+    LOG(info) << " rindexpath " << rindexpath ; 
+
     char d = 'S' ; 
     char t = argc > 1 ? argv[1][0] : d  ; 
     LOG(info) << " t " << t ; 
 
-    QCerenkovIntegral ck ;  
+    QCerenkovIntegral ck(rindexpath) ;  
 
     if( t == 'N' )
     {
