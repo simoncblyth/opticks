@@ -1,5 +1,7 @@
 // ./CSGScanTest.sh
 
+#include "OPTICKS_LOG.hh"
+
 #include <vector>
 #include <cassert>
 #include <iostream>
@@ -16,23 +18,21 @@
 
 int main(int argc, char** argv)
 {
-    //const char* dir = "/tmp/CSGScanTest_scans" ; 
-    int create_dirs = 2 ; // 2: dirpath
+    OPTICKS_LOG(argc, argv);    
 
+    int create_dirs = 2 ; // 2: dirpath
     const char* dir_default = SSys::getenvvar("CSGSCANTEST_BASE", "$TMP/CSGScanTest_scans" ); 
     const char* dir = SPath::Resolve(dir_default, create_dirs) ; 
-    std::cout << " dir " << dir << std::endl ; 
-
+    LOG(info) << " CSGSCANTEST_BASE dir " << dir ; 
 
     const char* solid = SSys::getenvvar("CSGSCANTEST_SOLID", "elli" ); 
+    LOG(info) << " CSGSCANTEST_SOLID " << solid ; 
 
     CSGFoundry fd ;  
-
-    std::cout << "CSGSCANTEST_SOLID " << solid << std::endl; 
     fd.maker->make( solid ); 
 
     unsigned numSolid = fd.getNumSolid() ; 
-    std::cout << "numSolid " << numSolid << std::endl ; 
+    LOG(info) << "[ numSolid " << numSolid  ; 
 
     for(unsigned i=0 ; i < numSolid ; i++)
     {
@@ -43,5 +43,9 @@ int main(int argc, char** argv)
         sc.rectangle_scan(); 
         sc.circle_scan(); 
     }
+
+
+    LOG(info) << "] numSolid " << numSolid  ; 
+
     return 0 ;  
 }

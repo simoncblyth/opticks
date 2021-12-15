@@ -648,6 +648,23 @@ void GInstancer::labelTree()
 GInstancer::labelRepeats_r
 ----------------------------
 
+Recursion is kicked off within GInstancer::labelTree from the outer node of each placement
+of a repeated piece of geometry.
+
+ridx
+    repeat index (0-based)
+
+pidx
+    placement index (0-based)
+
+outer_volume
+    notice how this is passed along unchanged throughout the recursion, 
+    at the first call the volume and node are the same 
+
+oidx
+    offset index (0-based) within the placement 
+
+
 Note that the --skipsolidname and --csgskiplv options 
 result in calling GVolume::setCSGSkip 
 

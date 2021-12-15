@@ -438,6 +438,37 @@ CSGNode CSGNode::InfCylinder(float radius, float hz)
     return nd ; 
 } 
 
+CSGNode CSGNode::InfPhiCut(float startPhi_, float deltaPhi_ ) 
+{
+    double startPhi = startPhi_ ; 
+    double deltaPhi = deltaPhi_ ; 
+    double phi0 = startPhi ; 
+    double phi1 = startPhi + deltaPhi ; 
+    double pi = M_PIf ;  
+    double cosPhi0 = cos(phi0*pi); 
+    double sinPhi0 = sin(phi0*pi); 
+    double cosPhi1 = cos(phi1*pi); 
+    double sinPhi1 = sin(phi1*pi); 
+
+    LOG(info) 
+        << " startPhi " << startPhi
+        << " deltaPhi " << deltaPhi
+        << " phi0 " << phi0
+        << " phi1 " << phi1
+        << " cosPhi0 " << cosPhi0 
+        << " sinPhi0 " << sinPhi0 
+        << " cosPhi1 " << cosPhi1 
+        << " sinPhi1 " << sinPhi1
+        ; 
+
+
+    CSGNode nd = {} ; 
+    nd.setParam( cosPhi0, sinPhi0, cosPhi1, sinPhi1, 0.f, 0.f )  ; 
+    nd.setAABB( -100.f,-100.f,-100.f, 100.f, 100.f, 100.f );      // placeholder, hmm how to avoid ?
+    nd.setTypecode(CSG_PHICUT); 
+    return nd ; 
+}
+
 
 CSGNode CSGNode::Disc(float px, float py, float ir, float r, float z1, float z2)
 {

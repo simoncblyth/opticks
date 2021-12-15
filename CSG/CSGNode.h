@@ -235,6 +235,7 @@ struct CSG_API CSGNode
     static CSGNode Slab(float nx, float ny, float nz, float d1, float d2 ) ;
     static CSGNode Cylinder(float px, float py, float radius, float z1, float z2) ;
     static CSGNode InfCylinder(float radius, float hz ) ;
+    static CSGNode InfPhiCut(float startPhi, float deltaPhi ) ;
     static CSGNode Disc(float px, float py, float ir, float r, float z1, float z2);
 
     static CSGNode MakeDemo(const char* name); 

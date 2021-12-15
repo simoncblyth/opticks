@@ -40,6 +40,7 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(strcmp(name, "rcyl") == 0) so = makeRotatedCylinder(name) ;
     else if(strcmp(name, "dcyl") == 0) so = makeDifferenceCylinder(name) ;
     else if(strcmp(name, "icyl") == 0) so = makeInfCylinder(name) ;
+    else if(strcmp(name, "iphi") == 0) so = makeInfPhiCut(name) ;
     else if(strcmp(name, "bssc") == 0) so = makeBoxSubSubCylinder(name) ;
     else LOG(fatal) << "invalid name [" << name << "]" ; 
     assert( so ); 
@@ -539,15 +540,17 @@ CSGSolid* CSGMaker::makeInfCylinder(const char* label, float radius, float hz )
     return makeSolid11(label, nd, nullptr, ICYL_MIDX ); 
 }
 
+CSGSolid* CSGMaker::makeInfPhiCut(const char* label, float startPhi, float deltaPhi )
+{
+    CSGNode nd = CSGNode::InfPhiCut(startPhi, deltaPhi ); 
+    return makeSolid11(label, nd, nullptr, IPHI_MIDX ); 
+}
 
 CSGSolid* CSGMaker::makeZSphere(const char* label, float radius, float z1, float z2)
 {
     CSGNode nd = CSGNode::ZSphere(radius, z1, z2); 
     return makeSolid11(label, nd, nullptr, ZSPH_MIDX ); 
 }
-
-
-
 
 CSGSolid* CSGMaker::makeCone(const char* label, float r1, float z1, float r2, float z2)
 {

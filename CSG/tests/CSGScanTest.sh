@@ -2,8 +2,8 @@
 #source ../env.sh 
 CUDA_PREFIX=/usr/local/cuda   # just use some CUDA headers, not using GPU 
 
-#opts="-DDEBUG=1"
-opts=""
+opts="-DDEBUG=1"
+#opts=""
 
 name=CSGScanTest 
 srcs="$name.cc 
@@ -39,7 +39,8 @@ base=/tmp/$USER/opticks/$name
 #base=/tmp/CSGScanTest_scans
 
 export CSGSCANTEST_BASE=$base
-export CSGSCANTEST_SOLID=icyl
+#export CSGSCANTEST_SOLID=icyl
+export CSGSCANTEST_SOLID=iphi
 
 
 scans="axis rectangle circle"

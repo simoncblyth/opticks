@@ -28,6 +28,7 @@ float __int_as_float(int i)
 }
 
 #define CUDART_INF_F            __int_as_float(0x7f800000)
+#define CUDART_PI_F             3.141592654f
 
 #endif
 
@@ -668,6 +669,141 @@ bool intersect_node_plane( float4& isect, const quad& q0, const float t_min, con
 }
 
 
+/**
+intersect_node_phicut
+------------------------
+
+The phicut planes go through the origin so the equation of the plane is::
+
+    p.n = 0
+
+Intersecting a ray with the plane::
+
+    p = o + t v       parametric ray equation  
+
+   (o + t v).n = 0 
+
+      o.n  = - t v.n
+
+              -o.n
+       t  = -----------  
+               v.n             
+
+
+
+Unbounded shape that cuts phi via two half-planes "attached" to the z-axis 
+
+Start by considering the quadrant formed by X and Y axes::
+
+    startPhi = 0.f 
+    deltaPhi = 0.5f     // units of pi
+
+    phi0 = 0.f 
+    phi1 = 0.f + 0.5f = 0.5f 
+ 
+Need outwards normals of the planes (see phicut.py)::
+
+    n0   (  sin(phi0), -cos(phi0), 0 )   =  ( 0, -1,  0)
+    n1   ( -sin(phi1),  cos(phi1), 0 )   =  ( -1, 0,  0)   
+ 
+
+                phi=0.5
+                  Y
+                  
+                  |      
+                  |
+              n1--+
+                  |
+                  |
+   phi=1.0 . . . .O----+----- X    phi=0, 2 
+                  .    |
+                  .    n0
+                  .
+                  .
+                  .
+                phi=1.5
+
+
+
+Normal incidence is no problem::
+
+          Y
+          |
+          | 
+          | 
+          |     (10,0,0)
+          O------+---------- X
+                 |      
+                 |
+                 |
+                 * 
+                 normal        ( 0,  -1, 0)
+                 ray_origin    (10, -10, 0)  .normal =  10   
+                 ray_direction ( 0,   1, 0)  .normal  = -1  
+
+                 t = -10/(-1) = 10
+
+Disqualify rays with direction within the plane::
+  
+       normal        (  0, -1, 0)      
+       ray_origin    ( 20, 0,  0)   .normal     0
+       ray_direction ( -1, 0,  0)   .normal     0
+
+
+**/
+
+INTERSECT_FUNC
+bool intersect_node_phicut( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
+{
+    const float cosPhi0 = q0.f.x ; 
+    const float sinPhi0 = q0.f.y ; `
+    const float cosPhi1 = q0.f.z ; 
+    const float sinPhi1 = q0.f.w ; 
+
+    const float3 n0 = make_float3(  sinPhi0, -cosPhi0, 0.f ); 
+    const float3 n1 = make_float3( -sinPhi1,  cosPhi1, 0.f ); 
+
+    float dn0 = dot(ray_direction, n0 );          // zero when ray_direction is within the plane 
+    float on0 = dot(ray_origin,    n0 ); 
+    float t0 = dn0 == 0.f ? t_min : -on0/dn0 ;    // setting to t_min disqualifies that intersect 
+
+    float dn1 = dot(ray_direction, n1 );
+    float on1 = dot(ray_origin,    n1 ); 
+    float t1 = dn1 == 0.f ? t_min : -on1/dn1 ;
+
+#ifdef DEBUG
+    printf("//intersect_node_phicut n0 %10.3f %10.3f %10.3f  dn0 %10.3f on0 %10.3f t0 %10.3f \n", n0.x, n0.y, n0.z, dn0, on0, t0 ); 
+    printf("//intersect_node_phicut n1 %10.3f %10.3f %10.3f  dn1 %10.3f on1 %10.3f t1 %10.3f \n", n1.x, n1.y, n1.z, dn1, on1, t1 ); 
+#endif
+
+    float t_near = fminf(t0,t1);  // order the intersects 
+    float t_far  = fmaxf(t0,t1);
+
+    float t_cand = t_near > t_min  ?  t_near : ( t_far > t_min ? t_far : t_min ) ; 
+
+    bool valid_intersect = t_cand > t_min ;
+    bool n1_hit = t_cand == t1 ;
+
+    if( valid_intersect ) 
+    {
+        isect.x = n1_hit ? n1.x : n0.x ;
+        isect.y = n1_hit ? n1.y : n0.y ;
+        isect.z = n1_hit ? n1.z : n0.z ;
+        isect.w = t_cand ; 
+    }
+    return valid_intersect ; 
+}
+
+
+/**
+intersect_node_slab
+---------------------
+
+One normal, two distances
+
+**/
+
+
 INTERSECT_FUNC
 bool intersect_node_slab( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
@@ -1162,6 +1298,7 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_CYLINDER:         valid_isect = intersect_node_cylinder(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_INFCYLINDER:      valid_isect = intersect_node_infcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_DISC:             valid_isect = intersect_node_disc(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_PHICUT:           valid_isect = intersect_node_phicut(           isect, node->q0,               t_min, origin, direction ) ; break ;
     }
     if(valid_isect)
     {

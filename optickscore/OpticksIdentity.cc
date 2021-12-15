@@ -5,6 +5,14 @@
 
 const plog::Severity OpticksIdentity::LEVEL = PLOG::EnvLevel("OpticksIdentity", "DEBUG"); 
 
+/**
+OpticksIdentity::Encode
+--------------------------
+
+Canonically invoked from GInstancer::labelRepeats_r
+
+**/
+
 unsigned OpticksIdentity::Encode(unsigned repeat_index, unsigned placement_index, unsigned offset_index) // static 
 {
     unsigned encoded_identifier = 0 ; 
@@ -18,9 +26,9 @@ unsigned OpticksIdentity::Encode(unsigned repeat_index, unsigned placement_index
     if( repeat_index > 0)
     {
 
-        bool repeat_ok = (repeat_index    & 0xff)   == repeat_index ; 
+        bool repeat_ok    = (repeat_index    & 0xff)   == repeat_index ; 
         bool placement_ok = (placement_index & 0xffff) == placement_index  ;
-        bool offset_ok = (offset_index    & 0xff)   == offset_index ; 
+        bool offset_ok    = (offset_index    & 0xff)   == offset_index ; 
  
         if(!repeat_ok || !placement_ok || !offset_ok )
             LOG(fatal) 
@@ -41,9 +49,9 @@ unsigned OpticksIdentity::Encode(unsigned repeat_index, unsigned placement_index
     }
     else if( repeat_index == 0)
     {
-        bool repeat_ok = (repeat_index    & 0xff)   == repeat_index ; 
+        bool repeat_ok    = (repeat_index    & 0xff)   == repeat_index ; 
         bool placement_ok = placement_index == 0  ;
-        bool offset_ok = (offset_index    & 0xffffff) == offset_index ;  
+        bool offset_ok    = (offset_index    & 0xffffff) == offset_index ;  
 
         if(!repeat_ok || !placement_ok || !offset_ok )
             LOG(fatal) 
