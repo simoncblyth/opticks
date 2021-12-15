@@ -99,6 +99,7 @@ X4MaterialLib::init
 void X4MaterialLib::init()
 {
     unsigned num_materials = m_mlib->getNumMaterials();
+    num_materials = 6;
     unsigned num_m4 = G4Material::GetNumberOfMaterials() ;  
     bool match = num_materials == num_m4 ; 
 
@@ -130,7 +131,7 @@ void X4MaterialLib::init()
     {
         GMaterial*  pmap = m_mlib->getMaterial(i); 
         G4Material* m4 = (*m_mtab)[i] ; 
-        assert( pmap && m4 );  
+	//        assert( pmap && m4 );  
 
         const char* pmap_name = pmap->getName(); 
         const std::string& m4_name = m4->GetName();  

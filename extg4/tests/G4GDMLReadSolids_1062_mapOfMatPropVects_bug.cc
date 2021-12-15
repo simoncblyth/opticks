@@ -169,9 +169,8 @@ int main(int argc, char** argv)
         for(unsigned i=0 ; i < pns.size() ; i++)
         {
             const std::string& pname = pns[i] ;
-            bool warning = false ; 
-            G4int pidx = mpt->GetPropertyIndex(pname, warning);
-            MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning );
+            G4int pidx = mpt->GetPropertyIndex(pname);
+            MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);
             if(pvec == NULL) continue ; 
             G4double mn, mx ;  
             getRange(mn, mx, pvec); 

@@ -15,7 +15,7 @@ set(TEST_SOURCES
 
     CGeometryTest.cc
     G4MaterialTest.cc
-    G4StringTest.cc
+#    G4StringTest.cc
     G4SphereTest.cc
     G4TrackTest.cc
     CSolidTest.cc

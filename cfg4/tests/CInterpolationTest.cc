@@ -138,7 +138,8 @@ int main(int argc, char** argv)
               ;
 
 
-    const char* mkeys_0 = "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB" ;
+    //    const char* mkeys_0 = "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB" ;
+    const char* mkeys_0 = "RINDEX,ABSLENGTH,RAYLEIGH" ;
     const char* mkeys_1 = "GROUPVEL,,, " ;  // <-- without trailing space the split giving 3 not 4 
 
 

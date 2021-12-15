@@ -50,7 +50,7 @@ NB when searching for switches in python include the space at the end, eg::
 
 #define WITH_SENSORLIB 1
 
-//#define WITH_SKIPAHEAD 1
+#define WITH_SKIPAHEAD 1
 // WITH_SKIPAHEAD is causing OptiX launch failures
 // see notes/issues/Linux_WITH_SKIPAHEAD_OptiX_launch_failure
 

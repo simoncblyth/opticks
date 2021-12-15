@@ -11,8 +11,8 @@
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * distributed under the License is distributed on an "AS IS" BASIS,  
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
  * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
@@ -263,7 +263,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
          ; 
         
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
-    addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB,GROUPVEL");
+    addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,GROUPVEL");
 
 /*
     bool legacy = Opticks::IsLegacyGeometryEnabled() ; 
@@ -367,9 +367,15 @@ void CPropLib::addScintillatorMaterialProperties( G4MaterialPropertiesTable* mpt
         ; 
 
     bool keylocal = false ; 
-    bool constant = false ; 
+    bool constant = false ;
+#if G4VERSION_NUMBER < 1100
     addProperties(mpt, scintillator, "SLOWCOMPONENT,FASTCOMPONENT", keylocal, constant);
     addProperties(mpt, scintillator, "SCINTILLATIONYIELD,RESOLUTIONSCALE,YIELDRATIO,FASTTIMECONSTANT,SLOWTIMECONSTANT", keylocal, constant ); // this used constant=true formerly
+#else
+    addProperties(mpt, scintillator, "SCINTILLATIONCOMPONENT1,SCINTILLATIONCOMPONENT2", keylocal, constant);
+    addProperties(mpt, scintillator, "SCINTILLATIONYIELD1,SCINTILLATIONYIELD2,SCINTILLATIONTIMECONSTANT1,SCINTILLATIONTIMECONSTANT2", keylocal, constant ); // this used constant=true formerly
+#endif
+
 
     // NB the above skips prefixed versions of the constants: Alpha, 
     //addProperties(mpt, scintillator, "ALL",          keylocal=false, constant=true );
@@ -532,7 +538,7 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval);
 #else
     G4String skey(lkey); 
-    G4int keyIdx = mpt->GetPropertyIndex(skey, false); 
+    G4int keyIdx = mpt->GetPropertyIndex(skey); 
     G4bool createNewKey = keyIdx == -1  ; 
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval, createNewKey );
 #endif
@@ -550,18 +556,8 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
     delete [] dval ; 
 }
 
-
-
-
-
-
-
-
-
-
 std::string CPropLib::getMaterialKeys(const G4Material* mat)
 {   
-    G4bool warning ; 
     typedef G4MaterialPropertyVector MPV ; 
 
     std::stringstream ss ;
@@ -572,9 +568,9 @@ std::string CPropLib::getMaterialKeys(const G4Material* mat)
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
-        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        G4int pidx = mpt->GetPropertyIndex(pname); 
         assert( pidx > -1 );  
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);  
         if(pvec == NULL) continue ; 
 
         ss << pname << " " ; 
@@ -582,33 +578,24 @@ std::string CPropLib::getMaterialKeys(const G4Material* mat)
     return ss.str(); 
 }
 
-
-
-
-
-
-
 GPropertyMap<double>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, const char* name)
 {    
     GPropertyMap<double>* pmap = new GPropertyMap<double>(name);
 
     typedef G4MaterialPropertyVector MPV ; 
-    bool warning ; 
 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
-        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        G4int pidx = mpt->GetPropertyIndex(pname); 
         assert( pidx > -1 );  
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);  
         if(pvec == NULL) continue ; 
 
         GProperty<double>* prop = convertVector(pvec);        
         pmap->addPropertyAsis( pname.c_str(), prop );  
     }   
-
-
     std::vector<G4String> cpns = mpt->GetMaterialConstPropertyNames() ;
     LOG(debug) << " cpns " << cpns.size() ; 
 
@@ -618,7 +605,7 @@ GPropertyMap<double>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, con
         G4bool exists = mpt->ConstPropertyExists( n.c_str() ) ; 
         if(!exists) continue ; 
 
-        G4int pidx = mpt->GetConstPropertyIndex(n, warning=true); 
+        G4int pidx = mpt->GetConstPropertyIndex(n); 
         assert( pidx > -1 );  
         G4double pvalue = mpt->GetConstProperty(pidx);  
 

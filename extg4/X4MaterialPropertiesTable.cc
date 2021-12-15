@@ -64,9 +64,7 @@ Used from X4Material::Convert/X4Material::init
 
 void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const G4MaterialPropertiesTable* const mpt, char mode )   //  static
 {
-    typedef G4MaterialPropertyVector MPV ; 
-    G4bool warning ; 
-
+    typedef G4MaterialPropertyVector MPV; 
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
     LOG(LEVEL) << " MaterialPropertyNames pns.size " << pns.size() ; 
         
@@ -76,9 +74,9 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& pname = pns[i]; 
-        G4int pidx = mpt->GetPropertyIndex(pname, warning=true); 
+        G4int pidx = mpt->GetPropertyIndex(pname); 
         assert( pidx > -1 );  
-        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        MPV* pvec = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx );  
         LOG(LEVEL)
             << " pname : " 
             << std::setw(30) << pname  
@@ -153,9 +151,7 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
             cpns_null += 1 ; 
             continue ; 
         } 
-
-        bool warning = false ;  
-        G4int pidx = mpt->GetConstPropertyIndex(pname, warning); 
+        G4int pidx = mpt->GetConstPropertyIndex(pname); 
         //assert( pidx > -1 );  // comment assert to investigate behavior change with 91702(aka 1100)
         G4double pval = pidx > -1 ? mpt->GetConstProperty(pidx) : -1. ;  
 
@@ -175,13 +171,7 @@ void X4MaterialPropertiesTable::AddProperties(GPropertyMap<double>* pmap, const 
         << " cpns " << cpns.size()
         << " cpns_null " << cpns_null
          ; 
-
-
-
-
 }
-
-
 
 std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* mpt)  // static
 {
@@ -190,16 +180,14 @@ std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* m
     SDigest dig ;
 
     typedef G4MaterialPropertyVector MPV ; 
-    G4bool warning ; 
-
     std::vector<G4String> pns = mpt->GetMaterialPropertyNames() ;
     LOG(LEVEL) << " NumProp " << pns.size() ; 
     for( unsigned i=0 ; i < pns.size() ; i++)
     {   
         const std::string& n = pns[i]; 
-        G4int pidx = mpt->GetPropertyIndex(n, warning=true); 
+        G4int pidx = mpt->GetPropertyIndex(n); 
         assert( pidx > -1 );  
-        MPV* v = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx, warning=false );  
+        MPV* v = const_cast<G4MaterialPropertiesTable*>(mpt)->GetProperty(pidx);  
         if(v == NULL) continue ; 
 
         std::string vs = X4PhysicsVector<double>::Digest(v) ; 
@@ -216,7 +204,7 @@ std::string X4MaterialPropertiesTable::Digest(const G4MaterialPropertiesTable* m
         G4bool exists = mpt->ConstPropertyExists( n.c_str() ) ;
         if(!exists) continue ; 
 
-        G4int pidx = mpt->GetConstPropertyIndex(n, warning=true); 
+        G4int pidx = mpt->GetConstPropertyIndex(n); 
         assert( pidx > -1 );  
         G4double pvalue = mpt->GetConstProperty(pidx);  
 
