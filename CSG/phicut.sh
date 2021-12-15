@@ -1,3 +1,3 @@
 #!/bin/bash -l 
 
-${IPYTHON:-ipython} phicut.py 
+${IPYTHON:-ipython} -i phicut.py 

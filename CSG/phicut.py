@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import numpy as np
+import logging
+log = logging.getLogger(__name__)
 
 try:
     import pyvista as pv
@@ -8,6 +10,137 @@ except ImportError:
     pv = None
 pass
 
+
+class HalfPlane(object):
+    @classmethod
+    def phi_quadrant(cls, phi):
+        """
+        This way of defining the quadrant avoids precision of pi issues. 
+        Yes, but its better to use the same definition that can be applied to the 
+        intersect positions without having to calculate phi from x,y.
+        Problems likely at boundaries between quadrants
+
+                         0.5
+                 0.75     |     0.25 
+                          |
+                          |
+               1.0  ------+------- 0.0 , 2.0 
+                          |
+                          |
+                1.25      |     1.75
+                         1.5 
+
+                         
+           cosPhi < 0  |  cosPhi > 0  
+                       |
+               -+      |     ++           
+               01      |     11     
+                       |              sinPhi > 0  
+               - - - - +----------------------------   
+                       |              sinPhi < 0  
+               --      |     +-
+               00      |     10
+
+        """
+        if phi >= 0 and phi < 0.5:
+            quadrant = 3  
+        elif phi >= 0.5 and phi < 1.0:
+            quadrant = 1
+        elif phi >= 1.0 and phi < 1.5:
+            quadrant = 0
+        elif phi >= 1.5 and phi <= 2.0:
+            quadrant = 2
+        else:
+            quadrant = -1
+        pass
+        return quadrant
+        
+    @classmethod
+    def xy_quadrant(cls, x, y ):
+        xpos = int(x >= 0.)
+        ypos = int(y >= 0.)
+        return 2*xpos + ypos 
+
+    @classmethod
+    def test_quadrant(cls, n=17):
+        """
+        In [3]: np.linspace(0,2,17)
+        Out[3]: array([0.   , 0.125, 0.25 , 0.375, 0.5  , 0.625, 0.75 , 0.875, 1.   , 1.125, 1.25 , 1.375, 1.5  , 1.625, 1.75 , 1.875, 2.   ])
+        """
+        phi = np.linspace(0, 2, n)
+        for p in phi:
+            x = np.cos(p*np.pi)
+            y = np.sin(p*np.pi)
+            _phi_quadrant = cls.phi_quadrant(p)
+            _xy_quadrant = cls.xy_quadrant(x,y)
+            print( " p %10.4f  phi_quadrant %d   cosPhi %10.4f sinPhi %10.4f  xy_quadrant %d " % (p, _phi_quadrant, x, y, _xy_quadrant ))
+        pass
+
+    def __init__(self, phi, debug=False ):
+        cosPhi, sinPhi = np.cos(phi*np.pi), np.sin(phi*np.pi)
+
+        #n_quadrant = self.phi_quadrant(phi)
+        n_quadrant = self.xy_quadrant(cosPhi, sinPhi)
+        n = np.array( [  sinPhi, -cosPhi, 0. ]  )
+
+        if debug:
+            log.info( " phi %10.3f cosPhi %10.3f sinPhi %10.3f  n_quadrant %d " % (phi, cosPhi, sinPhi, n_quadrant )) 
+        pass 
+
+        self.n_quadrant = n_quadrant 
+        self.n = n  
+        self.debug = debug 
+
+    def intersect(self, ray_origin, ray_direction, t_min, quadcheck=True ):
+        """
+
+
+        phi=1  -(*)- - - - - O-----*--+-----*------ X   phi = 0.  
+                /                 /   |      \
+               /                 /    |       \
+              /                 /     n        \
+                               /                \
+                              /
+
+        How to generalize disqualification ? 
+
+        Check the signs of (x,y) at the intersect
+        corresponds to signs of (cosPhi, sinPhi) of the plane 
+
+        """
+        n = self.n
+        n_quadrant = self.n_quadrant
+        debug = self.debug 
+
+        dn = np.dot(ray_direction, n )
+        on = np.dot(ray_origin,    n )
+        t_cand = t_min if dn == 0. else -on/dn  
+         
+        xyz = ray_origin + t_cand*ray_direction 
+        x = xyz[0]
+        y = xyz[1]
+        quadrant = self.xy_quadrant(x,y)
+
+        if quadcheck:
+            valid_intersect = t_cand > t_min and quadrant == n_quadrant  
+        else:
+            valid_intersect = t_cand > t_min
+        pass
+
+        if debug:
+            afmt_ = lambda a:"%7.3f %7.3f %7.3f" % (a[0], a[1], a[2])
+            print(" ray_origin %s ray_direction %s xyz %s t_cand %7.3f  quad %d n_quad %d valid_intersect %d" %
+               (afmt_(ray_origin), afmt_(ray_direction), afmt_(xyz), t_cand, quadrant, n_quadrant, valid_intersect )) 
+        pass  
+        if valid_intersect: 
+            isect = np.zeros(4)
+            isect[:3] = n 
+            isect[3] = t_cand
+        else:
+            isect = None
+        pass
+        return isect 
+ 
 
 class PhiCut(object):
     @classmethod
@@ -35,11 +168,11 @@ class PhiCut(object):
 
         dn0 = np.dot(ray_direction, n0 )
         on0 = np.dot(ray_origin,    n0 )
-        t0 = -on0/dn0 
+        t0 = t_min if dn0 == 0. else -on0/dn0  
 
         dn1 = np.dot(ray_direction, n1 )
         on1 = np.dot(ray_origin,    n1 )
-        t1 = -on1/dn1 
+        t1 = t_min if dn1 == 0. else -on1/dn1 
 
         t_near = min(t0,t1)
         t_far  = max(t0,t1)
@@ -67,9 +200,6 @@ class PhiCut(object):
             isect = None
         pass
         return isect 
-  
-         
-
 
 
 def check_normals():
@@ -103,61 +233,88 @@ def check_normals():
     cp = pl.show()
 
 
-
 class Scanner(object):
     def __init__(self, geom ):
         self.geom = geom 
 
-    def vertical(self, n, t_min=0 ):
+    def from_XY(self, n, modes=[0,1,2,3], t_min=0, shifted=True, quadcheck=True  ):
         geom = self.geom
-        ipos = np.zeros( (n*2, 3) ) 
-        iray = np.zeros( (n*2, 2, 3) ) 
+        ipos = np.zeros( (n*len(modes), 3) ) 
+        iray = np.zeros( (n*len(modes), 2, 3) ) 
+        offset = 0 
+        for mode in modes: 
+            for i in range(n):
+                j = i - n/2 
+                if mode == 0:  # shoot upwards from X axis, or shifted line
+                    dx = 0
+                    dy = 1
+                    ox = j*0.1
+                    oy = -10. if shifted else 0. 
+                elif mode == 1: # shoot downwards from X axis, or shifted line
+                    dx = 0
+                    dy = -1 
+                    ox = j*0.1
+                    oy = 10. if shifted else 0.  
+                elif mode == 2: # shoot to right from Y axis, or shifted line 
+                    dx = 1
+                    dy = 0 
+                    ox = -10. if shifted else 0. 
+                    oy = j*0.1 
+                elif mode == 3: # shoot to left from Y axis, or shifted line
+                    dx = -1
+                    dy = 0 
+                    ox = 10. if shifted else 0.
+                    oy = j*0.1 
+                pass
+                ray_origin    = np.array( [ox, oy, 0 ] )    
+                ray_direction = np.array( [dx, dy, 0 ] )    
 
-        for i in range(n):
-            j = i - n/2 
-            ray_origin    = np.array( [  j*0.1,   0, 0 ] )    
-            ray_direction = np.array( [     0,    1 if j > 0 else -1 , 0 ] )    
+                iray[i+offset,0] = ray_origin
+                iray[i+offset,1] = ray_direction
 
-            iray[i,0] = ray_origin
-            iray[i,1] = ray_direction
+                isect = geom.intersect( ray_origin, ray_direction, t_min, quadcheck=quadcheck )
 
-            isect = geom.intersect( ray_origin, ray_direction, t_min )
-            if not isect is None:
-                ipos[i] = isect[3]*ray_direction + ray_origin 
+                if not isect is None:
+                    ipos[i+offset] = isect[3]*ray_direction + ray_origin 
+                pass
             pass
-        pass
-        for i in range(n):
-            j = i - n/2 
-
-            ray_origin    = np.array( [     0,   j*0.1, 0 ] )    
-            ray_direction = np.array( [     1 if j > 0 else -1,     0, 0 ] )    
-
-            iray[i+n,0] = ray_origin
-            iray[i+n,1] = ray_direction
-
-            isect = geom.intersect( ray_origin, ray_direction, t_min )
-            if not isect is None:
-                ipos[i+n] = isect[3]*ray_direction + ray_origin 
-            pass
+            offset += n 
         pass
         self.ipos = ipos
         self.iray = iray
-    
 
 
 if __name__ == '__main__':
-    pc = PhiCut( 0.25, 0.1 )
-    sc = Scanner(pc)
-    sc.vertical(100)
+    logging.basicConfig(level=logging.INFO)
 
+    HalfPlane.test_quadrant()
+
+    #geom = HalfPlane( 0.0 )
+    #geom = HalfPlane( 0.25 )
+    #geom = HalfPlane( 0.50 )
+    #geom = HalfPlane( 0.75 )
+    #geom = HalfPlane( 1.00 )
+    #geom = HalfPlane( 1.25 )
+    geom = HalfPlane( 1.5, debug=True)    # problem at 1.5
+    #geom = HalfPlane( 1.75, debug=False)   
+    #geom = HalfPlane( 2.0, debug=False)    # problem at 2.0
+
+    #geom = PhiCut( 0.25, 0.1 )
+
+    #modes = [0,1,2,3]
+    modes = [2,]
+
+    sc = Scanner(geom)
+    sc.from_XY(100, modes=modes, quadcheck=True )
     
     size = np.array([1280, 720])
     pl = pv.Plotter(window_size=size*2 )
     #pl.camera.ParallelProjectionOn()
     pl.view_xy() 
-    pl.add_points( sc.ipos,  color="white" )  
-    pl.add_points( sc.iray[:,0],  color="red" )  
 
+    mask = np.logical_and( np.abs(sc.ipos[:,1]) < 10. , np.abs(sc.ipos[:,0]) < 10. )   
+    pl.add_points( sc.ipos[mask],  color="white" )  
+    pl.add_points( sc.iray[:,0],  color="red" )  
 
     look = (0,0,0)
     up = (0,1,0)
@@ -169,17 +326,5 @@ if __name__ == '__main__':
     pl.camera.Zoom(1)
     pl.show_grid()
     cp = pl.show()
-
-
-
-
-
-
-
-
-
-
-
-
 
 
