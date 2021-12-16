@@ -81,11 +81,15 @@ int main(int argc, char** argv)
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
 
 
+    const char* idpath = ok.getIdPath(); 
+    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
+    
+
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
 
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
-    QSim<float>::UploadComponents(fd->icdf, fd->bnd ); 
+    QSim<float>::UploadComponents(fd->icdf, fd->bnd, rindexpath ); 
 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 

@@ -7,6 +7,70 @@ TODO
 * arrange default env settings such that the bare executable can run 
 
 
+ 
+
+3D render scripts
+----------------
+
+cxr.sh
+    script that runs the CSGOptiXRender executable
+    this is a basis script that most of the below scripts invoke after setting controlling envvars 
+
+cxr_solid.sh
+    single solid render
+cxr_solids.sh
+    multiple invokations of cxr_solid.sh for different solids
+cxr_table.sh
+    rst table creation using snap.py 
+cxr_view.sh
+    sets envvars and invoked ./cxr.sh 
+cxr_views.sh
+    multiple invokations of cxr_view.sh varying EMM to change included geometry
+
+cxr_demo.sh
+cxr_demo_find.sh
+cxr_demos.sh
+
+cxr_flight.sh
+
+cxr_geochain.sh
+
+cxr_overview.sh
+
+cxr_pub.sh
+
+cxr_rsync.sh
+
+cxr_scan.sh
+
+
+2d render scripts
+-------------------------
+
+cxs.sh
+cxsd.sh
+
+
+
+
+admin scripts
+----------------
+
+
+grab.sh 
+    rsync outputs from P:/tmp/blyth/opticks/CSGOptiX/ to local 
+sync.sh
+    sync PWD code to remote 
+
+cf.sh
+
+pub.sh
+
+
+
+
+
+
 Census
 -------
 
@@ -30,6 +94,11 @@ B
 C
    build: cx ; ./build7.sh 
    rsync: cx ; ./grab.sh 
+
+
+
+
+
 
 
 
@@ -146,45 +215,6 @@ Six.h
 
 OptiX6Test.cu geo_OptiX6Test.cu
     compiled into ptx that gets loaded by Six to create OptiX < 7 pipeline
-
-
- 
-
-scripts
----------
-
-build.sh
-build7.sh
-cf.sh
-cxr.sh
-cxr_demo.sh
-cxr_demo_find.sh
-cxr_demos.sh
-cxr_flight.sh
-cxr_overview.sh
-cxr_rsync.sh
-cxr_scan.sh
-
-
-cxr_solid.sh
-    single solid render
-cxr_solids.sh
-    multiple invokations of cxr_solid.sh for different solids
-cxr_table.sh
-    rst table creation using snap.py 
-cxr_view.sh
-    sets envvars and invoked ./cxr.sh 
-cxr_views.sh
-    multiple invokations of cxr_view.sh varying EMM to change included geometry
-
-run.sh 
-    invoke cxr_overview.sh 
-go.sh
-    invoke build.sh and run.sh 
-grab.sh 
-    rsync outputs from P:/tmp/blyth/opticks/CSGOptiX/ to local 
-sync.sh
-    sync PWD code to remote 
 
 
 
