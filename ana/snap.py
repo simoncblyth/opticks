@@ -2,7 +2,7 @@
 """
 ::
 
-    ggeo.py --mm > $TMP/mm.txt    # create list of mm names used for labels
+    ggeo.py --mmtrim    # create list of mm names used for labels at $TMP/mm.txt
 
     snap.py       # list the snaps in speed order with labels 
 

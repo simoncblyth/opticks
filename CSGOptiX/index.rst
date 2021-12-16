@@ -1,20 +1,15 @@
 CSGOptiX : expt with OptiX 7 geometry and rendering 
 ======================================================
 
-TODO
------
-
-* arrange default env settings such that the bare executable can run 
-
-
- 
 
 3D render scripts
-----------------
+------------------
 
 cxr.sh
     script that runs the CSGOptiXRender executable
     this is a basis script that most of the below scripts invoke after setting controlling envvars 
+
+    [not intended to be used bare, this script is invoked from other scripts]
 
 cxr_overview.sh
     overview viewpoint by targeting the  
@@ -31,12 +26,22 @@ cxr_overview.sh
     Iidx 
        instance index      
 
+    [tested Dec 2021]
+
 cxr_scan.sh
     runs one of the other scripts (default cxr_overview.sh) multiple times with different values
     for the EMM envvar which is picked up by the basis cxr.sh script and fed to the executable
     via the "-e" option which is short for --enabledmergedmesh which feeds into a bitset 
     queryable by Opticks::isEnabledMergedMesh  
 
+    [tested Dec 2021]
+
+cxr_table.sh
+    rst table creation using snap.py 
+    the data for the table is collected from .json metadata sidecars to .jpg renders, 
+    so this works on laptop after grabbing the rendered .jpg and .json sidecars
+    
+    [tested Dec 2021]
 
 cxr_solid.sh
     single solid render, for example  ./cxr_solid.sh r0@
@@ -45,6 +50,7 @@ cxr_solid.sh
     The SLA envvar set by the script is passed into the executable via option --solid_label
     which is accessed from Opticks::getSolidLabel within CSGOptiX/tests/CSGOptiXRender.cc
     which uses CSGFoundry::findSolidIdx to select one or more solids based on the solid_label 
+
     [tested Dec 2021]
 
 cxr_solids.sh
@@ -57,27 +63,31 @@ cxr_solids.sh
 
     [tested Dec 2021]
 
-
-cxr_table.sh
-    rst table creation using snap.py 
-
 cxr_view.sh
-    sets envvars and invoked ./cxr.sh 
+    sets envvars and invokes ./cxr.sh 
+
+    [tested Dec 2021]
+
 cxr_views.sh
     multiple invokations of cxr_view.sh varying EMM to change included geometry
 
-cxr_demo.sh
-cxr_demo_find.sh
-cxr_demos.sh
-
 cxr_flight.sh
+    creates sequence of jpg snaps and puts them together into mp4 
+
+
+
+cxr_demo.sh
+cxr_demos.sh
+cxr_demo_find.sh
 
 cxr_geochain.sh
-
 
 cxr_pub.sh
 
 cxr_rsync.sh
+
+../bin/flight7.sh 
+
 
 
 
@@ -88,22 +98,22 @@ cxs.sh
 cxsd.sh
 
 
-
-
 admin scripts
 ----------------
 
-
 grab.sh 
-    rsync outputs from P:/tmp/blyth/opticks/CSGOptiX/ to local 
+    rsync .jpg .png .mp4 .json etc.. outputs from P:/tmp/blyth/opticks/CSGOptiX/ to local (eg laptop)::
+
+        cx 
+        ./grab.sh  
+
 sync.sh
     sync PWD code to remote 
 
 cf.sh
 
 pub.sh
-
-
+     
 
 
 
