@@ -12,6 +12,7 @@ pass
 
 
 class HalfPlane(object):
+
     @classmethod
     def phi_quadrant(cls, phi):
         """
@@ -89,9 +90,11 @@ class HalfPlane(object):
 
         self.n_quadrant = n_quadrant 
         self.n = n  
+        self.sinPhi = sinPhi
+        self.cosPhi = cosPhi
         self.debug = debug 
 
-    def intersect(self, ray_origin, ray_direction, t_min, quadcheck=True ):
+    def intersect(self, ray_origin, ray_direction, t_min ):
         """
 
 
@@ -102,35 +105,61 @@ class HalfPlane(object):
                                /                \
                               /
 
-        How to generalize disqualification ? 
+        How to generalize disqualification ? Possible techniques
+        
+        1. quadrant match   
+         
+           * check the signs of (x,y) at the intersect
+             corresponds to signs of (cosPhi, sinPhi) of the plane 
 
-        Check the signs of (x,y) at the intersect
-        corresponds to signs of (cosPhi, sinPhi) of the plane 
+           * issues with this at phi 1.5, 2.0 : presumably from depending on the sign of small values 
+           * using "side > 0" avoids the problems and is simpler
+
+        2. rotate intersect (x,y) by -phi, so sign of xrot can be required +ve 
+
+           * xrot = x*cosPhi + y*sinPhi
+           * yrot = -x*sinPhi + y*cosPhi  
+
+        3. intersect must fulfil p.n = 0 yes but disqualified does too.. so no use
+       
+        4. dot product between the vector from origin to intersect and the vector 
+           (cosPhi, sinPhi, 0 ) that is within the plane and identifies the phi 
+           should be +ve
+
+           * side = x*cosPhi + y*sinPhi
+           * actually the maths of this is the same as backwards rotation 
+             its just thinking of the same thing in two different frames
+         
 
         """
         n = self.n
-        n_quadrant = self.n_quadrant
+        sinPhi = self.sinPhi
+        cosPhi = self.cosPhi
         debug = self.debug 
 
         dn = np.dot(ray_direction, n )
         on = np.dot(ray_origin,    n )
         t_cand = t_min if dn == 0. else -on/dn  
-         
-        xyz = ray_origin + t_cand*ray_direction 
-        x = xyz[0]
-        y = xyz[1]
-        quadrant = self.xy_quadrant(x,y)
+        
+        xyz = ray_origin + t_cand*ray_direction
+ 
+        x = ray_origin[0] + t_cand*ray_direction[0] 
+        y = ray_origin[1] + t_cand*ray_direction[1] 
+        side0 = x*cosPhi + y*sinPhi
 
-        if quadcheck:
-            valid_intersect = t_cand > t_min and quadrant == n_quadrant  
+        side =     ray_origin[0]*cosPhi + ray_origin[1]*sinPhi + ( ray_direction[0]*cosPhi + ray_direction[1]*sinPhi )*t_cand 
+
+        sidecheck = True 
+        if sidecheck:
+            valid_intersect = t_cand > t_min and side > 0.  
         else:
             valid_intersect = t_cand > t_min
         pass
 
         if debug:
             afmt_ = lambda a:"%7.3f %7.3f %7.3f" % (a[0], a[1], a[2])
-            print(" ray_origin %s ray_direction %s xyz %s t_cand %7.3f  quad %d n_quad %d valid_intersect %d" %
-               (afmt_(ray_origin), afmt_(ray_direction), afmt_(xyz), t_cand, quadrant, n_quadrant, valid_intersect )) 
+            print(" ray_origin %s ray_direction %s xyz %s t_cand %7.3f  side0 %10.4f side %10.4f valid_intersect %d" %
+               (afmt_(ray_origin), afmt_(ray_direction), afmt_(xyz), t_cand, side0, side, valid_intersect )) 
         pass  
         if valid_intersect: 
             isect = np.zeros(4)
@@ -157,22 +186,37 @@ class PhiCut(object):
         n1 = np.array( [ -sinPhi1,  cosPhi1, 0. ]  )
         self.n0 = n0 
         self.n1 = n1 
+        self.cosPhi0 = cosPhi0
+        self.sinPhi0 = sinPhi0
+        self.cosPhi1 = cosPhi1
+        self.sinPhi1 = sinPhi1
+
 
     def intersect(self, ray_origin, ray_direction, t_min ):
         """
         These are currently full planes need to disqualify half of them. 
         What exactly is the convention for the allowed intersects ?
         """
-        n0 = self.n0
-        n1 = self.n1
+        cosPhi0 = self.cosPhi0
+        sinPhi0 = self.sinPhi0
+        cosPhi1 = self.cosPhi1
+        sinPhi1 = self.sinPhi1
 
-        dn0 = np.dot(ray_direction, n0 )
-        on0 = np.dot(ray_origin,    n0 )
-        t0 = t_min if dn0 == 0. else -on0/dn0  
+        # dot products for direction and origin into normal0 [  sinPhi0, -cosPhi0, 0. ] 
+        # for side < 0 : disqualify intersects as its the wrong half of the plane
+  
+        d_n0 = ray_direction[0]*sinPhi0 - ray_direction[1]*cosPhi0  
+        o_n0 = ray_origin[0]*sinPhi0 - ray_origin[1]*cosPhi0
+        t0 = t_min if d_n0 == 0. else -o_n0/d_n0  
+        side0 = ray_origin[0]*cosPhi0 + ray_origin[1]*sinPhi0 + ( ray_direction[0]*cosPhi0 + ray_direction[1]*sinPhi0 )*t0 
+        if side0 < 0.: t0 = t_min                  
 
-        dn1 = np.dot(ray_direction, n1 )
-        on1 = np.dot(ray_origin,    n1 )
-        t1 = t_min if dn1 == 0. else -on1/dn1 
+        # dot products for direction and origin onto normal1 [ -sinPhi1,  cosPhi1, 0. ] 
+        d_n1 = -ray_direction[0]*sinPhi1 + ray_direction[1]*cosPhi1  
+        o_n1 = -ray_origin[0]*sinPhi1 + ray_origin[1]*cosPhi1
+        t1 = t_min if d_n1 == 0. else -o_n1/d_n1  
+        side1 = ray_origin[0]*cosPhi1 + ray_origin[1]*sinPhi1 + ( ray_direction[0]*cosPhi1 + ray_direction[1]*sinPhi1 )*t1
+        if side1 < 0.: t1 = t_min                  
 
         t_near = min(t0,t1)
         t_far  = max(t0,t1)
@@ -189,12 +233,13 @@ class PhiCut(object):
             pass
         pass
 
-        n1_hit = t_cand == t1 
-
         valid_intersect = t_cand > t_min 
+
         if valid_intersect: 
             isect = np.zeros(4)
-            isect[:3]= n1 if n1_hit else n0
+            isect[0]= -sinPhi1 if t_cand == t1 else sinPhi0 
+            isect[1]=  cosPhi1 if t_cand == t1 else -cosPhi0 
+            isect[2]=  0. 
             isect[3] = t_cand
         else:
             isect = None
@@ -233,14 +278,15 @@ def check_normals():
     cp = pl.show()
 
 
-class Scanner(object):
-    def __init__(self, geom ):
-        self.geom = geom 
+class Scan(object):
+    def __init__(self, n, modes):
+        self.ipos = np.zeros( (n*len(modes), 3) ) 
+        self.iray = np.zeros( (n*len(modes), 2, 3) ) 
+        self.isec = np.zeros( (n*len(modes), 4) ) 
 
-    def from_XY(self, n, modes=[0,1,2,3], t_min=0, shifted=True, quadcheck=True  ):
-        geom = self.geom
-        ipos = np.zeros( (n*len(modes), 3) ) 
-        iray = np.zeros( (n*len(modes), 2, 3) ) 
+    @classmethod
+    def XY(cls, geom, n=100, modes=[0,1,2,3], t_min=0, shifted=True ):
+        scan = cls(n, modes)
         offset = 0 
         for mode in modes: 
             for i in range(n):
@@ -266,28 +312,28 @@ class Scanner(object):
                     ox = 10. if shifted else 0.
                     oy = j*0.1 
                 pass
+
                 ray_origin    = np.array( [ox, oy, 0 ] )    
                 ray_direction = np.array( [dx, dy, 0 ] )    
+                isect = geom.intersect( ray_origin, ray_direction, t_min )
 
-                iray[i+offset,0] = ray_origin
-                iray[i+offset,1] = ray_direction
-
-                isect = geom.intersect( ray_origin, ray_direction, t_min, quadcheck=quadcheck )
+                scan.iray[i+offset,0] = ray_origin
+                scan.iray[i+offset,1] = ray_direction
 
                 if not isect is None:
-                    ipos[i+offset] = isect[3]*ray_direction + ray_origin 
+                    scan.ipos[i+offset] = isect[3]*ray_direction + ray_origin 
+                    scan.isec[i+offset] = isect 
                 pass
             pass
             offset += n 
         pass
-        self.ipos = ipos
-        self.iray = iray
+        return scan
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    HalfPlane.test_quadrant()
+    #HalfPlane.test_quadrant()
 
     #geom = HalfPlane( 0.0 )
     #geom = HalfPlane( 0.25 )
@@ -295,26 +341,34 @@ if __name__ == '__main__':
     #geom = HalfPlane( 0.75 )
     #geom = HalfPlane( 1.00 )
     #geom = HalfPlane( 1.25 )
-    geom = HalfPlane( 1.5, debug=True)    # problem at 1.5
+    #geom = HalfPlane( 1.5, debug=False)   
     #geom = HalfPlane( 1.75, debug=False)   
-    #geom = HalfPlane( 2.0, debug=False)    # problem at 2.0
+    #geom = HalfPlane( 2.0, debug=False)    
 
-    #geom = PhiCut( 0.25, 0.1 )
+    geom = PhiCut( 0.25, 0.1 )
+    #geom = PhiCut( 0.0, 0.5 )
+    #geom = PhiCut( 0.0, 0.75 )
+    #geom = PhiCut( 0.0, 1.5 )
 
-    #modes = [0,1,2,3]
-    modes = [2,]
+    modes = [0,1,2,3]
+    #modes = [2,]
 
-    sc = Scanner(geom)
-    sc.from_XY(100, modes=modes, quadcheck=True )
+    scan = Scan.XY(geom, 100, modes=modes)
     
     size = np.array([1280, 720])
     pl = pv.Plotter(window_size=size*2 )
-    #pl.camera.ParallelProjectionOn()
     pl.view_xy() 
 
-    mask = np.logical_and( np.abs(sc.ipos[:,1]) < 10. , np.abs(sc.ipos[:,0]) < 10. )   
-    pl.add_points( sc.ipos[mask],  color="white" )  
-    pl.add_points( sc.iray[:,0],  color="red" )  
+    limit = 100. 
+    mask = np.logical_and( np.abs(scan.ipos[:,1]) < limit , np.abs(scan.ipos[:,0]) < limit )   
+
+    isect_normals = True 
+    if isect_normals:
+        pl.add_arrows( scan.ipos[mask], scan.isec[mask, :3],  color="white" )  
+    else:
+        pl.add_points( scan.ipos[mask],  color="white" )  
+    pass
+    pl.add_points( scan.iray[:,0],  color="red" )  
 
     look = (0,0,0)
     up = (0,1,0)
