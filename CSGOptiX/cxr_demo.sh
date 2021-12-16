@@ -61,7 +61,9 @@ fi
 emm=t0    # default to no solid skips with demo geometry 
 
 stamp=$(date +"%Y-%m-%d %H:%M")
-version=$(CSGOptiXVersion)
+version=$(CSGOptiXVersion 2>/dev/null)
+
+
 export MOI=${1:-$moi}
 export CFNAME=${CFNAME:-$cfname}
 export EMM=${EMM:-$emm}

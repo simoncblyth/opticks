@@ -31,10 +31,9 @@ cxr_overview.sh
     Iidx 
        instance index      
 
-
 cxr_scan.sh
     runs one of the other scripts (default cxr_overview.sh) multiple times with different values
-    for the EMM ennvar which is picked up by the basis cxr.sh script and fed to the executable
+    for the EMM envvar which is picked up by the basis cxr.sh script and fed to the executable
     via the "-e" option which is short for --enabledmergedmesh which feeds into a bitset 
     queryable by Opticks::isEnabledMergedMesh  
 

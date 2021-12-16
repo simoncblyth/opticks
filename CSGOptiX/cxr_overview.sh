@@ -26,7 +26,7 @@ export NAMEPREFIX=cxr_overview_emm_${EMM}_moi_      # MOI gets appended by the e
 export RELDIR=cxr_overview/cam_${CAM}_tmin_${TMIN}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
-version=$(CSGOptiXVersion)
+version=$(CSGOptiXVersion 2>/dev/null)
 
 export TOPLINE="./cxr_overview.sh    # EYE $EYE MOI $MOI ZOOM $ZOOM   $stamp  $version " 
 export BOTLINE=" RELDIR $RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER "

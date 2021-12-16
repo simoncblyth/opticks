@@ -79,7 +79,7 @@ plog::Severity PLOG::EnvLevel( const char* key, const char* fallback)
 
     if(strcmp(level, fallback) != 0)
     {
-        std::cout 
+        std::cerr 
             << "PLOG::EnvLevel"
             << " adjusting loglevel by envvar  "
             << " key " << key  

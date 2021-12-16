@@ -25,7 +25,8 @@ flight=${FLIGHT:-RoundaboutXY}
 
 pkg=CSGOptiX
 bin=CSGOptiXFlight
-outbase=/tmp/$USER/opticks/$pkg/$bin/$(CSGOptiXVersion)
+version=$(CSGOptiXVersion 2>/dev/null)
+outbase=/tmp/$USER/opticks/$pkg/$bin/$version
 
 prefix="${flight}"
 outdir="$outbase/$prefix"

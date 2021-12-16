@@ -20,7 +20,7 @@ export NAMEPREFIX=cxr_view_      # MOI is appended by tests/CSGOptiXRender.cc wh
 export RELDIR=cxr_view/cam_${CAM}_${EMM}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
-version=$(CSGOptiXVersion)
+version=$(CSGOptiXVersion 2>/dev/null)
 
 export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE EMM $EMM  $stamp  $version " 
 

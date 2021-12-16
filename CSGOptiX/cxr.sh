@@ -64,7 +64,9 @@ vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
 
-export BASEDIR=/tmp/$USER/opticks/$pkg/$bin/${CFNAME}/cvd${CVD}/$(CSGOptiXVersion)
+optix_version=$(CSGOptiXVersion 2>/dev/null)
+
+export BASEDIR=/tmp/$USER/opticks/$pkg/$bin/${CFNAME}/cvd${CVD}/$optix_version
 
 # these RELDIR and NAMEPREFIX defaults are typically overridden from higher level script
 nameprefix=cxr_${top}_${EMM}_

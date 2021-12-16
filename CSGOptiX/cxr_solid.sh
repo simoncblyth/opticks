@@ -66,7 +66,7 @@ export NAMEPREFIX="cxr_solid_${sla}_"
 export RELDIR=cxr_solid/cam_${CAM}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
-version=$(CSGOptiXVersion)
+version=$(CSGOptiXVersion 2>/dev/null)
 
 export TOPLINE="./cxr_solid.sh $SLA      # EYE $EYE TMIN $TMIN  $stamp  $version " 
 
