@@ -16,12 +16,52 @@ cxr.sh
     script that runs the CSGOptiXRender executable
     this is a basis script that most of the below scripts invoke after setting controlling envvars 
 
+cxr_overview.sh
+    overview viewpoint by targeting the  
+    uses envvar MOI=-1 to set an overview viewpoint intended to see the entire geometry
+    principal controls are EMM envvar for excluding/selecting solids  
+
+    CSGFoundry::parseMOI/CSGName::parseMOI parses MOI string eg sWorld:0:0 into three integers:
+    (export CSGName=INFO to see whats happening)
+
+    Midx 
+       mesh index (equivalent for Geant4 LV index or Solid index, selecting a shape) 
+    mOrd
+       mesh ordinal (when more than one such mesh in geometry this is used to select one of them)
+    Iidx 
+       instance index      
+
+
+cxr_scan.sh
+    runs one of the other scripts (default cxr_overview.sh) multiple times with different values
+    for the EMM ennvar which is picked up by the basis cxr.sh script and fed to the executable
+    via the "-e" option which is short for --enabledmergedmesh which feeds into a bitset 
+    queryable by Opticks::isEnabledMergedMesh  
+
+
 cxr_solid.sh
-    single solid render
+    single solid render, for example  ./cxr_solid.sh r0@
+    NB here solid is in the CSGSolid sense which corresponds to a GMergedMesh
+
+    The SLA envvar set by the script is passed into the executable via option --solid_label
+    which is accessed from Opticks::getSolidLabel within CSGOptiX/tests/CSGOptiXRender.cc
+    which uses CSGFoundry::findSolidIdx to select one or more solids based on the solid_label 
+    [tested Dec 2021]
+
 cxr_solids.sh
-    multiple invokations of cxr_solid.sh for different solids
+    multiple invokations of cxr_solid.sh for different solids, 
+    currently using seq 0 9 for running all JUNO solids::
+ 
+       ./cxr_solid.sh r0@
+       ./cxr_solid.sh r1@
+       ...
+
+    [tested Dec 2021]
+
+
 cxr_table.sh
     rst table creation using snap.py 
+
 cxr_view.sh
     sets envvars and invoked ./cxr.sh 
 cxr_views.sh
@@ -35,13 +75,11 @@ cxr_flight.sh
 
 cxr_geochain.sh
 
-cxr_overview.sh
 
 cxr_pub.sh
 
 cxr_rsync.sh
 
-cxr_scan.sh
 
 
 2d render scripts

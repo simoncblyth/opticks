@@ -150,7 +150,7 @@ std::string SBit::BinString(T v, bool anno)  // static
 
     std::stringstream ss ; 
     ss 
-        << ( express_flipped ? "~" : "" )
+        << ( express_flipped ? "~" : " " )
         << ( anno ? "0b" : "" )
         << bs.to_string() ;
         ;
@@ -231,11 +231,23 @@ std::string SBit::PosString(T v, char delim, bool anno)  // static
 
 /**
 SBit::ParseAnnotation
-------------------------
+----------------------
 
-Parses unsigned long long (64 bit) integer annotations 0x 0b 0p 
-prepended to string representations of integers generally expected to 
-be used as bitfields. For example all the below correspond to the same number::
+Parses unsigned long long (64 bit) integer strings such as : "0x001" "0b001" "0p001" "~0x001" "t0x001" 
+and returns the integer string without the annotation prefix and sets the output arguments:
+
+complement 
+    bool is true when the string starts with ~ or t 
+    (t is used as "~" can be problematic as it has special meaning to the shell)
+anno
+    char is set to one of 'x','b','d','p' OR '_' if there is no such prefix
+
+    x : hex
+    b : binary
+    d : decimal 
+    p : non-standard posString prefix which specifies positions of bits that are set  
+
+All the below correspond to the same number::
 
      2
      0d2
@@ -256,11 +268,18 @@ const char* SBit::ANNO = "xbdp" ;
 
 const char* SBit::ParseAnnotation(bool& complement, char& anno, const char* str_ )
 {
-    complement = strlen(str_) > 0 && ( str_[0] == '~' || str_[0] == 't' ) ;   
-    int postcomp =  complement ? 1 : 0 ; 
+    complement = strlen(str_) > 0 && ( str_[0] == '~' || str_[0] == 't' ) ;     // str_ starts with ~ or t 
+    int postcomp =  complement ? 1 : 0 ;                                        // offset to skip the complement first character                     
     anno = strlen(str_+postcomp) > 2 && str_[postcomp] == '0' && strchr(ANNO, str_[postcomp+1]) != nullptr ?  str_[postcomp+1] : '_' ;  
     return str_ + postcomp + ( anno == '_' ? 0 : 2 ) ; 
 }
+
+/**
+SBit::FromBinString
+----------------------
+
+
+**/
 
 unsigned long long SBit::FromBinString(const char* str_ )
 {
@@ -340,7 +359,7 @@ unsigned long long SBit::FromPosString(const char* str_, char delim)
 
 
 /**
-SBit::FromPosString
+SBit::FromString
 ---------------------
 
 A PosString is a comma delimited list of ints that indicate that 
@@ -356,8 +375,6 @@ those bit positions are set. For example::
 
 
 **/
-
-
 
 unsigned long long SBit::FromString(const char* str )
 {

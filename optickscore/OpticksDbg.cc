@@ -44,7 +44,8 @@ OpticksDbg::OpticksDbg(Opticks* ok)
    m_ok(ok),
    m_cfg(NULL),
    m_geo(NULL),        // SGeo
-   m_mask_buffer(NULL)
+   m_mask_buffer(NULL),
+   m_enabledmergedmesh(0)
 {
 }
 
@@ -169,7 +170,7 @@ void OpticksDbg::postconfigure()
    const std::string& x4pointskip = m_cfg->getX4PointSkip() ;
    const std::string& csgskiplv = m_cfg->getCSGSkipLV() ;
    const std::string& deferredcsgskiplv = m_cfg->getDeferredCSGSkipLV() ;
-   const std::string& enabledmm = m_cfg->getEnabledMergedMesh() ;
+   const std::string& enabledmm = m_cfg->getEnabledMergedMesh() ;   // default is ~0 meaning everything enabled
    const std::string& x4skipsolidname = m_cfg->getX4SkipSolidName() ;
 
    postconfigure( dindex, m_debug_photon );
@@ -184,7 +185,7 @@ void OpticksDbg::postconfigure()
    postconfigure( x4pointskip, m_x4pointskip );
    postconfigure( csgskiplv, m_csgskiplv );
    postconfigure( deferredcsgskiplv, m_deferredcsgskiplv );
-   postconfigure( enabledmm, m_enabledmergedmesh );
+   postconfigure( enabledmm, m_enabledmergedmesh );    
    postconfigure( x4skipsolidname, m_x4skipsolidname, ',' );
 
 
@@ -341,6 +342,14 @@ void OpticksDbg::postconfigure(const std::string& spec, std::vector<std::pair<in
     BStr::pair_split( pairs, spec.c_str(), ',', ":" ); 
 }
 
+/**
+OpticksDbg::postconfigure bitfield
+-------------------------------------
+
+Default spec is ~0 
+
+
+**/
 
 void OpticksDbg::postconfigure(const std::string& spec, unsigned long long& bitfield)
 {

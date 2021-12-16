@@ -7,6 +7,8 @@
 #include "CSGName.h"
 
 
+const plog::Severity CSGName::LEVEL = PLOG::EnvLevel("CSGName", "DEBUG"); 
+
 CSGName::CSGName( const CSGFoundry* foundry_ )
     :
     foundry(foundry_),
@@ -148,7 +150,7 @@ int CSGName::findIndex(const char* starting, unsigned& count, int max_count ) co
 CSGName::parseArg
 -------------------
 
-If the entire arg can be parsed as an integer that interger is
+If the entire arg can be parsed as an integer that integer is
 returned otherwise the index of the first ocuurence of the 
 string in the name list is returned or -1 if not found. 
 
@@ -166,6 +168,8 @@ int CSGName::parseArg(const char* arg, unsigned& count) const
     {   
         idx = findIndex(arg, count);  
     }
+
+    LOG(LEVEL) << " arg " << arg << " idx " << idx << " count " << count ; 
     return idx ; 
 }
 
@@ -233,6 +237,18 @@ void CSGName::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const
     midx = num_elem > 0 ? parseArg( elem[0].c_str(), count) : 0 ;  
     mord = num_elem > 1 ? ParseIntString( elem[1].c_str() ) : 0 ; 
     iidx = num_elem > 2 ? ParseIntString( elem[2].c_str() ) : 0 ; 
+
+    LOG(LEVEL) 
+        << " moi " << moi 
+        << " num_elem " << num_elem
+        << " count " << count 
+        << " midx " << midx 
+        << " mord " << mord
+        << " iidx " << iidx
+        << " name.size " << name.size()
+        ;
+
+
 }
 
 

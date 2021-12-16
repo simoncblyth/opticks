@@ -21,6 +21,8 @@ TOP
 CFBASE
     directory to load the CSGFoundry geometry from, default "$TMP/CSG_GGeo" 
 
+    NB CFBASE is now only used as an override (eg for demo geometry) 
+    when not rendering the standard OPTICKS_KEY geometry which is now located inside geocache.
 
 **/
 
@@ -66,7 +68,7 @@ int main(int argc, char** argv)
 
 
     const char* solid_label = ok.getSolidLabel();  // --solid_label   used for selecting solids from the geometry 
-    std::vector<unsigned>& solid_selection = ok.getSolidSelection(); 
+    std::vector<unsigned>& solid_selection = ok.getSolidSelection(); // NB its not set yet, that happens below 
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 

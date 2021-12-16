@@ -10,11 +10,13 @@ Identity machinery using the foundry list of meshnames (aka solid names)
 
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
 
 #include "CSG_API_EXPORT.hh"
 
 struct CSG_API CSGName
 {
+    static const plog::Severity LEVEL ; 
     const CSGFoundry* foundry ; 
     const std::vector<std::string>& name ; 
     static int ParseIntString(const char* arg, int fallback=-1);
