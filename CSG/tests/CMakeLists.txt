@@ -18,6 +18,7 @@ set(TEST_SOURCES
     CUTest.cc
     CSGLogTest.cc
     CSGIntersectTest.cc
+    CSGNodeScanTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

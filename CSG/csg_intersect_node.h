@@ -673,6 +673,8 @@ bool intersect_node_plane( float4& isect, const quad& q0, const float t_min, con
 intersect_node_phicut
 ------------------------
 
+Unbounded shape that cuts phi via two half-planes "attached" to the z-axis.
+See phicut.py for development and testing of intersect_node_phicut
 The phicut planes go through the origin so the equation of the plane is::
 
     p.n = 0
@@ -689,19 +691,7 @@ Intersecting a ray with the plane::
        t  = -----------  
                v.n             
 
-
-
-Unbounded shape that cuts phi via two half-planes "attached" to the z-axis 
-
-Start by considering the quadrant formed by X and Y axes::
-
-    startPhi = 0.f 
-    deltaPhi = 0.5f     // units of pi
-
-    phi0 = 0.f 
-    phi1 = 0.f + 0.5f = 0.5f 
- 
-Need outwards normals of the planes (see phicut.py)::
+Outwards normals of the two planes::
 
     n0   (  sin(phi0), -cos(phi0), 0 )   =  ( 0, -1,  0)
     n1   ( -sin(phi1),  cos(phi1), 0 )   =  ( -1, 0,  0)   
@@ -722,7 +712,6 @@ Need outwards normals of the planes (see phicut.py)::
                   .
                   .
                 phi=1.5
-
 
 
 Normal incidence is no problem::
@@ -756,39 +745,41 @@ INTERSECT_FUNC
 bool intersect_node_phicut( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float cosPhi0 = q0.f.x ; 
-    const float sinPhi0 = q0.f.y ; `
+    const float sinPhi0 = q0.f.y ; 
     const float cosPhi1 = q0.f.z ; 
     const float sinPhi1 = q0.f.w ; 
 
-    const float3 n0 = make_float3(  sinPhi0, -cosPhi0, 0.f ); 
-    const float3 n1 = make_float3( -sinPhi1,  cosPhi1, 0.f ); 
+    // setting t values to t_min disqualifies that intersect
+    // dot products with normal0  [ sinPhi0, -cosPhi0, 0.f ]
+    float d_n0 = ray_direction.x*sinPhi0 + ray_direction.y*(-cosPhi0) ; 
+    float o_n0 = ray_origin.x*sinPhi0 + ray_origin.y*(-cosPhi0) ; 
+    float t0 = d_n0 == 0.f ? t_min : -o_n0/d_n0 ;                 // perhaps could avoid the check if side0 became -inf ? 
+    float side0 = ray_origin.x*cosPhi0 + ray_origin.y*sinPhi0 + ( ray_direction.x*cosPhi0 + ray_direction.y*sinPhi0 )*t0 ;  
+    if(side0 < 0.f) t0 = t_min ; 
 
-    float dn0 = dot(ray_direction, n0 );          // zero when ray_direction is within the plane 
-    float on0 = dot(ray_origin,    n0 ); 
-    float t0 = dn0 == 0.f ? t_min : -on0/dn0 ;    // setting to t_min disqualifies that intersect 
-
-    float dn1 = dot(ray_direction, n1 );
-    float on1 = dot(ray_origin,    n1 ); 
-    float t1 = dn1 == 0.f ? t_min : -on1/dn1 ;
+    // dot products with normal1   [ -sinPhi1,  cosPhi1, 0.f ]
+    float d_n1 = ray_direction.x*(-sinPhi1) + ray_direction.y*cosPhi1 ; 
+    float o_n1 = ray_origin.x*(-sinPhi1) + ray_origin.y*cosPhi1 ; 
+    float t1 = d_n1 == 0.f ? t_min : -o_n1/d_n1 ; 
+    float side1 = ray_origin.x*cosPhi1 + ray_origin.y*sinPhi1 + ( ray_direction.x*cosPhi1 + ray_direction.y*sinPhi1 )*t1 ;  
+    if(side1 < 0.f) t1 = t_min ; 
 
 #ifdef DEBUG
-    printf("//intersect_node_phicut n0 %10.3f %10.3f %10.3f  dn0 %10.3f on0 %10.3f t0 %10.3f \n", n0.x, n0.y, n0.z, dn0, on0, t0 ); 
-    printf("//intersect_node_phicut n1 %10.3f %10.3f %10.3f  dn1 %10.3f on1 %10.3f t1 %10.3f \n", n1.x, n1.y, n1.z, dn1, on1, t1 ); 
+    printf("//intersect_node_phicut d_n0 %10.3f o_n0 %10.3f t0 %10.3f  side0 %10.3f  \n", d_n0, o_n0, t0, side0 ); 
+    printf("//intersect_node_phicut d_n1 %10.3f o_n1 %10.3f t1 %10.3f  side1 %10.3f  \n", d_n1, o_n1, t1, side1 ); 
 #endif
 
     float t_near = fminf(t0,t1);  // order the intersects 
     float t_far  = fmaxf(t0,t1);
-
     float t_cand = t_near > t_min  ?  t_near : ( t_far > t_min ? t_far : t_min ) ; 
 
     bool valid_intersect = t_cand > t_min ;
-    bool n1_hit = t_cand == t1 ;
 
     if( valid_intersect ) 
     {
-        isect.x = n1_hit ? n1.x : n0.x ;
-        isect.y = n1_hit ? n1.y : n0.y ;
-        isect.z = n1_hit ? n1.z : n0.z ;
+        isect.x = t_cand == t1 ? -sinPhi1 :  sinPhi0 ; 
+        isect.y = t_cand == t1 ?  cosPhi1 : -cosPhi0 ;  
+        isect.z = 0.f ; 
         isect.w = t_cand ; 
     }
     return valid_intersect ; 

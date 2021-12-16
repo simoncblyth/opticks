@@ -18,7 +18,7 @@ CSGMaker::CSGMaker( CSGFoundry* fd_ )
 {
 }
 
-
+// see CSGNode::MakeDemo for CSGNode level equivalent
 CSGSolid* CSGMaker::make(const char* name)
 {
     CSGSolid* so = nullptr ; 

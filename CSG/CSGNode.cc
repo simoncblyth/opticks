@@ -537,6 +537,7 @@ CSGNode CSGNode::MakeDemo(const char* name) // static
     if(strncmp(name, "slab", 4) == 0) return CSGNode::Slab(1.f, 0.f, 0.f, -10.f, 10.f ) ; 
     if(strncmp(name, "cyli", 4) == 0) return CSGNode::Cylinder(0.f, 0.f, 100.f, -50.f, 50.f ) ; 
     if(strncmp(name, "disc", 4) == 0) return CSGNode::Disc(    0.f, 0.f, 50.f, 100.f, -2.f, 2.f ) ; 
+    if(strncmp(name, "iphi", 4) == 0) return CSGNode::InfPhiCut(0.25f, 0.10f) ; 
     LOG(fatal) << " not implemented for name " << name ; 
     assert(0); 
     return CSGNode::Sphere(1.0); 

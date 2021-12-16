@@ -1,3 +1,12 @@
+/**
+CSGIntersectTest.cc
+=====================
+
+This is for very low level testing of csg_intersect_node.h intersect functions.
+For a slightly higher level test see CSGNodeScanTest.cc
+
+**/
+
 #include "OPTICKS_LOG.hh"
 #include <cmath>
 
@@ -10,12 +19,15 @@
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
 
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
     double startPhi = 0.25 ; 
     double deltaPhi = 0.1 ; 
+
     double phi0 = startPhi ; 
     double phi1 = startPhi + deltaPhi  ; 
 
