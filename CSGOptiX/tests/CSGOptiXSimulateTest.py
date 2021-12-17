@@ -225,9 +225,10 @@ class Photons(object):
         pass
         return np.concatenate(tuple(aa))
 
-    def __init__(self, p, cf=None, feat="pid"):
+    def __init__(self, p, cf=None, feat="pid", do_mok=False):
 
-        assert feat in ["pid", "bnd", "mok"]
+        log.info("[Photons p.ndim %d p.shape %s " % (int(p.ndim), str(p.shape)) )
+        assert feat in ["pid", "bnd", "ins", "mok"]
         if p.ndim == 3:
             bnd = p[:,2,3].view(np.int32)
             ids = p[:,3,3].view(np.int32) 
@@ -238,19 +239,39 @@ class Photons(object):
         pid = ids >> 16
         ins = ids & 0xffff   # ridx?    
 
+        log.info("[ Photons.bndfeat ")
         bnd_namedict = {} if cf is None else cf.bndnamedict 
         bndfeat = Feature("bnd", bnd, bnd_namedict)
+        log.info("] Photons.bndfeat ")
 
+        log.info("[ Photons.pidfeat ")
         pid_namedict = {} if cf is None else cf.primIdx_meshname_dict()
+        log.info(" pid_namedict: %d  " % len(pid_namedict))
         pidfeat = Feature("pid", pid, pid_namedict)
+        log.info("] Photons.pidfeat ")
 
-        mok_namedict = {} if cf is None else cf.moknamedict 
-        mokfeat = Feature("mok", pid, mok_namedict)
+        log.info("[ Photons.insfeat ")
+        ins_namedict = {} if cf is None else cf.insnamedict
+        log.info(" ins_namedict: %d  " % len(ins_namedict))
+        insfeat = Feature("ins", ins, ins_namedict)
+        log.info("] Photons.insfeat ")
+
+
+        if do_mok:
+            log.info("[ Photons.mokfeat ")
+            mok_namedict = {} if cf is None else cf.moknamedict 
+            mokfeat = Feature("mok", pid, mok_namedict)
+            log.info("] Photons.mokfeat ")
+        else: 
+            mokfeat = None
+        pass
 
         if feat=="pid":
             feat = pidfeat
         elif feat == "bnd":
             feat = bndfeat
+        elif feat == "ins":
+            feat = insfeat
         elif feat == "mok":
             feat = mokfeat
         else:
@@ -263,8 +284,10 @@ class Photons(object):
         self.ids = ids
         self.bndfeat = bndfeat
         self.pidfeat = pidfeat
+        self.insfeat = insfeat
         self.mokfeat = mokfeat
         self.feat = feat
+        log.info("]Photons")
 
     def __repr__(self):
         return "\n".join([
@@ -286,15 +309,21 @@ class Feature(object):
         for example boundary values or prim identity values.
         """
         uval, ucount = np.unique(val, return_counts=True)
+
         if len(vname) == 0:
             nn = ["%s%d" % (name,i) for i in uval]
             vname = dict(zip(uval,nn)) 
         pass
         pass 
-        idxdesc = np.argsort(ucount)[::-1] # indices of counts to place into descending count order
-        onames = [vname[j] for j in idxdesc]
-        ocount = [ucount[j] for j in idxdesc]
-        ouval  = [uval[j] for j in idxdesc]
+        idxdesc = np.argsort(ucount)[::-1]  
+        # indices of uval and ucount that reorder those arrays into descending count order
+
+        ocount = [ucount[j]       for j in idxdesc]
+        ouval  = [uval[j]         for j in idxdesc]
+
+        # vname needs absolutes to get the names 
+        onames = [vname[uval[j]]  for j in idxdesc]
+
 
         self.name = name
         self.val = val
@@ -312,7 +341,7 @@ class Feature(object):
         isel = self.parse_ISEL(ISEL, onames) 
         sisel = ",".join(map(str, isel))
 
-        print( "ISEL: [%s] isel: [%s] sisel [%s] " % (ISEL, str(isel), sisel))
+        print( "Feature name %s ISEL: [%s] isel: [%s] sisel [%s] " % (name, ISEL, str(isel), sisel))
 
         self.isel = isel 
         self.sisel = sisel 
@@ -487,6 +516,8 @@ class Plt(object):
         copyref( locals(), globals(), self, "gs_" ) 
       
     def positions(self, local=True):
+        """
+        """
         self.local = local
 
         gs_centers = self.gs_centers 
@@ -511,7 +542,6 @@ class Plt(object):
             lim[Y] = np.array([upos[:,Y].min(), upos[:,Y].max()])  
             lim[Z] = np.array([upos[:,Z].min(), upos[:,Z].max()])  
         pass
-
 
         # with global frame gs_centers this will lead to a non-straight-on view as its tilted
 
@@ -544,8 +574,14 @@ class Plt(object):
         sisel = self.feat.sisel
         return os.path.join(self.outdir,"%s_%s_%s.png" % (stem, ptype, self.feat.name)) 
 
-    def positions_mpplt(self):
+    def positions_mpplt(self, legend=True):
         """
+        (H,V) are the plotting axes 
+        (X,Y,Z) = (0,1,2) correspond to absolute axes which can be mapped to plotting axes in various ways 
+        
+        when Z is vertical lines of constant Z appear horizontal 
+        when Z is horizontal lines of constant Z appear vertical 
+
         """
         upos = self.upos
         ugsc = self.ugsc
@@ -565,7 +601,7 @@ class Plt(object):
         fig, ax = mp.subplots(figsize=self.size/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
 
-        print("positions_plt feat.name %s " % feat.name )
+        print("positions_mpplt feat.name %s " % feat.name )
 
         axes = self.axes
         H,V = axes      ## traditionally H,V = X,Z  but are now generalizing 
@@ -580,15 +616,6 @@ class Plt(object):
         log.info(" xlim[0] %8.4f xlim[1] %8.4f " % (xlim[0], xlim[1]) )
         log.info(" ylim[0] %8.4f ylim[1] %8.4f " % (ylim[0], ylim[1]) )
         log.info(" zlim[0] %8.4f zlim[1] %8.4f " % (zlim[0], zlim[1]) )
-
-
-        ## ZZ=190,-450 XX=250,-250 ./cxs.sh 
-
-        ## (H,V) are the plotting axes 
-        ## (X,Y,Z) = (0,1,2) correspond to absolute axes which can be mapped to plotting axes in various ways 
-        ##
-        ## when Z is vertical lines of constant Z appear horizontal 
-        ## when Z is horizontal lines of constant Z appear vertical 
 
         if H == X and V == Z:   
             for z in self.zz:   # ZZ horizontals 
@@ -617,9 +644,16 @@ class Plt(object):
         ax.set_ylim( lim[V] )  # zlim -> ylim 
 
         ax.set_aspect('equal')
-        ax.legend(loc="upper right", markerscale=4)
+        if legend:
+            ax.legend(loc="upper right", markerscale=4)
+            ptype = "mpplt"  
+        else:
+            ptype = "mpnky"  
+        pass
         fig.show()
-        outpath = self.outpath_("positions","mpplt")
+
+       
+        outpath = self.outpath_("positions",ptype )
         print(outpath)
         fig.savefig(outpath)
 
@@ -745,16 +779,20 @@ if __name__ == '__main__':
     cf = CSGFoundry(os.path.join(FOLD, "CSGFoundry"))
     cxs = Fold.Load( FOLD, "CSGOptiXSimulateTest", GEOM, globals=True ) 
 
-    feat = "pid"  #  mok/pid/bnd   
+    #feat = "mok"  #  mok/pid/bnd/ins   
+    feat = "pid"  #  mok/pid/bnd/ins      pid aka meshname
+    #feat = "bnd"  #  mok/pid/bnd/ins   
+    #feat = "ins"  #  mok/pid/bnd/ins   
 
     if feat == "mok":
         mock_photons = Photons.Mock()
-        ph = Photons(mock_photons, cf, feat=feat)
+        ph = Photons(mock_photons, cf, feat=feat, do_mok=True)
         print(ph.mokfeat)
     else:
-        ph = Photons(cxs.photons, cf, feat=feat)
+        ph = Photons(cxs.photons, cf, feat=feat, do_mok=False )
         print(ph.bndfeat)
         print(ph.pidfeat)
+        print(ph.insfeat)
     pass
    
 if 1:
@@ -763,8 +801,10 @@ if 1:
     plt.positions(local=True)
 
     if not mp is None:
-        plt.positions_mpplt()
+        plt.positions_mpplt(legend=True)
+        plt.positions_mpplt(legend=False)
     pass
+
     if not pv is None:
         if pv_simple:
             plt.positions_pvplt_simple()

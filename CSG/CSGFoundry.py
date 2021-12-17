@@ -17,9 +17,9 @@ class CSGFoundry(object):
         #self.bndnamedict = self.namelist_to_namedict(self.bndname)
         self.bndnamedict = self.namelist_to_namedict(self.bnd_meta)
 
-
         self.mokname = "zero one two three four five six seven eight nine".split()
         self.moknamedict = self.namelist_to_namedict(self.mokname)
+        self.insnamedict = {}
 
     def meshIdx(self, primIdx):
         """
@@ -38,7 +38,7 @@ class CSGFoundry(object):
             assert midx < len(self.meshname)
             mnam = self.meshname[midx]
             d[primIdx] = mnam
-            print("primIdx %5d midx %5d meshname %s " % (primIdx, midx, mnam))
+            #print("CSGFoundry:primIdx_meshname_dict primIdx %5d midx %5d meshname %s " % (primIdx, midx, mnam))
         pass
         return d
 

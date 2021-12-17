@@ -47,7 +47,8 @@ EOU
 
 msg="=== $BASH_SOURCE : "
 
-geom=Hama_1
+#geom=Hama_1
+geom=uni_acrylic3_0
 export GEOM=${GEOM:-$geom}
 
 isel=
@@ -60,17 +61,17 @@ if [ "$GEOM" == "Hama_1" ]; then
     cegs=16:0:9:500
     #gridscale=0.05
     gridscale=0.10
-elif [ "$GEOM" == "uni_acrylic3_2" ]; then
+elif [ "$GEOM" == "uni_acrylic3_0" ]; then
     moi=uni_acrylic3
     cegs=16:0:9:100
     #cegs=0:0:0:1000
     #cegs=16:4:9:100
     gridscale=0.05
-elif [ "$GEOM" == "uni_acrylic3_4" ]; then
+elif [ "$GEOM" == "uni_acrylic3_wide" ]; then
     moi=uni_acrylic3
     cegs=32:0:18:100
     gridscale=0.025
-elif [ "$GEOM" == "uni_acrylic3_20" ]; then
+elif [ "$GEOM" == "uni_acrylic3_tight" ]; then
     note="very tight grid to get into close corners"
     moi=uni_acrylic3
     cegs=16:0:9:100
@@ -163,7 +164,7 @@ elif [ "$(uname)" == "Darwin" ]; then
 
     opticks_keydir_grabbed_default=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
     opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$opticks_keydir_grabbed_default} 
-    export FOLD=$HOME/${OPTICKS_KEYDIR_GRABBED}/CSG_GGeo
+    export FOLD=$HOME/$opticks_keydir_grabbed/CSG_GGeo
     ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
 
 elif [ "$1" == "ana" ]; then 
