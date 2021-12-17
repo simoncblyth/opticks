@@ -52,7 +52,8 @@ EOU
 #geom=body_phys
 #geom=body_phys_pcnk_pdyn
 #geom=body_solid
-geom=SphereWithPhiSegment
+#geom=SphereWithPhiSegment
+geom=PolyconeWithMultipleRmin
 #geom=Orb
 
 export GEOM=${GEOM:-$geom}
@@ -65,6 +66,7 @@ case $GEOM in
    BoxMinusTubs0)               bin=GeoChainSolidTest ;;
    BoxMinusTubs1)               bin=GeoChainSolidTest ;;
    UnionOfHemiEllipsoids*)      bin=GeoChainSolidTest ;;
+   PolyconeWithMultipleRmin*)   bin=GeoChainSolidTest ;; 
    pmt_solid*)                  bin=GeoChainSolidTest ;;
    body_solid*)                 bin=GeoChainSolidTest ;;
    inner_solid*)                bin=GeoChainSolidTest ;;
@@ -129,17 +131,6 @@ export GInstancer=INFO
 #export NTREEPROCESS_LVLIST=0
 #export NNODENUDGER_LVLIST=0
 
-
-
-
-
-################# geometry options #########################
-
-## TODO: these now handled internally within PMTSim ?
-export JUNO_PMT20INCH_POLYCONE_NECK=ENABLED 
-export JUNO_PMT20INCH_SIMPLIFY_CSG=ENABLED
-export JUNO_PMT20INCH_NOT_USE_REAL_SURFACE=ENABLED    # when defined : dont intersect chop the PMT 
-export JUNO_PMT20INCH_PLUS_DYNODE=ENABLED   # switch on dynode without new optical model
 
 ################# mechanics ###############
 

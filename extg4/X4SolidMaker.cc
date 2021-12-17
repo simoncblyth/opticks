@@ -42,7 +42,10 @@ BoxMinusTubs0
 BoxMinusTubs1
 BoxMinusOrb
 UnionOfHemiEllipsoids
+PolyconeWithMultipleRmin
 )LITERAL"; 
+
+const G4VSolid* PolyconeWithMultipleRmin(const char* name);
 
 const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
 {
@@ -55,6 +58,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("BoxMinusTubs1",qname))                solid = X4SolidMaker::BoxMinusTubs1(qname); 
     else if(StartsWith("BoxMinusOrb",qname))                  solid = X4SolidMaker::BoxMinusOrb(qname); 
     else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = X4SolidMaker::UnionOfHemiEllipsoids(qname); 
+    else if(StartsWith("PolyconeWithMultipleRmin", qname))    solid = X4SolidMaker::PolyconeWithMultipleRmin(qname) ; 
     assert(solid); 
     return solid ; 
 }
@@ -238,6 +242,21 @@ const G4VSolid* X4SolidMaker::BoxMinusOrb(const char* name)
 
     G4VSolid* box_minus_orb = new G4SubtractionSolid(name,box,orb,nullptr, G4ThreeVector(dx, dy, dz) );  
     return box_minus_orb ; 
+}
+
+
+const G4VSolid* X4SolidMaker::PolyconeWithMultipleRmin(const char* name)
+{ 
+    double ZUpper4[4];
+    double RminUpper4[4];
+    double RmaxUpper4[4];
+    ZUpper4[0] = 0*mm;   RminUpper4[0] = 43.*mm; RmaxUpper4[0] = 195.*mm;
+    ZUpper4[1] = -15*mm; RminUpper4[1] = 43.*mm; RmaxUpper4[1] = 195.*mm;
+    ZUpper4[2] = -15*mm; RminUpper4[2] = 55.5*mm; RmaxUpper4[2] = 70.*mm;
+    ZUpper4[3] = -101*mm; RminUpper4[3] = 55.5*mm; RmaxUpper4[3] = 70.*mm;
+    
+    G4VSolid* base_steel = new G4Polycone("base_steel",0.0*deg,360.0*deg,4,ZUpper4,RminUpper4,RmaxUpper4);
+    return base_steel ;
 }
 
 

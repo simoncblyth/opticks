@@ -1372,7 +1372,8 @@ void X4Solid::convertPolycone()
     bool multi_Rmin = Rmin.size() > 1 ; 
     if( multi_Rmin ) 
     {
-        LOG(fatal) << " multiple Rmin is unhandled " << m_name ;  
+        LOG(fatal) << " multiple Rmin is unhandled " << m_name ;   // see j/issues/base_steel_multiple_Rmin_is_unhandled.rst
+        
     }
     //assert( !multi_Rmin ) ; 
 

@@ -41,7 +41,8 @@ msg="=== $BASH_SOURCE :"
 
 #geom=SphereWithPhiSegment
 #geom=Orb
-geom=sphere
+geom=PolyconeWithMultipleRmin
+
 
 export GEOM=${GEOM:-$geom}
 #cfname=GeoChain/$GEOM            # picks the CSGFoundry geometry to load

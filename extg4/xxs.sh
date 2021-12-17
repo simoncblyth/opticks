@@ -37,8 +37,9 @@ msg="=== $BASH_SOURCE :"
 #geom=AdditionAcrylicConstruction
 #geom=BoxMinusTubs0
 #geom=BoxMinusTubs1
-geom=BoxMinusOrb
+#geom=BoxMinusOrb
 #geom=UnionOfHemiEllipsoids
+geom=PolyconeWithMultipleRmin
 
 ## PMTSim debug solids 
 

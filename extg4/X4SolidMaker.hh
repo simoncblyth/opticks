@@ -22,6 +22,7 @@ struct X4_API X4SolidMaker
     static const G4VSolid* BoxMinusTubs1(const char* name); 
     static const G4VSolid* BoxMinusOrb(const char* name); 
     static const G4VSolid* UnionOfHemiEllipsoids(const char* name); 
+    static const G4VSolid* PolyconeWithMultipleRmin(const char* name);
 
     static void Extract( std::vector<long>& vals, const char* s ); 
     static bool StartsWith( const char* n, const char* q ); 
