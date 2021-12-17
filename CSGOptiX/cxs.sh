@@ -48,7 +48,8 @@ EOU
 msg="=== $BASH_SOURCE : "
 
 #geom=Hama_1
-geom=uni_acrylic3_0
+#geom=uni_acrylic3_0
+geom=uni_acrylic1_0
 export GEOM=${GEOM:-$geom}
 
 isel=
@@ -61,7 +62,13 @@ if [ "$GEOM" == "Hama_1" ]; then
     cegs=16:0:9:500
     #gridscale=0.05
     gridscale=0.10
+elif [ "$GEOM" == "uni_acrylic1_0" ]; then
+    moi=uni_acrylic1
+    cegs=16:0:9:100
+    gridscale=0.05
 elif [ "$GEOM" == "uni_acrylic3_0" ]; then
+    ## when use the option --additionacrylic-simplify-csg the uni_acrylic3 is not present 
+    ## instead get uni_acrylic1 : is that OK? 
     moi=uni_acrylic3
     cegs=16:0:9:100
     #cegs=0:0:0:1000
