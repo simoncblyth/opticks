@@ -48,7 +48,7 @@ EOU
 msg="=== $BASH_SOURCE : "
 
 # GEOM are integers or names
-geom=body_phys
+geom=1
 export GEOM=${GEOM:-$geom}
 
 
@@ -56,6 +56,8 @@ isel=
 cfbase=
 
 # hmm the name should enable the cfbase to be determined by directory existance
+# TODO: switch to name based GEOM control, not the old integers
+
 
 if [ "$GEOM" == "1" ]; then
     moi=Hama
@@ -158,7 +160,7 @@ export ISEL=${ISEL:-$isel}
 export XX=${XX:-$xx}
 export ZZ=${ZZ:-$zz}
 
-unset OPTICKS_KEY 
+#unset OPTICKS_KEY    ## NOPE CANNOT DO THAT NOW THAT CFBASE FOR STANDARD GEOM NOT USED
 
 if [ "$1" == "run" ]; then
     $GDB CSGOptiXSimulateTest

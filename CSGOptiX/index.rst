@@ -2,8 +2,8 @@ CSGOptiX : expt with OptiX 7 geometry and rendering
 ======================================================
 
 
-3D render scripts
-------------------
+3D render scripts (most using the OptiX 7 CSG,CSGOptiX machinery, a few using pre7 OpSnapTest,OptiXRap) 
+--------------------------------------------------------------------------------------------------------
 
 cxr.sh
     script that runs the CSGOptiXRender executable
@@ -73,24 +73,21 @@ cxr_views.sh
     multiple invokations of cxr_view.sh varying EMM to change included geometry
 
 
-
 cxr_flight.sh
     creates sequence of jpg snaps and puts them together into mp4 
+ 
+    TODO: compare with ../bin/flight7.sh AND MERGE OR REMOVE ONE 
 
+../bin/flight7.sh 
 
+    looks to be an update to flight.sh but using the OptiX 7 executable CSGOptiXFlight
 
-cxr_demo.sh
-cxr_demos.sh
-cxr_demo_find.sh
-
-cxr_geochain.sh
-
-cxr_pub.sh
-
-cxr_rsync.sh
+    TODO: this is setting CFBASE, that is no longer the way to pick standard geometry 
 
 
 ../bin/flight.sh 
+
+   PRE 7 RENDERING  
 
    flight-render-jpg  
        uses single OpFlightPathTest executable invokation with --flightconfig option 
@@ -99,31 +96,73 @@ cxr_rsync.sh
    flight-make-mp4
        uses ffmpeg to create .mp4 from the .jpg 
 
-
-../bin/flight7.sh 
-
-    looks to be an update to flight.sh but using the OptiX 7 executable CSGOptiXFlight
-
-    TODO: this is setting CFBASE, that is no longer the way to pick standard geometry 
-    TODO: flight7.sh and flight.sh are too similar, merge these 
-
     
 ../docs/misc/making_flightpath_raytrace_movies.rst
+
+    PRE 7 NOTES 
 
     OpSnapTest --savegparts   
 
     using python machinery to inspect geometry : 
 
+    TODO: update with instructions for 7 
 
-2d render scripts
+
+cxr_demo.sh
+    renders Demo CSGFoundry geometry created by::
+
+        cd ~/CSG        # c 
+        ./CSGDemoTest.sh  
+
+    [tested Dec 2021]
+
+cxr_demos.sh
+    perl grabs all geometry names from ../CSG/CSGDemoTest.sh   
+    and then runs cxr_demo.sh on every one of them 
+
+
+cxr_geochain.sh
+    renders geometry created by the GeoChain executable that can be 
+    anything from a single node to an entire detector geometry 
+
+    This geometry is identified by CFNAME which cxr.sh uses
+    for form an override CFBASE envvar /tmp/$USER/opticks/${CFNAME} 
+
+cxr_pub.sh
+    pub.py promotes from SRC_BASE=/tmp/$USER/opticks/CSGOptiX/CSGOptiXRender into presentation repo 
+
+cxr_rsync.sh
+    SUSPECT HAVE REPLACED USE OF THIS WITH THE MORE CONTROLLABLE pub.py APPROACH see cxr_pub.sh 
+
+
+
+2D render scripts
 -------------------------
 
-cxs.sh
+cxs.sh [run/ana/]
+
+    Two modes:
+
+    *run* 
+         invokes CSGOptiXSimulateTest executable (default on Linux)
+    *ana* 
+         invokes tests/CSGOptiXSimulateTest.py script (default on Darwin)
+         which uses matplotlib and/or pyvista to create mostly 2D geometry
+         plots of the positions of intersects onto geometry    
+
+    The *run* and *ana* are often invoked on different machines after *grab.sh* has
+    been used to get the .npy results of *run* onto the local machine.
+
 cxsd.sh
+    runs cxs.sh with GDB envvar defined to switch on lldb OR gdb debugger
+
+cxs_pub.sh
+    pub.py promotes from SRC_BASE=$TMP/CSGOptiX/CSGOptiXSimulateTest into presentation repo
 
 
-admin scripts
-----------------
+
+admin scripts relevant to both cxs and cxr 
+----------------------------------------------
 
 grab.sh 
     rsync .jpg .png .mp4 .json etc.. outputs from P:/tmp/blyth/opticks/CSGOptiX/ to local (eg laptop)::
@@ -132,11 +171,11 @@ grab.sh
         ./grab.sh  
 
 sync.sh
-    sync PWD code to remote 
+    sync PWD code to top level remote in directory of same name 
+    RSYNC : USE CAREFULLY  
 
 cf.sh
-
-pub.sh
+    find commands for manually comparison of renders  
      
 
 

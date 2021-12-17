@@ -2034,7 +2034,10 @@ opticks-find(){
 opticks-if(){ opticks-f "$1" -Hi ; }   
 opticks-fl(){ opticks-f "$1" -l ; }   
 opticks-f(){   
-   : search most everything including C/C++ code/headers, txt, rst, cmake python scripts etc.. BUT not .rst
+   : search C/C++ code/headers, txt, cmake python scripts etc.. BUT NOT .rst
+   : .rst due to too many hits within issues 
+   : to seach that use opticks-r 
+
    local str="${1:-ENV_HOME}"
    local opt=${2:--H}
 
@@ -2056,8 +2059,6 @@ opticks-f(){
        -name '*.py' \
         \) \
        -exec grep $opt "$str" {} \;
-
-#      -name '*.rst' -or \
 
 }
 

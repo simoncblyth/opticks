@@ -2,6 +2,9 @@
 
 usage(){ cat << EOU
 
+HMM : SUSPECT HAVE REPLACED USE OF THIS WITH THE MORE CONTROLLABLE pub.py APPROACH SEE cxr_pub.sh 
+
+
 ::
 
    ./cxr_rsync.sh cxr_view
