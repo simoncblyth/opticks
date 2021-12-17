@@ -934,14 +934,15 @@ void GPropertyLib::loadRaw( std::vector<GPropertyMap<double>*>& dst, const char*
 
 void GPropertyLib::dumpRaw(const char* msg) const 
 {
-    LOG(info) << msg ; 
     unsigned int nraw = m_raw.size();
+    LOG(info) << "[ nraw " << nraw << " " << msg ; 
     for(unsigned int i=0 ; i < nraw ; i++)
     {
         GPropertyMap<double>* pmap = m_raw[i] ;
         LOG(info) << " component " << pmap->getName() ;
         LOG(info) << " table " << pmap->make_table() ;
     }
+    LOG(info) << "] nraw " << nraw << " " << msg ; 
 }
 
 

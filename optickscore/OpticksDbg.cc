@@ -300,7 +300,7 @@ void OpticksDbg::postgeometrySkipSolidName()
         }
     }
 
-    LOG(LEVEL) 
+    LOG(notfound == 0 ? LEVEL : error) 
         << " --skipsolidname " << skipsolidname 
         << " solidname.size " << solidname.size() 
         << " soidx.size " << soidx.size()

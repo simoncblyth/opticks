@@ -482,12 +482,19 @@ std::string GProperty<T>::make_table(int fw, T dscale, bool dreciprocal, bool co
     }
     else
     {
+        unsigned count_same_domain = 1 ; 
         GProperty<T>* a = columns[0] ;
+
         for(unsigned int c=1 ; c < ncol ; c++) 
         {
             GProperty<T>* b = columns[c] ;  
             bool same_domain = hasSameDomain(a,b, delta) ;
-            if(!same_domain) 
+
+            if(same_domain)
+            {
+                count_same_domain += 1 ; 
+            }
+            else
             {
                  LOG(fatal) << "GProperty<T>::make_table"
                             << " domain mismatch "
@@ -496,32 +503,42 @@ std::string GProperty<T>::make_table(int fw, T dscale, bool dreciprocal, bool co
                             ; 
                  hasSameDomain(a,b, delta, true); // dump
             }
-
             //assert(same_domain);
         }
-        GAry<T>* doms = a ? a->getDomain() : NULL ;
-        assert(doms);
 
-        ss << std::setw(fw) << "domain" ; 
-        for(unsigned int c=0 ; c < ncol ; c++) ss << std::setw(fw) << titles[c] ; 
-        ss << std::endl ; 
+        bool all_same_domain = count_same_domain == ncol  ; 
 
-        T one(1); 
-        std::vector< GAry<T>* > values ; 
-        for(unsigned int c=0 ; c < ncol ; c++) values.push_back(columns[c]->getValues()) ; 
 
-        unsigned int nr = doms->getLength(); 
-
-        for(unsigned int r=0 ; r < nr ; r++)
+        if( !all_same_domain )
         {
-            if(constant && !(r == 0 || r == nr - 1)) continue ;
+            ss << "not all_same_domain count_same_domain " << count_same_domain << " ncol " << ncol ;   
+        } 
+        else
+        {
+            GAry<T>* doms = a ? a->getDomain() : NULL ;
+            assert(doms);
 
-            T dval = doms->getValue(r) ; 
-            if(dreciprocal) dval = one/dval ; 
-            ss << std::setw(fw) << dval*dscale ;
-
-            for(unsigned int c=0 ; c < ncol ; c++) ss << std::setw(fw) << ( values[c] ? values[c]->getValue(r) : -2. ) ; 
+            ss << std::setw(fw) << "domain" ; 
+            for(unsigned int c=0 ; c < ncol ; c++) ss << std::setw(fw) << titles[c] ; 
             ss << std::endl ; 
+
+            T one(1); 
+            std::vector< GAry<T>* > values ; 
+            for(unsigned int c=0 ; c < ncol ; c++) values.push_back(columns[c]->getValues()) ; 
+
+            unsigned int nr = doms->getLength(); 
+
+            for(unsigned int r=0 ; r < nr ; r++)
+            {
+                if(constant && !(r == 0 || r == nr - 1)) continue ;
+
+                T dval = doms->getValue(r) ; 
+                if(dreciprocal) dval = one/dval ; 
+                ss << std::setw(fw) << dval*dscale ;
+
+                for(unsigned int c=0 ; c < ncol ; c++) ss << std::setw(fw) << ( values[c] ? values[c]->getValue(r) : -2. ) ; 
+                ss << std::endl ; 
+            }
         }
     }
     return ss.str();
