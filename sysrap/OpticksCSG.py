@@ -1,7 +1,7 @@
-# generated Fri Dec 17 12:24:42 2021 
-# from /Users/blyth/opticks/sysrap 
+# generated Fri Dec 17 20:38:25 2021 
+# from /data/blyth/junotop/opticks/sysrap 
 # base OpticksCSG.h stem OpticksCSG 
-# with command :  /Users/blyth/opticks/bin/c_enums_to_python.py OpticksCSG.h 
+# with command :  /data/blyth/junotop/opticks/bin/c_enums_to_python.py OpticksCSG.h 
 #0
 class CSG_(object):
     ZERO = 0
