@@ -426,7 +426,7 @@ class Plt(object):
     def metadata(self, cxs):
 
         peta = cxs.peta
-        fdmeta = cxs.fdmeta
+        #fdmeta = cxs.fdmeta
 
         ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
         iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
@@ -453,11 +453,12 @@ class Plt(object):
         log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
         log.info(" nx_over_nz %s axes %s X %d Y %d Z %d" % (nx_over_nz,str(axes), X,Y,Z) )
 
-        self.fdmeta = fdmeta
+        #self.fdmeta = fdmeta
         self.peta = peta
         self.ce = ce
         self.sce = sce
-        self.thirdline = " ce: " + sce + " fdmeta: " + " ".join(fdmeta) 
+        #self.thirdline = " ce: " + sce + " fdmeta: " + " ".join(fdmeta) 
+        self.thirdline = " ce: " + sce 
 
         self.nx_over_nz = nx_over_nz   
         self.axes = axes 
@@ -734,9 +735,15 @@ class Plt(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/GeoChain/$GEOM" )
+    GEOM = os.environ.get("GEOM", None)
+    assert not GEOM is None
+
+    FOLD_DEFAULT = os.path.expandvars("/tmp/$USER/opticks/GeoChain/$GEOM" )
+    FOLD = os.environ.get("FOLD", FOLD_DEFAULT ) 
+    log.info("FOLD %s" % FOLD )
+
     cf = CSGFoundry(os.path.join(FOLD, "CSGFoundry"))
-    cxs = Fold.Load( FOLD, "CSGOptiXSimulateTest", globals=True ) 
+    cxs = Fold.Load( FOLD, "CSGOptiXSimulateTest", GEOM, globals=True ) 
 
     feat = "pid"  #  mok/pid/bnd   
 

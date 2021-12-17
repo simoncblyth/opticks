@@ -13,7 +13,11 @@ class CSGFoundry(object):
     def __init__(self, fold=FOLD):
         self.load(fold)
         self.meshnamedict = self.namelist_to_namedict(self.meshname)
-        self.bndnamedict = self.namelist_to_namedict(self.bndname)
+
+        #self.bndnamedict = self.namelist_to_namedict(self.bndname)
+        self.bndnamedict = self.namelist_to_namedict(self.bnd_meta)
+
+
         self.mokname = "zero one two three four five six seven eight nine".split()
         self.moknamedict = self.namelist_to_namedict(self.mokname)
 

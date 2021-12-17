@@ -47,38 +47,35 @@ EOU
 
 msg="=== $BASH_SOURCE : "
 
-# GEOM are integers or names
-geom=1
+geom=Hama_1
 export GEOM=${GEOM:-$geom}
-
 
 isel=
 cfbase=
 
-# hmm the name should enable the cfbase to be determined by directory existance
-# TODO: switch to name based GEOM control, not the old integers
 
-
-if [ "$GEOM" == "1" ]; then
+if [ "$GEOM" == "Hama_1" ]; then
     moi=Hama
     #cegs=16:0:9:1000:18700:0:0:100
     cegs=16:0:9:500
-    gridscale=0.05
-elif [ "$GEOM" == "2" ]; then
+    #gridscale=0.05
+    gridscale=0.10
+elif [ "$GEOM" == "uni_acrylic3_2" ]; then
     moi=uni_acrylic3
     cegs=16:0:9:100
     #cegs=0:0:0:1000
     #cegs=16:4:9:100
     gridscale=0.05
-elif [ "$GEOM" == "4" ]; then
+elif [ "$GEOM" == "uni_acrylic3_4" ]; then
     moi=uni_acrylic3
     cegs=32:0:18:100
     gridscale=0.025
-elif [ "$GEOM" == "20" ]; then
+elif [ "$GEOM" == "uni_acrylic3_20" ]; then
     note="very tight grid to get into close corners"
     moi=uni_acrylic3
     cegs=16:0:9:100
     gridscale=0.025
+
 elif [ "$GEOM" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    
     moi=0
@@ -99,7 +96,6 @@ elif [ "$GEOM" == "100" ]; then
     gridscale=0.1
     isel=0
 elif [ "$GEOM" == "101" ]; then
-    #cfbase=$TMP/GeoChain/BoxMinusTubs0
     cfbase=$TMP/GeoChain/BoxMinusTubs1
     moi=0
     cegs=16:0:9:100
@@ -111,7 +107,6 @@ elif [ "$GEOM" == "SphereWithPhiSegment" ]; then
     num_pho=100
     cegs=9:16:0:0:0:$dz:$num_pho
     gridscale=0.10
-
 
 else
     # everything else assume single PMT dimensions
@@ -164,9 +159,19 @@ export ZZ=${ZZ:-$zz}
 
 if [ "$1" == "run" ]; then
     $GDB CSGOptiXSimulateTest
-elif [ "$1" == "ana" -o "$(uname)" == "Darwin" ]; then 
+elif [ "$(uname)" == "Darwin" ]; then 
+
+    opticks_keydir_grabbed_default=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
+    opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$opticks_keydir_grabbed_default} 
+    export FOLD=$HOME/${OPTICKS_KEYDIR_GRABBED}/CSG_GGeo
+    ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
+
+elif [ "$1" == "ana" ]; then 
     ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
 else
     $GDB CSGOptiXSimulateTest
 fi 
+
+
+
 

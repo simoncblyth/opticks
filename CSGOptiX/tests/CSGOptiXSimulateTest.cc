@@ -19,6 +19,7 @@ is to be able to see the exact same geometry that the simulation is using.
 
 #include <cuda_runtime.h>
 #include <algorithm>
+#include <csignal>
 #include <iterator>
 
 #include "scuda.h"
@@ -45,19 +46,27 @@ int main(int argc, char** argv)
     //for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
     OPTICKS_LOG(argc, argv); 
 
-    const char* argforced = "--allownokey" ; 
+    //const char* argforced = "--allownokey" ; 
+    const char* argforced = nullptr ; 
+
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
-
 
     // new layout : save outputs within $CFBASE/CSGOptiXSimulateTest 
     // to keep intersects more closely to geometry for cross node access to identity info 
     // by forcing that geometry gets synced together with intersects 
     const char* cfbase = ok.getFoundryBase("CFBASE");  // envvar CFBASE can override 
 
+    const char* geom = SSys::getenvvar("GEOM") ; 
+    if(geom == nullptr) 
+    {
+        LOG(fatal) << " missing mandatory envvar GEOM " ; 
+        std::raise(SIGINT); 
+    }
+
     int create_dirs = 2 ;  
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", create_dirs );  
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", geom, create_dirs );  
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
 
     ok.setOutDir(outdir); 
@@ -67,6 +76,7 @@ int main(int argc, char** argv)
 
     LOG(info) 
         << " cfbase " << cfbase 
+        << " geom " << geom 
         << " default_outdir " << default_outdir
         << " outdir " << outdir
         ; 

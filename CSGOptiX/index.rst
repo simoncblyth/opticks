@@ -150,8 +150,11 @@ cxs.sh [run/ana/]
          which uses matplotlib and/or pyvista to create mostly 2D geometry
          plots of the positions of intersects onto geometry    
 
-    The *run* and *ana* are often invoked on different machines after *grab.sh* has
+    The *run* and *ana* are often invoked on different machines after *cxs_grab.sh* has
     been used to get the .npy results of *run* onto the local machine.
+
+cxs_grab.sh
+    rsyncs from OPTICKS_KEYDIR_REMOTE/CSG_GGeo to local 
 
 cxsd.sh
     runs cxs.sh with GDB envvar defined to switch on lldb OR gdb debugger
