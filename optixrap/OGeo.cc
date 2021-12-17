@@ -30,6 +30,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iomanip>
+#include <csignal>
 
 #include <optix_world.h>
 
@@ -222,6 +223,19 @@ OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeo* ggeo )
 
 void OGeo::init()
 {
+    bool is_gparts_transform_offset = m_ok->isGPartsTransformOffset()  ;   
+    LOG(info) << " is_gparts_transform_offset " << is_gparts_transform_offset ; 
+
+    if( is_gparts_transform_offset )
+    {   
+        LOG(fatal) 
+           << " using the old pre7 optixrap machinery with option --gparts_transform_offset enabled will result in mangled transforms " ; 
+        LOG(fatal) 
+           << " the --gparts_transform_offset is only appropriate when using the new optix7 machinery, eg CSG/CSGOptiX/CSG_GGeo/.. " ; 
+
+        std::raise(SIGINT); 
+    }   
+
     const char* accel = m_ok->getAccel(); 
 
     std::vector<std::string> elem ; 

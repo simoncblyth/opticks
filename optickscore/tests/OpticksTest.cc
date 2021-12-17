@@ -259,6 +259,13 @@ void test_writeGeocacheScript(const Opticks* ok)
     ok->writeGeocacheScript(); 
 }
 
+void test_isGPartsTransformOffset(const Opticks* ok)
+{
+    bool is_gparts_transform_offset = ok->isGPartsTransformOffset(); 
+    LOG(info) << " is_gparts_transform_offset " << is_gparts_transform_offset ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -295,9 +302,10 @@ int main(int argc, char** argv)
 
     test_getArgList(&ok); 
     test_getIdPath(&ok); 
+    test_writeGeocacheScript(&ok); 
 
     */
-    test_writeGeocacheScript(&ok); 
+    test_isGPartsTransformOffset(&ok); 
 
     return 0 ;
 }

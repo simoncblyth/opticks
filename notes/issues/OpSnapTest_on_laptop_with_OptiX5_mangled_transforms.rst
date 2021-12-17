@@ -2,6 +2,38 @@ OpSnapTest_on_laptop_with_OptiX5_mangled_transforms
 ======================================================
 
 
+CAUSE FOUND
+-----------------
+
+* I was thinking that the "--gparts" option was some other control whereas in fact that is just a short form of "--gparts_transform_offset"
+
+::
+
+    epsilon:optickscore blyth$ OpticksTest --gp
+    2021-12-17 13:31:56.667 INFO  [1167133] [main@273] OpticksTest
+    option '--gp' is ambiguous and matches '--gparts_transform_offset', '--gpumon', and '--gpumonpath'
+
+    2021-12-17 13:31:56.675 INFO  [1167133] [test_isGPartsTransformOffset@265]  is_gparts_transform_offset 0
+    epsilon:optickscore blyth$ OpticksTest --gpa
+
+    2021-12-17 13:32:01.444 INFO  [1167175] [main@273] OpticksTest
+    2021-12-17 13:32:01.451 INFO  [1167175] [test_isGPartsTransformOffset@265]  is_gparts_transform_offset 1
+    epsilon:optickscore blyth$ 
+
+
+ADDED ABORT IN OGeo WHEN THIS BAD OPTION IS USED
+--------------------------------------------------
+
+* OGeo (as part of optixrap) is only used in the pre7 workflow 
+* hence detecting that option enabled there is sufficient grounds for an abort 
+
+::
+
+    2021-12-17 13:45:25.963 INFO  [1286116] [OGeo::init@227]  is_gparts_transform_offset 1
+    2021-12-17 13:45:25.963 FATAL [1286116] [OGeo::init@231]  using the old pre7 optixrap machinery with option --gparts_transform_offset enabled will result in mangled transforms 
+    2021-12-17 13:45:25.963 FATAL [1286116] [OGeo::init@233]  the --gparts_transform_offset is only appropriate when using the new optix7 machinery, eg CSG/CSGOptiX/CSG_GGeo/.. 
+
+
 Issue : the snap from OpSnapTest shows incorrect transforms being applied
 ---------------------------------------------------------------------------
 

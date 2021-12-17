@@ -40,6 +40,25 @@ Need to be one above, also possibly better to set it to installed location::
     N[blyth@localhost opticks]$ 
 
 
+After update of the generated sysrap/OpticksCSG.py::
+
+
+    N[blyth@localhost opticks]$ export PYTHONPATH=$PYTHONPATH:$JUNOTOP
+    N[blyth@localhost opticks]$ ./ana/GParts.py 
+    Solid 0 : /tmp/blyth/opticks/GParts/0 : primbuf (3084, 4) partbuf (17346, 4, 4) tranbuf (7917, 3, 4, 4) idxbuf (3084, 4) 
+    Solid 1 : /tmp/blyth/opticks/GParts/1 : primbuf (5, 4) partbuf (7, 4, 4) tranbuf (5, 3, 4, 4) idxbuf (5, 4) 
+    Solid 2 : /tmp/blyth/opticks/GParts/2 : primbuf (7, 4) partbuf (33, 4, 4) tranbuf (16, 3, 4, 4) idxbuf (7, 4) 
+    Solid 3 : /tmp/blyth/opticks/GParts/3 : primbuf (7, 4) partbuf (61, 4, 4) tranbuf (21, 3, 4, 4) idxbuf (7, 4) 
+    Solid 4 : /tmp/blyth/opticks/GParts/4 : primbuf (4, 4) partbuf (24, 4, 4) tranbuf (12, 3, 4, 4) idxbuf (4, 4) 
+    Solid 5 : /tmp/blyth/opticks/GParts/5 : primbuf (1, 4) partbuf (1, 4, 4) tranbuf (1, 3, 4, 4) idxbuf (1, 4) 
+    Solid 6 : /tmp/blyth/opticks/GParts/6 : primbuf (1, 4) partbuf (31, 4, 4) tranbuf (9, 3, 4, 4) idxbuf (1, 4) 
+    Solid 7 : /tmp/blyth/opticks/GParts/7 : primbuf (1, 4) partbuf (3, 4, 4) tranbuf (1, 3, 4, 4) idxbuf (1, 4) 
+    Solid 8 : /tmp/blyth/opticks/GParts/8 : primbuf (1, 4) partbuf (31, 4, 4) tranbuf (11, 3, 4, 4) idxbuf (1, 4) 
+    Solid 9 : /tmp/blyth/opticks/GParts/9 : primbuf (130, 4) partbuf (130, 4, 4) tranbuf (130, 3, 4, 4) idxbuf (130, 4) 
+    N[blyth@localhost opticks]$ 
+
+
+
 sysrap-csg-generate is still not automated : need to run it after adding primitives or jumping python
 --------------------------------------------------------------------------------------------------------
 

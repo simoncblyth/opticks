@@ -280,7 +280,9 @@ void OpticksHub::loadGeometry()
 {
     assert(m_ggeo == NULL && "OpticksHub::loadGeometry should only be called once");
 
-    LOG(info) << "[ " << m_ok->getIdPath()  ; 
+    bool is_gparts_transform_offset = m_ok->isGPartsTransformOffset()  ; 
+
+    LOG(info) << "[ " << m_ok->getIdPath() << " isGPartsTransformOffset " << is_gparts_transform_offset  ; 
 
     m_ggeo = new GGeo(m_ok) ; 
     m_ggeo->setLookup(getLookup());  // TODO: see if legacy lookup stuff can be removed

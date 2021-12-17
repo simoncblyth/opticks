@@ -75,6 +75,11 @@ OpMgr::~OpMgr()
 void OpMgr::init()
 {
     LOG(LEVEL); 
+
+    bool is_gparts_transform_offset = m_ok->isGPartsTransformOffset()  ; 
+    LOG(info) << " is_gparts_transform_offset " << is_gparts_transform_offset ; 
+
+
     bool g4gun = m_ok->getSourceCode() == OpticksGenstep_G4GUN ;
     if(g4gun) LOG(fatal) << "OpMgr doesnt support G4GUN, other that via loading (TO BE IMPLEMENTED) " ;
     assert(!g4gun);
