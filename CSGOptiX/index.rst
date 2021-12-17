@@ -64,12 +64,15 @@ cxr_solids.sh
     [tested Dec 2021]
 
 cxr_view.sh
-    sets envvars and invokes ./cxr.sh 
+    sets MOI viewpoint (sWaterTube) deep within geometry  
+    and invokes ./cxr.sh 
 
     [tested Dec 2021]
 
 cxr_views.sh
     multiple invokations of cxr_view.sh varying EMM to change included geometry
+
+
 
 cxr_flight.sh
     creates sequence of jpg snaps and puts them together into mp4 
@@ -86,9 +89,30 @@ cxr_pub.sh
 
 cxr_rsync.sh
 
+
+../bin/flight.sh 
+
+   flight-render-jpg  
+       uses single OpFlightPathTest executable invokation with --flightconfig option 
+       to create potentially many .jpg snaps into --flightoutdir
+
+   flight-make-mp4
+       uses ffmpeg to create .mp4 from the .jpg 
+
+
 ../bin/flight7.sh 
 
+    looks to be an update to flight.sh but using the OptiX 7 executable CSGOptiXFlight
 
+    TODO: this is setting CFBASE, that is no longer the way to pick standard geometry 
+    TODO: flight7.sh and flight.sh are too similar, merge these 
+
+    
+../docs/misc/making_flightpath_raytrace_movies.rst
+
+    OpSnapTest --savegparts   
+
+    using python machinery to inspect geometry : 
 
 
 2d render scripts

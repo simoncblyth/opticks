@@ -108,15 +108,17 @@ sysrap-csg-generate()
     local msg="$FUNCNAME : " 
     local iwd=$PWD
     sysrap-cd
-    c_enums_to_python.py OpticksCSG.h 
+  
+    local script=$(opticks-home)/bin/c_enums_to_python.py
+    $script OpticksCSG.h 
+
 
     echo $msg To write above generated python to OpticksCSG.py ..
-
     local ans
     read -p "Enter YES ... " ans
 
     if [  "$ans" == "YES" ]; then 
-       c_enums_to_python.py OpticksCSG.h > OpticksCSG.py 
+       $script OpticksCSG.h > OpticksCSG.py 
 
        echo $msg checking the generated python is valid 
        python  OpticksCSG.py

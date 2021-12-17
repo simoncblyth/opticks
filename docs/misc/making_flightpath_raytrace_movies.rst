@@ -8,6 +8,9 @@ making_flightpath_raytrace_movies
     # any Opticks executable can do this (necessary as GParts are now postcache so this does not belong in geocache)
     # the parts are saved into $TMP/GParts
 
+    # TODO: could standardize doing as part of CSG_GGeo conversion 
+
+
     epsilon:ana blyth$ GParts.py 
     Solid 0 : /tmp/blyth/opticks/GParts/0 : primbuf (3084, 4) partbuf (17346, 4, 4) tranbuf (7917, 3, 4, 4) idxbuf (3084, 4) 
     Solid 1 : /tmp/blyth/opticks/GParts/1 : primbuf (5, 4) partbuf (7, 4, 4) tranbuf (5, 3, 4, 4) idxbuf (5, 4) 
