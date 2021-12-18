@@ -705,3 +705,10 @@ int SSys::RunPythonCode(const char* code)
 }
 
 
+void SSys::Exit(int rc)
+{
+    LOG(fatal) << " rc " << rc ; 
+    std::raise(SIGINT) ; 
+}
+
+

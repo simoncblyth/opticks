@@ -64,13 +64,15 @@ cxr_solids.sh
     [tested Dec 2021]
 
 cxr_view.sh
-    sets MOI viewpoint (sWaterTube) deep within geometry  
-    and invokes ./cxr.sh 
+    sets MOI viewpoint (sWaterTube) deep within geometry and invokes ./cxr.sh 
 
     [tested Dec 2021]
 
 cxr_views.sh
     multiple invokations of cxr_view.sh varying EMM to change included geometry
+
+    [tested Dec 2021]
+
 
 
 cxr_flight.sh
@@ -83,7 +85,6 @@ cxr_flight.sh
     looks to be an update to flight.sh but using the OptiX 7 executable CSGOptiXFlight
 
     TODO: this is setting CFBASE, that is no longer the way to pick standard geometry 
-
 
 ../bin/flight.sh 
 
@@ -108,6 +109,10 @@ cxr_flight.sh
     TODO: update with instructions for 7 
 
 
+
+
+
+
 cxr_demo.sh
     renders Demo CSGFoundry geometry created by::
 
@@ -128,6 +133,10 @@ cxr_geochain.sh
     This geometry is identified by CFNAME which cxr.sh uses
     for form an override CFBASE envvar /tmp/$USER/opticks/${CFNAME} 
 
+
+
+
+
 cxr_pub.sh
     pub.py promotes from SRC_BASE=/tmp/$USER/opticks/CSGOptiX/CSGOptiXRender into presentation repo 
 
@@ -144,9 +153,11 @@ cxs.sh [run/ana/]
     Two modes:
 
     *run* 
-         invokes CSGOptiXSimulateTest executable (default on Linux)
+         (default mode on Linux) 
+         invokes CSGOptiXSimulateTest executable
     *ana* 
-         invokes tests/CSGOptiXSimulateTest.py script (default on Darwin)
+         (default mode on Darwin, does not work remotely)
+         invokes tests/CSGOptiXSimulateTest.py script
          which uses matplotlib and/or pyvista to create mostly 2D geometry
          plots of the positions of intersects onto geometry    
 
@@ -154,7 +165,7 @@ cxs.sh [run/ana/]
     been used to get the .npy results of *run* onto the local machine.
 
 cxs_grab.sh
-    rsyncs from OPTICKS_KEYDIR_REMOTE/CSG_GGeo to local 
+    rsyncs from OPTICKS_KEYDIR_GRABBED/CSG_GGeo into local geocache dirs
 
 cxsd.sh
     runs cxs.sh with GDB envvar defined to switch on lldb OR gdb debugger

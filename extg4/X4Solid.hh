@@ -20,6 +20,7 @@
 #pragma once
 
 #include <vector>
+#include <set>
 #include "plog/Severity.h"
 #include "X4_API_EXPORT.hh"
 
@@ -27,6 +28,7 @@
 #include "G4RotationMatrix.hh"
 #include "X4SolidBase.hh"
 class G4VSolid ; 
+class G4PolyconeHistorical ; 
 class Opticks ; 
 struct nnode ; 
 struct nmat4triple ; 
@@ -111,8 +113,19 @@ class X4_API X4Solid : public X4SolidBase
         void convertCons();
         void convertTorus();
         void convertEllipsoid();
+
+    private:
+        static const bool convertPolycone_enable_phi_segment ; 
+        static const int  convertPolycone_debug_mode ;  // export X4Solid_convertPolycone_debug_mode=1 
+
         void convertPolycone();
-        static const bool convertPolycone_duplicate_py_inner_omission ; 
+        void convertPolycone_g4code();
+
+        static void Polycone_GetZPlane(std::vector<zplane>& zp, std::set<double>& R_inner, std::set<double>& R_outer, const G4PolyconeHistorical* ph  ); 
+        static void Polycone_MakePrims( const std::vector<zplane>& zp,  std::vector<nnode*>& prims, const char* name, bool outer  ); 
+        static bool Polycone_DoPhiSegment( const G4PolyconeHistorical* ph ); 
+        static bool Polycone_CheckZOrder( const std::vector<zplane>& zp, bool z_ascending ); 
+    private:
         void convertHype();
     private:
         static const float hz_disc_cylinder_cut ; 
@@ -127,8 +140,7 @@ class X4_API X4Solid : public X4SolidBase
         nnode* convertSphere_(bool only_inner);
         nnode* convertCons_(bool only_inner);
         nnode* convertHype_(bool only_inner);
-        void   convertPolyconePrimitives( const std::vector<zplane>& zp,  std::vector<nnode*>& prims );
-        void   convertPolycone_g4code();
+
     private:
         X4Solid* m_displaced ; 
 

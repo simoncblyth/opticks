@@ -1259,14 +1259,93 @@ void X4Solid::convertEllipsoid()
 }
 
 
-void X4Solid::convertPolyconePrimitives( const std::vector<zplane>& zp,  std::vector<nnode*>& prims )
+
+
+const bool X4Solid::convertPolycone_enable_phi_segment = false ; 
+
+/**
+X4Solid::convertPolycone
+--------------------------
+
+Note that phi segmented polycones are not handled. 
+
+See also:
+
+* G4GDMLWriteSolids::PolyconeWrite
+* G4GDMLWriteSolids::ZplaneWrite
+* ../analytic/gdml.py 
+
+**/
+
+void X4Solid::Polycone_GetZPlane(std::vector<zplane>& zp, std::set<double>& R_inner, std::set<double>& R_outer, const G4PolyconeHistorical* ph  )
+{
+    unsigned nz = ph->Num_z_planes ; 
+    zp.resize(nz); 
+    for (int i=0; i < int(nz) ; i++) 
+    {
+        zp[i] = { ph->Rmin[i], ph->Rmax[i], ph->Z_values[i] } ;  
+        R_inner.insert(ph->Rmin[i]); 
+        R_outer.insert(ph->Rmax[i]); 
+    }
+}
+
+
+bool X4Solid::Polycone_CheckZOrder( const std::vector<zplane>& zp, bool z_ascending )
+{
+    int count_z_order = 0 ; 
+    int nz = int(zp.size()); 
+    for( int i=1 ; i < nz ; i++)
+    {
+        bool z_order = z_ascending ? zp[i-1].z <= zp[i].z : zp[i].z <= zp[i-1].z ; 
+        if(z_order) count_z_order += 1 ; 
+    }
+    bool all_z_order = count_z_order == nz - 1 ;  // -1 as pairs 
+    return all_z_order ; 
+}
+
+bool X4Solid::Polycone_DoPhiSegment( const G4PolyconeHistorical* ph )
+{
+    const bool enable_phi_segment = convertPolycone_enable_phi_segment ; 
+    double startPhi = ph->Start_angle/degree ;  
+    double deltaPhi = ph->Opening_angle/degree ;
+
+    bool  has_phi_segment  = deltaPhi < 360.f  ; 
+
+    if(enable_phi_segment == false)
+    { 
+        if(has_phi_segment == true) 
+             LOG(error) 
+                 << " startPhi " << startPhi
+                 << " deltaPhi " << deltaPhi
+                 << " skipped has_phi_segment == false assert " 
+                 ; 
+        //assert( !has_phi_segment ); 
+    }
+
+    bool do_phi_segment = has_phi_segment && enable_phi_segment ; 
+    return do_phi_segment ; 
+}
+
+/**
+X4Solid::Polycone_MakePrims
+-----------------------------
+
+When making the inner need a way to expand outwards one side of the bookend prims 
+in z for coincidence avoidance
+
+* easy for to expand cylinders in z
+* for cone have to avoid changing the shape by appropriate scaling of the radius
+
+**/
+
+void X4Solid::Polycone_MakePrims( const std::vector<zplane>& zp,  std::vector<nnode*>& prims, const char* name, bool outer  )
 {
     for( unsigned i=1 ; i < zp.size() ; i++ )
     {
         const zplane& zp1 = zp[i-1] ;   // zplane struct rmin, rmax, z
         const zplane& zp2 = zp[i] ; 
-        double r1 = zp1.rmax ; 
-        double r2 = zp2.rmax ; 
+        double r1 = outer ? zp1.rmax : zp1.rmin ; 
+        double r2 = outer ? zp2.rmax : zp2.rmin ; 
         double z1 = zp1.z ; 
         double z2 = zp2.z ; 
 
@@ -1287,133 +1366,129 @@ void X4Solid::convertPolyconePrimitives( const std::vector<zplane>& zp,  std::ve
         if( r2 == r1 )
         { 
             n = make_cylinder(r2, z1, z2);
-            n->label = BStr::concat( m_name, i-1, "_zp_cylinder" ); 
+            n->label = BStr::concat<unsigned>( name, i-1, "_zp_cylinder" ); 
         }
         else
         {
             n = make_cone(r1,z1,r2,z2) ;
-            n->label = BStr::concat<unsigned>(m_name, i-1 , "_zp_cone" ) ; 
+            n->label = BStr::concat<unsigned>(name, i-1 , "_zp_cone" ) ; 
         }
         prims.push_back(n); 
     }   // over pairs of planes
 }
 
 
-
-const bool X4Solid::convertPolycone_duplicate_py_inner_omission = true ; 
-
-/**
-X4Solid::convertPolycone
---------------------------
-
-Note that phi segmented polycones are not handled. 
-
-See also:
-
-* G4GDMLWriteSolids::PolyconeWrite
-* G4GDMLWriteSolids::ZplaneWrite
-* ../analytic/gdml.py 
-
-**/
+const int X4Solid::convertPolycone_debug_mode = SSys::getenvint("X4Solid_convertPolycone_debug_mode", 0); 
 
 void X4Solid::convertPolycone()
 {  
-    bool deltaPhi_segment_enabled = false ; 
+    const int debug_mode = convertPolycone_debug_mode ; 
 
-    const G4Polycone* const solid = static_cast<const G4Polycone*>(m_solid);
-    assert(solid); 
-    const G4PolyconeHistorical* ph = solid->GetOriginalParameters() ;
+    const G4Polycone* const polycone = static_cast<const G4Polycone*>(m_solid);
+    assert(polycone); 
+    const G4PolyconeHistorical* ph = polycone->GetOriginalParameters() ;
+    double startPhi = ph->Start_angle/degree ;  
+    double deltaPhi = ph->Opening_angle/degree ;
 
-    float startPhi = ph->Start_angle/degree ;  
-    float deltaPhi = ph->Opening_angle/degree ;
-    bool  has_deltaPhi = deltaPhi < 360.f  ; 
+    std::vector<zplane> zp ; 
+    std::set<double> R_inner ; 
+    std::set<double> R_outer ; 
+    Polycone_GetZPlane(zp, R_inner, R_outer, ph ) ; 
 
-    if(deltaPhi_segment_enabled == false)
-    { 
-        if(has_deltaPhi == true) LOG(LEVEL) << " skipped has_deltaPhi == false assert " ; 
-        //assert( !has_deltaPhi ); 
-    }
-
-    unsigned nz = ph->Num_z_planes ; 
-
-    std::vector<zplane> zp(nz) ; 
-    std::set<double> Rmin ; 
-    std::set<double> Rmax ; 
-
-    for (int i=0; i < int(nz) ; i++) 
+    bool all_z_descending = Polycone_CheckZOrder(zp, false ); 
+    if(all_z_descending)
     {
-        zp[i] = { ph->Rmin[i], ph->Rmax[i], ph->Z_values[i] } ;  
-        Rmin.insert( ph->Rmin[i] );
-        Rmax.insert( ph->Rmax[i] );
-    }
-
-    bool zascend(true);
-    for( int i=1 ; i < int(nz) ; i++)
-    {
-        zascend = zp[i-1].z < zp[i].z ; 
-    }
-
-    //if( zp.size() == 2 && zp[0].z > zp[1].z )  // Aug 2018 FIX: was [0] [0] 
-    if(!zascend)
-    {
-        LOG(debug) << "Polycone reverse non-zascending zplanes for " << m_name ; 
+        LOG(error) << "all_z_descending detected, reversing " << m_name ; 
         std::reverse( std::begin(zp), std::end(zp) ) ; 
-    }
+    } 
+    bool all_z_ascending  = Polycone_CheckZOrder(zp, true  ); 
+    assert( all_z_ascending ); 
 
+    bool do_phi_segment = Polycone_DoPhiSegment(ph); 
+
+    unsigned nz = zp.size() ; 
     double zmin = zp[0].z ; 
     double zmax = zp[nz-1].z ; 
 
-    std::vector<nnode*> prims ; 
-    convertPolyconePrimitives( zp, prims ); 
-
-    bool dump = false ; 
-    nnode* cn = NTreeBuilder<nnode>::UnionTree(prims, dump) ;
-
-    bool multi_Rmin = Rmin.size() > 1 ; 
-    if( multi_Rmin ) 
+    double R_inner_min = *R_inner.begin() ; 
+    double R_inner_max = *R_inner.begin() ; 
+    for(std::set<double>::const_iterator it = R_inner.begin() ; it != R_inner.end() ; it++ ) 
     {
-        LOG(fatal) << " multiple Rmin is unhandled " << m_name ;   // see j/issues/base_steel_multiple_Rmin_is_unhandled.rst
-        
+        R_inner_min = std::min( R_inner_min, *it );
+        R_inner_max = std::max( R_inner_max, *it );
     }
-    //assert( !multi_Rmin ) ; 
 
-    double rmin = *Rmin.begin() ; 
-    double rmax = 0.  ; 
-    for(std::set<double>::const_iterator it = Rmax.begin() ; it != Rmax.end() ; it++ ) rmax = std::max( rmax, *it );
+    bool no_inner = R_inner_min == 0. && R_inner_max == 0. ; 
+    bool has_inner = !no_inner ; 
 
-    float segZ = (zmax-zmin)*1.01 ; 
-    float segR = rmax*1.5 ;   
 
-    LOG(LEVEL)
+    double R_outer_min = *R_outer.begin() ; 
+    double R_outer_max = *R_outer.begin() ; 
+    for(std::set<double>::const_iterator it = R_outer.begin() ; it != R_outer.end() ; it++ ) 
+    {
+        R_outer_min = std::min( R_outer_min, *it );
+        R_outer_max = std::max( R_outer_max, *it );
+    }
+
+    unsigned num_R_inner = R_inner.size() ; 
+    unsigned num_R_outer = R_outer.size() ; 
+
+    LOG(info)
+        << " nz " << nz
         << " zmin " << std::setw(10) << std::fixed << std::setprecision(4) << zmin
         << " zmax " << std::setw(10) << std::fixed << std::setprecision(4) << zmax
-        << " rmin " << std::setw(10) << std::fixed << std::setprecision(4) << rmin
-        << " rmax " << std::setw(10) << std::fixed << std::setprecision(4) << rmax
-        << " segZ " << std::setw(10) << std::fixed << std::setprecision(4) << segZ
-        << " segR " << std::setw(10) << std::fixed << std::setprecision(4) << segR
+        << " do_phi_segment " << do_phi_segment 
         ;
 
-    bool has_inner = rmin > 0. ; 
+    LOG(info)
+        << " R_inner_min  " << std::setw(10) << std::fixed << std::setprecision(4) << R_inner_min
+        << " R_inner_max  " << std::setw(10) << std::fixed << std::setprecision(4) << R_inner_max
+        << " num_R_inner " << num_R_inner
+        << " has_inner " << has_inner 
+        ;
+    LOG(info)
+        << " R_outer_min  " << std::setw(10) << std::fixed << std::setprecision(4) << R_outer_min
+        << " R_outer_max  " << std::setw(10) << std::fixed << std::setprecision(4) << R_outer_max
+        << " num_R_outer " << num_R_outer
+        ;
+
+
+    double segZ = (zmax-zmin)*1.01 ; 
+    double segR = R_outer_max*1.5 ;   
+
+
+
+    std::vector<nnode*> outer_prims ; 
+    Polycone_MakePrims( zp, outer_prims, m_name, true  ); 
+    bool dump = false ; 
+    nnode* outer = NTreeBuilder<nnode>::UnionTree(outer_prims, dump) ;
+
+
 
     nnode* inner = NULL ; 
-    if(has_inner)
+    if(has_inner && num_R_inner == 1)
     {
+        double rmin = R_inner_min ; 
+        assert( R_inner_min == R_inner_max ); 
+
         inner = make_cylinder(rmin, zmin, zmax);
         inner->label = BStr::concat( m_name, "_inner_cylinder", NULL  ); 
     }
+    else if( has_inner && num_R_inner > 1 )
+    {
+        // see j/issues/base_steel_multiple_Rmin_is_unhandled.rst
+        LOG(fatal) << " EXPERIMENTAL num_R_inner > 1 handling "  << m_name << " num_R_inner " << num_R_inner  ;   
 
+        std::vector<nnode*> inner_prims ; 
+        Polycone_MakePrims( zp, inner_prims, m_name, false  ); 
+        bool inner_dump = true ; 
+        inner = NTreeBuilder<nnode>::UnionTree(inner_prims, inner_dump) ;
 
-    bool omit = convertPolycone_duplicate_py_inner_omission ; 
-
-    if( has_inner && omit )
-    { 
-        LOG(error) << " convertPolycone_duplicate_py_inner_omission " << omit ;
-        inner = NULL ;  
     }
 
-    nnode* result = inner ? nnode::make_operator(CSG_DIFFERENCE, cn, inner )  : cn ; 
+    nnode* result = inner ? nnode::make_operator(CSG_DIFFERENCE, outer, inner )  : inner ; 
 
-    nnode* end_result =  has_deltaPhi && deltaPhi_segment_enabled 
+    nnode* end_result =  do_phi_segment
                       ?
                          intersectWithPhiSegment(result, startPhi, deltaPhi, segZ, segR ) 
                       :
@@ -1421,10 +1496,18 @@ void X4Solid::convertPolycone()
                       ;
 
 
-    setRoot(end_result); 
+    if( debug_mode > 0 )
+    {
+        LOG(error) << " X4Solid_convertPolycone_debug_mode " << debug_mode ; 
+        switch(debug_mode)
+        {
+            case 1: end_result = inner ; break ; 
+            case 2: end_result = outer ; break ; 
+        }
+    }
 
+    setRoot(end_result); 
     convertPolycone_g4code();
-    //LOG(error) << "DONE" ; 
 }
 
 

@@ -94,11 +94,17 @@ if [ "${GEOM/SphereWithPhiSegment}" != "$GEOM" ] ; then
    #return_difference=3
    #return_intersect=4
    #return_intersect_old=14  
-   #export X4Solid_intersectWithPhiSegment_debug_mode=$return_intersect_old
 
-   env | grep X4Solid
+   #export X4Solid_intersectWithPhiSegment_debug_mode=$return_intersect_old
+elif [ "${GEOM/PolyconeWithMultipleRmin}" != "$GEOM" ] ; then
+
+   return_inner=1
+   return_outer=2
+   export X4Solid_convertPolycone_debug_mode=$return_outer
+
 fi 
 
+env | grep X4Solid
 
 
 

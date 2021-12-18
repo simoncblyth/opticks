@@ -1,8 +1,14 @@
 #!/bin/bash -l 
 
-usage(){ cat << EOU
+cxs_grab_usage(){ cat << EOU
+cxs_grab.sh
+=============
 
-Hmm cxs now writing into geocache, so need to have a separate cxs_grab.sh for it 
+Runs rsync between a remote geocache/CSG_GGeo/ directory into which cxs 
+intersect "photon" arrays are persisted and local directories. 
+The remote directory to grab is configurable with envvar OPTICKS_KEYDIR_GRABBED,  eg::
+
+   .opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
 
 EOU
 }

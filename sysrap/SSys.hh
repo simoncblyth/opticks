@@ -101,6 +101,6 @@ class SYSRAP_API SSys {
      static const char* RunPythonScript_NOTES ; 
 
      static int RunPythonCode(const char* code);
-
+     static void Exit(int rc=0) ; 
 
 };
