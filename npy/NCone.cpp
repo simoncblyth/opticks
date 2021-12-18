@@ -36,6 +36,133 @@
 #include "Nuv.hpp"
 
 #include "PLOG.hh"
+
+
+float ncone::r1() const { return param.f.x ; }
+float ncone::z1() const { return param.f.y ; }
+float ncone::r2() const { return param.f.z ; }
+float ncone::z2() const { return param.f.w ; }  // z2 > z1
+
+// grow the cone on upwards on upper side (z2) or downwards on down side (z1)
+
+/**
+ncone::decrease_z1 ncone::increase_z2
+-----------------------------------------
+
+TODO: avoid increase_z1 and decrease_z2 changing angle of the cone by proportionately changing r1 and r2 
+
+
+                    
+                   new_r2
+                    |
+                    | r2   
+                    | | 
+                    | |
+              +~~~~~+ |        new_z2
+             /   .   \|
+            +----.----+        z2      z2 > z1  by assertion 
+           /     .     \
+          /      .      \
+         /       .       \
+        +--------.--------+    z1
+       /         .        |\
+      +~~~~~~~~~~.~~~~~~~~|~+  new_z1 
+                          | |
+                          | |
+                          r1| 
+                            |
+                           new_r1
+
+
+Consider increasing z2 by dz (dz > 0) to new_z2
+while keeping the same cone angle
+
+       new_z2 - z1       z2 - z1  
+      -------------  =  ----------
+       new_r2 - r1       r2 - r1 
+
+
+      new_r2 - r1       z2i - z1  
+      ----------  =  ----------
+       r2  - r1        z2 - z1 
+
+       new_r2 =   r1 +  (r2 - r1) ( new_z2 - z1 )/(z2 - z1)
+
+
+similarly for decreasing z1 by dz (dz > 0) to new_z1
+
+
+     new_r1 - r2          r2 - r1
+   ---------------  =   ----------
+     new_z1 - z2          z2 - z1 
+
+
+        
+     new_r1 = r2 + ( r2 - r1 )*(new_z1 - z2) / (z2 - z1 )
+
+
+**/
+
+
+void  ncone::increase_z2(float dz)
+{ 
+    assert( dz >= 0.f) ; 
+
+    const float _r1 = param.f.x ; 
+    const float _z1 = param.f.y ; 
+    const float _r2 = param.f.z ; 
+    const float _z2 = param.f.w ; 
+
+    const float new_z2 = _z2 + dz ; 
+    const float new_r2 =  _r1 +  (_r2 - _r1)*( new_z2 - _z1 )/(_z2 - _z1)  ; 
+
+    LOG(info) 
+        << " new_z2 " << new_z2 
+        << " new_r2 " << new_r2 
+        ;
+
+
+    param.f.z = new_r2 < 0.f ? 0.f : new_r2 ; 
+    param.f.w = new_z2 ; 
+} 
+
+
+void  ncone::decrease_z1(float dz)
+{ 
+    assert( dz >= 0.f) ; 
+
+    const float _r1 = param.f.x ; 
+    const float _z1 = param.f.y ; 
+    const float _r2 = param.f.z ; 
+    const float _z2 = param.f.w ; 
+
+    const float new_z1 = _z1 - dz ; 
+    const float new_r1 = _r2 + (_r2 - _r1)*(new_z1 - _z2) /(_z2 - _z1 ) ; 
+
+    LOG(info) 
+        << " new_z1 " << new_z1 
+        << " new_r1 " << new_r1 
+        ;
+
+
+    param.f.x = new_r1 < 0.f ? 0.f : new_r1 ; 
+    param.f.y = new_z1 ; 
+}
+
+
+float ncone::zc() const { return (z1() + z2())/2.f ; }
+float ncone::rmax() const { return fmaxf( r1(), r2())  ; }
+float ncone::z0() const {  return (z2()*r1()-z1()*r2())/(r1()-r2()) ; }
+float ncone::tantheta() const { return (r2()-r1())/(z2()-z1()) ; }
+float ncone::x() const { return 0.f ; }
+float ncone::y() const { return 0.f ; }
+glm::vec3 ncone::center() const { return glm::vec3(x(),y(),zc()) ; } 
+glm::vec2 ncone::cnormal() const { return glm::normalize( glm::vec2(z2()-z1(),r1()-r2()) ) ; }
+glm::vec2 ncone::csurface() const { glm::vec2 cn = cnormal() ; return glm::vec2( cn.y, -cn.x ) ; }      
+
+
+
+
     
 
 

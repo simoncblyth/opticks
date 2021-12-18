@@ -21,6 +21,7 @@
 #include "NNodeSample.hpp"
 #include "NNode.hpp"
 
+#include "PLOG.hh"
 #include "NPrimitives.hpp"
 
 
@@ -157,14 +158,50 @@ nnode* NNodeSample::Box3()
     nbox* a = make_box3(300,300,200) ; 
     return _Prepare(a) ; 
 }
-nnode* NNodeSample::Sample(const char* name)
+
+/**
+NNodeSample::Cone_0
+---------------------
+
+
+                             (2,2)
+                             (r2,z2)
+                  +-------------+
+                 /               \
+                /                 \
+               /                   \
+              /                     \
+             /                       \
+            /                         \
+           +-------------0-------------+ 
+
+                                      (r1, z1) 
+                                      (4, 0) 
+**/
+
+nnode* NNodeSample::Cone_0(const char* name)
 {
-    if(strcmp(name, "DifferenceOfSpheres") == 0) return DifferenceOfSpheres();
-    if(strcmp(name, "Box3") == 0)                return Box3();
-    return NULL ; 
+    LOG(info) << name ; 
+    float r1 = 4.f ; 
+    float z1 = 0.f ;
+    float r2 = 2.f ; 
+    float z2 = 2.f ;
+    ncone* cone = make_cone(r1,z1,r2,z2) ; 
+    nnode* node = (nnode*)cone ;
+    return node ; 
 }
 
 
 
+
+
+
+nnode* NNodeSample::Sample(const char* name)
+{
+    if(strcmp(name, "DifferenceOfSpheres") == 0) return DifferenceOfSpheres();
+    if(strcmp(name, "Box3") == 0)                return Box3();
+    if(strcmp(name, "Cone_0") == 0)              return Cone_0(name);
+    return NULL ; 
+}
 
 

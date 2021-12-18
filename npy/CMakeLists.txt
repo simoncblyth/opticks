@@ -203,6 +203,7 @@ set(SOURCES
     ImageNPY.cpp
 
     NPoint.cpp
+    NContour.cpp
 
 )
 
@@ -391,6 +392,8 @@ Ellipse.hpp
 ImageNPY.hpp
 
 NPoint.hpp
+NContour.hpp
+
 
 )
 

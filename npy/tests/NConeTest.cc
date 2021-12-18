@@ -20,9 +20,11 @@
 #include <iostream>
 #include <iomanip>
 
+#include "SPath.hh"
 #include "GLMFormat.hpp"
 #include "Nuv.hpp"
 #include "NCone.hpp"
+#include "NP.hh"
 
 #include "OPTICKS_LOG.hh"
 
@@ -54,6 +56,8 @@ void test_sdf()
 
 
 }
+
+
 
 
 void test_parametric()
@@ -140,14 +144,14 @@ void test_getSurfacePointsAll()
 
 
 
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_sdf();
+    test_sdf();
     //test_parametric();
-    test_getSurfacePointsAll();
+    //test_getSurfacePointsAll();
+
 
     return 0 ; 
 } 
