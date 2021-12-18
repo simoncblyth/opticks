@@ -35,15 +35,16 @@ struct NPY_API ncylinder : nnode
     float operator()(float x, float y, float z) const ;
     nbbox bbox() const;
 
-
     int       par_euler() const ; 
     unsigned  par_nsurf() const ; 
     glm::vec3 par_pos_model(const nuv& uv) const  ;
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
-
     void increase_z2(float dz);
     void decrease_z1(float dz);
+
+    void set_z1(float new_z1); 
+    void set_z2(float new_z2); 
 
     glm::vec3 gseedcenter() const ;
     glm::vec3 gseeddir() const ;
@@ -59,27 +60,7 @@ struct NPY_API ncylinder : nnode
     float     z2() const ; 
     float     r1() const ; 
     float     r2() const ; 
-
-
 };
-
-
-
-inline NPY_API float ncylinder::x() const { return param.f.x ; }
-inline NPY_API float ncylinder::y() const { return param.f.y ; }
-inline NPY_API float ncylinder::z() const { return 0.f ; }   // <--- where is this used ? z1 z2 
-inline NPY_API float ncylinder::radius() const { return param.f.w ; }
-inline NPY_API float ncylinder::r1()     const { return param.f.w ; } // so can treat like a cone in NNodeUncoincide
-inline NPY_API float ncylinder::r2()     const { return param.f.w ; }
-inline NPY_API glm::vec3 ncylinder::center() const { return glm::vec3(x(),y(),0.f) ; }
-
-inline NPY_API float ncylinder::z2() const { return param1.f.y ; }
-inline NPY_API float ncylinder::z1() const { return param1.f.x ; }
-
-// grow the cylinder upwards on upper side (z2) or downwards on down side (z1)
-inline NPY_API void  ncylinder::increase_z2(float dz){ assert( dz >= 0.f) ; param1.f.y += dz ; } // z2 > z1
-inline NPY_API void  ncylinder::decrease_z1(float dz){ assert( dz >= 0.f) ; param1.f.x -= dz ; }
-
 
 
 NPY_API void init_cylinder(ncylinder* n, const nquad& param, const nquad& param1 );
@@ -129,6 +110,5 @@ inline NPY_API ncylinder* make_cylinder(float x0, float y0, float z0, float w0, 
 
     return make_cylinder( radius_, z1_, z2_ );
 }
-
 
 

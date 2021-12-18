@@ -123,8 +123,10 @@ class X4_API X4Solid : public X4SolidBase
 
         static void Polycone_GetZPlane(std::vector<zplane>& zp, std::set<double>& R_inner, std::set<double>& R_outer, const G4PolyconeHistorical* ph  ); 
         static void Polycone_MakePrims( const std::vector<zplane>& zp,  std::vector<nnode*>& prims, const char* name, bool outer  ); 
+        static nnode* Polycone_MakeInner(const std::vector<zplane>& zp, const char* name, unsigned num_R_inner); 
         static bool Polycone_DoPhiSegment( const G4PolyconeHistorical* ph ); 
         static bool Polycone_CheckZOrder( const std::vector<zplane>& zp, bool z_ascending ); 
+
     private:
         void convertHype();
     private:

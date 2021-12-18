@@ -456,13 +456,38 @@ void NNodeNudger::znudge_union_maxmin(NNodeCoincidence* coin)
     NNodeJoinType join = NNodeEnum::JoinClassify( zi, zj, epsilon );
     assert(join == JOIN_COINCIDENT);
 
-    if( ri > rj )  
+    if( ri > rj )     
     {
+       /**
+                  rj
+            +-----+
+            |     |   
+        +---+-----+---+
+        |   +~~~~~+   |    j->decrease_z1
+        |             | 
+        +-------------+
+                      ri 
+        **/ 
+
         j->decrease_z1( dz );   
         coin->n = NUDGE_J_DECREASE_Z1 ; 
     }
     else
     {
+
+
+       /**
+                      rj                 
+        +-------------+
+        |             |
+        |   +~~~~~+   |    i->increase_z2
+        +---+-----+---+
+            |     |   
+            +-----+             
+                  ri         
+
+        **/ 
+
         i->increase_z2( dz ); 
         coin->n = NUDGE_I_INCREASE_Z2 ; 
     }

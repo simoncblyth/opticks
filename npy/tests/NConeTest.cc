@@ -105,6 +105,7 @@ void test_parametric()
 
 void test_getSurfacePointsAll()
 {
+
     float r1 = 4.f ; 
     float z1 = 0.f ;
     float r2 = 2.f ; 
@@ -141,6 +142,26 @@ void test_getSurfacePointsAll()
 }
 
 
+void test_increase_z2()
+{
+    float r1 = 4.f ; 
+    float z1 = 0.f ;
+    float r2 = 2.f ; 
+    float z2 = 2.f ;
+
+    ncone* cone = make_cone(r1,z1,r2,z2) ; 
+
+    cone->verbosity = 3 ;  
+    cone->pdump("make_cone(4,0,2,2)");
+
+
+    nnode* node = (nnode*)cone ; 
+
+    node->increase_z2(0.25); 
+    node->pdump("after increase_z2 ");
+
+}
+
 
 
 
@@ -148,9 +169,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    test_sdf();
+    //test_sdf();
     //test_parametric();
     //test_getSurfacePointsAll();
+
+    test_increase_z2(); 
 
 
     return 0 ; 

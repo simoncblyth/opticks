@@ -1464,7 +1464,6 @@ void X4Solid::convertPolycone()
     nnode* outer = NTreeBuilder<nnode>::UnionTree(outer_prims, dump) ;
 
 
-
     nnode* inner = NULL ; 
     if(has_inner && num_R_inner == 1)
     {
@@ -1476,14 +1475,8 @@ void X4Solid::convertPolycone()
     }
     else if( has_inner && num_R_inner > 1 )
     {
-        // see j/issues/base_steel_multiple_Rmin_is_unhandled.rst
-        LOG(fatal) << " EXPERIMENTAL num_R_inner > 1 handling "  << m_name << " num_R_inner " << num_R_inner  ;   
-
-        std::vector<nnode*> inner_prims ; 
-        Polycone_MakePrims( zp, inner_prims, m_name, false  ); 
-        bool inner_dump = true ; 
-        inner = NTreeBuilder<nnode>::UnionTree(inner_prims, inner_dump) ;
-
+        inner = Polycone_MakeInner( zp, m_name, num_R_inner ); 
+        inner->label = BStr::concat( m_name, "_inner_polycone", NULL  ); 
     }
 
     nnode* result = inner ? nnode::make_operator(CSG_DIFFERENCE, outer, inner )  : inner ; 
@@ -1494,7 +1487,6 @@ void X4Solid::convertPolycone()
                       :
                          result 
                       ;
-
 
     if( debug_mode > 0 )
     {
@@ -1509,6 +1501,95 @@ void X4Solid::convertPolycone()
     setRoot(end_result); 
     convertPolycone_g4code();
 }
+
+/**
+X4Solid::Polycone_MakeInner
+----------------------------
+
+* see j/issues/base_steel_multiple_Rmin_is_unhandled.rst
+
+**/
+
+nnode* X4Solid::Polycone_MakeInner(const std::vector<zplane>& zp, const char* name, unsigned num_R_inner) // static 
+{
+    LOG(fatal) << " EXPERIMENTAL num_R_inner > 1 handling "  << name << " num_R_inner " << num_R_inner  ;   
+
+    std::vector<nnode*> inner_prims ; 
+    Polycone_MakePrims( zp, inner_prims, name, false  ); 
+
+    unsigned num_prims = inner_prims.size() ; 
+    LOG(error) << " inner_prims.size " << num_prims ; 
+
+    nnode* lower = inner_prims[0] ; 
+    nnode* upper = inner_prims[inner_prims.size()-1] ; 
+
+    if( lower->is_znudge_capable() &&  upper->is_znudge_capable()  )
+    {
+        float dz = 1.0 ; 
+
+        LOG(error) << " lower.is_znudge_capable " ; 
+        lower->decrease_z1(dz); 
+
+        LOG(error) << " upper.is_znudge_capable " ;  
+        upper->increase_z2(dz); 
+
+        if( num_prims == 2 )
+        {
+            // see NNodeNudger::znudge_union_maxmin  expand the z on the smaller r side
+
+            nnode* j = upper ; 
+            nnode* i = lower ; 
+
+            float rj = j->r1() ; 
+            float ri = i->r2() ;  
+
+            if( ri > rj )    
+            {   
+               /** 
+                          rj
+                    +-----+
+                    |     |   
+                +---+-----+---+
+                |   +~~~~~+   |    j->decrease_z1
+                |             | 
+                +-------------+
+                              ri 
+                **/ 
+
+                j->decrease_z1( dz );   
+            }   
+            else
+            {   
+
+
+               /** 
+                              rj                 
+                +-------------+
+                |             |
+                |   +~~~~~+   |    i->increase_z2
+                +---+-----+---+
+                    |     |   
+                    +-----+             
+                          ri         
+
+                **/ 
+
+                i->increase_z2( dz );  
+            }   
+        }
+        else
+        {
+            LOG(fatal) << " polycone inner coincidence avoidance has not yet been generalized, name " << name  ;  
+        }
+    }
+
+    LOG(error) << " after znudges " ; 
+    bool inner_dump = true ; 
+    nnode* inner = NTreeBuilder<nnode>::UnionTree(inner_prims, inner_dump) ;
+    return inner ; 
+}
+
+
 
 
 void X4Solid::convertPolycone_g4code()

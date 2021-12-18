@@ -43,6 +43,58 @@
 
 
 
+float ncylinder::x() const { return param.f.x ; }
+float ncylinder::y() const { return param.f.y ; }
+float ncylinder::z() const { return 0.f ; }   // <--- where is this used ? z1 z2 
+float ncylinder::radius() const { return param.f.w ; }
+float ncylinder::r1()     const { return param.f.w ; } // so can treat like a cone in NNodeUncoincide
+float ncylinder::r2()     const { return param.f.w ; }
+glm::vec3 ncylinder::center() const { return glm::vec3(x(),y(),0.f) ; }
+
+float ncylinder::z2() const { return param1.f.y ; }
+float ncylinder::z1() const { return param1.f.x ; }
+
+// grow the cylinder upwards on upper side (z2) or downwards on down side (z1)
+void  ncylinder::increase_z2(float dz)
+{ 
+    assert( dz >= 0.f) ; 
+    float _z2 = z2(); 
+    float new_z2 = _z2 + dz ; 
+
+    LOG(info) 
+        << " _z2 " << _z2
+        << " dz " << dz
+        << " new_z2 " << new_z2 
+        ; 
+
+    set_z2(new_z2); 
+}  
+
+void  ncylinder::decrease_z1(float dz)
+{ 
+    assert( dz >= 0.f) ; 
+
+    float _z1 = z1(); 
+    float new_z1 = _z1 - dz ; 
+
+    LOG(info) 
+        << " _z1 " << _z1
+        << " dz " << dz
+        << " new_z1 " << new_z1
+        ; 
+
+    set_z1( new_z1 ); 
+}
+
+void ncylinder::set_z1(float new_z1)
+{
+    param1.f.x = new_z1 ; 
+}
+void ncylinder::set_z2(float new_z2)
+{
+    param1.f.y = new_z2 ; 
+}
+
 
 NPY_API void init_cylinder(ncylinder* n, const nquad& param, const nquad& param1 )
 {
