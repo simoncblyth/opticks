@@ -1479,7 +1479,7 @@ void X4Solid::convertPolycone()
         inner->label = BStr::concat( m_name, "_inner_polycone", NULL  ); 
     }
 
-    nnode* result = inner ? nnode::make_operator(CSG_DIFFERENCE, outer, inner )  : inner ; 
+    nnode* result = inner ? nnode::make_operator(CSG_DIFFERENCE, outer, inner ) : outer  ; 
 
     nnode* end_result =  do_phi_segment
                       ?

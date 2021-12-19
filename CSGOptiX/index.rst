@@ -156,7 +156,7 @@ cxs.sh [run/ana/]
          (default mode on Linux) 
          invokes CSGOptiXSimulateTest executable
     *ana* 
-         (default mode on Darwin, does not work remotely)
+         (default mode on Darwin, does not work remotely due to matplotlib/pyvista graphics)
          invokes tests/CSGOptiXSimulateTest.py script
          which uses matplotlib and/or pyvista to create mostly 2D geometry
          plots of the positions of intersects onto geometry    
