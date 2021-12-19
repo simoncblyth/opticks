@@ -47,21 +47,30 @@ EOU
 
 msg="=== $BASH_SOURCE : "
 
-#geom=Hama_1
+geom=Hama_1
 #geom=uni_acrylic3_0
-geom=uni_acrylic1_0
+#geom=uni_acrylic1_0
 export GEOM=${GEOM:-$geom}
 
 isel=
 cfbase=
 
 
+
+
+
 if [ "$GEOM" == "Hama_1" ]; then
+
     moi=Hama
-    #cegs=16:0:9:1000:18700:0:0:100
     cegs=16:0:9:500
-    #gridscale=0.05
     gridscale=0.10
+
+elif [ "$GEOM" == "Hama_2" ]; then
+
+    moi=Hama
+    cegs=32:0:18:500
+    gridscale=0.10
+
 elif [ "$GEOM" == "uni_acrylic1_0" ]; then
     moi=uni_acrylic1
     cegs=16:0:9:100
@@ -152,7 +161,7 @@ export MOI=${MOI:-$moi}
 export CXS_CEGS=${CXS_CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
-export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX"
+export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX GEOM $GEOM "
 
 if [ -n "$cfbase" ]; then 
     echo $msg cfbase $cfbase defined setting CFBASE to override standard geometry default 

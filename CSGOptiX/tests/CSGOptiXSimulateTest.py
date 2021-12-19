@@ -123,6 +123,7 @@ pass
 #pv=None
 
 X,Y,Z = 0,1,2
+SIZE = np.array([1280, 720])
 
 
 def make_colors():
@@ -132,7 +133,7 @@ def make_colors():
     #colors = ["red","green","blue","cyan","magenta","yellow","pink","purple"]
     all_colors = list(hexcolors.keys())
     easy_colors = "red green blue cyan magenta yellow pink".split()
-    skip_colors = "aliceblue".split()    # skip colors that look too alike 
+    skip_colors = "bisque beige white aliceblue antiquewhite".split()    # skip colors that look too alike 
 
     colors = easy_colors 
     for c in all_colors:
@@ -225,16 +226,20 @@ class Photons(object):
         pass
         return np.concatenate(tuple(aa))
 
-    def __init__(self, p, cf=None, feat="pid", do_mok=False):
+    def __init__(self, pos, cf=None, featname="pid", do_mok=False ):
 
+        p = pos.p
+            
         log.info("[Photons p.ndim %d p.shape %s " % (int(p.ndim), str(p.shape)) )
-        assert feat in ["pid", "bnd", "ins", "mok"]
+        assert featname in ["pid", "bnd", "ins", "mok"]
         if p.ndim == 3:
             bnd = p[:,2,3].view(np.int32)
             ids = p[:,3,3].view(np.int32) 
         elif p.ndim == 4:
             bnd = p.view(np.int32)[:,:,2,3]
             ids = p.view(np.int32)[:,:,3,3] 
+        else:
+            log.info("unexpected p.shape %s " % str(p.shape))
         pass
         pid = ids >> 16
         ins = ids & 0xffff   # ridx?    
@@ -256,7 +261,6 @@ class Photons(object):
         insfeat = Feature("ins", ins, ins_namedict)
         log.info("] Photons.insfeat ")
 
-
         if do_mok:
             log.info("[ Photons.mokfeat ")
             mok_namedict = {} if cf is None else cf.moknamedict 
@@ -266,13 +270,13 @@ class Photons(object):
             mokfeat = None
         pass
 
-        if feat=="pid":
+        if featname=="pid":
             feat = pidfeat
-        elif feat == "bnd":
+        elif featname == "bnd":
             feat = bndfeat
-        elif feat == "ins":
+        elif featname == "ins":
             feat = insfeat
-        elif feat == "mok":
+        elif featname == "mok":
             feat = mokfeat
         else:
             feat = None
@@ -428,35 +432,46 @@ class Feature(object):
             "ouval %s " % " ".join(map(str,self.ouval)),
             ])
 
+class Gensteps(object):
+    """
+    Transform enabled gensteps:
 
-class Plt(object):
-    def __init__(self, cxs, ph):
-        self.cxs = cxs 
-        self.ph = ph
-        self.gs = cxs.genstep
-        self.cf = None
-        self.mtr = cxs.metatran
+    * gs[igs,0,3] photons to generate for genstep *igs* 
+    * gs[igs,1] local frame center position
+    * gs[igs,2:] 4x4 transform  
 
-        self.feat = ph.feat
+    """
+    def __init__(self, genstep, metatran, local=True ):
+        gs = genstep
+        mtr = metatran
+        log.info("gensteps")
 
-        self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
-        self.botline = os.environ.get("BOTLINE", "cxs") 
+        numpho = gs.view(np.int32)[:,0,3] 
+        centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
+        for igs in range(len(gs)): centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
 
-        outdir = os.path.join(cxs.base, "figs")
-        if not os.path.isdir(outdir):
-            os.makedirs(outdir)
-        pass
-        self.outdir = outdir
-        self.metadata(cxs)
+        centers_local = np.dot( centers, mtr[1] )  # use metatran.v to transform back to local frame
+        ugsc = centers_local if local else centers  
 
-        self.gensteps(self.gs, self.mtr)
-        self.size = np.array([1280, 720])
+        lim = {}
+        lim[X] = np.array([ugsc[:,X].min(), ugsc[:,X].max()])
+        lim[Y] = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
+        lim[Z] = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
 
-    def metadata(self, cxs):
+        self.gs = gs
+        self.mtr = mtr 
+        self.numpho = numpho
+        self.centers = centers 
+        self.centers_local = centers_local
+        self.ugsc = ugsc
+        self.lim = lim 
 
-        peta = cxs.peta
-        #fdmeta = cxs.fdmeta
 
+class Peta(object):
+    """
+    Interpret the metadata 
+    """
+    def __init__(self, peta):
         ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
         iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
         ce = tuple(peta[0,2])
@@ -482,11 +497,9 @@ class Plt(object):
         log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
         log.info(" nx_over_nz %s axes %s X %d Y %d Z %d" % (nx_over_nz,str(axes), X,Y,Z) )
 
-        #self.fdmeta = fdmeta
         self.peta = peta
         self.ce = ce
         self.sce = sce
-        #self.thirdline = " ce: " + sce + " fdmeta: " + " ".join(fdmeta) 
         self.thirdline = " ce: " + sce 
 
         self.nx_over_nz = nx_over_nz   
@@ -496,58 +509,65 @@ class Plt(object):
         self.ny = ny
         self.nz = nz
         self.photons_per_genstep = photons_per_genstep
+ 
 
-    def gensteps(self, gs, mtr):
-        """
-        Transform enabled gensteps:
+class Positions(object):
+    """
+    Transforms global intersect positions into local frame 
+    """
+    def __init__(self, p, gs, peta, local=True, pos_mask=False ):
 
-        * gs[igs,0,3] photons to generate for genstep *igs* 
-        * gs[igs,1] local frame center position
-        * gs[igs,2:] 4x4 transform  
-
-        """
-        log.info("gensteps")
-        gs_numpho = gs.view(np.int32)[:,0,3] 
-        gs_centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
-        for igs in range(len(gs)): gs_centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
-
-        gs_centers_local = np.dot( gs_centers, mtr[1] )  # use metatran.v to transform back to local frame
-
-        copyref( locals(), globals(), self, "gs_" ) 
-      
-    def positions(self, local=True):
-        """
-        """
-        self.local = local
-
-        gs_centers = self.gs_centers 
-        gs_centers_local = self.gs_centers_local 
-        mtr = self.mtr
-        p = self.ph.p
+        mtr = gs.mtr                    # transform
 
         gpos = p[:,0].copy()            # global frame intersect positions
         gpos[:,3] = 1  
         lpos = np.dot( gpos, mtr[1] )   # local frame intersect positions
         upos = lpos if local else gpos
-        ugsc = gs_centers_local if local else gs_centers  
 
-        gslim = False if self.feat.name == "mok" else True
-        lim = {}
-        if gslim:
-            lim[X] = np.array([ugsc[:,X].min(), ugsc[:,X].max()])
-            lim[Y] = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
-            lim[Z] = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
-        else:
-            lim[X] = np.array([upos[:,X].min(), upos[:,X].max()])
-            lim[Y] = np.array([upos[:,Y].min(), upos[:,Y].max()])  
-            lim[Z] = np.array([upos[:,Z].min(), upos[:,Z].max()])  
+        poslim = {}
+        poslim[X] = np.array([upos[:,X].min(), upos[:,X].max()])
+        poslim[Y] = np.array([upos[:,Y].min(), upos[:,Y].max()])  
+        poslim[Z] = np.array([upos[:,Z].min(), upos[:,Z].max()])  
+
+        self.poslim = poslim 
+        self.gs = gs
+        self.peta = peta 
+
+        self.p = p 
+        self.upos = upos
+        self.local = local
+
+        #self.make_histogram()
+
+        if pos_mask:
+            self.apply_pos_mask()
         pass
 
-        # with global frame gs_centers this will lead to a non-straight-on view as its tilted
+    def apply_pos_mask(self):
+        lim = self.gs.lim  
 
-        nx = self.nx
-        ny = self.ny
-        nz = self.nz
+        xmin, xmax = lim[0] 
+        ymin, ymax = lim[1] 
+        zmin, zmax = lim[2] 
+
+        upos = self.upos
+        xmask = np.logical_and( upos[:,0] >= xmin, upos[:,0] <= xmax )
+        ymask = np.logical_and( upos[:,1] >= ymin, upos[:,1] <= ymax )
+        zmask = np.logical_and( upos[:,2] >= zmin, upos[:,2] <= zmax )
+        xz_mask = np.logical_and( xmask, zmask )
+        mask = xz_mask 
+
+        self.mask = mask
+        self.p = self.p[mask]
+        self.upos = upos[mask]
+
+
+    def make_histogram(self):
+        lim = self.gs.lim  
+        nx = self.peta.nx
+        ny = self.peta.ny
+        nz = self.peta.nz
+        upos = self.upos
 
         bins = (np.linspace(*lim[X], 2*nx+1), np.linspace(*lim[Y], max(2*ny+1,2) ), np.linspace(*lim[Z], 2*nz+2))
         h3d, bins2 = np.histogramdd(upos[:,:3], bins=bins )   
@@ -557,9 +577,27 @@ class Plt(object):
         self.bins = bins 
         self.bins2 = bins2 
 
-        self.upos = upos
-        self.ugsc = ugsc
-        self.lim = lim 
+    def pvplt_simple(self):
+        p = self.p
+        pos = p[:,0,:3]
+
+        pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
+        pl.add_points( pos, color="white" )        
+        cp = pl.show()
+        return cp
+
+
+class Plt(object):
+    def __init__(self, outdir, feat, gs, peta, pos ):
+
+        self.outdir = outdir 
+        self.feat = feat
+        self.gs = gs
+        self.peta = peta
+        self.pos = pos
+
+        self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
+        self.botline = os.environ.get("BOTLINE", "cxs") 
 
         efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
         self.xx = efloatlist_("XX")
@@ -568,8 +606,7 @@ class Plt(object):
         self.sz = float(os.environ.get("SZ","1.0"))
         self.zoom = float(os.environ.get("ZOOM","3.0"))
         self.look = np.array( list(map(float, os.environ.get("LOOK","0.,0.,0.").split(","))) )
-
-
+ 
     def outpath_(self, stem="positions", ptype="pvplt"):
         sisel = self.feat.sisel
         return os.path.join(self.outdir,"%s_%s_%s.png" % (stem, ptype, self.feat.name)) 
@@ -583,28 +620,24 @@ class Plt(object):
         when Z is horizontal lines of constant Z appear vertical 
 
         """
-        upos = self.upos
-        ugsc = self.ugsc
+        upos = self.pos.upos
+        ugsc = self.gs.ugsc
+        lim = self.gs.lim
+        H,V = self.peta.axes      ## traditionally H,V = X,Z  but are now generalizing 
+        feat = self.feat
+        sz = self.sz
+        print("positions_mpplt feat.name %s " % feat.name )
 
-        lim = self.lim
         xlim = lim[X]
         ylim = lim[Y]
         zlim = lim[Z]
 
-        feat = self.feat
-        sz = self.sz
-
         igs = slice(None) if len(ugsc) > 1 else 0
 
-        title = [self.topline, self.botline, self.thirdline]
+        title = [self.topline, self.botline, self.peta.thirdline]
 
-        fig, ax = mp.subplots(figsize=self.size/100.)  # mpl uses dpi 100
+        fig, ax = mp.subplots(figsize=SIZE/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
-
-        print("positions_mpplt feat.name %s " % feat.name )
-
-        axes = self.axes
-        H,V = axes      ## traditionally H,V = X,Z  but are now generalizing 
 
         for idesc in range(feat.unum):
             uval, selector, label, color, skip, msg = feat(idesc)
@@ -652,21 +685,9 @@ class Plt(object):
         pass
         fig.show()
 
-       
         outpath = self.outpath_("positions",ptype )
         print(outpath)
         fig.savefig(outpath)
-
-    def positions_pvplt_simple(self):
-        size = self.size
-        p = self.p
-
-        pos = p[:,0,:3]
-
-        pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
-        pl.add_points( pos, color="white" )        
-        cp = pl.show()
-        return cp
 
     def positions_pvplt(self):
         """
@@ -687,28 +708,26 @@ class Plt(object):
         A value greater than 1 is a zoom-in, a value less than 1 is a zoom-out.       
 
         """
-        size = self.size
+        lim = self.gs.lim
+        ugsc = self.gs.ugsc
 
-        lim = self.lim
         xlim = lim[X]
         ylim = lim[Y]
         zlim = lim[Z]
 
-        axes = self.axes
-        H,V = axes      ## traditionally H,V = X,Z  but are now generalizing 
+        H,V = self.peta.axes      ## traditionally H,V = X,Z  but are now generalizing 
  
-        upos = self.upos
-        ugsc = self.ugsc
-        grid = True if self.ny == 0 else False   # grid is too obscuring with 3D
+        upos = self.pos.upos
+        grid = True if self.peta.ny == 0 else False   # grid is too obscuring with 3D
 
         feat = self.feat 
         zoom = self.zoom
-        look = self.look if self.local else peta[0,1,:3]
+        look = self.look if self.pos.local else self.peta.peta[0,1,:3]
 
         yoffset = -1000.       ## with parallel projection are rather insensitive to eye position distance
         eye = look + np.array([ 0, yoffset, 0 ])    
 
-        pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
+        pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
         self.pl = pl 
 
         if H == X and V == Z:
@@ -723,7 +742,7 @@ class Plt(object):
         pl.camera.ParallelProjectionOn()  
         pl.add_text(self.topline, position="upper_left")
         pl.add_text(self.botline, position="lower_left")
-        pl.add_text(self.thirdline, position="lower_right")
+        pl.add_text(self.peta.thirdline, position="lower_right")
         print("positions_pvplt feat.name %s " % feat.name )
 
         for idesc in range(feat.unum):
@@ -763,53 +782,57 @@ class Plt(object):
         return cp
 
 
-
+def test_mok(cf):
+    mock_photons = Photons.Mock()
+    ph = Photons(mock_photons, cf, featname="mok", do_mok=True)
+    print(ph.mokfeat)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    GEOM = os.environ.get("GEOM", None)
-    assert not GEOM is None
+    GEOM = os.environ.get("GEOM", None) ; assert not GEOM is None
 
     FOLD_DEFAULT = os.path.expandvars("/tmp/$USER/opticks/GeoChain/$GEOM" )
-    FOLD = os.environ.get("FOLD", FOLD_DEFAULT ) 
+
+    FOLD = os.environ.get("FOLD", FOLD_DEFAULT ) ## override FOLD set in cxs.sh 
+
     log.info("FOLD %s" % FOLD )
 
     cf = CSGFoundry(os.path.join(FOLD, "CSGFoundry"))
+    #test_mok(cf)
+
     cxs = Fold.Load( FOLD, "CSGOptiXSimulateTest", GEOM, globals=True ) 
 
-    #feat = "mok"  #  mok/pid/bnd/ins   
-    feat = "pid"  #  mok/pid/bnd/ins      pid aka meshname
-    #feat = "bnd"  #  mok/pid/bnd/ins   
-    #feat = "ins"  #  mok/pid/bnd/ins   
-
-    if feat == "mok":
-        mock_photons = Photons.Mock()
-        ph = Photons(mock_photons, cf, feat=feat, do_mok=True)
-        print(ph.mokfeat)
-    else:
-        ph = Photons(cxs.photons, cf, feat=feat, do_mok=False )
-        print(ph.bndfeat)
-        print(ph.pidfeat)
-        print(ph.insfeat)
+    outdir = os.path.join(cxs.base, "figs")
+    if not os.path.isdir(outdir):
+        os.makedirs(outdir)
     pass
-   
-if 1:
-    pv_simple = False
-    plt = Plt(cxs, ph)
-    plt.positions(local=True)
+
+    gs = Gensteps(cxs.genstep, cxs.metatran)
+
+    peta = Peta(cxs.peta)
+
+    pos = Positions(cxs.photons, gs, peta, local=True, pos_mask=True )
+
+    #pos.pvplt_simple()
+
+    ## TODO: use pos.mask to make legend items more pertinent by only incluing entries for visible intersects
+
+    ph = Photons(pos, cf, featname="pid" )  # pid:meshname, bnd:boundary, ins:instance
+    print(ph.bndfeat)
+    print(ph.pidfeat)
+    print(ph.insfeat)
+    feat = ph.feat 
+
+    plt = Plt(outdir, feat, gs, peta, pos )
 
     if not mp is None:
         plt.positions_mpplt(legend=True)
-        plt.positions_mpplt(legend=False)
+        #plt.positions_mpplt(legend=False)   # when not using pos_mask legend often too big, so can switch it off 
     pass
 
     if not pv is None:
-        if pv_simple:
-            plt.positions_pvplt_simple()
-        else: 
-            plt.positions_pvplt()
-        pass
+        plt.positions_pvplt()
     pass
 

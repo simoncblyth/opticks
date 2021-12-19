@@ -164,6 +164,7 @@ cxs.sh [run/ana/]
     The *run* and *ana* are often invoked on different machines after *cxs_grab.sh* has
     been used to get the .npy results of *run* onto the local machine.
 
+
 cxs_grab.sh
     rsyncs from OPTICKS_KEYDIR_GRABBED/CSG_GGeo into local geocache dirs
 
@@ -171,7 +172,15 @@ cxsd.sh
     runs cxs.sh with GDB envvar defined to switch on lldb OR gdb debugger
 
 cxs_pub.sh
-    pub.py promotes from SRC_BASE=$TMP/CSGOptiX/CSGOptiXSimulateTest into presentation repo
+    pub.py promotes from the below SRC_BASE into presentation repo::
+
+         $HOME/$opticks_keydir_grabbed/CSG_GGeo/CSGOptiXSimulateTest 
+    
+    Shell commands are emitted to stdout that copy images around. 
+    Also s5 text is generated for copy/pasting into presentations::
+
+        ./cxs_pub.sh cp | grep uni_acrylic | sh 
+        ./cxs_pub.sh s5 | grep uni_acrylic  
 
 
 

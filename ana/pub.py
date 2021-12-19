@@ -62,6 +62,9 @@ class Pub(object):
         name = os.path.basename(base)
         dest = os.path.join(self.DEST_BASE, name)
 
+        log.debug("base %s " % base)
+        log.debug("dest %s " % dest)
+
         self.find(base, exts)
 
         cmds, s5ps, s5ti = self.copy_cmds(dest)
@@ -83,13 +86,17 @@ class Pub(object):
                 for ext in exts:
                     if name.endswith(ext): 
                         path = os.path.join(root, name)
-                        res.append(path[len(base)+1:])
+                        relpath = path[len(base)+1:] 
+                        log.debug("relpath %s " % relpath ) 
+                        res.append(relpath)
                     pass
                 pass
             pass
         pass
         self.base = base
         self.res = sorted(res)
+        log.debug("found %d res " % len(self.res)) 
+
 
     def copy_cmds(self, dest):
         """
@@ -106,7 +113,18 @@ class Pub(object):
             s5p = "/"+dpath[len(self.DEST_ROOT)+1:]  
             s5ps.append(s5p)
             elem = rel.split("/")
-            title = "_".join([elem[-3], elem[-2], elem[-1]])
+
+            if len(elem) > 2:
+                ## old layout 
+                title = "_".join([elem[-3], elem[-2], elem[-1]])
+            elif len(elem) > 1:
+                title = "_".join([elem[-2], elem[-1]])
+            else:
+                title = elem[0]
+            pass 
+
+            log.debug("rel %s elem %d title %s " % (rel, len(elem), title))
+
             s5ti.append(title)
         pass
         return cmds, s5ps, s5ti
@@ -174,13 +192,16 @@ def parse_args(doc, **kwa):
     parser.add_argument( "args", nargs="*", help="arg" )
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
-    logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
+
+    loglevel = args.level.upper()
+    #print("logging --level setting to %s " % loglevel ) 
+
+    logging.basicConfig(level=getattr(logging,loglevel), format=fmt)
     return args  
 
 
 
 if __name__ == '__main__':
-     logging.basicConfig(level=logging.INFO)
 
      pargs = parse_args(__doc__)
      args = pargs.args 
