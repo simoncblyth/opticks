@@ -59,11 +59,10 @@ export CAM=${CAM:-$cam}    # evar:CAMERATYPE
 export TMIN=${TMIN:-$tmin} # evar:TMIN
 export ZOOM=${ZOOM:-$zoom} 
 export CAMERATYPE=$CAM     # okc/Camera::Camera default 
-export GEOM=${GEOM:-$MOI}  # "sweeper" role   
+export OPTICKS_GEOM=${OPTICKS_GEOM:-$MOI}  # "sweeper" role , used by Opticks::getOutPrefix   
 
-vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE GEOM"
+vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
-
 
 optix_version=$(CSGOptiXVersion 2>/dev/null)
 
@@ -73,14 +72,8 @@ nameprefix=cxr_${top}_${EMM}_
 export NAMEPREFIX=${NAMEPREFIX:-$nameprefix}
 
 reldir=top_${TOP}_
-export RELDIR=${RELDIR:-$reldir}  
+export OPTICKS_RELDIR=${OPTICKS_RELDIR:-$reldir}  
 
-
-#export BASEDIR=/tmp/$USER/opticks/$pkg/$bin/${CFNAME}/cvd${CVD}/$optix_version
-#export OPTICKS_OUTDIR=${BASEDIR}/${RELDIR}
-#mkdir -p $OPTICKS_OUTDIR
-#arglist=$OPTICKS_OUTDIR/arglist.txt
-#export LOGDIR=${OPTICKS_OUTDIR}.logs
 
 export LOGDIR=/tmp/$USER/opticks/$pkg/$bin
 mkdir -p $LOGDIR 
@@ -139,11 +132,15 @@ else
     render $*                               ## single MOI via envvar 
 
     if [ $? -eq 0 ]; then 
-        ls -1rt `find $OPTICKS_OUTDIR -name '*.jpg' `
-        jpg=$(ls -1rt `find $OPTICKS_OUTDIR -name '*.jpg' ` | tail -1)
-        echo $msg jpg $jpg 
-        ls -l $jpg
-        [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
+        if [ -n "$OPTICKS_OUTDIR" ]; then 
+            ls -1rt `find $OPTICKS_OUTDIR -name '*.jpg' `
+            jpg=$(ls -1rt `find $OPTICKS_OUTDIR -name '*.jpg' ` | tail -1)
+            echo $msg jpg $jpg 
+            ls -l $jpg
+            [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
+        else
+            echo $msg OPTICKS_OUTDIR not defined 
+        fi 
     else
         echo $msg non-zero RC from render 
     fi 

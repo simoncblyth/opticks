@@ -18,19 +18,19 @@ export EYE=-0.6,0,0,1
 export CAM=0 
 export ZOOM=1.5 
 export QUALITY=90 
-export GEOM=overview
+export OPTICKS_GEOM=overview
 
 [ "$(uname)" == "Darwin" ] && emm=1, || emm=t8,
 export EMM=${EMM:-$emm}
 
 export NAMEPREFIX=cxr_overview_emm_${EMM}_moi_      # MOI gets appended by the executable
-export RELDIR=cxr_overview/cam_${CAM}_tmin_${TMIN}
+export OPTICKS_RELDIR=cxr_overview/cam_${CAM}_tmin_${TMIN}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion 2>/dev/null)
 
 export TOPLINE="./cxr_overview.sh    # EYE $EYE MOI $MOI ZOOM $ZOOM   $stamp  $version " 
-export BOTLINE=" RELDIR $RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER "
+export BOTLINE=" RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER "
 
 source ./cxr.sh  
 

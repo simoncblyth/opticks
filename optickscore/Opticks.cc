@@ -2646,15 +2646,27 @@ void Opticks::setOutDir( const char* outdir_ )  // overrides --outdir
 Opticks::getOutPrefix
 ----------------------
 
+When outputs are directed within the geocache
+it is preferable to provide contextual information 
+about the output via a relative directory, rather than 
+the absolute directory of OutDir 
+
 **/
+
 const char* Opticks::getOutPrefix(int optix_version_override ) const 
 {
     int optix_version_okconf = OKConf::OptiXVersionInteger() ; 
     int optix_version = optix_version_override > 0 ? optix_version_override : optix_version_okconf ; 
 
+    const char* geom = SSys::getenvvar("OPTICKS_GEOM") ; 
+    const char* reldir = SSys::getenvvar("OPTICKS_RELDIR") ; 
+
     const char* ucvd = getUsedCVD(); 
     std::stringstream ss ; 
-    ss << "cvd" << ucvd << "/" << optix_version ; 
+    ss << "cvd" << ucvd << "/" << optix_version ;
+    if(geom)   ss << "/" << geom ; 
+    if(reldir) ss << "/" << reldir ; 
+ 
     std::string s = ss.str(); 
     const char* out_prefix = strdup(s.c_str()); 
 
@@ -2663,6 +2675,8 @@ const char* Opticks::getOutPrefix(int optix_version_override ) const
         << " optix_version_okconf " << optix_version_okconf
         << " optix_version_override " << optix_version_override
         << " optix_version " << optix_version
+        << " reldir " << reldir 
+        << " geom " << geom 
         << " out_prefix " << out_prefix
         ; 
 

@@ -178,6 +178,7 @@ class SnapScan(object):
 
     @classmethod
     def MakeSnaps(cls, globptn):
+        log.info("globptn %s " % globptn )
         raw_paths = glob.glob(globptn) 
         log.debug("raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
         paths = filter(lambda p:Snap.is_valid(p), raw_paths)
@@ -260,7 +261,7 @@ class SnapScan(object):
 def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
     parser = argparse.ArgumentParser(doc)
-    parser.add_argument(     "--level", default="info", help="logging level" ) 
+    parser.add_argument(  "--level", default="info", help="logging level" ) 
     parser.add_argument(  "--globptn", default="$TMP/snap/*.jpg", help="base" ) 
     parser.add_argument(  "--jpg", action="store_true", help="List jpg paths in speed order" ) 
     parser.add_argument(  "--refjpgpfx", default="/env/presentation/snap/lLowerChimney_phys", help="List jpg paths s5 background image presentation format" ) 

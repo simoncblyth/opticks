@@ -61,7 +61,8 @@ int main(int argc, char** argv)
     ok.setRaygenMode(0);             // override --raygenmode option 
 
     int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
-    const char* out_prefix = ok.getOutPrefix(optix_version_override);  
+    const char* out_prefix = ok.getOutPrefix(optix_version_override);   
+    // out_prefix includes values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined
     LOG(info) 
         << " optix_version_override " << optix_version_override
         << " out_prefix " << out_prefix
@@ -70,17 +71,8 @@ int main(int argc, char** argv)
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = ok.getFoundryBase("CFBASE") ; 
 
-    const char* geom = SSys::getenvvar("GEOM") ; 
-    if(geom == nullptr) 
-    {
-        LOG(fatal) << " missing mandatory envvar GEOM " ; 
-        std::raise(SIGINT); 
-    }
-
     int create_dirs = 2 ;  
-
-    //const char* default_outdir = "$TMP/CSGOptiX" ; // former default lacked digest or any connection to source geometry
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXRenderTest", out_prefix, geom, create_dirs );  
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXRenderTest", out_prefix, create_dirs );  
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
     LOG(info) << " default_outdir " << default_outdir ; 
     LOG(info) << " outdir " << outdir ; 
@@ -89,7 +81,6 @@ int main(int argc, char** argv)
 
     const char* outdir2 = ok.getOutDir(); 
     assert( strcmp(outdir2, outdir) == 0 ); 
-
 
 
     const char* solid_label = ok.getSolidLabel();  // --solid_label   used for selecting solids from the geometry 
