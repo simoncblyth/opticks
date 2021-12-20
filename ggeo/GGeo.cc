@@ -927,19 +927,33 @@ This is aiming to avoid the need to::
 
 **/
 
-std::string GGeo::getMergedMeshLabel(unsigned ridx, bool numvol, bool trim) const 
+std::string GGeo::getMergedMeshLabels( bool numvol, bool trim, bool check ) const 
 {
+    unsigned nmm = getNumMergedMesh();  
+    std::stringstream ss ; 
+    for(unsigned ridx=0 ; ridx < nmm ; ridx++ ) 
+       ss << getMergedMeshLabel(ridx, numvol, trim, check ) << std::endl ; 
+     
+    std::string s = ss.str(); 
+    return s ; 
+}
 
+
+
+std::string GGeo::getMergedMeshLabel(unsigned ridx, bool numvol, bool trim, bool check) const 
+{
     unsigned nmm = getNumMergedMesh();  
     LOG(LEVEL) 
         << " nmm " << nmm 
         << " ridx " << ridx
+        << " check " << check 
         ; 
 
     assert( ridx < nmm ); 
+
     unsigned pidx = 0 ; 
     unsigned oidx = 0 ; 
-    bool check = true ; 
+
     glm::uvec4 id = getIdentity(ridx, pidx, oidx, check); 
 
     unsigned meshIdx = OpticksShape::MeshIndex(id) ; 
@@ -960,23 +974,22 @@ std::string GGeo::getMergedMeshLabel(unsigned ridx, bool numvol, bool trim) cons
 }
 
 
-std::string GGeo::getMergedMeshLabels( bool numvol, bool trim ) const 
+void GGeo::getMergedMeshLabels(std::vector<std::string>& mergedMeshLabels, bool check ) const 
 {
+    bool numvol = true ; 
+    bool trim = true ; 
     unsigned nmm = getNumMergedMesh();  
-    std::stringstream ss ; 
-    for(unsigned ridx=0 ; ridx < nmm ; ridx++ ) 
-       ss << getMergedMeshLabel(ridx, numvol, trim ) << std::endl ; 
-     
-    std::string s = ss.str(); 
-    return s ; 
-}
 
-void GGeo::getMergedMeshLabels(std::vector<std::string>& mergedMeshLabels ) const 
-{
-    unsigned nmm = getNumMergedMesh();  
+    LOG(LEVEL) 
+        << " nmm " << nmm 
+        << " numvol " << numvol
+        << " trim " << trim
+        << " check " << check 
+        ; 
+
     for(unsigned ridx=0 ; ridx < nmm ; ridx++ ) 
     {
-        std::string mmlabel = getMergedMeshLabel(ridx) ;
+        std::string mmlabel = getMergedMeshLabel(ridx, numvol, trim, check) ;
         mergedMeshLabels.push_back(mmlabel) ;  
     }
 }

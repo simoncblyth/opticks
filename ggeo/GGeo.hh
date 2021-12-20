@@ -391,9 +391,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void Summary(const char* msg="GGeo::Summary");
         void Details(const char* msg="GGeo::Details");
 
-        std::string getMergedMeshLabel(unsigned ridx, bool numvol=true, bool trim=true) const ; 
-        std::string getMergedMeshLabels( bool numvol=true, bool trim=true ) const ; 
-        void        getMergedMeshLabels( std::vector<std::string>& mergedMeshLabels ) const ; 
+        std::string getMergedMeshLabel(unsigned ridx, bool numvol=true, bool trim=true, bool check=true) const ; 
+        std::string getMergedMeshLabels( bool numvol=true, bool trim=true, bool check=true ) const ; 
+        void        getMergedMeshLabels( std::vector<std::string>& mergedMeshLabels, bool check=true ) const ; 
 
     public:
         GInstancer* getInstancer() const ;

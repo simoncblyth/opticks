@@ -21,6 +21,7 @@
 #include <string>
 
 #include "SStr.hh"
+#include "SSys.hh"
 #include "SGeo.hh"
 #include "NPY.hpp"
 #include "NGLM.hpp"
@@ -337,13 +338,19 @@ void test_getNumMeshes(const GGeo* ggeo)
 void test_getIdentity_dumpNode(const GGeo* ggeo)
 {
     unsigned nmm = ggeo->getNumMergedMesh();  
-    LOG(info) << " nmm " << nmm ; 
+
+    int GGeoTest_check = SSys::getenvint("GGeoTest_check", 0 ); 
+    LOG(info) 
+        << " nmm " << nmm
+        << " GGeoTest_check " << GGeoTest_check
+        ; 
+
+   bool check = GGeoTest_check > 0 ; 
 
     for(unsigned ridx=0 ; ridx < nmm ; ridx++ )
     {
         unsigned pidx = 0 ; 
         unsigned oidx = 0 ; 
-        bool check = true ; 
     
         glm::uvec4 id = ggeo->getIdentity(ridx, pidx, oidx, check); 
 
