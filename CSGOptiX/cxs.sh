@@ -47,7 +47,8 @@ EOU
 
 msg="=== $BASH_SOURCE : "
 
-geom=Hama_1
+#geom=Hama_1
+geom=Hama_2
 #geom=uni_acrylic3_0
 #geom=uni_acrylic1_0
 export GEOM=${GEOM:-$geom}
@@ -172,17 +173,17 @@ export ISEL=${ISEL:-$isel}
 export XX=${XX:-$xx}
 export ZZ=${ZZ:-$zz}
 
-#unset OPTICKS_KEY    ## NOPE CANNOT DO THAT NOW THAT CFBASE FOR STANDARD GEOM NOT USED
+opticks_keydir_grabbed_default=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
+opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$opticks_keydir_grabbed_default} 
+export FOLD=$HOME/$opticks_keydir_grabbed/CSG_GGeo
+
 
 if [ "$1" == "run" ]; then
     $GDB CSGOptiXSimulateTest
+elif [ "$1" == "bat" ]; then 
+    NOGUI=1 ${IPYTHON:-ipython} --pdb  tests/CSGOptiXSimulateTest.py 
 elif [ "$(uname)" == "Darwin" ]; then 
-
-    opticks_keydir_grabbed_default=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
-    opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$opticks_keydir_grabbed_default} 
-    export FOLD=$HOME/$opticks_keydir_grabbed/CSG_GGeo
     ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
-
 elif [ "$1" == "ana" ]; then 
     ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
 else

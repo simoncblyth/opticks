@@ -11,6 +11,42 @@ OpticksIdentity::Encode
 
 Canonically invoked from GInstancer::labelRepeats_r
 
+OpticksIdentity::Encode is packing 3 integers into 4 bytes to form the so called “tripletidentity”.  
+The packing makes some assumptions about the ranges of the values and assigns different
+numbers of bytes to each.
+
+repeat_index (ridx)
+    0-based index of the repeated piece of geometry, with remainder
+    non-repeated geometry in ridx=0 (aka global geometry)   
+
+    One byte allowed : ie up to 0xff = 255 
+
+    JUNO geometry currently has about 10 of these, corresponding for example
+    to the collections of volumes for the PMTs
+ 
+    
+placement_index (pidx)
+    0-based index corresponding to the placements of the repeated
+    pieces of gemoetry
+
+    Two bytes allowed : ie up to 0xffff = 65535
+
+    For JUNO this goes up to 20-30k corresponding to numbers of PMTs
+
+
+offset_index (oidx)
+    0-based index corresponding to the volumes within the repeated piece 
+    of geometry (ie the small number of volumes that make up the PMT)
+
+    For JUNO for repeated geometry this goes up to probably less than 10
+
+    One byte allowed : ie up to 0xff = 255 
+
+
+Notice that the above limits are for ridx > 0 for ridx = 0 (the global geometry)
+there is only one placement as this geometry is not repeated, so the offset_index 
+is afforded 3 bytes, ie up to 0xffffff = 16777215
+
 **/
 
 unsigned OpticksIdentity::Encode(unsigned repeat_index, unsigned placement_index, unsigned offset_index) // static 

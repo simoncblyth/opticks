@@ -17,6 +17,21 @@ the fphoton.npy intersects
 
 * for comparison of two sets of cxs see x4/xxs.sh 
 
+
+pyvista GUI keys
+----------------------
+
+* https://docs.pyvista.org/api/plotting/plotting.html
+
+
+Running on remote machine 
+----------------------------
+
+* https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
+* https://matplotlib.org/stable/tutorials/introductory/customizing.html
+
+
+
 TODO : identity info improvements
 ------------------------------------
 
@@ -96,16 +111,25 @@ Now how to lookup what a prim_id corresponds to ?
 
 """
 import os, logging, numpy as np
+GUI = not "NOGUI" in os.environ
+
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 from opticks.CSG.CSGFoundry import CSGFoundry 
 from opticks.ana.fold import Fold
+
+import matplotlib
+if GUI == False:
+    log.info("set pdf backend as GUI False")
+    matplotlib.use("agg")
+pass
 
 try:
     import matplotlib.pyplot as mp
 except ImportError:
     mp = None
 pass
+
 #mp=None
 
 try:
@@ -120,7 +144,12 @@ except ImportError:
     pv = None
     hexcolors = None
 pass
-#pv=None
+
+if GUI == False:
+    log.info("disabling pv as GUI False")
+    pv = None
+pass
+
 
 X,Y,Z = 0,1,2
 SIZE = np.array([1280, 720])
@@ -583,7 +612,8 @@ class Positions(object):
 
         pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
         pl.add_points( pos, color="white" )        
-        cp = pl.show()
+        cp = pl.show() if GUI else None
+
         return cp
 
 
@@ -683,7 +713,9 @@ class Plt(object):
         else:
             ptype = "mpnky"  
         pass
-        fig.show()
+        if GUI:
+            fig.show()
+        pass 
 
         outpath = self.outpath_("positions",ptype )
         print(outpath)
@@ -813,7 +845,9 @@ if __name__ == '__main__':
 
     peta = Peta(cxs.peta)
 
-    pos = Positions(cxs.photons, gs, peta, local=True, pos_mask=True )
+    pos_mask = True 
+    #pos_mask = False    #without pos_mask means that the legend is filled with features that are not visible in the frame 
+    pos = Positions(cxs.photons, gs, peta, local=True, pos_mask=pos_mask )
 
     #pos.pvplt_simple()
 
