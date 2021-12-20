@@ -79,7 +79,6 @@ int main(int argc, char** argv)
 
     LOG(info) 
         << " cfbase " << cfbase 
-        << " geom " << geom 
         << " default_outdir " << default_outdir
         << " outdir " << outdir
         ; 
