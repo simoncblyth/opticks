@@ -348,6 +348,35 @@ double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
     return dt ; 
 }
 
+/**
+Huh GEOM=Hama_16 ./cxs.sh  with only 14.8M photons causing an exception::
+
+    2021-12-20 19:49:22.143 INFO  [158578] [CSGOptiX::launch@330] [ (width, height, depth) ( 14825700,1,1)
+    terminate called after throwing an instance of 'sutil::CUDA_Exception'
+      what():  CUDA error on synchronize with error 'an illegal memory access was encountered' (/data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:342)
+
+    ./cxs.sh: line 230: 158578 Aborted                 (core dumped) $GDB CSGOptiXSimulateTest
+
+
+094 elif [ "$GEOM" == "Hama_16" ]; then
+ 95     
+ 96     ##  CUDA error on synchronize with error 'an illegal memory access was encountered' (/data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:342)
+ 97     moi=Hama
+ 98     cegs=256:0:144:100
+ 99     gridscale=0.20
+100     gsplot=0
+101 
+
+
+In [1]: (256*2+1)*(144*2+1)*100
+Out[1]: 14825700
+
+In [2]: (256*2+1)*(144*2+1)*100
+
+
+**/
+
+
 double CSGOptiX::render()
 {
     prepareParam(); 
@@ -355,6 +384,7 @@ double CSGOptiX::render()
     double dt = launch(params->width, params->height, params->depth );
     return dt ; 
 }
+
 
 double CSGOptiX::simulate()
 {

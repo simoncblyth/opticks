@@ -50,7 +50,19 @@ class Pub(object):
     DEST_BASE = os.path.join(DEST_ROOT, "env/presentation")
     INDENT = "    "
 
-    def __init__(self, base=None, exts=[".png", ".jpg"]):
+    @classmethod
+    def FindDigest(cls, path):
+        hexchar = "0123456789abcdef" 
+        digest = None
+        for elem in path.split("/"):
+            if len(elem) == 32 and set(elem).issubset(hexchar):
+                digest = elem
+            pass
+        pass
+        return digest 
+
+
+    def __init__(self, base=None, exts=[".png", ".jpg"], digestprefix=False):
         if base is None:
             base = os.environ.get("SRC_BASE", "$TMP/NonExisting")
         pass
@@ -60,7 +72,15 @@ class Pub(object):
         pass
         assert expect
         name = os.path.basename(base)
-        dest = os.path.join(self.DEST_BASE, name)
+        digest = self.FindDigest(base)
+        log.info("digest %s " % digest )
+        if digestprefix == False:
+            elem = [self.DEST_BASE, name]
+        else:
+            elem = [self.DEST_BASE, digest, name]
+        pass
+
+        dest = os.path.join(*elem)
 
         log.debug("base %s " % base)
         log.debug("dest %s " % dest)
@@ -189,6 +209,7 @@ class Pub(object):
 def parse_args(doc, **kwa):
     parser = argparse.ArgumentParser(doc)
     parser.add_argument( "--level", default="info", help="logging level" ) 
+    parser.add_argument( "--digestprefix", action="store_true", default=False, help="prefix with geocache digest" ) 
     parser.add_argument( "args", nargs="*", help="arg" )
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
@@ -206,7 +227,7 @@ if __name__ == '__main__':
      pargs = parse_args(__doc__)
      args = pargs.args 
 
-     p = Pub()
+     p = Pub(digestprefix=pargs.digestprefix)
      for arg in args:
          if arg == "cp":
              print(p)

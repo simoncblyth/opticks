@@ -34,7 +34,7 @@ else
 fi 
 
 pkg=CSGOptiX
-bin=CSGOptiXRender
+bin=CSGOptiXRenderTest
 
 # defaults 
 cvd=1            # default GPU to use

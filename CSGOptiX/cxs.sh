@@ -95,7 +95,7 @@ elif [ "$GEOM" == "Hama_16" ]; then
 
     ##  CUDA error on synchronize with error 'an illegal memory access was encountered' (/data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:342)
     moi=Hama
-    cegs=256:0:144:100
+    cegs=256:0:144:10
     gridscale=0.20
     gsplot=0
 
@@ -205,7 +205,6 @@ export ZZ=${ZZ:-$zz}
 opticks_keydir_grabbed_default=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
 opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$opticks_keydir_grabbed_default} 
 export FOLD=$HOME/$opticks_keydir_grabbed/CSG_GGeo
-
 
 
 if [ "$(uname)" == "Linux" ]; then 

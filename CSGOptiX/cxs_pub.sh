@@ -14,5 +14,5 @@ export SRC_BASE=$new_src_base
 #echo $msg SRC_BASE $SRC_BASE
 
 
-pub.py $* 
+pub.py $* --digestprefix 
 

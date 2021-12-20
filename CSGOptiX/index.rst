@@ -2,6 +2,14 @@ CSGOptiX : expt with OptiX 7 geometry and rendering
 ======================================================
 
 
+TODO
+-----
+
+* cxr paths need to have the digest in them 
+* cxs paths need to keep the digest at pub stage 
+
+
+
 3D render scripts (most using the OptiX 7 CSG,CSGOptiX machinery, a few using pre7 OpSnapTest,OptiXRap) 
 --------------------------------------------------------------------------------------------------------
 
@@ -38,6 +46,10 @@ cxr_scan.sh
 
 cxr_table.sh
     rst table creation using snap.py 
+
+    one of the input arguments is a glob pattern that identifies a set of .jpg renders
+    which are expected to have .json metadata sidecars 
+
     the data for the table is collected from .json metadata sidecars to .jpg renders, 
     so this works on laptop after grabbing the rendered .jpg and .json sidecars
     

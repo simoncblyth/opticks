@@ -29,7 +29,9 @@ CFBASE
 #include <algorithm>
 #include <iterator>
 #include <cstdlib>
+#include <csignal>
 
+#include "SPath.hh"
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 #include "scuda.h"
@@ -43,11 +45,6 @@ CFBASE
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-
-    bool overwrite = false ;  // allows commandline and envvars to override this default setting, see Opticks::getOutDir
-    SSys::setenvvar("OPTICKS_OUTDIR", "$TMP/CSGOptiX", overwrite );
-
-    // hmm maybe outdir should be inside cfbase ?
 
     bool override_cfbase =  SSys::hasenvvar("CFBASE") ; 
     const char* argforce = override_cfbase ? "--allownokey" : nullptr  ; 
@@ -65,6 +62,26 @@ int main(int argc, char** argv)
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = ok.getFoundryBase("CFBASE") ; 
+
+    const char* geom = SSys::getenvvar("GEOM") ; 
+    if(geom == nullptr) 
+    {
+        LOG(fatal) << " missing mandatory envvar GEOM " ; 
+        std::raise(SIGINT); 
+    }
+
+    int create_dirs = 2 ;  
+
+    //const char* default_outdir = "$TMP/CSGOptiX" ; // former default lacked digest or any connection to source geometry
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXRenderTest", geom, create_dirs );  
+    const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
+    LOG(info) << " outdir " << outdir ; 
+
+    ok.setOutDir(outdir); 
+
+    const char* outdir2 = ok.getOutDir(); 
+    assert( strcmp(outdir2, outdir) == 0 ); 
+
 
 
     const char* solid_label = ok.getSolidLabel();  // --solid_label   used for selecting solids from the geometry 
