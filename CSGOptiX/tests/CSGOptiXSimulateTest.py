@@ -160,7 +160,7 @@ def make_colors():
     :return colors: large list of color names with easily recognisable ones first 
     """
     #colors = ["red","green","blue","cyan","magenta","yellow","pink","purple"]
-    all_colors = list(hexcolors.keys())
+    all_colors = list(hexcolors.keys()) if not hexcolors is None else []
     easy_colors = "red green blue cyan magenta yellow pink".split()
     skip_colors = "bisque beige white aliceblue antiquewhite".split()    # skip colors that look too alike 
 
@@ -598,7 +598,15 @@ class Positions(object):
         nz = self.peta.nz
         upos = self.upos
 
-        bins = (np.linspace(*lim[X], 2*nx+1), np.linspace(*lim[Y], max(2*ny+1,2) ), np.linspace(*lim[Z], 2*nz+2))
+        # bizarrely some python3 versions think the below are SyntaxError without the num= 
+        #      SyntaxError: only named arguments may follow *expression
+        
+        binx = np.linspace(*lim[X], num=2*nx+1)
+        biny = np.linspace(*lim[Y], num=max(2*ny+1,2) )
+        binz = np.linspace(*lim[Z], num=2*nz+2)
+
+        bins = ( binx, biny, binz )
+
         h3d, bins2 = np.histogramdd(upos[:,:3], bins=bins )   
         ## TODO: use the 3d histo to sparse-ify gensteps positions, to avoiding shooting rays from big voids 
 
@@ -641,7 +649,7 @@ class Plt(object):
         sisel = self.feat.sisel
         return os.path.join(self.outdir,"%s_%s_%s.png" % (stem, ptype, self.feat.name)) 
 
-    def positions_mpplt(self, legend=True):
+    def positions_mpplt(self, legend=True, gsplot=0):
         """
         (H,V) are the plotting axes 
         (X,Y,Z) = (0,1,2) correspond to absolute axes which can be mapped to plotting axes in various ways 
@@ -701,7 +709,10 @@ class Plt(object):
         pass
 
         label = "gs_center XZ"
-        ax.scatter( ugsc[igs, H], ugsc[igs,V], label=None, s=sz )
+
+        if gsplot > 0:
+            ax.scatter( ugsc[igs, H], ugsc[igs,V], label=None, s=sz )
+        pass
 
         ax.set_xlim( lim[H] )
         ax.set_ylim( lim[V] )  # zlim -> ylim 
@@ -823,6 +834,7 @@ def test_mok(cf):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
+    GSPLOT = int(os.environ.get("GSPLOT", "0"))
     GEOM = os.environ.get("GEOM", None) ; assert not GEOM is None
 
     FOLD_DEFAULT = os.path.expandvars("/tmp/$USER/opticks/GeoChain/$GEOM" )
@@ -862,8 +874,8 @@ if __name__ == '__main__':
     plt = Plt(outdir, feat, gs, peta, pos )
 
     if not mp is None:
-        plt.positions_mpplt(legend=True)
-        #plt.positions_mpplt(legend=False)   # when not using pos_mask legend often too big, so can switch it off 
+        plt.positions_mpplt(legend=True, gsplot=GSPLOT )
+        plt.positions_mpplt(legend=False, gsplot=GSPLOT )   # when not using pos_mask legend often too big, so can switch it off 
     pass
 
     if not pv is None:

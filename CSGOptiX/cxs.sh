@@ -48,29 +48,57 @@ EOU
 msg="=== $BASH_SOURCE : "
 
 #geom=Hama_1
-geom=Hama_2
+#geom=Hama_2
+#geom=Hama_4
+geom=Hama_8
+#geom=Hama_16
+
+
 #geom=uni_acrylic3_0
 #geom=uni_acrylic1_0
 export GEOM=${GEOM:-$geom}
 
 isel=
 cfbase=
-
-
-
-
+gsplot=1
 
 if [ "$GEOM" == "Hama_1" ]; then
 
     moi=Hama
     cegs=16:0:9:500
     gridscale=0.10
+    gsplot=1
 
 elif [ "$GEOM" == "Hama_2" ]; then
 
     moi=Hama
     cegs=32:0:18:500
     gridscale=0.10
+    gsplot=1
+
+elif [ "$GEOM" == "Hama_4" ]; then
+
+    moi=Hama
+    cegs=64:0:36:100
+    #gridscale=0.10
+    gridscale=0.20
+    gsplot=0
+
+elif [ "$GEOM" == "Hama_8" ]; then
+
+    moi=Hama
+    cegs=128:0:72:100
+    gridscale=0.40
+    gsplot=0
+
+elif [ "$GEOM" == "Hama_16" ]; then
+
+    ##  CUDA error on synchronize with error 'an illegal memory access was encountered' (/data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:342)
+    moi=Hama
+    cegs=256:0:144:100
+    gridscale=0.20
+    gsplot=0
+
 
 elif [ "$GEOM" == "uni_acrylic1_0" ]; then
     moi=uni_acrylic1
@@ -163,6 +191,7 @@ export CXS_CEGS=${CXS_CEGS:-$cegs}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
 export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX GEOM $GEOM "
+export GSPLOT=${GSPLOT:-$gsplot}
 
 if [ -n "$cfbase" ]; then 
     echo $msg cfbase $cfbase defined setting CFBASE to override standard geometry default 
@@ -178,16 +207,26 @@ opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$opticks_keydir_grabbed_default
 export FOLD=$HOME/$opticks_keydir_grabbed/CSG_GGeo
 
 
-if [ "$1" == "run" ]; then
-    $GDB CSGOptiXSimulateTest
-elif [ "$1" == "bat" ]; then 
-    NOGUI=1 ${IPYTHON:-ipython} --pdb  tests/CSGOptiXSimulateTest.py 
-elif [ "$(uname)" == "Darwin" ]; then 
-    ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
-elif [ "$1" == "ana" ]; then 
-    ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
-else
-    $GDB CSGOptiXSimulateTest
+
+if [ "$(uname)" == "Linux" ]; then 
+
+    if [ "$1" == "run" ]; then
+        $GDB CSGOptiXSimulateTest
+    elif [ "$1" == "ana" ]; then 
+        NOGUI=1 ${IPYTHON:-ipython} tests/CSGOptiXSimulateTest.py 
+    else
+        $GDB CSGOptiXSimulateTest
+        NOGUI=1 ${IPYTHON:-ipython} tests/CSGOptiXSimulateTest.py 
+    fi
+
+elif [ "$(uname)" == "Darwin" ]; then
+
+    if [ "$1" == "bat" ]; then
+        NOGUI=1 ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
+    else
+        ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
+    fi 
+
 fi 
 
 

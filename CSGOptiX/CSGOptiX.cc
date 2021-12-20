@@ -327,7 +327,7 @@ void CSGOptiX::prepareParam()
 
 double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "[ (width, height, depth) ( " << width << "," << height << "," << depth << ")"  ; 
     double t0, t1 ; 
     t0 = BTimeStamp::RealTime();
 #if OPTIX_VERSION < 70000
