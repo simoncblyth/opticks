@@ -5,6 +5,7 @@ project(${name} VERSION 0.1.0)
 
 set(SINGLE_SOURCES
     CSGOptiXVersion.cc
+    CSGOptiXVersionTest.cc
     CSGOptiXRenderTest.cc
     CSGOptiXSimulateTest.cc
 )

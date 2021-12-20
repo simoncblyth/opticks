@@ -1,11 +1,11 @@
-#include <optix.h>
 #include <cstdio>
+#include "CSGOptiX.h"
 
-#define xstr(s) str(s)
-#define str(s) #s
-
-int main()
+int main(int argc, char** argv)
 {
-    printf("%s\n",xstr(OPTIX_VERSION)); 
+    const char* vers = CSGOptiX::_OPTIX_VERSION() ; 
+    printf("%s\n", vers ); 
     return 0 ; 
 }
+
+

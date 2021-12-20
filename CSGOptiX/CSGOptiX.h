@@ -11,6 +11,7 @@
 struct SMeta ; 
 struct NP ; 
 struct quad4 ; 
+struct float4 ; 
 
 struct CSGFoundry ; 
 struct CSGView ; 
@@ -21,6 +22,7 @@ struct QEvent ;
 
 struct Params ; 
 class Opticks ; 
+class Composition ; 
 
 #if OPTIX_VERSION < 70000
 struct Six ; 
@@ -39,6 +41,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     static const char* PTXNAME ; 
     static const char* GEO_PTXNAME ; 
     static const char* ENV(const char* key, const char* fallback);
+    static const char* _OPTIX_VERSION() ; 
 
     Opticks*          ok ;  
     int               raygenmode ; 

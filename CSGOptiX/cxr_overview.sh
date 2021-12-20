@@ -18,6 +18,7 @@ export EYE=-0.6,0,0,1
 export CAM=0 
 export ZOOM=1.5 
 export QUALITY=90 
+export GEOM=overview
 
 [ "$(uname)" == "Darwin" ] && emm=1, || emm=t8,
 export EMM=${EMM:-$emm}

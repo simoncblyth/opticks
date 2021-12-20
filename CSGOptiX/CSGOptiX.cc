@@ -497,3 +497,22 @@ void CSGOptiX::saveMetaTran(const char* fold, const char* name) const
 
 
 
+/**
+CSGOptiX::_OPTIX_VERSION
+-------------------------
+
+This depends on the the optix.h header only which provides the OPTIX_VERSION macro
+so it could be done at the lowest level, no need for it to be 
+up at this "elevation"
+
+**/
+
+#define xstr(s) str(s)
+#define str(s) #s
+
+const char* CSGOptiX::_OPTIX_VERSION()   // static 
+{
+    char vers[16] ; 
+    snprintf(vers, 16, "%s",xstr(OPTIX_VERSION)); 
+    return strdup(vers) ;  
+}

@@ -58,9 +58,10 @@ export SLA="${SLA:-$sla}"  # --solid_label
 export CAM=${CAM:-$cam}    # evar:CAMERATYPE
 export TMIN=${TMIN:-$tmin} # evar:TMIN
 export ZOOM=${ZOOM:-$zoom} 
-export CAMERATYPE=$CAM    # okc/Camera::Camera default 
+export CAMERATYPE=$CAM     # okc/Camera::Camera default 
+export GEOM=${GEOM:-$MOI}  # "sweeper" role   
 
-vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE"
+vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE GEOM"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
 
