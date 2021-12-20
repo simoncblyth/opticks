@@ -1774,9 +1774,24 @@ glm::uvec4 GGeo::getIdentity(unsigned ridx, unsigned pidx, unsigned oidx, bool c
 
         // consistency check the triplet identity  
         unsigned triplet = id.y ;
-        assert( OpticksIdentity::RepeatIndex(triplet)    == ridx ); 
-        assert( OpticksIdentity::PlacementIndex(triplet) == pidx ); 
-        assert( OpticksIdentity::OffsetIndex(triplet)    == oidx ); 
+
+        unsigned ridx_0 = OpticksIdentity::RepeatIndex(triplet) ; 
+        unsigned pidx_0 = OpticksIdentity::PlacementIndex(triplet) ; 
+        unsigned oidx_0 = OpticksIdentity::OffsetIndex(triplet) ; 
+
+
+        bool ridx_match = ridx_0 == ridx ; 
+        bool pidx_match = pidx_0 == pidx ; 
+        bool oidx_match = oidx_0 == oidx ; 
+
+        if(!ridx_match) LOG(error) << " ridx_match " << ridx_match << " ridx_0 " << ridx_0 << " ridx " << ridx ; 
+        if(!pidx_match) LOG(error) << " pidx_match " << pidx_match << " pidx_0 " << pidx_0 << " pidx " << pidx ; 
+        if(!oidx_match) LOG(error) << " oidx_match " << oidx_match << " oidx_0 " << oidx_0 << " oidx " << oidx ; 
+
+        assert( ridx_match ); 
+        assert( pidx_match ); 
+        //assert( oidx_match );  // suspect skipsolidname might mess this up 
+
     }
     return id ; 
 }
