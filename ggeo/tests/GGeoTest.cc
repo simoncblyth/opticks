@@ -426,10 +426,10 @@ int main(int argc, char** argv)
     test_GGeo_getFirstNodeIndexForPVNameStarting(gg);
     test_GGeo_getSignedBoundary(gg);
     test_getNumMeshes(gg);  
-    test_getIdentity_dumpNode(gg);     
 
     */
 
+    test_getIdentity_dumpNode(gg);     
     test_getMergedMeshLabels_0(gg); 
     test_getMergedMeshLabels_1(gg); 
 
