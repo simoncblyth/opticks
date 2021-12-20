@@ -2642,6 +2642,34 @@ void Opticks::setOutDir( const char* outdir_ )  // overrides --outdir
     if(outdir) m_outdir = strdup(outdir); 
 }
 
+/**
+Opticks::getOutPrefix
+----------------------
+
+**/
+const char* Opticks::getOutPrefix(int optix_version_override ) const 
+{
+    int optix_version_okconf = OKConf::OptiXVersionInteger() ; 
+    int optix_version = optix_version_override > 0 ? optix_version_override : optix_version_okconf ; 
+
+    const char* ucvd = getUsedCVD(); 
+    std::stringstream ss ; 
+    ss << "cvd" << ucvd << "/" << optix_version ; 
+    std::string s = ss.str(); 
+    const char* out_prefix = strdup(s.c_str()); 
+
+    LOG(error) 
+        << " ucvd " << ucvd 
+        << " optix_version_okconf " << optix_version_okconf
+        << " optix_version_override " << optix_version_override
+        << " optix_version " << optix_version
+        << " out_prefix " << out_prefix
+        ; 
+
+    return out_prefix ; 
+}
+
+
 const char* Opticks::getNamePrefix() const    // --nameprefix
 {
     const std::string& nameprefix = m_cfg->getNamePrefix() ; 

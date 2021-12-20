@@ -496,7 +496,6 @@ void CSGOptiX::saveMetaTran(const char* fold, const char* name) const
 
 
 
-
 /**
 CSGOptiX::_OPTIX_VERSION
 -------------------------
@@ -510,9 +509,9 @@ up at this "elevation"
 #define xstr(s) str(s)
 #define str(s) #s
 
-const char* CSGOptiX::_OPTIX_VERSION()   // static 
+int CSGOptiX::_OPTIX_VERSION()   // static 
 {
     char vers[16] ; 
     snprintf(vers, 16, "%s",xstr(OPTIX_VERSION)); 
-    return strdup(vers) ;  
+    return std::atoi(vers) ;  
 }

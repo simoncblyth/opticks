@@ -60,12 +60,12 @@ int main(int argc, char** argv)
     ok.configure(); 
     ok.setRaygenMode(0);             // override --raygenmode option 
 
-    const char* ucvd = ok.getUsedCVD(); 
-    LOG(info) << " ucvd " << ucvd ; 
-
-    const char* optix_version = CSGOptiX::_OPTIX_VERSION(); 
-    LOG(info) << " OPTIX_VERSION " << optix_version ;  
-
+    int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
+    const char* out_prefix = ok.getOutPrefix(optix_version_override);  
+    LOG(info) 
+        << " optix_version_override " << optix_version_override
+        << " out_prefix " << out_prefix
+        ;
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* cfbase = ok.getFoundryBase("CFBASE") ; 
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
     int create_dirs = 2 ;  
 
     //const char* default_outdir = "$TMP/CSGOptiX" ; // former default lacked digest or any connection to source geometry
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXRenderTest", geom, create_dirs );  
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXRenderTest", out_prefix, geom, create_dirs );  
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
     LOG(info) << " default_outdir " << default_outdir ; 
     LOG(info) << " outdir " << outdir ; 

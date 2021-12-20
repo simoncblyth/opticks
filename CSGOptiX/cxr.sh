@@ -67,23 +67,26 @@ for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done
 
 optix_version=$(CSGOptiXVersion 2>/dev/null)
 
-export BASEDIR=/tmp/$USER/opticks/$pkg/$bin/${CFNAME}/cvd${CVD}/$optix_version
 
 # these RELDIR and NAMEPREFIX defaults are typically overridden from higher level script
 nameprefix=cxr_${top}_${EMM}_
 export NAMEPREFIX=${NAMEPREFIX:-$nameprefix}
 
 reldir=top_${TOP}_
-export RELDIR=${RELDIR:-$reldir}
+export RELDIR=${RELDIR:-$reldir}  
 
-export OPTICKS_OUTDIR=${BASEDIR}/${RELDIR}
-mkdir -p $OPTICKS_OUTDIR
 
-arglist=$OPTICKS_OUTDIR/arglist.txt
+#export BASEDIR=/tmp/$USER/opticks/$pkg/$bin/${CFNAME}/cvd${CVD}/$optix_version
+#export OPTICKS_OUTDIR=${BASEDIR}/${RELDIR}
+#mkdir -p $OPTICKS_OUTDIR
+#arglist=$OPTICKS_OUTDIR/arglist.txt
+#export LOGDIR=${OPTICKS_OUTDIR}.logs
 
-export LOGDIR=${OPTICKS_OUTDIR}.logs
+export LOGDIR=/tmp/$USER/opticks/$pkg/$bin
 mkdir -p $LOGDIR 
 cd $LOGDIR 
+
+
 
 
 DIV=""

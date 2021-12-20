@@ -391,6 +391,9 @@ class OKCORE_API Opticks {
        const char* getOutDir() const ;        // --outdir
        void        setOutDir(const char* outdir) ; 
 
+       const char* getOutPrefix(int optix_version_override=0 ) const ; 
+
+
        const char* getNamePrefix() const ;    // --nameprefix
        FlightPath* getFlightPath();  // lazy cannot be const  
 

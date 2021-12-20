@@ -3,8 +3,8 @@
 
 int main(int argc, char** argv)
 {
-    const char* vers = CSGOptiX::_OPTIX_VERSION() ; 
-    printf("%s\n", vers ); 
+    int vers = CSGOptiX::_OPTIX_VERSION() ; 
+    printf("%d\n", vers ); 
     return 0 ; 
 }
 

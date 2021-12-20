@@ -41,7 +41,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     static const char* PTXNAME ; 
     static const char* GEO_PTXNAME ; 
     static const char* ENV(const char* key, const char* fallback);
-    static const char* _OPTIX_VERSION() ; 
+    static int   _OPTIX_VERSION() ; 
 
     Opticks*          ok ;  
     int               raygenmode ; 
