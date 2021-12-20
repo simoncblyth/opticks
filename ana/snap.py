@@ -18,6 +18,7 @@ from opticks.ana.rsttable import RSTTable
 
 class MM(object):
     """
+    TODO: use CSGFoundry/mmlabel.txt instead of $TMP/mm.txt
     """
     PTN = re.compile("\d+") 
     def __init__(self, path="$TMP/mm.txt"):
@@ -39,7 +40,7 @@ class MM(object):
         tilde = emm[0] == "t" or emm[0] == "~"
         pfx = (  "NOT: " if tilde else "     " ) 
 
-        if emm == "~0":
+        if emm == "~0" or emm == "t0":
             return "ALL"
         elif imm == [1,2,3,4]:
             return "ONLY PMT"
@@ -97,6 +98,8 @@ class Snap(object):
             __t0__
             _ALL_
 
+        ACTUALLY THIS ISSUE MAY BE FROM NON-UNIQUE IDENTIFIERS DERIVED FROM THE 
+        SLIDE TITLES BY REMOVING SOME CHARS SUCH AS "," "_" "~"
         """
         name = os.path.basename(self.jpg)
         tname = name.replace("~","t")

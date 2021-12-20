@@ -85,6 +85,7 @@ std::string CSGFoundry::desc() const
        << " gas " << gas.size()
        << " ias " << ias.size()
        << " meshname " << meshname.size()
+       << " mmlabel " << mmlabel.size()
        ;
 
     return ss.str(); 
@@ -1127,6 +1128,7 @@ void CSGFoundry::write(const char* dir_) const
     LOG(info) << dir ; 
 
     NP::WriteNames( dir, "meshname.txt", meshname );
+    NP::WriteNames( dir, "mmlabel.txt", mmlabel );
     NP::WriteString( dir, "meta.txt", meta ); 
               
     if(solid.size() > 0 ) NP::Write(dir, "solid.npy",  (int*)solid.data(),  solid.size(), 3, 4 ); 
@@ -1148,6 +1150,7 @@ void CSGFoundry::load( const char* dir_ )
     LOG(info) << dir ; 
 
     NP::ReadNames( dir, "meshname.txt", meshname );  
+    NP::ReadNames( dir, "mmlabel.txt", mmlabel );  
     meta = NP::ReadString( dir, "meta.txt" ); 
 
     loadArray( solid , dir, "solid.npy" ); 

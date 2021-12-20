@@ -25,21 +25,21 @@ xdir=$opticks_keydir_grabbed/CSG_GGeo/$executable/   ## trailing slash to avoid 
 from=P:$xdir
 to=$HOME/$xdir
 
-printf "arg %s \n" "$arg"
-
+printf "arg                    %s \n" "$arg"
+printf "EXECUTABLE             %s \n " "$EXECUTABLE"
 printf "OPTICKS_KEYDIR_GRABBED %s \n " "$OPTICKS_KEYDIR_GRABBED" 
 printf "opticks_keydir_grabbed %s \n " "$opticks_keydir_grabbed" 
 printf "\n"
-printf "cgdir  %s \n" $cgdir
-printf "from   %s \n" $from 
-printf "to     %s \n" $to 
+printf "xdir                   %s \n" "$xdir"
+printf "from                   %s \n" "$from" 
+printf "to                     %s \n" "$to" 
 
 mkdir -p $to
 
 if [ "$arg" == "tab" ]; then
 
-    #globptn="${to}cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*.jpg"
-    globptn="${to}cvd1/70000/overview/cxr_overview*.jpg"
+    globptn="${to}cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*.jpg"
+    #globptn="${to}cvd1/70000/overview/cxr_overview*.jpg"
     refjpgpfx="/env/presentation/cxr/cxr_overview"
 
     ${IPYTHON:-ipython} -i $(which snap.py) --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $*

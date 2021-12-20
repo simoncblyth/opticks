@@ -205,6 +205,7 @@ export ZZ=${ZZ:-$zz}
 opticks_keydir_grabbed_default=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
 opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$opticks_keydir_grabbed_default} 
 export FOLD=$HOME/$opticks_keydir_grabbed/CSG_GGeo
+export OPTICKS_GEOM=$GEOM 
 
 
 if [ "$(uname)" == "Linux" ]; then 

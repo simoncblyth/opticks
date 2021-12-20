@@ -359,14 +359,21 @@ bool SStr::HasPointerSuffix( const char* name, unsigned min_hexdigits, unsigned 
     return  num_hexdigits > -1 && num_hexdigits >= int(min_hexdigits) && num_hexdigits <= int(max_hexdigits) ; 
 }
 
+/**
+SStr::TrimPointerSuffix
+-------------------------
+
+For an input name such as "SomeName0xdeadbeef"  returns "SomeName"
+
+**/
 const char* SStr::TrimPointerSuffix( const char* name )
 {
-    int num_hexdigits = GetPointerSuffixDigits( name ); 
+    int num_hexdigits = GetPointerSuffixDigits( name ); // char-by-char look back  
     char* trim = strdup(name); 
 
     if( num_hexdigits >= 6 && num_hexdigits <= 12 )   // sanity check for the pointer suffix
     {
-        int ip = strlen(name) - num_hexdigits - 2 ;
+        int ip = strlen(name) - num_hexdigits - 2 ;  // offset to land on the '0' of "SomeName0xdeadbeef"
         assert( ip >= 0 ); 
         char* p = trim + ip ; 
         assert( *p == '0' ); 

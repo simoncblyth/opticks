@@ -272,8 +272,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         glm::vec4 getCE(unsigned index) const ; 
         int findNodeIndex(const void* origin, int origin_copyNumber) const ; 
     public:
-        void dumpNode(unsigned nidx); 
-        void dumpNode(unsigned ridx, unsigned pidx, unsigned oidx); 
+        void dumpNode(unsigned nidx) const ; 
+        void dumpNode(unsigned ridx, unsigned pidx, unsigned oidx) const ; 
     public:
         // sensor handling via GNodeLib
         unsigned       getNumSensorVolumes() const ;                    // pre-cache and post-cache
@@ -390,6 +390,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
     public:
         void Summary(const char* msg="GGeo::Summary");
         void Details(const char* msg="GGeo::Details");
+
+        std::string getMergedMeshLabel(unsigned ridx, bool numvol=true, bool trim=true) const ; 
+        std::string getMergedMeshLabels( bool numvol=true, bool trim=true ) const ; 
+        void        getMergedMeshLabels( std::vector<std::string>& mergedMeshLabels ) const ; 
 
     public:
         GInstancer* getInstancer() const ;

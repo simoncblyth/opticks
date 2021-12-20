@@ -334,6 +334,79 @@ void test_getNumMeshes(const GGeo* ggeo)
     assert( num_meshes_ggeo == num_meshes_sgeo ); 
 }
 
+void test_getIdentity_dumpNode(const GGeo* ggeo)
+{
+    unsigned nmm = ggeo->getNumMergedMesh();  
+    LOG(info) << " nmm " << nmm ; 
+
+    for(unsigned ridx=0 ; ridx < nmm ; ridx++ )
+    {
+        unsigned pidx = 0 ; 
+        unsigned oidx = 0 ; 
+        bool check = true ; 
+    
+        glm::uvec4 id = ggeo->getIdentity(ridx, pidx, oidx, check); 
+
+        unsigned meshIdx = OpticksShape::MeshIndex(id) ; 
+        unsigned bndIdx = OpticksShape::BoundaryIndex(id) ; 
+        const char* meshName = ggeo->getMeshName(meshIdx) ; 
+        const char* meshNameTrimmed = SStr::TrimPointerSuffix(meshName) ; 
+
+        GMergedMesh* mm = ggeo->getMergedMesh(ridx); 
+        unsigned numVol = mm->getNumVolumes(); 
+ 
+        unsigned nidx = id.x ; 
+
+        std::cout 
+            << " ridx " << std::setw(10) << ridx     
+            << " pidx " << std::setw(10) << pidx     
+            << " oidx " << std::setw(10) << oidx     
+            << " nidx " << std::setw(10) << nidx
+            << " meshIdx " << std::setw(10) << meshIdx
+            << " bndIdx " << std::setw(10) << bndIdx
+            << " numVol " << std::setw(10) << numVol 
+            << " meshName " << std::setw(30) << meshName
+            << " meshNameTrimmed " << std::setw(30) << meshNameTrimmed
+            << std::endl
+            ;     
+
+         //ggeo->dumpNode(nidx); 
+
+    }
+}
+
+
+void test_getMergedMeshLabels_0(const GGeo* gg)
+{
+    std::string labels = gg->getMergedMeshLabels(); 
+    LOG(info) 
+        << std::endl 
+        << "[" 
+        << std::endl 
+        << labels
+        << "]" 
+        << std::endl 
+        ; 
+}
+
+void test_getMergedMeshLabels_1(const GGeo* gg)
+{
+    std::vector<std::string> labels ; 
+    gg->getMergedMeshLabels(labels); 
+    LOG(info) << " labels.size " << labels.size() ; 
+
+    for(unsigned i=0 ; i < labels.size() ; i++)
+    {
+        std::cout 
+           << std::setw(10) << i 
+           << " : "
+           << "[" 
+           << labels[i]
+           << "]"
+           << std::endl 
+           ;
+    }
+}
 
 
 int main(int argc, char** argv)
@@ -344,16 +417,21 @@ int main(int argc, char** argv)
 
     GGeo* gg = GGeo::Load(&ok); 
 
-    //test_GGeo(gg);
-    //test_GGeo_getIdentity(gg);
-    //test_GGeo_getTransform(gg);
-    //test_GGeo_getGDMLAuxTargetNodeIndices(gg);
+    /*
+    test_GGeo(gg);
+    test_GGeo_getIdentity(gg);
+    test_GGeo_getTransform(gg);
+    test_GGeo_getGDMLAuxTargetNodeIndices(gg);
 
-    //test_GGeo_getFirstNodeIndexForPVNameStarting(gg);
-    //test_GGeo_getSignedBoundary(gg);
-
+    test_GGeo_getFirstNodeIndexForPVNameStarting(gg);
+    test_GGeo_getSignedBoundary(gg);
     test_getNumMeshes(gg);  
+    test_getIdentity_dumpNode(gg);     
 
+    */
+
+    test_getMergedMeshLabels_0(gg); 
+    test_getMergedMeshLabels_1(gg); 
 
     return 0 ;
 }

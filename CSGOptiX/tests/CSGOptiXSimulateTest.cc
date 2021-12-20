@@ -53,20 +53,23 @@ int main(int argc, char** argv)
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
 
+    int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
+    const char* out_prefix = ok.getOutPrefix(optix_version_override);   
+    // out_prefix includes values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined
+    LOG(info) 
+        << " optix_version_override " << optix_version_override
+        << " out_prefix " << out_prefix
+        ;
+ 
+
     // new layout : save outputs within $CFBASE/CSGOptiXSimulateTest 
     // to keep intersects more closely to geometry for cross node access to identity info 
     // by forcing that geometry gets synced together with intersects 
     const char* cfbase = ok.getFoundryBase("CFBASE");  // envvar CFBASE can override 
 
-    const char* geom = SSys::getenvvar("GEOM") ; 
-    if(geom == nullptr) 
-    {
-        LOG(fatal) << " missing mandatory envvar GEOM " ; 
-        std::raise(SIGINT); 
-    }
 
     int create_dirs = 2 ;  
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", geom, create_dirs );  
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", out_prefix, create_dirs );  
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
 
     ok.setOutDir(outdir); 

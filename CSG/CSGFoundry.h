@@ -191,6 +191,7 @@ struct CSG_API CSGFoundry
     void kludgeScalePrimBBox( unsigned solidIdx, float dscale );
 
     std::vector<std::string> meshname ;  // meshNames from GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
+    std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 
     std::vector<CSGSolid>  solid ;   
     std::vector<CSGPrim>   prim ; 

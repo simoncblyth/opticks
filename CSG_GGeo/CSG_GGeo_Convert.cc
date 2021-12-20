@@ -56,6 +56,8 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_, cons
 void CSG_GGeo_Convert::init()
 {
     ggeo->getMeshNames(foundry->meshname); 
+    ggeo->getMergedMeshLabels(foundry->mmlabel); 
+
     LOG(LEVEL) << " foundry.meshname.size " << foundry->meshname.size() ; 
 
     bool gparts_transform_offset = ok->isGPartsTransformOffset() ; 

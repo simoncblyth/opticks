@@ -54,6 +54,7 @@
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
 #include "OpticksFlags.hh"
+#include "OpticksShape.hh"
 #include "OpticksAttrSeq.hh"
 #include "Composition.hh"
 
@@ -914,9 +915,71 @@ void GGeo::Details(const char* msg)
         snprintf(mbuf,BSIZ, "%s mt %u", msg, imat);
         mat->Summary(mbuf);
     }
-
 }
 
+/**
+GGeo::getMergedMeshLabels
+----------------------------
+
+This is aiming to avoid the need to::
+
+    ggeo.py --mmtrim
+
+**/
+
+std::string GGeo::getMergedMeshLabel(unsigned ridx, bool numvol, bool trim) const 
+{
+
+    unsigned nmm = getNumMergedMesh();  
+    LOG(LEVEL) 
+        << " nmm " << nmm 
+        << " ridx " << ridx
+        ; 
+
+    assert( ridx < nmm ); 
+    unsigned pidx = 0 ; 
+    unsigned oidx = 0 ; 
+    bool check = true ; 
+    glm::uvec4 id = getIdentity(ridx, pidx, oidx, check); 
+
+    unsigned meshIdx = OpticksShape::MeshIndex(id) ; 
+    //unsigned bndIdx = OpticksShape::BoundaryIndex(id) ; 
+    const char* meshName = getMeshName(meshIdx) ; 
+    const char* meshNameTrimmed = SStr::TrimPointerSuffix(meshName) ; 
+    const char* u_meshName = trim ? meshNameTrimmed : meshName  ;  
+
+    GMergedMesh* mm = getMergedMesh(ridx); 
+    unsigned numVolumes = mm->getNumVolumes(); 
+
+    std::stringstream ss ; 
+    if(numvol) ss << numVolumes << ":"  ; 
+    ss << u_meshName  ; 
+    std::string s = ss.str(); 
+
+    return s ; 
+}
+
+
+std::string GGeo::getMergedMeshLabels( bool numvol, bool trim ) const 
+{
+    unsigned nmm = getNumMergedMesh();  
+    std::stringstream ss ; 
+    for(unsigned ridx=0 ; ridx < nmm ; ridx++ ) 
+       ss << getMergedMeshLabel(ridx, numvol, trim ) << std::endl ; 
+     
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+void GGeo::getMergedMeshLabels(std::vector<std::string>& mergedMeshLabels ) const 
+{
+    unsigned nmm = getNumMergedMesh();  
+    for(unsigned ridx=0 ; ridx < nmm ; ridx++ ) 
+    {
+        std::string mmlabel = getMergedMeshLabel(ridx) ;
+        mergedMeshLabels.push_back(mmlabel) ;  
+    }
+}
 
 
 
@@ -942,6 +1005,11 @@ void GGeo::getMeshNames(std::vector<std::string>& meshNames) const
 {
      m_meshlib->getMeshNames(meshNames); 
 }
+
+
+
+
+
 
 
 int GGeo::getMeshIndexWithName(const char* name, bool startswith) const 
@@ -1640,7 +1708,7 @@ unsigned GGeo::getNumVolumes(unsigned ridx) const
 }
 
 
-void GGeo::dumpNode(unsigned nidx)
+void GGeo::dumpNode(unsigned nidx) const 
 {
     glm::uvec4 id = m_nodelib->getIdentity(nidx); 
     unsigned triplet = id.y ;
@@ -1649,11 +1717,15 @@ void GGeo::dumpNode(unsigned nidx)
     unsigned oidx = OpticksIdentity::OffsetIndex(triplet); 
     dumpNode(ridx, pidx, oidx); 
 }
-void GGeo::dumpNode(unsigned ridx, unsigned pidx, unsigned oidx)
+void GGeo::dumpNode(unsigned ridx, unsigned pidx, unsigned oidx) const 
 {
     glm::uvec4 id = m_geolib->getIdentity(ridx, pidx, oidx); 
     unsigned nidx = id.x ; 
     LOG(info)
+        << " id.x " << id.x
+        << " id.y " << id.y
+        << " id.z " << id.z
+        << " id.w " << id.w
         << " ("
         << " ridx " << ridx
         << " pidx " << pidx

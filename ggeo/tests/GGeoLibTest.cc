@@ -144,6 +144,32 @@ void test_GGeoLib(GGeoLib* geolib)
 }
 
 
+void test_getIdentity(GGeoLib* geolib)
+{
+    unsigned nmm = geolib->getNumMergedMesh() ; 
+
+    for(unsigned ridx = 0 ; ridx < nmm ; ridx++ )
+    {  
+        unsigned pidx = 0 ;   
+        unsigned oidx = 0 ;   
+
+        GMergedMesh* mm = geolib->getMergedMesh(ridx); 
+        unsigned numVol = mm->getNumVolumes(); 
+
+        glm::uvec4 id = geolib->getIdentity(ridx, pidx, oidx); 
+        unsigned nidx = id.x ; 
+        LOG(info)
+            << " (" 
+            << " ridx " << ridx 
+            << " pidx " << pidx 
+            << " oidx " << oidx 
+            << " )" 
+            << " nidx " << nidx 
+            << " numVol " << numVol 
+            ;    
+    }
+}
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -158,7 +184,9 @@ int main(int argc, char** argv)
     GGeoLib* geolib = GGeoLib::Load(&ok, bndlib); 
     std::string s = geolib->summary("geolib");
     LOG(info) << std::endl << s ; 
-    test_GGeoLib(geolib);
+
+    //test_GGeoLib(geolib);
+    test_getIdentity(geolib); 
 
 
     return 0 ; 
