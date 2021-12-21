@@ -181,6 +181,7 @@ void CSGOptiXRenderTest::initArgs()
     }
 
     LOG(info) 
+        << " default_arg " << default_arg
         << " arglist.size " << arglist.size()
         << " args.size " << args.size()
         ;
@@ -200,7 +201,6 @@ void CSGOptiXRenderTest::setCE(const char* arg)
     int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
     fd->parseMOI(midx, mord, iidx,  arg );  
     int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
-    assert(rc); 
 
     LOG(info) 
         << " arg " << arg 
@@ -209,6 +209,7 @@ void CSGOptiXRenderTest::setCE(const char* arg)
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
         ; 
 
+    assert(rc==0); 
     cx->setCE(ce);   // establish the coordinate system 
 }
 

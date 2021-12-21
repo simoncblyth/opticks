@@ -6,79 +6,85 @@ cxr_solid.sh
 
 ::
 
-    SLA=r0@ EYE=0,-0.5,0.75,1 ./cxr_solid.sh 
-    SLA=r0@ EYE=0,-0.5,1,1    ./cxr_solid.sh 
+    SLA=r0@ EYE=0,-0.5,0.75 TMIN=0.5 ./cxr_solid.sh 
 
 
 Single solid renders of standard solids selected by solid label eg r1@ 
 the "@" is an alternate for "$" meaning to match the end of the string::
 
-    ./cxr_solid.sh r0@
-    ./cxr_solid.sh r1@
-    ./cxr_solid.sh r2@
-    ./cxr_solid.sh r3@
-    ./cxr_solid.sh r4@
+    SLA=r0@ ./cxr_solid.sh 
+    SLA=r1@ ./cxr_solid.sh 
+    SLA=r2@ ./cxr_solid.sh 
+    SLA=r3@ ./cxr_solid.sh 
+    SLA=r4@ ./cxr_solid.sh 
+
+
+For multiple invokations of this script see::
+
+    ./cxr_solids.sh
+
+
+Below need a non-standard CSGFoundry geometry and have not been tested recently
+---------------------------------------------------------------------------------
 
 Renders selecting special debug ONE_PRIM_SOLID selected by solid labels starting with r1p r2p 
 etc...  These typically select multiple solids that are presented with an IAS using 
 Y shifts of twice the maximum extent of the selected solids.  Hence the below
 show all the Prim in the corresponding standard solid arranged side by side::
 
-    ./cxr_solid.sh r1p
-    ./cxr_solid.sh r2p
-    ./cxr_solid.sh r3p
-    ./cxr_solid.sh r4p
+    SLA=r1p ./cxr_solid.sh
+    SLA=r2p ./cxr_solid.sh
+    SLA=r3p ./cxr_solid.sh
 
 Renders selecting the special debug ONE_NODE_SOLID selected by solid labels starting with R2P0N etc::
 
-    ./cxr_solid.sh R2P0N
-    ./cxr_solid.sh R8P0N11,R8P0N13,R8P0N14,R8P0N16,R8P0N17,R8P0N18,R8P0N19,R8P0N20,R8P0N21,R8P0N22,R8P0N15,R8P0N26
+    SLA=R2P0N ./cxr_solid.sh 
+    SLA=R8P0N11,R8P0N13,R8P0N14,R8P0N16,R8P0N17,R8P0N18,R8P0N19,R8P0N20,R8P0N21,R8P0N22,R8P0N15,R8P0N26  ./cxr_solid.sh 
 
-For multiple invokations of this script see::
 
-    ./cxr_solids.sh
 
 EOU
 }
 
-sla="${1:-r0@}"
+sla="r0@"
+export SLA=${SLA:-$sla}
+
 eye="0,-5,0,1"
 look="0,0,0,1"
 tmin=0.1
 zoom=1.0
 quality=50
+cam=1         # 0:perspective 1:ortho 
 
-[ "${sla:(-1)}" == "@" ] && eye="0,-1,0,1"
-[ "${sla:(-1)}" == "@" ] && tmin=1.0
+[ "${SLA:(-1)}" == "@" ] && eye="0,-1,0,1"
+[ "${SLA:(-1)}" == "@" ] && tmin=1.0
 
-if [ "$sla" == "r0@" ]; then 
+if [ "$SLA" == "r0@" ]; then 
    zoom=2.0
    quality=80
 fi 
 
+export EYE=${EYE:-$eye} 
+export LOOK=${LOOK:-$look}
+export ZOOM=${ZOOM:-$zoom}
+export TMIN=${TMIN:-$tmin}
 
 nameprefix=cxr_solid_${SLA}_
 
-if [ -n "$EYE" ]; then 
+if [ "$EYE" != "$eye" ]; then 
    nameprefix=${nameprefix}_eye_${EYE}_
 fi 
-if [ -n "$LOOK" ]; then 
+if [ "$LOOK" != "$look" ]; then 
    nameprefix=${nameprefix}_look_${LOOK}_
 fi 
-if [ -n "$ZOOM" ]; then 
+if [ "$ZOOM" != "$zoom" ]; then 
    nameprefix=${nameprefix}_zoom_${ZOOM}_
 fi 
-if [ -n "$TMIN" ]; then 
+if [ "$TMIN" != "$tmin" ]; then 
    nameprefix=${nameprefix}_tmin_${TMIN}_
 fi 
 
-
-export SLA="$sla"     ## feeds into --solid_label option 
-export CAM=1
-export EYE=${EYE:-$eye} 
-export LOOK=${LOOK:-$look}
-export TMIN=${TMIN:-$tmin}
-export ZOOM=${ZOOM:-$zoom}
+export CAM=${CAM:-$cam}
 export QUALITY=${QUALITY:-$quality}
 
 #export GDB=lldb_ 
