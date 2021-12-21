@@ -115,9 +115,17 @@ render()
 
 make_arglist()
 {
+    ## TODO: hoist arglist running up into its own script ?
+
     local arglist=$1
     ## TODO: needs rethink dont have CFBASE here at bash level 
-    local mname=$CFBASE/CSGFoundry/name.txt  # /tmp/$USER/opticks/CSG_GGeo/CSGFoundry/name.txt  # mesh names
+    ## writing a small executable to provide the CFBASE for the current OPTICKS_KEY seems the best way to do this
+    ## that avoids duplicating in bash whats already done in C++ 
+    ## HMM yes but this only works on the generator node not a grabbed one
+
+    #local mname=$CFBASE/CSGFoundry/meshname.txt 
+    local mname=$(Opticks_getFoundryBase)/CSGFoundry/meshname.txt 
+
     ls -l $mname
     #cat $mname | grep -v Flange | grep -v _virtual | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' -  > $arglist
     cat $mname | grep -v Flange | grep -v _virtual | sort | uniq > $arglist
@@ -126,20 +134,26 @@ make_arglist()
 
 
 if [ "$MOI" == "ALL" ]; then 
+
+    arglist=arglist.txt
     make_arglist $arglist 
     render --arglist $arglist $*            ## multiple MOI via the arglist 
 else
     render $*                               ## single MOI via envvar 
 
     if [ $? -eq 0 ]; then 
-        if [ -n "$OPTICKS_OUTDIR" ]; then 
-            ls -1rt `find $OPTICKS_OUTDIR -name '*.jpg' `
-            jpg=$(ls -1rt `find $OPTICKS_OUTDIR -name '*.jpg' ` | tail -1)
+
+        source CSGOptiXRenderTest_OUTPUT_DIR.sh || exit 1  
+        outdir=$CSGOptiXRenderTest_OUTPUT_DIR 
+
+        if [ -n "$outdir" ]; then 
+            ls -1rt `find $outdir -name '*.jpg' `
+            jpg=$(ls -1rt `find $outdir -name '*.jpg' ` | tail -1)
             echo $msg jpg $jpg 
             ls -l $jpg
             [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
         else
-            echo $msg OPTICKS_OUTDIR not defined 
+            echo $msg outdir not defined 
         fi 
     else
         echo $msg non-zero RC from render 

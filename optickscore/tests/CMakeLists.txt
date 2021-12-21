@@ -7,6 +7,7 @@ include(OpticksBuildOptions)
 set(TEST_SOURCES
 
     OpticksQueryTest.cc
+    Opticks_getFoundryBase.cc
     IndexerTest.cc
     CameraTest.cc
     CameraSwiftTest.cc

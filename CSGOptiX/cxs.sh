@@ -3,6 +3,9 @@ usage(){ cat << EOU
 cxs.sh : hybrid rendering/simulation machinery, eg creating 2D ray trace cross sections
 ========================================================================================
 
+TODO: fix the running directory to avoid dropping files in repo
+
+
 ::
 
     ISEL=0,1,3,4,5 ./cxs.sh ana       # select which boundaries to include in plot 
@@ -206,6 +209,15 @@ export OPTICKS_GEOM=$GEOM
 
 vars="MOI CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE GSPLOT ISEL XX ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+
+
+
+pkg=CSGOptiX
+bin=CSGOptiXSimulateTest 
+export LOGDIR=/tmp/$USER/opticks/$pkg/$bin
+mkdir -p $LOGDIR 
+cd $LOGDIR 
+
 
 
 if [ "$(uname)" == "Linux" ]; then 

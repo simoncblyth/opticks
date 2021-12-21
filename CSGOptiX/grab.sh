@@ -39,11 +39,14 @@ mkdir -p $to
 if [ "$arg" == "tab" ]; then
 
     globptn="${to}cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*.jpg"
-    #globptn="${to}cvd1/70000/overview/cxr_overview*.jpg"
     refjpgpfx="/env/presentation/cxr/cxr_overview"
 
     ${IPYTHON:-ipython} -i $(which snap.py) --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $*
 
+elif [ "$arg" == "tab_water" ]; then
+
+    globptn="${to}cvd1/70000/sWaterTube/cxr_view/*/cxr_view_sWaterTube.jpg"
+    ${IPYTHON:-ipython} -i $(which snap.py) --  --globptn "$globptn"  $*
 
 elif [ "$arg" == "png" ]; then
     rsync -zarv --progress --include="*/" --include="*.png" --exclude="*" "$from" "$to"

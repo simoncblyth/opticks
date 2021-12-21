@@ -78,6 +78,7 @@ int main(int argc, char** argv)
     LOG(info) << " outdir " << outdir ; 
 
     ok.setOutDir(outdir); 
+    ok.writeOutputDirScript(outdir) ; // writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
 
     const char* outdir2 = ok.getOutDir(); 
     assert( strcmp(outdir2, outdir) == 0 ); 

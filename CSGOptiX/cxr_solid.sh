@@ -63,7 +63,7 @@ export QUALITY=${QUALITY:-$quality}
 #export GDB=lldb_ 
 
 export NAMEPREFIX="cxr_solid_${sla}_"
-export RELDIR=cxr_solid/cam_${CAM}
+export OPTICKS_RELDIR=cxr_solid/cam_${CAM}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion 2>/dev/null)

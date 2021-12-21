@@ -60,6 +60,11 @@ class MM(object):
         return "\n".join(self.mm)
 
 
+class DummyCandleSnap(object):
+    def __init__(self):
+        self.av = 1 
+
+
 class Snap(object):
     @classmethod
     def is_valid(cls, jpg_path):
@@ -84,8 +89,6 @@ class Snap(object):
         # below are set by SnapScan after sorting
         self.sc = None   
         self.idx = None
-        self.rhs = "rhs"
-
 
     def jpg_(self):
         """
@@ -190,7 +193,7 @@ class SnapScan(object):
     def MakeSnaps(cls, globptn):
         log.info("globptn %s " % globptn )
         raw_paths = glob.glob(globptn) 
-        log.debug("raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
+        log.info("raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
         paths = filter(lambda p:Snap.is_valid(p), raw_paths)
         snaps = list(map(Snap,paths))
         snaps = sorted(snaps, key=lambda s:s.av)
@@ -231,7 +234,14 @@ class SnapScan(object):
             s.idx = idx
         pass
         self.snaps = snaps
+
+        if candle is None:
+            candle = DummyCandleSnap()
+        pass  
         self.candle = candle 
+
+       
+
 
 
 

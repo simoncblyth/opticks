@@ -2,7 +2,8 @@
 
 #moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
-emm=t8,
+#emm=t8,
+emm=t0      # "t0" : all from tilde zero        "t0," : exclude bit 0 global 
 zoom=1
 eye=-1,-1,-1,1
 
