@@ -832,21 +832,6 @@ def test_mok(cf):
 
 
 
-def FindDirUpTree(origpath, name="CSGFoundry"): 
-    elem = origpath.split("/")
-    found = None
-    for i in range(len(elem),0,-1):
-        path = "/".join(elem[:i])
-        cand = os.path.join(path, name)
-        log.debug(cand) 
-        if os.path.isdir(cand):
-            found = cand
-            break 
-        pass  
-    pass
-    return found 
-
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
@@ -859,7 +844,7 @@ if __name__ == '__main__':
         sys.exit(1)
     pass
 
-    CSGFoundry_DIR = FindDirUpTree( CSGOptiXSimulateTest_OUTPUT_DIR, "CSGFoundry" )
+    CSGFoundry_DIR = CSGFoundry.FindDirUpTree( CSGOptiXSimulateTest_OUTPUT_DIR, "CSGFoundry" )
     FOLD = os.path.dirname(CSGFoundry_DIR)
 
     print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % CSGOptiXSimulateTest_OUTPUT_DIR )

@@ -202,15 +202,10 @@ export ISEL=${ISEL:-$isel}
 export XX=${XX:-$xx}
 export ZZ=${ZZ:-$zz}
 
-opticks_keydir_grabbed_default=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
-opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$opticks_keydir_grabbed_default} 
-export FOLD=$HOME/$opticks_keydir_grabbed/CSG_GGeo       ## CRUCIAL CONTROL OF WHERE OUTPUT GOES
 export OPTICKS_GEOM=$GEOM 
-
 
 vars="MOI CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE GSPLOT ISEL XX ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
-
 
 
 if [ "$(uname)" == "Linux" ]; then 
@@ -237,7 +232,6 @@ elif [ "$(uname)" == "Darwin" ]; then
     else
         ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
     fi 
-
 fi 
 
 exit 0

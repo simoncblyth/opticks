@@ -10,23 +10,29 @@
 
 
 """
-import os, logging, glob, json, re, argparse 
+import os, sys, logging, glob, json, re, argparse 
 log = logging.getLogger(__name__)
 import numpy as np
 from opticks.ana.rsttable import RSTTable
+from opticks.CSG.CSGFoundry import CSGFoundry 
 
 
 class MM(object):
     """
-    TODO: use CSGFoundry/mmlabel.txt instead of $TMP/mm.txt
+    The input file is now a standard resident of the CSGFoundry directory 
+    Note that the input file was formerly created using::
+
+       ggeo.py --mmtrim > $TMP/mm.txt
+
     """
     PTN = re.compile("\d+") 
-    def __init__(self, path="$TMP/mm.txt"):
+    def __init__(self, path ):
         mm = os.path.expandvars(path)
         mm = open(mm, "r").read().splitlines() if os.path.exists(mm) else None
         self.mm = mm
         if mm is None:
-            print("missing mm.txt/mmtrim.txt, create with : ggeo.py --mmtrim > $TMP/mm.txt  " ) 
+            log.fatal("missing %s, which is now a standard part of CSGFoundry " % path  ) 
+            sys.exit(1)
         pass
 
     def imm(self, emm):
@@ -78,6 +84,8 @@ class Snap(object):
         # below are set by SnapScan after sorting
         self.sc = None   
         self.idx = None
+        self.rhs = "rhs"
+
 
     def jpg_(self):
         """
@@ -172,9 +180,8 @@ class Snap(object):
     def Hdr(cls):
         HFMT = [cls.PRE[i] + cls.HFMT[i] + cls.POST[i] for i in range(len(cls.HFMT))]
         hfmt = " ".join(HFMT)
-        return hfmt % tuple(cls.LABELS)
-
-
+        labels = cls.LABELS
+        return hfmt % tuple(labels)
 
 
 class SnapScan(object):
@@ -285,7 +292,17 @@ def parse_args(doc, **kwa):
 if __name__ == '__main__':
     args = parse_args(__doc__)
     log.debug(" args %s " % str(args))
-    mm = MM("$TMP/mm.txt")
+
+    base = os.path.dirname(os.path.expandvars(args.globptn)) 
+
+    cfdigest = CSGFoundry.FindDigest(base)
+    cfdir = CSGFoundry.FindDirUpTree(base)
+    mmlabel_path = os.path.join(cfdir, "mmlabel.txt")
+     
+    log.info("cfdir %s " % cfdir ) 
+    log.info("mmlabel_path %s " % mmlabel_path ) 
+
+    mm = MM(mmlabel_path)
 
     ss = SnapScan(args.globptn, mm) 
     if args.jpg:
@@ -304,7 +321,11 @@ if __name__ == '__main__':
         snaps = ss.snaps
     elif args.rst:
         t = ss.table()
-        rst = RSTTable.Render(t, Snap.LABELS, Snap.WIDS, Snap.HFMT, Snap.RFMT, Snap.PRE, Snap.POST )
+
+        labels = Snap.LABELS 
+        labels[-1] += " " + cfdigest[:8]
+
+        rst = RSTTable.Render(t, labels, Snap.WIDS, Snap.HFMT, Snap.RFMT, Snap.PRE, Snap.POST )
         print(rst)
     else:
         print(ss) 

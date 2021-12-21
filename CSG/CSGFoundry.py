@@ -7,6 +7,42 @@ class CSGFoundry(object):
     FMT = "   %10s : %20s  : %s "
 
     @classmethod
+    def FindDirUpTree(cls, origpath, name="CSGFoundry"): 
+        """
+        :param origpath: to traverse upwards looking for sibling dirs with *name*
+        :param name: sibling directory name to look for 
+        :return full path to *name* directory 
+        """
+        elem = origpath.split("/")
+        found = None
+        for i in range(len(elem),0,-1):
+            path = "/".join(elem[:i])
+            cand = os.path.join(path, name)
+            log.debug(cand) 
+            if os.path.isdir(cand):
+                found = cand
+                break 
+            pass  
+        pass
+        return found 
+
+    @classmethod
+    def FindDigest(cls, path):
+        """
+        :param path: Directory path in which to look for a 32 character digest path element 
+        :return 32 character digest or None: 
+        """
+        hexchar = "0123456789abcdef" 
+        digest = None
+        for elem in path.split("/"):
+            if len(elem) == 32 and set(elem).issubset(hexchar):
+                digest = elem
+            pass
+        pass
+        return digest 
+
+
+    @classmethod
     def namelist_to_namedict(cls, namelist):
         return dict(zip(range(len(namelist)),list(map(str,namelist)))) 
  
