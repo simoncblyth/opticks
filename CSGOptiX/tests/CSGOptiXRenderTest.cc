@@ -42,34 +42,58 @@ CFBASE
 #include "CSGOptiX.h"
 
 
-int main(int argc, char** argv)
+struct CSGOptiXRenderTest
 {
-    OPTICKS_LOG(argc, argv); 
+    static Opticks* InitOpticks(int argc, char** argv);  
 
-    bool override_cfbase =  SSys::hasenvvar("CFBASE") ; 
-    const char* argforce = override_cfbase ? "--allownokey" : nullptr  ; 
-    if( override_cfbase )
+    CSGOptiXRenderTest(int argc, char** argv ) ; 
+
+    Opticks*    ok ; 
+    const char* solid_label ; 
+    std::vector<unsigned>& solid_selection ; 
+
+    CSGFoundry* fd ; 
+    CSGOptiX*   cx ; 
+
+    void initFD(); 
+    void initCX(); 
+
+};
+
+
+CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
+    : 
+    ok(InitOpticks(argc, argv)),
+    solid_label(ok->getSolidLabel()),         // --solid_label   used for selecting solids from the geometry 
+    solid_selection(ok->getSolidSelection()), //  NB its not set yet, that happens below 
+    fd(nullptr),
+    cx(nullptr)
+{
+    initFD(); 
+    initCX(); 
+}
+
+Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv )
+{
+    bool has_cfbase = SSys::hasenvvar("CFBASE") ;
+    if( has_cfbase )  // when CFBASE override envvvar exists then there is no need for OPTICKS_KEY
     {
         unsetenv("OPTICKS_KEY"); 
     }
-    // placing CFBASE inside idpath means that in default situation with standard geocache geometry 
-    // cannot --allownokey but when the CFBASE override envvvar exists then there is 
-    // no need for OPTICKS_KEY  
 
-    Opticks ok(argc, argv, argforce ); 
-    ok.configure(); 
-    ok.setRaygenMode(0);             // override --raygenmode option 
+    Opticks* ok = new Opticks(argc, argv, has_cfbase ? "--allownokey" : nullptr  );  
+    ok->configure(); 
+    ok->setRaygenMode(0);  // override --raygenmode option 
 
     int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
-    const char* out_prefix = ok.getOutPrefix(optix_version_override);   
-    // out_prefix includes values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined
+    const char* out_prefix = ok->getOutPrefix(optix_version_override);  // out_prefix includes values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined
+    const char* cfbase = ok->getFoundryBase("CFBASE") ; 
+
     LOG(info) 
         << " optix_version_override " << optix_version_override
         << " out_prefix " << out_prefix
+        << " cfbase " << cfbase
         ;
-
-    const char* top    = SSys::getenvvar("TOP", "i0" ); 
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
 
     int create_dirs = 2 ;  
     const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXRenderTest", out_prefix, create_dirs );  
@@ -77,16 +101,18 @@ int main(int argc, char** argv)
     LOG(info) << " default_outdir " << default_outdir ; 
     LOG(info) << " outdir " << outdir ; 
 
-    ok.setOutDir(outdir); 
-    ok.writeOutputDirScript(outdir) ; // writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
+    ok->setOutDir(outdir); 
+    ok->writeOutputDirScript(outdir) ; // writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
 
-    const char* outdir2 = ok.getOutDir(); 
+    const char* outdir2 = ok->getOutDir(); 
     assert( strcmp(outdir2, outdir) == 0 ); 
+    return ok ; 
+}
 
-    const char* solid_label = ok.getSolidLabel();  // --solid_label   used for selecting solids from the geometry 
-    std::vector<unsigned>& solid_selection = ok.getSolidSelection(); // NB its not set yet, that happens below 
-
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+void CSGOptiXRenderTest::initFD()
+{
+    const char* cfbase = ok->getFoundryBase("CFBASE") ; 
+    fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
 
     if( solid_label )
@@ -99,23 +125,39 @@ int main(int argc, char** argv)
             << " solid_selection " << solsel 
             ;
     }
-    unsigned num_select = solid_selection.size();  
-
 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
+}
 
-    CSGOptiX cx(&ok, fd); 
-    cx.setTop(top); 
+void CSGOptiXRenderTest::initCX()
+{
+    const char* top    = SSys::getenvvar("TOP", "i0" ); 
+    cx = new CSGOptiX(ok, fd ); 
+    cx->setTop(top); 
 
-    if( cx.raygenmode > 0 )
+    if( cx->raygenmode > 0 )
     {
-        LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::simulate cx.raygenmode " << cx.raygenmode ; 
+        LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::simulate cx.raygenmode " << cx->raygenmode ; 
         assert(0); 
     }
+}
 
-    bool flight = ok.hasArg("--flightconfig") ; 
-    const std::vector<std::string>& arglist = ok.getArgList() ;  // --arglist /path/to/arglist.txt
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+
+    CSGOptiXRenderTest t(argc, argv); 
+
+    Opticks* ok = t.ok ; 
+    CSGFoundry* fd = t.fd ; 
+    CSGOptiX* cx = t.cx ; 
+
+
+    bool flight = ok->hasArg("--flightconfig") ; 
+    const std::vector<std::string>& arglist = ok->getArgList() ;  // --arglist /path/to/arglist.txt
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
 
@@ -132,6 +174,8 @@ int main(int argc, char** argv)
 
 
     LOG(info) << " args.size " << args.size() ; 
+    unsigned num_select = t.solid_selection.size();  
+
     for(unsigned i=0 ; i < args.size() ; i++)
     {
         const std::string& arg = args[i];
@@ -146,12 +190,12 @@ int main(int argc, char** argv)
 
         int rc = 0 ; 
         float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
-        if(solid_selection.size() > 0)
+        if(t.solid_selection.size() > 0)
         {   
             // HMM: solid selection leads to creation of an IAS referencing each of the 
             //      selected solids so for generality should be using IAS targetting 
             //
-            fd->gasCE(ce, solid_selection );    
+            fd->gasCE(ce, t.solid_selection );    
         }
         else
         {
@@ -163,23 +207,23 @@ int main(int argc, char** argv)
 
         if(rc == 0 )
         {
-            cx.setCE(ce);   // establish the coordinate system 
+            cx->setCE(ce);   // establish the coordinate system 
 
             if(flight)
             {
-                cx.render_flightpath(); 
+                cx->render_flightpath(); 
             }
             else
             {
-                double dt = cx.render();  
+                double dt = cx->render();  
 
                 const char* ext = ".jpg" ; 
                 int index = -1 ;  
-                const char* outpath = ok.getOutPath(namestem, ext, index ); 
+                const char* outpath = ok->getOutPath(namestem, ext, index ); 
                 LOG(error) << " outpath " << outpath ; 
 
                 std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
-                cx.snap(outpath, bottom_line.c_str(), topline  );   
+                cx->snap(outpath, bottom_line.c_str(), topline  );   
             }
         }
         else
