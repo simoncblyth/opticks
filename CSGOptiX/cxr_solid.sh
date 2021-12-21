@@ -51,6 +51,21 @@ if [ "$sla" == "r0@" ]; then
 fi 
 
 
+nameprefix=cxr_solid_${SLA}_
+
+if [ -n "$EYE" ]; then 
+   nameprefix=${nameprefix}_eye_$EYE_
+fi 
+if [ -n "$LOOK" ]; then 
+   nameprefix=${nameprefix}_look_$LOOK_
+fi 
+if [ -n "$ZOOM" ]; then 
+   nameprefix=${nameprefix}_zoom_$ZOOM_
+fi 
+if [ -n "$TMIN" ]; then 
+   nameprefix=${nameprefix}_tmin_$TMIN_
+fi 
+
 
 export SLA="$sla"
 export CAM=1
@@ -62,7 +77,7 @@ export QUALITY=${QUALITY:-$quality}
 
 #export GDB=lldb_ 
 
-export NAMEPREFIX="cxr_solid_${SLA}_"
+export NAMEPREFIX=$nameprefix
 export OPTICKS_RELDIR=cam_${CAM}
 export OPTICKS_GEOM=cxr_solid_$SLA
 
