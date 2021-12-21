@@ -110,7 +110,7 @@ NB getting zero for the flat instance_idx (single IAS, all transforms in it)
 Now how to lookup what a prim_id corresponds to ?
 
 """
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
 GUI = not "NOGUI" in os.environ
 
 log = logging.getLogger(__name__)
@@ -831,22 +831,47 @@ def test_mok(cf):
     print(ph.mokfeat)
 
 
+
+def FindDirUpTree(origpath, name="CSGFoundry"): 
+    elem = origpath.split("/")
+    found = None
+    for i in range(len(elem),0,-1):
+        path = "/".join(elem[:i])
+        cand = os.path.join(path, name)
+        log.debug(cand) 
+        if os.path.isdir(cand):
+            found = cand
+            break 
+        pass  
+    pass
+    return found 
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     GSPLOT = int(os.environ.get("GSPLOT", "0"))
-    GEOM = os.environ.get("GEOM", None) ; assert not GEOM is None
 
-    FOLD_DEFAULT = os.path.expandvars("/tmp/$USER/opticks/GeoChain/$GEOM" )
 
-    FOLD = os.environ.get("FOLD", FOLD_DEFAULT ) ## override FOLD set in cxs.sh 
+    CSGOptiXSimulateTest_OUTPUT_DIR = os.environ.get("CSGOptiXSimulateTest_OUTPUT_DIR", None) 
+    if CSGOptiXSimulateTest_OUTPUT_DIR is None:
+        log.fatal(" missing required envvar CSGOptiXSimulateTest_OUTPUT_DIR ")
+        sys.exit(1)
+    pass
 
-    log.info("FOLD %s" % FOLD )
+    CSGFoundry_DIR = FindDirUpTree( CSGOptiXSimulateTest_OUTPUT_DIR, "CSGFoundry" )
+    FOLD = os.path.dirname(CSGFoundry_DIR)
+
+    print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % CSGOptiXSimulateTest_OUTPUT_DIR )
+    print( " CSGFoundry_DIR                  : %s " % CSGFoundry_DIR  )
+    print( " FOLD                            : %s " % FOLD  )
+
 
     cf = CSGFoundry(os.path.join(FOLD, "CSGFoundry"))
     #test_mok(cf)
 
-    cxs = Fold.Load( FOLD, "CSGOptiXSimulateTest", GEOM, globals=True ) 
+    cxs = Fold.Load(CSGOptiXSimulateTest_OUTPUT_DIR ) 
+
 
     outdir = os.path.join(cxs.base, "figs")
     if not os.path.isdir(outdir):

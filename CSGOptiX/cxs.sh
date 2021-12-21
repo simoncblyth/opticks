@@ -217,10 +217,16 @@ if [ "$(uname)" == "Linux" ]; then
 
     if [ "$1" == "run" ]; then
         $GDB CSGOptiXSimulateTest
+        source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
+
     elif [ "$1" == "ana" ]; then 
+
+        source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
         NOGUI=1 ${IPYTHON:-ipython} tests/CSGOptiXSimulateTest.py 
     else
         $GDB CSGOptiXSimulateTest
+        source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
+
         NOGUI=1 ${IPYTHON:-ipython} tests/CSGOptiXSimulateTest.py 
     fi
 
@@ -234,6 +240,4 @@ elif [ "$(uname)" == "Darwin" ]; then
 
 fi 
 
-
-
-
+exit 0
