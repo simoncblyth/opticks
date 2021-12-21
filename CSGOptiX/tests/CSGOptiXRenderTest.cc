@@ -83,7 +83,6 @@ int main(int argc, char** argv)
     const char* outdir2 = ok.getOutDir(); 
     assert( strcmp(outdir2, outdir) == 0 ); 
 
-
     const char* solid_label = ok.getSolidLabel();  // --solid_label   used for selecting solids from the geometry 
     std::vector<unsigned>& solid_selection = ok.getSolidSelection(); // NB its not set yet, that happens below 
 
@@ -131,10 +130,19 @@ int main(int argc, char** argv)
         args.push_back(SSys::getenvvar("MOI", "sWorld:0:0"));  
     }
 
+
+    LOG(info) << " args.size " << args.size() ; 
     for(unsigned i=0 ; i < args.size() ; i++)
     {
         const std::string& arg = args[i];
         const char* namestem = num_select == 0 ? arg.c_str() : SSys::getenvvar("NAMESTEM", "")  ; 
+
+        LOG(info) 
+            << " i " << i 
+            << " arg " << arg 
+            << " num_select " << num_select 
+            << " namestem " << namestem
+            ;
 
         int rc = 0 ; 
         float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 

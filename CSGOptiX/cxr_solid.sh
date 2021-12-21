@@ -4,6 +4,12 @@ usage(){ cat << EOU
 cxr_solid.sh
 ============
 
+::
+
+    SLA=r0@ EYE=0,-0.5,0.75,1 ./cxr_solid.sh 
+    SLA=r0@ EYE=0,-0.5,1,1    ./cxr_solid.sh 
+
+
 Single solid renders of standard solids selected by solid label eg r1@ 
 the "@" is an alternate for "$" meaning to match the end of the string::
 
@@ -54,20 +60,20 @@ fi
 nameprefix=cxr_solid_${SLA}_
 
 if [ -n "$EYE" ]; then 
-   nameprefix=${nameprefix}_eye_$EYE_
+   nameprefix=${nameprefix}_eye_${EYE}_
 fi 
 if [ -n "$LOOK" ]; then 
-   nameprefix=${nameprefix}_look_$LOOK_
+   nameprefix=${nameprefix}_look_${LOOK}_
 fi 
 if [ -n "$ZOOM" ]; then 
-   nameprefix=${nameprefix}_zoom_$ZOOM_
+   nameprefix=${nameprefix}_zoom_${ZOOM}_
 fi 
 if [ -n "$TMIN" ]; then 
-   nameprefix=${nameprefix}_tmin_$TMIN_
+   nameprefix=${nameprefix}_tmin_${TMIN}_
 fi 
 
 
-export SLA="$sla"
+export SLA="$sla"     ## feeds into --solid_label option 
 export CAM=1
 export EYE=${EYE:-$eye} 
 export LOOK=${LOOK:-$look}
