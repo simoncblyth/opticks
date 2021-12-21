@@ -55,9 +55,21 @@ struct CSGOptiXRenderTest
     CSGFoundry* fd ; 
     CSGOptiX*   cx ; 
 
+    const char* topline ; 
+    const char* botline ; 
+    bool        flight ; 
+    float4      ce ; 
+    const char* default_arg ; 
+    std::vector<std::string> args ; 
+
+
     void initFD(); 
     void initCX(); 
+    void initArgs(); 
 
+    void setCE(const char* arg); 
+    void setCE_sla(); 
+    void render_snap(const char* namestem);
 };
 
 
@@ -67,10 +79,16 @@ CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
     solid_label(ok->getSolidLabel()),         // --solid_label   used for selecting solids from the geometry 
     solid_selection(ok->getSolidSelection()), //  NB its not set yet, that happens below 
     fd(nullptr),
-    cx(nullptr)
+    cx(nullptr),
+    topline(SSys::getenvvar("TOPLINE", "CSGOptiXRenderTest")),
+    botline(SSys::getenvvar("BOTLINE", nullptr )),
+    flight(ok->hasArg("--flightconfig")),
+    ce(make_float4(0.f, 0.f, 0.f, 1000.f )), 
+    default_arg(SSys::getenvvar("MOI", "sWorld:0:0"))  
 {
     initFD(); 
     initCX(); 
+    initArgs(); 
 }
 
 Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv )
@@ -143,6 +161,71 @@ void CSGOptiXRenderTest::initCX()
     }
 }
 
+void CSGOptiXRenderTest::initArgs()
+{
+    unsigned num_select = solid_selection.size();  
+    if( solid_label )
+    {
+        assert( num_select > 0 ); 
+    }
+
+    const std::vector<std::string>& arglist = ok->getArgList() ;  // --arglist /path/to/arglist.txt
+
+    if( arglist.size() > 0 )
+    {    
+        std::copy(arglist.begin(), arglist.end(), std::back_inserter(args));
+    }
+    else
+    {
+        args.push_back(default_arg); 
+    }
+
+    LOG(info) 
+        << " arglist.size " << arglist.size()
+        << " args.size " << args.size()
+        ;
+}
+
+
+/**
+CSGOptiXRenderTest::setCE
+---------------------------
+
+HMM: solid selection leads to creation of an IAS referencing each of the 
+     selected solids so for generality should be using IAS targetting 
+
+**/
+void CSGOptiXRenderTest::setCE(const char* arg)
+{
+    int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
+    fd->parseMOI(midx, mord, iidx,  arg );  
+    LOG(info) << " arg " << arg << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
+    int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
+    assert(rc); 
+    cx->setCE(ce);   // establish the coordinate system 
+}
+
+void CSGOptiXRenderTest::setCE_sla()
+{
+    assert( solid_label ); 
+    fd->gasCE(ce, solid_selection );    
+}
+
+void CSGOptiXRenderTest::render_snap(const char* namestem)
+{
+    double dt = cx->render();  
+    const char* outpath = ok->getOutPath(namestem, ".jpg", -1 ); 
+
+    LOG(error)  
+          << " namestem " << namestem 
+          << " outpath " << outpath 
+          << " dt " << dt 
+          ; 
+
+    std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
+    cx->snap(outpath, bottom_line.c_str(), topline  );   
+}
+
 
 
 int main(int argc, char** argv)
@@ -151,85 +234,30 @@ int main(int argc, char** argv)
 
     CSGOptiXRenderTest t(argc, argv); 
 
-    Opticks* ok = t.ok ; 
-    CSGFoundry* fd = t.fd ; 
-    CSGOptiX* cx = t.cx ; 
-
-
-    bool flight = ok->hasArg("--flightconfig") ; 
-    const std::vector<std::string>& arglist = ok->getArgList() ;  // --arglist /path/to/arglist.txt
-    const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
-    const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
-
-    // arglist allows multiple snaps with different viewpoints to be created  
-    std::vector<std::string> args ; 
-    if( arglist.size() > 0 )
-    {    
-        std::copy(arglist.begin(), arglist.end(), std::back_inserter(args));
+    if( t.solid_label )
+    {
+        t.setCE_sla(); 
+        const char* arg = SSys::getenvvar("NAMESTEM", "") ; 
+        t.render_snap(arg); 
+    }
+    else if( t.flight )
+    {
+        const std::string& _arg = t.args[0];
+        const char* arg = _arg.c_str(); 
+        t.setCE(arg); 
+        t.cx->render_flightpath(); 
     }
     else
     {
-        args.push_back(SSys::getenvvar("MOI", "sWorld:0:0"));  
-    }
-
-
-    LOG(info) << " args.size " << args.size() ; 
-    unsigned num_select = t.solid_selection.size();  
-
-    for(unsigned i=0 ; i < args.size() ; i++)
-    {
-        const std::string& arg = args[i];
-        const char* namestem = num_select == 0 ? arg.c_str() : SSys::getenvvar("NAMESTEM", "")  ; 
-
-        LOG(info) 
-            << " i " << i 
-            << " arg " << arg 
-            << " num_select " << num_select 
-            << " namestem " << namestem
-            ;
-
-        int rc = 0 ; 
-        float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
-        if(t.solid_selection.size() > 0)
-        {   
-            // HMM: solid selection leads to creation of an IAS referencing each of the 
-            //      selected solids so for generality should be using IAS targetting 
-            //
-            fd->gasCE(ce, t.solid_selection );    
-        }
-        else
+        for(unsigned i=0 ; i < t.args.size() ; i++)
         {
-            int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
-            fd->parseMOI(midx, mord, iidx,  arg.c_str() );  
-            LOG(info) << " i " << i << " arg " << arg << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
-            rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
-        }
-
-        if(rc == 0 )
-        {
-            cx->setCE(ce);   // establish the coordinate system 
-
-            if(flight)
-            {
-                cx->render_flightpath(); 
-            }
-            else
-            {
-                double dt = cx->render();  
-
-                const char* ext = ".jpg" ; 
-                int index = -1 ;  
-                const char* outpath = ok->getOutPath(namestem, ext, index ); 
-                LOG(error) << " outpath " << outpath ; 
-
-                std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
-                cx->snap(outpath, bottom_line.c_str(), topline  );   
-            }
-        }
-        else
-        {
-            LOG(error) << " SKIPPING as failed to lookup CE " << arg ; 
+            const std::string& _arg = t.args[i];
+            const char* arg = _arg.c_str(); 
+            t.setCE(arg);
+            t.render_snap(arg); 
         }
     }
     return 0 ; 
 }
+
+
