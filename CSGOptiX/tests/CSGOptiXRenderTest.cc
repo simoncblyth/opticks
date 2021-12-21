@@ -199,9 +199,16 @@ void CSGOptiXRenderTest::setCE(const char* arg)
 {
     int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
     fd->parseMOI(midx, mord, iidx,  arg );  
-    LOG(info) << " arg " << arg << " midx " << midx << " mord " << mord << " iidx " << iidx ;   
     int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
     assert(rc); 
+
+    LOG(info) 
+        << " arg " << arg 
+        << " midx " << midx << " mord " << mord << " iidx " << iidx 
+        << " rc " << rc
+        << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
+        ; 
+
     cx->setCE(ce);   // establish the coordinate system 
 }
 
@@ -209,6 +216,14 @@ void CSGOptiXRenderTest::setCE_sla()
 {
     assert( solid_label ); 
     fd->gasCE(ce, solid_selection );    
+
+    LOG(info) 
+        << " solid_label " << solid_label
+        << " solid_selection.size " << solid_selection.size()
+        << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
+       ; 
+
+    cx->setCE(ce);   // establish the coordinate system 
 }
 
 void CSGOptiXRenderTest::render_snap(const char* namestem)
@@ -236,19 +251,22 @@ int main(int argc, char** argv)
 
     if( t.solid_label )
     {
-        t.setCE_sla(); 
         const char* arg = SSys::getenvvar("NAMESTEM", "") ; 
+        LOG(info) << " t.solid_label " << t.solid_label << " arg " << arg ; 
+        t.setCE_sla(); 
         t.render_snap(arg); 
     }
     else if( t.flight )
     {
         const std::string& _arg = t.args[0];
         const char* arg = _arg.c_str(); 
+        LOG(info) << " t.flight arg " << arg  ; 
         t.setCE(arg); 
         t.cx->render_flightpath(); 
     }
     else
     {
+        LOG(info) << " t.args.size " << t.args.size()  ; 
         for(unsigned i=0 ; i < t.args.size() ; i++)
         {
             const std::string& _arg = t.args[i];

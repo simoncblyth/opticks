@@ -41,7 +41,7 @@ For multiple invokations of this script see::
 EOU
 }
 
-sla="${1:-r1p}"
+sla="${1:-r0@}"
 eye="0,-5,0,1"
 look="0,0,0,1"
 tmin=0.1
