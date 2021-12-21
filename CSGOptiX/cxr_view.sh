@@ -17,7 +17,7 @@ export QUALITY=90
 
 
 export NAMEPREFIX=cxr_view_      # MOI is appended by tests/CSGOptiXRender.cc when --solid_label yields no solids
-export RELDIR=cxr_view/cam_${CAM}_${EMM}
+export OPTICKS_RELDIR=cxr_view/cam_${CAM}_${EMM}
 
 stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion 2>/dev/null)

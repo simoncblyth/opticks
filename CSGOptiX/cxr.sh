@@ -67,7 +67,7 @@ for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done
 optix_version=$(CSGOptiXVersion 2>/dev/null)
 
 
-# these RELDIR and NAMEPREFIX defaults are typically overridden from higher level script
+# the OPTICKS_RELDIR and NAMEPREFIX defaults are typically overridden from higher level script
 nameprefix=cxr_${top}_${EMM}_
 export NAMEPREFIX=${NAMEPREFIX:-$nameprefix}
 
