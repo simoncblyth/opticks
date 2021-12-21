@@ -81,7 +81,6 @@ cd $LOGDIR
 
 
 
-
 DIV=""
 [ -n "$GDB" ] && DIV="--" 
 

@@ -2684,6 +2684,11 @@ void Opticks::setOutDir( const char* outdir_ )  // overrides --outdir
 Opticks::getOutPrefix
 ----------------------
 
+Example OutPrefix::
+
+   cvd1/70000/$OPTICKS_GEOM/$OPTICKS_RELDIR
+
+
 When outputs are directed within the geocache
 it is preferable to provide contextual information 
 about the output via a relative directory, rather than 
