@@ -2663,7 +2663,7 @@ const char* Opticks::getOutPrefix(int optix_version_override ) const
 
     const char* ucvd = getUsedCVD(); 
     std::stringstream ss ; 
-    ss << "cvd" << ucvd << "/" << optix_version ;
+    ss << "cvd" << ( ucvd ? ucvd : "0" ) << "/" << optix_version  ;
     if(geom)   ss << "/" << geom ; 
     if(reldir) ss << "/" << reldir ; 
  
