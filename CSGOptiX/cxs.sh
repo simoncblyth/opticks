@@ -208,6 +208,11 @@ export FOLD=$HOME/$opticks_keydir_grabbed/CSG_GGeo       ## CRUCIAL CONTROL OF W
 export OPTICKS_GEOM=$GEOM 
 
 
+vars="MOI CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE GSPLOT ISEL XX ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
+for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+
+
+
 if [ "$(uname)" == "Linux" ]; then 
 
     if [ "$1" == "run" ]; then

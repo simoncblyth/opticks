@@ -71,6 +71,7 @@ int main(int argc, char** argv)
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
 
     ok.setOutDir(outdir); 
+    ok.writeOutputDirScript(outdir) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
 
     const char* outdir2 = ok.getOutDir(); 
     assert( strcmp(outdir2, outdir) == 0 ); 

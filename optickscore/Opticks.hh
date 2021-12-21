@@ -264,6 +264,7 @@ class OKCORE_API Opticks {
 
        const char* getGeocacheDir() const ; // eg ~/.opticks/geocache 
        const char* getGeocacheScriptPath() const ; // eg ~/.opticks/geocache/geocache.sh 
+       void writeOutputDirScript(const char* outdir) const ; 
 
        bool        hasIdPath() const ; 
        const char* getKeyDir() const ;
