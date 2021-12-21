@@ -1390,7 +1390,8 @@ void Opticks::writeOutputDirScript(const char* outdir) const
         << "]" 
         ;
 
-    SStr::Save(sh_path, sh.c_str()) ; 
+    int create_dirs = 0 ; 
+    SStr::Save(sh_path, sh.c_str(), create_dirs ) ; 
 }
 
 

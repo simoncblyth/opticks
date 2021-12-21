@@ -229,6 +229,15 @@ void test_Save_Load()
     assert( strcmp(txt, TXT) == 0 );  
 }
 
+void test_Save_PWD()
+{
+    const char* path = "test_Save_PWD.txt" ; 
+    int create_dirs = 0 ;  // <-- manual requirement TODO:avoid need for this 
+
+    SStr::Save(path, TXT, create_dirs );  
+}
+
+
 
 
 void test_Split()
@@ -543,9 +552,10 @@ int main(int argc , char** argv )
     test_ReplaceChars(); 
     test_ato_(); 
     test_Extract(); 
+    test_Save_Load(); 
     */
 
-    test_Save_Load(); 
+    test_Save_PWD(); 
 
     return 0  ; 
 }

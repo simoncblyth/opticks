@@ -63,9 +63,17 @@ void SStr::Save(const char* path_, const std::vector<std::string>& a, char delim
 }
 
 
-void SStr::Save(const char* path_, const char* txt )
+/**
+SStr::Save
+-----------
+
+When saving into PWD it is necessary to manually set create_dirs to 0 
+otherwise the file is not written but rather an directory is created. TODO: fix this
+
+**/
+
+void SStr::Save(const char* path_, const char* txt, int create_dirs )
 {
-    int create_dirs = 1 ; // 1:filepath
     const char* path = SPath::Resolve(path_, create_dirs);  // 
     LOG(info) << "SPath::Resolve " << path_ << " to " << path ; 
     std::ofstream fp(path);
