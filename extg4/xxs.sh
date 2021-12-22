@@ -32,14 +32,14 @@ msg="=== $BASH_SOURCE :"
 ## X4SolidMaker debug solids
 
 #geom=Orb
-#geom=SphereWithPhiSegment 
+geom=SphereWithPhiSegment 
 #geom=SphereWithThetaSegment 
 #geom=AdditionAcrylicConstruction
 #geom=BoxMinusTubs0
 #geom=BoxMinusTubs1
 #geom=BoxMinusOrb
 #geom=UnionOfHemiEllipsoids
-geom=PolyconeWithMultipleRmin
+#geom=PolyconeWithMultipleRmin
 
 ## PMTSim debug solids 
 

@@ -19,7 +19,7 @@ class Scan(object):
         scan.topline = "created"
         scan.botline = ""
         scan.thirdline = ""
-
+        scan.fold = None
         return scan 
 
     @classmethod
@@ -32,6 +32,7 @@ class Scan(object):
         scan.topline = fold 
         scan.botline = ""
         scan.thirdline = ""
+        scan.fold = fold
         return scan 
  
     @classmethod
@@ -111,6 +112,21 @@ class Scan(object):
         pl.set_position( eye, reset=True )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
         pl.camera.Zoom(1)
         pl.show_grid()
-        cp = pl.show()
+
+        outpath = None
+        if not scan.fold is None:
+            outpath = os.path.join(scan.fold, "figs", "scanplot.png")
+            outfold = os.path.dirname(outpath)
+            if not os.path.isdir(outfold):
+                os.makedirs(outfold)
+            pass
+        pass
+        if not outpath is None:
+            log.info("screenshot outpath %s " % outpath)  
+            cp = pl.show(screenshot=outpath)
+        else:
+            cp = pl.show()
+        pass
+        return cp 
 
 

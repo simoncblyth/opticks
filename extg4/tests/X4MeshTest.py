@@ -73,7 +73,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     #default_geom = "BoxMinusOrb"
-    default_geom = "PolyconeWithMultipleRmin"
+    #default_geom = "PolyconeWithMultipleRmin"
+    default_geom = "SphereWithPhiSegment"
 
     geom = os.environ.get("GEOM", default_geom)
     fold = os.path.expandvars("/tmp/$USER/opticks/extg4/X4IntersectTest/%s/X4Mesh" % geom ) 
