@@ -249,9 +249,11 @@ class GGeo(object):
     KEY = key_(os.environ["OPTICKS_KEY"])
     KEYDIR = KEY.keydir
     VERSION = KEY.version
+    DIGEST = KEY.digest
     SUPPRESS_ = os.environ.get("OPTICKS_GGEO_SUPPRESS", "") 
     SUPPRESS_PTN = "("+SUPPRESS_.replace(",","|")+")" 
     SUPPRESS = None if SUPPRESS_PTN == "()" else re.compile(SUPPRESS_PTN) 
+
 
     @classmethod
     def Suppress(cls, name):
@@ -870,7 +872,7 @@ if __name__ == '__main__':
 
     elif args.mmsmry:
 
-        labels = ["ridx","plc","vol", "component name", "note"]
+        labels = ["ridx","plc","vol", "component name", "note (%s)" % gg.DIGEST[:8] ]
         hfmt = ["%4s", "%6s", "%5s", "%-40s", "%-25s" ]
         rfmt = ["%4d", "%6d", "%5d", "%-40s", "%-25s" ]
         wids = [4,  6, 5, 40 , 25 ]
