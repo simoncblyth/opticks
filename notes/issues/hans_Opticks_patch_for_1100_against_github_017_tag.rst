@@ -5,6 +5,10 @@ hans_Opticks_patch_for_1100_against_github_017_tag
 Issue
 --------
 
+* https://github.com/hanswenzel/opticks/commit/c127069542ba88dc9c59f9b891f991769a815322
+
+
+
 Hi Simon
 
 

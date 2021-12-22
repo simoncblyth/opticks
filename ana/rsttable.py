@@ -11,9 +11,18 @@ class RSTTable(object):
 
      @classmethod
      def Render(cls, t, labels, wids, hfmt, rfmt, pre, post):
+         """
+         :param t:  2D array of np.object that are the content of the table 
+         :param labels: list of string labels for the header
+         :param wids: list of integer widths 
+         :param hfmt: list of header format strings
+         :param rfmt: list of row format strings
+         :param pre:  list of strings that prepend the header and row formats
+         :param post: list of strings that postpend the header and row formats 
+         """
          tab = RSTTable(t)  
          tab.labels = labels
-         tab.pre  = np.array( list(map(len,pre)), dtype=np.int32 )
+         tab.pre  = np.array( list(map(len,pre)),  dtype=np.int32 )
          tab.post = np.array( list(map(len,post)), dtype=np.int32 )
          tab.wids = np.array( list(map(int,wids)), dtype=np.int32 )
          tab.hfmt = [ pre[i]+hfmt[i]+post[i] for i in range(len(hfmt)) ]
@@ -24,7 +33,18 @@ class RSTTable(object):
 
      @classmethod
      def Rdr(cls, t, labels, wid=10, hfm="%10s", rfm="%10.4f", pre_="", post_=""  ):
+         """
+         :param t: 2D array "table" of np.object items to populate the RST table
+         :param labels: list of labels
+         :param wid: int width that is repeated across all columns
+         :param hfm: string header format string
+         :param rfm: string row format string
+         :param pre_: string that prepends the header and row formats 
+         :param post_: string that postpends the header and row formats 
 
+         *Rdr* provides a simpler interface to creating RST tables than *Render*, which it uses
+         via *np.repeat* repetitions to generate the detailed input arrays needed by *Render*  
+         """
          nlab = len(labels)
 
          wids = np.repeat( wid, nlab ) 
@@ -40,6 +60,9 @@ class RSTTable(object):
          self.t = t  
 
      def __str__(self):
+         """
+         Builds the RST table line by line 
+         """
          nrow = self.t.shape[0]
          ncol = self.t.shape[1]    
 
@@ -72,8 +95,8 @@ def test_Render():
 
      labels = ["A", "B"] 
      wids = [ 10, 10]
-     hfmt = [ "%10s", "%10s" ]
-     rfmt = [ "%10s", "%10s" ]
+     hfmt = [ "%10s", "%10s" ]   # header format    
+     rfmt = [ "%10s", "%10s" ]   # row format
      pre  = [ "" ,    "   " ]
      post = [ "" ,    "   " ]
 
@@ -100,8 +123,6 @@ def test_Rdr3x3():
      labels = ["A", "B", "C" ] 
      rst = RSTTable.Rdr(t, labels )
      print(rst)
-
-
 
 
 if __name__ == '__main__':

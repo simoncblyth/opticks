@@ -523,10 +523,16 @@ class GGeo(object):
         midx = self.midx[nidx] 
         return midx
    
-    def get_soname(self, ridx, pidx, oidx):
+    def get_soname(self, ridx, pidx, oidx, trim=False):
+        """
+        :param ridx: repeat index
+        :param pidx: placement index
+        :param oidx: offset index within the repeated piece of geometry 
+        :param trim: when True trims any 0xdeadbeef pointer suffix  
+        """
         midx = self.get_lvidx(ridx, pidx, oidx)
         msn = self.msn[midx]
-        return msn 
+        return msn.split("0x")[0] if trim else msn  
 
     def make_nrpo(self):
         """
@@ -691,6 +697,7 @@ class GGeo(object):
         bidx = self.bidx[nidx] 
         shape_s = "shape( %3d %3d  %40s %40s)" % (midx,bidx, self.mlibnames[nidx], self.blibnames[nidx] )
         print( "%s  %s  %s " % (iden_s, nrpo_s, shape_s) )
+
 
     def names(self, nidx):
         pv = self.pv[nidx].decode('utf-8')  
@@ -860,33 +867,15 @@ if __name__ == '__main__':
 
     if args.check:
         gg.consistency_check()
-    elif args.mm or args.mmtrim:
-        mm_names = []
-        for ridx in gg.mmidx:
-            pidx = 0 
-            oidx = 0 
-            num_vol = gg.get_num_volumes(ridx) 
-            msn = gg.get_soname(ridx, pidx, oidx)
-            mm_name = "%d:%s" % (num_vol, msn)
-            if args.mmtrim:
-                mm_name = mm_name.split("0x")[0] 
-            pass
-            mm_names.append(mm_name)
-        pass
-        txt = "\n".join(mm_names)
-        print(txt)
-        mmtrimpath = os.path.expandvars(args.mmtrimpath) 
-        log.info("writing this list to mmtrimpath %s " % mmtrimpath )
-        open(mmtrimpath, "w").write(txt)   
 
     elif args.mmsmry:
-
 
         labels = ["ridx","plc","vol", "component name", "note"]
         hfmt = ["%4s", "%6s", "%5s", "%-40s", "%-25s" ]
         rfmt = ["%4d", "%6d", "%5d", "%-40s", "%-25s" ]
         wids = [4,  6, 5, 40 , 25 ]
         pre  =  ["",  "",   "", "   ", "  " ]
+        post =  ["",  "",   "", "   ", "  " ]
 
         mm_notes = {}
         mm_notes[0] = "non-repeated remainder"
@@ -899,7 +888,7 @@ if __name__ == '__main__':
             oidx = 0 
             num_vol = gg.get_num_volumes(ridx) 
             num_plc = gg.get_num_placements(ridx) 
-            msn = gg.get_soname(ridx, pidx, oidx)
+            msn = gg.get_soname(ridx, pidx, oidx, trim=args.mmtrim)
             mm_name = "%d:%s" % (num_vol, msn)
             mm_note = mm_notes.get(i, "")
             row = tuple([ridx, num_plc, num_vol, mm_name, mm_note])
@@ -907,9 +896,26 @@ if __name__ == '__main__':
             print(line)
             t[i] = row 
         pass
-        rst = RSTTable.Render(t, labels, wids, hfmt, rfmt, pre )
+        rst = RSTTable.Render(t, labels, wids, hfmt, rfmt, pre, post )
         print(rst) 
         pass
+
+    elif args.mm or args.mmtrim:
+        mm_names = []
+        for ridx in gg.mmidx:
+            pidx = 0 
+            oidx = 0 
+            num_vol = gg.get_num_volumes(ridx) 
+            msn = gg.get_soname(ridx, pidx, oidx, trim=args.mmtrim)
+            mm_name = "%d:%s" % (num_vol, msn)
+            mm_names.append(mm_name)
+        pass
+        txt = "\n".join(mm_names)
+        print(txt)
+        mmtrimpath = os.path.expandvars(args.mmtrimpath) 
+        log.info("writing this list to mmtrimpath %s " % mmtrimpath )
+        open(mmtrimpath, "w").write(txt)   
+
     elif args.idsmry or args.bbsmry:
 
         beg = int(args.idx[0])
