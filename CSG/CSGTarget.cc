@@ -134,7 +134,7 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
     foundry->getInstanceTransformsGAS(inst, gas_idx ); 
 
     bool iidx_in_range = iidx < int(inst.size()); 
-    LOG(info) 
+    LOG(LEVEL) 
         << " repeatIdx " << repeatIdx
         << " primIdx " << primIdx
         << " inst.size " << inst.size()
@@ -158,7 +158,7 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
     CSGPrim::Copy(gpr, lpr);   // start global prim from local 
     q.transform_aabb_inplace( gpr.AABB_() ); 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " q " << q 
         << " ins_idx " << ins_idx
         << " ias_idx " << ias_idx
@@ -170,7 +170,7 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
     gce.z = globalCE.z ; 
     gce.w = globalCE.w ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " gpr " << gpr.desc()
         << " gce " << gce 
         ; 
@@ -214,7 +214,7 @@ int CSGTarget::getTransform(qat4& q, int midx, int mord, int iidx) const
     foundry->getInstanceTransformsGAS(inst, gas_idx ); 
 
     bool iidx_in_range = iidx < int(inst.size()); 
-    LOG(info) 
+    LOG(LEVEL) 
         << " repeatIdx " << repeatIdx
         << " primIdx " << primIdx
         << " inst.size " << inst.size()

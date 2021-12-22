@@ -8,7 +8,7 @@ the flexibility to access other "COMPONENTS" currently.
 Testing this from ~/opticks/examples/UseOpticks/go.sh 
 
 
-Used from cmake/JUNODependencies.cmake::
+opticks/cmake/Modules/FindOpticks.cmake used from offline/cmake/JUNODependencies.cmake::
 
     ## Opticks
     if(DEFINED ENV{OPTICKS_PREFIX})

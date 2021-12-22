@@ -72,13 +72,19 @@ class Plt(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    cpos = efloatlist_("CPOS", "-1,-1,2" )
-    geom = os.environ.get("GEOM", "BoxMinusOrb")
-    fold = os.path.expandvars("/tmp/$USER/opticks/extg4/X4IntersectTest/%s/X4Mesh" % geom ) 
+    #default_geom = "BoxMinusOrb"
+    default_geom = "PolyconeWithMultipleRmin"
 
-    os.environ["TOPLINE"] = "GEOM=%s ~/opticks/extg4/X4MeshTest.sh" % geom 
+    geom = os.environ.get("GEOM", default_geom)
+    fold = os.path.expandvars("/tmp/$USER/opticks/extg4/X4IntersectTest/%s/X4Mesh" % geom ) 
+    cpos = efloatlist_("CPOS", "-1,-1,2" )
+    s_cpos = str(cpos)[1:-1].replace(" ","")
+
+
+
+    os.environ["TOPLINE"] = "GEOM=%s CPOS=%s ~/opticks/extg4/X4MeshTest.sh" % (geom, s_cpos ) 
     os.environ["BOTLINE"] = fold 
-    os.environ["THIRDLINE"] = "CPOS=%s" % str(cpos) 
+    os.environ["THIRDLINE"] = "CPOS=%s" % s_cpos 
 
     mesh = X4Mesh.Load(fold)
 
