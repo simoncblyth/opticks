@@ -210,6 +210,15 @@ void FlightPath::setPathFormat(const char* path_format)
     m_path_format = strdup(path_format); 
 }
 
+/**
+FlightPath::fillPathFormat
+---------------------------
+
+Writes to the *path* char array using m_path_format which is expected to 
+have one integer format token.
+
+**/
+
 void FlightPath::fillPathFormat(char* path, unsigned path_size, unsigned index )
 {
     assert( m_path_format && "must setPathFormat before calling fillPathFormat" ); 
@@ -321,7 +330,7 @@ int FlightPath::render( SRenderer* renderer )
     fp->setMeta<std::string>("top_annotation", top_annotation ); 
 
 
-    char path[128] ; 
+    char path[256] ; 
     for(int i=0 ; i < imax ; i++)
     {
         m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath
@@ -333,7 +342,7 @@ int FlightPath::render( SRenderer* renderer )
 
         std::string bottom_annotation = m_ok->getFrameAnnotation(i, imax, dt ); 
 
-        fp->fillPathFormat(path, 128, i ); 
+        fp->fillPathFormat(path, 256, i ); 
 
         fp->record(dt);  
 

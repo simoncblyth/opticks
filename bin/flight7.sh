@@ -12,8 +12,10 @@ EOU
 
 msg="=== $0 :"
 
-export CFBASE=/tmp/$USER/opticks/CSG_GGeo   ## TODO: this has been moved into geocache 
-[ ! -d "$CFBASE/CSGFoundry" ] && echo $msg ERROR no such directory $CFBASE/CSGFoundry && exit 1
+#export CFBASE=/tmp/$USER/opticks/CSG_GGeo   ## TODO: this has been moved into geocache 
+#[ ! -d "$CFBASE/CSGFoundry" ] && echo $msg ERROR no such directory $CFBASE/CSGFoundry && exit 1
+#
+# now using Opticks::getFoundryBase inside the executable to access the OPTICKS_KEY geocache CSGFoundry
 
 
 size=${SIZE:-2560,1440,1}  # currently ignored

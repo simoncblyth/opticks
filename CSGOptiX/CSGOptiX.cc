@@ -416,6 +416,8 @@ void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_
     int create_dirs = 1 ; // 1:filepath 
     const char* path = SPath::Resolve(path_, create_dirs ); 
 
+    LOG(info) << " path_ [" << path_ << "]"  ; 
+
 #if OPTIX_VERSION < 70000
     six->snap(path, bottom_line, top_line, line_height); 
 #else
