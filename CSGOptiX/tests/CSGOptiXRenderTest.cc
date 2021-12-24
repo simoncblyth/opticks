@@ -205,7 +205,7 @@ void CSGOptiXRenderTest::setCE(const char* arg)
     LOG(info) 
         << " arg " << arg 
         << " midx " << midx << " mord " << mord << " iidx " << iidx 
-        << " rc " << rc
+        << " rc [" << rc << "]" 
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
         ; 
 

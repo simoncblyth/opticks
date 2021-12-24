@@ -41,7 +41,8 @@ msg="=== $BASH_SOURCE :"
 
 #geom=SphereWithPhiSegment
 #geom=Orb
-geom=PolyconeWithMultipleRmin
+#geom=PolyconeWithMultipleRmin
+geom=hmsk_solidMaskTail
 
 
 export GEOM=${GEOM:-$geom}

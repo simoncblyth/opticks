@@ -32,7 +32,7 @@ msg="=== $BASH_SOURCE :"
 ## X4SolidMaker debug solids
 
 #geom=Orb
-geom=SphereWithPhiSegment 
+#geom=SphereWithPhiSegment 
 #geom=SphereWithThetaSegment 
 #geom=AdditionAcrylicConstruction
 #geom=BoxMinusTubs0
@@ -90,8 +90,11 @@ geom=SphereWithPhiSegment
 #geom=hama_body_solid_nurs
 #geom=hama_body_solid_prtc
 #geom=hama_body_solid_prtc_obto
-#geom=body_solid_nurs_pdyn
-#geom=body_solid_nurs
+#geom=hama_body_solid_nurs_pdyn
+#geom=hama_body_solid_nurs
+
+#geom=hmsk_solidMask
+geom=hmsk_solidMaskTail
 
 
 export GEOM=${GEOM:-$geom}

@@ -8,11 +8,19 @@ Usage::
     x4                     # cd ~/opticks/extg4   
     x4 ; ./X4MeshTest.sh 
 
+    EYE=-1,-1,0.8 ZOOM=1.5 $IPYTHON -i tests/X4MeshTest.py 
+
 """
-import logging, numpy 
+import logging
+import numpy as np
 from opticks.ana.fold import Fold
 
-efloatlist_ = lambda ekey,edef:list(map(float, filter(None, os.environ.get(ekey,edef).split(","))))
+efloat_ = lambda ekey,edef:float(os.environ.get(ekey,edef))
+efloatlist_ = lambda ekey,edef:np.array(list(map(float, filter(None, os.environ.get(ekey,edef).split(",")))))
+
+list_str_ = lambda l:str(l)[1:-1].replace(" ","")
+array_str_ = lambda a:str(a)[1:-1].replace(" ",",")
+
 
 try:
     import pyvista as pv
@@ -74,18 +82,31 @@ if __name__ == '__main__':
 
     #default_geom = "BoxMinusOrb"
     #default_geom = "PolyconeWithMultipleRmin"
-    default_geom = "SphereWithPhiSegment"
+    #default_geom = "SphereWithPhiSegment"
+    default_geom = "hmsk_solidMaskTail"
 
     geom = os.environ.get("GEOM", default_geom)
     fold = os.path.expandvars("/tmp/$USER/opticks/extg4/X4IntersectTest/%s/X4Mesh" % geom ) 
-    cpos = efloatlist_("CPOS", "-1,-1,2" )
-    s_cpos = str(cpos)[1:-1].replace(" ","")
+
+    eye = efloatlist_("EYE", "-1,-1,2" )
+    look = efloatlist_("LOOK", "0,0,0" )
+    up = efloatlist_("UP", "0,0,1" )
+    zoom = efloat_("ZOOM", "1") 
+
+    s_eye = array_str_(eye)
+    s_look = array_str_(look)
+    s_up = array_str_(up)
+    s_zoom = str(zoom)
+
+    log.info(" eye %s s_eye %s " % (str(eye), s_eye )) 
+    log.info(" look %s s_look %s " % (str(look), s_look )) 
+    log.info(" up %s s_up %s " % (str(up), s_up )) 
+    log.info(" zoom %s s_zoom %s " % (str(zoom), s_zoom )) 
 
 
-
-    os.environ["TOPLINE"] = "GEOM=%s CPOS=%s ~/opticks/extg4/X4MeshTest.sh" % (geom, s_cpos ) 
+    os.environ["TOPLINE"] = "GEOM=%s EYE=%s ~/opticks/extg4/X4MeshTest.sh" % (geom, s_eye ) 
     os.environ["BOTLINE"] = fold 
-    os.environ["THIRDLINE"] = "CPOS=%s" % s_cpos 
+    os.environ["THIRDLINE"] = "EYE=%s" % s_eye 
 
     mesh = X4Mesh.Load(fold)
 
@@ -96,12 +117,17 @@ if __name__ == '__main__':
     pl.add_mesh(mesh.surf)
 
     Plt.anno(pl)
+
+    pl.set_focus(    look )
+    pl.set_viewup(   up )
+    pl.set_position( eye, reset=True )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
+    pl.camera.Zoom(zoom)
+
     pl.show_grid()
  
     outpath = os.path.join(fold, "pvplot.png")
     log.info("screenshot %s " % outpath)
-    pl.show(cpos=cpos, screenshot=outpath)
-
+    pl.show(screenshot=outpath)
 
 
 
