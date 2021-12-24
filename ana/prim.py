@@ -301,6 +301,30 @@ class Solid(object):
     def __init__(self, base, kd):
         """  
         :param base: directory containing primBuffer.npy etc..  eg $TMP/GParts/0
+
+
+        ::
+
+            In [5]: p.primBuf
+            Out[5]: 
+            array([[0, 1, 0, 3],
+                   [1, 7, 1, 0]], dtype=uint32)
+
+            In [6]: p.partBuf.shape
+            Out[6]: (8, 4, 4)
+
+            In [7]: p.partBuf
+            Out[7]: 
+            array([[[    0.    ,     0.    ,     0.    ,  1000.    ],
+                    [    0.    ,     0.    ,     0.    ,     0.    ],
+                    [-1000.01  , -1000.01  , -1000.01  ,     0.    ],
+                    [ 1000.01  ,  1000.01  ,  1000.01  ,     0.    ]],
+
+                   [[    0.    ,     0.    ,     0.    ,   500.    ],
+                    [    0.    ,     0.    ,     0.    ,     0.    ],
+                    [ -500.01  ,  -500.01  ,  -500.01  ,     0.    ],
+                    [  500.01  ,   500.01  ,   500.01  ,     0.    ]],
+
         """
         sidx = int(os.path.basename(base))
         self.sidx = sidx

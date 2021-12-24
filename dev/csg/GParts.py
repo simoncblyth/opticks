@@ -23,28 +23,6 @@
 TODO: consolidate ana/prim.py with dev/csg/GParts.py 
 
 
-::
-
-    In [5]: p.primBuf
-    Out[5]: 
-    array([[0, 1, 0, 3],
-           [1, 7, 1, 0]], dtype=uint32)
-
-    In [6]: p.partBuf.shape
-    Out[6]: (8, 4, 4)
-
-    In [7]: p.partBuf
-    Out[7]: 
-    array([[[    0.    ,     0.    ,     0.    ,  1000.    ],
-            [    0.    ,     0.    ,     0.    ,     0.    ],
-            [-1000.01  , -1000.01  , -1000.01  ,     0.    ],
-            [ 1000.01  ,  1000.01  ,  1000.01  ,     0.    ]],
-
-           [[    0.    ,     0.    ,     0.    ,   500.    ],
-            [    0.    ,     0.    ,     0.    ,     0.    ],
-            [ -500.01  ,  -500.01  ,  -500.01  ,     0.    ],
-            [  500.01  ,   500.01  ,   500.01  ,     0.    ]],
-
 """
 import os
 import numpy as np
@@ -66,6 +44,8 @@ class GParts(object):
 
 
 if __name__ == '__main__':
+
+   assert 0, "superceded by ana/GParts.py ana/prim.py, THIS dev/csg/GParts IS TO BE DELETED" 
    p = GParts("/tmp/blyth/opticks")
    p0 = p[0]
    p1 = p[1]

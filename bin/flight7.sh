@@ -12,7 +12,7 @@ EOU
 
 msg="=== $0 :"
 
-export CFBASE=/tmp/$USER/opticks/CSG_GGeo 
+export CFBASE=/tmp/$USER/opticks/CSG_GGeo   ## TODO: this has been moved into geocache 
 [ ! -d "$CFBASE/CSGFoundry" ] && echo $msg ERROR no such directory $CFBASE/CSGFoundry && exit 1
 
 
@@ -24,7 +24,10 @@ scale1=${SCALE1:-0.5}
 flight=${FLIGHT:-RoundaboutXY}
 
 pkg=CSGOptiX
-bin=CSGOptiXFlight
+
+##bin=CSGOptiXFlight   ## huh : CSGOptiXFlight no longer exists, perhaps should be CSGOptiXRenderTest.cc
+bin=CSGOptiXRenderTest
+
 version=$(CSGOptiXVersion 2>/dev/null)
 outbase=/tmp/$USER/opticks/$pkg/$bin/$version
 
@@ -94,6 +97,4 @@ if [ "$(uname)" == "Darwin" ]; then
 else
     flight-render $*
 fi 
-
-
 

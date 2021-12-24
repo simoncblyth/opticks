@@ -1,13 +1,24 @@
 #!/usr/bin/env python
 
-import os, logging, argparse, numpy as np
+import os, sys, logging, argparse, numpy as np
 log = logging.getLogger(__name__)
 from opticks.ana.key import keydir
 from opticks.ana.prim import Solid 
 
 class GParts(object):
+    """
+    Opticks executables run with option --savegparts Opticks::isSaveGPartsEnabled() 
+    """
     def __init__(self, kd, basedir="$TMP/GParts"):
         basedir = os.path.expandvars(basedir)
+
+        if not os.path.isdir(basedir):
+            log.fatal("missing directory %s " % basedir)
+            log.fatal("create using --savegparts option with any Opticks executable that invokes GGeo::deferredCreateGParts" )
+            sys.exit(1)
+        pass
+
+
         ii = sorted(list(map(int,os.listdir(basedir))))
         dirs = list(map(lambda i:os.path.join(basedir, str(i)), ii)) 
 
@@ -43,11 +54,11 @@ def parse_args(doc, **kwa):
 
 
 if __name__ == '__main__':
+    args = parse_args(__doc__)
 
     kd = keydir(os.environ["OPTICKS_KEY"])
     gp = GParts(kd)
 
-    args = parse_args(__doc__)
 
     if len(args.ridx) > 0:
         for ridx in args.ridx:

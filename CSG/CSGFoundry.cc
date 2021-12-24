@@ -1349,6 +1349,12 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* 
     {
         rc = target->getCenterExtent(ce, midx, mord, iidx, qptr );    // should use emm ?
     }
+
+    if( rc != 0 )
+    {
+        LOG(error) << " non-zero RC from CSGTarget::getCenterExtent " ;   
+    }
+
     return rc ; 
 }
 

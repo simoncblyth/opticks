@@ -1422,6 +1422,11 @@ Thus it can be done postcache, as all the ingredients are loaded from cache.
 
 See :doc:`../notes/issues/GPts_GParts_optimization`
 
+
+* option --savegparts Opticks::isSaveGPartsEnabled() writes $TMP/GParts/0,1,2,.. 
+  which is read by ana/GParts.py to provide a python interface to the analytic geometry
+
+
 10**/
 
 void GGeo::deferredCreateGParts()

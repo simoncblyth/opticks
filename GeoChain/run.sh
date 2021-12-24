@@ -52,8 +52,12 @@ EOU
 #geom=body_phys
 #geom=body_phys_pcnk_pdyn
 #geom=body_solid
+
+#geom=hmsk_solidMask
+geom=hmsk_solidMaskTail
+
 #geom=SphereWithPhiSegment
-geom=PolyconeWithMultipleRmin
+#geom=PolyconeWithMultipleRmin
 #geom=Orb
 
 export GEOM=${GEOM:-$geom}

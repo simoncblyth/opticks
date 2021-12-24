@@ -1,45 +1,50 @@
 making_flightpath_raytrace_movies
 ===================================
 
+Overview
+----------
 
-0. get overview of the "Solids" (in Opticks sense of compounded shapes aka GMergedMesh) with GParts.py::
+Opticks includes several scripts and executables that can 
+be used to make movies of geometry and geometry+event propagations 
+using various techniques based on both raytraced and rasterized visualizations.
 
-    OpSnapTest --savegparts    
-    # any Opticks executable can do this (necessary as GParts are now postcache so this does not belong in geocache)
-    # the parts are saved into $TMP/GParts
+Some techniques are based on the combination of .jpg images into .mp4 using ffmpeg 
+whilst some use separate screen capture software to capture movies from Opticks OpenGL windows.  
 
-    # TODO: could standardize doing as part of CSG_GGeo conversion 
+* NVIDIA OptiX pre-7 ray traced geometry 
+* OpenGL rasterized event propagations (implemented somewhat confusingly with OpenGL geometry shaders) composited with NVIDIA OptiX pre-7 geometry   
+* OpenGL rasterized event propagations combined with OpenGL rasterized representations of Geant4 polygonized geometry 
+* NVIDIA OptiX 7 ray traced geometry 
 
+This page seeks to catalog and organized the various approaches and briefly document them. 
 
-    epsilon:ana blyth$ GParts.py 
-    Solid 0 : /tmp/blyth/opticks/GParts/0 : primbuf (3084, 4) partbuf (17346, 4, 4) tranbuf (7917, 3, 4, 4) idxbuf (3084, 4) 
-    Solid 1 : /tmp/blyth/opticks/GParts/1 : primbuf (5, 4) partbuf (7, 4, 4) tranbuf (5, 3, 4, 4) idxbuf (5, 4) 
-    Solid 2 : /tmp/blyth/opticks/GParts/2 : primbuf (6, 4) partbuf (30, 4, 4) tranbuf (15, 3, 4, 4) idxbuf (6, 4) 
-    Solid 3 : /tmp/blyth/opticks/GParts/3 : primbuf (6, 4) partbuf (54, 4, 4) tranbuf (29, 3, 4, 4) idxbuf (6, 4) 
-    Solid 4 : /tmp/blyth/opticks/GParts/4 : primbuf (6, 4) partbuf (28, 4, 4) tranbuf (15, 3, 4, 4) idxbuf (6, 4) 
-    Solid 5 : /tmp/blyth/opticks/GParts/5 : primbuf (1, 4) partbuf (3, 4, 4) tranbuf (1, 3, 4, 4) idxbuf (1, 4) 
-    Solid 6 : /tmp/blyth/opticks/GParts/6 : primbuf (1, 4) partbuf (31, 4, 4) tranbuf (9, 3, 4, 4) idxbuf (1, 4) 
-    Solid 7 : /tmp/blyth/opticks/GParts/7 : primbuf (1, 4) partbuf (1, 4, 4) tranbuf (1, 3, 4, 4) idxbuf (1, 4) 
-    Solid 8 : /tmp/blyth/opticks/GParts/8 : primbuf (1, 4) partbuf (31, 4, 4) tranbuf (11, 3, 4, 4) idxbuf (1, 4) 
-    Solid 9 : /tmp/blyth/opticks/GParts/9 : primbuf (130, 4) partbuf (130, 4, 4) tranbuf (130, 3, 4, 4) idxbuf (130, 4) 
+Related
+---------
 
-    * in above 6 and 8 look interesting : they are single prim with 31 parts(aka nodes) 
-      that is a depth 5 tree and potential performance problem
+* :doc:`python_browsing_geometry`
 
 
-1. use ggeo.py and triplet indexing to find the corresponding global node index (nidx)::
+Scripts
+----------
 
-    epsilon:opticks blyth$ ggeo.py 5:9/0/* --names
-    nrpo(  69668     5     0     0 )                                     lUpper_phys0x35b5ac0                                          lUpper0x35b5a00 
-    nrpo(  69078     6     0     0 )                                 lFasteners_phys0x34ce040                                      lFasteners0x34cdf00 
-    nrpo(  68488     7     0     0 )                                     lSteel_phys0x352c890                                          lSteel0x352c760 
-    nrpo(  70258     8     0     0 )                                  lAddition_phys0x35ff770                                       lAddition0x35ff5f0 
+bin/flight.sh 
+   uses executable OpFlightPathTest okop/tests/OpFlightPathTest.cc
+   jpg created by the executable are combined into mp4 using ffmpeg
+    
+bin/flight7.sh 
+   previously used CSGOptiXFlight, probably now CSGOptiXRenderTest CSGOptiX/tests/CSGOptiXRenderTest.cc
+   jpg created by the executable are combined into mp4 using ffmpeg
 
-    epsilon:ana blyth$ ggeo.py 5:9/0/*  --brief
-    nidx: 69668 triplet: 5000000 sh:5f0014 sidx:    0   nrpo(  69668     5     0     0 )  shape(  95  20                       base_steel0x360d8f0                            Water///Steel) 
-    nidx: 69078 triplet: 6000000 sh:5e0014 sidx:    0   nrpo(  69078     6     0     0 )  shape(  94  20                             uni10x34cdcb0                            Water///Steel) 
-    nidx: 68488 triplet: 7000000 sh:5d0014 sidx:    0   nrpo(  68488     7     0     0 )  shape(  93  20                   sStrutBallhead0x352a360                            Water///Steel) 
-    nidx: 70258 triplet: 8000000 sh:600010 sidx:    0   nrpo(  70258     8     0     0 )  shape(  96  16                     uni_acrylic30x35ff3d0                          Water///Acrylic) 
+   TODO: CFBASE location changes need attention  
+
+
+
+
+
+
+
+Old Notes
+-----------
 
 2. create an eye-look-up flight path, that is saved to /tmp/flightpath.npy::
 
