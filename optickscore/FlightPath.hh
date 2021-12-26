@@ -102,7 +102,6 @@ private:
 public:
     int* getIVPeriodPtr();
 public:
-    void setPathFormat();
     void fillPathFormat(char* path, unsigned path_size, unsigned index );
 public:
     void record(double dt ); 
@@ -110,6 +109,7 @@ public:
     template<typename T> void setMeta(const char* key, T value); 
     void save() const ; 
 private:
+    void initPathFormat();
     void setPathFormat(const char* path_format);
 private:
     const Opticks*                       m_ok ; 

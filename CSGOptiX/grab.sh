@@ -56,6 +56,10 @@ elif [ "$arg" == "jpg" ]; then
     rsync -zarv --progress --include="*/" --include="*.jpg" --include="*.json" --exclude="*" "$from" "$to"
     ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.json'`
 
+elif [ "$arg" == "mp4" ]; then
+    rsync -zarv --progress --include="*/" --include="*.mp4" --include="*.json" --exclude="*" "$from" "$to"
+    ls -1rt `find ${to%/} -name '*.mp4' -o -name '*.json'`
+
 elif [ "$arg" == "all" ]; then
     rsync -zarv --progress --include="*/" --include="*.txt" --include="*.npy" --include="*.jpg" --include="*.mp4" --include "*.json" --exclude="*" "$from" "$to"
 

@@ -1,4 +1,9 @@
 #!/bin/bash -l 
+
+BASH_FOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+
+
 usage(){ cat << EOU
 cxs.sh : hybrid rendering/simulation machinery, eg creating 2D ray trace cross sections
 ========================================================================================
@@ -56,9 +61,11 @@ msg="=== $BASH_SOURCE : "
 geom=Hama_8
 #geom=Hama_16
 
-
 #geom=uni_acrylic3_0
 #geom=uni_acrylic1_0
+
+
+
 export GEOM=${GEOM:-$geom}
 
 isel=
@@ -207,7 +214,7 @@ export ZZ=${ZZ:-$zz}
 
 export OPTICKS_GEOM=$GEOM 
 
-vars="MOI CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE GSPLOT ISEL XX ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
+vars="BASH_FOLDER MOI CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE GSPLOT ISEL XX ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 
@@ -223,26 +230,29 @@ cd $LOGDIR
 if [ "$(uname)" == "Linux" ]; then 
 
     if [ "$1" == "run" ]; then
+
         $GDB CSGOptiXSimulateTest
         source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
 
     elif [ "$1" == "ana" ]; then 
 
         source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
-        NOGUI=1 ${IPYTHON:-ipython} tests/CSGOptiXSimulateTest.py 
+        NOGUI=1 ${IPYTHON:-ipython} ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
+
     else
+
         $GDB CSGOptiXSimulateTest
         source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
+        NOGUI=1 ${IPYTHON:-ipython} ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
 
-        NOGUI=1 ${IPYTHON:-ipython} tests/CSGOptiXSimulateTest.py 
     fi
 
 elif [ "$(uname)" == "Darwin" ]; then
 
     if [ "$1" == "bat" ]; then
-        NOGUI=1 ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
+        NOGUI=1 ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
     else
-        ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXSimulateTest.py 
+        ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
     fi 
 fi 
 

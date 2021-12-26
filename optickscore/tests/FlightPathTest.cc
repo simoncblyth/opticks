@@ -244,8 +244,7 @@ void test_fillPathFormat(Opticks* ok)
     LOG(info); 
 
     FlightPath* fp = ok->getFlightPath(); 
-
-    fp->setPathFormat();  
+    //fp->initPathFormat();   // now done by the init 
 
     unsigned limit = 10 ; 
     fp->setMeta("limit", limit ); 

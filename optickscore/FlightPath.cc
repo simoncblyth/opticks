@@ -79,7 +79,7 @@ FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* outdir, c
 
 void FlightPath::init()
 {
-    setPathFormat(); 
+    initPathFormat(); 
 }
 
 
@@ -191,7 +191,7 @@ void FlightPath::load()
     }
 }
 
-void FlightPath::setPathFormat()
+void FlightPath::initPathFormat()
 {
     std::string name = m_cfg->getFrameName(m_nameprefix, -1); 
     bool create = true ; 
@@ -330,7 +330,7 @@ int FlightPath::render( SRenderer* renderer )
     fp->setMeta<std::string>("top_annotation", top_annotation ); 
 
 
-    char path[256] ; 
+    char path[256] ;   // TODO: use chdir and relative paths to avoid the need for such long paths 
     for(int i=0 ; i < imax ; i++)
     {
         m_composition->tick();  // changes Composition eye-look-up according to InterpolatedView flightpath

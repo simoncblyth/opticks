@@ -55,8 +55,8 @@ EOU
 
 #geom=hmsk_solidMask
 #geom=hmsk_solidMaskTail
-geom=nmsk_solidMask
-#geom=nmsk_solidMaskTail
+#geom=nmsk_solidMask
+geom=nmsk_solidMaskTail
 
 
 

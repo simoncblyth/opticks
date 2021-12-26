@@ -1,5 +1,7 @@
 #!/bin/bash -l
 
+msg="=== $BASH_SOURCE :"
+
 usage(){ cat << EOU
 flight7.sh
 ===============
@@ -10,52 +12,50 @@ See also flight.sh
 EOU
 }
 
-msg="=== $0 :"
+pkg=CSGOptiX
+bin=CSGOptiXRenderTest
+version=$(CSGOptiXVersion 2>/dev/null)
+logdir=/tmp/$USER/opticks/$pkg/$bin/$version
 
-#export CFBASE=/tmp/$USER/opticks/CSG_GGeo   ## TODO: this has been moved into geocache 
-#[ ! -d "$CFBASE/CSGFoundry" ] && echo $msg ERROR no such directory $CFBASE/CSGFoundry && exit 1
-#
-# now using Opticks::getFoundryBase inside the executable to access the OPTICKS_KEY geocache CSGFoundry
+moi=uni_acrylic1
+#moi=Hama:0:1000
 
-
-size=${SIZE:-2560,1440,1}  # currently ignored
 period=${PERIOD:-4}
 limit=${LIMIT:-600}
 scale0=${SCALE0:-3}
 scale1=${SCALE1:-0.5}
-flight=${FLIGHT:-RoundaboutXY}
-
-pkg=CSGOptiX
-
-##bin=CSGOptiXFlight   ## huh : CSGOptiXFlight no longer exists, perhaps should be CSGOptiXRenderTest.cc
-bin=CSGOptiXRenderTest
-
-version=$(CSGOptiXVersion 2>/dev/null)
-outbase=/tmp/$USER/opticks/$pkg/$bin/$version
-
-prefix="${flight}"
-outdir="$outbase/$prefix"
-
+flight=${FLIGHT:-RoundaboutXY_XZ}
 config="flight=$flight,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
+nameprefix="${flight}"
 
 flight-cmd(){ cat << EOC
-$bin --flightconfig "$config" --flightoutdir "$outdir" --nameprefix "$prefix"   $*
+$bin --flightconfig "$config" --nameprefix "$nameprefix"   $*
 EOC
+}
+
+export MOI=${MOI:-$moi}
+export OPTICKS_GEOM=$MOI
+export OPTICKS_RELDIR=$flight 
+
+
+flight-init()
+{
+   which $bin
+   pwd
+
+   echo $msg creating output directory logdir: "$logdir"
+   mkdir -p "$logdir" 
+
+   cd "$logdir"
 }
 
 flight-render-jpg()
 {
    local msg="=== $FUNCNAME :"
-   which $bin
-   pwd
-
-   echo $msg creating output directory outdir: "$outdir"
-   mkdir -p "$outdir" 
-
-   local log=$bin.log
    local cmd=$(flight-cmd $*) 
    echo $cmd
 
+   local log=$bin.log
    printf "\n\n\n$cmd\n\n\n" >> $log 
    eval $cmd
    local rc=$?
@@ -72,38 +72,31 @@ flight-make-mp4()
 
     local iwd=$PWD
 
-    source CSGOptiXRenderTest_OUTPUT_DIR.sh || exit 1
-    local outdir=${CSGOptiXRenderTest_OUTPUT_DIR}
+    source ${bin}_OUTPUT_DIR.sh || exit 1
+    local evar=${bin}_OUTPUT_DIR ; 
+    local outdir=${!evar}
+    echo $msg evar $evar outdir $outdir 
+
     cd "$outdir" 
     pwd
 
-    $jpg2mp4 "$prefix"
+    $jpg2mp4 
 
     cd $iwd 
-
     return 0 
 }
 
 flight-render()
 {
+    flight-init
     flight-render-jpg $*
     flight-make-mp4
 }
 
-flight-grab()
-{
-    [ -z "$outbase" ] && echo $msg outbase $outbase not defined && return 1 
-
-    local cmd="rsync -rtz --progress P:$outbase/ $outbase/"
-    echo $cmd
-    eval $cmd
-    open $outbase
-    return 0 
-}
-
 
 if [ "$(uname)" == "Darwin" ]; then
-    flight-grab
+    cx
+    ./cxr_grab.sh mp4 
 else
     flight-render $*
 fi 
