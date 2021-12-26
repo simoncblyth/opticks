@@ -35,6 +35,7 @@ outbase=/tmp/$USER/opticks/$pkg/$bin/$version
 
 prefix="${flight}"
 outdir="$outbase/$prefix"
+
 config="flight=$flight,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
 
 flight-cmd(){ cat << EOC
@@ -69,9 +70,16 @@ flight-make-mp4()
     local jpg2mp4=$HOME/env/bin/ffmpeg_jpg_to_mp4.sh
     [ ! -x "$jpg2mp4" ] && echo $msg no jpg2mp4 $jpg2mp4 script && return 1 
 
+    local iwd=$PWD
+
+    source CSGOptiXRenderTest_OUTPUT_DIR.sh || exit 1
+    local outdir=${CSGOptiXRenderTest_OUTPUT_DIR}
     cd "$outdir" 
     pwd
+
     $jpg2mp4 "$prefix"
+
+    cd $iwd 
 
     return 0 
 }

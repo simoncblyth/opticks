@@ -8,7 +8,7 @@ Usage::
     x4                     # cd ~/opticks/extg4   
     x4 ; ./X4MeshTest.sh 
 
-    EYE=-1,-1,0.8 ZOOM=1.5 $IPYTHON -i tests/X4MeshTest.py 
+    GEOM=hmsk_solidMaskTail  EYE=-1,-1,0.8 ZOOM=1.5 $IPYTHON -i tests/X4MeshTest.py 
 
 """
 import logging
@@ -19,7 +19,7 @@ efloat_ = lambda ekey,edef:float(os.environ.get(ekey,edef))
 efloatlist_ = lambda ekey,edef:np.array(list(map(float, filter(None, os.environ.get(ekey,edef).split(",")))))
 
 list_str_ = lambda l:str(l)[1:-1].replace(" ","")
-array_str_ = lambda a:str(a)[1:-1].replace(" ",",")
+array_str_ = lambda a:" ".join(str(a)[1:-1].split()).replace(" ",",")
 
 
 try:
@@ -84,9 +84,10 @@ if __name__ == '__main__':
     #default_geom = "PolyconeWithMultipleRmin"
     #default_geom = "SphereWithPhiSegment"
     default_geom = "hmsk_solidMaskTail"
-
     geom = os.environ.get("GEOM", default_geom)
-    fold = os.path.expandvars("/tmp/$USER/opticks/extg4/X4IntersectTest/%s/X4Mesh" % geom ) 
+
+    fold = os.path.expandvars("/tmp/$USER/opticks/extg4/X4MeshTest/%s/X4Mesh" % geom ) 
+    log.info("loading from fold %s " % fold) 
 
     eye = efloatlist_("EYE", "-1,-1,2" )
     look = efloatlist_("LOOK", "0,0,0" )
@@ -103,14 +104,11 @@ if __name__ == '__main__':
     log.info(" up %s s_up %s " % (str(up), s_up )) 
     log.info(" zoom %s s_zoom %s " % (str(zoom), s_zoom )) 
 
-
-    os.environ["TOPLINE"] = "GEOM=%s EYE=%s ~/opticks/extg4/X4MeshTest.sh" % (geom, s_eye ) 
+    os.environ["TOPLINE"] = "GEOM=%s EYE=%s ZOOM=%s ~/opticks/extg4/X4MeshTest.sh" % (geom, s_eye, s_zoom ) 
     os.environ["BOTLINE"] = fold 
     os.environ["THIRDLINE"] = "EYE=%s" % s_eye 
 
     mesh = X4Mesh.Load(fold)
-
-    #mesh.surf.plot(cpos=cpos)
 
     size = np.array([1280, 720])
     pl = pv.Plotter(window_size=size*2 )
@@ -128,6 +126,5 @@ if __name__ == '__main__':
     outpath = os.path.join(fold, "pvplot.png")
     log.info("screenshot %s " % outpath)
     pl.show(screenshot=outpath)
-
 
 

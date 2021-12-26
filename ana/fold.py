@@ -36,9 +36,9 @@ class Fold(object):
             if self.globals:
                 gstem = self.globals_prefix + stem
                 globals()[gstem] = a 
-                print(" %10s : %15s : %15s : %s " % (stem, gstem, ashape, path ))  
+                print(" %20s : %15s : %15s : %s " % (stem, gstem, ashape, path ))  
             else:
-                print(" %10s : %15s : %s " % (stem, ashape, path ))  
+                print(" %20s : %15s : %s " % (stem, ashape, path ))  
             pass
         pass
         self.stems = stems

@@ -4,20 +4,14 @@ X4IntersectSolidTest.py : 2D scatter plots of geometry intersect positions
 ============================================================================
 
 * typically used from xxs.sh 
-* provides comparison of intersect positions loaded from two input Fold 
 
-Formerly had to fiddle around varying the pyvista zoom (often needing very small values 1e-8) 
-to make geometry visible, but now find that using set_position with reset=True manages 
-to automatically get into ballpark from which more reasonable zoom values can fine tune.
+For debugging::
 
-Observed ipos stuck at genstep origin positions causing unexpected
-coloring of the genstep points, presumably from rays that miss. 
-Confirmed this by observation that gentstep points inside solids
-never change color as it is impossible to miss from inside. 
+    ${IPYTHON:-ipython} -i tests/X4IntersectSolidTest.py
 
-TODO: select on flags to avoid the miscoloring 
+* can be adapted to allow comparison of intersect positions loaded from multiple input Fold 
 
-TODO: avoid duplication between this and ~/opticks/CSGOptiX/tests/CSGOptiXSimulateTest.py
+TODO: factor out the common machinery used in this and ~/opticks/CSGOptiX/tests/CSGOptiXSimulateTest.py
 
 """
 
@@ -149,25 +143,31 @@ class Plt(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    CXS_RELDIR = os.environ.get("CXS_RELDIR", "extg4/X4IntersectTest" ) 
-    CXS_OTHER_RELDIR = os.environ.get("CXS_OTHER_RELDIR", "CSGOptiX/CSGOptiXSimulateTest" ) 
+    dirfmt = "/tmp/$USER/opticks/extg4/X4IntersectSolidTest/%(geom)s/X4Intersect" 
 
-    GEOM = os.environ.get("GEOM", "pmt_solid")
+    GEOM_default = "hmsk_solidMaskTail"
+    GEOM = os.environ.get("GEOM", GEOM_default )
     geoms = GEOM.split(",")
 
     colors = "red green blue cyan magenta yellow".split()
 
     folds = []
     others = []
+
     for i,geom in enumerate(geoms):
-        fold = Fold.Load("/tmp/$USER/opticks",CXS_RELDIR,geom, "X4Intersect", globals=True, globals_prefix=geom )
+
+        path = os.path.expandvars( dirfmt % locals() )
+        log.info(" path %s " % path )
+
+        fold = Fold.Load(path)
         folds.append(fold)
         fold.color = colors[i]
-        #other = Fold.Load("/tmp/$USER/opticks",CXS_OTHER_RELDIR,geom, globals=True, globals_prefix="other_" + geom )
-        #others.append(other)
     pass
 
     fold0 = folds[0]
+
+    log.info("fold0.base %s " % fold0.base )
+
     gridspec = GridSpec(fold0.peta)
     is_planar = not gridspec.axes is None
 
