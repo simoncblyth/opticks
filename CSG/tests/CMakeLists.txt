@@ -14,6 +14,7 @@ set(TEST_SOURCES
     CSGFoundryLoadTest.cc
     CSGNameTest.cc
     CSGTargetTest.cc
+    CSGTargetGlobalTest.cc
     CSGScanTest.cc
     CUTest.cc
     CSGLogTest.cc
