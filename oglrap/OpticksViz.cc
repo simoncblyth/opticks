@@ -531,6 +531,23 @@ void OpticksViz::renderGUI()
 }
 
 
+/**
+OpticksViz::setExternalRenderer
+---------------------------------
+
+Used from opticksgl/OKGLTracer.cc OKGLTracer::prepareTracer with::
+
+    111     m_composition->setRaytraceEnabled(true);  // enables the "O" key to switch to ray trace
+    114     m_viz->setExternalRenderer(this);
+
+The SRenderer pure virtual base protocol is just two methods *render* and *snap* 
+that only use standard types in the interface.
+
+The external renderer handles the optix ray trace render to buffer
+and thence to a texture that gets pushed to OpenGL.  
+
+**/
+
 void OpticksViz::setExternalRenderer(SRenderer* external_renderer)
 {
     m_external_renderer = external_renderer ; 

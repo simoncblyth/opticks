@@ -29,6 +29,15 @@
 #include "NPY_API_EXPORT.hh"
 
 
+/**
+NGrid
+=======
+
+Morton enabled grid providing resolution independent indexing
+that works with various vector and integer types.  
+
+**/
+
 template <typename FVec, typename IVec, int DIM>
 struct NPY_API NGrid
 {

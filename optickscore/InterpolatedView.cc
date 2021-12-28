@@ -40,7 +40,23 @@ const char* InterpolatedView::getPrefix()
     return PREFIX ; 
 }
 
+/**
+InterpolatedView::MakeFromArray
+---------------------------------
 
+elu
+    NPY array of shape (num_view,4,4) where num_view > 1 holding eye-look-up vectors 
+period
+    crucial input to the InterpolatedView used to configure the Animator
+scale0 scale1 
+    scales linearly varying between scale0 and scale1 are applied to the 
+    eye-look-up vectors that are used to create each view of the InterpolatedView 
+ctrl
+     SCtrl instance
+
+
+
+**/
 
 InterpolatedView* InterpolatedView::MakeFromArray(NPY<float>* elu, unsigned period, float scale0, float scale1, SCtrl* ctrl )
 {

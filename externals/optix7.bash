@@ -37,6 +37,43 @@ See Also
 * https://github.com/nvpro-samples/optix_advanced_samples/tree/master/src/optixIntroduction
 
 
+
+OptiX 7 OpenGL interop
+------------------------
+
+* https://forums.developer.nvidia.com/t/opengl-in-optix-7/83142
+
+dhart Oct 2019::
+
+OptiX 6.5 and earlier needs explicit interop since the handles you get from
+OptiX are not native device pointers. Since OptiX 7 uses raw device pointers
+and explicit CUDA streams, like you pointed out, OptiX doesn’t need any interop
+functionality beyond the interop you can find with CUDA. This goes for OpenGL
+as well as DirectX and Vulkan too. So the way to think about it is with OptiX
+6.5 and earlier you need OpenGL-OptiX interop, and with OptiX 7+ you need
+OpenGL-CUDA interop. There is still an explicit API for interop, but the API is
+CUDA functions rather than OptiX functions.
+
+All three of those APIs have some limitations in their interop with CUDA since
+they all deal in opaque buffer objects like OptiX used to. So you just need to
+draw from the knowledge base of OpenGL-CUDA interop in order to use OpenGL with
+OptiX 7. This set of slides is a bit dated, but I think still relevant to
+OpenGL-CUDA interop https://www.nvidia.com/content/GTC/documents/1055_GTC09.pdf
+
+
+* https://www.nvidia.com/content/GTC/documents/1055_GTC09.pdf
+
+What Every CUDA Programmer Should
+Know About OpenGL
+The Fairmont San Jose | 4:00 PM Thursday, October 1 2009 | Joe Stam
+
+
+Headless OpenGL using NVIDIA EGL
+------------------------------------
+
+* https://developer.nvidia.com/blog/egl-eye-opengl-visualization-without-x-server/
+
+
 Multiple pipelines, SBT, ...
 --------------------------------
 

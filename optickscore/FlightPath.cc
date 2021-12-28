@@ -24,6 +24,7 @@
 
 #include "SMeta.hh"
 #include "SPath.hh"
+#include "SSys.hh"
 #include "SRenderer.hh"
 
 // brap-
@@ -69,7 +70,7 @@ FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* outdir, c
     m_ivperiod(128),
     m_ctrl(NULL),
     m_meta(new SMeta),
-    m_scale(1.f),
+    m_scale(SSys::getenvfloat("FlightPath_scale",1.f)),
     m_path_format(nullptr),
     m_outdir(strdup(outdir))
 {
