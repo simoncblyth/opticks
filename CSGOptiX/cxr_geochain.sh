@@ -47,7 +47,9 @@ msg="=== $BASH_SOURCE :"
 #geom=hmsk_solidMaskTail
 
 #geom=nmsk_solidMask
-geom=nmsk_solidMaskTail
+#geom=nmsk_solidMaskTail
+
+geom=XJfixtureConstruction
 
 
 

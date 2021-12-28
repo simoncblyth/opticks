@@ -14,7 +14,13 @@ rsyncs OpticksEvent .npy arrays and .json metadata between machines
 
    PFX=tds3gun evtsync.sh rm     # deletes the destination dir before sync, for cleanliness
    PFX=tds3gun evtsync.sh ls     # skips the rsync, justs lists
-  
+ 
+
+Example directories that are synced::
+
+    evtsync from P:/tmp/blyth/opticks/tds3gun/evt/g4live/natural to /tmp/blyth/opticks/tds3gun/evt/g4live/natural
+
+ 
 EOU
 }
 
@@ -40,10 +46,15 @@ evtsync()
     fi
     mkdir -p $to 
 
+    local rc
+
     if [ "$CMD" != "ls" ]; then
         rsync -zarv --progress --include="*/" --include="*.npy" --include="*.txt" --include="*.json" --include="*.ini" --exclude="*" "${from}/" "${to}/"
+        rc=$? 
+        if [ $rc -ne 0 ]; then 
+            echo $msg non-zero rc from rsync : start ssh tunnel with \"tun\" and ensure remote directory being grabbed exists && exit 1
+        fi 
     fi 
-
     ls -1rt `find ${to%/} -name '*.npy' `
 
     return 0   

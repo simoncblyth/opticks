@@ -4,6 +4,7 @@
 #include "G4Sphere.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
+#include "G4Cons.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4ThreeVector.hh"
 #include "G4Orb.hh"
@@ -38,6 +39,8 @@ Orb
 SphereWithPhiSegment
 SphereWithThetaSegment
 AdditionAcrylicConstruction
+XJfixtureConstruction
+XJanchorConstruction
 BoxMinusTubs0
 BoxMinusTubs1
 BoxMinusOrb
@@ -54,11 +57,14 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4SolidMaker::SphereWithPhiSegment(qname); 
     else if(StartsWith("SphereWithThetaSegment",qname))       solid = X4SolidMaker::SphereWithThetaSegment(qname); 
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4SolidMaker::AdditionAcrylicConstruction(qname); 
+    else if(StartsWith("XJfixtureConstruction", qname))       solid = X4SolidMaker::XJfixtureConstruction(qname); 
+    else if(StartsWith("XJanchorConstruction", qname))        solid = X4SolidMaker::XJanchorConstruction(qname) ; 
     else if(StartsWith("BoxMinusTubs0",qname))                solid = X4SolidMaker::BoxMinusTubs0(qname); 
     else if(StartsWith("BoxMinusTubs1",qname))                solid = X4SolidMaker::BoxMinusTubs1(qname); 
     else if(StartsWith("BoxMinusOrb",qname))                  solid = X4SolidMaker::BoxMinusOrb(qname); 
     else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = X4SolidMaker::UnionOfHemiEllipsoids(qname); 
     else if(StartsWith("PolyconeWithMultipleRmin", qname))    solid = X4SolidMaker::PolyconeWithMultipleRmin(qname) ; 
+
     assert(solid); 
     return solid ; 
 }
@@ -205,6 +211,66 @@ const G4VSolid* X4SolidMaker::AdditionAcrylicConstruction(const char* name)
     //return uni_acrylic1 ; 
     return uni_acrylic2_initial ; 
 }
+
+
+
+
+const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
+{
+    G4VSolid* solidXJfixture_down1;
+    G4VSolid* solidXJfixture_down2;
+    G4VSolid* solidXJfixture_down3;
+    G4VSolid* solidXJfixture_down_uni1;
+    G4VSolid* solidXJfixture_down_uni2;
+    G4VSolid* solidXJfixture_down_uni3;
+    G4VSolid* solidXJfixture_down_uni4;
+    //G4VSolid* solidXJfixture_down_uni5;
+
+    G4VSolid* solidXJfixture_up1;
+    G4VSolid* solidXJfixture_up2;
+    G4VSolid* solidXJfixture_up_uni;
+
+    G4VSolid* solidXJfixture;
+
+
+// fixture part
+    solidXJfixture_down1 = new G4Tubs("solidXJfixture_down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    solidXJfixture_down2 = new G4Box("solidXJfixture_down2", 10.*mm, 11.5*mm, 13/2.*mm);
+    solidXJfixture_down_uni1 = new G4UnionSolid("solidXJfixture_down_uni1", solidXJfixture_down1, solidXJfixture_down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));
+    solidXJfixture_down_uni2 = new G4UnionSolid("solidXJfixture_down_uni2", solidXJfixture_down_uni1, solidXJfixture_down2, 0, G4ThreeVector(-52.*mm, 0.*mm, 0.*mm));
+    solidXJfixture_down3 = new G4Box("solidXJfixture_down3", 15.*mm, 15.*mm, 13/2.*mm);
+    solidXJfixture_down_uni3 = new G4UnionSolid("solidXJfixture_down_uni3", solidXJfixture_down_uni2, solidXJfixture_down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));
+    solidXJfixture_down_uni4 = new G4UnionSolid("solidXJfixture_down_uni4", solidXJfixture_down_uni3, solidXJfixture_down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm));
+
+// cover part
+    solidXJfixture_up1 = new G4Box("solidXJfixture_up1", 15.*mm, 40.*mm, 17/2.*mm);    
+    solidXJfixture_up2 = new G4Box("solidXJfixture_up2", 15.*mm, 65*mm, 5.*mm);
+    solidXJfixture_up_uni = new G4UnionSolid("solidXJfixture_up_uni", solidXJfixture_up1, solidXJfixture_up2, 0, G4ThreeVector(0.*mm, 0.*mm, 13.5*mm));
+
+// union 
+    solidXJfixture = new G4UnionSolid("solidXJfixture", solidXJfixture_down_uni4, solidXJfixture_up_uni, 0, G4ThreeVector(0.*mm, 0.*mm, -25.*mm));
+
+    return solidXJfixture ;
+}
+
+
+
+const G4VSolid* X4SolidMaker::XJanchorConstruction(const char* name)
+{
+    G4VSolid* solidXJanchor_up;
+    G4VSolid* solidXJanchor_down;
+    G4VSolid* solidXJanchor_ball;
+
+    solidXJanchor_up   = new G4Tubs("solidXJanchor_up", 0.*mm, 25.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    solidXJanchor_down = new G4Cons("solidXJanchor_down", 0.*mm, 47.*mm, 0.*mm, 73.*mm, 10.*mm, 0.*deg, 360.*deg);   // to subtract the ball
+    solidXJanchor_ball = new G4Sphere("solidXJanchor_ball", 0.*mm, 17820.*mm, 0.*deg, 360.*deg, 0.*deg, 180.*deg); 
+    G4SubtractionSolid* solidXJanchor_sub = new G4SubtractionSolid("solidXJanchor_sub",solidXJanchor_down, solidXJanchor_ball, 0, G4ThreeVector(0.*mm, 0*mm,  17820.*mm));
+    G4UnionSolid* solidXJanchor = new G4UnionSolid("solidXJanchor",solidXJanchor_sub, solidXJanchor_up, 0, G4ThreeVector(0.*mm, 0*mm,-16.5*mm));
+
+    return solidXJanchor ;
+} 
+
+
 
 const G4VSolid* X4SolidMaker::BoxMinusTubs0(const char* name)  // is afflicted
 {

@@ -18,6 +18,9 @@ struct X4_API X4SolidMaker
     static const G4VSolid* SphereWithPhiSegment(const char* name); 
     static const G4VSolid* SphereWithThetaSegment(const char* name); 
     static const G4VSolid* AdditionAcrylicConstruction(const char* name);
+    static const G4VSolid* XJfixtureConstruction(const char* name); 
+    static const G4VSolid* XJanchorConstruction(const char* name); 
+
     static const G4VSolid* BoxMinusTubs0(const char* name);
     static const G4VSolid* BoxMinusTubs1(const char* name); 
     static const G4VSolid* BoxMinusOrb(const char* name); 

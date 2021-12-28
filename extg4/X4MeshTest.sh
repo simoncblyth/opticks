@@ -9,6 +9,10 @@ GEOM=hmsk_solidMaskTail EYE=0.5,0.5,0.3 ZOOM=2 ./X4MeshTest.sh
 GEOM=nmsk_solidMaskTail EYE=0.5,0.5,0.3 ZOOM=2 ./X4MeshTest.sh
 
 
+GEOM=XJfixtureConstruction ./X4MeshTest.sh
+GEOM=XJanchorConstruction ./X4MeshTest.sh
+
+
 EOU
 }
 
