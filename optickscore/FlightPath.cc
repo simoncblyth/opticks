@@ -75,12 +75,15 @@ FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* outdir, c
     m_outdir(strdup(outdir))
 {
     init(); 
-    LOG(LEVEL) << " m_inputpath " << m_inputpath ; 
 }
 
 void FlightPath::init()
 {
     initPathFormat(); 
+    LOG(info) 
+        << " m_inputpath " << m_inputpath 
+        << " m_scale " << m_scale 
+        ; 
 }
 
 

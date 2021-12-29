@@ -34,6 +34,7 @@ $bin --flightconfig "$config" --nameprefix "$nameprefix"   $*
 EOC
 }
 
+export FlightPath_scale=${FlightPath_scale:-1}
 export MOI=${MOI:-$moi}
 export OPTICKS_GEOM=$MOI
 export OPTICKS_RELDIR=$flight 
