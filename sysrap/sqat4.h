@@ -140,6 +140,15 @@ struct qat4
         q2.f.x = 0.f ;  q2.f.y = 0.f ;   q2.f.z = 1.f ;  q2.f.w = 0.f ;   
         q3.f.x = 0.f ;  q3.f.y = 0.f ;   q3.f.z = 0.f ;  q3.f.w = 1.f ;   
     } 
+
+    QAT4_METHOD qat4(float tx, float ty, float tz) 
+    {
+        q0.f.x = 1.f ;  q0.f.y = 0.f ;   q0.f.z = 0.f ;  q0.f.w = 0.f ;   
+        q1.f.x = 0.f ;  q1.f.y = 1.f ;   q1.f.z = 0.f ;  q1.f.w = 0.f ;   
+        q2.f.x = 0.f ;  q2.f.y = 0.f ;   q2.f.z = 1.f ;  q2.f.w = 0.f ;   
+        q3.f.x = tx  ;  q3.f.y = ty  ;   q3.f.z = tz  ;  q3.f.w = 1.f ;   
+    } 
+
     QAT4_METHOD qat4(const float* v) 
     {
         q0.f.x = *(v+0)  ;  q0.f.y = *(v+1)  ;   q0.f.z = *(v+2)  ;  q0.f.w = *(v+3) ;   
@@ -154,6 +163,11 @@ struct qat4
         q2.f.x = float(*(v+8))  ;  q2.f.y = float(*(v+9))  ;   q2.f.z = float(*(v+10)) ;  q2.f.w = float(*(v+11)) ;   
         q3.f.x = float(*(v+12)) ;  q3.f.y = float(*(v+13)) ;   q3.f.z = float(*(v+14)) ;  q3.f.w = float(*(v+15)) ;   
     } 
+
+
+
+
+
 
     QAT4_METHOD float* data() 
     {
@@ -406,10 +420,10 @@ struct qat4
     }
 
 
-    static QAT4_METHOD qat4* from_string(const char* s0, const char* repl="[]()," )
+    static QAT4_METHOD qat4* from_string(const char* s0, const char* replace="[]()," )
     {
         char* s1 = strdup(s0); 
-        for(unsigned i=0 ; i < strlen(s1) ; i++) if(strchr(repl, s1[i]) != nullptr) s1[i] = ' ' ;   
+        for(unsigned i=0 ; i < strlen(s1) ; i++) if(strchr(replace, s1[i]) != nullptr) s1[i] = ' ' ;   
 
         std::stringstream ss(s1);  
         std::string s ; 
@@ -423,7 +437,23 @@ struct qat4
             tt >> v ; 
             vv.push_back(v); 
         }   
-        return vv.size() == 16 ? new qat4(vv.data()) : nullptr ; 
+
+        unsigned num_vv = vv.size() ; 
+        qat4* q = nullptr ; 
+
+        if( num_vv == 16 ) 
+        {
+            q = new qat4(vv.data()) ; 
+        }
+        else if( num_vv == 3 || num_vv == 4 ) 
+        {
+            float tx = vv[0] ; 
+            float ty = vv[1] ; 
+            float tz = vv[2] ; 
+
+            q = new qat4(tx, ty, tz) ; 
+        } 
+        return q ; 
     }  
 
 

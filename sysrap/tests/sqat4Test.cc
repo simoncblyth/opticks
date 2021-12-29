@@ -503,6 +503,30 @@ void test_from_string()
     std::cout << "z1 " << z1 << std::endl ; 
 }
 
+void test_from_string_tr()
+{
+    const char* str_0 = "(1022.116,1406.822,17734.953)"  ;
+    qat4* q0 = qat4::from_string(str_0); 
+    std::cout 
+        << " str_0 " << str_0
+        << std::endl 
+        << q0->desc('q') 
+        << std::endl 
+        ; 
+
+
+    const char* str_1 = "(1022.116,1406.822,17734.953,1)"  ;
+    qat4* q1 = qat4::from_string(str_1); 
+    std::cout 
+        << " str_1 " << str_1
+        << std::endl
+        << q1->desc('q') 
+        << std::endl
+        ; 
+
+
+}
+
 
 void test_copy()
 {
@@ -616,12 +640,17 @@ int main(int argc, char** argv)
     test_cube_corners(); 
     test_transform_aabb_inplace_2();
     test_from_string(); 
+   */
+   
+    test_from_string_tr(); 
+
+    /*
     test_copy(); 
     test_multiply_ctor(); 
     test_quad6_ctor(); 
     test_transform(); 
-    */
     test_transform_from_qat4(); 
+    */
 
 
     return 0 ; 

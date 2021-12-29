@@ -1007,3 +1007,31 @@ Yes, all near origin. The SEvent was not using ce.xyz::
 
 
 
+
+review cxs cegs generation
+---------------------------
+
+Is this qudarap/qsim.h whats doing the generation? It only handles XZ::
+
+
+    670 template <typename T>
+    671 inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
+    672 {   
+    673     p.q0.f = gs.q1.f ;  // start with local frame position, eg (0,0,0)   
+    674     
+    675     float u = curand_uniform(&rng);
+    676     float sinPhi, cosPhi;
+    677     sincosf(2.f*M_PIf*u,&sinPhi,&cosPhi);
+    678     
+    679     //  local frame XZ plane directions
+    680     p.q1.f.x = cosPhi ;  p.q1.f.y = 0.f    ;  p.q1.f.z = sinPhi ;  p.q1.f.w = 0.f ;
+    681 
+    682     qat4 qt(gs) ; // copy 4x4 transform from last 4 quads of genstep 
+    683     qt.right_multiply_inplace( p.q0.f, 1.f );   // position 
+    684     qt.right_multiply_inplace( p.q1.f, 0.f );   // direction 
+    685 }   
+    686 
+
+
+
+

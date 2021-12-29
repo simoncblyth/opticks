@@ -664,13 +664,19 @@ qsim::generate_photon_torch
 
 Acting on the gensteps created eg in QEvent 
 
+Contrast with CPU implementation sysrap SEvent::GenerateCenterExtentGenstepsPhotons
 
 **/
 
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
+    unsigned num_photons = gs.q0.u.w ; 
+    int gridaxes = gs.q0.i.y ; 
+    int dirmode  = gs.q0.i.z ; 
+
     p.q0.f = gs.q1.f ;  // start with local frame position, eg (0,0,0)   
+
 
     float u = curand_uniform(&rng); 
     float sinPhi, cosPhi;

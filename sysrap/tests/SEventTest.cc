@@ -32,7 +32,12 @@ const NP* test_MakeCountGensteps()
 
 const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz) 
 {
+    LOG(info); 
+
     float4 ce = make_float4( 1.f, 2.f, 3.f, 100.f );  
+
+    LOG(info) << " ce " << ce ; 
+
 
     std::vector<int> cegs = {{nx, ny, nz, 10 }} ; 
     float gridscale = 1.f ; 
@@ -41,23 +46,36 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz)
 
     float3 mn ; 
     float3 mx ; 
-    bool ce_offset_bb = true ; 
 
-    SEvent::GetBoundingBox(mn, mx, ce, cegs, gridscale, ce_offset_bb ); 
-    
-    std::cout 
-        << " mn " << mn 
-        << " mx " << mx
-        << std::endl
-        ;  
+    for( int i=0 ; i < 2 ; i++)
+    {
+        bool ce_offset_bb = i == 1 ; 
+        SEvent::GetBoundingBox(mn, mx, ce, cegs, gridscale, ce_offset_bb ); 
+        std::cout 
+            << " ce_offset_bb " << ce_offset_bb
+            << " mn " << mn 
+            << " mx " << mx
+            << std::endl
+            ;  
+     }
+
 
     //bool rot = false ;  // 45 degress around Z   OR identity 
     //const Tran<float>* tr = rot ? Tran<float>::make_rotate( 0., 0., 1., 45. ) : Tran<float>::make_identity() ;
     //std::cout << " tr " << *tr << std::endl ; 
     //qat4* qt_ptr = new qat4( tr->tdata() ); 
 
+    int idx = 1 ; 
 
-    const char* str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
+    const char* str_0 = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
+    const char* str_1 = "(100,100,100)" ; 
+    const char* str = nullptr ; 
+    switch(idx)
+    {
+        case 0: str = str_0 ; break ; 
+        case 1: str = str_1 ; break ; 
+    }
+
     qat4* qt = qat4::from_string(str); 
     const Tran<double>* geotran = Tran<double>::ConvertToTran(qt); 
     bool ce_offset = false ; 
@@ -76,6 +94,8 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz)
 
 void test_GenerateCenterExtentGensteps( const NP* gsa )
 {   
+    LOG(info); 
+
     std::vector<quad4> pp ;
     SEvent::GenerateCenterExtentGenstepsPhotons( pp, gsa ); 
    

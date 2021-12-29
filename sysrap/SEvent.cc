@@ -133,8 +133,7 @@ void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std
     mn.z = z0 ; 
     mx.z = z1 ; 
 
-    LOG(info)
-        << " CXS_CEGS "
+    LOG(LEVEL)
         << " ce_offset " << ce_offset 
         << " x0 " << std::setw(10) << std::fixed << std::setprecision(3) << x0
         << " x1 " << std::setw(10) << std::fixed << std::setprecision(3) << x1
@@ -153,7 +152,6 @@ void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std
 /**
 SEvent::MakeCenterExtentGensteps
 ----------------------------------
-    
     
 Creates grid of gensteps centered at ce.xyz with the grid specified 
 by integer ranges that are used to scale the extent parameter to yield
@@ -181,7 +179,6 @@ The gensteps are consumed by qsim::generate_photon_torch
 Which needs to use the gensteps data in order to transform the axis 
 aligned local frame grid of positions and directions 
 into global frame equivalents. 
-
 
 Instance transforms are best regarded as first doing rotate 
 about a local origin and then translate into global position.
@@ -272,6 +269,9 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
 
 const char* SEvent::DIMENSION_3_ = "3D" ; 
 const char* SEvent::DIMENSION_2_ = "2D" ; 
+const char* SEvent::DIMENSION_1_ = "1D" ; 
+const char* SEvent::DIMENSION_0_ = "0D" ;
+ 
 const char* SEvent::DirModeName( int dirmode )  // static 
 {
     const char* s = nullptr ; 
@@ -279,11 +279,11 @@ const char* SEvent::DirModeName( int dirmode )  // static
     {
         case DIMENSION_3: s = DIMENSION_3_ ; break ; 
         case DIMENSION_2: s = DIMENSION_2_ ; break ; 
+        case DIMENSION_1: s = DIMENSION_1_ ; break ; 
+        case DIMENSION_0: s = DIMENSION_0_ ; break ; 
     }
     return s ;
 }
-
-
 
 const char* SEvent::XYZ_ = "XYZ" ; 
 const char* SEvent::YZ_  = "YZ" ; 
@@ -363,6 +363,14 @@ NP* SEvent::MakeCountGensteps(const std::vector<int>& counts) // static
 }
 
 
+/**
+SEvent::GenerateCenterExtentGenstepsPhotons
+---------------------------------------------
+
+Contrast this CPU implementation of CEGS generation with qudarap/qsim.h qsim<T>::generate_photon_torch
+
+
+**/
 
 void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa )
 {
@@ -381,11 +389,12 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
     for(unsigned i=0 ; i < gsv.size() ; i++)
     {   
         const quad6& gs = gsv[i]; 
-        qat4 qt(gs) ;  // transform from last 4 quads of genstep 
+        qat4 qt(gs) ;  // copy 4x4 transform from last 4 quads of genstep 
         
         unsigned num_photons = gs.q0.u.w ; 
         int gridaxes = gs.q0.i.y ; 
-        int dirmode = gs.q0.i.z ; 
+        int dirmode  = gs.q0.i.z ; 
+
         //std::cout << " i " << i << " num_photons " << num_photons << std::endl ;
         
         double u0, phi  , sinPhi,   cosPhi ; 
@@ -403,6 +412,7 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
 
             cosTheta = u1 ; 
             sinTheta = sqrtf(1.0-u1*u1);
+
 
 
             p.q0.f = gs.q1.f ;  // position 

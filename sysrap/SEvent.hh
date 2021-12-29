@@ -8,11 +8,12 @@ template <typename T> struct Tran ;
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
+#include "sevent.h"
+
 struct SYSRAP_API SEvent
 {
     static const plog::Severity LEVEL ; 
 
-    enum { XYZ, YZ, XZ, XY } ;   
 
     static const char* XYZ_ ; 
     static const char* YZ_  ; 
@@ -21,9 +22,11 @@ struct SYSRAP_API SEvent
     static const char* GridAxesName( int gridaxes ); 
     static int GridAxes(int nx, int ny, int nz); 
 
-    enum { DIMENSION_3, DIMENSION_2 } ; 
-    static const char* DIMENSION_3_ ; 
+    static const char* DIMENSION_0_ ; 
+    static const char* DIMENSION_1_ ; 
     static const char* DIMENSION_2_ ; 
+    static const char* DIMENSION_3_ ;
+ 
     static const char* DirModeName( int dirmode ); 
 
     static NP* MakeGensteps(const std::vector<quad6>& gs ); 
