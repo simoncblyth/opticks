@@ -152,6 +152,18 @@ int main(int argc, char** argv)
         SEvent::StandardizeCEGS(ce, cegs, gridscale ); 
         assert( cegs.size() == 7 ); 
 
+        float3 mn ; 
+        float3 mx ; 
+
+        bool ce_offset_bb = true ; 
+        SEvent::GetBoundingBox( mn, mx, ce, cegs, gridscale, ce_offset_bb ); 
+
+        LOG(info) 
+            << " mn " << mn 
+            << " mx " << mx
+            ; 
+
+
         std::vector<int> override_ce ; 
         SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" ); 
 
@@ -164,8 +176,10 @@ int main(int argc, char** argv)
             LOG(info) << "override the MOI.ce with CXS_OVERRIDE_CE (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;  
         } 
 
+        bool ce_offset = false ; 
 
-        gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran ); 
+        gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset ); 
+
         cx.setCE(ce); 
         cx.setCEGS(cegs); 
         cx.setMetaTran(geotran); 

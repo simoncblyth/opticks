@@ -874,18 +874,6 @@ with the luxury of double precision, still potential for cxs spurious intersects
 
 
 
-cx cxs XJfixtureConstruction_0 failing to get cross section
--------------------------------------------------------------
-
-::
-
-    cx
-    ./cxs.sh 
-
-    cx
-    ./cxs_grab.sh png 
-
-
 
 
 
@@ -921,6 +909,101 @@ Get scale to work for flight7.sh mp4
 
     MOI=solidXJfixture:20 FlightPath_scale=4 PERIOD=8 ../bin/flight7.sh  
 
+
+cxr_arglist
+-------------
+
+Note that with repeated global geometry that 
+is currently not instanced such as solidXJfixture
+the apparent viewpoints are all over the place despite a fixed
+eye, look, up because there is no instance transform
+dedicated to the target geometry instead there is
+only the global identity transform.  
+
+This may explain the issue with cxs cross sections of 
+global repeated non-instanced geometry. 
+
+
+
+cxs for instanced
+-------------------
+
+Check for instanced, it works as expected with virtual hatboxes present::
+
+    cx
+    GEOM=Hama_1 ./cxs.sh
+    cx
+    ./cxs_grab.sh png 
+
+
+With ce_offset true in SEvent get no intersects and a grid not 
+in local frame. Using both ce_offset and the instance transform
+is kinda the same info in two different ways for instanced geom.
+
+
+
+cxs for global repeated XJfixtureConstruction_0 getting a blank 
+------------------------------------------------------------------------------
+
+::
+
+    cx
+    GEOM=XJfixtureConstruction_0 ./cxs.sh 
+
+    cx
+    ./cxs_grab.sh png 
+
+
+Hmm the gensteps might be in totally the wrong place::
+
+    2021-12-30 00:18:34.289 INFO  [100944] [SBT::checkHitgroup@819]  num_sbt (sbt.hitgroupRecordCount) 3240 num_solid 10 num_prim 3240
+    2021-12-30 00:18:34.289 INFO  [100944] [SBT::createGeom@101] ]
+    2021-12-30 00:18:34.289 INFO  [100944] [SBT::getAS@523]  spec i0 c i idx 0
+    2021-12-30 00:18:34.289 INFO  [100944] [main@128]  moi solidXJfixture:10 midx 88 mord 10 iidx 0
+    2021-12-30 00:18:34.290 INFO  [100944] [main@141]  rc 0 MOI.ce (-17336 -4160.73 -809.117 66.0447)
+    2021-12-30 00:18:34.290 INFO  [100944] [main@144] 
+    qt( 1.000, 0.000, 0.000, 0.000) ( 0.000, 1.000, 0.000, 0.000) ( 0.000, 0.000, 1.000, 0.000) ( 0.000, 0.000, 0.000, 1.000) 
+    2021-12-30 00:18:34.290 INFO  [100944] [SEvent::StandardizeCEGS@93]  CXS_CEGS  ix0 ix1 0 0 iy0 iy1 -16 16 iz0 iz1 -9 9 photons_per_genstep 100
+    2021-12-30 00:18:34.290 INFO  [100944] [SEvent::StandardizeCEGS@108]  CXS_CEGS  x0      0.000 x1      0.000 y0    -52.836 y1     52.836 z0    -29.720 z1     29.720 photons_per_genstep 100 gridscale      0.050 ce.w(extent)     66.045
+    2021-12-30 00:18:34.294 INFO  [100944] [CSGOptiX::setCE@257]  ce [ -17336 -4160.73 -809.117 66.0447] tmin_model 0.1 tmin 6.60447
+    2021-12-30 00:18:34.294 INFO  [100944] [Composition::setNear@2424]  intended 6.60447 result 6.60447
+    2021-12-30 00:18:34.294 INFO  [100944] [QEvent::setGensteps@55]  num_gs 627
+    //QSeed_create_photon_seeds 
+    2021-12-30 00:18:34.295 INFO  [100944] [CSGOptiX::prepareSimulateParam@208] [
+
+
+
+Yes, all near origin. The SEvent was not using ce.xyz::
+
+
+    In [1]: a = np.load("/Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1/CSG_GGeo/CSGOptiXSimulateTest/cvd0/70000/XJfixtureConstruction_0/genstep.npy")
+
+
+    In [3]: a.shape
+    Out[3]: (627, 6, 4)
+
+    In [4]: a[:,5]
+    Out[4]: 
+    array([[  0.   , -52.836, -29.72 ,   1.   ],
+           [  0.   , -52.836, -26.418,   1.   ],
+           [  0.   , -52.836, -23.116,   1.   ],
+           ...,
+           [  0.   ,  52.836,  23.116,   1.   ],
+           [  0.   ,  52.836,  26.418,   1.   ],
+           [  0.   ,  52.836,  29.72 ,   1.   ]], dtype=float32)
+
+    In [5]: a[:100,5]
+    Out[5]: 
+    array([[  0.   , -52.836, -29.72 ,   1.   ],
+           [  0.   , -52.836, -26.418,   1.   ],
+           [  0.   , -52.836, -23.116,   1.   ],
+           [  0.   , -52.836, -19.813,   1.   ],
+           [  0.   , -52.836, -16.511,   1.   ],
+           [  0.   , -52.836, -13.209,   1.   ],
+           [  0.   , -52.836,  -9.907,   1.   ],
+           [  0.   , -52.836,  -6.604,   1.   ],
+           [  0.   , -52.836,  -3.302,   1.   ],
+           [  0.   , -52.836,   0.   ,   1.   ],
 
 
 

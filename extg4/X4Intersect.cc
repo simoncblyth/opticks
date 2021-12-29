@@ -149,7 +149,9 @@ void X4Intersect::init()
     peta->q2.f.z = ce.z ;
     peta->q2.f.w = ce.w ;
 
-    gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran );  
+    bool ce_offset = false ; 
+
+    gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset );  
    
     SEvent::GenerateCenterExtentGenstepsPhotons( pp, gs );  
 

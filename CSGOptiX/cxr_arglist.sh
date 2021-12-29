@@ -8,6 +8,13 @@ Use the CSGOptiXRenderTest --arglist option
 to create multiple snapshot views of a geometry  
 from a single geometry load. 
 
+Note that with repeated global geometry that 
+is currently not instanced such as solidXJfixture
+the apparent viewpoints are all over the place despite a fixed
+eye, look, up because there is no instance transform
+dedicated to the target geometry instead there is
+only the global identity transform.  
+
 EON
 }
 

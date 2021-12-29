@@ -39,6 +39,17 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz)
 
     SEvent::StandardizeCEGS(ce, cegs, gridscale );
 
+    float3 mn ; 
+    float3 mx ; 
+    bool ce_offset_bb = true ; 
+
+    SEvent::GetBoundingBox(mn, mx, ce, cegs, gridscale, ce_offset_bb ); 
+    
+    std::cout 
+        << " mn " << mn 
+        << " mx " << mx
+        << std::endl
+        ;  
 
     //bool rot = false ;  // 45 degress around Z   OR identity 
     //const Tran<float>* tr = rot ? Tran<float>::make_rotate( 0., 0., 1., 45. ) : Tran<float>::make_identity() ;
@@ -49,9 +60,9 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz)
     const char* str = "(-0.585,-0.805, 0.098, 0.000) (-0.809, 0.588, 0.000, 0.000) (-0.057,-0.079,-0.995, 0.000) (1022.116,1406.822,17734.953, 1.000)"  ;
     qat4* qt = qat4::from_string(str); 
     const Tran<double>* geotran = Tran<double>::ConvertToTran(qt); 
+    bool ce_offset = false ; 
 
-
-    const NP* gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran );  
+    const NP* gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset );  
 
     int create_dirs = 2 ; // 2:dirpath
     const char* fold = SPath::Resolve(BASE, create_dirs );

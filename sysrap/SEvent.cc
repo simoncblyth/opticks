@@ -97,10 +97,12 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
 
     float3 mn ; 
     float3 mx ; 
-    GetBoundingBox( mn, mx, ce, cegs, gridscale ); 
+
+    bool ce_offset = true ; 
+    GetBoundingBox( mn, mx, ce, cegs, gridscale, ce_offset ); 
 }
 
-void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale ) // static 
+void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale, bool ce_offset ) // static 
 {
     assert( standardized_cegs.size() == 7 ) ; 
 
@@ -112,16 +114,15 @@ void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std
     int iz1 = standardized_cegs[5] ; 
     int photons_per_genstep = standardized_cegs[6] ;
 
-    bool offset = true ; 
 
-    float x0 = float(ix0)*gridscale*ce.w + ( offset ? ce.x : 0.f ) ;
-    float x1 = float(ix1)*gridscale*ce.w + ( offset ? ce.x : 0.f ) ;
+    float x0 = float(ix0)*gridscale*ce.w + ( ce_offset ? ce.x : 0.f ) ;
+    float x1 = float(ix1)*gridscale*ce.w + ( ce_offset ? ce.x : 0.f ) ;
 
-    float y0 = float(iy0)*gridscale*ce.w + ( offset ? ce.y : 0.f ) ;
-    float y1 = float(iy1)*gridscale*ce.w + ( offset ? ce.y : 0.f ) ;
+    float y0 = float(iy0)*gridscale*ce.w + ( ce_offset ? ce.y : 0.f ) ;
+    float y1 = float(iy1)*gridscale*ce.w + ( ce_offset ? ce.y : 0.f ) ;
 
-    float z0 = float(iz0)*gridscale*ce.w + ( offset ? ce.z : 0.f ) ;
-    float z1 = float(iz1)*gridscale*ce.w + ( offset ? ce.z : 0.f ) ;
+    float z0 = float(iz0)*gridscale*ce.w + ( ce_offset ? ce.z : 0.f ) ;
+    float z1 = float(iz1)*gridscale*ce.w + ( ce_offset ? ce.z : 0.f ) ;
 
     mn.x = x0 ; 
     mx.x = x1 ; 
@@ -134,7 +135,7 @@ void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std
 
     LOG(info)
         << " CXS_CEGS "
-        << " offset " << offset 
+        << " ce_offset " << ce_offset 
         << " x0 " << std::setw(10) << std::fixed << std::setprecision(3) << x0
         << " x1 " << std::setw(10) << std::fixed << std::setprecision(3) << x1
         << " y0 " << std::setw(10) << std::fixed << std::setprecision(3) << y0
@@ -197,7 +198,7 @@ frame as are doing the local_translate first.
 **/
 
 
-NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran ) // static
+NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset ) // static
 {
     std::vector<quad6> gensteps ;
     quad6 gs ; gs.zero();
@@ -221,6 +222,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
 
 
     LOG(LEVEL) 
+        << " ce_offset " << ce_offset 
         << " nx " << nx 
         << " ny " << ny 
         << " nz " << nz 
@@ -240,17 +242,15 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     gs.q1.f.z = 0.f ;
     gs.q1.f.w = 1.f ;
 
-    bool offset = true ; 
-
     for(int ix=ix0 ; ix < ix1+1 ; ix++ )
     for(int iy=iy0 ; iy < iy1+1 ; iy++ )
     for(int iz=iz0 ; iz < iz1+1 ; iz++ )
     {
         LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ;
 
-        double tx = double(ix)*gridscale*ce.w + ( offset ? ce.x : 0.f ) ;
-        double ty = double(iy)*gridscale*ce.w + ( offset ? ce.y : 0.f ) ;
-        double tz = double(iz)*gridscale*ce.w + ( offset ? ce.z : 0.f ) ;
+        double tx = double(ix)*gridscale*ce.w + ( ce_offset ? ce.x : 0.f ) ;
+        double ty = double(iy)*gridscale*ce.w + ( ce_offset ? ce.y : 0.f ) ;
+        double tz = double(iz)*gridscale*ce.w + ( ce_offset ? ce.z : 0.f ) ;
 
         const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz ); 
 
