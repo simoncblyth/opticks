@@ -79,8 +79,6 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
         assert(0); 
     }   
 
-
-
     cegs[0] = ix0 ; 
     cegs[1] = ix1 ;
     cegs[2] = iy0 ; 
@@ -88,7 +86,6 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
     cegs[4] = iz0 ;
     cegs[5] = iz1 ;
     cegs[6] = photons_per_genstep ;
-
 
     LOG(info)
         << " CXS_CEGS "
@@ -98,15 +95,46 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
         << " photons_per_genstep " << photons_per_genstep
         ;
 
-    float x0 = float(ix0)*gridscale*ce.w ;
-    float x1 = float(ix1)*gridscale*ce.w ;
-    float y0 = float(iy0)*gridscale*ce.w ;
-    float y1 = float(iy1)*gridscale*ce.w ;
-    float z0 = float(iz0)*gridscale*ce.w ;
-    float z1 = float(iz1)*gridscale*ce.w ;
+    float3 mn ; 
+    float3 mx ; 
+    GetBoundingBox( mn, mx, ce, cegs, gridscale ); 
+}
+
+void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale ) // static 
+{
+    assert( standardized_cegs.size() == 7 ) ; 
+
+    int ix0 = standardized_cegs[0] ; 
+    int ix1 = standardized_cegs[1] ; 
+    int iy0 = standardized_cegs[2] ; 
+    int iy1 = standardized_cegs[3] ; 
+    int iz0 = standardized_cegs[4] ; 
+    int iz1 = standardized_cegs[5] ; 
+    int photons_per_genstep = standardized_cegs[6] ;
+
+    bool offset = true ; 
+
+    float x0 = float(ix0)*gridscale*ce.w + ( offset ? ce.x : 0.f ) ;
+    float x1 = float(ix1)*gridscale*ce.w + ( offset ? ce.x : 0.f ) ;
+
+    float y0 = float(iy0)*gridscale*ce.w + ( offset ? ce.y : 0.f ) ;
+    float y1 = float(iy1)*gridscale*ce.w + ( offset ? ce.y : 0.f ) ;
+
+    float z0 = float(iz0)*gridscale*ce.w + ( offset ? ce.z : 0.f ) ;
+    float z1 = float(iz1)*gridscale*ce.w + ( offset ? ce.z : 0.f ) ;
+
+    mn.x = x0 ; 
+    mx.x = x1 ; 
+ 
+    mn.y = y0 ; 
+    mx.y = y1 ; 
+ 
+    mn.z = z0 ; 
+    mx.z = z1 ; 
 
     LOG(info)
         << " CXS_CEGS "
+        << " offset " << offset 
         << " x0 " << std::setw(10) << std::fixed << std::setprecision(3) << x0
         << " x1 " << std::setw(10) << std::fixed << std::setprecision(3) << x1
         << " y0 " << std::setw(10) << std::fixed << std::setprecision(3) << y0
@@ -117,8 +145,9 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
         << " gridscale " << std::setw(10) << std::fixed << std::setprecision(3) << gridscale
         << " ce.w(extent) " << std::setw(10) << std::fixed << std::setprecision(3) << ce.w
         ;
-
 }
+
+
 
 /**
 SEvent::MakeCenterExtentGensteps
@@ -211,15 +240,18 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     gs.q1.f.z = 0.f ;
     gs.q1.f.w = 1.f ;
 
+    bool offset = true ; 
+
     for(int ix=ix0 ; ix < ix1+1 ; ix++ )
     for(int iy=iy0 ; iy < iy1+1 ; iy++ )
     for(int iz=iz0 ; iz < iz1+1 ; iz++ )
     {
         LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ;
 
-        double tx = double(ix)*gridscale*ce.w ;
-        double ty = double(iy)*gridscale*ce.w ;
-        double tz = double(iz)*gridscale*ce.w ;
+        double tx = double(ix)*gridscale*ce.w + ( offset ? ce.x : 0.f ) ;
+        double ty = double(iy)*gridscale*ce.w + ( offset ? ce.y : 0.f ) ;
+        double tz = double(iz)*gridscale*ce.w + ( offset ? ce.z : 0.f ) ;
+
         const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz ); 
 
         bool reverse = false ;
