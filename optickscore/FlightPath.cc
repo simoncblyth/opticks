@@ -159,6 +159,7 @@ void FlightPath::setInterpolatedViewPeriod(unsigned int ivperiod)
 }
 void FlightPath::setScale(float scale)
 {
+    LOG(LEVEL) << " scale " << scale ; 
     m_scale = scale ; 
 }
 
@@ -254,7 +255,18 @@ bool FlightPath::isValid() const
 InterpolatedView* FlightPath::makeInterpolatedView()
 {
     load(); 
-    return m_eluc ? InterpolatedView::MakeFromArray( m_eluc, m_ivperiod, getScale0(), getScale1(), m_ctrl  ) : nullptr ; 
+
+    float scale0 = getScale0() ;  
+    float scale1 = getScale1() ;  
+
+    LOG(LEVEL)
+        << " m_ivperiod " << m_ivperiod
+        << " m_scale " << m_scale
+        << " scale0 " << scale0 
+        << " scale1 " << scale1
+        ; 
+
+    return m_eluc ? InterpolatedView::MakeFromArray( m_eluc, m_ivperiod, scale0, scale1, m_ctrl  ) : nullptr ; 
 }
 
 
