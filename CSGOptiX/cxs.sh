@@ -135,7 +135,7 @@ elif [ "$GEOM" == "uni_acrylic3_tight" ]; then
 
 elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
 
-    moi="XJfixtureConstruction:10"
+    moi="solidXJfixture:10"
     cegs=0:16:9:100
     gridscale=0.05
 

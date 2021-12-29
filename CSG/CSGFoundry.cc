@@ -1341,7 +1341,7 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* 
     int rc = 0 ; 
     if( midx == -1 )
     { 
-        assert( qptr == nullptr ); 
+        //assert( qptr == nullptr );  // huh:why? might well be identity 
         unsigned long long emm = 0ull ;   // hmm instance var ?
         iasCE(ce, emm); 
     }
