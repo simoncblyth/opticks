@@ -836,6 +836,16 @@ Look at counts for unique LVNames::
 solidXJfixture geometry deep dive
 -------------------------------------
 
+::
+
+    epsilon:opticks blyth$ git add . 
+    epsilon:opticks blyth$ git commit -m "examine solidXJfixture geometry for potential coincidence issues, note that first impression of issue with Tubs was because of stray --x4tubsnudgeskip 0 in GeoChain run.sh, there is however coincident internal union face between the celtic-cross and the altar that is not showing spurious intersects in xxs.sh testing, but may do so in cxs.sh "
+    [master a1ed6e6c1] examine solidXJfixture geometry for potential coincidence issues, note that first impression of issue with Tubs was because of stray --x4tubsnudgeskip 0 in GeoChain run.sh, there is however coincident internal union face between the celtic-cross and the altar that is not showing spurious intersects in xxs.sh testing, but may do so in cxs.sh
+     9 files changed, 178 insertions(+), 28 deletions(-)
+     create mode 100644 extg4/XJfixtureConstruction.sh
+    epsilon:opticks blyth$ git push 
+
+
 
 Hmm GeoChain was "--x4tubsnudgeskip 0" skipping inner nudge which was causing the coincidence at the top of the tubs::
 
@@ -852,17 +862,15 @@ Hmm GeoChain was "--x4tubsnudgeskip 0" skipping inner nudge which was causing th
     2021-12-29 10:34:14.569 INFO  [722870] [X4Solid::init@199] ]
 
 
-
-
-
-
 Removing that and the x4 xxs cross section render looks OK::
 
     x4 ; ./xxs.sh 
 
-Checkimg the geometry note that the z-underface of the "celtic-cross" is coincident with the z-upperface for the altar.
-But that seems to not be causing spurious intersects in xxs standalone testing (but that is close to origin, there is 
-potential for issues in real usage that do not show in close to origin testing).  Need to make some more insitu xxs.sh and cxr_view.sh  
+Checking the geometry note that the z-underface of the "celtic-cross" is coincident with the z-upperface for the altar.
+But that seems to not be causing spurious intersects in xxs standalone testing (but that is Geant4 intersection 
+with the luxury of double precision, still potential for cxs spurious intersects on that inner face). 
+
+ Need to make some more insitu cxs.sh and cxr_view.sh  
 
 
 

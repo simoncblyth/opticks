@@ -58,12 +58,13 @@ msg="=== $BASH_SOURCE : "
 #geom=Hama_1
 #geom=Hama_2
 #geom=Hama_4
-geom=Hama_8
+#geom=Hama_8
 #geom=Hama_16
 
 #geom=uni_acrylic3_0
 #geom=uni_acrylic1_0
 
+geom=XJfixtureConstruction_0
 
 
 export GEOM=${GEOM:-$geom}
@@ -131,6 +132,13 @@ elif [ "$GEOM" == "uni_acrylic3_tight" ]; then
     moi=uni_acrylic3
     cegs=16:0:9:100
     gridscale=0.025
+
+elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
+
+    moi="XJfixtureConstruction:10"
+    cegs=0:16:9:100
+    gridscale=0.05
+
 
 elif [ "$GEOM" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    
