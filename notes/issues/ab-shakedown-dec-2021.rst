@@ -832,3 +832,37 @@ Look at counts for unique LVNames::
 
 
 
+
+solidXJfixture geometry deep dive
+-------------------------------------
+
+
+Hmm GeoChain was "--x4tubsnudgeskip 0" skipping inner nudge which was causing the coincidence at the top of the tubs::
+
+    171 opts=""
+    172 opts="$opts --x4tubsnudgeskip 0"
+    173 #opts="$opts --skipsolidname ${GEOM}_body_solid_1_9   " 
+    174 
+
+
+::
+
+    2021-12-29 10:34:14.569 INFO  [722870] [*X4Solid::convertTubs_cylinder@682]  rmin 25 rmax 45 hz 6.5 has_inner 1 do_nudge_inner 0
+    2021-12-29 10:34:14.569 INFO  [722870] [X4Solid::convertTubs@779]  has_deltaPhi 0 pick_disc 0 deltaPhi_segment_enabled 1 is_x4tubsnudgeskip 1 do_nudge_inner 0
+    2021-12-29 10:34:14.569 INFO  [722870] [X4Solid::init@199] ]
+
+
+
+
+
+
+Removing that and the x4 xxs cross section render looks OK::
+
+    x4 ; ./xxs.sh 
+
+Checkimg the geometry note that the z-underface of the "celtic-cross" is coincident with the z-upperface for the altar.
+But that seems to not be causing spurious intersects in xxs standalone testing (but that is close to origin, there is 
+potential for issues in real usage that do not show in close to origin testing).  Need to make some more insitu xxs.sh and cxr_view.sh  
+
+
+

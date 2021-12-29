@@ -86,7 +86,7 @@ class GridSpec(object):
         """
         if nx == 0 and ny > 0 and nz > 0:
             ny_over_nz = float(ny)/float(nz)
-            axes = (Y,Z) if nx_over_nz > 1 else (Z,Y)
+            axes = (Y,Z) if ny_over_nz > 1 else (Z,Y)
         elif nx > 0 and ny == 0 and nz > 0:
             nx_over_nz = float(nx)/float(nz)
             axes = (X,Z) if nx_over_nz > 1 else (Z,X)

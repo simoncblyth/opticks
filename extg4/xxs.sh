@@ -94,7 +94,9 @@ msg="=== $BASH_SOURCE :"
 #geom=hama_body_solid_nurs
 
 #geom=hmsk_solidMask
-geom=hmsk_solidMaskTail
+#geom=hmsk_solidMaskTail
+
+geom=XJfixtureConstruction
 
 
 export GEOM=${GEOM:-$geom}
@@ -176,6 +178,17 @@ elif [ "$GEOM" == "BoxMinusOrb" ]; then
     cegs=9:0:16:0:0:0:$numpho
     gridscale=0.12
 
+
+
+elif [ "$GEOM" == "XJfixtureConstruction" ]; then
+
+    numpho=100
+    cegs=0:16:9:0:0:0:$numpho
+    gridscale=0.05      
+    # shrinking the grid makes the cross section render appear bigger 
+
+    source XJfixtureConstruction.sh
+
 else
     dz=-4
     numpho=10
@@ -208,7 +221,7 @@ export ZZD=${ZZD:-$zzd}
 
 env | grep CXS
 
-arg=${1:-run_ana_mesh}
+arg=${1:-run_ana}
 
 if [ "${arg/exit}" != "$arg" ]; then
    echo $msg early exit 
@@ -237,21 +250,6 @@ if [ "${arg/ana}"  != "$arg" ]; then
         [ $? -ne 0 ] && echo ana interactive error && exit 2
     fi
 fi 
-
-
-if [ "${arg/mesh}"  != "$arg" ]; then 
-
-    if [ -n "$SCANNER" ]; then 
-        ${IPYTHON:-ipython} --pdb $dir/tests/X4MeshTest.py 
-        [ $? -ne 0 ] && echo ana noninteractive error && exit 2
-    else
-        ${IPYTHON:-ipython} --pdb -i $dir/tests/X4MeshTest.py 
-        [ $? -ne 0 ] && echo ana interactive error && exit 2
-    fi
-fi 
-
-
-
 
 
 exit 0 

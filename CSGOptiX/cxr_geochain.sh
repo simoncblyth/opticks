@@ -59,14 +59,19 @@ export GEOM=${GEOM:-$geom}
 cfname=GeoChain_Darwin/$GEOM            # picks the CSGFoundry geometry to load
 
 
+moi=-1
+zoom=1
 
 if [ "$GEOM" == "default" ]; then  
-   moi=-1
    eye=-1,0,1,1 
    tmin=0.5
    cam=0         
+elif [ "$GEOM" == "XJfixtureConstruction" ]; then  
+   eye=1,1,1
+   tmin=0.1 
+   cam=1
+   zoom=2
 else
-   moi=-1 
    eye=-2,0,0,1        
    tmin=1
    cam=1     # 0:perspective  1:ortho        
@@ -82,6 +87,7 @@ export EMM=${EMM:-$emm}
 export TMIN=${TMIN:-$tmin}
 export EYE=${EYE:-$eye}
 export CAM=${CAM:-$cam}    # 0:perspective 1:ortho
+export ZOOM=${ZOOM:-$zoom}
 
 export NAMEPREFIX=cxr_geochain_${GEOM}_   # MOI is appended by tests/CSGOptiXRender.cc when --solid_label yields no solids
 export RELDIR=cxr_geochain/cam_${CAM}

@@ -19,17 +19,22 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-[ -z "$GEOM" ] && echo $msg Mandatory GEOM envvar is missing && exit 1 
-
 
 dir=$(dirname $BASH_SOURCE)
 bin=$(which X4MeshTest)
 script=$dir/tests/X4MeshTest.py
 
-geom=${GEOM}
-outdir="$TMP/extg4/X4MeshTest/$geom/X4Mesh"
 
-echo BASH_SOURCE $BASH_SOURCE bin $bin script $script outdir $outdir
+geom=XJfixtureConstruction 
+export GEOM=${GEOM:-$geom}
+
+outdir="$TMP/extg4/X4MeshTest/$GEOM/X4Mesh"
+
+if [ "$GEOM" == "XJfixtureConstruction" ]; then
+    source XJfixtureConstruction.sh
+fi 
+
+echo BASH_SOURCE $BASH_SOURCE bin $bin script $script outdir $outdir GEOM $GEOM
 
 $bin
 

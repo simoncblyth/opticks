@@ -111,7 +111,12 @@ elif [ "${GEOM/PolyconeWithMultipleRmin}" != "$GEOM" ] ; then
    #export X4Solid_convertPolycone_debug_mode=$return_outer
    echo -n 
 
+elif [ "${GEOM/XJfixtureConstruction}" != "$GEOM" ]; then
+
+    source ../extg4/XJfixtureConstruction.sh  || exit 1 
 fi 
+
+
 
 env | grep X4Solid
 
@@ -136,7 +141,7 @@ fi
 #export NTreeBalance=INFO
 #export NTreeBuilder=INFO
 
-#export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
+export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
 
 # checking that --skipsolidname is working 
 export OpticksDbg=INFO  
@@ -162,7 +167,7 @@ fi
 which $bin
 
 opts=""
-opts="$opts --x4tubsnudgeskip 0"
+#opts="$opts --x4tubsnudgeskip 0"
 #opts="$opts --skipsolidname ${GEOM}_body_solid_1_9   " 
 
 DEBUG=1
