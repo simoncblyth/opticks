@@ -111,51 +111,35 @@ render()
    return $rc
 }
 
+if [ -n "$ARGLIST" ] ; then 
 
-make_arglist()
-{
-    ## TODO: hoist arglist running up into its own script ?
+    echo $msg MOI $MOI ARGLIST $ARGLIST
+    render --arglist $ARGLIST $*            ## effectively multiple MOI via the arglist 
+    rc=$?
 
-    local arglist=$1
-    ## TODO: needs rethink dont have CFBASE here at bash level 
-    ## writing a small executable to provide the CFBASE for the current OPTICKS_KEY seems the best way to do this
-    ## that avoids duplicating in bash whats already done in C++ 
-    ## HMM yes but this only works on the generator node not a grabbed one
-
-    #local mname=$CFBASE/CSGFoundry/meshname.txt 
-    local mname=$(Opticks_getFoundryBase)/CSGFoundry/meshname.txt 
-
-    ls -l $mname
-    #cat $mname | grep -v Flange | grep -v _virtual | sort | uniq | perl -ne 'm,(.*0x).*, && print "$1\n" ' -  > $arglist
-    cat $mname | grep -v Flange | grep -v _virtual | sort | uniq > $arglist
-    ls -l $arglist && cat $arglist 
-}
-
-
-if [ "$MOI" == "ALL" ]; then 
-
-    arglist=arglist.txt
-    make_arglist $arglist 
-    render --arglist $arglist $*            ## multiple MOI via the arglist 
 else
     render $*                               ## single MOI via envvar 
+    rc=$?
+fi
 
-    if [ $? -eq 0 ]; then 
 
-        source CSGOptiXRenderTest_OUTPUT_DIR.sh || exit 1  
-        outdir=$CSGOptiXRenderTest_OUTPUT_DIR 
+if [ $rc -eq 0 ]; then 
 
-        if [ -n "$outdir" ]; then 
-            ls -1rt `find $outdir -name '*.jpg' `
-            jpg=$(ls -1rt `find $outdir -name '*.jpg' ` | tail -1)
-            echo $msg jpg $jpg 
-            ls -l $jpg
-            [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
-        else
-            echo $msg outdir not defined 
-        fi 
+    source CSGOptiXRenderTest_OUTPUT_DIR.sh || exit 1  
+    outdir=$CSGOptiXRenderTest_OUTPUT_DIR 
+
+    if [ -n "$outdir" ]; then 
+        ls -1rt `find $outdir -name '*.jpg' `
+        jpg=$(ls -1rt `find $outdir -name '*.jpg' ` | tail -1)
+        echo $msg jpg $jpg 
+        ls -l $jpg
+        [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
     else
-        echo $msg non-zero RC from render 
+        echo $msg outdir not defined 
     fi 
+else
+    echo $msg non-zero RC from render 
 fi 
+
+
 

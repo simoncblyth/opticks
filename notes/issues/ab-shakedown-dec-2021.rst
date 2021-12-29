@@ -874,8 +874,8 @@ with the luxury of double precision, still potential for cxs spurious intersects
 
 
 
-cx cxs XJfixtureConstruction_0 failing 
--------------------------------------------
+cx cxs XJfixtureConstruction_0 failing to get cross section
+-------------------------------------------------------------
 
 ::
 
@@ -888,11 +888,25 @@ cx cxs XJfixtureConstruction_0 failing
 
 
 
+
+cxr_view.sh shows can select between the global 64 with the mesh-ordinal "mord"
+-----------------------------------------------------------------------------------
+
+::
+
     cx
     MOI=solidXJfixture:10 ./cxr_view.sh 
 
     cx
     ./cxr_grab.sh jpg 
+
+
+
+
+Get scale to work for flight7.sh mp4
+----------------------------------------
+
+::
 
 
     cx
@@ -905,7 +919,7 @@ cx cxs XJfixtureConstruction_0 failing
     MOI=solidXJfixture:20 FlightPath_scale=10 ../bin/flight7.sh 
     ./cxr_grab.sh mp4
 
-
+    MOI=solidXJfixture:20 FlightPath_scale=4 PERIOD=8 ../bin/flight7.sh  
 
 
 
