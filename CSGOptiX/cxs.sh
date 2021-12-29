@@ -2,8 +2,6 @@
 
 BASH_FOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-
-
 usage(){ cat << EOU
 cxs.sh : hybrid rendering/simulation machinery, eg creating 2D ray trace cross sections
 ========================================================================================
@@ -56,6 +54,8 @@ EOU
 msg="=== $BASH_SOURCE : "
 
 #geom=Hama_1
+#geom=HamaYZ_1
+geom=HamaXY_1
 #geom=Hama_2
 #geom=Hama_4
 #geom=Hama_8
@@ -64,8 +64,7 @@ msg="=== $BASH_SOURCE : "
 #geom=uni_acrylic3_0
 #geom=uni_acrylic1_0
 
-geom=XJfixtureConstruction_0
-
+#geom=XJfixtureConstruction_0
 
 export GEOM=${GEOM:-$geom}
 
@@ -76,18 +75,32 @@ gsplot=1
 if [ "$GEOM" == "Hama_1" ]; then
 
     moi=Hama
-    #cegs=16:0:9:500   # XZ works 
-    cegs=0:16:9:500    # YZ probably not yet working 
-    #cegs=16:9:0:500    # XY probably not yet working 
+    cegs=16:0:9:500   # XZ works 
     gridscale=0.10
-    gsplot=1
+
+elif [ "$GEOM" == "HamaXZ_1" ]; then
+
+    moi=Hama
+    cegs=16:0:9:500   
+    gridscale=0.10
+
+elif [ "$GEOM" == "HamaYZ_1" ]; then
+
+    moi=Hama
+    cegs=0:16:9:500  
+    gridscale=0.10
+
+elif [ "$GEOM" == "HamaXY_1" ]; then
+
+    moi=Hama
+    cegs=16:9:0:500 
+    gridscale=0.10
 
 elif [ "$GEOM" == "Hama_2" ]; then
 
     moi=Hama
     cegs=32:0:18:500
     gridscale=0.10
-    gsplot=1
 
 elif [ "$GEOM" == "Hama_4" ]; then
 
@@ -259,6 +272,9 @@ if [ "$(uname)" == "Linux" ]; then
     fi
 
 elif [ "$(uname)" == "Darwin" ]; then
+
+    source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
+    echo $msg CSGOptiXSimulateTest_OUTPUT_DIR $CSGOptiXSimulateTest_OUTPUT_DIR
 
     if [ "$1" == "bat" ]; then
         NOGUI=1 ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 

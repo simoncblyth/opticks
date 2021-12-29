@@ -113,6 +113,7 @@ Now how to lookup what a prim_id corresponds to ?
 import os, sys, logging, numpy as np
 GUI = not "NOGUI" in os.environ
 
+
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 from opticks.CSG.CSGFoundry import CSGFoundry 
@@ -129,7 +130,6 @@ try:
 except ImportError:
     mp = None
 pass
-
 #mp=None
 
 try:
@@ -149,9 +149,17 @@ if GUI == False:
     log.info("disabling pv as GUI False")
     pv = None
 pass
+#pv = None
 
 
 X,Y,Z = 0,1,2
+
+_axes = {}
+_axes[X] = "X"
+_axes[Y] = "Y"
+_axes[Z] = "Z"
+
+
 SIZE = np.array([1280, 720])
 
 
@@ -512,33 +520,53 @@ class Peta(object):
         ny = (iy1 - iy0)//2  
         nz = (iz1 - iz0)//2  
 
-        nx_over_nz = float(nx)/float(nz)
-        if nx_over_nz > 1.:
-            axes = X,Z 
-        else:
-            axes = Z,X
-        pass
-        print("axes %s " % str(axes))
-        # expecting 2D with no action in ny
-
         log.info(" ix0 %d ix1 %d nx %d  " % (ix0, ix1, nx)) 
         log.info(" iy0 %d iy1 %d ny %d  " % (iy0, iy1, ny)) 
         log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
-        log.info(" nx_over_nz %s axes %s X %d Y %d Z %d" % (nx_over_nz,str(axes), X,Y,Z) )
+
+        axes = self.determine_planar_axes(nx, ny, nz)
+        print("axes %s " % str(axes))
 
         self.peta = peta
         self.ce = ce
         self.sce = sce
         self.thirdline = " ce: " + sce 
 
-        self.nx_over_nz = nx_over_nz   
         self.axes = axes 
- 
         self.nx = nx
         self.ny = ny
         self.nz = nz
         self.photons_per_genstep = photons_per_genstep
  
+
+    def determine_planar_axes(self, nx, ny, nz):
+        """ 
+        :param nx:
+        :param nx:
+        :param nx:
+
+        """
+        if nx == 0 and ny > 0 and nz > 0:
+            ny_over_nz = float(ny)/float(nz)
+            axes = (Y,Z) if ny_over_nz > 1 else (Z,Y)
+        elif nx > 0 and ny == 0 and nz > 0:
+            nx_over_nz = float(nx)/float(nz)
+            axes = (X,Z) if nx_over_nz > 1 else (Z,X)
+        elif nx > 0 and ny > 0 and nz == 0:
+            nx_over_ny = float(nx)/float(ny)
+            axes = (X,Y) if nx_over_ny > 1 else (Y,X)
+        else:
+            axes = None
+        pass
+        if axes is None:
+            msg = "non-planar grid in use : will need 3D handling "
+        else:
+            msg = "planar grid in use : axes %s %s " % ( _axes[axes[0]], _axes[axes[1]]) 
+        pass
+        print(" nx %d ny %d nz %d : %s " % (nx, ny, nz, msg))
+        print("axes %s " % str(axes))
+        return axes
+
 
 class Positions(object):
     """
@@ -662,6 +690,9 @@ class Plt(object):
         ugsc = self.gs.ugsc
         lim = self.gs.lim
         H,V = self.peta.axes      ## traditionally H,V = X,Z  but are now generalizing 
+
+        log.info(" peta.axes H:%s  V:%s " % (_axes[H], _axes[V] ))  
+
         feat = self.feat
         sz = self.sz
         print("positions_mpplt feat.name %s " % feat.name )
@@ -767,20 +798,38 @@ class Plt(object):
         zoom = self.zoom
         look = self.look if self.pos.local else self.peta.peta[0,1,:3]
 
-        yoffset = -1000.       ## with parallel projection are rather insensitive to eye position distance
-        eye = look + np.array([ 0, yoffset, 0 ])    
 
         pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
         self.pl = pl 
 
-        if H == X and V == Z:
-            up = (0,0,1)                               
-        elif H == Z and V == X:
-            up = (-1,0,0)                               
-        else:
-            assert 0
-        pass
-        pl.view_xz()   ## TODO: see if view_xz is doing anything when subsequently set_focus/viewup/position 
+        if   H == X and V == Z: HV = "XZ"
+        elif H == Z and V == X: HV = "ZX"
+        elif H == Y and V == Z: HV = "YZ"
+        elif H == Z and V == Y: HV = "ZY"
+        elif H == X and V == Y: HV = "XY"
+        elif H == Y and V == X: HV = "YX"
+        else: assert 0
+
+        ups = {}
+        ups["XZ"] = (0,0,1)
+        ups["ZX"] = (-1,0,0)
+        ups["YZ"] = (0,0,1)
+        ups["ZY"] = (0,-1,0)
+        ups["XY"] = (0,1,0)
+        ups["YX"] = (1,0,0)
+        up = ups.get(HV, None)
+
+        offs = {}
+        offs["XZ"] = np.array([     0., -1000.,     0. ])
+        offs["ZX"] = np.array([     0.,  1000.,     0. ])
+        offs["YZ"] = np.array([ -1000.,     0.,     0. ])
+        offs["ZY"] = np.array([  1000.,     0.,     0. ])
+        offs["XY"] = np.array([     0.,     0., -1000. ])
+        offs["YX"] = np.array([     0.,     0.,  1000. ])
+
+        off = offs.get(HV, None)
+        eye = look + off
+        #pl.view_xz()   ## TODO: see if view_xz is doing anything when subsequently set_focus/viewup/position 
 
         pl.camera.ParallelProjectionOn()  
         pl.add_text(self.topline, position="upper_left")
@@ -873,7 +922,6 @@ if __name__ == '__main__':
 
     #pos.pvplt_simple()
 
-    ## TODO: use pos.mask to make legend items more pertinent by only incluing entries for visible intersects
 
     ph = Photons(pos, cf, featname="pid" )  # pid:meshname, bnd:boundary, ins:instance
     print(ph.bndfeat)
@@ -882,6 +930,8 @@ if __name__ == '__main__':
     feat = ph.feat 
 
     plt = Plt(outdir, feat, gs, peta, pos )
+
+    upos = plt.pos.upos
 
     if not mp is None:
         plt.positions_mpplt(legend=True, gsplot=GSPLOT )

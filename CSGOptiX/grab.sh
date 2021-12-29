@@ -25,8 +25,12 @@ xdir=$opticks_keydir_grabbed/CSG_GGeo/$executable/   ## trailing slash to avoid 
 from=P:$xdir
 to=$HOME/$xdir
 
+LOGDIR=/tmp/$USER/opticks/CSGOptiX/$EXECUTABLE
+
+
 printf "arg                    %s \n" "$arg"
 printf "EXECUTABLE             %s \n " "$EXECUTABLE"
+printf "LOGDIR                 %s \n " "$LOGDIR"
 printf "OPTICKS_KEYDIR_GRABBED %s \n " "$OPTICKS_KEYDIR_GRABBED" 
 printf "opticks_keydir_grabbed %s \n " "$opticks_keydir_grabbed" 
 printf "\n"
@@ -65,8 +69,18 @@ elif [ "$arg" == "all" ]; then
 
     ls -1rt `find ${to%/} -name '*.json' -o -name '*.txt' `
     ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.mp4' -o -name '*.npy'  `
+
+
+
+    last_npy=$(ls -1rt `find ${to%/} -name '*.npy' ` | tail -1 )
+    last_outdir=$(dirname $last_npy)
+    script_outdir=$LOGDIR/${EXECUTABLE}_OUTPUT_DIR.sh
+    echo last_npy $last_npy 
+    echo last_outdir $last_outdir 
+    echo script_outdir $script_outdir
+    printf "export ${EXECUTABLE}_OUTPUT_DIR=$last_outdir\n" > $script_outdir
+    cat $script_outdir
+
 fi 
-
-
 
 

@@ -232,14 +232,14 @@ void CSGOptiX::setCEGS(const std::vector<int>& cegs)
     //params->setCEGS(cegs_); 
     assert( cegs.size() == 7 );   // use QEvent::StandardizeCEGS to convert 4 to 7  
 
-    peta->q0.i.x = cegs[0] ; 
-    peta->q0.i.y = cegs[1] ; 
-    peta->q0.i.z = cegs[2] ; 
-    peta->q0.i.w = cegs[3] ; 
+    peta->q0.i.x = cegs[0] ;  // ix0
+    peta->q0.i.y = cegs[1] ;  // ix1
+    peta->q0.i.z = cegs[2] ;  // iy0 
+    peta->q0.i.w = cegs[3] ;  // iy1
 
-    peta->q1.i.x = cegs[4] ; 
-    peta->q1.i.y = cegs[5] ; 
-    peta->q1.i.z = cegs[6] ; 
+    peta->q1.i.x = cegs[4] ;  // iz0
+    peta->q1.i.y = cegs[5] ;  // iz1 
+    peta->q1.i.z = cegs[6] ;  // num_photons
     peta->q1.i.w = 0 ; 
 }
 
