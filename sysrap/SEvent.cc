@@ -213,10 +213,9 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     int nx = (ix1 - ix0)/2 ; 
     int ny = (iy1 - iy0)/2 ; 
     int nz = (iz1 - iz0)/2 ; 
+
     int gridaxes = GridAxes(nx, ny, nz); 
-
     int dirmode = gridaxes == XYZ ? DIMENSION_3 : DIMENSION_2 ; 
-
 
     LOG(LEVEL) 
         << " ce_offset " << ce_offset 
@@ -234,7 +233,16 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     gs.q0.i.z = dirmode ; 
     gs.q0.i.w = photons_per_genstep ;
 
-    gs.q1.f.x = 0.f ;  // local frame position : currently origin, same for all gensteps : only the transform is changed   
+    /**
+    where should ce offset go to handle global geom
+
+    1. q1 of then genstep
+    2. translation held in the genstep transform
+    
+    local frame position : currently origin, same for all gensteps : only the transform is changed   
+
+    **/
+    gs.q1.f.x = 0.f ;  
     gs.q1.f.y = 0.f ;
     gs.q1.f.z = 0.f ;
     gs.q1.f.w = 1.f ;
@@ -369,7 +377,6 @@ SEvent::GenerateCenterExtentGenstepsPhotons
 
 Contrast this CPU implementation of CEGS generation with qudarap/qsim.h qsim<T>::generate_photon_torch
 
-
 **/
 
 void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa )
@@ -413,9 +420,7 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
             cosTheta = u1 ; 
             sinTheta = sqrtf(1.0-u1*u1);
 
-
-
-            p.q0.f = gs.q1.f ;  // position 
+            p.q0.f = gs.q1.f ;  // copy position from genstep into the photon, historically has been origin   
  
             if( dirmode == DIMENSION_2 )
             {
@@ -458,28 +463,28 @@ void SEvent::SetGridPlaneDirection( float4& dir, int gridaxes, float cosPhi, flo
         dir.x = 0.f ;  
         dir.y = cosPhi ;
         dir.z = sinPhi ;   
-        dir.w = 1.f    ;   
+        dir.w = 0.f    ;   
     }
     else if( gridaxes == XZ )
     {    
         dir.x = cosPhi ;   
         dir.y = 0.f    ;
         dir.z = sinPhi ;   
-        dir.w = 1.f    ;   
+        dir.w = 0.f    ;   
     }
     else if( gridaxes == XY )
     {    
         dir.x = cosPhi ;   
         dir.y = sinPhi ;
         dir.z = 0.     ;   
-        dir.w = 1.f    ;   
+        dir.w = 0.f    ;   
     }
     else if( gridaxes == XYZ )
     {    
         dir.x = cosPhi ;   
         dir.y = 0.f    ;
         dir.z = sinPhi ;   
-        dir.w = 1.f    ;   
+        dir.w = 0.f    ;   
     } 
     else
     {

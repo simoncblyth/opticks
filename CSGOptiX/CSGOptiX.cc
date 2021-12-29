@@ -100,6 +100,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     meta(new SMeta),
     peta(new quad4), 
     metatran(nullptr),
+    simulate_dt(0.),
     sim(raygenmode == 0 ? nullptr : new QSim<float>),
     evt(raygenmode == 0 ? nullptr : new QEvent)
 {
@@ -395,8 +396,8 @@ double CSGOptiX::simulate()
     assert( raygenmode > 0 ); 
     unsigned num_photons = params->num_photons ; 
     assert( num_photons > 0 ); 
-    double dt = launch(num_photons, 1u, 1u );
-    return dt ; 
+    simulate_dt = launch(num_photons, 1u, 1u );
+    return simulate_dt ; 
 }
 
 std::string CSGOptiX::Annotation( double dt, const char* bot_line )  // static 
@@ -498,6 +499,35 @@ void CSGOptiX::saveMetaTran(const char* fold, const char* name) const
     mta->save(fold, name);  
 }
 
+/**
+CSGOptiX::snapSimulateTest
+---------------------------
+
+Saving data for 2D cross sections, used by tests/CSGOptiXSimulateTest.cc 
+
+
+**/
+
+void CSGOptiX::snapSimulateTest(const char* outdir, const char* botline, const char* topline) 
+{
+    evt->setMeta( foundry->meta ); 
+    evt->savePhoton( outdir, "photons.npy");   // this one can get very big 
+    evt->saveGenstep(outdir, "genstep.npy");  
+    evt->saveMeta(   outdir, "fdmeta.txt" ); 
+
+    const char* namestem = "CSGOptiXSimulateTest" ; 
+    const char* ext = ".jpg" ; 
+    int index = -1 ;  
+    const char* outpath = ok->getOutPath(namestem, ext, index ); 
+    LOG(error) << " outpath " << outpath ; 
+
+    std::string bottom_line = CSGOptiX::Annotation( simulate_dt, botline ); 
+    snap(outpath, bottom_line.c_str(), topline  );   
+
+    writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
+    savePeta(        outdir, "peta.npy");   
+    saveMetaTran(    outdir, "metatran.npy"); 
+}
 
 
 

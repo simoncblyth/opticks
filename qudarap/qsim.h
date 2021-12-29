@@ -8,6 +8,7 @@
 
 #include "OpticksGenstep.h"
 #include "sqat4.h"
+#include "sevent.h"
 
 #include "qgs.h"
 #include "qprop.h"
@@ -671,19 +672,23 @@ Contrast with CPU implementation sysrap SEvent::GenerateCenterExtentGenstepsPhot
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
-    unsigned num_photons = gs.q0.u.w ; 
+    //unsigned num_photons = gs.q0.u.w ; 
     int gridaxes = gs.q0.i.y ; 
-    int dirmode  = gs.q0.i.z ; 
+    //int dirmode  = gs.q0.i.z ; 
 
     p.q0.f = gs.q1.f ;  // start with local frame position, eg (0,0,0)   
-
 
     float u = curand_uniform(&rng); 
     float sinPhi, cosPhi;
     sincosf(2.f*M_PIf*u,&sinPhi,&cosPhi);
 
-    //  local frame XZ plane directions
-    p.q1.f.x = cosPhi ;  p.q1.f.y = 0.f    ;  p.q1.f.z = sinPhi ;  p.q1.f.w = 0.f ;  
+    switch( gridaxes )
+    { 
+        case YZ:  { p.q1.f.x = 0.f    ;  p.q1.f.y = cosPhi ;  p.q1.f.z = sinPhi ;  p.q1.f.w = 0.f ; } ; break ; 
+        case XZ:  { p.q1.f.x = cosPhi ;  p.q1.f.y = 0.f    ;  p.q1.f.z = sinPhi ;  p.q1.f.w = 0.f ; } ; break ; 
+        case XY:  { p.q1.f.x = cosPhi ;  p.q1.f.y = sinPhi ;  p.q1.f.z = 0.f    ;  p.q1.f.w = 0.f ; } ; break ; 
+        case XYZ: { p.q1.f.x = cosPhi ;  p.q1.f.y = 0.f    ;  p.q1.f.z = sinPhi ;  p.q1.f.w = 0.f ; } ; break ;
+    }
 
     qat4 qt(gs) ; // copy 4x4 transform from last 4 quads of genstep 
     qt.right_multiply_inplace( p.q0.f, 1.f );   // position 

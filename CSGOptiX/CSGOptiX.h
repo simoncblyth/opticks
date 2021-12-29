@@ -71,6 +71,8 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     SMeta* meta ; 
     quad4* peta ; 
     const Tran<double>* metatran ; 
+    double simulate_dt ; 
+
 
     QSim<float>* sim ; 
     QEvent*      evt ;  
@@ -117,5 +119,10 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void setGensteps(const NP* gs);
     double simulate();    
     double launch(unsigned width, unsigned height, unsigned depth) ; 
+
+    void snapSimulateTest(const char* outdir, const char* botline, const char* topline) ; // uses snap, so not const 
+
+
+
 };
 

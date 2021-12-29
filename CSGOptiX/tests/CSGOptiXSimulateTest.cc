@@ -43,13 +43,9 @@ is to be able to see the exact same geometry that the simulation is using.
 
 int main(int argc, char** argv)
 {
-    //for(int i=0 ; i < argc ; i++ ) std::cout << argv[i] << std::endl; 
     OPTICKS_LOG(argc, argv); 
 
-    //const char* argforced = "--allownokey" ; 
-    const char* argforced = nullptr ; 
-
-    Opticks ok(argc, argv, argforced); 
+    Opticks ok(argc, argv ); 
     ok.configure(); 
     ok.setRaygenMode(1) ; // override --raygenmode option 
 
@@ -61,9 +57,6 @@ int main(int argc, char** argv)
         << " out_prefix [" << out_prefix << "]" 
         ;
 
-    // new layout : save outputs within $CFBASE/CSGOptiXSimulateTest 
-    // to keep intersects more closely to geometry for cross node access to identity info 
-    // by forcing that geometry gets synced together with intersects 
     const char* cfbase = ok.getFoundryBase("CFBASE");  // envvar CFBASE can override 
 
     int create_dirs = 2 ;  
@@ -91,11 +84,9 @@ int main(int argc, char** argv)
     float gridscale = SSys::getenvfloat("GRIDSCALE", 1.0 ); 
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
 
-
     const char* idpath = ok.getIdPath(); 
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
     
-
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
 
@@ -159,10 +150,10 @@ int main(int argc, char** argv)
         SEvent::GetBoundingBox( mn, mx, ce, cegs, gridscale, ce_offset_bb ); 
 
         LOG(info) 
+            << " ce_offset_bb " << ce_offset_bb
             << " mn " << mn 
             << " mx " << mx
             ; 
-
 
         std::vector<int> override_ce ; 
         SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" ); 
@@ -177,7 +168,6 @@ int main(int argc, char** argv)
         } 
 
         bool ce_offset = false ; 
-
         gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset ); 
 
         cx.setCE(ce); 
@@ -192,26 +182,8 @@ int main(int argc, char** argv)
     double dt = cx.simulate();  
     LOG(info) << " dt " << dt ;
 
-    //QSim<float>* sim = cx.sim ;
+    cx.snapSimulateTest(outdir, botline, topline ); 
  
-    QEvent* evt = cx.evt ; 
-    evt->setMeta( fd->meta ); 
-    evt->savePhoton( outdir, "photons.npy");   // this one can get very big 
-    evt->saveGenstep(outdir, "genstep.npy");  
-    evt->saveMeta(   outdir, "fdmeta.txt" ); 
-
-    const char* namestem = "CSGOptiXSimulateTest" ; 
-    const char* ext = ".jpg" ; 
-    int index = -1 ;  
-    const char* outpath = ok.getOutPath(namestem, ext, index ); 
-    LOG(error) << " outpath " << outpath ; 
-
-    std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
-    cx.snap(outpath, bottom_line.c_str(), topline  );   
-    cx.writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
-    cx.savePeta(        outdir, "peta.npy");   
-    cx.saveMetaTran(    outdir, "metatran.npy"); 
-
 
     cudaDeviceSynchronize(); 
     return 0 ; 

@@ -76,7 +76,9 @@ gsplot=1
 if [ "$GEOM" == "Hama_1" ]; then
 
     moi=Hama
-    cegs=16:0:9:500
+    #cegs=16:0:9:500   # XZ works 
+    cegs=0:16:9:500    # YZ probably not yet working 
+    #cegs=16:9:0:500    # XY probably not yet working 
     gridscale=0.10
     gsplot=1
 
