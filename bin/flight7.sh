@@ -17,8 +17,9 @@ bin=CSGOptiXRenderTest
 version=$(CSGOptiXVersion 2>/dev/null)
 logdir=/tmp/$USER/opticks/$pkg/$bin/$version
 
-moi=uni_acrylic1
+#moi=uni_acrylic1
 #moi=Hama:0:1000
+moi=solidXJfixture:10
 
 period=${PERIOD:-4}
 limit=${LIMIT:-600}

@@ -874,3 +874,39 @@ with the luxury of double precision, still potential for cxs spurious intersects
 
 
 
+cx cxs XJfixtureConstruction_0 failing 
+-------------------------------------------
+
+::
+
+    cx
+    ./cxs.sh 
+
+    cx
+    ./cxs_grab.sh png 
+
+
+
+
+    cx
+    MOI=solidXJfixture:10 ./cxr_view.sh 
+
+    cx
+    ./cxr_grab.sh jpg 
+
+
+    cx
+    MOI=solidXJfixture:10 ../bin/flight7.sh 
+    ./cxr_grab.sh mp4
+
+    MOI=solidXJfixture:20 ../bin/flight7.sh 
+    ./cxr_grab.sh mp4
+
+    MOI=solidXJfixture:20 FlightPath_scale=10 ../bin/flight7.sh 
+    ./cxr_grab.sh mp4
+
+
+
+
+
+

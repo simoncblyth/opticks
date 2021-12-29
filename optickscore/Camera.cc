@@ -316,7 +316,7 @@ void Camera::setEquirectangular(){ setStyle(EQUIRECTANGULAR_CAMERA) ; }
 
 
 unsigned Camera::getType() const { 
-    LOG(error) << " type " << m_type ; 
+    LOG(LEVEL) << " type " << m_type ; 
     return m_type ; 
 }
 

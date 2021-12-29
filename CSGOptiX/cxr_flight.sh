@@ -4,6 +4,8 @@ usage(){ cat << EOU
 cxr_flight.sh
 ===============
 
+TODO: compare this with bin/flight7.sh, consolidate and remove one of them 
+
 See also opticks/bin/flight.sh::
 
     ./cxr_flight.sh

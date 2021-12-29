@@ -321,7 +321,7 @@ void CSGOptiX::prepareParam()
     six->updateContext(); 
 #else
     params->upload();  
-    params->dump(" CSGOptiX::prepareParam"); 
+    if(!flight) params->dump(" CSGOptiX::prepareParam"); 
 #endif
 }
 
