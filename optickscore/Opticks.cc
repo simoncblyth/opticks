@@ -2856,7 +2856,7 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
         const char* outdir = getOutDir() ;
         const char* nameprefix = getNamePrefix(); 
 
-        float scale = m_cfg->getFlightPathScale() ;
+        float flightpathscale = getFlightPathScale() ; 
 
         LOG(LEVEL) 
              << " Creating flightpath from file " 
@@ -2864,17 +2864,22 @@ FlightPath* Opticks::getFlightPath()   // lazy cannot be const
              << " --outdir " << outdir
              << " --nameprefix " << nameprefix 
              << " --flightpathdir " << dir  
-             << " --flightpathscale " << scale 
+             << " --flightpathscale " << flightpathscale 
              ;   
 
 
         FlightPath* fp = new FlightPath(this, config, outdir, nameprefix) ;
-        fp->setScale(scale) ; 
+        fp->setScale(flightpathscale) ; 
         m_composition->setFlightPath(fp);
 
         m_flightpath = fp ; 
     }
     return m_flightpath ; 
+}
+
+float Opticks::getFlightPathScale() const   // --flightpathscale
+{
+    return m_cfg->getFlightPathScale() ;
 }
 
 

@@ -395,7 +395,8 @@ class OKCORE_API Opticks {
        const char* getOutPrefix(int optix_version_override=0 ) const ; 
 
 
-       const char* getNamePrefix() const ;    // --nameprefix
+       const char* getNamePrefix() const ;       // --nameprefix
+       float       getFlightPathScale() const ;  // --flightpathscale
        FlightPath* getFlightPath();  // lazy cannot be const  
 
        std::string getContextAnnotation() const ;

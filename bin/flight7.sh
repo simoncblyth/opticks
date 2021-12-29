@@ -29,15 +29,17 @@ flight=${FLIGHT:-RoundaboutXY_XZ}
 config="flight=$flight,ext=.jpg,scale0=$scale0,scale1=$scale1,framelimit=$limit,period=$period"
 nameprefix="${flight}"
 
-flight-cmd(){ cat << EOC
-$bin --flightconfig "$config" --nameprefix "$nameprefix"   $*
-EOC
-}
-
+export FlightPath=INFO
 export FlightPath_scale=${FlightPath_scale:-1}
 export MOI=${MOI:-$moi}
 export OPTICKS_GEOM=$MOI
 export OPTICKS_RELDIR=$flight 
+
+
+flight-cmd(){ cat << EOC
+$bin --flightconfig "$config" --nameprefix "$nameprefix" --flightpathscale ${FlightPath_scale}  $*
+EOC
+}
 
 
 flight-init()

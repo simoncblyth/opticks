@@ -53,7 +53,7 @@
 
 
 
-const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "INFO" ); 
+const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
 
 #if OPTIX_VERSION < 70000 
 const char* CSGOptiX::PTXNAME = "OptiX6Test" ; 
@@ -327,7 +327,6 @@ void CSGOptiX::prepareParam()
 
 double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
 {
-    LOG(LEVEL) << "[ (width, height, depth) ( " << width << "," << height << "," << depth << ")"  ; 
     double t0, t1 ; 
     t0 = BTimeStamp::RealTime();
 #if OPTIX_VERSION < 70000
@@ -344,7 +343,11 @@ double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
     t1 = BTimeStamp::RealTime();
     double dt = t1 - t0 ; 
     launch_times.push_back(dt);  
-    LOG(LEVEL) << "] " << std::fixed << std::setw(7) << std::setprecision(4) << dt  ; 
+
+    LOG(LEVEL) 
+          << " (width, height, depth) ( " << width << "," << height << "," << depth << ")"  
+          << std::fixed << std::setw(7) << std::setprecision(4) << dt  
+          ; 
     return dt ; 
 }
 
@@ -416,7 +419,7 @@ void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_
     int create_dirs = 1 ; // 1:filepath 
     const char* path = SPath::Resolve(path_, create_dirs ); 
 
-    LOG(info) << " path_ [" << path_ << "]"  ; 
+    LOG(LEVEL) << " path_ [" << path_ << "]"  ; 
 
 #if OPTIX_VERSION < 70000
     six->snap(path, bottom_line, top_line, line_height); 

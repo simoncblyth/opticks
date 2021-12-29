@@ -70,7 +70,7 @@ FlightPath::FlightPath(const Opticks* ok, const char* cfg, const char* outdir, c
     m_ivperiod(128),
     m_ctrl(NULL),
     m_meta(new SMeta),
-    m_scale(SSys::getenvfloat("FlightPath_scale",1.f)),
+    m_scale(SSys::getenvfloat("FlightPath_scale",1.f)),   // default overall scale from envvar may be overidden via Opticks option --flightpathscale 
     m_path_format(nullptr),
     m_outdir(strdup(outdir))
 {
