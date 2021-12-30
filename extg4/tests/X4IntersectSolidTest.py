@@ -17,6 +17,7 @@ TODO: factor out the common machinery used in this and ~/opticks/CSGOptiX/tests/
 
 import os, logging, numpy as np
 from opticks.ana.fold import Fold
+from opticks.ana.gridspec import GridSpec, X, Y, Z
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -26,85 +27,20 @@ try:
 except ImportError:
     mp = None
 pass
+#mp = None
 
 try:
     import pyvista as pv
     from pyvista.plotting.colors import hexcolors  
-    #theme = "default"
-    theme = "dark"
-    #theme = "paraview"
-    #theme = "document"
-    pv.set_plot_theme(theme)
+    themes = ["default", "dark", "paraview", "document" ]
+    pv.set_plot_theme(themes[1])
 except ImportError:
     pv = None
     hexcolors = None
 pass
-
-#mp = None
 #pv = None
 
 efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
-
-X,Y,Z = 0,1,2
-
-_axes = {}
-_axes[X] = "X"
-_axes[Y] = "Y"
-_axes[Z] = "Z"
-
-class GridSpec(object):
-    def __init__(self, peta):
-
-        ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
-        iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
-
-        ce = tuple(peta[0,2])
-        sce = ("%7.2f" * 4 ) % ce
-
-        assert photons_per_genstep > 0
-        assert zero == 0
-        nx = (ix1 - ix0)//2
-        ny = (iy1 - iy0)//2
-        nz = (iz1 - iz0)//2
-
-        axes = self.determine_planar_axes(nx, ny, nz)
-
-        self.peta = peta 
-        self.axes = axes
-        self.nx = nx
-        self.ny = ny
-        self.nz = nz
-        self.ce = ce
-
-
-    def determine_planar_axes(self, nx, ny, nz):
-        """
-        :param nx:
-        :param nx:
-        :param nx:
-
-        """
-        if nx == 0 and ny > 0 and nz > 0:
-            ny_over_nz = float(ny)/float(nz)
-            axes = (Y,Z) if ny_over_nz > 1 else (Z,Y)
-        elif nx > 0 and ny == 0 and nz > 0:
-            nx_over_nz = float(nx)/float(nz)
-            axes = (X,Z) if nx_over_nz > 1 else (Z,X)
-        elif nx > 0 and ny > 0 and nz == 0:
-            nx_over_ny = float(nx)/float(ny)
-            axes = (X,Y) if nx_over_ny > 1 else (Y,X)
-        else:
-            axes = None
-        pass
-        if axes is None:
-            msg = "non-planar grid in use : will need 3D handling "
-        else:
-            msg = "planar grid in use : axes %s %s " % ( _axes[axes[0]], _axes[axes[1]]) 
-        pass
-        print(" nx %d ny %d nz %d : %s " % (nx, ny, nz, msg))
-        print("axes %s " % str(axes))
-        return axes
-
 
 class Plt(object):
     def __init__(self, folds, others):
@@ -168,13 +104,12 @@ if __name__ == '__main__':
 
     log.info("fold0.base %s " % fold0.base )
 
-    gridspec = GridSpec(fold0.peta)
-    is_planar = not gridspec.axes is None
+    grid = GridSpec(fold0.peta)
+    is_planar = not grid.axes is None
 
     if is_planar:
-        H,V = gridspec.axes     ## traditionally H,V = X,Z  but are now generalizing 
-        _H = _axes[H]
-        _V = _axes[V]
+        H,V = grid.axes     ## traditionally H,V = X,Z  but are now generalizing 
+        _H,_V = grid.axlabels
     else:
         log.info("non-planar 3D grids detected" )
         H,V,_H,_V = None, None, None, None
@@ -283,23 +218,11 @@ if 1:
     if pv and is_planar and 0:
         yoffset = -50.  ## with parallel projection are rather insensitive to eye position distance
 
-
-        if H == X and V == Z:
-            up = (0,0,1)       
-        elif H == Z and V == X:
-            up = (-1,0,0)       
-        else:
-            assert 0
-        pass
-
-
-        look = (0,0,0)
-        eye = look + np.array([ 0, yoffset, 0 ])    
+        up = grid.up
+        look = grid.look
+        eye = grid.eye
 
         pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
-        pl.view_xz()
-        pl.camera.ParallelProjectionOn()  
-
         for test in tests:
             geom = test.base.split("/")[-2]
             ipos = test.isect[:,0,:3]
@@ -317,6 +240,7 @@ if 1:
         pl.add_text(plt.botline, position="lower_left")
         pl.add_text(plt.thirdline, position="lower_right")
 
+        pl.camera.ParallelProjectionOn()  
         pl.set_focus(    look )
         pl.set_viewup(   up )
         pl.set_position( eye, reset=True )  # reset=False is default

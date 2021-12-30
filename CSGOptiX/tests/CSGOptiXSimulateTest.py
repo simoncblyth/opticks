@@ -118,6 +118,8 @@ log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 from opticks.CSG.CSGFoundry import CSGFoundry 
 from opticks.ana.fold import Fold
+from opticks.ana.gridspec import GridSpec, X, Y, Z
+SIZE = np.array([1280, 720])
 
 import matplotlib
 if GUI == False:
@@ -135,11 +137,8 @@ pass
 try:
     import pyvista as pv
     from pyvista.plotting.colors import hexcolors  
-    #theme = "default"
-    theme = "dark"
-    #theme = "paraview"
-    #theme = "document"
-    pv.set_plot_theme(theme)
+    themes = ["default", "dark", "paraview", "document" ]
+    pv.set_plot_theme(themes[1])
 except ImportError:
     pv = None
     hexcolors = None
@@ -150,17 +149,7 @@ if GUI == False:
     pv = None
 pass
 #pv = None
-
-
-X,Y,Z = 0,1,2
-
-_axes = {}
-_axes[X] = "X"
-_axes[Y] = "Y"
-_axes[Z] = "Z"
-
-
-SIZE = np.array([1280, 720])
+print("pv:%s" % str(pv))
 
 
 def make_colors():
@@ -504,75 +493,12 @@ class Gensteps(object):
         self.lim = lim 
 
 
-class Peta(object):
-    """
-    Interpret the metadata 
-    """
-    def __init__(self, peta):
-        ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
-        iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
-        ce = tuple(peta[0,2])
-        sce = ("%7.2f" * 4 ) % ce
-
-        assert photons_per_genstep > 0
-        assert zero == 0 
-        nx = (ix1 - ix0)//2 
-        ny = (iy1 - iy0)//2  
-        nz = (iz1 - iz0)//2  
-
-        log.info(" ix0 %d ix1 %d nx %d  " % (ix0, ix1, nx)) 
-        log.info(" iy0 %d iy1 %d ny %d  " % (iy0, iy1, ny)) 
-        log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
-
-        axes = self.determine_planar_axes(nx, ny, nz)
-        print("axes %s " % str(axes))
-
-        self.peta = peta
-        self.ce = ce
-        self.sce = sce
-        self.thirdline = " ce: " + sce 
-
-        self.axes = axes 
-        self.nx = nx
-        self.ny = ny
-        self.nz = nz
-        self.photons_per_genstep = photons_per_genstep
- 
-
-    def determine_planar_axes(self, nx, ny, nz):
-        """ 
-        :param nx:
-        :param nx:
-        :param nx:
-
-        """
-        if nx == 0 and ny > 0 and nz > 0:
-            ny_over_nz = float(ny)/float(nz)
-            axes = (Y,Z) if ny_over_nz > 1 else (Z,Y)
-        elif nx > 0 and ny == 0 and nz > 0:
-            nx_over_nz = float(nx)/float(nz)
-            axes = (X,Z) if nx_over_nz > 1 else (Z,X)
-        elif nx > 0 and ny > 0 and nz == 0:
-            nx_over_ny = float(nx)/float(ny)
-            axes = (X,Y) if nx_over_ny > 1 else (Y,X)
-        else:
-            axes = None
-        pass
-        if axes is None:
-            msg = "non-planar grid in use : will need 3D handling "
-        else:
-            msg = "planar grid in use : axes %s %s " % ( _axes[axes[0]], _axes[axes[1]]) 
-        pass
-        print(" nx %d ny %d nz %d : %s " % (nx, ny, nz, msg))
-        print("axes %s " % str(axes))
-        return axes
-
 
 class Positions(object):
     """
     Transforms global intersect positions into local frame 
     """
-    def __init__(self, p, gs, peta, local=True, pos_mask=False ):
+    def __init__(self, p, gs, grid, local=True, pos_mask=False ):
 
         mtr = gs.mtr                    # transform
 
@@ -588,7 +514,7 @@ class Positions(object):
 
         self.poslim = poslim 
         self.gs = gs
-        self.peta = peta 
+        self.grid = grid 
 
         self.p = p 
         self.upos = upos
@@ -621,9 +547,9 @@ class Positions(object):
 
     def make_histogram(self):
         lim = self.gs.lim  
-        nx = self.peta.nx
-        ny = self.peta.ny
-        nz = self.peta.nz
+        nx = self.grid.nx
+        ny = self.grid.ny
+        nz = self.grid.nz
         upos = self.upos
 
         # bizarrely some python3 versions think the below are SyntaxError without the num= 
@@ -654,12 +580,12 @@ class Positions(object):
 
 
 class Plt(object):
-    def __init__(self, outdir, feat, gs, peta, pos ):
+    def __init__(self, outdir, feat, gs, grid, pos ):
 
         self.outdir = outdir 
         self.feat = feat
         self.gs = gs
-        self.peta = peta
+        self.grid = grid
         self.pos = pos
 
         self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
@@ -671,7 +597,6 @@ class Plt(object):
         self.zz = efloatlist_("ZZ")
         self.sz = float(os.environ.get("SZ","1.0"))
         self.zoom = float(os.environ.get("ZOOM","3.0"))
-        self.look = np.array( list(map(float, os.environ.get("LOOK","0.,0.,0.").split(","))) )
  
     def outpath_(self, stem="positions", ptype="pvplt"):
         sisel = self.feat.sisel
@@ -689,9 +614,10 @@ class Plt(object):
         upos = self.pos.upos
         ugsc = self.gs.ugsc
         lim = self.gs.lim
-        H,V = self.peta.axes      ## traditionally H,V = X,Z  but are now generalizing 
+        H,V = self.grid.axes    ## traditionally H,V = X,Z  but are now generalizing 
+        _H,_V = self.grid.axlabels
 
-        log.info(" peta.axes H:%s  V:%s " % (_axes[H], _axes[V] ))  
+        log.info(" grid.axes H:%s V:%s " % (_H, _V))  
 
         feat = self.feat
         sz = self.sz
@@ -703,7 +629,7 @@ class Plt(object):
 
         igs = slice(None) if len(ugsc) > 1 else 0
 
-        title = [self.topline, self.botline, self.peta.thirdline]
+        title = [self.topline, self.botline, self.grid.thirdline]
 
         fig, ax = mp.subplots(figsize=SIZE/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
@@ -745,10 +671,12 @@ class Plt(object):
             ax.scatter( ugsc[igs, H], ugsc[igs,V], label=None, s=sz )
         pass
 
-        ax.set_xlim( lim[H] )
-        ax.set_ylim( lim[V] )  # zlim -> ylim 
-
         ax.set_aspect('equal')
+        ax.set_xlim( lim[H] )
+        ax.set_ylim( lim[V] ) 
+        ax.set_xlabel(_H)
+        ax.set_ylabel(_V)
+
         if legend:
             ax.legend(loc="upper right", markerscale=4)
             ptype = "mpplt"  
@@ -789,52 +717,26 @@ class Plt(object):
         ylim = lim[Y]
         zlim = lim[Z]
 
-        H,V = self.peta.axes      ## traditionally H,V = X,Z  but are now generalizing 
+        H,V = self.grid.axes      ## traditionally H,V = X,Z  but are now generalizing 
  
         upos = self.pos.upos
-        grid = True if self.peta.ny == 0 else False   # grid is too obscuring with 3D
 
         feat = self.feat 
         zoom = self.zoom
-        look = self.look if self.pos.local else self.peta.peta[0,1,:3]
-
+        look = self.grid.look if self.pos.local else self.grid.ce[:3]
+        eye = look + self.grid.off
+        up = self.grid.up
 
         pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
         self.pl = pl 
 
-        if   H == X and V == Z: HV = "XZ"
-        elif H == Z and V == X: HV = "ZX"
-        elif H == Y and V == Z: HV = "YZ"
-        elif H == Z and V == Y: HV = "ZY"
-        elif H == X and V == Y: HV = "XY"
-        elif H == Y and V == X: HV = "YX"
-        else: assert 0
-
-        ups = {}
-        ups["XZ"] = (0,0,1)
-        ups["ZX"] = (-1,0,0)
-        ups["YZ"] = (0,0,1)
-        ups["ZY"] = (0,-1,0)
-        ups["XY"] = (0,1,0)
-        ups["YX"] = (1,0,0)
-        up = ups.get(HV, None)
-
-        offs = {}
-        offs["XZ"] = np.array([     0., -1000.,     0. ])
-        offs["ZX"] = np.array([     0.,  1000.,     0. ])
-        offs["YZ"] = np.array([ -1000.,     0.,     0. ])
-        offs["ZY"] = np.array([  1000.,     0.,     0. ])
-        offs["XY"] = np.array([     0.,     0., -1000. ])
-        offs["YX"] = np.array([     0.,     0.,  1000. ])
-
-        off = offs.get(HV, None)
-        eye = look + off
         #pl.view_xz()   ## TODO: see if view_xz is doing anything when subsequently set_focus/viewup/position 
 
         pl.camera.ParallelProjectionOn()  
         pl.add_text(self.topline, position="upper_left")
         pl.add_text(self.botline, position="lower_left")
-        pl.add_text(self.peta.thirdline, position="lower_right")
+        pl.add_text(self.grid.thirdline, position="lower_right")
+
         print("positions_pvplt feat.name %s " % feat.name )
 
         for idesc in range(feat.unum):
@@ -845,11 +747,12 @@ class Plt(object):
             pl.add_points( pos[:,:3], color=color )
         pass
 
-        grid = True 
-        if grid:
+        showgrid = not grid.axes is None  # too obscuring with 3D
+        if showgrid:
             pl.add_points( ugsc[:,:3], color="white" )   # genstep grid
         pass   
 
+        ## the lines need reworking 
         for z in self.zz:  # ZZ horizontals (when using traditional XZ axes)
             xhi = np.array( [xlim[1], 0, z] )  # RHS
             xlo = np.array( [xlim[0], 0, z] )  # LHS
@@ -862,6 +765,7 @@ class Plt(object):
             line = pv.Line(zlo, zhi)
             pl.add_mesh(line, color="w")
         pass
+
 
         pl.set_focus(    look )
         pl.set_viewup(   up )
@@ -906,7 +810,6 @@ if __name__ == '__main__':
 
     cxs = Fold.Load(CSGOptiXSimulateTest_OUTPUT_DIR ) 
 
-
     outdir = os.path.join(cxs.base, "figs")
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
@@ -914,11 +817,11 @@ if __name__ == '__main__':
 
     gs = Gensteps(cxs.genstep, cxs.metatran)
 
-    peta = Peta(cxs.peta)
+    grid = GridSpec(cxs.peta)
 
     pos_mask = True 
     #pos_mask = False    #without pos_mask means that the legend is filled with features that are not visible in the frame 
-    pos = Positions(cxs.photons, gs, peta, local=True, pos_mask=pos_mask )
+    pos = Positions(cxs.photons, gs, grid, local=True, pos_mask=pos_mask )
 
     #pos.pvplt_simple()
 
@@ -929,7 +832,7 @@ if __name__ == '__main__':
     print(ph.insfeat)
     feat = ph.feat 
 
-    plt = Plt(outdir, feat, gs, peta, pos )
+    plt = Plt(outdir, feat, gs, grid, pos )
 
     upos = plt.pos.upos
 
