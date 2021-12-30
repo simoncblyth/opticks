@@ -97,18 +97,18 @@ int main(int argc, char** argv)
     CSGOptiX cx(&ok, fd); 
     cx.setTop(top); 
 
+    // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ; 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
-    gsm->create(moi);  
+    bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ;
+    gsm->create(moi, ce_offset);  
 
     cx.setCE(gsm->ce); 
     cx.setCEGS(gsm->cegs); 
     cx.setMetaTran(gsm->geotran); 
     cx.setGensteps(gsm->gs); 
-    //cx.setNear(0.1); // TODO: not getting 0.1., investigate 
 
-    double dt = cx.simulate();  
-
+    cx.simulate();  
     cx.snapSimulateTest(outdir, botline, topline ); 
  
     cudaDeviceSynchronize(); 

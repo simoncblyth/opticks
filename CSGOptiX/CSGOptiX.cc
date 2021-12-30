@@ -264,6 +264,14 @@ void CSGOptiX::setCE(const glm::vec4& ce )
     composition->setNear(tmin); 
 }
 
+
+/**
+CSGOptiX::setNear
+-------------------
+
+TODO: not getting what is set eg 0.1., investigate 
+**/
+
 void CSGOptiX::setNear(float near)
 {
     composition->setNear(near); 
