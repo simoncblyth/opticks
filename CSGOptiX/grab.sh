@@ -71,7 +71,11 @@ elif [ "$arg" == "all" ]; then
     ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.mp4' -o -name '*.npy'  `
 
 
-
+    ## write source-able script ${EXECUTABLE}_OUTPUT_DIR.sh defining correponding envvar
+    ## depending on the path of the last .npy grabbed  
+    ## This is used from cxs.sh to transparently communicate the last OUTPUT_DIR 
+    ## between nodes. 
+     
     last_npy=$(ls -1rt `find ${to%/} -name '*.npy' ` | tail -1 )
     last_outdir=$(dirname $last_npy)
     script_outdir=$LOGDIR/${EXECUTABLE}_OUTPUT_DIR.sh

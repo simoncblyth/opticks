@@ -28,6 +28,7 @@ list(APPEND SOURCES
     CSGFoundry.cc
     CSGMaker.cc
     CSGName.cc
+    CSGGenstep.cc
     CSGTarget.cc
     CSGScan.cc
     CSGView.cc
@@ -48,6 +49,7 @@ list(APPEND CSG_HEADERS
     CSGFoundry.h
     CSGMaker.h
     CSGName.h
+    CSGGenstep.h
     CSGTarget.h
     CSGScan.h
     CSGView.h

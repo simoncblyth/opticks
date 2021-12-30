@@ -54,8 +54,10 @@ EOU
 msg="=== $BASH_SOURCE : "
 
 #geom=Hama_1
+#geom=HamaXZ_1
 #geom=HamaYZ_1
-geom=HamaXY_1
+#geom=HamaXY_1
+
 #geom=Hama_2
 #geom=Hama_4
 #geom=Hama_8
@@ -64,7 +66,7 @@ geom=HamaXY_1
 #geom=uni_acrylic3_0
 #geom=uni_acrylic1_0
 
-#geom=XJfixtureConstruction_0
+geom=XJfixtureConstruction_0
 
 export GEOM=${GEOM:-$geom}
 
@@ -201,14 +203,6 @@ else
     isel=
     unset CXS_OVERRIDE_CE
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
-
-    #zz=190,0,-5,-162,-195,-210,-275,-350,-365,-400,-420,-450
-    #xx=-254,254,-190,190
-    zz=190,-450         #  450+190 = 640 m_pmt_h     190 = m_z_equator     640-190 = 450 
-    xx=254,-254         #  m_pmt_r
-
-    # 640/2 = 320
-    #  190 - 320 = -130  
 
 fi 
 

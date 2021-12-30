@@ -22,6 +22,7 @@
 #include "CSGFoundry.h"
 #include "CSGName.h"
 #include "CSGTarget.h"
+#include "CSGGenstep.h"
 #include "CSGMaker.h"
 
 const unsigned CSGFoundry::IMAX = 50000 ; 
@@ -36,6 +37,7 @@ CSGFoundry::CSGFoundry()
     d_itra(nullptr),
     id(new CSGName(this)),
     target(new CSGTarget(this)),
+    genstep(new CSGGenstep(this)),
     maker(new CSGMaker(this)),
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),

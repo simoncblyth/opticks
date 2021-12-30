@@ -394,9 +394,17 @@ double CSGOptiX::simulate()
 {
     prepareParam(); 
     assert( raygenmode > 0 ); 
+
+    if( raygenmode == 0 )
+    {
+        LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::render cx.raygenmode " << raygenmode ; 
+        assert(0); 
+    }
+
     unsigned num_photons = params->num_photons ; 
     assert( num_photons > 0 ); 
     simulate_dt = launch(num_photons, 1u, 1u );
+    LOG(info) << " simulate_dt " << simulate_dt ;
     return simulate_dt ; 
 }
 

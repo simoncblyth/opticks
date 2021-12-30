@@ -3,53 +3,25 @@
 tests/CSGOptiXSimulateTest.py
 ==============================
 
-This is useful as it allows interactive visualization of workstation 
+This is allows interactive visualization of workstation 
 generated intersect data fphoton.npy on remote machines such as 
 user laptops that support pyvista. 
  
-But that raises the strong possibility that the geocache+CSGFoundry 
-used on the laptop does not match that used on the workstation to generate
-the fphoton.npy intersects
-
-* this will cause incorrect identity information for intersects. 
-* the problem is especially acute when multiple geometries are in use
-  and geometries are changed frequently 
-
-* for comparison of two sets of cxs see x4/xxs.sh 
-
-
 pyvista GUI keys
 ----------------------
 
 * https://docs.pyvista.org/api/plotting/plotting.html
 
-
-Running on remote machine 
-----------------------------
-
-* https://stackoverflow.com/questions/4931376/generating-matplotlib-graphs-without-a-running-x-server
-* https://matplotlib.org/stable/tutorials/introductory/customizing.html
-
-
-
-TODO : identity info improvements
-------------------------------------
-
-* retaining the sign of the boundary would be helpful also b=0 is swamped when using FramePhotons
+* to zoom out/in : slide two fingers up/down on trackpad. 
+* to pan : hold down shift and one finger tap-lock, then move finger around  
 
 FramePhotons vs Photons
 ---------------------------
 
 Using frame photons is a trick to effectively see results 
-from many more photons that have to pay the costs for tranfers etc.. 
+from many more photons that have to pay the costs for transfers etc.. 
 Frame photons lodge photons onto a frame of pixels limiting 
 the maximumm number of photons to handle. 
-
-pyvista interaction
-----------------------
-
-* to zoom out/in : slide two fingers up/down on trackpad. 
-* to pan : hold down shift and one finger tap-lock, then move finger around  
 
 
 plotting a selection of boundaries only, picked by descending frequency index
@@ -57,9 +29,8 @@ plotting a selection of boundaries only, picked by descending frequency index
 
 ::
 
-    cx ; ./grab.sh 
-    cx ; ./cxs0.sh py 
-
+    cx ; ./cxs_grab.sh 
+    cx ; ./cxs.sh 
 
     cx ; ipython -i tests/CSGOptiXSimulateTest.py   # all boundaries
 
@@ -72,47 +43,11 @@ plotting a selection of boundaries only, picked by descending frequency index
     ISEL=Pyrex,Water ./cxs.sh 
 
 
-AVOIDING INCORRECT IDENTITY INFO ?
-------------------------------------
-
-* digest info json metadata accompanying the intersects and foundry would allows the 
-  situation to be detected.  
-
-* transfering the CSGFoundry folder from workstation, so the identitity backing information is 
-  guaranteed to be consistent with the intersects even as geometry is frequently changed...
-  with this in mind think about the size of the CSGFoundry/geocache what can be skipped 
-  and what is essential for identity info
-
-::
-
-    cg ; ./grab.sh 
-
-
-
-FOUNDRY IDENTITY INFO
-------------------------
-
-Currently the only names CSGFoundry holds are mesh names
-
-
-__closesthit__ch::
-
-    331     unsigned instance_idx = optixGetInstanceId() ;    // see IAS_Builder::Build and InstanceId.h 
-    332     unsigned prim_idx  = optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
-    333     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_idx & 0xffff ) ;
-
-    prim_idx = ( i >> 16 )      ## index of bbox within within the GAS 
-    instance_idx = i & 0xffff   ## flat 
-
-NB getting zero for the flat instance_idx (single IAS, all transforms in it) 
-**DOES** tell you that its a global intersect 
-
-Now how to lookup what a prim_id corresponds to ?
-
 """
 import os, sys, logging, numpy as np
 GUI = not "NOGUI" in os.environ
-
+MP =  not "NOMP" in os.environ 
+PV =  not "NOPV" in os.environ 
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -127,21 +62,28 @@ if GUI == False:
     matplotlib.use("agg")
 pass
 
-try:
-    import matplotlib.pyplot as mp
-except ImportError:
+if MP:
+    try:
+        import matplotlib.pyplot as mp
+    except ImportError:
+        mp = None
+    pass
+else:
     mp = None
 pass
-#mp=None
 
-try:
-    import pyvista as pv
-    from pyvista.plotting.colors import hexcolors  
-    themes = ["default", "dark", "paraview", "document" ]
-    pv.set_plot_theme(themes[1])
-except ImportError:
+if PV:
+    try:
+        import pyvista as pv
+        from pyvista.plotting.colors import hexcolors  
+        themes = ["default", "dark", "paraview", "document" ]
+        pv.set_plot_theme(themes[1])
+    except ImportError:
+        pv = None
+        hexcolors = None
+    pass
+else:
     pv = None
-    hexcolors = None
 pass
 
 if GUI == False:
@@ -753,12 +695,16 @@ class Plt(object):
         pass   
 
         ## the lines need reworking 
+
+
+        print("zz: %s " % str(self.zz)) 
         for z in self.zz:  # ZZ horizontals (when using traditional XZ axes)
             xhi = np.array( [xlim[1], 0, z] )  # RHS
             xlo = np.array( [xlim[0], 0, z] )  # LHS
             line = pv.Line(xlo, xhi)
             pl.add_mesh(line, color="w")
         pass
+        print("xx: %s " % str(self.xx)) 
         for x in self.xx:    # XX verticals (when using traditional XZ axes)
             zhi = np.array( [x, 0, zlim[1]] )  # TOP
             zlo = np.array( [x, 0, zlim[0]] )  # BOT

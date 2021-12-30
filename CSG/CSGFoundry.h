@@ -17,6 +17,7 @@ struct NP ;
 struct CSGName ; 
 struct CSGTarget ; 
 struct CSGMaker ; 
+struct CSGGenstep ; 
 
 #include "CSGEnum.h"
 #include "CSGSolid.h"
@@ -212,6 +213,7 @@ struct CSG_API CSGFoundry
 
     CSGName*    id ; 
     CSGTarget*  target ; 
+    CSGGenstep* genstep ; 
     CSGMaker*   maker ; 
     bool        deepcopy_everynode_transform ; 
 
