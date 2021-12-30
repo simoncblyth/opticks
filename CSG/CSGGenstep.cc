@@ -1,4 +1,5 @@
 #include "SStr.hh"
+#include "SPath.hh"
 #include "SSys.hh"
 #include "PLOG.hh"
 
@@ -23,7 +24,8 @@ CSGGenstep::CSGGenstep( const CSGFoundry* foundry_ )
     ce(make_float4(0.f, 0.f, 0.f, 100.f)),
     qt(new qat4),
     geotran(nullptr),
-    gs(nullptr)
+    gs(nullptr),
+    pp(nullptr)
 {
     init(); 
 }
@@ -39,6 +41,13 @@ void CSGGenstep::init()
 CSGGenstep::create
 --------------------
 
+moi
+   string identifying piece of geometry
+
+ce_offset
+   typically false for instanced geometry and true for global  
+
+
 1. identify piece of geometry from moi
 2. get location and transform for the geometry
 3. configure grid to probe the geometry
@@ -46,8 +55,10 @@ CSGGenstep::create
 
 **/
 
-void CSGGenstep::create(const char* moi)
+void CSGGenstep::create(const char* moi, bool ce_offset)
 {
+    LOG(info) << " moi " << moi << " ce_offset " << ce_offset ; 
+
     if( strcmp(moi, "FAKE") == 0 ) 
     {
         std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
@@ -57,7 +68,6 @@ void CSGGenstep::create(const char* moi)
     {
         locate(moi); 
         configure_grid(); 
-        bool ce_offset = false ; 
         gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset ); 
     }
 }
@@ -141,7 +151,23 @@ void CSGGenstep::configure_grid()
 }
 
 
+void CSGGenstep::generate_photons_cpu()
+{
+    pp = SEvent::GenerateCenterExtentGenstepsPhotons_( gs );  
+    std::cout 
+         << "gs " << gs->sstr() 
+         << "pp " << pp->sstr() 
+         << std::endl 
+         ;
+}
 
-
+void CSGGenstep::save(const char* basedir) const 
+{
+    enum { e_dirpath = 2 } ; 
+    const char* base = SPath::Resolve(basedir, moi, e_dirpath ); 
+    LOG(info) << " save to " << base ; 
+    if(gs) gs->save(base, "gs.npy"); 
+    if(pp) pp->save(base, "pp.npy"); 
+}
 
 

@@ -92,19 +92,27 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz)
 
 
 
-void test_GenerateCenterExtentGensteps( const NP* gsa )
+void test_GenerateCenterExtentGensteps_0( const NP* gsa )
 {   
     LOG(info); 
 
     std::vector<quad4> pp ;
     SEvent::GenerateCenterExtentGenstepsPhotons( pp, gsa ); 
+    NP* ppa = NP::Make<float>( pp.size(), 4, 4 ); 
+    memcpy( ppa->bytes(),  (float*)pp.data(), ppa->arr_bytes() );
    
     int create_dirs = 2 ; // 2:dirpath
     const char* fold = SPath::Resolve(BASE, create_dirs );
-    
-    NP* ppa = NP::Make<float>( pp.size(), 4, 4 ); 
-    memcpy( ppa->bytes(),  (float*)pp.data(), ppa->arr_bytes() );
+    std::cout << "ppa " << ppa->sstr() << std::endl ;
+    ppa->save(fold, "ppa.npy"); 
+}
 
+void test_GenerateCenterExtentGensteps_1( const NP* gsa )
+{   
+    LOG(info); 
+    NP* ppa = SEvent::GenerateCenterExtentGenstepsPhotons_( gsa ); 
+    int create_dirs = 2 ; // 2:dirpath
+    const char* fold = SPath::Resolve(BASE, create_dirs );
     std::cout << "ppa " << ppa->sstr() << std::endl ;
     ppa->save(fold, "ppa.npy"); 
 }
@@ -120,7 +128,8 @@ int main(int argc, char** argv)
     assert( gs0 ); 
     gs0->dump(); 
 
-    test_GenerateCenterExtentGensteps(gs0); 
+    //test_GenerateCenterExtentGensteps_0(gs0); 
+    test_GenerateCenterExtentGensteps_1(gs0); 
 
     return 0 ; 
 }           

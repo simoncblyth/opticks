@@ -1,7 +1,8 @@
 #include "SSys.hh"
-#include "Opticks.hh"
+#include "SPath.hh"
+#include "NP.hh"
 #include "OPTICKS_LOG.hh"
-#include "scuda.h"
+#include "Opticks.hh"
 #include "CSGFoundry.h"
 #include "CSGGenstep.h"
 
@@ -21,10 +22,11 @@ int main(int argc, char** argv)
 
     CSGGenstep* gsm = fd->genstep ; 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
-    gsm->create(moi);  
-
+    bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ; 
+    gsm->create(moi, ce_offset);  
+    gsm->generate_photons_cpu(); 
+    gsm->save("$TMP/CSG/CSGGenstepTest"); 
 
     return 0 ; 
 }
-
 

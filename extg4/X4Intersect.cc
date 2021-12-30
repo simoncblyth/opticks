@@ -83,6 +83,16 @@ const char* X4Intersect::desc() const
     return strdup(s.c_str()); 
 }
 
+
+
+/**
+X4Intersect::init
+------------------
+
+HMM: most of this belongs elsewhere, eg in SEvent as its generally applicable 
+
+**/
+
 void X4Intersect::init()
 {
     peta->zero(); 

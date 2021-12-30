@@ -54,7 +54,7 @@ EOU
 msg="=== $BASH_SOURCE : "
 
 #geom=Hama_1
-#geom=HamaXZ_1
+geom=HamaXZ_1
 #geom=HamaYZ_1
 #geom=HamaXY_1
 
@@ -66,7 +66,7 @@ msg="=== $BASH_SOURCE : "
 #geom=uni_acrylic3_0
 #geom=uni_acrylic1_0
 
-geom=XJfixtureConstruction_0
+#geom=XJfixtureConstruction_0
 
 export GEOM=${GEOM:-$geom}
 

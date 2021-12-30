@@ -242,9 +242,9 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     local frame position : currently origin, same for all gensteps : only the transform is changed   
 
     **/
-    gs.q1.f.x = 0.f ;  
-    gs.q1.f.y = 0.f ;
-    gs.q1.f.z = 0.f ;
+    gs.q1.f.x = ce_offset ? ce.x : 0.f ;  
+    gs.q1.f.y = ce_offset ? ce.y : 0.f ;
+    gs.q1.f.z = ce_offset ? ce.z : 0.f ;
     gs.q1.f.w = 1.f ;
 
     for(int ix=ix0 ; ix < ix1+1 ; ix++ )
@@ -253,9 +253,13 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     {
         LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ;
 
-        double tx = double(ix)*gridscale*ce.w + ( ce_offset ? ce.x : 0.f ) ;
-        double ty = double(iy)*gridscale*ce.w + ( ce_offset ? ce.y : 0.f ) ;
-        double tz = double(iz)*gridscale*ce.w + ( ce_offset ? ce.z : 0.f ) ;
+        //double tx = double(ix)*gridscale*ce.w + ( ce_offset ? ce.x : 0.f ) ;
+        //double ty = double(iy)*gridscale*ce.w + ( ce_offset ? ce.y : 0.f ) ;
+        //double tz = double(iz)*gridscale*ce.w + ( ce_offset ? ce.z : 0.f ) ;
+
+        double tx = double(ix)*gridscale*ce.w ;
+        double ty = double(iy)*gridscale*ce.w ;
+        double tz = double(iz)*gridscale*ce.w ;
 
         const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz ); 
 
@@ -368,6 +372,22 @@ NP* SEvent::MakeCountGensteps(const std::vector<int>& counts) // static
         gs.push_back(qq);
     }
     return MakeGensteps(gs);
+}
+
+/**
+SEvent::GenerateCenterExtentGenstepsPhotons
+---------------------------------------------
+
+**/
+
+NP* SEvent::GenerateCenterExtentGenstepsPhotons_( const NP* gsa )
+{
+    std::vector<quad4> pp ;
+    SEvent::GenerateCenterExtentGenstepsPhotons( pp, gsa ); 
+
+    NP* ppa = NP::Make<float>( pp.size(), 4, 4 );
+    memcpy( ppa->bytes(),  (float*)pp.data(), ppa->arr_bytes() );
+    return ppa ; 
 }
 
 
