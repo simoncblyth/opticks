@@ -43,6 +43,38 @@ class Flight(object):
     DEFAULT_BASE = os.path.expanduser("~/.opticks/flight")
 
     @classmethod
+    def EyeLine(cls, axis='X', scale=1, start=500, stop=1, steps=32):
+        """
+        Move eye in straight line along an axis 
+
+                
+                Z
+                |   Y
+                |  /
+                | /
+                |/
+                +-----<---X
+
+        """
+        method = inspect.currentframe().f_code.co_name
+        name = "{method}{axis}".format(**locals())
+        log.info("axis %s scale %s steps %s name %s " % (axis, scale, steps, name))
+
+        f = cls.Make( name, steps) 
+        v = scale*np.linspace(start, stop,steps )
+
+        f.l[:] = [0,0,0,1]  
+
+        f.e[:,0] = v if axis == 'X' else 0 
+        f.e[:,1] = v if axis == 'Y' else 0
+        f.e[:,2] = v if axis == 'Z' else 0
+        f.e[:,3] = 1
+
+        f.u[:] = [0,0,1,0] if axis in "XY" else [1,0,0,0] 
+
+        return f
+
+    @classmethod
     def Roundabout(cls, plane='XY', scale=1, steps=32):
         """
 
@@ -211,6 +243,9 @@ def parse_args(doc, **kwa):
     parser.add_argument( "--level", default="info", help="logging level" ) 
     parser.add_argument( "--steps", default=32, type=int, help="Number of steps in flightpath that are interpolated between in InterpolatedView " ) 
     parser.add_argument( "--scale", default=1, type=float, help="scale of the flightpath, for example the radius for circles" ) 
+    parser.add_argument( "--start", default=100, type=float, help="start input for flightpath, for example EyeLine start along an axis" ) 
+    parser.add_argument( "--stop",  default=1,  type=float, help="stop input for flightpath, for example EyeLine stop along an axis" ) 
+
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -228,6 +263,10 @@ if __name__ == '__main__':
 
     p = 'XY_XZ'
     ff[p] = Flight.CombineArrays( [ff['XY'].eluc, ff['XZ'].eluc], 'Roundabout%s' % p )
+
+    for axis in "XYZ":
+        ff[axis] = Flight.EyeLine(axis, scale=args.scale, steps=args.steps)
+    pass
 
     for p in ff.keys():
         f = ff[p]

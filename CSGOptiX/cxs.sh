@@ -66,7 +66,8 @@ msg="=== $BASH_SOURCE : "
 #geom=uni_acrylic3_0
 #geom=uni_acrylic1_0
 
-geom=XJfixtureConstruction_0
+#geom=XJfixtureConstructionXZ_0
+geom=XJfixtureConstructionYZ_0
 
 export GEOM=${GEOM:-$geom}
 
@@ -151,13 +152,20 @@ elif [ "$GEOM" == "uni_acrylic3_tight" ]; then
     cegs=16:0:9:100
     gridscale=0.025
 
-elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
+elif [ "$GEOM" == "XJfixtureConstructionXZ_0" ]; then
 
     moi="solidXJfixture:10"
-    cegs=16:0:9:100               # XZ
-    #cegs=0:16:9:100               # YZ
-    gridscale=0.05
+    cegs=16:0:9:100           
+    gridscale=0.07
     ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+
+elif [ "$GEOM" == "XJfixtureConstructionYZ_0" ]; then
+
+    moi="solidXJfixture:10"
+    cegs=0:16:9:100            
+    gridscale=0.07
+    ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+
 
 elif [ "$GEOM" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    
