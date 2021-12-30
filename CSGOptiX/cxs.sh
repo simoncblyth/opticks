@@ -54,7 +54,7 @@ EOU
 msg="=== $BASH_SOURCE : "
 
 #geom=Hama_1
-geom=HamaXZ_1
+#geom=HamaXZ_1
 #geom=HamaYZ_1
 #geom=HamaXY_1
 
@@ -72,6 +72,7 @@ export GEOM=${GEOM:-$geom}
 
 isel=
 cfbase=
+ce_offset=0
 gsplot=1
 
 if [ "$GEOM" == "Hama_1" ]; then
@@ -156,7 +157,7 @@ elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
     cegs=16:0:9:100               # XZ
     #cegs=0:16:9:100               # YZ
     gridscale=0.05
-
+    ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
 
 elif [ "$GEOM" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    
@@ -216,6 +217,7 @@ fi
 
 export MOI=${MOI:-$moi}
 export CXS_CEGS=${CXS_CEGS:-$cegs}
+export CE_OFFSET=${CE_OFFSET:-$ce_offset}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
 export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX GEOM $GEOM "

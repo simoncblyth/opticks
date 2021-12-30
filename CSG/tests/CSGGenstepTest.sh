@@ -1,9 +1,21 @@
 #!/bin/bash -l 
 
+usage(){ cat << EOU
+CSGGenstepTest.sh
+===================
+
+CSGGenstepTest checks the center-extent-gensteps used in CSGOptiX/cxs.sh 
+by generating some photons on CPU from them and loading into python. 
+
+EOU
+}
+
+
 #geom=HamaXZ_1
 geom=XJfixtureConstruction_0
 
 export GEOM=${GEOM:-$geom}
+ce_offset=0
 
 if [ "$GEOM" == "HamaXZ_1" ]; then
     moi=Hama
