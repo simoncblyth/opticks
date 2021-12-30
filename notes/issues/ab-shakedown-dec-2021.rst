@@ -1033,5 +1033,66 @@ Is this qudarap/qsim.h whats doing the generation? It only handles XZ::
     686 
 
 
+rejigged CSGOptiXSimulateTest to use CSG/CSGGenstep
+--------------------------------------------------------
+
+After setting up to use CE_OFFSET for global geom, succeed to get cxs.sh intersects from solidXJfixture:10
+but its difficult to interpret as the global frame does not correspond to the natural frame of the geometry. 
+
+Make new EyeLine flights
+--------------------------
+
+::
+
+    N[blyth@localhost opticks]$ ./ana/makeflight.sh 
+    N[blyth@localhost opticks]$ FLIGHT=EyeLineX ./bin/flight7.sh 
+
+
+Hmm difficult, limited range of visibility. 
+
+
+Back to cxs.sh and xxs.sh
+----------------------------
+
+cxs.sh::
+
+    172 elif [ "$GEOM" == "XJfixtureConstructionXZ_1" ]; then
+    173 
+    174     note="this view is a good one : clearly see side cross section of sTarget sAcrylic sXJfixture sXJanchor  "
+    175     moi="solidXJfixture:10"
+    176     cegs=16:0:9:100           
+    177     gridscale=0.20   
+    178     ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+    179 
+    180 elif [ "$GEOM" == "XJfixtureConstructionYZ_1" ]; then
+    181     
+    182     moi="solidXJfixture:10"
+    183     cegs=0:16:9:100            
+    184     gridscale=0.20   
+    185     ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+    186 
+
+
+::
+
+    FEAT=pid ISEL=0,1,2 ./cxs.sh    # spurions within solidXJfixture  : celtic cross on top of altar 
+    FEAT=pid ISEL=0,1,3 ./cxs.sh    # spurions within solidXJanchor   : cone with cylinder on top
+
+
+Clear spurious intersects in the interior of solidXJfixture (middle of the altar) and interior of solidXJanchor (between Cons and Tubs)::
+
+    positions_pvplt feat.name pid 
+      0 : 2323 :   9129 :                  red :                                  sTarget : sTarget 
+      1 : 2322 :   6114 :                green :                                 sAcrylic : sAcrylic 
+      2 : 3026 :   5868 :                 blue :                           solidXJfixture : sXJfixture 
+    zz: [] 
+
+
+Even seeing Geant4 spurious intersects with solidXJanchor::
+
+    GEOM=XJfixtureConstruction_YZ ./xxs.sh
+    GEOM=XJanchorConstruction_YZ ./xxs.sh
+
+
 
 

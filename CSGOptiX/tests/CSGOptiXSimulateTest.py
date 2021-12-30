@@ -771,8 +771,10 @@ if __name__ == '__main__':
 
     #pos.pvplt_simple()
 
+    featname = os.environ.get("FEAT", "pid" )  
+    assert featname in ["pid", "bnd", "ins" ]    # pid:meshname, bnd:boundary, ins:instance
 
-    ph = Photons(pos, cf, featname="pid" )  # pid:meshname, bnd:boundary, ins:instance
+    ph = Photons(pos, cf, featname=featname ) 
     print(ph.bndfeat)
     print(ph.pidfeat)
     print(ph.insfeat)

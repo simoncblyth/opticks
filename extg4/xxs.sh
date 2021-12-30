@@ -96,7 +96,10 @@ msg="=== $BASH_SOURCE :"
 #geom=hmsk_solidMask
 #geom=hmsk_solidMaskTail
 
-geom=XJfixtureConstruction
+#geom=XJfixtureConstruction_YZ
+#geom=XJfixtureConstruction_XZ
+geom=XJanchorConstruction_YZ
+#geom=XJanchorConstruction_XZ
 
 
 export GEOM=${GEOM:-$geom}
@@ -180,14 +183,31 @@ elif [ "$GEOM" == "BoxMinusOrb" ]; then
 
 
 
-elif [ "$GEOM" == "XJfixtureConstruction" ]; then
+elif [ "$GEOM" == "XJfixtureConstruction_YZ" ]; then
+
+    numpho=100
+    cegs=0:16:9:0:0:0:$numpho
+    gridscale=0.05      # shrinking the grid makes the cross section render appear bigger 
+    source XJfixtureConstruction.sh
+
+elif [ "$GEOM" == "XJfixtureConstruction_XZ" ]; then
+
+    numpho=100
+    cegs=16:0:9:0:0:0:$numpho
+    gridscale=0.05      
+    source XJfixtureConstruction.sh
+
+elif [ "$GEOM" == "XJanchorConstruction_YZ" ]; then
 
     numpho=100
     cegs=0:16:9:0:0:0:$numpho
     gridscale=0.05      
-    # shrinking the grid makes the cross section render appear bigger 
 
-    source XJfixtureConstruction.sh
+elif [ "$GEOM" == "XJanchorConstruction_XZ" ]; then
+
+    numpho=100
+    cegs=16:0:9:0:0:0:$numpho
+    gridscale=0.05      
 
 else
     dz=-4

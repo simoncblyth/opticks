@@ -67,7 +67,9 @@ msg="=== $BASH_SOURCE : "
 #geom=uni_acrylic1_0
 
 #geom=XJfixtureConstructionXZ_0
-geom=XJfixtureConstructionYZ_0
+#geom=XJfixtureConstructionYZ_0
+#geom=XJfixtureConstructionXZ_1
+geom=XJfixtureConstructionYZ_1
 
 export GEOM=${GEOM:-$geom}
 
@@ -165,6 +167,23 @@ elif [ "$GEOM" == "XJfixtureConstructionYZ_0" ]; then
     cegs=0:16:9:100            
     gridscale=0.07
     ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+
+
+elif [ "$GEOM" == "XJfixtureConstructionXZ_1" ]; then
+
+    note="this view is a good one : clearly see side cross section of sTarget sAcrylic sXJfixture sXJanchor  "
+    moi="solidXJfixture:10"
+    cegs=16:0:9:100           
+    gridscale=0.20
+    ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+
+elif [ "$GEOM" == "XJfixtureConstructionYZ_1" ]; then
+
+    moi="solidXJfixture:10"
+    cegs=0:16:9:100            
+    gridscale=0.20
+    ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+
 
 
 elif [ "$GEOM" == "25" ]; then

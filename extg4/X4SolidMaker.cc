@@ -270,7 +270,10 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
     solidXJfixture_up_uni = new G4UnionSolid("solidXJfixture_up_uni", solidXJfixture_up1, solidXJfixture_up2, 0, G4ThreeVector(0.*mm, 0.*mm, 13.5*mm));
 
     /**
-     up_uni is two box altar 
+     up_uni is two box altar   : GETTING SPURIOUS INTERSECTS BECAUSE OF FLUSH UNION 
+
+     TOFIX: NEED TO EXPAND THE SMALLER BOX IN Y "up1" upwards TO OVERLAP THE UNION 
+
 
        up2 is raised by 13.5 to form the thinner in z table top of the altar 
 
@@ -282,7 +285,8 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
                |   up1         |   - - - -    
                |               |
                +---------------+ 
-
+                                          10 mm thin top of altar, 
+                                          17 mm thicker bottom of altar
 
           -> Y
 
@@ -336,6 +340,21 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
 }
 
 
+/**
+X4SolidMaker::XJanchorConstruction
+-----------------------------------
+
+Observed spurious Geant4 intersects on the line between the Tubs and the Cons::
+
+    solidXJanchor          G4UnionSolid
+
+        sub                G4SubtractionSolid      (subtract big sphere from cone)  
+              down         G4Cons
+              ball         G4Sphere
+
+        up                 G4Tubs
+
+**/
 
 const G4VSolid* X4SolidMaker::XJanchorConstruction(const char* name)
 {
