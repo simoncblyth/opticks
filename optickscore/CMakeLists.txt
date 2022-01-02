@@ -77,6 +77,8 @@ set(SOURCES
     SensorLib.cc
     MockSensorLib.cc
     MockSensorAngularEfficiencyTable.cc
+
+    CenterExtentFrame.cc
 )
 
 
@@ -159,6 +161,7 @@ set(HEADERS
     MockSensorLib.hh
     MockSensorAngularEfficiencyTable.hh 
 
+    CenterExtentFrame.hh
 )
 
 

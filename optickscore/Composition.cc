@@ -1344,6 +1344,53 @@ void Composition::setDomainCenterExtent(const glm::vec4& ce)
     // inverse signed normalize , ie letting coords out of signed unit box 
 }
 
+
+/**
+Composition::setCenterExtent
+-----------------------------
+
+The center-extent defines a symmetric box about the center position.::
+
+                          
+                                    (cx+extent, cy+extent, cz) 
+                          Y        / 
+                   +------+-------+
+                   |      |       |
+                   |      |       |
+                   |      |       |
+                   +------+-------+ X
+                   | (cx,cy,cz)   |
+                   |      |       |
+                   |      |       |
+                   +------+-------+
+                  /
+        (cx-extent, cy-extent, cz)
+
+
+The model2world 4x4 transform is constructed from the 
+translation matrix to get from the origin to (cx,cy,cz) and the 
+scale matrix that maps unity to the extent.
+
+Examples of the correspondence between coordinates in the world
+and model frame::
+
++---------------------------------------+-----------------------+
+| world frame                           | ce model frame        |
++=======================================+=======================+
+|   (cx,cy,cz)                          |   (0,0,0)             |
++---------------------------------------+-----------------------+
+|   (cx+extent,cy+extent,cz)            |   (1,1,0)             |
++---------------------------------------+-----------------------+
+|   (cx+extent,cy+extent,cz+extent)     |   (1,1,1)             |
++---------------------------------------+-----------------------+
+|   (cx-extent,cy-extent,cz-extent)     |   (-1,-1,-1)          |
++---------------------------------------+-----------------------+
+
+
+See tests/CompositionTest.cc
+
+**/
+
 void Composition::setCenterExtent(const glm::vec4& ce, bool autocam)
 {
     // this is invoked by App::uploadGeometry/Scene::setTarget
@@ -1359,8 +1406,13 @@ void Composition::setCenterExtent(const glm::vec4& ce, bool autocam)
 
     glm::vec3 isc(1.f/ce.w);
 
-    m_model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
-    m_world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);   // see tests/CompositionTest.cc
+
+    
+
+
+
+    m_world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
+    m_model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);    
 
 
     LOG(debug) << "Composition::setCenterExtent"

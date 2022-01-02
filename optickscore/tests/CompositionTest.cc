@@ -224,20 +224,21 @@ void test_setCenterExtent()
 
     glm::vec3 isc(1.f/ce.w);
 
-    glm::mat4 m_model_to_world = glm::scale( glm::translate(glm::mat4(1.0), tr), sc); 
-
-    glm::mat4 m_world_to_model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
+    glm::mat4 model2world = glm::scale( glm::translate(glm::mat4(1.0), tr), sc); 
+    glm::mat4 world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
  
 
-    glm::mat4 check = m_world_to_model * m_model_to_world ;
+    glm::mat4 check0 = world2model * model2world ;
+    glm::mat4 check1 = model2world * world2model ;
 
-    print(m_model_to_world, "m_model_to_world");
-    print(m_world_to_model, "m_world_to_model");
-    print(check, "check");
+    print(model2world, "model2world");
+    print(world2model, "world2_model");
+    print(check0, "check0");
+    print(check1, "check1");
 
 
-   std::cout << gpresent("m2w", m_model_to_world ) << std::endl ; 
-   std::cout << gpresent("w2m", m_world_to_model ) << std::endl ; 
+   std::cout << gpresent("m2w", model2world ) << std::endl ; 
+   std::cout << gpresent("w2m", world2model ) << std::endl ; 
 
 
    std::vector<glm::vec4> world ;
@@ -247,13 +248,13 @@ void test_setCenterExtent()
 
    for(unsigned i=0 ; i < world.size() ; i++)
    {
-       const glm::vec4& wpos = world[i] ; 
+       const glm::vec4& world_pos = world[i] ; 
 
-       glm::vec4 mpos = m_world_to_model * wpos ; 
+       glm::vec4 model_pos = world2model * world_pos ; 
 
        std::cout 
-               << gpresent("w", wpos ) 
-               << gpresent("m", mpos ) 
+               << gpresent("w", world_pos ) 
+               << gpresent("m", model_pos ) 
                << std::endl ; 
 
 
@@ -292,13 +293,15 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
 
+    test_setCenterExtent();
 
-    //test_rotate();
-    //test_center_extent(&ok);
-    //test_setCenterExtent();
-    //test_depth(&ok);
-
+    /*
+    test_rotate();
+    test_center_extent(&ok);
+    test_setCenterExtent();
+    test_depth(&ok);
     test_snapconfig(&ok);      
+    */
 
     return 0 ;
 }

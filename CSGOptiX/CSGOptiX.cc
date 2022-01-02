@@ -213,20 +213,6 @@ void CSGOptiX::prepareSimulateParam()   // per-event simulate setup prior to opt
 }
 
 
-/**
-CSGOptiX::setCE
-------------------
-
-Setting center_extent establishes the coordinate system. 
-
-**/
-
-void CSGOptiX::setCE(const float4& v )
-{
-    glm::vec4 ce(v.x, v.y, v.z, v.w); 
-    setCE(ce); 
-}
-
 void CSGOptiX::setCEGS(const std::vector<int>& cegs)
 {
     //params->setCEGS(cegs_); 
@@ -243,6 +229,30 @@ void CSGOptiX::setCEGS(const std::vector<int>& cegs)
     peta->q1.i.w = 0 ; 
 }
 
+/**
+CSGOptiX::setCE
+------------------
+
+Setting CE center-extent establishes the coordinate system
+via calls to Composition::setCenterExtent which results in the 
+definition of a model2world 4x4 matrix which becomes the frame of 
+reference used by the EYE LOOK UP navigation controls.  
+
+**/
+
+void CSGOptiX::setCE(const float4& v )
+{
+    glm::vec4 ce(v.x, v.y, v.z, v.w); 
+    setCE(ce); 
+}
+
+/**
+CSGOptiX::setCE
+-----------------
+
+
+**/
+
 void CSGOptiX::setCE(const glm::vec4& ce )
 {
     peta->q2.f.x = ce.x ;   // moved from q1
@@ -254,7 +264,7 @@ void CSGOptiX::setCE(const glm::vec4& ce )
     composition->setCenterExtent(ce, aim);  // model2world view setup 
 
     float extent = ce.w ; 
-    float tmin = extent*tmin_model ; 
+    float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
     LOG(info) 
         << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
         << " tmin_model " << tmin_model
