@@ -68,8 +68,8 @@ msg="=== $BASH_SOURCE : "
 
 #geom=XJfixtureConstructionXZ_0
 #geom=XJfixtureConstructionYZ_0
-#geom=XJfixtureConstructionXZ_1
-geom=XJfixtureConstructionYZ_1
+geom=XJfixtureConstructionXZ_1
+#geom=XJfixtureConstructionYZ_1
 #geom=XJfixtureConstructionTP_1
 
 export GEOM=${GEOM:-$geom}

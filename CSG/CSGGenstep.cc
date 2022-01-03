@@ -48,8 +48,13 @@ moi
 ce_offset
    typically false for instanced geometry and true for global  
 
-   TODO: automate/eliminate this : hmm its kinda a noddy way of getting a transform 
+   this is kinda a noddy way of getting a transform 
    so this should be false when using tangential transforms 
+
+ce_scale
+   typically true for old style global  
+
+TODO: eliminate ce_offset/ce_scale by using transform approach always
 
 
 1. identify piece of geometry from moi
@@ -59,7 +64,7 @@ ce_offset
 
 **/
 
-void CSGGenstep::create(const char* moi, bool ce_offset)
+void CSGGenstep::create(const char* moi, bool ce_offset, bool ce_scale )
 {
     LOG(info) << " moi " << moi << " ce_offset " << ce_offset ; 
 
@@ -72,7 +77,7 @@ void CSGGenstep::create(const char* moi, bool ce_offset)
     {
         locate(moi); 
         configure_grid(); 
-        gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset ); 
+        gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale ); 
     }
 }
 

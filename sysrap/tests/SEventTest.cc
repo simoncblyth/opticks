@@ -79,8 +79,9 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz)
     qat4* qt = qat4::from_string(str); 
     const Tran<double>* geotran = Tran<double>::ConvertToTran(qt); 
     bool ce_offset = false ; 
+    bool ce_scale = true ; 
 
-    const NP* gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset );  
+    const NP* gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );  
 
     int create_dirs = 2 ; // 2:dirpath
     const char* fold = SPath::Resolve(BASE, create_dirs );

@@ -23,9 +23,8 @@ from many more photons that have to pay the costs for transfers etc..
 Frame photons lodge photons onto a frame of pixels limiting 
 the maximumm number of photons to handle. 
 
-
-plotting a selection of boundaries only, picked by descending frequency index
-----------------------------------------------------------------------------------
+ISEL allows plotting of a selection of feature values only, picked by descending frequency index
+-------------------------------------------------------------------------------------------------
 
 ::
 

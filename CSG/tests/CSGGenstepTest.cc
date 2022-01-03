@@ -22,8 +22,11 @@ int main(int argc, char** argv)
 
     CSGGenstep* gsm = fd->genstep ; 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
+
     bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ; 
-    gsm->create(moi, ce_offset);  
+    bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;   // TODO: eliminate the need for these two 
+
+    gsm->create(moi, ce_offset, ce_scale );  
     gsm->generate_photons_cpu(); 
     gsm->save("$TMP/CSG/CSGGenstepTest"); 
 
