@@ -42,7 +42,8 @@ CSGGenstep::create
 --------------------
 
 moi
-   string identifying piece of geometry
+   string identifying piece of geometry mName:mOrdinal:mInstance eg Hama:0:1000
+   ordinal is to pick between global geom and instance between instanced 
 
 ce_offset
    typically false for instanced geometry and true for global  
@@ -77,8 +78,18 @@ void CSGGenstep::create(const char* moi, bool ce_offset)
 CSGGenstep::locate
 -----------------------
 
-1. identify a piece of geometry from moi
-2. get the location and transform for the piece of geometry 
+1. parseMoi string giving midx:mord:iidx 
+2. get the *ce* and instance transform (populating qat4 member *qt*) 
+   from the midx:mord:iidx using CSGTarget::getCenterExtent 
+   which branches depending on iidx:
+
+   iidx==-1 CSGTarget::getLocalCenterExtent 
+   iidx>-1  CSGTarget::getGlobalCenterExtent 
+
+3. form geotran from the instance transform  
+
+Using CSGGenstepTest observed that with global non-instanced geometry 
+are just using the identity transform from the single global "instance". 
 
 **/
 
@@ -98,6 +109,7 @@ void CSGGenstep::locate(const char* moi_)
     }
 
     int rc = foundry->getCenterExtent(ce, midx, mord, iidx, qt ) ;
+
     LOG(info) << " rc " << rc << " MOI.ce (" 
               << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;           
 

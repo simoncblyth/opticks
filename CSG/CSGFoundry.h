@@ -129,7 +129,10 @@ struct CSG_API CSGFoundry
     const CSGPrim*    getSolidPrim(unsigned solidIdx, unsigned primIdxRel) const ;
     const CSGNode*    getSolidPrimNode(unsigned solidIdx, unsigned primIdxRel, unsigned nodeIdxRel) const ;
 
-    void getMeshPrim(std::vector<CSGPrim>& select_prim, unsigned mesh_idx ) const ;
+    void getMeshPrimCopies(  std::vector<CSGPrim>& select_prim, unsigned mesh_idx ) const ;
+    void getMeshPrimPointers(std::vector<const CSGPrim*>& select_prim, unsigned mesh_idx ) const ; 
+    const CSGPrim* getMeshPrim( unsigned midx, unsigned mord ) const ; 
+
     unsigned getNumMeshPrim(unsigned mesh_idx ) const ;
     std::string descMeshPrim() const ;  
 
@@ -174,9 +177,10 @@ struct CSG_API CSGFoundry
     void     getInstanceTransformsIAS(std::vector<qat4>& select_inst, unsigned ias_idx, unsigned long long emm ) const ;
 
     unsigned getNumInstancesGAS(unsigned gas_idx) const ;
-    void     getInstanceTransformsGAS(std::vector<qat4>& select_inst, unsigned gas_idx ) const ;
+    void     getInstanceTransformsGAS(std::vector<qat4>&  select_qv, unsigned gas_idx ) const ;  // collecting by value : TODO eliminate, swiching to getInstancePointersGAS
+    void     getInstancePointersGAS(  std::vector<const qat4*>& select_qi, unsigned gas_idx ) const ;  // collecting pointers to the actual instances 
 
-    const qat4* getInstanceGAS(unsigned gas_idx_ , unsigned ordinal=0) ;
+    const qat4* getInstanceGAS(unsigned gas_idx_ , unsigned ordinal=0) const  ;
 
 
     // target  

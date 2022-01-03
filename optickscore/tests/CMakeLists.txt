@@ -61,7 +61,6 @@ set(TEST_SOURCES
     FlightPathTest.cc
     Opticks_getOutPathTest.cc
 
-    CenterExtentFrameTest.cc
 )
 
 

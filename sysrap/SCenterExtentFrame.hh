@@ -47,6 +47,11 @@ struct SYSRAP_API SCenterExtentFrame
 
     glm::tmat4x4<T> model2world ; 
     glm::tmat4x4<T> world2model ; 
+
+    const T* model2world_data ; 
+    const T* world2model_data ; 
+
+
 }; 
 
 

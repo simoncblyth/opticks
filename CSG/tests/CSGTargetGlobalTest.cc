@@ -44,6 +44,7 @@ int main(int argc, char** argv)
 
     int midx, max_mord, iidx ; 
     fd->parseMOI(midx, max_mord, iidx,  moi );  
+
     const char* name = midx > -1 ? fd->getName(midx) : nullptr ; 
 
     NP* ces = NP::Make<float>(max_mord, 4 ); 

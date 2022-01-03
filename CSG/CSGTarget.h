@@ -16,6 +16,9 @@ struct CSGTarget
     int getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, qat4* q) const ; 
 
     int getTransform(qat4& q, int midx, int mord, int iidx) const  ; 
+    const qat4* getInstanceTransform(int midx, int mord, int iidx) const ; 
+
+
 };
 
 

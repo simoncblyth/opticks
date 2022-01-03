@@ -152,6 +152,17 @@ struct CSG_API CSGPrim
         }
     }
 
+    static PRIM_METHOD void select_prim_pointers_mesh(const std::vector<CSGPrim>& prims, std::vector<const CSGPrim*>& select_prims, unsigned mesh_idx_ )
+    {
+        for(unsigned i=0 ; i < prims.size() ; i++)
+        {
+            const CSGPrim* pr = prims.data() + i ; 
+            unsigned mesh_idx = pr->meshIdx();  
+            if( mesh_idx_ == mesh_idx ) select_prims.push_back(pr) ;
+        }
+    }
+
+
     static PRIM_METHOD unsigned count_prim_mesh(const std::vector<CSGPrim>& prims, unsigned mesh_idx_ )
     {
         unsigned count = 0u ; 

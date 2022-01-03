@@ -26,7 +26,8 @@ if [ "$GEOM" == "HamaXZ_1" ]; then
 
 elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
 
-    moi="solidXJfixture:10"
+    #moi="solidXJfixture:10"
+    moi="solidXJfixture:10:-1"
     cegs=16:0:9:100               # XZ
     #cegs=0:16:9:100               # YZ
     gridscale=0.05
@@ -39,9 +40,17 @@ export CXS_CEGS=${CXS_CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 
-CSGGenstepTest
+if [ "$(uname)" == "Darwin" ]; then
+    lldb__ CSGGenstepTest
+else
+    CSGGenstepTest
+fi 
+
+[ $? -ne 0 ] && echo $msg runtime error && exit 1 
+
 
 ${IPYTHON:-ipython} -i CSGGenstepTest.py 
 
+exit 0 
 
 

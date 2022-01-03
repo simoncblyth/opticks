@@ -1,5 +1,7 @@
 #include "PLOG.hh"
 #include "scuda.h"
+#include "sqat4.h"
+#include "SCenterExtentFrame.hh"
 
 #include "CSGFoundry.h"
 #include "CSGTarget.h"
@@ -31,11 +33,37 @@ Used by CSGFoundry::getCenterExtent
 
 int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* qptr ) const 
 {
+    LOG(info) << " (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ") " ;  
     if( iidx == -1 )
     {
-        assert( qptr == nullptr ); 
+        // HMM: CSGFoundry::getCenterExtent BRANCHES FOR iidx == -1 SO THIS WILL NOT BE CALLED 
+
+        LOG(info) << "(iidx == -1) qptr transform will not be set, typically defaulting to identity " ; 
         int lrc = getLocalCenterExtent(ce, midx, mord); 
         if(lrc != 0) return 1 ; 
+    }
+    else if( iidx == -2 || iidx == -3 || iidx == -4 || iidx == -5)
+    {
+        LOG(info) << "(iidx == -2/-3/-4/-5  EXPERIMENTAL qptr transform will be set to SCenterExtentFrame transforms " ; 
+        int lrc = getLocalCenterExtent(ce, midx, mord); 
+        if(lrc != 0) return 1 ; 
+
+        SCenterExtentFrame<double> cef_rtpw( ce.x, ce.y, ce.z, ce.w, true );  
+        qat4 world2model_rtpw(cef_rtpw.world2model_data);  // converting to qat4 narrows to float 
+        qat4 model2world_rtpw(cef_rtpw.model2world_data); 
+
+        SCenterExtentFrame<double> cef_xyzw( ce.x, ce.y, ce.z, ce.w, false );  
+        qat4 world2model_xyzw(cef_xyzw.world2model_data);  // converting to qat4 narrows to float
+        qat4 model2world_xyzw(cef_xyzw.model2world_data); 
+
+        switch(iidx)
+        {
+           case -2:  qat4::copy(*qptr, world2model_rtpw) ; break ; 
+           case -3:  qat4::copy(*qptr, model2world_rtpw) ; break ; 
+           case -4:  qat4::copy(*qptr, world2model_xyzw) ; break ; 
+           case -5:  qat4::copy(*qptr, model2world_xyzw) ; break ; 
+        }   
+ 
     }
     else
     {
@@ -57,7 +85,7 @@ from which to read the localCE
 int CSGTarget::getLocalCenterExtent(float4& lce, int midx, int mord) const 
 {
     std::vector<CSGPrim> prim ; 
-    foundry->getMeshPrim(prim, midx );  
+    foundry->getMeshPrimCopies(prim, midx );  
     bool mord_in_range = mord < int(prim.size()) ; 
 
     LOG(info)  
@@ -94,69 +122,49 @@ CSGTarget::getGlobalCenterExtent
 4. select the *iidx* instance transform to construct a global-prim *gpr* 
 5. fill in *gce* with the global center-extren from  
 
-
+*gce*
+    output global center extent float4
 *midx* 
-    solid (aka mesh, aka lv) index
+    input mesh index (aka lv index) 
 *mord*
-    solid ordinal : this is particularly useful with the global geometry where there are 
+    input mesh ordinal : this is particularly useful with the global geometry where there are 
     no instances to select between. But there are repeated uses of the mesh that 
     this ordinal picks between. For instanced geometry this will mostly be zero(?)
 *iidx*
-    instance index, for example this could select a particular PMT 
+    input instance index, for example this could select a particular PMT 
+*qptr*
+    output instance transform pointer
+
 
 TODO: check this with global non-instanced geometry 
 
 **/
 
-
 int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, qat4* qptr ) const 
 {
-    std::vector<CSGPrim> prim ; 
-    foundry->getMeshPrim(prim, midx ); // collect prim matching the MIDX 
-
-    bool mord_in_range = mord < int(prim.size()) ; 
-    if(!mord_in_range) 
+    const qat4* qi = getInstanceTransform(midx, mord, iidx); 
+    if(qi == nullptr)
     {
-        LOG(error)  << " midx " << midx << " mord " << mord << " prim.size " << prim.size() << " mord_in_range " << mord_in_range ;   
-        return 1 ; 
+        LOG(fatal) 
+            << " failed to get InstanceTransform (midx mord iidx) " 
+            << "(" << midx << " " << mord << " " << iidx << ")" 
+            ;
+        return 1 ;  
     }
 
-    // first find the MORD-inal prim which has MIDX for its lvIdx
-    const CSGPrim& lpr = prim[mord] ; 
-    const float4 local_ce = lpr.ce() ; 
+    if(qptr) qat4::copy(*qptr, *qi);  
 
-    // use the prim to lookup indices for  the solid and prim 
-    unsigned repeatIdx = lpr.repeatIdx(); 
-    unsigned primIdx = lpr.primIdx(); 
-    unsigned gas_idx = repeatIdx ; 
+    qat4 q(qi->cdata());   // copy the instance (transform and identity info)
 
-    // collect the instances 
-    std::vector<qat4> inst ; 
-    foundry->getInstanceTransformsGAS(inst, gas_idx ); 
-
-    bool iidx_in_range = iidx < int(inst.size()); 
-    LOG(LEVEL) 
-        << " repeatIdx " << repeatIdx
-        << " primIdx " << primIdx
-        << " inst.size " << inst.size()
-        << " iidx " << iidx
-        << " iidx_in_range " << iidx_in_range 
-        << " local_ce " << local_ce 
-        ; 
-
-    if(!iidx_in_range) return 2 ; 
-
-    const qat4& qi = inst[iidx] ;  
-    if(qptr) qat4::copy(*qptr, qi); 
-
-    qat4 q(qi.cdata());   // copy the instance
-    unsigned ins_idx, gas_idx2, ias_idx ; 
-    q.getIdentity(ins_idx, gas_idx2, ias_idx )  ;
+    unsigned ins_idx, gas_idx, ias_idx ; 
+    q.getIdentity(ins_idx, gas_idx, ias_idx )  ;
     q.clearIdentity();           // clear before doing any transforming 
-    assert( gas_idx == gas_idx2 ); 
+
+
+    const CSGPrim* lpr = foundry->getMeshPrim(midx, mord);  
 
     CSGPrim gpr = {} ; 
-    CSGPrim::Copy(gpr, lpr);   // start global prim from local 
+    CSGPrim::Copy(gpr, *lpr);   // start global prim from local 
     q.transform_aabb_inplace( gpr.AABB_() ); 
 
     LOG(LEVEL) 
@@ -181,54 +189,94 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
 
 
 /**
-CSGTarget::getTransform
---------------------------
-
-TODO: too much duplicated between this and CSGTarget::getGlobalCenterExtent : try to factorize somehow
-
+CSGTarget::getTransform TODO eliminate this switching instead to getInstanceTransform
+----------------------------------------------------------------------------------------
 
 **/
 
 int CSGTarget::getTransform(qat4& q, int midx, int mord, int iidx) const 
 {
+    const qat4* qi = getInstanceTransform(midx, mord, iidx); 
+    if( qi == nullptr )
+    {
+        return 1 ; 
+    }
+    qat4::copy(q, *qi); 
+    return 0 ; 
+}
+
+/**
+CSGTarget::getInstanceTransform
+---------------------------------
+
+This method was added to eliminate duplication between CSGTarget::getTransform and  CSGTarget::getGlobalCenterExtent 
+
+Formally used temporary vector of qat4 transforms::
+
+   std::vector<qat4> inst ; 
+   foundry->getInstanceTransformsGAS(inst, gas_idx ); 
+
+But that makes usage difficult due to the limited lifetime of the 
+temporary inst vector. So instead have switched to collecting pointers 
+to the actual original instances from CSGFoundry not copies of them. 
+
+**/
+
+const qat4* CSGTarget::getInstanceTransform(int midx, int mord, int iidx) const 
+{
+    /*
     std::vector<CSGPrim> prim ; 
-    foundry->getMeshPrim(prim, midx ); // collect prim matching the MIDX 
+    foundry->getMeshPrimCopies(prim, midx ); // collect prim matching the MIDX 
 
     bool mord_in_range = mord < int(prim.size()) ; 
     if(!mord_in_range) 
     {
         LOG(error)  << " midx " << midx << " mord " << mord << " prim.size " << prim.size() << " mord_in_range " << mord_in_range ;   
-        return 1 ; 
+        return nullptr ; 
     }
 
     // first find the MORD-inal prim which has MIDX for its lvIdx
     const CSGPrim& lpr = prim[mord] ; 
-    const float4 local_ce = lpr.ce() ; 
+    */ 
 
+    const CSGPrim* lpr = foundry->getMeshPrim(midx, mord);  
+    if(!lpr)
+    {
+        LOG(fatal) << "Foundry::getMeshPrim failed for (midx mord) " << "(" << midx << " " <<  mord << ")"  ; 
+        return nullptr ; 
+    }
+
+
+    const float4 local_ce = lpr->ce() ; 
+
+    unsigned repeatIdx = lpr->repeatIdx(); 
+    unsigned primIdx = lpr->primIdx(); 
     // use the prim to lookup indices for  the solid and prim 
-    unsigned repeatIdx = lpr.repeatIdx(); 
-    unsigned primIdx = lpr.primIdx(); 
     unsigned gas_idx = repeatIdx ; 
 
-    // collect the instances 
-    std::vector<qat4> inst ; 
-    foundry->getInstanceTransformsGAS(inst, gas_idx ); 
-
-    bool iidx_in_range = iidx < int(inst.size()); 
-    LOG(LEVEL) 
+    LOG(info) 
+        << " (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ") "
+        << " lpr " << lpr
         << " repeatIdx " << repeatIdx
         << " primIdx " << primIdx
-        << " inst.size " << inst.size()
-        << " iidx " << iidx
-        << " iidx_in_range " << iidx_in_range 
         << " local_ce " << local_ce 
         ; 
 
-    if(!iidx_in_range) return 2 ; 
 
-    const qat4& qi = inst[iidx] ;  
-    qat4::copy(q, qi); 
+    const qat4* qi = foundry->getInstanceGAS(gas_idx, iidx ); 
 
-    return 0 ; 
+    /*
+    std::vector<const qat4*> inst ; 
+    foundry->getInstancePointersGAS(inst, gas_idx ); 
+    // collect all instance pointers for the gas_idx composite solid  
+    bool iidx_in_range = iidx < int(inst.size()); 
+
+    if(!iidx_in_range) return nullptr ; 
+
+    const qat4* qi = inst[iidx] ; 
+
+    */
+
+    return qi ; 
 }
 

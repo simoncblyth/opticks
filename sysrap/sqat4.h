@@ -350,6 +350,18 @@ struct qat4
         }
     }
 
+    // select instance pointers with the provided gas_idx, ordered as they are found
+    static QAT4_METHOD void select_instance_pointers_gas(const std::vector<qat4>& qv, std::vector<const qat4*>& select_qi, unsigned gas_idx_ )
+    {
+        for(unsigned i=0 ; i < qv.size() ; i++)
+        {
+            const qat4* qi = qv.data() + i ; 
+            unsigned ins_idx,  gas_idx, ias_idx ; 
+            qi->getIdentity(ins_idx,  gas_idx, ias_idx );  
+            if( gas_idx_ == gas_idx ) select_qi.push_back(qi) ;
+        }
+    }
+
     // return index of the ordinal-th instance with the provided gas_idx or -1 if not found
     static QAT4_METHOD int find_instance_gas(const std::vector<qat4>& qv, unsigned gas_idx_, unsigned ordinal  )
     {

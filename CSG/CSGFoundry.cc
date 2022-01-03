@@ -912,10 +912,48 @@ CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )
 
 
 // collect Prims with the supplied mesh_idx 
-void CSGFoundry::getMeshPrim(std::vector<CSGPrim>& select_prim, unsigned mesh_idx ) const 
+void CSGFoundry::getMeshPrimCopies(std::vector<CSGPrim>& select_prim, unsigned mesh_idx ) const 
 {
     CSGPrim::select_prim_mesh(prim, select_prim, mesh_idx); 
 }
+
+void CSGFoundry::getMeshPrimPointers(std::vector<const CSGPrim*>& select_prim, unsigned mesh_idx ) const 
+{
+    CSGPrim::select_prim_pointers_mesh(prim, select_prim, mesh_idx); 
+}
+
+/**
+CSGFoundry::getMeshPrim
+------------------------
+
+Selects prim pointers that match the *midx* mesh index
+and then return the ordinal-th one of them. 
+
+midx
+    mesh index
+mord
+    mesh ordinal 
+
+**/
+
+const CSGPrim* CSGFoundry::getMeshPrim( unsigned midx, unsigned mord ) const 
+{
+    std::vector<const CSGPrim*> select_prim ; 
+    getMeshPrimPointers(select_prim, midx );     
+
+    bool mord_in_range = mord < select_prim.size() ; 
+    if(!mord_in_range) 
+    {   
+        LOG(error)  << " midx " << midx << " mord " << mord << " select_prim.size " << select_prim.size() << " mord_in_range " << mord_in_range ;   
+        return nullptr ; 
+    }   
+
+    const CSGPrim* pr = select_prim[mord] ; 
+    return pr ; 
+}
+
+
+
 unsigned CSGFoundry::getNumMeshPrim(unsigned mesh_idx ) const 
 {
     return CSGPrim::count_prim_mesh(prim, mesh_idx); 
@@ -1277,17 +1315,22 @@ unsigned CSGFoundry::getNumInstancesGAS(unsigned gas_idx) const
 {
     return qat4::count_gas(inst, gas_idx );  
 }
-void CSGFoundry::getInstanceTransformsGAS(std::vector<qat4>& select_inst, unsigned gas_idx ) const 
+
+void CSGFoundry::getInstanceTransformsGAS(std::vector<qat4>& select_qv, unsigned gas_idx ) const 
 {
-    qat4::select_instances_gas(inst, select_inst, gas_idx ) ;
+    qat4::select_instances_gas(inst, select_qv, gas_idx ) ;
 }
 
-const qat4* CSGFoundry::getInstanceGAS(unsigned gas_idx_ , unsigned ordinal)
+void CSGFoundry::getInstancePointersGAS(std::vector<const qat4*>& select_qi, unsigned gas_idx ) const 
+{
+    qat4::select_instance_pointers_gas(inst, select_qi, gas_idx ) ;
+}
+
+const qat4* CSGFoundry::getInstanceGAS(unsigned gas_idx_ , unsigned ordinal) const 
 {
     int index = qat4::find_instance_gas(inst, gas_idx_, ordinal);
     return index > -1 ? &inst[index] : nullptr ; 
 }
-
 
 std::string CSGFoundry::descGAS() const 
 {
@@ -1343,7 +1386,6 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* 
     int rc = 0 ; 
     if( midx == -1 )
     { 
-        //assert( qptr == nullptr );  // huh:why? might well be identity 
         unsigned long long emm = 0ull ;   // hmm instance var ?
         iasCE(ce, emm); 
     }

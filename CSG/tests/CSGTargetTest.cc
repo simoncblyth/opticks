@@ -44,8 +44,6 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 
-    //const char* MMOI = SSys::getenvvar("MMOI", "solidXJfixture:0-63"); 
-    // TODO: interpret multi-MOI 
 
     const char* MOI = SSys::getenvvar("MOI", "sWorld:0:0"); 
     std::vector<std::string> vmoi ; 

@@ -103,6 +103,9 @@ void SCenterExtentFrame<T>::init()
     world2model = irotate * iscale * itranslate ; 
     model2world = translate * scale * rotate ; 
 
+    world2model_data = glm::value_ptr(world2model) ; 
+    model2world_data = glm::value_ptr(model2world) ; 
+
     /**
     From Composition::setCenterExtent 
 
