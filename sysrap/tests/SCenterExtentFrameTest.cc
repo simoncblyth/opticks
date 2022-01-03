@@ -1,9 +1,9 @@
-#include "CenterExtentFrame.hh"
-#include "CenterExtentFrameTest.hh"
-#include "Present.hh"
+#include "SCenterExtentFrame.hh"
+#include "SCenterExtentFrameTest.hh"
+#include "SPresent.hh"
 
 template<typename T>
-CenterExtentFrameTest<T>::CenterExtentFrameTest( const CenterExtentFrame<T>& _cef )
+SCenterExtentFrameTest<T>::SCenterExtentFrameTest( const SCenterExtentFrame<T>& _cef )
     :
     cef(_cef),
     ce(_cef.ce)
@@ -44,9 +44,9 @@ Observations
 **/
 
 template<typename T>
-void CenterExtentFrameTest<T>::dump(char m)
+void SCenterExtentFrameTest<T>::dump(char m)
 {
-    cef.dump("CenterExtentFrameTest::dump"); 
+    cef.dump("SCenterExtentFrameTest::dump"); 
 
     const std::vector<std::string>& mds = m == 'P' ? pref_modes : modes ;  
 
@@ -62,15 +62,15 @@ void CenterExtentFrameTest<T>::dump(char m)
             const char* m2w_mode = rmode.c_str() ;
             switch(pass)
             {
-               case 0: std::cout << Present( _world2model[w2m_mode],  " world2model", w2m_mode )   << std::endl ; break ; 
-               case 1: std::cout << Present( _model2world[m2w_mode],  " model2world", m2w_mode )   << std::endl ; break ;  
+               case 0: std::cout << SPresent( _world2model[w2m_mode],  " world2model", w2m_mode )   << std::endl ; break ; 
+               case 1: std::cout << SPresent( _model2world[m2w_mode],  " model2world", m2w_mode )   << std::endl ; break ;  
             }
         }
     }
 }
 
 template<typename T>
-void CenterExtentFrameTest<T>::check(const std::vector<glm::vec4>& world, const std::vector<std::string>& label, const char* title, const char* w2m_mode, const char* m2w_mode )
+void SCenterExtentFrameTest<T>::check(const std::vector<glm::vec4>& world, const std::vector<std::string>& label, const char* title, const char* w2m_mode, const char* m2w_mode )
 {
     const glm::tmat4x4<T>& w2m = _world2model[w2m_mode] ; 
     const glm::tmat4x4<T>& m2w = _model2world[m2w_mode] ;
@@ -84,16 +84,16 @@ void CenterExtentFrameTest<T>::check(const std::vector<glm::vec4>& world, const 
 
         std::cout 
             << std::setw(10) << label[i] 
-            << Present( world_pos, "world_pos") 
-            << Present( model_pos, "model_pos") 
-            << Present( world_pos2, "world_pos2") 
+            << SPresent( world_pos, "world_pos") 
+            << SPresent( model_pos, "model_pos") 
+            << SPresent( world_pos2, "world_pos2") 
             << std::endl
             ;
     }
 }
 
 template<typename T>
-void CenterExtentFrameTest<T>::check(char m)
+void SCenterExtentFrameTest<T>::check(char m)
 {
     dump(); 
     std::vector<glm::vec4> world ;
@@ -134,8 +134,8 @@ int main(int argc, char** argv)
     double extent = 5. ; 
     bool rtp_tangential = true ; 
 
-    CenterExtentFrame<double> f(cx,cy,cz,extent,rtp_tangential); 
-    CenterExtentFrameTest<double> ft(f);
+    SCenterExtentFrame<double> f(cx,cy,cz,extent,rtp_tangential); 
+    SCenterExtentFrameTest<double> ft(f);
     ft.check('P');  
 
     return 0 ; 

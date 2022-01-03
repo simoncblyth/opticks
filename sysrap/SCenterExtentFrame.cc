@@ -1,10 +1,10 @@
 #include <iostream>
 #include <array>
-#include "Present.hh"
-#include "CenterExtentFrame.hh"
+#include "SPresent.hh"
+#include "SCenterExtentFrame.hh"
 
 template<typename T>
-void CenterExtentFrame<T>::CartesianToSpherical( glm::tvec3<T>& radius_theta_phi, const glm::tvec4<T>& xyzw ) // static
+void SCenterExtentFrame<T>::CartesianToSpherical( glm::tvec3<T>& radius_theta_phi, const glm::tvec4<T>& xyzw ) // static
 {
     const T x = xyzw.x ; 
     const T y = xyzw.y ; 
@@ -21,7 +21,7 @@ void CenterExtentFrame<T>::CartesianToSpherical( glm::tvec3<T>& radius_theta_phi
 }
 
 template<typename T>
-void CenterExtentFrame<T>::SphericalToCartesian( glm::tvec4<T>& xyzw, const glm::tvec3<T>& radius_theta_phi ) // static
+void SCenterExtentFrame<T>::SphericalToCartesian( glm::tvec4<T>& xyzw, const glm::tvec3<T>& radius_theta_phi ) // static
 {
     const T radius = radius_theta_phi.x ;
     const T theta  = radius_theta_phi.y ;
@@ -40,7 +40,7 @@ void CenterExtentFrame<T>::SphericalToCartesian( glm::tvec4<T>& xyzw, const glm:
 }
 
 template<typename T>
-glm::tmat4x4<T> CenterExtentFrame<T>::XYZ_to_RTP( T theta, T phi )  // static
+glm::tmat4x4<T> SCenterExtentFrame<T>::XYZ_to_RTP( T theta, T phi )  // static
 {
     std::array<T, 16> _rot = {{
         sin(theta)*cos(phi),   sin(theta)*sin(phi),   cos(theta),  0. ,
@@ -52,7 +52,7 @@ glm::tmat4x4<T> CenterExtentFrame<T>::XYZ_to_RTP( T theta, T phi )  // static
 }
 
 template<typename T>
-glm::tmat4x4<T> CenterExtentFrame<T>::RTP_to_XYZ(  T theta, T phi ) // static
+glm::tmat4x4<T> SCenterExtentFrame<T>::RTP_to_XYZ(  T theta, T phi ) // static
 {
     std::array<T, 16> _iro = {{
         sin(theta)*cos(phi),   cos(theta)*cos(phi),  -sin(phi),     0. ,
@@ -64,7 +64,7 @@ glm::tmat4x4<T> CenterExtentFrame<T>::RTP_to_XYZ(  T theta, T phi ) // static
 }
 
 template<typename T>
-CenterExtentFrame<T>::CenterExtentFrame( float _cx, float _cy, float _cz, float _extent, bool _rtp_tangential  )
+SCenterExtentFrame<T>::SCenterExtentFrame( float _cx, float _cy, float _cz, float _extent, bool _rtp_tangential  )
     :
     ce(_cx, _cy, _cz, _extent),
     rtp_tangential(_rtp_tangential)
@@ -73,7 +73,7 @@ CenterExtentFrame<T>::CenterExtentFrame( float _cx, float _cy, float _cz, float 
 }
 
 template<typename T>
-CenterExtentFrame<T>::CenterExtentFrame( double _cx, double _cy, double _cz, double _extent, bool _rtp_tangential  )
+SCenterExtentFrame<T>::SCenterExtentFrame( double _cx, double _cy, double _cz, double _extent, bool _rtp_tangential  )
     :
     ce(_cx, _cy, _cz, _extent),
     rtp_tangential(_rtp_tangential)
@@ -82,7 +82,7 @@ CenterExtentFrame<T>::CenterExtentFrame( double _cx, double _cy, double _cz, dou
 }
 
 template<typename T>
-void CenterExtentFrame<T>::init()
+void SCenterExtentFrame<T>::init()
 { 
     CartesianToSpherical(rtp, ce); 
     SphericalToCartesian(xyzw, rtp); 
@@ -114,24 +114,24 @@ void CenterExtentFrame<T>::init()
 }
 
 template<typename T>
-void CenterExtentFrame<T>::dump(const char* msg) const 
+void SCenterExtentFrame<T>::dump(const char* msg) const 
 {
     std::cout << msg << std::endl ; 
-    std::cout << Present( ce  , "ce") << " " << ( rtp_tangential ? "RTP_TANGENTIAL" : "ORDINARY" ) << std::endl ; 
-    std::cout << Present( rtp , "rtp") << std::endl ;  
-    std::cout << Present( xyzw , "xyzw") << std::endl ;  
+    std::cout << SPresent( ce  , "ce") << " " << ( rtp_tangential ? "RTP_TANGENTIAL" : "ORDINARY" ) << std::endl ; 
+    std::cout << SPresent( rtp , "rtp") << std::endl ;  
+    std::cout << SPresent( xyzw , "xyzw") << std::endl ;  
 
-    std::cout << Present( rotate, "rotate") << std::endl ;  
-    std::cout << Present( irotate, "irotate") << std::endl ;  
+    std::cout << SPresent( rotate, "rotate") << std::endl ;  
+    std::cout << SPresent( irotate, "irotate") << std::endl ;  
 
-    std::cout << Present( scale, "scale") << std::endl ;  
-    std::cout << Present( iscale, "iscale") << std::endl ;  
+    std::cout << SPresent( scale, "scale") << std::endl ;  
+    std::cout << SPresent( iscale, "iscale") << std::endl ;  
 
-    std::cout << Present( translate, "translate") << std::endl ;  
-    std::cout << Present( itranslate, "itranslate") << std::endl ;  
+    std::cout << SPresent( translate, "translate") << std::endl ;  
+    std::cout << SPresent( itranslate, "itranslate") << std::endl ;  
 }
 
-template struct CenterExtentFrame<float> ; 
-template struct CenterExtentFrame<double> ; 
+template struct SCenterExtentFrame<float> ; 
+template struct SCenterExtentFrame<double> ; 
 
 

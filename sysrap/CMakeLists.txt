@@ -22,6 +22,11 @@ find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
 find_package(CUDA REQUIRED)
 
+include_directories(
+    ${OPTICKS_PREFIX}/externals/glm/glm
+)
+
+
 set(WITH_PLOG YES)
 
 set(SOURCES
@@ -80,6 +85,7 @@ set(SOURCES
     SLabelCache.cc
 
     SEvent.cc
+    SCenterExtentFrame.cc
 ) 
     
 
@@ -163,6 +169,9 @@ set(HEADERS
     iexpand.h 
 
     SEvent.hh
+    SCenterExtentFrame.hh
+    SPresent.hh
+
     OpticksGenstep.h
 )
 

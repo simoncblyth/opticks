@@ -2,11 +2,11 @@
 
 msg="=== $BASH_SOURCE :"
 
-name=CenterExtentFrameTest 
+name=SCenterExtentFrameTest 
 
 gcc \
     $name.cc \
-    ../CenterExtentFrame.cc \
+    ../SCenterExtentFrame.cc \
     \
     -std=c++11 \
     -lstdc++ \

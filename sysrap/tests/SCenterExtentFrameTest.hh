@@ -2,14 +2,14 @@
 
 #include <vector>
 #include <map>
-template <typename T> struct CenterExtentFrame ; 
+template <typename T> struct SCenterExtentFrame ; 
 
 template<typename T>
-struct CenterExtentFrameTest 
+struct SCenterExtentFrameTest 
 {
-    CenterExtentFrameTest( const CenterExtentFrame<T>& cef ); 
+    SCenterExtentFrameTest( const SCenterExtentFrame<T>& cef ); 
 
-    const CenterExtentFrame<T>& cef ; 
+    const SCenterExtentFrame<T>& cef ; 
     const glm::tvec4<T>& ce ; 
 
     std::vector<std::string> modes ;  

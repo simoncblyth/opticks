@@ -1,6 +1,6 @@
 #pragma once
 /**
-CenterExtentFrame
+SCenterExtentFrame
 ===================
 
 See also 
@@ -13,10 +13,10 @@ See also
 
 **/
 #include <glm/glm.hpp>
-#include "OKCORE_API_EXPORT.hh"
+#include "SYSRAP_API_EXPORT.hh"
 
 template<typename T>
-struct OKCORE_API CenterExtentFrame 
+struct SYSRAP_API SCenterExtentFrame 
 {
     // convert between coordinate systems
     static void CartesianToSpherical( glm::tvec3<T>& radius_theta_phi, const glm::tvec4<T>& xyzw ); 
@@ -26,11 +26,11 @@ struct OKCORE_API CenterExtentFrame
     static glm::tmat4x4<T> XYZ_to_RTP( T theta, T phi );
     static glm::tmat4x4<T> RTP_to_XYZ( T theta, T phi );
 
-    CenterExtentFrame( float  _cx, float  _cy, float  _cz, float  _extent, bool rtp_tangential ) ; 
-    CenterExtentFrame( double _cx, double _cy, double _cz, double _extent, bool rtp_tangential ) ; 
+    SCenterExtentFrame( float  _cx, float  _cy, float  _cz, float  _extent, bool rtp_tangential ) ; 
+    SCenterExtentFrame( double _cx, double _cy, double _cz, double _extent, bool rtp_tangential ) ; 
 
     void init();  
-    void dump(const char* msg="CenterExtentFrame::dump") const ; 
+    void dump(const char* msg="SCenterExtentFrame::dump") const ; 
 
     glm::tvec4<T> ce ;    // center extent 
     bool          rtp_tangential ; 
