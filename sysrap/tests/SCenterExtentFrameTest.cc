@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "SCenterExtentFrame.hh"
 #include "SCenterExtentFrameTest.hh"
 #include "SPresent.hh"

@@ -43,10 +43,10 @@ template<typename T>
 glm::tmat4x4<T> SCenterExtentFrame<T>::XYZ_to_RTP( T theta, T phi )  // static
 {
     std::array<T, 16> _rot = {{
-        sin(theta)*cos(phi),   sin(theta)*sin(phi),   cos(theta),  0. ,
-        cos(theta)*cos(phi),   cos(theta)*sin(phi),  -sin(theta),  0. ,
-        -sin(phi),             cos(phi),              0.,          0. ,
-         0.,                   0.,                    0.,          1.
+        T(sin(theta)*cos(phi)),  T(sin(theta)*sin(phi)),  T(cos(theta)),  T(0.) ,
+        T(cos(theta)*cos(phi)),  T(cos(theta)*sin(phi)),  T(-sin(theta)), T(0.) ,
+        T(-sin(phi)),            T(cos(phi)),             T(0.),          T(0.) ,
+        T( 0.),                  T(0.),                   T(0.),          T(1.)
       }} ;
     return glm::make_mat4x4<T>(_rot.data()) ;
 }
@@ -55,10 +55,10 @@ template<typename T>
 glm::tmat4x4<T> SCenterExtentFrame<T>::RTP_to_XYZ(  T theta, T phi ) // static
 {
     std::array<T, 16> _iro = {{
-        sin(theta)*cos(phi),   cos(theta)*cos(phi),  -sin(phi),     0. ,
-        sin(theta)*sin(phi),   cos(theta)*sin(phi),  cos(phi),      0. ,
-        cos(theta),            -sin(theta),          0.,            0. ,
-         0.,                   0.,                   0.,            1.
+        T(sin(theta)*cos(phi)),   T(cos(theta)*cos(phi)),  T(-sin(phi)),   T(0.) ,
+        T(sin(theta)*sin(phi)),   T(cos(theta)*sin(phi)),  T(cos(phi)),    T(0.) ,
+        T(cos(theta)),            T(-sin(theta)),          T(0.),          T(0.) ,
+        T(0.),                    T(0.),                   T(0.),          T(1.)
       }} ;
     return glm::make_mat4x4<T>(_iro.data()) ;
 }

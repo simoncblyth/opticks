@@ -10,7 +10,10 @@ gcc \
     \
     -std=c++11 \
     -lstdc++ \
+    -lm \
     -I.. \
+    -Wall \
+    -Wnarrowing \
     -I$OPTICKS_PREFIX/externals/glm/glm \
     -o $OPTICKS_PREFIX/lib/$name 
 
