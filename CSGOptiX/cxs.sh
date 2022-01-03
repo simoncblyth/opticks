@@ -77,6 +77,7 @@ export GEOM=${GEOM:-$geom}
 isel=
 cfbase=
 ce_offset=0
+ce_scale=0
 gsplot=1
 
 if [ "$GEOM" == "Hama_1" ]; then
@@ -161,6 +162,7 @@ elif [ "$GEOM" == "XJfixtureConstructionXZ_0" ]; then
     cegs=16:0:9:100           
     gridscale=0.07
     ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+    ce_scale=1 
 
 elif [ "$GEOM" == "XJfixtureConstructionYZ_0" ]; then
 
@@ -168,7 +170,7 @@ elif [ "$GEOM" == "XJfixtureConstructionYZ_0" ]; then
     cegs=0:16:9:100            
     gridscale=0.07
     ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
-
+    ce_scale=1 
 
 elif [ "$GEOM" == "XJfixtureConstructionXZ_1" ]; then
 
@@ -176,7 +178,9 @@ elif [ "$GEOM" == "XJfixtureConstructionXZ_1" ]; then
     moi="solidXJfixture:10"
     cegs=16:0:9:100           
     gridscale=0.20
+
     ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+    ce_scale=1 
 
 elif [ "$GEOM" == "XJfixtureConstructionYZ_1" ]; then
 
@@ -184,6 +188,7 @@ elif [ "$GEOM" == "XJfixtureConstructionYZ_1" ]; then
     cegs=0:16:9:100            
     gridscale=0.20
     ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+    ce_scale=1 
 
 elif [ "$GEOM" == "XJfixtureConstructionTP_1" ]; then
 
@@ -250,6 +255,7 @@ fi
 export MOI=${MOI:-$moi}
 export CXS_CEGS=${CXS_CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
+export CE_SCALE=${CE_SCALE:-$ce_scale}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
 export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX GEOM $GEOM "
@@ -266,9 +272,8 @@ export ZZ=${ZZ:-$zz}
 
 export OPTICKS_GEOM=$GEOM 
 
-vars="BASH_FOLDER MOI CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE GSPLOT ISEL XX ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
+vars="BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE GSPLOT ISEL XX ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
-
 
 
 pkg=CSGOptiX
@@ -276,7 +281,6 @@ bin=CSGOptiXSimulateTest
 export LOGDIR=/tmp/$USER/opticks/$pkg/$bin
 mkdir -p $LOGDIR 
 cd $LOGDIR 
-
 
 
 if [ "$(uname)" == "Linux" ]; then 

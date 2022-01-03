@@ -100,8 +100,13 @@ int main(int argc, char** argv)
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ; 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
-    bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ;   // dont do then when using tangential frames 
-    gsm->create(moi, ce_offset);  
+
+    bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ; 
+    bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;   
+    // TODO: eliminate the need for this switches by standardizing on model2world transforms
+
+    gsm->create(moi, ce_offset, ce_scale );
+  
 
     cx.setCE(gsm->ce); 
     cx.setCEGS(gsm->cegs); 
