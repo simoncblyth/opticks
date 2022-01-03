@@ -11,7 +11,12 @@ class Fold(object):
         kwa["relbase"] = relbase   # relbase is the dir path excluding the first element 
         base = os.path.join(*args)
         base = os.path.expandvars(base) 
-        return cls(base, **kwa) if os.path.isdir(base) else None
+
+        fold = cls(base, **kwa) if os.path.isdir(base) else None
+        if fold is None:
+            log.error("failed to load from base [%s]" % base )
+        pass
+        return fold
 
     def __init__(self, base, **kwa):
         self.base = base

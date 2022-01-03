@@ -39,7 +39,8 @@ struct SYSRAP_API SEvent
     static void GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa ); 
     static NP* GenerateCenterExtentGenstepsPhotons_( const NP* gsa ) ; 
 
-    static void SetGridPlaneDirection( float4& dir, int gridaxes, float cosPhi, float sinPhi ); 
+    static void SetGridPlaneDirection_2D( float4& dir, int gridaxes, float cosPhi, float sinPhi ); 
+    static void SetGridPlaneDirection_3D( float4& dir, int gridaxes, float cosPhi, float sinPhi, float cosTheta, float sinTheta ); 
 
 };
 

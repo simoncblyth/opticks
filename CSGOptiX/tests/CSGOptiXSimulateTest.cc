@@ -100,7 +100,7 @@ int main(int argc, char** argv)
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ; 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
-    bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ;
+    bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ;   // dont do then when using tangential frames 
     gsm->create(moi, ce_offset);  
 
     cx.setCE(gsm->ce); 

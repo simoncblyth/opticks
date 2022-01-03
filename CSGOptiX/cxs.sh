@@ -70,6 +70,7 @@ msg="=== $BASH_SOURCE : "
 #geom=XJfixtureConstructionYZ_0
 #geom=XJfixtureConstructionXZ_1
 geom=XJfixtureConstructionYZ_1
+#geom=XJfixtureConstructionTP_1
 
 export GEOM=${GEOM:-$geom}
 
@@ -184,7 +185,11 @@ elif [ "$GEOM" == "XJfixtureConstructionYZ_1" ]; then
     gridscale=0.20
     ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
 
+elif [ "$GEOM" == "XJfixtureConstructionTP_1" ]; then
 
+    moi="solidXJfixture:10:-3"
+    cegs=0:16:9:100            
+    gridscale=0.20
 
 elif [ "$GEOM" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    

@@ -48,6 +48,9 @@ moi
 ce_offset
    typically false for instanced geometry and true for global  
 
+   TODO: automate/eliminate this : hmm its kinda a noddy way of getting a transform 
+   so this should be false when using tangential transforms 
+
 
 1. identify piece of geometry from moi
 2. get location and transform for the geometry
@@ -90,6 +93,8 @@ CSGGenstep::locate
 
 Using CSGGenstepTest observed that with global non-instanced geometry 
 are just using the identity transform from the single global "instance". 
+Have added experimental way to use the tangential rtp transforms.
+
 
 **/
 

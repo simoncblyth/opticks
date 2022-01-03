@@ -247,21 +247,25 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     gs.q1.f.z = ce_offset ? ce.z : 0.f ;
     gs.q1.f.w = 1.f ;
 
+    //double local_scale = double(gridscale)*ce.w  ; 
+    double local_scale = double(gridscale)  ; 
+    // hmm: when using SCenterExtentFrame model2world transform the 
+    // extent is already handled within the transform so must not apply extent scaling 
+
+
     for(int ix=ix0 ; ix < ix1+1 ; ix++ )
     for(int iy=iy0 ; iy < iy1+1 ; iy++ )
     for(int iz=iz0 ; iz < iz1+1 ; iz++ )
     {
         LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ;
 
-        //double tx = double(ix)*gridscale*ce.w + ( ce_offset ? ce.x : 0.f ) ;
-        //double ty = double(iy)*gridscale*ce.w + ( ce_offset ? ce.y : 0.f ) ;
-        //double tz = double(iz)*gridscale*ce.w + ( ce_offset ? ce.z : 0.f ) ;
-
-        double tx = double(ix)*gridscale*ce.w ;
-        double ty = double(iy)*gridscale*ce.w ;
-        double tz = double(iz)*gridscale*ce.w ;
+        double tx = double(ix)*local_scale ;
+        double ty = double(iy)*local_scale ;
+        double tz = double(iz)*local_scale ;
 
         const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz ); 
+        // grid shifts 
+ 
 
         bool reverse = false ;
         const Tran<double>* transform = Tran<double>::product( geotran, local_translate, reverse );
@@ -442,22 +446,16 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
 
             p.q0.f = gs.q1.f ;  // copy position from genstep into the photon, historically has been origin   
  
-            if( dirmode == DIMENSION_2 )
+            switch(dirmode)
             {
-                SetGridPlaneDirection( p.q1.f, gridaxes, cosPhi, sinPhi ); 
-            } 
-            else if( dirmode == DIMENSION_3 )
-            {
-                p.q1.f.x =  sinTheta * cosPhi  ; 
-                p.q1.f.y =  sinTheta * sinPhi  ; 
-                p.q1.f.z =  cosTheta ; 
-                p.q1.f.w =  1.   ; 
+                case DIMENSION_2: SetGridPlaneDirection_2D( p.q1.f, gridaxes, cosPhi, sinPhi )                    ; break ; 
+                case DIMENSION_3: SetGridPlaneDirection_3D( p.q1.f, gridaxes, cosPhi, sinPhi, cosTheta, sinTheta ); break ; 
             }
 
             // tranforming photon position and direction into the desired frame
  
-            qt.right_multiply_inplace( p.q0.f, 1.f );   
-            qt.right_multiply_inplace( p.q1.f, 0.f );
+            qt.right_multiply_inplace( p.q0.f, 1.f );  // position 
+            qt.right_multiply_inplace( p.q1.f, 0.f );  // direction
             
             pp.push_back(p) ;
         }
@@ -468,15 +466,15 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
 
 
 /**
-SEvent::SetGridPlaneDirection
-------------------------------
+SEvent::SetGridPlaneDirection_2D
+----------------------------------
 
 TODO: probably need some minus signs in the below for consistency 
 TODO: for gridaxes XYZ an adhoc choice is made for the plane of the direction 
 
 **/
 
-void SEvent::SetGridPlaneDirection( float4& dir, int gridaxes, float cosPhi, float sinPhi ) // static 
+void SEvent::SetGridPlaneDirection_2D( float4& dir, int gridaxes, float cosPhi, float sinPhi )
 {
     if( gridaxes == YZ )
     {    
@@ -512,3 +510,17 @@ void SEvent::SetGridPlaneDirection( float4& dir, int gridaxes, float cosPhi, flo
         assert(0);  
     }
 }
+
+
+void SEvent::SetGridPlaneDirection_3D( float4& dir, int gridaxes, float cosPhi, float sinPhi, float cosTheta, float sinTheta ) // static 
+{
+    assert( gridaxes == XYZ ); 
+    dir.x =  sinTheta * cosPhi  ; 
+    dir.y =  sinTheta * sinPhi  ; 
+    dir.z =  cosTheta ; 
+    dir.w =  0.   ; 
+}
+
+
+
+
