@@ -12,7 +12,9 @@ EOU
 }
 
 
-moi=sWorld:0:-2
+#moi=sWorld:0:-1
+#moi=sWorld:0:-2
+#moi=sWorld:0:-3
 moi=-1
 
 export MOI=${MOI:-$moi} 

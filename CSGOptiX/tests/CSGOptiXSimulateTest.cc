@@ -106,9 +106,8 @@ int main(int argc, char** argv)
     // TODO: eliminate the need for this switches by standardizing on model2world transforms
 
     gsm->create(moi, ce_offset, ce_scale );
-  
 
-    cx.setComposition(gsm->ce, gsm->qt); 
+    cx.setComposition(gsm->ce, gsm->m2w, gsm=>w2m ); 
     cx.setCEGS(gsm->cegs); 
     cx.setMetaTran(gsm->geotran); 
     cx.setGensteps(gsm->gs); 

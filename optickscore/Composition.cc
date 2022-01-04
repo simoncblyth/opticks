@@ -1400,7 +1400,7 @@ TODO: currently to use rtp_tangential frame need to provide the transform in m2w
 
 **/
 
-void Composition::setCenterExtent(const glm::vec4& ce, bool autocam, const qat4* m2w )
+void Composition::setCenterExtent(const glm::vec4& ce, bool autocam, const qat4* m2w, const qat4* w2m )
 {
     // this is invoked by App::uploadGeometry/Scene::setTarget
 
@@ -1413,10 +1413,11 @@ void Composition::setCenterExtent(const glm::vec4& ce, bool autocam, const qat4*
     //setModel2World_old(ce); 
 
     bool m2w_valid = m2w && m2w->is_identity() == false ; 
+    bool w2m_valid = w2m && w2m->is_identity() == false ; 
 
-    if( m2w_valid )
+    if( m2w_valid && w2m_valid )
     {
-        setModel2World_qt(m2w); 
+        setModel2World_qt(m2w, w2m); 
     }
     else
     {
@@ -1478,11 +1479,14 @@ Invoked by Composition::setCenterExtent when a non-null m2w qat4 is provided.
 
 **/
 
-void Composition::setModel2World_qt(const qat4* m2w )
+void Composition::setModel2World_qt(const qat4* m2w, const qat4* w2m )
 {
-    Tran<double>* tvi = Tran<double>::ConvertToTran(m2w); 
-    m_model2world = tvi->t ;
-    m_world2model = tvi->v ;
+    //Tran<double>* tvi = Tran<double>::ConvertToTran(m2w); 
+
+    assert( m2w != nullptr ); 
+    assert( w2m != nullptr ); 
+    m_model2world = glm::make_mat4x4<float>(m2w->cdata());
+    m_world2model = glm::make_mat4x4<float>(w2m->cdata());
 
     dump("Composition::setModel2World_qt"); 
 }

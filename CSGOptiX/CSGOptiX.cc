@@ -240,10 +240,10 @@ reference used by the EYE LOOK UP navigation controls.
 
 **/
 
-void CSGOptiX::setComposition(const float4& v, const qat4* m2w )
+void CSGOptiX::setComposition(const float4& v, const qat4* m2w, const qat4* w2m )
 {
     glm::vec4 ce(v.x, v.y, v.z, v.w); 
-    setComposition(ce, m2w ); 
+    setComposition(ce, m2w, w2m ); 
 }
 
 /**
@@ -252,7 +252,7 @@ CSGOptiX::setComposition
 
 **/
 
-void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w  )
+void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* w2m )
 {
     peta->q2.f.x = ce.x ;   // moved from q1
     peta->q2.f.y = ce.y ; 
@@ -261,7 +261,7 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w  )
 
     bool autocam = true ; 
 
-    composition->setCenterExtent(ce, autocam, m2w );  // model2world view setup 
+    composition->setCenterExtent(ce, autocam, m2w, w2m );  // model2world view setup 
 
     float extent = ce.w ; 
     float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
@@ -270,8 +270,12 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w  )
         << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
         << " tmin_model " << tmin_model
         << " tmin " << tmin 
-        << " m2w " << *m2w
+        << " m2w " << m2w
+        << " w2m " << w2m
         ; 
+
+    if(m2w) LOG(info) << "m2w " << *m2w ; 
+    if(w2m) LOG(info) << "w2m " << *w2m ; 
 
     composition->setNear(tmin); 
 }

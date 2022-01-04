@@ -60,7 +60,8 @@ struct CSGOptiXRenderTest
     const char* botline ; 
     bool        flight ; 
     float4      ce ; 
-    qat4*       qt ; 
+    qat4*       m2w ; 
+    qat4*       w2m ; 
 
     const char* default_arg ; 
     std::vector<std::string> args ; 
@@ -87,7 +88,8 @@ CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
     botline(SSys::getenvvar("BOTLINE", nullptr )),
     flight(ok->hasArg("--flightconfig")),
     ce(make_float4(0.f, 0.f, 0.f, 1000.f )),
-    qt(qat4::identity()),
+    m2w(qat4::identity()),
+    w2m(qat4::identity()),
     default_arg(SSys::getenvvar("MOI", "sWorld:0:0"))  
 {
     initFD(); 
@@ -216,18 +218,19 @@ void CSGOptiXRenderTest::setCE(const char* moi)
     int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
     fd->parseMOI(midx, mord, iidx,  moi );  
 
-    int rc = fd->getCenterExtent(ce, midx, mord, iidx, qt ) ;
+    int rc = fd->getCenterExtent(ce, midx, mord, iidx, m2w, w2m ) ;
 
     LOG(info) 
         << " moi " << moi 
         << " midx " << midx << " mord " << mord << " iidx " << iidx 
         << " rc [" << rc << "]" 
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
-        << " qt (" << *qt << ")"    
+        << " m2w (" << *m2w << ")"    
+        << " w2m (" << *w2m << ")"    
         ; 
 
     assert(rc==0); 
-    cx->setComposition(ce, qt);   // establish the coordinate system 
+    cx->setComposition(ce, m2w, w2m );   // establish the coordinate system 
 }
 
 void CSGOptiXRenderTest::setCE_sla()
@@ -241,7 +244,7 @@ void CSGOptiXRenderTest::setCE_sla()
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
        ; 
 
-    cx->setComposition(ce, qt);   // establish the coordinate system 
+    cx->setComposition(ce, nullptr, nullptr);   // establish the coordinate system 
 }
 
 void CSGOptiXRenderTest::render_snap(const char* namestem)

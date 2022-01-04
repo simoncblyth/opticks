@@ -22,7 +22,8 @@ CSGGenstep::CSGGenstep( const CSGFoundry* foundry_ )
     mord(-1),
     iidx(-1),
     ce(make_float4(0.f, 0.f, 0.f, 100.f)),
-    qt(qat4::identity()),
+    m2w(qat4::identity()),
+    w2m(qat4::identity()),
     geotran(nullptr),
     gs(nullptr),
     pp(nullptr)
@@ -86,7 +87,7 @@ CSGGenstep::locate
 -----------------------
 
 1. parseMoi string giving midx:mord:iidx 
-2. get the *ce* and instance transform (populating qat4 member *qt*) 
+2. get the *ce* and instance transform (populating qat4 members *m2w* *w2m*) 
    from the midx:mord:iidx using CSGTarget::getCenterExtent 
    which branches depending on iidx:
 
@@ -117,15 +118,18 @@ void CSGGenstep::locate(const char* moi_)
         return ; 
     }
 
-    int rc = foundry->getCenterExtent(ce, midx, mord, iidx, qt ) ;
+    int rc = foundry->getCenterExtent(ce, midx, mord, iidx, m2w, w2m ) ;
 
     LOG(info) << " rc " << rc << " MOI.ce (" 
               << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;           
 
-    LOG(info) << std::endl << "qt" << *qt ; 
-    geotran = Tran<double>::ConvertToTran( qt );    // Tran from stran.h 
-    // matrix gets inverted by Tran<double>
+    LOG(info) << "m2w" << *m2w ;
+    LOG(info) << "w2m" << *w2m ;
+ 
+    geotran = Tran<double>::FromPair( m2w, w2m, 1e-6 );    // Tran from stran.h 
 
+    //geotran = Tran<double>::ConvertToTran( qt );    // Tran from stran.h 
+    // matrix gets inverted by Tran<double>
 
     //override_locate(); 
 }

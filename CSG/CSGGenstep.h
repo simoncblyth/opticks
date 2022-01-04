@@ -40,7 +40,8 @@ struct CSG_API CSGGenstep
     int mord ; 
     int iidx ; 
     float4 ce ;
-    qat4*  qt ;  
+    qat4*  m2w ;  
+    qat4*  w2m ;  
     Tran<double>* geotran ;
     std::vector<int> cegs ; 
 

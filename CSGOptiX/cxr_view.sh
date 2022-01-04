@@ -35,6 +35,13 @@ Nice views::
     MOI=sWaterTube EYE=0,1,-1,1 LOOK=0,0,-1 ./cxr_view.sh 
 
 
+RTP tangential::
+
+   MOI=solidXJfixture:10:-3 ./cxr_view.sh 
+
+   GDB=gdb MOI=solidXJfixture:10:-3 ./cxr_view.sh 
+
+
 
 EOU
 }

@@ -280,12 +280,12 @@ class OKCORE_API Composition : public NConfigurable {
 
   public: 
       void aim(const glm::vec4& ce, bool verbose=false);
-      void setCenterExtent(const glm::vec4& ce, bool autocam=false, const qat4* m2w=nullptr ); // effectively points at what you want to look at 
+      void setCenterExtent(const glm::vec4& ce, bool autocam=false, const qat4* m2w=nullptr, const qat4* w2m=nullptr ); // effectively points at what you want to look at 
       void dump(const char* msg) const ;
   private:
       void setModel2World_old(const glm::vec4& ce);
       void setModel2World_ce(const glm::vec4& ce, bool rtp_tangential );
-      void setModel2World_qt(const qat4* m2w );
+      void setModel2World_qt(const qat4* m2w, const qat4* w2m);
   public: 
       void setDomainCenterExtent(const glm::vec4& ce); // typically whole geometry domain
       void setColorDomain(const glm::uvec4& cd);

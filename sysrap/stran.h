@@ -38,7 +38,9 @@ struct Tran
     static const Tran<T>* product(const Tran<T>* a, const Tran<T>* b, const Tran<T>* c, bool reverse);
     static const Tran<T>* product(const std::vector<const Tran<T>*>& tt, bool reverse );
 
-    static Tran<T>* ConvertToTran(const qat4* q ); 
+    static Tran<T>* ConvertToTran( const qat4* q ); 
+    static Tran<T>* FromPair( const qat4* t, const qat4* v, T epsilon=1e-6 ); 
+    static glm::tmat4x4<T> MatFromQat(const qat4* q );
     static qat4*    ConvertFrom(const glm::tmat4x4<T>& tr ); 
 
     Tran( const T* transform, const T* inverse ) ;
@@ -301,6 +303,44 @@ Tran<T>* Tran<T>::ConvertToTran(const qat4* q )
 }
 
 
+template<typename T>
+Tran<T>* Tran<T>::FromPair(const qat4* t, const qat4* v, T epsilon ) // static
+{
+    glm::tmat4x4<T> tran = MatFromQat(t) ; 
+    glm::tmat4x4<T> itra = MatFromQat(v) ; 
+    Tran<T>* tr = new Tran<T>(tran, itra) ; 
+
+    bool ok = tr->is_identity('i', epsilon); 
+
+    if(!ok)
+    {
+        std::cerr 
+            << " Tran::FromPair is_identity fail with epsilon " << epsilon
+            << std::endl 
+            ;  
+    }
+
+    return tr ; 
+}
+
+template<typename T>
+glm::tmat4x4<T> Tran<T>::MatFromQat(const qat4* q )  // static
+{
+    const float* q_data = q->cdata();
+    glm::tmat4x4<T> tran(1.);
+    T* tran_ptr = glm::value_ptr(tran) ;
+    for(int i=0 ; i < 16 ; i++) tran_ptr[i] = T(q_data[i]) ; 
+    return tran ; 
+}
+ 
+
+/**
+Tran::ConvertFrom
+-------------------
+
+With T=double will narrow to floats within qat4 
+
+**/
 
 template<typename T>
 qat4* Tran<T>::ConvertFrom(const glm::tmat4x4<T>& transform )
