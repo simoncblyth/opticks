@@ -581,6 +581,7 @@ class Plt(object):
         upos = self.pos.upos
         ugsc = self.gs.ugsc
         lim = self.gs.lim
+
         H,V = self.grid.axes    ## traditionally H,V = X,Z  but are now generalizing 
         _H,_V = self.grid.axlabels
 

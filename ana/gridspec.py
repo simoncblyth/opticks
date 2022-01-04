@@ -217,6 +217,7 @@ class GridSpec(object):
         if planar:
             H, V = axes
 
+            ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
             _axes = "RTP" if int(iidx) == -3 else "XYZ"  
             axlabels =  _axes[H], _axes[V]
 

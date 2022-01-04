@@ -22,7 +22,7 @@ struct SYSRAP_API SCenterExtentFrame
     static void CartesianToSpherical( glm::tvec3<T>& radius_theta_phi, const glm::tvec4<T>& xyzw ); 
     static void SphericalToCartesian( glm::tvec4<T>& xyzw, const glm::tvec3<T>& radius_theta_phi );
 
-    // rotation matrices between conventional XYZ and tangential RPT cartesian frames 
+    // rotation matrices between conventional XYZ and tangential RTP cartesian frames 
     static glm::tmat4x4<T> XYZ_to_RTP( T theta, T phi );
     static glm::tmat4x4<T> RTP_to_XYZ( T theta, T phi );
 
