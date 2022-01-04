@@ -74,7 +74,9 @@ msg="=== $BASH_SOURCE : "
 
 #geom=XJfixtureConstructionTP_1
 #geom=XJfixtureConstructionRT_1
-geom=XJfixtureConstructionRP_1
+#geom=XJfixtureConstructionRP_1
+#geom=XJfixtureConstructionRP_55
+geom=XJfixtureConstructionPR_55
 
 export GEOM=${GEOM:-$geom}
 
@@ -204,19 +206,36 @@ elif [ "$GEOM" == "XJfixtureConstructionTP_1" ]; then
     cegs=0:16:9:100            
     gridscale=0.20
 
-elif [ "$GEOM" == "XJfixtureConstructionRT_1" ]; then
+elif [ "$GEOM" == "XJfixtureConstructionRT_10" ]; then
 
     note="bang on tangential view from P(phi-tangent-direction) showing the radial coincidence issues clearly" 
     moi="solidXJfixture:10:-3"
     cegs=16:9:0:100            
     gridscale=0.20
 
-elif [ "$GEOM" == "XJfixtureConstructionRP_1" ]; then
+elif [ "$GEOM" == "XJfixtureConstructionRP_10" ]; then
 
     note="bang on tangential view from T(theta-tangent-direction) radial coincidences are clear, also another in P direction apparent"
     moi="solidXJfixture:10:-3"
     cegs=16:0:9:100            
     gridscale=0.20
+
+elif [ "$GEOM" == "XJfixtureConstructionRP_55" ]; then
+
+    moi="solidXJfixture:55:-3"
+    cegs=16:0:9:100               
+    #gridscale=0.20
+    #gridscale=0.40
+    gridscale=0.80
+
+elif [ "$GEOM" == "XJfixtureConstructionPR_55" ]; then
+
+    moi="solidXJfixture:55:-3"
+    cegs=9:0:16:100               
+    #gridscale=0.20
+    #gridscale=0.40
+    gridscale=0.80
+
 
 elif [ "$GEOM" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    

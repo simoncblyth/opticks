@@ -41,6 +41,25 @@ RTP tangential::
 
    GDB=gdb MOI=solidXJfixture:10:-3 ./cxr_view.sh 
 
+   EYE=-1,0,0 MOI=solidXJfixture:10:-3 ./cxr_view.sh 
+
+   EYE=0,0,1 UP=0,-1,0  MOI=solidXJfixture:10:-3 ./cxr_view.sh 
+
+   EYE=0,0,2 UP=0,-1,0 TMIN=0.1  MOI=solidXJfixture:10:-3 ./cxr_view.sh 
+
+
+   Radial outwards as UP is quite natural 
+
+   EYE=0,1,1 UP=1,0,0 TMIN=0.1  MOI=solidXJfixture:10:-3 ./cxr_view.sh 
+
+   EYE=1,1,1 UP=1,0,0 TMIN=0.1  MOI=solidXJfixture:10:-3 ./cxr_view.sh 
+
+   EYE=2,1,1 UP=1,0,0 TMIN=0.1 CAM=1  MOI=solidXJfixture:10:-3 ./cxr_view.sh 
+
+   EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:10:-3 ./cxr_view.sh 
+
+
+   EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:55:-3 ./cxr_view.sh 
 
 
 EOU

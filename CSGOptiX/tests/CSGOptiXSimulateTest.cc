@@ -107,11 +107,16 @@ int main(int argc, char** argv)
 
     gsm->create(moi, ce_offset, ce_scale );
 
-    cx.setComposition(gsm->ce, gsm->m2w, gsm=>w2m ); 
+    NP* gs = gsm->gs ; 
+    gs->set_meta<std::string>("TOP", top ); 
+    gs->set_meta<std::string>("TOPLINE", topline ); 
+    gs->set_meta<std::string>("BOTLINE", botline ); 
+
+
+    cx.setComposition(gsm->ce, gsm->m2w, gsm->w2m ); 
     cx.setCEGS(gsm->cegs); 
     cx.setMetaTran(gsm->geotran); 
-    cx.setGensteps(gsm->gs); 
-
+    cx.setGensteps(gs); 
     cx.simulate();  
     cx.snapSimulateTest(outdir, botline, topline ); 
  

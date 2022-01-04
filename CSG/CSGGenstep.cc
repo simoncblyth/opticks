@@ -64,9 +64,11 @@ TODO: eliminate ce_offset/ce_scale by using transform approach always
 
 **/
 
-void CSGGenstep::create(const char* moi, bool ce_offset, bool ce_scale )
+void CSGGenstep::create(const char* moi_, bool ce_offset, bool ce_scale )
 {
-    LOG(info) << " moi " << moi << " ce_offset " << ce_offset ; 
+    moi = strdup(moi_); 
+
+    LOG(info) << " moi " << moi << " ce_offset " << ce_offset << " ce_scale " << ce_scale ; 
 
     if( strcmp(moi, "FAKE") == 0 ) 
     {
@@ -79,6 +81,11 @@ void CSGGenstep::create(const char* moi, bool ce_offset, bool ce_scale )
         configure_grid(); 
         gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale ); 
     }
+
+    gs->set_meta<std::string>("moi", moi ); 
+    gs->set_meta<int>("midx", midx); 
+    gs->set_meta<int>("mord", mord); 
+    gs->set_meta<int>("iidx", iidx); 
 }
 
 
@@ -117,6 +124,7 @@ void CSGGenstep::locate(const char* moi_)
             ;
         return ; 
     }
+
 
     int rc = foundry->getCenterExtent(ce, midx, mord, iidx, m2w, w2m ) ;
 

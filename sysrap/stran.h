@@ -39,7 +39,7 @@ struct Tran
     static const Tran<T>* product(const std::vector<const Tran<T>*>& tt, bool reverse );
 
     static Tran<T>* ConvertToTran( const qat4* q ); 
-    static Tran<T>* FromPair( const qat4* t, const qat4* v, T epsilon=1e-6 ); 
+    static Tran<T>* FromPair( const qat4* t, const qat4* v, T epsilon=1e-6 ); // WIDENS from float  
     static glm::tmat4x4<T> MatFromQat(const qat4* q );
     static qat4*    ConvertFrom(const glm::tmat4x4<T>& tr ); 
 

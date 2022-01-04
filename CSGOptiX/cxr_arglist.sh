@@ -27,7 +27,8 @@ MOI=${MOI:-$moi}
 MIN=${MIN:-$min}
 MAX=${MAX:-$max}
 
-global_repeat_arglist(){ for i in $(seq $MIN $MAX ) ; do echo $MOI:$i ; done ; }
+global_repeat_arglist(){     for i in $(seq $MIN $MAX ) ; do echo $MOI:$i    ; done ; }
+tangential_repeat_arglist(){ for i in $(seq $MIN $MAX ) ; do echo $MOI:$i:-3 ; done ; }
 
 all_mname_arglist()
 {
@@ -43,12 +44,13 @@ mkdir -p $(dirname $path)
 if [ "$MOI" == "ALL" ]; then
     all_mname_arglist > $path
 else
-    global_repeat_arglist  > $path
+    tangential_repeat_arglist  > $path
+    #global_repeat_arglist  > $path
 fi
 
 echo path $path 
 cat $path
 
 
-MOI=$MOI ARGLIST=$path ./cxr.sh 
+EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 CAM=1 MOI=$MOI ARGLIST=$path ./cxr.sh 
 

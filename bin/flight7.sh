@@ -19,7 +19,8 @@ logdir=/tmp/$USER/opticks/$pkg/$bin/$version
 
 #moi=uni_acrylic1
 #moi=Hama:0:1000
-moi=solidXJfixture:10
+#moi=solidXJfixture:55:-3
+moi=solidXJfixture:0:-3
 
 period=${PERIOD:-4}
 limit=${LIMIT:-600}
