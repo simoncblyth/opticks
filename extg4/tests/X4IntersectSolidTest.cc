@@ -28,19 +28,6 @@ int main(int argc, char** argv)
     SStr::Split(geom,',',names);  
     LOG(info) << " geom " << geom << " names.size " << names.size() ; 
 
-
-    std::stringstream ss ; 
-    ss << "creator:X4IntersectSolidTest" << std::endl ; 
-    ss << "geom:" << geom << std::endl ; 
-#ifdef WITH_PMTSIM
-    ss << "info:WITH_PMTSIM " << std::endl ; 
-#else
-    ss << "info:noPMTSIM " << std::endl ; 
-#endif
-    std::string meta = ss.str(); 
-    LOG(info) << meta ; 
-
-
     const char* base = "$TMP/extg4/X4IntersectSolidTest" ; 
 
     for(unsigned i=0 ; i < names.size() ; i++)
@@ -51,16 +38,7 @@ int main(int argc, char** argv)
         if( solid == nullptr ) LOG(fatal) << "failed to X4_GetSolid for name " << name ; 
         assert( solid );   
 
-        X4Intersect::Scan(solid, name, base, meta ); 
-
-        /**
-        its simpler to do this in another executable : X4MeshTest 
-
-        int create_dirs = 1 ; // 1:filepath 
-        const char* meshpath = SPath::Resolve(base, name, "X4Mesh", "mesh.gltf", create_dirs ); 
-        X4Mesh::Save(solid, meshpath ); 
-
-        **/
+        X4Intersect::Scan(solid, name, base ); 
 
     }
     return 0 ; 

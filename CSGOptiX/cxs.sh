@@ -77,8 +77,13 @@ msg="=== $BASH_SOURCE : "
 #geom=XJfixtureConstructionRP_1
 #geom=XJfixtureConstructionRP_55
 
-geom=XJfixtureConstructionTR_55
+#geom=XJfixtureConstructionTR_55
 #geom=XJfixtureConstructionPR_55
+
+#geom=XJfixtureConstructionTR_0
+geom=XJfixtureConstructionPR_0
+
+
 
 export GEOM=${GEOM:-$geom}
 
@@ -173,7 +178,7 @@ elif [ "$GEOM" == "XJfixtureConstructionXZ_0" ]; then
     ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
 
-elif [ "$GEOM" == "XJfixtureConstructionYZ_0" ]; then
+elif [ "$GEOM" == "XJfixtureConstructionYZ_10" ]; then
 
     moi="solidXJfixture:10"
     cegs=0:16:9:100            
@@ -181,7 +186,7 @@ elif [ "$GEOM" == "XJfixtureConstructionYZ_0" ]; then
     ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
 
-elif [ "$GEOM" == "XJfixtureConstructionXZ_1" ]; then
+elif [ "$GEOM" == "XJfixtureConstructionXZ_10" ]; then
 
     note="this view is a good one : clearly see side cross section of sTarget sAcrylic sXJfixture sXJanchor  "
     moi="solidXJfixture:10"
@@ -191,7 +196,7 @@ elif [ "$GEOM" == "XJfixtureConstructionXZ_1" ]; then
     ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
 
-elif [ "$GEOM" == "XJfixtureConstructionYZ_1" ]; then
+elif [ "$GEOM" == "XJfixtureConstructionYZ_10" ]; then
 
     note="this view is difficult to interpret : could be a bug or just a slice at a funny angle, need tangential check"
     moi="solidXJfixture:10"
@@ -201,10 +206,11 @@ elif [ "$GEOM" == "XJfixtureConstructionYZ_1" ]; then
     ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
 
-elif [ "$GEOM" == "XJfixtureConstructionTP_1" ]; then
+elif [ "$GEOM" == "XJfixtureConstructionTP_10" ]; then
 
     note="nicely aligned rectangle in YZ=(TP), longer in T direction +- 1 extent unit, +-0.24 extent units in P  "
     moi="solidXJfixture:10:-3"
+    #    R:T:P 
     cegs=0:16:9:100            
     gridscale=0.20
 
@@ -215,38 +221,36 @@ elif [ "$GEOM" == "XJfixtureConstructionRT_10" ]; then
     cegs=16:9:0:100            
     gridscale=0.20
 
-elif [ "$GEOM" == "XJfixtureConstructionRP_10" ]; then
-
-    note="bang on tangential view from T(theta-tangent-direction) radial coincidences are clear, also another in P direction apparent"
-    moi="solidXJfixture:10:-3"
-    cegs=16:0:9:100            
-    gridscale=0.20
-
-elif [ "$GEOM" == "XJfixtureConstructionRP_55" ]; then
-
-    moi="solidXJfixture:55:-3"
-    cegs=16:0:9:100               
-    #gridscale=0.20
-    #gridscale=0.40
-    gridscale=0.80
-
 elif [ "$GEOM" == "XJfixtureConstructionPR_55" ]; then
 
+    note="clearly solidXJfixture and solidXJanchor are inside uni_acrylic1 and bump into uni1 "
     moi="solidXJfixture:55:-3"
     #    R:T:P        larger side of grid becomes horizontal : hence  PR  (not RP)
     cegs=9:0:16:100          
-    #gridscale=0.20
-    #gridscale=0.40
     gridscale=0.80
 
 elif [ "$GEOM" == "XJfixtureConstructionTR_55" ]; then
 
+    note="clearly solidXJfixture and solidXJanchor are inside the foot of the stick uni_acrylic1, but as slice is to the side as can be seen from PR_55 do not see much of the stick "
     moi="solidXJfixture:55:-3"
     #    R:T:P        larger side of grid becomes horizontal : hence  TR  (not RT)
     cegs=9:16:0:100            
-    #gridscale=0.20
-    #gridscale=0.40
     gridscale=0.80
+
+elif [ "$GEOM" == "XJfixtureConstructionPR_0" ]; then
+
+    moi="solidXJfixture:0:-3"
+    #    R:T:P        larger side of grid becomes horizontal : hence  PR  (not RP)
+    cegs=9:0:16:100          
+    gridscale=0.10
+
+elif [ "$GEOM" == "XJfixtureConstructionTR_0" ]; then
+
+    note="mid-chimney with ce 0,0,17696.94  : solidSJReceiver and solidXJfixture clearly overlapped "
+    moi="solidXJfixture:0:-3"
+    #    R:T:P        larger side of grid becomes horizontal : hence  TR  (not RT)
+    cegs=9:16:0:100            
+    gridscale=0.10
 
 
 elif [ "$GEOM" == "25" ]; then

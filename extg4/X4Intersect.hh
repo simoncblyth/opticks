@@ -16,7 +16,7 @@ struct NP ;
 
 struct X4_API X4Intersect
 {
-    static void Scan(const G4VSolid* solid, const char* name, const char* basedir, const std::string& meta ); 
+    static void Scan(const G4VSolid* solid, const char* name, const char* basedir ); 
 
     X4Intersect( const G4VSolid* solid_ ); 
     const char* desc() const ; 

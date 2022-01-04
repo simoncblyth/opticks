@@ -18,6 +18,7 @@ TODO: factor out the common machinery used in this and ~/opticks/CSGOptiX/tests/
 import os, logging, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.gridspec import GridSpec, X, Y, Z
+from opticks.ana.npmeta import NPMeta
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -104,7 +105,9 @@ if __name__ == '__main__':
 
     log.info("fold0.base %s " % fold0.base )
 
-    grid = GridSpec(fold0.peta)
+    gsmeta = NPMeta(fold0.gs_meta)
+
+    grid = GridSpec(fold0.peta, gsmeta)
     is_planar = not grid.axes is None
 
     if is_planar:

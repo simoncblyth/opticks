@@ -96,10 +96,13 @@ msg="=== $BASH_SOURCE :"
 #geom=hmsk_solidMask
 #geom=hmsk_solidMaskTail
 
-geom=XJfixtureConstruction_YZ
+#geom=XJfixtureConstruction_YZ
 #geom=XJfixtureConstruction_XZ
 #geom=XJanchorConstruction_YZ
 #geom=XJanchorConstruction_XZ
+
+geom=SJReceiverConstruction_XZ
+
 
 
 export GEOM=${GEOM:-$geom}
@@ -204,6 +207,13 @@ elif [ "$GEOM" == "XJanchorConstruction_YZ" ]; then
     gridscale=0.05      
 
 elif [ "$GEOM" == "XJanchorConstruction_XZ" ]; then
+
+    numpho=100
+    cegs=16:0:9:0:0:0:$numpho
+    gridscale=0.05      
+
+
+elif [ "$GEOM" == "SJReceiverConstruction_XZ" ]; then
 
     numpho=100
     cegs=16:0:9:0:0:0:$numpho

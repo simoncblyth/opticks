@@ -27,17 +27,6 @@ int main(int argc, char** argv)
     const char* geom_default = "body_phys" ; 
     const char* geom = SSys::getenvvar("GEOM", geom_default );  
 
-    std::stringstream ss ; 
-    ss << "creator:X4IntersectVolumeTest" << std::endl ; 
-    ss << "geom:" << geom << std::endl ; 
-#ifdef WITH_PMTSIM
-    ss << "info:WITH_PMTSIM " << std::endl ; 
-#else
-    ss << "info:noPMTSIM " << std::endl ; 
-#endif
-    std::string meta = ss.str(); 
-    LOG(info) << meta ; 
-
 #ifdef WITH_PMTSIM
     typedef std::vector<double> VD ; 
     typedef std::vector<G4VSolid*> VS ; 
@@ -61,7 +50,7 @@ int main(int argc, char** argv)
     {
         G4VSolid* solid = (*so)[i] ; 
         G4String soname = solid->GetName(); 
-        X4Intersect::Scan(solid, soname.c_str(), base, meta ); 
+        X4Intersect::Scan(solid, soname.c_str(), base ); 
     }
 
 #endif

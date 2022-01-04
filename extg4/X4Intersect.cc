@@ -18,7 +18,7 @@
 #include "PLOG.hh"
 
 
-void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* basedir, const std::string& meta )  // static
+void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* basedir )  // static
 {
     assert( solid && "X4Intersect::Scan requires solid"); 
 
@@ -37,13 +37,14 @@ void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* base
         << " outdir " << outdir 
         ; 
 
-    x4i->gs->meta = meta ; 
+
+    NP* gs = x4i->gs ; 
+    gs->set_meta<std::string>("name", name) ; 
+    gs->set_meta<int>("iidx", 0) ; 
+
+
     x4i->save(outdir); 
 }
-
-
-
-
 
 
 X4Intersect::X4Intersect( const G4VSolid* solid_  )

@@ -193,7 +193,7 @@ class GridSpec(object):
         iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
 
         ce = tuple(peta[0,2])
-        sce = ("%7.2f" * 4 ) % ce
+        sce = (" %7.2f" * 4 ) % ce
 
         assert photons_per_genstep > 0
         assert zero == 0
