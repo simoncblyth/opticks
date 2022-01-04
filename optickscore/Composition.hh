@@ -24,6 +24,7 @@
 #include "plog/Severity.h"
 #include <glm/fwd.hpp>  
 
+struct qat4 ; 
 
 //class SCtrl ; 
 // bcfg-
@@ -278,8 +279,13 @@ class OKCORE_API Composition : public NConfigurable {
       void configureS(const char* name, std::vector<std::string> values);
 
   public: 
-      void aim(glm::vec4& ce, bool verbose=false);
-      void setCenterExtent(const glm::vec4& ce, bool autocam=false, bool rtp_tangential=false ); // effectively points at what you want to look at 
+      void aim(const glm::vec4& ce, bool verbose=false);
+      void setCenterExtent(const glm::vec4& ce, bool autocam=false, const qat4* m2w=nullptr ); // effectively points at what you want to look at 
+      void dump(const char* msg) const ;
+  private:
+      void setModel2World_old(const glm::vec4& ce);
+      void setModel2World_ce(const glm::vec4& ce, bool rtp_tangential );
+      void setModel2World_qt(const qat4* m2w );
   public: 
       void setDomainCenterExtent(const glm::vec4& ce); // typically whole geometry domain
       void setColorDomain(const glm::uvec4& cd);

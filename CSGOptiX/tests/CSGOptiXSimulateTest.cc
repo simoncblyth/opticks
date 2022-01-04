@@ -108,7 +108,7 @@ int main(int argc, char** argv)
     gsm->create(moi, ce_offset, ce_scale );
   
 
-    cx.setCE(gsm->ce, gsm->qt); 
+    cx.setComposition(gsm->ce, gsm->qt); 
     cx.setCEGS(gsm->cegs); 
     cx.setMetaTran(gsm->geotran); 
     cx.setGensteps(gsm->gs); 

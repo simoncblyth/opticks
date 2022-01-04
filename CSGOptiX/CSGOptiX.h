@@ -93,8 +93,8 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     // render related 
     void setCEGS(const std::vector<int>& cegs); 
 
-    void setCE(const float4& ce,    const qat4* qt ); 
-    void setCE(const glm::vec4& ce, const qat4* qt ); 
+    void setComposition(const float4& ce,    const qat4* m2w ); 
+    void setComposition(const glm::vec4& ce, const qat4* m2w ); 
     void setMetaTran(const Tran<double>* metatran ); 
 
     void setNear(float near); 

@@ -28,6 +28,10 @@
 
 #include <climits>
 
+#include "scuda.h"
+#include "squad.h"
+#include "stran.h"
+
 #include <boost/math/constants/constants.hpp>
 #include "BStr.hh"
 #include "NSnapConfig.hpp"
@@ -1350,7 +1354,7 @@ void Composition::setDomainCenterExtent(const glm::vec4& ce)
 Composition::setCenterExtent
 -----------------------------
 
-The center-extent defines a symmetric box about the center position.::
+The center-extent defines a symmetric box about a center position.::
 
                           
                                     (cx+extent, cy+extent, cz) 
@@ -1390,9 +1394,13 @@ and model frame::
 
 See tests/CompositionTest.cc
 
+TODO: can autocam be removed, always set to true ?
+
+TODO: currently to use rtp_tangential frame need to provide the transform in m2w 
+
 **/
 
-void Composition::setCenterExtent(const glm::vec4& ce, bool autocam, bool rtp_tangential )
+void Composition::setCenterExtent(const glm::vec4& ce, bool autocam, const qat4* m2w )
 {
     // this is invoked by App::uploadGeometry/Scene::setTarget
 
@@ -1400,47 +1408,82 @@ void Composition::setCenterExtent(const glm::vec4& ce, bool autocam, bool rtp_ta
     m_center_extent.y = ce.y ;
     m_center_extent.z = ce.z ;
     m_center_extent.w = ce.w ;
+    m_extent = ce.w ; 
 
+    //setModel2World_old(ce); 
+
+    if( m2w != nullptr )
+    {
+        setModel2World_qt(m2w); 
+    }
+    else
+    {
+        bool rtp_tangential = false ; 
+        setModel2World_ce(ce, rtp_tangential ); 
+    }
+
+    update();
+
+    if(autocam)
+    {
+        aim(ce);
+    }
+}
+
+void Composition::dump(const char* msg) const 
+{
+    LOG(info)
+        << msg 
+        << std::endl  
+        << " m_center_extent " << gformat(m_center_extent) << std::endl 
+        << " m_model2world " << std::endl 
+        << gformat(m_model2world) << std::endl 
+        << " m_world2model " << std::endl 
+        << gformat(m_world2model) << std::endl 
+        ;
+}
+
+
+void Composition::setModel2World_old(const glm::vec4& ce)
+{
     // old way : to be replaced once SCenterExtentFrame is checked
     glm::vec4 ce_(ce.x,ce.y,ce.z,ce.w);
     glm::vec3 sc(ce.w);
     glm::vec3 tr(ce.x, ce.y, ce.z);
     glm::vec3 isc(1.f/ce.w);
 
-    glm::mat4 old_world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);
-    glm::mat4 old_model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
+    m_world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);
+    m_model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
 
-    SCenterExtentFrame<double> cef_rtpw( ce.x, ce.y, ce.z, ce.w, true ); 
-    SCenterExtentFrame<double> cef_xyzw( ce.x, ce.y, ce.z, ce.w, false ); 
-
-    m_world2model = old_world2model ; 
-    m_model2world = old_model2world ;  
- 
-    //m_world2model = rtp_tangential ? cef_rtpw.world2model : cef_xyzw.world2model ; 
-    //m_model2world = rtp_tangential ? cef_rtpw.model2world : cef_xyzw.model2world ; 
-
-    LOG(info) 
-        << " ce " << gformat(m_center_extent) << std::endl 
-        << " old_model2world " << std::endl 
-        << gformat(old_model2world) << std::endl 
-        << " old_world2model " << std::endl 
-        << gformat(old_world2model) << std::endl 
-        << " m_model2world " << std::endl 
-        << gformat(m_model2world) << std::endl 
-        << " m_world2model " << std::endl 
-        << gformat(m_world2model) << std::endl 
-        ;
-
-    m_extent = ce.w ; 
-
-    update();
-
-    if(autocam)
-    {
-        aim(ce_);
-    }
+    dump("Composition::setModel2World_old"); 
 }
 
+void Composition::setModel2World_ce(const glm::vec4& ce, bool rtp_tangential )
+{
+    SCenterExtentFrame<double> cef( ce.x, ce.y, ce.z, ce.w, rtp_tangential ); 
+    m_model2world = cef.model2world ;
+    m_world2model = cef.world2model ;
+
+    dump("Composition::setModel2World_ce"); 
+}
+
+
+/**
+Composition::setModel2World_qt
+--------------------------------
+
+Invoked by Composition::setCenterExtent when a non-null m2w qat4 is provided.
+
+**/
+
+void Composition::setModel2World_qt(const qat4* m2w )
+{
+    Tran<double>* tvi = Tran<double>::ConvertToTran(m2w); 
+    m_model2world = tvi->t ;
+    m_world2model = tvi->v ;
+
+    dump("Composition::setModel2World_qt"); 
+}
 
 
 void Composition::setLookW(std::string lookw)
@@ -1621,7 +1664,7 @@ void Composition::setEyeZ(float z)
 
 
 
-void Composition::aim(glm::vec4& ce, bool verbose)
+void Composition::aim(const glm::vec4& ce, bool verbose)
 {
      if(verbose)
      {

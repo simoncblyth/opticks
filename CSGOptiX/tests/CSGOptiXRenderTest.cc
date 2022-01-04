@@ -216,7 +216,7 @@ void CSGOptiXRenderTest::setCE(const char* moi)
         ; 
 
     assert(rc==0); 
-    cx->setCE(ce, qt);   // establish the coordinate system 
+    cx->setComposition(ce, qt);   // establish the coordinate system 
 }
 
 void CSGOptiXRenderTest::setCE_sla()
@@ -230,7 +230,7 @@ void CSGOptiXRenderTest::setCE_sla()
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
        ; 
 
-    cx->setCE(ce, qt);   // establish the coordinate system 
+    cx->setComposition(ce, qt);   // establish the coordinate system 
 }
 
 void CSGOptiXRenderTest::render_snap(const char* namestem)
