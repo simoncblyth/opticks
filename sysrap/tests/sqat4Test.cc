@@ -627,7 +627,19 @@ void test_transform_from_qat4()
 
 }
 
-
+void test_is_identity()
+{
+    qat4* a = new qat4   ; 
+    qat4* b = new qat4() ; 
+    qat4* c = qat4::identity() ; 
+ 
+    std::cout 
+        << " a " << a->is_identity() 
+        << " b " << b->is_identity() 
+        << " c " << c->is_identity() 
+        << std::endl 
+        ;
+}
 
 int main(int argc, char** argv)
 {
@@ -640,9 +652,9 @@ int main(int argc, char** argv)
     test_cube_corners(); 
     test_transform_aabb_inplace_2();
     test_from_string(); 
+    test_from_string_tr(); 
    */
    
-    test_from_string_tr(); 
 
     /*
     test_copy(); 
@@ -652,6 +664,7 @@ int main(int argc, char** argv)
     test_transform_from_qat4(); 
     */
 
+    test_is_identity(); 
 
     return 0 ; 
 }

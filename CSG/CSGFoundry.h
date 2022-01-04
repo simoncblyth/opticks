@@ -184,7 +184,7 @@ struct CSG_API CSGFoundry
 
 
     // target  
-    int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* qptr=nullptr ) const ;
+    int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
     int getTransform(   qat4& q   , int midx, int mord, int iidx=-1) const ;
 
     // id 

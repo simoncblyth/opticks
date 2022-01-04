@@ -199,6 +199,17 @@ CSGOptiXRenderTest::setCE
 HMM: solid selection leads to creation of an IAS referencing each of the 
      selected solids so for generality should be using IAS targetting 
 
+For global geometry which typically uses default iidx of 0 there is special 
+handling of iidx -1/-2/-3 implemented in CSGTarget::getCenterExtent
+
+
+iidx -2
+    ordinary xyzw frame calulated by SCenterExtentFrame
+
+iidx -3
+    rtp tangential frame calulated by SCenterExtentFrame
+
+
 **/
 void CSGOptiXRenderTest::setCE(const char* moi)
 {

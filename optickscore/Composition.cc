@@ -1412,7 +1412,9 @@ void Composition::setCenterExtent(const glm::vec4& ce, bool autocam, const qat4*
 
     //setModel2World_old(ce); 
 
-    if( m2w != nullptr )
+    bool m2w_valid = m2w && m2w->is_identity() == false ; 
+
+    if( m2w_valid )
     {
         setModel2World_qt(m2w); 
     }

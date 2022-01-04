@@ -1376,12 +1376,25 @@ const char* CSGFoundry::getName(unsigned midx) const
 CSGFoundry::getCenterExtent
 -------------------------------
 
-For midx -1 returns ce obtained from the ias bbox, otherwise
-uses CSGTarget to lookup the center extent. 
+For midx -1 returns ce obtained from the ias bbox, 
+otherwise uses CSGTarget to lookup the center extent. 
+
+For global geometry which typically means a default iidx of 0 
+there is special handling for iidx -1/-2/-3 in CSGTarget::getCenterExtent
+
+iidx -1
+    uses getLocalCenterExtent
+
+iidx -2
+    uses SCenterExtentFrame xyzw : ordinary XYZ frame 
+
+iidx -3
+    uses SCenterExtentFrame rtpw : tangential RTP frame 
+
 
 **/
 
-int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* qptr ) const 
+int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* m2w, qat4* w2m  ) const 
 {
     int rc = 0 ; 
     if( midx == -1 )
@@ -1391,7 +1404,7 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* 
     }
     else
     {
-        rc = target->getCenterExtent(ce, midx, mord, iidx, qptr );    // should use emm ?
+        rc = target->getCenterExtent(ce, midx, mord, iidx, m2w, w2m );    // should use emm ?
     }
 
     if( rc != 0 )

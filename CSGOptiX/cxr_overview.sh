@@ -12,7 +12,10 @@ EOU
 }
 
 
-export MOI=-1 
+moi=sWorld:0:-2
+moi=-1
+
+export MOI=${MOI:-$moi} 
 export TMIN=0.4 
 export EYE=-0.6,0,0,1 
 export CAM=0 
