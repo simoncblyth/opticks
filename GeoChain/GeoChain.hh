@@ -68,10 +68,10 @@ struct GEOCHAIN_API GeoChain
     GeoChain(Opticks* ok ); 
     
     void init(); 
-    void convertSolid(const G4VSolid*          so , const std::string& meta); 
-    void convertNodeTree( nnode*             root , const std::string& meta); 
-    void convertPV(   const G4VPhysicalVolume* pv , const std::string& meta); 
-    void convertMesh(GMesh* mesh, const std::string& meta_ ) ; 
+    void convertSolid(const G4VSolid*          so ); 
+    void convertNodeTree( nnode*             root ); 
+    void convertPV(   const G4VPhysicalVolume* pv ); 
+    void convertMesh(GMesh* mesh ) ; 
 
     void save(const char* base, const char* name) const ; 
 }; 

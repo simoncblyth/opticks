@@ -25,12 +25,11 @@ int main(int argc, char** argv)
     GGeo* ggeo = GGeo::Load(&ok); 
     LOG(error) << "] load ggeo " ; 
 
-    const char* meta = nullptr ; 
 
     CSGFoundry foundry ; 
 
     LOG(error) << "[ convert ggeo " ; 
-    CSG_GGeo_Convert conv(&foundry, ggeo, meta) ; 
+    CSG_GGeo_Convert conv(&foundry, ggeo ) ; 
     conv.convert(); 
     LOG(error) << "] convert ggeo " ; 
 

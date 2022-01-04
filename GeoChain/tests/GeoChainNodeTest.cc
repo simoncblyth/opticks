@@ -20,12 +20,6 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     const char* name = SSys::getenvvar("GEOM", "sphere" ); 
 
-    std::stringstream ss ; 
-    ss << "creator:GeoChainNodeTest" << std::endl ; 
-    ss << "name:" << name << std::endl ; 
-    std::string meta = ss.str(); 
-    LOG(info) << meta ; 
-
     nnode* root = nullptr ; 
     if(strcmp(name, "sphere") == 0)
     {
@@ -42,7 +36,7 @@ int main(int argc, char** argv)
     ok.configure(); 
 
     GeoChain chain(&ok); 
-    chain.convertNodeTree(root, meta);  
+    chain.convertNodeTree(root);  
     chain.save(base, name); 
 
     return 0 ; 

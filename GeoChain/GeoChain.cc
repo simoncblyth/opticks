@@ -40,25 +40,17 @@ GeoChain::GeoChain(Opticks* ok_)
     lvIdx(0),  
     soIdx(0)  
 {
-    init();
 }
 
-void GeoChain::init()
+void GeoChain::convertSolid(const G4VSolid* so)
 {
-    //for(int lvIdx=-1 ; lvIdx < 10 ; lvIdx+= 1 ) LOG(info) << " lvIdx " << lvIdx << " ok.isX4TubsNudgeSkip(lvIdx) " << ok->isX4TubsNudgeSkip(lvIdx)  ; 
-}
-
-void GeoChain::convertSolid(const G4VSolid* so, const std::string& meta_)
-{
-    LOG(info) << "[ meta " << meta_ ; 
-
     G4String solidname = so->GetName(); 
     const char* soname = strdup(solidname.c_str()); 
     const char* lvname = strdup(solidname.c_str()); 
 
     mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, so, soname, lvname ) ; 
     LOG(info) << " mesh " << mesh ; 
-    convertMesh(mesh, meta_); 
+    convertMesh(mesh); 
 
     LOG(info) << "]" ;  
 }
@@ -77,7 +69,7 @@ TODO: factorise X4PhysicalVolume::ConvertSolid_ in order to
 
 **/
 
-void GeoChain::convertNodeTree(nnode* raw, const std::string& meta_ )
+void GeoChain::convertNodeTree(nnode* raw)
 {
     const G4VSolid* const solid = nullptr ; 
     bool balance_deep_tree = false ;  
@@ -86,13 +78,11 @@ void GeoChain::convertNodeTree(nnode* raw, const std::string& meta_ )
 
     mesh = X4PhysicalVolume::ConvertSolid_FromRawNode(ok, lvIdx, soIdx, solid, soname, lvname, balance_deep_tree, raw ); 
 
-    convertMesh(mesh, meta_); 
+    convertMesh(mesh); 
 }
 
-void GeoChain::convertMesh(GMesh* mesh, const std::string& meta_ )
+void GeoChain::convertMesh(GMesh* mesh)
 {
-    const char* meta = meta_.empty() ? nullptr : meta_.c_str() ; 
-
     ggeo->add(mesh); 
 
     // standin for X4PhysicalVolume::convertStructure
@@ -103,7 +93,7 @@ void GeoChain::convertMesh(GMesh* mesh, const std::string& meta_ )
 
     ggeo->deferredCreateGParts(); 
 
-    CSG_GGeo_Convert conv(fd, ggeo, meta ) ; 
+    CSG_GGeo_Convert conv(fd, ggeo) ; 
     conv.convert();
 }
 
@@ -117,12 +107,8 @@ avoid duplication with some static methods
 
 **/
 
-void GeoChain::convertPV( const G4VPhysicalVolume* top, const std::string& meta_ )
+void GeoChain::convertPV( const G4VPhysicalVolume* top )
 {
-    const char* meta = meta_.empty() ? nullptr : meta_.c_str() ; 
-    std::cout << "[ GeoChain::convertPV meta " << meta << std::endl ; 
-    std::cout << "GeoChain::convertPV top " << top << std::endl ; 
-
     X4PhysicalVolume xtop(ggeo, top) ; 
 
     // ggeo->postDirectTranslation();  tries to save which fails with no idpath 
@@ -131,7 +117,7 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top, const std::string& meta_
 
     ggeo->deferredCreateGParts();
 
-    CSG_GGeo_Convert conv(fd, ggeo, meta ) ;  
+    CSG_GGeo_Convert conv(fd, ggeo) ;  
 
     conv.convert();   // populates fd:CSGFoundry 
 

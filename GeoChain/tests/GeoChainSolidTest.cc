@@ -44,19 +44,6 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     const char* name = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ); 
-
-    std::stringstream ss ; 
-    ss << "creator:GeoChainSolidTest" << std::endl ; 
-    ss << "name:" << name << std::endl ; 
-#ifdef WITH_PMTSIM
-    ss << "info:WITH_PMTSIM " << std::endl ; 
-#else
-    ss << "info:noPMTSIM " << std::endl ; 
-#endif
-    std::string meta = ss.str(); 
-    LOG(info) << meta ; 
-
-
     const G4VSolid* solid = nullptr ; 
 
     if(X4SolidMaker::CanMake(name))
@@ -73,7 +60,7 @@ int main(int argc, char** argv)
 
 
     const char* base = GeoChain::BASE ; 
-    X4Intersect::Scan(solid, name, base, meta ); 
+    X4Intersect::Scan(solid, name, base ); 
     // X4Intersect .npy land as siblings to the CSGFoundry dir 
 
     const char* argforced = "--allownokey --gparts_transform_offset" ; 
@@ -81,7 +68,7 @@ int main(int argc, char** argv)
     ok.configure(); 
 
     GeoChain chain(&ok); 
-    chain.convertSolid(solid, meta);  
+    chain.convertSolid(solid);  
 
     chain.save(base, name); 
 

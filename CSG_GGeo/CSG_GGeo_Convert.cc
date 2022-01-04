@@ -35,20 +35,20 @@
 const plog::Severity CSG_GGeo_Convert::LEVEL = PLOG::EnvLevel("CSG_GGeo_Convert", "DEBUG"); 
 
 
-CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_, const char* meta ) 
+CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ ) 
     : 
     foundry(foundry_),
     ggeo(ggeo_),
     ok(ggeo->getOpticks()),
     reverse(SSys::getenvbool("REVERSE")),
-    dump_ridx(SSys::getenvint("DUMP_RIDX", -1))
+    dump_ridx(SSys::getenvint("DUMP_RIDX", -1)),
+    meta(nullptr)
 {
     LOG(LEVEL) 
         << " reverse " << reverse
         << " dump_ridx (DUMP_RIDX) " << dump_ridx
         ;  
 
-    foundry->meta = meta ; 
     init(); 
 }
 

@@ -40,14 +40,8 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
 
-    std::stringstream ss ; 
-    ss << "creator:GeoChainVolumeTest" << std::endl ; 
-    ss << "name:" << name << std::endl ; 
-    ss << "gparts_transform_offset:" << ( ok.isGPartsTransformOffset() ? "YES" : "NO" ) << std::endl ; 
-    std::string meta = ss.str(); 
-
     GeoChain chain(&ok); 
-    chain.convertPV(pv, meta);  
+    chain.convertPV(pv);  
 
     chain.save(GeoChain::BASE, name); 
 

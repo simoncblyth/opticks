@@ -23,7 +23,7 @@ struct CSG_GGEO_API CSG_GGeo_Convert
     int dump_ridx ; 
     const char* meta ; 
 
-    CSG_GGeo_Convert(CSGFoundry* foundry, const GGeo* ggeo, const char* meta ) ; 
+    CSG_GGeo_Convert(CSGFoundry* foundry, const GGeo* ggeo ) ; 
     void init();
 
     void convert();   
