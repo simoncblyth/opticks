@@ -52,8 +52,13 @@ log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 from opticks.CSG.CSGFoundry import CSGFoundry 
 from opticks.ana.fold import Fold
+from opticks.ana.npmeta import NPMeta
 from opticks.ana.gridspec import GridSpec, X, Y, Z
 SIZE = np.array([1280, 720])
+
+
+
+
 
 import matplotlib
 if GUI == False:
@@ -538,16 +543,20 @@ class Positions(object):
 
 
 class Plt(object):
-    def __init__(self, outdir, feat, gs, grid, pos ):
+    def __init__(self, outdir, feat, gs, grid, pos, gsmeta ):
 
         self.outdir = outdir 
         self.feat = feat
         self.gs = gs
         self.grid = grid
         self.pos = pos
+        self.gsmeta = gsmeta
 
-        self.topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
-        self.botline = os.environ.get("BOTLINE", "cxs") 
+        topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
+        botline = os.environ.get("BOTLINE", "cxs") 
+
+        self.topline = gsmeta.find("TOPLINE:", topline )
+        self.botline = gsmeta.find("BOTLINE:", botline )
 
         efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
         self.xx = efloatlist_("XX")
@@ -746,7 +755,6 @@ def test_mok(cf):
     print(ph.mokfeat)
 
 
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
@@ -777,7 +785,8 @@ if __name__ == '__main__':
         os.makedirs(outdir)
     pass
 
-    grid = GridSpec(cxs.peta)
+    gsmeta = NPMeta(cxs.genstep_meta)
+    grid = GridSpec(cxs.peta, gsmeta)
 
     local_extent_scale = True 
 
@@ -798,7 +807,7 @@ if __name__ == '__main__':
     print(ph.insfeat)
     feat = ph.feat 
 
-    plt = Plt(outdir, feat, gs, grid, pos )
+    plt = Plt(outdir, feat, gs, grid, pos, gsmeta )
 
     upos = plt.pos.upos
 

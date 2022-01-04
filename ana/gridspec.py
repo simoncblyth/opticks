@@ -9,10 +9,6 @@ eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).sp
 
 X,Y,Z = 0,1,2
 
-_axes = {}
-_axes[X] = "X"
-_axes[Y] = "Y"
-_axes[Z] = "Z"
 
 class XZ(object):
     """
@@ -159,12 +155,18 @@ class Axes(object):
     offs["YX"] = YX.off
 
     @classmethod
-    def Up(cls, HV):
+    def HV_(cls, H, V, axes="XYZ"):
+        return "%s%s" % (axes[H], axes[V] ) 
+ 
+    @classmethod
+    def Up(cls, H, V):
+        HV = cls.HV_(H,V) 
         up = cls.ups.get(HV, None)
         return up 
 
     @classmethod
-    def Off(cls, HV):
+    def Off(cls, H, V):
+        HV = cls.HV_(H,V) 
         off = cls.offs.get(HV, None)
         return off 
 
@@ -179,8 +181,13 @@ class GridSpec(object):
         peta[0,2] = ce
         return peta 
 
+    def __init__(self, peta, gsmeta ):
 
-    def __init__(self, peta):
+        moi = gsmeta.find("moi:", None)
+        midx = gsmeta.find("midx:", None)
+        mord = gsmeta.find("mord:", None)
+        iidx = gsmeta.find("iidx:", None)
+        log.info(" moi %s midx %s mord %s iidx %s " % (moi, midx, mord, iidx))
 
         ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
         iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
@@ -209,18 +216,14 @@ class GridSpec(object):
 
         if planar:
             H, V = axes
+
+            _axes = "RTP" if int(iidx) == -3 else "XYZ"  
             axlabels =  _axes[H], _axes[V]
 
-            if   H == X and V == Z: HV = "XZ"
-            elif H == Z and V == X: HV = "ZX"
-            elif H == Y and V == Z: HV = "YZ"
-            elif H == Z and V == Y: HV = "ZY"
-            elif H == X and V == Y: HV = "XY"
-            elif H == Y and V == X: HV = "YX"
-            else: HV = None
+            HV = "%s%s" % (_axes[H],_axes[V])
 
-            up  = Axes.Up(HV)
-            off = Axes.Off(HV)
+            up  = Axes.Up(H,V)
+            off = Axes.Off(H,V)
             eye = look + 50.*off
         else:
             HV = None
@@ -234,6 +237,8 @@ class GridSpec(object):
         self.off = off
         self.HV = HV 
         self.peta = peta 
+        self.gsmeta = gsmeta
+
         self.axes = axes
         self.planar = planar
         self.axlabels = axlabels

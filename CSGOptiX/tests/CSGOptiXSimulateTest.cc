@@ -25,6 +25,7 @@ is to be able to see the exact same geometry that the simulation is using.
 #include "scuda.h"
 #include "sqat4.h"
 #include "stran.h"
+#include "NP.hh"
 
 #include "SSys.hh"
 #include "SPath.hh"

@@ -76,7 +76,9 @@ msg="=== $BASH_SOURCE : "
 #geom=XJfixtureConstructionRT_1
 #geom=XJfixtureConstructionRP_1
 #geom=XJfixtureConstructionRP_55
-geom=XJfixtureConstructionPR_55
+
+geom=XJfixtureConstructionTR_55
+#geom=XJfixtureConstructionPR_55
 
 export GEOM=${GEOM:-$geom}
 
@@ -228,10 +230,18 @@ elif [ "$GEOM" == "XJfixtureConstructionRP_55" ]; then
     #gridscale=0.40
     gridscale=0.80
 
+elif [ "$GEOM" == "XJfixtureConstructionTR_55" ]; then
+
+    moi="solidXJfixture:55:-3"
+    cegs=9:0:16:100              # XYZ RPT [R] [T]   larger side of grid becomes the horizontal   
+    #gridscale=0.20
+    #gridscale=0.40
+    gridscale=0.80
+
 elif [ "$GEOM" == "XJfixtureConstructionPR_55" ]; then
 
     moi="solidXJfixture:55:-3"
-    cegs=9:0:16:100               
+    cegs=9:16:0:100              # XYZ RPT [R] [P]   larger side of grid becomes the horizontal   
     #gridscale=0.20
     #gridscale=0.40
     gridscale=0.80

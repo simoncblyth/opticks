@@ -34,7 +34,11 @@ class Fold(object):
             is_txt = name.endswith(".txt")
             stem = name[:-4]
             stems.append(stem)
-            a = np.load(path) if is_npy else np.loadtxt(path, dtype=np.object)
+
+            txt_dtype = "|S100" if stem.endswith("_meta") else np.object 
+            a = np.load(path) if is_npy else np.loadtxt(path, dtype=txt_dtype, delimiter="\t") 
+
+            # use non-present delim so lines with spaces do not cause errors
             #list(map(str.strip,open(path).readlines())) 
             setattr(self, stem, a ) 
             ashape = str(a.shape) if is_npy else len(a)    
