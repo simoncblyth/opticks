@@ -22,7 +22,7 @@ CSGGenstep::CSGGenstep( const CSGFoundry* foundry_ )
     mord(-1),
     iidx(-1),
     ce(make_float4(0.f, 0.f, 0.f, 100.f)),
-    qt(new qat4),
+    qt(qat4::identity()),
     geotran(nullptr),
     gs(nullptr),
     pp(nullptr)
@@ -32,7 +32,6 @@ CSGGenstep::CSGGenstep( const CSGFoundry* foundry_ )
 
 void CSGGenstep::init()
 {
-    qt->init();   // identity 
     SSys::getenvintvec("CXS_CEGS", cegs, ':', "5:0:5:1000" ); 
     // expect 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
 }
@@ -124,7 +123,8 @@ void CSGGenstep::locate(const char* moi_)
               << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;           
 
     LOG(info) << std::endl << "qt" << *qt ; 
-    geotran = Tran<double>::ConvertToTran( qt );  // houses transform and inverse
+    geotran = Tran<double>::ConvertToTran( qt );    // Tran from stran.h 
+    // matrix gets inverted by Tran<double>
 
 
     //override_locate(); 

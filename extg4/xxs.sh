@@ -96,9 +96,9 @@ msg="=== $BASH_SOURCE :"
 #geom=hmsk_solidMask
 #geom=hmsk_solidMaskTail
 
-#geom=XJfixtureConstruction_YZ
+geom=XJfixtureConstruction_YZ
 #geom=XJfixtureConstruction_XZ
-geom=XJanchorConstruction_YZ
+#geom=XJanchorConstruction_YZ
 #geom=XJanchorConstruction_XZ
 
 

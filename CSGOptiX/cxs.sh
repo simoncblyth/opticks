@@ -68,9 +68,13 @@ msg="=== $BASH_SOURCE : "
 
 #geom=XJfixtureConstructionXZ_0
 #geom=XJfixtureConstructionYZ_0
-geom=XJfixtureConstructionXZ_1
+
+#geom=XJfixtureConstructionXZ_1
 #geom=XJfixtureConstructionYZ_1
+
 #geom=XJfixtureConstructionTP_1
+#geom=XJfixtureConstructionRT_1
+geom=XJfixtureConstructionRP_1
 
 export GEOM=${GEOM:-$geom}
 
@@ -161,7 +165,8 @@ elif [ "$GEOM" == "XJfixtureConstructionXZ_0" ]; then
     moi="solidXJfixture:10"
     cegs=16:0:9:100           
     gridscale=0.07
-    ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+
+    ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
 
 elif [ "$GEOM" == "XJfixtureConstructionYZ_0" ]; then
@@ -169,7 +174,7 @@ elif [ "$GEOM" == "XJfixtureConstructionYZ_0" ]; then
     moi="solidXJfixture:10"
     cegs=0:16:9:100            
     gridscale=0.07
-    ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+    ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
 
 elif [ "$GEOM" == "XJfixtureConstructionXZ_1" ]; then
@@ -179,21 +184,38 @@ elif [ "$GEOM" == "XJfixtureConstructionXZ_1" ]; then
     cegs=16:0:9:100           
     gridscale=0.20
 
-    ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+    ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
 
 elif [ "$GEOM" == "XJfixtureConstructionYZ_1" ]; then
 
+    note="this view is difficult to interpret : could be a bug or just a slice at a funny angle, need tangential check"
     moi="solidXJfixture:10"
     cegs=0:16:9:100            
     gridscale=0.20
-    ce_offset=1      ## 1: for global geometry     TODO: find way to automate this setting 
+
+    ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
 
 elif [ "$GEOM" == "XJfixtureConstructionTP_1" ]; then
 
+    note="nicely aligned rectangle in YZ=(TP), longer in T direction +- 1 extent unit, +-0.24 extent units in P  "
     moi="solidXJfixture:10:-3"
     cegs=0:16:9:100            
+    gridscale=0.20
+
+elif [ "$GEOM" == "XJfixtureConstructionRT_1" ]; then
+
+    note="bang on tangential view from P(phi-tangent-direction) showing the radial coincidence issues clearly" 
+    moi="solidXJfixture:10:-3"
+    cegs=16:9:0:100            
+    gridscale=0.20
+
+elif [ "$GEOM" == "XJfixtureConstructionRP_1" ]; then
+
+    note="bang on tangential view from T(theta-tangent-direction) radial coincidences are clear, also another in P direction apparent"
+    moi="solidXJfixture:10:-3"
+    cegs=16:0:9:100            
     gridscale=0.20
 
 elif [ "$GEOM" == "25" ]; then

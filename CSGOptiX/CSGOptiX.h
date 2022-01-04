@@ -11,6 +11,7 @@
 struct SMeta ; 
 struct NP ; 
 struct quad4 ; 
+struct qat4 ; 
 struct float4 ; 
 
 struct CSGFoundry ; 
@@ -92,8 +93,8 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     // render related 
     void setCEGS(const std::vector<int>& cegs); 
 
-    void setCE(const float4& ce); 
-    void setCE(const glm::vec4& ce); 
+    void setCE(const float4& ce,    const qat4* qt ); 
+    void setCE(const glm::vec4& ce, const qat4* qt ); 
     void setMetaTran(const Tran<double>* metatran ); 
 
     void setNear(float near); 

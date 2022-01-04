@@ -408,7 +408,7 @@ class Gensteps(object):
     * gs[igs,2:] 4x4 transform  
 
     """
-    def __init__(self, genstep, metatran, local=True ):
+    def __init__(self, genstep, metatran, grid, local=True, local_extent_scale=False ):
         gs = genstep
         mtr = metatran
         log.info("gensteps")
@@ -418,6 +418,12 @@ class Gensteps(object):
         for igs in range(len(gs)): centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
 
         centers_local = np.dot( centers, mtr[1] )  # use metatran.v to transform back to local frame
+
+        if local and local_extent_scale:
+            extent = grid.ce[3]
+            centers_local[:,:3] *= extent 
+        pass
+
         ugsc = centers_local if local else centers  
 
         lim = {}
@@ -438,14 +444,25 @@ class Gensteps(object):
 class Positions(object):
     """
     Transforms global intersect positions into local frame 
+
+    HMM: the local frame positions are model frame in extent units  
+    when using tangential ... not so convenient would be better 
+    with real mm dimensions in local : kludge this with local_extent_scale=True
+ 
     """
-    def __init__(self, p, gs, grid, local=True, pos_mask=False ):
+    def __init__(self, p, gs, grid, local=True, pos_mask=False, local_extent_scale=False ):
 
         mtr = gs.mtr                    # transform
 
         gpos = p[:,0].copy()            # global frame intersect positions
         gpos[:,3] = 1  
         lpos = np.dot( gpos, mtr[1] )   # local frame intersect positions
+
+        if local and local_extent_scale:
+            extent = grid.ce[3]
+            lpos[:,:3] *= extent 
+        pass
+
         upos = lpos if local else gpos
 
         poslim = {}
@@ -760,13 +777,15 @@ if __name__ == '__main__':
         os.makedirs(outdir)
     pass
 
-    gs = Gensteps(cxs.genstep, cxs.metatran)
-
     grid = GridSpec(cxs.peta)
+
+    local_extent_scale = True 
+
+    gs = Gensteps(cxs.genstep, cxs.metatran, grid, local_extent_scale=local_extent_scale )
 
     pos_mask = True 
     #pos_mask = False    #without pos_mask means that the legend is filled with features that are not visible in the frame 
-    pos = Positions(cxs.photons, gs, grid, local=True, pos_mask=pos_mask )
+    pos = Positions(cxs.photons, gs, grid, local=True, pos_mask=pos_mask, local_extent_scale=local_extent_scale )
 
     #pos.pvplt_simple()
 

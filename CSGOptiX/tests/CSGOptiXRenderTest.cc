@@ -35,6 +35,7 @@ CFBASE
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 #include "scuda.h"
+#include "sqat4.h"
 
 #include "Opticks.hh"
 
@@ -59,6 +60,8 @@ struct CSGOptiXRenderTest
     const char* botline ; 
     bool        flight ; 
     float4      ce ; 
+    qat4*       qt ; 
+
     const char* default_arg ; 
     std::vector<std::string> args ; 
 
@@ -67,7 +70,7 @@ struct CSGOptiXRenderTest
     void initCX(); 
     void initArgs(); 
 
-    void setCE(const char* arg); 
+    void setCE(const char* moi); 
     void setCE_sla(); 
     void render_snap(const char* namestem);
 };
@@ -83,7 +86,8 @@ CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
     topline(SSys::getenvvar("TOPLINE", "CSGOptiXRenderTest")),
     botline(SSys::getenvvar("BOTLINE", nullptr )),
     flight(ok->hasArg("--flightconfig")),
-    ce(make_float4(0.f, 0.f, 0.f, 1000.f )), 
+    ce(make_float4(0.f, 0.f, 0.f, 1000.f )),
+    qt(qat4::identity()),
     default_arg(SSys::getenvvar("MOI", "sWorld:0:0"))  
 {
     initFD(); 
@@ -196,21 +200,23 @@ HMM: solid selection leads to creation of an IAS referencing each of the
      selected solids so for generality should be using IAS targetting 
 
 **/
-void CSGOptiXRenderTest::setCE(const char* arg)
+void CSGOptiXRenderTest::setCE(const char* moi)
 {
     int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
-    fd->parseMOI(midx, mord, iidx,  arg );  
-    int rc = fd->getCenterExtent(ce, midx, mord, iidx) ;
+    fd->parseMOI(midx, mord, iidx,  moi );  
+
+    int rc = fd->getCenterExtent(ce, midx, mord, iidx, qt ) ;
 
     LOG(info) 
-        << " arg " << arg 
+        << " moi " << moi 
         << " midx " << midx << " mord " << mord << " iidx " << iidx 
         << " rc [" << rc << "]" 
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
+        << " qt (" << *qt << ")"    
         ; 
 
     assert(rc==0); 
-    cx->setCE(ce);   // establish the coordinate system 
+    cx->setCE(ce, qt);   // establish the coordinate system 
 }
 
 void CSGOptiXRenderTest::setCE_sla()
@@ -224,7 +230,7 @@ void CSGOptiXRenderTest::setCE_sla()
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
        ; 
 
-    cx->setCE(ce);   // establish the coordinate system 
+    cx->setCE(ce, qt);   // establish the coordinate system 
 }
 
 void CSGOptiXRenderTest::render_snap(const char* namestem)

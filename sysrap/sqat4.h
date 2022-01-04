@@ -184,6 +184,13 @@ struct qat4
         return new qat4(cdata()); 
     }
 
+    static QAT4_METHOD qat4* identity()
+    {
+        qat4* q = new qat4 ; 
+        q->init() ; 
+        return q ; 
+    }
+
     static QAT4_METHOD void copy(qat4& b, const qat4& a )
     {
         b.q0.f.x = a.q0.f.x ; b.q0.f.y = a.q0.f.y ; b.q0.f.z = a.q0.f.z ; b.q0.f.w = a.q0.f.w ; 

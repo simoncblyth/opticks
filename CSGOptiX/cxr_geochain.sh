@@ -49,8 +49,8 @@ msg="=== $BASH_SOURCE :"
 #geom=nmsk_solidMask
 #geom=nmsk_solidMaskTail
 
-#geom=XJfixtureConstruction
-geom=XJanchorConstruction
+geom=XJfixtureConstruction
+#geom=XJanchorConstruction
 
 
 export GEOM=${GEOM:-$geom}

@@ -240,35 +240,37 @@ reference used by the EYE LOOK UP navigation controls.
 
 **/
 
-void CSGOptiX::setCE(const float4& v )
+void CSGOptiX::setCE(const float4& v, const qat4* qt )
 {
     glm::vec4 ce(v.x, v.y, v.z, v.w); 
-    setCE(ce); 
+    setCE(ce, qt ); 
 }
 
 /**
 CSGOptiX::setCE
 -----------------
 
-
 **/
 
-void CSGOptiX::setCE(const glm::vec4& ce )
+void CSGOptiX::setCE(const glm::vec4& ce, const qat4* qt  )
 {
     peta->q2.f.x = ce.x ;   // moved from q1
     peta->q2.f.y = ce.y ; 
     peta->q2.f.z = ce.z ; 
     peta->q2.f.w = ce.w ; 
 
-    bool aim = true ; 
-    composition->setCenterExtent(ce, aim);  // model2world view setup 
+    bool autocam = true ; 
+
+    composition->setCenterExtent(ce, autocam, qt );  // model2world view setup 
 
     float extent = ce.w ; 
     float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
+
     LOG(info) 
         << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
         << " tmin_model " << tmin_model
         << " tmin " << tmin 
+        << " qt " << *qt
         ; 
 
     composition->setNear(tmin); 

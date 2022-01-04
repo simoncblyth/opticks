@@ -34,6 +34,7 @@
 #include "NGLM.hpp"
 #include "SCtrl.hh"
 #include "SSys.hh"
+#include "SCenterExtentFrame.hh"
 
 
 // npy-
@@ -1391,7 +1392,7 @@ See tests/CompositionTest.cc
 
 **/
 
-void Composition::setCenterExtent(const glm::vec4& ce, bool autocam)
+void Composition::setCenterExtent(const glm::vec4& ce, bool autocam, bool rtp_tangential )
 {
     // this is invoked by App::uploadGeometry/Scene::setTarget
 
@@ -1400,32 +1401,37 @@ void Composition::setCenterExtent(const glm::vec4& ce, bool autocam)
     m_center_extent.z = ce.z ;
     m_center_extent.w = ce.w ;
 
+    // old way : to be replaced once SCenterExtentFrame is checked
     glm::vec4 ce_(ce.x,ce.y,ce.z,ce.w);
     glm::vec3 sc(ce.w);
     glm::vec3 tr(ce.x, ce.y, ce.z);
-
     glm::vec3 isc(1.f/ce.w);
 
+    glm::mat4 old_world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);
+    glm::mat4 old_model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
 
-    
+    SCenterExtentFrame<double> cef_rtpw( ce.x, ce.y, ce.z, ce.w, true ); 
+    SCenterExtentFrame<double> cef_xyzw( ce.x, ce.y, ce.z, ce.w, false ); 
 
+    m_world2model = old_world2model ; 
+    m_model2world = old_model2world ;  
+ 
+    //m_world2model = rtp_tangential ? cef_rtpw.world2model : cef_xyzw.world2model ; 
+    //m_model2world = rtp_tangential ? cef_rtpw.model2world : cef_xyzw.model2world ; 
 
-
-    m_world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
-    m_model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);    
-
-
-    LOG(debug) << "Composition::setCenterExtent"
-              << " ce " << gformat(m_center_extent) 
-              ;
-
-    LOG(debug) << "Composition::setCenterExtent"
-              << " model2world " << gformat(m_model2world)
-              << " world2model " << gformat(m_world2model)
-              ;
+    LOG(info) 
+        << " ce " << gformat(m_center_extent) << std::endl 
+        << " old_model2world " << std::endl 
+        << gformat(old_model2world) << std::endl 
+        << " old_world2model " << std::endl 
+        << gformat(old_world2model) << std::endl 
+        << " m_model2world " << std::endl 
+        << gformat(m_model2world) << std::endl 
+        << " m_world2model " << std::endl 
+        << gformat(m_world2model) << std::endl 
+        ;
 
     m_extent = ce.w ; 
-
 
     update();
 
