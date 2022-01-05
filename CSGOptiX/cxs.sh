@@ -81,7 +81,8 @@ msg="=== $BASH_SOURCE : "
 #geom=XJfixtureConstructionPR_55
 
 #geom=XJfixtureConstructionTR_0
-geom=XJfixtureConstructionPR_0
+#geom=XJfixtureConstructionPR_0
+geom=XJfixtureConstructionTP_0
 
 
 
@@ -250,6 +251,13 @@ elif [ "$GEOM" == "XJfixtureConstructionTR_0" ]; then
     moi="solidXJfixture:0:-3"
     #    R:T:P        larger side of grid becomes horizontal : hence  TR  (not RT)
     cegs=9:16:0:100            
+    gridscale=0.10
+
+elif [ "$GEOM" == "XJfixtureConstructionTP_0" ]; then
+
+    moi="solidXJfixture:0:-3"
+    #    R:T:P        larger side of grid becomes horizontal : hence  TP
+    cegs=0:16:9:100            
     gridscale=0.10
 
 

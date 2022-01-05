@@ -456,6 +456,11 @@ class Positions(object):
  
     """
     def __init__(self, p, gs, grid, local=True, pos_mask=False, local_extent_scale=False ):
+        """
+        :param p: photons array
+        :param gs: Gensteps instance
+        :param grid: GridSpec instance 
+        """
 
         mtr = gs.mtr                    # transform
 
@@ -795,6 +800,7 @@ if __name__ == '__main__':
 
     pos_mask = True 
     #pos_mask = False    #without pos_mask means that the legend is filled with features that are not visible in the frame 
+
     pos = Positions(cxs.photons, gs, grid, local=True, pos_mask=pos_mask, local_extent_scale=local_extent_scale )
 
     #pos.pvplt_simple()

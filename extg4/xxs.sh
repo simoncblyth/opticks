@@ -98,10 +98,13 @@ msg="=== $BASH_SOURCE :"
 
 #geom=XJfixtureConstruction_YZ
 #geom=XJfixtureConstruction_XZ
+#geom=XJfixtureConstruction_XY
+
 #geom=XJanchorConstruction_YZ
 #geom=XJanchorConstruction_XZ
+geom=XJanchorConstruction_XY
 
-geom=SJReceiverConstruction_XZ
+#geom=SJReceiverConstruction_XZ
 
 
 
@@ -157,7 +160,6 @@ elif [ "$GEOM" == "SphereWithThetaSegment" ]; then
 
     export THIRDLINE="theta_start $X4SolidMaker_SphereWithThetaSegment_theta_start theta_delta $X4SolidMaker_SphereWithThetaSegment_theta_delta "
 
-
     ## theta_start:0    theta_delta:0.25    upwards 90 degree fan centered on +ve Z-axis
     ## theta_start:0.25 theta_delta:0.25    bow-tie above the z=0 plane
     ## theta_start:0.5  theta_delta:0.25    bow-tie under the z=0 plane
@@ -184,10 +186,9 @@ elif [ "$GEOM" == "BoxMinusOrb" ]; then
     cegs=9:0:16:0:0:0:$numpho
     gridscale=0.12
 
-
-
 elif [ "$GEOM" == "XJfixtureConstruction_YZ" ]; then
 
+    note="blocky head with ears shape"
     numpho=100
     cegs=0:16:9:0:0:0:$numpho
     gridscale=0.05      # shrinking the grid makes the cross section render appear bigger 
@@ -195,21 +196,43 @@ elif [ "$GEOM" == "XJfixtureConstruction_YZ" ]; then
 
 elif [ "$GEOM" == "XJfixtureConstruction_XZ" ]; then
 
+    note="appears as three separate rectangles with this slice"
     numpho=100
     cegs=16:0:9:0:0:0:$numpho
     gridscale=0.05      
     source XJfixtureConstruction.sh
 
+elif [ "$GEOM" == "XJfixtureConstruction_XY" ]; then
+
+    note="pretty celtic cross"
+    numpho=100
+    cegs=16:9:0:0:0:0:$numpho
+    gridscale=0.05      
+    source XJfixtureConstruction.sh
+
+
+
+
+
 elif [ "$GEOM" == "XJanchorConstruction_YZ" ]; then
 
+    note="spurious Geant4 intersects on line between cone top and base"
     numpho=100
     cegs=0:16:9:0:0:0:$numpho
     gridscale=0.05      
 
 elif [ "$GEOM" == "XJanchorConstruction_XZ" ]; then
 
+    note="also spurious Geant4 intersects on line between cone top and base, rotational symmetry"
     numpho=100
     cegs=16:0:9:0:0:0:$numpho
+    gridscale=0.05      
+
+elif [ "$GEOM" == "XJanchorConstruction_XY" ]; then
+
+    note="circle : z-offset as z-max zero : G4Sphere::DistanceToOut noise"
+    numpho=100
+    cegs=16:9:0:0:0:-1:$numpho
     gridscale=0.05      
 
 
@@ -248,6 +271,9 @@ export CXS_OTHER_RELDIR=${CXS_OTHER_RELDIR:-$other_reldir}
 export XX=${XX:-$xx}
 export ZZ=${ZZ:-$zz}
 export ZZD=${ZZD:-$zzd}
+export TOPLINE="x4 ; GEOM=$GEOM ./xxs.sh "
+export BOTLINE="$note"
+export THIRDLINE="CXS_CEGS=$CXS_CEGS"
 
 env | grep CXS
 
