@@ -1,7 +1,10 @@
 #pragma once
 
+#include <string>
 #include <vector>
+#include "G4ThreeVector.hh"
 class G4VSolid ; 
+class G4Box ; 
 
 #include "X4_API_EXPORT.hh"
 #include "plog/Severity.h"
@@ -21,6 +24,18 @@ struct X4_API X4SolidMaker
 
     static const int XJfixtureConstruction_debug_mode ; 
     static const G4VSolid* XJfixtureConstruction(const char* name); 
+
+    static G4VSolid* Uncoincide_Box_Box_Union( const G4VSolid* bbu  ); 
+    static std::string Desc( const G4Box* box );
+    static std::string Desc( const G4ThreeVector* v );
+
+    enum { X, Y, Z, ERR } ; 
+    static int OneAxis( const G4ThreeVector* v );
+    static double HalfLength( const G4Box* box, int axis ); 
+    static void ChangeBoxHalfLength( G4Box* box, int axis, double delta ); 
+    static void ChangeThreeVector( G4ThreeVector* v, int axis, double delta );
+
+
     static const G4VSolid* XJanchorConstruction(const char* name); 
     static const G4VSolid* SJReceiverConstruction(const char* name);
 

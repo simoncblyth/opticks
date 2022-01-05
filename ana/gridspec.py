@@ -218,10 +218,10 @@ class GridSpec(object):
             H, V = axes
 
             ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
-            _axes = "RTP" if int(iidx) == -3 else "XYZ"  
-            axlabels =  _axes[H], _axes[V]
+            coords = "RTP" if int(iidx) == -3 else "XYZ"  
+            axlabels =  coords[H], coords[V]
 
-            HV = "%s%s" % (_axes[H],_axes[V])
+            HV = "%s%s" % (coords[H],coords[V])
 
             up  = Axes.Up(H,V)
             off = Axes.Off(H,V)
@@ -231,7 +231,7 @@ class GridSpec(object):
             axlabels = None          
             pass
         pass
-
+        self.coords = coords
         self.eye = eye
         self.look = look 
         self.up  = up

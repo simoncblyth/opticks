@@ -248,7 +248,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     gs.q1.f.z = ce_offset ? ce.z : 0.f ;
     gs.q1.f.w = 1.f ;
 
-    double local_scale = ce_scale ?double(gridscale)*ce.w : double(gridscale) ; 
+    double local_scale = ce_scale ? double(gridscale)*ce.w : double(gridscale) ; 
     // hmm: when using SCenterExtentFrame model2world transform the 
     // extent is already handled within the transform so must not apply extent scaling 
 

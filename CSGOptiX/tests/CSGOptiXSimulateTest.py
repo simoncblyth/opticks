@@ -48,6 +48,7 @@ GUI = not "NOGUI" in os.environ
 MP =  not "NOMP" in os.environ 
 PV =  not "NOPV" in os.environ 
 PVG = "PVG" in os.environ
+SIM = "SIM" in os.environ
 #LES = not "NOLES" in os.environ
 MASK = not "NOMASK" in os.environ
 
@@ -58,7 +59,6 @@ from opticks.ana.fold import Fold
 from opticks.ana.npmeta import NPMeta
 from opticks.ana.gridspec import GridSpec, X, Y, Z
 SIZE = np.array([1280, 720])
-
 
 
 import matplotlib
@@ -95,8 +95,7 @@ if GUI == False:
     log.info("disabling pv as GUI False")
     pv = None
 pass
-#pv = None
-print("pv:%s" % str(pv))
+#print("pv:%s" % str(pv))
 
 
 def make_colors():
@@ -154,7 +153,6 @@ def fromself( l, s, kk ):
         l[k] = getattr(s, k)
     pass
 
-
 def shorten_bname(bname):
     elem = bname.split("/")
     if len(elem) == 4:
@@ -164,7 +162,6 @@ def shorten_bname(bname):
         bn = bname
     pass 
     return bn
-
 
 class Photons(object):
     """
@@ -543,13 +540,11 @@ class Positions(object):
     def pvplt_simple(self):
         p = self.p
         pos = p[:,0,:3]
-
         pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
         pl.add_points( pos, color="white" )        
+        pl.show_grid()
         cp = pl.show() if GUI else None
-
         return cp
-
 
 class Plt(object):
     def __init__(self, outdir, feat, gs, grid, pos, gsmeta ):
@@ -565,7 +560,6 @@ class Plt(object):
         botline = os.environ.get("BOTLINE", "cxs") 
 
         ## hmm what should come from remote and what local ?
-
         self.topline = gsmeta.find("TOPLINE:", topline )
         self.botline = gsmeta.find("BOTLINE:", botline )
 
@@ -838,29 +832,31 @@ if __name__ == '__main__':
 
     pos = Positions(cxs.photons, gs, grid, local=True, pos_mask=pos_mask, local_extent_scale=local_extent_scale )
 
-    #pos.pvplt_simple()
+    if SIM:
+        pos.pvplt_simple()
+    else:
+        featname = os.environ.get("FEAT", "pid" )  
+        assert featname in ["pid", "bnd", "ins" ]    # pid:meshname, bnd:boundary, ins:instance
 
-    featname = os.environ.get("FEAT", "pid" )  
-    assert featname in ["pid", "bnd", "ins" ]    # pid:meshname, bnd:boundary, ins:instance
+        ph = Photons(pos, cf, featname=featname ) 
+        print(ph.bndfeat)
+        print(ph.pidfeat)
+        print(ph.insfeat)
+        feat = ph.feat 
 
-    ph = Photons(pos, cf, featname=featname ) 
-    print(ph.bndfeat)
-    print(ph.pidfeat)
-    print(ph.insfeat)
-    feat = ph.feat 
+        plt = Plt(outdir, feat, gs, grid, pos, gsmeta )
 
-    plt = Plt(outdir, feat, gs, grid, pos, gsmeta )
+        upos = plt.pos.upos
 
-    upos = plt.pos.upos
+        if not mp is None:
+            plt.positions_mpplt(legend=True, gsplot=GSPLOT )
+            plt.positions_mpplt(legend=False, gsplot=GSPLOT )   # when not using pos_mask legend often too big, so can switch it off 
+        pass
 
-    if not mp is None:
-        plt.positions_mpplt(legend=True, gsplot=GSPLOT )
-        plt.positions_mpplt(legend=False, gsplot=GSPLOT )   # when not using pos_mask legend often too big, so can switch it off 
+        if not pv is None:
+            plt.positions_pvplt()
+        pass
+        print("leaves:")
+        print("\n".join(leaves))
     pass
-
-    if not pv is None:
-        plt.positions_pvplt()
-    pass
-    print("leaves:")
-    print("\n".join(leaves))
 

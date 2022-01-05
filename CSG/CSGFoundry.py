@@ -44,14 +44,22 @@ class CSGFoundry(object):
 
     @classmethod
     def namelist_to_namedict(cls, namelist):
-        return dict(zip(range(len(namelist)),list(map(str,namelist)))) 
+        nd = {} 
+        if not namelist is None:
+            nd = dict(zip(range(len(namelist)),list(map(str,namelist)))) 
+        pass
+        return nd
  
     def __init__(self, fold=FOLD):
         self.load(fold)
         self.meshnamedict = self.namelist_to_namedict(self.meshname)
 
-        #self.bndnamedict = self.namelist_to_namedict(self.bndname)
-        self.bndnamedict = self.namelist_to_namedict(self.bnd_meta)
+        if hasattr(self, 'bnd_meta'):
+             bndnamedict = self.namelist_to_namedict(self.bnd_meta)
+        else:
+             bndnamedict = {}
+        pass
+        self.bndnamedict = bndnamedict
 
         self.mokname = "zero one two three four five six seven eight nine".split()
         self.moknamedict = self.namelist_to_namedict(self.mokname)
@@ -78,6 +86,24 @@ class CSGFoundry(object):
         pass
         return d
 
+    def loadtxt(self, path):
+        """
+        When the path contains only a single line using dtype np.object or |S100
+        both result in an object with no length::
+        
+            array('solidXJfixture', dtype=object)
+
+        """
+        # both these do not yield an array when only a single line in the file
+        # 
+        #a_txt = np.loadtxt(path, dtype=np.object)   # yields single object 
+        #a_txt = np.loadtxt(path, dtype="|S100")
+
+        txt = open(path).read().splitlines()
+        a_txt = np.array(txt, dtype=np.object ) 
+        return a_txt 
+  
+
     def load(self, fold):
         log.info("load %s " % fold)
 
@@ -92,7 +118,7 @@ class CSGFoundry(object):
         for name in filter(lambda name:name.endswith(".npy") or name.endswith(".txt"), names):
             path = os.path.join(fold, name)
             stem = name[:-4]
-            a = np.load(path) if name.endswith(".npy") else np.loadtxt(path, dtype=np.object)
+            a = np.load(path) if name.endswith(".npy") else self.loadtxt(path)
             if name == "bnd.txt": stem = "bndname"  ## TODO: avoid clash of stems between bnd.npy and bnd.txt ?
             setattr(self, stem, a)
             stems.append(stem)

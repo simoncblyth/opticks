@@ -78,7 +78,7 @@ msg="=== $BASH_SOURCE : "
 #geom=XJfixtureConstructionXZ_0
 #geom=XJfixtureConstructionYZ_0
 
-geom=XJfixtureConstructionXZ_10
+#geom=XJfixtureConstructionXZ_10
 #geom=XJfixtureConstructionYZ_10
 
 #geom=XJfixtureConstructionTP_1
@@ -286,6 +286,9 @@ elif [ "$GEOM" == "custom_XJfixtureConstructionXY" ]; then
     cegs=0:16:9:-2:0:0:100            
     gridscale=0.10
 
+    ce_offset=1    # pre-tangential-frame approach  
+    ce_scale=1 
+
 
 elif [ "$GEOM" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    
@@ -345,7 +348,9 @@ if [ "$(uname)" == "Linux" ]; then
        echo $msg :
        echo $msg : 1. you intended to use the standard geometry but the GEOM $GEOM envvar does not match any of the if branches 
        echo $msg : 2. you want to use a non-standard geometry but have not yet created it : 
-       echo $msg :    do so with GeoChain after building from CSGOptiX with b7
+       echo $msg :    do so from \"cd ~/opticks/GeoChain\" after b7 building by invoking:
+       echo $msg :
+       echo $msg :    \"gc \; GEOM=$GEOM ./run.sh\" 
        echo $msg :   
        exit 1 
     fi 
@@ -411,7 +416,12 @@ if [ "$(uname)" == "Linux" ]; then
 
         $GDB CSGOptiXSimulateTest
         source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
-        NOGUI=1 ${IPYTHON:-ipython} ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
+
+        if [ -n "$PDB" ]; then
+            NOGUI=1 ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
+        else
+            NOGUI=1 ${IPYTHON:-ipython}          ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
+        fi 
 
     fi
 

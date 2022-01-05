@@ -96,13 +96,13 @@ msg="=== $BASH_SOURCE :"
 #geom=hmsk_solidMask
 #geom=hmsk_solidMaskTail
 
-#geom=XJfixtureConstruction_YZ
+geom=XJfixtureConstruction_YZ
 #geom=XJfixtureConstruction_XZ
 #geom=XJfixtureConstruction_XY
 
 #geom=XJanchorConstruction_YZ
 #geom=XJanchorConstruction_XZ
-geom=XJanchorConstruction_XY
+#geom=XJanchorConstruction_XY
 
 #geom=SJReceiverConstruction_XZ
 
@@ -209,9 +209,6 @@ elif [ "$GEOM" == "XJfixtureConstruction_XY" ]; then
     cegs=16:9:0:0:0:0:$numpho
     gridscale=0.05      
     source XJfixtureConstruction.sh
-
-
-
 
 
 elif [ "$GEOM" == "XJanchorConstruction_YZ" ]; then

@@ -271,10 +271,18 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
     solidXJfixture_up2 = new G4Box("solidXJfixture_up2", 15.*mm, 65*mm, 5.*mm);
     solidXJfixture_up_uni = new G4UnionSolid("solidXJfixture_up_uni", solidXJfixture_up1, solidXJfixture_up2, 0, G4ThreeVector(0.*mm, 0.*mm, 13.5*mm));
 
+    G4VSolid* new_solidXJfixture_up_uni = Uncoincide_Box_Box_Union( solidXJfixture_up_uni );
+
+    solidXJfixture_up_uni = new_solidXJfixture_up_uni ;
+
+
     /**
      up_uni is two box altar   : GETTING SPURIOUS INTERSECTS BECAUSE OF FLUSH UNION 
 
      TOFIX: NEED TO EXPAND THE SMALLER BOX IN Y "up1" upwards TO OVERLAP THE UNION 
+
+       G4Box param are half lengths symmetrically defined, so must grow hz and shift up
+
 
 
        up2 is raised by 13.5 to form the thinner in z table top of the altar 
@@ -340,6 +348,212 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
     }
     return solid ;
 }
+
+/**
+X4SolidMaker::Uncoincide_Box_Box_Union
+----------------------------------------
+
+To avoid coincidence need to expand the smaller box into the larger 
+without changing the position the lower edge.
+Hence increase the half-size in Z from *hz* to *new_hz* and 
+simultaneously shift upwards by the same amount (*zoff*) 
+to keep the lower edge at same z position::
+
+
+       +hz + uncoincide - - - - - - - +~~~~~~~~~+ - -    zoff + new_hz  - - -
+                                      |         |
+                                      |         |
+       +hz  +---------+ - - - - - - - | - - - - | - - - - - - - - - - - - - -
+            |         |               |         |  
+            |         |               |         |
+            |         |               |         |
+            |         |               |_________|        zoff 
+            |         |               |         |
+        0 --|---------| - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            |         |               |         |
+            |         |               |         |
+            |         |               |         |                                
+            |         |               |         |
+            |         |               |         |
+       -hz  +---------+ - - - - - - - +---------+ - - -  zoff - new_hz  - - -
+
+
+
+Line equations::
+
+      hz + uncoincide = zoff + new_hz
+
+      -hz             = zoff - new_hz 
+
+Add them::
+
+     zoff = uncoincide/2
+
+Subtract them::
+     
+     new_hz = hz + uncoincide/2 
+
+
+
+
+
+up2 is raised by 13.5 to form the thinner in z table top of the altar 
+
+
+         +---------------------------+     5mm                     - - -  8.5 + 10 = 18.5
+         |         up2               |  - - - -   13.5  = 8.5+5
+         +-----+---------------+-----+
+               |               |   17/2 = 8.5mm       
+               |   up1         |   - - - -    
+               |               |
+               +---------------+ 
+                                          10 mm thin top of altar, 
+                                          17 mm thicker bottom of altar
+
+
+**/
+
+G4VSolid* X4SolidMaker::Uncoincide_Box_Box_Union( const G4VSolid* bbu  )  // static
+{
+    LOG(info) << " bbu.GetName " << bbu->GetName() ;  
+
+    const G4BooleanSolid* bs = dynamic_cast<const G4BooleanSolid*>(bbu) ; 
+
+    const G4VSolid* a = bs->GetConstituentSolid(0) ; 
+    const G4VSolid* _b = bs->GetConstituentSolid(1) ; 
+    const G4DisplacedSolid* _b_disp = dynamic_cast<const G4DisplacedSolid*>(_b) ; 
+    G4ThreeVector b_tla = _b_disp->GetObjectTranslation();
+    const G4VSolid* b = _b_disp->GetConstituentMovedSolid()  ; 
+
+    LOG(info) << " a.GetName " << a->GetName() ;  
+    LOG(info) << " _b.GetName " << _b->GetName() ;  
+    LOG(info) << " _b_disp.GetName " << _b_disp->GetName() ;  
+    LOG(info) << " b.GetName " << b->GetName() ;  
+    LOG(info) << " b_tla " << Desc(&b_tla) ;
+ 
+    const G4Box* a_box = dynamic_cast<const G4Box*>(a); 
+    const G4Box* b_box = dynamic_cast<const G4Box*>(b); 
+    LOG(info) << " a_box " << Desc(a_box) ;  
+    LOG(info) << " b_box " << Desc(b_box) ;  
+
+    G4ThreeVector new_tla(b_tla); 
+
+    std::string new_name = bs->GetName()  ; 
+
+    G4Box* new_a = new G4Box(a->GetName(), a_box->GetXHalfLength(), a_box->GetYHalfLength(), a_box->GetZHalfLength() ); 
+    G4Box* new_b = new G4Box(b->GetName(), b_box->GetXHalfLength(), b_box->GetYHalfLength(), b_box->GetZHalfLength() ); 
+
+    int shift_axis = OneAxis(&b_tla); 
+    LOG(info) << " shift_axis " << shift_axis ; 
+
+
+    G4Box* smaller_box = nullptr ;  
+    for(int axis=0 ; axis < 3 ; axis++)
+    {
+        if(axis == shift_axis) continue ;   // 
+        double ah = HalfLength(a_box, axis); 
+        double bh = HalfLength(b_box, axis); 
+        if(ah == bh) continue ;    // ignore equal axes 
+        smaller_box = ah < bh ? new_a : new_b ;  
+    } 
+
+    double uncoincide = 1.*mm ; 
+    if(smaller_box)
+    {
+        ChangeBoxHalfLength( smaller_box, shift_axis, uncoincide/2. );         
+        ChangeThreeVector(   &new_tla ,   shift_axis, uncoincide/2. ) ;     
+    }
+    else
+    {
+        LOG(fatal) << " failed to uncoincide " ; 
+    }
+
+    G4UnionSolid* new_bbu = new G4UnionSolid( new_name, new_a, new_b, 0, new_tla ); 
+    return new_bbu ; 
+}
+
+
+double X4SolidMaker::HalfLength( const G4Box* box, int axis )
+{
+    double value = 0. ; 
+    switch(axis)
+    {
+        case X: value = box->GetXHalfLength() ; break ; 
+        case Y: value = box->GetYHalfLength() ; break ; 
+        case Z: value = box->GetZHalfLength() ; break ; 
+    }
+    return value ; 
+}
+
+void X4SolidMaker::ChangeThreeVector( G4ThreeVector* v, int axis, double delta )
+{
+    if( v == nullptr ) return ; 
+    switch(axis)
+    {
+        case X: v->setX(v->x() + delta)  ; break ; 
+        case Y: v->setY(v->y() + delta)  ; break ; 
+        case Z: v->setZ(v->z() + delta)  ; break ; 
+    }
+}
+void X4SolidMaker::ChangeBoxHalfLength( G4Box* box, int axis, double delta )
+{
+    switch(axis)
+    {
+        case X: box->SetXHalfLength(box->GetXHalfLength() + delta)  ; break ; 
+        case Y: box->SetYHalfLength(box->GetYHalfLength() + delta)  ; break ; 
+        case Z: box->SetZHalfLength(box->GetZHalfLength() + delta)  ; break ; 
+    }
+}
+
+
+
+
+
+
+int X4SolidMaker::OneAxis( const G4ThreeVector* v )
+{
+    double x = v ? v->x() : 0. ; 
+    double y = v ? v->y() : 0. ; 
+    double z = v ? v->z() : 0. ; 
+    int axis = ERR ; 
+    if( x != 0. && y == 0. && z == 0. ) axis = X ; 
+    if( x == 0. && y != 0. && z == 0. ) axis = Y ; 
+    if( x == 0. && y == 0. && z != 0. ) axis = Z ; 
+    return axis ; 
+}
+
+
+
+std::string X4SolidMaker::Desc( const G4Box* box )
+{
+    std::stringstream ss ; 
+    ss 
+       << "(" 
+       << std::fixed << std::setw(10) << std::setprecision(3) << box->GetXHalfLength() << " "
+       << std::fixed << std::setw(10) << std::setprecision(3) << box->GetYHalfLength() << " "
+       << std::fixed << std::setw(10) << std::setprecision(3) << box->GetZHalfLength()
+       << ") "
+       << box->GetName()
+       ;
+    std::string s = ss.str();
+    return s ; 
+}
+
+std::string X4SolidMaker::Desc( const G4ThreeVector* v )
+{
+    std::stringstream ss ; 
+    ss 
+       << "(" 
+       << std::fixed << std::setw(10) << std::setprecision(3) << (v ? v->x() : 0. ) << " "
+       << std::fixed << std::setw(10) << std::setprecision(3) << (v ? v->y() : 0. )  << " "
+       << std::fixed << std::setw(10) << std::setprecision(3) << (v ? v->z() : 0. ) 
+       << ") "
+       ;
+    std::string s = ss.str();
+    return s ; 
+} 
+
+
 
 
 /**

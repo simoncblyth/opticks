@@ -54,8 +54,13 @@ geom=XJfixtureConstruction
 
 
 export GEOM=${GEOM:-$geom}
-#cfname=GeoChain/$GEOM            # picks the CSGFoundry geometry to load
-cfname=GeoChain_Darwin/$GEOM            # picks the CSGFoundry geometry to load
+
+# cfname picks the CSGFoundry geometry to load
+if [ "$(uname)" == "Linux" ]; then
+    cfname=GeoChain/$GEOM            
+else
+    cfname=GeoChain_Darwin/$GEOM            
+fi
 
 
 moi=-1

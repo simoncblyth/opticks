@@ -1095,4 +1095,67 @@ Even seeing Geant4 spurious intersects with solidXJanchor::
 
 
 
+GeoChain examination of XJfixtureConstruction
+------------------------------------------------
+
+In Geant4 geometry is tweakable::
+
+    epsilon:GeoChain blyth$ cat ../extg4/XJfixtureConstruction.sh 
+    #!/bin/bash 
+
+    X4SolidMaker_XJfixtureConstruction(){
+
+       local default=0
+       local just_tubs=1
+       local down_uni4=7  # celtic cross  
+       local up_uni=10    # two box altar  
+       local celtic_cross_sub_altar=11   # no visble sub from celtic cross : so no overlap between them : they are flush 
+       local split=12      # split the celtic cross and altar 
+
+       export X4SolidMaker__XJfixtureConstruction_debug_mode=$default
+       env | grep X4SolidMaker
+    }
+
+    X4SolidMaker_XJfixtureConstruction
+
+
+
+Convert into CSGFoundry::
+
+   gc 
+   GEOM=XJfixtureConstruction ./run.sh 
+
+cxr 3D render::
+
+   cx
+   GEOM=XJfixtureConstruction ./cxr_geochain.sh       # celtic cross on top of altar 
+
+   ## this works both on laptop (using OptiX 5) and on workstation using OptiX 7 
+
+   GEOM=XJfixtureConstruction EYE=1,0,0.5 UP=0,0,1 TMIN=1 ./cxr_geochain.sh 
+
+   ## coincidence wierdness is apparent  
+
+
+cxs 2D render::  
+
+   cx 
+   GEOM=custom_XJfixtureConstructionXY ./cxs.sh 
+
+   ## have yet to back port this to OptiX5+6 so must do on workstation 
+   ## and then grab back to laptop for python plotting 
+
+laptop::
+
+    cx
+    ./tmp_grab.sh   # The gran script writes CSGOptiXSimulateTest_OUTPUT_DIR.sh into standard location 
+                    # based on the path of the last .npy grabbed.
+     
+    ./cxs.sh        # The above CSGOptiXSimulateTest_OUTPUT_DIR.sh script is sourced by cxs.sh 
+                    # which sets the directory from which to get the geometry to render. 
+
+         ## very clear view of coincidence intersects    
+
+
+
 
