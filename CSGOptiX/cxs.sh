@@ -6,14 +6,23 @@ usage(){ cat << EOU
 cxs.sh : hybrid rendering/simulation machinery, eg creating 2D ray trace cross sections
 ========================================================================================
 
-TODO: fix the running directory to avoid dropping files in repo
-
+TODO: partition creation and analysis more clearly... currently some 
+      stuff comes from metadata written during creation and 
+      cannot be updated during analysis
 
 ::
 
     ISEL=0,1,3,4,5 ./cxs.sh ana       # select which boundaries to include in plot 
 
     XX=-208,208 ZZ=-15.2,15.2 ./cxs.sh 
+
+    NOMASK=1 ./cxs.sh
+        Do not mask intersect positions by the limits of the genstep grid
+        (so see distant intersects) 
+
+    PVG=1 ./cxs.sh 
+        Show the pyvista grid scale 
+
 
 Two envvars MOI and CEGS configure the gensteps.
 
@@ -69,7 +78,7 @@ msg="=== $BASH_SOURCE : "
 #geom=XJfixtureConstructionXZ_0
 #geom=XJfixtureConstructionYZ_0
 
-#geom=XJfixtureConstructionXZ_1
+geom=XJfixtureConstructionXZ_1
 #geom=XJfixtureConstructionYZ_1
 
 #geom=XJfixtureConstructionTP_1
@@ -82,7 +91,8 @@ msg="=== $BASH_SOURCE : "
 
 #geom=XJfixtureConstructionTR_0
 #geom=XJfixtureConstructionPR_0
-geom=XJfixtureConstructionTP_0
+#geom=XJfixtureConstructionTP_0
+#geom=XJfixtureConstructionTP_0_Rshift
 
 
 
@@ -260,6 +270,14 @@ elif [ "$GEOM" == "XJfixtureConstructionTP_0" ]; then
     cegs=0:16:9:100            
     gridscale=0.10
 
+elif [ "$GEOM" == "XJfixtureConstructionTP_0_Rshift" ]; then
+
+    moi="solidXJfixture:0:-3"
+    #    R:T:P        larger side of grid becomes horizontal : hence  TP
+    cegs=0:16:9:-2:0:0:100            
+    gridscale=0.10
+
+
 
 elif [ "$GEOM" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    
@@ -322,8 +340,21 @@ export CXS_CEGS=${CXS_CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
 export CE_SCALE=${CE_SCALE:-$ce_scale}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
-export TOPLINE="cxs.sh CSGOptiXSimulateTest CXS $CXS MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE ISEL $ISEL"
-export BOTLINE="ZOOM $ZOOM LOOK $LOOK ZZ $ZZ XX $XX GEOM $GEOM "
+export TOPLINE="cxs.sh MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE"
+
+botline="botline"
+[ -n "$ZOOM" ] && botline="$botline ZOOM $ZOOM"
+[ -n "$LOOK" ] && botline="$botline LOOK $LOOK"
+[ -n "$ZZ" ]   && botline="$botline ZZ $ZZ"
+[ -n "$XX" ]   && botline="$botline XX $XX"
+
+export BOTLINE="$botline"
+
+## CAUTION : CURRENTLY THE BOTLINE and TOPLINE from generation which comes from metadata
+##  trumps any changes from analysis running
+## ... hmm that is kinda not appropriate for cosmetic presentation changes like differnt XX ZZ etc.. 
+
+
 export GSPLOT=${GSPLOT:-$gsplot}
 
 if [ -n "$cfbase" ]; then 
@@ -379,5 +410,7 @@ elif [ "$(uname)" == "Darwin" ]; then
         ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
     fi 
 fi 
+
+echo LOGDIR : $LOGDIR
 
 exit 0

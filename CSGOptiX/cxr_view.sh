@@ -62,6 +62,19 @@ RTP tangential::
    EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:55:-3 ./cxr_view.sh 
 
 
+Mid chimney fixture::
+
+
+              R
+              |
+              +-- P
+             /
+            T
+           
+
+   EYE=0,-1,0 UP=1,0,0 TMIN=0.1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+
+
 EOU
 }
 

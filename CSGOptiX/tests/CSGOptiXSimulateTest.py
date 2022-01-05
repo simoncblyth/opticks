@@ -47,6 +47,8 @@ import os, sys, logging, numpy as np
 GUI = not "NOGUI" in os.environ
 MP =  not "NOMP" in os.environ 
 PV =  not "NOPV" in os.environ 
+PVG = "PVG" in os.environ
+MASK = not "NOMASK" in os.environ
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -55,8 +57,6 @@ from opticks.ana.fold import Fold
 from opticks.ana.npmeta import NPMeta
 from opticks.ana.gridspec import GridSpec, X, Y, Z
 SIZE = np.array([1280, 720])
-
-
 
 
 
@@ -504,9 +504,12 @@ class Positions(object):
         upos = self.upos
         xmask = np.logical_and( upos[:,0] >= xmin, upos[:,0] <= xmax )
         ymask = np.logical_and( upos[:,1] >= ymin, upos[:,1] <= ymax )
+        xy_mask = np.logical_and( xmask, ymask )
+
         zmask = np.logical_and( upos[:,2] >= zmin, upos[:,2] <= zmax )
-        xz_mask = np.logical_and( xmask, zmask )
-        mask = xz_mask 
+        xyz_mask = np.logical_and( xy_mask, zmask )
+
+        mask = xyz_mask 
 
         self.mask = mask
         self.p = self.p[mask]
@@ -559,6 +562,8 @@ class Plt(object):
 
         topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
         botline = os.environ.get("BOTLINE", "cxs") 
+
+        ## hmm what should come from remote and what local ?
 
         self.topline = gsmeta.find("TOPLINE:", topline )
         self.botline = gsmeta.find("BOTLINE:", botline )
@@ -749,6 +754,10 @@ class Plt(object):
         pl.set_position( eye, reset=True )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
         pl.camera.Zoom(2)
 
+        if PVG:
+            pl.show_grid()
+        pass
+
         outpath = self.outpath_("positions","pvplt")
         print(outpath)
         cp = pl.show(screenshot=outpath)
@@ -766,7 +775,6 @@ if __name__ == '__main__':
 
     GSPLOT = int(os.environ.get("GSPLOT", "0"))
 
-
     CSGOptiXSimulateTest_OUTPUT_DIR = os.environ.get("CSGOptiXSimulateTest_OUTPUT_DIR", None) 
     if CSGOptiXSimulateTest_OUTPUT_DIR is None:
         log.fatal(" missing required envvar CSGOptiXSimulateTest_OUTPUT_DIR ")
@@ -776,15 +784,41 @@ if __name__ == '__main__':
     CSGFoundry_DIR = CSGFoundry.FindDirUpTree( CSGOptiXSimulateTest_OUTPUT_DIR, "CSGFoundry" )
     FOLD = os.path.dirname(CSGFoundry_DIR)
 
+    LEAF = os.environ.get("LEAF", None) 
+
     print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % CSGOptiXSimulateTest_OUTPUT_DIR )
+    print( " LEAF                            : %s " % LEAF )
     print( " CSGFoundry_DIR                  : %s " % CSGFoundry_DIR  )
     print( " FOLD                            : %s " % FOLD  )
+
+    outdir = CSGOptiXSimulateTest_OUTPUT_DIR 
+    outbase = os.path.dirname(outdir)
+    outleaf = os.path.basename(outdir)
+    outdir2 = os.path.join(outbase, outleaf)  
+    assert outdir == outdir2 
+
+    leaves = list(filter(lambda _:_.startswith(outleaf[:10]),os.listdir(outbase)))
+    print("\n".join(leaves))
+
+    if not LEAF is None and LEAF != outleaf:
+        for cand in leaves:
+            print(" cand : %s " % cand )
+            endmatch = cand.endswith(LEAF)
+            if cand == LEAF or endmatch:
+                 pickleaf = cand
+            pass
+        pass
+        outdir = os.path.join(outbase, pickleaf)  
+
+        print(" OVERRIDE CSGOptiXSimulateTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
+        print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % outdir )
+    pass
 
 
     cf = CSGFoundry(os.path.join(FOLD, "CSGFoundry"))
     #test_mok(cf)
 
-    cxs = Fold.Load(CSGOptiXSimulateTest_OUTPUT_DIR ) 
+    cxs = Fold.Load(outdir) 
 
     outdir = os.path.join(cxs.base, "figs")
     if not os.path.isdir(outdir):
@@ -798,8 +832,8 @@ if __name__ == '__main__':
 
     gs = Gensteps(cxs.genstep, cxs.metatran, grid, local_extent_scale=local_extent_scale )
 
-    pos_mask = True 
-    #pos_mask = False    #without pos_mask means that the legend is filled with features that are not visible in the frame 
+    pos_mask = MASK   # default is True, disable mask with NOMASK envvar   
+    #without pos_mask means that the legend is filled with features that are not visible in the frame 
 
     pos = Positions(cxs.photons, gs, grid, local=True, pos_mask=pos_mask, local_extent_scale=local_extent_scale )
 
@@ -826,4 +860,6 @@ if __name__ == '__main__':
     if not pv is None:
         plt.positions_pvplt()
     pass
+    print("leaves:")
+    print("\n".join(leaves))
 

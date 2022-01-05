@@ -98,18 +98,25 @@ elif [ "$arg" == "all" ]; then
 
         last_npy=$(ls -1rt `find ${to%/} -name '*.npy' ` | tail -1 )
         last_outdir=$(dirname $last_npy)
+        last_outbase=$(dirname $last_outdir)
+        last_outleaf=$(basename $last_outdir)
 
         ## write source-able script ${EXECUTABLE}_OUTPUT_DIR.sh defining correponding envvar
         ## depending on the path of the last .npy grabbed  
         ## This is used from cxs.sh to transparently communicate the last OUTPUT_DIR 
         ## between nodes. 
 
-        script_outdir=$LOGDIR/${EXECUTABLE}_OUTPUT_DIR.sh
+        script=$LOGDIR/${EXECUTABLE}_OUTPUT_DIR.sh
+        mkdir -p $(dirname $script)
+
         echo last_npy $last_npy 
         echo last_outdir $last_outdir 
-        echo script_outdir $script_outdir
-        printf "export ${EXECUTABLE}_OUTPUT_DIR=$last_outdir\n" > $script_outdir
-        cat $script_outdir
+        echo last_outbase $last_outbase
+        echo last_outleaf $last_outleaf
+
+        echo script $script
+        printf "export ${EXECUTABLE}_OUTPUT_DIR=$last_outdir\n" > $script
+        cat $script
    fi 
 
 fi 
