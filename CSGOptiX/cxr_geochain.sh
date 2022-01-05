@@ -7,7 +7,7 @@ Rendering CSGFoundry geometry created from
 Geant4 C++ solid specification by GeoChain 
 executable. Usage::
 
-    cd ~/opticks/GeoChain
+    cd ~/opticks/GeoChain   # gc 
     ./run.sh                # create geometry CF folder
 
     cd ~/opticks/CSGOptiX

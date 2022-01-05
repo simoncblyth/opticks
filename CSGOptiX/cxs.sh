@@ -78,8 +78,8 @@ msg="=== $BASH_SOURCE : "
 #geom=XJfixtureConstructionXZ_0
 #geom=XJfixtureConstructionYZ_0
 
-geom=XJfixtureConstructionXZ_1
-#geom=XJfixtureConstructionYZ_1
+geom=XJfixtureConstructionXZ_10
+#geom=XJfixtureConstructionYZ_10
 
 #geom=XJfixtureConstructionTP_1
 #geom=XJfixtureConstructionRT_1
@@ -94,6 +94,7 @@ geom=XJfixtureConstructionXZ_1
 #geom=XJfixtureConstructionTP_0
 #geom=XJfixtureConstructionTP_0_Rshift
 
+geom=custom_XJfixtureConstructionXY
 
 
 export GEOM=${GEOM:-$geom}
@@ -278,6 +279,13 @@ elif [ "$GEOM" == "XJfixtureConstructionTP_0_Rshift" ]; then
     gridscale=0.10
 
 
+elif [ "$GEOM" == "custom_XJfixtureConstructionXY" ]; then
+
+    cfbase=$TMP/GeoChain/XJfixtureConstruction  
+    moi=0
+    cegs=0:16:9:-2:0:0:100            
+    gridscale=0.10
+
 
 elif [ "$GEOM" == "25" ]; then
     cfbase=$TMP/CSGDemoTest/dcyl    
@@ -329,8 +337,16 @@ fi
 
 if [ "$(uname)" == "Linux" ]; then
     if [ -n "$cfbase" -a ! -d "$cfbase/CSGFoundry" ]; then
-       echo $msg : ERROR : cfbase directory $cfbase MUST contain CSGFoundry subfolder 
-       echo $msg : TIPS : run GeoChain first to create the geometry and use b7 to build CSGOptiX 
+
+       echo $msg : ERROR cfbase $cfbase is defined signalling to use a non-standard CSGFoundry geometry 
+       echo $msg : BUT no such CSGFoundry directory exists 
+       echo $msg :
+       echo $msg : Possibilities: 
+       echo $msg :
+       echo $msg : 1. you intended to use the standard geometry but the GEOM $GEOM envvar does not match any of the if branches 
+       echo $msg : 2. you want to use a non-standard geometry but have not yet created it : 
+       echo $msg :    do so with GeoChain after building from CSGOptiX with b7
+       echo $msg :   
        exit 1 
     fi 
 fi

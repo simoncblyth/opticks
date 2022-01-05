@@ -48,6 +48,7 @@ GUI = not "NOGUI" in os.environ
 MP =  not "NOMP" in os.environ 
 PV =  not "NOPV" in os.environ 
 PVG = "PVG" in os.environ
+#LES = not "NOLES" in os.environ
 MASK = not "NOMASK" in os.environ
 
 log = logging.getLogger(__name__)
@@ -828,7 +829,7 @@ if __name__ == '__main__':
     gsmeta = NPMeta(cxs.genstep_meta)
     grid = GridSpec(cxs.peta, gsmeta)
 
-    local_extent_scale = True 
+    local_extent_scale = grid.coords == "RTP" 
 
     gs = Gensteps(cxs.genstep, cxs.metatran, grid, local_extent_scale=local_extent_scale )
 

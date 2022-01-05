@@ -27,7 +27,11 @@ msg="=== $BASH_SOURCE :"
 if [ -n "$CFNAME" ]; then
     export CFBASE=/tmp/$USER/opticks/${CFNAME}    ## override CFBASE envvar only used when CFNAME defined, eg for demo geometry
     echo $msg CFNAME $CFNAME CFBASE $CFBASE OVERRIDING 
-    [ ! -d "$CFBASE/CSGFoundry" ] && echo ERROR no such directory $CFBASE/CSGFoundry && exit 1
+    if [ ! -d "$CFBASE/CSGFoundry" ]; then 
+        echo $msg ERROR CFNAME override but no corresponding CSGFoundry directory $CFBASE/CSGFoundry 
+        echo $msg TO CREATE NON-STANDARD geometries use \"gc \; GEOM=$(basename $CFNAME) ./run.sh\"  
+        exit 1
+    fi
 else
     unset CFBASE
     CFNAME=CSG_GGeo
