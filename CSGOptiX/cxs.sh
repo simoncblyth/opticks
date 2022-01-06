@@ -91,6 +91,7 @@ export NOTE1=${NOTE1:-$note1}
 
 export ISEL=${ISEL:-$isel}
 export XX=${XX:-$xx}
+export YY=${YY:-$yy}
 export ZZ=${ZZ:-$zz}
 export OPTICKS_GEOM=$GEOM 
 
@@ -134,8 +135,9 @@ botline="MOI $MOI CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE"
 
 [ -n "$ZOOM" ] && botline="$botline ZOOM $ZOOM"
 [ -n "$LOOK" ] && botline="$botline LOOK $LOOK"
-[ -n "$ZZ" ]   && botline="$botline ZZ $ZZ"
 [ -n "$XX" ]   && botline="$botline XX $XX"
+[ -n "$YY" ]   && botline="$botline YY $YY"
+[ -n "$ZZ" ]   && botline="$botline ZZ $ZZ"
 
 topline="cxs.sh MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE"
 
@@ -143,14 +145,11 @@ export BOTLINE="${BOTLINE:-$botline}"
 export TOPLINE="${TOPLINE:-$topline}"
 
 
-
-
-
 ## CAUTION : CURRENTLY THE BOTLINE and TOPLINE from generation which comes from metadata
 ##  trumps any changes from analysis running
 ## ... hmm that is kinda not appropriate for cosmetic presentation changes like differnt XX ZZ etc.. 
 
-vars="GEOM LOGDIR BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE NOTE GSPLOT ISEL XX ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
+vars="GEOM LOGDIR BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE NOTE GSPLOT ISEL XX YY ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 

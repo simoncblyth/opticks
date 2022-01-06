@@ -239,7 +239,6 @@ solidXJfixture             Union
 const int X4SolidMaker::XJfixtureConstruction_debug_mode = SSys::getenvint("X4SolidMaker__XJfixtureConstruction_debug_mode", 0 ) ; 
 const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
 {
-
     G4VSolid* solidXJfixture_down1;
     G4VSolid* solidXJfixture_down2;
     G4VSolid* solidXJfixture_down3;
@@ -272,9 +271,8 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
     solidXJfixture_up2 = new G4Box("solidXJfixture_up2", 15.*mm, 65*mm, 5.*mm);
     solidXJfixture_up_uni = new G4UnionSolid("solidXJfixture_up_uni", solidXJfixture_up1, solidXJfixture_up2, 0, G4ThreeVector(0.*mm, 0.*mm, 13.5*mm));
 
-    G4VSolid* new_solidXJfixture_up_uni = Uncoincide_Box_Box_Union( solidXJfixture_up_uni );
-
-    solidXJfixture_up_uni = new_solidXJfixture_up_uni ;
+    //G4VSolid* new_solidXJfixture_up_uni = Uncoincide_Box_Box_Union( solidXJfixture_up_uni );
+    //solidXJfixture_up_uni = new_solidXJfixture_up_uni ;
 
 
     /**
@@ -298,9 +296,9 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
                                                             :     :     :                                altar frame              fixture frame 
                                                         
              -------------+                             +---+---+-+-----+        - - - - - - - - - - - - 18.5+13  =   31.5             6.5  
-             |            |                             |   :   | :    13/2=6.5                                       
+             |            |                             |   :   |      13/2=6.5                                       
              +            +                             +   :   + :     :         - - - - - - - - - - -  18.5+6.5 =   25               0.0           
-             |            |                             |   :   | :     :
+             |            |                             |   :   |       :
              +------------+----------------+-----25-----+---20--+-+-----+         - - - - - - - - - -      8.5+10 =  18.5              -6.5  
              |                                                          |
              +    up2                      +                            +       - - - - - - - - - - - - -   8.5+5  = 13.5              -11.5

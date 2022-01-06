@@ -90,7 +90,7 @@ if PV:
 else:
     pv = None
 pass
-pv=None
+#pv=None
 
 if GUI == False:
     log.info("disabling pv as GUI False")
@@ -572,11 +572,19 @@ class Plt(object):
         self.note1 = note1 
 
         efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
-        self.xx = efloatlist_("XX")
-        self.yy = efloatlist_("YY")
-        self.zz = efloatlist_("ZZ")
+
+        aa = {} 
+        aa[X] = efloatlist_("XX")
+        aa[Y] = efloatlist_("YY")
+        aa[Z] = efloatlist_("ZZ")
+
+        self.aa = aa
         self.sz = float(os.environ.get("SZ","1.0"))
         self.zoom = float(os.environ.get("ZOOM","3.0"))
+
+        log.info(" aa[X] %s " % str(self.aa[X]))
+        log.info(" aa[Y] %s " % str(self.aa[Y]))
+        log.info(" aa[Z] %s " % str(self.aa[Z]))
  
     def outpath_(self, stem="positions", ptype="pvplt"):
         sisel = self.feat.sisel
@@ -625,8 +633,6 @@ class Plt(object):
         pass
 
 
-
-
         for idesc in range(feat.unum):
             uval, selector, label, color, skip, msg = feat(idesc)
             if skip: continue
@@ -638,25 +644,7 @@ class Plt(object):
         log.info(" ylim[0] %8.4f ylim[1] %8.4f " % (ylim[0], ylim[1]) )
         log.info(" zlim[0] %8.4f zlim[1] %8.4f " % (zlim[0], zlim[1]) )
 
-        if H == X and V == Z:   
-            for z in self.zz:   # ZZ horizontals 
-                label = "z:%8.4f" % z
-                ax.plot( lim[H], [z,z], label=None )
-            pass
-            for x in self.xx:    # XX verticals 
-                label = "x:%8.4f" % x
-                ax.plot( [x, x], lim[V], label=None ) 
-            pass
-        elif H == Z and V == X:  ## ZZ verticals 
-            for z in self.zz:   
-                label = "z:%8.4f" % z
-                ax.plot( [z, z], lim[V], label=None )
-            pass
-            for x in self.xx:    # XX horizontals
-                label = "x:%8.4f" % x
-                ax.plot( lim[H], [x, x], label=None ) 
-            pass
-        pass
+        self.lines_plt(ax, None)
 
         label = "gs_center XZ"
 
@@ -683,6 +671,72 @@ class Plt(object):
         outpath = self.outpath_("positions",ptype )
         print(outpath)
         fig.savefig(outpath)
+
+
+    def lines_plt(self, ax, pl):
+        """
+
+               +----------------------+
+               |                      |
+               |                      |
+               +----------------------+      
+               |                      |   
+               +----------------------+      
+               |                      |
+               |                      |   V=Z
+               +----------------------+
+
+                 H=X
+
+        """
+        H,V = self.grid.axes    
+        hlim = self.gs.lim[H]
+        vlim = self.gs.lim[V]
+
+        for i in [X,Y,Z]: 
+            aa = self.aa[i]
+            if len(aa) > 0:
+                for a in aa:
+                    if V == i:
+                        if not ax is None:
+                            ax.plot( hlim, [a,a] )
+                        elif not pl is None:
+                            pass
+                            lo = np.array( [0, 0, 0])
+                            hi = np.array( [0, 0, 0])
+
+                            lo[H] = hlim[0] 
+                            hi[H] = hlim[1] 
+                            lo[i] = a 
+                            hi[i] = a 
+
+                            hline = pv.Line(lo, hi)
+                            pl.add_mesh(hline, color="w")
+                        pass
+                    elif H == i:
+                        if not ax is None:
+                            ax.plot( [a,a], vlim )
+                        elif not pl is None:
+                            pass
+                            lo = np.array( [0, 0, 0])
+                            hi = np.array( [0, 0, 0])
+
+                            lo[V] = vlim[0] 
+                            hi[V] = vlim[1] 
+                            lo[i] = a 
+                            hi[i] = a 
+
+                            vline = pv.Line(lo, hi)
+                            pl.add_mesh(vline, color="w")
+                        pass
+                    else:
+                        pass
+                    pass
+                pass
+            pass
+        pass
+
+
 
     def positions_pvplt(self):
         """
@@ -747,22 +801,7 @@ class Plt(object):
 
         ## the lines need reworking 
 
-
-        print("zz: %s " % str(self.zz)) 
-        for z in self.zz:  # ZZ horizontals (when using traditional XZ axes)
-            xhi = np.array( [xlim[1], 0, z] )  # RHS
-            xlo = np.array( [xlim[0], 0, z] )  # LHS
-            line = pv.Line(xlo, xhi)
-            pl.add_mesh(line, color="w")
-        pass
-        print("xx: %s " % str(self.xx)) 
-        for x in self.xx:    # XX verticals (when using traditional XZ axes)
-            zhi = np.array( [x, 0, zlim[1]] )  # TOP
-            zlo = np.array( [x, 0, zlim[0]] )  # BOT
-            line = pv.Line(zlo, zhi)
-            pl.add_mesh(line, color="w")
-        pass
-
+        self.lines_plt(None, pl)
 
         pl.set_focus(    look )
         pl.set_viewup(   up )

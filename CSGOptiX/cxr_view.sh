@@ -74,6 +74,8 @@ Mid chimney fixture::
 
    EYE=0,-1,0 UP=1,0,0 TMIN=0.1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
 
+   EYE=0,-4,0 UP=1,0,0 TMIN=0.1 MOI=solidXJfixture:0:-3 ./cxr_view.sh  
+
 
 EOU
 }

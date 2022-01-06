@@ -46,21 +46,21 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-#comp=XZ_10        # done
-#comp=YZ_10        # rerun
+#comp=XZ_10         # done
+#comp=YZ_10         # rerun
 
-#comp=TP_10        # rerun
-#comp=RT_10        # rerun
+#comp=TP_10         # rerun
+#comp=RT_10         # rerun
 
-#comp=PR_55        # done 
-#comp=TR_55        # done 
+#comp=PR_55         # done 
+#comp=TR_55         # done 
 
-#comp=PR_0         # done 
-#comp=TR_0         # done
-#comp=TP_0         # done  
-comp=TP_0_Rshift   # done
+#comp=PR_0          # done 
+#comp=TR_0          # done
+#comp=TP_0          # done  
+#comp=TP_0_Rshift   # done
 
-#comp=custom_XY
+comp=custom_XY
 
 
 
@@ -175,6 +175,10 @@ elif [ "$GEOM" == "custom_${GBASE}XY" ]; then
 
     ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
+
+    export ZZ=-33.5,6.5 
+    export YY=-65,65 
+
 
 else
     echo $msg ERROR GEOM $GEOM is not handled  
