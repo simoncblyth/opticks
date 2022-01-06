@@ -264,6 +264,7 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
     solidXJfixture_down3 = new G4Box("solidXJfixture_down3", 15.*mm, 15.*mm, 13/2.*mm);
     solidXJfixture_down_uni3 = new G4UnionSolid("solidXJfixture_down_uni3", solidXJfixture_down_uni2, solidXJfixture_down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));
     solidXJfixture_down_uni4 = new G4UnionSolid("solidXJfixture_down_uni4", solidXJfixture_down_uni3, solidXJfixture_down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm));
+
     // down_uni4 is celtic-cross shape or uniform z half-thickness 13./2. = 6.5 mm  (shifts in x and y,  not z)
 
 // cover part
@@ -279,42 +280,63 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
     /**
      up_uni is two box altar   : GETTING SPURIOUS INTERSECTS BECAUSE OF FLUSH UNION 
 
-     TOFIX: NEED TO EXPAND THE SMALLER BOX IN Y "up1" upwards TO OVERLAP THE UNION 
+     TOFIX: 
+         expand "up1" (as its smaller in y) by uncoincide/2 in hz 
+         and shift it upwards to maintain the low edge at same place 
 
-       G4Box param are half lengths symmetrically defined, so must grow hz and shift up
+         BUT: "up1" is on LHS of the combination, "up2" is the one thats shifted up
+
+         HMM: seems have to switch that around ... this is going to have knockon effect
+         over what line is zero in Z which would cause a change in the placement 
 
 
+         up2 is raised by 13.5 to form the thinner in z table top of the altar 
 
-       up2 is raised by 13.5 to form the thinner in z table top of the altar 
+             
+                                                           35    50     65        
+                                                     
+                                                            :     :     :                                altar frame              fixture frame 
+                                                        
+             -------------+                             +---+---+-+-----+        - - - - - - - - - - - - 18.5+13  =   31.5             6.5  
+             |            |                             |   :   | :    13/2=6.5                                       
+             +            +                             +   :   + :     :         - - - - - - - - - - -  18.5+6.5 =   25               0.0           
+             |            |                             |   :   | :     :
+             +------------+----------------+-----25-----+---20--+-+-----+         - - - - - - - - - -      8.5+10 =  18.5              -6.5  
+             |                                                          |
+             +    up2                      +                            +       - - - - - - - - - - - - -   8.5+5  = 13.5              -11.5
+             |                                                          |
+             +---------+^^^^^^^^^^^^^^^^^^^+^^^^^^^^^^^^^^^^^^+---------+       - - - - - - - - - - - - -             8.5              -16.5
+                       |                                      |         
+                       |                                     17/2=8.5        
+                       +  up1                                 +                - - - - - - - - - - - - -              0.0              -25.0
+                       |                                      |
+                       |                                      |
+               Z       +-------------------+-------40---------+            - - - - - - - - - - - - - - - -           -8.5              -33.5
+               |                                    
+               +-- Y
+              /
+             X
 
 
-         +---------------------------+     5mm                     - - -  8.5 + 10 = 18.5
-         |         up2               |  - - - -   13.5  = 8.5+5
-         +-----+---------------+-----+
-               |               |   17/2 = 8.5mm       
-               |   up1         |   - - - -    
-               |               |
-               +---------------+ 
-                                          10 mm thin top of altar, 
-                                          17 mm thicker bottom of altar
-
-          -> Y
-
-              6.5+13.5 = 20.
-
-       Then altar is offset by -25. pushing its top down to     18.5 - 25. = -6.5 in final frame 
+       Then altar is offset by -25. pushing its top down to 18.5 - 25. = -6.5 in final frame 
        which is flush with the lower edge of the celtic cross 
      **/   
 
 
 // union 
     solidXJfixture = new G4UnionSolid("solidXJfixture", solidXJfixture_down_uni4, solidXJfixture_up_uni, 0, G4ThreeVector(0.*mm, 0.*mm, -25.*mm));
-    // altar is pushed down 
+
+
+    G4VSolid* solidXJfixture_twiddle = new G4UnionSolid("solidXJfixture_twiddle", solidXJfixture_up_uni, solidXJfixture_down_uni4, 0, G4ThreeVector(0.*mm, 0.*mm, 25.*mm));
+    // twiddling puts the zero at the altar frame zero 
+    // so would have to offset the placement 
+
+
 
     G4VSolid* celtic_cross_sub_altar = new G4SubtractionSolid("solidXJfixture_celtic_cross_sub_altar", solidXJfixture_down_uni4, solidXJfixture_up_uni, 0, G4ThreeVector(0.*mm, 0.*mm, -25.*mm));
 
 
-    G4VSolid* solidXJfixture_split = new G4UnionSolid("solidXJfixture", solidXJfixture_down_uni4, solidXJfixture_up_uni, 0, G4ThreeVector(0.*mm, 0.*mm, -50.*mm));
+    G4VSolid* solidXJfixture_split = new G4UnionSolid("solidXJfixture_split", solidXJfixture_down_uni4, solidXJfixture_up_uni, 0, G4ThreeVector(0.*mm, 0.*mm, -50.*mm));
 
 
 
@@ -339,6 +361,7 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
            case 10: solid = solidXJfixture_up_uni    ; break ;    
            case 11: solid = celtic_cross_sub_altar   ; break ;    
            case 12: solid = solidXJfixture_split     ; break ;    
+           case 13: solid = solidXJfixture_twiddle   ; break ;    
         } 
         LOG(info) 
             << "X4SolidMaker__XJfixtureConstruction_debug_mode " << debug_mode
@@ -411,6 +434,13 @@ up2 is raised by 13.5 to form the thinner in z table top of the altar
                                           17 mm thicker bottom of altar
 
 
+
+
+HMM: the sign of the change to the translation depends on 
+whether the smaller_box (which needs to grow into the larger) is on 
+the rhs of the combination which has the translation applied to it 
+
+
 **/
 
 G4VSolid* X4SolidMaker::Uncoincide_Box_Box_Union( const G4VSolid* bbu  )  // static
@@ -447,20 +477,30 @@ G4VSolid* X4SolidMaker::Uncoincide_Box_Box_Union( const G4VSolid* bbu  )  // sta
     LOG(info) << " shift_axis " << shift_axis ; 
 
 
-    G4Box* smaller_box = nullptr ;  
+
+    enum { A, B, UNKNOWN } ; 
+    int smaller = UNKNOWN ; 
+  
     for(int axis=0 ; axis < 3 ; axis++)
     {
         if(axis == shift_axis) continue ;   // 
         double ah = HalfLength(a_box, axis); 
         double bh = HalfLength(b_box, axis); 
         if(ah == bh) continue ;    // ignore equal axes 
-        smaller_box = ah < bh ? new_a : new_b ;  
+        smaller = ah < bh ? A : B ; 
     } 
 
+    LOG(info) << " smaller " << smaller ; 
+
+
     double uncoincide = 1.*mm ; 
-    if(smaller_box)
+    if(smaller != UNKNOWN )
     {
+        G4Box* smaller_box = smaller == A ? new_a : new_b ; 
+        LOG(info) << " smaller_box.GetName " << smaller_box->GetName() ; 
+
         ChangeBoxHalfLength( smaller_box, shift_axis, uncoincide/2. );         
+
         ChangeThreeVector(   &new_tla ,   shift_axis, uncoincide/2. ) ;     
     }
     else

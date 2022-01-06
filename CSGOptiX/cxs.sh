@@ -81,7 +81,7 @@ msg="=== $BASH_SOURCE : "
 #geom=XJfixtureConstructionXZ_10
 #geom=XJfixtureConstructionYZ_10
 
-#geom=XJfixtureConstructionTP_1
+geom=XJfixtureConstructionTP_1
 #geom=XJfixtureConstructionRT_1
 #geom=XJfixtureConstructionRP_1
 #geom=XJfixtureConstructionRP_55
@@ -94,7 +94,7 @@ msg="=== $BASH_SOURCE : "
 #geom=XJfixtureConstructionTP_0
 #geom=XJfixtureConstructionTP_0_Rshift
 
-geom=custom_XJfixtureConstructionXY
+#geom=custom_XJfixtureConstructionXY
 
 
 export GEOM=${GEOM:-$geom}
@@ -363,6 +363,9 @@ export CE_SCALE=${CE_SCALE:-$ce_scale}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export TOPLINE="cxs.sh MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE"
 
+
+
+
 botline="botline"
 [ -n "$ZOOM" ] && botline="$botline ZOOM $ZOOM"
 [ -n "$LOOK" ] && botline="$botline LOOK $LOOK"
@@ -430,7 +433,11 @@ elif [ "$(uname)" == "Darwin" ]; then
     source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
     echo $msg CSGOptiXSimulateTest_OUTPUT_DIR $CSGOptiXSimulateTest_OUTPUT_DIR
 
-    if [ "$1" == "bat" ]; then
+    if [ "$1" == "png" ]; then
+
+        echo MOI $MOI
+
+    elif [ "$1" == "bat" ]; then
         NOGUI=1 ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
     else
         ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 

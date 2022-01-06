@@ -8,8 +8,10 @@ X4SolidMaker_XJfixtureConstruction(){
    local up_uni=10    # two box altar  
    local celtic_cross_sub_altar=11   # no visble sub from celtic cross : so no overlap between them : they are flush 
    local split=12      # split the celtic cross and altar 
+   local twiddle=13   # puts the zero at the altar frame zero
 
    export X4SolidMaker__XJfixtureConstruction_debug_mode=$default
+
    env | grep X4SolidMaker
 }
 
