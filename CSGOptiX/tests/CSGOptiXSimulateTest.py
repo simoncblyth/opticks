@@ -90,6 +90,7 @@ if PV:
 else:
     pv = None
 pass
+pv=None
 
 if GUI == False:
     log.info("disabling pv as GUI False")
@@ -558,10 +559,17 @@ class Plt(object):
 
         topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
         botline = os.environ.get("BOTLINE", "cxs") 
+        note = os.environ.get("NOTE", "") 
+        note1 = os.environ.get("NOTE1", "") 
+   
+        gsmeta_topline = gsmeta.find("TOPLINE:", topline )
+        gsmeta_botline = gsmeta.find("BOTLINE:", botline )
 
         ## hmm what should come from remote and what local ?
-        self.topline = gsmeta.find("TOPLINE:", topline )
-        self.botline = gsmeta.find("BOTLINE:", botline )
+        self.topline = topline 
+        self.botline = botline 
+        self.note = note 
+        self.note1 = note1 
 
         efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
         self.xx = efloatlist_("XX")
@@ -606,6 +614,18 @@ class Plt(object):
 
         fig, ax = mp.subplots(figsize=SIZE/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
+              
+        note = self.note
+        note1 = self.note1
+        if len(note) > 0:
+             mp.text(0.01, 0.99, note, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
+        pass
+        if len(note1) > 0:
+             mp.text(0.01, 0.95, note1, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
+        pass
+
+
+
 
         for idesc in range(feat.unum):
             uval, selector, label, color, skip, msg = feat(idesc)
@@ -850,7 +870,7 @@ if __name__ == '__main__':
 
         if not mp is None:
             plt.positions_mpplt(legend=True, gsplot=GSPLOT )
-            plt.positions_mpplt(legend=False, gsplot=GSPLOT )   # when not using pos_mask legend often too big, so can switch it off 
+            #plt.positions_mpplt(legend=False, gsplot=GSPLOT )   # when not using pos_mask legend often too big, so can switch it off 
         pass
 
         if not pv is None:

@@ -1,5 +1,5 @@
 #!/bin/bash -l 
 
-EXECUTABLE=CSGOptiXSimulateTest ./pub.sh $* 
+EXECUTABLE=CSGOptiXSimulateTest source ./pub.sh $* 
 
 

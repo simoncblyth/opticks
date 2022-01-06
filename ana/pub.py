@@ -73,19 +73,21 @@ class Pub(object):
         assert expect
         name = os.path.basename(base)
         digest = self.FindDigest(base)
-        log.info("digest %s " % digest )
+        log.debug("digest %s " % digest )
+
         if digestprefix == False:
             elem = [self.DEST_BASE, name]
         else:
             elem = [self.DEST_BASE, digest, name]
         pass
+        dest = os.path.join(*list(filter(None,elem)))
 
-        dest = os.path.join(*elem)
-
-        log.debug("base %s " % base)
+        log.debug("elem %s " % str(elem))  # 
+        log.debug("base %s " % base)  # 
         log.debug("dest %s " % dest)
 
-        self.find(base, exts)
+        geom = os.environ.get("GEOM", "")
+        self.find(base, exts, with_elem=geom)
 
         cmds, s5ps, s5ti = self.copy_cmds(dest)
 
@@ -94,7 +96,7 @@ class Pub(object):
         self.s5ps = s5ps
         self.s5ti = s5ti
 
-    def find(self, base, exts):
+    def find(self, base, exts, with_elem=""):
         """
         Collect base relative paths to files with extension *ext*
         """
@@ -102,13 +104,22 @@ class Pub(object):
         res = []
         for root, dirs, files in os.walk(base):
             for name in files:
-
                 for ext in exts:
                     if name.endswith(ext): 
                         path = os.path.join(root, name)
                         relpath = path[len(base)+1:] 
-                        log.debug("relpath %s " % relpath ) 
-                        res.append(relpath)
+                        
+                        if len(with_elem) > 0: 
+                            elem = relpath.split("/")
+                            contains_elem = with_elem in elem
+                        else:
+                            contains_elem = True 
+                        pass
+                        log.debug("relpath %s contains_elem %s with_elem %s " % (relpath, contains_elem, with_elem) ) 
+
+                        if contains_elem: 
+                            res.append(relpath)
+                        pass
                     pass
                 pass
             pass
