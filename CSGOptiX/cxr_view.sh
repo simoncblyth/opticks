@@ -77,6 +77,33 @@ Mid chimney fixture::
    EYE=0,-4,0 UP=1,0,0 TMIN=0.1 MOI=solidXJfixture:0:-3 ./cxr_view.sh  
 
 
+   EYE=0,-4,0 UP=1,0,0 TMIN=0.1 MOI=solidXJfixture:0:-3 ./cxr_view.sh  
+
+
+
+
+   EYE=4,-2,-2 UP=1,0,0 TMIN=0.1 MOI=solidXJfixture:2:-3 ./cxr_view.sh  
+   EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 MOI=solidXJfixture:2:-3 ./cxr_view.sh  
+
+   EYE=16,-8,-8 UP=0,-1,0 TMIN=0.1 MOI=solidXJfixture:2:-3 ./cxr_view.sh  
+        sticks and hatboxes : whacky angle   
+
+
+
+
+
+   EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:2:-3 ./cxr.sh
+        this reproduces the view from the image grid of 64
+
+   EYE=4,-2,-2 UP=1,0,0 TMIN=0.0 CAM=1 MOI=solidXJfixture:2:-3 ./cxr.sh
+        backing up shows that its just a funny angle on cut stick base
+
+   EYE=8,-4,-4 UP=1,0,0 TMIN=0.0 CAM=1 MOI=solidXJfixture:2:-3 ./cxr.sh
+        backing up more makes it plain, the cause of the curious shape 
+        is the tmin cutting off the top of sticks
+
+
+
 EOU
 }
 
@@ -120,7 +147,7 @@ export OPTICKS_RELDIR=cam_${CAM}_${EMM}
 stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion 2>/dev/null)
 
-export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE EMM $EMM  $stamp  $version " 
+export TOPLINE="./cxr_view.sh $MOI      # EYE $EYE LOOK $LOOK UP $UP      EMM $EMM  $stamp  $version " 
 
 source ./cxr.sh     
 

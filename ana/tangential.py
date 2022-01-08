@@ -8,7 +8,8 @@ using a tangential frame.
 
 See also:
 
-*  ana/spherical.py 
+* ana/spherical.py 
+* tangential.cc
 * https://mathworld.wolfram.com/SphericalCoordinates.html
 * https://en.wikipedia.org/wiki/Vector_fields_in_cylindrical_and_spherical_coordinates
 
@@ -19,12 +20,12 @@ from collections import OrderedDict as odict
 from opticks.ana.spherical import Spherical 
 
 import pyvista as pv
+pv.set_plot_theme("dark")
+
 _white = "ffffff"
 _red = "ff0000"
 _green = "00ff00"
 _blue = "0000ff"
-
-
 
 DTYPE = np.float64
 FLOAT = [float, np.float64, np.float32]
@@ -226,25 +227,25 @@ class Tangential(object):
         #return np.dot( rtpw, self.iro_tra )
         return np.dot( rtpw, self.rot_tra )
 
-    def get_plane_rtpw(self, side=10):
-        v_t = np.linspace( -side, side, 20 )  
-        v_p = np.linspace( -side, side, 20 )  
+    def get_plane_rtpw(self, side=10, num=20 ):
+        v_t = np.linspace( -side, side, num )  
+        v_p = np.linspace( -side, side, num )  
         t, p = np.meshgrid(v_t, v_p)
         r = np.zeros_like(t)
         w = np.ones_like(t)
         _rtpw = np.dstack( (r, t, p, w)) 
         return _rtpw 
  
-    def get_plane_xyzw(self):
-        _rtpw = self.get_plane_rtpw()
+    def get_plane_xyzw(self, side=10, num=20):
+        _rtpw = self.get_plane_rtpw(side=side, num=num )
         _xyzw = self.tangential_to_conventional( _rtpw ) 
         return _xyzw
 
     def __repr__(self):
         return "\n".join(map(str, ["itr", self.itr, "rot", self.rot, "tra", self.tra, "itr_rot", self.itr_rot, "iro_tra", self.iro_tra ]))
 
-    def pvplot(self, pl, color=_white):
-        _xyzw = self.get_plane_xyzw()
+    def pvplot(self, pl, color=_white, side=10, num=20 ):
+        _xyzw = self.get_plane_xyzw(side=side, num=num)
         pos =  _xyzw[:,:,:3].reshape(-1,3)   
         pl.add_points( pos,  color=color )
 
@@ -266,6 +267,7 @@ if __name__ == '__main__':
     rtp["anti-null_island"] = np.array( [radius, 0.5, 1.],  dtype=DTYPE )
     rtp["south_pole"]       = np.array( [radius, 1,   0.],  dtype=DTYPE )
     rtp["midlat"]           = np.array( [radius, 0.25, 0.], dtype=DTYPE )
+    rtp["midlat2"]          = np.array( [radius, 0.25, 0.5], dtype=DTYPE )
 
     for k in rtp: xyzw[k] = spherical_to_cartesian( rtp[k] )
     for k in rtp: ta[k] = Tangential( rtp[k] )
@@ -280,20 +282,39 @@ if __name__ == '__main__':
     all_rtp = np.vstack(rtp.values())    
     all_xyzw = spherical_to_cartesian( all_rtp.T )
 
-    sg = Spherical.Grid(radius=radius)
+    sg = Spherical.Grid(radius=radius, n_theta=24, n_phi=24 )
+
+
+    sp = pv.Sphere(radius=radius)
+
 
     pl = pv.Plotter(window_size=SIZE*2 )
     pl.show_grid()
 
-    sg.pvplot(pl)
+    sg.pvplot(pl, mag=2.5)
 
-    ta["midlat"].pvplot(pl, color="red" )
-    ta["north_pole"].pvplot(pl, color="blue" )
-    ta["south_pole"].pvplot(pl, color="yellow" )
-    ta["null_island"].pvplot(pl, color="cyan" )
-    ta["anti-null_island"].pvplot(pl, color="magenta" )
+    pl.add_mesh(sp)
 
-    cp = pl.show()
+    #ta["midlat2"].pvplot(pl, color="red", side=10, num=20 )
+
+    #ta["north_pole"].pvplot(pl, color="blue" )
+    #ta["south_pole"].pvplot(pl, color="yellow" )
+    #ta["null_island"].pvplot(pl, color="cyan" )
+    #ta["anti-null_island"].pvplot(pl, color="magenta" )
+
+
+    look = np.array( [0,0,0])
+    up = np.array( [0,0,1])
+    eye =  3.0*radius*np.array([1.,1.,1.])/np.sqrt(3.)
+
+    pl.set_focus(    look )
+    pl.set_viewup(   up )
+    pl.set_position( eye, reset=True ) 
+
+    pl.camera.Zoom(2.0)
+
+    outpath = "/tmp/tangential.png"
+    cp = pl.show(screenshot=outpath)
 
 
 

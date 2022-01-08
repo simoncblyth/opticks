@@ -100,7 +100,7 @@ class Spherical(object):
         # derivative with phi : direction of increasing phi : phi tangent vector
         pvec[:,0] = -np.sin(phi).ravel()  
         pvec[:,1] =  np.cos(phi).ravel()
-        pvec[:,2] = 0 
+        pvec[:,2] = 0. 
         pvec[:,3] = 0.
 
         xyzw = rvec*radius 
@@ -123,12 +123,12 @@ class Spherical(object):
     def __repr__(self):
         return "rtp %s rvec %s tvec %s pvec %s " % (str(self.rtp), str(self.rvec), str(self.tvec), str(self.pvec))
 
-    def pvplot(self, pl):
+    def pvplot(self, pl, mag=1):
         s = self
         pl.add_points( s.xyzw[:,:3], color=_white )
-        pl.add_arrows( s.xyzw[:,:3], s.rvec[:,:3], color=_red )
-        pl.add_arrows( s.xyzw[:,:3], s.tvec[:,:3], color=_green )
-        pl.add_arrows( s.xyzw[:,:3], s.pvec[:,:3], color=_blue )
+        pl.add_arrows( s.xyzw[:,:3], s.rvec[:,:3], mag=mag, color=_red )
+        pl.add_arrows( s.xyzw[:,:3], s.tvec[:,:3], mag=mag, color=_green )
+        pl.add_arrows( s.xyzw[:,:3], s.pvec[:,:3], mag=mag, color=_blue )
 
 
 if __name__ == '__main__':

@@ -1,3 +1,15 @@
+/**
+tangential.cc
+===============
+
+1. Creates tangential frame transforms for a point on a sphere
+   configured via envvar RTP  radius-theta-phi where theta and
+   phi are expressed in units of pi.
+
+2. Performs test conversions between conventional and tangential frames 
+   which are dumped to stdout 
+
+**/
 
 #include <cstdlib>
 #include <vector>
