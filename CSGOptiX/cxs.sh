@@ -97,6 +97,25 @@ export OPTICKS_GEOM=$GEOM
 
 
 
+IFS=: read -a cegs_arr <<< "$cegs"
+
+# quotes on the in variable due to bug fixed in bash 4.3 according to 
+# https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash
+
+cegs_elem=${#cegs_arr[@]}
+
+case $cegs_elem in 
+   4) echo $msg 4 element CXS_CEGS $CXS_CEGS ;; 
+   7) echo $msg 7 element CXS_CEGS $CXS_CEGS ;; 
+   *) echo $msg ERROR UNEXPECTED $cegs_elem element CXS_CEGS $CXS_CEGS && exit 1  ;; 
+esac
+
+
+
+
+
+
+
 if [ "$(uname)" == "Linux" ]; then
     if [ -n "$cfbase" -a ! -d "$cfbase/CSGFoundry" ]; then
 
@@ -126,7 +145,6 @@ bin=CSGOptiXSimulateTest
 export LOGDIR=/tmp/$USER/opticks/$pkg/$bin
 mkdir -p $LOGDIR 
 cd $LOGDIR 
-
 
 
 

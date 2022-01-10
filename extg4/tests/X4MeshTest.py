@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
     size = np.array([1280, 720])
     pl = pv.Plotter(window_size=size*2 )
-    pl.add_mesh(mesh.surf)
+    pl.add_mesh(mesh.surf, opacity=1.0, show_edges=False, lighting=True )
 
     Plt.anno(pl)
 

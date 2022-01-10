@@ -90,15 +90,101 @@ Mid chimney fixture::
 
 
 
+   EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:41:-3 ./cxr_view.sh
 
 
-   EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:2:-3 ./cxr.sh
+
+
+   EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh
         this reproduces the view from the image grid of 64
 
-   EYE=4,-2,-2 UP=1,0,0 TMIN=0.0 CAM=1 MOI=solidXJfixture:2:-3 ./cxr.sh
+   EYE=8,-4,-4 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh
+        back up, see the chimney cylinder with lots of coincidence speckle
+        but looses sight of the fixture
+
+   EYE=0,-4,0 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        try tangential view, japanese temple with speckle behind
+
+   EYE=0,-4,0 UP=1,0,0 TMIN=4 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        tangential view, upping TMIN 
+
+   EYE=0,-8,0 UP=1,0,0 TMIN=8 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        tangential view, upping TMIN and backing away, see confusing close view of sticks to right   
+
+   EYE=0,-16,0 UP=1,0,0 TMIN=16 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        tangential view, upping TMIN and backing away, makes more sense now than can see multiple
+        sticks, one with its cover cut away. Also can now see the curve of the sphere. 
+
+   EYE=0,-32,0 UP=1,0,0 TMIN=32 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        now can see the hatboxes, an interesting view showing context of the fixture, 
+        but the parallel projection makes it kinda wierd but good at understandable 
+        cutting of geometry.
+        Also the bottom half of the frame is just a single block of color
+        TODO: make some more like this from a bit higher up in R
+
+   EYE=16,-32,0 LOOK=16,0,0 UP=1,0,0 TMIN=32 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        Look at a point 16 extents above the fixture
+
+   EYE=32,-32,0 LOOK=32,0,0 UP=1,0,0 TMIN=32 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        Look at a point 32 extents above the fixture
+
+   EYE=32,-48,0 LOOK=32,0,0 UP=1,0,0 TMIN=48 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        Look at a point 32 extents above the fixture
+
+   GEOM=solidXJfixture:0:-3 ./cxr_pub.sh sp | grep 32,-48 
+   GEOM=solidXJfixture:0:-3 ./cxr_pub.sh cp | grep 32,-48  | sh 
+   GEOM=solidXJfixture:0:-3 ./cxr_pub.sh s5 | grep 32,-48 
+
+   EYE=32,-48,0 LOOK=32,0,0 UP=1,0,0 TMIN=48 CAM=1 ZOOM=0.25 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        Try zoom out  
+ 
+   GEOM=solidXJfixture:0:-3 ./cxr_pub.sh cp | grep zoom_0.25 | sh 
+
+
+   EYE=0,-32,0 UP=1,0,0 TMIN=32 CAM=0 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        Try with perspective cam, its easier to understand 
+
+   EYE=8,-32,0 UP=1,0,0 TMIN=32 CAM=0 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        Try moving up a bit in R, good view
+
+   GEOM=solidXJfixture:0:-3 ./cxr_pub.sh sp | grep 8,-32 
+   GEOM=solidXJfixture:0:-3 ./cxr_pub.sh cp | grep 8,-32 
+   GEOM=solidXJfixture:0:-3 ./cxr_pub.sh cp | grep 8,-32 | sh
+   GEOM=solidXJfixture:0:-3 ./cxr_pub.sh s5 | grep 8,-32
+
+      publish into s5 
+
+   EYE=4,-8,0 UP=1,0,0 TMIN=8 CAM=0 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+       Try a closer followup 
+
+
+
+   EYE=8,-16,0 UP=1,0,0 TMIN=16 CAM=0 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        Try moving in, ok not a good at showing context as previous 
+
+
+
+
+   EYE=-4,-4,0 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        sink down in R to look up at fixture, see it with swash of chimney cyl 
+
+   EYE=-4,0,0 UP=0,1,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        try directly up view : see it but no chimney edge
+
+   EYE=-10,0,0 UP=0,1,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        backing away can see chimney ring of very slightly different shade
+
+   EYE=-10,0,4 UP=0,1,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:0:-3 ./cxr_view.sh 
+        offset a bit, get the swash again
+
+
+   EYE=2,-1,-1 UP=1,0,0 TMIN=0.1 CAM=1 MOI=solidXJfixture:2:-3 ./cxr_view.sh
+        this reproduces the view from the image grid of 64
+
+   EYE=4,-2,-2 UP=1,0,0 TMIN=0.0 CAM=1 MOI=solidXJfixture:2:-3 ./cxr_view.sh
         backing up shows that its just a funny angle on cut stick base
 
-   EYE=8,-4,-4 UP=1,0,0 TMIN=0.0 CAM=1 MOI=solidXJfixture:2:-3 ./cxr.sh
+   EYE=8,-4,-4 UP=1,0,0 TMIN=0.0 CAM=1 MOI=solidXJfixture:2:-3 ./cxr_view.sh
         backing up more makes it plain, the cause of the curious shape 
         is the tmin cutting off the top of sticks
 

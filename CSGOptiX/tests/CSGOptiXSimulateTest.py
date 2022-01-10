@@ -6,6 +6,12 @@ tests/CSGOptiXSimulateTest.py
 This is allows interactive visualization of workstation 
 generated intersect data fphoton.npy on remote machines such as 
 user laptops that support pyvista. 
+
+
+issue : TR inversion of pv vs mp
+-----------------------------------
+
+* PR cross section matches, TR is inverted in T direction
  
 pyvista GUI keys
 ----------------------

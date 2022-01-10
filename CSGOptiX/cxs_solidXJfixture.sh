@@ -3,7 +3,7 @@ usage(){ cat << EOU
 cxs_solidXJfixture.sh
 =======================
 
-NB unlike many others this does not honour GEOM, **it sets GEOM** it based on COMP 
+NB unlike many others this does not honour GEOM, **it sets GEOM** based on COMP 
 
 Whilst iterating on cxs running on workstation and 
 grabbing the intersect photons to local laptop with
@@ -61,6 +61,12 @@ msg="=== $BASH_SOURCE :"
 #comp=TP_0_Rshift   # done
 
 comp=custom_XY
+#comp=TR_2
+#comp=TR_52
+#comp=TR_41
+#comp=PR_41
+#comp=ClosePR_41
+#comp=CloserPR_41
 
 
 
@@ -116,6 +122,49 @@ elif [ "$GEOM" == "${GBASE}RT_10" ]; then
     cegs=16:9:0:100            
     gridscale=0.20
 
+
+elif [ "$GEOM" == "${GBASE}TR_2" ]; then
+
+    note="depth check : looks like positioned to correspond to sTarget radius" 
+    moi="solidXJfixture:2:-3"
+    cegs=9:16:0:100            
+    gridscale=0.80
+
+elif [ "$GEOM" == "${GBASE}TR_52" ]; then
+
+    note="picked as render suggests directly under foot : bumps into rods" 
+    moi="solidXJfixture:52:-3"
+    cegs=9:16:0:100            
+    gridscale=0.80
+
+elif [ "$GEOM" == "${GBASE}TR_41" ]; then
+
+    note="picked as render looks on edge of foot : cross section shows poking out" 
+    moi="solidXJfixture:41:-3"
+    cegs=9:16:0:100            
+    gridscale=0.80
+
+elif [ "$GEOM" == "${GBASE}PR_41" ]; then
+
+    note="very clear impinge" 
+    moi="solidXJfixture:41:-3"
+    cegs=9:0:16:100      
+    gridscale=0.80
+
+elif [ "$GEOM" == "${GBASE}ClosePR_41" ]; then
+
+    note="very clear impinge" 
+    moi="solidXJfixture:41:-3"
+    cegs=9:0:16:100      
+    gridscale=0.20
+
+elif [ "$GEOM" == "${GBASE}CloserPR_41" ]; then
+
+    note="very clear impinge" 
+    moi="solidXJfixture:41:-3"
+    cegs=9:0:16:100      
+    gridscale=0.10
+
 elif [ "$GEOM" == "${GBASE}PR_55" ]; then
 
     note="sXJfixture and sXJanchor are inside uni_acrylic1 and bump into uni1 "
@@ -170,14 +219,16 @@ elif [ "$GEOM" == "custom_${GBASE}XY" ]; then
     note="all interior lines are spurious from coincidences"
     cfbase=$TMP/GeoChain/XJfixtureConstruction  
     moi=0
-    cegs=0:16:9:-2:0:0:100            
+    #cegs=0:16:9:-2:0:0:100    # YZ with offset in X           
+    cegs=0:16:9:0:0:0:100            
     gridscale=0.10
 
     ce_offset=1    # pre-tangential-frame approach  
     ce_scale=1 
 
     export ZZ=-33.5,6.5 
-    export YY=-65,65 
+    #export YY=-65,-50,-35,0,35,50,65 
+    export YY=-45,-25,25,45 
 
 
 else
