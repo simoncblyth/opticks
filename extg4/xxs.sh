@@ -96,7 +96,7 @@ msg="=== $BASH_SOURCE :"
 #geom=hmsk_solidMask
 #geom=hmsk_solidMaskTail
 
-geom=XJfixtureConstruction_YZ
+#geom=XJfixtureConstruction_YZ
 #geom=XJfixtureConstruction_XZ
 #geom=XJfixtureConstruction_XY
 
@@ -104,7 +104,7 @@ geom=XJfixtureConstruction_YZ
 #geom=XJanchorConstruction_XZ
 #geom=XJanchorConstruction_XY
 
-#geom=SJReceiverConstruction_XZ
+geom=SJReceiverConstruction_XZ
 
 
 
@@ -303,6 +303,32 @@ if [ "${arg/ana}"  != "$arg" ]; then
         [ $? -ne 0 ] && echo ana interactive error && exit 2
     fi
 fi 
+
+
+if [ -n "$PUB" ]; then 
+
+   outdir=$TMP/extg4/X4IntersectSolidTest/$GEOM/X4Intersect/figs 
+   reldir=/env/presentation/extg4/X4IntersectSolidTest/$GEOM/X4Intersect/figs 
+   pubdir=$HOME/simoncblyth.bitbucket.io$reldir
+
+   pngname=isect_mpplt.png 
+
+   echo $msg outdir $outdir
+   echo $msg reldir $reldir
+   echo $msg pubdir $pubdir
+
+   if [ ! -d "$pubdir" ]; then 
+      mkdir -p $pubdir
+   fi 
+
+   cmd="cp $outdir/$pngname $pubdir/$pngname"
+   echo $msg cmd $cmd
+   eval $cmd
+
+   echo $msh rel $reldir/$pngname
+
+fi 
+
 
 
 exit 0 
