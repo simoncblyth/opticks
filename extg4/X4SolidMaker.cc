@@ -49,6 +49,7 @@ UnionOfHemiEllipsoids
 PolyconeWithMultipleRmin
 AnnulusBoxUnion
 AnnulusTwoBoxUnion
+AnnulusOtherTwoBoxUnion
 AnnulusFourBoxUnion
 )LITERAL"; 
 
@@ -71,6 +72,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("PolyconeWithMultipleRmin", qname))    solid = X4SolidMaker::PolyconeWithMultipleRmin(qname) ; 
     else if(StartsWith("AnnulusBoxUnion", qname))             solid = X4SolidMaker::AnnulusBoxUnion(qname) ; 
     else if(StartsWith("AnnulusTwoBoxUnion", qname))          solid = X4SolidMaker::AnnulusTwoBoxUnion(qname) ; 
+    else if(StartsWith("AnnulusOtherTwoBoxUnion", qname))     solid = X4SolidMaker::AnnulusOtherTwoBoxUnion(qname) ; 
     else if(StartsWith("AnnulusFourBoxUnion", qname))         solid = X4SolidMaker::AnnulusFourBoxUnion(qname) ; 
     assert(solid); 
     return solid ; 
@@ -402,6 +404,7 @@ YZ view looks symmetric as both sides of tubs have box-extensions::
 
 const G4VSolid* X4SolidMaker::AnnulusTwoBoxUnion(const char* name)
 {
+   // do not see spurious intersects with this
     G4VSolid* down1  = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
     G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
     G4VSolid* uni13 = new G4UnionSolid(  "uni13", down1, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));
@@ -409,8 +412,18 @@ const G4VSolid* X4SolidMaker::AnnulusTwoBoxUnion(const char* name)
     return uni133 ; 
 }
 
+const G4VSolid* X4SolidMaker::AnnulusOtherTwoBoxUnion(const char* name)
+{
+    G4VSolid* down1 = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    G4VSolid* down2 = new G4Box("down2", 10.*mm, 11.5*mm, 13/2.*mm);
+    G4VSolid* down_uni1 = new G4UnionSolid("down_uni1", down1    , down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));
+    G4VSolid* down_uni2 = new G4UnionSolid("down_uni2", down_uni1, down2, 0, G4ThreeVector(-52.*mm, 0.*mm, 0.*mm));
+    return down_uni2 ; 
+}
+
 const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion(const char* name)
 {
+    // spurious intersects appear in XY cross section but not YZ 
     G4VSolid* down1 = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
     G4VSolid* down2 = new G4Box("down2", 10.*mm, 11.5*mm, 13/2.*mm);
     G4VSolid* down_uni1 = new G4UnionSolid("down_uni1", down1    , down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));

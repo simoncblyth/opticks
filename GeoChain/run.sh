@@ -61,7 +61,9 @@ EOU
 #geom=XJfixtureConstruction
 #geom=XJanchorConstruction
 #geom=AnnulusBoxUnion 
-geom=AnnulusTwoBoxUnion 
+#geom=AnnulusTwoBoxUnion 
+geom=AnnulusOtherTwoBoxUnion 
+#geom=AnnulusFourBoxUnion 
 
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin
@@ -161,7 +163,7 @@ unset OPTICKS_KEY      # TODO: do this inside executables, as kinda important
 
 #####################################################
 
-cd $OPTICKS_HOME/GeoChain
+#cd $(opticks-home)/GeoChain
 
 if [ -f "$bin.log" ]; then 
     rm $bin.log 

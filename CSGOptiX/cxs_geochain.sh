@@ -20,7 +20,9 @@ msg="=== $BASH_SOURCE :"
 #geom="AnnulusBoxUnion_YZ"
 
 #geom="AnnulusTwoBoxUnion_XY"
-geom="AnnulusTwoBoxUnion_YZ"
+#geom="AnnulusTwoBoxUnion_YZ"
+#geom="AnnulusFourBoxUnion_XY"
+geom="AnnulusFourBoxUnion_YZ"
 
 
 export GEOM=${GEOM:-$geom}
@@ -36,10 +38,9 @@ ce_scale=1
 gsplot=1
 
 
-dcyl(){ gridscale=0.025 ; }
-bssc(){ gridscale=0.025 ; }
-AnnulusBoxUnion(){     gridscale=0.15 ;  }  # enlarge genstep grid to fit the protruding box
-AnnulusTwoBoxUnion(){  gridscale=0.15 ;  } 
+dcyl(){    gridscale=0.025 ; }
+bssc(){    gridscale=0.025 ; }
+Annulus(){ gridscale=0.15 ;  }  # enlarge genstep grid to fit the protruding unioned boxes
 
 default()
 {
@@ -62,8 +63,10 @@ case $GEOM in
    AdditionAcrylicConstruction_*) cfbase=$TMP/GeoChain/AdditionAcrylicConstruction ;;
    BoxMinusTubs_*)                cfbase=$TMP/GeoChain/BoxMinusTubs ;;
    SphereWithPhiSegment_*)        cfbase=$TMP/GeoChain/SphereWithPhiSegment ;;
-   AnnulusBoxUnion_*)             cfbase=$TMP/GeoChain/AnnulusBoxUnion && AnnulusBoxUnion;;    
-   AnnulusTwoBoxUnion_*)          cfbase=$TMP/GeoChain/AnnulusTwoBoxUnion && AnnulusTwoBoxUnion;;    
+   AnnulusBoxUnion_*)             cfbase=$TMP/GeoChain/AnnulusBoxUnion         && Annulus ;;    
+   AnnulusTwoBoxUnion_*)          cfbase=$TMP/GeoChain/AnnulusTwoBoxUnion      && Annulus ;;    
+   AnnulusOtherTwoBoxUnion_*)     cfbase=$TMP/GeoChain/AnnulusOtherTwoBoxUnion && Annulus ;;    
+   AnnulusFourBoxUnion_*)         cfbase=$TMP/GeoChain/AnnulusFourBoxUnion     && Annulus ;;    
    *)                             cfbase=$TMP/GeoChain/$GEOM && default ;; 
 esac
 
@@ -73,7 +76,9 @@ case $GEOM in
    AnnulusBoxUnion_YZ) note="no spurious intersects seen" ;; 
    AnnulusBoxUnion_XY) note="no spurious intersects seen" ;; 
    AnnulusTwoBoxUnion_XY) note="no spurious intersects seen" ;; 
-   AnnulusTwoBoxUnion_YZ) note="" ;; 
+   AnnulusTwoBoxUnion_YZ) note="no spurious" ;; 
+   AnnulusFourBoxUnion_XY) note="spurious intersects appear with four boxes, not with two" ;; 
+   AnnulusFourBoxUnion_YZ) note="curious the spurious intersects visible in XY cross-section are not apparent in YZ cross-section" ;; 
 esac
 
 case $GEOM in  
