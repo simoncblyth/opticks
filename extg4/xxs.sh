@@ -104,8 +104,9 @@ msg="=== $BASH_SOURCE :"
 #geom=XJanchorConstruction_XZ
 #geom=XJanchorConstruction_XY
 
-geom=SJReceiverConstruction_XZ
-
+#geom=SJReceiverConstruction_XZ
+#geom=AnnulusBoxUnion_YZ
+geom=AnnulusBoxUnion_XY
 
 
 export GEOM=${GEOM:-$geom}
@@ -217,6 +218,20 @@ elif [ "$GEOM" == "XJanchorConstruction_YZ" ]; then
     numpho=100
     cegs=0:16:9:0:0:0:$numpho
     gridscale=0.05      
+
+
+elif [ "$GEOM" == "AnnulusBoxUnion_YZ" ]; then
+
+    numpho=100
+    cegs=0:16:9:0:0:0:$numpho
+    gridscale=0.05      
+
+elif [ "$GEOM" == "AnnulusBoxUnion_XY" ]; then
+
+    numpho=100
+    cegs=16:9:0:0:0:0:$numpho
+    gridscale=0.05      
+
 
 elif [ "$GEOM" == "XJanchorConstruction_XZ" ]; then
 

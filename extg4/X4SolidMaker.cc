@@ -47,6 +47,7 @@ BoxMinusTubs1
 BoxMinusOrb
 UnionOfHemiEllipsoids
 PolyconeWithMultipleRmin
+AnnulusBoxUnion
 )LITERAL"; 
 
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
@@ -66,7 +67,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("BoxMinusOrb",qname))                  solid = X4SolidMaker::BoxMinusOrb(qname); 
     else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = X4SolidMaker::UnionOfHemiEllipsoids(qname); 
     else if(StartsWith("PolyconeWithMultipleRmin", qname))    solid = X4SolidMaker::PolyconeWithMultipleRmin(qname) ; 
-
+    else if(StartsWith("AnnulusBoxUnion", qname))             solid = X4SolidMaker::AnnulusBoxUnion(qname) ; 
     assert(solid); 
     return solid ; 
 }
@@ -234,6 +235,55 @@ solidXJfixture             Union
       up1                  Box
       up2                  Box       0.*mm, 0.*mm, 13.5*mm     (Up in Z)
 
+
+
+         up2 is raised by 13.5 to form the thinner in z table top of the altar 
+
+             
+                Spurious vertical at 35          In Y box is at 50 +- 15   
+                                                           35    50     65        
+                                                            :  
+                                                            :     :     :                                altar frame              fixture frame 
+                                                            :
+             -------------+                             +---+---+-+-----+        - - - - - - - - - - - - 18.5+13  =   31.5             6.5  
+             |            |                             |   :   |      13/2=6.5                                       
+             +            +                             +   :   + :     :         - - - - - - - - - - -  18.5+6.5 =   25               0.0           
+             |            |                             |   :   |       :
+             +------------+----------------+-----25-----+---20--+-+-----+         - - - - - - - - - -      8.5+10 =  18.5              -6.5  
+             |                                                          |
+             +    up2                      +                            +       - - - - - - - - - - - - -   8.5+5  = 13.5              -11.5
+             |                                                          |
+             +---------+^^^^^^^^^^^^^^^^^^^+^^^^^^^^^^^^^^^^^^+---------+       - - - - - - - - - - - - -             8.5              -16.5
+                       |                                      |         
+                       |                                     17/2=8.5        
+                       +  up1                                 +                - - - - - - - - - - - - -              0.0              -25.0
+                       |                                      |
+                       |                                      |
+                       +-------------------+-------40---------+            - - - - - - - - - - - - - - - -           -8.5              -33.5
+
+                                           |            |    :   |
+                                           0            25   35  45
+                                                        |    :   | 
+                                                        |    :   |
+                                                        |    :   outer tubs
+                                                        |    :
+                                                        |    spurious vertical from box edge (why? it is within the tubs ring) 
+                                                        |
+                                                        inner tubs
+                                                        
+
+               Z 
+               |                                    
+               +-- Y
+              /
+             X
+
+
+       Then altar is offset by -25. pushing its top down to 18.5 - 25. = -6.5 in final frame 
+       which is flush with the lower edge of the celtic cross 
+
+
+
 **/
 
 const int X4SolidMaker::XJfixtureConstruction_debug_mode = SSys::getenvint("X4SolidMaker__XJfixtureConstruction_debug_mode", 0 ) ; 
@@ -254,7 +304,6 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
 
     G4VSolid* solidXJfixture;
 
-
 // fixture part
     solidXJfixture_down1 = new G4Tubs("solidXJfixture_down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
     solidXJfixture_down2 = new G4Box("solidXJfixture_down2", 10.*mm, 11.5*mm, 13/2.*mm);
@@ -274,74 +323,20 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
     //G4VSolid* new_solidXJfixture_up_uni = Uncoincide_Box_Box_Union( solidXJfixture_up_uni );
     //solidXJfixture_up_uni = new_solidXJfixture_up_uni ;
 
-
-    /**
-     up_uni is two box altar   : GETTING SPURIOUS INTERSECTS BECAUSE OF FLUSH UNION 
-
-     TOFIX: 
-         expand "up1" (as its smaller in y) by uncoincide/2 in hz 
-         and shift it upwards to maintain the low edge at same place 
-
-         BUT: "up1" is on LHS of the combination, "up2" is the one thats shifted up
-
-         HMM: seems have to switch that around ... this is going to have knockon effect
-         over what line is zero in Z which would cause a change in the placement 
-
-
-         up2 is raised by 13.5 to form the thinner in z table top of the altar 
-
-             
-                                                           35    50     65        
-                                                     
-                                                            :     :     :                                altar frame              fixture frame 
-                                                        
-             -------------+                             +---+---+-+-----+        - - - - - - - - - - - - 18.5+13  =   31.5             6.5  
-             |            |                             |   :   |      13/2=6.5                                       
-             +            +                             +   :   + :     :         - - - - - - - - - - -  18.5+6.5 =   25               0.0           
-             |            |                             |   :   |       :
-             +------------+----------------+-----25-----+---20--+-+-----+         - - - - - - - - - -      8.5+10 =  18.5              -6.5  
-             |                                                          |
-             +    up2                      +                            +       - - - - - - - - - - - - -   8.5+5  = 13.5              -11.5
-             |                                                          |
-             +---------+^^^^^^^^^^^^^^^^^^^+^^^^^^^^^^^^^^^^^^+---------+       - - - - - - - - - - - - -             8.5              -16.5
-                       |                                      |         
-                       |                                     17/2=8.5        
-                       +  up1                                 +                - - - - - - - - - - - - -              0.0              -25.0
-                       |                                      |
-                       |                                      |
-               Z       +-------------------+-------40---------+            - - - - - - - - - - - - - - - -           -8.5              -33.5
-               |                                    
-               +-- Y
-              /
-             X
-
-
-       Then altar is offset by -25. pushing its top down to 18.5 - 25. = -6.5 in final frame 
-       which is flush with the lower edge of the celtic cross 
-     **/   
-
-
-// union 
     solidXJfixture = new G4UnionSolid("solidXJfixture", solidXJfixture_down_uni4, solidXJfixture_up_uni, 0, G4ThreeVector(0.*mm, 0.*mm, -25.*mm));
 
 
-    G4VSolid* solidXJfixture_twiddle = new G4UnionSolid("solidXJfixture_twiddle", solidXJfixture_up_uni, solidXJfixture_down_uni4, 0, G4ThreeVector(0.*mm, 0.*mm, 25.*mm));
     // twiddling puts the zero at the altar frame zero 
     // so would have to offset the placement 
 
-
-
+    G4VSolid* solidXJfixture_twiddle = new G4UnionSolid("solidXJfixture_twiddle", solidXJfixture_up_uni, solidXJfixture_down_uni4, 0, G4ThreeVector(0.*mm, 0.*mm, 25.*mm));
     G4VSolid* celtic_cross_sub_altar = new G4SubtractionSolid("solidXJfixture_celtic_cross_sub_altar", solidXJfixture_down_uni4, solidXJfixture_up_uni, 0, G4ThreeVector(0.*mm, 0.*mm, -25.*mm));
-
-
     G4VSolid* solidXJfixture_split = new G4UnionSolid("solidXJfixture_split", solidXJfixture_down_uni4, solidXJfixture_up_uni, 0, G4ThreeVector(0.*mm, 0.*mm, -50.*mm));
 
 
-
-
     G4VSolid* solid = solidXJfixture ;
-    int debug_mode = XJfixtureConstruction_debug_mode ; 
 
+    int debug_mode = XJfixtureConstruction_debug_mode ; 
     if( debug_mode > 0 )
     {
         switch(debug_mode)
@@ -369,6 +364,16 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
     }
     return solid ;
 }
+
+const G4VSolid* X4SolidMaker::AnnulusBoxUnion(const char* name)
+{
+    G4VSolid* down1  = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
+    G4VSolid* uni13 = new G4UnionSolid("uni13", down1, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));
+    return uni13 ; 
+}
+
+
 
 /**
 X4SolidMaker::Uncoincide_Box_Box_Union

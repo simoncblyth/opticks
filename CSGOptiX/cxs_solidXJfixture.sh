@@ -16,6 +16,14 @@ The grab writes CSGOptiXSimulateTest_OUTPUT_DIR.sh script
 to the LOGDIR directory which is then sourced by the cxs.sh
 script when run in lrun mode.   
 
+For custom geometry such as from GeoChain test geometry need to use::
+
+    ./tmp_grab.sh png
+    ./tmp_grab.sh png
+    ./cxs_solidXJfixture.sh lrun     
+
+
+
 Whilst working on the plot presentation of previously 
 grabbed intersect photons the COMP control is used.
 This is used for changing annotations and deciding 
@@ -216,6 +224,7 @@ elif [ "$GEOM" == "${GBASE}TP_0_Rshift" ]; then
 
 elif [ "$GEOM" == "custom_${GBASE}XY" ]; then
 
+    ## HMM : THIS IS KINDA MISPLACED BETTER IN A cxs_geochain.sh  
     note="all interior lines are spurious from coincidences"
     cfbase=$TMP/GeoChain/XJfixtureConstruction  
     moi=0
@@ -228,7 +237,7 @@ elif [ "$GEOM" == "custom_${GBASE}XY" ]; then
 
     export ZZ=-33.5,6.5 
     #export YY=-65,-50,-35,0,35,50,65 
-    export YY=-45,-25,25,45 
+    #export YY=-45,-25,25,45 
 
 
 else
@@ -247,5 +256,16 @@ else
    echo $msg COMP $COMP GEOM $GEOM note $note PUB $PUB
    source ./cxs.sh $*
 fi
+
+
+if [ -z "$cfbase" ]; then
+    echo $msg cfbase $cfbase is not defined : so are handling standard geometry : hence use cxs_grab.sh to grab from workstation to laptop
+else
+    echo $msg cfbase $cfbase is defined : so are handling non-standard geometry : hence use tmp_grab.sh to grab from workstation to laptop
+fi 
+
+
+
+
 
 

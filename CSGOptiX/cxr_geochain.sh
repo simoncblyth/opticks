@@ -44,14 +44,14 @@ msg="=== $BASH_SOURCE :"
 #geom=PolyconeWithMultipleRmin
 
 #geom=hmsk_solidMask
-geom=hmsk_solidMaskTail
+#geom=hmsk_solidMaskTail
 
 #geom=nmsk_solidMask
 #geom=nmsk_solidMaskTail
 
 #geom=XJfixtureConstruction
 #geom=XJanchorConstruction
-
+geom=AnnulusBoxUnion
 
 export GEOM=${GEOM:-$geom}
 

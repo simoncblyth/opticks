@@ -58,8 +58,9 @@ EOU
 #geom=nmsk_solidMask
 #geom=nmsk_solidMaskTail
 
-geom=XJfixtureConstruction
+#geom=XJfixtureConstruction
 #geom=XJanchorConstruction
+geom=AnnulusBoxUnion 
 
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin
