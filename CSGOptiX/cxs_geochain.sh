@@ -1,4 +1,14 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+
+NOMASK=1 ./cxs_geochain.sh 
+    use NOMASK to debug empty frames, eg when the genstep grid is too small for the geometry 
+
+EOU
+}
+
+
+
 msg="=== $BASH_SOURCE :"
 
 #geom="dcyl_XZ"
@@ -6,7 +16,8 @@ msg="=== $BASH_SOURCE :"
 #geom="AdditionAcrylicConstruction_XZ"
 #geom="BoxMinusTubs1_XZ"
 #geom="SphereWithPhiSegment"
-geom="AnnulusBoxUnion_YZ"
+geom="AnnulusBoxUnion_XY"
+#geom="AnnulusBoxUnion_YZ"
 
 export GEOM=${GEOM:-$geom}
 moi=0
@@ -16,10 +27,15 @@ dz=0
 num_pho=100
 isel=0   # setting isel to zero, prevents skipping bnd 0 
 gridscale=0.1
+ce_offset=0
+ce_scale=1
+gsplot=1
 
 
 dcyl(){ gridscale=0.025 ; }
 bssc(){ gridscale=0.025 ; }
+AnnulusBoxUnion(){  gridscale=0.15 ;  }  # enlarge genstep grid to fit the protruding box
+
 default()
 {
     # everything else assume single PMT dimensions
@@ -30,21 +46,27 @@ default()
 }
 
 
+
+
 case $GEOM in 
    dcyl_*)                        cfbase=$TMP/CSGDemoTest/dcyl  && dcyl  ;;
    bssc_*)                        cfbase=$TMP/CSGDemoTest/bssc  && bssc  ;; 
+
    BoxMinusTubs_*)                cfbase=$TMP/GeoChain/BoxMinusTubs         ;;
    SphereWithPhiSegment_*)        cfbase=$TMP/GeoChain/SphereWithPhiSegment ;;
    AdditionAcrylicConstruction_*) cfbase=$TMP/GeoChain/AdditionAcrylicConstruction ;;
    BoxMinusTubs_*)                cfbase=$TMP/GeoChain/BoxMinusTubs ;;
    SphereWithPhiSegment_*)        cfbase=$TMP/GeoChain/SphereWithPhiSegment ;;
-   AnnulusBoxUnion_*)             cfbase=$TMP/GeoChain/AnnulusBoxUnion ;;    
+   AnnulusBoxUnion_*)             cfbase=$TMP/GeoChain/AnnulusBoxUnion && AnnulusBoxUnion;;    
    *)                             cfbase=$TMP/GeoChain/$GEOM && default ;; 
 esac
 
-if [ "$GEOM" == "bssc_XZ" ]; then  
-    note="HMM : box minus sub-sub cylinder NOT showing the spurious intersects, maybe nice round demo numbers effect"
-fi 
+
+case $GEOM in 
+   bssc_XZ) note="HMM : box minus sub-sub cylinder NOT showing the spurious intersects, maybe nice round demo numbers effect" ;; 
+   AnnulusBoxUnion_YZ) note="no spurious intersects seen" ;; 
+   AnnulusBoxUnion_XY) note="no spurious intersects seen" ;; 
+esac
 
 case $GEOM in  
    *XZ) cegs=16:0:9:$dx:$dy:$dz:$num_pho  ;;
@@ -54,6 +76,8 @@ case $GEOM in
    *ZY) cegs=0:9:16:$dx:$dy:$dz:$num_pho  ;;
    *YX) cegs=9:16:0:$dx:$dy:$dz:$num_pho  ;;
 esac
+# first axis named is the longer one that is presented on the horizontal in landscape aspect   
 
 source ./cxs.sh 
+
 

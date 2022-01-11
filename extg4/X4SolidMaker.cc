@@ -48,6 +48,7 @@ BoxMinusOrb
 UnionOfHemiEllipsoids
 PolyconeWithMultipleRmin
 AnnulusBoxUnion
+AnnulusTwoBoxUnion
 )LITERAL"; 
 
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
@@ -68,6 +69,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = X4SolidMaker::UnionOfHemiEllipsoids(qname); 
     else if(StartsWith("PolyconeWithMultipleRmin", qname))    solid = X4SolidMaker::PolyconeWithMultipleRmin(qname) ; 
     else if(StartsWith("AnnulusBoxUnion", qname))             solid = X4SolidMaker::AnnulusBoxUnion(qname) ; 
+    else if(StartsWith("AnnulusTwoBoxUnion", qname))          solid = X4SolidMaker::AnnulusTwoBoxUnion(qname) ; 
     assert(solid); 
     return solid ; 
 }
@@ -367,11 +369,27 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
 
 const G4VSolid* X4SolidMaker::AnnulusBoxUnion(const char* name)
 {
+    // do not see spurious intersects 
     G4VSolid* down1  = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
     G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
     G4VSolid* uni13 = new G4UnionSolid("uni13", down1, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));
     return uni13 ; 
 }
+
+const G4VSolid* X4SolidMaker::AnnulusTwoBoxUnion(const char* name)
+{
+    G4VSolid* down1  = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
+    G4VSolid* uni13 = new G4UnionSolid(  "uni13", down1, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));
+    G4VSolid* uni133 = new G4UnionSolid("uni133", uni13, down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm));
+    return uni133 ; 
+}
+
+
+
+
+
+
 
 
 

@@ -125,9 +125,9 @@ if [ "$(uname)" == "Linux" ]; then
        echo $msg : Possibilities: 
        echo $msg :
        echo $msg : 1. you intended to use the standard geometry but the GEOM $GEOM envvar does not match any of the if branches 
-       echo $msg : 2. you want to use a non-standard geometry but have not yet created it : 
-       echo $msg :    do so from \"cd ~/opticks/GeoChain\" after b7 building by invoking:
+       echo $msg : 2. you want to use a non-standard geometry but have not yet created it : do so as shown below
        echo $msg :
+       echo $msg :    \"b7 \; cd ~/opticks/GeoChain\"  
        echo $msg :    \"gc \; GEOM=$GEOM ./run.sh\" 
        echo $msg :   
        exit 1 
@@ -233,5 +233,12 @@ elif [ "$(uname)" == "Darwin" ]; then
 fi 
 
 echo LOGDIR : $LOGDIR
+if [ -n "$cfbase" ]; then 
+   echo $msg cfbase $cfbase is defined : are using non-standard geometry 
+   echo $msg cross section intersects onto non-standard geometry are stored into tmp directories
+   echo $msg to grab these to laptop use cx tmp_grab.sh 
+fi 
+
+
 
 exit 0
