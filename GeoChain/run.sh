@@ -60,7 +60,8 @@ EOU
 
 #geom=XJfixtureConstruction
 #geom=XJanchorConstruction
-geom=AnnulusBoxUnion 
+#geom=AnnulusBoxUnion 
+geom=AnnulusTwoBoxUnion 
 
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin

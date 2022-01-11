@@ -26,6 +26,7 @@ struct X4_API X4SolidMaker
     static const G4VSolid* XJfixtureConstruction(const char* name); 
     static const G4VSolid* AnnulusBoxUnion(const char* name) ; 
     static const G4VSolid* AnnulusTwoBoxUnion(const char* name) ; 
+    static const G4VSolid* AnnulusFourBoxUnion(const char* name) ; 
 
     static G4VSolid* Uncoincide_Box_Box_Union( const G4VSolid* bbu  ); 
     static std::string Desc( const G4Box* box );

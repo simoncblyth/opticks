@@ -16,8 +16,12 @@ msg="=== $BASH_SOURCE :"
 #geom="AdditionAcrylicConstruction_XZ"
 #geom="BoxMinusTubs1_XZ"
 #geom="SphereWithPhiSegment"
-geom="AnnulusBoxUnion_XY"
+#geom="AnnulusBoxUnion_XY"
 #geom="AnnulusBoxUnion_YZ"
+
+#geom="AnnulusTwoBoxUnion_XY"
+geom="AnnulusTwoBoxUnion_YZ"
+
 
 export GEOM=${GEOM:-$geom}
 moi=0
@@ -34,7 +38,8 @@ gsplot=1
 
 dcyl(){ gridscale=0.025 ; }
 bssc(){ gridscale=0.025 ; }
-AnnulusBoxUnion(){  gridscale=0.15 ;  }  # enlarge genstep grid to fit the protruding box
+AnnulusBoxUnion(){     gridscale=0.15 ;  }  # enlarge genstep grid to fit the protruding box
+AnnulusTwoBoxUnion(){  gridscale=0.15 ;  } 
 
 default()
 {
@@ -58,6 +63,7 @@ case $GEOM in
    BoxMinusTubs_*)                cfbase=$TMP/GeoChain/BoxMinusTubs ;;
    SphereWithPhiSegment_*)        cfbase=$TMP/GeoChain/SphereWithPhiSegment ;;
    AnnulusBoxUnion_*)             cfbase=$TMP/GeoChain/AnnulusBoxUnion && AnnulusBoxUnion;;    
+   AnnulusTwoBoxUnion_*)          cfbase=$TMP/GeoChain/AnnulusTwoBoxUnion && AnnulusTwoBoxUnion;;    
    *)                             cfbase=$TMP/GeoChain/$GEOM && default ;; 
 esac
 
@@ -66,6 +72,8 @@ case $GEOM in
    bssc_XZ) note="HMM : box minus sub-sub cylinder NOT showing the spurious intersects, maybe nice round demo numbers effect" ;; 
    AnnulusBoxUnion_YZ) note="no spurious intersects seen" ;; 
    AnnulusBoxUnion_XY) note="no spurious intersects seen" ;; 
+   AnnulusTwoBoxUnion_XY) note="no spurious intersects seen" ;; 
+   AnnulusTwoBoxUnion_YZ) note="" ;; 
 esac
 
 case $GEOM in  

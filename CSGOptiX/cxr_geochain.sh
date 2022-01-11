@@ -51,7 +51,8 @@ msg="=== $BASH_SOURCE :"
 
 #geom=XJfixtureConstruction
 #geom=XJanchorConstruction
-geom=AnnulusBoxUnion
+#geom=AnnulusBoxUnion
+geom=AnnulusTwoBoxUnion
 
 export GEOM=${GEOM:-$geom}
 
