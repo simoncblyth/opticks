@@ -62,8 +62,8 @@ EOU
 #geom=XJanchorConstruction
 #geom=AnnulusBoxUnion 
 #geom=AnnulusTwoBoxUnion 
-geom=AnnulusOtherTwoBoxUnion 
-#geom=AnnulusFourBoxUnion 
+#geom=AnnulusOtherTwoBoxUnion 
+geom=AnnulusFourBoxUnion 
 
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin

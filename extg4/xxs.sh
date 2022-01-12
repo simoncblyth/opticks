@@ -100,14 +100,14 @@ msg="=== $BASH_SOURCE :"
 #geom=XJfixtureConstruction_XZ
 #geom=XJfixtureConstruction_XY
 
-#geom=XJanchorConstruction_YZ
+geom=XJanchorConstruction_YZ
 #geom=XJanchorConstruction_XZ
 #geom=XJanchorConstruction_XY
 
 #geom=SJReceiverConstruction_XZ
 #geom=AnnulusBoxUnion_YZ
 #geom=AnnulusBoxUnion_XY
-geom=AnnulusFourBoxUnion_XY
+#geom=AnnulusFourBoxUnion_XY
 
 
 export GEOM=${GEOM:-$geom}

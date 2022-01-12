@@ -22,8 +22,10 @@ msg="=== $BASH_SOURCE :"
 #geom="AnnulusTwoBoxUnion_XY"
 #geom="AnnulusTwoBoxUnion_YZ"
 #geom="AnnulusFourBoxUnion_XY"
-geom="AnnulusFourBoxUnion_YZ"
+#geom="AnnulusFourBoxUnion_YZ"
 
+#geom="AnnulusOtherTwoBoxUnion_XY"
+geom="AnnulusOtherTwoBoxUnion_XZ"
 
 export GEOM=${GEOM:-$geom}
 moi=0
@@ -79,6 +81,8 @@ case $GEOM in
    AnnulusTwoBoxUnion_YZ) note="no spurious" ;; 
    AnnulusFourBoxUnion_XY) note="spurious intersects appear with four boxes, not with two" ;; 
    AnnulusFourBoxUnion_YZ) note="curious the spurious intersects visible in XY cross-section are not apparent in YZ cross-section" ;; 
+   AnnulusOtherTwoBoxUnion_XY) note="no spurious intersects seen" ;; 
+   AnnulusOtherTwoBoxUnion_XZ) note="no spurious intersects seen" ;; 
 esac
 
 case $GEOM in  

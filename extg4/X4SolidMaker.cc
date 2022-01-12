@@ -421,6 +421,12 @@ const G4VSolid* X4SolidMaker::AnnulusOtherTwoBoxUnion(const char* name)
     return down_uni2 ; 
 }
 
+/**
+Not yet managed to see the spurious intersects with a render::
+
+    EYE=0,0,2 UP=0,1,0 CAM=1 TMIN=2 ./cxr_geochain.sh 
+
+**/
 const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion(const char* name)
 {
     // spurious intersects appear in XY cross section but not YZ 
@@ -679,6 +685,7 @@ Observed spurious Geant4 intersects on the line between the Tubs and the Cons::
               ball         G4Sphere
 
         up                 G4Tubs
+
 
 **/
 
