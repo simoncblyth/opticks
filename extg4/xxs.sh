@@ -24,6 +24,10 @@ once developments are nearly finalized.
 | _pdyn  | JUNO_PMT20INCH_PLUS_DYNODE=ENABLED             | adds dynode volumes inside inner2_log so need to look at xxv.sh to see effect     |
 +--------+------------------------------------------------+-----------------------------------------------------------------------------------+
 
+
+CIRCLE=0,0,17820,17820 ./xxs.sh 
+
+
 EOU
 }
 
@@ -220,6 +224,25 @@ elif [ "$GEOM" == "XJanchorConstruction_YZ" ]; then
     cegs=0:16:9:0:0:0:$numpho
     gridscale=0.05      
 
+    source XJanchorConstruction.sh
+
+elif [ "$GEOM" == "XJanchorConstruction_XZ" ]; then
+
+    note="also spurious Geant4 intersects on line between cone top and base, rotational symmetry"
+    numpho=100
+    cegs=16:0:9:0:0:0:$numpho
+    gridscale=0.05      
+
+    source XJanchorConstruction.sh
+
+elif [ "$GEOM" == "XJanchorConstruction_XY" ]; then
+
+    note="circle : z-offset as z-max zero : G4Sphere::DistanceToOut noise"
+    numpho=100
+    cegs=16:9:0:0:0:-1:$numpho
+    gridscale=0.05      
+
+    source XJanchorConstruction.sh
 
 elif [ "$GEOM" == "AnnulusBoxUnion_YZ" ]; then
 
@@ -233,20 +256,6 @@ elif [ "$GEOM" == "AnnulusBoxUnion_XY" ]; then
     cegs=16:9:0:0:0:0:$numpho
     gridscale=0.05      
 
-
-elif [ "$GEOM" == "XJanchorConstruction_XZ" ]; then
-
-    note="also spurious Geant4 intersects on line between cone top and base, rotational symmetry"
-    numpho=100
-    cegs=16:0:9:0:0:0:$numpho
-    gridscale=0.05      
-
-elif [ "$GEOM" == "XJanchorConstruction_XY" ]; then
-
-    note="circle : z-offset as z-max zero : G4Sphere::DistanceToOut noise"
-    numpho=100
-    cegs=16:9:0:0:0:-1:$numpho
-    gridscale=0.05      
 
 
 elif [ "$GEOM" == "SJReceiverConstruction_XZ" ]; then

@@ -162,8 +162,8 @@ Opticks repo
 * e2w_reciprocal_check trying to see if the difference can all be explained by CLHEP changed constants
 * remove all use of G4PhysicsVector::SetSpline due to Geant4 API change, implicitly assuming the default stays a sensible false 
 
-2021 Oct : QUDARap : QTex, QCerenkov : new world order simulation atoms
----------------------------------------------------------------------------
+2021 Oct : QUDARap : QTex, QCerenkov : new world order simulation atoms, JUNO Fastenener void subtraction reveals CSG limitation, Geant4 1100 property debug
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 * QCerenkov lookup GPU texture testing
 * investigate 12 opticks-t fails with unreleased 91072, four might be fixed by X4PropertyMap createNewKey=true 
@@ -200,7 +200,7 @@ Opticks repo
 * improve NNodeNudger debugging, add primitiveIndexOffset to CSGPrimSpec
 * PMTSim_Z test
 
-2021 Nov : Z-cutting G4VSolid that actually cuts the CSG tree, Geant4 2D cross-sections with QIntersectSolidTest, QIntersectVolumeTest 
+2021 Nov : Z-cutting G4VSolid that actually cuts the CSG tree, Geant4 2D cross-sections with (Q->X4)IntersectSolidTest, (Q->X4)IntersectVolumeTest 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 * GeoChain testing of the ZCutSolid from j/PMTSIM
@@ -224,6 +224,18 @@ Opticks repo
 * thinking about how to special case handle maximally unbalanced trees in fewer passes, suspect can check INCLUDE/EXCLUDE transitions in RPRE-order which is kinda an undo order for typical construction order which is POST-order
 
 
+2021 Dec : work with LHCb RICH people on phicut/thetacut primitive
+-------------------------------------------------------------------------------------------
+
+* rework X4Solid::convertPolycone to handle multiple R_inner, eg base_steel
+* found spurious Geant4 and Opticks intersects from flush unions in solidXJfixture and solidXJanchor, these could explain the 0.5 percent history mismatch in ab.sh
+
+
+
+2022 Jan 
+----------
+
+* RTP tangential frame for investigation of some overlaps in global geometry 
 
 
 
@@ -282,7 +294,65 @@ CSG : 2021-04-27 -> 2021-08-19 : after which incorporated into Opticks
  
 
 
+2020 Focus : Generalizing Opticks to facilitate integration with detector simulation frameworks
+--------------------------------------------------------------------------------------------------
 
+Looking at commits in 2020::
+
+    git lg --since 2020-01-01 --until 2020-12-31 
+
+Currently starts from
+
+* https://bitbucket.org/simoncblyth/opticks/commits/?page=60
+
+
+Remote Working : ssh tunneling + rsync scripts + old CUDA + image handling 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* developed ssh tunneling scripts that avoid repetitive steps to connect to non-publicly accessible remote nodes  
+  such as the GPU workstation I use at IHEP
+
+* using scripts that cooperate with other instances of themselves run on the remote node allows 
+  repetitive manual remote working operations such as copying to be avoided
+
+* for example the git.py svn.py utilities automate syncing to a remote working copy directory 
+  which allows working on a remote node without having to suffer slow editing across network connections
+  and also avoids excessive numbers of "sync" commits
+
+* restored Opticks operation with CUDA 9 to allow local testing on my laptop that is limited to this old CUDA version 
+
+* as interactive use of a remote GPU is problematic over the network I improved Opticks image handling allowing writing 
+  of annotated images to allow visualization checks to proceed via saving images and tranferring the files
+
+* adopted highly compressed jpg image saving to speedup network transfers between remote GPU workstation at IHEP 
+  and laptop in England
+
+   
+
+Generalization of Opticks Build/Install Machinery
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+0. Opticks now builds against "foreign" externals using CMAKE_PREFIX_PATH mechanism  
+1. opticks-config  machinery (after some expts with other approaches decided to use Boost-CMake-Modules BCM .pc generation capabilities) 
+   that allows integration of CMake based Opticks build with non-CMake (CMT) based Offline build  
+
+   * this entailed changes to every one of Opticks 20 packages with build test scripts added for all of them 
+
+2. Opticks as a JUNOenv external 
+
+Housekeeping : Migrate Opticks repo from Mercurial to Git as bitbucket ending support for Mercurial
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+Code level integration of Opticks with JUNO Offline using G4Opticks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* PMT Geometry Changes needed for Opticks Translation
+
+
+2. GDML parsing and matplotlib geometry plotting developed for PMT neck simplifications, removing G4Torus
 
 
 2020 Dec : tidy up in prep for release candidates, remove old externals, G4 10.6 tests reveals Geant4 bug, way buffer for hit completion 
@@ -498,8 +568,6 @@ Some notes on progress:
   where the world pointer is passed to Opticks. 
   The first problem is multiple types of cathodes : I need to generalize 
   Opticks to handle this 
-
-
 
 
 2020 April

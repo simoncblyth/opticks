@@ -1244,8 +1244,15 @@ bool intersect_node_disc(float4& isect, const quad& q0, const quad& q1, const fl
     return valid_isect ; 
 }
 
+/**
+intersect_node
+----------------
 
+Notice that only the inverse CSG transforms are needed on the GPU as these are used to 
+transform the ray_origin and ray_direction into the local origin and direction in the 
+local frame of the node.   
 
+**/
 
 INTERSECT_FUNC
 bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction )

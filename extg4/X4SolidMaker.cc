@@ -681,25 +681,69 @@ Observed spurious Geant4 intersects on the line between the Tubs and the Cons::
     solidXJanchor          G4UnionSolid
 
         sub                G4SubtractionSolid      (subtract big sphere from cone)  
-              down         G4Cons
+              down         G4Cons   
               ball         G4Sphere
 
         up                 G4Tubs
 
 
+
+
+        +-------------------------+--------------------------+         - - - - - -   
+         \                        .                         /                             10.0
+          .                       +                        .           - - - - - -                   - - - - - -
+           \                      .                       /                               10.0            |
+            +---------+^^^^^^^^^^^.^^^^^^^^^^^^+---------+             - - - - - -                       16.5
+                      |           .            |                                    13/2 = 6.5            |
+                      +           .            +                       - - - - - -                   - - - - - -
+                      |           .            |                                    13/2 = 6.5 
+                      +-----------.------------+         |   |         - - - - - - 
+                                  0           25        47  73 
+                            
+
+     FIX : 
+         increase tubs hz by uncoincide/2 
+         shift upwards uncoincide/2 (-> low edge stays same) by shifting down less
+
 **/
+
+const int X4SolidMaker::XJanchorConstruction_debug_mode = SSys::getenvint("X4SolidMaker__XJanchorConstruction_debug_mode", 0 ) ; 
 
 const G4VSolid* X4SolidMaker::XJanchorConstruction(const char* name)
 {
+    bool do_uncoincide = false ; 
+    bool do_noball = false ; 
+
+    switch(XJanchorConstruction_debug_mode)
+    {
+        case 0: do_uncoincide = false ;  do_noball = false ; break ; 
+        case 1: do_uncoincide = true  ;  do_noball = false ; break ; 
+        case 2: do_uncoincide = false ;  do_noball = true  ; break ; 
+        case 3: do_uncoincide = true  ;  do_noball = true  ; break ; 
+    }
+
+    double uncoincide = do_uncoincide ? 1. : 0. ; 
+
+    LOG(info) 
+        << " X4SolidMaker__XJanchorConstruction_debug_mode " << XJanchorConstruction_debug_mode
+        << " do_uncoincide " << do_uncoincide 
+        << " uncoincide " << uncoincide 
+        << " do_noball " << do_noball 
+        ; 
+
+
     G4VSolid* solidXJanchor_up;
     G4VSolid* solidXJanchor_down;
     G4VSolid* solidXJanchor_ball;
 
-    solidXJanchor_up   = new G4Tubs("solidXJanchor_up", 0.*mm, 25.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    solidXJanchor_up   = new G4Tubs("solidXJanchor_up", 0.*mm, 25.*mm, (13.+uncoincide)/2*mm, 0.*deg, 360.*deg);
     solidXJanchor_down = new G4Cons("solidXJanchor_down", 0.*mm, 47.*mm, 0.*mm, 73.*mm, 10.*mm, 0.*deg, 360.*deg);   // to subtract the ball
     solidXJanchor_ball = new G4Sphere("solidXJanchor_ball", 0.*mm, 17820.*mm, 0.*deg, 360.*deg, 0.*deg, 180.*deg); 
-    G4SubtractionSolid* solidXJanchor_sub = new G4SubtractionSolid("solidXJanchor_sub",solidXJanchor_down, solidXJanchor_ball, 0, G4ThreeVector(0.*mm, 0*mm,  17820.*mm));
-    G4UnionSolid* solidXJanchor = new G4UnionSolid("solidXJanchor",solidXJanchor_sub, solidXJanchor_up, 0, G4ThreeVector(0.*mm, 0*mm,-16.5*mm));
+
+    G4SubtractionSolid* solidXJanchor_sub_ = new G4SubtractionSolid("solidXJanchor_sub",solidXJanchor_down, solidXJanchor_ball, 0, G4ThreeVector(0.*mm, 0*mm,  17820.*mm));
+    G4VSolid* solidXJanchor_sub = do_noball ? solidXJanchor_down : (G4VSolid*)solidXJanchor_sub_ ; 
+
+    G4UnionSolid* solidXJanchor = new G4UnionSolid("solidXJanchor",solidXJanchor_sub, solidXJanchor_up, 0, G4ThreeVector(0.*mm, 0*mm,(-16.5 + uncoincide/2)*mm));
 
     return solidXJanchor ;
 } 

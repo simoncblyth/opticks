@@ -7,6 +7,7 @@
 
 #include "X4_API_EXPORT.hh"
 #include "G4ThreeVector.hh"
+#include "geomdefs.hh"
 
 struct quad4 ; 
 struct quad6 ; 
@@ -22,8 +23,10 @@ struct X4_API X4Intersect
     const char* desc() const ; 
 
     static double Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump); 
+    static double Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in  ); 
 
     void init(); 
+    void scan_(); 
     void scan(); 
     void save(const char* dir) const ;
 

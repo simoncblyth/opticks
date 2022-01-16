@@ -1266,6 +1266,17 @@ template void CSGFoundry::loadArray( std::vector<float4>& , const char* , const 
 template void CSGFoundry::loadArray( std::vector<qat4>& , const char* , const char* , bool ); 
 
 
+/**
+CSGFoundry::upload
+--------------------
+
+Notice that the solid, inst and tran are not uploaded, as they are not needed on GPU. 
+The reason is that the solid feeds into the GAS, the inst into the IAS and the tran 
+are not needed because the inverse transforms are all that is needed.
+
+
+**/
+
 void CSGFoundry::upload()
 {
     inst_find_unique(); 

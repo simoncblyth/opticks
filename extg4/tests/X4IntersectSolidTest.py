@@ -145,6 +145,7 @@ if 1:
     xx = efloatlist_("XX")
     zz = efloatlist_("ZZ")
     zzd = efloatlist_("ZZD")
+    CIRCLE = efloatlist_("CIRCLE") 
 
     icol = "red"
     other_icol = "blue"
@@ -213,6 +214,22 @@ if 1:
             pass
         pass
 
+
+        if len(CIRCLE) > 0:
+            xlim = ax.get_xlim() 
+            ylim = ax.get_ylim() 
+
+            assert len(CIRCLE) == 4 
+            circle = np.array(CIRCLE) 
+            circ = mp.Circle( (circle[H], circle[V]), circle[-1], color='r', clip_on=False, fill=False)
+            ax.add_patch(circ)
+
+            ax.set_xlim(xlim)
+            ax.set_ylim(ylim)
+        else:
+            pass
+        pass
+
         ax.legend(loc="upper right")
         fig.show()
 
@@ -268,6 +285,9 @@ if 1:
             line = pv.Line(zlo, zhi)
             pl.add_mesh(line, color="w")
         pass
+
+
+
 
         if savefig:
             outpath = os.path.join(outdir, figname+"_pvplt.png")

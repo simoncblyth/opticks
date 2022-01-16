@@ -8,6 +8,7 @@
 #include "stran.h"
 #include "squad.h"
 
+#include "SDirect.hh"
 #include "SPath.hh"
 #include "SEvent.hh"
 #include "SSys.hh"
@@ -172,9 +173,9 @@ void X4Intersect::init()
 
 
 
-G4double X4Intersect::Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ) // static
+G4double X4Intersect::Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
 {
-    EInside in =  solid->Inside(pos) ; 
+    in =  solid->Inside(pos) ; 
     G4double t = kInfinity ; 
     switch( in )
     {
@@ -183,6 +184,13 @@ G4double X4Intersect::Distance(const G4VSolid* solid, const G4ThreeVector& pos, 
         case kOutside: t = solid->DistanceToIn(  pos, dir ) ; break ; 
         default:  assert(0) ; 
     }
+    return t ; 
+}
+
+G4double X4Intersect::Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ) // static
+{
+    EInside in ; 
+    G4double t = Distance_( solid, pos, dir, in  );  
 
     if(dump && t != kInfinity)
     {
@@ -240,7 +248,7 @@ TODO: collect surface normals
 
 **/
 
-void X4Intersect::scan()
+void X4Intersect::scan_()
 {
     for(unsigned i=0 ; i < pp.size() ; i++)
     {
@@ -266,6 +274,37 @@ void X4Intersect::scan()
         ii.push_back(isect); 
     } 
 }
+
+
+void X4Intersect::scan()
+{
+
+    std::stringstream coutbuf;
+    std::stringstream cerrbuf;
+    {   
+       cout_redirect out(coutbuf.rdbuf());
+       cerr_redirect err(cerrbuf.rdbuf());
+
+       scan_(); 
+    }   
+    std::string cout_ = coutbuf.str() ; 
+    std::string cerr_ = cerrbuf.str() ; 
+
+
+    LOG(info) 
+        << "scan" 
+        << " cout " << strlen(cout_.c_str()) 
+        << " cerr " << strlen(cerr_.c_str()) 
+        ;
+
+    /*
+    if(cout_.size() > 0) LOG(info) << "cout from scan " << std::endl << cout_ ; 
+    if(cerr_.size() > 0) LOG(warning) << "cerr from scan "  << std::endl << cerr_ ; 
+    */
+}
+
+
+
 
 void X4Intersect::save(const char* dir) const 
 {

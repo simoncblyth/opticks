@@ -40,6 +40,7 @@ struct X4_API X4SolidMaker
     static void ChangeThreeVector( G4ThreeVector* v, int axis, double delta );
 
 
+    static const int XJanchorConstruction_debug_mode ; 
     static const G4VSolid* XJanchorConstruction(const char* name); 
     static const G4VSolid* SJReceiverConstruction(const char* name);
 
