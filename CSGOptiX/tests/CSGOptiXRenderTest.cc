@@ -1,6 +1,6 @@
 /**
-CSGOptiXRender
-=================
+CSGOptiXRenderTest
+====================
 
 This executable is typically run via cxr_*.sh specialized bash scripts 
 each dedicated to different types of renders. 
@@ -46,6 +46,7 @@ CFBASE
 struct CSGOptiXRenderTest
 {
     static Opticks* InitOpticks(int argc, char** argv);  
+    static void InitOutdir(Opticks* ok); 
 
     CSGOptiXRenderTest(int argc, char** argv ) ; 
 
@@ -108,9 +109,22 @@ Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv )
     Opticks* ok = new Opticks(argc, argv, has_cfbase ? "--allownokey" : nullptr  );  
     ok->configure(); 
     ok->setRaygenMode(0);  // override --raygenmode option 
+    InitOutdir(ok); 
+    return ok ; 
+}
 
+/**
+CSGOptiXRenderTest::InitOutdir
+-------------------------------
+
+The out_prefix depends on values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined.
+
+**/
+
+void CSGOptiXRenderTest::InitOutdir(Opticks* ok)
+{
     int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
-    const char* out_prefix = ok->getOutPrefix(optix_version_override);  // out_prefix includes values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined
+    const char* out_prefix = ok->getOutPrefix(optix_version_override);  
     const char* cfbase = ok->getFoundryBase("CFBASE") ; 
 
     LOG(info) 
@@ -130,8 +144,9 @@ Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv )
 
     const char* outdir2 = ok->getOutDir(); 
     assert( strcmp(outdir2, outdir) == 0 ); 
-    return ok ; 
 }
+
+
 
 void CSGOptiXRenderTest::initFD()
 {
@@ -183,7 +198,7 @@ void CSGOptiXRenderTest::initArgs()
     }
     else
     {
-        args.push_back(default_arg); 
+        args.push_back(default_arg);   // default_arg is value of MOI envvar 
     }
 
     LOG(info) 

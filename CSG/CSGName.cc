@@ -143,33 +143,50 @@ int CSGName::findIndex(const char* starting, unsigned& count, int max_count ) co
             count += 1 ;  
         }   
     }   
-    return (max_count == -1 || count <= unsigned(max_count))  ? result : -1 ;   
+    bool count_ok = max_count == -1 || count <= unsigned(max_count) ; 
+    return count_ok ? result : -1 ;   
 }
 
 /**
 CSGName::parseArg
 -------------------
 
-If the entire arg can be parsed as an integer that integer is
-returned otherwise the index of the first ocuurence of the 
-string in the name list is returned or -1 if not found. 
+An arg of "ALL" is special cased yielding -1 otherwise parsing the string
+as an integer is attempted. If the entire string does not parse as an integer 
+or it matches the fallback "-1" then look for the string in the list of names. 
+If a name starting with the arg is found the 0-based index is returned, 
+otherwise -1 is returned.   
 
 **/
 
+const char* CSGName::parseArg_ALL = "ALL" ; 
+
 int CSGName::parseArg(const char* arg, unsigned& count) const 
 {
-    int idx = ParseIntString(arg, -1 ) ; 
-    count = 0 ;  
-    if(idx != -1) // succeeded to parse entire string as an integer
-    {   
+    count = 0 ; 
+    int idx = -1 ; 
+
+    bool is_all = strcmp( arg, parseArg_ALL) == 0 ? true : false ; 
+    if(is_all)
+    {
         count = 1 ; 
-    }   
+    }
     else
-    {   
-        idx = findIndex(arg, count);  
+    {
+        int fallback = -1 ; 
+        int idx = ParseIntString(arg, fallback ) ; 
+     
+        if(idx == fallback)  
+        {   
+            idx = findIndex(arg, count);  
+        }   
+        else
+        {   
+            count = 1 ; 
+        }
     }
 
-    LOG(LEVEL) << " arg " << arg << " idx " << idx << " count " << count ; 
+    LOG(LEVEL) << " arg " << arg << " idx " << idx << " count " << count << " is_all " << is_all ; 
     return idx ; 
 }
 

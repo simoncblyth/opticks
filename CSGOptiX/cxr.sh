@@ -137,7 +137,40 @@ if [ $rc -eq 0 ]; then
         jpg=$(ls -1rt `find $outdir -name '*.jpg' ` | tail -1)
         echo $msg jpg $jpg 
         ls -l $jpg
+
+
         [ -n "$jpg" -a "$(uname)" == "Darwin" ] && open $jpg
+
+        if [ -n "$jpg" -a "$(uname)" == "Darwin" -a -n "$PUB" ]; then 
+
+            if [ "$PUB" == "1" ]; then 
+                ext=""
+            else
+                ext="_${PUB}" 
+            fi 
+
+            rel=${jpg/\/tmp\/$USER\/opticks\//}  
+            rel=${rel/\.jpg}
+
+            s5p=/env/presentation/${rel}${ext}.jpg
+            pub=$HOME/simoncblyth.bitbucket.io$s5p
+
+            echo $msg jpg $jpg
+            echo $msg rel $rel
+            echo $msg ext $ext
+            echo $msg pub $pub
+            echo $msg s5p $s5p 1280px_720px 
+            mkdir -p $(dirname $pub)
+
+            if [ -f "$pub" ]; then 
+                echo $msg published path exists already : NOT COPYING : set PUB to an ext string to distinguish the name or more permanently arrange for a different path   
+            else
+                echo $msg copying jpg to pub 
+                cp $jpg $pub
+                echo $msg add s5p to s5_background_image.txt
+            fi 
+        fi 
+
     else
         echo $msg outdir not defined 
     fi 

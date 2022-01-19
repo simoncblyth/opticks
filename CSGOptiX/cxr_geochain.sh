@@ -16,6 +16,16 @@ executable. Usage::
 
 The EYE, LOOK, UP envvars set the okc/View::home defaults 
 
+
+DONE: avoid outdir having -1 elem in the path, as thats tedious to handle from shell 
+DONE: add PUB=1 sensitivity to copy renders into standardized publication dirs based on the outdir 
+      with the front of the path replaced 
+
+Taking a look inside, hunting speckle::
+
+    EYE=0,-0.7,0. UP=0,0,1 TMIN=0. CAM=0  ./cxr_geochain.sh 
+
+
 EOU
 }
 
@@ -49,11 +59,11 @@ msg="=== $BASH_SOURCE :"
 #geom=nmsk_solidMask
 #geom=nmsk_solidMaskTail
 
-#geom=XJfixtureConstruction
+geom=XJfixtureConstruction
 #geom=XJanchorConstruction
 #geom=AnnulusBoxUnion
 #geom=AnnulusTwoBoxUnion
-geom=AnnulusFourBoxUnion
+#geom=AnnulusFourBoxUnion
 #geom=AnnulusOtherTwoBoxUnion
 
 export GEOM=${GEOM:-$geom}
@@ -66,7 +76,7 @@ else
 fi
 
 
-moi=-1
+moi=ALL
 zoom=1
 
 if [ "$GEOM" == "default" ]; then  

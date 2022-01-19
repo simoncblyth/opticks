@@ -30,6 +30,7 @@ struct CSG_API CSGName
     int getIndex( const char* name    , unsigned& count) const ;
     int findIndex(const char* starting, unsigned& count, int max_count=-1) const ;
 
+    static const char* parseArg_ALL ; 
     int parseArg(const char* arg, unsigned& count ) const ;
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ;
 
