@@ -350,6 +350,15 @@ void CSGOptiX::prepareParam()
 #endif
 }
 
+/**
+CSGOptiX::launch
+-------------------
+
+See OptiX7Test.cu::__raygen__rg for what happens next, depending on params.raygenmode
+the "render" or "simulate" method gets called. 
+ 
+**/
+
 double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
 {
     double t0, t1 ; 

@@ -56,7 +56,8 @@ PV =  not "NOPV" in os.environ
 PVG = "PVG" in os.environ
 SIM = "SIM" in os.environ
 #LES = not "NOLES" in os.environ
-MASK = not "NOMASK" in os.environ
+MASK = os.environ.get("MASK", "pos")
+ALLOWED_MASK = ("pos", "t" )
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -466,7 +467,7 @@ class Positions(object):
     with real mm dimensions in local : kludge this with local_extent_scale=True
  
     """
-    def __init__(self, p, gs, grid, local=True, pos_mask=False, local_extent_scale=False ):
+    def __init__(self, p, gs, grid, local=True, mask="pos", local_extent_scale=False ):
         """
         :param p: photons array
         :param gs: Gensteps instance
@@ -477,6 +478,7 @@ class Positions(object):
 
         gpos = p[:,0].copy()            # global frame intersect positions
         gpos[:,3] = 1  
+
         lpos = np.dot( gpos, mtr[1] )   # local frame intersect positions
 
         if local and local_extent_scale:
@@ -501,9 +503,15 @@ class Positions(object):
 
         #self.make_histogram()
 
-        if pos_mask:
+
+        if mask == "pos":
             self.apply_pos_mask()
+        elif mask == "t":
+            self.apply_t_mask()
+        else: 
+            pass
         pass
+
 
     def apply_pos_mask(self):
         lim = self.gs.lim  
@@ -522,9 +530,19 @@ class Positions(object):
 
         mask = xyz_mask 
 
+        log.info("apply_pos_mask")
+        self.set_mask(mask)
+
+    def apply_t_mask(self):
+        log.info("apply_t_mask")
+        t = self.p[:,2,2]
+        mask = t > 0. 
+        self.set_mask( mask) 
+
+    def set_mask(self, mask):
         self.mask = mask
         self.p = self.p[mask]
-        self.upos = upos[mask]
+        self.upos = self.upos[mask]
 
 
     def make_histogram(self):
@@ -603,6 +621,14 @@ class Plt(object):
         return os.path.join(self.outdir,"%s_%s_%s.png" % (stem, ptype, self.feat.name)) 
 
     def positions_mpplt(self, legend=True, gsplot=0):
+        axes = self.grid.axes   
+        if len(axes) == 2:
+            self.positions_mpplt_2D(legend=legend, gsplot=gsplot)
+        else:
+            pass
+        pass
+
+    def positions_mpplt_2D(self, legend=True, gsplot=0):
         """
         (H,V) are the plotting axes 
         (X,Y,Z) = (0,1,2) correspond to absolute axes which can be mapped to plotting axes in various ways 
@@ -751,6 +777,36 @@ class Plt(object):
 
 
     def positions_pvplt(self):
+        axes = self.grid.axes   
+        if len(axes) == 2:
+            self.positions_pvplt_2D()
+        else:
+            self.positions_pvplt_3D()
+        pass
+
+    def positions_pvplt_3D(self):
+        pass
+        feat = self.feat 
+        upos = self.pos.upos
+
+
+        pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
+
+        log.info("feat.unum %d " % feat.unum)
+
+        for idesc in range(feat.unum):
+            uval, selector, label, color, skip, msg = feat(idesc)
+            if skip: continue
+            pos = upos[selector] 
+            print(msg)
+            pl.add_points( pos[:,:3], color=color )
+        pass
+        pl.show_grid()
+        cp = pl.show() if GUI else None
+        return cp
+
+
+    def positions_pvplt_2D(self):
         """
         * actually better to use set_position reset=True after adding points to auto get into ballpark 
 
@@ -904,10 +960,12 @@ if __name__ == '__main__':
 
     gs = Gensteps(cxs.genstep, metatran, grid, local_extent_scale=local_extent_scale )
 
-    pos_mask = MASK   # default is True, disable mask with NOMASK envvar   
+    mask = MASK   # default is "pos" 
+    assert mask in ALLOWED_MASK, "mask %s is not in ALLOWED_MASK list %s " % (mask, str(ALLOWED_MASK))
+
     #without pos_mask means that the legend is filled with features that are not visible in the frame 
 
-    pos = Positions(cxs.photons, gs, grid, local=True, pos_mask=pos_mask, local_extent_scale=local_extent_scale )
+    pos = Positions(cxs.photons, gs, grid, local=True, mask=mask, local_extent_scale=local_extent_scale )
 
     if SIM:
         pos.pvplt_simple()

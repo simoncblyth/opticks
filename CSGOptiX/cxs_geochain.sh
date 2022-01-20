@@ -27,7 +27,11 @@ msg="=== $BASH_SOURCE :"
 #geom="AnnulusOtherTwoBoxUnion_XY"
 #geom="AnnulusOtherTwoBoxUnion_XZ"
 
-geom="AltXJfixtureConstruction_YZ"
+#geom="AltXJfixtureConstruction_YZ"
+#geom="AltXJfixtureConstruction_XZ"
+#geom="AltXJfixtureConstruction_XY"
+geom="AltXJfixtureConstruction_XYZ"
+
 
 export GEOM=${GEOM:-$geom}
 moi=0   # intended to catch the first meshname (which for geochain is usually the only meshname)
@@ -45,8 +49,9 @@ gsplot=1
 dcyl(){    gridscale=0.025 ; }
 bssc(){    gridscale=0.025 ; }
 Annulus(){ gridscale=0.15 ;  }  # enlarge genstep grid to fit the protruding unioned boxes
+default(){ echo -n  ; }
 
-default()
+pmt_default()
 {
     # everything else assume single PMT dimensions
     dz=-4
@@ -76,15 +81,19 @@ case $GEOM in
    AnnulusFourBoxUnion_YZ) note="curious the spurious intersects visible in XY cross-section are not apparent in YZ cross-section" ;; 
    AnnulusOtherTwoBoxUnion_XY) note="no spurious intersects seen" ;; 
    AnnulusOtherTwoBoxUnion_XZ) note="no spurious intersects seen" ;; 
+   AltXJfixtureConstruction_YZ) note="spurious intersects in YZ plane avoided with the Alt CSG modelling" ;; 
+   AltXJfixtureConstruction_XZ) note="thin xbox cross piece apparent" ;; 
+   AltXJfixtureConstruction_XY) note="some spurious remain between the curve of the outer tubs and the protruding boxes" ;; 
 esac
 
 case $GEOM in  
-   *XZ) cegs=16:0:9:$dx:$dy:$dz:$num_pho  ;;
-   *YZ) cegs=0:16:9:$dx:$dy:$dz:$num_pho  ;;
-   *XY) cegs=16:9:0:$dx:$dy:$dz:$num_pho  ;;
-   *ZX) cegs=9:0:16:$dx:$dy:$dz:$num_pho  ;;
-   *ZY) cegs=0:9:16:$dx:$dy:$dz:$num_pho  ;;
-   *YX) cegs=9:16:0:$dx:$dy:$dz:$num_pho  ;;
+   *_XZ) cegs=16:0:9:$dx:$dy:$dz:$num_pho  ;;
+   *_YZ) cegs=0:16:9:$dx:$dy:$dz:$num_pho  ;;
+   *_XY) cegs=16:9:0:$dx:$dy:$dz:$num_pho  ;;
+   *_ZX) cegs=9:0:16:$dx:$dy:$dz:$num_pho  ;;
+   *_ZY) cegs=0:9:16:$dx:$dy:$dz:$num_pho  ;;
+   *_YX) cegs=9:16:0:$dx:$dy:$dz:$num_pho  ;;
+   *_XYZ) cegs=9:16:9:$dx:$dy:$dz:$num_pho ;;  
 esac
 # first axis named is the longer one that is presented on the horizontal in landscape aspect   
 

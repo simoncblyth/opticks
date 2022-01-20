@@ -164,7 +164,9 @@ const char* CSGName::parseArg_ALL = "ALL" ;
 int CSGName::parseArg(const char* arg, unsigned& count) const 
 {
     count = 0 ; 
-    int idx = -1 ; 
+
+    int fallback = -1 ; 
+    int idx = fallback ; 
 
     bool is_all = strcmp( arg, parseArg_ALL) == 0 ? true : false ; 
     if(is_all)
@@ -173,8 +175,7 @@ int CSGName::parseArg(const char* arg, unsigned& count) const
     }
     else
     {
-        int fallback = -1 ; 
-        int idx = ParseIntString(arg, fallback ) ; 
+        idx = ParseIntString(arg, fallback ) ; 
         if(idx == fallback)  
         {   
             idx = findIndex(arg, count);  

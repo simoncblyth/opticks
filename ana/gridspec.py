@@ -132,6 +132,21 @@ class YX(object):
     off = np.array( [0,0,1], dtype=np.float32 ) 
 
 
+class XYZ(object):
+    """
+
+            Z  
+            | 
+            |
+            +------ Y
+           /
+          /
+         X
+
+    """ 
+    up = np.array( [0,0,1], dtype=np.float32 )
+    off = np.array( [1,0,0], dtype=np.float32 )
+
 
 class Axes(object):
     ups = {}
@@ -144,6 +159,8 @@ class Axes(object):
     ups["XY"] = XY.up
     ups["YX"] = YX.up
 
+    ups["XYZ"] = XYZ.up
+
     offs = {}
     offs["XZ"] = XZ.off
     offs["ZX"] = ZX.off
@@ -153,6 +170,9 @@ class Axes(object):
 
     offs["XY"] = XY.off
     offs["YX"] = YX.off
+
+    offs["XYZ"] = XYZ.off
+
 
     @classmethod
     def HV_(cls, H, V, axes="XYZ"):
@@ -187,7 +207,9 @@ class GridSpec(object):
         midx = gsmeta.find("midx:", None)
         mord = gsmeta.find("mord:", None)
         iidx = gsmeta.find("iidx:", None)
-        log.info(" moi %s midx %s mord %s iidx %s " % (moi, midx, mord, iidx))
+
+        coords = "RTP" if int(iidx) == -3 else "XYZ"   ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
+        log.info(" moi %s midx %s mord %s iidx %s coords %s " % (moi, midx, mord, iidx, coords))
 
         ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
         iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
@@ -211,26 +233,27 @@ class GridSpec(object):
         up  = eary_("UP","0.,0.,1.")
         off  = eary_("OFF","0.,0.,1.")
 
-        axes = self.determine_planar_axes(nx, ny, nz)
-        planar = not axes is None
+        axes = self.determine_axes(nx, ny, nz)
+        planar = len(axes) == 2 
 
         if planar:
             H, V = axes
-
-            ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
-            coords = "RTP" if int(iidx) == -3 else "XYZ"  
             axlabels =  coords[H], coords[V]
-
             HV = "%s%s" % (coords[H],coords[V])
-
             up  = Axes.Up(H,V)
             off = Axes.Off(H,V)
-            eye = look + 50.*off
         else:
-            HV = None
-            axlabels = None          
+            H, V, D = axes
+            HV = None 
+            axlabels =  coords[H], coords[V], coords[D]
+            up = XYZ.up
+            off = XYZ.off
             pass
         pass
+
+        eye = look + 50.*off
+
+
         self.coords = coords
         self.eye = eye
         self.look = look 
@@ -255,13 +278,13 @@ class GridSpec(object):
     def __str__(self):
         return "GridSpec (nx ny nz) (%d %d %d) axes %s axlabels %s " % (self.nx, self.ny, self.nz, str(self.axes), str(self.axlabels) ) 
 
-    def determine_planar_axes(self, nx, ny, nz):
+    def determine_axes(self, nx, ny, nz):
         """
         :param nx:
         :param nx:
         :param nx:
 
-        Planar axes order is arranged to make the longer axis the first horizontal one 
+        With planar axes the order is arranged to make the longer axis the first horizontal one 
         followed by the shorter axis as the vertical one.  
 
             +------+
@@ -285,7 +308,7 @@ class GridSpec(object):
             nx_over_ny = float(nx)/float(ny)
             axes = (X,Y) if nx_over_ny > 1 else (Y,X)
         else:
-            axes = None
+            axes = (X,Y,Z)
         pass
         return axes
 

@@ -195,6 +195,7 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     // transform (x,z) intersect position into pixel coordinates (ix,iz)
     float3 position = origin + t*direction ; 
 
+    // TODO: 2D has been generalized, need to act on plane config enum here to regain the frame plot 
     float wx = float(params.cegs.x == 0 ? 1 : params.cegs.x) ;
     float wz = float(params.cegs.z == 0 ? 1 : params.cegs.z) ;
 
