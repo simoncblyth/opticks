@@ -25,10 +25,12 @@ msg="=== $BASH_SOURCE :"
 #geom="AnnulusFourBoxUnion_YZ"
 
 #geom="AnnulusOtherTwoBoxUnion_XY"
-geom="AnnulusOtherTwoBoxUnion_XZ"
+#geom="AnnulusOtherTwoBoxUnion_XZ"
+
+geom="AltXJfixtureConstruction_YZ"
 
 export GEOM=${GEOM:-$geom}
-moi=0
+moi=0   # intended to catch the first meshname (which for geochain is usually the only meshname)
 dx=0
 dy=0
 dz=0
@@ -53,23 +55,14 @@ default()
     export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
 }
 
-
+gcn=${GEOM%%_*}  ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
 
 
 case $GEOM in 
-   dcyl_*)                        cfbase=$TMP/CSGDemoTest/dcyl  && dcyl  ;;
-   bssc_*)                        cfbase=$TMP/CSGDemoTest/bssc  && bssc  ;; 
-
-   BoxMinusTubs_*)                cfbase=$TMP/GeoChain/BoxMinusTubs         ;;
-   SphereWithPhiSegment_*)        cfbase=$TMP/GeoChain/SphereWithPhiSegment ;;
-   AdditionAcrylicConstruction_*) cfbase=$TMP/GeoChain/AdditionAcrylicConstruction ;;
-   BoxMinusTubs_*)                cfbase=$TMP/GeoChain/BoxMinusTubs ;;
-   SphereWithPhiSegment_*)        cfbase=$TMP/GeoChain/SphereWithPhiSegment ;;
-   AnnulusBoxUnion_*)             cfbase=$TMP/GeoChain/AnnulusBoxUnion         && Annulus ;;    
-   AnnulusTwoBoxUnion_*)          cfbase=$TMP/GeoChain/AnnulusTwoBoxUnion      && Annulus ;;    
-   AnnulusOtherTwoBoxUnion_*)     cfbase=$TMP/GeoChain/AnnulusOtherTwoBoxUnion && Annulus ;;    
-   AnnulusFourBoxUnion_*)         cfbase=$TMP/GeoChain/AnnulusFourBoxUnion     && Annulus ;;    
-   *)                             cfbase=$TMP/GeoChain/$GEOM && default ;; 
+   dcyl_*)    cfbase=$TMP/CSGDemoTest/$gcn  && dcyl     ;;
+   bssc_*)    cfbase=$TMP/CSGDemoTest/$gcn  && bssc     ;; 
+   Annulus*)  cfbase=$TMP/GeoChain/$gcn     && Annulus  ;;    
+   *)         cfbase=$TMP/GeoChain/$gcn     && default  ;;    
 esac
 
 
@@ -94,6 +87,9 @@ case $GEOM in
    *YX) cegs=9:16:0:$dx:$dy:$dz:$num_pho  ;;
 esac
 # first axis named is the longer one that is presented on the horizontal in landscape aspect   
+
+echo $msg GEOM $GEOM gcn $gcn cegs $cegs
+
 
 source ./cxs.sh 
 

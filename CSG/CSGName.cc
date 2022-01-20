@@ -175,7 +175,6 @@ int CSGName::parseArg(const char* arg, unsigned& count) const
     {
         int fallback = -1 ; 
         int idx = ParseIntString(arg, fallback ) ; 
-     
         if(idx == fallback)  
         {   
             idx = findIndex(arg, count);  
@@ -207,7 +206,17 @@ int CSGName::ParseIntString(const char* arg, int fallback)  // static
     unsigned long int uli = strtoul(arg, endptr, base); 
     bool end_points_to_terminator = end == arg + strlen(arg) ;   
     int result = int(uli) ; 
-    return end_points_to_terminator ? result : fallback ;
+    int ret = end_points_to_terminator ? result : fallback ;
+
+    LOG(LEVEL) 
+         << " arg [" << arg << "] " 
+         << " uli " << uli 
+         << " end_points_to_terminator " << end_points_to_terminator
+         << " result " << result 
+         << " ret " << ret 
+         ;
+
+    return ret ;  
 }
 
 /**

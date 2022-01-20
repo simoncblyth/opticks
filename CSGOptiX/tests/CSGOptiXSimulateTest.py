@@ -427,7 +427,13 @@ class Gensteps(object):
         centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
         for igs in range(len(gs)): centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
 
-        centers_local = np.dot( centers, mtr[1] )  # use metatran.v to transform back to local frame
+        if not mtr is None:
+             tran = mtr[1]
+        else:
+             tran = np.eye(4) 
+             log.warning("metatran is None : no transform metadata : assming local frame, such as with geochain test solids")
+        pass
+        centers_local = np.dot( centers, tran )  # use metatran.v to transform back to local frame
 
         if local and local_extent_scale:
             extent = grid.ce[3]
@@ -890,7 +896,13 @@ if __name__ == '__main__':
 
     local_extent_scale = grid.coords == "RTP" 
 
-    gs = Gensteps(cxs.genstep, cxs.metatran, grid, local_extent_scale=local_extent_scale )
+    metatran = getattr(cxs, "metatran", None) 
+    if metatran is None:
+        log.warning("using placeholder identity metatran") 
+        metatran = np.vstack( [np.eye(4) , np.eye(4), np.eye(4) ] ).reshape(-1,4,4)
+    pass    
+
+    gs = Gensteps(cxs.genstep, metatran, grid, local_extent_scale=local_extent_scale )
 
     pos_mask = MASK   # default is True, disable mask with NOMASK envvar   
     #without pos_mask means that the legend is filled with features that are not visible in the frame 
