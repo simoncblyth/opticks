@@ -24,6 +24,7 @@ struct X4_API X4SolidMaker
 
     static const int XJfixtureConstruction_debug_mode ; 
     static const G4VSolid* XJfixtureConstruction(const char* name); 
+    static const G4VSolid* AltXJfixtureConstruction(const char* name); 
     static const G4VSolid* AnnulusBoxUnion(const char* name) ; 
     static const G4VSolid* AnnulusTwoBoxUnion(const char* name) ; 
     static const G4VSolid* AnnulusOtherTwoBoxUnion(const char* name) ; 

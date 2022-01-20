@@ -40,6 +40,7 @@ SphereWithPhiSegment
 SphereWithThetaSegment
 AdditionAcrylicConstruction
 XJfixtureConstruction
+AltXJfixtureConstruction
 XJanchorConstruction
 SJReceiverConstruction
 BoxMinusTubs0
@@ -63,6 +64,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("SphereWithThetaSegment",qname))       solid = X4SolidMaker::SphereWithThetaSegment(qname); 
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4SolidMaker::AdditionAcrylicConstruction(qname); 
     else if(StartsWith("XJfixtureConstruction", qname))       solid = X4SolidMaker::XJfixtureConstruction(qname); 
+    else if(StartsWith("AltXJfixtureConstruction", qname))    solid = X4SolidMaker::AltXJfixtureConstruction(qname); 
     else if(StartsWith("XJanchorConstruction", qname))        solid = X4SolidMaker::XJanchorConstruction(qname) ; 
     else if(StartsWith("SJReceiverConstruction", qname))      solid = X4SolidMaker::SJReceiverConstruction(qname) ; 
     else if(StartsWith("BoxMinusTubs0",qname))                solid = X4SolidMaker::BoxMinusTubs0(qname); 
@@ -251,15 +253,15 @@ solidXJfixture             Union
                                                             :  
                                                             :     :     :                                altar frame              fixture frame 
                                                             :
-             -------------+                             +---+---+-+-----+        - - - - - - - - - - - - 18.5+13  =   31.5             6.5  
+             -------------+                             +---+---+-+-----+        - - - - - - - - - - - - 18.5+13  =   31.5             6.5     - - - - - -
              |            |                             |   :   |      13/2=6.5                                       
              +            +                             +   :   + :     :         - - - - - - - - - - -  18.5+6.5 =   25               0.0           
              |            |                             |   :   |       :
-             +------------+----------------+-----25-----+---20--+-+-----+         - - - - - - - - - -      8.5+10 =  18.5              -6.5  
-             |                                                          |
+             +------------+----------------+-----25-----+---20--+-+-----+         - - - - - - - - - -      8.5+10 =  18.5              -6.5       13+10 = 23  
+             |                                                          5
              +    up2                      +                            +       - - - - - - - - - - - - -   8.5+5  = 13.5              -11.5
-             |                                                          |
-             +---------+^^^^^^^^^^^^^^^^^^^+^^^^^^^^^^^^^^^^^^+---------+       - - - - - - - - - - - - -             8.5              -16.5
+             |                                                          5
+             +---------+^^^^^^^^^^^^^^^^^^^+^^^^^^^^^^^^^^^^^^+---------+       - - - - - - - - - - - - -             8.5              -16.5    - - - - -
                        |                                      |         
                        |                                     17/2=8.5        
                        +  up1                                 +                - - - - - - - - - - - - -              0.0              -25.0
@@ -292,6 +294,83 @@ solidXJfixture             Union
 
 **/
 
+
+/**
+X4SolidMaker::AltXJfixtureConstruction
+----------------------------------------
+
+Contract this with XJfixtureConstruction : the shape is very nearly the 
+same but this uses only 3 boxes and 2 tubs rather than 6 boxes and 2 tubs. 
+
+
+                        :      65     :
+                        : 11.5        :
+        +-----------+---+---+---------+
+        |           + x - --+ 13      | 23/2    - - - - -
+        |           +---+---+         |            (23-13)/2 = 10/2
+        + - - - - - - - | - - - - - - +         - - - - - 
+        |    u          |             | 23/2 
+        |               |             |
+        +-----+^^^^^^^^^|^^^^^^^^+----+            (23+17)/2  = 40/2 
+              |  l      |        | 17/2
+              + - - - - | - - - -+              ----
+              |         |        | 17/2
+              +---------+---45---+ 
+
+       Z 
+       | 
+       |
+       +---> Y
+      /
+     X
+                                  ulxoi
+                      ulxo                    i
+             ulx              o
+         ul        x           
+       u    l
+
+**/
+
+const G4VSolid* X4SolidMaker::AltXJfixtureConstruction(const char* name)
+{
+    G4VSolid* u ;
+    G4VSolid* l ;
+    G4VSolid* x ;
+    G4VSolid* o ;
+    G4VSolid* i ;
+
+    G4VSolid* ul ;
+    G4VSolid* ulx ;
+    G4VSolid* ulxo ;
+    G4VSolid* ulxoi ;
+
+    // Y is the long (left-right) dimension 
+    G4double l_uncoincide = 1. ; 
+
+    u = new G4Box("u", 15.*mm, 65.*mm,  23/2.*mm);
+    l = new G4Box("l", 15.*mm, 40.*mm,  (17+l_uncoincide)/2.*mm);    // increase lbox in half_z by  lbox_uncoincide/2.   
+    ul = new G4UnionSolid("ul", u, l, 0, G4ThreeVector(0.*mm, 0.*mm, (-40.+l_uncoincide)/2*mm ) ) ;
+
+    G4double zs = 10/2.*mm ; 
+    x = new G4Box("x", 62.*mm, 11.5*mm, 13/2.*mm);
+    ulx = new G4UnionSolid("ulx", ul, x, 0, G4ThreeVector(0.*mm, 0.*mm, zs )) ; 
+
+    o = new G4Tubs("o", 0.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    ulxo = new G4UnionSolid("ulxo", ulx, o, 0, G4ThreeVector(0.*mm, 0.*mm, zs )) ; 
+
+    G4double i_uncoincide = 1. ;  
+    // increase the half_z of subtracted tubs : avoiding upper coincident face
+    // and raise by the same to keep low edge sub the same : hmm that leaves a thin cross piece from the base of x 
+    // perhaps better to subtract more and get rid of that ?
+
+    i = new G4Tubs("i", 0.*mm, 25.*mm, 13./2*mm + i_uncoincide/2.*mm , 0.*deg, 360.*deg);  
+    ulxoi = new G4SubtractionSolid("ulxoi", ulxo, i, 0, G4ThreeVector(0.*mm, 0.*mm, zs+i_uncoincide/2.*mm  )) ; 
+
+    //return ul ;  
+    //return ulx ;  
+    //return ulxo ;  
+    return ulxoi ;  
+}
 const int X4SolidMaker::XJfixtureConstruction_debug_mode = SSys::getenvint("X4SolidMaker__XJfixtureConstruction_debug_mode", 0 ) ; 
 const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
 {
@@ -321,7 +400,7 @@ const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
 
     // down_uni4 is celtic-cross shape or uniform z half-thickness 13./2. = 6.5 mm  (shifts in x and y,  not z)
 
-// cover part
+// cover part  : Y is the long dimension 
     solidXJfixture_up1 = new G4Box("solidXJfixture_up1", 15.*mm, 40.*mm, 17/2.*mm);    
     solidXJfixture_up2 = new G4Box("solidXJfixture_up2", 15.*mm, 65*mm, 5.*mm);
     solidXJfixture_up_uni = new G4UnionSolid("solidXJfixture_up_uni", solidXJfixture_up1, solidXJfixture_up2, 0, G4ThreeVector(0.*mm, 0.*mm, 13.5*mm));

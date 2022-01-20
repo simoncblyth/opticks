@@ -24,10 +24,11 @@ msg="=== $BASH_SOURCE :"
 #geom=hmsk_solidMaskTail
 #geom=nmsk_solidMaskTail
 #geom=XJfixtureConstruction 
+geom=AltXJfixtureConstruction 
 #geom=XJanchorConstruction
 #geom=SJReceiverConstruction
 #geom=AnnulusTwoBoxUnion
-geom=AnnulusOtherTwoBoxUnion
+#geom=AnnulusOtherTwoBoxUnion
 #geom=AnnulusFourBoxUnion
 
 export GEOM=${GEOM:-$geom}
