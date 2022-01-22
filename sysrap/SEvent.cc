@@ -217,7 +217,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     int gridaxes = GridAxes(nx, ny, nz); 
     int dirmode = gridaxes == XYZ ? DIMENSION_3 : DIMENSION_2 ; 
 
-    LOG(LEVEL) 
+    LOG(info) 
         << " ce_offset " << ce_offset 
         << " ce_scale " << ce_scale
         << " nx " << nx 
@@ -257,7 +257,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     for(int iy=iy0 ; iy < iy1+1 ; iy++ )
     for(int iz=iz0 ; iz < iz1+1 ; iz++ )
     {
-        LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ;
+        //LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ;
 
         double tx = double(ix)*local_scale ;
         double ty = double(iy)*local_scale ;

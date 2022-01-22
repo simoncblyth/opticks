@@ -11,7 +11,7 @@ void NContour::XZ_bbox_grid( std::vector<float>& xx, std::vector<float>& yy, con
     float x0 = bb.min.x ; 
     float x1 = bb.max.x ;
     float dx = x1 - x0 ; 
-    x0 -= float(mx)*sx*dx ; 
+    x0 -= float(mx)*sx*dx ;   // reduce x0 from the bb.min.x to give some space
     x1 += float(mx)*sx*dx ; 
  
     float z0 = bb.min.z ; 
@@ -23,6 +23,7 @@ void NContour::XZ_bbox_grid( std::vector<float>& xx, std::vector<float>& yy, con
     for(float x=x0 ; x <= x1 ; x+=dx*sx ) xx.push_back(x) ; 
     for(float y=z0 ; y <= z1 ; y+=dz*sy ) yy.push_back(y) ; 
 }
+
 
 
 NContour::NContour( const std::vector<float>& xx, const std::vector<float>& yy )

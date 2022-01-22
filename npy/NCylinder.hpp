@@ -33,6 +33,7 @@ struct nuv ;
 struct NPY_API ncylinder : nnode 
 {
     float operator()(float x, float y, float z) const ;
+
     nbbox bbox() const;
 
     int       par_euler() const ; 

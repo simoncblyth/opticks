@@ -519,6 +519,27 @@ bool intersect_node_hyperboloid(float4& isect, const quad& q0, const float t_min
 
 
 /**
+intersect_node_box3
+-----------------------
+
+"Fast, Branchless Ray/Bounding Box Intersections"
+
+* https://tavianator.com/2011/ray_box.html
+
+..
+
+    The fastest method for performing ray/AABB intersections is the slab method.
+    The idea is to treat the box as the space inside of three pairs of parallel
+    planes. The ray is clipped by each pair of parallel planes, and if any portion
+    of the ray remains, it intersected the box.
+
+
+* https://tavianator.com/2015/ray_box_nan.html
+
+
+
+
+
 
 Just because the ray intersects the box doesnt 
 mean its a usable intersect, there are 3 possibilities::
@@ -596,6 +617,15 @@ bool intersect_node_box3(float4& isect, const quad& q0, const float t_min, const
 
        // discern which face is intersected from the largest absolute coordinate 
        // hmm this implicitly assumes a "box" of equal sides, not a "box3"
+       // nope, no problem as the above pa already scales by the fullside so effectivey get a symmetric box 
+       // about the origin for the purpose of the comparison
+       //
+       //
+       // Think about intersects onto the unit cube
+       // clearly the coordinate with the largest absolute value
+       // identifies the x,y or z pair of axes and then 
+       // the sign of that gives which face and the outwards normal.
+       // Hmm : what about the corner case ?
 
        float3 n = make_float3(0.f) ;
        if(      pa.x >= pa.y && pa.x >= pa.z ) n.x = copysignf( 1.f , p.x ) ;              
@@ -618,6 +648,32 @@ bool intersect_node_box3(float4& isect, const quad& q0, const float t_min, const
 #endif
    return has_valid_intersect ; 
 }
+
+/**
+distance_node_box3
+--------------------
+
+https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
+
+https://www.youtube.com/watch?v=62-pRVZuS5c
+
+float sdBox( vec3 p, vec3 b )
+{
+  vec3 q = abs(p) - b;
+  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+}
+
+**/
+
+INTERSECT_FUNC
+float distance_node_box3(const float3& pos, const quad& q0 )
+{
+    float3 q = make_float3( fabs(pos.x) - q0.f.x/2.f, fabs(pos.y) - q0.f.y/2.f , fabs(pos.z) - q0.f.z/2.f ) ;    
+    float3 z = make_float3( 0.f ); 
+    float sd = length(fmaxf(q, z)) + fminf(fmaxf(q.x, fmaxf(q.y, q.z)), 0.f ) ;   
+    return sd ; 
+}
+
 
 
 /**
@@ -828,6 +884,69 @@ bool intersect_node_slab( float4& isect, const quad& q0, const quad& q1, const f
 }
 
 
+
+/**
+distance_node_cylinder
+------------------------
+
+* https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
+
+Capped Cylinder - exact
+
+float sdCappedCylinder( vec3 p, float h, float r )
+{
+  vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(h,r); 
+  // dont follow  would expect h <-> r with radius to be on the first dimension and height on second
+     
+  return min(max(d.x,d.y),0.0) + length(max(d,0.0));
+}
+
+
+                      p
+                      +
+                      | 
+                      |
+                      | 
+  - - - +---r----+----+---+ - - - - - -
+        |        :        |
+        h        :        +------+ p    
+        |        :        |
+        |        :        |
+        +--------+--------+
+        |        :        |
+        |        :        |
+        |        :        |
+        |        :        |
+  - - - +--------+--------+ - - - - - - - 
+
+
+
+
+
+The SDF rules for CSG combinations::
+
+    union(l,r)     ->  min(l,r)
+    intersect(l,r) ->  max(l,r)
+    difference(l,r) -> max(l,-r)    [aka subtraction, corresponds to intersecting with a complemented rhs]
+
+
+**/
+
+
+INTERSECT_FUNC
+float distance_node_cylinder( const float3& pos, const quad& q0, const quad& q1 )
+{
+    const float   radius = q0.f.w ; 
+    const float       z1 = q1.f.x  ; 
+    const float       z2 = q1.f.y  ;   // z2 > z1 
+
+    float sd_capslab = fmaxf( pos.z - z2 , z1 - pos.z ); 
+    float sd_infcyl = sqrtf( pos.x*pos.x + pos.y*pos.y ) - radius ;  
+    float sd = fmaxf( sd_capslab, sd_infcyl ); 
+    return sd ; 
+}
+
+
 /**
 intersect_node_cylinder
 ------------------------
@@ -847,9 +966,9 @@ INTERSECT_FUNC
 bool intersect_node_cylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float   radius = q0.f.w ; 
-
     const float       z1 = q1.f.x  ; 
     const float       z2 = q1.f.y  ; 
+
     //if(fabs(z1) != fabs(z2)) return false ;   
     const float  sizeZ = z2 - z1 ; 
     const float3 position = make_float3( q0.f.x, q0.f.y, z1 ); // P: point on axis at base of cylinder
@@ -1332,5 +1451,42 @@ bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const floa
                ;
 }
 
+
+
+INTERSECT_FUNC
+float distance_node( const float3& global_position, const CSGNode* node, const float4* plan, const qat4* itra )
+{
+    const unsigned typecode = node->typecode() ;  
+    const unsigned gtransformIdx = node->gtransformIdx() ; 
+    const bool complement = node->is_complement();
+
+    const qat4* q = gtransformIdx > 0 ? itra + gtransformIdx - 1 : nullptr ;  // gtransformIdx is 1-based, 0 meaning None
+
+    float3 local_position  = q ? q->right_multiply(global_position,  1.f) : global_position ;  
+    float distance = 0.f ;  
+
+    switch(typecode)
+    {
+        case CSG_BOX3:      distance = distance_node_box3(     local_position, node->q0 )           ; break ;
+        case CSG_CYLINDER:  distance = distance_node_cylinder( local_position, node->q0, node->q1 ) ; break ;
+    }
+    return complement ? -distance : distance  ; 
+}
+
+
+INTERSECT_FUNC
+float distance_tree( const float3& global_position, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0 );
+
+
+INTERSECT_FUNC
+float distance_prim( const float3& global_position, int numNode, const CSGNode* node, const float4* plan, const qat4* itra )
+{
+    return numNode == 1 
+               ? 
+                  distance_node(global_position,          node, plan, itra )
+               :
+                  distance_tree(global_position, numNode, node, plan, itra )
+               ;
+}
 
 

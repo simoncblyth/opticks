@@ -120,11 +120,19 @@ nbbox ncylinder::bbox() const
     return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }
 
+/**
+
+
+
+
+**/
+
 float ncylinder::operator()(float x_, float y_, float z_) const 
 {
     glm::vec4 p(x_,y_,z_,1.0); 
     if(gtransform) p = gtransform->v * p ; 
 
+    // distance to infinite cylinder
     float dinf = glm::distance( glm::vec2(p.x, p.y), glm::vec2(x(), y()) ) - radius() ;  // <- no z-dep
 
     float qcap_z = z2() ;  // typically +ve   z2>z1  
@@ -132,7 +140,7 @@ float ncylinder::operator()(float x_, float y_, float z_) const
 
     float d_PQCAP = fmaxf( p.z - qcap_z, -(p.z - pcap_z) );
 
-    float sd = fmaxf( d_PQCAP, dinf );
+    float sd = fmaxf( d_PQCAP, dinf );   // "CSG" intersect the slab with the cylinder 
 
 /*
     std::cout 
@@ -146,6 +154,9 @@ float ncylinder::operator()(float x_, float y_, float z_) const
 */
     return complement ? -sd : sd ; 
 } 
+
+
+
 
 glm::vec3 ncylinder::gseedcenter() const 
 {

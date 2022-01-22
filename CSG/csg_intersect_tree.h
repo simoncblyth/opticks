@@ -19,6 +19,94 @@ using std::signbit ;
 #include "csg_pack.h"
 #include "csg_classify.h"
 
+#include "f4_stack.h"
+
+
+/**
+distance_tree : gets given trees with numNode 3, 7, 15, ... where some nodes can be CSG_ZERO empties
+need to handle the tree without recursion, (the sdf approach of NNode.cpp in nunion::operator etc.. relies on recursion)
+
+
+    0
+  1   2
+
+
+    0
+  1    2
+3  4  5  6
+
+
+           0
+     1           2
+  3    4     5      6
+7  8  9 10 11 12  13 14
+
+
+Should be a lot simpler than intersect_tree as CSG union/intersection/difference can be 
+done simply by fminf fmaxf on the distances from lower levels.  
+
+Simply postorder traverse using a stack perhaps
+
+
+
+**/
+
+TREE_FUNC
+float distance_tree( const float3& global_position, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0 )
+{
+    unsigned height = TREE_HEIGHT(numNode) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
+
+    // beginIdx, endIdx are 1-based level order tree indices, root:1 leftmost:1<<height    0:"parent" of root
+    unsigned beginIdx = 1 << height ;  // leftmost 
+    unsigned endIdx   = 0 ;            // parent of root 
+    unsigned nodeIdx = beginIdx ; 
+
+    F4_Stack stack ; 
+    stack.curr = -1 ; 
+    float distance = 0.f ; 
+
+    while( nodeIdx != endIdx )
+    {
+        unsigned depth = TREE_DEPTH(nodeIdx) ;
+        unsigned elevation = height - depth ; 
+
+        const CSGNode* nd = node + nodeIdx - 1 ; 
+        OpticksCSG_t typecode = (OpticksCSG_t)nd->typecode() ;
+
+        if( typecode == CSG_ZERO )
+        {
+            nodeIdx = POSTORDER_NEXT( nodeIdx, elevation ) ;
+            continue ; 
+        }
+
+        bool primitive = typecode >= CSG_SPHERE ; 
+        if( primitive )
+        {
+            distance = distance_node(global_position, nd, plan0, itra0 ) ; 
+            stack.push(distance) ; 
+        }
+        else
+        {
+            float lhs ;  
+            float rhs ;  
+            stack.pop2( lhs, rhs ); 
+
+            switch( typecode )
+            {
+                case CSG_UNION:        distance = fminf( lhs,  rhs ) ; break ;   
+                case CSG_INTERSECTION: distance = fmaxf( lhs,  rhs ) ; break ;   
+                case CSG_DIFFERENCE:   distance = fmaxf( lhs, -rhs ) ; break ;   
+                default:               distance = 0.f                ; break ;             
+            }
+            stack.push(distance) ; 
+        }
+        nodeIdx = POSTORDER_NEXT( nodeIdx, elevation ) ;
+    }
+    stack.pop(distance);  
+    return distance ; 
+}
+
+
 
 TREE_FUNC
 bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction )

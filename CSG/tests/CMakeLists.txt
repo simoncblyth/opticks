@@ -20,7 +20,9 @@ set(TEST_SOURCES
     CSGScanTest.cc
     CUTest.cc
     CSGLogTest.cc
-    CSGIntersectTest.cc
+    intersect_node_phicut_test.cc 
+    intersect_node_box3_test.cc 
+    intersect_node_cylinder_test.cc 
     CSGNodeScanTest.cc
 )
 

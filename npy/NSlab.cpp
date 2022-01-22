@@ -25,48 +25,48 @@
 #include "NSlab.hpp"
 
 /*
+NSlab sdf
+------------
 
-Consider CSG difference of near and far halfspaces
+Refer to NPlane.cpp sdf before trying to understand this one
 
-        difference(near-half-space,far-half-space) = max( dnear, -dfar )
+The SDF rules for CSG combinations::
 
+    union(l,r)     ->  min(l,r)
+    intersect(l,r) ->  max(l,r)
+    difference(l,r) -> max(l,-r)    [aka subtraction, corresponds to intersecting with a complemented rhs]
 
+A slab can be considered to be the CSG difference of near and far planes::
 
                          ^      
                          |
-                  -------+---------   
-                                  -ve: inside far halfspace
-                                      
-                         ^       
-                         |         
-                  -------+---------   
-                                  -ve: inside near halfspace
-                        
- 
-                         .  origin
+                  -------+------------------------------------------------         ---------------------
+                   ////////////////  -ve: inside far halfspace ///////////         /////////////////////
+                  ////////////////////////////////////////////////////////         /////////////////////
+                                                                                   ///// slab //////////
+                         ^                                                         /////////////////////
+                         |                                                         /////////////////////
+                  -------+------------------------------------------------         ---------------------
+                  ///////////////   -ve: inside near halfspace ///////////
+                  ////////////////////////////////////////////////////////       
+                  ////////////////////////////////////////////////////////       
+                         +  origin
 
 
-  CSG difference "max(l,-r)" near and far:
+CSG difference/subtraction "max(l,-r)" near and far:
 
-           far-halfspace - near-halfspace  = slab 
+   far_halfspace - near_halfspace  = slab 
 
-  CSG intersect "max(l,r)" near and -far (complement of far)
+Alternate point of view:
 
+    CSG intersect "max(l,r)" near and -far (complement of far)
 
-  Not so easy to imagine CSG difference that leaves you with 
-  negative space, so instead just flip the order and negate
+Not so easy to imagine CSG difference that leaves you with 
+negative space, so instead just flip the order and negate
 
      A - B =>  -(B - A)
 
-   So you get everything not in the slab.
-
-  View the planes as a half-spaces want to form CSG intersection
-
-
-  CSG 
-      union(l,r)     ->  min(l,r)
-      intersect(l,r) ->  max(l,r)
-      difference(l,r) -> max(l,-r)
+So you get everything not in the slab.
 
 */
 
@@ -80,10 +80,10 @@ float nslab::operator()(float x, float y, float z) const
     float b_ = b();
 
     float d = glm::dot(n, glm::vec3(q)) ; // distance from q to the nearest point on plane thru origin
-    float da =  d - a_ ;             
-    float db =  d - b_  ;   // b > a
+    float da =  d - a_ ;  // near            
+    float db =  d - b_  ; // far :  b > a
   
-    float sd = fmaxf(db, -da)   ;
+    float sd = fmaxf(db, -da)   ;  // CSG difference : far - near 
 
     return complement ? -sd : sd ; 
 } 

@@ -667,14 +667,20 @@ Acting on the gensteps created eg in QEvent
 
 Contrast with CPU implementation sysrap SEvent::GenerateCenterExtentGenstepsPhotons
 
+The gensteps are for example configured in SEvent::MakeCenterExtentGensteps
+
+NB the sevent.h enum order is different to the python one  eg XYZ=0 
+
 **/
 
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
-    //unsigned num_photons = gs.q0.u.w ; 
-    int gridaxes = gs.q0.i.y ; 
+    //int gencode = gs.q0.i.x ;   
+    int gridaxes = gs.q0.i.y ;   
     //int dirmode  = gs.q0.i.z ; 
+    //unsigned num_photons = gs.q0.u.w ; 
+
 
     p.q0.f = gs.q1.f ;  // start with local frame position, eg (0,0,0)   
 
@@ -684,15 +690,18 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
     sincosf(2.f*M_PIf*u0,&sinPhi,&cosPhi);
 
     float u1 = curand_uniform(&rng); 
-    float cosTheta = u1 ;
-    float sinTheta = sqrtf(1.0-u1*u1) ; 
+    float cosTheta = u1 ;  // perhaps use -1:1 ?
+    float sinTheta = sqrtf(1.f-u1*u1) ; 
 
     switch( gridaxes )
     { 
         case YZ:  { p.q1.f.x = 0.f    ;  p.q1.f.y = cosPhi ;  p.q1.f.z = sinPhi ;  p.q1.f.w = 0.f ; } ; break ; 
         case XZ:  { p.q1.f.x = cosPhi ;  p.q1.f.y = 0.f    ;  p.q1.f.z = sinPhi ;  p.q1.f.w = 0.f ; } ; break ; 
         case XY:  { p.q1.f.x = cosPhi ;  p.q1.f.y = sinPhi ;  p.q1.f.z = 0.f    ;  p.q1.f.w = 0.f ; } ; break ; 
-        case XYZ: { p.q1.f.x = sinTheta*cosPhi ;  p.q1.f.y = sinTheta*sinPhi    ;  p.q1.f.z = cosTheta  ;  p.q1.f.w = 0.f ; } ; break ;   // previously used XZ
+        case XYZ: { p.q1.f.x = sinTheta*cosPhi ;  
+                    p.q1.f.y = sinTheta*sinPhi ;  
+                    p.q1.f.z = cosTheta        ;  
+                    p.q1.f.w = 0.f ; } ; break ;   // previously used XZ
     }
 
     qat4 qt(gs) ; // copy 4x4 transform from last 4 quads of genstep 

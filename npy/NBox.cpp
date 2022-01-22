@@ -78,6 +78,19 @@ float nbox::sdf_local_(const glm::vec3& pos, const glm::vec3& halfside)
 }
 
 
+/**
+https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
+
+https://www.youtube.com/watch?v=62-pRVZuS5c
+
+float sdBox( vec3 p, vec3 b )
+{
+  vec3 q = abs(p) - b;
+  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+}
+
+**/
+
 float nbox::sdf_(const glm::vec3& pos, const nmat4triple* triple) const 
 {
     glm::vec4 q(pos,1.0); 

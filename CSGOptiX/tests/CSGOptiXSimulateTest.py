@@ -785,12 +785,17 @@ class Plt(object):
         pass
 
     def positions_pvplt_3D(self):
+        """
+        Could try to reconstruct solid surface from the point cloud of intersects 
+        https://docs.pyvista.org/api/core/_autosummary/pyvista.PolyDataFilters.reconstruct_surface.html#pyvista.PolyDataFilters.reconstruct_surface
+        """
         pass
         feat = self.feat 
         upos = self.pos.upos
 
 
         pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
+        self.pl = pl
 
         log.info("feat.unum %d " % feat.unum)
 
@@ -799,8 +804,9 @@ class Plt(object):
             if skip: continue
             pos = upos[selector] 
             print(msg)
-            pl.add_points( pos[:,:3], color=color )
+            pl.add_points( pos[:,:3], color=color, point_size=10  )
         pass
+        pl.enable_eye_dome_lighting()  # improves depth peception for point cloud, especially from a distance
         pl.show_grid()
         cp = pl.show() if GUI else None
         return cp
@@ -962,8 +968,7 @@ if __name__ == '__main__':
 
     mask = MASK   # default is "pos" 
     assert mask in ALLOWED_MASK, "mask %s is not in ALLOWED_MASK list %s " % (mask, str(ALLOWED_MASK))
-
-    #without pos_mask means that the legend is filled with features that are not visible in the frame 
+    #without mask=pos means that the legend is filled with features that are not visible in the frame 
 
     pos = Positions(cxs.photons, gs, grid, local=True, mask=mask, local_extent_scale=local_extent_scale )
 
@@ -993,5 +998,6 @@ if __name__ == '__main__':
         pass
         print("leaves:")
         print("\n".join(leaves))
+        pl = plt.pl
     pass
 

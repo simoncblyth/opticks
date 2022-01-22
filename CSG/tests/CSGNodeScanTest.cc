@@ -3,7 +3,11 @@
 CSGNodeScanTest.cc
 =====================
 
-For lower level test see CSGIntersectTest.cc
+For lower level tests see::
+
+   intersect_node_box3_test.cc
+   intersect_node_cylinder_test.cc
+   intersect_node_phicut_test.cc  
 
 **/
 
@@ -101,6 +105,7 @@ Scan* Scan::XY(const CSGNode* node, int n, const char* modes_, float t_min, bool
 
             float3 ray_origin    = make_float3( ox, oy, 0.f ); 
             float3 ray_direction = make_float3( dx, dy, 0.f ); 
+            float3 position = make_float3( 0.f, 0.f, 0.f ); 
 
             _iray[(i+offset)*2*3+0] = ray_origin.x ; 
             _iray[(i+offset)*2*3+1] = ray_origin.y ; 
@@ -118,9 +123,11 @@ Scan* Scan::XY(const CSGNode* node, int n, const char* modes_, float t_min, bool
             if(valid_intersect)
             {
                 float t = isect.w ;  
-                _ipos[(i+offset)*3 + 0] = ray_origin.x + t*ray_direction.x ; 
-                _ipos[(i+offset)*3 + 1] = ray_origin.y + t*ray_direction.y ; 
-                _ipos[(i+offset)*3 + 2] = ray_origin.z + t*ray_direction.z ; 
+                position = ray_origin + t*ray_direction ; 
+                 
+                _ipos[(i+offset)*3 + 0] = position.x ; 
+                _ipos[(i+offset)*3 + 1] = position.y ; 
+                _ipos[(i+offset)*3 + 2] = position.z ; 
 
                 _isec[(i+offset)*4 + 0] = isect.x ; 
                 _isec[(i+offset)*4 + 1] = isect.y ; 
@@ -141,6 +148,8 @@ int main(int argc, char** argv)
     const char* name = "iphi" ; 
     CSGNode nd = CSGNode::MakeDemo(name) ;  
     Scan* scan = Scan::XY(&nd); 
+ 
+    // TODO: expand this to work with trees of multiple CSGNode
   
     const char* base = "$TMP/CSGNodeScanTest" ; 
     int create_dirs = 2 ; // 2:dirpath   

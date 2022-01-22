@@ -1,6 +1,6 @@
 /**
-CSGIntersectTest.cc
-=====================
+intersect_node_phicut_test.cc
+===================================
 
 This is for very low level testing of csg_intersect_node.h intersect functions.
 For a slightly higher level test see CSGNodeScanTest.cc

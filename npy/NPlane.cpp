@@ -50,6 +50,31 @@ std::string nplane::desc() const
 }
 
 
+/**
+nplane sdf
+------------
+
+
+       sd < 0 | sd > 0         
+              |
+              |
+             plane
+              |
+              |      .
+              |<---->.
+       +- - - | - -  + q
+              |      .
+              |
+       +------+-> normal 
+      O    ^  |
+           |  |
+           distance_to_origin       
+              |
+              |
+
+Complement-ing flips the normal, and changes the sign of sd 
+**/
+
 float nplane::operator()(float x, float y, float z) const 
 {
     glm::vec4 q(x,y,z,1.0); 
@@ -57,7 +82,6 @@ float nplane::operator()(float x, float y, float z) const
     float sd = glm::dot(normal(),glm::vec3(q)) - distance_to_origin() ;   
     return complement ? -sd : sd ; 
 }
-
 
 bool nplane::intersect( const float tmin, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect )
 {
