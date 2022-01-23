@@ -63,16 +63,14 @@ if __name__ == '__main__':
 
     grid.point_arrays["values"] = values
 
-
-
     method = ['marching_cubes','contour','flying_edges'][1]
     isovalue = 0 
     num_isosurfaces = 1 
     mesh = grid.contour(num_isosurfaces, scalars="values", rng=[isovalue, isovalue], method=method )
 
-
+    show_edges = "EDGES" in os.environ   
     pl = pv.Plotter(window_size=SIZE*2)
-    pl.add_mesh(mesh, smooth_shading=False, color='tan', show_edges=False  )   # style='wireframe' 
+    pl.add_mesh(mesh, smooth_shading=False, color='tan', show_edges=show_edges  )   # style='wireframe' 
     pl.show_grid()
     pl.show()
 

@@ -1,4 +1,5 @@
 #include "SSys.hh"
+#include "SPath.hh"
 
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
@@ -7,6 +8,7 @@
 #include "CSGNode.h"
 #include "CSGGrid.h"
 
+#include "Opticks.hh"
 #include "OpticksCSG.h"
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
@@ -16,7 +18,13 @@
 
 struct CSGSignedDistanceFieldTest
 {
-    const CSGFoundry& fd ; 
+    const char* default_geom ; 
+    const char* geom ; 
+    const char* cfbase ; 
+    const char* name ; 
+    int resolution ; 
+
+    const CSGFoundry* fd ; 
     const CSGNode* node0 ;  
     const float4*  plan0 ; 
     const qat4*    itra0 ; 
@@ -26,38 +34,112 @@ struct CSGSignedDistanceFieldTest
     const CSGNode* select_root ; 
      
 
-    CSGSignedDistanceFieldTest( const CSGFoundry& fd_ ); 
+    CSGSignedDistanceFieldTest();
+    void     initFD();  
+    void     initFD_geom();  
+    void     initFD_cfbase();  
 
     void     selectPrim(const CSGPrim* pr ); 
     void     dumpPrim();
-    CSGGrid* scanPrim(unsigned nn );
+    CSGGrid* scanPrim();
 
     float operator()(const float3& position) const ; 
 
 };
 
-CSGSignedDistanceFieldTest::CSGSignedDistanceFieldTest( const CSGFoundry& fd_ )
+CSGSignedDistanceFieldTest::CSGSignedDistanceFieldTest()
     :
-    fd(fd_),
-    node0(fd.node.data()),
-    plan0(fd.plan.data()),
-    itra0(fd.itra.data()),
+    //default_geom("UnionBoxSphere"),
+    default_geom(nullptr),
+    geom(SSys::getenvvar("GEOM", default_geom)),
+    cfbase(SSys::getenvvar("CFBASE")), 
+    name(nullptr),
+    resolution(SSys::getenvint("RESOLUTION", 25)),
+    fd(nullptr),
+    node0(nullptr),
+    plan0(nullptr),
+    itra0(nullptr),
     select_prim(nullptr),
     select_numNode(0),
     select_root(nullptr)
 {
+    LOG(info) << " GEOM " << geom << " RESOLUTION " << resolution ; 
+    initFD(); 
 }
+
+void  CSGSignedDistanceFieldTest::initFD_geom()
+{
+    fd = new CSGFoundry ; 
+    node0 = fd->node.data() ; 
+    plan0 = fd->plan.data() ;
+    itra0 = fd->itra.data() ;
+
+    name = strdup(geom); 
+    LOG(info) << "init from GEOM " << geom << " name " << name ; 
+    CSGMaker* mk = fd->maker ;
+    CSGSolid* so = mk->make( geom ); 
+    LOG(info) << " so " << so ; 
+    LOG(info) << " so.desc " << so->desc() ; 
+    LOG(info) << " fd.desc " << fd->desc() ; 
+}
+void  CSGSignedDistanceFieldTest::initFD_cfbase()
+{
+    name = SPath::Basename(cfbase); 
+    LOG(info) << "init from CFBASE " << cfbase << " name " << name  ; 
+
+
+    fd = CSGFoundry::Load(cfbase, "CSGFoundry");
+    //fd->upload();
+
+    node0 = fd->node.data() ; 
+    plan0 = fd->plan.data() ;
+    itra0 = fd->itra.data() ;
+}
+
+void  CSGSignedDistanceFieldTest::initFD()
+{
+    if( geom != nullptr && cfbase == nullptr)
+    {
+        initFD_geom(); 
+    }
+    else if(cfbase != nullptr)
+    {
+        initFD_cfbase();
+    } 
+    else
+    {
+        LOG(fatal) << " neither GEOM or CFBASE envvars are defined " ; 
+        return ; 
+    }
+
+    // TODO: use MOI to identify the prim to select, here just picking the first 
+    unsigned solidIdx = 0 ; 
+    unsigned primIdxRel = 0 ; 
+    const CSGPrim* pr = fd->getSolidPrim(solidIdx, primIdxRel); 
+    selectPrim(pr); 
+}
+
 
 void CSGSignedDistanceFieldTest::selectPrim( const CSGPrim* pr )
 {
     select_prim = pr ; 
     select_numNode = pr->numNode() ; 
     select_root = node0 + pr->nodeOffset() ; 
+
+    LOG(info) 
+         << " select_prim " << select_prim
+         << " select_numNode " << select_numNode
+         << " select_root " << select_root 
+         ;
+         
+
 }
 
 void CSGSignedDistanceFieldTest::dumpPrim()
 {
     const CSGPrim* pr = select_prim ; 
+    if( pr == nullptr ) return ; 
+
     int numNode = select_numNode ; 
     for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset()+numNode ; nodeIdx++)
     {    
@@ -70,9 +152,15 @@ float CSGSignedDistanceFieldTest::operator()(const float3& position ) const
     return distance_tree( position, select_numNode, select_root, plan0, itra0 ) ; 
 }
 
-CSGGrid* CSGSignedDistanceFieldTest::scanPrim( unsigned resolution )
+CSGGrid* CSGSignedDistanceFieldTest::scanPrim()
 {
     const CSGPrim* pr = select_prim ; 
+    if( pr == nullptr ) 
+    {
+        LOG(fatal) << " no prim is selected " ; 
+        return nullptr ; 
+    }
+
     const float4 ce =  pr->ce() ; 
     CSGGrid* grid = new CSGGrid( ce, resolution, resolution, resolution ); 
     grid->scan(*this) ; 
@@ -83,31 +171,19 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* geom = SSys::getenvvar("GEOM", "UnionBoxSphere") ; 
-    int resolution = SSys::getenvint("RESOLUTION", 25 ); 
+    CSGSignedDistanceFieldTest tst ;
+    tst.dumpPrim();
+ 
+    const CSGGrid* grid = tst.scanPrim(); 
 
-    LOG(info) << " GEOM " << geom << " RESOLUTION " << resolution ; 
-    
-    CSGFoundry fd ;
-    CSGMaker* mk = fd.maker ;
-    CSGSolid* so = mk->make( geom ); 
-
-    LOG(info) << " so " << so ; 
-    LOG(info) << " so.desc " << so->desc() ; 
-    LOG(info) << " fd.desc " << fd.desc() ; 
-
-    CSGSignedDistanceFieldTest tst(fd); 
-
-    // HMM: should use moi machinery perhaps, so can grab from the standard geometry in addition to CSGMaker demo prim 
-
-    unsigned solidIdx = 0 ; 
-    unsigned primIdxRel = 0 ; 
-    const CSGPrim* pr = fd.getSolidPrim(solidIdx, primIdxRel); 
-    tst.selectPrim(pr); 
-
-    tst.dumpPrim(); 
-    const CSGGrid* grid = tst.scanPrim(resolution); 
-    grid->save(geom);  
+    if( grid )
+    {
+        grid->save(tst.name);  
+    }
+    else
+    {
+        LOG(fatal) << "failed to create grid " ; 
+    }
 
     return 0 ; 
 }

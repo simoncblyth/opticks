@@ -13,9 +13,9 @@ CSGGrid::CSGGrid( const float4& ce_, int nx_, int ny_, int nz_ )
     ny(ny_),
     nz(nz_),
     gridscale(make_float3(margin*ce.w/float(nx), margin*ce.w/float(ny), margin*ce.w/float(nz))),
-    ni(2*nx+1),
+    ni(2*nz+1),   // ijk -> zyx to match pv.UniformGrid 
     nj(2*ny+1),
-    nk(2*nz+1),
+    nk(2*nx+1),
     sdf(NP::Make<float>(ni,nj,nk)),
     sdf_v(sdf->values<float>()),
     xyzd(NP::Make<float>(ni,nj,nk,4)),
