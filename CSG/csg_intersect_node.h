@@ -60,6 +60,16 @@ Bringing over functions from  ~/opticks/optixrap/cu/csg_intersect_primitive.h
 **/
 
 
+INTERSECT_FUNC
+float distance_node_sphere(const float3& pos, const quad& q0 )
+{
+    float3 center = make_float3(q0.f);
+    float radius = q0.f.w;
+    float3 p = pos - center;
+    float sd = length(p) - radius ; 
+    return sd ; 
+}
+
 
 INTERSECT_FUNC
 bool intersect_node_sphere(float4& isect, const quad& q0, const float& t_min, const float3& ray_origin, const float3& ray_direction )
@@ -1467,6 +1477,7 @@ float distance_node( const float3& global_position, const CSGNode* node, const f
 
     switch(typecode)
     {
+        case CSG_SPHERE:    distance = distance_node_sphere(   local_position, node->q0 )           ; break ; 
         case CSG_BOX3:      distance = distance_node_box3(     local_position, node->q0 )           ; break ;
         case CSG_CYLINDER:  distance = distance_node_cylinder( local_position, node->q0, node->q1 ) ; break ;
     }

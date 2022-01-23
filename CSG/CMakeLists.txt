@@ -32,6 +32,7 @@ list(APPEND SOURCES
     CSGTarget.cc
     CSGScan.cc
     CSGView.cc
+    CSGGrid.cc
 
     CSG_LOG.cc
 )
@@ -53,6 +54,7 @@ list(APPEND CSG_HEADERS
     CSGTarget.h
     CSGScan.h
     CSGView.h
+    CSGGrid.h
     CSGEnum.h
 
     CSG_LOG.hh 

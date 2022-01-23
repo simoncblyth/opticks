@@ -18,30 +18,73 @@ CSGMaker::CSGMaker( CSGFoundry* fd_ )
 {
 }
 
+bool CSGMaker::StartsWith( const char* n, const char* q ) // static
+{
+    return strlen(q) >= strlen(n) && strncmp(q, n, strlen(n)) == 0 ; 
+}
+
+bool CSGMaker::CanMake(const char* qname) // static 
+{
+    bool found = false ; 
+    std::stringstream ss(NAMES) ;    
+    std::string name ; 
+    while (!found && std::getline(ss, name)) if(!name.empty() && StartsWith(name.c_str(), qname)) found = true ;
+    LOG(LEVEL) << " qname " << qname << " found " << found ; 
+    return found ; 
+}
+
+const char* CSGMaker::NAMES = R"LITERAL(
+sphe
+zsph
+cone
+hype
+box3
+plan
+slab
+cyli
+disc
+vcub
+vtet
+elli
+ubsp
+UnionBoxSphere
+ibsp
+dbsp
+rcyl
+dcyl
+icyl
+iphi
+bssc
+)LITERAL"; 
+
+
 // see CSGNode::MakeDemo for CSGNode level equivalent
 CSGSolid* CSGMaker::make(const char* name)
 {
     CSGSolid* so = nullptr ; 
-    if(     strcmp(name, "sphe") == 0) so = makeSphere(name) ;
-    else if(strcmp(name, "zsph") == 0) so = makeZSphere(name) ;
-    else if(strcmp(name, "cone") == 0) so = makeCone(name) ;
-    else if(strcmp(name, "hype") == 0) so = makeHyperboloid(name) ;
-    else if(strcmp(name, "box3") == 0) so = makeBox3(name) ;
-    else if(strcmp(name, "plan") == 0) so = makePlane(name) ;
-    else if(strcmp(name, "slab") == 0) so = makeSlab(name) ;
-    else if(strcmp(name, "cyli") == 0) so = makeCylinder(name) ;
-    else if(strcmp(name, "disc") == 0) so = makeDisc(name) ;
-    else if(strcmp(name, "vcub") == 0) so = makeConvexPolyhedronCube(name) ;
-    else if(strcmp(name, "vtet") == 0) so = makeConvexPolyhedronTetrahedron(name) ;
-    else if(strcmp(name, "elli") == 0) so = makeEllipsoid(name) ;
-    else if(strcmp(name, "ubsp") == 0) so = makeUnionBoxSphere(name) ;
-    else if(strcmp(name, "ibsp") == 0) so = makeIntersectionBoxSphere(name) ;
-    else if(strcmp(name, "dbsp") == 0) so = makeDifferenceBoxSphere(name) ;
-    else if(strcmp(name, "rcyl") == 0) so = makeRotatedCylinder(name) ;
-    else if(strcmp(name, "dcyl") == 0) so = makeDifferenceCylinder(name) ;
-    else if(strcmp(name, "icyl") == 0) so = makeInfCylinder(name) ;
-    else if(strcmp(name, "iphi") == 0) so = makeInfPhiCut(name) ;
-    else if(strcmp(name, "bssc") == 0) so = makeBoxSubSubCylinder(name) ;
+    if(     StartsWith("sphe", name)) so = makeSphere(name) ;
+    else if(StartsWith("zsph", name)) so = makeZSphere(name) ;
+    else if(StartsWith("cone", name)) so = makeCone(name) ;
+    else if(StartsWith("hype", name)) so = makeHyperboloid(name) ;
+    else if(StartsWith("box3", name)) so = makeBox3(name) ;
+    else if(StartsWith("plan", name)) so = makePlane(name) ;
+    else if(StartsWith("slab", name)) so = makeSlab(name) ;
+    else if(StartsWith("cyli", name)) so = makeCylinder(name) ;
+    else if(StartsWith("disc", name)) so = makeDisc(name) ;
+    else if(StartsWith("vcub", name)) so = makeConvexPolyhedronCube(name) ;
+    else if(StartsWith("vtet", name)) so = makeConvexPolyhedronTetrahedron(name) ;
+    else if(StartsWith("elli", name)) so = makeEllipsoid(name) ;
+    else if(StartsWith("ubsp", name)) so = makeUnionBoxSphere(name) ;
+    else if(StartsWith("ibsp", name)) so = makeIntersectionBoxSphere(name) ;
+    else if(StartsWith("dbsp", name)) so = makeDifferenceBoxSphere(name) ;
+    else if(StartsWith("UnionBoxSphere", name))        so = makeUnionBoxSphere(name) ;
+    else if(StartsWith("IntersectionBoxSphere", name)) so = makeIntersectionBoxSphere(name) ;
+    else if(StartsWith("DifferenceBoxSphere", name))   so = makeDifferenceBoxSphere(name) ;
+    else if(StartsWith("rcyl", name)) so = makeRotatedCylinder(name) ;
+    else if(StartsWith("dcyl", name)) so = makeDifferenceCylinder(name) ;
+    else if(StartsWith("icyl", name)) so = makeInfCylinder(name) ;
+    else if(StartsWith("iphi", name)) so = makeInfPhiCut(name) ;
+    else if(StartsWith("bssc", name)) so = makeBoxSubSubCylinder(name) ;
     else LOG(fatal) << "invalid name [" << name << "]" ; 
     assert( so ); 
     return so ;  
@@ -110,10 +153,6 @@ void CSGMaker::makeDemoGrid()
 /**
 Foundary::makeLayered
 ----------------------------
-
-Once have transforms working can generalize to any shape. 
-But prior to that just do layering for sphere for adiabatic transition
-from Shape to CSGFoundry/CSGSolid.
 
 NB Each layer is a separate CSGPrim with a single CSGNode 
 

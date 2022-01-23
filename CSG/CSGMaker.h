@@ -11,6 +11,11 @@ struct CSGFoundry ;
 struct CSG_API CSGMaker
 {
     static const plog::Severity LEVEL ; 
+
+    static const char* NAMES ; 
+    static bool StartsWith( const char* n, const char* q ); 
+    static bool CanMake( const char* q ); 
+
     static float4 TriPlane( const std::vector<float3>& v, unsigned i, unsigned j, unsigned k );
 
     enum {  // enum used for Demo solids (equivalent to lvIdx or meshIdx with full geometries)

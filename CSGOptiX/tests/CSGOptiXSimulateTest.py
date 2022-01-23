@@ -806,7 +806,11 @@ class Plt(object):
             print(msg)
             pl.add_points( pos[:,:3], color=color, point_size=10  )
         pass
-        pl.enable_eye_dome_lighting()  # improves depth peception for point cloud, especially from a distance
+        pl.enable_eye_dome_lighting()  
+        ##
+        ## improves depth peception for point cloud, especially from a distance
+        ## https://www.kitware.com/eye-dome-lighting-a-non-photorealistic-shading-technique/
+        ##
         pl.show_grid()
         cp = pl.show() if GUI else None
         return cp
