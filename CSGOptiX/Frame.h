@@ -43,7 +43,6 @@ struct Frame
     void writeIsect(  const char* dir, const char* name) const ;
     void writePhoton( const char* dir, const char* name) const ;
 
-
     unsigned char* getPixelData() const ;
     float*         getIntersectData() const ;
     float*         getPhotonData() const ;
@@ -51,7 +50,5 @@ struct Frame
     uchar4* getDevicePixel() const ; 
     float4* getDeviceIsect() const ; 
     quad4*  getDevicePhoton() const ; 
-
 }; 
-
 

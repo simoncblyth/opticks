@@ -50,6 +50,13 @@ void Frame::init()
     QU::device_free_and_alloc<quad4>(  &d_photon, num_pixels );  
 }
 
+/**
+Frame::download
+----------------
+
+From GPU buffers into vectors.
+
+**/
 void Frame::download()
 {
     unsigned num_pixels = width*height ; 

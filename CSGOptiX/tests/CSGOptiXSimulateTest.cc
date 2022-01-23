@@ -15,6 +15,15 @@ is to be able to see the exact same geometry that the simulation is using.
      MOI=Hama CXS_CEGS=5:0:5:1000   CSGOptiXSimulateTest
      MOI=Hama CXS_CEGS=10:0:10:1000 CSGOptiXSimulateTest
 
+TODO: 
+    find way to get sdf distances for all intersects GPU side 
+    using GPU side buffer of positions 
+
+    just need to run the distance function for all points and with 
+    the appropriate CSGNode root and num_node
+
+    does not need OptiX, just CUDA (or it can be done CPU side also)
+
 **/
 
 #include <cuda_runtime.h>
@@ -40,8 +49,6 @@ is to be able to see the exact same geometry that the simulation is using.
 #include "QSim.hh"
 #include "QEvent.hh"
 #include "SEvent.hh"
-
-
 
 int main(int argc, char** argv)
 {
@@ -112,7 +119,6 @@ int main(int argc, char** argv)
     gs->set_meta<std::string>("TOP", top ); 
     gs->set_meta<std::string>("TOPLINE", topline ); 
     gs->set_meta<std::string>("BOTLINE", botline ); 
-
 
     cx.setComposition(gsm->ce, gsm->m2w, gsm->w2m ); 
     cx.setCEGS(gsm->cegs); 
