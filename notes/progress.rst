@@ -60,7 +60,6 @@ JUNO/Opticks Geometry : finding issues and fixing them
     * sometimes source geometry issue, sometimes translation issue 
     * improves CPU sim, enables GPU sim 
     
-
 JUNO PMT Efficiencies : detection efficiency culling
     Development of detection efficiency culling on GPU led to improvements in PMT parameter services 
     and substantially reduced GPU to CPU transfers and CPU memory for hits.
@@ -72,20 +71,24 @@ JUNO Cerenkov photon generation : finding issues an fixing them
     this kinda sprouted off both simulation matching cerenkov wavelength discrep from rejection sampling float/double
     and JUNO issues with Cerenkov wavelength bug that I found and Cerenkov hangs 
 
-Opticks integration with Geant4 allowing inclusion as example with 1100 distrib
-    Opticks updates for Geant4 1070 at start of 2021 and 1100 at end of 2021 and associated Geant4 bug reports from early access to 1100 : that 
-    resulted in inclusion of Opticks example in 1100 Geant4 distrib  : working with Geant4 devs
-
 Opticks Improvements directed by the needs of users 
     working with Opticks users : bug fixes when applying Opticks geometry tranlation to LHCb RICH geometry, 
     (improving Opticks by applying it to more detectors and coordinating with people to add primitives needed
     for those geometries)
     new primitives working LHCb RICH and LZ students and postdocs
 
-Opticks Publicity : raising awareness of Opticks in the community 
-    (not development topic, but its an activity that takes time just like others : and needs to be mentioned)
-    CAF talk, vCHEP talk, CHEP proceedings paper
+Opticks integration with Geant4 allowing inclusion as example with 1100 distrib
+    Opticks updates for Geant4 1070 at start of 2021 and 1100 at end of 2021 and associated Geant4 bug reports from early access to 1100 : that 
+    resulted in inclusion of Opticks example in 1100 Geant4 distrib  : working with Geant4 devs
 
+Opticks Publicity : raising awareness of Opticks in the community 
+    CAF talk, vCHEP talk, CHEP proceedings paper
+    (not development topic, but its an activity that takes time just like others : and needs to be mentioned)
+
+JUNO/Opticks infrastructure integration
+    junoenv scripts, CMake machinery, Opticks snapshot releases on github
+    (skip this 9th topic)
+    
 
 
 2021

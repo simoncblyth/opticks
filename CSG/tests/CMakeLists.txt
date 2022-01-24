@@ -25,6 +25,7 @@ set(TEST_SOURCES
     intersect_node_cylinder_test.cc 
     CSGNodeScanTest.cc
     CSGSignedDistanceFieldTest.cc
+    distance_node_test.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

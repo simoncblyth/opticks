@@ -36,20 +36,27 @@ bool CSGMaker::CanMake(const char* qname) // static
 const char* CSGMaker::NAMES = R"LITERAL(
 sphe
 zsph
+ZSphere
 cone
 hype
 box3
 plan
+Plane
 slab
+Slab
 cyli
 disc
 vcub
 vtet
+ConvexPolyhedronCube
+ConvexPolyhedronTetrahedron
 elli
 ubsp
-UnionBoxSphere
 ibsp
 dbsp
+UnionBoxSphere
+IntersectionBoxSphere
+DifferenceBoxSphere
 rcyl
 dcyl
 icyl
@@ -64,15 +71,20 @@ CSGSolid* CSGMaker::make(const char* name)
     CSGSolid* so = nullptr ; 
     if(     StartsWith("sphe", name)) so = makeSphere(name) ;
     else if(StartsWith("zsph", name)) so = makeZSphere(name) ;
+    else if(StartsWith("ZSphere", name))  so = makeZSphere(name) ;
     else if(StartsWith("cone", name)) so = makeCone(name) ;
     else if(StartsWith("hype", name)) so = makeHyperboloid(name) ;
     else if(StartsWith("box3", name)) so = makeBox3(name) ;
     else if(StartsWith("plan", name)) so = makePlane(name) ;
+    else if(StartsWith("Plane", name)) so = makePlane(name) ;
     else if(StartsWith("slab", name)) so = makeSlab(name) ;
+    else if(StartsWith("Slab", name)) so = makeSlab(name) ;
     else if(StartsWith("cyli", name)) so = makeCylinder(name) ;
     else if(StartsWith("disc", name)) so = makeDisc(name) ;
     else if(StartsWith("vcub", name)) so = makeConvexPolyhedronCube(name) ;
     else if(StartsWith("vtet", name)) so = makeConvexPolyhedronTetrahedron(name) ;
+    else if(StartsWith("ConvexPolyhedronCube", name))        so = makeConvexPolyhedronCube(name) ;
+    else if(StartsWith("ConvexPolyhedronTetrahedron", name)) so = makeConvexPolyhedronTetrahedron(name) ;
     else if(StartsWith("elli", name)) so = makeEllipsoid(name) ;
     else if(StartsWith("ubsp", name)) so = makeUnionBoxSphere(name) ;
     else if(StartsWith("ibsp", name)) so = makeIntersectionBoxSphere(name) ;

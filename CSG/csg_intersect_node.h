@@ -118,6 +118,27 @@ bool intersect_node_sphere(float4& isect, const quad& q0, const float& t_min, co
 }
 
 
+
+
+INTERSECT_FUNC
+float distance_node_zsphere(const float3& pos, const quad& q0, const quad& q1 )
+{
+    float3 center = make_float3(q0.f);
+    float radius = q0.f.w;
+    const float2 zdelta = make_float2(q1.f);
+    const float z2 = center.z + zdelta.y ; 
+    const float z1 = center.z + zdelta.x ;    
+
+    float3 p = pos - center;
+    float sd_sphere = length(p) - radius ; 
+    float sd_capslab = fmaxf( pos.z - z2 , z1 - pos.z ); 
+
+    float sd = fmaxf( sd_capslab, sd_sphere );    // CSG intersect
+    return sd ; 
+}
+
+
+
 INTERSECT_FUNC
 bool intersect_node_zsphere(float4& isect, const quad& q0, const quad& q1, const float& t_min, const float3& ray_origin, const float3& ray_direction )
 {
@@ -188,6 +209,24 @@ bool intersect_node_zsphere(float4& isect, const quad& q0, const quad& q1, const
         }
     }
     return valid_isect ;
+}
+
+
+INTERSECT_FUNC
+float distance_node_convexpolyhedron( const float3& pos, const CSGNode* node, const float4* plan )
+{
+    unsigned planeIdx = node->planeIdx() ; 
+    unsigned planeNum = node->planeNum() ; 
+    float sd = 0.f ; 
+    for(unsigned i=0 ; i < planeNum ; i++) 
+    {    
+        const float4& plane = plan[planeIdx+i];   
+        float d = plane.w ;
+        float3 n = make_float3(plane);
+        float sd_plane = dot(pos, n) - d ; 
+        sd = i == 0 ? sd_plane : fmaxf( sd, sd_plane ); 
+    }
+    return sd ; 
 }
 
 
@@ -735,6 +774,17 @@ bool intersect_node_plane( float4& isect, const quad& q0, const float t_min, con
 }
 
 
+INTERSECT_FUNC
+float distance_node_plane( const float3& pos, const quad& q0 )
+{
+    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;   // plane normal direction  
+    const float d = q0.f.w ;                                 // distance to origin 
+    float pn = dot(pos, n ); 
+    float sd = pn - d ;  
+    return sd ; 
+}
+
+
 /**
 intersect_node_phicut
 ------------------------
@@ -849,6 +899,24 @@ bool intersect_node_phicut( float4& isect, const quad& q0, const float t_min, co
         isect.w = t_cand ; 
     }
     return valid_intersect ; 
+}
+
+
+
+
+
+INTERSECT_FUNC
+float distance_node_slab( const float3& pos, const quad& q0, const quad& q1 )
+{
+   const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+   const float a = q1.f.x ; 
+   const float b = q1.f.y ; 
+   float pn = dot(pos, n ); 
+
+   //float sd = fmaxf( pn - b, a - pn ) ; 
+   float sd = fmaxf( pn - b, pn - a ) ;   // uncertain here
+
+   return sd ; 
 }
 
 
@@ -1487,9 +1555,13 @@ float distance_node( const float3& global_position, const CSGNode* node, const f
 
     switch(typecode)
     {
-        case CSG_SPHERE:    distance = distance_node_sphere(   local_position, node->q0 )           ; break ; 
-        case CSG_BOX3:      distance = distance_node_box3(     local_position, node->q0 )           ; break ;
-        case CSG_CYLINDER:  distance = distance_node_cylinder( local_position, node->q0, node->q1 ) ; break ;
+        case CSG_SPHERE:           distance = distance_node_sphere(            local_position, node->q0 )           ; break ; 
+        case CSG_ZSPHERE:          distance = distance_node_zsphere(           local_position, node->q0, node->q1 ) ; break ; 
+        case CSG_CONVEXPOLYHEDRON: distance = distance_node_convexpolyhedron(  local_position, node, plan )         ; break ;
+        case CSG_BOX3:             distance = distance_node_box3(              local_position, node->q0 )           ; break ;
+        case CSG_CYLINDER:         distance = distance_node_cylinder(          local_position, node->q0, node->q1 ) ; break ;
+        case CSG_PLANE:            distance = distance_node_plane(             local_position, node->q0 )           ; break ;
+        case CSG_SLAB:             distance = distance_node_slab(              local_position, node->q0, node->q1 ) ; break ;
     }
     return complement ? -distance : distance  ; 
 }

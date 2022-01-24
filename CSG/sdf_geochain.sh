@@ -46,6 +46,12 @@ EOU
 msg="=== $BASH_SOURCE :"
 
 geom=AltXJfixtureConstruction
+#geom=ZSphere
+#geom=Plane
+#geom=Slab                  ## not getting what expected 
+#geom=ConvexPolyhedronCube
+#geom=ConvexPolyhedronTetrahedron
+
 export GEOM=${GEOM:-$geom}
 
 if [ "$(uname)" == "Linux" ]; then
