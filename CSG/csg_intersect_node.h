@@ -1462,6 +1462,16 @@ bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const floa
 }
 
 
+/**
+distance_node
+---------------
+
+For hints on how to implement distance functions for more primitives:
+
+* https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
+* env-;sdf-
+
+**/
 
 INTERSECT_FUNC
 float distance_node( const float3& global_position, const CSGNode* node, const float4* plan, const qat4* itra )

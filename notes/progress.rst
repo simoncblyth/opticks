@@ -10,40 +10,140 @@ Progress
        :depth: 3
 
 
+Tips for making yearly summaries
+-----------------------------------
 
-2021 Summary in under 100 words
----------------------------------
+1. review commit messages month by month with eg ``o ; ./mo.sh -1`` 
+2. review presentations month by month, find them with presentation-index
+3. while doing the above reviews. compile a list of topics and check 
+   that the vast majority of commit messages and presentation pages 
+   can fit under the topics : if not add more topics or re-scope the topics
 
-.. include:: summary_2021.rst
+   * for communication purposes do not want too many topics, aim for ~8, 
+     think about how they related to each other 
 
-::
+JUNO Opticks Progress : Short Summary 2021 : 
+------------------------------------------------------------
 
-    wc -w summary_2021.rst    # 169 
+From scratch development of a shared GPU+CPU geometry model enabling 
+state-of-the-art NVIDIA OptiX 7 ray tracing of CSG based detector geometries, 
+flattened into a two-level structure for optimal performance harnessing ray trace 
+dedicated NVIDIA GPU hardware. Development was guided by frequent consultation with NVIDIA engineers. 
 
-Development of detection efficiency culling on GPU led to improvements in PMT parameter services 
-and substantially reduced GPU to CPU transfers and CPU memory for hits.
+JUNO Opticks development, validation and performance testing revealed issues with PMT 
+and Fastener geometry, Cerenkov photon generation and PMT parameter services.
+This has led to improved geometry modelling, Cerenkov numerical integration
+and sampling and PMT services resulting in substantial improvements to the correctness
+and performance of the JUNO Geant4 and Opticks based simulations.
 
+
+Broad headings 2021 progress for a 600 word medium length summary
+--------------------------------------------------------------------
+
+* do all commits and presentation pages fit under these headings : or are some more topics needed ?
+
+
+New OptiX7 Opticks Packages Developed for all new OptiX 7 API 
+    short summary mentions only the shared GPU+CPU geometry (ie CSG pkg) as a simplfication and because its the central thing, 
+    but in reality for the new model to do anything useful need supporting packages : CSG_GGeo, QUDARap, CSGOptiX
+    also changes to existing GGeo was needed to work with the new model 
+
+JUNO Opticks-Geant4 simulation history matching 
+    using newly developed G4OpticksRecorder 
+
+JUNO/Opticks Geometry : finding issues and fixing them
+    developed new approach to creating 2D planar ray tracing cross sections where geometry visualizations
+    are created directly from ray intersections with the geometry : providing an ideal way to check for
+    overlapping geometry or spurious intersects arising rom poor geometry modelling   
+
+    * PMTs, several components of support fasteners
+    * sometimes source geometry issue, sometimes translation issue 
+    * improves CPU sim, enables GPU sim 
+    
+
+JUNO PMT Efficiencies : detection efficiency culling
+    Development of detection efficiency culling on GPU led to improvements in PMT parameter services 
+    and substantially reduced GPU to CPU transfers and CPU memory for hits.
+    Worked with young JUNO developers to incorporate the needed changes. 
+
+    * scale CPU memory for hits by a factor of the efficiency
+
+JUNO Cerenkov photon generation : finding issues an fixing them 
+    this kinda sprouted off both simulation matching cerenkov wavelength discrep from rejection sampling float/double
+    and JUNO issues with Cerenkov wavelength bug that I found and Cerenkov hangs 
+
+Opticks integration with Geant4 allowing inclusion as example with 1100 distrib
+    Opticks updates for Geant4 1070 at start of 2021 and 1100 at end of 2021 and associated Geant4 bug reports from early access to 1100 : that 
+    resulted in inclusion of Opticks example in 1100 Geant4 distrib  : working with Geant4 devs
+
+Opticks Improvements directed by the needs of users 
+    working with Opticks users : bug fixes when applying Opticks geometry tranlation to LHCb RICH geometry, 
+    (improving Opticks by applying it to more detectors and coordinating with people to add primitives needed
+    for those geometries)
+    new primitives working LHCb RICH and LZ students and postdocs
+
+Opticks Publicity : raising awareness of Opticks in the community 
+    (not development topic, but its an activity that takes time just like others : and needs to be mentioned)
+    CAF talk, vCHEP talk, CHEP proceedings paper
+
+
+
+2021
+-----
 
 
 2021 Jan : Geant4 1070,  first OptiX 7 expts
 -------------------------------------------------
+
+* http://localhost/env/presentation/opticks_jan2021_juno_sim_review.html
+  
+  * mainly review of 2020 : leap in Opticks awareness
+  * Geant4 bug 2305 (optical surfaces) reported 2020-12-22 
+  * Geant4 bug 2311 (vector to map API change) reported 2021-01-20
+  * about LZ+Opticks+OptiX7 meeting series
 
 * compiletime -> runtime control for way data and angular efficiencies 
 * create orientation docs for NVIDIA + LZ colleagues : https://simoncblyth.bitbucket.io/opticks/docs/orientation.html
 * attempt to handle the g4 1070 G4LogicalBorderSurface vector to map change, currently without controlling the order
 * fixes for g4_1070 including name order sorting of G4LogicalBorderSurfaceTable which has become a std::map, see notes/issues/g4_1070_G4LogicalBorderSurface_vector_to_map_problems.rst
 * fix the nhit nhiy inconsistency, the GPU side way buffer was not being resized in OEvent causing the stuck at first events hiy issue, see notes/issues/G4OKTest_fail_from_nhit_nhiy_mismatch.rst
+* completing the hits 
 
 2021 Feb : first expts with OptiX 7
 ---------------------------------------
 
-* OptiX 7 learning 
-* Opticks leak checking revealed some significant ones
+* http://localhost/env/presentation/lz_opticks_optix7_20210208.html
+
+  * very early stage of OptiX 7 expts 
+
+* http://localhost/env/presentation/lz_opticks_optix7_20210225.html
+
+  * compound GAS issue : bbox fudge, boxy spheres 
+
+
+* OptiX 7 learning : getting to grips with the entirely new API : lots of boilerplate, learning by expts, bbox fudge etc 
+* OptiX 7 with custom prim not well documented, so useful to get advice from NVIDIA engineers
+* Opticks leak checking revealed some significant ones : working with Geant4 people
+* unified OptiX pre-7 7 approach for high level 
 * SIMG compressed jpg, png rather than uncompressed ppm, for easier remote OptiX 7 work 
+* double precision transform handling as new JUNO geometry seems to need it
+* review and document G4OpticksHitExtra including how --boundary option feeds into the way_control in GPU context
 
 
 2021 March : OptiX7 expts in OptiXTest
 -------------------------------------------
+
+* http://localhost/env/presentation/opticks_detector_geometry_caf_mar2021.html
+
+  * detailed look at Opticks geometry approach (prior to OptiX7 CSG developments, but IAS/GAS mentioned) 
+
+
+* http://localhost/env/presentation/lz_opticks_optix7_20210315.html
+ 
+  * resolve the compound GAS issue, by switching to using singe BI containing all AABB
+  * intersect_node.h allowing CPU testing  
+  * run into identity limitations
+
 
 OptiXTest : 2021/03/11 -> 2021/05/07
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,9 +159,26 @@ Opticks repo
 * always save origin.gdml into geocache to try to avoid fails of tests that need GDML when running from geocache created live
 * standalone-ish L4CerenkovTest exercising the branches of L4Cerenkov::GetAverageNumberOfPhotons and plotting NumPhotons vs BetaInverse with branches distinguished
 
-
 2021 April : machinery for geometry performance scanning, video making for investigating slow geometry
 ----------------------------------------------------------------------------------------------------------
+
+* http://localhost/env/presentation/lz_opticks_optix7_20210406.html
+
+  * first mention of "Foundry" based CSG geometry model : called this because you create everything Solid/Node/Prim 
+    via the Foundry and they get contiguously stored into Foundry vectors ready for upload to GPU 
+  * "CSG" working  
+  * CSG model looks pretty complete at this stage  
+
+* https://simoncblyth.bitbucket.io/env/presentation/juno_opticks_20210426.html
+* http://localhost/env/presentation/juno_opticks_20210426.html
+
+  * bash junoenv opticks (replace old pkg based approach, treat opticks like sniper, not Geant4)  
+  * gdmlkludge
+  * PMTEfficiencyCheck : 1-in-a-million-ce issue : improving efficiency lookup
+  * interestingly bad pre-7 OpSnapTest ray trace times : clearly many issues left in geometry, huge time range 
+  * fly around fastener movie
+  * tds-mu timings  **TODO: redo these with current geom**
+
 
 * work over in https://github.com/simoncblyth/OptiXTest bringing CSG to OptiX 7 revealed a bug in cone intersects for axial rays from one direction due to an enum 0, fix that issue here too
 * arranging for X4PhysicalVolume::convertMaterials X4MaterialTable::Convert to only convert used materials, to match the materials that G4GDML exports
@@ -72,9 +189,31 @@ Opticks repo
 * rationalize OpTracer snap analogously to FlightPath, getting reusable view control machinery out of OpTracer
 * reworked GTree::makeInstanceIdentityBuffer to handle CSG skips 
 * snap.py sorting the snap results by render speed and creating table of times
+* pin down ordering of GInstancer repeat_candidates using two-level sort to avoid notes/issues/GParts_ordering_difference_on_different_machine.rst
+* use SBit::FromString for --enabledmergedmesh/-e for the brevity/flexibility of bitfield control 
+
 
 2021 May : GGeo enhancemends needed for CSG_GGeo conversion, Machinery for Matching : CManager, G4OpticksRecorder
 -------------------------------------------------------------------------------------------------------------------
+
+* http://localhost/env/presentation/lz_opticks_optix7_20210504.html
+
+  * CSGFoundry model near final : 7, pre-7, CPU testing
+  * duplicate 7 environment in pre-7
+  * lots of noshow images in the presentation, directory name change perhaps?
+
+* http://localhost/env/presentation/opticks_vchep_2021_may19.html
+
+  * 1st JUNO Opticks OptiX7 ray trace  
+  * efficiency culling decison moved to GPU, reducing CPU hit memory  
+  * series of meetings with NVIDIA engineers suggested and organized by LZ. LBNL, NERSC
+
+* http://localhost/env/presentation/lz_opticks_optix7_20210518.html
+
+  * debugging CSG_GGeo
+  * comparing OptiX 5,6,7 cxr_solid views : last prim bug 
+  * Hammamatsu ellipsoid bug is apparent : prior to my realizing it 
+ 
 
 * GParts enhancements needed for CSGOptiXGGeo (which later becomes  CSG_GGeo)
 * fix GParts:add which was omitting to offset the tranform indices in combination, changes motivated by CSGOptiXGGeo
@@ -94,7 +233,7 @@ Opticks repo
 -----------------------------------------------------------------------------------
 
 * CManager::Get for use from the non-G4Opticks CFG4 S+C processes as now need to declare CManager::BeginOfGenstep before record track steps
-* try switching CGenerator to ONESTEP/DYAMIC recording in all cases
+* try switching CGenerator to ONESTEP/DYNAMIC recording in all cases
 * start updating CerekovMinimal to use G4OpticksRecorder
 * rename (getNumPhotons,getNumPhotons2) -> (getNumPhotonsSum,getNumPhotons) Sum is significantly slower for large numbers of gensteps as shown by Zike
 * G4OpticksRecorder/CManager/CRecorder/CWriter machinery is working with CKM with KLUDGE-d Scintillation for Geant4 lifecycle testing of REJOINed full photon recording
@@ -113,6 +252,24 @@ Opticks repo
 
 2021 July : QProp, Cerenkov matching 
 --------------------------------------------
+
+* http://localhost/env/presentation/juno_opticks_20210712.html
+
+  * JUNO Opticks/Geant4 Optical Photon Simulation Matching 
+  * matching tools : GtOpticksTool input photon running, photon repetition, G4OpticksRecorder  
+  * reemission bookkeeping
+  * photon history comparisons (skipping setupCD_Sticks to allow fair comparison)
+  * list of fixes for Geant4 implicits, special cases, remove degenerates 
+  * scintillation wavelength well matched
+  * G4Cerenkov_modified bug  
+
+
+* http://localhost/env/presentation/lz_opticks_optix7_20210727.html
+
+  * QUDARap : pure CUDA photon generation
+  * Cerenkov GPU wavelength generation needing double precision
+
+
 
 * GDML 2d plot for slow geometry : lAddition
 * review recent issues notes to decide what else to present, plus start reviving the comparison plotting machinery
@@ -143,7 +300,7 @@ Opticks repo
   * TODO: probably should move the enum down rather than upping the dependency pkg  
 
 * CSGOptiXSimulate : start checking optix7 raytrace from gensteps, save photons 
-* reue of OptiX7Test.cu intersection code for both rendering and simulation means cannot pre-diddle normals etc..
+* reuse of OptiX7Test.cu intersection code for both rendering and simulation means cannot pre-diddle normals etc..
 * thinking about versioning and tagging, turns out OpticksVersionNumber.hh already exists providing OPTICKS_VERSION_NUMBER, see notes/releases-and-versioning.rst 
 * retire ancient tests CG4Test OKG4Test that are unclear how to bring into the CManager Geant4 integration approach without lots of additional code
 * fix Cerenkov wavelength regression, must reciprocalize otherwise wavelength not properly peaked towards low wavelengths
@@ -151,6 +308,19 @@ Opticks repo
 
 2021 Sept : Cerenkov S2 integration, Geant4 1100 compat
 ---------------------------------------------------------
+
+* http://localhost/env/presentation/juno_opticks_cerenkov_20210902.html
+
+  * G4Cerenkov/G4Cerenkov_modified imprecision, -ve photon yields
+  * S2 advantages : more accurate, simpler, faster 
+  * QUDARap paired hh/h CPU/GPU headers pattern 
+  * keep most GPU code in simple headers : testable from multiple environments 
+  * having to use double precision for Cerenkov rejection sampling is a performance problem
+  * ana/rindex.py prototype
+  * Hama translated ellipsoid bug is visible and not noted in this presentation
+  * random aligned Cerenkov comparison
+  * PMTAngular : efficiency>1
+
 
 * encapsulating QCerenkov ICDF into QCK for ease of testing 
 * piecewise sympy RINDEX and S2 fails to integrate, perhaps doing each bin separately would work
@@ -164,6 +334,18 @@ Opticks repo
 
 2021 Oct : QUDARap : QTex, QCerenkov : new world order simulation atoms, JUNO Fastenener void subtraction reveals CSG limitation, Geant4 1100 property debug
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* http://localhost/env/presentation/opticks_autumn_20211019.html
+
+  * Cerenkov : Rejection vs Lookup sampling, S2 integration, ICDF curves, chi2 compare rejection vs lookup samples  
+  * Geant4 : Opticks updates for 1100
+  * Greater than 500 Opticks unit tests proved useful for pre-release testing of Geant4 11 : several issues 
+    immediately discoved simply by running the Opticks unit tests 
+  * made the case to avoid proposed changes to Geant4 material property API
+  * reported several issues and suggested fixes to Geant4 developers which they eventually accepted
+  * NEW 2d planar ray tracing : new geometry testing tools via 2d cross sections 
+  * interfering sub-sub bug in fasteners : overcomplex CSG modelling 
+
 
 * QCerenkov lookup GPU texture testing
 * investigate 12 opticks-t fails with unreleased 91072, four might be fixed by X4PropertyMap createNewKey=true 
@@ -201,7 +383,17 @@ Opticks repo
 * PMTSim_Z test
 
 2021 Nov : Z-cutting G4VSolid that actually cuts the CSG tree, Geant4 2D cross-sections with (Q->X4)IntersectSolidTest, (Q->X4)IntersectVolumeTest 
--------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+* http://localhost/env/presentation/opticks_20211117.html
+
+  * Hama PMT Solid Breaking Opticks translation 
+  * avoid profligate CSG modelling by actually cutting CSG tree  
+  * spurious Geant4 intersects
+  * Geant4 geometry 2D cross sections
+  * new GeoChain package 
+
 
 * GeoChain testing of the ZCutSolid from j/PMTSIM
 * generalize CXS_CEGS center-extent-gensteps config to allow specification of dx:dy:dz offset grids
@@ -227,6 +419,18 @@ Opticks repo
 2021 Dec : work with LHCb RICH people on phicut/thetacut primitive
 -------------------------------------------------------------------------------------------
 
+* http://localhost/env/presentation/opticks_20211223_pre_xmas.html
+
+  * ZSolid applied to Hama and NNVT PMTs
+  * Offline CMake integration
+  * PolyconeWithMultipleRmin translation 
+  * render speed tests following lots of geometry fixes
+  * cxr_solid renders
+  * speed tables : now much smaller range 
+  * LHCb RICH mirror geometry reveals cut sphere bug, quick fixed, 
+    plus working with student to add a better way using phicut thetacut primitives  
+
+
 * rework X4Solid::convertPolycone to handle multiple R_inner, eg base_steel
 * found spurious Geant4 and Opticks intersects from flush unions in solidXJfixture and solidXJanchor, these could explain the 0.5 percent history mismatch in ab.sh
 
@@ -234,6 +438,21 @@ Opticks repo
 
 2022 Jan 
 ----------
+
+* http://localhost/env/presentation/opticks_20220115_innovation_in_hep_workshop_hongkong.html
+* http://localhost/env/presentation/opticks_20220118_juno_collaboration_meeting.html
+
+  * Opticks 2D slicing
+  * PMT mask fix
+  * Fastener interfering sub-sub  
+  * cutdown PMT issue 
+  * render speed check
+  * history matching check 
+  * XJfixtureConstruction solid : many spurious intersects 
+  * XJfixtureConstruction positions : 64 renders : many overlaps 
+  * XJanchorConstruction
+  * SJReceiverConstruction
+
 
 * RTP tangential frame for investigation of some overlaps in global geometry 
 
