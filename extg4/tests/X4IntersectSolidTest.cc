@@ -11,8 +11,6 @@ Used from script extg4/xxs.sh
 #include "SPath.hh"
 
 #include "X4Intersect.hh"
-#include "X4Mesh.hh"
-
 #include "X4_GetSolid.hh"
 
 
