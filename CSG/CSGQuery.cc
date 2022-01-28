@@ -86,10 +86,13 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
     {   
         float t = isect.q0.f.w ; 
         float3 ipos = ray_origin + t*ray_direction ;   
+        float sd = (*this)(ipos) ; 
+        // sd: surface distance at intersect position which is expected to be close to zero, otherwise identifies spurious intersects to investigate.  
+
         isect.q1.f.x = ipos.x ;
         isect.q1.f.y = ipos.y ;
         isect.q1.f.z = ipos.z ;
-        isect.q1.f.w = t ; 
+        isect.q1.f.w = sd ;  
 
         isect.q2.f.x = ray_origin.x ; 
         isect.q2.f.y = ray_origin.y ; 

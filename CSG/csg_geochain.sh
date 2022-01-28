@@ -27,10 +27,10 @@ export GEOM=${GEOM:-$geom}
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
 
 
-if [ "$(uname)" == "Darwin"] ; then
-   cfbase=$TMP/GeoChain/$gcn 
-else
+if [ "$(uname)" == "Darwin" ] ; then
    cfbase=$TMP/GeoChain_Darwin/$gcn 
+else
+   cfbase=$TMP/GeoChain/$gcn 
 fi 
 
 dx=0

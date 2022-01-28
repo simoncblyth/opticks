@@ -1004,9 +1004,9 @@ float sdCappedCylinder( vec3 p, float h, float r )
 
 The SDF rules for CSG combinations::
 
-    union(l,r)     ->  min(l,r)
-    intersect(l,r) ->  max(l,r)
-    difference(l,r) -> max(l,-r)    [aka subtraction, corresponds to intersecting with a complemented rhs]
+    CSG union(l,r)     ->  min(l,r)
+    CSG intersect(l,r) ->  max(l,r)
+    CSG difference(l,r) -> max(l,-r)    [aka subtraction, corresponds to intersecting with a complemented rhs]
 
 
 **/
