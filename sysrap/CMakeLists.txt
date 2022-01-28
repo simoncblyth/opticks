@@ -86,6 +86,7 @@ set(SOURCES
 
     SEvent.cc
     SCenterExtentFrame.cc
+    SCenterExtentGenstep.cc
 ) 
     
 
@@ -170,6 +171,7 @@ set(HEADERS
 
     SEvent.hh
     SCenterExtentFrame.hh
+    SCenterExtentGenstep.hh 
     SPresent.hh
 
     OpticksGenstep.h

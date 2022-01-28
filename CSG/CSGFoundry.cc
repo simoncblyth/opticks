@@ -1207,6 +1207,23 @@ void CSGFoundry::load( const char* dir_ )
 }
 
 
+
+
+CSGFoundry*  CSGFoundry::Make(const char* geom) // static
+{
+    CSGFoundry* fd = new CSGFoundry();  
+    CSGMaker* mk = fd->maker ;
+    CSGSolid* so = mk->make( geom );
+    assert( so ); 
+
+    LOG(info) << " so " << so ;
+    LOG(info) << " so.desc " << so->desc() ;
+    LOG(info) << " fd.desc " << fd->desc() ;
+
+    return fd ; 
+}
+
+
 CSGFoundry*  CSGFoundry::Load(const char* dir) // static
 {
     CSGFoundry* fd = new CSGFoundry();  

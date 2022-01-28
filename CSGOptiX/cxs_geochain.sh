@@ -104,7 +104,7 @@ case $GEOM in
 esac
 # first axis named is the longer one that is presented on the horizontal in landscape aspect   
 
-echo $msg GEOM $GEOM gcn $gcn cegs $cegs
+echo $msg GEOM $GEOM gcn $gcn cegs $cegs cfbase $cfbase
 
 
 source ./cxs.sh 

@@ -12,21 +12,29 @@
 
 void SCenterExtentGenstep::save(const char* dir) const
 {
-    LOG(info) << "[ ii.size " << ii.size() ;
-    NP* isect = NP::Make<float>(ii.size(), 4, 4);
-    LOG(info) << isect->sstr() ;
-    isect->read<float>((float*)ii.data());
-    isect->save(dir, "isect.npy");
     gs->save(dir, "gs.npy" ); 
+    save_vec(dir, "isect.npy", ii ); 
+    save_vec(dir, "photons.npy", pp ); 
 
     int create_dirs = 1 ; // 1:filepath
     const char* peta_path = SPath::Resolve(dir, "peta.npy", create_dirs) ;
     NP::Write(peta_path, (float*)(&peta->q0.f.x), 1, 4, 4 );
-
-    LOG(info) << "]" ; 
 }
 
-
+void SCenterExtentGenstep::save_vec(const char* dir, const char* name, const std::vector<quad4>& vv ) const 
+{
+    if(vv.size() == 0) 
+    {
+        LOG(info) << " skip as no vec entries for " << name  ;
+        return ; 
+    }
+    LOG(info) << "[ " << name << " size " << vv.size() ;
+    NP* arr = NP::Make<float>(vv.size(), 4, 4);
+    LOG(info) << arr->sstr() ;
+    arr->read<float>((float*)vv.data());
+    arr->save(dir, name);
+    LOG(info) << "]" ; 
+}
 
 template<typename T> void SCenterExtentGenstep::set_meta(const char* key, T value ) 
 {
@@ -34,25 +42,32 @@ template<typename T> void SCenterExtentGenstep::set_meta(const char* key, T valu
     gs->set_meta<T>(key, value) ; 
 }
 
-
 SCenterExtentGenstep::SCenterExtentGenstep()
     :
     gs(nullptr),
     gridscale(SSys::getenvfloat("GRIDSCALE", 1.0 )),
-    peta(new quad4)
+    peta(new quad4),
+    ce(make_float4(0.f, 0.f, 0.f, 100.f ))
 {
     init(); 
 } 
 
 void SCenterExtentGenstep::init()
 {
+    const char* topline = SSys::getenvvar("TOPLINE", "SCenterExtentGenstep.topline") ; 
+    const char* botline = SSys::getenvvar("BOTLINE", "SCenterExtentGenstep.botline" ) ; 
+    set_meta<std::string>("TOPLINE", topline );
+    set_meta<std::string>("BOTLINE", botline );
+
     peta->zero(); 
 
     LOG(info) << "[ gridscale " << gridscale  ;
 
-    ce = make_float4(0.f, 0.f, 0.f, 100.f );
+    const char* cxs_cegs = SSys::getenvvar("CXS_CEGS"); 
+    if(cxs_cegs) LOG(fatal) << " CXS_CEGS is defined : have moved to standardize on CEGS " ;
+    assert( cxs_cegs == nullptr );  
 
-    SSys::getenvintvec("CXS_CEGS", cegs, ':', "16:0:9:10" );
+    SSys::getenvintvec("CEGS", cegs, ':', "16:0:9:10" );
     // expect 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
 
     SEvent::StandardizeCEGS(ce, cegs, gridscale );
@@ -80,7 +95,6 @@ void SCenterExtentGenstep::init()
         << " GridAxesName " << SEvent::GridAxesName(gridaxes)
         ;
 
-
     peta->q0.i.x = ix0 ;
     peta->q0.i.y = ix1 ;
     peta->q0.i.z = iy0 ;
@@ -90,8 +104,6 @@ void SCenterExtentGenstep::init()
     peta->q1.i.y = iz1 ;
     peta->q1.i.z = photons_per_genstep ;
     peta->q1.i.w = zero ;
-
-
 
     SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" );
 

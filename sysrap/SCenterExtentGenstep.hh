@@ -24,6 +24,8 @@ struct SYSRAP_API SCenterExtentGenstep
     void init(); 
     const char* desc() const ; 
     void save(const char* dir) const ; 
+    void save_vec(const char* dir, const char* name, const std::vector<quad4>& vv ) const ; 
+
     template<typename T> void set_meta(const char* key, T value ) ; 
 
 
@@ -39,6 +41,7 @@ struct SYSRAP_API SCenterExtentGenstep
     int nz ; 
 
     std::vector<int> override_ce ;   
+
     std::vector<quad4> pp ;
     std::vector<quad4> ii ;
 

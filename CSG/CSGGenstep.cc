@@ -11,6 +11,13 @@
 #include "CSGFoundry.h"
 #include "CSGGenstep.h"
 
+//#include "SCenterExtentGenstep.hh"
+
+/**
+TODO: adopt SCenterExtentGenstep.hh
+**/
+
+
 const plog::Severity CSGGenstep::LEVEL = PLOG::EnvLevel("CSGGenstep", "DEBUG"); 
 
 CSGGenstep::CSGGenstep( const CSGFoundry* foundry_ )
@@ -33,7 +40,7 @@ CSGGenstep::CSGGenstep( const CSGFoundry* foundry_ )
 
 void CSGGenstep::init()
 {
-    SSys::getenvintvec("CXS_CEGS", cegs, ':', "5:0:5:1000" ); 
+    SSys::getenvintvec("CEGS", cegs, ':', "5:0:5:1000" ); 
     // expect 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
 }
 
@@ -183,7 +190,6 @@ void CSGGenstep::configure_grid()
         << " mx " << mx
         ; 
 }
-
 
 void CSGGenstep::generate_photons_cpu()
 {

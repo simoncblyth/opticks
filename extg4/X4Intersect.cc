@@ -35,15 +35,6 @@ void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* base
         << " outdir " << outdir 
         ; 
 
-
-   /*
-    NP* gs = x4i->gs ; 
-    gs->set_meta<std::string>("name", name) ; 
-    gs->set_meta<int>("iidx", 0) ; 
-    x4i->save(outdir); 
-    */
-
-
     SCenterExtentGenstep* cegs = x4i->cegs ; 
     cegs->set_meta<std::string>("name", name); 
     cegs->set_meta<int>("iidx", 0 ); 

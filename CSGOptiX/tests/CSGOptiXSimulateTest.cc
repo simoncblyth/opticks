@@ -108,7 +108,6 @@ int main(int argc, char** argv)
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ; 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
-
     bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ; 
     bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;   
     // TODO: eliminate the need for this switches by standardizing on model2world transforms

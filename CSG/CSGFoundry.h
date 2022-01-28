@@ -41,6 +41,7 @@ struct CSG_API CSGFoundry
 {
     static const plog::Severity LEVEL ; 
     static const unsigned IMAX ; 
+    static CSGFoundry* Make(const char* geom);
     static CSGFoundry* Load(const char* base, const char* rel);
     static CSGFoundry* Load(const char* dir );
     static int Compare(const CSGFoundry* a , const CSGFoundry* b ); 

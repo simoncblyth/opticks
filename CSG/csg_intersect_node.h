@@ -3,7 +3,7 @@
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #    define INTERSECT_FUNC __forceinline__ __device__
 #else
-#    define INTERSECT_FUNC
+#    define INTERSECT_FUNC inline
 #endif
 
 
@@ -20,6 +20,7 @@ union uif_t
     float f ; 
 };
 
+INTERSECT_FUNC
 float __int_as_float(int i)
 {
     uif_t uif ; 
