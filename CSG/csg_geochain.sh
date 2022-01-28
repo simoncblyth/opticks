@@ -1,21 +1,31 @@
 #!/bin/bash -l 
-
 msg="=== $BASH_SOURCE :"
-
 usage(){ cat << EOU
 csg_geochain.sh : CPU Opticks equivalent to cxs_geochain.sh with OptiX on GPU 
 ==========================================================================================
 
 The idea behind this is to provide a convenient way to test code primarily intended to run on GPU 
-in the more friendly debugging environment of the CPU.
+in the more friendly debugging environment of the CPU.::
+
+    IXIYIZ=4,0,0 ./csg_geochain.sh  ana
+        selecting single genstep with IXIYIZ 
+
+    IXIYIZ=5,0,0 ./csg_geochain.sh  ana
+
+    IXIYIZ=0,6,0 ./csg_geochain.sh  ana      
 
 EOU
 }
 
-
 #geom=AltXJfixtureConstruction_YZ
 #geom=AltXJfixtureConstruction_XZ
-geom=AltXJfixtureConstruction_XY
+#geom=AltXJfixtureConstruction_XY
+
+#geom=AnnulusBoxUnion_XY
+#geom=AnnulusTwoBoxUnion_XY
+#geom=AnnulusOtherTwoBoxUnion_XY
+#geom=AnnulusFourBoxUnion_XY
+geom=AnnulusFourBoxUnion_YX
 
 #geom=XJfixtureConstruction_YZ
 #geom=XJfixtureConstruction_XZ
@@ -36,8 +46,25 @@ fi
 dx=0
 dy=0
 dz=0
-num_pho=10
-gridscale=0.15
+num_pho=100
+
+case $gcn in 
+  AnnulusFourBoxUnion) gridscale=0.1  ;; 
+                    *) gridscale=0.15 ;;
+esac
+
+
+_AnnulusFourBoxUnion_YX(){
+   note="couple of spurious intersects with IXIYIZ=5,0,0 and 0,6,0  " 
+   ixiyiz=0,6,0
+
+   export AGAIN=/tmp/s_isect.npy 
+}
+
+case $GEOM in 
+   AnnulusFourBoxUnion_YX) _AnnulusFourBoxUnion_YX ;;
+                        *) note="" ;;
+esac
 
 case $GEOM in  
    *_XZ) cegs=16:0:9:$dx:$dy:$dz:$num_pho  ;;  
@@ -49,14 +76,19 @@ case $GEOM in
    *_XYZ) cegs=9:16:9:$dx:$dy:$dz:$num_pho ;;  
 esac
 
+export NOTE=$note 
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CEGS=${CEGS:-$cegs}
 export CFBASE=${CFBASE:-$cfbase}
 export CEGS=${CEGS:-$cegs}
+export IXIYIZ=${IXIYIZ:-$ixiyiz}
+
 
 export TOPLINE="GEOM=$GEOM ./csg_geochain.sh "
 export BOTLINE="$note"
 export THIRDLINE="CEGS=$CEGS"
+
+
 
 
 check_cegs()
@@ -111,7 +143,7 @@ check_cegs        || exit 1
 check_cfbase      || exit 1 
 check_cfbase_file || exit 1 
 
-dumpvars GEOM CEGS GRIDSCALE TOPLINE BOTLINE CFBASE
+dumpvars GEOM CEGS GRIDSCALE TOPLINE BOTLINE CFBASE NOTE IXIYIZ 
 
 
 bin=CSGIntersectSolidTest
@@ -121,9 +153,22 @@ arg=${1:-run_ana}
 if [ "${arg/run}" != "$arg" ]; then
 
     echo $msg running binary $bin
-    $GDB $bin
+    $bin
     [ $? -ne 0 ] && echo $msg run error && exit 1
+
+elif [ "${arg/dbg}" != "$arg" ]; then 
+
+    echo $msg running binary $bin under debugger
+    if [ "$(uname)" == "Darwin" ]; then
+        lldb__ $bin
+    else
+        gdb $bin
+    fi 
+
 fi
+
+[ -n "$AGAIN" ] && echo $msg early exit as AGAIN $AGAIN is defined && exit 0 
+
 
 if [ "${arg/ana}" != "$arg" ]; then
 

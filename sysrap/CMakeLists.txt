@@ -164,6 +164,7 @@ set(HEADERS
     stran.h
     ssincos.h
     sevent.h
+    sc4u.h
 
     sview.h
     strided_range.h 

@@ -5,6 +5,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "SCenterExtentGenstep.hh"
+#include "NP.hh"
 
 #include "CSGQuery.h"
 #include "CSGFoundry.h"
@@ -97,5 +98,31 @@ void CSGGeometry::saveCenterExtentGenstepIntersect() const
     cegs->save(outdir); 
 }
 
+void CSGGeometry::intersectAgain( const char* path )
+{
+    if( path == nullptr ) path = "/tmp/s_isect.npy" ; 
+    LOG(info) << " loading from " << path ; 
+    NP* a = NP::Load(path); 
+    if( a == nullptr ) 
+    {
+        LOG(fatal) << " no path " << path ; 
+        return ; 
+    }
+    LOG(info) << " isect a " << a->sstr() ; 
 
+    assert( a->shape.size() == 3 && a->shape[1] == 4 && a->shape[2] == 4 ); 
+
+    std::vector<quad4> isects(a->shape[0]) ; 
+    memcpy( isects.data(), a->bytes(),  sizeof(float)*16 );    
+    const quad4& prev_isect = isects[0] ; 
+
+    LOG(info) << " prev_isect.q1.f.x " << prev_isect.q1.f.x ;  
+    
+    quad4 isect ;
+    bool valid_intersect = q->intersect_again(isect, prev_isect );  
+    
+    LOG(info) 
+        << " valid_intersect " << valid_intersect 
+        ;
+}
 

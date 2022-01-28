@@ -54,11 +54,6 @@ SCenterExtentGenstep::SCenterExtentGenstep()
 
 void SCenterExtentGenstep::init()
 {
-    const char* topline = SSys::getenvvar("TOPLINE", "SCenterExtentGenstep.topline") ; 
-    const char* botline = SSys::getenvvar("BOTLINE", "SCenterExtentGenstep.botline" ) ; 
-    set_meta<std::string>("TOPLINE", topline );
-    set_meta<std::string>("BOTLINE", botline );
-
     peta->zero(); 
 
     LOG(info) << "[ gridscale " << gridscale  ;
@@ -80,7 +75,6 @@ void SCenterExtentGenstep::init()
     int iz0 = cegs[4] ;
     int iz1 = cegs[5] ;
     int photons_per_genstep = cegs[6] ;
-    int zero = 0 ;
 
     nx = (ix1 - ix0)/2 ;
     ny = (iy1 - iy0)/2 ;
@@ -103,7 +97,7 @@ void SCenterExtentGenstep::init()
     peta->q1.i.x = iz0 ;
     peta->q1.i.y = iz1 ;
     peta->q1.i.z = photons_per_genstep ;
-    peta->q1.i.w = zero ;
+    peta->q1.f.w = gridscale ;
 
     SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" );
 
@@ -117,6 +111,7 @@ void SCenterExtentGenstep::init()
         ce.w = float(override_ce[3]);
         LOG(info) << "override ce with CXS_OVERRIDE_CE (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;
     }
+    LOG(info) << "ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;
 
     peta->q2.f.x = ce.x ;   // moved from q1
     peta->q2.f.y = ce.y ;
@@ -127,6 +122,11 @@ void SCenterExtentGenstep::init()
     bool ce_scale = true ;
 
     gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
+
+    const char* topline = SSys::getenvvar("TOPLINE", "SCenterExtentGenstep.topline") ; 
+    const char* botline = SSys::getenvvar("BOTLINE", "SCenterExtentGenstep.botline" ) ; 
+    set_meta<std::string>("TOPLINE", topline );
+    set_meta<std::string>("BOTLINE", botline );
 
     SEvent::GenerateCenterExtentGenstepsPhotons( pp, gs );
 

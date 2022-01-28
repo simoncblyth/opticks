@@ -32,6 +32,7 @@ struct CSG_API CSGGeometry
 
     void saveSignedDistanceField() const ; 
     void saveCenterExtentGenstepIntersect() const ; 
+    void intersectAgain( const char* path ); 
 
 };
 

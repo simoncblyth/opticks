@@ -45,7 +45,8 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-geom=AltXJfixtureConstruction
+#geom=AltXJfixtureConstruction
+geom=AnnulusBoxUnion
 #geom=ZSphere
 #geom=Plane
 #geom=Slab                  ## not getting what expected 

@@ -5,6 +5,8 @@
 #include "sqat4.h"
 #include "stran.h"
 #include "ssincos.h"
+#include "sc4u.h"
+
 
 #include "NP.hh"
 #include "PLOG.hh"
@@ -253,6 +255,8 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     // extent is already handled within the transform so must not apply extent scaling 
 
 
+    C4U gsid ;   // sc4u.h 
+
     for(int ix=ix0 ; ix < ix1+1 ; ix++ )
     for(int iy=iy0 ; iy < iy1+1 ; iy++ )
     for(int iz=iz0 ; iz < iz1+1 ; iz++ )
@@ -272,7 +276,14 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
 
         qat4* qc = Tran<double>::ConvertFrom( transform->t ) ;
 
-        qc->write(gs);                    // copy qc into gs.q2,q3,q4,q5
+        gsid.c4.x = ix ; 
+        gsid.c4.y = iy ; 
+        gsid.c4.z = iz ; 
+        gsid.c4.w = 0 ; 
+
+        gs.q1.u.w = gsid.u ; // CAUTION: stomping on coordinate 1.0 TODO: make sure thats not used otherwise, id using qat4 for transforming it should not be 
+
+        qc->write(gs);  // copy qc into gs.q2,q3,q4,q5
 
         gensteps.push_back(gs);
     }
@@ -433,6 +444,16 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
         
         for(unsigned j=0 ; j < num_photons ; j++)
         {   
+            C4U gsid ; 
+            gsid.u = gs.q1.u.w ;
+
+            unsigned char ucj = (j < 255 ? j : 255 ) ;
+            gsid.c4.w = ucj ;  
+
+            //std::cout << " ucj " << int(ucj) << std::endl ; 
+
+            p.q3.u.w = gsid.u ; 
+
             u0 = rng();
             //u0 = double(j)/double(num_photons-1) ;
 
@@ -456,6 +477,7 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
  
             qt.right_multiply_inplace( p.q0.f, 1.f );  // position 
             qt.right_multiply_inplace( p.q1.f, 0.f );  // direction
+
             
             pp.push_back(p) ;
         }
