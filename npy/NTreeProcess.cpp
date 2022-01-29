@@ -159,8 +159,18 @@ void NTreeProcess<T>::init()
 #endif
 
     positiver = new NTreePositive<T>(root) ;  // inplace changes operator types and sets complements on primitives
-    if(balancer->height0 > MaxHeight0 )
+
+    bool want_to_balance = balancer->height0 > MaxHeight0 ;
+    LOG(LEVEL) 
+         << " want_to_balance " << ( want_to_balance ? "YES" : "NO" )
+         << " y when height0 exceeds MaxHeight0 "
+         << " balancer.height0 " << balancer->height0 
+         << " MaxHeight0 " << MaxHeight0
+         ; 
+
+    if(want_to_balance)
     {
+
         //formerly the positiver ctor was done here, restricting its goodness to trees that need to be balanced
         balanced = balancer->create_balanced() ;  
         result = balanced ; 

@@ -15,6 +15,7 @@ struct CSG_API CSGDraw
     unsigned   width ; 
     unsigned   height ; 
     SCanvas*   canvas ; 
+    bool       dump ; 
 
 };
  

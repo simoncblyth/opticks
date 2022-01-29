@@ -24,8 +24,11 @@ EOU
 #geom=AnnulusBoxUnion_XY
 #geom=AnnulusTwoBoxUnion_XY
 #geom=AnnulusOtherTwoBoxUnion_XY
+
 #geom=AnnulusFourBoxUnion_XY
-geom=AnnulusFourBoxUnion_YX
+#geom=AnnulusFourBoxUnion_YX
+geom=CylinderFourBoxUnion_YX
+#geom=AnnulusCrossTwoBoxUnion_YX
 
 #geom=XJfixtureConstruction_YZ
 #geom=XJfixtureConstruction_XZ
@@ -35,6 +38,7 @@ geom=AnnulusFourBoxUnion_YX
 export GEOM=${GEOM:-$geom}
 
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
+
 
 
 if [ "$(uname)" == "Darwin" ] ; then
@@ -49,22 +53,45 @@ dz=0
 num_pho=100
 
 case $gcn in 
-  AnnulusFourBoxUnion) gridscale=0.1  ;; 
-                    *) gridscale=0.15 ;;
+   AnnulusFourBoxUnion) gridscale=0.1  ;; 
+   AnnulusCrossTwoBoxUnion) gridscale=0.1  ;; 
+  CylinderFourBoxUnion) gridscale=0.1  ;; 
+                     *) gridscale=0.15 ;;
 esac
+
+
+echo $msg GEOM $GEOM gcn $gcn gridscale $gridscale 
 
 
 _AnnulusFourBoxUnion_YX(){
-   note="couple of spurious intersects with IXIYIZ=5,0,0 and 0,6,0  " 
-   ixiyiz=0,6,0
 
+   echo $msg $FUNCNAME GEOM $GEOM
+   ixiyiz=0,6,0
+   #export IXIYIZ=${IXIYIZ:-$ixiyiz}
+   #export IW=23   # pick a single photon : hmm maybe shold get that from the AGAIN name ?
    #export AGAIN=/tmp/s_isect.npy 
 }
 
+_Default(){
+   echo $msg $FUNCNAME GEOM $GEOM
+}
+
+
 case $GEOM in 
-   AnnulusFourBoxUnion_YX) _AnnulusFourBoxUnion_YX ;;
-                        *) note="" ;;
+       AnnulusFourBoxUnion_YX) note="see spurious with IXIYIZ=5,0,0 and 0,6,0 " ;;
+   AnnulusCrossTwoBoxUnion_YX) note="no spurious despite same apparent geom on ray path" ;;
+      CylinderFourBoxUnion_YX) note="see spurious" ;;
+                            *) note="" ;;
 esac
+
+case $GEOM in 
+       AnnulusFourBoxUnion_YX) _AnnulusFourBoxUnion_YX ;;
+   AnnulusCrossTwoBoxUnion_YX) _AnnulusFourBoxUnion_YX ;;
+      CylinderFourBoxUnion_YX) _AnnulusFourBoxUnion_YX ;;
+                            *) _Default ;;
+esac
+
+echo $msg ixiyiz $ixiyiz
 
 case $GEOM in  
    *_XZ) cegs=16:0:9:$dx:$dy:$dz:$num_pho  ;;  
@@ -81,7 +108,6 @@ export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CEGS=${CEGS:-$cegs}
 export CFBASE=${CFBASE:-$cfbase}
 export CEGS=${CEGS:-$cegs}
-export IXIYIZ=${IXIYIZ:-$ixiyiz}
 
 
 export TOPLINE="GEOM=$GEOM ./csg_geochain.sh "
@@ -177,7 +203,7 @@ elif [ "${arg/dbg}" != "$arg" ]; then
 
 fi
 
-[ -n "$AGAIN" ] && echo $msg early exit as AGAIN $AGAIN is defined && exit 0 
+#[ -n "$AGAIN" ] && echo $msg early exit as AGAIN $AGAIN is defined && exit 0 
 
 
 if [ "${arg/ana}" != "$arg" ]; then

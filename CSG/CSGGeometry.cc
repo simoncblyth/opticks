@@ -104,16 +104,12 @@ void CSGGeometry::saveCenterExtentGenstepIntersect() const
 void CSGGeometry::intersectAgain( const char* path )
 {
     if( path == nullptr ) path = "/tmp/s_isect.npy" ; 
-    LOG(info) << " loading from " << path ; 
     NP* a = NP::Load(path); 
-    if( a == nullptr ) 
-    {
-        LOG(fatal) << " no path " << path ; 
-        return ; 
-    }
-    LOG(info) << " isect a " << a->sstr() ; 
-
+    if( a == nullptr ) LOG(fatal) << " FAILED to load from path " << path ; 
+    assert( a ); 
+    LOG(info) << " loading isect from " << path << " s.sstr " << a->sstr() ; 
     assert( a->shape.size() == 3 && a->shape[1] == 4 && a->shape[2] == 4 ); 
+
 
     std::vector<quad4> isects(a->shape[0]) ; 
     memcpy( isects.data(), a->bytes(),  sizeof(float)*16 );    
@@ -123,10 +119,9 @@ void CSGGeometry::intersectAgain( const char* path )
     
     quad4 isect ;
     bool valid_intersect = q->intersect_again(isect, prev_isect );  
-    
-    LOG(info) 
-        << " valid_intersect " << valid_intersect 
-        ;
+    LOG(info) << " valid_intersect " << valid_intersect ; 
+
+    draw("CSGGeometry::intersectAgain"); 
 }
 
 void CSGGeometry::dump(const char* msg) const 

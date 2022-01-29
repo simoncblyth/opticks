@@ -36,6 +36,7 @@ list(APPEND SOURCES
     CSGQuery.cc
     CSGGeometry.cc
     CSGDraw.cc
+    CSGRecord.cc
 
     CSG_LOG.cc
 )
@@ -61,6 +62,7 @@ list(APPEND CSG_HEADERS
     CSGQuery.h
     CSGGeometry.h
     CSGDraw.h
+    CSGRecord.h
 
     CSGEnum.h
 
@@ -100,6 +102,11 @@ message(STATUS "CMAKE_BINARY_DIR         : ${CMAKE_BINARY_DIR}")
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
+
+# these DEBUG are exceedingly verbose : only use for single photons and do not leave like this 
+#target_compile_definitions( ${name} PUBLIC DEBUG )
+#target_compile_definitions( ${name} PUBLIC DEBUG_RECORD )
+
 
 target_include_directories(${name}
      PUBLIC

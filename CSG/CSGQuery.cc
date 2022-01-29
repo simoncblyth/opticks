@@ -1,10 +1,15 @@
 #include "PLOG.hh"
-#include "SCanvas.hh"
+#include "SPath.hh"
 #include "sc4u.h"
 
 #include "CSGFoundry.h"
 #include "CSGQuery.h"
 #include "CSGGrid.h"
+
+#ifdef DEBUG_RECORD
+#include "CSGRecord.h"
+#endif
+
 
 #include "OpticksCSG.h"
 #include "csg_intersect_node.h"
@@ -225,6 +230,14 @@ bool CSGQuery::intersect_again( quad4& isect, const quad4& prev_isect ) const
         << Desc(prev_isect, "prev_isect" ) 
         << Desc(isect,      "isect" ) 
         ;
+
+#ifdef DEBUG_RECORD
+     CSGRecord::Dump("CSGQuery::intersect_again"); 
+
+     int create_dirs = 2 ; // 2:dirpath 
+     const char* dir = SPath::Resolve("$TMP/CSGQuery/intersect_again", create_dirs ); 
+     CSGRecord::Save(dir); 
+#endif
 
     return valid_intersect ; 
 }

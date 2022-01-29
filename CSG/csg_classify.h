@@ -18,7 +18,7 @@ typedef enum {
 
 
 
-#ifdef DEBUG
+#if defined(DEBUG)  || defined(DEBUG_RECORD)
 static const char* CTRL_RETURN_MISS_   = "RETURN_MISS" ; 
 static const char* CTRL_RETURN_A_      = "RETURN_A" ; 
 static const char* CTRL_RETURN_B_      = "RETURN_B" ; 
@@ -54,7 +54,7 @@ typedef enum {
 #define CSG_CLASSIFY( ise, dir, tmin )   (fabsf((ise).w) > (tmin) ?  ( (ise).x*(dir).x + (ise).y*(dir).y + (ise).z*(dir).z < 0.f ? State_Enter : State_Exit ) : State_Miss )
 
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(DEBUG_RECORD) 
 static const char* State_Enter_  = "Enter" ; 
 static const char* State_Exit_   = "Exit" ; 
 static const char* State_Miss_   = "Miss" ; 
@@ -89,7 +89,7 @@ struct LUT
     unsigned packed_boolean_lut_BCloser[4] = { 0x22115122, 0x00022055, 0x00133155, 0x00000000 } ;
 
     LUT_METHOD
-    int lookup( OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB, bool ACloser )
+    int lookup( OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB, bool ACloser ) const 
     {
         const unsigned* lut = ACloser ? packed_boolean_lut_ACloser : packed_boolean_lut_BCloser ;  
         unsigned offset = 3*(unsigned)stateA + (unsigned)stateB ; 

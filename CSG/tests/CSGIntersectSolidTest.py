@@ -18,7 +18,16 @@ from opticks.ana.gridspec import GridSpec, X, Y, Z
 from opticks.ana.npmeta import NPMeta
 
 efloatlist_ = lambda ekey,fallback:list(map(float, filter(None, os.environ.get(ekey,fallback).split(","))))
-eintlist_ = lambda ekey,fallback:list(map(int, filter(None, os.environ.get(ekey,fallback).split(","))))
+
+def eintlist_(ekey, fallback):
+    slis = os.environ.get(ekey,fallback)
+    if len(slis) == 0: 
+        #slis = fallback
+        return None
+    slis = slis.split(",")
+    return list(map(int, filter(None, slis)))
+
+
 eint_ = lambda ekey, fallback:int(os.environ.get(ekey,fallback))
 
 
@@ -79,6 +88,43 @@ class Plotter(pv.Plotter):
 
 
 
+def lines_rectangle_YX(center, halfside):
+    """
+
+          1                0
+           +------+------+
+           |      |      |
+           |      |      |
+           |- - - + - - -| 
+           |      |      |
+           |      |      |
+           +------+------+
+         2                3
+
+
+         X
+         |
+         +-- Y
+
+    """
+    p0 = np.array( [center[0]+halfside[0], center[1]+halfside[1], center[2] ])
+    p1 = np.array( [center[0]+halfside[0], center[1]-halfside[1], center[2] ])
+    p2 = np.array( [center[0]-halfside[0], center[1]-halfside[1], center[2] ])
+    p3 = np.array( [center[0]-halfside[0], center[1]+halfside[1], center[2] ])
+
+    ll = np.zeros( (4,2,3),  dtype=np.float32 )
+
+    ll[0] = p0, p1
+    ll[1] = p1, p2
+    ll[2] = p2, p3
+    ll[3] = p3, p0
+
+    return ll.reshape(-1,3)
+    
+    
+ 
+
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -98,16 +144,23 @@ if __name__ == '__main__':
     isect_gsid = fold.isect[:,3,3].copy().view(np.int8).reshape(-1,4)    # genstep (ix,iy,iz,0) from which each intersect originated from     
 
     sd_cut = -1e-3
+    select_spurious = sd < sd_cut 
+    select_all = t > -999.
 
-    ix,iy,iz = eintlist_("IXIYIZ", "0,0,0")
+    ixiyiz = eintlist_("IXIYIZ", "0,0,0")
     iw = eint_("IW","-1")
 
-    select_spurious = sd < sd_cut 
-    select_isect_gsid = np.logical_and( np.logical_and( isect_gsid[:,0] == ix , isect_gsid[:,1] == iy ), isect_gsid[:,2] == iz )
+    if not ixiyiz is None:
+        ix,iy,iz = ixiyiz
+        select_isect_gsid = np.logical_and( np.logical_and( isect_gsid[:,0] == ix , isect_gsid[:,1] == iy ), isect_gsid[:,2] == iz )
+    else:
+        select_isect_gsid = None
+    pass  
 
-    #select = select_spurious 
+    select = select_spurious 
     #select = select_isect_gsid
-    select = np.logical_and( select_isect_gsid, select_spurious )
+    #select = select_all
+    #select = np.logical_and( select_isect_gsid, select_spurious )
 
     if iw > -1:
         # selecting a single intersect as well as single genstep  
@@ -130,12 +183,23 @@ if __name__ == '__main__':
 
     log.info( "sd_cut %10.4g sd.min %10.4g sd.max %10.4g num select %d " % (sd_cut, sd.min(), sd.max(), len(s_pos)))
 
-    if len(s_isect) == 1:
+
+    again = 'AGAIN' in os.environ
+
+    # save the isect only when have selected a single photon 
+    if not again and len(s_isect) == 1:
         s_isect_path = "/tmp/s_isect.npy"
         log.info("save to %s " % s_isect_path )
         np.save(s_isect_path, s_isect )
     pass
 
+    # load detailed records created when using DEBUG_RECORD 
+    if again:
+        isect_again = Fold.Load("/tmp/$USER/opticks/CSGQuery/intersect_again")  
+        recs = isect_again.CSGRecord
+    else:
+        recs = []
+    pass   
 
     look = np.array([0,0,0], dtype=np.float32) 
     eye  = np.array([0,0,-100], dtype=np.float32)
@@ -147,6 +211,12 @@ if __name__ == '__main__':
     pl.add_points( gspos, color="yellow" )
     pl.add_points( pos, color="white" )
     #pl.add_arrows( pos, dir_, color="white", mag=10 )
+
+    if len(recs) > 0:
+        for rec in recs: 
+            pl.add_arrows( rec[2,:3], rec[0,:3], color="pink", mag=10 )
+        pass
+    pass   
 
     if len(s_pos) > 0:
         pl.add_points( s_pos, color="red" )
@@ -175,6 +245,12 @@ if __name__ == '__main__':
     radius = 45. 
     arc = pv.CircularArc([0,  radius, 0], [0, radius, 0], [0, 0, 0], negative=True)
     pl.add_mesh(arc, color='cyan', line_width=1)
+
+    llpx = lines_rectangle_YX([52., 0.,0.],[10.,11.5, 6.5]) 
+    llpy = lines_rectangle_YX([0., 50.,0.],[15.,15.,  6.5])
+
+    pl.add_lines(llpx, color='cyan', width=1 )
+    pl.add_lines(llpy, color='cyan', width=1 )
 
     cp = pl.show()
 

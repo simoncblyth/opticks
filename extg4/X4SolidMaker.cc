@@ -51,7 +51,9 @@ PolyconeWithMultipleRmin
 AnnulusBoxUnion
 AnnulusTwoBoxUnion
 AnnulusOtherTwoBoxUnion
+AnnulusCrossTwoBoxUnion
 AnnulusFourBoxUnion
+CylinderFourBoxUnion
 )LITERAL"; 
 
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
@@ -75,7 +77,9 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("AnnulusBoxUnion", qname))             solid = X4SolidMaker::AnnulusBoxUnion(qname) ; 
     else if(StartsWith("AnnulusTwoBoxUnion", qname))          solid = X4SolidMaker::AnnulusTwoBoxUnion(qname) ; 
     else if(StartsWith("AnnulusOtherTwoBoxUnion", qname))     solid = X4SolidMaker::AnnulusOtherTwoBoxUnion(qname) ; 
+    else if(StartsWith("AnnulusCrossTwoBoxUnion", qname))     solid = X4SolidMaker::AnnulusCrossTwoBoxUnion(qname) ; 
     else if(StartsWith("AnnulusFourBoxUnion", qname))         solid = X4SolidMaker::AnnulusFourBoxUnion(qname) ; 
+    else if(StartsWith("CylinderFourBoxUnion", qname))        solid = X4SolidMaker::CylinderFourBoxUnion(qname) ; 
     assert(solid); 
     return solid ; 
 }
@@ -486,8 +490,8 @@ const G4VSolid* X4SolidMaker::AnnulusTwoBoxUnion(const char* name)
    // do not see spurious intersects with this
     G4VSolid* down1  = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
     G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
-    G4VSolid* uni13 = new G4UnionSolid(  "uni13", down1, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));
-    G4VSolid* uni133 = new G4UnionSolid("uni133", uni13, down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm));
+    G4VSolid* uni13 = new G4UnionSolid(  "uni13", down1, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
+    G4VSolid* uni133 = new G4UnionSolid("uni133", uni13, down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
     return uni133 ; 
 }
 
@@ -495,10 +499,25 @@ const G4VSolid* X4SolidMaker::AnnulusOtherTwoBoxUnion(const char* name)
 {
     G4VSolid* down1 = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
     G4VSolid* down2 = new G4Box("down2", 10.*mm, 11.5*mm, 13/2.*mm);
-    G4VSolid* down_uni1 = new G4UnionSolid("down_uni1", down1    , down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));
-    G4VSolid* down_uni2 = new G4UnionSolid("down_uni2", down_uni1, down2, 0, G4ThreeVector(-52.*mm, 0.*mm, 0.*mm));
+    G4VSolid* down_uni1 = new G4UnionSolid("down_uni1", down1    , down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));  // +X
+    G4VSolid* down_uni2 = new G4UnionSolid("down_uni2", down_uni1, down2, 0, G4ThreeVector(-52.*mm, 0.*mm, 0.*mm)); // -X 
     return down_uni2 ; 
 }
+
+
+const G4VSolid* X4SolidMaker::AnnulusCrossTwoBoxUnion(const char* name)
+{
+    G4VSolid* down1 = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    G4VSolid* down2 = new G4Box("down2", 10.*mm, 11.5*mm, 13/2.*mm);
+    G4VSolid* down_uni1 = new G4UnionSolid("down_uni1", down1    , down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));  // +X
+
+    G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
+    G4VSolid* down_uni3 = new G4UnionSolid("down_uni3", down_uni1, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
+ 
+    return down_uni3 ; 
+}
+
+
 
 /**
 Not yet managed to see the spurious intersects with a render::
@@ -506,23 +525,22 @@ Not yet managed to see the spurious intersects with a render::
     EYE=0,0,2 UP=0,1,0 CAM=1 TMIN=2 ./cxr_geochain.sh 
 
 **/
-const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion(const char* name)
+
+const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion_(const char* name, G4double inner_radius )
 {
     // spurious intersects appear in XY cross section but not YZ 
-    G4VSolid* down1 = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    G4VSolid* down1 = new G4Tubs("down1", inner_radius, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
     G4VSolid* down2 = new G4Box("down2", 10.*mm, 11.5*mm, 13/2.*mm);
-    G4VSolid* down_uni1 = new G4UnionSolid("down_uni1", down1    , down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));
-    G4VSolid* down_uni2 = new G4UnionSolid("down_uni2", down_uni1, down2, 0, G4ThreeVector(-52.*mm, 0.*mm, 0.*mm));
+    G4VSolid* down_uni1 = new G4UnionSolid("down_uni1", down1    , down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));  // +X
+    G4VSolid* down_uni2 = new G4UnionSolid("down_uni2", down_uni1, down2, 0, G4ThreeVector(-52.*mm, 0.*mm, 0.*mm)); // -X
     G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
-    G4VSolid* down_uni3 = new G4UnionSolid("down_uni3", down_uni2, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));
-    G4VSolid* down_uni4 = new G4UnionSolid("down_uni4", down_uni3, down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm));
+    G4VSolid* down_uni3 = new G4UnionSolid("down_uni3", down_uni2, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
+    G4VSolid* down_uni4 = new G4UnionSolid("down_uni4", down_uni3, down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
     return down_uni4 ; 
 }
 
-
-
-
-
+const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion(const char* name){  return AnnulusFourBoxUnion_(name, 25.*mm );  }
+const G4VSolid* X4SolidMaker::CylinderFourBoxUnion(const char* name){ return AnnulusFourBoxUnion_(name,  0.*mm );  }
 
 
 

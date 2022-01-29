@@ -64,7 +64,9 @@ EOU
 #geom=AnnulusBoxUnion 
 #geom=AnnulusTwoBoxUnion 
 #geom=AnnulusOtherTwoBoxUnion 
-geom=AnnulusFourBoxUnion 
+geom=AnnulusCrossTwoBoxUnion 
+#geom=AnnulusFourBoxUnion 
+#geom=CylinderFourBoxUnion 
 
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin
@@ -142,10 +144,10 @@ fi
 #export CSGSolid=INFO
 #export CSG_GGeo_Convert=INFO
 
-#export NTreeProcess=INFO
-#export NNodeNudger=INFO
-#export NTreeBalance=INFO
-#export NTreeBuilder=INFO
+export NTreeProcess=INFO   ## balance decision happens here 
+export NNodeNudger=INFO
+export NTreeBalance=INFO
+export NTreeBuilder=INFO
 
 export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
 
