@@ -35,6 +35,7 @@ list(APPEND SOURCES
     CSGGrid.cc
     CSGQuery.cc
     CSGGeometry.cc
+    CSGDraw.cc
 
     CSG_LOG.cc
 )
@@ -59,6 +60,8 @@ list(APPEND CSG_HEADERS
     CSGGrid.h
     CSGQuery.h
     CSGGeometry.h
+    CSGDraw.h
+
     CSGEnum.h
 
     CSG_LOG.hh 

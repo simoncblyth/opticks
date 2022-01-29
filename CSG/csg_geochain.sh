@@ -58,7 +58,7 @@ _AnnulusFourBoxUnion_YX(){
    note="couple of spurious intersects with IXIYIZ=5,0,0 and 0,6,0  " 
    ixiyiz=0,6,0
 
-   export AGAIN=/tmp/s_isect.npy 
+   #export AGAIN=/tmp/s_isect.npy 
 }
 
 case $GEOM in 
@@ -146,11 +146,21 @@ check_cfbase_file || exit 1
 dumpvars GEOM CEGS GRIDSCALE TOPLINE BOTLINE CFBASE NOTE IXIYIZ 
 
 
+
+
 bin=CSGIntersectSolidTest
 script=tests/CSGIntersectSolidTest.py 
 
 arg=${1:-run_ana}
-if [ "${arg/run}" != "$arg" ]; then
+
+
+
+if [ "${arg/dump}" != "$arg" ]; then 
+   echo $msg CSGGeometryTest dump
+   CSGGeometryTest
+   exit 0 
+
+elif [ "${arg/run}" != "$arg" ]; then
 
     echo $msg running binary $bin
     $bin

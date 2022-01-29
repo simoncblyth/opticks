@@ -8,6 +8,7 @@
 #include "NP.hh"
 
 #include "CSGQuery.h"
+#include "CSGDraw.h"
 #include "CSGFoundry.h"
 #include "CSGGeometry.h"
 #include "CSGGrid.h"
@@ -19,7 +20,8 @@ CSGGeometry::CSGGeometry()
     cfbase(SSys::getenvvar("CFBASE")), 
     name(nullptr),
     fd(nullptr),
-    q(nullptr)
+    q(nullptr),
+    d(nullptr)
 {
     LOG(info) << " GEOM " << geom  ; 
     init(); 
@@ -41,6 +43,7 @@ void  CSGGeometry::init()
         return ; 
     }
     q = new CSGQuery(fd); 
+    d = new CSGDraw(q) ; 
 }
 
 void  CSGGeometry::init_geom()
@@ -125,4 +128,15 @@ void CSGGeometry::intersectAgain( const char* path )
         << " valid_intersect " << valid_intersect 
         ;
 }
+
+void CSGGeometry::dump(const char* msg) const 
+{
+    q->dump(msg); 
+}
+void CSGGeometry::draw(const char* msg) 
+{
+    d->draw(msg); 
+}
+
+
 

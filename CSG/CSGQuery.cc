@@ -1,4 +1,5 @@
 #include "PLOG.hh"
+#include "SCanvas.hh"
 #include "sc4u.h"
 
 #include "CSGFoundry.h"
@@ -9,7 +10,6 @@
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
 
-
 CSGQuery::CSGQuery( const CSGFoundry* fd_ ) 
     :
     fd(fd_),
@@ -18,6 +18,7 @@ CSGQuery::CSGQuery( const CSGFoundry* fd_ )
     plan0(fd->getPlan(0)),
     itra0(fd->getItra(0)),
     select_prim(nullptr),
+    select_nodeOffset(0),
     select_numNode(0),
     select_root(nullptr)
 {
@@ -40,28 +41,39 @@ void CSGQuery::selectPrim(unsigned solidIdx, unsigned primIdxRel )
 void CSGQuery::selectPrim( const CSGPrim* pr )
 {
     select_prim = pr ; 
+    select_nodeOffset = pr->nodeOffset() ; 
     select_numNode = pr->numNode() ; 
     select_root = node0 + pr->nodeOffset() ; 
 
     LOG(info) 
          << " select_prim " << select_prim
+         << " select_nodeOffset " << select_nodeOffset
          << " select_numNode " << select_numNode
          << " select_root " << select_root 
          ;   
 }
 
-void CSGQuery::dumpPrim() const 
+unsigned CSGQuery::getSelectedTreeHeight() const 
 {
-    const CSGPrim* pr = select_prim ;
-    if( pr == nullptr ) return ;
-
-    int numNode = select_numNode ;
-    for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset()+numNode ; nodeIdx++)
-    {
-        const CSGNode* nd = node0 + nodeIdx ;
-        LOG(info) << "    nodeIdx " << std::setw(5) << nodeIdx << " : " << nd->desc() ;
-    }
+    return TREE_HEIGHT(select_numNode) ; 
 }
+
+
+/**
+CSGQuery::getSelectedNode
+---------------------------
+
+nodeIdxRel
+   1-based tree index, root=1 
+
+**/
+
+const CSGNode* CSGQuery::getSelectedNode( int nodeIdxRel ) const 
+{
+    const CSGNode* nd = nodeIdxRel - 1 < select_numNode ? select_root + nodeIdxRel - 1 : nullptr  ;
+    return nd ; 
+}
+
 
 float CSGQuery::operator()(const float3& position ) const
 {
@@ -232,4 +244,32 @@ CSGGrid* CSGQuery::scanPrim(int resolution) const
     grid->scan(*this) ;
     return grid ;
 }
+
+
+
+void CSGQuery::dumpPrim() const 
+{
+    if( select_numNode == 0 ) return ;
+
+    LOG(info) 
+          << " select_numNode " << select_numNode
+          << " select_nodeOffset " << select_nodeOffset
+          ; 
+
+    for(int nodeIdx=select_nodeOffset ; nodeIdx < select_nodeOffset+select_numNode ; nodeIdx++)
+    {
+        const CSGNode* nd = node0 + nodeIdx ;
+        LOG(info) << "    nodeIdx " << std::setw(5) << nodeIdx << " : " << nd->desc() ;
+    }
+
+}
+
+void CSGQuery::dump(const char* msg) const
+{
+    LOG(info) << msg ; 
+    dumpPrim(); 
+}
+
+
+
 

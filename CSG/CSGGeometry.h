@@ -10,6 +10,7 @@ avoids repetition of geometry setup, loading and querying mechanics.
 
 struct CSGFoundry ; 
 struct CSGQuery ; 
+struct CSGDraw ; 
 
 #include "CSG_API_EXPORT.hh"
 
@@ -21,7 +22,8 @@ struct CSG_API CSGGeometry
     const char* name ; 
 
     const CSGFoundry* fd ; 
-    const CSGQuery*   q ; 
+    const CSGQuery*   q ;  
+    CSGDraw*    d ;    // cannot be const because of canvas
 
     CSGGeometry(); 
 
@@ -33,6 +35,8 @@ struct CSG_API CSGGeometry
     void saveSignedDistanceField() const ; 
     void saveCenterExtentGenstepIntersect() const ; 
     void intersectAgain( const char* path ); 
+    void dump(const char* msg="CSGGeometry::dump") const ; 
+    void draw(const char* msg="CSGGeometry::draw") ; 
 
 };
 

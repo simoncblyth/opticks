@@ -9,6 +9,7 @@ struct float3 ;
 struct quad4 ; 
 struct qat4 ; 
 struct CSGGrid ; 
+struct SCanvas ; 
 
 #include "CSG_API_EXPORT.hh"
 
@@ -17,12 +18,17 @@ struct CSG_API CSGQuery
     static const float SD_CUT ; 
     static std::string Desc( const quad4& isect, const char* label  ); 
 
-
     CSGQuery(const CSGFoundry* fd); 
 
     void     init(); 
     void     selectPrim(unsigned solidIdx, unsigned primIdxRel );
     void     selectPrim(const CSGPrim* pr );
+
+    unsigned getSelectedTreeHeight() const ; 
+    const CSGNode* getSelectedNode( int nodeIdxRel ) const ; 
+
+    void     dump(const char* msg) const ;
+
 
     void     dumpPrim() const ;
     CSGGrid* scanPrim(int resolution) const ;
@@ -39,8 +45,12 @@ struct CSG_API CSGQuery
     const qat4*    itra0 ; 
 
     const CSGPrim* select_prim ;
+    int            select_nodeOffset ; 
     int            select_numNode ;
     const CSGNode* select_root ;
+
+
+
  
 
 };

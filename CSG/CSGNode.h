@@ -193,6 +193,8 @@ struct CSG_API CSGNode
 
     static std::string Desc(const float* fval, int numval=6, int wid=7, int prec=1 ); 
     std::string desc() const ; 
+    std::string tag() const ; 
+    std::string brief() const ; 
     static void Dump(const CSGNode* n, unsigned ni, const char* label);  
 
     bool is_operator() const ; 

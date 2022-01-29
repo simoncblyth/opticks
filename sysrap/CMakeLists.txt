@@ -174,6 +174,7 @@ set(HEADERS
     SCenterExtentFrame.hh
     SCenterExtentGenstep.hh 
     SPresent.hh
+    SCanvas.hh
 
     OpticksGenstep.h
 )

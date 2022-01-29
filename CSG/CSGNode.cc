@@ -55,8 +55,7 @@ std::string CSGNode::desc() const
         << "CSGNode "
         << std::setw(5) << index() 
         << " " 
-        << ( is_complement() ? "!" : " " )
-        << CSG::Tag((OpticksCSG_t)typecode())
+        << brief()
         << " aabb: " << Desc( aabb, 6, 7, 1 ) 
         << " trIdx: " << std::setw(5) << trIdx 
         ;    
@@ -64,6 +63,24 @@ std::string CSGNode::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+std::string CSGNode::tag() const
+{
+    return CSG::Tag((OpticksCSG_t)typecode()) ; 
+}
+
+std::string CSGNode::brief() const
+{
+    std::stringstream ss ; 
+    ss
+        << ( is_complement() ? "!" : " " )
+        << tag()
+        ;
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 void CSGNode::Dump(const CSGNode* n_, unsigned ni, const char* label)
 {

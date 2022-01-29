@@ -27,6 +27,8 @@ set(TEST_SOURCES
     CSGNodeScanTest.cc
     CSGSignedDistanceFieldTest.cc
     distance_node_test.cc
+
+    CSGGeometryTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})
