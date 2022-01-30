@@ -16,9 +16,12 @@ struct CSGDraw ;
 
 struct CSG_API CSGGeometry 
 {
+    static const char* OutDir(const char* cfbase, const char* geom);  
+
     const char* default_geom ; 
     const char* geom ; 
     const char* cfbase ; 
+    const char* outdir ; 
     const char* name ; 
 
     const CSGFoundry* fd ; 
@@ -33,8 +36,11 @@ struct CSG_API CSGGeometry
 
 
     void saveSignedDistanceField() const ; 
+
+    void centerExtentGenstepIntersect() ;
     void saveCenterExtentGenstepIntersect() const ; 
-    void intersectAgain( const char* path ); 
+    void intersectSelected(const char* path); 
+
     void dump(const char* msg="CSGGeometry::dump") const ; 
     void draw(const char* msg="CSGGeometry::draw") ; 
 

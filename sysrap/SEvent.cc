@@ -449,10 +449,7 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
 
             unsigned char ucj = (j < 255 ? j : 255 ) ;
             gsid.c4.w = ucj ;  
-
-            //std::cout << " ucj " << int(ucj) << std::endl ; 
-
-            p.q3.u.w = gsid.u ; 
+            p.q3.u.w = gsid.u ;   // record genstep IXIYIZ and photon index IW into photon (3,3)
 
             u0 = rng();
             //u0 = double(j)/double(num_photons-1) ;

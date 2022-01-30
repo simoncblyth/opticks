@@ -24,9 +24,7 @@ once developments are nearly finalized.
 | _pdyn  | JUNO_PMT20INCH_PLUS_DYNODE=ENABLED             | adds dynode volumes inside inner2_log so need to look at xxv.sh to see effect     |
 +--------+------------------------------------------------+-----------------------------------------------------------------------------------+
 
-
 CIRCLE=0,0,17820,17820 ./xxs.sh 
-
 
 EOU
 }
@@ -84,7 +82,6 @@ msg="=== $BASH_SOURCE :"
 #geom=pmt_solid_zcut
 #geom=body_solid,inner2_solid   
 
-
 ## *manager* solids yield different shapes depending on the string between prefix and options
 
 #geom=nnvt_body_solid
@@ -104,7 +101,7 @@ msg="=== $BASH_SOURCE :"
 #geom=XJfixtureConstruction_XZ
 #geom=XJfixtureConstruction_XY
 
-geom=XJanchorConstruction_YZ
+#geom=XJanchorConstruction_YZ
 #geom=XJanchorConstruction_XZ
 #geom=XJanchorConstruction_XY
 
@@ -113,8 +110,12 @@ geom=XJanchorConstruction_YZ
 #geom=AnnulusBoxUnion_XY
 #geom=AnnulusFourBoxUnion_XY
 
+geom=BoxFourBoxUnion_YX
+#geom=BoxThreeBoxUnion_YX
 
 export GEOM=${GEOM:-$geom}
+gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
+
 zcut=${GEOM#*zcut}
 [ "$GEOM" != "$zcut" ] && zzd=$zcut 
 echo geom $geom GEOM $GEOM zcut $zcut zzd $zzd
@@ -135,159 +136,61 @@ else
 fi  
 echo $msg other_reldir $other_reldir other_fold $other_fold other_exists $other_exists
 
-if [ "$GEOM" == "Orb" ]; then
+num_pho=10
+dx=0
+dy=0
+dz=0
 
-    dx=0
-    dy=0
-    dz=0
-    numpho=10
-    cegs=16:0:9:$dx:$dy:$dz:$numpho
-    gridscale=0.15
+case $gcn in 
+                    Orb)   gridscale=0.15 ;;
+   SphereWithPhiSegment)   gridscale=0.15 ;;
+   SphereWithThetaSegment) gridscale=0.1  ;;
+   BoxMinusOrb)            gridscale=0.12 ;;
+   XJfixtureConstruction)  gridscale=0.05 ;;
+   XJanchorConstruction)   gridscale=0.05 ;;      
+   AnnulusBoxUnion)        gridscale=0.05 ;;     
+   SJReceiverConstruction) gridscale=0.05 ;;
+   BoxFourBoxUnion)        gridscale=0.07 ;;
+   BoxThreeBoxUnion)       gridscale=0.07 ;;
+                 *)        gridscale=0.10 ;;
+esac
 
-    zz=-100,100
-    xx=-100,100
-
-elif [ "$GEOM" == "SphereWithPhiSegment" ]; then
-
-    export X4SolidMaker_SphereWithPhiSegment_phi_start=1.0    # inputs are multiples of pi 
-    export X4SolidMaker_SphereWithPhiSegment_phi_delta=0.25 
-
-    # NB *debug_return_segment* is not relevant here, its only relevant when converting from Geant4
-    #export X4Solid_intersectWithPhiSegment_debug_return_segment=1 
-
-    numpho=10
-    cegs=16:9:0:0:0:$dz:$numpho    ## XY is the relevant cross-section 
-    gridscale=0.15
-
-elif [ "$GEOM" == "SphereWithThetaSegment" ]; then
-
-    export X4SolidMaker_SphereWithThetaSegment_theta_start=0.25    # inputs are multiples of pi 
-    export X4SolidMaker_SphereWithThetaSegment_theta_delta=0.50
-
-    export THIRDLINE="theta_start $X4SolidMaker_SphereWithThetaSegment_theta_start theta_delta $X4SolidMaker_SphereWithThetaSegment_theta_delta "
-
-    ## theta_start:0    theta_delta:0.25    upwards 90 degree fan centered on +ve Z-axis
-    ## theta_start:0.25 theta_delta:0.25    bow-tie above the z=0 plane
-    ## theta_start:0.5  theta_delta:0.25    bow-tie under the z=0 plane
-    ## theta_start:0.75 theta_delta:0.25    downwards 90 degree fan centered on -ve Z-axis
-    ## theta_start:1    theta_delta:0.25    some kinda mess : just a radial line 
-
-    numpho=10
-    cegs=10:10:10:0:0:0:$numpho    ## nx:ny:nz:dx:dy:dz:numpho
-    gridscale=0.1
-
-elif [ "$GEOM" == "BoxMinusOrb" ]; then
-
-    export X4SolidMaker_BoxMinusOrb_radius=110.0
-
-    export X4SolidMaker_BoxMinusOrb_sx=100.0
-    export X4SolidMaker_BoxMinusOrb_sy=100.0
-    export X4SolidMaker_BoxMinusOrb_sz=80.0
-
-    export X4SolidMaker_BoxMinusOrb_dx=0.0
-    export X4SolidMaker_BoxMinusOrb_dy=0.0
-    export X4SolidMaker_BoxMinusOrb_dz=50.0
-
-    numpho=100
-    cegs=9:0:16:0:0:0:$numpho
-    gridscale=0.12
-
-elif [ "$GEOM" == "XJfixtureConstruction_YZ" ]; then
-
-    note="blocky head with ears shape"
-    numpho=100
-    cegs=0:16:9:0:0:0:$numpho
-    gridscale=0.05      # shrinking the grid makes the cross section render appear bigger 
-    source XJfixtureConstruction.sh
-
-elif [ "$GEOM" == "XJfixtureConstruction_XZ" ]; then
-
-    note="appears as three separate rectangles with this slice"
-    numpho=100
-    cegs=16:0:9:0:0:0:$numpho
-    gridscale=0.05      
-    source XJfixtureConstruction.sh
-
-elif [ "$GEOM" == "XJfixtureConstruction_XY" ]; then
-
-    note="pretty celtic cross"
-    numpho=100
-    cegs=16:9:0:0:0:0:$numpho
-    gridscale=0.05      
-    source XJfixtureConstruction.sh
-
-
-elif [ "$GEOM" == "XJanchorConstruction_YZ" ]; then
-
-    note="spurious Geant4 intersects on line between cone top and base"
-    numpho=100
-    cegs=0:16:9:0:0:0:$numpho
-    gridscale=0.05      
-
-    source XJanchorConstruction.sh
-
-elif [ "$GEOM" == "XJanchorConstruction_XZ" ]; then
-
-    note="also spurious Geant4 intersects on line between cone top and base, rotational symmetry"
-    numpho=100
-    cegs=16:0:9:0:0:0:$numpho
-    gridscale=0.05      
-
-    source XJanchorConstruction.sh
-
-elif [ "$GEOM" == "XJanchorConstruction_XY" ]; then
-
-    note="circle : z-offset as z-max zero : G4Sphere::DistanceToOut noise"
-    numpho=100
-    cegs=16:9:0:0:0:-1:$numpho
-    gridscale=0.05      
-
-    source XJanchorConstruction.sh
-
-elif [ "$GEOM" == "AnnulusBoxUnion_YZ" ]; then
-
-    numpho=100
-    cegs=0:16:9:0:0:0:$numpho
-    gridscale=0.05      
-
-elif [ "$GEOM" == "AnnulusBoxUnion_XY" ]; then
-
-    numpho=100
-    cegs=16:9:0:0:0:0:$numpho
-    gridscale=0.05      
-
-
-
-elif [ "$GEOM" == "SJReceiverConstruction_XZ" ]; then
-
-    numpho=100
-    cegs=16:0:9:0:0:0:$numpho
-    gridscale=0.05      
-
-else
-    dz=-4
-    numpho=10
-    #cegs=16:0:9:0:0:$dz:$numpho
-    #gridscale=0.15
-    cegs=9:0:16:0:0:$dz:$numpho
-    gridscale=0.10
-
-    #zz=190,-162,-195,-210,-275,-350,-365,-420,-450
-    xx=-254,254
-
-    unset CXS_OVERRIDE_CE
-    export CXS_OVERRIDE_CE=0:0:-130:320   ## fix at the full uncut ce 
-    # -320-130 = -450  320-130 = 190 
-fi 
-
+case $GEOM in 
+   XJfixtureConstruction_YZ) note="blocky head with ears shape" ;;
+   XJfixtureConstruction_XZ) note="appears as three separate rectangles with this slice" ;;
+   XJfixtureConstruction_XY) note="pretty celtic cross" ;;
+   XJanchorConstruction_YZ)  note="spurious Geant4 intersects on line between cone top and base" ;;
+   XJanchorConstruction_XZ)  note="also spurious Geant4 intersects on line between cone top and base, rotational symmetry" ;;
+   XJanchorConstruction_XY)  note="circle : z-offset as z-max zero : G4Sphere::DistanceToOut noise" ; dz=-1 ;;
+esac
 
 case ${GEOM} in
    ten_tubs_union*) zz=0,-70,-140,-210,-280,-350,-420,-490,-560,-630  ;;
 esac
 
+case $gcn in 
+   SphereWithPhiSegment)    source SphereWithPhiSegment.sh ;;
+   SphereWithThetaSegment)  source SphereWithThetaSegment.sh ;;
+   BoxMinusOrb)             source BoxMinusOrb.sh ;;
+   XJfixtureConstruction)   source XJfixtureConstruction.sh ;;
+   XJanchorConstruction)    source XJanchorConstruction.sh ;;   
+esac   
+   
+
+case $GEOM in  
+   *_XZ) cegs=16:0:9:$dx:$dy:$dz:$num_pho  ;;  
+   *_YZ) cegs=0:16:9:$dx:$dy:$dz:$num_pho  ;;  
+   *_XY) cegs=16:9:0:$dx:$dy:$dz:$num_pho  ;;  
+   *_ZX) cegs=9:0:16:$dx:$dy:$dz:$num_pho  ;;  
+   *_ZY) cegs=0:9:16:$dx:$dy:$dz:$num_pho  ;;  
+   *_YX) cegs=9:16:0:$dx:$dy:$dz:$num_pho  ;;  
+   *_XYZ) cegs=9:16:9:$dx:$dy:$dz:$num_pho ;;  
+esac
+
+
 
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
-export CXS_CEGS=${CXS_CEGS:-$cegs}
+export CEGS=${CEGS:-$cegs}
 export CXS_RELDIR=${CXS_RELDIR:-$reldir} 
 export CXS_OTHER_RELDIR=${CXS_OTHER_RELDIR:-$other_reldir} 
 export XX=${XX:-$xx}
@@ -296,6 +199,24 @@ export ZZD=${ZZD:-$zzd}
 export TOPLINE="x4 ; GEOM=$GEOM ./xxs.sh "
 export BOTLINE="$note"
 export THIRDLINE="CXS_CEGS=$CXS_CEGS"
+
+check_cegs()
+{
+    local msg="=== $FUNCNAME :"
+    IFS=: read -a cegs_arr <<< "$CEGS"
+    local cegs_elem=${#cegs_arr[@]}
+
+    case $cegs_elem in
+       4) echo $msg 4 element CEGS $CEGS ;;
+       7) echo $msg 7 element CEGS $CEGS ;;
+       *) echo $msg ERROR UNEXPECTED $cegs_elem element CEGS $CEGS && return 1  ;;
+    esac
+    return 0
+}
+check_cegs || exit 1 
+
+
+
 
 env | grep CXS
 
@@ -349,11 +270,7 @@ if [ -n "$PUB" ]; then
    cmd="cp $outdir/$pngname $pubdir/$pngname"
    echo $msg cmd $cmd
    eval $cmd
-
    echo $msh rel $reldir/$pngname
-
 fi 
-
-
 
 exit 0 

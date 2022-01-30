@@ -54,6 +54,9 @@ AnnulusOtherTwoBoxUnion
 AnnulusCrossTwoBoxUnion
 AnnulusFourBoxUnion
 CylinderFourBoxUnion
+BoxFourBoxUnion
+BoxCrossTwoBoxUnion
+BoxThreeBoxUnion
 )LITERAL"; 
 
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
@@ -80,6 +83,9 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("AnnulusCrossTwoBoxUnion", qname))     solid = X4SolidMaker::AnnulusCrossTwoBoxUnion(qname) ; 
     else if(StartsWith("AnnulusFourBoxUnion", qname))         solid = X4SolidMaker::AnnulusFourBoxUnion(qname) ; 
     else if(StartsWith("CylinderFourBoxUnion", qname))        solid = X4SolidMaker::CylinderFourBoxUnion(qname) ; 
+    else if(StartsWith("BoxFourBoxUnion", qname))             solid = X4SolidMaker::BoxFourBoxUnion(qname) ; 
+    else if(StartsWith("BoxCrossTwoBoxUnion", qname))         solid = X4SolidMaker::BoxCrossTwoBoxUnion(qname) ; 
+    else if(StartsWith("BoxThreeBoxUnion", qname))            solid = X4SolidMaker::BoxThreeBoxUnion(qname) ; 
     assert(solid); 
     return solid ; 
 }
@@ -526,7 +532,7 @@ Not yet managed to see the spurious intersects with a render::
 
 **/
 
-const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion_(const char* name, G4double inner_radius )
+const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion_(const char* name, G4double inner_radius  )
 {
     // spurious intersects appear in XY cross section but not YZ 
     G4VSolid* down1 = new G4Tubs("down1", inner_radius, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
@@ -541,6 +547,36 @@ const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion_(const char* name, G4double in
 
 const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion(const char* name){  return AnnulusFourBoxUnion_(name, 25.*mm );  }
 const G4VSolid* X4SolidMaker::CylinderFourBoxUnion(const char* name){ return AnnulusFourBoxUnion_(name,  0.*mm );  }
+
+
+const G4VSolid* X4SolidMaker::BoxFourBoxUnion_(const char* name, const char* opt )
+{
+    G4VSolid* down1 = new G4Box("down1", 45.*mm, 45.*mm, 45.*mm );
+    G4VSolid* comb = down1 ;  
+
+    G4VSolid* down2 = new G4Box("down2", 10.*mm, 11.5*mm, 13/2.*mm);
+    G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
+
+    bool px = strstr(opt, "+X"); 
+    bool nx = strstr(opt, "-X"); 
+    bool py = strstr(opt, "+Y"); 
+    bool ny = strstr(opt, "-Y"); 
+
+    if(px) comb = new G4UnionSolid("comb_px", comb, down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));  // +X
+    if(nx) comb = new G4UnionSolid("comb_nx", comb, down2, 0, G4ThreeVector(-52.*mm, 0.*mm, 0.*mm)); // -X
+
+    if(py) comb = new G4UnionSolid("comb_py", comb, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
+    if(ny) comb = new G4UnionSolid("comb_ny", comb, down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
+
+    return comb ; 
+}
+
+const G4VSolid* X4SolidMaker::BoxFourBoxUnion(const char* name ){      return BoxFourBoxUnion_(name, "+X,-X,+Y,-Y") ; }
+const G4VSolid* X4SolidMaker::BoxCrossTwoBoxUnion(const char* name ){  return BoxFourBoxUnion_(name, "+X,+Y") ; }
+const G4VSolid* X4SolidMaker::BoxThreeBoxUnion(const char* name ){     return BoxFourBoxUnion_(name, "+X,+Y,-Y") ; }
+
+
+
 
 
 

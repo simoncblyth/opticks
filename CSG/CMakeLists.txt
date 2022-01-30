@@ -103,7 +103,7 @@ add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
 
-# these DEBUG are exceedingly verbose : only use for single photons and do not leave like this 
+# these DEBUG flags are exceedingly verbose : only use for single photons and do not leave like this 
 #target_compile_definitions( ${name} PUBLIC DEBUG )
 #target_compile_definitions( ${name} PUBLIC DEBUG_RECORD )
 

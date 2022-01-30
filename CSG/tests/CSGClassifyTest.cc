@@ -7,23 +7,12 @@
 #define DEBUG 1 
 #include "csg_classify.h"
 
-/**
-
-    +-------:+--------+
-    |       :|        |
-    |       :|        |
-    +-------:+--------+
-
-
-**/
-
-
-void print_LUT( const LUT& lut, OpticksCSG_t typecode )
+void print_LUT( const LUT& lut, OpticksCSG_t typecode, const char* notes )
 {
-    unsigned width = 4+1 ; 
-    unsigned height = 4+1 ; 
-    unsigned xscale = 18 ; 
-    unsigned yscale = 6 ; 
+    int width = 4+1 ; 
+    int height = 4+1 ; 
+    int xscale = 18 ; 
+    int yscale = 6 ; 
 
     int mx = 2 ; 
     int my = 2 ; 
@@ -89,27 +78,40 @@ void print_LUT( const LUT& lut, OpticksCSG_t typecode )
         IntersectionState_t B_state = (IntersectionState_t)b  ; 
         int ictrl = lut.lookup( typecode , A_state, B_state, A_closer ) ;
         const char* ctrl = CTRL::Name(ictrl) ; 
-        assert( strlen(ctrl) < xscale ); 
+        assert( strlen(ctrl) < unsigned(xscale) ); 
 
         canvas.draw( b+1, a+1, mx+0, my+c+1,  ctrl ); 
     }
     canvas.print(); 
+    printf("%s\n", notes); 
 }
 
 
-int main(int argc, char** argv)
-{
-    LUT lut ; 
+const char* REFERENCE = R"LITERAL(
 
-    print_LUT(lut, CSG_UNION ); 
-    print_LUT(lut, CSG_INTERSECTION ); 
-    print_LUT(lut, CSG_DIFFERENCE); 
+http://xrt.wikidot.com/doc:csg
 
-    return 0 ; 
-}
+http://xrt.wdfiles.com/local--files/doc%3Acsg/CSG.pdf
 
-/**
+A ray is shot at each sub-object to find the nearest intersection, then the
+intersection with the sub-object is classified as one of entering, exiting or
+missing it. Based upon the combination of the two classifications, one of
+several actions is taken:
 
+1. returning a hit
+2. returning a miss
+3. changing the starting point of the ray for one of the objects and then
+   shooting this ray, classifying the intersection. In this case, the state
+   machine enters a new loop.
+
+
+Note that when there is a MISS on either side, the LUT results
+are the same no matter what leftIsCloser is set to for all 
+operations : UNION, INTERSECTION, DIFFERENCE.
+
+)LITERAL" ;
+
+const char* UNION = R"LITERAL(
 +-----------------+-----------------+-----------------+-----------------+                 
 |                 |                 |                 |                 |                 
 | union           | B Enter         | B Exit          | B Miss          |                 
@@ -135,9 +137,24 @@ int main(int argc, char** argv)
 |                 | RETURN_B        | RETURN_B        | RETURN_MISS     |                 
 |                 |                 |                 |                 |                 
 +-----------------+-----------------+-----------------+-----------------+                 
-      
-     UNION FROM INSIDE                                   UNION FROM OUTSIDE                            
-                                                                                                       
+
+(A Enter, B Enter) 
+    origin outside both -> return closest
+
+(A Exit, B Exit)   
+    origin inside both  -> return furthest
+
+(A Exit, B Enter)  
+    origin inside A 
+
+    * if A closer return A (means disjoint)     
+    * if B closer loop B (to find the otherside of it, and then compare again)
+
+
+
+
+     UX1 : UNION FROM INSIDE ONE                           UX2 : UNION FROM OUTSIDE 0,1,2                            
+                                                           UX3 : UNION FROM INSIDE BOTH 3,4,5                                            
                                                                                                        
                   +-----------------------+                           +-----------------------+        
                   |                     B |                           |                     B |        
@@ -155,17 +172,42 @@ int main(int argc, char** argv)
                                                                                                        
                                                                                                        
      0: origin                                           0: origin                                     
-     1: first B intersect, B Enter                       1: first A intersect, A Enter                 
-     2: first A intersect, A Exit                        2: first B intersect, B Enter                 
+     1: B Enter                                          1: A Enter                 
+     2: A Exit                                           2: B Enter                 
      1,2: B Closer        ==> LOOP_B                     1,2: A Closer        ==> RETURN_A             
-     3: second B intersect, B Exit                  
+     3: B Exit                  
      2,3: A closer        ==> RETURN_B                   3: origin
-                                                         4: first A intersect, A Exit
-                                                         5: first B intersect, B Exit
+                                                         4: A Exit
+                                                         5: B Exit
                                                          4,5 A Closer         ==> RETURN_B
 
-                                                                                    
 
+      UX4 : DISJOINT UNION  0,[1],2
+
+                                       
+        +---------------------+                +---------------------+       
+        | A                   |                |                   B |
+        |                     |                |                     |
+        |                     |                |                     |
+        |                     |                |                     |
+        |                     |                |                     |
+        |         0- - - - - [1] -  - - - - - -2                     |
+        |                     |                |                     |
+        |                     |                |                     |
+        |                     |                |                     |
+        |                     |                |                     |
+        +---------------------+                +---------------------+       
+
+
+    0: origin
+    1: A Exit
+    2: B Enter
+    1,2: A Closer        ==> RETURN_A [1]
+
+)LITERAL" ;
+
+                                                                        
+const char* INTERSECTION = R"LITERAL(
 +-----------------+-----------------+-----------------+-----------------+                 
 |                 |                 |                 |                 |                 
 | intersection    | B Enter         | B Exit          | B Miss          |                 
@@ -191,12 +233,41 @@ int main(int argc, char** argv)
 |                 | RETURN_MISS     | RETURN_MISS     | RETURN_MISS     |                 
 |                 |                 |                 |                 |                 
 +-----------------+-----------------+-----------------+-----------------+                 
-                                                                                          
-                                                                                          
-                                                                                          
-                                                                                          
-                                                                                          
 
+
+     IX1 : INTERSECTION FROM INSIDE ONE 0,[1],2            IX2 : INTERSECTION FROM OUTSIDE 0,1,[2],3                            
+                                                           IX3 : INTERSECTION FROM INSIDE BOTH 4,[5],6                                            
+                                                                                                       
+                  +-----------------------+                           +-----------------------+        
+                  |                     B |                           |                     B |        
+       +------------------+               |                +------------------+               |        
+       | A        |       |               |                | A        |       |               |        
+       |          |       |               |                |          |   4 -[5]- - - - - - - 6        
+       |          |       |               |                |          |       |               |        
+       |   0- - -[1]- - - 2               |            0 - 1 - - - - [2] - - -3               |        
+       |          |       |               |                |          |       |               |        
+       |          |       |               |                |          |       |               |        
+       |          +-------|---------------+                |          +-------|---------------+        
+       |                  |                                |                  |                        
+       |                  |                                |                  |                        
+       +------------------+                                +------------------+                        
+                                                                                                       
+                                                                                                       
+     0: origin                                           0: origin                                     
+     1: B Enter                                          1: A Enter                                            
+     2: A Exit                                           2: B Enter                                           
+     1,2: B Closer    ==> RETURN_B => [1]                1,2: A Closer   => LOOP_A  1->3 
+                                                         3: A Exit
+                                                         3,2: B Closer   => RETURN_B => [2]
+
+
+                                                         4: origin
+                                                         5: A Exit
+                                                         6: B Exit
+                                                         5,6: A Closer   ==> RETURN_A   [5]
+)LITERAL" ;
+
+const char* DIFFERENCE = R"LITERAL(
 +-----------------+-----------------+-----------------+-----------------+                 
 |                 |                 |                 |                 |                 
 | difference      | B Enter         | B Exit          | B Miss          |                 
@@ -222,8 +293,55 @@ int main(int argc, char** argv)
 |                 | RETURN_MISS     | RETURN_MISS     | RETURN_MISS     |                 
 |                 |                 |                 |                 |                 
 +-----------------+-----------------+-----------------+-----------------+                 
-                                                                                          
 
-**/
 
+
+     DX1 : DIFFERENCE FROM INSIDE ONE 0,[1],2              DX2 : DIFFERENCE FROM OUTSIDE 0,[1],2                           
+                                                           DX3 : DIFFERENCE FROM INSIDE BOTH 4,5,6                                            
+                                                                                                       
+                  +-----------------------+                           +-----------------------+        
+                  |                     B |                           |                     B |        
+       +------------------+               |                +------------------+               |        
+       | A        |       |               |                | A        |       |               |        
+       |          |       |               |                |          |   4 - 5 - - - - - - - 6        
+       |          |       |               |                |          |       |               |        
+       |   0- - -[1]> - - 2               |          0 - <[1] - - - - 2       |               |        
+       |          |       |               |                |          |       |               |        
+       |          |       |               |                |          |       |               |        
+       |          +-------|---------------+                |          +-------|---------------+        
+       |                  |                                |                  |                        
+       |                  |                                |                  |                        
+       +------------------+                                +------------------+                        
+                                                                                                       
+                                                                                                       
+     0: origin                                           0: origin                                     
+     1: B Enter                                          1: A Enter
+     2: A Exit                                           2: B Enter
+     1,2: B Closer  =>   RETURN_FLIP_B   [1]>            1,2: A Closer   => RETURN_A [1]
+
+
+                                                         4: origin
+                                                         5: A Exit
+                                                         6: B Exit
+                                                         5,6: A Closer    => LOOP_A  => A MISS   
+                                                         ==> RETURN_MISS                                     
+
+)LITERAL" ;
+
+int main(int argc, char** argv)
+{
+    printf("%s\b", REFERENCE); 
+    LUT lut ; 
+    switch( argc > 1 ? argv[1][0] : 'A' )
+    {
+        case 'U': print_LUT(lut, CSG_UNION        , UNION );        break ;  
+        case 'I': print_LUT(lut, CSG_INTERSECTION , INTERSECTION ); break ;  
+        case 'D': print_LUT(lut, CSG_DIFFERENCE   , DIFFERENCE );   break ;  
+        default: 
+                  print_LUT(lut, CSG_UNION        , UNION );       
+                  print_LUT(lut, CSG_INTERSECTION , INTERSECTION ); 
+                  print_LUT(lut, CSG_DIFFERENCE   , DIFFERENCE );  
+    }
+    return 0 ; 
+}
 

@@ -114,18 +114,6 @@ http://xrt.wikidot.com/doc:csg
 
 http://xrt.wdfiles.com/local--files/doc%3Acsg/CSG.pdf
 
-A ray is shot at each sub-object to find the nearest intersection, then the
-intersection with the sub-object is classified as one of entering, exiting or
-missing it. Based upon the combination of the two classifications, one of
-several actions is taken:
-
-1. returning a hit
-2. returning a miss
-3. changing the starting point of the ray for one of the objects and then
-   shooting this ray, classifying the intersection. In this case, the state
-   machine enters a new loop.
-
-
 
                    
                   +-----------------------+
@@ -141,7 +129,23 @@ several actions is taken:
        |                  |
        |                  |
        +------------------+
-      
+
+A ray is shot at each sub-object to find the nearest intersection, then the
+intersection with the sub-object is classified as one of entering, exiting or
+missing it. Based upon the combination of the two classifications, one of
+several actions is taken:
+
+1. returning a hit
+2. returning a miss
+3. changing the starting point of the ray for one of the objects and then
+   shooting this ray, classifying the intersection. In this case, the state
+   machine enters a new loop.
+
+For illustrations of the LUT details see tests/CSGClassifyTest.cc::
+
+    CSGClassifyTest U
+    CSGClassifyTest I
+    CSGClassifyTest D
 
 
 **/
@@ -183,7 +187,8 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
         unsigned endIdx   = UNPACK4_3(slice);
 
 #ifdef DEBUG_RECORD
-        printf("// tranche_pop : tloop %d tmin %10.4f beginIdx %d endIdx %d  tr.curr %d csg.curr %d   \n", tloop, tmin, beginIdx, endIdx, tr.curr, csg.curr );
+        if(CSGRecord::ENABLED)
+            printf("// tranche_pop : tloop %d tmin %10.4f beginIdx %d endIdx %d  tr.curr %d csg.curr %d   \n", tloop, tmin, beginIdx, endIdx, tr.curr, csg.curr );
         assert( ierr == 0 ); 
 #endif
 
@@ -206,6 +211,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
             bool primitive = typecode >= CSG_SPHERE ; 
 #ifdef DEBUG
             printf("//intersect_tree.h nodeIdx %d primitive %d \n", nodeIdx, primitive ); 
+
 #endif
             if(primitive)
             {
@@ -222,12 +228,25 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 
 
 #ifdef DEBUG_RECORD
-                printf("// %3d : primative push : add record  \n", nodeIdx ); 
-                quad4& rec = CSGRecord::record.back(); 
-                rec.q1.u.w = 1 ;    // mark primitive push 
-                rec.q2.f.x = ray_origin.x + fabs(rec.q0.f.w)*ray_direction.x ; 
-                rec.q2.f.y = ray_origin.y + fabs(rec.q0.f.w)*ray_direction.y ; 
-                rec.q2.f.z = ray_origin.z + fabs(rec.q0.f.w)*ray_direction.z ; 
+                if(CSGRecord::ENABLED)
+                {
+                    IntersectionState_t nd_state = CSG_CLASSIFY( nd_isect,  ray_direction, tmin );
+                    printf("// %3d : primative push : add record  \n", nodeIdx ); 
+                    quad4& rec = CSGRecord::record.back(); 
+                    rec.q1.f.x = ray_origin.x + fabs(rec.q0.f.w)*ray_direction.x ; 
+                    rec.q1.f.y = ray_origin.y + fabs(rec.q0.f.w)*ray_direction.y ; 
+                    rec.q1.f.z = ray_origin.z + fabs(rec.q0.f.w)*ray_direction.z ; 
+
+                    rec.q2.i.x = typecode ; 
+                    rec.q2.i.y = int(nd_state) ; 
+                    rec.q2.i.z = -1 ; 
+                    rec.q2.i.w = -1 ; 
+
+                    rec.q3.i.x = tloop ; 
+                    rec.q3.i.y = nodeIdx ;    // mark primitive push 
+                    rec.q3.i.z = -1 ;         // placeholder for ctrl 
+                  
+                }
                 assert( ierr == 0 ); 
 #endif
                 if(ierr) break ; 
@@ -268,8 +287,11 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 
                 bool leftIsCloser = t_left <= t_right ;
 
-                // complements (signalled by -0.f) cannot Miss, only Exit, see opticks/notes/issues/csg_complement.rst 
-                // these are only valid (and only needed) for misses 
+
+                // it is impossible to Miss a complemented (signaled by -0.f) solid as it is unbounded
+                // hence the below artificially changes leftIsCloser and states to Exit
+                // see opticks/notes/issues/csg_complement.rst 
+                // these settings are only valid (and only needed) for misses 
 
                 bool l_complement = signbit(csg.data[left].x) ;
                 bool r_complement = signbit(csg.data[right].x) ;
@@ -279,28 +301,43 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 
                 if(r_complement_miss)
                 {
+#ifdef DEBUG_RECORD
+                    if(CSGRecord::ENABLED)
+                    {
+                        printf("// %3d : r_complement_miss setting leftIsCloser %d to true and r_state %5s to Exit \n", 
+                                nodeIdx, leftIsCloser, IntersectionState::Name(l_state)  ); 
+                    }
+#endif
                     r_state = State_Exit ; 
                     leftIsCloser = true ; 
-#ifdef DEBUG_RECORD
-                    printf("// %3d : r_complement_miss \n", nodeIdx ); 
-#endif
-                } 
+               } 
 
                 if(l_complement_miss)
                 {
+#ifdef DEBUG_RECORD
+                    if(CSGRecord::ENABLED)
+                    {
+                        printf("// %3d : l_complement_miss setting leftIsCloser %d to false and l_state %5s to Exit \n", 
+                                nodeIdx, leftIsCloser, IntersectionState::Name(r_state)  ); 
+                    }
+#endif
                     l_state = State_Exit ; 
                     leftIsCloser = false ; 
-#ifdef DEBUG_RECORD
-                    printf("// %3d : l_complement_miss \n", nodeIdx ); 
-#endif
                 } 
 
                 int ctrl = lut.lookup( typecode , l_state, r_state, leftIsCloser ) ;
 
-
 #ifdef DEBUG_RECORD
-                printf("// %3d : stack peeking : left %d right %d (stackIdx)  l:%5s r:%5s   t_left %10.4f t_right %10.4f leftIsCloser %d -> ctrl %d %s \n", 
-                       nodeIdx,left,right,IntersectionState::Name(l_state),IntersectionState::Name(r_state), t_left, t_right, leftIsCloser, ctrl, CTRL::Name(ctrl)  ); 
+                if(CSGRecord::ENABLED)
+                {
+                    printf("// %3d : stack peeking : left %d right %d (stackIdx)  %15s  l:%5s %10.4f    r:%5s %10.4f     leftIsCloser %d -> %s \n", 
+                           nodeIdx,left,right,
+                           CSG::Name(typecode), 
+                           IntersectionState::Name(l_state), t_left,  
+                           IntersectionState::Name(r_state), t_right, 
+                           leftIsCloser, 
+                           CTRL::Name(ctrl)  ); 
+                }
 #endif
 
                 Action_t act = UNDEFINED ; 
@@ -314,7 +351,8 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                         result.y = -result.y ;     
                         result.z = -result.z ;     
                     }
-                    result.w = copysignf( result.w , nodeIdx % 2 == 0 ? -1.f : 1.f );
+                    result.w = copysignf( result.w , nodeIdx % 2 == 0 ? -1.f : 1.f );  
+                    // record left/right in sign of t 
 
                     ierr = csg_pop0(csg); if(ierr) break ;
                     ierr = csg_pop0(csg); if(ierr) break ;
@@ -347,6 +385,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                     unsigned loopTree  = ctrl == CTRL_LOOP_A ? leftTree : rightTree  ;
 
 #ifdef DEBUG_RECORD
+                    if(CSGRecord::ENABLED) 
                     printf("// %3d : looping one side tminAdvanced %10.4f with eps %10.4f \n", nodeIdx, tminAdvanced, propagate_epsilon );  
 #endif
 
@@ -371,23 +410,37 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                     act = BREAK  ;  
 
 #ifdef DEBUG_RECORD
+                    if(CSGRecord::ENABLED) 
                     printf("// %3d : looping :  act BREAK \n", nodeIdx ); 
 #endif
 
                 }                      // "return" or "recursive call" 
 
 #ifdef DEBUG_RECORD
-                //printf("// %3d : add record \n", nodeIdx ); 
-                quad4& rec = CSGRecord::record.back(); 
-                rec.q1.u.w = 2 ;    // mark operator push 
-                rec.q2.f.x = ray_origin.x + fabs(rec.q0.f.w)*ray_direction.x ; 
-                rec.q2.f.y = ray_origin.y + fabs(rec.q0.f.w)*ray_direction.y ; 
-                rec.q2.f.z = ray_origin.z + fabs(rec.q0.f.w)*ray_direction.z ; 
+                if(CSGRecord::ENABLED) 
+                {
+                    //printf("// %3d : add record \n", nodeIdx ); 
+                    quad4& rec = CSGRecord::record.back(); 
+
+                    rec.q1.f.x = ray_origin.x + fabs(rec.q0.f.w)*ray_direction.x ; 
+                    rec.q1.f.y = ray_origin.y + fabs(rec.q0.f.w)*ray_direction.y ; 
+                    rec.q1.f.z = ray_origin.z + fabs(rec.q0.f.w)*ray_direction.z ; 
+
+                    rec.q2.i.x = typecode ; //  set to initial csg.curr within csg_push  
+                    rec.q2.i.y = int(l_state) ; 
+                    rec.q2.i.z = int(r_state) ; 
+                    rec.q2.i.w = int(leftIsCloser) ; 
+
+                    rec.q3.i.x = tloop ;  
+                    rec.q3.i.y = nodeIdx ;    // mark operator push with negation 
+                    rec.q3.i.z = ctrl  ; 
+                }
 #endif
 
                 if(act == BREAK) 
                 {
 #ifdef DEBUG_RECORD
+                     if(CSGRecord::ENABLED) 
                      printf("// %3d : break for backtracking \n", nodeIdx ); 
 #endif
                      break ; 
@@ -401,6 +454,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
     ierr |= (( csg.curr !=  0)  ? ERROR_END_EMPTY : 0)  ; 
 
 #ifdef DEBUG_RECORD
+    if(CSGRecord::ENABLED) 
     printf("// intersect_tree.h ierr %d csg.curr %d \n", ierr, csg.curr ); 
 #endif
     if(csg.curr == 0)  

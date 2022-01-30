@@ -212,13 +212,13 @@ class GridSpec(object):
         log.info(" moi %s midx %s mord %s iidx %s coords %s " % (moi, midx, mord, iidx, coords))
 
         ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
-        iz0,iz1,photons_per_genstep,zero = peta[0,1].view(np.int32)
+        iz0,iz1,photons_per_genstep,_ = peta[0,1].view(np.int32)
+        gridscale = peta[0,1,3]
 
         ce = tuple(peta[0,2])
         sce = (" %7.2f" * 4 ) % ce
 
         assert photons_per_genstep > 0
-        assert zero == 0
         nx = (ix1 - ix0)//2
         ny = (iy1 - iy0)//2
         nz = (iz1 - iz0)//2
@@ -226,6 +226,7 @@ class GridSpec(object):
         log.info(" ix0 %d ix1 %d nx %d  " % (ix0, ix1, nx)) 
         log.info(" iy0 %d iy1 %d ny %d  " % (iy0, iy1, ny)) 
         log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
+        log.info(" gridscale %10.4f " % gridscale )
 
         # below default from envvars are overridden for planar data
         eye = eary_("EYE","1.,1.,1.")

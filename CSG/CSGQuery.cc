@@ -93,6 +93,18 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const quad4& p ) const
     return intersect( isect, t_min, ray_origin, ray_direction, gsid ); 
 }
 
+
+
+const float CSGQuery::SD_CUT = -1e-3 ; 
+
+bool CSGQuery::IsSpurious( const quad4& isect ) // static
+{
+    float sd = isect.q1.f.w ;  
+    bool spurious = sd < SD_CUT ; 
+    return spurious ; 
+}
+
+
 /**
 CSGQuery::intersect
 --------------------
@@ -127,6 +139,8 @@ isect.q3.f.xyz
 
 **/
 
+
+
 bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, const float3& ray_direction, unsigned gsid ) const 
 {
     isect.zero();
@@ -136,7 +150,6 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
     {   
         float t = isect.q0.f.w ; 
         float3 ipos = ray_origin + t*ray_direction ;   
-        //float sd = (*this)(ipos) ; 
         float sd = distance_tree( ipos, select_numNode, select_root, plan0, itra0 ) ;
 
         isect.q1.f.x = ipos.x ;
@@ -157,14 +170,10 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
     return valid_intersect ; 
 }
 
-
-
-const float CSGQuery::SD_CUT = -1e-3 ; 
-
 std::string CSGQuery::Desc( const quad4& isect, const char* label  )  // static
 {
     float sd = isect.q1.f.w ; 
-
+    bool spurious = IsSpurious(isect); 
     std::stringstream ss ; 
     ss 
          << label 
@@ -184,7 +193,7 @@ std::string CSGQuery::Desc( const quad4& isect, const char* label  )  // static
          << std::setw(10) << std::fixed << std::setprecision(4) << isect.q1.f.z 
          << std::setw(10) << std::fixed << std::setprecision(4) << sd
          << ")" 
-         << ( sd < SD_CUT ? " SPURIOUS INTERSECT " : "-" ) 
+         << ( spurious ? " SPURIOUS INTERSECT " : "-" ) 
          << " sd < SD_CUT : " 
          << std::setw(10) << std::fixed << std::setprecision(4) <<  SD_CUT 
          << std::endl 
@@ -216,6 +225,7 @@ std::string CSGQuery::Desc( const quad4& isect, const char* label  )  // static
 CSGQuery::intersect_again
 --------------------------
 
+
 **/
 bool CSGQuery::intersect_again( quad4& isect, const quad4& prev_isect ) const 
 {
@@ -223,22 +233,16 @@ bool CSGQuery::intersect_again( quad4& isect, const quad4& prev_isect ) const
     float3 ray_origin    = make_float3( prev_isect.q2.f.x, prev_isect.q2.f.y, prev_isect.q2.f.z ); 
     float3 ray_direction = make_float3( prev_isect.q3.f.x, prev_isect.q3.f.y, prev_isect.q3.f.z ); 
     unsigned gsid = prev_isect.q3.u.w ; 
+
+    CSGRecord::SetEnabled(true); 
     bool valid_intersect = intersect( isect, t_min, ray_origin, ray_direction, gsid );  
+    CSGRecord::SetEnabled(false); 
 
     LOG(info) 
         << std::endl 
         << Desc(prev_isect, "prev_isect" ) 
         << Desc(isect,      "isect" ) 
         ;
-
-#ifdef DEBUG_RECORD
-     CSGRecord::Dump("CSGQuery::intersect_again"); 
-
-     int create_dirs = 2 ; // 2:dirpath 
-     const char* dir = SPath::Resolve("$TMP/CSGQuery/intersect_again", create_dirs ); 
-     CSGRecord::Save(dir); 
-#endif
-
     return valid_intersect ; 
 }
 
@@ -258,8 +262,6 @@ CSGGrid* CSGQuery::scanPrim(int resolution) const
     return grid ;
 }
 
-
-
 void CSGQuery::dumpPrim() const 
 {
     if( select_numNode == 0 ) return ;
@@ -274,7 +276,6 @@ void CSGQuery::dumpPrim() const
         const CSGNode* nd = node0 + nodeIdx ;
         LOG(info) << "    nodeIdx " << std::setw(5) << nodeIdx << " : " << nd->desc() ;
     }
-
 }
 
 void CSGQuery::dump(const char* msg) const
@@ -282,7 +283,5 @@ void CSGQuery::dump(const char* msg) const
     LOG(info) << msg ; 
     dumpPrim(); 
 }
-
-
 
 

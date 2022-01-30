@@ -4,6 +4,8 @@
 
 #include "scuda.h"
 #include "squad.h"
+#include "sc4u.h"
+
 #include "SCenterExtentGenstep.hh"
 #include "NP.hh"
 
@@ -11,13 +13,30 @@
 #include "CSGDraw.h"
 #include "CSGFoundry.h"
 #include "CSGGeometry.h"
+#include "CSGRecord.h"
 #include "CSGGrid.h"
+
+
+
+const char* CSGGeometry::OutDir(const char* cfbase, const char* geom)   // static  
+{
+    if(cfbase == nullptr || geom == nullptr)
+    {
+        LOG(fatal) << " require CFBASE and GEOM to control output dir " ; 
+        return nullptr ;   
+    }
+    int create_dirs = 2 ;   
+    const char* outdir = SPath::Resolve(cfbase, "CSGIntersectSolidTest", geom, create_dirs );  
+    return outdir ;  
+}
+
 
 CSGGeometry::CSGGeometry()
     :
     default_geom(nullptr),
     geom(SSys::getenvvar("GEOM", default_geom)),
     cfbase(SSys::getenvvar("CFBASE")), 
+    outdir(OutDir(cfbase,geom)),
     name(nullptr),
     fd(nullptr),
     q(nullptr),
@@ -70,58 +89,87 @@ void CSGGeometry::saveSignedDistanceField() const
     grid->save(name);  
 }
 
+
+
+
+
+void CSGGeometry::centerExtentGenstepIntersect() 
+{
+    const char* path = SSys::getenvvar("SELECTED_ISECT"); 
+    if(path == nullptr)
+    {
+        saveCenterExtentGenstepIntersect(); 
+    }
+    else
+    {
+        intersectSelected(path); 
+    }
+
+    draw("CSGGeometry::centerExtentGenstepIntersect"); 
+}
+
+
 void CSGGeometry::saveCenterExtentGenstepIntersect() const 
 {
-    if(cfbase == nullptr || geom == nullptr)
-    {
-        LOG(fatal) << " require CFBASE and GEOM to control output dir " ; 
-        return ;   
-    }
-    int create_dirs = 2 ;   
-    const char* outdir = SPath::Resolve(cfbase, "CSGIntersectSolidTest", geom, create_dirs );  
-
-
-    
     SCenterExtentGenstep* cegs = new SCenterExtentGenstep ; 
-
     const std::vector<quad4>& pp = cegs->pp ; 
     std::vector<quad4>& ii = cegs->ii ; 
+
     float t_min = 0.f ; 
     quad4 isect ;
-
     for(unsigned i=0 ; i < pp.size() ; i++)
     {   
         const quad4& p = pp[i]; 
-        bool valid_intersect = q->intersect(isect, t_min, p );  
-        if( valid_intersect )
-        {   
-            ii.push_back(isect);
-        }   
+        if(q->intersect(isect, t_min, p )) ii.push_back(isect); 
     }   
     cegs->save(outdir); 
 }
 
-void CSGGeometry::intersectAgain( const char* path )
+void CSGGeometry::intersectSelected(const char* path)
 {
-    if( path == nullptr ) path = "/tmp/s_isect.npy" ; 
     NP* a = NP::Load(path); 
     if( a == nullptr ) LOG(fatal) << " FAILED to load from path " << path ; 
-    assert( a ); 
-    LOG(info) << " loading isect from " << path << " s.sstr " << a->sstr() ; 
-    assert( a->shape.size() == 3 && a->shape[1] == 4 && a->shape[2] == 4 ); 
+    if( a == nullptr ) return ; 
 
+    bool expected_shape = a->has_shape(-1,4,4) ;  
+    assert(expected_shape); 
+    LOG(info) << " load SELECTED_ISECT from " << path << " a.sstr " << a->sstr() ; 
 
-    std::vector<quad4> isects(a->shape[0]) ; 
+    unsigned num_isect = a->shape[0] ;
+    std::vector<quad4> isects(num_isect) ; 
     memcpy( isects.data(), a->bytes(),  sizeof(float)*16 );    
-    const quad4& prev_isect = isects[0] ; 
 
-    LOG(info) << " prev_isect.q1.f.x " << prev_isect.q1.f.x ;  
-    
-    quad4 isect ;
-    bool valid_intersect = q->intersect_again(isect, prev_isect );  
-    LOG(info) << " valid_intersect " << valid_intersect ; 
+    for(unsigned i=0 ; i < num_isect ; i++)
+    {
+        const quad4& prev_isect = isects[i] ; 
 
-    draw("CSGGeometry::intersectAgain"); 
+        int4 gsid ; 
+        C4U_decode(gsid, prev_isect.q3.u.w ); 
+
+        quad4 isect ;
+        bool valid_intersect = q->intersect_again(isect, prev_isect );  
+
+        std::string gsid_name = C4U_name(gsid, "gsid", '_' ); 
+
+#ifdef DEBUG_RECORD
+        int create_dirs = 2 ; // 2:dirpath 
+        const char* dir = SPath::Resolve(outdir, "intersectSelected", gsid_name.c_str(), create_dirs ); 
+        CSGRecord::Save(dir); 
+        if(i == 0) CSGRecord::Dump(dir); 
+        CSGRecord::Clear(); 
+#endif
+
+        std::cout 
+            << " gsid " << C4U_desc(gsid) 
+            << " gsid_name " << gsid_name 
+            << " valid_intersect " << valid_intersect  
+            << " t:prev_isect.q0.f.w " 
+            << std::setw(10) << std::fixed << std::setprecision(4) << prev_isect.q0.f.w 
+            << " t:isect.q0.f.w " 
+            << std::setw(10) << std::fixed << std::setprecision(4) << isect.q0.f.w 
+            << std::endl 
+            ;
+    }
 }
 
 void CSGGeometry::dump(const char* msg) const 

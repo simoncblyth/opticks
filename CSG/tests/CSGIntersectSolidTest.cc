@@ -15,7 +15,6 @@ as access to geochain or CSGMaker geometry is then the same
 **/
 
 #include "OPTICKS_LOG.hh"
-#include "SSys.hh"
 #include "CSGGeometry.h"
 
 int main(int argc, char** argv)
@@ -23,16 +22,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     CSGGeometry geom ;
-
-    const char* again = SSys::getenvvar("AGAIN") ; 
-    if( again )
-    {
-        geom.intersectAgain(again); 
-    }
-    else
-    {
-        geom.saveCenterExtentGenstepIntersect(); 
-    }
+    geom.centerExtentGenstepIntersect();  
 
     return 0 ; 
 

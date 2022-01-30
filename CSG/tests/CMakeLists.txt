@@ -29,6 +29,7 @@ set(TEST_SOURCES
     distance_node_test.cc
 
     CSGGeometryTest.cc
+    CSGClassifyTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

@@ -64,9 +64,12 @@ EOU
 #geom=AnnulusBoxUnion 
 #geom=AnnulusTwoBoxUnion 
 #geom=AnnulusOtherTwoBoxUnion 
-geom=AnnulusCrossTwoBoxUnion 
+#geom=AnnulusCrossTwoBoxUnion 
 #geom=AnnulusFourBoxUnion 
 #geom=CylinderFourBoxUnion 
+geom=BoxFourBoxUnion 
+#geom=BoxCrossTwoBoxUnion 
+#geom=BoxThreeBoxUnion 
 
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin
