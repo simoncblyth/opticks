@@ -549,6 +549,55 @@ const G4VSolid* X4SolidMaker::AnnulusFourBoxUnion(const char* name){  return Ann
 const G4VSolid* X4SolidMaker::CylinderFourBoxUnion(const char* name){ return AnnulusFourBoxUnion_(name,  0.*mm );  }
 
 
+/**
+ 
+
+                          +----------+
+                          | B        |
+                          |          | 
+               +----------|----------|-------------+
+               |  A       |          |             | 
+               |          +----------+             | 
+               |                                   |
+          +---------+                        +------------+
+          |    |    |                        |     |    C |
+          |    |    |                        |     |      |
+          |    |    |                        |     |      |
+          | D  |    |                        |     |      |
+          +---------+                        +------------+
+               |                                   |
+               |                                   |
+               |          +----------+             |
+               |          |          |             |
+               +----------|----------|-------------+
+                          |          |          
+                          |       D  |               
+                          +----------+               
+                                                    
+ 
+
+TODO: switch off balancing and check the impact of pairing order
+
+* eg disjoint unions (like B+C) 
+  although they work on their own they may be implicated with inner boundary spurious 
+
+        
+                 
+                  U
+             U       D
+        U       C
+       A  B
+
+
+:google:`CSG disjoint union`
+
+* https://hal.inria.fr/hal-01225212/document
+
+Extending CSG with projections: Towards formally certified 
+
+**/
+
+
 const G4VSolid* X4SolidMaker::BoxFourBoxUnion_(const char* name, const char* opt )
 {
     G4VSolid* down1 = new G4Box("down1", 45.*mm, 45.*mm, 45.*mm );

@@ -1,5 +1,8 @@
 #pragma once
 
+
+#ifdef DEBUG_RECORD
+
 #include <vector>
 #include <string>
 struct quad4 ; 
@@ -28,4 +31,5 @@ struct CSGRecord
 
 };
 
+#endif
 

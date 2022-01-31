@@ -234,9 +234,13 @@ bool CSGQuery::intersect_again( quad4& isect, const quad4& prev_isect ) const
     float3 ray_direction = make_float3( prev_isect.q3.f.x, prev_isect.q3.f.y, prev_isect.q3.f.z ); 
     unsigned gsid = prev_isect.q3.u.w ; 
 
+#ifdef DEBUG_RECORD
     CSGRecord::SetEnabled(true); 
+#endif
     bool valid_intersect = intersect( isect, t_min, ray_origin, ray_direction, gsid );  
+#ifdef DEBUG_RECORD
     CSGRecord::SetEnabled(false); 
+#endif
 
     LOG(info) 
         << std::endl 

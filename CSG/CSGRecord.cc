@@ -1,3 +1,5 @@
+#ifdef DEBUG_RECORD
+
 #include <sstream>
 #include <string>
 
@@ -160,4 +162,4 @@ void CSGRecord::Save(const char* dir)  // static
     NP::Write<float>(dir, "CSGRecord.npy", (float*)record.data(),  record.size(), 4, 4 );  
 }
 
-
+#endif
