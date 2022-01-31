@@ -148,19 +148,26 @@ fi
 #export CSG_GGeo_Convert=INFO
 
 export NTreeProcess=INFO   ## balance decision happens here 
-export NNodeNudger=INFO
+#export NTREEPROCESS_LVLIST=0
+#export NTREEPROCESS_MAXHEIGHT0=10   ## 3 is default
+#
+# have confirmed that switching off balancing 
+# by setting NTREEPROCESS_MAXHEIGHT0 to a large value 
+# prevents the interior boundary spurious issue
+
+#export NNodeNudger=INFO
+#export NNODENUDGER_LVLIST=0
+
 export NTreeBalance=INFO
 export NTreeBuilder=INFO
 
-export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
+#export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
 
 # checking that --skipsolidname is working 
-export OpticksDbg=INFO  
-export GInstancer=INFO
+#export OpticksDbg=INFO  
+#export GInstancer=INFO
 
 #export DUMP_RIDX=0
-#export NTREEPROCESS_LVLIST=0
-#export NNODENUDGER_LVLIST=0
 
 
 ################# mechanics ###############

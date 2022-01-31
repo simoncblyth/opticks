@@ -68,7 +68,8 @@ T* NTreeBalance<T>::create_balanced()
     LOG(LEVEL) << "hop_mask " << CSGMaskDesc(hop_mask ); 
 
 
-    OpticksCSG_t op = CSG_MonoOperator(op_mask) ;    // sysrap/OpticksCSGMask.h returns CSG_ZERO when not a mono mask
+   // sysrap/OpticksCSGMask.h returns CSG_ZERO when not a UNION or INTERSECTION mono mask
+    OpticksCSG_t op = CSG_MonoOperator(op_mask) ;    
     OpticksCSG_t hop = CSG_MonoOperator(hop_mask) ;  
 
     T* balanced = NULL ; 
@@ -78,7 +79,7 @@ T* NTreeBalance<T>::create_balanced()
         std::vector<T*> prims ; 
         std::vector<T*> otherprim ; 
 
-        subtrees( prims, 0, otherprim );    // subdepth 0 : all the leaves  
+        subtrees( prims, 0, otherprim );    // subdepth 0 : so collects all leaves into prims, otherprim should be empty   
 
         LOG(LEVEL) << " CommonTree prims " << prims.size() ; 
         assert( otherprim.size() == 0 );  

@@ -54,7 +54,7 @@ static std::string CSGMaskDesc( unsigned mask )
 CSG_MonoOperator
 ------------------
 
-For masks corresponding to a single operator return
+For masks corresponding to a single UNION or INTERSECTION operator return
 the CSG code of the operator, otherwise return CSG_ZERO.
 
 TODO: collect these into a OpticksCSGMask class as static methods for easier identification 

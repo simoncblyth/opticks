@@ -322,8 +322,8 @@ if __name__ == '__main__':
     ## red position points (usually invisible under arrow) and normal arrows    
 
     if s_count > 0:
-        pl.add_points( s_pos, color="red" )
-        pl.add_arrows( s_pos, s_dir, color="red", mag=10 )
+        pl.add_points( s_pos[:s_limited], color="red" )
+        pl.add_arrows( s_pos[:s_limited], s_dir[:s_limited], color="red", mag=10 )
 
         #pl.add_arrows( s_ray_origin, s_ray_direction, color="blue", mag=s_t ) 
         # drawing arrow from ray origins to intersects works, but the arrows are too big 

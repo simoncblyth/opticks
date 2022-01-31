@@ -40,7 +40,8 @@ template <typename T>
 const plog::Severity NTreeProcess<T>::LEVEL = PLOG::EnvLevel("NTreeProcess", "DEBUG") ; 
 
 template <typename T>
-unsigned NTreeProcess<T>::MaxHeight0 = 3 ;   // was discrepantly 4 previously   
+unsigned NTreeProcess<T>::MaxHeight0 = SSys::getenvint( "NTREEPROCESS_MAXHEIGHT0", 3 ) ;  
+ // was discrepantly 4 previously   
 
 template <typename T>
 std::vector<int>* NTreeProcess<T>::LVList = SSys::getenvintvec("NTREEPROCESS_LVLIST") ;  
