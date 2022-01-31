@@ -110,15 +110,19 @@ msg="=== $BASH_SOURCE :"
 #geom=AnnulusBoxUnion_XY
 #geom=AnnulusFourBoxUnion_XY
 
-geom=BoxFourBoxUnion_YX
+#geom=BoxFourBoxUnion_YX
 #geom=BoxThreeBoxUnion_YX
+
+#geom=OrbGridMultiUnion10:30_YX
+geom=BoxGridMultiUnion10:30_YX
+
 
 export GEOM=${GEOM:-$geom}
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
 
 zcut=${GEOM#*zcut}
 [ "$GEOM" != "$zcut" ] && zzd=$zcut 
-echo geom $geom GEOM $GEOM zcut $zcut zzd $zzd
+echo geom $geom GEOM $GEOM gcn $gcn zcut $zcut zzd $zzd
 
 tmp=/tmp/$USER/opticks
 reldir=extg4/X4IntersectTest

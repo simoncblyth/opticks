@@ -60,7 +60,9 @@ int main(int argc, char** argv)
 
 
     const char* base = GeoChain::BASE ; 
-    X4Intersect::Scan(solid, name, base ); 
+
+    //X4Intersect::Scan(solid, name, base );  
+    // WIP: remove the scan,  its unclear to do this with the geometry conversion, better done in dedicated executable 
     // X4Intersect .npy land as siblings to the CSGFoundry dir 
 
     const char* argforced = "--allownokey --gparts_transform_offset" ; 

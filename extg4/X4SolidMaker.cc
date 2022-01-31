@@ -10,6 +10,7 @@
 #include "G4Orb.hh"
 #include "G4UnionSolid.hh"
 #include "G4Ellipsoid.hh"
+#include "G4MultiUnion.hh"
 
 using CLHEP::pi ;
 
@@ -51,7 +52,7 @@ bool X4SolidMaker::CanMake(const char* qname) // static
 }
 
 const char* X4SolidMaker::NAMES = R"LITERAL(
-Orb
+JustOrb
 SphereWithPhiSegment
 SphereWithThetaSegment
 AdditionAcrylicConstruction
@@ -73,6 +74,8 @@ CylinderFourBoxUnion
 BoxFourBoxUnion
 BoxCrossTwoBoxUnion
 BoxThreeBoxUnion
+OrbGridMultiUnion
+BoxGridMultiUnion
 )LITERAL"; 
 
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
@@ -86,7 +89,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     }
 
     const G4VSolid* solid = nullptr ; 
-    if(     StartsWith("Orb",qname))                          solid = X4SolidMaker::Orb(qname); 
+    if(     StartsWith("JustOrb",qname))                      solid = X4SolidMaker::JustOrb(qname); 
     else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4SolidMaker::SphereWithPhiSegment(qname); 
     else if(StartsWith("SphereWithThetaSegment",qname))       solid = X4SolidMaker::SphereWithThetaSegment(qname); 
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4SolidMaker::AdditionAcrylicConstruction(qname); 
@@ -108,11 +111,13 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("BoxFourBoxUnion", qname))             solid = X4SolidMaker::BoxFourBoxUnion(qname) ; 
     else if(StartsWith("BoxCrossTwoBoxUnion", qname))         solid = X4SolidMaker::BoxCrossTwoBoxUnion(qname) ; 
     else if(StartsWith("BoxThreeBoxUnion", qname))            solid = X4SolidMaker::BoxThreeBoxUnion(qname) ; 
+    else if(StartsWith("OrbGridMultiUnion", qname))           solid = X4SolidMaker::OrbGridMultiUnion(qname) ; 
+    else if(StartsWith("BoxGridMultiUnion", qname))           solid = X4SolidMaker::BoxGridMultiUnion(qname) ; 
     assert(solid); 
     return solid ; 
 }
 
-const G4VSolid* X4SolidMaker::Orb(const char* name)  // static
+const G4VSolid* X4SolidMaker::JustOrb(const char* name)  // static
 {
     return new G4Orb(name, 100.) ; 
 }
@@ -1106,6 +1111,117 @@ const G4VSolid* X4SolidMaker::UnionOfHemiEllipsoids(const char* name )
     return solid ; 
 }
 
+
+const G4VSolid* X4SolidMaker::GridMultiUnion_(const char* name, G4VSolid* item, double gridspace, int nx, int ny, int nz )
+{
+    G4MultiUnion* grid = new G4MultiUnion(name);
+
+    for(int i=-nx ; i <= nx ; i++ )
+    for(int j=-ny ; j <= ny ; j++ )
+    for(int k=-nz ; k <= nz ; k++ )
+    {
+        G4ThreeVector pos(double(i)*gridspace*mm, double(j)*gridspace*mm, double(k)*gridspace*mm ); 
+        LOG(info) << pos ; 
+
+        G4RotationMatrix rot(0, 0, 0);
+        G4Transform3D tr(rot, pos); 
+        grid->AddNode(*item, tr);
+    }
+    //grid->Voxelize();
+    return grid ; 
+}
+
+/**
+X4SolidMaker::OrbGridMultiUnion
+----------------------------------
+
+                    :       :
+                    :       :
+          +---+   +-:-+   +-:-+ 
+          |   |   | : |   | : |
+          +---+   +-:-+   +-:-+
+                    :       :
+          +---+   +-:-+   +-:-+ 
+          |   |   | 0 |   | : |
+          +---+   +-:-+   +-:-+
+                    :       :
+          +---+   +-:-+   +-:-+ 
+          |   |   | : |   | : |
+          +---+   +-:-+   +-:-+
+                    :       :
+                  : : :     :
+            -radius:+radius 
+                    :        
+
+
+* when there is no overlap  radius < gridscale , only the middle Orb gets intersects
+
+**/
+
+const G4VSolid* X4SolidMaker::OrbGridMultiUnion(const char* name)
+{
+    std::vector<long> vals ; 
+    Extract(vals, name); 
+
+    assert( vals.size() == 2 ); 
+
+    double radius(vals[0]) ; 
+    double gridscale(vals[1]) ; 
+
+    LOG(info)
+        << " name " << name
+        << " radius " << radius 
+        << " gridscale " << gridscale
+        ; 
+
+    G4VSolid* item = new G4Orb("orb", radius*mm ); 
+
+    int nx = 3 ; 
+    int ny = 3 ; 
+    int nz = 3 ; 
+
+    return GridMultiUnion_(name, item, gridscale, nx, ny, nz ); 
+}
+
+
+
+const G4VSolid* X4SolidMaker::BoxGridMultiUnion(const char* name)
+{
+    std::vector<long> vals ; 
+    Extract(vals, name); 
+
+    assert( vals.size() == 2 ); 
+
+    double halfside(vals[0]) ; 
+    double gridscale(vals[1]) ; 
+
+    LOG(info)
+        << " name " << name
+        << " halfside " << halfside
+        << " gridscale " << gridscale
+        ; 
+
+    G4VSolid* item = new G4Box("box", halfside*mm, halfside*mm, halfside*mm ); 
+
+    int nx = 3 ; 
+    int ny = 3 ; 
+    int nz = 3 ; 
+
+    return GridMultiUnion_(name, item, gridscale, nx, ny, nz ); 
+}
+
+
+
+
+
+
+/**
+X4SolidMaker::Extract
+-----------------------
+
+Extract integers from a string into a vector. 
+
+**/
 
 void X4SolidMaker::Extract( std::vector<long>& vals, const char* s )  // static
 {

@@ -23,6 +23,12 @@ Commits
     epsilon:opticks blyth$ git push 
 
 
+Lucas phicut thetacut
+-------------------
+
+* https://bitbucket.org/imjavert/opticks/src/master/CSG/csg_intersect_node.h
+
+
 
 Idea for implementing G4Sphere theta and phi segments using unbounded primitives CSG_PHICUT CSG_THETACUT
 ----------------------------------------------------------------------------------------------------------

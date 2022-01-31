@@ -20,7 +20,7 @@ struct X4_API X4SolidMaker
     static bool  CanMake(const char* name); 
     static const G4VSolid* Make(const char* name); 
 
-    static const G4VSolid* Orb(const char* name); 
+    static const G4VSolid* JustOrb(const char* name); 
     static const G4VSolid* SphereWithPhiSegment(const char* name); 
     static const G4VSolid* SphereWithThetaSegment(const char* name); 
     static const G4VSolid* AdditionAcrylicConstruction(const char* name);
@@ -40,6 +40,11 @@ struct X4_API X4SolidMaker
     static const G4VSolid* BoxFourBoxUnion(const char* name); 
     static const G4VSolid* BoxCrossTwoBoxUnion(const char* name );
     static const G4VSolid* BoxThreeBoxUnion(const char* name); 
+
+    static const G4VSolid* GridMultiUnion_(const char* name, G4VSolid* item, double gridspace, int nx, int ny, int nz ); 
+    static const G4VSolid* OrbGridMultiUnion(const char* name);
+    static const G4VSolid* BoxGridMultiUnion(const char* name);
+
 
     static G4VSolid* Uncoincide_Box_Box_Union( const G4VSolid* bbu  ); 
     static std::string Desc( const G4Box* box );

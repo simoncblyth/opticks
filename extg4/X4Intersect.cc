@@ -3,6 +3,7 @@
 
 #include "G4ThreeVector.hh"
 #include "G4VSolid.hh"
+#include "G4MultiUnion.hh"
 
 #include "scuda.h"
 #include "squad.h"
@@ -69,10 +70,27 @@ G4double X4Intersect::Distance_(const G4VSolid* solid, const G4ThreeVector& pos,
     return t ; 
 }
 
+G4double X4Intersect::DistanceMultiUnionNoVoxels_(const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
+{
+    in =  solid->InsideNoVoxels(pos) ; 
+    G4double t = kInfinity ; 
+    switch( in )
+    {
+        case kInside:  t = solid->DistanceToOutNoVoxels( pos, dir, nullptr ) ; break ; 
+        case kSurface: t = solid->DistanceToOutNoVoxels( pos, dir, nullptr ) ; break ; 
+        case kOutside: t = solid->DistanceToInNoVoxels(  pos, dir ) ; break ; 
+        default:  assert(0) ; 
+    }
+    return t ; 
+}
+
+
 G4double X4Intersect::Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ) // static
 {
     EInside in ; 
-    G4double t = Distance_( solid, pos, dir, in  );  
+
+    const G4MultiUnion* m = dynamic_cast<const G4MultiUnion*>(solid) ; 
+    G4double t = m ? DistanceMultiUnionNoVoxels_(m, pos, dir, in ) : Distance_( solid, pos, dir, in  );  
 
     if(dump && t != kInfinity)
     {

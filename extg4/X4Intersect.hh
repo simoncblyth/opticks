@@ -8,6 +8,7 @@
 
 struct SCenterExtentGenstep ; 
 class G4VSolid ; 
+class G4MultiUnion ;
 
 struct X4_API X4Intersect
 {
@@ -18,6 +19,7 @@ struct X4_API X4Intersect
 
     static double Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump); 
     static double Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in  ); 
+    static double DistanceMultiUnionNoVoxels_(const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in );
 
     void init(); 
     void scan_(); 
