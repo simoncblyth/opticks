@@ -80,6 +80,8 @@ list(APPEND INTERSECT_HEADERS
     csg_tranche.h
     csg_error.h
     csg_postorder.h
+
+    f4_stack.h
 )
 
 list(APPEND CUDA_HEADERS

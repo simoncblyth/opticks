@@ -69,6 +69,7 @@ set(SOURCES
     X4SolidExtent.cc
     X4Mesh.cc
     X4SolidList.cc
+    X4SolidTree.cc
 
     X4GDMLParser.cc
     X4GDMLWriteStructure.cc
@@ -138,6 +139,7 @@ set(HEADERS
     X4SolidExtent.hh
     X4Mesh.hh
     X4SolidList.hh
+    X4SolidTree.hh
 
     X4GDMLParser.hh
     X4GDMLWriteStructure.hh

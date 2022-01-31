@@ -16,21 +16,21 @@ void test_CanMake()
     assert( other == false ); 
 }
 
-void test_Make()
+void test_Make(const char* qname_)
 {
-    const char* qname = "UnionOfHemiEllipsoids-10" ; 
+    const char* qname = qname_ ? qname_ : "UnionOfHemiEllipsoids-10" ;
     const G4VSolid* solid = X4SolidMaker::Make( qname ); 
-    assert( solid ); 
+    LOG(info) << " qname " << qname << " solid " << solid ;  
 }
-
-
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
     test_CanMake();
-    test_Make();
+    test_Make(nullptr);
+
+    for(int i=1 ; i < argc ; i++) test_Make( argv[i] ); 
   
     return 0 ; 
 }

@@ -15,9 +15,25 @@ using CLHEP::pi ;
 
 #include "SSys.hh"
 #include "X4SolidMaker.hh"
+#include "X4SolidTree.hh"
 #include "PLOG.hh"
 
 const plog::Severity X4SolidMaker::LEVEL = PLOG::EnvLevel("X4SolidMaker", "DEBUG"); 
+
+const char* X4SolidMaker::Name( const char* prefix, unsigned idx ) // static
+{
+    std::stringstream ss ; 
+    ss << prefix << idx ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()) ; 
+}
+
+G4VSolid* X4SolidMaker::PrimitiveClone( const G4VSolid* src, const char* prefix, unsigned idx) // static
+{
+    const char* name = Name(prefix, idx ); 
+    G4VSolid* clone = X4SolidTree::PrimitiveClone(src, name); 
+    return clone ; 
+}
 
 bool X4SolidMaker::StartsWith( const char* n, const char* q ) // static
 {
@@ -63,6 +79,12 @@ const G4VSolid* PolyconeWithMultipleRmin(const char* name);
 
 const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
 {
+    if(strcmp(qname, "NAMES") == 0 )
+    {
+        std::cout << NAMES ; 
+        return nullptr ; 
+    }
+
     const G4VSolid* solid = nullptr ; 
     if(     StartsWith("Orb",qname))                          solid = X4SolidMaker::Orb(qname); 
     else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4SolidMaker::SphereWithPhiSegment(qname); 
@@ -600,22 +622,43 @@ Extending CSG with projections: Towards formally certified
 
 const G4VSolid* X4SolidMaker::BoxFourBoxUnion_(const char* name, const char* opt )
 {
-    G4VSolid* down1 = new G4Box("down1", 45.*mm, 45.*mm, 45.*mm );
-    G4VSolid* comb = down1 ;  
-
-    G4VSolid* down2 = new G4Box("down2", 10.*mm, 11.5*mm, 13/2.*mm);
-    G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
+    G4VSolid* cbo = new G4Box("cbo", 45.*mm, 45.*mm, 45.*mm ); 
+    G4VSolid* xbo = new G4Box("xbo", 10.*mm, 11.5*mm, 13/2.*mm);
+    G4VSolid* ybo = new G4Box("ybo", 15.*mm, 15.*mm, 13/2.*mm);
 
     bool px = strstr(opt, "+X"); 
     bool nx = strstr(opt, "-X"); 
     bool py = strstr(opt, "+Y"); 
     bool ny = strstr(opt, "-Y"); 
 
-    if(px) comb = new G4UnionSolid("comb_px", comb, down2, 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));  // +X
-    if(nx) comb = new G4UnionSolid("comb_nx", comb, down2, 0, G4ThreeVector(-52.*mm, 0.*mm, 0.*mm)); // -X
+    G4VSolid* comb = nullptr ;  
+    unsigned idx = 0 ; 
 
-    if(py) comb = new G4UnionSolid("comb_py", comb, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
-    if(ny) comb = new G4UnionSolid("comb_ny", comb, down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
+    if(true)
+    {
+        comb = PrimitiveClone(cbo,"cbo",idx) ; 
+        idx += 1 ; 
+    }
+    if(px) 
+    {
+        comb = new G4UnionSolid(Name("cpx",idx), comb, PrimitiveClone(xbo,"bpx",idx+1), 0, G4ThreeVector(52.*mm, 0.*mm, 0.*mm));  // +X
+        idx += 2 ; 
+    }
+    if(nx) 
+    {
+        comb = new G4UnionSolid(Name("cnx",idx), comb, PrimitiveClone(xbo,"bnx",idx+1), 0, G4ThreeVector(-52.*mm, 0.*mm, 0.*mm)); // -X
+        idx += 2 ; 
+    }
+    if(py)
+    {
+        comb = new G4UnionSolid(Name("cpy",idx), comb, PrimitiveClone(ybo,"bpy",idx+1), 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
+        idx += 2 ; 
+    }
+    if(ny) 
+    {
+        comb = new G4UnionSolid(Name("cny",idx), comb, PrimitiveClone(ybo,"bny",idx+1), 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
+        idx += 2 ; 
+    } 
 
     return comb ; 
 }
