@@ -104,9 +104,19 @@ std::string NGrid<T>::desc()
         for(unsigned c=0 ; c < nc ; c++)
         {        
             const T* ptr = get(r,c) ;
-            //const char* label = ptr ? ptr->label : unset ; 
-            std::string id = ptr ? ptr->id() : unset ; 
-            ss << std::setw(width) << id ; 
+
+            std::string out = unset ; 
+            if(ptr)
+            {  
+                out = ptr->id() ; 
+                if(ptr->label && strcmp(ptr->label, out.c_str()) != 0)
+                {
+                    out += " " ; 
+                    out += ptr->label ; 
+                } 
+             }
+
+            ss << std::setw(width) << out ; 
         }
         ss << rowjoin ; 
     }

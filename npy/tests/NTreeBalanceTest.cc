@@ -36,11 +36,11 @@
 
 nnode* make_tree_0()
 {
-    nnode* a = make_sphere(0,0,-50,100) ;  
-    nnode* b = make_sphere(0,0, 50,100) ;  
-    nnode* c = make_box(0,0, 50,100) ;  
-    nnode* d = make_box(0,0,  0,100) ;  
-    nnode* e = make_box(0,0,  0,100) ;  
+    nnode* a = make_sphere(0,0,-50,100) ;    a->label = "a" ;
+    nnode* b = make_sphere(0,0, 50,100) ;    b->label = "b" ;
+    nnode* c = make_box(0,0, 50,100) ;       c->label = "c" ; 
+    nnode* d = make_box(0,0,  0,100) ;       d->label = "d" ;
+    nnode* e = make_box(0,0,  0,100) ;       e->label = "e" ;
 
     nnode* ab = nnode::make_operator( CSG_UNION, a, b );
     nnode* de = nnode::make_operator( CSG_DIFFERENCE, d, e );
@@ -51,22 +51,22 @@ nnode* make_tree_0()
 }
 
 
-nnode* make_tree_1()
+nnode* make_tree_1(OpticksCSG_t op)
 {
-    nnode* a = make_sphere(0,0,-50,100) ;  
-    nnode* b = make_sphere(0,0,-50,100) ;  
-    nnode* c = make_sphere(0,0,-50,100) ;  
-    nnode* d = make_sphere(0,0,-50,100) ;  
-    nnode* e = make_sphere(0,0,-50,100) ;  
-    nnode* f = make_sphere(0,0,-50,100) ;  
-    nnode* g = make_sphere(0,0,-50,100) ;  
+    nnode* a = make_sphere(0,0,-50,100) ;  a->label = "a" ; 
+    nnode* b = make_sphere(0,0,-50,100) ;  b->label = "b" ;  
+    nnode* c = make_sphere(0,0,-50,100) ;  c->label = "c" ; 
+    nnode* d = make_sphere(0,0,-50,100) ;  d->label = "d" ; 
+    nnode* e = make_sphere(0,0,-50,100) ;  e->label = "e" ; 
+    nnode* f = make_sphere(0,0,-50,100) ;  f->label = "f" ;  
+    nnode* g = make_sphere(0,0,-50,100) ;  g->label = "g" ; 
 
-    nnode* ab = nnode::make_operator( CSG_DIFFERENCE, a, b );
-    nnode* abc = nnode::make_operator( CSG_DIFFERENCE, ab, c );
-    nnode* abcd = nnode::make_operator( CSG_DIFFERENCE, abc, d );
-    nnode* abcde = nnode::make_operator( CSG_DIFFERENCE, abcd, e );
-    nnode* abcdef = nnode::make_operator( CSG_DIFFERENCE, abcde, f );
-    nnode* abcdefg = nnode::make_operator( CSG_DIFFERENCE, abcdef, g );
+    nnode* ab = nnode::make_operator( op , a, b );  ab->label="ab" ; 
+    nnode* abc = nnode::make_operator( op, ab, c ); abc->label="abc" ; 
+    nnode* abcd = nnode::make_operator( op, abc, d ); abcd->label="abcd" ; 
+    nnode* abcde = nnode::make_operator( op, abcd, e ); abcde->label="abcde" ; 
+    nnode* abcdef = nnode::make_operator( op, abcde, f ); abcdef->label="abcdef" ; 
+    nnode* abcdefg = nnode::make_operator( op, abcdef, g ); abcdefg->label="abcdefg" ; 
 
     return abcdefg ; 
 }
@@ -105,19 +105,19 @@ make_tree_2
 
 nnode* make_tree_2()
 {
-    nnode* a = make_sphere(0,0,-50,100) ;  
-    nnode* b = make_sphere(0,0,-50,100) ;  
-    nnode* c = make_sphere(0,0,-50,100) ;  
-    nnode* d = make_sphere(0,0,-50,100) ;  
-    nnode* e = make_sphere(0,0,-50,100) ;  
-    nnode* f = make_sphere(0,0,-50,100) ;  
-    nnode* g = make_sphere(0,0,-50,100) ;  
-    nnode* h = make_sphere(0,0,-50,100) ;  
-    nnode* i = make_sphere(0,0,-50,100) ;  
-    nnode* j = make_sphere(0,0,-50,100) ;  
-    nnode* k = make_sphere(0,0,-50,100) ;  
-    nnode* l = make_sphere(0,0,-50,100) ;  
-    nnode* m = make_sphere(0,0,-50,100) ;  
+    nnode* a = make_sphere(0,0,-50,100) ;   a->label = "a" ; 
+    nnode* b = make_sphere(0,0,-50,100) ;   b->label = "b" ; 
+    nnode* c = make_sphere(0,0,-50,100) ;   c->label = "c" ;  
+    nnode* d = make_sphere(0,0,-50,100) ;   d->label = "d" ;  
+    nnode* e = make_sphere(0,0,-50,100) ;   e->label = "e" ;  
+    nnode* f = make_sphere(0,0,-50,100) ;   f->label = "f" ;  
+    nnode* g = make_sphere(0,0,-50,100) ;   g->label = "g" ;  
+    nnode* h = make_sphere(0,0,-50,100) ;   h->label = "h" ; 
+    nnode* i = make_sphere(0,0,-50,100) ;   i->label = "i" ; 
+    nnode* j = make_sphere(0,0,-50,100) ;   j->label = "j" ; 
+    nnode* k = make_sphere(0,0,-50,100) ;   k->label = "k" ; 
+    nnode* l = make_sphere(0,0,-50,100) ;   l->label = "l" ; 
+    nnode* m = make_sphere(0,0,-50,100) ;   m->label = "m" ; 
 
     nnode* ab = nnode::make_operator( CSG_DIFFERENCE, a, b );
 
@@ -139,14 +139,59 @@ nnode* make_tree_2()
     return root ; 
 }
 
+
+
+nnode* make_tree_3()
+{
+    nnode* a = make_sphere(0,0,-50,100) ;   a->label = "a" ; 
+    nnode* b = make_sphere(0,0,-50,100) ;   b->label = "b" ; 
+    nnode* c = make_sphere(0,0,-50,100) ;   c->label = "c" ;  
+    nnode* d = make_sphere(0,0,-50,100) ;   d->label = "d" ;  
+    nnode* e = make_sphere(0,0,-50,100) ;   e->label = "e" ;  
+    nnode* f = make_sphere(0,0,-50,100) ;   f->label = "f" ;  
+    nnode* g = make_sphere(0,0,-50,100) ;   g->label = "g" ;  
+
+    nnode* ab = nnode::make_operator( CSG_UNION, a, b );
+    nnode* abc = nnode::make_operator( CSG_UNION, ab, c );
+    nnode* abcd = nnode::make_operator( CSG_UNION, abc, d );
+    nnode* abcde = nnode::make_operator( CSG_UNION, abcd, e );
+    nnode* abcdef = nnode::make_operator( CSG_UNION, abcde, f );
+    nnode* abcdefg = nnode::make_operator( CSG_DIFFERENCE, abcdef, g );
+
+    return abcdefg  ; 
+}
+
+
+
+nnode* make_tree_mono(OpticksCSG_t op, unsigned num_leaf)
+{
+    std::string labels = "abcdefghijklmnopqrstuvwxyz" ; 
+    assert( num_leaf < strlen(labels.c_str()) ); 
+
+    nnode* comp = nullptr ; 
+    for(unsigned i=0 ; i < num_leaf ; i++) 
+    {
+         nnode* node = make_sphere(0,0,-50,100) ;   
+         node->label = strdup(labels.substr(i,1).c_str()) ; 
+         comp = comp == nullptr ? node :  nnode::make_operator( CSG_UNION, comp, node ) ; 
+    }
+    return comp  ; 
+}
+
+
+
 nnode* make_tree( int i )
 {
     nnode* root = NULL ; 
     switch(i)
     {
-        case 0: root = make_tree_0() ; break ; 
-        case 1: root = make_tree_1() ; break ; 
-        case 2: root = make_tree_2() ; break ; 
+        case 0: root = make_tree_0()                  ; break ; 
+        case 1: root = make_tree_1(CSG_UNION)         ; break ; 
+        case 2: root = make_tree_2()                  ; break ; 
+        case 3: root = make_tree_3()                  ; break ; 
+        case 4: root = make_tree_mono(CSG_UNION, 4)   ; break ; 
+        case 5: root = make_tree_mono(CSG_UNION, 5)   ; break ; 
+        case 6: root = make_tree_mono(CSG_UNION, 6)   ; break ; 
     }
     assert( root ) ; 
     return root ; 
@@ -205,29 +250,27 @@ void test_balance(nnode* tree)
     LOG(info) << "tree balanced\n" << NTreeAnalyse<nnode>::Desc(balanced) ; 
 }
 
-void test_process(nnode* tree)
+void test_process(nnode* tree, int idx)
 {
-    LOG(info) << "tree initial \n" << NTreeAnalyse<nnode>::Desc(tree) ; 
+    LOG(info) << "tree " << idx << " initial \n" << NTreeAnalyse<nnode>::Desc(tree) ; 
 
     bool dump = true ; 
     NTreeProcess<nnode> proc(tree, dump); 
 
     nnode* result = proc.result ; 
-    LOG(info) << "tree result \n" << NTreeAnalyse<nnode>::Desc(result) ; 
+    LOG(info) << "tree " << idx << " result \n" << NTreeAnalyse<nnode>::Desc(result) ; 
 }
-
 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    int it = 2 ;  
-    nnode* tree = make_tree(it) ; 
-
-    //test_balance_0(tree);
-    //test_balance(tree);
-    test_process(tree);
+    for( int i=0 ; i < 7 ; i++)
+    {
+        nnode* tree = make_tree(i) ; 
+        test_process(tree, i );
+    }
 
     return 0 ; 
 }

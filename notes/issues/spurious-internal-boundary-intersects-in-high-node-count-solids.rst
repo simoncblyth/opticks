@@ -52,7 +52,7 @@ TODO
 
 
 2. experiment with a new compound "CSG_BLOBUNION" that 
-   does something a bit similar to G4MultiUnion with restrictions
+   does something a bit similar to G4MultiUnion perhaps with restrictions
    on the topology to make finding compound enter and exit points 
    performant   
 
@@ -60,10 +60,6 @@ TODO
      be mopped up into blobs 
 
 3. improve presentation of CSG/tests/CSGIntersectSolidTest.py so can explain the issue 
-
-
-
-
 
 
 

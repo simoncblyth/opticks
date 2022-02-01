@@ -609,18 +609,14 @@ TODO: switch off balancing and check the impact of pairing order
   although they work on their own they may be implicated with inner boundary spurious 
 
         
-                 
-                  U
+                       U                 
+                  U       E 
              U       D
         U       C
        A  B
 
-
 :google:`CSG disjoint union`
 
-* https://hal.inria.fr/hal-01225212/document
-
-Extending CSG with projections: Towards formally certified 
 
 **/
 
@@ -1221,6 +1217,8 @@ X4SolidMaker::Extract
 
 Extract integers from a string into a vector. 
 
+The 2nd strtol endptr arg increments p beyond each group of integer digits
+
 **/
 
 void X4SolidMaker::Extract( std::vector<long>& vals, const char* s )  // static
@@ -1229,7 +1227,7 @@ void X4SolidMaker::Extract( std::vector<long>& vals, const char* s )  // static
     char* p = s0 ; 
     while (*p) 
     {   
-        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtol(p, &p, 10)) ; 
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtol(p, &p, 10)) ;  
         else p++ ;
     }   
     free(s0); 
