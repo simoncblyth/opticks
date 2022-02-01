@@ -43,7 +43,10 @@ CSGFoundry::CSGFoundry()
     last_added_solid(nullptr),
     last_added_prim(nullptr),
     bnd(nullptr),
-    icdf(nullptr)
+    icdf(nullptr),
+    meta(nullptr),
+    fold(nullptr),
+    cfbase(nullptr)
 {
     init(); 
 }
@@ -1153,7 +1156,6 @@ void CSGFoundry::DumpAABB(const char* msg, const float* aabb) // static
 }
 
 
-
 void CSGFoundry::write(const char* base, const char* rel) const 
 {
     std::stringstream ss ;   
@@ -1167,9 +1169,9 @@ void CSGFoundry::write(const char* dir_) const
     const char* dir = SPath::Resolve(dir_, create_dirs); 
     LOG(info) << dir ; 
 
-    NP::WriteNames( dir, "meshname.txt", meshname );
-    NP::WriteNames( dir, "mmlabel.txt", mmlabel );
-    NP::WriteString( dir, "meta.txt", meta ); 
+    if(meshname.size() > 0 ) NP::WriteNames( dir, "meshname.txt", meshname );
+    if(mmlabel.size() > 0 )  NP::WriteNames( dir, "mmlabel.txt", mmlabel );
+    if(meta && strlen(meta) > 0)  NP::WriteString( dir, "meta.txt", meta ); 
               
     if(solid.size() > 0 ) NP::Write(dir, "solid.npy",  (int*)solid.data(),  solid.size(), 3, 4 ); 
     if(prim.size() > 0 ) NP::Write(dir, "prim.npy",   (float*)prim.data(), prim.size(),   4, 4 ); 
@@ -1231,6 +1233,14 @@ CSGFoundry*  CSGFoundry::Load(const char* dir) // static
     return fd ; 
 } 
 
+/**
+CSGFoundry::Load
+-----------------
+
+Convention is for rel to be named "CSGFoundry" thus
+
+**/
+
 CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
 {
     CSGFoundry* fd = new CSGFoundry();  
@@ -1242,9 +1252,28 @@ void CSGFoundry::load( const char* base, const char* rel )
 {
     std::stringstream ss ;   
     ss << base << "/" << rel ; 
-    std::string dir = ss.str();   
-    load( dir.c_str() ); 
+    std::string folder = ss.str();   
+    load( folder.c_str() ); 
 }
+
+void CSGFoundry::setFold(const char* fold_)
+{
+    const char* rel = SPath::Basename(fold_); 
+    assert( strcmp( rel, "CSGFoundry" ) == 0 ); 
+
+    fold = strdup(fold_);  
+    cfbase = SPath::Dirname(fold_) ; 
+}
+const char* CSGFoundry::getCFBase() const
+{
+    return cfbase ; 
+}
+const char* CSGFoundry::getFold() const 
+{
+    return fold ; 
+}
+
+
 
 
 template<typename T>

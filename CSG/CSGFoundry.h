@@ -55,6 +55,10 @@ struct CSG_API CSGFoundry
     CSGFoundry();
     void init(); 
 
+    const char* getFold() const ;
+    const char* getCFBase() const ;
+    void setFold(const char* fold); 
+
 
     std::string desc() const ;
     std::string descMeshName() const ; 
@@ -230,6 +234,9 @@ struct CSG_API CSGFoundry
     NP* icdf ; 
 
     const char* meta ; 
+    const char* fold ; 
+    const char* cfbase ; 
+
 
 
 };

@@ -307,8 +307,18 @@ bool CSGNode::IsOnlyDifferenceMask( unsigned atm )  // static
      return atm == CSG::DifferenceMask() ; 
 }
 
-
-
+void CSGNode::getYRange(float& y0, float& y1) const 
+{
+    unsigned tc = typecode(); 
+    if( tc == CSG_BOX3 )
+    {
+        float fx, fy, fz, a, b, c ; 
+        getParam( fx, fy, fz, a, b, c ); 
+  
+        y0 = -fy*0.5f ; 
+        y1 =  fy*0.5f ;  
+    }
+}
 
 void CSGNode::setAABBLocal()
 {

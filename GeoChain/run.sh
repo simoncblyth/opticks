@@ -46,6 +46,14 @@ To render the resulting CSG geometry on GPU node use eg::
    ./cxr_geochain.sh     # 3d rendered view 
 
 
+NB IF YOU GET PERPLEXING FAILS REMEMBER THAT SEVERAL PACKAGES MUST BE CONISTENT (ESPECIALLY THEIR HEADERS)
+
+* CSG
+* CSG_GGeo
+* GeoChain 
+
+
+
 EOU
 }
 

@@ -43,6 +43,40 @@ void test_draw_txt()
     c->print(); 
 }
 
+void test_format_float()
+{
+    char tmp[10] ;
+    for( float val=0.f ; val < 10.f ; val+= 0.50001f )
+    {
+        int len = sprintf(tmp, "%7.2f", val );
+
+        bool expect = len == int(strlen(tmp)) ; 
+        printf("//test_format_float %s  %d %d   \n", tmp, len, expect ); 
+    }
+}
+
+void test_draw_float()
+{
+    int xscale = 8 ; 
+    int yscale = 3 ; 
+    int width = 10 ; 
+    int height = 5 ; 
+
+    SCanvas* c = new SCanvas(width,height,xscale,yscale); 
+
+    for(int ix=0 ; ix < width ;  ix++ )
+    for(int iy=0 ; iy < height ; iy++ )
+    {
+        int dx = 0 ; 
+        for(int dy=0 ; dy < yscale ; dy++)
+        {
+            float val = float(dy) + 0.5f ; 
+            c->drawf(ix,iy,dx,dy, val );  
+        }
+    } 
+    c->print(); 
+}
+
 void test_resize()
 {
     int xscale = 5 ; 
@@ -67,7 +101,11 @@ int main(int argc, char** argv)
 {
     //test_draw_int(); 
     //test_draw_txt(); 
-    test_resize();  
+    //test_resize();  
+
+    test_format_float(); 
+    test_draw_float(); 
+ 
     return 0 ; 
 }
 

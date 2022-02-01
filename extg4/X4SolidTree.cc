@@ -49,7 +49,6 @@ void X4SolidTree::Draw(const G4VSolid* original, const char* msg ) // static
     zs->draw(msg);
     zs->dumpNames(msg); 
     zs->zdump(msg); 
-
 }
 
 X4SolidTree::X4SolidTree(const G4VSolid* original_ ) 
@@ -887,20 +886,39 @@ void X4SolidTree::draw_r( const G4VSolid* node_, int mode )
     canvas->draw(   ix, iy, 0,2,  idx); 
     canvas->drawch( ix, iy, 0,3,  mk ); 
 
+    bool can_y = X4SolidTree::CanY(node) ;
     bool can_z = X4SolidTree::CanZ(node) ;
     if(verbose) std::cout << "X4SolidTree::draw_r can_z " << can_z << std::endl ;  
 
-    if(can_z)
+    if(can_y)
     {
-        double zdelta = getZ(node_) ;  
+        double y_delta = getY(node_) ;  
+        double y0, y1 ; 
+        YRange(y0, y1, node);  
+
+        const char* fmt = "%7.2f" ;  
+        canvas->drawf(   ix, -1, 0,0,  y_delta   , fmt); 
+        canvas->drawf(   ix, -1, 0,2,  y1+y_delta, fmt  ); 
+        canvas->drawf(   ix, -1, 0,3,  y0+y_delta, fmt ); 
+    }
+    else if(can_z)
+    {
+        double z_delta = getZ(node_) ;  
         double z0, z1 ; 
         ZRange(z0, z1, node);  
 
         // below is coercing double into int val 
-        canvas->draw(   ix, -1, 0,0,  zdelta ); 
-        canvas->draw(   ix, -1, 0,2,  z1+zdelta ); 
-        canvas->draw(   ix, -1, 0,3,  z0+zdelta ); 
+        canvas->draw(   ix, -1, 0,0,  z_delta ); 
+        canvas->draw(   ix, -1, 0,2,  z1+z_delta ); 
+        canvas->draw(   ix, -1, 0,3,  z0+z_delta ); 
     }
+
+
+
+
+
+
+
 }
 
 
@@ -2293,6 +2311,25 @@ G4VSolid* X4SolidTree::PromoteTubsToPolycone( const G4VSolid* solid ) // static
 }
 
 
+double X4SolidTree::getX( const G4VSolid* node ) const
+{
+    G4RotationMatrix* tree_rot = nullptr ; 
+    G4ThreeVector    tree_tla(0., 0., 0. ); 
+    getTreeTransform(tree_rot, &tree_tla, node ); 
+
+    double x_delta = tree_tla.x() ; 
+    return x_delta ; 
+}
+
+double X4SolidTree::getY( const G4VSolid* node ) const
+{
+    G4RotationMatrix* tree_rot = nullptr ; 
+    G4ThreeVector    tree_tla(0., 0., 0. ); 
+    getTreeTransform(tree_rot, &tree_tla, node ); 
+
+    double y_delta = tree_tla.y() ; 
+    return y_delta ; 
+}
 
 double X4SolidTree::getZ( const G4VSolid* node ) const
 {
@@ -2300,14 +2337,29 @@ double X4SolidTree::getZ( const G4VSolid* node ) const
     G4ThreeVector    tree_tla(0., 0., 0. ); 
     getTreeTransform(tree_rot, &tree_tla, node ); 
 
-    double zdelta = tree_tla.z() ; 
-    return zdelta ; 
+    double z_delta = tree_tla.z() ; 
+    return z_delta ; 
 }
 
+
+
+
+
+
+bool X4SolidTree::CanX(  const G4VSolid* solid ) 
+{
+    int type = EntityType(solid) ; 
+    return type == _G4Box ; 
+}
+bool X4SolidTree::CanY(  const G4VSolid* solid ) 
+{
+    int type = EntityType(solid) ; 
+    return type == _G4Box ; 
+}
 bool X4SolidTree::CanZ( const G4VSolid* solid ) // static
 {
     int type = EntityType(solid) ; 
-    bool can = type == _G4Ellipsoid || type == _G4Tubs || type == _G4Polycone || type == _G4Torus ; 
+    bool can = type == _G4Ellipsoid || type == _G4Tubs || type == _G4Polycone || type == _G4Torus || type == _G4Box ; 
     G4String name = solid->GetName(); 
 
     if( can == false && verbose )
@@ -2322,6 +2374,24 @@ bool X4SolidTree::CanZ( const G4VSolid* solid ) // static
 
     return can ; 
 }
+
+
+void X4SolidTree::XRange( double& x0, double& x1, const G4VSolid* solid) // static  
+{
+    switch(EntityType(solid))
+    {
+        case _G4Box:       GetXRange( dynamic_cast<const G4Box*>(solid),       x0, x1 );  break ; 
+        case _G4Other:    { std::cout << "X4SolidTree::GetX FATAL : not implemented for entityType " << EntityTypeName(solid) << std::endl ; assert(0) ; } ; break ;  
+    }
+}
+void X4SolidTree::YRange( double& y0, double& y1, const G4VSolid* solid) // static  
+{
+    switch(EntityType(solid))
+    {
+        case _G4Box:       GetYRange( dynamic_cast<const G4Box*>(solid),       y0, y1 );  break ; 
+        case _G4Other:    { std::cout << "X4SolidTree::GetY FATAL : not implemented for entityType " << EntityTypeName(solid) << std::endl ; assert(0) ; } ; break ;  
+    }
+}
 void X4SolidTree::ZRange( double& z0, double& z1, const G4VSolid* solid) // static  
 {
     switch(EntityType(solid))
@@ -2330,9 +2400,34 @@ void X4SolidTree::ZRange( double& z0, double& z1, const G4VSolid* solid) // stat
         case _G4Tubs:      GetZRange( dynamic_cast<const G4Tubs*>(solid)    ,  z0, z1 );  break ; 
         case _G4Polycone:  GetZRange( dynamic_cast<const G4Polycone*>(solid),  z0, z1 );  break ; 
         case _G4Torus:     GetZRange( dynamic_cast<const G4Torus*>(solid),     z0, z1 );  break ; 
+        case _G4Box:       GetZRange( dynamic_cast<const G4Box*>(solid),       z0, z1 );  break ; 
         case _G4Other:    { std::cout << "X4SolidTree::GetZ FATAL : not implemented for entityType " << EntityTypeName(solid) << std::endl ; assert(0) ; } ; break ;  
     }
 }
+
+
+
+void X4SolidTree::GetXRange( const G4Box* const box, double& _x0, double& _x1 )  // static 
+{
+    _x1 = box->GetXHalfLength() ; 
+    _x0 = -_x1 ; 
+    assert( _x1 > 0. ); 
+}
+void X4SolidTree::GetYRange( const G4Box* const box, double& _y0, double& _y1 )  // static 
+{
+    _y1 = box->GetYHalfLength() ; 
+    _y0 = -_y1 ; 
+    assert( _y1 > 0. ); 
+}
+void X4SolidTree::GetZRange( const G4Box* const box, double& _z0, double& _z1 )  // static 
+{
+    _z1 = box->GetZHalfLength() ; 
+    _z0 = -_z1 ; 
+    assert( _z1 > 0. ); 
+}
+
+
+
 
 void X4SolidTree::GetZRange( const G4Ellipsoid* const ellipsoid, double& _z0, double& _z1 )  // static 
 {
@@ -2360,7 +2455,6 @@ void X4SolidTree::GetZRange( const G4Polycone* const polycone, double& _z0, doub
     _z1 = pars->Z_values[num_z-1] ; 
     _z0 = pars->Z_values[0] ;  
 }
-
 void X4SolidTree::GetZRange( const G4Torus* const torus, double& _z0, double& _z1 )  // static 
 {
     G4double rmax = torus->GetRmax() ; 

@@ -6,6 +6,7 @@ class G4Tubs ;
 class G4Polycone ; 
 class G4Torus ; 
 class G4DisplacedSolid ; 
+class G4Box ; 
 
 #include "G4RotationMatrix.hh" 
 #include "G4ThreeVector.hh" 
@@ -117,7 +118,10 @@ struct X4_API X4SolidTree
 
 
 
+    double getX(const G4VSolid* node ) const ; 
+    double getY(const G4VSolid* node ) const ; 
     double getZ(const G4VSolid* node ) const ; 
+
     void   getTreeTransform( G4RotationMatrix* rot, G4ThreeVector* tla, const G4VSolid* node ) const ; 
 
     int classifyTree( double zcut ); 
@@ -211,7 +215,6 @@ struct X4_API X4SolidTree
     static const char* DirtyEntityTag_( const G4VSolid* node );
     static const char* EntityTag_( const G4VSolid* solid );
 
-
     enum { 
        UNDEFINED=0, 
          INCLUDE=1<<0, 
@@ -238,7 +241,6 @@ struct X4_API X4SolidTree
     static bool            Displaced(       const G4VSolid* solid) ;
     static std::string     Desc(const G4VSolid* solid); 
 
-
     // navigation
     static const G4VSolid* Left(  const G4VSolid* node) ;
     static const G4VSolid* Right( const G4VSolid* node) ;  // NB the G4VSolid returned might be a G4DisplacedSolid wrapping the G4VSolid 
@@ -251,8 +253,18 @@ struct X4_API X4SolidTree
     static       G4VSolid* Moved_( G4RotationMatrix* rot, G4ThreeVector* tla, G4VSolid* node) ;
 
     // local node frame access 
+    static void XRange( double& x0, double& x1,  const G4VSolid* solid ) ; 
+    static void YRange( double& y0, double& y1,  const G4VSolid* solid ) ; 
     static void ZRange( double& z0, double& z1,  const G4VSolid* solid ) ; 
+
+    static bool CanX(   const G4VSolid* solid ); 
+    static bool CanY(   const G4VSolid* solid ); 
     static bool CanZ(   const G4VSolid* solid ); 
+
+    static void GetXRange( const G4Box*       const box      , double& x0, double& x1 );
+    static void GetYRange( const G4Box*       const box      , double& y0, double& y1 );
+    static void GetZRange( const G4Box*       const box      , double& z0, double& z1 );
+
     static void GetZRange( const G4Ellipsoid* const ellipsoid, double& z0, double& z1 );
     static void GetZRange( const G4Tubs*      const tubs     , double& z0, double& z1 ); 
     static void GetZRange( const G4Polycone*  const polycone , double& z0, double& z1 ); 

@@ -29,7 +29,7 @@ struct SCanvas
     void clear(); 
     void drawtest(); 
 
-    void drawf(  int ix, int iy, int dx, int dy, float val); 
+    void drawf(  int ix, int iy, int dx, int dy, float val , const char* fmt="%7.2f" ); 
     void draw(   int ix, int iy, int dx, int dy, int val); 
     void drawch( int ix, int iy, int dx, int dy, char ch); 
     void draw(   int ix, int iy, int dx, int dy, const char* txt);
@@ -87,10 +87,10 @@ inline void SCanvas::drawtest()
 
 
 
-inline void SCanvas::drawf(int ix, int iy, int dx, int dy, float val)
+inline void SCanvas::drawf(int ix, int iy, int dx, int dy, float val, const char* fmt )
 {
     char tmp[10] ;
-    int rc = sprintf(tmp, "%f", val );
+    int rc = sprintf(tmp, fmt, val );
     bool expect = rc == int(strlen(tmp)) ; 
     assert( expect );
     if(!expect) exit(EXIT_FAILURE) ; 
@@ -141,12 +141,17 @@ inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   //
     int y = iy*yscale + dy ; 
     int l = strlen(txt) ; 
 
-    bool expect_xy =  x + l < int(nx) &&  y < int(ny) ; 
-    assert( expect_xy ); 
+    bool expect_xscale = xscale > 7 ; 
+    if(!expect_xscale) printf("SCanvas::_draw expect_xscale when drawing floats an xscale of at least 8 is needed  xscale %d  \n", xscale) ; 
 
-    if(!expect_xy) printf("SCanvas::_draw expect_xy ERROR out of range x+l %d  nx %d  y %d ny %d \n", x+l, nx, y, ny ); 
-    if(!expect_xy) exit(EXIT_FAILURE); 
+    bool expect_x =  x + l < int(nx) ; 
+    bool expect_y =  y < int(ny) ; 
 
+    if(!expect_x) printf("SCanvas::_draw expect_x ERROR out of range ix %d xscale %d dx %d x %d l %d x+l %d  nx %d txt [%s] \n", ix, xscale, dx, x, l, x+l, nx, txt ); 
+    if(!expect_y) printf("SCanvas::_draw expect_y ERROR out of range y %d ny %d \n",   y, ny ); 
+
+    if(!expect_x) exit(EXIT_FAILURE); 
+    if(!expect_y) exit(EXIT_FAILURE); 
 
     int offset = y*nx + x ;  
     bool expect_offset = offset >= 0 && offset + l < int(nx*ny) ; 

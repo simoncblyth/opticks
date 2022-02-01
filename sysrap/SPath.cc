@@ -69,6 +69,16 @@ const char* SPath::GetHomePath(const char* rel)  // static
     return strdup(path.c_str()) ; 
 }
 
+/**
+SPath::Dirname
+-----------------
+
+::
+
+   SPath::Dirname("/some/path/with/some/last/elem") ->  "/some/path/with/some/last"
+
+**/
+
 const char* SPath::Dirname(const char* path)  
 {
     std::string p = path ; 

@@ -314,8 +314,11 @@ entire tree to see if the primitive ends up being negated.
 For example could have a double difference.
 Hmm this would suggest that should always positivize the tree, 
 not just for overlarge ones that get balanced.  
+
 Then can just exclude the primitives that end up 
 being complemented.
+
+* THIS IS DONE : TREES ARE NOW STANDARDLY CONVERTED TO POSITIVE FORM AT NPY LEVEL
 
 Also previously the placeholder zero node bbox were not excluded from inclusion 
 in the CSGPrim bbox which sometimes unnecessarily increased bbox in any direction by up to to 100mm, 
@@ -482,8 +485,10 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     std::string tag = comp->getTag(partIdx); 
     unsigned tc = comp->getTypeCode(partIdx);
 
+
+    // TODO: transform handling in double, narrowing to float at the last possible moment 
     const Tran<float>* tv = nullptr ; 
-    unsigned gtran = comp->getGTransform(partIdx);
+    unsigned gtran = comp->getGTransform(partIdx);  // 1-based index, 0 means None
     if( gtran > 0 )
     {
         glm::mat4 t = comp->getTran(gtran-1,0) ;
@@ -491,7 +496,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
         tv = new Tran<float>(t, v); 
     }
 
-    unsigned tranIdx = tv ?  1 + foundry->addTran(*tv) : 0 ; 
+    unsigned tranIdx = tv ?  1 + foundry->addTran(*tv) : 0 ;   // 1-based index referencing foundry transforms
 
     const float* param = comp->getPartValues(partIdx, 0, 0 );  
     bool complement = comp->getComplement(partIdx);

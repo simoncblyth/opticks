@@ -1,3 +1,5 @@
+#include <csignal>
+
 #include "SSys.hh"
 #include "SPath.hh"
 #include "PLOG.hh"
@@ -31,14 +33,14 @@ const char* CSGGeometry::OutDir(const char* cfbase, const char* geom)   // stati
 }
 
 
-CSGGeometry::CSGGeometry()
+CSGGeometry::CSGGeometry(const CSGFoundry* fd_)
     :
     default_geom(nullptr),
     geom(SSys::getenvvar("GEOM", default_geom)),
     cfbase(SSys::getenvvar("CFBASE")), 
     outdir(OutDir(cfbase,geom)),
     name(nullptr),
-    fd(nullptr),
+    fd(fd_),
     q(nullptr),
     d(nullptr)
 {
@@ -48,35 +50,35 @@ CSGGeometry::CSGGeometry()
 
 void  CSGGeometry::init()
 {
-    if( geom != nullptr && cfbase == nullptr)
+    if( fd == nullptr )
     {
-        init_geom(); 
+        if( geom != nullptr && cfbase == nullptr)
+        {
+            name = strdup(geom); 
+            LOG(info) << "init from GEOM " << geom << " name " << name ; 
+            fd = CSGFoundry::Make(geom) ; 
+        }
+        else if(cfbase != nullptr)
+        {
+            name = SPath::Basename(cfbase); 
+            LOG(info) << "init from CFBASE " << cfbase << " name " << name  ; 
+            fd = CSGFoundry::Load(cfbase, "CSGFoundry");
+        }
+        else
+        {
+            LOG(fatal) << " neither GEOM or CFBASE envvars are defined and fd pointer not provided : ABORT " ; 
+            std::raise(SIGINT); 
+        }
     }
-    else if(cfbase != nullptr)
-    {
-        init_cfbase();
-    } 
     else
     {
-        LOG(fatal) << " neither GEOM or CFBASE envvars are defined " ; 
-        return ; 
+        LOG(info) << " booting from provided CSGFoundry pointer " ; 
+        cfbase = fd->getCFBase(); 
     }
     q = new CSGQuery(fd); 
     d = new CSGDraw(q) ; 
 }
 
-void  CSGGeometry::init_geom()
-{
-    name = strdup(geom); 
-    LOG(info) << "init from GEOM " << geom << " name " << name ; 
-    fd = CSGFoundry::Make(geom) ; 
-}
-void  CSGGeometry::init_cfbase()
-{
-    name = SPath::Basename(cfbase); 
-    LOG(info) << "init from CFBASE " << cfbase << " name " << name  ; 
-    fd = CSGFoundry::Load(cfbase, "CSGFoundry");
-}
 
 void CSGGeometry::saveSignedDistanceField() const 
 {
@@ -181,5 +183,8 @@ void CSGGeometry::draw(const char* msg)
     d->draw(msg); 
 }
 
-
-
+void CSGGeometry::Draw( const CSGFoundry* fd, const char* msg  ) // static 
+{
+    CSGGeometry cgeo(fd); 
+    cgeo.draw(msg); 
+}

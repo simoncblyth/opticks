@@ -9,7 +9,7 @@ struct CSG_API CSGDraw
 {
     CSGDraw(const CSGQuery* q_) ; 
     void draw(const char* msg);
-    void draw_r(int nodeIdxRel, int depth, int& inorder ) ;
+    void draw_r(int nodeIdxRel, int depth, int& inorder, char axis ) ;
 
     const CSGQuery* q ; 
     unsigned   width ; 

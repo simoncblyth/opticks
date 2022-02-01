@@ -16,6 +16,7 @@ struct CSGDraw ;
 
 struct CSG_API CSGGeometry 
 {
+    static void Draw( const CSGFoundry* fd, const char* msg="CSGGeometry::Draw"  ); 
     static const char* OutDir(const char* cfbase, const char* geom);  
 
     const char* default_geom ; 
@@ -28,7 +29,7 @@ struct CSG_API CSGGeometry
     const CSGQuery*   q ;  
     CSGDraw*    d ;    // cannot be const because of canvas
 
-    CSGGeometry(); 
+    CSGGeometry(const CSGFoundry* fd_ = nullptr); 
 
     void init(); 
     void init_geom(); 

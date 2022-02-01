@@ -13,8 +13,10 @@
 #include "GMesh.hh"
 #include "GGeo.hh"
 #include "X4PhysicalVolume.hh"
+#include "X4SolidTree.hh"
 
 #include "CSGFoundry.h"
+#include "CSGGeometry.h"
 #include "CSG_GGeo_Convert.h"
 
 #include "PLOG.hh"
@@ -42,15 +44,20 @@ GeoChain::GeoChain(Opticks* ok_)
 {
 }
 
-void GeoChain::convertSolid(const G4VSolid* so)
+void GeoChain::convertSolid(const G4VSolid* solid )
 {
-    G4String solidname = so->GetName(); 
+    LOG(info) << "[" ;  
+    X4SolidTree::Draw(solid, "GeoChain::convertSolid original G4VSolid tree" );  
+
+    G4String solidname = solid->GetName(); 
     const char* soname = strdup(solidname.c_str()); 
     const char* lvname = strdup(solidname.c_str()); 
 
-    mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, so, soname, lvname ) ; 
+    mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, solid, soname, lvname ) ; 
     LOG(info) << " mesh " << mesh ; 
     convertMesh(mesh); 
+    
+    CSGGeometry::Draw(fd, "GeoChain::convertSolid converted CSGNode tree"); 
 
     LOG(info) << "]" ;  
 }
