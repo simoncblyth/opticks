@@ -60,6 +60,8 @@ set(TEST_SOURCES
 
     X4SurfaceTest.cc
     CLHEPVersionInteger.cc
+
+    convertMultiUnionTest.cc
 )
 
 

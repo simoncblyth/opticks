@@ -381,6 +381,10 @@ void CSGNode::setAABBLocal()
     {
         setAABB( 0.f );  
     }
+    else if( tc == CSG_CONTIGUOUS || tc == CSG_DISCONTIGUOUS )
+    {
+        setAABB( 0.f );  
+    }
     else if( tc == CSG_ZERO )
     {
         setAABB( UNBOUNDED_DEFAULT_EXTENT ); 

@@ -32,6 +32,7 @@
 #include "G4Tubs.hh"
 #include "G4Box.hh"
 #include "G4Orb.hh"
+#include "G4MultiUnion.hh"
 #include "G4Sphere.hh"
 #include "G4BooleanSolid.hh"
 #include "G4IntersectionSolid.hh"
@@ -61,6 +62,8 @@
 #include "NSphere.hpp"
 #include "NBox.hpp"
 #include "NDisc.hpp"
+#include "NMultiUnion.hpp"
+
 #include "NNode.hpp"
 #include "NTreeBuilder.hpp"
 #include "NTreeProcess.hpp"
@@ -299,26 +302,8 @@ void X4Solid::convertDisplacedSolid()
 
     glm::mat4 xf_disp = X4Transform3D::GetDisplacementTransform(disp);  
 
-    const nmat4triple* disp_transform = new nmat4triple(xf_disp) ; 
-
-
-    if( a->transform == nullptr )  // no preexisting transform, no stomp worries
-    {
-        a->transform = disp_transform ; 
-    }
-    else
-    {
-        // TODO: CHECK TO SEE IF THIS AVOIDS STOMPING ON PRIOR TRANSFORM SUCH AS ELLIPSOID SCALE 
-        const nmat4triple* prior_transform = a->transform ; 
-
-        bool reverse = false ;   // adhoc guess of transform order : to be checked by comparing results with G4 
-        const nmat4triple* comb_transform = nmat4triple::product( disp_transform, prior_transform, reverse ); 
-        a->transform = comb_transform ; 
-
-        DumpTransform("prior_transform", prior_transform );  
-        DumpTransform("disp_transform", disp_transform );  
-        DumpTransform("comb_transform", comb_transform );  
-    }
+    bool update_global = false ;   // update happens later,  after tree completed
+    a->set_transform( xf_disp, update_global );   
 
     setRoot(a); 
 }
@@ -338,14 +323,54 @@ void X4Solid::DumpTransform( const char* msg, const nmat4triple* transform ) // 
         ;
 }
 
+/**
+X4Solid::convertMultiUnion
+---------------------------
+
+**/
+
+void X4Solid::convertMultiUnion()
+{
+    const G4MultiUnion* const compound = static_cast<const G4MultiUnion*>(m_solid);
+    assert(compound); 
+
+    //OpticksCSG_t type = CSG_DISCONTIGUOUS ;   
+    OpticksCSG_t type = CSG_CONTIGUOUS ;   
+    // TODO: set type depending on solid name 
+
+    nnode* n_comp = make_multiunion(type) ;  
+    unsigned num_sub = compound->GetNumberOfSolids() ; 
+
+    int lvIdx = get_lvIdx();  // pass lvIdx to children 
+    bool top = false ; 
+
+    for( unsigned isub=0 ; isub < num_sub ; isub++)
+    {
+        const G4VSolid* sub = compound->GetSolid(isub);
+        // TODO: assert that the constituents are primitives, not booleans or G4MultiUnion 
+ 
+        const G4Transform3D& tr = compound->GetTransformation(isub) ;
+        glm::mat4 tr_sub = X4Transform3D::Convert(tr); 
+
+        X4Solid* x_sub = new X4Solid(sub, m_ok, top, lvIdx); 
+        nnode* n_sub = x_sub->root(); 
+
+        n_sub->set_transform( tr_sub, true );  
+
+        n_comp->subs.push_back(n_sub);      
+    }
+
+    setRoot(n_comp); 
+}
 
 
 /**
 X4Solid::convertBooleanSolid
 ------------------------------
 
-Looks like the handling of the boolean transform happens at the 
-level of the right child, not here.  
+The transform which may be associated with the right child gets
+captured by X4Solid::convertDisplacedSolid when the right child 
+is a G4DisplacedSolid. 
 
 **/
 
@@ -443,7 +468,6 @@ void X4Solid::convertBooleanSolid()
     const std::vector<std::string> ckeys(keys); 
     setG4Param(cparam, ckeys); 
 }
-
 
 
 
@@ -617,16 +641,12 @@ void X4Solid::convertOrb()
     setG4Args(param, keys);
 }
 
-
 void X4Solid::convertBox()
 {  
     // cf ../analytic/gdml.py:Box
 
     const G4Box* const solid = static_cast<const G4Box*>(m_solid);
     assert(solid); 
-
-    //LOG(info) << "\n" << *solid ; 
-
 
     // match G4GDMLWriteSolids::BoxWrite
     float hx = solid->GetXHalfLength()/mm ; 

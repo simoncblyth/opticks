@@ -112,9 +112,11 @@ msg="=== $BASH_SOURCE :"
 
 #geom=BoxFourBoxUnion_YX
 #geom=BoxThreeBoxUnion_YX
+geom=BoxFourBoxContiguous_YX
 
 #geom=OrbGridMultiUnion10:30_YX
-geom=BoxGridMultiUnion10:30_YX
+#geom=BoxGridMultiUnion10:30_YX
+
 
 
 export GEOM=${GEOM:-$geom}

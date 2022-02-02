@@ -76,6 +76,7 @@ BoxCrossTwoBoxUnion
 BoxThreeBoxUnion
 OrbGridMultiUnion
 BoxGridMultiUnion
+BoxFourBoxContiguous
 )LITERAL"; 
 
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
@@ -113,6 +114,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     else if(StartsWith("BoxThreeBoxUnion", qname))            solid = X4SolidMaker::BoxThreeBoxUnion(qname) ; 
     else if(StartsWith("OrbGridMultiUnion", qname))           solid = X4SolidMaker::OrbGridMultiUnion(qname) ; 
     else if(StartsWith("BoxGridMultiUnion", qname))           solid = X4SolidMaker::BoxGridMultiUnion(qname) ; 
+    else if(StartsWith("BoxFourBoxContiguous", qname))        solid = X4SolidMaker::BoxFourBoxContiguous(qname) ; 
     assert(solid); 
     return solid ; 
 }
@@ -671,6 +673,70 @@ const G4VSolid* X4SolidMaker::BoxThreeBoxUnion(const char* name ){     return Bo
 
 
 
+const G4VSolid* X4SolidMaker::BoxFourBoxContiguous_(const char* name, const char* opt )
+{
+    G4VSolid* cbo = new G4Box("cbo", 45.*mm, 45.*mm, 45.*mm ); 
+    G4VSolid* xbo = new G4Box("xbo", 10.*mm, 11.5*mm, 13/2.*mm);
+    G4VSolid* ybo = new G4Box("ybo", 15.*mm, 15.*mm, 13/2.*mm);
+
+    bool px = strstr(opt, "+X"); 
+    bool nx = strstr(opt, "-X"); 
+    bool py = strstr(opt, "+Y"); 
+    bool ny = strstr(opt, "-Y"); 
+
+    G4VSolid* item ; 
+    unsigned idx = 0 ; 
+    G4MultiUnion* comb = new G4MultiUnion(name);
+    G4RotationMatrix rot(0, 0, 0);
+
+    if(true)
+    {
+        G4ThreeVector pos(0.*mm, 0.*mm, 0.*mm);  // center
+        G4Transform3D tr(rot, pos); 
+        item = PrimitiveClone(cbo,"cbo",idx) ; 
+        comb->AddNode(*item, tr);
+        idx+=1 ; 
+    }
+    if(px) 
+    {
+        G4ThreeVector pos(52.*mm, 0.*mm, 0.*mm);  // +X
+        G4Transform3D tr(rot, pos); 
+        item = PrimitiveClone(xbo,"bpx",idx) ; 
+        comb->AddNode(*item, tr);
+        idx+=1 ; 
+    }
+    if(nx) 
+    {
+        G4ThreeVector pos(-52.*mm, 0.*mm, 0.*mm);  // -X
+        G4Transform3D tr(rot, pos); 
+        item = PrimitiveClone(xbo,"bnx",idx) ; 
+        comb->AddNode(*item, tr);
+        idx += 1 ; 
+    }
+    if(py)
+    {
+        G4ThreeVector pos(0.*mm, 50.*mm, 0.*mm);  // +Y
+        G4Transform3D tr(rot, pos); 
+        item = PrimitiveClone(ybo,"bpy",idx) ; 
+        comb->AddNode(*item, tr);
+        idx += 1 ; 
+    }
+    if(ny) 
+    {
+        G4ThreeVector pos(0.*mm, -50.*mm, 0.*mm);  // -Y
+        G4Transform3D tr(rot, pos); 
+        item = PrimitiveClone(ybo,"bny",idx) ; 
+        comb->AddNode(*item, tr);
+        idx += 1 ; 
+    } 
+    return comb ; 
+}
+
+
+const G4VSolid* X4SolidMaker::BoxFourBoxContiguous(const char* name ){     return BoxFourBoxContiguous_(name, "-X,+X,+Y,-Y") ; }
+
+
+
 
 
 
@@ -1122,6 +1188,7 @@ const G4VSolid* X4SolidMaker::GridMultiUnion_(const char* name, G4VSolid* item, 
         G4RotationMatrix rot(0, 0, 0);
         G4Transform3D tr(rot, pos); 
         grid->AddNode(*item, tr);
+
     }
     //grid->Voxelize();
     return grid ; 

@@ -41,6 +41,7 @@ float __int_as_float(int i)
 #include "CSGPrim.h"
 
 #include "csg_robust_quadratic_roots.h"
+#include "csg_classify.h"
 
 /**
 csg_intersect_node.h
@@ -59,6 +60,11 @@ CSGNode (synonymous with Part)
 Bringing over functions from  ~/opticks/optixrap/cu/csg_intersect_primitive.h
 
 **/
+
+
+
+INTERSECT_FUNC
+bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction ); 
 
 
 INTERSECT_FUNC
@@ -311,6 +317,157 @@ bool intersect_node_convexpolyhedron( float4& isect, const CSGNode* node, const 
     }
     return valid_intersect ;
 }
+
+
+
+
+/**
+intersect_node_contiguous
+----------------------------
+
+
+Example of a contiguous shape composed of constituent boxes::
+
+
+                                           +---------------+
+                                           |               |   
+                                           |               |   
+                                           |               |   
+                             +-------------|...............|-----------+
+                             |             .               .           |   
+                             |             .               .           |   
+                             |             .               .           |   
+                             |             .................           |   
+                             |                                         |   
+                             |                                         |   
+                      +------........                            .......--------+
+                      |      .      .                            .     .        |   
+                      |      .      .                            .  0 -1 - - - [2]  
+                      |      .      .                            .     .        |   
+           0 - - - - [1]- - -2      .                     0 - - -1 - - 2 - - - [3]  
+                      |      .      .                            E     X        |   
+                      |      .      .                            .     .        |  
+                      +------........                            .......--------+
+                             |                                         |   
+                             |                                         |   
+                             |                                   0 - - 1   
+                             |                                         |   
+                             |             .................           |   
+                             |             .               .           |   
+                     0 - - - 1 - - - - - - 2               .           |   
+                             E             E               .           |   
+                             +-------------.................-----------+
+                                           |               |   
+                                           |               |   
+                                           |               |   
+                                           +---------------+
+
+
+
+* can tell are outside all constituents (and hence the compound) 
+  when *ALL* first intersects on constituents are state ENTER 
+  [this assumes non-complemented constituents]
+  (this is because EXIT is shielded by the corresponding ENTER) 
+
+  * -> compound intersect is the closest ENTER
+
+* when *ANY* EXIT states are obtained from first intersects this means 
+  are inside the CONTIGUOUS compound
+
+  * this true in general for CONTIGUOUS compounds as are considering intersects 
+    with all constituents and constituents do not "shield" each other : so will 
+    always manage to have a first intersect that EXIT when start inside any of them 
+
+  * to find the compound intersect are forced to find all the EXITS 
+    for all the consituents that found ENTERs for  
+
+
+**/
+
+INTERSECT_FUNC
+float distance_node( const float3& global_position, const CSGNode* node, const float4* plan, const qat4* itra ); 
+
+INTERSECT_FUNC
+float distance_node_contiguous( const float3& pos, const CSGNode* node, const float4* plan, const qat4* itra )
+{
+    const unsigned num_sub = node->subNum() ; 
+    float sd = RT_DEFAULT_MAX ; 
+    for(unsigned isub=0 ; isub < num_sub ; isub++)
+    {
+         const CSGNode* sub_node = node+1u+isub ; 
+         float sub_sd = distance_node( pos, sub_node, plan, itra ); 
+         sd = fminf( sd, sub_sd ); 
+    }
+    return sd ; 
+}
+
+
+INTERSECT_FUNC
+bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
+{
+    float sd = distance_node_contiguous( ray_origin, node, plan, itra ); 
+    bool inside = sd < 0.f ;
+ 
+    const unsigned num_sub = node->subNum() ; 
+
+    float4 isect_nearest_enter = make_float4( 0.f, 0.f, 0.f, RT_DEFAULT_MAX ) ; 
+    float4 isect_farthest_exit = make_float4( 0.f, 0.f, 0.f, t_min ) ; 
+
+    float4 sub_isect_0 = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
+    float4 sub_isect_1 = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
+
+    unsigned enter_count = 0 ; 
+    unsigned exit_count = 0 ; 
+    float propagate_epsilon = 0.0001f ; 
+
+    for(unsigned isub=0 ; isub < num_sub ; isub++)
+    {
+        const CSGNode* sub_node = node+1u+isub ; 
+        if(intersect_node( sub_isect_0, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
+        {
+             IntersectionState_t sub_state_0 = CSG_CLASSIFY( sub_isect_0, ray_direction, t_min ); 
+             if( sub_state_0 == State_Exit)
+             {
+                 exit_count += 1 ; 
+                 if( sub_isect_0.w > isect_farthest_exit.w ) isect_farthest_exit = sub_isect_0 ;  
+             }
+             else if( sub_state_0 == State_Enter)
+             {
+                 enter_count += 1 ; 
+                 if( sub_isect_0.w < isect_nearest_enter.w ) isect_nearest_enter = sub_isect_0 ;  
+
+                 if(inside)  // when inside need to find EXITs for all the ENTERs, when ouside just need nearest ENTER
+                 { 
+                     float tminAdvanced = sub_isect_0.w + propagate_epsilon ; 
+                     if(intersect_node( sub_isect_1, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
+                     {
+                          IntersectionState_t sub_state_1 = CSG_CLASSIFY( sub_isect_1, ray_direction, tminAdvanced ); 
+                          if( sub_state_1 == State_Exit ) 
+                          {
+                              exit_count += 1 ; 
+                              if( sub_isect_1.w > isect_farthest_exit.w ) isect_farthest_exit = sub_isect_1 ;  
+                          } 
+                     }
+                 }
+             }
+        }
+    }
+
+    bool valid_intersect = false ; 
+    if( inside )
+    {
+        valid_intersect = exit_count > 0 && isect_farthest_exit.w > t_min ; 
+        if(valid_intersect) isect = isect_farthest_exit ;  
+    } 
+    else
+    {
+        valid_intersect = enter_count > 0 && isect_nearest_enter.w > t_min ; 
+        if(valid_intersect) isect = isect_nearest_enter ;  
+    }
+    return valid_intersect ; 
+}
+
+
 
 
 /**
@@ -1486,6 +1643,7 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_SPHERE:           valid_isect = intersect_node_sphere(           isect, node->q0,               t_min, origin, direction ) ; break ; 
         case CSG_ZSPHERE:          valid_isect = intersect_node_zsphere(          isect, node->q0, node->q1,     t_min, origin, direction ) ; break ; 
         case CSG_CONVEXPOLYHEDRON: valid_isect = intersect_node_convexpolyhedron( isect, node, plan,             t_min, origin, direction ) ; break ;
+        case CSG_CONTIGUOUS:       valid_isect = intersect_node_contiguous(       isect, node, plan, itra,       t_min, origin, direction ) ; break ;
         case CSG_CONE:             valid_isect = intersect_node_cone(             isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_HYPERBOLOID:      valid_isect = intersect_node_hyperboloid(      isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_BOX3:             valid_isect = intersect_node_box3(             isect, node->q0,               t_min, origin, direction ) ; break ;
@@ -1559,6 +1717,7 @@ float distance_node( const float3& global_position, const CSGNode* node, const f
         case CSG_SPHERE:           distance = distance_node_sphere(            local_position, node->q0 )           ; break ; 
         case CSG_ZSPHERE:          distance = distance_node_zsphere(           local_position, node->q0, node->q1 ) ; break ; 
         case CSG_CONVEXPOLYHEDRON: distance = distance_node_convexpolyhedron(  local_position, node, plan )         ; break ;
+        case CSG_CONTIGUOUS:       distance = distance_node_contiguous(        local_position, node, plan, itra )   ; break ;
         case CSG_BOX3:             distance = distance_node_box3(              local_position, node->q0 )           ; break ;
         case CSG_CYLINDER:         distance = distance_node_cylinder(          local_position, node->q0, node->q1 ) ; break ;
         case CSG_PLANE:            distance = distance_node_plane(             local_position, node->q0 )           ; break ;

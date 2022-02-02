@@ -102,6 +102,7 @@ class X4_API X4Solid : public X4SolidBase
         void convertIntersectionSolid();
         void convertSubtractionSolid();
     private:
+        void convertMultiUnion();
         void convertBooleanSolid();
         void convertSphere();
         static const bool convertSphere_enable_phi_segment ;  

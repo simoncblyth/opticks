@@ -100,10 +100,15 @@ struct CSG_API CSGNode
     quad q2 ; 
     quad q3 ; 
 
+    // only used for CSG_CONVEXPOLYHEDRON and similar prim like CSG_TRAPEZOID which are composed of planes 
     NODE_METHOD unsigned planeIdx()      const { return q0.u.x ; }  // 1-based, 0 meaning None
     NODE_METHOD unsigned planeNum()      const { return q0.u.y ; } 
     NODE_METHOD void setPlaneIdx(unsigned idx){  q0.u.x = idx ; } 
-    NODE_METHOD void setPlaneNum(unsigned num){  q0.u.y = num ; }
+    NODE_METHOD void setPlaneNum(unsigned num){  q0.u.x = num ; } 
+
+    // only used for compounds such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS
+    NODE_METHOD unsigned subNum()        const { return q0.u.x ; } 
+    NODE_METHOD void setSubNum(unsigned num){    q0.u.x = num ; }
 
     NODE_METHOD void getParam( float& x , float& y , float& z , float& w , float& z1, float& z2 ) const 
     {

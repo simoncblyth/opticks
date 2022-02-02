@@ -51,7 +51,9 @@ typedef enum {
   CSG_INFCYLINDER=26,
   CSG_PHICUT=27, 
   CSG_THETACUT=28, 
- CSG_UNDEFINED=29,
+  CSG_DISCONTIGUOUS=29,
+  CSG_CONTIGUOUS=30, 
+  CSG_UNDEFINED=31,
 
  CSG_FLAGPARTLIST=100,
  CSG_FLAGNODETREE=101,
@@ -107,6 +109,8 @@ static const char* CSG_CONVEXPOLYHEDRON_ = "convexpolyhedron" ;
 static const char* CSG_SEGMENT_       = "segment" ; 
 static const char* CSG_PHICUT_        = "phicut" ; 
 static const char* CSG_THETACUT_      = "thetacut" ; 
+static const char* CSG_DISCONTIGUOUS_  = "discontiguous" ; 
+static const char* CSG_CONTIGUOUS_     = "contiguous" ; 
 static const char* CSG_ELLIPSOID_     = "ellipsoid" ; 
 static const char* CSG_TORUS_          = "torus" ; 
 static const char* CSG_HYPERBOLOID_    = "hyperboloid" ; 
@@ -160,6 +164,8 @@ struct CSG
         else if(strcmp(nodename, CSG_SEGMENT_) == 0)        tc = CSG_SEGMENT ;
         else if(strcmp(nodename, CSG_PHICUT_) == 0)         tc = CSG_PHICUT ;
         else if(strcmp(nodename, CSG_THETACUT_) == 0)       tc = CSG_THETACUT ;
+        else if(strcmp(nodename, CSG_DISCONTIGUOUS_) == 0)   tc = CSG_DISCONTIGUOUS ;
+        else if(strcmp(nodename, CSG_CONTIGUOUS_) == 0)      tc = CSG_CONTIGUOUS ;
         else if(strcmp(nodename, CSG_CONVEXPOLYHEDRON_) == 0) tc = CSG_CONVEXPOLYHEDRON ;
         else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   tc = CSG_INTERSECTION ;
         else if(strcmp(nodename, CSG_UNION_) == 0)          tc = CSG_UNION ;
@@ -221,6 +227,8 @@ struct CSG
             case CSG_SEGMENT:       s = CSG_SEGMENT_       ; break ; 
             case CSG_PHICUT:        s = CSG_PHICUT_        ; break ; 
             case CSG_THETACUT:      s = CSG_THETACUT_      ; break ; 
+            case CSG_DISCONTIGUOUS: s = CSG_DISCONTIGUOUS_ ; break ; 
+            case CSG_CONTIGUOUS:    s = CSG_CONTIGUOUS_    ; break ; 
             case CSG_CONVEXPOLYHEDRON: s = CSG_CONVEXPOLYHEDRON_ ; break ; 
             case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
             case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 

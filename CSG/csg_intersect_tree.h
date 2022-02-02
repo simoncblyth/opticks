@@ -141,12 +141,85 @@ several actions is taken:
    shooting this ray, classifying the intersection. In this case, the state
    machine enters a new loop.
 
-For illustrations of the LUT details see tests/CSGClassifyTest.cc::
+For full details of the LUT (lookup table) and the single-intersect CSG implementation below 
+see tests/CSGClassifyTest.cc and run the below::
 
     CSGClassifyTest U
     CSGClassifyTest I
     CSGClassifyTest D
 
+
+Complete binary tree of height 4 (31 nodes) with 1-based nodeIdx in binary:: 
+                                                                                                                                          depth    elevation
+                                                                      1                                                                      0         4
+ 
+                                      10                                                            11                                       1         3
+
+                          100                        101                            110                           [111]                       2         2
+
+                 1000            1001          1010         1011             1100          1101            *1110*           1111              3         1
+ 
+             10000  10001    10010 10011    10100 10101   10110 10111     11000 11001   11010  11011   *11100* *11101*   11110   11111          4         0
+                                                                                                     
+
+
+CSG looping in the below implementation has been using the below complete binary tree slices(tranche)::
+
+    unsigned fullTree  = PACK4(  0,  0,  1 << height, 0 ) ;    
+
+    unsigned leftIdx = 2*nodeIdx  ;    // left child of nodeIdx
+    unsigned rightIdx = leftIdx + 1 ; // right child of nodeIdx  
+
+    unsigned endTree   = PACK4(  0,  0,  nodeIdx,  endIdx  );
+    unsigned leftTree  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+    unsigned rightTree = PACK4(  0,  0,  rightIdx << (elevation-1), nodeIdx );
+
+
+1 << height 
+    leftmost, eg 10000
+0 = 1 >> 1 
+    one beyond root(1) in the sequence
+ 
+nodeIdx
+     node reached in the current slice of postorder sequence  
+endIdx 
+     one beyond the last node in the current sequence (for fulltree that is 0)
+
+leftTree 
+     consider example nodeIdx 111 which has elevation 2 in a height 4 tree
+     
+     nodeIdx  :  111
+     leftIdx  : 1110  
+     rightIdx : 1111
+
+     leftTree.start : leftIdx << (2-1)  : 11100
+     leftTree.end   : rightIdx << (2-1) : 11110    one beyond the leftIdx subtree of three nodes in the postorder sequence 
+
+rightTree
+    again consider nodeIdx 111
+
+    nodeIdx   :  111
+    rightIdx  : 1111
+
+    rightTree.start : rightIdx << (2-1) : 11110     same one beyond end of leftTree is the start of the rightTree slice 
+    rightTree.end   :nodeIdx 
+
+
+Now consider how different things would be with an unbalanced tree : the number of nodes traversed in a leftTree traverse
+of an unbalanced tree would be much more... the leftTree  would encompass the entirety of the postorder sequence 
+up until the same end points as above.  The rightTree would not change.
+
+Perhaps leftTreeOld should be replaced with leftTreeNew starting all the way from leftmost beginning of the postorder sequence::
+
+    unsigned leftTreeOld  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+    unsigned leftTreeNew  = PACK4(  0,  0,  1 << height , rightIdx << (elevation-1)) ; 
+
+I suspect that when using balanced trees the leftTreeold can cause spurious intersects
+due to discontiguity from incomplete geometry as a result of not looping over the 
+full prior postorder sequence. 
+
+Tried using leftTreeNew with a balanced tree and it still gives spurious intersects on internal boundariues,
+so it looks like tree balanching and the CSG algorithm as it stands are not compatible.  
 
 **/
 
@@ -289,7 +362,8 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 
 
                 // it is impossible to Miss a complemented (signaled by -0.f) solid as it is unbounded
-                // hence the below artificially changes leftIsCloser and states to Exit
+                // hence the below artificially changes leftIsCloser to reflect the unboundedness 
+                // and sets the corresponding states to Exit
                 // see opticks/notes/issues/csg_complement.rst 
                 // these settings are only valid (and only needed) for misses 
 
@@ -378,9 +452,10 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 
                     // looping is effectively backtracking, pop both and put otherside back
 
-                    unsigned endTree   = PACK4(  0,  0,  nodeIdx,  endIdx  );
-                    unsigned leftTree  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
-                    unsigned rightTree = PACK4(  0,  0,  rightIdx << (elevation-1), nodeIdx );
+                    unsigned endTree       = PACK4(  0,  0,  nodeIdx,  endIdx  );
+                    unsigned leftTree      = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+                    //unsigned leftTreeNew   = PACK4(  0,  0,  1 << height             , rightIdx << (elevation-1)) ; 
+                    unsigned rightTree     = PACK4(  0,  0,  rightIdx << (elevation-1), nodeIdx );
 
                     unsigned loopTree  = ctrl == CTRL_LOOP_A ? leftTree : rightTree  ;
 

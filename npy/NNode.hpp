@@ -190,6 +190,7 @@ struct NPY_API nnode
     static void update_gtransforms_r(nnode* node);
 
     const nmat4triple* global_transform(); 
+
     static const nmat4triple* global_transform(nnode* n); 
 
 
@@ -204,6 +205,8 @@ struct NPY_API nnode
     glm::mat4 get_root_transform() const ;     
 
 
+    static void DumpTransform( const char* msg, const nmat4triple* transform ); 
+    void set_transform( const glm::mat4& t, bool update_global ); 
     void set_translation( float x, float y, float z );
     void set_placement( const nmat4triple* plc );
     void set_centering();
@@ -353,6 +356,7 @@ struct NPY_API nnode
     nquad param3 ; 
 
     std::vector<glm::vec4> planes ; 
+    std::vector<nnode*>    subs ; 
     std::vector<glm::vec3> par_points ; 
     std::vector<nuv>       par_coords ; 
 

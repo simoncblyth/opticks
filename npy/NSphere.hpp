@@ -89,6 +89,7 @@ inline NPY_API void init_sphere(nsphere* s, const nquad& param)
 {
     s->param = param ; 
 }
+
 inline NPY_API nsphere* make_sphere(const nquad& param)
 {
     nsphere* n = new nsphere ; 

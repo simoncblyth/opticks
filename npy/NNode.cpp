@@ -337,7 +337,6 @@ leaf back up to root
 If a placement transform is present on the root node, that 
 is also collected. 
 
-
 * NB these are the CSG nodes, not structure nodes
 
 **/
@@ -365,6 +364,8 @@ const nmat4triple* nnode::global_transform(nnode* n)
     }
     return gtransform ; 
 }
+
+
 
 
 /**
@@ -459,8 +460,59 @@ glm::mat4 nnode::get_root_transform() const
 
 
 
+void nnode::DumpTransform( const char* msg, const nmat4triple* transform ) // static 
+{
+    std::cout
+        << msg  
+        << std::endl  
+        << gpresent("t", transform->t ) 
+        << std::endl  
+        << gpresent("v", transform->v )  
+        << std::endl  
+        << gpresent("q", transform->q ) 
+        << std::endl  
+        ;    
+}
+
+/**
+nnode::set_transform
+-----------------------
+
+TODO: check does this need to go via set_placement in order to update_gtransforms ?
 
 
+
+
+
+**/
+
+void nnode::set_transform( const glm::mat4& tmat, bool update_global )
+{
+    const nmat4triple* add_transform = new nmat4triple(tmat) ; 
+
+    if( transform == nullptr )  // no preexisting transform, no stomp worries
+    {    
+        transform = add_transform ; 
+    }    
+    else 
+    {    
+        // THIS AVOIDS STOMPING ON PRIOR TRANSFORM SUCH AS ELLIPSOID SCALE 
+        const nmat4triple* prior_transform = transform ; 
+
+        bool reverse = false ;   // adhoc guess of transform order : to be checked by comparing results with G4 
+        const nmat4triple* comb_transform = nmat4triple::product( add_transform, prior_transform, reverse ); 
+        transform = comb_transform ; 
+
+        DumpTransform("prior_transform", prior_transform );   
+        DumpTransform("disp_transform", add_transform );   
+        DumpTransform("comb_transform", comb_transform );   
+    }    
+
+    if(update_global)
+    {
+        update_gtransforms(); 
+    }
+}
 
 
 /**
@@ -481,6 +533,12 @@ void nnode::set_translation( float x, float y, float z )
 /**
 nnode::set_placement
 -----------------------
+
+The placement transform is used by nnode::global_transform 
+when a placement transform is present on the root node, that 
+is included into the global transforms.  Hence this provides
+a way to bake in a placing transform to all the global transforms 
+of a node tree. 
 
 Formerly when this was called apply_placement
 the placement was nullified after update_gtransforms()
@@ -1109,6 +1167,12 @@ void nnode::get_primitive_bbox(nbbox& bb) const
         nbbox pp = n->bbox() ;
         bb.copy_from(pp) ; 
     }
+    else if(node->type == CSG_CONTIGUOUS || node->type == CSG_DISCONTIGUOUS)
+    {
+        nmultiunion* n = (nmultiunion*)node ; 
+        nbbox pp = n->bbox() ;
+        bb.copy_from(pp) ; 
+    }
     else
     {
         LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSG::Name(node->type) ;  
@@ -1338,6 +1402,8 @@ std::function<float(float,float,float)> nnode::sdf() const
         case CSG_TORUS:          { ntorus* n = (ntorus*)node ; f = *n ; } break ; 
         case CSG_CUBIC:          { ncubic* n = (ncubic*)node ; f = *n ; } break ; 
         case CSG_HYPERBOLOID:    { nhyperboloid* n = (nhyperboloid*)node ; f = *n ; } break ; 
+        case CSG_CONTIGUOUS:     { nmultiunion* n  = (nmultiunion*)node ; f = *n ; } break ; 
+        case CSG_DISCONTIGUOUS:  { nmultiunion* n  = (nmultiunion*)node ; f = *n ; } break ; 
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSG::Name(node->type) ;  
             assert(0);

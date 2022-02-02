@@ -31,6 +31,7 @@
 #include "NTorus.hpp"
 #include "NHyperboloid.hpp"
 #include "NCubic.hpp"
+#include "NMultiUnion.hpp"
 
 
 /*

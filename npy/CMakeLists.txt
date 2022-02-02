@@ -111,8 +111,8 @@ set(SOURCES
     NSphere.cpp
     NTorus.cpp
     NHyperboloid.cpp
+    NMultiUnion.cpp
     NCubic.cpp
-
 
     NBBox.cpp
     NBBoxEnum.cpp
@@ -316,6 +316,7 @@ NSphere.hpp
 
 NTorus.hpp
 NHyperboloid.hpp
+NMultiUnion.hpp
 NCubic.hpp
 
 NPlane.hpp

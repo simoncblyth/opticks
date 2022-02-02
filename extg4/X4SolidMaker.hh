@@ -45,6 +45,9 @@ struct X4_API X4SolidMaker
     static const G4VSolid* OrbGridMultiUnion(const char* name);
     static const G4VSolid* BoxGridMultiUnion(const char* name);
 
+    static const G4VSolid* BoxFourBoxContiguous_(const char* name, const char* opt ); 
+    static const G4VSolid* BoxFourBoxContiguous(const char* name); 
+
 
     static G4VSolid* Uncoincide_Box_Box_Union( const G4VSolid* bbu  ); 
     static std::string Desc( const G4Box* box );

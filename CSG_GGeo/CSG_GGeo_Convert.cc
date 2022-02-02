@@ -516,6 +516,13 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
         LOG(info) << "special cased handling of CSG_CONVEXPOLYHEDRON bbox bb.desc " << bb.desc() ; 
         n->setAABB( bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z ); 
     }
+    else if( tc == CSG_CONTIGUOUS || tc == CSG_DISCONTIGUOUS )
+    {
+        nbbox bb = comp->getBBox(partIdx); 
+        LOG(info) << "special cased handling of CSG_CONTIGUOUS CSG_DISCONTIGUOUS bbox bb.desc " << bb.desc() ; 
+        n->setAABB( bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z ); 
+        // need to add the subs immediately after the compound "header" node 
+    }
     else
     {
         n->setAABBLocal();  

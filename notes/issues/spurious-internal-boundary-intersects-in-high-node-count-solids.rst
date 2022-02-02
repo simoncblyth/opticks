@@ -241,3 +241,107 @@ Tracing the unbalanced tree, never
                                            |               |
                                            +---------------+
 
+
+
+
+
+Complete binary tree of height 4 (31 nodes) with 1-based nodeIdx in binary:: 
+                                                                                                                                          depth    elevation
+                                                                      1                                                                      0         4
+ 
+                                      10                                                            11                                       1         3
+
+                          100                        101                            110                           [111]                       2         2
+
+                 1000            1001          1010         1011             1100          1101            *1110*           1111              3         1
+ 
+             10000  10001    10010 10011    10100 10101   10110 10111     11000 11001   11010  11011   *11100* *11101*   11110   11111          4         0
+                                                                                                     
+
+
+CSG looping in the below implementation has been using the below complete binary tree slices(tranche)::
+
+    unsigned fullTree  = PACK4(  0,  0,  1 << height, 0 ) ;    
+
+    unsigned leftIdx = 2*nodeIdx  ;    // left child of nodeIdx
+    unsigned rightIdx = leftIdx + 1 ; // right child of nodeIdx  
+
+    unsigned endTree   = PACK4(  0,  0,  nodeIdx,  endIdx  );
+    unsigned leftTree  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+    unsigned rightTree = PACK4(  0,  0,  rightIdx << (elevation-1), nodeIdx );
+
+
+1 << height 
+    leftmost, eg 10000
+0 = 1 >> 1 
+    one beyond root(1) in the sequence
+ 
+nodeIdx
+     node reached in the current slice of postorder sequence  
+endIdx 
+     one beyond the last node in the current sequence (for fulltree that is 0)
+
+leftTree 
+     consider example nodeIdx 111 which has elevation 2 in a height 4 tree
+     
+     nodeIdx  :  111
+     leftIdx  : 1110  
+     rightIdx : 1111
+
+     leftTree.start : leftIdx << (2-1)  : 11100
+     leftTree.end   : rightIdx << (2-1) : 11110    one beyond the leftIdx subtree of three nodes in the postorder sequence 
+
+rightTree
+    again consider nodeIdx 111
+
+    nodeIdx   :  111
+    rightIdx  : 1111
+
+    rightTree.start : rightIdx << (2-1) : 11110     same one beyond end of leftTree is the start of the rightTree slice 
+    rightTree.end   :nodeIdx 
+
+
+Now consider how different things would be with an unbalanced tree : the number of nodes traversed in a leftTree traverse
+of an unbalanced tree would be much more... the leftTree  would encompass the entirety of the postorder sequence 
+up until the same end points as above.  The rightTree would not change.
+
+Perhaps leftTreeOld should be replaced with leftTreeNew starting all the way from leftmode 
+beginning of the postorder sequence::
+
+    unsigned leftTreeOld  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+    unsigned leftTreeNew  = PACK4(  0,  0,  1 << height , rightIdx << (elevation-1)) ; 
+
+
+I suspect that when using balanced trees the below leftTree can cause spurious intersects
+due to discontiguity from incomplete geometry as a result of not looping over the 
+full prior postorder sequence. 
+
+Tried using leftTreeNew with a balanced tree and it still gives spurious intersects on internal boundariues,
+so it looks like tree balanching and the CSG algorithm as it stands are not compatible.  
+
+Tree balancing is a bandaid to allow greater node count trees to be used without 
+replacing use of complete binary tree storage. 
+
+Implementing CSG_CONTIGUOUS and CSG_DISCONTIGUOUS to handle multiunions of lots of nodes 
+looks to be straightforward (especially CSG_CONTIGUOUS) and would remove most of the need for 
+
+
+tree balancing by being able to mop up large numbers of nodes into these new compound primitives.
+
+An intuitive way of understanding the issue::
+
+    CSG geometries are grown in a sequence of combinations
+    The CSG intersect implementation makes binary decisions between intersects, this
+    works with unblanced trees which preserve the original intent of the shape. 
+
+HMM: so why did leftTreeNew give spurious with balanced trees  ? Need to check the detailed causes
+
+TODO: improve CSGRecord visualization and use to compare 
+
+1. unbalanced tree running 
+2. balanced tree running with leftTreeOld 
+3. balanced tree running with leftTreeNew 
+
+
+
+
