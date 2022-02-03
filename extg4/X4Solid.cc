@@ -338,13 +338,13 @@ void X4Solid::convertMultiUnion()
     OpticksCSG_t type = CSG_CONTIGUOUS ;   
     // TODO: set type depending on solid name 
 
-    nnode* n_comp = make_multiunion(type) ;  
-    unsigned num_sub = compound->GetNumberOfSolids() ; 
+    unsigned sub_num = compound->GetNumberOfSolids() ; 
+    nnode* n_comp = make_multiunion(type, sub_num) ;  
 
     int lvIdx = get_lvIdx();  // pass lvIdx to children 
     bool top = false ; 
 
-    for( unsigned isub=0 ; isub < num_sub ; isub++)
+    for( unsigned isub=0 ; isub < sub_num ; isub++)
     {
         const G4VSolid* sub = compound->GetSolid(isub);
         // TODO: assert that the constituents are primitives, not booleans or G4MultiUnion 

@@ -50,12 +50,15 @@ msg="=== $BASH_SOURCE :"
 #geom=BoxFourBoxUnion
 #geom=BoxCrossTwoBoxUnion
 #geom=BoxThreeBoxUnion
-geom=BoxFourBoxUnion
+#geom=BoxFourBoxUnion
+geom=BoxFourBoxContiguous
 #geom=ZSphere
 #geom=Plane
 #geom=Slab                  ## not getting what expected 
 #geom=ConvexPolyhedronCube
 #geom=ConvexPolyhedronTetrahedron
+
+
 
 export GEOM=${GEOM:-$geom}
 
@@ -89,8 +92,8 @@ bin=CSGSignedDistanceFieldTest
 which $bin
 
 if [ "$(uname)" == "Darwin" ]; then
-   #lldb__ $bin
-   $bin
+   lldb__ $bin
+   #$bin
 else
    $bin
 fi

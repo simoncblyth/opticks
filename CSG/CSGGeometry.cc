@@ -92,8 +92,15 @@ void CSGGeometry::saveSignedDistanceField() const
 }
 
 
+/**
+CSGGeometry::centerExtentGenstepIntersect
+-------------------------------------------
 
+When SELECT_ISECT envvar is set to the path of an isect.npy 
+those intersects are rerun. This is convenient for debugging 
+a selection of intersects. 
 
+**/
 
 void CSGGeometry::centerExtentGenstepIntersect() 
 {
@@ -124,6 +131,14 @@ void CSGGeometry::saveCenterExtentGenstepIntersect() const
         const quad4& p = pp[i]; 
         if(q->intersect(isect, t_min, p )) ii.push_back(isect); 
     }   
+
+    unsigned num_isect = ii.size() ;
+    LOG(info) 
+        << " pp.size " << pp.size()
+        << " ii.size " << num_isect
+        << ( num_isect == 0 ? " WARNING : NO INTERSECTS " : " " )
+        ;
+
     cegs->save(outdir); 
 }
 

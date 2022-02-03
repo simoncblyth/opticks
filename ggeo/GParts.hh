@@ -285,6 +285,8 @@ class GGEO_API GParts {
         unsigned getPlanIdx(unsigned partIdx) const ; 
         unsigned getPlanNum(unsigned partIdx) const ; 
 
+        // only valid for CSG::IsList(type) such as CSG_CONTIGUOUS/CSG_DISCONTIGUOUS multiunion 
+        unsigned getSubNum(unsigned partIdx) const ; 
 
         unsigned  getNumTran() const ; 
         glm::mat4 getTran(unsigned tranIdx, unsigned j) const ; 

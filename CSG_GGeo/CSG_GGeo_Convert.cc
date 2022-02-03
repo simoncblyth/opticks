@@ -346,6 +346,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     LOG(LEVEL)
         << " primIdx " << std::setw(4) << primIdx
         << " meshIdx " << std::setw(4) << meshIdx
+        << " numParts " << std::setw(4) << numParts
         << " comp.getTypeMask " << mask 
         << " CSG::TypeMask " << CSG::TypeMask(mask)
         << " CSG::IsPositiveMask " << positive
@@ -484,6 +485,8 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
 
     std::string tag = comp->getTag(partIdx); 
     unsigned tc = comp->getTypeCode(partIdx);
+    bool is_list = CSG::IsList((OpticksCSG_t)tc) ; 
+    int sub_num = is_list ? comp->getSubNum(partIdx) : -1 ;  
 
 
     // TODO: transform handling in double, narrowing to float at the last possible moment 
@@ -498,7 +501,17 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
 
     unsigned tranIdx = tv ?  1 + foundry->addTran(*tv) : 0 ;   // 1-based index referencing foundry transforms
 
-    const float* param = comp->getPartValues(partIdx, 0, 0 );  
+    LOG(info) 
+        << " primIdx " << std::setw(4) << primIdx 
+        << " partIdxRel " << std::setw(4) << partIdxRel
+        << " tag " << std::setw(6) << tag
+        << " tc " << std::setw(10) << CSG::Name((OpticksCSG_t)tc) 
+        << " tranIdx " << std::setw(4) << tranIdx
+        << " is_list " << ( is_list ? "IS_LIST" : "not_list" )
+        << " sub_num " << std::setw(4) << sub_num 
+        ; 
+
+    const float* param6 = comp->getPartValues(partIdx, 0, 0 );  
     bool complement = comp->getComplement(partIdx);
 
     bool has_planes = CSG::HasPlanes(tc); 
@@ -506,7 +519,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
 
     const float* aabb = nullptr ;  
 
-    CSGNode nd = CSGNode::Make(tc, param, aabb ) ; 
+    CSGNode nd = CSGNode::Make(tc, param6, aabb ) ; 
     CSGNode* n = foundry->addNode(nd, planes );
     n->setIndex(partIdx); 
 

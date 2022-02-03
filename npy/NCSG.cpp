@@ -188,8 +188,7 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
     tree->setLVIdx(lvIdx); 
     tree->setIndex(lvIdx); 
 
-    tree->postchange(); 
-
+    tree->postchange();  // collect global transforms and exports
 
     LOG(LEVEL) 
         << " ] "
@@ -199,8 +198,6 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
 
     return tree ; 
 }
-
-
 
 
 /**
@@ -216,7 +213,7 @@ setting of placement transforms or translations.
 void NCSG::postchange() 
 {
     collect_global_transforms();  // also sets the gtransform_idx onto the tree
-    export_();                    // node tree -> complete binary tree m_nodes buffer
+    export_();                    // node tree or list serialized into m_nodes buffer
     export_srcidx();              // identity indices into srcidx buffer  : formerly was not done by NCSG::Load only NCSG::Adopt
 
     if(m_config)
@@ -461,7 +458,7 @@ NCSG::import : from complete binary tree buffers into nnode tree
 --------------------------------------------------------------------
 
 1. prepareForImport : tripletize the m_srctransforms into m_transforms
-2. import_r : collects m_gtransforms by multiplication down the tree
+2. import_tree : collects m_gtransforms by multiplication down the tree
 
 **/
 
@@ -867,14 +864,6 @@ void NCSG::check_node(const nnode* node ) const
 
 
 
-
-
-
-
-
-
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /**
 NCSG::collect_global_transforms
@@ -912,11 +901,35 @@ void NCSG::collect_global_transforms()
 {
     bool locked(false) ;  // with locked=true m_csgdata asserts if called more than once
     m_csgdata->prepareForGTransforms(locked);
-    collect_global_transforms_r( m_root ) ; 
+
+    if(m_root->is_tree())
+    {
+        collect_global_transforms_r( m_root ) ; 
+    }
+    else if(m_root->is_list())
+    {
+        collect_global_transforms_list() ; 
+    }
 }
+
+void NCSG::collect_global_transforms_list() 
+{
+    check_subs(); 
+    collect_global_transforms_node(m_root);
+
+    unsigned sub_num = m_root->subNum(); 
+    for(unsigned isub=0 ; isub < sub_num ; isub++)
+    {
+        nnode* sub = m_root->subs[isub];    
+        // sub cannot be const, as the export writes things like indices into the node
+
+        collect_global_transforms_node(sub);
+    }
+}
+
 void NCSG::collect_global_transforms_r(nnode* node) 
 {
-    collect_global_transforms_visit(node);
+    collect_global_transforms_node(node);
 
     if(node->left && node->right)
     {
@@ -924,7 +937,7 @@ void NCSG::collect_global_transforms_r(nnode* node)
         collect_global_transforms_r(node->right);
     }
 }
-void NCSG::collect_global_transforms_visit(nnode* node)
+void NCSG::collect_global_transforms_node(nnode* node)
 {
     if(node->is_primitive())
     {
@@ -1056,15 +1069,45 @@ void NCSG::export_tree_()
     export_tree_r(m_root, 0);
 }
 
+/**
+NCSG::export_tree_r
+----------------------
+
+Somewhat unually this is using 0-based level indices for complete binary tree indexing::
+
+             0
+       1            2 
+     3   4      5      6 
+    7 8 9 10  11 12  13 14
+
+1-based indexing is more intuitive, expecially when express in binary::
+
+                     1
+            10                    11 
+      100       101         110         111
+  1000 1001  1010 1011   1100 1101   1110 1111 
+
+**/
+
 void NCSG::export_tree_r(nnode* node, unsigned idx)
 {
     export_node( node, idx) ; 
 
     if(node->left && node->right)
     {
-        export_tree_r(node->left,  2*idx + 1);  // complete binary tree indexing 
+        export_tree_r(node->left,  2*idx + 1);  // 0-based complete binary tree indexing 
         export_tree_r(node->right, 2*idx + 2);
     }  
+}
+
+void NCSG::check_subs() const 
+{
+    bool is_list = CSG::IsList(m_root->type); 
+    assert( is_list ); 
+
+    unsigned sub_num_0 = m_root->subs.size(); 
+    unsigned sub_num_1 = m_root->subNum(); 
+    assert( sub_num_0 == sub_num_1 ); 
 }
 
 void NCSG::export_list_()
@@ -1072,8 +1115,10 @@ void NCSG::export_list_()
     unsigned idx = 0 ; 
     export_node( m_root,  idx) ; 
 
-    unsigned num_sub = m_root->subs.size(); 
-    for(unsigned isub=0 ; isub < num_sub ; isub++)
+    check_subs(); 
+    unsigned sub_num = m_root->subNum(); 
+
+    for(unsigned isub=0 ; isub < sub_num ; isub++)
     {
         idx = 1 + isub ; 
         nnode* sub = m_root->subs[isub];    
@@ -1116,6 +1161,16 @@ void NCSG::export_node(nnode* node, unsigned idx)
     export_planes(node, _planes);
   
     npart pt = node->part();  // node->type node->gtransform_idx node->complement written into pt 
+
+    bool root_is_list = m_root->is_list(); 
+    if(root_is_list)
+    {
+        LOG(LEVEL) 
+           << " idx " << idx 
+           << " root_is_list exporting node  pt.q0.u.x " << pt.q0.u.x
+           ; 
+    }
+
 
     pt.check_bb_zero(node->type); 
 
@@ -1195,7 +1250,7 @@ allowing loading to proceed just like from python
 
 void NCSG::export_srcnode(nnode* node, unsigned idx)
 {
-    LOG(debug) << "[" ; 
+    LOG(LEVEL) << "[" ; 
 
     assert( m_adopted ) ; 
 
@@ -1211,7 +1266,7 @@ void NCSG::export_srcnode(nnode* node, unsigned idx)
     npart pt = node->srcpart();
     _srcnodes->setPart( pt, idx );   // writes 4 quads to buffer 
 
-    LOG(debug) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 

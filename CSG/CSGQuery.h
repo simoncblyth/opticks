@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+
 struct CSGFoundry ; 
 struct CSGPrim ; 
 struct CSGNode ; 
@@ -24,7 +25,8 @@ struct CSG_API CSGQuery
     void     selectPrim(unsigned solidIdx, unsigned primIdxRel );
     void     selectPrim(const CSGPrim* pr );
 
-    unsigned getSelectedTreeHeight() const ; 
+    int            getSelectedType() const ; 
+    int            getSelectedTreeHeight() const ;   // -1: if selected CSGNode is not a tree
     const CSGNode* getSelectedNode( int nodeIdxRel ) const ; 
 
     void     dump(const char* msg) const ;
@@ -32,10 +34,12 @@ struct CSG_API CSGQuery
 
     void     dumpPrim() const ;
     CSGGrid* scanPrim(int resolution) const ;
+    float distance(const float3& position ) const ; 
     float operator()(const float3& position) const ;
 
     bool intersect( quad4& isect,  float t_min, const quad4& p ) const ;
     bool intersect( quad4& isect,  float t_min, const float3& ray_origin, const float3& ray_direction, unsigned gsid ) const ;
+    void intersect_elaborate( quad4& isect, float t_min, const float3& ray_origin, const float3& ray_direction, unsigned gsid  ) const ; 
     bool intersect_again( quad4& isect, const quad4& prev_isect ) const ; 
 
     static bool IsSpurious( const quad4& isect ); 
@@ -51,8 +55,8 @@ struct CSG_API CSGQuery
     int            select_nodeOffset ; 
     int            select_numNode ;
     const CSGNode* select_root ;
-
-
+    int            select_root_typecode ; 
+    bool           select_is_tree ; 
 
  
 

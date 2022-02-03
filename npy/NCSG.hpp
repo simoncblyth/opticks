@@ -359,8 +359,9 @@ class NPY_API NCSG {
         // collect global transforms into m_gtransforms and sets the node->gtransform and node->gtransform_idx refs
         void collect_global_transforms() ;
     private:
+        void collect_global_transforms_list(); 
         void collect_global_transforms_r(nnode* node) ;
-        void collect_global_transforms_visit(nnode* node);
+        void collect_global_transforms_node(nnode* node);
         unsigned addUniqueTransform( const nmat4triple* gtransform );
 
     private:
@@ -372,6 +373,8 @@ class NPY_API NCSG {
         void export_tree_();
         void export_tree_r(nnode* node, unsigned idx);
         void export_list_();
+        void check_subs() const ; 
+
 
         // collects gtransform into the tran buffer and sets gtransform_idx 
         // into the node tree needed to prepare a G4 directly converted solid to go to GPU 

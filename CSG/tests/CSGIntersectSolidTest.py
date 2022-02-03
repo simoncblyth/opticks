@@ -165,6 +165,15 @@ def ReferenceGeometry(pl):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
+
+    pl = pv.Plotter(window_size=SIZE*2 ) 
+
+
+
+
+
+
+
     cegs_path = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM") 
     recs_path = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM/intersectSelected")
 
@@ -173,6 +182,17 @@ if __name__ == '__main__':
 
     gspos = fold.gs[:,5,:3]
     gsid =  fold.gs[:,1,3].copy().view(np.int8).reshape(-1,4)  
+
+    pl.add_points( gspos, color="yellow" )
+
+
+    if not hasattr(fold, 'isect'):
+       log.fatal("no isect")
+       pl.show_grid()
+       cp = pl.show()
+       sys.exit(0)
+    pass 
+    
 
     dir_, t = fold.isect[:,0,:3], fold.isect[:,0,3]   # intersect normal and ray distance 
     pos, sd = fold.isect[:,1,:3], fold.isect[:,1,3]   # intersect position and surface distance 
@@ -284,12 +304,6 @@ if __name__ == '__main__':
     pass
 
 
-    pl = pv.Plotter(window_size=SIZE*2 ) 
-
-
-    ## genstep and intersect positions : points plotted without selection 
-
-    pl.add_points( gspos, color="yellow" )
     pl.add_points( pos, color="white" )
     #pl.add_arrows( pos, dir_, color="white", mag=10 )
 

@@ -73,10 +73,10 @@ EOU
 #geom=AnnulusTwoBoxUnion 
 #geom=AnnulusOtherTwoBoxUnion 
 #geom=AnnulusCrossTwoBoxUnion 
-#geom=AnnulusFourBoxUnion 
+geom=AnnulusFourBoxUnion 
 #geom=CylinderFourBoxUnion 
 #geom=BoxFourBoxUnion 
-geom=BoxFourBoxContiguous 
+#geom=BoxFourBoxContiguous 
 #geom=BoxCrossTwoBoxUnion 
 #geom=BoxThreeBoxUnion 
 

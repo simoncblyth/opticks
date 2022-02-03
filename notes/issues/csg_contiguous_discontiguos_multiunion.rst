@@ -26,6 +26,30 @@ How to implement
 * hmm could fork with different types of CSGPrim but then the compound would not be 
   able to participate as just another node in a CSG tree
 
+
+Issue when genstep origin is on the surface of the shape : FIXED by using inside_or_surface
+----------------------------------------------------------------------------------------------
+
+* was lucky that by chance the gridscale conspired to land some 
+  genstep origin positions exactly onto the surface of the shape
+
+* TODO: arrange to automatically place some gensteps onto surfaces
+
+* was getting spurions isects on internal boundaries
+
+* issue seems fixed by using *inside_or_surface* instead of *inside*::
+
+     408     float sd = distance_node_contiguous( ray_origin, node, plan, itra );
+     409     //bool inside = sd < 0.f ;
+     410     bool inside_or_surface = sd <= 0.f ;
+
+
+::
+
+    IXIYIZ=-3,-3,0 GEOM=BoxFourBoxContiguous_YX ./csg_geochain.sh ana
+
+
+
    
 Splitting at CSGPrim level could simply be done in intersect_prim : but then cannot be part of ordinary tree
 ---------------------------------------------------------------------------------------------------------------  
@@ -33,7 +57,7 @@ Splitting at CSGPrim level could simply be done in intersect_prim : but then can
 ::
 
     1522 INTERSECT_FUNC
-    1523 bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray     _direction )
+    1523 bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
     1524 {
     1525     return numNode == 1
     1526                ?
@@ -93,9 +117,10 @@ ideas to avoid recursion
 ---------------------------
 
 
-Recursion is very much the natural way to handle self similar structures like 
-trees, but OptiX does not allow that in intersection funcs::
+Recursion is the natural way to handle self similar structures like trees, 
+but OptiX does not allow recursion in intersection funcs::
 
+  intersect_"prim"(numNode, node) 
      intersect_tree
           intersect_node
                 intersect_node
@@ -106,6 +131,7 @@ CSG implemented in intersect_tree avoids recursive intersect_node calls using
 slices of the postorder sequence to emulate the same traversal order 
 that a recursive algorithm would use with iterative calls::
 
+  intersect_"prim"(numNode, node) 
      intersect_tree
           intersect_node
           intersect_node
@@ -124,6 +150,7 @@ So internally the multiunion just contains a flat list of leaves.
 
 ::
 
+    intersect_"prim"(numNode, node) 
        intersect_tree
              intersect_node          for most nodes (sphere, box, cone, ... ) getting the intersect will require just one call to intersect_leaf 
                   intersect_leaf
@@ -141,6 +168,13 @@ So internally the multiunion just contains a flat list of leaves.
 * http://raganwald.com/2018/05/20/we-dont-need-no-stinking-recursion.html
 
 
+::
+
+
+    2022-02-03 20:44:56.408 INFO  [25801734] [Six::createGAS_Standard@206]  create optix::Geometry solid/ mm 0
+    2022-02-03 20:44:56.408 INFO  [25801734] [Six::createGeometry@165]  solid_idx   0 numPrim   1 primOffset   0 d_pr 0x700a60000
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtProgramCreateFromPTXFile(RTcontext, const char *, const char *, RTprogram *)" caught exception: Compile Error: Found recursive call to _Z24distance_node_contiguousRK6float3PK7CSGNodePK6float4PK4qat4)
+    ./cxr.sh: line 108: 85786 Abort trap: 6           CSGOptiXRenderTest --nameprefix "cxr_geochain_BoxFourBoxContiguous_" --cvd 0 -e "t0" --solid_label ""
 
 
 

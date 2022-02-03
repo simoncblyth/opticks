@@ -2105,6 +2105,9 @@ unsigned GParts::getBoundary(unsigned partIdx) const
 }
 
 
+
+
+
 /**
 GParts::getPlanIdx GParts::getPlanNum
 -----------------------------------------
@@ -2118,12 +2121,15 @@ unsigned GParts::getPlanIdx(unsigned partIdx) const
 {
     return getUInt(partIdx, PLANEIDX_J, PLANEIDX_K);       // (0,0) q0.u.x
 }
+unsigned GParts::getSubNum(unsigned partIdx) const   
+{
+    return getUInt(partIdx, SUBNUM_J, SUBNUM_K);       // (0,0) q0.u.x   colocated, distinguish appropriate by typecode
+}
+
 unsigned GParts::getPlanNum(unsigned partIdx) const 
 {
     return getUInt(partIdx, PLANENUM_J, PLANENUM_K);       // (0,1) q0.u.y
 }
-
-
 
 
 

@@ -66,6 +66,10 @@ Bringing over functions from  ~/opticks/optixrap/cu/csg_intersect_primitive.h
 INTERSECT_FUNC
 bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction ); 
 
+INTERSECT_FUNC
+bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction ); 
+
+
 
 INTERSECT_FUNC
 float distance_node_sphere(const float3& pos, const quad& q0 )
@@ -385,7 +389,8 @@ Example of a contiguous shape composed of constituent boxes::
 **/
 
 INTERSECT_FUNC
-float distance_node( const float3& global_position, const CSGNode* node, const float4* plan, const qat4* itra ); 
+float distance_leaf( const float3& global_position, const CSGNode* node, const float4* plan, const qat4* itra ); 
+
 
 INTERSECT_FUNC
 float distance_node_contiguous( const float3& pos, const CSGNode* node, const float4* plan, const qat4* itra )
@@ -395,7 +400,7 @@ float distance_node_contiguous( const float3& pos, const CSGNode* node, const fl
     for(unsigned isub=0 ; isub < num_sub ; isub++)
     {
          const CSGNode* sub_node = node+1u+isub ; 
-         float sub_sd = distance_node( pos, sub_node, plan, itra ); 
+         float sub_sd = distance_leaf( pos, sub_node, plan, itra ); 
          sd = fminf( sd, sub_sd ); 
     }
     return sd ; 
@@ -406,7 +411,7 @@ INTERSECT_FUNC
 bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
     float sd = distance_node_contiguous( ray_origin, node, plan, itra ); 
-    bool inside = sd < 0.f ;
+    bool inside_or_surface = sd <= 0.f ;
  
     const unsigned num_sub = node->subNum() ; 
 
@@ -423,7 +428,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
     for(unsigned isub=0 ; isub < num_sub ; isub++)
     {
         const CSGNode* sub_node = node+1u+isub ; 
-        if(intersect_node( sub_isect_0, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
+        if(intersect_leaf( sub_isect_0, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
         {
              IntersectionState_t sub_state_0 = CSG_CLASSIFY( sub_isect_0, ray_direction, t_min ); 
              if( sub_state_0 == State_Exit)
@@ -436,10 +441,10 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
                  enter_count += 1 ; 
                  if( sub_isect_0.w < isect_nearest_enter.w ) isect_nearest_enter = sub_isect_0 ;  
 
-                 if(inside)  // when inside need to find EXITs for all the ENTERs, when ouside just need nearest ENTER
+                 if(inside_or_surface)  // when inside_or_surface need to find EXITs for all the ENTERs, when ouside just need nearest ENTER
                  { 
                      float tminAdvanced = sub_isect_0.w + propagate_epsilon ; 
-                     if(intersect_node( sub_isect_1, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
+                     if(intersect_leaf( sub_isect_1, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
                      {
                           IntersectionState_t sub_state_1 = CSG_CLASSIFY( sub_isect_1, ray_direction, tminAdvanced ); 
                           if( sub_state_1 == State_Exit ) 
@@ -454,7 +459,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
     }
 
     bool valid_intersect = false ; 
-    if( inside )
+    if( inside_or_surface )
     {
         valid_intersect = exit_count > 0 && isect_farthest_exit.w > t_min ; 
         if(valid_intersect) isect = isect_farthest_exit ;  
@@ -1599,9 +1604,10 @@ bool intersect_node_disc(float4& isect, const quad& q0, const quad& q1, const fl
     return valid_isect ; 
 }
 
+
 /**
-intersect_node
-----------------
+intersect_leaf : must be purely single node 
+----------------------------------------------
 
 Notice that only the inverse CSG transforms are needed on the GPU as these are used to 
 transform the ray_origin and ray_direction into the local origin and direction in the 
@@ -1610,7 +1616,7 @@ local frame of the node.
 **/
 
 INTERSECT_FUNC
-bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction )
+bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction )
 {
     const unsigned typecode = node->typecode() ;  
     const unsigned gtransformIdx = node->gtransformIdx() ; 
@@ -1622,9 +1628,9 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
     float3 direction = q ? q->right_multiply(ray_direction, 0.f) : ray_direction ;   
 
 #ifdef DEBUG
-    printf("//intersect_node.h typecode %d gtransformIdx %d \n", typecode, gtransformIdx ); 
-    printf("//intersect_node.h ray_origin (%10.4f,%10.4f,%10.4f) \n",  ray_origin.x, ray_origin.y, ray_origin.z ); 
-    printf("//intersect_node.h ray_direction (%10.4f,%10.4f,%10.4f) \n",  ray_direction.x, ray_direction.y, ray_direction.z ); 
+    printf("//intersect_leaf typecode %d gtransformIdx %d \n", typecode, gtransformIdx ); 
+    printf("//intersect_leaf ray_origin (%10.4f,%10.4f,%10.4f) \n",  ray_origin.x, ray_origin.y, ray_origin.z ); 
+    printf("//intersect_leaf ray_direction (%10.4f,%10.4f,%10.4f) \n",  ray_direction.x, ray_direction.y, ray_direction.z ); 
     if(q) 
     {
         printf(" q.q0.f (%10.4f,%10.4f,%10.4f,%10.4f)  \n", q->q0.f.x,q->q0.f.y,q->q0.f.z,q->q0.f.w  ); 
@@ -1643,7 +1649,6 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_SPHERE:           valid_isect = intersect_node_sphere(           isect, node->q0,               t_min, origin, direction ) ; break ; 
         case CSG_ZSPHERE:          valid_isect = intersect_node_zsphere(          isect, node->q0, node->q1,     t_min, origin, direction ) ; break ; 
         case CSG_CONVEXPOLYHEDRON: valid_isect = intersect_node_convexpolyhedron( isect, node, plan,             t_min, origin, direction ) ; break ;
-        case CSG_CONTIGUOUS:       valid_isect = intersect_node_contiguous(       isect, node, plan, itra,       t_min, origin, direction ) ; break ;
         case CSG_CONE:             valid_isect = intersect_node_cone(             isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_HYPERBOLOID:      valid_isect = intersect_node_hyperboloid(      isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_BOX3:             valid_isect = intersect_node_box3(             isect, node->q0,               t_min, origin, direction ) ; break ;
@@ -1674,6 +1679,31 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
 }
 
 
+
+/**
+intersect_node : node can be compound for CSG_CONTIGUOUS, usually single node 
+-------------------------------------------------------------------------------
+
+Layout is needed to avoid intersect_node recursion 
+
+**/
+
+
+INTERSECT_FUNC
+bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction )
+{
+    const unsigned typecode = node->typecode() ;  
+    return typecode == CSG_CONTIGUOUS ?
+                            intersect_node_contiguous(isect, node, plan, itra, t_min, ray_origin, ray_direction )
+                          :
+                            intersect_leaf(           isect, node, plan, itra, t_min, ray_origin, ray_direction )
+                          ;  
+}
+
+
+
+
+
 INTERSECT_FUNC
 bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction );
 
@@ -1701,7 +1731,7 @@ For hints on how to implement distance functions for more primitives:
 **/
 
 INTERSECT_FUNC
-float distance_node( const float3& global_position, const CSGNode* node, const float4* plan, const qat4* itra )
+float distance_leaf( const float3& global_position, const CSGNode* node, const float4* plan, const qat4* itra )
 {
     const unsigned typecode = node->typecode() ;  
     const unsigned gtransformIdx = node->gtransformIdx() ; 
@@ -1717,13 +1747,32 @@ float distance_node( const float3& global_position, const CSGNode* node, const f
         case CSG_SPHERE:           distance = distance_node_sphere(            local_position, node->q0 )           ; break ; 
         case CSG_ZSPHERE:          distance = distance_node_zsphere(           local_position, node->q0, node->q1 ) ; break ; 
         case CSG_CONVEXPOLYHEDRON: distance = distance_node_convexpolyhedron(  local_position, node, plan )         ; break ;
-        case CSG_CONTIGUOUS:       distance = distance_node_contiguous(        local_position, node, plan, itra )   ; break ;
         case CSG_BOX3:             distance = distance_node_box3(              local_position, node->q0 )           ; break ;
         case CSG_CYLINDER:         distance = distance_node_cylinder(          local_position, node->q0, node->q1 ) ; break ;
         case CSG_PLANE:            distance = distance_node_plane(             local_position, node->q0 )           ; break ;
         case CSG_SLAB:             distance = distance_node_slab(              local_position, node->q0, node->q1 ) ; break ;
     }
     return complement ? -distance : distance  ; 
+}
+
+
+/**
+distance_node
+----------------
+
+Arranged like this with CSG_CONTIGUOUS separated to avoid distance_node recursion 
+
+**/
+
+INTERSECT_FUNC
+float distance_node( const float3& global_position, const CSGNode* node, const float4* plan, const qat4* itra )
+{
+    const unsigned typecode = node->typecode() ;  
+    return typecode == CSG_CONTIGUOUS ?  
+                               distance_node_contiguous( global_position, node, plan, itra ) 
+                            :
+                               distance_leaf(            global_position, node, plan, itra ) 
+                            ;
 }
 
 

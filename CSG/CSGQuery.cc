@@ -25,9 +25,11 @@ CSGQuery::CSGQuery( const CSGFoundry* fd_ )
     select_prim(nullptr),
     select_nodeOffset(0),
     select_numNode(0),
-    select_root(nullptr)
+    select_root(nullptr),
+    select_root_typecode(CSG_ZERO),
+    select_is_tree(true)
 {
-   init(); 
+    init(); 
 }
 
 void CSGQuery::init()
@@ -49,18 +51,27 @@ void CSGQuery::selectPrim( const CSGPrim* pr )
     select_nodeOffset = pr->nodeOffset() ; 
     select_numNode = pr->numNode() ; 
     select_root = node0 + pr->nodeOffset() ; 
+    select_root_typecode = select_root->typecode(); 
+    select_is_tree = CSG::IsTree((OpticksCSG_t)select_root_typecode) ; 
 
     LOG(info) 
          << " select_prim " << select_prim
          << " select_nodeOffset " << select_nodeOffset
          << " select_numNode " << select_numNode
          << " select_root " << select_root 
+         << " select_root_typecode " << CSG::Name(select_root_typecode)
+         << " getSelectedTreeHeight " << getSelectedTreeHeight()
          ;   
 }
 
-unsigned CSGQuery::getSelectedTreeHeight() const 
+
+int CSGQuery::getSelectedType() const
 {
-    return TREE_HEIGHT(select_numNode) ; 
+    return select_root_typecode ; 
+}
+int CSGQuery::getSelectedTreeHeight() const 
+{
+    return select_is_tree ? TREE_HEIGHT(select_numNode) : -1 ;   
 }
 
 
@@ -68,21 +79,34 @@ unsigned CSGQuery::getSelectedTreeHeight() const
 CSGQuery::getSelectedNode
 ---------------------------
 
-nodeIdxRel
-   1-based tree index, root=1 
+nodeIdx
+   0-based tree index, root=0 
 
 **/
 
-const CSGNode* CSGQuery::getSelectedNode( int nodeIdxRel ) const 
+const CSGNode* CSGQuery::getSelectedNode( int nodeIdx ) const 
 {
-    const CSGNode* nd = nodeIdxRel - 1 < select_numNode ? select_root + nodeIdxRel - 1 : nullptr  ;
+    const CSGNode* nd = nodeIdx < select_numNode ? select_root + nodeIdx : nullptr  ;
     return nd ; 
 }
+
+float CSGQuery::distance(const float3& position ) const
+{
+    return select_is_tree ? 
+                  distance_tree( position, select_numNode, select_root, plan0, itra0 ) 
+               :
+                  distance_list( position, select_numNode, select_root, plan0, itra0 ) 
+               ;
+}
+
+
+
+
 
 
 float CSGQuery::operator()(const float3& position ) const
 {
-    return distance_tree( position, select_numNode, select_root, plan0, itra0 ) ;
+    return distance(position); 
 }
 
 bool CSGQuery::intersect( quad4& isect,  float t_min, const quad4& p ) const 
@@ -93,16 +117,6 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const quad4& p ) const
     return intersect( isect, t_min, ray_origin, ray_direction, gsid ); 
 }
 
-
-
-const float CSGQuery::SD_CUT = -1e-3 ; 
-
-bool CSGQuery::IsSpurious( const quad4& isect ) // static
-{
-    float sd = isect.q1.f.w ;  
-    bool spurious = sd < SD_CUT ; 
-    return spurious ; 
-}
 
 
 /**
@@ -141,34 +155,66 @@ isect.q3.f.xyz
 
 
 
+
+
 bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, const float3& ray_direction, unsigned gsid ) const 
 {
     isect.zero();
-    bool valid_intersect = intersect_tree(isect.q0.f, select_numNode, select_root, plan0, itra0, t_min, ray_origin, ray_direction );  
+
+    bool valid_intersect = intersect_prim( isect.q0.f, select_numNode, select_root, plan0, itra0, t_min, ray_origin, ray_direction ) ; 
+
+/*
+    bool valid_intersect = select_is_tree ?
+                                       intersect_tree(isect.q0.f, select_numNode, select_root, plan0, itra0, t_min, ray_origin, ray_direction )  
+                                  :
+                                       intersect_node_contiguous(isect.q0.f, select_root, plan0, itra0, t_min, ray_origin, ray_direction )  
+                                  ;
+*/
+
 
     if( valid_intersect )
     {   
-        float t = isect.q0.f.w ; 
-        float3 ipos = ray_origin + t*ray_direction ;   
-        float sd = distance_tree( ipos, select_numNode, select_root, plan0, itra0 ) ;
-
-        isect.q1.f.x = ipos.x ;
-        isect.q1.f.y = ipos.y ;
-        isect.q1.f.z = ipos.z ;
-        isect.q1.f.w = sd ;  
-
-        isect.q2.f.x = ray_origin.x ; 
-        isect.q2.f.y = ray_origin.y ; 
-        isect.q2.f.z = ray_origin.z ;
-        isect.q2.f.w = t_min ; 
-
-        isect.q3.f.x = ray_direction.x ; 
-        isect.q3.f.y = ray_direction.y ; 
-        isect.q3.f.z = ray_direction.z ;
-        isect.q3.u.w = gsid ;  
+        intersect_elaborate( isect, t_min, ray_origin, ray_direction, gsid ); 
     }   
     return valid_intersect ; 
 }
+
+void CSGQuery::intersect_elaborate( quad4& isect, float t_min, const float3& ray_origin, const float3& ray_direction, unsigned gsid  ) const 
+{
+    float t = isect.q0.f.w ; 
+    float3 ipos = ray_origin + t*ray_direction ;   
+
+    float sd = distance(ipos) ;
+
+    isect.q1.f.x = ipos.x ;
+    isect.q1.f.y = ipos.y ;
+    isect.q1.f.z = ipos.z ;
+    isect.q1.f.w = sd ;  
+
+    isect.q2.f.x = ray_origin.x ; 
+    isect.q2.f.y = ray_origin.y ; 
+    isect.q2.f.z = ray_origin.z ;
+    isect.q2.f.w = t_min ; 
+
+    isect.q3.f.x = ray_direction.x ; 
+    isect.q3.f.y = ray_direction.y ; 
+    isect.q3.f.z = ray_direction.z ;
+    isect.q3.u.w = gsid ;  
+}
+
+
+const float CSGQuery::SD_CUT = -1e-3 ; 
+
+bool CSGQuery::IsSpurious( const quad4& isect ) // static
+{
+    float sd = isect.q1.f.w ;  
+    bool spurious = sd < SD_CUT ; 
+    return spurious ; 
+}
+
+
+
+
 
 std::string CSGQuery::Desc( const quad4& isect, const char* label  )  // static
 {

@@ -43,3 +43,11 @@ inline NPY_API nmultiunion* make_multiunion(OpticksCSG_t type, const nquad& para
     return n ; 
 }
 
+inline NPY_API nmultiunion* make_multiunion(OpticksCSG_t type, unsigned sub_num  )
+{
+    nmultiunion* n = make_multiunion(type) ; 
+    n->setSubNum(sub_num); 
+    return n ; 
+}
+
+

@@ -3,7 +3,7 @@
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #    define TREE_FUNC __forceinline__ __device__
 #else
-#    define TREE_FUNC
+#    define TREE_FUNC inline
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -50,6 +50,7 @@ Simply postorder traverse using a stack perhaps
 
 
 **/
+
 
 TREE_FUNC
 float distance_tree( const float3& global_position, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0 )
@@ -105,6 +106,21 @@ float distance_tree( const float3& global_position, int numNode, const CSGNode* 
     stack.pop(distance);  
     return distance ; 
 }
+
+TREE_FUNC
+float distance_list( const float3& global_position, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0 )
+{
+    float distance = RT_DEFAULT_MAX ; 
+    for(int nodeIdx=1 ; nodeIdx < numNode ; nodeIdx++)  // head node of list just carries subNum, so start from 1 
+    {
+        const CSGNode* nd = node + nodeIdx ; 
+        float sd = distance_node(global_position, nd, plan0, itra0 ) ; 
+        distance = fminf( distance,  sd ) ;
+    }
+    return distance ; 
+}
+
+
 
 /**
 intersect_tree
