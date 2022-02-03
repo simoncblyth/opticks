@@ -1130,13 +1130,18 @@ GMesh* X4PhysicalVolume::ConvertSolid_FromRawNode( const Opticks* ok, int lvIdx,
 
     nnode* root = do_balance ? NTreeProcess<nnode>::Process(raw, soIdx, lvIdx) : raw ;  
 
+    LOG(LEVEL) << " after NTreeProcess:::Process " ; 
+
     root->other = raw ; 
     root->set_nudgeskip( is_x4nudgeskip ); 
     root->set_pointskip( is_x4pointskip );  
     root->set_treeidx( lvIdx ); 
 
     const NSceneConfig* config = NULL ; 
+
+    LOG(LEVEL) << "[ before NCSG::Adopt " ; 
     NCSG* csg = NCSG::Adopt( root, config, soIdx, lvIdx );   // Adopt exports nnode tree to m_nodes buffer in NCSG instance
+    LOG(LEVEL) << "] after NCSG::Adopt " ; 
     assert( csg ) ; 
     assert( csg->isUsedGlobally() );
 

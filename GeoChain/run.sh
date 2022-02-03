@@ -154,7 +154,7 @@ fi
 
 #export GGeo=INFO
 #export CSGSolid=INFO
-#export CSG_GGeo_Convert=INFO
+export CSG_GGeo_Convert=INFO
 
 export NTreeProcess=INFO   ## balance decision happens here 
 #export NTREEPROCESS_LVLIST=0
@@ -169,8 +169,11 @@ export NTreeProcess=INFO   ## balance decision happens here
 
 export NTreeBalance=INFO
 export NTreeBuilder=INFO
+export NCSG=INFO
+export NCSGData=INFO
 
 #export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
+export X4PhysicalVolume=INFO
 
 # checking that --skipsolidname is working 
 #export OpticksDbg=INFO  

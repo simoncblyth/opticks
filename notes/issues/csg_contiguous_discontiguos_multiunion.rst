@@ -89,6 +89,64 @@ The compound CSGNode needs to be able to refer to other CSGNode,
   * probably OptiX will not allow such a recursive call 
 
 
+ideas to avoid recursion
+---------------------------
+
+
+Recursion is very much the natural way to handle self similar structures like 
+trees, but OptiX does not allow that in intersection funcs::
+
+     intersect_tree
+          intersect_node
+                intersect_node
+                     intersect_node
+                     
+
+CSG implemented in intersect_tree avoids recursive intersect_node calls using 
+slices of the postorder sequence to emulate the same traversal order 
+that a recursive algorithm would use with iterative calls::
+
+     intersect_tree
+          intersect_node
+          intersect_node
+          intersect_node
+          intersect_node
+
+
+Now CSG_CONTIGUOUS/CSG_DISCONTIGUOUS multiunions poses a problem because it is a node which needs 
+to contain other nodes and also needs to be able to work as part of a tree.
+The internal nodes of the multiunion can be restricted to being leaves (ie not being compound: other multiunions or CSG trees)
+
+* termed "leaf" not "primitive" to avoid confusion with CSGPrim [which is essentially (nodeOffset,numNodes)] which aligns with the OptiX idea of a prim 
+
+So internally the multiunion just contains a flat list of leaves. 
+
+
+::
+
+       intersect_tree
+             intersect_node          for most nodes (sphere, box, cone, ... ) getting the intersect will require just one call to intersect_leaf 
+                  intersect_leaf
+             intersect_node          for multiunion nodes getting the intersect will require intersect_leaf calls for all leaves, 1(2) each when outside(inside) the compound 
+                  intersect_leaf
+                  intersect_leaf
+                  intersect_leaf
+             intersect_node
+                  intersect_leaf
+
+
+* recursive intersect_node calls are avoided by splitting the handling of "leaf" which are never compound from "node" can be compound 
+
+ 
+* http://raganwald.com/2018/05/20/we-dont-need-no-stinking-recursion.html
+
+
+
+
+
+intersect_node background
+------------------------------
+
 
 ::
 

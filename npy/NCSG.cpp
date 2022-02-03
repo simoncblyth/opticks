@@ -143,6 +143,8 @@ NCSG* NCSG::Adopt(nnode* root)
 NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvIdx)
 {
     LOG(LEVEL) << "[" ; 
+    std::cout << "NCSG::Adopt" << std::endl ; 
+
     NSceneConfig* config = new NSceneConfig(config_); 
     NCSG* csg = Adopt( root, config, soIdx , lvIdx ); 
     LOG(LEVEL) << "]" ; 
@@ -161,7 +163,8 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
 {
     PrepTree(root);
 
-    LOG(debug) 
+    LOG(LEVEL) 
+        << " [ "
         << " soIdx " << soIdx  
         << " lvIdx " << lvIdx 
         ; 
@@ -186,6 +189,13 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
     tree->setIndex(lvIdx); 
 
     tree->postchange(); 
+
+
+    LOG(LEVEL) 
+        << " ] "
+        << " soIdx " << soIdx  
+        << " lvIdx " << lvIdx 
+        ; 
 
     return tree ; 
 }
@@ -344,9 +354,9 @@ NCSG::NCSG(nnode* root )
     m_other(NULL)
 {
     setBoundary( root->boundary );  // boundary spec
-    LOG(debug) << "[" ; 
+    LOG(LEVEL) << "[ init csgdata " ; 
     m_csgdata->init_buffers(root->maxdepth()) ;  
-    LOG(debug) << "]" ; 
+    LOG(LEVEL) << "] init csgdata " ; 
 }
 
 
