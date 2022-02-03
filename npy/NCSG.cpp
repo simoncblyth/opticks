@@ -161,7 +161,7 @@ NCSG instanciation via ctor taking nnode argument
 
 NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
 {
-    PrepTree(root);
+    root->prepare();  // prepareTree or prepareList depending on type 
 
     LOG(LEVEL) 
         << " [ "
@@ -233,21 +233,6 @@ void NCSG::postchange()
 
 
 
-void NCSG::PrepTree(nnode* root)  // static
-{
-    root->prepTree();   // done already from  X4Solid::Convert 
-/*
-    nnode::Set_parent_links_r(root, NULL);
-    root->check_tree( FEATURE_PARENT_LINKS ); 
-    root->update_gtransforms() ;  // sets node->gtransform (not gtransform_idx) parent links are required 
-    root->check_tree( FEATURE_GTRANSFORMS ); 
-    root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
-*/   
-
- 
-}
-
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -281,7 +266,8 @@ NCSG::NCSG(const char* treedir)
     m_tris(NULL),
     m_soIdx(0),
     m_lvIdx(0),
-    m_other(NULL)
+    m_other(NULL),
+    m_height(-1)
 {
 }
 
@@ -351,11 +337,20 @@ NCSG::NCSG(nnode* root )
     m_tris(NULL),
     m_soIdx(0),
     m_lvIdx(0),
-    m_other(NULL)
+    m_other(NULL),
+    m_height(root->is_tree() ? root->maxdepth() : -1)
 {
-    setBoundary( root->boundary );  // boundary spec
-    LOG(LEVEL) << "[ init csgdata " ; 
-    m_csgdata->init_buffers(root->maxdepth()) ;  
+    init();
+}
+
+
+void NCSG::init()
+{
+    setBoundary( m_root->boundary );  // boundary spec
+
+    unsigned num_serialization_nodes = m_root->num_serialization_nodes(); 
+    LOG(LEVEL) << "[ init csgdata : num_serialization_nodes " << num_serialization_nodes << " height " << m_height << "(-1 for lists)"   ; 
+    m_csgdata->init_node_buffers(num_serialization_nodes) ;  
     LOG(LEVEL) << "] init csgdata " ; 
 }
 
@@ -485,27 +480,98 @@ void NCSG::import()
                   << " verbosity(>0) " << m_verbosity 
                   << " importing buffer into CSG node tree "
                   << " num_nodes " << getNumNodes()
-                  << " height " << getHeight()
                   ;
     }
 
     m_csgdata->prepareForImport() ;  // from m_srctransforms to m_transforms, and get m_gtransforms ready to collect
 
-    m_root = import_r(0, NULL) ;  
+    // need type of first node to distinguish tree from list   
+    OpticksCSG_t root_type  = (OpticksCSG_t)m_csgdata->getTypeCode(0);      
+    LOG(LEVEL) << " root_type " << CSG::Name(root_type) ; 
+
+    if(CSG::IsTree(root_type))
+    {
+        import_tree(); 
+    }
+    else if(CSG::IsList(root_type))
+    {
+        import_list(); 
+    }
+    else
+    {
+        assert(0) ; // unexpected root_type 
+    }
+
 
     m_root->set_treedir(m_treedir) ; 
     m_root->set_treeidx(getTreeNameIdx()) ;  //
 
-    m_root->check_tree( FEATURE_PARENT_LINKS );  
-    m_root->update_gtransforms(); 
-    m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS );  
-
-    postimport();
-
+    postimport();  // create nudger
     checkroot(); 
+
     if(m_verbosity > 5) check();  // recursive transform dumping 
     if(m_verbosity > 1) LOG(info) << "]" ; 
 }
+
+void NCSG::import_tree()
+{
+    m_root = import_tree_r(0, NULL) ;  
+
+    m_root->check_tree( FEATURE_PARENT_LINKS );  
+    m_root->update_gtransforms(); 
+    m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS );  
+}
+
+
+void NCSG::import_list()
+{
+    m_root = import_list_node(0); 
+
+    std::vector<nnode*>& subs = m_root->subs ; 
+
+    assert( subs.size() == 0 ); 
+
+    unsigned num = m_root->subNum(); 
+
+    LOG(LEVEL)
+        << " root.type " << CSG::Name(m_root->type) 
+        << " num " << num 
+        ; 
+    assert( num > 0 ); 
+
+    for(unsigned isub=0 ; isub < num ; isub++)
+    {
+        nnode* sub = import_list_node( 1+isub );
+        subs.push_back(sub);  
+    }
+}
+
+nnode* NCSG::import_list_node( unsigned idx ) 
+{
+    OpticksCSG_t type = (OpticksCSG_t)m_csgdata->getTypeCode(idx);      
+    int transform_idx = m_csgdata->getTransformIndex(idx) ;
+    bool complement = m_csgdata->isComplement(idx) ; 
+    bool is_list = CSG::IsList(type) ; 
+    bool is_list_expect = idx == 0 ? true : false ; 
+
+    LOG(LEVEL) 
+        << " idx " << idx
+        << " type " << CSG::Name(type)
+        << " transform_idx " << transform_idx
+        << " complement " << complement 
+        ;
+    assert( is_list == is_list_expect ); 
+    assert( complement == false ); 
+
+    nnode* node = import_primitive( idx, type ); 
+
+    node->transform = m_csgdata->import_transform_triple( transform_idx ) ;  
+    // from m_transforms, expecting (-1,3,4,4)
+
+    return node ; 
+}
+
+
 
 void NCSG::postimport()
 {
@@ -513,8 +579,8 @@ void NCSG::postimport()
 }
 
 /**
-NCSG::import_r
-----------------
+NCSG::import_tree_r
+--------------------
 
 Importing : constructs the in memory nnode tree from 
 the src buffers loaded by loadsrc ( which were written by analytic/csg.py ) 
@@ -532,7 +598,7 @@ But now thats done from NCSG::import
 
 **/
 
-nnode* NCSG::import_r(unsigned idx, nnode* parent)
+nnode* NCSG::import_tree_r(unsigned idx, nnode* parent)
 {
     if(idx >= getNumNodes()) return NULL ; 
     
@@ -551,7 +617,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
  
     if(typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE)
     {
-        node = import_operator( idx, typecode ) ; 
+        node = import_tree_operator( idx, typecode ) ; 
 
         node->parent = parent ; 
         node->idx = idx ; 
@@ -559,8 +625,8 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
         node->transform = m_csgdata->import_transform_triple( transform_idx ) ;  // from m_transforms, expecting (-1,3,4,4)
 
-        node->left = import_r(idx*2+1, node );  
-        node->right = import_r(idx*2+2, node );
+        node->left = import_tree_r(idx*2+1, node );  
+        node->right = import_tree_r(idx*2+2, node );
 
         node->left->other = node->right ;   // used by NOpenMesh 
         node->right->other = node->left ; 
@@ -589,7 +655,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
 
 
-nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
+nnode* NCSG::import_tree_operator( unsigned idx, OpticksCSG_t typecode )
 {
     if(m_verbosity > 2)
     {
@@ -648,6 +714,9 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
        case CSG_SEGMENT:  
        case CSG_CONVEXPOLYHEDRON:  
                                 node = make_convexpolyhedron(p0,p1,p2,p3)   ; break ; 
+       case CSG_CONTIGUOUS:     
+       case CSG_DISCONTIGUOUS:  
+                                node = make_multiunion(typecode, p0)  ; break ; 
 
        case CSG_ELLIPSOID: assert(0 && "ellipsoid should be zsphere at this level" )   ; break ; 
        default:           node = NULL ; break ; 
@@ -930,61 +999,87 @@ these as idxs get into that buffer
 
 void NCSG::export_()
 {
-    LOG(debug) << "[" ; 
-    m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ) ; 
-
     m_csgdata->prepareForExport() ;  //  create node buffer 
-
-    LOG(debug) << "]" ; 
 
     NPY<float>* _nodes = m_csgdata->getNodeBuffer() ; 
     assert(_nodes);
 
-    LOG(debug) 
-        << " exporting CSG node tree into nodes buffer "
-        << " num_nodes " << getNumNodes()
-        << " height " << getHeight()
-        ;
-
     export_idx();  
 
-    export_r(m_root, 0);
-
-    // m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS | FEATURE_GTRANSFORM_IDX ) ; 
-    //  FEATURE_GTRANSFORM_IDX not fulfilled
+    if( m_root->is_tree() )
+    {
+        export_tree_();
+    }
+    else if( m_root->is_list() )
+    {
+        export_list_();  
+    }
+    else
+    {
+        assert(0) ;  // unexpected m_root type  
+    }
 }
+
+
 
 /**
 NCSG::export_idx
 -------------------
 
-Set tree identity indices into the idx buffer
+Set identity indices into the idx buffer
 
 **/
 
 void NCSG::export_idx()   // only tree level
 {
-    unsigned height = getHeight()  ;
     bool src = false ; 
-    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, height, src ); 
+    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, m_height, src ); 
 }
 
 void NCSG::export_srcidx()   // only tree level
 {
-    unsigned height = getHeight()  ;
     bool src = true  ; 
-    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, height, src ); 
+    m_csgdata->setIdx( m_index, m_soIdx, m_lvIdx, m_height, src ); 
 }
 
-void NCSG::export_r(nnode* node, unsigned idx)
+
+void NCSG::export_tree_()
+{
+    LOG(LEVEL) 
+        << " exporting CSG node tree into nodes buffer "
+        << " num_nodes " << getNumNodes()
+        ;
+
+
+    m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ) ; 
+
+    export_tree_r(m_root, 0);
+}
+
+void NCSG::export_tree_r(nnode* node, unsigned idx)
 {
     export_node( node, idx) ; 
 
     if(node->left && node->right)
     {
-        export_r(node->left,  2*idx + 1);  // complete binary tree indexing 
-        export_r(node->right, 2*idx + 2);
+        export_tree_r(node->left,  2*idx + 1);  // complete binary tree indexing 
+        export_tree_r(node->right, 2*idx + 2);
     }  
+}
+
+void NCSG::export_list_()
+{
+    unsigned idx = 0 ; 
+    export_node( m_root,  idx) ; 
+
+    unsigned num_sub = m_root->subs.size(); 
+    for(unsigned isub=0 ; isub < num_sub ; isub++)
+    {
+        idx = 1 + isub ; 
+        nnode* sub = m_root->subs[isub];    
+        // sub cannot be const, as the export writes things like indices into the node
+        export_node( sub,  idx) ; 
+    }
 }
 
 
@@ -1027,8 +1122,6 @@ void NCSG::export_node(nnode* node, unsigned idx)
     NPY<float>* _nodes = m_csgdata->getNodeBuffer(); 
 
     _nodes->setPart( pt, idx);  // writes 4 quads to buffer
-
-    //LOG(error) << "export_node DONE  " ; 
 }
 
 
@@ -1546,9 +1639,14 @@ bool        NCSG::is_skip() const {           return m_meta->getValue<int>("skip
 bool        NCSG::is_uncoincide() const {     return m_meta->getValue<int>("uncoincide","1") == 1 ; }
 
 
-// from m_csgdata
 
-unsigned NCSG::getHeight() const { return m_csgdata->getHeight(); }
+unsigned NCSG::getHeight() const 
+{ 
+    return m_height ; 
+    //return m_csgdata->getHeight(); 
+}
+
+// from m_csgdata
 unsigned NCSG::getNumNodes() const { return m_csgdata->getNumNodes() ; } 
 
 NPY<float>*    NCSG::getNodeBuffer() const {       return m_csgdata->getNodeBuffer() ; }

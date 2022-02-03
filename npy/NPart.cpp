@@ -91,7 +91,15 @@ void npart::setGTransform(unsigned gtransform_idx, bool complement)
 
 }
 
-
+// matches CSG/CSGNode
+void npart::setSubNum(unsigned sub_num )
+{
+    q0.u.x = sub_num ; 
+}
+unsigned npart::getSubNum() const
+{
+    return q0.u.x ; 
+}
 
 
 

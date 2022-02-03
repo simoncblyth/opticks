@@ -107,6 +107,11 @@ struct NPY_API nnode
     virtual npart srcpart() const ;
     virtual unsigned maxdepth() const ;
     virtual unsigned _maxdepth(unsigned depth) const ;
+    unsigned num_serialization_nodes() const ; 
+
+    static unsigned NumNodes(unsigned height); 
+    static unsigned CompleteTreeHeight( unsigned num_nodes ); 
+
 
     std::string ana_desc() const ; 
     std::string ana_brief() const ; 
@@ -230,7 +235,9 @@ struct NPY_API nnode
     void dump_gtransform() const ;
     void dump_planes() const ;
 
-    void prepTree(); 
+    void prepare(); 
+    void prepareTree(); 
+    void prepareList(); 
   
     // needed for NCSG::FromNode
     static void Set_parent_links_r(nnode* node, nnode* parent);
@@ -314,16 +321,26 @@ struct NPY_API nnode
     bool is_lzero() const ;   //  l-zero AND !r-zero
 
     bool is_operator() const ;
-    bool is_primitive() const ;
+    bool is_tree() const ; 
+
+    bool is_primitive() const ;  // left and right are nullptr
+    bool is_leaf() const ;       // is not compound as determined by type
+    bool is_list() const ;       // has one or more sub nodes, and left and right are nullptr :  used by CSG_(DIS)CONTIGUOUS multiunions
+
     bool is_unbounded() const ;
     bool is_root() const ;
     bool is_bileaf() const ;
+
+
 
     bool has_planes() const ;
     unsigned planeIdx() const ;
     unsigned planeNum() const ;
     void setPlaneIdx(unsigned idx); 
     void setPlaneNum(unsigned num); 
+
+    unsigned subNum() const ; 
+    void     setSubNum(unsigned sub_num) ; 
 
 
     unsigned     idx ; 
@@ -350,10 +367,10 @@ struct NPY_API nnode
     bool               complement ; 
     int                verbosity ; 
 
-    nquad param ; 
-    nquad param1 ; 
-    nquad param2 ; 
-    nquad param3 ; 
+    nquad param ;     // aka q0
+    nquad param1 ;    // aka q1
+    nquad param2 ;    // aka q2
+    nquad param3 ;    // aka q3
 
     std::vector<glm::vec4> planes ; 
     std::vector<nnode*>    subs ; 

@@ -120,7 +120,7 @@ NStepTest.cc
 
 
 NMarchingCubesNPYTest.cc
-NCSGDataTest.cc
+NNodeCompleteTreeHeightTest.cc
 NCSGTest.cc
 NCSG2Test.cc
 NCSGLoadTest.cc

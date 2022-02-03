@@ -38,6 +38,12 @@ union nquad ;
 NCSGData
 =========
 
+TODO: 
+   remove the tree lingo, generalize to just num_nodes serialized nodes
+   tree stuff needs to be done at higher level in NCSG 
+     
+
+
 Are using this class as a testbed for generic buffer handling...
 which creates a kinda strange style mix : consider making this 
 entirely generic buffer handling code. Moving specifics up into NCSG ? 
@@ -50,12 +56,8 @@ SrcBuffers
     Canonically these are the buffers written from python by
     opticks.analytic.csg:CSG.Serialize
 
-
 TransportBuffers
     (is that the right name ?) 
-
-
-
 
 **/
 
@@ -107,11 +109,13 @@ class NPY_API NCSGData
     public:
         static bool        Exists(const char* treedir);     // compat : pass thru to ExistsDir
         enum { NTRAN = 3  };
-        static unsigned NumNodes(unsigned height);
+      //  static unsigned NumNodes(unsigned height);
     private:
         static const char* FILENAME ; 
-        enum { MAX_HEIGHT = 10 };
-        static unsigned CompleteTreeHeight( unsigned num_nodes );
+
+
+        //enum { MAX_HEIGHT = 10 };
+        //static unsigned CompleteTreeHeight( unsigned num_nodes );
 
         static std::string TxtPath(const char* treedir);
         static bool        ExistsTxt(const char* treedir);  // looks for FILENAME (csg.txt) in the treedir
@@ -119,7 +123,8 @@ class NPY_API NCSGData
         static bool        ExistsDir(const char* treedir);  // just checks existance of dir
     public:
         NCSGData(); 
-        void init_buffers(unsigned height);  // maxdepth of node tree
+        //void init_buffers(unsigned height);  // maxdepth of node tree
+        void init_node_buffers(unsigned num_nodes);  // maxdepth of node tree
         void setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height, bool src  );
 
     public:
@@ -152,7 +157,7 @@ class NPY_API NCSGData
     private:
         int         m_verbosity ;  
         NPYList*    m_npy ; 
-        unsigned    m_height ; 
+        //unsigned    m_height ; 
         unsigned    m_num_nodes ; 
 
     private:

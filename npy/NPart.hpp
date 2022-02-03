@@ -53,6 +53,9 @@ struct NPY_API npart
     void setITransform(unsigned itransform_idx, bool complement=false);  // used by NCSG::export_srcnode
     void setBBox(const nbbox& bb);
 
+    void setSubNum(unsigned sub_num) ; 
+    unsigned getSubNum() const ; 
+
     void setParam(const nquad& param);
     void setParam1(const nquad& param1);
     void setParam2(const nquad& param2);

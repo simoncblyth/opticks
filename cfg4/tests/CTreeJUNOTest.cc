@@ -49,7 +49,8 @@ void test_lv( int lv )
     LOG(fatal) << "LV=" << lv << " label " << a->label  ; 
     LOG(error) << a->ana_desc() ; 
 
-    NCSG::PrepTree(a); 
+    //NCSG::PrepTree(a); 
+    a->prepare(); 
 
     G4VSolid* solid = CMaker::MakeSolid(a);
 

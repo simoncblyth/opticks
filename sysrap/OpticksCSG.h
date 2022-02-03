@@ -253,12 +253,34 @@ struct CSG
 
     static bool IsPrimitive(OpticksCSG_t type)
     {
+        // hmm this is fine in context of tree : but are generalizing with lists as well as trees
         return !(type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
     }
 
+    static bool IsTree(OpticksCSG_t type)
+    {
+        return (type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
+    }
+    // TODO: consolidate uses of these
     static bool IsOperator(OpticksCSG_t type)
     {
         return  (type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
+    }
+
+
+    static bool IsList(OpticksCSG_t type)
+    {
+        return  (type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS ) ; 
+    }
+
+    static bool IsCompound(OpticksCSG_t type)
+    { 
+        return IsTree(type) || IsList(type) ; 
+    }
+
+    static bool IsLeaf(OpticksCSG_t type)
+    {
+        return !IsCompound(type) ;  
     }
 
     static bool IsUnbounded(OpticksCSG_t type)

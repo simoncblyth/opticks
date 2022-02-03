@@ -1,20 +1,26 @@
 /**
+NNodeCompleteTreeHeightTest.cc
+===============================
+
+Formerly NCSGDataTest 
 
 See notes/issues/investigate-sams-x375-a-solid-that-breaks-balancing.rst
 
 **/
 
-#include "NCSGData.hpp"
+#include "NNode.hpp"
 #include "OPTICKS_LOG.hh"
 
 void test_NumNodes()
 {
-    for(unsigned h=0 ; h < 260 ; h++) 
+    for(unsigned h=0 ; h < 20 ; h++) 
     {
-        unsigned nn = NCSGData::NumNodes(h); 
+        unsigned nn = nnode::NumNodes(h); 
+        unsigned h2 = nnode::CompleteTreeHeight(nn); 
         std::cout 
             << " h " << std::setw(10) << h 
             << " NumNodes " << std::setw(20) << nn
+            << " h2 " << std::setw(10) << h2 
             << std::endl 
             ; 
     }

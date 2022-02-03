@@ -27,12 +27,19 @@ struct NPY_API nmultiunion : nnode
 };
 
 
-inline NPY_API nmultiunion* make_multiunion(OpticksCSG_t type)
+inline NPY_API nmultiunion* make_multiunion(OpticksCSG_t type )
 {
     nmultiunion* n = new nmultiunion ; 
     //assert( type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS); 
     assert( type == CSG_CONTIGUOUS  ); 
     nnode::Init(n,type) ; 
+
+    return n ; 
+}
+inline NPY_API nmultiunion* make_multiunion(OpticksCSG_t type, const nquad& param  )
+{
+    nmultiunion* n = make_multiunion(type) ; 
+    n->param = param ;    
     return n ; 
 }
 

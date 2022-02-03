@@ -37,7 +37,7 @@
 #include "NCSGData.hpp"
 #include "GLMFormat.hpp"
 
-#define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
+//#define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
 
 
 const plog::Severity NCSGData::LEVEL = PLOG::EnvLevel("NCSGData", "DEBUG"); 
@@ -86,15 +86,24 @@ NPY<float>*    NCSGData::getSrcVertsBuffer() const {     return dynamic_cast<NPY
 NPY<int>*      NCSGData::getSrcFacesBuffer() const {     return dynamic_cast<NPY<int>*>(m_npy->getBuffer((int)SRC_FACES)) ; }
 NPY<unsigned>* NCSGData::getSrcIdxBuffer() const {       return dynamic_cast<NPY<unsigned>*>(m_npy->getBuffer((int)SRC_IDX)) ; } 
 
+/**
+NCSGData::init_node_buffers
+-----------------------------
 
-void NCSGData::init_buffers(unsigned height)  // invoked from NCSG::NCSG(nnode* root ) ie when adopting 
+Invoked from NCSG::NCSG(nnode* root ) when adopting 
+
+Formerly called init_buffers with tree height argumnent, now generalizing to num_node argument, 
+in order to not assume complete binary tree numbers of nodes.  
+
+**/
+
+void NCSGData::init_node_buffers(unsigned num_nodes)  
 {
+    //m_height = height ; 
+    //unsigned num_nodes = NumNodes(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
 
-    m_height = height ; 
-    unsigned num_nodes = NumNodes(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
     m_num_nodes = num_nodes ; 
     LOG(LEVEL) 
-        << " m_height " << m_height
         << " m_num_nodes " << m_num_nodes
         ; 
 
@@ -122,7 +131,8 @@ void NCSGData::loadsrc(const char* treedir)  // invoked from NCSG::NCSG(const ch
 
 
     m_num_nodes = m_npy->getNumItems((int)SRC_NODES); 
-    m_height = CompleteTreeHeight( m_num_nodes ) ; 
+
+    //m_height = CompleteTreeHeight( m_num_nodes ) ; 
 
     import_src_identity();
 
@@ -145,6 +155,7 @@ void NCSGData::import_src_identity()
     m_src_lvIdx = uidx.z ; 
     m_src_height = uidx.w ; 
 
+    /*
 
     bool match_height = m_src_height == m_height ;
   
@@ -160,6 +171,7 @@ void NCSGData::import_src_identity()
             ; 
      
     assert( match_height );
+    */
 
 
 }
@@ -298,12 +310,12 @@ NCSGData::NCSGData()
     :
     m_verbosity(1),
     m_npy(new NPYList(NCSGData::SPECS)),
-    m_height(0),
+    //m_height(0),
     m_num_nodes(0),
     m_src_index(0), 
     m_src_soIdx(0),
-    m_src_lvIdx(0),
-    m_src_height(0)
+    m_src_lvIdx(0)
+    //m_src_height(0)
 {
 }
 
@@ -347,6 +359,16 @@ bool NCSGData::ExistsTxt(const char* treedir)
 }
 
 
+/*
+NCSGData::CompleteTreeHeight
+-----------------------------
+
+Obtain tree height from the number of nodes assuming complete binary tree
+This is here in order to fill in m_height when loading NCSGData from file.
+
+TODO: move to higher level 
+
+
 unsigned NCSGData::CompleteTreeHeight( unsigned num_nodes )
 {
     unsigned height = UINT_MAX ;  
@@ -379,6 +401,11 @@ unsigned NCSGData::getHeight() const
 {
     return m_height ; 
 }
+*/
+
+
+
+
 unsigned NCSGData::getNumNodes() const 
 {
     return m_num_nodes ; 
@@ -400,7 +427,7 @@ and then this identity information gets concatenated in GParts::Combine
 
 void NCSGData::setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height, bool src )
 {
-    assert( height == m_height ); 
+    //assert( height == m_height ); 
     glm::uvec4 uidx(index, soIdx, lvIdx, height); 
 
     NPY<unsigned>* _idx = src ? getSrcIdxBuffer() : getIdxBuffer() ;  
@@ -421,7 +448,6 @@ std::string NCSGData::smry() const
 {
     std::stringstream ss ; 
     ss 
-       << " ht " << std::setw(2) << m_height 
        << " nn " << std::setw(4) << m_num_nodes
        << " sid " << std::setw(4) << m_src_index
        << " sso " << std::setw(4) << m_src_soIdx

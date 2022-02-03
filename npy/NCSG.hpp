@@ -284,9 +284,10 @@ class NPY_API NCSG {
     public:
         bool         isUsedGlobally() const ;
     public:
-        // from NCSGData.m_csgdata, principal consumer is GParts::make
-
         unsigned     getHeight() const ;
+
+    public:
+        // from NCSGData.m_csgdata, principal consumer is GParts::make
         unsigned     getNumNodes() const ;
 
         NPY<float>*    getNodeBuffer() const ;
@@ -322,6 +323,8 @@ class NPY_API NCSG {
     public:
         void setBoundary(const char* boundary); // for --testauto
     private:
+        void init(); 
+    private:
         // Deserialize branch 
         void setConfig(const NSceneConfig* config);
         const NSceneConfig* getConfig() const ;   
@@ -337,13 +340,17 @@ class NPY_API NCSG {
    private:
         // import src buffers of nodes/transforms into a node tree 
         void import();
+        void import_tree();
+        void import_list();
+        nnode* import_list_node( unsigned idx ); 
+
         void postimport();
         void postimport_uncoincide();
         void postimport_autoscan();
 
-        nnode* import_r(unsigned idx, nnode* parent=NULL);
+        nnode* import_tree_r(unsigned idx, nnode* parent=NULL);
+        nnode* import_tree_operator( unsigned idx, OpticksCSG_t typecode );
         nnode* import_primitive( unsigned idx, OpticksCSG_t typecode );
-        nnode* import_operator( unsigned idx, OpticksCSG_t typecode );
         void import_srcplanes(nnode* node);
         void import_srcvertsfaces(nnode* node);
 
@@ -359,18 +366,20 @@ class NPY_API NCSG {
     private:
         // Serialize branch 
         // export node tree into a buffers (complete binary tree buffer of nodes, transforms, planes)
-        void export_r(nnode* node, unsigned idx);
+        void export_();
         void export_idx();
         void export_srcidx();
-        void export_();
+        void export_tree_();
+        void export_tree_r(nnode* node, unsigned idx);
+        void export_list_();
 
         // collects gtransform into the tran buffer and sets gtransform_idx 
         // into the node tree needed to prepare a G4 directly converted solid to go to GPU 
         void export_node( nnode* node, unsigned idx );
-        //void export_gtransform(nnode* node);
-        void export_srcnode(nnode* node, unsigned idx);
-        void export_planes(nnode* node, NPY<float>* _dest );
+        void export_srcnode( nnode* node, unsigned idx);
+        void export_planes( nnode* node, NPY<float>* _dest );
         void export_itransform( nnode* node, NPY<float>* _dest ); 
+        // exporting writes things like indices into the node, so cannot be const 
     public:
         void setSOIdx(unsigned soIdx);
         void setLVIdx(unsigned lvIdx);
@@ -416,6 +425,7 @@ class NPY_API NCSG {
         unsigned    m_lvIdx ;   // debugging 
 
         NCSG*       m_other ; 
+        int         m_height ;   // -1: when root is not a binary tree (eg for multiunions), otherwise tree height 
 
 };
 

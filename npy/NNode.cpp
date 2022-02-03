@@ -47,6 +47,8 @@
 
 #include "NPrimitives.hpp"
 
+#define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
+
 #include "PLOG.hh"
 
 
@@ -84,6 +86,21 @@ void nnode::setPlaneNum(unsigned num)
 {
     param.u.y = num ; 
 }
+
+
+unsigned nnode::subNum() const 
+{
+    return param.u.x ; 
+}
+void nnode::setSubNum(unsigned num) 
+{
+    param.u.x = num ; 
+}
+
+
+
+
+
 
 
 std::string nnode::ana_desc() const
@@ -165,19 +182,39 @@ bool nnode::is_lzero() const
 
 
 
+bool nnode::is_primitive() const 
+{
+    // CAUTION : NOT THE SAME AS CSG::IsPrimitive which is from type only 
+    return left == NULL && right == NULL ; 
+}
+
 
 bool nnode::is_operator() const 
 {
-    return type == CSG_UNION || type == CSG_INTERSECTION || type == CSG_DIFFERENCE ; 
+    return CSG::IsOperator(type); 
 }
-bool nnode::is_primitive() const 
+bool nnode::is_tree() const 
 {
-    return left == NULL && right == NULL ; 
+    return CSG::IsTree(type) ; 
 }
+
+
+
+bool nnode::is_leaf() const 
+{
+    return CSG::IsLeaf(type) ; 
+}
+bool nnode::is_list() const 
+{
+    return CSG::IsList(type) ; 
+}
+
+
 bool nnode::is_unbounded() const 
 {
-    return type == CSG_SLAB || type == CSG_PLANE ; 
+    return CSG::IsUnbounded(type); 
 }
+
 
 
 bool nnode::is_root() const 
@@ -317,6 +354,68 @@ unsigned nnode::_maxdepth(unsigned depth) const   // recursive
 {
     return left && right ? nmaxu( left->_maxdepth(depth+1), right->_maxdepth(depth+1)) : depth ;  
 }
+
+
+unsigned nnode::num_serialization_nodes() const
+{
+    assert( is_root() ); 
+    unsigned num_nodes = 0 ; 
+    if( is_list() )
+    {
+        unsigned num_subs = subs.size() ;
+        num_nodes = 1 + num_subs ;  
+    } 
+    else if( is_tree() )
+    {
+        unsigned height = maxdepth() ; 
+        num_nodes = TREE_NODES(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
+    }
+    return num_nodes ; 
+}
+
+unsigned nnode::NumNodes(unsigned height)  // static
+{
+    unsigned num_nodes = TREE_NODES(height) ; 
+    return num_nodes ; 
+}
+
+
+/**
+nnode::CompleteTreeHeight
+-----------------------------
+
+Obtain tree height from the number of nodes assuming complete binary tree
+This was moved from NCSGData
+
+**/
+
+unsigned nnode::CompleteTreeHeight( unsigned num_nodes ) // static
+{
+    unsigned height = UINT_MAX ;  
+    enum { MAX_HEIGHT = 10 };
+    int h = MAX_HEIGHT*2 ;   // <-- dont let exceeding MAXHEIGHT, mess up determination of height 
+    while(h--)
+    {
+        unsigned complete_nodes = TREE_NODES(h) ;
+        if(complete_nodes == num_nodes) height = h ; 
+    }
+
+    bool invalid_height = height == UINT_MAX ; 
+
+    if(invalid_height)
+    {
+        LOG(fatal) << "nnode::CompleteTreeHeight"
+                   << " INVALID_HEIGHT "
+                   << " num_nodes " << num_nodes
+                   << " MAX_HEIGHT " << MAX_HEIGHT
+                   ;
+    }
+    assert(!invalid_height); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
+    return height ; 
+}
+
+
+
 
 
 const nmat4triple* nnode::global_transform()
@@ -558,6 +657,13 @@ void nnode::set_placement( const nmat4triple* plc )
 }
 
 
+/**
+nnode::check_tree
+-------------------
+
+Recursive traversl asserting that various features of the tree are as expected. 
+
+**/
 
 void nnode::check_tree(unsigned mask) const 
 {
@@ -572,7 +678,7 @@ void nnode::check_tree_r(const nnode* node, const nnode* parent, unsigned depth,
         assert( node->parent == parent ) ; 
     }
 
-    if(node->is_primitive())
+    if(node->is_primitive())   // is_primitive means left and right are null 
     {
         if( mask & FEATURE_GTRANSFORMS )
         {
@@ -1795,9 +1901,42 @@ void nnode::Set_parent_links_r(nnode* node, nnode* parent) // static
 }
 
 
-void nnode::prepTree()  
+/**
+nnode::prepare
+-----------------
+
+Called from X4PhysicalVolume::ConvertSolid_FromRawNode/NCSG::Adopt/NCSG::PrepTree
+
+
+**/
+
+void nnode::prepare()
+{
+    if( is_list() )
+    {
+        prepareList(); 
+    } 
+    else
+    {
+        prepareTree(); 
+    }
+}
+
+
+/**
+nnode::prepareTree
+--------------------
+
+Recursively sets parent links and updates gtransforms, then checks tree. 
+
+**/
+
+void nnode::prepareTree()  
 {
     nnode* root = this ; 
+    unsigned num_subs = root->subs.size() ; 
+    assert( num_subs == 0 ); 
+
     nnode::Set_parent_links_r(root, NULL);
     root->check_tree( FEATURE_PARENT_LINKS ); 
     root->update_gtransforms() ;  // sets node->gtransform (not gtransform_idx) parent links are required 
@@ -1805,8 +1944,26 @@ void nnode::prepTree()
     root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
 }
 
+/**
+nnode::prepareList
+--------------------
 
+* checks list constraints : all sub must be leaf nodes
 
+**/
+
+void nnode::prepareList()
+{
+    nnode* root = this ; 
+    unsigned num_subs = root->subs.size() ; 
+    assert( num_subs > 0 ); 
+
+    for(unsigned i=0 ; i < num_subs ; i++)
+    {
+        const nnode* sub = subs[i] ;  
+        assert( sub->is_leaf() ); 
+    }
+}
 
 
 void nnode::dump(const char* msg) const 
