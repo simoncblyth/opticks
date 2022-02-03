@@ -1,5 +1,5 @@
 /**
-intersect_node_cylinder_test.cc
+intersect_leaf_cylinder_test.cc
 ===================================
 
 **/
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     float3 ray_origin    = make_float3(  0.f, 0.f, 0.f ); 
     float3 ray_direction = make_float3(  0.f, 0.f, 1.f ); 
  
-    bool valid_isect = intersect_node_cylinder( isect, q0, q1, t_min, ray_origin, ray_direction ); 
+    bool valid_isect = intersect_leaf_cylinder( isect, q0, q1, t_min, ray_origin, ray_direction ); 
     float3 pos = make_float3( 0.f , 0.f, 0.f ); 
 
     if(valid_isect)
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
         float t = isect.w ; 
         pos  = ray_origin + t*ray_direction  ; 
 
-        float sd = distance_node_cylinder(pos, q0, q1) ; 
+        float sd = distance_leaf_cylinder(pos, q0, q1) ; 
 
         printf("//pos %10.4f %10.4f %10.4f  sd   %10.4f \n", pos.x, pos.y, pos.z, sd ); 
     }

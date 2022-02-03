@@ -80,9 +80,11 @@ float distance_tree( const float3& global_position, int numNode, const CSGNode* 
             continue ; 
         }
 
-        bool primitive = typecode >= CSG_SPHERE ; 
+        bool primitive = typecode >= CSG_SPHERE ;  
+        // HMM : this includes CSG_CONTIGUOUS 
         if( primitive )
         {
+            // could explicitly branch here on distance_node_contiguous or distance_leaf
             distance = distance_node(global_position, nd, plan0, itra0 ) ; 
             stack.push(distance) ; 
         }

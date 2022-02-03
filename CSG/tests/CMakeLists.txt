@@ -21,12 +21,14 @@ set(TEST_SOURCES
     CSGScanTest.cc
     CUTest.cc
     CSGLogTest.cc
-    intersect_node_phicut_test.cc 
-    intersect_node_box3_test.cc 
-    intersect_node_cylinder_test.cc 
+
+    intersect_leaf_phicut_test.cc 
+    intersect_leaf_box3_test.cc 
+    intersect_leaf_cylinder_test.cc 
+    distance_leaf_slab_test.cc
+
     CSGNodeScanTest.cc
     CSGSignedDistanceFieldTest.cc
-    distance_node_test.cc
 
     CSGGeometryTest.cc
     CSGClassifyTest.cc

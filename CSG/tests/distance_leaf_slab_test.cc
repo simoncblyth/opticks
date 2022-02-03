@@ -1,5 +1,5 @@
 /**
-distance_node_test.cc
+distance_leaf_slab_test.cc
 ===================================
 
 **/
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     q1.f.w =  0.f ; 
 
     float3 pos = make_float3( 0.f , 0.f, 0.f ); 
-    float sd = distance_node_slab( pos, q0, q1 ); 
+    float sd = distance_leaf_slab( pos, q0, q1 ); 
 
     printf("//pos %10.4f %10.4f %10.4f  sd   %10.4f \n", pos.x, pos.y, pos.z, sd ); 
 

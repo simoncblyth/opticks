@@ -1,5 +1,5 @@
 /**
-intersect_node_phicut_test.cc
+intersect_leaf_phicut_test.cc
 ===================================
 
 This is for very low level testing of csg_intersect_node.h intersect functions.
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     float3 ray_origin    = make_float3( 10.f, 0.f, 0.f ); 
     float3 ray_direction = make_float3(  0.f, 1.f, 0.f ); 
  
-    bool valid_isect = intersect_node_phicut( isect, q0, t_min, ray_origin, ray_direction ); 
+    bool valid_isect = intersect_leaf_phicut( isect, q0, t_min, ray_origin, ray_direction ); 
     float4 post = make_float4( 0.f , 0.f, 0.f , 0.f ); 
 
     if(valid_isect)

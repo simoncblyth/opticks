@@ -70,9 +70,8 @@ INTERSECT_FUNC
 bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction ); 
 
 
-
 INTERSECT_FUNC
-float distance_node_sphere(const float3& pos, const quad& q0 )
+float distance_leaf_sphere(const float3& pos, const quad& q0 )
 {
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
@@ -83,13 +82,13 @@ float distance_node_sphere(const float3& pos, const quad& q0 )
 
 
 INTERSECT_FUNC
-bool intersect_node_sphere(float4& isect, const quad& q0, const float& t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_sphere(float4& isect, const quad& q0, const float& t_min, const float3& ray_origin, const float3& ray_direction )
 {
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
 
 #ifdef DEBUG
-    printf("//intersect_node.h:sphere radius %10.4f \n", radius );  
+    printf("//intersect_leaf_sphere radius %10.4f \n", radius );  
 #endif
 
 
@@ -123,7 +122,7 @@ bool intersect_node_sphere(float4& isect, const quad& q0, const float& t_min, co
 
 
 #ifdef DEBUG
-    printf("//intersect_node.h:sphere valid_isect %d  isect ( %10.4f %10.4f %10.4f %10.4f)  \n", valid_isect, isect.x, isect.y, isect.z, isect.w ); 
+    printf("//intersect_leaf_sphere valid_isect %d  isect ( %10.4f %10.4f %10.4f %10.4f)  \n", valid_isect, isect.x, isect.y, isect.z, isect.w ); 
 #endif
     return valid_isect ;
 }
@@ -132,7 +131,7 @@ bool intersect_node_sphere(float4& isect, const quad& q0, const float& t_min, co
 
 
 INTERSECT_FUNC
-float distance_node_zsphere(const float3& pos, const quad& q0, const quad& q1 )
+float distance_leaf_zsphere(const float3& pos, const quad& q0, const quad& q1 )
 {
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
@@ -151,7 +150,7 @@ float distance_node_zsphere(const float3& pos, const quad& q0, const quad& q1 )
 
 
 INTERSECT_FUNC
-bool intersect_node_zsphere(float4& isect, const quad& q0, const quad& q1, const float& t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const float& t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float3 center = make_float3(q0.f);
     float3 O = ray_origin - center;  
@@ -198,7 +197,9 @@ bool intersect_node_zsphere(float4& isect, const quad& q0, const quad& q1, const
         else if( t2cap > t_min )                                  t_cand = t2cap ;  // t2cap qualifies -> t2cap
         else if( t2sph > t_min && z2sph > zmin && z2sph < zmax)   t_cand = t2sph ;  // t2sph qualifies and t2cap disabled or disqialified -> t2sph
 
-        //rtPrintf("csg_intersect_zsphere t_min %7.3f t1sph %7.3f t1cap %7.3f t2cap %7.3f t2sph %7.3f t_cand %7.3f \n", t_min, t1sph, t1cap, t2cap, t2sph, t_cand ); 
+#ifdef DEBUG
+        //printf("//intersect_leaf_zsphere t_min %7.3f t1sph %7.3f t1cap %7.3f t2cap %7.3f t2sph %7.3f t_cand %7.3f \n", t_min, t1sph, t1cap, t2cap, t2sph, t_cand ); 
+#endif
     }
 
     bool valid_isect = t_cand > t_min ;
@@ -224,7 +225,7 @@ bool intersect_node_zsphere(float4& isect, const quad& q0, const quad& q1, const
 
 
 INTERSECT_FUNC
-float distance_node_convexpolyhedron( const float3& pos, const CSGNode* node, const float4* plan )
+float distance_leaf_convexpolyhedron( const float3& pos, const CSGNode* node, const float4* plan )
 {
     unsigned planeIdx = node->planeIdx() ; 
     unsigned planeNum = node->planeNum() ; 
@@ -242,7 +243,7 @@ float distance_node_convexpolyhedron( const float3& pos, const CSGNode* node, co
 
 
 INTERSECT_FUNC
-bool intersect_node_convexpolyhedron( float4& isect, const CSGNode* node, const float4* plan, const float t_min , const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_convexpolyhedron( float4& isect, const CSGNode* node, const float4* plan, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
     float t0 = -CUDART_INF_F ; 
     float t1 =  CUDART_INF_F ; 
@@ -476,7 +477,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
 
 
 /**
-intersect_node_cone
+intersect_leaf_cone
 =====================
 
 Suspect this cone implementation has issues with axial rays 
@@ -509,7 +510,7 @@ TODO: investigate and see if some special casing can avoid the issues.
 **/
 
 INTERSECT_FUNC
-bool intersect_node_cone( float4& isect, const quad& q0, const float t_min , const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
     float r1 = q0.f.x ; 
     float z1 = q0.f.y ; 
@@ -521,7 +522,7 @@ bool intersect_node_cone( float4& isect, const quad& q0, const float t_min , con
     float z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
 
 #ifdef DEBUG
-    printf("//intersect_node.h:cone r1 %10.4f z1 %10.4f r2 %10.4f z2 %10.4f : z0 %10.4f \n", r1, z1, r2, z2, z0 );  
+    printf("//intersect_lead_cone r1 %10.4f z1 %10.4f r2 %10.4f z2 %10.4f : z0 %10.4f \n", r1, z1, r2, z2, z0 );  
 #endif
  
     float r1r1 = r1*r1 ; 
@@ -547,7 +548,7 @@ bool intersect_node_cone( float4& isect, const quad& q0, const float t_min , con
     float disc = c1*c1 - c0*c2 ; 
 
 #ifdef DEBUG
-    printf("//intersect_node.h:cone c2 %10.4f c1 %10.4f c0 %10.4f disc %10.4f : tth %10.4f \n", c2, c1, c0, disc, tth  );  
+    printf("//intersect_leaf_cone c2 %10.4f c1 %10.4f c0 %10.4f disc %10.4f : tth %10.4f \n", c2, c1, c0, disc, tth  );  
 #endif
  
 
@@ -623,7 +624,7 @@ bool intersect_node_cone( float4& isect, const quad& q0, const float t_min , con
 
 
 INTERSECT_FUNC
-bool intersect_node_hyperboloid(float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_hyperboloid(float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
    /*
      http://mathworld.wolfram.com/One-SheetedHyperboloid.html
@@ -731,7 +732,7 @@ bool intersect_node_hyperboloid(float4& isect, const quad& q0, const float t_min
 
 
 /**
-intersect_node_box3
+intersect_leaf_box3
 -----------------------
 
 "Fast, Branchless Ray/Bounding Box Intersections"
@@ -765,14 +766,14 @@ mean its a usable intersect, there are 3 possibilities::
 **/
 
 INTERSECT_FUNC
-bool intersect_node_box3(float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
    const float3 bmin = make_float3(-q0.f.x/2.f, -q0.f.y/2.f, -q0.f.z/2.f );   // fullside 
    const float3 bmax = make_float3( q0.f.x/2.f,  q0.f.y/2.f,  q0.f.z/2.f ); 
    const float3 bcen = make_float3( 0.f, 0.f, 0.f ) ;    
 
 #ifdef DEBUG
-    printf("//intersect_node.h:box3  bmin (%10.4f,%10.4f,%10.4f) bmax (%10.4f,%10.4f,%10.4f)  \n", bmin.x, bmin.y, bmin.z, bmax.x, bmax.y, bmax.z );  
+    printf("//intersect_leaf_box3  bmin (%10.4f,%10.4f,%10.4f) bmax (%10.4f,%10.4f,%10.4f)  \n", bmin.x, bmin.y, bmin.z, bmax.x, bmax.y, bmax.z );  
 #endif
 
    float3 idir = make_float3(1.f)/ray_direction ; 
@@ -808,8 +809,8 @@ bool intersect_node_box3(float4& isect, const quad& q0, const float t_min, const
 
 
 #ifdef DEBUG
-    printf("//intersect_node.h:box3  along_xyz (%d,%d,%d) in_xyz (%d,%d,%d)   has_intersect %d  \n", along_x, along_y, along_z, in_x, in_y, in_z, has_intersect  );  
-    //printf("//intersect_node_box3 t_min %10.4f t_near %10.4f t_far %10.4f \n", t_min, t_near, t_far ); 
+    printf("//intersect_leaf_box3  along_xyz (%d,%d,%d) in_xyz (%d,%d,%d)   has_intersect %d  \n", along_x, along_y, along_z, in_x, in_y, in_z, has_intersect  );  
+    //printf("//intersect_leaf_box3 t_min %10.4f t_near %10.4f t_far %10.4f \n", t_min, t_near, t_far ); 
 #endif
 
 
@@ -818,7 +819,7 @@ bool intersect_node_box3(float4& isect, const quad& q0, const float t_min, const
    {
        float t_cand = t_min < t_near ?  t_near : ( t_min < t_far ? t_far : t_min ) ; 
 #ifdef DEBUG
-       printf("//intersect_node.h:box3 t_min %10.4f t_near %10.4f t_far %10.4f t_cand %10.4f \n", t_min, t_near, t_far, t_cand ); 
+       printf("//intersect_leaf_box3 t_min %10.4f t_near %10.4f t_far %10.4f t_cand %10.4f \n", t_min, t_near, t_far, t_cand ); 
 #endif
 
        float3 p = ray_origin + t_cand*ray_direction - bcen ; 
@@ -856,13 +857,13 @@ bool intersect_node_box3(float4& isect, const quad& q0, const float t_min, const
    }
 
 #ifdef DEBUG
-   printf("//intersect_node.h:box3 has_valid_intersect %d  isect ( %10.4f %10.4f %10.4f %10.4f)  \n", has_valid_intersect, isect.x, isect.y, isect.z, isect.w ); 
+   printf("//intersect_leaf_box3 has_valid_intersect %d  isect ( %10.4f %10.4f %10.4f %10.4f)  \n", has_valid_intersect, isect.x, isect.y, isect.z, isect.w ); 
 #endif
    return has_valid_intersect ; 
 }
 
 /**
-distance_node_box3
+distance_leaf_box3
 --------------------
 
 https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
@@ -878,7 +879,7 @@ float sdBox( vec3 p, vec3 b )
 **/
 
 INTERSECT_FUNC
-float distance_node_box3(const float3& pos, const quad& q0 )
+float distance_leaf_box3(const float3& pos, const quad& q0 )
 {
     float3 q = make_float3( fabs(pos.x) - q0.f.x/2.f, fabs(pos.y) - q0.f.y/2.f , fabs(pos.z) - q0.f.z/2.f ) ;    
     float3 z = make_float3( 0.f ); 
@@ -889,7 +890,7 @@ float distance_node_box3(const float3& pos, const quad& q0 )
 
 
 /**
-intersect_node_plane
+intersect_leaf_plane
 -----------------------
 
 * https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
@@ -915,7 +916,7 @@ Equation for points p that are in the plane::
 **/
 
 INTERSECT_FUNC
-bool intersect_node_plane( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_plane( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;   // plane normal direction  
    const float d = q0.f.w ;                                 // distance to origin 
@@ -938,7 +939,7 @@ bool intersect_node_plane( float4& isect, const quad& q0, const float t_min, con
 
 
 INTERSECT_FUNC
-float distance_node_plane( const float3& pos, const quad& q0 )
+float distance_leaf_plane( const float3& pos, const quad& q0 )
 {
     const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;   // plane normal direction  
     const float d = q0.f.w ;                                 // distance to origin 
@@ -949,7 +950,7 @@ float distance_node_plane( const float3& pos, const quad& q0 )
 
 
 /**
-intersect_node_phicut
+intersect_leaf_phicut
 ------------------------
 
 Unbounded shape that cuts phi via two half-planes "attached" to the z-axis.
@@ -1021,7 +1022,7 @@ Disqualify rays with direction within the plane::
 **/
 
 INTERSECT_FUNC
-bool intersect_node_phicut( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float cosPhi0 = q0.f.x ; 
     const float sinPhi0 = q0.f.y ; 
@@ -1044,8 +1045,8 @@ bool intersect_node_phicut( float4& isect, const quad& q0, const float t_min, co
     if(side1 < 0.f) t1 = t_min ; 
 
 #ifdef DEBUG
-    printf("//intersect_node_phicut d_n0 %10.3f o_n0 %10.3f t0 %10.3f  side0 %10.3f  \n", d_n0, o_n0, t0, side0 ); 
-    printf("//intersect_node_phicut d_n1 %10.3f o_n1 %10.3f t1 %10.3f  side1 %10.3f  \n", d_n1, o_n1, t1, side1 ); 
+    printf("//intersect_leaf_phicut d_n0 %10.3f o_n0 %10.3f t0 %10.3f  side0 %10.3f  \n", d_n0, o_n0, t0, side0 ); 
+    printf("//intersect_leaf_phicut d_n1 %10.3f o_n1 %10.3f t1 %10.3f  side1 %10.3f  \n", d_n1, o_n1, t1, side1 ); 
 #endif
 
     float t_near = fminf(t0,t1);  // order the intersects 
@@ -1069,7 +1070,7 @@ bool intersect_node_phicut( float4& isect, const quad& q0, const float t_min, co
 
 
 INTERSECT_FUNC
-float distance_node_slab( const float3& pos, const quad& q0, const quad& q1 )
+float distance_leaf_slab( const float3& pos, const quad& q0, const quad& q1 )
 {
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
    const float a = q1.f.x ; 
@@ -1093,7 +1094,7 @@ One normal, two distances
 
 
 INTERSECT_FUNC
-bool intersect_node_slab( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_slab( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
 
@@ -1127,7 +1128,7 @@ bool intersect_node_slab( float4& isect, const quad& q0, const quad& q1, const f
 
 
 /**
-distance_node_cylinder
+distance_leaf_cylinder
 ------------------------
 
 * https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
@@ -1175,7 +1176,7 @@ The SDF rules for CSG combinations::
 
 
 INTERSECT_FUNC
-float distance_node_cylinder( const float3& pos, const quad& q0, const quad& q1 )
+float distance_leaf_cylinder( const float3& pos, const quad& q0, const quad& q1 )
 {
     const float   radius = q0.f.w ; 
     const float       z1 = q1.f.x  ; 
@@ -1189,7 +1190,7 @@ float distance_node_cylinder( const float3& pos, const quad& q0, const quad& q1 
 
 
 /**
-intersect_node_cylinder
+intersect_leaf_cylinder
 ------------------------
 
 For ascii art explanation of the maths see optixrap/cu/intersect_ztubs.h
@@ -1204,7 +1205,7 @@ For ascii art explanation of the maths see optixrap/cu/intersect_ztubs.h
 **/
 
 INTERSECT_FUNC
-bool intersect_node_cylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float   radius = q0.f.w ; 
     const float       z1 = q1.f.x  ; 
@@ -1400,7 +1401,7 @@ bool intersect_node_cylinder( float4& isect, const quad& q0, const quad& q1, con
 
 
 /**
-intersect_node_infcylinder
+intersect_leaf_infcylinder
 ----------------------------------
 
 Use standard Z-axial cylinder orientation to see how much it simplifies::
@@ -1422,7 +1423,7 @@ dot the non-axial x and y thanks to the fixed orientation.
 **/
 
 INTERSECT_FUNC
-bool intersect_node_infcylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_infcylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float r = q0.f.w ; 
 
@@ -1462,7 +1463,7 @@ bool intersect_node_infcylinder( float4& isect, const quad& q0, const quad& q1, 
 
 
 /**
-intersect_node_disc
+intersect_leaf_disc
 ---------------------
 
 RTCD p197  (Real Time Collision Detection)
@@ -1552,7 +1553,7 @@ of the rigid outward normal direction.::
 **/
 
 INTERSECT_FUNC
-bool intersect_node_disc(float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_disc(float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float   inner  = q0.f.z ; 
     const float   radius = q0.f.w ; 
@@ -1564,7 +1565,7 @@ bool intersect_node_disc(float4& isect, const quad& q0, const quad& q1, const fl
     const float3 center = make_float3( q0.f.x, q0.f.y, zc ); // C: point at middle of disc
 
 #ifdef DEBUG
-    printf("disc.center (%10.4f, %10.4f, %10.4f) \n", center.x, center.y, center.z ); 
+    printf("//intersect_leaf_disc (%10.4f, %10.4f, %10.4f) \n", center.x, center.y, center.z ); 
 #endif
 
 
@@ -1646,18 +1647,18 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
     bool valid_isect = false ; 
     switch(typecode)
     {
-        case CSG_SPHERE:           valid_isect = intersect_node_sphere(           isect, node->q0,               t_min, origin, direction ) ; break ; 
-        case CSG_ZSPHERE:          valid_isect = intersect_node_zsphere(          isect, node->q0, node->q1,     t_min, origin, direction ) ; break ; 
-        case CSG_CONVEXPOLYHEDRON: valid_isect = intersect_node_convexpolyhedron( isect, node, plan,             t_min, origin, direction ) ; break ;
-        case CSG_CONE:             valid_isect = intersect_node_cone(             isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_HYPERBOLOID:      valid_isect = intersect_node_hyperboloid(      isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_BOX3:             valid_isect = intersect_node_box3(             isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_PLANE:            valid_isect = intersect_node_plane(            isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_SLAB:             valid_isect = intersect_node_slab(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_CYLINDER:         valid_isect = intersect_node_cylinder(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_INFCYLINDER:      valid_isect = intersect_node_infcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_DISC:             valid_isect = intersect_node_disc(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_PHICUT:           valid_isect = intersect_node_phicut(           isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_SPHERE:           valid_isect = intersect_leaf_sphere(           isect, node->q0,               t_min, origin, direction ) ; break ; 
+        case CSG_ZSPHERE:          valid_isect = intersect_leaf_zsphere(          isect, node->q0, node->q1,     t_min, origin, direction ) ; break ; 
+        case CSG_CONVEXPOLYHEDRON: valid_isect = intersect_leaf_convexpolyhedron( isect, node, plan,             t_min, origin, direction ) ; break ;
+        case CSG_CONE:             valid_isect = intersect_leaf_cone(             isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_HYPERBOLOID:      valid_isect = intersect_leaf_hyperboloid(      isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_BOX3:             valid_isect = intersect_leaf_box3(             isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_PLANE:            valid_isect = intersect_leaf_plane(            isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_SLAB:             valid_isect = intersect_leaf_slab(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_CYLINDER:         valid_isect = intersect_leaf_cylinder(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_INFCYLINDER:      valid_isect = intersect_leaf_infcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_DISC:             valid_isect = intersect_leaf_disc(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_PHICUT:           valid_isect = intersect_leaf_phicut(           isect, node->q0,               t_min, origin, direction ) ; break ;
     }
     if(valid_isect)
     {
@@ -1744,13 +1745,13 @@ float distance_leaf( const float3& global_position, const CSGNode* node, const f
 
     switch(typecode)
     {
-        case CSG_SPHERE:           distance = distance_node_sphere(            local_position, node->q0 )           ; break ; 
-        case CSG_ZSPHERE:          distance = distance_node_zsphere(           local_position, node->q0, node->q1 ) ; break ; 
-        case CSG_CONVEXPOLYHEDRON: distance = distance_node_convexpolyhedron(  local_position, node, plan )         ; break ;
-        case CSG_BOX3:             distance = distance_node_box3(              local_position, node->q0 )           ; break ;
-        case CSG_CYLINDER:         distance = distance_node_cylinder(          local_position, node->q0, node->q1 ) ; break ;
-        case CSG_PLANE:            distance = distance_node_plane(             local_position, node->q0 )           ; break ;
-        case CSG_SLAB:             distance = distance_node_slab(              local_position, node->q0, node->q1 ) ; break ;
+        case CSG_SPHERE:           distance = distance_leaf_sphere(            local_position, node->q0 )           ; break ; 
+        case CSG_ZSPHERE:          distance = distance_leaf_zsphere(           local_position, node->q0, node->q1 ) ; break ; 
+        case CSG_CONVEXPOLYHEDRON: distance = distance_leaf_convexpolyhedron(  local_position, node, plan )         ; break ;
+        case CSG_BOX3:             distance = distance_leaf_box3(              local_position, node->q0 )           ; break ;
+        case CSG_CYLINDER:         distance = distance_leaf_cylinder(          local_position, node->q0, node->q1 ) ; break ;
+        case CSG_PLANE:            distance = distance_leaf_plane(             local_position, node->q0 )           ; break ;
+        case CSG_SLAB:             distance = distance_leaf_slab(              local_position, node->q0, node->q1 ) ; break ;
     }
     return complement ? -distance : distance  ; 
 }
