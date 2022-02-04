@@ -181,6 +181,10 @@ bool nnode::is_lzero() const
 }
 
 
+bool nnode::is_lr_null() const 
+{
+    return left == NULL && right == NULL ; 
+}
 
 bool nnode::is_primitive() const 
 {

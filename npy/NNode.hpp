@@ -324,6 +324,7 @@ struct NPY_API nnode
     bool is_tree() const ; 
 
     bool is_primitive() const ;  // left and right are nullptr
+    bool is_lr_null() const ; 
     bool is_leaf() const ;       // is not compound as determined by type
     bool is_list() const ;       // has one or more sub nodes, and left and right are nullptr :  used by CSG_(DIS)CONTIGUOUS multiunions
 

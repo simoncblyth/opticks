@@ -47,7 +47,7 @@ struct NPY_API npart
 
     void zero();
     void dump(const char* msg) const ;
-    void check_bb_zero(OpticksCSG_t typecode) const ;
+    void check_bb_is_zero(OpticksCSG_t typecode) const ;
     void setTypeCode(OpticksCSG_t typecode);
     void setGTransform(unsigned gtransform_idx, bool complement=false);
     void setITransform(unsigned itransform_idx, bool complement=false);  // used by NCSG::export_srcnode

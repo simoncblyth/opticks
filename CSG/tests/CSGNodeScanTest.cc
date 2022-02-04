@@ -24,6 +24,7 @@ For lower level tests see::
 #include "sqat4.h"
 
 #define DEBUG 1 
+#include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
 

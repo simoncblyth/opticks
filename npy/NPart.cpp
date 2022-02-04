@@ -189,7 +189,7 @@ void npart::zero()
     qx.u = {0,0,0,0} ;
 }
 
-void npart::check_bb_zero(OpticksCSG_t typecode) const 
+void npart::check_bb_is_zero(OpticksCSG_t typecode) const 
 {
    if( typecode == CSG_CONVEXPOLYHEDRON) return ;  // bbox is actually used 
 
@@ -198,6 +198,7 @@ void npart::check_bb_zero(OpticksCSG_t typecode) const
        if(q2.u.x != 3)
            LOG(fatal) << "check_bb_zero endcap flags expected 3 (ignored anyhow) " << q2.u.x ;
        //assert( q2.u.x == 3 );   // <-- no nolonger used endcap flags, but keeping it for matching 
+        //TODO: check this is now zero 
    }
    else
    {

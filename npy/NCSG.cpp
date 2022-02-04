@@ -1171,8 +1171,7 @@ void NCSG::export_node(nnode* node, unsigned idx)
            ; 
     }
 
-
-    pt.check_bb_zero(node->type); 
+    pt.check_bb_is_zero(node->type); 
 
     NPY<float>* _nodes = m_csgdata->getNodeBuffer(); 
 
@@ -1399,8 +1398,6 @@ For some solids this seems to hang.
 
 glm::uvec4 NCSG::collect_surface_points() 
 {
-
-
     if(!m_points) 
     {
         m_points = new NNodePoints(m_root, m_config );

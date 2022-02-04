@@ -2005,9 +2005,9 @@ However nconvexpolyhedron should normally have this set..
 
 nbbox GParts::getBBox(unsigned int i) const 
 {
-   gfloat3 min = getGfloat3(i, BBMIN_J, BBMIN_K );  // (2,0)
-   gfloat3 max = getGfloat3(i, BBMAX_J, BBMAX_K );  // (3,0) 
-   nbbox bb = make_bbox(min.x, min.y, min.z, max.x, max.y, max.z);  
+   gfloat3 mn = getGfloat3(i, BBMIN_J, BBMIN_K );  // (2,0) 
+   gfloat3 mx = getGfloat3(i, BBMAX_J, BBMAX_K );  // (3,0) 
+   nbbox bb = make_bbox(mn.x, mn.y, mn.z, mx.x, mx.y, mx.z);  
    return bb ; 
 }
 

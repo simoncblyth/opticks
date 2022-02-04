@@ -109,6 +109,15 @@ float distance_tree( const float3& global_position, int numNode, const CSGNode* 
     return distance ; 
 }
 
+/**
+distance_list
+--------------
+
+Using fminf so is implicitly a union list, could also use fmaxf and have intersection list 
+controlled by ancillary type on the head node. 
+
+**/
+
 TREE_FUNC
 float distance_list( const float3& global_position, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0 )
 {
@@ -117,7 +126,7 @@ float distance_list( const float3& global_position, int numNode, const CSGNode* 
     {
         const CSGNode* nd = node + nodeIdx ; 
         float sd = distance_node(global_position, nd, plan0, itra0 ) ; 
-        distance = fminf( distance,  sd ) ;
+        distance = fminf( distance,  sd ) ;   
     }
     return distance ; 
 }
@@ -238,6 +247,9 @@ full prior postorder sequence.
 
 Tried using leftTreeNew with a balanced tree and it still gives spurious intersects on internal boundariues,
 so it looks like tree balanching and the CSG algorithm as it stands are not compatible.  
+
+TODO: need to confirm exactly what is happening using CSGRecord, have not extinguished all hope of getting balanced
+to work yet, as it seems like it should be possible in principle.
 
 **/
 
@@ -560,4 +572,32 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
     }
     return isect.w > 0.f ;  // ? 
 }
+
+
+
+
+
+TREE_FUNC
+bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
+{
+    return numNode == 1 
+               ? 
+                  intersect_node(isect,          node, plan, itra, t_min, ray_origin, ray_direction )
+               :
+                  intersect_tree(isect, numNode, node, plan, itra, t_min, ray_origin, ray_direction )
+               ;
+}
+
+
+TREE_FUNC
+float distance_prim( const float3& global_position, int numNode, const CSGNode* node, const float4* plan, const qat4* itra )
+{
+    return numNode == 1 
+               ? 
+                  distance_node(global_position,          node, plan, itra )
+               :
+                  distance_tree(global_position, numNode, node, plan, itra )
+               ;
+}
+
 
