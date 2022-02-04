@@ -8,6 +8,7 @@
 
 #include "OpticksGenstep.h"
 #include "sqat4.h"
+#include "sc4u.h"
 #include "sevent.h"
 
 #include "qgs.h"
@@ -676,13 +677,17 @@ NB the sevent.h enum order is different to the python one  eg XYZ=0
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
-    //int gencode = gs.q0.i.x ;   
-    int gridaxes = gs.q0.i.y ;   
-    //int dirmode  = gs.q0.i.z ; 
+    C4U gsid ;  
+
+    //int gencode          = gs.q0.i.x ;   
+    int gridaxes           = gs.q0.i.y ;  // { XYZ, YZ, XZ, XY }
+    gsid.u                 = gs.q0.i.z ; 
     //unsigned num_photons = gs.q0.u.w ; 
 
-
-    p.q0.f = gs.q1.f ;  // start with local frame position, eg (0,0,0)   
+    p.q0.f.x = gs.q1.f.x ;   // start with genstep local frame position, typically origin  (0,0,0)   
+    p.q0.f.y = gs.q1.f.y ; 
+    p.q0.f.z = gs.q1.f.z ; 
+    p.q0.f.w = 1.f ;        
 
     float u0 = curand_uniform(&rng); 
 
@@ -707,6 +712,15 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
     qat4 qt(gs) ; // copy 4x4 transform from last 4 quads of genstep 
     qt.right_multiply_inplace( p.q0.f, 1.f );   // position 
     qt.right_multiply_inplace( p.q1.f, 0.f );   // direction 
+
+    // HMM:  photon_id is global to the launch 
+    // but having a  local to the photons of this genstep index is more useful for this id
+    // so the genstep needs to carry the photon_id offset in order convert into a local index
+
+    unsigned char ucj = (photon_id < 255 ? photon_id : 255 ) ;
+    gsid.c4.w = ucj ; 
+    p.q3.u.w = gsid.u ;
+
 } 
 
 

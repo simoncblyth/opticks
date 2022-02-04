@@ -998,6 +998,11 @@ if __name__ == '__main__':
 
     fold = Fold.Load(outdir) 
 
+    t_all_zero = np.all( fold.photons[:,0,3] == 0 ) 
+    if t_all_zero:
+       log.error(" no photons landed on geometry ")
+    pass
+
     outdir = os.path.join(fold.base, "figs")
     if not os.path.isdir(outdir):
         os.makedirs(outdir)

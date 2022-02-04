@@ -112,7 +112,7 @@ int main(int argc, char** argv)
     bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;   
     // TODO: eliminate the need for this switches by standardizing on model2world transforms
 
-    gsm->create(moi, ce_offset, ce_scale );
+    gsm->create(moi, ce_offset, ce_scale ); // SEvent::MakeCenterExtentGensteps
 
     NP* gs = gsm->gs ; 
     gs->set_meta<std::string>("TOP", top ); 

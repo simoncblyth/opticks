@@ -191,6 +191,18 @@ void CSGGenstep::configure_grid()
         ; 
 }
 
+
+/**
+CSGGenstep::generate_photons_cpu
+----------------------------------
+
+The GPU equivalent should aim to match 
+
+   CSGOptiX/OptiX7Test.cu/simulate  
+   quadrap/qsim.h/generate_photon
+
+**/
+
 void CSGGenstep::generate_photons_cpu()
 {
     pp = SEvent::GenerateCenterExtentGenstepsPhotons_( gs );  

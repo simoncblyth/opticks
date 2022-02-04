@@ -196,6 +196,18 @@ frame as are doing the local_translate first.
 
 **/
 
+unsigned SEvent::GenstepID( int ix, int iy, int iz, int iw )
+{ 
+    C4U gsid ;   // sc4u.h 
+
+    gsid.c4.x = ix ; 
+    gsid.c4.y = iy ; 
+    gsid.c4.z = iz ; 
+    gsid.c4.w = iw ; 
+
+    return gsid.u ; 
+}
+
 
 NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) // static
 {
@@ -216,8 +228,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     int ny = (iy1 - iy0)/2 ; 
     int nz = (iz1 - iz0)/2 ; 
 
-    int gridaxes = GridAxes(nx, ny, nz); 
-    int dirmode = gridaxes == XYZ ? DIMENSION_3 : DIMENSION_2 ; 
+    int gridaxes = GridAxes(nx, ny, nz);   // { XYZ, YZ, XZ, XY }
 
     LOG(info) 
         << " ce_offset " << ce_offset 
@@ -227,13 +238,12 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
         << " nz " << nz 
         << " GridAxes " << gridaxes
         << " GridAxesName " << GridAxesName(gridaxes)
-        << " DirMode " << dirmode
-        << " DirModeName " << DirModeName(dirmode)
         ;
 
+    // TODO: pack the enums together to make way for a photon_offset for the genstep 
     gs.q0.i.x = OpticksGenstep_TORCH ;
     gs.q0.i.y = gridaxes ; 
-    gs.q0.i.z = dirmode ; 
+    gs.q0.i.z = 0 ;          // set to gsid below
     gs.q0.i.w = photons_per_genstep ;
 
     /**
@@ -255,7 +265,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     // extent is already handled within the transform so must not apply extent scaling 
 
 
-    C4U gsid ;   // sc4u.h 
+    unsigned photon_offset = 0 ; 
 
     for(int ix=ix0 ; ix < ix1+1 ; ix++ )
     for(int iy=iy0 ; iy < iy1+1 ; iy++ )
@@ -276,41 +286,23 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
 
         qat4* qc = Tran<double>::ConvertFrom( transform->t ) ;
 
-        gsid.c4.x = ix ; 
-        gsid.c4.y = iy ; 
-        gsid.c4.z = iz ; 
-        gsid.c4.w = 0 ; 
+        unsigned gsid = GenstepID(ix,iy,iz,0) ; 
 
-        gs.q1.u.w = gsid.u ; // CAUTION: stomping on coordinate 1.0 TODO: make sure thats not used otherwise, id using qat4 for transforming it should not be 
+        //gs.q1.u.w = gsid ; // CAUTION: stomping on coordinate 1.0 TODO: make sure thats not used otherwise, id using qat4 for transforming it should not be 
+        gs.q0.u.z = gsid ;   // MOVED 
+
+        //gs.q0.u.y = photon_offset ;  TODO: rearrange to allow this
 
         qc->write(gs);  // copy qc into gs.q2,q3,q4,q5
 
         gensteps.push_back(gs);
+        photon_offset += photons_per_genstep ; 
     }
     LOG(LEVEL) << " gensteps.size " << gensteps.size() ;
 
     return MakeGensteps(gensteps);
 }
 
-
-
-const char* SEvent::DIMENSION_3_ = "3D" ; 
-const char* SEvent::DIMENSION_2_ = "2D" ; 
-const char* SEvent::DIMENSION_1_ = "1D" ; 
-const char* SEvent::DIMENSION_0_ = "0D" ;
- 
-const char* SEvent::DirModeName( int dirmode )  // static 
-{
-    const char* s = nullptr ; 
-    switch( dirmode )
-    {
-        case DIMENSION_3: s = DIMENSION_3_ ; break ; 
-        case DIMENSION_2: s = DIMENSION_2_ ; break ; 
-        case DIMENSION_1: s = DIMENSION_1_ ; break ; 
-        case DIMENSION_0: s = DIMENSION_0_ ; break ; 
-    }
-    return s ;
-}
 
 const char* SEvent::XYZ_ = "XYZ" ; 
 const char* SEvent::YZ_  = "YZ" ; 
@@ -432,24 +424,27 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
     {   
         const quad6& gs = gsv[i]; 
         qat4 qt(gs) ;  // copy 4x4 transform from last 4 quads of genstep 
-        
+
+        C4U gsid ;   // genstep integer grid coordinate IXIYIZ and IW photon index up to 255
+
+        int gencode          = gs.q0.i.x ; 
+        int gridaxes         = gs.q0.i.y ; 
+        gsid.u               = gs.q0.u.z ;     // formerly gs.q1.u.w 
         unsigned num_photons = gs.q0.u.w ; 
-        int gridaxes = gs.q0.i.y ; 
-        int dirmode  = gs.q0.i.z ; 
+
+        assert( gencode == OpticksGenstep_TORCH );
 
         //std::cout << " i " << i << " num_photons " << num_photons << std::endl ;
         
-        double u0, phi  , sinPhi,   cosPhi ; 
-        double u1, sinTheta, cosTheta ; 
+        double u0, u1 ; 
+        double phi, sinPhi,   cosPhi ; 
+        double sinTheta, cosTheta ; 
         
         for(unsigned j=0 ; j < num_photons ; j++)
         {   
-            C4U gsid ; 
-            gsid.u = gs.q1.u.w ;
-
-            unsigned char ucj = (j < 255 ? j : 255 ) ;
-            gsid.c4.w = ucj ;  
-            p.q3.u.w = gsid.u ;   // record genstep IXIYIZ and photon index IW into photon (3,3)
+            // this inner loop should be similar to quadarap/qsim.h/generate_photon_torch
+            // TODO: arrange a header such that can actually use the same code 
+            //   needs some curand_uniform macro refinition trickery
 
             u0 = rng();
             //u0 = double(j)/double(num_photons-1) ;
@@ -462,20 +457,22 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
             cosTheta = u1 ; 
             sinTheta = sqrtf(1.0-u1*u1);
 
-            p.q0.f = gs.q1.f ;  // copy position from genstep into the photon, historically has been origin   
+            // copy position from genstep into the photon, historically has been origin   
+            p.q0.f.x = gs.q1.f.x ;
+            p.q0.f.y = gs.q1.f.y ;
+            p.q0.f.z = gs.q1.f.z ;
+            p.q0.f.w = 1.f ;       // <-- dont copy the "float" gsid 
  
-            switch(dirmode)
-            {
-                case DIMENSION_2: SetGridPlaneDirection_2D( p.q1.f, gridaxes, cosPhi, sinPhi )                    ; break ; 
-                case DIMENSION_3: SetGridPlaneDirection_3D( p.q1.f, gridaxes, cosPhi, sinPhi, cosTheta, sinTheta ); break ; 
-            }
+            SetGridPlaneDirection( p.q1.f, gridaxes, cosPhi, sinPhi, cosTheta, sinTheta );   // cosTheta sinTheta not used for 2D 
 
             // tranforming photon position and direction into the desired frame
- 
             qt.right_multiply_inplace( p.q0.f, 1.f );  // position 
             qt.right_multiply_inplace( p.q1.f, 0.f );  // direction
 
-            
+            unsigned char ucj = (j < 255 ? j : 255 ) ;
+            gsid.c4.w = ucj ;     // setting C4U union element to change gsid.u 
+            p.q3.u.w = gsid.u ;   // include photon index IW with the genstep coordinate into photon (3,3)
+        
             pp.push_back(p) ;
         }
     }
@@ -485,43 +482,42 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
 
 
 /**
-SEvent::SetGridPlaneDirection_2D
+SEvent::SetGridPlaneDirection
 ----------------------------------
 
-TODO: probably need some minus signs in the below for consistency 
-TODO: for gridaxes XYZ an adhoc choice is made for the plane of the direction 
+The cosTheta and sinTheta arguments are only used for the 3D gridaxes == XYZ
 
 **/
 
-void SEvent::SetGridPlaneDirection_2D( float4& dir, int gridaxes, float cosPhi, float sinPhi )
+void SEvent::SetGridPlaneDirection( float4& dir, int gridaxes, double cosPhi, double sinPhi, double cosTheta, double sinTheta )
 {
     if( gridaxes == YZ )
     {    
         dir.x = 0.f ;  
-        dir.y = cosPhi ;
-        dir.z = sinPhi ;   
+        dir.y = float(cosPhi) ;
+        dir.z = float(sinPhi) ;   
         dir.w = 0.f    ;   
     }
     else if( gridaxes == XZ )
     {    
-        dir.x = cosPhi ;   
+        dir.x = float(cosPhi) ;   
         dir.y = 0.f    ;
-        dir.z = sinPhi ;   
+        dir.z = float(sinPhi) ;   
         dir.w = 0.f    ;   
     }
     else if( gridaxes == XY )
     {    
-        dir.x = cosPhi ;   
-        dir.y = sinPhi ;
-        dir.z = 0.     ;   
+        dir.x = float(cosPhi) ;   
+        dir.y = float(sinPhi) ;
+        dir.z = 0.f     ;   
         dir.w = 0.f    ;   
     }
-    else if( gridaxes == XYZ )
+    else if( gridaxes == XYZ )    // formerly adhoc used XZ here
     {    
-        dir.x = cosPhi ;   
-        dir.y = 0.f    ;
-        dir.z = sinPhi ;   
-        dir.w = 0.f    ;   
+        dir.x = float(sinTheta * cosPhi)  ; 
+        dir.y = float(sinTheta * sinPhi)  ; 
+        dir.z = float(cosTheta) ; 
+        dir.w =  0.f   ; 
     } 
     else
     {
@@ -529,17 +525,4 @@ void SEvent::SetGridPlaneDirection_2D( float4& dir, int gridaxes, float cosPhi, 
         assert(0);  
     }
 }
-
-
-void SEvent::SetGridPlaneDirection_3D( float4& dir, int gridaxes, float cosPhi, float sinPhi, float cosTheta, float sinTheta ) // static 
-{
-    assert( gridaxes == XYZ ); 
-    dir.x =  sinTheta * cosPhi  ; 
-    dir.y =  sinTheta * sinPhi  ; 
-    dir.z =  cosTheta ; 
-    dir.w =  0.   ; 
-}
-
-
-
 

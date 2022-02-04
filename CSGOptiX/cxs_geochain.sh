@@ -4,6 +4,8 @@ usage(){ cat << EOU
 NOMASK=1 ./cxs_geochain.sh 
    use NOMASK to debug empty frames, eg when the genstep grid is too small for the geometry 
 
+SIM=1 ./cxs_geochain.sh 
+   use pvplt_simple for debugging 
 
 MASK=t GEOM=AltXJfixtureConstruction_XYZ ./cxs_geochain.sh 
    3D pyvista view of intersects  

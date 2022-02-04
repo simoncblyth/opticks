@@ -14,6 +14,9 @@ union C4U {
 };  
 
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+
 #include <sstream>
 #include <string>
 #include <iostream>
@@ -67,11 +70,6 @@ inline std::string C4U_name( const int4& gsid, const char* prefix, char delim )
     std::string s = ss.str(); 
     return s ; 
 }
-
-
-
-
-
 inline void C4U_decode( int4& gsid,  unsigned u )
 {
     C4U c4u ; 
@@ -83,4 +81,5 @@ inline void C4U_decode( int4& gsid,  unsigned u )
     gsid.w = int(c4u.c4.w) ; 
 }
 
+#endif 
 

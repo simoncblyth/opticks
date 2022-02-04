@@ -14,20 +14,12 @@ struct SYSRAP_API SEvent
 {
     static const plog::Severity LEVEL ; 
 
-
     static const char* XYZ_ ; 
     static const char* YZ_  ; 
     static const char* XZ_  ; 
     static const char* XY_  ; 
     static const char* GridAxesName( int gridaxes ); 
     static int GridAxes(int nx, int ny, int nz); 
-
-    static const char* DIMENSION_0_ ; 
-    static const char* DIMENSION_1_ ; 
-    static const char* DIMENSION_2_ ; 
-    static const char* DIMENSION_3_ ;
- 
-    static const char* DirModeName( int dirmode ); 
 
     static NP* MakeGensteps(const std::vector<quad6>& gs ); 
     static void StandardizeCEGS(        const float4& ce,       std::vector<int>& cegs, float gridscale );
@@ -39,8 +31,8 @@ struct SYSRAP_API SEvent
     static void GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa ); 
     static NP* GenerateCenterExtentGenstepsPhotons_( const NP* gsa ) ; 
 
-    static void SetGridPlaneDirection_2D( float4& dir, int gridaxes, float cosPhi, float sinPhi ); 
-    static void SetGridPlaneDirection_3D( float4& dir, int gridaxes, float cosPhi, float sinPhi, float cosTheta, float sinTheta ); 
+    static void SetGridPlaneDirection( float4& dir, int gridaxes, double cosPhi, double sinPhi, double cosTheta, double sinTheta ); 
+    static unsigned GenstepID( int ix, int iy, int iz, int iw=0 ) ; 
 
 };
 
