@@ -12,8 +12,8 @@ is to be able to see the exact same geometry that the simulation is using.
 
 ::
 
-     MOI=Hama CXS_CEGS=5:0:5:1000   CSGOptiXSimulateTest
-     MOI=Hama CXS_CEGS=10:0:10:1000 CSGOptiXSimulateTest
+     MOI=Hama CEGS=5:0:5:1000   CSGOptiXSimulateTest
+     MOI=Hama CEGS=10:0:10:1000 CSGOptiXSimulateTest
 
 TODO: 
     find way to get sdf distances for all intersects GPU side 

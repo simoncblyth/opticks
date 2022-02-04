@@ -37,9 +37,10 @@ msg="=== $BASH_SOURCE :"
 #geom="AltXJfixtureConstruction_YZ"
 #geom="AltXJfixtureConstruction_XZ"
 #geom="AltXJfixtureConstruction_XY"
-geom="AltXJfixtureConstruction_XYZ"
+#geom="AltXJfixtureConstruction_XYZ"
 
-geom="BoxFourBoxContiguous_YX"
+geom="BoxFourBoxUnion_YX"
+#geom="BoxFourBoxContiguous_YX"
 
 
 export GEOM=${GEOM:-$geom}

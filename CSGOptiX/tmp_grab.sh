@@ -55,6 +55,11 @@ grab_all()
         local last_npy=$(ls -1rt $all_npy | tail -1 )
         local last_outdir=$(dirname $last_npy)
 
+        if [ ! -d "$LOGDIR" ]; then 
+            echo $msg creating LOGDIR $LOGDIR
+            mkdir -p $LOGDIR 
+        fi 
+
         if [ -d "$LOGDIR" ]; then 
             local script=$LOGDIR/CSGOptiXSimulateTest_OUTPUT_DIR.sh
             printf "export CSGOptiXSimulateTest_OUTPUT_DIR=$last_outdir\n" > $script 

@@ -81,7 +81,7 @@ if [ -z "$moi" -o -z "$cegs" -o -z "$ce_offset" -o -z "$ce_scale" -o -z "$gridsc
 fi 
 
 export MOI=${MOI:-$moi}
-export CXS_CEGS=${CXS_CEGS:-$cegs}
+export CEGS=${CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
 export CE_SCALE=${CE_SCALE:-$ce_scale}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
@@ -97,7 +97,7 @@ export OPTICKS_GEOM=$GEOM
 
 
 
-IFS=: read -a cegs_arr <<< "$cegs"
+IFS=: read -a cegs_arr <<< "$CEGS"
 
 # quotes on the in variable due to bug fixed in bash 4.3 according to 
 # https://stackoverflow.com/questions/918886/how-do-i-split-a-string-on-a-delimiter-in-bash
@@ -105,9 +105,9 @@ IFS=: read -a cegs_arr <<< "$cegs"
 cegs_elem=${#cegs_arr[@]}
 
 case $cegs_elem in 
-   4) echo $msg 4 element CXS_CEGS $CXS_CEGS ;; 
-   7) echo $msg 7 element CXS_CEGS $CXS_CEGS ;; 
-   *) echo $msg ERROR UNEXPECTED $cegs_elem element CXS_CEGS $CXS_CEGS && exit 1  ;; 
+   4) echo $msg 4 element CEGS $CEGS ;; 
+   7) echo $msg 7 element CEGS $CEGS ;; 
+   *) echo $msg ERROR UNEXPECTED $cegs_elem element CEGS $CEGS && exit 1  ;; 
 esac
 
 

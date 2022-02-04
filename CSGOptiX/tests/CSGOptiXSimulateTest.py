@@ -106,6 +106,23 @@ pass
 #print("pv:%s" % str(pv))
 
 
+def pvplt_simple(xyz, label):
+    """
+    :param xyz: (n,3) shaped array of positions
+    :param label: to place on plot 
+
+    KEEP THIS SIMPLE : FOR DEBUGGING WHEN LESS BELLS AND WHISTLES IS AN ADVANTAGE
+    """
+    pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
+    pl.add_text( "pvplt_simple %s " % label, position="upper_left")
+    pl.add_points( xyz, color="white" )        
+    pl.show_grid()
+    cp = pl.show() if GUI else None
+    return cp
+
+
+
+
 def make_colors():
     """
     :return colors: large list of color names with easily recognisable ones first 
@@ -422,10 +439,14 @@ class Gensteps(object):
     def __init__(self, genstep, metatran, grid, local=True, local_extent_scale=False ):
         gs = genstep
         mtr = metatran
-        log.info("gensteps")
 
         numpho = gs.view(np.int32)[:,0,3] 
+
+        gsid = gs.view(np.int32)[:,1,3].copy()
+        gs[:,1,3] = 1.    # copy the identity and set to 1. for transforming as position 
+
         centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
+
         for igs in range(len(gs)): centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
 
         if not mtr is None:
@@ -449,6 +470,7 @@ class Gensteps(object):
         lim[Z] = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
 
         self.gs = gs
+        self.gsid = gsid
         self.mtr = mtr 
         self.numpho = numpho
         self.centers = centers 
@@ -456,6 +478,18 @@ class Gensteps(object):
         self.ugsc = ugsc
         self.lim = lim 
 
+        log.info("Gensteps\n %s " % repr(self))
+
+
+    def __repr__(self):
+        return "\n".join([
+                   "gs.gs %s " % str(self.gs.shape),
+                   "gs.mtr %s " % str(self.mtr.shape),
+                   "gs.numpho %s " % self.numpho,
+                   "gs.lim[X] %s " % str(self.lim[X]),
+                   "gs.lim[Y] %s " % str(self.lim[Y]),
+                   "gs.lim[Z] %s " % str(self.lim[Z]),
+              ])
 
 
 class Positions(object):
@@ -469,7 +503,7 @@ class Positions(object):
     """
     def __init__(self, p, gs, grid, local=True, mask="pos", local_extent_scale=False ):
         """
-        :param p: photons array
+        :param p: photons array  (should be called isect really)
         :param gs: Gensteps instance
         :param grid: GridSpec instance 
         """
@@ -498,7 +532,11 @@ class Positions(object):
         self.grid = grid 
 
         self.p = p 
+
+        self.gpos = gpos
+        self.lpos = lpos
         self.upos = upos
+
         self.local = local
 
         #self.make_histogram()
@@ -544,7 +582,6 @@ class Positions(object):
         self.p = self.p[mask]
         self.upos = self.upos[mask]
 
-
     def make_histogram(self):
         lim = self.gs.lim  
         nx = self.grid.nx
@@ -568,17 +605,18 @@ class Positions(object):
         self.bins = bins 
         self.bins2 = bins2 
 
-    def pvplt_simple(self):
-        p = self.p
-        pos = p[:,0,:3]
-        pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
-        pl.add_points( pos, color="white" )        
-        pl.show_grid()
-        cp = pl.show() if GUI else None
-        return cp
+
 
 class Plt(object):
     def __init__(self, outdir, feat, gs, grid, pos, gsmeta ):
+        """
+        :param outdir:
+        :param feat:
+        :param gs:
+        :param grid:
+        :param pos:
+        :param gsmeta:
+        """
 
         self.outdir = outdir 
         self.feat = feat
@@ -791,7 +829,7 @@ class Plt(object):
         """
         pass
         feat = self.feat 
-        upos = self.pos.upos
+        upos = self.pos.upos   ## typically local frame 
 
 
         pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
@@ -916,7 +954,8 @@ if __name__ == '__main__':
     CSGFoundry_DIR = CSGFoundry.FindDirUpTree( CSGOptiXSimulateTest_OUTPUT_DIR, "CSGFoundry" )
     FOLD = os.path.dirname(CSGFoundry_DIR)
 
-    LEAF = os.environ.get("LEAF", None) 
+    LEAF = os.environ.get("LEAF", None)   ## LEAF is used to hop between geometries in sibling dirs 
+
 
     print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % CSGOptiXSimulateTest_OUTPUT_DIR )
     print( " LEAF                            : %s " % LEAF )
@@ -928,11 +967,14 @@ if __name__ == '__main__':
     outleaf = os.path.basename(outdir)
     outdir2 = os.path.join(outbase, outleaf)  
     assert outdir == outdir2 
+    print( " outleaf                         : %s " % outleaf )
 
     leaves = list(filter(lambda _:_.startswith(outleaf[:10]),os.listdir(outbase)))
     print("\n".join(leaves))
 
     if not LEAF is None and LEAF != outleaf:
+
+        pickleaf = None
         for cand in leaves:
             print(" cand : %s " % cand )
             endmatch = cand.endswith(LEAF)
@@ -940,44 +982,49 @@ if __name__ == '__main__':
                  pickleaf = cand
             pass
         pass
-        outdir = os.path.join(outbase, pickleaf)  
 
-        print(" OVERRIDE CSGOptiXSimulateTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
-        print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % outdir )
+        if not pickleaf is None:
+            outdir = os.path.join(outbase, pickleaf)  
+            print(" OVERRIDE CSGOptiXSimulateTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
+            print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % outdir )
+        else:
+            print("FAILED to override CSGOptiXSimulateTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
+        pass
     pass
 
 
     cf = CSGFoundry(os.path.join(FOLD, "CSGFoundry"))
     #test_mok(cf)
 
-    cxs = Fold.Load(outdir) 
+    fold = Fold.Load(outdir) 
 
-    outdir = os.path.join(cxs.base, "figs")
+    outdir = os.path.join(fold.base, "figs")
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
     pass
 
-    gsmeta = NPMeta(cxs.genstep_meta)
-    grid = GridSpec(cxs.peta, gsmeta)
+    gsmeta = NPMeta(fold.genstep_meta)
+    grid = GridSpec(fold.peta, gsmeta)
 
     local_extent_scale = grid.coords == "RTP" 
 
-    metatran = getattr(cxs, "metatran", None) 
+    metatran = getattr(fold, "metatran", None) 
     if metatran is None:
         log.warning("using placeholder identity metatran") 
         metatran = np.vstack( [np.eye(4) , np.eye(4), np.eye(4) ] ).reshape(-1,4,4)
     pass    
 
-    gs = Gensteps(cxs.genstep, metatran, grid, local_extent_scale=local_extent_scale )
+    gs = Gensteps(fold.genstep, metatran, grid, local_extent_scale=local_extent_scale )
 
     mask = MASK   # default is "pos" 
     assert mask in ALLOWED_MASK, "mask %s is not in ALLOWED_MASK list %s " % (mask, str(ALLOWED_MASK))
     #without mask=pos means that the legend is filled with features that are not visible in the frame 
 
-    pos = Positions(cxs.photons, gs, grid, local=True, mask=mask, local_extent_scale=local_extent_scale )
+    pos = Positions(fold.photons, gs, grid, local=True, mask=mask, local_extent_scale=local_extent_scale )
 
     if SIM:
-        pos.pvplt_simple()
+        pvplt_simple(pos.gpos[:,:3], "pos.gpos[:,:3]" )
+        pvplt_simple(pos.lpos[:,:3], "pos.lpos[:,:3]" )
     else:
         featname = os.environ.get("FEAT", "pid" )  
         assert featname in ["pid", "bnd", "ins" ]    # pid:meshname, bnd:boundary, ins:instance
