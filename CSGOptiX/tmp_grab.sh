@@ -54,10 +54,15 @@ grab_all()
 
         local last_npy=$(ls -1rt $all_npy | tail -1 )
         local last_outdir=$(dirname $last_npy)
-        local script=$LOGDIR/CSGOptiXSimulateTest_OUTPUT_DIR.sh
-        printf "export CSGOptiXSimulateTest_OUTPUT_DIR=$last_outdir\n" > $script 
-        echo $msg script $script
-        cat $script
+
+        if [ -d "$LOGDIR" ]; then 
+            local script=$LOGDIR/CSGOptiXSimulateTest_OUTPUT_DIR.sh
+            printf "export CSGOptiXSimulateTest_OUTPUT_DIR=$last_outdir\n" > $script 
+            echo $msg script $script
+            cat $script
+        else
+            echo $msg LOGDIR $LOGDIR does not exist : cannot write CSGOptiXSimulateTest_OUTPUT_DIR.sh based on last_outdir $last_outdir : use arg like jpg to grab renders only 
+        fi 
 
     fi
 

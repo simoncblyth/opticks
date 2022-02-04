@@ -9,6 +9,7 @@
 #include "qsim.h"
 #include "qevent.h"
 
+#include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
 

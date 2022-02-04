@@ -284,6 +284,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 
     addInstances(repeatIdx); 
 
+    LOG(LEVEL) << " numPrim " << numPrim ; 
     LOG(LEVEL) << " solid.bb " <<  bb ;
     LOG(LEVEL) << " solid.desc " << so->desc() ;
 
@@ -430,6 +431,9 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 CSG_GGeo_Convert::convertNode
 -------------------------------
 
+Canonically invoked from CSG_GGeo_Convert::convertPrim which is invoked from CSG_GGeo_Convert::convertSolid
+
+
 Add node to foundry and returns pointer to it
 
 primIdx
@@ -518,7 +522,6 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     std::vector<float4>* planes = has_planes ? GetPlanes(comp, primIdx, partIdxRel) : nullptr ; 
 
     const float* aabb = nullptr ;  
-
     CSGNode nd = CSGNode::Make(tc, param6, aabb ) ; 
     CSGNode* n = foundry->addNode(nd, planes );
     n->setIndex(partIdx); 
@@ -538,7 +541,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     }
     else
     {
-        n->setAABBLocal();  
+        n->setAABBLocal(); // use params of each type to set the bbox 
     }
 
     n->setTransform(tranIdx); 

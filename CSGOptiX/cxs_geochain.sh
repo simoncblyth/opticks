@@ -39,6 +39,8 @@ msg="=== $BASH_SOURCE :"
 #geom="AltXJfixtureConstruction_XY"
 geom="AltXJfixtureConstruction_XYZ"
 
+geom="BoxFourBoxContiguous_YX"
+
 
 export GEOM=${GEOM:-$geom}
 moi=0   # intended to catch the first meshname (which for geochain is usually the only meshname)

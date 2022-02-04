@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 struct float4 ; 
 struct float3 ; 
 struct NP ; 

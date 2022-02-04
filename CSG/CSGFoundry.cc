@@ -137,6 +137,7 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
     bool size_match = a.size() == b.size() ; 
     if(!size_match) LOG(info) << name << " size_match FAIL " ; 
     if(!size_match) mismatch += 1 ; 
+    if(!size_match) return mismatch ;  // below will likely crash if sizes are different 
 
     int data_match = memcmp( a.data(), b.data(), a.size()*sizeof(T) ) ; 
     if(data_match != 0) LOG(info) << name << " sizeof(T) " << sizeof(T) << " data_match FAIL " ; 
@@ -230,7 +231,7 @@ std::string CSGFoundry::descInst(unsigned ias_idx_, unsigned long long emm ) con
 CSGFoundry::iasBB
 --------------------
 
-bbox of the IAS obtained by tranforming the center_extent cubes of all instances
+bbox of the IAS obtained by transforming the center_extent cubes of all instances
 hmm: could get a smaller bbox by using the bbox and not the ce of the instances 
 need to add bb to solid...
 

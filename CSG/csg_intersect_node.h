@@ -11,6 +11,7 @@ intersect_node_contiguous
 
 TODO: distance_node_discontiguous, intersect_node_discontiguous 
      CSG_DISCONTIGUOUS shapes are multiunions that the user guarantees to have no overlap between nodes, 
+     (perhaps CSG_DISJOINT or CSG_SEPERATED would be better names)
      for example a menagerie of different primitives arranged such that there are all entirely disconnected
      from each other 
 
@@ -33,6 +34,8 @@ distance_node
 /**
 distance_node_contiguous
 ----------------------------
+
+HMM : I think this same implementation should work for distance_node_discontiguous too 
 
 **/
 
@@ -148,7 +151,8 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
                  enter_count += 1 ; 
                  if( sub_isect_0.w < isect_nearest_enter.w ) isect_nearest_enter = sub_isect_0 ;  
 
-                 if(inside_or_surface)  // when inside_or_surface need to find EXITs for all the ENTERs, when ouside just need nearest ENTER
+                 if(inside_or_surface)  
+                 // when inside_or_surface need to find EXITs for all the ENTERs, when ouside just need nearest ENTER
                  { 
                      float tminAdvanced = sub_isect_0.w + propagate_epsilon ; 
                      if(intersect_leaf( sub_isect_1, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
@@ -178,6 +182,27 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
     }
     return valid_intersect ; 
 }
+
+
+/**
+intersect_node_discontiguous
+-----------------------------
+
+The guarantee that all sub-nodes do not overlap other sub-nodes
+makes the implementation straightforward and hence fast:
+
+* origin outside: closest ENTER
+* origin inside: closest EXIT 
+
+Providing more types of multiunion allows the user to communicate 
+more precisely hence a simpler less general algorithm more suited 
+to the situation can be applied. 
+
+**/
+
+
+
+
 
 
 

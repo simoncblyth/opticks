@@ -71,6 +71,7 @@ list(APPEND CSG_HEADERS
 )
 
 list(APPEND INTERSECT_HEADERS
+    csg_intersect_leaf.h 
     csg_intersect_node.h 
     csg_intersect_tree.h 
     csg_robust_quadratic_roots.h
