@@ -169,11 +169,6 @@ if __name__ == '__main__':
     pl = pv.Plotter(window_size=SIZE*2 ) 
 
 
-
-
-
-
-
     cegs_path = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM") 
     recs_path = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM/intersectSelected")
 

@@ -124,26 +124,14 @@ void CSGOptiX::init()
 
     LOG(LEVEL) << "]" ; 
 }
-
-
 void CSGOptiX::initPeta()
 { 
     peta->zero(); 
-    //unsigned* ptr = &(peta->q0.u.x) ;  
-    //for(unsigned i=0 ; i < 16 ; i++ ) *(ptr + i) = 0u ; 
 }
-
-void CSGOptiX::setMetaTran(const Tran<double>* metatran_ )
-{
-    metatran = metatran_ ; 
-}
-
-
 void CSGOptiX::initParams()
 {
     params->device_alloc(); 
 }
-
 void CSGOptiX::initGeometry()
 {
     params->node = foundry->d_node ; 
@@ -161,7 +149,33 @@ void CSGOptiX::initGeometry()
     sbt->setFoundry(foundry); 
 #endif
 }
+void CSGOptiX::initRender()
+{
+#if OPTIX_VERSION < 70000
+    six->initFrame();     
+    // sets params->pixels, isect from optix device pointers
+    // HUH:instanciating Six does this already  
+#else
+    params->pixels = frame->getDevicePixel(); 
+    params->isect  = frame->getDeviceIsect(); 
+    params->fphoton = frame->getDevicePhoton(); 
+#endif
+}
+void CSGOptiX::initSimulate() // once only (not per-event) simulate setup tasks .. 
+{
+    params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
+    params->evt = evt ? evt->getDevicePtr() : nullptr ;  // qevent*
+    params->tmin = 0.f ;      // perhaps needs to be epsilon to avoid self-intersection off boundaries ?
+    params->tmax = 1000000.f ; 
+}
 
+
+
+
+void CSGOptiX::setMetaTran(const Tran<double>* metatran_ )
+{
+    metatran = metatran_ ; 
+}
 void CSGOptiX::setTop(const char* tspec)
 {
     LOG(LEVEL) << "[" << " tspec " << tspec ; 
@@ -177,25 +191,6 @@ void CSGOptiX::setTop(const char* tspec)
     LOG(LEVEL) << "]" << " tspec " << tspec ; 
 }
 
-
-void CSGOptiX::initRender()
-{
-#if OPTIX_VERSION < 70000
-    six->initFrame();     // sets params->pixels, isect from optix device pointers
-#else
-    params->pixels = frame->getDevicePixel(); 
-    params->isect  = frame->getDeviceIsect(); 
-    params->fphoton = frame->getDevicePhoton(); 
-#endif
-}
-
-void CSGOptiX::initSimulate() // once only (not per-event) simulate setup tasks .. 
-{
-    params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
-    params->evt = evt ? evt->getDevicePtr() : nullptr ;  // qevent*
-    params->tmin = 0.f ;      // perhaps needs to be epsilon to avoid self-intersection off boundaries ?
-    params->tmax = 1000000.f ; 
-}
 
 
 void CSGOptiX::setGensteps(const NP* gs)
@@ -215,7 +210,6 @@ void CSGOptiX::prepareSimulateParam()   // per-event simulate setup prior to opt
 
 void CSGOptiX::setCEGS(const std::vector<int>& cegs)
 {
-    //params->setCEGS(cegs_); 
     assert( cegs.size() == 7 );   // use QEvent::StandardizeCEGS to convert 4 to 7  
 
     peta->q0.i.x = cegs[0] ;  // ix0
@@ -226,7 +220,7 @@ void CSGOptiX::setCEGS(const std::vector<int>& cegs)
     peta->q1.i.x = cegs[4] ;  // iz0
     peta->q1.i.y = cegs[5] ;  // iz1 
     peta->q1.i.z = cegs[6] ;  // num_photons
-    peta->q1.i.w = 0 ; 
+    peta->q1.i.w = 0 ;     // TODO: gridscale according to ana/gridspec.py 
 }
 
 /**
@@ -354,8 +348,14 @@ void CSGOptiX::prepareParam()
 CSGOptiX::launch
 -------------------
 
-See OptiX7Test.cu::__raygen__rg for what happens next, depending on params.raygenmode
-the "render" or "simulate" method gets called. 
+For what happens next, see 
+
+OptiX7Test.cu::__raygen__rg
+
+OptiX6Test.cu::raygen
+
+
+Depending on params.raygenmode the "render" or "simulate" method is called. 
  
 **/
 

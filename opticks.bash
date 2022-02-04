@@ -22,6 +22,7 @@ opticks-(){         source $(opticks-source) && opticks-env $* ; }
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  } 
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
 b7(){  opticks-build7 ; }
+oo7(){ oo ; b7 ; }
 
 oot(){ oo ; opticks-t ; : opticks.bash ; }
 t(){ typeset -f $*    ; : opticks.bash ; } 

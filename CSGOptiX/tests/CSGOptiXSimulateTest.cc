@@ -105,6 +105,8 @@ int main(int argc, char** argv)
     CSGOptiX cx(&ok, fd); 
     cx.setTop(top); 
 
+
+
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ; 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
@@ -120,9 +122,12 @@ int main(int argc, char** argv)
     gs->set_meta<std::string>("BOTLINE", botline ); 
 
     cx.setComposition(gsm->ce, gsm->m2w, gsm->w2m ); 
-    cx.setCEGS(gsm->cegs); 
+    cx.setCEGS(gsm->cegs);   // sets peta metadata
     cx.setMetaTran(gsm->geotran); 
     cx.setGensteps(gs); 
+
+
+
     cx.simulate();  
     cx.snapSimulateTest(outdir, botline, topline ); 
  

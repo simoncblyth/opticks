@@ -194,33 +194,26 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 
 
     // transform (x,z) intersect position into pixel coordinates (ix,iz)
-    float3 position = origin + t*direction ; 
+    float3 ipos = origin + t*direction ; 
 
-    // TODO: 2D has been generalized, need to act on plane config enum here to regain the frame plot 
-    float wx = float(params.cegs.x == 0 ? 1 : params.cegs.x) ;
-    float wz = float(params.cegs.z == 0 ? 1 : params.cegs.z) ;
+    // aim to match the CPU side test isect "photons" from CSG/CSGQuery.cc/CSGQuery::intersect_elaborate
 
-    float fx = 0.5f*(1.f+(position.x - params.center_extent.x)/(wx*params.center_extent.w)) ;   // 0.f -> 1.f 
-    float fz = 0.5f*(1.f+(position.z - params.center_extent.z)/(wz*params.center_extent.w)) ;   // 0.f -> 1.f
-    unsigned ix = fx > 0.f && fx < 1.f ? unsigned( fx*params.width ) : 0 ;  
-    unsigned iz = fz > 0.f && fz < 1.f ? unsigned( fz*params.height ) : 0 ; 
-     
-    p.q0.f.x = position.x ; 
-    p.q0.f.y = position.y ; 
-    p.q0.f.z = position.z ; 
-    p.q0.f.w = spare1 ; 
+    p.q0.f.x = normal.x ; 
+    p.q0.f.y = normal.y ; 
+    p.q0.f.z = normal.z ; 
+    p.q0.f.w = t  ;  
 
-    p.q1.f.x = fx ; 
-    p.q1.f.y = fz ; 
-    p.q1.i.z = ix ; 
-    p.q1.i.w = iz ; 
+    p.q1.f.x = ipos.x ; 
+    p.q1.f.y = ipos.y ; 
+    p.q1.i.z = ipos.z ; 
+    p.q1.i.w = 0.f ;   // TODO: sd 
 
-    p.q2.f.x = params.tmin ; 
-    p.q2.f.y = params.tmax ; 
-    p.q2.f.z = t ; 
-    p.q2.u.w = boundary ; 
+    p.q2.f.x = origin.x ; 
+    p.q2.f.y = origin.y ; 
+    p.q2.f.z = origin.z ; 
+    p.q2.u.w = params.tmin ; 
 
-    p.q3.f.x = direction.x ;   // previously normal, direction now to check generation   
+    p.q3.f.x = direction.x ;   
     p.q3.f.y = direction.y ; 
     p.q3.f.z = direction.z ; 
     p.q3.u.w = identity ; 
@@ -233,14 +226,16 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     // Note that multiple threads may be writing to the same pixel 
     // that is apparently not a problem, just which does it is uncontrolled.
 
-
+    /*
     unsigned index = iz * params.width + ix ;
     if( index > 0 )
     {
         params.pixels[index] = make_uchar4( 255u, 0u, 0u, 255u) ;
-        params.isect[index] = make_float4( position.x, position.y, position.z, uint_as_float(identity)) ; 
+        params.isect[index] = make_float4( ipos.x, ipos.y, ipos.z, uint_as_float(identity)) ; 
         params.fphoton[index] = p ; 
     }
+    */
+
 }
 
 /**

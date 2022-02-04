@@ -442,8 +442,13 @@ class Gensteps(object):
 
         numpho = gs.view(np.int32)[:,0,3] 
 
-        gsid = gs.view(np.int32)[:,1,3].copy()
-        gs[:,1,3] = 1.    # copy the identity and set to 1. for transforming as position 
+        #gsid = gs.view(np.int32)[:,1,3].copy()
+        ##gs[:,1,3] = 1.    # copy the identity and set to 1. for transforming as position 
+
+        gsid = gs.view(np.int32)[:,0,2].copy()
+
+        all_one = np.all( gs[:,1,3] == 1. )
+        assert all_one 
 
         centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
 
@@ -510,7 +515,9 @@ class Positions(object):
 
         mtr = gs.mtr                    # transform
 
-        gpos = p[:,0].copy()            # global frame intersect positions
+        isect = p[:,0]
+
+        gpos = p[:,1].copy()            # global frame intersect positions
         gpos[:,3] = 1  
 
         lpos = np.dot( gpos, mtr[1] )   # local frame intersect positions
@@ -533,6 +540,7 @@ class Positions(object):
 
         self.p = p 
 
+        self.isect = isect
         self.gpos = gpos
         self.lpos = lpos
         self.upos = upos
@@ -910,7 +918,7 @@ class Plt(object):
             pl.add_points( pos[:,:3], color=color )
         pass
 
-        showgrid = not grid.axes is None  # too obscuring with 3D
+        showgrid = not gridspec.axes is None  # too obscuring with 3D
         if showgrid:
             pl.add_points( ugsc[:,:3], color="white" )   # genstep grid
         pass   
@@ -965,6 +973,8 @@ if __name__ == '__main__':
     outdir = CSGOptiXSimulateTest_OUTPUT_DIR 
     outbase = os.path.dirname(outdir)
     outleaf = os.path.basename(outdir)
+    outgeom = outleaf.split("_")[0]  
+
     outdir2 = os.path.join(outbase, outleaf)  
     assert outdir == outdir2 
     print( " outleaf                         : %s " % outleaf )
@@ -973,18 +983,10 @@ if __name__ == '__main__':
     print("\n".join(leaves))
 
     if not LEAF is None and LEAF != outleaf:
-
-        pickleaf = None
-        for cand in leaves:
-            print(" cand : %s " % cand )
-            endmatch = cand.endswith(LEAF)
-            if cand == LEAF or endmatch:
-                 pickleaf = cand
-            pass
-        pass
-
-        if not pickleaf is None:
-            outdir = os.path.join(outbase, pickleaf)  
+        leafgeom = LEAF.split("_")[0]
+        altdir = outdir.replace(outgeom,leafgeom).replace(outleaf,LEAF)
+        if os.path.isdir(altdir):
+            outdir = altdir
             print(" OVERRIDE CSGOptiXSimulateTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
             print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % outdir )
         else:
@@ -998,10 +1000,11 @@ if __name__ == '__main__':
 
     fold = Fold.Load(outdir) 
 
-    t_all_zero = np.all( fold.photons[:,0,3] == 0 ) 
-    if t_all_zero:
-       log.error(" no photons landed on geometry ")
-    pass
+    num_photons = len(fold.photons )
+    landing_count = np.count_nonzero( fold.photons[:,0,3] )
+    landing_msg = "ERROR NO PHOTONS LANDED" if landing_count == 0 else ""
+    print(" num_photons: %d : landing_count : %d   %s " % (num_photons, landing_count, landing_msg) )
+
 
     outdir = os.path.join(fold.base, "figs")
     if not os.path.isdir(outdir):
@@ -1009,9 +1012,9 @@ if __name__ == '__main__':
     pass
 
     gsmeta = NPMeta(fold.genstep_meta)
-    grid = GridSpec(fold.peta, gsmeta)
+    gridspec = GridSpec(fold.peta, gsmeta)
 
-    local_extent_scale = grid.coords == "RTP" 
+    local_extent_scale = gridspec.coords == "RTP" 
 
     metatran = getattr(fold, "metatran", None) 
     if metatran is None:
@@ -1019,13 +1022,13 @@ if __name__ == '__main__':
         metatran = np.vstack( [np.eye(4) , np.eye(4), np.eye(4) ] ).reshape(-1,4,4)
     pass    
 
-    gs = Gensteps(fold.genstep, metatran, grid, local_extent_scale=local_extent_scale )
+    gs = Gensteps(fold.genstep, metatran, gridspec, local_extent_scale=local_extent_scale )
 
     mask = MASK   # default is "pos" 
     assert mask in ALLOWED_MASK, "mask %s is not in ALLOWED_MASK list %s " % (mask, str(ALLOWED_MASK))
     #without mask=pos means that the legend is filled with features that are not visible in the frame 
 
-    pos = Positions(fold.photons, gs, grid, local=True, mask=mask, local_extent_scale=local_extent_scale )
+    pos = Positions(fold.photons, gs, gridspec, local=True, mask=mask, local_extent_scale=local_extent_scale )
 
     if SIM:
         pvplt_simple(pos.gpos[:,:3], "pos.gpos[:,:3]" )
@@ -1040,7 +1043,7 @@ if __name__ == '__main__':
         print(ph.insfeat)
         feat = ph.feat 
 
-        plt = Plt(outdir, feat, gs, grid, pos, gsmeta )
+        plt = Plt(outdir, feat, gs, gridspec, pos, gsmeta )
 
         upos = plt.pos.upos
 
@@ -1054,6 +1057,9 @@ if __name__ == '__main__':
         pass
         print("leaves:")
         print("\n".join(leaves))
-        pl = plt.pl
+        pl = getattr(plt, 'pl', None)
+        if pl is None:
+            print("plt.pl is None")
+        pass
     pass
 

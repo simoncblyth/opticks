@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "PLOG.hh"
+#include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"
 #include "NP.hh"
@@ -37,7 +38,8 @@ Six::Six(const Opticks* ok_, const char* ptx_path_, const char* geo_ptx_path_, P
     geo_ptx_path(strdup(geo_ptx_path_)),
     entry_point_index(0u),
     optix_device_ordinal(0u),
-    foundry(nullptr)
+    foundry(nullptr),
+    pindex(SSys::getenvint("PINDEX", 0))
 {
     initContext();
     initPipeline(); 
@@ -47,11 +49,11 @@ Six::Six(const Opticks* ok_, const char* ptx_path_, const char* geo_ptx_path_, P
 
 void Six::initContext()
 {
-    LOG(info); 
+    LOG(info) << " pindex " << pindex ; 
     context->setRayTypeCount(1);
     context->setPrintEnabled(true);
     context->setPrintBufferSize(1024);
-    context->setPrintLaunchIndex(-1,-1,-1); 
+    context->setPrintLaunchIndex(pindex); 
     context->setEntryPointCount(1);
 }
 
@@ -59,8 +61,8 @@ void Six::initPipeline()
 {
     LOG(info); 
     context->setRayGenerationProgram( entry_point_index, context->createProgramFromPTXFile( ptx_path , "raygen" ));
-    context->setMissProgram(   entry_point_index, context->createProgramFromPTXFile( ptx_path , "miss" ));
-    material->setClosestHitProgram( entry_point_index, context->createProgramFromPTXFile( ptx_path, "closest_hit" ));
+    context->setMissProgram(          entry_point_index, context->createProgramFromPTXFile( ptx_path , "miss" ));
+    material->setClosestHitProgram(   entry_point_index, context->createProgramFromPTXFile( ptx_path , "closest_hit" ));
 }
 
 void Six::initFrame()
@@ -92,13 +94,23 @@ void Six::updateContext()
     context[ "W"  ]->setFloat( params->W.x, params->W.y, params->W.z  );  
     context[ "radiance_ray_type"   ]->setUint( 0u );  
     context[ "cameratype"   ]->setUint( params->cameratype );  
+    context[ "raygenmode"   ]->setUint( params->raygenmode ); 
 }
 
 template<typename T>
-void Six::createContextBuffer( T* d_ptr, unsigned num_item, const char* name )
+void Six::createContextBuffer( char typ, T* d_ptr, unsigned num_item, const char* name )
 {
     LOG(info) << name << " " << d_ptr << ( d_ptr == nullptr ? " EMPTY " : "" ); 
-    optix::Buffer buffer = context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_USER, num_item );
+
+    unsigned type ;
+    switch(typ)
+    {
+        case 'I': type = RT_BUFFER_INPUT  ; break ; 
+        case 'O': type = RT_BUFFER_OUTPUT ; break ; 
+    }
+
+    RTformat format = RT_FORMAT_USER ; 
+    optix::Buffer buffer = context->createBuffer( type, format, num_item );
     buffer->setElementSize( sizeof(T) ); 
     if(d_ptr)
     {
@@ -107,9 +119,9 @@ void Six::createContextBuffer( T* d_ptr, unsigned num_item, const char* name )
     context[name]->set( buffer );
 }
 
-template void Six::createContextBuffer( CSGNode*,  unsigned, const char* ) ; 
-template void Six::createContextBuffer( qat4*,  unsigned, const char* ) ; 
-template void Six::createContextBuffer( float*, unsigned, const char* ) ; 
+template void Six::createContextBuffer( char typ, CSGNode*,  unsigned, const char* ) ; 
+template void Six::createContextBuffer( char typ, qat4*,     unsigned, const char* ) ; 
+template void Six::createContextBuffer( char typ, float*,    unsigned, const char* ) ; 
 
 
 void Six::setFoundry(const CSGFoundry* foundry_)  // HMM: maybe makes more sense to get given directly the lower level CSGFoundry ?
@@ -143,9 +155,9 @@ This is equivalent to foundry upload with SBT.cc in OptiX 7
 **/
 void Six::createContextBuffers()
 {
-    createContextBuffer<CSGNode>(   foundry->d_node, foundry->getNumNode(), "node_buffer" ); 
-    createContextBuffer<qat4>(      foundry->d_itra, foundry->getNumItra(), "itra_buffer" ); 
-    createContextBuffer<float4>(    foundry->d_plan, foundry->getNumPlan(), "plan_buffer" ); 
+    createContextBuffer<CSGNode>( 'I' , foundry->d_node, foundry->getNumNode(), "node_buffer" ); 
+    createContextBuffer<qat4>(    'I' , foundry->d_itra, foundry->getNumItra(), "itra_buffer" ); 
+    createContextBuffer<float4>(  'I' , foundry->d_plan, foundry->getNumPlan(), "plan_buffer" ); 
 }
 
 
@@ -265,10 +277,6 @@ void Six::createIAS_Selection()
     optix::Group ias = createSolidSelectionIAS( ias_idx, solid_selection ); 
     groups.push_back(ias); 
 }
-
-
-
-
 
 optix::Group Six::createIAS(unsigned ias_idx)
 {

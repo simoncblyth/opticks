@@ -26,6 +26,14 @@ Taking a look inside, hunting speckle::
     EYE=0,-0.7,0. UP=0,0,1 TMIN=0. CAM=0  ./cxr_geochain.sh 
 
 
+
+Debugging blank renders::
+
+     EYE=0.1,0.1,0.1 ./cxr_geochain.sh 
+          shoot from inside so every pixel should intersect 
+          add debug to trace whats happening 
+
+
 EOU
 }
 
@@ -64,10 +72,11 @@ msg="=== $BASH_SOURCE :"
 #geom=XJanchorConstruction
 #geom=AnnulusBoxUnion
 #geom=AnnulusTwoBoxUnion
-geom=AnnulusFourBoxUnion
+#geom=AnnulusFourBoxUnion
 #geom=AnnulusOtherTwoBoxUnion
 
-#geom=BoxFourBoxContiguous
+#geom=BoxFourBoxUnion
+geom=BoxFourBoxContiguous
 
 
 export GEOM=${GEOM:-$geom}

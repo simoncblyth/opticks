@@ -30,6 +30,7 @@ struct Six
     unsigned          entry_point_index ; 
     unsigned          optix_device_ordinal ; 
     const CSGFoundry* foundry ; 
+    int               pindex ; 
 
     //std::vector<optix::Geometry> solids ; 
     std::map<unsigned, optix::Geometry> solids ; 
@@ -53,7 +54,7 @@ struct Six
     void createIAS_Standard();
     void createIAS_Selection();
 
-    template<typename T> void createContextBuffer( T* d_ptr, unsigned num_item, const char* name ); 
+    template<typename T> void createContextBuffer( char typ, T* d_ptr, unsigned num_item, const char* name ); 
     optix::Group              createIAS(unsigned ias_idx);
     optix::Group              createIAS(const std::vector<qat4>& inst );
     optix::Group              createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection);

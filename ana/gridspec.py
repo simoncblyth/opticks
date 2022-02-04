@@ -202,7 +202,15 @@ class GridSpec(object):
         return peta 
 
     def __init__(self, peta, gsmeta ):
+        """
+        :param peta:
+        :param gsmeta:
 
+
+
+
+
+        """
         moi = gsmeta.find("moi:", None)
         midx = gsmeta.find("midx:", None)
         mord = gsmeta.find("mord:", None)

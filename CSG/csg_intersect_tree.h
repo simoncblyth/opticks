@@ -580,11 +580,18 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 TREE_FUNC
 bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
+#ifdef DEBUG6
+#if OPTIX_VERSION < 70000 
+    rtPrintf("// intersect_prim  numNode %d \n", numNode );  
+#endif
+#endif
+
     return numNode == 1 
                ? 
                   intersect_node(isect,          node, plan, itra, t_min, ray_origin, ray_direction )
                :
-                  intersect_tree(isect, numNode, node, plan, itra, t_min, ray_origin, ray_direction )
+                  //intersect_tree(isect, numNode, node, plan, itra, t_min, ray_origin, ray_direction )
+                  intersect_node_contiguous( isect, node, plan, itra, t_min, ray_origin, ray_direction )
                ;
 }
 

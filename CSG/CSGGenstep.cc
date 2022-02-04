@@ -93,6 +93,8 @@ void CSGGenstep::create(const char* moi_, bool ce_offset, bool ce_scale )
     gs->set_meta<int>("midx", midx); 
     gs->set_meta<int>("mord", mord); 
     gs->set_meta<int>("iidx", iidx); 
+    gs->set_meta<float>("gridscale", gridscale ); 
+
 }
 
 

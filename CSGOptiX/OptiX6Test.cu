@@ -8,6 +8,7 @@ rtDeclareVariable(float3,        W, , );
 rtDeclareVariable(float,         tmin, , );
 rtDeclareVariable(unsigned,      radiance_ray_type, , );
 rtDeclareVariable(unsigned,      cameratype, , );
+rtDeclareVariable(unsigned,      raygenmode, , );
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
@@ -66,6 +67,7 @@ RT_PROGRAM void raygen()
 
 RT_PROGRAM void miss()
 {
+    //prd.result = make_float3(0.5f, 1.f, 1.f) ;  // cyan
     prd.result = make_float3(1.f, 1.f, 1.f) ;
 }
 

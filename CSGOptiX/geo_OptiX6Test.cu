@@ -1,6 +1,10 @@
 #include "scuda.h"
 #include "sqat4.h"
 
+#include <optix_device.h>
+
+#define DEBUG6 1
+#include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
 
@@ -8,7 +12,6 @@
 #include "CSGNode.h"
 
 
-#include <optix_device.h>
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
@@ -46,6 +49,9 @@ RT_PROGRAM void intersect(int primIdx)
     const float4* plan = &plan_buffer[0] ;  
     const qat4*   itra = &itra_buffer[0] ;  
 
+    rtPrintf("// intersect identity %d primIdx %d nodeOffset %d numNode %d \n", 
+         identity, primIdx, nodeOffset, numNode ); 
+
     float4 isect ; 
     if(intersect_prim(isect, numNode, node, plan, itra, ray.tmin , ray.origin, ray.direction ))
     {
@@ -73,13 +79,13 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     result[4] = *(aabb+4); 
     result[5] = *(aabb+5); 
 
-#ifdef DEBUG
+//#ifdef DEBUG
     rtPrintf("// bounds identity %d primIdx %d nodeOffset %d numNode %d aabb %10.3f %10.3f %10.3f   %10.3f %10.3f %10.3f  \n", 
          identity, primIdx, nodeOffset, numNode,
          result[0], result[1], result[2],  
          result[3], result[4], result[5] 
         ); 
-#endif
+//#endif
 
 
 }

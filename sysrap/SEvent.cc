@@ -90,7 +90,7 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
     cegs[6] = photons_per_genstep ;
 
     LOG(info)
-        << " CXS_CEGS "
+        << " CEGS "
         << " ix0 ix1 " << ix0 << " " << ix1
         << " iy0 iy1 " << iy0 << " " << iy1
         << " iz0 iz1 " << iz0 << " " << iz1

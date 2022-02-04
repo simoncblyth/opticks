@@ -8,6 +8,7 @@ set(SINGLE_SOURCES
     CSGOptiXVersionTest.cc
     CSGOptiXRenderTest.cc
     CSGOptiXSimulateTest.cc
+    CSGOptiXTest.cc 
 )
 
 foreach(SRC ${SINGLE_SOURCES})

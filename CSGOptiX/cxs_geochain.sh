@@ -1,5 +1,9 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
+cxs_geochain.sh : CenterExtentGensteps onto GeoChain GPU geometry using CSGOptiXSimulateTest with OptiX 7
+=============================================================================================================
+
+NB remember that must run BOTH : "oo" followed by "b7" (or the just now added "oo7") to rebuild 
 
 NOMASK=1 ./cxs_geochain.sh 
    use NOMASK to debug empty frames, eg when the genstep grid is too small for the geometry 
@@ -11,6 +15,8 @@ MASK=t GEOM=AltXJfixtureConstruction_XYZ ./cxs_geochain.sh
    3D pyvista view of intersects  
 
 GEOM=AltXJfixtureConstruction_XY ./cxs_geochain.sh 
+
+
 
 
 EOU
