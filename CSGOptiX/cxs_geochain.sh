@@ -50,8 +50,9 @@ msg="=== $BASH_SOURCE :"
 geom="BoxFourBoxUnion_YX"
 #geom="BoxFourBoxContiguous_YX"
 
-
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
 export GEOM=${GEOM:-$geom}
+
 moi=0   # intended to catch the first meshname (which for geochain is usually the only meshname)
 dx=0
 dy=0

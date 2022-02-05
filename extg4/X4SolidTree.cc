@@ -15,6 +15,7 @@
 #include "G4Box.hh"
 #include "G4Orb.hh"
 #include "G4MultiUnion.hh"
+#include "G4Sphere.hh"
 
 #include "G4RotationMatrix.hh"
 
@@ -951,21 +952,13 @@ const char* X4SolidTree::G4Torus_              = "Tor" ;
 const char* X4SolidTree::G4Box_                = "Box" ;
 const char* X4SolidTree::G4Orb_                = "Orb" ;
 const char* X4SolidTree::G4MultiUnion_         = "MUN" ;
+const char* X4SolidTree::G4Sphere_             = "Sph" ;
 
 const char* X4SolidTree::G4UnionSolid_         = "Uni" ;
 const char* X4SolidTree::G4SubtractionSolid_   = "Sub" ;
 const char* X4SolidTree::G4IntersectionSolid_  = "Int" ;
 const char* X4SolidTree::G4DisplacedSolid_     = "Dis" ;
 
-
-const char* X4SolidTree::DirtyEntityTag_( const G4VSolid* node )
-{
-    G4GeometryType type = node->GetEntityType();  // G4GeometryType typedef for G4String
-    char* tag = strdup(type.c_str() + 2);  // +2 skip "G4"
-    assert( strlen(tag) > 3 ); 
-    tag[3] = '\0' ;
-    return tag ;  
-}
 
 const char* X4SolidTree::EntityTag_( const G4VSolid* solid )
 {
@@ -980,6 +973,7 @@ const char* X4SolidTree::EntityTag_( const G4VSolid* solid )
        case _G4Box:               s = G4Box_               ; break ; 
        case _G4Orb:               s = G4Orb_               ; break ; 
        case _G4MultiUnion:        s = G4MultiUnion_        ; break ; 
+       case _G4Sphere:            s = G4Sphere_            ; break ; 
  
        case _G4UnionSolid:        s = G4UnionSolid_        ; break ; 
        case _G4SubtractionSolid:  s = G4SubtractionSolid_  ; break ; 
@@ -989,6 +983,15 @@ const char* X4SolidTree::EntityTag_( const G4VSolid* solid )
     return s ; 
 }
  
+
+const char* X4SolidTree::DirtyEntityTag_( const G4VSolid* node )
+{
+    G4GeometryType type = node->GetEntityType();  // G4GeometryType typedef for G4String
+    char* tag = strdup(type.c_str() + 2);  // +2 skip "G4"
+    assert( strlen(tag) > 3 ); 
+    tag[3] = '\0' ;
+    return tag ;  
+}
  
 
 
@@ -1005,6 +1008,7 @@ int X4SolidTree::EntityType(const G4VSolid* solid)   // static
     if( strcmp(name, "G4Box") == 0 )               type = _G4Box ; 
     if( strcmp(name, "G4Orb") == 0 )               type = _G4Orb ; 
     if( strcmp(name, "G4MultiUnion") == 0 )        type = _G4MultiUnion ; 
+    if( strcmp(name, "G4Sphere") == 0 )            type = _G4Sphere ; 
 
     if( strcmp(name, "G4UnionSolid") == 0 )        type = _G4UnionSolid ; 
     if( strcmp(name, "G4SubtractionSolid") == 0 )  type = _G4SubtractionSolid ; 
@@ -2264,6 +2268,11 @@ G4VSolid* X4SolidTree::PrimitiveClone( const  G4VSolid* solid )  // static
     {
         const G4MultiUnion* mun = dynamic_cast<const G4MultiUnion*>(solid) ; 
         clone = new G4MultiUnion(*mun) ;  
+    }
+    else if( type == _G4Sphere )
+    {
+        const G4Sphere* sph = dynamic_cast<const G4Sphere*>(solid) ; 
+        clone = new G4Sphere(*sph) ;  
     }
     else
     {

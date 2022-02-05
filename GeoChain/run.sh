@@ -76,14 +76,18 @@ EOU
 #geom=AnnulusFourBoxUnion 
 #geom=CylinderFourBoxUnion 
 #geom=BoxFourBoxUnion 
-geom=BoxFourBoxContiguous 
+#geom=BoxFourBoxContiguous 
 #geom=BoxCrossTwoBoxUnion 
 #geom=BoxThreeBoxUnion 
+
+#geom=SphereWithPhiCutDEV
+geom=GeneralSphereDEV
 
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin
 #geom=Orb
 
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
 export GEOM=${GEOM:-$geom}
 # pick the Solid or Volume binary depending on GEOM
 
@@ -172,7 +176,7 @@ export NTreeBuilder=INFO
 export NCSG=INFO
 export NCSGData=INFO
 
-#export X4Solid=INFO        # looking at G4Solid::convertEllipsoid
+export X4Solid=INFO  
 export X4PhysicalVolume=INFO
 
 # checking that --skipsolidname is working 

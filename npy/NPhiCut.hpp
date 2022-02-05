@@ -15,12 +15,11 @@ struct nmat4triple ;
 
 struct NPY_API nphicut : nnode 
 {
-    nbbox bbox() const ; 
     float operator()(float x_, float y_, float z_) const ; 
 
     glm::vec3 normal(int idx) const ; 
 
-    // placeholder zeros
+    // placeholder : otherwise X4PhysicalVolume::ConvertSolid_FromRawNode asserts in NCSG::Adopt nnode::collectParPoints
     int par_euler() const ;
     unsigned par_nsurf() const ;
     unsigned par_nvertices(unsigned , unsigned ) const ; 
@@ -52,4 +51,28 @@ inline NPY_API nphicut* make_phicut(OpticksCSG_t type, const nquad& param)
     n->param = param ;    
     return n ; 
 }
+
+inline NPY_API nphicut* make_phicut(OpticksCSG_t type, double startPhi_pi, double deltaPhi_pi )
+{
+    double phi0 = startPhi_pi ; 
+    double phi1 = startPhi_pi + deltaPhi_pi ;
+
+    const double pi = glm::pi<double>() ; 
+    double cosPhi0 = std::cos(phi0*pi) ;
+    double sinPhi0 = std::sin(phi0*pi) ;
+    double cosPhi1 = std::cos(phi1*pi) ;
+    double sinPhi1 = std::sin(phi1*pi) ;
+
+    nquad param ; 
+    param.f.x = float(cosPhi0); 
+    param.f.y = float(sinPhi0); 
+    param.f.z = float(cosPhi1); 
+    param.f.w = float(sinPhi1); 
+
+    nphicut* n = make_phicut(type, param); 
+    return n ; 
+}
+
+
+
 

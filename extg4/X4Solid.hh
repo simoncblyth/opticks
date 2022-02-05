@@ -83,6 +83,7 @@ class X4_API X4Solid : public X4SolidBase
     public:
         static const plog::Severity  LEVEL ; 
         static void SetVerbosity(unsigned verbosity);
+        static bool Contains( const char* s , char c ); 
         static void Banner( int lvIdx, int soIdx, const char* lvname, const char* soname ); 
         static nnode* Convert(const G4VSolid* solid, const Opticks* ok, const char* boundary=NULL, int lvIdx=-1 );
         static nnode* Balance(nnode* raw, int soIdx=-1 , int lvIdx=-1 );  // cannot be const due to inplace positivization
@@ -137,10 +138,15 @@ class X4_API X4Solid : public X4SolidBase
     private:
         nnode* intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR );
         static const int intersectWithPhiSegment_debug_mode ; 
-
         void booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot );
         G4ThreeVector GetAngles(const G4RotationMatrix& mtx);
+    private:
+        nnode* intersectWithPhiCut(  nnode* whole, double startPhi, double deltaPhi   ) ; 
+        nnode* intersectWithThetaCut(nnode* whole, double theta0_pi, double theta1_pi ) ; 
+    private:
         nnode* convertSphere_(bool only_inner);
+        nnode* convertSphereDEV_(const char* opt);
+    private:
         nnode* convertCons_(bool only_inner);
         nnode* convertHype_(bool only_inner);
 

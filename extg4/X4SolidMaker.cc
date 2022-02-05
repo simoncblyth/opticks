@@ -21,6 +21,37 @@ using CLHEP::pi ;
 
 const plog::Severity X4SolidMaker::LEVEL = PLOG::EnvLevel("X4SolidMaker", "DEBUG"); 
 
+const char* X4SolidMaker::NAMES = R"LITERAL(
+JustOrb
+SphereWithPhiSegment
+SphereWithPhiCutDEV
+GeneralSphereDEV
+SphereWithThetaSegment
+AdditionAcrylicConstruction
+XJfixtureConstruction
+AltXJfixtureConstruction
+XJanchorConstruction
+SJReceiverConstruction
+BoxMinusTubs0
+BoxMinusTubs1
+BoxMinusOrb
+UnionOfHemiEllipsoids
+PolyconeWithMultipleRmin
+AnnulusBoxUnion
+AnnulusTwoBoxUnion
+AnnulusOtherTwoBoxUnion
+AnnulusCrossTwoBoxUnion
+AnnulusFourBoxUnion
+CylinderFourBoxUnion
+BoxFourBoxUnion
+BoxCrossTwoBoxUnion
+BoxThreeBoxUnion
+OrbGridMultiUnion
+BoxGridMultiUnion
+BoxFourBoxContiguous
+)LITERAL"; 
+
+
 const char* X4SolidMaker::Name( const char* prefix, unsigned idx ) // static
 {
     std::stringstream ss ; 
@@ -51,34 +82,6 @@ bool X4SolidMaker::CanMake(const char* qname) // static
     return found ; 
 }
 
-const char* X4SolidMaker::NAMES = R"LITERAL(
-JustOrb
-SphereWithPhiSegment
-SphereWithThetaSegment
-AdditionAcrylicConstruction
-XJfixtureConstruction
-AltXJfixtureConstruction
-XJanchorConstruction
-SJReceiverConstruction
-BoxMinusTubs0
-BoxMinusTubs1
-BoxMinusOrb
-UnionOfHemiEllipsoids
-PolyconeWithMultipleRmin
-AnnulusBoxUnion
-AnnulusTwoBoxUnion
-AnnulusOtherTwoBoxUnion
-AnnulusCrossTwoBoxUnion
-AnnulusFourBoxUnion
-CylinderFourBoxUnion
-BoxFourBoxUnion
-BoxCrossTwoBoxUnion
-BoxThreeBoxUnion
-OrbGridMultiUnion
-BoxGridMultiUnion
-BoxFourBoxContiguous
-)LITERAL"; 
-
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
 
 const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
@@ -92,6 +95,8 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     const G4VSolid* solid = nullptr ; 
     if(     StartsWith("JustOrb",qname))                      solid = X4SolidMaker::JustOrb(qname); 
     else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4SolidMaker::SphereWithPhiSegment(qname); 
+    else if(StartsWith("SphereWithPhiCutDEV",qname))          solid = X4SolidMaker::SphereWithPhiCutDEV(qname); 
+    else if(StartsWith("GeneralSphereDEV",qname))             solid = X4SolidMaker::GeneralSphereDEV(qname); 
     else if(StartsWith("SphereWithThetaSegment",qname))       solid = X4SolidMaker::SphereWithThetaSegment(qname); 
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4SolidMaker::AdditionAcrylicConstruction(qname); 
     else if(StartsWith("XJfixtureConstruction", qname))       solid = X4SolidMaker::XJfixtureConstruction(qname); 
@@ -123,6 +128,56 @@ const G4VSolid* X4SolidMaker::JustOrb(const char* name)  // static
 {
     return new G4Orb(name, 100.) ; 
 }
+
+
+/**
+X4SolidMaker::SphereWithPhiCutDEV
+--------------------------------------
+**/
+
+const G4VSolid* X4SolidMaker::SphereWithPhiCutDEV(const char* name)  // static
+{
+    double radius    = SSys::getenvfloat("X4SolidMaker_SphereWithPhiCutDEV_radius", 20.f) ;    // mm
+    double phi_start = SSys::getenvfloat("X4SolidMaker_SphereWithPhiCutDEV_phi_start", 0.f) ;  // units of pi
+    double phi_delta = SSys::getenvfloat("X4SolidMaker_SphereWithPhiCutDEV_phi_delta", 0.5f) ; // units of pi
+
+    G4String pName = name ; 
+    G4double pRmin = 0. ; 
+    G4double pRmax = radius ; 
+    G4double pSPhi = phi_start*pi ;    
+    G4double pDPhi = phi_delta*pi ; 
+    G4double pSTheta = 0. ; 
+    G4double pDTheta = pi ;     // pi: full in theta
+
+    return new G4Sphere(pName, pRmin, pRmax, pSPhi, pDPhi, pSTheta, pDTheta ); 
+}
+
+
+
+const G4VSolid* X4SolidMaker::GeneralSphereDEV(const char* name)  // static
+{
+    double innerRadius = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_innerRadius", 50.f) ;    // mm
+    double outerRadius = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_outerRadius", 100.f) ;    // mm
+    double phiStart    = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_phiStart",    0.f) ;  // units of pi
+    double phiDelta    = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_phiDelta",    0.5f) ; // units of pi
+    double thetaStart  = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_thetaStart",  0.f) ;  // units of pi
+    double thetaDelta  = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_thetaDelta",  0.5f) ; // units of pi
+
+    G4String pName = name ; 
+    G4double pRmin = innerRadius*mm ; 
+    G4double pRmax = outerRadius*mm ; 
+    G4double pSPhi = phiStart*pi ;    
+    G4double pDPhi = phiDelta*pi ; 
+    G4double pSTheta = thetaStart*pi ; 
+    G4double pDTheta = thetaDelta*pi ; 
+
+    return new G4Sphere(pName, pRmin, pRmax, pSPhi, pDPhi, pSTheta, pDTheta ); 
+}
+
+
+
+
+
 
 /**
 X4SolidMaker::SphereWithPhiSegment

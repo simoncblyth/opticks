@@ -63,6 +63,8 @@
 #include "NBox.hpp"
 #include "NDisc.hpp"
 #include "NMultiUnion.hpp"
+#include "NPhiCut.hpp"
+#include "NThetaCut.hpp"
 
 #include "NNode.hpp"
 #include "NTreeBuilder.hpp"
@@ -474,6 +476,139 @@ void X4Solid::convertBooleanSolid()
 const bool X4Solid::convertSphere_enable_phi_segment = SSys::getenvbool("X4Solid_convertSphere_enable_phi_segment"); 
 
 
+/**
+X4Solid::convertSphereDEV_
+-----------------------------
+
+When there is an inner radius as well as thetacut and phicut 
+what is the appropriate/best way to arrange the CSG structure ? 
+Perhaps a tree like::
+
+
+                                              intersect                  
+ 
+                       intersect                          phicut 
+          
+          diff                       thetacut 
+
+     outer     inner 
+
+
+TODO: make comparisons with Geant4 to see what is correct 
+
+
+**/
+
+bool X4Solid::Contains( const char* s , char c ) // static 
+{
+    for(unsigned i=0 ; i < strlen(s) ; i++) if(s[i] == c) return true ; 
+    return false ; 
+}
+
+
+nnode* X4Solid::convertSphereDEV_(const char* opt )
+{
+    LOG(fatal)
+        << " USING DEV IMPLEMENTATION : TRIGGED BY SOLID NAME CONTAINING DEV " << m_name 
+        ;
+
+    const char* allopt = "RTP" ; 
+    std::stringstream ss ; 
+    ss << " opt " << opt ; 
+    for(unsigned i=0 ; i < strlen(allopt) ; i++) ss << " " << allopt[i] << ":" << ( Contains(opt, allopt[i]) ? "+" : "-" ) ; 
+   
+    std::string desc = ss.str(); 
+    LOG(info) << desc ; 
+
+    const G4Sphere* const solid = static_cast<const G4Sphere*>(m_solid);
+
+    float innerRadius = solid->GetInnerRadius()/mm ; 
+    float outerRadius = solid->GetOuterRadius()/mm ; 
+    bool has_inner = innerRadius > 0.f ;  
+
+    nnode* outer = make_sphere( outerRadius );
+    outer->label = BStr::concat(m_name, "_outer", NULL ) ; 
+
+    nnode* inner = has_inner ? make_sphere( innerRadius ) : nullptr ;
+    if(inner) 
+    {
+        inner->label = BStr::concat(m_name, "_inner", NULL ) ; 
+        inner->complement = true ; 
+    }
+
+    LOG(LEVEL) 
+        << " innerRadius " << innerRadius
+        << " outerRadius " << outerRadius
+        << " has_inner " << has_inner 
+        ;
+
+
+    double startTheta_pi = solid->GetStartThetaAngle()/(180.*degree) ; 
+    double deltaTheta_pi = solid->GetDeltaThetaAngle()/(180.*degree) ; 
+    double theta0_pi = startTheta_pi  ;
+    double theta1_pi = startTheta_pi + deltaTheta_pi ;
+    assert( theta0_pi >= 0. && theta0_pi <= 1.) ; 
+    assert( theta1_pi >= 0. && theta1_pi <= 1.) ; 
+    bool has_thetacut = theta0_pi > 0. || theta1_pi < 1. ; 
+
+    LOG(LEVEL) 
+        << " startTheta_pi " << startTheta_pi
+        << " deltaTheta_pi " << deltaTheta_pi
+        << " theta0_pi " << theta0_pi
+        << " theta1_pi " << theta1_pi
+        << " has_thetacut " << has_thetacut
+        ;
+
+
+    double startPhi_pi = solid->GetStartPhiAngle()/(180.*degree) ; 
+    double deltaPhi_pi = solid->GetDeltaPhiAngle()/(180.*degree) ; 
+    bool has_phicut = deltaPhi_pi < 2.f ; 
+
+    LOG(LEVEL)
+        << " startPhi_pi " << startPhi_pi
+        << " deltaPhi_pi " << deltaPhi_pi
+        << " has_phicut " << has_phicut
+        ;
+     
+
+    enum { RADIUS, THETA, PHI } ; 
+
+    bool enabled[3] ; 
+    enabled[RADIUS] = Contains(opt, 'R'); 
+    enabled[THETA]  = Contains(opt, 'T'); 
+    enabled[PHI]    = Contains(opt, 'P'); 
+
+    bool has[3] ; 
+    has[RADIUS] = has_inner ; 
+    has[THETA]  = has_thetacut ; 
+    has[PHI]    = has_phicut ; 
+
+    nnode* result = outer ; 
+    
+    for(unsigned i=0 ; i < strlen(opt) ; i++)
+    {
+        LOG(LEVEL) << " i " << i << " opt[i] " << opt[i] << " has[i] " << has[i] << " enabled[i] " << enabled[i]  ; 
+
+        if( opt[i] == 'R' && has[i] && enabled[i] )
+        {
+            LOG(LEVEL) << " intersect with complemented inner " ; 
+            result = nnode::make_operator(CSG_INTERSECTION, result, inner); 
+        } 
+        else if ( opt[i] == 'T' && has[i] && enabled[i] )
+        {
+            LOG(LEVEL) << " intersectWithThetaCut " ; 
+            result = intersectWithThetaCut( result, theta0_pi, theta1_pi );  
+        }
+        else if ( opt[i] == 'P' && has[i] && enabled[i] )
+        {
+            LOG(LEVEL) << " intersectWithPhiCut " ; 
+            result = intersectWithPhiCut(result, startPhi_pi, deltaPhi_pi );
+        }
+    }
+    return result ; 
+}
+
+
 nnode* X4Solid::convertSphere_(bool only_inner)
 {
     const G4Sphere* const solid = static_cast<const G4Sphere*>(m_solid);
@@ -586,11 +721,20 @@ void X4Solid::convertSphere()
 {  
     const G4Sphere* const solid = static_cast<const G4Sphere*>(m_solid);
     assert(solid); 
-    //LOG(info) << "\n" << *solid ; 
 
-    bool only_inner = false ; 
+    nnode* n = nullptr ; 
 
-    nnode* n = convertSphere_(only_inner); 
+    if(strstr(m_name, "DEV") != nullptr)
+    {
+        const char* opt = SSys::getenvvar("X4Solid_convertSphereDEV_opt", "RTP") ;  
+        n = convertSphereDEV_(opt); 
+    }
+    else
+    {
+        bool only_inner = false ; 
+        n = convertSphere_(only_inner); 
+    }
+ 
     setRoot(n); 
 
 
@@ -834,6 +978,53 @@ void X4Solid::convertTubs()
     setG4Param(param, keys);
     setG4Args(param, keys);
 }
+
+
+
+
+/**
+X4Solid::intersectWithPhiCut
+---------------------------------
+
+**/
+
+nnode* X4Solid::intersectWithPhiCut(nnode* whole, double startPhi_pi, double deltaPhi_pi )  
+{
+    OpticksCSG_t type = CSG_PHICUT ; 
+    //OpticksCSG_t type = CSG_LPHICUT ; 
+
+    nnode* phicut = make_phicut( type, startPhi_pi, deltaPhi_pi ); 
+    phicut->label = BStr::concat(m_name, "_phicut_wedge", NULL); 
+
+    nnode* result = nnode::make_operator(CSG_INTERSECTION, whole, phicut); 
+    result->label = BStr::concat(m_name, "_phicut_intersection", NULL); 
+
+    return result ; 
+}
+
+
+/**
+X4Solid::intersectWithThetaCut
+---------------------------------
+
+**/
+
+nnode* X4Solid::intersectWithThetaCut(nnode* whole, double theta0_pi, double theta1_pi )  
+{
+    //OpticksCSG_t type = CSG_THETACUT ; 
+    OpticksCSG_t type = CSG_LTHETACUT ; 
+
+    nnode* thetacut = make_thetacut( type, theta0_pi, theta1_pi ); 
+    thetacut->label = BStr::concat(m_name, "_thetacut_wedge", NULL); 
+
+    nnode* result = nnode::make_operator(CSG_INTERSECTION, whole, thetacut ); 
+    result->label = BStr::concat(m_name, "_thetacut_intersection", NULL); 
+
+    return result ; 
+}
+
+
+
 
 
 /**

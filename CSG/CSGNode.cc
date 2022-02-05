@@ -389,6 +389,14 @@ void CSGNode::setAABBLocal()
     {
         setAABB( UNBOUNDED_DEFAULT_EXTENT ); 
     }
+    else if( tc == CSG_PHICUT || tc == CSG_LPHICUT )
+    {
+        setAABB( UNBOUNDED_DEFAULT_EXTENT ); 
+    }
+    else if( tc == CSG_THETACUT || tc == CSG_LTHETACUT )
+    {
+        setAABB( UNBOUNDED_DEFAULT_EXTENT ); 
+    }
     else
     {
         LOG(fatal) << " not implemented for tc " << tc << " CSG::Name(tc) " << CSG::Name(tc) ; 

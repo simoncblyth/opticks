@@ -34,6 +34,8 @@ msg="=== $BASH_SOURCE :"
 ## X4SolidMaker debug solids
 
 #geom=Orb
+#geom=SphereWithPhiCutDEV_YX
+geom=GeneralSphereDEV_YX
 #geom=SphereWithPhiSegment 
 #geom=SphereWithThetaSegment 
 #geom=AdditionAcrylicConstruction
@@ -112,12 +114,14 @@ msg="=== $BASH_SOURCE :"
 
 #geom=BoxFourBoxUnion_YX
 #geom=BoxThreeBoxUnion_YX
-geom=BoxFourBoxContiguous_YX
+#geom=BoxFourBoxContiguous_YX
 
 #geom=OrbGridMultiUnion10:30_YX
 #geom=BoxGridMultiUnion10:30_YX
 
+geom=GeneralSphereDEV_YX
 
+#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
 
 export GEOM=${GEOM:-$geom}
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
@@ -180,6 +184,7 @@ case $gcn in
    BoxMinusOrb)             source BoxMinusOrb.sh ;;
    XJfixtureConstruction)   source XJfixtureConstruction.sh ;;
    XJanchorConstruction)    source XJanchorConstruction.sh ;;   
+   GeneralSphereDEV)        source GeneralSphereDEV.sh ;;
 esac   
    
 

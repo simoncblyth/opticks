@@ -55,17 +55,18 @@ EOU
 #geom=AnnulusCrossTwoBoxUnion_YX
 
 #geom=BoxFourBoxUnion_YX
-geom=BoxFourBoxContiguous_YX
+#geom=BoxFourBoxContiguous_YX
+geom=SphereWithPhiCutDEV_YX
 
 #geom=BoxCrossTwoBoxUnion_YX
 #geom=BoxThreeBoxUnion_YX
-
 
 #geom=XJfixtureConstruction_YZ
 #geom=XJfixtureConstruction_XZ
 #geom=XJfixtureConstruction_XY
 
 
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
 export GEOM=${GEOM:-$geom}
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
 

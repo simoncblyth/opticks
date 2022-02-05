@@ -1395,6 +1395,8 @@ float distance_leaf( const float3& global_position, const CSGNode* node, const f
         case CSG_CYLINDER:         distance = distance_leaf_cylinder(          local_position, node->q0, node->q1 ) ; break ;
         case CSG_PLANE:            distance = distance_leaf_plane(             local_position, node->q0 )           ; break ;
         case CSG_SLAB:             distance = distance_leaf_slab(              local_position, node->q0, node->q1 ) ; break ;
+        case CSG_LPHICUT:          distance = distance_leaf_phicut(            local_position, node->q0 )           ; break ;
+        case CSG_PHICUT:           distance = distance_leaf_phicut(            local_position, node->q0 )           ; break ;
     }
     return complement ? -distance : distance  ; 
 }

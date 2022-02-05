@@ -196,6 +196,7 @@ struct X4_API X4SolidTree
         _G4Box,
         _G4Orb,
         _G4MultiUnion,
+        _G4Sphere,
         _G4UnionSolid, 
         _G4SubtractionSolid, 
         _G4IntersectionSolid, 
@@ -209,6 +210,7 @@ struct X4_API X4SolidTree
     static const char* G4Box_     ;
     static const char* G4Orb_     ;
     static const char* G4MultiUnion_     ;
+    static const char* G4Sphere_     ;
     static const char* G4UnionSolid_        ;
     static const char* G4SubtractionSolid_  ;
     static const char* G4IntersectionSolid_ ;

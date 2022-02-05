@@ -1,5 +1,24 @@
 #pragma once
 
+
+LEAF_FUNC
+float distance_leaf_phicut( const float3& pos, const quad& q0 )
+{
+    const float& cosPhi0 = q0.f.x ; 
+    const float& sinPhi0 = q0.f.y ; 
+    const float& cosPhi1 = q0.f.z ; 
+    const float& sinPhi1 = q0.f.w ; 
+
+    // dot products with normal0  [  sinPhi0, -cosPhi0, 0.f ]
+    float sd0 = sinPhi0*pos.x - cosPhi0*pos.y ;  
+
+    // dot products with normal1  [ -sinPhi1,  cosPhi1, 0.f ]
+    float sd1 = -sinPhi1*pos.x + cosPhi1*pos.y ;  
+
+    return fminf( sd0, sd1 ); 
+}
+
+
 /**
 intersect_leaf_phicut
 ------------------------
@@ -179,4 +198,6 @@ bool intersect_leaf_phicut_lucas(float4& isect, const quad& angles, const float&
 
     return valid;
 }
+
+
 
