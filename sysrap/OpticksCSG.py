@@ -1,4 +1,4 @@
-# generated Sat Feb  5 11:29:17 2022 
+# generated Sat Feb  5 14:14:18 2022 
 # from /Users/blyth/opticks/sysrap 
 # base OpticksCSG.h stem OpticksCSG 
 # with command :  /Users/blyth/opticks/bin/c_enums_to_python.py OpticksCSG.h 
@@ -33,8 +33,10 @@ class CSG_(object):
     CUBIC = 118
     INFCYLINDER = 119
     PHICUT = 120
-    THETACUT = 121
-    UNDEFINED = 122
+    LPHICUT = 121
+    THETACUT = 122
+    LTHETACUT = 123
+    UNDEFINED = 124
     OBSOLETE = 1000
     PARTLIST = 1001
     FLAGPARTLIST = 1002
@@ -44,7 +46,7 @@ class CSG_(object):
     ZLENS = 1006
     PRISM = 1007
     LAST = 1008
-    D2V={'zero': 0, 'tree': 1, 'intersection': 3, 'union': 2, 'difference': 4, 'node': 10, 'contiguous': 11, 'discontiguous': 12, 'leaf': 100, 'sphere': 101, 'box': 102, 'zsphere': 103, 'tubs': 104, 'cylinder': 105, 'slab': 106, 'plane': 107, 'cone': 108, 'multicone': 109, 'box3': 110, 'trapezoid': 111, 'convexpolyhedron': 112, 'disc': 113, 'segment': 114, 'ellipsoid': 115, 'torus': 116, 'hyperboloid': 117, 'cubic': 118, 'infcylinder': 119, 'phicut': 120, 'thetacut': 121, 'undefined': 122, 'obsolete': 1000, 'partlist': 1001, 'flagpartlist': 1002, 'flagnodetree': 1003, 'flaginvisible': 1004, 'pmt': 1005, 'zlens': 1006, 'prism': 1007, 'last': 1008}
+    D2V={'zero': 0, 'tree': 1, 'intersection': 3, 'union': 2, 'difference': 4, 'node': 10, 'contiguous': 11, 'discontiguous': 12, 'leaf': 100, 'sphere': 101, 'box': 102, 'zsphere': 103, 'tubs': 104, 'cylinder': 105, 'slab': 106, 'plane': 107, 'cone': 108, 'multicone': 109, 'box3': 110, 'trapezoid': 111, 'convexpolyhedron': 112, 'disc': 113, 'segment': 114, 'ellipsoid': 115, 'torus': 116, 'hyperboloid': 117, 'cubic': 118, 'infcylinder': 119, 'phicut': 120, 'lphicut': 121, 'thetacut': 122, 'lthetacut': 123, 'undefined': 124, 'obsolete': 1000, 'partlist': 1001, 'flagpartlist': 1002, 'flagnodetree': 1003, 'flaginvisible': 1004, 'pmt': 1005, 'zlens': 1006, 'prism': 1007, 'last': 1008}
 
 
     @classmethod

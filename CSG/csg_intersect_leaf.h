@@ -819,122 +819,6 @@ bool intersect_leaf_plane( float4& isect, const quad& q0, const float t_min, con
 }
 
 
-/**
-intersect_leaf_phicut
-------------------------
-
-Unbounded shape that cuts phi via two half-planes "attached" to the z-axis.
-See phicut.py for development and testing of intersect_node_phicut
-The phicut planes go through the origin so the equation of the plane is::
-
-    p.n = 0
-
-Intersecting a ray with the plane::
-
-    p = o + t v       parametric ray equation  
-
-   (o + t v).n = 0 
-
-      o.n  = - t v.n
-
-              -o.n
-       t  = -----------  
-               v.n             
-
-Outwards normals of the two planes::
-
-    n0   (  sin(phi0), -cos(phi0), 0 )   =  ( 0, -1,  0)
-    n1   ( -sin(phi1),  cos(phi1), 0 )   =  ( -1, 0,  0)   
- 
-
-                phi=0.5
-                  Y
-                  
-                  |      
-                  |
-              n1--+
-                  |
-                  |
-   phi=1.0 . . . .O----+----- X    phi=0, 2 
-                  .    |
-                  .    n0
-                  .
-                  .
-                  .
-                phi=1.5
-
-
-Normal incidence is no problem::
-
-          Y
-          |
-          | 
-          | 
-          |     (10,0,0)
-          O------+---------- X
-                 |      
-                 |
-                 |
-                 * 
-                 normal        ( 0,  -1, 0)
-                 ray_origin    (10, -10, 0)  .normal =  10   
-                 ray_direction ( 0,   1, 0)  .normal  = -1  
-
-                 t = -10/(-1) = 10
-
-Disqualify rays with direction within the plane::
-  
-       normal        (  0, -1, 0)      
-       ray_origin    ( 20, 0,  0)   .normal     0
-       ray_direction ( -1, 0,  0)   .normal     0
-
-
-**/
-
-LEAF_FUNC
-bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
-{
-    const float cosPhi0 = q0.f.x ; 
-    const float sinPhi0 = q0.f.y ; 
-    const float cosPhi1 = q0.f.z ; 
-    const float sinPhi1 = q0.f.w ; 
-
-    // setting t values to t_min disqualifies that intersect
-    // dot products with normal0  [ sinPhi0, -cosPhi0, 0.f ]
-    float d_n0 = ray_direction.x*sinPhi0 + ray_direction.y*(-cosPhi0) ; 
-    float o_n0 = ray_origin.x*sinPhi0 + ray_origin.y*(-cosPhi0) ; 
-    float t0 = d_n0 == 0.f ? t_min : -o_n0/d_n0 ;                 // perhaps could avoid the check if side0 became -inf ? 
-    float side0 = ray_origin.x*cosPhi0 + ray_origin.y*sinPhi0 + ( ray_direction.x*cosPhi0 + ray_direction.y*sinPhi0 )*t0 ;  
-    if(side0 < 0.f) t0 = t_min ; 
-
-    // dot products with normal1   [ -sinPhi1,  cosPhi1, 0.f ]
-    float d_n1 = ray_direction.x*(-sinPhi1) + ray_direction.y*cosPhi1 ; 
-    float o_n1 = ray_origin.x*(-sinPhi1) + ray_origin.y*cosPhi1 ; 
-    float t1 = d_n1 == 0.f ? t_min : -o_n1/d_n1 ; 
-    float side1 = ray_origin.x*cosPhi1 + ray_origin.y*sinPhi1 + ( ray_direction.x*cosPhi1 + ray_direction.y*sinPhi1 )*t1 ;  
-    if(side1 < 0.f) t1 = t_min ; 
-
-#ifdef DEBUG
-    printf("//intersect_leaf_phicut d_n0 %10.3f o_n0 %10.3f t0 %10.3f  side0 %10.3f  \n", d_n0, o_n0, t0, side0 ); 
-    printf("//intersect_leaf_phicut d_n1 %10.3f o_n1 %10.3f t1 %10.3f  side1 %10.3f  \n", d_n1, o_n1, t1, side1 ); 
-#endif
-
-    float t_near = fminf(t0,t1);  // order the intersects 
-    float t_far  = fmaxf(t0,t1);
-    float t_cand = t_near > t_min  ?  t_near : ( t_far > t_min ? t_far : t_min ) ; 
-
-    bool valid_intersect = t_cand > t_min ;
-
-    if( valid_intersect ) 
-    {
-        isect.x = t_cand == t1 ? -sinPhi1 :  sinPhi0 ; 
-        isect.y = t_cand == t1 ?  cosPhi1 : -cosPhi0 ;  
-        isect.z = 0.f ; 
-        isect.w = t_cand ; 
-    }
-    return valid_intersect ; 
-}
-
 
 
 LEAF_FUNC
@@ -1472,6 +1356,13 @@ bool intersect_leaf_disc(float4& isect, const quad& q0, const quad& q1, const fl
     return valid_isect ; 
 }
 
+
+
+
+#include "csg_intersect_leaf_phicut.h"
+#include "csg_intersect_leaf_thetacut.h"
+
+
 /**
 distance_leaf
 ---------------
@@ -1558,6 +1449,8 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_BOX3:             valid_isect = intersect_leaf_box3(             isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_PLANE:            valid_isect = intersect_leaf_plane(            isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_PHICUT:           valid_isect = intersect_leaf_phicut(           isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_LPHICUT:          valid_isect = intersect_leaf_phicut_lucas(     isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_LTHETACUT:        valid_isect = intersect_leaf_thetacut_lucas(   isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_SLAB:             valid_isect = intersect_leaf_slab(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_CYLINDER:         valid_isect = intersect_leaf_cylinder(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_INFCYLINDER:      valid_isect = intersect_leaf_infcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;

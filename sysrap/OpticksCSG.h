@@ -52,8 +52,10 @@ typedef enum {
         CSG_CUBIC=118,
         CSG_INFCYLINDER=119,
         CSG_PHICUT=120, 
-        CSG_THETACUT=121, 
-        CSG_UNDEFINED=122, 
+        CSG_LPHICUT=121, 
+        CSG_THETACUT=122, 
+        CSG_LTHETACUT=123, 
+        CSG_UNDEFINED=124, 
 
     CSG_OBSOLETE=1000, 
         CSG_PARTLIST=1001,   
@@ -124,7 +126,9 @@ static const char* CSG_HYPERBOLOID_    = "hyperboloid" ;
 static const char* CSG_CUBIC_          = "cubic" ; 
 static const char* CSG_INFCYLINDER_   = "infcylinder" ; 
 static const char* CSG_PHICUT_        = "phicut" ; 
+static const char* CSG_LPHICUT_       = "lphicut" ; 
 static const char* CSG_THETACUT_      = "thetacut" ; 
+static const char* CSG_LTHETACUT_     = "lthetacut" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
 
 
@@ -180,7 +184,9 @@ struct CSG
         else if(strcmp(nodename, CSG_CUBIC_) == 0)          tc = CSG_CUBIC ;
         else if(strcmp(nodename, CSG_SEGMENT_) == 0)        tc = CSG_SEGMENT ;
         else if(strcmp(nodename, CSG_PHICUT_) == 0)         tc = CSG_PHICUT ;
+        else if(strcmp(nodename, CSG_LPHICUT_) == 0)        tc = CSG_LPHICUT ;
         else if(strcmp(nodename, CSG_THETACUT_) == 0)       tc = CSG_THETACUT ;
+        else if(strcmp(nodename, CSG_LTHETACUT_) == 0)      tc = CSG_LTHETACUT ;
         else if(strcmp(nodename, CSG_DISCONTIGUOUS_) == 0)   tc = CSG_DISCONTIGUOUS ;
         else if(strcmp(nodename, CSG_CONTIGUOUS_) == 0)      tc = CSG_CONTIGUOUS ;
         else if(strcmp(nodename, CSG_CONVEXPOLYHEDRON_) == 0) tc = CSG_CONVEXPOLYHEDRON ;
@@ -248,7 +254,9 @@ struct CSG
             case CSG_CUBIC:         s = CSG_CUBIC_         ; break ; 
             case CSG_INFCYLINDER:   s = CSG_INFCYLINDER_   ; break ; 
             case CSG_PHICUT:        s = CSG_PHICUT_        ; break ; 
+            case CSG_LPHICUT:       s = CSG_LPHICUT_       ; break ; 
             case CSG_THETACUT:      s = CSG_THETACUT_      ; break ; 
+            case CSG_LTHETACUT:     s = CSG_LTHETACUT_      ; break ; 
             case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
 
             case CSG_OBSOLETE:      s = CSG_OBSOLETE_      ; break ; 
@@ -311,7 +319,7 @@ struct CSG
 
     static bool IsUnbounded(OpticksCSG_t type)
     {
-        return  type == CSG_PHICUT || type == CSG_THETACUT || type == CSG_INFCYLINDER  || type == CSG_PLANE || type == CSG_SLAB ; 
+        return  type == CSG_PHICUT || type == CSG_THETACUT || type == CSG_INFCYLINDER  || type == CSG_PLANE || type == CSG_SLAB || type == CSG_LPHICUT || type == CSG_LTHETACUT ; 
     }
 
     static bool IsUnion(OpticksCSG_t type)
