@@ -63,8 +63,8 @@ Example of a contiguous shape composed of constituent boxes::
 
 
                                            +---------------+
-                                           |               |   
-                                           |               |   
+             E : ENTER                     |               |   
+             X : EXIT                      |               |   
                                            |               |   
                              +-------------|...............|-----------+
                              |             .               .           |   
@@ -78,7 +78,7 @@ Example of a contiguous shape composed of constituent boxes::
                       |      .      .                            .  0 -1 - - - [2]  
                       |      .      .                            .     .        |   
            0 - - - - [1]- - -2      .                     0 - - -1 - - 2 - - - [3]  
-                      |      .      .                            E     X        |   
+                      E      E      .                            E     X        |   
                       |      .      .                            .     .        |  
                       +------........                            .......--------+
                              |                                         |   
@@ -87,7 +87,7 @@ Example of a contiguous shape composed of constituent boxes::
                              |                                         |   
                              |             .................           |   
                              |             .               .           |   
-                     0 - - - 1 - - - - - - 2               .           |   
+                     0 - - -[1]- - - - - - 2               .           |   
                              E             E               .           |   
                              +-------------.................-----------+
                                            |               |   
@@ -104,15 +104,61 @@ Example of a contiguous shape composed of constituent boxes::
 
   * -> compound intersect is the closest ENTER
 
+
 * when *ANY* EXIT states are obtained from first intersects this means 
   are inside the CONTIGUOUS compound
 
-  * this true in general for CONTIGUOUS compounds as are considering intersects 
+  * this is true in general for CONTIGUOUS compounds as are considering intersects 
     with all constituents and constituents do not "shield" each other : so will 
-    always manage to have a first intersect that EXIT when start inside any of them 
+    always manage to have a first intersect that EXITs when start inside any of them 
 
   * to find the compound intersect are forced to find all the EXITS 
     for all the consituents that found ENTERs for  
+
+
+ALG ISSUE : DOES NOT HONOUR t_min CUTTING : PRESUMABLY DUE TO MIXING DISTANCE AND INTERSECT ?
+
+* fix by checking insideness of : ray_origin + t_min*ray_direction  ?
+* TODO: check get expected t_min behaviour, that is: cutaway sphere in perspective projection around origin
+  (correct t_min behaviour is a requirement to participate in CSG trees)
+
+
+PROBLEMS WITH USING DISTANCE FUNCTION 
+
+Using distance_node_contiguous feels "impure" as it mixes volume-centric with surface-centric approaches
+plus it comes with some issues:
+
+1. kinda duplicitous : as will be running intersect_leaf on all sub_node anyhow
+2. using a second way of getting the same info (with another float cut) feels likely to cause edge issues 
+3. distance functions are not yet implemented for all leaf 
+  
+ADVANTAGE OF USING DISTANCE FUNCTION 
+
+Knowing inside_or_surface ahead of time allows:
+
+1. single loop over leaves (BUT there is a hidden loop inside distance_node_contiguous)
+2. avoids storing ENTER/EXIT states and distances for isect  
+ 
+   * expect this to be is a big GPU performance advantage (more storage less in flight)
+   * especially advantageous as this shape is targetting CSG boolean abuse solids with large numbers of leaves 
+
+THOUGHTS ON ROOT CAUSE
+
+Need to know all isect are ENTER before can decide that do not need to find the EXITs.
+Put another way : if any EXIT encountered, must promote all ENTER into EXIT, 
+and doing this requires have the ENTER distance. 
+If the EXIT is obtained immediately after the ENTER that avoids having to store the ENTER distance. 
+  
+How important is the only ENTER optimization is unclear : would need to measure for specific geometry.
+BUT : really want to avoid storing all isect if at all possible. 
+
+FORGO ALL ENTER "OPTIMIZATION"
+
+* no need to know inside_or_surface 
+* just one loop and promote all ENTER to EXIT would also avoid the need to store all isect 
+
+
+TODO: implement in several different ways and test performance for a variety of shapes
 
 **/
 
@@ -120,7 +166,7 @@ Example of a contiguous shape composed of constituent boxes::
 INTERSECT_FUNC
 bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
-    float sd = distance_node_contiguous( ray_origin, node, plan, itra ); 
+    float sd = distance_node_contiguous( ray_origin + t_min*ray_direction, node, plan, itra ); 
     bool inside_or_surface = sd <= 0.f ;
  
     const unsigned num_sub = node->subNum() ; 
@@ -130,6 +176,8 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
 
     float4 sub_isect_0 = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
     float4 sub_isect_1 = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
+    // HMM: are both these sub_isect needed ? seems not : there is no comparison between them, 
+    // HMM: same with sub_state_0, sub_state_1  
 
     unsigned enter_count = 0 ; 
     unsigned exit_count = 0 ; 
@@ -151,8 +199,8 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
                  enter_count += 1 ; 
                  if( sub_isect_0.w < isect_nearest_enter.w ) isect_nearest_enter = sub_isect_0 ;  
 
+                 // when inside_or_surface need to find EXITs for all the ENTERs, when outside just need nearest ENTER
                  if(inside_or_surface)  
-                 // when inside_or_surface need to find EXITs for all the ENTERs, when ouside just need nearest ENTER
                  { 
                      float tminAdvanced = sub_isect_0.w + propagate_epsilon ; 
                      if(intersect_leaf( sub_isect_1, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
@@ -163,6 +211,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
                               exit_count += 1 ; 
                               if( sub_isect_1.w > isect_farthest_exit.w ) isect_farthest_exit = sub_isect_1 ;  
                           } 
+                          // TODO: debug check do not get another ENTER
                      }
                  }
              }

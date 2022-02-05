@@ -580,31 +580,47 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 TREE_FUNC
 bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
-#ifdef DEBUG6
+    const unsigned typecode = node->typecode() ;  
+#ifdef DEBUG_SIX
 #if OPTIX_VERSION < 70000 
-    rtPrintf("// intersect_prim  numNode %d \n", numNode );  
+    rtPrintf("// DEBUG_SIX intersect_prim  numNode %d typecode %d  \n", numNode, typecode );  
 #endif
 #endif
-
-    return numNode == 1 
-               ? 
-                  intersect_node(isect,          node, plan, itra, t_min, ray_origin, ray_direction )
-               :
-                  //intersect_tree(isect, numNode, node, plan, itra, t_min, ray_origin, ray_direction )
-                  intersect_node_contiguous( isect, node, plan, itra, t_min, ray_origin, ray_direction )
-               ;
+    bool valid_intersect = false ; 
+    if( typecode > CSG_LEAF )
+    {
+        valid_intersect = intersect_leaf(  isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+    }
+    else if( typecode < CSG_NODE )
+    {
+        valid_intersect = intersect_tree(isect, numNode, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+    }
+    else if( typecode == CSG_CONTIGUOUS )  
+    {
+        valid_intersect = intersect_node_contiguous( isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+    }
+    return valid_intersect ; 
 }
 
 
 TREE_FUNC
 float distance_prim( const float3& global_position, int numNode, const CSGNode* node, const float4* plan, const qat4* itra )
 {
-    return numNode == 1 
-               ? 
-                  distance_node(global_position,          node, plan, itra )
-               :
-                  distance_tree(global_position, numNode, node, plan, itra )
-               ;
+    const unsigned typecode = node->typecode() ;  
+    float distance = -1.f ; 
+    if( typecode > CSG_LEAF )
+    {
+        distance = distance_leaf(global_position, node, plan, itra );
+    } 
+    else if( typecode < CSG_NODE )
+    {
+        distance = distance_tree(global_position, numNode, node, plan, itra );
+    }
+    else if( typecode == CSG_CONTIGUOUS )  
+    {
+        distance = distance_node_contiguous( global_position, node, plan, itra ) ; 
+    }
+    return distance ; 
 }
 
 

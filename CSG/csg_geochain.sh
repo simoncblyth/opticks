@@ -53,8 +53,10 @@ EOU
 #geom=AnnulusFourBoxUnion_YX
 #geom=CylinderFourBoxUnion_YX
 #geom=AnnulusCrossTwoBoxUnion_YX
+
 #geom=BoxFourBoxUnion_YX
 geom=BoxFourBoxContiguous_YX
+
 #geom=BoxCrossTwoBoxUnion_YX
 #geom=BoxThreeBoxUnion_YX
 

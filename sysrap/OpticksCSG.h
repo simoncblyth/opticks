@@ -21,43 +21,49 @@
 
 typedef enum {
     CSG_ZERO=0,
-    CSG_UNION=1,
-    CSG_INTERSECTION=2,
-    CSG_DIFFERENCE=3,
-    CSG_PARTLIST=4,   
 
-    CSG_SPHERE=5,
-       CSG_BOX=6,
-   CSG_ZSPHERE=7,
-     CSG_ZLENS=8,
-       CSG_PMT=9,
-     CSG_PRISM=10,
-      CSG_TUBS=11,
-  CSG_CYLINDER=12,
-      CSG_SLAB=13,
-     CSG_PLANE=14,
+    CSG_TREE=1,
+        CSG_UNION=2,
+        CSG_INTERSECTION=3,
+        CSG_DIFFERENCE=4,
 
-      CSG_CONE=15,
- CSG_MULTICONE=16,
-      CSG_BOX3=17,
- CSG_TRAPEZOID=18,
- CSG_CONVEXPOLYHEDRON=19,
-     CSG_DISC=20,
-   CSG_SEGMENT=21,
-   CSG_ELLIPSOID=22,
-   CSG_TORUS=23,
-   CSG_HYPERBOLOID=24,
-   CSG_CUBIC=25,
-  CSG_INFCYLINDER=26,
-  CSG_PHICUT=27, 
-  CSG_THETACUT=28, 
-  CSG_DISCONTIGUOUS=29,
-  CSG_CONTIGUOUS=30, 
-  CSG_UNDEFINED=31,
+    CSG_NODE=10, 
+        CSG_CONTIGUOUS=11, 
+        CSG_DISCONTIGUOUS=12,
 
- CSG_FLAGPARTLIST=100,
- CSG_FLAGNODETREE=101,
- CSG_FLAGINVISIBLE=102
+    CSG_LEAF=100,
+        CSG_SPHERE=101,
+        CSG_BOX=102,
+        CSG_ZSPHERE=103,
+        CSG_TUBS=104,
+        CSG_CYLINDER=105,
+        CSG_SLAB=106,
+        CSG_PLANE=107,
+        CSG_CONE=108,
+        CSG_MULTICONE=109,
+        CSG_BOX3=110,
+        CSG_TRAPEZOID=111,
+        CSG_CONVEXPOLYHEDRON=112,
+        CSG_DISC=113,
+        CSG_SEGMENT=114,
+        CSG_ELLIPSOID=115,
+        CSG_TORUS=116,
+        CSG_HYPERBOLOID=117,
+        CSG_CUBIC=118,
+        CSG_INFCYLINDER=119,
+        CSG_PHICUT=120, 
+        CSG_THETACUT=121, 
+        CSG_UNDEFINED=122, 
+
+    CSG_OBSOLETE=1000, 
+        CSG_PARTLIST=1001,   
+        CSG_FLAGPARTLIST=1002,
+        CSG_FLAGNODETREE=1003,
+        CSG_FLAGINVISIBLE=1004,
+        CSG_PMT=1005,
+        CSG_ZLENS=1006,
+        CSG_PRISM=1007,
+        CSG_LAST=1008
 
 } OpticksCSG_t ; 
 
@@ -85,20 +91,24 @@ TODO: stick these in a struct
 #include <cassert>
 
 static const char* CSG_ZERO_          = "zero" ; 
+
+
+static const char* CSG_TREE_          = "tree" ; 
 static const char* CSG_INTERSECTION_  = "intersection" ; 
 static const char* CSG_UNION_         = "union" ; 
 static const char* CSG_DIFFERENCE_    = "difference" ; 
-static const char* CSG_PARTLIST_      = "partlist" ; 
+
+static const char* CSG_NODE_           = "node" ; 
+static const char* CSG_CONTIGUOUS_     = "contiguous" ; 
+static const char* CSG_DISCONTIGUOUS_  = "discontiguous" ; 
+
+
+static const char* CSG_LEAF_           = "leaf" ; 
 static const char* CSG_SPHERE_        = "sphere" ; 
 static const char* CSG_BOX_           = "box" ; 
 static const char* CSG_ZSPHERE_       = "zsphere" ; 
-static const char* CSG_ZLENS_         = "zlens" ; 
-static const char* CSG_PMT_           = "pmt" ; 
-static const char* CSG_PRISM_         = "prism" ; 
 static const char* CSG_TUBS_          = "tubs" ; 
 static const char* CSG_CYLINDER_      = "cylinder" ; 
-static const char* CSG_INFCYLINDER_   = "infcylinder" ; 
-static const char* CSG_DISC_          = "disc" ; 
 static const char* CSG_SLAB_          = "slab" ; 
 static const char* CSG_PLANE_         = "plane" ; 
 static const char* CSG_CONE_          = "cone" ; 
@@ -106,20 +116,27 @@ static const char* CSG_MULTICONE_     = "multicone" ;
 static const char* CSG_BOX3_          = "box3" ; 
 static const char* CSG_TRAPEZOID_     = "trapezoid" ; 
 static const char* CSG_CONVEXPOLYHEDRON_ = "convexpolyhedron" ; 
+static const char* CSG_DISC_          = "disc" ; 
 static const char* CSG_SEGMENT_       = "segment" ; 
-static const char* CSG_PHICUT_        = "phicut" ; 
-static const char* CSG_THETACUT_      = "thetacut" ; 
-static const char* CSG_DISCONTIGUOUS_  = "discontiguous" ; 
-static const char* CSG_CONTIGUOUS_     = "contiguous" ; 
 static const char* CSG_ELLIPSOID_     = "ellipsoid" ; 
 static const char* CSG_TORUS_          = "torus" ; 
 static const char* CSG_HYPERBOLOID_    = "hyperboloid" ; 
 static const char* CSG_CUBIC_          = "cubic" ; 
+static const char* CSG_INFCYLINDER_   = "infcylinder" ; 
+static const char* CSG_PHICUT_        = "phicut" ; 
+static const char* CSG_THETACUT_      = "thetacut" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
 
-static const char* CSG_FLAGPARTLIST_ = "flagpartlist" ; 
-static const char* CSG_FLAGNODETREE_ = "flagnodetree" ; 
+
+static const char* CSG_OBSOLETE_      = "obsolete" ; 
+static const char* CSG_PARTLIST_      = "partlist" ; 
+static const char* CSG_FLAGPARTLIST_  = "flagpartlist" ; 
+static const char* CSG_FLAGNODETREE_  = "flagnodetree" ; 
 static const char* CSG_FLAGINVISIBLE_ = "flaginvisible" ; 
+static const char* CSG_PMT_           = "pmt" ; 
+static const char* CSG_ZLENS_         = "zlens" ; 
+static const char* CSG_PRISM_         = "prism" ; 
+static const char* CSG_LAST_          = "last" ; 
 
 
 
@@ -200,40 +217,49 @@ struct CSG
         switch(type)
         {
             case CSG_ZERO:          s = CSG_ZERO_          ; break ; 
-            case CSG_INTERSECTION:  s = CSG_INTERSECTION_  ; break ; 
+
+            case CSG_TREE:          s = CSG_TREE_          ; break ; 
             case CSG_UNION:         s = CSG_UNION_         ; break ; 
+            case CSG_INTERSECTION:  s = CSG_INTERSECTION_  ; break ; 
             case CSG_DIFFERENCE:    s = CSG_DIFFERENCE_    ; break ; 
-            case CSG_PARTLIST:      s = CSG_PARTLIST_      ; break ; 
+
+            case CSG_NODE:          s = CSG_NODE_          ; break ; 
+            case CSG_CONTIGUOUS:    s = CSG_CONTIGUOUS_    ; break ; 
+            case CSG_DISCONTIGUOUS: s = CSG_DISCONTIGUOUS_ ; break ; 
+
+            case CSG_LEAF:          s = CSG_LEAF_          ; break ; 
             case CSG_SPHERE:        s = CSG_SPHERE_        ; break ; 
             case CSG_BOX:           s = CSG_BOX_           ; break ; 
-            case CSG_BOX3:          s = CSG_BOX3_          ; break ; 
             case CSG_ZSPHERE:       s = CSG_ZSPHERE_       ; break ; 
-            case CSG_ZLENS:         s = CSG_ZLENS_         ; break ; 
-            case CSG_PMT:           s = CSG_PMT_           ; break ; 
-            case CSG_PRISM:         s = CSG_PRISM_         ; break ; 
             case CSG_TUBS:          s = CSG_TUBS_          ; break ; 
             case CSG_CYLINDER:      s = CSG_CYLINDER_      ; break ; 
-            case CSG_INFCYLINDER:   s = CSG_INFCYLINDER_   ; break ; 
-            case CSG_DISC:          s = CSG_DISC_          ; break ; 
             case CSG_SLAB:          s = CSG_SLAB_          ; break ; 
             case CSG_PLANE:         s = CSG_PLANE_         ; break ; 
             case CSG_CONE:          s = CSG_CONE_          ; break ; 
             case CSG_MULTICONE:     s = CSG_MULTICONE_     ; break ; 
+            case CSG_BOX3:          s = CSG_BOX3_          ; break ; 
             case CSG_TRAPEZOID:     s = CSG_TRAPEZOID_     ; break ; 
+            case CSG_CONVEXPOLYHEDRON: s = CSG_CONVEXPOLYHEDRON_ ; break ; 
+            case CSG_DISC:          s = CSG_DISC_          ; break ; 
+            case CSG_SEGMENT:       s = CSG_SEGMENT_       ; break ; 
             case CSG_ELLIPSOID:     s = CSG_ELLIPSOID_     ; break ; 
             case CSG_TORUS:         s = CSG_TORUS_         ; break ; 
             case CSG_HYPERBOLOID:   s = CSG_HYPERBOLOID_   ; break ; 
             case CSG_CUBIC:         s = CSG_CUBIC_         ; break ; 
-            case CSG_SEGMENT:       s = CSG_SEGMENT_       ; break ; 
+            case CSG_INFCYLINDER:   s = CSG_INFCYLINDER_   ; break ; 
             case CSG_PHICUT:        s = CSG_PHICUT_        ; break ; 
             case CSG_THETACUT:      s = CSG_THETACUT_      ; break ; 
-            case CSG_DISCONTIGUOUS: s = CSG_DISCONTIGUOUS_ ; break ; 
-            case CSG_CONTIGUOUS:    s = CSG_CONTIGUOUS_    ; break ; 
-            case CSG_CONVEXPOLYHEDRON: s = CSG_CONVEXPOLYHEDRON_ ; break ; 
             case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
+
+            case CSG_OBSOLETE:      s = CSG_OBSOLETE_      ; break ; 
+            case CSG_PARTLIST:      s = CSG_PARTLIST_      ; break ; 
             case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 
             case CSG_FLAGNODETREE:  s = CSG_FLAGNODETREE_  ; break ; 
             case CSG_FLAGINVISIBLE: s = CSG_FLAGINVISIBLE_ ; break ; 
+            case CSG_PMT:           s = CSG_PMT_           ; break ; 
+            case CSG_ZLENS:         s = CSG_ZLENS_         ; break ; 
+            case CSG_PRISM:         s = CSG_PRISM_         ; break ; 
+            case CSG_LAST:          s = CSG_LAST_          ; break ; 
         }
         return s ; 
     }
