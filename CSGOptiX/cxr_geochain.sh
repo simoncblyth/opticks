@@ -1,7 +1,7 @@
 #!/bin/bash -l
 usage(){ cat << EOU
-cxr_geochain.sh 
-=================
+cxr_geochain.sh : 3D renders using CSGOptiXRenderTest
+==========================================================
 
 Rendering CSGFoundry geometry created from
 Geant4 C++ solid specification by GeoChain 

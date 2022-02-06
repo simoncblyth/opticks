@@ -389,6 +389,24 @@ and quadratic sheet marked (*) on below::
 
 TODO: investigate and see if some special casing can avoid the issues.
 
+
+
+    cone with apex at [0,0,z0]  and   r1/(z1-z0) = tanth  for any r1,z1 on the cone
+    
+        x^2 + y^2  - (z - z0)^2 tanth^2 = 0 
+        x^2 + y^2  - (z^2 -2z0 z - z0^2) tanth^2 = 0 
+    
+      Gradient:    [2x, 2y, (-2z tanth^2) + 2z0 tanth^2 ] 
+
+
+
+To find ray intersect with infinite cone insert parametric ray
+into definining eqn of cone, giving a quadratic in t::
+
+    (o.x+ t d.x)^2 + (o.y + t d.y)^2 - (o.z - z0 + t d.z)^2 tth2 = 0 
+     
+    c2 t^2 + 2 c1 t + c0 = 0 
+
 **/
 
 LEAF_FUNC
@@ -413,16 +431,7 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
     const float3& o = ray_origin ;
     const float3& d = ray_direction ;
 
-    //  cone with apex at [0,0,z0]  and   r1/(z1-z0) = tanth  for any r1,z1 on the cone
-    //
-    //     x^2 + y^2  - (z - z0)^2 tanth^2 = 0 
-    //     x^2 + y^2  - (z^2 -2z0 z - z0^2) tanth^2 = 0 
-    //
-    //   Gradient:    [2x, 2y, (-2z tanth^2) + 2z0 tanth^2 ] 
-    //
-    //   (o.x+ t d.x)^2 + (o.y + t d.y)^2 - (o.z - z0 + t d.z)^2 tth2 = 0 
-    // 
-    // quadratic in t :    c2 t^2 + 2 c1 t + c0 = 0 
+    // collecting terms to form coefficients of the quadratic : c2 t^2 + 2 c1 t + c0 = 0 
 
     float c2 = d.x*d.x + d.y*d.y - d.z*d.z*tth2 ;
     float c1 = o.x*d.x + o.y*d.y - (o.z-z0)*d.z*tth2 ; 
@@ -433,8 +442,6 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
     printf("//intersect_leaf_cone c2 %10.4f c1 %10.4f c0 %10.4f disc %10.4f : tth %10.4f \n", c2, c1, c0, disc, tth  );  
 #endif
  
-
-
     // * cap intersects (including axial ones) will always have potentially out of z-range cone intersects 
     // * cone intersects will have out of r-range plane intersects, other than rays within xy plane
  
@@ -445,9 +452,11 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
         float sdisc = sqrtf(disc) ;   
         float root1 = (-c1 - sdisc)/c2 ;
         float root2 = (-c1 + sdisc)/c2 ;  
-        float root1p = root1 > t_min ? root1 : RT_DEFAULT_MAX ;   // disqualify -ve roots from mirror cone immediately 
+        float root1p = root1 > t_min ? root1 : RT_DEFAULT_MAX ;  
         float root2p = root2 > t_min ? root2 : RT_DEFAULT_MAX ; 
+        // disqualify -ve roots from mirror cone thats behind you immediately 
 
+        // order the roots 
         float t_near = fminf( root1p, root2p );
         float t_far  = fmaxf( root1p, root2p );  
         float z_near = o.z+t_near*d.z ; 
@@ -456,9 +465,12 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
         t_near = z_near > z1 && z_near < z2  && t_near > t_min ? t_near : RT_DEFAULT_MAX ; // disqualify out-of-z
         t_far  = z_far  > z1 && z_far  < z2  && t_far  > t_min ? t_far  : RT_DEFAULT_MAX ; 
 
+        // intersects with cap planes
         float idz = 1.f/d.z ; 
         float t_cap1 = d.z == 0.f ? RT_DEFAULT_MAX : (z1 - o.z)*idz ;   // d.z zero means no z-plane intersects
         float t_cap2 = d.z == 0.f ? RT_DEFAULT_MAX : (z2 - o.z)*idz ;
+
+        // radii squared at cap intersects  
         float r_cap1 = (o.x + t_cap1*d.x)*(o.x + t_cap1*d.x) + (o.y + t_cap1*d.y)*(o.y + t_cap1*d.y) ;  
         float r_cap2 = (o.x + t_cap2*d.x)*(o.x + t_cap2*d.x) + (o.y + t_cap2*d.y)*(o.y + t_cap2*d.y) ;  
 
@@ -492,6 +504,8 @@ bool intersect_leaf_cone( float4& isect, const quad& q0, const float t_min , con
                 //   Gradient:    [2x, 2y, (-2z + 2z0) tanth^2 ] 
                 //   Gradient:    2*[x, y, (z0-z) tanth^2 ] 
                 float3 n = normalize(make_float3( o.x+t_cand*d.x, o.y+t_cand*d.y, (z0-(o.z+t_cand*d.z))*tth2  ))  ; 
+                // huh : surely simpler way to get normal, just from cone param ?
+
                 isect.x = n.x ; 
                 isect.y = n.y ;
                 isect.z = n.z ; 

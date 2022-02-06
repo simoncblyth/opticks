@@ -1,5 +1,96 @@
 #pragma once
 
+
+
+
+LEAF_FUNC
+bool intersect_leaf_thetacut(float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d)
+{   
+    const float& cosTheta0si = q0.f.x ; 
+    const float& tanTheta0sq = q0.f.y ; 
+    const float& cosTheta1si = q0.f.z ; 
+    const float& tanTheta1sq = q0.f.w ; 
+
+    // quadratic coefficients     
+    float dd  = d.x * d.x + d.y * d.y - d.z * d.z * tanTheta0sq ;
+    float od  = o.x * d.x + o.y * d.y - o.z * d.z * tanTheta0sq ;
+    float oo  = o.x * o.x + o.y * o.y - o.z * o.z * tanTheta0sq ;
+    float disc = od * od - oo * dd ;
+    bool intersects = disc > 0.f; 
+    float discRoot = intersects ? sqrt(disc) : 0.f; //avoids sqrt(NEGATIVE)
+
+    float t_cand = intersects ? (-od + discRoot) / dd : RT_DEFAULT_MAX; //beginning on t_cand saves defining extra variable
+    float t0     = intersects ? (-od - discRoot) / dd : RT_DEFAULT_MAX;
+
+    if (cosTheta0si * (t_cand * d.z + o.z) < 0.f  || t_cand <= t_min) t_cand = RT_DEFAULT_MAX;      //eliminates bad t_cand/mirror cone 
+    if (cosTheta0si * (t0     * d.z + o.z) > 0.f  && t0 > t_min     ) t_cand = fminf(t_cand, t0); 
+
+
+    /*
+    THIS IS TRYING TO AVOID KEEPING ALL THE  ROOTS ALIVE AT ONCE
+    TO REDUCE RESOURCES : BUT IN THE PROCESS IT MAKES ASSUMPTIONS 
+    THAT MAY NOT ALWAYS BE TRUE.
+
+    TO WORK IN CSG COMBINATION IT MUST BE POSSIBLE FOR t_min CUTTING 
+    TO INVALIDATE ANY ROOT : SO IT IS WRONG TO TRY TO CHOOSE A 
+    ROOT FROM ONE CONE BEFORE CONSIDERING THE ROOTS FROM THE OTHER 
+    */
+
+
+    // modify quadratic coefficients to hop to the other cone 
+    dd += d.z * d.z * (tanTheta0sq - tanTheta1sq );
+    od += o.z * d.z * (tanTheta0sq - tanTheta1sq );
+    oo += o.z * o.z * (tanTheta0sq - tanTheta1sq );
+    disc = od * od - oo * dd ;
+
+    intersects = disc > 0.f;
+    discRoot = intersects ? sqrt(disc) : 0.f;
+
+    t0 =             intersects ? (-od + discRoot) / dd : RT_DEFAULT_MAX;
+    const float t1 = intersects ? (-od - discRoot) / dd : RT_DEFAULT_MAX;
+
+    if (cosTheta1si * (t0 * d.z + o.z) > 0.f && t0 > t_min) t_cand = fminf(t_cand, t0);
+    if (cosTheta1si * (t1 * d.z + o.z) > 0.f && t1 > t_min) t_cand = fminf(t_cand, t1);
+
+    /*
+
+         n   = [0,0,1]  normal the plane : for when cones degenerate into plane 
+         p   = o + t*d 
+         p.z = o.z + t*d.z = 0                 
+
+
+          -------*------------- z = 0 
+                /
+               /
+              /        t_plane = -o.z /d.z 
+             /
+            o
+
+    */
+
+    const float t_plane = -o.z / d.z;
+    const bool plane = cosTheta0si * cosTheta1si == 0.0 && t_plane > t_min && t_cand > t_plane;
+    const bool valid = t_cand < RT_DEFAULT_MAX || plane;
+
+    if (valid) {
+        const bool side = t_cand == t0 || t_cand == t1; //corrects normals for both cones/planes around 90 degrees
+                     // HUH: shouldnt this be t_cand == t1 to pick the side     
+
+        isect.x = plane ? 0.f                               : (side ?  cosTheta1si * (o.x + t_cand * d.x)                : -cosTheta0si * (o.x + t_cand * d.x));
+        isect.y = plane ? 0.f                               : (side ?  cosTheta1si * (o.y + t_cand * d.y)                : -cosTheta0si * (o.y + t_cand * d.y));
+        isect.z = plane ? (cosTheta0si == 0.f ? 1.f : -1.f) : (side ? -cosTheta1si * (o.z + t_cand * d.z) * tanTheta1sq  :  cosTheta0si * (o.z + t_cand * d.z) * tanTheta0sq );
+        isect = normalize(isect);   
+
+        // SCB: normalizing a float3 : unfounded assumption that isect.w = 0 
+
+        isect.w = plane ? t_plane : t_cand;
+    }
+    return valid ; 
+}
+
+
+
+
 /**
 SCB comments on intersect_leaf_thetacut_lucas
 
@@ -63,6 +154,7 @@ bool intersect_leaf_thetacut_lucas(float4& isect, const quad& thetaDat, const fl
 
     const float t_plane = -rayOrigin.z / rayDirection.z;
     const bool plane = thetaDat.f.x * thetaDat.f.z == 0.0 && t_plane > t_min && t_cand > t_plane;
+    // SCB                                 ^^^^^^^^^^^^^^^^^  
     const bool valid = t_cand < RT_DEFAULT_MAX || plane;
 
     if (valid) {
@@ -70,9 +162,16 @@ bool intersect_leaf_thetacut_lucas(float4& isect, const quad& thetaDat, const fl
 
         isect.x = plane ? 0.0 : (side ? thetaDat.f.z * (rayOrigin.x + t_cand * rayDirection.x)
                                        : - thetaDat.f.x * (rayOrigin.x + t_cand * rayDirection.x));
+
+        //SCB            ^^^^ ALLWAYS 0.f OTHERWISE POINTLESS DOUBLES : BAD FOR PERFORMANCE ON GPU  
+
         isect.y = plane ? 0.0 : (side ? thetaDat.f.z * (rayOrigin.y + t_cand * rayDirection.y)
                                        : - thetaDat.f.x * (rayOrigin.y + t_cand * rayDirection.y));
+
+        //SCB              ^^^^^^^^  : DITTO
         isect.z = plane ? (thetaDat.f.x == 0.0 ? 1.0 : -1.0)
+        //SCB                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ DITTO
+
                         : ( side ? - thetaDat.f.z * (rayOrigin.z + t_cand * rayDirection.z) * thetaDat.f.w
                                  : thetaDat.f.x * (rayOrigin.z + t_cand * rayDirection.z) * thetaDat.f.y );
         isect = normalize(isect);

@@ -19,48 +19,47 @@
 #include "DemoGeo.h"
 #include "DemoGrid.h"
 
-DemoGeo::DemoGeo(CSGFoundry* foundry_)
+DemoGeo::DemoGeo(CSGFoundry* foundry_, const char* geom)
     :
     foundry(foundry_),
     maker(foundry->maker)
 {
-    init();
+    init(geom);
 }
 
-void DemoGeo::init()
+void DemoGeo::init(const char* geom)
 {
     LOG(info) << "[" ; 
 
-    const char* geometry = SSys::getenvvar("GEOMETRY", "parade" ); 
     float outer = SSys::getenvint("OUTER", 100.f ) ; 
     int layers = SSys::getenvint("LAYERS", 1) ; 
     int numgas = SSys::getenvint("NUMGAS", 1) ; 
 
-    LOG(info) << " geometry " << geometry << " layers " << layers ;    
+    LOG(info) << " geom " << geom << " layers " << layers ;    
 
-    if(strcmp(geometry, "sphere_containing_grid_of_spheres") == 0)
+    if(strcmp(geom, "sphere_containing_grid_of_spheres") == 0)
     {
         init_sphere_containing_grid_of_spheres(layers );
     }
-    else if(strcmp(geometry, "parade") == 0)
+    else if(strcmp(geom, "parade") == 0)
     {
         init_parade();
     }
-    else if(SStr::StartsWith(geometry, "clustered_"))
+    else if(SStr::StartsWith(geom, "clustered_"))
     {
-        init_clustered( geometry + strlen("clustered_")); 
+        init_clustered( geom + strlen("clustered_")); 
     }
-    else if(SStr::StartsWith(geometry, "scaled_"))
+    else if(SStr::StartsWith(geom, "scaled_"))
     {
-        init_scaled( geometry, geometry + strlen("scaled_"), outer, layers, numgas ); 
+        init_scaled( geom, geom + strlen("scaled_"), outer, layers, numgas ); 
     }
-    else if(SStr::StartsWith(geometry, "layered_"))
+    else if(SStr::StartsWith(geom, "layered_"))
     {
-        init_layered( geometry + strlen("layered_"), outer, layers ); 
+        init_layered( geom + strlen("layered_"), outer, layers ); 
     }
     else
     {
-        init(geometry); 
+        init_maker(geom); 
     }
 
     LOG(info) << "]" ; 
@@ -175,7 +174,7 @@ void DemoGeo::init_layered(const char* name, float outer, unsigned layers)
     addInstance(gas_idx);  
 }
 
-void DemoGeo::init(const char* name)
+void DemoGeo::init_maker(const char* name)
 {
     CSGSolid* so = maker->make(name) ; 
     LOG(info) << " name " << name << " so.center_extent " << so->center_extent ; 

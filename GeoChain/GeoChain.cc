@@ -44,6 +44,18 @@ GeoChain::GeoChain(Opticks* ok_)
 {
 }
 
+/**
+GeoChain::convertSolid
+-----------------------
+
+Geometry conversions:
+
+1. G4VSolid
+2. GMesh 
+3. CSGFoundry 
+
+**/
+
 void GeoChain::convertSolid(const G4VSolid* solid )
 {
     LOG(info) << "[" ;  
@@ -70,9 +82,9 @@ GeoChain::convertNodeTree
 TODO: "const nnode* nd" argument prevented by NCSG::Adopt,  
        maybe need to clone the node tree to support const argument  ?
 
-TODO: factorise X4PhysicalVolume::ConvertSolid_ in order to 
-      kick off the geochain with nnode and GMesh placeholder 
-      without adding much code
+DONE : factorised X4PhysicalVolume::ConvertSolid_ in order to enable
+       kicking off the geochain with nnode and GMesh placeholder 
+       without adding much code
 
 **/
 
@@ -103,6 +115,22 @@ void GeoChain::convertMesh(GMesh* mesh)
     CSG_GGeo_Convert conv(fd, ggeo) ; 
     conv.convert();
 }
+
+
+/**
+GeoChain::convertName
+-----------------------
+
+TODO: integrate with DemoGeo so can handle geometry created at CSG level just like geometry created at G4VSolid level 
+
+**/
+
+void GeoChain::convertName(const char* name)
+{
+
+}
+
+
 
 
 /**
@@ -141,8 +169,9 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top )
     std::cout << "] GeoChain::convert " << std::endl ; 
 }
 
-void GeoChain::save(const char* base, const char* name) const 
+void GeoChain::save(const char* name, const char* base_) const 
 {
+    const char* base = base_ ? base : BASE ;  
     int create_dirs = 2 ; // 2: dirpath
     const char* fold = SPath::Resolve(base, name, create_dirs );   
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );

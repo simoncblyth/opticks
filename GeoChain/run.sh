@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-GeoChain/run.sh 
-================
+GeoChain/run.sh  : geometry conversions using GeoChainSolidTest or GeoChainVolumeTest
+=========================================================================================
 
 Performs full geometry translation chain:
 

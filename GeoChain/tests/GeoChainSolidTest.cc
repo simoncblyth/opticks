@@ -40,39 +40,47 @@ just the path to the CSGFoundry directory.
 #include "PMTSim.hh"
 #endif
 
-int main(int argc, char** argv)
-{
-    OPTICKS_LOG(argc, argv); 
-    const char* name = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ); 
-    const G4VSolid* solid = nullptr ; 
 
-    if(X4SolidMaker::CanMake(name))
+const G4VSolid* GetSolid(const char* geom)
+{
+    const G4VSolid* solid = nullptr ; 
+    if(X4SolidMaker::CanMake(geom))
     {
-        solid = X4SolidMaker::Make(name); 
+        solid = X4SolidMaker::Make(geom); 
     }
     else
     {
 #ifdef WITH_PMTSIM
-        solid = PMTSim::GetSolid(name); 
+        solid = PMTSim::GetSolid(geom); 
 #endif
     }
-    assert( solid ); 
+    return solid ; 
+}
 
 
-    const char* base = GeoChain::BASE ; 
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
 
-    //X4Intersect::Scan(solid, name, base );  
-    // WIP: remove the scan,  its unclear to do this with the geometry conversion, better done in dedicated executable 
-    // X4Intersect .npy land as siblings to the CSGFoundry dir 
+    const char* geom = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ); 
 
     const char* argforced = "--allownokey --gparts_transform_offset" ; 
     Opticks ok(argc, argv, argforced); 
     ok.configure(); 
 
     GeoChain chain(&ok); 
-    chain.convertSolid(solid);  
 
-    chain.save(base, name); 
+    const G4VSolid* solid = GetSolid(geom);  
+    if( solid )
+    {
+        chain.convertSolid(solid);  
+    }
+    else
+    {
+        chain.convertName(geom);         
+    }
+
+    chain.save(geom); 
 
     return 0 ; 
 }

@@ -28,8 +28,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    const char* geom = SSys::getenvvar("GEOM", "sphere" ); 
     CSGFoundry fd ;
-    DemoGeo dg(&fd) ;  
+    DemoGeo dg(&fd, geom) ;  
 
     LOG(info) << fd.desc(); 
     LOG(info) << fd.descSolids(); 
@@ -56,7 +57,6 @@ int main(int argc, char** argv)
     std::vector<float3> corners ; 
     AABB::cube_corners(corners, ce ); 
     for(int i=0 ; i < int(corners.size()) ; i++) LOG(info) << corners[i] ;  
-
 
     return 0 ; 
 }

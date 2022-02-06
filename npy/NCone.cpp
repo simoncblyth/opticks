@@ -152,13 +152,68 @@ void  ncone::decrease_z1(float dz)
 
 float ncone::zc() const { return (z1() + z2())/2.f ; }
 float ncone::rmax() const { return fmaxf( r1(), r2())  ; }
+
 float ncone::z0() const {  return (z2()*r1()-z1()*r2())/(r1()-r2()) ; }
+
+
 float ncone::tantheta() const { return (r2()-r1())/(z2()-z1()) ; }
 float ncone::x() const { return 0.f ; }
 float ncone::y() const { return 0.f ; }
 glm::vec3 ncone::center() const { return glm::vec3(x(),y(),zc()) ; } 
 glm::vec2 ncone::cnormal() const { return glm::normalize( glm::vec2(z2()-z1(),r1()-r2()) ) ; }
 glm::vec2 ncone::csurface() const { glm::vec2 cn = cnormal() ; return glm::vec2( cn.y, -cn.x ) ; }      
+
+
+
+
+/**
+                    
+                     
+                 O         
+                ...     
+               . . .   
+              .  .  . r2                
+             .   .   .|
+            +----.----+        z2      z2 > z1  by assertion 
+           /     .     \
+          /      .      \
+         /       .       \
+        +--------.--------+    z1
+                 .        |   
+                 .        r1 
+                 .            
+                             
+
+                 r2 = 0 
+                     
+                 O      z2 = 0 
+                /.\
+               / . \
+              /  .th\
+             /   .   \
+            /    .    \
+           /     .     \
+          /      .      \
+         /       .       \
+        +--------.--------+    z1          
+                 .        |   
+                 .        r1 
+                 .            
+ 
+
+               r2 - r1
+    tan(th) = ---------- 
+               z2 - z1 
+
+
+        
+       
+
+
+
+
+
+**/
 
 
 
@@ -175,6 +230,29 @@ nbbox ncone::bbox() const
 
     return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }
+
+/**
+
+* https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
+
+
+float sdCone( in vec3 p, in vec2 c, float h )
+{
+  // c is the sin/cos of the angle, h is height
+  // Alternatively pass q instead of (c,h),
+  // which is the point at the base in 2D
+  vec2 q = h*vec2(c.x/c.y,-1.0);
+    
+  vec2 w = vec2( length(p.xz), p.y );
+  vec2 a = w - q*clamp( dot(w,q)/dot(q,q), 0.0, 1.0 );
+  vec2 b = w - q*vec2( clamp( w.x/q.x, 0.0, 1.0 ), 1.0 );
+  float k = sign( q.y );
+  float d = min(dot( a, a ),dot(b, b));
+  float s = max( k*(w.x*q.y-w.y*q.x),k*(w.y-q.y)  );
+  return sqrt(d)*sign(s);
+}
+
+**/
 
 float ncone::operator()(float x_, float y_, float z_) const 
 {
@@ -384,6 +462,47 @@ http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
         return dot(c,vec2(q,p.z));       //  c (radius,height) normalized
     }
 
+
+
+    Infinite Cone - exact
+
+    float sdCone( vec3 p, vec2 c )
+    {
+        // c is the sin/cos of the angle
+
+        vec2 q = vec2( length(p.xz), -p.y );         (radial, vertical) query point 
+
+        float d = length(q-c*max(dot(q,c), 0.0));    
+
+        return d * ((q.x*c.y-q.y*c.x<0.0)?-1.0:1.0);
+
+        // 
+
+
+    }
+
+          
+
+                   tan(th) = r/h  sin/cos
+                         /
+                +       +  (r,h)
+         \      :      /
+          \     :     /
+           \    :    C                   OC [r, h]
+            \   :   /   .                CQ [h, -r]
+             \  :  /         Q 
+              \ : /     .    
+               \:/  .
+                O                        BQ [h, r]
+               / \
+              /   B
+             /     \
+
+
+
+
+
+
     Capped Cone - signed - bound
 
     float sdCappedCone( in vec3 p, in vec3 c )
@@ -405,9 +524,15 @@ https://github.com/marklundin/glsl-sdf-primitives/blob/master/sdCappedCone.glsl
 
     float sdCone( in vec3 p, in vec3 c )
     {
-        vec2 q = vec2( length(p.xz), p.y );
-        float d1 = -p.y-c.z;
+        vec2 q = vec2( length(p.xz), p.y );   // query point in (radial, vertical) coordinates  (assume apex origin) 
+
+        float d1 = -p.y-c.z;                  // vertical distance to cap 
+
+
+
         float d2 = max( dot(q,c.xy), p.y);
+
+
         return length(max(vec2(d1,d2),0.0)) + min(max(d1,d2), 0.);
     }
 
@@ -418,11 +543,68 @@ sdf-edit::
 
     322 // Cone with correct distances to tip and base circle. Y is up, 0 is in the middle of the base.
     323 float fCone(vec3 p, float radius, float height) {
-    324     vec2 q = vec2(length(p.xz), p.y);
+    324     vec2 q = vec2(length(p.xz), p.y);    
+
+            // express query point q in (radial,vertical) coordinates 
+
+
     325     vec2 tip = q - vec2(0, height);              // cone coordinates (radial, axial) from apex
+
+             apex is radius 0 : curious why not use apex as the origin of operations   ?
+            
+             tip is vector : TQ
+      
+
+
+
+
+                                (0,h) r
+                   +------------T------------A - - - - - 
+                   :\           :           / 
+                   : \          :          /        OA = [ r, h ]
+                   :  \         :         /   
+                   :   \        L.       /    
+                   :    \       :   .   /     
+                   :     \      :      I        OIQ : right angle      OI.IQ = 0   perpendicular normal
+                   :      \     :     /   .                           
+                   :       \    :    /       .                 [ r, h ].[ h, -r ] = 0
+                   :        \   :   /           .  
+                   :         \  :  /               .         IQ [ h, -r]
+                   :          \ : /                   . 
+                   :           \:/                      Q 
+                 - :- - - - - - O - - - - - - - -   . - - - - - - - 
+                   :           /:\               .
+                   :          / : \           .
+                   :         /  :  \       .
+                   :        /   :   \   .
+                   :       /    :    J         JQ [ h, r]
+                   :      /     :  .  \
+                   :     /      M      \
+                   :    /       :       \
+                   :   /        :        \
+                   :  /         :         \
+                   : /          :          \
+                   ;/           :           \
+                   +------------S------------C
+                                      r
+
+
     326     vec2 mantleDir = normalize(vec2(height, radius));
+
+                //  JQ [h, r]  normalized
+
+
     327     float mantle = dot(tip, mantleDir);
+
+                //  distance to the lower sheet 
+
+
     328     float d = max(mantle, -q.y);
+
+
+
+
+
     329     float projected = dot(tip, vec2(mantleDir.y, -mantleDir.x));
     330 
     331     // distance to tip

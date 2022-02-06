@@ -5,9 +5,9 @@ CSGNodeScanTest.cc
 
 For lower level tests see::
 
-   intersect_node_box3_test.cc
-   intersect_node_cylinder_test.cc
-   intersect_node_phicut_test.cc  
+   intersect_leaf_box3_test.cc
+   intersect_leaf_cylinder_test.cc
+   intersect_leaf_phicut_test.cc  
 
 **/
 

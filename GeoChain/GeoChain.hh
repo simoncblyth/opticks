@@ -72,8 +72,9 @@ struct GEOCHAIN_API GeoChain
     void convertNodeTree( nnode*             root ); 
     void convertPV(   const G4VPhysicalVolume* pv ); 
     void convertMesh(GMesh* mesh ) ; 
+    void convertName(const char* geom ); 
 
-    void save(const char* base, const char* name) const ; 
+    void save(const char* name, const char* base=nullptr) const ; 
 }; 
 
 
