@@ -56,7 +56,7 @@ void  CSGGeometry::init()
         {
             name = strdup(geom); 
             LOG(info) << "init from GEOM " << geom << " name " << name ; 
-            fd = CSGFoundry::Make(geom) ; 
+            fd = CSGFoundry::MakeGeom(geom) ; 
         }
         else if(cfbase != nullptr)
         {

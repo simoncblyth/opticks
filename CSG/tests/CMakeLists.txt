@@ -21,6 +21,7 @@ set(TEST_SOURCES
     CSGScanTest.cc
     CUTest.cc
     CSGLogTest.cc
+    CSGMakerTest.cc
 
     intersect_leaf_phicut_test.cc 
     intersect_leaf_box3_test.cc 

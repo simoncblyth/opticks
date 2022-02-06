@@ -1,8 +1,8 @@
 #!/bin/bash -l 
 msg="=== $BASH_SOURCE :"
 usage(){ cat << EOU
-csg_geochain.sh : CPU Opticks equivalent to cxs_geochain.sh with OptiX on GPU 
-==========================================================================================
+csg_geochain.sh : CPU Opticks equivalent to cxs_geochain.sh with OptiX on GPU using CSGIntersectSolidTest
+===========================================================================================================
 
 The idea behind this is to provide a convenient way to test code primarily intended to run on GPU 
 in the more friendly debugging environment of the CPU.::
@@ -66,7 +66,19 @@ geom=SphereWithPhiCutDEV_YX
 #geom=XJfixtureConstruction_XY
 
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
+#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
+
+#geom=iphi_YX
+
+#geom=ithe_XZ
+geom=ithl_YZ
+#geom=ithl_XZ
+
+#geom=ithe_XYZ
+#geom=ithl_XYZ
+
+
+
 export GEOM=${GEOM:-$geom}
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
 

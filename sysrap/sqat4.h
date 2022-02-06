@@ -162,17 +162,31 @@ struct qat4
 
     QAT4_METHOD qat4(const float* v) 
     {
-        q0.f.x = *(v+0)  ;  q0.f.y = *(v+1)  ;   q0.f.z = *(v+2)  ;  q0.f.w = *(v+3) ;   
-        q1.f.x = *(v+4)  ;  q1.f.y = *(v+5)  ;   q1.f.z = *(v+6)  ;  q1.f.w = *(v+7) ;   
-        q2.f.x = *(v+8)  ;  q2.f.y = *(v+9)  ;   q2.f.z = *(v+10) ;  q2.f.w = *(v+11) ;   
-        q3.f.x = *(v+12) ;  q3.f.y = *(v+13) ;   q3.f.z = *(v+14) ;  q3.f.w = *(v+15) ;   
+        if(v)
+        { 
+            q0.f.x = *(v+0)  ;  q0.f.y = *(v+1)  ;   q0.f.z = *(v+2)  ;  q0.f.w = *(v+3) ;   
+            q1.f.x = *(v+4)  ;  q1.f.y = *(v+5)  ;   q1.f.z = *(v+6)  ;  q1.f.w = *(v+7) ;   
+            q2.f.x = *(v+8)  ;  q2.f.y = *(v+9)  ;   q2.f.z = *(v+10) ;  q2.f.w = *(v+11) ;   
+            q3.f.x = *(v+12) ;  q3.f.y = *(v+13) ;   q3.f.z = *(v+14) ;  q3.f.w = *(v+15) ;   
+        }
+        else
+        {
+            init(); 
+        }
     } 
     QAT4_METHOD qat4(const double* v) // narrowing 
     {
-        q0.f.x = float(*(v+0))  ;  q0.f.y = float(*(v+1))  ;   q0.f.z = float(*(v+2))  ;  q0.f.w = float(*(v+3)) ;   
-        q1.f.x = float(*(v+4))  ;  q1.f.y = float(*(v+5))  ;   q1.f.z = float(*(v+6))  ;  q1.f.w = float(*(v+7)) ;   
-        q2.f.x = float(*(v+8))  ;  q2.f.y = float(*(v+9))  ;   q2.f.z = float(*(v+10)) ;  q2.f.w = float(*(v+11)) ;   
-        q3.f.x = float(*(v+12)) ;  q3.f.y = float(*(v+13)) ;   q3.f.z = float(*(v+14)) ;  q3.f.w = float(*(v+15)) ;   
+        if(v)
+        { 
+            q0.f.x = float(*(v+0))  ;  q0.f.y = float(*(v+1))  ;   q0.f.z = float(*(v+2))  ;  q0.f.w = float(*(v+3)) ;   
+            q1.f.x = float(*(v+4))  ;  q1.f.y = float(*(v+5))  ;   q1.f.z = float(*(v+6))  ;  q1.f.w = float(*(v+7)) ;   
+            q2.f.x = float(*(v+8))  ;  q2.f.y = float(*(v+9))  ;   q2.f.z = float(*(v+10)) ;  q2.f.w = float(*(v+11)) ;   
+            q3.f.x = float(*(v+12)) ;  q3.f.y = float(*(v+13)) ;   q3.f.z = float(*(v+14)) ;  q3.f.w = float(*(v+15)) ;   
+        }
+        else
+        {
+            init(); 
+        }
     } 
 
 

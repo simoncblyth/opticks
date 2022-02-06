@@ -3,6 +3,7 @@
 struct CSGNode ; 
 struct CSGSolid ; 
 
+#include <string>
 #include "CSG_API_EXPORT.hh"
 #include "plog/Severity.h"
 
@@ -15,6 +16,7 @@ struct CSG_API CSGMaker
     static const char* NAMES ; 
     static bool StartsWith( const char* n, const char* q ); 
     static bool CanMake( const char* q ); 
+    static void GetNames(std::vector<std::string>& names ); 
 
     static float4 TriPlane( const std::vector<float3>& v, unsigned i, unsigned j, unsigned k );
 
@@ -22,7 +24,7 @@ struct CSG_API CSGMaker
         SPHE_MIDX, ZSPH_MIDX, CONE_MIDX, HYPE_MIDX, BOX3_MIDX, 
         PLAN_MIDX, SLAB_MIDX, CYLI_MIDX, DISC_MIDX, VCUB_MIDX, 
         VTET_MIDX, ELLI_MIDX, UBSP_MIDX, IBSP_MIDX, DBSP_MIDX, 
-        RCYL_MIDX, ICYL_MIDX, IPHI_MIDX
+        RCYL_MIDX, ICYL_MIDX, IPHI_MIDX, ITHE_MIDX, ITHL_MIDX
     }; 
 
     CSGFoundry* fd ; 
@@ -66,6 +68,10 @@ struct CSG_API CSGMaker
 
     CSGSolid* makeInfCylinder(const char* label="icyl", float radius=50.f,  float hz=25.f ); 
     CSGSolid* makeInfPhiCut(  const char* label="iphi", float startPhi=0.25f, float deltaPhi=0.1f ); // units of pi  
+    CSGSolid* makeInfTheCut(  const char* label="ithe", float startThe=0.25f, float deltaThe=0.1f ); // units of pi  
+    CSGSolid* makeInfTheCutL( const char* label="ithl", float startThe=0.25f, float deltaThe=0.1f ); // units of pi  
+
+
     CSGSolid* makeZSphere(    const char* label="zsph", float r=100.f,  float z1=-50.f , float z2=50.f ); 
     CSGSolid* makeCone(       const char* label="cone", float r1=300.f, float z1=-300.f, float r2=100.f,   float z2=-100.f ); 
     CSGSolid* makeHyperboloid(const char* label="hype", float r0=100.f, float zf=50.f,   float z1=-50.f,   float z2=50.f );

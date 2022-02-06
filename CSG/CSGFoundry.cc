@@ -9,6 +9,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"
 #include "NP.hh"
@@ -46,7 +47,8 @@ CSGFoundry::CSGFoundry()
     icdf(nullptr),
     meta(nullptr),
     fold(nullptr),
-    cfbase(nullptr)
+    cfbase(nullptr),
+    geom(nullptr)
 {
     init(); 
 }
@@ -109,6 +111,14 @@ std::string CSGFoundry::descMeshName() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+void CSGFoundry::addMeshName(const char* name) 
+{
+    meshname.push_back(name); 
+    mmlabel.push_back(name);  
+}
+
 
 
 int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
@@ -194,6 +204,9 @@ std::string CSGFoundry::descSolids() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
 
 
 std::string CSGFoundry::descInst(unsigned ias_idx_, unsigned long long emm ) const
@@ -838,6 +851,52 @@ unsigned CSGFoundry::addTran( const qat4* tr, const qat4* it )
     return idx ;  
 }
 
+/**
+CSGFoundry::addTran
+----------------------
+
+Add identity transform to tran and itra arrays and return index. 
+
+**/
+unsigned CSGFoundry::addTran()
+{
+    qat4 t ; 
+    t.init(); 
+    qat4 v ; 
+    v.init(); 
+    unsigned idx = addTran(&t, &v); 
+    return idx ; 
+}
+
+
+/**
+CSGFoundry::addInstance
+------------------------
+
+Used for example from CSG_GGeo_Convert::addInstances
+
+**/
+
+void CSGFoundry::addInstance(const float* tr16, unsigned gas_idx, unsigned ias_idx )
+{
+    qat4 instance(tr16) ;  // identity matrix if tr16 is nullptr 
+    unsigned ins_idx = inst.size() ;
+
+    instance.setIdentity( ins_idx, gas_idx, ias_idx );
+
+    LOG(LEVEL) 
+        << " ins_idx " << ins_idx 
+        << " gas_idx " << gas_idx 
+        << " ias_idx " << ias_idx 
+        ;
+
+    inst.push_back( instance );
+} 
+
+
+
+
+
 CSGNode* CSGFoundry::addNodes(const std::vector<CSGNode>& nds )
 {
     unsigned idx = node.size() ; 
@@ -913,6 +972,8 @@ CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )
 
     return last_added_prim  ; 
 }
+
+
 
 
 // collect Prims with the supplied mesh_idx 
@@ -1157,6 +1218,35 @@ void CSGFoundry::DumpAABB(const char* msg, const float* aabb) // static
 }
 
 
+
+#ifdef __APPLE__
+const char* CSGFoundry::BASE = "$TMP/GeoChain_Darwin" ;
+#else
+const char* CSGFoundry::BASE = "$TMP/GeoChain" ;
+#endif
+
+const char* CSGFoundry::RELDIR = "CSGFoundry"  ;
+
+
+const char* CSGFoundry::getBaseDir(bool create) const
+{
+    int create_dirs = create ? 2 : 0 ; // 2:dirpath 0:noop
+    const char* fold = geom ? SPath::Resolve(BASE, geom, create_dirs ) : nullptr ;
+    const char* cfbase = SSys::getenvvar("CFBASE", fold  );  
+    return cfbase ? strdup(cfbase) : nullptr ; 
+}
+
+void CSGFoundry::write() const 
+{
+    const char* cfbase = getBaseDir(true) ; 
+    if( cfbase == nullptr )
+    {
+        LOG(fatal) << "cannot write unless CFBASE envvar defined or geom has been set " ; 
+        return ;   
+    }
+    write(cfbase, RELDIR );  
+}
+
 void CSGFoundry::write(const char* base, const char* rel) const 
 {
     std::stringstream ss ;   
@@ -1186,6 +1276,29 @@ void CSGFoundry::write(const char* dir_) const
     if(icdf) icdf->save(dir, "icdf.npy") ; 
 }
 
+
+
+
+void CSGFoundry::load() 
+{
+    const char* cfbase = getBaseDir(false) ; 
+    if( cfbase == nullptr )
+    {
+        LOG(fatal) << "cannot load unless CFBASE envvar defined or geom has been set " ; 
+        return ;   
+    }
+    load(cfbase, RELDIR );  
+}
+
+void CSGFoundry::load(const char* base, const char* rel) 
+{
+    std::stringstream ss ;   
+    ss << base << "/" << rel ; 
+    std::string dir = ss.str();   
+    load(dir.c_str()); 
+}
+
+
 void CSGFoundry::load( const char* dir_ )
 {
     int create_dirs = 0 ; 
@@ -1209,14 +1322,37 @@ void CSGFoundry::load( const char* dir_ )
     icdf = NP::Load(dir, "icdf.npy"); 
 }
 
+void CSGFoundry::setGeom(const char* geom_)
+{
+    geom = geom_ ? strdup(geom_) : nullptr ; 
+}
 
+/**
+CSGFoundry::MakeGeom
+----------------------
 
+Intended for creation of small test geometries that are entirely created by this method.
 
-CSGFoundry*  CSGFoundry::Make(const char* geom) // static
+**/
+
+CSGFoundry*  CSGFoundry::MakeGeom(const char* geom) // static
 {
     CSGFoundry* fd = new CSGFoundry();  
     CSGMaker* mk = fd->maker ;
     CSGSolid* so = mk->make( geom );
+    fd->setGeom(geom);  
+
+
+    unsigned tranIdx = fd->addTran() ; // not-used here but need to have at least one transform in geometry
+    LOG(LEVEL) << "tranIdx " << tranIdx ; 
+
+    const float* tr16 = nullptr ; 
+    unsigned gas_idx = 0 ; 
+    unsigned ias_idx = 0 ; 
+    fd->addInstance(tr16, gas_idx, ias_idx );  
+
+    fd->addMeshName(geom);   // add to meshname mmlabel to avoid tripping some checks 
+
     assert( so ); 
 
     LOG(info) << " so " << so ;
@@ -1234,6 +1370,16 @@ CSGFoundry*  CSGFoundry::Load(const char* dir) // static
     return fd ; 
 } 
 
+CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
+{
+    CSGFoundry* fd = new CSGFoundry();  
+    fd->setGeom(geom); 
+    fd->load(); 
+    return fd ; 
+} 
+
+
+
 /**
 CSGFoundry::Load
 -----------------
@@ -1248,14 +1394,6 @@ CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
     fd->load(base, rel); 
     return fd ; 
 } 
-
-void CSGFoundry::load( const char* base, const char* rel )
-{
-    std::stringstream ss ;   
-    ss << base << "/" << rel ; 
-    std::string folder = ss.str();   
-    load( folder.c_str() ); 
-}
 
 void CSGFoundry::setFold(const char* fold_)
 {

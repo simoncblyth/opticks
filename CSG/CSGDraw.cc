@@ -36,6 +36,10 @@ void CSGDraw::draw(const char* msg)
     {
         draw_list(); 
     }
+    else if( CSG::IsLeaf((OpticksCSG_t)type) )
+    {
+        draw_leaf(); 
+    }
     else
     {
         assert(0) ; // unexpected type 
@@ -126,6 +130,16 @@ void CSGDraw::draw_list()
         draw_list_item( sub, idx ); 
     }
 }
+
+void CSGDraw::draw_leaf()
+{
+    assert( CSG::IsLeaf((OpticksCSG_t)type) ); 
+
+    unsigned idx = 0 ; 
+    const CSGNode* leaf = q->getSelectedNode(idx);
+ 
+    draw_list_item( leaf, idx ); 
+} 
 
 void CSGDraw::draw_list_item( const CSGNode* nd, unsigned idx )
 {

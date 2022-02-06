@@ -33,6 +33,14 @@ bool CSGMaker::CanMake(const char* qname) // static
     return found ; 
 }
 
+void CSGMaker::GetNames(std::vector<std::string>& names ) // static
+{
+    std::stringstream ss(NAMES) ;    
+    std::string name ; 
+    while (std::getline(ss, name)) if(!name.empty()) names.push_back(name); 
+}
+
+
 const char* CSGMaker::NAMES = R"LITERAL(
 sphe
 zsph
@@ -61,28 +69,32 @@ rcyl
 dcyl
 icyl
 iphi
+ithe
+ithl
 bssc
 )LITERAL"; 
+
+
 
 
 // see CSGNode::MakeDemo for CSGNode level equivalent
 CSGSolid* CSGMaker::make(const char* name)
 {
     CSGSolid* so = nullptr ; 
-    if(     StartsWith("sphe", name)) so = makeSphere(name) ;
-    else if(StartsWith("zsph", name)) so = makeZSphere(name) ;
+    if(     StartsWith("sphe", name))     so = makeSphere(name) ;
+    else if(StartsWith("zsph", name))     so = makeZSphere(name) ;
     else if(StartsWith("ZSphere", name))  so = makeZSphere(name) ;
-    else if(StartsWith("cone", name)) so = makeCone(name) ;
-    else if(StartsWith("hype", name)) so = makeHyperboloid(name) ;
-    else if(StartsWith("box3", name)) so = makeBox3(name) ;
-    else if(StartsWith("plan", name)) so = makePlane(name) ;
-    else if(StartsWith("Plane", name)) so = makePlane(name) ;
-    else if(StartsWith("slab", name)) so = makeSlab(name) ;
-    else if(StartsWith("Slab", name)) so = makeSlab(name) ;
-    else if(StartsWith("cyli", name)) so = makeCylinder(name) ;
-    else if(StartsWith("disc", name)) so = makeDisc(name) ;
-    else if(StartsWith("vcub", name)) so = makeConvexPolyhedronCube(name) ;
-    else if(StartsWith("vtet", name)) so = makeConvexPolyhedronTetrahedron(name) ;
+    else if(StartsWith("cone", name))     so = makeCone(name) ;
+    else if(StartsWith("hype", name))     so = makeHyperboloid(name) ;
+    else if(StartsWith("box3", name))     so = makeBox3(name) ;
+    else if(StartsWith("plan", name))     so = makePlane(name) ;
+    else if(StartsWith("Plane", name))    so = makePlane(name) ;
+    else if(StartsWith("slab", name))     so = makeSlab(name) ;
+    else if(StartsWith("Slab", name))     so = makeSlab(name) ;
+    else if(StartsWith("cyli", name))     so = makeCylinder(name) ;
+    else if(StartsWith("disc", name))     so = makeDisc(name) ;
+    else if(StartsWith("vcub", name))     so = makeConvexPolyhedronCube(name) ;
+    else if(StartsWith("vtet", name))     so = makeConvexPolyhedronTetrahedron(name) ;
     else if(StartsWith("ConvexPolyhedronCube", name))        so = makeConvexPolyhedronCube(name) ;
     else if(StartsWith("ConvexPolyhedronTetrahedron", name)) so = makeConvexPolyhedronTetrahedron(name) ;
     else if(StartsWith("elli", name)) so = makeEllipsoid(name) ;
@@ -96,6 +108,8 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("dcyl", name)) so = makeDifferenceCylinder(name) ;
     else if(StartsWith("icyl", name)) so = makeInfCylinder(name) ;
     else if(StartsWith("iphi", name)) so = makeInfPhiCut(name) ;
+    else if(StartsWith("ithe", name)) so = makeInfTheCut(name) ;
+    else if(StartsWith("ithl", name)) so = makeInfTheCutL(name) ;
     else if(StartsWith("bssc", name)) so = makeBoxSubSubCylinder(name) ;
     else LOG(fatal) << "invalid name [" << name << "]" ; 
     assert( so ); 
@@ -596,6 +610,22 @@ CSGSolid* CSGMaker::makeInfPhiCut(const char* label, float startPhi, float delta
     CSGNode nd = CSGNode::InfPhiCut(startPhi, deltaPhi ); 
     return makeSolid11(label, nd, nullptr, IPHI_MIDX ); 
 }
+
+
+CSGSolid* CSGMaker::makeInfTheCut(const char* label, float startThe, float deltaThe )
+{
+    CSGNode nd = CSGNode::InfTheCut(startThe, deltaThe, ' ' ); 
+    return makeSolid11(label, nd, nullptr, ITHE_MIDX ); 
+}
+CSGSolid* CSGMaker::makeInfTheCutL(const char* label, float startThe, float deltaThe )
+{
+    CSGNode nd = CSGNode::InfTheCut(startThe, deltaThe, 'L' ); 
+    return makeSolid11(label, nd, nullptr, ITHL_MIDX ); 
+}
+
+
+
+
 
 CSGSolid* CSGMaker::makeZSphere(const char* label, float radius, float z1, float z2)
 {

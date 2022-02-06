@@ -41,9 +41,16 @@ struct CSG_API CSGFoundry
 {
     static const plog::Severity LEVEL ; 
     static const unsigned IMAX ; 
-    static CSGFoundry* Make(const char* geom);
+    static const char* BASE ; 
+    static const char* RELDIR ; 
+
+
+    static CSGFoundry* MakeGeom(const char* geom);
+    static CSGFoundry* LoadGeom(const char* geom); 
+
     static CSGFoundry* Load(const char* base, const char* rel);
     static CSGFoundry* Load(const char* dir );
+
     static int Compare(const CSGFoundry* a , const CSGFoundry* b ); 
 
     template<typename T>
@@ -58,6 +65,7 @@ struct CSG_API CSGFoundry
     const char* getFold() const ;
     const char* getCFBase() const ;
     void setFold(const char* fold); 
+    void setGeom(const char* geom); 
 
 
     std::string desc() const ;
@@ -155,6 +163,8 @@ struct CSG_API CSGFoundry
 
     template<typename T> unsigned addTran( const Tran<T>& tr  );
     unsigned addTran( const qat4* tr, const qat4* it ) ;
+    unsigned addTran() ;
+    void     addInstance(const float* tr16, unsigned gas_idx, unsigned ias_idx ); 
 
 
     //void makeDemoSolids();   // via maker
@@ -164,8 +174,15 @@ struct CSG_API CSGFoundry
     static void DumpAABB(const char* msg, const float* aabb); 
 
 
+    const char* getBaseDir(bool create) const ; 
+
     void write(const char* dir) const ;
     void write(const char* base, const char* rel) const ;
+
+    // these argumentless methods require CFBASE envvar or geom member to be set 
+    void write() const ; 
+    void load() ; 
+
     void load( const char* base, const char* rel ) ; 
     void load( const char* dir ) ; 
 
@@ -200,6 +217,7 @@ struct CSG_API CSGFoundry
     void kludgeScalePrimBBox( const char* label, float dscale );
     void kludgeScalePrimBBox( unsigned solidIdx, float dscale );
 
+    void addMeshName(const char* name); 
     std::vector<std::string> meshname ;  // meshNames from GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 
@@ -236,7 +254,7 @@ struct CSG_API CSGFoundry
     const char* meta ; 
     const char* fold ; 
     const char* cfbase ; 
-
+    const char* geom ; 
 
 
 };

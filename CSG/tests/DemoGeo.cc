@@ -93,6 +93,18 @@ void DemoGeo::init_sphere_containing_grid_of_spheres(unsigned layers )
     maker->makeLayered("sphere", big_radius, 1 ); 
 }
 
+/**
+DemoGeo::init_parade
+-----------------------
+
+::
+
+   GEOM=parade CSGDemoTest
+   cx ; GEOM=parade ./cxr_geochain.sh   
+       render looks like things on top of each other
+       TODO: investigate, improve default grid layout  
+
+**/
 
 void DemoGeo::init_parade()
 {

@@ -171,7 +171,7 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top )
 
 void GeoChain::save(const char* name, const char* base_) const 
 {
-    const char* base = base_ ? base : BASE ;  
+    const char* base = base_ ? base_ : BASE ;  
     int create_dirs = 2 ; // 2: dirpath
     const char* fold = SPath::Resolve(base, name, create_dirs );   
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );

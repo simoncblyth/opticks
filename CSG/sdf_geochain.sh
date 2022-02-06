@@ -59,7 +59,9 @@ geom=BoxFourBoxContiguous
 #geom=ConvexPolyhedronCube
 #geom=ConvexPolyhedronTetrahedron
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*}
+#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*}
+
+geom=parade
 
 
 export GEOM=${GEOM:-$geom}

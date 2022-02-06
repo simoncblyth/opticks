@@ -34,6 +34,9 @@ Debugging blank renders::
           add debug to trace whats happening 
 
 
+EYE=1,1,1 GEOM=DifferenceBoxSphere TMIN=0.5 ./cxr_geochain.sh 
+
+
 EOU
 }
 
@@ -79,8 +82,9 @@ msg="=== $BASH_SOURCE :"
 #geom=BoxFourBoxContiguous
 
 geom=SphereWithPhiCutDEV
+#geom=parade
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
+#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
 export GEOM=${GEOM:-$geom}
 
 # cfname picks the CSGFoundry geometry to load

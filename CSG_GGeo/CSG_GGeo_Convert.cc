@@ -210,12 +210,19 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     for(unsigned i=0 ; i < num_inst ; i++)
     {
         glm::mat4 it = mm->getITransform_(i); 
-        qat4 instance(glm::value_ptr(it)) ;   
-        unsigned ins_idx = foundry->inst.size() ;
+    
+        const float* tr16 = glm::value_ptr(it) ; 
         unsigned gas_idx = repeatIdx ; 
         unsigned ias_idx = 0 ; 
+
+        /*
+        qat4 instance(tr16) ;   
+        unsigned ins_idx = foundry->inst.size() ;
         instance.setIdentity( ins_idx, gas_idx, ias_idx );
         foundry->inst.push_back( instance );
+        */
+
+        foundry->addInstance(tr16, gas_idx, ias_idx); 
     }
 }
 

@@ -509,6 +509,50 @@ CSGNode CSGNode::InfPhiCut(float startPhi_, float deltaPhi_ )
 }
 
 
+
+CSGNode CSGNode::InfTheCut(float startThe_, float deltaThe_, char imp) 
+{
+    double startThe = startThe_ ; 
+    double deltaThe = deltaThe_ ; 
+    double the0 = startThe ; 
+    double the1 = startThe + deltaThe ; 
+    double pi = M_PIf ;  
+
+    double d_cosTheta0 = std::cos(the0*pi) ; 
+    double d_cosTheta1 = std::cos(the1*pi) ; 
+    double d_tanTheta0 = std::tan(the0*pi) ; 
+    double d_tanTheta1 = std::tan(the1*pi) ; 
+    double d_tanTheta0sq = d_tanTheta0*d_tanTheta0 ; 
+    double d_tanTheta1sq = d_tanTheta1*d_tanTheta1 ; 
+
+    float cosTheta0si = d_cosTheta0 < 0. ? -1.f : 1.f ; 
+    float tanTheta0sq = float(d_tanTheta0sq); 
+    float cosTheta1si = d_cosTheta1 < 0. ? -1.f : 1.f ; 
+    float tanTheta1sq = float(d_tanTheta1sq); 
+
+    LOG(info) 
+        << " startThe " << startThe
+        << " deltaThe " << deltaThe
+        << " the0 " << the0
+        << " the1 " << the1
+        << " cosTheta0si " << cosTheta0si 
+        << " tanTheta0sq " << tanTheta0sq
+        << " cosTheta1si " << cosTheta1si 
+        << " tanTheta1sq " << tanTheta1sq
+        ; 
+
+    CSGNode nd = {} ; 
+    nd.setParam( cosTheta0si, tanTheta0sq, cosTheta1si, tanTheta1sq, 0.f, 0.f )  ; 
+    nd.setAABB( -100.f,-100.f,-100.f, 100.f, 100.f, 100.f );     
+    nd.setTypecode( imp == 'L' ? CSG_LTHETACUT : CSG_THETACUT ); 
+
+    return nd ; 
+}
+
+
+
+
+
 CSGNode CSGNode::Disc(float px, float py, float ir, float r, float z1, float z2)
 {
     CSGNode nd = {} ;
@@ -577,6 +621,8 @@ CSGNode CSGNode::MakeDemo(const char* name) // static
     if(strncmp(name, "cyli", 4) == 0) return CSGNode::Cylinder(0.f, 0.f, 100.f, -50.f, 50.f ) ; 
     if(strncmp(name, "disc", 4) == 0) return CSGNode::Disc(    0.f, 0.f, 50.f, 100.f, -2.f, 2.f ) ; 
     if(strncmp(name, "iphi", 4) == 0) return CSGNode::InfPhiCut(0.25f, 0.10f) ; 
+    if(strncmp(name, "ithe", 4) == 0) return CSGNode::InfTheCut(0.25f, 0.10f, ' ') ; 
+    if(strncmp(name, "ithl", 4) == 0) return CSGNode::InfTheCut(0.25f, 0.10f, 'L') ; 
     LOG(fatal) << " not implemented for name " << name ; 
     assert(0); 
     return CSGNode::Sphere(1.0); 
