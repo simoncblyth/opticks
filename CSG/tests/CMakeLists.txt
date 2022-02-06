@@ -24,6 +24,7 @@ set(TEST_SOURCES
     CSGMakerTest.cc
 
     intersect_leaf_phicut_test.cc 
+    intersect_leaf_thetacut_test.cc
     intersect_leaf_box3_test.cc 
     intersect_leaf_cylinder_test.cc 
     distance_leaf_slab_test.cc

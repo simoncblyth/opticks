@@ -509,8 +509,7 @@ CSGNode CSGNode::InfPhiCut(float startPhi_, float deltaPhi_ )
 }
 
 
-
-CSGNode CSGNode::InfTheCut(float startThe_, float deltaThe_, char imp) 
+void CSGNode::PrepThetaCutParam( quad& q0,  float startThe_, float deltaThe_ )
 {
     double startThe = startThe_ ; 
     double deltaThe = deltaThe_ ; 
@@ -530,6 +529,11 @@ CSGNode CSGNode::InfTheCut(float startThe_, float deltaThe_, char imp)
     float cosTheta1si = d_cosTheta1 < 0. ? -1.f : 1.f ; 
     float tanTheta1sq = float(d_tanTheta1sq); 
 
+    q0.f.x = cosTheta0si ;
+    q0.f.y = tanTheta0sq ;
+    q0.f.z = cosTheta1si ;
+    q0.f.w = tanTheta1sq ;
+
     LOG(info) 
         << " startThe " << startThe
         << " deltaThe " << deltaThe
@@ -540,9 +544,14 @@ CSGNode CSGNode::InfTheCut(float startThe_, float deltaThe_, char imp)
         << " cosTheta1si " << cosTheta1si 
         << " tanTheta1sq " << tanTheta1sq
         ; 
+}
 
+
+CSGNode CSGNode::InfTheCut(float startThe_, float deltaThe_, char imp) 
+{
     CSGNode nd = {} ; 
-    nd.setParam( cosTheta0si, tanTheta0sq, cosTheta1si, tanTheta1sq, 0.f, 0.f )  ; 
+    PrepThetaCutParam( nd.q0, startThe_, deltaThe_ ); 
+
     nd.setAABB( -100.f,-100.f,-100.f, 100.f, 100.f, 100.f );     
     nd.setTypecode( imp == 'L' ? CSG_LTHETACUT : CSG_THETACUT ); 
 

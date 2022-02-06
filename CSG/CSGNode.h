@@ -245,6 +245,8 @@ struct CSG_API CSGNode
     static CSGNode Cylinder(float px, float py, float radius, float z1, float z2) ;
     static CSGNode InfCylinder(float radius, float hz ) ;
     static CSGNode InfPhiCut(float startPhi, float deltaPhi ) ;
+
+    static void PrepThetaCutParam( quad& q0,  float startThe_, float deltaThe_ ); 
     static CSGNode InfTheCut(float startThe_, float deltaThe_, char imp) ; 
     static CSGNode Disc(float px, float py, float ir, float r, float z1, float z2);
 
