@@ -119,7 +119,8 @@ geom=GeneralSphereDEV_YX
 #geom=OrbGridMultiUnion10:30_YX
 #geom=BoxGridMultiUnion10:30_YX
 
-geom=GeneralSphereDEV_YX
+#geom=GeneralSphereDEV_YX
+geom=GeneralSphereDEV_XZ
 
 #catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
 

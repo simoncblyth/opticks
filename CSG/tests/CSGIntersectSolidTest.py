@@ -8,7 +8,7 @@ AnnulusFourBoxUnion
     notice that spurious intersects all from 2nd circle roots  
  
 
-IXIYIZ=-6,0,0 SPURIOUS=1 ./csg_geochain.sh ana
+IXYZ=-6,0,0 SPURIOUS=1 ./csg_geochain.sh ana
 
 
 
@@ -178,11 +178,26 @@ if __name__ == '__main__':
     gspos = fold.gs[:,5,:3]
     gsid =  fold.gs[:,1,3].copy().view(np.int8).reshape(-1,4)  
 
-    pl.add_points( gspos, color="yellow" )
+    no_gs = 'NO_GS' in os.environ 
+    if no_gs:
+        print(" skip gspos points due to NO_GS " )
+    else:
+        pl.add_points( gspos, color="yellow" )
+    pass
+
+    gsmeta = NPMeta(fold.gs_meta)  # TODO cxs_geochain uses genstep_meta : standardize
+    gridspec = GridSpec(fold.peta, gsmeta)
+    axes = gridspec.axes
+    print(" gridspec.axes : %s " % str(axes) )
+
+    gridspec.pv_arrange_viewpoint(pl, reset=True)
 
 
-    if not hasattr(fold, 'isect'):
-       log.fatal("no isect")
+    no_isect = not hasattr(fold, 'isect') 
+    gs_only = 'GS_ONLY' in os.environ
+
+    if no_isect or gs_only:
+       log.fatal("early exit just showing gensteps as no_isect:%s in fold OR gs_only:%d selected by GS_ONLY envvar" % (no_isect, gs_only))
        pl.show_grid()
        cp = pl.show()
        sys.exit(0)
@@ -196,7 +211,6 @@ if __name__ == '__main__':
 
     ray_origin = fold.isect[:, 2, :3]
     ray_direction = fold.isect[:, 3, :3]
-
 
     sd_cut = -1e-3
     select_spurious = sd < sd_cut 
@@ -212,21 +226,21 @@ if __name__ == '__main__':
     print( "%40s : %d " % ("count_spurious", count_spurious) )
 
 
-    ## when envvar IXIYIZ is defined restrict to a single genstep source of photons identified by grid coordinates
-    ixiyiz = eintlist_("IXIYIZ", None)   
-    if not ixiyiz is None:
-        ix,iy,iz = ixiyiz
+    ## when envvar IXYZ is defined restrict to a single genstep source of photons identified by grid coordinates
+    ixyz = eintlist_("IXYZ", None)   
+    if not ixyz is None:
+        ix,iy,iz = ixyz
         select_isect_gsid = np.logical_and( np.logical_and( isect_gsid[:,0] == ix , isect_gsid[:,1] == iy ), isect_gsid[:,2] == iz )
         count_isect_gsid = np.count_nonzero(select_isect_gsid) 
 
         select = np.logical_and( select, select_isect_gsid )
         count_select = np.count_nonzero(select)
 
-        print("%40s : %d   IXIYIZ %s " %   ("count_isect_gsid", count_isect_gsid, os.environ.get("IXIYIZ",None) ))
+        print("%40s : %d   IXYZ %s " %   ("count_isect_gsid", count_isect_gsid, os.environ.get("IXYZ",None) ))
         print("%40s : %d  \n" % ("count_select", count_select)) 
     pass  
 
-    ## when envvar IW is defined restrict to a single photon index, usually used together with IXIYIZ to pick one intersect
+    ## when envvar IW is defined restrict to a single photon index, usually used together with IXYZ to pick one intersect
     iw = eint_("IW","-1")
     if iw > -1:
         # selecting a single intersect as well as single genstep  
@@ -249,8 +263,8 @@ if __name__ == '__main__':
     pass      
 
 
-    if not ixiyiz is None and not iw is None:
-        ix,iy,iz = ixiyiz
+    if not ixyz is None and not iw is None:
+        ix,iy,iz = ixyz
         gsid = "gsid_%d_%d_%d_%d" % (ix,iy,iz,iw)     
         recs_fold = Fold.Load(recs_path, gsid)
         recs = [] if recs_fold is None else recs_fold.CSGRecord 
@@ -364,15 +378,6 @@ if __name__ == '__main__':
     pl.add_text(topline, position="upper_left")
     pl.add_text(botline, position="lower_left")
 
-
-    look = np.array([0,0,0], dtype=np.float32) 
-    eye  = np.array([0,0,-100], dtype=np.float32)
-    up   = np.array([1,0,0], dtype=np.float32)
-
-    pl.set_focus(    look )
-    pl.set_viewup(   up ) 
-    pl.set_position( eye, reset=False )   
-    pl.camera.Zoom(1)
 
     cp = pl.show()
 

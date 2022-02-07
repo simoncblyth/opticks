@@ -12,9 +12,11 @@
 
 
 #include "OpticksCSG.h"
+
 #include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
+
 
 CSGQuery::CSGQuery( const CSGFoundry* fd_ ) 
     :
@@ -65,7 +67,6 @@ void CSGQuery::selectPrim( const CSGPrim* pr )
          ;   
 }
 
-
 int CSGQuery::getSelectedType() const
 {
     return select_root_typecode ; 
@@ -74,7 +75,6 @@ int CSGQuery::getSelectedTreeHeight() const
 {
     return select_is_tree ? TREE_HEIGHT(select_numNode) : -1 ;   
 }
-
 
 /**
 CSGQuery::getSelectedNode

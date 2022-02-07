@@ -52,15 +52,15 @@ SCenterExtentGenstep::SCenterExtentGenstep()
     init(); 
 } 
 
+/**
+HMM: looks like just using a fixed CE independent of the geometry being probed 
+**/
+
 void SCenterExtentGenstep::init()
 {
     peta->zero(); 
 
     LOG(info) << "[ gridscale " << gridscale  ;
-
-    const char* cxs_cegs = SSys::getenvvar("CXS_CEGS"); 
-    if(cxs_cegs) LOG(fatal) << " CXS_CEGS is defined : have moved to standardize on CEGS " ;
-    assert( cxs_cegs == nullptr );  
 
     SSys::getenvintvec("CEGS", cegs, ':', "16:0:9:10" );
     // expect 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 

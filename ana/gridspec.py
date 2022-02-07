@@ -201,22 +201,18 @@ class GridSpec(object):
         peta[0,2] = ce
         return peta 
 
+
     def __init__(self, peta, gsmeta ):
         """
         :param peta:
         :param gsmeta:
-
-
-
-
-
         """
         moi = gsmeta.find("moi:", None)
         midx = gsmeta.find("midx:", None)
         mord = gsmeta.find("mord:", None)
         iidx = gsmeta.find("iidx:", None)
 
-        coords = "RTP" if int(iidx) == -3 else "XYZ"   ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
+        coords = "RTP" if not iidx is None and int(iidx) == -3 else "XYZ"   ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
         log.info(" moi %s midx %s mord %s iidx %s coords %s " % (moi, midx, mord, iidx, coords))
 
         ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
@@ -283,6 +279,33 @@ class GridSpec(object):
         self.sce = sce
         self.thirdline = " ce: " + sce 
         self.photons_per_genstep = photons_per_genstep
+
+
+    def pv_arrange_viewpoint(self, pl, reset=False, zoom=1, parallel=True ):
+        """
+        :param pl: pyvista plotter instance
+        :param reset: for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
+
+        Note for greater control of the view it is better to use reset=False
+        """
+        
+        look = self.look 
+        eye = look + self.off
+        up = self.up
+
+        print("pv_arrange_viewpoint look:%s eye: %s up:%s " % (str(look), str(eye), str(up) ))
+
+        if parallel:
+            pl.camera.ParallelProjectionOn()
+        pass
+
+        pl.set_focus(    look )
+        pl.set_viewup(   up )
+        pl.set_position( eye, reset=reset )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
+        pl.camera.Zoom(zoom)
+
+
+
 
     def __str__(self):
         return "GridSpec (nx ny nz) (%d %d %d) axes %s axlabels %s " % (self.nx, self.ny, self.nz, str(self.axes), str(self.axlabels) ) 

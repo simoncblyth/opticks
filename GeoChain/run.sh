@@ -78,16 +78,16 @@ EOU
 #geom=BoxFourBoxUnion 
 #geom=BoxFourBoxContiguous 
 #geom=BoxCrossTwoBoxUnion 
-#geom=BoxThreeBoxUnion 
+geom=BoxThreeBoxUnion 
 
 #geom=SphereWithPhiCutDEV
-geom=GeneralSphereDEV
+#geom=GeneralSphereDEV
 
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin
 #geom=Orb
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
+#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*}
 export GEOM=${GEOM:-$geom}
 # pick the Solid or Volume binary depending on GEOM
 

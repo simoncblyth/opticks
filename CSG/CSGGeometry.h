@@ -38,9 +38,11 @@ struct CSG_API CSGGeometry
 
     void saveSignedDistanceField() const ; 
 
-    void centerExtentGenstepIntersect() ;
-    void saveCenterExtentGenstepIntersect() const ; 
+
+    void centerExtentGenstepIntersect() ; // invokes one of the below
+    void saveCenterExtentGenstepIntersect(float t_min) const ; 
     void intersectSelected(const char* path); 
+
 
     void dump(const char* msg="CSGGeometry::dump") const ; 
     void draw(const char* msg="CSGGeometry::draw") ; 

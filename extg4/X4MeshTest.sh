@@ -24,13 +24,15 @@ msg="=== $BASH_SOURCE :"
 #geom=hmsk_solidMaskTail
 #geom=nmsk_solidMaskTail
 #geom=XJfixtureConstruction 
-geom=AltXJfixtureConstruction 
+#geom=AltXJfixtureConstruction 
 #geom=XJanchorConstruction
 #geom=SJReceiverConstruction
 #geom=AnnulusTwoBoxUnion
 #geom=AnnulusOtherTwoBoxUnion
 #geom=AnnulusFourBoxUnion
+geom=GeneralSphereDEV
 
+#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
 export GEOM=${GEOM:-$geom}
 
 outdir="$TMP/extg4/X4MeshTest/$GEOM/X4Mesh"

@@ -1,18 +1,18 @@
 #!/bin/bash -l 
 msg="=== $BASH_SOURCE :"
 usage(){ cat << EOU
-csg_geochain.sh : CPU Opticks equivalent to cxs_geochain.sh with OptiX on GPU using CSGIntersectSolidTest
-===========================================================================================================
+csg_geochain.sh : CPU Opticks equivalent to cxs_geochain.sh with OptiX on GPU using test/CSGIntersectSolidTest.cc tests/CSGIntersectSolidTest.py
+==================================================================================================================================================
 
 The idea behind this is to provide a convenient way to test code primarily intended to run on GPU 
 in the more friendly debugging environment of the CPU.::
 
-    IXIYIZ=4,0,0 ./csg_geochain.sh  ana
-        selecting single genstep with IXIYIZ 
+    IXYZ=4,0,0 ./csg_geochain.sh  ana
+        selecting single genstep with IXYZ 
 
-    IXIYIZ=5,0,0 ./csg_geochain.sh  ana
+    IXYZ=5,0,0 ./csg_geochain.sh  ana
 
-    IXIYIZ=0,6,0 ./csg_geochain.sh  ana      
+    IXYZ=0,6,0 ./csg_geochain.sh  ana      
 
 
     SPURIOUS=1 GEOM=CylinderFourBoxUnion_YX ./csg_geochain.sh ana
@@ -27,16 +27,31 @@ in the more friendly debugging environment of the CPU.::
     SPURIOUS=1 GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh ana
           181/20997 spurious all exiting the cylinder with all 4 boxes
 
-    SPURIOUS=1 IXIYIZ=-6,0,0 GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh ana
+    SPURIOUS=1 IXYZ=-6,0,0 GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh ana
           select single genstep   
 
-    SPURIOUS=1 IXIYIZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX SAVE_SELECTED_ISECT=1 ./csg_geochain.sh ana
+    SPURIOUS=1 IXYZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX SAVE_SELECTED_ISECT=1 ./csg_geochain.sh ana
 
     SELECTED_ISECT=/tmp/selected_isect.npy GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh run
           run again just with selected isects, with CSGRecord enabled 
           will need to use same geometry to get same results     
 
-    SPURIOUS=1 IXIYIZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX  ./csg_geochain.sh ana
+    SPURIOUS=1 IXYZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX  ./csg_geochain.sh ana
+
+
+    TMIN=50 ./csg_geochain.sh 
+        NB can only change TMIN at C++ level not ana level 
+
+        Note that TMIN is currently absolute, it is not extent relative like with cxr_geochain.sh  
+        rendereing   
+
+
+    IXYZ=8,0,0 TMIN=50 ./csg_geochain.sh ana
+        at python analysis level the highlighted genstep can be changed using IXYZ 
+        TMIN does nothing at analysis level the intersects from the prior run are loaded and plotted
+           
+     
+
 
 EOU
 }
@@ -56,7 +71,7 @@ EOU
 
 #geom=BoxFourBoxUnion_YX
 #geom=BoxFourBoxContiguous_YX
-geom=SphereWithPhiCutDEV_YX
+#geom=SphereWithPhiCutDEV_YX
 
 #geom=BoxCrossTwoBoxUnion_YX
 #geom=BoxThreeBoxUnion_YX
@@ -65,19 +80,22 @@ geom=SphereWithPhiCutDEV_YX
 #geom=XJfixtureConstruction_XZ
 #geom=XJfixtureConstruction_XY
 
-
-#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
-
 #geom=iphi_YX
 
 #geom=ithe_XZ
-geom=ithl_YZ
 #geom=ithl_XZ
+
+#geom=ithe_YZ
+#geom=ithl_YZ
 
 #geom=ithe_XYZ
 #geom=ithl_XYZ
 
+#geom=GeneralSphereDEV_XZ
+geom=GeneralSphereDEV_XYZ
 
+
+#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
 
 export GEOM=${GEOM:-$geom}
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
@@ -99,7 +117,7 @@ case $gcn in
 esac
 
 case $GEOM in 
-       AnnulusFourBoxUnion_YX) note="see spurious with IXIYIZ=5,0,0 and 0,6,0 " ;;
+       AnnulusFourBoxUnion_YX) note="see spurious with IXYZ=5,0,0 and 0,6,0 " ;;
    AnnulusCrossTwoBoxUnion_YX) note="no spurious despite same apparent geom on ray path" ;;
       CylinderFourBoxUnion_YX) note="see spurious" ;;
            BoxThreeBoxUnion_YX) note="no spurious" ;; 
@@ -120,6 +138,7 @@ case $GEOM in
    *_ZY) cegs=0:9:16:$dx:$dy:$dz:$num_pho  ;;  
    *_YX) cegs=9:16:0:$dx:$dy:$dz:$num_pho  ;;  
    *_XYZ) cegs=9:16:9:$dx:$dy:$dz:$num_pho ;;  
+       *) echo $msg UNEXPECTED SUFFIX FOR GEOM $GEOM WHICH DOES NOT END WITH ONE OF : _XZ _YZ _XY _ZX _ZY _YX _XYZ  && exit 1   ;; 
 esac
 
 echo $msg GEOM $GEOM gcn $gcn gridscale $gridscale ixiyiz $ixiyiz
@@ -147,6 +166,36 @@ check_cegs()
     return 0 
 }
 
+
+check_cfbase_how_to_create(){ cat << EOH
+
+How to Create CSGFoundry Geometry
+======================================
+
+A. From converted G4VSolid 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Apply GeoChain conversion to a names geometry::
+
+    b7  # when using OptiX 7
+    cd ~/opticks/GeoChain
+    GEOM=${GEOM%%_*} ./run.sh 
+
+B. Directly from CSGSolid/CSGPrim/CSGNode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create and persists into CSGFoundry folders one OR all CSGMaker solids::
+
+    cd ~/opticks/CSG
+
+    CSGMakerTest     
+    GEOM=${GEOM%%_*} CSGMakerTest
+
+
+EOH
+}
+
+
 check_cfbase()
 {
     local msg="=== $FUNCNAME :"
@@ -158,11 +207,9 @@ check_cfbase()
        echo $msg : Possibilities: 
        echo $msg :
        echo $msg : 1. you intended to use the standard geometry but the GEOM $GEOM envvar does not match any of the if branches 
-       echo $msg : 2. you want to use a non-standard geometry but have not yet created it : do so as shown below
+       echo $msg : 2. you want to use a non-standard geometry but have not yet created it
        echo $msg :
-       echo $msg :    \"b7 \; cd ~/opticks/GeoChain\"  
-       echo $msg :    \"gc \; GEOM=$GEOM ./run.sh\" 
-       echo $msg :   
+       check_cfbase_how_to_create 
        return 1
     fi
     return 0 
@@ -172,7 +219,10 @@ check_cfbase_file()
 {
     local msg="=== $FUNCNAME :"
     if [ -n "$cfbase" -a -d "$cfbase/CSGFoundry" -a ! -f "$cfbase/CSGFoundry/meshname.txt" ]; then
-       echo $msg : ERROR cfbase $cfbase is defined and the directory exists but it misses expected files 
+       echo $msg : ERROR cfbase $cfbase is defined and the $cfbase/CSGFoundry directory exists
+       echo $msg : BUT it misses expected files such as $cfbase/CSGFoundry/meshname.txt 
+       echo $msg :
+       check_cfbase_how_to_create 
        return 1 
     fi 
     return 0 
@@ -183,7 +233,7 @@ dumpvars(){ for var in $* ; do printf "%20s : %s \n" $var "${!var}" ; done ; }
 check_cegs        || exit 1 
 check_cfbase      || exit 1 
 check_cfbase_file || exit 1 
-dumpvars GEOM CEGS GRIDSCALE TOPLINE BOTLINE CFBASE NOTE IXIYIZ 
+dumpvars GEOM CEGS GRIDSCALE TOPLINE BOTLINE CFBASE NOTE IXYZ 
 
 bin=CSGIntersectSolidTest
 script=tests/CSGIntersectSolidTest.py 

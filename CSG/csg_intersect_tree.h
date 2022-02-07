@@ -581,6 +581,10 @@ TREE_FUNC
 bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
     const unsigned typecode = node->typecode() ;  
+#ifdef DEBUG 
+    printf("//intersect_prim\n"); 
+#endif
+
 #ifdef DEBUG_SIX
 #if OPTIX_VERSION < 70000 
     rtPrintf("// DEBUG_SIX intersect_prim  numNode %d typecode %d  \n", numNode, typecode );  

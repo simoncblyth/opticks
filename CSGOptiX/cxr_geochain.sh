@@ -81,7 +81,9 @@ msg="=== $BASH_SOURCE :"
 #geom=BoxFourBoxUnion
 #geom=BoxFourBoxContiguous
 
-geom=SphereWithPhiCutDEV
+#geom=SphereWithPhiCutDEV
+geom=GeneralSphereDEV
+
 #geom=parade
 
 #catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom

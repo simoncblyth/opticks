@@ -1,7 +1,35 @@
 #pragma once
 
+/**
+intersect_leaf_thetacut
+--------------------------
 
 
+
+
+           .       \             /       .
+             .      \           /      .
+               .     \         /     .
+                 .    \       /    .
+                   .   \     /   . 
+        ------------0---1---2---3----------------
+                       . \ / .
+                          O 
+
+
+                  
+
+                         . O .
+                       .  / \  .
+             --------0---1---2---3-----------
+                   .    /     \    .
+                 .     /       \     .
+               .      /         \      .
+             .       /           \       . 
+
+
+
+**/
 
 LEAF_FUNC
 bool intersect_leaf_thetacut(float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d)
@@ -85,6 +113,14 @@ bool intersect_leaf_thetacut(float4& isect, const quad& q0, const float t_min, c
 
         isect.w = plane ? t_plane : t_cand;
     }
+
+
+#ifdef DEBUG
+    printf("//intersect_leaf_thetacut q0.f (%10.4f %10.4f %10.4f %10.4f) valid %d  isect  (%10.4f %10.4f %10.4f %10.4f) \n" , 
+           q0.f.x, q0.f.y, q0.f.z, q0.f.z, valid, isect.x, isect.y, isect.z, isect.w ) ; 
+#endif
+
+
     return valid ; 
 }
 

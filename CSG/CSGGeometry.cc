@@ -32,6 +32,17 @@ const char* CSGGeometry::OutDir(const char* cfbase, const char* geom)   // stati
     return outdir ;  
 }
 
+/**
+CSGGeometry::CSGGeometry
+-------------------------
+
+Can boot in three ways:
+
+1. externally created CSGFoundry instance
+2. GEOM envvar identifying a test geometry, and resulting in creation of a CSGFoundry instance  
+3. CFBASE envvar identifying directory containing a persisted CSGFoundry geometry that is loaded
+
+**/
 
 CSGGeometry::CSGGeometry(const CSGFoundry* fd_)
     :
@@ -107,7 +118,8 @@ void CSGGeometry::centerExtentGenstepIntersect()
     const char* path = SSys::getenvvar("SELECTED_ISECT"); 
     if(path == nullptr)
     {
-        saveCenterExtentGenstepIntersect(); 
+        float t_min = SSys::getenvfloat("TMIN", 0.f ); 
+        saveCenterExtentGenstepIntersect(t_min); 
     }
     else
     {
@@ -118,13 +130,14 @@ void CSGGeometry::centerExtentGenstepIntersect()
 }
 
 
-void CSGGeometry::saveCenterExtentGenstepIntersect() const 
+void CSGGeometry::saveCenterExtentGenstepIntersect(float t_min) const 
 {
     SCenterExtentGenstep* cegs = new SCenterExtentGenstep ; 
     const std::vector<quad4>& pp = cegs->pp ; 
     std::vector<quad4>& ii = cegs->ii ; 
 
-    float t_min = 0.f ; 
+    LOG(info) << "[ pp.size " << pp.size() << " t_min " << std::fixed << std::setw(10) << std::setprecision(4) << t_min  ; 
+
     quad4 isect ;
     for(unsigned i=0 ; i < pp.size() ; i++)
     {   
@@ -140,6 +153,7 @@ void CSGGeometry::saveCenterExtentGenstepIntersect() const
         ;
 
     cegs->save(outdir); 
+    LOG(info) << "]" ; 
 }
 
 void CSGGeometry::intersectSelected(const char* path)
