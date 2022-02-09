@@ -18,6 +18,7 @@
  */
 
 #include <cstdio>
+#include <csignal>
 #include <cassert>
 #include <cmath>
 #include <sstream>
@@ -373,6 +374,15 @@ unsigned nnode::num_serialization_nodes() const
     {
         unsigned height = maxdepth() ; 
         num_nodes = TREE_NODES(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
+    }
+    else if( is_leaf() )
+    {
+        num_nodes = 1 ; 
+    }
+    else
+    {
+        LOG(fatal) << " m_root node type is not list/tree/leaf ABORT " ; 
+        std::raise(SIGINT); 
     }
     return num_nodes ; 
 }

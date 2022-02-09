@@ -215,13 +215,6 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
         unsigned gas_idx = repeatIdx ; 
         unsigned ias_idx = 0 ; 
 
-        /*
-        qat4 instance(tr16) ;   
-        unsigned ins_idx = foundry->inst.size() ;
-        instance.setIdentity( ins_idx, gas_idx, ias_idx );
-        foundry->inst.push_back( instance );
-        */
-
         foundry->addInstance(tr16, gas_idx, ias_idx); 
     }
 }
@@ -522,15 +515,22 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
         << " sub_num " << std::setw(4) << sub_num 
         ; 
 
-    const float* param6 = comp->getPartValues(partIdx, 0, 0 );  
+    const float* param = comp->getPartValues(partIdx, 0, 0 );  
     bool complement = comp->getComplement(partIdx);
 
     bool has_planes = CSG::HasPlanes(tc); 
     std::vector<float4>* planes = has_planes ? GetPlanes(comp, primIdx, partIdxRel) : nullptr ; 
 
     const float* aabb = nullptr ;  
-    CSGNode nd = CSGNode::Make(tc, param6, aabb ) ; 
+    CSGNode nd = tc == CSG_THETACUT ? CSGNode::Make8(tc, param, aabb) : CSGNode::Make(tc, param, aabb ) ; 
     CSGNode* n = foundry->addNode(nd, planes );
+
+    if( tc == CSG_THETACUT )
+    {
+        LOG(LEVEL); 
+        CSGNode::Dump(n, 1, "CSG_GGeo_Convert::convertNode CSG_THETACUT before setIndex" );  
+    }
+
     n->setIndex(partIdx); 
 
     if( tc == CSG_CONVEXPOLYHEDRON )

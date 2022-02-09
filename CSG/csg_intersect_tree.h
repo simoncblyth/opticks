@@ -397,18 +397,31 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                 // see opticks/notes/issues/csg_complement.rst 
                 // these settings are only valid (and only needed) for misses 
 
+                // Q: where are complements set into the intersects ?
+                // A: at the tail of intersect_leaf the normal is flipped for complemented solids
+                //    even (actually especially) for MISS 
+                //
+                // TODO: need to also do something like this for unbounded MISS like thetacut/phicut
+                //       but only for appropriate ray directions
+                //   
+
                 bool l_complement = signbit(csg.data[left].x) ;
                 bool r_complement = signbit(csg.data[right].x) ;
 
-                bool l_complement_miss = l_state == State_Miss && l_complement ;
-                bool r_complement_miss = r_state == State_Miss && r_complement ;
+                // unbounded values are only valid for CSG_THETACUT State_Miss
+                bool l_unbounded = signbit(csg.data[left].y) ;
+                bool r_unbounded = signbit(csg.data[right].y) ;
 
-                if(r_complement_miss)
+                bool l_promote_miss = l_state == State_Miss && ( l_complement || l_unbounded ) ;
+                bool r_promote_miss = r_state == State_Miss && ( r_complement || r_unbounded ) ;
+
+
+                if(r_promote_miss)
                 {
 #ifdef DEBUG_RECORD
                     if(CSGRecord::ENABLED)
                     {
-                        printf("// %3d : r_complement_miss setting leftIsCloser %d to true and r_state %5s to Exit \n", 
+                        printf("// %3d : r_promote_miss setting leftIsCloser %d to true and r_state %5s to Exit \n", 
                                 nodeIdx, leftIsCloser, IntersectionState::Name(l_state)  ); 
                     }
 #endif
@@ -416,12 +429,12 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                     leftIsCloser = true ; 
                } 
 
-                if(l_complement_miss)
+                if(l_promote_miss)
                 {
 #ifdef DEBUG_RECORD
                     if(CSGRecord::ENABLED)
                     {
-                        printf("// %3d : l_complement_miss setting leftIsCloser %d to false and l_state %5s to Exit \n", 
+                        printf("// %3d : l_promote_miss setting leftIsCloser %d to false and l_state %5s to Exit \n", 
                                 nodeIdx, leftIsCloser, IntersectionState::Name(r_state)  ); 
                     }
 #endif

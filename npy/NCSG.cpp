@@ -1027,6 +1027,10 @@ void NCSG::export_()
     {
         export_list_();  
     }
+    else if( m_root->is_leaf() )
+    {
+        export_leaf_();  
+    }
     else
     {
         assert(0) ;  // unexpected m_root type  
@@ -1108,6 +1112,11 @@ void NCSG::check_subs() const
     unsigned sub_num_0 = m_root->subs.size(); 
     unsigned sub_num_1 = m_root->subNum(); 
     assert( sub_num_0 == sub_num_1 ); 
+}
+
+void NCSG::export_leaf_()
+{
+    export_node( m_root, 0) ; 
 }
 
 void NCSG::export_list_()

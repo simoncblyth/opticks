@@ -300,7 +300,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
         qc->write(gs);  // copy qc into gs.q2,q3,q4,q5
 
         gensteps.push_back(gs);
-        photon_offset += photons_per_genstep ; 
+        photon_offset += std::abs(photons_per_genstep) ; 
     }
     LOG(LEVEL) << " gensteps.size " << gensteps.size() ;
     return MakeGensteps(gensteps);
@@ -430,10 +430,11 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
 
         C4U gsid ;   // genstep integer grid coordinate IXIYIZ and IW photon index up to 255
 
-        int gencode          = gs.q0.i.x ; 
-        int gridaxes         = gs.q0.i.y ; 
-        gsid.u               = gs.q0.u.z ;     // formerly gs.q1.u.w 
-        unsigned num_photons = gs.q0.u.w ; 
+        int gencode           = gs.q0.i.x ; 
+        int gridaxes          = gs.q0.i.y ; 
+        gsid.u                = gs.q0.u.z ;     // formerly gs.q1.u.w 
+        int      num_photons_ = gs.q0.i.w ; 
+        unsigned num_photons  = std::abs(num_photons_);  
 
         assert( gencode == OpticksGenstep_TORCH );
 
@@ -446,17 +447,17 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
         for(unsigned j=0 ; j < num_photons ; j++)
         {   
             // this inner loop should be similar to quadarap/qsim.h/generate_photon_torch
-            // TODO: arrange a header such that can actually use the same code 
-            //   needs some curand_uniform macro refinition trickery
+            // TODO: arrange a header such that can actually use the same code via some curand_uniform macro refinition trickery
+            // -ve num_photons uses regular, not random azimuthal spray of directions
 
-            u0 = rng();
-            //u0 = double(j)/double(num_photons-1) ;
-
-            u1 = rng(); 
+            u0 = num_photons_ < 0 ? double(j)/double(num_photons-1) : rng() ;
 
             phi = 2.*M_PIf*u0 ;     // azimuthal 0->2pi 
             ssincos(phi,sinPhi,cosPhi);  
 
+            
+            // cosTheta sinTheta are only used for 3D (not 2D planar gensteps)
+            u1 = rng(); 
             cosTheta = u1 ; 
             sinTheta = sqrtf(1.0-u1*u1);
 
@@ -466,7 +467,7 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
             p.q0.f.z = gs.q1.f.z ;
             p.q0.f.w = 1.f ;       // <-- dont copy the "float" gsid 
  
-            SetGridPlaneDirection( p.q1.f, gridaxes, cosPhi, sinPhi, cosTheta, sinTheta );   // cosTheta sinTheta not used for 2D 
+            SetGridPlaneDirection( p.q1.f, gridaxes, cosPhi, sinPhi, cosTheta, sinTheta );  
 
             // tranforming photon position and direction into the desired frame
             qt.right_multiply_inplace( p.q0.f, 1.f );  // position 

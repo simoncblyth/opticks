@@ -1465,7 +1465,7 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_BOX3:             valid_isect = intersect_leaf_box3(             isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_PLANE:            valid_isect = intersect_leaf_plane(            isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_PHICUT:           valid_isect = intersect_leaf_phicut(           isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_THETACUT:         valid_isect = intersect_leaf_thetacut(         isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_THETACUT:         valid_isect = intersect_leaf_thetacut(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_LPHICUT:          valid_isect = intersect_leaf_phicut_lucas(     isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_LTHETACUT:        valid_isect = intersect_leaf_thetacut_lucas(   isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_SLAB:             valid_isect = intersect_leaf_slab(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
@@ -1480,14 +1480,20 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
         // so left_multiply the normal by the inverse-transform rather than the right_multiply 
         // done above to get the inverse transformed origin and direction
         //const unsigned boundary = node->boundary();  ???
-    }   
-    if(complement)  // flip normal, even for miss need to signal the complement with a -0.f  
-    {
-        isect.x = -isect.x ;
-        isect.y = -isect.y ;
-        isect.z = -isect.z ;
-    }
 
+        if(complement)  // flip normal for complement 
+        {
+            isect.x = -isect.x ;
+            isect.y = -isect.y ;
+            isect.z = -isect.z ;
+        }
+    }   
+    else
+    {
+         // even for miss need to signal the complement with a -0.f in isect.x
+         if(complement) isect.x = -isect.x ;  
+         // note that isect.y is also flipped for unbounded exit : for consumption by intersect_tree
+    }
 
     return valid_isect ; 
 }

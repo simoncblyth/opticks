@@ -235,6 +235,65 @@ const char* INTERSECTION = R"LITERAL(
 +-----------------+-----------------+-----------------+-----------------+                 
 
 
+
+  HUH : ( A Exit, B Enter, A Closer )  -> LOOP_A        
+
+               but A just exited so there will be no otherside ? 
+               YES, but that assumes simple convex constituent shapes
+               whereas the alg needs to handle less simple shapes like torus or annulus 
+
+        ( B Enter, A Exit, B Closer )  -> RETURN_B 
+
+
+
+Consider INTERSECTION between an ordinary bounded A and an unbounded B (eg phicut or thetacut)
+ 
+* assume that find a way to special case reclassify "B Miss" into "B Exit" 
+  for rays going in the appropriate range of directions 
+
+  * currently complement miss flips the signbits of isect.xyz 
+    but only signbit of isect.x is read as the signal for complemented miss
+
+  * rationalize the signalling:
+ 
+    1. isect.x signbit for complement miss
+    2. isect.y signbit for unbounded miss that can be promoted to unbounded exit
+
+  * hmm this is only applicable when start "inside" B as can only EXIT_B when start inside
+  
+* as the "otherside" of B is at infinity the comparison will always be "A Closer"
+
+ 
+
+                           => MISS         /
+                             2:B_MISS     /
+                               2         /  B : unbounded
+                              /         /
+                             /         /
+                            /         /
+                           /         /
+                          /         /
+              +----------1-A_EXIT--/-------------+
+              | A       /         / . . . . . . .|  
+              |        /         / . . . . . . . |  
+              |       0         / . . .  0--->---1----------- 2:B_MISS  
+              |                / . . . . . . . . A_EXIT  
+              |               + . 0 . . . . . . .|       (A_EXIT, B_MISS) => RETURN_MISS
+              |                \ / . . . . . . . |                
+              |                 1 . . . . . . . .|       (A_EXIT, B_EXIT) => A_Closer => RETURN_A  
+              |                / \ . . . . . . . |  
+              +---------------2---\--------------+
+                                   \
+                       1:B_EXIT     \
+                       2:A_EXIT      \
+                       1,2:B_Closer   \
+                       => RETURN_B
+
+
+
+
+
+
      IX1 : INTERSECTION FROM INSIDE ONE 0,[1],2            IX2 : INTERSECTION FROM OUTSIDE 0,1,[2],3                            
                                                            IX3 : INTERSECTION FROM INSIDE BOTH 4,[5],6                                            
                                                                                                        

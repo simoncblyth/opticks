@@ -222,7 +222,7 @@ class GridSpec(object):
         ce = tuple(peta[0,2])
         sce = (" %7.2f" * 4 ) % ce
 
-        assert photons_per_genstep > 0
+        assert photons_per_genstep != 0
         nx = (ix1 - ix0)//2
         ny = (iy1 - iy0)//2
         nz = (iz1 - iz0)//2

@@ -373,6 +373,7 @@ class NPY_API NCSG {
         void export_tree_();
         void export_tree_r(nnode* node, unsigned idx);
         void export_list_();
+        void export_leaf_();
         void check_subs() const ; 
 
 

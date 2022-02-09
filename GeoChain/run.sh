@@ -148,6 +148,9 @@ export NTreeProcess=INFO   ## balance decision happens here
 
 export NTreeBalance=INFO
 export NTreeBuilder=INFO
+
+export nthetacut=INFO 
+export nphicut=INFO 
 export NCSG=INFO
 export NCSGData=INFO
 

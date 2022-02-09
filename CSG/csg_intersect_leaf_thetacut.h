@@ -14,12 +14,14 @@ intersect_leaf_thetacut
                    .   \     /   . 
         ------------0---1---2---3----------------
                        . \ / .
-                          O 
+          - - - - - - - - O - - - - - - - - -   
 
 
                   
 
-                         . O .
+
+
+             - - - - - - . O .- - - - - - - -
                        .  / \  .
              --------0---1---2---3-----------
                    .    /     \    .
@@ -36,36 +38,124 @@ which root to use once.
 
 
 
-                        |
-          \             | /
-           \            |/
-            \           1
-             \         /|
-              \       / |
-               \     /  |
-           - - -0- - 1 -|- - - - - 
-                 \ /    |
-                  O     |
-                .   .   |
-              .       . |
-            .           0
-          .             | .
-        .               |   . 
-      .                       .
+Because its unbounded need some special
+handling of MISS that would intersect with 
+the "otherside" arc at infinity. 
 
+As the relevant angles are geospecific it 
+needs to be done here in the leaf. 
+This is a bit similar to the handling of complemented solids 
+but there is a difference in that the otherside intersects
+of a complemented solid are not restricted in angle. 
+
+Need a way to signal that an unbounded MISS 
+should be promoted to an EXIT at infinity. 
+
+See CSG/tests/CSGClassifyTest.cc for thoughts on how 
+to do this.
+
+
+
+                        unbounded
+                            MISS
+                              1
+                              |
+                    .         |         .
+                              |     |      .
+                 .    \       0     | /       .
+                       \            |/
+               .        \           1          .
+                         \         /|
+              .           \       / |            .
+                           \     /  |
+             .         - - -0- - 1 -|- - - - -   
+                             \ /    |            .  
+             .                O     |     0 - - - - - - - - - - 1
+                            .   .   |           .           (unbounded MISS -> EXIT)
+              .           .       . |
+                        .           0         . 
+                .     .             | .     
+                    .               |   .   .
+                  .                       .
+
+
+Notice: 
+
+1. rays from origin can never intersect the thetacut.
+2. thetacut is an unbounded shape : which means there is 
+   an "arc" at infinity 
+ 
+
+     |
+     |            /
+     |           /
+     |          /
+     |         /   (0,1) when theta0_pi = 0.
+     Z        +(sinTheta0, cosTheta0) 
+     |       /              
+     |      /
+     |     /     +  +  
+     |    /   d.z| /  ( d_xy , d.z )   (radial, vertical) components of ray direction  
+     |   /       |/
+     |  /        +--+  
+     | /             sqrt(d.x*d.x+d.y*d.y)
+     |/
+     +- - - - - - - - - - -  X
+     |\
+     | \
+     |  \
+     |   \
+     |    \
+     |     \
+     |      \
+     |       \
+     |        \
+     |         + (sinTheta1, cosTheta1) 
+     |          \     (0,-1) when theta1_pi = 1.0 
+     |           \
+    
+
+
+
+   2D cross product between theta vectors shown above and ray direction is proportional 
+   to the sine of the angle between them.  
+   (thinking of 2D vector(radial, vertical) embedded in a 3D space ) 
+   is as both 
+
+            (v0.xy, v0.z          ) ^ ( d_xy, d.z ) = v0.xy*d.z     - v0.z*d_xy ; 
+
+            (sinTheta0, cosTheta0 ) ^ (d_xy, d.z )  = sinTheta0*d.z - cosTheta0*d_xy 
+         
+ 
 
 **/
 
 LEAF_FUNC
-bool intersect_leaf_thetacut(float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d)
+bool intersect_leaf_thetacut(float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& o, const float3& d)
 {   
     const float& cosTheta0si = q0.f.x ;  // sign of cosTheta0 : +1. for theta 0->0.5 ,  -1. for theta 0.5->1.  (units if pi) 
     const float& tanTheta0sq = q0.f.y ; 
     const float& cosTheta1si = q0.f.z ;  // sign of cosTheta1 : +1. for theta 0->0.5 ,  -1. for theta 0.5->1.  (units if pi) 
     const float& tanTheta1sq = q0.f.w ; 
 
-    // quadratic coefficients     
-    float dd  = d.x * d.x + d.y * d.y - d.z * d.z * tanTheta0sq ;
+    const float& cosTheta0   = q1.f.x ; 
+    const float& sinTheta0   = q1.f.y ;
+    const float& cosTheta1   = q1.f.z ; 
+    const float& sinTheta1   = q1.f.w ;
+
+    // axially symmetric cone : so can consider (radial, vertical) 2D space
+    const float dxx_dyy = d.x * d.x + d.y * d.y ;  
+    const float d_xy = sqrt( dxx_dyy ); 
+    const float cross0 = sinTheta0*d.z - cosTheta0*d_xy ; 
+    const float cross1 = sinTheta1*d.z - cosTheta1*d_xy ; 
+    bool unbounded_exit = cross0 > 0.f && cross1 < 0.f ;   
+    // ray direction is between the cone directions 
+    // so a "miss" would eventually exit at infinity 
+    // if the ray starts within the shape 
+
+
+    // quadratic coefficients for intersection of ray with theta0 cone     
+    float dd  = dxx_dyy - d.z * d.z * tanTheta0sq ;
     float od  = o.x * d.x + o.y * d.y - o.z * d.z * tanTheta0sq ;
     float oo  = o.x * o.x + o.y * o.y - o.z * o.z * tanTheta0sq ;
     float disc = od * od - oo * dd ;
@@ -151,17 +241,21 @@ bool intersect_leaf_thetacut(float4& isect, const quad& q0, const float t_min, c
         isect.z = plane ? (cosTheta0si == 0.f ? 1.f : -1.f) : (side ? -cosTheta1si * (o.z + t_cand * d.z) * tanTheta1sq  :  cosTheta0si * (o.z + t_cand * d.z) * tanTheta0sq );
         isect = normalize(isect);   
 
-        // SCB: normalizing a float3 : unfounded assumption that isect.w = 0 
+        // SCB: normalizing a float4 : unfounded assumption that isect.w = 0 
 
         isect.w = plane ? t_plane : t_cand;
     }
-
+    else if( unbounded_exit )
+    {
+        isect.y = -isect.y ;  // signflip signalling that can promote MISS to EXIT at infinity 
+        // TODO:maybe better return an int not a bool, so can signal more easily 
+    }
 
 #ifdef DEBUG
-    printf("//intersect_leaf_thetacut q0.f (%10.4f %10.4f %10.4f %10.4f) valid %d  isect  (%10.4f %10.4f %10.4f %10.4f) \n" , 
-           q0.f.x, q0.f.y, q0.f.z, q0.f.z, valid, isect.x, isect.y, isect.z, isect.w ) ; 
+    printf("//intersect_leaf_thetacut q0.f  (%10.4f %10.4f %10.4f %10.4f)\n" , q0.f.x, q0.f.y, q0.f.z, q0.f.z ) ; 
+    printf("//intersect_leaf_thetacut q1.f  (%10.4f %10.4f %10.4f %10.4f)\n" , q1.f.x, q1.f.y, q1.f.z, q1.f.z ) ; 
+    printf("//intersect_leaf_thetacut isect (%10.4f %10.4f %10.4f %10.4f) valid %d  \n" , isect.x, isect.y, isect.z, isect.w, valid ) ; 
 #endif
-
 
     return valid ; 
 }

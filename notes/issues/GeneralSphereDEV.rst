@@ -41,4 +41,43 @@ Curious no isect from genstep IXYZ (0,0,0)
            [ 0,  0, -1, 99]], dtype=int8)
 
 
+Using regular bicycle spoke photon directions with negative PHO 
+----------------------------------------------------------------------
 
+
+Unexpected miss in outer direction around XY plane::
+
+     IXYZ=-5,0,0 PHO=-100 ./csg_geochain.sh 
+
+Seems like photons with angle in the thetacut range failing to land. 
+
+* need some special handling of unbounded 
+
+
+CSG/csg_intersect_leaf.h::
+
+    1485     if(complement)  // flip normal, even for miss need to signal the complement with a -0.f  
+    1486     {
+    1487         isect.x = -isect.x ;
+    1488         isect.y = -isect.y ;
+    1489         isect.z = -isect.z ;
+    1490     }
+    1491     /*
+    1492 
+    1493     // unbounded leaf cutters MISS need some special casing 
+    1494     // unbounded MISS needs to be converted into EXIT but only in some directions 
+    1495 
+    1496     else if(valid_isect == false && typecode == CSG_THETACUT)
+    1497     {
+    1498         isect.x = -isect.x ;
+    1499     }
+    1500     */
+    1501     
+    1502     return valid_isect ;
+    1503 }
+
+
+The above is too indescriminate, need to do it only when the rays are headed for the 
+otherside at infinity. 
+
+TODO: try not constructing by intersecting but instead by intersecting with the complemented other side 

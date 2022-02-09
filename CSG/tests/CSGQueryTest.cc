@@ -16,9 +16,9 @@ int main(int argc, char** argv)
 
     d->draw("CSGQueryTest");
 
-    float3 ray_origin =   make_float3(  5.f, 5.f, 0.f ); 
+    float3 ray_origin =   make_float3(  0.f, 0.f, 0.f ); 
 
-    float3 ray_direction = make_float3( 1.f, 0.f, 0.f ); 
+    float3 ray_direction = make_float3( -1.f, 0.f, 0.f ); 
 
     float t_min = 0.f ; 
 

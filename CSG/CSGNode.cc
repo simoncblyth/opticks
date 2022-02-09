@@ -508,8 +508,15 @@ CSGNode CSGNode::InfPhiCut(float startPhi_, float deltaPhi_ )
     return nd ; 
 }
 
+/**
+CSGNode::PrepThetaCutParam
+-----------------------------
 
-void CSGNode::PrepThetaCutParam( quad& q0,  float startThe_, float deltaThe_ )
+This needs to match npy/NThetaCut.hpp:make_thetacut 
+
+**/
+
+void CSGNode::PrepThetaCutParam( quad& q0, quad& q1,  float startThe_, float deltaThe_ )
 {
     double startThe = startThe_ ; 
     double deltaThe = deltaThe_ ; 
@@ -518,7 +525,9 @@ void CSGNode::PrepThetaCutParam( quad& q0,  float startThe_, float deltaThe_ )
     double pi = M_PIf ;  
 
     double d_cosTheta0 = std::cos(the0*pi) ; 
+    double d_sinTheta0 = std::sin(the0*pi) ; 
     double d_cosTheta1 = std::cos(the1*pi) ; 
+    double d_sinTheta1 = std::sin(the1*pi) ; 
     double d_tanTheta0 = std::tan(the0*pi) ; 
     double d_tanTheta1 = std::tan(the1*pi) ; 
     double d_tanTheta0sq = d_tanTheta0*d_tanTheta0 ; 
@@ -529,10 +538,17 @@ void CSGNode::PrepThetaCutParam( quad& q0,  float startThe_, float deltaThe_ )
     float cosTheta1si = d_cosTheta1 < 0. ? -1.f : 1.f ; 
     float tanTheta1sq = float(d_tanTheta1sq); 
 
+
     q0.f.x = cosTheta0si ;
     q0.f.y = tanTheta0sq ;
     q0.f.z = cosTheta1si ;
     q0.f.w = tanTheta1sq ;
+
+    q1.f.x = float(d_cosTheta0) ;
+    q1.f.y = float(d_sinTheta0) ;
+    q1.f.z = float(d_cosTheta1) ;
+    q1.f.w = float(d_sinTheta1) ;
+
 
     LOG(info) 
         << " startThe " << startThe
@@ -550,9 +566,9 @@ void CSGNode::PrepThetaCutParam( quad& q0,  float startThe_, float deltaThe_ )
 CSGNode CSGNode::InfTheCut(float startThe_, float deltaThe_, char imp) 
 {
     CSGNode nd = {} ; 
-    PrepThetaCutParam( nd.q0, startThe_, deltaThe_ ); 
+    PrepThetaCutParam( nd.q0, nd.q1, startThe_, deltaThe_ ); 
 
-    nd.setAABB( -100.f,-100.f,-100.f, 100.f, 100.f, 100.f );     
+    nd.setAABB( -100.f,-100.f,-100.f, 100.f, 100.f, 100.f );    // HMM: adhoc ?   
     nd.setTypecode( imp == 'L' ? CSG_LTHETACUT : CSG_THETACUT ); 
 
     return nd ; 
@@ -645,6 +661,18 @@ CSGNode CSGNode::Make(unsigned typecode, const float* param6, const float* aabb 
     if(aabb)    nd.setAABB( aabb );  
     return nd ; 
 }
+
+CSGNode CSGNode::Make8(unsigned typecode, const float* param8, const float* aabb ) // static
+{
+    CSGNode nd = {} ;
+    nd.setTypecode(typecode) ; 
+    if(param8)  nd.setParam8( param8 );  
+    if(aabb)    nd.setAABB( aabb );  
+    return nd ; 
+}
+
+
+
 
 
 

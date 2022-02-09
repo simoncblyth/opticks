@@ -164,7 +164,10 @@ struct CSG_API CSGFoundry
     template<typename T> unsigned addTran( const Tran<T>& tr  );
     unsigned addTran( const qat4* tr, const qat4* it ) ;
     unsigned addTran() ;
+    void     addTranPlaceholder(); 
+
     void     addInstance(const float* tr16, unsigned gas_idx, unsigned ias_idx ); 
+    void     addInstancePlaceholder(); 
 
 
     //void makeDemoSolids();   // via maker

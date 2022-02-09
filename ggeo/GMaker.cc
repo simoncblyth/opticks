@@ -91,8 +91,17 @@ GVolume* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& para
          case CSG_UNION:        volume = makeBox(param); break ;    // boolean union
          case CSG_DIFFERENCE:   volume = makeBox(param); break ;    // boolean difference
 
+         case CSG_LEAF:
+         case CSG_NODE:
+         case CSG_TREE:
+         case CSG_OBSOLETE:
+         case CSG_LAST:
+         case CSG_CONTIGUOUS:
+         case CSG_DISCONTIGUOUS:
          case CSG_PHICUT:
          case CSG_THETACUT:
+         case CSG_LPHICUT:
+         case CSG_LTHETACUT:
          case CSG_ZERO:         
          case CSG_PARTLIST:
          case CSG_PMT:

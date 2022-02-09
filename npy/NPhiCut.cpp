@@ -2,6 +2,11 @@
 
 #include "nmat4triple.hpp"
 #include "NPhiCut.hpp"
+#include "PLOG.hh"
+
+
+const plog::Severity nphicut::LEVEL = PLOG::EnvLevel("nphicut", "DEBUG"); 
+
 
 
 /**
@@ -27,11 +32,6 @@ nphicut sdf
               |
 
 Complement-ing flips the normal, and changes the sign of sd 
-
-
-
-
-
 
 
     
@@ -62,14 +62,6 @@ float nphicut::operator()(float x_, float y_, float z_) const
     return complement ? -sd : sd ;
 } 
 
-
-
-
-
-
-
-
-
 int nphicut::par_euler() const 
 {
     return 0 ;  
@@ -83,4 +75,58 @@ unsigned nphicut::par_nvertices(unsigned , unsigned ) const
     return 0 ;  
 }
 
+glm::vec3 nphicut::normal(int idx) const 
+{ 
+    const float& cosPhi0 = param.f.x ; 
+    const float& sinPhi0 = param.f.y ; 
+    const float& cosPhi1 = param.f.z ; 
+    const float& sinPhi1 = param.f.w ; 
+
+    return glm::vec3( idx == 0 ? sinPhi0 : -sinPhi1 , idx == 0 ? -cosPhi0 : cosPhi1 , 0.f); 
+}
+
+nphicut* nphicut::make(OpticksCSG_t type ) // static
+{
+    nphicut* n = new nphicut ; 
+    assert( type == CSG_PHICUT || type == CSG_LPHICUT ); 
+    nnode::Init(n,type) ; 
+    return n ; 
+}
+
+nphicut* nphicut::make(OpticksCSG_t type, const nquad& param)  // static
+{
+    nphicut* n = nphicut::make(type); 
+    n->param = param ;    
+    return n ; 
+}
+
+nphicut* nphicut::make(OpticksCSG_t type, double startPhi_pi, double deltaPhi_pi ) // static
+{
+    double phi0 = startPhi_pi ; 
+    double phi1 = startPhi_pi + deltaPhi_pi ;
+
+    const double pi = glm::pi<double>() ; 
+    double cosPhi0 = std::cos(phi0*pi) ;
+    double sinPhi0 = std::sin(phi0*pi) ;
+    double cosPhi1 = std::cos(phi1*pi) ;
+    double sinPhi1 = std::sin(phi1*pi) ;
+
+    nquad param ; 
+    param.f.x = float(cosPhi0); 
+    param.f.y = float(sinPhi0); 
+    param.f.z = float(cosPhi1); 
+    param.f.w = float(sinPhi1); 
+
+    nphicut* n = nphicut::make(type, param); 
+    n->pdump("nphicut::make"); 
+
+    return n ; 
+}
+
+void nphicut::pdump(const char* msg) const 
+{
+    LOG(LEVEL) << msg ; 
+    LOG(LEVEL) << " param  (" << param.f.x  << "," << param.f.y << "," << param.f.z << "," << param.f.w << ") " ; 
+    LOG(LEVEL) << " param1 (" << param1.f.x  << "," << param1.f.y << "," << param1.f.z << "," << param1.f.w << ") " ; 
+}
 

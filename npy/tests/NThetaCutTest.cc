@@ -1,14 +1,16 @@
+#include "OPTICKS_LOG.hh"
 #include "OpticksCSG.h"
 #include "NThetaCut.hpp"
 
 int main(int argc, char** argv)
 {
-    OpticksCSG_t type = CSG_LTHETACUT ; 
+    OPTICKS_LOG(argc, argv); 
 
-    double theta0_pi = 0. ; 
-    double theta1_pi = 0.5 ; 
+    OpticksCSG_t type = CSG_THETACUT ; 
 
-    nthetacut* n = make_thetacut( type, theta0_pi, theta1_pi ); 
+    double thetaStart_pi = 0.25 ; 
+    double thetaDelta_pi = 0.50 ; 
+    nthetacut* n = nthetacut::make( type, thetaStart_pi, thetaDelta_pi ); 
 
     assert( n ); 
 

@@ -868,6 +868,23 @@ unsigned CSGFoundry::addTran()
     return idx ; 
 }
 
+/**
+CSGFoundry::addTranPlaceholder
+-------------------------------
+
+Adds transforms tran and itra of none have yet been added 
+
+**/
+void CSGFoundry::addTranPlaceholder()
+{
+    unsigned idx = tran.size();   // size before push_back 
+    assert( tran.size() == itra.size()) ; 
+    if( idx == 0 )
+    {
+        addTran();   
+    }
+}
+
 
 /**
 CSGFoundry::addInstance
@@ -892,6 +909,15 @@ void CSGFoundry::addInstance(const float* tr16, unsigned gas_idx, unsigned ias_i
 
     inst.push_back( instance );
 } 
+
+void CSGFoundry::addInstancePlaceholder()
+{
+    const float* tr16 = nullptr ; 
+    unsigned gas_idx = 0 ; 
+    unsigned ias_idx = 0 ; 
+
+    addInstance(tr16, gas_idx, ias_idx );  
+}
 
 
 
@@ -1254,6 +1280,19 @@ void CSGFoundry::write(const char* base, const char* rel) const
     std::string dir = ss.str();   
     write(dir.c_str()); 
 }
+
+/**
+CSGFoundry::write
+------------------
+
+Have observed that whilst changing geometry this can lead to "mixed" exports 
+with the contents of CSGFoundry directory containing arrays from multiple exports. 
+The inconsistency causes crashes.  
+
+TODO: find way to avoid this, by deleting the folder ahead : or asserting on consistent time stamps
+on loading 
+ 
+**/
 void CSGFoundry::write(const char* dir_) const 
 {
     int create_dirs = 2 ; // 2:dirpath 
@@ -1342,14 +1381,8 @@ CSGFoundry*  CSGFoundry::MakeGeom(const char* geom) // static
     CSGSolid* so = mk->make( geom );
     fd->setGeom(geom);  
 
-
-    unsigned tranIdx = fd->addTran() ; // not-used here but need to have at least one transform in geometry
-    LOG(LEVEL) << "tranIdx " << tranIdx ; 
-
-    const float* tr16 = nullptr ; 
-    unsigned gas_idx = 0 ; 
-    unsigned ias_idx = 0 ; 
-    fd->addInstance(tr16, gas_idx, ias_idx );  
+    fd->addTranPlaceholder();  
+    fd->addInstancePlaceholder(); 
 
     fd->addMeshName(geom);   // add to meshname mmlabel to avoid tripping some checks 
 
@@ -1361,6 +1394,8 @@ CSGFoundry*  CSGFoundry::MakeGeom(const char* geom) // static
 
     return fd ; 
 }
+
+
 
 
 CSGFoundry*  CSGFoundry::Load(const char* dir) // static

@@ -125,6 +125,8 @@ void GeoChain::convertMesh(GMesh* mesh)
 
     CSG_GGeo_Convert conv(fd, ggeo) ; 
     conv.convert();
+
+    fd->addTranPlaceholder(); 
 }
 
 
@@ -134,11 +136,13 @@ GeoChain::convertName
 
 TODO: integrate with DemoGeo so can handle geometry created at CSG level just like geometry created at G4VSolid level 
 
+Doing something similar in CSG/tests/CSGMakerTest.cc
+
 **/
 
 void GeoChain::convertName(const char* name)
 {
-
+    assert(0); 
 }
 
 

@@ -293,7 +293,8 @@ if __name__ == '__main__':
     s_ray_direction = ray_direction[select]
 
     s_count = len(s_pos)
-    s_limited = min( s_count, 50 )
+    s_limited = min( s_count, 100 )   
+    # default number of photons per genstep is 100, so this gets all of those when selecting single genstep
     selected_isect = s_isect[:s_limited]
 
     print("%40s : %d  \n" % ("s_count", s_count)) 
