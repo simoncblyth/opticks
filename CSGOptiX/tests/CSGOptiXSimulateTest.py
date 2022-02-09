@@ -927,6 +927,8 @@ class Plt(object):
 
         self.lines_plt(None, pl)
 
+        # TODO: use gridspec.pv_compose 
+
         pl.set_focus(    look )
         pl.set_viewup(   up )
         pl.set_position( eye, reset=True )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 

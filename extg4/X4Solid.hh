@@ -23,7 +23,7 @@
 #include <set>
 #include "plog/Severity.h"
 #include "X4_API_EXPORT.hh"
-
+#include "OpticksCSG.h"
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
 #include "X4SolidBase.hh"
@@ -141,8 +141,8 @@ class X4_API X4Solid : public X4SolidBase
         void booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot );
         G4ThreeVector GetAngles(const G4RotationMatrix& mtx);
     private:
-        nnode* intersectWithPhiCut(  nnode* whole, double startPhi, double deltaPhi   ) ; 
-        nnode* intersectWithThetaCut(nnode* whole, double theta0_pi, double theta1_pi ) ; 
+        nnode* intersectWithPhiCut(  nnode* whole, double startPhi_pi, double deltaPhi_pi, OpticksCSG_t type ); 
+        nnode* intersectWithThetaCut(nnode* whole, double theta0_pi  , double theta1_pi  , OpticksCSG_t type ); 
     private:
         nnode* convertSphere_(bool only_inner);
         nnode* convertSphereDEV_(const char* opt);

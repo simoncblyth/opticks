@@ -29,14 +29,39 @@ intersect_leaf_thetacut
 
 
 
+There are lots of cases to consider, so 
+it is highly preferable to not make assumptions
+and keep all root alive and make decision of
+which root to use once. 
+
+
+
+                        |
+          \             | /
+           \            |/
+            \           1
+             \         /|
+              \       / |
+               \     /  |
+           - - -0- - 1 -|- - - - - 
+                 \ /    |
+                  O     |
+                .   .   |
+              .       . |
+            .           0
+          .             | .
+        .               |   . 
+      .                       .
+
+
 **/
 
 LEAF_FUNC
 bool intersect_leaf_thetacut(float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d)
 {   
-    const float& cosTheta0si = q0.f.x ; 
+    const float& cosTheta0si = q0.f.x ;  // sign of cosTheta0 : +1. for theta 0->0.5 ,  -1. for theta 0.5->1.  (units if pi) 
     const float& tanTheta0sq = q0.f.y ; 
-    const float& cosTheta1si = q0.f.z ; 
+    const float& cosTheta1si = q0.f.z ;  // sign of cosTheta1 : +1. for theta 0->0.5 ,  -1. for theta 0.5->1.  (units if pi) 
     const float& tanTheta1sq = q0.f.w ; 
 
     // quadratic coefficients     
@@ -50,14 +75,17 @@ bool intersect_leaf_thetacut(float4& isect, const quad& q0, const float t_min, c
     float t_cand = intersects ? (-od + discRoot) / dd : RT_DEFAULT_MAX; //beginning on t_cand saves defining extra variable
     float t0     = intersects ? (-od - discRoot) / dd : RT_DEFAULT_MAX;
 
-    if (cosTheta0si * (t_cand * d.z + o.z) < 0.f  || t_cand <= t_min) t_cand = RT_DEFAULT_MAX;      //eliminates bad t_cand/mirror cone 
+
+    // intersect on z-mirror cone  or too close   
+    if (cosTheta0si * (t_cand * d.z + o.z) < 0.f  || t_cand <= t_min) t_cand = RT_DEFAULT_MAX;   
+
+    // intersect not on z-mirror cone and not too close 
     if (cosTheta0si * (t0     * d.z + o.z) > 0.f  && t0 > t_min     ) t_cand = fminf(t_cand, t0); 
 
 
     /*
-    THIS IS TRYING TO AVOID KEEPING ALL THE  ROOTS ALIVE AT ONCE
-    TO REDUCE RESOURCES : BUT IN THE PROCESS IT MAKES ASSUMPTIONS 
-    THAT MAY NOT ALWAYS BE TRUE.
+    THIS IS TRYING TO AVOID KEEPING ALL THE  ROOTS ALIVE AT ONCE TO REDUCE RESOURCES : 
+    BUT IN THE PROCESS IT MAKES ASSUMPTIONS THAT MAY NOT ALWAYS BE TRUE.
 
     TO WORK IN CSG COMBINATION IT MUST BE POSSIBLE FOR t_min CUTTING 
     TO INVALIDATE ANY ROOT : SO IT IS WRONG TO TRY TO CHOOSE A 
@@ -97,12 +125,26 @@ bool intersect_leaf_thetacut(float4& isect, const quad& q0, const float t_min, c
     */
 
     const float t_plane = -o.z / d.z;
-    const bool plane = cosTheta0si * cosTheta1si == 0.0 && t_plane > t_min && t_cand > t_plane;
+
+    // plane: one (or both) of the cones has degenerated to a plane (theta 0.5) and has a candidate intersect 
+    // hmm: thats a bit funny the imprecise intersect from the degenerate cone may be competing 
+    // here with the one from the more precise plane 
+
+    const bool plane = cosTheta0si * cosTheta1si == 0.0 && t_plane > t_min && t_cand > t_plane ;
+
+
     const bool valid = t_cand < RT_DEFAULT_MAX || plane;
 
+    /*
+    At this stage cannot untangle which cone t0 and t1 come from : so cannot get the right normal ?
+
+    XY cross section of the two cones are two circles : with .xy components of normals radially outwards and inwards    
+
+    */
+
     if (valid) {
-        const bool side = t_cand == t0 || t_cand == t1; //corrects normals for both cones/planes around 90 degrees
-                     // HUH: shouldnt this be t_cand == t1 to pick the side     
+        const bool side = t_cand == t0 || t_cand == t1; 
+        //corrects normals for both cones/planes around 90 degrees
 
         isect.x = plane ? 0.f                               : (side ?  cosTheta1si * (o.x + t_cand * d.x)                : -cosTheta0si * (o.x + t_cand * d.x));
         isect.y = plane ? 0.f                               : (side ?  cosTheta1si * (o.y + t_cand * d.y)                : -cosTheta0si * (o.y + t_cand * d.y));
@@ -213,6 +255,14 @@ bool intersect_leaf_thetacut_lucas(float4& isect, const quad& thetaDat, const fl
         isect = normalize(isect);
         isect.w = plane ? t_plane : t_cand;
     }
+
+
+#ifdef DEBUG
+    const quad& q0 = thetaDat ; 
+    printf("//intersect_leaf_thetacut_lucas q0.f (%10.4f %10.4f %10.4f %10.4f) valid %d  isect  (%10.4f %10.4f %10.4f %10.4f) \n" , 
+           q0.f.x, q0.f.y, q0.f.z, q0.f.z, valid, isect.x, isect.y, isect.z, isect.w ) ; 
+#endif
+
 
     return valid;
 }

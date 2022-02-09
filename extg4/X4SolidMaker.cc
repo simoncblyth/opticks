@@ -1,4 +1,6 @@
 #include <cstring>
+#include "NP.hh"
+
 #include "G4SystemOfUnits.hh"
 #include "G4Polycone.hh"
 #include "G4Sphere.hh"
@@ -84,7 +86,7 @@ bool X4SolidMaker::CanMake(const char* qname) // static
 
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
 
-const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
+const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // static
 {
     if(strcmp(qname, "NAMES") == 0 )
     {
@@ -96,7 +98,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
     if(     StartsWith("JustOrb",qname))                      solid = X4SolidMaker::JustOrb(qname); 
     else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4SolidMaker::SphereWithPhiSegment(qname); 
     else if(StartsWith("SphereWithPhiCutDEV",qname))          solid = X4SolidMaker::SphereWithPhiCutDEV(qname); 
-    else if(StartsWith("GeneralSphereDEV",qname))             solid = X4SolidMaker::GeneralSphereDEV(qname); 
+    else if(StartsWith("GeneralSphereDEV",qname))             solid = X4SolidMaker::GeneralSphereDEV(qname, meta); 
     else if(StartsWith("SphereWithThetaSegment",qname))       solid = X4SolidMaker::SphereWithThetaSegment(qname); 
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4SolidMaker::AdditionAcrylicConstruction(qname); 
     else if(StartsWith("XJfixtureConstruction", qname))       solid = X4SolidMaker::XJfixtureConstruction(qname); 
@@ -154,14 +156,30 @@ const G4VSolid* X4SolidMaker::SphereWithPhiCutDEV(const char* name)  // static
 
 
 
-const G4VSolid* X4SolidMaker::GeneralSphereDEV(const char* name)  // static
+const G4VSolid* X4SolidMaker::GeneralSphereDEV(const char* name, std::string& meta )  // static
 {
+
     double innerRadius = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_innerRadius", 50.f) ;    // mm
     double outerRadius = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_outerRadius", 100.f) ;    // mm
-    double phiStart    = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_phiStart",    0.f) ;  // units of pi
-    double phiDelta    = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_phiDelta",    0.5f) ; // units of pi
-    double thetaStart  = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_thetaStart",  0.f) ;  // units of pi
-    double thetaDelta  = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_thetaDelta",  0.5f) ; // units of pi
+
+    // The two azimuthal angles from the phi cut should be in range 0. to 2. (in units of pi) use XY projection to visualize  
+    double phiStart    = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_phiStart",    0.f) ; 
+    double phiDelta    = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_phiDelta",    2.0f) ; 
+
+    // The two polar angles from the theta cut should be in range 0. to 1. (in units of pi) use XZ or YZ projections to visualize  
+    double thetaStart  = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_thetaStart",  0.f) ; 
+    double thetaDelta  = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_thetaDelta",  0.5f) ;
+
+
+    NP::SetMeta<std::string>( meta, "creator", "X4SolidMaker::GeneralSphereDEV" );  
+    NP::SetMeta<std::string>( meta, "name",    name );  
+    NP::SetMeta<float>( meta, "innerRadius", float(innerRadius) ); 
+    NP::SetMeta<float>( meta, "outerRadius", float(outerRadius) ); 
+    NP::SetMeta<float>( meta, "phiStart", float(phiStart) ); 
+    NP::SetMeta<float>( meta, "phiDelta", float(phiDelta) ); 
+    NP::SetMeta<float>( meta, "thetaStart", float(thetaStart) ); 
+    NP::SetMeta<float>( meta, "thetaDelta", float(thetaDelta) ); 
+ 
 
     G4String pName = name ; 
     G4double pRmin = innerRadius*mm ; 

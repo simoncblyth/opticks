@@ -42,6 +42,7 @@ GeoChain::GeoChain(Opticks* ok_)
     lvIdx(0),  
     soIdx(0)  
 {
+    LOG(LEVEL); 
 }
 
 /**
@@ -56,9 +57,13 @@ Geometry conversions:
 
 **/
 
-void GeoChain::convertSolid(const G4VSolid* solid )
+void GeoChain::convertSolid(const G4VSolid* solid, std::string& meta )
 {
-    LOG(info) << "[" ;  
+    LOG(fatal) << "[" ;  
+
+    if(meta.empty())  LOG(info) << "meta.empty" ; 
+    if(!meta.empty()) LOG(info) << " meta " << std::endl << meta ;  
+
     X4SolidTree::Draw(solid, "GeoChain::convertSolid original G4VSolid tree" );  
 
     G4String solidname = solid->GetName(); 
@@ -71,7 +76,13 @@ void GeoChain::convertSolid(const G4VSolid* solid )
     
     CSGGeometry::Draw(fd, "GeoChain::convertSolid converted CSGNode tree"); 
 
-    LOG(info) << "]" ;  
+    if(!meta.empty())  // pass metadata from the solid creation into the CSGFoundry meta.txt
+    {
+        fd->meta = strdup(meta.c_str());  
+    }
+
+
+    LOG(fatal) << "]" ;  
 }
 
 

@@ -267,7 +267,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
     unsigned fullTree = PACK4(0,0, 1 << height, 0 ) ;  // leftmost: 1<<height,  root:1>>1 = 0 ("parent" of root)  
  
 #ifdef DEBUG
-    printf("//intersect_tree.h numNode %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
+    printf("//intersect_tree  numNode %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
 #endif
 
     tranche_push( tr, fullTree, t_min );
@@ -304,7 +304,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
             const CSGNode* nd = node + nodeIdx - 1 ; 
             OpticksCSG_t typecode = (OpticksCSG_t)nd->typecode() ;
 #ifdef DEBUG
-            printf("//intersect_tree.h nodeIdx %d CSG::Name %10s depth %d elevation %d \n", nodeIdx, CSG::Name(typecode), depth, elevation ); 
+            printf("//intersect_tree  nodeIdx %d CSG::Name %10s depth %d elevation %d \n", nodeIdx, CSG::Name(typecode), depth, elevation ); 
 #endif
             if( typecode == CSG_ZERO )
             {
@@ -313,7 +313,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
             }
             bool primitive = typecode >= CSG_SPHERE ; 
 #ifdef DEBUG
-            printf("//intersect_tree.h nodeIdx %d primitive %d \n", nodeIdx, primitive ); 
+            printf("//intersect_tree  nodeIdx %d primitive %d \n", nodeIdx, primitive ); 
 
 #endif
             if(primitive)
@@ -325,7 +325,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                 nd_isect.w = copysignf( nd_isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack t signbit, to record the side, LHS -ve
 
 #ifdef DEBUG
-                printf("//intersect_tree.h nodeIdx %d primitive %d nd_isect (%10.4f %10.4f %10.4f %10.4f) \n", nodeIdx, primitive, nd_isect.x, nd_isect.y, nd_isect.z, nd_isect.w ); 
+                printf("//intersect_tree  nodeIdx %d primitive %d nd_isect (%10.4f %10.4f %10.4f %10.4f) \n", nodeIdx, primitive, nd_isect.x, nd_isect.y, nd_isect.z, nd_isect.w ); 
 #endif
                 ierr = csg_push(csg, nd_isect, nodeIdx ); 
 
@@ -359,7 +359,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                 if(csg.curr < 1)  // curr 1 : 2 items 
                 {
 #ifdef DEBUG
-                    printf("//intersect_tree.h ERROR_POP_EMPTY nodeIdx %4d typecode %d csg.curr %d \n", nodeIdx, typecode, csg.curr );
+                    printf("//intersect_tree  ERROR_POP_EMPTY nodeIdx %4d typecode %d csg.curr %d \n", nodeIdx, typecode, csg.curr );
 #endif
                     ierr |= ERROR_POP_EMPTY ; 
                     break ; 
@@ -373,7 +373,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                 if(!(firstLeft ^ secondLeft))
                 {
 #ifdef DEBUG
-                    printf("//intersect_tree.h ERROR_XOR_SIDE nodeIdx %4d typecode %d tl %10.3f tr %10.3f sl %d sr %d \n",
+                    printf("//intersect_tree ERROR_XOR_SIDE nodeIdx %4d typecode %d tl %10.3f tr %10.3f sl %d sr %d \n",
                              nodeIdx, typecode, csg.data[csg.curr].w, csg.data[csg.curr-1].w, firstLeft, secondLeft );
 #endif
                     ierr |= ERROR_XOR_SIDE ; 
@@ -496,7 +496,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 
 
 #ifdef DEBUG
-                    printf("//intersect_tree.h nodeIdx %2d height %2d depth %2d elevation %2d endTree %8x leftTree %8x rightTree %8x \n",
+                    printf("//intersect_tree nodeIdx %2d height %2d depth %2d elevation %2d endTree %8x leftTree %8x rightTree %8x \n",
                               nodeIdx,
                               height,
                               depth,
@@ -560,7 +560,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 
 #ifdef DEBUG_RECORD
     if(CSGRecord::ENABLED) 
-    printf("// intersect_tree.h ierr %d csg.curr %d \n", ierr, csg.curr ); 
+    printf("// intersect_tree ierr %d csg.curr %d \n", ierr, csg.curr ); 
 #endif
     if(csg.curr == 0)  
     {

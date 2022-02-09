@@ -53,13 +53,27 @@ CSGGeometry::CSGGeometry(const CSGFoundry* fd_)
     name(nullptr),
     fd(fd_),
     q(nullptr),
-    d(nullptr)
+    d(nullptr),
+    sxyzw(SSys::getenvintvec("SXYZW",',')),
+    sxyz(SSys::getenvintvec("SXYZ",',')),
+    sx(0),
+    sy(0),
+    sz(0),
+    sw(0)
 {
     LOG(info) << " GEOM " << geom  ; 
     init(); 
 }
 
-void  CSGGeometry::init()
+void CSGGeometry::init()
+{
+    init_fd(); 
+    q = new CSGQuery(fd); 
+    d = new CSGDraw(q) ; 
+    init_selection(); 
+}
+
+void CSGGeometry::init_fd()
 {
     if( fd == nullptr )
     {
@@ -86,9 +100,44 @@ void  CSGGeometry::init()
         LOG(info) << " booting from provided CSGFoundry pointer " ; 
         cfbase = fd->getCFBase(); 
     }
-    q = new CSGQuery(fd); 
-    d = new CSGDraw(q) ; 
 }
+
+void CSGGeometry::init_selection()
+{
+    if(sxyz)
+    { 
+        bool sxyz_expect = sxyz->size() == 3 ; 
+        if(!sxyz_expect)
+        {
+            LOG(fatal) << "SXYZ envvar is provided but with size: " << sxyz->size() << " when 3 is expected" ; 
+            assert(0); 
+        }  
+        sx = (*sxyz)[0] ; 
+        sy = (*sxyz)[1] ; 
+        sz = (*sxyz)[2] ; 
+
+        LOG(info) << "SXYZ (sx,sy,sz) " << "(" << sx << "," << sy << "," << sz << ")" ; 
+    }
+    else if(sxyzw)
+    {
+        bool sxyzw_expect = sxyzw->size() == 4 ; 
+        if(!sxyzw_expect)
+        {
+            LOG(fatal) << "SXYZW envvar is provided but with size: " << sxyzw->size() << " when 4 is expected" ; 
+            assert(0); 
+        }  
+        sx = (*sxyzw)[0] ; 
+        sy = (*sxyzw)[1] ; 
+        sz = (*sxyzw)[2] ;
+        sw = (*sxyzw)[3] ;
+        LOG(info) << "SXYZW (sx,sy,sz,sw) " << "(" << sx << "," << sy << "," << sz << "," << sw << ")" ; 
+    }
+    else
+    {
+        LOG(info) << " no SXYZ or SXYZW selection " ; 
+    }
+}
+
 
 
 void CSGGeometry::saveSignedDistanceField() const 
@@ -138,16 +187,41 @@ void CSGGeometry::saveCenterExtentGenstepIntersect(float t_min) const
 
     LOG(info) << "[ pp.size " << pp.size() << " t_min " << std::fixed << std::setw(10) << std::setprecision(4) << t_min  ; 
 
+    C4U gsid ;
     quad4 isect ;
+    unsigned num_ray(0); 
+
     for(unsigned i=0 ; i < pp.size() ; i++)
     {   
         const quad4& p = pp[i]; 
-        if(q->intersect(isect, t_min, p )) ii.push_back(isect); 
+        gsid.u = p.q3.u.w ; 
+
+        int ix = gsid.c4.x ; 
+        int iy = gsid.c4.y ; 
+        int iz = gsid.c4.z ; 
+        int iw = gsid.c4.w ; 
+
+        if( sxyz == nullptr && sxyzw == nullptr )   // no restriction 
+        {
+            num_ray += 1 ; 
+            if(q->intersect(isect, t_min, p )) ii.push_back(isect); 
+        }
+        else if( sxyz && ix == sx && iy == sy && iz == sz )    // restrict to single genstep 
+        {
+            num_ray += 1 ; 
+            if(q->intersect(isect, t_min, p )) ii.push_back(isect); 
+        }
+        else if( sxyzw && ix == sx && iy == sy && iz == sz && iw == sw )  // restrict to single photon 
+        {
+            num_ray += 1 ; 
+            if(q->intersect(isect, t_min, p )) ii.push_back(isect); 
+        }
     }   
 
     unsigned num_isect = ii.size() ;
     LOG(info) 
         << " pp.size " << pp.size()
+        << " num_ray " << num_ray 
         << " ii.size " << num_isect
         << ( num_isect == 0 ? " WARNING : NO INTERSECTS " : " " )
         ;

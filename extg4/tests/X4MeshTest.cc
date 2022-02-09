@@ -12,7 +12,9 @@ int main(int argc, char** argv)
     const char* geom_default = "hmsk_solidMask" ; 
     const char* geom = SSys::getenvvar("GEOM", geom_default ); 
 
-    const G4VSolid* solid = X4_GetSolid(geom); 
+    std::string meta ; 
+    const G4VSolid* solid = X4_GetSolid(geom, meta ); 
+    if(!meta.empty()) LOG(info) << "meta:" << std::endl << meta ; 
 
     if( solid == nullptr ) LOG(fatal) << "failed to X4_GetSolid for geom " << geom ; 
     if(!solid) return 1 ; 

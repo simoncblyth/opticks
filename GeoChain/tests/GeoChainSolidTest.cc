@@ -40,16 +40,16 @@ just the path to the CSGFoundry directory.
 #include "PMTSim.hh"
 #endif
 
-
-const G4VSolid* GetSolid(const char* geom)
+const G4VSolid* GetSolid(const char* geom, std::string& meta )
 {
     const G4VSolid* solid = nullptr ; 
     if(X4SolidMaker::CanMake(geom))
     {
-        solid = X4SolidMaker::Make(geom); 
+        solid = X4SolidMaker::Make(geom, meta); 
     }
     else
     {
+
 #ifdef WITH_PMTSIM
         solid = PMTSim::GetSolid(geom); 
 #endif
@@ -70,13 +70,15 @@ int main(int argc, char** argv)
 
     GeoChain chain(&ok); 
 
-    const G4VSolid* solid = GetSolid(geom);  
+    std::string meta ; 
+    const G4VSolid* solid = GetSolid(geom, meta);  
+
     if( solid )
-    {
-        chain.convertSolid(solid);  
+    {   // for shapes authored as G4VSolid 
+        chain.convertSolid(solid, meta );  
     }
     else
-    {
+    {   // for shapes authored as CSGSolid/CSGPrim/CSGNode 
         chain.convertName(geom);         
     }
 

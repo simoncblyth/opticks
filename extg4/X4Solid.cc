@@ -472,6 +472,13 @@ void X4Solid::convertBooleanSolid()
 }
 
 
+bool X4Solid::Contains( const char* s , char c ) // static 
+{
+    for(unsigned i=0 ; i < strlen(s) ; i++) if(s[i] == c) return true ; 
+    return false ; 
+}
+
+
 
 const bool X4Solid::convertSphere_enable_phi_segment = SSys::getenvbool("X4Solid_convertSphere_enable_phi_segment"); 
 
@@ -498,13 +505,6 @@ TODO: make comparisons with Geant4 to see what is correct
 
 
 **/
-
-bool X4Solid::Contains( const char* s , char c ) // static 
-{
-    for(unsigned i=0 ; i < strlen(s) ; i++) if(s[i] == c) return true ; 
-    return false ; 
-}
-
 
 nnode* X4Solid::convertSphereDEV_(const char* opt )
 {
@@ -597,12 +597,12 @@ nnode* X4Solid::convertSphereDEV_(const char* opt )
         else if ( opt[i] == 'T' && has[i] && enabled[i] )
         {
             LOG(LEVEL) << " intersectWithThetaCut " ; 
-            result = intersectWithThetaCut( result, theta0_pi, theta1_pi );  
+            result = intersectWithThetaCut( result, theta0_pi, theta1_pi, CSG_THETACUT );  
         }
         else if ( opt[i] == 'P' && has[i] && enabled[i] )
         {
             LOG(LEVEL) << " intersectWithPhiCut " ; 
-            result = intersectWithPhiCut(result, startPhi_pi, deltaPhi_pi );
+            result = intersectWithPhiCut(result, startPhi_pi, deltaPhi_pi, CSG_PHICUT );
         }
     }
     return result ; 
@@ -988,10 +988,9 @@ X4Solid::intersectWithPhiCut
 
 **/
 
-nnode* X4Solid::intersectWithPhiCut(nnode* whole, double startPhi_pi, double deltaPhi_pi )  
+nnode* X4Solid::intersectWithPhiCut(nnode* whole, double startPhi_pi, double deltaPhi_pi, OpticksCSG_t type  )  
 {
-    OpticksCSG_t type = CSG_PHICUT ; 
-    //OpticksCSG_t type = CSG_LPHICUT ; 
+    assert( type == CSG_PHICUT || type == CSG_LPHICUT ); 
 
     nnode* phicut = make_phicut( type, startPhi_pi, deltaPhi_pi ); 
     phicut->label = BStr::concat(m_name, "_phicut_wedge", NULL); 
@@ -1009,10 +1008,9 @@ X4Solid::intersectWithThetaCut
 
 **/
 
-nnode* X4Solid::intersectWithThetaCut(nnode* whole, double theta0_pi, double theta1_pi )  
+nnode* X4Solid::intersectWithThetaCut(nnode* whole, double theta0_pi, double theta1_pi, OpticksCSG_t type  )  
 {
-    //OpticksCSG_t type = CSG_THETACUT ; 
-    OpticksCSG_t type = CSG_LTHETACUT ; 
+    assert( type == CSG_THETACUT || type == CSG_LTHETACUT ); 
 
     nnode* thetacut = make_thetacut( type, theta0_pi, theta1_pi ); 
     thetacut->label = BStr::concat(m_name, "_thetacut_wedge", NULL); 

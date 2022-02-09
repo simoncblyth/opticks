@@ -93,6 +93,7 @@ const CSGNode* CSGQuery::getSelectedNode( int nodeIdx ) const
 
 float CSGQuery::distance(const float3& position ) const
 {
+    // TODO: should be using a distance_prim with this decision in there ?
     return select_is_tree ? 
                   distance_tree( position, select_numNode, select_root, plan0, itra0 ) 
                :
@@ -161,22 +162,6 @@ isect.q3.f.xyz
 bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, const float3& ray_direction, unsigned gsid ) const 
 {
     isect.zero();
-    bool valid_intersect = intersect_prim( isect.q0.f, select_numNode, select_root, plan0, itra0, t_min, ray_origin, ray_direction ) ; 
-    if( valid_intersect ) intersect_elaborate( isect, t_min, ray_origin, ray_direction, gsid );
-    return valid_intersect ; 
-}
-
-void CSGQuery::intersect_elaborate( quad4& isect, float t_min, const float3& ray_origin, const float3& ray_direction, unsigned gsid  ) const 
-{
-    float t = isect.q0.f.w ; 
-    float3 ipos = ray_origin + t*ray_direction ;   
-
-    float sd = distance(ipos) ;
-
-    isect.q1.f.x = ipos.x ;
-    isect.q1.f.y = ipos.y ;
-    isect.q1.f.z = ipos.z ;
-    isect.q1.f.w = sd ;  
 
     isect.q2.f.x = ray_origin.x ; 
     isect.q2.f.y = ray_origin.y ; 
@@ -187,6 +172,23 @@ void CSGQuery::intersect_elaborate( quad4& isect, float t_min, const float3& ray
     isect.q3.f.y = ray_direction.y ; 
     isect.q3.f.z = ray_direction.z ;
     isect.q3.u.w = gsid ;  
+
+    //std::cout << " ray_origin " << ray_origin << " ray_direction " << ray_direction << std::endl ; 
+
+    bool valid_intersect = intersect_prim( isect.q0.f, select_numNode, select_root, plan0, itra0, t_min, ray_origin, ray_direction ) ; 
+    if( valid_intersect ) 
+    {
+        float t = isect.q0.f.w ; 
+        float3 ipos = ray_origin + t*ray_direction ;   
+
+        float sd = distance(ipos) ;
+
+        isect.q1.f.x = ipos.x ;
+        isect.q1.f.y = ipos.y ;
+        isect.q1.f.z = ipos.z ;
+        isect.q1.f.w = sd ;  
+    }
+    return valid_intersect ; 
 }
 
 
@@ -203,13 +205,15 @@ bool CSGQuery::IsSpurious( const quad4& isect ) // static
 
 
 
-std::string CSGQuery::Desc( const quad4& isect, const char* label  )  // static
+std::string CSGQuery::Desc( const quad4& isect, const char* label, bool* valid_intersect  )  // static
 {
     float sd = isect.q1.f.w ; 
     bool spurious = IsSpurious(isect); 
     std::stringstream ss ; 
     ss 
          << label 
+         << " "
+         << ( valid_intersect ? ( *valid_intersect ? "INTERSECT" : "no intersect" )  : " " ) 
          << std::endl 
          << std::setw(30) << " q0 norm t " 
          << "(" 

@@ -41,10 +41,12 @@ set(HEADERS)
 
 list(APPEND SOURCES
    GeoChain.cc
+   GEOCHAIN_LOG.cc
 )
 
 list(APPEND HEADERS
    GeoChain.hh
+   GEOCHAIN_LOG.hh
 )
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )

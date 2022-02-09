@@ -5,7 +5,7 @@ import numpy as np
 log = logging.getLogger(__name__)
 
 eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
-
+efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
 
 X,Y,Z = 0,1,2
 
@@ -231,6 +231,7 @@ class GridSpec(object):
         log.info(" iy0 %d iy1 %d ny %d  " % (iy0, iy1, ny)) 
         log.info(" iz0 %d iz1 %d nz %d  " % (iz0, iz1, nz)) 
         log.info(" gridscale %10.4f " % gridscale )
+        log.info(" sce %s " % sce )
 
         # below default from envvars are overridden for planar data
         eye = eary_("EYE","1.,1.,1.")
@@ -247,16 +248,22 @@ class GridSpec(object):
             HV = "%s%s" % (coords[H],coords[V])
             up  = Axes.Up(H,V)
             off = Axes.Off(H,V)
+
+            eye = look + ce[3]*off
+
         else:
             H, V, D = axes
             HV = None 
             axlabels =  coords[H], coords[V], coords[D]
             up = XYZ.up
             off = XYZ.off
+            ## hmm in 3D case makes less sense : better to just use the input EYE
+
+            eye = ce[3]*eye 
+
             pass
         pass
 
-        eye = look + 50.*off
 
 
         self.coords = coords
@@ -281,7 +288,7 @@ class GridSpec(object):
         self.photons_per_genstep = photons_per_genstep
 
 
-    def pv_arrange_viewpoint(self, pl, reset=False, zoom=1, parallel=True ):
+    def pv_compose(self, pl, reset=False, zoom=1, parallel=True ):
         """
         :param pl: pyvista plotter instance
         :param reset: for reset=True to succeed to auto-set the view, must do this after add_points etc.. 

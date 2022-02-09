@@ -42,6 +42,10 @@ pubdir="$HOME/simoncblyth.bitbucket.io$reldir"
 if [ "$GEOM" == "XJfixtureConstruction" ]; then
     source XJfixtureConstruction.sh
 
+elif [ "$GEOM" == "GeneralSphereDEV" ]; then
+
+    source GeneralSphereDEV.sh 
+
 elif [ "$GEOM" == "SJReceiverConstruction" ]; then 
 
     eye=1,1,0.2 

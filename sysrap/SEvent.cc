@@ -149,7 +149,26 @@ void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std
         ;
 }
 
+/**
+SEvent::GenstepID
+-------------------
 
+Pack four signed integers (assumed to be in char range -128 to 127) 
+into a 32 bit unsigtned char using C4U uniform.  
+
+**/
+
+unsigned SEvent::GenstepID( int ix, int iy, int iz, int iw )
+{ 
+    C4U gsid ;   // sc4u.h 
+
+    gsid.c4.x = ix ; 
+    gsid.c4.y = iy ; 
+    gsid.c4.z = iz ; 
+    gsid.c4.w = iw ; 
+
+    return gsid.u ; 
+}
 
 /**
 SEvent::MakeCenterExtentGensteps
@@ -196,18 +215,6 @@ frame as are doing the local_translate first.
 
 **/
 
-unsigned SEvent::GenstepID( int ix, int iy, int iz, int iw )
-{ 
-    C4U gsid ;   // sc4u.h 
-
-    gsid.c4.x = ix ; 
-    gsid.c4.y = iy ; 
-    gsid.c4.z = iz ; 
-    gsid.c4.w = iw ; 
-
-    return gsid.u ; 
-}
-
 
 NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) // static
 {
@@ -243,7 +250,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
     // TODO: pack the enums together to make way for a photon_offset for the genstep 
     gs.q0.i.x = OpticksGenstep_TORCH ;
     gs.q0.i.y = gridaxes ; 
-    gs.q0.i.z = 0 ;          // set to gsid below
+    gs.q0.u.z = 0 ;          // set to gsid below
     gs.q0.i.w = photons_per_genstep ;
 
     /**
@@ -279,7 +286,6 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
 
         const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz ); 
         // grid shifts 
- 
 
         bool reverse = false ;
         const Tran<double>* transform = Tran<double>::product( geotran, local_translate, reverse );
@@ -288,10 +294,8 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
 
         unsigned gsid = GenstepID(ix,iy,iz,0) ; 
 
-        //gs.q1.u.w = gsid ; // CAUTION: stomping on coordinate 1.0 TODO: make sure thats not used otherwise, id using qat4 for transforming it should not be 
-        gs.q0.u.z = gsid ;   // MOVED 
-
         //gs.q0.u.y = photon_offset ;  TODO: rearrange to allow this
+        gs.q0.u.z = gsid ;   // MOVED from (1,3) to (0,2) 
 
         qc->write(gs);  // copy qc into gs.q2,q3,q4,q5
 
@@ -299,7 +303,6 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
         photon_offset += photons_per_genstep ; 
     }
     LOG(LEVEL) << " gensteps.size " << gensteps.size() ;
-
     return MakeGensteps(gensteps);
 }
 

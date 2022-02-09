@@ -9,8 +9,11 @@ int main(int argc, char** argv)
     const char* qname = argc > 1 ? argv[1] : nullptr ; 
     if( qname == nullptr ) return 0 ; 
 
-    const G4VSolid* solid = X4SolidMaker::Make( qname ); 
+    std::string meta ; 
+    const G4VSolid* solid = X4SolidMaker::Make( qname, meta ); 
     assert( solid ); 
+    if(!meta.empty()) LOG(info) << meta ; 
+
 
     LOG(info) << " qname " << qname << " solid " << solid ; 
 

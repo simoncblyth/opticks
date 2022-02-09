@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-xxs.sh : Geant4 equivalent to OptiX cxs.sh 
-===============================================
+xxs.sh : Geant4 equivalent to OptiX cxs.sh using tests/X4IntersectSolidTest.cc tests/X4IntersectSolidTest.py
+===============================================================================================================
 
 Provides 2D cross section plots of G4VSolid provided from j/PMTSim. 
 
@@ -120,7 +120,9 @@ geom=GeneralSphereDEV_YX
 #geom=BoxGridMultiUnion10:30_YX
 
 #geom=GeneralSphereDEV_YX
+#geom=GeneralSphereDEV_XY
 geom=GeneralSphereDEV_XZ
+#geom=GeneralSphereDEV_YZ
 
 #catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
 
@@ -165,6 +167,9 @@ case $gcn in
    BoxThreeBoxUnion)       gridscale=0.07 ;;
                  *)        gridscale=0.10 ;;
 esac
+
+## HMM: is the real CE being used, needing gridscale suggests not 
+
 
 case $GEOM in 
    XJfixtureConstruction_YZ) note="blocky head with ears shape" ;;

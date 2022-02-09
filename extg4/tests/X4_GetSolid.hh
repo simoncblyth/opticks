@@ -18,12 +18,12 @@ This can be done with::
 #include "PMTSim.hh"
 #endif
 
-const G4VSolid* X4_GetSolid(const char* name)
+const G4VSolid* X4_GetSolid(const char* name, std::string& meta)
 {
     const G4VSolid* solid = nullptr ; 
     if(X4SolidMaker::CanMake(name))
     {
-        solid = X4SolidMaker::Make(name); 
+        solid = X4SolidMaker::Make(name, meta ); 
     }
     else
     {

@@ -168,6 +168,8 @@ if __name__ == '__main__':
 
     pl = pv.Plotter(window_size=SIZE*2 ) 
 
+    #pl.enable_eye_dome_lighting()  # improves depth perception with point clouds
+
 
     cegs_path = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM") 
     recs_path = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM/intersectSelected")
@@ -176,7 +178,7 @@ if __name__ == '__main__':
     fold = cegs.fold
 
     gspos = fold.gs[:,5,:3]
-    gsid =  fold.gs[:,1,3].copy().view(np.int8).reshape(-1,4)  
+    gsid =  fold.gs[:,0,2].copy().view(np.int8).reshape(-1,4)   # q0.u.z (4 packed signed char) 
 
     no_gs = 'NO_GS' in os.environ 
     if no_gs:
@@ -190,7 +192,7 @@ if __name__ == '__main__':
     axes = gridspec.axes
     print(" gridspec.axes : %s " % str(axes) )
 
-    gridspec.pv_arrange_viewpoint(pl, reset=True)
+    gridspec.pv_compose(pl, reset=True)
 
 
     no_isect = not hasattr(fold, 'isect') 
@@ -236,7 +238,7 @@ if __name__ == '__main__':
         select = np.logical_and( select, select_isect_gsid )
         count_select = np.count_nonzero(select)
 
-        print("%40s : %d   IXYZ %s " %   ("count_isect_gsid", count_isect_gsid, os.environ.get("IXYZ",None) ))
+        print("%40s : %d   IXYZ %s  ix:%d iy:%d iz:%d" %   ("count_isect_gsid", count_isect_gsid, os.environ.get("IXYZ",None), ix,iy,iz ))
         print("%40s : %d  \n" % ("count_select", count_select)) 
     pass  
 
@@ -265,13 +267,13 @@ if __name__ == '__main__':
 
     if not ixyz is None and not iw is None:
         ix,iy,iz = ixyz
-        gsid = "gsid_%d_%d_%d_%d" % (ix,iy,iz,iw)     
-        recs_fold = Fold.Load(recs_path, gsid)
+        gsid_label = "gsid_%d_%d_%d_%d" % (ix,iy,iz,iw)     
+        recs_fold = Fold.Load(recs_path, gsid_label)
         recs = [] if recs_fold is None else recs_fold.CSGRecord 
         if len(recs) > 0:
             print("%40s : %s   recs_fold.base %s " % ("recs", str(recs.shape), recs_fold.base )) 
         else:
-            print(" no recs to load at recs_path/gsid %s/%s " % (recs_path, gsid))
+            print(" no recs to load at recs_path/gsid_label %s/%s " % (recs_path, gsid_label))
         pass
     else:
         recs = []

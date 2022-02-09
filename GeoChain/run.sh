@@ -1,4 +1,5 @@
 #!/bin/bash -l 
+msg="=== $BASH_SOURCE :"
 usage(){ cat << EOU
 GeoChain/run.sh  : geometry conversions using GeoChainSolidTest or GeoChainVolumeTest
 =========================================================================================
@@ -46,13 +47,11 @@ To render the resulting CSG geometry on GPU node use eg::
    ./cxr_geochain.sh     # 3d rendered view 
 
 
-NB IF YOU GET PERPLEXING FAILS REMEMBER THAT SEVERAL PACKAGES MUST BE CONISTENT (ESPECIALLY THEIR HEADERS)
+NB IF YOU GET PERPLEXING FAILS REBUILD THE BELOW PACKAGES WHICH INCLUDE HEADERS WHICH MUST BE CONSISTENT
 
 * CSG
 * CSG_GGeo
 * GeoChain 
-
-
 
 EOU
 }
@@ -65,7 +64,16 @@ EOU
 #geom=hmsk_solidMaskTail
 #geom=nmsk_solidMask
 #geom=nmsk_solidMaskTail
-
+#geom=AdditionAcrylicConstruction
+#geom=BoxMinusTubs0
+#geom=BoxMinusTubs1
+#geom=UnionOfHemiEllipsoids
+#geom=PolyconeWithMultipleRmin
+#geom=pmt_solid
+#geom=body_solid
+#geom=inner_solid
+#geom=inner1_solid
+#geom=inner2_solid
 #geom=XJfixtureConstruction
 #geom=AltXJfixtureConstruction
 #geom=XJanchorConstruction
@@ -78,11 +86,11 @@ EOU
 #geom=BoxFourBoxUnion 
 #geom=BoxFourBoxContiguous 
 #geom=BoxCrossTwoBoxUnion 
-geom=BoxThreeBoxUnion 
+#geom=BoxThreeBoxUnion 
 
+#geom=SphereWithPhiSegment
 #geom=SphereWithPhiCutDEV
-#geom=GeneralSphereDEV
-
+geom=GeneralSphereDEV
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin
 #geom=Orb
@@ -93,20 +101,6 @@ export GEOM=${GEOM:-$geom}
 
 bin=
 case $GEOM in 
-   SphereWithPhiSegment*)       bin=GeoChainSolidTest ;; 
-   AdditionAcrylicConstruction) bin=GeoChainSolidTest ;;
-   BoxMinusTubs0)               bin=GeoChainSolidTest ;;
-   BoxMinusTubs1)               bin=GeoChainSolidTest ;;
-   UnionOfHemiEllipsoids*)      bin=GeoChainSolidTest ;;
-   PolyconeWithMultipleRmin*)   bin=GeoChainSolidTest ;; 
-   pmt_solid*)                  bin=GeoChainSolidTest ;;
-   body_solid*)                 bin=GeoChainSolidTest ;;
-   inner_solid*)                bin=GeoChainSolidTest ;;
-   inner1_solid*)               bin=GeoChainSolidTest ;;
-   inner2_solid*)               bin=GeoChainSolidTest ;;
-   III*)                        bin=GeoChainSolidTest ;;
-   1_3*)                        bin=GeoChainSolidTest ;;
-
    body_phys*)                  bin=GeoChainVolumeTest ;;
    inner1_phys)                 bin=GeoChainVolumeTest ;; 
    inner2_phys)                 bin=GeoChainVolumeTest ;; 
@@ -115,38 +109,19 @@ case $GEOM in
    *)                           bin=GeoChainSolidTest  ;;    # default : assume solid
 esac
 
+# TODO: arrange auto-detection of Solid OR Volume so can then have single executable 
 
-if [ "${GEOM/SphereWithPhiSegment}" != "$GEOM" ] ; then
 
-  
-   export X4Solid_convertSphere_enable_phi_segment=1 
+geoscript=../extg4/${GEOM}.sh 
 
-   #return_segment=1
-   #return_union=2
-   #return_difference=3
-   #return_intersect=4
-   #return_intersect_old=14  
-
-   #export X4Solid_intersectWithPhiSegment_debug_mode=$return_intersect_old
-elif [ "${GEOM/PolyconeWithMultipleRmin}" != "$GEOM" ] ; then
-
-   #return_inner=1
-   #return_outer=2
-   #export X4Solid_convertPolycone_debug_mode=$return_outer
-   echo -n 
-
-elif [ "${GEOM/XJfixtureConstruction}" != "$GEOM" ]; then
-
-    source ../extg4/XJfixtureConstruction.sh  || exit 1 
+if [ -f "$geoscript" ]; then
+   echo $msg sourcing geoscript $geoscript
+   source $geoscript 
+else
+   echo $msg THERE IS NO extg4 geoscript $geoscript 
 fi 
 
 
-
-env | grep X4Solid
-
-
-
-msg="=== $BASH_SOURCE :"
 echo $msg GEOM $GEOM bin $bin
 
 if [ "$bin" == "" ]; then

@@ -41,7 +41,22 @@ dependency rules, it is of course not doing so because this header is included
 into the main (or point-of-use library) and the pre-processor macros 
 ensure that only the active package tree of headers gets included.
 
+
+What you need to do to get logging to work for a package
+------------------------------------------------------------
+
+* must implement logging stuff in header as this code is required by plog to live in the main, not in a lib
+* to get logging to work need:
+
+0. package must implement the PKGNAME_LOG.hh based on others
+1. package CMakeLists.txt must define the OPTICKS_PKGNAME compile definition
+2. include the compile definition protected OPTICKS_PKGNAME header into OPTICKS_LOG.hh
+3. add initialize call to OPTICKS_LOG_::Initialize
+4. add check call to OPTICKS_LOG_::Check  
+
 **/
+
+
 
 #include <cstdio>
 
@@ -107,45 +122,24 @@ ensure that only the active package tree of headers gets included.
 #include "G4OK_LOG.hh"
 #endif
 
-
-
-
 #ifdef OPTICKS_CSG
 #include "CSG_LOG.hh"
 #endif
-
 #ifdef OPTICKS_CSG_GGEO
 #include "CSG_GGEO_LOG.hh"
 #endif
-
+#ifdef OPTICKS_GEOCHAIN
+#include "GEOCHAIN_LOG.hh"
+#endif
 #ifdef OPTICKS_QUDARAP
 #include "QUDARAP_LOG.hh"
 #endif
-
 #ifdef OPTICKS_CSGOPTIX
 #include "CSGOPTIX_LOG.hh"
 #endif
 
 
-
 #include "SYSRAP_API_EXPORT.hh"
-
-
-/**
-OPTICKS_LOG NB
-================
-
-* must implement logging stuff in header as this code is required by plog to live in the main, not in a lib
-* to get logging to work need:
-
-0. package must implement the PKGNAME_LOG.hh based on others
-1. package CMakeLists.txt must define the OPTICKS_PKGNAME compile definition
-2. include the preprocessor protected header above
-3. add initialize call to OPTICKS_LOG_::Initialize
-4. add check call to OPTICKS_LOG_::Check  
-
-**/
-
 
 
 #include "PLOG.hh"
@@ -223,8 +217,13 @@ class SYSRAP_API OPTICKS_LOG_ {
 #ifdef OPTICKS_CSG
     CSG_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSG"), app1, NULL );
 #endif
+
+
 #ifdef OPTICKS_CSG_GGEO
     CSG_GGEO_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSG_GGEO"), app1, NULL );
+#endif
+#ifdef OPTICKS_GEOCHAIN
+    GEOCHAIN_LOG::Initialize(instance->prefixlevel_parse( max_level, "GEOCHAIN"), app1, NULL );
 #endif
 #ifdef OPTICKS_QUDARAP
     QUDARAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "QUDARAP"), app1, NULL );
@@ -362,6 +361,8 @@ class SYSRAP_API OPTICKS_LOG_ {
     printf("%s\n", "!OPTICKS_G4OK" ); 
 #endif
 
+
+
 #ifdef OPTICKS_CSG
     printf("%s\n", "OPTICKS_CSG" ); 
     CSG_LOG::Check("CSG");
@@ -374,6 +375,13 @@ class SYSRAP_API OPTICKS_LOG_ {
     CSG_GGEO_LOG::Check("CSG_GGEO");
 #else
     printf("%s\n", "!OPTICKS_CSG_GGEO" ); 
+#endif
+
+#ifdef OPTICKS_GEOCHAIN
+    printf("%s\n", "OPTICKS_GEOCHAIN" ); 
+    GEOCHAIN_LOG::Check("GEOCHAIN");
+#else
+    printf("%s\n", "!OPTICKS_GEOCHAIN" ); 
 #endif
 
 #ifdef OPTICKS_QUDARAP

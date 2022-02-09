@@ -1372,9 +1372,11 @@ CSGFoundry*  CSGFoundry::Load(const char* dir) // static
 
 CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 {
+    if(geom == nullptr) geom = SSys::getenvvar("GEOM", "GeneralSphereDEV") ; 
     CSGFoundry* fd = new CSGFoundry();  
     fd->setGeom(geom); 
     fd->load(); 
+    if(fd->meta) LOG(info) << fd->meta ; 
     return fd ; 
 } 
 
