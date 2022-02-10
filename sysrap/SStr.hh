@@ -131,6 +131,8 @@ class SYSRAP_API SStr {
       static const char* ReplaceChars(const char* str, const char* repl="(),[]", char to=' ') ; 
 
       static void Extract( std::vector<long>& vals, const char* s ); 
+      static void Extract_( std::vector<long>& vals, const char* s ); 
+      static void Extract_( std::vector<float>& vals, const char* s ); 
 
 
 };

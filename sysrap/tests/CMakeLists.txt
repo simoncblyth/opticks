@@ -82,6 +82,7 @@ set(TEST_SOURCES
    stranTest.cc
 
    SEventTest.cc
+   SThetaCutTest.cc
    SCanvasTest.cc 
 )
 

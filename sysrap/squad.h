@@ -5,6 +5,9 @@
    #include <iostream>
    #include <iomanip>
    #include <sstream>
+   #include <vector>
+   #include <cstring>
+   #include <cassert>
 #endif
 
 
@@ -99,6 +102,101 @@ inline std::ostream& operator<<(std::ostream& os, const quad6& v)
        ;   
     return os; 
 }
+
+
+
+inline void qvals( std::vector<float>& vals, const char* key, const char* fallback, int num_expect )
+{
+    char* val = getenv(key);
+    char* p = const_cast<char*>( val ? val : fallback ); 
+    while (*p) 
+    {   
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-' || *p == '.') vals.push_back(strtof(p, &p)) ; 
+        else p++ ;
+    }   
+    if( num_expect > 0 ) assert( vals.size() == unsigned(num_expect) ); 
+}
+
+inline void qvals( std::vector<long>& vals, const char* key, const char* fallback, int num_expect )
+{
+    char* val = getenv(key);
+    char* p = const_cast<char*>( val ? val : fallback ); 
+    while (*p) 
+    {   
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-' ) vals.push_back(strtol(p, &p, 10)) ; 
+        else p++ ;
+    }   
+    if( num_expect > 0 ) assert( vals.size() == unsigned(num_expect) ); 
+}
+
+
+inline void qvals( float& v,   const char* key, const char* fallback )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, 1 ); 
+    v = vals[0] ; 
+}
+inline void qvals( float2& v,  const char* key, const char* fallback )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, 2 ); 
+    v.x = vals[0] ; 
+    v.y = vals[1] ; 
+}
+inline void qvals( float3& v,  const char* key, const char* fallback )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, 3 ); 
+    v.x = vals[0] ; 
+    v.y = vals[1] ; 
+    v.z = vals[2] ; 
+}
+inline void qvals( float4& v,  const char* key, const char* fallback )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, 4 ); 
+    v.x = vals[0] ; 
+    v.y = vals[1] ; 
+    v.z = vals[2] ; 
+    v.w = vals[3] ; 
+}
+
+
+inline void qvals( int& v,   const char* key, const char* fallback )
+{
+    std::vector<long> vals ; 
+    qvals( vals, key, fallback, 1 ); 
+    v = vals[0] ; 
+}
+inline void qvals( int2& v,  const char* key, const char* fallback )
+{
+    std::vector<long> vals ; 
+    qvals( vals, key, fallback, 2 ); 
+    v.x = vals[0] ; 
+    v.y = vals[1] ; 
+}
+inline void qvals( int3& v,  const char* key, const char* fallback )
+{
+    std::vector<long> vals ; 
+    qvals( vals, key, fallback, 3 ); 
+    v.x = vals[0] ; 
+    v.y = vals[1] ; 
+    v.z = vals[2] ; 
+}
+inline void qvals( int4& v,  const char* key, const char* fallback )
+{
+    std::vector<long> vals ; 
+    qvals( vals, key, fallback, 4 ); 
+    v.x = vals[0] ; 
+    v.y = vals[1] ; 
+    v.z = vals[2] ; 
+    v.w = vals[3] ; 
+}
+
+
+
+
+
 #endif 
 
 

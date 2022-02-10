@@ -983,6 +983,7 @@ X4Solid::intersectWithPhiCut
 
 nnode* X4Solid::intersectWithPhiCut(nnode* whole, double startPhi_pi, double deltaPhi_pi, OpticksCSG_t type  )  
 {
+
     assert( type == CSG_PHICUT || type == CSG_LPHICUT ); 
 
     nnode* phicut = nphicut::make( type, startPhi_pi, deltaPhi_pi ); 

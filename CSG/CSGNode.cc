@@ -571,6 +571,14 @@ CSGNode CSGNode::MakeDemo(const char* name) // static
     return CSGNode::Sphere(1.0); 
 }
 
+/**
+CSGNode::Make
+--------------
+
+NB not easy to expand to more than 6 params as q1.u.z q1.u.w are otherwise engaged 
+
+**/
+
 CSGNode CSGNode::Make(unsigned typecode, const float* param6, const float* aabb ) // static
 {
     CSGNode nd = {} ;
@@ -580,14 +588,6 @@ CSGNode CSGNode::Make(unsigned typecode, const float* param6, const float* aabb 
     return nd ; 
 }
 
-CSGNode CSGNode::Make8(unsigned typecode, const float* param8, const float* aabb ) // static
-{
-    CSGNode nd = {} ;
-    nd.setTypecode(typecode) ; 
-    if(param8)  nd.setParam8( param8 );  
-    if(aabb)    nd.setAABB( aabb );  
-    return nd ; 
-}
 
 
 

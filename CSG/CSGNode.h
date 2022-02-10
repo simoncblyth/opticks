@@ -139,18 +139,6 @@ struct CSG_API CSGNode
         q1.f.y = *(p+5) ;  
     }
 
-    NODE_METHOD void setParam8(const float* p)  // CAUTION stomp risk for final 2, use for leaf nodes only 
-    { 
-        q0.f.x = *(p+0) ; 
-        q0.f.y = *(p+1) ; 
-        q0.f.z = *(p+2) ; 
-        q0.f.w = *(p+3) ; 
-        q1.f.x = *(p+4) ; 
-        q1.f.y = *(p+5) ;  
-        q1.f.z = *(p+6) ;  
-        q1.f.w = *(p+7) ;  
-    }
-
 
 
 
@@ -265,7 +253,6 @@ struct CSG_API CSGNode
 
     static CSGNode MakeDemo(const char* name); 
     static CSGNode Make( unsigned typecode, const float* param6, const float* aabb); 
-    static CSGNode Make8(unsigned typecode, const float* param8, const float* aabb); 
 
 #endif
 

@@ -81,3 +81,22 @@ The above is too indescriminate, need to do it only when the rays are headed for
 otherside at infinity. 
 
 TODO: try not constructing by intersecting but instead by intersecting with the complemented other side 
+
+
+
+
+Using 2D(embedded in 3D) cross products : can determine if ray direction is between cone directions
+---------------------------------------------------------------------------------------------------------
+
+
+
+::
+
+     IXYZ=9,0,9 ./csg_geochain.sh ana        # expected
+     IXYZ=10,0,10 ./csg_geochain.sh ana      # no isect : duh : because there are no gensteps at that grid position
+
+
+
+
+
+

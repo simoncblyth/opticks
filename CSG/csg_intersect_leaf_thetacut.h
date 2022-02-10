@@ -81,26 +81,27 @@ to do this.
 
 Notice: 
 
-1. rays from origin can never intersect the thetacut.
-2. thetacut is an unbounded shape : which means there is 
-   an "arc" at infinity 
+1. rays from origin can never intersect the thetacut, at least not until infinity
+2. thetacut is an unbounded shape : which means there is an "arc" at infinity 
  
+The two cones are rotationally symmetric about Z axis : so consider (radial, vertical) (R,Z) 2D space
 
+     Z
      |
      |            /
      |           /
      |          /
-     |         /   (0,1) when theta0_pi = 0.
-     Z        +(sinTheta0, cosTheta0) 
+     |         /  
+     |        +(sinTheta0, cosTheta0)  = (0,1) when theta0_pi = 0.
      |       /              
      |      /
      |     /     +  +  
      |    /   d.z| /  ( d_xy , d.z )   (radial, vertical) components of ray direction  
      |   /       |/
      |  /        +--+  
-     | /             sqrt(d.x*d.x+d.y*d.y)
+     | /             sqrt(d.x*d.x+d.y*d.y) = d_xy
      |/
-     +- - - - - - - - - - -  X
+     +- - - - - - - - - - -  R
      |\
      | \
      |  \
@@ -110,48 +111,60 @@ Notice:
      |      \
      |       \
      |        \
-     |         + (sinTheta1, cosTheta1) 
-     |          \     (0,-1) when theta1_pi = 1.0 
+     |         + (sinTheta1, cosTheta1) = (0, -1)   when theta1_pi = 1.0 
+     |          \
      |           \
     
 
+2D cross product (embedded in 3D RZW space at W=0) between theta vectors shown 
+above and ray direction is proportional to the sine of the angle between them.  
 
+Using adhoc sign convention::
 
-   2D cross product between theta vectors shown above and ray direction is proportional 
-   to the sine of the angle between them.  
-   (thinking of 2D vector(radial, vertical) embedded in a 3D space ) 
-   is as both 
+   (v0.xy, v0.z ) ^ ( d_xy, d.z ) =  v0.z*d_xy - v0.xy*d.z ; 
 
-            (v0.xy, v0.z          ) ^ ( d_xy, d.z ) = v0.xy*d.z     - v0.z*d_xy ; 
+   cross0 =  (sinTheta0, cosTheta0 ) ^ (d_xy, d.z )  = cosTheta0*d_xy - sinTheta0*d.z  
+   cross1 =  (sinTheta1, cosTheta1 ) ^ (d_xy, d.z )  = cosTheta1*d_xy - sinTheta1*d.z  
 
-            (sinTheta0, cosTheta0 ) ^ (d_xy, d.z )  = sinTheta0*d.z - cosTheta0*d_xy 
-         
- 
+cross0 > 0.f && cross1 < 0.f 
+    means the ray direction is between the theta0 and theta1 cone directions 
+    so a "miss" would eventually exit the "otherside" of the unbounded thetacut at infinity
+    (assuming the ray starts within the shape) 
+    HMM: currently not checking are inside shape but it seems not be matter 
+    (could check are inside by similar cross-trick with the ray_origin)
 
 **/
 
 LEAF_FUNC
 bool intersect_leaf_thetacut(float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& o, const float3& d)
 {   
-    const float& cosTheta0si = q0.f.x ;  // sign of cosTheta0 : +1. for theta 0->0.5 ,  -1. for theta 0.5->1.  (units if pi) 
-    const float& tanTheta0sq = q0.f.y ; 
-    const float& cosTheta1si = q0.f.z ;  // sign of cosTheta1 : +1. for theta 0->0.5 ,  -1. for theta 0.5->1.  (units if pi) 
-    const float& tanTheta1sq = q0.f.w ; 
+    const float& cosTheta0   = q0.f.x ; 
+    const float& sinTheta0   = q0.f.y ;
+    const float& cosTheta1   = q0.f.z ; 
+    const float& sinTheta1   = q0.f.w ;
+    const float& tanTheta0sq = q1.f.x ; 
+    const float& tanTheta1sq = q1.f.y ; 
 
-    const float& cosTheta0   = q1.f.x ; 
-    const float& sinTheta0   = q1.f.y ;
-    const float& cosTheta1   = q1.f.z ; 
-    const float& sinTheta1   = q1.f.w ;
+    // HMM: the signs are just used to check sign of the intersect indicates are not intersecting the mirror cone 
+    //     so could just use cosTheta itself ? 
+    const float cosTheta0Sign = cosTheta0 < 0.f ? -1.f : 1.f ;
+    const float cosTheta1Sign = cosTheta1 < 0.f ? -1.f : 1.f ;
+  
 
-    // axially symmetric cone : so can consider (radial, vertical) 2D space
     const float dxx_dyy = d.x * d.x + d.y * d.y ;  
     const float d_xy = sqrt( dxx_dyy ); 
-    const float cross0 = sinTheta0*d.z - cosTheta0*d_xy ; 
-    const float cross1 = sinTheta1*d.z - cosTheta1*d_xy ; 
+    const float cross0 = cosTheta0*d_xy - sinTheta0*d.z; 
+    const float cross1 = cosTheta1*d_xy - sinTheta1*d.z; 
     bool unbounded_exit = cross0 > 0.f && cross1 < 0.f ;   
-    // ray direction is between the cone directions 
-    // so a "miss" would eventually exit at infinity 
-    // if the ray starts within the shape 
+
+#ifdef DEBUG
+    printf("//intersect_leaf_thetacut q0.f  (%10.4f %10.4f %10.4f %10.4f) %s \n" , q0.f.x, q0.f.y, q0.f.z, q0.f.w, "cosTheta0/sinTheta0/cosTheta1/sinTheta1"  ) ; 
+    printf("//intersect_leaf_thetacut q1.f  (%10.4f %10.4f %10.4f %10.4f)\n" , q1.f.x, q1.f.y, q1.f.z, q1.f.w ) ; 
+    printf("//intersect_leaf_thetacut dxx_dyy %10.4f d_xy %10.4f d.z %10.4f \n", dxx_dyy, d_xy, d.z  ); 
+    printf("//intersect_leaf_thetacut cross0 %10.4f cosTheta0*d_xy - sinTheta0*d.z \n", cross0 );
+    printf("//intersect_leaf_thetacut cross1 %10.4f cosTheta1*d_xy - sinTheta1*d.z\n", cross1 );
+    printf("//intersect_leaf_thetacut unbounded_exit %d \n", unbounded_exit ); 
+#endif
 
 
     // quadratic coefficients for intersection of ray with theta0 cone     
@@ -160,17 +173,17 @@ bool intersect_leaf_thetacut(float4& isect, const quad& q0, const quad& q1, cons
     float oo  = o.x * o.x + o.y * o.y - o.z * o.z * tanTheta0sq ;
     float disc = od * od - oo * dd ;
     bool intersects = disc > 0.f; 
-    float discRoot = intersects ? sqrt(disc) : 0.f; //avoids sqrt(NEGATIVE)
+    float discRoot = intersects ? sqrt(disc) : 0.f; 
 
-    float t_cand = intersects ? (-od + discRoot) / dd : RT_DEFAULT_MAX; //beginning on t_cand saves defining extra variable
+    float t_cand = intersects ? (-od + discRoot) / dd : RT_DEFAULT_MAX;
     float t0     = intersects ? (-od - discRoot) / dd : RT_DEFAULT_MAX;
 
 
     // intersect on z-mirror cone  or too close   
-    if (cosTheta0si * (t_cand * d.z + o.z) < 0.f  || t_cand <= t_min) t_cand = RT_DEFAULT_MAX;   
+    if (cosTheta0Sign * (t_cand * d.z + o.z) < 0.f  || t_cand <= t_min) t_cand = RT_DEFAULT_MAX;   
 
     // intersect not on z-mirror cone and not too close 
-    if (cosTheta0si * (t0     * d.z + o.z) > 0.f  && t0 > t_min     ) t_cand = fminf(t_cand, t0); 
+    if (cosTheta0Sign * (t0     * d.z + o.z) > 0.f  && t0 > t_min     ) t_cand = fminf(t_cand, t0); 
 
 
     /*
@@ -180,8 +193,9 @@ bool intersect_leaf_thetacut(float4& isect, const quad& q0, const quad& q1, cons
     TO WORK IN CSG COMBINATION IT MUST BE POSSIBLE FOR t_min CUTTING 
     TO INVALIDATE ANY ROOT : SO IT IS WRONG TO TRY TO CHOOSE A 
     ROOT FROM ONE CONE BEFORE CONSIDERING THE ROOTS FROM THE OTHER 
-    */
 
+    TODO: try to tickle this itch by choosing an appropriate t_min, ray_origin, ray_direction 
+    */
 
     // modify quadratic coefficients to hop to the other cone 
     dd += d.z * d.z * (tanTheta0sq - tanTheta1sq );
@@ -195,8 +209,8 @@ bool intersect_leaf_thetacut(float4& isect, const quad& q0, const quad& q1, cons
     t0 =             intersects ? (-od + discRoot) / dd : RT_DEFAULT_MAX;
     const float t1 = intersects ? (-od - discRoot) / dd : RT_DEFAULT_MAX;
 
-    if (cosTheta1si * (t0 * d.z + o.z) > 0.f && t0 > t_min) t_cand = fminf(t_cand, t0);
-    if (cosTheta1si * (t1 * d.z + o.z) > 0.f && t1 > t_min) t_cand = fminf(t_cand, t1);
+    if (cosTheta1Sign * (t0 * d.z + o.z) > 0.f && t0 > t_min) t_cand = fminf(t_cand, t0);
+    if (cosTheta1Sign * (t1 * d.z + o.z) > 0.f && t1 > t_min) t_cand = fminf(t_cand, t1);
 
     /*
 
@@ -215,48 +229,41 @@ bool intersect_leaf_thetacut(float4& isect, const quad& q0, const quad& q1, cons
     */
 
     const float t_plane = -o.z / d.z;
+    const bool plane = cosTheta0 * cosTheta1 == 0.0 && t_plane > t_min && t_cand > t_plane ;
 
-    // plane: one (or both) of the cones has degenerated to a plane (theta 0.5) and has a candidate intersect 
-    // hmm: thats a bit funny the imprecise intersect from the degenerate cone may be competing 
-    // here with the one from the more precise plane 
+/**
+plane:true
+    one of the cones has degenerated to a plane (theta 0.5) and has a candidate intersect 
+    (cosTheta0/1 are arranged to be precisely zero for angle 0.5) 
 
-    const bool plane = cosTheta0si * cosTheta1si == 0.0 && t_plane > t_min && t_cand > t_plane ;
-
+hmm: thats a bit funny the imprecise intersect from the degenerate cone may be competing 
+here with the one from the more precise plane 
+**/
 
     const bool valid = t_cand < RT_DEFAULT_MAX || plane;
 
-    /*
-    At this stage cannot untangle which cone t0 and t1 come from : so cannot get the right normal ?
-
-    XY cross section of the two cones are two circles : with .xy components of normals radially outwards and inwards    
-
-    */
-
     if (valid) {
         const bool side = t_cand == t0 || t_cand == t1; 
-        //corrects normals for both cones/planes around 90 degrees
+        // when t_cand is equal to the current t0 or t1 it means that the itersect is with the theta1 cone and not the theta0 cone
 
-        isect.x = plane ? 0.f                               : (side ?  cosTheta1si * (o.x + t_cand * d.x)                : -cosTheta0si * (o.x + t_cand * d.x));
-        isect.y = plane ? 0.f                               : (side ?  cosTheta1si * (o.y + t_cand * d.y)                : -cosTheta0si * (o.y + t_cand * d.y));
-        isect.z = plane ? (cosTheta0si == 0.f ? 1.f : -1.f) : (side ? -cosTheta1si * (o.z + t_cand * d.z) * tanTheta1sq  :  cosTheta0si * (o.z + t_cand * d.z) * tanTheta0sq );
+        // XY cross section of the two cones are two circles : with .xy components of normals radially outwards and inwards    
+        isect.x = plane ? 0.f                             : (side ?  cosTheta1Sign * (o.x + t_cand * d.x)                : -cosTheta0Sign * (o.x + t_cand * d.x));
+        isect.y = plane ? 0.f                             : (side ?  cosTheta1Sign * (o.y + t_cand * d.y)                : -cosTheta0Sign * (o.y + t_cand * d.y));
+        isect.z = plane ? (cosTheta0 == 0.f ? 1.f : -1.f) : (side ? -cosTheta1Sign * (o.z + t_cand * d.z) * tanTheta1sq  :  cosTheta0Sign * (o.z + t_cand * d.z) * tanTheta0sq );
         isect = normalize(isect);   
-
         // SCB: normalizing a float4 : unfounded assumption that isect.w = 0 
 
         isect.w = plane ? t_plane : t_cand;
     }
     else if( unbounded_exit )
     {
-        isect.y = -isect.y ;  // signflip signalling that can promote MISS to EXIT at infinity 
-        // TODO:maybe better return an int not a bool, so can signal more easily 
+        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity 
+        // TODO:maybe better return an int not a bool, so can signal more clearly  
     }
 
 #ifdef DEBUG
-    printf("//intersect_leaf_thetacut q0.f  (%10.4f %10.4f %10.4f %10.4f)\n" , q0.f.x, q0.f.y, q0.f.z, q0.f.z ) ; 
-    printf("//intersect_leaf_thetacut q1.f  (%10.4f %10.4f %10.4f %10.4f)\n" , q1.f.x, q1.f.y, q1.f.z, q1.f.z ) ; 
     printf("//intersect_leaf_thetacut isect (%10.4f %10.4f %10.4f %10.4f) valid %d  \n" , isect.x, isect.y, isect.z, isect.w, valid ) ; 
 #endif
-
     return valid ; 
 }
 
@@ -343,6 +350,7 @@ bool intersect_leaf_thetacut_lucas(float4& isect, const quad& thetaDat, const fl
         //SCB              ^^^^^^^^  : DITTO
         isect.z = plane ? (thetaDat.f.x == 0.0 ? 1.0 : -1.0)
         //SCB                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ DITTO
+        //SCB         using the special setting of zero to determine which of the cones degenerated to the plane 
 
                         : ( side ? - thetaDat.f.z * (rayOrigin.z + t_cand * rayDirection.z) * thetaDat.f.w
                                  : thetaDat.f.x * (rayOrigin.z + t_cand * rayDirection.z) * thetaDat.f.y );

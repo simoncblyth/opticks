@@ -505,8 +505,6 @@ int SStr::ISplit( const char* line, std::vector<int>& ivec, char delim )
 
 
 
-
-
 template const char* SStr::Concat_<unsigned>(           const char* , unsigned           , const char*  );
 template const char* SStr::Concat_<unsigned long long>( const char* , unsigned long long , const char*  );
 template const char* SStr::Concat_<int>(                const char* , int                , const char*  );
@@ -744,6 +742,28 @@ void SStr::Extract( std::vector<long>& vals, const char* s )
     }
     free(s0); 
 }
+
+void SStr::Extract_( std::vector<long>& vals, const char* s )
+{
+    char* p = const_cast<char*>(s) ; 
+    while (*p) 
+    {
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtol(p, &p, 10)) ; 
+        else p++ ;
+    }
+}
+
+void SStr::Extract_( std::vector<float>& vals, const char* s )
+{
+    char* p = const_cast<char*>(s) ; 
+    while (*p) 
+    {
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtof(p, &p)) ; 
+        else p++ ;
+    }
+}
+
+
 
 
 

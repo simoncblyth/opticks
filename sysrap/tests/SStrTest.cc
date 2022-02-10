@@ -516,11 +516,23 @@ void test_Extract()
     const char* s = "asjdhajsdhas-100   -200 300 sajdasjdhakjHDKJ +66 21 23 45 1001 -10 akjdshaHD -42 " ; 
     LOG(info) << s ; 
     std::vector<long> vals ; 
-    SStr::Extract(vals, s ); 
+    SStr::Extract_(vals, s ); 
 
     for(unsigned i=0 ; i < vals.size() ; i++ ) std::cout << vals[i] << std::endl;
 
 }
+
+void test_Extract_float()
+{
+    const char* s = "asjdhajsdhas-0.1   -.2 +30.5 sajdasjdhakjHDKJ +66 21 23.6 45 1001 -10.2 akjdshaHD -42.5 " ; 
+    LOG(info) << s ; 
+    std::vector<float> vals ; 
+    SStr::Extract_(vals, s ); 
+
+    for(unsigned i=0 ; i < vals.size() ; i++ ) std::cout << vals[i] << std::endl;
+}
+
+
 
 
 int main(int argc , char** argv )
@@ -551,11 +563,12 @@ int main(int argc , char** argv )
     test_TrimPointerSuffix(); 
     test_ReplaceChars(); 
     test_ato_(); 
-    test_Extract(); 
     test_Save_Load(); 
-    */
-
     test_Save_PWD(); 
+    */
+    //test_Extract(); 
+    test_Extract_float(); 
+
 
     return 0  ; 
 }
