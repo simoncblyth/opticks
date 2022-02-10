@@ -85,6 +85,9 @@ set(SOURCES
     SLabelCache.cc
 
     SEvent.cc
+    SThetaCut.cc 
+    SPhiCut.cc 
+
     SCenterExtentFrame.cc
     SCenterExtentGenstep.cc
 ) 
@@ -171,6 +174,10 @@ set(HEADERS
     iexpand.h 
 
     SEvent.hh
+    SThetaCut.hh
+    SPhiCut.hh
+
+
     SCenterExtentFrame.hh
     SCenterExtentGenstep.hh 
     SPresent.hh

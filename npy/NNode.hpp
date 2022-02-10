@@ -44,6 +44,7 @@ class NNodeDump2 ;
 class NNodePoints ; 
 
 class BMeta ; 
+union quad ; 
 
 
 // NGLMExt
@@ -77,6 +78,9 @@ so it belongs at node level up in GParts. Not here in "nnode" at mesh level.
 
 struct NPY_API nnode 
 {
+    void set_p0( const quad& q0 ); 
+    void set_p1( const quad& q1 ); 
+
     static unsigned bb_count ; 
     static nnode* copy( const nnode* a ); // retaining vtable of subclass instances 
     nnode* make_copy() const ;  // retaining vtable of subclass instances
@@ -398,7 +402,6 @@ struct NPY_API nnode
     void write_g4code(const char* path) const ;
     static void to_g4code(const nnode* root, std::ostream& out, unsigned depth );
     static void to_g4code_r(const nnode* node, std::ostream& out, unsigned depth );
-
 
 
 

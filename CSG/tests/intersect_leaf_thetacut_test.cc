@@ -13,6 +13,7 @@ For a slightly higher level test see CSGNodeScanTest.cc
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
+#include "SThetaCut.hh"
 
 #define DEBUG 1 
 #include "csg_intersect_leaf.h"
@@ -56,11 +57,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    float startTheta = 0.25 ; 
-    float deltaTheta = 0.5 ; 
+    float startTheta_pi = 0.25 ; 
+    float deltaTheta_pi = 0.5 ; 
 
     quad q0, q1  ; 
-    CSGNode::PrepThetaCutParam( q0, q1, startTheta, deltaTheta ); 
+    SThetaCut::PrepareParam( q0, q1, startTheta_pi, deltaTheta_pi ); 
     
     float4 isect = make_float4(0.f, 0.f, 0.f, 0.f ); 
     float4 post  = make_float4(0.f, 0.f, 0.f, 0.f ); 

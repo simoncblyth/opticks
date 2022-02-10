@@ -6,9 +6,9 @@
 #include <iomanip>
 #include <vector_types.h>
 
-//#include "sutil_vec_math.h"
 #include "scuda.h"
-
+#include "SThetaCut.hh"
+#include "SPhiCut.hh"
 #include "OpticksCSG.h"
 #include "PLOG.hh"
 
@@ -477,105 +477,23 @@ CSGNode CSGNode::InfCylinder(float radius, float hz)
     return nd ; 
 } 
 
-CSGNode CSGNode::InfPhiCut(float startPhi_, float deltaPhi_ ) 
+CSGNode CSGNode::InfPhiCut(float startPhi_pi, float deltaPhi_pi ) 
 {
-    double startPhi = startPhi_ ; 
-    double deltaPhi = deltaPhi_ ; 
-    double phi0 = startPhi ; 
-    double phi1 = startPhi + deltaPhi ; 
-    double pi = M_PIf ;  
-    double cosPhi0 = cos(phi0*pi); 
-    double sinPhi0 = sin(phi0*pi); 
-    double cosPhi1 = cos(phi1*pi); 
-    double sinPhi1 = sin(phi1*pi); 
-
-    LOG(info) 
-        << " startPhi " << startPhi
-        << " deltaPhi " << deltaPhi
-        << " phi0 " << phi0
-        << " phi1 " << phi1
-        << " cosPhi0 " << cosPhi0 
-        << " sinPhi0 " << sinPhi0 
-        << " cosPhi1 " << cosPhi1 
-        << " sinPhi1 " << sinPhi1
-        ; 
-
-
     CSGNode nd = {} ; 
-    nd.setParam( cosPhi0, sinPhi0, cosPhi1, sinPhi1, 0.f, 0.f )  ; 
+    SPhiCut::PrepareParam( nd.q0 ,  startPhi_pi, deltaPhi_pi ); 
     nd.setAABB( -100.f,-100.f,-100.f, 100.f, 100.f, 100.f );      // placeholder, hmm how to avoid ?
     nd.setTypecode(CSG_PHICUT); 
     return nd ; 
 }
 
-/**
-CSGNode::PrepThetaCutParam
------------------------------
-
-This needs to match npy/NThetaCut.hpp:make_thetacut 
-
-**/
-
-void CSGNode::PrepThetaCutParam( quad& q0, quad& q1,  float startThe_, float deltaThe_ )
-{
-    double startThe = startThe_ ; 
-    double deltaThe = deltaThe_ ; 
-    double the0 = startThe ; 
-    double the1 = startThe + deltaThe ; 
-    double pi = M_PIf ;  
-
-    double d_cosTheta0 = std::cos(the0*pi) ; 
-    double d_sinTheta0 = std::sin(the0*pi) ; 
-    double d_cosTheta1 = std::cos(the1*pi) ; 
-    double d_sinTheta1 = std::sin(the1*pi) ; 
-    double d_tanTheta0 = std::tan(the0*pi) ; 
-    double d_tanTheta1 = std::tan(the1*pi) ; 
-    double d_tanTheta0sq = d_tanTheta0*d_tanTheta0 ; 
-    double d_tanTheta1sq = d_tanTheta1*d_tanTheta1 ; 
-
-    float cosTheta0si = d_cosTheta0 < 0. ? -1.f : 1.f ; 
-    float tanTheta0sq = float(d_tanTheta0sq); 
-    float cosTheta1si = d_cosTheta1 < 0. ? -1.f : 1.f ; 
-    float tanTheta1sq = float(d_tanTheta1sq); 
-
-
-    q0.f.x = cosTheta0si ;
-    q0.f.y = tanTheta0sq ;
-    q0.f.z = cosTheta1si ;
-    q0.f.w = tanTheta1sq ;
-
-    q1.f.x = float(d_cosTheta0) ;
-    q1.f.y = float(d_sinTheta0) ;
-    q1.f.z = float(d_cosTheta1) ;
-    q1.f.w = float(d_sinTheta1) ;
-
-
-    LOG(info) 
-        << " startThe " << startThe
-        << " deltaThe " << deltaThe
-        << " the0 " << the0
-        << " the1 " << the1
-        << " cosTheta0si " << cosTheta0si 
-        << " tanTheta0sq " << tanTheta0sq
-        << " cosTheta1si " << cosTheta1si 
-        << " tanTheta1sq " << tanTheta1sq
-        ; 
-}
-
-
-CSGNode CSGNode::InfTheCut(float startThe_, float deltaThe_, char imp) 
+CSGNode CSGNode::InfThetaCut(float startTheta_pi, float deltaTheta_pi, char imp) 
 {
     CSGNode nd = {} ; 
-    PrepThetaCutParam( nd.q0, nd.q1, startThe_, deltaThe_ ); 
-
+    SThetaCut::PrepareParam( nd.q0, nd.q1, startTheta_pi, deltaTheta_pi ); 
     nd.setAABB( -100.f,-100.f,-100.f, 100.f, 100.f, 100.f );    // HMM: adhoc ?   
     nd.setTypecode( imp == 'L' ? CSG_LTHETACUT : CSG_THETACUT ); 
-
     return nd ; 
 }
-
-
-
 
 
 CSGNode CSGNode::Disc(float px, float py, float ir, float r, float z1, float z2)
@@ -646,8 +564,8 @@ CSGNode CSGNode::MakeDemo(const char* name) // static
     if(strncmp(name, "cyli", 4) == 0) return CSGNode::Cylinder(0.f, 0.f, 100.f, -50.f, 50.f ) ; 
     if(strncmp(name, "disc", 4) == 0) return CSGNode::Disc(    0.f, 0.f, 50.f, 100.f, -2.f, 2.f ) ; 
     if(strncmp(name, "iphi", 4) == 0) return CSGNode::InfPhiCut(0.25f, 0.10f) ; 
-    if(strncmp(name, "ithe", 4) == 0) return CSGNode::InfTheCut(0.25f, 0.10f, ' ') ; 
-    if(strncmp(name, "ithl", 4) == 0) return CSGNode::InfTheCut(0.25f, 0.10f, 'L') ; 
+    if(strncmp(name, "ithe", 4) == 0) return CSGNode::InfThetaCut(0.25f, 0.10f, ' ') ; 
+    if(strncmp(name, "ithl", 4) == 0) return CSGNode::InfThetaCut(0.25f, 0.10f, 'L') ; 
     LOG(fatal) << " not implemented for name " << name ; 
     assert(0); 
     return CSGNode::Sphere(1.0); 

@@ -8,7 +8,7 @@ template <typename T> struct Tran ;
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
-#include "sevent.h"
+#include "sevent.h"  // just enum { XYZ, YZ, XZ, XY } ;   TODO: eliminate 
 
 struct SYSRAP_API SEvent
 {

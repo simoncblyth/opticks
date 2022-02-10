@@ -372,7 +372,7 @@ unsigned NNodeUncoincide::uncoincide_treewise()
     // TODO: investigate CSG_ZSPHERE too 
     // TODO: hmm:perhaps can apply to any tree just select operable nodes to work with ...
 
-    bool proceed = prim_mask == CSGMASK_CYLINDER || prim_mask == (CSGMASK_CYLINDER | CSGMASK_CONE) ; 
+    bool proceed = prim_mask == (unsigned)CSGMASK_CYLINDER || prim_mask == (unsigned)(CSGMASK_CYLINDER | CSGMASK_CONE) ; 
 
     LOG(info) << "NNodeUncoincide::uncoincide_treewise"
               << " proceed " << ( proceed ? "Y" : "-" )

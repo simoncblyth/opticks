@@ -1,5 +1,9 @@
 #include <limits>
 
+#include "scuda.h"
+#include "squad.h"
+
+#include "SPhiCut.hh"
 #include "nmat4triple.hpp"
 #include "NPhiCut.hpp"
 #include "PLOG.hh"
@@ -85,39 +89,17 @@ glm::vec3 nphicut::normal(int idx) const
     return glm::vec3( idx == 0 ? sinPhi0 : -sinPhi1 , idx == 0 ? -cosPhi0 : cosPhi1 , 0.f); 
 }
 
-nphicut* nphicut::make(OpticksCSG_t type ) // static
+
+nphicut* nphicut::make(OpticksCSG_t type, double startPhi_pi, double deltaPhi_pi ) // static
 {
     nphicut* n = new nphicut ; 
     assert( type == CSG_PHICUT || type == CSG_LPHICUT ); 
     nnode::Init(n,type) ; 
-    return n ; 
-}
 
-nphicut* nphicut::make(OpticksCSG_t type, const nquad& param)  // static
-{
-    nphicut* n = nphicut::make(type); 
-    n->param = param ;    
-    return n ; 
-}
+    quad q0 ; 
+    SPhiCut::PrepareParam( q0, startPhi_pi, deltaPhi_pi ); 
 
-nphicut* nphicut::make(OpticksCSG_t type, double startPhi_pi, double deltaPhi_pi ) // static
-{
-    double phi0 = startPhi_pi ; 
-    double phi1 = startPhi_pi + deltaPhi_pi ;
-
-    const double pi = glm::pi<double>() ; 
-    double cosPhi0 = std::cos(phi0*pi) ;
-    double sinPhi0 = std::sin(phi0*pi) ;
-    double cosPhi1 = std::cos(phi1*pi) ;
-    double sinPhi1 = std::sin(phi1*pi) ;
-
-    nquad param ; 
-    param.f.x = float(cosPhi0); 
-    param.f.y = float(sinPhi0); 
-    param.f.z = float(cosPhi1); 
-    param.f.w = float(sinPhi1); 
-
-    nphicut* n = nphicut::make(type, param); 
+    n->set_p0(q0); 
     n->pdump("nphicut::make"); 
 
     return n ; 

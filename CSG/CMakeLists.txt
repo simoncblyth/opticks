@@ -106,8 +106,8 @@ add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
 
-# these DEBUG flags are exceedingly verbose : only use for single photons and do not leave like this 
-target_compile_definitions( ${name} PRIVATE DEBUG )
+# these DEBUG flags are exceedingly verbose : only use for single photons and do not commit with them uncommented
+#target_compile_definitions( ${name} PRIVATE DEBUG )
 #target_compile_definitions( ${name} PRIVATE DEBUG_RECORD )
 
 

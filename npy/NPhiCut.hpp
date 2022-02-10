@@ -17,9 +17,6 @@ struct nmat4triple ;
 struct NPY_API nphicut : nnode 
 {
     static const plog::Severity LEVEL ; 
-
-    static nphicut* make(OpticksCSG_t type );
-    static nphicut* make(OpticksCSG_t type, const nquad& param);
     static nphicut* make(OpticksCSG_t type, double startPhi_pi, double deltaPhi_pi );
 
     void pdump(const char* msg) const ; 

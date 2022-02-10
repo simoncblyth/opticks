@@ -67,9 +67,9 @@ struct CSG_API CSGMaker
     CSGSolid* makeRotatedCylinder(const char* label="rcyl", float px=0.f, float py=0.f, float radius=100.f, float z1=-50.f, float z2=50.f, float ax=1.f, float ay=0.f, float az=0.f, float angle_deg=45.f  );
 
     CSGSolid* makeInfCylinder(const char* label="icyl", float radius=50.f,  float hz=25.f ); 
-    CSGSolid* makeInfPhiCut(  const char* label="iphi", float startPhi=0.25f, float deltaPhi=0.1f ); // units of pi  
-    CSGSolid* makeInfTheCut(  const char* label="ithe", float startThe=0.25f, float deltaThe=0.1f ); // units of pi  
-    CSGSolid* makeInfTheCutL( const char* label="ithl", float startThe=0.25f, float deltaThe=0.1f ); // units of pi  
+    CSGSolid* makeInfPhiCut(  const char* label="iphi", float startPhi_pi=0.25f,   float deltaPhi_pi=0.1f ); // units of pi  
+    CSGSolid* makeInfThetaCut(  const char* label="ithe", float startTheta_pi=0.25f, float deltaTheta_pi=0.1f ); // units of pi  
+    CSGSolid* makeInfThetaCutL( const char* label="ithl", float startTheta_pi=0.25f, float deltaTheta_pi=0.1f ); // units of pi  
 
 
     CSGSolid* makeZSphere(    const char* label="zsph", float r=100.f,  float z1=-50.f , float z2=50.f ); 

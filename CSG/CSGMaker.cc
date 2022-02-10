@@ -108,8 +108,8 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("dcyl", name)) so = makeDifferenceCylinder(name) ;
     else if(StartsWith("icyl", name)) so = makeInfCylinder(name) ;
     else if(StartsWith("iphi", name)) so = makeInfPhiCut(name) ;
-    else if(StartsWith("ithe", name)) so = makeInfTheCut(name) ;
-    else if(StartsWith("ithl", name)) so = makeInfTheCutL(name) ;
+    else if(StartsWith("ithe", name)) so = makeInfThetaCut(name) ;
+    else if(StartsWith("ithl", name)) so = makeInfThetaCutL(name) ;
     else if(StartsWith("bssc", name)) so = makeBoxSubSubCylinder(name) ;
     else LOG(fatal) << "invalid name [" << name << "]" ; 
     assert( so ); 
@@ -605,21 +605,21 @@ CSGSolid* CSGMaker::makeInfCylinder(const char* label, float radius, float hz )
     return makeSolid11(label, nd, nullptr, ICYL_MIDX ); 
 }
 
-CSGSolid* CSGMaker::makeInfPhiCut(const char* label, float startPhi, float deltaPhi )
+CSGSolid* CSGMaker::makeInfPhiCut(const char* label, float startPhi_pi, float deltaPhi_pi )
 {
-    CSGNode nd = CSGNode::InfPhiCut(startPhi, deltaPhi ); 
+    CSGNode nd = CSGNode::InfPhiCut(startPhi_pi, deltaPhi_pi ); 
     return makeSolid11(label, nd, nullptr, IPHI_MIDX ); 
 }
 
 
-CSGSolid* CSGMaker::makeInfTheCut(const char* label, float startThe, float deltaThe )
+CSGSolid* CSGMaker::makeInfThetaCut(const char* label, float startTheta_pi, float deltaTheta_pi )
 {
-    CSGNode nd = CSGNode::InfTheCut(startThe, deltaThe, ' ' ); 
+    CSGNode nd = CSGNode::InfThetaCut(startTheta_pi, deltaTheta_pi, ' ' ); 
     return makeSolid11(label, nd, nullptr, ITHE_MIDX ); 
 }
-CSGSolid* CSGMaker::makeInfTheCutL(const char* label, float startThe, float deltaThe )
+CSGSolid* CSGMaker::makeInfThetaCutL(const char* label, float startTheta_pi, float deltaTheta_pi )
 {
-    CSGNode nd = CSGNode::InfTheCut(startThe, deltaThe, 'L' ); 
+    CSGNode nd = CSGNode::InfThetaCut(startTheta_pi, deltaTheta_pi, 'L' ); 
     return makeSolid11(label, nd, nullptr, ITHL_MIDX ); 
 }
 

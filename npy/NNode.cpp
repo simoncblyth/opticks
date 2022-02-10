@@ -25,6 +25,9 @@
 #include <iomanip>
 #include <set>
 
+#include "scuda.h"
+#include "squad.h"
+
 #include "BFile.hh"
 #include "BRng.hh"
 
@@ -62,6 +65,24 @@ float nnode::r1() const { assert(0 && "nnode::r1 needs override "); return 0 ; }
 float nnode::r2() const { assert(0 && "nnode::r2 needs override "); return 0 ; } 
 void  nnode::increase_z2(float /*dz*/){ assert(0 && "nnode::increase_z2 needs override "); }
 void  nnode::decrease_z1(float /*dz*/){ assert(0 && "nnode::decrease_z1 needs override "); }
+
+
+void nnode::set_p0( const quad& q0 )
+{
+    param.f.x = q0.f.x ; 
+    param.f.y = q0.f.y ; 
+    param.f.z = q0.f.z ; 
+    param.f.w = q0.f.w ; 
+}
+
+void nnode::set_p1( const quad& q1 )
+{
+    param1.f.x = q1.f.x ; 
+    param1.f.y = q1.f.y ; 
+    param1.f.z = q1.f.z ; 
+    param1.f.w = q1.f.w ; 
+}
+
 
 
 
@@ -2442,7 +2463,6 @@ void nnode::reconstruct_ellipsoid( glm::vec3& axes, glm::vec2& zcut, glm::mat4& 
     //print(zcut, "zcut" ); 
 
 }
-
 
 
 
