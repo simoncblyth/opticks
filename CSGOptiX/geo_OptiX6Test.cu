@@ -49,11 +49,12 @@ RT_PROGRAM void intersect(int primIdx)
     const float4* plan = &plan_buffer[0] ;  
     const qat4*   itra = &itra_buffer[0] ;  
 
-    rtPrintf("// intersect identity %d primIdx %d nodeOffset %d numNode %d \n", 
-         identity, primIdx, nodeOffset, numNode ); 
-
     float4 isect ; 
-    if(intersect_prim(isect, numNode, node, plan, itra, ray.tmin , ray.origin, ray.direction ))
+    bool valid_isect = intersect_prim(isect, numNode, node, plan, itra, ray.tmin , ray.origin, ray.direction ) ; 
+    rtPrintf("//geo_OptiXTest.cu:intersect identity %d primIdx %d nodeOffset %d numNode %d valid_isect %d isect.w %10.4f \n", 
+         identity, primIdx, nodeOffset, numNode, valid_isect, isect.w ); 
+
+    if(valid_isect)
     {
         if(rtPotentialIntersection(isect.w))
         {

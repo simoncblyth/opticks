@@ -88,6 +88,7 @@ void CSGGeometry::init_fd()
             name = SPath::Basename(cfbase); 
             LOG(info) << "init from CFBASE " << cfbase << " name " << name  ; 
             fd = CSGFoundry::Load(cfbase, "CSGFoundry");
+            LOG(info) << " fd.meta\n" << ( fd->meta ? fd->meta : " NO meta " ) ; 
         }
         else
         {

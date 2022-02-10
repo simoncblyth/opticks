@@ -74,6 +74,10 @@ list(APPEND INTERSECT_HEADERS
     csg_intersect_leaf.h 
     csg_intersect_node.h 
     csg_intersect_tree.h 
+
+    csg_intersect_leaf_thetacut.h 
+    csg_intersect_leaf_phicut.h 
+
     csg_robust_quadratic_roots.h
     csg_classify.h
     csg_pack.h

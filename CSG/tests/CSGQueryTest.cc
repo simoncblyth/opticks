@@ -7,6 +7,7 @@
 
 void XScan(const CSGQuery* q )
 {
+
     float3 ray_origin, ray_direction_0, ray_direction_1  ; 
     float t_min ; 
 
@@ -35,6 +36,44 @@ void XScan(const CSGQuery* q )
 
          bool valid_intersect_1 = q->intersect(isect_1, t_min, ray_origin, ray_direction_1 , gsid ); 
          std::cout << CSGQuery::Desc( isect_1, "trial_1", &valid_intersect_1 ) << std::endl ; 
+    }
+
+    NP::Write("/tmp", "CSGQueryTest.npy",  (float*)isects.data(), isects.size(), 4, 4 ); 
+}
+
+void PhiScan(const CSGQuery* q)
+{
+    float3 ray_origin ; 
+    float3 ray_direction ; 
+    float t_min ; 
+    qvals(ray_origin    , "ORI", "0,0,0" );  
+    qvals(ray_direction , "DIR", "1,0,0" );  
+    qvals(t_min         , "TMIN", "0" ); 
+
+    unsigned gsid = 0 ; 
+    int num = 12 ; 
+
+    std::vector<quad4> isects(num) ;
+ 
+    for(int i=0 ; i < num ; i++)
+    {
+         double fphi = double(i)/double(num-1) ; 
+         double fphi_deg = fphi*360. ; 
+         double phi = fphi*2.*M_PIf ;
+ 
+         double cosPhi = std::cos( phi ); 
+         double sinPhi = std::sin( phi ); 
+ 
+         ray_direction.x = cosPhi ;
+         ray_direction.y = sinPhi ;  
+         ray_direction.z = 0.f ; 
+
+         quad4& isect = isects[i] ; 
+
+         bool valid_intersect = q->intersect(isect, t_min, ray_origin, ray_direction , gsid ); 
+
+         std::cout << " i " << std::setw(3) << i << " fphi " << fphi << " fphi_deg " << fphi_deg << std::endl ; 
+         std::cout << CSGQuery::Desc( isect, "PhiScan", &valid_intersect ) << std::endl ; 
     }
 
     NP::Write("/tmp", "CSGQueryTest.npy",  (float*)isects.data(), isects.size(), 4, 4 ); 
@@ -82,6 +121,7 @@ int main(int argc, char** argv)
     {
         case 'O': One(q)   ; break ; 
         case 'X': XScan(q) ; break ; 
+        case 'P': PhiScan(q) ; break ; 
     }
 
     return 0 ; 

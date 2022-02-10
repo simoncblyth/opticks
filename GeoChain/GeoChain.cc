@@ -49,11 +49,14 @@ GeoChain::GeoChain(Opticks* ok_)
 GeoChain::convertSolid
 -----------------------
 
-Geometry conversions:
+Geometry conversions from 1->2->3
 
 1. G4VSolid
 2. GMesh 
 3. CSGFoundry 
+
+The meta param is for example from X4SolidMaker
+which then gets passed into CSGFoundry meta.
 
 **/
 

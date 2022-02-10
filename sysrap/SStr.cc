@@ -758,7 +758,7 @@ void SStr::Extract_( std::vector<float>& vals, const char* s )
     char* p = const_cast<char*>(s) ; 
     while (*p) 
     {
-        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtof(p, &p)) ; 
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-' || *p == '.') vals.push_back(strtof(p, &p)) ; 
         else p++ ;
     }
 }

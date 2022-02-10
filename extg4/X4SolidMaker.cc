@@ -158,25 +158,33 @@ const G4VSolid* X4SolidMaker::SphereWithPhiCutDEV(const char* name)  // static
 
 const G4VSolid* X4SolidMaker::GeneralSphereDEV(const char* name, std::string& meta )  // static
 {
-
+    const char* radiusMode = SSys::getenvvar("X4SolidMaker_GeneralSphereDEV_radiusMode"); 
     double innerRadius = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_innerRadius", 50.f) ;    // mm
     double outerRadius = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_outerRadius", 100.f) ;    // mm
 
     // The two azimuthal angles from the phi cut should be in range 0. to 2. (in units of pi) use XY projection to visualize  
+    const char* phiMode = SSys::getenvvar("X4SolidMaker_GeneralSphereDEV_phiMode"); 
     double phiStart    = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_phiStart",    0.f) ; 
     double phiDelta    = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_phiDelta",    2.0f) ; 
 
     // The two polar angles from the theta cut should be in range 0. to 1. (in units of pi) use XZ or YZ projections to visualize  
+    const char* thetaMode = SSys::getenvvar("X4SolidMaker_GeneralSphereDEV_thetaMode"); 
     double thetaStart  = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_thetaStart",  0.f) ; 
     double thetaDelta  = SSys::getenvfloat("X4SolidMaker_GeneralSphereDEV_thetaDelta",  0.5f) ;
 
 
     NP::SetMeta<std::string>( meta, "creator", "X4SolidMaker::GeneralSphereDEV" );  
     NP::SetMeta<std::string>( meta, "name",    name );  
+
+    NP::SetMeta<std::string>( meta, "radiusMode", radiusMode ); 
     NP::SetMeta<float>( meta, "innerRadius", float(innerRadius) ); 
     NP::SetMeta<float>( meta, "outerRadius", float(outerRadius) ); 
+
+    NP::SetMeta<std::string>( meta, "phiMode", phiMode ); 
     NP::SetMeta<float>( meta, "phiStart", float(phiStart) ); 
     NP::SetMeta<float>( meta, "phiDelta", float(phiDelta) ); 
+
+    NP::SetMeta<std::string>( meta, "thetaMode", thetaMode ); 
     NP::SetMeta<float>( meta, "thetaStart", float(thetaStart) ); 
     NP::SetMeta<float>( meta, "thetaDelta", float(thetaDelta) ); 
  

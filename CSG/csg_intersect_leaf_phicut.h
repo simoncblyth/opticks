@@ -92,26 +92,40 @@ Disqualify rays with direction within the plane::
 **/
 
 LEAF_FUNC
-bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
+bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d )
 {
     const float& cosPhi0 = q0.f.x ; 
     const float& sinPhi0 = q0.f.y ; 
     const float& cosPhi1 = q0.f.z ; 
     const float& sinPhi1 = q0.f.w ; 
 
+    // hmm unlike with thetacut the angles make exceed 1  
+    const float cross0 = cosPhi0*d.x - sinPhi0*d.y ;
+    const float cross1 = cosPhi1*d.x - sinPhi1*d.y ;
+    bool unbounded_exit = cross0 > 0.f && cross1 < 0.f ;   
+
+#ifdef DEBUG
+    printf("//intersect_leaf_phicut q0.f  (%10.4f %10.4f %10.4f %10.4f) %s \n" , q0.f.x, q0.f.y, q0.f.z, q0.f.w, "cosPhi0/sinPhi0/cosPhi1/sinPhi1"  ) ; 
+    printf("//intersect_leaf_phicut d.xyz ( %10.4f %10.4f %10.4f ) \n", d.x, d.y, d.z  ); 
+    printf("//intersect_leaf_phicut cross0 %10.4f cosPhi0*d.x - sinPhi0*d.y \n", cross0 );
+    printf("//intersect_leaf_phicut cross1 %10.4f cosPhi1*d.x - sinPhi1*d.y \n", cross1 );
+    printf("//intersect_leaf_phicut unbounded_exit %d \n", unbounded_exit ); 
+#endif
+
+
     // setting t values to t_min disqualifies that intersect
     // dot products with normal0  [ sinPhi0, -cosPhi0, 0.f ]
-    float d_n0 = ray_direction.x*sinPhi0 + ray_direction.y*(-cosPhi0) ; 
-    float o_n0 = ray_origin.x*sinPhi0 + ray_origin.y*(-cosPhi0) ; 
+    float d_n0 = d.x*sinPhi0 + d.y*(-cosPhi0) ; 
+    float o_n0 = o.x*sinPhi0 + o.y*(-cosPhi0) ; 
     float t0 = d_n0 == 0.f ? t_min : -o_n0/d_n0 ;                 // perhaps could avoid the check if side0 became -inf ? 
-    float side0 = ray_origin.x*cosPhi0 + ray_origin.y*sinPhi0 + ( ray_direction.x*cosPhi0 + ray_direction.y*sinPhi0 )*t0 ;  
+    float side0 = o.x*cosPhi0 + o.y*sinPhi0 + ( d.x*cosPhi0 + d.y*sinPhi0 )*t0 ;  
     if(side0 < 0.f) t0 = t_min ; 
 
     // dot products with normal1   [ -sinPhi1,  cosPhi1, 0.f ]
-    float d_n1 = ray_direction.x*(-sinPhi1) + ray_direction.y*cosPhi1 ; 
-    float o_n1 = ray_origin.x*(-sinPhi1) + ray_origin.y*cosPhi1 ; 
+    float d_n1 = d.x*(-sinPhi1) + d.y*cosPhi1 ; 
+    float o_n1 = o.x*(-sinPhi1) + o.y*cosPhi1 ; 
     float t1 = d_n1 == 0.f ? t_min : -o_n1/d_n1 ; 
-    float side1 = ray_origin.x*cosPhi1 + ray_origin.y*sinPhi1 + ( ray_direction.x*cosPhi1 + ray_direction.y*sinPhi1 )*t1 ;  
+    float side1 = o.x*cosPhi1 + o.y*sinPhi1 + ( d.x*cosPhi1 + d.y*sinPhi1 )*t1 ;  
     if(side1 < 0.f) t1 = t_min ; 
 
 #ifdef DEBUG
@@ -132,6 +146,11 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
         isect.z = 0.f ; 
         isect.w = t_cand ; 
     }
+    else if( unbounded_exit )
+    {
+        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity 
+    }
+
     return valid_intersect ; 
 }
 

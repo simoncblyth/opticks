@@ -94,7 +94,12 @@ int main(int argc, char** argv)
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
     
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+    if(fd->meta) LOG(info) << "fd.meta\n" << fd->meta ; 
+
     fd->upload(); 
+     
+
+
 
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
     QSim<float>::UploadComponents(fd->icdf, fd->bnd, rindexpath ); 

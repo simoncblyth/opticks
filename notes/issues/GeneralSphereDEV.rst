@@ -97,6 +97,43 @@ Using 2D(embedded in 3D) cross products : can determine if ray direction is betw
 
 
 
+Debug blank cxr_geochain.sh render with thetacut : NOW FIXED 
+----------------------------------------------------------------
+
+Modify to a full sphere to orientate and prepare debug. 
+Set EYE inside the sphere so every pixel should intersect::
+
+    EYE=-0.25,0,0 ./cxr_geochain.sh 
+
+Get logging::
+
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.3494 
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.3622 
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.3749 
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.2852 
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.2981 
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.3109 
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.3238 
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.2333 
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.2463 
+    //geo_OptiXTest.cu:intersect identity 0 primIdx 0 nodeOffset 0 numNode 1 valid_isect 1 isect.w   111.2593 
 
 
+Now back to thetacut sphere and recreate the CSG geom::
+
+   x4 ; vi GeneralSphereDEV.sh 
+   gc ; ./run.sh 
+
+Huh, working already. Must have been just that the was not seeing the new headers::
+
+    EYE=-1,-1,1 TMIN=0.1 ./cxr_geochain.sh 
+
+
+
+Onwards to phicut 
+--------------------
+
+Pacman, but failing to intersect with half of phi:: 
+
+    IXYZ=-3,3,0 ./csg_geochain.sh 
 
