@@ -20,7 +20,11 @@ from opticks.sysrap.SCenterExtentGenstep import SCenterExtentGenstep
 from opticks.ana.gridspec import GridSpec, X, Y, Z
 from opticks.ana.npmeta import NPMeta
 
+
+efloat_ = lambda ekey, fallback:float(os.environ.get(ekey,fallback))
 efloatlist_ = lambda ekey,fallback:list(map(float, filter(None, os.environ.get(ekey,fallback).split(","))))
+
+eint_ = lambda ekey, fallback:int(os.environ.get(ekey,fallback))
 
 def eintlist_(ekey, fallback):
     """
@@ -30,9 +34,6 @@ def eintlist_(ekey, fallback):
     if slis is None or len(slis) == 0: return None
     slis = slis.split(",")
     return list(map(int, filter(None, slis)))
-
-
-eint_ = lambda ekey, fallback:int(os.environ.get(ekey,fallback))
 
 
 SIZE = np.array([1280, 720])
@@ -165,14 +166,14 @@ def ReferenceGeometry(pl):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-
     pl = pv.Plotter(window_size=SIZE*2 ) 
-
     #pl.enable_eye_dome_lighting()  # improves depth perception with point clouds
 
+    plotbase = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM")
+    print(" plotbase : %s " % plotbase )
 
-    cegs_path = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM") 
-    recs_path = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM/intersectSelected")
+    cegs_path = plotbase  
+    recs_path = os.path.join(plotbase, "intersectSelected" )
 
     cegs = SCenterExtentGenstep(cegs_path)
     fold = cegs.fold
@@ -192,8 +193,8 @@ if __name__ == '__main__':
     axes = gridspec.axes
     print(" gridspec.axes : %s " % str(axes) )
 
-    gridspec.pv_compose(pl, reset=True)
-
+    zoom = efloat_("ZOOM", "1.")
+    gridspec.pv_compose(pl, reset=False, zoom=zoom)
 
     no_isect = not hasattr(fold, 'isect') 
     gs_only = 'GS_ONLY' in os.environ
@@ -204,7 +205,6 @@ if __name__ == '__main__':
        cp = pl.show()
        sys.exit(0)
     pass 
-    
 
     dir_, t = fold.isect[:,0,:3], fold.isect[:,0,3]   # intersect normal and ray distance 
     pos, sd = fold.isect[:,1,:3], fold.isect[:,1,3]   # intersect position and surface distance 
@@ -220,8 +220,6 @@ if __name__ == '__main__':
 
     select = select_all 
 
-
-
     count_all = np.count_nonzero(select_all)
     count_spurious = np.count_nonzero(select_spurious)
 
@@ -232,6 +230,7 @@ if __name__ == '__main__':
 
     sphi = 'SPHI' in os.environ
     if sphi:
+        print(" SPHI : selecting intersects based on phi angle of the position ") 
         phi0,phi1 = efloatlist_("SPHI", "0.25,1.75")    
         cosPhi0,sinPhi0 = np.cos(phi0*np.pi),np.sin(phi0*np.pi)     
         cosPhi1,sinPhi1 = np.cos(phi1*np.pi),np.sin(phi1*np.pi)     
@@ -239,20 +238,13 @@ if __name__ == '__main__':
         PR = cosPhi0*pos[:,1] - pos[:,0]*sinPhi0
         QR = cosPhi1*pos[:,1] - pos[:,0]*sinPhi1   #Q ^ R = cosPhi1*d.y - d.x*sinPhi1 
         select_phi = np.logical_and( PR > 0., QR < 0. ) if PQ > 0. else np.logical_or( PR > 0., QR < 0. )
-        #select_phi = np.logical_and( PR > 0., QR < 0. ) 
-
         select_phi = np.logical_not( select_phi )
-
         count_phi = np.count_nonzero(select_phi)
-    
         print( "%40s : %d " % ("count_phi", count_phi) )
-
         select = np.logical_and( select, select_phi )
         count_select = np.count_nonzero(select)
         print("%40s : %d   SPHI %s  phi0 %s phi1 %s PQ %s \n" % ("count_select", count_select, os.environ["SPHI"], phi0, phi1, PQ )) 
     pass
-
-
 
     ## when envvar IXYZ is defined restrict to a single genstep source of photons identified by grid coordinates
     ixyz = eintlist_("IXYZ", None)   
@@ -290,10 +282,6 @@ if __name__ == '__main__':
         print("%40s : %d  \n" % ("count_select", count_select)) 
     pass      
 
-
-
-
-
     if not ixyz is None and not iw is None:
         ix,iy,iz = ixyz
         gsid_label = "gsid_%d_%d_%d_%d" % (ix,iy,iz,iw)     
@@ -308,10 +296,8 @@ if __name__ == '__main__':
         recs = []
     pass
 
-
     count_select = np.count_nonzero(select)
     print("%40s : %d  \n" % ("count_select", count_select)) 
-
 
     s_t = t[select]
     s_pos = pos[select]
@@ -320,6 +306,7 @@ if __name__ == '__main__':
     s_isect = fold.isect[select]
     s_ray_origin = ray_origin[select]
     s_ray_direction = ray_direction[select]
+    s_pos_r = np.sqrt(np.sum(s_pos*s_pos, axis=1))  
 
     s_count = len(s_pos)
     s_limited = min( s_count, 100 )   
@@ -328,8 +315,18 @@ if __name__ == '__main__':
 
     print("%40s : %d  \n" % ("s_count", s_count)) 
     print("%40s : %d  \n" % ("s_limited", s_limited)) 
-    print("%40s : (use IW=w to select single rays)\n %s \n" % ( "s_isect_gsid", s_isect_gsid ))
     print("%40s : %d  \n" % ("selected_isect", len(selected_isect))) 
+
+    def fmt(i):
+        _s_isect_gsid = " s_isect_gsid ( %3d %3d %3d %3d ) " % tuple(s_isect_gsid[i]) 
+        _s_t = " s_t ( %10.4f ) " % s_t[i]
+        _s_pos = " s_pos ( %10.4f %10.4f %10.4f ) " % tuple(s_pos[i])
+        _s_pos_r = " s_pos_r ( %10.4f ) " % s_pos_r[i]
+        return " %s %s %s %s " % (_s_isect_gsid, _s_t, _s_pos, _s_pos_r )
+    pass
+    desc = "\n".join(map(fmt,np.arange(s_limited)))
+    print(desc) 
+    print(" Use IXYZ to select gensteps, IW to select photons within the genstep ")
 
     log.info( "sd_cut %10.4g sd.min %10.4g sd.max %10.4g num select %d " % (sd_cut, sd.min(), sd.max(), len(s_pos)))
 
@@ -344,20 +341,21 @@ if __name__ == '__main__':
         print(" define key %s to save selected isect to %s " % (key, selected_isect_path ))
     pass
 
-
-    pl.add_points( s_pos, color="white" )
-    #pl.add_points( pos, color="white" )
-    #pl.add_arrows( pos, dir_, color="white", mag=10 )
+    plot_selected = 'PLOT_SELECTED' in os.environ   # normally all positions are plotted not just selected
+    if plot_selected:
+        pl.add_points( s_pos, color="white" )
+    else:
+        pl.add_points( pos, color="white" )
+    pass
 
     if 0:
-        # works but then have to fish 
+        # works but then would have to fish for labelling etc.. 
         if len(recs) > 0:
             arrows = make_arrows( recs[:,2,:3], recs[:,0,:3], mag=10 )
             pl.add_mesh( arrows, color="pink" )
             print(arrows)
         pass
     pass
-
     if 1:
         # less efficient but gives easy access to each arrow position 
         for irec, rec in enumerate(recs): 
@@ -372,7 +370,6 @@ if __name__ == '__main__':
             pl.add_point_labels( points[mask], [ str(rec_tloop_nodeIdx_ctrl) ] , point_size=20, font_size=36 )
         pass
     pass   
-
     
     ## different presentation of selected intersects 
     ## red position points (usually invisible under arrow) and normal arrows    
@@ -384,9 +381,8 @@ if __name__ == '__main__':
         #pl.add_arrows( s_ray_origin, s_ray_direction, color="blue", mag=s_t ) 
         # drawing arrow from ray origins to intersects works, but the arrows are too big 
         # TODO: find way to do this with different presentation
-        # as it avoids having to loop over the intersects as done
-        # below which restricts too small numbers  
-   
+        # as it avoids having to python loop over the intersects as done
+        # below which restricts to small numbers  
       
         ll = np.zeros( (s_limited, 2, 3), dtype=np.float32 )
         ll[:,0] = s_ray_origin[:s_limited]
@@ -400,18 +396,22 @@ if __name__ == '__main__':
         log.info("no s_pos selected  ")
     pass
 
-
-
     pl.show_grid()
     ReferenceGeometry(pl)
-
     topline = os.environ.get("TOPLINE", "topline")
     botline = os.environ.get("BOTLINE", "botline")
-
     pl.add_text(topline, position="upper_left")
     pl.add_text(botline, position="lower_left")
 
+    figsdir = os.path.join(plotbase, "figs")
+    if not os.path.isdir(figsdir):
+        os.makedirs(figsdir)
+    pass
 
-    cp = pl.show()
+    outname = "out.png" 
+    outpath = os.path.join(figsdir, outname)
+    print(" outpath : %s " % outpath )
+
+    cp = pl.show(screenshot=outpath)
 
 

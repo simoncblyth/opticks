@@ -122,7 +122,7 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
 #ifdef DEBUG
     printf("//intersect_leaf_phicut q0.f  (%10.4f %10.4f %10.4f %10.4f) %s \n" , q0.f.x, q0.f.y, q0.f.z, q0.f.w, "cosPhi0/sinPhi0/cosPhi1/sinPhi1"  ) ; 
     printf("//intersect_leaf_phicut d.xyz ( %10.4f %10.4f %10.4f ) \n", d.x, d.y, d.z  ); 
-    printf("//intersect_leaf_phicut PQ %10.4f cosPhi0*sinPhi1 - cosPhi1*sinPhi0 \n", PQ );
+    printf("//intersect_leaf_phicut PQ %10.4f cosPhi0*sinPhi1 - cosPhi1*sinPhi0 : +ve angle less than pi, -ve angle greater than pi \n", PQ );
     printf("//intersect_leaf_phicut PR %10.4f cosPhi0*d.y - d.x*sinPhi0 \n", PR );
     printf("//intersect_leaf_phicut QR %10.4f cosPhi1*d.y - d.x*sinPhi1 \n", PR );
     printf("//intersect_leaf_phicut unbounded_exit %d \n", unbounded_exit ); 
@@ -132,6 +132,7 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
     // setting t values to t_min disqualifies that intersect
     // dot products with normal0  [ sinPhi0, -cosPhi0, 0.f ]
   
+    
     /*
     // Old careful approach works, but unneeded rotation flops for checking the side, 
     // can just check signbit of x intersect matches the sigbit of the cosPhi
@@ -149,8 +150,8 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
 
     float side1 = o.x*cosPhi1 + o.y*sinPhi1 + ( d.x*cosPhi1 + d.y*sinPhi1 )*t1 ;  
     if(side1 < 0.f) t1 = t_min ; 
-
     */
+
 
     /*
 
@@ -177,22 +178,43 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
     //      SPHI=0.24,1.76 ./csg_geochain.sh ana
     //      SPHI=0.24,1.76 IXYZ=4,4,0 ./csg_geochain.sh ana
     //
-    //  TODO: why ? its little different to the above which has no problem 
-    //
-    //  *  t_cand differing infinity handling probably ?
+    //   Q: why ? its little different to the above which has no problem 
+    //   A: bug t_cand < t_min which should be t_cand <= t_min   
     //
     //   https://tavianator.com/2011/ray_box.html
     //    0*inf = nan
     //
 
     
-    float t_cand = -( o.x*sinPhi0 + o.y*(-cosPhi0) )/ ( d.x*sinPhi0 + d.y*(-cosPhi0) ) ;         // may be inf or -inf
-    if(signbit(o.x+t_cand*d.x) != signbit(cosPhi0) || t_cand < t_min ) t_cand = RT_DEFAULT_MAX ; // disqualify wrong side or too close
+    float t_cand = -( o.x*sinPhi0 + o.y*(-cosPhi0) )/ ( d.x*sinPhi0 + d.y*(-cosPhi0) ) ; 
+    // when origin o is on the phi0 line t_cand is -0.f 
+
+#ifdef DEBUG
+    printf("//intersect_leaf_phicut ( o.x*sinPhi0 + o.y*(-cosPhi0)    %10.4f \n", ( o.x*sinPhi0 + o.y*(-cosPhi0)) ); 
+    printf("//intersect_leaf_phicut ( d.x*sinPhi0 + d.y*(-cosPhi0)    %10.4f \n", ( d.x*sinPhi0 + d.y*(-cosPhi0)) ); 
+    printf("//intersect_leaf_phicut t_min    %10.4f \n", t_min ); 
+    printf("//intersect_leaf_phicut t_cand.0 %10.4f \n", t_cand ); 
+#endif
+
+    // disqualify wrong side or too close
+    if(signbit(o.x+t_cand*d.x) != signbit(cosPhi0) || t_cand < t_min ) t_cand = RT_DEFAULT_MAX ; 
+    //if(signbit(o.x+t_cand*d.x) != signbit(cosPhi0) || t_cand <= t_min ) t_cand = RT_DEFAULT_MAX ; 
+    //                                             ^^^^^^^^^^^^^^^^^^  
+    //    must be  t_cand <= t_min to avoid spurious intersects in CSG combination 
+    //    for rays starting on phi0 line which have t_cand -0.f
+
+#ifdef DEBUG
+    printf("//intersect_leaf_phicut t_cand.1 %10.4f \n", t_cand ); 
+#endif
 
     const float t1 = -( o.x*(-sinPhi1) + o.y*cosPhi1 )/( d.x*(-sinPhi1) + d.y*cosPhi1 ) ; 
     if(signbit(o.x + t1*d.x) == signbit(cosPhi1) && t1 > t_min ) t_cand = fminf( t1, t_cand );  
+    bool valid_intersect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;  
 
-    bool valid_intersect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;  // hmm t_cand -ve infinity allowed 
+#ifdef DEBUG
+    printf("//intersect_leaf_phicut t1      %10.4f \n", t1 ); 
+    printf("//intersect_leaf_phicut t_cand.2 %10.4f valid_intersect %d \n", t_cand, valid_intersect  ); 
+#endif
 
     if( valid_intersect ) 
     {

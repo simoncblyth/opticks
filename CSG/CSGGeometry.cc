@@ -215,7 +215,11 @@ void CSGGeometry::saveCenterExtentGenstepIntersect(float t_min) const
         else if( sxyzw && ix == sx && iy == sy && iz == sz && iw == sw )  // restrict to single photon 
         {
             num_ray += 1 ; 
-            if(q->intersect(isect, t_min, p )) ii.push_back(isect); 
+            LOG(info) << "[ single photon selected" ; 
+            bool valid_isect = q->intersect(isect, t_min, p ) ; 
+            if(valid_isect) ii.push_back(isect); 
+            LOG(info) << std::endl << CSGQuery::Desc(isect, "single photon selected", &valid_isect ) ;  
+            LOG(info) << "] single photon selected " ; 
         }
     }   
 

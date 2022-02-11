@@ -1442,16 +1442,17 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
     printf("//intersect_leaf typecode %d gtransformIdx %d \n", typecode, gtransformIdx ); 
     printf("//intersect_leaf ray_origin (%10.4f,%10.4f,%10.4f) \n",  ray_origin.x, ray_origin.y, ray_origin.z ); 
     printf("//intersect_leaf ray_direction (%10.4f,%10.4f,%10.4f) \n",  ray_direction.x, ray_direction.y, ray_direction.z ); 
+    /*
     if(q) 
     {
-        printf(" q.q0.f (%10.4f,%10.4f,%10.4f,%10.4f)  \n", q->q0.f.x,q->q0.f.y,q->q0.f.z,q->q0.f.w  ); 
-        printf(" q.q1.f (%10.4f,%10.4f,%10.4f,%10.4f)  \n", q->q1.f.x,q->q1.f.y,q->q1.f.z,q->q1.f.w  ); 
-        printf(" q.q2.f (%10.4f,%10.4f,%10.4f,%10.4f)  \n", q->q2.f.x,q->q2.f.y,q->q2.f.z,q->q2.f.w  ); 
-        printf(" q.q3.f (%10.4f,%10.4f,%10.4f,%10.4f)  \n", q->q3.f.x,q->q3.f.y,q->q3.f.z,q->q3.f.w  ); 
-
-        printf(" origin (%10.4f,%10.4f,%10.4f) \n",  origin.x, origin.y, origin.z ); 
-        printf(" direction (%10.4f,%10.4f,%10.4f) \n",  direction.x, direction.y, direction.z ); 
+        printf("//intersect_leaf q.q0.f (%10.4f,%10.4f,%10.4f,%10.4f)  \n", q->q0.f.x,q->q0.f.y,q->q0.f.z,q->q0.f.w  ); 
+        printf("//intersect_leaf q.q1.f (%10.4f,%10.4f,%10.4f,%10.4f)  \n", q->q1.f.x,q->q1.f.y,q->q1.f.z,q->q1.f.w  ); 
+        printf("//intersect_leaf q.q2.f (%10.4f,%10.4f,%10.4f,%10.4f)  \n", q->q2.f.x,q->q2.f.y,q->q2.f.z,q->q2.f.w  ); 
+        printf("//intersect_leaf q.q3.f (%10.4f,%10.4f,%10.4f,%10.4f)  \n", q->q3.f.x,q->q3.f.y,q->q3.f.z,q->q3.f.w  ); 
+        printf("//intersect_leaf origin (%10.4f,%10.4f,%10.4f) \n",  origin.x, origin.y, origin.z ); 
+        printf("//intersect_leaf direction (%10.4f,%10.4f,%10.4f) \n",  direction.x, direction.y, direction.z ); 
     }
+    */
 #endif
 
     bool valid_isect = false ; 
@@ -1494,6 +1495,11 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
          if(complement) isect.x = -isect.x ;  
          // note that isect.y is also flipped for unbounded exit : for consumption by intersect_tree
     }
+
+#ifdef DEBUG
+    printf("//intersect_leaf valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", valid_isect, isect.x, isect.y, isect.z, isect.w); 
+#endif
+ 
 
     return valid_isect ; 
 }

@@ -50,6 +50,12 @@ in the more friendly debugging environment of the CPU.::
         at python analysis level the highlighted genstep can be changed using IXYZ 
         TMIN does nothing at analysis level the intersects from the prior run are loaded and plotted
            
+    SXYZW=4,4,0,80 ./csg_geochain.sh run
+        re-run with a single photon 
+        do this after recompiling with DEBUG flag allows to see the details of the single photon 
+
+
+
      
 
 
@@ -124,6 +130,7 @@ case $GEOM in
       CylinderFourBoxUnion_YX) note="see spurious" ;;
            BoxThreeBoxUnion_YX) note="no spurious" ;; 
            BoxFourBoxUnion_YX) note="see spurious in the +Y and -X small boxes " ;; 
+          GeneralSphereDEV_XY) note="phicut bug from \"t_cand <  t_min\" that should be \"t_cand <= t_min \" : SPHI selects spurious in bad phi range "  ;;
                             *) note="" ;;
 esac
 
@@ -150,12 +157,18 @@ esac
 
 echo $msg GEOM $GEOM gcn $gcn gridscale $gridscale ixiyiz $ixiyiz
 
+
+topline="GEOM=$GEOM ./csg_geochain.sh "
+[ -n "$SPHI" ] && topline="SPHI=$SPHI $topline" 
+[ -n "$IXYZ" ] && topline="IXYZ=$IXYZ $topline" 
+
+
 export NOTE=$note 
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CEGS=${CEGS:-$cegs}
 export CFBASE=${CFBASE:-$cfbase}
 export CEGS=${CEGS:-$cegs}
-export TOPLINE="GEOM=$GEOM ./csg_geochain.sh "
+export TOPLINE="$topline"
 export BOTLINE="$note"
 export THIRDLINE="CEGS=$CEGS"
 
@@ -272,6 +285,33 @@ if [ "${arg/ana}" != "$arg" ]; then
     echo $msg running script $script
     ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $msg script error && exit 2
+
+    figdir=$cfbase/$bin/$GEOM/figs
+    ls -l $figdir 
+
+    if [ -n "$PUB" ]; then 
+
+       reldir=/env/presentation/CSG/$bin/$GEOM/figs 
+       pubdir=$HOME/simoncblyth.bitbucket.io$reldir
+
+       figname=out.png 
+       pubname=${GEOM}_${PUB}.png       
+
+       echo $msg figdir $figdir
+       echo $msg reldir $reldir
+       echo $msg pubdir $pubdir
+       echo $msg pubname $pubname
+
+       if [ ! -d "$pubdir" ]; then 
+          mkdir -p $pubdir
+       fi  
+
+       cmd="cp $figdir/$figname $pubdir/$pubname"
+       echo $msg cmd $cmd
+       eval $cmd
+       echo $msg rel $reldir/$pubname
+    fi 
+
 fi
 
 exit 0
