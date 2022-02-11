@@ -2,7 +2,6 @@
 
 import numpy as np
 import pyvista as pv
-SIZE = np.array([1280, 720])
 
 
 
@@ -34,6 +33,7 @@ if __name__ == '__main__':
      ll[:,1] = pos
 
 
+     SIZE = np.array([1280, 720])
      pl = pv.Plotter(window_size=SIZE*2 )
      
      stg = make_stage(10)

@@ -220,12 +220,38 @@ if __name__ == '__main__':
 
     select = select_all 
 
+
+
     count_all = np.count_nonzero(select_all)
     count_spurious = np.count_nonzero(select_spurious)
 
     print("\n\n")
     print( "%40s : %d " % ("count_all", count_all) )
     print( "%40s : %d " % ("count_spurious", count_spurious) )
+
+
+    sphi = 'SPHI' in os.environ
+    if sphi:
+        phi0,phi1 = efloatlist_("SPHI", "0.25,1.75")    
+        cosPhi0,sinPhi0 = np.cos(phi0*np.pi),np.sin(phi0*np.pi)     
+        cosPhi1,sinPhi1 = np.cos(phi1*np.pi),np.sin(phi1*np.pi)     
+        PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0 
+        PR = cosPhi0*pos[:,1] - pos[:,0]*sinPhi0
+        QR = cosPhi1*pos[:,1] - pos[:,0]*sinPhi1   #Q ^ R = cosPhi1*d.y - d.x*sinPhi1 
+        select_phi = np.logical_and( PR > 0., QR < 0. ) if PQ > 0. else np.logical_or( PR > 0., QR < 0. )
+        #select_phi = np.logical_and( PR > 0., QR < 0. ) 
+
+        select_phi = np.logical_not( select_phi )
+
+        count_phi = np.count_nonzero(select_phi)
+    
+        print( "%40s : %d " % ("count_phi", count_phi) )
+
+        select = np.logical_and( select, select_phi )
+        count_select = np.count_nonzero(select)
+        print("%40s : %d   SPHI %s  phi0 %s phi1 %s PQ %s \n" % ("count_select", count_select, os.environ["SPHI"], phi0, phi1, PQ )) 
+    pass
+
 
 
     ## when envvar IXYZ is defined restrict to a single genstep source of photons identified by grid coordinates
@@ -263,6 +289,9 @@ if __name__ == '__main__':
         print("%40s : %d    SPURIOUS %s " % ("count_spurious", count_spurious, os.environ["SPURIOUS"] ))
         print("%40s : %d  \n" % ("count_select", count_select)) 
     pass      
+
+
+
 
 
     if not ixyz is None and not iw is None:
@@ -316,7 +345,8 @@ if __name__ == '__main__':
     pass
 
 
-    pl.add_points( pos, color="white" )
+    pl.add_points( s_pos, color="white" )
+    #pl.add_points( pos, color="white" )
     #pl.add_arrows( pos, dir_, color="white", mag=10 )
 
     if 0:

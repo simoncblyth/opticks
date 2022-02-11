@@ -89,6 +89,21 @@ Disqualify rays with direction within the plane::
        ray_direction ( -1, 0,  0)   .normal     0
 
 
+Edge vectors P, Q and radial direction vector R::
+
+   P  ( cosPhi0, sinPhi0, 0 )        phi0=0   (1, 0, 0)  phi0=1  (-1, 0, 0)  
+   Q  ( cosPhi1, sinPhi1, 0 )  
+   R  (  d.x   ,   d.y  , 0 )        d.z is ignored, only intersected in radial direction within XY plane
+
+Use conventional cross product sign convention  A ^ B =  (Ax By - Bx Ay ) k the products are::
+ 
+   PQ = P ^ Q = cosPhi0*sinPhi1 - cosPhi1*sinPhi0 
+   PR = P ^ R = cosPhi0*d.y - d.x*sinPhi0 
+   QR = Q ^ R = cosPhi1*d.y - d.x*sinPhi1 
+
+Note that as R is not normalized the PR and QR cross products are only proportional to the sine of the angles.
+See tests/cross2D_angle_range_without_trig.py for exploration of 2D cross product 
+
 **/
 
 LEAF_FUNC
@@ -99,45 +114,85 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
     const float& cosPhi1 = q0.f.z ; 
     const float& sinPhi1 = q0.f.w ; 
 
-    // hmm unlike with thetacut the angles make exceed 1  
-    const float cross0 = cosPhi0*d.x - sinPhi0*d.y ;
-    const float cross1 = cosPhi1*d.x - sinPhi1*d.y ;
-    bool unbounded_exit = cross0 > 0.f && cross1 < 0.f ;   
+    const float PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0  ;  // PQ +ve => angle < pi,   PQ -ve => angle > pi 
+    const float PR = cosPhi0*d.y - d.x*sinPhi0  ;          // PR and QR +ve/-ve selects the "side of the line"
+    const float QR = cosPhi1*d.y - d.x*sinPhi1  ;  
+    bool unbounded_exit = PQ > 0.f ? ( PR > 0.f && QR < 0.f ) : ( PR > 0.f || QR < 0.f )  ;   
 
 #ifdef DEBUG
     printf("//intersect_leaf_phicut q0.f  (%10.4f %10.4f %10.4f %10.4f) %s \n" , q0.f.x, q0.f.y, q0.f.z, q0.f.w, "cosPhi0/sinPhi0/cosPhi1/sinPhi1"  ) ; 
     printf("//intersect_leaf_phicut d.xyz ( %10.4f %10.4f %10.4f ) \n", d.x, d.y, d.z  ); 
-    printf("//intersect_leaf_phicut cross0 %10.4f cosPhi0*d.x - sinPhi0*d.y \n", cross0 );
-    printf("//intersect_leaf_phicut cross1 %10.4f cosPhi1*d.x - sinPhi1*d.y \n", cross1 );
+    printf("//intersect_leaf_phicut PQ %10.4f cosPhi0*sinPhi1 - cosPhi1*sinPhi0 \n", PQ );
+    printf("//intersect_leaf_phicut PR %10.4f cosPhi0*d.y - d.x*sinPhi0 \n", PR );
+    printf("//intersect_leaf_phicut QR %10.4f cosPhi1*d.y - d.x*sinPhi1 \n", PR );
     printf("//intersect_leaf_phicut unbounded_exit %d \n", unbounded_exit ); 
 #endif
 
 
     // setting t values to t_min disqualifies that intersect
     // dot products with normal0  [ sinPhi0, -cosPhi0, 0.f ]
+  
+    /*
+    // Old careful approach works, but unneeded rotation flops for checking the side, 
+    // can just check signbit of x intersect matches the sigbit of the cosPhi
+
     float d_n0 = d.x*sinPhi0 + d.y*(-cosPhi0) ; 
     float o_n0 = o.x*sinPhi0 + o.y*(-cosPhi0) ; 
     float t0 = d_n0 == 0.f ? t_min : -o_n0/d_n0 ;                 // perhaps could avoid the check if side0 became -inf ? 
+
     float side0 = o.x*cosPhi0 + o.y*sinPhi0 + ( d.x*cosPhi0 + d.y*sinPhi0 )*t0 ;  
     if(side0 < 0.f) t0 = t_min ; 
 
-    // dot products with normal1   [ -sinPhi1,  cosPhi1, 0.f ]
     float d_n1 = d.x*(-sinPhi1) + d.y*cosPhi1 ; 
     float o_n1 = o.x*(-sinPhi1) + o.y*cosPhi1 ; 
     float t1 = d_n1 == 0.f ? t_min : -o_n1/d_n1 ; 
+
     float side1 = o.x*cosPhi1 + o.y*sinPhi1 + ( d.x*cosPhi1 + d.y*sinPhi1 )*t1 ;  
     if(side1 < 0.f) t1 = t_min ; 
 
-#ifdef DEBUG
-    printf("//intersect_leaf_phicut d_n0 %10.3f o_n0 %10.3f t0 %10.3f  side0 %10.3f  \n", d_n0, o_n0, t0, side0 ); 
-    printf("//intersect_leaf_phicut d_n1 %10.3f o_n1 %10.3f t1 %10.3f  side1 %10.3f  \n", d_n1, o_n1, t1, side1 ); 
-#endif
+    */
+
+    /*
+
+    // Medium careful approach works, accepting t0 and t1 becoming infinity for some ray directions
+    // but still carefully ordering the roots. 
+    // 
+    float t0 = -(o.x*sinPhi0 + o.y*(-cosPhi0))/ ( d.x*sinPhi0 + d.y*(-cosPhi0) ) ; 
+    if(signbit(o.x+t0*d.x) != signbit(cosPhi0)) t0 = t_min ; 
+
+    float t1 = -(o.x*(-sinPhi1) + o.y*cosPhi1)/(d.x*(-sinPhi1) + d.y*cosPhi1 ) ; 
+    if(signbit(o.x+t1*d.x) != signbit(cosPhi1)) t1 = t_min ; 
 
     float t_near = fminf(t0,t1);  // order the intersects 
     float t_far  = fmaxf(t0,t1);
     float t_cand = t_near > t_min  ?  t_near : ( t_far > t_min ? t_far : t_min ) ; 
-
     bool valid_intersect = t_cand > t_min ;
+
+   */ 
+
+    
+    //  Lucas wild abandon approach gives bad intersects 
+    //  Select isect in the bad region::
+    //
+    //      SPHI=0.24,1.76 ./csg_geochain.sh ana
+    //      SPHI=0.24,1.76 IXYZ=4,4,0 ./csg_geochain.sh ana
+    //
+    //  TODO: why ? its little different to the above which has no problem 
+    //
+    //  *  t_cand differing infinity handling probably ?
+    //
+    //   https://tavianator.com/2011/ray_box.html
+    //    0*inf = nan
+    //
+
+    
+    float t_cand = -( o.x*sinPhi0 + o.y*(-cosPhi0) )/ ( d.x*sinPhi0 + d.y*(-cosPhi0) ) ;         // may be inf or -inf
+    if(signbit(o.x+t_cand*d.x) != signbit(cosPhi0) || t_cand < t_min ) t_cand = RT_DEFAULT_MAX ; // disqualify wrong side or too close
+
+    const float t1 = -( o.x*(-sinPhi1) + o.y*cosPhi1 )/( d.x*(-sinPhi1) + d.y*cosPhi1 ) ; 
+    if(signbit(o.x + t1*d.x) == signbit(cosPhi1) && t1 > t_min ) t_cand = fminf( t1, t_cand );  
+
+    bool valid_intersect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;  // hmm t_cand -ve infinity allowed 
 
     if( valid_intersect ) 
     {
@@ -189,6 +244,24 @@ Simon's comments on intersect_leaf_phicut_lucas
    * the required behaviour is for the t_min to cut away the solid in an expanding sphere 
      shape when using perspective projection (plane when using parallel projection)
 
+ 
+            |        /
+            |       /
+            |      +
+            |     /:
+            |    / :
+            |   /  :
+            | [1]--:- - - - - 0
+            | /:   :    accepted sign(xi) == sign(cosPhi1)  
+            |/ :   :
+   . . . . .O--:-- +-----+  X
+           .:  :xi :cosPhi1
+          . :
+        *1*- - - - - - - - - 0     disqualified "other half" intersect 
+        .   :      (-ve x)*(+ve cosPhi1 ) => -ve => disqualified 
+       .    :          
+      .     :
+     .      :
 
 **/
 
@@ -205,6 +278,10 @@ bool intersect_leaf_phicut_lucas(float4& isect, const quad& angles, const float&
     const float t1 = -(-angles.f.w * ray_origin.x + angles.f.z * ray_origin.y) / (-angles.f.w * ray_direction.x + angles.f.z * ray_direction.y);
     if (t1 * angles.f.z * ray_direction.x + angles.f.z * ray_origin.x > 0.f && t1 > t_min)
         t_cand = fminf(t1, t_cand);
+
+     //   angles.f.z * ( t1 * ray_direction.x + ray_origin.x )
+     //   cosPhi1 * (intersection_x) > 0  
+
 
     const bool valid = t_cand < RT_DEFAULT_MAX;
     if (valid)
