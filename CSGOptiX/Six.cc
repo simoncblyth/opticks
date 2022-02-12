@@ -7,6 +7,7 @@
 #include "SPath.hh"
 #include "NP.hh"
 #include "scuda.h"
+#include "squad.h"
 #include "sqat4.h"
 #include "OpticksCSG.h"
 
@@ -74,6 +75,16 @@ void Six::initFrame()
     posi_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, params->width, params->height);
     context["posi_buffer"]->set( posi_buffer );
 
+    isect_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_USER, params->width, params->height);
+    isect_buffer->setElementSize( sizeof(quad4) ); 
+    context["isect_buffer"]->set( isect_buffer );
+
+    LOG(info) 
+        << " params->width " << params->width
+        << " params->height " << params->height
+        << " sizeof(quad4) " << sizeof(quad4) 
+        ; 
+
     //params->pixels = (uchar4*)pixels_buffer->getDevicePointer(optix_device_ordinal); 
     //params->isect = (float4*)posi_buffer->getDevicePointer(optix_device_ordinal); 
 
@@ -122,6 +133,7 @@ void Six::createContextBuffer( char typ, T* d_ptr, unsigned num_item, const char
 template void Six::createContextBuffer( char typ, CSGNode*,  unsigned, const char* ) ; 
 template void Six::createContextBuffer( char typ, qat4*,     unsigned, const char* ) ; 
 template void Six::createContextBuffer( char typ, float*,    unsigned, const char* ) ; 
+template void Six::createContextBuffer( char typ, quad4*,    unsigned, const char* ) ; 
 
 
 void Six::setFoundry(const CSGFoundry* foundry_)  // HMM: maybe makes more sense to get given directly the lower level CSGFoundry ?
@@ -467,10 +479,16 @@ void Six::snap(const char* path, const char* bottom_line, const char* top_line, 
     img.writeJPG(path, quality); 
     pixels_buffer->unmap(); 
 
-    const char* npy_path = SStr::ReplaceEnd( path, ".jpg", ".npy");
-    float* isects = (float*)posi_buffer->map() ;
-    NP::Write(npy_path, isects, params->height, params->width, 4 );
+    const char* posi_path = SStr::ReplaceEnd( path, ".jpg", "_posi.npy");
+    float* posi = (float*)posi_buffer->map() ;
+    NP::Write(posi_path, posi, params->height, params->width, 4 );
     posi_buffer->unmap(); 
+
+    const char* isect_path = SStr::ReplaceEnd( path, ".jpg", "_isect.npy");
+    float* isect = (float*)isect_buffer->map() ;
+    NP::Write(isect_path, isect, params->height, params->width, 4, 4 );
+    isect_buffer->unmap(); 
+
 
     LOG(info) << "]" ; 
 }

@@ -97,11 +97,11 @@ EOU
 #geom=ithe_XYZ
 #geom=ithl_XYZ
 
-#geom=GeneralSphereDEV_XZ
+geom=GeneralSphereDEV_XZ
 #geom=GeneralSphereDEV_XYZ
 #geom=GeneralSphereDEV_XZ
-geom=GeneralSphereDEV_XY
-
+#geom=GeneralSphereDEV_YZ
+#geom=GeneralSphereDEV_XY
 
 #catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
 
@@ -162,7 +162,12 @@ topline="GEOM=$GEOM ./csg_geochain.sh "
 [ -n "$SPHI" ] && topline="SPHI=$SPHI $topline" 
 [ -n "$IXYZ" ] && topline="IXYZ=$IXYZ $topline" 
 
+cmdline="GEOM=$GEOM ./csg_geochain.sh "
+[ -n "$SPHI" ] && cmdline="SPHI=$SPHI $cmdline" 
+[ -n "$IXYZ" ] && cmdline="IXYZ=$IXYZ $cmdline" 
+[ -n "$SPURIOUS" ] && cmdline="SPURIOUS=$SPURIOUS $cmdline" 
 
+export CMDLINE=$cmdline
 export NOTE=$note 
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CEGS=${CEGS:-$cegs}

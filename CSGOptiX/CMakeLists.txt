@@ -31,6 +31,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR} 
 )
 
+
+
 set(COMPUTE_CAPABILITY 30)
 
 set(CUDA_NVCC_FLAGS)
@@ -87,6 +89,7 @@ message(STATUS "_generated_OBJ_files ${_generated_OBJ_files}")
 message(STATUS "_generated_PTX_files ${_generated_PTX_files}") 
 
 add_library( ${name} SHARED ${SOURCES} ${HEADERS}  ${_generated_OBJ_files} ${_generated_PTX_files}   )
+target_compile_definitions( ${name} PRIVATE DEBUG_SIX )
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSGOPTIX )
 

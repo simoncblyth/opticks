@@ -114,13 +114,16 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
     const float& cosPhi1 = q0.f.z ; 
     const float& sinPhi1 = q0.f.w ; 
 
+    // PQ, PR, QR are 2D cross products used to identity unbounded exits at infinity 
+    // see cross2D_angle_range_without_trig.py for explanation
     const float PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0  ;  // PQ +ve => angle < pi,   PQ -ve => angle > pi 
     const float PR = cosPhi0*d.y - d.x*sinPhi0  ;          // PR and QR +ve/-ve selects the "side of the line"
     const float QR = cosPhi1*d.y - d.x*sinPhi1  ;  
     bool unbounded_exit = PQ > 0.f ? ( PR > 0.f && QR < 0.f ) : ( PR > 0.f || QR < 0.f )  ;   
+    //bool unbounded_exit = false ; 
 
 #ifdef DEBUG
-    printf("//intersect_leaf_phicut q0.f  (%10.4f %10.4f %10.4f %10.4f) %s \n" , q0.f.x, q0.f.y, q0.f.z, q0.f.w, "cosPhi0/sinPhi0/cosPhi1/sinPhi1"  ) ; 
+    printf("//intersect_leaf_phicut q0.f  (%10.4f %10.4f %10.4f %10.4f) %s t_min %10.4f \n" , q0.f.x, q0.f.y, q0.f.z, q0.f.w, "cosPhi0/sinPhi0/cosPhi1/sinPhi1", t_min  ) ; 
     printf("//intersect_leaf_phicut d.xyz ( %10.4f %10.4f %10.4f ) \n", d.x, d.y, d.z  ); 
     printf("//intersect_leaf_phicut PQ %10.4f cosPhi0*sinPhi1 - cosPhi1*sinPhi0 : +ve angle less than pi, -ve angle greater than pi \n", PQ );
     printf("//intersect_leaf_phicut PR %10.4f cosPhi0*d.y - d.x*sinPhi0 \n", PR );
@@ -128,11 +131,9 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
     printf("//intersect_leaf_phicut unbounded_exit %d \n", unbounded_exit ); 
 #endif
 
-
     // setting t values to t_min disqualifies that intersect
     // dot products with normal0  [ sinPhi0, -cosPhi0, 0.f ]
-  
-    
+      
     /*
     // Old careful approach works, but unneeded rotation flops for checking the side, 
     // can just check signbit of x intersect matches the sigbit of the cosPhi
@@ -187,32 +188,90 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
 
     
     float t_cand = -( o.x*sinPhi0 + o.y*(-cosPhi0) )/ ( d.x*sinPhi0 + d.y*(-cosPhi0) ) ; 
-    // when origin o is on the phi0 line t_cand is -0.f 
+    // o on phi0 line => t_cand.0  -0.f 
+    // o on phi0 line, d along line => t_cand.0  0/0 = nan 
 
 #ifdef DEBUG
-    printf("//intersect_leaf_phicut ( o.x*sinPhi0 + o.y*(-cosPhi0)    %10.4f \n", ( o.x*sinPhi0 + o.y*(-cosPhi0)) ); 
-    printf("//intersect_leaf_phicut ( d.x*sinPhi0 + d.y*(-cosPhi0)    %10.4f \n", ( d.x*sinPhi0 + d.y*(-cosPhi0)) ); 
-    printf("//intersect_leaf_phicut t_min    %10.4f \n", t_min ); 
-    printf("//intersect_leaf_phicut t_cand.0 %10.4f \n", t_cand ); 
+    //printf("//intersect_leaf_phicut ( o.x*sinPhi0 + o.y*(-cosPhi0)    %10.4f \n", ( o.x*sinPhi0 + o.y*(-cosPhi0)) ); 
+    //printf("//intersect_leaf_phicut ( d.x*sinPhi0 + d.y*(-cosPhi0)    %10.4f \n", ( d.x*sinPhi0 + d.y*(-cosPhi0)) ); 
+    printf("//intersect_leaf_phicut t_cand.0 %10.4f t_min %10.4f \n", t_cand, t_min  ); 
+    //printf("//intersect_leaf_phicut o.x+t_cand*d.x  %10.4f \n", o.x+t_cand*d.x ); 
+    //printf("//intersect_leaf_phicut signbit(o.x+t_cand*d.x)  %d \n", signbit(o.x+t_cand*d.x) ); 
+    //printf("//intersect_leaf_phicut signbit(o.x+t_cand*d.x) != signbit(cosPhi0)  %d \n", signbit(o.x+t_cand*d.x) != signbit(cosPhi0) ); 
+    //printf("//intersect_leaf_phicut t_cand.0 < t_min : %d \n", t_cand < t_min ); 
+    //printf("//intersect_leaf_phicut t_cand.0 > t_min : %d \n", t_cand > t_min ); 
+    //printf("//intersect_leaf_phicut t_cand.0 == t_min : %d \n", t_cand == t_min ); 
+    //printf("//intersect_leaf_phicut signbit(o.x+t_cand*d.x) != signbit(cosPhi0) || t_cand.0 < t_min : %d \n",  signbit(o.x+t_cand*d.x) != signbit(cosPhi0) || t_cand < t_min ); 
+
+    {
+        /*
+        in XZ projection testing deciding based on ipos_x yields spurious due to ipos_x going slightly wrong sign 
+        switching to ipos_y avoids the problem : WHY ?
+        */
+        float ipos_x = (o.x+t_cand*d.x) ; 
+        float ipos_y = (o.y+t_cand*d.y) ; 
+        bool x_wrong_side = ipos_x*cosPhi0 < 0.f ; 
+        bool y_wrong_side = ipos_y*sinPhi0 < 0.f ; 
+        bool too_close =  t_cand <= t_min ; 
+        printf("//intersect_leaf_phicut ipos_x %10.4f ipos_x*1e6f %10.4f  cosPhi0 %10.4f  x_wrong_side %d \n", ipos_x, ipos_x*1e6f, cosPhi0, x_wrong_side ); 
+        printf("//intersect_leaf_phicut ipos_y %10.4f ipos_y*1e6f %10.4f  sinPhi0 %10.4f  y_wrong_side %d \n", ipos_y, ipos_y*1e6f, sinPhi0, y_wrong_side ); 
+        printf("//intersect_leaf_phicut t_cand %10.4f t_min %10.4f too_close %d \n", t_cand, t_min, too_close ); 
+    }
+
+
+/*
+rays along the phi0 line get t_cand nan from 0/0 
+BUT as all comparisons with nan yield false the below 
+also note that signbit(nan) == true which would also invalidate +ve cosPhi0 
+*/
 #endif
 
-    // disqualify wrong side or too close
-    if(signbit(o.x+t_cand*d.x) != signbit(cosPhi0) || t_cand < t_min ) t_cand = RT_DEFAULT_MAX ; 
-    //if(signbit(o.x+t_cand*d.x) != signbit(cosPhi0) || t_cand <= t_min ) t_cand = RT_DEFAULT_MAX ; 
-    //                                             ^^^^^^^^^^^^^^^^^^  
-    //    must be  t_cand <= t_min to avoid spurious intersects in CSG combination 
-    //    for rays starting on phi0 line which have t_cand -0.f
+    if((o.y+t_cand*d.y)*sinPhi0 < 0.f || t_cand <= t_min ) t_cand = RT_DEFAULT_MAX ; 
+    //if((o.x+t_cand*d.x+1e-4)*cosPhi0 < 0.f || t_cand <= t_min ) t_cand = RT_DEFAULT_MAX ; 
+    //if((o.x+t_cand*d.x)*cosPhi0 < 0.f || t_cand < t_min ) t_cand = RT_DEFAULT_MAX ;         // t_cand < t_min YIELDS SPURIOUS INTERSECTS 
+/*
+Disqualify wrong side or too close  
+                                        ^^^^^^^^^^^^^^^^^^  
+
+1. must be  t_cand <= t_min to avoid spurious intersects in CSG combination 
+   for rays starting on phi0 line which have t_cand -0.f
+
+   * this is because NOT("t_cand > t_min") -> "t_cand <= t_min"  
+
+2. At first glance using signbit seems better, but signbit(nan) == true 
+   which means that the t_cand nan does not propagate to the comparison 
+   so the invalidation will only happen for +ve cosPhi0 
+
+   signbit(o.x+t_cand*d.x) != signbit(cosPhi0) 
+
+   * actually not invalidating here doesnt matter as the t_cand nan will 
+     simply end up giving a false for valid_intersect 
+
+   * product (o.x+t_cand*d.x)*cosPhi0  will be nan for t_cand nan and 
+     all comparisons with nan give false so t_cand will stay nan here
+
+   * all comparisons with nan always returns false 
+     but that does not kill the entire short circuit OR 
+     (see sysrap/tests/signbitTest.cc)
+
+
+
+
+*/
 
 #ifdef DEBUG
     printf("//intersect_leaf_phicut t_cand.1 %10.4f \n", t_cand ); 
 #endif
 
     const float t1 = -( o.x*(-sinPhi1) + o.y*cosPhi1 )/( d.x*(-sinPhi1) + d.y*cosPhi1 ) ; 
-    if(signbit(o.x + t1*d.x) == signbit(cosPhi1) && t1 > t_min ) t_cand = fminf( t1, t_cand );  
+    if((o.x + t1*d.x)*cosPhi1 > 0.f && t1 > t_min ) t_cand = fminf( t1, t_cand );  
     bool valid_intersect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;  
 
 #ifdef DEBUG
-    printf("//intersect_leaf_phicut t1      %10.4f \n", t1 ); 
+    //printf("//intersect_leaf_phicut t1_num  ( o.x*(-sinPhi1) + o.y*cosPhi1 )  : %10.4f \n", ( o.x*(-sinPhi1) + o.y*cosPhi1 ) ); 
+    //printf("//intersect_leaf_phicut t1_den  ( d.x*(-sinPhi1) + d.y*cosPhi1 )  : %10.4f \n", ( d.x*(-sinPhi1) + d.y*cosPhi1 ) );  
+    //printf("//intersect_leaf_phicut t1      %10.4f \n", t1 ); 
+    //printf("//intersect_leaf_phicut  signbit(o.x + t1*d.x) == signbit(cosPhi1) && t1 > t_min  : %d \n", signbit(o.x + t1*d.x) == signbit(cosPhi1) && t1 > t_min ); 
     printf("//intersect_leaf_phicut t_cand.2 %10.4f valid_intersect %d \n", t_cand, valid_intersect  ); 
 #endif
 

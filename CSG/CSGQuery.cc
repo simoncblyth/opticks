@@ -211,9 +211,9 @@ std::string CSGQuery::Desc( const quad4& isect, const char* label, bool* valid_i
     bool spurious = IsSpurious(isect); 
     std::stringstream ss ; 
     ss 
-         << label 
+         << std::setw(30) << label 
          << " "
-         << ( valid_intersect ? ( *valid_intersect ? "INTERSECT" : "no intersect" )  : " " ) 
+         << ( valid_intersect ? ( *valid_intersect ? "HIT" : "MISS" )  : " " ) 
          << std::endl 
          << std::setw(30) << " q0 norm t " 
          << "(" 

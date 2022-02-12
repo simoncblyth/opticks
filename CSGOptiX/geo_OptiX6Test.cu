@@ -51,8 +51,11 @@ RT_PROGRAM void intersect(int primIdx)
 
     float4 isect ; 
     bool valid_isect = intersect_prim(isect, numNode, node, plan, itra, ray.tmin , ray.origin, ray.direction ) ; 
-    rtPrintf("//geo_OptiXTest.cu:intersect identity %d primIdx %d nodeOffset %d numNode %d valid_isect %d isect.w %10.4f \n", 
+
+#ifdef DEBUG_SIX
+    rtPrintf("//DEBUG_SIX/geo_OptiXTest.cu:intersect identity %d primIdx %d nodeOffset %d numNode %d valid_isect %d isect.w %10.4f \n", 
          identity, primIdx, nodeOffset, numNode, valid_isect, isect.w ); 
+#endif
 
     if(valid_isect)
     {

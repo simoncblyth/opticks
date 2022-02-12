@@ -167,7 +167,11 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     pl = pv.Plotter(window_size=SIZE*2 ) 
-    #pl.enable_eye_dome_lighting()  # improves depth perception with point clouds
+
+    if 'EDL' in os.environ:
+        print("EDL : enable_eye_dome_lighting :  improves depth perception with point clouds")
+        pl.enable_eye_dome_lighting()  
+    pass   
 
     plotbase = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM")
     print(" plotbase : %s " % plotbase )
@@ -198,6 +202,7 @@ if __name__ == '__main__':
 
     no_isect = not hasattr(fold, 'isect') 
     gs_only = 'GS_ONLY' in os.environ
+    quiet = True 
 
     if no_isect or gs_only:
        log.fatal("early exit just showing gensteps as no_isect:%s in fold OR gs_only:%d selected by GS_ONLY envvar" % (no_isect, gs_only))
@@ -208,14 +213,15 @@ if __name__ == '__main__':
 
     dir_, t = fold.isect[:,0,:3], fold.isect[:,0,3]   # intersect normal and ray distance 
     pos, sd = fold.isect[:,1,:3], fold.isect[:,1,3]   # intersect position and surface distance 
+    asd = np.abs(sd) 
 
     isect_gsid = fold.isect[:,3,3].copy().view(np.int8).reshape(-1,4)    # genstep (ix,iy,iz,0) from which each intersect originated from     
 
     ray_origin = fold.isect[:, 2, :3]
     ray_direction = fold.isect[:, 3, :3]
 
-    sd_cut = -1e-3
-    select_spurious = sd < sd_cut 
+    asd_cut = 1e-3
+    select_spurious = asd > asd_cut 
     select_all = t > 0.
 
     select = select_all 
@@ -223,10 +229,13 @@ if __name__ == '__main__':
     count_all = np.count_nonzero(select_all)
     count_spurious = np.count_nonzero(select_spurious)
 
+    cmdline = os.environ.get("CMDLINE", "no-CMDLINE")
+
     print("\n\n")
+    print(cmdline)
+    print("\n")
     print( "%40s : %d " % ("count_all", count_all) )
     print( "%40s : %d " % ("count_spurious", count_spurious) )
-
 
     sphi = 'SPHI' in os.environ
     if sphi:
@@ -285,12 +294,14 @@ if __name__ == '__main__':
     if not ixyz is None and not iw is None:
         ix,iy,iz = ixyz
         gsid_label = "gsid_%d_%d_%d_%d" % (ix,iy,iz,iw)     
-        recs_fold = Fold.Load(recs_path, gsid_label)
+        recs_fold = Fold.Load(recs_path, gsid_label, quiet=True)
         recs = [] if recs_fold is None else recs_fold.CSGRecord 
         if len(recs) > 0:
             print("%40s : %s   recs_fold.base %s " % ("recs", str(recs.shape), recs_fold.base )) 
         else:
-            print(" no recs to load at recs_path/gsid_label %s/%s " % (recs_path, gsid_label))
+            if quiet == False:
+                print(" no recs to load at recs_path/gsid_label %s/%s " % (recs_path, gsid_label))
+            pass
         pass
     else:
         recs = []
@@ -301,6 +312,7 @@ if __name__ == '__main__':
 
     s_t = t[select]
     s_pos = pos[select]
+    s_sd = sd[select]
     s_isect_gsid = isect_gsid[select]
     s_dir = dir_[select]
     s_isect = fold.isect[select]
@@ -322,13 +334,14 @@ if __name__ == '__main__':
         _s_t = " s_t ( %10.4f ) " % s_t[i]
         _s_pos = " s_pos ( %10.4f %10.4f %10.4f ) " % tuple(s_pos[i])
         _s_pos_r = " s_pos_r ( %10.4f ) " % s_pos_r[i]
-        return " %s %s %s %s " % (_s_isect_gsid, _s_t, _s_pos, _s_pos_r )
+        _s_sd = " s_sd ( %10.4f ) " % s_sd[i]
+        return " %s %s %s %s %s " % (_s_isect_gsid, _s_t, _s_pos, _s_pos_r, _s_sd )
     pass
     desc = "\n".join(map(fmt,np.arange(s_limited)))
     print(desc) 
     print(" Use IXYZ to select gensteps, IW to select photons within the genstep ")
 
-    log.info( "sd_cut %10.4g sd.min %10.4g sd.max %10.4g num select %d " % (sd_cut, sd.min(), sd.max(), len(s_pos)))
+    log.info( "asd_cut %10.4g sd.min %10.4g sd.max %10.4g num select %d " % (asd_cut, sd.min(), sd.max(), len(s_pos)))
 
 
     selected_isect_path = "/tmp/selected_isect.npy"

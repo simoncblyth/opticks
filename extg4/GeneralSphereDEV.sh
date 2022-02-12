@@ -66,12 +66,14 @@ export X4SolidMaker_GeneralSphereDEV_outerRadius=$outerRadius
 
 #phiMode=full
 #phiMode=melon
-phiMode=pacman
+#phiMode=pacman
+phiMode=pacmanpp
 
 case $phiMode in 
         full)    phiStart=0.00 ; phiDelta=2.00 ;; 
        melon)    phiStart=0.25 ; phiDelta=0.50 ;;   
       pacman)    phiStart=0.25 ; phiDelta=1.50 ;;   
+      pacmanpp)  phiStart=0.50 ; phiDelta=1.50 ;;   
 esac
 export X4SolidMaker_GeneralSphereDEV_phiMode=$phiMode
 export X4SolidMaker_GeneralSphereDEV_phiStart=$phiStart

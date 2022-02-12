@@ -119,9 +119,9 @@ msg="=== $BASH_SOURCE :"
 #geom=BoxGridMultiUnion10:30_YX
 
 #geom=GeneralSphereDEV_YX
-geom=GeneralSphereDEV_XY
+#geom=GeneralSphereDEV_XY
 #geom=GeneralSphereDEV_XZ
-#geom=GeneralSphereDEV_YZ
+geom=GeneralSphereDEV_YZ
 
 #catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
 

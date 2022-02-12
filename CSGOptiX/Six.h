@@ -23,6 +23,7 @@ struct Six
     optix::Material    material ;
     optix::Buffer      pixels_buffer ; 
     optix::Buffer      posi_buffer ; 
+    optix::Buffer      isect_buffer ; 
 
     Params*           params ; 
     const char*       ptx_path ; 

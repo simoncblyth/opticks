@@ -23,7 +23,6 @@ CFBASE
 
     NB CFBASE is now only used as an override (eg for demo geometry) 
     when not rendering the standard OPTICKS_KEY geometry which is now located inside geocache.
-
 **/
 
 #include <algorithm>

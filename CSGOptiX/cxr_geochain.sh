@@ -27,7 +27,21 @@ Taking a look inside, hunting speckle::
 
 
 
-Debugging blank renders::
+Debugging unexpected renders
+------------------------------
+
+1. force recompile the kernels by touching .cu 
+
+   * have observed that changes to CSG headers do not automatically 
+     trigger rebuilds of the .cu kernels : so touch the .cu to 
+     make sure get the latest CSG headers
+
+
+
+Debugging blank renders
+------------------------
+
+::
 
      EYE=0.1,0.1,0.1 ./cxr_geochain.sh 
           shoot from inside so every pixel should intersect 
