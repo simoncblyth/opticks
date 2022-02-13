@@ -40,6 +40,7 @@ CSGFoundry
 struct CSG_API CSGFoundry
 {
     static const plog::Severity LEVEL ; 
+    static const int  VERBOSE ; 
     static const unsigned IMAX ; 
     static const char* BASE ; 
     static const char* RELDIR ; 
@@ -258,6 +259,7 @@ struct CSG_API CSGFoundry
     const char* fold ; 
     const char* cfbase ; 
     const char* geom ; 
+    const char* loaddir ; 
 
 
 };

@@ -1,4 +1,5 @@
 #include "PLOG.hh"
+#include "SSys.hh"
 #include "SPath.hh"
 #include "sc4u.h"
 
@@ -16,6 +17,9 @@
 #include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
 #include "csg_intersect_tree.h"
+
+
+const int CSGQuery::VERBOSE = SSys::getenvint("VERBOSE", 0); 
 
 
 CSGQuery::CSGQuery( const CSGFoundry* fd_ ) 
@@ -57,7 +61,7 @@ void CSGQuery::selectPrim( const CSGPrim* pr )
     select_root_typecode = select_root->typecode(); 
     select_is_tree = CSG::IsTree((OpticksCSG_t)select_root_typecode) ; 
 
-    LOG(info) 
+    if(VERBOSE > 0 ) LOG(info) 
          << " select_prim " << select_prim
          << " select_nodeOffset " << select_nodeOffset
          << " select_numNode " << select_numNode

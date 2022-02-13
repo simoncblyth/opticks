@@ -389,7 +389,22 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                 float t_right = fabsf( csg.data[right].w );
 
                 bool leftIsCloser = t_left <= t_right ;
+#ifdef DEBUG
+                {
+                    // dot products of ray_direction and normals for the two isect 
+                    float l_cos = csg.data[left].x*ray_direction.x + csg.data[left].y*ray_direction.y + csg.data[left].z*ray_direction.z ; 
+                    float r_cos = csg.data[right].x*ray_direction.x + csg.data[right].y*ray_direction.y + csg.data[right].z*ray_direction.z ; 
 
+                    printf("\n//intersect_tree nodeIdx %3d t_left %10.4f t_right %10.4f leftIsCloser %d  l_state %5s r_state %5s l_cos*1e6f %10.4f r_cos*1e6f %10.4f \n", 
+                             nodeIdx, t_left, t_right, leftIsCloser, 
+                             IntersectionState::Name(l_state),
+                             IntersectionState::Name(r_state),
+                             l_cos*1e6f,
+                             r_cos*1e6f 
+                    ); 
+
+                }
+#endif
 
                 // it is impossible to Miss a complemented (signaled by -0.f) solid as it is unbounded
                 // hence the below artificially changes leftIsCloser to reflect the unboundedness 
@@ -444,6 +459,15 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 
                 int ctrl = lut.lookup( typecode , l_state, r_state, leftIsCloser ) ;
 
+#ifdef DEBUG
+                printf("// %3d : stack peeking : left %d right %d (stackIdx)  %15s  l:%5s %10.4f    r:%5s %10.4f     leftIsCloser %d -> %s \n", 
+                           nodeIdx,left,right,
+                           CSG::Name(typecode), 
+                           IntersectionState::Name(l_state), t_left,  
+                           IntersectionState::Name(r_state), t_right, 
+                           leftIsCloser, 
+                           CTRL::Name(ctrl)  ); 
+#endif
 #ifdef DEBUG_RECORD
                 if(CSGRecord::ENABLED)
                 {

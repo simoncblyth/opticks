@@ -19,21 +19,7 @@ from opticks.sysrap.SCenterExtentGenstep import SCenterExtentGenstep
 
 from opticks.ana.gridspec import GridSpec, X, Y, Z
 from opticks.ana.npmeta import NPMeta
-
-
-efloat_ = lambda ekey, fallback:float(os.environ.get(ekey,fallback))
-efloatlist_ = lambda ekey,fallback:list(map(float, filter(None, os.environ.get(ekey,fallback).split(","))))
-
-eint_ = lambda ekey, fallback:int(os.environ.get(ekey,fallback))
-
-def eintlist_(ekey, fallback):
-    """
-    empty string envvar yields None
-    """
-    slis = os.environ.get(ekey,fallback)
-    if slis is None or len(slis) == 0: return None
-    slis = slis.split(",")
-    return list(map(int, filter(None, slis)))
+from opticks.ana.eget import efloat_, efloatlist_, eint_, eintlist_
 
 
 SIZE = np.array([1280, 720])

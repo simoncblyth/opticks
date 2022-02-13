@@ -322,6 +322,7 @@ Switching to "t_cand <= t_min" avoids the spurious intersect::
          visible vertical axis seam of misses between hemisphere to left and quadrant to the right 
 
          * using Y : the seam is still visible
+         * from future : note that the seam is not from misses, it is from unexpected hits onto the axis line 
 
     EYE=-1,-1,1 TMIN=0.1 ./cxr_geochain.sh 
          huh : only see the quadrant to the right, the hemi to the left disappears
@@ -563,12 +564,23 @@ Curious dont see spurious in any projection with CSG, hmm maybe aligning the pla
     EYE=-1.5,0,0 TMIN=0. CAM=1 ./cxr_geochain.sh 
         clear seam : back view 
 
+        * after SMath::sin_pi/cos_pi : right side hemi disappears
+        * after unbounded exit permit 0. : right side hemi is back again 
+
+    EYE=-1.5,0,0 TMIN=0. CAM=0 ./cxr_geochain.sh
+
+
     EYE=-1.5,0,0 TMIN=0. CAM=1 ZOOM=5 ./cxr_geochain.sh
         zooming in so the entire frame has intersects, except for the white seam down the middle
+
+        * after SMath::sin_pi/cos_pi : entire RHS is miss 
+
+
 
     EYE=-1.5,0,0 TMIN=0. CAM=0 ./cxr_geochain.sh 
         even perspective cam shows seam line  
     
+        * after SMath::sin_pi/cos_pi : nothing missing, no seam 
 
 
 Add an isect_buffer to OptiX6Test.cu : that suggests that all pixels are hits. 
@@ -639,6 +651,8 @@ Looking at the 3x3 central pixel isects::
 
 
 
+
+
 So now I know the ray origin and direction for the unexpected pixels::
 
     DUMP=3 ORI=-150,0,0 DIR=1,0,0 CSGQueryTest O
@@ -697,6 +711,8 @@ So now I know the ray origin and direction for the unexpected pixels::
 
 
 Recompile with DEBUG flag and rerun that ray, why is the further hit trumping the nearer one::
+
+    epsilon:CSG blyth$ DUMP=3 ORI=-150,0,0 DIR=1,0,0 CSGQueryTest O       ## ./CSGQueryTest.sh 
 
     2022-02-12 22:22:32.764 INFO  [34236727] [CSGQueryTest::operator@83]  mode O
     2022-02-12 22:22:32.764 INFO  [34236727] [CSGQueryTest::config@134] 
@@ -762,4 +778,674 @@ Recompile with DEBUG flag and rerun that ray, why is the further hit trumping th
 
 
 Artificially setting unbounded_exit to always false does not change the outcome. 
+
+Notice the normal direction for intersects onto the axis line. 
+They are perpendicular to the ray direction which will mess up hit classification
+which is based on the dot product of ray direction and the normal. 
+When that is zero it is possible that an EXIT is mis-classified as an ENTER.
+
+
+::
+
+        .                        
+                                      Y
+                                  .   -     
+                              .       |         
+                                      |    pp quadrant cutaway with pacmanpp
+                           .          |           
+                                      ^  (0,1,0) normal
+                          .          /|\            
+                                      |             
+        -X  0 -----------1------------2--->---------3------------------- +X
+                                      |  (1,0,0) dir
+         -150          -100           0            100
+                                      |  
+                           .          |          .
+                                      |      
+                              .       |       .
+                                  .   -   .
+
+
+
+
+More debug, confirms the cause is an ENTER that should be an EXIT::
+
+    ./CSGQueryTest.sh 
+
+    //intersect_leaf_phicut t_cand.0   150.0000 t_min     0.0000 
+    //intersect_leaf_phicut ipos_x     0.0000 ipos_x*1e6f     0.0000  cosPhi0    -0.0000  x_wrong_side 0 
+    //intersect_leaf_phicut ipos_y     0.0000 ipos_y*1e6f     0.0000  sinPhi0     1.0000  y_wrong_side 0 
+    //intersect_leaf_phicut t_cand   150.0000 t_min     0.0000 too_close 0 
+    //intersect_leaf_phicut t_cand.1   150.0000 
+    //intersect_leaf_phicut t_cand.2   150.0000 valid_intersect 1 
+    //intersect_leaf valid_isect 1 isect (   -0.0000     1.0000     0.0000   150.0000)   
+    //intersect_tree  nodeIdx 3 primitive 1 nd_isect (   -0.0000     1.0000     0.0000   150.0000) 
+    //intersect_tree  nodeIdx 1 CSG::Name intersection depth 0 elevation 1 
+    //intersect_tree  nodeIdx 1 primitive 0 
+
+    //intersect_tree nodeIdx   1 t_left    50.0000 t_right   150.0000 leftIsCloser 1  l_state Enter r_state Enter l_cos*1e6f -1000000.0000 r_cos*1e6f    -0.1748 
+    //   1 : stack peeking : left 0 right 1 (stackIdx)     intersection  l:Enter    50.0000    r:Enter   150.0000     leftIsCloser 1 -> LOOP_A 
+    //intersect_tree nodeIdx  1 height  1 depth  0 elevation  1 endTree    10000 leftTree  3020000 rightTree  1030000 
+    //intersect_tree  nodeIdx 2 CSG::Name     sphere depth 1 elevation 0 
+    //intersect_tree  nodeIdx 2 primitive 1 
+    //intersect_leaf typecode 101 gtransformIdx 1 
+    //intersect_leaf ray_origin ( -150.0000,    0.0000,    0.0000) 
+    //intersect_leaf ray_direction (    1.0000,    0.0000,    0.0000) 
+    //intersect_leaf_sphere radius   100.0000 
+    //intersect_leaf_sphere valid_isect 1  isect (     1.0000     0.0000     0.0000   250.0000)  
+    //intersect_leaf valid_isect 1 isect (    1.0000     0.0000     0.0000   250.0000)   
+    //intersect_tree  nodeIdx 2 primitive 1 nd_isect (    1.0000     0.0000     0.0000  -250.0000) 
+    //intersect_tree  nodeIdx 1 CSG::Name intersection depth 0 elevation 1 
+    //intersect_tree  nodeIdx 1 primitive 0 
+
+    //intersect_tree nodeIdx   1 t_left   250.0000 t_right   150.0000 leftIsCloser 0  l_state  Exit r_state Enter l_cos*1e6f 1000000.0000 r_cos*1e6f    -0.1748 
+    //   1 : stack peeking : left 1 right 0 (stackIdx)     intersection  l: Exit   250.0000    r:Enter   150.0000     leftIsCloser 0 -> RETURN_B 
+                               One HIT
+                        q0 norm t (   -0.0000    1.0000    0.0000  150.0000)
+                       q1 ipos sd (    0.0000    0.0000    0.0000    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -150.0000    0.0000    0.0000    0.0000)
+                  q3 ray_dir gsid (    1.0000    0.0000    0.0000 C4U (     0    0    0    0 ) )
+
+
+Classification comes from dot product::
+
+    #define CSG_CLASSIFY( ise, dir, tmin )   (fabsf((ise).w) > (tmin) ?  ( (ise).x*(dir).x + (ise).y*(dir).y + (ise).z*(dir).z < 0.f ? State_Enter : State_Exit ) : State_Miss )
+
+    < 0.f  : ENTER   direction is against the normal 
+    >= 0.f : EXIT    direction is with the normal 
+
+So next question is where is the very slightly -ve x component of the normal coming from.::
+
+    278     if( valid_intersect )
+    279     {
+    280         isect.x = t_cand == t1 ? -sinPhi1 :  sinPhi0 ;
+    281         isect.y = t_cand == t1 ?  cosPhi1 : -cosPhi0 ;
+    282         isect.z = 0.f ;
+    283         isect.w = t_cand ;
+    284     }
+    285     else if( unbounded_exit )
+    286     {
+    287         isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity 
+    288     }
+    289 
+
+
+
+Its coming from -sinPhi1 = -sinPhi(2*pi) not being zero as it should be but a very small -ve value.
+Changing that with SPhiCut and SMath::sin_pi and then rerun geochain and the intersect::
+
+
+    2022-02-13 14:34:57.743 INFO  [34690282] [CSGQueryTest::config@134] 
+     name One
+     dump 3 dump_hit 1 dump_miss 1 ( 0:no 1:hit 2:miss 3:hit+miss ) 
+     ORI ray_origin (-150.000, 0.000, 0.000) 
+     DIR ray_direction ( 1.000, 0.000, 0.000) 
+     TMIN tmin 0.000
+     GSID gsid 0
+     NUM num 1
+
+    //intersect_prim
+    //intersect_tree  numNode 3 height 1 fullTree(hex) 20000 
+    //intersect_tree  nodeIdx 2 CSG::Name     sphere depth 1 elevation 0 
+    //intersect_tree  nodeIdx 2 primitive 1 
+    //intersect_leaf typecode 101 gtransformIdx 1 
+    //intersect_leaf ray_origin ( -150.0000,    0.0000,    0.0000) 
+    //intersect_leaf ray_direction (    1.0000,    0.0000,    0.0000) 
+    //intersect_leaf_sphere radius   100.0000 
+    //intersect_leaf_sphere valid_isect 1  isect (    -1.0000     0.0000     0.0000    50.0000)  
+    //intersect_leaf valid_isect 1 isect (   -1.0000     0.0000     0.0000    50.0000)   
+    //intersect_tree  nodeIdx 2 primitive 1 nd_isect (   -1.0000     0.0000     0.0000   -50.0000) 
+    //intersect_tree  nodeIdx 3 CSG::Name     phicut depth 1 elevation 0 
+    //intersect_tree  nodeIdx 3 primitive 1 
+    //intersect_leaf typecode 120 gtransformIdx 2 
+    //intersect_leaf ray_origin ( -150.0000,    0.0000,    0.0000) 
+    //intersect_leaf ray_direction (    1.0000,    0.0000,    0.0000) 
+    //intersect_leaf_phicut q0.f  (    0.0000     1.0000     1.0000     0.0000) cosPhi0/sinPhi0/cosPhi1/sinPhi1 t_min     0.0000 
+    //intersect_leaf_phicut d.xyz (     1.0000     0.0000     0.0000 ) 
+    //intersect_leaf_phicut PQ    -1.0000 cosPhi0*sinPhi1 - cosPhi1*sinPhi0 : +ve angle less than pi, -ve angle greater than pi 
+    //intersect_leaf_phicut PR    -1.0000 cosPhi0*d.y - d.x*sinPhi0 
+    //intersect_leaf_phicut QR    -1.0000 cosPhi1*d.y - d.x*sinPhi1 
+    //intersect_leaf_phicut unbounded_exit 0 
+    //intersect_leaf_phicut t_cand.0   150.0000 t_min     0.0000 
+    //intersect_leaf_phicut ipos_x     0.0000 ipos_x*1e6f     0.0000  cosPhi0     0.0000  x_wrong_side 0 
+    //intersect_leaf_phicut ipos_y     0.0000 ipos_y*1e6f     0.0000  sinPhi0     1.0000  y_wrong_side 0 
+    //intersect_leaf_phicut t_cand   150.0000 t_min     0.0000 too_close 0 
+    //intersect_leaf_phicut t_cand.1   150.0000 
+    //intersect_leaf_phicut t_cand.2   150.0000 valid_intersect 1 
+    //intersect_leaf valid_isect 1 isect (    1.0000     0.0000     0.0000   150.0000)   
+    //intersect_tree  nodeIdx 3 primitive 1 nd_isect (    1.0000     0.0000     0.0000   150.0000) 
+    //intersect_tree  nodeIdx 1 CSG::Name intersection depth 0 elevation 1 
+    //intersect_tree  nodeIdx 1 primitive 0 
+
+    //intersect_tree nodeIdx   1 t_left    50.0000 t_right   150.0000 leftIsCloser 1  l_state Enter r_state  Exit l_cos*1e6f -1000000.0000 r_cos*1e6f 1000000.0000 
+    //   1 : stack peeking : left 0 right 1 (stackIdx)     intersection  l:Enter    50.0000    r: Exit   150.0000     leftIsCloser 1 -> RETURN_A 
+                               One HIT
+                        q0 norm t (   -1.0000    0.0000    0.0000   50.0000)
+                       q1 ipos sd ( -100.0000    0.0000    0.0000    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -150.0000    0.0000    0.0000    0.0000)
+                  q3 ray_dir gsid (    1.0000    0.0000    0.0000 C4U (     0    0    0    0 ) )
+
+    epsilon:CSG blyth$ 
+
+
+
+
+
+
+
+CSGClassifyTest I 
+
+
++-----------------+-----------------+-----------------+-----------------+                 
+|                 |                 |                 |                 |                 
+| intersection    | B Enter         | B Exit          | B Miss          |                 
+| A Closer        |                 |                 |                 |                 
+| B Closer        |                 |                 |                 |                 
+|                 |                 |                 |                 |                 
++-----------------+-----------------+-----------------+-----------------+                 
+|                 |                 |                 |                 |                 
+| A Enter         |                 |                 |                 |                 
+|                 | LOOP_A          | RETURN_A        | RETURN_MISS     |                 
+|                 | LOOP_B          | LOOP_B          | RETURN_MISS     |                 
+|                 |                 |                 |                 |                 
++-----------------+-----------------+-----------------+-----------------+                 
+|                 |                 |                 |                 |                 
+| A Exit          |                 |                 |                 |                 
+|                 | LOOP_A          | RETURN_A        | RETURN_MISS     |                 
+|                 | RETURN_B        | RETURN_B        | RETURN_MISS     |                 
+|                 |                 |                 |                 |                 
++-----------------+-----------------+-----------------+-----------------+                 
+|                 |                 |                 |                 |                 
+| A Miss          |                 |                 |                 |                 
+|                 | RETURN_MISS     | RETURN_MISS     | RETURN_MISS     |                 
+|                 | RETURN_MISS     | RETURN_MISS     | RETURN_MISS     |                 
+|                 |                 |                 |                 |                 
++-----------------+-----------------+-----------------+-----------------+                 
+
+
+
+
+
+After switching to more precise SMath::sin_pi check the seam again::
+
+    cx
+    DXDY=5,5 i tests/CSGOptiXRenderTest.py 
+
+
+Observe that its no longer a solid pale green line, but now more dotted and whiter line.
+So now are actually getting misses. 
+
+Back to old X -150 position, where get missing RHS::
+
+    epsilon:CSGOptiX blyth$ DXDY=1,1 i tests/CSGOptiXRenderTest.py 
+       a :   (1080, 1920, 4, 4) : /tmp/blyth/opticks/GeoChain_Darwin/GeneralSphereDEV/CSGOptiXRenderTest/cvd0/50001/ALL/top_i0_/cxr_geochain_GeneralSphereDEV_ALL_isect.npy 
+       b :         (3, 3, 4, 4) :  select the central portion of the image array  
+
+
+    In [1]: b                                                                                                                                                                                            
+    In [2]: b.view(np.int32)[:,:,3,3]                                                                                                                                                                    
+    Out[2]: 
+    array([[2, 2, 1],               # mode:1 MISS  mode:2 HIT 
+           [2, 2, 1],
+           [2, 2, 1]], dtype=int32)
+
+
+Right hand column of misses::
+
+    In [4]: b[:,2]                                                                                                                                                                                       
+    Out[4]: 
+    array([[[   1.   ,    1.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [-150.   ,   -0.056,    0.   ,    1.5  ],
+            [   1.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   1.   ,    1.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [-150.   ,   -0.056,   -0.056,    1.5  ],
+            [   1.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   1.   ,    1.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [-150.   ,   -0.056,   -0.111,    1.5  ],
+            [   1.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+
+Left hand column of hits onto the sphere, close to (-100,0,0)::
+
+    In [5]: b[:,0]                                                                                                                                                                                       
+    Out[5]: 
+    array([[[   0.   ,    0.5  ,    0.5  ,    0.   ],
+            [-100.   ,    0.056,    0.   ,    0.   ],
+            [-150.   ,    0.056,    0.   ,    1.5  ],
+            [   1.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   0.   ,    0.5  ,    0.5  ,    0.   ],
+            [-100.   ,    0.056,   -0.056,    0.   ],
+            [-150.   ,    0.056,   -0.056,    1.5  ],
+            [   1.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   0.   ,    0.5  ,    0.499,    0.   ],
+            [-100.   ,    0.056,   -0.111,    0.   ],
+            [-150.   ,    0.056,   -0.111,    1.5  ],
+            [   1.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+
+
+
+Reproduce the miss nearby::
+
+    epsilon:CSG blyth$ DUMP=3 ORI=-150,-1,-1 DIR=1,0,0 CSGQueryTest O
+    2022-02-13 15:26:15.916 INFO  [34747756] [CSGFoundry::load@1345] /tmp/blyth/opticks/GeoChain_Darwin/GeneralSphereDEV/CSGFoundry
+    2022-02-13 15:26:15.918 INFO  [34747756] [CSGFoundry::loadArray@1476]  ni     1 nj 3 nk 4 solid.npy
+    2022-02-13 15:26:15.918 INFO  [34747756] [CSGFoundry::loadArray@1476]  ni     1 nj 4 nk 4 prim.npy
+    2022-02-13 15:26:15.918 INFO  [34747756] [CSGFoundry::loadArray@1476]  ni     3 nj 4 nk 4 node.npy
+    2022-02-13 15:26:15.918 INFO  [34747756] [CSGFoundry::loadArray@1476]  ni     2 nj 4 nk 4 tran.npy
+    2022-02-13 15:26:15.918 INFO  [34747756] [CSGFoundry::loadArray@1476]  ni     2 nj 4 nk 4 itra.npy
+    2022-02-13 15:26:15.919 INFO  [34747756] [CSGFoundry::loadArray@1476]  ni     1 nj 4 nk 4 inst.npy
+    NP::load Failed to load from path /tmp/blyth/opticks/GeoChain_Darwin/GeneralSphereDEV/CSGFoundry/bnd.npy
+    NP::load Failed to load from path /tmp/blyth/opticks/GeoChain_Darwin/GeneralSphereDEV/CSGFoundry/icdf.npy
+    2022-02-13 15:26:15.919 INFO  [34747756] [*CSGFoundry::LoadGeom@1414] creator:X4SolidMaker::GeneralSphereDEV
+    name:GeneralSphereDEV
+    innerRadius:0
+    outerRadius:100
+    phiStart:0.5
+    phiDelta:1.5
+    thetaStart:0
+    thetaDelta:1
+    2022-02-13 15:26:15.919 INFO  [34747756] [CSGQuery::selectPrim@60]  select_prim 0x10bb78000 select_nodeOffset 0 select_numNode 3 select_root 0x10be86000 select_root_typecode intersection getSelectedTreeHeight 1
+    2022-02-13 15:26:15.919 INFO  [34747756] [CSGQueryTest::CSGQueryTest@77]  GEOM GeneralSphereDEV
+    2022-02-13 15:26:15.919 INFO  [34747756] [CSGDraw::draw@27] CSGQueryTest axis Y
+
+               in                           
+              1                             
+                 0.00                       
+                -0.00                       
+                                            
+     sp                  ph                 
+    2                   3                   
+     100.00              100.00             
+    -100.00             -100.00             
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+    2022-02-13 15:26:15.919 INFO  [34747756] [CSGQueryTest::operator@83]  mode O
+    2022-02-13 15:26:15.919 INFO  [34747756] [CSGQueryTest::config@134] 
+     name One
+     dump 3 dump_hit 1 dump_miss 1 ( 0:no 1:hit 2:miss 3:hit+miss ) 
+     ORI ray_origin (-150.000,-1.000,-1.000) 
+     DIR ray_direction ( 1.000, 0.000, 0.000) 
+     TMIN tmin 0.000
+     GSID gsid 0
+     NUM num 1
+
+                               One MISS
+                        q0 norm t (    0.0000    0.0000    0.0000    0.0000)
+                       q1 ipos sd (    0.0000    0.0000    0.0000    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -150.0000   -1.0000   -1.0000    0.0000)
+                  q3 ray_dir gsid (    1.0000    0.0000    0.0000 C4U (     0    0    0    0 ) )
+
+    epsilon:CSG blyth$ 
+
+
+
+   
+                                               Y
+                                              (0,1) 
+                                        . (cosPhi0, sinPhi0)
+                                               |
+                                    .          | 
+                                               |
+                                .              | 
+                                               | 
+                              .                |
+                                               |
+                 +-----------|-----------------0----------------------(1,0)--- X
+                                                                    (cosPhi1, sinPhi1)
+                              .
+                 0 - - - - - - 1 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+                              ENTER                                                      EXIT_PHICUT_AT_INFINITY
+                              SPHERE 
+
+
+
+::
+
+    117     // PQ, PR, QR are 2D cross products used to identity unbounded exits at infinity 
+    118     // see cross2D_angle_range_without_trig.py for explanation
+    119     const float PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0  ;  // PQ +ve => angle < pi,   PQ -ve => angle > pi 
+    120     const float PR = cosPhi0*d.y - d.x*sinPhi0  ;          // PR and QR +ve/-ve selects the "side of the line"
+    121     const float QR = cosPhi1*d.y - d.x*sinPhi1  ;
+    122     bool unbounded_exit = PQ > 0.f ? ( PR > 0.f && QR < 0.f ) : ( PR > 0.f || QR < 0.f )  ;
+    123     //bool unbounded_exit = false ; 
+
+
+Change to permitting 0.::
+
+    117     // PQ, PR, QR are 2D cross products used to identity unbounded exits at infinity 
+    118     // see cross2D_angle_range_without_trig.py for explanation
+    119     const float PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0  ;  // PQ +ve => angle < pi,   PQ -ve => angle > pi 
+    120     const float PR = cosPhi0*d.y - d.x*sinPhi0  ;          // PR and QR +ve/-ve selects the "side of the line"
+    121     const float QR = cosPhi1*d.y - d.x*sinPhi1  ;
+    122     bool unbounded_exit = PQ >= 0.f ? ( PR >= 0.f && QR <= 0.f ) : ( PR >= 0.f || QR <= 0.f )  ;
+    123     //bool unbounded_exit = false ; 
+
+
+Note that have to manually touch cx .cu in order to pick up changed CSG headers in cx build
+
+
+::
+
+    EYE=-1.5,0,0  TMIN=0. CAM=1 ./cxr_geochain.sh 
+        as expected from -X : cutaway not visible 
+        after unbounded exit permitting zero 
+
+        * RHS (-Y) hemi no longer missing, no seam 
+
+
+    EYE=1.5,0,0  TMIN=0. CAM=1 ./cxr_geochain.sh 
+        as expected from +X : cutaway +Y quadrant on the right with flat phicut face  
+
+    EYE=0,0,2 UP=0,1,0  TMIN=0. CAM=0 ./cxr_geochain.sh 
+        from +Z with perspective camera get expected cutaway pp-quadrant to top right 
+
+    EYE=0,0,2 UP=0,1,0  TMIN=0. CAM=1 ./cxr_geochain.sh 
+        from +Z with parallel camera get unexpected : full sphere 
+        
+    DUMP=3 ORI=1,1,200 DIR=0,0,-1 CSGQueryTest O  
+        this is giving HIT when miss expected 
+
+
+phicut is missed, but there is improper setting of unbounded exit which promotes the miss to EXIT::
+
+    epsilon:CSG blyth$ DUMP=3 ORI=1,1,200 DIR=0,0,-1  CSGQueryTest O
+    //intersect_prim
+    //intersect_tree  numNode 3 height 1 fullTree(hex) 20000 
+    //intersect_tree  nodeIdx 2 CSG::Name     sphere depth 1 elevation 0 
+    //intersect_tree  nodeIdx 2 primitive 1 
+    //intersect_leaf typecode 101 gtransformIdx 1 
+    //intersect_leaf ray_origin (    1.0000,    1.0000,  200.0000) 
+    //intersect_leaf ray_direction (    0.0000,    0.0000,   -1.0000) 
+    //intersect_leaf_sphere radius   100.0000 
+    //intersect_leaf_sphere valid_isect 1  isect (     0.0100     0.0100     0.9999   100.0100)  
+    //intersect_leaf valid_isect 1 isect (    0.0100     0.0100     0.9999   100.0100)   
+    //intersect_tree  nodeIdx 2 primitive 1 nd_isect (    0.0100     0.0100     0.9999  -100.0100) 
+    //intersect_tree  nodeIdx 3 CSG::Name     phicut depth 1 elevation 0 
+    //intersect_tree  nodeIdx 3 primitive 1 
+    //intersect_leaf typecode 120 gtransformIdx 2 
+    //intersect_leaf ray_origin (    1.0000,    1.0000,  200.0000) 
+    //intersect_leaf ray_direction (    0.0000,    0.0000,   -1.0000) 
+    //intersect_leaf_phicut q0.f  (    0.0000     1.0000     1.0000     0.0000) cosPhi0/sinPhi0/cosPhi1/sinPhi1 t_min     0.0000 
+    //intersect_leaf_phicut d.xyz (     0.0000     0.0000    -1.0000 ) 
+    //intersect_leaf_phicut PQ    -1.0000 cosPhi0*sinPhi1 - cosPhi1*sinPhi0 : +ve:angle less than pi, -ve:angle greater than pi 
+    //intersect_leaf_phicut PR     0.0000 cosPhi0*d.y - d.x*sinPhi0 
+    //intersect_leaf_phicut QR     0.0000 cosPhi1*d.y - d.x*sinPhi1 
+
+    A-HA : FOR PURE Z-DIRECTION-RAYS : THIS APPROACH CANNOT WORK AS PR AND QR ALWAYS ZERO   
+
+
+    //intersect_leaf_phicut unbounded_exit 1 
+    //intersect_leaf_phicut t_cand.0       -inf t_min     0.0000 
+    //intersect_leaf_phicut ipos_x        nan ipos_x*1e6f        nan  cosPhi0     0.0000  x_wrong_side 0 
+    //intersect_leaf_phicut ipos_y        nan ipos_y*1e6f        nan  sinPhi0     1.0000  y_wrong_side 0 
+    //intersect_leaf_phicut t_cand       -inf t_min     0.0000 too_close 1 
+    //intersect_leaf_phicut t_cand.1 999999988484154753734934528.0000 
+    //intersect_leaf_phicut t_cand.2 999999988484154753734934528.0000 valid_intersect 0 
+    //intersect_leaf valid_isect 0 isect (    0.0000    -0.0000     0.0000     0.0000)   
+    //intersect_tree  nodeIdx 3 primitive 1 nd_isect (    0.0000    -0.0000     0.0000     0.0000) 
+    //intersect_tree  nodeIdx 1 CSG::Name intersection depth 0 elevation 1 
+    //intersect_tree  nodeIdx 1 primitive 0 
+
+    //intersect_tree nodeIdx   1 t_left   100.0100 t_right     0.0000 leftIsCloser 0  l_state Enter r_state  Miss l_cos*1e6f -999900.0000 r_cos*1e6f     0.0000 
+    //   1 : stack peeking : left 0 right 1 (stackIdx)     intersection  l:Enter   100.0100    r: Exit     0.0000     leftIsCloser 1 -> RETURN_A 
+                               One HIT
+                        q0 norm t (    0.0100    0.0100    0.9999  100.0100)
+                       q1 ipos sd (    1.0000    1.0000   99.9900    1.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (    1.0000    1.0000  200.0000    0.0000)
+                  q3 ray_dir gsid (    0.0000    0.0000   -1.0000 C4U (     0    0    0    0 ) )
+
+    epsilon:CSG blyth$ 
+
+
+
+
+Add zpure special case::
+
+    144 LEAF_FUNC
+    145 bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d )
+    146 {
+    147     const float& cosPhi0 = q0.f.x ;
+    148     const float& sinPhi0 = q0.f.y ;
+    149     const float& cosPhi1 = q0.f.z ;
+    150     const float& sinPhi1 = q0.f.w ;
+    151 
+    152     const float PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0  ;  // PQ +ve => angle < pi,   PQ -ve => angle > pi 
+    153     bool zpure = d.x == 0.f && d.y == 0.f ;
+    154     const float PR = cosPhi0*(zpure ? o.y : d.y) - (zpure ? o.x : d.x)*sinPhi0  ;          // PR and QR +ve/-ve selects the "side of the line"
+    155     const float QR = cosPhi1*(zpure ? o.y : d.y) - (zpure ? o.x : d.x)*sinPhi1  ;
+    156     bool unbounded_exit = PQ >= 0.f ? ( PR >= 0.f && QR <= 0.f ) : ( PR >= 0.f || QR <= 0.f )  ;
+    157 
+
+After zpure special case::
+
+    EYE=0,0,2 UP=0,1,0  TMIN=0. CAM=1 ./cxr_geochain.sh 
+        get expected cutaway quadrant 
+
+    EYE=-2,0,1 TMIN=0. CAM=1 ./cxr_geochain.sh 
+        expected full sphere from -X 
+
+    EYE=-2,0,1 TMIN=0. CAM=1 ./cxr_geochain.sh 
+        unexpected, no sign of cutaway 
+
+    EYE=-2,0,4 TMIN=0. CAM=1 ./cxr_geochain.sh 
+        still no sign of cutaway 
+
+    EYE=1,1,1 TMIN=0. CAM=1 ./cxr_geochain.sh 
+        cutaway evident : beach ball view
+
+    EYE=-1,-1,1 TMIN=0. CAM=1 ./cxr_geochain.sh 
+        dotty seam up middle 
+
+    EYE=-1,-1,1 TMIN=0. CAM=0 ./cxr_geochain.sh 
+        seam evident with perspective too
+
+    EYE=-1,-1,1 TMIN=0. CAM=1 ZOOM=5 ./cxr_geochain.sh 
+        zooming in on seam : it looks like a very regular dotted line 
+
+Checking with imshow, looks like white line (misses) in the middle of the road::
+
+    epsilon:CSGOptiX blyth$ DYDX=32,32 i tests/CSGOptiXRenderTest.py
+       a :   (1080, 1920, 4, 4) : /tmp/blyth/opticks/GeoChain_Darwin/GeneralSphereDEV/CSGOptiXRenderTest/cvd0/50001/ALL/top_i0_/cxr_geochain_GeneralSphereDEV_ALL_isect.npy 
+       b :       (65, 65, 4, 4) :  select the central portion of the image array  
+
+
+Line of misses down the middle, one of the white road markings::
+
+    epsilon:CSGOptiX blyth$ DYDX=1,1 i tests/CSGOptiXRenderTest.py
+       a :   (1080, 1920, 4, 4) : /tmp/blyth/opticks/GeoChain_Darwin/GeneralSphereDEV/CSGOptiXRenderTest/cvd0/50001/ALL/top_i0_/cxr_geochain_GeneralSphereDEV_ALL_isect.npy 
+       b :         (3, 3, 4, 4) :  select the central portion of the image array  
+
+    In [1]: b.view(np.int32)[:,:,3,3]                                                                                                                                                                    
+    Out[1]: 
+    array([[2, 1, 2],
+           [2, 1, 2],
+           [2, 1, 2]], dtype=int32)
+
+Line of hits to the left::
+
+    In [2]: b[:,0]                                                                                                                                                                                       
+    Out[2]: 
+    array([[[   0.211,    0.211,    0.789,    0.   ],
+            [ -57.758,  -57.712,   57.735,    0.   ],
+            [-100.023,  -99.977,  100.   ,    1.732],
+            [   0.577,    0.577,   -0.577,    0.   ]],
+
+           [[   0.211,    0.211,    0.789,    0.   ],
+            [ -57.771,  -57.725,   57.709,    0.   ],
+            [-100.036,  -99.99 ,   99.974,    1.732],
+            [   0.577,    0.577,   -0.577,    0.   ]],
+
+           [[   0.211,    0.211,    0.788,    0.   ],
+            [ -57.784,  -57.739,   57.683,    0.   ],
+            [-100.049, -100.004,   99.948,    1.732],
+            [   0.577,    0.577,   -0.577,    0.   ]]], dtype=float32)
+
+
+Line of misses in the middle::
+
+    In [3]: b[:,1]                                                                                                                                                                                       
+    Out[3]: 
+    array([[[   1.   ,    1.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [-100.   , -100.   ,  100.   ,    1.732],
+            [   0.577,    0.577,   -0.577,    0.   ]],
+
+           [[   1.   ,    1.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [-100.013, -100.013,   99.974,    1.732],
+            [   0.577,    0.577,   -0.577,    0.   ]],
+
+           [[   1.   ,    1.   ,    1.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [-100.026, -100.026,   99.948,    1.732],
+            [   0.577,    0.577,   -0.577,    0.   ]]], dtype=float32)
+
+
+Hmm does not miss, need more precision ?:: 
+
+    DUMP=3 ORI=-100,-100,100 DIR=1,1,-1 CSGQueryTest O
+
+    epsilon:CSG blyth$ DUMP=3 ORI=-100,-100,100 DIR=1,1,-1 CSGQueryTest O
+                               One HIT
+                        q0 norm t (   -0.5774   -0.5774    0.5774   73.2051)
+                       q1 ipos sd (  -57.7350  -57.7350   57.7350    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -100.0000 -100.0000  100.0000    0.0000)
+                  q3 ray_dir gsid (    0.5774    0.5774   -0.5774 C4U (     0    0    0    0 ) )
+
+
+Add a new LOAD "L" mode to CSGQueryTest that loads the isect subset written by CSGOptiX/tests/CSGOptiXRenderTest.py 
+providing a way to rerun a pixel with exactly the same ray_origin, ray_direction and tmin using::
+
+    epsilon:CSG blyth$ YX=1,1 CSGQueryTest
+    2022-02-13 19:56:23.421 INFO  [35008083] [CSGQueryTest::Load@288]  a (3, 3, 4, 4, ) LOAD loadpath /tmp/blyth/opticks/CSGOptiX/CSGOptiXRenderTest/dy_1_dx_1.npy YX ( 1,1 )
+                            noname MISS
+                        q0 norm t (    0.0000    0.0000    0.0000    0.0000)
+                       q1 ipos sd (    0.0000    0.0000    0.0000    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -100.0131 -100.0131   99.9738    1.7321)
+                  q3 ray_dir gsid (    0.5774    0.5774   -0.5774 C4U (     0    0    0    0 ) )
+
+
+Rerunning the single pixel isect with debug::
+
+    epsilon:CSG blyth$ YX=1,1 CSGQueryTest
+    2022-02-13 19:59:14.356 INFO  [35012887] [CSGQueryTest::Load@288]  a (3, 3, 4, 4, ) LOAD loadpath /tmp/blyth/opticks/CSGOptiX/CSGOptiXRenderTest/dy_1_dx_1.npy YX ( 1,1 )
+    //intersect_prim
+    //intersect_tree  numNode 3 height 1 fullTree(hex) 20000 
+    //intersect_tree  nodeIdx 2 CSG::Name     sphere depth 1 elevation 0 
+    //intersect_tree  nodeIdx 2 primitive 1 
+    //intersect_leaf typecode 101 gtransformIdx 1 
+    //intersect_leaf ray_origin ( -100.0131, -100.0131,   99.9738) 
+    //intersect_leaf ray_direction (    0.5774,    0.5774,   -0.5774) 
+    //intersect_leaf_sphere radius   100.0000 
+    //intersect_leaf_sphere valid_isect 1  isect (    -0.5775    -0.5775     0.5771    73.2051)  
+    //intersect_leaf valid_isect 1 isect (   -0.5775    -0.5775     0.5771    73.2051)   
+    //intersect_tree  nodeIdx 2 primitive 1 nd_isect (   -0.5775    -0.5775     0.5771   -73.2051) 
+    //intersect_tree  nodeIdx 3 CSG::Name     phicut depth 1 elevation 0 
+    //intersect_tree  nodeIdx 3 primitive 1 
+    //intersect_leaf typecode 120 gtransformIdx 2 
+    //intersect_leaf ray_origin ( -100.0131, -100.0131,   99.9738) 
+    //intersect_leaf ray_direction (    0.5774,    0.5774,   -0.5774) 
+    //intersect_leaf_phicut q0.f  (    0.0000     1.0000     1.0000     0.0000) cosPhi0/sinPhi0/cosPhi1/sinPhi1 t_min     1.7321 
+    //intersect_leaf_phicut d.xyz (     0.5774     0.5774    -0.5774 ) zpure 0 
+    //intersect_leaf_phicut PQ    -1.0000 cosPhi0*sinPhi1 - cosPhi1*sinPhi0 : +ve:angle less than pi, -ve:angle greater than pi 
+    //intersect_leaf_phicut PR    -0.5774 cosPhi0*d.y - d.x*sinPhi0 
+    //intersect_leaf_phicut QR     0.5774 cosPhi1*d.y - d.x*sinPhi1 
+    //intersect_leaf_phicut unbounded_exit 0 
+    //intersect_leaf_phicut t_cand.0   173.2278 t_min     1.7321 
+    //intersect_leaf_phicut ipos_x    -0.0000 ipos_x*1e6f    -7.6294  cosPhi0     0.0000  x_wrong_side 0 
+    //intersect_leaf_phicut ipos_y    -0.0000 ipos_y*1e6f    -7.6294  sinPhi0     1.0000  y_wrong_side 1 
+    //intersect_leaf_phicut t_cand   173.2278 t_min     1.7321 too_close 0 
+    //intersect_leaf_phicut t_cand.1 999999988484154753734934528.0000 
+    //intersect_leaf_phicut t_cand.2 999999988484154753734934528.0000 valid_intersect 0 
+    //intersect_leaf valid_isect 0 isect (    0.0000     0.0000     0.0000     0.0000)   
+    //intersect_tree  nodeIdx 3 primitive 1 nd_isect (    0.0000     0.0000     0.0000     0.0000) 
+    //intersect_tree  nodeIdx 1 CSG::Name intersection depth 0 elevation 1 
+    //intersect_tree  nodeIdx 1 primitive 0 
+
+    //intersect_tree nodeIdx   1 t_left    73.2051 t_right     0.0000 leftIsCloser 0  l_state Enter r_state  Miss l_cos*1e6f -1000000.0000 r_cos*1e6f     0.0000 
+    //   1 : stack peeking : left 0 right 1 (stackIdx)     intersection  l:Enter    73.2051    r: Miss     0.0000     leftIsCloser 0 -> RETURN_MISS 
+                            noname MISS
+                        q0 norm t (    0.0000    0.0000    0.0000    0.0000)
+                       q1 ipos sd (    0.0000    0.0000    0.0000    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -100.0131 -100.0131   99.9738    1.7321)
+                  q3 ray_dir gsid (    0.5774    0.5774   -0.5774 C4U (     0    0    0    0 ) )
+
+
+Nextdoor pixel gives expected HIT::
+
+    epsilon:CSG blyth$ YX=0,0 CSGQueryTest
+    2022-02-13 20:04:55.216 INFO  [35017754] [CSGQueryTest::Load@288]  a (3, 3, 4, 4, ) LOAD loadpath /tmp/blyth/opticks/CSGOptiX/CSGOptiXRenderTest/dy_1_dx_1.npy YX ( 0,0 )
+    //intersect_prim
+    //intersect_tree  numNode 3 height 1 fullTree(hex) 20000 
+    //intersect_tree  nodeIdx 2 CSG::Name     sphere depth 1 elevation 0 
+    //intersect_tree  nodeIdx 2 primitive 1 
+    //intersect_leaf typecode 101 gtransformIdx 1 
+    //intersect_leaf ray_origin ( -100.0227,  -99.9773,  100.0000) 
+    //intersect_leaf ray_direction (    0.5774,    0.5774,   -0.5774) 
+    //intersect_leaf_sphere radius   100.0000 
+    //intersect_leaf_sphere valid_isect 1  isect (    -0.5776    -0.5771     0.5774    73.2051)  
+    //intersect_leaf valid_isect 1 isect (   -0.5776    -0.5771     0.5774    73.2051)   
+    //intersect_tree  nodeIdx 2 primitive 1 nd_isect (   -0.5776    -0.5771     0.5774   -73.2051) 
+    //intersect_tree  nodeIdx 3 CSG::Name     phicut depth 1 elevation 0 
+    //intersect_tree  nodeIdx 3 primitive 1 
+    //intersect_leaf typecode 120 gtransformIdx 2 
+    //intersect_leaf ray_origin ( -100.0227,  -99.9773,  100.0000) 
+    //intersect_leaf ray_direction (    0.5774,    0.5774,   -0.5774) 
+    //intersect_leaf_phicut q0.f  (    0.0000     1.0000     1.0000     0.0000) cosPhi0/sinPhi0/cosPhi1/sinPhi1 t_min     1.7321 
+    //intersect_leaf_phicut d.xyz (     0.5774     0.5774    -0.5774 ) zpure 0 
+    //intersect_leaf_phicut PQ    -1.0000 cosPhi0*sinPhi1 - cosPhi1*sinPhi0 : +ve:angle less than pi, -ve:angle greater than pi 
+    //intersect_leaf_phicut PR    -0.5774 cosPhi0*d.y - d.x*sinPhi0 
+    //intersect_leaf_phicut QR     0.5774 cosPhi1*d.y - d.x*sinPhi1 
+    //intersect_leaf_phicut unbounded_exit 0 
+    //intersect_leaf_phicut t_cand.0   173.2444 t_min     1.7321 
+    //intersect_leaf_phicut ipos_x     0.0000 ipos_x*1e6f     0.0000  cosPhi0     0.0000  x_wrong_side 0 
+    //intersect_leaf_phicut ipos_y     0.0454 ipos_y*1e6f 45364.3789  sinPhi0     1.0000  y_wrong_side 0 
+    //intersect_leaf_phicut t_cand   173.2444 t_min     1.7321 too_close 0 
+    //intersect_leaf_phicut t_cand.1   173.2444 
+    //intersect_leaf_phicut t_cand.2   173.2444 valid_intersect 1 
+    //intersect_leaf valid_isect 1 isect (    1.0000     0.0000     0.0000   173.2444)   
+    //intersect_tree  nodeIdx 3 primitive 1 nd_isect (    1.0000     0.0000     0.0000   173.2444) 
+    //intersect_tree  nodeIdx 1 CSG::Name intersection depth 0 elevation 1 
+    //intersect_tree  nodeIdx 1 primitive 0 
+
+    //intersect_tree nodeIdx   1 t_left    73.2051 t_right   173.2444 leftIsCloser 1  l_state Enter r_state  Exit l_cos*1e6f -1000000.0000 r_cos*1e6f 577350.2500 
+    //   1 : stack peeking : left 0 right 1 (stackIdx)     intersection  l:Enter    73.2051    r: Exit   173.2444     leftIsCloser 1 -> RETURN_A 
+                            noname HIT
+                        q0 norm t (   -0.5776   -0.5771    0.5774   73.2051)
+                       q1 ipos sd (  -57.7577  -57.7123   57.7350    0.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min ( -100.0227  -99.9773  100.0000    1.7321)
+                  q3 ray_dir gsid (    0.5774    0.5774   -0.5774 C4U (     0    0    0    0 ) )
+
+
+::
+
+    EYE=-1,-1,0 TMIN=0. CAM=1 ./cxr_geochain.sh
+        very clear seam 
+
+    EYE=1,1,0 TMIN=0. CAM=1 ./cxr_geochain.sh 
+        beach ball view
+
+    EYE=-1,-1,0 TMIN=0.7 CAM=1 ZOOM=2 ./cxr_geochain.sh 
+        back view is informative using TMIN to cut a hole in the phere 
+        showing the phicut planes : with a white line of misses up the middle  
+
+
+Upside down Italian flag, from the two phicut faces and line of misses up the sharp edge of phicut::
+
+    epsilon:CSGOptiX blyth$ ./CSGOptiXRenderTest.sh 
+       a :   (1080, 1920, 4, 4) : /tmp/blyth/opticks/GeoChain_Darwin/GeneralSphereDEV/CSGOptiXRenderTest/cvd0/50001/ALL/top_i0_/cxr_geochain_GeneralSphereDEV_ALL_isect.npy 
+       b :         (3, 3, 4, 4) : /tmp/blyth/opticks/CSGOptiX/CSGOptiXRenderTest/dy_1_dx_1.npy 
+
 

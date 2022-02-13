@@ -29,6 +29,7 @@
 const unsigned CSGFoundry::IMAX = 50000 ; 
 
 const plog::Severity CSGFoundry::LEVEL = PLOG::EnvLevel("CSGFoundry", "DEBUG" ); 
+const int CSGFoundry::VERBOSE = SSys::getenvint("VERBOSE", 0); 
 
 CSGFoundry::CSGFoundry()
     :
@@ -48,7 +49,8 @@ CSGFoundry::CSGFoundry()
     meta(nullptr),
     fold(nullptr),
     cfbase(nullptr),
-    geom(nullptr)
+    geom(nullptr),
+    loaddir(nullptr)
 {
     init(); 
 }
@@ -1342,7 +1344,8 @@ void CSGFoundry::load( const char* dir_ )
 {
     int create_dirs = 0 ; 
     const char* dir = SPath::Resolve(dir_, create_dirs); 
-    LOG(info) << dir ; 
+    LOG(LEVEL) << dir ; 
+    loaddir = strdup(dir) ; 
 
     NP::ReadNames( dir, "meshname.txt", meshname );  
     NP::ReadNames( dir, "mmlabel.txt", mmlabel );  
@@ -1357,8 +1360,8 @@ void CSGFoundry::load( const char* dir_ )
     loadArray( plan  , dir, "plan.npy" , true );  
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
-    bnd = NP::Load(dir, "bnd.npy"); 
-    icdf = NP::Load(dir, "icdf.npy"); 
+    if(NP::Exists(dir, "bnd.npy"))  bnd = NP::Load(dir, "bnd.npy"); 
+    if(NP::Exists(dir, "icdf.npy")) icdf = NP::Load(dir, "icdf.npy"); 
 }
 
 void CSGFoundry::setGeom(const char* geom_)
@@ -1411,7 +1414,18 @@ CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
     CSGFoundry* fd = new CSGFoundry();  
     fd->setGeom(geom); 
     fd->load(); 
-    if(fd->meta) LOG(info) << fd->meta ; 
+
+    if(VERBOSE > 0 )
+    {
+        if( fd->meta )
+        {
+            LOG(info) << " geom " << geom << " loaddir " << fd->loaddir << std::endl << fd->meta ; 
+        }
+        else
+        {
+            LOG(info) << " geom " << geom << " loaddir " << fd->loaddir ;  
+        }
+    }
     return fd ; 
 } 
 
@@ -1473,7 +1487,7 @@ void CSGFoundry::loadArray( std::vector<T>& vec, const char* dir, const char* na
         unsigned nj = a->shape[1] ; 
         unsigned nk = a->shape[2] ; 
 
-        LOG(info) << " ni " << std::setw(5) << ni << " nj " << std::setw(1) << nj << " nk " << std::setw(1) << nk << " " << name ; 
+        LOG(LEVEL) << " ni " << std::setw(5) << ni << " nj " << std::setw(1) << nj << " nk " << std::setw(1) << nk << " " << name ; 
 
         vec.clear(); 
         vec.resize(ni); 

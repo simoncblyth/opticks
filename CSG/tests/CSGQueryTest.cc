@@ -8,6 +8,7 @@ DUMP=2 NUM=210 CSGQueryTest A
 **/
 
 #include "SSys.hh"
+#include "SPath.hh"
 #include "NP.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -18,6 +19,8 @@ DUMP=2 NUM=210 CSGQueryTest A
 
 struct CSGQueryTest 
 { 
+    static const int VERBOSE ; 
+
     const CSGFoundry* fd ; 
     const CSGQuery* q ; 
     CSGDraw* d ; 
@@ -38,6 +41,7 @@ struct CSGQueryTest
     std::vector<quad4>* isects ;
     CSGQueryTest(); 
 
+    void create_isects(); 
     std::string config( 
         const char* _name, 
         const char* _ray_origin, 
@@ -51,6 +55,7 @@ struct CSGQueryTest
 
     void intersect(int idx, float3* mod_ray_origin=nullptr , float3* mod_ray_direction=nullptr); 
     void One(); 
+    void Load(); 
     void XScan(); 
     void LookForSeam(); 
     void PhiScan(); 
@@ -61,6 +66,8 @@ struct CSGQueryTest
 }; 
 
 const char* CSGQueryTest::DUMP=" ( 0:no 1:hit 2:miss 3:hit+miss ) " ; 
+const int CSGQueryTest::VERBOSE = SSys::getenvint("VERBOSE", 0 ); 
+
 
 CSGQueryTest::CSGQueryTest()
     :
@@ -74,16 +81,20 @@ CSGQueryTest::CSGQueryTest()
     name("noname"),
     isects(nullptr)
 {
-    LOG(info) << " GEOM " << fd->geom ; 
-    d->draw("CSGQueryTest");
+    if(VERBOSE > 0 )
+    {
+        LOG(info) << " GEOM " << fd->geom ; 
+        d->draw("CSGQueryTest");
+    }
 }
 
 void CSGQueryTest::operator()( char mode)
 {
-    LOG(info) << " mode " << mode ; 
+    if(VERBOSE > 0 ) LOG(info) << " mode " << mode ; 
     switch(mode)
     {
         case 'O': One()            ; break ; 
+        case 'L': Load()           ; break ; 
         case 'S': LookForSeam()    ; break ; 
         case 'X': XScan()          ; break ; 
         case 'P': PhiScan()        ; break ; 
@@ -93,6 +104,19 @@ void CSGQueryTest::operator()( char mode)
         case '2': PacmanPhiLine2() ; break ; 
         default: assert(0 && "mode unhandled" ) ; break ; 
     }
+}
+
+void CSGQueryTest::create_isects()
+{
+    assert( num > 0 ); 
+    isects = new std::vector<quad4>(num) ; 
+
+    if( num == 1 )
+    {
+        dump_hit = true ; 
+        dump_miss = true ; 
+    }
+
 }
 
 std::string CSGQueryTest::config( 
@@ -112,7 +136,7 @@ std::string CSGQueryTest::config(
 
     ray_direction = normalize(ray_direction); 
 
-    isects = new std::vector<quad4>(num) ; 
+    create_isects(); 
 
     std::stringstream ss ; 
     ss 
@@ -131,7 +155,8 @@ std::string CSGQueryTest::config(
        ;
 
     std::string s = ss.str(); 
-    LOG(info) << std::endl << s ; 
+
+    if(VERBOSE > 0 ) LOG(info) << std::endl << s ; 
     return s ; 
 }
 
@@ -229,12 +254,95 @@ void CSGQueryTest::One()
 }
 
 
+/**
+CSGQueryTest::Load
+-------------------
+
+LOAD "L" mode loads an isect subset written by CSGOptiX/tests/CSGOptiXRenderTest.py
+providing a way to rerun a pixel with exactly the same ray_origin, ray_direction and tmin using eg::
+
+    YX=0,0 DUMP=3 CSGQueryTest
+    YX=1,1 DUMP=3 CSGQueryTest
+
+The pixel to rerun is chosed by (IY,IX) coordinate where::
+
+    (0,0) is top left pixel 
+    (1,0) is pixel below the top left pixel 
+
+**/
+
+void CSGQueryTest::Load()
+{
+    const char* defaultpath = "$TMP/CSGOptiX/CSGOptiXRenderTest/dy_1_dx_1.npy" ; 
+    const char* loadpath_ = SSys::getenvvar("LOAD", defaultpath ) ;  
+    int create_dirs = 0 ; 
+    const char* loadpath = SPath::Resolve(loadpath_, create_dirs) ;   
+
+    NP* a = NP::Load(loadpath); 
+
+    int2 yx ; 
+    qvals( yx, "YX", "0,0" ); 
+    int iy = yx.x ; 
+    int ix = yx.y ; 
+
+    LOG(info) << " a " << a->sstr() << " LOAD loadpath " << loadpath << " YX ( " << iy << "," << ix << " )"   ; 
+
+    assert( a->shape.size() == 4 ); 
+    int ni = a->shape[0] ;  
+    int nj = a->shape[1] ;
+    int nk = a->shape[2] ;  
+    int nl = a->shape[3] ;
+
+    assert( nk == 4 && nl == 4 ); 
+
+    int ny = ni ; 
+    int nx = nj ; 
+    assert( ix < nx ); 
+    assert( iy < ny ); 
+
+    quad4 load_isect ; 
+    load_isect.zero(); 
+
+    unsigned itemoffset = iy*nx + ix ; 
+
+    unsigned itembytes = sizeof(float)*4*4 ;  
+    void* dst = &load_isect.q0.f.x ; 
+    void* src = a->bytes() + itembytes*itemoffset ; 
+
+    memcpy( dst, src, itembytes  );  
+
+    if(VERBOSE > 0) LOG(info) 
+        << "load_isect "  << std::endl
+        << " q0.f " << load_isect.q0.f << std::endl 
+        << " q1.f " << load_isect.q1.f << std::endl 
+        << " q2.f " << load_isect.q2.f << std::endl 
+        << " q3.f " << load_isect.q3.f << std::endl 
+        ;
+
+    ray_origin.x = load_isect.q2.f.x ; 
+    ray_origin.y = load_isect.q2.f.y ; 
+    ray_origin.z = load_isect.q2.f.z ;
+    tmin = load_isect.q2.f.w ;
+
+    ray_direction.x = load_isect.q3.f.x ; 
+    ray_direction.y = load_isect.q3.f.y ; 
+    ray_direction.z = load_isect.q3.f.z ;
+
+    num = 1 ; 
+    create_isects(); 
+    intersect(0); 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    char mode = argc > 1 ? argv[1][0] : 'O' ; 
+    if( SSys::getenvbool("YX") ) mode = 'L' ; 
+
     CSGQueryTest t ; 
-    t( argc > 1 ? argv[1][0] : 'O'  ); 
+    t(mode); 
 
     return 0 ; 
 }

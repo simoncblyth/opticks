@@ -84,6 +84,7 @@ set(SOURCES
     SGLM.cc
     SLabelCache.cc
 
+    SMath.cc
     SEvent.cc
     SThetaCut.cc 
     SPhiCut.cc 
@@ -173,6 +174,7 @@ set(HEADERS
     strided_range.h 
     iexpand.h 
 
+    SMath.hh
     SEvent.hh
     SThetaCut.hh
     SPhiCut.hh

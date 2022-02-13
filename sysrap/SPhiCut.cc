@@ -1,6 +1,7 @@
 #include "PLOG.hh"
 #include "scuda.h"
 #include "squad.h"
+#include "SMath.hh"
 #include "SPhiCut.hh"
 
 const plog::Severity SPhiCut::LEVEL = PLOG::EnvLevel("SPhiCut", "DEBUG" ); 
@@ -48,19 +49,17 @@ A do nothing phicut shape would have have startPhi=0. deltaPhi=2.
 **/
 
 
+
+
 void SPhiCut::PrepareParam( quad& q0, double startPhi_pi, double deltaPhi_pi )
 {
     double phi0_pi = startPhi_pi ; 
     double phi1_pi = startPhi_pi + deltaPhi_pi ;
 
-    const double pi = M_PIf ; 
-    double phi0 = phi0_pi*pi ; 
-    double phi1 = phi1_pi*pi ; 
-
-    double cosPhi0 = std::cos(phi0) ;
-    double sinPhi0 = std::sin(phi0) ;
-    double cosPhi1 = std::cos(phi1) ;
-    double sinPhi1 = std::sin(phi1) ;
+    double cosPhi0 = SMath::cos_pi(phi0_pi) ;
+    double sinPhi0 = SMath::sin_pi(phi0_pi) ;
+    double cosPhi1 = SMath::cos_pi(phi1_pi) ;
+    double sinPhi1 = SMath::sin_pi(phi1_pi) ;
 
     q0.f.x = float(cosPhi0); 
     q0.f.y = float(sinPhi0); 
@@ -70,8 +69,8 @@ void SPhiCut::PrepareParam( quad& q0, double startPhi_pi, double deltaPhi_pi )
     LOG(LEVEL) 
         << " startPhi_pi " << startPhi_pi
         << " deltaPhi_pi " << deltaPhi_pi
-        << " phi0 " << phi0
-        << " phi1 " << phi1
+        << " phi0_pi " << phi0_pi
+        << " phi1_pi " << phi1_pi
         << " cosPhi0 " << cosPhi0
         << " sinPhi0 " << sinPhi0 
         << " cosPhi1 " << cosPhi1

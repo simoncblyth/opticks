@@ -102,7 +102,42 @@ Use conventional cross product sign convention  A ^ B =  (Ax By - Bx Ay ) k the 
    QR = Q ^ R = cosPhi1*d.y - d.x*sinPhi1 
 
 Note that as R is not normalized the PR and QR cross products are only proportional to the sine of the angles.
-See tests/cross2D_angle_range_without_trig.py for exploration of 2D cross product 
+See CSG/tests/cross2D_angle_range_without_trig.py for exploration of 2D cross product 
+
+When rays have non-zero x,y direction components the 2D cross products 
+between the direction vectors and the phi edge vectors determines
+if the rays will exit the unbounded shape at infinity.
+
+When rays are purely in Z direction this approach does not work as PR and QR 
+will always be zero because d.x and d.y are zero.  
+So in this zpure case the (o.x, o.y) are used instead of (d.x, d.y)
+Can think of vectors from origin to the (o.x, o.y) ray origin which can 
+serve the same purpose of determining whether the ray will exit the 
+shape at infinity or not. 
+
+                                                        NO 
+            . . . . . . . . . . . .|                   /
+            . . . . . . . . . . . .|                  /
+            . . . . . . . . . . . .|                 /
+            . . . . . . . . . . . .|                /
+            . . . . . . . . . . phi0=0.5           /
+            . . . . . . . . . . . .|              /
+            . . . . . . . . . . . .|             0     
+            . . . . . . . . . . . .|
+            . . . . . 0 . . . . . .| 
+            . . . . ./. . . . . . .|
+            . . . . / . . . . . . .+------------ phi1=2.0 ---  X   
+            . . . ./. . . . . . . . . . . . . . . . . . . . . . .
+            . . . / . . . . . . . . . . . . . . . . . . . . . . .
+            . . ./. . . . . . . . . . . . . . . . . . . . . . . .
+            . . / . . . . . . . . . . . . . . . .0------------------ YES UNBOUNDED_EXIT AT INFINITY
+            . ./. . . . . . . . . . . . . . . . . . . . . . . . .
+            . / . . . . . . . . . . . . . . . . . . . . . . . . .
+            ./. . . . . . . . . . . . . . . . . . . . . . . . . .
+            / . . . . . . . . . . . . . . . . . . . . . . . . . .
+           / 
+         YES
+
 
 **/
 
@@ -114,20 +149,18 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
     const float& cosPhi1 = q0.f.z ; 
     const float& sinPhi1 = q0.f.w ; 
 
-    // PQ, PR, QR are 2D cross products used to identity unbounded exits at infinity 
-    // see cross2D_angle_range_without_trig.py for explanation
     const float PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0  ;  // PQ +ve => angle < pi,   PQ -ve => angle > pi 
-    const float PR = cosPhi0*d.y - d.x*sinPhi0  ;          // PR and QR +ve/-ve selects the "side of the line"
-    const float QR = cosPhi1*d.y - d.x*sinPhi1  ;  
-    bool unbounded_exit = PQ > 0.f ? ( PR > 0.f && QR < 0.f ) : ( PR > 0.f || QR < 0.f )  ;   
-    //bool unbounded_exit = false ; 
+    bool zpure = d.x == 0.f && d.y == 0.f ;   
+    const float PR = cosPhi0*(zpure ? o.y : d.y) - (zpure ? o.x : d.x)*sinPhi0  ;          // PR and QR +ve/-ve selects the "side of the line"
+    const float QR = cosPhi1*(zpure ? o.y : d.y) - (zpure ? o.x : d.x)*sinPhi1  ;  
+    bool unbounded_exit = PQ >= 0.f ? ( PR >= 0.f && QR <= 0.f ) : ( PR >= 0.f || QR <= 0.f )  ;   
 
 #ifdef DEBUG
     printf("//intersect_leaf_phicut q0.f  (%10.4f %10.4f %10.4f %10.4f) %s t_min %10.4f \n" , q0.f.x, q0.f.y, q0.f.z, q0.f.w, "cosPhi0/sinPhi0/cosPhi1/sinPhi1", t_min  ) ; 
-    printf("//intersect_leaf_phicut d.xyz ( %10.4f %10.4f %10.4f ) \n", d.x, d.y, d.z  ); 
-    printf("//intersect_leaf_phicut PQ %10.4f cosPhi0*sinPhi1 - cosPhi1*sinPhi0 : +ve angle less than pi, -ve angle greater than pi \n", PQ );
+    printf("//intersect_leaf_phicut d.xyz ( %10.4f %10.4f %10.4f ) zpure %d \n", d.x, d.y, d.z, zpure  ); 
+    printf("//intersect_leaf_phicut PQ %10.4f cosPhi0*sinPhi1 - cosPhi1*sinPhi0 : +ve:angle less than pi, -ve:angle greater than pi \n", PQ );
     printf("//intersect_leaf_phicut PR %10.4f cosPhi0*d.y - d.x*sinPhi0 \n", PR );
-    printf("//intersect_leaf_phicut QR %10.4f cosPhi1*d.y - d.x*sinPhi1 \n", PR );
+    printf("//intersect_leaf_phicut QR %10.4f cosPhi1*d.y - d.x*sinPhi1 \n", QR );
     printf("//intersect_leaf_phicut unbounded_exit %d \n", unbounded_exit ); 
 #endif
 
@@ -210,11 +243,13 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
         */
         float ipos_x = (o.x+t_cand*d.x) ; 
         float ipos_y = (o.y+t_cand*d.y) ; 
+        float ipos_z = (o.z+t_cand*d.z) ; 
         bool x_wrong_side = ipos_x*cosPhi0 < 0.f ; 
         bool y_wrong_side = ipos_y*sinPhi0 < 0.f ; 
         bool too_close =  t_cand <= t_min ; 
         printf("//intersect_leaf_phicut ipos_x %10.4f ipos_x*1e6f %10.4f  cosPhi0 %10.4f  x_wrong_side %d \n", ipos_x, ipos_x*1e6f, cosPhi0, x_wrong_side ); 
         printf("//intersect_leaf_phicut ipos_y %10.4f ipos_y*1e6f %10.4f  sinPhi0 %10.4f  y_wrong_side %d \n", ipos_y, ipos_y*1e6f, sinPhi0, y_wrong_side ); 
+        printf("//intersect_leaf_phicut ipos_z %10.4f ipos_z*1e6f %10.4f                                  \n", ipos_z, ipos_z*1e6f ); 
         printf("//intersect_leaf_phicut t_cand %10.4f t_min %10.4f too_close %d \n", t_cand, t_min, too_close ); 
     }
 
@@ -286,7 +321,6 @@ Disqualify wrong side or too close
     {
         isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity 
     }
-
     return valid_intersect ; 
 }
 

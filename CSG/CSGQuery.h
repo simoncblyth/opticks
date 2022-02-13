@@ -17,6 +17,7 @@ struct SCanvas ;
 struct CSG_API CSGQuery 
 {
     static const float SD_CUT ; 
+    static const int VERBOSE ; 
     static std::string Desc( const quad4& isect, const char* label, bool* valid_intersect=nullptr  ); 
 
     CSGQuery(const CSGFoundry* fd); 
