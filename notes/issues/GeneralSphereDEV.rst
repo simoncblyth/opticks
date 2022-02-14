@@ -1442,10 +1442,141 @@ Nextdoor pixel gives expected HIT::
         showing the phicut planes : with a white line of misses up the middle  
 
 
-Upside down Italian flag, from the two phicut faces and line of misses up the sharp edge of phicut::
+Upside down Italian flag on the knife edge, from the two phicut faces and white line of misses up the sharp edge of phicut::
 
     epsilon:CSGOptiX blyth$ ./CSGOptiXRenderTest.sh 
        a :   (1080, 1920, 4, 4) : /tmp/blyth/opticks/GeoChain_Darwin/GeneralSphereDEV/CSGOptiXRenderTest/cvd0/50001/ALL/top_i0_/cxr_geochain_GeneralSphereDEV_ALL_isect.npy 
        b :         (3, 3, 4, 4) : /tmp/blyth/opticks/CSGOptiX/CSGOptiXRenderTest/dy_1_dx_1.npy 
+
+
+
+
+
+Start again with attempt to avoid two imprecise decisions at edge causing gap
+-------------------------------------------------------------------------------
+
+Now problem with normal incidence (1,0,0) direction::
+
+    epsilon:CSG blyth$ SPURIOUS=1 ./csg_geochain.sh 
+
+    SPURIOUS=1 IXYZ=-1,1,0  ./csg_geochain.sh 
+
+
+Are missing the phicut at normal incidence and getting spurious hit on sphere::
+
+    epsilon:CSG blyth$ DUMP=3 ORI=-1,1,0 DIR=1,0,0 CSGQueryTest O
+                               One HIT
+                        q0 norm t (    1.0000    0.0100    0.0000  100.9950)
+                       q1 ipos sd (   99.9950    1.0000    0.0000    1.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (   -1.0000    1.0000    0.0000    0.0000)
+                  q3 ray_dir gsid (    1.0000    0.0000    0.0000 C4U (     0    0    0    0 ) )
+
+    epsilon:CSG blyth$ DUMP=3 ORI=-1,10,0 DIR=1,0,0 CSGQueryTest O
+                               One HIT
+                        q0 norm t (    0.9950    0.1000    0.0000  100.4987)
+                       q1 ipos sd (   99.4987   10.0000    0.0000   10.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (   -1.0000   10.0000    0.0000    0.0000)
+                  q3 ray_dir gsid (    1.0000    0.0000    0.0000 C4U (     0    0    0    0 ) )
+
+    epsilon:CSG blyth$ DUMP=3 ORI=-1,50,0 DIR=1,0,0 CSGQueryTest O
+                               One HIT
+                        q0 norm t (    0.8660    0.5000    0.0000   87.6025)
+                       q1 ipos sd (   86.6025   50.0000    0.0000   50.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (   -1.0000   50.0000    0.0000    0.0000)
+                  q3 ray_dir gsid (    1.0000    0.0000    0.0000 C4U (     0    0    0    0 ) )
+
+
+The problem is not normal incidence with phi0 plane, it is direction being parallel with phi1 plane
+That causes t1 -inf so rearrange to make nan disqualify one root without killing the other::
+
+    212     
+    213     const float t0c = ( s0x <= 0.f || t0 <= t_min) ? RT_DEFAULT_MAX : t0 ;
+    214     const float t1c = ( s1x <= 0.f || t1 <= t_min) ? RT_DEFAULT_MAX : t1 ;
+    215     // comparisons with nan always give false, so make false correspond to disqualification  
+    216     // t0, t1 can be -inf so must check them against t_min individually before comparing them 
+    217     
+    218     const float t_cand = fminf( t0c, t1c ) ;
+
+
+After that::
+
+    SPURIOUS=1 ./csg_geochain.sh
+
+get spurious sphere intersects for +X rays on or beyond the pacmanpp phi0 plane
+
+::
+
+    epsilon:CSG blyth$ ORI=1,10,0 DIR=1,0,0 CSGQueryTest O
+                               One HIT
+                        q0 norm t (    0.9950    0.1000    0.0000   98.4987)
+                       q1 ipos sd (   99.4987   10.0000    0.0000   10.0000)- sd < SD_CUT :    -0.0010
+                 q2 ray_ori t_min (    1.0000   10.0000    0.0000    0.0000)
+                  q3 ray_dir gsid (    1.0000    0.0000    0.0000 C4U (     0    0    0    0 ) )
+
+
+That is caused by false positive unbounded_exit for the face parallel rays. 
+
+So add requiremeht that "sd <= 0" at the t_min point, so that requires on t_min point is within the phicut shape (or on surface):: 
+
+    177     const float sd0 =  sinPhi0*(o.x+t_min*d.x) - cosPhi0*(o.y+t_min*d.y) ;
+    178     const float sd1 = -sinPhi1*(o.x+t_min*d.x) + cosPhi1*(o.y+t_min*d.y) ;
+    179     float sd = fminf( sd0, sd1 );   // signed distance at t_min 
+    180     
+    181 #ifdef DEBUG
+    182     printf("//intersect_leaf_phicut  sd0 %10.4f sd1 %10.4f sd  %10.4f \n", sd0, sd1, sd ); 
+    183 #endif
+    184 
+    185     
+    186     const float PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0  ;  // PQ +ve => angle < pi,   PQ -ve => angle > pi 
+    187     const bool zpure = d.x == 0.f && d.y == 0.f ;   
+    188     const float PR = cosPhi0*(zpure ? o.y : d.y) - (zpure ? o.x : d.x)*sinPhi0  ;          // PR and QR +ve/-ve selects the "side of the line"
+    189     const float QR = cosPhi1*(zpure ? o.y : d.y) - (zpure ? o.x : d.x)*sinPhi1  ;          
+    190     const bool unbounded_exit = sd <= 0.f &&  ( PQ >= 0.f ? ( PR >= 0.f && QR <= 0.f ) : ( PR >= 0.f || QR <= 0.f ))  ;
+    191     
+
+Which eliminates most spurious, leaving 6 all starting on the phi0 plane and heading +X::
+
+      SPURIOUS=1 ./csg_geochain.sh
+
+      s_isect_gsid (   0   1   0   0 )   s_t (    98.8686 )   s_pos (    98.8686    15.0000     0.0000 )   s_pos_r (   100.0000 )   s_sd (    15.0000 )  
+      s_isect_gsid (   0   2   0   0 )   s_t (    95.3939 )   s_pos (    95.3939    30.0000     0.0000 )   s_pos_r (   100.0000 )   s_sd (    30.0000 )  
+      s_isect_gsid (   0   3   0   0 )   s_t (    89.3029 )   s_pos (    89.3029    45.0000     0.0000 )   s_pos_r (   100.0000 )   s_sd (    45.0000 )  
+      s_isect_gsid (   0   4   0   0 )   s_t (    80.0000 )   s_pos (    80.0000    60.0000     0.0000 )   s_pos_r (   100.0000 )   s_sd (    60.0000 )  
+      s_isect_gsid (   0   5   0   0 )   s_t (    66.1438 )   s_pos (    66.1438    75.0000     0.0000 )   s_pos_r (   100.0000 )   s_sd (    66.1438 )  
+      s_isect_gsid (   0   6   0   0 )   s_t (    43.5890 )   s_pos (    43.5890    90.0000     0.0000 )   s_pos_r (   100.0000 )   s_sd (    43.5890 )  
+
+Modify the requirement to not allow sd==0.f gets rid of all SPURIOUS::
+
+     const bool unbounded_exit = sd < 0.f &&  ( PQ >= 0.f ? ( PR >= 0.f && QR <= 0.f ) : ( PR >= 0.f || QR <= 0.f ))  ; 
+
+
+Looking again at cxr are back to previous situation with the edge seam::
+
+    EYE=-1,-1,0 TMIN=0.7 CAM=1 ./cxr_geochain.sh 
+        inverted italian flag   
+
+    EYE=1,0,0 CAM=1 ./cxr_geochain.sh 
+        right side hemi disappeared
+
+        * default tmin of 1 is suprisingly large : corresponding to extent of solid : in order to chop in half 
+        * this means that disappeating the phicut face is actually expected behaviour  
+
+    EYE=1,0,0 CAM=1 TMIN=0.99 ./cxr_geochain.sh
+         no longer disappeared right hemi because pull back the tmin 
+
+    EYE=1.1,0,0 CAM=1 ./cxr_geochain.sh 
+        right side hemi appears when move back 
+
+    EYE=1,0,0 CAM=1 TMIN=0 ./cxr_geochain.sh
+        again appears when set TMIN zero 
+
+    EYE=2,0,0 CAM=0 ./cxr_geochain.sh 
+        smaller right hemi : not expected 
+
+    EYE=2,0,0 CAM=1 ./cxr_geochain.sh 
+        looks correct other than seam line
+
+     EYE=0,0,2 UP=0,1,0  CAM=1 TMIN=0 ./cxr_geochain.sh 
+         expected cut quadrant 
 
 

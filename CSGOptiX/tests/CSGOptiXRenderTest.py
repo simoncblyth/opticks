@@ -56,6 +56,7 @@ if __name__ == '__main__':
     fmt = " %3s : %20s : %s "
     print(fmt % ( "a", str(a.shape), path ))
 
+    assert len(a.shape) == 4 
     ny, nx, ni, nj = a.shape
     assert ni == 4
     assert nj == 4
@@ -72,6 +73,7 @@ if __name__ == '__main__':
     np.save(outpath, b )
     print(fmt % ( "b", str(b.shape), outpath ))
     
+    # result are pixel RGB colors   
     a_result = a[:,:,0,:3] 
     b_result = b[:,:,0,:3] 
 

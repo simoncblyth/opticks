@@ -5,7 +5,9 @@
 #include <cstdio>
 #include <cassert>
 
-int main(int argc, char** argv)
+
+
+void check_nan()
 {
     unsigned n = 8 ; 
     float* pairs = new float[n*2]  
@@ -56,5 +58,58 @@ int main(int argc, char** argv)
         }
 
     } 
+}
+
+
+void check_inf()
+{
+    float inf = 1.f/0.f ; 
+    float ninf = -inf; 
+
+    float inf_times_zero = inf*0.f ; 
+    float inf_plus_zero = inf+0.f ; 
+    float inf_times_one = inf*1.f ; 
+    float inf_plus_one = inf+1.f ; 
+
+    float ninf_times_zero = ninf*0.f ; 
+    float ninf_plus_zero = ninf+0.f ; 
+    float ninf_times_one = ninf*1.f ; 
+    float ninf_plus_one = ninf+1.f ; 
+
+    float ninf_times_minus_one = ninf*-1.f ; 
+
+
+    printf("// inf      %10.4f \n", inf ); 
+    printf("// ninf     %10.4f \n", ninf ); 
+
+    printf("// inf_times_zero %10.4f \n", inf_times_zero ); 
+    printf("// inf_plus_zero %10.4f \n",  inf_plus_zero ); 
+    printf("// inf_times_one %10.4f \n", inf_times_one ); 
+    printf("// inf_plus_one %10.4f \n",  inf_plus_one ); 
+
+    assert( std::isnan(inf_times_zero) ); 
+    assert( std::isinf(inf_plus_zero) ); 
+    assert( std::isinf(inf_times_one) ); 
+    assert( std::isinf(inf_plus_one) ); 
+
+    printf("// ninf_times_zero %10.4f \n", ninf_times_zero ); 
+    printf("// ninf_times_minus_one %10.4f \n", ninf_times_minus_one ); 
+    printf("// ninf_plus_zero %10.4f \n",  ninf_plus_zero ); 
+    printf("// ninf_times_one %10.4f \n", ninf_times_one ); 
+    printf("// ninf_plus_one %10.4f \n",  ninf_plus_one ); 
+
+    assert( std::isnan(ninf_times_zero) ); 
+    assert( std::isinf(ninf_plus_zero) ); 
+    assert( std::isinf(ninf_times_one) ); 
+    assert( std::isinf(ninf_plus_one) ); 
+}
+
+
+
+
+int main(int argc, char** argv)
+{
+    // check_nan(); 
+    check_inf(); 
     return 0 ; 
 }

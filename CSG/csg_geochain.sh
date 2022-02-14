@@ -97,11 +97,11 @@ EOU
 #geom=ithe_XYZ
 #geom=ithl_XYZ
 
-geom=GeneralSphereDEV_XZ
+#geom=GeneralSphereDEV_XZ
 #geom=GeneralSphereDEV_XYZ
 #geom=GeneralSphereDEV_XZ
 #geom=GeneralSphereDEV_YZ
-#geom=GeneralSphereDEV_XY
+geom=GeneralSphereDEV_XY
 
 #catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
 

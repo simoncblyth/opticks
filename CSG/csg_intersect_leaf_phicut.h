@@ -122,7 +122,7 @@ shape at infinity or not.
             . . . . . . . . . . . .|                /
             . . . . . . . . . . phi0=0.5           /
             . . . . . . . . . . . .|              /
-            . . . . . . . . . . . .|             0     
+            . . . . . . . . . . . .|             0  sd > 0.f     
             . . . . . . . . . . . .|
             . . . . . 0 . . . . . .| 
             . . . . ./. . . . . . .|
@@ -131,7 +131,7 @@ shape at infinity or not.
             . . . / . . . . . . . . . . . . . . . . . . . . . . .
             . . ./. . . . . . . . . . . . . . . . . . . . . . . .
             . . / . . . . . . . . . . . . . . . .0------------------ YES UNBOUNDED_EXIT AT INFINITY
-            . ./. . . . . . . . . . . . . . . . . . . . . . . . .
+            . ./. . . . . . . . . . . . . . . .sd < 0.f . . . . .
             . / . . . . . . . . . . . . . . . . . . . . . . . . .
             ./. . . . . . . . . . . . . . . . . . . . . . . . . .
             / . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -139,10 +139,139 @@ shape at infinity or not.
          YES
 
 
+
+Clockwise rotation by phi (flipping sign):: 
+
+  | x' |    |  cosPhi   sinPhi |   | x  |
+  |    | =  |                  |   |    |
+  | y' |    | -sinPhi   cosPhi |   | y  | 
+ 
+
+    x' = cosPhi x + sinPhi y 
+
+    y' = -sinPhi x + cosPhi y 
+
+
+Within edgezone want to avoid two separate decisions as to which face gets hit 
+otherwise numerical imprecision will result in inconsistent decisions causing misses (white seams) along the edge. 
+
 **/
+
 
 LEAF_FUNC
 bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d )
+{
+    const float& cosPhi0 = q0.f.x ; 
+    const float& sinPhi0 = q0.f.y ; 
+    const float& cosPhi1 = q0.f.z ; 
+    const float& sinPhi1 = q0.f.w ; 
+
+#ifdef DEBUG
+    printf("//intersect_leaf_phicut  q0.f (%10.4f %10.4f   %10.4f %10.4f )   cosPhi0 sinPhi0   cosPhi1 sinPhi1      t_min  %10.4f \n", cosPhi0, sinPhi0, cosPhi1, sinPhi1, t_min ); 
+#endif
+
+    const float sd0 =  sinPhi0*(o.x+t_min*d.x) - cosPhi0*(o.y+t_min*d.y) ;  
+    const float sd1 = -sinPhi1*(o.x+t_min*d.x) + cosPhi1*(o.y+t_min*d.y) ;  
+    float sd = fminf( sd0, sd1 );   // signed distance at t_min, sd < 0 means are within the phicut shape : ie between the planes
+
+#ifdef DEBUG
+    printf("//intersect_leaf_phicut  sd0 %10.4f sd1 %10.4f sd  %10.4f \n", sd0, sd1, sd ); 
+#endif
+
+    const float PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0  ;  // PQ +ve => angle < pi,   PQ -ve => angle > pi 
+    const bool zpure = d.x == 0.f && d.y == 0.f ;   
+    const float PR = cosPhi0*(zpure ? o.y : d.y) - (zpure ? o.x : d.x)*sinPhi0  ;          // PR and QR +ve/-ve selects the "side of the line"
+    const float QR = cosPhi1*(zpure ? o.y : d.y) - (zpure ? o.x : d.x)*sinPhi1  ;  
+    const bool unbounded_exit = sd < 0.f &&  ( PQ >= 0.f ? ( PR >= 0.f && QR <= 0.f ) : ( PR >= 0.f || QR <= 0.f ))  ;   
+
+#ifdef DEBUG
+    printf("//intersect_leaf_phicut  PQ %10.4f zpure %d \n", PQ, zpure ); 
+    printf("//intersect_leaf_phicut  PR %10.4f  QR %10.4f unbounded_exit %d \n", PR,QR, unbounded_exit ); 
+#endif
+ 
+    // dotproduct with outward normal [ sinPhi0, -cosPhi0, 0 ]  of phi0 plane    eg [1,0,0] for pacmanpp
+    const float t0 = -( o.x*sinPhi0 + o.y*(-cosPhi0) )/ ( d.x*sinPhi0 + d.y*(-cosPhi0) ) ;  // -o.x/d.x 
+    const float x0 = o.x+t0*d.x ; 
+    const float y0 = o.y+t0*d.y ; 
+    const float s0x =  cosPhi0*x0 + sinPhi0*y0 ; 
+
+#ifdef DEBUG
+    const float s0y = -sinPhi0*x0 + cosPhi0*y0 ; 
+    printf("//intersect_leaf_phicut  t0 %10.4f  (x0,y0) (%10.4f, %10.4f)   (s0x,s0y) (%10.4f, %10.4f) \n", t0, x0,y0, s0x,s0y ); 
+#endif
+
+    // dotproduct with outward normal [ -sinPhi1, cosPhi1, 0 ]  of phi1 plane    eg [0,1,0] for pacmanpp
+    const float t1 = -( o.x*(-sinPhi1) + o.y*cosPhi1 )/( d.x*(-sinPhi1) + d.y*cosPhi1 ) ;  
+    const float x1 = o.x+t1*d.x ;                  
+    const float y1 = o.y+t1*d.y ;                  
+    const float s1x =  cosPhi1*x1 + sinPhi1*y1 ; 
+
+#ifdef DEBUG
+    const float s1y = -sinPhi1*x1 + cosPhi1*y1 ; 
+    printf("//intersect_leaf_phicut  t1 %10.4f  (x1,y1) (%10.4f, %10.4f)   (s1x,s1y) (%10.4f, %10.4f) \n", t1, x1,y1, s1x,s1y ); 
+#endif
+
+    const float epsilon = 1e-4f ; 
+    bool safezone = ( fabsf(s0x) > epsilon && fabsf(s1x) > epsilon ) ;
+    const float t0c = ( s0x > 0.f && t0 > t_min) ? t0 : RT_DEFAULT_MAX ; 
+    const float t1c = ( s1x > 0.f && t1 > t_min) ? t1 : RT_DEFAULT_MAX ; 
+    const float t_cand = safezone ? fminf( t0c, t1c ) : ( s0x > 0.f ? t0 : t1 ) ;
+    const bool valid_intersect = t_cand > t_min && t_cand <  RT_DEFAULT_MAX ; 
+
+    /*
+       0. s0x s1x are -phi0 and -phi1 rotated xprime coordinates of intersect positions
+          it might be tempting to simply match signs of intersect x or y 
+          but that does not work in general for any phi0 phi1 angle  
+
+          * eg pacmanpp +x   x1:-inf y1:nan s1x:nan s1y:nan
+
+       1. s0x s1x can become nan (from t0 or t1 inf or -inf and inf*0.f->nan or -inf*0.f->nan ) 
+          and comparisons with nan always give false. So arrange direction of the comparisons 
+          such that true yields the root in order that a false from nan comparison does what 
+          is needed and disqualifies the root. 
+    
+       2. t0, t1 can be -inf/inf/nan so must check them against t_min individually 
+
+          * when t0 OR t1 is inf the s0x OR s1x will be nan 
+
+       3. must prevent nan from one root infecting the other, by quashing it before root comparison
+
+       4. close to knife edge numerical imprecision makes inconsistencies between sign comparisons on s0x and s1x likely 
+          (such inconsistencies cause seams lines of MISS-es along the knife edge between the phi planes)
+
+          * having unexpected holes in geometry is more of a problem than having normals at edge swap between planes
+          * hence : prevent inconsistent decisions by making just one decision over which plane is hit when at knife edge
+    */ 
+
+
+#ifdef DEBUG
+    printf("//intersect_leaf_phicut t0c %10.4f t1c %10.4f safezone %d t_cand %10.4f valid_intersect %d  unbounded_exit %d \n", t0c, t1c, safezone, t_cand, valid_intersect, unbounded_exit );  
+#endif
+
+    if( valid_intersect ) 
+    {
+        isect.x = t_cand == t1 ? -sinPhi1 :  sinPhi0 ; 
+        isect.y = t_cand == t1 ?  cosPhi1 : -cosPhi0 ;  
+        isect.z = 0.f ; 
+        isect.w = t_cand ; 
+    }
+    else if( unbounded_exit )
+    {
+        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity 
+    }
+    return valid_intersect ; 
+}
+
+
+
+
+
+
+
+
+
+LEAF_FUNC
+bool intersect_leaf_phicut_dev( float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d )
 {
     const float& cosPhi0 = q0.f.x ; 
     const float& sinPhi0 = q0.f.y ; 
@@ -262,6 +391,7 @@ also note that signbit(nan) == true which would also invalidate +ve cosPhi0
 #endif
 
     if((o.y+t_cand*d.y)*sinPhi0 < 0.f || t_cand <= t_min ) t_cand = RT_DEFAULT_MAX ; 
+
     //if((o.x+t_cand*d.x+1e-4)*cosPhi0 < 0.f || t_cand <= t_min ) t_cand = RT_DEFAULT_MAX ; 
     //if((o.x+t_cand*d.x)*cosPhi0 < 0.f || t_cand < t_min ) t_cand = RT_DEFAULT_MAX ;         // t_cand < t_min YIELDS SPURIOUS INTERSECTS 
 /*
@@ -289,7 +419,14 @@ Disqualify wrong side or too close
      but that does not kill the entire short circuit OR 
      (see sysrap/tests/signbitTest.cc)
 
+3. at first glance may think could make the disqualification based only 
+   x or y of intersect BUT that will nor work for all phi0 phi1 angles.
+   So in general it is necessary to rotate the intersect (x,y) positions 
+   by -phi0 and -phi1 to place it back on the x line. 
 
+
+
+ 
 
 
 */
