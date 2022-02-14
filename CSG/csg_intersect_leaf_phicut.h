@@ -197,7 +197,7 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
 
 #ifdef DEBUG
     const float s0y = -sinPhi0*x0 + cosPhi0*y0 ; 
-    printf("//intersect_leaf_phicut  t0 %10.4f  (x0,y0) (%10.4f, %10.4f)   (s0x,s0y) (%10.4f, %10.4f) \n", t0, x0,y0, s0x,s0y ); 
+    printf("//intersect_leaf_phicut  t0 %10.4f  (x0,y0) (%10.4f, %10.4f)   (s0x,s0y) (%10.4g, %10.4g) \n", t0, x0,y0, s0x,s0y ); 
 #endif
 
     // dotproduct with outward normal [ -sinPhi1, cosPhi1, 0 ]  of phi1 plane    eg [0,1,0] for pacmanpp
@@ -213,9 +213,9 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
 
     const float epsilon = 1e-4f ; 
     bool safezone = ( fabsf(s0x) > epsilon && fabsf(s1x) > epsilon ) ;
-    const float t0c = ( s0x > 0.f && t0 > t_min) ? t0 : RT_DEFAULT_MAX ; 
-    const float t1c = ( s1x > 0.f && t1 > t_min) ? t1 : RT_DEFAULT_MAX ; 
-    const float t_cand = safezone ? fminf( t0c, t1c ) : ( s0x > 0.f ? t0 : t1 ) ;
+    const float t0c = ( s0x >= 0.f && t0 > t_min) ? t0 : RT_DEFAULT_MAX ; 
+    const float t1c = ( s1x >= 0.f && t1 > t_min) ? t1 : RT_DEFAULT_MAX ; 
+    const float t_cand = safezone ? fminf( t0c, t1c ) : ( s0x >= 0.f ? t0c : t1c ) ;
     const bool valid_intersect = t_cand > t_min && t_cand <  RT_DEFAULT_MAX ; 
 
     /*
@@ -241,6 +241,13 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
 
           * having unexpected holes in geometry is more of a problem than having normals at edge swap between planes
           * hence : prevent inconsistent decisions by making just one decision over which plane is hit when at knife edge
+
+          * TODO: current approach makes the knife edge decision based on s0x (an arbitrary choice)
+            it would be better to choose based on the s0x or s1x with the larger absolute value, 
+            but need to fish for which is which to pick t0c or t1c::
+
+                 fmaxf(abs(s0x), abs(s1x)) == abs(s0x) ? t0c : t1c 
+
     */ 
 
 

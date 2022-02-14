@@ -63,8 +63,9 @@ void SCenterExtentGenstep::init()
     LOG(info) << "[ gridscale " << gridscale  ;
 
     SSys::getenvintvec("CEGS", cegs, ':', "16:0:9:10" );
-    // expect 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
+    // input CEGS are 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
 
+ 
     SEvent::StandardizeCEGS(ce, cegs, gridscale );
     assert( cegs.size() == 7 );
 
@@ -128,7 +129,7 @@ void SCenterExtentGenstep::init()
     set_meta<std::string>("TOPLINE", topline );
     set_meta<std::string>("BOTLINE", botline );
 
-    SEvent::GenerateCenterExtentGenstepsPhotons( pp, gs );
+    SEvent::GenerateCenterExtentGenstepsPhotons( pp, gs, gridscale );
 
     LOG(info) << "]" ;
 }

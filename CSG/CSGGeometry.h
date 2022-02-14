@@ -37,7 +37,7 @@ struct CSG_API CSGGeometry
     int sz ;  
     int sw ;  
 
-
+    void operator()(); 
     CSGGeometry(const CSGFoundry* fd_ = nullptr); 
 
     void init(); 

@@ -47,6 +47,7 @@ nx:ny:nz:dx:dy:dz:num_photons
 ix0:iy0:iz0:ix1:iy1:iz1:num_photons 
      standardized absolute form of grid specification 
 
+
 **/
 
 void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gridscale ) // static 
@@ -62,18 +63,21 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
         photons_per_genstep = cegs[3] ;
     }   
     else if( cegs.size() == 7 ) 
-    {   
+    {  
+        int nx = std::abs(cegs[0]) ; 
+        int ny = std::abs(cegs[1]) ; 
+        int nz = std::abs(cegs[2]) ; 
         int dx = cegs[3] ; 
         int dy = cegs[4] ; 
         int dz = cegs[5] ; 
         photons_per_genstep = cegs[6] ;
 
-        ix0 = -cegs[0] + dx ; 
-        iy0 = -cegs[1] + dy ; 
-        iz0 = -cegs[2] + dz ; 
-        ix1 =  cegs[0] + dx ; 
-        iy1 =  cegs[1] + dy ; 
-        iz1 =  cegs[2] + dz ; 
+        ix0 = -nx + dx ; 
+        iy0 = -ny + dy ; 
+        iz0 = -nz + dz ; 
+        ix1 =  nx + dx ; 
+        iy1 =  ny + dy ; 
+        iz1 =  nz + dz ; 
     }   
     else
     {   
@@ -390,10 +394,10 @@ SEvent::GenerateCenterExtentGenstepsPhotons
 
 **/
 
-NP* SEvent::GenerateCenterExtentGenstepsPhotons_( const NP* gsa )
+NP* SEvent::GenerateCenterExtentGenstepsPhotons_( const NP* gsa, float gridscale )
 {
     std::vector<quad4> pp ;
-    SEvent::GenerateCenterExtentGenstepsPhotons( pp, gsa ); 
+    SEvent::GenerateCenterExtentGenstepsPhotons( pp, gsa, gridscale ); 
 
     NP* ppa = NP::Make<float>( pp.size(), 4, 4 );
     memcpy( ppa->bytes(),  (float*)pp.data(), ppa->arr_bytes() );
@@ -409,7 +413,7 @@ Contrast this CPU implementation of CEGS generation with qudarap/qsim.h qsim<T>:
 
 **/
 
-void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa )
+void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale )
 {
     LOG(info) << " gsa " << gsa->sstr() ; 
     assert( gsa->shape.size() == 3 && gsa->shape[1] == 6 && gsa->shape[2] == 4 );
@@ -422,6 +426,21 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
     
     unsigned seed = 0 ; 
     SRng<float> rng(seed) ;
+
+
+    float3 paradir ; 
+    qvals(paradir, "PARADIR", "0,0,0" );  
+    bool with_paradir = dot(paradir,paradir) > 0.f ; 
+    if(with_paradir)  
+    {
+        paradir = normalize(paradir);     
+        LOG(info) << " PARADIR enabled " << paradir ; 
+    }
+    else
+    {
+        LOG(info) << " PARADIR NOT-enabled " ; 
+    }
+
     
     for(unsigned i=0 ; i < gsv.size() ; i++)
     {   
@@ -461,13 +480,29 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
             cosTheta = u1 ; 
             sinTheta = sqrtf(1.0-u1*u1);
 
-            // copy position from genstep into the photon, historically has been origin   
-            p.q0.f.x = gs.q1.f.x ;
-            p.q0.f.y = gs.q1.f.y ;
-            p.q0.f.z = gs.q1.f.z ;
-            p.q0.f.w = 1.f ;       // <-- dont copy the "float" gsid 
- 
-            SetGridPlaneDirection( p.q1.f, gridaxes, cosPhi, sinPhi, cosTheta, sinTheta );  
+            if( with_paradir )
+            {
+                // what scaling is needed to span the grid ?
+                p.q0.f.x = 0.f ;  
+                p.q0.f.y = u0*float(num_photons-1)*gridscale ; 
+                p.q0.f.z = 0.f ; 
+                p.q0.f.w = 1.f ;  
+
+                p.q1.f.x = paradir.x ; 
+                p.q1.f.y = paradir.y ; 
+                p.q1.f.z = paradir.z ; 
+                p.q1.f.w = 0.f ; 
+            }
+            else
+            {
+                // copy position from genstep into the photon, historically has been origin   
+                p.q0.f.x = gs.q1.f.x ;
+                p.q0.f.y = gs.q1.f.y ;
+                p.q0.f.z = gs.q1.f.z ;
+                p.q0.f.w = 1.f ;       // <-- dont copy the "float" gsid 
+
+                SetGridPlaneDirection( p.q1.f, gridaxes, cosPhi, sinPhi, cosTheta, sinTheta );  
+            }
 
             // tranforming photon position and direction into the desired frame
             qt.right_multiply_inplace( p.q0.f, 1.f );  // position 

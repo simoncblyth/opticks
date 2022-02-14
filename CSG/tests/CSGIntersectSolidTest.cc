@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     CSGGeometry geom ;
-    geom.centerExtentGenstepIntersect();  
+    geom() ; 
 
     return 0 ; 
 

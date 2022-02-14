@@ -19,6 +19,13 @@
 #include "CSGGrid.h"
 
 
+void CSGGeometry::operator()()
+{
+    LOG(info) << " centerExtentGenstepIntersect " ; 
+
+    centerExtentGenstepIntersect();  
+}
+
 
 const char* CSGGeometry::OutDir(const char* cfbase, const char* geom)   // static  
 {

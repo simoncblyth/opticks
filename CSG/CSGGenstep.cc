@@ -207,7 +207,7 @@ The GPU equivalent should aim to match
 
 void CSGGenstep::generate_photons_cpu()
 {
-    pp = SEvent::GenerateCenterExtentGenstepsPhotons_( gs );  
+    pp = SEvent::GenerateCenterExtentGenstepsPhotons_( gs, gridscale );  
     std::cout 
          << "gs " << gs->sstr() 
          << "pp " << pp->sstr() 

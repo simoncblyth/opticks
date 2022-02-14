@@ -28,8 +28,8 @@ struct SYSRAP_API SEvent
     static NP* MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) ;
     static NP* MakeCountGensteps();
     static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep);
-    static void GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa ); 
-    static NP* GenerateCenterExtentGenstepsPhotons_( const NP* gsa ) ; 
+    static void GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale ); 
+    static NP* GenerateCenterExtentGenstepsPhotons_( const NP* gsa, float gridscale ) ; 
 
     static void SetGridPlaneDirection( float4& dir, int gridaxes, double cosPhi, double sinPhi, double cosTheta, double sinTheta ); 
     static unsigned GenstepID( int ix, int iy, int iz, int iw=0 ) ; 

@@ -17,12 +17,12 @@
 
 #DUMP=3 ORI=-100,-100,0 DIR=1,1,0 CSGQueryTest O
 
-#yx=1,1
-#YX=${YX:-$yx} CSGQueryTest
+yx=1,1
+YX=${YX:-$yx} CSGQueryTest
 
 
 
 #DUMP=3 ORI=-1,1,0 DIR=1,0,0 CSGQueryTest O
 
-DUMP=3 ORI=100,10,0 DIR=-1,0,0 CSGQueryTest O
+#DUMP=3 ORI=100,10,0 DIR=-1,0,0 CSGQueryTest O
 

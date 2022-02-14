@@ -31,10 +31,11 @@ struct SYSRAP_API SCenterExtentGenstep
 
     NP*    gs ;         // not const as need to externally set the meta 
     float  gridscale ;   
+
     quad4* peta ; 
     bool   dump ; 
     float4 ce ;
- 
+
     std::vector<int> cegs ; 
     int nx ; 
     int ny ; 

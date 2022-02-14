@@ -97,8 +97,9 @@ void test_GenerateCenterExtentGensteps_0( const NP* gsa )
 {   
     LOG(info); 
 
+    float gridscale = 1.f ; // not usually used
     std::vector<quad4> pp ;
-    SEvent::GenerateCenterExtentGenstepsPhotons( pp, gsa ); 
+    SEvent::GenerateCenterExtentGenstepsPhotons( pp, gsa, gridscale ); 
     NP* ppa = NP::Make<float>( pp.size(), 4, 4 ); 
     memcpy( ppa->bytes(),  (float*)pp.data(), ppa->arr_bytes() );
    
@@ -111,7 +112,8 @@ void test_GenerateCenterExtentGensteps_0( const NP* gsa )
 void test_GenerateCenterExtentGensteps_1( const NP* gsa )
 {   
     LOG(info); 
-    NP* ppa = SEvent::GenerateCenterExtentGenstepsPhotons_( gsa ); 
+    float gridscale = 1.f ; // not usually used
+    NP* ppa = SEvent::GenerateCenterExtentGenstepsPhotons_( gsa, gridscale ); 
     int create_dirs = 2 ; // 2:dirpath
     const char* fold = SPath::Resolve(BASE, create_dirs );
     std::cout << "ppa " << ppa->sstr() << std::endl ;
