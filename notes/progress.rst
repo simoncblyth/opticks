@@ -26,6 +26,18 @@ Tips for making yearly summaries
 2022 February 
 ---------------
 
+* CSG_OVERLAP : a multi-INTERSECTION equivalent of the CSG_CONTIGUOUS multi-UNION
+   
+  * added new compound primitive implemented in CSG/csg_intersect_node.h:intersect_node_overlap
+    based on farthest_enter and nearest_exit 
+  * list based : so it can mop up intersection nodes into a compound node 
+  * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/OverlapBoxSphere.rst
+  * :doc:`/notes/issues/OverlapBoxSphere`
+  * TODO: test with more than 2 sub nodes, test the compound prim can work in CSG tree 
+  * TODO: think about intersecting with complemented (and unbounded phicut/thetacut/plane nodes) : 
+    can CSG_OVERLAP be made to work with such leaves ?
+  * potentially be used for general sphere combining intersects  
+
 * thoughts on UK GPU hackathon
 
   * :doc:`/docs/geometry_testing`

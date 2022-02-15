@@ -8,9 +8,10 @@ int main(int argc, char** argv)
      const char* arg =  argc > 1 ? argv[1] : nullptr ; 
      OPTICKS_LOG(argc, argv); 
 
-     //const char* _geom = "sphere" ;    // missing tran 
-     //const char* _geom = "UnionBoxSphere" ;  // missing inst
-     const char* _geom = nullptr ; 
+     //const char* _geom = "sphere" ;   
+     //const char* _geom = "UnionBoxSphere" ;
+     const char* _geom = "OverlapBoxSphere" ;  
+     //const char* _geom = nullptr ; 
      const char* geom = SSys::getenvvar("GEOM", _geom ); 
 
      std::vector<std::string> names ; 

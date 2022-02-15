@@ -235,18 +235,85 @@ const char* INTERSECTION = R"LITERAL(
 +-----------------+-----------------+-----------------+-----------------+                 
 
 
-
-  HUH : ( A Exit, B Enter, A Closer )  -> LOOP_A        
-
-               but A just exited so there will be no otherside ? 
-               YES, but that assumes simple convex constituent shapes
-               whereas the alg needs to handle less simple shapes like torus or annulus 
-
-        ( B Enter, A Exit, B Closer )  -> RETURN_B 
+Ordering states (Closer,Further) 
 
 
+(Enter, Enter) -> Loop Closer   
+    Find otherside of Closer Enter (by advancing t_min and intersecting that constituent again and then comparing again)
 
-Consider INTERSECTION between an ordinary bounded A and an unbounded B (eg phicut or thetacut)
+    ::
+
+            +-------------+               
+            | A           |
+            |      +------|-------+      0:Origin
+            |      |      |     B |      1:A_Enter
+      0- - -1 - - [2]- - -3       |      2:B_Enter
+            E      E      X       |      (1:A_Enter,2:B_Enter) => A_Closer => LOOP_A : Closer one => 3
+            |      |      |       |      3:A Exit                      
+            +------|------+       |      (2:B Enter,3:A Exit) => RETURN_B 2:B_Enter  
+                   |              | 
+                   +--------------+
+
+(Enter, Exit) -> Return Closer One : the Enter 
+     
+
+
+(Exit, Enter) -> Loop Closer (the Exit)
+    One might first imagine that having just exited so there will be no otherside ? 
+    But that assumes simple convex constituent shapes whereas the alg needs to 
+    handle less simple shapes like torus or annulus 
+
+
+
+(Exit, Exit) -> Return Closer Exit 
+
+
+
+
+Thinking of ROTH diagrams for intersection
+
+                           
+                       |--------------|
+                       
+                            |------------------|
+
+                                  |-----------------|
+
+           Enters:     |    |     | 
+
+           Exits:                     |        |    |
+
+
+                  farthest enter  |   |
+                                  |   |    nearest exit
+
+For an overlap need::
+
+                      farthest_enter < nearest_exit  
+
+
+                          |-----------|     
+
+                                           |------------|
+  
+            Enters:       |                |
+
+            Exits:                    |                 |              
+                         
+  
+                         nearest exit |    | farthest enter 
+
+No overlap as::
+
+                         nearest_exit   < farthest_enter 
+
+
+
+
+
+
+
+Consider INTERSECTION setween an ordinary bounded A and an unbounded B (eg phicut or thetacut)
  
 * assume that find a way to special case reclassify "B Miss" into "B Exit" 
   for rays going in the appropriate range of directions 
@@ -263,8 +330,10 @@ Consider INTERSECTION between an ordinary bounded A and an unbounded B (eg phicu
   
 * as the "otherside" of B is at infinity the comparison will always be "A Closer"
 
- 
 
+::
+ 
+              .
                            => MISS         /
                              2:B_MISS     /
                                2         /  B : unbounded
@@ -324,6 +393,34 @@ Consider INTERSECTION between an ordinary bounded A and an unbounded B (eg phicu
                                                          5: A Exit
                                                          6: B Exit
                                                          5,6: A Closer   ==> RETURN_A   [5]
+
+
+
+
+
+
+
+
+The below shapes are not permissable as there is no common overlap
+giving such a shape to a MULTI_INTERSECT may abort and will give incorrect intersects.      
+
+
+             +------+  
+         +---|------|-----+
+         |   |      |     |
+         |   |      |     |
+         |   +------+     | 
+         |           +----|-----+
+         +-----------|----+     |
+                     +----------+
+
+      +----+      +-----+      +-----+
+      |    |      |     |      |     |
+   - -E - - - - - E- - - - - - E- - - - - - 
+      |    |      |     |      |     |
+      +----+      +-----+      +-----+
+
+
 )LITERAL" ;
 
 const char* DIFFERENCE = R"LITERAL(

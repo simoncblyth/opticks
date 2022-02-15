@@ -101,9 +101,10 @@ EOU
 #geom=GeneralSphereDEV_XYZ
 #geom=GeneralSphereDEV_XZ
 #geom=GeneralSphereDEV_YZ
-geom=GeneralSphereDEV_XY
+#geom=GeneralSphereDEV_XY
 
-
+geom=OverlapBoxSphere_XY
+#geom=IntersectionBoxSphere_XY
 
 #catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
 

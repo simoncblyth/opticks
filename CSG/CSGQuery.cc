@@ -97,12 +97,8 @@ const CSGNode* CSGQuery::getSelectedNode( int nodeIdx ) const
 
 float CSGQuery::distance(const float3& position ) const
 {
-    // TODO: should be using a distance_prim with this decision in there ?
-    return select_is_tree ? 
-                  distance_tree( position, select_numNode, select_root, plan0, itra0 ) 
-               :
-                  distance_list( position, select_numNode, select_root, plan0, itra0 ) 
-               ;
+    float sd = distance_prim( position, select_numNode, select_root, plan0, itra0 ) ; 
+    return sd ;  
 }
 
 float CSGQuery::operator()(const float3& position ) const

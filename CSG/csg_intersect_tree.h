@@ -619,7 +619,7 @@ bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const floa
 {
     const unsigned typecode = node->typecode() ;  
 #ifdef DEBUG 
-    printf("//intersect_prim\n"); 
+    printf("//intersect_prim typecode %d \n", typecode ); 
 #endif
 
 #ifdef DEBUG_SIX
@@ -640,6 +640,10 @@ bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const floa
     {
         valid_intersect = intersect_node_contiguous( isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }
+    else if( typecode == CSG_OVERLAP )
+    {
+        valid_intersect = intersect_node_overlap( isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+    }  
     return valid_intersect ; 
 }
 
@@ -657,9 +661,9 @@ float distance_prim( const float3& global_position, int numNode, const CSGNode* 
     {
         distance = distance_tree(global_position, numNode, node, plan, itra );
     }
-    else if( typecode == CSG_CONTIGUOUS )  
+    else  
     {
-        distance = distance_node_contiguous( global_position, node, plan, itra ) ; 
+        distance = distance_node_list( typecode, global_position, node, plan, itra ) ; 
     }
     return distance ; 
 }

@@ -64,6 +64,7 @@ ibsp
 dbsp
 UnionBoxSphere
 IntersectionBoxSphere
+OverlapBoxSphere
 DifferenceBoxSphere
 rcyl
 dcyl
@@ -98,11 +99,9 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("ConvexPolyhedronCube", name))        so = makeConvexPolyhedronCube(name) ;
     else if(StartsWith("ConvexPolyhedronTetrahedron", name)) so = makeConvexPolyhedronTetrahedron(name) ;
     else if(StartsWith("elli", name)) so = makeEllipsoid(name) ;
-    else if(StartsWith("ubsp", name)) so = makeUnionBoxSphere(name) ;
-    else if(StartsWith("ibsp", name)) so = makeIntersectionBoxSphere(name) ;
-    else if(StartsWith("dbsp", name)) so = makeDifferenceBoxSphere(name) ;
     else if(StartsWith("UnionBoxSphere", name))        so = makeUnionBoxSphere(name) ;
     else if(StartsWith("IntersectionBoxSphere", name)) so = makeIntersectionBoxSphere(name) ;
+    else if(StartsWith("OverlapBoxSphere", name))      so = makeOverlapBoxSphere(name) ;
     else if(StartsWith("DifferenceBoxSphere", name))   so = makeDifferenceBoxSphere(name) ;
     else if(StartsWith("rcyl", name)) so = makeRotatedCylinder(name) ;
     else if(StartsWith("dcyl", name)) so = makeDifferenceCylinder(name) ;
@@ -442,6 +441,56 @@ CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, char op_, const CSGNo
 }
 
 
+CSGSolid* CSGMaker::makeOverlapBoxSphere( const char* label, float radius, float fullside )
+{
+    CSGNode bx = CSGNode::Box3(fullside) ; 
+    CSGNode sp = CSGNode::Sphere(radius); 
+
+    std::vector<CSGNode> leaves ; 
+    leaves.push_back(bx); 
+    leaves.push_back(sp); 
+
+    return makeOverlapList( label, leaves ); 
+}
+
+
+CSGSolid* CSGMaker::makeOverlapList( const char* label, const std::vector<CSGNode>& leaves  )
+{
+    unsigned numPrim = 1 ; 
+    CSGSolid* so = fd->addSolid(numPrim, label);
+    
+    unsigned numSub = leaves.size() ; 
+    unsigned numNode = 1 + numSub ; 
+    int nodeOffset_ = -1 ; 
+    CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
+
+    CSGNode overlap = CSGNode::Overlap(numSub); 
+    CSGNode* n = fd->addNode(overlap); 
+
+    AABB bb = {} ;
+    // naive bbox combination yields overlarge bbox, not appropriate for production code
+    for(unsigned i=0 ; i < leaves.size() ; i++)
+    {
+        const CSGNode& leaf = leaves[i] ; 
+        fd->addNode(leaf); 
+        bb.include_aabb( leaf.AABB() );  // assumes any transforms have been applied to the Node AABB
+    }
+     
+    p->setAABB( bb.data() );  
+
+    so->center_extent = bb.center_extent()  ; 
+
+    // setting transform as othewrise loading foundry fails for lack of non-optional tran array 
+    const Tran<double>* tran_identity = Tran<double>::make_identity(); 
+    unsigned transform_idx = 1 + fd->addTran(*tran_identity);   // 1-based idx, 0 meaning None
+    n->setTransform(transform_idx); 
+
+    LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
+    return so ; 
+}
+
+
+
 /**
 CSGMaker::makeBooleanSeptuplet
 ----------------------------------
@@ -558,6 +607,9 @@ CSGSolid* CSGMaker::makeIntersectionBoxSphere( const char* label, float radius, 
 CSGSolid* CSGMaker::makeDifferenceBoxSphere( const char* label, float radius, float fullside ){
     return makeBooleanBoxSphere(label, 'D', radius, fullside, DBSP_MIDX ); 
 }
+
+
+
 
 
 CSGSolid* CSGMaker::makeSphere(const char* label, float radius)

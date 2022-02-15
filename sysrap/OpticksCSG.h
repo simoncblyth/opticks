@@ -30,6 +30,7 @@ typedef enum {
     CSG_NODE=10, 
         CSG_CONTIGUOUS=11, 
         CSG_DISCONTIGUOUS=12,
+        CSG_OVERLAP=13, 
 
     CSG_LEAF=100,
         CSG_SPHERE=101,
@@ -103,6 +104,7 @@ static const char* CSG_DIFFERENCE_    = "difference" ;
 static const char* CSG_NODE_           = "node" ; 
 static const char* CSG_CONTIGUOUS_     = "contiguous" ; 
 static const char* CSG_DISCONTIGUOUS_  = "discontiguous" ; 
+static const char* CSG_OVERLAP_        = "overlap" ; 
 
 
 static const char* CSG_LEAF_           = "leaf" ; 
@@ -189,6 +191,7 @@ struct CSG
         else if(strcmp(nodename, CSG_LTHETACUT_) == 0)      tc = CSG_LTHETACUT ;
         else if(strcmp(nodename, CSG_DISCONTIGUOUS_) == 0)   tc = CSG_DISCONTIGUOUS ;
         else if(strcmp(nodename, CSG_CONTIGUOUS_) == 0)      tc = CSG_CONTIGUOUS ;
+        else if(strcmp(nodename, CSG_OVERLAP_) == 0)         tc = CSG_OVERLAP ;
         else if(strcmp(nodename, CSG_CONVEXPOLYHEDRON_) == 0) tc = CSG_CONVEXPOLYHEDRON ;
         else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   tc = CSG_INTERSECTION ;
         else if(strcmp(nodename, CSG_UNION_) == 0)          tc = CSG_UNION ;
@@ -232,6 +235,7 @@ struct CSG
             case CSG_NODE:          s = CSG_NODE_          ; break ; 
             case CSG_CONTIGUOUS:    s = CSG_CONTIGUOUS_    ; break ; 
             case CSG_DISCONTIGUOUS: s = CSG_DISCONTIGUOUS_ ; break ; 
+            case CSG_OVERLAP:       s = CSG_OVERLAP_       ; break ; 
 
             case CSG_LEAF:          s = CSG_LEAF_          ; break ; 
             case CSG_SPHERE:        s = CSG_SPHERE_        ; break ; 
@@ -304,7 +308,7 @@ struct CSG
 
     static bool IsList(OpticksCSG_t type)
     {
-        return  (type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS ) ; 
+        return  (type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS || type == CSG_OVERLAP ) ; 
     }
 
     static bool IsCompound(OpticksCSG_t type)

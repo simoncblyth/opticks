@@ -4,6 +4,7 @@ struct CSGNode ;
 struct CSGSolid ; 
 
 #include <string>
+#include <vector>
 #include "CSG_API_EXPORT.hh"
 #include "plog/Severity.h"
 
@@ -42,6 +43,8 @@ struct CSG_API CSGMaker
     CSGSolid* makeSolid11(const char* label, CSGNode nd, const std::vector<float4>* pl=nullptr, int meshIdx=-1 );
     CSGSolid* makeBooleanBoxSphere( const char* label, char op, float radius, float fullside, int meshIdx = -1  ) ;
     CSGSolid* makeBooleanTriplet(   const char* label, char op, const CSGNode& left, const CSGNode& right, int meshIdx=-1 ) ; 
+    CSGSolid* makeOverlapList(      const char* label, const std::vector<CSGNode>& leaves  ); 
+
     CSGSolid* makeBooleanSeptuplet( 
         const char* label, 
         const CSGNode& top, 
@@ -59,6 +62,8 @@ struct CSG_API CSGMaker
 
     CSGSolid* makeUnionBoxSphere(        const char* label="ubsp", float radius=100.f, float fullside=150.f );
     CSGSolid* makeIntersectionBoxSphere( const char* label="ibsp", float radius=100.f, float fullside=150.f );
+    CSGSolid* makeOverlapBoxSphere(       const char* label="obsp", float radius=100.f, float fullside=150.f ); 
+
     CSGSolid* makeDifferenceBoxSphere(   const char* label="dbsp", float radius=100.f, float fullside=150.f );
 
     CSGSolid* makeSphere(     const char* label="sphe", float r=100.f ); 

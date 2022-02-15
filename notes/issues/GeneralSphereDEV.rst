@@ -1730,3 +1730,42 @@ Confirm not miss, its different shade of green::
                   q3 ray_dir gsid (    0.7071   -0.7071    0.0000 C4U (     0    0    0    0 ) )
 
 
+
+
+Axis line getting intersects even when it should be obscured
+----------------------------------------------------------------
+
+Eye ball view with sphere shell cutaway::
+
+    EYE=-1,1,0 CAM=1 TMIN=0.707 ./cxr_geochain.sh 
+
+
+
+
+
+                         
+                         Y  |
+                            |     cutaway quadrant 
+                            |
+                0           +
+                       .    |    .
+                    1       |  
+                   .        |        .
+                            |    
+                 .          |           .
+                            |    
+                +- - - - - -2------------+---X-----
+                             
+                 .          |           .
+                             
+                    .       |         .
+
+                        .   |    .
+                            +
+
+
+
+
+
+
+

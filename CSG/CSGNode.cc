@@ -167,6 +167,13 @@ CSGNode CSGNode::BooleanOperator(char op)   // static
     nd.setTypecode(CSG::BooleanOperator(op)) ; 
     return nd ; 
 }
+CSGNode CSGNode::Overlap(unsigned num_sub)   // static 
+{
+    CSGNode nd = {} ;
+    nd.setTypecode(CSG_OVERLAP) ; 
+    nd.setSubNum(num_sub); 
+    return nd ; 
+}
 
 
 

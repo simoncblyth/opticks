@@ -51,19 +51,17 @@ msg="=== $BASH_SOURCE :"
 #geom=BoxCrossTwoBoxUnion
 #geom=BoxThreeBoxUnion
 #geom=BoxFourBoxUnion
-geom=BoxFourBoxContiguous
+#geom=BoxFourBoxContiguous
+geom=OverlapBoxSphere
 #geom=SphereWithPhiCutDEV
 #geom=ZSphere
 #geom=Plane
 #geom=Slab                  ## not getting what expected 
 #geom=ConvexPolyhedronCube
 #geom=ConvexPolyhedronTetrahedron
+#geom=parade
 
 #catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*}
-
-geom=parade
-
-
 export GEOM=${GEOM:-$geom}
 
 if [ "$(uname)" == "Linux" ]; then
