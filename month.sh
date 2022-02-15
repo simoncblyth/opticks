@@ -21,6 +21,7 @@ EOU
 
 
 mo=${1:-1}
+rev=${REV:-0}
 
 year=$(date +"%Y")
 lastyear=$(( $year - 1 ))
@@ -38,10 +39,16 @@ fi
 month=$(printf "%0.2d" $mo)
 
 if [ "$mo" == "0" ]; then 
-    cmd="git lg --after $logyear-01-01 --before $logyear-12-31 | tail -r "
+    cmd="git lg --after $logyear-01-01 --before $logyear-12-31"
+
 else 
-    cmd="git lg --after $logyear-$month-01 --before $logyear-$month-31 | tail -r "
+    cmd="git lg --after $logyear-$month-01 --before $logyear-$month-31"
 fi 
+
+if [ "$rev" == "1" ]; then 
+   cmd="$cmd | tail -r"
+fi 
+
 
 echo $cmd
 eval $cmd
