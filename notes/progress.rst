@@ -29,6 +29,7 @@ Tips for making yearly summaries
 * thoughts on UK GPU hackathon
 
   * :doc:`/docs/geometry_testing`
+  * https://bitbucket.org/simoncblyth/opticks/src/master/docs/geometry_testing.rst 
 
 * multiunion CSG_CONTIGUOUS : trying to replace large trees with instead small trees with some large compound nodes
 
@@ -55,7 +56,10 @@ Tips for making yearly summaries
 2022 January 
 -------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/opticks_20220115_innovation_in_hep_workshop_hongkong.html
 * http://localhost/env/presentation/opticks_20220115_innovation_in_hep_workshop_hongkong.html
+
+* http://simoncblyth.bitbucket.io/env/presentation/opticks_20220118_juno_collaboration_meeting.html
 * http://localhost/env/presentation/opticks_20220118_juno_collaboration_meeting.html
 
   * Opticks 2D slicing
@@ -74,7 +78,8 @@ Tips for making yearly summaries
 * JUNO XJFixtureConstruction (height 4 OR 5 CSG tree composed of many boxes and cylinders)
 
   * re-modelling at Geant4 level to avoid coincident constituent faces avoids most spurious intersects but very unusually **NOT ALL ARE REMOVED** 
-  * investigating :doc:`/notes/issues/spurious-internal-boundary-intersects-in-high-node-count-solids` 
+  * :doc:`/notes/issues/spurious-internal-boundary-intersects-in-high-node-count-solids` 
+  * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/spurious-internal-boundary-intersects-in-high-node-count-solid.rst 
 
     * when CSG tree balancing is not done the problem does not occur
     * find simpler shape BoxFourBoxUnion that exhibits the same issue
@@ -91,6 +96,7 @@ Tips for making yearly summaries
       than with complete binary tree serialization. 
 
       * :doc:`/notes/issues/csg_contiguous_discontiguos_multiunion`  
+      * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/csg_contiguous_discontiguos_multiunion.rst
 
 
 * LHCb RICH theta and phi cut G4Sphere  
@@ -171,6 +177,7 @@ JUNO/Opticks infrastructure integration
 2021 Dec : work with LHCb RICH people on phicut/thetacut primitive
 -------------------------------------------------------------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/opticks_20211223_pre_xmas.html
 * http://localhost/env/presentation/opticks_20211223_pre_xmas.html
 
   * ZSolid applied to Hama and NNVT PMTs
@@ -189,6 +196,7 @@ JUNO/Opticks infrastructure integration
 2021 Nov : Z-cutting G4VSolid that actually cuts the CSG tree, Geant4 2D cross-sections with (Q->X4)IntersectSolidTest, (Q->X4)IntersectVolumeTest 
 -----------------------------------------------------------------------------------------------------------------------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/opticks_20211117.html
 * http://localhost/env/presentation/opticks_20211117.html
 
   * Hama PMT Solid Breaking Opticks translation 
@@ -223,6 +231,7 @@ JUNO/Opticks infrastructure integration
 2021 Oct : QUDARap : QTex, QCerenkov : new world order simulation atoms, JUNO Fastenener void subtraction reveals CSG limitation, Geant4 1100 property debug
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/opticks_autumn_20211019.html
 * http://localhost/env/presentation/opticks_autumn_20211019.html
 
   * Cerenkov : Rejection vs Lookup sampling, S2 integration, ICDF curves, chi2 compare rejection vs lookup samples  
@@ -249,7 +258,11 @@ JUNO/Opticks infrastructure integration
 * simplify QTex by splitting off QTexRotate
 * CSG_GGeo dumping to see whats happening with r8 and the ginormous bbox, CSGNode.desc needs complement
 * exclude bbox from complemented leaf nodes with only intersect ancestry from contributing to the CSGPrim bbox
-* exclude the zero nodes bbox from inclusion into the CSGPrim bbox, giving ridx:8 the expected bbox from p40 of https://simoncblyth.bitbucket.io/env/presentation/juno_opticks_20210712.html 
+* exclude the zero nodes bbox from inclusion into the CSGPrim bbox, giving ridx:8 the expected bbox from p40 of 
+ 
+  * https://simoncblyth.bitbucket.io/env/presentation/juno_opticks_20210712.html 
+  * https://localhost/env/presentation/juno_opticks_20210712.html 
+
 * formalizing CSGOptiXSimulate a bit
 * add gridscale to concentate the genstep grid on the target geometry
 * move CSG/qat4.h,AABB.h down to sysrap/sqat4.h,saabb.h for wider use, preparation for transforming local frame genstep positions/directions into global frame
@@ -275,6 +288,7 @@ JUNO/Opticks infrastructure integration
 2021 Sept : Cerenkov S2 integration, Geant4 1100 compat
 ---------------------------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/juno_opticks_cerenkov_20210902.html
 * http://localhost/env/presentation/juno_opticks_cerenkov_20210902.html
 
   * G4Cerenkov/G4Cerenkov_modified imprecision, -ve photon yields
@@ -331,6 +345,7 @@ JUNO/Opticks infrastructure integration
 2021 July : QProp, Cerenkov matching 
 --------------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/juno_opticks_20210712.html
 * http://localhost/env/presentation/juno_opticks_20210712.html
 
   * JUNO Opticks/Geant4 Optical Photon Simulation Matching 
@@ -342,6 +357,7 @@ JUNO/Opticks infrastructure integration
   * G4Cerenkov_modified bug  
 
 
+* http://simoncblyth.bitbucket.io/env/presentation/lz_opticks_optix7_20210727.html
 * http://localhost/env/presentation/lz_opticks_optix7_20210727.html
 
   * QUDARap : pure CUDA photon generation
@@ -388,18 +404,21 @@ JUNO/Opticks infrastructure integration
 2021 May : GGeo enhancemends needed for CSG_GGeo conversion, Machinery for Matching : CManager, G4OpticksRecorder
 -------------------------------------------------------------------------------------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/lz_opticks_optix7_20210504.html
 * http://localhost/env/presentation/lz_opticks_optix7_20210504.html
 
   * CSGFoundry model near final : 7, pre-7, CPU testing
   * duplicate 7 environment in pre-7
   * lots of noshow images in the presentation, directory name change perhaps?
 
+* http://simoncblyth.bitbucket.io/env/presentation/opticks_vchep_2021_may19.html
 * http://localhost/env/presentation/opticks_vchep_2021_may19.html
 
   * 1st JUNO Opticks OptiX7 ray trace  
   * efficiency culling decison moved to GPU, reducing CPU hit memory  
   * series of meetings with NVIDIA engineers suggested and organized by LZ. LBNL, NERSC
 
+* http://simoncblyth.bitbucket.io/env/presentation/lz_opticks_optix7_20210518.html
 * http://localhost/env/presentation/lz_opticks_optix7_20210518.html
 
   * debugging CSG_GGeo
@@ -424,6 +443,7 @@ JUNO/Opticks infrastructure integration
 2021 April : machinery for geometry performance scanning, video making for investigating slow geometry
 ----------------------------------------------------------------------------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/lz_opticks_optix7_20210406.html
 * http://localhost/env/presentation/lz_opticks_optix7_20210406.html
 
   * first mention of "Foundry" based CSG geometry model : called this because you create everything Solid/Node/Prim 
@@ -432,6 +452,9 @@ JUNO/Opticks infrastructure integration
   * CSG model looks pretty complete at this stage  
 
 * https://simoncblyth.bitbucket.io/env/presentation/juno_opticks_20210426.html
+* https://localhost/env/presentation/juno_opticks_20210426.html
+
+* http://simoncblyth.bitbucket.io/env/presentation/juno_opticks_20210426.html
 * http://localhost/env/presentation/juno_opticks_20210426.html
 
   * bash junoenv opticks (replace old pkg based approach, treat opticks like sniper, not Geant4)  
@@ -459,11 +482,13 @@ JUNO/Opticks infrastructure integration
 2021 March : OptiX7 expts in OptiXTest
 -------------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/opticks_detector_geometry_caf_mar2021.html
 * http://localhost/env/presentation/opticks_detector_geometry_caf_mar2021.html
 
   * detailed look at Opticks geometry approach (prior to OptiX7 CSG developments, but IAS/GAS mentioned) 
 
 
+* http://simoncblyth.bitbucket.io/env/presentation/lz_opticks_optix7_20210315.html
 * http://localhost/env/presentation/lz_opticks_optix7_20210315.html
  
   * resolve the compound GAS issue, by switching to using singe BI containing all AABB
@@ -490,10 +515,12 @@ Opticks repo
 2021 Feb : first expts with OptiX 7
 ---------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/lz_opticks_optix7_20210208.html
 * http://localhost/env/presentation/lz_opticks_optix7_20210208.html
 
   * very early stage of OptiX 7 expts 
 
+* http://simoncblyth.bitbucket.io/env/presentation/lz_opticks_optix7_20210225.html
 * http://localhost/env/presentation/lz_opticks_optix7_20210225.html
 
   * compound GAS issue : bbox fudge, boxy spheres 
@@ -513,6 +540,7 @@ Opticks repo
 2021 Jan : Geant4 1070,  first OptiX 7 expts
 -------------------------------------------------
 
+* http://simoncblyth.bitbucket.io/env/presentation/opticks_jan2021_juno_sim_review.html
 * http://localhost/env/presentation/opticks_jan2021_juno_sim_review.html
   
   * mainly review of 2020 : leap in Opticks awareness
@@ -1918,6 +1946,7 @@ review presentations
 Update and open the internal index of presentations with *index.sh* (env/bin/index.sh)
 
 * http://localhost/env/presentation/index.html
+* http://simoncblyth.bitbucket.io/env/presentation/index.html
 * to update the descriptions appearing in the index page, update the metadata description fields in the .txt sources, 
   no need to update the html of the presentations unless you find bugs that warrant "explanations from the future"
 
