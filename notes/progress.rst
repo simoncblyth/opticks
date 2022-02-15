@@ -34,19 +34,22 @@ Tips for making yearly summaries
 * multiunion CSG_CONTIGUOUS : trying to replace large trees with instead small trees with some large compound nodes
 
   * reorganize intersect and distance functions into three levels tree/node/leaf to avoid recursive CSG_CONTIGUOUS node functions that OptiX disallows 
-  * make start at implementing CSG_CONTIGUOUS NMultiUnion as its looking doubtful that balanced trees can be made to work the the CSG intersection
+  * make start at implementing CSG_CONTIGUOUS NMultiUnion as its looking doubtful that balanced trees can be made to work with the CSG intersection
   * generalize NCSG to saving lists of nodes needed by NMultiUnion as well as the normal trees of nodes needed for booleans 
 
 * phicut thetacut
 
   * unbounded like CSG_THETACUT CSG_PHICUT require csg_tree_intersect special handling to promote MISS into an EXIT at infinity 
-    a bit similar to complemented but more involved as depends in the ray direction and starting within the shape,
+    a bit similar to complemented but more involved as depends on the ray direction and starting within the shape,
 
-  * avoiding inconsitent plane side decisions on phicut knife edge by making only one decision appears to avoid the problem of a line of misses along the edge
+  * avoiding inconsistent plane side decisions on phicut knife edge by making only one decision appears to avoid the problem of a line of misses along the edge
   * testing phicut intersection with sphere throwing up lots of issues : tails, seam lines 
     
     * handling the cases making the phicut imp much more involved that hoped for
     * unbounded and other complexities makes me question if this is the right approach 
+
+      * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/GeneralSphereDEV.rst
+      * :doc:`/notes/issues/GeneralSphereDEV`
 
       * perhaps implementing CSG_ICONTIGUOUS (need better name) that does for intersections what CSG_CONTIGUOUS  
         does for unions would allow implementing the general sphere directly with planes and cones 
@@ -79,7 +82,7 @@ Tips for making yearly summaries
 
   * re-modelling at Geant4 level to avoid coincident constituent faces avoids most spurious intersects but very unusually **NOT ALL ARE REMOVED** 
   * :doc:`/notes/issues/spurious-internal-boundary-intersects-in-high-node-count-solids` 
-  * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/spurious-internal-boundary-intersects-in-high-node-count-solid.rst 
+  * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/spurious-internal-boundary-intersects-in-high-node-count-solids.rst 
 
     * when CSG tree balancing is not done the problem does not occur
     * find simpler shape BoxFourBoxUnion that exhibits the same issue
@@ -102,7 +105,8 @@ Tips for making yearly summaries
 * LHCb RICH theta and phi cut G4Sphere  
 
   * exploring use of CSG intersection with unbounded primitives CSG_PHICUT and CSG_THETACUT
-
+  * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/LHCb_Rich_Lucas_unclear_sphere_phisegment_issue.rst
+  * :doc:`/notes/issues/LHCb_Rich_Lucas_unclear_sphere_phisegment_issue.` 
 
 
 
