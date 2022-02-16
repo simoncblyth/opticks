@@ -347,13 +347,22 @@ nnode* nnode::deepclone_r(const nnode* n, unsigned depth) // static
     return c ; 
 }  
 
+nnode* nnode::primclone() const
+{
+    assert( is_primitive() ); 
+    return nullptr ; 
+}
+
 void nnode::primcopy(nnode* c, const nnode* p)  // static 
 {
     c->param = p->param ; 
     c->param1 = p->param1 ; 
     c->param2 = p->param2 ; 
     c->param3 = p->param3 ; 
-    c->transform = p->transform->clone();   // nmat4triple::clone
+
+    const nmat4triple* t = p->transform ; 
+
+    c->transform = t ? t->clone() : nullptr ; 
 }
 
 

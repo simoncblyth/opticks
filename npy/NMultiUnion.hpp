@@ -30,6 +30,8 @@ struct NPY_API nmultiunion : nnode
     nbbox bbox() const ; 
     float operator()(float x_, float y_, float z_) const ; 
 
+    void pdump(const char* msg="nmultiunion::pdump") const ; 
+
 
     // placeholder zeros
     int par_euler() const ;

@@ -126,6 +126,8 @@ struct NPY_API nnode
 
     nnode* deepclone() const ; 
     static nnode* deepclone_r(const nnode* n, unsigned depth); 
+
+    nnode* primclone() const ; 
     static void primcopy(nnode* c, const nnode* p) ; 
 
     static void Init(nnode* n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);

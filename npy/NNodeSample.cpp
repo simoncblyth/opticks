@@ -27,12 +27,12 @@
 
 nnode* NNodeSample::Sphere1()
 {
-    nsphere* a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere* a = nsphere::Create(0.f,0.f,-50.f,100.f);
     return a ; 
 }
 nnode* NNodeSample::Sphere2()
 {
-    nsphere* b = make_sphere(0.f,0.f, 50.f,100.f);
+    nsphere* b = nsphere::Create(0.f,0.f, 50.f,100.f);
     return b ; 
 }
 nnode* NNodeSample::Union1()
@@ -80,7 +80,7 @@ nnode* NNodeSample::SphereBoxUnion()
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = make_sphere(0.f,0.f,0.f,radius);
+    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius);
     nbox*    bx = make_box(0.f,0.f,0.f, inscribe );
     nunion*  u_sp_bx = nunion::make_union( sp, bx );
 
@@ -91,7 +91,7 @@ nnode* NNodeSample::SphereBoxIntersection()
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = make_sphere(0.f,0.f,0.f,radius);
+    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius);
     nbox*    bx = make_box(0.f,0.f,0.f, inscribe );
     nintersection*  i_sp_bx = nintersection::make_intersection( sp, bx );
 
@@ -102,7 +102,7 @@ nnode* NNodeSample::SphereBoxDifference()
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = make_sphere(0.f,0.f,0.f,radius);
+    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius);
     nbox*    bx = make_box(0.f,0.f,0.f, inscribe );
     ndifference*    d_sp_bx = ndifference::make_difference( sp, bx );
 
@@ -113,7 +113,7 @@ nnode* NNodeSample::BoxSphereDifference()
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = make_sphere(0.f,0.f,0.f,radius);
+    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius);
     nbox*    bx = make_box(0.f,0.f,0.f, inscribe );
     ndifference*    d_bx_sp = ndifference::make_difference( bx, sp );
 
@@ -148,8 +148,8 @@ nnode* NNodeSample::_Prepare(nnode* root)
 }
 nnode* NNodeSample::DifferenceOfSpheres()
 {
-    nsphere* a = make_sphere( 0.000,0.000,0.000,500.000 ) ; a->label = "a" ;   
-    nsphere* b = make_sphere( 0.000,0.000,0.000,100.000 ) ; b->label = "b" ;   
+    nsphere* a = nsphere::Create( 0.000,0.000,0.000,500.000 ) ; a->label = "a" ;   
+    nsphere* b = nsphere::Create( 0.000,0.000,0.000,100.000 ) ; b->label = "b" ;   
     ndifference* ab = ndifference::make_difference( a, b ) ; ab->label = "ab" ; a->parent = ab ; b->parent = ab ;  ;   
     return _Prepare(ab) ; 
 }

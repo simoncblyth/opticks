@@ -72,9 +72,9 @@ void test_generateParPoints_box()
 
 void test_generateParPoints_sphere()
 {
-    nsphere* n = make_sphere(0.,0.,0.,10.); 
+    nsphere* n = nsphere::Create(0.,0.,0.,10.); 
     n->verbosity = 3 ;  
-    n->pdump("make_sphere(0,0,0,10)");
+    n->pdump("nsphere::Create(0,0,0,10)");
     test_generateParPoints(n, 20u, 0 );   
 }
 

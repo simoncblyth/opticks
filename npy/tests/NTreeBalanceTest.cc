@@ -36,8 +36,8 @@
 
 nnode* make_tree_0()
 {
-    nnode* a = make_sphere(0,0,-50,100) ;    a->label = "a" ;
-    nnode* b = make_sphere(0,0, 50,100) ;    b->label = "b" ;
+    nnode* a = nsphere::Create(0,0,-50,100) ;    a->label = "a" ;
+    nnode* b = nsphere::Create(0,0, 50,100) ;    b->label = "b" ;
     nnode* c = make_box(0,0, 50,100) ;       c->label = "c" ; 
     nnode* d = make_box(0,0,  0,100) ;       d->label = "d" ;
     nnode* e = make_box(0,0,  0,100) ;       e->label = "e" ;
@@ -53,13 +53,13 @@ nnode* make_tree_0()
 
 nnode* make_tree_1(OpticksCSG_t op)
 {
-    nnode* a = make_sphere(0,0,-50,100) ;  a->label = "a" ; 
-    nnode* b = make_sphere(0,0,-50,100) ;  b->label = "b" ;  
-    nnode* c = make_sphere(0,0,-50,100) ;  c->label = "c" ; 
-    nnode* d = make_sphere(0,0,-50,100) ;  d->label = "d" ; 
-    nnode* e = make_sphere(0,0,-50,100) ;  e->label = "e" ; 
-    nnode* f = make_sphere(0,0,-50,100) ;  f->label = "f" ;  
-    nnode* g = make_sphere(0,0,-50,100) ;  g->label = "g" ; 
+    nnode* a = nsphere::Create(0,0,-50,100) ;  a->label = "a" ; 
+    nnode* b = nsphere::Create(0,0,-50,100) ;  b->label = "b" ;  
+    nnode* c = nsphere::Create(0,0,-50,100) ;  c->label = "c" ; 
+    nnode* d = nsphere::Create(0,0,-50,100) ;  d->label = "d" ; 
+    nnode* e = nsphere::Create(0,0,-50,100) ;  e->label = "e" ; 
+    nnode* f = nsphere::Create(0,0,-50,100) ;  f->label = "f" ;  
+    nnode* g = nsphere::Create(0,0,-50,100) ;  g->label = "g" ; 
 
     nnode* ab = nnode::make_operator( op , a, b );  ab->label="ab" ; 
     nnode* abc = nnode::make_operator( op, ab, c ); abc->label="abc" ; 
@@ -105,19 +105,19 @@ make_tree_2
 
 nnode* make_tree_2()
 {
-    nnode* a = make_sphere(0,0,-50,100) ;   a->label = "a" ; 
-    nnode* b = make_sphere(0,0,-50,100) ;   b->label = "b" ; 
-    nnode* c = make_sphere(0,0,-50,100) ;   c->label = "c" ;  
-    nnode* d = make_sphere(0,0,-50,100) ;   d->label = "d" ;  
-    nnode* e = make_sphere(0,0,-50,100) ;   e->label = "e" ;  
-    nnode* f = make_sphere(0,0,-50,100) ;   f->label = "f" ;  
-    nnode* g = make_sphere(0,0,-50,100) ;   g->label = "g" ;  
-    nnode* h = make_sphere(0,0,-50,100) ;   h->label = "h" ; 
-    nnode* i = make_sphere(0,0,-50,100) ;   i->label = "i" ; 
-    nnode* j = make_sphere(0,0,-50,100) ;   j->label = "j" ; 
-    nnode* k = make_sphere(0,0,-50,100) ;   k->label = "k" ; 
-    nnode* l = make_sphere(0,0,-50,100) ;   l->label = "l" ; 
-    nnode* m = make_sphere(0,0,-50,100) ;   m->label = "m" ; 
+    nnode* a = nsphere::Create(0,0,-50,100) ;   a->label = "a" ; 
+    nnode* b = nsphere::Create(0,0,-50,100) ;   b->label = "b" ; 
+    nnode* c = nsphere::Create(0,0,-50,100) ;   c->label = "c" ;  
+    nnode* d = nsphere::Create(0,0,-50,100) ;   d->label = "d" ;  
+    nnode* e = nsphere::Create(0,0,-50,100) ;   e->label = "e" ;  
+    nnode* f = nsphere::Create(0,0,-50,100) ;   f->label = "f" ;  
+    nnode* g = nsphere::Create(0,0,-50,100) ;   g->label = "g" ;  
+    nnode* h = nsphere::Create(0,0,-50,100) ;   h->label = "h" ; 
+    nnode* i = nsphere::Create(0,0,-50,100) ;   i->label = "i" ; 
+    nnode* j = nsphere::Create(0,0,-50,100) ;   j->label = "j" ; 
+    nnode* k = nsphere::Create(0,0,-50,100) ;   k->label = "k" ; 
+    nnode* l = nsphere::Create(0,0,-50,100) ;   l->label = "l" ; 
+    nnode* m = nsphere::Create(0,0,-50,100) ;   m->label = "m" ; 
 
     nnode* ab = nnode::make_operator( CSG_DIFFERENCE, a, b );
 
@@ -143,13 +143,13 @@ nnode* make_tree_2()
 
 nnode* make_tree_3()
 {
-    nnode* a = make_sphere(0,0,-50,100) ;   a->label = "a" ; 
-    nnode* b = make_sphere(0,0,-50,100) ;   b->label = "b" ; 
-    nnode* c = make_sphere(0,0,-50,100) ;   c->label = "c" ;  
-    nnode* d = make_sphere(0,0,-50,100) ;   d->label = "d" ;  
-    nnode* e = make_sphere(0,0,-50,100) ;   e->label = "e" ;  
-    nnode* f = make_sphere(0,0,-50,100) ;   f->label = "f" ;  
-    nnode* g = make_sphere(0,0,-50,100) ;   g->label = "g" ;  
+    nnode* a = nsphere::Create(0,0,-50,100) ;   a->label = "a" ; 
+    nnode* b = nsphere::Create(0,0,-50,100) ;   b->label = "b" ; 
+    nnode* c = nsphere::Create(0,0,-50,100) ;   c->label = "c" ;  
+    nnode* d = nsphere::Create(0,0,-50,100) ;   d->label = "d" ;  
+    nnode* e = nsphere::Create(0,0,-50,100) ;   e->label = "e" ;  
+    nnode* f = nsphere::Create(0,0,-50,100) ;   f->label = "f" ;  
+    nnode* g = nsphere::Create(0,0,-50,100) ;   g->label = "g" ;  
 
     nnode* ab = nnode::make_operator( CSG_UNION, a, b );
     nnode* abc = nnode::make_operator( CSG_UNION, ab, c );
@@ -171,7 +171,7 @@ nnode* make_tree_mono(OpticksCSG_t op, unsigned num_leaf)
     nnode* comp = nullptr ; 
     for(unsigned i=0 ; i < num_leaf ; i++) 
     {
-         nnode* node = make_sphere(0,0,-50,100) ;   
+         nnode* node = nsphere::Create(0,0,-50,100) ;   
          node->label = strdup(labels.substr(i,1).c_str()) ; 
          comp = comp == nullptr ? node :  nnode::make_operator( CSG_UNION, comp, node ) ; 
     }

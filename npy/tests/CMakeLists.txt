@@ -58,6 +58,7 @@ NTorusTest.cc
 NHyperboloidTest.cc
 NCubicTest.cc
 NSphereTest.cc
+NMultiUnionTest.cc
 NPhiCutTest.cc
 NThetaCutTest.cc
 NZSphereTest.cc

@@ -62,8 +62,8 @@
 
 void test_positivize()
 {
-    nnode* a = make_sphere(0,0,-50,100) ;  
-    nnode* b = make_sphere(0,0, 50,100) ;  
+    nnode* a = nsphere::Create(0,0,-50,100) ;  
+    nnode* b = nsphere::Create(0,0, 50,100) ;  
     nnode* c = make_box(0,0, 50,100) ;  
     nnode* d = make_box(0,0,  0,100) ;  
     nnode* e = make_box(0,0,  0,100) ;  

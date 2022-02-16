@@ -86,15 +86,15 @@ void test_node_transforms()
     */
   
     // lu
-    nsphere* la = make_sphere(-500.f,0.f,-50.f,100.f); la->label = "la" ; 
-    nsphere* lb = make_sphere(-500.f,0.f, 50.f,100.f); lb->label = "lb" ; 
+    nsphere* la = nsphere::Create(-500.f,0.f,-50.f,100.f); la->label = "la" ; 
+    nsphere* lb = nsphere::Create(-500.f,0.f, 50.f,100.f); lb->label = "lb" ; 
     nunion*  lu = nunion::make_union( la, lb );
     la->parent = lu ; 
     lb->parent = lu ; 
 
     // ru
-    nsphere* ra = make_sphere( 500.f,0.f,-50.f,100.f); ra->label = "ra" ; 
-    nsphere* rb = make_sphere( 500.f,0.f, 50.f,100.f); rb->label = "rb" ; 
+    nsphere* ra = nsphere::Create( 500.f,0.f,-50.f,100.f); ra->label = "ra" ; 
+    nsphere* rb = nsphere::Create( 500.f,0.f, 50.f,100.f); rb->label = "rb" ; 
     nunion*  ru = nunion::make_union( ra, rb );
     ra->parent = ru ; 
     rb->parent = ru ; 
@@ -142,8 +142,8 @@ void test_node_transforms()
 
 void test_node_bbox_unspsp()
 {
-    nsphere* a = make_sphere(-50.f,0.f,0.f,100.f); a->label = "a" ; 
-    nsphere* b = make_sphere( 50.f,0.f,0.f,100.f); b->label = "b" ; 
+    nsphere* a = nsphere::Create(-50.f,0.f,0.f,100.f); a->label = "a" ; 
+    nsphere* b = nsphere::Create( 50.f,0.f,0.f,100.f); b->label = "b" ; 
     nunion*  ab = nunion::make_union( a, b );
     a->parent = ab ; 
     b->parent = ab ; 

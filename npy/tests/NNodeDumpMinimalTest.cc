@@ -65,7 +65,7 @@ void t1()   // fails to dynamic_cast node of type CSG_SPHERE to nsphere
 void t1c()  // works 
 {
     LOG(info); 
-    nsphere* o = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere* o = nsphere::Create(0.f,0.f,-50.f,100.f);
     nnode* n = o ; 
     n->dump();
 }
@@ -79,7 +79,7 @@ void t1d()  // fails : so the problem is related to the original object going ou
 
     nsphere* a = NULL ; 
     {
-        nsphere o = make_sphere(0.f,0.f,-50.f,100.f);
+        nsphere o = nsphere::Create(0.f,0.f,-50.f,100.f);
         // why should o going out of scope matter ? 
         // perhaps implicit copy ctor is being overly lazy : overly agressive optimization  ??
         // :google:`gcc 5.4 optimization bug` 
@@ -96,7 +96,7 @@ void t1f()   // fails, commenting out the scope braces and it works
     LOG(info); 
     nnode* a = NULL ; 
     {
-        nsphere o = make_sphere(0.f,0.f,-50.f,100.f);
+        nsphere o = nsphere::Create(0.f,0.f,-50.f,100.f);
         o.dump(); 
         a = new nsphere(o) ;
     }
@@ -183,14 +183,14 @@ void t1h()  // works
 void t2()  // fails to dynamic_cast node of type CSG_SPHERE to nsphere
 {
     LOG(info) ; 
-    nsphere* a = new nsphere(make_sphere(0.f,0.f,-50.f,100.f));
+    nsphere* a = new nsphere(nsphere::Create(0.f,0.f,-50.f,100.f));
     a->dump(); 
 }
 
 void t3()  // works for gcc 5.4.0
 {
     LOG(info) ; 
-    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere a = nsphere::Create(0.f,0.f,-50.f,100.f);
     a.dump(); 
 }
 
@@ -198,7 +198,7 @@ void t3f()  // working still
 {
     LOG(info) ; 
 
-    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere a = nsphere::Create(0.f,0.f,-50.f,100.f);
     a.dump(); 
 
     nnode* n = (nnode*)&a ; 
@@ -207,7 +207,7 @@ void t3f()  // working still
 
 void t4()  // works too 
 {
-    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere a = nsphere::Create(0.f,0.f,-50.f,100.f);
     a.dump();
 
     nsphere b(a) ; 
@@ -216,7 +216,7 @@ void t4()  // works too
 
 void t5()  //  works too
 {
-    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere a = nsphere::Create(0.f,0.f,-50.f,100.f);
     a.dump();
 
     nsphere* b = new nsphere(a) ; 

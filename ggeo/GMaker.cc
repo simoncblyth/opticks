@@ -98,6 +98,7 @@ GVolume* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& para
          case CSG_LAST:
          case CSG_CONTIGUOUS:
          case CSG_DISCONTIGUOUS:
+         case CSG_OVERLAP:
          case CSG_PHICUT:
          case CSG_THETACUT:
          case CSG_LPHICUT:
@@ -456,8 +457,8 @@ GVolume* GMaker::makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec)
     //       be moved into npy- and handled at a higher
     //       from here
 
-    nsphere* a = make_sphere(0,0,a_zpos,a_radius);
-    nsphere* b = make_sphere(0,0,b_zpos,b_radius);
+    nsphere* a = nsphere::Create(0,0,a_zpos,a_radius);
+    nsphere* b = nsphere::Create(0,0,b_zpos,b_radius);
     ndisk* d = nsphere::intersect(a,b) ;   // from NPlane.hpp, not same as ndisc (degenerated ncylinder)
     float zd = d->z();
 

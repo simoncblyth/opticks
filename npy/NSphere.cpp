@@ -39,6 +39,39 @@
 
 #include "PLOG.hh"
 
+
+float nsphere::x() const { return param.f.x ; }
+float nsphere::y() const { return param.f.y ; }
+float nsphere::z() const { return param.f.z ; }
+float nsphere::radius() const { return param.f.w ; }
+glm::vec3 nsphere::center() const { return glm::vec3(x(),y(),z())  ; }
+
+
+
+nsphere* nsphere::Create(const nquad& param)  // static 
+{
+    nsphere* n = new nsphere ; 
+    nnode::Init(n,CSG_SPHERE) ; 
+    n->param = param  ; 
+    return n ; 
+}
+nsphere* nsphere::Create(float x, float y, float z, float w)
+{
+    nquad param ; 
+    param.f = {x,y,z,w} ;
+    return Create(param);
+}
+
+nsphere* nsphere::Create(float radius)
+{
+    return Create(0.f,0.f,0.f,radius);
+}
+
+
+
+
+
+
 float nsphere::sdf_local_(const glm::vec3& lpos, float radius )
 {
     glm::vec3 c(0.f,0.f,0.f); 
@@ -254,7 +287,7 @@ void nsphere::resizeToFit(const nbbox& bb, float scale, float delta)
     qce.f.w *= scale ; 
     qce.f.w += delta ;
 
-    init_sphere( this, qce );
+    param = qce ;
 }
 
 

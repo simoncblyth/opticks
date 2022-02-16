@@ -74,7 +74,7 @@ void test_csgsdf()
 
 void test_sphere(NMarchingCubesNPY& mcu, bool dump)
 {
-    nsphere* a = make_sphere(0.f,0.f,0.f,100.f);
+    nsphere* a = nsphere::Create(0.f,0.f,0.f,100.f);
 
     NTrianglesNPY* tris0 = mcu(a);
     assert(tris0);
@@ -102,8 +102,8 @@ void test_box(NMarchingCubesNPY& mcu, bool dump)
 
 void test_union(NMarchingCubesNPY& mcu, bool dump)
 {
-    nsphere* a = make_sphere(0.f,0.f,-50.f,100.f);
-    nsphere* b = make_sphere(0.f,0.f, 50.f,100.f);
+    nsphere* a = nsphere::Create(0.f,0.f,-50.f,100.f);
+    nsphere* b = nsphere::Create(0.f,0.f, 50.f,100.f);
     nunion* u = nunion::make_union( a, b ); 
 
     NTrianglesNPY* tris = mcu(u);
@@ -114,8 +114,8 @@ void test_union(NMarchingCubesNPY& mcu, bool dump)
 
 void test_intersection(NMarchingCubesNPY& mcu, bool dump)
 {
-    nsphere* a = make_sphere(0.f,0.f,-50.f,100.f);
-    nsphere* b = make_sphere(0.f,0.f, 50.f,100.f);
+    nsphere* a = nsphere::Create(0.f,0.f,-50.f,100.f);
+    nsphere* b = nsphere::Create(0.f,0.f, 50.f,100.f);
 
     nintersection* i = nintersection::make_intersection( a , b ); 
 
@@ -128,8 +128,8 @@ void test_intersection(NMarchingCubesNPY& mcu, bool dump)
 
 void test_difference(NMarchingCubesNPY& mcu, bool dump)
 {
-    nsphere* a = make_sphere(0.f,0.f,-50.f,100.f);
-    nsphere* b = make_sphere(0.f,0.f, 50.f,100.f);
+    nsphere* a = nsphere::Create(0.f,0.f,-50.f,100.f);
+    nsphere* b = nsphere::Create(0.f,0.f, 50.f,100.f);
 
     ndifference* d1 = ndifference::make_difference( a, b ); 
     ndifference* d2 = ndifference::make_difference( b, a ); 

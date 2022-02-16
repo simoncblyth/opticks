@@ -10,6 +10,16 @@
 
 const plog::Severity nmultiunion::LEVEL = PLOG::EnvLevel("nmultiunion", "DEBUG"); 
 
+
+
+void nmultiunion::pdump(const char* msg) const 
+{
+    std::cout << msg << " subs.size " << subs.size() << std::endl ; 
+
+
+}
+
+
 nbbox nmultiunion::bbox() const 
 {
     std::cout << "nmultiunion::bbox subs.size " << subs.size() << std::endl ; 

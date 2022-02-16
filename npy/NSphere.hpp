@@ -31,7 +31,12 @@ struct nuv ;
 
 #include "NPY_API_EXPORT.hh"
 
-struct NPY_API nsphere : nnode {
+struct NPY_API nsphere : nnode 
+{
+    static nsphere* Create(const nquad& param); 
+    static nsphere* Create(float x, float y, float z, float w); 
+    static nsphere* Create(float radius); 
+
 
     float costheta(float z);
 
@@ -76,36 +81,5 @@ struct NPY_API nsphere : nnode {
     float z2() const ; 
 
 };
-
-inline NPY_API float nsphere::x() const { return param.f.x ; }
-inline NPY_API float nsphere::y() const { return param.f.y ; }
-inline NPY_API float nsphere::z() const { return param.f.z ; }
-inline NPY_API float nsphere::radius() const { return param.f.w ; }
-inline NPY_API glm::vec3 nsphere::center() const { return glm::vec3(x(),y(),z())  ; }
-
-
-
-inline NPY_API void init_sphere(nsphere* s, const nquad& param)
-{
-    s->param = param ; 
-}
-
-inline NPY_API nsphere* make_sphere(const nquad& param)
-{
-    nsphere* n = new nsphere ; 
-    nnode::Init(n,CSG_SPHERE) ; 
-    init_sphere(n, param);
-    return n ; 
-}
-inline NPY_API nsphere* make_sphere(float x, float y, float z, float w)
-{
-    nquad param ; 
-    param.f = {x,y,z,w} ;
-    return make_sphere(param);
-}
-inline NPY_API nsphere* make_sphere(float radius=100.f)
-{
-    return make_sphere(0.f,0.f,0.f,radius);
-}
 
 
