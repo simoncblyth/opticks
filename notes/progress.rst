@@ -26,14 +26,19 @@ Tips for making yearly summaries
 2022 February 
 ---------------
 
+* CSG_DISCONTIGUOUS : leaf list with simple nearest ENTER/EXIT imp
+
+  * added new compound node implemented in CSG/csg_intersect_node.h:intersect_node_discontiguous 
+  * TODO: test use within CSG trees
+
 * CSG_OVERLAP : a multi-INTERSECTION equivalent of the CSG_CONTIGUOUS multi-UNION
    
-  * added new compound primitive implemented in CSG/csg_intersect_node.h:intersect_node_overlap
+  * added new compound node implemented in CSG/csg_intersect_node.h:intersect_node_overlap
     based on farthest_enter and nearest_exit 
   * list based : so it can mop up intersection nodes into a compound node 
   * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/OverlapBoxSphere.rst
   * :doc:`/notes/issues/OverlapBoxSphere`
-  * TODO: test with more than 2 sub nodes, test the compound prim can work in CSG tree 
+  * TODO: test the compound prim can work in CSG tree 
   * TODO: think about intersecting with complemented (and unbounded phicut/thetacut/plane nodes) : 
     can CSG_OVERLAP be made to work with such leaves ?
   * potentially be used for general sphere combining intersects  
@@ -43,8 +48,9 @@ Tips for making yearly summaries
   * :doc:`/docs/geometry_testing`
   * https://bitbucket.org/simoncblyth/opticks/src/master/docs/geometry_testing.rst 
 
-* multiunion CSG_CONTIGUOUS : trying to replace large trees with instead small trees with some large compound nodes
+* CSG_CONTIGUOUS multiunion : trying to replace large trees with instead small trees with some large compound nodes
 
+  * TODO: try to apply to XJFixtureConstruction : gather suitable union leaves to mop up into CSG_CONTIGUOUS   
   * reorganize intersect and distance functions into three levels tree/node/leaf to avoid recursive CSG_CONTIGUOUS node functions that OptiX disallows 
   * make start at implementing CSG_CONTIGUOUS NMultiUnion as its looking doubtful that balanced trees can be made to work with the CSG intersection
   * generalize NCSG to saving lists of nodes needed by NMultiUnion as well as the normal trees of nodes needed for booleans 

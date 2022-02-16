@@ -1,5 +1,34 @@
 #pragma once
 
+/**
+distance_leaf_phicut
+-----------------------
+
+::
+
+      . . . . . . phi0=0.5
+      . . . . . . |
+      . . . . . . |
+      . . . . . . |--> [sinPhi0,-cosPhi0] = [1,0]
+      . . . . . . |
+      . . . . . . |
+      . . . . . . |
+      . . . . . . | sd0   (x,y)
+      . . . . . . +. . . +
+      . . . . . . |      :
+      . . . . . . |      sd1
+      . . . . . . |      :           [ -sinPhi1, cosPhi1] = [0, 1]
+      . . . . . . |      :          ^
+      . . . . . . |      :          | 
+      . . . . . . +------+----------+--- phi1=2
+      . . . . . . . . . . . . . . . . . . . . .
+      . . . . . . . . . . . . . . . . . . . . .
+      . . . . . . . . . . . . . . . . . . . . .
+      . . . . . . . . . . . . . . . . . . . . .
+      . . . . . . . . . . . . . . . . . . . . .
+      . . . . . . . . . . . . . . . . . . . . .
+
+**/
 
 LEAF_FUNC
 float distance_leaf_phicut( const float3& pos, const quad& q0 )
@@ -47,15 +76,15 @@ Outwards normals of the two planes::
     n1   ( -sin(phi1),  cos(phi1), 0 )   =  ( -1, 0,  0)   
  
 
-                phi=0.5
+                phi1=0.5
                   Y
-                  
-                  |      
-                  |
-              n1--+
-                  |
-                  |
-   phi=1.0 . . . .O----+----- X    phi=0, 2 
+                  | . . . . . . .
+                  | . . . . . . .
+                  | . . . . . . .
+              n1--+ . . . . . . .
+                  | . . . . . . .
+                  | . . . . . . . 
+   phi=1.0 . . . .O----+-------- X    phi0=0 
                   .    |
                   .    n0
                   .
@@ -104,6 +133,10 @@ Use conventional cross product sign convention  A ^ B =  (Ax By - Bx Ay ) k the 
 Note that as R is not normalized the PR and QR cross products are only proportional to the sine of the angles.
 See CSG/tests/cross2D_angle_range_without_trig.py for exploration of 2D cross product 
 
+Alternative way of looking at this is with the sine of angle subtraction identity::
+
+    sin(a-b) = sin(a)cos(b)-cos(a)sin(b)  
+
 When rays have non-zero x,y direction components the 2D cross products 
 between the direction vectors and the phi edge vectors determines
 if the rays will exit the unbounded shape at infinity.
@@ -123,9 +156,9 @@ shape at infinity or not.
             . . . . . . . . . . phi0=0.5           /
             . . . . . . . . . . . .|              /
             . . . . . . . . . . . .|             0  sd > 0.f     
-            . . . . . . . . . . . .|
-            . . . . . 0 . . . . . .| 
-            . . . . ./. . . . . . .|
+            . . . . . . . . . . . .|             
+            . . . . . 0 . . . . . .|             
+            . . . . ./. . . . . . .|             
             . . . . / . . . . . . .+------------ phi1=2.0 ---  X   
             . . . ./. . . . . . . . . . . . . . . . . . . . . . .
             . . . / . . . . . . . . . . . . . . . . . . . . . . .
@@ -155,6 +188,47 @@ Clockwise rotation by phi (flipping sign)::
 Within edgezone want to avoid two separate decisions as to which face gets hit 
 otherwise numerical imprecision will result in inconsistent decisions causing misses (white seams) along the edge. 
 
+
+
+Thoughts on implementing phicut by CSG combination of two halfspaces
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+phi1 - phi0 > 1.0 
+    A+B      : union of two halfspaces   
+    !(!A.!B) : complement of intersection of the two halfspaces complemented 
+
+::
+      
+        
+            A | !A
+          phi0=0.5
+       . . . .|
+       . . . .|               
+       . . . .|         
+       . . . .|          
+       . . . .|            !B
+       ~~~~~~~+--------- phi1=2.0
+       . . . .:. . . . .    B
+       . . . .:. . . . .
+       . . . .:. . . . .
+       . . . .:. . . . .
+
+phi1 - phi0 < 1.0 : 
+
+    A.B      :  intersection of two halfspaces 
+    !(!A+!B) : complement of union of two halfspaces complemented
+
+           !A | A
+           phi1=0.5
+              | . . . . .         
+              | . . . . .         
+              | . . . . .        
+              | . . . . .  B         
+       ~~~~~~~+--------- phi0=0.0
+              :            !B 
+              :
+              :
+              :
 **/
 
 
@@ -172,7 +246,7 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
 
     const float sd0 =  sinPhi0*(o.x+t_min*d.x) - cosPhi0*(o.y+t_min*d.y) ;  
     const float sd1 = -sinPhi1*(o.x+t_min*d.x) + cosPhi1*(o.y+t_min*d.y) ;  
-    float sd = fminf( sd0, sd1 );   // signed distance at t_min, sd < 0 means are within the phicut shape : ie between the planes
+    float sd = fminf( sd0, sd1 );   // signed distance at t_min, sd < 0.f means are within the phicut shape : ie between the planes
 
 #ifdef DEBUG
     printf("//intersect_leaf_phicut  sd0 %10.4f sd1 %10.4f sd  %10.4f \n", sd0, sd1, sd ); 

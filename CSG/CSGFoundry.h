@@ -162,10 +162,16 @@ struct CSG_API CSGFoundry
     CSGSolid* addDeepCopySolid(unsigned solidIdx, const char* label=nullptr );
 
 
-    template<typename T> unsigned addTran( const Tran<T>& tr  );
+    template<typename T> unsigned addTran( const Tran<T>* tr  );
+    template<typename T> unsigned addTran_( const Tran<T>* tr  );
     unsigned addTran( const qat4* tr, const qat4* it ) ;
     unsigned addTran() ;
     void     addTranPlaceholder(); 
+
+    // adds transform and associates it with the node
+    template<typename T> const qat4* addNodeTran(CSGNode* nd, const Tran<T>* tr, bool transform_node_aabb  ); 
+    void addNodeTran(CSGNode* nd ); 
+
 
     void     addInstance(const float* tr16, unsigned gas_idx, unsigned ias_idx ); 
     void     addInstancePlaceholder(); 

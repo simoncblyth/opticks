@@ -503,7 +503,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
         tv = new Tran<float>(t, v); 
     }
 
-    unsigned tranIdx = tv ?  1 + foundry->addTran(*tv) : 0 ;   // 1-based index referencing foundry transforms
+    unsigned tranIdx = tv ?  1 + foundry->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
     LOG(info) 
         << " primIdx " << std::setw(4) << primIdx 

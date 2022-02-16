@@ -52,7 +52,13 @@ msg="=== $BASH_SOURCE :"
 #geom=BoxThreeBoxUnion
 #geom=BoxFourBoxUnion
 #geom=BoxFourBoxContiguous
-geom=OverlapBoxSphere
+#geom=OverlapBoxSphere
+#geom=ContiguousBoxSphere
+#geom=DiscontiguousBoxSphere
+
+#geom=OverlapThreeSphere
+geom=ContiguousThreeSphere
+
 #geom=SphereWithPhiCutDEV
 #geom=ZSphere
 #geom=Plane

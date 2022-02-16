@@ -235,7 +235,12 @@ struct CSG_API CSGNode
     static CSGNode Intersection(); 
     static CSGNode Difference(); 
     static CSGNode BooleanOperator(char op); 
+
     static CSGNode Overlap(unsigned num_sub); 
+    static CSGNode Contiguous(unsigned num_sub); 
+    static CSGNode Discontiguous(unsigned num_sub); 
+    static CSGNode ListHeader(char type, unsigned num_sub); 
+
 
     static CSGNode Zero();
     static CSGNode Sphere(float radius);

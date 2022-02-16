@@ -97,8 +97,12 @@ msg="=== $BASH_SOURCE :"
 
 #geom=SphereWithPhiCutDEV
 #geom=GeneralSphereDEV
-geom=OverlapBoxSphere
+#geom=OverlapBoxSphere
+#geom=ContiguousBoxSphere
+#geom=DiscontiguousBoxSphere
 
+#geom=ContiguousThreeSphere
+geom=OverlapThreeSphere
 
 #geom=parade
 

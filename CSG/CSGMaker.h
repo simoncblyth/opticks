@@ -43,7 +43,12 @@ struct CSG_API CSGMaker
     CSGSolid* makeSolid11(const char* label, CSGNode nd, const std::vector<float4>* pl=nullptr, int meshIdx=-1 );
     CSGSolid* makeBooleanBoxSphere( const char* label, char op, float radius, float fullside, int meshIdx = -1  ) ;
     CSGSolid* makeBooleanTriplet(   const char* label, char op, const CSGNode& left, const CSGNode& right, int meshIdx=-1 ) ; 
-    CSGSolid* makeOverlapList(      const char* label, const std::vector<CSGNode>& leaves  ); 
+
+    CSGSolid* makeOverlapList(       const char* label,            const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
+    CSGSolid* makeContiguousList(    const char* label,            const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
+    CSGSolid* makeDiscontiguousList( const char* label,            const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
+    CSGSolid* makeList(              const char* label, char type, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  );
+
 
     CSGSolid* makeBooleanSeptuplet( 
         const char* label, 
@@ -63,6 +68,16 @@ struct CSG_API CSGMaker
     CSGSolid* makeUnionBoxSphere(        const char* label="ubsp", float radius=100.f, float fullside=150.f );
     CSGSolid* makeIntersectionBoxSphere( const char* label="ibsp", float radius=100.f, float fullside=150.f );
     CSGSolid* makeOverlapBoxSphere(       const char* label="obsp", float radius=100.f, float fullside=150.f ); 
+
+
+    CSGSolid* makeListThreeSphere(          const char* label, char type, float radius, float side  ); 
+    CSGSolid* makeOverlapThreeSphere(       const char* label, float radius=100.f, float side=50.f ); 
+    CSGSolid* makeContiguousThreeSphere(    const char* label, float radius=100.f, float side=50.f ); 
+    CSGSolid* makeDiscontiguousThreeSphere( const char* label, float radius=100.f, float side=100.f  ); 
+
+
+    CSGSolid* makeContiguousBoxSphere(    const char* label="cbsp", float radius=100.f, float fullside=150.f ); 
+    CSGSolid* makeDiscontiguousBoxSphere( const char* label="DiscontiguousBoxSphere", float radius=100.f, float fullside=150.f ) ; 
 
     CSGSolid* makeDifferenceBoxSphere(   const char* label="dbsp", float radius=100.f, float fullside=150.f );
 

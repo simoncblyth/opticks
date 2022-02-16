@@ -65,6 +65,11 @@ dbsp
 UnionBoxSphere
 IntersectionBoxSphere
 OverlapBoxSphere
+OverlapThreeSphere
+ContiguousThreeSphere
+DiscontiguousThreeSphere
+ContiguousBoxSphere
+DiscontiguousBoxSphere
 DifferenceBoxSphere
 rcyl
 dcyl
@@ -102,6 +107,11 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("UnionBoxSphere", name))        so = makeUnionBoxSphere(name) ;
     else if(StartsWith("IntersectionBoxSphere", name)) so = makeIntersectionBoxSphere(name) ;
     else if(StartsWith("OverlapBoxSphere", name))      so = makeOverlapBoxSphere(name) ;
+    else if(StartsWith("OverlapThreeSphere", name))    so = makeOverlapThreeSphere(name) ;
+    else if(StartsWith("ContiguousThreeSphere", name))    so = makeContiguousThreeSphere(name) ;
+    else if(StartsWith("DiscontiguousThreeSphere", name))    so = makeDiscontiguousThreeSphere(name) ;
+    else if(StartsWith("ContiguousBoxSphere", name))   so = makeContiguousBoxSphere(name) ;
+    else if(StartsWith("DiscontiguousBoxSphere", name))   so = makeDiscontiguousBoxSphere(name) ;
     else if(StartsWith("DifferenceBoxSphere", name))   so = makeDifferenceBoxSphere(name) ;
     else if(StartsWith("rcyl", name)) so = makeRotatedCylinder(name) ;
     else if(StartsWith("dcyl", name)) so = makeDifferenceCylinder(name) ;
@@ -232,6 +242,17 @@ CSGSolid* CSGMaker::makeLayered(const char* label, float outer_radius, unsigned 
     return so ; 
 }
 
+/**
+CSGMaker::makeScaled
+----------------------
+
+Creates a CSGSolid composed of *layers* CSGPrim where each CSGPrim has one CSGNode
+with different scale transforms created and associated with each CSGNode to make 
+a Russian doll arrangement.  
+
+This demonstrates adding a transform and associating it to a CSGNode.  
+
+**/
 
 CSGSolid* CSGMaker::makeScaled(const char* label, const char* demo_node_type, float outer_scale, unsigned layers )
 {
@@ -250,15 +271,18 @@ CSGSolid* CSGMaker::makeScaled(const char* label, const char* demo_node_type, fl
         CSGNode* nd = fd->addNode(CSGNode::MakeDemo(demo_node_type)) ;
     
         float scale = scales[i]; 
-
         const Tran<double>* tran_scale = Tran<double>::make_scale( double(scale), double(scale), double(scale) ); 
-        unsigned transform_idx = 1 + fd->addTran(*tran_scale);      // 1-based idx, 0 meaning None
 
+        /*
+        unsigned transform_idx = 1 + fd->addTran(tran_scale);      // 1-based idx, 0 meaning None
         nd->setTransform(transform_idx); 
-
-        const qat4* tr = fd->getTran(transform_idx-1u) ; 
-
+        const qat4* tr = fd->getTran(transform_idx-1u) ;   // storage uses 0-based 
         tr->transform_aabb_inplace( nd->AABB() ); 
+        */
+
+        bool transform_node_aabb = true ; 
+        fd->addNodeTran( nd, tran_scale, transform_node_aabb ); 
+
 
         bb.include_aabb( nd->AABB() ); 
 
@@ -273,7 +297,12 @@ CSGSolid* CSGMaker::makeScaled(const char* label, const char* demo_node_type, fl
 
 
 
+/**
+CSGMaker::makeClustered
+-------------------------
 
+
+**/
 
 CSGSolid* CSGMaker::makeClustered(const char* label,  int i0, int i1, int is, int j0, int j1, int js, int k0, int k1, int ks, double unit, bool inbox ) 
 {
@@ -307,11 +336,15 @@ CSGSolid* CSGMaker::makeClustered(const char* label,  int i0, int i1, int is, in
         CSGNode* n = fd->addNode(CSGNode::MakeDemo(label)) ;
     
         const Tran<double>* translate = Tran<double>::make_translate( double(i)*unit, double(j)*unit, double(k)*unit ); 
-        unsigned transform_idx = 1 + fd->addTran(*translate);      // 1-based idx, 0 meaning None
+
+
+        unsigned transform_idx = 1 + fd->addTran(translate);      // 1-based idx, 0 meaning None
         n->setTransform(transform_idx); 
         const qat4* t = fd->getTran(transform_idx-1u) ; 
-
         t->transform_aabb_inplace( n->AABB() ); 
+
+
+
 
         bb.include_aabb( n->AABB() ); 
 
@@ -331,15 +364,17 @@ CSGSolid* CSGMaker::makeClustered(const char* label,  int i0, int i1, int is, in
         float4 ce = bb.center_extent(); 
         float fullside = ce.w*2.f ; 
 
-        const Tran<float>* to_center = Tran<float>::make_translate( float(ce.x), float(ce.y), float(ce.z) ); 
-        unsigned transform_idx = 1 + fd->addTran(*to_center);  // 1-based idx, 0 meaning None
-        const qat4* t = fd->getTran(transform_idx-1u) ; 
-
         unsigned numNode = 1 ; 
         int nodeOffset_ = -1 ;  // -1:use current node count as about to add the declared numNode
         CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
         CSGNode bx = CSGNode::Box3(fullside) ;
         CSGNode* n = fd->addNode(bx); 
+
+
+        const Tran<float>* to_center = Tran<float>::make_translate( float(ce.x), float(ce.y), float(ce.z) ); 
+        unsigned transform_idx = 1 + fd->addTran(to_center);  // 1-based idx, 0 meaning None
+        const qat4* t = fd->getTran(transform_idx-1u) ; 
+
         n->setTransform(transform_idx); 
         t->transform_aabb_inplace( n->AABB() ); 
 
@@ -431,8 +466,8 @@ CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, char op_, const CSGNo
     so->center_extent = bb.center_extent()  ; 
 
     // setting transform as otherise loading foundry fails for lack of non-optional tran array 
-    const Tran<double>* tran_identity = Tran<double>::make_identity(); 
-    unsigned transform_idx = 1 + fd->addTran(*tran_identity);   // 1-based idx, 0 meaning None
+    //const Tran<double>* tran_identity = Tran<double>::make_identity(); 
+    unsigned transform_idx = 1 + fd->addTran();   // 1-based idx, 0 meaning None
     n->setTransform(transform_idx); 
 
 
@@ -450,41 +485,173 @@ CSGSolid* CSGMaker::makeOverlapBoxSphere( const char* label, float radius, float
     leaves.push_back(bx); 
     leaves.push_back(sp); 
 
-    return makeOverlapList( label, leaves ); 
+    return makeOverlapList( label, leaves, nullptr ); 
+}
+
+/**
+
+                                    Y        
+
+              (-side,side)          |             (side, side)
+                         +          |             +
+                                    |  
+                                    |  
+                                    |  
+                                    |  
+                                    |  
+                      --------------O---------=---------  X
+                                    |  
+                                    |  
+                                    |  
+                                    |  
+                                    |  
+                                    |  
+                                    +
+                                    | ( 0, -side*sqrt(2))
+                                    |  
+
+
+               
+
+**/
+
+
+CSGSolid* CSGMaker::makeListThreeSphere( const char* label, char type, float radius, float side )
+{
+    CSGNode s0 = CSGNode::Sphere(radius); 
+    CSGNode s1 = CSGNode::Sphere(radius); 
+    CSGNode s2 = CSGNode::Sphere(radius); 
+
+    const Tran<double>* t0 = Tran<double>::make_translate(  side,  side         , 0. ); 
+    const Tran<double>* t1 = Tran<double>::make_translate( -side,  side         , 0. ); 
+    const Tran<double>* t2 = Tran<double>::make_translate(    0., -side*sqrt(2.), 0. ); 
+
+
+    std::vector<CSGNode> leaves ; 
+    leaves.push_back(s0); 
+    leaves.push_back(s1); 
+    leaves.push_back(s2); 
+
+    std::vector<const Tran<double>*> tran ; 
+    tran.push_back(t0); 
+    tran.push_back(t1); 
+    tran.push_back(t2); 
+
+    return makeList( label, type, leaves, &tran ); 
+}
+
+CSGSolid* CSGMaker::makeOverlapThreeSphere( const char* label, float radius, float side )
+{
+    return makeListThreeSphere( label, 'O' , radius, side ); 
+}
+CSGSolid* CSGMaker::makeContiguousThreeSphere( const char* label, float radius, float side )
+{
+    return makeListThreeSphere( label, 'C' , radius, side ); 
+}
+CSGSolid* CSGMaker::makeDiscontiguousThreeSphere( const char* label, float radius, float side )
+{
+    return makeListThreeSphere( label, 'D' , radius, side ); 
 }
 
 
-CSGSolid* CSGMaker::makeOverlapList( const char* label, const std::vector<CSGNode>& leaves  )
+
+
+
+
+CSGSolid* CSGMaker::makeContiguousBoxSphere( const char* label, float radius, float fullside )
 {
+    CSGNode bx = CSGNode::Box3(fullside) ; 
+    CSGNode sp = CSGNode::Sphere(radius); 
+
+    std::vector<CSGNode> leaves ; 
+    leaves.push_back(bx); 
+    leaves.push_back(sp); 
+
+    return makeContiguousList( label, leaves, nullptr ); 
+}
+
+CSGSolid* CSGMaker::makeDiscontiguousBoxSphere( const char* label, float radius, float fullside )
+{
+    CSGNode bx = CSGNode::Box3(fullside) ; 
+    CSGNode sp = CSGNode::Sphere(radius); 
+
+    const Tran<double>* bx_shift = Tran<double>::make_translate( fullside, 0., 0. ) ;  
+    const Tran<double>* sp_shift = Tran<double>::make_translate(-fullside, 0., 0. ) ;  
+
+    std::vector<CSGNode> leaves ; 
+    leaves.push_back(bx); 
+    leaves.push_back(sp); 
+
+    std::vector<const Tran<double>*> trans ;
+    trans.push_back(bx_shift); 
+    trans.push_back(sp_shift); 
+
+    return makeDiscontiguousList( label, leaves, &trans ); 
+}
+
+
+
+
+CSGSolid* CSGMaker::makeOverlapList(       const char* label, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran )
+{  
+    return makeList( label, 'O', leaves, tran ); 
+}
+CSGSolid* CSGMaker::makeContiguousList(    const char* label, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran  )
+{ 
+    return makeList( label, 'C', leaves, tran ); 
+}
+CSGSolid* CSGMaker::makeDiscontiguousList( const char* label, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran  )
+{ 
+    return makeList( label, 'D', leaves, tran ); 
+}
+
+
+CSGSolid* CSGMaker::makeList( const char* label, char type, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran )
+{
+    unsigned numSub = leaves.size() ; 
+    unsigned numTran = tran ? tran->size() : 0  ; 
+
+    if( numTran > 0 )
+    {
+        assert( numSub == numTran ); 
+    }
+
     unsigned numPrim = 1 ; 
     CSGSolid* so = fd->addSolid(numPrim, label);
     
-    unsigned numSub = leaves.size() ; 
     unsigned numNode = 1 + numSub ; 
     int nodeOffset_ = -1 ; 
     CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
 
-    CSGNode overlap = CSGNode::Overlap(numSub); 
-    CSGNode* n = fd->addNode(overlap); 
+    CSGNode hdr = CSGNode::ListHeader(type, numSub); 
+    CSGNode* n = fd->addNode(hdr); 
 
     AABB bb = {} ;
     // naive bbox combination yields overlarge bbox, not appropriate for production code
     for(unsigned i=0 ; i < leaves.size() ; i++)
     {
         const CSGNode& leaf = leaves[i] ; 
-        fd->addNode(leaf); 
-        bb.include_aabb( leaf.AABB() );  // assumes any transforms have been applied to the Node AABB
+        const Tran<double>* tr = tran ? (*tran)[i] : nullptr ; 
+
+        CSGNode* s = fd->addNode(leaf); 
+
+        if(tr)
+        {
+            bool transform_node_aabb = true ; 
+            fd->addNodeTran(s, tr, transform_node_aabb ); 
+        }
+
+        bb.include_aabb( s->AABB() );  // assumes any transforms have been applied to the Node AABB
     }
      
     p->setAABB( bb.data() );  
 
     so->center_extent = bb.center_extent()  ; 
 
-    // setting transform as othewrise loading foundry fails for lack of non-optional tran array 
-    const Tran<double>* tran_identity = Tran<double>::make_identity(); 
-    unsigned transform_idx = 1 + fd->addTran(*tran_identity);   // 1-based idx, 0 meaning None
-    n->setTransform(transform_idx); 
+    // setting identity transform 
+    fd->addNodeTran(n); 
 
+    
     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
     return so ; 
 }
@@ -544,8 +711,8 @@ CSGSolid* CSGMaker::makeBooleanSeptuplet(
     so->center_extent = bb.center_extent()  ; 
 
     // setting transform as otherise loading foundry fails for lack of non-optional tran array 
-    const Tran<double>* tran_identity = Tran<double>::make_identity(); 
-    unsigned transform_idx = 1 + fd->addTran(*tran_identity);   // 1-based idx, 0 meaning None
+    //const Tran<double>* tran_identity = Tran<double>::make_identity(); 
+    unsigned transform_idx = 1 + fd->addTran();   // 1-based idx, 0 meaning None
     tptr->setTransform(transform_idx); 
 
     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
@@ -631,7 +798,7 @@ CSGSolid* CSGMaker::makeEllipsoid(  const char* label, float rx, float ry, float
 
     const Tran<double>* tr = Tran<double>::make_scale(sx, sy, sz ); 
 
-    unsigned idx = 1 + fd->addTran(*tr);      // 1-based idx, 0 meaning None
+    unsigned idx = 1 + fd->addTran(tr);      // 1-based idx, 0 meaning None
 
     nd.setTransform(idx); 
     return makeSolid11(label, nd, nullptr, ELLI_MIDX ); 
@@ -644,7 +811,7 @@ CSGSolid* CSGMaker::makeRotatedCylinder(const char* label, float px, float py, f
 {
     CSGNode nd = CSGNode::Cylinder( px, py, radius, z1, z2 ); 
     const Tran<float>* tr = Tran<float>::make_rotate(ax, ay, az, angle_deg ); 
-    unsigned idx = 1 + fd->addTran(*tr);      // 1-based idx, 0 meaning None
+    unsigned idx = 1 + fd->addTran(tr);      // 1-based idx, 0 meaning None
     //LOG(info) << *tr ;
     nd.setTransform(idx); 
     return makeSolid11(label, nd, nullptr, RCYL_MIDX ); 

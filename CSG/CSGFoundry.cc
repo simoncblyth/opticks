@@ -830,18 +830,40 @@ float4* CSGFoundry::addPlan(const float4& pl )
     return plan.data() + idx ; 
 }
 
+
+
+/**
+CSGFoundry::addTran
+---------------------
+
+When tr argument is nullptr an identity transform is added.
+
+**/
+ 
 template<typename T>
-unsigned CSGFoundry::addTran( const Tran<T>& tr  )
+unsigned CSGFoundry::addTran( const Tran<T>* tr  )
 {
-    //LOG(info) << tr.brief() ; 
-    qat4 t(glm::value_ptr(tr.t));  // narrowing when T=double
-    qat4 v(glm::value_ptr(tr.v)); 
+   return tr == nullptr ? addTran() : addTran_(tr); 
+}
+template unsigned CSGFoundry::addTran<float>(const Tran<float>* ) ;
+template unsigned CSGFoundry::addTran<double>(const Tran<double>* ) ;
+
+
+ 
+template<typename T>
+unsigned CSGFoundry::addTran_( const Tran<T>* tr  )
+{
+    qat4 t(glm::value_ptr(tr->t));  // narrowing when T=double
+    qat4 v(glm::value_ptr(tr->v)); 
     unsigned idx = addTran(&t, &v); 
     return idx ; 
 }
 
-template unsigned CSGFoundry::addTran<float>(const Tran<float>& ) ;
-template unsigned CSGFoundry::addTran<double>(const Tran<double>& ) ;
+template unsigned CSGFoundry::addTran_<float>(const Tran<float>* ) ;
+template unsigned CSGFoundry::addTran_<double>(const Tran<double>* ) ;
+
+
+
 
 
 unsigned CSGFoundry::addTran( const qat4* tr, const qat4* it )
@@ -874,7 +896,7 @@ unsigned CSGFoundry::addTran()
 CSGFoundry::addTranPlaceholder
 -------------------------------
 
-Adds transforms tran and itra of none have yet been added 
+Adds transforms tran and itra if none have yet been added 
 
 **/
 void CSGFoundry::addTranPlaceholder()
@@ -886,6 +908,47 @@ void CSGFoundry::addTranPlaceholder()
         addTran();   
     }
 }
+
+
+
+/**
+CSGFoundry::addNodeTran
+------------------------
+
+Adds tranform and associates it to the CSGNode
+
+**/
+
+template<typename T>
+const qat4* CSGFoundry::addNodeTran( CSGNode* nd, const Tran<T>* tr, bool transform_node_aabb  )
+{
+    unsigned transform_idx = 1 + addTran(tr);      // 1-based idx, 0 meaning None
+    nd->setTransform(transform_idx); 
+    const qat4* q = getTran(transform_idx-1u) ;   // storage uses 0-based 
+
+    if( transform_node_aabb )
+    {
+        q->transform_aabb_inplace( nd->AABB() );  
+    }
+    return q ; 
+}
+
+
+template const qat4* CSGFoundry::addNodeTran<float>(  CSGNode* nd, const Tran<float>* , bool ) ;
+template const qat4* CSGFoundry::addNodeTran<double>( CSGNode* nd, const Tran<double>*, bool ) ;
+
+
+void CSGFoundry::addNodeTran(CSGNode* nd )
+{
+    unsigned transform_idx = 1 + addTran();      // 1-based idx, 0 meaning None
+    nd->setTransform(transform_idx); 
+}
+ 
+
+
+
+
+
 
 
 /**

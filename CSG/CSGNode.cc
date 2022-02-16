@@ -167,10 +167,19 @@ CSGNode CSGNode::BooleanOperator(char op)   // static
     nd.setTypecode(CSG::BooleanOperator(op)) ; 
     return nd ; 
 }
-CSGNode CSGNode::Overlap(unsigned num_sub)   // static 
+
+CSGNode CSGNode::Overlap(   unsigned num_sub){    return CSGNode::ListHeader( 'O', num_sub ); }
+CSGNode CSGNode::Contiguous(unsigned num_sub){    return CSGNode::ListHeader( 'C', num_sub ); }
+CSGNode CSGNode::Discontiguous(unsigned num_sub){ return CSGNode::ListHeader( 'D', num_sub ); }
+CSGNode CSGNode::ListHeader(char type, unsigned num_sub)   // static 
 {
     CSGNode nd = {} ;
-    nd.setTypecode(CSG_OVERLAP) ; 
+    switch(type)
+    { 
+        case 'O': nd.setTypecode(CSG_OVERLAP)      ; break ; 
+        case 'C': nd.setTypecode(CSG_CONTIGUOUS) ; break ; 
+        case 'D': nd.setTypecode(CSG_DISCONTIGUOUS) ; break ; 
+    }
     nd.setSubNum(num_sub); 
     return nd ; 
 }
@@ -556,6 +565,8 @@ CSGNode::MakeDemo
 -------------------
 
 Only the first four chars of the name are used to select the type of node.
+
+* see CSGMaker for more extensive test node/prim/solid creation
 
 **/
 

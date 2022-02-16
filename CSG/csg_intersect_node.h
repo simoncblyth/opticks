@@ -3,6 +3,12 @@
 csg_intersect_node.h
 =======================
 
+Providing more types of multi-union or multi-intersection allows the user to communicate 
+more precisely hence a simpler less general algorithm more suited 
+to the specific geometry can be applied. 
+
+
+
 This header must be included after csg_intersect_leaf.h and before csg_intersect_tree.h
 
 distance_node_contiguous
@@ -50,11 +56,11 @@ float distance_node_list( unsigned typecode, const float3& pos, const CSGNode* n
          const CSGNode* sub_node = node+1u+isub ; 
          float sub_sd = distance_leaf( pos, sub_node, plan, itra ); 
 
-
          switch(typecode)
          {
-            case CSG_CONTIGUOUS: sd = fminf( sd, sub_sd );   break ; 
-            case CSG_OVERLAP:    sd = fmaxf( sd, sub_sd );   break ; 
+            case CSG_CONTIGUOUS:    sd = fminf( sd, sub_sd );   break ; 
+            case CSG_DISCONTIGUOUS: sd = fminf( sd, sub_sd );   break ; 
+            case CSG_OVERLAP:       sd = fmaxf( sd, sub_sd );   break ; 
          } 
 #ifdef DEBUG
         printf("//distance_node_list isub %d sub_sd %10.4f sd %10.4f \n ", isub, sub_sd, sd );  
@@ -65,11 +71,12 @@ float distance_node_list( unsigned typecode, const float3& pos, const CSGNode* n
 
 
 /**
-intersect_node_contiguous 
---------------------------
+intersect_node_contiguous : union of shapes which combine to make single fully connected compound shape 
+------------------------------------------------------------------------------------------------------------
 
- * "_union" is implicit. TODO: rename as might well have equivalent  "_intersect" too 
-
+* shapes that filfil the requirements for using CSG_CONTIGUOUS (multi-union) can avoid tree overheads, 
+  and thus benefit from simpler and faster intersection 
+  
 
 Example of a contiguous union shape composed of constituent boxes::
 
@@ -183,8 +190,8 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
  
     const unsigned num_sub = node->subNum() ; 
 
-    float4 isect_nearest_enter = make_float4( 0.f, 0.f, 0.f, RT_DEFAULT_MAX ) ; 
-    float4 isect_farthest_exit = make_float4( 0.f, 0.f, 0.f, t_min ) ; 
+    float4 nearest_enter = make_float4( 0.f, 0.f, 0.f, RT_DEFAULT_MAX ) ; 
+    float4 farthest_exit = make_float4( 0.f, 0.f, 0.f, t_min ) ; 
 
     float4 sub_isect_0 = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
     float4 sub_isect_1 = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
@@ -204,12 +211,12 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
              if( sub_state_0 == State_Exit)
              {
                  exit_count += 1 ; 
-                 if( sub_isect_0.w > isect_farthest_exit.w ) isect_farthest_exit = sub_isect_0 ;  
+                 if( sub_isect_0.w > farthest_exit.w ) farthest_exit = sub_isect_0 ;  
              }
              else if( sub_state_0 == State_Enter)
              {
                  enter_count += 1 ; 
-                 if( sub_isect_0.w < isect_nearest_enter.w ) isect_nearest_enter = sub_isect_0 ;  
+                 if( sub_isect_0.w < nearest_enter.w ) nearest_enter = sub_isect_0 ;  
 
                  // when inside_or_surface need to find EXITs for all the ENTERs, when outside just need nearest ENTER
                  if(inside_or_surface)  
@@ -221,7 +228,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
                           if( sub_state_1 == State_Exit ) 
                           {
                               exit_count += 1 ; 
-                              if( sub_isect_1.w > isect_farthest_exit.w ) isect_farthest_exit = sub_isect_1 ;  
+                              if( sub_isect_1.w > farthest_exit.w ) farthest_exit = sub_isect_1 ;  
                           } 
                           // TODO: debug check do not get another ENTER
                      }
@@ -233,20 +240,27 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
     bool valid_intersect = false ; 
     if( inside_or_surface )
     {
-        valid_intersect = exit_count > 0 && isect_farthest_exit.w > t_min ; 
-        if(valid_intersect) isect = isect_farthest_exit ;  
+        valid_intersect = exit_count > 0 && farthest_exit.w > t_min ; 
+        if(valid_intersect) isect = farthest_exit ;  
     } 
     else
     {
-        valid_intersect = enter_count > 0 && isect_nearest_enter.w > t_min ; 
-        if(valid_intersect) isect = isect_nearest_enter ;  
+        valid_intersect = enter_count > 0 && nearest_enter.w > t_min ; 
+        if(valid_intersect) isect = nearest_enter ;  
     }
     return valid_intersect ; 
 }
 
 /**
-intersect_node_overlap
--------------------------
+intersect_node_overlap : intersection of leaves
+----------------------------------------------------
+
+* HMM: could general sphere be implemented using CSG_OVERLAP multi-intersection 
+  of inner and outer sphere, phi planes and theta cones ?
+
+* shapes that can be described entirely with intersection can avoid tree overheads 
+
+
 
 Imagine the CSG_OVERLAP of 3 shapes A,B,C the resulting ABC shape is the portion that is inside all of them.
 
@@ -441,23 +455,47 @@ bool intersect_node_overlap( float4& isect, const CSGNode* node, const float4* p
 
 
 /**
-intersect_node_discontiguous
------------------------------
+intersect_node_discontiguous : union of disjoint leaves with absolutely no overlapping
+----------------------------------------------------------------------------------------
 
 The guarantee that all sub-nodes do not overlap other sub-nodes
 makes the implementation straightforward and hence fast:
 
-* origin outside: closest ENTER
-* origin inside: closest EXIT 
-
-Providing more types of multiunion allows the user to communicate 
-more precisely hence a simpler less general algorithm more suited 
-to the situation can be applied. 
-
+* closest ENTER or EXIT 
 **/
 
 
+INTERSECT_FUNC
+bool intersect_node_discontiguous( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
+{
+    const unsigned num_sub = node->subNum() ; 
 
+    float4 closest = make_float4( 0.f, 0.f, 0.f, RT_DEFAULT_MAX ) ; 
+    float4 sub_isect = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
+
+    for(unsigned isub=0 ; isub < num_sub ; isub++)
+    {
+        const CSGNode* sub_node = node+1u+isub ; 
+        if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
+        {
+            if( sub_isect.w < closest.w ) closest = sub_isect ;  
+        }
+    }
+
+    bool valid_isect = closest.w < RT_DEFAULT_MAX ; 
+    if(valid_isect) 
+    {
+        isect = closest ;  
+    }
+
+#ifdef DEBUG
+    printf("//intersect_node_discontiguous num_sub %d  closest.w %10.4f \n", 
+       num_sub, closest.w ); 
+#endif
+
+    return valid_isect ; 
+}
+ 
 
 
 
@@ -479,9 +517,10 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
     bool valid_intersect ; 
     switch(typecode)
     {
-       case CSG_CONTIGUOUS:  valid_intersect = intersect_node_contiguous(isect, node, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
-       case CSG_OVERLAP:     valid_intersect = intersect_node_overlap(   isect, node, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
-                   default:  valid_intersect = intersect_leaf(           isect, node, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
+       case CSG_CONTIGUOUS:     valid_intersect = intersect_node_contiguous(   isect, node, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
+       case CSG_OVERLAP:        valid_intersect = intersect_node_overlap(      isect, node, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
+       case CSG_DISCONTIGUOUS:  valid_intersect = intersect_node_discontiguous(isect, node, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
+                   default:     valid_intersect = intersect_leaf(              isect, node, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
     }
     return valid_intersect ; 
 }
@@ -500,8 +539,9 @@ float distance_node( const float3& global_position, const CSGNode* node, const f
     switch(typecode)
     {
         case CSG_CONTIGUOUS: 
-        case CSG_OVERLAP:    distance = distance_node_list( typecode,  global_position, node, plan, itra )  ; break ; 
-                    default: distance = distance_leaf(                 global_position, node, plan, itra )  ; break ; 
+        case CSG_OVERLAP:          distance = distance_node_list( typecode,  global_position, node, plan, itra )  ; break ; 
+        case CSG_DISCONTIGUOUS:    distance = distance_node_list( typecode,  global_position, node, plan, itra )  ; break ; 
+        default:                   distance = distance_leaf(                 global_position, node, plan, itra )  ; break ; 
     }
     return distance ; 
 }

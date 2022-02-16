@@ -640,6 +640,10 @@ bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const floa
     {
         valid_intersect = intersect_node_contiguous( isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }
+    else if( typecode == CSG_DISCONTIGUOUS )  
+    {
+        valid_intersect = intersect_node_discontiguous( isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+    }
     else if( typecode == CSG_OVERLAP )
     {
         valid_intersect = intersect_node_overlap( isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 

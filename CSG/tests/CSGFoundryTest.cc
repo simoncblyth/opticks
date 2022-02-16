@@ -52,7 +52,7 @@ void test_addTran()
 {
     CSGFoundry fd ; 
     const Tran<double>* tr = Tran<double>::make_translate( 100., 200., 300. ) ; 
-    unsigned idx = fd.addTran( *tr );   // this idx is 0-based 
+    unsigned idx = fd.addTran( tr );   // this idx is 0-based 
     std::cout << "test_addTran idx " << idx << std::endl ; 
     assert( idx == 0u );   
     const qat4* t = fd.getTran(idx) ; 
