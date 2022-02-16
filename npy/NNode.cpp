@@ -317,6 +317,46 @@ void nnode::set_boundary( const char* boundary_)
 }
 
 
+/**
+nnode::deepclone
+-----------------
+
+parent links are not copied
+
+
+**/
+nnode* nnode::deepclone() const 
+{
+    return deepclone_r(this, 0); 
+}
+nnode* nnode::deepclone_r(const nnode* n, unsigned depth) // static
+{
+    nnode* c = nullptr ; 
+    if(n->is_operator())
+    {
+        nnode* l = deepclone_r(n->left,  depth+1 ); 
+        nnode* r = deepclone_r(n->right, depth+1 ); 
+        c = make_operator( n->type, l, r );  
+    }
+    else
+    {
+        c = new nnode ; 
+        nnode::Init(c, n->type, nullptr, nullptr ); 
+        primcopy(c, n);  
+    }
+    return c ; 
+}  
+
+void nnode::primcopy(nnode* c, const nnode* p)  // static 
+{
+    c->param = p->param ; 
+    c->param1 = p->param1 ; 
+    c->param2 = p->param2 ; 
+    c->param3 = p->param3 ; 
+    c->transform = p->transform->clone();   // nmat4triple::clone
+}
+
+
 
 void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
 {
@@ -461,6 +501,8 @@ const nmat4triple* nnode::global_transform()
 /**
 nnode::global_transform
 ------------------------
+
+NB parent links are needed
 
 Is invoked by nnode::update_gtransforms_r from each primitive, 
 whence parent links are followed up the tree until reaching root
@@ -845,6 +887,9 @@ void nnode::collect_progeny_r( const nnode* n, std::vector<const nnode*>& progen
 }
 
 
+
+
+
 void nnode::collect_monogroup( std::vector<const nnode*>& monogroup ) const 
 {
    if(!parent) return ;    
@@ -949,7 +994,8 @@ unsigned nnode::get_mask(NNodeType ntyp) const
 void nnode::get_mask_r(const nnode* node, NNodeType ntyp, unsigned& msk ) // static
 {
     bool collect = false ;  
-    if(node->type < 32)
+    assert( node->type < CSG_UNDEFINED ); 
+    if(true)
     {
        if(     ntyp == NODE_ALL) collect = true ; 
        else if(ntyp == NODE_PRIMITIVE && node->type >= CSG_SPHERE ) collect = true  ;

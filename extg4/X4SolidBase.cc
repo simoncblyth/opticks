@@ -203,6 +203,12 @@ X4SolidBase::X4SolidBase( const G4VSolid* solid, const Opticks* ok, bool top, in
    if( m_top ) OTHER_ID->reset() ; 
 }
 
+
+const char* X4SolidBase::HINT_CSG_CONTIGUOUS = "CSG_CONTIGUOUS" ; 
+bool X4SolidBase::hasHintContiguous() const { return hasHint(HINT_CSG_CONTIGUOUS) ; }
+bool X4SolidBase::hasHint( const char* hint ) const { return strstr(m_name, hint) != nullptr ; }  
+
+
 bool X4SolidBase::isX4TubsNudgeSkip() const   // --x4tubsnudgeskip 0,1,2,
 {
     return m_ok->isX4TubsNudgeSkip(m_lvIdx);  
@@ -341,10 +347,11 @@ void X4SolidBase::setG4Code()
 }
 
  
-nnode* X4SolidBase::root() const 
+nnode* X4SolidBase::getRoot() const 
 {
     return m_root ; 
 }
+
 void X4SolidBase::setRoot(nnode* root)
 {
     assert( root ) ; 

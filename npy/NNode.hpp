@@ -124,6 +124,9 @@ struct NPY_API nnode
     std::string tag() const ;
     std::string id() const ;
 
+    nnode* deepclone() const ; 
+    static nnode* deepclone_r(const nnode* n, unsigned depth); 
+    static void primcopy(nnode* c, const nnode* p) ; 
 
     static void Init(nnode* n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
@@ -250,7 +253,7 @@ struct NPY_API nnode
     void collect_prim(std::vector<const nnode*>& prim) const ;
     static void collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) ;
 
-    void collect_prim_for_edit(std::vector<nnode*>& prim) ;
+    void collect_prim_for_edit(std::vector<nnode*>& prim)  ;
     static void collect_prim_for_edit_r(std::vector<nnode*>& prim, nnode* node) ;
 
 
@@ -347,6 +350,8 @@ struct NPY_API nnode
     unsigned subNum() const ; 
     void     setSubNum(unsigned sub_num) ; 
 
+    
+    // ---------------------------------------------------------
 
     unsigned     idx ; 
     OpticksCSG_t type ;  

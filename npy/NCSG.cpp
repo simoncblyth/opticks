@@ -713,7 +713,7 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
                                 node = make_convexpolyhedron(p0,p1,p2,p3)   ; break ; 
        case CSG_CONTIGUOUS:     
        case CSG_DISCONTIGUOUS:  
-                                node = make_multiunion(typecode, p0)  ; break ; 
+                                node = nmultiunion::Create(typecode, p0)  ; break ; 
 
        case CSG_ELLIPSOID: assert(0 && "ellipsoid should be zsphere at this level" )   ; break ; 
        default:           node = NULL ; break ; 

@@ -476,7 +476,7 @@ const G4VSolid* X4SolidMaker::AltXJfixtureConstruction(const char* name)
     ulx = new G4UnionSolid("ulx", ul, x, 0, G4ThreeVector(0.*mm, 0.*mm, zs )) ; 
 
     o = new G4Tubs("o", 0.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
-    ulxo = new G4UnionSolid("ulxo", ulx, o, 0, G4ThreeVector(0.*mm, 0.*mm, zs )) ; 
+    ulxo = new G4UnionSolid("ulxo_CSG_CONTIGUOUS", ulx, o, 0, G4ThreeVector(0.*mm, 0.*mm, zs )) ; 
 
     G4double i_uncoincide = 1. ;  
     // increase the half_z of subtracted tubs : avoiding upper coincident face

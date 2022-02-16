@@ -62,7 +62,7 @@ void test_solid(G4VSolid* so)
     bool top = true ; 
     X4Solid* xs = new X4Solid(so, ok, top) ; 
     LOG(info) << xs->desc() ; 
-    nnode* root = xs->root(); 
+    nnode* root = xs->getRoot(); 
     assert( root ) ; 
     root->update_gtransforms();
     root->dump();

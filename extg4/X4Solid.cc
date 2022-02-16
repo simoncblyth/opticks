@@ -110,7 +110,7 @@ nnode* X4Solid::Convert(const G4VSolid* solid, const Opticks* ok, const char* bo
 
     bool top = true ; 
     X4Solid xs(solid, ok, top, lvIdx );
-    nnode* root = xs.root(); 
+    nnode* root = xs.getRoot(); 
 
     root->update_gtransforms(); 
     //root->prepTree(); // updates_gtransforms and sets parent links  
@@ -258,9 +258,23 @@ void X4Solid::booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVec
              ;
 }
 
+/**
+X4Solid::convertUnionSolid
+---------------------------
+
+Solids with CSG_CONTIGUOUS hinting are converted via alternative approach 
+
+**/
+
 void X4Solid::convertUnionSolid()
 {
     convertBooleanSolid() ;
+
+    bool contiguous = hasHintContiguous(); 
+    if(contiguous) 
+    {
+        changeToContiguousSolid() ;
+    }
 }
 void X4Solid::convertIntersectionSolid()
 {
@@ -278,7 +292,7 @@ X4Solid::convertDisplacedSolid
 The constituents of BooleanSolid which have displacements 
 are represented by a G4DisplacedSolid
 
-Note possibly fixed issue notes/issues/ellipsoid_not_maintaining_shape_within_boolean_combination.rst
+Note fixed for translation issue notes/issues/ellipsoid_not_maintaining_shape_within_boolean_combination.rst
 was addressed by combining the prior scale transform with the displaced transform from 
 the boolean combination. Although it seems to work the testing has not yet used rotation
 so there could be transform combination glitches with other transforms.
@@ -295,7 +309,7 @@ void X4Solid::convertDisplacedSolid()
     X4Solid* xmoved = new X4Solid(moved, m_ok, top);
     setDisplaced(xmoved); 
 
-    nnode* a = xmoved->root();
+    nnode* a = xmoved->getRoot();
 
     LOG(LEVEL)
         << " a.csgname " << a->csgname()
@@ -341,7 +355,7 @@ void X4Solid::convertMultiUnion()
     // TODO: set type depending on solid name 
 
     unsigned sub_num = compound->GetNumberOfSolids() ; 
-    nnode* n_comp = make_multiunion(type, sub_num) ;  
+    nnode* n_comp = nmultiunion::Create(type, sub_num) ;  
 
     int lvIdx = get_lvIdx();  // pass lvIdx to children 
     bool top = false ; 
@@ -355,7 +369,7 @@ void X4Solid::convertMultiUnion()
         glm::mat4 tr_sub = X4Transform3D::Convert(tr); 
 
         X4Solid* x_sub = new X4Solid(sub, m_ok, top, lvIdx); 
-        nnode* n_sub = x_sub->root(); 
+        nnode* n_sub = x_sub->getRoot(); 
 
         n_sub->set_transform( tr_sub, true );  
 
@@ -364,6 +378,36 @@ void X4Solid::convertMultiUnion()
 
     setRoot(n_comp); 
 }
+
+
+/**
+X4Solid::changeToContiguousSolid
+---------------------------------
+
+Hmm need to collect all leaves of the subtree rooted here into a
+compound like the above multiunion  
+
+Need to apply the X4Solid conversion to the leaves only
+and just collect flattened transforms from the operator nodes above them  
+
+Hmm probably simplest to apply the normal convertBooleanSolid and 
+then replace the nnode subtree. Because thats using the nnode 
+lingo should do thing within nmultiunion
+
+Just need to collect the list of nodes. Hmm maybe flatten transforms ?
+
+**/
+
+void X4Solid::changeToContiguousSolid()
+{
+    LOG(LEVEL); 
+    nnode* subtree = getRoot(); 
+    nmultiunion* root = nmultiunion::CreateFromTree(CSG_CONTIGUOUS, subtree) ; 
+    setRoot(root); 
+}
+
+
+
 
 
 /**
@@ -376,22 +420,13 @@ is a G4DisplacedSolid.
 
 **/
 
+
 void X4Solid::convertBooleanSolid()
 {  
     const G4BooleanSolid* const solid = static_cast<const G4BooleanSolid*>(m_solid);
     assert(solid); 
 
-    OpticksCSG_t _operator = CSG_ZERO ; 
-    if      (dynamic_cast<const G4IntersectionSolid*>(solid)) _operator = CSG_INTERSECTION ;
-    else if (dynamic_cast<const G4SubtractionSolid*>(solid))  _operator = CSG_DIFFERENCE ;
-    else if (dynamic_cast<const G4UnionSolid*>(solid))        _operator = CSG_UNION ;
-    assert( _operator != CSG_ZERO ) ;
-
-    LOG(LEVEL) 
-        << " _operator " << _operator 
-        << " CSG::Name " << CSG::Name(_operator) 
-        ; 
-
+    OpticksCSG_t _operator = GetOperator(solid); 
     G4VSolid* left  = const_cast<G4VSolid*>(solid->GetConstituentSolid(0));
     G4VSolid* right = const_cast<G4VSolid*>(solid->GetConstituentSolid(1));
 
@@ -405,8 +440,8 @@ void X4Solid::convertBooleanSolid()
     X4Solid* xleft = new X4Solid(left, m_ok, top, lvIdx); 
     X4Solid* xright = new X4Solid(right, m_ok, top, lvIdx ); 
 
-    nnode* a = xleft->root(); 
-    nnode* b = xright->root(); 
+    nnode* a = xleft->getRoot(); 
+    nnode* b = xright->getRoot(); 
     nnode* n = nnode::make_operator( _operator, a, b ); 
 
     setRoot(n); 
@@ -470,6 +505,27 @@ void X4Solid::convertBooleanSolid()
     const std::vector<std::string> ckeys(keys); 
     setG4Param(cparam, ckeys); 
 }
+
+
+
+OpticksCSG_t X4Solid::GetOperator( const G4BooleanSolid* solid ) // static
+{
+    OpticksCSG_t _operator = CSG_ZERO ; 
+    if      (dynamic_cast<const G4IntersectionSolid*>(solid)) _operator = CSG_INTERSECTION ;
+    else if (dynamic_cast<const G4SubtractionSolid*>(solid))  _operator = CSG_DIFFERENCE ;
+    else if (dynamic_cast<const G4UnionSolid*>(solid))        _operator = CSG_UNION ;
+    assert( _operator != CSG_ZERO ) ;
+
+    LOG(LEVEL) 
+        << " _operator " << _operator 
+        << " CSG::Name " << CSG::Name(_operator) 
+        ; 
+
+    return _operator ; 
+}
+
+
+
 
 
 bool X4Solid::Contains( const char* s , char c ) // static 

@@ -51,6 +51,16 @@ Tips for making yearly summaries
 * CSG_CONTIGUOUS multiunion : trying to replace large trees with instead small trees with some large compound nodes
 
   * TODO: try to apply to XJFixtureConstruction : gather suitable union leaves to mop up into CSG_CONTIGUOUS   
+  * TODO: detect suitable raw(unbalanced) G4BooleanSolid trees suitable for use of CSG_CONTIGUOUS 
+    
+    * see X4SolidMaker::AltXJfixtureConstruction the last G4UnionSolid in a sequence of them which 
+      fulfill the topological requirements should have the "CSG_CONTIGUOUS" marker within its name
+
+      * need to inhibit balancing for such trees
+      * could explictly use G4MultiUnion in source geometry, see X4Solid::convertMultiUnion
+      * can branch based on the solid name marker within X4Solid::convertUnionSolid
+
+
   * reorganize intersect and distance functions into three levels tree/node/leaf to avoid recursive CSG_CONTIGUOUS node functions that OptiX disallows 
   * make start at implementing CSG_CONTIGUOUS NMultiUnion as its looking doubtful that balanced trees can be made to work with the CSG intersection
   * generalize NCSG to saving lists of nodes needed by NMultiUnion as well as the normal trees of nodes needed for booleans 

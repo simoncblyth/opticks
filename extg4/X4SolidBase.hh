@@ -78,7 +78,15 @@ class X4_API X4SolidBase
         static std::string GenInstanciate(const char* cls, const char* identifier, const char* name, const std::vector<T>& param);
     public:
         X4SolidBase(const G4VSolid* solid, const Opticks* ok, bool top=false, int lvIdx=-1); 
-        nnode* root() const ;
+
+    public:
+        static const char* HINT_CSG_CONTIGUOUS  ; 
+        bool hasHintContiguous() const ; 
+    private:
+        bool hasHint( const char* hint ) const ; 
+
+    public:
+        nnode* getRoot() const ;
         std::string desc() const  ; 
         std::string brief() const  ; 
         bool isX4TubsNudgeSkip() const ; 

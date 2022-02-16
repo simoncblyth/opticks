@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
     X4Solid xs(so, &ok, true) ; 
 
-    nnode* root = xs.root(); 
+    nnode* root = xs.getRoot(); 
 
     root->dump_g4code();  
 

@@ -75,7 +75,7 @@ EOU
 #geom=inner1_solid
 #geom=inner2_solid
 #geom=XJfixtureConstruction
-#geom=AltXJfixtureConstruction
+geom=AltXJfixtureConstruction
 #geom=XJanchorConstruction
 #geom=AnnulusBoxUnion 
 #geom=AnnulusTwoBoxUnion 
@@ -90,7 +90,7 @@ EOU
 
 #geom=SphereWithPhiSegment
 #geom=SphereWithPhiCutDEV
-geom=GeneralSphereDEV
+#geom=GeneralSphereDEV
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin
 #geom=Orb

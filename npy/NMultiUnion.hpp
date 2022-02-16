@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include "plog/Severity.h"
+
 #include "NNode.hpp"
 #include "NPY_API_EXPORT.hh"
 struct nbbox ; 
@@ -15,6 +18,15 @@ struct nmat4triple ;
 
 struct NPY_API nmultiunion : nnode 
 {
+    static const plog::Severity LEVEL ; 
+
+    static nmultiunion* Create(OpticksCSG_t type) ; 
+    static nmultiunion* Create(OpticksCSG_t type, const nquad& param  ); 
+    static nmultiunion* Create(OpticksCSG_t type, unsigned sub_num  ); 
+
+    static nmultiunion* CreateFromTree( OpticksCSG_t type, const nnode* subtree ); 
+    static nmultiunion* CreateFromList( OpticksCSG_t type, std::vector<nnode*>& prim  ); 
+
     nbbox bbox() const ; 
     float operator()(float x_, float y_, float z_) const ; 
 
@@ -25,29 +37,5 @@ struct NPY_API nmultiunion : nnode
     unsigned par_nvertices(unsigned , unsigned ) const ; 
 
 };
-
-
-inline NPY_API nmultiunion* make_multiunion(OpticksCSG_t type )
-{
-    nmultiunion* n = new nmultiunion ; 
-    //assert( type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS); 
-    assert( type == CSG_CONTIGUOUS  ); 
-    nnode::Init(n,type) ; 
-
-    return n ; 
-}
-inline NPY_API nmultiunion* make_multiunion(OpticksCSG_t type, const nquad& param  )
-{
-    nmultiunion* n = make_multiunion(type) ; 
-    n->param = param ;    
-    return n ; 
-}
-
-inline NPY_API nmultiunion* make_multiunion(OpticksCSG_t type, unsigned sub_num  )
-{
-    nmultiunion* n = make_multiunion(type) ; 
-    n->setSubNum(sub_num); 
-    return n ; 
-}
 
 

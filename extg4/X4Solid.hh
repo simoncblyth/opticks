@@ -28,6 +28,7 @@
 #include "G4RotationMatrix.hh"
 #include "X4SolidBase.hh"
 class G4VSolid ; 
+class G4BooleanSolid ; 
 class G4PolyconeHistorical ; 
 class Opticks ; 
 struct nnode ; 
@@ -89,7 +90,8 @@ class X4_API X4Solid : public X4SolidBase
         static nnode* Balance(nnode* raw, int soIdx=-1 , int lvIdx=-1 );  // cannot be const due to inplace positivization
     public:
         X4Solid(const G4VSolid* solid, const Opticks* ok, bool top, int lvIdx=-1); 
-
+    public:
+    public:
         bool hasDisplaced() const ; 
         X4Solid* getDisplaced() const ; 
         void setDisplaced(X4Solid* displaced);
@@ -104,7 +106,11 @@ class X4_API X4Solid : public X4SolidBase
         void convertSubtractionSolid();
     private:
         void convertMultiUnion();
+        void changeToContiguousSolid(); 
         void convertBooleanSolid();
+        static OpticksCSG_t GetOperator( const G4BooleanSolid* solid ); 
+
+
         void convertSphere();
         static const bool convertSphere_enable_phi_segment ;  
  
