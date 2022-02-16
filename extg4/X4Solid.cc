@@ -582,10 +582,10 @@ nnode* X4Solid::convertSphereDEV_(const char* opt )
     float outerRadius = solid->GetOuterRadius()/mm ; 
     bool has_inner = innerRadius > 0.f ;  
 
-    nnode* outer = make_sphere( outerRadius );
+    nnode* outer = nsphere::Create( outerRadius );
     outer->label = BStr::concat(m_name, "_outer", NULL ) ; 
 
-    nnode* inner = has_inner ? make_sphere( innerRadius ) : nullptr ;
+    nnode* inner = has_inner ? nsphere::Create( innerRadius ) : nullptr ;
     if(inner) 
     {
         inner->label = BStr::concat(m_name, "_inner", NULL ) ; 
@@ -707,7 +707,7 @@ nnode* X4Solid::convertSphere_(bool only_inner)
     }
     else
     {
-        cn = make_sphere( x, y, z, radius );
+        cn = nsphere::Create( x, y, z, radius );
         cn->label = BStr::concat(m_name, "_nsphere", NULL ) ; 
     }
     
@@ -822,7 +822,7 @@ void X4Solid::convertOrb()
     float y = 0.f ; 
     float z = 0.f ; 
 
-    nnode* n =  make_sphere( x, y, z, radius );
+    nnode* n =  nsphere::Create( x, y, z, radius );
     n->label = BStr::concat(m_name, "_sphere", NULL ) ; 
 
     setRoot(n); 
@@ -1479,7 +1479,7 @@ void X4Solid::convertEllipsoid()
     nnode* cn = zslice ? 
                           (nnode*)make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 ) 
                        :
-                          (nnode*)make_sphere( 0.f, 0.f, 0.f, cz )
+                          (nnode*)nsphere::Create( 0.f, 0.f, 0.f, cz )
                        ;
 
     cn->label = BStr::concat(m_name, "_ellipsoid", NULL) ; 

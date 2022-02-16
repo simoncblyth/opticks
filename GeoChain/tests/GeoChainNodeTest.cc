@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     nnode* root = nullptr ; 
     if(strcmp(name, "sphere") == 0)
     {
-        root = make_sphere( 0.f, 0.f, 0.f, 100.f ); 
+        root = nsphere::Create( 0.f, 0.f, 0.f, 100.f ); 
     }
 
     assert( root ); 

@@ -54,7 +54,7 @@ void test_load_csg(int argc, char** argv)
 
 void test_make_csg()
 {
-    nsphere* sp = make_sphere();
+    nsphere* sp = nsphere::Create(100.f);
     sp->set_boundary("Dummy"); 
 
     NCSG* csg = NCSG::Adopt(sp);
