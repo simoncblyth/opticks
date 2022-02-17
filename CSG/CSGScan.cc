@@ -43,12 +43,12 @@ void CSGScan::trace(const float t_min, const float3& ray_origin, const float3& r
     for(unsigned primIdx=primIdx0 ; primIdx < primIdx1 ; primIdx++)
     {
         const CSGPrim* prim = prim0 + primIdx ;  
-        int numNode = prim->numNode(); 
+        //int numNode = prim->numNode(); 
         int nodeOffset = prim->nodeOffset(); 
         const CSGNode* node = node0 + nodeOffset ; 
         
         float4 isect = make_float4( 0.f, 0.f, 0.f, 0.f ) ; 
-        bool valid_isect = intersect_prim(isect, numNode, node, plan0, itra0, t_min, ray_origin, ray_direction );
+        bool valid_isect = intersect_prim(isect, node, plan0, itra0, t_min, ray_origin, ray_direction );
         record(valid_isect, isect, ray_origin, ray_direction );  
     } 
 }

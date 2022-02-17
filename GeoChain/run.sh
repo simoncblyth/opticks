@@ -75,8 +75,8 @@ EOU
 #geom=inner1_solid
 #geom=inner2_solid
 #geom=XJfixtureConstruction
-geom=AltXJfixtureConstruction
-#geom=AltXJfixtureConstructionU
+#geom=AltXJfixtureConstruction
+geom=AltXJfixtureConstructionU
 #geom=XJanchorConstruction
 #geom=AnnulusBoxUnion 
 #geom=AnnulusTwoBoxUnion 
@@ -147,11 +147,11 @@ export NTreeProcess=INFO   ## balance decision happens here
 #export NNodeNudger=INFO
 #export NNODENUDGER_LVLIST=0
 
-export NTreeBalance=INFO
-export NTreeBuilder=INFO
+#export NTreeBalance=INFO
+#export NTreeBuilder=INFO
 
-export nthetacut=INFO 
-export nphicut=INFO 
+#export nthetacut=INFO 
+#export nphicut=INFO 
 export NCSG=INFO
 export NCSGData=INFO
 

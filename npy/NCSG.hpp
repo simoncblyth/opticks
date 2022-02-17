@@ -341,6 +341,9 @@ class NPY_API NCSG {
         // import src buffers of nodes/transforms into a node tree 
         void import();
         void import_tree();
+        void import_tree_list_(unsigned idx0); 
+        void import_tree_list_subs_( nnode* n, unsigned sub_num, unsigned idx0 ); 
+
         void import_list();
         nnode* import_list_node( unsigned idx ); 
 
@@ -371,6 +374,10 @@ class NPY_API NCSG {
         void export_idx();
         void export_srcidx();
         void export_tree_();
+        void export_tree_list_(unsigned idx0); 
+        void export_tree_list_subs_( const nnode* n, unsigned sub_num, unsigned idx0 ); 
+
+
         void export_tree_r(nnode* node, unsigned idx);
         void export_list_();
         void export_leaf_();

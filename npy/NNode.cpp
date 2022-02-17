@@ -56,6 +56,9 @@
 #include "PLOG.hh"
 
 
+const plog::Severity nnode::LEVEL = PLOG::EnvLevel("nnode", "DEBUG"); 
+
+
 unsigned nnode::bb_count = 0 ; 
 
 // see NNodeUncoincide::uncoincide_union
@@ -464,32 +467,113 @@ unsigned nnode::_maxdepth(unsigned depth) const   // recursive
     return left && right ? nmaxu( left->_maxdepth(depth+1), right->_maxdepth(depth+1)) : depth ;  
 }
 
+/**
+nnode::num_serialization_nodes
+---------------------------------
+
+TODO: this is not handling having list nodes within the tree
+
+**/
 
 unsigned nnode::num_serialization_nodes() const
 {
     assert( is_root() ); 
-    unsigned num_nodes = 0 ; 
+    unsigned tot_nodes = 0 ; 
     if( is_list() )
     {
         unsigned num_subs = subs.size() ;
-        num_nodes = 1 + num_subs ;  
+        tot_nodes = 1 + num_subs ;  
     } 
     else if( is_tree() )
     {
-        unsigned height = maxdepth() ; 
-        num_nodes = TREE_NODES(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
+        tot_nodes = num_tree_nodes(); 
+
+        std::vector<const nnode*> list_nodes ; 
+        find_list_nodes(list_nodes);       
+        LOG(info) << " list_nodes.size " << list_nodes.size() ; 
+
+        for(unsigned i=0 ; i < list_nodes.size() ; i++)
+        {
+            const nnode* n = list_nodes[i] ; 
+            LOG(info) << " n.subs.size " << n->subs.size() ; 
+            tot_nodes += n->subs.size() ; 
+        }
     }
     else if( is_leaf() )
     {
-        num_nodes = 1 ; 
+        tot_nodes = 1 ; 
     }
     else
     {
         LOG(fatal) << " m_root node type is not list/tree/leaf ABORT " ; 
         std::raise(SIGINT); 
     }
-    return num_nodes ; 
+    return tot_nodes ; 
 }
+
+unsigned nnode::num_tree_nodes() const
+{
+    assert( is_root() ); 
+    assert( is_tree() ); 
+    unsigned height = maxdepth() ; 
+    unsigned tree_nodes = TREE_NODES(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
+    return tree_nodes ; 
+}
+ 
+
+void nnode::find_list_nodes( std::vector<const nnode*>& list_nodes ) const 
+{
+    find_list_nodes_r( list_nodes, this ); 
+}
+void nnode::find_list_nodes( std::vector<nnode*>& list_nodes ) 
+{
+    find_list_nodes_r( list_nodes, this ); 
+}
+
+
+
+
+/**
+nnode::find_list_nodes_r
+-------------------------
+
+inorder/postorder/preorder ?
+
+**/
+void nnode::find_list_nodes_r( std::vector<const nnode*>& list_nodes, const nnode* n ) // static
+{
+    if( n->is_list() )
+    {
+        list_nodes.push_back(n); 
+    }
+    else if( n->left && n->right )
+    {
+        find_list_nodes_r(list_nodes, n->left  ); 
+        find_list_nodes_r(list_nodes, n->right ); 
+    }
+}
+
+void nnode::find_list_nodes_r( std::vector<nnode*>& list_nodes, nnode* n ) // static
+{
+    if( n->is_list() )
+    {
+        list_nodes.push_back(n); 
+    }
+    else if( n->left && n->right )
+    {
+        find_list_nodes_r(list_nodes, n->left  ); 
+        find_list_nodes_r(list_nodes, n->right ); 
+    }
+}
+
+
+
+
+
+
+
+
+
 
 unsigned nnode::NumNodes(unsigned height)  // static
 {
@@ -2030,7 +2114,7 @@ nnode::prepare
 -----------------
 
 Called from X4PhysicalVolume::ConvertSolid_FromRawNode/NCSG::Adopt/NCSG::PrepTree
-
+on the root node. 
 
 **/
 
@@ -2066,6 +2150,10 @@ void nnode::prepareTree()
     root->update_gtransforms() ;  // sets node->gtransform (not gtransform_idx) parent links are required 
     root->check_tree( FEATURE_GTRANSFORMS ); 
     root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
+
+    unsigned tree_nodes = num_tree_nodes(); 
+    LOG(LEVEL) << " tree_nodes " << tree_nodes ; 
+    root->setSubNum( tree_nodes ); 
 }
 
 /**

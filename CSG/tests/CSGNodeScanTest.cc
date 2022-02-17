@@ -119,7 +119,9 @@ Scan* Scan::XY(const CSGNode* node, int n, const char* modes_, float t_min, bool
             float4 isect = make_float4( 0.f, 0.f, 0.f, 0.f ); 
             const float4* plan = nullptr ; 
             const qat4* itra = nullptr ; 
-            bool valid_intersect = intersect_node(isect, node, plan, itra, t_min, ray_origin, ray_direction ); 
+
+            bool valid_intersect = intersect_node(isect, node, node, plan, itra, t_min, ray_origin, ray_direction ); 
+            // TODO: this should be using higher level intersect_prim ???
 
             if(valid_intersect)
             {

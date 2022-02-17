@@ -13,7 +13,7 @@ CSGDraw::CSGDraw(const CSGQuery* q_)
     :
     q(q_),
     type(q->getSelectedType()), 
-    width(q->select_numNode),
+    width(q->select_prim_numNode),
     height( CSG::IsTree((OpticksCSG_t)type) ? q->getSelectedTreeHeight() : 1),
     canvas(new SCanvas(width+1, height+2, 10, 5)),
     dump(false)

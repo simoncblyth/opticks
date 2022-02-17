@@ -517,23 +517,67 @@ void NCSG::import_tree()
     m_root->check_tree( FEATURE_PARENT_LINKS );  
     m_root->update_gtransforms(); 
     m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS );  
+
+    unsigned idx0 = m_root->num_tree_nodes(); 
+
+    import_tree_list_(idx0);    
 }
 
+void NCSG::import_tree_list_(unsigned idx0)
+{
+    std::vector<nnode*> list_nodes ;
+    m_root->find_list_nodes(list_nodes); 
+
+    unsigned num_lists = list_nodes.size() ; 
+    LOG(LEVEL) << " num_lists " << num_lists << " idx0 " << idx0  ; 
+    assert( num_lists == 0 || num_lists == 1 );  // maybe more in future
+
+    unsigned offset = idx0 ; 
+    for(unsigned i=0 ; i < num_lists ; i++)
+    {
+        nnode* n = list_nodes[i] ;
+        unsigned sub_num = n->subNum(); 
+        unsigned sub_num2 = n->subs.size(); 
+        assert( sub_num == sub_num2 ); 
+        LOG(info) << " i " << i << " sub_num " << sub_num << " idx0 " << idx0 << " offset " << offset ;
+
+        import_tree_list_subs_( n, sub_num, offset ); 
+
+        offset += sub_num ; 
+    } 
+}
+
+
+void NCSG::import_tree_list_subs_( nnode* n, unsigned sub_num, unsigned offset )
+{
+    LOG(LEVEL) << " sub_num " << sub_num << " offset " << offset ; 
+
+    for(unsigned isub=0 ; isub < sub_num ; isub++)
+    {
+        nnode* sub = import_list_node( offset+isub );
+        n->subs.push_back(sub);  
+    }
+}
+
+
+
+/**
+NCSG::import_list
+-------------------
+
+This assumes the list sub nodes are found at indices immediately 
+after the list header node 
+
+**/
 
 void NCSG::import_list()
 {
     m_root = import_list_node(0); 
-
     std::vector<nnode*>& subs = m_root->subs ; 
-
-    assert( subs.size() == 0 ); 
+    assert( subs.size() == 0 );    // expected to be empty at this initial juncture
 
     unsigned num = m_root->subNum(); 
-
-    LOG(LEVEL)
-        << " root.type " << CSG::Name(m_root->type) 
-        << " num " << num 
-        ; 
+    LOG(LEVEL) << " root.type " << CSG::Name(m_root->type) << " num " << num ; 
     assert( num > 0 ); 
 
     for(unsigned isub=0 ; isub < num ; isub++)
@@ -560,12 +604,12 @@ nnode* NCSG::import_list_node( unsigned idx )
     assert( is_list == is_list_expect ); 
     assert( complement == false ); 
 
-    nnode* node = import_primitive( idx, type ); 
+    nnode* n = import_primitive( idx, type ); 
 
-    node->transform = m_csgdata->import_transform_triple( transform_idx ) ;  
+    n->transform = m_csgdata->import_transform_triple( transform_idx ) ;  
     // from m_transforms, expecting (-1,3,4,4)
 
-    return node ; 
+    return n ; 
 }
 
 
@@ -597,7 +641,7 @@ But now thats done from NCSG::import
 
 nnode* NCSG::import_tree_r(unsigned idx, nnode* parent)
 {
-    if(idx >= getNumNodes()) return NULL ; 
+    if(idx >= getNumNodes()) return NULL ;  // getNumNodes is the number of serialization nodes from csgdata
     
     // from m_srcnodes     
     OpticksCSG_t typecode = (OpticksCSG_t)m_csgdata->getTypeCode(idx);      
@@ -1073,7 +1117,56 @@ void NCSG::export_tree_()
     m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ) ; 
 
     export_tree_r(m_root, 0);
+
+    unsigned idx0 = m_root->num_tree_nodes(); 
+
+    export_tree_list_(idx0);    
 }
+
+
+/**
+NCSG::export_tree_list_
+-------------------------
+
+Exports sub nodes of compound or list nodes that are contained within the tree 
+
+**/
+
+void NCSG::export_tree_list_(unsigned idx0)
+{
+    std::vector<const nnode*> list_nodes ;
+    m_root->find_list_nodes(list_nodes); 
+
+    unsigned num_lists = list_nodes.size() ; 
+    LOG(LEVEL) << " num_lists " << num_lists << " idx0 " << idx0  ; 
+    assert( num_lists == 0 || num_lists == 1 );  // maybe more in future
+
+    unsigned offset = idx0 ; 
+    for(unsigned i=0 ; i < num_lists ; i++)
+    {
+        const nnode* n = list_nodes[i] ;
+        unsigned sub_num = n->subNum(); 
+        unsigned sub_num2 = n->subs.size(); 
+        assert( sub_num == sub_num2 ); 
+        LOG(info) << " i " << i << " sub_num " << sub_num << " idx0 " << idx0 << " offset " << offset ;
+
+        export_tree_list_subs_( n, sub_num, offset ); 
+
+        offset += sub_num ; 
+    } 
+}
+
+
+void NCSG::export_tree_list_subs_( const nnode* n, unsigned sub_num, unsigned idx0 )
+{
+    for(unsigned isub=0 ; isub < sub_num ; isub++)
+    {
+        nnode* s = n->subs[isub];    
+        export_node( s,  idx0 + isub ) ; 
+    }
+}
+
+
 
 /**
 NCSG::export_tree_r
@@ -1120,6 +1213,7 @@ void NCSG::export_leaf_()
 {
     export_node( m_root, 0) ; 
 }
+
 
 void NCSG::export_list_()
 {

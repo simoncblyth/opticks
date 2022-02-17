@@ -53,8 +53,9 @@ Simply postorder traverse using a stack perhaps
 
 
 TREE_FUNC
-float distance_tree( const float3& global_position, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0 )
+float distance_tree( const float3& global_position, const CSGNode* node, const float4* plan0, const qat4* itra0 )
 {
+    const int numNode = node->subNum(); 
     unsigned height = TREE_HEIGHT(numNode) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
 
     // beginIdx, endIdx are 1-based level order tree indices, root:1 leftmost:1<<height    0:"parent" of root
@@ -118,8 +119,9 @@ controlled by ancillary type on the head node.
 **/
 
 TREE_FUNC
-float distance_list( const float3& global_position, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0 )
+float distance_list( const float3& global_position, const CSGNode* node, const float4* plan0, const qat4* itra0 )
 {
+    const int numNode = node->subNum() ; 
     float distance = RT_DEFAULT_MAX ; 
     for(int nodeIdx=1 ; nodeIdx < numNode ; nodeIdx++)  // head node of list just carries subNum, so start from 1 
     {
@@ -253,8 +255,9 @@ to work yet, as it seems like it should be possible in principle.
 **/
 
 TREE_FUNC
-bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction )
+bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
+    const int numNode=node->subNum() ; 
     unsigned height = TREE_HEIGHT(numNode) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
     float propagate_epsilon = 0.0001f ;  // ? 
     int ierr = 0 ;  
@@ -267,6 +270,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
  
 #ifdef DEBUG
     printf("//intersect_tree  numNode %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
+    //if( numNode == 0 ) return false ; 
 #endif
 
     tranche_push( tr, fullTree, t_min );
@@ -319,7 +323,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
             {
                 float4 nd_isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
 
-                intersect_node( nd_isect, nd, plan0, itra0, tmin, ray_origin, ray_direction );
+                intersect_node( nd_isect, nd, node, plan0, itra0, tmin, ray_origin, ray_direction );
 
                 nd_isect.w = copysignf( nd_isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack t signbit, to record the side, LHS -ve
 
@@ -614,7 +618,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
 
 
 TREE_FUNC
-bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
+bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
     const unsigned typecode = node->typecode() ;  
 #ifdef DEBUG 
@@ -623,37 +627,38 @@ bool intersect_prim( float4& isect, int numNode, const CSGNode* node, const floa
 
 #ifdef DEBUG_SIX
 #if OPTIX_VERSION < 70000 
-    rtPrintf("// DEBUG_SIX intersect_prim  numNode %d typecode %d  \n", numNode, typecode );  
+    rtPrintf("// DEBUG_SIX intersect_prim  typecode %d  \n", typecode );  
 #endif
 #endif
     bool valid_intersect = false ; 
     if( typecode > CSG_LEAF )
     {
-        valid_intersect = intersect_leaf(  isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_leaf(             isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }
     else if( typecode < CSG_NODE )
     {
-        valid_intersect = intersect_tree(isect, numNode, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_tree(             isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }
     else if( typecode == CSG_CONTIGUOUS )  
     {
-        valid_intersect = intersect_node_contiguous( isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_node_contiguous(   isect, node, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }
     else if( typecode == CSG_DISCONTIGUOUS )  
     {
-        valid_intersect = intersect_node_discontiguous( isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_node_discontiguous( isect, node, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }
     else if( typecode == CSG_OVERLAP )
     {
-        valid_intersect = intersect_node_overlap( isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_node_overlap(       isect, node, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }  
     return valid_intersect ; 
 }
 
 
 TREE_FUNC
-float distance_prim( const float3& global_position, int numNode, const CSGNode* node, const float4* plan, const qat4* itra )
+float distance_prim( const float3& global_position, const CSGNode* node, const float4* plan, const qat4* itra )
 {
+    //const int numNode = node->subNum(); 
     const unsigned typecode = node->typecode() ;  
     float distance = -1.f ; 
     if( typecode > CSG_LEAF )
@@ -662,7 +667,7 @@ float distance_prim( const float3& global_position, int numNode, const CSGNode* 
     } 
     else if( typecode < CSG_NODE )
     {
-        distance = distance_tree(global_position, numNode, node, plan, itra );
+        distance = distance_tree(global_position, node, plan, itra );
     }
     else  
     {

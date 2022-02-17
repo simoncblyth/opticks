@@ -31,6 +31,13 @@
 #GEOM=ContiguousBoxSphere DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
 #GEOM=DiscontiguousBoxSphere DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
 
-GEOM=AltXJFixtureConstruction DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
-#GEOM=AltXJFixtureConstructionU DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
+#GEOM=AltXJFixtureConstruction DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
+
+#GEOM=AltXJFixtureConstructionU DUMP=3 ORI=-70,-70,0 DIR=1,1,0 CSGQueryTest O
+#GEOM=AltXJFixtureConstruction  DUMP=3 ORI=-70,-70,0 DIR=1,1,0 CSGQueryTest O
+
+
+#GEOM=UnionListBoxSphere CSGMakerTest 
+GEOM=UnionListBoxSphere  DUMP=3 ORI=-70,-70,0 DIR=1,1,0 CSGQueryTest O
+
 

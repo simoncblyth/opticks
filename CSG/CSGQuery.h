@@ -28,6 +28,8 @@ struct CSG_API CSGQuery
 
     int            getSelectedType() const ; 
     int            getSelectedTreeHeight() const ;   // -1: if selected CSGNode is not a tree
+    const CSGNode* getSelectedTreeNode( int nodeIdxRel ) const ; 
+
     const CSGNode* getSelectedNode( int nodeIdxRel ) const ; 
 
     void     dump(const char* msg) const ;
@@ -53,9 +55,10 @@ struct CSG_API CSGQuery
 
     const CSGPrim* select_prim ;
     int            select_nodeOffset ; 
-    int            select_numNode ;
-    const CSGNode* select_root ;
+    int            select_prim_numNode ;
+    const CSGNode* select_root_node ;
     int            select_root_typecode ; 
+    int            select_root_subNum ; 
     bool           select_is_tree ; 
 
  

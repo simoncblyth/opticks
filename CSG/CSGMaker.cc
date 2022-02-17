@@ -3,6 +3,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "stran.h"
+#include "OpticksCSG.h"
 
 #include "PLOG.hh"
 
@@ -63,6 +64,7 @@ ubsp
 ibsp
 dbsp
 UnionBoxSphere
+UnionListBoxSphere
 IntersectionBoxSphere
 OverlapBoxSphere
 OverlapThreeSphere
@@ -105,6 +107,7 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("ConvexPolyhedronTetrahedron", name)) so = makeConvexPolyhedronTetrahedron(name) ;
     else if(StartsWith("elli", name)) so = makeEllipsoid(name) ;
     else if(StartsWith("UnionBoxSphere", name))        so = makeUnionBoxSphere(name) ;
+    else if(StartsWith("UnionListBoxSphere", name))    so = makeUnionListBoxSphere(name) ;
     else if(StartsWith("IntersectionBoxSphere", name)) so = makeIntersectionBoxSphere(name) ;
     else if(StartsWith("OverlapBoxSphere", name))      so = makeOverlapBoxSphere(name) ;
     else if(StartsWith("OverlapThreeSphere", name))    so = makeOverlapThreeSphere(name) ;
@@ -421,11 +424,11 @@ CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector
 
 CSGSolid* CSGMaker::makeBooleanBoxSphere( const char* label, char op_, float radius, float fullside, int meshIdx )
 {
-    //CSGNode op = CSGNode::BooleanOperator(op_); 
     CSGNode bx = CSGNode::Box3(fullside) ; 
     CSGNode sp = CSGNode::Sphere(radius); 
     return makeBooleanTriplet(label, op_, bx, sp ); 
 }
+
 
 /**
 CSGMaker::makeBooleanTriplet
@@ -449,11 +452,11 @@ CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, char op_, const CSGNo
     unsigned numNode = 3 ; 
     int nodeOffset_ = -1 ; 
     CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
-    if(meshIdx > -1) p->setMeshIdx(meshIdx); 
+    if(meshIdx > -1) p->setMeshIdx(meshIdx);
 
-    CSGNode op = CSGNode::BooleanOperator(op_); 
-
+    CSGNode op = CSGNode::BooleanOperator(op_, 3); 
     CSGNode* n = fd->addNode(op); 
+
     fd->addNode(left); 
     fd->addNode(right); 
      
@@ -605,6 +608,19 @@ CSGSolid* CSGMaker::makeDiscontiguousList( const char* label, const std::vector<
     return makeList( label, 'D', leaves, tran ); 
 }
 
+/**
+CSGMaker::makeListOne
+-----------------------
+
+For machinery debugging 
+**/
+
+CSGSolid* CSGMaker::makeListOne( const char* label, char type, const CSGNode& leaf )
+{
+    std::vector<CSGNode> leaves ; 
+    leaves.push_back(leaf); 
+    return makeList(label, type, leaves, nullptr ); 
+}
 
 CSGSolid* CSGMaker::makeList( const char* label, char type, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran )
 {
@@ -623,7 +639,8 @@ CSGSolid* CSGMaker::makeList( const char* label, char type, const std::vector<CS
     int nodeOffset_ = -1 ; 
     CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
 
-    CSGNode hdr = CSGNode::ListHeader(type, numSub); 
+    unsigned subOffset = 0 ;  
+    CSGNode hdr = CSGNode::ListHeader(type, numSub, subOffset ); 
     CSGNode* n = fd->addNode(hdr); 
 
     AABB bb = {} ;
@@ -655,6 +672,71 @@ CSGSolid* CSGMaker::makeList( const char* label, char type, const std::vector<CS
     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
     return so ; 
 }
+
+
+/**
+CSGMaker::makeUnionListBoxSphere
+---------------------------------
+
+This is for testing a tree with a compound node within it  
+
+
+          op
+         /  \
+        bx   co  
+             |
+             sp 
+
+
+**/
+
+CSGSolid* CSGMaker::makeUnionListBoxSphere( const char* label, float radius, float fullside )
+{
+    // 3 tree nodes + 1 sub-node from the compound
+    CSGNode op    = CSGNode::BooleanOperator('U', 3); 
+    CSGNode left  = CSGNode::Box3(fullside) ; 
+
+    int subNum = 1 ;    // number of subs referenced by the List node
+    int subOffset = 3 ; // offset to the first node after the tree 
+    // when only one List the subOffset will be the number of nodes in the tree eg 3, 7, 15 
+    CSGNode right = CSGNode::ListHeader('C', subNum, subOffset ); 
+    CSGNode sub   = CSGNode::Sphere(radius); 
+
+    unsigned numPrim = 1 ; 
+    CSGSolid* so = fd->addSolid(numPrim, label);
+
+    unsigned numNode = 3 + 1 ; 
+    int nodeOffset_ = -1 ; 
+    CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
+
+    CSGNode* root = fd->addNode(op);   
+    CSGNode* l    = fd->addNode(left); 
+    CSGNode* r    = fd->addNode(right); 
+    CSGNode* s    = fd->addNode(sub); 
+
+    assert( op.subNum() == 3 && root->subNum() == 3 ); 
+     
+    assert( root->typecode() == CSG_UNION ); 
+    assert( l->typecode() == CSG_BOX3 ); 
+    assert( r->typecode() == CSG_CONTIGUOUS ); 
+    assert( s->typecode() == CSG_SPHERE ); 
+
+    AABB bb = {} ;
+    bb.include_aabb( right.AABB() ); 
+    bb.include_aabb( sub.AABB() ); 
+    p->setAABB( bb.data() );  
+    so->center_extent = bb.center_extent()  ; 
+
+    fd->addNodeTran(root); 
+
+    LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
+    return so ; 
+}
+
+
+
+
+
 
 
 
@@ -750,9 +832,9 @@ CSGMaker::makeBoxSubSubCylinder
 
 CSGSolid* CSGMaker::makeBoxSubSubCylinder( const char* label, float fullside, float rmax, float rmin, float z1, float z2, float z_inner_factor   )
 {
-    CSGNode t = CSGNode::BooleanOperator('D'); 
+    CSGNode t = CSGNode::BooleanOperator('D', -1); 
     CSGNode l = CSGNode::Box3(fullside) ;
-    CSGNode r = CSGNode::BooleanOperator('D'); 
+    CSGNode r = CSGNode::BooleanOperator('D', -1); 
     CSGNode ll = CSGNode::Zero(); 
     CSGNode lr = CSGNode::Zero(); 
     CSGNode rl = CSGNode::Cylinder( 0.f, 0.f, rmax, z1, z2 ); 

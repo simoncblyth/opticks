@@ -49,6 +49,7 @@ std::string CSGNode::desc() const
 {
     const float* aabb = AABB(); 
     unsigned trIdx = gtransformIdx(); 
+    int num_sub = is_compound() ? subNum() : -1  ; 
 
     std::stringstream ss ; 
     ss
@@ -58,6 +59,7 @@ std::string CSGNode::desc() const
         << brief()
         << " aabb: " << Desc( aabb, 6, 7, 1 ) 
         << " trIdx: " << std::setw(5) << trIdx 
+        << " num_sub: " << std::setw(3) << num_sub 
         ;    
 
     std::string s = ss.str(); 
@@ -68,6 +70,7 @@ std::string CSGNode::tag() const
 {
     return CSG::Tag((OpticksCSG_t)typecode()) ; 
 }
+
 
 std::string CSGNode::brief() const
 {
@@ -158,20 +161,26 @@ void CSGNode::Dump(const CSGNode* n_, unsigned ni, const char* label)
 
 
 
-CSGNode CSGNode::Union(){         return CSGNode::BooleanOperator('U') ; }  // static
-CSGNode CSGNode::Intersection(){  return CSGNode::BooleanOperator('I') ; }
-CSGNode CSGNode::Difference(){    return CSGNode::BooleanOperator('D') ; }
-CSGNode CSGNode::BooleanOperator(char op)   // static 
+CSGNode CSGNode::Union(){         return CSGNode::BooleanOperator('U',-1) ; }  // static
+CSGNode CSGNode::Intersection(){  return CSGNode::BooleanOperator('I',-1) ; }
+CSGNode CSGNode::Difference(){    return CSGNode::BooleanOperator('D',-1) ; }
+
+CSGNode CSGNode::BooleanOperator(char op, int num_sub)   // static 
 {
     CSGNode nd = {} ;
     nd.setTypecode(CSG::BooleanOperator(op)) ; 
+    if( num_sub > 0 ) 
+    {
+        nd.setSubNum(num_sub); 
+    }
     return nd ; 
 }
 
-CSGNode CSGNode::Overlap(   unsigned num_sub){    return CSGNode::ListHeader( 'O', num_sub ); }
-CSGNode CSGNode::Contiguous(unsigned num_sub){    return CSGNode::ListHeader( 'C', num_sub ); }
-CSGNode CSGNode::Discontiguous(unsigned num_sub){ return CSGNode::ListHeader( 'D', num_sub ); }
-CSGNode CSGNode::ListHeader(char type, unsigned num_sub)   // static 
+CSGNode CSGNode::Overlap(      int num_sub, int sub_offset){ return CSGNode::ListHeader( 'O', num_sub, sub_offset ); }
+CSGNode CSGNode::Contiguous(   int num_sub, int sub_offset){ return CSGNode::ListHeader( 'C', num_sub, sub_offset ); }
+CSGNode CSGNode::Discontiguous(int num_sub, int sub_offset){ return CSGNode::ListHeader( 'D', num_sub, sub_offset ); }
+
+CSGNode CSGNode::ListHeader(char type, int num_sub, int sub_offset )   // static 
 {
     CSGNode nd = {} ;
     switch(type)
@@ -180,12 +189,23 @@ CSGNode CSGNode::ListHeader(char type, unsigned num_sub)   // static
         case 'C': nd.setTypecode(CSG_CONTIGUOUS) ; break ; 
         case 'D': nd.setTypecode(CSG_DISCONTIGUOUS) ; break ; 
     }
-    nd.setSubNum(num_sub); 
+    if(num_sub > 0)
+    {
+        nd.setSubNum(num_sub); 
+    }
+    if(sub_offset > 0)
+    {
+        nd.setSubOffset(sub_offset); 
+    }
     return nd ; 
 }
 
 
 
+bool CSGNode::is_compound() const 
+{
+    return CSG::IsCompound((OpticksCSG_t)typecode()) ; 
+}
 bool CSGNode::is_operator() const 
 {
     unsigned tc = typecode(); 

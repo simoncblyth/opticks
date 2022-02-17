@@ -391,7 +391,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
         if(dump || bbskip) 
             LOG(LEVEL)
-                << std::setw(3) << partIdxRel 
+                << " partIdxRel " << std::setw(3) << partIdxRel 
                 << " " << n->desc() 
                 << " negated " << negated
                 << " bbskip " << bbskip 
@@ -407,6 +407,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     LOG(LEVEL)
         << " ridx " << std::setw(2) << last_ridx
         << " primIdx " << std::setw(3) << primIdx 
+        << " numParts " << std::setw(3) << numParts 
         << " AABB " << AABB::Desc(bb_data) 
         ; 
 

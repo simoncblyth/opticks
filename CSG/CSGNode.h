@@ -64,7 +64,7 @@ cx:convexpolyhedron
     |    | b3:fx          | b3:fy          | b3:fz          |                |  b3: fullside dimensions, center always origin  |
     |    | pl/sl:nx       | pl/sl:ny       | pl/sl:nz       | pl:d           |  pl: NB Node plane distinct from plane array    |
     |    |                |                | ds:inner_r     | ds:radius      |                                                 |
-    |    |                |                |                | radius()       |                                                 |
+    |    | co:subNum      | co:subOffset   |                | radius()       |                                                 |
     |    | cx:planeIdx    | cx:planeNum    |                |                |                                                 |
     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
     |    | zs:zdelta_0    | zs:zdelta_1    | boundary       | index          |                                                 |
@@ -106,9 +106,13 @@ struct CSG_API CSGNode
     NODE_METHOD void setPlaneIdx(unsigned idx){  q0.u.x = idx ; } 
     NODE_METHOD void setPlaneNum(unsigned num){  q0.u.x = num ; } 
 
-    // only used for compounds such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS
+    // used for compound node types such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS and the rootnode of boolean trees CSG_UNION/CSG_INTERSECTION/CSG_DIFFERENCE...
     NODE_METHOD unsigned subNum()        const { return q0.u.x ; } 
+    NODE_METHOD unsigned subOffset()     const { return q0.u.y ; } 
+
     NODE_METHOD void setSubNum(unsigned num){    q0.u.x = num ; }
+    NODE_METHOD void setSubOffset(unsigned num){ q0.u.y = num ; }
+
 
     NODE_METHOD void getParam( float& x , float& y , float& z , float& w , float& z1, float& z2 ) const 
     {
@@ -204,9 +208,12 @@ struct CSG_API CSGNode
     static std::string Desc(const float* fval, int numval=6, int wid=7, int prec=1 ); 
     std::string desc() const ; 
     std::string tag() const ; 
+
+
     std::string brief() const ; 
     static void Dump(const CSGNode* n, unsigned ni, const char* label);  
 
+    bool is_compound() const ; 
     bool is_operator() const ; 
     bool is_intersection() const ; 
     bool is_union() const ; 
@@ -234,12 +241,12 @@ struct CSG_API CSGNode
     static CSGNode Union(); 
     static CSGNode Intersection(); 
     static CSGNode Difference(); 
-    static CSGNode BooleanOperator(char op); 
+    static CSGNode BooleanOperator(char op, int num_sub); 
 
-    static CSGNode Overlap(unsigned num_sub); 
-    static CSGNode Contiguous(unsigned num_sub); 
-    static CSGNode Discontiguous(unsigned num_sub); 
-    static CSGNode ListHeader(char type, unsigned num_sub); 
+    static CSGNode Overlap(      int num_sub, int sub_offset); 
+    static CSGNode Contiguous(   int num_sub, int sub_offset); 
+    static CSGNode Discontiguous(int num_sub, int sub_offset); 
+    static CSGNode ListHeader(char type, int num_sub, int sub_offset); 
 
 
     static CSGNode Zero();

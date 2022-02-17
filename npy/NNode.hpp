@@ -25,6 +25,7 @@
 #include <functional>
 #include <ostream>
 #include <fstream>
+#include "plog/Severity.h"
 
 #include "OpticksCSG.h"
 #include "OpticksCSGMask.h"
@@ -78,6 +79,13 @@ so it belongs at node level up in GParts. Not here in "nnode" at mesh level.
 
 struct NPY_API nnode 
 {
+    static const plog::Severity LEVEL ; 
+
+    void find_list_nodes( std::vector<const nnode*>& list_nodes ) const ; 
+    static void find_list_nodes_r( std::vector<const nnode*>& list_nodes, const nnode* n ) ; 
+    void find_list_nodes( std::vector< nnode*>& list_nodes ) ; 
+    static void find_list_nodes_r( std::vector<nnode*>& list_nodes, nnode* n ) ; 
+
     void set_p0( const quad& q0 ); 
     void set_p1( const quad& q1 ); 
     void set_bbox(const nbbox& bb); 
@@ -114,6 +122,7 @@ struct NPY_API nnode
     virtual unsigned maxdepth() const ;
     virtual unsigned _maxdepth(unsigned depth) const ;
     unsigned num_serialization_nodes() const ; 
+    unsigned num_tree_nodes() const ; 
 
     static unsigned NumNodes(unsigned height); 
     static unsigned CompleteTreeHeight( unsigned num_nodes ); 

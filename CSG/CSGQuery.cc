@@ -31,9 +31,10 @@ CSGQuery::CSGQuery( const CSGFoundry* fd_ )
     itra0(fd->getItra(0)),
     select_prim(nullptr),
     select_nodeOffset(0),
-    select_numNode(0),
-    select_root(nullptr),
+    select_prim_numNode(0),
+    select_root_node(nullptr),
     select_root_typecode(CSG_ZERO),
+    select_root_subNum(0),
     select_is_tree(true)
 {
     init(); 
@@ -56,19 +57,30 @@ void CSGQuery::selectPrim( const CSGPrim* pr )
 {
     select_prim = pr ; 
     select_nodeOffset = pr->nodeOffset() ; 
-    select_numNode = pr->numNode() ; 
-    select_root = node0 + pr->nodeOffset() ; 
-    select_root_typecode = select_root->typecode(); 
+    select_prim_numNode = pr->numNode() ; 
+    select_root_node = node0 + pr->nodeOffset() ; 
+    select_root_typecode = select_root_node->typecode(); 
+    select_root_subNum = select_root_node->subNum(); 
+
+
     select_is_tree = CSG::IsTree((OpticksCSG_t)select_root_typecode) ; 
 
     if(VERBOSE > 0 ) LOG(info) 
          << " select_prim " << select_prim
          << " select_nodeOffset " << select_nodeOffset
-         << " select_numNode " << select_numNode
-         << " select_root " << select_root 
+         << " select_prim_numNode " << select_prim_numNode
+         << " select_root_node " << select_root_node 
          << " select_root_typecode " << CSG::Name(select_root_typecode)
+         << " select_root_subNum " << select_root_subNum
          << " getSelectedTreeHeight " << getSelectedTreeHeight()
          ;   
+
+
+    if( select_root_subNum == 0 )
+    {
+        LOG(fatal) << "select_root_subNum ZERO " ; 
+        assert(0); 
+    }
 }
 
 int CSGQuery::getSelectedType() const
@@ -77,27 +89,41 @@ int CSGQuery::getSelectedType() const
 }
 int CSGQuery::getSelectedTreeHeight() const 
 {
-    return select_is_tree ? TREE_HEIGHT(select_numNode) : -1 ;   
+    return select_is_tree ? TREE_HEIGHT(select_root_subNum) : -1 ;   
 }
 
 /**
 CSGQuery::getSelectedNode
 ---------------------------
 
+**/
+
+const CSGNode* CSGQuery::getSelectedNode( int nodeIdx ) const 
+{
+    const CSGNode* nd = nodeIdx < select_prim_numNode ? select_root_node + nodeIdx : nullptr  ;
+    return nd ; 
+}
+
+
+/**
+CSGQuery::getSelectedTreeNode
+------------------------------
+
 nodeIdx
    0-based tree index, root=0 
 
 **/
 
-const CSGNode* CSGQuery::getSelectedNode( int nodeIdx ) const 
+const CSGNode* CSGQuery::getSelectedTreeNode( int nodeIdx ) const 
 {
-    const CSGNode* nd = nodeIdx < select_numNode ? select_root + nodeIdx : nullptr  ;
+    const CSGNode* nd = nodeIdx < select_root_subNum ? select_root_node + nodeIdx : nullptr  ;
     return nd ; 
 }
 
+
 float CSGQuery::distance(const float3& position ) const
 {
-    float sd = distance_prim( position, select_numNode, select_root, plan0, itra0 ) ; 
+    float sd = distance_prim( position, select_root_node, plan0, itra0 ) ; 
     return sd ;  
 }
 
@@ -175,7 +201,11 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
 
     //std::cout << " ray_origin " << ray_origin << " ray_direction " << ray_direction << std::endl ; 
 
-    bool valid_intersect = intersect_prim( isect.q0.f, select_numNode, select_root, plan0, itra0, t_min, ray_origin, ray_direction ) ; 
+    
+
+
+
+    bool valid_intersect = intersect_prim( isect.q0.f, select_root_node, plan0, itra0, t_min, ray_origin, ray_direction ) ; 
     if( valid_intersect ) 
     {
         float t = isect.q0.f.w ; 
@@ -306,15 +336,15 @@ CSGGrid* CSGQuery::scanPrim(int resolution) const
 void CSGQuery::dumpPrim(const char* msg) const 
 {
     
-    if( select_numNode == 0 ) return ;
+    if( select_prim_numNode == 0 ) return ;
 
     LOG(info) 
           << msg 
-          << " select_numNode " << select_numNode
+          << " select_prim_numNode " << select_prim_numNode
           << " select_nodeOffset " << select_nodeOffset
           ; 
 
-    for(int nodeIdx=select_nodeOffset ; nodeIdx < select_nodeOffset+select_numNode ; nodeIdx++)
+    for(int nodeIdx=select_nodeOffset ; nodeIdx < select_nodeOffset+select_prim_numNode ; nodeIdx++)
     {
         const CSGNode* nd = node0 + nodeIdx ;
         LOG(info) << "    nodeIdx " << std::setw(5) << nodeIdx << " : " << nd->desc() ;

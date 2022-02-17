@@ -65,7 +65,11 @@ EOU
 #geom=AltXJfixtureConstruction_YZ
 #geom=AltXJfixtureConstruction_XZ
 #geom=AltXJfixtureConstruction_XY
-geom=AltXJfixtureConstructionU_XY
+#geom=AltXJfixtureConstructionU_XY
+
+
+#geom=UnionBoxSphere_XY
+geom=UnionListBoxSphere_XY
 
 #geom=AnnulusBoxUnion_XY
 #geom=AnnulusTwoBoxUnion_XY

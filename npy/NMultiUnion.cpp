@@ -20,7 +20,7 @@ void nmultiunion::pdump(const char* msg) const
 
 nbbox nmultiunion::bbox() const 
 {
-    std::cout << "nmultiunion::bbox subs.size " << subs.size() << std::endl ; 
+    LOG(LEVEL)  << "nmultiunion::bbox subs.size " << subs.size()  ; 
 
     nbbox bb = make_bbox() ; 
 
@@ -28,15 +28,14 @@ nbbox nmultiunion::bbox() const
     {
         const nnode* sub = subs[isub] ; 
 
-        std::cout 
+        LOG(LEVEL)
             << " isub " << std::setw(5) << isub 
             << " sub->gtransform " << std::setw(10) << sub->gtransform
             << " sub->transform " << std::setw(10) << sub->transform
-            << std::endl 
             ;
 
         nbbox sub_bb = sub->bbox();  
-        sub_bb.dump(); 
+        //sub_bb.dump(); 
 
         bb.include(sub_bb); 
     }

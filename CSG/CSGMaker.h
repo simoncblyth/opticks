@@ -48,6 +48,7 @@ struct CSG_API CSGMaker
     CSGSolid* makeContiguousList(    const char* label,            const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
     CSGSolid* makeDiscontiguousList( const char* label,            const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
     CSGSolid* makeList(              const char* label, char type, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  );
+    CSGSolid* makeListOne(           const char* label, char type, const CSGNode& leaf ); 
 
 
     CSGSolid* makeBooleanSeptuplet( 
@@ -66,6 +67,7 @@ struct CSG_API CSGMaker
     CSGSolid* makeBoxSubSubCylinder(  const char* label="bssc", float fullside=300.f, float rmax=100.f, float rmin=50.f, float z1=-50.f, float z2=50.f, float z_inner_factor=1.01 );
 
     CSGSolid* makeUnionBoxSphere(        const char* label="ubsp", float radius=100.f, float fullside=150.f );
+    CSGSolid* makeUnionListBoxSphere(    const char* label="UnionListBoxSphere", float radius=100.f, float fullside=150.f );
     CSGSolid* makeIntersectionBoxSphere( const char* label="ibsp", float radius=100.f, float fullside=150.f );
     CSGSolid* makeOverlapBoxSphere(       const char* label="obsp", float radius=100.f, float fullside=150.f ); 
 

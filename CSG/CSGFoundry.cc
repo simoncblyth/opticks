@@ -817,6 +817,7 @@ CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl )
         for(unsigned i=0 ; i < num_planes ; i++) addPlan((*pl)[i]);  
     }
 
+
     node.push_back(nd); 
     last_added_node = node.data() + globalNodeIdx ;
     return last_added_node ; 
