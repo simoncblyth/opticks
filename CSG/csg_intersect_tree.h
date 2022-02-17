@@ -80,9 +80,8 @@ float distance_tree( const float3& global_position, int numNode, const CSGNode* 
             continue ; 
         }
 
-        bool primitive = typecode >= CSG_SPHERE ;  
-        // HMM : this includes CSG_CONTIGUOUS 
-        if( primitive )
+        bool node_or_leaf = typecode >= CSG_NODE ;  
+        if( node_or_leaf )
         {
             // could explicitly branch here on distance_node_contiguous or distance_leaf
             distance = distance_node(global_position, nd, plan0, itra0 ) ; 
@@ -311,12 +310,12 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                 nodeIdx = POSTORDER_NEXT( nodeIdx, elevation ) ;
                 continue ; 
             }
-            bool primitive = typecode >= CSG_SPHERE ; 
+            bool node_or_leaf = typecode >= CSG_NODE ; 
 #ifdef DEBUG
-            printf("//intersect_tree  nodeIdx %d primitive %d \n", nodeIdx, primitive ); 
+            printf("//intersect_tree  nodeIdx %d node_or_leaf %d \n", nodeIdx, node_or_leaf ); 
 
 #endif
-            if(primitive)
+            if(node_or_leaf)
             {
                 float4 nd_isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
 
@@ -325,7 +324,7 @@ bool intersect_tree( float4& isect, int numNode, const CSGNode* node, const floa
                 nd_isect.w = copysignf( nd_isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack t signbit, to record the side, LHS -ve
 
 #ifdef DEBUG
-                printf("//intersect_tree  nodeIdx %d primitive %d nd_isect (%10.4f %10.4f %10.4f %10.4f) \n", nodeIdx, primitive, nd_isect.x, nd_isect.y, nd_isect.z, nd_isect.w ); 
+                printf("//intersect_tree  nodeIdx %d node_or_leaf %d nd_isect (%10.4f %10.4f %10.4f %10.4f) \n", nodeIdx, node_or_leaf, nd_isect.x, nd_isect.y, nd_isect.z, nd_isect.w ); 
 #endif
                 ierr = csg_push(csg, nd_isect, nodeIdx ); 
 

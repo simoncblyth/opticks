@@ -54,7 +54,7 @@ struct NPY_API nconvexpolyhedron : nnode
     void dump_srcvertsfaces() const ; 
 
 
-    void set_bbox(const nbbox& bb) ;
+    //void set_bbox(const nbbox& bb) ; moved to NNode
 
     static nconvexpolyhedron* make_trapezoid_cube();
     static nconvexpolyhedron* make_trapezoid(float z, float x1, float y1, float x2, float y2 );   

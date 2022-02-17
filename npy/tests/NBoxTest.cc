@@ -56,14 +56,14 @@ void test_gtransform()
         if(verbose)
         std::cout << " gtransform " << triple << std::endl ; 
 
-        nbox* a = make_box(0.f,0.f,0.f,100.f);      
+        nbox* a = nbox::Create(0.f,0.f,0.f,100.f, CSG_BOX);      
         // untouched box at origin
 
-        nbox* b = make_box(0.f,0.f,0.f,100.f);      
+        nbox* b = nbox::Create(0.f,0.f,0.f,100.f, CSG_BOX);      
         b->gtransform = &triple ;  
         // translated box via gtransform
 
-        nbox* c = make_box( tlate.x, tlate.y, tlate.z,100.f);  
+        nbox* c = nbox::Create( tlate.x, tlate.y, tlate.z,100.f, CSG_BOX);  
         // manually positioned box at tlated position 
 
 
@@ -96,7 +96,7 @@ void test_gtransform()
 
 void test_sdf()
 {
-    nbox* b = make_box(0,0,0,1);  // unit box centered at origin       
+    nbox* b = nbox::Create(0,0,0,1, CSG_BOX);  // unit box centered at origin       
 
     for(float x=-2.f ; x < 2.f ; x+=0.01f )
     {
@@ -121,7 +121,7 @@ void test_parametric()
 {
     LOG(info) << "test_parametric" ;
 
-    nbox* box = make_box(0,0,0,100); 
+    nbox* box = nbox::Create(0,0,0,100, CSG_BOX); 
 
     unsigned nsurf = box->par_nsurf();
     assert(nsurf == 6);
@@ -159,13 +159,13 @@ void test_box_box3()
     LOG(info) << "test_box_box3" ;
 
 
-    nbox* box = make_box(0,0,0,10);
+    nbox* box = nbox::Create(0,0,0,10, CSG_BOX);
     box->verbosity = 3 ;  
-    box->pdump("make_box(0,0,0,10)");
+    box->pdump("nbox::Create(0,0,0,10, CSG_BOX)");
 
-    nbox* box3 = make_box3(20,20,20);
+    nbox* box3 = nbox::Create(20,20,20, 0, CSG_BOX3);
     box3->verbosity = 3 ;  
-    box3->pdump("make_box3(20,20,20)");
+    box3->pdump("nbox::Create(20,20,20,0, CSG_BOX3)");
 
 }
 
@@ -190,13 +190,13 @@ void test_nudge()
     int margin = 1 ;  
 
     float h = 10.f ;  
-    nbox* box = make_box3(2*h,2*h,2*h); 
+    nbox* box = nbox::Create(2*h,2*h,2*h,0, CSG_BOX3); 
     box->verbosity = 3 ;  
 
     nmat4triple* start = make_triple() ;
     box->gtransform = start ; 
 
-    box->pdump("make_box3(2*h,2*h,2*h)");
+    box->pdump("nbox::Create(2*h,2*h,2*h,0,CSG_BOX3)");
 
 
     unsigned prim_idx = 0 ;   
@@ -223,7 +223,7 @@ void test_nudge()
 
     float delta = 1.f ; 
     box->nudge(nudge_face, delta);
-    box->pdump("make_box3(2*h,2*h,2*h) NUDGED");
+    box->pdump("nbox::Create(2*h,2*h,2*h,0,CSG_BOX3) NUDGED");
 
     box->collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box->verbosity ); 
     const std::vector<glm::vec3>& after = box->par_points ;
@@ -245,9 +245,9 @@ void test_nudge()
 void test_getParPoints()
 {
     float h = 10.f ;  
-    nbox* box = make_box3(2*h,2*h,2*h); 
+    nbox* box = nbox::Create(2*h,2*h,2*h,0,CSG_BOX3); 
     box->verbosity = 3 ;  
-    box->pdump("make_box3(2*h,2*h,2*h)");
+    box->pdump("nbox::Create(2*h,2*h,2*h,0,CSG_BOX3)");
 
     unsigned level = 1 ;  // +---+---+
     int margin = 1 ;      // o---*---o

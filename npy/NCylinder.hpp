@@ -32,6 +32,12 @@ struct nuv ;
 
 struct NPY_API ncylinder : nnode 
 {
+    static ncylinder* Create(const nquad& param, const nquad& param1 ); 
+    static ncylinder* Create(float radius_, float z1_, float z2_ ); 
+    static ncylinder* Create(); 
+    static ncylinder* Create(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1); 
+
+
     float operator()(float x, float y, float z) const ;
 
     nbbox bbox() const;
@@ -64,52 +70,5 @@ struct NPY_API ncylinder : nnode
 };
 
 
-NPY_API void init_cylinder(ncylinder* n, const nquad& param, const nquad& param1 );
-
-inline NPY_API ncylinder* make_cylinder(const nquad& param, const nquad& param1 )
-{
-    ncylinder* n = new ncylinder ; 
-    nnode::Init(n,CSG_CYLINDER) ; 
-    init_cylinder(n, param, param1);
-    return n ; 
-}
-
-inline NPY_API ncylinder* make_cylinder(float radius_, float z1_, float z2_)
-{
-    nquad param, param1 ;
-
-    param.f = {0,0,0,radius_} ;
-
-    param1.f.x = z1_ ; 
-    param1.f.y = z2_ ; 
-    param1.u.z = 0u ; 
-    param1.u.w = 0u ; 
-
-    return make_cylinder(param, param1 );
-}
-
-inline NPY_API ncylinder* make_cylinder()
-{
-    float radius = 10. ; 
-    float z1 = -5.f ; 
-    float z2 = 15.f ; 
-    return make_cylinder(radius,z1,z2); 
-}
-
-inline NPY_API ncylinder* make_cylinder(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
-{
-    // used by code generation 
-    assert( x0 == 0.f );
-    assert( y0 == 0.f );
-    assert( z0 == 0.f );
-    assert( z1 == 0.f );
-    assert( w1 == 0.f );
-
-    float radius_ = w0 ; 
-    float z1_ = x1 ; 
-    float z2_ = y1 ; 
-
-    return make_cylinder( radius_, z1_, z2_ );
-}
 
 

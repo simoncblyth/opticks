@@ -84,6 +84,27 @@ void nnode::set_p1( const quad& q1 )
 }
 
 
+/**
+nnode::set_bbox
+-----------------
+
+For most nodes set_bbox is not used as it is trivial 
+to derive the bbox from the parameters. However for some
+node types such as convexpolyhedron it is not easy to do 
+that, hence set_bbox is used from them.  
+
+**/
+
+void nnode::set_bbox(const nbbox& bb)
+{
+    param2.f.x = bb.min.x ;
+    param2.f.y = bb.min.y ;
+    param2.f.z = bb.min.z ;
+
+    param3.f.x = bb.max.x ;
+    param3.f.y = bb.max.y ;
+    param3.f.z = bb.max.z ;
+}
 
 
 bool nnode::has_planes() const 
@@ -340,9 +361,7 @@ nnode* nnode::deepclone_r(const nnode* n, unsigned depth) // static
     }
     else
     {
-        c = new nnode ; 
-        nnode::Init(c, n->type, nullptr, nullptr ); 
-        primcopy(c, n);  
+        c = n->primclone() ; 
     }
     return c ; 
 }  
@@ -350,18 +369,33 @@ nnode* nnode::deepclone_r(const nnode* n, unsigned depth) // static
 nnode* nnode::primclone() const
 {
     assert( is_primitive() ); 
-    return nullptr ; 
+
+    nnode* c = nullptr ; 
+    switch( type )
+    {
+        case CSG_SPHERE:   c = nsphere::Create(param)           ; break ; 
+        case CSG_BOX3:     c = nbox::Create(param, CSG_BOX3)    ; break ; 
+        case CSG_BOX:      c = nbox::Create(param, CSG_BOX)     ; break ; 
+        case CSG_CYLINDER: c = ncylinder::Create(param, param1) ; break ; 
+        default: c = nullptr ; 
+    }
+
+    if( c == nullptr )
+    {
+        LOG(fatal) << "primclone missing handling of type " << CSG::Name( type ) ; 
+        std::raise(SIGINT); 
+    }
+    else
+    {
+        primcopy(c, this); 
+    } 
+    return c ; 
 }
+
 
 void nnode::primcopy(nnode* c, const nnode* p)  // static 
 {
-    c->param = p->param ; 
-    c->param1 = p->param1 ; 
-    c->param2 = p->param2 ; 
-    c->param3 = p->param3 ; 
-
     const nmat4triple* t = p->transform ; 
-
     c->transform = t ? t->clone() : nullptr ; 
 }
 

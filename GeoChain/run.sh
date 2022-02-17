@@ -76,6 +76,7 @@ EOU
 #geom=inner2_solid
 #geom=XJfixtureConstruction
 geom=AltXJfixtureConstruction
+#geom=AltXJfixtureConstructionU
 #geom=XJanchorConstruction
 #geom=AnnulusBoxUnion 
 #geom=AnnulusTwoBoxUnion 

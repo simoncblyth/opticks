@@ -29,6 +29,8 @@
 #GEOM=OverlapBoxSphere DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
 
 #GEOM=ContiguousBoxSphere DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
-GEOM=DiscontiguousBoxSphere DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
+#GEOM=DiscontiguousBoxSphere DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
 
+GEOM=AltXJFixtureConstruction DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
+#GEOM=AltXJFixtureConstructionU DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
 

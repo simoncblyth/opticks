@@ -64,7 +64,7 @@ void test_generateParPoints(const nnode* n, unsigned num_gen, unsigned sheetmask
 
 void test_generateParPoints_box()
 {
-    nbox* n = make_box3(2.*1.f,2.*2.f,2.*3.f); 
+    nbox* n = nbox::Create( 2.*1.f , 2.*2.f, 2.*3.f, 0.f, CSG_BOX3 ); 
     n->verbosity = 3 ;  
     n->pdump("make_box3(2.,4.,6.)");
     test_generateParPoints(n, 60u, 0x3f );  //  b11 1111    

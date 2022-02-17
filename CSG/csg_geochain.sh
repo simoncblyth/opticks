@@ -65,6 +65,7 @@ EOU
 #geom=AltXJfixtureConstruction_YZ
 #geom=AltXJfixtureConstruction_XZ
 #geom=AltXJfixtureConstruction_XY
+geom=AltXJfixtureConstructionU_XY
 
 #geom=AnnulusBoxUnion_XY
 #geom=AnnulusTwoBoxUnion_XY
@@ -108,7 +109,7 @@ EOU
 #geom=DiscontiguousBoxSphere_XY
 #geom=IntersectionBoxSphere_XY
 
-geom=OverlapThreeSphere_XY
+#geom=OverlapThreeSphere_XY
 #geom=ContiguousThreeSphere_XY
 
 

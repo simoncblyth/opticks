@@ -33,10 +33,10 @@
 void test_resizeToFit()
 {
     float h = 10.f ; 
-    nbox* box = make_box3(2*h,2*h,2*h); 
+    nbox* box = nbox::Create(2*h,2*h,2*h,0, CSG_BOX3); 
 
     box->verbosity = 3 ;  
-    box->pdump("original make_box3(2*h,2*h,2*h)");
+    box->pdump("original nbox::Create(2*h,2*h,2*h,0,CSG_BOX3)");
 
     nbbox bb = box->bbox_model();
 
@@ -48,7 +48,7 @@ void test_resizeToFit()
 
     box->resizeToFit( cc , 1.f, 0.f );    
 
-    box->pdump("after resizeToFit make_box3(2*h,2*h,2*h)");
+    box->pdump("after resizeToFit nbox::Create(2*h,2*h,2*h,0,CSG_BOX3)");
 
     nbbox cc2 = box->bbox_model();
 
@@ -67,15 +67,15 @@ void test_resizeToFit()
 
 void test_resizeToFit_box()
 {
-    nbox* box = make_box( 0.f, 0.f, -5.f, 10.f ); 
+    nbox* box = nbox::Create( 0.f, 0.f, -5.f, 10.f, CSG_BOX ); 
     box->verbosity = 3 ;  
-    box->pdump("make_box(0,0,-5,10)");
+    box->pdump("nbox::Create(0,0,-5,10, CSG_BOX)");
 
 
     float sz = 100.f ; 
     float dz = -50.f ; 
     nbbox bb = make_bbox( -sz, -sz, -sz + dz,   sz, sz, sz + dz ); 
-    nbox* xbox = make_box( 0.f, 0.f, dz, sz ); 
+    nbox* xbox = nbox::Create( 0.f, 0.f, dz, sz, CSG_BOX ); 
 
     LOG(info) << " bb " << bb.description() ; 
 
@@ -92,9 +92,9 @@ void test_resizeToFit_box()
 
 void test_resizeToFit_box3()
 {
-    nbox* box = make_box3( 10.f, 10.f, 20.f ); 
+    nbox* box = nbox::Create( 10.f, 10.f, 20.f, 0.f, CSG_BOX3 ); 
     box->verbosity = 3 ;  
-    box->pdump("make_box3(10,10,20)");
+    box->pdump("nbox::Create(10,10,20,0,CSG_BOX3)");
 
 
     float sz = 100.f ; 
@@ -103,7 +103,7 @@ void test_resizeToFit_box3()
     // this bb is shifted down in z 
 
 
-    nbox* ybox = make_box3(2.f*sz, 2.f*sz, 2.f*sz ); 
+    nbox* ybox = nbox::Create(2.f*sz, 2.f*sz, 2.f*sz, 0.f, CSG_BOX3 ); 
 
     LOG(info) << " bb " << bb.description() ; 
 
@@ -124,8 +124,8 @@ void test_box()
     float sz = 10.f ; 
     float dz = -sz/2.f ;   // push down in z
 
-    nbox* ybox = make_box(0.f, 0.f, dz, sz ); 
-    ybox->pdump("make_box(0,0,-5, 10)");
+    nbox* ybox = nbox::Create(0.f, 0.f, dz, sz, CSG_BOX ); 
+    ybox->pdump("nbox::Create(0,0,-5, 10, CSG_BOX)");
     nbbox bb = ybox->bbox_model();
     LOG(info) << " bb " << bb.description() ; 
 
@@ -138,8 +138,8 @@ void test_box3()   // always symmetric
 {
     float sz = 10.f ; 
 
-    nbox* box = make_box3( sz, sz, 2.f*sz ); 
-    box->pdump("make_box3(10,10,20)");
+    nbox* box = nbox::Create( sz, sz, 2.f*sz, 0.f, CSG_BOX3 ); 
+    box->pdump("nbox::Create(10,10,20, 0, CSG_BOX3)");
     nbbox bb = box->bbox_model();
     LOG(info) << " bb " << bb.description() ; 
 
@@ -151,8 +151,8 @@ void test_box3()   // always symmetric
 void test_box_transform()
 {
     float sz = 10.f ; 
-    nbox* a = make_box(0.f, 0.f, 0.f, sz ); 
-    a->pdump("make_box(0,0,0, 10)");
+    nbox* a = nbox::Create(0.f, 0.f, 0.f, sz, CSG_BOX ); 
+    a->pdump("nbox::Create(0,0,0, 10, CSG_BOX)");
  
     assert(  a->transform == NULL ); 
     a->transform = nmat4triple::make_translate( 0.f, 0.f, -5.f ); 

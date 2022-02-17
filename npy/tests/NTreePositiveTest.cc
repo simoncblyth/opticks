@@ -64,9 +64,9 @@ void test_positivize()
 {
     nnode* a = nsphere::Create(0,0,-50,100) ;  
     nnode* b = nsphere::Create(0,0, 50,100) ;  
-    nnode* c = make_box(0,0, 50,100) ;  
-    nnode* d = make_box(0,0,  0,100) ;  
-    nnode* e = make_box(0,0,  0,100) ;  
+    nnode* c = nbox::Create(0,0, 50,100, CSG_BOX) ;  
+    nnode* d = nbox::Create(0,0,  0,100, CSG_BOX) ;  
+    nnode* e = nbox::Create(0,0,  0,100, CSG_BOX) ;  
 
     nnode* ab = nnode::make_operator( CSG_UNION, a, b );
     nnode* de = nnode::make_operator( CSG_DIFFERENCE, d, e );

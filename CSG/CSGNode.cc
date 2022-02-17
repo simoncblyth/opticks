@@ -397,8 +397,10 @@ void CSGNode::setAABBLocal()
     {
         setAABB( 0.f );  
     }
-    else if( tc == CSG_CONTIGUOUS || tc == CSG_DISCONTIGUOUS )
+    else if( tc == CSG_CONTIGUOUS || tc == CSG_DISCONTIGUOUS ) 
     {
+        // cannot define bbox of list header nodes without combining bbox of all the subs 
+        // so have to defer setting the bbox until all the subs are converted 
         setAABB( 0.f );  
     }
     else if( tc == CSG_ZERO )

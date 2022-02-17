@@ -400,10 +400,11 @@ Just need to collect the list of nodes. Hmm maybe flatten transforms ?
 
 void X4Solid::changeToContiguousSolid()
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << "[" ; 
     nnode* subtree = getRoot(); 
     nmultiunion* root = nmultiunion::CreateFromTree(CSG_CONTIGUOUS, subtree) ; 
     setRoot(root); 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -850,7 +851,7 @@ void X4Solid::convertBox()
     float y = 2.0*hy ; 
     float z = 2.0*hz ; 
 
-    nnode* n =  make_box3( x, y, z);
+    nnode* n =  nbox::Create( x, y, z,0.f, CSG_BOX3 );
     n->label = BStr::concat(m_name, "_box3", NULL ) ; 
     setRoot(n); 
 
@@ -907,16 +908,16 @@ nnode* X4Solid::convertTubs_cylinder(bool do_nudge_inner)
         { 
             double nudge_inner = 0.01 ; 
             double dz = hz*nudge_inner ;  
-            inner = make_cylinder(rmin, -(hz+dz), (hz+dz) );   // radius, z1, z2    (z2 > z1)
+            inner = ncylinder::Create(rmin, -(hz+dz), (hz+dz) );   // radius, z1, z2    (z2 > z1)
         }
         else
         {
-            inner = make_cylinder(rmin, -hz, hz );         // radius, z1, z2    (z2 > z1)
+            inner = ncylinder::Create(rmin, -hz, hz );         // radius, z1, z2    (z2 > z1)
         }
         inner->label = BStr::concat( m_name, "_inner", NULL ); 
     }
 
-    nnode* outer = make_cylinder(rmax, -hz, hz);
+    nnode* outer = ncylinder::Create(rmax, -hz, hz);
     outer->label = BStr::concat( m_name, "_outer", NULL ); 
 
     nnode* tube = has_inner ? nnode::make_operator(CSG_DIFFERENCE, outer, inner) : outer ; 
@@ -1123,7 +1124,7 @@ nnode* X4Solid::intersectWithPhiSegment(nnode* whole, float startPhi, float delt
         float sy = bb.max.y - bb.min.y ; 
         float sz = bb.max.z - bb.min.z ; 
 
-        segment = make_box3(sx,sy,sz);  
+        segment = nbox::Create(sx,sy,sz,0.f, CSG_BOX3);  
         //segment.transform = nmat4triple::make_transform(
         segment->label = BStr::concat(m_name, "_segment_box", NULL); 
     }
@@ -1624,7 +1625,7 @@ void X4Solid::Polycone_MakePrims( const std::vector<zplane>& zp,  std::vector<nn
         nnode* n = NULL ; 
         if( r2 == r1 )
         { 
-            n = make_cylinder(r2, z1, z2);
+            n = ncylinder::Create(r2, z1, z2);
             n->label = BStr::concat<unsigned>( name, i-1, "_zp_cylinder" ); 
         }
         else
@@ -1729,7 +1730,7 @@ void X4Solid::convertPolycone()
         double rmin = R_inner_min ; 
         assert( R_inner_min == R_inner_max ); 
 
-        inner = make_cylinder(rmin, zmin, zmax);
+        inner = ncylinder::Create(rmin, zmin, zmax);
         inner->label = BStr::concat( m_name, "_inner_cylinder", NULL  ); 
     }
     else if( has_inner && num_R_inner > 1 )

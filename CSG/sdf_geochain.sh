@@ -45,7 +45,8 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-#geom=AltXJfixtureConstruction
+geom=AltXJfixtureConstruction
+#geom=AltXJfixtureConstructionU
 #geom=AnnulusBoxUnion
 #geom=BoxFourBoxUnion
 #geom=BoxCrossTwoBoxUnion
@@ -57,7 +58,7 @@ msg="=== $BASH_SOURCE :"
 #geom=DiscontiguousBoxSphere
 
 #geom=OverlapThreeSphere
-geom=ContiguousThreeSphere
+#geom=ContiguousThreeSphere
 
 #geom=SphereWithPhiCutDEV
 #geom=ZSphere

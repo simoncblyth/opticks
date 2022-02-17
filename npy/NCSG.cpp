@@ -695,18 +695,18 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
     nnode* node = NULL ;   
     switch(typecode)
     {
-       case CSG_SPHERE:         node = nsphere::Create(p0)      ; break ; 
-       case CSG_ZSPHERE:        node = make_zsphere(p0,p1,p2)   ; break ; 
-       case CSG_BOX:            node = make_box(p0)             ; break ; 
-       case CSG_BOX3:           node = make_box3(p0)            ; break ; 
-       case CSG_SLAB:           node = make_slab(p0, p1)        ; break ; 
-       case CSG_PLANE:          node = make_plane(p0)           ; break ; 
-       case CSG_CYLINDER:       node = make_cylinder(p0, p1)    ; break ; 
-       case CSG_DISC:           node = make_disc(p0, p1)        ; break ; 
-       case CSG_CONE:           node = make_cone(p0)            ; break ; 
-       case CSG_TORUS:          node = make_torus(p0)           ; break ; 
-       case CSG_CUBIC:          node = make_cubic(p0,p1)        ; break ; 
-       case CSG_HYPERBOLOID:    node = make_hyperboloid(p0)     ; break ; 
+       case CSG_SPHERE:         node = nsphere::Create(p0)        ; break ; 
+       case CSG_ZSPHERE:        node = make_zsphere(p0,p1,p2)     ; break ; 
+       case CSG_BOX:            node = nbox::Create(p0, CSG_BOX)  ; break ; 
+       case CSG_BOX3:           node = nbox::Create(p0, CSG_BOX3) ; break ; 
+       case CSG_SLAB:           node = make_slab(p0, p1)          ; break ; 
+       case CSG_PLANE:          node = make_plane(p0)             ; break ; 
+       case CSG_CYLINDER:       node = ncylinder::Create(p0, p1)  ; break ; 
+       case CSG_DISC:           node = make_disc(p0, p1)          ; break ; 
+       case CSG_CONE:           node = make_cone(p0)              ; break ; 
+       case CSG_TORUS:          node = make_torus(p0)             ; break ; 
+       case CSG_CUBIC:          node = make_cubic(p0,p1)          ; break ; 
+       case CSG_HYPERBOLOID:    node = make_hyperboloid(p0)       ; break ; 
        case CSG_TRAPEZOID:  
        case CSG_SEGMENT:  
        case CSG_CONVEXPOLYHEDRON:  
@@ -1007,6 +1007,8 @@ export_planes
 NB the part writing into part buffer has to be after 
 these as idxs get into that buffer
 
+
+TODO: problem for trees that contain compound nodes ?
 
 **/
 

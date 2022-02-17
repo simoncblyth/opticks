@@ -80,6 +80,8 @@ struct NPY_API nnode
 {
     void set_p0( const quad& q0 ); 
     void set_p1( const quad& q1 ); 
+    void set_bbox(const nbbox& bb); 
+
 
     static unsigned bb_count ; 
     static nnode* copy( const nnode* a ); // retaining vtable of subclass instances 

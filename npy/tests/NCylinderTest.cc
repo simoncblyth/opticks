@@ -31,7 +31,7 @@
 void test_dumpSurfacePointsAll()
 {
     LOG(info) << "test_dumpSurfacePointsAll" ;
-    ncylinder* cy = make_cylinder();
+    ncylinder* cy = ncylinder::Create();
     cy->dumpSurfacePointsAll("cy.dumpSurfacePointsAll", FRAME_LOCAL);
 }
 
@@ -44,7 +44,7 @@ void test_parametric()
     float radius = 10. ; 
     float z1 = -5.f ; 
     float z2 = 15.f ; 
-    ncylinder* cy = make_cylinder(radius,z1,z2); 
+    ncylinder* cy = ncylinder::Create(radius,z1,z2); 
 
     unsigned nsurf = cy->par_nsurf();
     assert(nsurf == 3);
@@ -87,9 +87,9 @@ void test_sdf()
     float z1 = 0 ; 
     float z2 = 400 ; 
 
-    c[0] = make_cylinder(radius,z1,z2) ;   
-    c[1] = make_cylinder(radius,z1+100.f,z2+100.f) ;   
-    c[2] = make_cylinder(radius,z1-100.f,z2-100.f) ;   
+    c[0] = ncylinder::Create(radius,z1,z2) ;   
+    c[1] = ncylinder::Create(radius,z1+100.f,z2+100.f) ;   
+    c[2] = ncylinder::Create(radius,z1-100.f,z2-100.f) ;   
 
     for(int i=0 ; i < nc ; i++) c[i]->dump();
 

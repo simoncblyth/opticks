@@ -41,8 +41,6 @@ distance_node
 distance_node_list
 ----------------------------
 
-HMM : I think this same implementation should work for distance_node_discontiguous too 
-
 **/
 
 
@@ -63,7 +61,7 @@ float distance_node_list( unsigned typecode, const float3& pos, const CSGNode* n
             case CSG_OVERLAP:       sd = fmaxf( sd, sub_sd );   break ; 
          } 
 #ifdef DEBUG
-        printf("//distance_node_list isub %d sub_sd %10.4f sd %10.4f \n ", isub, sub_sd, sd );  
+        printf("//distance_node_list isub %d sub_sd %10.4f sd %10.4f \n", isub, sub_sd, sd );  
 #endif
     }
     return sd ; 
@@ -185,10 +183,17 @@ TODO: implement in several different ways and test performance for a variety of 
 INTERSECT_FUNC
 bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
+#ifdef DEBUG
+     printf("//intersect_node_contiguous \n"); 
+#endif
+
     float sd = distance_node_list( CSG_CONTIGUOUS, ray_origin + t_min*ray_direction, node, plan, itra ); 
     bool inside_or_surface = sd <= 0.f ;
- 
     const unsigned num_sub = node->subNum() ; 
+
+#ifdef DEBUG
+     printf("//intersect_node_contiguous sd %10.4f inside_or_surface %d num_sub %d \n", sd, inside_or_surface, num_sub); 
+#endif
 
     float4 nearest_enter = make_float4( 0.f, 0.f, 0.f, RT_DEFAULT_MAX ) ; 
     float4 farthest_exit = make_float4( 0.f, 0.f, 0.f, t_min ) ; 
@@ -248,6 +253,11 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const float4
         valid_intersect = enter_count > 0 && nearest_enter.w > t_min ; 
         if(valid_intersect) isect = nearest_enter ;  
     }
+
+#ifdef DEBUG
+     printf("//intersect_node_contiguous valid_intersect %d  (%10.4f %10.4f %10.4f %10.4f) \n", valid_intersect, isect.x, isect.y, isect.z, isect.w ); 
+#endif
+
     return valid_intersect ; 
 }
 
@@ -514,6 +524,11 @@ INTERSECT_FUNC
 bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction )
 {
     const unsigned typecode = node->typecode() ;  
+
+#ifdef DEBUG
+    printf("//intersect_node typecode %d \n", typecode); 
+#endif
+
     bool valid_intersect ; 
     switch(typecode)
     {
@@ -522,6 +537,7 @@ bool intersect_node( float4& isect, const CSGNode* node, const float4* plan, con
        case CSG_DISCONTIGUOUS:  valid_intersect = intersect_node_discontiguous(isect, node, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
                    default:     valid_intersect = intersect_leaf(              isect, node, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
     }
+
     return valid_intersect ; 
 }
 

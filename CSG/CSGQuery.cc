@@ -303,11 +303,13 @@ CSGGrid* CSGQuery::scanPrim(int resolution) const
     return grid ;
 }
 
-void CSGQuery::dumpPrim() const 
+void CSGQuery::dumpPrim(const char* msg) const 
 {
+    
     if( select_numNode == 0 ) return ;
 
     LOG(info) 
+          << msg 
           << " select_numNode " << select_numNode
           << " select_nodeOffset " << select_nodeOffset
           ; 

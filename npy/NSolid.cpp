@@ -63,7 +63,7 @@ nnode* NSolid::createEllipsoid( const char* name, float ax, float by, float cz, 
 nnode* NSolid::createTubs( const char* name , float rmin, float rmax, float hz )
 {
     assert( rmin == 0.f ); 
-    ncylinder* n = make_cylinder( rmax, -hz, hz ); 
+    ncylinder* n = ncylinder::Create( rmax, -hz, hz ); 
     n->label = strdup(name) ; 
     return (nnode*)n ; 
 }

@@ -643,6 +643,10 @@ float distance_leaf_box3(const float3& pos, const quad& q0 )
     float3 q = make_float3( fabs(pos.x) - q0.f.x/2.f, fabs(pos.y) - q0.f.y/2.f , fabs(pos.z) - q0.f.z/2.f ) ;    
     float3 z = make_float3( 0.f ); 
     float sd = length(fmaxf(q, z)) + fminf(fmaxf(q.x, fmaxf(q.y, q.z)), 0.f ) ;   
+
+#ifdef DEBUG
+    printf("//distance_leaf_box3 sd %10.4f \n", sd ); 
+#endif
     return sd ; 
 }
 
@@ -951,6 +955,10 @@ float distance_leaf_cylinder( const float3& pos, const quad& q0, const quad& q1 
     float sd_capslab = fmaxf( pos.z - z2 , z1 - pos.z ); 
     float sd_infcyl = sqrtf( pos.x*pos.x + pos.y*pos.y ) - radius ;  
     float sd = fmaxf( sd_capslab, sd_infcyl ); 
+
+#ifdef DEBUG
+    printf("//distance_leaf_cylinder sd %10.4f \n", sd ); 
+#endif
     return sd ; 
 }
 
@@ -1409,10 +1417,14 @@ float distance_leaf( const float3& global_position, const CSGNode* node, const f
         case CSG_CYLINDER:         distance = distance_leaf_cylinder(          local_position, node->q0, node->q1 ) ; break ;
         case CSG_PLANE:            distance = distance_leaf_plane(             local_position, node->q0 )           ; break ;
         case CSG_SLAB:             distance = distance_leaf_slab(              local_position, node->q0, node->q1 ) ; break ;
-        case CSG_LPHICUT:          distance = distance_leaf_phicut(            local_position, node->q0 )           ; break ;
         case CSG_PHICUT:           distance = distance_leaf_phicut(            local_position, node->q0 )           ; break ;
     }
-    return complement ? -distance : distance  ; 
+
+    const float sd = complement ? -distance : distance  ; 
+#ifdef DEBUG
+    printf("//distance_leaf typecode %d complement %d sd %10.4f \n", typecode, complement, sd  ); 
+#endif
+    return sd ; 
 }
 
 

@@ -37,6 +37,43 @@
 
 #include "OpticksCSG.h"
 
+
+
+
+nbox* nbox::Create(const nquad& p, OpticksCSG_t type  ) // static
+{
+    assert( type == CSG_BOX3 || type == CSG_BOX ); 
+    nbox* n = new nbox ; 
+    nnode::Init(n,type) ; 
+    n->param = p ; 
+    n->_bbox_model = new nbbox(n->bbox_model()) ;   // bbox_model() has no transforms applied, so is available early
+    return n ;
+}
+
+
+nbox* nbox::Create(float x, float y, float z, float w, OpticksCSG_t type  )  // static
+{
+    nquad param ;
+    param.f =  {x,y,z,w} ;
+
+    if( type == CSG_BOX3 )
+    {
+        assert( w == 0.f ) ;   // w is vestigial for CSG_BOX3, used by code gen
+    }
+    else if( type == CSG_BOX )
+    {
+        assert( w > 0.f ); 
+    }
+
+    return Create( param, type ); 
+}
+
+
+
+
+
+
+
 /**
 ~/opticks_refs/Procedural_Modelling_with_Signed_Distance_Functions_Thesis.pdf
 
@@ -45,6 +82,9 @@ SDF from point px,py,pz to box at origin with side lengths (sx,sy,sz) at the ori
     max( abs(px) - sx/2, abs(py) - sy/2, abs(pz) - sz/2 )
 
 **/
+
+
+
 
 float nbox::operator()(float x_, float y_, float z_) const 
 {
@@ -157,7 +197,7 @@ glm::vec3 nbox::bmax() const
 {
     glm::vec3 h = halfside(); 
     glm::vec3 c = center();    
-    if(is_box3) assert( c.x == 0 && c.y == 0 && c.z == 0 );
+    if(is_box3()) assert( c.x == 0 && c.y == 0 && c.z == 0 );
     return c + h ; 
 }
 
@@ -165,7 +205,7 @@ glm::vec3 nbox::bmin() const
 {
     glm::vec3 h = halfside(); 
     glm::vec3 c = center();    
-    if(is_box3) assert( c.x == 0 && c.y == 0 && c.z == 0 );
+    if(is_box3()) assert( c.x == 0 && c.y == 0 && c.z == 0 );
     return c - h ; 
 }
 
@@ -178,6 +218,9 @@ nbbox nbox::bbox_model() const
 
     return bb ; 
 }
+
+bool nbox::is_box() const { return type == CSG_BOX ;  }
+bool nbox::is_box3() const { return type == CSG_BOX3 ;  }
 
 
 
@@ -434,7 +477,7 @@ How to nudge to avoid a coincidence ?
 void nbox::nudge(unsigned s, float delta)
 {
     assert( s < par_nsurf());
-    assert( is_box3 && type == CSG_BOX3 && "nbox::nudge only implemented for CSG_BOX3 not CSG_BOX " );
+    assert( is_box3() && "nbox::nudge only implemented for CSG_BOX3 not CSG_BOX " );
 
     if(verbosity > 0)
     {
@@ -526,27 +569,20 @@ with scale and delta applied.
 
 void nbox::resizeToFit(const nbbox& bb, float scale, float delta )
 {
-    nquad qce ; 
-
-    if(is_box3)
+    if(is_box3())
     {
         // NB box3 always centered, see NBox2Test
-        qce.f.x = scale*(fabs(bb.min.x) + fabs(bb.max.x)) + delta ; 
-        qce.f.y = scale*(fabs(bb.min.y) + fabs(bb.max.y)) + delta ; 
-        qce.f.z = scale*(fabs(bb.min.z) + fabs(bb.max.z)) + delta ; 
-        qce.f.w = 0.f ; 
-
-        init_box3( this, qce );
+        param.f.x = scale*(fabs(bb.min.x) + fabs(bb.max.x)) + delta ; 
+        param.f.y = scale*(fabs(bb.min.y) + fabs(bb.max.y)) + delta ; 
+        param.f.z = scale*(fabs(bb.min.z) + fabs(bb.max.z)) + delta ; 
+        param.f.w = 0.f ; 
     }
     else
     {
-        qce.f = bb.center_extent() ; 
-        qce.f.w *= scale ; 
-        qce.f.w += delta ; 
-  
-        init_box( this, qce );
+        param.f = bb.center_extent() ; 
+        param.f.w *= scale ; 
+        param.f.w += delta ; 
     }
-
 }
 
 
@@ -599,7 +635,7 @@ void nbox::pdump(const char* msg) const
               << " gseedcenter " << gseedcenter()
               << " transform? " << !!transform
               << " gtransform? " << !!gtransform
-              << " is_box3 " << is_box3
+              << " is_box3 " << is_box3()
               << std::endl ; 
 
 
@@ -643,4 +679,47 @@ float nbox::r1() const { return 0.f ; }
 float nbox::z1() const { return 0.f ; }
 float nbox::r2() const { return 0.f ; }
 float nbox::z2() const { return 0.f ; } 
+
+
+
+
+glm::vec3 nbox::center() const { return glm::vec3(x(), y(), z()) ; }
+
+float nbox::x() const { return is_box() ? param.f.x : 0.f ; }
+float nbox::y() const { return is_box() ? param.f.y : 0.f ; }
+float nbox::z() const { return is_box() ? param.f.z : 0.f ; }
+bool  nbox::is_centered() const { return x() == 0.f && y() == 0.f && z() == 0.f ; }
+void  nbox::set_centered() 
+{ 
+    assert( is_box()) ; 
+    param.f.x = 0.f ; 
+    param.f.y = 0.f ; 
+    param.f.z = 0.f ; 
+}
+
+glm::vec3 nbox::halfside() const 
+{ 
+    glm::vec3 h ; 
+    if(type == CSG_BOX3)
+    { 
+        h.x = param.f.x/2.f ;
+        h.y = param.f.y/2.f ;
+        h.z = param.f.z/2.f ;
+    }
+    else if(type == CSG_BOX )
+    {
+        h.x = param.f.w ;
+        h.y = param.f.w ;
+        h.z = param.f.w ;
+    }
+    else
+    {
+        assert(0);
+    }
+    return h ;
+}
+
+
+
+
 

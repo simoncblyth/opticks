@@ -32,6 +32,7 @@ SphereWithThetaSegment
 AdditionAcrylicConstruction
 XJfixtureConstruction
 AltXJfixtureConstruction
+AltXJfixtureConstructionU
 XJanchorConstruction
 SJReceiverConstruction
 BoxMinusTubs0
@@ -86,6 +87,12 @@ bool X4SolidMaker::CanMake(const char* qname) // static
 
 const G4VSolid* PolyconeWithMultipleRmin(const char* name);
 
+
+const G4VSolid* X4SolidMaker::Make(const char* qname)  // static
+{
+    std::string meta ; 
+    return X4SolidMaker::Make(qname, meta); 
+}
 const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // static
 {
     if(strcmp(qname, "NAMES") == 0 )
@@ -102,6 +109,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("SphereWithThetaSegment",qname))       solid = X4SolidMaker::SphereWithThetaSegment(qname); 
     else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = X4SolidMaker::AdditionAcrylicConstruction(qname); 
     else if(StartsWith("XJfixtureConstruction", qname))       solid = X4SolidMaker::XJfixtureConstruction(qname); 
+    else if(StartsWith("AltXJfixtureConstructionU", qname))   solid = X4SolidMaker::AltXJfixtureConstructionU(qname); 
     else if(StartsWith("AltXJfixtureConstruction", qname))    solid = X4SolidMaker::AltXJfixtureConstruction(qname); 
     else if(StartsWith("XJanchorConstruction", qname))        solid = X4SolidMaker::XJanchorConstruction(qname) ; 
     else if(StartsWith("SJReceiverConstruction", qname))      solid = X4SolidMaker::SJReceiverConstruction(qname) ; 
@@ -453,6 +461,15 @@ same but this uses only 3 boxes and 2 tubs rather than 6 boxes and 2 tubs.
 
 const G4VSolid* X4SolidMaker::AltXJfixtureConstruction(const char* name)
 {
+    return AltXJfixtureConstruction_(name, ""); 
+}
+const G4VSolid* X4SolidMaker::AltXJfixtureConstructionU(const char* name)
+{
+    return AltXJfixtureConstruction_(name, "ulxo"); 
+}
+
+const G4VSolid* X4SolidMaker::AltXJfixtureConstruction_(const char* name, const char* opt)
+{
     G4VSolid* u ;
     G4VSolid* l ;
     G4VSolid* x ;
@@ -477,6 +494,7 @@ const G4VSolid* X4SolidMaker::AltXJfixtureConstruction(const char* name)
 
     o = new G4Tubs("o", 0.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
     ulxo = new G4UnionSolid("ulxo_CSG_CONTIGUOUS", ulx, o, 0, G4ThreeVector(0.*mm, 0.*mm, zs )) ; 
+    if( strstr(opt, "ulxo"))  return ulxo ; 
 
     G4double i_uncoincide = 1. ;  
     // increase the half_z of subtracted tubs : avoiding upper coincident face

@@ -148,10 +148,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    nbox* world = make_box(0,0,0,11) ; 
+    nbox* world = nbox::Create(0,0,0,11, CSG_BOX) ; 
     nbbox wbb = world->bbox() ;
 
-    nbox* obj = make_box(0,0,0,7) ; 
+    nbox* obj = nbox::Create(0,0,0,7, CSG_BOX) ; 
 
     std::function<float(float,float,float)> fn = obj->sdf();
 

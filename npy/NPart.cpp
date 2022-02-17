@@ -191,7 +191,7 @@ void npart::zero()
 
 void npart::check_bb_is_zero(OpticksCSG_t typecode) const 
 {
-   if( typecode == CSG_CONVEXPOLYHEDRON) return ;  // bbox is actually used 
+   if( typecode == CSG_CONVEXPOLYHEDRON || typecode == CSG_CONTIGUOUS || typecode == CSG_DISCONTIGUOUS ) return ;  // bbox is actually used 
 
    if( typecode == CSG_ZSPHERE )
    {

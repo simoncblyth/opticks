@@ -36,11 +36,11 @@
 
 nnode* make_tree_0()
 {
-    nnode* a = nsphere::Create(0,0,-50,100) ;    a->label = "a" ;
-    nnode* b = nsphere::Create(0,0, 50,100) ;    b->label = "b" ;
-    nnode* c = make_box(0,0, 50,100) ;       c->label = "c" ; 
-    nnode* d = make_box(0,0,  0,100) ;       d->label = "d" ;
-    nnode* e = make_box(0,0,  0,100) ;       e->label = "e" ;
+    nnode* a = nsphere::Create(0,0,-50,100) ;      a->label = "a" ;
+    nnode* b = nsphere::Create(0,0, 50,100) ;      b->label = "b" ;
+    nnode* c = nbox::Create(0,0, 50,100,CSG_BOX) ; c->label = "c" ; 
+    nnode* d = nbox::Create(0,0,  0,100,CSG_BOX) ; d->label = "d" ;
+    nnode* e = nbox::Create(0,0,  0,100,CSG_BOX) ; e->label = "e" ;
 
     nnode* ab = nnode::make_operator( CSG_UNION, a, b );
     nnode* de = nnode::make_operator( CSG_DIFFERENCE, d, e );

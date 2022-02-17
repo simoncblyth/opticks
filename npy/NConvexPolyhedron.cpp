@@ -299,17 +299,6 @@ glm::vec3 nconvexpolyhedron::par_pos_model(const nuv& uv) const
 
 
 
-void nconvexpolyhedron::set_bbox(const nbbox& bb)
-{
-    param2.f.x = bb.min.x ;
-    param2.f.y = bb.min.y ;
-    param2.f.z = bb.min.z ;
-
-    param3.f.x = bb.max.x ;
-    param3.f.y = bb.max.y ;
-    param3.f.z = bb.max.z ;
-}
-
 void nconvexpolyhedron::set_planes( const std::vector<glm::vec4>& planes_ ) 
 {
     std::copy( planes_.begin() , planes_.end(), std::back_inserter(planes) ) ;

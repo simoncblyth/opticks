@@ -14,6 +14,7 @@ set(PMTSIM_TEST_SOURCES
 set(TEST_SOURCES
 
     X4SolidMakerTest.cc
+    X4SolidMultiUnionTest.cc 
 
     X4Test.cc
     X4EntityTest.cc

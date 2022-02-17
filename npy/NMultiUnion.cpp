@@ -15,8 +15,6 @@ const plog::Severity nmultiunion::LEVEL = PLOG::EnvLevel("nmultiunion", "DEBUG")
 void nmultiunion::pdump(const char* msg) const 
 {
     std::cout << msg << " subs.size " << subs.size() << std::endl ; 
-
-
 }
 
 
@@ -81,9 +79,9 @@ in order to be able to chop the tree into a pile of leaves without changing geom
 
 nmultiunion* nmultiunion::CreateFromTree( OpticksCSG_t type, const nnode* src )  // static 
 {
+    LOG(LEVEL) << "[" ; 
     nnode* subtree = src->deepclone(); 
     subtree->prepareTree() ;  // sets parent links and gtransforms by multiplying the transforms 
-
 
     unsigned mask = subtree->get_oper_mask(); 
     OpticksCSG_t subtree_type = CSG_MonoOperator(mask); 
@@ -107,7 +105,10 @@ nmultiunion* nmultiunion::CreateFromTree( OpticksCSG_t type, const nnode* src ) 
         }
     }
 
-    return CreateFromList(type, prim) ; 
+    nmultiunion* n = CreateFromList(type, prim) ; 
+    
+    LOG(LEVEL) << "]" ; 
+    return n ; 
 }
 
 /**
@@ -127,8 +128,14 @@ nmultiunion* nmultiunion::CreateFromList( OpticksCSG_t type, std::vector<nnode*>
     {
         nnode* sub = prim[i] ; 
         assert( sub->complement == false );  
+        LOG(info) << " sub.type " << sub->type ; 
         comp->subs.push_back(sub); 
     }
+
+    nbbox bb = comp->bbox(); 
+    LOG(info) << " bb " << bb.desc() ; 
+    comp->set_bbox(bb);  
+
     return comp ; 
 }
 

@@ -88,7 +88,7 @@ void test_sphere(NMarchingCubesNPY& mcu, bool dump)
 
 void test_box(NMarchingCubesNPY& mcu, bool dump)
 {
-    nbox* a = make_box(0.f,0.f,0.f,1000.f);
+    nbox* a = nbox::Create(0.f,0.f,0.f,1000.f, CSG_BOX);
 
     NTrianglesNPY* tris0 = mcu(a);
     assert(tris0);

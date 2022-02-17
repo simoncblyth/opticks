@@ -18,6 +18,7 @@ struct X4_API X4SolidMaker
     static G4VSolid* PrimitiveClone( const G4VSolid* src, const char* prefix, unsigned idx); 
 
     static bool  CanMake(const char* name); 
+    static const G4VSolid* Make(const char* name); 
     static const G4VSolid* Make(const char* name, std::string& meta ); 
 
     static const G4VSolid* JustOrb(const char* name); 
@@ -30,6 +31,8 @@ struct X4_API X4SolidMaker
     static const int XJfixtureConstruction_debug_mode ; 
     static const G4VSolid* XJfixtureConstruction(const char* name); 
     static const G4VSolid* AltXJfixtureConstruction(const char* name); 
+    static const G4VSolid* AltXJfixtureConstructionU(const char* name); 
+    static const G4VSolid* AltXJfixtureConstruction_(const char* name, const char* opt); 
     static const G4VSolid* AnnulusBoxUnion(const char* name) ; 
     static const G4VSolid* AnnulusTwoBoxUnion(const char* name) ; 
     static const G4VSolid* AnnulusOtherTwoBoxUnion(const char* name) ; 

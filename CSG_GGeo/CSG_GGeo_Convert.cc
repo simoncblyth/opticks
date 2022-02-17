@@ -353,7 +353,6 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         << " CSG::IsPositiveMask " << positive
         ;
 
-
     assert( foundry->last_added_solid ); 
 
     int last_ridx = foundry->last_added_solid->get_ridx();  
@@ -387,17 +386,6 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         if(n->is_zero()) continue;  
 
         bool negated = n->is_complemented_primitive();   
-
-        // what really want to know is if the primitive is_complement in the positive tree 
-        /*
-        unsigned atm = CSGNode::AncestorTypeMask(root, partIdxRel, false ); 
-        unsigned depth = CSGNode::Depth(partIdxRel); 
-        bool odm = CSGNode::IsOnlyDifferenceMask(atm) ; 
-        bool oim = CSGNode::IsOnlyIntersectionMask(atm) ; 
-        bool bbskip_0 =  oim && negated  ;  // exclude bbox of complemented leaf with only intersection ancestry 
-        bool bbskip_1 =  odm && depth == 1 && n->is_primitive() && !n->is_complement() ;  
-        bool bbskip = bbskip_0 || bbskip_1 ;  
-        */
 
         bool bbskip = negated ; 
 

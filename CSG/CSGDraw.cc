@@ -64,7 +64,6 @@ void CSGDraw::draw_tree_r(int nodeIdxRel, int depth, int& inorder, char axis )
     if( nd == nullptr ) return ; 
     if( nd->is_zero() ) return ; 
 
-
     const float* aabb = nd->AABB();  
     float a0, a1 ; 
     switch(axis)

@@ -160,7 +160,7 @@ void test_node_bbox_uncyco()
     float cy_z1 = -50.f ; 
     float cy_z2 =  50.f ; 
 
-    ncylinder* cy = make_cylinder(cy_radius,cy_z1,cy_z2); 
+    ncylinder* cy = ncylinder::Create(cy_radius,cy_z1,cy_z2); 
     cy->label = "cy" ; 
 
     float co_r1 = 100.f ; 
@@ -189,8 +189,8 @@ void test_getSurfacePoints_difference()
 {
     LOG(info) << "test_getSurfacePoints_difference" ; 
 
-    nbox* a = make_box3(400,400,100);
-    nbox* b = make_box3(300,300,50);
+    nbox* a = nbox::Create(400,400,100, 0, CSG_BOX3);
+    nbox* b = nbox::Create(300,300,50,  0, CSG_BOX3);
 
     glm::vec3 tlate(0,0,25);
     b->transform = nmat4triple::make_translate( tlate );    
@@ -224,7 +224,7 @@ void test_getSurfacePoints_difference()
 
 void test_getSurfacePoints()
 {
-     nbox* bx = make_box3(20,20,20);
+     nbox* bx = nbox::Create(20,20,20, 0, CSG_BOX3);
 
      unsigned ns = bx->par_nsurf();
      assert( ns == 6 );
@@ -296,8 +296,8 @@ void test_getCoincidentSurfacePoints()
 
   
 */
-     nbox* bx = make_box(0,0,0,10);
-     nbox* other = make_box(0,0,20,10) ;  
+     nbox* bx = nbox::Create(0,0,0,10, CSG_BOX);
+     nbox* other = nbox::Create(0,0,20,10, CSG_BOX) ;  
 
      unsigned ns = bx->par_nsurf();
      assert( ns == 6 );
@@ -328,8 +328,8 @@ void test_getCoincidentSurfacePoints()
 
 void test_getCoincident()
 {
-     nbox* bx = make_box(0,0,0,10);
-     nbox* other = make_box(20,0,0,10) ;  
+     nbox* bx = nbox::Create(0,0,0,10, CSG_BOX);
+     nbox* other = nbox::Create(20,0,0,10, CSG_BOX) ;  
 
      std::vector<nuv> coincident ; 
      bx->getCoincident(coincident, other ); 
@@ -372,8 +372,8 @@ void test_getSurfacePointsAll_Composite()
 
 
     {
-        nbox* a = make_box(aa.x,aa.y,aa.z,aa.w);
-        nbox* b = make_box(bb.x,bb.y,bb.z,bb.w);
+        nbox* a = nbox::Create(aa.x,aa.y,aa.z,aa.w, CSG_BOX);
+        nbox* b = nbox::Create(bb.x,bb.y,bb.z,bb.w, CSG_BOX);
         b->transform = nmat4triple::make_translate( tlate );    
 
         ndifference* ab = ndifference::make_difference(a, b); 
@@ -390,8 +390,8 @@ void test_getSurfacePointsAll_Composite()
         std::cout << "difference:(inside/surface/outside/select)  " << glm::to_string(tot) << std::endl ; 
     }
     {
-        nbox* a = make_box(aa.x,aa.y,aa.z,aa.w);
-        nbox* b = make_box(bb.x,bb.y,bb.z,bb.w);
+        nbox* a = nbox::Create(aa.x,aa.y,aa.z,aa.w, CSG_BOX);
+        nbox* b = nbox::Create(bb.x,bb.y,bb.z,bb.w, CSG_BOX);
         b->transform = nmat4triple::make_translate( tlate );    
 
         nunion*        ab = nunion::make_union(a, b); 
@@ -408,8 +408,8 @@ void test_getSurfacePointsAll_Composite()
         std::cout << "union: (inside/surface/outside/select)   " << glm::to_string(tot) << std::endl ; 
     }
     {
-        nbox* a = make_box(aa.x,aa.y,aa.z,aa.w);
-        nbox* b = make_box(bb.x,bb.y,bb.z,bb.w);
+        nbox* a = nbox::Create(aa.x,aa.y,aa.z,aa.w, CSG_BOX);
+        nbox* b = nbox::Create(bb.x,bb.y,bb.z,bb.w, CSG_BOX);
         b->transform = nmat4triple::make_translate( tlate );    
 
         nintersection* ab = nintersection::make_intersection(a, b); 

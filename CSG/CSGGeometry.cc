@@ -76,6 +76,8 @@ void CSGGeometry::init()
 {
     init_fd(); 
     q = new CSGQuery(fd); 
+    q->dumpPrim("CSGGeometry::init"); 
+
     d = new CSGDraw(q) ; 
     init_selection(); 
 }
@@ -108,6 +110,9 @@ void CSGGeometry::init_fd()
         LOG(info) << " booting from provided CSGFoundry pointer " ; 
         cfbase = fd->getCFBase(); 
     }
+
+   
+
 }
 
 void CSGGeometry::init_selection()

@@ -33,18 +33,19 @@ nbox
 
 Currently two flavors of box use nbox class
 
+#. CSG_BOX3 (symmetrically placed at origin with fullside param)   <-- THIS IS THE STANDARD ONE 
 #. CSG_BOX (positioned box with single dimension control) 
-#. CSG_BOX3 (unplaced box with 3 dimension control) 
-#. TODO: CSG_BOX4 (box with z1/z2 controls)
+#. TODO: CSG_BOX6 (box with bmin bmax param) for nudge convenience
 
 */
 
 struct nmat4triple ; 
 
-
-
 struct NPY_API nbox : nnode 
 {
+    static nbox* Create(const nquad& p,                     OpticksCSG_t type  ); 
+    static nbox* Create(float x, float y, float z, float w, OpticksCSG_t type  );
+
     //  geometry modifiers
 
     void resizeToFit(const nbbox& container_bb, float scale, float delta );
@@ -110,99 +111,11 @@ struct NPY_API nbox : nnode
 
     bool is_equal( const nbox& other ) const ; 
 
-    bool is_box   ;   // cannot const these without ctor
-    bool is_box3  ; 
+    bool is_box() const  ;  
+    bool is_box3() const  ; 
 
 };
 
-
-// only methods that are specific to boxes 
-// and need to override the nnode need to be here 
-
-
-inline NPY_API glm::vec3 nbox::center() const { return glm::vec3(x(), y(), z()) ; }
-
-inline NPY_API float nbox::x() const { return is_box ? param.f.x : 0.f ; }
-inline NPY_API float nbox::y() const { return is_box ? param.f.y : 0.f ; }
-inline NPY_API float nbox::z() const { return is_box ? param.f.z : 0.f ; }
-inline NPY_API bool  nbox::is_centered() const { return x() == 0.f && y() == 0.f && z() == 0.f ; }
-inline NPY_API void  nbox::set_centered() 
-{ 
-    assert( is_box) ; 
-    param.f.x = 0.f ; 
-    param.f.y = 0.f ; 
-    param.f.z = 0.f ; 
-}
-
-inline NPY_API glm::vec3 nbox::halfside() const 
-{ 
-    glm::vec3 h ; 
-    if(type == CSG_BOX3)
-    { 
-        h.x = param.f.x/2.f ;
-        h.y = param.f.y/2.f ;
-        h.z = param.f.z/2.f ;
-    }
-    else if(type == CSG_BOX )
-    {
-        h.x = param.f.w ;
-        h.y = param.f.w ;
-        h.z = param.f.w ;
-    }
-    else
-    {
-        assert(0);
-    }
-    return h ;
-}
-
-
-
-inline NPY_API void init_box(nbox* b, const nquad& p )
-{
-    b->param = p ; 
-    b->is_box = true ; 
-    b->is_box3 = false ; 
-    b->_bbox_model = new nbbox(b->bbox_model()) ;   // bbox_model() has no transforms applied, so is available early
-
-}
-inline NPY_API void init_box3(nbox* b, const nquad& p )
-{
-    b->param = p ; 
-    b->is_box = false ; 
-    b->is_box3 = true ; 
-    b->_bbox_model = new nbbox(b->bbox_model()) ;   // bbox_model() has no transforms applied, so is available early
-}
-
-inline NPY_API nbox* make_box(const nquad& p)
-{
-    nbox* n = new nbox ; 
-    nnode::Init(n,CSG_BOX) ; 
-    init_box(n, p );
-    return n ;
-}
-inline NPY_API nbox* make_box3(const nquad& p)
-{
-    nbox* n = new nbox ; 
-    nnode::Init(n,CSG_BOX3) ; 
-    init_box3(n, p );
-    return n ;
-}
-
-
-inline NPY_API nbox* make_box(float x, float y, float z, float w)  // center and halfside
-{
-    nquad param ;
-    param.f =  {x,y,z,w} ;
-    return make_box( param ); 
-}
-inline NPY_API nbox* make_box3(float x, float y, float z, float w=0.f) // three 
-{
-    assert( w == 0.f );  // used by code gen 
-    nquad param ;
-    param.f =  {x,y,z,0} ;
-    return make_box3( param ); 
-}
 
 
 

@@ -43,6 +43,64 @@
 
 
 
+ncylinder* ncylinder::Create(const nquad& param, const nquad& param1 )  // static
+{
+    ncylinder* n = new ncylinder ; 
+    nnode::Init(n,CSG_CYLINDER) ; 
+
+    n->param = param ; 
+    n->param1 = param1 ;
+
+    bool z_ascending = n->z2() > n->z1() ;
+    if(!z_ascending) n->pdump("init_cylinder z_ascending FAIL ");
+    assert( z_ascending  );
+
+    return n ; 
+}
+
+
+ncylinder* ncylinder::Create(float radius_, float z1_, float z2_ )  // static 
+{
+    nquad param, param1 ;
+
+    param.f = {0,0,0,radius_} ;
+
+    param1.f.x = z1_ ; 
+    param1.f.y = z2_ ; 
+    param1.u.z = 0u ; 
+    param1.u.w = 0u ; 
+
+    return Create(param, param1); 
+}
+
+ncylinder* ncylinder::Create() // static 
+{
+    return Create(10.f, -5.f, 15.f ); 
+}
+
+
+ncylinder* ncylinder::Create(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1) // static
+{
+    // used by code generation 
+    assert( x0 == 0.f );
+    assert( y0 == 0.f );
+    assert( z0 == 0.f );
+    assert( z1 == 0.f );
+    assert( w1 == 0.f );
+
+
+    float radius_ = w0 ; 
+    float z1_ = x1 ; 
+    float z2_ = y1 ; 
+
+    return Create( radius_, z1_, z2_ );
+}
+
+
+
+
+
+
 float ncylinder::x() const { return param.f.x ; }
 float ncylinder::y() const { return param.f.y ; }
 float ncylinder::z() const { return 0.f ; }   // <--- where is this used ? z1 z2 
@@ -95,16 +153,6 @@ void ncylinder::set_z2(float new_z2)
     param1.f.y = new_z2 ; 
 }
 
-
-NPY_API void init_cylinder(ncylinder* n, const nquad& param, const nquad& param1 )
-{
-    n->param = param ; 
-    n->param1 = param1 ;
-
-    bool z_ascending = n->z2() > n->z1() ;
-    if(!z_ascending) n->pdump("init_cylinder z_ascending FAIL ");
-    assert( z_ascending  );
-}
 
 
 nbbox ncylinder::bbox() const 

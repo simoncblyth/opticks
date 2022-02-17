@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    nbox* box = make_box( 0,0,0, 10 );
+    nbox* box = nbox::Create( 0,0,0, 10, CSG_BOX);
     nbbox bb = box->bbox();
 
     NGenerator gen(bb);

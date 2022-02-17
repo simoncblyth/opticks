@@ -21,8 +21,6 @@ int main(int argc, char** argv)
     nbbox bb = n->bbox(); 
     LOG(info) << " bb.desc " << bb.desc() ;  
 
-
-
     return 0 ; 
 }
 

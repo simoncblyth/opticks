@@ -33,7 +33,7 @@ struct CSG_API CSGQuery
     void     dump(const char* msg) const ;
 
 
-    void     dumpPrim() const ;
+    void     dumpPrim(const char* msg="CSGQuery::dumpPrim") const ;
     CSGGrid* scanPrim(int resolution) const ;
     float distance(const float3& position ) const ; 
     float operator()(const float3& position) const ;

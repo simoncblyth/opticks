@@ -21,18 +21,17 @@
 #include "NFieldCache.hpp"
 #include "NPY_LOG.hh"
 #include "NBox.hpp"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
-    nbox* world = make_box(0,0,0,100) ; 
+    nbox* world = nbox::Create(0,0,0,100, CSG_BOX) ; 
     nbbox wbb = world->bbox() ;
     NGenerator gen(wbb);
-    nbox* obj = make_box(0,0,0,10) ; 
+    nbox* obj = nbox::Create(0,0,0,10, CSG_BOX) ; 
 
     NFieldCache fc(*obj, wbb) ; 
 

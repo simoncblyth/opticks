@@ -42,8 +42,8 @@ void test_collect_surface_points()
     glm::vec4 aa(0,0,0,10);
     glm::vec4 bb(0,0,0,10);
 
-    nbox* a = make_box(aa.x,aa.y,aa.z,aa.w);
-    nbox* b = make_box(bb.x,bb.y,bb.z,bb.w);
+    nbox* a = nbox::Create(aa.x,aa.y,aa.z,aa.w, CSG_BOX);
+    nbox* b = nbox::Create(bb.x,bb.y,bb.z,bb.w, CSG_BOX);
     b->transform = nmat4triple::make_translate( tlate );    
 
     nintersection* ab = nintersection::make_intersection(a, b); 
