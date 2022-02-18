@@ -241,12 +241,12 @@ struct CSG_API CSGNode
     static CSGNode Union(); 
     static CSGNode Intersection(); 
     static CSGNode Difference(); 
-    static CSGNode BooleanOperator(char op, int num_sub); 
+    static CSGNode BooleanOperator(unsigned op, int num_sub); 
 
     static CSGNode Overlap(      int num_sub, int sub_offset); 
     static CSGNode Contiguous(   int num_sub, int sub_offset); 
     static CSGNode Discontiguous(int num_sub, int sub_offset); 
-    static CSGNode ListHeader(char type, int num_sub, int sub_offset); 
+    static CSGNode ListHeader(unsigned type, int num_sub, int sub_offset); 
 
 
     static CSGNode Zero();

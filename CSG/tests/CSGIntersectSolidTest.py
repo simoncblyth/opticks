@@ -144,6 +144,8 @@ def ReferenceGeometry(pl):
         AnnulusFourBoxUnion_YX(pl, opt="+X -X +Y -Y circ")
     elif geom == "BoxCrossTwoBoxUnion_YX":
         AnnulusFourBoxUnion_YX(pl, opt="+Y +X")
+    
+
     else:
         print("ReferenceGeometry not implemented for GEOM %s " % geom)
     pass

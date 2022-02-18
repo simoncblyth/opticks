@@ -69,7 +69,8 @@ EOU
 
 
 #geom=UnionBoxSphere_XY
-geom=UnionListBoxSphere_XY
+#geom=UnionListBoxSphere_XY
+geom=UnionLLBoxSphere_XY
 
 #geom=AnnulusBoxUnion_XY
 #geom=AnnulusTwoBoxUnion_XY
@@ -117,9 +118,7 @@ geom=UnionListBoxSphere_XY
 #geom=ContiguousThreeSphere_XY
 
 
-
-#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
-
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
 export GEOM=${GEOM:-$geom}
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
 

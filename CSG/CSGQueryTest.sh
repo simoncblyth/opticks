@@ -1,43 +1,27 @@
 #!/bin/bash -l 
 
-#DUMP=3 ORI=-150,0,0 DIR=1,0,0 CSGQueryTest O
+msg="=== $BASH_SOURCE "
+
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*} 
+GEOM=${GEOM:-$geom}
+
+echo $msg catgeom $catgeom geom $geom GEOM $GEOM
 
 
-#DUMP=3 ORI=-150,1,0 DIR=1,0,0 CSGQueryTest O
+#ori=0,-70.71067811865476,0
 
-#DUMP=3 ORI=-150,-1,0 DIR=1,0,0 CSGQueryTest O
+ori=0,0,0
+dir=1,0,0
 
+ORI=${ORI:-$ori}
+DIR=${DIR:-$dir}
 
-# this is giving hit when miss expected
-#DUMP=3 ORI=1,1,200 DIR=0,0,-1 CSGQueryTest O
-
-#DUMP=3 ORI=-1,-1,200 DIR=0,0,-1 CSGQueryTest O
-
-#DUMP=3 ORI=-100,-100,100 DIR=1,1,-1 CSGQueryTest O
-
-#DUMP=3 ORI=-100,-100,0 DIR=1,1,0 CSGQueryTest O
-
-#yx=1,1
-#YX=${YX:-$yx} CSGQueryTest
+export GEOM 
+export ORI  
+export DIR  
+export DUMP=3
 
 
-#DUMP=3 ORI=-1,1,0 DIR=1,0,0 CSGQueryTest O
-
-#DUMP=3 ORI=100,10,0 DIR=-1,0,0 CSGQueryTest O
-
-
-#GEOM=OverlapBoxSphere DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
-
-#GEOM=ContiguousBoxSphere DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
-#GEOM=DiscontiguousBoxSphere DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
-
-#GEOM=AltXJFixtureConstruction DUMP=3 ORI=0,0,0 DIR=1,0,0 CSGQueryTest O
-
-#GEOM=AltXJFixtureConstructionU DUMP=3 ORI=-70,-70,0 DIR=1,1,0 CSGQueryTest O
-#GEOM=AltXJFixtureConstruction  DUMP=3 ORI=-70,-70,0 DIR=1,1,0 CSGQueryTest O
-
-
-#GEOM=UnionListBoxSphere CSGMakerTest 
-GEOM=UnionListBoxSphere  DUMP=3 ORI=-70,-70,0 DIR=1,1,0 CSGQueryTest O
+CSGQueryTest O
 
 

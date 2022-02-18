@@ -65,14 +65,17 @@ ibsp
 dbsp
 UnionBoxSphere
 UnionListBoxSphere
+UnionLLBoxSphere
 IntersectionBoxSphere
 OverlapBoxSphere
 OverlapThreeSphere
 ContiguousThreeSphere
 DiscontiguousThreeSphere
+DiscontiguousTwoSphere
 ContiguousBoxSphere
 DiscontiguousBoxSphere
 DifferenceBoxSphere
+ListTwoBoxTwoSphere
 rcyl
 dcyl
 icyl
@@ -108,14 +111,17 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("elli", name)) so = makeEllipsoid(name) ;
     else if(StartsWith("UnionBoxSphere", name))        so = makeUnionBoxSphere(name) ;
     else if(StartsWith("UnionListBoxSphere", name))    so = makeUnionListBoxSphere(name) ;
+    else if(StartsWith("UnionLLBoxSphere", name))      so = makeUnionLLBoxSphere(name) ;
     else if(StartsWith("IntersectionBoxSphere", name)) so = makeIntersectionBoxSphere(name) ;
     else if(StartsWith("OverlapBoxSphere", name))      so = makeOverlapBoxSphere(name) ;
     else if(StartsWith("OverlapThreeSphere", name))    so = makeOverlapThreeSphere(name) ;
     else if(StartsWith("ContiguousThreeSphere", name))    so = makeContiguousThreeSphere(name) ;
     else if(StartsWith("DiscontiguousThreeSphere", name))    so = makeDiscontiguousThreeSphere(name) ;
+    else if(StartsWith("DiscontiguousTwoSphere", name))    so = makeDiscontiguousTwoSphere(name) ;
     else if(StartsWith("ContiguousBoxSphere", name))   so = makeContiguousBoxSphere(name) ;
     else if(StartsWith("DiscontiguousBoxSphere", name))   so = makeDiscontiguousBoxSphere(name) ;
     else if(StartsWith("DifferenceBoxSphere", name))   so = makeDifferenceBoxSphere(name) ;
+    else if(StartsWith("ListTwoBoxTwoSphere", name))   so = makeListTwoBoxTwoSphere(name); 
     else if(StartsWith("rcyl", name)) so = makeRotatedCylinder(name) ;
     else if(StartsWith("dcyl", name)) so = makeDifferenceCylinder(name) ;
     else if(StartsWith("icyl", name)) so = makeInfCylinder(name) ;
@@ -422,7 +428,7 @@ CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector
     return so ; 
 }
 
-CSGSolid* CSGMaker::makeBooleanBoxSphere( const char* label, char op_, float radius, float fullside, int meshIdx )
+CSGSolid* CSGMaker::makeBooleanBoxSphere( const char* label, unsigned op_, float radius, float fullside, int meshIdx )
 {
     CSGNode bx = CSGNode::Box3(fullside) ; 
     CSGNode sp = CSGNode::Sphere(radius); 
@@ -444,7 +450,7 @@ the nodes are already added to the CSGFoundry.
  
 **/
 
-CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, char op_, const CSGNode& left, const CSGNode& right, int meshIdx ) 
+CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, unsigned op_, const CSGNode& left, const CSGNode& right, int meshIdx ) 
 {
     unsigned numPrim = 1 ; 
     CSGSolid* so = fd->addSolid(numPrim, label);
@@ -517,9 +523,7 @@ CSGSolid* CSGMaker::makeOverlapBoxSphere( const char* label, float radius, float
                
 
 **/
-
-
-CSGSolid* CSGMaker::makeListThreeSphere( const char* label, char type, float radius, float side )
+CSGSolid* CSGMaker::makeListThreeSphere( const char* label, unsigned type, float radius, float side )
 {
     CSGNode s0 = CSGNode::Sphere(radius); 
     CSGNode s1 = CSGNode::Sphere(radius); 
@@ -545,18 +549,117 @@ CSGSolid* CSGMaker::makeListThreeSphere( const char* label, char type, float rad
 
 CSGSolid* CSGMaker::makeOverlapThreeSphere( const char* label, float radius, float side )
 {
-    return makeListThreeSphere( label, 'O' , radius, side ); 
+    return makeListThreeSphere( label, CSG_OVERLAP , radius, side ); 
 }
+/**
+CSGMaker::makeContiguousThreeSphere
+---------------------------------------
+radius 100.f side 50.f 
+
+
+    (-side,side,0)          (side,side,0)    
+    (-50,50,0)              (50,50,0) 
+        s1         |         s0 
+          +        |         +
+                   |
+                   |
+          ---------O-----------
+                   |
+                   |
+                   +
+                  s2
+                (0,-70,0)
+               (0,-side*sqrt(2),0)
+
+
+TIP: for debugging temporarily switch to CSG_DISCONTIGUOUS in order to see the separate spheres
+**/
+
 CSGSolid* CSGMaker::makeContiguousThreeSphere( const char* label, float radius, float side )
 {
-    return makeListThreeSphere( label, 'C' , radius, side ); 
+    return makeListThreeSphere( label, CSG_CONTIGUOUS , radius, side ); 
 }
+
+/**
+CSGMaker::makeDiscontiguousThreeSphere
+-----------------------------------------
+
+radius 100.f side 100.f 
+
+    (-side,side,0)          (side,side,0)    
+    (-100,100,0)            (100,100,0) 
+     s1            |            s0 
+      +            |             +
+                   |
+                   |
+                   |
+                   |
+                   |
+          ---------O-----------
+                   |
+                   |
+                   |
+                   |
+                   |
+                   |
+                   +
+                  s2
+                (0,-170,0)
+               (0,-side*sqrt(2),0)
+
+
+**/
+
 CSGSolid* CSGMaker::makeDiscontiguousThreeSphere( const char* label, float radius, float side )
 {
-    return makeListThreeSphere( label, 'D' , radius, side ); 
+    return makeListThreeSphere( label, CSG_DISCONTIGUOUS , radius, side ); 
 }
 
 
+/**
+CSGMaker::makeDiscontiguousTwoSphere
+-------------------------------------
+
+Checking the sense of the transforms : get the expected ones. 
+
+
+                   Y
+    (-100,200)     |
+    (-side, 2*side)|
+         t1        |
+           +       |
+                   |
+                   |
+                   |      +   t0 (side, 0.5*side)    (100,50)
+                   |                            
+                   |
+        -----------O------------------------------ X
+
+**/
+
+CSGSolid* CSGMaker::makeDiscontiguousTwoSphere( const char* label, float radius, float side )
+{
+    return makeListTwoSphere( label, CSG_DISCONTIGUOUS , radius, side ); 
+}
+
+CSGSolid* CSGMaker::makeListTwoSphere( const char* label, unsigned type, float radius, float side )
+{
+    CSGNode s0 = CSGNode::Sphere(radius); 
+    CSGNode s1 = CSGNode::Sphere(radius); 
+
+    const Tran<double>* t0 = Tran<double>::make_translate(  side,  0.5*side     , 0. ); 
+    const Tran<double>* t1 = Tran<double>::make_translate( -side,  2.0*side      , 0. ); 
+
+    std::vector<CSGNode> leaves ; 
+    leaves.push_back(s0); 
+    leaves.push_back(s1); 
+
+    std::vector<const Tran<double>*> tran ; 
+    tran.push_back(t0); 
+    tran.push_back(t1); 
+ 
+    return makeList( label, type, leaves, &tran ); 
+}
 
 
 
@@ -595,43 +698,26 @@ CSGSolid* CSGMaker::makeDiscontiguousBoxSphere( const char* label, float radius,
 
 
 
-CSGSolid* CSGMaker::makeOverlapList(       const char* label, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran )
+CSGSolid* CSGMaker::makeOverlapList(       const char* label, std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran )
 {  
-    return makeList( label, 'O', leaves, tran ); 
+    return makeList( label, CSG_OVERLAP, leaves, tran ); 
 }
-CSGSolid* CSGMaker::makeContiguousList(    const char* label, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran  )
+CSGSolid* CSGMaker::makeContiguousList(    const char* label, std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran  )
 { 
-    return makeList( label, 'C', leaves, tran ); 
+    return makeList( label, CSG_CONTIGUOUS, leaves, tran ); 
 }
-CSGSolid* CSGMaker::makeDiscontiguousList( const char* label, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran  )
+CSGSolid* CSGMaker::makeDiscontiguousList( const char* label, std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran  )
 { 
-    return makeList( label, 'D', leaves, tran ); 
+    return makeList( label, CSG_DISCONTIGUOUS, leaves, tran ); 
 }
 
-/**
-CSGMaker::makeListOne
------------------------
 
-For machinery debugging 
-**/
-
-CSGSolid* CSGMaker::makeListOne( const char* label, char type, const CSGNode& leaf )
-{
-    std::vector<CSGNode> leaves ; 
-    leaves.push_back(leaf); 
-    return makeList(label, type, leaves, nullptr ); 
-}
-
-CSGSolid* CSGMaker::makeList( const char* label, char type, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran )
+CSGSolid* CSGMaker::makeList( const char* label, unsigned type, std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran )
 {
     unsigned numSub = leaves.size() ; 
     unsigned numTran = tran ? tran->size() : 0  ; 
-
-    if( numTran > 0 )
-    {
-        assert( numSub == numTran ); 
-    }
-
+    if( numTran > 0 ) assert( numSub == numTran );
+ 
     unsigned numPrim = 1 ; 
     CSGSolid* so = fd->addSolid(numPrim, label);
     
@@ -639,35 +725,16 @@ CSGSolid* CSGMaker::makeList( const char* label, char type, const std::vector<CS
     int nodeOffset_ = -1 ; 
     CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
 
-    unsigned subOffset = 0 ;  
+    unsigned subOffset = 1 ; // now using absolute offsets from "root" to the first sub  see notes/issues/ContiguousThreeSphere.rst
     CSGNode hdr = CSGNode::ListHeader(type, numSub, subOffset ); 
     CSGNode* n = fd->addNode(hdr); 
 
     AABB bb = {} ;
-    // naive bbox combination yields overlarge bbox, not appropriate for production code
-    for(unsigned i=0 ; i < leaves.size() ; i++)
-    {
-        const CSGNode& leaf = leaves[i] ; 
-        const Tran<double>* tr = tran ? (*tran)[i] : nullptr ; 
-
-        CSGNode* s = fd->addNode(leaf); 
-
-        if(tr)
-        {
-            bool transform_node_aabb = true ; 
-            fd->addNodeTran(s, tr, transform_node_aabb ); 
-        }
-
-        bb.include_aabb( s->AABB() );  // assumes any transforms have been applied to the Node AABB
-    }
-     
+    fd->addNodes( bb, leaves, tran ); 
     p->setAABB( bb.data() );  
-
     so->center_extent = bb.center_extent()  ; 
 
-    // setting identity transform 
-    fd->addNodeTran(n); 
-
+    fd->addNodeTran(n);   // setting identity transform 
     
     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
     return so ; 
@@ -683,29 +750,37 @@ This is for testing a tree with a compound node within it
 
           op
          /  \
-        bx   co  
+        bx  (co)  
              |
              sp 
 
+
+List notes require subNum and subOffset to identify the referenced sequence of sub-nodes. 
+The subOffset in a tree with only a single list will simply be the number of tree nodes 
+which is 3 in this simple example. 
+For larger trees it will be the number of nodes in the complete binary tree 
+which will be: 3, 7, 15, 31  
+
+When more than one list the subOffset will need to be arranged to 
+skip over the subs of other lists. 
 
 **/
 
 CSGSolid* CSGMaker::makeUnionListBoxSphere( const char* label, float radius, float fullside )
 {
     // 3 tree nodes + 1 sub-node from the compound
-    CSGNode op    = CSGNode::BooleanOperator('U', 3); 
+    CSGNode op    = CSGNode::BooleanOperator(CSG_UNION, 3); 
     CSGNode left  = CSGNode::Box3(fullside) ; 
 
     int subNum = 1 ;    // number of subs referenced by the List node
-    int subOffset = 3 ; // offset to the first node after the tree 
-    // when only one List the subOffset will be the number of nodes in the tree eg 3, 7, 15 
-    CSGNode right = CSGNode::ListHeader('C', subNum, subOffset ); 
+    int subOffset = op.subNum() ; 
+    CSGNode right = CSGNode::ListHeader(CSG_CONTIGUOUS, subNum, subOffset ); 
     CSGNode sub   = CSGNode::Sphere(radius); 
 
     unsigned numPrim = 1 ; 
     CSGSolid* so = fd->addSolid(numPrim, label);
 
-    unsigned numNode = 3 + 1 ; 
+    unsigned numNode = 3 + subNum ; 
     int nodeOffset_ = -1 ; 
     CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
 
@@ -727,17 +802,191 @@ CSGSolid* CSGMaker::makeUnionListBoxSphere( const char* label, float radius, flo
     p->setAABB( bb.data() );  
     so->center_extent = bb.center_extent()  ; 
 
-    fd->addNodeTran(root); 
+    fd->addNodeTran(root);  // adding identity, as geometry must have at least one transform
 
     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
     return so ; 
 }
 
 
+/**
+CSGMaker::makeBooleanListList
+-------------------------------
+
+This generalizes from CSGMaker::makeUnionListBoxSphere in order to test in a more flexible way.
+
+**/
+
+CSGSolid* CSGMaker::makeBooleanListList( const char* label, 
+       unsigned op_, 
+       unsigned ltype,
+       unsigned rtype,  
+       std::vector<CSGNode>& lhs, 
+       std::vector<CSGNode>& rhs, 
+       const std::vector<const Tran<double>*>* ltran,
+       const std::vector<const Tran<double>*>* rtran
+    )
+{
+    unsigned num_left  = lhs.size(); 
+    unsigned num_right = rhs.size(); 
+    assert( num_left > 0 && num_right > 0 ); 
+
+    // singles on left or right are inlined into the boolean so no addition beyond the tree
+    unsigned numNode = 3 + ( num_left == 1 ? 0 : num_left ) + ( num_right == 1 ? 0 : num_right )  ; 
+
+    unsigned numPrim = 1 ; 
+    CSGSolid* so = fd->addSolid(numPrim, label);
+
+    int nodeOffset_ = -1 ; 
+    CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
+
+    CSGNode op    = CSGNode::BooleanOperator(op_, 3); 
+    CSGNode* root = fd->addNode(op); 
+
+    unsigned subOffset = 0 ; 
+    subOffset += root->subNum() ;  
+    assert( subOffset == 3 );   // 3 tree nodes
 
 
+    AABB bb = {} ;
+
+    if( num_left == 1 && num_right == 1 )
+    {
+        const CSGNode& left = lhs[0]; 
+        const CSGNode& right = rhs[0]; 
+
+        fd->addNode(bb, left); 
+        fd->addNode(bb, right); 
+    }
+    else if( num_left > 1 && num_right == 1 )
+    {
+        CSGNode left = CSGNode::ListHeader(ltype, num_left, subOffset ); 
+        subOffset += num_left ; 
+
+        const CSGNode& right = rhs[0]; 
+
+        fd->addNode(left); 
+        fd->addNode(bb, right); 
+        fd->addNodes(bb, lhs, ltran); 
+    }
+    else if( num_left == 1 && num_right > 1 )
+    {
+        CSGNode left = lhs[0] ; 
+        CSGNode right = CSGNode::ListHeader(rtype, num_right, subOffset ); 
+        subOffset += num_right ; 
+
+        fd->addNode(bb, left); 
+        fd->addNode(right); 
+        fd->addNodes(bb, rhs, rtran); 
+    }
+    else if( num_left > 1 && num_right > 1 )
+    {
+        CSGNode left = CSGNode::ListHeader(ltype, num_left, subOffset ); 
+        subOffset += num_left ; 
+
+        CSGNode right = CSGNode::ListHeader(rtype, num_right, subOffset ); 
+        subOffset += num_right ; 
+
+        fd->addNode(left); 
+        fd->addNode(right); 
+
+        fd->addNodes( bb, lhs, ltran ); 
+        fd->addNodes( bb, rhs, rtran ); 
+    }
 
 
+    p->setAABB( bb.data() );  
+    so->center_extent = bb.center_extent()  ; 
+
+    fd->addNodeTran(root);  // adding identity, as geometry must have at least one transform
+    
+    return so ; 
+}
+
+
+/**
+CSGMaker::makeUnionLLBoxSphere
+--------------------------------
+
+radius=100.f fullside=100.f
+
+
+                                   (-50,100)                  (50,100)
+                                    +                           +
+                          .                 .             .            .
+                                                   +  
+                     .                                                       .
+                                              .           . 
+ 
+                  .                                                                 .
+                                         .
+
+              .                       .                       \                        .
+             
+                               
+           -|-----------------------s0-------------O------------|s1--------------------|-------------
+                              (-50,0,0)                       (50,0,0)                        
+
+              \                        \                      /                       /
+
+
+                   
+                 
+                                                    +
+
+
+                                    +                           +
+                                  (-50,-100)                 (50, -100)
+
+
+            |          |            |             |            |           |          |
+          -150        -100         -50            0            50         100        150
+          
+**/
+
+CSGSolid* CSGMaker::makeUnionLLBoxSphere( const char* label, float radius, float fullside  )
+{
+    std::vector<CSGNode> lhs ; 
+    lhs.push_back( CSGNode::Sphere(radius) ); 
+    lhs.push_back( CSGNode::Sphere(radius) ); 
+
+    std::vector<const Tran<double>*> ltran ;
+    ltran.push_back(Tran<double>::make_translate( -radius/2., 0., 0. )) ;
+    ltran.push_back(Tran<double>::make_translate(  radius/2., 0., 0. )) ;
+
+    std::vector<CSGNode> rhs ; 
+    rhs.push_back( CSGNode::Box3(fullside) ); 
+    rhs.push_back( CSGNode::Box3(fullside) ); 
+
+    std::vector<const Tran<double>*> rtran ;
+    rtran.push_back(Tran<double>::make_translate(   0.,  fullside, 0. )) ;
+    rtran.push_back(Tran<double>::make_translate(   0., -fullside, 0. )) ;
+
+    unsigned btype = CSG_DIFFERENCE ; 
+    unsigned ltype = CSG_CONTIGUOUS ; 
+    unsigned rtype = CSG_DISCONTIGUOUS  ;   
+
+    return makeBooleanListList(label, btype, ltype, rtype, lhs, rhs, &ltran, &rtran ); 
+}
+
+CSGSolid* CSGMaker::makeListTwoBoxTwoSphere( const char* label, float radius, float fullside  )
+{
+    std::vector<CSGNode> leaves ; 
+    leaves.push_back( CSGNode::Sphere(radius) ); 
+    leaves.push_back( CSGNode::Sphere(radius) ); 
+    leaves.push_back( CSGNode::Box3(fullside) ); 
+    leaves.push_back( CSGNode::Box3(fullside) ); 
+
+    std::vector<const Tran<double>*> tran ;
+    tran.push_back(Tran<double>::make_translate( -radius/2., 0., 0. )) ;
+    tran.push_back(Tran<double>::make_translate(  radius/2., 0., 0. )) ;
+    tran.push_back(Tran<double>::make_translate(   0.,  fullside, 0. )) ;
+    tran.push_back(Tran<double>::make_translate(   0., -fullside, 0. )) ;
+
+    unsigned type = CSG_DISCONTIGUOUS ; // useful during dev to see constituents
+    //unsigned type = CSG_CONTIGUOUS ; 
+    return makeList( label, type, leaves, &tran ); 
+}
 
 
 /**
@@ -812,7 +1061,7 @@ CSGSolid* CSGMaker::makeDifferenceCylinder( const char* label, float rmax, float
 
     CSGNode outer = CSGNode::Cylinder( 0.f, 0.f, rmax, z1, z2 ); 
     CSGNode inner = CSGNode::Cylinder( px, py,   rmin, z1*z_inner_factor, z2*z_inner_factor ); 
-    return makeBooleanTriplet(label, 'D', outer, inner ); 
+    return makeBooleanTriplet(label, CSG_DIFFERENCE, outer, inner ); 
 }
 
 /**
@@ -832,9 +1081,9 @@ CSGMaker::makeBoxSubSubCylinder
 
 CSGSolid* CSGMaker::makeBoxSubSubCylinder( const char* label, float fullside, float rmax, float rmin, float z1, float z2, float z_inner_factor   )
 {
-    CSGNode t = CSGNode::BooleanOperator('D', -1); 
+    CSGNode t = CSGNode::BooleanOperator(CSG_DIFFERENCE, -1); 
     CSGNode l = CSGNode::Box3(fullside) ;
-    CSGNode r = CSGNode::BooleanOperator('D', -1); 
+    CSGNode r = CSGNode::BooleanOperator(CSG_DIFFERENCE, -1); 
     CSGNode ll = CSGNode::Zero(); 
     CSGNode lr = CSGNode::Zero(); 
     CSGNode rl = CSGNode::Cylinder( 0.f, 0.f, rmax, z1, z2 ); 
@@ -848,13 +1097,13 @@ CSGSolid* CSGMaker::makeBoxSubSubCylinder( const char* label, float fullside, fl
 
 
 CSGSolid* CSGMaker::makeUnionBoxSphere( const char* label, float radius, float fullside ){
-    return makeBooleanBoxSphere(label, 'U', radius, fullside, UBSP_MIDX ); 
+    return makeBooleanBoxSphere(label, CSG_UNION, radius, fullside, UBSP_MIDX ); 
 }
 CSGSolid* CSGMaker::makeIntersectionBoxSphere( const char* label, float radius, float fullside ){
-    return makeBooleanBoxSphere(label, 'I', radius, fullside, IBSP_MIDX ); 
+    return makeBooleanBoxSphere(label, CSG_INTERSECTION, radius, fullside, IBSP_MIDX ); 
 }
 CSGSolid* CSGMaker::makeDifferenceBoxSphere( const char* label, float radius, float fullside ){
-    return makeBooleanBoxSphere(label, 'D', radius, fullside, DBSP_MIDX ); 
+    return makeBooleanBoxSphere(label, CSG_DIFFERENCE, radius, fullside, DBSP_MIDX ); 
 }
 
 

@@ -161,33 +161,35 @@ void CSGNode::Dump(const CSGNode* n_, unsigned ni, const char* label)
 
 
 
-CSGNode CSGNode::Union(){         return CSGNode::BooleanOperator('U',-1) ; }  // static
-CSGNode CSGNode::Intersection(){  return CSGNode::BooleanOperator('I',-1) ; }
-CSGNode CSGNode::Difference(){    return CSGNode::BooleanOperator('D',-1) ; }
+CSGNode CSGNode::Union(){         return CSGNode::BooleanOperator(CSG_UNION,-1) ; }  // static
+CSGNode CSGNode::Intersection(){  return CSGNode::BooleanOperator(CSG_INTERSECTION,-1) ; }
+CSGNode CSGNode::Difference(){    return CSGNode::BooleanOperator(CSG_DIFFERENCE,-1) ; }
 
-CSGNode CSGNode::BooleanOperator(char op, int num_sub)   // static 
+CSGNode CSGNode::BooleanOperator(unsigned op, int num_sub)   // static 
 {
+    assert( CSG::IsOperator((OpticksCSG_t)op) ); 
     CSGNode nd = {} ;
-    nd.setTypecode(CSG::BooleanOperator(op)) ; 
+    nd.setTypecode(op) ; 
     if( num_sub > 0 ) 
     {
         nd.setSubNum(num_sub); 
-    }
+    }    
     return nd ; 
 }
 
-CSGNode CSGNode::Overlap(      int num_sub, int sub_offset){ return CSGNode::ListHeader( 'O', num_sub, sub_offset ); }
-CSGNode CSGNode::Contiguous(   int num_sub, int sub_offset){ return CSGNode::ListHeader( 'C', num_sub, sub_offset ); }
-CSGNode CSGNode::Discontiguous(int num_sub, int sub_offset){ return CSGNode::ListHeader( 'D', num_sub, sub_offset ); }
+CSGNode CSGNode::Overlap(      int num_sub, int sub_offset){ return CSGNode::ListHeader( CSG_OVERLAP, num_sub, sub_offset ); }
+CSGNode CSGNode::Contiguous(   int num_sub, int sub_offset){ return CSGNode::ListHeader( CSG_CONTIGUOUS, num_sub, sub_offset ); }
+CSGNode CSGNode::Discontiguous(int num_sub, int sub_offset){ return CSGNode::ListHeader( CSG_DISCONTIGUOUS, num_sub, sub_offset ); }
 
-CSGNode CSGNode::ListHeader(char type, int num_sub, int sub_offset )   // static 
+CSGNode CSGNode::ListHeader(unsigned type, int num_sub, int sub_offset )   // static 
 {
     CSGNode nd = {} ;
     switch(type)
     { 
-        case 'O': nd.setTypecode(CSG_OVERLAP)      ; break ; 
-        case 'C': nd.setTypecode(CSG_CONTIGUOUS) ; break ; 
-        case 'D': nd.setTypecode(CSG_DISCONTIGUOUS) ; break ; 
+        case CSG_OVERLAP:       nd.setTypecode(CSG_OVERLAP)       ; break ; 
+        case CSG_CONTIGUOUS:    nd.setTypecode(CSG_CONTIGUOUS)    ; break ; 
+        case CSG_DISCONTIGUOUS: nd.setTypecode(CSG_DISCONTIGUOUS) ; break ; 
+        default:   assert(0)  ; 
     }
     if(num_sub > 0)
     {

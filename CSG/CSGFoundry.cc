@@ -823,6 +823,69 @@ CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl )
     return last_added_node ; 
 }
 
+
+
+
+/**
+CSGFoundry::addNodes
+----------------------
+
+Pointer to the last added node is returned
+
+**/
+
+CSGNode* CSGFoundry::addNodes(const std::vector<CSGNode>& nds )
+{
+    unsigned idx = node.size() ; 
+    for(unsigned i=0 ; i < nds.size() ; i++) 
+    {
+        const CSGNode& nd = nds[i]; 
+        idx = node.size() ;     // number of nodes prior to adding this one 
+        assert( idx < IMAX ); 
+        node.push_back(nd); 
+    }
+    return node.data() + idx ; 
+}
+
+CSGNode*  CSGFoundry::addNode(AABB& bb, CSGNode nd )
+{
+    CSGNode* n = addNode(nd); 
+    bb.include_aabb( n->AABB() ); 
+    return n ; 
+}
+
+CSGNode* CSGFoundry::addNodes(AABB& bb, std::vector<CSGNode>& nds, const std::vector<const Tran<double>*>* trs  )
+{
+    if( trs == nullptr ) return addNodes(nds); 
+    
+    unsigned num_nd = nds.size() ; 
+    unsigned num_tr = trs ? trs->size() : 0  ; 
+    if( num_tr > 0 ) assert( num_nd == num_tr );
+
+    CSGNode* n = nullptr ;  
+    for(unsigned i=0 ; i < num_nd ; i++) 
+    {
+        CSGNode& nd = nds[i]; 
+        const Tran<double>* tr = trs ? (*trs)[i] : nullptr ; 
+        n = addNode(nd); 
+        if(tr)
+        {
+            bool transform_node_aabb = true ; 
+            addNodeTran(n, tr, transform_node_aabb ); 
+        }
+        bb.include_aabb( n->AABB() ); 
+    }
+    return n ; 
+}
+
+
+
+
+
+
+
+
+
 float4* CSGFoundry::addPlan(const float4& pl )
 {
     unsigned idx = plan.size(); 
@@ -989,18 +1052,6 @@ void CSGFoundry::addInstancePlaceholder()
 
 
 
-CSGNode* CSGFoundry::addNodes(const std::vector<CSGNode>& nds )
-{
-    unsigned idx = node.size() ; 
-    for(unsigned i=0 ; i < nds.size() ; i++) 
-    {
-        const CSGNode& nd = nds[i]; 
-        idx = node.size() ;  
-        assert( idx < IMAX ); 
-        node.push_back(nd); 
-    }
-    return node.data() + idx ; 
-}
 
 /**
 CSGFoundry::addPrim

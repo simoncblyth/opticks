@@ -41,14 +41,13 @@ struct CSG_API CSGMaker
     CSGSolid* makeClustered(const char* name,  int i0, int i1, int is, int j0, int j1, int js, int k0, int k1, int ks, double unit, bool inbox ) ;
 
     CSGSolid* makeSolid11(const char* label, CSGNode nd, const std::vector<float4>* pl=nullptr, int meshIdx=-1 );
-    CSGSolid* makeBooleanBoxSphere( const char* label, char op, float radius, float fullside, int meshIdx = -1  ) ;
-    CSGSolid* makeBooleanTriplet(   const char* label, char op, const CSGNode& left, const CSGNode& right, int meshIdx=-1 ) ; 
+    CSGSolid* makeBooleanBoxSphere( const char* label, unsigned op, float radius, float fullside, int meshIdx = -1  ) ;
+    CSGSolid* makeBooleanTriplet(   const char* label, unsigned op, const CSGNode& left, const CSGNode& right, int meshIdx=-1 ) ; 
 
-    CSGSolid* makeOverlapList(       const char* label,            const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
-    CSGSolid* makeContiguousList(    const char* label,            const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
-    CSGSolid* makeDiscontiguousList( const char* label,            const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
-    CSGSolid* makeList(              const char* label, char type, const std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  );
-    CSGSolid* makeListOne(           const char* label, char type, const CSGNode& leaf ); 
+    CSGSolid* makeOverlapList(       const char* label,            std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
+    CSGSolid* makeContiguousList(    const char* label,            std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
+    CSGSolid* makeDiscontiguousList( const char* label,            std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  ); 
+    CSGSolid* makeList(              const char* label, unsigned type, std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* trans  );
 
 
     CSGSolid* makeBooleanSeptuplet( 
@@ -72,11 +71,31 @@ struct CSG_API CSGMaker
     CSGSolid* makeOverlapBoxSphere(       const char* label="obsp", float radius=100.f, float fullside=150.f ); 
 
 
-    CSGSolid* makeListThreeSphere(          const char* label, char type, float radius, float side  ); 
+
+    CSGSolid* makeUnionLLBoxSphere( const char* label="UnionLLBoxSphere", float radius=100.f, float fullside=100.f  ); 
+    CSGSolid* makeListTwoBoxTwoSphere( const char* label="ListTwoBoxTwoSphere", float radius=100.f, float fullside=100.f  ); 
+
+
+    CSGSolid* makeBooleanListList( const char* label, 
+       unsigned op, 
+       unsigned ltype, 
+       unsigned rtype, 
+       std::vector<CSGNode>& lhs, 
+       std::vector<CSGNode>& rhs,  
+       const std::vector<const Tran<double>*>* ltran,
+       const std::vector<const Tran<double>*>* rtran
+        ); 
+
+
+    CSGSolid* makeListThreeSphere(          const char* label, unsigned type, float radius, float side  ); 
     CSGSolid* makeOverlapThreeSphere(       const char* label, float radius=100.f, float side=50.f ); 
     CSGSolid* makeContiguousThreeSphere(    const char* label, float radius=100.f, float side=50.f ); 
     CSGSolid* makeDiscontiguousThreeSphere( const char* label, float radius=100.f, float side=100.f  ); 
 
+
+    CSGSolid* makeListTwoSphere( const char* label, unsigned type, float radius, float side ); 
+    CSGSolid* makeDiscontiguousTwoSphere( const char* label, float radius=100.f, float side=100.f ); 
+  
 
     CSGSolid* makeContiguousBoxSphere(    const char* label="cbsp", float radius=100.f, float fullside=150.f ); 
     CSGSolid* makeDiscontiguousBoxSphere( const char* label="DiscontiguousBoxSphere", float radius=100.f, float fullside=150.f ) ; 

@@ -85,7 +85,7 @@ float distance_tree( const float3& global_position, const CSGNode* node, const f
         if( node_or_leaf )
         {
             // could explicitly branch here on distance_node_contiguous or distance_leaf
-            distance = distance_node(global_position, nd, plan0, itra0 ) ; 
+            distance = distance_node(global_position, nd, node, plan0, itra0 ) ; 
             stack.push(distance) ; 
         }
         else
@@ -126,7 +126,7 @@ float distance_list( const float3& global_position, const CSGNode* node, const f
     for(int nodeIdx=1 ; nodeIdx < numNode ; nodeIdx++)  // head node of list just carries subNum, so start from 1 
     {
         const CSGNode* nd = node + nodeIdx ; 
-        float sd = distance_node(global_position, nd, plan0, itra0 ) ; 
+        float sd = distance_node(global_position, nd, node, plan0, itra0 ) ; 
         distance = fminf( distance,  sd ) ;   
     }
     return distance ; 
@@ -622,7 +622,7 @@ bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, con
 {
     const unsigned typecode = node->typecode() ;  
 #ifdef DEBUG 
-    printf("//intersect_prim typecode %d \n", typecode ); 
+    printf("//intersect_prim typecode %d name %s \n", typecode, CSG::Name(typecode) ); 
 #endif
 
 #ifdef DEBUG_SIX
@@ -671,7 +671,7 @@ float distance_prim( const float3& global_position, const CSGNode* node, const f
     }
     else  
     {
-        distance = distance_node_list( typecode, global_position, node, plan, itra ) ; 
+        distance = distance_node_list( typecode, global_position, node, node, plan, itra ) ; 
     }
     return distance ; 
 }

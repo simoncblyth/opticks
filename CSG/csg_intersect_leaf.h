@@ -123,10 +123,6 @@ bool intersect_leaf_sphere(float4& isect, const quad& q0, const float& t_min, co
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
 
-#ifdef DEBUG
-    printf("//intersect_leaf_sphere radius %10.4f \n", radius );  
-#endif
-
     float3 O = ray_origin - center;
     float3 D = ray_direction;
 
@@ -156,8 +152,12 @@ bool intersect_leaf_sphere(float4& isect, const quad& q0, const float& t_min, co
     }
 
 #ifdef DEBUG
-    printf("//intersect_leaf_sphere valid_isect %d  isect ( %10.4f %10.4f %10.4f %10.4f)  \n", valid_isect, isect.x, isect.y, isect.z, isect.w ); 
+    //printf("//intersect_leaf_sphere valid_isect %d  isect ( %10.4f %10.4f %10.4f %10.4f)  \n", valid_isect, isect.x, isect.y, isect.z, isect.w ); 
+    printf("//intersect_leaf_sphere valid %d radius %10.4f center (%10.4f, %10.4f, %10.4f) ray_ori (%10.4f, %10.4f, %10.4f)  \n", 
+       valid_isect,  radius, center.x, center.y, center.z, ray_origin.x, ray_origin.y, ray_origin.z  );  
 #endif
+
+
     return valid_isect ;
 }
 
@@ -1422,7 +1422,7 @@ float distance_leaf( const float3& global_position, const CSGNode* node, const f
 
     const float sd = complement ? -distance : distance  ; 
 #ifdef DEBUG
-    printf("//distance_leaf typecode %d complement %d sd %10.4f \n", typecode, complement, sd  ); 
+    printf("//distance_leaf typecode %d name %s complement %d sd %10.4f \n", typecode, CSG::Name(typecode), complement, sd  ); 
 #endif
     return sd ; 
 }
@@ -1451,9 +1451,9 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
     float3 direction = q ? q->right_multiply(ray_direction, 0.f) : ray_direction ;   
 
 #ifdef DEBUG
-    printf("//intersect_leaf typecode %d gtransformIdx %d \n", typecode, gtransformIdx ); 
-    printf("//intersect_leaf ray_origin (%10.4f,%10.4f,%10.4f) \n",  ray_origin.x, ray_origin.y, ray_origin.z ); 
-    printf("//intersect_leaf ray_direction (%10.4f,%10.4f,%10.4f) \n",  ray_direction.x, ray_direction.y, ray_direction.z ); 
+    //printf("//[intersect_leaf typecode %d name %s gtransformIdx %d \n", typecode, CSG::Name(typecode), gtransformIdx ); 
+    //printf("//intersect_leaf ray_origin (%10.4f,%10.4f,%10.4f) \n",  ray_origin.x, ray_origin.y, ray_origin.z ); 
+    //printf("//intersect_leaf ray_direction (%10.4f,%10.4f,%10.4f) \n",  ray_direction.x, ray_direction.y, ray_direction.z ); 
     /*
     if(q) 
     {
@@ -1509,9 +1509,8 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
     }
 
 #ifdef DEBUG
-    printf("//intersect_leaf valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", valid_isect, isect.x, isect.y, isect.z, isect.w); 
+    //printf("//]intersect_leaf typecode %d name %s valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", typecode, CSG::Name(typecode), valid_isect, isect.x, isect.y, isect.z, isect.w); 
 #endif
- 
 
     return valid_isect ; 
 }
