@@ -62,7 +62,12 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* geom = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ); 
+    const char* geom_ = SSys::getenvvar("GEOM", "AdditionAcrylicConstruction" ) ; 
+    const char* geom = SStr::Trim(geom_); 
+
+    LOG(info) << " geom_ [" << geom_ << "] " ; 
+    LOG(info) << " geom  [" << geom  << "] " ; 
+
 
     const char* argforced = "--allownokey --gparts_transform_offset" ; 
     Opticks ok(argc, argv, argforced); 
@@ -79,6 +84,7 @@ int main(int argc, char** argv)
     }
     else
     {   // for shapes authored as CSGSolid/CSGPrim/CSGNode 
+        // HMM: handling these with CSG/CSGMakerTest.sh  
         chain.convertName(geom);         
     }
 

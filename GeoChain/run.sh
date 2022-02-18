@@ -96,7 +96,10 @@ geom=AltXJfixtureConstructionU
 #geom=PolyconeWithMultipleRmin
 #geom=Orb
 
-#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*}
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*}
+
+echo geom [$geom]
+
 export GEOM=${GEOM:-$geom}
 # pick the Solid or Volume binary depending on GEOM
 
@@ -156,6 +159,7 @@ export NCSG=INFO
 export NCSGData=INFO
 
 export X4Solid=INFO  
+export X4SolidMaker=INFO  
 export X4PhysicalVolume=INFO
 
 # checking that --skipsolidname is working 

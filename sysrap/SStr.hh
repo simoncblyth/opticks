@@ -82,6 +82,10 @@ class SYSRAP_API SStr {
       static int  GetPointerSuffixDigits( const char* name );
       static const char* TrimPointerSuffix( const char* name ); 
 
+      static const char* TrimLeading(const char* s); 
+      static const char* TrimTrailing(const char* s); 
+      static const char* Trim(const char* s); 
+
       static const char* Concat( const char* a, const char* b, const char* c=NULL  );
       static const char* Concat( const char* a, unsigned b   , const char* c=NULL  );
       static const char* Concat( const char* a, unsigned b, const char* c, unsigned d, const char* e  ) ; 

@@ -523,6 +523,17 @@ void NCSG::import_tree()
     import_tree_list_(idx0);    
 }
 
+/**
+NCSG::import_tree_list_
+-------------------------
+
+Invoked from NCSG::import_tree after the tree has been imported, 
+so can find the list header nodes 
+
+TODO: does this need subOffset yet ? Best to do together with subNum 
+
+**/
+
 void NCSG::import_tree_list_(unsigned idx0)
 {
     std::vector<nnode*> list_nodes ;
@@ -536,17 +547,18 @@ void NCSG::import_tree_list_(unsigned idx0)
     for(unsigned i=0 ; i < num_lists ; i++)
     {
         nnode* n = list_nodes[i] ;
+
         unsigned sub_num = n->subNum(); 
-        unsigned sub_num2 = n->subs.size(); 
-        assert( sub_num == sub_num2 ); 
-        LOG(info) << " i " << i << " sub_num " << sub_num << " idx0 " << idx0 << " offset " << offset ;
+        unsigned sub_num2 = n->subs.size(); // huh: that will be zero  
+        assert( sub_num == sub_num2 );   // <-- expecting this to assert
+
+        LOG(info) << " i " << i << " sub_num " << sub_num << " sub_num2 " << sub_num2 << " idx0 " << idx0 << " offset " << offset ;
 
         import_tree_list_subs_( n, sub_num, offset ); 
 
         offset += sub_num ; 
     } 
 }
-
 
 void NCSG::import_tree_list_subs_( nnode* n, unsigned sub_num, unsigned offset )
 {

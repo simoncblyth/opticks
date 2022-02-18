@@ -106,7 +106,7 @@ geom=OverlapThreeSphere
 
 #geom=parade
 
-#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*}
 export GEOM=${GEOM:-$geom}
 
 # cfname picks the CSGFoundry geometry to load

@@ -408,9 +408,6 @@ void X4Solid::changeToContiguousSolid()
 }
 
 
-
-
-
 /**
 X4Solid::convertBooleanSolid
 ------------------------------

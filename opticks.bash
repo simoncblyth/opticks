@@ -29,6 +29,7 @@ oot(){ oo ; opticks-t ; : opticks.bash ; }
 t(){ typeset -f $*    ; : opticks.bash ; } 
 rc(){ local RC=$?; echo RC $RC; return $RC ; : opticks.bash ;  }
 
+geom(){ local path=$HOME/.opticks/GEOM.txt ; vi $path ;   }
 
 opticks-source(){   echo $BASH_SOURCE ; }
 opticks-ldir(){     echo $(dirname $BASH_SOURCE) ; }

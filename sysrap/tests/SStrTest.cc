@@ -532,6 +532,38 @@ void test_Extract_float()
     for(unsigned i=0 ; i < vals.size() ; i++ ) std::cout << vals[i] << std::endl;
 }
 
+void test_Trim(const char* s)
+{
+     std::cout 
+         << "s                    [" << s << "]" << std::endl 
+         << "SStr::TrimTrailing(s)[" << SStr::TrimTrailing(s) << "]" << std::endl 
+         << "SStr::TrimLeading(s) [" << SStr::TrimLeading(s) << "]" << std::endl 
+         << "SStr::Trim(s)        [" << SStr::Trim(s) << "]" << std::endl 
+         ;
+
+}
+
+void test_Trim()
+{
+     const char* s0 = "            contents with gaps before whitespace          " ; 
+     test_Trim(s0);
+
+     const char* s1 = R"LITERAL(     
+ 
+red
+green
+blue cyan magenta
+yellow
+
+
+)LITERAL" ;
+
+     test_Trim(s1);
+
+
+}
+
+
 
 
 
@@ -565,10 +597,10 @@ int main(int argc , char** argv )
     test_ato_(); 
     test_Save_Load(); 
     test_Save_PWD(); 
-    */
-    //test_Extract(); 
+    test_Extract(); 
     test_Extract_float(); 
-
+    */
+    test_Trim(); 
 
     return 0  ; 
 }

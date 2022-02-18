@@ -815,6 +815,9 @@ CSGMaker::makeBooleanListList
 
 This generalizes from CSGMaker::makeUnionListBoxSphere in order to test in a more flexible way.
 
+TODO: need to apply the experience from here to the GeoChain conversions with CSG_CONTIGUOUS hinting, 
+should the subOffset be set at NCSG level ?
+
 **/
 
 CSGSolid* CSGMaker::makeBooleanListList( const char* label, 

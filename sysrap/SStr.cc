@@ -392,6 +392,33 @@ const char* SStr::TrimPointerSuffix( const char* name )
 
 
 
+const char* SStr::TrimLeading(const char* s)
+{
+    char* p = strdup(s); 
+    while( *p && ( *p == ' ' || *p == '\n' )) p++ ; 
+    return p ; 
+}
+const char* SStr::TrimTrailing(const char* s)
+{
+    char* p = strdup(s); 
+    char* e = p + strlen(p) - 1 ; 
+    while(e > p && ( *e == ' ' || *e == '\n' )) e-- ;
+    e[1] = '\0' ;
+    return p ; 
+}
+const char* SStr::Trim(const char* s)
+{
+    char* p = strdup(s); 
+    char* e = p + strlen(p) - 1 ; 
+    while(e > p && ( *e == ' ' || *e == '\n' )) e-- ;
+    *(e+1) = '\0' ;
+    while( *p && ( *p == ' ' || *p == '\n')) p++ ; 
+    return p ; 
+}
+
+
+
+
 
 
 const char* SStr::Concat( const char* a, const char* b, const char* c  )

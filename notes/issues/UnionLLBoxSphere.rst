@@ -116,3 +116,14 @@ Still loadsa internals::
 
 
 
+Fixed those but speckle at the box cut::
+
+    EYE=0,2,2 UP=0,1,0 ZOOM=3 ./cxr_geochain.sh 
+
+
+Checking _XYZ note some spurious in region where the spheres and box come together::
+
+    SPURIOUS=1 EDL=1 NO_GS=1 ./csg_geochain.sh ana
+
+
+

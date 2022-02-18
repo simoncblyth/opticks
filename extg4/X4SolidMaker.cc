@@ -130,6 +130,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("OrbGridMultiUnion", qname))           solid = X4SolidMaker::OrbGridMultiUnion(qname) ; 
     else if(StartsWith("BoxGridMultiUnion", qname))           solid = X4SolidMaker::BoxGridMultiUnion(qname) ; 
     else if(StartsWith("BoxFourBoxContiguous", qname))        solid = X4SolidMaker::BoxFourBoxContiguous(qname) ; 
+    LOG(LEVEL) << " qname " << qname << " solid " << solid ; 
     assert(solid); 
     return solid ; 
 }
