@@ -37,8 +37,11 @@ struct CSG_API CSGQuery
 
     void     dumpPrim(const char* msg="CSGQuery::dumpPrim") const ;
     CSGGrid* scanPrim(int resolution) const ;
+
+
     float distance(const float3& position ) const ; 
     float operator()(const float3& position) const ;
+    void distance( quad4& isect,  const float3& ray_origin ) const ; 
 
     bool intersect( quad4& isect,  float t_min, const quad4& p ) const ;
     bool intersect( quad4& isect,  float t_min, const float3& ray_origin, const float3& ray_direction, unsigned gsid ) const ;

@@ -1,8 +1,7 @@
 #!/bin/bash -l 
 
 msg="=== $BASH_SOURCE "
-
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*} 
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom && geom=$(echo ${catgeom%%_*})
 GEOM=${GEOM:-$geom}
 
 echo $msg catgeom $catgeom geom $geom GEOM $GEOM
@@ -22,6 +21,9 @@ export DIR
 export DUMP=3
 
 
-CSGQueryTest O
+#mode=O   # OneIntersect
+mode=D   # OneDistance
+
+CSGQueryTest $mode
 
 

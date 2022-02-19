@@ -49,7 +49,10 @@ std::string CSGNode::desc() const
 {
     const float* aabb = AABB(); 
     unsigned trIdx = gtransformIdx(); 
-    int num_sub = is_compound() ? subNum() : -1  ; 
+    bool compound = is_compound(); 
+
+    int subNum_ = compound ? subNum() : -1  ; 
+    int subOffset_ = compound ? subOffset() : -1  ; 
 
     std::stringstream ss ; 
     ss
@@ -59,7 +62,8 @@ std::string CSGNode::desc() const
         << brief()
         << " aabb: " << Desc( aabb, 6, 7, 1 ) 
         << " trIdx: " << std::setw(5) << trIdx 
-        << " num_sub: " << std::setw(3) << num_sub 
+        << " subNum: " << std::setw(3) << subNum_ 
+        << " subOffset:: " << std::setw(3) << subOffset_ 
         ;    
 
     std::string s = ss.str(); 

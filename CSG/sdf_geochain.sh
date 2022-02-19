@@ -68,7 +68,7 @@ geom=AltXJfixtureConstruction
 #geom=ConvexPolyhedronTetrahedron
 #geom=parade
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*}
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$(echo ${catgeom%%_*})
 export GEOM=${GEOM:-$geom}
 
 if [ "$(uname)" == "Linux" ]; then

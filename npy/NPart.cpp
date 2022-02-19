@@ -101,6 +101,19 @@ unsigned npart::getSubNum() const
     return q0.u.x ; 
 }
 
+void npart::setSubOffset(unsigned sub_offset )
+{
+    q0.u.y = sub_offset ; 
+}
+unsigned npart::getSubOffset() const
+{
+    return q0.u.y ; 
+}
+
+
+
+
+
 
 
 // thought not used, but they are for in memory npart 

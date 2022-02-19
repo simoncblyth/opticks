@@ -30,6 +30,7 @@ struct CSGQueryTest
     int dump ;  
     bool dump_hit ; 
     bool dump_miss ; 
+    bool dump_dist ; 
  
     const char* name ; 
     float3 ray_origin ; 
@@ -54,7 +55,10 @@ struct CSGQueryTest
     void save() const ; 
 
     void intersect(int idx, float3* mod_ray_origin=nullptr , float3* mod_ray_direction=nullptr); 
-    void One(); 
+    void distance(int idx, float3* mod_ray_origin=nullptr ); 
+
+    void OneIntersection(); 
+    void OneDistance(); 
     void Load(); 
     void XScan(); 
     void LookForSeam(); 
@@ -78,6 +82,7 @@ CSGQueryTest::CSGQueryTest()
     dump(SSys::getenvint("DUMP",0)),
     dump_hit(  (dump & 1) != 0 ),
     dump_miss( (dump & 2) != 0 ),
+    dump_dist( (dump & 4) != 0 ),
     name("noname"),
     isects(nullptr)
 {
@@ -93,15 +98,16 @@ void CSGQueryTest::operator()( char mode)
     if(VERBOSE > 0 ) LOG(info) << " mode " << mode ; 
     switch(mode)
     {
-        case 'O': One()            ; break ; 
-        case 'L': Load()           ; break ; 
-        case 'S': LookForSeam()    ; break ; 
-        case 'X': XScan()          ; break ; 
-        case 'P': PhiScan()        ; break ; 
-        case 'A': AxisScan()       ; break ; 
-        case '0': PacmanPhiLine0() ; break ; 
-        case '1': PacmanPhiLine1() ; break ; 
-        case '2': PacmanPhiLine2() ; break ; 
+        case 'O': OneIntersection() ; break ; 
+        case 'D': OneDistance()     ; break ; 
+        case 'L': Load()            ; break ; 
+        case 'S': LookForSeam()     ; break ; 
+        case 'X': XScan()           ; break ; 
+        case 'P': PhiScan()         ; break ; 
+        case 'A': AxisScan()        ; break ; 
+        case '0': PacmanPhiLine0()  ; break ; 
+        case '1': PacmanPhiLine1()  ; break ; 
+        case '2': PacmanPhiLine2()  ; break ; 
         default: assert(0 && "mode unhandled" ) ; break ; 
     }
 }
@@ -111,10 +117,11 @@ void CSGQueryTest::create_isects()
     assert( num > 0 ); 
     isects = new std::vector<quad4>(num) ; 
 
-    if( num == 1 )
+    if( num == 1 )  // when only one : dump everything 
     {
         dump_hit = true ; 
         dump_miss = true ; 
+        dump_dist = true ; 
     }
 
 }
@@ -173,6 +180,17 @@ void CSGQueryTest::intersect(int idx, float3* mod_ray_origin, float3* mod_ray_di
     bool do_dump = ( dump_hit && valid_intersect ) || ( dump_miss && !valid_intersect );  
     if(do_dump) std::cout << CSGQuery::Desc( isect, name, &valid_intersect ) << std::endl ; 
 }
+
+void CSGQueryTest::distance(int idx, float3* mod_ray_origin )
+{
+    assert( idx < num ); 
+    quad4& isect = (*isects)[idx] ; 
+
+    q->distance( isect, mod_ray_origin ? *mod_ray_origin : ray_origin ); 
+
+    if(dump_dist) std::cout << CSGQuery::Desc( isect, name, nullptr ) << std::endl ; 
+}
+
 
 void CSGQueryTest::save() const 
 {
@@ -247,11 +265,19 @@ void CSGQueryTest::PacmanPhiLine2()
     config("PacmanPhiLine1", "1,1,0", "1,1,0", "0", "1" ); 
     intersect(0); 
 }
-void CSGQueryTest::One()
+void CSGQueryTest::OneIntersection()
 {
     config("One", "-150,0,0", "1,0,0", "0", "1" ); 
     intersect(0); 
 }
+void CSGQueryTest::OneDistance()
+{
+    config("Dist", "-150,0,0", "1,0,0", "0", "1" ); 
+    distance(0); 
+}
+
+
+
 
 
 /**
@@ -339,7 +365,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     char mode = argc > 1 ? argv[1][0] : 'O' ; 
-    if( SSys::getenvbool("YX") ) mode = 'L' ; 
+    if( SSys::getenvbool("YX") ) mode = 'L' ;  // L mode loads isect for rerunning 
 
     CSGQueryTest t ; 
     t(mode); 

@@ -134,6 +134,15 @@ void nnode::setPlaneNum(unsigned num)
 }
 
 
+
+/**
+nnode::subNum
+---------------
+
+Fields used for subNum and subOffset here need match those used in CSG/CSGNode.h 
+
+**/
+
 unsigned nnode::subNum() const 
 {
     return param.u.x ; 
@@ -142,6 +151,16 @@ void nnode::setSubNum(unsigned num)
 {
     param.u.x = num ; 
 }
+
+unsigned nnode::subOffset() const 
+{
+    return param.u.y ; 
+}
+void nnode::setSubOffset(unsigned num) 
+{
+    param.u.y = num ; 
+}
+
 
 
 
@@ -490,12 +509,12 @@ unsigned nnode::num_serialization_nodes() const
 
         std::vector<const nnode*> list_nodes ; 
         find_list_nodes(list_nodes);       
-        LOG(info) << " list_nodes.size " << list_nodes.size() ; 
+        LOG(LEVEL) << " list_nodes.size " << list_nodes.size() ; 
 
         for(unsigned i=0 ; i < list_nodes.size() ; i++)
         {
             const nnode* n = list_nodes[i] ; 
-            LOG(info) << " n.subs.size " << n->subs.size() ; 
+            LOG(LEVEL) << " n.subs.size " << n->subs.size() ; 
             tot_nodes += n->subs.size() ; 
         }
     }
@@ -514,12 +533,61 @@ unsigned nnode::num_serialization_nodes() const
 unsigned nnode::num_tree_nodes() const
 {
     assert( is_root() ); 
-    assert( is_tree() ); 
+    //assert( is_tree() );  // might be single leaf 
     unsigned height = maxdepth() ; 
     unsigned tree_nodes = TREE_NODES(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
     return tree_nodes ; 
 }
  
+std::string nnode::descNodes() const 
+{
+    unsigned num_serialization_nodes_ = num_serialization_nodes(); 
+    unsigned num_tree_nodes_ = num_tree_nodes() ;
+
+    std::vector<const nnode*> lists ; 
+    find_list_nodes(lists); 
+    unsigned num_list_nodes_ = lists.size(); 
+
+
+    std::stringstream ss ; 
+    ss   
+        << "nnode::descNodes" 
+        << " num_serialization_nodes " << num_serialization_nodes_ 
+        << " num_tree_nodes " << num_tree_nodes_
+        << " num_list_nodes " << num_list_nodes_
+        ;    
+
+    unsigned tot_subs = 0 ; 
+    if( num_list_nodes_ > 0 )
+    {    
+        ss << " i/subNum/subOffset " ; 
+        for(unsigned i=0 ; i < num_list_nodes_ ; i++) 
+        {    
+             const nnode* l = lists[i]; 
+             unsigned l_sub_num = l->subNum() ; 
+             unsigned l_sub_offset = l->subOffset() ; 
+             tot_subs += l_sub_num ; 
+             ss << i << "/" << l_sub_num << "/" << l_sub_offset << " " ;  
+        }    
+    }
+
+    unsigned tot_nodes = num_tree_nodes_ + tot_subs ; 
+    bool expect = tot_nodes == num_serialization_nodes_  ; 
+
+    ss 
+        << " tot_subs " << tot_subs 
+        << " tot_nodes " << tot_nodes 
+        << ( expect ? " as expected " : " ERROR-NODE-COUNT-INCONSISTENCY " ) 
+        ;  
+
+    assert( expect ); 
+
+    std::string s = ss.str();
+    return s ; 
+}
+
+
+
 
 void nnode::find_list_nodes( std::vector<const nnode*>& list_nodes ) const 
 {

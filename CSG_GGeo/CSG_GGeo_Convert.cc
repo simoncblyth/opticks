@@ -479,7 +479,8 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
     std::string tag = comp->getTag(partIdx); 
     unsigned tc = comp->getTypeCode(partIdx);
     bool is_list = CSG::IsList((OpticksCSG_t)tc) ; 
-    int sub_num = is_list ? comp->getSubNum(partIdx) : -1 ;  
+    int subNum = is_list ? comp->getSubNum(partIdx) : -1 ;  
+    int subOffset = is_list ? comp->getSubOffset(partIdx) : -1 ;  
 
 
     // TODO: transform handling in double, narrowing to float at the last possible moment 
@@ -501,7 +502,8 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
         << " tc " << std::setw(10) << CSG::Name((OpticksCSG_t)tc) 
         << " tranIdx " << std::setw(4) << tranIdx
         << " is_list " << ( is_list ? "IS_LIST" : "not_list" )
-        << " sub_num " << std::setw(4) << sub_num 
+        << " subNum " << std::setw(4) << subNum 
+        << " subOffset " << std::setw(4) << subOffset
         ; 
 
     const float* param6 = comp->getPartValues(partIdx, 0, 0 );  

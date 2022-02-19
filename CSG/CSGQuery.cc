@@ -221,6 +221,25 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
     return valid_intersect ; 
 }
 
+/**
+CSGQuery::distance
+-------------------
+
+Used for debugging distance issues
+
+**/
+
+void CSGQuery::distance( quad4& isect,  const float3& ray_origin ) const 
+{
+    isect.zero();
+    isect.q1.f.w = distance(ray_origin) ;
+
+    isect.q2.f.x = ray_origin.x ; 
+    isect.q2.f.y = ray_origin.y ; 
+    isect.q2.f.z = ray_origin.z ;
+    isect.q2.f.w = 0.f ; 
+}
+
 
 const float CSGQuery::SD_CUT = -1e-3 ; 
 
@@ -318,6 +337,14 @@ bool CSGQuery::intersect_again( quad4& isect, const quad4& prev_isect ) const
 }
 
 
+/**
+CSGQuery::scanPrim
+--------------------
+
+Used by sdf_geochain.sh CSGGeometry::saveSignedDistanceField
+
+**/
+
 CSGGrid* CSGQuery::scanPrim(int resolution) const 
 {
     const CSGPrim* pr = select_prim ;
@@ -328,6 +355,8 @@ CSGGrid* CSGQuery::scanPrim(int resolution) const
     }
 
     const float4 ce =  pr->ce() ;
+    LOG(info) << " ce " << ce << " resolution " << resolution ;  
+
     CSGGrid* grid = new CSGGrid( ce, resolution, resolution, resolution );
     grid->scan(*this) ;
     return grid ;
@@ -347,7 +376,7 @@ void CSGQuery::dumpPrim(const char* msg) const
     for(int nodeIdx=select_nodeOffset ; nodeIdx < select_nodeOffset+select_prim_numNode ; nodeIdx++)
     {
         const CSGNode* nd = node0 + nodeIdx ;
-        LOG(info) << "    nodeIdx " << std::setw(5) << nodeIdx << " : " << nd->desc() ;
+        LOG(info) << nd->desc() ;
     }
 }
 

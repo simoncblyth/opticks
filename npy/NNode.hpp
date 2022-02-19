@@ -361,7 +361,10 @@ struct NPY_API nnode
     void setPlaneNum(unsigned num); 
 
     unsigned subNum() const ; 
+    unsigned subOffset() const ; 
     void     setSubNum(unsigned sub_num) ; 
+    void     setSubOffset(unsigned sub_offset) ; 
+    std::string descNodes() const ; 
 
     
     // ---------------------------------------------------------

@@ -122,8 +122,7 @@ msg="=== $BASH_SOURCE :"
 #geom=GeneralSphereDEV_XY
 #geom=GeneralSphereDEV_XZ
 geom=GeneralSphereDEV_YZ
-
-#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && geom=$(echo $catgeom)
 
 export GEOM=${GEOM:-$geom}
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 

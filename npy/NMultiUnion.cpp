@@ -153,10 +153,23 @@ nmultiunion* nmultiunion::Create(OpticksCSG_t type, const nquad& param  ) // sta
     return n ; 
 }
 
+/**
+nmultiunion::Create
+---------------------
+
+Cannot set the real subOffset at this juncture, need to wait until 
+are serializing all nodes of the prim in order to calculate the subOffsets 
+of all the list-nodes within the tree. 
+
+**/
+
 nmultiunion* nmultiunion::Create(OpticksCSG_t type, unsigned sub_num  )
 {
     nmultiunion* n = Create(type) ; 
     n->setSubNum(sub_num); 
+
+    unsigned sub_offset = 0 ;  // placeholder, gets set by  NCSG::export_tree_list_ 
+    n->setSubOffset(sub_offset); 
     return n ; 
 }
 

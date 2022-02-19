@@ -54,7 +54,9 @@ struct NPY_API npart
     void setBBox(const nbbox& bb);
 
     void setSubNum(unsigned sub_num) ; 
+    void setSubOffset(unsigned sub_offset) ; 
     unsigned getSubNum() const ; 
+    unsigned getSubOffset() const ; 
 
     void setParam(const nquad& param);
     void setParam1(const nquad& param1);

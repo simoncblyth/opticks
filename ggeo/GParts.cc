@@ -2125,6 +2125,13 @@ unsigned GParts::getSubNum(unsigned partIdx) const
 {
     return getUInt(partIdx, SUBNUM_J, SUBNUM_K);       // (0,0) q0.u.x   colocated, distinguish appropriate by typecode
 }
+unsigned GParts::getSubOffset(unsigned partIdx) const   
+{
+    return getUInt(partIdx, SUBOFFSET_J, SUBOFFSET_K);    // (0,0) q0.u.y   colocated, distinguish appropriate by typecode
+}
+
+
+
 
 unsigned GParts::getPlanNum(unsigned partIdx) const 
 {

@@ -341,12 +341,17 @@ NCSG::NCSG(nnode* root )
 }
 
 
+
 void NCSG::init()
 {
     setBoundary( m_root->boundary );  // boundary spec
-
+    LOG(LEVEL) 
+         << "[ init csgdata :" 
+         << m_root->descNodes() 
+         << " tree height " << m_height << "(-1 for lists)" 
+         ;
+ 
     unsigned num_serialization_nodes = m_root->num_serialization_nodes(); 
-    LOG(LEVEL) << "[ init csgdata : num_serialization_nodes " << num_serialization_nodes << " height " << m_height << "(-1 for lists)"   ; 
     m_csgdata->init_node_buffers(num_serialization_nodes) ;  
     LOG(LEVEL) << "] init csgdata " ; 
 }
@@ -1120,61 +1125,149 @@ void NCSG::export_srcidx()   // only tree level
 
 void NCSG::export_tree_()
 {
+    m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ) ; 
+
+    unsigned num_tree_nodes_ = m_root->num_tree_nodes(); 
+
     LOG(LEVEL) 
         << " exporting CSG node tree into nodes buffer "
-        << " num_nodes " << getNumNodes()
+        << " getNumNodes  " << getNumNodes() << " (total serialization nodes) "
+        << " num_tree_nodes " << num_tree_nodes_
         ;
 
-
-    m_root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ) ; 
+    export_tree_list_prepare_(num_tree_nodes_);    
 
     export_tree_r(m_root, 0);
 
-    unsigned idx0 = m_root->num_tree_nodes(); 
-
-    export_tree_list_(idx0);    
+    export_tree_list_(num_tree_nodes_);    
 }
 
 
 /**
-NCSG::export_tree_list_
--------------------------
+NCSG::export_tree_list_prepare_
+----------------------------------
 
-Exports sub nodes of compound or list nodes that are contained within the tree 
+As it is too late to set the subOffsets back into the tree list headers
+when exporting the subs (because the tree nodes have already been exported at that juncture)
+it is necessary to run this prepare method prior to tree export.
+
+What this does is simply to set the subOffsets into the list headers within the tree. 
+ie this sets up the serialization order of the sub nodes. 
+
+Prepare to exports sub nodes of compound or list nodes that are contained within the tree 
+For example consider a triplet boolean tree of 3 nodes where both left 
+and right nodes are list nodes of length 4 and 5 respectively.
+The nodes serialization is::
+
+            
+       0         root node CSG_UNION/INTERSECTION/DIFFERENCE 
+       1         left  : a list node with subNum:4/subOffset:3  (3 + 0 = 3)   tree_nodes + preceeding subs         
+       2         right : a list node with subNum:5/subOffset:7  (3 + 4 = 7)
+
+         3       <-- subOffset:3 points here : start of subs of the first list node in tree
+         4
+         5
+         6
+            7   <-- subOffset:7 points here : start of subs of second list node in tree
+            8
+            9
+           10
+           11
+
+The subNum for each list node is known at creation, eg nmultiunion::Create
+The subOffset for each list node is only known at serialization. 
 
 **/
 
-void NCSG::export_tree_list_(unsigned idx0)
+void NCSG::export_tree_list_prepare_(unsigned num_tree_nodes_)
 {
-    std::vector<const nnode*> list_nodes ;
+    unsigned subOffset = num_tree_nodes_ ; 
+
+    std::vector<nnode*> list_nodes ;
     m_root->find_list_nodes(list_nodes); 
 
-    unsigned num_lists = list_nodes.size() ; 
-    LOG(LEVEL) << " num_lists " << num_lists << " idx0 " << idx0  ; 
-    assert( num_lists == 0 || num_lists == 1 );  // maybe more in future
+    unsigned num_list_nodes = list_nodes.size() ; 
 
-    unsigned offset = idx0 ; 
-    for(unsigned i=0 ; i < num_lists ; i++)
+    assert( num_list_nodes == 0 || num_list_nodes == 1 );  // maybe more in future
+
+
+    for(unsigned i=0 ; i < num_list_nodes ; i++)
     {
-        const nnode* n = list_nodes[i] ;
-        unsigned sub_num = n->subNum(); 
-        unsigned sub_num2 = n->subs.size(); 
-        assert( sub_num == sub_num2 ); 
-        LOG(info) << " i " << i << " sub_num " << sub_num << " idx0 " << idx0 << " offset " << offset ;
+        nnode* l = list_nodes[i] ;
 
-        export_tree_list_subs_( n, sub_num, offset ); 
+        unsigned l_sub_num = l->subNum(); 
+        unsigned l_sub_num2 = l->subs.size(); 
+        assert( l_sub_num == l_sub_num2 ); 
 
-        offset += sub_num ; 
+        unsigned l_sub_offset0 = l->subOffset(); 
+        assert( l_sub_offset0 == 0 ); 
+
+        l->setSubOffset( subOffset );   
+
+        unsigned l_sub_offset = l->subOffset(); 
+        assert( l_sub_offset == subOffset ); 
+
+        LOG(LEVEL) 
+             << " i " << i 
+             << " l_sub_num " << l_sub_num 
+             << " l_sub_offset " << l_sub_offset 
+             << " num_tree_nodes_ " << num_tree_nodes_
+             << " subOffset " << subOffset ;
+
+        subOffset += l_sub_num ; 
     } 
 }
 
 
-void NCSG::export_tree_list_subs_( const nnode* n, unsigned sub_num, unsigned idx0 )
+
+void NCSG::export_tree_list_(unsigned num_tree_nodes_)
 {
-    for(unsigned isub=0 ; isub < sub_num ; isub++)
+    unsigned subOffset = num_tree_nodes_ ; 
+
+    std::vector<nnode*> list_nodes ;
+    m_root->find_list_nodes(list_nodes); 
+
+    unsigned num_lists = list_nodes.size() ; 
+
+    LOG(LEVEL) 
+        << " num_lists " << num_lists 
+        << " num_tree_nodes_  " << num_tree_nodes_ 
+        << "(following tree nodes)" 
+        ; 
+
+    assert( num_lists == 0 || num_lists == 1 );  // maybe more in future
+
+    for(unsigned i=0 ; i < num_lists ; i++)
     {
-        nnode* s = n->subs[isub];    
-        export_node( s,  idx0 + isub ) ; 
+        nnode* l = list_nodes[i] ;
+
+        unsigned l_sub_num = l->subNum(); 
+        unsigned l_sub_num2 = l->subs.size(); 
+        assert( l_sub_num == l_sub_num2 ); 
+
+        unsigned l_sub_offset = l->subOffset(); 
+        assert( l_sub_offset == subOffset );  // perhaps export_tree_list_prepare_ was not called 
+
+        LOG(LEVEL) 
+             << " i " << i 
+             << " l_sub_num " << l_sub_num 
+             << " l_sub_offset " << l_sub_offset 
+             << " num_tree_nodes_ " << num_tree_nodes_
+             << " subOffset " << subOffset ;
+
+        export_tree_list_subs_( l, l_sub_num, subOffset ); 
+
+        subOffset += l_sub_num ; 
+    } 
+}
+
+
+void NCSG::export_tree_list_subs_( const nnode* l, unsigned l_sub_num, unsigned sub_offset )
+{
+    for(unsigned isub=0 ; isub < l_sub_num ; isub++)
+    {
+        nnode* s = l->subs[isub];    
+        export_node( s,  sub_offset + isub ) ; 
     }
 }
 
@@ -1366,8 +1459,6 @@ allowing loading to proceed just like from python
 
 void NCSG::export_srcnode(nnode* node, unsigned idx)
 {
-    LOG(LEVEL) << "[" ; 
-
     assert( m_adopted ) ; 
 
     NPY<float>* _srcnodes = m_csgdata->getSrcNodeBuffer(); 
@@ -1382,7 +1473,18 @@ void NCSG::export_srcnode(nnode* node, unsigned idx)
     npart pt = node->srcpart();
     _srcnodes->setPart( pt, idx );   // writes 4 quads to buffer 
 
-    LOG(LEVEL) << "]" ; 
+    OpticksCSG_t typecode = pt.getTypeCode();
+    bool is_list = CSG::IsList(typecode) ;  
+    int subNum = is_list ? pt.getSubNum() : -1 ; 
+    int subOffset = is_list ? pt.getSubOffset() : -1 ; 
+
+
+    LOG(LEVEL) 
+          << " idx " << std::setw(3) << idx 
+          << " CSG::Name(pt.typecode) " << std::setw(15) << CSG::Name(typecode) 
+          << " pt.subNum " << std::setw(3) << subNum 
+          << " pt.subOffset " << std::setw(3) << subOffset 
+          ; 
 }
 
 

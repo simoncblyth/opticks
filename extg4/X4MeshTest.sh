@@ -32,7 +32,7 @@ msg="=== $BASH_SOURCE :"
 #geom=AnnulusFourBoxUnion
 geom=GeneralSphereDEV
 
-#catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom} 
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && geom=$(echo ${catgeom%%_*})
 export GEOM=${GEOM:-$geom}
 
 outdir="$TMP/extg4/X4MeshTest/$GEOM/X4Mesh"
