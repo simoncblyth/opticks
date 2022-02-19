@@ -129,7 +129,10 @@ CSGSolid* CSGMaker::make(const char* name)
     else if(StartsWith("ithe", name)) so = makeInfThetaCut(name) ;
     else if(StartsWith("ithl", name)) so = makeInfThetaCutL(name) ;
     else if(StartsWith("bssc", name)) so = makeBoxSubSubCylinder(name) ;
-    else LOG(fatal) << "invalid name [" << name << "]" ; 
+    else 
+    {
+        LOG(fatal) << "invalid name [" << name << "]" << " expecting one of the below " << std::endl << NAMES  ; 
+    }
     assert( so ); 
     return so ;  
 }

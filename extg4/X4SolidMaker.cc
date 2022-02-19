@@ -1,4 +1,5 @@
 #include <cstring>
+#include "SStr.hh"
 #include "NP.hh"
 
 #include "G4SystemOfUnits.hh"
@@ -42,6 +43,7 @@ UnionOfHemiEllipsoids
 PolyconeWithMultipleRmin
 AnnulusBoxUnion
 AnnulusTwoBoxUnion
+AnnulusTwoBoxUnionContiguous
 AnnulusOtherTwoBoxUnion
 AnnulusCrossTwoBoxUnion
 AnnulusFourBoxUnion
@@ -618,17 +620,81 @@ YZ view looks symmetric as both sides of tubs have box-extensions::
    /
   X
 
+
+X4SolidMaker::AnnulusTwoBoxUnion
+
+
+               tub_bpy_bny
+
+     tub_bpy                  bny 
+
+  tub       bpy 
+
+
+
+For hinting as CSG_CONTIGUOUS or CSG_DISCONTIGUOUS to work 
+requires setting the inner to zero to avoid the CSG_DIFFERENCE. 
+
 **/
+
 
 const G4VSolid* X4SolidMaker::AnnulusTwoBoxUnion(const char* name)
 {
-   // do not see spurious intersects with this
-    G4VSolid* down1  = new G4Tubs("down1", 25.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
-    G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
-    G4VSolid* uni13 = new G4UnionSolid(  "uni13", down1, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
-    G4VSolid* uni133 = new G4UnionSolid("uni133", uni13, down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
-    return uni133 ; 
+    const char* suffix = nullptr ; 
+    if(     strstr(name, "Contiguous"))    suffix = "_CSG_CONTIGUOUS" ; 
+    else if(strstr(name, "Discontiguous")) suffix = "_CSG_DISCONTIGUOUS" ; 
+    const char* rootname = SStr::Concat("tub_bpy_bny", suffix, "" );     
+
+    double innerRadius = suffix ? 0.*mm : 25.*mm ; 
+    double bpy_scale_z = suffix ? 2. : 1. ; 
+    double bny_scale_z = suffix ? 4. : 1. ; 
+
+
+    LOG(LEVEL) 
+        << " name " << name 
+        << " suffix " << suffix 
+        << " rootname " << rootname 
+        << " innerRadius " << innerRadius 
+        << " bpy_scale_z " << bpy_scale_z
+        << " bny_scale_z " << bny_scale_z
+        ; 
+
+    G4VSolid* tub  = new G4Tubs("tub", innerRadius, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+
+    G4VSolid* bpy = new G4Box("bpy", 15.*mm, 15.*mm, bpy_scale_z*13/2.*mm);
+    G4VSolid* tub_bpy = new G4UnionSolid(  "tub_bpy", tub, bpy, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
+
+    G4VSolid* bny = new G4Box("bny", 15.*mm, 15.*mm, bny_scale_z*13/2.*mm);
+    G4VSolid* tub_bpy_bny = new G4UnionSolid(rootname, tub_bpy, bny, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
+
+    G4VSolid* result = nullptr ; 
+    if(suffix)
+    {
+        bool toplist = strstr(name, "List") ; 
+        if( toplist )
+        {
+            result = tub_bpy_bny ; 
+        } 
+        else
+        {
+            double uncoincide = 1. ; 
+            G4VSolid* itu  = new G4Tubs("itu", 0.*mm, 25.*mm, (uncoincide+13./2)*mm, 0.*deg, 360.*deg);
+            G4VSolid* tub_bpy_bny_itu = new G4SubtractionSolid("tub_bpy_bny_itu", tub_bpy_bny, itu );
+            result=tub_bpy_bny_itu  ; 
+        }
+    }
+    else
+    {
+        result = tub_bpy_bny ; 
+    }
+    return result ; 
 }
+
+
+
+
+
+
 
 const G4VSolid* X4SolidMaker::AnnulusOtherTwoBoxUnion(const char* name)
 {

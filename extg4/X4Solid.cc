@@ -270,10 +270,14 @@ void X4Solid::convertUnionSolid()
 {
     convertBooleanSolid() ;
 
-    bool contiguous = hasHintContiguous(); 
-    if(contiguous) 
+    bool has_hint = hasHint() ; 
+    LOG(error) << " has_hint " << has_hint << " desc " << desc() ; 
+
+    if(has_hint) 
     {
-        changeToContiguousSolid() ;
+        unsigned hint = getHintCode() ; 
+        LOG(error) << " acting in hint " << CSG::Name(hint) << " within m_name " << m_name ; 
+        changeToListSolid(hint) ;
     }
 }
 void X4Solid::convertIntersectionSolid()
@@ -381,7 +385,7 @@ void X4Solid::convertMultiUnion()
 
 
 /**
-X4Solid::changeToContiguousSolid
+X4Solid::changeToListSolid
 ---------------------------------
 
 Hmm need to collect all leaves of the subtree rooted here into a
@@ -398,11 +402,15 @@ Just need to collect the list of nodes. Hmm maybe flatten transforms ?
 
 **/
 
-void X4Solid::changeToContiguousSolid()
+void X4Solid::changeToListSolid(unsigned hint)
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "[ hint " << CSG::Name(hint)  ; 
+    assert( hint == CSG_CONTIGUOUS || hint == CSG_DISCONTIGUOUS );  //  CSG_OVERLAP not implemented yet
+
     nnode* subtree = getRoot(); 
-    nmultiunion* root = nmultiunion::CreateFromTree(CSG_CONTIGUOUS, subtree) ; 
+    OpticksCSG_t typecode = (OpticksCSG_t)hint ; 
+
+    nmultiunion* root = nmultiunion::CreateFromTree(typecode, subtree) ; 
     setRoot(root); 
     LOG(LEVEL) << "]" ; 
 }

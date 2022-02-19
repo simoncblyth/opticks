@@ -91,16 +91,12 @@ by everyone that will be working with Opticks.
 
 
 
-
-
-List of scripts
-------------------
-
+List of GEOM scripts
+-----------------------
  
-All the below scripts access the $HOME/.opticks/GEOM.txt file or GEOM envvar to configure the geometry to create, visualize or shoot single rays at:: 
-  
-     gc ; ./run.sh           ## CPU : Create Geant4 solid and convert it via GeoChain into an Opticks CSGFoundry geometry 
-
+All the below scripts access the $HOME/.opticks/GEOM.txt file or GEOM envvar to configure the geometry to create, visualize or shoot single rays at.
+The first three scripts run directly from the G4VSolid or G4PhysicalVolume. 
+The last four scripts require the third translate.sh or fourth CSGMakerTest.sh  script to have been run first:: 
 
 
      x4 ; ./X4MeshTest.sh    ## CPU : Geant4 polygons visualized with pyvista
@@ -109,11 +105,18 @@ All the below scripts access the $HOME/.opticks/GEOM.txt file or GEOM envvar to 
 
 
 
+     gc ; ./translate.sh     ## CPU : Create CSGFoundry geometry via translation of Geant4 geometry via the GeoChain 
+
+     c ; ./CSGMakerTest.sh   ## CPU : Create CSGFoundry geometry directly at CSGNode/CSGPrim/CSGSolid level with CSGMaker 
+
+
+
      c ; ./sdf_geochain.sh   ## CPU : 3D Opticks distance field visualised with pyvista iso-surface finding 
 
      c ; ./csg_geochain.sh   ## CPU : 2D(or 3D) pyvista visualization of Opticks intersects (CPU test run of CUDA comparible intersect code)
 
      c ; ./CSGQueryTest.sh   ## CPU : test mostly used for shooting single rays at geometry, useful after compiling with DEBUG flag enabled   
+
 
 
 

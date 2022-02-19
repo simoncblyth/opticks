@@ -20,6 +20,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 
 #include "OPTICKS_LOG.hh"
@@ -71,12 +72,45 @@ void test_TypeMask()
 }
 
 
+void test_HintCode(const char* name)
+{
+     unsigned hintcode = CSG::HintCode(name); 
+     std::cout 
+         << " name " << std::setw(40) << name 
+         << " hintcode " << std::setw(6) << hintcode
+         << " CSG::Name(hintcode) " << std::setw(15) << CSG::Name(hintcode)
+         << std::endl 
+         ;
+
+}
+
+const char* NAMES = R"LITERAL(
+Hello_CSG_CONTIGUOUS
+Hello_CSG_DISCONTIGUOUS
+Hello_CSG_OVERLAP
+Name_without_any_hint
+)LITERAL";
+
+void test_HintCode()
+{
+    std::stringstream ss(NAMES) ;
+    std::string name ;
+    while (std::getline(ss, name)) if(!name.empty()) test_HintCode(name.c_str());     
+}
+    
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+    /*
     test_type(); 
     test_TypeMask(); 
+    */
+    test_HintCode(); 
+  
 
     return 0 ; 
 } 

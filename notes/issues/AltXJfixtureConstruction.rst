@@ -69,4 +69,198 @@ XJFixtureConstruction assert : not expecting more than one level of translation
 
 
 
+First : Check with a simpler solid : AnnulusTwoBoxUnionContiguous
+-------------------------------------------------------------------
+
+
+::
+
+     627 const G4VSolid* X4SolidMaker::AnnulusTwoBoxUnion(const char* name)
+     628 {
+     629     bool contiguous = strstr(name, "Contiguous");
+     630     const char* rootname = SStr::Concat("uni133", contiguous ? "_CSG_CONTIGUOUS" : "", "" );
+     631     double innerRadius = contiguous ? 0.*mm : 25.*mm ;
+     632     // for hinting as CSG_CONTIGUOUS to work requires setting the inner to zero to avoid the CSG_DIFFERENCE
+     633     
+     634     G4VSolid* down1  = new G4Tubs("down1", innerRadius, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+     635     G4VSolid* down3 = new G4Box("down3", 15.*mm, 15.*mm, 13/2.*mm);
+     636     G4VSolid* uni13 = new G4UnionSolid(  "uni13", down1, down3, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
+     637     
+     638     LOG(LEVEL) << " name " << name << " contiguous " << contiguous << " rootname " << rootname ;
+     639     G4VSolid* uni133 = new G4UnionSolid(rootname, uni13, down3, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
+     640     return uni133 ;  
+     641 }   
+
+
+Find that only one of the boxes is  Y-shifted when use "AnnulusTwoBoxUnionContiguous" 
+
+* maybe its the transform on the node which is converted to a list node that is being lost. 
+* actually the box was missing due to lack of setSubOffset for standalone list nodes
+
+
+Probably loss of transform in::
+
+    079 nmultiunion* nmultiunion::CreateFromTree( OpticksCSG_t type, const nnode* src )  // static 
+     80 {   
+     81     LOG(LEVEL) << "[" ; 
+     82     nnode* subtree = src->deepclone(); 
+     83     subtree->prepareTree() ;  // sets parent links and gtransforms by multiplying the transforms 
+     84     
+     85     unsigned mask = subtree->get_oper_mask(); 
+     86     OpticksCSG_t subtree_type = CSG_MonoOperator(mask);
+     87     
+     88     if(subtree_type != CSG_UNION)
+     89     {    
+     90          LOG(fatal) << "Can only create nmultiunion from a subtree that is purely composed of CSG_UNION operator nodes" ;
+     91          std::raise(SIGINT);
+     92     }
+     93     
+     94     std::vector<nnode*> prim ; 
+     95     subtree->collect_prim_for_edit(prim);
+     96     
+     97     unsigned num_prim = prim.size();  
+     98     for(unsigned i=0 ; i < num_prim ; i++)
+     99     {   
+    100         nnode* p = prim[i];
+    101         if( p->gtransform )
+    102         {   
+    103             p->transform = p->gtransform ;
+    104         }
+    105     }
+    106     
+    107     nmultiunion* n = CreateFromList(type, prim) ;
+    108     
+    109     LOG(LEVEL) << "]" ;
+    110     return n ;
+    111 }
+    112 
+
+
+After making the boxes bigger, it seems that one of the boxes is missed, or they are both on top of each other. 
+After making  the bny box larger in z than the bpy one can confirm that the bny box is missed. 
+
+::
+
+     623 /**
+     624 X4SolidMaker::AnnulusTwoBoxUnion
+     625 
+     626 
+     627                tub_bpy_bny
+     628 
+     629      tub_bpy                  bny 
+     630 
+     631   tub       bpy 
+     632 
+     633 
+     634 
+     635 For hinting as CSG_CONTIGUOUS or CSG_DISCONTIGUOUS to work 
+     636 requires setting the inner to zero to avoid the CSG_DIFFERENCE. 
+     637 
+     638 **/
+     639 
+     640 
+     641 const G4VSolid* X4SolidMaker::AnnulusTwoBoxUnion(const char* name)
+     642 {
+     643     const char* suffix = nullptr ;
+     644     if(     strstr(name, "Contiguous"))    suffix = "_CSG_CONTIGUOUS" ;
+     645     else if(strstr(name, "Discontiguous")) suffix = "_CSG_DISCONTIGUOUS" ;
+     646     const char* rootname = SStr::Concat("tub_bpy_bny", suffix, "" );     
+     647     
+     648     double innerRadius = suffix ? 0.*mm : 25.*mm ;
+     649     double bpy_scale_z = suffix ? 2. : 1. ; 
+     650     double bny_scale_z = suffix ? 4. : 1. ; 
+     651     
+     652     
+     653     LOG(LEVEL)
+     654         << " name " << name
+     655         << " suffix " << suffix
+     656         << " rootname " << rootname
+     657         << " innerRadius " << innerRadius
+     658         << " bpy_scale_z " << bpy_scale_z
+     659         << " bny_scale_z " << bny_scale_z
+     660         ;
+     661 
+     662     G4VSolid* tub  = new G4Tubs("tub", innerRadius, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+     663     G4VSolid* bpy = new G4Box("bpy", 15.*mm, 15.*mm, bpy_scale_z*13/2.*mm);
+     664     G4VSolid* tub_bpy = new G4UnionSolid(  "tub_bpy", tub, bpy, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
+     665 
+     666     G4VSolid* bny = new G4Box("bny", 15.*mm, 15.*mm, bny_scale_z*13/2.*mm);
+     667     G4VSolid* tub_bpy_bny = new G4UnionSolid(rootname, tub_bpy, bny, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
+     668 
+     669     return tub_bpy_bny ;
+     670 }
+
+
+
+Hmm seems offsetSub is still at 0, it should be 1::
+
+    epsilon:CSG blyth$ ./CSGQueryTest.sh 
+    === ./CSGQueryTest.sh catgeom AnnulusTwoBoxUnionDiscontiguous_XYZ
+    === ./CSGQueryTest.sh catgeom AnnulusTwoBoxUnionDiscontiguous_XYZ geom AnnulusTwoBoxUnionDiscontiguous GEOM AnnulusTwoBoxUnionDiscontiguous
+    //distance_node_list num_sub 3 offset_sub 0 isub 0 sub_node.typecode 12 sub_node.typecode.name discontiguous
+    Assertion failed: (sub_node->typecode() > CSG_LEAF), function distance_node_list, file /Users/blyth/opticks/CSG/csg_intersect_node.h, line 64.
+    ./CSGQueryTest.sh: line 27:  2428 Abort trap: 6           CSGQueryTest $mode
+    epsilon:CSG blyth$ 
+
+
+Fixing that recovers the missing box::
+
+    1322 /**
+    1323 NCSG::export_list_
+    1324 ----------------------
+    1325 
+    1326 This is for a standalone list node (NOT for list nodes that are contained within trees). 
+    1327 As the list node is standalone the subOffset is set to 1 in order to find the subs 
+    1328 which immediately follow the header. 
+    1329 
+    1330 **/
+    1331 
+    1332 void NCSG::export_list_()
+    1333 {
+    1334     unsigned idx = 0 ;
+    1335     m_root->setSubOffset(1);
+    1336 
+    1337     export_node( m_root,  idx) ;
+    1338 
+    1339     check_subs();
+    1340     unsigned sub_num = m_root->subNum();
+    1341 
+    1342     for(unsigned isub=0 ; isub < sub_num ; isub++)
+    1343     {
+    1344         idx = 1 + isub ;
+    1345         nnode* sub = m_root->subs[isub];
+    1346         // sub cannot be const, as the export writes things like indices into the node
+    1347         export_node( sub,  idx) ;
+    1348     }
+    1349 }
+    1350 
+
+Seems that now standalone list nodes work with correct transforms, but lists within trees loose all 
+their transforms.
+
+For AnnulusTwoBoxUnionContiguous with node list within tree the trIdx for the subs are all zero::
+
+    AnnulusTwoBoxUnionContiguous
+    2022-02-19 20:06:03.136 INFO  [5605863] [CSGGeometry::init_fd@110]  booting from provided CSGFoundry pointer 
+    2022-02-19 20:06:03.136 INFO  [5605863] [CSGQuery::dumpPrim@370] CSGGeometry::init select_prim_numNode 6 select_nodeOffset 0
+    2022-02-19 20:06:03.136 INFO  [5605863] [CSGQuery::dumpPrim@379] CSGNode     0  in aabb:    -0.0    -0.0    -0.0     0.0     0.0     0.0  trIdx:     0 subNum:   3 subOffset::   0
+    2022-02-19 20:06:03.136 INFO  [5605863] [CSGQuery::dumpPrim@379] CSGNode     1  co aabb:   -45.0   -65.0   -26.0    45.0    65.0    26.0  trIdx:     1 subNum:   3 subOffset::   3
+    2022-02-19 20:06:03.136 INFO  [5605863] [CSGQuery::dumpPrim@379] CSGNode     2 !cy aabb:   -25.0   -25.0    -7.5    25.0    25.0     7.5  trIdx:     2 subNum:  -1 subOffset::  -1
+    2022-02-19 20:06:03.136 INFO  [5605863] [CSGQuery::dumpPrim@379] CSGNode     3  cy aabb:   -45.0   -45.0    -6.5    45.0    45.0     6.5  trIdx:     0 subNum:  -1 subOffset::  -1
+    2022-02-19 20:06:03.136 INFO  [5605863] [CSGQuery::dumpPrim@379] CSGNode     4  bo aabb:   -15.0   -15.0   -13.0    15.0    15.0    13.0  trIdx:     0 subNum:  -1 subOffset::  -1
+    2022-02-19 20:06:03.137 INFO  [5605863] [CSGQuery::dumpPrim@379] CSGNode     5  bo aabb:   -15.0   -15.0   -26.0    15.0    15.0    26.0  trIdx:     0 subNum:  -1 subOffset::  -1
+    2022-02-19 20:06:03.137 INFO  [5605863] [CSGGeometry::init_selection@150]  no SXYZ or SXYZW selection 
+    2022-02-19 20:06:03.137 INFO  [5605863] [CSGDraw::draw@27] GeoChain::convertSolid converted CSGNode tree axis Y
+
+With standalone List AnnulusTwoBoxUnionContiguousList the trIdx are set::
+
+    2022-02-19 20:32:19.735 INFO  [5635205] [CSGGeometry::init_selection@150]  no SXYZ or SXYZW selection 
+    2022-02-19 20:32:19.735 INFO  [5635205] [CSGGeometry::saveSignedDistanceField@159]  name AnnulusTwoBoxUnionContiguousList RESOLUTION 25
+    2022-02-19 20:32:19.735 INFO  [5635205] [CSGQuery::dumpPrim@370] CSGQuery::dumpPrim select_prim_numNode 4 select_nodeOffset 0
+    2022-02-19 20:32:19.735 INFO  [5635205] [CSGQuery::dumpPrim@379] CSGNode     0  co aabb:   -45.0   -65.0   -26.0    45.0    65.0    26.0  trIdx:     1 subNum:   3 subOffset::   1
+    2022-02-19 20:32:19.735 INFO  [5635205] [CSGQuery::dumpPrim@379] CSGNode     1  cy aabb:   -45.0   -45.0    -6.5    45.0    45.0     6.5  trIdx:     2 subNum:  -1 subOffset::  -1
+    2022-02-19 20:32:19.735 INFO  [5635205] [CSGQuery::dumpPrim@379] CSGNode     2  bo aabb:   -15.0    35.0   -13.0    15.0    65.0    13.0  trIdx:     3 subNum:  -1 subOffset::  -1
+    2022-02-19 20:32:19.735 INFO  [5635205] [CSGQuery::dumpPrim@379] CSGNode     3  bo aabb:   -15.0   -65.0   -26.0    15.0   -35.0    26.0  trIdx:     4 subNum:  -1 subOffset::  -1
+    2022-02-19 20:32:19.735 INFO  [5635205] [*CSGQuery::scanPrim@358]  ce ( 0.000, 0.000, 0.000,65.000)  resolution 25
+
 

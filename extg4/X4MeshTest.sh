@@ -63,7 +63,10 @@ script=$dir/tests/X4MeshTest.py
 
 echo BASH_SOURCE $BASH_SOURCE bin $bin script $script outdir $outdir GEOM $GEOM
 
-# /Users/blyth/simoncblyth.bitbucket.io/env/presentation/extg4/X4MeshTest/XJfixtureConstruction/X4Mesh
+
+export X4SolidMaker=INFO 
+
+
 
 
 $bin

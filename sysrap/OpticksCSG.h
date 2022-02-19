@@ -106,6 +106,11 @@ static const char* CSG_CONTIGUOUS_     = "contiguous" ;
 static const char* CSG_DISCONTIGUOUS_  = "discontiguous" ; 
 static const char* CSG_OVERLAP_        = "overlap" ; 
 
+static const char* _CSG_CONTIGUOUS     = "CSG_CONTIGUOUS" ; 
+static const char* _CSG_DISCONTIGUOUS  = "CSG_DISCONTIGUOUS" ; 
+static const char* _CSG_OVERLAP        = "CSG_OVERLAP" ; 
+
+
 
 static const char* CSG_LEAF_           = "leaf" ; 
 static const char* CSG_SPHERE_        = "sphere" ; 
@@ -385,6 +390,17 @@ struct CSG
     {
          return HasPlanes((OpticksCSG_t)type); 
     }
+
+    static unsigned HintCode(const char* name)
+    {
+        unsigned hintcode = CSG_ZERO ; 
+        if(     strstr(name, _CSG_CONTIGUOUS)    != nullptr) hintcode = CSG_CONTIGUOUS ; 
+        else if(strstr(name, _CSG_DISCONTIGUOUS) != nullptr) hintcode = CSG_DISCONTIGUOUS ; 
+        else if(strstr(name, _CSG_OVERLAP)       != nullptr) hintcode = CSG_OVERLAP ; 
+        return hintcode ; 
+    }
+
+
 
 };
 

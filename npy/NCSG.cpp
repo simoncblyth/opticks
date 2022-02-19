@@ -1319,10 +1319,21 @@ void NCSG::export_leaf_()
     export_node( m_root, 0) ; 
 }
 
+/**
+NCSG::export_list_
+----------------------
+
+This is for a standalone list node (NOT for list nodes that are contained within trees). 
+As the list node is standalone the subOffset is set to 1 in order to find the subs 
+which immediately follow the header. 
+
+**/
 
 void NCSG::export_list_()
 {
     unsigned idx = 0 ; 
+    m_root->setSubOffset(1); 
+
     export_node( m_root,  idx) ; 
 
     check_subs(); 

@@ -23,7 +23,7 @@
 #include <string>
 #include <cstring>
 
-
+#include "OpticksCSG.h"
 #include "SStr.hh"
 #include "NNode.hpp"
 #include "X4.hh"
@@ -204,9 +204,14 @@ X4SolidBase::X4SolidBase( const G4VSolid* solid, const Opticks* ok, bool top, in
 }
 
 
-const char* X4SolidBase::HINT_CSG_CONTIGUOUS = "CSG_CONTIGUOUS" ; 
-bool X4SolidBase::hasHintContiguous() const { return hasHint(HINT_CSG_CONTIGUOUS) ; }
-bool X4SolidBase::hasHint( const char* hint ) const { return strstr(m_name, hint) != nullptr ; }  
+unsigned X4SolidBase::getHintCode() const 
+{ 
+    return CSG::HintCode(m_name) ; 
+}  
+bool X4SolidBase::hasHint() const
+{
+    return getHintCode() != CSG_ZERO ; 
+}
 
 
 bool X4SolidBase::isX4TubsNudgeSkip() const   // --x4tubsnudgeskip 0,1,2,

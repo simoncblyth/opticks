@@ -80,11 +80,8 @@ class X4_API X4SolidBase
         X4SolidBase(const G4VSolid* solid, const Opticks* ok, bool top=false, int lvIdx=-1); 
 
     public:
-        static const char* HINT_CSG_CONTIGUOUS  ; 
-        bool hasHintContiguous() const ; 
-    private:
-        bool hasHint( const char* hint ) const ; 
-
+        bool hasHint() const ; 
+        unsigned getHintCode() const ; 
     public:
         nnode* getRoot() const ;
         std::string desc() const  ; 

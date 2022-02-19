@@ -106,7 +106,7 @@ class X4_API X4Solid : public X4SolidBase
         void convertSubtractionSolid();
     private:
         void convertMultiUnion();
-        void changeToContiguousSolid(); 
+        void changeToListSolid(unsigned hint); 
         void convertBooleanSolid();
         static OpticksCSG_t GetOperator( const G4BooleanSolid* solid ); 
 

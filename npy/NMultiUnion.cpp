@@ -141,7 +141,7 @@ nmultiunion* nmultiunion::CreateFromList( OpticksCSG_t type, std::vector<nnode*>
 nmultiunion* nmultiunion::Create(OpticksCSG_t type )  // static 
 {
     nmultiunion* n = new nmultiunion ; 
-    assert( type == CSG_CONTIGUOUS  ); 
+    assert( type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS  ); 
     nnode::Init(n,type) ; 
 
     return n ; 

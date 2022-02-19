@@ -148,6 +148,18 @@ case $GEOM in
                             *) note="" ;;
 esac
 
+case $GEOM in 
+   *_XYZ)   is3d=1 ;; 
+       *)   is3d=0 ;;
+esac
+
+if [ $is3d -eq 1 ]; then 
+   echo $msg is3d for GEOM $GEOM setting NO_GS and EDL 
+   export NO_GS=1
+   export ESL=1
+fi 
+
+
 dx=0
 dy=0
 dz=0
