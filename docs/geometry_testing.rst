@@ -81,10 +81,44 @@ CSGOptiX/cxs_geochain.sh
     Creates 2D cross-sections of CSG geometries composed of intersections 
     onto the geometry. 
 
+    * not implemented for OptiX < 7 (only works with OptiX 7)
+
 
 
 Opticks is not something that can be picked up quickly, or installed quickly either. 
 For hackathons or similar to be productive requires significant preparation work
 by everyone that will be working with Opticks.
+
+
+
+
+
+List of scripts
+------------------
+
+ 
+All the below scripts access the $HOME/.opticks/GEOM.txt file or GEOM envvar to configure the geometry to create, visualize or shoot single rays at:: 
+  
+     gc ; ./run.sh           ## CPU : Create Geant4 solid and convert it via GeoChain into an Opticks CSGFoundry geometry 
+
+
+
+     x4 ; ./X4MeshTest.sh    ## CPU : Geant4 polygons visualized with pyvista
+
+     x4 ; ./xxs.sh           ## CPU : 2D Geant4 intersects visualized with matplotlib and/or pyvista
+
+
+
+     c ; ./sdf_geochain.sh   ## CPU : 3D Opticks distance field visualised with pyvista iso-surface finding 
+
+     c ; ./csg_geochain.sh   ## CPU : 2D(or 3D) pyvista visualization of Opticks intersects (CPU test run of CUDA comparible intersect code)
+
+     c ; ./CSGQueryTest.sh   ## CPU : test mostly used for shooting single rays at geometry, useful after compiling with DEBUG flag enabled   
+
+
+
+     cx ; ./cxr_geochain.sh  ## GPU : 3D OptiX/Opticks render of geometry      
+
+
 
 

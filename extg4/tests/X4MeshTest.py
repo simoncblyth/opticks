@@ -14,6 +14,7 @@ Usage::
 import logging
 import numpy as np
 from opticks.ana.fold import Fold
+from opticks.ana.gridspec import CrossHairs
 
 efloat_ = lambda ekey,edef:float(os.environ.get(ekey,edef))
 efloatlist_ = lambda ekey,edef:np.array(list(map(float, filter(None, os.environ.get(ekey,edef).split(",")))))
@@ -112,7 +113,9 @@ if __name__ == '__main__':
 
     size = np.array([1280, 720])
     pl = pv.Plotter(window_size=size*2 )
-    pl.add_mesh(mesh.surf, opacity=1.0, show_edges=False, lighting=True )
+
+    edge = "EDGE" in os.environ 
+    pl.add_mesh(mesh.surf, opacity=1.0, show_edges=edge, lighting=True )
 
     Plt.anno(pl)
 
@@ -122,6 +125,10 @@ if __name__ == '__main__':
     pl.camera.Zoom(zoom)
 
     pl.show_grid()
+
+    CrossHairs.draw(pl)
+
+
  
     outpath = os.path.join(fold, "pvplot.png")
     log.info("screenshot %s " % outpath)

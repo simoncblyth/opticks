@@ -352,6 +352,29 @@ class GridSpec(object):
         return axes
 
 
+class CrossHairs(object):
+    @classmethod
+    def draw(cls, pl, sz=100):
+
+        nll = 3 ; 
+        ll = np.zeros( (nll, 2, 3), dtype=np.float32 )
+        ll[0,0] = (-sz,0,0)
+        ll[0,1] = (sz,0,0)
+
+        ll[1,0] = (0,-sz,0)
+        ll[1,1] = (0,sz,0)
+
+        ll[2,0] = (0,0,-sz)
+        ll[2,1] = (0,0,sz)
+
+        pl.add_points( ll.reshape(-1,3), color="magenta", point_size=16.0 )
+
+        for i in range(len(ll)):
+             pl.add_lines( ll[i].reshape(-1,3), color="blue" )
+        pass  
+
+
+
 
 if __name__ == '__main__':
      logging.basicConfig(level=logging.INFO)

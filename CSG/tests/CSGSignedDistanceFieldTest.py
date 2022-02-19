@@ -10,6 +10,7 @@ import os
 import pyvista as pv 
 import numpy as np
 from opticks.ana.fold import Fold
+from opticks.ana.gridspec import CrossHairs
 from opticks.ana.npmeta import NPMeta
 
 SIZE = np.array([1280, 720])
@@ -72,6 +73,9 @@ if __name__ == '__main__':
     pl = pv.Plotter(window_size=SIZE*2)
     pl.add_mesh(mesh, smooth_shading=False, color='tan', show_edges=show_edges  )   # style='wireframe' 
     pl.show_grid()
+
+    CrossHairs.draw(pl)
+
     pl.show()
 
 
