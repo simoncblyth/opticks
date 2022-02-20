@@ -158,8 +158,6 @@ class Rays(object):
     ## different presentation of selected intersects 
     ## red position points (usually invisible under arrow) and normal arrows    
 
-
-
     #pl.add_arrows( s_ray_origin, s_ray_direction, color="blue", mag=s_t ) 
     # drawing arrow from ray origins to intersects works, but the arrows are too big 
     # TODO: find way to do this with different presentation
@@ -191,6 +189,54 @@ class Rays(object):
     pass
 
 
+class CSGRecord(object):
+    @classmethod
+    def Draw0(cls, pl, recs): 
+        """
+        # works but then difficult for labelling 
+        """
+        if len(recs) > 0:
+            arrows = make_arrows( recs[:,2,:3], recs[:,0,:3], mag=10 )
+            pl.add_mesh( arrows, color="pink" )
+            print(arrows)
+        pass
+    @classmethod
+    def Draw1(cls, pl, recs): 
+        """
+        Old record layout 
+        """
+        rec_tloop_nodeIdx_ctrl = rec[3,:3].view(np.int32)
+        arrows = make_arrows( rec_pos, rec_dir, mag=10 )
+        pl.add_mesh( arrows, color="pink" )
+        points = arrows.points 
+        mask = slice(0,1)
+        pl.add_point_labels( points[mask], [ str(rec_tloop_nodeIdx_ctrl) ] , point_size=20, font_size=36 )
+
+    @classmethod
+    def Draw(cls, pl, recs, ray_origin, ray_direction): 
+        """
+        # less efficient but gives easy access to each arrow position 
+        """
+        for i in range(len(recs)): 
+            left  = recs[i,0]
+            right = recs[i,1]
+
+            n_left = left[:3]
+            n_right = right[:3]
+
+            t_left  = np.abs(left[3])
+            t_right = np.abs(right[3])
+
+            pos_left  = ray_origin + t_left*ray_direction
+            pos_right = ray_origin + t_right*ray_direction
+
+            # TODO: need to record tminAdvanced
+
+            Rays.Draw(pl, ray_origin,  pos_left , n_left  )
+            Rays.Draw(pl, ray_origin,  pos_right, n_right )
+        pass
+    pass   
+pass 
 
 
 if __name__ == '__main__':
@@ -207,7 +253,11 @@ if __name__ == '__main__':
     print(" plotbase : %s " % plotbase )
 
     cegs_path = plotbase  
-    recs_path = os.path.join(plotbase, "intersectSelected" )
+    #rel_name = "intersectSelected"
+    rel_name = "saveCenterExtentGenstepIntersect"
+    recs_path = os.path.join(plotbase, rel_name )
+
+
 
     cegs = SCenterExtentGenstep(cegs_path)
     fold = cegs.fold
@@ -248,13 +298,13 @@ if __name__ == '__main__':
     pos, sd = fold.isect[:,1,:3], fold.isect[:,1,3]   # intersect position and surface distance 
     asd = np.abs(sd) 
 
-    isect_gsid = fold.isect[:,3,3].copy().view(np.int8).reshape(-1,4)    # genstep (ix,iy,iz,0) from which each intersect originated from     
+    isect_gsid_ = fold.isect[:,3,3].copy().view(np.uint32)
+    isect_gsid = isect_gsid_.view(np.int8).reshape(-1,4)    # genstep (ix,iy,iz,0) from which each intersect originated from     
 
     ## bitwise_and removes the bytes holding the photon index, for easier connection to gs level  
     isect_gsoid_ = np.bitwise_and( fold.isect[:,3,3].view(np.uint32), 0x00ffffff ).copy()
     isect_gsoid = isect_gsoid_.view(np.int8).reshape(-1,4)  
     np.all( isect_gsid[:,:3]  == isect_gsoid[:,:3] ) 
- 
 
     ray_origin = fold.isect[:, 2, :3]
     ray_direction = fold.isect[:, 3, :3]
@@ -262,7 +312,6 @@ if __name__ == '__main__':
     asd_cut = 1e-3
     select_spurious = asd > asd_cut 
     select_all = t > 0.
-
 
     gss_ = np.unique(isect_gsoid_[select_spurious]) 
     gss = gss_.view(np.int8).reshape(-1,4)        # gensteps which have spurious intersects 
@@ -272,17 +321,12 @@ if __name__ == '__main__':
     if no_gs:
         print(" skip gspos points due to NO_GS " )
     else:
-
         gss_select_count = np.count_nonzero(gss_select)
         if gss_select_count > 0:  
             pl.add_points( gspos[gss_select], color="green" )
         pass
         ## gs with spurious intersects presented differently
     pass
-
-
-
-
 
     select = select_all 
 
@@ -317,6 +361,11 @@ if __name__ == '__main__':
 
     ## when envvar IXYZ is defined restrict to a single genstep source of photons identified by grid coordinates
     ixyz = eintlist_("IXYZ", None)   
+    sxyzw = eintlist_("SXYZW", None)   
+    _sxyzw = np.array( sxyzw, dtype=np.int8 ).view(np.uint32)[0] 
+    _sxyzw_idx = np.where( isect_gsid_ == _sxyzw )  
+
+
     if not ixyz is None:
         ix,iy,iz = ixyz
         select_isect_gsid = np.logical_and( np.logical_and( isect_gsid[:,0] == ix , isect_gsid[:,1] == iy ), isect_gsid[:,2] == iz )
@@ -351,9 +400,18 @@ if __name__ == '__main__':
         print("%40s : %d  \n" % ("count_select", count_select)) 
     pass
 
+    gsid_label = None 
     if not ixyz is None and not iw is None:
         ix,iy,iz = ixyz
         gsid_label = "gsid_%d_%d_%d_%d" % (ix,iy,iz,iw)     
+        print(" IXYZ/IW defined =>  gsid_label : %s " % gsid_label )
+    elif not sxyzw is None:
+        sx,sy,sz,sw = sxyzw
+        gsid_label = "gsid_%d_%d_%d_%d" % (sx,sy,sz,sw) 
+        print(" SXYZW defined  =>  gsid_label : %s " % gsid_label )
+    pass     
+         
+    if not gsid_label is None: 
         recs_fold = Fold.Load(recs_path, gsid_label, quiet=True)
         recs = [] if recs_fold is None else recs_fold.CSGRecord 
         if len(recs) > 0:
@@ -365,6 +423,12 @@ if __name__ == '__main__':
         pass
     else:
         recs = []
+    pass
+
+    if len(recs) > 0:
+        _ray_origin = ray_origin[_sxyzw_idx][0]
+        _ray_direction = ray_direction[_sxyzw_idx][0]
+        CSGRecord.Draw(pl, recs, _ray_origin, _ray_direction )
     pass
 
     count_select = np.count_nonzero(select)
@@ -434,38 +498,13 @@ if __name__ == '__main__':
         pl.add_points( pos, color="white" )
     pass
 
-    if 0:
-        # works but then would have to fish for labelling etc.. 
-        if len(recs) > 0:
-            arrows = make_arrows( recs[:,2,:3], recs[:,0,:3], mag=10 )
-            pl.add_mesh( arrows, color="pink" )
-            print(arrows)
-        pass
-    pass
-    if 1:
-        # less efficient but gives easy access to each arrow position 
-        for irec, rec in enumerate(recs): 
-            rec_dir = rec[0,:3]
-            rec_pos = rec[1,:3]
-            rec_tloop_nodeIdx_ctrl = rec[3,:3].view(np.int32)
-
-            arrows = make_arrows( rec_pos, rec_dir, mag=10 )
-            pl.add_mesh( arrows, color="pink" )
-            points = arrows.points 
-            mask = slice(0,1)
-            pl.add_point_labels( points[mask], [ str(rec_tloop_nodeIdx_ctrl) ] , point_size=20, font_size=36 )
-        pass
-    pass   
-    
-
     ## different presentation of selected intersects and normals
-    if s_count > 0:
+    if s_count > 0 and sxyzw is None:
         Rays.Draw( pl, s_ray_origin[:s_limited], s_pos[:s_limited], s_dir[:s_limited] )
     pass
     if ss_count > 0:
         Rays.Draw( pl, ss_ray_origin[:ss_limited], ss_pos[:ss_limited], ss_dir[:ss_limited], ray_color="yellow", nrm_color="yellow" )
     pass
-
 
     pl.show_grid()
     ReferenceGeometry(pl)
