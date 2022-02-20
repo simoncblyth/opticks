@@ -624,11 +624,11 @@ YZ view looks symmetric as both sides of tubs have box-extensions::
 X4SolidMaker::AnnulusTwoBoxUnion
 
 
-               tub_bpy_bny
-
-     tub_bpy                  bny 
-
-  tub       bpy 
+               tub_bpy_bny  T
+                             \
+     tub_bpy T                bny 
+              \
+  tub          bpy 
 
 
 

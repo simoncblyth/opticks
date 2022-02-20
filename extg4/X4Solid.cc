@@ -375,7 +375,8 @@ void X4Solid::convertMultiUnion()
         X4Solid* x_sub = new X4Solid(sub, m_ok, top, lvIdx); 
         nnode* n_sub = x_sub->getRoot(); 
 
-        n_sub->set_transform( tr_sub, true );  
+        bool update_global = true ;  
+        n_sub->set_transform( tr_sub, update_global );  
 
         n_comp->subs.push_back(n_sub);      
     }
@@ -399,6 +400,16 @@ then replace the nnode subtree. Because thats using the nnode
 lingo should do thing within nmultiunion
 
 Just need to collect the list of nodes. Hmm maybe flatten transforms ?
+
+
+Q: what about a list node within an ordinary CSG tree ?
+A: see X4Solid::convertBooleanSolid the getRoot is called on the X4Solid from the 
+   xleft and xright X4Solid instances and these are put together in an ordinary operator
+   nnode. So what will happen is that the left or right of the operator node will 
+   end up being set get set to the nmultiunion.
+
+   To follow what happens next in the GeoChain need to see NCSG and how it handles
+   the export on encountering the nmultiunion. 
 
 **/
 

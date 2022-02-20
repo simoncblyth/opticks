@@ -161,23 +161,12 @@ NCSG instanciation via ctor taking nnode argument
 
 NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsigned lvIdx )
 {
-    root->prepare();  // prepareTree or prepareList depending on type 
+    root->prepare();  // prepareTreei(checks tree, update_gtransforms)  or prepareList (just checks leaf)
 
-    LOG(LEVEL) 
-        << " [ "
-        << " soIdx " << soIdx  
-        << " lvIdx " << lvIdx 
-        ; 
-
-    // XCSG test generation giving lots of these Adopts with zero idx
-    // if( soIdx == 0 && lvIdx == 0) std::raise(SIGINT); 
-
+    LOG(LEVEL) << " [ " << " soIdx " << soIdx  << " lvIdx " << lvIdx ; 
 
     int treeidx = root->get_treeidx() ; 
-    if( treeidx > -1 ) 
-    {
-        assert( unsigned(treeidx) == lvIdx ); 
-    }
+    if( treeidx > -1 ) assert( unsigned(treeidx) == lvIdx ); 
 
     root->set_treeidx(lvIdx) ;  // without this no nudging is done
 
@@ -190,11 +179,7 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
 
     tree->postchange();  // collect global transforms and exports
 
-    LOG(LEVEL) 
-        << " ] "
-        << " soIdx " << soIdx  
-        << " lvIdx " << lvIdx 
-        ; 
+    LOG(LEVEL) << " ] " << " soIdx " << soIdx  << " lvIdx " << lvIdx ; 
 
     return tree ; 
 }
@@ -942,8 +927,6 @@ Effects:
    * formerly it set node->gtransform : but thats too late for eg NNodeNudger
      so now it just checks it gets the same transform
 
-   
-
 Related:
 
 opticks/notes/issues/subtree_instances_missing_transform.rst
@@ -969,38 +952,71 @@ void NCSG::collect_global_transforms()
     }
     else if(m_root->is_list())
     {
-        collect_global_transforms_list() ; 
+        collect_global_transforms_list(m_root) ; 
     }
 }
 
-void NCSG::collect_global_transforms_list() 
+void NCSG::collect_global_transforms_list(nnode* node) 
 {
-    check_subs(); 
-    collect_global_transforms_node(m_root);
+    check_subs(node); 
+    collect_global_transforms_node(node);
 
-    unsigned sub_num = m_root->subNum(); 
+    unsigned sub_num = node->subNum(); 
     for(unsigned isub=0 ; isub < sub_num ; isub++)
     {
-        nnode* sub = m_root->subs[isub];    
+        nnode* sub = node->subs[isub];    
         // sub cannot be const, as the export writes things like indices into the node
 
         collect_global_transforms_node(sub);
     }
 }
 
+/**
+NCSG::collect_global_transforms_r
+------------------------------------
+
+Branching for listnode within trees is done 
+here to prevent missing transforms. 
+
+**/
+
 void NCSG::collect_global_transforms_r(nnode* node) 
 {
-    collect_global_transforms_node(node);
-
-    if(node->left && node->right)
+    if( node->is_list() )
     {
-        collect_global_transforms_r(node->left);
-        collect_global_transforms_r(node->right);
+        collect_global_transforms_list(node); 
+    }
+    else
+    {
+        collect_global_transforms_node(node);
+
+        if(node->left && node->right)
+        {
+            collect_global_transforms_r(node->left);
+            collect_global_transforms_r(node->right);
+        }
     }
 }
+
+/**
+NCSG::collect_global_transforms_node
+--------------------------------------
+
+For nodes without left+right child nodes (aka primitives) 
+forms the global transform using node local transforms and the tree using parent links
+BUT it doesnt set it, it just checks it matches the one there already
+before addUniqueTransform to the buffer and setting the gtransform_idx
+on the node. 
+
+
+**/
+
 void NCSG::collect_global_transforms_node(nnode* node)
 {
-    if(node->is_primitive())
+    bool lr_null = node->is_lr_null() ;
+    LOG(LEVEL) << " lr_null " << lr_null ; 
+
+    if(lr_null)  
     {
         const nmat4triple* gtransform = node->global_transform();   
         assert( gtransform ); 
@@ -1012,8 +1028,6 @@ void NCSG::collect_global_transforms_node(nnode* node)
         node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None (which should not happen now)
     }
 } 
-
-
 
 
 unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
@@ -1304,14 +1318,20 @@ void NCSG::export_tree_r(nnode* node, unsigned idx)
     }  
 }
 
-void NCSG::check_subs() const 
+void NCSG::check_subs(const nnode* node) // static 
 {
-    bool is_list = CSG::IsList(m_root->type); 
+    bool is_list = CSG::IsList(node->type); 
     assert( is_list ); 
 
-    unsigned sub_num_0 = m_root->subs.size(); 
-    unsigned sub_num_1 = m_root->subNum(); 
+    unsigned sub_num_0 = node->subs.size(); 
+    unsigned sub_num_1 = node->subNum(); 
     assert( sub_num_0 == sub_num_1 ); 
+
+   // hmm during transform collection too early for this check perhspa
+   // unsigned sub_offset = node->subOffset();
+   // if( sub_offset == 0 ) LOG(fatal) << " sub_offset should be 1 for standalone list nodes, and more for list nodes within trees " ; 
+   // assert( sub_offset > 0 ); 
+
 }
 
 void NCSG::export_leaf_()
@@ -1333,10 +1353,10 @@ void NCSG::export_list_()
 {
     unsigned idx = 0 ; 
     m_root->setSubOffset(1); 
+    check_subs(m_root); 
 
     export_node( m_root,  idx) ; 
 
-    check_subs(); 
     unsigned sub_num = m_root->subNum(); 
 
     for(unsigned isub=0 ; isub < sub_num ; isub++)

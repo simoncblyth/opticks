@@ -273,7 +273,7 @@ bool nnode::is_leaf() const
 {
     return CSG::IsLeaf(type) ; 
 }
-bool nnode::is_list() const 
+bool nnode::is_list() const  // CSG_CONTIGUOUS or CSG_DISCONTIGUOUS or CSG_OVERLAP
 {
     return CSG::IsList(type) ; 
 }
@@ -2204,6 +2204,10 @@ nnode::prepareTree
 --------------------
 
 Recursively sets parent links and updates gtransforms, then checks tree. 
+The subNum is set on the root node to the number of tree nodes 
+in order to allow finding the subs of any list nodes that are within the tree. 
+
+TODO: update_gtransforms needs to be made listnode in tree aware ?
 
 **/
 
@@ -2215,7 +2219,7 @@ void nnode::prepareTree()
 
     nnode::Set_parent_links_r(root, NULL);
     root->check_tree( FEATURE_PARENT_LINKS ); 
-    root->update_gtransforms() ;  // sets node->gtransform (not gtransform_idx) parent links are required 
+    root->update_gtransforms() ;  // sets node->gtransform (not gtransform_idx), parent links are required to have been set  
     root->check_tree( FEATURE_GTRANSFORMS ); 
     root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
 
@@ -2229,6 +2233,8 @@ nnode::prepareList
 --------------------
 
 * checks list constraints : all sub must be leaf nodes
+
+HMM: what about list nodes within trees ?
 
 **/
 

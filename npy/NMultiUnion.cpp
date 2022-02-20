@@ -76,6 +76,10 @@ in order to be able to chop the tree into a pile of leaves without changing geom
 
 **/
 
+
+
+
+
 nmultiunion* nmultiunion::CreateFromTree( OpticksCSG_t type, const nnode* src )  // static 
 {
     LOG(LEVEL) << "[" ; 
@@ -95,13 +99,20 @@ nmultiunion* nmultiunion::CreateFromTree( OpticksCSG_t type, const nnode* src ) 
     subtree->collect_prim_for_edit(prim); 
 
     unsigned num_prim = prim.size(); 
+
+    LOG(LEVEL) << " num_prim " << num_prim ; 
+
     for(unsigned i=0 ; i < num_prim ; i++) 
     {
         nnode* p = prim[i]; 
         if( p->gtransform )
         {
+            LOG(LEVEL) << " i " << i << " stealing p.gtransform into p.transform " ; 
             p->transform = p->gtransform ; 
+            LOG(LEVEL) << " p.transform " << std::endl << *p->transform ; 
+
         }
+        LOG(LEVEL) << " i " << i << " p.transform " << p->transform << " p.gtransform " << p->gtransform ; 
     }
 
     nmultiunion* n = CreateFromList(type, prim) ; 

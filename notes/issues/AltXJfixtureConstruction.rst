@@ -264,3 +264,11 @@ With standalone List AnnulusTwoBoxUnionContiguousList the trIdx are set::
     2022-02-19 20:32:19.735 INFO  [5635205] [*CSGQuery::scanPrim@358]  ce ( 0.000, 0.000, 0.000,65.000)  resolution 25
 
 
+
+
+Adding handling for list nodes within trees to NCSG::collect_global_transforms_r succeeds to include all transforms, 
+but seeing spurious. Perhaps from difference with the list which needs to flip ?:: 
+
+    SPURIOUS=1 IXYZ=0,0,2 ./csg_geochain.sh ana
+
+

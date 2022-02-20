@@ -157,6 +157,7 @@ export NTreeProcess=INFO   ## balance decision happens here
 #export nphicut=INFO 
 export NCSG=INFO
 export NCSGData=INFO
+export nmultiunion=INFO
 
 export X4Solid=INFO  
 export X4SolidMaker=INFO  
