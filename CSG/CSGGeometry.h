@@ -32,6 +32,7 @@ struct CSG_API CSGGeometry
 
     std::vector<int>* sxyzw ;
     std::vector<int>* sxyz ; 
+    bool no_selection ; 
     int sx ;  
     int sy ;  
     int sz ;  

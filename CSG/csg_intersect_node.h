@@ -61,7 +61,7 @@ float distance_node_list( unsigned typecode, const float3& pos, const CSGNode* n
          const CSGNode* sub_node = root+offset_sub+isub ;
 #ifdef DEBUG
          printf("//distance_node_list num_sub %d offset_sub %d isub %d sub_node.typecode %d sub_node.typecode.name %s\n", num_sub, offset_sub, isub, sub_node->typecode(), CSG::Name(sub_node->typecode())) ;  
-         assert( sub_node->typecode() > CSG_LEAF ); 
+         assert( sub_node->typecode() >= CSG_LEAF ); 
 #endif
 
  

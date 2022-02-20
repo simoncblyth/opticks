@@ -15,7 +15,7 @@ in the more friendly debugging environment of the CPU.::
     IXYZ=0,6,0 ./csg_geochain.sh  ana      
 
 
-    SPURIOUS=1 GEOM=CylinderFourBoxUnion_YX ./csg_geochain.sh ana
+    SPUR=1 GEOM=CylinderFourBoxUnion_YX ./csg_geochain.sh ana
          56/20997 spurious intersects all exiting the cylinder 
          within the +Y and -X boxes
 
@@ -24,19 +24,19 @@ in the more friendly debugging environment of the CPU.::
 
          TODO: test with CSG balancing disabled
 
-    SPURIOUS=1 GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh ana
+    SPUR=1 GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh ana
           181/20997 spurious all exiting the cylinder with all 4 boxes
 
-    SPURIOUS=1 IXYZ=-6,0,0 GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh ana
+    SPUR=1 IXYZ=-6,0,0 GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh ana
           select single genstep   
 
-    SPURIOUS=1 IXYZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX SAVE_SELECTED_ISECT=1 ./csg_geochain.sh ana
+    SPUR=1 IXYZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX SAVE_SELECTED_ISECT=1 ./csg_geochain.sh ana
 
     SELECTED_ISECT=/tmp/selected_isect.npy GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh run
           run again just with selected isects, with CSGRecord enabled 
           will need to use same geometry to get same results     
 
-    SPURIOUS=1 IXYZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX  ./csg_geochain.sh ana
+    SPUR=1 IXYZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX  ./csg_geochain.sh ana
 
 
     TMIN=50 ./csg_geochain.sh 
@@ -191,7 +191,7 @@ topline="GEOM=$GEOM ./csg_geochain.sh "
 cmdline="GEOM=$GEOM ./csg_geochain.sh "
 [ -n "$SPHI" ] && cmdline="SPHI=$SPHI $cmdline" 
 [ -n "$IXYZ" ] && cmdline="IXYZ=$IXYZ $cmdline" 
-[ -n "$SPURIOUS" ] && cmdline="SPURIOUS=$SPURIOUS $cmdline" 
+[ -n "$SPUR" ] && cmdline="SPUR=$SPUR $cmdline" 
 
 export CMDLINE=$cmdline
 export NOTE=$note 
@@ -298,18 +298,20 @@ if [ "${arg/dump}" != "$arg" ]; then
 
 elif [ "${arg/run}" != "$arg" ]; then
 
-    echo $msg running binary $bin
-    $bin
-    [ $? -ne 0 ] && echo $msg run error && exit 1
-
-elif [ "${arg/dbg}" != "$arg" ]; then 
-
-    echo $msg running binary $bin under debugger
-    if [ "$(uname)" == "Darwin" ]; then
-        lldb__ $bin
+    if [ -n "$DEBUG" ]; then 
+        echo $msg running binary $bin under debugger
+        if [ "$(uname)" == "Darwin" ]; then
+            lldb__ $bin
+        else
+            gdb $bin
+        fi 
+        [ $? -ne 0 ] && echo $msg error while running binary $bin under debugger  && exit 1
     else
-        gdb $bin
+        echo $msg running binary $bin
+        $bin
+        [ $? -ne 0 ] && echo $msg error while running binary $bin  && exit 1
     fi 
+
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then

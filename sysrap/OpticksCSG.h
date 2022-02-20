@@ -23,16 +23,16 @@ typedef enum {
     CSG_ZERO=0,
 
     CSG_TREE=1,
-        CSG_UNION=2,
-        CSG_INTERSECTION=3,
-        CSG_DIFFERENCE=4,
+        CSG_UNION=1,
+        CSG_INTERSECTION=2,
+        CSG_DIFFERENCE=3,
 
-    CSG_NODE=10, 
+    CSG_NODE=11, 
         CSG_CONTIGUOUS=11, 
         CSG_DISCONTIGUOUS=12,
         CSG_OVERLAP=13, 
 
-    CSG_LEAF=100,
+    CSG_LEAF=101,
         CSG_SPHERE=101,
         CSG_BOX=102,
         CSG_ZSPHERE=103,
@@ -232,17 +232,17 @@ struct CSG
         {
             case CSG_ZERO:          s = CSG_ZERO_          ; break ; 
 
-            case CSG_TREE:          s = CSG_TREE_          ; break ; 
+            //case CSG_TREE:          s = CSG_TREE_          ; break ;   CSG_TREE has same value as CSG_UNION it is used for grouping 
             case CSG_UNION:         s = CSG_UNION_         ; break ; 
             case CSG_INTERSECTION:  s = CSG_INTERSECTION_  ; break ; 
             case CSG_DIFFERENCE:    s = CSG_DIFFERENCE_    ; break ; 
 
-            case CSG_NODE:          s = CSG_NODE_          ; break ; 
+            //case CSG_NODE:          s = CSG_NODE_          ; break ;    CSG_NODE has same value as CSG_CONTIGUOUS it is used for grouping 
             case CSG_CONTIGUOUS:    s = CSG_CONTIGUOUS_    ; break ; 
             case CSG_DISCONTIGUOUS: s = CSG_DISCONTIGUOUS_ ; break ; 
             case CSG_OVERLAP:       s = CSG_OVERLAP_       ; break ; 
 
-            case CSG_LEAF:          s = CSG_LEAF_          ; break ; 
+            //case CSG_LEAF:          s = CSG_LEAF_          ; break ;    CSG_LEAF has same value as CSG_SPHERE 
             case CSG_SPHERE:        s = CSG_SPHERE_        ; break ; 
             case CSG_BOX:           s = CSG_BOX_           ; break ; 
             case CSG_ZSPHERE:       s = CSG_ZSPHERE_       ; break ; 

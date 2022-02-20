@@ -290,7 +290,7 @@ providing a way to rerun a pixel with exactly the same ray_origin, ray_direction
     YX=0,0 DUMP=3 CSGQueryTest
     YX=1,1 DUMP=3 CSGQueryTest
 
-The pixel to rerun is chosed by (IY,IX) coordinate where::
+The pixel to rerun is chosen with (IY,IX) coordinate where::
 
     (0,0) is top left pixel 
     (1,0) is pixel below the top left pixel 

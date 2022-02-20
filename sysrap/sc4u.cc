@@ -5,9 +5,6 @@
 #include "NP.hh"
 
 
-
-
-
 int main(int argc, char** argv)
 {
     C4U c4u ; 
@@ -21,6 +18,12 @@ int main(int argc, char** argv)
 
     std::cout << " c4u   " << C4U_desc(c4u) << std::endl ; 
     std::cout << " c4u.u " << C4U_desc(u)   << std::endl ; 
+
+    std::string s = C4U_name( u, "prefix", '_' ); 
+
+    std::cout << " C4U_name " << s << std::endl ; 
+
+
 
     quad4 p ; 
     p.zero();

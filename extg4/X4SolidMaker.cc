@@ -12,6 +12,7 @@
 #include "G4ThreeVector.hh"
 #include "G4Orb.hh"
 #include "G4UnionSolid.hh"
+#include "G4IntersectionSolid.hh"
 #include "G4Ellipsoid.hh"
 #include "G4MultiUnion.hh"
 
@@ -25,6 +26,9 @@ using CLHEP::pi ;
 const plog::Severity X4SolidMaker::LEVEL = PLOG::EnvLevel("X4SolidMaker", "DEBUG"); 
 
 const char* X4SolidMaker::NAMES = R"LITERAL(
+JustOrbOrbUnion
+JustOrbOrbIntersection
+JustOrbOrbDifference
 JustOrb
 SphereWithPhiSegment
 SphereWithPhiCutDEV
@@ -104,7 +108,10 @@ const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // st
     }
 
     const G4VSolid* solid = nullptr ; 
-    if(     StartsWith("JustOrb",qname))                      solid = X4SolidMaker::JustOrb(qname); 
+    if(     StartsWith("JustOrbOrbUnion",qname))              solid = X4SolidMaker::JustOrbOrbUnion(qname); 
+    else if(StartsWith("JustOrbOrbIntersection",qname))       solid = X4SolidMaker::JustOrbOrbIntersection(qname); 
+    else if(StartsWith("JustOrbOrbDifference",qname))         solid = X4SolidMaker::JustOrbOrbDifference(qname); 
+    else if(StartsWith("JustOrb",qname))                      solid = X4SolidMaker::JustOrb(qname); 
     else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4SolidMaker::SphereWithPhiSegment(qname); 
     else if(StartsWith("SphereWithPhiCutDEV",qname))          solid = X4SolidMaker::SphereWithPhiCutDEV(qname); 
     else if(StartsWith("GeneralSphereDEV",qname))             solid = X4SolidMaker::GeneralSphereDEV(qname, meta); 
@@ -142,6 +149,24 @@ const G4VSolid* X4SolidMaker::JustOrb(const char* name)  // static
     return new G4Orb(name, 100.) ; 
 }
 
+
+const G4VSolid* X4SolidMaker::JustOrbOrbUnion(       const char* name){ return JustOrbOrb_(name, 'U') ; }
+const G4VSolid* X4SolidMaker::JustOrbOrbIntersection(const char* name){ return JustOrbOrb_(name, 'I') ; }
+const G4VSolid* X4SolidMaker::JustOrbOrbDifference(  const char* name){ return JustOrbOrb_(name, 'D') ; }
+
+const G4VSolid* X4SolidMaker::JustOrbOrb_(const char* name, char op)  // static
+{
+    G4Orb* l = new G4Orb("l", 100.) ; 
+    G4Orb* r = new G4Orb("r", 100.) ; 
+    G4VSolid* oo  = nullptr ; 
+    switch(op)
+    {
+         case 'U': oo = new G4UnionSolid(       name, l, r,  0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm ) ) ; break ; 
+         case 'I': oo = new G4IntersectionSolid(name, l, r,  0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm ) ) ; break ; 
+         case 'D': oo = new G4SubtractionSolid( name, l, r,  0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm ) ) ; break ; 
+    }
+    return oo ; 
+}
 
 /**
 X4SolidMaker::SphereWithPhiCutDEV
@@ -643,56 +668,38 @@ const G4VSolid* X4SolidMaker::AnnulusTwoBoxUnion(const char* name)
     const char* suffix = nullptr ; 
     if(     strstr(name, "Contiguous"))    suffix = "_CSG_CONTIGUOUS" ; 
     else if(strstr(name, "Discontiguous")) suffix = "_CSG_DISCONTIGUOUS" ; 
-    const char* rootname = SStr::Concat("tub_bpy_bny", suffix, "" );     
 
-    double innerRadius = suffix ? 0.*mm : 25.*mm ; 
-    double bpy_scale_z = suffix ? 2. : 1. ; 
-    double bny_scale_z = suffix ? 4. : 1. ; 
+    bool toplist = strstr(name, "List") != nullptr ;  
 
+    const char* listname = SStr::Concat("tub_bpy_bny", suffix, "" );     
+
+    double innerRadius = 0.*mm ; 
+    double bpy_scale_z = 2. ; 
+    double bny_scale_z = 4. ; 
 
     LOG(LEVEL) 
         << " name " << name 
         << " suffix " << suffix 
-        << " rootname " << rootname 
+        << " listname " << listname 
         << " innerRadius " << innerRadius 
         << " bpy_scale_z " << bpy_scale_z
         << " bny_scale_z " << bny_scale_z
         ; 
 
-    G4VSolid* tub  = new G4Tubs("tub", innerRadius, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
+    G4VSolid* tub  = new G4Tubs("tub", 0.*mm, 45.*mm, 13./2*mm, 0.*deg, 360.*deg);
 
     G4VSolid* bpy = new G4Box("bpy", 15.*mm, 15.*mm, bpy_scale_z*13/2.*mm);
     G4VSolid* tub_bpy = new G4UnionSolid(  "tub_bpy", tub, bpy, 0, G4ThreeVector(0.*mm, 50.*mm, 0.*mm));  // +Y
 
     G4VSolid* bny = new G4Box("bny", 15.*mm, 15.*mm, bny_scale_z*13/2.*mm);
-    G4VSolid* tub_bpy_bny = new G4UnionSolid(rootname, tub_bpy, bny, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
+    G4VSolid* tub_bpy_bny = new G4UnionSolid(listname, tub_bpy, bny, 0, G4ThreeVector(0.*mm, -50.*mm, 0.*mm)); // -Y 
 
-    G4VSolid* result = nullptr ; 
-    if(suffix)
-    {
-        bool toplist = strstr(name, "List") ; 
-        if( toplist )
-        {
-            result = tub_bpy_bny ; 
-        } 
-        else
-        {
-            double uncoincide = 1. ; 
-            G4VSolid* itu  = new G4Tubs("itu", 0.*mm, 25.*mm, (uncoincide+13./2)*mm, 0.*deg, 360.*deg);
-            G4VSolid* tub_bpy_bny_itu = new G4SubtractionSolid("tub_bpy_bny_itu", tub_bpy_bny, itu );
-            result=tub_bpy_bny_itu  ; 
-        }
-    }
-    else
-    {
-        result = tub_bpy_bny ; 
-    }
-    return result ; 
+    double uncoincide = 1. ; 
+    G4VSolid* itu  = new G4Tubs("itu", 0.*mm, 25.*mm, (uncoincide+13./2)*mm, 0.*deg, 360.*deg);
+    G4VSolid* tub_bpy_bny_itu = new G4SubtractionSolid("tub_bpy_bny_itu", tub_bpy_bny, itu );
+
+    return toplist ? tub_bpy_bny : tub_bpy_bny_itu  ; 
 }
-
-
-
-
 
 
 

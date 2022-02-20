@@ -191,7 +191,6 @@ After making  the bny box larger in z than the bpy one can confirm that the bny 
      670 }
 
 
-
 Hmm seems offsetSub is still at 0, it should be 1::
 
     epsilon:CSG blyth$ ./CSGQueryTest.sh 
@@ -267,8 +266,75 @@ With standalone List AnnulusTwoBoxUnionContiguousList the trIdx are set::
 
 
 Adding handling for list nodes within trees to NCSG::collect_global_transforms_r succeeds to include all transforms, 
-but seeing spurious. Perhaps from difference with the list which needs to flip ?:: 
+but seeing spurious intersects onto the subtracted inner tubs.
+Spurs look to be mostly from gensteps with direct sightlines to the subtracted tubs. 
 
-    SPURIOUS=1 IXYZ=0,0,2 ./csg_geochain.sh ana
+
+With GEOM AnnulusTwoBoxUnionContiguous_YZ for listnode to mop up everything other than the subtracted inner
+-----------------------------------------------------------------------------------------------------------
+
+::
+
+    SPUR=1 IXYZ=0,0,2 ./csg_geochain.sh ana
+    SPUR=1 IXYZ=0,1,2 ./csg_geochain.sh ana
+    SPUR=1 IXYZ=0,2,2 ./csg_geochain.sh ana
+         seems to be 2nd crossings showing up as spurious
+         with inwards normal showing up (from the complemented)
+
+    SPUR=1 IXYZ=0,0,0 ./csg_geochain.sh ana
+         only from rays that are also in line with the end boxes 
+
+    IXYZ=0,1,2  ./csg_geochain.sh ana 
+         ~1/20 spurs, DONE: color spur rays different
+  
+    IXYZ=0,-2,1 ./csg_geochain.sh ana 
+
+
+::
+
+    SXYZW=0,-2,1,93 ./csg_geochain.sh run
+
+
+Pick a spurious intersect to delve into:: 
+
+    IXYZ=0,8,8  ./csg_geochain.sh ana 
+
+    SXYZW=0,8,8,61 ./csg_geochain.sh run 
+
+
+HMM: get CSGRecord to work again to dive into the single intersect CSG decision without 
+needing such laborious manual debugging
+
+
+
+
+With GEOM AnnulusTwoBoxUnionContiguousList_YZ to just show the standalone listnode
+------------------------------------------------------------------------------------
+
+No spurs in either Opticks or G4 
+
+
+WIth GEOM AnnulusTwoBoxUnionDiscontiguous_YZ using simple first ENTER/EXIT intersect on listnode
+--------------------------------------------------------------------------------------------------
+
+No spurs other than the expected internals. 
+
+
+With GEOM AnnulusTwoBoxUnion_YZ for ordinary tree
+----------------------------------------------------
+
+G4 spurs on line between end boxes and tubs::
+
+    ./xxs.sh 
+
+No spurs with Opticks::
+
+    c ; ./csg_geochain.sh 
+
+
+
+
+  
+
 
 

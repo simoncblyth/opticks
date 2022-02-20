@@ -21,6 +21,11 @@ using std::signbit ;
 
 #include "f4_stack.h"
 
+#ifdef DEBUG_RECORD
+#include "sc4u.h"
+#include "sbibit.h"
+#include "sbit_.h"
+#endif
 
 /**
 distance_tree : gets given trees with numNode 3, 7, 15, ... where some nodes can be CSG_ZERO empties
@@ -270,7 +275,7 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
  
 #ifdef DEBUG
     printf("//intersect_tree  numNode %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
-    //if( numNode == 0 ) return false ; 
+    assert( numNode > 0 ); 
 #endif
 
     tranche_push( tr, fullTree, t_min );
@@ -334,25 +339,6 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
 
 
 #ifdef DEBUG_RECORD
-                if(CSGRecord::ENABLED)
-                {
-                    IntersectionState_t nd_state = CSG_CLASSIFY( nd_isect,  ray_direction, tmin );
-                    printf("// %3d : primative push : add record  \n", nodeIdx ); 
-                    quad4& rec = CSGRecord::record.back(); 
-                    rec.q1.f.x = ray_origin.x + fabs(rec.q0.f.w)*ray_direction.x ; 
-                    rec.q1.f.y = ray_origin.y + fabs(rec.q0.f.w)*ray_direction.y ; 
-                    rec.q1.f.z = ray_origin.z + fabs(rec.q0.f.w)*ray_direction.z ; 
-
-                    rec.q2.i.x = typecode ; 
-                    rec.q2.i.y = int(nd_state) ; 
-                    rec.q2.i.z = -1 ; 
-                    rec.q2.i.w = -1 ; 
-
-                    rec.q3.i.x = tloop ; 
-                    rec.q3.i.y = nodeIdx ;    // mark primitive push 
-                    rec.q3.i.z = -1 ;         // placeholder for ctrl 
-                  
-                }
                 assert( ierr == 0 ); 
 #endif
                 if(ierr) break ; 
@@ -392,7 +378,8 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                 float t_right = fabsf( csg.data[right].w );
 
                 bool leftIsCloser = t_left <= t_right ;
-#ifdef DEBUG
+
+#ifdef DEBUG_COS
                 {
                     // dot products of ray_direction and normals for the two isect 
                     float l_cos = csg.data[left].x*ray_direction.x + csg.data[left].y*ray_direction.y + csg.data[left].z*ray_direction.z ; 
@@ -408,7 +395,6 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
 
                 }
 #endif
-
                 // it is impossible to Miss a complemented (signaled by -0.f) solid as it is unbounded
                 // hence the below artificially changes leftIsCloser to reflect the unboundedness 
                 // and sets the corresponding states to Exit
@@ -419,9 +405,6 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                 // A: at the tail of intersect_leaf the normal is flipped for complemented solids
                 //    even (actually especially) for MISS 
                 //
-                // TODO: need to also do something like this for unbounded MISS like thetacut/phicut
-                //       but only for appropriate ray directions
-                //   
 
                 bool l_complement = signbit(csg.data[left].x) ;
                 bool r_complement = signbit(csg.data[right].x) ;
@@ -471,18 +454,49 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                            leftIsCloser, 
                            CTRL::Name(ctrl)  ); 
 #endif
+
+
 #ifdef DEBUG_RECORD
                 if(CSGRecord::ENABLED)
                 {
-                    printf("// %3d : stack peeking : left %d right %d (stackIdx)  %15s  l:%5s %10.4f    r:%5s %10.4f     leftIsCloser %d -> %s \n", 
+                    printf("// %3d CSG decision : left %d right %d (stackIdx)  %15s  l:%5s %10.4f    r:%5s %10.4f     leftIsCloser %d -> %s \n", 
                            nodeIdx,left,right,
                            CSG::Name(typecode), 
                            IntersectionState::Name(l_state), t_left,  
                            IntersectionState::Name(r_state), t_right, 
                            leftIsCloser, 
                            CTRL::Name(ctrl)  ); 
+
+                    quad4 rec ; 
+                    rec.zero();  
+                    rec.q0.f = csg.data[left] ; 
+                    rec.q1.f = csg.data[right] ; 
+
+                    U4U uu ; 
+                    uu.u4.x = sbibit_PACK4( typecode, l_state, r_state, leftIsCloser ) ; 
+                    uu.u4.y = sbit_rPACK8( l_promote_miss, l_complement, l_unbounded, false, r_promote_miss, r_complement, r_unbounded, false ); 
+                    uu.u4.z = 0 ; 
+                    uu.u4.w = 0 ; 
+
+                    rec.q2.u.x = uu.u ; 
+                    rec.q2.u.y = ctrl ;  
+
+                    CSGRecord::record.push_back(rec); 
                 }
 #endif
+
+#ifdef DEBUG_RECORD
+                if(CSGRecord::ENABLED)
+                {
+                    quad4& rec = CSGRecord::record.back();  
+                    rec.q3.u.y = 0 ; 
+                    rec.q3.i.z = 0 ; 
+                    rec.q3.i.w = 0 ; 
+                }
+#endif
+
+
+
 
                 Action_t act = UNDEFINED ; 
 
@@ -534,7 +548,6 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                     printf("// %3d : looping one side tminAdvanced %10.4f with eps %10.4f \n", nodeIdx, tminAdvanced, propagate_epsilon );  
 #endif
 
-
 #ifdef DEBUG
                     printf("//intersect_tree nodeIdx %2d height %2d depth %2d elevation %2d endTree %8x leftTree %8x rightTree %8x \n",
                               nodeIdx,
@@ -561,26 +574,6 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
 
                 }                      // "return" or "recursive call" 
 
-#ifdef DEBUG_RECORD
-                if(CSGRecord::ENABLED) 
-                {
-                    //printf("// %3d : add record \n", nodeIdx ); 
-                    quad4& rec = CSGRecord::record.back(); 
-
-                    rec.q1.f.x = ray_origin.x + fabs(rec.q0.f.w)*ray_direction.x ; 
-                    rec.q1.f.y = ray_origin.y + fabs(rec.q0.f.w)*ray_direction.y ; 
-                    rec.q1.f.z = ray_origin.z + fabs(rec.q0.f.w)*ray_direction.z ; 
-
-                    rec.q2.i.x = typecode ; //  set to initial csg.curr within csg_push  
-                    rec.q2.i.y = int(l_state) ; 
-                    rec.q2.i.z = int(r_state) ; 
-                    rec.q2.i.w = int(leftIsCloser) ; 
-
-                    rec.q3.i.x = tloop ;  
-                    rec.q3.i.y = nodeIdx ;    // mark operator push with negation 
-                    rec.q3.i.z = ctrl  ; 
-                }
-#endif
 
                 if(act == BREAK) 
                 {
@@ -631,7 +624,7 @@ bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, con
 #endif
 #endif
     bool valid_intersect = false ; 
-    if( typecode > CSG_LEAF )
+    if( typecode >= CSG_LEAF )
     {
         valid_intersect = intersect_leaf(             isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }
@@ -661,7 +654,7 @@ float distance_prim( const float3& global_position, const CSGNode* node, const f
     //const int numNode = node->subNum(); 
     const unsigned typecode = node->typecode() ;  
     float distance = -1.f ; 
-    if( typecode > CSG_LEAF )
+    if( typecode >= CSG_LEAF )
     {
         distance = distance_leaf(global_position, node, plan, itra );
     } 

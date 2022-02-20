@@ -8,7 +8,7 @@ AnnulusFourBoxUnion
     notice that spurious intersects all from 2nd circle roots  
  
 
-IXYZ=-6,0,0 SPURIOUS=1 ./csg_geochain.sh ana
+IXYZ=-6,0,0 SPUR=1 ./csg_geochain.sh ana
 
 
 
@@ -151,6 +151,48 @@ def ReferenceGeometry(pl):
     pass
 
 
+
+class Rays(object):
+    """
+
+    ## different presentation of selected intersects 
+    ## red position points (usually invisible under arrow) and normal arrows    
+
+
+
+    #pl.add_arrows( s_ray_origin, s_ray_direction, color="blue", mag=s_t ) 
+    # drawing arrow from ray origins to intersects works, but the arrows are too big 
+    # TODO: find way to do this with different presentation
+    # as it avoids having to python loop over the intersects as done
+    # below which restricts to small numbers  
+    """
+    @classmethod
+    def Draw(cls, pl, ori, pos, nrm, ori_color="magenta", nrm_color="red", ray_color="blue" ):
+        """
+        :param pl: plotter
+        :param ori: ray origin
+        :param pos: intersect position
+        :param nrm: surface normal at intersect position
+        """
+        assert len(ori) == len(pos) 
+        assert len(ori) == len(nrm) 
+
+        pl.add_points( pos, color=nrm_color )   
+        pl.add_arrows( pos, nrm, color=nrm_color, mag=10 )
+
+        ll = np.zeros( (len(ori), 2, 3), dtype=np.float32 )
+        ll[:,0] = ori
+        ll[:,1] = pos
+
+        pl.add_points( ori, color=ori_color, point_size=16.0 )
+        for i in range(len(ll)):
+            pl.add_lines( ll[i].reshape(-1,3), color=ray_color )
+        pass  
+    pass
+
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
@@ -171,13 +213,16 @@ if __name__ == '__main__':
     fold = cegs.fold
 
     gspos = fold.gs[:,5,:3]
-    gsid =  fold.gs[:,0,2].copy().view(np.int8).reshape(-1,4)   # q0.u.z (4 packed signed char) 
+
+    gsid_ =  fold.gs[:,0,2].view(np.uint32).copy()
+    gsid =  gsid_.view(np.int8).reshape(-1,4)   # q0.u.z (4 packed signed char) 
 
     no_gs = 'NO_GS' in os.environ 
     if no_gs:
         print(" skip gspos points due to NO_GS " )
     else:
         pl.add_points( gspos, color="yellow" )
+        ## TODO: identify gs with spurious intersects and present them differently
     pass
 
     gsmeta = NPMeta(fold.gs_meta)  # TODO cxs_geochain uses genstep_meta : standardize
@@ -205,12 +250,39 @@ if __name__ == '__main__':
 
     isect_gsid = fold.isect[:,3,3].copy().view(np.int8).reshape(-1,4)    # genstep (ix,iy,iz,0) from which each intersect originated from     
 
+    ## bitwise_and removes the bytes holding the photon index, for easier connection to gs level  
+    isect_gsoid_ = np.bitwise_and( fold.isect[:,3,3].view(np.uint32), 0x00ffffff ).copy()
+    isect_gsoid = isect_gsoid_.view(np.int8).reshape(-1,4)  
+    np.all( isect_gsid[:,:3]  == isect_gsoid[:,:3] ) 
+ 
+
     ray_origin = fold.isect[:, 2, :3]
     ray_direction = fold.isect[:, 3, :3]
 
     asd_cut = 1e-3
     select_spurious = asd > asd_cut 
     select_all = t > 0.
+
+
+    gss_ = np.unique(isect_gsoid_[select_spurious]) 
+    gss = gss_.view(np.int8).reshape(-1,4)        # gensteps which have spurious intersects 
+    gsid_idx = np.where(np.in1d(gsid_, gss_))[0]  # gsid_ indices of      
+    gss_select = np.isin(gsid_, gss_)  # mask selecting  gensteps which have spurious intersects
+
+    if no_gs:
+        print(" skip gspos points due to NO_GS " )
+    else:
+
+        gss_select_count = np.count_nonzero(gss_select)
+        if gss_select_count > 0:  
+            pl.add_points( gspos[gss_select], color="green" )
+        pass
+        ## gs with spurious intersects presented differently
+    pass
+
+
+
+
 
     select = select_all 
 
@@ -270,14 +342,14 @@ if __name__ == '__main__':
         print("%40s : %d  \n" % ("count_select", count_select)) 
     pass  
 
-    # when envvar SPURIOUS is defined restrict to intersects that have sd less than sd_cut  
-    spurious = 'SPURIOUS' in os.environ
+    # when envvar SPUR is defined restrict to intersects that have sd less than sd_cut  
+    spurious = 'SPUR' in os.environ
     if spurious:
         select = np.logical_and( select, select_spurious )
         count_select = np.count_nonzero(select)
-        print("%40s : %d    SPURIOUS %s " % ("count_spurious", count_spurious, os.environ["SPURIOUS"] ))
+        print("%40s : %d    SPUR %s " % ("count_spurious", count_spurious, os.environ["SPUR"] ))
         print("%40s : %d  \n" % ("count_select", count_select)) 
-    pass      
+    pass
 
     if not ixyz is None and not iw is None:
         ix,iy,iz = ixyz
@@ -317,13 +389,26 @@ if __name__ == '__main__':
     print("%40s : %d  \n" % ("s_limited", s_limited)) 
     print("%40s : %d  \n" % ("selected_isect", len(selected_isect))) 
 
+    ## sub selection of the selected that are also spurious as judged by signed distance
+
+    select_and_spurious = np.logical_and( select, select_spurious )
+    ss_pos = pos[select_and_spurious]
+    ss_dir = dir_[select_and_spurious]
+    ss_ray_origin = ray_origin[select_and_spurious]
+
+    ss_count = len(ss_pos)
+    ss_limited = min( ss_count, 100 )   
+
+    print("%40s : %d  \n" % ("ss_count", ss_count)) 
+    print("%40s : %d  \n" % ("ss_limited", ss_limited)) 
+
     def fmt(i):
-        _s_isect_gsid = " s_isect_gsid ( %3d %3d %3d %3d ) " % tuple(s_isect_gsid[i]) 
+        _s_isect_gsid = "SXYZW=%d,%d,%d,%d  " % tuple(s_isect_gsid[i]) 
         _s_t = " s_t ( %10.4f ) " % s_t[i]
         _s_pos = " s_pos ( %10.4f %10.4f %10.4f ) " % tuple(s_pos[i])
         _s_pos_r = " s_pos_r ( %10.4f ) " % s_pos_r[i]
         _s_sd = " s_sd ( %10.4f ) " % s_sd[i]
-        return " %s %s %s %s %s " % (_s_isect_gsid, _s_t, _s_pos, _s_pos_r, _s_sd )
+        return " %-20s %s %s %s %s " % (_s_isect_gsid, _s_t, _s_pos, _s_pos_r, _s_sd )
     pass
     desc = "\n".join(map(fmt,np.arange(s_limited)))
     print(desc) 
@@ -372,30 +457,15 @@ if __name__ == '__main__':
         pass
     pass   
     
-    ## different presentation of selected intersects 
-    ## red position points (usually invisible under arrow) and normal arrows    
 
+    ## different presentation of selected intersects and normals
     if s_count > 0:
-        pl.add_points( s_pos[:s_limited], color="red" )
-        pl.add_arrows( s_pos[:s_limited], s_dir[:s_limited], color="red", mag=10 )
-
-        #pl.add_arrows( s_ray_origin, s_ray_direction, color="blue", mag=s_t ) 
-        # drawing arrow from ray origins to intersects works, but the arrows are too big 
-        # TODO: find way to do this with different presentation
-        # as it avoids having to python loop over the intersects as done
-        # below which restricts to small numbers  
-      
-        ll = np.zeros( (s_limited, 2, 3), dtype=np.float32 )
-        ll[:,0] = s_ray_origin[:s_limited]
-        ll[:,1] = s_pos[:s_limited]
-
-        pl.add_points( s_ray_origin[:s_limited], color="magenta", point_size=16.0 )
-        for i in range(len(ll)):
-            pl.add_lines( ll[i].reshape(-1,3), color="blue" )
-        pass  
-    else:
-        log.info("no s_pos selected  ")
+        Rays.Draw( pl, s_ray_origin[:s_limited], s_pos[:s_limited], s_dir[:s_limited] )
     pass
+    if ss_count > 0:
+        Rays.Draw( pl, ss_ray_origin[:ss_limited], ss_pos[:ss_limited], ss_dir[:ss_limited], ray_color="yellow", nrm_color="yellow" )
+    pass
+
 
     pl.show_grid()
     ReferenceGeometry(pl)

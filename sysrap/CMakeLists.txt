@@ -169,6 +169,8 @@ set(HEADERS
     ssincos.h
     sevent.h
     sc4u.h
+    sbit_.h
+    sbibit.h
 
     sview.h
     strided_range.h 

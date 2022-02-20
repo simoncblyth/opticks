@@ -39,16 +39,9 @@ struct CSG_Stack
 CSG_FUNC 
 int csg_push(CSG_Stack& csg, const float4& isect, unsigned nodeIdx)
 {
-#ifdef DEBUG_RECORD
-    quad4 rec ; 
-    rec.zero();  
-    rec.q0.f = isect ; 
-    //rec.q2.i.x = csg.curr ;   //now using for typecode as csg.curr showing no troubles 
-    CSGRecord::record.push_back(rec); 
-    // printf("//csg_stack.h:csg_push.DEBUG_RECORD %lu \n", CSGRecord::record.size() );  
-    assert( csg.curr < CSG_STACK_SIZE ); 
+#ifdef DEBUG
+     assert( csg.curr < CSG_STACK_SIZE ); 
 #endif
-
     if(csg.curr >= CSG_STACK_SIZE - 1) return ERROR_OVERFLOW ; 
     csg.curr++ ; 
     csg.data[csg.curr] = isect ; 

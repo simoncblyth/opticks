@@ -46,6 +46,9 @@ Packs 4 8bit integers into 32 bits
        (( (d) & 0xff ) << 24 ) \
                              )
 
+
+
+
 /**2
 pack.h : UNPACK4_0/1/2/3 Macros
 --------------------------------

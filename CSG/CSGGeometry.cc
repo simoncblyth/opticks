@@ -63,6 +63,7 @@ CSGGeometry::CSGGeometry(const CSGFoundry* fd_)
     d(nullptr),
     sxyzw(SSys::getenvintvec("SXYZW",',')),
     sxyz(SSys::getenvintvec("SXYZ",',')),
+    no_selection(sxyzw == nullptr && sxyz == nullptr),
     sx(0),
     sy(0),
     sz(0),
@@ -231,6 +232,18 @@ void CSGGeometry::saveCenterExtentGenstepIntersect(float t_min) const
             bool valid_isect = q->intersect(isect, t_min, p ) ; 
             if(valid_isect) ii.push_back(isect); 
             LOG(info) << std::endl << CSGQuery::Desc(isect, "single photon selected", &valid_isect ) ;  
+
+#ifdef DEBUG_RECORD
+            std::string gsid_name = C4U_name( gsid.u , "gsid", '_' );  
+            int create_dirs = 2 ; // 2:dirpath 
+            const char* dir = SPath::Resolve(outdir, "saveCenterExtentGenstepIntersect", gsid_name.c_str(), create_dirs ); 
+            LOG(info) << " DEBUG_RECORD saving to " << dir ; 
+            CSGRecord::Save(dir); 
+            CSGRecord::Dump(dir); 
+            CSGRecord::Clear(); 
+#else
+            LOG(info) << " DEBUG_RECORD flag not enabled " ; 
+#endif
             LOG(info) << "] single photon selected " ; 
         }
     }   
@@ -243,7 +256,17 @@ void CSGGeometry::saveCenterExtentGenstepIntersect(float t_min) const
         << ( num_isect == 0 ? " WARNING : NO INTERSECTS " : " " )
         ;
 
-    cegs->save(outdir); 
+    if( no_selection )
+    {
+        LOG(info) << " saving to outdir " << outdir ; 
+        cegs->save(outdir); 
+    }
+    else
+    {
+        LOG(info) << " NOT saving as an SXYZ or SXYZW selection is in use " ; 
+        
+    }
+
     LOG(info) << "]" ; 
 }
 

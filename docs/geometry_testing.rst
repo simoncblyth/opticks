@@ -115,6 +115,12 @@ The last four scripts require the third translate.sh or fourth CSGMakerTest.sh  
 
      c ; ./csg_geochain.sh   ## CPU : 2D(or 3D) pyvista visualization of Opticks intersects (CPU test run of CUDA comparible intersect code)
 
+     c ; SPUR=1 ./csg_geochain.sh   
+            ## highlight spurious intersects  
+
+     c ; SXYZW=0,-2,1,93 ./csg_geochain.sh run    
+            ## rerun a single ray chosen via genstep grid coordinates and ray index within the genstep
+
      c ; ./CSGQueryTest.sh   ## CPU : test mostly used for shooting single rays at geometry, useful after compiling with DEBUG flag enabled   
 
 

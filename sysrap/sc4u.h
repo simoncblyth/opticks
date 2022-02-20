@@ -1,6 +1,22 @@
 #pragma once
 #include "scuda.h"
 
+
+struct U4 { 
+  unsigned char x ; 
+  unsigned char y ;
+  unsigned char z ;
+  unsigned char w ; 
+}; 
+
+union U4U { 
+   U4 u4 ; 
+   unsigned u ;  
+};  
+
+
+
+
 struct C4 { 
   char x ; 
   char y ;
@@ -22,6 +38,8 @@ union C4U {
 #include <iostream>
 #include <iomanip>
 
+
+
 inline std::string C4U_desc( const C4U& c4u )
 {
     std::stringstream ss ; 
@@ -40,6 +58,7 @@ inline std::string C4U_desc( unsigned u )
 {
     C4U c4u ; 
     c4u.u = u ; 
+
     return C4U_desc( c4u ); 
 }
 
@@ -56,6 +75,8 @@ inline std::string C4U_desc( const int4& gsid )
     std::string s = ss.str(); 
     return s ; 
 }
+
+
 
 inline std::string C4U_name( const int4& gsid, const char* prefix, char delim )
 {
@@ -80,6 +101,17 @@ inline void C4U_decode( int4& gsid,  unsigned u )
     gsid.z = int(c4u.c4.z) ; 
     gsid.w = int(c4u.c4.w) ; 
 }
+
+
+inline std::string C4U_name( unsigned gsid_ , const char* prefix, char delim )
+{
+    int4 gsid ; 
+    C4U_decode( gsid, gsid_ );  
+    return C4U_name( gsid, prefix, delim ); 
+}
+    
+
+
 
 #endif 
 
