@@ -1,9 +1,22 @@
 #!/bin/bash -l 
 
+msg="=== $BASH_SOURCE :"
+
 export CSGRecord_ENABLED=1
 
-#export SXYZW=0,8,8,61
-export SXYZW=-16,-3,0,99
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && geom=$(echo ${catgeom})
+
+case $geom in 
+   #JustOrbOrbDifference_XY)        sxyzw=-16,-3,0,99 ;;
+   JustOrbOrbDifference_XY)         sxyzw=0,9,0,74    ;;
+   #AnnulusTwoBoxUnionContiguous_YZ) sxyzw=0,8,8,61    ;; 
+   AnnulusTwoBoxUnionContiguous_YZ) sxyzw=0,-3,-1,4   ;;
+esac
+
+if [ -n "$sxyzw" ]; then
+    export SXYZW=$sxyzw
+    echo $msg defining SXYZW $SXYZW for geom $geom : selecting individual rays for rerunning with CSGRecord collection and presentation  
+fi 
 
 #./csg_geochain.sh run 
 #./csg_geochain.sh ana

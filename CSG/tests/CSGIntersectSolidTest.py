@@ -165,26 +165,44 @@ class Rays(object):
     # below which restricts to small numbers  
     """
     @classmethod
-    def Draw(cls, pl, ori, pos, nrm, ori_color="magenta", nrm_color="red", ray_color="blue" ):
+    def Draw(cls, pl, p0, p1, n1, n0=None, ori_color="magenta", nrm_color="red", ray_color="blue", ray_width=1, pos_shift=None ):
         """
-        :param pl: plotter
-        :param ori: ray origin
-        :param pos: intersect position
-        :param nrm: surface normal at intersect position
+        :param pl: pyvista plotter
+        :param p0: start position
+        :param p1: end position 
+        :param n1: direction vec at end
+        :param n0: direction vec at start or None
+        :param pos_shift: shift vector or None
         """
-        assert len(ori) == len(pos) 
-        assert len(ori) == len(nrm) 
+        assert len(p0) == len(p1) 
 
-        pl.add_points( pos, color=nrm_color )   
-        pl.add_arrows( pos, nrm, color=nrm_color, mag=10 )
+        if not pos_shift is None:
+            q0 = p0 + pos_shift
+            q1 = p1 + pos_shift
+        else:
+            q0 = p0 
+            q1 = p1 
+        pass
 
-        ll = np.zeros( (len(ori), 2, 3), dtype=np.float32 )
-        ll[:,0] = ori
-        ll[:,1] = pos
+        pl.add_points( q0, color=nrm_color )   
 
-        pl.add_points( ori, color=ori_color, point_size=16.0 )
+        if not n1 is None:
+            assert len(q0) == len(n1) 
+            pl.add_arrows( q1, n1, color=nrm_color, mag=10 )
+        pass
+
+        if not n0 is None:
+            assert len(q0) == len(n0)
+            pl.add_arrows( q0, n0, color=nrm_color, mag=10 )
+        pass
+
+        ll = np.zeros( (len(q0), 2, 3), dtype=np.float32 )
+        ll[:,0] = q0
+        ll[:,1] = q1
+
+        pl.add_points( q0, color=ori_color, point_size=16.0 )
         for i in range(len(ll)):
-            pl.add_lines( ll[i].reshape(-1,3), color=ray_color )
+            pl.add_lines( ll[i].reshape(-1,3), color=ray_color, width=ray_width )
         pass  
     pass
 
@@ -213,29 +231,71 @@ class CSGRecord(object):
         pl.add_point_labels( points[mask], [ str(rec_tloop_nodeIdx_ctrl) ] , point_size=20, font_size=36 )
 
     @classmethod
-    def Draw(cls, pl, recs, ray_origin, ray_direction): 
+    def Draw(cls, pl, recs, ray_origin, ray_direction, off): 
         """
+        :param pl: pyvista plotter
+        :param recs: CSGRecord array for a single ray CSG tree intersection
+        :param ray_origin:
+        :param ray_direction:
+        :param off: normalized vector out of the genstep plane, pointing to viewpoint  
+
         # less efficient but gives easy access to each arrow position 
         """
+
+        pos_shifts = []
         for i in range(len(recs)): 
             left  = recs[i,0]
-            right = recs[i,1]
-
             n_left = left[:3]
-            n_right = right[:3]
-
             t_left  = np.abs(left[3])
+
+            right = recs[i,1]
+            n_right = right[:3]
             t_right = np.abs(right[3])
 
+            tmin = recs[i,3,0] 
+            t_min = recs[i,3,1] 
+            tminAdvanced = recs[i-1,3,2] if i > 0 else 0. 
+  
+            ## tminAdvanced is bit confusing as collected 
+            ## into record prior to the decision  (for leaf looping anyhow) 
+
+            print("CSGRecord.Draw rec %d : tmin %10.4f t_min %10.4f tminAdvanced %10.4f (from prior rec) " % (i, tmin, t_min, tminAdvanced ))
+
+            result = recs[i,4]
+            t_result = np.abs(result[3])
+            n_result = result[:3]
+
+            pos_t_min = ray_origin + t_min*ray_direction                # base 
+            pos_tmin  = ray_origin + tmin*ray_direction                 
+            pos_tminAdvanced = ray_origin + tminAdvanced*ray_direction  
             pos_left  = ray_origin + t_left*ray_direction
             pos_right = ray_origin + t_right*ray_direction
+            pos_result = ray_origin + t_result*ray_direction
 
-            # TODO: need to record tminAdvanced
+            pos_shift_0 = float(i*10+0)*off 
+            pos_shift_1 = float(i*10+1)*off 
+            pos_shift_2 = float(i*10+2)*off 
+            pos_shift_3 = float(i*10+3)*off 
 
-            Rays.Draw(pl, ray_origin,  pos_left , n_left  )
-            Rays.Draw(pl, ray_origin,  pos_right, n_right )
+            pos_shifts.append(pos_shift_0)
+
+            if tminAdvanced > 0.:
+                Rays.Draw(pl, pos_t_min, pos_tminAdvanced ,  ray_direction, ray_width=4, pos_shift=pos_shift_0, ray_color="green"  )
+            pass
+
+            Rays.Draw(pl, pos_tmin,  pos_left ,  n_left,        ray_width=4, pos_shift=pos_shift_1  )
+            Rays.Draw(pl, pos_tmin,  pos_right,  n_right,       ray_width=4, pos_shift=pos_shift_2  )
+
+            if t_result > 0.:
+                Rays.Draw(pl, pos_tmin,  pos_result, n_result,      ray_width=4, pos_shift=pos_shift_3, ray_color="cyan", nrm_color="cyan"  )
+            pass
         pass
+        return pos_shifts
     pass   
+
+    
+
+
 pass 
 
 
@@ -272,13 +332,13 @@ if __name__ == '__main__':
         print(" skip gspos points due to NO_GS " )
     else:
         pl.add_points( gspos, color="yellow" )
-        ## TODO: identify gs with spurious intersects and present them differently
     pass
 
     gsmeta = NPMeta(fold.gs_meta)  # TODO cxs_geochain uses genstep_meta : standardize
     gridspec = GridSpec(fold.peta, gsmeta)
     axes = gridspec.axes
-    print(" gridspec.axes : %s " % str(axes) )
+    off = gridspec.off
+    print(" gridspec.axes : %s   gridspec.off %s  " % (str(axes), str(off)) )
 
     zoom = efloat_("ZOOM", "1.")
     gridspec.pv_compose(pl, reset=False, zoom=zoom)
@@ -362,8 +422,9 @@ if __name__ == '__main__':
     ## when envvar IXYZ is defined restrict to a single genstep source of photons identified by grid coordinates
     ixyz = eintlist_("IXYZ", None)   
     sxyzw = eintlist_("SXYZW", None)   
-    _sxyzw = np.array( sxyzw, dtype=np.int8 ).view(np.uint32)[0] 
-    _sxyzw_idx = np.where( isect_gsid_ == _sxyzw )  
+
+    _sxyzw = np.array( sxyzw, dtype=np.int8 ).view(np.uint32)[0] if not sxyzw is None else None
+    _sxyzw_idx = np.where( isect_gsid_ == _sxyzw )  if not _sxyzw is None else None
 
 
     if not ixyz is None:
@@ -425,10 +486,13 @@ if __name__ == '__main__':
         recs = []
     pass
 
+
+    pos_shifts = []
     if len(recs) > 0:
+        assert not _sxyzw_idx is None
         _ray_origin = ray_origin[_sxyzw_idx][0]
         _ray_direction = ray_direction[_sxyzw_idx][0]
-        CSGRecord.Draw(pl, recs, _ray_origin, _ray_direction )
+        pos_shifts = CSGRecord.Draw(pl, recs, _ray_origin, _ray_direction, off )
     pass
 
     count_select = np.count_nonzero(select)
@@ -495,14 +559,20 @@ if __name__ == '__main__':
     if plot_selected:
         pl.add_points( s_pos, color="white" )
     else:
-        pl.add_points( pos, color="white" )
+        if len(pos_shifts) == 0:
+            pl.add_points( pos, color="white" )
+        else:
+            for pos_shift in pos_shifts:
+                pl.add_points( pos+pos_shift, color="white" )
+            pass
+        pass
     pass
 
     ## different presentation of selected intersects and normals
     if s_count > 0 and sxyzw is None:
         Rays.Draw( pl, s_ray_origin[:s_limited], s_pos[:s_limited], s_dir[:s_limited] )
     pass
-    if ss_count > 0:
+    if ss_count > 0 and sxyzw is None:
         Rays.Draw( pl, ss_ray_origin[:ss_limited], ss_pos[:ss_limited], ss_dir[:ss_limited], ray_color="yellow", nrm_color="yellow" )
     pass
 

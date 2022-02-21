@@ -336,5 +336,105 @@ No spurs with Opticks::
 
   
 
+Getting an inkling of the cause of problems
+-----------------------------------------------
 
+Comparing intersects from the tree with nodelist and standalone list for a genstep with spurs in the tree starts to provide an inkling.::
+
+   AnnulusTwoBoxUnionContiguous_YZ
+   AnnulusTwoBoxUnionContiguousList_YZ
+
+
+
+::
+
+   IXYZ=0,-3,-1 ./csg_geochain.sh ana 
+
+
+The nodelist is always giving the furthest exit. Which misses intermediate exits breaking the CSG tree intersect alg.
+
+Suspect by that working first with "first-exits" will allow disjointed exits to be disqualified. 
+
+
+NEW IMPLEMENTATION THAT DISQUALIFIES DISJOINT BY PUSHING THE ENVELOPE
+-------------------------------------------------------------------------
+
+
+1. first pass : find farthest first exits and mark subs that are Miss or Exit as done 
+2. second pass : redo the Enter intersects and loop them to get Exits 
+
+
+::
+
+    353     else   // FROM INSIDE
+    354     {
+    355         // *first pass* : find furthest first exit and update done vector for state Exit and Miss 
+    356         for(unsigned isub=0 ; isub < num_sub ; isub++)
+    357         {
+    358             const CSGNode* sub_node = root+offset_sub+isub ;
+    359             if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
+    360             {
+    361                 sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min );
+    362 
+    363                 if( sub_state == State_Exit)
+    364                 {
+    365                     exit_count += 1 ;
+    366                     if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;
+    367                 }
+    368 
+    369                 if( sub_state == State_Exit || sub_state == State_Miss ) done |= ( 0x1 << isub ) ;
+    370                 // only subs with State_Enter are left undone 
+    371             }
+    372         }
+    373 
+    374         // *second pass* : redo the undone that are all State_Enter 
+    375         for(unsigned isub=0 ; isub < num_sub ; isub++)
+    376         {
+    377             if((done & ( 0x1 << isub )) == 0)   // sub us undone : only state Enter need intersecting again
+    378             {
+    379                 const CSGNode* sub_node = root+offset_sub+isub ;
+    380 
+    381                 if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
+    382                 {
+    387                     // only State_Enter within envelope are permissable,  otherwise isub is disqualified as disjoint  
+    388                     // HMM: suspect there is dependency on sub order here ... so need another pass to avoid ?
+    389                     //  think about a long line of subs which keeps pushing the envelope 
+    390                     // TODO: test with a line of boxes where deliberatately shuffle the sub order
+    391 
+    392                     if( sub_isect.w < farthest_exit.w )
+    393                     {
+    394                         float tminAdvanced = sub_isect.w + propagate_epsilon ;
+    395                         if(intersect_leaf( sub_isect, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
+    396                         {
+    397                             sub_state = CSG_CLASSIFY( sub_isect, ray_direction, tminAdvanced );
+    398                             if( sub_state == State_Exit )
+    399                             {
+    400                                 exit_count += 1 ;
+    401                                 if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;
+    402                             }
+    ...
+    409                         }
+    410                    }      // within the envelope 
+    411                }          // redoing the Enter intersect    
+    412            }              // sub is undone 
+    413        }                  // over subs 
+    414     }                     // end INSIDE branch 
+    415 
+    418     bool valid_intersect = false ;
+    419     if( inside_or_surface )
+    420     {
+    421         valid_intersect = exit_count > 0 && farthest_exit.w > t_min ;
+    422         if(valid_intersect) isect = farthest_exit ;
+    423     }
+    424     else
+    425     {
+    426         valid_intersect = enter_count > 0 && nearest_enter.w > t_min ;
+    427         if(valid_intersect) isect = nearest_enter ;
+    428     }
+    429 
+    430 #ifdef DEBUG
+    431      printf("//intersect_node_contiguous valid_intersect %d  (%10.4f %10.4f %10.4f %10.4f) \n", valid_intersect, isect.x, isect.y, isect.z, isect.w );
+    432 #endif
+    433 
+    434     return valid_intersect ;
 

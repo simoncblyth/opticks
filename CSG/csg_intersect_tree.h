@@ -288,7 +288,7 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
     {
         tloop++ ; 
         unsigned slice ; 
-        float tmin ; 
+        float tmin ;    // NB different from t_min when looping 
 
         ierr = tranche_pop(tr, slice, tmin );
         if(ierr) break ; 
@@ -467,35 +467,32 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                            leftIsCloser, 
                            CTRL::Name(ctrl)  ); 
 
-                    quad4 rec ; 
+                    quad6 rec ; 
                     rec.zero();  
+
                     rec.q0.f = csg.data[left] ; 
                     rec.q1.f = csg.data[right] ; 
 
                     U4U uu ; 
                     uu.u4.x = sbibit_PACK4( typecode, l_state, r_state, leftIsCloser ) ; 
                     uu.u4.y = sbit_rPACK8( l_promote_miss, l_complement, l_unbounded, false, r_promote_miss, r_complement, r_unbounded, false ); 
-                    uu.u4.z = 0 ; 
-                    uu.u4.w = 0 ; 
+                    uu.u4.z = tloop ; 
+                    uu.u4.w = nodeIdx ; 
 
                     rec.q2.u.x = uu.u ; 
                     rec.q2.u.y = ctrl ;  
+                    rec.q2.u.z = 0u ;  
+                    rec.q2.u.w = 0u ;  
+
+                    // HMM: tmin arriving here not the advanced one when just looping a leaf 
+                    rec.q3.f.x = tmin ;  // specific to this tranche, can be advanced compared to t_min
+                    rec.q3.f.y = t_min ; // overall  
+                    rec.q3.f.z = 0.f ;   // set to tminAdvanced when looping below 
+                    rec.q3.f.w = 0.f ; 
 
                     CSGRecord::record.push_back(rec); 
                 }
 #endif
-
-#ifdef DEBUG_RECORD
-                if(CSGRecord::ENABLED)
-                {
-                    quad4& rec = CSGRecord::record.back();  
-                    rec.q3.u.y = 0 ; 
-                    rec.q3.i.z = 0 ; 
-                    rec.q3.i.w = 0 ; 
-                }
-#endif
-
-
 
 
                 Action_t act = UNDEFINED ; 
@@ -517,6 +514,15 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                     ierr = csg_push(csg, result, nodeIdx );  if(ierr) break ;
 
                     act = CONTINUE ;  
+
+#ifdef DEBUG_RECORD
+                    if(CSGRecord::ENABLED)
+                    {
+                        quad6& rec = CSGRecord::record.back();  
+                        rec.q4.f = result ; 
+                    }
+#endif
+
                 }
                 else   //   CTRL_LOOP_A/CTRL_LOOP_B
                 {                 
@@ -545,7 +551,11 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
 
 #ifdef DEBUG_RECORD
                     if(CSGRecord::ENABLED) 
-                    printf("// %3d : looping one side tminAdvanced %10.4f with eps %10.4f \n", nodeIdx, tminAdvanced, propagate_epsilon );  
+                    {
+                        printf("// %3d : looping one side tminAdvanced %10.4f with eps %10.4f \n", nodeIdx, tminAdvanced, propagate_epsilon );  
+                        quad6& rec = CSGRecord::record.back();  
+                        rec.q3.f.z = tminAdvanced ; 
+                    }
 #endif
 
 #ifdef DEBUG

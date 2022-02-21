@@ -8,7 +8,7 @@
 #include "OpticksCSG.h"
 #include "csg_classify.h"
 
-struct quad4 ; 
+struct quad6 ; 
 
 /**
 CSGRecord
@@ -24,11 +24,11 @@ struct CSGRecord
     static bool ENABLED ;  
     static void SetEnabled(bool enabled); 
 
-    static std::vector<quad4> record ;     
+    static std::vector<quad6> record ;     
 
 
-    CSGRecord( const quad4& r_ ); 
-    const quad4& r ; 
+    CSGRecord( const quad6& r_ ); 
+    const quad6& r ; 
 
     unsigned typecode ; 
     IntersectionState_t l_state ; 
@@ -43,18 +43,19 @@ struct CSGRecord
     bool r_complement ; 
     bool r_unbounded ;
     bool r_false ; 
-    unsigned zero0 ; 
-    unsigned zero1 ; 
+    unsigned tloop ; 
+    unsigned nodeIdx ; 
     unsigned ctrl ; 
 
+    float tmin ;   // may be advanced : but dont see that with simple looping of leaf
+    float t_min ;  // overall fixed value 
+    float tminAdvanced ; //  direct collection of the advanced for upcoming looping 
+
+    void unpack(unsigned packed ); 
 
     static void Dump(const char* msg="CSGRecord::Dump"); 
-    static std::string Desc( const quad4& r, unsigned irec, const char* label  ); 
-
+    static std::string Desc( const quad6& r, unsigned irec, const char* label  ); 
     std::string desc(unsigned irec, const char* label  ) const ; 
-    std::string desc_q2() const ; 
-    std::string desc_q3() const ;
- 
     static void Save(const char* dir); 
     static void Clear(); 
 };

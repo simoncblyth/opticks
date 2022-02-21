@@ -18,10 +18,10 @@
 
 #include "CSGRecord.h"
 
-std::vector<quad4> CSGRecord::record = {} ;     
+std::vector<quad6> CSGRecord::record = {} ;     
 
 
-CSGRecord::CSGRecord( const quad4& r_ )
+CSGRecord::CSGRecord( const quad6& r_ )
     :
     r(r_),
     typecode(CSG_ZERO),
@@ -36,38 +36,49 @@ CSGRecord::CSGRecord( const quad4& r_ )
     r_complement(false),
     r_unbounded(false),
     r_false(false),
-    zero0(0),
-    zero1(0),
-    ctrl(0)
+    tloop(0),
+    nodeIdx(0),
+    ctrl(0),
+    tmin(0.f),
+    t_min(0.f),
+    tminAdvanced(0.f)
+{
+    unpack(r.q2.u.x); 
+
+    ctrl = r.q2.u.y ;   // lots of spare bits in here
+
+    tmin = r.q3.f.x ; 
+    t_min = r.q3.f.y ; 
+    tminAdvanced = r.q3.f.z ; 
+}
+
+void CSGRecord::unpack(unsigned packed )
 {
     U4U uu ; 
-    uu.u = r.q2.u.x ; 
-    ctrl = r.q2.u.y ; 
+    uu.u = packed ; 
 
     typecode     =                      sbibit_UNPACK4_0( uu.u4.x ); 
     l_state      = (IntersectionState_t)sbibit_UNPACK4_1( uu.u4.x ); 
     r_state      = (IntersectionState_t)sbibit_UNPACK4_2( uu.u4.x ); 
     leftIsCloser =                      sbibit_UNPACK4_3( uu.u4.x ); 
 
-    l_promote_miss = sbit_UNPACK8_0( uu.u4.y );
-    l_complement   = sbit_UNPACK8_1( uu.u4.y );
-    l_unbounded    = sbit_UNPACK8_2( uu.u4.y );
-    l_false        = sbit_UNPACK8_3( uu.u4.y );
+    l_promote_miss = sbit_rUNPACK8_0( uu.u4.y );
+    l_complement   = sbit_rUNPACK8_1( uu.u4.y );
+    l_unbounded    = sbit_rUNPACK8_2( uu.u4.y );
+    l_false        = sbit_rUNPACK8_3( uu.u4.y );
 
-    r_promote_miss = sbit_UNPACK8_4( uu.u4.y );
-    r_complement   = sbit_UNPACK8_5( uu.u4.y );
-    r_unbounded    = sbit_UNPACK8_6( uu.u4.y );
-    r_false        = sbit_UNPACK8_7( uu.u4.y );
+    r_promote_miss = sbit_rUNPACK8_4( uu.u4.y );
+    r_complement   = sbit_rUNPACK8_5( uu.u4.y );
+    r_unbounded    = sbit_rUNPACK8_6( uu.u4.y );
+    r_false        = sbit_rUNPACK8_7( uu.u4.y );
 
     assert( l_false == false ); 
     assert( r_false == false ); 
 
-    zero0 = uu.u4.z ; 
-    zero1 = uu.u4.w ; 
-
-    assert( zero0 == 0 ); 
-    assert( zero1 == 0 ); 
+    tloop = uu.u4.z ; 
+    nodeIdx = uu.u4.w ; 
 }
+
 
 bool CSGRecord::ENABLED = SSys::getenvbool("CSGRecord_ENABLED") ;  
 void CSGRecord::SetEnabled(bool enabled)  // static
@@ -105,7 +116,8 @@ CSGRecord::Dump
 
 Getting inkling of source of spurious intersects 
 when have lots of of constituents because the binary 
-comparisons are not being redone.
+comparisons are not being redone with looping on 
+balanced trees. 
 
 **/
 
@@ -115,7 +127,7 @@ void CSGRecord::Dump(const char* msg) // static
     for(unsigned i=0 ; i < record.size() ; i++) std::cout << Desc(record[i], i, "rec"); 
 } 
 
-std::string CSGRecord::Desc(const quad4& r, unsigned irec, const char* label  )  // static
+std::string CSGRecord::Desc(const quad6& r, unsigned irec, const char* label  )  // static
 {
     CSGRecord rec(r); 
     return rec.desc(irec, label); 
@@ -125,6 +137,8 @@ std::string CSGRecord::desc(unsigned irec, const char* label  ) const
 {
     std::stringstream ss ; 
     ss 
+         << " tloop " << std::setw(4) << tloop 
+         << " nodeIdx " << std::setw(4) << nodeIdx
          << " irec " << std::setw(10) << irec << " label " << std::setw(90) << label << " " << CSG::Name(typecode)  
          << std::endl 
          << std::setw(30) << " r.q0.f left  " 
@@ -156,57 +170,36 @@ std::string CSGRecord::desc(unsigned irec, const char* label  ) const
          << " " << ( r_unbounded ?   "r_unbounded" : "-" )
          << " "
          << ( leftIsCloser ? " " : "rightIsCloser" )
+         << " ctrl " << CTRL::Name(ctrl)
          << std::endl 
-         << desc_q2()
-         << desc_q3() 
-         << std::endl 
-         ;
-
-    std::string s = ss.str() ; 
-    return s ; 
-}
-
-
-std::string CSGRecord::desc_q2() const 
-{
-    std::stringstream ss ; 
-    ss 
-        << std::setw(30) << " r.q2.i.x tc/l/r/lic " 
-        << "(" 
-        << std::setw(10) << r.q2.i.x 
-        << std::setw(10) << r.q2.i.y
-        << std::setw(10) << r.q2.i.z
-        << std::setw(10) << r.q2.i.w
-        << ")" 
-        << " " 
-        << std::endl 
-        ;
-
-    std::string s = ss.str() ; 
-    return s ; 
-}
-
-
-std::string CSGRecord::desc_q3() const 
-{
-    std::stringstream ss ; 
-    ss 
-         << std::setw(30) << " rec.q3.i.x tr/nodeIdx/ctrl" 
+         << std::setw(30) << " r.q3.f tmin/t_min  " 
          << "(" 
-         << std::setw(10) << r.q3.i.x 
-         << std::setw(10) << r.q3.i.y 
-         << std::setw(10) << ctrl
-         << std::setw(10) << r.q3.i.w 
-         << ")" 
-         << " tr "      << std::setw(4) << r.q3.i.x
-         << " nodeIdx " << std::setw(4) << r.q3.i.y
-         << " ctrl " <<  CTRL::Name(ctrl) 
+         << std::setw(10) << std::fixed << std::setprecision(4) << r.q3.f.x 
+         << std::setw(10) << std::fixed << std::setprecision(4) << r.q3.f.y
+         << std::setw(10) << std::fixed << std::setprecision(4) << r.q3.f.z 
+         << std::setw(10) << std::fixed << std::setprecision(4) << r.q3.f.w 
+         << ") " 
+         << " tmin "
+         << std::setw(10) << std::fixed << std::setprecision(4) << tmin
+         << " t_min "
+         << std::setw(10) << std::fixed << std::setprecision(4) << t_min
+         << " tminAdvanced "
+         << std::setw(10) << std::fixed << std::setprecision(4) << tminAdvanced
+         << std::endl 
+         << std::setw(30) << " r.q4.f result  " 
+         << "(" 
+         << std::setw(10) << std::fixed << std::setprecision(4) << r.q4.f.x 
+         << std::setw(10) << std::fixed << std::setprecision(4) << r.q4.f.y
+         << std::setw(10) << std::fixed << std::setprecision(4) << r.q4.f.z 
+         << std::setw(10) << std::fixed << std::setprecision(4) << r.q4.f.w 
+         << ") " 
          << std::endl 
          ;
 
     std::string s = ss.str() ; 
     return s ; 
 }
+
 
 
 void CSGRecord::Clear()  // static
@@ -226,7 +219,7 @@ void CSGRecord::Save(const char* dir)  // static
 
     if( num_record > 0)
     {
-        NP::Write<float>(dir, "CSGRecord.npy", (float*)record.data(),  num_record, 4, 4 );  
+        NP::Write<float>(dir, "CSGRecord.npy", (float*)record.data(),  num_record, 6, 4 );  
     }
     else
     {

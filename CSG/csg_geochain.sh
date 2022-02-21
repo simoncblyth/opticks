@@ -187,6 +187,8 @@ echo $msg GEOM $GEOM gcn $gcn gridscale $gridscale ixiyiz $ixiyiz
 topline="GEOM=$GEOM ./csg_geochain.sh "
 [ -n "$SPHI" ] && topline="SPHI=$SPHI $topline" 
 [ -n "$IXYZ" ] && topline="IXYZ=$IXYZ $topline" 
+[ -n "$SXYZW" ] && topline="SXYZW=$SXYZW $topline" 
+
 
 cmdline="GEOM=$GEOM ./csg_geochain.sh "
 [ -n "$SPHI" ] && cmdline="SPHI=$SPHI $cmdline" 
