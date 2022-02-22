@@ -318,13 +318,13 @@ of envelope prevents the two pass approach ?
                  |                |     |                   |
                  +----------------+     +-------------------+
 
-                      ^
-                      |
+                 E           E          E            E           
+                      X           X          X              X          X       
 
 
 
    
-1. *first pass* : find furthest first exit and update done vector for state Exit and Miss 
+1. *first pass* : find furthest first exit 
 
    A: X2 : this is the furthest first exit 
    B: E1
@@ -337,7 +337,19 @@ of envelope prevents the two pass approach ?
    * only E1 qualifies, looping that takes you to X4 
 
 
-* then two passes is not enough  
+
+
+
+
+1. *zeroth pass* : hoping that are outside just find nearest enter and count first exits 
+
+2. when no Exits are outside the compound which makes the intersect simply the closest enter, so return it  
+
+3. *first pass* : collect enter distances, isub indices and get farthest_exit of the first exits 
+
+   * first exits always qualify as potential intersects, it is only exits after an enter that may be disjoint 
+     and require contiguity checking before can qualify as candidate intersect
+    
 
 
 **/
@@ -361,14 +373,15 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
 
     float4 nearest_enter = make_float4( 0.f, 0.f, 0.f, RT_DEFAULT_MAX ) ; 
     float4 farthest_exit = make_float4( 0.f, 0.f, 0.f, t_min ) ; 
+    // TODO: with split zeroth and first passes do not need both these isect at the same time, so could combine/reuse
+
     float4 sub_isect = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
 
-    int enter_count = 0 ; 
     int exit_count = 0 ; 
-    float propagate_epsilon = 0.0001f ; 
+    const float propagate_epsilon = 0.0001f ; 
     IntersectionState_t sub_state = State_Miss ;  
 
-    // *zeroth pass* : hoping for no Exits indicating are outside
+    // 1. *zeroth pass* : hoping that are outside just find nearest enter and count exits 
 
     for(int i=0 ; i < num_sub ; i++)
     {
@@ -376,14 +389,11 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
         if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
         {
             sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
-
 #ifdef DEBUG
             printf("//intersect_node_contiguous i %d state %s t %10.4f \n", i, IntersectionState::Name(sub_state), sub_isect.w );   
 #endif          
-
             if( sub_state == State_Enter)
             {
-                enter_count += 1 ; 
                 if( sub_isect.w < nearest_enter.w ) nearest_enter = sub_isect ;  
             }
             else if( sub_state == State_Exit )
@@ -394,13 +404,13 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     } 
 
 #ifdef DEBUG
-    printf("//intersect_node_contiguous enter_count %d exit_count %d \n", enter_count, exit_count); 
+    printf("//intersect_node_contiguous exit_count %d \n", exit_count); 
 #endif
 
-    // when no Exits are outside the compound which makes the intersect simply the closest enter 
+    // 2. when no Exits are outside the compound which makes the intersect simply the closest enter, so return it
     if(exit_count == 0) 
     {
-        bool valid_intersect = enter_count > 0 && nearest_enter.w > t_min ; 
+        bool valid_intersect = nearest_enter.w > t_min && nearest_enter.w < RT_DEFAULT_MAX ; 
         if(valid_intersect) isect = nearest_enter ;
 #ifdef DEBUG
         printf("//intersect_node_contiguous : outside early exit   %10.4f %10.4f %10.4f %10.4f \n", isect.x, isect.y, isect.z, isect.w );  
@@ -414,14 +424,16 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     // TODO: compare performance between combining and splitting the zeroth and first passes 
 
 
-    enter_count = 0 ; 
+    int enter_count = 0 ; 
     float enter[8] ; 
     int   idx[8] ;   // HMM: could squeeze 16 nibbles into the 64 bits of ULL 
 
-    // *first pass* : find furthest first exits and nearest enter 
+    
+    
+    // 3. *first pass* : collect enter distances, isub indices and get farthest_exit of the first exits 
     // 
-    // * first exits always qualify as potential interscts, it is only exits after an enter that are suspect of being disjoint 
-    //   and need contiguity checking before can qualify as candidate intersect
+    // * first exits always qualify as potential intersects, it is only exits after an enter that may be disjoint 
+    //   and require contiguity checking before can qualify as candidate intersect
     // 
 
     for(int isub=0 ; isub < num_sub ; isub++)
@@ -432,9 +444,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
             sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
             if( sub_state == State_Enter)
             {
-                if( sub_isect.w < nearest_enter.w ) nearest_enter = sub_isect ;  
-
-                idx[enter_count] = isub ;   // record which sub this index of enter came from 
+                idx[enter_count] = isub ;   // record which isub this enter corresponds to 
                 enter[enter_count] = sub_isect.w ;
 #ifdef DEBUG
                 printf("//intersect_node_contiguous isub %d enter_count %d idx[enter_count] %d enter[enter_count] %10.4f \n", isub, enter_count, idx[enter_count], enter[enter_count] ); 
@@ -449,18 +459,51 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
         }
     } 
 
-    // insertionSortIndirectSentinel : 
-    // order the enter indices so that they would make enter ascend 
+#ifdef DEBUG
+    if(enter_count > 8)
+    { 
+        // maybe could use integer template specialization to tailor the limit to each geometry combined 
+        // with nvrtc runtime-compilation to allow resource use customization during geometry conversion
+        printf("//intersect_node_contiguous enter_count %d exceeds limit of 8 \n", enter_count );  
+    }
+    assert( enter_count <= 8 ) ; 
+#endif
 
-    for (int i = 1; i < enter_count ; i++) 
+
+    // insertionSortIndirectSentinel : 
+    // 4. order the enter indices so that they would make enter ascend 
+    // see SysRap/tests/sorting/insertionSortIndirect.sh to understand the sort 
+    // ordering the idx (isub indices) to make the enter values ascend 
+
+#ifdef DEBUG
+    printf("//intersect_node_contiguous enter_count %d \n", enter_count ); 
+    for(int i=0 ; i < enter_count ; i++) printf(" i %2d idx[i] %2d enter[i] %10.4f \n", i, idx[i], enter[i] ); 
+#endif
+
+    for (int i = 1; i < enter_count ; i++)
     {   
-        for(int j = i ; j > 0 && enter[j] < enter[j-1] ; j-- )
+        int key = idx[i] ;  // hold idx[1] out of the pack    
+        int j = i - 1 ;
+        
+        // descending j below i whilst find out of order  
+        while( j >= 0 && enter[j] > enter[i] )   
         {   
-             int swap = idx[j] ; 
-             idx[j] = idx[j-1]; 
-             idx[j-1] = swap ; 
-        }   
-    }   
+            idx[j+1] = idx[j] ;    // i=1,j=0,idx[1]=idx[0]   assuming not ascending
+            j = j - 1;
+            
+            // sliding values (actually the isub indices) that are greater than the key one upwards
+            // no need to "swap" as are holding the key out of the pack
+            // ready to place it into the slot opened by the slide up   
+        }
+        
+        idx[j+1] = key ;       // i=1,j=-1, idx[0]=key
+
+        // i=1, j->0, when enter[j] <= enter[i]  (already ascending) 
+        // the while block doesnt run 
+        //   => pointless idx[1] = idx[1]   
+        // so puts the key back in the pack at the same place it came from  
+    }
+
  
     // *2nd pass* : loop over enters in t order  
     // only find exits for Enters that qualify as contiguous (thus excluding disjoint subs)
@@ -468,8 +511,9 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     //
     // I think that because the enters are t ordered there is no need for rerunning this
     // despite each turn of the loop potentially pushing the envelope of permissible enters
-    //  
-
+    //
+    // suspect can break on first disqualification ? think line of disjoint boxes
+    //
 
     for(int i=0 ; i < enter_count ; i++)
     {
@@ -491,7 +535,6 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
                     exit_count += 1 ; 
                     if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;  
                 }
-
 #ifdef DEBUG
                 assert( sub_state == State_Exit ); 
 #endif          
@@ -501,11 +544,9 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
 
     bool valid_intersect = exit_count > 0 && farthest_exit.w > t_min ; 
     if(valid_intersect) isect = farthest_exit ;  
-
 #ifdef DEBUG
      printf("//intersect_node_contiguous valid_intersect %d  (%10.4f %10.4f %10.4f %10.4f) \n", valid_intersect, isect.x, isect.y, isect.z, isect.w ); 
 #endif
-
     return valid_intersect ; 
 }
 
