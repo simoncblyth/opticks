@@ -438,3 +438,13 @@ NEW IMPLEMENTATION THAT DISQUALIFIES DISJOINT BY PUSHING THE ENVELOPE
     433 
     434     return valid_intersect ;
 
+
+
+
+Hmm need to sort indices of enter distances like np.argsort
+
+* https://github.com/numpy/numpy/tree/main/numpy/core/src/npysort
+
+
+
+

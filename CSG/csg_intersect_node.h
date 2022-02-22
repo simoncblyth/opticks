@@ -148,7 +148,7 @@ Example of a contiguous union shape composed of constituent boxes::
 
 ALG ISSUE : DOES NOT HONOUR t_min CUTTING : PRESUMABLY DUE TO MIXING DISTANCE AND INTERSECT ?
 
-* fix by checking insideness of : ray_origin + t_min*ray_direction  ?
+* fixied by checking insideness of : ray_origin + t_min*ray_direction  ?
 * TODO: check get expected t_min behaviour, that is: cutaway sphere in perspective projection around origin
   (correct t_min behaviour is a requirement to participate in CSG trees)
 
@@ -171,6 +171,8 @@ Knowing inside_or_surface ahead of time allows:
  
    * expect this to be is a big GPU performance advantage (more storage less in flight)
    * especially advantageous as this shape is targetting CSG boolean abuse solids with large numbers of leaves 
+   * from future : note that cannot avoid storing t_enter to properly get furthest exit that is not disjoint 
+     making the case to eliminate the distance function
 
 THOUGHTS ON ROOT CAUSE
 
@@ -345,149 +347,164 @@ INTERSECT_FUNC
 bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNode* root, 
        const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
+    const int num_sub = node->subNum() ; 
+    const int offset_sub = node->subOffset() ; 
 #ifdef DEBUG
-     printf("//intersect_node_contiguous \n"); 
+     printf("//intersect_node_contiguous num_sub %d offset_sub %d \n", num_sub, offset_sub ); 
 #endif
 
+#ifdef DEBUG_DISTANCE
     float sd = distance_node_list( CSG_CONTIGUOUS, ray_origin + t_min*ray_direction, node, root, plan, itra ); 
     bool inside_or_surface = sd <= 0.f ;
-    const unsigned num_sub = node->subNum() ; 
-    const unsigned offset_sub = node->subOffset() ; 
-
-
-#ifdef DEBUG
-     printf("//intersect_node_contiguous sd %10.4f inside_or_surface %d num_sub %d offset_sub %d \n", sd, inside_or_surface, num_sub, offset_sub ); 
+    printf("//intersect_node_contiguous sd %10.4f inside_or_surface %d num_sub %d offset_sub %d \n", sd, inside_or_surface, num_sub, offset_sub ); 
 #endif
 
     float4 nearest_enter = make_float4( 0.f, 0.f, 0.f, RT_DEFAULT_MAX ) ; 
     float4 farthest_exit = make_float4( 0.f, 0.f, 0.f, t_min ) ; 
     float4 sub_isect = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
 
-    unsigned pending = (0x1 << num_sub) - 1 ;  // start with bits set for all subs
-
-    //
-    // hmm could collect the states State_Enter=0, State_Exit=1, State_Miss=2
-    // YES, but actually no need just need to note that that sub is State_Exit or State_Miss
-    // which means do not need to intersect leaf for it again.  
-
     unsigned enter_count = 0 ; 
     unsigned exit_count = 0 ; 
     float propagate_epsilon = 0.0001f ; 
     IntersectionState_t sub_state = State_Miss ;  
-    
 
-    if(inside_or_surface == false )  // when outside just need nearest ENTER
+    // *zeroth pass* : hoping for no Exits indicating are outside
+
+    for(int i=0 ; i < num_sub ; i++)
     {
-        for(unsigned isub=0 ; isub < num_sub ; isub++)
+        const CSGNode* sub_node = root+offset_sub+i ; 
+        if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
         {
-            const CSGNode* sub_node = root+offset_sub+isub ; 
-            if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
+            sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
+            if( sub_state == State_Enter)
             {
-                 sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
-                 if( sub_state == State_Enter)
-                 {
-                     enter_count += 1 ; 
-                     if( sub_isect.w < nearest_enter.w ) nearest_enter = sub_isect ;  
-                 }
+                enter_count += 1 ; 
+                if( sub_isect.w < nearest_enter.w ) nearest_enter = sub_isect ;  
             }
-        } 
-    }
-    else   // FROM INSIDE
-    {
-        // *first pass* : find furthest first exit and update done vector for state Exit and Miss 
-        for(unsigned isub=0 ; isub < num_sub ; isub++)
-        {
-            const CSGNode* sub_node = root+offset_sub+isub ; 
-            if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
+            else if( sub_state == State_Exit )
             {
-                sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
+                exit_count += 1 ; 
+            }
+        }
+    } 
 
-                if( sub_state == State_Exit)
+    // when no Exits are outside the compound which makes the intersect simply the closest enter 
+    if(exit_count == 0) 
+    {
+        bool valid_intersect = enter_count > 0 && nearest_enter.w > t_min ; 
+        if(valid_intersect) isect = nearest_enter ;
+#ifdef DEBUG
+        printf("//intersect_node_contiguous : outside early exit   %10.4f %10.4f %10.4f %10.4f \n", isect.x, isect.y, isect.z, isect.w );  
+#endif
+        return valid_intersect ;   
+    }
+
+
+    // now to work, there are Exits so are inside the compund and need to get outta here using some resources
+    // hmm but i guess these static resources will also be in play even with the early exit ?
+    // TODO: compare performance between combining and splitting the zeroth and first passes 
+
+    // HMM: how to handle the limitation to the number of subs ?
+    // seems only way to avoid storing enter distances is doing the intersect again ?
+
+
+    float enter[8] ; 
+    int idx[8] ;   
+
+    // TODO: avoid using resources beyond the number of enters 
+    //float e_enter[8] ; 
+    //int   e_idx[8] ;   
+
+
+    // *first pass* : find furthest first exits and nearest enter and update pending vector for state Exit and Miss 
+
+    for(int i=0 ; i < num_sub ; i++)
+    {
+        enter[i] = RT_DEFAULT_MAX ; 
+        idx[i] = i ; 
+
+        const CSGNode* sub_node = root+offset_sub+i ; 
+        if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
+        {
+            sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
+            if( sub_state == State_Enter)
+            {
+                if( sub_isect.w < nearest_enter.w ) nearest_enter = sub_isect ;  
+                enter[i] = sub_isect.w ; 
+
+                // try just storing Enters
+                //e_idx[enter_count] = i ; 
+                //e_enter[enter_count] = sub_isect.w ;
+ 
+                enter_count += 1 ; 
+
+            }
+            else if( sub_state == State_Exit )
+            {
+                exit_count += 1 ; 
+                if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;  
+            }
+        }
+    } 
+
+    // sweep Exit and Miss idx to the right 
+
+    int j = num_sub-1 ; 
+    for (int i = 0; i < num_sub; i++) 
+    {   
+        if(RT_DEFAULT_MAX == enter[idx[i]] && i < j)
+        {   
+            int swap = idx[j] ; 
+            idx[j] = idx[i] ; 
+            idx[i] = swap ;   
+            j-- ;   
+        }   
+    }   
+
+    // insertionSortIndirectSentinel : order idx by increasing enter distance
+
+    for (int i = 1; i < num_sub ; i++) 
+    {   
+        if( enter[idx[i]] == RT_DEFAULT_MAX ) break ; 
+
+        for(int j = i ; j > 0 && enter[idx[j]] < enter[idx[j-1]] ; j-- )
+        {   
+             int swap = idx[j] ; 
+             idx[j] = idx[j-1]; 
+             idx[j-1] = swap ; 
+        }   
+    }   
+
+ 
+    // loop over the enters
+
+    for(int i=0 ; i < num_sub ; i++)
+    {
+        int j = idx[i]; 
+        if( enter[j] == RT_DEFAULT_MAX ) break ; 
+
+        const CSGNode* sub_node = root+offset_sub+j ; 
+        float tminAdvanced = enter[j] + propagate_epsilon ; 
+        if(tminAdvanced < farthest_exit.w)  // exclude disjoint subs
+        {  
+            if(intersect_leaf( sub_isect, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
+            {
+                sub_state = CSG_CLASSIFY( sub_isect, ray_direction, tminAdvanced ); 
+                if( sub_state == State_Exit ) 
                 {
                     exit_count += 1 ; 
                     if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;  
                 }
 
-                if( sub_state == State_Exit || sub_state == State_Miss ) pending &= ~(0x1 << isub) ; 
-                //  for State_Exit OR State_Miss clear the isub bit, or only subs with State_Enter are left set 
-            }
-        } 
-
-        // TODO: to handle any sub ordering  expect need a "while(pending)" loop here 
-        //       to keep going until have flipped all the mark bits to zero 
-        //  
-
-        
-        // *second pass* : redo the undone that are all State_Enter 
-        //while(pending)
-
-        for(unsigned isub=0 ; isub < num_sub ; isub++)
-        {
-            if((pending >> isub) & 0x1 )  // isub bit is still there, so its an Enter  
-            {
-                const CSGNode* sub_node = root+offset_sub+isub ; 
-
-                if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
-                {
 #ifdef DEBUG
-                    sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
-                    assert(sub_state == State_Enter) ;  // all undone should be State_Enter 
-#endif
-                    // only State_Enter within envelope are permissable,  otherwise isub is disqualified as disjoint  
-                    // HMM: suspect there is sub order dependency with this ...
-                    // also every new Exit can push the envelope of other Enter that are no longer disqualified 
-                    // 
-                    //  think about a long line of subs which keeps pushing the envelope 
-                    // TODO: test with a line of boxes where deliberatately shuffle the sub order
-                    //
-                    // keeps pushing envelope so cannot mark done until 
-                    //
-                    // having the Exits in t order   
-
-
-                    if( sub_isect.w < farthest_exit.w )  
-                    {
-                        float tminAdvanced = sub_isect.w + propagate_epsilon ; 
-                        if(intersect_leaf( sub_isect, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
-                        {
-                            sub_state = CSG_CLASSIFY( sub_isect, ray_direction, tminAdvanced ); 
-                            if( sub_state == State_Exit ) 
-                            {
-                                exit_count += 1 ; 
-                                if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;  
-
-                                pending &= ~(0x1 << isub) ;  // clear bit once found an exit for a sub
-
-                                // HMM: does the moving envelope prevent being able to mark done ?
-                                // NO dont think so because envelope can only ever get pushed out 
-                                // and subs only have one exit 
-                            } 
-#ifdef DEBUG
-                            else
-                            {
-                                assert(0);   // not expecting to get anything other than an Exit 
-                            }
+                assert( sub_state == State_Exit ); 
 #endif          
-                        }
-                   }   // within the envelope 
-               }       // redoing the Enter intersect    
-           }           // sub is undone 
-       }               // over subs 
-    }                  // end INSIDE branch 
-
-
-
-    bool valid_intersect = false ; 
-    if( inside_or_surface )
-    {
-        valid_intersect = exit_count > 0 && farthest_exit.w > t_min ; 
-        if(valid_intersect) isect = farthest_exit ;  
-    } 
-    else
-    {
-        valid_intersect = enter_count > 0 && nearest_enter.w > t_min ; 
-        if(valid_intersect) isect = nearest_enter ;  
+            }
+        }
     }
+
+    bool valid_intersect = exit_count > 0 && farthest_exit.w > t_min ; 
+    if(valid_intersect) isect = farthest_exit ;  
 
 #ifdef DEBUG
      printf("//intersect_node_contiguous valid_intersect %d  (%10.4f %10.4f %10.4f %10.4f) \n", valid_intersect, isect.x, isect.y, isect.z, isect.w ); 
