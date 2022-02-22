@@ -363,7 +363,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     float4 farthest_exit = make_float4( 0.f, 0.f, 0.f, t_min ) ; 
     float4 sub_isect = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
 
-    unsigned mark = (0x1 << num_sub) - 1 ;  // start with bits set for all subs
+    unsigned pending = (0x1 << num_sub) - 1 ;  // start with bits set for all subs
 
     //
     // hmm could collect the states State_Enter=0, State_Exit=1, State_Miss=2
@@ -408,15 +408,22 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
                     if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;  
                 }
 
-                if( sub_state == State_Exit || sub_state == State_Miss ) mark &= ~(0x1 << isub) ; 
+                if( sub_state == State_Exit || sub_state == State_Miss ) pending &= ~(0x1 << isub) ; 
                 //  for State_Exit OR State_Miss clear the isub bit, or only subs with State_Enter are left set 
             }
         } 
+
+        // TODO: to handle any sub ordering  expect need a "while(pending)" loop here 
+        //       to keep going until have flipped all the mark bits to zero 
+        //  
+
         
         // *second pass* : redo the undone that are all State_Enter 
+        //while(pending)
+
         for(unsigned isub=0 ; isub < num_sub ; isub++)
         {
-            if((mark >> isub) & 0x1 )  // isub bit is still there, so its an Enter  
+            if((pending >> isub) & 0x1 )  // isub bit is still there, so its an Enter  
             {
                 const CSGNode* sub_node = root+offset_sub+isub ; 
 
@@ -449,7 +456,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
                                 exit_count += 1 ; 
                                 if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;  
 
-                                mark &= ~(0x1 << isub) ;  // clear bit once found an exit 
+                                pending &= ~(0x1 << isub) ;  // clear bit once found an exit for a sub
 
                                 // HMM: does the moving envelope prevent being able to mark done ?
                                 // NO dont think so because envelope can only ever get pushed out 
