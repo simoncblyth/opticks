@@ -10,7 +10,8 @@ case $geom in
    #JustOrbOrbDifference_XY)        sxyzw=-16,-3,0,99 ;;
    JustOrbOrbDifference_XY)         sxyzw=0,9,0,74    ;;
    #AnnulusTwoBoxUnionContiguous_YZ) sxyzw=0,8,8,61    ;; 
-   AnnulusTwoBoxUnionContiguous_YZ) sxyzw=0,-3,-1,4   ;;
+   #AnnulusTwoBoxUnionContiguous_YZ) sxyzw=0,-3,-1,4   ;;
+   AnnulusTwoBoxUnionContiguous_YZ) sxyzw=0,-2,0,50   ;;
 esac
 
 if [ -n "$sxyzw" ]; then

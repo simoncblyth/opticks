@@ -688,7 +688,7 @@ bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const
    const float3 bmax = make_float3( q0.f.x/2.f,  q0.f.y/2.f,  q0.f.z/2.f ); 
    const float3 bcen = make_float3( 0.f, 0.f, 0.f ) ;    
 
-#ifdef DEBUG
+#ifdef DEBUG_BOX3
     printf("//intersect_leaf_box3  bmin (%10.4f,%10.4f,%10.4f) bmax (%10.4f,%10.4f,%10.4f)  \n", bmin.x, bmin.y, bmin.z, bmax.x, bmax.y, bmax.z );  
 #endif
 
@@ -722,7 +722,7 @@ bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const
    else             has_intersect = ( t_far > t_near && t_far > 0.f ) ;  // segment of ray intersects box, at least one is ahead
 
 
-#ifdef DEBUG
+#ifdef DEBUG_BOX3
     printf("//intersect_leaf_box3  along_xyz (%d,%d,%d) in_xyz (%d,%d,%d)   has_intersect %d  \n", along_x, along_y, along_z, in_x, in_y, in_z, has_intersect  );  
     //printf("//intersect_leaf_box3 t_min %10.4f t_near %10.4f t_far %10.4f \n", t_min, t_near, t_far ); 
 #endif
@@ -732,7 +732,7 @@ bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const
    if( has_intersect ) 
    {
        float t_cand = t_min < t_near ?  t_near : ( t_min < t_far ? t_far : t_min ) ; 
-#ifdef DEBUG
+#ifdef DEBUG_BOX3
        printf("//intersect_leaf_box3 t_min %10.4f t_near %10.4f t_far %10.4f t_cand %10.4f \n", t_min, t_near, t_far, t_cand ); 
 #endif
 
@@ -770,7 +770,7 @@ bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const
        }
    }
 
-#ifdef DEBUG
+#ifdef DEBUG_BOX3
    printf("//intersect_leaf_box3 has_valid_intersect %d  isect ( %10.4f %10.4f %10.4f %10.4f)  \n", has_valid_intersect, isect.x, isect.y, isect.z, isect.w ); 
 #endif
    return has_valid_intersect ; 

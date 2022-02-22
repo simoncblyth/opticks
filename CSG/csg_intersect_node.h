@@ -363,8 +363,8 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     float4 farthest_exit = make_float4( 0.f, 0.f, 0.f, t_min ) ; 
     float4 sub_isect = make_float4( 0.f, 0.f, 0.f, 0.f ) ;    
 
-    unsigned enter_count = 0 ; 
-    unsigned exit_count = 0 ; 
+    int enter_count = 0 ; 
+    int exit_count = 0 ; 
     float propagate_epsilon = 0.0001f ; 
     IntersectionState_t sub_state = State_Miss ;  
 
@@ -376,6 +376,11 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
         if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
         {
             sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
+
+#ifdef DEBUG
+            printf("//intersect_node_contiguous i %d state %s t %10.4f \n", i, IntersectionState::Name(sub_state), sub_isect.w );   
+#endif          
+
             if( sub_state == State_Enter)
             {
                 enter_count += 1 ; 
@@ -387,6 +392,10 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
             }
         }
     } 
+
+#ifdef DEBUG
+    printf("//intersect_node_contiguous enter_count %d exit_count %d \n", enter_count, exit_count); 
+#endif
 
     // when no Exits are outside the compound which makes the intersect simply the closest enter 
     if(exit_count == 0) 
@@ -404,42 +413,35 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     // hmm but i guess these static resources will also be in play even with the early exit ?
     // TODO: compare performance between combining and splitting the zeroth and first passes 
 
-    // HMM: how to handle the limitation to the number of subs ?
-    // seems only way to avoid storing enter distances is doing the intersect again ?
 
-
+    enter_count = 0 ; 
     float enter[8] ; 
-    int idx[8] ;   
+    int   idx[8] ;   // HMM: could squeeze 16 nibbles into the 64 bits of ULL 
 
-    // TODO: avoid using resources beyond the number of enters 
-    //float e_enter[8] ; 
-    //int   e_idx[8] ;   
+    // *first pass* : find furthest first exits and nearest enter 
+    // 
+    // * first exits always qualify as potential interscts, it is only exits after an enter that are suspect of being disjoint 
+    //   and need contiguity checking before can qualify as candidate intersect
+    // 
 
-
-    // *first pass* : find furthest first exits and nearest enter and update pending vector for state Exit and Miss 
-
-    for(int i=0 ; i < num_sub ; i++)
+    for(int isub=0 ; isub < num_sub ; isub++)
     {
-        enter[i] = RT_DEFAULT_MAX ; 
-        idx[i] = i ; 
-
-        const CSGNode* sub_node = root+offset_sub+i ; 
+        const CSGNode* sub_node = root+offset_sub+isub ; 
         if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction ))
         {
             sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
             if( sub_state == State_Enter)
             {
                 if( sub_isect.w < nearest_enter.w ) nearest_enter = sub_isect ;  
-                enter[i] = sub_isect.w ; 
 
-                // try just storing Enters
-                //e_idx[enter_count] = i ; 
-                //e_enter[enter_count] = sub_isect.w ;
- 
+                idx[enter_count] = isub ;   // record which sub this index of enter came from 
+                enter[enter_count] = sub_isect.w ;
+#ifdef DEBUG
+                printf("//intersect_node_contiguous isub %d enter_count %d idx[enter_count] %d enter[enter_count] %10.4f \n", isub, enter_count, idx[enter_count], enter[enter_count] ); 
+#endif
                 enter_count += 1 ; 
-
             }
-            else if( sub_state == State_Exit )
+            else if( sub_state == State_Exit )  
             {
                 exit_count += 1 ; 
                 if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;  
@@ -447,45 +449,39 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
         }
     } 
 
-    // sweep Exit and Miss idx to the right 
+    // insertionSortIndirectSentinel : 
+    // order the enter indices so that they would make enter ascend 
 
-    int j = num_sub-1 ; 
-    for (int i = 0; i < num_sub; i++) 
+    for (int i = 1; i < enter_count ; i++) 
     {   
-        if(RT_DEFAULT_MAX == enter[idx[i]] && i < j)
-        {   
-            int swap = idx[j] ; 
-            idx[j] = idx[i] ; 
-            idx[i] = swap ;   
-            j-- ;   
-        }   
-    }   
-
-    // insertionSortIndirectSentinel : order idx by increasing enter distance
-
-    for (int i = 1; i < num_sub ; i++) 
-    {   
-        if( enter[idx[i]] == RT_DEFAULT_MAX ) break ; 
-
-        for(int j = i ; j > 0 && enter[idx[j]] < enter[idx[j-1]] ; j-- )
+        for(int j = i ; j > 0 && enter[j] < enter[j-1] ; j-- )
         {   
              int swap = idx[j] ; 
              idx[j] = idx[j-1]; 
              idx[j-1] = swap ; 
         }   
     }   
-
  
-    // loop over the enters
+    // *2nd pass* : loop over enters in t order  
+    // only find exits for Enters that qualify as contiguous (thus excluding disjoint subs)
+    // where the qualification is based on the farthest_exit.w 
+    //
+    // I think that because the enters are t ordered there is no need for rerunning this
+    // despite each turn of the loop potentially pushing the envelope of permissible enters
+    //  
 
-    for(int i=0 ; i < num_sub ; i++)
+
+    for(int i=0 ; i < enter_count ; i++)
     {
-        int j = idx[i]; 
-        if( enter[j] == RT_DEFAULT_MAX ) break ; 
+        int isub = idx[i];  // reference back from enter count index  *i* to sub-index *isub*
+        const CSGNode* sub_node = root+offset_sub+isub ; 
+        float tminAdvanced = enter[i] + propagate_epsilon ; 
 
-        const CSGNode* sub_node = root+offset_sub+j ; 
-        float tminAdvanced = enter[j] + propagate_epsilon ; 
-        if(tminAdvanced < farthest_exit.w)  // exclude disjoint subs
+#ifdef DEBUG
+        printf("//intersect_node_contiguous i/enter_count/isub %d/%d/%d tminAdvanced %10.4f farthest_exit.w %10.4f  \n", i, enter_count, isub, tminAdvanced, farthest_exit.w ); 
+#endif
+
+        if(tminAdvanced < farthest_exit.w) 
         {  
             if(intersect_leaf( sub_isect, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction ))
             {
