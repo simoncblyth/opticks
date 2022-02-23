@@ -445,7 +445,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
             sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
             if( sub_state == State_Enter)
             {
-                aux[enter_count] = isub ;   // record which isub this enter corresponds to 
+                aux[enter_count] = isub ;   // record which isub this enter corresponds to : could instead store the sub_node
                 idx[enter_count] = enter_count ; 
                 enter[enter_count] = sub_isect.w ;
 
@@ -485,21 +485,19 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     // ordering the idx (isub indices) to make the enter values ascend 
 
 #ifdef DEBUG
-    printf("//intersect_node_contiguous enter_count %d \n", enter_count ); 
-    for(int i=0 ; i < enter_count ; i++) printf(" i %2d idx[i] %2d enter[i] %10.4f \n", i, idx[i], enter[i] ); 
+    printf("//intersect_node_contiguous enter_count %d  (before sort) \n", enter_count ); 
+    for(int i=0 ; i < enter_count ; i++) printf("//intersect_node_contiguous  i %2d idx[i] %2d  aux[i] %2d enter[i] %10.4f \n", i, idx[i], aux[i], enter[i] ); 
 #endif
 
     for (int i = 1; i < enter_count ; i++)
     {   
         int key = idx[i] ;  // hold idx[1] out of the pack    
-        //int akey = aux[i] ; 
         int j = i - 1 ;
         
         // descending j below i whilst find out of order  
         while( j >= 0 && enter[idx[j]] > enter[key] )   
         {   
             idx[j+1] = idx[j] ;    // i=1,j=0,idx[1]=idx[0]   assuming not ascending
-            //aux[j+1] = aux[j] ;  
             
             j = j - 1;
             
@@ -509,13 +507,18 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
         }
         
         idx[j+1] = key ;       // i=1,j=-1, idx[0]=key
-        //aux[j+1] = akey ; 
 
         // i=1, j->0, when enter[j] <= enter[i]  (already ascending) 
         // the while block doesnt run 
         //   => pointless idx[1] = idx[1]   
         // so puts the key back in the pack at the same place it came from  
     }
+
+
+#ifdef DEBUG
+    printf("//intersect_node_contiguous enter_count %d  (after sort) \n", enter_count ); 
+    for(int i=0 ; i < enter_count ; i++) printf("//intersect_node_contiguous  i %2d idx[i] %2d  aux[i] %2d enter[i] %10.4f enter[idx[i]] %10.4f  \n", i, idx[i], aux[i], enter[i], enter[idx[i]] ); 
+#endif
 
  
     // *2nd pass* : loop over enters in t order  
@@ -530,11 +533,12 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
 
     for(int i=0 ; i < enter_count ; i++)
     {
-        //int isub = aux[i];  // reference back from enter count index  *i* to sub-index *isub*
-        int isub = aux[idx[i]];  // rather than shuffling aux, can just use it a fixed mapping from enter index to isub index 
+        // idx[i]       : enter index with ascending t_enter
+        // aux[idx[i]]  : isub index with ascending t_enter      
 
+        float tminAdvanced = enter[idx[i]] + propagate_epsilon ; 
+        int isub = aux[idx[i]];  // rather than shuffling aux, can just use it a fixed mapping from enter index to isub index 
         const CSGNode* sub_node = root+offset_sub+isub ; 
-        float tminAdvanced = enter[i] + propagate_epsilon ; 
 
 #ifdef DEBUG
         printf("//intersect_node_contiguous i/enter_count/isub %d/%d/%d tminAdvanced %10.4f farthest_exit.w %10.4f  \n", i, enter_count, isub, tminAdvanced, farthest_exit.w ); 
@@ -551,6 +555,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
                     if( sub_isect.w > farthest_exit.w ) farthest_exit = sub_isect ;  
                 }
 #ifdef DEBUG
+               
                 assert( sub_state == State_Exit ); 
 #endif          
             }

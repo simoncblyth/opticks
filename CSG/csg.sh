@@ -26,8 +26,10 @@ esac
 
 
 #sopr=0:0_YZ
-sopr=0:0_XYZ
+#sopr=0:0_XYZ
+sopr=0:3_XY
 
+export VERBOSE=1
 export SOPR=${SOPR:-$sopr}
 
 
@@ -72,7 +74,6 @@ elif [ "${arg/run}" != "$arg" ]; then
         [ $? -ne 0 ] && echo $msg error while running binary $bin  && exit 1
     fi 
 fi
-
 
 
 

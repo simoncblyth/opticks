@@ -94,7 +94,7 @@ void CSGQuery::selectPrim( const CSGPrim* pr )
     if( select_root_subNum == 0 )
     {
         LOG(fatal) << "select_root_subNum ZERO " ; 
-        assert(0); 
+        //assert(0); 
     }
 }
 

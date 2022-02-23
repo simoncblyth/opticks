@@ -78,6 +78,7 @@ struct CSG_API CSGFoundry
     std::string descInst(unsigned ias_idx_, unsigned long long emm=~0ull ) const ;
 
     void dump() const ;
+    void dumpSolid() const ;
     void dumpSolid(unsigned solidIdx ) const ;
     int findSolidIdx(const char* label) const  ; // -1 if not found
     void findSolidIdx(std::vector<unsigned>& solid_idx, const char* label) const ; 

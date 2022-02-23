@@ -342,6 +342,13 @@ void CSGGeometry::intersectSelected(const char* path)
 
 void CSGGeometry::dump(const char* msg) const 
 {
+    LOG(error) << "fd.dumpSolid" ; 
+    fd->dumpSolid(); 
+    LOG(error) << "fd.dumpPrim" ; 
+    fd->dumpPrim(); 
+    LOG(error) << "fd.dumpNode" ; 
+    fd->dumpNode(); 
+    LOG(error) << "q.dump" ; 
     q->dump(msg); 
 }
 void CSGGeometry::draw(const char* msg) 

@@ -365,23 +365,47 @@ void CSGFoundry::dump() const
     LOG(info) << "]" ; 
 }
 
+void CSGFoundry::dumpSolid() const 
+{
+    unsigned num_solid = getNumSolid(); 
+    for(unsigned solidIdx=0 ; solidIdx < num_solid ; solidIdx++)
+    {
+        dumpSolid(solidIdx); 
+    }
+}
+
 void CSGFoundry::dumpSolid(unsigned solidIdx) const 
 {
     const CSGSolid* so = solid.data() + solidIdx ; 
-    LOG(info) << so->desc() ; 
+    int primOffset = so->primOffset ; 
+    int numPrim = so->numPrim  ; 
+    
+    std::cout 
+        << " solidIdx " << std::setw(3) << solidIdx 
+        << so->desc() 
+        << " primOffset " << std::setw(5) << primOffset 
+        << " numPrim " << std::setw(5) << numPrim 
+        << std::endl
+        ; 
 
-    for(int primIdx=so->primOffset ; primIdx < so->primOffset+so->numPrim ; primIdx++)
+    for(int primIdx=so->primOffset ; primIdx < primOffset + numPrim ; primIdx++)
     {
         const CSGPrim* pr = prim.data() + primIdx ; 
-        LOG(info) 
+        int nodeOffset = pr->nodeOffset() ; 
+        int numNode = pr->numNode() ;  
+
+        std::cout
             << " primIdx " << std::setw(3) << primIdx << " "
             << pr->desc() 
+            << " nodeOffset " << std::setw(4) << nodeOffset 
+            << " numNode " << std::setw(4) << numNode
+            << std::endl 
             ; 
 
-        for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset()+pr->numNode() ; nodeIdx++)
+        for(int nodeIdx=nodeOffset ; nodeIdx < nodeOffset + numNode ; nodeIdx++)
         {
             const CSGNode* nd = node.data() + nodeIdx ; 
-            LOG(info) << nd->desc() ; 
+            std::cout << nd->desc() << std::endl ; 
         }
     } 
 }
