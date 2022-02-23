@@ -20,6 +20,8 @@ struct CSG_API CSGName
     const CSGFoundry* foundry ; 
     const std::vector<std::string>& name ; 
     static int ParseIntString(const char* arg, int fallback=-1);
+    static void ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr ); 
+
 
     CSGName( const CSGFoundry* foundry );  
 

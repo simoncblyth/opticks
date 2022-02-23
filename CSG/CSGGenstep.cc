@@ -48,6 +48,8 @@ void CSGGenstep::init()
 CSGGenstep::create
 --------------------
 
+Invoked from CSGOptiX/tests/CSGOptiXSimulateTest.cc:main which is used by CSGOptiX/cxs.sh scripts. 
+
 moi
    string identifying piece of geometry mName:mOrdinal:mInstance eg Hama:0:1000
    ordinal is to pick between global geom and instance between instanced 
@@ -94,7 +96,6 @@ void CSGGenstep::create(const char* moi_, bool ce_offset, bool ce_scale )
     gs->set_meta<int>("mord", mord); 
     gs->set_meta<int>("iidx", iidx); 
     gs->set_meta<float>("gridscale", gridscale ); 
-
 }
 
 
@@ -115,7 +116,6 @@ CSGGenstep::locate
 Using CSGGenstepTest observed that with global non-instanced geometry 
 are just using the identity transform from the single global "instance". 
 Have added experimental way to use the tangential rtp transforms.
-
 
 **/
 
@@ -223,5 +223,4 @@ void CSGGenstep::save(const char* basedir) const
     if(gs) gs->save(base, "gs.npy"); 
     if(pp) pp->save(base, "pp.npy"); 
 }
-
 

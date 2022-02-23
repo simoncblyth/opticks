@@ -151,7 +151,13 @@ struct CSG_API CSGPrim
             if( mesh_idx_ == mesh_idx ) select_prims.push_back(pr) ;
         }
     }
+   
+    /**
+    CSGPrim::select_prim_pointers_mesh
+    -----------------------------------
 
+    From the *prims* vector reference find prim with mesh_idx and collect the CSGPrim pointers into *select_prims*   
+    **/ 
     static PRIM_METHOD void select_prim_pointers_mesh(const std::vector<CSGPrim>& prims, std::vector<const CSGPrim*>& select_prims, unsigned mesh_idx_ )
     {
         for(unsigned i=0 ; i < prims.size() ; i++)

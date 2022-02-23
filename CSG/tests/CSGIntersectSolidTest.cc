@@ -2,27 +2,56 @@
 CSGIntersectSolidTest
 =======================
 
-Used from script CSG/csg_geochain.sh 
+Used scripts such as CSG/csg_geochain.sh 
 
-Simple single solid testing of CSG intersects obtained using 
+With GEOM envvar : Typically small test solids
+------------------------------------------------
+
+When this executable is run with the GEOM envvar defined 
+small test geometries are created with CSGFoundry::MakeGeom.
+
+These geometries are created by conversion of G4VSolid with 
+GeoChain/translate.sh or directly in CSGSolid/Prim/Node with CSGMaker 
+(this is similar to CSGOptiX/cxs_geochain.sh)
+
+Without GEOM envvar : Typically full geometries (can be small too) 
+--------------------------------------------------------------------
+
+"Standard" CSGFoundry geometries are loaded from the OPTICKS_KEY 
+identified geocache. NB the GGeo geocache must first be converted into 
+CSGFoundry by CSG_GGeo/run.sh
+
+* TODO: change to doing the cg translation automatically ? 
+
+Single Solid Intersect Test
+------------------------------
+
+Single solid testing of CSG intersects obtained using 
 code intended for GPU but running on CPU in order to facilitate 
 convenient debugging.
-
-Initially thought to model on extg4/tests/X4IntersectSolidTest 
-but actually best to follow cx cxs_geochain.sh (not x4 xxs.sh) 
-as access to geochain or CSGMaker geometry is then the same 
 
 **/
 
 #include "OPTICKS_LOG.hh"
+#include "SSys.hh"
+#include "Opticks.hh"
 #include "CSGGeometry.h"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    CSGGeometry geom ;
+    Opticks ok(argc, argv);
+    ok.configure();
+
+    bool with_geom = SSys::getenvbool("GEOM") ; 
+    const char* cfbase = with_geom ? nullptr : ok.getFoundryBase("CFBASE") ; 
+    LOG(info) << " with_geom " << with_geom << " cfbase " << cfbase ;
+
+    CSGGeometry geom(cfbase) ;
     geom() ; 
+
+    if(cfbase) ok.writeCFBaseScript("CSG/tests/CSGIntersectSolidTest.cc") ; 
 
     return 0 ; 
 

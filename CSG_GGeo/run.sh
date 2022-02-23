@@ -1,8 +1,8 @@
 #!/bin/bash -l
 
 usage(){ cat << EOU
-run.sh : Loads current GGeo identified by OPTICKS_KEY, converts into CSGFoundry and saves  
-===========================================================================================
+run.sh : using tests/CSG_GGeoTest.cc  : Loads current GGeo identified by OPTICKS_KEY, converts into CSGFoundry and saves  
+===========================================================================================================================
 
 ::
 
@@ -121,28 +121,51 @@ by listing from the C++ see sysrap/tests/dirent.cc
 EON
 }
 
-opticks_geocache_prefix=~/.opticks
-geocache_sh=${OPTICKS_GEOCACHE_PREFIX:-$opticks_geocache_prefix}/geocache/geocache.sh  
 
-if [ -f "$geocache_sh" ]; then 
-    echo $msg geocache_sh $geocache_sh sourcing
-    cat $geocache_sh
-    source $geocache_sh
 
-    cfbase=${OPTICKS_KEYDIR}/CSG_GGeo
-    logdir=$cfbase/logs  # matches the chdir done in tests/CSG_GGeoTest.cc
-    outdir=$cfbase/CSGFoundry
+invoke_geocache_sh_notes(){ cat << EON
 
-    echo $msg outdir:$outdir
-    ls -l $outdir/
+Below invoke_geocache_sh seems out of place. 
+This conversion done here depends on OPTICKS_KEY to identify 
+the geometry to convert.  That may well 
+be a different geometry to the one setup in the script. 
 
-    echo $msg logdir:$logdir
-    ls -l $logdir/
+   ~/.opticks/geocache/geocache.sh
+   /usr/local/opticks/geocache/geocache.sh 
 
-else
-    echo $msg geocache_sh $geocache_sh does not exist 
-    exit 0
-fi 
+I presume this is attempting to become a standard place to 
+keep OPTICKS_KEY settings...  But not there yet.
+
+EON
+}
+
+invoke_geocache_sh()
+{
+    local opticks_geocache_prefix=~/.opticks
+    local geocache_sh=${OPTICKS_GEOCACHE_PREFIX:-$opticks_geocache_prefix}/geocache/geocache.sh  
+
+    if [ -f "$geocache_sh" ]; then 
+        echo $msg geocache_sh $geocache_sh sourcing
+        cat $geocache_sh
+        source $geocache_sh
+
+        cfbase=${OPTICKS_KEYDIR}/CSG_GGeo
+        logdir=$cfbase/logs  # matches the chdir done in tests/CSG_GGeoTest.cc
+        outdir=$cfbase/CSGFoundry
+
+        echo $msg outdir:$outdir
+        ls -l $outdir/
+
+        echo $msg logdir:$logdir
+        ls -l $logdir/
+
+    else
+        echo $msg geocache_sh $geocache_sh does not exist 
+        exit 0
+    fi 
+}
+#invoke_geocache_sh
+
 
 exit 0 
 

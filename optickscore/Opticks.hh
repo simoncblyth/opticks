@@ -477,6 +477,10 @@ class OKCORE_API Opticks {
        std::string          geocacheScriptString(const char* msg) const ; 
        void                 writeGeocacheScript(const char* msg="Opticks::writeGeocacheScript") const ; 
    public:
+        const char*         getCFBaseScriptPath() const ; 
+        std::string         getCFBaseScriptString(const char* msg) const ; 
+        void                writeCFBaseScript(const char* msg="Opticks::writeCFBaseScript") const ; 
+   public:
        const char*          getDbgIndex() const ;
        const char*          getDbgCSGPath();
        unsigned             getSeed() const ; 

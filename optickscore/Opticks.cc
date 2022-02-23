@@ -1322,6 +1322,9 @@ std::string Opticks::geocacheScriptString(const char* msg) const
     return s ; 
 }
 
+
+
+
 /**
 Opticks::writeGeocacheScript
 -----------------------------
@@ -1353,6 +1356,61 @@ void Opticks::writeGeocacheScript(const char* msg) const
 
     SStr::Save(sh_path, sh.c_str()) ; 
 }
+
+
+
+
+const char* Opticks::getCFBaseScriptPath() const 
+{
+    std::stringstream ss ; 
+    ss << "/tmp/CFBASE.sh" ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
+
+
+std::string Opticks::getCFBaseScriptString(const char* msg) const 
+{
+    std::stringstream ss ; 
+    ss
+        << "# " << msg  
+        << std::endl 
+        << "# " << STime::Stamp()   
+        << std::endl 
+        << "export CFBASE=" << getFoundryBase("CFBASE")
+        << std::endl 
+        << "cfcd(){ cd $CFBASE/CSGFoundry ; pwd ; } " 
+        << std::endl 
+        << "# "    
+        << std::endl 
+        ;   
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+void Opticks::writeCFBaseScript(const char* msg) const
+{
+    const char* sh_path = getCFBaseScriptPath() ; 
+    std::string sh = getCFBaseScriptString(msg); 
+
+    LOG(info) 
+        << "writing sh_path " << sh_path << std::endl
+        << "sh [" << std::endl
+        << sh  
+        << "]" 
+        ;
+
+    SStr::Save(sh_path, sh.c_str()) ; 
+}
+
+
+
+
+
+
+
 
 
 /**

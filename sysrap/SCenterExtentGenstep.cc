@@ -42,12 +42,12 @@ template<typename T> void SCenterExtentGenstep::set_meta(const char* key, T valu
     gs->set_meta<T>(key, value) ; 
 }
 
-SCenterExtentGenstep::SCenterExtentGenstep()
+SCenterExtentGenstep::SCenterExtentGenstep(const float4* ce_)
     :
     gs(nullptr),
     gridscale(SSys::getenvfloat("GRIDSCALE", 1.0 )),
     peta(new quad4),
-    ce(make_float4(0.f, 0.f, 0.f, 100.f ))
+    ce( ce_ ? *ce_ : make_float4(0.f, 0.f, 0.f, 100.f ))
 {
     init(); 
 } 

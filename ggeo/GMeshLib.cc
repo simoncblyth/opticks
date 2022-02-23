@@ -25,6 +25,7 @@
 #include <sstream>
 #include <string>
 
+#include "SSys.hh"
 #include "BStr.hh"
 #include "BFile.hh"
 #include "Opticks.hh"
@@ -40,7 +41,7 @@
 
 const plog::Severity GMeshLib::LEVEL = PLOG::EnvLevel("GMeshLib", "DEBUG") ; 
 
-const unsigned GMeshLib::MAX_MESH = 300 ;   // <-- hmm 500 too large ? it means a lot of filesystem checking 
+const unsigned GMeshLib::MAX_MESH = SSys::getenvint("GMeshLib_MAX_MESH", 400) ;   // <-- hmm 500 too large ? it means a lot of filesystem checking 
 /**
 TODO: be more clever about the introspection to avoid the filesystem checking for every index
 **/
@@ -192,13 +193,26 @@ void GMeshLib::saveAltReferences()
 /**
 GMeshLib::loadAltReferences
 -----------------------------
-
-
 **/
-
 
 void GMeshLib::loadAltReferences() 
 {
+
+    for(unsigned i=0 ; i < m_meshes.size() ; i++ )
+    {
+        const GMesh* mesh = m_meshes[i] ; 
+        const NCSG* solid = i < m_solids.size() ? m_solids[i] : NULL ;  
+        assert( mesh->getCSG() == solid ); 
+        if(solid == NULL) continue ;  
+        int altindex = solid->get_altindex();  
+        LOG(LEVEL) 
+            << " mesh.i " << i 
+            << " altindex " << altindex ; 
+            ;
+    }
+
+
+
     for(unsigned i=0 ; i < m_meshes.size() ; i++ )
     {
         const GMesh* mesh = m_meshes[i] ; 
@@ -207,9 +221,25 @@ void GMeshLib::loadAltReferences()
         if(solid == NULL) continue ;  
 
         int altindex = solid->get_altindex();  
+
+        LOG(LEVEL) 
+            << " mesh.i " << i 
+            << " altindex " << altindex ; 
+            ;
+         
         if(altindex == -1) continue ; 
-     
-        assert( unsigned(altindex) < m_meshes.size() ); 
+        bool altindex_expect = unsigned(altindex) < m_meshes.size() ; 
+
+        if(!altindex_expect)
+        {
+             LOG(fatal)
+                 << " m_solids.size() " << m_solids.size()
+                 << " m_meshes.size() " << m_meshes.size()
+                 << " altindex " << altindex 
+                 ; 
+ 
+        }     
+        assert( altindex_expect ); 
         const GMesh* alt = m_meshes[altindex] ; 
         const_cast<GMesh*>(mesh)->setAlt(alt) ;            
         LOG(LEVEL) 

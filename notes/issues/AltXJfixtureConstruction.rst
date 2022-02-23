@@ -446,5 +446,13 @@ Hmm need to sort indices of enter distances like np.argsort
 * https://github.com/numpy/numpy/tree/main/numpy/core/src/npysort
 
 
+Spurs from gensteps at extremities in XY projection::
+
+    GEOM=AltXJfixtureConstruction_XY IXYZ=-4,0,0 ./csg_geochain.sh 
+
+
+
+
+
 
 

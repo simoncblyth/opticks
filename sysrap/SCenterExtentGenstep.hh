@@ -2,6 +2,7 @@
 
 struct NP ; 
 struct quad6 ; 
+struct float4 ; 
 template <typename T> struct Tran ;
 
 #include <vector>
@@ -20,7 +21,7 @@ struct SYSRAP_API SCenterExtentGenstep
 {
     static const plog::Severity LEVEL ; 
 
-    SCenterExtentGenstep(); 
+    SCenterExtentGenstep(const float4* ce_=nullptr); 
     void init(); 
     const char* desc() const ; 
     void save(const char* dir) const ; 

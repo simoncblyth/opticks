@@ -141,7 +141,9 @@ int main(int argc, char** argv)
         ;   
 
 
+    LOG(info) << "[ descMeshPrim " ;  
     LOG(info) << fd->descMeshPrim() ; 
+    LOG(info) << "] descMeshPrim " ;  
 
     const CSGName* id = fd->id ; 
     //test_getNumName(id); 

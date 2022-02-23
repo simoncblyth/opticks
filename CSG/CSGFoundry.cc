@@ -519,6 +519,15 @@ void CSGFoundry::dumpPrim(unsigned solidIdx) const
     LOG(info) << std::endl << s ;
 }
 
+/**
+CSGFoundry::getSolidPrim
+----------------------------
+
+Use *solidIdx* to get CSGSolid pointer *so* and then use 
+the *so->primOffset* together with *primIdxRel* to get the CSGPrim pointer. 
+
+**/
+
 const CSGPrim*  CSGFoundry::getSolidPrim(unsigned solidIdx, unsigned primIdxRel) const 
 {
     const CSGSolid* so = getSolid(solidIdx); 
@@ -1117,9 +1126,13 @@ CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )
 }
 
 
+/**
+CSGFoundry::getMeshPrimCopies
+------------------------------
 
+Collect Prims with the supplied mesh_idx 
 
-// collect Prims with the supplied mesh_idx 
+**/
 void CSGFoundry::getMeshPrimCopies(std::vector<CSGPrim>& select_prim, unsigned mesh_idx ) const 
 {
     CSGPrim::select_prim_mesh(prim, select_prim, mesh_idx); 
@@ -1773,7 +1786,6 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* 
     {
         LOG(error) << " non-zero RC from CSGTarget::getCenterExtent " ;   
     }
-
     return rc ; 
 }
 

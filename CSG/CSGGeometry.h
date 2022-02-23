@@ -12,22 +12,29 @@ avoids repetition of geometry setup, loading and querying mechanics.
 struct CSGFoundry ; 
 struct CSGQuery ; 
 struct CSGDraw ; 
+struct float4 ; 
 
+#include "plog/Severity.h"
 #include "CSG_API_EXPORT.hh"
 
 struct CSG_API CSGGeometry 
 {
+    static const plog::Severity LEVEL ;   
     static void Draw( const CSGFoundry* fd, const char* msg="CSGGeometry::Draw"  ); 
-    static const char* OutDir(const char* cfbase, const char* geom);  
+    static const char* OutDir(const char* cfbase, const char* geom, const char* sopr);  
 
     const char* default_geom ; 
+    const char* default_sopr ; 
     const char* geom ; 
+    const char* sopr ; 
     const char* cfbase ; 
     const char* outdir ; 
     const char* name ; 
 
     const CSGFoundry* fd ; 
     const CSGQuery*   q ;  
+    float4*          ce ; 
+
     CSGDraw*    d ;    // cannot be const because of canvas
 
     std::vector<int>* sxyzw ;
@@ -39,7 +46,7 @@ struct CSG_API CSGGeometry
     int sw ;  
 
     void operator()(); 
-    CSGGeometry(const CSGFoundry* fd_ = nullptr); 
+    CSGGeometry(const char* default_cfbase = nullptr, const CSGFoundry* fd_ = nullptr); 
 
     void init(); 
     void init_fd(); 

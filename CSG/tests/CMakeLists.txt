@@ -34,6 +34,7 @@ set(TEST_SOURCES
     CSGSignedDistanceFieldTest.cc
 
     CSGGeometryTest.cc
+    CSGGeometryFromGeocacheTest.cc
     CSGClassifyTest.cc
 )
 

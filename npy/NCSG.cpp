@@ -484,8 +484,13 @@ void NCSG::import()
     {
         import_list(); 
     }
+    else if(CSG::IsLeaf(root_type))
+    {
+        import_leaf();        
+    }
     else
     {
+        LOG(fatal) << " UNEXPECTED root_type " << root_type << "  CSG::Name(root_type) " <<  CSG::Name(root_type) ; 
         assert(0) ; // unexpected root_type 
     }
 
@@ -499,6 +504,17 @@ void NCSG::import()
     if(m_verbosity > 5) check();  // recursive transform dumping 
     if(m_verbosity > 1) LOG(info) << "]" ; 
 }
+
+
+
+void NCSG::import_leaf()
+{
+    unsigned idx = 0 ; 
+    OpticksCSG_t root_type  = (OpticksCSG_t)m_csgdata->getTypeCode(idx);      
+    m_root = import_primitive( idx, root_type ); 
+    m_root->update_gtransforms(); 
+}
+
 
 void NCSG::import_tree()
 {
@@ -613,7 +629,6 @@ nnode* NCSG::import_list_node( unsigned idx )
 
     return n ; 
 }
-
 
 
 void NCSG::postimport()

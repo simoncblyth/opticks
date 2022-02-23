@@ -145,7 +145,10 @@ int CSGTarget::getLocalCenterExtent(float4& lce, int midx, int mord) const
 CSGTarget::getGlobalCenterExtent
 ---------------------------------
 
-1. first find the MORD-inal prim *lpr* which has MIDX for its midx/lvIdx
+1. first find the MORD-inal prim *lpr* which has MIDX for its midx
+
+   * midx corresponds to GGeo lvIdx or soIdx
+
 2. use the prim to lookup indices for the solid(gas_idx) and prim 
 3. collect instance transforms matching the *gas_idx*
 4. select the *iidx* instance transform to construct a global-prim *gpr* 
@@ -201,7 +204,6 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
         << " ins_idx " << ins_idx
         << " ias_idx " << ias_idx
         ; 
-
     float4 globalCE = gpr.ce(); 
     gce.x = globalCE.x ; 
     gce.y = globalCE.y ; 

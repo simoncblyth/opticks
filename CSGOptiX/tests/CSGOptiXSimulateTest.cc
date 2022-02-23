@@ -97,9 +97,6 @@ int main(int argc, char** argv)
     if(fd->meta) LOG(info) << "fd.meta\n" << fd->meta ; 
 
     fd->upload(); 
-     
-
-
 
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
     QSim<float>::UploadComponents(fd->icdf, fd->bnd, rindexpath ); 
@@ -109,8 +106,6 @@ int main(int argc, char** argv)
 
     CSGOptiX cx(&ok, fd); 
     cx.setTop(top); 
-
-
 
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ; 
@@ -130,8 +125,6 @@ int main(int argc, char** argv)
     cx.setCEGS(gsm->cegs);   // sets peta metadata
     cx.setMetaTran(gsm->geotran); 
     cx.setGensteps(gs); 
-
-
 
     cx.simulate();  
     cx.snapSimulateTest(outdir, botline, topline ); 

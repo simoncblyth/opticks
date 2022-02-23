@@ -220,6 +220,38 @@ int CSGName::ParseIntString(const char* arg, int fallback)  // static
     return ret ;  
 }
 
+
+/**
+CSGName::ParseSOPR
+--------------------
+**/
+
+void CSGName::ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr_ ) // static
+{
+    const char* sopr = SStr::ReplaceChars(sopr_, "_", ':'); 
+
+    std::stringstream ss; 
+    ss.str(sopr)  ;
+    std::string s;
+    char delim = ':' ; 
+    std::vector<std::string> elem ; 
+    while (std::getline(ss, s, delim)) elem.push_back(s) ; 
+
+    unsigned num_elem = elem.size(); 
+    
+    solidIdx = num_elem > 0 ? ParseIntString( elem[0].c_str() ) : 0 ; 
+    primIdxRel = num_elem > 1 ? ParseIntString( elem[1].c_str() ) : 0 ; 
+
+    LOG(LEVEL) 
+        << " sopr_ " << sopr_ 
+        << " sopr " << sopr 
+        << " solidIdx " << solidIdx 
+        << " primIdxRel " << primIdxRel 
+        ; 
+}
+
+
+
 /**
 CSGName::parseMOI
 -------------------

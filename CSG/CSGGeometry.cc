@@ -18,24 +18,46 @@
 #include "CSGRecord.h"
 #include "CSGGrid.h"
 
+const plog::Severity CSGGeometry::LEVEL = PLOG::EnvLevel("CSGGeometry", "DEBUG") ; 
+
 
 void CSGGeometry::operator()()
 {
-    LOG(info) << " centerExtentGenstepIntersect " ; 
+    LOG(info) ; 
 
-    centerExtentGenstepIntersect();  
+    bool dump_ = SSys::getenvbool("DUMP"); 
+    if(dump_)
+    {
+        LOG(info) << " dump  " ; 
+        dump();  
+        draw(); 
+    }
+    else
+    {
+        LOG(info) << " centerExtentGenstepIntersect " ; 
+        centerExtentGenstepIntersect();  
+    }
 }
 
 
-const char* CSGGeometry::OutDir(const char* cfbase, const char* geom)   // static  
+const char* CSGGeometry::OutDir(const char* cfbase, const char* geom, const char* sopr)   // static  
 {
-    if(cfbase == nullptr || geom == nullptr)
+    if(cfbase == nullptr )
     {
-        LOG(fatal) << " require CFBASE and GEOM to control output dir " ; 
+        LOG(fatal) << " require CFBASE to control output dir " ; 
         return nullptr ;   
     }
+
+    const char* reldir = geom ? geom : sopr ; 
+
+    if(reldir == nullptr )
+    {
+        LOG(fatal) << " require geom or sopr to control reldir included in output dir " ; 
+        return nullptr ;   
+    }
+
     int create_dirs = 2 ;   
-    const char* outdir = SPath::Resolve(cfbase, "CSGIntersectSolidTest", geom, create_dirs );  
+    const char* outdir = SPath::Resolve(cfbase, "CSGIntersectSolidTest", reldir, create_dirs );  
     return outdir ;  
 }
 
@@ -51,15 +73,18 @@ Can boot in three ways:
 
 **/
 
-CSGGeometry::CSGGeometry(const CSGFoundry* fd_)
+CSGGeometry::CSGGeometry(const char* default_cfbase, const CSGFoundry* fd_)
     :
     default_geom(nullptr),
+    default_sopr(nullptr),
     geom(SSys::getenvvar("GEOM", default_geom)),
-    cfbase(SSys::getenvvar("CFBASE")), 
-    outdir(OutDir(cfbase,geom)),
+    sopr(SSys::getenvvar("SOPR", default_sopr)),
+    cfbase(SSys::getenvvar("CFBASE", default_cfbase)), 
+    outdir(OutDir(cfbase,geom,sopr)),
     name(nullptr),
     fd(fd_),
     q(nullptr),
+    ce(nullptr),
     d(nullptr),
     sxyzw(SSys::getenvintvec("SXYZW",',')),
     sxyz(SSys::getenvintvec("SXYZ",',')),
@@ -78,7 +103,7 @@ void CSGGeometry::init()
     init_fd(); 
     q = new CSGQuery(fd); 
     q->dumpPrim("CSGGeometry::init"); 
-
+    ce = new float4(q->select_prim->ce()) ; 
     d = new CSGDraw(q) ; 
     init_selection(); 
 }
@@ -111,9 +136,6 @@ void CSGGeometry::init_fd()
         LOG(info) << " booting from provided CSGFoundry pointer " ; 
         cfbase = fd->getCFBase(); 
     }
-
-   
-
 }
 
 void CSGGeometry::init_selection()
@@ -195,7 +217,8 @@ void CSGGeometry::centerExtentGenstepIntersect()
 
 void CSGGeometry::saveCenterExtentGenstepIntersect(float t_min) const 
 {
-    SCenterExtentGenstep* cegs = new SCenterExtentGenstep ; 
+    //float4 ce = make_float4(0.f, 0.f, 0.f, 70.f ); 
+    SCenterExtentGenstep* cegs = new SCenterExtentGenstep(ce) ; 
     const std::vector<quad4>& pp = cegs->pp ; 
     std::vector<quad4>& ii = cegs->ii ; 
 
@@ -328,6 +351,6 @@ void CSGGeometry::draw(const char* msg)
 
 void CSGGeometry::Draw( const CSGFoundry* fd, const char* msg  ) // static 
 {
-    CSGGeometry cgeo(fd); 
+    CSGGeometry cgeo(nullptr, fd); 
     cgeo.draw(msg); 
 }

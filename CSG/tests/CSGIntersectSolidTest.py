@@ -292,11 +292,14 @@ class CSGRecord(object):
         pass
         return pos_shifts
     pass   
-
-    
-
-
 pass 
+
+
+def PlotBase():
+    identdir = "$GEOM" if "GEOM" in os.environ else "$SOPR" 
+    plotbase = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/%s" % identdir)
+    print(" plotbase : %s " % plotbase )
+    return plotbase 
 
 
 if __name__ == '__main__':
@@ -309,14 +312,11 @@ if __name__ == '__main__':
         pl.enable_eye_dome_lighting()  
     pass   
 
-    plotbase = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/$GEOM")
-    print(" plotbase : %s " % plotbase )
-
+    plotbase = PlotBase()
     cegs_path = plotbase  
     #rel_name = "intersectSelected"
     rel_name = "saveCenterExtentGenstepIntersect"
     recs_path = os.path.join(plotbase, rel_name )
-
 
 
     cegs = SCenterExtentGenstep(cegs_path)

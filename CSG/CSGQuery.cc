@@ -4,6 +4,7 @@
 #include "sc4u.h"
 
 #include "CSGFoundry.h"
+#include "CSGName.h"
 #include "CSGQuery.h"
 #include "CSGGrid.h"
 
@@ -40,10 +41,24 @@ CSGQuery::CSGQuery( const CSGFoundry* fd_ )
     init(); 
 }
 
+/**
+
+TODO: work out how  MOI and SOPR correspond to each other 
+      to identify the prim to select : so this can work with full geometries
+
+**/
+
 void CSGQuery::init()
 {
-    selectPrim(0u,0u);  // select first prim of first solid 
-    // TODO: use MOI to identify the prim to select : so this can work with full geometries
+    // select first prim of first solid unless SOPR overrides that 
+    int solidIdx = 0 ; 
+    int primIdxRel = 0 ; 
+
+    const char* sopr = SSys::getenvvar("SOPR", "0:0" ); 
+    CSGName::ParseSOPR(solidIdx, primIdxRel, sopr );    
+
+    LOG(info) << " sopr " << sopr << " solidIdx " << solidIdx << " primIdxRel " << primIdxRel ; 
+    selectPrim(solidIdx, primIdxRel );  
 }
 
 void CSGQuery::selectPrim(unsigned solidIdx, unsigned primIdxRel )
