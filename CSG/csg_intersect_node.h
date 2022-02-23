@@ -449,6 +449,10 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
                 idx[enter_count] = enter_count ; 
                 enter[enter_count] = sub_isect.w ;
 
+                // TODO: very wasteful enter_count and isub usually very small values, 
+                //       could pack them together perhaps ?
+
+
                 // HMM: trying to do two levels of indirection at once doesnt work with the indirect sort, hence have to use the aux
 
 #ifdef DEBUG
@@ -488,14 +492,14 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     for (int i = 1; i < enter_count ; i++)
     {   
         int key = idx[i] ;  // hold idx[1] out of the pack    
-        int akey = aux[i] ; 
+        //int akey = aux[i] ; 
         int j = i - 1 ;
         
         // descending j below i whilst find out of order  
         while( j >= 0 && enter[idx[j]] > enter[key] )   
         {   
             idx[j+1] = idx[j] ;    // i=1,j=0,idx[1]=idx[0]   assuming not ascending
-            aux[j+1] = aux[j] ;  
+            //aux[j+1] = aux[j] ;  
             
             j = j - 1;
             
@@ -505,7 +509,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
         }
         
         idx[j+1] = key ;       // i=1,j=-1, idx[0]=key
-        aux[j+1] = akey ; 
+        //aux[j+1] = akey ; 
 
         // i=1, j->0, when enter[j] <= enter[i]  (already ascending) 
         // the while block doesnt run 
@@ -526,7 +530,9 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
 
     for(int i=0 ; i < enter_count ; i++)
     {
-        int isub = aux[i];  // reference back from enter count index  *i* to sub-index *isub*
+        //int isub = aux[i];  // reference back from enter count index  *i* to sub-index *isub*
+        int isub = aux[idx[i]];  // rather than shuffling aux, can just use it a fixed mapping from enter index to isub index 
+
         const CSGNode* sub_node = root+offset_sub+isub ; 
         float tminAdvanced = enter[i] + propagate_epsilon ; 
 

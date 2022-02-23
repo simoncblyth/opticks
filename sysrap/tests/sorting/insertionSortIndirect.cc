@@ -1,10 +1,56 @@
 // name=insertionSortIndirect ; gcc $name.cc -std=c++11 -lstdc++ -I$OPTICKS_PREFIX/include/SysRap -o /tmp/$name && /tmp/$name
-#include "NP.hh"
-#include <iomanip>
 
 /**
+Exploring How To Sort CSG Leaf nodes into intersect Enter order for n-ary intersection
+------------------------------------------------------------------------------------------
 
-Algorithm 
+Problem characteristics
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* typically small number of leaf Enter for each ray, ie 1,2,3,4,5 
+  (depending on layout of solid constituents)
+
+* t_enter array will often be mostly sorted (or reversed) initially as leaf sub-ordering 
+  usually follows geometrical positioning. Reversed as rays come from anywhere in any direction.
+
+* dont actually want to sort an array of t_enter, want to sort the CSGNode* pointers of the leaves
+  based on their intersect distances and do not want to keep repeating the intersects : 
+  so collect array of t_enter and and indices array and do indirect sort  (like np.argsort)
+
+* only a subset of all subs have Enter for each ray : requires mapping from enter index
+  back to sub index OR planting a large token value  for non-Enter and doing some sweeping 
+  before sorting
+
+* currently using insertion sort small size probably means hard coded 
+  sorting networks for : 1,2,3,4,5,6,7,8  would be better
+
+  * BUT : needs to be indirect, and need mapping back to isub 
+
+
+Available sort techniques
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+https://en.wikipedia.org/wiki/Selection_sort
+
+https://en.wikipedia.org/wiki/Sorting_network
+
+https://en.wikipedia.org/wiki/Bitonic_sorter
+
+https://www.tools-of-computing.com/tc/CS/Sorts/bitonic_sort.htm
+
+https://stackoverflow.com/questions/32172144/fastest-way-to-sort-10-numbers-numbers-are-32-bit
+
+https://www.toptal.com/developers/sorting-algorithms
+
+.. selection sort is greatly outperformed on larger arrays by divide-and-conquer algorithms such as mergesort. 
+However, insertion sort or selection sort are both typically faster for small arrays (i.e. fewer than 10–20 elements). 
+A useful optimization in practice for the recursive algorithms is to switch to insertion sort or selection sort 
+for "small enough" sublists.
+
+
+Insertion Sort Algorithm 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 To sort an array of size n in ascending order: 
 
 1. Iterate from arr[1] to arr[n] over the array. 
@@ -14,6 +60,33 @@ To sort an array of size n in ascending order:
    the swapped element.
 
 **/
+
+#include "NP.hh"
+#include <iomanip>
+
+
+void insertionSort(float* enter, int n)
+{
+    /* Move elements of arr[0..i-1], that are
+       greater than key, to one position ahead
+       of their current position */
+
+    int i, j;
+
+    for (i = 1; i < n; i++) 
+    {
+        float key = enter[i];   // move key thru the array 
+        j = i - 1;
+
+        // j is less than i, so want the enter[j] values to be less than key
+        while (j >= 0 && enter[j] > key) 
+        {
+            enter[j + 1] = enter[j];
+            j = j - 1;    // keep decrementing j down to zero 
+        }
+        enter[j + 1] = key;
+    }
+}
 
 void insertionSortIndirect_0( int* idx, const float* enter, int count, int* aux )
 {
@@ -88,7 +161,7 @@ void insertionSortIndirect_1_WRONG( int* idx, const float* enter, int count )
         j = i - 1 ;   
 
         // descending j below i whilst find out of order  
-        while( j >= 0 && enter[j] > enter[i] )     // <--- WRONG 
+        while( j >= 0 && enter[j] > enter[i] )     // <--- WRONG : NEEDS TO BE enter[idx[j]] > enter[key] TO FEEL THE SHUFFLE
         {
             idx[j+1] = idx[j] ;  
 
@@ -142,29 +215,6 @@ void insertionSortIndirect( int* idx, const float* enter, int count, int* aux, i
     }
 }
 
-
-void insertionSort(float* enter, int n)
-{
-    /* Move elements of arr[0..i-1], that are
-       greater than key, to one position ahead
-       of their current position */
-
-    int i, j;
-
-    for (i = 1; i < n; i++) 
-    {
-        float key = enter[i];   // move key thru the array 
-        j = i - 1;
-
-        // j is less than i, so want the enter[j] values to be less than key
-        while (j >= 0 && enter[j] > key) 
-        {
-            enter[j + 1] = enter[j];
-            j = j - 1;    // keep decrementing j down to zero 
-        }
-        enter[j + 1] = key;
-    }
-}
 
 unsigned compare( const int* idx0, const int* idx1, unsigned count )
 {
@@ -220,7 +270,7 @@ void test_insertionSortIndirect(const char* fold)
 
 
 
-void dump( const int* idx, const float* enter, int count, const int* aux, const char* msg )
+void dump( const int* idx, const float* enter, int count, const int* aux, const char* msg, const int* aux0 )
 {
     int w = 30 ; 
     int v = 7 ; 
@@ -236,14 +286,31 @@ void dump( const int* idx, const float* enter, int count, const int* aux, const 
         for(int i=0 ; i < count ; i++) std::cout << std::setw(v) << aux[i] << " " ; 
         std::cout << std::endl ; 
     }
+    if(aux0)
+    {
+        std::cout << std::setw(w) << " aux0[i] "  ; 
+        for(int i=0 ; i < count ; i++) std::cout << std::setw(v) << aux0[i] << " " ; 
+        std::cout << " (original aux0, unshuffled by sorting, maps enter index to value index ) " << std::endl ; 
+
+
+        std::cout << std::setw(w) <<  " aux0[idx[i]] " ; 
+        for(int i=0 ; i < count ; i++) std::cout << std::setw(v) << aux0[idx[i]] << " " ; 
+        std::cout << " using shuffled idx order to get original value index in sort order " << std::endl ; 
+    }
+
 
     std::cout <<  std::setw(w) << " enter[i] " ; 
     for(int i=0 ; i < count ; i++) std::cout << std::setw(v) << enter[i] << " " ; 
-    std::cout << std::endl ; 
+    std::cout << " (untouched by sorting) " << std::endl ; 
 
     std::cout << std::setw(w) <<  " enter[idx[i]] " ; 
     for(int i=0 ; i < count ; i++) std::cout << std::setw(v) << enter[idx[i]] << " " ; 
-    std::cout << std::endl ; 
+    std::cout << " using shuffled idx to get sorted enters " << std::endl ; 
+
+
+
+
+
 
 }
 
@@ -259,15 +326,16 @@ void test_small()
     int* idx = i->values<int>(); 
 
     int* aux = nullptr ; 
+    int* aux0 = nullptr ; 
 
-    dump(idx, enter, enter_count, aux, "before sort" ); 
+    dump(idx, enter, enter_count, aux, "before sort", aux0 ); 
 
     //insertionSort( enter, enter_count ); 
 
     int imp = 0 ; 
     insertionSortIndirect(idx, enter, enter_count, aux, imp ); 
 
-    dump(idx, enter, enter_count, aux, "after sort" ); 
+    dump(idx, enter, enter_count, aux, "after sort", aux0 ); 
 }
 
 
@@ -291,6 +359,7 @@ void test_small_isub()
 
     
     float enter[32] ; 
+    int   aux0[32] ;
     int   aux[32] ;
     int   idx[32] ;
     int enter_count = 0 ; 
@@ -301,8 +370,10 @@ void test_small_isub()
         if( v > 0.f)
         {  
             enter[enter_count] = v ; 
-            aux[enter_count] = i ;             // ATTEMPTING 2 LEVELS OF INDIRECTION : NOT GOING TO WORK WITH SORT  
-            idx[enter_count] = enter_count ;   // ONE LEVEL INDIRECT IS OK
+            aux0[enter_count] = i ; // maps from enter index to original value index             
+            aux[enter_count] = i ;  // ATTEMPTING 2 LEVELS OF INDIRECTION : NOT GOING TO WORK WITH SORT  
+            idx[enter_count] = enter_count ;   
+            // ONE LEVEL INDIRECT IS OK
             enter_count += 1 ; 
             assert( enter_count < 32 ); 
         }
@@ -320,9 +391,11 @@ void test_small_isub()
 
     int imp = 1 ; 
 
-    dump(idx, enter, enter_count, aux, "before sort" ); 
+    dump(idx, enter, enter_count, aux, "before sort", aux0 ); 
+
     insertionSortIndirect(idx, enter, enter_count, aux, imp ); 
-    dump(idx, enter, enter_count, aux, "after sort" ); 
+
+    dump(idx, enter, enter_count, aux, "after sort", aux0  ); 
 
 
 
