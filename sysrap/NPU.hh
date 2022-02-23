@@ -323,6 +323,8 @@ struct U
     static std::string ChangeExt( const char* s, const char* x1, const char* x2) ; 
     static std::string DirName( const char* path ); 
     static std::string BaseName( const char* path ); 
+    static std::string FormName( const char* prefix, int idx, const char* ext ); 
+    static std::string FormName( const char* prefix, const char* body, const char* ext ); 
 };
 
 inline bool U::EndsWith( const char* s, const char* q)
@@ -357,6 +359,21 @@ inline std::string U::BaseName( const char* path )
     return pos == std::string::npos ? "" : p.substr(pos+1); 
 }
 
+inline std::string U::FormName( const char* prefix, int idx, const char* ext )
+{
+    std::stringstream ss ; 
+    ss << prefix << idx << ext ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+inline std::string U::FormName( const char* prefix, const char* body, const char* ext )
+{
+    std::stringstream ss ; 
+    ss << prefix << body << ext ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 

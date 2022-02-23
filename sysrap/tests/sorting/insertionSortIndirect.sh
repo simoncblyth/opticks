@@ -16,7 +16,6 @@ create()
 create
 
 
-
 gcc $name.cc -std=c++11 -lstdc++ -I$OPTICKS_PREFIX/include/SysRap -o /tmp/$name 
 [ $? -ne 0 ] && echo $msg compile error && exit 1 
 
@@ -24,8 +23,11 @@ gcc $name.cc -std=c++11 -lstdc++ -I$OPTICKS_PREFIX/include/SysRap -o /tmp/$name
 [ $? -ne 0 ] && echo $msg run error && exit 2 
 
 
-${IPYTHON:-ipython} -i $name.py 
-
+if [ -n "$I" ]; then 
+   ${IPYTHON:-ipython} -i $name.py 
+else
+   ${OPTICKS_PYTHON:-python}  $name.py 
+fi 
 
 
 
