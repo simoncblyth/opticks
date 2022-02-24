@@ -189,6 +189,7 @@ case $gcn in
    XJfixtureConstruction)   source XJfixtureConstruction.sh ;;
    XJanchorConstruction)    source XJanchorConstruction.sh ;;   
    GeneralSphereDEV)        source GeneralSphereDEV.sh ;;
+   SphereIntersectBox)      source SphereIntersectBox.sh ;;
 esac   
    
 
@@ -202,6 +203,7 @@ case $GEOM in
    *_XYZ) cegs=9:16:9:$dx:$dy:$dz:$num_pho ;;  
 esac
 
+echo $msg dx $dx dy $dy dz $dz cegs $cegs 
 
 
 export GRIDSCALE=${GRIDSCALE:-$gridscale}

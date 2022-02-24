@@ -142,6 +142,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("BoxGridMultiUnion", qname))           solid = X4SolidMaker::BoxGridMultiUnion(qname) ; 
     else if(StartsWith("BoxFourBoxContiguous", qname))        solid = X4SolidMaker::BoxFourBoxContiguous(qname) ; 
     else if(StartsWith("LHCbRich", qname))                    solid = X4SolidMaker::LHCbRich(qname) ; 
+    else if(StartsWith("SphereIntersectBox", qname))          solid = X4SolidMaker::SphereIntersectBox(qname) ; 
     LOG(LEVEL) << " qname " << qname << " solid " << solid ; 
     assert(solid); 
     return solid ; 
@@ -1581,15 +1582,11 @@ const G4double SphMirrSubLeftPosZ = -1.0* SphMirrSubRightPosZ;
 const G4VSolid* X4SolidMaker::SphereIntersectBox(const char* qname)  // static 
 {
     G4double phiStart = 0. ; 
-    G4double phiDelta = 2.* CLHEP::pi ; 
+    G4double phiDelta = 2. ; 
     G4double thetaStart = 0. ; 
-    G4double thetaDelta = 1.* CLHEP::pi ; 
-
-    G4Sphere* sph = new G4Sphere("sph", 95.*mm, 105.*mm,  phiStart, phiDelta, thetaStart, thetaDelta );  
-
+    G4double thetaDelta = 1.  ; 
+    G4Sphere* sph = new G4Sphere("sph", 95.*mm, 105.*mm,  phiStart*CLHEP::pi, phiDelta*CLHEP::pi, thetaStart*CLHEP::pi, thetaDelta*CLHEP::pi );  
     G4Box* box = new G4Box("box", 20.*mm, 20.*mm, 20.*mm ); 
-
-    G4IntersectionSolid* ins = new G4IntersectionSolid("ins", sph, box, 0, G4ThreeVector(0.*mm, 0.*mm, 100.*mm ) ); 
-
-    return ins ;  
+    G4IntersectionSolid* sph_box = new G4IntersectionSolid("sph_box", sph, box, 0, G4ThreeVector(0.*mm, 0.*mm, 100.*mm ) ); 
+    return sph_box ;  
 }

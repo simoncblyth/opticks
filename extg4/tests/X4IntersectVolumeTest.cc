@@ -28,6 +28,7 @@ int main(int argc, char** argv)
     const char* geom = SSys::getenvvar("GEOM", geom_default );  
 
 #ifdef WITH_PMTSIM
+
     typedef std::vector<double> VD ; 
     typedef std::vector<G4VSolid*> VS ; 
 
@@ -53,6 +54,8 @@ int main(int argc, char** argv)
         X4Intersect::Scan(solid, soname.c_str(), base ); 
     }
 
+#else
+     LOG(fatal) << " Not implemented for geom " << geom ; 
 #endif
     return 0 ; 
 }
