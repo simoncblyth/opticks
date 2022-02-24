@@ -46,9 +46,35 @@ void X4Intersect::Scan(const G4VSolid* solid, const char* name, const char* base
 X4Intersect::X4Intersect( const G4VSolid* solid_  )
     :
     solid(solid_), 
-    cegs(new SCenterExtentGenstep)
+    ce(nullptr),
+    cegs(nullptr)
 {
+    init(); 
 }
+
+void X4Intersect::init()
+{
+    G4ThreeVector pMin ; 
+    G4ThreeVector pMax ; 
+    solid->BoundingLimits(pMin, pMax); 
+    G4ThreeVector center = ( pMin + pMax )/2. ;  
+    G4ThreeVector fullside = pMax - pMin ; 
+    G4ThreeVector halfside = fullside/2.  ; 
+    G4double extent = std::max( std::max( halfside.x(), halfside.y() ), halfside.z() ) ;  
+
+    LOG(info) 
+         << " pMin " << pMin 
+         << " pMax " << pMax 
+         << " center " << center 
+         << " fullside " << fullside      
+         << " halfside " << halfside      
+         << " entent " << extent 
+         ;
+
+    ce = new float4(make_float4(center.x(), center.y(), center.z(), extent)) ;  
+    cegs = new SCenterExtentGenstep(ce) ; 
+}
+
 
 const char* X4Intersect::desc() const 
 {

@@ -4,6 +4,8 @@ usage(){ cat << EOU
 GeoChain/translate.sh  : geometry conversions using GeoChainSolidTest or GeoChainVolumeTest
 ===========================================================================================
 
+HMM: maybe rename to geochain.sh 
+
 Performs full geometry translation chain:
 
 1. Geant4 C++ G4VSolid OR G4VPhysicalVolume/G4LogicalVolume definition
@@ -28,10 +30,17 @@ Doing this in PMTSim which is JUNO specific might be a solution.
 Usage::
 
    gc                          # cd ~/opticks/GeoChain  
-   GEOM=body_solid ./run.sh 
-   GEOM=body_phys  ./run.sh 
+
+   vi ~/.opticks/GEOM.txt     ## or "geom" shortcut function, add or uncomment GEOM string in the file 
+   ./translate.sh             ## default GEOM value is obtained from the GEOM.txt file
+
+
+   GEOM=body_solid ./translate.sh 
+   GEOM=body_phys  ./translate.sh 
+
 
    GEOM=body_phys ./grab.sh    # grab from remote node 
+
 
 To render the resulting CSG geometry on GPU node use eg::
 
@@ -45,6 +54,13 @@ To render the resulting CSG geometry on GPU node use eg::
                          #
 
    ./cxr_geochain.sh     # 3d rendered view 
+
+
+2D intersect CSG geometry on CPU::
+
+   c 
+   ./csg_geochain.sh 
+
 
 
 NB IF YOU GET PERPLEXING FAILS REBUILD THE BELOW PACKAGES WHICH INCLUDE HEADERS WHICH MUST BE CONSISTENT
@@ -96,7 +112,7 @@ geom=AltXJfixtureConstructionU
 #geom=PolyconeWithMultipleRmin
 #geom=Orb
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=${catgeom%%_*}
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$(echo ${catgeom%%_*})
 
 echo geom [$geom]
 

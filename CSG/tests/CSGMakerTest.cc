@@ -17,8 +17,9 @@ int main(int argc, char** argv)
      std::vector<std::string> names ; 
      if( geom == nullptr ) CSGMaker::GetNames(names); 
      else names.push_back(geom); 
-
      LOG(info) << " names.size " << names.size() ; 
+
+
      if( arg && ( strcmp(arg,"N") == 0 || strcmp(arg,"n") == 0 ))
      {
          for(unsigned i=0 ; i < names.size() ; i++) std::cout << names[i] << std::endl ; 
@@ -39,7 +40,6 @@ int main(int argc, char** argv)
          int rc = CSGFoundry::Compare(fd, lfd );  
          assert( 0 == rc );
      }
-
 
 
      return 0 ; 

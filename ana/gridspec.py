@@ -5,7 +5,10 @@ import numpy as np
 log = logging.getLogger(__name__)
 
 eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
-efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
+#efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
+
+from opticks.ana.eget import efloat_
+
 
 X,Y,Z = 0,1,2
 
@@ -239,6 +242,10 @@ class GridSpec(object):
         up  = eary_("UP","0.,0.,1.")
         off  = eary_("OFF","0.,0.,1.")
 
+
+        EYES = efloat_("EYES", "6.")   # TODO: why 6 ? how to control FOV to gain more control of this
+
+
         axes = self.determine_axes(nx, ny, nz)
         planar = len(axes) == 2 
 
@@ -249,7 +256,7 @@ class GridSpec(object):
             up  = Axes.Up(H,V)
             off = Axes.Off(H,V)
 
-            eye = look + ce[3]*off
+            eye = look + ce[3]*off*EYES
 
         else:
             H, V, D = axes
@@ -259,10 +266,11 @@ class GridSpec(object):
             off = XYZ.off
             ## hmm in 3D case makes less sense : better to just use the input EYE
 
-            eye = ce[3]*eye 
+            eye = ce[3]*eye*EYES 
 
             pass
         pass
+        log.info(" planar %d  eye %s  EYES %s " % (planar, str(eye), EYES))
 
 
 
@@ -288,28 +296,34 @@ class GridSpec(object):
         self.photons_per_genstep = photons_per_genstep
 
 
-    def pv_compose(self, pl, reset=False, zoom=1, parallel=True ):
+    def pv_compose(self, pl ):
         """
         :param pl: pyvista plotter instance
         :param reset: for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
 
         Note for greater control of the view it is better to use reset=False
         """
+
+        PARA = "PARA" in os.environ 
+        RESET = "RESET" in os.environ 
+        ZOOM = efloat_("ZOOM", "1.")
         
+        #eye = look + self.off
+
         look = self.look 
-        eye = look + self.off
+        eye = self.eye
         up = self.up
 
-        print("pv_arrange_viewpoint look:%s eye: %s up:%s " % (str(look), str(eye), str(up) ))
+        print("pv_arrange_viewpoint look:%s eye: %s up:%s  PARA:%s RESET:%d ZOOM:%s  " % (str(look), str(eye), str(up), RESET, PARA, ZOOM ))
 
-        if parallel:
+        if PARA:
             pl.camera.ParallelProjectionOn()
         pass
 
         pl.set_focus(    look )
         pl.set_viewup(   up )
-        pl.set_position( eye, reset=reset )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
-        pl.camera.Zoom(zoom)
+        pl.set_position( eye, reset=RESET )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
+        pl.camera.Zoom(ZOOM)
 
 
 

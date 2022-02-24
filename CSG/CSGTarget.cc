@@ -60,7 +60,7 @@ Used by CSGFoundry::getCenterExtent
 
 int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* m2w, qat4* w2m ) const 
 {
-    LOG(info) << " (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ") " ;  
+    LOG(LEVEL) << " (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ") " ;  
     if( iidx == -1 )
     {
         // HMM: CSGFoundry::getCenterExtent BRANCHES FOR iidx == -1 SO THIS WILL NOT BE CALLED 
@@ -267,7 +267,7 @@ const qat4* CSGTarget::getInstanceTransform(int midx, int mord, int iidx) const
     unsigned primIdx = lpr->primIdx(); 
     unsigned gas_idx = repeatIdx ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ") "
         << " lpr " << lpr
         << " repeatIdx " << repeatIdx

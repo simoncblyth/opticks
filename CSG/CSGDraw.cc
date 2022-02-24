@@ -9,6 +9,9 @@
 #include "CSGQuery.h"
 #include "CSGDraw.h"
 
+
+const plog::Severity CSGDraw::LEVEL = PLOG::EnvLevel("CSGDraw", "DEBUG"); 
+
 CSGDraw::CSGDraw(const CSGQuery* q_)
     :
     q(q_),
@@ -25,6 +28,15 @@ void CSGDraw::draw(const char* msg)
     char axis = 'Y' ; 
 
     LOG(info) << msg << " axis " << axis ; 
+
+    LOG(info) 
+       << " type " << type
+       << " CSG::Name(type) " << CSG::Name(type)
+       << " IsTree " <<  CSG::IsTree((OpticksCSG_t)type) 
+       << " width " << width 
+       << " height " << height
+       ;
+
 
     if( CSG::IsTree((OpticksCSG_t)type) )
     {

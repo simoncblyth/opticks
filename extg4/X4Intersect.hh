@@ -6,6 +6,7 @@
 #include "G4ThreeVector.hh"
 #include "geomdefs.hh"
 
+struct float4 ; 
 struct SCenterExtentGenstep ; 
 class G4VSolid ; 
 class G4MultiUnion ;
@@ -26,6 +27,7 @@ struct X4_API X4Intersect
     void scan(); 
 
     const G4VSolid* solid ; 
+    float4*         ce ; 
     SCenterExtentGenstep* cegs ; 
 }; 
 

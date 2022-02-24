@@ -231,8 +231,12 @@ A. From converted G4VSolid
 Apply GeoChain conversion to a named geometry::
 
     b7  # when using OptiX 7
-    cd ~/opticks/GeoChain
-    GEOM=${GEOM%%_*} ./run.sh 
+    cd ~/opticks/GeoChain     # or use "gc" shortcut function 
+    GEOM=${GEOM%%_*} ./translate.sh 
+
+
+
+
 
 B. Directly from CSGSolid/CSGPrim/CSGNode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -243,6 +247,11 @@ Create and persists into CSGFoundry folders one OR all CSGMaker solids::
 
     CSGMakerTest     
     GEOM=${GEOM%%_*} CSGMakerTest
+
+Alternatively use the script::
+
+    cd ~/opticks/CSG
+    ./CSGMakerTest.sh  # gets GEOM value from ~/.opticks/GEOM.txt if that file exists
 
 
 EOH
@@ -344,7 +353,8 @@ if [ "${arg/ana}" != "$arg" ]; then
        cmd="cp $figdir/$figname $pubdir/$pubname"
        echo $msg cmd $cmd
        eval $cmd
-       echo $msg rel $reldir/$pubname
+       echo $msg add below with a title to s5_background_image.txt for presenation 
+       echo $msg $reldir/$pubname 1280px_720px
     fi 
 
 fi

@@ -1,11 +1,15 @@
 #pragma once
 
+#include "plog/Severity.h"
+#include "CSG_API_EXPORT.hh"
+
 struct CSGQuery ; 
 struct SCanvas ; 
-#include "CSG_API_EXPORT.hh"
 
 struct CSG_API CSGDraw
 {
+    static const plog::Severity LEVEL ; 
+
     CSGDraw(const CSGQuery* q_) ; 
     void draw(const char* msg);
     void draw_tree_r(int nodeIdxRel, int depth, int& inorder, char axis ) ;
@@ -16,8 +20,8 @@ struct CSG_API CSGDraw
     const CSGQuery* q ; 
 
     int          type ; 
-    unsigned     width ; 
-    unsigned     height ; 
+    int          width ; 
+    int          height ; 
     SCanvas*     canvas ; 
     bool         dump ; 
 

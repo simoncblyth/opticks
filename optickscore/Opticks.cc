@@ -1371,15 +1371,16 @@ const char* Opticks::getCFBaseScriptPath() const
 
 std::string Opticks::getCFBaseScriptString(const char* msg) const 
 {
+    const char* cfbase = getFoundryBase("CFBASE") ;  
     std::stringstream ss ; 
     ss
         << "# " << msg  
         << std::endl 
         << "# " << STime::Stamp()   
         << std::endl 
-        << "export CFBASE=" << getFoundryBase("CFBASE")
+        << "export CFBASE=" << cfbase
         << std::endl 
-        << "cfcd(){ cd $CFBASE/CSGFoundry ; pwd ; } " 
+        << "cfcd(){ cd " << cfbase << "/CSGFoundry ; pwd ; } "    // dont assume the envvar still same when function used
         << std::endl 
         << "# "    
         << std::endl 

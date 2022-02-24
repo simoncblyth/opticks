@@ -32,6 +32,8 @@
 #include "NHyperboloid.hpp"
 #include "NCubic.hpp"
 #include "NMultiUnion.hpp"
+#include "NThetaCut.hpp"
+#include "NPhiCut.hpp"
 
 
 /*

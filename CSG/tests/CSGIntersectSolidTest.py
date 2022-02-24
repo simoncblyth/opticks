@@ -340,8 +340,7 @@ if __name__ == '__main__':
     off = gridspec.off
     print(" gridspec.axes : %s   gridspec.off %s  " % (str(axes), str(off)) )
 
-    zoom = efloat_("ZOOM", "1.")
-    gridspec.pv_compose(pl, reset=False, zoom=zoom)
+    gridspec.pv_compose(pl)  ## composition is sensitive to envvars RESET PARA ZOOM
 
     no_isect = not hasattr(fold, 'isect') 
     gs_only = 'GS_ONLY' in os.environ
@@ -369,7 +368,7 @@ if __name__ == '__main__':
     ray_origin = fold.isect[:, 2, :3]
     ray_direction = fold.isect[:, 3, :3]
 
-    asd_cut = 1e-3
+    asd_cut = efloat_("ASD", 1e-2)
     select_spurious = asd > asd_cut 
     select_all = t > 0.
 

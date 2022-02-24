@@ -536,7 +536,9 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
         // idx[i]       : enter index with ascending t_enter
         // aux[idx[i]]  : isub index with ascending t_enter      
 
+        //float tminAdvanced = enter[i] + propagate_epsilon ;    // <= without ordered enters get internal spurious 
         float tminAdvanced = enter[idx[i]] + propagate_epsilon ; 
+
         int isub = aux[idx[i]];  // rather than shuffling aux, can just use it a fixed mapping from enter index to isub index 
         const CSGNode* sub_node = root+offset_sub+isub ; 
 

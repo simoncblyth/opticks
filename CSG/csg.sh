@@ -7,6 +7,13 @@ csg.sh : using test/CSGIntersectSolidTest.cc tests/CSGIntersectSolidTest.py with
 
 TODO: factor off common parts of csg_geochain.sh and this script csg.sh 
 
+
+
+Dumping geometry::
+
+   DUMP=1 DEBUG=1 ./csg.sh
+
+
 EOU
 }
 
@@ -27,7 +34,10 @@ esac
 
 #sopr=0:0_YZ
 #sopr=0:0_XYZ
-sopr=0:3_XY
+#sopr=0:3_XY
+#sopr=0:3_XYZ
+#sopr=0:3_XZ
+sopr=0:3_YZ
 
 export VERBOSE=1
 export SOPR=${SOPR:-$sopr}
@@ -53,12 +63,8 @@ script=tests/CSGIntersectSolidTest.py
 
 arg=${1:-run_ana}
 
-if [ "${arg/dump}" != "$arg" ]; then 
-   echo $msg CSGGeometryTest dump
-   DUMP=1 $bin 
-   exit 0 
 
-elif [ "${arg/run}" != "$arg" ]; then
+if [ "${arg/run}" != "$arg" ]; then
 
     if [ -n "$DEBUG" ]; then 
         echo $msg running binary $bin under debugger
@@ -75,7 +81,7 @@ elif [ "${arg/run}" != "$arg" ]; then
     fi 
 fi
 
-
+[ -n "$DUMP" ] && echo $msg early exit as DUMP defined && exit 0 
 
 if [ "${arg/ana}" != "$arg" ]; then
 

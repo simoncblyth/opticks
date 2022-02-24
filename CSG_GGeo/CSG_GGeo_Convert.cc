@@ -340,6 +340,9 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     unsigned numParts = comp->getNumParts(primIdx) ;
     unsigned meshIdx = comp->getMeshIndex(primIdx);    // aka lvIdx
 
+    unsigned subNum = comp->getSubNum(primIdx) ; // ? HMM SAME FOOTING ?
+    unsigned subOffset = comp->getSubOffset(primIdx) ; // ? HMM SAME FOOTING ?
+
     bool operators_only = true ; 
     unsigned mask = comp->getTypeMask(primIdx, operators_only); 
     bool positive = CSG::IsPositiveMask( mask ); 
@@ -348,6 +351,8 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         << " primIdx " << std::setw(4) << primIdx
         << " meshIdx " << std::setw(4) << meshIdx
         << " numParts " << std::setw(4) << numParts
+        << " subNum " << std::setw(4) << subNum
+        << " subOffset " << std::setw(4) << subOffset
         << " comp.getTypeMask " << mask 
         << " CSG::TypeMask " << CSG::TypeMask(mask)
         << " CSG::IsPositiveMask " << positive
@@ -381,7 +386,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     {
         CSGNode* n = convertNode(comp, primIdx, partIdxRel); 
 
-        if(root == nullptr) root = n ; 
+        if(root == nullptr) root = n ;   // first nodes becomes root 
 
         if(n->is_zero()) continue;  
 
@@ -401,6 +406,25 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
         if(!bbskip) bb.include_aabb( naabb );  
     }
+
+
+    assert( root ); 
+
+    unsigned subNum2 = numParts ; 
+    // HMM: usually numParts is the number of tree nodes : but not always following introduction of list-nodes
+    // TODO: fix the conversion to pass along the subNum from GGeo level 
+
+    LOG(info) 
+        << " setSubNum " 
+        << " subNum " << subNum
+        << " subNum2 " << subNum2
+        << " numParts " << numParts
+        ; 
+    //assert( subNum2 == subNum );
+ 
+    root->setSubNum( subNum2 ); 
+
+
 
     const float* bb_data = bb.data(); 
 

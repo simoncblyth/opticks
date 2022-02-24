@@ -132,6 +132,7 @@ CSGSolid* CSGMaker::make(const char* name)
     else 
     {
         LOG(fatal) << "invalid name [" << name << "]" << " expecting one of the below " << std::endl << NAMES  ; 
+        LOG(error) << "perhaps you intended to convert from a G4VSolid : if so see ~/opticks/GeoChain/translate.sh " ; 
     }
     assert( so ); 
     return so ;  

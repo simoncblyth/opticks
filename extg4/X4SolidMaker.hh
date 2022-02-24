@@ -22,6 +22,7 @@ struct X4_API X4SolidMaker
     static const G4VSolid* Make(const char* name, std::string& meta ); 
 
     static const G4VSolid* JustOrb(const char* name); 
+    static const G4VSolid* LHCbRich(const char* name); 
 
     static const G4VSolid* JustOrbOrbUnion(       const char* name); 
     static const G4VSolid* JustOrbOrbIntersection(const char* name); 

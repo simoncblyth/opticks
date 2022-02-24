@@ -58,6 +58,7 @@ BoxThreeBoxUnion
 OrbGridMultiUnion
 BoxGridMultiUnion
 BoxFourBoxContiguous
+LHCbRich
 )LITERAL"; 
 
 
@@ -139,6 +140,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("OrbGridMultiUnion", qname))           solid = X4SolidMaker::OrbGridMultiUnion(qname) ; 
     else if(StartsWith("BoxGridMultiUnion", qname))           solid = X4SolidMaker::BoxGridMultiUnion(qname) ; 
     else if(StartsWith("BoxFourBoxContiguous", qname))        solid = X4SolidMaker::BoxFourBoxContiguous(qname) ; 
+    else if(StartsWith("LHCbRich", qname))                    solid = X4SolidMaker::LHCbRich(qname) ; 
     LOG(LEVEL) << " qname " << qname << " solid " << solid ; 
     assert(solid); 
     return solid ; 
@@ -1473,6 +1475,106 @@ void X4SolidMaker::Extract( std::vector<long>& vals, const char* s )  // static
     free(s0); 
 }
 
+
+
+
+/**
+
+   // /Users/blyth/liyu/Rich_Simplified/include/SphMirrorGeometryParameters.hh
+
+
+   %s///g
+
+**/
+
+
+const G4VSolid* X4SolidMaker::LHCbRich(const char* qname)  // static 
+{
+
+// include/RichTbRich1MasterGeometryParameters.hh
+//const G4double MasterHalfSizeX = 1250.0 * CLHEP::mm;
+//const G4double MasterHalfSizeY = 2600.0 * CLHEP::mm;
+//const G4double MasterHalfSizeZ = 1150.0 * CLHEP::mm;
+//const G4double MasterPosX = 0.0 * CLHEP::mm;
+//const G4double MasterPosY = 0.0 * CLHEP::mm;
+//const G4double MasterPosZ = 1500.0 * CLHEP::mm;
+
+//const G4double SubMasterHalfSizeX = 1025.0 * CLHEP::mm;
+//const G4double SubMasterHalfSizeY = 2500.0 * CLHEP::mm;
+//const G4double SubMasterHalfSizeZ = 635.0 * CLHEP::mm;
+//const G4double SubMasterPosX = 0.0 * CLHEP::mm;
+//const G4double SubMasterPosY = 0.0 * CLHEP::mm;
+//const G4double SubMasterPosZ = 125.0 * CLHEP::mm;
+
+//Parameters for simplified rich1 sph mirror.
+const G4double SphMirrInnerRadius = 3650.0 *  CLHEP::mm;
+const G4double SphMirrThickness   = 1.5 * CLHEP::mm;
+const G4double SphMirrOuterRadius =  SphMirrInnerRadius + SphMirrThickness ;
+const G4double SphMirrSegmentSizeX = 1500.0 * CLHEP::mm;
+const G4double SphMirrSegmentSizeY = 650.0  * CLHEP::mm;
+//const G4double SphMirrCOCInLHCbPosX =  0.0       * CLHEP::mm;
+//const G4double SphMirrCOCInLHCbPosY =  932.897   * CLHEP::mm;
+//const G4double SphMirrCOCInLHCbPosZ =  -1493.286 * CLHEP::mm;
+//const G4double SphMirrVertTilt = asin ( SphMirrCOCInLHCbPosY/SphMirrInnerRadius) * CLHEP::rad;
+
+// To account for spherical geometry with straight edges, the angluar sizes are increased by a factor and then boolen subtraction made. 
+const G4double SphMirrDeltaExtendedFactor = 1.2; 
+const G4double SphMirrDeltaTheta =  2 * asin(SphMirrSegmentSizeX/(2.0*SphMirrInnerRadius)) * SphMirrDeltaExtendedFactor *  CLHEP::rad;
+const G4double SphMirrDeltaPhi =  2 * asin(SphMirrSegmentSizeY/(2.0*SphMirrInnerRadius) )* SphMirrDeltaExtendedFactor * CLHEP::rad;
+const G4double SphMirrThetaStart = (0.5 * CLHEP::pi * CLHEP::rad)  - (0.5 * SphMirrDeltaTheta) ;
+const G4double SphMirrPhiStart   =  -0.5 * SphMirrDeltaPhi ;
+const G4double SphMirrSubLargeSize = 5000 *  CLHEP::mm;
+const G4double SphMirrSubHalfSizeX = SphMirrSubLargeSize;
+const G4double SphMirrSubHalfSizeY = SphMirrSubLargeSize;
+const G4double SphMirrSubHalfSizeZ = SphMirrSubLargeSize;
+const G4double SphMirrSubPosX = 0.0 *  CLHEP::mm;
+const G4double SphMirrSubPosY = 0.0 *  CLHEP::mm;
+const G4double SphMirrSubUpPosY = (0.5 * SphMirrSegmentSizeY) + SphMirrSubHalfSizeY;
+const G4double SphMirrSubDownPosY = -1.0 * SphMirrSubUpPosY ;
+const G4double SphMirrSubPosZ = 0.0 * CLHEP::mm;
+const G4double SphMirrSubRightPosZ =(0.5 * SphMirrSegmentSizeX) +  SphMirrSubHalfSizeZ;
+const G4double SphMirrSubLeftPosZ = -1.0* SphMirrSubRightPosZ;
+//const G4double SphMirrYShiftFromEdge = 1.0 * CLHEP::mm;
+//const G4double SphMirrPhiGapShift =  asin (SphMirrYShiftFromEdge/SphMirrInnerRadius) * CLHEP::rad;
+//const G4double SphMirrRotY = -0.5 * CLHEP::pi * CLHEP::rad;
+//const G4double SphMirrRotZ =  SphMirrPhiGapShift + (0.5 * SphMirrDeltaPhi) -  SphMirrVertTilt ;
+//const G4double SphMirrPosX = SphMirrCOCInLHCbPosX - SubMasterPosX -  MasterPosX ;
+//const G4double SphMirrPosY = SphMirrCOCInLHCbPosY - SubMasterPosY -  MasterPosY ;
+//const G4double SphMirrPosZ = SphMirrCOCInLHCbPosZ - SubMasterPosZ -  MasterPosZ ;
+
+
+
+
+   // /Users/blyth/liyu/Rich_Simplified/src/RichTbLHCbR1SphMirror.cc    
+
+  G4Sphere* SphFullSph = new G4Sphere ("SphFullSphDEV",SphMirrInnerRadius,
+                       SphMirrOuterRadius,SphMirrPhiStart,
+                                           SphMirrDeltaPhi, SphMirrThetaStart,
+                                           SphMirrDeltaTheta);
+  G4Box * SphSubBox = new G4Box("SphSubBox",SphMirrSubHalfSizeX,
+                    SphMirrSubHalfSizeY, SphMirrSubHalfSizeZ);
+  G4RotationMatrix SubBoxRot;
+  G4ThreeVector  SubBoxTPos ( SphMirrSubPosX,SphMirrSubUpPosY,SphMirrSubPosZ);  
+  G4ThreeVector  SubBoxBPos ( SphMirrSubPosX,SphMirrSubDownPosY,SphMirrSubPosZ);  
+  G4ThreeVector  SubBoxLPos ( SphMirrSubPosX,SphMirrSubPosY,SphMirrSubLeftPosZ);  
+  G4ThreeVector  SubBoxRPos ( SphMirrSubPosX,SphMirrSubPosY,SphMirrSubRightPosZ);  
+  G4Transform3D  SubBoxTTrans(  SubBoxRot, SubBoxTPos);
+  G4Transform3D  SubBoxBTrans(  SubBoxRot, SubBoxBPos);
+  G4Transform3D  SubBoxLTrans(  SubBoxRot, SubBoxLPos);
+  G4Transform3D  SubBoxRTrans(  SubBoxRot, SubBoxRPos);
+  G4SubtractionSolid* TSph = new G4SubtractionSolid("SphTSph",SphFullSph,
+                                            SphSubBox , SubBoxTTrans);
+  G4SubtractionSolid* BSph = new G4SubtractionSolid("SphBSphBox",TSph,
+                                            SphSubBox , SubBoxBTrans);
+  G4SubtractionSolid* LSph = new G4SubtractionSolid("SphLSphBox",BSph,
+                                            SphSubBox , SubBoxLTrans);
+  G4SubtractionSolid* RSph = new G4SubtractionSolid("SphRSphBox",LSph,
+                                            SphSubBox , SubBoxRTrans);
+
+
+
+   return RSph  ; 
+}
 
 
 

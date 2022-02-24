@@ -1717,6 +1717,8 @@ nnode* nnode::copy( const nnode* node )  // static
         case CSG_TORUS:           { ntorus* n        = (ntorus*)node         ; c = new ntorus(*n)        ; } break ; 
         case CSG_CUBIC:           { ncubic* n        = (ncubic*)node         ; c = new ncubic(*n)        ; } break ; 
         case CSG_HYPERBOLOID:     { nhyperboloid* n  = (nhyperboloid*)node   ; c = new nhyperboloid(*n)  ; } break ; 
+        case CSG_THETACUT:        { nthetacut* n     = (nthetacut*)node      ; c = new nthetacut(*n)     ; } break ; 
+        case CSG_PHICUT:          { nphicut* n       = (nphicut*)node        ; c = new nphicut(*n)       ; } break ; 
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSG::Name(node->type) ;  
             assert(0);
