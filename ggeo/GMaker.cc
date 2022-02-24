@@ -90,40 +90,7 @@ GVolume* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& para
          case CSG_INTERSECTION: volume = makeBox(param); break ;    // boolean intersect
          case CSG_UNION:        volume = makeBox(param); break ;    // boolean union
          case CSG_DIFFERENCE:   volume = makeBox(param); break ;    // boolean difference
-
-         case CSG_OBSOLETE:
-         case CSG_LAST:
-         case CSG_CONTIGUOUS:
-         case CSG_DISCONTIGUOUS:
-         case CSG_OVERLAP:
-         case CSG_PHICUT:
-         case CSG_THETACUT:
-         case CSG_LPHICUT:
-         case CSG_LTHETACUT:
-         case CSG_ZERO:         
-         case CSG_PARTLIST:
-         case CSG_PMT:
-         case CSG_TUBS:
-         case CSG_CYLINDER:
-         case CSG_INFCYLINDER:
-         case CSG_DISC:
-         case CSG_SLAB:
-         case CSG_CONE:
-         case CSG_MULTICONE:
-         case CSG_TRAPEZOID:
-         case CSG_CONVEXPOLYHEDRON:
-         case CSG_SEGMENT:
-         case CSG_BOX3:
-         case CSG_PLANE:
-         case CSG_UNDEFINED:
-         case CSG_FLAGPARTLIST:
-         case CSG_FLAGNODETREE:
-         case CSG_FLAGINVISIBLE:
-         case CSG_TORUS:
-         case CSG_ELLIPSOID:
-         case CSG_HYPERBOLOID:
-         case CSG_CUBIC:
-                                volume = NULL ; break ;
+         default:               volume = nullptr       ; break ;
      }
      assert(volume);
      volume->setCSGFlag( type );

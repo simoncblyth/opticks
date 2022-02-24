@@ -2013,8 +2013,8 @@ bool         NCSG::isBox3() const  {     assert( m_root ); return m_root->is_box
 
 std::string NCSG::get_type_mask_string() const { assert(m_root); return m_root->get_type_mask_string() ; }
 unsigned    NCSG::get_type_mask() const  {          assert(m_root); return m_root->get_type_mask() ; }
-unsigned    NCSG::get_oper_mask() const {           assert(m_root); return m_root->get_oper_mask() ; }
-unsigned    NCSG::get_prim_mask() const {           assert(m_root); return m_root->get_prim_mask() ; } 
+unsigned    NCSG::get_tree_mask() const {           assert(m_root); return m_root->get_tree_mask() ; }
+unsigned    NCSG::get_leaf_mask() const {           assert(m_root); return m_root->get_leaf_mask() ; } 
 
 
 

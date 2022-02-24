@@ -26,7 +26,6 @@
 #include "PLOG.hh"
 
 #include "OpticksCSG.h"
-#include "OpticksCSGMask.h"
 
 #include "NPY.hpp"
 #include "NGLMExt.hpp"
@@ -604,7 +603,8 @@ void NNodeNudger::dump(const char* msg)
       LOG(info) 
           << msg 
           << " treedir " << ( root->treedir ? root->treedir : "-" )
-          << " typmsk " << root->get_type_mask_string() 
+          << " leaf_mask " << root->get_leaf_mask_string() 
+          << " tree_mask " << root->get_tree_mask_string() 
           << " nprim " << prim.size()
           << " nudges " << nudges.size()
           << " verbosity " << verbosity

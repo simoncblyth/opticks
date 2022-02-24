@@ -2,7 +2,6 @@
 #include <csignal>
 
 #include "PLOG.hh"
-#include "OpticksCSGMask.h"
 
 #include "NBBox.hpp"
 #include "nmat4triple.hpp"
@@ -86,8 +85,8 @@ nmultiunion* nmultiunion::CreateFromTree( OpticksCSG_t type, const nnode* src ) 
     nnode* subtree = src->deepclone(); 
     subtree->prepareTree() ;  // sets parent links and gtransforms by multiplying the transforms 
 
-    unsigned mask = subtree->get_oper_mask(); 
-    OpticksCSG_t subtree_type = CSG_MonoOperator(mask); 
+    unsigned mask = subtree->get_tree_mask(); 
+    OpticksCSG_t subtree_type = CSG::MonoOperator(mask); 
  
     if(subtree_type != CSG_UNION)
     {

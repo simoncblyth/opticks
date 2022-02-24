@@ -48,10 +48,11 @@ nthetacut::make
 
 **/
 
-nthetacut* nthetacut::make(OpticksCSG_t type, double startTheta_pi, double deltaTheta_pi )
+nthetacut* nthetacut::make(double startTheta_pi, double deltaTheta_pi )
 {
+    OpticksCSG_t type = CSG_THETACUT ; 
+
     nthetacut* n = new nthetacut ; 
-    assert( type == CSG_THETACUT || type == CSG_LTHETACUT ); 
     nnode::Init(n,type) ; 
 
     quad q0, q1 ; 

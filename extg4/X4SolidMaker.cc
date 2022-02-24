@@ -30,6 +30,7 @@ JustOrbOrbUnion
 JustOrbOrbIntersection
 JustOrbOrbDifference
 JustOrb
+SphereIntersectBox
 SphereWithPhiSegment
 SphereWithPhiCutDEV
 GeneralSphereDEV
@@ -1577,4 +1578,18 @@ const G4double SphMirrSubLeftPosZ = -1.0* SphMirrSubRightPosZ;
 }
 
 
+const G4VSolid* X4SolidMaker::SphereIntersectBox(const char* qname)  // static 
+{
+    G4double phiStart = 0. ; 
+    G4double phiDelta = 2.* CLHEP::pi ; 
+    G4double thetaStart = 0. ; 
+    G4double thetaDelta = 1.* CLHEP::pi ; 
 
+    G4Sphere* sph = new G4Sphere("sph", 95.*mm, 105.*mm,  phiStart, phiDelta, thetaStart, thetaDelta );  
+
+    G4Box* box = new G4Box("box", 20.*mm, 20.*mm, 20.*mm ); 
+
+    G4IntersectionSolid* ins = new G4IntersectionSolid("ins", sph, box, 0, G4ThreeVector(0.*mm, 0.*mm, 100.*mm ) ); 
+
+    return ins ;  
+}

@@ -33,7 +33,6 @@ Tests individual trees::
 #include <iostream>
 
 #include "SSys.hh"
-#include "OpticksCSGMask.h"
 
 #include "BFile.hh"
 #include "BStr.hh"
@@ -69,9 +68,9 @@ void test_coincidence( const std::vector<NCSG*>& trees )
 
         unsigned num_coincidence = csg->get_num_coincidence();
 
-        unsigned mask = csg->get_oper_mask();
+        unsigned mask = csg->get_tree_mask();
 
-        if(mask == CSGMASK_INTERSECTION ) 
+        if(mask == CSG::Mask(CSG_INTERSECTION)) 
         {
             LOG(info) << "skip intersection " ;             
             continue ; 

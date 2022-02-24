@@ -1162,13 +1162,16 @@ void nnode::update_gtransforms_r(nnode* node)
 
 
 
-unsigned nnode::get_type_mask() const { return get_mask(NODE_ALL) ; }
-unsigned nnode::get_prim_mask() const { return get_mask(NODE_PRIMITIVE) ; }
-unsigned nnode::get_oper_mask() const { return get_mask(NODE_OPERATOR) ; }
+unsigned nnode::get_type_mask() const { return get_mask(CSG_ZERO) ; }  // uses the offset type to squeeze into 32 bits 
+unsigned nnode::get_leaf_mask() const { return get_mask(CSG_LEAF) ; }  // formerly get_prim_mask
+unsigned nnode::get_tree_mask() const { return get_mask(CSG_TREE) ; }  // formerly get_oper_mask
+unsigned nnode::get_node_mask() const { return get_mask(CSG_NODE) ; }  // new
 
-std::string nnode::get_type_mask_string() const { return get_mask_string(NODE_ALL) ; }
-std::string nnode::get_prim_mask_string() const { return get_mask_string(NODE_PRIMITIVE) ; }
-std::string nnode::get_oper_mask_string() const { return get_mask_string(NODE_OPERATOR) ; }
+
+std::string nnode::get_type_mask_string() const { return get_mask_string(CSG_ZERO) ; }
+std::string nnode::get_leaf_mask_string() const { return get_mask_string(CSG_LEAF) ; }  // _prim
+std::string nnode::get_tree_mask_string() const { return get_mask_string(CSG_TREE) ; }   // _oper
+std::string nnode::get_node_mask_string() const { return get_mask_string(CSG_NODE) ; }   // _oper
 
 
 
@@ -1180,24 +1183,27 @@ returns a mask integer holding the types of all nodes in the tree
 that meet the NNodeType criteria allowing selection of all/operators/primitives
 
 **/
-unsigned nnode::get_mask(NNodeType ntyp) const 
+unsigned nnode::get_mask(OpticksCSG_t ntyp) const 
 {
     unsigned msk = 0 ;   
     get_mask_r(this, ntyp, msk );
     return msk ; 
 }
-void nnode::get_mask_r(const nnode* node, NNodeType ntyp, unsigned& msk ) // static
+void nnode::get_mask_r(const nnode* node, OpticksCSG_t ntyp, unsigned& msk ) // static
 {
     bool collect = false ;  
     assert( node->type < CSG_UNDEFINED ); 
     if(true)
     {
-       if(     ntyp == NODE_ALL) collect = true ; 
-       else if(ntyp == NODE_PRIMITIVE && node->type >= CSG_SPHERE ) collect = true  ;
-       else if(ntyp == NODE_OPERATOR  && (node->type == CSG_UNION || node->type == CSG_INTERSECTION || node->type == CSG_DIFFERENCE )) collect = true  ;
+       if(     ntyp == CSG_ZERO )                           collect = true ; 
+       if(     ntyp == CSG_NODE && CSG::IsList(node->type)) collect = true ; 
+       else if(ntyp == CSG_LEAF && CSG::IsLeaf(node->type)) collect = true ;
+       else if(ntyp == CSG_TREE && CSG::IsTree(node->type)) collect = true ; 
     }
-    if(collect)  msk |= (0x1 << node->type) ;
-
+    if(collect)  
+    {
+        msk |= CSG::Mask(node->type) ;
+    }
 
     if(node->left && node->right)
     {
@@ -1205,12 +1211,10 @@ void nnode::get_mask_r(const nnode* node, NNodeType ntyp, unsigned& msk ) // sta
         get_mask_r(node->right, ntyp, msk);
     }
 } 
-std::string nnode::get_mask_string(NNodeType ntyp) const 
+std::string nnode::get_mask_string(OpticksCSG_t ntyp) const 
 {
     unsigned msk = get_mask(ntyp);
-    std::stringstream ss ; 
-    for(unsigned i=0 ; i < 32 ; i++) if(msk & (0x1 << i)) ss << CSG::Name((OpticksCSG_t)i) << " " ;   
-    return ss.str();
+    return CSG::MaskString(msk); 
 }
 
 

@@ -20,7 +20,6 @@
 #include "PLOG.hh"
 
 #include "OpticksCSG.h"
-#include "OpticksCSGMask.h"
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
@@ -367,17 +366,20 @@ unsigned NNodeUncoincide::uncoincide_treewise()
     assert( m_node->is_root() );
     nnode* root = m_node ; 
 
-    unsigned prim_mask = root->get_prim_mask();
+    //unsigned prim_mask = root->get_prim_mask();
+    unsigned leaf_mask = root->get_leaf_mask();
 
     // TODO: investigate CSG_ZSPHERE too 
     // TODO: hmm:perhaps can apply to any tree just select operable nodes to work with ...
 
-    bool proceed = prim_mask == (unsigned)CSGMASK_CYLINDER || prim_mask == (unsigned)(CSGMASK_CYLINDER | CSGMASK_CONE) ; 
+    unsigned cy =  (unsigned)CSG::Mask(CSG_CYLINDER) ;
+    unsigned cyco =  (unsigned)(CSG::Mask(CSG_CYLINDER) | CSG::Mask(CSG_CONE)) ; 
+    bool proceed = leaf_mask == cy || leaf_mask == cyco ; 
 
     LOG(info) << "NNodeUncoincide::uncoincide_treewise"
               << " proceed " << ( proceed ? "Y" : "-" )
               << " verbosity " << m_verbosity 
-              << " prim_mask " << root->get_prim_mask_string()
+              << " leaf_mask " << root->get_leaf_mask_string()
               ;
     if(proceed)
     {
@@ -392,11 +394,6 @@ unsigned NNodeUncoincide::uncoincide_treewise()
 /**
 NNodeUncoincide::uncoincide_treewise_fiddle
 ---------------------------------------------
-
-
-
-
-
 
 Suspect the z-nudging will work regardless 
 of the fiddling ... it just depends on 
@@ -418,9 +415,9 @@ unsigned NNodeUncoincide::uncoincide_treewise_fiddle()
 
     unsigned type_mask = root->get_type_mask();
 
-    unsigned uncy     = CSGMASK_UNION | CSGMASK_CYLINDER ;
-    unsigned uncyco   = CSGMASK_UNION | CSGMASK_CYLINDER | CSGMASK_CONE ;
-    unsigned uncycodi = CSGMASK_UNION | CSGMASK_DIFFERENCE | CSGMASK_CYLINDER | CSGMASK_CONE ;
+    unsigned uncy     = CSG::Mask(CSG_UNION) | CSG::Mask(CSG_CYLINDER) ;
+    unsigned uncyco   = CSG::Mask(CSG_UNION) | CSG::Mask(CSG_CYLINDER) | CSG::Mask(CSG_CONE) ;
+    unsigned uncycodi = CSG::Mask(CSG_UNION) | CSG::Mask(CSG_DIFFERENCE) | CSG::Mask(CSG_CYLINDER) | CSG::Mask(CSG_CONE) ;
 
     bool root_di = root->type == CSG_DIFFERENCE ; 
     bool root_uncy   = type_mask == uncy ;

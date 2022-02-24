@@ -21,7 +21,6 @@
 #include <cassert>
 
 #include "OpticksCSG.h"
-#include "OpticksCSGMask.h"
 #include "NTreeBalance.hpp"
 #include "NTreeBuilder.hpp"
 #include "PLOG.hh"
@@ -64,13 +63,13 @@ T* NTreeBalance<T>::create_balanced()
     unsigned hop_mask = operators(2);  // operators above the bileaf operators
 
 
-    LOG(LEVEL) << "op_mask " << CSGMaskDesc(op_mask ); 
-    LOG(LEVEL) << "hop_mask " << CSGMaskDesc(hop_mask ); 
+    LOG(LEVEL) << "op_mask " << CSG::MaskDesc(op_mask ); 
+    LOG(LEVEL) << "hop_mask " << CSG::MaskDesc(hop_mask ); 
 
 
-   // sysrap/OpticksCSGMask.h returns CSG_ZERO when not a UNION or INTERSECTION mono mask
-    OpticksCSG_t op = CSG_MonoOperator(op_mask) ;    
-    OpticksCSG_t hop = CSG_MonoOperator(hop_mask) ;  
+   // sysrap/OpticksCSG::Mask.h returns CSG_ZERO when not a UNION or INTERSECTION mono mask
+    OpticksCSG_t op = CSG::MonoOperator(op_mask) ;    
+    OpticksCSG_t hop = CSG::MonoOperator(hop_mask) ;  
 
     T* balanced = NULL ; 
 
@@ -265,7 +264,7 @@ template <typename T>
 std::string NTreeBalance<T>::operatorsDesc(unsigned minsubdepth) const 
 {
     unsigned ops = operators(minsubdepth);
-    return CSGMaskDesc(ops); 
+    return CSG::MaskDesc(ops); 
 }
 
 
@@ -286,10 +285,10 @@ void NTreeBalance<T>::operators_r(const T* node, unsigned& mask, unsigned minsub
         {
             switch( node->type )
             {
-                case CSG_UNION         : mask |= CSGMASK_UNION        ; break ; 
-                case CSG_INTERSECTION  : mask |= CSGMASK_INTERSECTION ; break ; 
-                case CSG_DIFFERENCE    : mask |= CSGMASK_DIFFERENCE   ; break ; 
-                default                : mask |= 0                    ; break ; 
+                case CSG_UNION         : mask |= CSG::Mask(CSG_UNION)        ; break ; 
+                case CSG_INTERSECTION  : mask |= CSG::Mask(CSG_INTERSECTION) ; break ; 
+                case CSG_DIFFERENCE    : mask |= CSG::Mask(CSG_DIFFERENCE)   ; break ; 
+                default                : mask |= 0                         ; break ; 
             }
         }
         operators_r( node->left,  mask, minsubdepth ); 
@@ -300,13 +299,13 @@ template <typename T>
 bool NTreeBalance<T>::is_positive_form() const 
 {
     unsigned ops = operators(); 
-    return (ops & CSGMASK_DIFFERENCE) == 0 ; 
+    return (ops & CSG::Mask(CSG_DIFFERENCE)) == 0 ; 
 }
 template <typename T>
 bool NTreeBalance<T>::is_mono_form() const // only one type of operator
 {
     unsigned ops = operators(); 
-    return (ops == CSGMASK_DIFFERENCE) || (ops == CSGMASK_UNION)  || (ops == CSGMASK_INTERSECTION)  ; 
+    return (ops == CSG::Mask(CSG_DIFFERENCE)) || (ops == CSG::Mask(CSG_UNION))  || (ops == CSG::Mask(CSG_INTERSECTION))  ; 
 }
 
 #include "No.hpp"

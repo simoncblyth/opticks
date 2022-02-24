@@ -49,19 +49,33 @@ void test_type()
 void test_TypeMask()
 {
     LOG(info); 
+    
+    // UID
+    // 000  ___ 
+    // 001  __D
+    // 010  _I_ 
+    // 011  _ID
+    // 100  U__ 
+    // 101  U_D
+    // 110  UI_
+    // 111  UID
 
     std::vector<unsigned> masks = {{ 
-         CSG::UnionMask(), 
-         CSG::IntersectionMask(), 
-         CSG::DifferenceMask(), 
-         CSG::UnionMask() | CSG::IntersectionMask(),
-         CSG::UnionMask() | CSG::IntersectionMask() | CSG::DifferenceMask()
+         0u,
+         CSG::Mask(CSG_DIFFERENCE), 
+         CSG::Mask(CSG_INTERSECTION), 
+         CSG::Mask(CSG_INTERSECTION) | CSG::Mask(CSG_DIFFERENCE),
+         CSG::Mask(CSG_UNION), 
+         CSG::Mask(CSG_UNION) | CSG::Mask(CSG_DIFFERENCE),
+         CSG::Mask(CSG_UNION) | CSG::Mask(CSG_INTERSECTION),
+         CSG::Mask(CSG_UNION) | CSG::Mask(CSG_INTERSECTION) | CSG::Mask(CSG_DIFFERENCE)
     }}; 
 
     for(unsigned i=0 ; i < masks.size() ; i++)
     {
         unsigned mask = masks[i] ; 
         std::cout 
+            << " i " << std::setw(5) << i
             << " mask " << std::setw(5) << mask 
             << " CSG::TypeMask(mask) " << std::setw(10) << CSG::TypeMask(mask)
             << " CSG::IsPositiveMask(mask) " << std::setw(2) << CSG::IsPositiveMask(mask)
@@ -99,6 +113,100 @@ void test_HintCode()
 }
     
 
+void test_OffsetType()
+{
+    std::vector<unsigned> types = { 
+            CSG_ZERO, 
+            CSG_TREE, 
+                CSG_UNION, 
+                CSG_INTERSECTION, 
+                CSG_DIFFERENCE, 
+            CSG_LIST, 
+                CSG_CONTIGUOUS, 
+                CSG_DISCONTIGUOUS,
+                CSG_OVERLAP,
+            CSG_LEAF,
+                CSG_SPHERE,
+                CSG_BOX,
+                CSG_ZSPHERE,
+                CSG_TUBS,
+                CSG_CYLINDER,
+                CSG_SLAB,
+                CSG_PLANE,
+                CSG_CONE,
+                CSG_MULTICONE,
+                CSG_BOX3,
+                CSG_TRAPEZOID,
+                CSG_CONVEXPOLYHEDRON,
+                CSG_DISC,
+                CSG_SEGMENT,
+                CSG_ELLIPSOID,
+                CSG_TORUS,
+                CSG_HYPERBOLOID,
+                CSG_CUBIC,
+                CSG_INFCYLINDER,
+                CSG_PHICUT, 
+                CSG_THETACUT, 
+                CSG_UNDEFINED
+       }; 
+
+    for(unsigned i=0 ; i < types.size() ; i++)
+    {
+         OpticksCSG_t type = (OpticksCSG_t)types[i]; 
+         const char* name = CSG::Name(type) ; 
+         OpticksCSG_t type2 = CSG::TypeCode(name); 
+         const char* name2 = CSG::Name(type2) ; 
+
+         unsigned offset_type = CSG::OffsetType(type); 
+         unsigned type3 = CSG::TypeFromOffsetType( offset_type ); 
+
+         std::cout 
+              << " i " << std::setw(3) << i 
+              << " type " << std::setw(3) << type
+              << " offset_type " << std::setw(3) << offset_type
+              << " CSG::Tag(type) " << std::setw(10) << CSG::Tag(type)
+              << " CSG::Name(type) " << std::setw(15) << name
+              << " CSG::Name(type2) " << std::setw(15) << name2
+              << " CSG::IsPrimitive(type) " << std::setw(2) << CSG::IsPrimitive(type)
+              << " CSG::IsList(type) " << std::setw(2) << CSG::IsList(type)
+              << " CSG::IsCompound(type) " << std::setw(2) << CSG::IsCompound(type)
+              << " CSG::IsLeaf(type) " << std::setw(2) << CSG::IsLeaf(type)
+              << std::endl
+              ;
+         assert( type2 == type ); 
+         assert( type3 == type ); 
+    }
+}
+
+void test_MaskString()
+{
+    unsigned mask = CSG::Mask(CSG_SPHERE) | CSG::Mask(CSG_UNION)  ; 
+    std::cout << CSG::MaskString(mask) << std::endl ; 
+
+    unsigned typemask = 0 ; 
+
+    for(unsigned i=0 ; i < 32 ; i++) 
+    {
+        OpticksCSG_t type = (OpticksCSG_t)CSG::TypeFromOffsetType(i) ; 
+        typemask |= CSG::Mask(type); 
+
+        const char* name =  CSG::Name(type)  ; 
+        if( name == nullptr ) continue ; 
+      
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " type " << std::setw(3) << type
+            << " CSG::Name(type) " << std::setw(20) << CSG::Name(type)
+            << " typemask " << std::setw(10) << typemask 
+            << " CSG::MaskString(typemask) " << CSG::MaskString(typemask)
+            << std::endl 
+            ;
+
+    }
+
+
+}
+
 
 
 int main(int argc, char** argv)
@@ -107,10 +215,12 @@ int main(int argc, char** argv)
 
     /*
     test_type(); 
-    test_TypeMask(); 
-    */
     test_HintCode(); 
+    test_TypeMask(); 
+    test_OffsetType(); 
+    */
   
+    test_MaskString(); 
 
     return 0 ; 
 } 

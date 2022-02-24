@@ -133,7 +133,6 @@ set(HEADERS
     SSortKV.hh
     SPairVec.hh
     OpticksCSG.h
-    OpticksCSGMask.h
     PlainFormatter.hh
     SAr.hh
     SArr.hh

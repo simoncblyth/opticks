@@ -26,7 +26,6 @@
 #include "PLOG.hh"
 
 #include "OpticksCSG.h"
-#include "OpticksCSGMask.h"
 
 #include "NPY.hpp"
 #include "NGLMExt.hpp"

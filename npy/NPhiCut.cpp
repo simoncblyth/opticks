@@ -90,10 +90,11 @@ glm::vec3 nphicut::normal(int idx) const
 }
 
 
-nphicut* nphicut::make(OpticksCSG_t type, double startPhi_pi, double deltaPhi_pi ) // static
+nphicut* nphicut::make(double startPhi_pi, double deltaPhi_pi ) // static
 {
+    OpticksCSG_t type = CSG_PHICUT ;  
+
     nphicut* n = new nphicut ; 
-    assert( type == CSG_PHICUT || type == CSG_LPHICUT ); 
     nnode::Init(n,type) ; 
 
     quad q0 ; 

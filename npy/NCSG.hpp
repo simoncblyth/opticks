@@ -206,8 +206,8 @@ class NPY_API NCSG {
     public:
         // passthru to root
         unsigned    get_type_mask() const ;
-        unsigned    get_oper_mask() const ;
-        unsigned    get_prim_mask() const ;
+        unsigned    get_tree_mask() const ;
+        unsigned    get_leaf_mask() const ;
         std::string get_type_mask_string() const ;
     public:
         nbbox     bbox() const ;

@@ -663,12 +663,12 @@ nnode* X4Solid::convertSphereDEV_(const char* opt )
         else if ( opt[i] == 'T' && has[i] && enabled[i] )
         {
             LOG(LEVEL) << " intersectWithThetaCut " ; 
-            result = intersectWithThetaCut( result, startTheta_pi, deltaTheta_pi, CSG_THETACUT );  
+            result = intersectWithThetaCut( result, startTheta_pi, deltaTheta_pi );  
         }
         else if ( opt[i] == 'P' && has[i] && enabled[i] )
         {
             LOG(LEVEL) << " intersectWithPhiCut " ; 
-            result = intersectWithPhiCut(result, startPhi_pi, deltaPhi_pi, CSG_PHICUT );
+            result = intersectWithPhiCut(result, startPhi_pi, deltaPhi_pi );
         }
     }
     return result ; 
@@ -1054,12 +1054,9 @@ X4Solid::intersectWithPhiCut
 
 **/
 
-nnode* X4Solid::intersectWithPhiCut(nnode* whole, double startPhi_pi, double deltaPhi_pi, OpticksCSG_t type  )  
+nnode* X4Solid::intersectWithPhiCut(nnode* whole, double startPhi_pi, double deltaPhi_pi)  
 {
-
-    assert( type == CSG_PHICUT || type == CSG_LPHICUT ); 
-
-    nnode* phicut = nphicut::make( type, startPhi_pi, deltaPhi_pi ); 
+    nnode* phicut = nphicut::make( startPhi_pi, deltaPhi_pi ); 
     phicut->label = BStr::concat(m_name, "_phicut_wedge", NULL); 
 
     nnode* result = nnode::make_operator(CSG_INTERSECTION, whole, phicut); 
@@ -1075,11 +1072,9 @@ X4Solid::intersectWithThetaCut
 
 **/
 
-nnode* X4Solid::intersectWithThetaCut(nnode* whole, double startTheta_pi, double deltaTheta_pi, OpticksCSG_t type  )  
+nnode* X4Solid::intersectWithThetaCut(nnode* whole, double startTheta_pi, double deltaTheta_pi)  
 {
-    assert( type == CSG_THETACUT || type == CSG_LTHETACUT ); 
-
-    nnode* thetacut = nthetacut::make( type, startTheta_pi, deltaTheta_pi ); 
+    nnode* thetacut = nthetacut::make( startTheta_pi, deltaTheta_pi ); 
     thetacut->label = BStr::concat(m_name, "_thetacut_wedge", NULL); 
 
     nnode* result = nnode::make_operator(CSG_INTERSECTION, whole, thetacut ); 

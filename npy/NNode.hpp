@@ -28,7 +28,6 @@
 #include "plog/Severity.h"
 
 #include "OpticksCSG.h"
-#include "OpticksCSGMask.h"
 #include "NQuad.hpp"
 #include "Nuv.hpp"
 #include "NPY_API_EXPORT.hh"
@@ -294,18 +293,26 @@ struct NPY_API nnode
     static bool is_same_monogroup(const nnode* a, const nnode* b, OpticksCSG_t op) ; // static
 
 
+    //std::string get_prim_mask_string() const ;
+    //std::string get_oper_mask_string() const ;
+
+    //unsigned    get_prim_mask() const ;
+    //unsigned    get_oper_mask() const ;
+
     std::string get_type_mask_string() const ;
-    std::string get_prim_mask_string() const ;
-    std::string get_oper_mask_string() const ;
+    std::string get_leaf_mask_string() const ;
+    std::string get_node_mask_string() const ;
+    std::string get_tree_mask_string() const ;
 
     unsigned    get_type_mask() const ;
-    unsigned    get_prim_mask() const ;
-    unsigned    get_oper_mask() const ;
+    unsigned    get_leaf_mask() const ;
+    unsigned    get_node_mask() const ;
+    unsigned    get_tree_mask() const ;
 
     // type composition mask for the tree with input NNodeType to select ALL,OPERATORS,PRIMITIVES 
-    unsigned get_mask(NNodeType ntyp) const ;
-    static void get_mask_r(const nnode* node, NNodeType ntyp, unsigned& msk);
-    std::string get_mask_string(NNodeType ntyp) const ;
+    unsigned get_mask(OpticksCSG_t ntyp) const ;
+    static void get_mask_r(const nnode* node, OpticksCSG_t ntyp, unsigned& msk);
+    std::string get_mask_string(OpticksCSG_t ntyp) const ;
 
     // type count for the tree : eg to give the number of CSG_TORUS present in the tree
     bool has_torus() const ; 
