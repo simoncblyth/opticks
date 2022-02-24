@@ -1171,12 +1171,12 @@ CSGSolid* CSGMaker::makeInfPhiCut(const char* label, float startPhi_pi, float de
 
 CSGSolid* CSGMaker::makeInfThetaCut(const char* label, float startTheta_pi, float deltaTheta_pi )
 {
-    CSGNode nd = CSGNode::InfThetaCut(startTheta_pi, deltaTheta_pi, ' ' ); 
+    CSGNode nd = CSGNode::InfThetaCut(startTheta_pi, deltaTheta_pi ); 
     return makeSolid11(label, nd, nullptr, ITHE_MIDX ); 
 }
 CSGSolid* CSGMaker::makeInfThetaCutL(const char* label, float startTheta_pi, float deltaTheta_pi )
 {
-    CSGNode nd = CSGNode::InfThetaCut(startTheta_pi, deltaTheta_pi, 'L' ); 
+    CSGNode nd = CSGNode::InfThetaCut(startTheta_pi, deltaTheta_pi ); 
     return makeSolid11(label, nd, nullptr, ITHL_MIDX ); 
 }
 

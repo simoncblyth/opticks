@@ -1479,8 +1479,6 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
         case CSG_PLANE:            valid_isect = intersect_leaf_plane(            isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_PHICUT:           valid_isect = intersect_leaf_phicut(           isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_THETACUT:         valid_isect = intersect_leaf_thetacut(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_LPHICUT:          valid_isect = intersect_leaf_phicut_lucas(     isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_LTHETACUT:        valid_isect = intersect_leaf_thetacut_lucas(   isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_SLAB:             valid_isect = intersect_leaf_slab(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_CYLINDER:         valid_isect = intersect_leaf_cylinder(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_INFCYLINDER:      valid_isect = intersect_leaf_infcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;

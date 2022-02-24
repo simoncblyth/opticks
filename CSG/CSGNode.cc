@@ -336,17 +336,17 @@ unsigned CSGNode::Depth( unsigned partIdxRel ) // static
 
 bool CSGNode::IsOnlyUnionMask( unsigned atm )  // static 
 {
-     return atm == CSG::UnionMask() ; 
+     return atm == CSG::Mask(CSG_UNION) ; 
 }
 
 bool CSGNode::IsOnlyIntersectionMask( unsigned atm )  // static 
 {
-     return atm == CSG::IntersectionMask() ; 
+     return atm == CSG::Mask(CSG_INTERSECTION) ; 
 }
 
 bool CSGNode::IsOnlyDifferenceMask( unsigned atm )  // static 
 {
-     return atm == CSG::DifferenceMask() ; 
+     return atm == CSG::Mask(CSG_DIFFERENCE) ; 
 }
 
 void CSGNode::getYRange(float& y0, float& y1) const 
@@ -433,11 +433,11 @@ void CSGNode::setAABBLocal()
     {
         setAABB( UNBOUNDED_DEFAULT_EXTENT ); 
     }
-    else if( tc == CSG_PHICUT || tc == CSG_LPHICUT )
+    else if( tc == CSG_PHICUT )
     {
         setAABB( UNBOUNDED_DEFAULT_EXTENT ); 
     }
-    else if( tc == CSG_THETACUT || tc == CSG_LTHETACUT )
+    else if( tc == CSG_THETACUT )
     {
         setAABB( UNBOUNDED_DEFAULT_EXTENT ); 
     }
@@ -530,12 +530,12 @@ CSGNode CSGNode::InfPhiCut(float startPhi_pi, float deltaPhi_pi )
     return nd ; 
 }
 
-CSGNode CSGNode::InfThetaCut(float startTheta_pi, float deltaTheta_pi, char imp) 
+CSGNode CSGNode::InfThetaCut(float startTheta_pi, float deltaTheta_pi ) 
 {
     CSGNode nd = {} ; 
     SThetaCut::PrepareParam( nd.q0, nd.q1, startTheta_pi, deltaTheta_pi ); 
     nd.setAABB( -100.f,-100.f,-100.f, 100.f, 100.f, 100.f );    // HMM: adhoc ?   
-    nd.setTypecode( imp == 'L' ? CSG_LTHETACUT : CSG_THETACUT ); 
+    nd.setTypecode(CSG_THETACUT); 
     return nd ; 
 }
 
@@ -610,8 +610,7 @@ CSGNode CSGNode::MakeDemo(const char* name) // static
     if(strncmp(name, "cyli", 4) == 0) return CSGNode::Cylinder(0.f, 0.f, 100.f, -50.f, 50.f ) ; 
     if(strncmp(name, "disc", 4) == 0) return CSGNode::Disc(    0.f, 0.f, 50.f, 100.f, -2.f, 2.f ) ; 
     if(strncmp(name, "iphi", 4) == 0) return CSGNode::InfPhiCut(0.25f, 0.10f) ; 
-    if(strncmp(name, "ithe", 4) == 0) return CSGNode::InfThetaCut(0.25f, 0.10f, ' ') ; 
-    if(strncmp(name, "ithl", 4) == 0) return CSGNode::InfThetaCut(0.25f, 0.10f, 'L') ; 
+    if(strncmp(name, "ithe", 4) == 0) return CSGNode::InfThetaCut(0.25f, 0.10f ) ; 
     LOG(fatal) << " not implemented for name " << name ; 
     assert(0); 
     return CSGNode::Sphere(1.0); 
