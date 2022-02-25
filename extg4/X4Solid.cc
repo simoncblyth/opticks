@@ -1056,7 +1056,7 @@ X4Solid::intersectWithPhiCut
 
 nnode* X4Solid::intersectWithPhiCut(nnode* whole, double startPhi_pi, double deltaPhi_pi)  
 {
-    nnode* phicut = nphicut::make( startPhi_pi, deltaPhi_pi ); 
+    nnode* phicut = nphicut::Create( startPhi_pi, deltaPhi_pi ); 
     phicut->label = BStr::concat(m_name, "_phicut_wedge", NULL); 
 
     nnode* result = nnode::make_operator(CSG_INTERSECTION, whole, phicut); 
@@ -1074,7 +1074,7 @@ X4Solid::intersectWithThetaCut
 
 nnode* X4Solid::intersectWithThetaCut(nnode* whole, double startTheta_pi, double deltaTheta_pi)  
 {
-    nnode* thetacut = nthetacut::make( startTheta_pi, deltaTheta_pi ); 
+    nnode* thetacut = nthetacut::Create( startTheta_pi, deltaTheta_pi ); 
     thetacut->label = BStr::concat(m_name, "_thetacut_wedge", NULL); 
 
     nnode* result = nnode::make_operator(CSG_INTERSECTION, whole, thetacut ); 

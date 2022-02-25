@@ -48,12 +48,10 @@ nthetacut::make
 
 **/
 
-nthetacut* nthetacut::make(double startTheta_pi, double deltaTheta_pi )
+nthetacut* nthetacut::Create(double startTheta_pi, double deltaTheta_pi )
 {
-    OpticksCSG_t type = CSG_THETACUT ; 
-
     nthetacut* n = new nthetacut ; 
-    nnode::Init(n,type) ; 
+    nnode::Init(n,CSG_THETACUT) ; 
 
     quad q0, q1 ; 
     SThetaCut::PrepareParam( q0, q1, startTheta_pi, deltaTheta_pi ); 
@@ -65,5 +63,14 @@ nthetacut* nthetacut::make(double startTheta_pi, double deltaTheta_pi )
     return n ; 
 }
 
+nthetacut* nthetacut::Create(const nquad& p0, const nquad& p1)  // static 
+{
+    nthetacut* n = new nthetacut ; 
+    nnode::Init(n,CSG_THETACUT) ; 
+    n->param = p0  ;
+    n->param1 = p1  ;
+ 
+    return n ; 
+}
 
 

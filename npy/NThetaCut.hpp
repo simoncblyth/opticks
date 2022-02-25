@@ -19,7 +19,8 @@ struct NPY_API nthetacut : nnode
 {
     static const plog::Severity LEVEL ; 
 
-    static nthetacut* make(double startTheta_pi, double deltaTheta_pi); 
+    static nthetacut* Create(const nquad& p0, const nquad& p1); 
+    static nthetacut* Create(double startTheta_pi, double deltaTheta_pi); 
 
     float operator()(float x_, float y_, float z_) const ; 
     void pdump(const char* msg) const ; 

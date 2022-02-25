@@ -55,6 +55,7 @@ nsphere* nsphere::Create(const nquad& param)  // static
     n->param = param  ; 
     return n ; 
 }
+
 nsphere* nsphere::Create(float x, float y, float z, float w)
 {
     nquad param ; 

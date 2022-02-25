@@ -9,7 +9,7 @@ int main(int argc, char** argv)
     double startPhi_pi = 0. ; 
     double deltaPhi_pi = 0.5 ; 
 
-    nphicut* n = nphicut::make( startPhi_pi, deltaPhi_pi ); 
+    nphicut* n = nphicut::Create( startPhi_pi, deltaPhi_pi ); 
 
     assert( n ); 
 

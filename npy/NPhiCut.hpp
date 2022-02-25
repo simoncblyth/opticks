@@ -17,7 +17,8 @@ struct nmat4triple ;
 struct NPY_API nphicut : nnode 
 {
     static const plog::Severity LEVEL ; 
-    static nphicut* make(double startPhi_pi, double deltaPhi_pi );
+    static nphicut* Create(const nquad& param);
+    static nphicut* Create(double startPhi_pi, double deltaPhi_pi );
 
     void pdump(const char* msg) const ; 
 

@@ -768,6 +768,8 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
        case CSG_TORUS:          node = make_torus(p0)             ; break ; 
        case CSG_CUBIC:          node = make_cubic(p0,p1)          ; break ; 
        case CSG_HYPERBOLOID:    node = make_hyperboloid(p0)       ; break ; 
+       case CSG_THETACUT:       node = nthetacut::Create(p0,p1)   ; break ; 
+       case CSG_PHICUT:         node = nphicut::Create(p0)        ; break ; 
        case CSG_TRAPEZOID:  
        case CSG_SEGMENT:  
        case CSG_CONVEXPOLYHEDRON:  

@@ -90,12 +90,17 @@ glm::vec3 nphicut::normal(int idx) const
 }
 
 
-nphicut* nphicut::make(double startPhi_pi, double deltaPhi_pi ) // static
+nphicut* nphicut::Create(const nquad& p0)  // static
 {
-    OpticksCSG_t type = CSG_PHICUT ;  
-
     nphicut* n = new nphicut ; 
-    nnode::Init(n,type) ; 
+    nnode::Init(n,CSG_PHICUT) ; 
+    n->param = p0 ; 
+    return n ; 
+}
+nphicut* nphicut::Create(double startPhi_pi, double deltaPhi_pi ) // static
+{
+    nphicut* n = new nphicut ; 
+    nnode::Init(n,CSG_PHICUT) ; 
 
     quad q0 ; 
     SPhiCut::PrepareParam( q0, startPhi_pi, deltaPhi_pi ); 
