@@ -671,6 +671,24 @@ nnode* X4Solid::convertSphereDEV_(const char* opt )
             result = intersectWithPhiCut(result, startPhi_pi, deltaPhi_pi );
         }
     }
+
+    G4ThreeVector pMin ; 
+    G4ThreeVector pMax ; 
+    solid->BoundingLimits(pMin, pMax); 
+
+    nbbox bb = {} ; 
+    bb.min.x = pMin.x(); 
+    bb.min.y = pMin.y(); 
+    bb.min.z = pMin.z(); 
+
+    bb.max.x = pMax.x(); 
+    bb.max.y = pMax.y(); 
+    bb.max.z = pMax.z(); 
+
+    LOG(LEVEL) << "General Sphere nnode::set_bbox using bb from G4VSolid::BoundingLimits " << bb.desc() ; 
+
+    result->set_bbox( bb ); 
+
     return result ; 
 }
 
@@ -1156,7 +1174,7 @@ nnode* X4Solid::intersectWithPhiSegment(nnode* whole, float startPhi, float delt
                 ; 
         } 
 
-        segment = nconvexpolyhedron::make_segment(phi0, phi1, u_segZ, segR );  
+        segment = nconvexpolyhedron::CreateSegment(phi0, phi1, u_segZ, segR );  
         segment->label = BStr::concat(m_name, "_segment_wedge", NULL); 
     }
 
@@ -1213,7 +1231,7 @@ Following
     float y2 = 2.0*solid->GetYHalfLength2()/mm ; 
     float z = 2.0*solid->GetZHalfLength()/mm ; 
 
-    nnode* trd = nconvexpolyhedron::make_trapezoid(z, x1, y1, x2, y2 ); 
+    nnode* trd = nconvexpolyhedron::CreateTrapezoid(z, x1, y1, x2, y2 ); 
     trd->label = BStr::concat(m_name, "_solid", NULL ); 
 
     setRoot(trd); 

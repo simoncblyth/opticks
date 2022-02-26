@@ -45,13 +45,14 @@ void test_draw_txt()
 
 void test_format_float()
 {
-    char tmp[10] ;
+    float offset = 5e6 ; 
+
+    char tmp[16] ;
     for( float val=0.f ; val < 10.f ; val+= 0.50001f )
     {
-        int len = sprintf(tmp, "%7.2f", val );
-
+        int len = sprintf(tmp, "%7.2f", val + offset );
         bool expect = len == int(strlen(tmp)) ; 
-        printf("//test_format_float %s  %d %d   \n", tmp, len, expect ); 
+        printf("//test_format_float  tmp:%s  len:%d  expect:%d offset %g  \n", tmp, len, expect, offset ); 
     }
 }
 
@@ -104,7 +105,7 @@ int main(int argc, char** argv)
     //test_resize();  
 
     test_format_float(); 
-    test_draw_float(); 
+    //test_draw_float(); 
  
     return 0 ; 
 }

@@ -88,6 +88,7 @@ struct NPY_API nnode
     void set_p0( const quad& q0 ); 
     void set_p1( const quad& q1 ); 
     void set_bbox(const nbbox& bb); 
+    void set_bbox(float min_x, float min_y, float min_z, float max_x, float max_y, float max_z ); 
 
 
     static unsigned bb_count ; 

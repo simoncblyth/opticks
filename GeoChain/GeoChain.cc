@@ -62,7 +62,7 @@ which then gets passed into CSGFoundry meta.
 
 void GeoChain::convertSolid(const G4VSolid* solid, std::string& meta )
 {
-    LOG(fatal) << "[" ;  
+    LOG(LEVEL) << "[" ;  
 
     if(meta.empty())  LOG(info) << "meta.empty" ; 
     if(!meta.empty()) LOG(info) << " meta " << std::endl << meta ;  
@@ -85,7 +85,7 @@ void GeoChain::convertSolid(const G4VSolid* solid, std::string& meta )
     }
 
 
-    LOG(fatal) << "]" ;  
+    LOG(LEVEL) << "]" ;  
 }
 
 
@@ -104,6 +104,7 @@ DONE : factorised X4PhysicalVolume::ConvertSolid_ in order to enable
 
 void GeoChain::convertNodeTree(nnode* raw)
 {
+    LOG(LEVEL) << "[" ;  
     const G4VSolid* const solid = nullptr ; 
     bool balance_deep_tree = false ;  
     const char* soname = "convertNodeTree" ; 
@@ -112,10 +113,12 @@ void GeoChain::convertNodeTree(nnode* raw)
     mesh = X4PhysicalVolume::ConvertSolid_FromRawNode(ok, lvIdx, soIdx, solid, soname, lvname, balance_deep_tree, raw ); 
 
     convertMesh(mesh); 
+    LOG(LEVEL) << "]" ;  
 }
 
 void GeoChain::convertMesh(GMesh* mesh)
 {
+    LOG(LEVEL) << "[" ;  
     ggeo->add(mesh); 
 
     // standin for X4PhysicalVolume::convertStructure
@@ -130,6 +133,7 @@ void GeoChain::convertMesh(GMesh* mesh)
     conv.convert();
 
     fd->addTranPlaceholder(); 
+    LOG(LEVEL) << "]" ;  
 }
 
 
@@ -162,6 +166,7 @@ avoid duplication with some static methods
 
 void GeoChain::convertPV( const G4VPhysicalVolume* top )
 {
+    LOG(LEVEL) << "[" ;  
     X4PhysicalVolume xtop(ggeo, top) ; 
 
     // ggeo->postDirectTranslation();  tries to save which fails with no idpath 
@@ -184,7 +189,7 @@ void GeoChain::convertPV( const G4VPhysicalVolume* top )
         ; 
 
 
-    std::cout << "] GeoChain::convert " << std::endl ; 
+    LOG(LEVEL) << "]" ;  
 }
 
 void GeoChain::save(const char* name, const char* base_) const 

@@ -96,6 +96,9 @@ to derive the bbox from the parameters. However for some
 node types such as convexpolyhedron it is not easy to do 
 that, hence set_bbox is used from them.  
 
+HMM: notice that the 6 numbers arr not contiguous, unlike with CSG/CSGNode
+
+
 **/
 
 void nnode::set_bbox(const nbbox& bb)
@@ -108,6 +111,21 @@ void nnode::set_bbox(const nbbox& bb)
     param3.f.y = bb.max.y ;
     param3.f.z = bb.max.z ;
 }
+
+void nnode::set_bbox(float min_x, float min_y, float min_z, float max_x, float max_y, float max_z )
+{
+    param2.f.x = min_x ;
+    param2.f.y = min_y ;
+    param2.f.z = min_z ;
+
+    param3.f.x = max_x ;
+    param3.f.y = max_y ;
+    param3.f.z = max_z ;
+}
+
+
+
+
 
 
 bool nnode::has_planes() const 

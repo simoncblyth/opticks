@@ -32,6 +32,30 @@
 #include "PLOG.hh"
 
 
+nconvexpolyhedron* nconvexpolyhedron::Create(const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3) // static
+{
+    nconvexpolyhedron* n = new nconvexpolyhedron ; 
+    nnode::Init(n,CSG_CONVEXPOLYHEDRON) ; 
+    n->param = param ; 
+    n->param1 = param1 ; 
+    n->param2 = param2 ; 
+    n->param3 = param3 ; 
+    return n ;
+}
+
+nconvexpolyhedron* nconvexpolyhedron::Create()   // static
+{
+    nquad param, param1, param2, param3 ; 
+    param.u = {0,0,0,0} ;
+    param1.u = {0,0,0,0} ;
+    param2.u = {0,0,0,0} ;
+    param3.u = {0,0,0,0} ;
+    return Create(param, param1, param2, param3 );
+}
+
+
+
+
 void nconvexpolyhedron::check_planes() const 
 {
     unsigned num_planes = planes.size(); 
@@ -383,7 +407,7 @@ void nconvexpolyhedron::dump_uv_basis(const char* msg) const
 
 
 
-nconvexpolyhedron* nconvexpolyhedron::make_trapezoid_cube()
+nconvexpolyhedron* nconvexpolyhedron::CreateTrapezoidCube()
 {
    /*
     z-order verts
@@ -417,7 +441,7 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid_cube()
     float x2 = 200 ; 
     float y2 = 200 ; 
   
-    nconvexpolyhedron* cpol = nconvexpolyhedron::make_trapezoid( z,  x1,  y1,  x2,  y2 );
+    nconvexpolyhedron* cpol = nconvexpolyhedron::CreateTrapezoid( z,  x1,  y1,  x2,  y2 );
 
     nbbox bb = cpol->bbox_model();
     std::cout << "bbox_model " << bb.desc() << std::endl ; 
@@ -425,9 +449,7 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid_cube()
     return cpol ; 
 }
 
-
-
-nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1, float x2, float y2 ) // static
+nconvexpolyhedron* nconvexpolyhedron::CreateTrapezoid(float z, float x1, float y1, float x2, float y2 ) // static
 {
    /*
     z-order verts
@@ -479,20 +501,15 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1
     p[4] = make_plane( v[5], v[7], v[6] ) ; // +Z
     p[5] = make_plane( v[3], v[1], v[0] ) ; // -Z
 
-    nconvexpolyhedron* cpol = make_convexpolyhedron();
+    nconvexpolyhedron* cpol = Create();
     cpol->set_planes( p) ; 
     cpol->set_bbox( bb) ; 
 
     return cpol ; 
-
 }
 
-
-
-
-
 /**
-nconvexpolyhedron::make_segment
+nconvexpolyhedron::CreateSegment
 ==================================
 
 Prism intended for deltaphi intersecting with
@@ -532,7 +549,7 @@ see notes/issues/LHCb_Rich_Lucas_unclear_sphere_phisegment_issue.rst
 
 **/
 
-nconvexpolyhedron* nconvexpolyhedron::make_segment(float phi0, float phi1, float sz, float sr ) // static
+nconvexpolyhedron* nconvexpolyhedron::CreateSegment(float phi0, float phi1, float sz, float sr ) // static
 {
     float z0 = -sz ; 
     float z1 = sz ;
@@ -570,7 +587,7 @@ nconvexpolyhedron* nconvexpolyhedron::make_segment(float phi0, float phi1, float
     unsigned verbosity = 0 ; 
     nbbox bb = nbbox::from_points( v, verbosity );
 
-    nconvexpolyhedron* cpol = make_convexpolyhedron();
+    nconvexpolyhedron* cpol = Create();
     cpol->set_planes( p) ; 
     cpol->set_bbox( bb) ; 
 
@@ -581,7 +598,7 @@ nconvexpolyhedron* nconvexpolyhedron::make_segment(float phi0, float phi1, float
 
 nconvexpolyhedron* nconvexpolyhedron::make_transformed( const glm::mat4& t  ) const 
 {
-    nconvexpolyhedron* cpol = make_convexpolyhedron() ;
+    nconvexpolyhedron* cpol = Create() ;
 
     for(unsigned i=0 ; i < planes.size() ; i++ )
     {

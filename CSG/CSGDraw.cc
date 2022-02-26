@@ -12,21 +12,21 @@
 
 const plog::Severity CSGDraw::LEVEL = PLOG::EnvLevel("CSGDraw", "DEBUG"); 
 
-CSGDraw::CSGDraw(const CSGQuery* q_)
+
+CSGDraw::CSGDraw(const CSGQuery* q_, char axis_ )
     :
     q(q_),
+    axis(axis_),
     type(q->getSelectedType()), 
     width(q->select_prim_numNode),
     height( CSG::IsTree((OpticksCSG_t)type) ? q->getSelectedTreeHeight() : 1),
-    canvas(new SCanvas(width+1, height+2, 10, 5)),
+    canvas(new SCanvas(width+2, height+2, 10, 5)),
     dump(false)
 {
 }
 
 void CSGDraw::draw(const char* msg)
 {
-    char axis = 'Y' ; 
-
     LOG(info) << msg << " axis " << axis ; 
 
     LOG(info) 
@@ -42,7 +42,9 @@ void CSGDraw::draw(const char* msg)
     {
         int nodeIdxRel_root = 1 ;
         int inorder = 0 ; 
-        draw_tree_r( nodeIdxRel_root,  0, inorder, axis ); 
+
+        draw_tree_r( nodeIdxRel_root,  0, inorder ); 
+
     }
     else if( CSG::IsList((OpticksCSG_t)type) )
     {
@@ -70,7 +72,7 @@ nodeIdxRel
 
 **/
 
-void CSGDraw::draw_tree_r(int nodeIdxRel, int depth, int& inorder, char axis ) 
+void CSGDraw::draw_tree_r(int nodeIdxRel, int depth, int& inorder ) 
 {
     const CSGNode* nd = q->getSelectedNode( nodeIdxRel - 1  );  // convert 1-based index to 0-based
     if( nd == nullptr ) return ; 
@@ -91,7 +93,7 @@ void CSGDraw::draw_tree_r(int nodeIdxRel, int depth, int& inorder, char axis )
     int left = nodeIdxRel << 1 ; 
     int right = left + 1 ; 
 
-    draw_tree_r(left,  depth+1, inorder, axis); 
+    draw_tree_r(left,  depth+1, inorder ); 
 
     // inorder visit 
     {
@@ -116,7 +118,7 @@ void CSGDraw::draw_tree_r(int nodeIdxRel, int depth, int& inorder, char axis )
      
         inorder += 1 ; 
     }
-    draw_tree_r(right, depth+1, inorder, axis ); 
+    draw_tree_r(right, depth+1, inorder ); 
 }
 
 void CSGDraw::draw_list()

@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    nconvexpolyhedron* a_cpol = nconvexpolyhedron::make_trapezoid_cube() ; 
+    nconvexpolyhedron* a_cpol = nconvexpolyhedron::CreateTrapezoidCube() ; 
     assert( a_cpol ) ; 
     a_cpol->dump_planes(); 
     a_cpol->dump_srcvertsfaces(); 

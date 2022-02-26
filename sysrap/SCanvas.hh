@@ -89,7 +89,7 @@ inline void SCanvas::drawtest()
 
 inline void SCanvas::drawf(int ix, int iy, int dx, int dy, float val, const char* fmt )
 {
-    char tmp[10] ;
+    char tmp[16] ;
     int rc = sprintf(tmp, fmt, val );
     bool expect = rc == int(strlen(tmp)) ; 
     assert( expect );
@@ -134,8 +134,13 @@ inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   //
     bool expect_dy =  dy >= 0 && dy < int(yscale) ; 
 
     bool expect = expect_ix && expect_iy && expect_dx && expect_dy ; 
-    assert(expect); 
-    if(!expect) exit(EXIT_FAILURE); 
+
+    if(!expect) printf("SCanvas::_draw ix %d width %d iy %d height dx %d xscale %d dy %d yscale %d \n", ix, width, iy, height, dx, xscale, dy, yscale ); 
+    if(!expect) return ;  
+
+    //assert(expect); 
+    //if(!expect) exit(EXIT_FAILURE); 
+    //if(!expect) exit(EXIT_FAILURE); 
 
     int x = ix*xscale + dx ; 
     int y = iy*yscale + dy ; 
@@ -150,16 +155,23 @@ inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   //
     if(!expect_x) printf("SCanvas::_draw expect_x ERROR out of range ix %d xscale %d dx %d x %d l %d x+l %d  nx %d txt [%s] \n", ix, xscale, dx, x, l, x+l, nx, txt ); 
     if(!expect_y) printf("SCanvas::_draw expect_y ERROR out of range y %d ny %d \n",   y, ny ); 
 
-    if(!expect_x) exit(EXIT_FAILURE); 
-    if(!expect_y) exit(EXIT_FAILURE); 
+    //if(!expect_x) exit(EXIT_FAILURE); 
+    //if(!expect_y) exit(EXIT_FAILURE); 
+
+    if(!expect_x) return ; 
+    if(!expect_y) return ; 
+
+
 
     int offset = y*nx + x ;  
     bool expect_offset = offset >= 0 && offset + l < int(nx*ny) ; 
 
     if(!expect_offset) printf("SCanvas::_draw error out of range offset+l %d  nx*ny %d \n", offset+l, nx*ny ) ; 
-    assert(expect_offset);  
-    if(!expect_offset) exit(EXIT_FAILURE); 
-    
+
+    //assert(expect_offset);  
+    //if(!expect_offset) exit(EXIT_FAILURE); 
+    if(!expect_offset) return ;     
+
 
     memcpy( c + offset , txt, l );
 }

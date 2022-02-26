@@ -1596,6 +1596,16 @@ const G4VSolid* X4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static
 
     const G4double SegmentSizeX = 1480.0 * CLHEP::mm;
     const G4double SegmentSizeY = 880.0 * CLHEP::mm;
+
+   /**
+   From xxs.sh looking at XZ, XY, YZ planes
+ 
+         X range :  5M -> 5M + 6 mm 
+         Y range : -440 -> 440 mm
+         Z range : -740 -> 740 mm
+   **/ 
+
+
    /*
     const G4double BotInLHCbPosY  = 337.90 * CLHEP::mm;
     const G4double BotInLHCbPosZ  = 1323.31 * CLHEP::mm;

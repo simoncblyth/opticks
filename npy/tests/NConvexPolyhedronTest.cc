@@ -62,7 +62,7 @@ nconvexpolyhedron* test_make()
     param2.u = {0,0,0,0} ;
     param3.u = {0,0,0,0} ;
 
-    nconvexpolyhedron* cpol = make_convexpolyhedron(param, param1, param2, param3 );
+    nconvexpolyhedron* cpol = nconvexpolyhedron::Create(param, param1, param2, param3 );
     return cpol ; 
 }
 
@@ -189,7 +189,7 @@ nconvexpolyhedron* test_make_trapezoid()
     float x2 = 200 ; 
     float y2 = 200 ; 
   
-    nconvexpolyhedron* cpol = nconvexpolyhedron::make_trapezoid( z,  x1,  y1,  x2,  y2 );
+    nconvexpolyhedron* cpol = nconvexpolyhedron::CreateTrapezoid( z,  x1,  y1,  x2,  y2 );
 
     cpol->dump_planes();
     cpol->dump_uv_basis();

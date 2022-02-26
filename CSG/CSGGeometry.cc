@@ -104,7 +104,7 @@ void CSGGeometry::init()
     q = new CSGQuery(fd); 
     q->dumpPrim("CSGGeometry::init"); 
     ce = new float4(q->select_prim->ce()) ; 
-    d = new CSGDraw(q) ; 
+    d = new CSGDraw(q, 'Z') ; 
     init_selection(); 
 }
 

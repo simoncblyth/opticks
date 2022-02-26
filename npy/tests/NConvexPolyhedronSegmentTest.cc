@@ -34,7 +34,7 @@ nconvexpolyhedron* test_make_trapezoid()
     float x2 = 200 ; 
     float y2 = 200 ; 
   
-    nconvexpolyhedron* cpol = nconvexpolyhedron::make_trapezoid( z,  x1,  y1,  x2,  y2 );
+    nconvexpolyhedron* cpol = nconvexpolyhedron::CreateTrapezoid( z,  x1,  y1,  x2,  y2 );
     return cpol ; 
 }
 
@@ -85,7 +85,7 @@ nconvexpolyhedron*  test_make_segment()
     float segZ = 10.f ; 
     float segR = 10.f ; 
 
-    nconvexpolyhedron* cpol = nconvexpolyhedron::make_segment(phi0, phi1, segZ, segR );
+    nconvexpolyhedron* cpol = nconvexpolyhedron::CreateSegment(phi0, phi1, segZ, segR );
 
     // when the deltaphi is 180 : dont get a sensible segment 
 

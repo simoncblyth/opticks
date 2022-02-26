@@ -77,7 +77,7 @@ CSGQueryTest::CSGQueryTest()
     :
     fd(CSGFoundry::LoadGeom()),
     q(new CSGQuery(fd)),
-    d(new CSGDraw(q)),
+    d(new CSGDraw(q,'Z')),
     gsid(0),
     dump(SSys::getenvint("DUMP",0)),
     dump_hit(  (dump & 1) != 0 ),

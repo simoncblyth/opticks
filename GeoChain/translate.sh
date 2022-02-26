@@ -154,6 +154,7 @@ fi
 #export GGeo=INFO
 #export CSGSolid=INFO
 export CSG_GGeo_Convert=INFO
+export GeoChain=INFO
 
 export NTreeProcess=INFO   ## balance decision happens here 
 #export NTREEPROCESS_LVLIST=0
