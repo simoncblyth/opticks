@@ -59,7 +59,8 @@ BoxThreeBoxUnion
 OrbGridMultiUnion
 BoxGridMultiUnion
 BoxFourBoxContiguous
-LHCbRich
+LHCbRichSphMirr
+LHCbRichFlatMirr
 )LITERAL"; 
 
 
@@ -141,7 +142,8 @@ const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("OrbGridMultiUnion", qname))           solid = X4SolidMaker::OrbGridMultiUnion(qname) ; 
     else if(StartsWith("BoxGridMultiUnion", qname))           solid = X4SolidMaker::BoxGridMultiUnion(qname) ; 
     else if(StartsWith("BoxFourBoxContiguous", qname))        solid = X4SolidMaker::BoxFourBoxContiguous(qname) ; 
-    else if(StartsWith("LHCbRich", qname))                    solid = X4SolidMaker::LHCbRich(qname) ; 
+    else if(StartsWith("LHCbRichSphMirr", qname))             solid = X4SolidMaker::LHCbRichSphMirr(qname) ; 
+    else if(StartsWith("LHCbRichFlatMirr", qname))            solid = X4SolidMaker::LHCbRichFlatMirr(qname) ; 
     else if(StartsWith("SphereIntersectBox", qname))          solid = X4SolidMaker::SphereIntersectBox(qname) ; 
     LOG(LEVEL) << " qname " << qname << " solid " << solid ; 
     assert(solid); 
@@ -1490,7 +1492,7 @@ void X4SolidMaker::Extract( std::vector<long>& vals, const char* s )  // static
 **/
 
 
-const G4VSolid* X4SolidMaker::LHCbRich(const char* qname)  // static 
+const G4VSolid* X4SolidMaker::LHCbRichSphMirr(const char* qname)  // static 
 {
 
 // include/RichTbRich1MasterGeometryParameters.hh
@@ -1577,6 +1579,52 @@ const G4double SphMirrSubLeftPosZ = -1.0* SphMirrSubRightPosZ;
 
    return RSph  ; 
 }
+
+
+const G4VSolid* X4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static 
+{
+
+    // /Users/blyth/Rich_Simplified/Rich_Simplified/include/RichTbR1FlatMirrorGeometryParameters.hh
+
+    //  :.,+30s/RichTbR1FlatMirr//g
+
+    //Parameters for simplified rich1 flat mirror.
+    const G4double InnerRadius = 5000.0 *  CLHEP::m;
+    const G4double Thickness   = 6.0 * CLHEP::mm;
+    const G4double OuterRadius =  InnerRadius + Thickness ;
+
+
+    const G4double SegmentSizeX = 1480.0 * CLHEP::mm;
+    const G4double SegmentSizeY = 880.0 * CLHEP::mm;
+   /*
+    const G4double BotInLHCbPosY  = 337.90 * CLHEP::mm;
+    const G4double BotInLHCbPosZ  = 1323.31 * CLHEP::mm;
+    const G4double VertTilt = 0.25656 * CLHEP:: rad; 
+    const G4double RotX = -1.0 * VertTilt;
+    const G4double RotY = (0.5 * CLHEP::pi * CLHEP::rad);
+   */
+
+    const G4double DeltaTheta = asin(SegmentSizeX/InnerRadius) * CLHEP::rad;
+    const G4double DeltaPhi = asin(SegmentSizeY/InnerRadius) * CLHEP::rad;
+    const G4double StartTheta = (0.5 * CLHEP::pi * CLHEP::rad)  - (0.5*  DeltaTheta);
+    const G4double StartPhi = -0.5 * DeltaPhi;
+
+    /*
+    const G4double InLHCbPosX = 0.0* CLHEP::mm;
+    const G4double InLHCbPosY = BotInLHCbPosY + 
+                                                 0.5 * SegmentSizeY * cos (VertTilt) +
+                                                 OuterRadius * sin ( VertTilt );
+     */
+
+
+    // /Users/blyth/Rich_Simplified/Rich_Simplified/src/RichTbLHCbR1FlatMirror.cc
+
+    G4Sphere* RichTbR1FlatFull = new G4Sphere ("RichTbR1FlatFullDEV",InnerRadius,OuterRadius,StartPhi,DeltaPhi, StartTheta,DeltaTheta);
+
+    return RichTbR1FlatFull ;
+}
+
+
 
 
 const G4VSolid* X4SolidMaker::SphereIntersectBox(const char* qname)  // static 

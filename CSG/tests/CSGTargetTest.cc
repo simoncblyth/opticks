@@ -30,34 +30,43 @@ CSGTargetTest
 #include "CSGFoundry.h"
 
 
-int main(int argc, char** argv)
+struct CSGTargetTest
 {
-    OPTICKS_LOG(argc, argv); 
+    Opticks*        ok ; 
+    const char* cfbase ; 
+    CSGFoundry*     fd ; 
+    float4          ce ; 
 
-    Opticks ok(argc, argv); 
-    ok.configure(); 
+    qat4 q0 ; 
+    qat4 q1 ; 
 
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
-    LOG(info) << "cfbase " << cfbase ; 
+    CSGTargetTest(int argc, char** argv); 
+    void dumpMOI(const char* MOI); 
+    void dumpALL(); 
+};
 
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+
+CSGTargetTest::CSGTargetTest(int argc, char** argv)
+    :
+    ok(Opticks::Configure(argc, argv)), 
+    cfbase(ok->getFoundryBase("CFBASE")),
+    fd(CSGFoundry::Load(cfbase, "CSGFoundry")),
+    ce(make_float4( 0.f, 0.f, 0.f, 1000.f ))
+{
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 
+    q0.zero(); 
+    q1.zero(); 
+}
 
-    const char* MOI = SSys::getenvvar("MOI", "sWorld:0:0"); 
+void CSGTargetTest::dumpMOI( const char* MOI )
+{
     std::vector<std::string> vmoi ; 
     SStr::Split(MOI, ',',  vmoi ); 
 
     LOG(info) << " MOI " << MOI << " vmoi.size " << vmoi.size() ; 
 
-    qat4 q0 ; 
-    q0.zero(); 
-
-    qat4 q1 ; 
-    q1.zero(); 
-
-    float4 ce = make_float4( 0.f, 0.f, 0.f, 1000.f ); 
 
     for(unsigned pass=0 ; pass < 3 ; pass++)
     for(unsigned i=0 ; i < vmoi.size() ; i++)
@@ -79,7 +88,7 @@ int main(int argc, char** argv)
                 << " midx " << std::setw(5) << midx 
                 << " mord " << std::setw(5) << mord 
                 << " iidx " << std::setw(6) << iidx
-                << " name " << std::setw(10) << name 
+                << " name " << std::setw(10) << ( name  ? name : "-" )
                 << std::endl 
                 ;
         } 
@@ -101,7 +110,58 @@ int main(int argc, char** argv)
         }
         assert( q_match ); 
     }
+}
 
+void CSGTargetTest::dumpALL()
+{
+    unsigned num_prim = fd->getNumPrim(); 
+    LOG(info) 
+         << " fd.getNumPrim " << num_prim 
+         << " fd.meshname.size " << fd->meshname.size() 
+         ; 
+
+    for(unsigned primIdx=0 ; primIdx < num_prim ; primIdx++)
+    {
+        const CSGPrim* pr = fd->getPrim(primIdx); 
+        unsigned meshIdx = pr->meshIdx();  
+        float4 lce = pr->ce();
+
+        std::cout 
+            << " primIdx " << std::setw(4) << primIdx 
+            << " lce ( "
+            << " " << std::setw(10) << std::fixed << std::setprecision(2) << lce.x
+            << " " << std::setw(10) << std::fixed << std::setprecision(2) << lce.y
+            << " " << std::setw(10) << std::fixed << std::setprecision(2) << lce.z
+            << " " << std::setw(10) << std::fixed << std::setprecision(2) << lce.w
+            << " )" 
+            << " lce.w/1000  "
+            << " " << std::setw(10) << std::fixed << std::setprecision(2) << lce.w/1000.f
+            << " meshIdx " << std::setw(4) << meshIdx 
+            << " " << fd->meshname[meshIdx]
+            << std::endl ; 
+    }
+}
+
+
+
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+
+    CSGTargetTest tt(argc, argv); 
+
+    const char* MOI = SSys::getenvvar("MOI", nullptr ); 
+
+    if(MOI) 
+    {
+        tt.dumpMOI(MOI); 
+    }
+    else
+    {
+        tt.dumpALL(); 
+    }
 
     return 0 ; 
 }

@@ -45,6 +45,10 @@ int main(int argc, char** argv)
     int midx, max_mord, iidx ; 
     fd->parseMOI(midx, max_mord, iidx,  moi );  
 
+    // TODO: provide discovery interface that returns max mordinal for a midx 
+    //       and also provides the midx range too  
+
+
     const char* name = midx > -1 ? fd->getName(midx) : nullptr ; 
 
     NP* ces = NP::Make<float>(max_mord, 4 ); 

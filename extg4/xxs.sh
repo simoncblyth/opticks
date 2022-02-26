@@ -190,6 +190,7 @@ case $gcn in
    XJanchorConstruction)    source XJanchorConstruction.sh ;;   
    GeneralSphereDEV)        source GeneralSphereDEV.sh ;;
    SphereIntersectBox)      source SphereIntersectBox.sh ;;
+   LHCbRichFlatMirr)        source LHCbRichFlatMirr.sh ;;
 esac   
    
 

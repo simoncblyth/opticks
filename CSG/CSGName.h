@@ -4,7 +4,7 @@
 CSGName.h
 ===========
 
-Identity machinery using the foundry list of meshnames (aka solid names) 
+Identity machinery using the foundry vector of meshnames (aka solid names) 
 
 **/
 
@@ -25,6 +25,7 @@ struct CSG_API CSGName
 
     CSGName( const CSGFoundry* foundry );  
 
+    std::string desc() const ; 
     unsigned getNumName() const;
     const char* getName(unsigned idx) const ;
     const char* getAbbr(unsigned idx) const ;

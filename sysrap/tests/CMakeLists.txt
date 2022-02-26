@@ -81,6 +81,7 @@ set(TEST_SOURCES
 
    stranTest.cc
 
+   SCenterExtentGenstepTest.cc
    SEventTest.cc
    SThetaCutTest.cc
    SPhiCutTest.cc

@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "SStr.hh"
 #include "PLOG.hh"
 
@@ -15,6 +17,17 @@ CSGName::CSGName( const CSGFoundry* foundry_ )
     name(foundry->meshname)
 {
 }
+
+std::string CSGName::desc() const 
+{
+    unsigned num_name = getNumName() ; 
+
+    std::stringstream ss ; 
+    ss << "CSGName::desc numName " << num_name << " name[0] " << getName(0) << " name[-1] " <<  getName(num_name-1 ) ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 unsigned CSGName::getNumName() const
 {

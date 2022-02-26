@@ -161,7 +161,8 @@ class OKCORE_API Opticks {
    private:
        bool envkey(); 
    public:
-       Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );
+       static Opticks* Configure(int argc=0, char** argv=nullptr, const char* argforced=nullptr);
+       Opticks(int argc=0, char** argv=nullptr, const char* argforced=nullptr );
    private:
        void init();
        void initResource();

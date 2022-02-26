@@ -168,7 +168,13 @@ struct CSG_API CSGPrim
         }
     }
 
+    /**
+    CSGPrim::count_prim_mesh
+    --------------------------
 
+    Count the number of prims with meshIdx equal to the queried mesh_idx_ 
+
+    **/
     static PRIM_METHOD unsigned count_prim_mesh(const std::vector<CSGPrim>& prims, unsigned mesh_idx_ )
     {
         unsigned count = 0u ; 

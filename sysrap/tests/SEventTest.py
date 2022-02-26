@@ -11,6 +11,7 @@ SEventTest.py
 """
 
 import os, numpy as np
+from opticks.ana.fold import Fold
 
 try:
     import pyvista as pv
@@ -18,29 +19,6 @@ except ImportError:
     pv = None
 pass
 
-
-class SEventTest(object):
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/sysrap/SEventTest")
-    def __init__(self, fold=FOLD):
-        names = os.listdir(fold)
-        stems = []
-        for name in filter(lambda n:n.endswith(".npy"), names):
-            stem = name[:-4]
-            path = os.path.join(fold, name)
-            a = np.load(path)
-            print(" %10s : %15s : %s " % (stem, str(a.shape), path ))
-            globals()[stem] = a 
-            setattr( self, stem, a )
-            stems.append(stem)
-        pass
-        self.stems = stems
-    def dump(self):
-        for stem in self.stems:
-            a = getattr(self, stem)
-            print(stem)
-            print(a)
-            #print(a.view(np.int32)) 
-        pass
 
 
 def test_transform():
@@ -56,11 +34,10 @@ def test_transform():
 
 
 if __name__ == '__main__':
-    t = SEventTest()
-    t.dump()
+    t = Fold.Load("/tmp/$USER/opticks/sysrap/SEventTest")
 
-    pos = ppa[:,0,:3]
-    dir = ppa[:,1,:3]
+    pos = t.ppa[:,0,:3]
+    dir = t.ppa[:,1,:3]
     #pv = None
 
     if not pv is None:

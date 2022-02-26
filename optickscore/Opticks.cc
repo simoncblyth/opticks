@@ -369,6 +369,13 @@ std::string Opticks::getArgLine() const
     return m_sargs->getArgLine(); 
 }
 
+Opticks* Opticks::Configure(int argc, char** argv, const char* argforced)  // static
+{
+    Opticks* ok = new Opticks(argc, argv, argforced); 
+    ok->configure(); 
+    return ok ; 
+}
+
 Opticks::Opticks(int argc, char** argv, const char* argforced )
     :
     m_log(new SLog("Opticks::Opticks","",debug)),

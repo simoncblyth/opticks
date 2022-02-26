@@ -1,4 +1,9 @@
 #!/bin/bash -l 
 
-${IPYTHON:-ipython} tests/SEventTest.py 
+SEventTest 
+
+${IPYTHON:-ipython} SEventTest.py 
+
+
+
 

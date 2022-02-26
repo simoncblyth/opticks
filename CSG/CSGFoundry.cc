@@ -1197,12 +1197,48 @@ const CSGPrim* CSGFoundry::getMeshPrim( unsigned midx, unsigned mord ) const
     return pr ; 
 }
 
+/**
+CSGFoundry::getNumMeshPrim
+-----------------------------
 
+Returns the number of prim with the *mesh_idx* in entire geometry. 
+Using CSGPrim::count_prim_mesh
 
+The MOI mesh-ordinal values must always be less than the number of mesh prim.  
+
+**/
 unsigned CSGFoundry::getNumMeshPrim(unsigned mesh_idx ) const 
 {
     return CSGPrim::count_prim_mesh(prim, mesh_idx); 
 }
+
+/**
+CSGFoundry::descMeshPrim
+--------------------------
+
+Presents table:
+
++----------+------------------+---------------+
+| midx     |   numMeshPrim    |   meshName    |
++----------+------------------+---------------+
+
+
+midx
+   mesh index corresponding to lvIdx
+
+numMeshPrim
+   number of prim in entire geometry with this midx
+
+meshName
+   name coming from the source geometry
+
+
+Notice that the meshName might not be unique, it is 
+merely obtained from the source geometry solid name. 
+In this case meshName addressing is not very useful
+and it is necessary to address using the midx.  
+
+**/
 
 std::string CSGFoundry::descMeshPrim() const 
 {
@@ -1869,8 +1905,6 @@ void CSGFoundry::kludgeScalePrimBBox( unsigned solidIdx, float dscale )
         pr->scaleAABB_(scale); 
     } 
 }
-
-
 
 
 

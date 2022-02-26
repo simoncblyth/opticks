@@ -19,12 +19,17 @@ and hence belongs at a lower level
 
 struct SYSRAP_API SCenterExtentGenstep
 {
+    static const char* BASE ; 
     static const plog::Severity LEVEL ; 
+    static void DumpBoundingBox(const float4& ce, const std::vector<int>& cegs, float gridscale ); 
 
     SCenterExtentGenstep(const float4* ce_=nullptr); 
     void init(); 
     const char* desc() const ; 
+    void dumpBoundingBox() const ; 
     void save(const char* dir) const ; 
+    void save() const ; 
+
     void save_vec(const char* dir, const char* name, const std::vector<quad4>& vv ) const ; 
 
     template<typename T> void set_meta(const char* key, T value ) ; 

@@ -75,9 +75,7 @@ void test_parseArg( const CSGName* id, const char* arg )
        << " : "
        << name
        ;
-
 }
-
 
 void test_parseArg( const CSGName* id, int argc, char** argv )
 {
@@ -112,7 +110,19 @@ void test_parseMOI( const CSGName* id, int argc, char** argv )
     for(int i=1 ; i < argc             ; i++) test_parseMOI(id, argv[i]);  
 }
 
+void test_parseMOI_fd( const CSGFoundry* fd )
+{
+    const char* moi = SSys::getenvvar("MOI", "sWorld:0:0"); 
+    int midx, mord, iidx ; 
+    fd->parseMOI(midx, mord, iidx,  moi );  
 
+    LOG(info) 
+        << " MOI " << moi 
+        << " midx " << midx 
+        << " mord " << mord 
+        << " iidx " << iidx
+        ;   
+}
 
 
 int main(int argc, char** argv)
@@ -129,30 +139,20 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
     fd->summary(); 
 
-    const char* moi = SSys::getenvvar("MOI", "sWorld:0:0"); 
-    int midx, mord, iidx ; 
-    fd->parseMOI(midx, mord, iidx,  moi );  
-
-    LOG(info) 
-        << " MOI " << moi 
-        << " midx " << midx 
-        << " mord " << mord 
-        << " iidx " << iidx
-        ;   
-
+    const CSGName* id = fd->id ; 
+    LOG(info) << id->desc(); 
 
     LOG(info) << "[ descMeshPrim " ;  
     LOG(info) << fd->descMeshPrim() ; 
     LOG(info) << "] descMeshPrim " ;  
 
-    const CSGName* id = fd->id ; 
     //test_getNumName(id); 
     //test_getName(id); 
     //test_findIndex(id); 
-    test_getAbbr(id); 
+    //test_getAbbr(id); 
     //test_parseArg(id, argc, argv); 
-    test_parseMOI(id, argc, argv); 
-
+    //test_parseMOI(id, argc, argv); 
+    //test_parseMOI_fd(fd); 
 
     return 0 ; 
 }

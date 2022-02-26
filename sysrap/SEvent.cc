@@ -219,7 +219,6 @@ frame as are doing the local_translate first.
 
 **/
 
-
 NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) // static
 {
     std::vector<quad6> gensteps ;
@@ -447,7 +446,7 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
         const quad6& gs = gsv[i]; 
         qat4 qt(gs) ;  // copy 4x4 transform from last 4 quads of genstep 
 
-        C4U gsid ;   // genstep integer grid coordinate IXIYIZ and IW photon index up to 255
+        C4U gsid ;   // genstep integer grid coordinate IXYZ and IW photon index up to 255
 
         int gencode           = gs.q0.i.x ; 
         int gridaxes          = gs.q0.i.y ; 
@@ -504,11 +503,11 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
                 SetGridPlaneDirection( p.q1.f, gridaxes, cosPhi, sinPhi, cosTheta, sinTheta );  
             }
 
-            // tranforming photon position and direction into the desired frame
+            // tranform photon position and direction into the desired frame
             qt.right_multiply_inplace( p.q0.f, 1.f );  // position 
             qt.right_multiply_inplace( p.q1.f, 0.f );  // direction
 
-            unsigned char ucj = (j < 255 ? j : 255 ) ;
+            unsigned char ucj = (j < 255 ? j : 255 ) ;  // photon index local to the genstep
             gsid.c4.w = ucj ;     // setting C4U union element to change gsid.u 
             p.q3.u.w = gsid.u ;   // include photon index IW with the genstep coordinate into photon (3,3)
         

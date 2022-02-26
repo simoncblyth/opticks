@@ -10,15 +10,22 @@
 
 #include "PLOG.hh"
 
+const char* SCenterExtentGenstep::BASE = "$TMP/SCenterExtentGenstep"  ; 
+
+void SCenterExtentGenstep::save() const
+{
+    save(BASE); 
+}
 void SCenterExtentGenstep::save(const char* dir) const
 {
-    gs->save(dir, "gs.npy" ); 
-    save_vec(dir, "isect.npy", ii ); 
-    save_vec(dir, "photons.npy", pp ); 
-
-    int create_dirs = 1 ; // 1:filepath
-    const char* peta_path = SPath::Resolve(dir, "peta.npy", create_dirs) ;
-    NP::Write(peta_path, (float*)(&peta->q0.f.x), 1, 4, 4 );
+    int create_dirs = 2 ; // 2:dirpath
+    const char* fold = SPath::Resolve(dir, create_dirs);  
+    
+    LOG(info) << " saving to " << fold ; 
+    gs->save(fold, "gs.npy" ); 
+    save_vec(fold, "isect.npy", ii ); 
+    save_vec(fold, "photons.npy", pp ); 
+    NP::Write(fold, "peta.npy", (float*)(&peta->q0.f.x), 1, 4, 4 );
 }
 
 void SCenterExtentGenstep::save_vec(const char* dir, const char* name, const std::vector<quad4>& vv ) const 
@@ -42,6 +49,31 @@ template<typename T> void SCenterExtentGenstep::set_meta(const char* key, T valu
     gs->set_meta<T>(key, value) ; 
 }
 
+
+void SCenterExtentGenstep::DumpBoundingBox(const float4& ce, const std::vector<int>& cegs, float gridscale )
+{ 
+    float3 mn ; 
+    float3 mx ; 
+    std::cout << " SEvent::GetBoundingBox without and with ce_offset " << std::endl ; 
+    for( int i=0 ; i < 2 ; i++)
+    {
+        bool ce_offset_bb = i == 1 ; 
+        SEvent::GetBoundingBox(mn, mx, ce, cegs, gridscale, ce_offset_bb ); 
+        std::cout 
+            << " ce_offset_bb " << ce_offset_bb
+            << " mn " << mn 
+            << " mx " << mx
+            << std::endl
+            ;  
+    }
+}
+
+void SCenterExtentGenstep::dumpBoundingBox() const 
+{
+    DumpBoundingBox(ce, cegs, gridscale); 
+}
+
+
 SCenterExtentGenstep::SCenterExtentGenstep(const float4* ce_)
     :
     gs(nullptr),
@@ -53,7 +85,13 @@ SCenterExtentGenstep::SCenterExtentGenstep(const float4* ce_)
 } 
 
 /**
-HMM: looks like just using a fixed CE independent of the geometry being probed 
+SCenterExtentGenstep::init
+-----------------------------
+
+Interprets the CEGS envvar defining a 2D plane or 3D grid
+of integer genstep positions. The integral coordinates get scaled 
+by GRIDSCALE to give the float positions.  
+
 **/
 
 void SCenterExtentGenstep::init()
@@ -100,10 +138,12 @@ void SCenterExtentGenstep::init()
     peta->q1.i.z = photons_per_genstep ;
     peta->q1.f.w = gridscale ;
 
+
+    //const Tran<double>* geotran = Tran<double>::make_identity();
+    const Tran<double>* geotran = Tran<double>::make_translate(ce.x, ce.y, ce.z);
+
+    /*
     SSys::getenvintvec("CXS_OVERRIDE_CE",  override_ce, ':', "0:0:0:0" );
-
-    const Tran<double>* geotran = Tran<double>::make_identity();
-
     if( override_ce.size() == 4 && override_ce[3] > 0 )
     {
         ce.x = float(override_ce[0]);
@@ -112,6 +152,9 @@ void SCenterExtentGenstep::init()
         ce.w = float(override_ce[3]);
         LOG(info) << "override ce with CXS_OVERRIDE_CE (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;
     }
+
+   */
+
     LOG(info) << "ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ")" ;
 
     peta->q2.f.x = ce.x ;   // moved from q1
@@ -133,10 +176,6 @@ void SCenterExtentGenstep::init()
 
     LOG(info) << "]" ;
 }
-
-
-
-
 
 const char* SCenterExtentGenstep::desc() const 
 {
@@ -170,6 +209,5 @@ template void     SCenterExtentGenstep::set_meta<unsigned>(const char*, unsigned
 template void     SCenterExtentGenstep::set_meta<float>(const char*, float ); 
 template void     SCenterExtentGenstep::set_meta<double>(const char*, double ); 
 template void     SCenterExtentGenstep::set_meta<std::string>(const char*, std::string ); 
-
 
 

@@ -67,6 +67,10 @@ class Plt(object):
 
 
     def pv_simple3d(self, pos):
+        if pos is None:
+             log.info("pv_simple3d pos None")
+             return 
+        pass
         size = self.size
 
         pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
@@ -134,7 +138,7 @@ if __name__ == '__main__':
 
 
 if 1:
-    ipos = fold0.isect[:,0,:3]
+    ipos = fold0.isect[:,0,:3] if hasattr(fold0, 'isect') else None
     gpos = fold0.gs[:,5,:3]    # last line of the transform is translation
 
     lim = {}
@@ -158,7 +162,6 @@ if 1:
     plt = Plt(folds, others)
 
     if pv and not is_planar:
-        ipos = fold0.isect[:,0,:3]
         plt.pv_simple3d(ipos)
 
     elif mp and is_planar: 
@@ -173,9 +176,14 @@ if 1:
 
         for fold in folds:
             geom = fold.base.split("/")[-2]
-            ipos = fold.isect[:,0,:3]
+            ipos = fold.isect[:,0,:3] if hasattr(fold, 'isect') else None
             gpos = fold.gs[:,5,:3]    # last line of the transform is translation
-            ax.scatter( ipos[:,H], ipos[:,V], s=sz, color=fold.color, label=geom ) 
+
+            if not ipos is None:
+                ax.scatter( ipos[:,H], ipos[:,V], s=sz, color=fold.color, label=geom ) 
+            else:
+                log.info("ipos None")
+            pass
             ax.scatter( gpos[:,H], gpos[:,V], s=sz, color=gcol ) 
         pass
 

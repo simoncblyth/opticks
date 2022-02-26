@@ -119,7 +119,7 @@ struct NP
 
     template<typename T> void fill(T value); 
     template<typename T> void _fillIndexFlat(T offset=0); 
-    template<typename T> void _dump(int i0=-1, int i1=-1) const ;   
+    template<typename T> void _dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ;   
 
 
     static NP* MakeLike(  const NP* src);  
@@ -167,7 +167,7 @@ struct NP
     template<typename T> std::string _present(T v) const ; 
 
     void fillIndexFlat(); 
-    void dump(int i0=-1, int i1=-1) const ; 
+    void dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ; 
 
     void clear();   
 
@@ -2084,34 +2084,34 @@ inline void NP::fillIndexFlat()
 }
 
 
-inline void NP::dump(int i0, int i1) const 
+inline void NP::dump(int i0, int i1, int j0, int j1) const 
 {
     if(uifc == 'f')
     {   
         switch(ebyte)
         {   
-            case 4: _dump<float>(i0,i1)  ; break ; 
-            case 8: _dump<double>(i0,i1) ; break ; 
+            case 4: _dump<float>(i0,i1,j0,j1)  ; break ; 
+            case 8: _dump<double>(i0,i1,j0,j1) ; break ; 
         }   
     }   
     else if(uifc == 'u')
     {   
         switch(ebyte)
         {   
-            case 1: _dump<unsigned char>(i0,i1)  ; break ; 
-            case 2: _dump<unsigned short>(i0,i1)  ; break ; 
-            case 4: _dump<unsigned int>(i0,i1) ; break ; 
-            case 8: _dump<unsigned long>(i0,i1) ; break ; 
+            case 1: _dump<unsigned char>(i0,i1,j0,j1)  ; break ; 
+            case 2: _dump<unsigned short>(i0,i1,j0,j1)  ; break ; 
+            case 4: _dump<unsigned int>(i0,i1,j0,j1) ; break ; 
+            case 8: _dump<unsigned long>(i0,i1,j0,j1) ; break ; 
         }   
     }   
     else if(uifc == 'i')
     {   
         switch(ebyte)
         {   
-            case 1: _dump<char>(i0,i1)  ; break ; 
-            case 2: _dump<short>(i0,i1)  ; break ; 
-            case 4: _dump<int>(i0,i1) ; break ; 
-            case 8: _dump<long>(i0,i1) ; break ; 
+            case 1: _dump<char>(i0,i1,j0,j1)  ; break ; 
+            case 2: _dump<short>(i0,i1,j0,j1)  ; break ; 
+            case 4: _dump<int>(i0,i1,j0,j1) ; break ; 
+            case 8: _dump<long>(i0,i1,j0,j1) ; break ; 
         }   
     }   
 }
@@ -2808,7 +2808,7 @@ NP::_dump
 
 
 **/
-template <typename T> inline void NP::_dump(int i0_, int i1_) const 
+template <typename T> inline void NP::_dump(int i0_, int i1_, int j0_, int j1_ ) const 
 {
     int ni = NPS::ni_(shape) ;  // ni_ nj_ nk_ returns shape dimension size or 1 if no such dimension
     int nj = NPS::nj_(shape) ;
@@ -2817,6 +2817,10 @@ template <typename T> inline void NP::_dump(int i0_, int i1_) const
     int i0 = i0_ == -1 ? 0                : i0_ ;  
     int i1 = i1_ == -1 ? std::min(ni, 10) : i1_ ;  
 
+    int j0 = j0_ == -1 ? 0                : j0_ ;  
+    int j1 = j1_ == -1 ? std::min(nj, 10) : j1_ ;  
+
+
     std::cout 
        << desc() 
        << std::endl 
@@ -2824,22 +2828,26 @@ template <typename T> inline void NP::_dump(int i0_, int i1_) const
        << " ni " << ni 
        << " nj " << nj 
        << " nk " << nk
-       << " item range i0:i1 "
+       << " item range  "
        << " i0 " << i0 
        << " i1 " << i1 
+       << " j0 " << j0 
+       << " j1 " << j1 
        << std::endl 
        ;  
 
     const T* vv = cvalues<T>(); 
 
     for(int i=i0 ; i < i1 ; i++){
-        std::cout << "[" << i  << "] " ;
-        for(int j=0 ; j < nj ; j++){
+        std::cout << "[" << std::setw(4) << i  << "] " ;
+        for(int j=j0 ; j < j1 ; j++){
             for(int k=0 ; k < nk ; k++)
             {
                 int index = i*nj*nk + j*nk + k ; 
                 T v = *(vv + index) ; 
+                if(k%4 == 0 ) std::cout << " : " ;  
                 std::cout << _present<T>(v)  ;      
+
             }
             //std::cout << std::endl ; 
         }
