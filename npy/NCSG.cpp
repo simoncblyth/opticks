@@ -1430,7 +1430,22 @@ void NCSG::export_node(nnode* node, unsigned idx)
            ; 
     }
 
-    pt.check_bb_is_zero(node->type); 
+
+    bool expect_external_bbox = CSG::ExpectExternalBBox( node->type ); 
+    if( expect_external_bbox )
+    {
+        assert( node->external_bbox ); 
+    }
+
+    if( node->external_bbox )
+    {
+        assert( pt.has_bb_zero() == false ); 
+    }
+    else
+    {
+        assert( pt.has_bb_zero() == true ); 
+    }
+
 
     NPY<float>* _nodes = m_csgdata->getNodeBuffer(); 
 

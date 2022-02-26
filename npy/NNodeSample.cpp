@@ -80,7 +80,7 @@ nnode* NNodeSample::SphereBoxUnion()
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius);
+    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius );
     nbox*    bx = nbox::Create(0.f,0.f,0.f, inscribe, CSG_BOX);
     nunion*  u_sp_bx = nunion::make_union( sp, bx );
 
@@ -91,7 +91,7 @@ nnode* NNodeSample::SphereBoxIntersection()
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius);
+    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius );
     nbox*    bx = nbox::Create(0.f,0.f,0.f, inscribe, CSG_BOX );
     nintersection*  i_sp_bx = nintersection::make_intersection( sp, bx );
 
@@ -102,7 +102,7 @@ nnode* NNodeSample::SphereBoxDifference()
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius);
+    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius );
     nbox*    bx = nbox::Create(0.f,0.f,0.f, inscribe, CSG_BOX );
     ndifference*    d_sp_bx = ndifference::make_difference( sp, bx );
 
@@ -113,7 +113,7 @@ nnode* NNodeSample::BoxSphereDifference()
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius);
+    nsphere* sp = nsphere::Create(0.f,0.f,0.f,radius );
     nbox*    bx = nbox::Create(0.f,0.f,0.f, inscribe, CSG_BOX );
     ndifference*    d_bx_sp = ndifference::make_difference( bx, sp );
 

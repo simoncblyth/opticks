@@ -564,7 +564,32 @@ yellow
 }
 
 
+void test_ExtractLong()
+{
 
+     const char* lines = R"LITERAL(     
+ 
+red1
+green2
+blue2 cyan magenta
+yellow3
+
+
+)LITERAL" ;
+
+
+    std::stringstream ss(lines) ;    
+    std::string line ; 
+    while (std::getline(ss, line))  
+    {   
+        if(line.empty()) continue ;   
+
+        const char* s = line.c_str(); 
+        long l = SStr::ExtractLong(s, 0); 
+
+        LOG(info) << std::setw(40) << s << " l: " << l  ; 
+    }
+}
 
 
 int main(int argc , char** argv )
@@ -599,8 +624,9 @@ int main(int argc , char** argv )
     test_Save_PWD(); 
     test_Extract(); 
     test_Extract_float(); 
-    */
     test_Trim(); 
+    */
+    test_ExtractLong(); 
 
     return 0  ; 
 }

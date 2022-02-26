@@ -134,7 +134,6 @@ void test_OffsetType()
                 CSG_SLAB,
                 CSG_PLANE,
                 CSG_CONE,
-                CSG_MULTICONE,
                 CSG_BOX3,
                 CSG_TRAPEZOID,
                 CSG_CONVEXPOLYHEDRON,

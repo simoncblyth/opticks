@@ -757,6 +757,12 @@ const char* SStr::ReplaceChars(const char* str, const char* repl, char to )
     return s ; 
 }
 
+long SStr::ExtractLong( const char* s, long fallback )
+{
+    std::vector<long> vals;
+    Extract(vals, s); 
+    return vals.size() == 1 ? vals[0] : fallback ; 
+}
 
 void SStr::Extract( std::vector<long>& vals, const char* s )
 {

@@ -202,28 +202,10 @@ void npart::zero()
     qx.u = {0,0,0,0} ;
 }
 
-void npart::check_bb_is_zero(OpticksCSG_t typecode) const 
+
+bool npart::has_bb_zero() const 
 {
-   if( typecode == CSG_CONVEXPOLYHEDRON || typecode == CSG_CONTIGUOUS || typecode == CSG_DISCONTIGUOUS ) return ;  // bbox is actually used 
-
-   if( typecode == CSG_ZSPHERE )
-   {
-       if(q2.u.x != 3)
-           LOG(fatal) << "check_bb_zero endcap flags expected 3 (ignored anyhow) " << q2.u.x ;
-       //assert( q2.u.x == 3 );   // <-- no nolonger used endcap flags, but keeping it for matching 
-        //TODO: check this is now zero 
-   }
-   else
-   {
-       assert( q2.u.x == 0 ); 
-
-   } 
-   assert( q2.u.y == 0 ); 
-   assert( q2.u.z == 0 ); 
-
-   assert( q3.u.x == 0 ); 
-   assert( q3.u.y == 0 ); 
-   assert( q3.u.z == 0 ); 
+    return q2.f.x == 0.f && q2.f.y == 0.f &&  q2.f.z == 0.f && q3.f.x == 0.f && q3.f.y == 0.f &&  q3.f.z == 0.f ; 
 }
 
 

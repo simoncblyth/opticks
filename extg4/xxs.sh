@@ -207,6 +207,11 @@ esac
 echo $msg dx $dx dy $dy dz $dz cegs $cegs 
 
 
+
+
+export X4SolidMaker=INFO
+
+
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CEGS=${CEGS:-$cegs}
 export CXS_RELDIR=${CXS_RELDIR:-$reldir} 

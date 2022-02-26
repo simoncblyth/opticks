@@ -47,16 +47,15 @@ float nsphere::radius() const { return param.f.w ; }
 glm::vec3 nsphere::center() const { return glm::vec3(x(),y(),z())  ; }
 
 
-
-nsphere* nsphere::Create(const nquad& param)  // static 
+nsphere* nsphere::Create(const nquad& param )  // static 
 {
     nsphere* n = new nsphere ; 
-    nnode::Init(n,CSG_SPHERE) ; 
+    nnode::Init(n, CSG_SPHERE) ; 
     n->param = param  ; 
     return n ; 
 }
 
-nsphere* nsphere::Create(float x, float y, float z, float w)
+nsphere* nsphere::Create(float x, float y, float z, float w )
 {
     nquad param ; 
     param.f = {x,y,z,w} ;

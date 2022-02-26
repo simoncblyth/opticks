@@ -679,7 +679,7 @@ updating : nearest_exit, farthest_enter.
 
 
 
-The below arrangement of constituents are not permissable as there is no common overlap
+The below arrangements of constituents are not permissable as there is no common overlap
 giving such a shape to a CSG_OVERLAP may abort and will give incorrect or no intersects.      
 
 
@@ -825,7 +825,6 @@ bool intersect_node_overlap( float4& isect, const CSGNode* node, const CSGNode* 
     return valid_isect ; 
 }
  
-
 
 
 

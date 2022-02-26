@@ -399,6 +399,7 @@ struct NPY_API nnode
     unsigned           gtransform_idx ; 
     unsigned           itransform_idx ; 
     bool               complement ; 
+    bool               external_bbox ; 
     int                verbosity ; 
 
     nquad param ;     // aka q0

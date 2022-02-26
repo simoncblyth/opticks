@@ -17,6 +17,7 @@
 #include "G4MultiUnion.hh"
 
 using CLHEP::pi ;
+using CLHEP::mm ;
 
 #include "SSys.hh"
 #include "X4SolidMaker.hh"
@@ -1580,9 +1581,77 @@ const G4double SphMirrSubLeftPosZ = -1.0* SphMirrSubRightPosZ;
    return RSph  ; 
 }
 
+/**
+X4SolidMaker::LHCbRichFlatMirr
+---------------------------------
+
+
+
+
+                  Z
+                  |
+                  |
+                  |                                                                                |
+                  +-----> X - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+ 
+                 /                                                                                /
+                /
+               Y
+
+
+      Rectangle is formed close to X axis, deltaPhi (in XY plane) is symmetric around phi=0. 
+
+              
+
+
+                               Z
+                               |
+
+              |+--------------|+
+               |               |
+               |               |
+               |               |
+               |               |          
+               |               |  1480/2
+               |               |
+               |               |          
+               |               |
+               + - - - + - - - +       
+               |               |
+               |               |
+               |               |
+               |               |  1480/2
+               |               |   
+               |               |
+               |               |
+               |               |
+              |+--------------|+
+
+            5,000,000     5,000,006           
+
+                   ------->  X
+
+
+   sagitta 
+
+         l^2        ( 1480/2 )^2
+         ---   =     -------------   = 0.01369
+         8r            8*5,000,000 
+
+
+   intersect box 
+       center    :  ( 5000003, 0 , 0 )
+       halfsides :  (       4, 880/2,   1480/2 )       
+     
+
+                    4 in X is more than enough to contain the sagitta
+
+**/
 
 const G4VSolid* X4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static 
 {
+    long mode = SStr::ExtractLong(qname, 0); 
+    LOG(LEVEL) << " qname " << qname << " mode " << mode ; 
+
 
     // /Users/blyth/Rich_Simplified/Rich_Simplified/include/RichTbR1FlatMirrorGeometryParameters.hh
 
@@ -1592,9 +1661,11 @@ const G4VSolid* X4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static
     const G4double InnerRadius = 5000.0 *  CLHEP::m;
     const G4double Thickness   = 6.0 * CLHEP::mm;
     const G4double OuterRadius =  InnerRadius + Thickness ;
+    const G4double MiddleRadius = (InnerRadius + OuterRadius)/2. ; 
 
 
-    const G4double SegmentSizeX = 1480.0 * CLHEP::mm;
+    const G4double SegmentSizeX = 1480.0 * CLHEP::mm;  // <-- should be Z (not X)
+    const G4double SegmentSizeZ = SegmentSizeX  ; 
     const G4double SegmentSizeY = 880.0 * CLHEP::mm;
 
    /**
@@ -1614,10 +1685,32 @@ const G4VSolid* X4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static
     const G4double RotY = (0.5 * CLHEP::pi * CLHEP::rad);
    */
 
-    const G4double DeltaTheta = asin(SegmentSizeX/InnerRadius) * CLHEP::rad;
-    const G4double DeltaPhi = asin(SegmentSizeY/InnerRadius) * CLHEP::rad;
+    const G4double DeltaTheta = asin(SegmentSizeX/InnerRadius) * CLHEP::rad;  // NO NEED FOR THE asin AS EXTREMELY SMALL ANGLES 
+    const G4double DeltaPhi   = asin(SegmentSizeY/InnerRadius) * CLHEP::rad;
     const G4double StartTheta = (0.5 * CLHEP::pi * CLHEP::rad)  - (0.5*  DeltaTheta);
-    const G4double StartPhi = -0.5 * DeltaPhi;
+    const G4double StartPhi   = -0.5 * DeltaPhi;
+
+    LOG(LEVEL)
+        << " DeltaTheta " << DeltaTheta
+        << " SegmentSizeX " << SegmentSizeX
+        << " InnerRadius " << InnerRadius  
+        << " SegmentSizeX/InnerRadius " << SegmentSizeX/InnerRadius
+        << " asin(SegmentSizeX/InnerRadius) " << asin(SegmentSizeX/InnerRadius)
+        << " CLHEP::rad " << CLHEP::rad
+        << " StartTheta " << StartTheta
+        ;
+
+
+    LOG(LEVEL)
+        << " DeltaPhi " << DeltaPhi
+        << " SegmentSizeY " << SegmentSizeY
+        << " InnerRadius " << InnerRadius
+        << " SegmentSizeY/InnerRadius " << SegmentSizeY/InnerRadius
+        << " asin(SegmentSizeY/InnerRadius) " << asin(SegmentSizeY/InnerRadius) 
+        << " CLHEP::rad " << CLHEP::rad
+        << " StartPhi " << StartPhi 
+        ;
+
 
     /*
     const G4double InLHCbPosX = 0.0* CLHEP::mm;
@@ -1631,7 +1724,24 @@ const G4VSolid* X4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static
 
     G4Sphere* RichTbR1FlatFull = new G4Sphere ("RichTbR1FlatFullDEV",InnerRadius,OuterRadius,StartPhi,DeltaPhi, StartTheta,DeltaTheta);
 
-    return RichTbR1FlatFull ;
+
+
+    G4VSolid* solid = nullptr ; 
+    if( mode == 0 )
+    {
+        solid = RichTbR1FlatFull ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " constructing the flat mirror using intersection box rather than attemping to describe with miniscule thetacut and phicut angles"  ;  
+        G4Orb* outer = new G4Orb("outer",OuterRadius); 
+        G4Orb* inner = new G4Orb("inner",InnerRadius); 
+        G4SubtractionSolid* shell = new G4SubtractionSolid("shell", outer, inner ); 
+        G4Box* box = new G4Box("box", Thickness/2. + 1.*mm, SegmentSizeY/2. , SegmentSizeZ/2. );  
+        solid = new G4IntersectionSolid( qname, shell, box, 0, G4ThreeVector( MiddleRadius, 0., 0. ));    
+    }
+
+    return solid ;
 }
 
 

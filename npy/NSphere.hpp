@@ -33,8 +33,8 @@ struct nuv ;
 
 struct NPY_API nsphere : nnode 
 {
-    static nsphere* Create(const nquad& param); 
-    static nsphere* Create(float x, float y, float z, float w); 
+    static nsphere* Create(const nquad& param ); 
+    static nsphere* Create(float x, float y, float z, float w ); 
     static nsphere* Create(float radius); 
 
 

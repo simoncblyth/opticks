@@ -103,6 +103,8 @@ HMM: notice that the 6 numbers arr not contiguous, unlike with CSG/CSGNode
 
 void nnode::set_bbox(const nbbox& bb)
 {
+    external_bbox = true ; 
+
     param2.f.x = bb.min.x ;
     param2.f.y = bb.min.y ;
     param2.f.z = bb.min.z ;
@@ -114,6 +116,8 @@ void nnode::set_bbox(const nbbox& bb)
 
 void nnode::set_bbox(float min_x, float min_y, float min_z, float max_x, float max_y, float max_z )
 {
+    external_bbox = true ; 
+
     param2.f.x = min_x ;
     param2.f.y = min_y ;
     param2.f.z = min_z ;
@@ -413,10 +417,10 @@ nnode* nnode::primclone() const
     nnode* c = nullptr ; 
     switch( type )
     {
-        case CSG_SPHERE:   c = nsphere::Create(param)           ; break ; 
-        case CSG_BOX3:     c = nbox::Create(param, CSG_BOX3)    ; break ; 
-        case CSG_BOX:      c = nbox::Create(param, CSG_BOX)     ; break ; 
-        case CSG_CYLINDER: c = ncylinder::Create(param, param1) ; break ; 
+        case CSG_SPHERE:   c = nsphere::Create(param)              ; break ; 
+        case CSG_BOX3:     c = nbox::Create(param, CSG_BOX3)       ; break ; 
+        case CSG_BOX:      c = nbox::Create(param, CSG_BOX)        ; break ; 
+        case CSG_CYLINDER: c = ncylinder::Create(param, param1)    ; break ; 
         default: c = nullptr ; 
     }
 
@@ -469,6 +473,7 @@ void nnode::Init( nnode* n , OpticksCSG_t type, nnode* left, nnode* right )
     n->itransform_idx = 0 ; 
 
     n->complement = false ; 
+    n->external_bbox = false ; 
     n->verbosity = 0 ; 
 
     n->param.u  = {0u,0u,0u,0u};

@@ -548,22 +548,25 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
 
     n->setIndex(partIdx); 
 
-    if( tc == CSG_CONVEXPOLYHEDRON )
+    nbbox bb = comp->getBBox(partIdx); 
+    bool expect_external_bbox = CSG::ExpectExternalBBox( (OpticksCSG_t) tc ); 
+
+    if( bb.is_empty()  )
     {
-        nbbox bb = comp->getBBox(partIdx); 
-        LOG(info) << "special cased handling of CSG_CONVEXPOLYHEDRON bbox bb.desc " << bb.desc() ; 
-        n->setAABB( bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z ); 
-    }
-    else if( tc == CSG_CONTIGUOUS || tc == CSG_DISCONTIGUOUS )
-    {
-        nbbox bb = comp->getBBox(partIdx); 
-        LOG(info) << "special cased handling of CSG_CONTIGUOUS CSG_DISCONTIGUOUS bbox bb.desc " << bb.desc() ; 
-        n->setAABB( bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z ); 
-        // need to add the subs immediately after the compound "header" node 
+        if(expect_external_bbox==true)
+        {
+            LOG(fatal) << " node of type " << CSG::Name(tc) << " are expected to have external bbox, but there is none " ; 
+            assert(0); 
+        }
+        n->setAABBLocal(); // use params of each type to set the bbox 
     }
     else
     {
-        n->setAABBLocal(); // use params of each type to set the bbox 
+        if(expect_external_bbox==false)
+        {
+            LOG(error) << " not expecting bbox for node of type " << CSG::Name(tc) << " (maybe boolean tree for general sphere)" ; 
+        }
+        n->setAABB( bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z ); 
     }
 
     n->setTransform(tranIdx); 

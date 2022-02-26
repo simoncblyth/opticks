@@ -72,7 +72,6 @@ Machinery primitives or not currently used:
  CSG_PMT                  pmt
  CSG_ZLENS                zlens
  CSG_TUBS                 tubs
- CSG_MULTICONE            multicone
 =======================  =================  
 
 

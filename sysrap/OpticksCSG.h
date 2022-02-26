@@ -44,7 +44,6 @@ typedef enum {
         CSG_SLAB=106,
         CSG_PLANE=107,
         CSG_CONE=108,
-        CSG_MULTICONE=109,
         CSG_BOX3=110,
         CSG_TRAPEZOID=111,
         CSG_CONVEXPOLYHEDRON=112,
@@ -127,7 +126,6 @@ static const char* CSG_CYLINDER_      = "cylinder" ;
 static const char* CSG_SLAB_          = "slab" ; 
 static const char* CSG_PLANE_         = "plane" ; 
 static const char* CSG_CONE_          = "cone" ; 
-static const char* CSG_MULTICONE_     = "multicone" ; 
 static const char* CSG_BOX3_          = "box3" ; 
 static const char* CSG_TRAPEZOID_     = "trapezoid" ; 
 static const char* CSG_CONVEXPOLYHEDRON_ = "convexpolyhedron" ; 
@@ -188,7 +186,6 @@ struct CSG
         else if(strcmp(nodename, CSG_SLAB_) == 0)           tc = CSG_SLAB ;
         else if(strcmp(nodename, CSG_PLANE_) == 0)          tc = CSG_PLANE ;
         else if(strcmp(nodename, CSG_CONE_) == 0)           tc = CSG_CONE ;
-        else if(strcmp(nodename, CSG_MULTICONE_) == 0)      tc = CSG_MULTICONE ;
         else if(strcmp(nodename, CSG_TRAPEZOID_) == 0)      tc = CSG_TRAPEZOID ;
         else if(strcmp(nodename, CSG_ELLIPSOID_) == 0)      tc = CSG_ELLIPSOID ;
         else if(strcmp(nodename, CSG_TORUS_) == 0)          tc = CSG_TORUS ;
@@ -254,7 +251,6 @@ struct CSG
             case CSG_SLAB:          s = CSG_SLAB_          ; break ; 
             case CSG_PLANE:         s = CSG_PLANE_         ; break ; 
             case CSG_CONE:          s = CSG_CONE_          ; break ; 
-            case CSG_MULTICONE:     s = CSG_MULTICONE_     ; break ; 
             case CSG_BOX3:          s = CSG_BOX3_          ; break ; 
             case CSG_TRAPEZOID:     s = CSG_TRAPEZOID_     ; break ; 
             case CSG_CONVEXPOLYHEDRON: s = CSG_CONVEXPOLYHEDRON_ ; break ; 
@@ -325,6 +321,11 @@ struct CSG
     static bool IsLeaf(OpticksCSG_t type)
     {
         return !IsCompound(type) ;  
+    }
+
+    static bool ExpectExternalBBox(OpticksCSG_t type)
+    {
+        return  type == CSG_CONVEXPOLYHEDRON || type == CSG_CONTIGUOUS || type == CSG_DISCONTIGUOUS || type == CSG_OVERLAP ; 
     }
 
     static bool IsUnbounded(OpticksCSG_t type)
