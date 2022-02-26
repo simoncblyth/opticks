@@ -1,8 +1,8 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
 
-cxr.sh : basis for higher level render scripts
-================================================
+cxr.sh : basis for higher level render scripts using CSGOptiXRenderTest
+=========================================================================
 
 This is typically invoked via higher level scripts, see::
 

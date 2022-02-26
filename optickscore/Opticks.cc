@@ -3372,8 +3372,8 @@ void Opticks::postconfigureSize()
     else
     {
 #ifdef __APPLE__
-        //m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
-        m_size = glm::uvec4(1920,1080,1,0) ;
+        m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
+        //m_size = glm::uvec4(1920,1080,2,0) ;
 #else
         m_size = glm::uvec4(1920,1080,1,0) ;
 #endif
@@ -3425,6 +3425,8 @@ void Opticks::postconfigurePosition()
 
 void Opticks::postconfigureComposition()
 {
+    LOG(LEVEL) << "[" ; 
+
     assert( isConfigured() );  
 
     glm::uvec4 size = getSize();
@@ -3440,6 +3442,8 @@ void Opticks::postconfigureComposition()
 
     unsigned cameratype = getCameraType(); 
     m_composition->setCameraType( cameratype );  
+
+    LOG(LEVEL) << "]" ; 
 }
 
 

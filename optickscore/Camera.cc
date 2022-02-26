@@ -178,7 +178,12 @@ Camera::Camera(int width, int height, float basis )
     LOG(LEVEL) << "m_type (CAMERATYPE) " << m_type ;  
     bool internal = true ; 
     setSize(width, height, internal);
+
+#ifdef __APPLE__
+    setPixelFactor(2); 
+#else
     setPixelFactor(1); 
+#endif
 
     aim(basis);
 
@@ -192,6 +197,7 @@ void Camera::aim(float basis)
    float a_scale = basis ; 
 
    LOG(LEVEL) 
+          << "["
           << " basis " << basis
           << " a_near " << a_near
           << " a_far " << a_far
@@ -214,6 +220,10 @@ void Camera::aim(float basis)
 
 
    setScale( a_scale );  // scale should be renamed to Ortho scale, as only relevant to Orthographic projection
+
+
+   LOG(LEVEL) << "]" ; 
+
 }
 
 void Camera::setBasis(float basis)
@@ -329,6 +339,7 @@ void Camera::setSize(int width, int height, bool internal )
 }
 void Camera::setPixelFactor(unsigned int factor)
 {
+    LOG(LEVEL) << " factor " << factor ; 
     m_pixel_factor = factor ; 
     m_changed = true ; 
 }

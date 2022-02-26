@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <csignal>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -59,7 +60,7 @@
 #include "Pix.hh"
 
 
-const plog::Severity Frame::LEVEL = debug ; 
+const plog::Severity Frame::LEVEL = PLOG::EnvLevel("Frame", "DEBUG") ; 
 
 
 
@@ -231,6 +232,13 @@ void Frame::setSize(unsigned int width, unsigned int height, unsigned int coord2
     m_width = width ;
     m_height = height ;
     m_coord2pixel = coord2pixel ;
+
+#ifdef __APPLE__
+    if( m_coord2pixel != 2 )
+    {
+        std::raise(SIGINT); 
+    }
+#endif
 
     m_pix->resize(width, height, coord2pixel); 
 
@@ -493,6 +501,7 @@ void Frame::resize(unsigned int width, unsigned int height, unsigned int coord2p
      if(width == 0 || height == 0) return ;  // ignore dud resizes
 
      setSize(width, height, coord2pixel);
+
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      glViewport(0, 0, m_width*m_coord2pixel, m_height*m_coord2pixel);
 }

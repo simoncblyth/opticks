@@ -20,7 +20,7 @@ cxr.sh
     [not intended to be used bare, this script is invoked from other scripts]
 
 cxr_overview.sh
-    overview viewpoint by targeting the  
+    overview viewpoint by targeting the entire geomery  
     uses envvar MOI=-1 to set an overview viewpoint intended to see the entire geometry
     principal controls are EMM envvar for excluding/selecting solids  
 

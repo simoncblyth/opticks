@@ -1184,17 +1184,15 @@ unsigned int Composition::getPixelFactor() const
 
 void Composition::setSize(const glm::uvec4& size)
 {
-    LOG(debug)
-              << " x " << size.x 
-              << " y " << size.y 
-              << " z " << size.z
-              ; 
+    LOG(LEVEL) << " x " << size.x << " y " << size.y << " z " << size.z ; 
     setSize(size.x, size.y, size.z);
 }
 void Composition::setSize(unsigned int width, unsigned int height, unsigned int factor)
 {
+    LOG(LEVEL) << "[ width " << width << " height " << height << " factor " << factor ; 
     m_camera->setSize(width/factor,height/factor);
     m_camera->setPixelFactor(factor);
+    LOG(LEVEL) << "]" ; 
 }
 
 

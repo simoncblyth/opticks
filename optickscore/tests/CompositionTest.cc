@@ -285,6 +285,14 @@ void test_snapconfig(Opticks* ok)
     }
 }
 
+void test_getPixelFactor(const Opticks* ok)
+{
+    Composition* comp = ok->getComposition(); 
+    unsigned coord2pixel = comp->getPixelFactor(); 
+    LOG(info) << " coord2pixel " << coord2pixel ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -293,15 +301,16 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv); 
     ok.configure(); 
 
-    test_setCenterExtent();
-
     /*
     test_rotate();
+    test_setCenterExtent();
     test_center_extent(&ok);
     test_setCenterExtent();
     test_depth(&ok);
     test_snapconfig(&ok);      
     */
+
+    test_getPixelFactor(&ok); 
 
     return 0 ;
 }
