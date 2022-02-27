@@ -353,7 +353,7 @@ Which Prim gets intersected relies on the CSGPrim::setSbtIndexOffset
 extern "C" __global__ void __intersection__is()
 {
     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();  
-    int numNode = hg->numNode ;        // equivalent to CSGPrim, as same info : specify complete binary tree sequence of CSGNode 
+    //int numNode = hg->numNode ;        // equivalent to CSGPrim, as same info : specify complete binary tree sequence of CSGNode 
     int nodeOffset = hg->nodeOffset ; 
 
     const CSGNode* node = params.node + nodeOffset ;  // root of tree
@@ -365,7 +365,7 @@ extern "C" __global__ void __intersection__is()
     const float3 ray_direction = optixGetObjectRayDirection();
 
     float4 isect ; // .xyz normal .w distance 
-    if(intersect_prim(isect, numNode, node, plan, itra, t_min , ray_origin, ray_direction ))  
+    if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))  
     {
         const unsigned hitKind = 0u ;   // only 8bit : could use to customize how attributes interpreted
         unsigned a0, a1, a2, a3, a4, a5, a6, a7 ;      
