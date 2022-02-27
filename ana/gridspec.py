@@ -238,7 +238,10 @@ class GridSpec(object):
 
         # below default from envvars are overridden for planar data
         eye = eary_("EYE","1.,1.,1.")
-        look = eary_("LOOK","0.,0.,0.")
+
+        #look = eary_("LOOK","0.,0.,0.")
+        look = ce[:3]
+
         up  = eary_("UP","0.,0.,1.")
         off  = eary_("OFF","0.,0.,1.")
 

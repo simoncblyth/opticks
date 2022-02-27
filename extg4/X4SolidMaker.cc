@@ -1738,7 +1738,10 @@ const G4VSolid* X4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static
         G4Orb* inner = new G4Orb("inner",InnerRadius); 
         G4SubtractionSolid* shell = new G4SubtractionSolid("shell", outer, inner ); 
         G4Box* box = new G4Box("box", Thickness/2. + 1.*mm, SegmentSizeY/2. , SegmentSizeZ/2. );  
-        solid = new G4IntersectionSolid( qname, shell, box, 0, G4ThreeVector( MiddleRadius, 0., 0. ));    
+
+        std::string rootname = qname ; 
+        rootname += "_CSG_EXBB" ; 
+        solid = new G4IntersectionSolid( rootname, shell, box, 0, G4ThreeVector( MiddleRadius, 0., 0. ));    
     }
 
     return solid ;
@@ -1755,6 +1758,6 @@ const G4VSolid* X4SolidMaker::SphereIntersectBox(const char* qname)  // static
     G4double thetaDelta = 1.  ; 
     G4Sphere* sph = new G4Sphere("sph", 95.*mm, 105.*mm,  phiStart*CLHEP::pi, phiDelta*CLHEP::pi, thetaStart*CLHEP::pi, thetaDelta*CLHEP::pi );  
     G4Box* box = new G4Box("box", 20.*mm, 20.*mm, 20.*mm ); 
-    G4IntersectionSolid* sph_box = new G4IntersectionSolid("sph_box", sph, box, 0, G4ThreeVector(0.*mm, 0.*mm, 100.*mm ) ); 
+    G4IntersectionSolid* sph_box = new G4IntersectionSolid("sph_box_CSG_EXBB", sph, box, 0, G4ThreeVector(0.*mm, 0.*mm, 100.*mm ) ); 
     return sph_box ;  
 }

@@ -60,6 +60,7 @@ class X4_API X4SolidBase
         static SId* OTHER_ID ; 
 
         const char* getIdentifier() const ; 
+        const char* getName() const ; 
 
         static G4Hype*      MakeHyperboloid(const char* name, float rmin , float rmax, float inst, float outst, float hz ) ; 
         static G4Ellipsoid* MakeEllipsoid(const char* name, float ax, float by, float cz, float zcut1=0.f, float zcut2=0.f );

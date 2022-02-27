@@ -44,6 +44,7 @@ typedef enum {
         CSG_SLAB=106,
         CSG_PLANE=107,
         CSG_CONE=108,
+        CSG_EXBB=109,
         CSG_BOX3=110,
         CSG_TRAPEZOID=111,
         CSG_CONVEXPOLYHEDRON=112,
@@ -114,6 +115,7 @@ static const char* CSG_OVERLAP_        = "overlap" ;
 static const char* _CSG_CONTIGUOUS     = "CSG_CONTIGUOUS" ; 
 static const char* _CSG_DISCONTIGUOUS  = "CSG_DISCONTIGUOUS" ; 
 static const char* _CSG_OVERLAP        = "CSG_OVERLAP" ; 
+static const char* _CSG_EXBB           = "CSG_EXBB" ; 
 
 
 
@@ -139,6 +141,7 @@ static const char* CSG_INFCYLINDER_   = "infcylinder" ;
 static const char* CSG_PHICUT_        = "phicut" ; 
 static const char* CSG_THETACUT_      = "thetacut" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
+static const char* CSG_EXBB_          = "externalbb" ; 
 
 
 static const char* CSG_OBSOLETE_      = "obsolete" ; 
@@ -265,6 +268,7 @@ struct CSG
             case CSG_THETACUT:      s = CSG_THETACUT_      ; break ; 
             case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
 
+            case CSG_EXBB:          s = CSG_EXBB_          ; break ; 
             case CSG_OBSOLETE:      s = CSG_OBSOLETE_      ; break ; 
             case CSG_PARTLIST:      s = CSG_PARTLIST_      ; break ; 
             case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 
@@ -473,6 +477,7 @@ struct CSG
         if(     strstr(name, _CSG_CONTIGUOUS)    != nullptr) hintcode = CSG_CONTIGUOUS ; 
         else if(strstr(name, _CSG_DISCONTIGUOUS) != nullptr) hintcode = CSG_DISCONTIGUOUS ; 
         else if(strstr(name, _CSG_OVERLAP)       != nullptr) hintcode = CSG_OVERLAP ; 
+        else if(strstr(name, _CSG_EXBB)          != nullptr) hintcode = CSG_EXBB ; 
         return hintcode ; 
     }
     static std::string MaskDesc( unsigned mask )

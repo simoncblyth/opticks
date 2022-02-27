@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import numpy as np
 from opticks.ana.fold import Fold
 
 X,Y,Z,W=0,1,2,3

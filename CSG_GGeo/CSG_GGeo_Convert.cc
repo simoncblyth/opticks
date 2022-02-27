@@ -235,6 +235,7 @@ CSG_GGeo_Convert::convertSolid NB this "solid" corresponds to ggeo/GMergedMesh
 
 CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 {
+    LOG(LEVEL) << "[" ; 
     unsigned nmm = ggeo->getNumMergedMesh(); 
     assert( repeatIdx < nmm ); 
     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx); 
@@ -287,6 +288,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
     LOG(LEVEL) << " numPrim " << numPrim ; 
     LOG(LEVEL) << " solid.bb " <<  bb ;
     LOG(LEVEL) << " solid.desc " << so->desc() ;
+    LOG(LEVEL) << "]" ; 
 
     return so ; 
 }
@@ -334,6 +336,8 @@ and should be removed as are now always using absolute tran and plan addressing
 
 CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 {
+    LOG(LEVEL) << "[" ; 
+
     unsigned numPrim = comp->getNumPrim();
     assert( primIdx < numPrim ); 
 
@@ -343,9 +347,12 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     unsigned subNum = comp->getSubNum(primIdx) ; // ? HMM SAME FOOTING ?
     unsigned subOffset = comp->getSubOffset(primIdx) ; // ? HMM SAME FOOTING ?
 
+
     bool operators_only = true ; 
     unsigned mask = comp->getTypeMask(primIdx, operators_only); 
     bool positive = CSG::IsPositiveMask( mask ); 
+    nbbox xbb = comp->getBBox(primIdx);  
+    bool has_xbb = xbb.is_empty() == false ; 
 
     LOG(LEVEL)
         << " primIdx " << std::setw(4) << primIdx
@@ -356,7 +363,11 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         << " comp.getTypeMask " << mask 
         << " CSG::TypeMask " << CSG::TypeMask(mask)
         << " CSG::IsPositiveMask " << positive
+        << " has_xbb " << has_xbb
         ;
+
+    LOG(LEVEL) << "GParts::getBBox(primIdx) xbb " << xbb.desc() ; 
+
 
     assert( foundry->last_added_solid ); 
 
@@ -414,7 +425,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     // HMM: usually numParts is the number of tree nodes : but not always following introduction of list-nodes
     // TODO: fix the conversion to pass along the subNum from GGeo level 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " setSubNum " 
         << " subNum " << subNum
         << " subNum2 " << subNum2
@@ -425,18 +436,35 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     root->setSubNum( subNum2 ); 
 
 
-
-    const float* bb_data = bb.data(); 
-
     LOG(LEVEL)
         << " ridx " << std::setw(2) << last_ridx
         << " primIdx " << std::setw(3) << primIdx 
         << " numParts " << std::setw(3) << numParts 
-        << " AABB " << AABB::Desc(bb_data) 
-        ; 
+        ;
 
-    prim->setAABB( bb_data ); 
+ 
+    if( has_xbb == false )
+    {
+        const float* bb_data = bb.data(); 
+        LOG(LEVEL)
+            << " has_xbb " << has_xbb 
+            << " (using self defined BB for prim) "
+            << " AABB \n" << AABB::Desc(bb_data) 
+            ; 
+        prim->setAABB( bb_data ); 
+    } 
+    else
+    {
+        LOG(LEVEL)
+            << " has_xbb " << has_xbb 
+            << " (USING EXTERNAL BB for prim, eg from G4VSolid) "
+            << " xbb \n" << xbb.desc()
+            ;
+ 
+        prim->setAABB( xbb.min.x, xbb.min.y, xbb.min.z, xbb.max.x, xbb.max.y, xbb.max.z ); 
+    }
 
+    LOG(LEVEL) << "]" ; 
     return prim ; 
 }
 

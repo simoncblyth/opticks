@@ -74,7 +74,7 @@ void GeoChain::convertSolid(const G4VSolid* solid, std::string& meta )
     const char* lvname = strdup(solidname.c_str()); 
 
     mesh = X4PhysicalVolume::ConvertSolid(ok, lvIdx, soIdx, solid, soname, lvname ) ; 
-    LOG(info) << " mesh " << mesh ; 
+    LOG(LEVEL) << " mesh " << mesh ; 
     convertMesh(mesh); 
     
     CSGGeometry::Draw(fd, "GeoChain::convertSolid converted CSGNode tree"); 

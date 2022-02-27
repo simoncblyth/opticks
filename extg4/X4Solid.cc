@@ -118,6 +118,21 @@ nnode* X4Solid::Convert(const G4VSolid* solid, const Opticks* ok, const char* bo
 
     if(boundary) root->boundary = boundary ; 
 
+
+    bool has_hint = xs.hasHint() ; 
+    LOG(error) << " xs.hasHint " << has_hint << " xs.desc " << xs.desc() ; 
+
+    if(has_hint) 
+    {
+        unsigned hint = xs.getHintCode() ; 
+        LOG(error) << " acting on xs.getHintCode " << CSG::Name(hint) << " with xs.getName " << xs.getName() ; 
+        if( hint == CSG_EXBB )
+        {
+            SetExternalBoundingBox(root, solid); 
+        } 
+    }
+
+
     LOG(LEVEL) << "]" ;  
 
     return root ; 
@@ -672,6 +687,13 @@ nnode* X4Solid::convertSphereDEV_(const char* opt )
         }
     }
 
+    SetExternalBoundingBox(result, solid); 
+    return result ; 
+}
+
+
+void X4Solid::SetExternalBoundingBox( nnode* root,  const G4VSolid* solid ) // static
+{
     G4ThreeVector pMin ; 
     G4ThreeVector pMax ; 
     solid->BoundingLimits(pMin, pMax); 
@@ -685,12 +707,11 @@ nnode* X4Solid::convertSphereDEV_(const char* opt )
     bb.max.y = pMax.y(); 
     bb.max.z = pMax.z(); 
 
-    LOG(LEVEL) << "General Sphere nnode::set_bbox using bb from G4VSolid::BoundingLimits " << bb.desc() ; 
+    LOG(LEVEL) << "nnode::set_bbox using bb from G4VSolid::BoundingLimits " << bb.desc() ; 
 
-    result->set_bbox( bb ); 
-
-    return result ; 
+    root->set_bbox( bb ); 
 }
+
 
 
 nnode* X4Solid::convertSphere_(bool only_inner)

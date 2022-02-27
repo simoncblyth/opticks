@@ -134,7 +134,7 @@ class X4_API X4Solid : public X4SolidBase
         static nnode* Polycone_MakeInner(const std::vector<zplane>& zp, const char* name, unsigned num_R_inner); 
         static bool Polycone_DoPhiSegment( const G4PolyconeHistorical* ph ); 
         static bool Polycone_CheckZOrder( const std::vector<zplane>& zp, bool z_ascending ); 
-
+        static void SetExternalBoundingBox( nnode* root,  const G4VSolid* solid ); 
     private:
         void convertHype();
     private:

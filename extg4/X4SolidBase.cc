@@ -325,6 +325,15 @@ const char* X4SolidBase::getIdentifier() const
 {
     return m_identifier ; 
 }
+
+const char* X4SolidBase::getName() const 
+{
+    return m_name ; 
+}
+
+
+
+
  
 void X4SolidBase::addG4Code( const char* g4code )
 {
