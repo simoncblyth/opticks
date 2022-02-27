@@ -66,7 +66,10 @@ echo BASH_SOURCE $BASH_SOURCE bin $bin script $script outdir $outdir GEOM $GEOM
 
 export X4SolidMaker=INFO 
 
-
+case $GEOM in 
+   LHCbRichSphMirr*)  export X4Mesh_noofsides=240  ;;
+   LHCbRichFlatMirr*) export X4Mesh_noofsides=48   ;;   ## setting this to high value is too expensive 
+esac
 
 
 $bin

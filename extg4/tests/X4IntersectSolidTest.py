@@ -76,6 +76,7 @@ class Plt(object):
         pl = pv.Plotter(window_size=size*2 )  # retina 2x ?
         self.anno(pl)
         pl.add_points( pos, color="white" )    
+        pl.show_grid()
         cp = pl.show()
         return cp
 
@@ -118,7 +119,7 @@ if __name__ == '__main__':
     gsmeta = NPMeta(fold0.gs_meta)
 
     grid = GridSpec(fold0.peta, gsmeta)
-    is_planar = not grid.axes is None
+    is_planar = not grid.axes is None and len(grid.axes) == 2 
 
     if is_planar:
         H,V = grid.axes     ## traditionally H,V = X,Z  but are now generalizing 
@@ -293,8 +294,6 @@ if 1:
             line = pv.Line(zlo, zhi)
             pl.add_mesh(line, color="w")
         pass
-
-
 
 
         if savefig:

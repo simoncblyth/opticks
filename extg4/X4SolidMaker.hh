@@ -21,6 +21,11 @@ struct X4_API X4SolidMaker
     static const G4VSolid* Make(const char* name); 
     static const G4VSolid* Make(const char* name, std::string& meta ); 
 
+    static G4double Sagitta( G4double radius, G4double chord ); 
+    static G4double SagittaMax( G4double radius, G4double sy, G4double sz ); 
+    static G4double SagittaMax( G4double InnerRadius, G4double OuterRadius,  G4double sy, G4double sz ); 
+
+
     static const G4VSolid* JustOrb(const char* name); 
     static const G4VSolid* LHCbRichSphMirr(const char* name); 
     static const G4VSolid* LHCbRichFlatMirr(const char* name); 

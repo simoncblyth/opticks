@@ -1484,118 +1484,227 @@ void X4SolidMaker::Extract( std::vector<long>& vals, const char* s )  // static
 
 
 /**
+X4SolidMaker::LHCbRichSphMirr
+--------------------------------
 
-   // /Users/blyth/liyu/Rich_Simplified/include/SphMirrorGeometryParameters.hh
+
+                               Z
+                               |
+
+              |+--------------|+
+               |               |
+               |               |
+               |               |
+               |               |          
+               |               |  1500/2
+               |               |
+               |               |          
+               |               |
+               + - - - + - - - +       
+               |               |
+               |               |
+               |               |
+               |               |  1500/2
+               |               |   
+               |               |
+               |               |
+               |               |
+              |+--------------|+
+               :               :
+             3650.0           3651.5                
 
 
-   %s///g
+                   ------->  X
+
+
+
+
 
 **/
 
 
 const G4VSolid* X4SolidMaker::LHCbRichSphMirr(const char* qname)  // static 
 {
+    long mode = SStr::ExtractLong(qname, 0); 
+    LOG(LEVEL) << " qname " << qname << " mode " << mode ; 
 
-// include/RichTbRich1MasterGeometryParameters.hh
-//const G4double MasterHalfSizeX = 1250.0 * CLHEP::mm;
-//const G4double MasterHalfSizeY = 2600.0 * CLHEP::mm;
-//const G4double MasterHalfSizeZ = 1150.0 * CLHEP::mm;
-//const G4double MasterPosX = 0.0 * CLHEP::mm;
-//const G4double MasterPosY = 0.0 * CLHEP::mm;
-//const G4double MasterPosZ = 1500.0 * CLHEP::mm;
+   // /Users/blyth/liyu/Rich_Simplified/include/SphMirrorGeometryParameters.hh
+    //Parameters for simplified rich1 sph mirror.
+    const G4double InnerRadius = 3650.0 *  CLHEP::mm;
+    const G4double Thickness   = 1.5 * CLHEP::mm;
+    const G4double OuterRadius =  InnerRadius + Thickness ;
 
-//const G4double SubMasterHalfSizeX = 1025.0 * CLHEP::mm;
-//const G4double SubMasterHalfSizeY = 2500.0 * CLHEP::mm;
-//const G4double SubMasterHalfSizeZ = 635.0 * CLHEP::mm;
-//const G4double SubMasterPosX = 0.0 * CLHEP::mm;
-//const G4double SubMasterPosY = 0.0 * CLHEP::mm;
-//const G4double SubMasterPosZ = 125.0 * CLHEP::mm;
+    const G4double SegmentSizeX = 1500.0 * CLHEP::mm;  // SCB : misnammed should be Z not X
+    const G4double SegmentSizeZ = SegmentSizeX  ; 
+    const G4double SegmentSizeY = 650.0  * CLHEP::mm;
 
-//Parameters for simplified rich1 sph mirror.
-const G4double SphMirrInnerRadius = 3650.0 *  CLHEP::mm;
-const G4double SphMirrThickness   = 1.5 * CLHEP::mm;
-const G4double SphMirrOuterRadius =  SphMirrInnerRadius + SphMirrThickness ;
-const G4double SphMirrSegmentSizeX = 1500.0 * CLHEP::mm;
-const G4double SphMirrSegmentSizeY = 650.0  * CLHEP::mm;
-//const G4double SphMirrCOCInLHCbPosX =  0.0       * CLHEP::mm;
-//const G4double SphMirrCOCInLHCbPosY =  932.897   * CLHEP::mm;
-//const G4double SphMirrCOCInLHCbPosZ =  -1493.286 * CLHEP::mm;
-//const G4double SphMirrVertTilt = asin ( SphMirrCOCInLHCbPosY/SphMirrInnerRadius) * CLHEP::rad;
 
-// To account for spherical geometry with straight edges, the angluar sizes are increased by a factor and then boolen subtraction made. 
-const G4double SphMirrDeltaExtendedFactor = 1.2; 
-const G4double SphMirrDeltaTheta =  2 * asin(SphMirrSegmentSizeX/(2.0*SphMirrInnerRadius)) * SphMirrDeltaExtendedFactor *  CLHEP::rad;
-const G4double SphMirrDeltaPhi =  2 * asin(SphMirrSegmentSizeY/(2.0*SphMirrInnerRadius) )* SphMirrDeltaExtendedFactor * CLHEP::rad;
-const G4double SphMirrThetaStart = (0.5 * CLHEP::pi * CLHEP::rad)  - (0.5 * SphMirrDeltaTheta) ;
-const G4double SphMirrPhiStart   =  -0.5 * SphMirrDeltaPhi ;
-const G4double SphMirrSubLargeSize = 5000 *  CLHEP::mm;
-const G4double SphMirrSubHalfSizeX = SphMirrSubLargeSize;
-const G4double SphMirrSubHalfSizeY = SphMirrSubLargeSize;
-const G4double SphMirrSubHalfSizeZ = SphMirrSubLargeSize;
-const G4double SphMirrSubPosX = 0.0 *  CLHEP::mm;
-const G4double SphMirrSubPosY = 0.0 *  CLHEP::mm;
-const G4double SphMirrSubUpPosY = (0.5 * SphMirrSegmentSizeY) + SphMirrSubHalfSizeY;
-const G4double SphMirrSubDownPosY = -1.0 * SphMirrSubUpPosY ;
-const G4double SphMirrSubPosZ = 0.0 * CLHEP::mm;
-const G4double SphMirrSubRightPosZ =(0.5 * SphMirrSegmentSizeX) +  SphMirrSubHalfSizeZ;
-const G4double SphMirrSubLeftPosZ = -1.0* SphMirrSubRightPosZ;
-//const G4double SphMirrYShiftFromEdge = 1.0 * CLHEP::mm;
-//const G4double SphMirrPhiGapShift =  asin (SphMirrYShiftFromEdge/SphMirrInnerRadius) * CLHEP::rad;
-//const G4double SphMirrRotY = -0.5 * CLHEP::pi * CLHEP::rad;
-//const G4double SphMirrRotZ =  SphMirrPhiGapShift + (0.5 * SphMirrDeltaPhi) -  SphMirrVertTilt ;
-//const G4double SphMirrPosX = SphMirrCOCInLHCbPosX - SubMasterPosX -  MasterPosX ;
-//const G4double SphMirrPosY = SphMirrCOCInLHCbPosY - SubMasterPosY -  MasterPosY ;
-//const G4double SphMirrPosZ = SphMirrCOCInLHCbPosZ - SubMasterPosZ -  MasterPosZ ;
+    // To account for spherical geometry with straight edges, the angluar sizes are increased by a factor and then boolen subtraction made. 
+    const G4double DeltaExtendedFactor = 1.2; 
+    const G4double DeltaTheta =  2 * asin(SegmentSizeX/(2.0*InnerRadius)) * DeltaExtendedFactor *  CLHEP::rad;
+    const G4double DeltaPhi =  2 * asin(SegmentSizeY/(2.0*InnerRadius) )* DeltaExtendedFactor * CLHEP::rad;
+    const G4double ThetaStart = (0.5 * CLHEP::pi * CLHEP::rad)  - (0.5 * DeltaTheta) ;
+    const G4double PhiStart   =  -0.5 * DeltaPhi ;
+    const G4double SubLargeSize = 5000 *  CLHEP::mm;
+    const G4double SubHalfSizeX = SubLargeSize;
+    const G4double SubHalfSizeY = SubLargeSize;
+    const G4double SubHalfSizeZ = SubLargeSize;
+    const G4double SubPosX = 0.0 *  CLHEP::mm;
+    const G4double SubPosY = 0.0 *  CLHEP::mm;
+    const G4double SubUpPosY = (0.5 * SegmentSizeY) + SubHalfSizeY;
+    const G4double SubDownPosY = -1.0 * SubUpPosY ;
+    const G4double SubPosZ = 0.0 * CLHEP::mm;
+    const G4double SubRightPosZ =(0.5 * SegmentSizeX) +  SubHalfSizeZ;
+    const G4double SubLeftPosZ = -1.0* SubRightPosZ;
 
 
 
+   // /Users/blyth/liyu/Rich_Simplified/src/RichTbLHCbR1or.cc    
 
-   // /Users/blyth/liyu/Rich_Simplified/src/RichTbLHCbR1SphMirror.cc    
-
-  G4Sphere* SphFullSph = new G4Sphere ("SphFullSphDEV",SphMirrInnerRadius,
-                       SphMirrOuterRadius,SphMirrPhiStart,
-                                           SphMirrDeltaPhi, SphMirrThetaStart,
-                                           SphMirrDeltaTheta);
-  G4Box * SphSubBox = new G4Box("SphSubBox",SphMirrSubHalfSizeX,
-                    SphMirrSubHalfSizeY, SphMirrSubHalfSizeZ);
-  G4RotationMatrix SubBoxRot;
-  G4ThreeVector  SubBoxTPos ( SphMirrSubPosX,SphMirrSubUpPosY,SphMirrSubPosZ);  
-  G4ThreeVector  SubBoxBPos ( SphMirrSubPosX,SphMirrSubDownPosY,SphMirrSubPosZ);  
-  G4ThreeVector  SubBoxLPos ( SphMirrSubPosX,SphMirrSubPosY,SphMirrSubLeftPosZ);  
-  G4ThreeVector  SubBoxRPos ( SphMirrSubPosX,SphMirrSubPosY,SphMirrSubRightPosZ);  
-  G4Transform3D  SubBoxTTrans(  SubBoxRot, SubBoxTPos);
-  G4Transform3D  SubBoxBTrans(  SubBoxRot, SubBoxBPos);
-  G4Transform3D  SubBoxLTrans(  SubBoxRot, SubBoxLPos);
-  G4Transform3D  SubBoxRTrans(  SubBoxRot, SubBoxRPos);
-  G4SubtractionSolid* TSph = new G4SubtractionSolid("SphTSph",SphFullSph,
+    G4Sphere* SphFullSph = new G4Sphere ("SphFullSphDEV",InnerRadius,
+                       OuterRadius,PhiStart,
+                                           DeltaPhi, ThetaStart,
+                                           DeltaTheta);
+    G4Box * SphSubBox = new G4Box("SphSubBox",SubHalfSizeX,
+                    SubHalfSizeY, SubHalfSizeZ);
+    G4RotationMatrix SubBoxRot;
+    G4ThreeVector  SubBoxTPos ( SubPosX,SubUpPosY,SubPosZ);  
+    G4ThreeVector  SubBoxBPos ( SubPosX,SubDownPosY,SubPosZ);  
+    G4ThreeVector  SubBoxLPos ( SubPosX,SubPosY,SubLeftPosZ);  
+    G4ThreeVector  SubBoxRPos ( SubPosX,SubPosY,SubRightPosZ);  
+    G4Transform3D  SubBoxTTrans(  SubBoxRot, SubBoxTPos);
+    G4Transform3D  SubBoxBTrans(  SubBoxRot, SubBoxBPos);
+    G4Transform3D  SubBoxLTrans(  SubBoxRot, SubBoxLPos);
+    G4Transform3D  SubBoxRTrans(  SubBoxRot, SubBoxRPos);
+    G4SubtractionSolid* TSph = new G4SubtractionSolid("SphTSph",SphFullSph,
                                             SphSubBox , SubBoxTTrans);
-  G4SubtractionSolid* BSph = new G4SubtractionSolid("SphBSphBox",TSph,
+   G4SubtractionSolid* BSph = new G4SubtractionSolid("SphBSphBox",TSph,
                                             SphSubBox , SubBoxBTrans);
-  G4SubtractionSolid* LSph = new G4SubtractionSolid("SphLSphBox",BSph,
+   G4SubtractionSolid* LSph = new G4SubtractionSolid("SphLSphBox",BSph,
                                             SphSubBox , SubBoxLTrans);
-  G4SubtractionSolid* RSph = new G4SubtractionSolid("SphRSphBox",LSph,
+   G4SubtractionSolid* RSph = new G4SubtractionSolid("SphRSphBox",LSph,
                                             SphSubBox , SubBoxRTrans);
 
 
+    const G4VSolid* simple = nullptr ;  
+    if( mode == 1 )
+    {
+        G4double MiddleRadius = (InnerRadius + OuterRadius)/2. ; 
 
-   return RSph  ; 
+        G4Orb* inner = new G4Orb("inner", InnerRadius ); 
+        G4Orb* outer = new G4Orb("outer", OuterRadius ); 
+        G4SubtractionSolid* shell = new G4SubtractionSolid("shell", outer, inner ); 
+
+        G4double sag_max = SagittaMax( InnerRadius, OuterRadius, SegmentSizeY, SegmentSizeZ ); 
+        G4double SagMax = 80.*mm ; 
+        assert( SagMax > sag_max ); 
+        G4double FullDepthX = Thickness + SagMax ; 
+       
+        G4Box* cutbox = new G4Box("cutbox", FullDepthX/2. , SegmentSizeY/2. , SegmentSizeZ/2. );  
+        simple = new G4IntersectionSolid("simple_CSG_EXBB", shell, cutbox, 0, G4ThreeVector(MiddleRadius, 0., 0.) ) ; 
+    }
+ 
+
+    const G4VSolid* solid = nullptr ;  
+    switch(mode)
+    {
+       case 0: solid = RSph   ; break ; 
+       case 1: solid = simple ; break ;  
+    }
+    assert(solid); 
+    return solid  ; 
 }
+/**
+X4SolidMaker::Sagitta
+---------------------
+
+
+ 
+                  . 
+            .     .        .
+        .         s           .
+      /           .            \
+   A +------------+-------------+ B
+          l/2     |C    l/2
+       .          |           .
+                 r-s
+          .       |      .
+        r         |         r
+              .   |   .
+                  |
+                  +
+                  O
+
+s: sagitta or depth of the arc 
+
+l: full length of chord across base of arc
+
+r: radius 
+
+
+Pythagoras for triangle AOC:: 
+
+     (r-s)^2 + (l/2)^2 = r^2 
+
+       r - s = sqrt( r^2 - (l/2)^2 )
+           
+           s = r - sqrt( r^2 - (l/2)^2 )
+
+**/
+
+
+G4double X4SolidMaker::Sagitta( G4double radius, G4double chord )
+{
+    G4double sagitta = radius - sqrt( radius*radius - chord*chord/4. ) ; 
+    return sagitta ;  
+}
+
+G4double X4SolidMaker::SagittaMax( G4double radius, G4double sy, G4double sz )
+{
+    G4double sag_sy = Sagitta( radius, sy ); 
+    G4double sag_sz = Sagitta( radius, sz ); 
+    G4double sag_max = std::max( sag_sy, sag_sz ); 
+    return sag_max ; 
+}
+
+G4double X4SolidMaker::SagittaMax( G4double InnerRadius, G4double OuterRadius,  G4double sy, G4double sz )
+{
+    G4double sag_inner = SagittaMax( InnerRadius, sy, sz ); 
+    G4double sag_outer = SagittaMax( OuterRadius, sy, sz ); 
+    G4double sag_max = std::max( sag_inner, sag_outer ); 
+
+    LOG(LEVEL)
+        << " InnerRadius " << InnerRadius
+        << " OuterRadius " << OuterRadius
+        << " sag_max " << sag_max
+        << std::endl
+        << " sag_inner : SaggitaMax(" << InnerRadius << "," <<  sy << "," << sz << ")" << sag_inner 
+        << std::endl
+        << " sag_outer : SaggitaMax(" << OuterRadius << "," <<  sy << "," << sz << ")" << sag_outer
+        << std::endl
+        ;
+
+    return sag_max ; 
+}
+
 
 /**
 X4SolidMaker::LHCbRichFlatMirr
 ---------------------------------
 
 
-
-
-                  Z
+                  Z 
                   |
-                  |
-                  |                                                                                |
-                  +-----> X - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+ 
-                 /                                                                                /
-                /
-               Y
+                  |    Y
+                  |   /
+                  |  /
+                  | /
+                  |/                                                                                               |
+                  +-------> X - - - - - - - - - - - - 5,000,000 mm  - - - - - - - - - - - - - - - - - - - - - - - -+ 
+                 .                                                                                                /
+                .
+               .
+             -Y
 
 
       Rectangle is formed close to X axis, deltaPhi (in XY plane) is symmetric around phi=0. 
@@ -1666,6 +1775,7 @@ const G4VSolid* X4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static
 
     const G4double SegmentSizeX = 1480.0 * CLHEP::mm;  // <-- should be Z (not X)
     const G4double SegmentSizeZ = SegmentSizeX  ; 
+
     const G4double SegmentSizeY = 880.0 * CLHEP::mm;
 
    /**
@@ -1734,10 +1844,24 @@ const G4VSolid* X4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static
     else
     {
         LOG(LEVEL) << " constructing the flat mirror using intersection box rather than attemping to describe with miniscule thetacut and phicut angles"  ;  
+
+
+        G4double sag_max = SagittaMax( InnerRadius, OuterRadius, SegmentSizeY, SegmentSizeZ ); 
+        G4double SagMax = 1.*mm ; 
+        assert( SagMax > sag_max ); 
+        G4double FullDepthX = Thickness + SagMax ; 
+
+
+        LOG(LEVEL) 
+            << " sag_max " << sag_max
+            << " SagMax " << SagMax
+            << " FullDepthX  " << FullDepthX 
+            ;
+
         G4Orb* outer = new G4Orb("outer",OuterRadius); 
         G4Orb* inner = new G4Orb("inner",InnerRadius); 
         G4SubtractionSolid* shell = new G4SubtractionSolid("shell", outer, inner ); 
-        G4Box* box = new G4Box("box", Thickness/2. + 1.*mm, SegmentSizeY/2. , SegmentSizeZ/2. );  
+        G4Box* box = new G4Box("box", FullDepthX/2. , SegmentSizeY/2. , SegmentSizeZ/2. );  
 
         std::string rootname = qname ; 
         rootname += "_CSG_EXBB" ; 

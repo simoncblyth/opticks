@@ -22,7 +22,7 @@
 #include <sstream>
 #include <string>
 
-
+#include "SSys.hh"
 
 #include "G4VSolid.hh"
 #include "G4Polyhedron.hh"
@@ -172,11 +172,19 @@ std::string X4Mesh::desc() const
     return ss.str();
 }
 
+
+const char* X4Mesh::noofsides =  "X4Mesh_noofsides" ; 
+
 void X4Mesh::polygonize()
 {
     G4bool create = true ; 
-    G4int noofsides = 24 ;
-    G4Polyhedron::SetNumberOfRotationSteps(noofsides);
+    G4int noofsides_ = SSys::getenvint(noofsides, 24) ;
+    if( noofsides_ != 24 )
+    {
+       LOG(error) << " using non-default G4Polyhedron::SetNumberOfRotationSteps " << noofsides_ << " due to envvar " << noofsides ; 
+    }  
+
+    G4Polyhedron::SetNumberOfRotationSteps(noofsides_);
 
     std::stringstream coutbuf;
     std::stringstream cerrbuf;
