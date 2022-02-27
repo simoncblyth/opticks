@@ -135,7 +135,7 @@ inline void SCanvas::_draw(int ix, int iy, int dx, int dy, const char* txt)   //
 
     bool expect = expect_ix && expect_iy && expect_dx && expect_dy ; 
 
-    if(!expect) printf("SCanvas::_draw ix %d width %d iy %d height dx %d xscale %d dy %d yscale %d \n", ix, width, iy, height, dx, xscale, dy, yscale ); 
+    if(!expect) printf("SCanvas::_draw ix %d width %d iy %d height %d dx %d xscale %d dy %d yscale %d \n", ix, width, iy, height, dx, xscale, dy, yscale ); 
     if(!expect) return ;  
 
     //assert(expect); 

@@ -102,12 +102,12 @@ TODO: stick these in a struct
 static const char* CSG_ZERO_          = "zero" ; 
 
 
-static const char* CSG_TREE_          = "tree" ; 
+//static const char* CSG_TREE_          = "tree" ; 
 static const char* CSG_INTERSECTION_  = "intersection" ; 
 static const char* CSG_UNION_         = "union" ; 
 static const char* CSG_DIFFERENCE_    = "difference" ; 
 
-static const char* CSG_NODE_           = "node" ; 
+//static const char* CSG_NODE_           = "node" ; 
 static const char* CSG_CONTIGUOUS_     = "contiguous" ; 
 static const char* CSG_DISCONTIGUOUS_  = "discontiguous" ; 
 static const char* CSG_OVERLAP_        = "overlap" ; 
@@ -118,8 +118,7 @@ static const char* _CSG_OVERLAP        = "CSG_OVERLAP" ;
 static const char* _CSG_EXBB           = "CSG_EXBB" ; 
 
 
-
-static const char* CSG_LEAF_           = "leaf" ; 
+//static const char* CSG_LEAF_          = "leaf" ; 
 static const char* CSG_SPHERE_        = "sphere" ; 
 static const char* CSG_BOX_           = "box" ; 
 static const char* CSG_ZSPHERE_       = "zsphere" ; 
