@@ -1,6 +1,9 @@
 #!/bin/bash -l 
 
 usage(){ cat << EOU
+X4MeshTest.sh : Geant4 polyhedron renders using tests/X4MeshTest.cc and tests/X4MeshTest.py
+=============================================================================================
+
 
 GEOM=hmsk_solidMask     EYE=0.5,0.5,-0.3 ZOOM=2 ./X4MeshTest.sh
 GEOM=hmsk_solidMaskTail EYE=0.5,0.5,0.3 ZOOM=2 ./X4MeshTest.sh

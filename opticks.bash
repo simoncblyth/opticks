@@ -2921,3 +2921,35 @@ opticks-build7()
 }
 
 
+opticks-geompath()
+{
+    : uses the first of dotpath or homepath 
+    local dotpath=$HOME/.opticks/GEOM.txt
+    local homepath=$(opticks-home)/GEOM.txt
+    local path=""
+    if [ -f "$dotpath" ]; then 
+        path=$dotpath
+    elif [ -f "$homepath" ]; then
+        path=$homepath
+    fi
+    echo $path
+}
+
+opticks-geom()
+{
+    local geompath=$(opticks-geompath)
+    local geom=""
+    if [ -n "$geompath" ]; then 
+        local catgeom=$(cat $geompath 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && geom=$(echo ${catgeom%%_*})
+    fi
+    echo $geom
+}
+
+opticks-geom-(){ 
+    local msg="=== $FUNCNAME :" 
+    local geompath=$(opticks-geompath) 
+    echo $msg geompath $geompath
+    vi $geompath 
+}
+
+

@@ -38,6 +38,13 @@ See Also
 
 
 
+example for using 2 payloads to one uint64 pntr to global memory
+-------------------------------------------------------------------
+
+* https://github.com/ingowald/optix7course/blob/master/example08_addingTextures/devicePrograms.cu
+
+
+
 OptiX 7 OpenGL interop
 ------------------------
 

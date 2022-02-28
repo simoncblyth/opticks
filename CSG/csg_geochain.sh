@@ -163,6 +163,8 @@ fi
 dx=0
 dy=0
 dz=0
+
+DZ=${DZ:-$dz}
 pho=${PHO:--100} 
 
 case $pho in
@@ -171,13 +173,13 @@ case $pho in
 esac
 
 case $GEOM in  
-   *_XZ) cegs=16:0:9:$dx:$dy:$dz:$pho  ;;  
-   *_YZ) cegs=0:16:9:$dx:$dy:$dz:$pho  ;;  
-   *_XY) cegs=16:9:0:$dx:$dy:$dz:$pho  ;;  
-   *_ZX) cegs=9:0:16:$dx:$dy:$dz:$pho  ;;  
-   *_ZY) cegs=0:9:16:$dx:$dy:$dz:$pho  ;;  
-   *_YX) cegs=9:16:0:$dx:$dy:$dz:$pho  ;;  
-   *_XYZ) cegs=9:16:9:$dx:$dy:$dz:$pho ;;  
+   *_XZ) cegs=16:0:9:$dx:$dy:$DZ:$pho  ;;  
+   *_YZ) cegs=0:16:9:$dx:$dy:$DZ:$pho  ;;  
+   *_XY) cegs=16:9:0:$dx:$dy:$DZ:$pho  ;;  
+   *_ZX) cegs=9:0:16:$dx:$dy:$DZ:$pho  ;;  
+   *_ZY) cegs=0:9:16:$dx:$dy:$DZ:$pho  ;;  
+   *_YX) cegs=9:16:0:$dx:$dy:$DZ:$pho  ;;  
+   *_XYZ) cegs=9:16:9:$dx:$dy:$DZ:$pho ;;  
        *) echo $msg UNEXPECTED SUFFIX FOR GEOM $GEOM WHICH DOES NOT END WITH ONE OF : _XZ _YZ _XY _ZX _ZY _YX _XYZ  && exit 1   ;; 
 esac
 

@@ -42,9 +42,14 @@ CSGQuery::CSGQuery( const CSGFoundry* fd_ )
 }
 
 /**
+CSGQuery::init
+----------------
 
-TODO: work out how  MOI and SOPR correspond to each other 
-      to identify the prim to select : so this can work with full geometries
+MOI meshName:meshOrdinal:instanceIndex 
+   selects by meshname irrespective of which solid it appears in 
+
+SOPR
+   selects more formally by solidIdx:primIdxRel 
 
 **/
 

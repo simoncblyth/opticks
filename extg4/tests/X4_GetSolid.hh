@@ -28,9 +28,10 @@ const G4VSolid* X4_GetSolid(const char* name, std::string& meta)
     else
     {
 #ifdef WITH_PMTSIM
+        std::cout << "extg4/tests/X4_GetSolid.hh : X4_GetSolid : WITH_PMTSIM invoking PMTSim::GetSolid(  " << name << ") " << std::endl ; 
         solid = PMTSim::GetSolid(name); 
 #else
-        std::cout << " not WITH_PMTSIM " << name << std::endl;  
+        std::cout << "extg4/tests/X4_GetSolid.hh : X4_GetSolid :  not WITH_PMTSIM " << name << std::endl ;  
 #endif
     }
     return solid ; 

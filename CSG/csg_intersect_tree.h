@@ -274,7 +274,7 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
     unsigned fullTree = PACK4(0,0, 1 << height, 0 ) ;  // leftmost: 1<<height,  root:1>>1 = 0 ("parent" of root)  
  
 #ifdef DEBUG
-    printf("//intersect_tree  numNode %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
+    printf("//intersect_tree  numNode(subNum) %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
     assert( numNode > 0 ); 
 #endif
 

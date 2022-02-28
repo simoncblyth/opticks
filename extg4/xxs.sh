@@ -46,57 +46,41 @@ msg="=== $BASH_SOURCE :"
 
 ## PMTSim debug solids 
 
-#geom=polycone
-#geom=polycone_zcut-150
-#geom=two_tubs_union
-#geom=three_tubs_union
-#geom=three_tubs_union_zcut-700
-#geom=ten_tubs_union_zcut-630
-#geom=ten_tubs_union_zcut-420
+#geom=Polycone
+#geom=Polycone:zcut-150
+#geom=TwoTubsUnion
+#geom=ThreeTubsUnion
+#geom=ThreeTubsUnion:zcut-700
+#geom=TenTubsUnion:zcut-630
+#geom=TenTubsUnion:zcut-420
 
-## PMTSim *maker* solids, always give same solid for each maker
+## PMTSim *Maker* solids, always give same solid for each maker
 
-#geom=nnvt_maker_zcut-500.0
-#geom=nnvt_maker_zcut-400.0
-#geom=nnvt_maker_zcut-350.0
-#geom=nnvt_maker_zcut-300.0
-#geom=nnvt_maker_zcut-200.0
-#geom=nnvt_maker_zcut-183.25
+#geom=nnvtMaker:zcut-500.0
+#geom=nnvtMaker:zcut-400.0
+#geom=nnvtMaker:zcut-350.0
+geom=nnvtMaker:zcut-300.0
+#geom=nnvtMaker:zcut-200.0
+#geom=nnvtMaker:zcut-183.25
 
-#geom=hama_maker_zcut-500.0
-#geom=hama_maker_zcut-400.0
-#geom=hama_maker_zcut-350.0
-#geom=hama_maker_zcut-300.0
-#geom=hama_maker_zcut-183.25
+#geom=hamaMaker:zcut-500.0
+#geom=hamaMaker:zcut-400.0
+#geom=hamaMaker:zcut-350.0
+#geom=hamaMaker:zcut-300.0
+#geom=hamaMaker:zcut-183.25
 
-#geom=pmt_solid
-#geom=I
-#geom=III
-#geom=1_2
-#geom=1_3
-#geom=_pmt_cut_solid
-#geom=pmt_solid
-#geom=body_solid
-#geom=body_solid_zcut
-#geom=body_solid_zcut,body_solid
-#geom=inner2_solid_zcut
-#geom=pmt_solid_zcut
-#geom=body_solid,inner2_solid   
+#geom=nnvtBodySolid
+#geom=nnvtBodySolid:nurs
 
-## *manager* solids yield different shapes depending on the string between prefix and options
+#geom=hamaBodySolid
+#geom=hamaBodySolid:nurs
+#geom=hamaBodySolid:prtc
+#geom=hamaBodySolid:prtc:obto
+#geom=hamaBodySolid:nurs:pdyn
+#geom=hamaBodySolid:nurs
 
-#geom=nnvt_body_solid
-#geom=nnvt_body_solid_nurs
-
-#geom=hama_body_solid
-#geom=hama_body_solid_nurs
-#geom=hama_body_solid_prtc
-#geom=hama_body_solid_prtc_obto
-#geom=hama_body_solid_nurs_pdyn
-#geom=hama_body_solid_nurs
-
-#geom=hmsk_solidMask
-#geom=hmsk_solidMaskTail
+#geom=hmskSolidMask
+#geom=hmskSolidMaskTail
 
 #geom=XJfixtureConstruction_YZ
 #geom=XJfixtureConstruction_XZ
@@ -179,7 +163,7 @@ case $GEOM in
 esac
 
 case ${GEOM} in
-   ten_tubs_union*) zz=0,-70,-140,-210,-280,-350,-420,-490,-560,-630  ;;
+   TenTubsUnion*) zz=0,-70,-140,-210,-280,-350,-420,-490,-560,-630  ;;
 esac
 
 case $gcn in 
@@ -207,10 +191,7 @@ esac
 echo $msg dx $dx dy $dy dz $dz cegs $cegs 
 
 
-
-
 export X4SolidMaker=INFO
-
 
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CEGS=${CEGS:-$cegs}

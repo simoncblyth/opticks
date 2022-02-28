@@ -19,10 +19,11 @@ export GEOM
 export ORI  
 export DIR  
 export DUMP=3
+export VERBOSE=1
 
 
-#mode=O   # OneIntersect
-mode=D   # OneDistance
+mode=O   # OneIntersect
+#mode=D   # OneDistance
 
 CSGQueryTest $mode
 

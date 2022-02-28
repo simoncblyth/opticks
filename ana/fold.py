@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, logging, numpy as np
+import os, logging, numpy as np, datetime
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
@@ -29,8 +29,16 @@ class Fold(object):
 
         names = os.listdir(base)
         stems = []
+        stamps = []
+
         for name in filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),names):
             path = os.path.join(base, name)
+            st = os.stat(path)
+            stamp = datetime.datetime.fromtimestamp(st.st_ctime)
+            print(stamp)
+
+            stamps.append(stamp)
+
             is_npy = name.endswith(".npy")
             is_txt = name.endswith(".txt")
             stem = name[:-4]
@@ -52,6 +60,7 @@ class Fold(object):
             pass
         pass
         self.stems = stems
+        self.stamps = stamps
 
     def desc(self, stem):
         a = getattr(self, stem)

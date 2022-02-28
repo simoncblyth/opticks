@@ -421,20 +421,16 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
     assert( root ); 
 
-    unsigned subNum2 = numParts ; 
     // HMM: usually numParts is the number of tree nodes : but not always following introduction of list-nodes
     // TODO: fix the conversion to pass along the subNum from GGeo level 
 
-    LOG(LEVEL) 
+    LOG(fatal) 
         << " setSubNum " 
         << " subNum " << subNum
-        << " subNum2 " << subNum2
         << " numParts " << numParts
         ; 
-    //assert( subNum2 == subNum );
  
-    root->setSubNum( subNum2 ); 
-
+    root->setSubNum( subNum ); 
 
     LOG(LEVEL)
         << " ridx " << std::setw(2) << last_ridx

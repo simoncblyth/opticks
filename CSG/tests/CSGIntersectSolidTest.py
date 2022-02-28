@@ -314,7 +314,6 @@ if __name__ == '__main__':
 
     plotbase = PlotBase()
     cegs_path = plotbase  
-    #rel_name = "intersectSelected"
     rel_name = "saveCenterExtentGenstepIntersect"
     recs_path = os.path.join(plotbase, rel_name )
 
