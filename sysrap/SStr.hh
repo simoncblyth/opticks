@@ -86,6 +86,9 @@ class SYSRAP_API SStr {
       static const char* TrimTrailing(const char* s); 
       static const char* Trim(const char* s); 
 
+      static const char* HeadFirst(const char* s, char c); 
+      static const char* HeadLast( const char* s, char c); 
+
       static const char* Concat( const char* a, const char* b, const char* c=NULL  );
       static const char* Concat( const char* a, unsigned b   , const char* c=NULL  );
       static const char* Concat( const char* a, unsigned b, const char* c, unsigned d, const char* e  ) ; 
@@ -93,6 +96,8 @@ class SYSRAP_API SStr {
       template <typename T>
       static const char* Concat_( const char* a, T b   , const char* c  );
 
+
+    
 
       static const char* Replace( const char* s,  char a, char b ); 
       static const char* ReplaceEnd( const char* s, const char* q, const char* r  ); 

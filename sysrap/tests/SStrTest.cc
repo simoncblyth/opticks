@@ -592,6 +592,35 @@ yellow3
 }
 
 
+void test_HeadFirst_HeadLast()
+{
+    const char* lines = R"LITERAL(
+SomeName_suffix
+green2WithoutSuffix
+MultipleUnderscoreblue2_cyan_magenta
+)LITERAL" ;
+
+    std::stringstream ss(lines) ;    
+    std::string line ; 
+    while (std::getline(ss, line))  
+    {   
+        if(line.empty()) continue ;   
+
+        const char* s = line.c_str(); 
+        const char* f = SStr::HeadFirst(s, '_'); 
+        const char* l = SStr::HeadLast(s, '_'); 
+       
+        std::cout 
+            << " s[" << std::setw(40) << ( s ? s : "-" ) << "]" << std::setw(3) << strlen(s) 
+            << " f[" << std::setw(40) << ( f ? f : "-" ) << "]" << std::setw(3) << strlen(f) 
+            << " l[" << std::setw(40) << ( l ? l : "-" ) << "]" << std::setw(3) << strlen(l) 
+            << std::endl 
+            ;
+    }
+}   
+
+
+
 int main(int argc , char** argv )
 {
     OPTICKS_LOG(argc, argv);
@@ -625,8 +654,9 @@ int main(int argc , char** argv )
     test_Extract(); 
     test_Extract_float(); 
     test_Trim(); 
-    */
     test_ExtractLong(); 
+    */
+    test_HeadFirst_HeadLast(); 
 
     return 0  ; 
 }

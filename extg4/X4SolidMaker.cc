@@ -545,6 +545,14 @@ const G4VSolid* X4SolidMaker::AltXJfixtureConstruction_(const char* name, const 
     return ulxoi ;  
 }
 const int X4SolidMaker::XJfixtureConstruction_debug_mode = SSys::getenvint("X4SolidMaker__XJfixtureConstruction_debug_mode", 0 ) ; 
+
+/**
+X4SolidMaker::XJfixtureConstruction
+------------------------------------
+
+
+**/
+
 const G4VSolid* X4SolidMaker::XJfixtureConstruction(const char* name)
 {
     G4VSolid* solidXJfixture_down1;

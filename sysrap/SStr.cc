@@ -416,8 +416,47 @@ const char* SStr::Trim(const char* s)
     return p ; 
 }
 
+/**
+SStr::HeadFirst
+-----------------
 
+Returns string up until the first occurence of the char
+or the entire string of the char does not occur. 
 
+For example::
+
+    SStr::HeadFirst("AltXJFixtureConstruction_XZ", '_') -> "AltXJFixtureConstruction" 
+
+**/
+
+const char* SStr::HeadFirst(const char* s_, char c )
+{
+    char* s = strdup(s_); 
+    char* p = strchr(s, c ); 
+    if(p) *p = '\0' ;  // terminate string at first occurence of c   
+    return s ; 
+}
+
+/**
+SStr::HeadLast
+-----------------
+
+Returns string up until the last occurence of the char
+or the entire string of the char does not occur. 
+
+For example::
+
+    SStr::HeadFirst("AltXJFixtureConstruction_OtherSuffix_XZ", '_') -> "AltXJFixtureConstruction_OtherSuffix" 
+
+**/
+
+const char* SStr::HeadLast(const char* s_, char c )
+{
+    char* s = strdup(s_); 
+    char* p = strrchr(s, c ); 
+    if(p) *p = '\0' ;  // terminate string at last occurence of c   
+    return s ; 
+}
 
 
 

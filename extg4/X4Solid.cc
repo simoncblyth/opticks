@@ -758,7 +758,7 @@ nnode* X4Solid::convertSphere_(bool only_inner)
         double zmin = radius*std::cos(lTheta*CLHEP::pi/180.) ;
         double zmax = radius*std::cos(rTheta*CLHEP::pi/180.) ;
         assert( zmax > zmin ) ; 
-        cn = make_zsphere( x, y, z, radius, zmin, zmax ) ;
+        cn = nzsphere::Create( x, y, z, radius, zmin, zmax ) ;
         cn->label = BStr::concat(m_name, "_nzsphere", NULL) ; 
     }
     else
@@ -1528,7 +1528,7 @@ void X4Solid::convertEllipsoid()
 
 
     nnode* cn = zslice ? 
-                          (nnode*)make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 ) 
+                          (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1, z2 ) 
                        :
                           (nnode*)nsphere::Create( 0.f, 0.f, 0.f, cz )
                        ;

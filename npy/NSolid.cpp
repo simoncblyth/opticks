@@ -50,7 +50,7 @@ nnode* NSolid::createEllipsoid( const char* name, float ax, float by, float cz, 
                        ;
     */
 
-    nnode* n = (nnode*)make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 ) ;
+    nnode* n = (nnode*)nzsphere::Create( 0.f, 0.f, 0.f, cz, z1, z2 ) ;
 
 
     n->label = strdup(name) ; 

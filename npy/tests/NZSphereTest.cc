@@ -33,21 +33,21 @@
 void test_dumpSurfacePointsAll()
 {
     LOG(info) << "test_dumpSurfacePointsAll" ;
-    nzsphere* zs = make_zsphere();
+    nzsphere* zs = nzsphere::Create();
     zs->dumpSurfacePointsAll("zs.dumpSurfacePointsAll", FRAME_LOCAL);
 }
 
 
 void test_part()
 {
-    nzsphere* s = make_zsphere(0,0,0,10,-5,5);
+    nzsphere* s = nzsphere::Create(0,0,0,10,-5,5);
     npart p = s->part();
     p.dump("p");
 }
 
 void test_bbox()
 {
-    nzsphere* a = make_zsphere(0.f,0.f,0.f,100.f, -50.f, 50.f);
+    nzsphere* a = nzsphere::Create(0.f,0.f,0.f,100.f, -50.f, 50.f);
     a->dump("zsph");
 
     nbbox bb = a->bbox();
@@ -60,7 +60,7 @@ void test_sdf()
     float zdelta_min = -radius/2.f ; 
     float zdelta_max = radius/2.f ; 
 
-    nzsphere* _a = make_zsphere(0.f,0.f,0.f,radius,zdelta_min,zdelta_max);
+    nzsphere* _a = nzsphere::Create(0.f,0.f,0.f,radius,zdelta_min,zdelta_max);
     const nzsphere& a = *_a ; 
 
     for(float v=-2*radius ; v <= 2*radius ; v+= radius/10.f ) 
@@ -91,7 +91,7 @@ void test_parametric()
     float z1 = -radius/2.f ; 
     float z2 = radius/2.f ; 
 
-    nzsphere* zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2);
+    nzsphere* zs = nzsphere::Create(0.f,0.f,0.f,radius,z1,z2);
 
 
 
@@ -127,7 +127,7 @@ void test_parametric()
 
 void test_deltaTheta(float radius, float z1, float z2)
 {
-    nzsphere* zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2 );
+    nzsphere* zs = nzsphere::Create(0.f,0.f,0.f,radius,z1,z2 );
      
     LOG(info) << "test_deltaTheta" 
              << " radius " << radius

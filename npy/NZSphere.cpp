@@ -37,6 +37,88 @@
 #include "PLOG.hh"
 
 
+
+nzsphere* nzsphere::Create(const nquad& param, const nquad& param1 )
+{
+    nzsphere* n = new nzsphere ; 
+    nnode::Init(n,CSG_ZSPHERE) ; 
+
+    n->param = param ; 
+    n->param1 = param1 ; 
+    n->check();
+
+    return n ; 
+}
+
+nzsphere* nzsphere::Create(float x, float y, float z, float radius, float z1, float z2 )
+{
+    nquad p0, p1 ; 
+    p0.f = {x,y,z,radius} ;
+    p1.f = {z1, z2, 0,0} ;
+    return Create(p0, p1);
+}
+
+nzsphere* nzsphere::Create()
+{
+    return Create(0.f, 0.f, 0.f, 100.f, -50.f, 70.f );
+}
+
+nzsphere* nzsphere::Create(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
+{
+    // used by code generation 
+    assert( z1 == 0.f );
+    assert( w1 == 0.f );
+    return Create( x0,y0,z0,w0,x1,y1 );
+}
+
+
+
+
+
+glm::vec3 nzsphere::center() const { return glm::vec3(x(),y(),z()) ;  } 
+
+float nzsphere::x() const {      return param.f.x ; }
+float nzsphere::y() const {      return param.f.y ; }
+float nzsphere::z() const {      return param.f.z ; }
+float nzsphere::radius() const { return param.f.w ; }
+
+float nzsphere::z2() const {      return param1.f.y ; }  // z2 > z1
+float nzsphere::z1() const {      return param1.f.x ; }
+float nzsphere::r1() const {      return rz(z1()) ; } 
+float nzsphere::r2() const {      return rz(z2()) ; } 
+
+float nzsphere::zmax() const {    return z() + z2() ; }
+float nzsphere::zmin() const {    return z() + z1() ; }
+float nzsphere::zc() const {      return (zmin() + zmax())/2.f ; }
+
+unsigned nzsphere::flags() const { return param2.u.x ; }
+
+// grow the zsphere upwards on upper side (z2) or downwards on down side (z1)
+void  nzsphere::increase_z2(float dz){ assert( dz >= 0.f) ; param1.f.y += dz ; check() ; } // z2 > z1
+void  nzsphere::decrease_z1(float dz){ assert( dz >= 0.f) ; param1.f.x -= dz ; check() ; }
+void  nzsphere::set_zcut(float z1, float z2){  param1.f.x = z1 ; param1.f.y = z2 ; check() ; }
+
+
+float nzsphere::rz(float z_) const 
+{
+    float r = radius(); 
+    return sqrt(r*r - z_*z_) ;  
+}
+
+/*
+In [23]: np.arccos([1,0,-1])/np.pi
+Out[23]: array([ 0. ,  0.5,  1. ])
+*/ 
+
+float nzsphere::startTheta() const { return acosf(z2()/radius()); }
+float nzsphere::endTheta() const {   return acosf(z1()/radius()); }
+float nzsphere::deltaTheta() const { return endTheta() - startTheta(); }
+
+
+
+
+
+
 void nzsphere::check() const 
 {
     bool z1z2_asc = z2() > z1() ; 

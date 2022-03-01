@@ -757,7 +757,7 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
     switch(typecode)
     {
        case CSG_SPHERE:         node = nsphere::Create(p0)        ; break ; 
-       case CSG_ZSPHERE:        node = make_zsphere(p0,p1,p2)     ; break ; 
+       case CSG_ZSPHERE:        node = nzsphere::Create(p0,p1)    ; break ; 
        case CSG_BOX:            node = nbox::Create(p0, CSG_BOX)  ; break ; 
        case CSG_BOX3:           node = nbox::Create(p0, CSG_BOX3) ; break ; 
        case CSG_SLAB:           node = make_slab(p0, p1)          ; break ; 

@@ -178,17 +178,19 @@ case $gcn in
 esac   
    
 
+DZ=${DZ:-$dz}
+
 case $GEOM in  
-   *_XZ) cegs=16:0:9:$dx:$dy:$dz:$num_pho  ;;  
-   *_YZ) cegs=0:16:9:$dx:$dy:$dz:$num_pho  ;;  
-   *_XY) cegs=16:9:0:$dx:$dy:$dz:$num_pho  ;;  
-   *_ZX) cegs=9:0:16:$dx:$dy:$dz:$num_pho  ;;  
-   *_ZY) cegs=0:9:16:$dx:$dy:$dz:$num_pho  ;;  
-   *_YX) cegs=9:16:0:$dx:$dy:$dz:$num_pho  ;;  
-   *_XYZ) cegs=9:16:9:$dx:$dy:$dz:$num_pho ;;  
+   *_XZ) cegs=16:0:9:$dx:$dy:$DZ:$num_pho  ;;  
+   *_YZ) cegs=0:16:9:$dx:$dy:$DZ:$num_pho  ;;  
+   *_XY) cegs=16:9:0:$dx:$dy:$DZ:$num_pho  ;;  
+   *_ZX) cegs=9:0:16:$dx:$dy:$DZ:$num_pho  ;;  
+   *_ZY) cegs=0:9:16:$dx:$dy:$DZ:$num_pho  ;;  
+   *_YX) cegs=9:16:0:$dx:$dy:$DZ:$num_pho  ;;  
+   *_XYZ) cegs=9:16:9:$dx:$dy:$DZ:$num_pho ;;  
 esac
 
-echo $msg dx $dx dy $dy dz $dz cegs $cegs 
+echo $msg dx $dx dy $dy DZ $DZ cegs $cegs 
 
 
 export X4SolidMaker=INFO

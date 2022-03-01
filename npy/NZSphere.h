@@ -19,10 +19,13 @@
 
 #pragma once
 
-enum {
-  ZSPHERE_PCAP = 0x1 << 0,
-  ZSPHERE_QCAP = 0x1 << 1
-};
+
+//  cap control makes no sense as CSG constituents cannot have open edges
+//  
+// enum {
+//   ZSPHERE_PCAP = 0x1 << 0,
+//   ZSPHERE_QCAP = 0x1 << 1
+// };
 
 
 

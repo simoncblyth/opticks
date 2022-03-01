@@ -4,6 +4,8 @@
 #include <iomanip>
 #include <cstdlib>
 
+#include "PLOG.hh"
+
 #include "G4SolidStore.hh"
 #include "G4UnionSolid.hh"
 #include "G4IntersectionSolid.hh"
@@ -1940,8 +1942,9 @@ G4VSolid* X4SolidTree::BooleanClone( const  G4VSolid* solid, int depth, G4Rotati
             << std::endl
             ; 
     }
-    assert( expect_tla ); 
-    if(!expect_tla) exit(EXIT_FAILURE); 
+    //assert( expect_tla ); 
+    if(!expect_tla) LOG(fatal) << " TMP SKIP ASSERT " ; 
+    //if(!expect_tla) exit(EXIT_FAILURE); 
 
     G4String name = solid->GetName() ; 
     G4RotationMatrix lrot, rrot ;  

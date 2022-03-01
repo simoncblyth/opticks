@@ -295,11 +295,79 @@ class CSGRecord(object):
 pass 
 
 
-def PlotBase():
+
+
+def apply_phicut(select):
+    print(" SPHI : selecting intersects based on phi angle of the position ") 
+    phi0,phi1 = efloatlist_("SPHI", "0.25,1.75")    
+    cosPhi0,sinPhi0 = np.cos(phi0*np.pi),np.sin(phi0*np.pi)     
+    cosPhi1,sinPhi1 = np.cos(phi1*np.pi),np.sin(phi1*np.pi)     
+    PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0 
+    PR = cosPhi0*pos[:,1] - pos[:,0]*sinPhi0
+    QR = cosPhi1*pos[:,1] - pos[:,0]*sinPhi1   #Q ^ R = cosPhi1*d.y - d.x*sinPhi1 
+    select_phi = np.logical_and( PR > 0., QR < 0. ) if PQ > 0. else np.logical_or( PR > 0., QR < 0. )
+    select_phi = np.logical_not( select_phi )
+    count_phi = np.count_nonzero(select_phi)
+    print( "%40s : %d " % ("count_phi", count_phi) )
+    select = np.logical_and( select, select_phi )
+    count_select = np.count_nonzero(select)
+    print("%40s : %d   SPHI %s  phi0 %s phi1 %s PQ %s \n" % ("count_select", count_select, os.environ["SPHI"], phi0, phi1, PQ )) 
+    return select
+pass
+
+def CSGIntersectFold():
+    """
+    eg /tmp/blyth/opticks/GeoChain_Darwin/nmskSolidMaskTail/CSGIntersectSolidTest/nmskSolidMaskTail_XZ 
+    """
     identdir = "$GEOM" if "GEOM" in os.environ else "$SOPR" 
-    plotbase = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/%s" % identdir)
-    print(" plotbase : %s " % plotbase )
-    return plotbase 
+    isectFold = os.path.expandvars("$CFBASE/CSGIntersectSolidTest/%s" % identdir)
+    print("CSGIntersectFolder : %s " % isectFold )
+    return isectFold 
+
+def X4IntersectFold():
+    """
+    eg /tmp/blyth/opticks/extg4/X4IntersectSolidTest/nmskSolidMaskTail_XZ/X4Intersect/
+    """
+    identdir = "$GEOM" if "GEOM" in os.environ else "$SOPR" 
+    isectFold = os.path.expandvars("/tmp/$USER/opticks/extg4/X4IntersectSolidTest/%s/X4Intersect" % identdir)
+    print("X4IntersectFolder : %s " % isectFold )
+    return isectFold 
+
+def select_ixyz_genstep(select, ixyz):
+    """
+    when envvar IXYZ is defined restrict to a single genstep source of photons identified by grid coordinates
+    """
+    ix,iy,iz = ixyz
+    print(isect_gsid)
+    select_isect_gsid = np.logical_and( np.logical_and( isect_gsid[:,0] == ix , isect_gsid[:,1] == iy ), isect_gsid[:,2] == iz )
+    count_isect_gsid = np.count_nonzero(select_isect_gsid) 
+
+    select = np.logical_and( select, select_isect_gsid )
+    count_select = np.count_nonzero(select)
+
+    print("%40s : %d   IXYZ %s  ix:%d iy:%d iz:%d" %   ("count_isect_gsid", count_isect_gsid, os.environ.get("IXYZ",None), ix,iy,iz ))
+    print("%40s : %d  \n" % ("count_select", count_select)) 
+
+    return select
+
+def select_iw_genstep(select, iw ):
+    """
+    when envvar IW is defined restrict to a single photon index, usually used together with IXYZ to pick one intersect
+    by selecting a single intersect as well as single genstep  
+    """
+    select_iw = isect_gsid[:,3] == iw 
+    count_iw = np.count_nonzero(select_iw)
+    select = np.logical_and( select, select_iw )
+    count_select = np.count_nonzero(select)
+
+    print("%40s : %d   IW %s " %   ("count_iw", count_iw, os.environ["IW"] ))
+    print("%40s : %d  \n" % ("count_select", count_select)) 
+
+    return select 
+
+
+
+
 
 
 if __name__ == '__main__':
@@ -312,19 +380,25 @@ if __name__ == '__main__':
         pl.enable_eye_dome_lighting()  
     pass   
 
-    plotbase = PlotBase()
-    cegs_path = plotbase  
-    rel_name = "saveCenterExtentGenstepIntersect"
-    recs_path = os.path.join(plotbase, rel_name )
+    if 'X4' in os.environ:
+        x4_fold_ = X4IntersectFold()
+        x4_cegs = SCenterExtentGenstep(x4_fold_)
+        x4_fold = x4_cegs.fold
+    else:
+        x4_fold = None
+    pass
 
 
-    cegs = SCenterExtentGenstep(cegs_path)
+    csg_fold_ = CSGIntersectFold()
+    cegs = SCenterExtentGenstep(csg_fold_)
     fold = cegs.fold
+    rel_name = "saveCenterExtentGenstepIntersect"
+    recs_path = os.path.join(csg_fold_, rel_name )
+
 
     gspos = fold.gs[:,5,:3]
-
     gsid_ =  fold.gs[:,0,2].view(np.uint32).copy()
-    gsid =  gsid_.view(np.int8).reshape(-1,4)   # q0.u.z (4 packed signed char) 
+    gsid =  gsid_.view(np.int8).reshape(-1,4)            # q0.u.z (4 packed signed char) 
 
     no_gs = 'NO_GS' in os.environ 
     if no_gs:
@@ -354,27 +428,36 @@ if __name__ == '__main__':
 
     dir_, t = fold.isect[:,0,:3], fold.isect[:,0,3]   # intersect normal and ray distance 
     pos, sd = fold.isect[:,1,:3], fold.isect[:,1,3]   # intersect position and surface distance 
-    asd = np.abs(sd) 
-
-    isect_gsid_ = fold.isect[:,3,3].copy().view(np.uint32)
-    isect_gsid = isect_gsid_.view(np.int8).reshape(-1,4)    # genstep (ix,iy,iz,0) from which each intersect originated from     
-
-    ## bitwise_and removes the bytes holding the photon index, for easier connection to gs level  
-    isect_gsoid_ = np.bitwise_and( fold.isect[:,3,3].view(np.uint32), 0x00ffffff ).copy()
-    isect_gsoid = isect_gsoid_.view(np.int8).reshape(-1,4)  
-    np.all( isect_gsid[:,:3]  == isect_gsoid[:,:3] ) 
-
-    ray_origin = fold.isect[:, 2, :3]
+    ray_origin    = fold.isect[:, 2, :3]
     ray_direction = fold.isect[:, 3, :3]
 
+    if not x4_fold is None: 
+        x4_pos = x4_fold.isect[:,0,:3]   # TODO: standardize isect layout
+    else:
+        x4_pos = None 
+    pass
+
+    isect_gsid_ = fold.isect[:,3,3].copy().view(np.uint32)
+    isect_gsid = isect_gsid_.view(np.int8).reshape(-1,4)   
+    # genstep (ix,iy,iz,iw) from which each intersect originated from, 
+    # iw is photon index within genstep     
+
+    ## bitwise_and to remove bytes holding the photon index, for easier connection to gs level  
+    isect_gsoid_ = np.bitwise_and( fold.isect[:,3,3].view(np.uint32), 0x00ffffff ).copy()
+    isect_gsoid = isect_gsoid_.view(np.int8).reshape(-1,4)  
+    assert np.all( isect_gsid[:,:3]  == isect_gsoid[:,:3] ) 
+
+
+    asd = np.abs(sd)   # absolute distance to surface : should be close to zero for all intersects 
     asd_cut = efloat_("ASD", 1e-2)
     select_spurious = asd > asd_cut 
     select_all = t > 0.
 
+
     gss_ = np.unique(isect_gsoid_[select_spurious]) 
-    gss = gss_.view(np.int8).reshape(-1,4)        # gensteps which have spurious intersects 
-    gsid_idx = np.where(np.in1d(gsid_, gss_))[0]  # gsid_ indices of      
-    gss_select = np.isin(gsid_, gss_)  # mask selecting  gensteps which have spurious intersects
+    gss = gss_.view(np.int8).reshape(-1,4)         # gensteps which have spurious intersects 
+    gsid_idx = np.where(np.in1d(gsid_, gss_))[0]   # gsid_ indices of      
+    gss_select = np.isin(gsid_, gss_)              # genstep mask selecting gensteps the rays from which have spurious intersects
 
     if no_gs:
         print(" skip gspos points due to NO_GS " )
@@ -390,7 +473,6 @@ if __name__ == '__main__':
 
     count_all = np.count_nonzero(select_all)
     count_spurious = np.count_nonzero(select_spurious)
-
     cmdline = os.environ.get("CMDLINE", "no-CMDLINE")
 
     print("\n\n")
@@ -399,64 +481,31 @@ if __name__ == '__main__':
     print( "%40s : %d " % ("count_all", count_all) )
     print( "%40s : %d " % ("count_spurious", count_spurious) )
 
-    sphi = 'SPHI' in os.environ
-    if sphi:
-        print(" SPHI : selecting intersects based on phi angle of the position ") 
-        phi0,phi1 = efloatlist_("SPHI", "0.25,1.75")    
-        cosPhi0,sinPhi0 = np.cos(phi0*np.pi),np.sin(phi0*np.pi)     
-        cosPhi1,sinPhi1 = np.cos(phi1*np.pi),np.sin(phi1*np.pi)     
-        PQ = cosPhi0*sinPhi1 - cosPhi1*sinPhi0 
-        PR = cosPhi0*pos[:,1] - pos[:,0]*sinPhi0
-        QR = cosPhi1*pos[:,1] - pos[:,0]*sinPhi1   #Q ^ R = cosPhi1*d.y - d.x*sinPhi1 
-        select_phi = np.logical_and( PR > 0., QR < 0. ) if PQ > 0. else np.logical_or( PR > 0., QR < 0. )
-        select_phi = np.logical_not( select_phi )
-        count_phi = np.count_nonzero(select_phi)
-        print( "%40s : %d " % ("count_phi", count_phi) )
-        select = np.logical_and( select, select_phi )
-        count_select = np.count_nonzero(select)
-        print("%40s : %d   SPHI %s  phi0 %s phi1 %s PQ %s \n" % ("count_select", count_select, os.environ["SPHI"], phi0, phi1, PQ )) 
+    if 'SPHI' in os.environ:
+        select = apply_phicut(select)
     pass
 
-    ## when envvar IXYZ is defined restrict to a single genstep source of photons identified by grid coordinates
-    ixyz = eintlist_("IXYZ", None)   
-    sxyzw = eintlist_("SXYZW", None)   
-
-    _sxyzw = np.array( sxyzw, dtype=np.int8 ).view(np.uint32)[0] if not sxyzw is None else None
-    _sxyzw_idx = np.where( isect_gsid_ == _sxyzw )  if not _sxyzw is None else None
-
-
-    if not ixyz is None:
-        ix,iy,iz = ixyz
-        select_isect_gsid = np.logical_and( np.logical_and( isect_gsid[:,0] == ix , isect_gsid[:,1] == iy ), isect_gsid[:,2] == iz )
-        count_isect_gsid = np.count_nonzero(select_isect_gsid) 
-
-        select = np.logical_and( select, select_isect_gsid )
-        count_select = np.count_nonzero(select)
-
-        print("%40s : %d   IXYZ %s  ix:%d iy:%d iz:%d" %   ("count_isect_gsid", count_isect_gsid, os.environ.get("IXYZ",None), ix,iy,iz ))
-        print("%40s : %d  \n" % ("count_select", count_select)) 
-    pass  
-
-    ## when envvar IW is defined restrict to a single photon index, usually used together with IXYZ to pick one intersect
-    iw = eint_("IW","-1")
-    if iw > -1:
-        # selecting a single intersect as well as single genstep  
-        select_iw = isect_gsid[:,3] == iw 
-        count_iw = np.count_nonzero(select_iw)
-        select = np.logical_and( select, select_iw )
-        count_select = np.count_nonzero(select)
-
-        print("%40s : %d   IW %s " %   ("count_iw", count_iw, os.environ["IW"] ))
-        print("%40s : %d  \n" % ("count_select", count_select)) 
-    pass  
-
-    # when envvar SPUR is defined restrict to intersects that have sd less than sd_cut  
-    spurious = 'SPUR' in os.environ
-    if spurious:
+    if 'SPUR' in os.environ:  # when envvar SPUR is defined restrict to intersects that have sd less than sd_cut  
         select = np.logical_and( select, select_spurious )
         count_select = np.count_nonzero(select)
         print("%40s : %d    SPUR %s " % ("count_spurious", count_spurious, os.environ["SPUR"] ))
         print("%40s : %d  \n" % ("count_select", count_select)) 
+    pass
+
+    sxyzw = eintlist_("SXYZW", None)   
+    _sxyzw = np.array( sxyzw, dtype=np.int8 ).view(np.uint32)[0] if not sxyzw is None else None
+    _sxyzw_idx = np.where( isect_gsid_ == _sxyzw )  if not _sxyzw is None else None
+
+    ixyz = eintlist_("IXYZ", None)   
+    if not ixyz is None:
+        log.info("select_ixyz_genstep") 
+        select = select_ixyz_genstep(select, ixyz)  
+    pass
+
+    iw = eint_("IW","-1")
+    if iw > -1:
+        log.info("select_iw_genstep") 
+        select = select_iw_genstep(select, iw)  
     pass
 
     gsid_label = None 
@@ -469,7 +518,7 @@ if __name__ == '__main__':
         gsid_label = "gsid_%d_%d_%d_%d" % (sx,sy,sz,sw) 
         print(" SXYZW defined  =>  gsid_label : %s " % gsid_label )
     pass     
-         
+        
     if not gsid_label is None: 
         recs_fold = Fold.Load(recs_path, gsid_label, quiet=True)
         recs = [] if recs_fold is None else recs_fold.CSGRecord 
@@ -483,7 +532,6 @@ if __name__ == '__main__':
     else:
         recs = []
     pass
-
 
     pos_shifts = []
     if len(recs) > 0:
@@ -553,8 +601,7 @@ if __name__ == '__main__':
         print(" define key %s to save selected isect to %s " % (key, selected_isect_path ))
     pass
 
-    plot_selected = 'PLOT_SELECTED' in os.environ   # normally all positions are plotted not just selected
-    if plot_selected:
+    if 'PLOT_SELECTED_ONLY' in os.environ:   # normally all positions are plotted not just selected
         pl.add_points( s_pos, color="white" )
     else:
         if len(pos_shifts) == 0:
@@ -565,6 +612,14 @@ if __name__ == '__main__':
             pass
         pass
     pass
+
+    if not x4_pos is None:
+        print("x4_pos %s" % str(x4_pos.shape))
+        pl.add_points( x4_pos+10*off, color="cyan" )  
+    else:
+        print("x4_pos None")
+    pass    
+
 
     ## different presentation of selected intersects and normals
     if s_count > 0 and sxyzw is None:
@@ -581,7 +636,7 @@ if __name__ == '__main__':
     pl.add_text(topline, position="upper_left")
     pl.add_text(botline, position="lower_left")
 
-    figsdir = os.path.join(plotbase, "figs")
+    figsdir = os.path.join(csg_fold_, "figs")
     if not os.path.isdir(figsdir):
         os.makedirs(figsdir)
     pass

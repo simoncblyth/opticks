@@ -13,13 +13,16 @@ This can be done with::
 
 **/
 
+#include "SStr.hh"
 #include "X4SolidMaker.hh"
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
 #endif
 
-const G4VSolid* X4_GetSolid(const char* name, std::string& meta)
+const G4VSolid* X4_GetSolid(const char* name_, std::string& meta)
 {
+    const char* name = SStr::HeadFirst(name_, '_'); 
+
     const G4VSolid* solid = nullptr ; 
     if(X4SolidMaker::CanMake(name))
     {
