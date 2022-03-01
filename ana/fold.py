@@ -35,7 +35,6 @@ class Fold(object):
             path = os.path.join(base, name)
             st = os.stat(path)
             stamp = datetime.datetime.fromtimestamp(st.st_ctime)
-            print(stamp)
 
             stamps.append(stamp)
 
@@ -54,11 +53,24 @@ class Fold(object):
             if self.globals:
                 gstem = self.globals_prefix + stem
                 globals()[gstem] = a 
-                print(" %20s : %15s : %15s : %s " % (stem, gstem, ashape, path ))  
+                print(" %20s : %15s : %20s : %20s : %s " % (stem, gstem, ashape, str(stamp), name ))  
             else:
-                print(" %20s : %15s : %s " % (stem, ashape, path ))  
+                print(" %20s : %15s : %20s :  %s " % (stem, ashape, str(stamp), name ))  
             pass
         pass
+
+        min_stamp = min(stamps)
+        max_stamp = max(stamps)
+        dif_stamp = max_stamp - min_stamp 
+
+        print(" min_stamp : %s " % str(min_stamp))
+        print(" max_stamp : %s " % str(max_stamp))
+        print(" dif_stamp : %s " % str(dif_stamp))
+
+        assert dif_stamp.microseconds < 1e6, "stamp divergence detected microseconds %d : so are seeing mixed up results from multiple runs " % dif_stamp.microseconds 
+        
+
+
         self.stems = stems
         self.stamps = stamps
 

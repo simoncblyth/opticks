@@ -38,6 +38,10 @@ geom=GeneralSphereDEV
 catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && geom=$(echo ${catgeom%%_*})
 export GEOM=${GEOM:-$geom}
 
+# PYVISTA_KILL_DISPLAY envvar is observed to speedup exiting from ipython after pyvista plotting 
+# see https://github.com/pyvista/pyvista/blob/main/pyvista/plotting/plotting.py
+export PYVISTA_KILL_DISPLAY=1
+
 outdir="$TMP/extg4/X4MeshTest/$GEOM/X4Mesh"
 reldir="/env/presentation/extg4/X4MeshTest/$GEOM/X4Mesh"
 pubdir="$HOME/simoncblyth.bitbucket.io$reldir"

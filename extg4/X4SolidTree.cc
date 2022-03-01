@@ -27,6 +27,8 @@
 
 const bool X4SolidTree::verbose = getenv("X4SolidTree_verbose") != nullptr ; 
 
+const plog::Severity X4SolidTree::LEVEL = PLOG::EnvLevel("X4SolidTree", "DEBUG") ; 
+
 G4VSolid* X4SolidTree::ApplyZCutTree( const G4VSolid* original, double zcut ) // static
 {
     if(verbose)
@@ -43,16 +45,20 @@ G4VSolid* X4SolidTree::ApplyZCutTree( const G4VSolid* original, double zcut ) //
 
 void X4SolidTree::Draw(const G4VSolid* original, const char* msg ) // static
 {
+    LOG(LEVEL) << "[" ; 
     if(original == nullptr )
     {
         std::cout << "ERROR X4SolidTree::Draw got nullptr original : msg " << msg << std::endl ; 
         return ; 
     }    
 
+
     X4SolidTree* zs = new X4SolidTree(original); 
     zs->draw(msg);
     zs->dumpNames(msg); 
     zs->zdump(msg); 
+
+    LOG(LEVEL) << "]" ; 
 }
 
 X4SolidTree::X4SolidTree(const G4VSolid* original_ ) 
@@ -263,7 +269,7 @@ void X4SolidTree::parent_r( const G4VSolid* node_, int depth)
     if( node_ == nullptr ) return ; 
     const G4VSolid* node = Moved(node_ ); 
 
-    if(Boolean(node))
+    if(IsBoolean(node))
     {
         const G4VSolid* l = Left(node) ; 
         const G4VSolid* r = Right(node) ; 
@@ -494,7 +500,7 @@ bool X4SolidTree::is_exclude( const G4VSolid* node_) const
 
 bool X4SolidTree::is_exclude_include( const G4VSolid* node_) const 
 {
-    if(!Boolean(node_)) return false ; 
+    if(!IsBoolean(node_)) return false ; 
     const G4VSolid* left_  = Left(node_); 
     const G4VSolid* right_ = Right(node_); 
     return is_exclude(left_) &&  is_include(right_) ; 
@@ -502,7 +508,7 @@ bool X4SolidTree::is_exclude_include( const G4VSolid* node_) const
 
 bool X4SolidTree::is_include_exclude( const G4VSolid* node_) const 
 {
-    if(!Boolean(node_)) return false ; 
+    if(!IsBoolean(node_)) return false ; 
     const G4VSolid* left_  = Left(node_); 
     const G4VSolid* right_ = Right(node_); 
     return is_include(left_) &&  is_exclude(right_) ; 
@@ -510,7 +516,7 @@ bool X4SolidTree::is_include_exclude( const G4VSolid* node_) const
 
 bool X4SolidTree::is_crux( const G4VSolid* node_ ) const 
 {
-    if(!Boolean(node_)) return false ; 
+    if(!IsBoolean(node_)) return false ; 
     const G4VSolid* left_  = Left(node_); 
     const G4VSolid* right_ = Right(node_); 
     bool exclude_include = zcls(left_) == EXCLUDE &&  zcls(right_) == INCLUDE ;
@@ -1025,37 +1031,37 @@ std::string X4SolidTree::Desc(const G4VSolid* solid) // static
 
     ss << EntityTypeName(solid)
        << " name " << solid->GetName()
-       << " bool " << Boolean(solid)
-       << " disp " << Displaced(solid)
+       << " bool " << IsBoolean(solid)
+       << " disp " << IsDisplaced(solid)
        ; 
 
     std::string s = ss.str(); 
     return s ; 
 }
 
-bool X4SolidTree::Boolean(const G4VSolid* solid) // static
+bool X4SolidTree::IsBoolean(const G4VSolid* solid) // static
 {
     return dynamic_cast<const G4BooleanSolid*>(solid) != nullptr ; 
 }
-bool X4SolidTree::Displaced(const G4VSolid* solid) // static
+bool X4SolidTree::IsDisplaced(const G4VSolid* solid) // static
 {
     return dynamic_cast<const G4DisplacedSolid*>(solid) != nullptr ; 
 }
 const G4VSolid* X4SolidTree::Left(const G4VSolid* solid ) // static
 {
-    return Boolean(solid) ? solid->GetConstituentSolid(0) : nullptr ; 
+    return IsBoolean(solid) ? solid->GetConstituentSolid(0) : nullptr ; 
 }
 const G4VSolid* X4SolidTree::Right(const G4VSolid* solid ) // static
 {
-    return Boolean(solid) ? solid->GetConstituentSolid(1) : nullptr ; 
+    return IsBoolean(solid) ? solid->GetConstituentSolid(1) : nullptr ; 
 }
 G4VSolid* X4SolidTree::Left_(G4VSolid* solid ) // static
 {
-    return Boolean(solid) ? solid->GetConstituentSolid(0) : nullptr ; 
+    return IsBoolean(solid) ? solid->GetConstituentSolid(0) : nullptr ; 
 }
 G4VSolid* X4SolidTree::Right_(G4VSolid* solid ) // static
 {
-    return Boolean(solid) ? solid->GetConstituentSolid(1) : nullptr ; 
+    return IsBoolean(solid) ? solid->GetConstituentSolid(1) : nullptr ; 
 }
 
 /**
@@ -1110,7 +1116,7 @@ int X4SolidTree::maxdepth() const
 
 int X4SolidTree::Maxdepth_r( const G4VSolid* node_, int depth)  // static 
 {
-    return Boolean(node_) ? std::max( Maxdepth_r(X4SolidTree::Left(node_), depth+1), Maxdepth_r(X4SolidTree::Right(node_), depth+1)) : depth ; 
+    return IsBoolean(node_) ? std::max( Maxdepth_r(X4SolidTree::Left(node_), depth+1), Maxdepth_r(X4SolidTree::Right(node_), depth+1)) : depth ; 
 }
 
 /**
@@ -1127,7 +1133,7 @@ void X4SolidTree::dumpTree(const char* msg ) const
 
 void X4SolidTree::dumpTree_r( const G4VSolid* node_, int depth  ) const
 {
-    if(Boolean(node_))
+    if(IsBoolean(node_))
     {
         dumpTree_r(X4SolidTree::Left(node_) , depth+1) ; 
         dumpTree_r(X4SolidTree::Right(node_), depth+1) ; 
@@ -1203,7 +1209,7 @@ int X4SolidTree::classifyTree_r(G4VSolid* node_, int depth, double zcut )
     int sid = in(node_);    // inorder 
     int pos = post(node_); 
 
-    if(Boolean(node_))
+    if(IsBoolean(node_))
     {
         int left_zcl = classifyTree_r(Left_(node_) , depth+1, zcut) ; 
         int right_zcl = classifyTree_r(Right_(node_), depth+1, zcut) ; 
@@ -1278,7 +1284,7 @@ int X4SolidTree::classifyMask(const G4VSolid* top) const   // NOT USED ?
 int X4SolidTree::classifyMask_r( const G4VSolid* node_, int depth ) const 
 {
     int mask = 0 ; 
-    if(Boolean(node_))
+    if(IsBoolean(node_))
     {
         mask |= classifyMask_r( Left(node_) , depth+1 ) ; 
         mask |= classifyMask_r( Right(node_), depth+1 ) ; 
@@ -1420,7 +1426,7 @@ void X4SolidTree::collectNames_inorder_r( const G4VSolid* n_, int depth )
 
 void X4SolidTree::cutTree_r( const G4VSolid* node_, int depth, double zcut )
 {
-    if(Boolean(node_))
+    if(IsBoolean(node_))
     {
         cutTree_r( X4SolidTree::Left(node_) , depth+1, zcut ) ; 
         cutTree_r( X4SolidTree::Right(node_), depth+1, zcut ) ; 
@@ -1455,7 +1461,7 @@ void X4SolidTree::collectNodes( std::vector<const G4VSolid*>& nodes, const G4VSo
 
 void X4SolidTree::collectNodes_r( std::vector<const G4VSolid*>& nodes, const G4VSolid* node_, int query_zcls, int depth  )
 {
-    if(Boolean(node_))
+    if(IsBoolean(node_))
     {
         collectNodes_r( nodes, Left(node_) , query_zcls, depth+1 ) ; 
         collectNodes_r( nodes, Right(node_), query_zcls, depth+1 ) ; 
@@ -1746,7 +1752,7 @@ void X4SolidTree::dumpUp(const char* msg) const
 
 void X4SolidTree::dumpUp_r(const G4VSolid* node, int depth) const  
 {
-    if(Boolean(node))
+    if(IsBoolean(node))
     {
         dumpUp_r(X4SolidTree::Left(  node ), depth+1 ); 
         dumpUp_r(X4SolidTree::Right( node ), depth+1 ); 
@@ -1841,15 +1847,18 @@ which appear to make properly independent copies
 
 G4VSolid* X4SolidTree::DeepClone( const  G4VSolid* solid )  // static 
 {
+    LOG(LEVEL) << "[" ; 
     G4RotationMatrix* rot = nullptr ; 
     G4ThreeVector* tla = nullptr ; 
     int depth = 0 ; 
-    return DeepClone_r(solid, depth, rot, tla );  
+    G4VSolid* clone = DeepClone_r(solid, depth, rot, tla );  
+    LOG(LEVEL) << "]" ; 
+    return clone ; 
 }
 
 /**
 X4SolidTree::DeepClone_r
---------------------
+--------------------------
 
 G4DisplacedSolid is a wrapper for the right hand side boolean constituent 
 which serves the purpose of holding the transform. The G4DisplacedSolid 
@@ -1857,14 +1866,84 @@ is automatically created by the G4BooleanSolid ctor when there is an associated 
 
 The below *rot* and *tla* look at first glance like they are not used. 
 But look more closely, the recursive DeepClone_r calls within BooleanClone are using them 
-across the generations. This structure is necessary for BooleanClone because the 
-transform from the child is needed when cloning the parent.
+across the generations. **This structure is necessary for BooleanClone because the 
+transform from the child is needed when cloning the parent**.
+
+The transform is wrapped around the right hand child (either leaf or operator) 
+but for the clone it is needed at construction of the parent.  
 
 **/
 
 G4VSolid* X4SolidTree::DeepClone_r( const G4VSolid* node_, int depth, G4RotationMatrix* rot, G4ThreeVector* tla )  // static 
 {
-    const G4VSolid* node = Moved( rot, tla, node_ ); // if node_ isa G4DisplacedSolid node will not be and rot/tla will be set 
+    const G4VSolid* node = Moved( rot, tla, node_ );  // <-- checking this node for a wrapper, not expecting one for the root node
+    DeepCloneDump(depth, node_, node, tla ); 
+    G4VSolid* clone = IsBoolean(node) ? BooleanClone(node, depth, rot, tla ) : PrimitiveClone(node) ; 
+    ExpectNonNull( clone, "X4SolidTree::DeepClone_r GOT null clone " ); 
+    return clone ; 
+}    
+
+/**
+X4SolidTree::BooleanClone
+-----------------------
+
+The left and right G4VSolid outputs from DeepClone_r will not be G4DisplacedSolid because
+those get "dereferenced" by Moved and the rot/tla set.  This means that the information 
+from the G4DisplacedSolid is available. This approach is necessary as the G4DisplacedSolid
+is an "internal" object that the G4BooleanSolid ctor creates from the rot and tla ctor arguments. 
+
+HMM : rot and tla arguments were not used and they are not always null ... 
+that suggests there is a lack of generality here for booleans of booleans etc... 
+with translations that apply on top of translations. 
+However for JUNO PMTs are not expecting any rotations
+and are not expecting more than one level of translation. 
+
+**/
+
+G4VSolid* X4SolidTree::BooleanClone( const  G4VSolid* solid, int depth, G4RotationMatrix* rot, G4ThreeVector* tla ) // static
+{
+    if(verbose) std::cout << "X4SolidTree::BooleanClone" << std::endl ; 
+
+    ExpectNoRotation(    rot, "X4SolidTree::BooleanClone expect_rot ERROR " ); 
+    ExpectNoTranslation( tla, "X4SolidTree::BooleanClone expect_tla ERROR (not expecting more than one level of translation) ", true ); 
+
+    G4String name = solid->GetName() ; 
+    G4RotationMatrix lrot, rrot ;  
+    G4ThreeVector    ltra, rtra ; 
+
+    const G4BooleanSolid* src_boolean = dynamic_cast<const G4BooleanSolid*>(solid) ; 
+    G4VSolid* left  = DeepClone_r( src_boolean->GetConstituentSolid(0), depth+1, &lrot, &ltra ) ; 
+    G4VSolid* right = DeepClone_r( src_boolean->GetConstituentSolid(1), depth+1, &rrot, &rtra ) ; 
+
+    ExpectNoDisplaced(     left, "X4SolidTree::BooleanClone expect_left ERROR "); 
+    ExpectNoRotation(     &lrot, "X4SolidTree::BooleanClone expect_lrot ERROR : G4 should never have left transforms  " ); 
+    ExpectNoTranslation(  &ltra, "X4SolidTree::BooleanClone expect_ltra ERROR : not expectsing left translation", false ); 
+    ExpectNoRotation(     &rrot, "X4SolidTree::BooleanClone expect_rrot ERROR : simplifying assumptions  " ); 
+
+    G4VSolid* clone = nullptr ; 
+    switch(EntityType(solid))
+    {
+        case _G4UnionSolid        : clone = new G4UnionSolid(       name, left, right, &rrot, rtra ) ; break ; 
+        case _G4SubtractionSolid  : clone = new G4SubtractionSolid( name, left, right, &rrot, rtra ) ; break ;
+        case _G4IntersectionSolid : clone = new G4IntersectionSolid(name, left, right, &rrot, rtra ) ; break ; 
+    } 
+    CheckBooleanClone( clone, left, right ); 
+    return clone ; 
+}
+
+
+
+
+
+void X4SolidTree::DeepCloneDump( int depth, const G4VSolid* node_ , const G4VSolid* node , G4ThreeVector* tla )
+{
+    LOG(LEVEL) 
+        << "[ depth " << depth 
+        << " EntityTypeName(node_) " << EntityTypeName(node_)  
+        << " EntityTypeName(node) "  << EntityTypeName(node)  
+        ; 
+     
+    // if node_ isa G4DisplacedSolid node will not be and rot/tla will be set 
 
     if(verbose) 
     {
@@ -1887,51 +1966,24 @@ G4VSolid* X4SolidTree::DeepClone_r( const G4VSolid* node_, int depth, G4Rotation
             << std::endl 
             ; 
     }
+} 
 
-    G4VSolid* clone = Boolean(node) ? BooleanClone(node, depth, rot, tla ) : PrimitiveClone(node) ; 
-
-    bool expect = clone != nullptr ; 
-    if(!expect) std::cout << "X4SolidTree::DeepClone_r GOT null clone " << std::endl ; 
-    assert(expect);
-    if(!expect) exit(EXIT_FAILURE); 
-    return clone ; 
-}    
-
-/**
-X4SolidTree::BooleanClone
------------------------
-
-The left and right G4VSolid outputs from DeepClone_r will not be G4DisplacedSolid because
-those get "dereferenced" by Moved and the rot/tla set.  This means that the information 
-from the G4DisplacedSolid is available. This approach is necessary as the G4DisplacedSolid
-is an "internal" object that the G4BooleanSolid ctor creates from the rot and tla ctor arguments. 
-
-**/
-
-G4VSolid* X4SolidTree::BooleanClone( const  G4VSolid* solid, int depth, G4RotationMatrix* rot, G4ThreeVector* tla ) // static
+void X4SolidTree::ExpectNoRotation( const G4RotationMatrix* rot, const char* msg )
 {
-    if(verbose) std::cout << "X4SolidTree::BooleanClone" << std::endl ; 
-
-    // HMM : rot and tla arguments were not used and they are not always null ... 
-    // that suggests there is a lack of generality here for booleans of booleans etc... 
-    // with translations that apply on top of translations. 
-    // However for JUNO PMTs are not expecting any rotations
-    // and are not expecting more than one level of translation. 
-
-    G4ThreeVector zero(0., 0., 0.); 
-    double epsilon = 1e-6 ; 
-
     bool expect_rot = rot == nullptr || rot->isIdentity() ;   
-    if(!expect_rot) std::cout << "X4SolidTree::BooleanClone expect_rot ERROR " << std::endl ; 
+    if(!expect_rot) std::cout << msg  << std::endl ; 
     assert( expect_rot ); 
     if(!expect_rot) exit(EXIT_FAILURE); 
+}
 
-    bool expect_tla = tla == nullptr || tla->isNear(zero, epsilon) ; 
+void X4SolidTree::ExpectNoTranslation( const G4ThreeVector* tla, const char* msg, bool skip_assert )
+{
+    if(!tla) return ; 
+    bool expect_tla = tla->x() == 0. && tla->y() == 0. && tla->z() == 0. ;
     if(!expect_tla) 
     {
-        std::cout << "X4SolidTree::BooleanClone expect_tla ERROR (not expecting more than one level of translation) " << std::endl ; 
-        if(tla) std::cout 
-            << "X4SolidTree::BooleanClone" 
+        std::cout 
+            << msg 
             << " tla( " 
             << tla->x() 
             << " " 
@@ -1941,57 +1993,40 @@ G4VSolid* X4SolidTree::BooleanClone( const  G4VSolid* solid, int depth, G4Rotati
             << ") " 
             << std::endl
             ; 
+
+        if( skip_assert )
+        {
+            LOG(fatal) << " TMP SKIP ASSERT " ; 
+        }
+        else
+        {
+            assert( expect_tla );
+            if(!expect_tla) exit(EXIT_FAILURE); 
+        }
     }
-    //assert( expect_tla ); 
-    if(!expect_tla) LOG(fatal) << " TMP SKIP ASSERT " ; 
-    //if(!expect_tla) exit(EXIT_FAILURE); 
-
-    G4String name = solid->GetName() ; 
-    G4RotationMatrix lrot, rrot ;  
-    G4ThreeVector    ltra, rtra ; 
-
-    const G4BooleanSolid* src_boolean = dynamic_cast<const G4BooleanSolid*>(solid) ; 
-    G4VSolid* left  = DeepClone_r( src_boolean->GetConstituentSolid(0), depth+1, &lrot, &ltra ) ; 
-    G4VSolid* right = DeepClone_r( src_boolean->GetConstituentSolid(1), depth+1, &rrot, &rtra ) ; 
-
-    // not expecting left or right to be displaced   
-
-    bool expect_left = dynamic_cast<const G4DisplacedSolid*>(left) == nullptr ;  
-    assert( expect_left );
-    if(!expect_left) std::cout << "X4SolidTree::BooleanClone expect_left ERROR " << std::endl ;
-    if(!expect_left) exit(EXIT_FAILURE); 
-
-    bool expect_right = dynamic_cast<const G4DisplacedSolid*>(right) == nullptr ; 
-    assert( expect_right );
-    if(!expect_right) std::cout << "X4SolidTree::BooleanClone expect_right ERROR " << std::endl ;
-    if(!expect_right) exit(EXIT_FAILURE); 
-
-    bool expect_lrot = lrot.isIdentity() ;  // lrot is expected to always be identity, as G4 never has left transforms
-    assert( expect_lrot );
-    if(!expect_lrot) std::cout << "X4SolidTree::BooleanClone expect_lrot ERROR " << std::endl ;
-    if(!expect_lrot) exit(EXIT_FAILURE); 
-
-    bool expect_ltra = ltra.x() == 0. && ltra.y() == 0. && ltra.z() == 0. ; // not expecting translations on the left
-    assert( expect_ltra );
-    if(!expect_ltra) std::cout << "X4SolidTree::BooleanClone expect_ltra ERROR " << std::endl ;
-    if(!expect_ltra) exit(EXIT_FAILURE); 
-
-    bool expect_rrot = rrot.isIdentity() ; // rrot identity is a simplifying assumption
-    assert( expect_rrot );
-    if(!expect_rrot) std::cout << "X4SolidTree::BooleanClone expect_rrot ERROR " << std::endl ;
-    if(!expect_rrot) exit(EXIT_FAILURE); 
-
-
-    G4VSolid* clone = nullptr ; 
-    switch(EntityType(solid))
-    {
-        case _G4UnionSolid        : clone = new G4UnionSolid(       name, left, right, &rrot, rtra ) ; break ; 
-        case _G4SubtractionSolid  : clone = new G4SubtractionSolid( name, left, right, &rrot, rtra ) ; break ;
-        case _G4IntersectionSolid : clone = new G4IntersectionSolid(name, left, right, &rrot, rtra ) ; break ; 
-    } 
-    CheckBooleanClone( clone, left, right ); 
-    return clone ; 
 }
+
+
+void X4SolidTree::ExpectNoDisplaced( const G4VSolid* solid, const char* msg )
+{
+    bool expect = dynamic_cast<const G4DisplacedSolid*>(solid) == nullptr ; 
+    if(!expect) std::cout << msg << std::endl ; 
+    if(!expect) exit(EXIT_FAILURE); 
+    assert( expect );
+}
+
+void X4SolidTree::ExpectNonNull( const G4VSolid* clone, const char* msg )
+{
+    bool expect = clone != nullptr ; 
+    if(!expect) std::cout << msg << std::endl ; 
+
+    assert(expect);
+    if(!expect) exit(EXIT_FAILURE); 
+}
+
+
+
+
 
 void X4SolidTree::CheckBooleanClone( const G4VSolid* clone, const G4VSolid* left, const G4VSolid* right ) // static
 {
@@ -2231,6 +2266,8 @@ void X4SolidTree::SetLeft(  G4VSolid* node, G4VSolid* left)  // static
 
 G4VSolid* X4SolidTree::PrimitiveClone( const  G4VSolid* solid )  // static 
 {
+    LOG(LEVEL) << EntityTypeName(solid) ; 
+
     G4VSolid* clone = nullptr ; 
     int type = EntityType(solid); 
     if( type == _G4Ellipsoid )

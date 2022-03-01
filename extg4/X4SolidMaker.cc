@@ -31,6 +31,7 @@ JustOrbOrbUnion
 JustOrbOrbIntersection
 JustOrbOrbDifference
 JustOrb
+ThreeOrbUnion
 SphereIntersectBox
 SphereWithPhiSegment
 SphereWithPhiCutDEV
@@ -116,6 +117,7 @@ const G4VSolid* X4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("JustOrbOrbIntersection",qname))       solid = X4SolidMaker::JustOrbOrbIntersection(qname); 
     else if(StartsWith("JustOrbOrbDifference",qname))         solid = X4SolidMaker::JustOrbOrbDifference(qname); 
     else if(StartsWith("JustOrb",qname))                      solid = X4SolidMaker::JustOrb(qname); 
+    else if(StartsWith("ThreeOrbUnion",qname))                solid = X4SolidMaker::ThreeOrbUnion(qname); 
     else if(StartsWith("SphereWithPhiSegment",qname))         solid = X4SolidMaker::SphereWithPhiSegment(qname); 
     else if(StartsWith("SphereWithPhiCutDEV",qname))          solid = X4SolidMaker::SphereWithPhiCutDEV(qname); 
     else if(StartsWith("GeneralSphereDEV",qname))             solid = X4SolidMaker::GeneralSphereDEV(qname, meta); 
@@ -386,7 +388,67 @@ const G4VSolid* X4SolidMaker::AdditionAcrylicConstruction(const char* name)
     return uni_acrylic2_initial ; 
 }
 
+/**
+X4SolidMaker::ThreeOrbUnion : Checking the cloning of a boolean tree with two levels of transforms
+----------------------------------------------------------------------------------------------------
 
+ThreeOrbUnion0: left-hand form does NOT combine transforms 
+
+* this way the transforms are both associated with leaf nodes
+
+       abc
+       /  \
+      /   (c)  <- transform on leaf 
+     ab
+    /  \
+   a   (b)  <- transform on leaf
+
+* all right hand sides are leaf, so no double level of transforms
+
+
+ThreeOrbUnion1: right-hand form DOES combine two transforms : and trips assert in X4SolidTree::BooleanClone
+
+      cab
+    /    \
+   c     (ab)   <- transform on operator node
+          / \
+         a  (b)  <- transform on leaf
+
+* happens because a boolean combination is on the right hand side of another boolean combination  
+
+
+The righthand edge of 0 is at 120 and 1 is at 130.
+They are different because of the combination of the transforms for 1::
+
+    XX=120 GEOM=ThreeOrbUnion0_XZ ./xxs.sh 
+    XX=130 GEOM=ThreeOrbUnion1_XZ ./xxs.sh 
+
+**/
+
+const G4VSolid* X4SolidMaker::ThreeOrbUnion(const char* name)
+{
+    long mode = SStr::ExtractLong(name, 0); 
+    LOG(LEVEL) << " mode " << mode ; 
+
+    G4Orb* a = new G4Orb("a", 100. ); 
+    G4Orb* b = new G4Orb("b", 100. ); 
+    G4Orb* c = new G4Orb("c", 100. ); 
+
+    const G4VSolid* solid = nullptr ; 
+    if( mode == 0 )
+    {
+        G4UnionSolid* ab = new G4UnionSolid( "ab", a, b, 0, G4ThreeVector( 10., 0., 0. ) ); 
+        G4UnionSolid* ab_c = new G4UnionSolid( "ab_c", ab, c, 0, G4ThreeVector( 20., 0., 0. ) ); 
+        solid = ab_c ; 
+    }
+    else if( mode == 1 )
+    {
+        G4UnionSolid* ab = new G4UnionSolid( "ab", a, b, 0, G4ThreeVector( 10., 0., 0. ) ); 
+        G4UnionSolid* c_ab = new G4UnionSolid( "c_ab", c, ab, 0, G4ThreeVector( 20., 0., 0. ) ); 
+        solid = c_ab ; 
+    }
+    return solid ; 
+}
 
 /**
 X4SolidMaker::XJfixtureConstruction

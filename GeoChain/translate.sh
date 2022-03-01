@@ -177,6 +177,8 @@ export NCSGData=INFO
 export nmultiunion=INFO
 
 export X4Solid=INFO  
+export X4SolidTree=INFO
+export X4SolidTree_verbose=1
 export X4SolidMaker=INFO  
 export X4PhysicalVolume=INFO
 

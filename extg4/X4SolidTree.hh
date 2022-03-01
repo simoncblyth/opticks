@@ -11,6 +11,8 @@ class G4Box ;
 #include "G4RotationMatrix.hh" 
 #include "G4ThreeVector.hh" 
 
+#include "plog/Severity.h"
+
 #include <string>
 #include <map>
 #include <vector>
@@ -39,6 +41,7 @@ struct X4_API X4SolidTree
 {
 #endif
     // primary API
+    static const plog::Severity LEVEL ; 
     static const bool verbose ; 
     static G4VSolid* ApplyZCutTree( const G4VSolid* original, double zcut ); 
     static void Draw(const G4VSolid* original, const char* msg="X4SolidTree::Draw" ); 
@@ -241,8 +244,8 @@ struct X4_API X4SolidTree
     static int             EntityType(      const G4VSolid* solid) ; 
     static const char*     EntityTypeName(  const G4VSolid* solid) ; 
     static const char*     EntityTag(       const G4VSolid* solid, bool move ) ; // move:true sees thru G4DisplacedSolid 
-    static bool            Boolean(         const G4VSolid* solid) ;
-    static bool            Displaced(       const G4VSolid* solid) ;
+    static bool            IsBoolean(         const G4VSolid* solid) ;
+    static bool            IsDisplaced(       const G4VSolid* solid) ;
     static std::string     Desc(const G4VSolid* solid); 
 
     // navigation
@@ -278,6 +281,13 @@ struct X4_API X4SolidTree
     static G4VSolid* DeepClone(    const G4VSolid* solid ); 
     static G4VSolid* DeepClone_r(  const G4VSolid* solid, int depth, G4RotationMatrix* rot, G4ThreeVector* tla ); 
     static G4VSolid* BooleanClone( const G4VSolid* solid, int depth, G4RotationMatrix* rot, G4ThreeVector* tla ); 
+
+    static void DeepCloneDump( int depth, const G4VSolid* node_ , const G4VSolid* node , G4ThreeVector* tla ); 
+
+    static void ExpectNonNull( const G4VSolid* clone, const char* msg ); 
+    static void ExpectNoRotation(    const G4RotationMatrix* rot, const char* msg ); 
+    static void ExpectNoTranslation( const G4ThreeVector*    tla, const char* msg, bool skip_assert ); 
+    static void ExpectNoDisplaced( const G4VSolid* solid, const char* msg ); 
 
 
     static void GetBooleanBytes(char** bytes, int& num_bytes, const G4VSolid* solid );

@@ -215,7 +215,7 @@ check_cegs()
     case $cegs_elem in
        4) echo $msg 4 element CEGS $CEGS ;;
        7) echo $msg 7 element CEGS $CEGS ;;
-       *) echo $msg ERROR UNEXPECTED $cegs_elem element CEGS $CEGS && return 1  ;;
+       *) echo $msg ERROR UNEXPECTED $cegs_elem element CEGS $CEGS : PROBABLY GEOM LACKS PROJECTION SUFFIX SUCH AS _XY  && return 1  ;;
     esac
     return 0
 }
