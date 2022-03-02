@@ -562,6 +562,22 @@ unsigned nnode::num_tree_nodes() const
     return tree_nodes ; 
 }
  
+
+std::string nnode::brief() const 
+{
+    std::stringstream ss ; 
+    ss   
+        << "nnode::brief" 
+        << " subNum " << std::setw(4) << subNum()
+        << " subOffset " << std::setw(4) << subOffset()
+        << " numTreeNodes " << std::setw(4) << num_tree_nodes() 
+        << " numSerializationNodes " << std::setw(4) << num_serialization_nodes()
+        ;
+
+    std::string s = ss.str();
+    return s ; 
+}
+
 std::string nnode::descNodes() const 
 {
     unsigned num_serialization_nodes_ = num_serialization_nodes(); 

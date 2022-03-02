@@ -1022,7 +1022,7 @@ GMesh* X4PhysicalVolume::ConvertSolid( const Opticks* ok, int lvIdx, int soIdx, 
 
     LOG(LEVEL)
         << " lvIdx " << lvIdx
-        << " root.descNodes " << root->descNodes()
+        << " root.brief " << root->brief()
         << " soname " << soname
         ;
 

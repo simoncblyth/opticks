@@ -372,6 +372,7 @@ struct NPY_API nnode
     unsigned subOffset() const ; 
     void     setSubNum(unsigned sub_num) ; 
     void     setSubOffset(unsigned sub_offset) ; 
+    std::string brief() const ; 
     std::string descNodes() const ; 
 
     
