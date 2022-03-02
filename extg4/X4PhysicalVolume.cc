@@ -1019,6 +1019,14 @@ GMesh* X4PhysicalVolume::ConvertSolid( const Opticks* ok, int lvIdx, int soIdx, 
     // raw unbalanced tree height  
     const nnode* root = mesh->getRoot(); 
     assert( root ); 
+
+    LOG(LEVEL)
+        << " lvIdx " << lvIdx
+        << " root.descNodes " << root->descNodes()
+        << " soname " << soname
+        ;
+
+
     const nnode* unbalanced = root->other ? root->other : root  ; 
     assert( unbalanced ); 
 

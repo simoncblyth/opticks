@@ -72,6 +72,33 @@ GParts
   from python (pmt-/tree.py) 
 
 
+Buffers
+------------
+
+partBuffer
+    CSG nodes eg Sphere, Box, Cylinder
+
+planBuffer
+    planes referenced by some shapes such as ConvexPolyhedron like Trapezoid
+    (JUNO geometry does not have any of these)
+
+primBuffer
+    higher level than the partBuffer : references into partBuffer with an offset and
+    a number of nodes eg corresponding to trees of nodes 
+    So the primBuffer corresponds (roughly) to a G4VSolid that is used within a LogicalVolume
+
+tranBuffer
+    holds transforms, inverse transforms and transposed-inverse-transforms
+    these transforms are referenced by index from the partBuffer nodes
+
+ITransformBuffer
+    instance transform buffer, for example holding the transforms that position every PMT 
+    together with a reference to the prim 
+
+InstanceIdentityBuffer
+     holds things like the boundary code of the instance and also identifi
+
+
 Lifecycle Summary
 -----------------------
 

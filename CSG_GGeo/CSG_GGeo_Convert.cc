@@ -343,9 +343,8 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
     unsigned numParts = comp->getNumParts(primIdx) ;
     unsigned meshIdx = comp->getMeshIndex(primIdx);    // aka lvIdx
-
-    unsigned subNum = comp->getSubNum(primIdx) ; // ? HMM SAME FOOTING ?
-    unsigned subOffset = comp->getSubOffset(primIdx) ; // ? HMM SAME FOOTING ?
+    unsigned subNum = comp->getSubNum(primIdx) ;        // ? HMM SAME FOOTING ?
+    unsigned subOffset = comp->getSubOffset(primIdx) ;  // ? HMM SAME FOOTING ?
 
 
     bool operators_only = true ; 
@@ -425,9 +424,11 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     // TODO: fix the conversion to pass along the subNum from GGeo level 
 
     LOG(fatal) 
+        << " meshIdx " << std::setw(4) << meshIdx 
+        << " numParts " << std::setw(4) << numParts
         << " setSubNum " 
         << " subNum " << subNum
-        << " numParts " << numParts
+        << " subOffset " << subOffset
         ; 
  
     root->setSubNum( subNum ); 
