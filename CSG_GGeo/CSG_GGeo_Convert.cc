@@ -338,14 +338,21 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 {
     LOG(LEVEL) << "[" ; 
 
-    unsigned numPrim = comp->getNumPrim();
+    unsigned numPrim = comp->getNumPrim();  // size of prim_buffer
     assert( primIdx < numPrim ); 
 
-    unsigned numParts = comp->getNumParts(primIdx) ;
-    unsigned meshIdx = comp->getMeshIndex(primIdx);    // aka lvIdx
-    unsigned subNum = comp->getSubNum(primIdx) ;        // ? HMM SAME FOOTING ?
-    unsigned subOffset = comp->getSubOffset(primIdx) ;  // ? HMM SAME FOOTING ?
+    unsigned numParts  = comp->getNumParts(primIdx) ;   // from primBuffer
+    unsigned meshIdx   = comp->getMeshIndex(primIdx);   // from idxBuffer aka lvIdx 
+    unsigned partOffset = comp->getPartOffset(primIdx) ;
 
+    // gymnastics hops from prim->part GParts::getTypeMask is informative for this
+    unsigned root_partIdxRel = 0 ; 
+    unsigned root_partIdx = partOffset + root_partIdxRel ; 
+
+    int root_typecode  = comp->getTypeCode(root_partIdx) ; 
+    int root_subNum    = comp->getSubNum(root_partIdx) ;    
+    int root_subOffset = comp->getSubOffset(root_partIdx) ;  
+    bool root_is_compound = CSG::IsCompound((OpticksCSG_t)root_typecode); 
 
     bool operators_only = true ; 
     unsigned mask = comp->getTypeMask(primIdx, operators_only); 
@@ -357,8 +364,9 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         << " primIdx " << std::setw(4) << primIdx
         << " meshIdx " << std::setw(4) << meshIdx
         << " numParts " << std::setw(4) << numParts
-        << " subNum " << std::setw(4) << subNum
-        << " subOffset " << std::setw(4) << subOffset
+        << " root_subNum " << std::setw(4) << root_subNum
+        << " root_subOffset " << std::setw(4) << root_subOffset
+        << " root_typecode " << CSG::Name(root_typecode)
         << " comp.getTypeMask " << mask 
         << " CSG::TypeMask " << CSG::TypeMask(mask)
         << " CSG::IsPositiveMask " << positive
@@ -426,12 +434,17 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     LOG(fatal) 
         << " meshIdx " << std::setw(4) << meshIdx 
         << " numParts " << std::setw(4) << numParts
-        << " setSubNum " 
-        << " subNum " << subNum
-        << " subOffset " << subOffset
+        << " root_subNum " << std::setw(4) << root_subNum
+        << " root_subOffset " << std::setw(4) << root_subOffset
+        << " root_is_compound " << root_is_compound
         ; 
  
-    root->setSubNum( subNum ); 
+    if(root_is_compound)
+    {
+        root->setSubNum( root_subNum ); 
+        root->setSubOffset( root_subOffset ); 
+    }
+
 
     LOG(LEVEL)
         << " ridx " << std::setw(2) << last_ridx
@@ -474,8 +487,7 @@ Canonically invoked from CSG_GGeo_Convert::convertPrim which is invoked from CSG
 
 Add node to foundry and returns pointer to it
 
-primIdx
-    0:numPrim-1 identifying the Prim (aka layer) within the composite 
+primIdx0:numPrim-1 identifying the Prim (aka layer) within the composite 
 
 partIdxRel 
     relative part(aka node) index 0:numPart-1 within the Prim, used together with 

@@ -143,8 +143,6 @@ NCSG* NCSG::Adopt(nnode* root)
 NCSG* NCSG::Adopt(nnode* root, const char* config_, unsigned soIdx, unsigned lvIdx)
 {
     LOG(LEVEL) << "[" ; 
-    std::cout << "NCSG::Adopt" << std::endl ; 
-
     NSceneConfig* config = new NSceneConfig(config_); 
     NCSG* csg = Adopt( root, config, soIdx , lvIdx ); 
     LOG(LEVEL) << "]" ; 
@@ -165,10 +163,12 @@ NCSG* NCSG::Adopt(nnode* root, const NSceneConfig* config, unsigned soIdx, unsig
 
     LOG(LEVEL) << " [ " << " soIdx " << soIdx  << " lvIdx " << lvIdx ; 
 
+
     int treeidx = root->get_treeidx() ; 
     if( treeidx > -1 ) assert( unsigned(treeidx) == lvIdx ); 
-
     root->set_treeidx(lvIdx) ;  // without this no nudging is done
+
+
 
     NCSG* tree = new NCSG(root);
 
@@ -693,7 +693,7 @@ nnode* NCSG::import_tree_r(unsigned idx, nnode* parent)
     }
     else 
     {
-        node = import_primitive( idx, typecode ); 
+        node = import_primitive( idx, typecode );   // list nodes go this way too 
 
         node->parent = parent ;                // <-- parent hookup needed prior to gtransform collection 
         node->idx = idx ; 
@@ -712,6 +712,15 @@ nnode* NCSG::import_tree_r(unsigned idx, nnode* parent)
 } 
 
 
+/**
+NCSG::import_tree_operator
+---------------------------
+
+TODO : Notice that only the typecode is used, no parameters
+are loaded from the buffer... but they need to be 
+for subNum/subOffset 
+
+**/
 
 nnode* NCSG::import_tree_operator( unsigned idx, OpticksCSG_t typecode )
 {
@@ -733,6 +742,12 @@ nnode* NCSG::import_tree_operator( unsigned idx, OpticksCSG_t typecode )
        default:               node = NULL                                 ; break ; 
     }
     assert(node);
+
+
+    // Mar 2022: trying to get subNum subOffset to be passed along  
+    nquad p0 = m_csgdata->getQuad(idx, 0);  
+    node->param = p0 ; 
+
     return node ; 
 }
 

@@ -53,12 +53,7 @@ const NPYSpecList* NCSGData::MakeSPECS()
     sl->add( (unsigned)SRC_IDX         , new NPYSpec("srcidx.npy"         , 0, 4, 0, 0, 0, NPYBase::UINT  , "" , false, verbosity));
     sl->add( (unsigned)SRC_TRANSFORMS  , new NPYSpec("srctransforms.npy"  , 0, 4, 4, 0, 0, NPYBase::FLOAT , "" , false, verbosity));
     sl->add( (unsigned)SRC_PLANES      , new NPYSpec("srcplanes.npy"      , 0, 4, 0, 0, 0, NPYBase::FLOAT , "" , true , verbosity));
-
-
     sl->add( (unsigned)SRC_FACES       , new NPYSpec("srcfaces.npy"       , 0, 4, 0, 0, 0, NPYBase::INT   , "" , true , verbosity));
-     // analytic/prism.py _get_faces using 4       
-
-
     //                                                                       ^^^^^^  srcfaces is glm::ivec4  in nconvexpolyhedron ?????
     sl->add( (unsigned)SRC_VERTS       , new NPYSpec("srcverts.npy"       , 0, 3, 0, 0, 0, NPYBase::FLOAT , "" , true , verbosity));
     //                                                                       ^^^^^^  srcverts is glm::vec3  in nconvexpolyhedron
@@ -99,9 +94,6 @@ in order to not assume complete binary tree numbers of nodes.
 
 void NCSGData::init_node_buffers(unsigned num_nodes)  
 {
-    //m_height = height ; 
-    //unsigned num_nodes = NumNodes(height); // number of nodes for a complete binary tree of the needed height, with no balancing 
-
     m_num_nodes = num_nodes ; 
     LOG(LEVEL) 
         << " m_num_nodes " << m_num_nodes
@@ -119,6 +111,8 @@ void NCSGData::init_node_buffers(unsigned num_nodes)
     m_npy->initBuffer( (int)SRC_FACES     ,            0, zero , msg ); 
 }
 
+
+
 void NCSGData::loadsrc(const char* treedir)  // invoked from NCSG::NCSG(const char* treedir) , ie when loading 
 {
     m_npy->loadBuffer( treedir,(int)SRC_NODES ); 
@@ -131,8 +125,6 @@ void NCSGData::loadsrc(const char* treedir)  // invoked from NCSG::NCSG(const ch
 
 
     m_num_nodes = m_npy->getNumItems((int)SRC_NODES); 
-
-    //m_height = CompleteTreeHeight( m_num_nodes ) ; 
 
     import_src_identity();
 
@@ -154,26 +146,6 @@ void NCSGData::import_src_identity()
     m_src_soIdx = uidx.y ; 
     m_src_lvIdx = uidx.z ; 
     m_src_height = uidx.w ; 
-
-    /*
-
-    bool match_height = m_src_height == m_height ;
-  
-    if(!match_height)
-        LOG(fatal)  
-            << " src_index " << m_src_index
-            << " src_soIdx " << m_src_soIdx
-            << " src_lvIdx " << m_src_lvIdx
-            << " src_height " << m_src_height
-            << " m_height " << m_height
-            << ( match_height ? " MATCH " : " MISMATCH " ) 
-            << "height" 
-            ; 
-     
-    assert( match_height );
-    */
-
-
 }
 
 
@@ -358,54 +330,6 @@ bool NCSGData::ExistsTxt(const char* treedir)
     return exists ; 
 }
 
-
-/*
-NCSGData::CompleteTreeHeight
------------------------------
-
-Obtain tree height from the number of nodes assuming complete binary tree
-This is here in order to fill in m_height when loading NCSGData from file.
-
-TODO: move to higher level 
-
-
-unsigned NCSGData::CompleteTreeHeight( unsigned num_nodes )
-{
-    unsigned height = UINT_MAX ;  
-    int h = MAX_HEIGHT*2 ;   // <-- dont let exceeding MAXHEIGHT, mess up determination of height 
-    while(h--)
-    {
-        unsigned complete_nodes = TREE_NODES(h) ;
-        if(complete_nodes == num_nodes) height = h ; 
-    }
-
-    bool invalid_height = height == UINT_MAX ; 
-
-    if(invalid_height)
-    {
-        LOG(fatal) << "NCSGData::CompleteTreeHeight"
-                   << " INVALID_HEIGHT "
-                   << " num_nodes " << num_nodes
-                   << " MAX_HEIGHT " << MAX_HEIGHT
-                   ;
-    }
-    assert(!invalid_height); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
-    return height ; 
-}
-
-unsigned NCSGData::NumNodes(unsigned height) // static
-{
-   return TREE_NODES(height);
-}
-unsigned NCSGData::getHeight() const 
-{
-    return m_height ; 
-}
-*/
-
-
-
-
 unsigned NCSGData::getNumNodes() const 
 {
     return m_num_nodes ; 
@@ -427,7 +351,6 @@ and then this identity information gets concatenated in GParts::Combine
 
 void NCSGData::setIdx( unsigned index, unsigned soIdx, unsigned lvIdx, unsigned height, bool src )
 {
-    //assert( height == m_height ); 
     glm::uvec4 uidx(index, soIdx, lvIdx, height); 
 
     NPY<unsigned>* _idx = src ? getSrcIdxBuffer() : getIdxBuffer() ;  

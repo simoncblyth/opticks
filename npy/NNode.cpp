@@ -165,21 +165,25 @@ Fields used for subNum and subOffset here need match those used in CSG/CSGNode.h
 
 **/
 
-unsigned nnode::subNum() const 
+int nnode::subNum() const 
 {
-    return param.u.x ; 
+    bool compound = CSG::IsCompound(type) ;  
+    return compound ? param.u.x : -1 ; 
 }
 void nnode::setSubNum(unsigned num) 
 {
+    assert( CSG::IsCompound(type) );  
     param.u.x = num ; 
 }
 
-unsigned nnode::subOffset() const 
+int nnode::subOffset() const 
 {
-    return param.u.y ; 
+    bool compound = CSG::IsCompound(type) ;  
+    return compound ? param.u.y : -1 ; 
 }
 void nnode::setSubOffset(unsigned num) 
 {
+    assert( CSG::IsCompound(type) );  
     param.u.y = num ; 
 }
 
@@ -2268,9 +2272,20 @@ void nnode::prepareTree()
     root->check_tree( FEATURE_GTRANSFORMS ); 
     root->check_tree( FEATURE_PARENT_LINKS | FEATURE_GTRANSFORMS ); 
 
+
+    bool compound = CSG::IsCompound(root->type); 
     unsigned tree_nodes = num_tree_nodes(); 
-    LOG(LEVEL) << " tree_nodes " << tree_nodes ; 
-    root->setSubNum( tree_nodes ); 
+
+    LOG(LEVEL) << " tree_nodes " << tree_nodes << " compound " << compound << " type " << CSG::Name(root->type) ; 
+    if(compound)
+    { 
+        assert( tree_nodes > 1 ); 
+        root->setSubNum( tree_nodes ); 
+    }
+    else
+    {
+        assert( tree_nodes == 1 ); 
+    }
 }
 
 /**

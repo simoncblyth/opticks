@@ -301,6 +301,7 @@ class GGEO_API GParts {
 
         unsigned getIndex(unsigned partIdx) const ;
         unsigned getTypeCode(unsigned partIdx) const ;
+        bool     isCompound(unsigned partIdx) const ; 
         unsigned getNodeIndex(unsigned partIdx) const ;
 
         unsigned getGTransform(unsigned partIdx) const ; 
@@ -313,8 +314,11 @@ class GGEO_API GParts {
         unsigned getPlanNum(unsigned partIdx) const ; 
 
         // only valid for CSG::IsList(type) such as CSG_CONTIGUOUS/CSG_DISCONTIGUOUS multiunion 
-        unsigned getSubNum(unsigned partIdx) const ; 
-        unsigned getSubOffset(unsigned partIdx) const ; 
+        unsigned getSubNum_(unsigned partIdx) const ; 
+        unsigned getSubOffset_(unsigned partIdx) const ; 
+        int      getSubNum(unsigned partIdx) const ; 
+        int      getSubOffset(unsigned partIdx) const ; 
+
 
         unsigned  getNumTran() const ; 
         glm::mat4 getTran(unsigned tranIdx, unsigned j) const ; 

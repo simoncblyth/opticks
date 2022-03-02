@@ -120,12 +120,12 @@ nnode* X4Solid::Convert(const G4VSolid* solid, const Opticks* ok, const char* bo
 
 
     bool has_hint = xs.hasHint() ; 
-    LOG(error) << " xs.hasHint " << has_hint << " xs.desc " << xs.desc() ; 
+    LOG(LEVEL) << " xs.hasHint " << has_hint << " xs.desc " << xs.desc() ; 
 
     if(has_hint) 
     {
         unsigned hint = xs.getHintCode() ; 
-        LOG(error) << " acting on xs.getHintCode " << CSG::Name(hint) << " with xs.getName " << xs.getName() ; 
+        LOG(LEVEL) << " acting on xs.getHintCode " << CSG::Name(hint) << " with xs.getName " << xs.getName() ; 
         if( hint == CSG_EXBB )
         {
             SetExternalBoundingBox(root, solid); 
@@ -286,12 +286,12 @@ void X4Solid::convertUnionSolid()
     convertBooleanSolid() ;
 
     bool has_hint = hasHint() ; 
-    LOG(error) << " has_hint " << has_hint << " desc " << desc() ; 
+    LOG(LEVEL) << " has_hint " << has_hint << " desc " << desc() ; 
 
     if(has_hint) 
     {
         unsigned hint = getHintCode() ; 
-        LOG(error) << " acting in hint " << CSG::Name(hint) << " within m_name " << m_name ; 
+        LOG(LEVEL) << " acting in hint " << CSG::Name(hint) << " within m_name " << m_name ; 
         changeToListSolid(hint) ;
     }
 }

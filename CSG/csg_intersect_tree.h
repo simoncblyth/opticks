@@ -262,7 +262,7 @@ to work yet, as it seems like it should be possible in principle.
 TREE_FUNC
 bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
-    const int numNode=node->subNum() ; 
+    const int numNode=node->subNum() ;   // SO THIS SHOULD NO LONGER EVER BE 1 
     unsigned height = TREE_HEIGHT(numNode) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
     float propagate_epsilon = 0.0001f ;  // ? 
     int ierr = 0 ;  

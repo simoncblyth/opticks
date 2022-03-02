@@ -91,6 +91,13 @@ cx:convexpolyhedron
 
 * moved typecode from q2.w in order to give 6 contiguous slots for aabb
 
+
+subNum subOffset
+------------------
+
+Used by compound node types such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS and the rootnode of boolean trees CSG_UNION/CSG_INTERSECTION/CSG_DIFFERENCE...
+Note that because subNum uses q0.u.x and subOffset used q0.u.y this should not be used for leaf nodes. 
+
 **/
 
 struct CSG_API CSGNode

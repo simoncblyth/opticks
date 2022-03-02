@@ -157,7 +157,6 @@ class NPY_API NCSGData
     private:
         int         m_verbosity ;  
         NPYList*    m_npy ; 
-        //unsigned    m_height ; 
         unsigned    m_num_nodes ; 
 
     private:

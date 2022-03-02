@@ -187,6 +187,15 @@ int GParts::Compare(const GParts* a, const GParts* b, bool dump )
 }
 
 
+int GParts::DEBUG = -1 ; 
+void GParts::SetDEBUG(int dbg)
+{
+    DEBUG = dbg ; 
+}
+
+int GParts::COUNT = 0 ; 
+
+
 /**
 GParts::Create from GPts
 --------------------------
@@ -214,18 +223,10 @@ GMergedMesh::mergeVolumeAnalytic
 
 * testing this with GPtsTest, using GParts::Compare 
 
+* notice how a combined GParts instance is contatenated from individual GParts instance for each GPt 
+  using the referenced NCSG 
+
 **/
-
-
-int GParts::DEBUG = -1 ; 
-void GParts::SetDEBUG(int dbg)
-{
-    DEBUG = dbg ; 
-}
-
-int GParts::COUNT = 0 ; 
-
-
 
 
 GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned* num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
@@ -270,7 +271,7 @@ GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<con
         const NCSG* csg = unsigned(lvIdx) < solids.size() ? solids[lvIdx] : NULL ; 
         assert( csg ); 
 
-        //  X4PhysicalVolume::convertNode
+        //  X4PhysicalVolume::convertNode (structural) is where the GPt is collected 
 
         GParts* parts = GParts::Make( csg, spec.c_str(), ndIdx ); 
 
@@ -2094,18 +2095,22 @@ unsigned GParts::getTypeCode(unsigned partIdx) const
 {
     return getUInt(partIdx, TYPECODE_J, TYPECODE_K);       // (2,3) q2.u.w
 }
+
+bool GParts::isCompound(unsigned partIdx) const 
+{
+    unsigned typecode = getTypeCode(partIdx); 
+    bool is_compound = CSG::IsCompound((OpticksCSG_t)typecode); 
+    return is_compound ; 
+}
+
 unsigned GParts::getIndex(unsigned partIdx) const          // (1,3) q1.u.w 
 {
     return getUInt(partIdx, INDEX_J, INDEX_K);
 }
-
 unsigned GParts::getBoundary(unsigned partIdx) const 
 {
     return getUInt(partIdx, BOUNDARY_J, BOUNDARY_K);       // (1,2) q1.u.z
 }
-
-
-
 
 
 /**
@@ -2119,16 +2124,63 @@ comes from see NCSG::export_planes
 
 unsigned GParts::getPlanIdx(unsigned partIdx) const 
 {
-    return getUInt(partIdx, PLANEIDX_J, PLANEIDX_K);       // (0,0) q0.u.x
+    return getUInt(partIdx, PLANEIDX_J, PLANEIDX_K);      // (0,0) q0.u.x
 }
-unsigned GParts::getSubNum(unsigned partIdx) const   
+unsigned GParts::getSubNum_(unsigned partIdx) const   
 {
-    return getUInt(partIdx, SUBNUM_J, SUBNUM_K);       // (0,0) q0.u.x   colocated, distinguish appropriate by typecode
+    return getUInt(partIdx, SUBNUM_J, SUBNUM_K);          // (0,0) q0.u.x   colocated, distinguish appropriate by typecode
 }
-unsigned GParts::getSubOffset(unsigned partIdx) const   
+unsigned GParts::getSubOffset_(unsigned partIdx) const   
 {
-    return getUInt(partIdx, SUBOFFSET_J, SUBOFFSET_K);    // (0,0) q0.u.y   colocated, distinguish appropriate by typecode
+    return getUInt(partIdx, SUBOFFSET_J, SUBOFFSET_K);    // (0,1) q0.u.y   colocated, distinguish appropriate by typecode
 }
+
+
+/**
+GParts::getSubNum 
+------------------
+
+For compound nodes (ie tree root or list header nodes) 
+the number of sub nodes is returned which is the total 
+number of tree nodes for trees or the number of sub nodes for lists.
+
+For non-compound leaf nodes -1 is returned
+
+* from m_part_buffer
+
+**/
+
+int GParts::getSubNum(unsigned partIdx) const   
+{
+    bool is_compound = isCompound(partIdx); 
+    int subnum = is_compound ? getSubNum_(partIdx) : -1 ; 
+    return subnum ; 
+}
+
+/**
+GParts::getSubOffset
+----------------------
+
+For list header nodes within trees this returns the offset 
+from the root to where the sub nodes can be found. For the 
+first list in a tree that will be one beyond the last tree node. 
+
+For list header root nodes the subOffset is expected to be 1
+pointing to the node immediately after the list header node.
+
+For non-compound leaf nodes -1 is returned
+
+* from m_part_buffer
+
+**/
+
+int GParts::getSubOffset(unsigned partIdx) const   
+{
+    bool is_compound = isCompound(partIdx); 
+    int sub_offset = is_compound ? getSubOffset_(partIdx) : -1 ; 
+    return sub_offset ; 
+}
+
 
 
 

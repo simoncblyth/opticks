@@ -368,8 +368,8 @@ struct NPY_API nnode
     void setPlaneIdx(unsigned idx); 
     void setPlaneNum(unsigned num); 
 
-    unsigned subNum() const ; 
-    unsigned subOffset() const ; 
+    int      subNum() const ;      // returns -1 for leaf 
+    int      subOffset() const ;   // returns -1 for leaf 
     void     setSubNum(unsigned sub_num) ; 
     void     setSubOffset(unsigned sub_offset) ; 
     std::string brief() const ; 
@@ -434,9 +434,11 @@ struct NPY_API nnode
     static void to_g4code(const nnode* root, std::ostream& out, unsigned depth );
     static void to_g4code_r(const nnode* node, std::ostream& out, unsigned depth );
 
-
-
 };
+
+
+// TODO: get these out of header
+
 inline nnode* nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
 {
     nnode* n = new nnode ;    nnode::Init(n, operator_ , left, right ); return n ;

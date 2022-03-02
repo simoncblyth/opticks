@@ -456,10 +456,19 @@ EON
 geocache-11dec2021-gdmlpath(){ echo $(opticks-prefix)/origin_CGDMLKludge_11dec2021.gdml ; }
 geocache-11dec2021(){  geocache-create- --gdmlpath $(geocache-11dec2021-gdmlpath) -D --noviz  ; }
 
-
 geocache-12dec2021-key(){ echo OKX4Test.X4PhysicalVolume.lWorld0x574e7f0_PV.f65f5cd1a197e3a0c9fe55975ff2c7a7 ; }
 geocache-12dec2021-gdmlpath(){ echo $(opticks-prefix)/origin_CGDMLKludge_12dec2021.gdml ; }
 geocache-12dec2021(){  geocache-create- --gdmlpath $(geocache-12dec2021-gdmlpath) -D --noviz  ; }
+
+geocache-02mar2022-key(){ echo OKX4Test.X4PhysicalVolume.lWorld0x5780b30_PV.5303cd587554cb16682990189831ae83 ; }
+geocache-02mar2022-gdmlpath(){ echo $(opticks-prefix)/origin_CGDMLKludge_02mar2022.gdml ; }
+geocache-02mar2022(){  geocache-create- --gdmlpath $(geocache-02mar2022-gdmlpath) -D --noviz  ; }
+
+
+geocache-02mar2022-dbg(){
+   export X4PhysicalVolume=INFO
+   geocache-02mar2022
+}
 
 
 
@@ -470,8 +479,11 @@ geocache-gdml-scp(){
    #local digest=${1:-50859f8d4163ea73814016bc7008ec4d}
    #local label=${2:-29aug2021} 
 
-   local digest=${1:-3dbec4dc3bdef47884fe48af781a179d}
-   local label=${2:-30oct2021}
+   #local digest=${1:-3dbec4dc3bdef47884fe48af781a179d}
+   #local label=${2:-30oct2021}
+
+   local digest=${1:-1ad3e6c8947a2b32dea175bc67816952}
+   local label=${2:-02mar2022}
 
    local cmd="scp P:.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/$digest/1/origin_CGDMLKludge.gdml  $(opticks-prefix)/origin_CGDMLKludge_$label.gdml"
    echo $cmd
