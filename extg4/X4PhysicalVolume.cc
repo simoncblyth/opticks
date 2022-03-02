@@ -1466,7 +1466,7 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
     const char* omat = X4::BaseName(omat_) ; 
     const char* imat = X4::BaseName(imat_) ; 
 
-    LOG(LEVEL)
+    LOG(debug)
         << " imat_.GetName " << std::setw(50) << imat_->GetName()
         << " omat_.GetName " << std::setw(50) << omat_->GetName()
         << " omat " << std::setw(50) << omat
