@@ -438,11 +438,22 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         << " root_subOffset " << std::setw(4) << root_subOffset
         << " root_is_compound " << root_is_compound
         ; 
+
+
  
     if(root_is_compound)
     {
+        assert( numParts > 1 ); 
+        assert( int(root_subNum) == int(numParts) ); // <-- THIS WILL BREAK WHEN USE LIST NODES
+
         root->setSubNum( root_subNum ); 
         root->setSubOffset( root_subOffset ); 
+    }
+    else
+    {
+        assert( numParts == 1 ); 
+        assert( root_subNum == -1 ); 
+        assert( root_subOffset == -1 ); 
     }
 
 
