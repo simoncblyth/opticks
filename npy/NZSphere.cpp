@@ -121,19 +121,43 @@ float nzsphere::deltaTheta() const { return endTheta() - startTheta(); }
 
 void nzsphere::check() const 
 {
-    bool z1z2_asc = z2() > z1() ; 
+    bool z2_gt_z1 = z2() > z1() ; 
+    bool z2_lt_radius = fabs(z2()) <= radius() ; 
+    bool z1_lt_radius = fabs(z1()) <= radius() ; 
+    bool zmax_gt_zmin = zmax() > zmin() ; 
 
-    if(!z1z2_asc)
+    if(!z2_gt_z1)
        LOG(fatal) 
-          << " z1z2_asc " 
+          << " NOT z2_gt_z1 " 
           << " z1 " << z1()
           << " z2 " << z2()
           ;
  
-    assert( z1z2_asc );
-    assert( fabs(z2()) <= radius() );
-    assert( fabs(z1()) <= radius() );
-    assert( zmax() > zmin() ); 
+    if(!z2_lt_radius)
+       LOG(fatal) 
+           << " NOT z2_lt_radius "
+           << " z2 " << z2() 
+           << " radius " << radius() 
+           ;
+
+    if(!z1_lt_radius)
+       LOG(fatal) 
+           << " NOT z1_lt_radius "
+           << " z1 " << z1() 
+           << " radius " << radius() 
+           ;
+
+    if(!zmax_gt_zmin)
+       LOG(fatal) 
+           << " NOT zmax_gt_zmin "
+           << " zmax " << zmax() 
+           << " zmin " << zmin() 
+           ;
+
+    assert( z2_gt_z1 );
+    assert( z2_lt_radius );
+    assert( z1_lt_radius );
+    assert( zmax_gt_zmin ); 
 }
 
 
