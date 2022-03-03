@@ -221,7 +221,7 @@ class NPY_API NCSG {
     private:
         glm::uvec4 collect_surface_points();
 
-    public:
+   public:
         bool      has_placement_translation() const ; 
         glm::vec3 get_placement_translation() const ; 
 
@@ -231,9 +231,14 @@ class NPY_API NCSG {
         void      set_translation( float x, float y, float z); 
         void      set_centering(); 
 
+
+
         bool      has_root_transform() const ; 
         glm::mat4 get_root_transform() const ; 
 
+    public:
+        void      set_loading(bool loading);
+        bool      is_loading() const ; 
     public:
         // kept in metadata : survives persisting 
         void        set_lvname(const char* name);
@@ -414,6 +419,8 @@ class NPY_API NCSG {
         int              m_verbosity ;  
         bool             m_usedglobally ; 
         bool             m_balanced ; 
+        bool             m_loading ; 
+
         nnode*           m_root ;  
         NNodePoints*     m_points ; 
         NNodeUncoincide* m_uncoincide ; 

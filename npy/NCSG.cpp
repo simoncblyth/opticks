@@ -76,6 +76,8 @@ by python opticks.analytic.csg:CSG.Serialize
 
 **/
 
+
+
 NCSG* NCSG::Load(const char* treedir)
 {
     const char* config_ = "polygonize=0" ; 
@@ -106,6 +108,7 @@ NCSG* NCSG::Load(const char* treedir, const NSceneConfig* config  )
 
     NCSG* tree = new NCSG(treedir) ; 
 
+    tree->set_loading(true);     
     tree->setConfig(config);
     tree->setVerbosity(config->verbosity);
     tree->setIsUsedGlobally(true);
@@ -232,6 +235,8 @@ NCSG::NCSG(const char* treedir)
     m_surface_epsilon(SURFACE_EPSILON),
     m_verbosity(0),
     m_usedglobally(true),   // changed to true : June 2018, see notes/issues/subtree_instances_missing_transform.rst
+    m_balanced(false),
+    m_loading(false),
     m_root(NULL),
     m_points(NULL),
     m_uncoincide(NULL),
@@ -303,6 +308,8 @@ NCSG::NCSG(nnode* root )
     m_surface_epsilon(SURFACE_EPSILON),
     m_verbosity(root->verbosity),
     m_usedglobally(true),   // changed to true : June 2018, see notes/issues/subtree_instances_missing_transform.rst
+    m_balanced(false),
+    m_loading(false),
     m_root(root),
     m_points(NULL),
     m_uncoincide(make_uncoincide()),
@@ -498,7 +505,7 @@ void NCSG::import()
     m_root->set_treedir(m_treedir) ; 
     m_root->set_treeidx(getTreeNameIdx()) ;  //
 
-    postimport();  // create nudger
+    //postimport();  // create nudger
     checkroot(); 
 
     if(m_verbosity > 5) check();  // recursive transform dumping 
@@ -1446,19 +1453,31 @@ void NCSG::export_node(nnode* node, unsigned idx)
     }
 
 
-    bool expect_external_bbox = CSG::ExpectExternalBBox( node->type ); 
-    if( expect_external_bbox )
-    {
-        assert( node->external_bbox ); 
-    }
 
-    if( node->external_bbox )
+
+    if(is_loading() == false)
     {
-        assert( pt.has_bb_zero() == false ); 
-    }
-    else
-    {
-        assert( pt.has_bb_zero() == true ); 
+        // hmm these checks can only be done at creation, not when loading
+        bool has_bb_zero = pt.has_bb_zero() ; 
+        bool expect_external_bbox = CSG::ExpectExternalBBox( node->type ); 
+
+        if( expect_external_bbox )
+        {
+            if( node->external_bbox == false ) LOG(fatal) << " expect_external_bbox for node->type " << CSG::Name(node->type) ; 
+            assert( node->external_bbox == true ); 
+        }
+
+        if( node->external_bbox )
+        { 
+            if(has_bb_zero == true) LOG(fatal) << " node->external_bbox indicates that bbox was set externally BUT has_bb_zero is true : expected non-empty bb " ; 
+            assert( has_bb_zero == false );        
+        }
+        else
+        {
+            if(has_bb_zero == false) LOG(fatal) << " node->external_bbox is false indicating bbox was not set externally has_bb_zero is false : unexpected bb is present   " ; 
+            assert( has_bb_zero == true );        
+        } 
+
     }
 
 
@@ -1956,6 +1975,17 @@ std::string NCSG::getTestLVName() const
     unsigned idx = getIndex();
     return TestVolumeName( shapename, "lv", idx);     
 }
+
+
+void NCSG::set_loading(bool loading) 
+{
+    m_loading = loading ; 
+}
+bool NCSG::is_loading() const 
+{
+    return m_loading ; 
+}
+
 
 
 // m_meta is NPYMeta instance, all the below get_* set_* are accessing default item=-1 

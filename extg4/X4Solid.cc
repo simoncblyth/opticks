@@ -119,19 +119,21 @@ nnode* X4Solid::Convert(const G4VSolid* solid, const Opticks* ok, const char* bo
     if(boundary) root->boundary = boundary ; 
 
 
-    bool has_hint = xs.hasHint() ; 
-    LOG(LEVEL) << " xs.hasHint " << has_hint << " xs.desc " << xs.desc() ; 
+    bool hint_external_bbox = xs.hasHint() && xs.getHintCode() == CSG_EXBB ; 
+    bool expect_external_bbox = CSG::ExpectExternalBBox(root->type)  ; 
+    bool set_external_bbox = hint_external_bbox || expect_external_bbox ; 
 
-    if(has_hint) 
+
+    LOG(LEVEL) 
+        << " hint_external_bbox  " << hint_external_bbox 
+        << " expect_external_bbox " << expect_external_bbox 
+        << " set_external_bbox  " << set_external_bbox 
+        ; 
+
+    if(set_external_bbox) 
     {
-        unsigned hint = xs.getHintCode() ; 
-        LOG(LEVEL) << " acting on xs.getHintCode " << CSG::Name(hint) << " with xs.getName " << xs.getName() ; 
-        if( hint == CSG_EXBB )
-        {
-            SetExternalBoundingBox(root, solid); 
-        } 
+        SetExternalBoundingBox(root, solid); 
     }
-
 
     LOG(LEVEL) << "]" ;  
 

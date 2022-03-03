@@ -333,7 +333,11 @@ geocache-create-()
          
     #$(opticks-prefix)/bin/o.sh --okx4test --g4codegen --deletegeocache $*
 
-    OKX4Test --g4codegen --deletegeocache $* 
+    if [ -n "$DEBUG" ]; then 
+       lldb__ OKX4Test  --deletegeocache $* 
+    else
+        OKX4Test --deletegeocache $* 
+    fi 
 
     echo $msg logs are in tmp:$tmp
     cd $iwd
@@ -779,20 +783,25 @@ geocache-dx1-notes(){ cat << EON
 
 Manually modified dx0 GDML to make dx1, with addition of bordersurface with non-zero associated efficiency.
 
+2022 Mar 
+    find need to add --x4nudgeskip 100,103,105,111,112,132 ro avoid asserts in NNodeNudger
+    and define OPTICKS_SGDML_PREFIX_G4Material=/dd/Materials/ to avoid addBoundary assert
+
 EON
 }
-geocache-dx1-(){  opticksaux- ; geocache-create- --gdmlpath $(opticksaux-dx1) --x4polyskip 211,232  --geocenter --noviz $* ; }     
+geocache-dx1-(){  opticksaux- ; 
+    export OPTICKS_SGDML_PREFIX_G4Material=/dd/Materials/
+    geocache-create- --gdmlpath $(opticksaux-dx1) --x4polyskip 211,232  --x4nudgeskip 100,103,105,111,112,132 --geocenter --noviz $* ; }     
 geocache-dx1-comment(){ echo sensors-gdml-review.rst ; }     
 geocache-dx1(){   geocache-dx1- --runfolder $FUNCNAME --runcomment $(${FUNCNAME}-comment) $* ; } 
 geocache-dx1-key(){ 
    case $(uname) in 
       Linux)  echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.5aa828335373870398bf4f738781da6c ;;
-      Darwin) echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.50a18baaf29b18fae8c1642927003ee3 ;;
+      #Darwin) echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.50a18baaf29b18fae8c1642927003ee3 ;;
+      Darwin) echo OKX4Test.X4PhysicalVolume.World0xc15cfc00x40f7000_PV.f9225f882628d01e0303b3609013324e ;; 
    esac
 }
 geocache-dx1-keydir(){ OPTICKS_KEY=$(geocache-dx1-key) geocache-keydir ; }
-
-
 
 geocache-j21-env()
 {

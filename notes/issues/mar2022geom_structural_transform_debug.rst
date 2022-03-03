@@ -64,12 +64,181 @@ Then grabbing from laptop::
 * no surprises the box of PMTs looks as expected 
 
 
-TODO: check with dayabay gdml geometry 
-------------------------------------------------
+
+DONE: OTracerTest check with dayabay gdml geometry : it looks fine after avoid a few asserts, no transform troubles 
+-----------------------------------------------------------------------------------------------------------------------
 
 ::
 
    geocache-create    # geocache-dx1 
+
+
+::
+
+    2022-03-04 00:14:50.886 INFO  [337494] [X4PhysicalVolume::convertSolid@951]  lvname /dd/Geometry/CalibrationSources/lvDiffuserBall0xc3074400x3f225a0 soname DiffuserBall0xc3073d00x3e9b4b0 [--x4skipsolidname] n
+    2022-03-04 00:14:50.889 INFO  [337494] [X4PhysicalVolume::convertSolid@951]  lvname /dd/Geometry/CalibrationSources/lvLedSourceShell0xc3066b00x3f226d0 soname led-source-shell0xc3068f00x3e9bd80 [--x4skipsolidname] n
+    2022-03-04 00:14:50.891 INFO  [337494] [ncylinder::increase_z2@122]  _z2 14.865 dz 1 new_z2 15.865
+    OKX4Test: /data/blyth/junotop/opticks/npy/NZSphere.cpp:134: void nzsphere::check() const: Assertion `fabs(z2()) <= radius()' failed.
+    Aborted (core dumped)
+    === geocache-create- : logs are in tmp:/tmp/blyth/opticks/geocache-create-
+    N[blyth@localhost opticks]$ 
+    N[blyth@localhost opticks]$ 
+
+
+
+::
+
+    ame] n
+    2022-03-04 00:27:56.876 INFO  [353849] [X4PhysicalVolume::convertSolid@951]  lvname /dd/Geometry/CalibrationSources/lvLedSourceShell0xc3066b00x3f226d0 soname led-source-shell0xc3068f00x3e9bd80 [--x4skipsolidname] n
+    2022-03-04 00:27:56.878 INFO  [353849] [ncylinder::increase_z2@122]  _z2 14.865 dz 1 new_z2 15.865
+    2022-03-04 00:27:56.878 FATAL [353849] [nzsphere::check@137]  NOT z2_lt_radius  z2 11.035 radius 10.035
+    2022-03-04 00:27:56.878 FATAL [353849] [nzsphere::check@159]  tmp skip assert 
+    OKX4Test: /data/blyth/junotop/opticks/npy/NNodeNudger.cpp:501: void NNodeNudger::znudge_union_maxmin(NNodeCoincidence*): Assertion `join2 != JOIN_COINCIDENT' failed.
+    Aborted (core dumped)
+    === geocache-create- : logs are in tmp:/tmp/blyth/opticks/geocache-create-
+    N[blyth@localhost npy]$ 
+
+
+    2022-03-03 16:31:49.711 INFO  [9583911] [ncylinder::increase_z2@122]  _z2 14.865 dz 1 new_z2 15.865
+    2022-03-03 16:31:49.711 FATAL [9583911] [nzsphere::check@137]  NOT z2_lt_radius  z2 11.035 radius 10.035
+    2022-03-03 16:31:49.711 FATAL [9583911] [nzsphere::check@159]  tmp skip assert 
+    Assertion failed: (join2 != JOIN_COINCIDENT), function znudge_union_maxmin, file /Users/blyth/opticks/npy/NNodeNudger.cpp, line 501.
+    Process 90800 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff53f5db66 libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill:
+    ->  0x7fff53f5db66 <+10>: jae    0x7fff53f5db70            ; <+20>
+        0x7fff53f5db68 <+12>: movq   %rax, %rdi
+        0x7fff53f5db6b <+15>: jmp    0x7fff53f54ae9            ; cerror_nocancel
+        0x7fff53f5db70 <+20>: retq   
+    Target 0: (OKX4Test) stopped.
+
+    Process 90800 launched: '/usr/local/opticks/lib/OKX4Test' (x86_64)
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff53f5db66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff54128080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff53eb91ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff53e811ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x000000010a5c3514 libNPY.dylib`NNodeNudger::znudge_union_maxmin(this=0x000000011ed55690, coin=0x000000011ed54f30) at NNodeNudger.cpp:501
+        frame #5: 0x000000010a5c2a31 libNPY.dylib`NNodeNudger::znudge(this=0x000000011ed55690, coin=0x000000011ed54f30) at NNodeNudger.cpp:298
+        frame #6: 0x000000010a5c188f libNPY.dylib`NNodeNudger::uncoincide(this=0x000000011ed55690) at NNodeNudger.cpp:285
+        frame #7: 0x000000010a5c0b39 libNPY.dylib`NNodeNudger::init(this=0x000000011ed55690) at NNodeNudger.cpp:92
+        frame #8: 0x000000010a5c07f7 libNPY.dylib`NNodeNudger::NNodeNudger(this=0x000000011ed55690, root_=0x000000011ed549e0, epsilon_=0.00000999999974, (null)=0) at NNodeNudger.cpp:66
+        frame #9: 0x000000010a5c0e8d libNPY.dylib`NNodeNudger::NNodeNudger(this=0x000000011ed55690, root_=0x000000011ed549e0, epsilon_=0.00000999999974, (null)=0) at NNodeNudger.cpp:64
+        frame #10: 0x000000010a628c9d libNPY.dylib`NCSG::MakeNudger(msg="Adopt root ctor", root=0x000000011ed549e0, surface_epsilon=0.00000999999974) at NCSG.cpp:278
+        frame #11: 0x000000010a628df2 libNPY.dylib`NCSG::NCSG(this=0x000000011ed55280, root=0x000000011ed549e0) at NCSG.cpp:309
+        frame #12: 0x000000010a6280cd libNPY.dylib`NCSG::NCSG(this=0x000000011ed55280, root=0x000000011ed549e0) at NCSG.cpp:324
+        frame #13: 0x000000010a627e6d libNPY.dylib`NCSG::Adopt(root=0x000000011ed549e0, config=0x000000011ed54ec0, soIdx=0, lvIdx=0) at NCSG.cpp:173
+        frame #14: 0x000000010a627abd libNPY.dylib`NCSG::Adopt(root=0x000000011ed549e0, config_="", soIdx=0, lvIdx=0) at NCSG.cpp:147
+        frame #15: 0x000000010a627938 libNPY.dylib`NCSG::Adopt(root=0x000000011ed549e0) at NCSG.cpp:140
+        frame #16: 0x00000001038f15ed libExtG4.dylib`X4CSG::X4CSG(this=0x00007ffeefbf9378, solid_=0x000000011644e450, ok_=0x0000000115c3db40) at X4CSG.cc:128
+        frame #17: 0x00000001038ef765 libExtG4.dylib`X4CSG::X4CSG(this=0x00007ffeefbf9378, solid_=0x000000011644e450, ok_=0x0000000115c3db40) at X4CSG.cc:132
+        frame #18: 0x00000001038f02d7 libExtG4.dylib`X4CSG::GenerateTest(solid=0x000000011644e450, ok=0x0000000115c3db40, prefix="/usr/local/opticks/geocache/OKX4Test_World0xc15cfc00x40f7000_PV_g4live/g4ok_gltf/f9225f882628d01e0303b3609013324e/1/g4codegen", lvidx=100) at X4CSG.cc:78
+        frame #19: 0x00000001039df094 libExtG4.dylib`X4PhysicalVolume::GenerateTestG4Code(ok=0x0000000115c3db40, lvIdx=100, solid=0x000000011644e450, raw=0x000000011ed45fa0) at X4PhysicalVolume.cc:1198
+        frame #20: 0x00000001039dedf0 libExtG4.dylib`X4PhysicalVolume::ConvertSolid_(ok=0x0000000115c3db40, lvIdx=100, soIdx=100, solid=0x000000011644e450, soname="led-source-shell0xc3068f00x3e9bd80", lvname="/dd/Geometry/CalibrationSources/lvLedSourceShell0xc3066b00x3f226d0", balance_deep_tree=true) at X4PhysicalVolume.cc:1115
+        frame #21: 0x00000001039ddf4d libExtG4.dylib`X4PhysicalVolume::ConvertSolid(ok=0x0000000115c3db40, lvIdx=100, soIdx=100, solid=0x000000011644e450, soname="led-source-shell0xc3068f00x3e9bd80", lvname="/dd/Geometry/CalibrationSources/lvLedSourceShell0xc3066b00x3f226d0") at X4PhysicalVolume.cc:1015
+        frame #22: 0x00000001039dca08 libExtG4.dylib`X4PhysicalVolume::convertSolid(this=0x00007ffeefbfdea8, lv=0x000000011523a100) at X4PhysicalVolume.cc:962
+        frame #23: 0x00000001039db115 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x000000011523aa90, depth=13) at X4PhysicalVolume.cc:923
+        frame #24: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x000000011523fa70, depth=12) at X4PhysicalVolume.cc:917
+        frame #25: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x00000001152404f0, depth=11) at X4PhysicalVolume.cc:917
+        frame #26: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x0000000115240870, depth=10) at X4PhysicalVolume.cc:917
+        frame #27: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x00000001152479b0, depth=9) at X4PhysicalVolume.cc:917
+        frame #28: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x0000000115249b10, depth=8) at X4PhysicalVolume.cc:917
+        frame #29: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x00000001162f4060, depth=7) at X4PhysicalVolume.cc:917
+        frame #30: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x00000001162f67e0, depth=6) at X4PhysicalVolume.cc:917
+        frame #31: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x000000010f07eac0, depth=5) at X4PhysicalVolume.cc:917
+        frame #32: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x000000010f07f840, depth=4) at X4PhysicalVolume.cc:917
+        frame #33: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x000000010f080e50, depth=3) at X4PhysicalVolume.cc:917
+        frame #34: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x000000010f081c50, depth=2) at X4PhysicalVolume.cc:917
+        frame #35: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x000000010f081a10, depth=1) at X4PhysicalVolume.cc:917
+        frame #36: 0x00000001039dae34 libExtG4.dylib`X4PhysicalVolume::convertSolids_r(this=0x00007ffeefbfdea8, pv=0x000000010f084200, depth=0) at X4PhysicalVolume.cc:917
+        frame #37: 0x00000001039d69c8 libExtG4.dylib`X4PhysicalVolume::convertSolids(this=0x00007ffeefbfdea8) at X4PhysicalVolume.cc:879
+        frame #38: 0x00000001039d57af libExtG4.dylib`X4PhysicalVolume::init(this=0x00007ffeefbfdea8) at X4PhysicalVolume.cc:202
+        frame #39: 0x00000001039d545f libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=0x00007ffeefbfdea8, ggeo=0x0000000115c60f80, top=0x000000010f084200) at X4PhysicalVolume.cc:181
+        frame #40: 0x00000001039d45f5 libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=0x00007ffeefbfdea8, ggeo=0x0000000115c60f80, top=0x000000010f084200) at X4PhysicalVolume.cc:172
+        frame #41: 0x00000001000156e6 OKX4Test`main(argc=13, argv=0x00007ffeefbfe6b8) at OKX4Test.cc:108
+        frame #42: 0x00007fff53e0d015 libdyld.dylib`start + 1
+        frame #43: 0x00007fff53e0d015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+    (lldb) f 4
+    frame #4: 0x000000010a5c3514 libNPY.dylib`NNodeNudger::znudge_union_maxmin(this=0x000000011ed55690, coin=0x000000011ed54f30) at NNodeNudger.cpp:501
+       498 	    float zj2 = jbb2.min.z ;
+       499 	 
+       500 	    NNodeJoinType join2 = NNodeEnum::JoinClassify( zi2, zj2, epsilon );
+    -> 501 	    assert(join2 != JOIN_COINCIDENT);
+       502 	
+       503 	    coin->fixed = true ; 
+       504 	
+    (lldb) 
+
+
+Huh : having to add lots of x4nudgeskip to get the conversion thru::
+
+    geocache-;DEBUG=1 geocache-create
+
+
+::
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff53f5db66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff54128080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff53eb91ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff53e811ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x0000000109ae4ccf libGGeo.dylib`GBndLib::add(this=0x0000000116478790, omat_="/dd/Materials/Vacuum", osur_=0x0000000000000000, isur_=0x0000000000000000, imat_="/dd/Materials/Vacuum") at GBndLib.cc:508
+        frame #5: 0x0000000109ae478e libGGeo.dylib`GBndLib::addBoundary(this=0x0000000116478790, omat="/dd/Materials/Vacuum", osur=0x0000000000000000, isur=0x0000000000000000, imat="/dd/Materials/Vacuum") at GBndLib.cc:470
+        frame #6: 0x00000001039e260d libExtG4.dylib`X4PhysicalVolume::addBoundary(this=0x00007ffeefbfde88, pv=0x0000000116651000, pv_p=0x0000000000000000) at X4PhysicalVolume.cc:1598
+        frame #7: 0x00000001039e028a libExtG4.dylib`X4PhysicalVolume::convertNode(this=0x00007ffeefbfde88, pv=0x0000000116651000, parent=0x0000000000000000, depth=0, pv_p=0x0000000000000000, recursive_select=0x00007ffeefbfd083) at X4PhysicalVolume.cc:1674
+        frame #8: 0x00000001039e003d libExtG4.dylib`X4PhysicalVolume::convertStructure_r(this=0x00007ffeefbfde88, pv=0x0000000116651000, parent=0x0000000000000000, depth=0, parent_pv=0x0000000000000000, recursive_select=0x00007ffeefbfd083) at X4PhysicalVolume.cc:1409
+        frame #9: 0x00000001039d6dcc libExtG4.dylib`X4PhysicalVolume::convertStructure(this=0x00007ffeefbfde88) at X4PhysicalVolume.cc:1336
+        frame #10: 0x00000001039d57bb libExtG4.dylib`X4PhysicalVolume::init(this=0x00007ffeefbfde88) at X4PhysicalVolume.cc:203
+        frame #11: 0x00000001039d545f libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=0x00007ffeefbfde88, ggeo=0x00000001164784a0, top=0x0000000116651000) at X4PhysicalVolume.cc:181
+        frame #12: 0x00000001039d45f5 libExtG4.dylib`X4PhysicalVolume::X4PhysicalVolume(this=0x00007ffeefbfde88, ggeo=0x00000001164784a0, top=0x0000000116651000) at X4PhysicalVolume.cc:172
+        frame #13: 0x00000001000156e6 OKX4Test`main(argc=14, argv=0x00007ffeefbfe698) at OKX4Test.cc:108
+        frame #14: 0x00007fff53e0d015 libdyld.dylib`start + 1
+        frame #15: 0x00007fff53e0d015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+cg with dx1
+-------------
+
+::
+
+    2022-03-03 17:40:11.116 INFO  [9727616] [*CSG_GGeo_Convert::convertNode@570]  primIdx 1641 partIdxRel   14 tag     ze tc       zero tranIdx    0 is_list not_list subNum   -1 subOffset   -1
+    2022-03-03 17:40:11.116 INFO  [9727616] [*CSG_GGeo_Convert::convertNode@570]  primIdx 1641 partIdxRel   15 tag     cy tc   cylinder tranIdx 1528 is_list not_list subNum   -1 subOffset   -1
+    2022-03-03 17:40:11.116 INFO  [9727616] [*CSG_GGeo_Convert::convertNode@570]  primIdx 1641 partIdxRel   16 tag     cy tc   cylinder tranIdx 1529 is_list not_list subNum   -1 subOffset   -1
+    2022-03-03 17:40:11.116 INFO  [9727616] [*CSG_GGeo_Convert::convertNode@570]  primIdx 1641 partIdxRel   17 tag     co tc convexpolyhedron tranIdx 1530 is_list not_list subNum   -1 subOffset   -1
+    2022-03-03 17:40:11.116 FATAL [9727616] [*CSG_GGeo_Convert::GetPlanes@662]  unexpected pl_buf 672,4
+    Assertion failed: (pl_expect), function GetPlanes, file /Users/blyth/opticks/CSG_GGeo/CSG_GGeo_Convert.cc, line 666.
+    ./run.sh: line 98:  8660 Abort trap: 6           $GDB $bin $GDBDIV $*
+    epsilon:CSG_GGeo blyth$ 
+    epsilon:CSG_GGeo blyth$ 
+
+
+    (lldb) f 5
+    frame #5: 0x00000001000fd286 libCSG_GGeo.dylib`CSG_GGeo_Convert::convertNode(this=0x00007ffeefbfded8, comp=0x0000000101ffb610, primIdx=1641, partIdxRel=17) at CSG_GGeo_Convert.cc:585
+       582 	    bool complement = comp->getComplement(partIdx);
+       583 	
+       584 	    bool has_planes = CSG::HasPlanes(tc); 
+    -> 585 	    std::vector<float4>* planes = has_planes ? GetPlanes(comp, primIdx, partIdxRel) : nullptr ; 
+       586 	
+       587 	    const float* aabb = nullptr ;  
+       588 	    CSGNode nd = CSGNode::Make(tc, param6, aabb ) ; 
+    (lldb) p tc
+    (unsigned int) $0 = 112
+    (lldb) p CSG::Name(tc)
+    (const char *) $1 = 0x00000001001283fd "convexpolyhedron"
+    (lldb) p primIdx
+    (unsigned int) $2 = 1641
+    (lldb) p partIdxRel
+    (unsigned int) $3 = 17
+
+
 
 
 

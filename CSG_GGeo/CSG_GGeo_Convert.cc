@@ -655,12 +655,20 @@ std::vector<float4>* CSG_GGeo_Convert::GetPlanes(const GParts* comp, unsigned pr
 
     unsigned planIdx = comp->getPlanIdx(partIdx); 
     unsigned planNum = comp->getPlanNum(partIdx); 
+
     NPY<float>* pl_buf = comp->getPlanBuffer(); 
 
-    bool pl_expect = pl_buf->hasShape(planNum, 4) ; 
+    bool pl_expect = pl_buf->hasShape(-1, 4) ;   // HUH: was (planNum, 4) surely should be (-1, 4)
+
     if(!pl_expect)
         LOG(fatal)
-           << " unexpected pl_buf " << pl_buf->getShapeString()
+           << " primIdx " << primIdx
+           << " partOffset " << partOffset
+           << " partIdx " << partIdx
+           << " tc " << CSG::Name(tc)
+           << " planIdx " << planIdx
+           << " planNum " << planNum 
+           << " unexpected pl_buf shape  " << pl_buf->getShapeString()
            ;
 
     assert( pl_expect ); 
