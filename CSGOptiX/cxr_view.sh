@@ -196,7 +196,7 @@ EOU
 
 #moi=sStrut      # what to look at 
 moi=sWaterTube   # should be same as lLowerChimney_phys
-emm=t0      # "t0" : tilde zero meaning all       "t0," : exclude bit 0 global,  "t8," exclude mm 8 
+emm=t0           # "t0" : tilde zero meaning all       "t0," : exclude bit 0 global,  "t8," exclude mm 8 
 zoom=1
 eye=-1,-1,-1,1
 tmin=0.4

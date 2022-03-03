@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* geom_default = "body_phys" ; 
+    const char* geom_default = "nnvtBodyPhys" ; 
     const char* geom = SSys::getenvvar("GEOM", geom_default );  
 
 #ifdef WITH_PMTSIM

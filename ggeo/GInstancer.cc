@@ -18,6 +18,7 @@
  */
 
 
+#include "SSys.hh"
 #include "SLog.hh"
 #include "BTimeKeeper.hh"
 
@@ -50,13 +51,15 @@
 
 const plog::Severity GInstancer::LEVEL = PLOG::EnvLevel("GInstancer", "DEBUG") ; 
 
+const int GInstancer::INSTANCE_REPEAT_MIN = SSys::getenvint("GInstancer_instance_repeat_min", 400 ); 
+const int GInstancer::INSTANCE_VERTEX_MIN = SSys::getenvint("GInstancer_instance_vertex_min",   0 ); 
+
 GInstancer::GInstancer(Opticks* ok, GGeo* ggeo) 
     : 
     m_log(new SLog("GInstancer::GInstancer","", verbose)),
     m_ok(ok),
-    m_config(m_ok->getSceneConfig()),
-    m_repeat_min(m_config->instance_repeat_min),
-    m_vertex_min(m_config->instance_vertex_min),  // aiming to include leaf? sStrut and sFasteners
+    m_repeat_min(INSTANCE_REPEAT_MIN),
+    m_vertex_min(INSTANCE_VERTEX_MIN), 
     m_ggeo(ggeo),
     m_geolib(ggeo->getGeoLib()),
     m_nodelib(ggeo->getNodeLib()),
@@ -271,6 +274,15 @@ struct GRepeat
     {
     }
 
+    std::string reason()
+    {
+        std::stringstream ss ; 
+        ss << " ndig:" << ndig ; 
+        if( ndig <= repeat_min )  ss << " ( <= repeat_min" << repeat_min << ") " ; 
+        ss << " nvert:" << nvert ; 
+        if( nvert <= vertex_min ) ss << " ( <= vertex_min  " << vertex_min << ") " ; 
+        return ss.str();
+    }
     std::string desc()
     { 
         std::stringstream ss ; 
@@ -309,7 +321,7 @@ Allowing leaf repeaters results in too many, so place vertex count reqirement to
 
 void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min)
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "[ repeat_min " << repeat_min << " vertex_min " << vertex_min  ; 
 
     unsigned int nall = m_digest_count->size() ; 
     std::vector<GRepeat> cands ; 
@@ -327,7 +339,17 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
         GRepeat cand(repeat_min, vertex_min,  i, pdig, ndig , first );
         cands.push_back(cand) ;
 
-        if(cand.candidate) m_repeat_candidates.push_back(pdig);        
+        if(cand.candidate) 
+        {
+            m_repeat_candidates.push_back(pdig);        
+        } 
+        else
+        {
+            LOG(LEVEL)
+                << " reject repcan "
+                << cand.reason()
+                ;  
+        }
     }
 
     unsigned num_all = cands.size() ; 

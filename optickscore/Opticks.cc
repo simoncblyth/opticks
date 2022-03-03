@@ -1278,6 +1278,8 @@ std::string Opticks::reportKeyString() const
     if(strcmp(kspec, espec) == 0) 
     {
         LOG(info) << "This key matches that of the current envvar " ; 
+        LOG(info) << " kspec " << kspec ; 
+        LOG(info) << " espec " << espec ; 
     }
     else
     {

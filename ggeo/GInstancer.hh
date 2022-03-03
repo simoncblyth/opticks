@@ -26,7 +26,6 @@
 #include "plog/Severity.h"
 
 class SLog ; 
-struct NSceneConfig ; 
 class Opticks ;
 
 class GGeo ; 
@@ -62,6 +61,8 @@ This populates GGeo.m_geolib with GMergedMesh.
 class GGEO_API GInstancer {
    public:
         static const plog::Severity LEVEL ;  
+        static const int INSTANCE_REPEAT_MIN ; // GInstancer_instance_repeat_min
+        static const int INSTANCE_VERTEX_MIN ; // GInstancer_instance_vertex_min 
    public:
         GInstancer(Opticks* ok, GGeo* ggeo ) ;
         void setRepeatMin(unsigned repeat_min);
@@ -126,7 +127,6 @@ class GGEO_API GInstancer {
    private:
        SLog*                     m_log ; 
        Opticks*                  m_ok ; 
-       NSceneConfig*             m_config ; 
        unsigned                  m_repeat_min ; 
        unsigned                  m_vertex_min ; 
 

@@ -18,6 +18,14 @@ the arglist all from a single load of the geometry.
 So a single run creates multiple different snaps of different
 parts of a geometry.
 
+To copy the last jpg render into s5p publication folders rerun the commandline 
+with PUB=some_descriptive_string. 
+The last render will be opened and a publication path determined and the jpg copied to it. 
+To check the path to be used without doing the copy use PUB=1. 
+Examples::
+
+   PUB=1                      EYE=1,0,0 ZOOM=1 ./cxr_overview.sh 
+   PUB=simple_transform_check EYE=1,0,0 ZOOM=1 ./cxr_overview.sh 
 
 EOU
 }
@@ -115,17 +123,39 @@ render()
    return $rc
 }
 
-if [ -n "$ARGLIST" ] ; then 
 
-    echo $msg MOI $MOI ARGLIST $ARGLIST
-    render --arglist $ARGLIST $*            ## effectively multiple MOI via the arglist 
-    rc=$?
+# skip the render when running with PUB defined
+if [ -z "$PUB" ]; then
+    if [ -n "$ARGLIST" ] ; then 
 
+        echo $msg MOI $MOI ARGLIST $ARGLIST
+        render --arglist $ARGLIST $*            ## effectively multiple MOI via the arglist 
+        rc=$?
+
+    else
+        render $*                               ## single MOI via envvar 
+        rc=$?
+    fi
 else
-    render $*                               ## single MOI via envvar 
-    rc=$?
+    rc=0
 fi
 
+
+relative_stem(){
+   local jpg=$1
+  
+   local geocache=${OPTICKS_GEOCACHE_PREFIX:-$HOME/.opticks}/geocache/
+   local oktmp=/tmp/$USER/opticks/
+
+   local rel 
+   case $jpg in 
+      ${geocache}*)  rel=${jpg/$geocache/} ;;
+      ${oktmp}*)     rel=${jpg/$oktmp/} ;; 
+   esac 
+   rel=${rel/\.jpg}
+
+   echo $rel 
+}
 
 if [ $rc -eq 0 ]; then 
 
@@ -144,14 +174,12 @@ if [ $rc -eq 0 ]; then
         if [ -n "$jpg" -a "$(uname)" == "Darwin" -a -n "$PUB" ]; then 
 
             if [ "$PUB" == "1" ]; then 
-                ext=""
+                ext=""    ## use PUB=1 to debug the paths 
             else
                 ext="_${PUB}" 
             fi 
 
-            rel=${jpg/\/tmp\/$USER\/opticks\//}  
-            rel=${rel/\.jpg}
-
+            rel=$(relative_stem $jpg)
             s5p=/env/presentation/${rel}${ext}.jpg
             pub=$HOME/simoncblyth.bitbucket.io$s5p
 
@@ -164,6 +192,8 @@ if [ $rc -eq 0 ]; then
 
             if [ -f "$pub" ]; then 
                 echo $msg published path exists already : NOT COPYING : set PUB to an ext string to distinguish the name or more permanently arrange for a different path   
+            elif [ "$ext" == "" ]; then 
+                echo $msg skipping copy : to do the copy you must set PUB to some descriptive string rather than just using PUB=1
             else
                 echo $msg copying jpg to pub 
                 cp $jpg $pub

@@ -1,8 +1,8 @@
 #!/bin/bash -l 
 
 usage(){ cat << EOU
-xxv.sh : Volume equivalent of xxs.sh 
-===============================================
+xxv.sh : Volume equivalent of xxs.sh using extg4/tests/X4IntersectVolumeTest.cc
+==================================================================================
 
 Provides 2D cross section plots of the G4VSolid in a PV tree of solids with structure transforms applied to intersects.
 To run over all the commented and uncommented geom listed in xxv.sh below use ./xxv_scan.sh 
@@ -13,17 +13,17 @@ EOU
 msg="=== $BASH_SOURCE :"
 
 
-#geom=hama_body_phys_nurs
-#geom=hama_body_phys_nurs_pdyn
-#geom=hama_body_phys_nurs_pdyn_prtc_obto
-#geom=hama_body_phys_pdyn
-#geom=hama_body_phys
+#geom=hamaBodyPhys:nurs
+#geom=hamaBodyPhys:nurs:pdyn
+#geom=hamaBodyPhys:nurs:pdyn:prtc:obto
+#geom=hamaBodyPhys:pdyn
+#geom=hamaBodyPhys
 
-#geom=nnvt_body_phys_nurs
-geom=nnvt_body_phys_nurs_pdyn
-#geom=nnvt_body_phys_nurs_pdyn_prtc_obto
-#geom=nnvt_body_phys_pdyn
-#geom=nnvt_body_phys
+#geom=nnvtBodyPhys:nurs
+geom=nnvtBodyPhys:nurs:pdyn
+#geom=nnvtBodyPhys:nurs:pdyn:prtc:obto
+#geom=nnvtBodyPhys:pdyn
+#geom=nnvtBodyPhys
 
 
 export GEOM=${GEOM:-$geom}

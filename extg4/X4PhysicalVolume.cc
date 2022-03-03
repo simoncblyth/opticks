@@ -1683,7 +1683,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
     int lvIdx = m_lvidx[lv] ;   // from postorder traverse in convertSolids to match GDML lvIdx : mesh identity uses lvIdx
 
-    LOG(verbose) 
+    LOG(LEVEL) 
         << " copyNumber " << std::setw(8) << copyNumber
         << " boundary " << std::setw(4) << boundary 
         << " materialIdx " << std::setw(4) << materialIdx
@@ -1816,10 +1816,15 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     G4PVPlacement* _placement = const_cast<G4PVPlacement*>(placement) ;  
     void* origin_node = static_cast<void*>(_placement) ; 
     int origin_copyNumber = copyNumber ; 
-    
+
+
     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node, origin_copyNumber );
     volume->setBoundary( boundary );   // must setBoundary before adding sensor volume 
     volume->setCopyNumber(copyNumber);  // NB within instances this is changed by GInstancer::labelRepeats_r when m_duplicate_outernode_copynumber is true
+
+
+    LOG(LEVEL) << " instanciate GVolume node_count  " << m_node_count ; 
+
 
     m_node_count += 1 ; 
 
