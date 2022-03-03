@@ -331,7 +331,9 @@ geocache-create-()
     local tmp=$(geocache-tmp $FUNCNAME)
     mkdir -p $tmp && cd $tmp
          
-    $(opticks-prefix)/bin/o.sh --okx4test --g4codegen --deletegeocache $*
+    #$(opticks-prefix)/bin/o.sh --okx4test --g4codegen --deletegeocache $*
+
+    OKX4Test --g4codegen --deletegeocache $* 
 
     echo $msg logs are in tmp:$tmp
     cd $iwd

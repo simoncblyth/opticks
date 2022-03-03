@@ -8,8 +8,8 @@ I have seen something similar before which was due to the --gparts_transform_off
 omitted. But that seems not to be the case this time. 
 
 
-Test with simple geometry : a grid of PMTs
------------------------------------------------------
+Test with simple geometry : a grid of PMTs : so far no problem
+-----------------------------------------------------------------
 
 To setup a simpler environment to debug structural transforms and their conversion, 
 get PMTSim::GetPV operational and use it from a new test 
@@ -43,8 +43,39 @@ get PMTSim::GetPV operational and use it from a new test
     PUB=simple_transform_check EYE=1,0,0 ZOOM=1 ./cxr_overview.sh 
 
 
+* Using "Six" on laptop with both an instanced and an all global geometry get the expected render of a grid of PMTs in a box. 
+* Using OKTest and OTracerTest on laptop (OpenGL rasterized) shows expected 27 PMTs in box
 
-With both an instanced and an all global geometry get the expected render of a grid of PMTs in a box. 
+  * NB have to open the Scene menu and select the instances to get the PMTs to appear
+  * checking "O" flipping gets the same modulo y-inversion between the ray traced and rasterized 
+
+    * TODO: fix the y-inversion (not urgent)
+
+
+* checking on P and setting::
+
+    export OPTICKS_KEYDIR_GRABBED=.opticks/geocache/G4OKPMTSimTest_World_pv_g4live/g4ok_gltf/64f67f47f00b6e9831b16c54495f0bdd/1 
+
+Then grabbing from laptop::
+
+   cx 
+   ./cxr_grab.sh jpg   
+
+* no surprises the box of PMTs looks as expected 
+
+
+TODO: check with dayabay gdml geometry 
+------------------------------------------------
+
+::
+
+   geocache-create    # geocache-dx1 
+
+
+
+TODO : check with an old JUNO gdml
+-------------------------------------
+
 
 
 
