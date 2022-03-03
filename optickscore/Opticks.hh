@@ -469,6 +469,7 @@ class OKCORE_API Opticks {
        bool                 isNoGDMLPath() const ;    // --nogdmlpath
        bool                 isAllowNoKey() const ;    // --allownokey
    public:
+       bool                 isEarlyExit() const ;    // --earlyexit
        bool                 canDeleteGeoCache() const ; 
        void                 deleteGeoCache() const ; 
        void                 enforceNoGeoCache() const ; 

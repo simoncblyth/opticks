@@ -44,7 +44,18 @@ class Fold(object):
             stems.append(stem)
 
             txt_dtype = "|S100" if stem.endswith("_meta") else np.object 
-            a = np.load(path) if is_npy else np.loadtxt(path, dtype=txt_dtype, delimiter="\t") 
+
+            if is_npy:
+                a = np.load(path)
+            else: 
+                t = np.loadtxt(path, dtype=txt_dtype, delimiter="\t") 
+                if t.shape == (): ## prevent one line file behaving different from multiline 
+                    a = np.zeros(1, dtype=txt_dtype)
+                    a[0] = str(t)
+                else:
+                    a = t     
+                pass
+            pass
 
             # use non-present delim so lines with spaces do not cause errors
             #list(map(str.strip,open(path).readlines())) 

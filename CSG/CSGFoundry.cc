@@ -959,10 +959,6 @@ unsigned CSGFoundry::addTran_( const Tran<T>* tr  )
 template unsigned CSGFoundry::addTran_<float>(const Tran<float>* ) ;
 template unsigned CSGFoundry::addTran_<double>(const Tran<double>* ) ;
 
-
-
-
-
 unsigned CSGFoundry::addTran( const qat4* tr, const qat4* it )
 {
     unsigned idx = tran.size();   // size before push_back 

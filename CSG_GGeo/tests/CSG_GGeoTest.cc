@@ -25,6 +25,11 @@ int main(int argc, char** argv)
     GGeo* ggeo = GGeo::Load(&ok); 
     LOG(error) << "] load ggeo " ; 
 
+    if(ok.isEarlyExit())
+    {
+        LOG(fatal) << " early exit due to --earlyexit option " << argv[0] ; 
+        return 0 ; 
+    }  
 
     CSGFoundry foundry ; 
 

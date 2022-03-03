@@ -117,7 +117,6 @@ GGeo* GGeo::Get() // static
     return fInstance ;    
 }
 
-
 GGeo* GGeo::Load(Opticks* ok) // static
 {
     if(!ok->isConfigured()) ok->configure(); 
@@ -128,7 +127,6 @@ GGeo* GGeo::Load(Opticks* ok) // static
     LOG(LEVEL) << st ;  
     return ggeo ;  
 }
-
 
 
 /**
@@ -552,7 +550,6 @@ void GGeo::loadFromCache()
 
     m_meshlib->setGGeoLib(m_geolib); 
 
-
     postLoadFromCache(); 
 
     LOG(LEVEL) << "]" ; 
@@ -571,8 +568,8 @@ void GGeo::postLoadFromCache()
     LOG(LEVEL) << "[" ; 
     loadCacheMeta();
 
-    close();                  // formerly OpticksHub::loadGeometry
-    deferred();              // formerly OpticksHub::init   <-- this is needed for live running also  
+    close();               
+    deferred();           
     LOG(LEVEL) << "]" ; 
 }
 
@@ -1422,10 +1419,8 @@ Thus it can be done postcache, as all the ingredients are loaded from cache.
 
 See :doc:`../notes/issues/GPts_GParts_optimization`
 
-
 * option --savegparts Opticks::isSaveGPartsEnabled() writes $TMP/GParts/0,1,2,.. 
   which is read by ana/GParts.py to provide a python interface to the analytic geometry
-
 
 10**/
 
@@ -1444,6 +1439,8 @@ void GGeo::deferredCreateGParts()
         << " meshlib.solids " << solids.size()
         << " gparts_debug " << gparts_debug
         ; 
+
+    int globalTranOffset = 0 ;  // not used see CSG_GGeo_Convert::convertNode  
 
     for(unsigned i=0 ; i < nmm ; i++)
     {
@@ -1472,8 +1469,10 @@ void GGeo::deferredCreateGParts()
 
 
         GParts::SetDEBUG( i == unsigned(gparts_debug) ? 1 : 0 ); 
-        GParts* parts = GParts::Create( m_ok, pts, solids, &num_mismatch_pt, &mismatch_placements ) ; 
-        parts->setRepeatIndex(i); 
+        GParts* parts = GParts::Create( m_ok, pts, solids, &num_mismatch_pt, &mismatch_placements, i, globalTranOffset ) ; 
+        unsigned ridx = parts->getRepeatIndex(); 
+        assert( ridx == i );   
+
 
         if(num_mismatch_pt > 0 )
         {

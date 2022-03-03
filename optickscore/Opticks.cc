@@ -1218,6 +1218,11 @@ bool Opticks::canDeleteGeoCache() const   // --deletegeocache
 {
     return m_cfg->hasOpt("deletegeocache") ;
 }
+bool Opticks::isEarlyExit() const   // --earlyexit
+{
+    return m_cfg->hasOpt("earlyexit") ;
+}
+
 
 bool Opticks::isNoGDMLPath() const   // --nogdmlpath
 {

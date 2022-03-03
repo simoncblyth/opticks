@@ -155,7 +155,7 @@ struct CSG_API CSGNode
 
     NODE_METHOD void getYRange(float& y0, float& y1) const ; 
 
-    NODE_METHOD void setAABBLocal();  // sets local frame BBox based on typecode and parameters (WARNING: not implemented for all shapes yet)
+    NODE_METHOD void setAABBLocal();
     NODE_METHOD void setAABB(  float x0, float y0, float z0, float x1, float y1, float z1){  q2.f.x = x0 ; q2.f.y = y0 ; q2.f.z = z0 ; q2.f.w = x1 ; q3.f.x = y1 ; q3.f.y = z1 ; }  
     NODE_METHOD void setAABB(  float e ){                                                    q2.f.x = -e ; q2.f.y = -e ; q2.f.z = -e ; q2.f.w =  e ; q3.f.x =  e ; q3.f.y =  e ; }  
     NODE_METHOD void setAABB(const float* p)

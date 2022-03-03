@@ -248,5 +248,217 @@ TODO : check with an old JUNO gdml
 
 
 
+review gparts_transform_offset
+----------------------------------
+
+::
+
+    epsilon:CSG_GGeo blyth$ opticks-f gparts_transform_offset
+    ./okop/OpMgr.cc:    bool is_gparts_transform_offset = m_ok->isGPartsTransformOffset()  ; 
+    ./okop/OpMgr.cc:    LOG(info) << " is_gparts_transform_offset " << is_gparts_transform_offset ; 
+
+    ./opticksgeo/OpticksHub.cc:    bool is_gparts_transform_offset = m_ok->isGPartsTransformOffset()  ; 
+    ./opticksgeo/OpticksHub.cc:    LOG(info) << "[ " << m_ok->getIdPath() << " isGPartsTransformOffset " << is_gparts_transform_offset  ; 
+
+    ./GeoChain/tests/GeoChainNodeTest.cc:    const char* argforced = "--allownokey --gparts_transform_offset" ; 
+    ./GeoChain/tests/GeoChainVolumeTest.cc:    const char* argforced = "--allownokey --gparts_transform_offset" ; 
+    ./GeoChain/tests/GeoChainVolumeTest.cc:    // see notes/issues/PMT_body_phys_bizarre_innards_confirmed_fixed_by_using_gparts_transform_offset_option.rst
+    ./GeoChain/tests/GeoChainSolidTest.cc:    const char* argforced = "--allownokey --gparts_transform_offset" ; 
+
+    ./ggeo/GParts.cc:Notice the --gparts_transform_offset option which 
+    ./ggeo/GParts.cc:are handled separately, hence --gparts_transform_offset
+    ./ggeo/GParts.cc:    if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
+    ./ggeo/GParts.cc:        if(dump) LOG(info) << " --gparts_transform_offset IS ENABLED, COUNT  " << COUNT  ; 
+    ./ggeo/GParts.cc:        if(dump) LOG(info) << " NOT ENABLED --gparts_transform_offset, COUNT  " << COUNT  ; 
+
+    ./optickscore/tests/OpticksTest.cc:    bool is_gparts_transform_offset = ok->isGPartsTransformOffset(); 
+    ./optickscore/tests/OpticksTest.cc:    LOG(info) << " is_gparts_transform_offset " << is_gparts_transform_offset ; 
+
+    ./optickscore/Opticks.hh:       bool isGPartsTransformOffset() const ; // --gparts_transform_offset
+    ./optickscore/OpticksCfg.cc:       ("gparts_transform_offset",  "see GParts::add") ;
+    ./optickscore/Opticks.cc:    return m_cfg->hasOpt("gparts_transform_offset") ;  
+
+    ./optixrap/OGeo.cc:    bool is_gparts_transform_offset = m_ok->isGPartsTransformOffset()  ;   
+    ./optixrap/OGeo.cc:    LOG(info) << " is_gparts_transform_offset " << is_gparts_transform_offset ; 
+    ./optixrap/OGeo.cc:    if( is_gparts_transform_offset )
+    ./optixrap/OGeo.cc:           << " using the old pre7 optixrap machinery with option --gparts_transform_offset enabled will result in mangled transforms " ; 
+    ./optixrap/OGeo.cc:           << " the --gparts_transform_offset is only appropriate when using the new optix7 machinery, eg CSG/CSGOptiX/CSG_GGeo/.. " ; 
+
+    ./CSG_GGeo/tests/CSG_GGeoTest.cc:    const char* argforced = "--gparts_transform_offset" ; 
+    ./CSG_GGeo/run.sh:--gparts_transform_offset
+    ./CSG_GGeo/run.sh:Hmm without "--gparts_transform_offset" get messed up geometry 
+    ./CSG_GGeo/run.sh:    epsilon:CSG_GGeo blyth$ opticks-f gparts_transform_offset 
+    ./CSG_GGeo/run.sh:    ./ggeo/GParts.cc:    if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
+    ./CSG_GGeo/run.sh:    ./ggeo/GParts.cc:        LOG(LEVEL) << " --gparts_transform_offset " ; 
+    ./CSG_GGeo/run.sh:    ./ggeo/GParts.cc:        LOG(LEVEL) << " NOT --gparts_transform_offset " ; 
+    ./CSG_GGeo/run.sh:    ./optickscore/Opticks.hh:       bool isGPartsTransformOffset() const ; // --gparts_transform_offset
+    ./CSG_GGeo/run.sh:    ./optickscore/OpticksCfg.cc:       ("gparts_transform_offset",  "see GParts::add") ;
+    ./CSG_GGeo/run.sh:    ./optickscore/Opticks.cc:    return m_cfg->hasOpt("gparts_transform_offset") ;  
+    ./CSG_GGeo/run.sh:    1266 Notice the --gparts_transform_offset option which 
+    ./CSG_GGeo/run.sh:    1272 are handled separately, hence --gparts_transform_offset
+    ./CSG_GGeo/run.sh:    1297     if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
+    ./CSG_GGeo/run.sh:    1299         LOG(LEVEL) << " --gparts_transform_offset " ;
+    ./CSG_GGeo/run.sh:    1307         LOG(LEVEL) << " NOT --gparts_transform_offset " ;
+    ./CSG_GGeo/CSG_GGeo_Convert.cc:    bool gparts_transform_offset = ok->isGPartsTransformOffset() ; 
+    ./CSG_GGeo/CSG_GGeo_Convert.cc:    if(!gparts_transform_offset)
+    ./CSG_GGeo/CSG_GGeo_Convert.cc:            << " GParts geometry requires use of --gparts_transform_offset "
+    ./CSG_GGeo/CSG_GGeo_Convert.cc:    assert(gparts_transform_offset); 
+    ./CSG_GGeo/run1.sh:./run.sh --gparts_transform_offset 
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ 
+
+
+::
+
+    GGeo::deferredCreateGParts
+    GParts::Create
+
+
+
+
+Huh thats unreasonable the tranOffset should not go down::
+
+    2022-03-03 20:33:35.570 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4471 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.570 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4472 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.570 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4473 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.570 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4474 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.570 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4475 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.570 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4476 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.570 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4477 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.570 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4478 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.571 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4479 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.571 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4480 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.571 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4481 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.571 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4482 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.571 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4483 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.571 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4484 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.571 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4485 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.572 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4486 ridx 0 tranOffset 5740
+    2022-03-03 20:33:35.856 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4487 ridx 1 tranOffset 0
+    2022-03-03 20:33:35.856 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4488 ridx 2 tranOffset 0
+    2022-03-03 20:33:35.856 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4489 ridx 3 tranOffset 0
+    2022-03-03 20:33:35.857 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4490 ridx 4 tranOffset 0
+    2022-03-03 20:33:35.857 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4491 ridx 5 tranOffset 0
+    2022-03-03 20:33:35.857 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4492 ridx 5 tranOffset 4
+    2022-03-03 20:33:35.858 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4493 ridx 5 tranOffset 8
+    2022-03-03 20:33:35.858 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4494 ridx 5 tranOffset 10
+    2022-03-03 20:33:35.858 INFO  [9919390] [GParts::add@1322]  --gparts_transform_offset IS ENABLED, COUNT  4495 ridx 5 tranOffset 11
+    2022-03-03 20:33:35.859 ERROR [9919390] [main@26] ] load ggeo 
+    epsilon:CSG_GGeo blyth$ 
+
+
+Actually it is OK, see CSG_GGeo_Convert::convertNode.::
+
+
+    542 CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, unsigned partIdxRel )
+    543 {
+    544     unsigned repeatIdx = comp->getRepeatIndex();  // set in GGeo::deferredCreateGParts
+    545     unsigned partOffset = comp->getPartOffset(primIdx) ;
+    546     unsigned partIdx = partOffset + partIdxRel ;
+    547     unsigned idx = comp->getIndex(partIdx);
+    548     assert( idx == partIdx );
+    549     unsigned boundary = comp->getBoundary(partIdx); // EXPT
+    550 
+    551     std::string tag = comp->getTag(partIdx);
+    552     unsigned tc = comp->getTypeCode(partIdx);
+    553     bool is_list = CSG::IsList((OpticksCSG_t)tc) ;
+    554     int subNum = is_list ? comp->getSubNum(partIdx) : -1 ;
+    555     int subOffset = is_list ? comp->getSubOffset(partIdx) : -1 ;
+    556 
+    557 
+    558     // TODO: transform handling in double, narrowing to float at the last possible moment 
+    559     const Tran<float>* tv = nullptr ;
+    560     unsigned gtran = comp->getGTransform(partIdx);  // 1-based index, 0 means None
+    561     if( gtran > 0 )
+    562     {
+    563         glm::mat4 t = comp->getTran(gtran-1,0) ;
+    564         glm::mat4 v = comp->getTran(gtran-1,1);
+    565         tv = new Tran<float>(t, v);
+    566     }
+    567 
+    568     unsigned tranIdx = tv ?  1 + foundry->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
+    569 
+
+
+
+
+::
+
+    epsilon:ggeo blyth$ ./GPartsTest.sh 
+    Fold : loading from base /tmp/blyth/opticks/GParts/0 setting globals False globals_prefix  
+                   GParts :           14700 : 2022-03-03 22:03:19.280775 :  GParts.txt 
+                idxBuffer :       (4486, 4) : 2022-03-03 22:03:19.277043 :  idxBuffer.npy 
+               planBuffer :        (672, 4) : 2022-03-03 22:03:19.276789 :  planBuffer.npy 
+               partBuffer :   (14700, 4, 4) : 2022-03-03 22:03:19.275552 :  partBuffer.npy 
+               tranBuffer : (5745, 3, 4, 4) : 2022-03-03 22:03:19.276539 :  tranBuffer.npy 
+               primBuffer :       (4486, 4) : 2022-03-03 22:03:19.277272 :  primBuffer.npy 
+     min_stamp : 2022-03-03 22:03:19.275552 
+     max_stamp : 2022-03-03 22:03:19.280775 
+     dif_stamp : 0:00:00.005223 
+    Fold : loading from base /tmp/blyth/opticks/GParts/1 setting globals False globals_prefix  
+                   GParts :               1 : 2022-03-03 22:03:19.281851 :  GParts.txt 
+                idxBuffer :          (1, 4) : 2022-03-03 22:03:19.281489 :  idxBuffer.npy 
+               partBuffer :       (1, 4, 4) : 2022-03-03 22:03:19.281333 :  partBuffer.npy 
+               primBuffer :          (1, 4) : 2022-03-03 22:03:19.281656 :  primBuffer.npy 
+     min_stamp : 2022-03-03 22:03:19.281333 
+     max_stamp : 2022-03-03 22:03:19.281851 
+     dif_stamp : 0:00:00.000518 
+    Fold : loading from base /tmp/blyth/opticks/GParts/2 setting globals False globals_prefix  
+                   GParts :               1 : 2022-03-03 22:03:19.282868 :  GParts.txt 
+                idxBuffer :          (1, 4) : 2022-03-03 22:03:19.282533 :  idxBuffer.npy 
+               partBuffer :       (1, 4, 4) : 2022-03-03 22:03:19.282359 :  partBuffer.npy 
+               primBuffer :          (1, 4) : 2022-03-03 22:03:19.282699 :  primBuffer.npy 
+     min_stamp : 2022-03-03 22:03:19.282359 
+     max_stamp : 2022-03-03 22:03:19.282868 
+     dif_stamp : 0:00:00.000509 
+    Fold : loading from base /tmp/blyth/opticks/GParts/3 setting globals False globals_prefix  
+                   GParts :               1 : 2022-03-03 22:03:19.283844 :  GParts.txt 
+                idxBuffer :          (1, 4) : 2022-03-03 22:03:19.283465 :  idxBuffer.npy 
+               partBuffer :       (1, 4, 4) : 2022-03-03 22:03:19.283295 :  partBuffer.npy 
+               primBuffer :          (1, 4) : 2022-03-03 22:03:19.283631 :  primBuffer.npy 
+     min_stamp : 2022-03-03 22:03:19.283295 
+     max_stamp : 2022-03-03 22:03:19.283844 
+     dif_stamp : 0:00:00.000549 
+    Fold : loading from base /tmp/blyth/opticks/GParts/4 setting globals False globals_prefix  
+                   GParts :               1 : 2022-03-03 22:03:19.284859 :  GParts.txt 
+                idxBuffer :          (1, 4) : 2022-03-03 22:03:19.284510 :  idxBuffer.npy 
+               partBuffer :       (1, 4, 4) : 2022-03-03 22:03:19.284321 :  partBuffer.npy 
+               primBuffer :          (1, 4) : 2022-03-03 22:03:19.284678 :  primBuffer.npy 
+     min_stamp : 2022-03-03 22:03:19.284321 
+     max_stamp : 2022-03-03 22:03:19.284859 
+     dif_stamp : 0:00:00.000538 
+    Fold : loading from base /tmp/blyth/opticks/GParts/5 setting globals False globals_prefix  
+                   GParts :              41 : 2022-03-03 22:03:19.287721 :  GParts.txt 
+                idxBuffer :          (5, 4) : 2022-03-03 22:03:19.287413 :  idxBuffer.npy 
+               partBuffer :      (41, 4, 4) : 2022-03-03 22:03:19.287077 :  partBuffer.npy 
+               tranBuffer :   (11, 3, 4, 4) : 2022-03-03 22:03:19.287241 :  tranBuffer.npy 
+               primBuffer :          (5, 4) : 2022-03-03 22:03:19.287564 :  primBuffer.npy 
+     min_stamp : 2022-03-03 22:03:19.287077 
+     max_stamp : 2022-03-03 22:03:19.287721 
+     dif_stamp : 0:00:00.000644 
+
+    In [1]:                                                         
+
+
+
+::
+
+    //    partOffset, numParts, tranOffset, planOffset 
+
+    In [2]: g[0].primBuffer                                                                                                                                                                                   
+    Out[2]: 
+    array([[    0,     1,     0,     0],
+           [    1,     3,     0,     0],
+           [    4,     3,     2,     0],
+           [    7,    15,     4,     0],
+           [   22,     1,     9,     0],
+           ...,
+           [14681,     1,  5740,   672],
+           [14682,     1,  5740,   672],
+           [14683,     1,  5740,   672],
+           [14684,     1,  5740,   672],
+           [14685,    15,  5740,   672]], dtype=int32)
+
+
 
 

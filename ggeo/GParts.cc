@@ -200,7 +200,7 @@ int GParts::COUNT = 0 ;
 GParts::Create from GPts
 --------------------------
 
-Canoically invoked from ``GGeo::deferredCreateGParts``
+Canonically invoked from ``GGeo::deferredCreateGParts``
 by ``GGeo::postLoadFromCache`` or ``GGeo::postDirectTranslation``.
 
 The (GPt)pt from each GVolume yields a per-volume (GParts)parts instance
@@ -226,10 +226,20 @@ GMergedMesh::mergeVolumeAnalytic
 * notice how a combined GParts instance is contatenated from individual GParts instance for each GPt 
   using the referenced NCSG 
 
+* there is one combined GParts instance for each GMergedMesh which concatenates together the 
+  analytic CSG buffers for all the "layers" of the GMergedMesh   
+
 **/
 
 
-GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<const NCSG*>& solids, unsigned* num_mismatch_pt, std::vector<glm::mat4>* mismatch_placements ) // static
+GParts* GParts::Create(
+    const Opticks* ok, 
+    const GPts* pts, 
+    const std::vector<const NCSG*>& solids, 
+    unsigned* num_mismatch_pt, 
+    std::vector<glm::mat4>* mismatch_placements, 
+    int imm,
+    int global_tranOffset) // static
 {
     plog::Severity level = DEBUG == 0 ? LEVEL : info ;  
 
@@ -245,7 +255,8 @@ GParts* GParts::Create(const Opticks* ok, const GPts* pts, const std::vector<con
 
     GParts* com = new GParts() ; 
     com->setOpticks(ok); 
-
+    com->setRepeatIndex(imm); 
+    com->setGlobalTranOffset(global_tranOffset); 
 
     unsigned verbosity = 0 ; 
     std::vector<unsigned> mismatch_pt ; 
@@ -340,6 +351,21 @@ unsigned GParts::getRepeatIndex() const
     return m_ridx ; 
 }
 
+/**
+GParts::setGlobalTranOffset
+----------------------------
+
+Not used yet.
+
+**/
+void GParts::setGlobalTranOffset(int global_tranOffset)
+{
+    m_global_tranOffset = global_tranOffset ; 
+}
+int GParts::getGlobalTranOffset() const
+{
+    return m_global_tranOffset ;
+}
 
 
 
@@ -710,7 +736,8 @@ GParts::GParts(GBndLib* bndlib)
     m_medium(NULL),
     m_csg(NULL),
     m_ridx(~0u),
-    m_ok(bndlib ? bndlib->getOpticks(): nullptr)
+    m_ok(bndlib ? bndlib->getOpticks(): nullptr),
+    m_global_tranOffset(-1)
 {
     m_idx_buffer->zero();
     m_part_buffer->zero();
@@ -739,7 +766,8 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_medium(NULL),
     m_csg(NULL),
     m_ridx(~0u),
-    m_ok(bndlib ? bndlib->getOpticks() : nullptr)
+    m_ok(bndlib ? bndlib->getOpticks() : nullptr),
+    m_global_tranOffset(-1)
 {
     m_bndspec->add(spec);
 
@@ -763,7 +791,8 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_medium(NULL),
     m_csg(NULL),
     m_ridx(~0u),
-    m_ok(bndlib ? bndlib->getOpticks() : nullptr)
+    m_ok(bndlib ? bndlib->getOpticks() : nullptr),
+    m_global_tranOffset(-1)
 {
     checkSpec(spec); 
     init() ; 
@@ -1272,11 +1301,22 @@ is necessary for CSG_GGeo creation of CSGFoundry as in that case the
 entire geometry is treated together. 
 Without it get JUNO Chimney in middle of CD !
 
+The tranOffset-ing adjusts the transform offsets 
+to correspond to a collection of all transforms within 
+the composite. NB not all transforms, just all within the the composite GParts.
+
+
 Whereas for pre-7 running each GMergedMesh transforms 
 are handled separately, hence --gparts_transform_offset
 should not be used. 
 
+Canonical invokation is from GParts::Create 
+where separate GParts instances are joined together. 
+
+
 **/
+
+
 
 void GParts::add(GParts* other)
 {
@@ -1297,8 +1337,7 @@ void GParts::add(GParts* other)
 
     m_bndspec->add(other->getBndSpec());
 
-
-    // count the tran and plan collected so far into this GParts
+    // count the tran and plan collected so far into this composite GParts
     unsigned tranOffset = m_tran_buffer->getNumItems(); 
     //unsigned planOffset = m_plan_buffer->getNumItems(); 
 
@@ -1307,16 +1346,22 @@ void GParts::add(GParts* other)
     NPY<float>* other_tran_buffer = other->getTranBuffer() ;
     NPY<float>* other_plan_buffer = other->getPlanBuffer() ;
 
-
-    bool dump = COUNT < 10 || COUNT % 1000 == 0 ; 
+    //bool dump = COUNT < 100 || COUNT % 1000 == 0 ; 
+    bool dump = true ; 
 
     if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
     { 
-        if(dump) LOG(info) << " --gparts_transform_offset IS ENABLED, COUNT  " << COUNT  ; 
+        if(dump) LOG(info) 
+            << " --gparts_transform_offset IS ENABLED, COUNT  " << COUNT 
+            << " ridx " << getRepeatIndex() 
+            << " tranOffset " << tranOffset  
+            ; 
 
         bool preserve_zero = true ; 
         bool preserve_signbit = true ; 
-        other_part_buffer->addOffset(GTRANSFORM_J, GTRANSFORM_K, tranOffset, preserve_zero, preserve_signbit );  
+
+        other_part_buffer->addOffset(GTRANSFORM_J, GTRANSFORM_K, tranOffset, preserve_zero, preserve_signbit );    // (3,3)
+
         // hmm offsetting of planes needs to be done only for parts of type CSG_CONVEXPOLYHEDRON 
     }
     else
@@ -1370,8 +1415,6 @@ void GParts::add(GParts* other)
     //    against the combined transform (and plane) buffers
     //
 
-
-
 /*
     LOG(info) 
               << " n0 " << std::setw(3) << n0  
@@ -1388,6 +1431,9 @@ void GParts::add(GParts* other)
 
   
 }
+
+
+
 
 
 /**

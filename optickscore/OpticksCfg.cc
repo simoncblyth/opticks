@@ -229,6 +229,10 @@ void OpticksCfg<Listener>::init()
        ("deletegeocache",  "deletes the geocache before recreating") ;
 
    m_desc.add_options()
+       ("earlyexit",  "wildcard early exit") ;
+
+
+   m_desc.add_options()
        ("dbg_with_hemi_ellipsoid_bug",  "checking the effect of putting the bug back in X4Solid::convertEllipsoid") ;
 
 
