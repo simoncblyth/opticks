@@ -155,7 +155,10 @@ void nzsphere::check() const
            ;
 
     assert( z2_gt_z1 );
-    assert( z2_lt_radius );
+
+    if(!z2_lt_radius) LOG(fatal) << " tmp skip assert "; 
+    //assert( z2_lt_radius );
+
     assert( z1_lt_radius );
     assert( zmax_gt_zmin ); 
 }
