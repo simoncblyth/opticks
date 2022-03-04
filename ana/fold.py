@@ -74,9 +74,13 @@ class Fold(object):
         max_stamp = max(stamps)
         dif_stamp = max_stamp - min_stamp 
 
+        now_stamp = datetime.datetime.now()
+        age_stamp = now_stamp - max_stamp
+
         print(" min_stamp : %s " % str(min_stamp))
         print(" max_stamp : %s " % str(max_stamp))
         print(" dif_stamp : %s " % str(dif_stamp))
+        print(" age_stamp : %s " % str(age_stamp))
 
         assert dif_stamp.microseconds < 1e6, "stamp divergence detected microseconds %d : so are seeing mixed up results from multiple runs " % dif_stamp.microseconds 
         

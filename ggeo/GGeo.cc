@@ -1518,8 +1518,20 @@ void GGeo::deferredCreateGParts()
     LOG(LEVEL) << "]" ; 
 }
 
-
-
+void GGeo::saveGParts() const 
+{
+    unsigned nmm = m_geolib->getNumMergedMesh(); 
+    LOG(info) << " nmm " << nmm ; 
+    for(unsigned i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = m_geolib->getMergedMesh(i);
+        GParts* parts = mm->getParts();  
+        const char* sidx = BStr::itoa(i) ;
+        std::string sptpath = BFile::FormPath("$TMP", "GParts",sidx );
+        LOG(info) << " --savegparts optionally saving to " << sptpath  ; 
+        parts->save(sptpath.c_str()); 
+    }
+}
 
 
 GParts* GGeo::getCompositeParts(unsigned index) const

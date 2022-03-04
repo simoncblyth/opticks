@@ -73,7 +73,7 @@ G4VPhysicalVolume* X4VolumeMaker::MakePhysical(const char* name)
 
 G4VPhysicalVolume* X4VolumeMaker::WrapLVTranslate( G4LogicalVolume* lv, double tx, double ty, double tz )
 {
-    double halfside = 2.*std::max( std::max( tx, ty ), tz ); 
+    double halfside = 3.*std::max( std::max( tx, ty ), tz ); 
 
     G4VPhysicalVolume* world_pv = WorldBox(halfside); 
     G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 

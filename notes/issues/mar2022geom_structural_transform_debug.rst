@@ -462,3 +462,8 @@ Actually it is OK, see CSG_GGeo_Convert::convertNode.::
 
 
 
+
+::
+
+    EYE=-1.1,0,0 ./cxr_debug.sh 
+

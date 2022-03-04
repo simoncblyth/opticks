@@ -191,6 +191,7 @@ class G4OK_API G4Opticks
         void setGeometry(const char* gdmlpath);
         void setGeometry(const G4VPhysicalVolume* world, bool standardize_geant4_materials); 
         void loadGeometry(); 
+        void saveGParts() const ; 
     public:
         bool isWayEnabled() const ; 
         unsigned getWayMask() const ; 

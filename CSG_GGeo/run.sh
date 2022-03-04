@@ -141,6 +141,8 @@ be a different geometry to the one setup in the script.
 I presume this is attempting to become a standard place to 
 keep OPTICKS_KEY settings...  But not there yet.
 
+This is the path written by Opticks::writeGeocacheScript
+
 EON
 }
 

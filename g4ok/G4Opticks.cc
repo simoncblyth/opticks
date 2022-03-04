@@ -692,6 +692,14 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
     } 
 }
 
+
+void G4Opticks::saveGParts() const 
+{
+    assert( m_ggeo ); 
+    m_ggeo->saveGParts(); 
+}
+
+
 bool G4Opticks::isWayEnabled() const 
 {
     return m_way_enabled ; 

@@ -192,6 +192,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void deferredCreateGParts(); 
         void deferredCreateGGeo();
     public:
+        void saveGParts() const ; 
+    public:
         GParts* getCompositeParts(unsigned index) const ;
         void dumpParts(const char* msg, int repeatIdx, int primIdx, int partIdxRel) const ;
     public:

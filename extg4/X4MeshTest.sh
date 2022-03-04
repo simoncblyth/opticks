@@ -46,15 +46,16 @@ outdir="$TMP/extg4/X4MeshTest/$GEOM/X4Mesh"
 reldir="/env/presentation/extg4/X4MeshTest/$GEOM/X4Mesh"
 pubdir="$HOME/simoncblyth.bitbucket.io$reldir"
 
-if [ "$GEOM" == "XJfixtureConstruction" ]; then
-    source XJfixtureConstruction.sh
 
-elif [ "$GEOM" == "GeneralSphereDEV" ]; then
+case $GEOM in 
+   XJfixtureConstruction) source XJfixtureConstruction.sh ;;
+   GeneralSphereDEV)   source GeneralSphereDEV.sh ;;
+   BoxMinusOrb)        source BoxMinusOrb.sh ;; 
+   SJReceiverConstruction) source SJReceiverConstruction.sh ;; 
+esac
 
-    source GeneralSphereDEV.sh 
 
-elif [ "$GEOM" == "SJReceiverConstruction" ]; then 
-
+if [ "$GEOM" == "SJReceiverConstruction" ]; then 
     eye=1,1,0.2 
     zoom=2.5
     export EYE=${EYE:-$eye}

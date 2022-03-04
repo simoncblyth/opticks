@@ -1,5 +1,8 @@
 #!/bin/bash -l 
 
+import logging
+log = logging.getLogger(__name__)
+
 from opticks.ana.fold import Fold
 from opticks.ana.key import keydir
 from opticks.CSG.CSGFoundry import CSGFoundry 
@@ -13,6 +16,7 @@ class GParts(object):
         part = fold.partBuffer
         idx = fold.idxBuffer
         tran = fold.tranBuffer if hasattr(fold, 'tranBuffer') else []
+        tran_num = len(tran)
 
         prim_partOffset = prim[:,0]
         prim_numParts   = prim[:,1]
@@ -27,8 +31,10 @@ class GParts(object):
         part_complement = part.view(np.int32)[:,3,3] & 0x80000000 != 0
         part_transform_max = part_transform.max()  
 
+        
         if len(tran) > 0:
-            assert len(tran) == part_transform_max
+            log.info(" tran_num %d part_transform_max %d " % (tran_num, part_transform_max))
+            #assert tran_num == part_transform_max
         pass
 
         self.prim = prim
@@ -57,9 +63,12 @@ class GParts(object):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
 
     kd = keydir(os.environ["OPTICKS_KEY"])
-    cf = CSGFoundry(os.path.join(kd, "CSG_GGeo/CSGFoundry"))
+
+    cfdir = os.path.join(kd, "CSG_GGeo/CSGFoundry")
+    cf = CSGFoundry(cfdir) if os.path.isdir(cfdir) else None
 
     base = "$TMP/GParts"
     ridxs = sorted(os.listdir(os.path.expandvars(base)))

@@ -1348,7 +1348,7 @@ const G4VSolid* X4SolidMaker::BoxMinusTubs1(const char* name)
 
 const G4VSolid* X4SolidMaker::BoxMinusOrb(const char* name) 
 {
-    double radius = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_radius", 100.f) ; 
+    double radius = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_radius", 130.f) ; 
 
     double sx     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_sx", 100.f) ; 
     double sy     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_sy", 100.f) ; 
@@ -1356,7 +1356,7 @@ const G4VSolid* X4SolidMaker::BoxMinusOrb(const char* name)
 
     double dx     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dx", 0.f) ;  
     double dy     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dy", 0.f) ;  
-    double dz     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dz", 0.f) ;  
+    double dz     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dz", 10.f) ;  
 
     G4VSolid* box = new G4Box("box",  sx, sy, sz ); 
     G4VSolid* orb = new G4Orb("orb",  radius ); 
