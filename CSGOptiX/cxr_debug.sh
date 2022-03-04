@@ -39,6 +39,7 @@ export BOTLINE=" RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER 
 
 
 source $OPTICKS_HOME/bin/geocache_hookup.sh
+
 source ./cxr.sh 
 
 

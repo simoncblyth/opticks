@@ -33,8 +33,10 @@ class GParts(object):
 
         
         if len(tran) > 0:
-            log.info(" tran_num %d part_transform_max %d " % (tran_num, part_transform_max))
-            #assert tran_num == part_transform_max
+
+            expect_equal = tran_num == part_transform_max
+            log.info(" tran_num %d part_transform_max %d expect_equal %d  " % (tran_num, part_transform_max, expect_equal ))
+            assert expect_equal, " maybe did not run with option --gparts_transform_offset "  
         pass
 
         self.prim = prim
@@ -66,17 +68,24 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     kd = keydir(os.environ["OPTICKS_KEY"])
-
     cfdir = os.path.join(kd, "CSG_GGeo/CSGFoundry")
+    gpdir = os.path.join(kd, "DebugGParts")
+
+    ridxs = sorted(os.listdir(os.path.expandvars(gpdir)))
+
+    log.info("kd    : %s " % kd ) 
+    log.info("cfdir : %s " % cfdir) 
+    log.info("gpdir : %s " % gpdir) 
+    log.info("ridxs : %s " % ",".join(ridxs) ) 
+    log.info("g[0] ...")
+
     cf = CSGFoundry(cfdir) if os.path.isdir(cfdir) else None
 
-    base = "$TMP/GParts"
-    ridxs = sorted(os.listdir(os.path.expandvars(base)))
     g = {} 
     for ridx in ridxs:
         try:
             int(ridx)
-            g[int(ridx)] = GParts(base, int(ridx)) 
+            g[int(ridx)] = GParts(gpdir, int(ridx)) 
         except ValueError:
             pass
         pass

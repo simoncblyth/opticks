@@ -628,6 +628,9 @@ void G4Opticks::loadGeometry()
     const char* keyspec = NULL ;   // NULL means get keyspec from OPTICKS_KEY envvar 
     bool parse_argv = false ; 
     Opticks* ok = InitOpticks(keyspec, m_embedded_commandline_extra, parse_argv ); 
+
+    //ok->setGPartsTransformOffset(true);  // HMM: POTENTIAL TO MESS UP pre-7 
+
     GGeo* ggeo = GGeo::Load(ok); 
     setGeometry(ggeo); 
 }
@@ -693,11 +696,19 @@ void G4Opticks::setGeometry(const GGeo* ggeo)
 }
 
 
+/**
+G4Opticks::saveGParts
+-----------------------
+
+HMM: GParts creation is deferred until loading ? 
+
 void G4Opticks::saveGParts() const 
 {
     assert( m_ggeo ); 
     m_ggeo->saveGParts(); 
 }
+
+**/
 
 
 bool G4Opticks::isWayEnabled() const 
@@ -934,6 +945,11 @@ GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
 
     bool parse_argv = false ; 
     Opticks* ok = InitOpticks(keyspec, m_embedded_commandline_extra, parse_argv ); 
+
+    // ok->setGPartsTransformOffset(true);  
+    // HMM: CANNOT DO THIS PRIOR TO pre-7 
+    // IDEA: COULD CREATE GParts TWICE WITH THE DIFFERENT SETTING AFTER pre-7 OGeo 
+    // ACTUALLY: IT MAKES MORE SENSE TO SAVE IT ONLY IN CSG_GGeo : 
  
     const char* dbggdmlpath = ok->getDbgGDMLPath(); 
     if( dbggdmlpath != NULL )

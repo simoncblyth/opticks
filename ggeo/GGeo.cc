@@ -1412,6 +1412,21 @@ void GGeo::prepareVolumes()
 --------------------------------
 
 Canonically invoked from ``GGeo::postLoadFromCache`` and ``GGeo::postDirectTranslation``.
+so this happens both on direct translation and on saving.
+But beware the --gparts_transform_offset setting : when creating a CSGFoundry 
+geometry it needs to be enabled. 
+
+
+::
+
+    frame #3: 0x00000001069a76f5 libGGeo.dylib`GParts::Create(ok=0x0000000110100310, pts=0x000000010eed2e60, solids=size=7, num_mismatch_pt=0x00007ffeefbfa7c0, mismatch_placements=0x00007ffeefbfa7a8 size=0, imm=0, global_tranOffset=0)0>, std::__1::allocator<glm::mat<4, 4, float, (glm::qualifier)0> > >*, int, int) at GParts.cc:258
+    frame #4: 0x0000000106a1b01e libGGeo.dylib`GGeo::deferredCreateGParts(this=0x000000010ee8e360) at GGeo.cc:1472
+    frame #5: 0x0000000106a185d0 libGGeo.dylib`GGeo::deferred(this=0x000000010ee8e360) at GGeo.cc:622
+    frame #6: 0x0000000106a18aec libGGeo.dylib`GGeo::postDirectTranslation(this=0x000000010ee8e360) at GGeo.cc:602
+    frame #7: 0x00000001000e39c3 libG4OK.dylib`G4Opticks::translateGeometry(this=0x000000010ee79720, top=0x000000010ed1f570) at G4Opticks.cc:974
+    frame #8: 0x00000001000e2874 libG4OK.dylib`G4Opticks::setGeometry(this=0x000000010ee79720, world=0x000000010ed1f570) at G4Opticks.cc:602
+
+
 
 This is needed prior to GPU upload of analytic geometry by OGeo,
 it requires the GMergedMesh from GGeoLib and the NCSG solids from GMeshLib.  
@@ -1422,6 +1437,8 @@ See :doc:`../notes/issues/GPts_GParts_optimization`
 * option --savegparts Opticks::isSaveGPartsEnabled() writes $TMP/GParts/0,1,2,.. 
   which is read by ana/GParts.py to provide a python interface to the analytic geometry
 
+
+
 10**/
 
 void GGeo::deferredCreateGParts()
@@ -1431,6 +1448,7 @@ void GGeo::deferredCreateGParts()
     const std::vector<const NCSG*>& solids = m_meshlib->getSolids(); 
           
     unsigned nmm = m_geolib->getNumMergedMesh(); 
+    const char* base = m_ok->DebugGPartsPath(); 
 
     int gparts_debug = SSys::getenvint("GPARTS_DEBUG", ~0u ); 
 
@@ -1438,6 +1456,7 @@ void GGeo::deferredCreateGParts()
         << " geolib.nmm " << nmm 
         << " meshlib.solids " << solids.size()
         << " gparts_debug " << gparts_debug
+        << " base " << base
         ; 
 
     int globalTranOffset = 0 ;  // not used see CSG_GGeo_Convert::convertNode  
@@ -1508,30 +1527,37 @@ void GGeo::deferredCreateGParts()
 
         if(m_ok->isSaveGPartsEnabled())
         {
-            const char* sidx = BStr::itoa(i) ;
-            std::string sptpath = BFile::FormPath("$TMP", "GParts",sidx );
-            LOG(info) << " --savegparts optionally saving to " << sptpath  ; 
-            parts->save(sptpath.c_str()); 
+            //const char* sidx = BStr::itoa(i) ;
+            //std::string sptpath = BFile::FormPath("$TMP", "GParts",sidx );
+            LOG(info) << " --savegparts optionally saving to " << base  ; 
+            //parts->save(sptpath.c_str()); 
+            parts->save(base, i); 
         }
     }
 
     LOG(LEVEL) << "]" ; 
 }
 
+/**
+GGeo::saveGParts
+------------------
+
 void GGeo::saveGParts() const 
 {
     unsigned nmm = m_geolib->getNumMergedMesh(); 
-    LOG(info) << " nmm " << nmm ; 
+    const char* base = m_ok->DebugGPartsPath(); 
+    LOG(info) << " nmm " << nmm << " base " << base ; 
     for(unsigned i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_geolib->getMergedMesh(i);
         GParts* parts = mm->getParts();  
-        const char* sidx = BStr::itoa(i) ;
-        std::string sptpath = BFile::FormPath("$TMP", "GParts",sidx );
-        LOG(info) << " --savegparts optionally saving to " << sptpath  ; 
-        parts->save(sptpath.c_str()); 
+        //const char* sidx = BStr::itoa(i) ;
+        //std::string sptpath = BFile::FormPath("$TMP", "GParts",sidx );
+        LOG(info) << " --savegparts optionally saving to " << base  ; 
+        parts->save(base, i); 
     }
 }
+**/
 
 
 GParts* GGeo::getCompositeParts(unsigned index) const

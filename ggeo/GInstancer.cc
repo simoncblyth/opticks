@@ -277,10 +277,15 @@ struct GRepeat
     std::string reason()
     {
         std::stringstream ss ; 
+        ss << " index " << index ; 
+        ss << " nprog:" << nprog ; 
+
         ss << " ndig:" << ndig ; 
-        if( ndig <= repeat_min )  ss << " ( <= repeat_min" << repeat_min << ") " ; 
+        if( ndig <= repeat_min )  ss << " ( <= repeat_min " << repeat_min << ") " ; 
+
         ss << " nvert:" << nvert ; 
-        if( nvert <= vertex_min ) ss << " ( <= vertex_min  " << vertex_min << ") " ; 
+        if( nvert <= vertex_min ) ss << " ( <= vertex_min " << vertex_min << ") " ; 
+
         return ss.str();
     }
     std::string desc()

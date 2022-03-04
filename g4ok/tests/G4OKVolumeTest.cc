@@ -34,7 +34,9 @@ int main(int argc, char** argv)
     G4Opticks* g4ok = new G4Opticks ; 
     g4ok->setGeometry(pv); 
 
-    g4ok->saveGParts(); 
+    // HMM: GParts creation makes more sense on loading just prior to CSG_GGeo, 
+    // as then --gparts_transform_offset will be set 
+    //g4ok->saveGParts(); 
 
     const char* bin = argv[0]; 
     Opticks* ok = Opticks::Get() ;

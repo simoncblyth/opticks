@@ -243,6 +243,8 @@ GParts* GParts::Create(
 {
     plog::Severity level = DEBUG == 0 ? LEVEL : info ;  
 
+
+
     unsigned num_pt = pts->getNumPt(); 
 
     LOG(level) 
@@ -252,6 +254,8 @@ GParts* GParts::Create(
          << " LEVEL " << LEVEL << " " << PLOG::_name(LEVEL)
          << " num_pt " << num_pt 
          ; 
+
+    //std::raise(SIGINT); 
 
     GParts* com = new GParts() ; 
     com->setOpticks(ok); 
@@ -929,6 +933,15 @@ with corresponding GMergedMesh.
 Also called by X4SolidTest:test_cathode, X4PhysicalVolume2Test
 
 **/
+
+
+void GParts::save(const char* dir, int idx)
+{
+    const char* sidx = BStr::itoa(idx) ;
+    std::string path = BFile::FormPath(dir, sidx); 
+    save(path.c_str()); 
+}
+
 
 void GParts::save(const char* dir, const char* rela)
 {

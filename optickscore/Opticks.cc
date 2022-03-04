@@ -295,6 +295,12 @@ const char* Opticks::OriginGDMLPath()  // static
 {
     return BOpticksResource::GetCachePath("origin.gdml");       
 }
+const char* Opticks::DebugGPartsPath()  // static 
+{
+    return BOpticksResource::GetCachePath("DebugGParts");       
+}
+
+
 
 
 const char* Opticks::OptiXCachePathDefault()  // static
@@ -3279,7 +3285,7 @@ void Opticks::postconfigure()
     postconfigureSize(); 
     postconfigurePosition(); 
     postconfigureComposition(); 
-
+    postconfigureOptions(); 
 
     initResource();  
 
@@ -3461,6 +3467,24 @@ void Opticks::postconfigureComposition()
 }
 
 
+void Opticks::postconfigureOptions()
+{
+    m_gparts_transform_offset = m_cfg->hasOpt("gparts_transform_offset") ;  
+}
+void Opticks::setGPartsTransformOffset(bool gparts_transform_offset )
+{
+    if( gparts_transform_offset != m_gparts_transform_offset )
+    {
+        LOG(fatal) << "Code level changing the default --gparts_transform_offset option setting to  " << gparts_transform_offset  ; 
+    }
+    m_gparts_transform_offset = gparts_transform_offset ; 
+}
+bool Opticks::isGPartsTransformOffset() const 
+{
+    return m_gparts_transform_offset ;  
+}
+
+
 
 
 
@@ -3556,12 +3580,6 @@ bool Opticks::isEnabledLegacyG4DAE() const
 {
     return m_cfg->hasOpt("enabled_legacy_g4dae") ;  
 }
-
-bool Opticks::isGPartsTransformOffset() const 
-{
-    return m_cfg->hasOpt("gparts_transform_offset") ;  
-}
-
 
 
 

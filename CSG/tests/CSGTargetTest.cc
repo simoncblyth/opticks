@@ -53,6 +53,7 @@ CSGTargetTest::CSGTargetTest(int argc, char** argv)
     fd(CSGFoundry::Load(cfbase, "CSGFoundry")),
     ce(make_float4( 0.f, 0.f, 0.f, 1000.f ))
 {
+    LOG(info) << "cfbase " << cfbase ; 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 

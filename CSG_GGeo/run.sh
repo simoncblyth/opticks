@@ -1,5 +1,4 @@
 #!/bin/bash -l
-
 usage(){ cat << EOU
 run.sh : using tests/CSG_GGeoTest.cc  : Loads current GGeo identified by OPTICKS_KEY, converts into CSGFoundry and saves  
 ===========================================================================================================================
@@ -86,12 +85,9 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 bin=CSG_GGeoTest
-
-#export ONE_PRIM_SOLID=1 # adds extra debugging solids that reuse existing prim one-by-one
-export DUMP_RIDX=${DUMP_RIDX:-8} 
-
-
 which $bin
+
+export DUMP_RIDX=${DUMP_RIDX:-8} 
 
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Darwin" ]; then
@@ -104,76 +100,5 @@ else
 fi
 
 
-
-logdir_notes(){ cat << EON
-
-HMM: moved to getting the CFBASE at C++ level 
-making the below logdir innapropriate 
-
-Despite adding SPath::chdir it is problematic 
-to use as the logfile setup is done very early within
-OPTICKS_LOG ... so need a way to define the logs directory 
-within the CSG_GGeo dir of the idpath exceedingly early.
-
-Actually a logs directory within the idpath would be OK also.
-So can use OPTICKS_KEY which is a known to be existing envvar so can 
-create a static function that rustles up the idpath just from 
-that : without all the other processing. 
-
-HMM: could avoid needing logdir and outdir in this script
-by listing from the C++ see sysrap/tests/dirent.cc 
-
-EON
-}
-
-
-
-invoke_geocache_sh_notes(){ cat << EON
-
-Below invoke_geocache_sh seems out of place. 
-This conversion done here depends on OPTICKS_KEY to identify 
-the geometry to convert.  That may well 
-be a different geometry to the one setup in the script. 
-
-   ~/.opticks/geocache/geocache.sh
-   /usr/local/opticks/geocache/geocache.sh 
-
-I presume this is attempting to become a standard place to 
-keep OPTICKS_KEY settings...  But not there yet.
-
-This is the path written by Opticks::writeGeocacheScript
-
-EON
-}
-
-invoke_geocache_sh()
-{
-    local opticks_geocache_prefix=~/.opticks
-    local geocache_sh=${OPTICKS_GEOCACHE_PREFIX:-$opticks_geocache_prefix}/geocache/geocache.sh  
-
-    if [ -f "$geocache_sh" ]; then 
-        echo $msg geocache_sh $geocache_sh sourcing
-        cat $geocache_sh
-        source $geocache_sh
-
-        cfbase=${OPTICKS_KEYDIR}/CSG_GGeo
-        logdir=$cfbase/logs  # matches the chdir done in tests/CSG_GGeoTest.cc
-        outdir=$cfbase/CSGFoundry
-
-        echo $msg outdir:$outdir
-        ls -l $outdir/
-
-        echo $msg logdir:$logdir
-        ls -l $logdir/
-
-    else
-        echo $msg geocache_sh $geocache_sh does not exist 
-        exit 0
-    fi 
-}
-#invoke_geocache_sh
-
-
 exit 0 
-
 

@@ -402,6 +402,7 @@ class GGEO_API GParts {
         void applyPlacementTransform(GMatrix<float>* placement, unsigned verbosity, unsigned& num_mismatch );
         void applyPlacementTransform(const glm::mat4& placement, unsigned verbosity, unsigned& num_mismatch );
 
+        void save(const char* dir, int idx); 
         void save(const char* dir);
         void save(const char* dir, const char* rela);
         static GParts* Load(const char* dir);

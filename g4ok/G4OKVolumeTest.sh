@@ -50,10 +50,7 @@ if [ -n "$DEBUG" ]; then
    lldb__ G4OKVolumeTest
 else
     G4OKVolumeTest 
-
-    
 fi 
-
 
 
 

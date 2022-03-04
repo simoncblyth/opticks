@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 
     OPTICKS_LOG(argc, argv);
 
-    const char* argforced = "--gparts_transform_offset" ; 
+    const char* argforced = "--gparts_transform_offset --savegparts " ; 
     Opticks ok(argc, argv, argforced );
     ok.configure(); 
 

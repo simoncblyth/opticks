@@ -125,6 +125,8 @@ class OKCORE_API Opticks {
        static bool IsGeant4EnvironmentDetected(); 
 
        static const char* OriginGDMLPath() ; 
+       static const char* DebugGPartsPath() ;
+
        static const char* OptiXCachePathDefault(); 
    public:
        static BPropNames* G_MATERIAL_NAMES ;
@@ -172,12 +174,16 @@ class OKCORE_API Opticks {
        const char* getCVD() const ;
        const char* getDefaultCVD() const ;
        const char* getUsedCVD() const ;
+   public:
+       bool isGPartsTransformOffset() const ; //  --gparts_transform_offset option sets default, can change with setter 
+       void setGPartsTransformOffset(bool gparts_transform_offset ) ;  
    private:
        void postconfigure(); 
        void postconfigureCVD() ;
        void postconfigureSize() ;
        void postconfigurePosition() ;
        void postconfigureComposition() ;
+       void postconfigureOptions(); 
        void postconfigureState() ;
        void postconfigureGeometryHandling();
    public:
@@ -227,7 +233,6 @@ class OKCORE_API Opticks {
        bool isValid();
 
        bool isEnabledLegacyG4DAE() const ;  // --enabled_legacy_g4dae 
-       bool isGPartsTransformOffset() const ; // --gparts_transform_offset
 
        //bool isLocalG4() const ; // --localg4 
    public:
@@ -882,6 +887,7 @@ class OKCORE_API Opticks {
        std::vector<unsigned>  m_solid_selection ; 
        bool                 m_save ; 
        const char*          m_outdir ; 
+       bool                 m_gparts_transform_offset ; 
 
 };
 
