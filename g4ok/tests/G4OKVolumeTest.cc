@@ -9,28 +9,26 @@
 #include "G4OpticksHit.hh"
 #include "OpticksFlags.hh"
 
-#ifdef WITH_PMTSIM
-#include "PMTSim.hh"
-#endif
+#include "X4VolumeMaker.hh"
 
 
-struct G4OKPMTSimTest
+struct G4OKVolumeTest
 {
     G4Opticks* g4ok ; 
 
-    G4OKPMTSimTest(); 
-    virtual ~G4OKPMTSimTest();
+    G4OKVolumeTest(); 
+    virtual ~G4OKVolumeTest();
 
 };
 
 
-G4OKPMTSimTest::G4OKPMTSimTest()
+G4OKVolumeTest::G4OKVolumeTest()
     :
     g4ok(new G4Opticks)
 {
 }
 
-G4OKPMTSimTest::~G4OKPMTSimTest()
+G4OKVolumeTest::~G4OKVolumeTest()
 {
 }
 
@@ -40,15 +38,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* geom_default = "nnvtBodyLogWrapLV" ; 
+    //const char* geom_default = "nnvtBodyLogWrapLV" ; 
+    const char* geom_default = "JustOrbGrid" ; 
     const char* geom = SSys::getenvvar("GEOM", geom_default );  
 
-    G4VPhysicalVolume* pv = nullptr ; 
-
-#ifdef WITH_PMTSIM
-    pv = PMTSim::GetPV(geom);
-#else
-#endif
+    G4VPhysicalVolume* pv = X4VolumeMaker::Make(geom) ; 
 
     if( pv == nullptr )
     {
@@ -59,7 +53,7 @@ int main(int argc, char** argv)
     LOG(info) << " pv " << pv->GetName() ; 
 
 
-    G4OKPMTSimTest t ; 
+    G4OKVolumeTest t ; 
     t.g4ok->setGeometry(pv); 
 
     Opticks* ok = Opticks::Get() ;

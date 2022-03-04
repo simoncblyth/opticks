@@ -7,7 +7,7 @@ include(OpticksBuildOptions)
 set(TESTS
     G4OKTest.cc
     G4OpticksHitTest.cc
-
+    G4OKVolumeTest.cc 
 )
 
 foreach(SRC ${TESTS})
@@ -22,10 +22,13 @@ foreach(SRC ${TESTS})
 endforeach()
 
 
+
+#[=[
+
 find_package(PMTSim CONFIG)
 
+# TODO: enable this to be used without PMTSim also 
 set(PMTSIM_TEST_SOURCES
-   G4OKPMTSimTest.cc 
 )
 
 
@@ -46,8 +49,7 @@ foreach(TEST_CC_SRC ${PMTSIM_TEST_SOURCES})
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
-
-
+#]=]
 
 
 

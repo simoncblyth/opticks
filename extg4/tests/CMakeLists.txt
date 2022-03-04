@@ -9,7 +9,10 @@ set(PMTSIM_TEST_SOURCES
     X4IntersectSolidTest.cc 
     X4IntersectVolumeTest.cc 
     X4MeshTest.cc
+    X4VolumeMakerTest.cc 
 )
+
+# hmm what about executables than can use PMTSim but are also useful without ?
 
 set(TEST_SOURCES
 
