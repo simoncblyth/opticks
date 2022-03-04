@@ -47,6 +47,8 @@ message(STATUS "CLHEP NOT FOUND")
 endif()
 
 
+find_package(PMTSim CONFIG)
+
 
 
 
@@ -206,6 +208,14 @@ target_link_libraries( ${name} PUBLIC
     Opticks::OpticksXercesC
     CLHEP::CLHEP
 )
+
+if(PMTSim_FOUND)
+    target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
+    target_compile_definitions( ${name} PUBLIC WITH_PMTSIM )
+endif()
+
+
+
 
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 

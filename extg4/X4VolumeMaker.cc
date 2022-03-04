@@ -13,12 +13,31 @@
 #include "X4SolidMaker.hh"
 #include "X4VolumeMaker.hh"
 
+#ifdef WITH_PMTSIM
+#include "PMTSim.hh"
+#endif
+
 const plog::Severity X4VolumeMaker::LEVEL = PLOG::EnvLevel("X4VolumeMaker", "DEBUG"); 
 
 
 G4VPhysicalVolume* X4VolumeMaker::Make(const char* name)
 {
-    G4VPhysicalVolume* pv = MakePhysical(name) ; 
+    G4VPhysicalVolume* pv = nullptr ; 
+    
+#ifdef WITH_PMTSIM
+    if(PMTSim::HasManagerPrefix(name))
+    {
+        G4LogicalVolume* lv = PMTSim::GetLV(name); 
+        double halfside = 5000. ;  
+        pv = Wrap(lv, halfside) ;          
+    }
+    else
+    {
+        pv = MakePhysical(name) ; 
+    }
+#else
+    pv = MakePhysical(name) ; 
+#endif
     return pv ; 
 }
 
@@ -141,6 +160,22 @@ const char* X4VolumeMaker::GridName(const char* prefix, int ix, int iy, int iz, 
     ss << prefix << ix << "_" << iy << "_" << iz << suffix ; 
     std::string s = ss.str();
     return strdup(s.c_str()); 
+}
+
+G4VPhysicalVolume* X4VolumeMaker::Wrap( G4LogicalVolume* lv, double halfside  )
+{
+    G4VPhysicalVolume* world_pv = WorldBox(halfside); 
+    G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 
+
+    G4String name = lv->GetName(); 
+    name += "_pv" ; 
+
+    G4ThreeVector tla(0.,0.,0.); 
+    G4VPhysicalVolume* pv_item = new G4PVPlacement(0, tla, lv ,name,world_lv,false,0);
+    assert( pv_item );
+  
+
+    return world_pv ; 
 }
 
 

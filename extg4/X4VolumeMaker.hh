@@ -17,6 +17,8 @@ struct X4_API X4VolumeMaker
     static G4VPhysicalVolume* WrapLVTranslate( G4LogicalVolume* lv, double tx, double ty, double tz ); 
     static G4VPhysicalVolume* WrapLVGrid( G4LogicalVolume* lv, int nx, int ny, int nz  ); 
     static G4VPhysicalVolume* WorldBox( double halfside ); 
+    static G4VPhysicalVolume* Wrap( G4LogicalVolume* lv, double halfside  ); 
+
 
     static const char* GridName(const char* prefix, int ix, int iy, int iz, const char* suffix); 
 

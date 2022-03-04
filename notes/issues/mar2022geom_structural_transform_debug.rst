@@ -467,3 +467,44 @@ Actually it is OK, see CSG_GGeo_Convert::convertNode.::
 
     EYE=-1.1,0,0 ./cxr_debug.sh 
 
+
+
+P EMM check : after rerun with online-data updated
+-----------------------------------------------------
+
+::
+
+    EMM=1, ./cxr_overview.sh   # looks normal 3 inch PMTs : no trouble with instance transforms
+    EMM=2, ./cxr_overview.sh   # looks normal hatboxes 
+    EMM=3, ./cxr_overview.sh   # looks normal hatboxes 
+
+
+
+
+Havest names
+---------------
+
+::
+
+    sChimneyAcrylic0x71a6010
+    sChimneyLS0x71a61f0
+    sChimneySteel0x71a63d0
+
+
+
+::
+
+   MOI=sChimneyAcrylic ./cxr_view.sh 
+
+   MOI=sChimneyAcrylic EYE=-1,0,0 TMIN=0 ./cxr_view.sh 
+       looks centrally pointed
+ 
+   MOI=sChimneyAcrylic EYE=-10,0,0 TMIN=0 ./cxr_view.sh 
+        this is OK, at top of sphere 
+
+   MOI=sChimneyLS EYE=-10,0,0 TMIN=0 ./cxr_view.sh 
+        confusing view
+
+   MOI=sChimneyLS EYE=0,0,1 UP=0,1,0  TMIN=0.1 ./cxr_view.sh 
+        try to look down inside the mid-chimney 
+
