@@ -324,6 +324,15 @@ const char* SPath::getcwd()  // static
 }
 
 
+int SPath::mtime(const char* path)
+{
+     struct stat st;
+     int ierr = stat(path, &st ); 
+     int mtime = st.st_mtime;
+     return ierr == 0 ? mtime : 0 ; 
+}
+
+
 
 template<typename T>
 const char* SPath::MakePath( const char* prefix, const char* reldir, const T real, const char* name)  // static

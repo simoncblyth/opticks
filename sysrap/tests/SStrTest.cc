@@ -82,6 +82,20 @@ void test_Format1()
  
 }
 
+
+void test_FormatInt()
+{
+    const char* fmt = "/tmp/Frame%0.3d.ppm"   ; 
+    LOG(info) << fmt ; 
+    for(int i=-10 ; i < 10 ; i++ )
+    {
+        const char* result = SStr::FormatInt<64>(fmt, i );
+        std::cout << result << std::endl ;   
+    }
+}
+
+
+
 void test_Contains()
 {
     const char* s = "/hello/there/Cathode/World" ; 
@@ -655,8 +669,9 @@ int main(int argc , char** argv )
     test_Extract_float(); 
     test_Trim(); 
     test_ExtractLong(); 
-    */
     test_HeadFirst_HeadLast(); 
+    */
+    test_FormatInt(); 
 
     return 0  ; 
 }

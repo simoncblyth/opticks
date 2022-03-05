@@ -266,6 +266,18 @@ void test_isGPartsTransformOffset(const Opticks* ok)
 }
 
 
+void test_getCacheMetaTime(const Opticks* ok)
+{
+    const char* path = ok->getCacheMetaPath(); 
+    int mtime = ok->getCacheMetaTime(); 
+    std::string stamp = ok->getCacheMetaStamp(); 
+    LOG(info) 
+       << " path " << path 
+       << " mtime " << mtime 
+       << " stamp " << stamp
+       ; 
+}
+
 
 int main(int argc, char** argv)
 {
@@ -303,9 +315,11 @@ int main(int argc, char** argv)
     test_getArgList(&ok); 
     test_getIdPath(&ok); 
     test_writeGeocacheScript(&ok); 
+    test_isGPartsTransformOffset(&ok); 
 
     */
-    test_isGPartsTransformOffset(&ok); 
+    test_getCacheMetaTime(&ok); 
+
 
     return 0 ;
 }

@@ -62,6 +62,10 @@ class SYSRAP_API SStr {
       static const char* Format3( const char* fmt, const char* value1, const char* value2, const char* value3 );
 
 
+      template <size_t SIZE>
+      static const char* FormatInt( const char* fmt, int value ); 
+
+
       template<typename T>
       static const char* FormatReal(const T value, int w, int p, char fill='0' ) ; 
 

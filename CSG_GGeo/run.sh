@@ -89,6 +89,8 @@ which $bin
 
 export DUMP_RIDX=${DUMP_RIDX:-8} 
 
+#export CSG_GGeo_Convert=INFO
+
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Darwin" ]; then
         lldb__ $bin $* 

@@ -28,7 +28,7 @@ struct SYSRAP_API STime
     static int EpochSeconds(); 
     static std::string Format(int epochseconds=0, const char* fmt=NULL ); 
     static std::string Stamp(); 
-    
+    static std::string mtime(const char* path); 
 
 };
 

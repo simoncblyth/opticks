@@ -445,7 +445,6 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     {
         assert( numParts > 1 ); 
         assert( int(root_subNum) == int(numParts) ); // <-- THIS WILL BREAK WHEN USE LIST NODES
-
         root->setSubNum( root_subNum ); 
         root->setSubOffset( root_subOffset ); 
     }

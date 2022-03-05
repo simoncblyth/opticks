@@ -36,7 +36,7 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-source $OPTICKS_HOME/bin/geocache_hookup.sh
+source $OPTICKS_HOME/bin/geocache_hookup.sh ${1:-new}
 
 ${IPYTHON:-ipython} -i --pdb --  GPartsTest.py
 

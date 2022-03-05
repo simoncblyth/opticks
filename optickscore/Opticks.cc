@@ -2344,6 +2344,19 @@ void Opticks::saveCacheMeta() const
     m_cachemeta->save(cachemetapath);
 }
 
+ 
+int Opticks::getCacheMetaTime() const
+{
+    const char* cachemetapath = getCacheMetaPath();
+    return SPath::mtime(cachemetapath); 
+}
+std::string Opticks::getCacheMetaStamp() const
+{
+    const char* cachemetapath = getCacheMetaPath();
+    return STime::mtime(cachemetapath); 
+}
+
+
 
 /**
 Opticks::loadOriginCacheMeta

@@ -48,7 +48,7 @@
 #include "OGLRap_imgui.hh"
 
 
-const plog::Severity Interactor::LEVEL = info ; 
+const plog::Severity Interactor::LEVEL = PLOG::EnvLevel("Interactor", "DEBUG")  ; 
 
 
 const unsigned int Interactor::_pan_mode_key = GLFW_KEY_X ; 

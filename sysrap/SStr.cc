@@ -134,6 +134,21 @@ unsigned long long SStr::ToULL( const char* s )
 }
 
 
+
+
+template<size_t SIZE>
+const char* SStr::FormatInt( const char* fmt, int value )
+{
+    char buf[SIZE]; 
+    size_t cx = snprintf( buf, SIZE, fmt, value );   
+    assert( cx < SIZE && "snprintf truncation detected" );  
+    return strdup(buf);
+}
+
+template const char* SStr::FormatInt<64>( const char* , int  );
+
+
+
 template<size_t SIZE>
 const char* SStr::Format1( const char* fmt, const char* value )
 {

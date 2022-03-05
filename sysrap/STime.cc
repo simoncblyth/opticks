@@ -18,6 +18,7 @@
  */
 
 #include "STime.hh"
+#include "SPath.hh"
 #include <time.h>
 
 int STime::EpochSeconds()
@@ -47,6 +48,14 @@ std::string STime::Stamp()
 {
     return STime::Format(0, nullptr); 
 }
+
+std::string STime::mtime(const char* path)
+{
+    int mt = SPath::mtime(path);   
+    return mt > 0 ? STime::Format(mt, nullptr) : "" ;
+}
+
+
 
 
 

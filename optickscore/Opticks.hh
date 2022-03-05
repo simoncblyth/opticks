@@ -339,6 +339,9 @@ class OKCORE_API Opticks {
        const char* getGDMLAuxMetaPath() const ;
        const char* getRunCommentPath() const ;
 
+       int getCacheMetaTime() const ; 
+       std::string getCacheMetaStamp() const ; 
+
        const char* getGLTFPath() const ;      // output GLTF path
    public:
        // from cfg

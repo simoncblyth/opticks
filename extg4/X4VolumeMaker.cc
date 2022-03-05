@@ -31,13 +31,8 @@ G4VPhysicalVolume* X4VolumeMaker::Make(const char* name)
         double halfside = 5000. ;  
         pv = Wrap(lv, halfside) ;          
     }
-    else
-    {
-        pv = MakePhysical(name) ; 
-    }
-#else
-    pv = MakePhysical(name) ; 
 #endif
+    if( pv == nullptr) pv = MakePhysical(name) ; 
     return pv ; 
 }
 
@@ -51,14 +46,48 @@ G4LogicalVolume*  X4VolumeMaker::MakeLogical(const char* name)
     return lv ; 
 }
 
+void X4VolumeMaker::MakeLogical(std::vector<G4LogicalVolume*>& lvs , const char* names_ )
+{
+    std::vector<std::string> names ; 
+    SStr::Split(names_ , ',', names ); 
+    unsigned num_names = names.size(); 
+    LOG(LEVEL) << " names_ " << names_ << " num_names " << num_names ;  
+    assert( num_names > 1 ); 
+
+    for(unsigned i=0 ; i < num_names ; i++)
+    {
+        const char* name = names[i].c_str(); 
+        G4LogicalVolume* lv = MakeLogical(name) ; 
+        assert(lv); 
+        lvs.push_back(lv);   
+    }
+}
+
 G4VPhysicalVolume* X4VolumeMaker::MakePhysical(const char* name)
 {
-    G4LogicalVolume* lv = MakeLogical(name) ; 
+    bool list = strstr(name, "List") != nullptr ; 
+    G4VPhysicalVolume* pv = list ? MakePhysicalList_(name) : MakePhysicalOne_(name)  ; 
+    return pv ; 
+}
+
+
+G4VPhysicalVolume* X4VolumeMaker::MakePhysicalList_(const char* name)
+{
+    assert( SStr::StartsWith(name, "List") ); 
+    std::vector<G4LogicalVolume*> lvs ; 
+    MakeLogical(lvs, name + strlen("List") ); 
+    G4VPhysicalVolume* pv = WrapLVGrid(lvs, 1, 1, 1 ); 
+    return pv ; 
+}
+
+G4VPhysicalVolume* X4VolumeMaker::MakePhysicalOne_(const char* name)
+{
+    G4VPhysicalVolume* pv = nullptr ; 
 
     bool grid = strstr(name, "Grid") != nullptr ; 
     bool cube = strstr(name, "Cube") != nullptr ; 
 
-    G4VPhysicalVolume* pv = nullptr ; 
+    G4LogicalVolume* lv = MakeLogical(name) ; 
 
     if(grid)
     {
@@ -133,26 +162,52 @@ in a grid specified by (nx,ny,nz) integers.
 
 G4VPhysicalVolume* X4VolumeMaker::WrapLVGrid( G4LogicalVolume* lv, int nx, int ny, int nz  )
 {
-    LOG(LEVEL) << " (nx,ny,nz) (" << nx << "," << ny << " " << nz << ")" ; 
+    std::vector<G4LogicalVolume*> lvs ; 
+    lvs.push_back(lv); 
+    return WrapLVGrid(lvs, nx, ny, nz ) ; 
+}
+
+
+G4VPhysicalVolume* X4VolumeMaker::WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  )
+{
+    unsigned num_lv = lvs.size(); 
 
     int extent = std::max(std::max(nx, ny), nz); 
     G4double sc = 500. ; 
     G4double halfside = sc*extent*3. ; 
 
+    LOG(LEVEL) 
+        << " num_lv " << num_lv 
+        << " (nx,ny,nz) (" << nx << "," << ny << " " << nz << ")" 
+        << " extent " << extent
+        << " halfside " << halfside
+        ;
+
     G4VPhysicalVolume* world_pv = WorldBox(halfside); 
     G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 
 
+    unsigned count = 0 ; 
     for(int ix=-nx ; ix < nx+1 ; ix++)
     for(int iy=-ny ; iy < ny+1 ; iy++)
     for(int iz=-nz ; iz < nz+1 ; iz++)
     {   
+        G4LogicalVolume* ulv = lvs[count%num_lv] ; 
+        count += 1 ; 
+        assert( ulv ); 
+
         const char* iname = GridName("item", ix, iy, iz, "" );    
         G4ThreeVector tla( sc*double(ix), sc*double(iy), sc*double(iz) );  
-        G4VPhysicalVolume* pv_n = new G4PVPlacement(0, tla, lv ,iname,world_lv,false,0);
+        G4VPhysicalVolume* pv_n = new G4PVPlacement(0, tla, ulv ,iname,world_lv,false,0);
         assert( pv_n );  
     }   
     return world_pv ; 
 }
+
+
+
+
+
+
 
 const char* X4VolumeMaker::GridName(const char* prefix, int ix, int iy, int iz, const char* suffix)
 {

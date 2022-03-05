@@ -189,6 +189,13 @@ void test_getcwd()
     LOG(info) << " after SPath::chdir SPath::getcwd " << cwd  ; 
 } 
 
+void test_mtime()
+{
+    const char* path = "/tmp/tt.txt" ; 
+    int mtime = SPath::mtime(path);  
+    LOG(info) << " path " << path << " mtime " << mtime ; 
+}
+
 
 
 int main(int argc , char** argv )
@@ -210,8 +217,9 @@ int main(int argc , char** argv )
     test_MakeDirs(); 
     test_MakePath(); 
     test_Resolve_createdirs(); 
-*/
     test_getcwd(); 
+*/
+    test_mtime(); 
 
     return 0  ; 
 }

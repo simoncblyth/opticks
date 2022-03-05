@@ -183,7 +183,8 @@ class OGLRAP_API Frame : public Touchable {
        int           m_pos_y ;
 
    private:
-        unsigned m_cursor_moved_mode ; 
+       unsigned m_cursor_moved_mode ; 
+       unsigned  m_snapcount ; 
 
 
 };

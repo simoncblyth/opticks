@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, numpy as np, logging
+import os, numpy as np, logging, datetime
 log = logging.getLogger(__name__)
 
 class CSGFoundry(object):
@@ -115,17 +115,39 @@ class CSGFoundry(object):
 
         names = os.listdir(fold)
         stems = []
+        stamps = []
         for name in filter(lambda name:name.endswith(".npy") or name.endswith(".txt"), names):
             path = os.path.join(fold, name)
+            st = os.stat(path)
+            stamp = datetime.datetime.fromtimestamp(st.st_ctime)
+            stamps.append(stamp)
             stem = name[:-4]
             a = np.load(path) if name.endswith(".npy") else self.loadtxt(path)
             if name == "bnd.txt": stem = "bndname"  ## TODO: avoid clash of stems between bnd.npy and bnd.txt ?
             setattr(self, stem, a)
             stems.append(stem)
             #globals()[stem] = a 
-            print(self.FMT % (stem, str(a.shape), path))
+            #print(self.FMT % (stem, str(a.shape), path))
         pass
+
+        min_stamp = min(stamps)
+        max_stamp = max(stamps)
+        now_stamp = datetime.datetime.now()
+        dif_stamp = max_stamp - min_stamp
+        age_stamp = now_stamp - max_stamp 
+
+        #print("min_stamp:%s" % min_stamp)
+        #print("max_stamp:%s" % max_stamp)
+        #print("dif_stamp:%s" % dif_stamp)
+        #print("age_stamp:%s" % age_stamp)
+
+        assert dif_stamp.microseconds < 1e6, "stamp divergence detected microseconds %d : so are seeing mixed up results from multiple runs " % dif_stamp.microseconds
+
         self.stems = stems
+        self.min_stamp = min_stamp
+        self.max_stamp = max_stamp
+        self.age_stamp = age_stamp
+        self.stamps = stamps
         self.fold = fold
 
     def desc(self, stem):
@@ -135,8 +157,14 @@ class CSGFoundry(object):
         path = os.path.join(self.fold, "%s%s" % (pstem, ext))
         return self.FMT % (stem, str(a.shape), path) 
 
-    def __repr__(self):
+    def head(self):
+        return "\n".join(map(str, [self.fold, "min_stamp:%s" % self.min_stamp, "max_stamp:%s" % self.max_stamp, "age_stamp:%s" % self.age_stamp])) 
+
+    def body(self):
         return "\n".join(map(lambda stem:self.desc(stem),self.stems))
+ 
+    def __repr__(self):
+        return "\n".join([self.head(),self.body()])
 
     def dump_node_boundary(self):
         logging.info("dump_node_boundary") 

@@ -27,12 +27,10 @@
 
 #include "OPTICKS_LOG.hh"
 
-int main(int argc, char** argv) 
+
+void test_EpochSeconds()
 {
-    OPTICKS_LOG(argc, argv);
-
     LOG(info); 
-
     int t = STime::EpochSeconds() ;      
 
     std::cout << "STime::EpochSeconds() " << t << std::endl ; 
@@ -53,6 +51,23 @@ int main(int argc, char** argv)
 
 
     SSys::run( "date +%s" ); 
+}
+
+void test_mtime()
+{
+    LOG(info); 
+    const char* path = "/tmp/tt.txt" ; 
+    std::string mt = STime::mtime(path); 
+    LOG(info) << " path " << path << " mt " << mt ; 
+}
+
+
+int main(int argc, char** argv) 
+{
+    OPTICKS_LOG(argc, argv);
+
+    //test_EpochSeconds(); 
+    test_mtime(); 
 
     return 0 ; 
 }

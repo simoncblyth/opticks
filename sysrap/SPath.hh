@@ -38,6 +38,10 @@ class SYSRAP_API SPath {
       static const char* Basename(const char* path); 
       static const char* ChangeName(const char* srcpath, const char* name) ;
 
+      static int mtime(const char* path); 
+      
+
+
       static const char* UserTmpDir(const char* pfx="/tmp", const char* user_envvar="USER", const char* sub="opticks", char sep='/'  );
 
       // create_dirs:(0 do nothing, 1:assume file path, 2:assume dir path)

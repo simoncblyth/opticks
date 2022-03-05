@@ -30,6 +30,7 @@
 
 #include "OGLRAP_BODY.hh"
 #include "PLOG.hh"
+#include "SStr.hh"
 #include "SPPM.hh"
 
 //
@@ -86,7 +87,8 @@ Frame::Frame()
     m_pixel_factor(1),
     m_pos_x(0),
     m_pos_y(0),
-    m_cursor_moved_mode(JUST_MOVE)
+    m_cursor_moved_mode(JUST_MOVE),
+    m_snapcount(0)
 {
 }
 
@@ -548,9 +550,19 @@ float Frame::readDepth( int x, int y_, int yheight )
     return depth ; 
 }
 
+
+/**
+TODO: update this to use SIMG for jpg saving 
+**/
+
+
+
 void Frame::snap()
 {
-    m_pix->snap("/tmp/Frame.ppm"); 
+    const char* fmt = "/tmp/Frame%0.3d.ppm" ; 
+    const char* path = SStr::FormatInt<64>(fmt, m_snapcount ); 
+    m_pix->snap(path); 
+    m_snapcount += 1 ; 
 }
 
 

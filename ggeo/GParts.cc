@@ -243,8 +243,6 @@ GParts* GParts::Create(
 {
     plog::Severity level = DEBUG == 0 ? LEVEL : info ;  
 
-
-
     unsigned num_pt = pts->getNumPt(); 
 
     LOG(level) 

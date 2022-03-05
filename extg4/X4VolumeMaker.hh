@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 class G4LogicalVolume ; 
 class G4VPhysicalVolume ; 
 
@@ -13,9 +14,17 @@ struct X4_API X4VolumeMaker
     static G4VPhysicalVolume* Make(const char* name); 
 
     static G4VPhysicalVolume* MakePhysical(const char* name); 
+    static G4VPhysicalVolume* MakePhysicalList_(const char* name); 
+    static G4VPhysicalVolume* MakePhysicalOne_(const char* name); 
+
     static G4LogicalVolume*   MakeLogical(const char* name); 
+    static void MakeLogical(std::vector<G4LogicalVolume*>& lvs , const char* names_ ) ; 
+
     static G4VPhysicalVolume* WrapLVTranslate( G4LogicalVolume* lv, double tx, double ty, double tz ); 
+
     static G4VPhysicalVolume* WrapLVGrid( G4LogicalVolume* lv, int nx, int ny, int nz  ); 
+    static G4VPhysicalVolume* WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  ); 
+
     static G4VPhysicalVolume* WorldBox( double halfside ); 
     static G4VPhysicalVolume* Wrap( G4LogicalVolume* lv, double halfside  ); 
 
