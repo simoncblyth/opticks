@@ -78,8 +78,8 @@ RT_PROGRAM void pinhole_camera()
   prd.result = bad_color ;
 
   float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;  // (-1:1, -1:1 )
-  const bool yflip = true ; 
-  if(yflip) d.y = -d.y ;  
+  //const bool yflip = true ; 
+  //if(yflip) d.y = -d.y ;  
 
 
   optix::Ray ray ;
