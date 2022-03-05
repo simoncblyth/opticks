@@ -190,6 +190,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void prepareOpticks(); 
         void deferred(); 
         void deferredCreateGParts(); 
+        void checkMismatch( unsigned i, unsigned nmm, const std::vector<glm::mat4>& mismatch_placements, unsigned num_mismatch_pt  ); 
+
         void deferredCreateGGeo();
     public:
         //void saveGParts() const ; 

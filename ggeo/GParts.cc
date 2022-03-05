@@ -186,7 +186,6 @@ int GParts::Compare(const GParts* a, const GParts* b, bool dump )
     return rc ; 
 }
 
-
 int GParts::DEBUG = -1 ; 
 void GParts::SetDEBUG(int dbg)
 {
@@ -232,17 +231,26 @@ GMergedMesh::mergeVolumeAnalytic
 **/
 
 
+struct Mismatch
+{
+
+
+
+
+}; 
+
+
+
+
 GParts* GParts::Create(
     const Opticks* ok, 
     const GPts* pts, 
     const std::vector<const NCSG*>& solids, 
     unsigned* num_mismatch_pt, 
     std::vector<glm::mat4>* mismatch_placements, 
-    int imm,
-    int global_tranOffset) // static
+    int imm ) // static
 {
     plog::Severity level = DEBUG == 0 ? LEVEL : info ;  
-
     unsigned num_pt = pts->getNumPt(); 
 
     LOG(level) 
@@ -258,14 +266,13 @@ GParts* GParts::Create(
     GParts* com = new GParts() ; 
     com->setOpticks(ok); 
     com->setRepeatIndex(imm); 
-    com->setGlobalTranOffset(global_tranOffset); 
 
     unsigned verbosity = 0 ; 
     std::vector<unsigned> mismatch_pt ; 
 
     for(unsigned i=0 ; i < num_pt ; i++)
     {
-        const GPt* pt = pts->getPt(i); 
+        const GPt* pt = pts->getPt(i); //  GPt holds structural tree transforms and indices collected in X4PhysicalVolume::convertNode 
         int   lvIdx = pt->lvIdx ; 
         int   ndIdx = pt->ndIdx ; 
         const std::string& spec = pt->getSpec() ; 
@@ -280,39 +287,29 @@ GParts* GParts::Create(
             ;
 
         assert( lvIdx > -1 ); 
-
         const NCSG* csg = unsigned(lvIdx) < solids.size() ? solids[lvIdx] : NULL ; 
         assert( csg ); 
-
-        //  X4PhysicalVolume::convertNode (structural) is where the GPt is collected 
 
         GParts* parts = GParts::Make( csg, spec.c_str(), ndIdx ); 
 
         unsigned num_mismatch = 0 ; 
-
         parts->applyPlacementTransform( placement, verbosity, num_mismatch );   // this changes parts:m_tran_buffer
-
-        if(num_mismatch > 0 )
-        {
-            LOG(error) << " pt " << i << " invert_trs num_mismatch : " << num_mismatch ; 
-            mismatch_pt.push_back(i); 
-            if(mismatch_placements)
-            {
-                glm::mat4 placement_(placement);
-                placement_[0][3] = SPack::unsigned_as_float(i);  
-                placement_[1][3] = SPack::unsigned_as_float(lvIdx);  
-                placement_[2][3] = SPack::unsigned_as_float(ndIdx);  
-                placement_[3][3] = SPack::unsigned_as_float(num_mismatch);  
-                mismatch_placements->push_back(placement_); 
-            }
-        }
+        if(num_mismatch > 0 ) RecordMismatch( mismatch_pt, mismatch_placements, placement, i, lvIdx, ndIdx, num_mismatch ); 
 
         parts->dumpTran("parts"); 
         com->add( parts ); 
     }
 
     com->dumpTran("com");
+    DumpMismatch( num_mismatch_pt, mismatch_pt ); 
 
+    LOG(level) << "]" ; 
+    return com ; 
+}
+
+
+void GParts::DumpMismatch( unsigned* num_mismatch_pt, std::vector<unsigned> mismatch_pt )
+{
     if(num_mismatch_pt) 
     {
         *num_mismatch_pt = mismatch_pt.size(); 
@@ -324,9 +321,23 @@ GParts* GParts::Create(
             std::cout << std::endl ; 
         }
     }
+}
 
-    LOG(level) << "]" ; 
-    return com ; 
+
+void GParts::RecordMismatch( std::vector<unsigned> mismatch_pt, std::vector<glm::mat4>* mismatch_placements, const glm::mat4& placement,  unsigned  i, unsigned lvIdx, unsigned ndIdx, unsigned num_mismatch  )
+{
+    assert(num_mismatch > 0 ); 
+    LOG(error) << " pt " << i << " invert_trs num_mismatch : " << num_mismatch ; 
+    mismatch_pt.push_back(i); 
+    if(mismatch_placements)
+    {
+        glm::mat4 placement_(placement);
+        placement_[0][3] = SPack::unsigned_as_float(i);  
+        placement_[1][3] = SPack::unsigned_as_float(lvIdx);  
+        placement_[2][3] = SPack::unsigned_as_float(ndIdx);  
+        placement_[3][3] = SPack::unsigned_as_float(num_mismatch);  
+        mismatch_placements->push_back(placement_); 
+    }
 }
 
 
@@ -359,7 +370,6 @@ GParts::setGlobalTranOffset
 
 Not used yet.
 
-**/
 void GParts::setGlobalTranOffset(int global_tranOffset)
 {
     m_global_tranOffset = global_tranOffset ; 
@@ -368,6 +378,7 @@ int GParts::getGlobalTranOffset() const
 {
     return m_global_tranOffset ;
 }
+**/
 
 
 
@@ -738,8 +749,8 @@ GParts::GParts(GBndLib* bndlib)
     m_medium(NULL),
     m_csg(NULL),
     m_ridx(~0u),
-    m_ok(bndlib ? bndlib->getOpticks(): nullptr),
-    m_global_tranOffset(-1)
+    m_ok(bndlib ? bndlib->getOpticks(): nullptr)
+    //m_global_tranOffset(-1)
 {
     m_idx_buffer->zero();
     m_part_buffer->zero();
@@ -768,8 +779,8 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_medium(NULL),
     m_csg(NULL),
     m_ridx(~0u),
-    m_ok(bndlib ? bndlib->getOpticks() : nullptr),
-    m_global_tranOffset(-1)
+    m_ok(bndlib ? bndlib->getOpticks() : nullptr)
+    //m_global_tranOffset(-1)
 {
     m_bndspec->add(spec);
 
@@ -793,8 +804,8 @@ GParts::GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf,  NPY<float>* tranBuf,
     m_medium(NULL),
     m_csg(NULL),
     m_ridx(~0u),
-    m_ok(bndlib ? bndlib->getOpticks() : nullptr),
-    m_global_tranOffset(-1)
+    m_ok(bndlib ? bndlib->getOpticks() : nullptr)
+    //m_global_tranOffset(-1)
 {
     checkSpec(spec); 
     init() ; 
@@ -1213,13 +1224,9 @@ whilst testing small subsets of geometry
 void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbosity, unsigned& num_mismatch )
 {
     plog::Severity level = DEBUG ? info : LEVEL ;  
-
     LOG(level) << "[ placement " << glm::to_string( placement ) ; 
 
-    //std::raise(SIGINT); 
-
     assert(m_tran_buffer->hasShape(-1,3,4,4));
-
     unsigned ni = m_tran_buffer->getNumItems();
 
     LOG(level) 
@@ -1248,7 +1255,6 @@ void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbos
 
         m_tran_buffer->setMat4Triple( ntvq, i ); 
     }
-
    
     num_mismatch = mismatch.size(); 
 
@@ -1260,9 +1266,7 @@ void GParts::applyPlacementTransform(const glm::mat4& placement, unsigned verbos
         std::cout << " mismatch indices : " ; 
         for(unsigned i=0 ; i < mismatch.size() ; i++) std::cout << mismatch[i] << " " ; 
         std::cout << std::endl ; 
-
     }
-
 
     assert(m_plan_buffer->hasShape(-1,4));
     unsigned num_plane = m_plan_buffer->getNumItems();

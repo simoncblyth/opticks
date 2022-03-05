@@ -1258,4 +1258,177 @@ EUREKA : succeed to reproduce issue in a small scale test
 
 
 
+Looks like failure to GParts::applyPlacementTransform could be due to empty tranbuf for leaves
+-------------------------------------------------------------------------------------------------
+
+::
+
+    2034 NPY<float>*    NCSG::getTransformBuffer() const {  return m_csgdata->getTransformBuffer() ; }
+    2035 NPY<float>*    NCSG::getGTransformBuffer() const { return m_csgdata->getGTransformBuffer() ; }
+
+
+
+
+::
+
+     608 GParts* GParts::Make( const NCSG* tree, const char* spec, unsigned ndIdx )
+     609 {
+     610     assert(spec);
+     611 
+     612     bool usedglobally = tree->isUsedGlobally() ;   // see opticks/notes/issues/subtree_instances_missing_transform.rst
+     613     assert( usedglobally == true );  // always true now ?   
+     614 
+     615     NPY<unsigned>* tree_idxbuf = tree->getIdxBuffer() ;   // (1,4) identity indices (index,soIdx,lvIdx,height)
+     616     NPY<float>*   tree_tranbuf = tree->getGTransformBuffer() ;
+     617     NPY<float>*   tree_planbuf = tree->getPlaneBuffer() ;
+     618     assert( tree_tranbuf );
+     619 
+     620     NPY<unsigned>* idxbuf = tree_idxbuf->clone()  ;   // <-- lacking this clone was cause of the mystifying repeated indices see notes/issues/GPtsTest             
+     621     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
+     622     NPY<float>* tranbuf = usedglobally                 ? tree_tranbuf->clone() : tree_tranbuf ;
+     623     NPY<float>* planbuf = usedglobally && tree_planbuf ? tree_planbuf->clone() : tree_planbuf ;
+     624 
+     625     
+
+
+NCSG::import has changed substantially for list nodes
+---------------------------------------------------------
+
+
+::
+
+     462 void NCSG::import()
+     463 {
+     464     if(m_verbosity > 1)
+     465         LOG(info)
+     466                   << " verbosity(>1) " << m_verbosity
+     467                   << " treedir " << m_treedir
+     468                   << " smry " << smry()
+     469                   ;
+     470 
+     471     if(m_verbosity > 1)
+     472     {
+     473         LOG(info)
+     474                   << " verbosity(>0) " << m_verbosity
+     475                   << " importing buffer into CSG node tree "
+     476                   << " num_nodes " << getNumNodes()
+     477                   ;
+     478     }
+     479 
+     480     m_csgdata->prepareForImport() ;  // from m_srctransforms to m_transforms, and get m_gtransforms ready to collect
+     481 
+     482     // need type of first node to distinguish tree from list   
+     483     OpticksCSG_t root_type  = (OpticksCSG_t)m_csgdata->getTypeCode(0);
+     484     LOG(LEVEL) << " root_type " << CSG::Name(root_type) ;
+     485 
+     486     if(CSG::IsTree(root_type))
+     487     {
+     488         import_tree();
+     489     }
+     490     else if(CSG::IsList(root_type))
+     491     {
+     492         import_list();
+     493     }
+     494     else if(CSG::IsLeaf(root_type))
+     495     {
+     496         import_leaf();
+     497     }
+     498     else
+     499     {
+     500         LOG(fatal) << " UNEXPECTED root_type " << root_type << "  CSG::Name(root_type) " <<  CSG::Name(root_type) ;
+     501         assert(0) ; // unexpected root_type 
+     502     }
+     503 
+     504 
+     505     m_root->set_treedir(m_treedir) ;
+     506     m_root->set_treeidx(getTreeNameIdx()) ;  //
+
+
+::
+
+     944 /**
+     945 nnode::set_placement
+     946 -----------------------
+     947 
+     948 The placement transform is used by nnode::global_transform 
+     949 when a placement transform is present on the root node, that 
+     950 is included into the global transforms.  Hence this provides
+     951 a way to bake in a placing transform to all the global transforms 
+     952 of a node tree. 
+     953 
+     954 Formerly when this was called apply_placement
+     955 the placement was nullified after update_gtransforms()
+     956 but it appears that methods such as NCSG::collect_global_transforms 
+     957 are going to invoke node->global_transform() again on all 
+     958 primitives ... so need to leave the placement in place.
+     959 
+     960 **/
+     961 
+     962 void nnode::set_placement( const nmat4triple* plc )
+     963 {
+     964     assert( is_root() ) ;
+     965     placement = plc ;
+     966     update_gtransforms();
+     967 
+     968     // placement = NULL ;   
+     969 }
+     970 
+
+::
+
+     982 void NCSG::collect_global_transforms()
+     983 {
+     984     bool locked(false) ;  // with locked=true m_csgdata asserts if called more than once
+     985     m_csgdata->prepareForGTransforms(locked);
+     986 
+     987     if(m_root->is_tree())
+     988     {
+     989         collect_global_transforms_r( m_root ) ;
+     990     }
+     991     else if(m_root->is_list())
+     992     {
+     993         collect_global_transforms_list(m_root) ;
+     994     }
+     995     else
+     996     {
+     997          assert(0);  // WHA WHA OOPS : THIS COULD BE THE CAUSE OF THE LEAF PLACEMENT BUG 
+     998     }
+     999 }
+
+
+CONFIRMED FIX
+-----------------
+
+::
+
+    .NCSG* NCSG::Load(const char* treedir)
+     {
+         const char* config_ = "polygonize=0" ; 
+    @@ -990,10 +988,23 @@ void NCSG::collect_global_transforms()
+         {
+             collect_global_transforms_r( m_root ) ; 
+         }
+    +    else if(m_root->is_leaf())  // WHA WHA OOPS : PRIOR OMISSION OF THIS MAY BE THE CAUSE OF THE LEAF PLACEMENT BUG 
+    +    {
+    +        collect_global_transforms_leaf(m_root) ; 
+    +    }
+         else if(m_root->is_list())
+         {
+             collect_global_transforms_list(m_root) ; 
+         }
+    +    else
+    +    {
+    +         assert(0); 
+    +    }
+    +}
+    +
+    +void NCSG::collect_global_transforms_leaf(nnode* node) 
+    +{
+    +    collect_global_transforms_node(node);
+     }
+     
+
+
+
+
 

@@ -73,9 +73,7 @@ NCSG::Load
 Loads a single CSG tree from a tree directory, as written 
 by python opticks.analytic.csg:CSG.Serialize
 
-
 **/
-
 
 
 NCSG* NCSG::Load(const char* treedir)
@@ -990,10 +988,23 @@ void NCSG::collect_global_transforms()
     {
         collect_global_transforms_r( m_root ) ; 
     }
+    else if(m_root->is_leaf())  // WHA WHA OOPS : PRIOR OMISSION OF THIS MAY BE THE CAUSE OF THE LEAF PLACEMENT BUG 
+    {
+        collect_global_transforms_leaf(m_root) ; 
+    }
     else if(m_root->is_list())
     {
         collect_global_transforms_list(m_root) ; 
     }
+    else
+    {
+         assert(0); 
+    }
+}
+
+void NCSG::collect_global_transforms_leaf(nnode* node) 
+{
+    collect_global_transforms_node(node);
 }
 
 void NCSG::collect_global_transforms_list(nnode* node) 

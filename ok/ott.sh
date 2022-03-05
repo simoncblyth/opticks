@@ -31,8 +31,11 @@ if [ -n "$opt" ]; then
 fi 
 
 
-export Frame=INFO
+#export Frame=INFO
+export GGeo=INFO
 export GParts=INFO
+
+#export GParts_debug=0   # ridx for extra output 
 
 which OTracerTest 
 

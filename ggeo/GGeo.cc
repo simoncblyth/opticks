@@ -1441,6 +1441,7 @@ See :doc:`../notes/issues/GPts_GParts_optimization`
 
 10**/
 
+
 void GGeo::deferredCreateGParts()
 {
     LOG(LEVEL) << "[" ; 
@@ -1450,75 +1451,41 @@ void GGeo::deferredCreateGParts()
     unsigned nmm = m_geolib->getNumMergedMesh(); 
     const char* base = m_ok->DebugGPartsPath(); 
 
-    int gparts_debug = SSys::getenvint("GPARTS_DEBUG", ~0u ); 
+    int GParts_debug = SSys::getenvint("GParts_debug", ~0u ); 
 
     LOG(LEVEL) 
         << " geolib.nmm " << nmm 
         << " meshlib.solids " << solids.size()
-        << " gparts_debug " << gparts_debug
+        ; 
+
+    LOG(LEVEL) 
+        << " GParts_debug " << GParts_debug
         << " base " << base
         ; 
 
-    int globalTranOffset = 0 ;  // not used see CSG_GGeo_Convert::convertNode  
+
 
     for(unsigned i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_geolib->getMergedMesh(i);
-
-        if( mm->getParts() != NULL )
-        {
-            LOG(LEVEL) << " skip as parts already present for mm " << i ;  
-            // this happens for test geometry eg tboolean.sh 
-            continue ; 
-        } 
-
         assert( mm->getParts() == NULL ); 
 
         GPts* pts = mm->getPts(); 
-        if( pts == NULL )
-        { 
-            LOG(fatal) << " pts NULL, cannot create GParts for mm " << i ; 
-            //continue ; 
-            assert(0); 
-        }
+        if( pts == NULL ) LOG(fatal) << " pts NULL, cannot create GParts for mm " << i ; 
+        assert(pts); 
 
         LOG(LEVEL) << "[ GParts::Create i/nmm " << i << "/" << nmm ; 
         unsigned num_mismatch_pt = 0 ; 
         std::vector<glm::mat4> mismatch_placements ; 
 
-
-        GParts::SetDEBUG( i == unsigned(gparts_debug) ? 1 : 0 ); 
-        GParts* parts = GParts::Create( m_ok, pts, solids, &num_mismatch_pt, &mismatch_placements, i, globalTranOffset ) ; 
+        GParts::SetDEBUG( i == unsigned(GParts_debug) ? 1 : 0 ); 
+        GParts* parts = GParts::Create( m_ok, pts, solids, &num_mismatch_pt, &mismatch_placements, i ) ; 
         unsigned ridx = parts->getRepeatIndex(); 
         assert( ridx == i );   
-
-
-        if(num_mismatch_pt > 0 )
-        {
-            LOG(error) << "num_mismatch_pt " << num_mismatch_pt << " for GMergedMesh i/nmm " << i << "/" << nmm ; 
-        }
-
-        if(mismatch_placements.size() > 0 )
-        {
-            LOG(error) << "mismatch_placements " << mismatch_placements.size() ; 
-            const char* path = SStr::Concat("$TMP/GGeo__deferredCreateGParts/mm", i, "/mismatch_placements.npy") ;
-            if( m_save_mismatch_placements )
-            {
-                NPY<float>* a = NPY<float>::make(mismatch_placements.size(), 4, 4); 
-                a->read( mismatch_placements.data() );  
-                LOG(error) << "saving " << path ; 
-                a->save(path); 
-            }
-            else
-            {
-                LOG(error) << "save mismatch placements by setting envvar : OPTICKS_GGEO_SAVE_MISMATCH_PLACEMENTS path " << path  ; 
-            } 
-        }
+        checkMismatch(i, nmm, mismatch_placements, num_mismatch_pt); 
 
         LOG(LEVEL) << "] GParts::Create i/nmm " << i << "/" << nmm ; 
-
         parts->setBndLib(m_bndlib); 
-
         LOG(LEVEL) << "[ parts->close i/nmm " << i << "/" << nmm ; 
         parts->close(); 
         LOG(LEVEL) << "] parts->close i/nmm " << i << "/" << nmm ; 
@@ -1527,16 +1494,43 @@ void GGeo::deferredCreateGParts()
 
         if(m_ok->isSaveGPartsEnabled())
         {
-            //const char* sidx = BStr::itoa(i) ;
-            //std::string sptpath = BFile::FormPath("$TMP", "GParts",sidx );
             LOG(info) << " --savegparts optionally saving to " << base  ; 
-            //parts->save(sptpath.c_str()); 
             parts->save(base, i); 
         }
     }
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+
+void GGeo::checkMismatch( unsigned i, unsigned nmm, const std::vector<glm::mat4>& mismatch_placements, unsigned num_mismatch_pt  )
+{
+    if(num_mismatch_pt > 0 )
+    {
+        LOG(error) << "num_mismatch_pt " << num_mismatch_pt << " for GMergedMesh i/nmm " << i << "/" << nmm ; 
+    }
+
+    if(mismatch_placements.size() > 0 )
+    {
+        LOG(error) << "mismatch_placements " << mismatch_placements.size() ; 
+        const char* path = SStr::Concat("$TMP/GGeo__deferredCreateGParts/mm", i, "/mismatch_placements.npy") ;
+        if( m_save_mismatch_placements )
+        {
+            NPY<float>* a = NPY<float>::make(mismatch_placements.size(), 4, 4); 
+            a->read( mismatch_placements.data() );  
+            LOG(error) << "saving " << path ; 
+            a->save(path); 
+        }
+        else
+        {
+            LOG(error) << "save mismatch placements by setting envvar : OPTICKS_GGEO_SAVE_MISMATCH_PLACEMENTS path " << path  ; 
+        } 
+    }
+}
+
+
+
 
 /**
 GGeo::saveGParts

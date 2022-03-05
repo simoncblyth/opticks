@@ -263,9 +263,13 @@ class GGEO_API GParts {
             const std::vector<const NCSG*>& solids, 
             unsigned* num_mismatch_pt=nullptr, 
             std::vector<glm::mat4>* mismatch_placements=nullptr, 
-            int imm=-1,
-            int global_transformOffset=-1
+            int imm=-1
             );
+
+
+        static void RecordMismatch( std::vector<unsigned> mismatch_pt, std::vector<glm::mat4>* mismatch_placements, const glm::mat4& placement,  unsigned  i, unsigned lvIdx, unsigned ndIdx, unsigned num_mismatch  ); 
+        static void DumpMismatch( unsigned* num_mismatch_pt, std::vector<unsigned> mismatch_pt ); 
+
 
         static GParts* Make(const npart& pt, const char* spec);
         static GParts* Make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
@@ -279,8 +283,8 @@ class GGEO_API GParts {
         GParts*  getSub(unsigned i) const ; 
 
     public:
-        void setGlobalTranOffset(int global_tranOffset ); 
-        int  getGlobalTranOffset() const ; 
+        //void setGlobalTranOffset(int global_tranOffset ); 
+        //int  getGlobalTranOffset() const ; 
     public:
         GParts(GBndLib* bndlib=NULL);
         GParts(NPY<unsigned>* idxBuf, NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);
@@ -483,7 +487,7 @@ class GGEO_API GParts {
         std::vector<GParts*> m_subs ; 
         unsigned           m_ridx ; 
         const Opticks*     m_ok ; 
-        int                m_global_tranOffset ; 
+        //int                m_global_tranOffset ; 
 
 
 };

@@ -895,9 +895,6 @@ nnode::set_transform
 TODO: check does this need to go via set_placement in order to update_gtransforms ?
 
 
-
-
-
 **/
 
 void nnode::set_transform( const glm::mat4& tmat, bool update_global )

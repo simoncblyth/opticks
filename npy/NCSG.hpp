@@ -368,6 +368,7 @@ class NPY_API NCSG {
         // collect global transforms into m_gtransforms and sets the node->gtransform and node->gtransform_idx refs
         void collect_global_transforms() ;
     private:
+        void collect_global_transforms_leaf(nnode* node); 
         void collect_global_transforms_list(nnode* node); 
         void collect_global_transforms_r(nnode* node) ;
         void collect_global_transforms_node(nnode* node);
