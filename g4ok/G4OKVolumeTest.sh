@@ -27,21 +27,29 @@ GInstancer_instance_repeat_min
    small number does more instancing 
 
 
+See extg4/X4VolumeMakerTest.sh for GEOM names 
+
 EOU
 }
 
 msg="=== $BASH_SOURCE :"
+
+
+
 
 #geom=JustOrbGrid
 #geom=JustOrbCube
 #geom=BoxMinusOrbCube
 #geom=lchilogicLowerChimney
 
-geom=ListJustOrb,BoxMinusOrb
+#geom=ListJustOrb,BoxMinusOrb
+#geom=BoxMinusOrbXoff
+geom=JustOrbZoff
 
 export GEOM=${GEOM:-$geom}
 
 export X4PhysicalVolume=INFO
+export X4VolumeMaker=INFO
 export GParts=INFO
 export GInstancer=INFO
 

@@ -1356,7 +1356,7 @@ const G4VSolid* X4SolidMaker::BoxMinusOrb(const char* name)
 
     double dx     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dx", 0.f) ;  
     double dy     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dy", 0.f) ;  
-    double dz     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dz", 10.f) ;  
+    double dz     = SSys::getenvfloat("X4SolidMaker_BoxMinusOrb_dz", 0.f) ;  
 
     G4VSolid* box = new G4Box("box",  sx, sy, sz ); 
     G4VSolid* orb = new G4Orb("orb",  radius ); 

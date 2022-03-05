@@ -86,24 +86,58 @@ G4VPhysicalVolume* X4VolumeMaker::MakePhysicalOne_(const char* name)
 
     bool grid = strstr(name, "Grid") != nullptr ; 
     bool cube = strstr(name, "Cube") != nullptr ; 
+    bool xoff = strstr(name, "Xoff") != nullptr ; 
+    bool yoff = strstr(name, "Yoff") != nullptr ; 
+    bool zoff = strstr(name, "Zoff") != nullptr ; 
 
     G4LogicalVolume* lv = MakeLogical(name) ; 
 
-    if(grid)
-    {
-        pv =   WrapLVGrid(lv, 1, 1, 1 ); 
-    }
-    else if(cube)
-    {
-        pv =   WrapLVTranslate(lv, 100., 100., 100. ); 
-    }
-    else
-    {
-        pv =   WrapLVTranslate(lv, 0., 0., 0. ); 
-    }
+    if(grid)      pv =   WrapLVGrid(lv, 1, 1, 1 ); 
+    else if(cube) pv =   WrapLVTranslate(lv, 100., 100., 100. ); 
+    else if(xoff) pv =   WrapLVOffset(lv, 200.,   0.,   0. ); 
+    else if(yoff) pv =   WrapLVOffset(lv,   0., 200.,   0. ); 
+    else if(zoff) pv =   WrapLVOffset(lv,   0.,   0., 200. ); 
+    else          pv =   WrapLVTranslate(lv, 0., 0., 0. ); 
 
     return pv ; 
 }
+
+
+
+void X4VolumeMaker::AddPlacement( G4LogicalVolume* mother,  G4LogicalVolume* lv,  double tx, double ty, double tz )
+{
+    G4ThreeVector tla(tx,ty,tz); 
+    std::string name = lv->GetName(); 
+    name += "_placement" ; 
+    LOG(LEVEL) << Desc(tla) << " " << name ;  
+    G4VPhysicalVolume* pv = new G4PVPlacement(0,tla,lv,name,mother,false,0);
+    assert(pv); 
+} 
+
+
+void X4VolumeMaker::AddPlacement( G4LogicalVolume* mother, const char* name,  double tx, double ty, double tz )
+{
+    G4LogicalVolume* lv = MakeLogical(name); 
+    AddPlacement( mother, lv, tx, ty, tz ); 
+}
+
+G4VPhysicalVolume* X4VolumeMaker::WrapLVOffset( G4LogicalVolume* lv, double tx, double ty, double tz )
+{
+    G4String name = lv->GetName(); 
+    name += "_Offset" ; 
+
+    double halfside = 3.*std::max( std::max( tx, ty ), tz ); 
+    G4VPhysicalVolume* world_pv = WorldBox(halfside); 
+    G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 
+
+    AddPlacement(world_lv, lv, tx, ty, tz ); 
+
+    bool bmo = true ; 
+    if(bmo) AddPlacement( world_lv, "BoxMinusOrb", 0., 0., 0. ); 
+
+    return world_pv ;  
+}
+
 
 /**
 
@@ -168,6 +202,21 @@ G4VPhysicalVolume* X4VolumeMaker::WrapLVGrid( G4LogicalVolume* lv, int nx, int n
 }
 
 
+std::string X4VolumeMaker::Desc( const G4ThreeVector& tla )
+{
+    std::stringstream ss ; 
+    ss << " tla (" 
+       <<  " " << std::fixed << std::setw(10) << std::setprecision(3) << tla.x()
+       <<  " " << std::fixed << std::setw(10) << std::setprecision(3) << tla.y()
+       <<  " " << std::fixed << std::setw(10) << std::setprecision(3) << tla.z()
+       <<  ") " 
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 G4VPhysicalVolume* X4VolumeMaker::WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  )
 {
     unsigned num_lv = lvs.size(); 
@@ -195,8 +244,21 @@ G4VPhysicalVolume* X4VolumeMaker::WrapLVGrid( std::vector<G4LogicalVolume*>& lvs
         count += 1 ; 
         assert( ulv ); 
 
-        const char* iname = GridName("item", ix, iy, iz, "" );    
+         const G4String& ulv_name_ = ulv->GetName();  
+         std::string ulv_name = ulv_name_ ; 
+         ulv_name += "_plc_" ; 
+
+        const char* iname = GridName( ulv_name.c_str(), ix, iy, iz, "" );    
         G4ThreeVector tla( sc*double(ix), sc*double(iy), sc*double(iz) );  
+
+        LOG(LEVEL) 
+           << " G4PVPlacement "
+           << " count " << std::setw(3) << count 
+           << Desc(tla)
+           <<  iname
+           ;
+
+
         G4VPhysicalVolume* pv_n = new G4PVPlacement(0, tla, ulv ,iname,world_lv,false,0);
         assert( pv_n );  
     }   

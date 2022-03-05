@@ -130,5 +130,6 @@ if __name__ == '__main__':
         pass
     pass
 
+    # prim from the ridx solid with the midx  
     ridx_midx_prim_ = lambda ridx,midx:g[ridx].prim[np.where( g[ridx].idx[:,1] == midx )]  
 
