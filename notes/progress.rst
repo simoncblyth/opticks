@@ -79,7 +79,7 @@ Tips for making yearly summaries
       * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/GeneralSphereDEV.rst
       * :doc:`/notes/issues/GeneralSphereDEV`
 
-      * perhaps implementing CSG_ICONTIGUOUS (need better name) that does for intersections what CSG_CONTIGUOUS  
+      * perhaps implementing CSG_OVERLAP that does for intersections what CSG_CONTIGUOUS  
         does for unions would allow implementing the general sphere directly with planes and cones 
         rather than with pairs-of-planes and pairs-of-cones 
 

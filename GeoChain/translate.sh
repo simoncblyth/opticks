@@ -158,11 +158,34 @@ export GeoChain=INFO
 
 export NTreeProcess=INFO   ## balance decision happens here 
 #export NTREEPROCESS_LVLIST=0
-#export NTREEPROCESS_MAXHEIGHT0=10   ## 3 is default
-#
-# have confirmed that switching off balancing 
-# by setting NTREEPROCESS_MAXHEIGHT0 to a large value 
-# prevents the interior boundary spurious issue
+
+
+Unbalanced(){ cat << EOU
+$FUNCNAME Unbalanced Tree
+============================
+
+Balancing is hereby switched off by setting 
+the envvar  NTREEPROCESS_MAXHEIGHT0 to a large value.
+
+NTREEPROCESS_MAXHEIGHT0 : $NTREEPROCESS_MAXHEIGHT0
+
+Have confirmed that switching off balancing 
+prevents interior boundary spurious issue 
+found with some solids, but it also causes 
+a very large performance problem.
+
+TODO: find better way to postorder traverse a complete binary 
+tree with lots of CSG_ZERO eg each node could carry a nextIdx
+reference. 
+
+EOU
+}
+
+if [ "${GEOM/Unbalanced}" != "${GEOM}" ]; then
+   export NTREEPROCESS_MAXHEIGHT0=10   ## 3 is default
+   Unbalanced 
+fi 
+
 
 #export NNodeNudger=INFO
 #export NNODENUDGER_LVLIST=0

@@ -7,6 +7,10 @@ csg_geochain.sh : CPU Opticks equivalent to cxs_geochain.sh with OptiX on GPU us
 The idea behind this is to provide a convenient way to test code primarily intended to run on GPU 
 in the more friendly debugging environment of the CPU.::
 
+
+    PUB=unbalanced_ok ./csg_geochain.sh  ana 
+
+
     IXYZ=4,0,0 ./csg_geochain.sh  ana
         selecting single genstep with IXYZ 
 
@@ -164,6 +168,11 @@ dx=0
 dy=0
 dz=0
 
+case $GEOM in
+      XJfixtureConstruction*)  dz=1 ;;
+   AltXJfixtureConstruction*)  dz=1 ;;
+esac
+
 DZ=${DZ:-$dz}
 pho=${PHO:--100} 
 
@@ -190,12 +199,16 @@ topline="GEOM=$GEOM ./csg_geochain.sh "
 [ -n "$SPHI" ] && topline="SPHI=$SPHI $topline" 
 [ -n "$IXYZ" ] && topline="IXYZ=$IXYZ $topline" 
 [ -n "$SXYZW" ] && topline="SXYZW=$SXYZW $topline" 
+[ "$DZ" != "0" ] && topline="DZ=$DZ $topline"
+[ -n "$ZOOM" ] && topline="ZOOM=$ZOOM $topline" 
 
 
 cmdline="GEOM=$GEOM ./csg_geochain.sh "
 [ -n "$SPHI" ] && cmdline="SPHI=$SPHI $cmdline" 
 [ -n "$IXYZ" ] && cmdline="IXYZ=$IXYZ $cmdline" 
 [ -n "$SPUR" ] && cmdline="SPUR=$SPUR $cmdline" 
+[ "$DZ" != "0" ] && cmdline="DZ=$DZ $cmdline"
+[ -n "$ZOOM" ] && cmdline="ZOOM=$ZOOM $cmdline" 
 
 export CMDLINE=$cmdline
 export NOTE=$note 

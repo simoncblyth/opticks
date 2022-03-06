@@ -32,9 +32,8 @@ fi
 
 
 #export Frame=INFO
-export GGeo=INFO
-export GParts=INFO
-
+#export GGeo=INFO
+#export GParts=INFO
 #export GParts_debug=0   # ridx for extra output 
 
 which OTracerTest 

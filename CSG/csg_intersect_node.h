@@ -305,14 +305,14 @@ of envelope prevents the two pass approach ?
                  |B               |     |D                  |
                  |                |     |                   |
                  |                |     |                   |
-            +----|----+      +----|-----|----+       +------|----------+       
-            |A   |    |      |C   |     |    |       |E     |          |
-            |    |    |      |    |     |    |       |      |          |
-            | 0 E1   (X2)    E3  X4    E5   X6      E7     X8         X9
-            |    |    |      |    |     |    |       |      |          |
-            |    |    |      |    |     |    |       |      |          |
-            |    |    |      |    |     |    |       |      |          |
-            +----|----+      +----|-----|----+       +------|----------+   
+            +----|----+      +----|-----|----+       +------|----------+             +-----------+
+            |A   |    |      |C   |     |    |       |E     |          |             |           | 
+            |    |    |      |    |     |    |       |      |          |             |           |
+            | 0 E1   (X2)    E3  X4    E5   X6      E7     X8         X9            E10         X10
+            |    |    |      |    |     |    |       |      |          |             |           | 
+            |    |    |      |    |     |    |       |      |          |             |           |
+            |    |    |      |    |     |    |       |      |          |             |           | 
+            +----|----+      +----|-----|----+       +------|----------+             +-----------+
                  |                |     |                   |
                  |                |     |                   |
                  |                |     |                   |
@@ -582,6 +582,20 @@ The guarantee that all sub-nodes do not overlap other sub-nodes
 makes the implementation straightforward and hence fast:
 
 * closest ENTER or EXIT 
+
+
+
+     +-------+          +-------+          +-------+          +-------+         +-------+      
+     |       |          |       |          |       |          |       |         |       |      
+     |       |          |       |          |       |          |       |         |       |      
+     +-------+          +-------+          +-------+          +-------+         +-------+       
+
+     +-------+          +-------+          +-------+          +-------+         +-------+      
+     |       |          |       |          |       |          |       |         |       |      
+     |       |          |       |          |       |          |       |         |       |      
+     +-------+          +-------+          +-------+          +-------+         +-------+       
+
+
 **/
 
 
@@ -632,8 +646,6 @@ intersect_node_overlap : intersection of leaves
   of inner and outer sphere, phi planes and theta cones ?
 
 * shapes that can be described entirely with intersection can avoid tree overheads 
-
-
 
 Imagine the CSG_OVERLAP of 3 shapes A,B,C the resulting ABC shape is the portion that is inside all of them.
 
