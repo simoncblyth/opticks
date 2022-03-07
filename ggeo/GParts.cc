@@ -1361,8 +1361,8 @@ void GParts::add(GParts* other)
     NPY<float>* other_tran_buffer = other->getTranBuffer() ;
     NPY<float>* other_plan_buffer = other->getPlanBuffer() ;
 
-    //bool dump = COUNT < 100 || COUNT % 1000 == 0 ; 
-    bool dump = true ; 
+    bool dump = COUNT < 10 || COUNT % 1000 == 0 ; 
+    //bool dump = true ; 
 
     if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
     { 

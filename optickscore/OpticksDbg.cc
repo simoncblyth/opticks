@@ -96,6 +96,11 @@ unsigned OpticksDbg::getNumCSGSkipLV() const
 {
     return m_csgskiplv.size() ; 
 }
+unsigned OpticksDbg::getNumCXSkipLV() const 
+{
+    return m_cxskiplv.size() ; 
+}
+
 unsigned OpticksDbg::getNumDeferredCSGSkipLV() const 
 {
     return m_deferredcsgskiplv.size() ; 
@@ -169,6 +174,7 @@ void OpticksDbg::postconfigure()
    const std::string& x4tubsnudgeskip = m_cfg->getX4TubsNudgeSkip() ;
    const std::string& x4pointskip = m_cfg->getX4PointSkip() ;
    const std::string& csgskiplv = m_cfg->getCSGSkipLV() ;
+   const std::string& cxskiplv = m_cfg->getCXSkipLV() ;
    const std::string& deferredcsgskiplv = m_cfg->getDeferredCSGSkipLV() ;
    const std::string& enabledmm = m_cfg->getEnabledMergedMesh() ;   // default is ~0 meaning everything enabled
    const std::string& x4skipsolidname = m_cfg->getX4SkipSolidName() ;
@@ -184,6 +190,7 @@ void OpticksDbg::postconfigure()
    postconfigure( x4tubsnudgeskip, m_x4tubsnudgeskip );
    postconfigure( x4pointskip, m_x4pointskip );
    postconfigure( csgskiplv, m_csgskiplv );
+   postconfigure( cxskiplv, m_cxskiplv );
    postconfigure( deferredcsgskiplv, m_deferredcsgskiplv );
    postconfigure( enabledmm, m_enabledmergedmesh );    
    postconfigure( x4skipsolidname, m_x4skipsolidname, ',' );
@@ -444,6 +451,18 @@ bool OpticksDbg::IsStringListed( const char* str, const std::vector<std::string>
 {
     return ls.size() == 0 ? emptylistdefault : std::find(ls.begin(), ls.end(), str ) != ls.end() ; 
 }
+std::string OpticksDbg::GetList( const std::vector<unsigned>& ls, char delim ) // static
+{
+    unsigned num = ls.size(); 
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < num ; i++) 
+    {
+        ss << ls[i] ; 
+        if( i < num-1 ) ss << delim ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 bool OpticksDbg::isX4SkipSolidName(const char* soname) const 
 {
@@ -455,6 +474,19 @@ bool OpticksDbg::isCSGSkipLV(unsigned lvIdx) const   // --csgskiplv
 {
     return IsListed(lvIdx, m_csgskiplv, false); 
 }
+
+
+
+bool OpticksDbg::isCXSkipLV(unsigned lvIdx) const   // --cxskiplv
+{
+    return IsListed(lvIdx, m_cxskiplv, false); 
+}
+std::string OpticksDbg::getCXSkipLVList() const  // --cxskiplv
+{
+    return GetList(m_cxskiplv, ','); 
+}
+
+
 bool OpticksDbg::isDeferredCSGSkipLV(unsigned lvIdx) const   // --deferredcsgskiplv
 {
     return IsListed(lvIdx, m_deferredcsgskiplv, false); 

@@ -63,6 +63,7 @@ class OKCORE_API OpticksDbg
        unsigned getNumX4TubsNudgeSkip() const ;
        unsigned getNumX4PointSkip() const ;
        unsigned getNumCSGSkipLV() const ;
+       unsigned getNumCXSkipLV() const ;
        unsigned getNumDeferredCSGSkipLV() const ;
     public:
        NPY<unsigned>* getMaskBuffer() const ;
@@ -71,6 +72,7 @@ class OKCORE_API OpticksDbg
     public:
        static bool IsListed(unsigned idx, const std::vector<unsigned>& ls, bool emptylistdefault);
        static bool IsStringListed( const char* str, const std::vector<std::string>& ls, bool emptylistdefault ); 
+       static std::string GetList( const std::vector<unsigned>& ls, char delim ); 
 
        bool isDbgPhoton(unsigned record_id) const ;
        bool isOtherPhoton(unsigned record_id) const ;
@@ -84,9 +86,12 @@ class OKCORE_API OpticksDbg
 
        bool isX4SkipSolidName(const char* soname) const ;   // --x4skipsolidname
 
+       bool isCXSkipLV(unsigned lvIdx) const ;   // --cxskiplv
        bool isCSGSkipLV(unsigned lvIdx) const ;   // --csgskiplv
        bool isDeferredCSGSkipLV(unsigned lvIdx) const ;   // --deferredcsgskiplv
        bool isSkipSolidIdx(unsigned lvIdx) const ;  // --skipsolidname 
+
+       std::string getCXSkipLVList() const ; 
 
        bool isEnabledMergedMesh(unsigned mm) const ;
        const char* getEnabledMergedMesh() const  ; 
@@ -125,6 +130,7 @@ class OKCORE_API OpticksDbg
        std::vector<unsigned> m_x4tubsnudgeskip ; 
        std::vector<unsigned> m_x4pointskip ; 
        std::vector<unsigned> m_csgskiplv ; 
+       std::vector<unsigned> m_cxskiplv ; 
        std::vector<unsigned> m_deferredcsgskiplv ; 
        std::vector<unsigned> m_skipsolididx ;        // from --skipsolidname 
        std::vector<std::string> m_x4skipsolidname ; 

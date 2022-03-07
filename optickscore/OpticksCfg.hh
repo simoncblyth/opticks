@@ -115,6 +115,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getX4TubsNudgeSkip() const ;
      const std::string& getX4PointSkip() const ;
      const std::string& getCSGSkipLV() const ;            // --csgskiplv
+     const std::string& getCXSkipLV() const ;             // --cxskiplv
      const std::string& getDeferredCSGSkipLV() const ;    // --deferredcsgskiplv
      const std::string& getSkipSolidName() const ;        // --skipsolidname
      const std::string& getX4SkipSolidName() const ;      // --x4skipsolidname
@@ -287,6 +288,7 @@ private:
      std::string m_x4tubsnudgeskip ;
      std::string m_x4pointskip ;
      std::string m_csgskiplv ; 
+     std::string m_cxskiplv ; 
      std::string m_deferredcsgskiplv ; 
      std::string m_skipsolidname ; 
      std::string m_x4skipsolidname ; 

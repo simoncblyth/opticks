@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EON
-geocache_hookup.sh 
-====================
+geocache_hookup.sh : by setting OPTICKS_KEY envvar
+=====================================================
 
 The geocache_hookup argument is used to select the geometry:
 
@@ -9,6 +9,8 @@ old
     some old reference geometry 
 new
     recent addition
+asis
+    do not change OPTICKS_KEY 
 last
     last created geocache, using the OPTICKS_KEY export line 
     written by Opticks::writeGeocacheScript writes::
@@ -47,9 +49,7 @@ geocache_hookup_last()
     if [ -f "$geocache_sh" ]; then
         echo $msg sourcing geocache_sh $geocache_sh that was written by Opticks::writeGeocacheScript
         ls -alst $geocache_sh
-        #cat $geocache_sh
         source $geocache_sh
-
         export OPTICKS_KEYFUNC=$FUNCNAME
     else
         echo $msg ERROR expecting to find geocache_sh $geocache_sh
@@ -70,6 +70,8 @@ geocache_hookup()
     export OPTICKS_GEOCACHE_HOOKUP_ARG=$arg
     if [ "$arg" == "last" ]; then 
         geocache_hookup_last 
+    elif [ "$arg" == "asis" ]; then 
+        echo -n  
     else
         export OPTICKS_KEY=$(geocache_hookup_key) 
     fi 
@@ -79,5 +81,4 @@ geocache_hookup()
 }
 
 geocache_hookup $*
-
 

@@ -58,6 +58,11 @@ void CSG_GGeo_Convert::init()
     ggeo->getMeshNames(foundry->meshname); 
     ggeo->getMergedMeshLabels(foundry->mmlabel); 
 
+    std::string cxskiplv = ok->getCXSkipLVList() ;  // --cxskiplv
+    LOG(LEVEL) << " --cxskiplv  " << cxskiplv ; 
+
+    foundry->setMeta("cxskiplv", cxskiplv ); 
+
     LOG(LEVEL) << " foundry.meshname.size " << foundry->meshname.size() ; 
 
     bool gparts_transform_offset = ok->isGPartsTransformOffset() ; 
@@ -219,6 +224,32 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     }
 }
 
+/**
+CSG_GGeo_Convert::CountSolidPrim
+-----------------------------------
+
+**/
+
+unsigned CSG_GGeo_Convert::CountSolidPrim( const GParts* comp, const Opticks* ok )
+{
+    unsigned solidPrim = 0 ; 
+    unsigned numPrim = comp->getNumPrim();
+    for(unsigned primIdx=0 ; primIdx < numPrim ; primIdx++) 
+    {   
+        unsigned meshIdx   = comp->getMeshIndex(primIdx);   // from idxBuffer aka lvIdx 
+        bool cxskip = ok->isCXSkipLV(meshIdx); 
+        if(cxskip)
+        {
+            LOG(LEVEL) << " cxskip meshIdx " << meshIdx  ; 
+        }
+        else
+        {
+            solidPrim += 1 ; 
+        }
+    }
+    LOG(LEVEL) << " numPrim " << numPrim  << " solidPrim " << solidPrim ; 
+    return solidPrim ; 
+}
 
 /**
 CSG_GGeo_Convert::convertSolid NB this "solid" corresponds to ggeo/GMergedMesh
@@ -232,6 +263,7 @@ CSG_GGeo_Convert::convertSolid NB this "solid" corresponds to ggeo/GMergedMesh
 6. return the solid 
 
 **/
+
 
 CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 {
@@ -247,40 +279,56 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
     std::string rlabel = CSGSolid::MakeLabel('r',repeatIdx) ; 
 
     bool dump = dump_ridx > -1 && dump_ridx == int(repeatIdx) ;  
+    unsigned solidPrim = CountSolidPrim(comp, ok);  
 
     LOG(LEVEL)
         << " repeatIdx " << repeatIdx 
         << " nmm " << nmm
         << " numPrim(GParts.getNumPrim) " << numPrim
+        << " solidPrim " << solidPrim 
         << " rlabel " << rlabel 
         << " num_inst " << num_inst 
         << " dump_ridx " << dump_ridx
         << " dump " << dump  
         ;   
 
-    CSGSolid* so = foundry->addSolid(numPrim, rlabel.c_str() );  // primOffset captured into CSGSolid 
+
+    CSGSolid* so = foundry->addSolid(solidPrim, rlabel.c_str() );  // primOffset captured into CSGSolid 
     assert(so); 
 
     AABB bb = {} ;
 
+    unsigned solidPrimChk = 0 ; 
+
     // over the "layers/volumes" of the solid (eg multiple vols of PMT) 
     for(unsigned primIdx=0 ; primIdx < numPrim ; primIdx++) 
     {   
-        unsigned globalPrimIdx = so->primOffset + primIdx ;
-        unsigned globalPrimIdx_0 = foundry->getNumPrim() ; 
-        assert( globalPrimIdx == globalPrimIdx_0 ); 
+        unsigned meshIdx   = comp->getMeshIndex(primIdx);   // from idxBuffer aka lvIdx 
+        const char* mname = foundry->getName(meshIdx); 
+        bool cxskip = ok->isCXSkipLV(meshIdx); 
+        
+        LOG(LEVEL) << " cxskip " << cxskip << " meshIdx " << meshIdx << " mname " << mname ;   
+        if(cxskip) 
+        {
+            LOG(error) << " cxskip " << cxskip << " meshIdx " << meshIdx << " mname " << mname ;   
+            continue ; 
+        }
 
         CSGPrim* prim = convertPrim(comp, primIdx); 
         bb.include_aabb( prim->AABB() );
 
-        unsigned sbtIdx = prim->sbtIndexOffset() ; 
-        //assert( sbtIdx == globalPrimIdx  );  
-        assert( sbtIdx == primIdx  );  
+        unsigned sbtIdx = prim->sbtIndexOffset() ;  // from CSGFoundry::addPrim
+        //assert( sbtIdx == primIdx  );    // HMM: not with skips
+        assert( sbtIdx == solidPrimChk  );   
 
         prim->setRepeatIdx(repeatIdx); 
         prim->setPrimIdx(primIdx); 
-        //LOG(LEVEL) << prim->desc() ;
+
+        solidPrimChk += 1 ; 
     }   
+
+    assert( solidPrim == solidPrimChk ); 
+
     so->center_extent = bb.center_extent() ;  
 
     addInstances(repeatIdx); 
@@ -412,6 +460,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
 
         bool bbskip = negated ; 
 
+          /*
         if(dump || bbskip) 
             LOG(LEVEL)
                 << " partIdxRel " << std::setw(3) << partIdxRel 
@@ -419,6 +468,8 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
                 << " negated " << negated
                 << " bbskip " << bbskip 
                 ;
+
+        */ 
 
         float* naabb = n->AABB();  
 
@@ -431,7 +482,7 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
     // HMM: usually numParts is the number of tree nodes : but not always following introduction of list-nodes
     // TODO: fix the conversion to pass along the subNum from GGeo level 
 
-    LOG(fatal) 
+    LOG(LEVEL) 
         << " meshIdx " << std::setw(4) << meshIdx 
         << " numParts " << std::setw(4) << numParts
         << " root_subNum " << std::setw(4) << root_subNum
@@ -566,7 +617,7 @@ CSGNode* CSG_GGeo_Convert::convertNode(const GParts* comp, unsigned primIdx, uns
 
     unsigned tranIdx = tv ?  1 + foundry->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " primIdx " << std::setw(4) << primIdx 
         << " partIdxRel " << std::setw(4) << partIdxRel
         << " tag " << std::setw(6) << tag

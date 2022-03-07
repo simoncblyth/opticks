@@ -229,6 +229,9 @@ struct CSG_API CSGFoundry
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ; 
     const char* getName(unsigned midx) const ;  
 
+    template <typename T> void setMeta( const char* key, T value ); 
+    template <typename T> T    getMeta( const char* key, T fallback); 
+    bool hasMeta() const ; 
 
     void kludgeScalePrimBBox( const char* label, float dscale );
     void kludgeScalePrimBBox( unsigned solidIdx, float dscale );
@@ -267,13 +270,11 @@ struct CSG_API CSGFoundry
     NP* bnd ; 
     NP* icdf ; 
 
-    const char* meta ; 
+    std::string meta ; 
     const char* fold ; 
     const char* cfbase ; 
     const char* geom ; 
     const char* loaddir ; 
-
-
 };
 
 

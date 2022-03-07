@@ -278,6 +278,19 @@ void test_getCacheMetaTime(const Opticks* ok)
        ; 
 }
 
+void test_isCXSkipLV(const Opticks* ok)
+{
+    unsigned numCXSkipLV = ok->getNumCXSkipLV(); 
+    LOG(info) << "numCXSkipLV " << numCXSkipLV << " eg --cxskiplv 1,2,3,101 " ; 
+
+    for(unsigned i=0 ; i < 1000 ; i++ )
+    {
+        unsigned meshIdx = i ; 
+        bool cxSkip = ok->isCXSkipLV(meshIdx) ; 
+        if(cxSkip) LOG(info) << " --cxskiplv meshIdx " << meshIdx ; 
+    }
+}
+
 
 int main(int argc, char** argv)
 {
@@ -316,9 +329,10 @@ int main(int argc, char** argv)
     test_getIdPath(&ok); 
     test_writeGeocacheScript(&ok); 
     test_isGPartsTransformOffset(&ok); 
+    test_getCacheMetaTime(&ok); 
 
     */
-    test_getCacheMetaTime(&ok); 
+    test_isCXSkipLV(&ok); 
 
 
     return 0 ;

@@ -1,5 +1,5 @@
-mar2022geom_structural_transform_debug 
-==========================================
+mar2022geom_structural_transform_debug  CONFIRMED FIXED
+==========================================================
 
 JUNO Renders cxr OptiX 7 renders now looking to use wrong global transforms : chimney in middle of LS
 --------------------------------------------------------------------------------------------------------

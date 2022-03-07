@@ -813,6 +813,11 @@ bool Opticks::isCSGSkipLV(unsigned lvIdx) const
 {
    return m_dbg->isCSGSkipLV(lvIdx);
 }
+bool Opticks::isCXSkipLV(unsigned lvIdx) const 
+{
+   return m_dbg->isCXSkipLV(lvIdx);
+}
+
 bool Opticks::isDeferredCSGSkipLV(unsigned lvIdx) const 
 {
    return m_dbg->isDeferredCSGSkipLV(lvIdx);
@@ -831,6 +836,16 @@ unsigned Opticks::getNumCSGSkipLV() const
 {
    return m_dbg->getNumCSGSkipLV() ; 
 }
+unsigned Opticks::getNumCXSkipLV() const 
+{
+   return m_dbg->getNumCXSkipLV() ; 
+}
+std::string Opticks::getCXSkipLVList() const 
+{
+   return m_dbg->getCXSkipLVList() ;  
+}
+
+
 unsigned Opticks::getNumDeferredCSGSkipLV() const 
 {
    return m_dbg->getNumDeferredCSGSkipLV() ; 

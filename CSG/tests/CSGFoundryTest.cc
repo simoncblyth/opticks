@@ -134,6 +134,46 @@ void test_getInstanceGAS()
     LOG(info) << *q ; 
 }
 
+void test_setMeta_getMeta()
+{
+    LOG(info) ; 
+
+    CSGFoundry fd ; 
+
+    int i0 = -101 ; 
+    int i1 = -1010 ; 
+    unsigned u = 202 ; 
+    float f = 42.f ; 
+    double d = 420. ; 
+    std::string s0 = "string0" ; 
+    std::string s1 = "string1" ; 
+
+    fd.setMeta("i0", i0); 
+    fd.setMeta("i1", i1); 
+    fd.setMeta("u", u);
+    fd.setMeta("f", f );  
+    fd.setMeta("d", d );
+    fd.setMeta("s0", s0 );
+    fd.setMeta("s1", s1 );
+  
+    int i0_ = fd.getMeta("i0", 0); 
+    int i1_ = fd.getMeta("i1", 0); 
+    unsigned u_ = fd.getMeta("u", 0u); 
+    float f_ = fd.getMeta("f", 0.f); 
+    double d_ = fd.getMeta("d", 0.); 
+    std::string  s0_ = fd.getMeta<std::string>("s0", ""); 
+    std::string  s1_ = fd.getMeta<std::string>("s1", ""); 
+
+    assert( i0 == i0_ ); 
+    assert( i1 == i1_ ); 
+    assert( u == u_ ); 
+    assert( f == f_ ); 
+    assert( d == d_ ); 
+    assert( strcmp(s0.c_str(), s0_.c_str()) == 0 ); 
+    assert( strcmp(s1.c_str(), s1_.c_str()) == 0 ); 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -145,9 +185,11 @@ int main(int argc, char** argv)
     test_Compare(); 
     test_Load(); 
     test_getInstanceTransformsGAS() ;
+    test_getInstanceGAS() ;
     */
 
-    test_getInstanceGAS() ;
+    test_setMeta_getMeta(); 
+
 
     return 0 ; 
 }

@@ -1,5 +1,4 @@
 #!/bin/bash -l 
-
 grab_usage(){ cat << EOU
 grab.sh
 =============
@@ -13,7 +12,6 @@ The remote directory to grab is configurable with envvar OPTICKS_KEYDIR_GRABBED,
 NB to update the CSGFoundry geometry on laptop for correct labelling of volumes use::
 
    ./cf_grab.sh 
-
 
 EOU
 }

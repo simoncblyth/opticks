@@ -46,7 +46,7 @@ CSGFoundry::CSGFoundry()
     last_added_prim(nullptr),
     bnd(nullptr),
     icdf(nullptr),
-    meta(nullptr),
+    meta(),
     fold(nullptr),
     cfbase(nullptr),
     geom(nullptr),
@@ -1128,13 +1128,13 @@ CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )
 
     pr.setNumNode(num_node) ; 
     pr.setNodeOffset(nodeOffset); 
-    //pr.setSbtIndexOffset(globalPrimIdx) ;  // <--- bug ?
+    //pr.setSbtIndexOffset(globalPrimIdx) ;  // <--- bug : needs to be local 
     pr.setSbtIndexOffset(localPrimIdx) ; 
 
     pr.setMeshIdx(-1) ;                // metadata, that may be set by caller 
 
     pr.setTranOffset(tran.size());     // HMM are tranOffset and planOffset used now that use global referencing  ?
-    pr.setPlanOffset(plan.size()); 
+    pr.setPlanOffset(plan.size());     // but still handy to keep them for debugging 
 
     assert( globalPrimIdx < IMAX ); 
     prim.push_back(pr); 
@@ -1487,7 +1487,7 @@ void CSGFoundry::write(const char* dir_) const
 
     if(meshname.size() > 0 ) NP::WriteNames( dir, "meshname.txt", meshname );
     if(mmlabel.size() > 0 )  NP::WriteNames( dir, "mmlabel.txt", mmlabel );
-    if(meta && strlen(meta) > 0)  NP::WriteString( dir, "meta.txt", meta ); 
+    if(hasMeta())  NP::WriteString( dir, "meta.txt", meta.c_str() ); 
               
     if(solid.size() > 0 ) NP::Write(dir, "solid.npy",  (int*)solid.data(),  solid.size(), 3, 4 ); 
     if(prim.size() > 0 ) NP::Write(dir, "prim.npy",   (float*)prim.data(), prim.size(),   4, 4 ); 
@@ -1502,6 +1502,23 @@ void CSGFoundry::write(const char* dir_) const
 }
 
 
+template <typename T> void CSGFoundry::setMeta( const char* key, T value ){ NP::SetMeta(meta, key, value ); }
+
+template void CSGFoundry::setMeta<int>(const char*, int );
+template void CSGFoundry::setMeta<unsigned>(const char*, unsigned );
+template void CSGFoundry::setMeta<float>(const char*, float );
+template void CSGFoundry::setMeta<double>(const char*, double );
+template void CSGFoundry::setMeta<std::string>(const char*, std::string );
+
+template <typename T> T CSGFoundry::getMeta( const char* key, T fallback){ return NP::GetMeta(meta, key, fallback );  }
+
+template int         CSGFoundry::getMeta<int>(const char*, int );
+template unsigned    CSGFoundry::getMeta<unsigned>(const char*, unsigned );
+template float       CSGFoundry::getMeta<float>(const char*, float );
+template double      CSGFoundry::getMeta<double>(const char*, double );
+template std::string CSGFoundry::getMeta<std::string>(const char*, std::string );
+
+bool CSGFoundry::hasMeta() const {  return meta.empty() == false ; }
 
 
 void CSGFoundry::load() 
@@ -1601,7 +1618,7 @@ CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 
     if(VERBOSE > 0 )
     {
-        if( fd->meta )
+        if( !fd->meta.empty() )
         {
             LOG(info) << " geom " << geom << " loaddir " << fd->loaddir << std::endl << fd->meta ; 
         }

@@ -99,6 +99,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_x4tubsnudgeskip(""),
     m_x4pointskip(""),
     m_csgskiplv(""),
+    m_cxskiplv(""),
     m_deferredcsgskiplv(""),
     m_accel(""),
     m_seqmap(""),
@@ -1132,6 +1133,12 @@ void OpticksCfg<Listener>::init()
        ("csgskiplv",  boost::program_options::value<std::string>(&m_csgskiplv), csgskiplv );
 
 
+   char cxskiplv[256];
+   snprintf(cxskiplv,256, "comma delimited string listing lvIdx indices to skip in CSG_GGeo geometry conversion. Default %s", m_cxskiplv.c_str() );
+   m_desc.add_options()
+       ("cxskiplv",  boost::program_options::value<std::string>(&m_cxskiplv), cxskiplv );
+
+
    char deferredcsgskiplv[256];
    snprintf(deferredcsgskiplv,256, "comma delimited string listing lvIdx indices to skip in GParts::Create which is called deferred (aka postcache). Default %s", m_deferredcsgskiplv.c_str() );
    m_desc.add_options()
@@ -1991,6 +1998,15 @@ const std::string& OpticksCfg<Listener>::getCSGSkipLV() const   // --csgskiplv
 {
     return m_csgskiplv ; 
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getCXSkipLV() const   // --cxskiplv
+{
+    return m_cxskiplv ; 
+}
+
+
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getDeferredCSGSkipLV() const   // --deferredcsgskiplv

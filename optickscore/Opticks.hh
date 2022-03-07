@@ -550,9 +550,13 @@ class OKCORE_API Opticks {
        bool isX4TubsNudgeSkip(unsigned lvIdx) const ; 
        bool isX4PointSkip(unsigned lvIdx) const ; 
 
-
        bool isCSGSkipLV(unsigned lvIdx) const ;          // --csgskiplv
        unsigned getNumCSGSkipLV() const ;
+
+       bool isCXSkipLV(unsigned lvIdx) const ;          // --cxskiplv
+       unsigned getNumCXSkipLV() const ;
+       std::string getCXSkipLVList() const ; 
+
 
        bool isDeferredCSGSkipLV(unsigned lvIdx) const ;  // --deferredcsgskiplv
        unsigned getNumDeferredCSGSkipLV() const ;

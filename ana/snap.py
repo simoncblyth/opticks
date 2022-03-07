@@ -304,12 +304,13 @@ if __name__ == '__main__':
     log.debug(" args %s " % str(args))
 
     base = os.path.dirname(os.path.expandvars(args.globptn)) 
+    log.info("base %s " % (base) ) 
 
     cfdigest = CSGFoundry.FindDigest(base)
     cfdir = CSGFoundry.FindDirUpTree(base)
+    log.info("cfdir %s cfdigest %s " % (cfdir, cfdigest) ) 
+
     mmlabel_path = os.path.join(cfdir, "mmlabel.txt")
-     
-    log.info("cfdir %s " % cfdir ) 
     log.info("mmlabel_path %s " % mmlabel_path ) 
 
     mm = MM(mmlabel_path)

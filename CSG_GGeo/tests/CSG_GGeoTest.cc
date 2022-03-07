@@ -19,6 +19,9 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv, argforced );
     ok.configure(); 
 
+    unsigned numCXSkipLV = ok.getNumCXSkipLV();  // --cxskiplv 1,101,202
+    LOG(info) << " numCXSkipLV " << numCXSkipLV ; 
+      
     const char* idpath = ok.getIdPath() ; 
 
     LOG(error) << "[ load ggeo from idpath " << idpath  ; 

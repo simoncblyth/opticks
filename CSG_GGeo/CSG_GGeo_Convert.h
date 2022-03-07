@@ -15,6 +15,7 @@ class GParts ;
 struct CSG_GGEO_API CSG_GGeo_Convert
 {   
     static const plog::Severity LEVEL ; 
+    static unsigned CountSolidPrim( const GParts* comp, const Opticks* ok ); 
 
     CSGFoundry* foundry ; 
     const GGeo* ggeo ; 

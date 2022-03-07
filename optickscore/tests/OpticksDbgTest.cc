@@ -78,7 +78,15 @@ void test_postconfigure_strings(int argc, char** argv)
     assert( ok.isX4SkipSolidName("two") == true ); 
     assert( ok.isX4SkipSolidName("three") == true ); 
     assert( ok.isX4SkipSolidName("four") == false ); 
+}
 
+
+void test_getCXSkipLVList(int argc, char** argv)
+{
+    Opticks ok(argc, argv ) ; 
+    ok.configure();
+    std::string cx = ok.getCXSkipLVList() ; 
+    LOG(info) << " --cxskiplv " << cx ; 
 }
 
 
@@ -86,11 +94,13 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_isDbgPhoton_string(argc, argv);
-    //test_isDbgPhoton_path(argc, argv);
-    //test_getMaskBuffer(argc, argv);
-
+    /*
+    test_isDbgPhoton_string(argc, argv);
+    test_isDbgPhoton_path(argc, argv);
+    test_getMaskBuffer(argc, argv);
     test_postconfigure_strings(argc, argv) ; 
+    */
+    test_getCXSkipLVList(argc, argv); 
 
     return 0 ; 
 }
