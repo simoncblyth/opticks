@@ -1,5 +1,7 @@
 #!/bin/bash
 
+arg=$1
+
 NAME=$(basename $BASH_SOURCE)
 MSG="=== $NAME :" 
 
@@ -62,6 +64,7 @@ export OPTICKS_PREFIX=/usr/local/opticks_minimal
 export OPTICKS_CUDA_PREFIX=/usr/local/cuda
 export OPTICKS_OPTIX_PREFIX=/usr/local/optix
 export OPTICKS_COMPUTE_CAPABILITY=30
+#export OPTICKS_GEOCACHE_PREFIX=/usr/local/opticks  # default is $HOME/.opticks
 
 export TMP=${TMP:-/tmp/$USER/opticks}  
 
@@ -110,23 +113,47 @@ opticks-curl(){  curl -L -O $* ; }
 olocal-(){ echo -n ; }
 opticks-(){ echo -n ; }
 
-source $OPTICKS_HOME/om.bash 
-source $OPTICKS_HOME/externals/externals.bash 
 
-bcm-
-bcm--
+if [ "$arg" == "build" ]; then
 
-glm-
-glm--
+    source $OPTICKS_HOME/om.bash 
+    source $OPTICKS_HOME/externals/externals.bash 
 
-plog-
-plog--
+    bcm-
+    bcm--
 
-nljson-
-nljson--
+    glm-
+    glm--
 
-cd $OPTICKS_HOME
+    plog-
+    plog--
 
-om-install
+    nljson-
+    nljson--
 
+    cd $OPTICKS_HOME
+
+    om-install
+
+else
+    echo $msg use arg build to do so 
+fi 
+
+usage(){ cat << EOU
+
+Test by running: 
+
+/usr/local/opticks_minimal/lib/CSGOptiXRenderTest
+$OPTICKS_PREFIX/lib/CSGOptiXRenderTest
+
+
+OPTICKS_KEY : $OPTICKS_KEY 
+OPTICKS_GEOCACHE_PREFIX : $OPTICKS_GEOCACHE_PREFIX    (default is $HOME/.opticks)
+
+After setting OPTICKS_KEY and copying in the geocache
+
+EOU
+}
+
+usage
 

@@ -47,9 +47,9 @@ msg="=== $BASH_SOURCE :"
 #geom=JustOrbCube
 #geom=BoxMinusOrbCube
 #geom=lchilogicLowerChimney
-#geom=ListJustOrb,BoxMinusOrb
+geom=ListJustOrb,BoxMinusOrb
 #geom=BoxMinusOrbXoff
-geom=JustOrbZoff
+#geom=JustOrbZoff
 
 export GEOM=${GEOM:-$geom}
 
