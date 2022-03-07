@@ -1,4 +1,5 @@
 #!/bin/bash
+## NB : no -l : so not accessing the login environment : trying to do most everything in here 
 
 arg=$1
 
@@ -146,11 +147,20 @@ Test by running:
 /usr/local/opticks_minimal/lib/CSGOptiXRenderTest
 $OPTICKS_PREFIX/lib/CSGOptiXRenderTest
 
-
 OPTICKS_KEY : $OPTICKS_KEY 
 OPTICKS_GEOCACHE_PREFIX : $OPTICKS_GEOCACHE_PREFIX    (default is $HOME/.opticks)
 
 After setting OPTICKS_KEY and copying in the geocache
+
+For scripts that use this executable see::
+
+   cd $OPTICKS_HOME/CSGOptix
+   ls -l cxr*.sh
+
+For text rendering it is necessary to define envvar that points to a font file, eg::
+
+   export OPTICKS_STTF_PATH=/usr/local/opticks/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
+
 
 EOU
 }
