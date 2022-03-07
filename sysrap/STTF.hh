@@ -99,6 +99,13 @@ inline unsigned char* STTF::Load(const char* path) // static
 
     long size ;
     FILE* fontFile = fopen(path, "rb");
+   
+    if( fontFile == nullptr )
+    {
+        printf("STTF::Load failed to open %s\n", path); 
+        return nullptr ; 
+    }
+
     fseek(fontFile, 0, SEEK_END);
     size = ftell(fontFile); /* how long is the file ? */
     fseek(fontFile, 0, SEEK_SET); /* reset */

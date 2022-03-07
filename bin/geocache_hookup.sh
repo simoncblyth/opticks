@@ -56,25 +56,25 @@ geocache_hookup_last()
     fi 
 }
 
+geocache_hookup_key()
+{
+    local arg=${1:-new}
+    case $arg in  
+       old)  echo $OPTICKS_KEY_OLD ;;
+       new)  echo $OPTICKS_KEY_NEW ;;
+    esac
+}
 geocache_hookup()
 {
     local arg=${1:-new}
     export OPTICKS_GEOCACHE_HOOKUP_ARG=$arg
-    case $arg in  
-       old)  keyfunc=geocache-12dec2021-key ;;
-       new)  keyfunc=geocache-02mar2022-key ;;
-      last)  keyfunc=last ;;
-         *)  keyfunc=geocache-02mar2022-key ;;
-    esac
-
-    if [ "$keyfunc" == "last" ]; then 
+    if [ "$arg" == "last" ]; then 
         geocache_hookup_last 
-    else 
-        export OPTICKS_KEYFUNC=$keyfunc
-        export OPTICKS_KEY=$(geocache-;${OPTICKS_KEYFUNC})
+    else
+        export OPTICKS_KEY=$(geocache_hookup_key) 
     fi 
 
-    local vars="arg keyfunc OPTICKS_KEYFUNC OPTICKS_KEY"
+    local vars="arg OPTICKS_GEOCACHE_HOOKUP_ARG OPTICKS_KEY"
     for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done
 }
 
