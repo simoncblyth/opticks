@@ -76,7 +76,7 @@ PIP::PIP(const char* ptx_path_ )
 const char* PIP::desc() const
 {
     std::stringstream ss ; 
-    ss << "PIP " ; 
+    ss << "PIP " 
        << " max_trace_depth:" << max_trace_depth 
        << " num_payload_values:" << num_payload_values 
        << " num_attribute_values:" << num_attribute_values 

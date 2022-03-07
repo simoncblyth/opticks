@@ -438,11 +438,14 @@ double CSGOptiX::simulate()
     return simulate_dt ; 
 }
 
-std::string CSGOptiX::Annotation( double dt, const char* bot_line )  // static 
+std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 
 {
     std::stringstream ss ; 
     ss << std::fixed << std::setw(10) << std::setprecision(4) << dt ;
     if(bot_line) ss << std::setw(30) << " " << bot_line ; 
+
+    if(extra) ss << " " << extra ; 
+
     std::string anno = ss.str(); 
     return anno ; 
 }
@@ -559,7 +562,13 @@ void CSGOptiX::snapSimulateTest(const char* outdir, const char* botline, const c
     const char* outpath = ok->getOutPath(namestem, ext, index ); 
     LOG(error) << " outpath " << outpath ; 
 
-    std::string bottom_line = CSGOptiX::Annotation( simulate_dt, botline ); 
+    const char* extra = nullptr ; 
+#if OPTIX_VERSION < 70000
+#else
+    extra =  pip->desc(); 
+#endif
+
+    std::string bottom_line = CSGOptiX::Annotation( simulate_dt, botline, extra ); 
     snap(outpath, bottom_line.c_str(), topline  );   
 
     writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 

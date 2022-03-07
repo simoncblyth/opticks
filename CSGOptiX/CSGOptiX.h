@@ -108,7 +108,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void savePeta(const char* fold, const char* name) const ; 
     void saveMetaTran(const char* fold, const char* name) const ; 
 
-    static std::string Annotation( double dt, const char* bot_line ); 
+    static std::string Annotation( double dt, const char* bot_line, const char* extra=nullptr ); 
 
     // [ fulfil SRenderer protocol base
     double render();    
