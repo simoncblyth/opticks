@@ -16,6 +16,11 @@
 #include "Binding.h"
 #include "Params.h"
 
+#ifdef WITH_PRD
+#include "PRD.h"
+#endif
+
+
 extern "C" { __constant__ Params params ;  }
 
 
@@ -26,6 +31,43 @@ trace : pure function, with no use of params, everything via args
 See below __closesthit__ch to see where the payload p0-p7 comes from.
 
 **/
+
+#ifdef WITH_PRD
+static __forceinline__ __device__ void trace(
+        OptixTraversableHandle handle,
+        float3                 ray_origin,
+        float3                 ray_direction,
+        float                  tmin,
+        float                  tmax,
+        PRD*                   prd
+        )   
+{
+    const unsigned SBToffset = 0u ; 
+    const unsigned SBTstride = 1u ; 
+    const unsigned missSBTIndex = 0u ; 
+    const float rayTime = 0.0f ; 
+
+    uint32_t p0, p1 ; 
+    packPointer( prd, p0, p1 ); 
+
+    optixTrace(
+            handle,
+            ray_origin,
+            ray_direction,
+            tmin,
+            tmax,
+            rayTime,
+            OptixVisibilityMask( 1 ),
+            OPTIX_RAY_FLAG_NONE,
+            SBToffset,
+            SBTstride,
+            missSBTIndex,
+            p0, p1
+            );
+
+     // outcome of optixTrace is to set PRD contents
+}
+#else
 
 static __forceinline__ __device__ void trace(
         OptixTraversableHandle handle,
@@ -45,7 +87,7 @@ static __forceinline__ __device__ void trace(
     const unsigned SBTstride = 1u ; 
     const unsigned missSBTIndex = 0u ; 
     const float rayTime = 0.0f ; 
-
+    
     unsigned p0, p1, p2, p3 ; 
     unsigned p4, p5, p6, p7 ; 
 
@@ -73,8 +115,8 @@ static __forceinline__ __device__ void trace(
     *boundary = p5 ; 
     *spare1   = uint_as_float( p6 ); 
     *spare2   = uint_as_float( p7 ); 
-    // max of 8, perhaps need f_theta, f_phi ?
 }
+#endif
 
 
 __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity )  // pure 
@@ -88,6 +130,42 @@ __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned ide
             255u
             );
 }
+
+/**
+https://github.com/ingowald/optix7course/blob/master/example08_addingTextures/devicePrograms.cu
+**/
+
+static __forceinline__ __device__ void* unpackPointer( uint32_t i0, uint32_t i1 )
+{
+    const uint64_t uptr = static_cast<uint64_t>( i0 ) << 32 | i1;
+    void*           ptr = reinterpret_cast<void*>( uptr ); 
+    return ptr;
+}
+
+static __forceinline__ __device__ void  packPointer( void* ptr, uint32_t& i0, uint32_t& i1 )
+{
+    const uint64_t uptr = reinterpret_cast<uint64_t>( ptr );
+    i0 = uptr >> 32;
+    i1 = uptr & 0x00000000ffffffff;
+}
+
+/**
+getPRD
+--------
+
+An arbitrary payload is associated with each ray that is initialized with the optixTrace call. 
+The payload is passed to all the IS, AH, CH and MS programs that are executed during this invocation of trace. 
+The payload can be read and written by each program 
+
+**/
+
+template<typename T> static __forceinline__ __device__ T *getPRD()
+{ 
+    const uint32_t u0 = optixGetPayload_0();
+    const uint32_t u1 = optixGetPayload_1();
+    return reinterpret_cast<T*>( unpackPointer( u0, u1 ) );
+}
+
 
 
 /**
@@ -349,11 +427,19 @@ __intersection__is
 HitGroupData provides the numNode and nodeOffset of the intersected CSGPrim.
 Which Prim gets intersected relies on the CSGPrim::setSbtIndexOffset
 
+Note that optixReportIntersection returns a bool, but that is 
+only relevant when using anyHit as it provides a way to ignore hits.
+But Opticks does not used any anyHit so the returned bool should 
+always be true. 
+
+The attributes passed into optixReportIntersection are 
+available within the CH (and AH) programs. 
+
 **/
+
 extern "C" __global__ void __intersection__is()
 {
     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();  
-    //int numNode = hg->numNode ;        // equivalent to CSGPrim, as same info : specify complete binary tree sequence of CSGNode 
     int nodeOffset = hg->nodeOffset ; 
 
     const CSGNode* node = params.node + nodeOffset ;  // root of tree
@@ -368,11 +454,15 @@ extern "C" __global__ void __intersection__is()
     if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))  
     {
         const unsigned hitKind = 0u ;   // only 8bit : could use to customize how attributes interpreted
-        unsigned a0, a1, a2, a3, a4, a5, a6, a7 ;      
         const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
-
         float3 local_point = ray_origin + isect.w*ray_direction ;        
 
+#ifdef WITH_PRD
+        if(optixReportIntersection( isect.w, hitKind))
+        {
+        }   
+#else
+        unsigned a0, a1, a2, a3, a4, a5, a6, a7 ;      
         a0 = float_as_uint( isect.x );  // isect.xyz is object frame normal of geometry at intersection point 
         a1 = float_as_uint( isect.y );
         a2 = float_as_uint( isect.z );
@@ -383,8 +473,11 @@ extern "C" __global__ void __intersection__is()
         a7 = float_as_uint( local_point.z ); 
 
         optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4, a5, a6, a7 );   
+#endif
+
         // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 
         // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch 
     }
 }
+
 // story begins with intersection
