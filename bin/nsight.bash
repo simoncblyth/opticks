@@ -17,6 +17,14 @@ nvprof and nvvp : old tools being replaced
     which nvvp
     /usr/local/cuda-10.1/bin/nvvp
 
+    https://docs.nvidia.com/nsight-systems/UserGuide/index.html
+
+    https://developer.nvidia.com/nsight-compute
+
+::
+
+    srun --qos=epsrc --reservation=mhdz1996-swift-hep --pty --nodes 1 --tasks-per-node 1 --exclusive --time=4:00:00 --gres=gpu:1 /bin/bash
+
 
 NVTX : NVIDIA Tools Extension : customize timeline
 ------------------------------------------------------------

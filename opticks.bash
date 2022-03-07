@@ -21,6 +21,7 @@ opticks-(){         source $(opticks-source) && opticks-env $* ; }
 
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  } 
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
+
 b7(){  opticks-build7 ; }
 oo7(){ oo ; b7 ; }
 cu(){  local cu ; date ; for cu in *.cu ; do echo touch $cu && touch $cu ; done ; ls -l *.cu ;  } 

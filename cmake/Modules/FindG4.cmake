@@ -57,7 +57,8 @@ if(Geant4_FOUND)
 
 else()
     message(STATUS "\$ENV{CMAKE_PREFIX_PATH}:$ENV{CMAKE_PREFIX_PATH} ")
-    message(FATAL_ERROR "find_package(Geant4 CONFIG) FAILED : check envvar CMAKE_PREFIX_PATH   G4_MODULE : ${G4_MODULE} ")
+    message(STATUS "find_package(Geant4 CONFIG) FAILED : check envvar CMAKE_PREFIX_PATH   G4_MODULE : ${G4_MODULE} ")
+    # FATAL_ERROR
 
 endif()
 

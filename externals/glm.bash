@@ -236,6 +236,7 @@ glm-url(){    echo https://github.com/g-truc/glm/releases/download/$(glm-version
 glm-dist(){    echo $(dirname $(glm-dir))/$(basename $(glm-url)) ; }
 
 glm-get(){
+   local iwd=$PWD
    local msg="=== $FUNCNAME :"
    local dir=$(dirname $(glm-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(glm-url)
@@ -256,6 +257,7 @@ glm-get(){
       ln -sfnv $(glm-name)/glm glm 
       echo $msg planting symbolic link for access without version in path
    fi  
+   cd $iwd
    return 0 
 }
 

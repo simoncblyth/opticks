@@ -123,6 +123,7 @@ plog-wipe(){
 }
 
 plog-get(){
+   local iwd=$PWD
    local msg="=== $FUNCNAME :"
    local dir=$(dirname $(plog-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(plog-url)
@@ -132,6 +133,7 @@ plog-get(){
    else
        echo $msg plog already cloned
    fi 
+   cd $iwd
 }
 
 plog--()

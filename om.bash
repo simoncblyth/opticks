@@ -222,7 +222,8 @@ om-prefix-clean(){
 
 
 
-om-cmake-generator(){ echo $(opticks-cmake-generator) ; }
+#om-cmake-generator(){ echo $(opticks-cmake-generator) ; }
+om-cmake-generator(){ echo "Unix Makefiles" ; }
 om-bdir(){  
    local gen=$(om-cmake-generator)
    case $gen in 
@@ -301,6 +302,42 @@ qudarap
 EOS
 }
 
+om-subs-minimal-notes(){ cat << EON
+om-subs-minimal
+================
+
+Minimimal package build of Opticks intended to facilitate 
+loading from separately created geocache and OptiX 7 rendering.
+This is convenient for use on nodes which are difficult to work with.
+
+HMM: it would not be too difficuly move some optickscore
+functionality down to sysrap, which would allow
+the following three pkgs to be skipped
+
+boostrap
+npy
+optickscore
+
+Started this in sysrap/SOpticks
+
+Also could skip building most of the tests to speed up the build alot
+
+EON
+}
+
+
+om-subs--minimal(){ cat << EOS
+okconf
+sysrap
+boostrap
+npy
+optickscore
+CSG
+qudarap
+CSGOptiX
+EOS
+}
+
 
 om-subs-alt-notes(){ cat << EON
 
@@ -353,9 +390,12 @@ EOS
 
 om-subs--()
 {
-   om-subs--all
+   case ${OM_SUBS:-all} in 
+     all)     om-subs--all ;;
+     minimal) om-subs--minimal ;;
+     alt)     om-subs--alt ;;
+   esac
 }
-
 
 om-subs-(){ om-subs-- | grep -v ^\# ; }
 

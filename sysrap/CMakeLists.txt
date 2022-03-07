@@ -86,6 +86,7 @@ set(SOURCES
 
     SMath.cc
     SEvent.cc
+    SOpticks.cc
     SThetaCut.cc 
     SPhiCut.cc 
 

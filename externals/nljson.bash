@@ -16,6 +16,7 @@ nljson-dist(){   echo $(nljson-path) ; }
 nljson-get()
 {
    local msg="=== $FUNCNAME :"
+   local iwd=$PWD
    local dir=$(dirname $(nljson-path)) &&  mkdir -p $dir && cd $dir
 
    local url=$(nljson-url)
@@ -23,6 +24,9 @@ nljson-get()
 
    [ ! -s "$name" ] && opticks-curl $url 
    [ ! -s "$name" ] && echo $msg FAILED TO DOWNLOAD $name
+
+   cd $iwd
+
    [ -s "$name" ]   # set rc 
 }
 
