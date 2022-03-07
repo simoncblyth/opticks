@@ -18,21 +18,20 @@
 
 #ifdef WITH_PRD
 #include "PRD.h"
+#include "Pointer.h"
 #endif
-
 
 extern "C" { __constant__ Params params ;  }
 
-
+#ifdef WITH_PRD
 /**
-trace : pure function, with no use of params, everything via args
+trace : pure function
 -------------------------------------------------------------------
 
-See below __closesthit__ch to see where the payload p0-p7 comes from.
+See below __closesthit__ch to see where PRD contents is set.
 
 **/
 
-#ifdef WITH_PRD
 static __forceinline__ __device__ void trace(
         OptixTraversableHandle handle,
         float3                 ray_origin,
@@ -68,6 +67,14 @@ static __forceinline__ __device__ void trace(
      // outcome of optixTrace is to set PRD contents
 }
 #else
+
+/**
+trace : pure function, with no use of params, everything via args
+-------------------------------------------------------------------
+
+See below __closesthit__ch to see where the payload p0-p7 comes from.
+
+**/
 
 static __forceinline__ __device__ void trace(
         OptixTraversableHandle handle,
@@ -131,40 +138,8 @@ __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned ide
             );
 }
 
-/**
-https://github.com/ingowald/optix7course/blob/master/example08_addingTextures/devicePrograms.cu
-**/
 
-static __forceinline__ __device__ void* unpackPointer( uint32_t i0, uint32_t i1 )
-{
-    const uint64_t uptr = static_cast<uint64_t>( i0 ) << 32 | i1;
-    void*           ptr = reinterpret_cast<void*>( uptr ); 
-    return ptr;
-}
 
-static __forceinline__ __device__ void  packPointer( void* ptr, uint32_t& i0, uint32_t& i1 )
-{
-    const uint64_t uptr = reinterpret_cast<uint64_t>( ptr );
-    i0 = uptr >> 32;
-    i1 = uptr & 0x00000000ffffffff;
-}
-
-/**
-getPRD
---------
-
-An arbitrary payload is associated with each ray that is initialized with the optixTrace call. 
-The payload is passed to all the IS, AH, CH and MS programs that are executed during this invocation of trace. 
-The payload can be read and written by each program 
-
-**/
-
-template<typename T> static __forceinline__ __device__ T *getPRD()
-{ 
-    const uint32_t u0 = optixGetPayload_0();
-    const uint32_t u1 = optixGetPayload_1();
-    return reinterpret_cast<T*>( unpackPointer( u0, u1 ) );
-}
 
 
 
@@ -174,7 +149,11 @@ render : non-pure, uses params for viewpoint inputs and pixels output
 
 **/
 
+#ifdef WITH_PRD
+static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim,  PRD* prd )
+#else
 static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim )
+#endif
 {
     float2 d = 2.0f * make_float2(
             static_cast<float>( idx.x ) / static_cast<float>( dim.x ),
@@ -190,6 +169,20 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     const float3 origin    = cameratype == 0u ? params.eye                     : params.eye + dxyUV    ;
     const float3 direction = cameratype == 0u ? normalize( dxyUV + params.W )  : normalize( params.W ) ;
 
+#ifdef WITH_PRD
+    trace( 
+        params.handle,
+        origin,
+        direction,
+        params.tmin,
+        params.tmax,
+        prd
+    );
+
+    float3 position = origin + direction*prd->t ; 
+    float3 diddled_normal = normalize(prd->normal)*0.5f + 0.5f ; // lightens render, with mid-grey "pedestal" 
+
+#else
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
     unsigned identity = 0u ; 
@@ -213,8 +206,9 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 
     float3 position = origin + t*direction ; 
     float3 diddled_normal = normalize(normal)*0.5f + 0.5f ; // lightens render, with mid-grey "pedestal" 
-    uchar4 color = make_color( diddled_normal, identity );
+#endif
 
+    uchar4 color = make_color( diddled_normal, identity );
     unsigned index = idx.y * params.width + idx.x ;
 
     params.pixels[index] = color ; 
@@ -227,7 +221,11 @@ simulate : uses params for input: gensteps, seeds and output photons
 
 **/
 
+#ifdef WITH_PRD
+static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim, PRD* prd )
+#else
 static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim )
+#endif
 {
     qevent* evt      = params.evt ; 
     if (idx.x >= evt->num_photon) return;
@@ -244,6 +242,20 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     float3 origin    = make_float3( p.q0.f.x, p.q0.f.y, p.q0.f.z ) ; 
     float3 direction = make_float3( p.q1.f.x, p.q1.f.y, p.q1.f.z ) ; 
 
+#ifdef WITH_PRD
+    trace( 
+        params.handle,
+        origin,
+        direction,
+        params.tmin,
+        params.tmax,
+        prd
+    );
+
+    float t = prd->t ; 
+    const float3& normal = prd->normal ; 
+    unsigned identity = prd->identity ;  
+#else
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
     unsigned identity = 0u ; 
@@ -251,24 +263,21 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     float spare1 = 0.f ; 
     float spare2 = 0.f ; 
 
-    bool do_trace = true ; 
+    trace( 
+        params.handle,
+        origin,
+        direction,
+        params.tmin,
+        params.tmax,
+        &normal, 
+        &t, 
+        &identity,
+        &boundary,
+        &spare1,  
+        &spare2
+    );
 
-    if( do_trace )
-    { 
-        trace( 
-            params.handle,
-            origin,
-            direction,
-            params.tmin,
-            params.tmax,
-            &normal, 
-            &t, 
-            &identity,
-            &boundary,
-            &spare1,  
-            &spare2
-        );
-    }
+#endif
 
 
     // transform (x,z) intersect position into pixel coordinates (ix,iz)
@@ -330,11 +339,26 @@ extern "C" __global__ void __raygen__rg()
 {
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
+
+#ifdef WITH_PRD
+    PRD prd ; 
+    prd.normal = make_float3(0.5f, 0.5f, 0.5f); 
+    prd.t        = 0.f ; 
+    prd.identity = 0u ; 
+    prd.boundary = 0u ; 
+
+    switch( params.raygenmode )
+    {
+        case 0: render(   idx, dim, &prd ) ; break ;  
+        case 1: simulate( idx, dim, &prd ) ; break ;  
+    }
+#else
     switch( params.raygenmode )
     {
         case 0: render(   idx, dim ) ; break ;  
         case 1: simulate( idx, dim ) ; break ;  
     }
+#endif
 } 
 
 
@@ -388,6 +412,12 @@ optixGetRayTmax
 
 extern "C" __global__ void __closesthit__ch()
 {
+#ifdef WITH_PRD
+     PRD* prd = getPRD<PRD>(); 
+
+  
+
+#else
     const float3 local_normal =    // geometry object frame normal at intersection point 
         make_float3(
                 uint_as_float( optixGetAttribute_0() ),
@@ -417,6 +447,8 @@ extern "C" __global__ void __closesthit__ch()
     float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
 
     setPayload( normal, t, identity, boundary, spare1, spare2 );  // communicate to raygen 
+#endif
+
 }
 
 
@@ -460,6 +492,12 @@ extern "C" __global__ void __intersection__is()
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
         {
+            PRD* prd = getPRD(); 
+            prd->normal.x = isect.x ;  
+            prd->normal.y = isect.y ;  
+            prd->normal.z = isect.z ;
+            prd->t        = isect.w ;   
+
         }   
 #else
         unsigned a0, a1, a2, a3, a4, a5, a6, a7 ;      

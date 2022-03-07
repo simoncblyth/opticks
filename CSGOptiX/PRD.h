@@ -2,7 +2,8 @@
 
 struct PRD
 {
-    float4   isect ; 
+    float3   normal ;
+    float    t ;  
     unsigned identity ; 
     unsigned boundary ; 
 };
