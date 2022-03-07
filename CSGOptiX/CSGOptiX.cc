@@ -523,6 +523,10 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     js["nameprefix"] = ok->getNamePrefix() ;
     js["jpg"] = jpg_path ; 
     js["emm"] = ok->getEnabledMergedMesh() ;
+    if(foundry->hasMeta())
+    {
+        js["cfmeta"] = foundry->meta ; 
+    }
 
     const std::vector<double>& t = launch_times ;
     if( t.size() > 0 )

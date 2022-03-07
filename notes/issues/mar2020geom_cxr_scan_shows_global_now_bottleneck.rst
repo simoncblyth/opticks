@@ -74,6 +74,11 @@ Bottleneck looks to be "3089:sWorld"
 
 Need to find way to vary contexts of that...
 
+* added --cxskiplv to so this
+
+* --cxskiplv 102,103 gives 0.0073
+
+
 
 Dumping the prim::
 
