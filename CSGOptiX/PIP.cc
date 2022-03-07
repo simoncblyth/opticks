@@ -77,9 +77,9 @@ const char* PIP::desc() const
 {
     std::stringstream ss ; 
     ss << "PIP " 
-       << " max_trace_depth:" << max_trace_depth 
-       << " num_payload_values:" << num_payload_values 
-       << " num_attribute_values:" << num_attribute_values 
+       << " td:" << max_trace_depth 
+       << " pv:" << num_payload_values 
+       << " av:" << num_attribute_values 
 #ifdef WITH_PRD
        << " WITH_PRD " 
 #else

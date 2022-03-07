@@ -32,9 +32,9 @@ JUNO (trunk:Mar 2, 2022)
    WITH_PRD 0.0143
    without  0.0126
    without  0.0125  
-   WITH_PRD 0.0143   (attribs and payload values left at 8 unnecessarily)
+   WITH_PRD 0.0143   (here and above WITH_PRD used attribs and payload values at 8 without reason)
    WITH_PRD 0.0125   (now with attribs and payload values reduced to 2)
-
+   WITH_PRD 0.0124  
 
 
 trace : pure function

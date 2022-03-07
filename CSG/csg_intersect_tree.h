@@ -642,10 +642,12 @@ bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, con
     {
         valid_intersect = intersect_tree(             isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }
+#ifdef WITH_CONTIGUOUS
     else if( typecode == CSG_CONTIGUOUS )  
     {
         valid_intersect = intersect_node_contiguous(   isect, node, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
     }
+#endif
     else if( typecode == CSG_DISCONTIGUOUS )  
     {
         valid_intersect = intersect_node_discontiguous( isect, node, node, plan, itra, t_min, ray_origin, ray_direction ) ; 

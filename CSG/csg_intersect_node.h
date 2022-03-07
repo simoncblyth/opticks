@@ -355,6 +355,8 @@ of envelope prevents the two pass approach ?
 **/
 
 
+#ifdef WITH_CONTIGUOUS
+
 INTERSECT_FUNC
 bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNode* root, 
        const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
@@ -572,6 +574,7 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     return valid_intersect ; 
 }
 
+#endif
 
 
 /**
@@ -866,7 +869,9 @@ bool intersect_node( float4& isect, const CSGNode* node, const CSGNode* root,
     bool valid_intersect ; 
     switch(typecode)
     {
+#ifdef WITH_CONTIGUOUS
        case CSG_CONTIGUOUS:     valid_intersect = intersect_node_contiguous(   isect, node, root, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
+#endif
        case CSG_OVERLAP:        valid_intersect = intersect_node_overlap(      isect, node, root, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
        case CSG_DISCONTIGUOUS:  valid_intersect = intersect_node_discontiguous(isect, node, root, plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
                    default:     valid_intersect = intersect_leaf(              isect, node,       plan, itra, t_min, ray_origin, ray_direction )  ; break ; 
@@ -888,7 +893,9 @@ float distance_node( const float3& global_position, const CSGNode* node, const C
     float distance ; 
     switch(typecode)
     {
-        case CSG_CONTIGUOUS: 
+#ifdef WITH_CONTIGUOUS
+        case CSG_CONTIGUOUS:       distance = distance_node_list( typecode,  global_position, node, root, plan, itra )  ; break ; 
+#endif
         case CSG_OVERLAP:          distance = distance_node_list( typecode,  global_position, node, root, plan, itra )  ; break ; 
         case CSG_DISCONTIGUOUS:    distance = distance_node_list( typecode,  global_position, node, root, plan, itra )  ; break ; 
         default:                   distance = distance_leaf(                 global_position, node, plan, itra )  ; break ; 
