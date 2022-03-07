@@ -169,9 +169,6 @@ void CSGOptiX::initSimulate() // once only (not per-event) simulate setup tasks 
     params->tmax = 1000000.f ; 
 }
 
-
-
-
 void CSGOptiX::setMetaTran(const Tran<double>* metatran_ )
 {
     metatran = metatran_ ; 

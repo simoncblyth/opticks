@@ -59,13 +59,37 @@ OptixProgramGroupOptions PIP::CreateProgramGroupOptions() // static
 PIP::PIP(const char* ptx_path_ ) 
     :
     max_trace_depth(2),
+#ifdef WITH_PRD
+    num_payload_values(2),     // see 
+    num_attribute_values(2),   // see __intersection__is
+#else
     num_payload_values(8),     // see 
     num_attribute_values(8),   // see __intersection__is
+#endif
     pipeline_compile_options(CreatePipelineOptions(num_payload_values,num_attribute_values)),
     program_group_options(CreateProgramGroupOptions()),
     module(CreateModule(ptx_path_,pipeline_compile_options))
 {
     init(); 
+}
+
+const char* PIP::desc() const
+{
+    std::stringstream ss ; 
+    ss << "PIP " ; 
+       << " max_trace_depth:" << max_trace_depth 
+       << " num_payload_values:" << num_payload_values 
+       << " num_attribute_values:" << num_attribute_values 
+#ifdef WITH_PRD
+       << " WITH_PRD " 
+#else
+       << " NOT_WITH_PRD " 
+#endif    
+       << " " 
+       ; 
+
+   std::string s = ss.str(); 
+   return strdup(s.c_str()); 
 }
 
 

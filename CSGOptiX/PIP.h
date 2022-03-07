@@ -31,6 +31,7 @@ struct PIP
     static OptixModule CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options );
 
     PIP(const char* ptx_path_); 
+    const char* desc() const ; 
 
     void init(); 
     void createRaygenPG(const char* rg);

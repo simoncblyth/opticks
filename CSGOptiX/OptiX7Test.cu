@@ -25,6 +25,18 @@ extern "C" { __constant__ Params params ;  }
 
 #ifdef WITH_PRD
 /**
+
+JUNO (trunk:Mar 2, 2022)
+
+   without  0.0126
+   WITH_PRD 0.0143
+   without  0.0126
+   without  0.0125  
+   WITH_PRD 0.0143   (attribs and payload values left at 8 unnecessarily)
+   WITH_PRD 0.0125   (now with attribs and payload values reduced to 2)
+
+
+
 trace : pure function
 -------------------------------------------------------------------
 
@@ -180,8 +192,9 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     );
 
     float3 position = origin + direction*prd->t ; 
-    float3 diddled_normal = normalize(prd->normal)*0.5f + 0.5f ; // lightens render, with mid-grey "pedestal" 
-
+    //float3 diddled_normal = normalize(prd->normal)*0.5f + 0.5f ; // lightens render, with mid-grey "pedestal" 
+    float3 diddled_normal = prd->normal  ; // darker render WITH_PRD 
+    unsigned identity = prd->identity ; 
 #else
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
@@ -362,6 +375,9 @@ extern "C" __global__ void __raygen__rg()
 } 
 
 
+#ifdef WITH_PRD
+#else
+
 /**
 *setPayload* is used from __closesthit__ and __miss__ providing communication to __raygen__ optixTrace call
 **/
@@ -378,15 +394,26 @@ static __forceinline__ __device__ void setPayload( float3 normal, float t, unsig
     // maximum of 8 payload values configured in PIP::PIP 
 }
 
+#endif
 
 extern "C" __global__ void __miss__ms()
 {
     MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
+#ifdef WITH_PRD
+    PRD* prd = getPRD<PRD>(); 
+    prd->normal.x =  ms->r ; 
+    prd->normal.y =  ms->g ; 
+    prd->normal.z =  ms->b ;
+    prd->t = 0.f ; 
+    prd->identity = 0u ; 
+    prd->boundary = 0u ; 
+#else
     float3 normal = make_float3( ms->r, ms->g, ms->b );   // hmm: this is render specific, but easily ignored
     float t = 0.f ; 
     unsigned identity = 0u ; 
     unsigned boundary = 0u ; 
     setPayload( normal, t, identity, boundary, 0.f, 0.f  );
+#endif
 }
 
 /**
@@ -413,10 +440,13 @@ optixGetRayTmax
 extern "C" __global__ void __closesthit__ch()
 {
 #ifdef WITH_PRD
-     PRD* prd = getPRD<PRD>(); 
+    PRD* prd = getPRD<PRD>(); 
+    unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
+    unsigned prim_idx = optixGetPrimitiveIndex() ;  // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+    unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ; 
 
-  
-
+    prd->identity = identity ;   
+    prd->normal = optixTransformNormalFromObjectToWorldSpace( prd->normal ) ;  
 #else
     const float3 local_normal =    // geometry object frame normal at intersection point 
         make_float3(
@@ -492,12 +522,12 @@ extern "C" __global__ void __intersection__is()
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
         {
-            PRD* prd = getPRD(); 
+            PRD* prd = getPRD<PRD>(); 
             prd->normal.x = isect.x ;  
             prd->normal.y = isect.y ;  
             prd->normal.z = isect.z ;
             prd->t        = isect.w ;   
-
+            prd->boundary = boundary ; 
         }   
 #else
         unsigned a0, a1, a2, a3, a4, a5, a6, a7 ;      
