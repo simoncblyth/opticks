@@ -571,7 +571,7 @@ Saving data for 2D cross sections, used by tests/CSGOptiXSimulateTest.cc
 
 void CSGOptiX::snapSimulateTest(const char* outdir, const char* botline, const char* topline) 
 {
-    evt->setMeta( foundry->meta ); 
+    evt->setMeta( foundry->meta.c_str() ); 
     evt->savePhoton( outdir, "photons.npy");   // this one can get very big 
     evt->saveGenstep(outdir, "genstep.npy");  
     evt->saveMeta(   outdir, "fdmeta.txt" ); 

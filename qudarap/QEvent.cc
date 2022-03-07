@@ -35,7 +35,7 @@ QEvent::QEvent()
     d_evt(QU::device_alloc<qevent>(1)),
     genstep(nullptr),
     seed(nullptr),
-    meta(nullptr)
+    meta()
 {
     INSTANCE = this ; 
 }
@@ -44,6 +44,11 @@ void QEvent::setMeta(const char* meta_)
 {
     meta = meta_ ; 
 } 
+
+bool QEvent::hasMeta() const 
+{
+    return meta.empty() == false ; 
+}
 
 void QEvent::setGensteps(const NP* gs_) 
 { 
@@ -101,10 +106,10 @@ void QEvent::saveGenstep( const char* dir_, const char* name)
 
 void QEvent::saveMeta( const char* dir_, const char* name)
 {     
-    if(!meta) return ; 
+    if(!hasMeta()) return ; 
     int create_dirs = 1 ;  // 1:filepath 
     const char* path = SPath::Resolve(dir_, name, create_dirs); 
-    NP::WriteString(path, meta ); 
+    NP::WriteString(path, meta.c_str() ); 
 }
 
 std::string QEvent::desc() const
