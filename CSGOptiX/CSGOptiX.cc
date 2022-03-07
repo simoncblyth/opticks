@@ -107,6 +107,19 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     init(); 
 }
 
+const char* CSGOptiX::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "CSGOptiX " ; 
+#if OPTIX_VERSION < 70000
+    ss << " Six " ; 
+#else
+    ss << pip->desc() ; 
+#endif
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
+
 void CSGOptiX::init()
 {
     LOG(LEVEL) << "[" ; 
@@ -443,7 +456,6 @@ std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* e
     std::stringstream ss ; 
     ss << std::fixed << std::setw(10) << std::setprecision(4) << dt ;
     if(bot_line) ss << std::setw(30) << " " << bot_line ; 
-
     if(extra) ss << " " << extra ; 
 
     std::string anno = ss.str(); 
@@ -461,13 +473,21 @@ void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_
     int create_dirs = 1 ; // 1:filepath 
     const char* path = SPath::Resolve(path_, create_dirs ); 
 
-    LOG(LEVEL) << " path_ [" << path_ << "]"  ; 
+#if OPTIX_VERSION < 70000
+    const char* top_extra = nullptr ;
+#else
+    const char* top_extra = pip->desc(); 
+#endif
+    const char* topline = SStr::Concat(top_line, top_extra); 
+
+    LOG(LEVEL) << " path_ [" << path_ << "]" ; 
+    LOG(LEVEL) << " topline " << topline  ; 
 
 #if OPTIX_VERSION < 70000
-    six->snap(path, bottom_line, top_line, line_height); 
+    six->snap(path, bottom_line, topline, line_height); 
 #else
     frame->download(); 
-    frame->annotate( bottom_line, top_line, line_height ); 
+    frame->annotate( bottom_line, topline, line_height ); 
     frame->writeJPG(path, jpg_quality);  
 #endif
     if(!flight || SStr::Contains(path,"00000"))
@@ -568,8 +588,8 @@ void CSGOptiX::snapSimulateTest(const char* outdir, const char* botline, const c
     extra =  pip->desc(); 
 #endif
 
-    std::string bottom_line = CSGOptiX::Annotation( simulate_dt, botline, extra ); 
-    snap(outpath, bottom_line.c_str(), topline  );   
+    std::string bottom_line = CSGOptiX::Annotation( simulate_dt, botline ); 
+    snap(outpath, bottom_line.c_str(), SStr::Concat(topline, extra)  );   
 
     writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
     savePeta(        outdir, "peta.npy");   

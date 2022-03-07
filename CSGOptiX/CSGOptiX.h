@@ -80,6 +80,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
 
 
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
+    const char* desc() const ; 
 
     void init(); 
     void initPeta();
