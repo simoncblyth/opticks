@@ -217,6 +217,7 @@ $FUNCNAME
   (derived) OPTICKS_KEYDIR     :  ${OPTICKS_KEYDIR}    
 
   geocache-keydir    : $(geocache-keydir)
+  geocache-keyfunc   : $(geocache-keyfunc)
   geocache-keydir-py : $(geocache-keydir-py)
       above two directories should match 
 
@@ -253,7 +254,7 @@ geocache-keydir-test()
    local b=$(geocache-keydir-py)
    [ "$a" != "$b" ] && echo $msg MISMATCH $a $b && sleep 1000000000000
 }
-
+geocache-keyfunc(){ echo ${OPTICKS_KEYFUNC:-geocache_keyfunc_default} ; }
 
 geocache-keydir-()
 {
@@ -1477,6 +1478,44 @@ see BOpticksResource::ResolveResultsPrefix
 
 
 EON
+}
+
+
+geocache-create-cfbase-tarball(){
+   local msg="=== $FUNCNAME :"
+   local keydir=$(geocache-keydir) 
+   local keyfunc=$(geocache-keyfunc)
+ 
+   cd $keydir
+   [ ! -d "CSG_GGeo" ] && echo $msg ERROR CSG_GGeo does not exist && return 1 
+
+   cd $keydir/CSG_GGeo
+   [ ! -d "CSGFoundry" ] && echo $msg ERROR CSG_GGeo/CSGFoundry does not exist && return 2
+
+   mkdir -p $keyfunc
+
+   cd $keydir/CSG_GGeo/$keyfunc
+   ln -svf ../CSGFoundry 
+
+   cd $keydir/CSG_GGeo
+
+   local tgz=$keyfunc.tar.gz
+   echo $msg creating tgz $tgz into directory $PWD containing the CSGFoundry directory  
+   local ans 
+
+   read -p "$msg proceed to create tgz $tgz into $PWD ? Enter YES to continue : " ans 
+  
+   if [ "$ans" == "YES" ]; then 
+
+       case $(uname) in 
+           Darwin) tar -L -czvf $tgz $keyfunc ;;
+           Linux)  tar -h -czvf $tgz $keyfunc ;;   
+       esac
+   else
+       echo $msg SKIPPED
+   fi 
+
+   return 0 
 }
 
 
