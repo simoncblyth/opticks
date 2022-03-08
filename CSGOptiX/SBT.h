@@ -29,6 +29,7 @@ struct CSGPrim ;
 struct SBT 
 {
     const Opticks*  ok ; 
+    static bool ValidSpec(const char* spec); 
     const std::vector<unsigned>&  solid_selection ; 
     unsigned long long emm ; 
     const PIP*      pip ; 

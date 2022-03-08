@@ -503,8 +503,16 @@ AS* SBT::getTop() const
     return top ; 
 }
 
+bool SBT::ValidSpec(const char* spec) // static
+{
+    return spec && strlen(spec) > 1 ; 
+}
+
 void SBT::setTop(const char* spec)
 {
+    bool valid_spec = ValidSpec(spec); 
+    if(valid_spec) LOG(fatal) << " valid spec is required [" << spec << "]"  ; 
+    assert( valid_spec );  
     AS* a = getAS(spec); 
     setTop(a); 
 }
