@@ -27,12 +27,14 @@ Examples::
    PUB=1                      EYE=1,0,0 ZOOM=1 ./cxr_overview.sh 
    PUB=simple_transform_check EYE=1,0,0 ZOOM=1 ./cxr_overview.sh 
 
+
 EOU
 }
 
 msg="=== $BASH_SOURCE :"
 
 if [ -n "$CFNAME" ]; then
+    echo $msg CFNAME $CFNAME is defined : this is used by cxr_geochain.sh and cxr_demo.sh 
     export CFBASE=/tmp/$USER/opticks/${CFNAME}    ## override CFBASE envvar only used when CFNAME defined, eg for demo geometry
     echo $msg CFNAME $CFNAME CFBASE $CFBASE OVERRIDING 
     if [ ! -d "$CFBASE/CSGFoundry" ]; then 
@@ -40,6 +42,8 @@ if [ -n "$CFNAME" ]; then
         echo $msg TO CREATE NON-STANDARD geometries use \"gc \; GEOM=$(basename $CFNAME) ./run.sh\"  
         return 1
     fi
+elif [ -n "$CFBASE" ]; then 
+    echo $msg CFBASE $CFBASE is defined : using asis 
 else
     unset CFBASE
     CFNAME=CSG_GGeo

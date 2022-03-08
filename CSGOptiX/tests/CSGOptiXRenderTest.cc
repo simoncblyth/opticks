@@ -102,7 +102,12 @@ Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv )
     bool has_cfbase = SSys::hasenvvar("CFBASE") ;
     if( has_cfbase )  // when CFBASE override envvvar exists then there is no need for OPTICKS_KEY
     {
+        LOG(info) << " CFBASE envvar detected : ignoring OPTICKS_KEY " ; 
         unsetenv("OPTICKS_KEY"); 
+    }
+    else
+    {
+        LOG(info) << " no CFBASE envvar detected : will need OPTICKS_KEY " ; 
     }
 
     Opticks* ok = new Opticks(argc, argv, has_cfbase ? "--allownokey" : nullptr  );  

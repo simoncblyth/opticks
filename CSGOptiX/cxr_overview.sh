@@ -1,6 +1,8 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
+cxr_overview.sh
+================
+
 ::
 
    EMM=0, ./cxr_overview.sh 
@@ -28,7 +30,7 @@ export OPTICKS_GEOM=cxr_overview
 
 #[ "$(uname)" == "Darwin" ] && emm=1, || emm=t8,
 
-emm=t0           # "t0" : tilde zero meaning all       "t0," : exclude bit 0 global,  "t8," exclude mm 8 
+emm=t0    # "t0" : tilde zero meaning all       "t0," : exclude bit 0 global,  "t8," exclude mm 8 
 export EMM=${EMM:-$emm}
 
 export NAMEPREFIX=cxr_overview_emm_${EMM}_moi_      # MOI gets appended by the executable
