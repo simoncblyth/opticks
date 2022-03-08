@@ -112,6 +112,17 @@ const char* OpticksBufferSpec::photon_interop_ = "OPTIX_INPUT_OUTPUT,INTEROP_PTR
 #endif
 
 
+#elif OKCONF_OPTIX_VERSION_MAJOR == 7
+
+#ifdef WITH_SEED_BUFFER
+const char* OpticksBufferSpec::photon_compute_ = "OPTIX_OUTPUT_ONLY"  ;
+const char* OpticksBufferSpec::photon_interop_ = "OPTIX_OUTPUT_ONLY,INTEROP_PTR_FROM_OPENGL"  ;
+#else
+const char* OpticksBufferSpec::photon_compute_ = "OPTIX_INPUT_OUTPUT,BUFFER_COPY_ON_DIRTY"  ;
+const char* OpticksBufferSpec::photon_interop_ = "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL,BUFFER_COPY_ON_DIRTY"  ;
+#endif
+
+
 #endif
 
 
@@ -144,6 +155,14 @@ const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ;
 
 
 #elif OKCONF_OPTIX_VERSION_MAJOR == 6
+
+const char* OpticksBufferSpec::genstep_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY"  ;   // ,VERBOSE_MODE
+const char* OpticksBufferSpec::genstep_interop_ = "OPTIX_INPUT_ONLY"  ; 
+const char* OpticksBufferSpec::source_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY"  ;   //  ,VERBOSE_MODE 
+const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ; 
+
+
+#elif OKCONF_OPTIX_VERSION_MAJOR == 7
 
 const char* OpticksBufferSpec::genstep_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY"  ;   // ,VERBOSE_MODE
 const char* OpticksBufferSpec::genstep_interop_ = "OPTIX_INPUT_ONLY"  ; 
