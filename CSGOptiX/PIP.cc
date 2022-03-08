@@ -7,6 +7,7 @@
 
 #include <optix.h>
 #include <optix_stubs.h>
+#include <optix_stack_size.h>
 
 #include <cuda_runtime.h>
 #include "scuda.h"    // roundUp
@@ -15,6 +16,8 @@
 #include "Ctx.h"
 #include "Binding.h"
 #include "PIP.h"
+
+#include "PLOG.hh"
 
 
 static bool readFile( std::string& str, const char* path )
@@ -350,9 +353,9 @@ void PIP::configureStack()
     // following OptiX_700/SDK/optixPathTracer/optixPathTracer.cpp
 
     OptixStackSizes stackSizes = {};
-    OPTIX_CHECK_LOG( optixUtilAccumulateStackSizes( raygen_pg,   &stackSizes ) ); 
-    OPTIX_CHECK_LOG( optixUtilAccumulateStackSizes( miss_pg,     &stackSizes ) ); 
-    OPTIX_CHECK_LOG( optixUtilAccumulateStackSizes( hitgroup_pg, &stackSizes ) ); 
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( raygen_pg,   &stackSizes ) ); 
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( miss_pg,     &stackSizes ) ); 
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( hitgroup_pg, &stackSizes ) ); 
 
     uint32_t max_trace_depth = 1;   // only RG invokes trace, no recursion   
     uint32_t max_cc_depth = 0; 
@@ -402,7 +405,7 @@ void PIP::configureStack()
 
     //OPTIX_CHECK_LOG( optixProgramGroupGetStackSize(raygen_pg, OptixStackSizes* stackSizes ) );
 
-    OPTIX_CHECK_LOG( optixPipelineSetStackSize( pipeline,
+    OPTIX_CHECK( optixPipelineSetStackSize( pipeline,
                                        directCallableStackSizeFromTraversal,
                                        directCallableStackSizeFromState,
                                        continuationStackSize,
