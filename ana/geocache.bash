@@ -1518,5 +1518,40 @@ geocache-create-cfbase-tarball(){
    return 0 
 }
 
+geocache-use-cfbase-tarball-notes(){ cat << EON
+
+epsilon:~ blyth$ mv tds3_mar_2022.tar.gz  /tmp/
+epsilon:~ blyth$ cd /tmp
+epsilon:tmp blyth$ tar zxvf tds3_mar_2022.tar.gz
+x tds3_mar_2022/
+x tds3_mar_2022/CSGFoundry/
+x tds3_mar_2022/CSGFoundry/meshname.txt
+x tds3_mar_2022/CSGFoundry/mmlabel.txt
+x tds3_mar_2022/CSGFoundry/solid.npy
+x tds3_mar_2022/CSGFoundry/prim.npy
+x tds3_mar_2022/CSGFoundry/node.npy
+x tds3_mar_2022/CSGFoundry/tran.npy
+x tds3_mar_2022/CSGFoundry/itra.npy
+x tds3_mar_2022/CSGFoundry/inst.npy
+x tds3_mar_2022/CSGFoundry/bnd.npy
+x tds3_mar_2022/CSGFoundry/bnd_meta.txt
+x tds3_mar_2022/CSGFoundry/icdf.npy
+x tds3_mar_2022/CSGFoundry/icdf_meta.txt
+x tds3_mar_2022/CSGFoundry/meta.txt
+epsilon:tmp blyth$ l 
+
+export CFBASE=/tmp/tds3_mar_2022
+
+cx
+
+./cxr_cfbase.sh 
+
+
+
+EON
+}
+
+
+
 
 

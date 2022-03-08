@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash -l
 usage(){ cat << EOU
 cxr_cfbase.sh
 ================
@@ -44,6 +44,12 @@ Test CFBASE running, create::
 transporting 
 
    cd /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/CSGFoundry
+
+
+   $OPTICKS_KEYFUNC
+
+   cd /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo
+   tar -czvf file.tar.gz CSGFoundry 
 
 
 EOU
