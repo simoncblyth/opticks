@@ -38,7 +38,7 @@ if [ -n "$CFNAME" ]; then
     if [ ! -d "$CFBASE/CSGFoundry" ]; then 
         echo $msg ERROR CFNAME override but no corresponding CSGFoundry directory $CFBASE/CSGFoundry 
         echo $msg TO CREATE NON-STANDARD geometries use \"gc \; GEOM=$(basename $CFNAME) ./run.sh\"  
-        exit 1
+        return 1
     fi
 else
     unset CFBASE
@@ -157,7 +157,7 @@ relative_stem(){
 
 if [ $rc -eq 0 ]; then 
 
-    source CSGOptiXRenderTest_OUTPUT_DIR.sh || exit 1  
+    source CSGOptiXRenderTest_OUTPUT_DIR.sh || return 1  
     outdir=$CSGOptiXRenderTest_OUTPUT_DIR 
 
     if [ -n "$outdir" ]; then 
