@@ -11,10 +11,6 @@ usage(){ cat << EOU
 EOU
 }
 
-
-#moi=sWorld:0:-1
-#moi=sWorld:0:-2
-#moi=sWorld:0:-3
 moi=-1
 tmin=0.4
 eye=-0.6,0,0,1
@@ -29,8 +25,6 @@ export ZOOM=${ZOOM:-$zoom}
 
 export QUALITY=90 
 export OPTICKS_GEOM=cxr_overview
-
-
 
 #[ "$(uname)" == "Darwin" ] && emm=1, || emm=t8,
 
@@ -48,5 +42,4 @@ export BOTLINE=" RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER 
 
 source ./cxr.sh  
 
-exit 0    
 

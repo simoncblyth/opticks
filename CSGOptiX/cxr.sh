@@ -127,11 +127,9 @@ render()
 # skip the render when running with PUB defined
 if [ -z "$PUB" ]; then
     if [ -n "$ARGLIST" ] ; then 
-
         echo $msg MOI $MOI ARGLIST $ARGLIST
         render --arglist $ARGLIST $*            ## effectively multiple MOI via the arglist 
         rc=$?
-
     else
         render $*                               ## single MOI via envvar 
         rc=$?
