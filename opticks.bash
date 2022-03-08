@@ -2037,6 +2037,7 @@ opticks-find(){
 
 opticks-if(){ opticks-f "$1" -Hi ; }   
 opticks-fl(){ opticks-f "$1" -l ; }   
+opticks-fh(){ HERE=1 opticks-f $* ; }  
 opticks-f(){   
    : search C/C++ code/headers, txt, cmake python scripts etc.. BUT NOT .rst
    : .rst due to too many hits within issues 
@@ -2046,7 +2047,7 @@ opticks-f(){
    local opt=${2:--H}
 
    local iwd=$PWD
-   opticks-scd
+   [ -z "$HERE" ] && opticks-scd
 
    find . \
         \( \

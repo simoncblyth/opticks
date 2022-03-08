@@ -23,6 +23,12 @@ Tips for making yearly summaries
      think about how they related to each other 
 
 
+2022 March
+-------------
+
+* Created repo to share CSGFoundry geometry via tarballs https://github.com/simoncblyth/cfbase
+
+
 2022 February 
 ---------------
 

@@ -283,6 +283,51 @@ void test_TrackInfo()
 }
 
 
+/**
+
+
+As expected to_ullong() gives overflow for N > 64
+
+libc++abi.dylib: terminating with uncaught exception of type std::overflow_error: bitset to_ullong overflow error
+
+**/
+
+template <size_t N>
+void test_bitset_()
+{
+    std::bitset<N>* bs = new std::bitset<N>(); 
+    bs->set(0, true);  
+    bs->set(N/2, true);  
+    bs->set(N-1, true);  
+    std::string s = bs->to_string() ; 
+    
+    std::cout << std::setw(4) << N << ":" << s << ":" << std::endl ;     
+
+    if( N <= 64 )  
+    {
+        unsigned long long u = bs->to_ullong() ; 
+        std::cout << " ull (hex) " << std::hex << u << " (dec) " << std::dec << u << std::endl ;
+    }
+
+}
+
+void test_bitset()
+{
+    LOG(info); 
+    test_bitset_<1>();   
+    test_bitset_<2>(); 
+    test_bitset_<4>(); 
+    test_bitset_<8>(); 
+    test_bitset_<16>(); 
+    test_bitset_<32>(); 
+    test_bitset_<64>(); 
+    test_bitset_<128>(); 
+    test_bitset_<256>(); 
+    test_bitset_<512>(); 
+    test_bitset_<1024>(); 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -291,10 +336,7 @@ int main(int argc, char** argv)
 /*
     test_ffs(); 
     test_ffsll(); 
-*/
     test_count_nibbles(); 
-
-/*
     test_HasOneSetBit(); 
     test_BinString(); 
     test_FromBinString(); 
@@ -304,7 +346,9 @@ int main(int argc, char** argv)
     test_signbit(); 
     test_TrackInfo();   
 */
- 
+
+    test_bitset(); 
+
     return 0 ; 
 }
 

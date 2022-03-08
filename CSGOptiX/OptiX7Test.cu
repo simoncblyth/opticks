@@ -203,7 +203,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     );
 
     float3 position = origin + direction*prd->t ; 
-    float3 diddled_normal = normalize(prd->normal)*0.5f + 0.4f ; // lightens render, with mid-grey "pedestal" 
+    float3 diddled_normal = normalize(prd->normal)*0.5f + 0.5f ; // lightens render, with mid-grey "pedestal" 
     //float3 diddled_normal = prd->normal  ; // darker render WITH_PRD 
     unsigned identity = prd->identity ; 
 #else

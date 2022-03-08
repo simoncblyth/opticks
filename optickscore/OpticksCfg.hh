@@ -176,6 +176,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getRepeatIndex(); 
      int          getMultiEvent() const ; 
      const std::string& getEnabledMergedMesh() const ; 
+     const std::string& getEnabledLV() const ; 
      int          getAnalyticMesh() const ; 
      int          getCameraType() const ; 
      int          getModulo(); 
@@ -341,6 +342,7 @@ private:
      int         m_repeatidx ; 
      int         m_multievent ; 
      std::string m_enabledmergedmesh; 
+     std::string m_enabledlv ; 
      int         m_analyticmesh; 
      int         m_cameratype; 
      int         m_modulo ; 

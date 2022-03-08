@@ -144,6 +144,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_repeatidx(-1),
     m_multievent(1),
     m_enabledmergedmesh("~0"),
+    m_enabledlv("~0"),
     m_analyticmesh(-1),
     m_cameratype(SSys::getenvint("CAMERATYPE",0)),   // this overrides the Camera::Camera ctor
     m_modulo(-1),
@@ -1375,6 +1376,14 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("enabledmergedmesh,e",  boost::program_options::value<std::string>(&m_enabledmergedmesh), enabledmergedmesh );
 
+
+   char enabledlv[256];
+   snprintf(enabledlv,256, "SBit::FromString specified \"lvIdx\" to include in the OptiX GPU geometry eg \"0,2,5\".. Default %s ", m_enabledlv.c_str() );
+   m_desc.add_options()
+       ("enabledlv",  boost::program_options::value<std::string>(&m_enabledlv), enabledlv );
+
+
+
    char analyticmesh[128];
    snprintf(analyticmesh,128, "Index of instanced mesh with which to attempt analytic OptiX geometry eg 1,2. Or -1 for no analytic geometry. Default %d ", m_analyticmesh);
    m_desc.add_options()
@@ -2321,6 +2330,14 @@ const std::string& OpticksCfg<Listener>::getEnabledMergedMesh() const
 {
     return m_enabledmergedmesh ; 
 }
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getEnabledLV() const 
+{
+    return m_enabledlv ; 
+}
+
+
+
 template <class Listener>
 int OpticksCfg<Listener>::getAnalyticMesh() const 
 {

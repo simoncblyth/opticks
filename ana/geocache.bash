@@ -1520,32 +1520,45 @@ geocache-create-cfbase-tarball(){
 
 geocache-use-cfbase-tarball-notes(){ cat << EON
 
-epsilon:~ blyth$ mv tds3_mar_2022.tar.gz  /tmp/
-epsilon:~ blyth$ cd /tmp
-epsilon:tmp blyth$ tar zxvf tds3_mar_2022.tar.gz
-x tds3_mar_2022/
-x tds3_mar_2022/CSGFoundry/
-x tds3_mar_2022/CSGFoundry/meshname.txt
-x tds3_mar_2022/CSGFoundry/mmlabel.txt
-x tds3_mar_2022/CSGFoundry/solid.npy
-x tds3_mar_2022/CSGFoundry/prim.npy
-x tds3_mar_2022/CSGFoundry/node.npy
-x tds3_mar_2022/CSGFoundry/tran.npy
-x tds3_mar_2022/CSGFoundry/itra.npy
-x tds3_mar_2022/CSGFoundry/inst.npy
-x tds3_mar_2022/CSGFoundry/bnd.npy
-x tds3_mar_2022/CSGFoundry/bnd_meta.txt
-x tds3_mar_2022/CSGFoundry/icdf.npy
-x tds3_mar_2022/CSGFoundry/icdf_meta.txt
-x tds3_mar_2022/CSGFoundry/meta.txt
-epsilon:tmp blyth$ l 
+Hmm could consider reading archive without untarring, eg 
+   
+   http://www.libarchive.org
 
-export CFBASE=/tmp/tds3_mar_2022
 
-cx
+* https://github.com/simoncblyth/cfbase
 
-./cxr_cfbase.sh 
 
+    epsilon:~ blyth$ mv tds3_mar_2022.tar.gz  /tmp/
+    epsilon:~ blyth$ cd /tmp
+    epsilon:tmp blyth$ tar zxvf tds3_mar_2022.tar.gz
+    x tds3_mar_2022/
+    x tds3_mar_2022/CSGFoundry/
+    x tds3_mar_2022/CSGFoundry/meshname.txt
+    x tds3_mar_2022/CSGFoundry/mmlabel.txt
+    x tds3_mar_2022/CSGFoundry/solid.npy
+    x tds3_mar_2022/CSGFoundry/prim.npy
+    x tds3_mar_2022/CSGFoundry/node.npy
+    x tds3_mar_2022/CSGFoundry/tran.npy
+    x tds3_mar_2022/CSGFoundry/itra.npy
+    x tds3_mar_2022/CSGFoundry/inst.npy
+    x tds3_mar_2022/CSGFoundry/bnd.npy
+    x tds3_mar_2022/CSGFoundry/bnd_meta.txt
+    x tds3_mar_2022/CSGFoundry/icdf.npy
+    x tds3_mar_2022/CSGFoundry/icdf_meta.txt
+    x tds3_mar_2022/CSGFoundry/meta.txt
+    epsilon:tmp blyth$ l 
+
+
+
+Set CFBASE envvar and run render::
+
+    export CFBASE=/tmp/tds3_mar_2022
+    cx  ## cd ~/opticks/CSGOptiX
+    source ./cxr.sh 
+
+OR::
+
+   CFBASE=/tmp/tds3_mar_2022 source ./cxr.sh 
 
 
 EON
