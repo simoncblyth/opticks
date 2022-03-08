@@ -511,7 +511,7 @@ bool SBT::ValidSpec(const char* spec) // static
 void SBT::setTop(const char* spec)
 {
     bool valid_spec = ValidSpec(spec); 
-    if(valid_spec) LOG(fatal) << " valid spec is required [" << spec << "]"  ; 
+    if(!valid_spec) LOG(fatal) << " valid spec is required [" << spec << "]"  ; 
     assert( valid_spec );  
     AS* a = getAS(spec); 
     setTop(a); 

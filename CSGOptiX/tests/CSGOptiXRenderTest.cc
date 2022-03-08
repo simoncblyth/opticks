@@ -170,7 +170,9 @@ void CSGOptiXRenderTest::initFD()
 
 void CSGOptiXRenderTest::initCX()
 {
-    const char* top    = SSys::getenvvar("TOP", "i0" ); 
+    const char* top = SSys::getenvvar("TOP", "i0" ); 
+    LOG(info) << " top [" << top << "]" ; 
+
     cx = new CSGOptiX(ok, fd ); 
     cx->setTop(top); 
 
