@@ -72,6 +72,7 @@ struct SBT
     void checkHitgroup();
 
     void createIAS();
+    bool isStandardIAS() const ; 
     void createIAS_Standard();
     void createIAS(unsigned ias_idx);
     void createIAS_Selection();
@@ -82,6 +83,7 @@ struct SBT
     const IAS& getIAS(unsigned ias_idx) const ;
 
     void createGAS();
+    bool isStandardGAS() const ; 
     void createGAS_Standard();
     void createGAS_Selection();
     void createGAS(unsigned gas_idx);

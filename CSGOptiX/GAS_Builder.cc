@@ -21,12 +21,17 @@
 
 const plog::Severity GAS_Builder::LEVEL = PLOG::EnvLevel("GAS_Builder", "DEBUG"); 
 
-
 /**
-GAS_Builder::Build
--------------------
+GAS_Builder::Build : CSGPrimSpec --> GAS : Compound Solid (set of Prim level)
+-------------------------------------------------------------------------------
 
-Canonically invoked from SBT::createGeom/SBT::createGAS using CSGPrimSpec from foundry 
+Canonically invoked from SBT::createGeom/SBT::createGAS using CSGPrimSpec from CSGFoundry 
+
+GAS& gas
+   output struct holding vector of BI (currently always one entry)
+
+CSGPrimSpec& ps
+   arrays of bbox  
 
 **/
 
@@ -49,12 +54,17 @@ void GAS_Builder::Build( GAS& gas, const CSGPrimSpec& ps )  // static
 /**
 GAS_Builder::Build_11N GAS:BI:AABB  1:1:N  one BI with multiple AABB
 ------------------------------------------------------------------------
+
+11N mode is the default (and now only) mode in which there is always 
+only one BI in the bis vector.  
+
 **/
 
-void GAS_Builder::Build_11N( GAS& gas, const CSGPrimSpec& psd )
+void GAS_Builder::Build_11N( GAS& gas, const CSGPrimSpec& ps )
 {
-    BI bi = MakeCustomPrimitivesBI_11N(psd);
+    BI bi = MakeCustomPrimitivesBI_11N(ps);
     gas.bis.push_back(bi); 
+    assert( gas.bis.size() == 1 ); 
     BoilerPlate(gas); 
 }
 
@@ -63,7 +73,9 @@ void GAS_Builder::Build_11N( GAS& gas, const CSGPrimSpec& psd )
 GAS_Builder::MakeCustomPrimitivesBI_11N
 -----------------------------------------
 
-Creates buildInput using device refs of pre-uploaded aabb for all prim (aka layers) of the Shape 
+References to bbox array from CSGPrimSpec copyied into the BI
+
+Creates buildInput using device refs of pre-uploaded aabb for all prim (aka layers) of the Solid
 and arranges for separate SBT records for each prim.
 
 Added primitiveIndexOffset to CSGPrimSpec in attempt to get identity info 
@@ -121,13 +133,6 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
 } 
 
 
-
-
-
-
-
-
-
 void GAS_Builder::DumpAABB( const float* aabb, unsigned num_aabb, unsigned stride_in_bytes )  // static 
 {
     assert( stride_in_bytes % sizeof(float) == 0 ); 
@@ -150,8 +155,8 @@ void GAS_Builder::DumpAABB( const float* aabb, unsigned num_aabb, unsigned strid
 }
 
 /**
-GAS_Builder::Build
----------------------
+GAS_Builder::BoilerPlate
+----------------------------
 
 Boilerplate building the GAS from the BI vector. 
 In the default 11N mode there is always only one BI in the vector.

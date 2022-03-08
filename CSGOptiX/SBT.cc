@@ -91,10 +91,22 @@ void SBT::setFoundry(const CSGFoundry* foundry_)
     createGeom(); 
 }
 
+/**
+SBT::createGeom
+-----------------
+
+createGAS 
+    CSGPrimSpec for each compound solid are converted to GAS and collected into map 
+createIAS
+    instance transforms with compound solid references are converted into the IAS
+createHitgroup    
+    bringing it all together
+
+**/
 void SBT::createGeom()
 {
     LOG(info) << "[" ; 
-    createGAS();  
+    createGAS();    
     createIAS(); 
     createHitgroup(); 
     checkHitgroup(); 
@@ -185,7 +197,7 @@ prim extent is used.
 
 void SBT::createGAS()  
 {
-    if( solid_selection.size() == 0  )
+    if(isStandardGAS())
     {
         createGAS_Standard();  
     }
@@ -195,12 +207,26 @@ void SBT::createGAS()
     }
 }
 
+bool SBT::isStandardGAS() const 
+{
+    return solid_selection.size() == 0 ; 
+}
+
+/**
+SBT::createGAS_Standard
+-------------------------
+
+Only --enabledmergedmesh solids (default is all)
+are converted into GAS and collected into the vgas GAS map. 
+
+**/
 void SBT::createGAS_Standard()
 { 
     unsigned num_solid = foundry->getNumSolid();   // STANDARD_SOLID
     for(unsigned i=0 ; i < num_solid ; i++)
     {
         unsigned gas_idx = i ; 
+
         bool enabled = ok->isEnabledMergedMesh(gas_idx) ;
         bool enabled2 = emm & ( 0x1 << gas_idx ) ;  
         assert( enabled == enabled2 );  
@@ -226,8 +252,16 @@ void SBT::createGAS_Selection()
         createGAS(gas_idx); 
     }
 }
- 
 
+/**
+SBT::createGAS 
+---------------
+
+1. gets CSGPrimSpec for a the *gas_idx* compound solid from foundry 
+2. converts the CSGPrimSpec into a GAS, passing in bbox device array pointers
+3. inserts gas into vgas map using *gas_idx* key 
+
+**/
 void SBT::createGAS(unsigned gas_idx)
 {
     CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
@@ -235,6 +269,14 @@ void SBT::createGAS(unsigned gas_idx)
     GAS_Builder::Build(gas, ps);
     vgas[gas_idx] = gas ;  
 }
+
+/**
+SBT::getGAS
+------------
+
+Access the GAS from the vgas map using *gas_idx* key 
+
+**/
 
 const GAS& SBT::getGAS(unsigned gas_idx) const 
 {
@@ -246,9 +288,14 @@ const GAS& SBT::getGAS(unsigned gas_idx) const
 
 
 
+bool SBT::isStandardIAS() const 
+{
+    return solid_selection.size() == 0  ; 
+}
+
 void SBT::createIAS()
 {
-    if( solid_selection.size() == 0  )
+    if(isStandardIAS())
     {
         createIAS_Standard(); 
     }
@@ -521,6 +568,16 @@ void SBT::setTop(AS* top_)
     top = top_ ;
 }
 
+/**
+SBT::getAS
+------------
+
+Returns pointer to GAS or IAS. 
+Currently only expecting spec "i0" corresponding to first IAS
+(formerly "g0", "g1" have worked too)
+
+**/
+
 AS* SBT::getAS(const char* spec) const 
 {
    assert( strlen(spec) > 1 );  
@@ -576,6 +633,15 @@ SBT::_getOffset
 Implemented as an inner method avoiding "goto" 
 to break out of multiple for loops.
 
+Iterates over vgas GAS map in *gas_idx* key order 0,1,2,.. and within 
+each GAS iterates over the "layers" (aka CSGPrim of the CSGSolid)
+counting the number of *sbt* records encountered until reach (solid_idx_, layer_idx_)
+at which point returns *offset_sbt*. 
+
+This assumes(implies) that only enabled mergedmesh have 
+vgas entries.  
+
+
 **/
 unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const 
 {
@@ -595,7 +661,7 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
         { 
             const BI& bi = gas.bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
-            unsigned num_sbt = buildInputCPA.numSbtRecords ; 
+            unsigned num_sbt = buildInputCPA.numSbtRecords ;  // <-- corresponding to bbox of the GAS
 
             for( unsigned k=0 ; k < num_sbt ; k++)
             { 
@@ -615,7 +681,10 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
 SBT::getTotalRec
 ------------------
 
-NB no check that 
+Returns the total number of SBT records for all layers (aka CSGPrim) 
+of all GAS in the map. 
+
+Corresponds to the total number of enabled Prim in all enabled solids.
 
 **/
 
@@ -628,8 +697,10 @@ unsigned SBT::getTotalRec() const
     for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
         unsigned gas_idx = it->first ; 
+
         bool enabled = ok->isEnabledMergedMesh(gas_idx)  ; 
         if(enabled == false) LOG(error) << "gas_idx " << gas_idx << " enabled " << enabled ; 
+
 
         const GAS& gas = it->second ; 
  
@@ -705,11 +776,20 @@ std::string SBT::descGAS() const
 SBT::createHitgroup
 ---------------------
 
+The hitgroup array has records for all active Prims of all active Solid.
+The records hold (numNode, nodeOffset) of all those active Prim.  
+
+
 Note:
 
 1. all HitGroup SBT records have the same hitgroup_pg, different shapes 
    are distinguished by program data not program code 
 
+
+Prim Selection
+~~~~~~~~~~~~~~~~
+
+Thoughts on how to implement Prim selection with CSGPrim::MakeSpec
 
 **/
 
@@ -718,7 +798,7 @@ void SBT::createHitgroup()
     unsigned num_solid = foundry->getNumSolid(); 
     unsigned num_gas = vgas.size(); 
     //assert( num_gas == num_solid );   // not when emm active : then there are less gas than solid
-    unsigned tot_rec = getTotalRec(); 
+    unsigned tot_rec = getTotalRec();   // corresponds to the total number of enabled Prim in all enabled solids
 
     LOG(info)
         << " num_solid " << num_solid 
@@ -741,9 +821,12 @@ void SBT::createHitgroup()
     {
         unsigned gas_idx = it->first ; 
         const GAS& gas = it->second ; 
-        //assert( ok->isEnabledMergedMesh(gas_idx) ); 
-        unsigned num_bi = gas.bis.size(); 
 
+        //assert( ok->isEnabledMergedMesh(gas_idx) );  would expect YES
+
+        unsigned num_bi = gas.bis.size(); 
+        assert( num_bi == 1 ); 
+         
         const CSGSolid* so = foundry->getSolid(gas_idx) ;
         int numPrim = so->numPrim ; 
         int primOffset = so->primOffset ; 
@@ -753,6 +836,9 @@ void SBT::createHitgroup()
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
             const BI& bi = gas.bis[j] ; 
+            // Q: is there a bi for each node ?
+            // A: NO, roughly speaking the bi hold the bbox references for all CSGPrim of the solid(=GAS) 
+
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;
             unsigned num_rec = buildInputCPA.numSbtRecords ; 
             assert( num_rec == unsigned(numPrim) ) ; 
@@ -762,7 +848,8 @@ void SBT::createHitgroup()
                 unsigned localPrimIdx = k ;   
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;   
                 const CSGPrim* prim = foundry->getPrim( globalPrimIdx ); 
-                setPrimData( hg->data, prim ); 
+
+                setPrimData( hg->data, prim );  // copy numNode, nodeOffset from CSGPrim into hg->data
 
                 unsigned check_sbt_offset = getOffset(gas_idx, localPrimIdx ); 
 

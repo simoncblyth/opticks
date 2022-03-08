@@ -94,6 +94,7 @@ class OKCORE_API OpticksDbg
        std::string getCXSkipLVList() const ; 
 
        bool isEnabledMergedMesh(unsigned mm) const ;
+       bool isFullyEnabledMergedMesh() const ; 
        const char* getEnabledMergedMesh() const  ; 
        unsigned long long getEMM() const ; 
     public:

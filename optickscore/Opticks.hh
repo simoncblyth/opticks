@@ -567,6 +567,8 @@ class OKCORE_API Opticks {
 
        unsigned long long getEMM() const ;
        bool isEnabledMergedMesh(unsigned mm) const ;
+       bool isFullyEnabledMergedMesh() const ; 
+
        const char* getEnabledMergedMesh() const  ; 
 
        unsigned getInstanceModulo(unsigned mm) const ;

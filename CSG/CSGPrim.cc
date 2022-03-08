@@ -42,10 +42,40 @@ CSGPrim::MakeSpec
 -------------------
 
 Specification providing pointers to access all the AABB of *numPrim* CSGPrim, 
-canonically used for all CSGPrim within a CSGSolid 
+canonically invoked by CSGFoundry::getPrimSpecHost and CSGFoundry::getPrimSpecDevice
+which provide the CSGPrim bbox pointers for all CSGPrim within a CSGSolid. 
+
 This can be done very simply for both host and device due to the contiguous storage 
 of the CSGPrim in the foundry and fixed strides. 
+
+CSGPrimSpec::primitiveIndexOffset
+    Primitive index bias, applied in optixGetPrimitiveIndex() so the primIdx 
+    obtained in closesthit__ch__ is absolute to the entire geometry 
+    instead of the default of being local to the compound solid. 
+    (see GAS_Builder::MakeCustomPrimitivesBI_11N)
+
+    This primIdx obtained for each intersect is combined with the 
+    optixGetInstanceId() to give the intersect identity.
  
+
+How to implement Prim selection ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Applying Prim selection based on meshIdx/lvIdx of each 
+Prim still requires to iterate over them all.
+Better to apply selection in one place only. 
+So where to apply prim selection ?
+
+CSGPrimSpec is too late as the prim array handled
+there needs to be memory contiguous.   
+This suggests addition of selected_prim to CSGFoundry::
+
+    std::vector<CSGPrim>  prim ;
+    std::vector<CSGPrim>  selected_prim ;
+
+Must also ensure no blind passing of primOffsets as they 
+will be invalid. 
+
 **/
 
 CSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned numPrim ) // static 
@@ -57,7 +87,7 @@ CSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned
     ps.sbtIndexOffset = prim->sbtIndexOffsetPtr() ;  
     ps.num_prim = numPrim ; 
     ps.stride_in_bytes = sizeof(CSGPrim); 
-    ps.primitiveIndexOffset = primIdx ; 
+    ps.primitiveIndexOffset = primIdx ;   
 
     return ps ; 
 }

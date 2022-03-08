@@ -852,13 +852,21 @@ unsigned Opticks::getNumDeferredCSGSkipLV() const
 }
 
 
+/**
+TODO: assumption of less than 64 compound solids 
+**/
+
 unsigned long long Opticks::getEMM() const 
 {
-   return m_dbg->getEMM();  
+    return m_dbg->getEMM();  
 }
 bool Opticks::isEnabledMergedMesh(unsigned mm) const   // --enabledmergedmesh,e
 {
-   return m_dbg->isEnabledMergedMesh(mm);
+    return m_dbg->isEnabledMergedMesh(mm);
+}
+bool Opticks::isFullyEnabledMergedMesh() const 
+{
+    return m_dbg->isFullyEnabledMergedMesh();
 }
 
 const char* Opticks::getEnabledMergedMesh() const    // --enabledmergedmesh,e

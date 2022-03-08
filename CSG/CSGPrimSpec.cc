@@ -112,16 +112,16 @@ void CSGPrimSpec::downloadDump(const char* msg) const
     unsigned nff = numValues - CSGPrim::value_offsetof_AABB() ;  
     unsigned nuu = numValues - CSGPrim::value_offsetof_sbtIndexOffset() ;
     std::cout 
-         << "[ " << msg 
-         << " num_prim " << num_prim 
-         << " stride_in_values " << stride_in_values
-         << " numValues " << numValues
-         << " nff " << nff
-         << " nuu " << nuu
-         << " CSGPrim::value_offsetof_AABB " << CSGPrim::value_offsetof_AABB()
-         << " CSGPrim::value_offsetof_sbtIndexOffset " << CSGPrim::value_offsetof_sbtIndexOffset()
-         << std::endl 
-         ; 
+        << "[ " << msg 
+        << " num_prim " << num_prim 
+        << " stride_in_values " << stride_in_values
+        << " numValues " << numValues
+        << " nff " << nff
+        << " nuu " << nuu
+        << " CSGPrim::value_offsetof_AABB " << CSGPrim::value_offsetof_AABB()
+        << " CSGPrim::value_offsetof_sbtIndexOffset " << CSGPrim::value_offsetof_sbtIndexOffset()
+        << std::endl 
+        ; 
 
     assert( stride_in_values == 16 ); 
 

@@ -492,6 +492,14 @@ bool OpticksDbg::isDeferredCSGSkipLV(unsigned lvIdx) const   // --deferredcsgski
     return IsListed(lvIdx, m_deferredcsgskiplv, false); 
 }
 
+/**
+OpticksDbg::isEnabledMergedMesh
+---------------------------------
+
+TODO: fix unfounded assumption of less than 64 compound solids ?
+      or at least assert when there are more 
+
+**/
 
 bool OpticksDbg::isEnabledMergedMesh(unsigned mm) const 
 {
@@ -506,10 +514,24 @@ bool OpticksDbg::isEnabledMergedMesh(unsigned mm) const
     //return IsListed(mm, m_enabledmergedmesh, true ); 
 }
 
+
+
+
+bool OpticksDbg::isFullyEnabledMergedMesh() const 
+{
+    std::bitset<64> bs(m_enabledmergedmesh); 
+    bool full_emm = bs.count() == 0 || bs.count() == 64  ; 
+    return full_emm ; 
+}
+
+
+
+
 unsigned long long OpticksDbg::getEMM() const 
 {
     return m_enabledmergedmesh ; 
 }
+
 
 
 
