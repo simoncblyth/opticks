@@ -24,6 +24,7 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <bitset>
 
 void test_ffs()
 {
