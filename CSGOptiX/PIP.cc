@@ -315,3 +315,98 @@ void PIP::linkPipeline(unsigned max_trace_depth)
     assert( sizeof_log == 0); 
 }
 
+
+
+   
+
+
+
+
+
+/**
+PIP::configureStack
+------------------------
+
+https://on-demand.gputechconf.com/siggraph/2019/pdf/sig915-optix-performance-tools-tricks.pdf
+
+https://sibr.gitlabpages.inria.fr/docs/0.9.6/OptixRaycaster_8cpp_source.html
+
+/Developer/OptiX_700/include/optix_stack_size.h
+ 
+/Developer/OptiX_700/SDK/optixPathTracer/optixPathTracer.cpp
+
+In optix_stack_size.h:
+   OptixStackSizes
+   optixUtilAccumulateStackSizes()
+   optixUtilComputeStackSizes()
+   optixPipelineSetStackSize()
+These analyze your shaders. Source code included!
+Detailed control over stack size See optixPathTracer for example
+ 
+
+**/
+void PIP::configureStack()
+{
+    // following OptiX_700/SDK/optixPathTracer/optixPathTracer.cpp
+
+    OptixStackSizes stackSizes = {};
+    OPTIX_CHECK_LOG( optixUtilAccumulateStackSizes( raygen_pg,   &stackSizes ) ); 
+    OPTIX_CHECK_LOG( optixUtilAccumulateStackSizes( miss_pg,     &stackSizes ) ); 
+    OPTIX_CHECK_LOG( optixUtilAccumulateStackSizes( hitgroup_pg, &stackSizes ) ); 
+
+    uint32_t max_trace_depth = 1;   // only RG invokes trace, no recursion   
+    uint32_t max_cc_depth = 0; 
+    uint32_t max_dc_depth = 0; 
+
+    LOG(info) 
+        << "(inputs to optixUtilComputeStackSizes)" 
+        << std::endl 
+        << " max_trace_depth " << max_trace_depth
+        << " max_cc_depth " << max_cc_depth
+        << " max_dc_depth " << max_dc_depth
+        ;
+
+    uint32_t directCallableStackSizeFromTraversal;
+    uint32_t directCallableStackSizeFromState;
+    uint32_t continuationStackSize;
+
+    OPTIX_CHECK( optixUtilComputeStackSizes(
+                &stackSizes,
+                max_trace_depth,
+                max_cc_depth,
+                max_dc_depth,
+                &directCallableStackSizeFromTraversal,
+                &directCallableStackSizeFromState,
+                &continuationStackSize
+                ) ); 
+
+    LOG(info)
+        << "(outputs from optixUtilComputeStackSizes) " 
+        << std::endl 
+        << " directCallableStackSizeFromTraversal " << directCallableStackSizeFromTraversal
+        << std::endl 
+        << " directCallableStackSizeFromState " << directCallableStackSizeFromState
+        << std::endl 
+        << " continuationStackSize " << continuationStackSize
+        ;
+
+
+    unsigned maxTraversableGraphDepth = 2 ;  // Opticks only using IAS->GAS
+
+    LOG(info) 
+        << "(further inputs to optixPipelineSetStackSize)"
+        << std::endl 
+        << " maxTraversableGraphDepth " << maxTraversableGraphDepth
+        ;  
+
+
+    //OPTIX_CHECK_LOG( optixProgramGroupGetStackSize(raygen_pg, OptixStackSizes* stackSizes ) );
+
+    OPTIX_CHECK_LOG( optixPipelineSetStackSize( pipeline,
+                                       directCallableStackSizeFromTraversal,
+                                       directCallableStackSizeFromState,
+                                       continuationStackSize,
+                                       maxTraversableGraphDepth ) ) ;
+}
+
+

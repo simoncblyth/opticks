@@ -39,6 +39,8 @@ struct PIP
     void createHitgroupPG(const char* is, const char* ch, const char* ah );
 
     void linkPipeline(unsigned max_trace_depth);
+    void configureStack(); 
+
 }; 
 
 

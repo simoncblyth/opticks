@@ -26,6 +26,13 @@ optix7-usage(){ cat << \EOU
 OptiX 7 : Brand New Lower Level API
 ======================================= 
 
+
+Profiling
+-----------
+
+* https://on-demand.gputechconf.com/siggraph/2019/pdf/sig915-optix-performance-tools-tricks.pdf
+
+
 See Also 
 ---------
 
