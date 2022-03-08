@@ -161,6 +161,9 @@ void CSGOptiX::initGeometry()
 #else
     sbt->setFoundry(foundry); 
 #endif
+
+    const char* top = Top(); 
+    setTop(top); 
 }
 void CSGOptiX::initRender()
 {
@@ -186,6 +189,21 @@ void CSGOptiX::setMetaTran(const Tran<double>* metatran_ )
 {
     metatran = metatran_ ; 
 }
+
+
+const char* CSGOptiX::TOP = "i0" ; 
+const char* CSGOptiX::Top()
+{
+    const char* top = SSys::getenvvar("TOP", TOP ); 
+    bool top_valid = top != nullptr && strlen(top) > 1 && top[0] == 'i' ;  
+    if(!top_valid)
+    { 
+        LOG(error) << "TOP envvar not invalid  [" << top << "] override with default [" << TOP << "]"  ; 
+        top = TOP ; 
+    }
+    return top ; 
+}
+
 void CSGOptiX::setTop(const char* tspec)
 {
     LOG(LEVEL) << "[" << " tspec " << tspec ; 

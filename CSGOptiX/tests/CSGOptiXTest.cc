@@ -27,16 +27,11 @@ int main(int argc, char** argv)
     const char* default_cfbase = SPath::Resolve("$TMP/GeoChain", default_geom, createdirs );   // 2: dirpath
     const char* cfbase = SSys::getenvvar("CFBASE", default_cfbase ); 
     LOG(info) << " cfbase " << cfbase ; 
-    const char* top    = SSys::getenvvar("TOP", "i0" ); 
     
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     fd->upload(); 
 
     CSGOptiX cx(&ok, fd); 
-    cx.setTop(top); 
-
-    
-
 
  
     cudaDeviceSynchronize(); 

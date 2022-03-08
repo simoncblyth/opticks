@@ -57,7 +57,7 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-export CFBASE=/tmp/cfbase
+export CFBASE=${CFBASE:-/tmp/cfbase}
 source ./cxr.sh
 
 

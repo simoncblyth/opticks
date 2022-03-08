@@ -105,7 +105,6 @@ int main(int argc, char** argv)
     //fd->summary(); 
 
     CSGOptiX cx(&ok, fd); 
-    cx.setTop(top); 
 
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ; 

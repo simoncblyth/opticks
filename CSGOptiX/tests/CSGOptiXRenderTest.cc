@@ -47,6 +47,7 @@ struct CSGOptiXRenderTest
     static Opticks* InitOpticks(int argc, char** argv);  
     static void InitOutdir(Opticks* ok); 
 
+
     CSGOptiXRenderTest(int argc, char** argv ) ; 
 
     Opticks*    ok ; 
@@ -173,13 +174,11 @@ void CSGOptiXRenderTest::initFD()
     //fd->summary(); 
 }
 
+
+
 void CSGOptiXRenderTest::initCX()
 {
-    const char* top = SSys::getenvvar("TOP", "i0" ); 
-    LOG(info) << " top [" << top << "]" ; 
-
     cx = new CSGOptiX(ok, fd ); 
-    cx->setTop(top); 
 
     if( cx->raygenmode > 0 )
     {

@@ -78,7 +78,9 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     QSim<float>* sim ; 
     QEvent*      evt ;  
 
-
+    static const char* TOP ; 
+    static const char* Top() ; 
+ 
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
     const char* desc() const ; 
 
@@ -88,8 +90,10 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void initGeometry();
     void initRender();
     void initSimulate();
- 
+
+ private: 
     void setTop(const char* tspec); 
+ public: 
 
     // render related 
     void setCEGS(const std::vector<int>& cegs); 
