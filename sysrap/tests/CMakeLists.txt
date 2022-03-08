@@ -62,6 +62,7 @@ set(TEST_SOURCES
    SColorTest.cc
    SPackTest.cc 
    SBitTest.cc
+   SEnabledTest.cc
    SBitFromStringTest.cc
    SRandTest.cc
 

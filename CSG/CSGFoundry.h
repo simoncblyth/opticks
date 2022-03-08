@@ -242,7 +242,6 @@ struct CSG_API CSGFoundry
 
     std::vector<CSGSolid>  solid ;   
     std::vector<CSGPrim>   prim ; 
-    std::vector<CSGPrim>   selected_prim ; 
     std::vector<CSGNode>   node ; 
     std::vector<float4>    plan ; 
     std::vector<qat4>      tran ;  

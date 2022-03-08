@@ -666,6 +666,25 @@ NB PrimAABB is distinct from NodeAABB. Cannot directly use NodeAABB
 because the number of nodes for each prim (node tree) varies meaning 
 that the strides are irregular. 
 
+Prim Selection
+~~~~~~~~~~~~~~~~
+
+HMM: Prim selection will also require new primOffset for all solids, 
+so best to implement it by spawning a new CSGFoundry with the selection applied.
+Then the CSGFoundry code can stay the same just with different solid and prim 
+and applying the selection can be focussed into one static method. 
+
+HMM: but its not all of CSGFoundry that needs to have selection 
+applied its just the solid and prim. Could prune nodes and transforms 
+too, but probably not worthwhile. 
+
+How to implement ? Kinda like CSG_GGeo translation but starting 
+from another instance of CSGFoundry.
+
+Also probably better to do enabledmergedmesh solid selection this
+way too rather than smearing ok->isEnabledMergedMesh all over CSGOptiX/SBT
+Better for SBT creation not to be mixed up with geometry selection.
+
 **/
 
 CSGPrimSpec CSGFoundry::getPrimSpec(unsigned solidIdx) const 

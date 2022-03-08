@@ -74,6 +74,7 @@ set(SOURCES
     SAbbrev.cc
     SPack.cc
     SBit.cc
+    SEnabled.cc
     SRand.cc
 
     SMockViz.cc
@@ -149,6 +150,7 @@ set(HEADERS
     SAbbrev.hh
     SPack.hh
     SBit.hh
+    SEnabled.hh
     SRand.hh
 
     SMockViz.hh

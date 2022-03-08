@@ -26,6 +26,17 @@ optix7-usage(){ cat << \EOU
 OptiX 7 : Brand New Lower Level API
 ======================================= 
 
+Callables
+-----------
+
+* https://raytracing-docs.nvidia.com/optix7/guide/index.html#callables#callables
+
+Two types of callable programs exist in NVIDIA OptiX 7: direct callables and
+continuation callables. Unlike direct callables, continuation callables can
+call the function optixTrace. Direct callables are called immediately, but
+because of their additional capability, continuation callables need to be
+executed by the scheduler. This may result in additional overhead when running
+continuation callables.
 
 Profiling
 -----------
