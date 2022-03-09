@@ -11,6 +11,9 @@ Aiming to keep this geometry independent
 
 struct PIP
 {
+
+
+
     unsigned max_trace_depth ; 
     unsigned num_payload_values ; 
     unsigned num_attribute_values ; 
@@ -26,8 +29,14 @@ struct PIP
 
     OptixPipeline pipeline = nullptr;
 
+    static OptixCompileDebugLevel        DebugLevel(const char* option); 
+    static OptixCompileOptimizationLevel OptimizationLevel(const char* option) ; 
+
     static OptixPipelineCompileOptions CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues );
     static OptixProgramGroupOptions CreateProgramGroupOptions();
+
+    static const char* CreateModule_debugLevel ; 
+    static const char* CreateModule_optLevel ; 
     static OptixModule CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options );
 
     PIP(const char* ptx_path_); 
@@ -38,12 +47,7 @@ struct PIP
     void createMissPG(const char* ms);
     void createHitgroupPG(const char* is, const char* ch, const char* ah );
 
-    static const char* debugLevel_ ; 
-    OptixCompileDebugLevel debugLevel(); 
-
-    static const char* optLevel_ ; 
-    OptixCompileOptimizationLevel optLevel() ; 
-
+    static const char* linkPipeline_debugLevel ; 
     void linkPipeline(unsigned max_trace_depth);
     void configureStack(); 
 
