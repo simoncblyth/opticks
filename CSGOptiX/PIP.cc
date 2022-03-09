@@ -11,6 +11,7 @@
 
 #include <cuda_runtime.h>
 #include "scuda.h"    // roundUp
+#include "SStr.hh"
 #include "SSys.hh"
 #include "OPTIX_CHECK.h"
 
@@ -77,7 +78,7 @@ OptixExceptionFlags PIP::ExceptionFlags_(const char* opt)
 unsigned PIP::ExceptionFlags(const char* options)
 {
     std::vector<std::string> opts ; 
-    SStr::Split( option, '|', opts );  
+    SStr::Split( options, '|', opts );  
 
     unsigned exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE ; 
     for(unsigned i=0 ; i < opts.size() ; i++)
