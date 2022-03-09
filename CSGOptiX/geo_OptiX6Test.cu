@@ -11,8 +11,6 @@
 #include "CSGPrim.h"
 #include "CSGNode.h"
 
-
-
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
 rtDeclareVariable(float3, position,         attribute position, );  
@@ -26,13 +24,10 @@ rtDeclareVariable(unsigned, identity,  ,);
 // per solid context, not global 
 rtBuffer<CSGPrim> prim_buffer;
 
-
 // global context
 rtBuffer<CSGNode> node_buffer;
 rtBuffer<qat4> itra_buffer;
 rtBuffer<float4> plan_buffer;
-
-
 
 /**
 As the primIdx argument is in 0:num_prim-1 need separate prim_buffer per geometry 
@@ -88,8 +83,6 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
          result[3], result[4], result[5] 
         ); 
 #endif
-
-
 }
 
 

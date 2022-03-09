@@ -109,7 +109,6 @@ Multiple pipelines, SBT, ...
 * https://forums.developer.nvidia.com/t/how-to-handle-multiple-ray-generators/83446
 
 
-
 From OptiX 7.2 Release Notes : **Specialization**
 -----------------------------------------------------
 
@@ -137,6 +136,8 @@ OptiX 7.1.0 requires that you install a r450+ driver.
 OptiX 7.0.0 requires that you install the 435.80 driver on Windows or the 435.12 Driver for linux.. 
 
 OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17 Driver for linux.
+
+* IHEP P, Current Driver 435.21, CUDA 10.1 : so are stuck at 700 until update that 
 
 
 From Downloads page https://developer.nvidia.com/designworks/optix/download

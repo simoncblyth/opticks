@@ -46,6 +46,21 @@ OptixCompileDebugLevel PIP::DebugLevel(const char* option)  // static
     LOG(info) << " option " << option << " level " << level ;  
     return level ; 
 }
+const char * PIP::DebugLevel_( OptixCompileDebugLevel debugLevel )
+{
+    const char* s = nullptr ; 
+    switch(debugLevel)
+    {  
+        case OPTIX_COMPILE_DEBUG_LEVEL_NONE:     s = OPTIX_COMPILE_DEBUG_LEVEL_NONE_     ; break ; 
+        case OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO: s = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO_ ; break ;
+        case OPTIX_COMPILE_DEBUG_LEVEL_FULL:     s = OPTIX_COMPILE_DEBUG_LEVEL_FULL_     ; break ;
+    }
+    return s ;    
+}
+const char* PIP::OPTIX_COMPILE_DEBUG_LEVEL_NONE_     = "OPTIX_COMPILE_DEBUG_LEVEL_NONE" ; 
+const char* PIP::OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO_ = "OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO" ; 
+const char* PIP::OPTIX_COMPILE_DEBUG_LEVEL_FULL_     = "OPTIX_COMPILE_DEBUG_LEVEL_FULL" ; 
+
 
 OptixCompileOptimizationLevel PIP::OptimizationLevel(const char* option) // static 
 {
@@ -60,7 +75,22 @@ OptixCompileOptimizationLevel PIP::OptimizationLevel(const char* option) // stat
     LOG(info) << " option " << option << " level " << level ;  
     return level ; 
 }
-
+const char* PIP::OptimizationLevel_( OptixCompileOptimizationLevel optLevel )
+{
+    const char* s = nullptr ; 
+    switch(optLevel)
+    {
+        case OPTIX_COMPILE_OPTIMIZATION_LEVEL_0: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_0_ ; break ; 
+        case OPTIX_COMPILE_OPTIMIZATION_LEVEL_1: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_1_ ; break ; 
+        case OPTIX_COMPILE_OPTIMIZATION_LEVEL_2: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_2_ ; break ; 
+        case OPTIX_COMPILE_OPTIMIZATION_LEVEL_3: s = OPTIX_COMPILE_OPTIMIZATION_LEVEL_3_ ; break ; 
+    }
+    return s ; 
+} 
+const char* PIP::OPTIX_COMPILE_OPTIMIZATION_LEVEL_0_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_0" ; 
+const char* PIP::OPTIX_COMPILE_OPTIMIZATION_LEVEL_1_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_1" ; 
+const char* PIP::OPTIX_COMPILE_OPTIMIZATION_LEVEL_2_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_2" ; 
+const char* PIP::OPTIX_COMPILE_OPTIMIZATION_LEVEL_3_ = "OPTIX_COMPILE_OPTIMIZATION_LEVEL_3" ; 
 
 OptixExceptionFlags PIP::ExceptionFlags_(const char* opt)
 {
@@ -73,7 +103,24 @@ OptixExceptionFlags PIP::ExceptionFlags_(const char* opt)
     else assert(0) ; 
     return flag ; 
 }
-
+const char* PIP::ExceptionFlags__(OptixExceptionFlags excFlag)
+{
+    const char* s = nullptr ; 
+    switch(excFlag)
+    {
+        case OPTIX_EXCEPTION_FLAG_NONE:           s = OPTIX_EXCEPTION_FLAG_NONE_            ; break ; 
+        case OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW: s = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_  ; break ;
+        case OPTIX_EXCEPTION_FLAG_TRACE_DEPTH:    s = OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_     ; break ; 
+        case OPTIX_EXCEPTION_FLAG_USER:           s = OPTIX_EXCEPTION_FLAG_USER_            ; break ; 
+        case OPTIX_EXCEPTION_FLAG_DEBUG:          s = OPTIX_EXCEPTION_FLAG_DEBUG_           ; break ;      
+    }
+    return s ; 
+}
+const char* PIP::OPTIX_EXCEPTION_FLAG_NONE_ = "OPTIX_EXCEPTION_FLAG_NONE" ; 
+const char* PIP::OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ = "OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW" ; 
+const char* PIP::OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_ = "OPTIX_EXCEPTION_FLAG_TRACE_DEPTH" ; 
+const char* PIP::OPTIX_EXCEPTION_FLAG_USER_ = "OPTIX_EXCEPTION_FLAG_USER_" ; 
+const char* PIP::OPTIX_EXCEPTION_FLAG_DEBUG_ = "OPTIX_EXCEPTION_FLAG_DEBUG" ; 
 
 unsigned PIP::ExceptionFlags(const char* options)
 {
@@ -95,13 +142,12 @@ const char* PIP::CreatePipelineOptions_exceptionFlags  = SSys::getenvvar("PIP_Cr
 
 OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues ) // static
 {
+    //unsigned traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS ; 
+    unsigned traversableGraphFlags=OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ;  // without this get no intersects
+
     OptixPipelineCompileOptions pipeline_compile_options = {} ;
-
     pipeline_compile_options.usesMotionBlur        = false;
-    //pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
-    pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ; 
-    // without the OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING  got no intersects
-
+    pipeline_compile_options.traversableGraphFlags = traversableGraphFlags ; 
     pipeline_compile_options.numPayloadValues      = numPayloadValues ;   // in optixTrace call
     pipeline_compile_options.numAttributeValues    = numAttributeValues ;
     pipeline_compile_options.exceptionFlags        = ExceptionFlags( CreatePipelineOptions_exceptionFlags )  ;
@@ -110,31 +156,12 @@ OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues
     return pipeline_compile_options ;  
 }
 
-
 OptixProgramGroupOptions PIP::CreateProgramGroupOptions() // static
 {
     OptixProgramGroupOptions program_group_options   = {}; // Initialize to zeros
     return program_group_options ; 
 }
 
-const int PIP::MAX_TRACE_DEPTH = SSys::getenvint("PIP_max_trace_depth", 1 ) ;   // was 2 
- 
-PIP::PIP(const char* ptx_path_ ) 
-    :
-    max_trace_depth(MAX_TRACE_DEPTH),
-#ifdef WITH_PRD
-    num_payload_values(2),     // see 
-    num_attribute_values(2),   // see __intersection__is
-#else
-    num_payload_values(8),     // see 
-    num_attribute_values(8),   // see __intersection__is
-#endif
-    pipeline_compile_options(CreatePipelineOptions(num_payload_values,num_attribute_values)),
-    program_group_options(CreateProgramGroupOptions()),
-    module(CreateModule(ptx_path_,pipeline_compile_options))
-{
-    init(); 
-}
 
 const char* PIP::desc() const
 {
@@ -155,6 +182,31 @@ const char* PIP::desc() const
    return strdup(s.c_str()); 
 }
 
+const int PIP::MAX_TRACE_DEPTH = SSys::getenvint("PIP_max_trace_depth", 1 ) ;   // was 2 
+
+/**
+PIP::PIP
+---------
+
+PTX read from *ptx_path_* is used to CreateModule
+
+**/
+PIP::PIP(const char* ptx_path_ ) 
+    :
+    max_trace_depth(MAX_TRACE_DEPTH),
+#ifdef WITH_PRD
+    num_payload_values(2),     // see 
+    num_attribute_values(2),   // see __intersection__is
+#else
+    num_payload_values(8),     // see 
+    num_attribute_values(8),   // see __intersection__is
+#endif
+    pipeline_compile_options(CreatePipelineOptions(num_payload_values,num_attribute_values)),
+    program_group_options(CreateProgramGroupOptions()),
+    module(CreateModule(ptx_path_,pipeline_compile_options))
+{
+    init(); 
+}
 
 /**
 PIP::init
@@ -174,7 +226,7 @@ void PIP::init()
 }
 
 /**
-PIP::createModule
+PIP::CreateModule
 -------------------
 
 PTX from file is read and compiled into the module
@@ -189,16 +241,24 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     std::string ptx ; 
     readFile(ptx, ptx_path ); 
 
-    std::cout 
+    int maxRegisterCount = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT ; 
+    OptixCompileOptimizationLevel optLevel = OptimizationLevel(CreateModule_optLevel) ; 
+    OptixCompileDebugLevel  debugLevel = DebugLevel(CreateModule_debugLevel) ; 
+
+    LOG(info)
         << " ptx_path " << ptx_path << std::endl 
         << " ptx size " << ptx.size() << std::endl 
+        << " maxRegisterCount " << maxRegisterCount << std::endl 
+        << " optLevel " << OptimizationLevel_(optLevel) << std::endl 
+        << " debugLevel " << DebugLevel_(debugLevel) << std::endl 
         ;
+
 
     OptixModule module = nullptr ;
     OptixModuleCompileOptions module_compile_options = {};
-    module_compile_options.maxRegisterCount     = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
-    module_compile_options.optLevel             = OptimizationLevel(CreateModule_optLevel) ; 
-    module_compile_options.debugLevel           = DebugLevel(CreateModule_debugLevel) ;
+    module_compile_options.maxRegisterCount     = maxRegisterCount ;
+    module_compile_options.optLevel             = optLevel ; 
+    module_compile_options.debugLevel           = debugLevel ;
 
     size_t sizeof_log = 0 ; 
     char log[2048]; // For error reporting from OptiX creation functions

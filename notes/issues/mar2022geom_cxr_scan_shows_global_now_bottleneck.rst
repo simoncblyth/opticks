@@ -153,10 +153,16 @@ resolution scan : JUNO march 2022 trunk
 |  1     | 1280,720  |   921,600    | 0.0039  |   0.0042    |
 +--------+-----------+--------------+---------+-------------+
 
-#include <nvtx3/nvToolsExt.h>
 
-nvtxRangePushA("")
-nvtxRangePop()
+adding profile tags
+---------------------
+
+::
+
+    #include <nvtx3/nvToolsExt.h>
+
+    nvtxRangePushA("DescriptionString");
+    nvtxRangePop();
 
 
 

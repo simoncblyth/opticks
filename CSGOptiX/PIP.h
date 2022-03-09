@@ -31,9 +31,27 @@ struct PIP
     OptixPipeline pipeline = nullptr;
 
     static OptixCompileDebugLevel        DebugLevel(const char* option); 
+    static const char *                  DebugLevel_( OptixCompileDebugLevel debugLevel ); 
+    static const char* OPTIX_COMPILE_DEBUG_LEVEL_NONE_     ; 
+    static const char* OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO_ ;  
+    static const char* OPTIX_COMPILE_DEBUG_LEVEL_FULL_     ;  
+
     static OptixCompileOptimizationLevel OptimizationLevel(const char* option) ; 
+    static const char* OptimizationLevel_( OptixCompileOptimizationLevel optLevel ); 
+    static const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_0_ ; 
+    static const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_1_ ; 
+    static const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_2_ ; 
+    static const char* OPTIX_COMPILE_OPTIMIZATION_LEVEL_3_ ; 
+
     static OptixExceptionFlags           ExceptionFlags_(const char* opt) ; 
     static unsigned                      ExceptionFlags(const char* options); 
+    static const char*                   ExceptionFlags__(OptixExceptionFlags excFlag) ; 
+    static const char* OPTIX_EXCEPTION_FLAG_NONE_ ;
+    static const char* OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ ;
+    static const char* OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_ ;
+    static const char* OPTIX_EXCEPTION_FLAG_USER_ ;
+    static const char* OPTIX_EXCEPTION_FLAG_DEBUG_ ;
+
 
     static const char*                 CreatePipelineOptions_exceptionFlags ; 
     static OptixPipelineCompileOptions CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues );
