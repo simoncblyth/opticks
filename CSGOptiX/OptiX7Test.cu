@@ -72,6 +72,10 @@ static __forceinline__ __device__ void trace(
     uint32_t p0, p1 ; 
     packPointer( prd, p0, p1 ); 
 
+    //OptiXRayFlags rayFlags = OPTIX_RAY_FLAG_NONE ; 
+    OptiXRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ; 
+
+
     optixTrace(
             handle,
             ray_origin,
@@ -80,7 +84,7 @@ static __forceinline__ __device__ void trace(
             tmax,
             rayTime,
             OptixVisibilityMask( 1 ),
-            OPTIX_RAY_FLAG_NONE,
+            rayFlags,
             SBToffset,
             SBTstride,
             missSBTIndex,
