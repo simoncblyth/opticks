@@ -291,6 +291,13 @@ void test_isCXSkipLV(const Opticks* ok)
     }
 }
 
+void test_getSize(const Opticks* ok)
+{
+    glm::uvec4 sz = ok->getSize(); 
+    LOG(info) << " sz : " << glm::to_string(sz ) ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -330,10 +337,11 @@ int main(int argc, char** argv)
     test_writeGeocacheScript(&ok); 
     test_isGPartsTransformOffset(&ok); 
     test_getCacheMetaTime(&ok); 
-
-    */
     test_isCXSkipLV(&ok); 
 
+    */
+
+    test_getSize(&ok); 
 
     return 0 ;
 }

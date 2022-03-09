@@ -3409,17 +3409,33 @@ OpticksCfg default is "" so without options m_size becomes::
 
 **/
 
+
+glm::uvec4 Opticks::SizeScaleXY( glm::uvec4& sz , float scale ) // static 
+{
+    glm::uvec4 ssz(sz);  
+    ssz.x = unsigned( float(sz.x)*scale  ); 
+    ssz.y = unsigned( float(sz.y)*scale  ); 
+    return ssz ; 
+}
+
 void Opticks::postconfigureSize()
 {
-    const std::string& ssize = m_cfg->getSize();
+    const std::string& ssize = m_cfg->getSize(); 
+    float sizescale = m_cfg->getSizeScale(); 
     if(!ssize.empty()) 
     {
-        m_size = guvec4(ssize);
+        glm::uvec4 sz = guvec4(ssize) ;  
+        glm::uvec4 ssz = sizescale == 1.f ? sz : SizeScaleXY(sz, sizescale) ;
+        LOG(info) 
+            << " ssize " << ssize
+            << " sizescale " << sizescale
+            << " sz " << glm::to_string(sz) << " ssz " << glm::to_string(ssz) 
+            ;  
+        m_size = ssz ; 
     }
     else if(m_cfg->hasOpt("fullscreen"))
     {
 #ifdef __APPLE__
-        //m_size = glm::uvec4(2880,1800,2,0) ;
         m_size = glm::uvec4(1440,900,2,0) ;
 #else
         m_size = glm::uvec4(2560,1440,1,0) ;
@@ -3429,7 +3445,6 @@ void Opticks::postconfigureSize()
     {
 #ifdef __APPLE__
         m_size = glm::uvec4(2880,1704,2,0) ;  // 1800-44-44px native height of menubar  
-        //m_size = glm::uvec4(1920,1080,2,0) ;
 #else
         m_size = glm::uvec4(1920,1080,1,0) ;
 #endif

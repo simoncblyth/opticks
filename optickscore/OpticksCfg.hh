@@ -56,6 +56,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getKey();
      const std::string& getCVD();
      const std::string& getSize() const ;
+     float              getSizeScale() const ; 
      const std::string& getPosition();
      const std::string& getDbgCSGPath();
      const std::string& getLogName();
@@ -237,6 +238,7 @@ private:
      std::string m_key ;
      std::string m_cvd ;
      std::string m_size ;
+     float       m_sizescale ; 
      std::string m_position ;
      std::string m_dbgcsgpath ;
      std::string m_logname ;

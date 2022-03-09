@@ -180,6 +180,7 @@ class OKCORE_API Opticks {
    private:
        void postconfigure(); 
        void postconfigureCVD() ;
+       static glm::uvec4 SizeScaleXY( glm::uvec4& sz , float scale ); 
        void postconfigureSize() ;
        void postconfigurePosition() ;
        void postconfigureComposition() ;

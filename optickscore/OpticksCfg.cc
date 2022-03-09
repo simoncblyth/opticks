@@ -49,7 +49,13 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
     m_listener(listener),
     m_key(BOpticksResource::DefaultKey()),
     m_cvd(SSys::getenvvar("CVD","")),
-    m_size(""),
+#ifdef __APPLE__
+    m_size("1920,1080,2"),
+    //m_size("2880,1704,2"),    // 1800-44-44px native height of menubar  
+#else
+    m_size("1920,1080,1"),
+#endif
+    m_sizescale(1.0f),
     m_position(""),
     m_dbgcsgpath(""),
     m_logname(""),
@@ -1447,6 +1453,11 @@ void OpticksCfg<Listener>::init()
        ("size",  boost::program_options::value<std::string>(&m_size),
             "Comma delimited screen window coordinate width,height,window2pixel eg 1024,768,2  ");
 
+   char sizescale[256];
+   snprintf(sizescale,256, "Scale factor applied to the size width and height. Default %f. ", m_sizescale ); 
+   m_desc.add_options()
+       ("sizescale",  boost::program_options::value<float>(&m_sizescale), sizescale );
+
    m_desc.add_options()
        ("position",  boost::program_options::value<std::string>(&m_position),
             "Comma delimited screen window upper left coordinate x,y,-,- eg 100,100  "
@@ -1668,6 +1679,15 @@ const std::string& OpticksCfg<Listener>::getSize() const
     bool is_p = strcmp(m_size.c_str(), "p") == 0 ; 
     return is_p ? SIZE_P : m_size ;
 }
+
+template <class Listener>
+float OpticksCfg<Listener>::getSizeScale() const 
+{
+    return m_sizescale ;
+}
+
+
+
 
 
 template <class Listener>
