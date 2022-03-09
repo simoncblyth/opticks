@@ -138,3 +138,28 @@ causing the bottleneck.  Expecting: solidXJfixture
 Its easier to do the skipping post geocache. Do it within CSG_GGeo/CSG_GGeo_Convert.cc
 
 
+resolution scan : JUNO march 2022 trunk
+----------------------------------------------------
+
+
+
++-----------------------------------------------------------+
+|         ``EMM=t0, ./cxr_overview.sh`` exclude global      |
++--------+-----------+--------------+---------+-------------+
+| resol  | size      |  pixels      | launch  |  norm to 1M |
++========+===========+==============+=========+=============+
+| 1.5    | 1920,1080 |  2,073,600   | 0.0074  |   0.0036    |
++--------+-----------+--------------+---------+-------------+
+|  1     | 1280,720  |   921,600    | 0.0039  |   0.0042    |
++--------+-----------+--------------+---------+-------------+
+
+#include <nvtx3/nvToolsExt.h>
+
+nvtxRangePushA("")
+nvtxRangePop()
+
+
+
+
+
+

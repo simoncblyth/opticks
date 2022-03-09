@@ -37,6 +37,10 @@
 #include "THRAP_TAIL.hh"
 
 
+#ifdef WITH_NVTOOLS
+#include <nvtx3/nvToolsExt.h>
+#endif
+
 #include "OpticksPhoton.h"
 // keep minimal : nvcc is tempramental 
 
@@ -261,7 +265,15 @@ unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, unsign
 
     TIsHit<T> is_hit(hitmask); 
 
+#ifdef WITH_NVTOOLS
+    nvtxRangePushA("TBuf::downloadSelection.count_if"); 
+#endif
+
     unsigned numSel = thrust::count_if(ptr, ptr+numItems, is_hit );
+
+#ifdef WITH_NVTOOLS
+    nvtxRangePop(); 
+#endif
 
     if(verbose)
     std::cout 
@@ -278,9 +290,26 @@ unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, unsign
     // device buffer is deallocated when d_selected goes out of scope 
     // so do the download to host within this scope
 
+#ifdef WITH_NVTOOLS
+    nvtxRangePushA("TBuf::downloadSelection.d_selected"); 
+#endif
+
     thrust::device_vector<T> d_selected(numSel) ;    
 
+#ifdef WITH_NVTOOLS
+    nvtxRangePop(); 
+#endif
+
+#ifdef WITH_NVTOOLS
+    nvtxRangePushA("TBuf::downloadSelection.copy_if"); 
+#endif
+
     thrust::copy_if(ptr, ptr+numItems, d_selected.begin(), is_hit );
+
+#ifdef WITH_NVTOOLS
+    nvtxRangePop(); 
+#endif
+
 
     CBufSpec cselected = make_bufspec<T>(d_selected); 
 
@@ -304,7 +333,17 @@ unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, unsign
 
     assert(tsel.getSize() == numSel );
 
+#ifdef WITH_NVTOOLS
+    nvtxRangePushA("TBuf::downloadSelection.download"); 
+#endif
+
     tsel.download(selection, verbose);
+
+#ifdef WITH_NVTOOLS
+    nvtxRangePop(); 
+#endif
+
+
 
     return numSel ; 
 }
