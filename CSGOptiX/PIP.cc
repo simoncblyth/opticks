@@ -61,6 +61,37 @@ OptixCompileOptimizationLevel PIP::OptimizationLevel(const char* option) // stat
 }
 
 
+OptixExceptionFlags PIP::ExceptionFlags_(const char* opt)
+{
+    OptixExceptionFlags flag = OPTIX_EXCEPTION_FLAG_NONE ; 
+    if(      strcmp(opt, "NONE") == 0 )          flag = OPTIX_EXCEPTION_FLAG_NONE ;  
+    else if( strcmp(opt, "STACK_OVERFLOW") == 0) flag = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW ; 
+    else if( strcmp(opt, "TRACE_DEPTH") == 0)    flag = OPTIX_EXCEPTION_FLAG_TRACE_DEPTH  ; 
+    else if( strcmp(opt, "USER") == 0)           flag = OPTIX_EXCEPTION_FLAG_USER  ; 
+    else if( strcmp(opt, "DEBUG") == 0)          flag = OPTIX_EXCEPTION_FLAG_DEBUG  ; 
+    else assert(0) ; 
+    return flag ; 
+}
+
+
+unsigned PIP::ExceptionFlags(const char* options)
+{
+    std::vector<std::string> opts ; 
+    SStr::Split( option, '|', opts );  
+
+    unsigned exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE ; 
+    for(unsigned i=0 ; i < opts.size() ; i++)
+    {
+        const std::string& opt = opts[i] ; 
+        exceptionFlags |= ExceptionFlags_(opt.c_str()); 
+    }
+    LOG(info) << " options " << options << " exceptionFlags " << exceptionFlags ; 
+    return exceptionFlags ;  
+}
+
+
+const char* PIP::CreatePipelineOptions_exceptionFlags  = SSys::getenvvar("PIP_CreatePipelineOptions_exceptionFlags", "STACK_OVERFLOW" ); 
+
 OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues ) // static
 {
     OptixPipelineCompileOptions pipeline_compile_options = {} ;
@@ -72,8 +103,7 @@ OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues
 
     pipeline_compile_options.numPayloadValues      = numPayloadValues ;   // in optixTrace call
     pipeline_compile_options.numAttributeValues    = numAttributeValues ;
-    //pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_NONE; 
-    pipeline_compile_options.exceptionFlags        = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW;
+    pipeline_compile_options.exceptionFlags        = ExceptionFlags( CreatePipelineOptions_exceptionFlags )  ;
     pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
 
     return pipeline_compile_options ;  
@@ -86,10 +116,11 @@ OptixProgramGroupOptions PIP::CreateProgramGroupOptions() // static
     return program_group_options ; 
 }
 
+const PIP::MAX_TRACE_DEPTH = SSys::getenvint("PIP_max_trace_depth", 1 ) ;   // was 2 
  
 PIP::PIP(const char* ptx_path_ ) 
     :
-    max_trace_depth(2),
+    max_trace_depth(MAX_TRACE_DEPTH),
 #ifdef WITH_PRD
     num_payload_values(2),     // see 
     num_attribute_values(2),   // see __intersection__is

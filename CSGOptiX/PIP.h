@@ -13,6 +13,8 @@ This is used by CSGOptiX.cc and SBT.cc
 
 struct PIP
 {
+    static const int MAX_TRACE_DEPTH ; 
+
     unsigned max_trace_depth ; 
     unsigned num_payload_values ; 
     unsigned num_attribute_values ; 
@@ -30,7 +32,10 @@ struct PIP
 
     static OptixCompileDebugLevel        DebugLevel(const char* option); 
     static OptixCompileOptimizationLevel OptimizationLevel(const char* option) ; 
+    static OptixExceptionFlags           ExceptionFlags_(const char* opt) ; 
+    static unsigned                      ExceptionFlags(const char* options); 
 
+    static const char*                 CreatePipelineOptions_exceptionFlags ; 
     static OptixPipelineCompileOptions CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues );
     static OptixProgramGroupOptions CreateProgramGroupOptions();
 
