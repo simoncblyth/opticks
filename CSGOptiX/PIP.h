@@ -38,6 +38,12 @@ struct PIP
     void createMissPG(const char* ms);
     void createHitgroupPG(const char* is, const char* ch, const char* ah );
 
+    static const char* debugLevel_ ; 
+    OptixCompileDebugLevel debugLevel(); 
+
+    static const char* optLevel_ ; 
+    OptixCompileOptimizationLevel optLevel() ; 
+
     void linkPipeline(unsigned max_trace_depth);
     void configureStack(); 
 

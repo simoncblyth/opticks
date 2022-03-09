@@ -11,6 +11,7 @@
 
 #include <cuda_runtime.h>
 #include "scuda.h"    // roundUp
+#include "SSys.hh"
 #include "OPTIX_CHECK.h"
 
 #include "Ctx.h"
@@ -119,7 +120,11 @@ PIP::createModule
 
 PTX from file is read and compiled into the module
 
+const char* PIP::OPTIX_COMPILE_DEBUG_LEVEL = SSys::getenvvar("OPTIX_COMPILE_DEBUG_LEVEL", "OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO" ) ; 
+    if(strcmp(OPTIX_COMPILE_DEBUG_LEVEL,"OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO") == 0 )
+
 **/
+
 
 OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options ) // static 
 {
@@ -132,7 +137,6 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
         ;
 
     OptixModule module = nullptr ;
-
     OptixModuleCompileOptions module_compile_options = {};
     module_compile_options.maxRegisterCount     = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
     module_compile_options.optLevel             = OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
@@ -282,6 +286,37 @@ void PIP::createHitgroupPG(const char* is, const char* ch, const char* ah )
     if(sizeof_log > 0) std::cout << log << std::endl ; 
     assert( sizeof_log == 0); 
 }
+const char* PIP::debugLevel_ = SSys::getenvvar("PIP_debugLevel", "FULL" ) ; 
+
+OptixCompileDebugLevel PIP::debugLevel()
+{
+    OptixCompileDebugLevel level  ; 
+      
+    if(     strcmp(debugLevel_, "NONE") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_NONE ; 
+    else if(strcmp(debugLevel_, "LINEINFO") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO ; 
+    else if(strcmp(debugLevel_, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
+    else assert(0) ; 
+
+    LOG(info) << " debugLevel_ " << debugLevel_ << " level " << level ;  
+    return level ; 
+}
+
+
+const char* PIP::optLevel_ = SSys::getenvvar("PIP_optLevel", "FULL" ) ; 
+OptixCompileOptimizationLevel PIP::optLevel()
+{
+    OptixCompileOptimizationLevel level ; 
+    if(      strcmp(optLevel_, "LEVEL_0") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_0  ; 
+    else if( strcmp(optLevel_, "LEVEL_1") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_1  ; 
+    else if( strcmp(optLevel_, "LEVEL_2") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_2  ; 
+    else if( strcmp(optLevel_, "LEVEL_3") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_LEVEL_3  ; 
+    else if( strcmp(optLevel_, "DEFAULT") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_DEFAULT  ; 
+    else assert(0) ; 
+ 
+    LOG(info) << " optLevel_ " << optLevel_ << " level " << level ;  
+    return level ; 
+}
+
 
 /**
 PIP::linkPipeline
@@ -297,8 +332,8 @@ void PIP::linkPipeline(unsigned max_trace_depth)
 
     OptixPipelineLinkOptions pipeline_link_options = {};
     pipeline_link_options.maxTraceDepth          = max_trace_depth ;
-    pipeline_link_options.debugLevel             = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
     pipeline_link_options.overrideUsesMotionBlur = false;
+    pipeline_link_options.debugLevel             = debugLevel() ;
 
     size_t sizeof_log = 0 ; 
     char log[2048]; 

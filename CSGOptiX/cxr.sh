@@ -62,6 +62,7 @@ sla=             # solid_label selection
 cam=0            # 0:perpective 1:orthographic 2:equirect (2:not supported in CSGOptiX(7) yet)
 tmin=0.1         # near in units of extent, so typical range is 0.1-2.0 for visibility, depending on EYE->LOOK distance
 zoom=1.0
+size=2560,1440,1
 
 [ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop 
 
@@ -74,6 +75,7 @@ export SLA="${SLA:-$sla}"  # --solid_label
 export CAM=${CAM:-$cam}    # evar:CAMERATYPE
 export TMIN=${TMIN:-$tmin} # evar:TMIN
 export ZOOM=${ZOOM:-$zoom} 
+export SIZE=${SIZE:-$size} 
 export CAMERATYPE=$CAM     # okc/Camera::Camera default 
 export OPTICKS_GEOM=${OPTICKS_GEOM:-$MOI}  # "sweeper" role , used by Opticks::getOutPrefix   
 
