@@ -129,6 +129,7 @@ void CSGOptiX::init()
     LOG(LEVEL) << " ptxpath " << ptxpath  ; 
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
+    initStack(); 
     initPeta(); 
     initParams(); 
     initGeometry();
@@ -137,6 +138,17 @@ void CSGOptiX::init()
 
     LOG(LEVEL) << "]" ; 
 }
+
+void CSGOptiX::initStack()
+{
+    LOG(info); 
+#if OPTIX_VERSION < 70000
+#else
+    pip->configureStack(); 
+#endif
+
+}
+
 void CSGOptiX::initPeta()
 { 
     peta->zero(); 

@@ -149,10 +149,8 @@ PTX from file is read and compiled into the module
 
 **/
 
-
 const char* PIP::CreateModule_optLevel   = SSys::getenvvar("PIP_CreateModule_optLevel", "DEFAULT" ) ; 
 const char* PIP::CreateModule_debugLevel = SSys::getenvvar("PIP_CreateModule_debugLevel", "LINEINFO" ) ; 
-
 
 OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options ) // static 
 {

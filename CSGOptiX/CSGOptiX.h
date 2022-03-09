@@ -85,6 +85,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     const char* desc() const ; 
 
     void init(); 
+    void initStack(); 
     void initPeta();
     void initParams();
     void initGeometry();

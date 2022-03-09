@@ -30,7 +30,11 @@ export OPTICKS_GEOM=cxr_overview
 
 #[ "$(uname)" == "Darwin" ] && emm=1, || emm=t8,
 
-emm=t0    # "t0" : tilde zero meaning all       "t0," : exclude bit 0 global,  "t8," exclude mm 8 
+emm_all=t0        # tilde zero     : (without comma so this is whole number spec)  meaning ALL
+emm_noglobal=t0,  # tilde 0-th bit : (with comma meaning single bitindex spec) meaning exclude solid 0 (global) 
+emm_no8=t8,       # tilde 8-th bit : exclude solid 8 
+emm=$emm_all
+
 export EMM=${EMM:-$emm}
 
 export NAMEPREFIX=cxr_overview_emm_${EMM}_moi_      # MOI gets appended by the executable
