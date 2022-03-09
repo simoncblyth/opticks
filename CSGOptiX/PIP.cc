@@ -117,7 +117,7 @@ OptixProgramGroupOptions PIP::CreateProgramGroupOptions() // static
     return program_group_options ; 
 }
 
-const PIP::MAX_TRACE_DEPTH = SSys::getenvint("PIP_max_trace_depth", 1 ) ;   // was 2 
+const int PIP::MAX_TRACE_DEPTH = SSys::getenvint("PIP_max_trace_depth", 1 ) ;   // was 2 
  
 PIP::PIP(const char* ptx_path_ ) 
     :
