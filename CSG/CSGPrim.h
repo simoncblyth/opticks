@@ -90,6 +90,8 @@ struct CSG_API CSGPrim
 
     // -------- mesh/repeat/primIdx are metadata for debugging convenience 
 
+
+
     PRIM_METHOD unsigned  meshIdx() const {           return q1.u.y ; }  // aka lvIdx
     PRIM_METHOD void   setMeshIdx(unsigned midx){     q1.u.y = midx ; }
 

@@ -945,8 +945,13 @@ void CSG_GGeo_Convert::addOneNodeSolid(unsigned solidIdx, unsigned primIdx, unsi
     }
 }
 
+/**
+CSG_GGeo_Convert::addDeepCopySolid
+-------------------------------------
 
+Invoked from main CSG_GGeoTest.cc when DEEP_COPY_SOLID envvar is defined. 
 
+**/
 void CSG_GGeo_Convert::addDeepCopySolid()
 {
     unsigned num_solid_standard = foundry->getNumSolid(STANDARD_SOLID) ; 

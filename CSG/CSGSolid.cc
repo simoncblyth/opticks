@@ -29,6 +29,8 @@ CSGSolid CSGSolid::Make( const char* label_, int numPrim_, int primOffset_ )
     return so ; 
 }
 
+
+
 std::string CSGSolid::desc() const 
 {
     std::string label16(label, 16); 

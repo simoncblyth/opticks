@@ -24,6 +24,7 @@ set(TEST_SOURCES
     CSGMakerTest.cc
     CSGQueryTest.cc
     CSGSelectionTest.cc
+    CSGCloneTest.cc
 
     intersect_leaf_phicut_test.cc 
     intersect_leaf_thetacut_test.cc

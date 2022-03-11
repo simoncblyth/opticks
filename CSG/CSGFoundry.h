@@ -31,8 +31,51 @@ struct CSGGenstep ;
 CSGFoundry
 ============
 
-* CSGSolids contain one or more CSGPrim  (CSGPrim would correspond to Geant4 G4VSolid)
-* CSGPrim contain one or more CSGNode    (CSGNode are CSG constituent nodes) 
+::
+
+        +-------+     +-------+    +---------+     +--------+       +-------+   +-------+        +------+
+        | inst  |     | solid |    |  prim   |     | node   |       | tran  |   | itra  |        | plan |
+        +=======+     +=======+    +=========+     +========+       +=======+   +=======+        +======+
+        | s=0   | ->  |       | -> |         | ->  |        |  ->   |       |   |       |        |      |
+        | s=0   |     |       |    |         |     |        |       |       |   |       |        |      |
+        | s=0   |     |       |    +---------+     |        |       |       |   |       |        |      |
+        | s=0   |     +-------+    |         |     |        |       |       |   |       |        +------+
+        | s=1   |                  |         |     |        |       |       |   |       |
+        | s=1   |                  |         |     +--------+       |       |   |       |
+        | s=1   |                  |         |     |        |       |       |   |       |
+        | s=1   |                  +---------+     |        |       |       |   |       |
+        +-------+                                  |        |       |       |   |       |
+                                                   |        |       |       |   |       |
+                                                   |        |       |       |   |       |
+                                                   |        |       |       |   |       |
+                                                   |        |       |       |   |       |
+                                                   |        |       |       |   |       |
+                                                   +--------+       |       |   |       |  
+                                                                    |       |   |       |
+                                                                    |       |   |       |
+                                                                    |       |   |       |
+                                                                    |       |   |       |
+                                                                    +-------+   +-------+
+       
+inst 
+   array of qat4 with single solid references (gas_idx)
+
+solid
+   references range of prim with (numPrim, primOffset)  
+prim
+   references range of node with (numNode, nodeOffset) (roughly corresponds to G4VSolid)
+node
+   references single transform with tranOffset 
+   sometimes references range of planes with (planOffset, numPlan)
+   (CSG constituent nodes : sphere, box, boolean operators)
+
+tran
+    array of quat4 node transforms, same size as itra
+itra
+    array of quat4 node inverse transforms, same size as tran
+plan 
+    array of float4 planes 
+
 
 **/
 

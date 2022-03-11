@@ -1331,22 +1331,25 @@ CSGSolid* CSGFoundry::addSolid(unsigned numPrim, const char* label, int primOffs
 CSGFoundry::addDeepCopySolid
 -------------------------------
 
+Used only from CSG_GGeo_Convert::addDeepCopySolid
+
+
 TODO: will probably want to always add transforms as the point of making 
 deep copies is to allow making experimental changes to the copies 
 eg for applying progressive shrink scaling to check whether problems are caused 
 by bbox being too close to each other
+
+
  
 **/
 CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
 {
     std::string cso_label = label ? label : CSGSolid::MakeLabel('d', solidIdx) ; 
 
-
     LOG(info) << " cso_label " << cso_label ; 
     std::cout << " cso_label " << cso_label << std::endl ; 
 
     const CSGSolid* oso = getSolid(solidIdx); 
-
     unsigned numPrim = oso->numPrim ; 
 
     AABB sbb = {} ; 
@@ -1406,9 +1409,10 @@ CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
 
             // TODO: fix this in CSGNode 
             bool c0 = cnd.is_complement(); 
-            cnd.zeroTransformComplement(); 
-            cnd.setComplement(c0) ; 
-            cnd.setTransform( c_tranIdx );   
+            //cnd.zeroTransformComplement(); 
+            //cnd.setComplement(c0) ; 
+            //cnd.setTransform( c_tranIdx );   
+            cnd.setTransformComplement(c_tranIdx, c0);  
 
             unsigned c_tranIdx2 = cnd.gtransformIdx() ; 
 
