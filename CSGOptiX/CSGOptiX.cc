@@ -10,26 +10,49 @@
 #include <cuda_runtime.h>
 #include <glm/glm.hpp>
 
+
+// sysrap
 #include "SStr.hh"
 #include "SSys.hh"
 #include "SMeta.hh"
 #include "SPath.hh"
 #include "SVec.hh"
-#include "QBuf.hh"
-
-#include "BTimeStamp.hh"
 #include "PLOG.hh"
+#include "scuda.h"
+#include "squad.h"
+
+
+/**
+TODO: move necessary functionality from brap and okc down to sysrap 
+      to make it possible to have an extremely minimal opticks install
+      (without brap npy okc)
+      for hackathons, profiling, reporting test cases etc..
+
+      Started this in sysrap/SOpticks
+**/
+
+//     
+// brap
+#include "BTimeStamp.hh"
+
+// okc:optickscore
 #include "Opticks.hh"
 #include "Composition.hh"
 #include "FlightPath.hh"
 
-#include "scuda.h"
-#include "squad.h"
-
+// csg 
 #include "CSGPrim.h"
 #include "CSGFoundry.h"
-
 #include "CSGView.h"
+
+// qudarap
+#include "QBuf.hh"
+#include "QSim.hh"
+#include "qsim.h"
+#include "QSeed.hh"
+#include "QEvent.hh"
+
+// CSGOptiX
 #include "Frame.h"
 #include "Params.h"
 
@@ -44,12 +67,6 @@
 #endif
 
 #include "CSGOptiX.h"
-
-// simulation
-#include "QSim.hh"
-#include "qsim.h"
-#include "QSeed.hh"
-#include "QEvent.hh"
 
 
 

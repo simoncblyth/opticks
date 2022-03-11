@@ -15,7 +15,7 @@ resolut-scan(){
 resolut-info()
 {
    local msg="=== $FUNCNAME :"
-   local factor=$1
+   local factor=${1:-1}
    local sz=$(resolut-size  $factor)
    local px=$(resolut-pixels $sz)
    local mpx=$(resolut-mpixels $sz)

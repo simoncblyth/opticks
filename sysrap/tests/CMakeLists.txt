@@ -65,6 +65,7 @@ set(TEST_SOURCES
    SEnabledTest.cc
    SBitFromStringTest.cc
    SRandTest.cc
+   SOpticksTest.cc
 
    SRngSpecTest.cc 
 

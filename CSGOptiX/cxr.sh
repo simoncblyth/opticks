@@ -63,7 +63,7 @@ cam=0            # 0:perpective 1:orthographic 2:equirect (2:not supported in CS
 tmin=0.1         # near in units of extent, so typical range is 0.1-2.0 for visibility, depending on EYE->LOOK distance
 zoom=1.0
 size=1280,720,1
-#size=2560,1440,1
+sizescale=1.5
 
 [ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop 
 
@@ -77,10 +77,12 @@ export CAM=${CAM:-$cam}    # evar:CAMERATYPE
 export TMIN=${TMIN:-$tmin} # evar:TMIN
 export ZOOM=${ZOOM:-$zoom} 
 export SIZE=${SIZE:-$size} 
+export SIZESCALE=${SIZESCALE:-$sizescale} 
+
 export CAMERATYPE=$CAM     # okc/Camera::Camera default 
 export OPTICKS_GEOM=${OPTICKS_GEOM:-$MOI}  # "sweeper" role , used by Opticks::getOutPrefix   
 
-vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE"
+vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE"
 for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
 optix_version=$(CSGOptiXVersion 2>/dev/null)
@@ -104,7 +106,7 @@ DIV=""
 [ -n "$GDB" ] && DIV="--" 
 
 render-cmd(){ cat << EOC
-$GDB $bin $DIV --nameprefix "$NAMEPREFIX" --cvd $CVD -e "$EMM" --size "$SIZE" --solid_label "$SLA" $* 
+$GDB $bin $DIV --nameprefix "$NAMEPREFIX" --cvd $CVD -e "$EMM" --size "$SIZE" --sizescale "$SIZESCALE" --solid_label "$SLA" $* 
 EOC
 }   
 

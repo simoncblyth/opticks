@@ -42,6 +42,12 @@ TODO:
 
 2. group the options 
 
+INVESTIGATE ALTERNATIVES TO boost::program_options  EG 
+
+* https://github.com/p-ranav/awesome-hpp#argument-parsers
+* https://github.com/p-ranav/argparse
+
+
 **/
 
 template <class Listener>

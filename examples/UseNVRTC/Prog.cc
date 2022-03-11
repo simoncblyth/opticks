@@ -86,6 +86,84 @@ includeNames
 
 Alternatively, the compile option -I can be used if the header is guaranteed to exist in the file system at runtime.
 
+
+
+
+
+* https://forums.developer.nvidia.com/t/include-header-in-nvrtc/56715
+
+Robert_Crovella January 5, 2018, 10:43pm #14 A description of how to use these
+parameters is contained here:
+
+http://docs.nvidia.com/cuda/nvrtc/index.html#basic-usage
+
+You are still using them incorrectly.
+
+The nvrtc mechanism gives 2 methods by which an include file can be
+incorporated into your program:
+
+By passing the entire contents of the include file to nvrtcCreateProgram By
+passing just the path of the include file to nvrtcCompileProgram The second
+method is probably easier. The first method is provided in case you cannot be
+certain that a particular include file will be available or findable at the
+place you expect in the filesystem, when the program is being compiled at
+runtime.
+
+The first method is not really outlined anywhere (although it is offered via
+jitify). An example of the second method is available in the CUDA sample codes,
+in the file /usr/local/cuda/samples/common/inc/nvrtc_helper.h Study the
+function compileFileToPTX in that helper file, and note how the
+cooperative_groups.h header file is passed to the nvrtcCompileProgram function.
+
+/usr/local/cuda/samples/common/inc/nvrtc_helper.h::
+
+     42 
+     43     int numCompileOptions = 0;
+     44 
+     45     char *compileParams[1];
+     46 
+     47     if (requiresCGheaders)
+     48     {
+     49         std::string compileOptions;
+     50         char *HeaderNames = "cooperative_groups.h";
+     51 
+     52         compileOptions = "--include-path=";
+     53 
+     54         std::string path = sdkFindFilePath(HeaderNames, argv[0]);
+     55         if (!path.empty())
+     56         {
+     57             std::size_t found = path.find(HeaderNames);
+     58             path.erase(found);
+     59         }
+     60         else
+     61         {
+     62             printf("\nCooperativeGroups headers not found, please install it in %s sample directory..\n Exiting..\n", argv[0]);
+     63         }
+     64         compileOptions += path.c_str();
+     65         compileParams[0] = (char *) malloc(sizeof(char)* (compileOptions.length() + 1));
+     66         strcpy(compileParams[0], compileOptions.c_str());
+     67         numCompileOptions++;
+     68     }
+     69 
+     70     // compile
+     71     nvrtcProgram prog;
+     72     NVRTC_SAFE_CALL("nvrtcCreateProgram", nvrtcCreateProgram(&prog, memBlock,
+     73                                                      filename, 0, NULL, NULL));
+     74 
+     75     nvrtcResult res = nvrtcCompileProgram(prog, numCompileOptions, compileParams);
+     76 
+        
+
+
+If you want to use the first method, don’t pass the path to the file in the
+header_sources, pass the complete contents of the include file in
+header_sources. This is the proximal reason for the error you are getting. The
+compiler is attempting to interpret /home/martin/ as the C/C++ code contents of
+your header file.
+
+
+
+
 **/
 
 void Prog::init()
