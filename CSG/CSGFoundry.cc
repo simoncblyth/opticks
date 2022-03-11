@@ -141,6 +141,7 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
     return mismatch ; 
 }
 
+
 template<typename T>
 int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std::vector<T>& b )
 {
