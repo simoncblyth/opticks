@@ -21,10 +21,23 @@ optix7-source(){   echo ${BASH_SOURCE} ; }
 optix7-vi(){       vi $(optix7-source) ; }
 optix7-env(){      olocal- ; }
 optix7-sbt(){      open ~/opticks_refs/sbt-s21888-rtx-accelerated-raytracing-with-optix-7.pdf ; }
+
+optix7-types(){    vim -R $(optix7-prefix)/include/optix_7_types.h ; }
 optix7-usage(){ cat << \EOU
 
 OptiX 7 : Brand New Lower Level API
 ======================================= 
+
+TODO
+-----
+
+revisit optix7c-cd and SDK 
+
+
+Program Group Creation
+-------------------------
+
+* https://raytracing-docs.nvidia.com/optix7/guide/index.html#program_pipeline_creation#program-group-creation
 
 Callables
 -----------
@@ -1249,6 +1262,11 @@ optix7-p(){ open- ; open-page $(( 4 + ${1:-0} )) $(optix7-pdf-) ; }
 
 optix7-g(){ optix7-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -Hi ${1:-texture} {} \+ ; }
 optix7-l(){ optix7-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -li ${1:-texture} {} \+ ; }
+
+optix7-f(){  optix7-cd ; find . -type f -exec grep -Hi ${1:-nvrtc} {} \+ ; }
+optix7-fl(){ optix7-cd ; find . -type f -exec grep -li ${1:-nvrtc} {} \+ ; }
+
+
 optix6-g(){ optix6-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -Hi ${1:-texture} {} \+ ; }
 optix6-l(){ optix6-cd ; find . -name '*.cpp' -o -name '*.h' -exec grep -li ${1:-texture} {} \+ ; }
 

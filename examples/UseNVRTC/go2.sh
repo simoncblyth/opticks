@@ -1,11 +1,7 @@
 #!/bin/bash 
 
-# /Developer/NVIDIA/CUDA-9.1/doc/pdf/NVRTC_User_Guide.pdf
-
-
 sdir=$(pwd)
-default_name=$(basename $sdir) 
-name=${NAME:-$default_name}
+name=UseNVRTC2
 bdir=/tmp/$USER/opticks/$name/build 
 rm   -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
@@ -13,6 +9,7 @@ export CUDA_PREFIX=/usr/local/cuda
 
 clang++ \
       $sdir/$name.cc \
+      $sdir/Prog.cc \
       -o $name \
       -std=c++11 \
       -I$CUDA_PREFIX/include \

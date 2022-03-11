@@ -6,19 +6,11 @@
 #include <cassert>
 #include <string>
 #include <vector>
-#include <nvrtc.h>
+
+#include "Prog.h"
+
 #include <cuda.h>
 
-#define STRINGIFY(x) STRINGIFY2(x)
-#define STRINGIFY2(x) #x
-#define LINE_STR STRINGIFY(__LINE__)
-
-#define NVRTC_CHECK_ERROR( func )                                  \
-  do {                                                             \
-    nvrtcResult code = func;                                       \
-    if( code != NVRTC_SUCCESS )                                    \
-      throw std::runtime_error( "ERROR: " __FILE__ "(" LINE_STR "): " + std::string( nvrtcGetErrorString( code ) ) ); \
-  } while( 0 )
 
 const char* cu_source = R"TOKEN(
 extern "C" __global__                                         
@@ -32,56 +24,25 @@ void saxpy(float a, float *x, float *y, float *out, size_t n)
 )TOKEN";
 
 
-
-
-
 int main(int argc, char** argv)
 {
     //  source string -> ptx string
 
-    nvrtcProgram prog = 0;
-    const char* name = "saxpy.cu" ; 
-    int  numHeaders = 0 ; 
-    const char** headers = nullptr ; 
-    const char** includeNames = nullptr ; 
-    NVRTC_CHECK_ERROR( nvrtcCreateProgram( &prog, cu_source, name, numHeaders, headers, includeNames )) ;
+    Prog* prog = nullptr ; 
+    {
+        const char* name = "saxpy.cu" ; 
+        int  numHeaders = 0 ; 
+        const char** headers = nullptr ; 
+        const char** includeNames = nullptr ; 
+        prog = new Prog(name, cu_source, numHeaders, headers, includeNames ); 
+    }
 
     const char* opts[] = {"--gpu-architecture=compute_30" } ;
     int numOptions = 1 ; 
-    NVRTC_CHECK_ERROR( nvrtcCompileProgram(prog, numOptions, opts)) ;
+    prog->compile(numOptions, opts); 
+    prog->dump();  
 
-    size_t logSize;
-    NVRTC_CHECK_ERROR( nvrtcGetProgramLogSize(prog, &logSize) );
-
-    char* log = new char[logSize];
-    NVRTC_CHECK_ERROR( nvrtcGetProgramLog(prog, log) );
-
-    size_t ptxSize;
-    NVRTC_CHECK_ERROR( nvrtcGetPTXSize(prog, &ptxSize));
-
-    char *ptx = new char[ptxSize];
-    NVRTC_CHECK_ERROR( nvrtcGetPTX(prog, ptx) );
-
-    NVRTC_CHECK_ERROR( nvrtcDestroyProgram(&prog) );
-
-     
-    std::cout 
-        << "[log size " << logSize 
-        << std::endl 
-        << log 
-        << std::endl 
-        << "]log" 
-        << std::endl
-        ;
- 
-    std::cout 
-        << "[ptx size " << ptxSize
-        << std::endl 
-        << ptx 
-        << std::endl
-        << "]ptx" 
-        << std::endl
-        ;
+    const char* ptx = prog->ptx ; 
 
 
 
