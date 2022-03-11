@@ -12,6 +12,46 @@ Could find and replace tokens manually or using string templating engine such as
 * could do this compilation just at geometry translation time, not at every launch, if it takes too long  
   
 
+what about headers that include headers
+------------------------------------------
+
+* https://stackoverflow.com/questions/40087364/how-do-you-include-standard-cuda-libraries-to-link-with-nvrtc-code
+
+Hmm it seems its not so easy to use curand with nvrtc
+-------------------------------------------------------
+
+* https://stackoverflow.com/questions/40087364/how-do-you-include-standard-cuda-libraries-to-link-with-nvrtc-code
+
+* not necessarily a show stopper, it is OptiX geometry code that needs NVRTC not the curand using simulation node
+
+* https://forums.developer.nvidia.com/t/using-curand-inside-nvrtc-jit-compiled-kernels/193826
+
+
+optix nvrtc : maybe forces use of more than 700
+------------------------------------------------------
+
+Yep. Release notes:: 
+
+    7.1.0 :Fixed support in optix headers for cuda runtime compilation using nvrtc.
+
+
+* https://forums.developer.nvidia.com/t/optix-7-samples-using-nvrtc/79800
+
+
+
+jitify
+--------
+
+* https://github.com/NVIDIA/jitify
+
+
+
+UseNVRTC
+---------------
+
+* 2022 Mar : pulled out Prog as starting point at trying to use non-trivially 
+
+
 Looked at this before in 
 
 * opticks/examples/UseNVRTC

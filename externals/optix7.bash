@@ -22,6 +22,8 @@ optix7-vi(){       vi $(optix7-source) ; }
 optix7-env(){      olocal- ; }
 optix7-sbt(){      open ~/opticks_refs/sbt-s21888-rtx-accelerated-raytracing-with-optix-7.pdf ; }
 
+optix7-release-notes(){ open $HOME/opticks_refs/OptiX_Release_Notes_7.4_01.pdf ; }
+
 optix7-types(){    vim -R $(optix7-prefix)/include/optix_7_types.h ; }
 optix7-usage(){ cat << \EOU
 
