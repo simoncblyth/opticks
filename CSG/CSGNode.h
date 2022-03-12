@@ -111,7 +111,7 @@ struct CSG_API CSGNode
     NODE_METHOD unsigned planeIdx()      const { return q0.u.x ; }  // 1-based, 0 meaning None
     NODE_METHOD unsigned planeNum()      const { return q0.u.y ; } 
     NODE_METHOD void setPlaneIdx(unsigned idx){  q0.u.x = idx ; } 
-    NODE_METHOD void setPlaneNum(unsigned num){  q0.u.x = num ; } 
+    NODE_METHOD void setPlaneNum(unsigned num){  q0.u.y = num ; } 
 
     // used for compound node types such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS and the rootnode of boolean trees CSG_UNION/CSG_INTERSECTION/CSG_DIFFERENCE...
     NODE_METHOD unsigned subNum()        const { return q0.u.x ; } 

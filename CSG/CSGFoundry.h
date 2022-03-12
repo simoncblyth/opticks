@@ -199,7 +199,7 @@ struct CSG_API CSGFoundry
     CSGSolid* addSolid(unsigned num_prim, const char* label, int primOffset_ = -1 );
     CSGPrim*  addPrim(int num_node, int nodeOffset_ ) ;   // former defaults meshIdx:-1, nodeOffset_:-1
 
-    CSGNode*  addNode(CSGNode nd, const std::vector<float4>* pl=nullptr );
+    CSGNode*  addNode(CSGNode nd, const std::vector<float4>* pl=nullptr, const Tran<double>* tr=nullptr );
     CSGNode*  addNodes(const std::vector<CSGNode>& nds );
 
     CSGNode*  addNode(AABB& bb, CSGNode nd );
@@ -226,7 +226,7 @@ struct CSG_API CSGFoundry
     void     addInstancePlaceholder(); 
 
 
-    //void makeDemoSolids();   // via maker
+    void makeDemoSolids();   // via maker
     CSGSolid* make(const char* name); 
 
 

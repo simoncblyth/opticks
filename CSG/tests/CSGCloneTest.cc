@@ -1,19 +1,18 @@
 #include "OPTICKS_LOG.hh"
 #include "CSGFoundry.h"
-#include "CSGMaker.h"
 #include "CSGClone.h"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    CSGFoundry* a = new CSGFoundry ; 
-    a->maker->makeDemoSolids(); 
+    CSGFoundry* src = new CSGFoundry ; 
+    src->makeDemoSolids(); 
 
-    CSGFoundry* b = CSGClone::Clone(a); 
-    LOG(info) << " b " << b ;  
+    CSGFoundry* dst = CSGClone::Clone(src); 
+    LOG(info) << " dst " << dst ;  
 
-    int cf = CSGFoundry::Compare(a, b); 
+    int cf = CSGFoundry::Compare(src, dst); 
     assert( cf == 0 ); 
 
     return 0 ;  

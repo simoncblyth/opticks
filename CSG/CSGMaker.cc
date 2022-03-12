@@ -408,7 +408,7 @@ CSGMaker::makeSolid11 makes 1-CSGPrim with 1-CSGNode
 ---------------------------------------------------------
 **/
 
-CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector<float4>* pl, int meshIdx  ) 
+CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector<float4>* pl, int meshIdx, const Tran<double>* tr  ) 
 {
     unsigned numPrim = 1 ; 
     CSGSolid* so = fd->addSolid(numPrim, label);
@@ -418,7 +418,7 @@ CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector
     CSGPrim* p = fd->addPrim(numNode, nodeOffset_); 
     p->setMeshIdx(meshIdx); 
 
-    CSGNode* n = fd->addNode(nd, pl ); 
+    CSGNode* n = fd->addNode(nd, pl, tr ); 
     p->setAABB( n->AABB() ); 
 
     float extent = p->extent(); 
@@ -1122,6 +1122,16 @@ CSGSolid* CSGMaker::makeSphere(const char* label, float radius)
     CSGNode nd = CSGNode::Sphere(radius); 
     return makeSolid11(label, nd, nullptr, SPHE_MIDX ); 
 }
+
+/**
+CSGMaker::makeEllipsoid
+--------------------------
+
+Hmm adding the transform to CSGFoundry before the prim gets added is problematic
+for CSGCloneTest as transfrom offsets get captured at prim creation. 
+
+**/
+
 CSGSolid* CSGMaker::makeEllipsoid(  const char* label, float rx, float ry, float rz )
 {
     CSGNode nd = CSGNode::Sphere(rx);
@@ -1136,23 +1146,15 @@ CSGSolid* CSGMaker::makeEllipsoid(  const char* label, float rx, float ry, float
 
     const Tran<double>* tr = Tran<double>::make_scale(sx, sy, sz ); 
 
-    unsigned idx = 1 + fd->addTran(tr);      // 1-based idx, 0 meaning None
-
-    nd.setTransform(idx); 
-    return makeSolid11(label, nd, nullptr, ELLI_MIDX ); 
+    return makeSolid11(label, nd, nullptr, ELLI_MIDX, tr ); 
 }
-
-
 
 
 CSGSolid* CSGMaker::makeRotatedCylinder(const char* label, float px, float py, float radius, float z1, float z2, float ax, float ay, float az, float angle_deg )
 {
     CSGNode nd = CSGNode::Cylinder( px, py, radius, z1, z2 ); 
-    const Tran<float>* tr = Tran<float>::make_rotate(ax, ay, az, angle_deg ); 
-    unsigned idx = 1 + fd->addTran(tr);      // 1-based idx, 0 meaning None
-    //LOG(info) << *tr ;
-    nd.setTransform(idx); 
-    return makeSolid11(label, nd, nullptr, RCYL_MIDX ); 
+    const Tran<double>* tr = Tran<double>::make_rotate(ax, ay, az, angle_deg ); 
+    return makeSolid11(label, nd, nullptr, RCYL_MIDX, tr  ); 
 }
 
 

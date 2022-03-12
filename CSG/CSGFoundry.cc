@@ -148,7 +148,7 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
     int mismatch = 0 ; 
 
     bool size_match = a.size() == b.size() ; 
-    if(!size_match) LOG(info) << name << " size_match FAIL " ; 
+    if(!size_match) LOG(info) << name << " size_match FAIL " << a.size() << " vs " << b.size()    ; 
     if(!size_match) mismatch += 1 ; 
     if(!size_match) return mismatch ;  // below will likely crash if sizes are different 
 
@@ -802,12 +802,10 @@ unsigned CSGFoundry::getSolidIdx(const CSGSolid* so) const
 
 
 
-/*
 void CSGFoundry::makeDemoSolids()
 {
     maker->makeDemoSolids(); 
 }
-*/
 
 
 CSGSolid* CSGFoundry::make(const char* name)
@@ -828,7 +826,7 @@ the global plan vector.
 
 **/
 
-CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl )
+CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl, const Tran<double>* tr  )
 {
     if(!last_added_prim) LOG(fatal) << "must addPrim prior to addNode" ; 
     assert( last_added_prim ); 
@@ -870,6 +868,11 @@ CSGNode* CSGFoundry::addNode(CSGNode nd, const std::vector<float4>* pl )
         for(unsigned i=0 ; i < num_planes ; i++) addPlan((*pl)[i]);  
     }
 
+    if(tr)
+    {
+        unsigned trIdx = 1u + addTran(tr);  // 1-based idx, 0 meaning None
+        nd.setTransform(trIdx);  
+    }
 
     node.push_back(nd); 
     last_added_node = node.data() + globalNodeIdx ;

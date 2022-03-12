@@ -1,6 +1,7 @@
 
 #include "scuda.h"
 #include "sqat4.h"
+#include "OpticksCSG.h"
 
 #include "CSGFoundry.h"
 #include "CSGSolid.h"
@@ -38,6 +39,9 @@ void CSGClone::Copy(CSGFoundry* dst, const CSGFoundry* src )
     {
         unsigned sSolidIdx = i ; 
         const CSGSolid* sso = src->getSolid(i);
+        LOG(LEVEL) << " sso " << sso->desc() ; 
+
+
         solidMap[sSolidIdx] = -1 ; 
         unsigned numPrim = sso->numPrim ;  
 
@@ -48,6 +52,7 @@ void CSGClone::Copy(CSGFoundry* dst, const CSGFoundry* src )
         assert( dSolidIdx == sSolidIdx ); 
         CSGSolid* dso = dst->addSolid(numPrim, sso->label );   
         int dPrimOffset = dso->primOffset ;     // HMM need to account for each prim added ?
+
         solidMap[sSolidIdx] = dSolidIdx ; 
 
         //LOG(LEVEL) << " dPrimOffset " << dPrimOffset ; 
@@ -55,21 +60,20 @@ void CSGClone::Copy(CSGFoundry* dst, const CSGFoundry* src )
         for(int primIdx=sso->primOffset ; primIdx < sso->primOffset+sso->numPrim ; primIdx++)
         {
              const CSGPrim* spr = src->getPrim(primIdx); 
-
              unsigned numNode = spr->numNode()  ;  // not envisaging node selection, so this will be same in src and dst 
+
+             unsigned dPrimIdx_global = dst->getNumPrim() ;  // destination numPrim prior to prim addition
+             unsigned dPrimIdx_local = dPrimIdx_global - dPrimOffset ; // make the PrimIdx local to the solid 
+
              CSGPrim* dpr = dst->addPrim(numNode, -1 ); 
 
-             int nodeOffset = dpr->nodeOffset(); 
-             //LOG(LEVEL) << " nodeOffset " << nodeOffset ;  
+             assert( dpr->nodeOffset() == spr->nodeOffset() ); 
 
              // blind copying makes no sense as offsets will be different with selection  
              // only some metadata referring back to the GGeo geometry is appropriate for copying
 
              dpr->setMeshIdx(spr->meshIdx());    
              dpr->setRepeatIdx(spr->repeatIdx()); 
-
-             unsigned dPrimIdx_global = dst->getNumPrim() ; 
-             unsigned dPrimIdx_local = dPrimIdx_global - dPrimOffset ; 
              dpr->setPrimIdx(dPrimIdx_local); 
              dpr->setAABB( spr->AABB() ); 
 
@@ -79,25 +83,57 @@ void CSGClone::Copy(CSGFoundry* dst, const CSGFoundry* src )
              for(int nodeIdx=spr->nodeOffset() ; nodeIdx < spr->nodeOffset()+spr->numNode() ; nodeIdx++)
              {
                  const CSGNode* snd = src->getNode(nodeIdx); 
-
+                 unsigned stypecode = snd->typecode(); 
                  unsigned sTranIdx = snd->gtransformIdx(); 
-                 const qat4* tra = sTranIdx == 0 ? nullptr : src->getTran(sTranIdx-1u) ; 
-                 const qat4* itr = sTranIdx == 0 ? nullptr : src->getItra(sTranIdx-1u) ; 
-                 unsigned dTranIdx = tra && itr ? 1u + dst->addTran( tra, itr ) : 0 ; 
 
+                 bool has_planes = CSG::HasPlanes(stypecode) ; 
+                 bool has_transform = sTranIdx > 0u ; 
+ 
+
+                 LOG(LEVEL) 
+                     << " nodeIdx " << nodeIdx 
+                     << " stypecode " << stypecode 
+                     << " sTranIdx " << sTranIdx 
+                     << " csgname " << CSG::Name(stypecode) 
+                     << " has_planes " << has_planes
+                     << " has_transform " << has_transform
+                     ; 
+
+                 std::vector<float4> splanes ; 
+                 if(has_planes)
+                 {
+                     LOG(LEVEL) << " planeIdx " << snd->planeIdx() << " planeNum " << snd->planeNum() ;  
+                     for(unsigned planIdx=snd->planeIdx() ; planIdx < snd->planeIdx() + snd->planeNum() ; planIdx++)
+                     {  
+                         const float4* splan = src->getPlan(planIdx);  
+                         splanes.push_back(*splan); 
+                     }
+                 }
+
+                 unsigned dTranIdx = 0u ; 
+                 if(has_transform)
+                 {
+                     const qat4* tra = src->getTran(sTranIdx-1u) ; 
+                     const qat4* itr = src->getItra(sTranIdx-1u) ; 
+                     dTranIdx = 1u + dst->addTran( tra, itr ) ;
+                     LOG(LEVEL) << " tra " << tra << " itr " << itr << " dTranIdx " << dTranIdx ; 
+                 }
+                   
                  CSGNode dnd = {} ;
                  CSGNode::Copy(dnd, *snd );   // dumb straight copy : so need to fix transform and plan references  
-                 dnd.setTransform( dTranIdx); 
+                 dnd.setTransform( dTranIdx ); 
 
-                 dst->addNode(dnd);
+                 CSGNode* dptr = dst->addNode(dnd, &splanes);   
 
-                 //TODO: treat plan just like tran 
+                 assert( dptr->planeNum() == snd->planeNum() ); 
+                 assert( dptr->planeIdx() == snd->planeIdx() ); 
+
              }   // over nodes of the prim
         }        // over prim of the solid
 
-        dso->center_extent = sso->center_extent ;  // HMM: this is cheating 
+        dso->center_extent = sso->center_extent ;  // HMM: this is cheating, need to accumulate when using selection 
 
-    }   // over solid
+    }   // over solids
 
 
 
