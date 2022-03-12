@@ -21,10 +21,10 @@
 
 #include <string>
 #include "plog/Severity.h"
-#include "BRAP_API_EXPORT.hh"
+#include "SYSRAP_API_EXPORT.hh"
 
 /** 
-BOpticksKey
+SOpticksKey
 ============
 
 Used to communicate the geometry identity digest
@@ -32,12 +32,15 @@ to be used by Opticks instanciation (especually OpticksResource)
 without changing the Opticks interface.
 
 This is for example used with direct G4 to Opticks running, 
-where the geometry  
+where the geometry is translated.
 
+This class is needed because the OPTICKS_KEY in the environment 
+is not always appropriate to use, eg when translating geometry which 
+generates a new OPTICKS_KEY 
 
 **/
 
-class BRAP_API BOpticksKey 
+class SYSRAP_API SOpticksKey 
 {
      private:
        static const plog::Severity  LEVEL ; 
@@ -47,9 +50,10 @@ class BRAP_API BOpticksKey
         static const char* IDFILE ; 
         static const char* IDSUBD ; 
         static int         LAYOUT ; 
+        static const char* LAYOUT_ ; 
         static bool         IsSet();
-        static BOpticksKey* GetKey();
-        static bool         SetKey(const char* spec) ;  
+        static SOpticksKey* GetKey();
+        static bool         SetKey(const char* spec=nullptr) ;  
         static void         Desc() ;  
         static const char* StemName( const char* ext, const char* sep="." );
     public:
@@ -64,6 +68,7 @@ class BRAP_API BOpticksKey
         const char* getIdGDML() const ; 
         const char* getIdsubd() const ; 
         int         getLayout() const ; 
+        const char* getIdPath(const char* base) const ; 
     public:
         std::string desc() const ; 
         bool isKeySource() const ;   // current executable is direct geocache creator
@@ -72,7 +77,7 @@ class BRAP_API BOpticksKey
         static bool IsLive() ;
         bool        isLive() const ; 
     private:
-        BOpticksKey(const char* spec); 
+        SOpticksKey(const char* spec); 
         void setLive(bool live) ; 
     private:
         const char* m_spec   ; 
@@ -87,9 +92,12 @@ class BRAP_API BOpticksKey
         const char* m_idgdml ; // eg g4ok.gdml
         const char* m_idsubd ; // eg g4ok_gltf
         int         m_layout ; 
+
         const char* m_current_exename ;
         bool        m_live ; 
- 
-        static BOpticksKey* fKey ; 
+     
+
+
+        static SOpticksKey* fKey ; 
 
 };

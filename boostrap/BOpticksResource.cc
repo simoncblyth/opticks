@@ -34,6 +34,8 @@ namespace fs = boost::filesystem;
 #include "SStr.hh"
 #include "SProc.hh"
 #include "SAr.hh"
+#include "SOpticksResource.hh"
+#include "SOpticksKey.hh"
 
 #include "BMeta.hh"
 #include "BFile.hh"
@@ -41,15 +43,15 @@ namespace fs = boost::filesystem;
 #include "BPath.hh"
 #include "BEnv.hh"
 #include "BResource.hh"
+
 #include "BOpticksResource.hh"
-#include "BOpticksKey.hh"
 
 #include "PLOG.hh"
 
 const plog::Severity BOpticksResource::LEVEL = PLOG::EnvLevel("BOpticksResource", "DEBUG") ; 
 
 
-BOpticksResource* BOpticksResource::fInstance = NULL  ;  
+BOpticksResource* BOpticksResource::fInstance = nullptr  ;  
 BOpticksResource* BOpticksResource::Instance()
 {
     return fInstance ; 
@@ -61,7 +63,7 @@ BOpticksResource* BOpticksResource::Get(const char* spec)  // static
 
 BOpticksResource* BOpticksResource::Create(const char* spec)  // static 
 {
-    BOpticksKey::SetKey(spec) ;  //  spec is normally NULL indicating use OPTICKS_KEY envvar 
+    SOpticksKey::SetKey(spec) ;  //  spec is normally nullptr indicating use OPTICKS_KEY envvar 
     BOpticksResource* rsc = new BOpticksResource ; 
     return rsc ; 
 }
@@ -76,7 +78,7 @@ instance and do initViaKey assuming an OPTICKS_KEY envvar.
 **/
 const char* BOpticksResource::GetCachePath(const char* rela, const char* relb, const char* relc ) // static 
 {
-    BOpticksResource* rsc = BOpticksResource::Get(NULL) ; 
+    BOpticksResource* rsc = BOpticksResource::Get(nullptr) ; 
     return rsc->makeIdPathPath(rela, relb, relc); 
 }
 
@@ -103,60 +105,60 @@ BOpticksResource::BOpticksResource()
     m_testgeo(false), 
     m_log(new SLog("BOpticksResource::BOpticksResource","",debug)),
     m_setup(false),
-    m_key(BOpticksKey::GetKey()),   // will be NULL unless BOpticksKey::SetKey has been called 
-    m_id(NULL),
+    m_key(SOpticksKey::GetKey()),   // will be nullptr unless BOpticksKey::SetKey has been called 
+    m_id(nullptr),
     m_res(new BResource),
     m_layout(SSys::getenvint("OPTICKS_RESOURCE_LAYOUT", 0)),   //  gets reset by from the key 
-    m_install_prefix(NULL),
-    m_geocache_prefix(NULL),
-    m_rngcache_prefix(NULL),
-    m_usercache_prefix(NULL),
-    m_opticksdata_dir(NULL),
-    m_opticksaux_dir(NULL),
-    m_geocache_dir(NULL),
-    m_rngcache_dir(NULL),
-    m_runcache_dir(NULL),
-    m_resource_dir(NULL),
-    m_gensteps_dir(NULL),
-    m_export_dir(NULL),
-    m_installcache_dir(NULL),
-    m_optixcachedefault_dir(NULL),
-    m_rng_dir(NULL),
-    m_tmpuser_dir(NULL),
-    m_srcpath(NULL),
-    m_srcfold(NULL),
-    m_srcbase(NULL),
-    m_srcdigest(NULL),
-    m_idfold(NULL),
-    m_idfile(NULL),
-    m_idgdml(NULL),
-    m_idsubd(NULL),
-    m_idname(NULL),
-    m_idpath(NULL),
-    m_idpath_tmp(NULL),
-    m_evtbase(NULL),
-    m_evtpfx(NULL),
-    m_debugging_idpath(NULL),
-    m_debugging_idfold(NULL),
-    m_daepath(NULL),
-    m_gdmlpath(NULL),
-    m_srcgdmlpath(NULL),
-    m_srcgltfpath(NULL),
-    m_idmappath(NULL),
-    m_g4codegendir(NULL),
-    m_gdmlauxmetapath(NULL),
-    m_cachemetapath(NULL),
-    m_runcommentpath(NULL),
-    m_primariespath(NULL),
-    m_directgensteppath(NULL),
-    m_directphotonspath(NULL),
-    m_gltfpath(NULL),
-    m_testcsgpath(NULL),
-    m_testconfig(NULL),
-    m_gdmlauxmeta(NULL),
-    m_gdmlauxmeta_lvmeta(NULL),
-    m_gdmlauxmeta_usermeta(NULL),
-    m_opticks_geospecific_options(NULL) 
+    m_install_prefix(nullptr),
+    m_geocache_prefix(nullptr),
+    m_rngcache_prefix(nullptr),
+    m_usercache_prefix(nullptr),
+    m_opticksdata_dir(nullptr),
+    m_opticksaux_dir(nullptr),
+    m_geocache_dir(nullptr),
+    m_rngcache_dir(nullptr),
+    m_runcache_dir(nullptr),
+    m_resource_dir(nullptr),
+    m_gensteps_dir(nullptr),
+    m_export_dir(nullptr),
+    m_installcache_dir(nullptr),
+    m_optixcachedefault_dir(nullptr),
+    m_rng_dir(nullptr),
+    m_tmpuser_dir(nullptr),
+    m_srcpath(nullptr),
+    m_srcfold(nullptr),
+    m_srcbase(nullptr),
+    m_srcdigest(nullptr),
+    m_idfold(nullptr),
+    m_idfile(nullptr),
+    m_idgdml(nullptr),
+    m_idsubd(nullptr),
+    m_idname(nullptr),
+    m_idpath(nullptr),
+    m_idpath_tmp(nullptr),
+    m_evtbase(nullptr),
+    m_evtpfx(nullptr),
+    m_debugging_idpath(nullptr),
+    m_debugging_idfold(nullptr),
+    m_daepath(nullptr),
+    m_gdmlpath(nullptr),
+    m_srcgdmlpath(nullptr),
+    m_srcgltfpath(nullptr),
+    m_idmappath(nullptr),
+    m_g4codegendir(nullptr),
+    m_gdmlauxmetapath(nullptr),
+    m_cachemetapath(nullptr),
+    m_runcommentpath(nullptr),
+    m_primariespath(nullptr),
+    m_directgensteppath(nullptr),
+    m_directphotonspath(nullptr),
+    m_gltfpath(nullptr),
+    m_testcsgpath(nullptr),
+    m_testconfig(nullptr),
+    m_gdmlauxmeta(nullptr),
+    m_gdmlauxmeta_lvmeta(nullptr),
+    m_gdmlauxmeta_usermeta(nullptr),
+    m_opticks_geospecific_options(nullptr) 
 {
     init();
     (*m_log)("DONE"); 
@@ -348,7 +350,7 @@ BOpticksResource::ResolveInstallPrefix
 const char* BOpticksResource::ResolveInstallPrefix()  // static
 {
     const char* evalue = SSys::getenvvar(INSTALL_PREFIX_KEY);    
-    return evalue == NULL ?  strdup(OKCONF_OPTICKS_INSTALL_PREFIX) : evalue ; 
+    return evalue == nullptr ?  strdup(OKCONF_OPTICKS_INSTALL_PREFIX) : evalue ; 
 }
 
 void BOpticksResource::initInstallPrefix()
@@ -387,107 +389,23 @@ void BOpticksResource::initInstallPrefix()
 }
 
 
-
-const char* BOpticksResource::GEOCACHE_PREFIX_KEY = "OPTICKS_GEOCACHE_PREFIX" ; 
-const char* BOpticksResource::RNGCACHE_PREFIX_KEY = "OPTICKS_RNGCACHE_PREFIX" ; 
-const char* BOpticksResource::USERCACHE_PREFIX_KEY = "OPTICKS_USERCACHE_PREFIX" ; 
-
-/**
-BOpticksResource::ResolveGeoCachePrefix
-----------------------------------------
-
-1. sensitive to envvar OPTICKS_GEOCACHE_PREFIX
-2. if envvar not defined defaults to $HOME/.opticks 
-3. the envvar is subsequently internally set by BOpticksResource::initCachePrefix
-
-NB changes to layout need to be done in triplicate C++/bash/py::
-
-   ana/geocache.bash
-   ana/key.py
-   boostrap/BOpticksResource.cc
-
-**/
-
-const char* BOpticksResource::ResolveGeoCachePrefix()  // static
-{
-    const char* evalue = SSys::getenvvar(GEOCACHE_PREFIX_KEY);    
-    return evalue == NULL ?  MakeUserDir(".opticks", NULL) : evalue ; 
-}
-const char* BOpticksResource::ResolveRngCachePrefix()  // static
-{
-    const char* evalue = SSys::getenvvar(RNGCACHE_PREFIX_KEY);    
-    return evalue == NULL ?  MakeUserDir(".opticks", NULL) : evalue ; 
-}
-const char* BOpticksResource::ResolveUserCachePrefix()  // static
-{
-    const char* evalue = SSys::getenvvar(USERCACHE_PREFIX_KEY);    
-    return evalue == NULL ?  MakeUserDir(".opticks", NULL) : evalue ; 
-}
-
-
-
-
 void BOpticksResource::initGeoCachePrefix()
 {
-    m_geocache_prefix = ResolveGeoCachePrefix();
+    m_geocache_prefix = SOpticksResource::ResolveGeoCachePrefix();
     m_res->addDir("geocache_prefix", m_geocache_prefix );
-
-    bool overwrite = true ; 
-    int rc = SSys::setenvvar(GEOCACHE_PREFIX_KEY, m_geocache_prefix, overwrite );  
-    // always set for uniformity 
-
-    LOG(LEVEL) 
-         << " geocache_prefix " << m_geocache_prefix  
-         << " key " << GEOCACHE_PREFIX_KEY
-         << " rc " << rc
-         ;   
- 
-    assert(rc==0); 
 }
 
 void BOpticksResource::initRngCachePrefix()
 {
-    m_rngcache_prefix = ResolveRngCachePrefix();
+    m_rngcache_prefix = SOpticksResource::ResolveRngCachePrefix();
     m_res->addDir("rngcache_prefix", m_rngcache_prefix );
-
-    bool overwrite = true ; 
-    int rc = SSys::setenvvar(RNGCACHE_PREFIX_KEY, m_rngcache_prefix, overwrite );  
-    // always set for uniformity 
-
-    LOG(LEVEL) 
-         << " rngcache_prefix " << m_rngcache_prefix  
-         << " key " << RNGCACHE_PREFIX_KEY
-         << " rc " << rc
-         ;   
- 
-    assert(rc==0); 
 }
 
 void BOpticksResource::initUserCachePrefix()
 {
-    m_usercache_prefix = ResolveUserCachePrefix();
+    m_usercache_prefix = SOpticksResource::ResolveUserCachePrefix();
     m_res->addDir("usercache_prefix", m_usercache_prefix );
-
-    bool overwrite = true ; 
-    int rc = SSys::setenvvar(USERCACHE_PREFIX_KEY, m_usercache_prefix, overwrite );  
-    // always set for uniformity 
-
-    LOG(LEVEL) 
-         << " usercache_prefix " << m_usercache_prefix  
-         << " key " << USERCACHE_PREFIX_KEY
-         << " rc " << rc
-         ;   
- 
-    assert(rc==0); 
 }
-
-
-
-
-
-
-
-
 
 
 std::string BOpticksResource::getGeocachePath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
@@ -504,8 +422,6 @@ std::string BOpticksResource::getResultsPath(const char* rela, const char* relb,
 
 
 
-
-
 std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
 {
     const char* idpath = getIdPath(); 
@@ -516,20 +432,16 @@ std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, 
 }
 
 
-
-
-
-
 void BOpticksResource::initTopDownDirs()
 { 
-    m_geocache_dir         = GeocacheDir() ;         // eg ~/.opticks/geocache
-    m_geocache_shpath      = GeocacheScriptPath() ;  // eg ~/.opticks/geocache/geocache.sh 
+    m_geocache_dir         = SOpticksResource::GeocacheDir() ;         // eg ~/.opticks/geocache
+    m_geocache_shpath      = SOpticksResource::GeocacheScriptPath() ;  // eg ~/.opticks/geocache/geocache.sh 
 
-    m_runcache_dir         = RuncacheDir() ;      // eg ~/.opticks/runcache
-    m_rngcache_dir         = RNGCacheDir() ;      // eg ~/.opticks/rngcache
-    m_rng_dir              = RNGDir() ;           // eg ~/.opticks/rngcache/RNG
+    m_runcache_dir         = SOpticksResource::RuncacheDir() ;      // eg ~/.opticks/runcache
+    m_rngcache_dir         = SOpticksResource::RNGCacheDir() ;      // eg ~/.opticks/rngcache
+    m_rng_dir              = SOpticksResource::RNGDir() ;           // eg ~/.opticks/rngcache/RNG
+
     m_results_dir          = ResultsDir() ;       // eg /usr/local/opticks/results
-
     m_opticksdata_dir      = OpticksDataDir() ;   // eg /usr/local/opticks/opticksdata
     m_opticksaux_dir       = OpticksAuxDir() ;    // eg /usr/local/opticks/opticksaux or /usr/local/opticks/opticksdata depending on OPTICKS_LEGACY_GEOMETRY_ENABLED
    
@@ -564,7 +476,7 @@ void BOpticksResource::initTopDownDirs()
 
     //m_res->addDir("okc_installcache_dir", m_okc_installcache_dir );
 
-    m_tmpuser_dir = MakeTmpUserDir("opticks", NULL) ;  // now usurped with $TMP
+    m_tmpuser_dir = MakeTmpUserDir("opticks", nullptr) ;  // now usurped with $TMP
     m_res->addDir( "tmpuser_dir", m_tmpuser_dir ); 
 }
 
@@ -605,33 +517,35 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
     {   
         treedir = BFile::FormPath( idfold, "extras") ;
     }   
-    return treedir.empty() ? NULL : strdup(treedir.c_str()) ; 
+    return treedir.empty() ? nullptr : strdup(treedir.c_str()) ; 
 }
 
 
-const char* BOpticksResource::GeocacheDir(){        return MakePath(ResolveGeoCachePrefix(), "geocache", NULL); }
-const char* BOpticksResource::GeocacheScriptPath(){ return MakePath(ResolveGeoCachePrefix(), "geocache", "geocache.sh" ); }
+
+/*
+const char* BOpticksResource::GeocacheDir(){        return SOpticksResource::GeocacheDir() ; }
+const char* BOpticksResource::GeocacheScriptPath(){ return SOpticksResource::GeocacheScriptPath() ;  }
+const char* BOpticksResource::RNGCacheDir(){        return SOpticksResource::RNGCacheDir() ; }
+const char* BOpticksResource::RNGDir(){             return SOpticksResource::RNGDir() ;  }
+const char* BOpticksResource::RuncacheDir(){        return SOpticksResource::RuncacheDir() ;  }
+*/
 
 
-const char* BOpticksResource::RNGCacheDir(){    return MakePath(ResolveRngCachePrefix(), "rngcache",  NULL); }
-const char* BOpticksResource::RNGDir(){         return MakePath(RNGCacheDir(), "RNG", NULL); }
 
-const char* BOpticksResource::RuncacheDir(){    return MakePath(ResolveUserCachePrefix(), "runcache",  NULL); }
-
-const char* BOpticksResource::ShaderDir(){      return MakePath(ResolveInstallPrefix(), "gl",  NULL); }
-const char* BOpticksResource::InstallCacheDir(){return MakePath(ResolveInstallPrefix(), "installcache",  NULL); }
+const char* BOpticksResource::ShaderDir(){      return MakePath(ResolveInstallPrefix(), "gl",  nullptr); }
+const char* BOpticksResource::InstallCacheDir(){return MakePath(ResolveInstallPrefix(), "installcache",  nullptr); }
 //const char* BOpticksResource::OKCInstallPath(){ return MakePath(ResolveInstallPrefix(), "installcache", "OKC"); }
 
-const char* BOpticksResource::OpticksDataDir(){ return MakePath(ResolveInstallPrefix(), "opticksdata",  NULL); }
-const char* BOpticksResource::OpticksAuxDir(){  return MakePath(ResolveInstallPrefix(),  IsLegacyGeometryEnabled() ? "opticksdata" : "opticksaux" ,  NULL); }
+const char* BOpticksResource::OpticksDataDir(){ return MakePath(ResolveInstallPrefix(), "opticksdata",  nullptr); }
+const char* BOpticksResource::OpticksAuxDir(){  return MakePath(ResolveInstallPrefix(),  IsLegacyGeometryEnabled() ? "opticksdata" : "opticksaux" ,  nullptr); }
 
-const char* BOpticksResource::ResourceDir(){    return MakePath(OpticksAuxDir() , "resource", NULL ); }
-const char* BOpticksResource::GenstepsDir(){    return MakePath(OpticksAuxDir() , "gensteps", NULL ); }
-const char* BOpticksResource::ExportDir(){      return MakePath(OpticksAuxDir() , "export",  NULL  ); }
+const char* BOpticksResource::ResourceDir(){    return MakePath(OpticksAuxDir() , "resource", nullptr ); }
+const char* BOpticksResource::GenstepsDir(){    return MakePath(OpticksAuxDir() , "gensteps", nullptr ); }
+const char* BOpticksResource::ExportDir(){      return MakePath(OpticksAuxDir() , "export",  nullptr  ); }
 
 
 // problematic in readonly installs : because results do not belong with install paths 
-const char* BOpticksResource::ResultsDir(){     return MakePath(ResolveResultsPrefix(), "results",  NULL); }
+const char* BOpticksResource::ResultsDir(){     return MakePath(ResolveResultsPrefix(), "results",  nullptr); }
 
 
 
@@ -663,7 +577,7 @@ const char* BOpticksResource::getDebuggingIDFOLD() {    return m_debugging_idfol
 
 void BOpticksResource::setTestCSGPath(const char* testcsgpath)
 {
-    m_testcsgpath = testcsgpath ? strdup(testcsgpath) : NULL ; 
+    m_testcsgpath = testcsgpath ? strdup(testcsgpath) : nullptr ; 
 }
 const char* BOpticksResource::getTestCSGPath() const 
 {
@@ -671,7 +585,7 @@ const char* BOpticksResource::getTestCSGPath() const
 }
 void BOpticksResource::setTestConfig(const char* testconfig)
 {
-    m_testconfig = testconfig ? strdup(testconfig) : NULL ; 
+    m_testconfig = testconfig ? strdup(testconfig) : nullptr ; 
 }
 const char* BOpticksResource::getTestConfig() const 
 {
@@ -701,7 +615,7 @@ const char* BOpticksResource::MakeTmpUserDir_(const char* sub, const char* rel)
 const char* BOpticksResource::MakeTmpUserDir(const char* sub, const char* rel) 
 {
     assert( strcmp(sub, "opticks") == 0 ); 
-    assert( rel == NULL ); 
+    assert( rel == nullptr ); 
     std::string path = BFile::FormPath("$TMP") ; 
     return strdup(path.c_str());
 }
@@ -792,9 +706,9 @@ void BOpticksResource::initViaKey()
     assert( !m_setup ) ;  
     m_setup = true ; 
 
-    if( m_key == NULL )
+    if( m_key == nullptr )
     {
-        LOG(fatal) << " m_key is NULL : early exit " ; 
+        LOG(fatal) << " m_key is nullptr : early exit " ; 
         return ;    // temporary whilst debugging geocache creation
     }
     assert( m_key ) ;
@@ -917,7 +831,7 @@ void BOpticksResource::initViaKey()
     if( legacy )
     { 
         if( !m_testgeo ) m_evtbase = m_idpath ; 
-        // huh normally NULL for testgeo ?
+        // huh normally nullptr for testgeo ?
     }
     else
     {
@@ -1082,7 +996,7 @@ void BOpticksResource::initMetadata()
     if(m_gdmlauxmeta_usermeta)
     {
         std::string opts = m_gdmlauxmeta_usermeta->get<std::string>(opticks_geospecific_options, "");
-        m_opticks_geospecific_options = opts.empty() ? NULL : strdup(opts.c_str()) ;  
+        m_opticks_geospecific_options = opts.empty() ? nullptr : strdup(opts.c_str()) ;  
     }
 }
 
@@ -1122,18 +1036,18 @@ void BOpticksResource::findGDMLAuxMetaEntries(std::vector<BMeta*>& entries, cons
 
         unsigned mode = 0 ;  
 
-        if(k == NULL && v == NULL) // both NULL : match all 
+        if(k == nullptr && v == nullptr) // both nullptr : match all 
         {    
             mode = 1 ;
             entries.push_back(sub);
         }
-        else if( k != NULL && v == NULL)  // key non-NULL, value NULL : match all with that key  
+        else if( k != nullptr && v == nullptr)  // key non-nullptr, value nullptr : match all with that key  
         {
             mode = 2 ;
             bool has_key = sub->hasKey(k);
             if(has_key) entries.push_back(sub) ;
         }
-        else if( k != NULL && v != NULL)  // key non-NULL, value non-NULL : match only those with that (key,value) pair
+        else if( k != nullptr && v != nullptr)  // key non-nullptr, value non-nullptr : match only those with that (key,value) pair
         {
             mode = 3 ;
             bool has_key = sub->hasKey(k);
@@ -1204,7 +1118,7 @@ unsigned BOpticksResource::getGDMLAuxTargetLVNames(std::vector<std::string>& lvn
 BOpticksResource::getGDMLAuxTargetLVName
 -------------------------------------------
 
-Returns the first lvname or NULL
+Returns the first lvname or nullptr
 
 **/
 
@@ -1212,7 +1126,7 @@ const char* BOpticksResource::getGDMLAuxTargetLVName() const
 {
     std::vector<std::string> lvnames ;
     getGDMLAuxTargetLVNames(lvnames);
-    return lvnames.size() > 0 ? strdup(lvnames[0].c_str()) : NULL ;
+    return lvnames.size() > 0 ? strdup(lvnames[0].c_str()) : nullptr ;
 }
 
 
@@ -1255,15 +1169,15 @@ void BOpticksResource::setEventPfx(const char* pfx)
 
 bool  BOpticksResource::hasKey() const
 {
-    return m_key != NULL ; 
+    return m_key != nullptr ; 
 }
-BOpticksKey*  BOpticksResource::getKey() const
+SOpticksKey*  BOpticksResource::getKey() const
 {
     return m_key ; 
 }
 const char* BOpticksResource::getKeySpec() const 
 {
-    return m_key ? m_key->getSpec() : NULL ; 
+    return m_key ? m_key->getSpec() : nullptr ; 
 }
 std::string BOpticksResource::export_() const 
 {
@@ -1280,7 +1194,7 @@ bool BOpticksResource::isKeySource() const   // name of current executable match
 BOpticksResource::isKeyLive
 -----------------------------
 
-Only true when Opticks::SetKey used with a non-NULL spec. This is the 
+Only true when Opticks::SetKey used with a non-nullptr spec. This is the 
 case when operating from a live Geant4 geometry, such as when 
 creating a geocache with geocache-create.
 
@@ -1295,7 +1209,7 @@ bool BOpticksResource::isKeyLive() const
 
 void BOpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for test saves into non-standard locations
 {
-   m_idpath_tmp = idpath_tmp ? strdup(idpath_tmp) : NULL ;  
+   m_idpath_tmp = idpath_tmp ? strdup(idpath_tmp) : nullptr ;  
 } 
 const char* BOpticksResource::getIdPath() const 
 {
@@ -1316,19 +1230,19 @@ const char* BOpticksResource::getIdFold() const
 void BOpticksResource::Brief(const char* msg) const 
 {
     std::cerr << msg << std::endl ; 
-    std::cerr << "install_prefix    : " <<  (m_install_prefix ? m_install_prefix : "NULL" ) << std::endl ; 
-    std::cerr << "opticksdata_dir   : " <<  (m_opticksdata_dir ? m_opticksdata_dir : "NULL" ) << std::endl ; 
-    std::cerr << "geocache_dir      : " <<  (m_geocache_dir ? m_geocache_dir : "NULL" ) << std::endl ; 
-    std::cerr << "resource_dir      : " <<  (m_resource_dir ? m_resource_dir : "NULL" ) << std::endl ; 
+    std::cerr << "install_prefix    : " <<  (m_install_prefix ? m_install_prefix : "nullptr" ) << std::endl ; 
+    std::cerr << "opticksdata_dir   : " <<  (m_opticksdata_dir ? m_opticksdata_dir : "nullptr" ) << std::endl ; 
+    std::cerr << "geocache_dir      : " <<  (m_geocache_dir ? m_geocache_dir : "nullptr" ) << std::endl ; 
+    std::cerr << "resource_dir      : " <<  (m_resource_dir ? m_resource_dir : "nullptr" ) << std::endl ; 
 
-    std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"NULL") << std::endl; 
-    std::cerr << "gdmlpath : " <<  (m_gdmlpath?m_gdmlpath:"NULL") << std::endl; 
-    std::cerr << "gltfpath : " <<  (m_gltfpath?m_gltfpath:"NULL") << std::endl; 
-    std::cerr << "digest   : " <<  (m_srcdigest?m_srcdigest:"NULL") << std::endl; 
-    std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
-    std::cerr << "idpath_tmp " <<  (m_idpath_tmp?m_idpath_tmp:"NULL") << std::endl; 
-    std::cerr << "idfold   : " <<  (m_idfold?m_idfold:"NULL") << std::endl; 
-    std::cerr << "idname   : " <<  (m_idname?m_idname:"NULL") << std::endl; 
+    std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"nullptr") << std::endl; 
+    std::cerr << "gdmlpath : " <<  (m_gdmlpath?m_gdmlpath:"nullptr") << std::endl; 
+    std::cerr << "gltfpath : " <<  (m_gltfpath?m_gltfpath:"nullptr") << std::endl; 
+    std::cerr << "digest   : " <<  (m_srcdigest?m_srcdigest:"nullptr") << std::endl; 
+    std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"nullptr") << std::endl; 
+    std::cerr << "idpath_tmp " <<  (m_idpath_tmp?m_idpath_tmp:"nullptr") << std::endl; 
+    std::cerr << "idfold   : " <<  (m_idfold?m_idfold:"nullptr") << std::endl; 
+    std::cerr << "idname   : " <<  (m_idname?m_idname:"nullptr") << std::endl; 
 
     m_res->dumpPaths("dumpPaths");
     m_res->dumpDirs("dumpDirs");
@@ -1347,7 +1261,7 @@ std::string BOpticksResource::desc() const
     float days = float(seconds)/float(60*60*24) ;
 
     ss << "cache.SinceLastWriteTime"
-       << " digest " << ( m_srcdigest ? m_srcdigest : "NULL" )
+       << " digest " << ( m_srcdigest ? m_srcdigest : "nullptr" )
        << " seconds " << std::setw(6) << seconds
        << std::fixed << std::setprecision(3)
        << " minutes " << std::setw(6) << minutes
@@ -1367,7 +1281,7 @@ void BOpticksResource::Summary(const char* msg) const
 
     const char* prefix = m_install_prefix ; 
 
-    std::cerr << "prefix   : " <<  (prefix ? prefix : "NULL" ) << std::endl ; 
+    std::cerr << "prefix   : " <<  (prefix ? prefix : "nullptr" ) << std::endl ; 
 
     std::cerr << "debugging_idpath  " << ( m_debugging_idpath ? m_debugging_idpath : "-" )<< std::endl ; 
     std::cerr << "debugging_idfold  " << ( m_debugging_idfold ? m_debugging_idfold : "-" )<< std::endl ; 

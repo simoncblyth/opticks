@@ -25,7 +25,7 @@
 
 class SLog ; 
 
-class BOpticksKey ; 
+class SOpticksKey ; 
 class BOpticksResource ; 
 class BEnv ; 
 
@@ -160,7 +160,7 @@ class OKCORE_API OpticksResource
    private:
        SLog*             m_log ; 
        BOpticksResource* m_rsc ; 
-       BOpticksKey*      m_key ; 
+       SOpticksKey*      m_key ; 
        Opticks*          m_ok ; 
        bool              m_allownokey ; 
        OpticksQuery*     m_query ;

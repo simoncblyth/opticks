@@ -28,8 +28,8 @@
 #include "BRAP_HEAD.hh"
 
 class SLog ; 
+class SOpticksKey ; 
 
-class BOpticksKey ; 
 class BPath ; 
 class BMeta ; 
 class BResource ; 
@@ -114,10 +114,8 @@ class BRAP_API  BOpticksResource {
     protected:
         static const char* INSTALL_PREFIX_KEY  ; 
         static const char* INSTALL_PREFIX_KEY2  ; 
+
     protected:
-        static const char* GEOCACHE_PREFIX_KEY  ; 
-        static const char* RNGCACHE_PREFIX_KEY  ; 
-        static const char* USERCACHE_PREFIX_KEY  ; 
     protected:
         static const char* G4ENV_RELPATH ; 
         static const char* OKDATA_RELPATH ;
@@ -154,17 +152,19 @@ class BRAP_API  BOpticksResource {
         static const char* ResolveResultsPrefix();
         static const char* ResolveEventBase();
         static const char* ResolveInstallPrefix();
-        static const char* ResolveGeoCachePrefix();
-        static const char* ResolveRngCachePrefix();
-        static const char* ResolveUserCachePrefix();
+
+
         static const char* OpticksDataDir();
         static const char* OpticksAuxDir();
+
+        /*
         static const char* GeocacheDir();
         static const char* GeocacheScriptPath(); 
-
         static const char* RNGCacheDir();
         static const char* RNGDir();
         static const char* RuncacheDir();
+        */
+
         static const char* ShaderDir();
         static const char* ResultsDir();
 
@@ -256,7 +256,7 @@ class BRAP_API  BOpticksResource {
         void setEventBase(const char* rela, const char* relb=NULL) ; 
         void setEventPfx(const char* pfx) ; 
     public:
-        BOpticksKey* getKey() const ; 
+        SOpticksKey* getKey() const ; 
         const char*  getKeySpec() const ;
         std::string  export_() const ; 
         bool         hasKey() const ;   // distinguishes direct from legacy 
@@ -301,7 +301,7 @@ class BRAP_API  BOpticksResource {
         bool         m_testgeo ;   
         SLog*        m_log ; 
         bool         m_setup ; 
-        BOpticksKey* m_key ; 
+        SOpticksKey* m_key ; 
         BPath*       m_id ; 
         BResource*   m_res ;   
  

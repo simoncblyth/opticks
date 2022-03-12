@@ -88,7 +88,6 @@ set(SOURCES
   BResource.cc
   BOpticks.cc
   BOpticksResource.cc
-  BOpticksKey.cc
   BDynamicDefine.cc
   BOpticksEvent.cc
   BConfig.cc
@@ -136,7 +135,6 @@ set(HEADERS
   BResource.hh
   BOpticks.hh
   BOpticksResource.hh
-  BOpticksKey.hh
   BDynamicDefine.hh
   BOpticksEvent.hh
   BConfig.hh

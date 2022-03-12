@@ -71,6 +71,7 @@ Can boot in three ways:
 2. GEOM envvar identifying a test geometry, and resulting in creation of a CSGFoundry instance  
 3. CFBASE envvar identifying directory containing a persisted CSGFoundry geometry that is loaded
 
+
 **/
 
 CSGGeometry::CSGGeometry(const char* default_cfbase, const CSGFoundry* fd_)

@@ -60,7 +60,7 @@
 #include "BStr.hh"
 #include "BFile.hh"
 #include "BTimeStamp.hh"
-#include "BOpticksKey.hh"
+#include "SOpticksKey.hh"
 
 
 #include "NXform.hpp"  // header with the implementation
@@ -116,11 +116,11 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top, const char* 
 {
     const char* key = X4PhysicalVolume::Key(top) ; 
 
-    BOpticksKey::SetKey(key);
+    SOpticksKey::SetKey(key);
 
     LOG(error) << " SetKey " << key  ; 
 
-    Opticks* ok = new Opticks(0,0, argforce);  // Opticks instanciation must be after BOpticksKey::SetKey
+    Opticks* ok = new Opticks(0,0, argforce);  // Opticks instanciation must be after SOpticksKey::SetKey
 
     ok->configure();   // see notes/issues/configuration_resource_rejig.rst
 

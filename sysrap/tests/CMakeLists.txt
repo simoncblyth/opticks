@@ -66,6 +66,8 @@ set(TEST_SOURCES
    SBitFromStringTest.cc
    SRandTest.cc
    SOpticksTest.cc
+   SOpticksKeyTest.cc
+   SOpticksResourceTest.cc
 
    SRngSpecTest.cc 
 

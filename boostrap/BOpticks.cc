@@ -22,7 +22,7 @@
 #include "SArgs.hh"
 
 #include "BOpticks.hh"
-#include "BOpticksKey.hh"
+#include "SOpticksKey.hh"
 #include "BOpticksResource.hh"
 
 #include "PLOG.hh"
@@ -33,7 +33,7 @@ BOpticks::BOpticks(int argc, char** argv, const char* argforced )
     m_sargs(new SArgs(argc, argv, argforced)), 
     m_argc(m_sargs->argc),
     m_argv(m_sargs->argv),
-    m_envkey(m_sargs->hasArg("--envkey") ? BOpticksKey::SetKey(nullptr) : false),
+    m_envkey(m_sargs->hasArg("--envkey") ? SOpticksKey::SetKey(nullptr) : false),
     m_testgeo(false),
     m_resource(BOpticksResource::Get(NULL)),    // creates if no instance yet
     m_error(0)

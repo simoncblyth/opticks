@@ -12,6 +12,7 @@
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"
+#include "SOpticksResource.hh"
 #include "NP.hh"
 #include "PLOG.hh"
 
@@ -1626,8 +1627,31 @@ CSGFoundry*  CSGFoundry::MakeGeom(const char* geom) // static
     return fd ; 
 }
 
+CSGFoundry*  CSGFoundry::MakeDemo()
+{
+    CSGFoundry* fd = new CSGFoundry();
+    fd->makeDemoSolids(); 
+    return fd ; 
+}
 
+/**
+CSGFoundry::Load
+-------------------
 
+Load precedence:
+
+1. when CFBASE envvar is defined the CSGFoundry directory within CFBASE dir will be loaded
+2. otherwise SOpticksResource::CFBase will invoke CGDir to obtain the CSG_GGeo directory 
+   corresponding to the current OPTICKS_KEY envvar 
+
+**/
+
+CSGFoundry* CSGFoundry::Load() // static
+{
+    const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  // sensitive to OPTICKS_KEY 
+    LOG(info) << "cfbase " << cfbase ;
+    return Load(cfbase, "CSGFoundry"); 
+}
 
 CSGFoundry*  CSGFoundry::Load(const char* dir) // static
 {

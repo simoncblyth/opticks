@@ -92,6 +92,8 @@ struct CSG_API CSGFoundry
     static CSGFoundry* MakeGeom(const char* geom);
     static CSGFoundry* LoadGeom(const char* geom=nullptr); 
 
+    static CSGFoundry* MakeDemo(); 
+    static CSGFoundry* Load();
     static CSGFoundry* Load(const char* base, const char* rel);
     static CSGFoundry* Load(const char* dir );
 

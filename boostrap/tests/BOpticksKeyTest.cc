@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "BOpticksKey.hh"
+#include "SOpticksKey.hh"
 #include "BOpticksResource.hh"
 #include "BFile.hh"
 #include "OPTICKS_LOG.hh"
@@ -38,9 +38,9 @@ int main( int argc, char** argv )
 {
     OPTICKS_LOG(argc, argv ); 
 
-    //BOpticksKey::SetKey("X4PhysicalVolumeTest.X4PhysicalVolume.World.3ad454e0990085f20c4689fce16c0819") ; 
-    BOpticksKey::SetKey(NULL);  // NULL means use the OPTICKS_KEY envvar 
-    BOpticksKey* key = BOpticksKey::GetKey(); 
+    //SOpticksKey::SetKey("X4PhysicalVolumeTest.X4PhysicalVolume.World.3ad454e0990085f20c4689fce16c0819") ; 
+    SOpticksKey::SetKey(NULL);  // NULL means use the OPTICKS_KEY envvar 
+    SOpticksKey* key = SOpticksKey::GetKey(); 
     if( key == NULL ) 
     {
         LOG(fatal) << "key is NULL, that means you did not set the OPTICKS_KEY envvar " ; 

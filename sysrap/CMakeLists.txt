@@ -88,6 +88,8 @@ set(SOURCES
     SMath.cc
     SEvent.cc
     SOpticks.cc
+    SOpticksResource.cc
+    SOpticksKey.cc
     SThetaCut.cc 
     SPhiCut.cc 
 
@@ -178,6 +180,10 @@ set(HEADERS
     strided_range.h 
     iexpand.h 
 
+
+    SOpticks.hh
+    SOpticksResource.hh
+    SOpticksKey.hh
     SMath.hh
     SEvent.hh
     SThetaCut.hh

@@ -39,7 +39,7 @@ namespace fs = boost::filesystem;
 #include "Map.hh"
 #include "BOpticksResource.hh"
 #include "BResource.hh"
-#include "BOpticksKey.hh"
+#include "SOpticksKey.hh"
 #include "BEnv.hh"
 
 // npy-

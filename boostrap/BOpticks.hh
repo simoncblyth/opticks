@@ -23,7 +23,7 @@
 #include "BRAP_HEAD.hh"
 
 struct SArgs ; 
-class BOpticksKey ; 
+class SOpticksKey ; 
 class BOpticksResource ; 
 
 

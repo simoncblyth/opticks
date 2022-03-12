@@ -52,7 +52,7 @@
 #include "BOpticksEvent.hh"
 #include "BOpticksResource.hh"
 #include "BResource.hh"
-#include "BOpticksKey.hh"
+#include "SOpticksKey.hh"
 #include "BFile.hh"
 #include "BTxt.hh"
 #include "BHex.hh"
@@ -359,12 +359,12 @@ bool Opticks::envkey()
     }
 
     bool key_is_set(false) ;
-    key_is_set = BOpticksKey::IsSet() ; 
+    key_is_set = SOpticksKey::IsSet() ; 
     if(key_is_set) return true ; 
 
-    BOpticksKey::SetKey(NULL) ;  // use keyspec from OPTICKS_KEY envvar 
+    SOpticksKey::SetKey(NULL) ;  // use keyspec from OPTICKS_KEY envvar 
 
-    key_is_set = BOpticksKey::IsSet() ; 
+    key_is_set = SOpticksKey::IsSet() ; 
     assert( key_is_set == true && "valid geocache and key are required, for operation without geocache use --allownokey " ); 
 
     return key_is_set ; 
@@ -3949,7 +3949,7 @@ std::string Opticks::description() const
 std::string Opticks::desc() const 
 {
     std::stringstream ss ; 
-    BOpticksKey* key = getKey() ;
+    SOpticksKey* key = getKey() ;
     ss << "Opticks.desc"
        << std::endl 
        << ( key ? key->desc() : "NULL-key?" )
@@ -3963,7 +3963,7 @@ std::string Opticks::desc() const
 
 std::string Opticks::export_() const 
 {
-    BOpticksKey* key = getKey() ;
+    SOpticksKey* key = getKey() ;
     return key->export_(); 
 }
 
@@ -4788,11 +4788,11 @@ const char*     Opticks::getIdFold() const { return m_rsc ? m_rsc->getIdFold() :
 
 const char*     Opticks::getInstallPrefix() { return m_rsc ? m_rsc->getInstallPrefix() : NULL ; }
 
-bool             Opticks::SetKey(const char* spec) { return BOpticksKey::SetKey(spec) ; }   // static
-BOpticksKey*     Opticks::GetKey() {                 return BOpticksKey::GetKey() ; }       // static
+bool             Opticks::SetKey(const char* spec) { return SOpticksKey::SetKey(spec) ; }   // static
+SOpticksKey*     Opticks::GetKey() {                 return SOpticksKey::GetKey() ; }       // static
 
-BOpticksKey*     Opticks::getKey() const {           return m_rsc->getKey() ; }
-const char*      Opticks::getKeySpec() const {       BOpticksKey* key = getKey(); return key ? key->getSpec() : "no-key-spec" ; }
+SOpticksKey*     Opticks::getKey() const {           return m_rsc->getKey() ; }
+const char*      Opticks::getKeySpec() const {       SOpticksKey* key = getKey(); return key ? key->getSpec() : "no-key-spec" ; }
 
 const char*     Opticks::getSrcGDMLPath() const {  return m_rsc ? m_rsc->getSrcGDMLPath() : NULL ; }
 const char*     Opticks::getGDMLPath()    const {  return m_rsc ? m_rsc->getGDMLPath() : NULL ; }

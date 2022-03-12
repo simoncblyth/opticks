@@ -37,7 +37,7 @@ class BDynamicDefine ;
 class BMeta ; 
 class BTxt ; 
 class BPropNames ; 
-class BOpticksKey ; 
+class SOpticksKey ; 
 class BOpticksResource ; 
 
 template <typename> class NPY ;
@@ -148,9 +148,9 @@ class OKCORE_API Opticks {
        static glm::vec4    getDomainSpec(bool fine=false);
        static glm::vec4    getDomainReciprocalSpec(bool fine=false);
    public:
-       static BOpticksKey* GetKey();
+       static SOpticksKey* GetKey();
        static bool         SetKey(const char* keyspec);
-       BOpticksKey*        getKey() const ;  // non-static : the key actually in use, usually the same as GetKey()
+       SOpticksKey*        getKey() const ;  // non-static : the key actually in use, usually the same as GetKey()
        const char*         getKeySpec() const ; 
    private:
        static Opticks*     fInstance ;  
