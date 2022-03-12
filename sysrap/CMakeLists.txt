@@ -74,6 +74,7 @@ set(SOURCES
     SAbbrev.cc
     SPack.cc
     SBit.cc
+    SBitSet.cc
     SEnabled.cc
     SRand.cc
 
@@ -152,6 +153,7 @@ set(HEADERS
     SAbbrev.hh
     SPack.hh
     SBit.hh
+    SBitSet.hh
     SEnabled.hh
     SRand.hh
 

@@ -42,16 +42,12 @@ class SYSRAP_API SBit {
         static bool HasOneSetBit(int x); 
 
 
-
-
         template <typename T> static std::string BinString(T v, bool anno=true); 
         template <typename T> static std::string HexString(T v, bool anno=true); 
         template <typename T> static std::string DecString(T v, bool anno=false); 
         template <typename T> static std::string PosString(T v, char delim=',', bool anno=false); 
 
         template <typename T> static std::string String(T v); 
-
-
 
         static const char* ANNO ; 
         static const char* ParseAnnotation(bool& complement, char& anno, const char* str_ );

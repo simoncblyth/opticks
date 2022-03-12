@@ -7,7 +7,7 @@ template<unsigned N>
 struct SYSRAP_API SEnabled
 {
     std::bitset<N>* enabled ; 
-    SEnabled(const char* spec, char delim=','); 
+    SEnabled(const char* spec); 
     bool isEnabled(unsigned idx) const ; 
 }; 
 

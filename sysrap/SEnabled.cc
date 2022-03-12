@@ -3,10 +3,11 @@
 #include "SEnabled.hh"
 
 template<unsigned N>
-SEnabled<N>::SEnabled(const char* spec, char delim )
+SEnabled<N>::SEnabled(const char* spec)
     :
     enabled(new std::bitset<N>())
 {
+    char delim = ',' ; 
     std::vector<int> ivec ; 
     SStr::ISplit( spec, ivec, delim );  
 
@@ -18,6 +19,8 @@ SEnabled<N>::SEnabled(const char* spec, char delim )
         (*enabled)[unsigned(idx)] = true ;  
     }
 }
+
+
 
 template<unsigned N>
 bool SEnabled<N>::isEnabled(unsigned idx) const
