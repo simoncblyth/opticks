@@ -26,8 +26,7 @@ list(APPEND SOURCES
     CSGPrimSpec.cc
     CSGSolid.cc
     CSGFoundry.cc
-    CSGSelection.cc
-    CSGClone.cc
+    CSGCopy.cc
     CSGMaker.cc
     CSGName.cc
     CSGGenstep.cc
@@ -54,8 +53,7 @@ list(APPEND CSG_HEADERS
 
 
     CSGFoundry.h
-    CSGSelection.h
-    CSGClone.h
+    CSGCopy.h
     CSGMaker.h
     CSGName.h
     CSGGenstep.h

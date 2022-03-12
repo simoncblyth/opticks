@@ -1,6 +1,6 @@
 #include "OPTICKS_LOG.hh"
 #include "CSGFoundry.h"
-#include "CSGClone.h"
+#include "CSGCopy.h"
 
 int main(int argc, char** argv)
 {
@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 
     // CSGFoundry::Load will load the geometry of the current OPTICKS_KEY unless CFBASE envvar override is defined  
 
-    CSGFoundry* dst = CSGClone::Clone(src); 
+    CSGFoundry* dst = CSGCopy::Clone(src); 
 
     int cf = CSGFoundry::Compare(src, dst); 
 

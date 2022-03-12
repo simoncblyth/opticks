@@ -1,6 +1,7 @@
 
 #include "scuda.h"
 #include "sqat4.h"
+#include "SBitSet.hh"
 #include "OpticksCSG.h"
 
 #include "CSGFoundry.h"
@@ -8,17 +9,24 @@
 #include "CSGPrim.h"
 #include "CSGNode.h"
 
-#include "CSGClone.h"
+#include "CSGCopy.h"
 #include "PLOG.hh"
 
 
-const plog::Severity CSGClone::LEVEL = PLOG::EnvLevel("CSGClone", "DEBUG" ); 
+const plog::Severity CSGCopy::LEVEL = PLOG::EnvLevel("CSGCopy", "DEBUG" ); 
 
 
-CSGFoundry* CSGClone::Clone(const CSGFoundry* src )
+CSGFoundry* CSGCopy::Clone(const CSGFoundry* src )
 {
     CSGFoundry* dst = new CSGFoundry ; 
-    Copy(dst, src); 
+    Copy(dst, src, nullptr); 
+    return dst ; 
+}
+
+CSGFoundry* CSGCopy::Select(const CSGFoundry* src, const SBitSet* elv )
+{
+    CSGFoundry* dst = new CSGFoundry ; 
+    Copy(dst, src, elv); 
     return dst ; 
 }
 
@@ -27,10 +35,9 @@ The ooint of cloning is to provide an easily verifiable starting point
 to implementing Prim selection so must not descend to very low level cloning.
 
 Follow CSGFoundry::addDeepCopySolid and try to improve on it 
-
 **/
 
-void CSGClone::Copy(CSGFoundry* dst, const CSGFoundry* src )
+void CSGCopy::Copy(CSGFoundry* dst, const CSGFoundry* src, const SBitSet* elv )
 { 
     unsigned sNumSolid = src->getNumSolid() ;
     int* solidMap = new int[sNumSolid] ; 

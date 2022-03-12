@@ -23,8 +23,7 @@ set(TEST_SOURCES
     CSGLogTest.cc
     CSGMakerTest.cc
     CSGQueryTest.cc
-    CSGSelectionTest.cc
-    CSGCloneTest.cc
+    CSGCopyTest.cc
 
     intersect_leaf_phicut_test.cc 
     intersect_leaf_thetacut_test.cc
