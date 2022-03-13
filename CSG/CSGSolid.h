@@ -49,6 +49,7 @@ struct CSG_API CSGSolid   // Composite shape
     static std::string MakeLabel(char typ0, unsigned idx0, char typ1, unsigned idx1 );  
     static std::string MakeLabel(char typ0, unsigned idx0, char typ1, unsigned idx1, char typ2, unsigned idx2 );  
     std::string desc() const ; 
+
 #endif
 
 };

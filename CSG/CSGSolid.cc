@@ -30,7 +30,6 @@ CSGSolid CSGSolid::Make( const char* label_, int numPrim_, int primOffset_ )
 }
 
 
-
 std::string CSGSolid::desc() const 
 {
     std::string label16(label, 16); 

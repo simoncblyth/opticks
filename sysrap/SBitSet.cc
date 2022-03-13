@@ -51,13 +51,7 @@ std::string SBitSet::Desc( unsigned num_bits, const bool* bits, bool reverse )
     return s ; 
 }
 
-bool SBitSet::operator[]( std::size_t pos ) const ;
-{
-    assert( pos < num_bits ); 
-    return bits[pos] ; 
-}
-
-bool SBitSet::is_set( std::size_t pos ) const ;
+bool SBitSet::is_set(unsigned pos) const 
 {
     assert( pos < num_bits ); 
     return bits[pos] ; 

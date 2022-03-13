@@ -11,7 +11,6 @@ int main(int argc, char** argv)
     LOG(info) << " mode [" << mode << "]" ; 
 
     CSGFoundry* src = mode == 'D' ? CSGFoundry::MakeDemo() : CSGFoundry::Load() ; 
-
     // CSGFoundry::Load will load the geometry of the current OPTICKS_KEY unless CFBASE envvar override is defined  
 
     CSGFoundry* dst = CSGCopy::Clone(src); 

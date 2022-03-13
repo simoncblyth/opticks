@@ -12,6 +12,7 @@
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"
+#include "SBitSet.hh"
 #include "SOpticksResource.hh"
 #include "NP.hh"
 #include "PLOG.hh"
@@ -1231,6 +1232,20 @@ unsigned CSGFoundry::getNumMeshPrim(unsigned mesh_idx ) const
 {
     return CSGPrim::count_prim_mesh(prim, mesh_idx); 
 }
+
+unsigned CSGFoundry::getNumSelectedPrimInSolid(const CSGSolid* solid, const SBitSet* elv ) const 
+{
+    unsigned num_selected_prim = 0 ;      
+    for(int primIdx=solid->primOffset ; primIdx < solid->primOffset+solid->numPrim ; primIdx++)
+    {    
+        const CSGPrim* pr = getPrim(primIdx); 
+        unsigned meshIdx = pr->meshIdx() ; 
+        bool selected = elv == nullptr ? true : elv->is_set(meshIdx) ; 
+        num_selected_prim += int(selected) ;  
+    }
+    return num_selected_prim ; 
+}
+
 
 /**
 CSGFoundry::descMeshPrim

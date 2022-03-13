@@ -3,6 +3,6 @@
 export CSGMaker=INFO
 export CSGCopy=INFO
 
-lldb__ CSGCopyTest 
+lldb__ CSGCopyTest $* 
 
 

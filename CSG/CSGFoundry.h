@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include "plog/Severity.h"
 
+struct SBitSet ; 
 struct NP ; 
 
 #include "scuda.h"
@@ -196,6 +197,7 @@ struct CSG_API CSGFoundry
     unsigned getNumMeshPrim(unsigned mesh_idx ) const ;
     std::string descMeshPrim() const ;  
 
+    unsigned getNumSelectedPrimInSolid(const CSGSolid* solid, const SBitSet* elv ) const ; 
 
 
     CSGSolid* addSolid(unsigned num_prim, const char* label, int primOffset_ = -1 );

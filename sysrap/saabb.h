@@ -33,6 +33,7 @@ struct AABB
 #else
     std::string desc() const ; 
     static std::string Desc(const float* data); 
+    static std::string Compare(unsigned& mismatch, const float* a, const float* b, int detail, float epsilon=1e-4); 
     static void cube_corners(std::vector<float3>& corners, const float4& ce );
 #endif
 
@@ -226,6 +227,37 @@ AABB_METHOD std::string AABB::Desc(const float* data)
 {
     std::stringstream ss ; 
     for(int j=0 ; j < 6 ; j++) ss << std::fixed << std::setw(10) << std::setprecision(2) << *(data + j) << " " ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+AABB_METHOD std::string AABB::Compare(unsigned& mismatch, const float* a, const float* b, int detail, float epsilon)
+{
+    mismatch = 0 ; 
+    std::stringstream ss ; 
+    for(int j=0 ; j < 6 ; j++)
+    {
+        float ab = a[j] - b[j] ;  
+
+        if( detail == 3 )
+        {
+            ss 
+               << std::fixed << std::setw(10) << std::setprecision(2) << a[j] << " "
+               << std::fixed << std::setw(10) << std::setprecision(2) << b[j] << " "
+               << std::fixed << std::setw(10) << std::setprecision(2) << ab   << " "
+               ;
+        }
+        else if( detail == 1 )
+        {
+            ss 
+               << std::fixed << std::setw(10) << std::setprecision(2) << ab   << " "
+               ;
+        }
+
+
+        if(std::abs(ab) > epsilon)  mismatch += 1 ;  
+    }
+    ss << " mismatch " << mismatch ; 
     std::string s = ss.str(); 
     return s ; 
 }

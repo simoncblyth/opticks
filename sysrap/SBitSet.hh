@@ -16,8 +16,7 @@ struct SYSRAP_API SBitSet
     void set(bool all); 
     void parse(const char* spec); 
 
-    bool operator[]( std::size_t pos ) const ;
-    bool is_set(     std::size_t pos ) const ;
+    bool is_set(unsigned pos) const ;
 
     virtual ~SBitSet(); 
     std::string desc() const ; 
