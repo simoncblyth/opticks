@@ -116,6 +116,7 @@ struct CSG_API CSGFoundry
 
 
     std::string desc() const ;
+    std::string descSolid() const ; 
     std::string descMeshName() const ; 
     std::string descGAS() const ;
 
@@ -187,6 +188,7 @@ struct CSG_API CSGFoundry
     const qat4*       getItra(unsigned itraIdx) const ;
     const qat4*       getInst(unsigned instIdx) const ;
 
+    void              getNodePlanes(std::vector<float4>& planes, const CSGNode* nd) const ;  
     const CSGPrim*    getSolidPrim(unsigned solidIdx, unsigned primIdxRel) const ;
     const CSGNode*    getSolidPrimNode(unsigned solidIdx, unsigned primIdxRel, unsigned nodeIdxRel) const ;
 
@@ -283,7 +285,18 @@ struct CSG_API CSGFoundry
     void kludgeScalePrimBBox( const char* label, float dscale );
     void kludgeScalePrimBBox( unsigned solidIdx, float dscale );
 
+    unsigned getNumMeshName() const ; 
+    unsigned getNumSolidLabel() const ; 
+
+    void getMeshName( std::vector<std::string>& mname ) const ; 
+    const std::string& getMeshName(unsigned midx) const ; 
+    const std::string descELV(const SBitSet* elv); 
+
+    const std::string& getSolidLabel(unsigned sidx) const ; 
+
     void addMeshName(const char* name); 
+    void addSolidLabel(const char* label); 
+
     std::vector<std::string> meshname ;  // meshNames from GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 

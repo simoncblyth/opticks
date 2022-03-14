@@ -71,6 +71,27 @@ void CSGFoundry::init()
 
 std::string CSGFoundry::desc() const 
 {
+    std::stringstream ss ; 
+    ss << "CSGFoundry "
+       << " num_total " << getNumSolidTotal()
+       << " num_solid " << solid.size()
+       << " num_prim " << prim.size()
+       << " num_node " << node.size()
+       << " num_plan " << plan.size()
+       << " num_tran " << tran.size()
+       << " num_itra " << itra.size()
+       << " num_inst " << inst.size()
+       << " ins " << ins.size()
+       << " gas " << gas.size()
+       << " ias " << ias.size()
+       << " meshname " << meshname.size()
+       << " mmlabel " << mmlabel.size()
+       ;
+    return ss.str(); 
+}
+
+std::string CSGFoundry::descSolid() const
+{
     unsigned num_total = getNumSolidTotal(); 
     unsigned num_standard = getNumSolid(STANDARD_SOLID); 
     unsigned num_oneprim  = getNumSolid(ONE_PRIM_SOLID); 
@@ -86,21 +107,10 @@ std::string CSGFoundry::desc() const
        << " ONE_NODE " << num_onenode
        << " DEEP_COPY " << num_deepcopy
        << " KLUDGE_BBOX " << num_kludgebbox
-       << " num_prim " << prim.size()
-       << " num_node " << node.size()
-       << " num_plan " << plan.size()
-       << " num_tran " << tran.size()
-       << " num_itra " << itra.size()
-       << " num_inst " << inst.size()
-       << " ins " << ins.size()
-       << " gas " << gas.size()
-       << " ias " << ias.size()
-       << " meshname " << meshname.size()
-       << " mmlabel " << mmlabel.size()
        ;
-
     return ss.str(); 
 }
+
 
 std::string CSGFoundry::descMeshName() const 
 {
@@ -117,13 +127,64 @@ std::string CSGFoundry::descMeshName() const
 }
 
 
-void CSGFoundry::addMeshName(const char* name) 
+unsigned CSGFoundry::getNumMeshName() const 
 {
-    meshname.push_back(name); 
-    mmlabel.push_back(name);  
+    return meshname.size() ; 
+}
+unsigned CSGFoundry::getNumSolidLabel() const 
+{
+    return mmlabel.size() ; 
 }
 
 
+void CSGFoundry::getMeshName( std::vector<std::string>& mname ) const 
+{
+    for(unsigned i=0 ; i < meshname.size() ; i++)
+    {
+        const std::string& mn = meshname[i]; 
+        mname.push_back(mn);   
+    }
+}
+
+const std::string& CSGFoundry::getMeshName(unsigned midx) const 
+{
+    assert( midx < meshname.size() ); 
+    return meshname[midx] ; 
+}
+
+const std::string CSGFoundry::descELV(const SBitSet* elv)
+{
+    std::vector<unsigned> pos ; 
+    elv->get_pos(pos); 
+
+    std::stringstream ss ;  
+    for(unsigned i=0 ; i < pos.size() ; i++)
+    {
+        const unsigned& p = pos[i] ; 
+        const std::string& mn = getMeshName(p) ; 
+        ss << std::setw(3) << i << ":" << mn << std::endl ;  
+    }
+    std::string s = ss.str(); 
+    return s ; 
+} 
+
+
+
+const std::string& CSGFoundry::getSolidLabel(unsigned sidx) const 
+{
+    assert( sidx < mmlabel.size() ); 
+    return mmlabel[sidx] ; 
+}
+
+void CSGFoundry::addMeshName(const char* name) 
+{
+    meshname.push_back(name); 
+}
+
+void CSGFoundry::addSolidLabel(const char* label)
+{
+    mmlabel.push_back(label);  
+}
 
 int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
 {
@@ -139,7 +200,7 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
     mismatch += CompareVec( "gas"  , a->gas , b->gas ); 
     mismatch += CompareVec( "ias"  , a->ias , b->ias ); 
     if( mismatch != 0 ) LOG(fatal) << " mismatch FAIL ";  
-    assert( mismatch == 0 ); 
+    //assert( mismatch == 0 ); 
     return mismatch ; 
 }
 
@@ -545,6 +606,22 @@ void CSGFoundry::dumpPrim(unsigned solidIdx) const
     std::string s = descPrim(solidIdx); 
     LOG(info) << std::endl << s ;
 }
+
+
+void CSGFoundry::getNodePlanes(std::vector<float4>& planes, const CSGNode* nd) const 
+{
+    unsigned tc = nd->typecode(); 
+    bool has_planes = CSG::HasPlanes(tc) ; 
+    if(has_planes)
+    {
+        for(unsigned planIdx=nd->planeIdx() ; planIdx < nd->planeIdx() + nd->planeNum() ; planIdx++)
+        {  
+            const float4* pl = getPlan(planIdx);  
+            planes.push_back(*pl); 
+        }
+    }
+}
+
 
 /**
 CSGFoundry::getSolidPrim
@@ -1372,7 +1449,7 @@ CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
     const CSGSolid* oso = getSolid(solidIdx); 
     unsigned numPrim = oso->numPrim ; 
 
-    AABB sbb = {} ; 
+    AABB solid_bb = {} ; 
     CSGSolid* cso = addSolid(numPrim, cso_label.c_str()); 
     cso->type = DEEP_COPY_SOLID ; 
 
@@ -1383,7 +1460,7 @@ CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
         unsigned numNode = opr->numNode()  ; 
         int nodeOffset_ = -1 ; // as deep copying, -1 declares that will immediately add numNode new nodes
 
-        AABB pbb = {} ; 
+        AABB prim_bb = {} ; 
         CSGPrim* cpr = addPrim(numNode, nodeOffset_ );
 
         cpr->setMeshIdx(opr->meshIdx());    // copy the metadata that makes sense to be copied 
@@ -1446,15 +1523,15 @@ CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
             {
                 tra->transform_aabb_inplace( cnd.AABB() ); 
             }
-            pbb.include_aabb( cnd.AABB() ); 
+            prim_bb.include_aabb( cnd.AABB() ); 
             addNode(cnd);       
         }                  // over nodes of the Prim 
          
-        cpr->setAABB(pbb.data()); 
-        sbb.include_aabb(pbb.data()) ; 
+        cpr->setAABB(prim_bb.data()); 
+        solid_bb.include_aabb(prim_bb.data()) ; 
     }    // over Prim of the Solid
 
-    cso->center_extent = sbb.center_extent() ;  
+    cso->center_extent = solid_bb.center_extent() ;  
     return cso ; 
 }
 
@@ -1631,7 +1708,9 @@ CSGFoundry*  CSGFoundry::MakeGeom(const char* geom) // static
     fd->addTranPlaceholder();  
     fd->addInstancePlaceholder(); 
 
-    fd->addMeshName(geom);   // add to meshname mmlabel to avoid tripping some checks 
+    // avoid tripping some checks 
+    fd->addMeshName(geom);   
+    fd->addSolidLabel(geom);  
 
     assert( so ); 
 

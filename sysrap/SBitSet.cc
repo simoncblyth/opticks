@@ -4,6 +4,15 @@
 #include "SBitSet.hh"
 #include "SStr.hh"
 
+
+SBitSet* SBitSet::Create(unsigned num_bits, const char* spec)
+{
+    SBitSet* bs = new SBitSet(num_bits); 
+    bs->parse(spec);  
+    return bs ; 
+}
+
+
 /**
 SBitSet::Parse
 ----------------
@@ -57,12 +66,23 @@ bool SBitSet::is_set(unsigned pos) const
     return bits[pos] ; 
 }
 
-SBitSet* SBitSet::Create(unsigned num_bits, const char* spec)
+unsigned SBitSet::count() const 
 {
-    SBitSet* bs = new SBitSet(num_bits); 
-    bs->parse(spec);  
-    return bs ; 
+    unsigned num = 0 ; 
+    for(unsigned i=0 ; i < num_bits ; i++ ) if(bits[i]) num += 1 ;  
+    return num ; 
 }
+
+bool SBitSet::all() const { return count() == num_bits ; }
+bool SBitSet::any() const { return count() > 0  ; }
+bool SBitSet::none() const { return count() == 0  ; }
+
+void SBitSet::get_pos( std::vector<unsigned>& pos ) const 
+{
+    for(unsigned i=0 ; i < num_bits ; i++ ) if(bits[i]) pos.push_back(i) ; 
+}
+
+
 
 SBitSet::SBitSet( unsigned num_bits_ )
     :

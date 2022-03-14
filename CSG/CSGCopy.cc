@@ -2,6 +2,7 @@
 #include "scuda.h"
 #include "sqat4.h"
 #include "SBitSet.hh"
+#include "SSys.hh"
 #include "OpticksCSG.h"
 
 #include "CSGFoundry.h"
@@ -14,24 +15,66 @@
 
 
 const plog::Severity CSGCopy::LEVEL = PLOG::EnvLevel("CSGCopy", "DEBUG" ); 
+const int CSGCopy::DUMP_RIDX = SSys::getenvint("DUMP_RIDX", -1) ; 
+const int CSGCopy::DUMP_NPS = SSys::getenvint("DUMP_NPS", 0) ; 
+
 
 
 CSGFoundry* CSGCopy::Clone(const CSGFoundry* src )
 {
-    CSGFoundry* dst = new CSGFoundry ; 
-    Copy(dst, src, nullptr); 
-    return dst ; 
+    CSGCopy cpy(src, nullptr); 
+    cpy.copy(); 
+    LOG(info) << cpy.desc(); 
+    return cpy.dst ; 
 }
 
 CSGFoundry* CSGCopy::Select(const CSGFoundry* src, const SBitSet* elv )
 {
-    CSGFoundry* dst = new CSGFoundry ; 
-    Copy(dst, src, elv); 
-    return dst ; 
+    CSGCopy cpy(src, elv); 
+    cpy.copy(); 
+    LOG(info) << cpy.desc(); 
+    return cpy.dst ; 
+}
+
+CSGCopy::CSGCopy(const CSGFoundry* src_, const SBitSet* elv_)
+    :
+    src(src_),
+    sNumSolid(src->getNumSolid()),
+    solidMap(new int[sNumSolid]), 
+    sSolidIdx(~0u), 
+    elv(elv_),
+    dst(new CSGFoundry)
+{
+}
+
+std::string CSGCopy::desc() const 
+{
+    std::stringstream ss ; 
+    ss 
+        << std::endl 
+        << "src:" 
+        << src->desc() 
+        << std::endl 
+        << "dst:" 
+        << dst->desc()
+        << std::endl 
+        ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+CSGCopy::~CSGCopy()
+{
+    delete [] solidMap ; 
+}
+
+unsigned CSGCopy::Dump( unsigned sSolidIdx )
+{
+    return ( DUMP_RIDX >= 0 && unsigned(DUMP_RIDX) == sSolidIdx ) ? DUMP_NPS : 0u ; 
 }
 
 /**
-CSGCopy::Copy
+CSGCopy::copy
 --------------
 
 The point of cloning is to provide an easily verifiable starting point 
@@ -47,20 +90,30 @@ to implementing Prim selection so must not descend to very low level cloning.
 
 **/
 
-void CSGCopy::Copy(CSGFoundry* dst, const CSGFoundry* src, const SBitSet* elv )
+void CSGCopy::copy()
 { 
-    unsigned sNumSolid = src->getNumSolid() ;
-    int* solidMap = new int[sNumSolid] ; 
-
+    copyMeshName();
+ 
     for(unsigned i=0 ; i < sNumSolid ; i++)
     {
-        unsigned sSolidIdx = i ; 
+        sSolidIdx = i ; 
         solidMap[sSolidIdx] = -1 ; 
 
-        const CSGSolid* sso = src->getSolid(i);
+        unsigned dump_ = Dump(sSolidIdx); 
+        bool dump_solid = dump_ & 0x1 ; 
+        if(dump_solid)
+        {
+            LOG(info) << "sSolidIdx " << sSolidIdx << " DUMP_RIDX " << DUMP_RIDX  << " DUMP_NPS " << DUMP_NPS << " dump_solid " << dump_solid  ;   
+        }
+
+        const CSGSolid* sso = src->getSolid(sSolidIdx);
         unsigned numSelectedPrim = src->getNumSelectedPrimInSolid(sso, elv );  
-        LOG(LEVEL) << " sso " << sso->desc() << " numSelectedPrim " << numSelectedPrim ; 
+        const std::string& solidLabel = src->getSolidLabel(sSolidIdx); 
+        if(dump_solid) LOG(LEVEL) << " sso " << sso->desc() << " numSelectedPrim " << numSelectedPrim << " solidLabel " << solidLabel ; 
+
         if( numSelectedPrim == 0 ) continue ;  
+
+        dst->addSolidLabel( solidLabel.c_str() );  
 
         unsigned dSolidIdx = dst->getNumSolid() ; // index before adding (0-based)
         if( elv == nullptr ) assert( dSolidIdx == sSolidIdx ); 
@@ -71,25 +124,46 @@ void CSGCopy::Copy(CSGFoundry* dst, const CSGFoundry* src, const SBitSet* elv )
 
         solidMap[sSolidIdx] = dSolidIdx ; 
 
-        CopySolidPrim(dPrimOffset, dst, sso, src, elv, true );  
+        AABB solid_bb = {} ;
+
+        copySolidPrim(solid_bb, dPrimOffset, sso);  
 
         unsigned numSelectedPrimCheck = dst->prim.size() - dPrimOffset ; 
         assert( numSelectedPrim == numSelectedPrimCheck );  
 
-        dso->center_extent = sso->center_extent ;  // HMM: this is cheating, need to accumulate when using selection 
-    }   // over solids
+        //dso->center_extent = sso->center_extent ;  // HMM: this is cheating, need to accumulate when using selection 
+        dso->center_extent = solid_bb.center_extent(); 
 
-    CopySolidInstances( solidMap, sNumSolid, dst, src ); 
+        if(dump_solid) LOG(LEVEL) << " dso " << dso->desc() ; 
+
+    }   // over solids of the entire geometry 
+
+    copySolidInstances(); 
 }
 
+
+void CSGCopy::copyMeshName()
+{
+    assert( dst->meshname.size() == 0); 
+    src->getMeshName(dst->meshname); 
+    assert( src->meshname.size() == dst->meshname.size() ); 
+}
+
+
+
 /**
-CSGCopy::CopySolidPrim
+CSGCopy::copySolidPrim
 ------------------------
+
+See the AABB mechanics at the tail of CSGFoundry::addDeepCopySolid
 
 **/
 
-void CSGCopy::CopySolidPrim(int dPrimOffset, CSGFoundry* dst, const CSGSolid* sso, const CSGFoundry* src, const SBitSet* elv, bool dump )
+void CSGCopy::copySolidPrim(AABB& solid_bb, int dPrimOffset, const CSGSolid* sso )
 {
+    unsigned dump_ = Dump(sSolidIdx); 
+    bool dump_prim = ( dump_ & 0x2 ) != 0u ; 
+
     for(int primIdx=sso->primOffset ; primIdx < sso->primOffset+sso->numPrim ; primIdx++)
     {
          const CSGPrim* spr = src->getPrim(primIdx); 
@@ -109,91 +183,122 @@ void CSGCopy::CopySolidPrim(int dPrimOffset, CSGFoundry* dst, const CSGSolid* ss
          dpr->setRepeatIdx(repeatIdx); 
          dpr->setPrimIdx(dPrimIdx_local); 
 
-         AABB dbb = {} ;
-         CopyPrimNodes(dbb, dst, spr, src, false ); 
-         //dpr->setAABB( dbb.data() );  
-         dpr->setAABB( spr->AABB() );  // will not be so with selection 
+         AABB prim_bb = {} ;
+         copyPrimNodes(prim_bb, spr ); 
+         dpr->setAABB( prim_bb.data() ); 
+         //dpr->setAABB( spr->AABB() );  // will not be so with selection 
 
          unsigned mismatch = 0 ; 
-         std::string cf = AABB::Compare(mismatch, spr->AABB(), dbb.data(), 1, 1e-6 ) ; 
-         if (mismatch > 0 )
+         std::string cf = AABB::Compare(mismatch, spr->AABB(), prim_bb.data(), 1, 1e-6 ) ; 
+         if ( dump_prim && mismatch > 0 )
          {
              std::cout << std::endl ;  
              std::cout << "spr " << spr->desc() << std::endl ; 
              std::cout << "dpr " << dpr->desc() << std::endl ; 
-             std::cout << "dbb " << std::setw(20) << " " << dbb.desc() << std::endl ; 
+             std::cout << "prim_bb " << std::setw(20) << " " << prim_bb.desc() << std::endl ; 
              std::cout << " AABB::Compare " << cf << std::endl ; 
          }
+
+         solid_bb.include_aabb(prim_bb.data()); 
     }   // over prim of the solid
 }
 
 
 /**
-CSGCopy::CopyPrimNodes
+CSGCopy::copyPrimNodes
 -------------------------
 
 **/
 
-void CSGCopy::CopyPrimNodes(AABB& bb, CSGFoundry* dst, const CSGPrim* spr, const CSGFoundry* src, bool dump )
+void CSGCopy::copyPrimNodes(AABB& prim_bb, const CSGPrim* spr )
 {
     for(int nodeIdx=spr->nodeOffset() ; nodeIdx < spr->nodeOffset()+spr->numNode() ; nodeIdx++)
     {
-        const CSGNode* snd = src->getNode(nodeIdx); 
-        unsigned stypecode = snd->typecode(); 
-        unsigned sTranIdx = snd->gtransformIdx(); 
-
-        bool has_planes = CSG::HasPlanes(stypecode) ; 
-        bool has_transform = sTranIdx > 0u ; 
-
-        if(dump) LOG(LEVEL) 
-            << " nodeIdx " << nodeIdx 
-            << " stypecode " << stypecode 
-            << " sTranIdx " << sTranIdx 
-            << " csgname " << CSG::Name(stypecode) 
-            << " has_planes " << has_planes
-            << " has_transform " << has_transform
-            ; 
-
-        std::vector<float4> splanes ; 
-        if(has_planes)
-        {
-            if(dump) LOG(LEVEL) << " planeIdx " << snd->planeIdx() << " planeNum " << snd->planeNum() ;  
-            for(unsigned planIdx=snd->planeIdx() ; planIdx < snd->planeIdx() + snd->planeNum() ; planIdx++)
-            {  
-                const float4* splan = src->getPlan(planIdx);  
-                splanes.push_back(*splan); 
-            }
-        }
-
-        unsigned dTranIdx = 0u ; 
-        if(has_transform)
-        {
-            const qat4* tra = src->getTran(sTranIdx-1u) ; 
-            const qat4* itr = src->getItra(sTranIdx-1u) ; 
-            dTranIdx = 1u + dst->addTran( tra, itr ) ;
-            if(dump) LOG(LEVEL) << " tra " << tra << " itr " << itr << " dTranIdx " << dTranIdx ; 
-        }
-           
-        CSGNode dnd = {} ;
-        CSGNode::Copy(dnd, *snd );   // dumb straight copy : so need to fix transform and plan references  
-        dnd.setTransform( dTranIdx ); 
-
-        CSGNode* dptr = dst->addNode(dnd, &splanes);   
-
-        assert( dptr->planeNum() == snd->planeNum() ); 
-        assert( dptr->planeIdx() == snd->planeIdx() ); 
-
-        bool negated = dptr->is_complemented_primitive();
-        float* naabb = dptr->AABB();   // hmm is transform applied ?
-        if(!negated) bb.include_aabb( naabb );
-
-        // see tail of CSG_GGeo_Convert::convertNode which uses qat4::transform_aabb_inplace to change CSGNode aabb
+        copyNode( prim_bb, nodeIdx ); 
     }   
+}
+
+/**
+CSGCopy::copyNode
+--------------------
+
+see tail of CSG_GGeo_Convert::convertNode which uses qat4::transform_aabb_inplace to change CSGNode aabb
+also see tail of CSGFoundry::addDeepCopySolid
+
+**/
+
+void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
+{
+    unsigned dump_ = Dump(sSolidIdx); 
+    bool dump_node = ( dump_ & 0x4 ) != 0u ; 
+
+    const CSGNode* snd = src->getNode(nodeIdx); 
+    unsigned stypecode = snd->typecode(); 
+    unsigned sTranIdx = snd->gtransformIdx(); 
+    bool has_planes = CSG::HasPlanes(stypecode) ; 
+    bool has_transform = sTranIdx > 0u ; 
+
+    std::vector<float4> splanes ; 
+    src->getNodePlanes(splanes, snd); 
+
+    unsigned dTranIdx = 0u ; 
+    const qat4* tra = nullptr ; 
+    const qat4* itr = nullptr ; 
+
+    if(has_transform)
+    {
+        tra = src->getTran(sTranIdx-1u) ; 
+        itr = src->getItra(sTranIdx-1u) ; 
+        dTranIdx = 1u + dst->addTran( tra, itr ) ;
+    }
+       
+    CSGNode nd = {} ;
+    CSGNode::Copy(nd, *snd );   // dumb straight copy : so need to fix transform and plan references  
+    nd.setTransform( dTranIdx ); 
+
+    CSGNode* dnd = dst->addNode(nd, &splanes);   
+
+    if( elv == nullptr )
+    {
+        assert( dnd->planeNum() == snd->planeNum() );  
+        assert( dnd->planeIdx() == snd->planeIdx() ); 
+    }
+
+    bool negated = dnd->is_complemented_primitive();
+    bool zero = dnd->typecode() == CSG_ZERO ; 
+    bool include_bb = negated == false && zero == false ; 
+
+    float* naabb = dnd->AABB();   
+
+    if(include_bb) 
+    {
+        dnd->setAABBLocal() ;         // reset to local with no transform applied
+        if(tra)
+        {
+            tra->transform_aabb_inplace( naabb );
+        }
+        prim_bb.include_aabb( naabb );
+    } 
+
+    //if(dump_node) LOG(LEVEL) 
+    if(dump_node) std::cout 
+        << " nd " << std::setw(6) << nodeIdx 
+        << " tc " << std::setw(4) << stypecode 
+        << " st " << std::setw(4) << sTranIdx 
+        << " dt " << std::setw(4) << dTranIdx 
+        << " cn " << std::setw(12) << CSG::Name(stypecode) 
+        << " hp " << has_planes
+        << " ht " << has_transform
+        << " ng " << negated
+        << " ib " << include_bb
+        << " bb " << AABB::Desc(naabb) 
+        << std::endl 
+        ; 
 }
 
 
 /**
-CSGCopy::CopySolidInstances
+CSGCopy::copySolidInstances
 -------------------------------
 
 As some solids may disappear as a result of Prim selection 
@@ -201,10 +306,8 @@ it is necessary to change potentially all the inst solid references.
 
 **/
 
-void CSGCopy::CopySolidInstances( const int* solidMap, unsigned sNumSolid, CSGFoundry* dst, const CSGFoundry* src )
+void CSGCopy::copySolidInstances()
 {
-    assert( sNumSolid == src->getNumSolid()) ;
-
     unsigned sNumInst = src->getNumInst(); 
     for(unsigned i=0 ; i < sNumInst ; i++)
     {
