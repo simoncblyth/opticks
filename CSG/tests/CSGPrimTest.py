@@ -122,9 +122,7 @@ if __name__ == '__main__':
 
     mname_skip = "Flange"
     all_ridxs = list(range(0,len(cf.solid)))
-
-    #ridxs = all_ridxs
-    ridxs = (0,)
+    ridxs = all_ridxs if not "RIDX" in os.environ else list(map(int, os.environ["RIDX"].split(",")))
 
     print("\n\n all_ridxs: %s   ridxs:%s   nmame_skip:%s   geocache_hookup_arg:%s " % (str(all_ridxs), str(ridxs), mname_skip, arg ))
     skip = 0 

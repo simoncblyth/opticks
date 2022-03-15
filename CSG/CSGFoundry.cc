@@ -177,7 +177,7 @@ const std::string CSGFoundry::descELV(const SBitSet* elv)
     {
         const unsigned& p = include_pos[i] ; 
         const std::string& mn = getMeshName(p) ; 
-        ss << std::setw(3) << i << ":" << mn << std::endl ;  
+        ss << std::setw(3) << p << ":" << mn << std::endl ;  
     }
 
     ss << "EXCLUDE:" << exclude_pos.size() << std::endl << std::endl ;  
@@ -185,7 +185,7 @@ const std::string CSGFoundry::descELV(const SBitSet* elv)
     {
         const unsigned& p = exclude_pos[i] ; 
         const std::string& mn = getMeshName(p) ; 
-        ss << std::setw(3) << i << ":" << mn << std::endl ;  
+        ss << std::setw(3) << p << ":" << mn << std::endl ;  
     }
 
     std::string s = ss.str(); 

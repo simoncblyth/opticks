@@ -45,10 +45,14 @@ EOU
 }
 
 nmm=${NMM:-9}   # geometry specific 
+nlv=${NLV:-141}
+## hmm could generate a metadata bash script to provide this kinda thing in the geocache
+
+
 script=${SCRIPT:-cxr_overview}
 export SCANNER="cxr_scan.sh"
 
-scan-ee()
+scan-emm-()
 {
     echo "t0"        # ALL 
     for e in $(seq 0 $nmm) ; do echo  "$e," ; done    # enabling each solid one-by-one
@@ -57,10 +61,32 @@ scan-ee()
     echo "1,2,3,4"   # ONLY PMTs
 }
 
-for e in $(scan-ee) 
-do 
-    echo $e 
-    EMM=$e ./$script.sh $*
-done 
+scan-elv-()
+{
+    for e in $(seq 0 $nlv) ; do echo "t$e" ; done    # disabling each midx one-by-one
+    for e in $(seq 0 $nlv) ; do echo "$e" ; done     # enabling each midx one-by-one
+}
+
+scan-emm()
+{
+    local e 
+    for e in $(scan-emm-) 
+    do 
+        echo $e 
+        EMM=$e ./$script.sh $*
+    done 
+}
+
+scan-elv()
+{
+    local e 
+    for e in $(scan-elv-) 
+    do 
+        echo $e 
+        ELV=$e ./$script.sh $*
+    done 
+}
+
+scan-elv
 
 

@@ -37,9 +37,11 @@ emm_noglobal=t0,  # tilde 0-th bit : (with comma meaning single bitindex spec) m
 emm_no8=t8,       # tilde 8-th bit : exclude solid 8 
 emm=$emm_all
 
+elv=t
 export EMM=${EMM:-$emm}
+export ELV=${ELV:-$elv}
 
-export NAMEPREFIX=cxr_overview_emm_${EMM}_moi_      # MOI gets appended by the executable
+export NAMEPREFIX=cxr_overview_emm_${EMM}_elv_${ELV}_moi_      # MOI gets appended by the executable
 export OPTICKS_RELDIR=cam_${CAM}_tmin_${TMIN}       # this can contain slashes
 
 stamp=$(date +"%Y-%m-%d %H:%M")
