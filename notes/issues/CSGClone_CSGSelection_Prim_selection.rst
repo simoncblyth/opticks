@@ -153,4 +153,21 @@ Test on laptop with simple g4ok/G4OKVolumeTest.sh geometry::
 
 
 
+CSGNodeTest shows unexpected repeated trIdx when ELV in use::
+
+
+    epsilon:tests blyth$ ELV=0 CSGNodeTest 
+    ...
+
+    CSGNode    33  sp aabb:  -100.0   400.0  -100.0   100.0   600.0   100.0  trIdx:    27 subNum:  -1 subOffset::  -1
+
+    CSGNode    37  sp aabb:   400.0  -600.0  -600.0   600.0  -400.0  -400.0  trIdx:    31 subNum:  -1 subOffset::  -1
+
+    CSGNode    41  sp aabb:   400.0  -600.0   400.0   600.0  -400.0   600.0  trIdx:    43 subNum:  -1 subOffset::  -1
+
+    CSGNode    45  sp aabb:   400.0  -100.0  -100.0   600.0   100.0   100.0  trIdx:    47 subNum:  -1 subOffset::  -1
+
+    CSGNode    49  sp aabb:   400.0   400.0  -600.0   600.0   600.0  -400.0  trIdx:    47 subNum:  -1 subOffset::  -1
+
+    CSGNode    53  sp aabb:   400.0   400.0   400.0   600.0   600.0   600.0  trIdx:    47 subNum:  -1 subOffset::  -1
 

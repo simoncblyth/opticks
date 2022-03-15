@@ -48,14 +48,12 @@ CFBASE
 
 struct CSGOptiXRenderTest
 {
-    static const char* InitCFBASE(); 
-    static Opticks* InitOpticks(int argc, char** argv, const char* cfbase );  
+    static Opticks* InitOpticks(int argc, char** argv);  
     static void InitOutdir(Opticks* ok, const char* cfbase); 
 
 
     CSGOptiXRenderTest(int argc, char** argv ) ; 
 
-    const char* cfbase ; 
     Opticks*    ok ; 
     const char* solid_label ; 
     std::vector<unsigned>& solid_selection ; 
@@ -77,7 +75,7 @@ struct CSGOptiXRenderTest
     std::vector<std::string> args ; 
 
 
-    void initFD(const char* cfbase); 
+    void initFD(); 
     void initCX(); 
     void initArgs(); 
 
@@ -89,13 +87,10 @@ struct CSGOptiXRenderTest
 
 CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
     : 
-    cfbase(InitCFBASE()),
-    ok(InitOpticks(argc, argv, cfbase)),
+    ok(InitOpticks(argc, argv)),
     solid_label(ok->getSolidLabel()),         // --solid_label   used for selecting solids from the geometry 
     solid_selection(ok->getSolidSelection()), //  NB its not set yet, that happens below 
-    fdl(nullptr),
-    elv(nullptr),
-    fd(nullptr),
+    fd(CSGFoundry::Load()), 
     cx(nullptr),
     topline(SSys::getenvvar("TOPLINE", "CSGOptiXRenderTest")),
     botline(SSys::getenvvar("BOTLINE", nullptr )),
@@ -105,43 +100,45 @@ CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
     w2m(qat4::identity()),
     default_arg(SSys::getenvvar("MOI", "sWorld:0:0"))  
 {
-    initFD(cfbase); 
+    initFD(); 
     initCX(); 
     initArgs(); 
 }
-
-
-
-const char* CSGOptiXRenderTest::InitCFBASE()
-{
-    bool has_cfbase = SSys::hasenvvar("CFBASE") ;
-
-    if( has_cfbase )  // when CFBASE override envvvar exists then there is no need for OPTICKS_KEY
-    {
-        LOG(info) << " CFBASE envvar detected : ignoring OPTICKS_KEY " ; 
-        unsetenv("OPTICKS_KEY"); 
-    }
-    else
-    {
-        LOG(info) << " no CFBASE envvar detected : will need OPTICKS_KEY " ; 
-    }
-
-    const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  // sensitive to OPTICKS_KEY 
-    return cfbase ; 
-}
-
 
 /**
 TODO: eliminate use of Opticks here, its doing little 
 **/
 
-Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv, const char* cfbase )
+Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv)
 {
-    Opticks* ok = new Opticks(argc, argv, cfbase ? "--allownokey" : nullptr  );  
+    Opticks* ok = new Opticks(argc, argv);  
     ok->configure(); 
     ok->setRaygenMode(0);  // override --raygenmode option 
-    InitOutdir(ok, cfbase); 
     return ok ; 
+}
+
+void CSGOptiXRenderTest::initFD()
+{
+    fd->upload(); 
+    if( solid_label )
+    {
+        fd->findSolidIdx(solid_selection, solid_label); 
+        std::string solsel = fd->descSolidIdx(solid_selection); 
+        LOG(error) 
+            << " --solid_label " << solid_label
+            << " solid_selection.size  " << solid_selection.size() 
+            << " solid_selection " << solsel 
+            ;
+    }
+
+    const char* origin_cfbase = fd->getOriginCFBase(); 
+    LOG(info) 
+        << "fd " << fd->desc() 
+        << " origin_cfbase " << origin_cfbase
+        ; 
+
+    InitOutdir(ok, origin_cfbase ); 
+    //fd->summary(); 
 }
 
 /**
@@ -178,39 +175,6 @@ void CSGOptiXRenderTest::InitOutdir(Opticks* ok, const char* cfbase)
     assert( strcmp(outdir2, outdir) == 0 ); 
 }
 
-
-void CSGOptiXRenderTest::initFD(const char* cfbase)
-{
-    fdl = CSGFoundry::Load(cfbase, "CSGFoundry"); 
-
-    elv = SBitSet::Create( fdl->getNumMeshName(), "ELV", nullptr ) ;  
-
-    if(elv)
-    { 
-        LOG(info) << elv->desc() << std::endl << fdl->descELV(elv) ; 
-        fd = CSGCopy::Select(fdl, elv );  
-    }
-    else
-    {
-        fd = fdl ; 
-    }
-
-    fd->upload(); 
-
-    if( solid_label )
-    {
-        fd->findSolidIdx(solid_selection, solid_label); 
-        std::string solsel = fd->descSolidIdx(solid_selection); 
-        LOG(error) 
-            << " --solid_label " << solid_label
-            << " solid_selection.size  " << solid_selection.size() 
-            << " solid_selection " << solsel 
-            ;
-    }
-
-    LOG(info) << "foundry " << fd->desc() ; 
-    //fd->summary(); 
-}
 
 
 

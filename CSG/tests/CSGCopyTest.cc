@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     LOG(info) << " mode [" << mode << "]" ; 
 
 
-    CSGFoundry* src = mode == 'D' ? CSGFoundry::MakeDemo() : CSGFoundry::Load() ; 
+    CSGFoundry* src = mode == 'D' ? CSGFoundry::MakeDemo() : CSGFoundry::Load_() ; 
     // CSGFoundry::Load the geometry of the current OPTICKS_KEY unless CFBASE envvar override is defined  
 
     const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", "t" ); 

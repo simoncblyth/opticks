@@ -6,6 +6,7 @@ find_package(OpticksCore REQUIRED CONFIG)
 
 set(TEST_SOURCES
     CSGNodeTest.cc
+    CSGNodeImpTest.cc
     CSGIntersectSolidTest.cc
     CSGPrimImpTest.cc
     CSGPrimSpecTest.cc

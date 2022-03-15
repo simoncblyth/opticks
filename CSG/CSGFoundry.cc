@@ -27,6 +27,7 @@
 #include "CSGTarget.h"
 #include "CSGGenstep.h"
 #include "CSGMaker.h"
+#include "CSGCopy.h"
 
 const unsigned CSGFoundry::IMAX = 50000 ; 
 
@@ -52,7 +53,9 @@ CSGFoundry::CSGFoundry()
     fold(nullptr),
     cfbase(nullptr),
     geom(nullptr),
-    loaddir(nullptr)
+    loaddir(nullptr),
+    origin(nullptr),
+    elv(nullptr)
 {
     init(); 
 }
@@ -1678,7 +1681,7 @@ void CSGFoundry::load()
 
 void CSGFoundry::load(const char* base, const char* rel) 
 {
-    set_cfbase(base);  
+    setCFBase(base);  
 
     std::stringstream ss ;   
     ss << base << "/" << rel ; 
@@ -1686,10 +1689,19 @@ void CSGFoundry::load(const char* base, const char* rel)
     load(dir.c_str()); 
 }
 
-void CSGFoundry::set_cfbase( const char* cfbase_ )
+void CSGFoundry::setCFBase( const char* cfbase_ )
 {
     cfbase = strdup(cfbase_); 
 }
+const char* CSGFoundry::getCFBase() const 
+{
+   return cfbase ; 
+}
+const char* CSGFoundry::getOriginCFBase() const 
+{
+   return origin ? origin->cfbase : cfbase ; 
+}
+
 
 
 void CSGFoundry::load( const char* dir_ )
@@ -1720,6 +1732,15 @@ void CSGFoundry::setGeom(const char* geom_)
 {
     geom = geom_ ? strdup(geom_) : nullptr ; 
 }
+void CSGFoundry::setOrigin(const CSGFoundry* origin_)
+{
+    origin = origin_ ; 
+}
+void CSGFoundry::setElv(const SBitSet* elv_)
+{
+    elv = elv_ ; 
+}
+
 
 /**
 CSGFoundry::MakeGeom
@@ -1759,8 +1780,39 @@ CSGFoundry*  CSGFoundry::MakeDemo()
     return fd ; 
 }
 
+
+
+
 /**
 CSGFoundry::Load
+-------------------
+
+
+**/
+CSGFoundry* CSGFoundry::Load() // static
+{
+    CSGFoundry* src = CSGFoundry::Load_() ; 
+   
+    const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", nullptr ); 
+
+    if(elv)
+    {
+        LOG(info) << elv->desc() << std::endl << src->descELV(elv) ; 
+    }
+
+    CSGFoundry* dst = CSGCopy::Select(src, elv ); 
+
+    dst->setOrigin(src); 
+    dst->setElv(elv); 
+
+    return dst ; 
+}
+
+
+
+
+/**
+CSGFoundry::Load_
 -------------------
 
 Load precedence:
@@ -1771,7 +1823,7 @@ Load precedence:
 
 **/
 
-CSGFoundry* CSGFoundry::Load() // static
+CSGFoundry* CSGFoundry::Load_() // static
 {
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  // sensitive to OPTICKS_KEY 
     LOG(info) << "cfbase " << cfbase ;
@@ -1831,10 +1883,7 @@ void CSGFoundry::setFold(const char* fold_)
     fold = strdup(fold_);  
     cfbase = SPath::Dirname(fold_) ; 
 }
-const char* CSGFoundry::getCFBase() const
-{
-    return cfbase ; 
-}
+
 const char* CSGFoundry::getFold() const 
 {
     return fold ; 

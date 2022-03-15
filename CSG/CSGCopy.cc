@@ -235,6 +235,7 @@ void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
     const CSGNode* snd = src->getNode(nodeIdx); 
     unsigned stypecode = snd->typecode(); 
     unsigned sTranIdx = snd->gtransformIdx(); 
+    bool complement = snd->is_complement();  
     bool has_planes = CSG::HasPlanes(stypecode) ; 
     bool has_transform = sTranIdx > 0u ; 
 
@@ -254,9 +255,15 @@ void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
        
     CSGNode nd = {} ;
     CSGNode::Copy(nd, *snd );   // dumb straight copy : so need to fix transform and plan references  
-    nd.setTransform( dTranIdx ); 
 
     CSGNode* dnd = dst->addNode(nd, &splanes);   
+    dnd->setTransformComplement( dTranIdx, complement ); 
+
+    LOG(info)
+        << " nodeIdx " << std::setw(5) << nodeIdx
+        << " sTranIdx " << std::setw(5) << sTranIdx 
+        << " dTranIdx " << std::setw(5) << dTranIdx 
+        ;
 
     if( elv == nullptr )
     {

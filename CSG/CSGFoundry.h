@@ -95,6 +95,7 @@ struct CSG_API CSGFoundry
 
     static CSGFoundry* MakeDemo(); 
     static CSGFoundry* Load();
+    static CSGFoundry* Load_();
     static CSGFoundry* Load(const char* base, const char* rel);
     static CSGFoundry* Load(const char* dir );
 
@@ -110,10 +111,10 @@ struct CSG_API CSGFoundry
     void init(); 
 
     const char* getFold() const ;
-    const char* getCFBase() const ;
     void setFold(const char* fold); 
     void setGeom(const char* geom); 
-
+    void setOrigin(const CSGFoundry* origin); 
+    void setElv(const SBitSet* elv); 
 
     std::string desc() const ;
     std::string descSolid() const ; 
@@ -249,7 +250,11 @@ struct CSG_API CSGFoundry
     void load() ; 
 
     void load( const char* base, const char* rel ) ; 
-    void set_cfbase( const char* cfbase_ ); 
+    void setCFBase( const char* cfbase_ ); 
+    const char* getCFBase() const ; 
+    const char* getOriginCFBase() const ; 
+
+
     void load( const char* dir ) ; 
 
     template<typename T> void loadArray( std::vector<T>& vec, const char* dir, const char* name, bool optional=false ); 
@@ -336,6 +341,10 @@ struct CSG_API CSGFoundry
     const char* cfbase ; 
     const char* geom ; 
     const char* loaddir ; 
+
+    const CSGFoundry* origin ; 
+    const SBitSet*    elv ; 
+
 };
 
 
