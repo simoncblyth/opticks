@@ -259,12 +259,14 @@ void CSGCopy::copyNode(AABB& prim_bb, unsigned nodeIdx )
     CSGNode* dnd = dst->addNode(nd, &splanes);   
     dnd->setTransformComplement( dTranIdx, complement ); 
 
-    LOG(info)
+    /*
+    LOG(LEVEL)
         << " nodeIdx " << std::setw(5) << nodeIdx
         << " sTranIdx " << std::setw(5) << sTranIdx 
         << " dTranIdx " << std::setw(5) << dTranIdx 
         ;
-
+    */
+ 
     if( elv == nullptr )
     {
         assert( dnd->planeNum() == snd->planeNum() );  
