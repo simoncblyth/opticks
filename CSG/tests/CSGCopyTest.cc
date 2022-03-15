@@ -4,6 +4,10 @@
 #include "CSGFoundry.h"
 #include "CSGCopy.h"
 
+
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -13,22 +17,12 @@ int main(int argc, char** argv)
     LOG(info) << " mode [" << mode << "]" ; 
 
 
-
     CSGFoundry* src = mode == 'D' ? CSGFoundry::MakeDemo() : CSGFoundry::Load() ; 
     // CSGFoundry::Load the geometry of the current OPTICKS_KEY unless CFBASE envvar override is defined  
 
+    const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", "t" ); 
 
-    const char* elv_ = SSys::getenvvar("ELV", "t") ; 
-    unsigned num_bits = src->getNumMeshName() ; 
-    const SBitSet* elv = SBitSet::Create( num_bits, elv_ ); 
-
-    LOG(info) << std::endl << src->descELV(elv) ; 
-
-    LOG(info) 
-        << " num_bits " << num_bits
-        << " elv_ " << elv_ 
-        << " elv " << elv->desc()
-        ;
+    LOG(info) << elv->desc() << std::endl << src->descELV(elv) ; 
 
     CSGFoundry* dst = CSGCopy::Select(src, elv ); 
 

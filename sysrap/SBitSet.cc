@@ -2,8 +2,18 @@
 #include <iomanip>
 
 #include "SBitSet.hh"
+#include "SSys.hh"
 #include "SStr.hh"
 
+
+
+SBitSet* SBitSet::Create(unsigned num_bits, const char* ekey, const char* fallback )
+{
+    const char* spec = SSys::getenvvar(ekey, fallback) ;
+    SBitSet* bs = Create(num_bits, spec); 
+    bs->set_label(ekey); 
+    return bs ; 
+}
 
 SBitSet* SBitSet::Create(unsigned num_bits, const char* spec)
 {
@@ -87,10 +97,22 @@ void SBitSet::get_pos( std::vector<unsigned>& pos ) const
 SBitSet::SBitSet( unsigned num_bits_ )
     :
     num_bits(num_bits_),
-    bits(new bool[num_bits])
+    bits(new bool[num_bits]),
+    label(nullptr),
+    spec(nullptr)
 {
     set(false); 
 }
+
+void SBitSet::set_label(const char* label_)
+{
+    label = strdup(label_); 
+}
+void SBitSet::set_spec( const char* spec_)
+{
+    spec = strdup(spec_); 
+}
+
 
 void SBitSet::set(bool all)
 {
@@ -100,6 +122,7 @@ void SBitSet::set(bool all)
 void SBitSet::parse(const char* spec)
 {
     Parse(num_bits, bits, spec); 
+    set_spec(spec); 
 }
 
 
@@ -110,6 +133,15 @@ SBitSet::~SBitSet()
 
 std::string SBitSet::desc() const 
 {
-    return Desc(num_bits, bits, false); 
+    std::stringstream ss ; 
+    ss 
+        << std::setw(4) << ( label ? label : "-" ) 
+        << std::setw(10) << ( spec ? spec : "-" ) 
+        << Desc(num_bits, bits, false)
+        ;
+
+    std::string s = ss.str();  
+    return s ; 
+  
 }
 

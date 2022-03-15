@@ -32,29 +32,38 @@ CFBASE
 
 #include "SPath.hh"
 #include "SSys.hh"
+#include "SOpticksResource.hh"
+#include "SBitSet.hh"
 #include "OPTICKS_LOG.hh"
 #include "scuda.h"
 #include "sqat4.h"
 
+// TODO: avoid use of Opticks.hh here 
 #include "Opticks.hh"
 
 #include "CSGFoundry.h"
+#include "CSGCopy.h"
 #include "CSGOptiX.h"
 
 
 struct CSGOptiXRenderTest
 {
-    static Opticks* InitOpticks(int argc, char** argv);  
-    static void InitOutdir(Opticks* ok); 
+    static const char* InitCFBASE(); 
+    static Opticks* InitOpticks(int argc, char** argv, const char* cfbase );  
+    static void InitOutdir(Opticks* ok, const char* cfbase); 
 
 
     CSGOptiXRenderTest(int argc, char** argv ) ; 
 
+    const char* cfbase ; 
     Opticks*    ok ; 
     const char* solid_label ; 
     std::vector<unsigned>& solid_selection ; 
 
-    CSGFoundry* fd ; 
+    CSGFoundry* fdl    ; // as loaded
+    const SBitSet* elv ; 
+
+    CSGFoundry* fd ;  // possibly with selection applied
     CSGOptiX*   cx ; 
 
     const char* topline ; 
@@ -68,7 +77,7 @@ struct CSGOptiXRenderTest
     std::vector<std::string> args ; 
 
 
-    void initFD(); 
+    void initFD(const char* cfbase); 
     void initCX(); 
     void initArgs(); 
 
@@ -80,9 +89,12 @@ struct CSGOptiXRenderTest
 
 CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
     : 
-    ok(InitOpticks(argc, argv)),
+    cfbase(InitCFBASE()),
+    ok(InitOpticks(argc, argv, cfbase)),
     solid_label(ok->getSolidLabel()),         // --solid_label   used for selecting solids from the geometry 
     solid_selection(ok->getSolidSelection()), //  NB its not set yet, that happens below 
+    fdl(nullptr),
+    elv(nullptr),
     fd(nullptr),
     cx(nullptr),
     topline(SSys::getenvvar("TOPLINE", "CSGOptiXRenderTest")),
@@ -93,14 +105,17 @@ CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
     w2m(qat4::identity()),
     default_arg(SSys::getenvvar("MOI", "sWorld:0:0"))  
 {
-    initFD(); 
+    initFD(cfbase); 
     initCX(); 
     initArgs(); 
 }
 
-Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv )
+
+
+const char* CSGOptiXRenderTest::InitCFBASE()
 {
     bool has_cfbase = SSys::hasenvvar("CFBASE") ;
+
     if( has_cfbase )  // when CFBASE override envvvar exists then there is no need for OPTICKS_KEY
     {
         LOG(info) << " CFBASE envvar detected : ignoring OPTICKS_KEY " ; 
@@ -111,10 +126,21 @@ Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv )
         LOG(info) << " no CFBASE envvar detected : will need OPTICKS_KEY " ; 
     }
 
-    Opticks* ok = new Opticks(argc, argv, has_cfbase ? "--allownokey" : nullptr  );  
+    const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  // sensitive to OPTICKS_KEY 
+    return cfbase ; 
+}
+
+
+/**
+TODO: eliminate use of Opticks here, its doing little 
+**/
+
+Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv, const char* cfbase )
+{
+    Opticks* ok = new Opticks(argc, argv, cfbase ? "--allownokey" : nullptr  );  
     ok->configure(); 
     ok->setRaygenMode(0);  // override --raygenmode option 
-    InitOutdir(ok); 
+    InitOutdir(ok, cfbase); 
     return ok ; 
 }
 
@@ -124,13 +150,14 @@ CSGOptiXRenderTest::InitOutdir
 
 The out_prefix depends on values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined.
 
+TODO: wean off Opticks, move file handling basics down to sysrap 
+
 **/
 
-void CSGOptiXRenderTest::InitOutdir(Opticks* ok)
+void CSGOptiXRenderTest::InitOutdir(Opticks* ok, const char* cfbase)
 {
     int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
-    const char* out_prefix = ok->getOutPrefix(optix_version_override);  
-    const char* cfbase = ok->getFoundryBase("CFBASE") ; 
+    const char* out_prefix = ok->getOutPrefix(optix_version_override);
 
     LOG(info) 
         << " optix_version_override " << optix_version_override
@@ -152,11 +179,22 @@ void CSGOptiXRenderTest::InitOutdir(Opticks* ok)
 }
 
 
-
-void CSGOptiXRenderTest::initFD()
+void CSGOptiXRenderTest::initFD(const char* cfbase)
 {
-    const char* cfbase = ok->getFoundryBase("CFBASE") ; 
-    fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+    fdl = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+
+    elv = SSys::hasenvvar("ELV") ? SBitSet::Create( fdl->getNumMeshName(), "ELV", "t" ) : nullptr ;  
+
+    if(elv)
+    { 
+        LOG(info) << elv->desc() << std::endl << fdl->descELV(elv) ; 
+        fd = CSGCopy::Select(fdl, elv );  
+    }
+    else
+    {
+        fd = fdl ; 
+    }
+
     fd->upload(); 
 
     if( solid_label )
