@@ -117,9 +117,13 @@ if __name__ == '__main__':
     prim_repeatIdx      =  prim_repeatIdx_(cf.prim)
     prim_primIdx        =  prim_primIdx_(cf.prim)
  
+    prim_meshIdx_to_numNode = dict(zip(prim_meshIdx,prim_numNode))  
+
 
     mname_skip = "Flange"
     all_ridxs = list(range(0,len(cf.solid)))
+
+    #ridxs = all_ridxs
     ridxs = (0,)
 
     print("\n\n all_ridxs: %s   ridxs:%s   nmame_skip:%s   geocache_hookup_arg:%s " % (str(all_ridxs), str(ridxs), mname_skip, arg ))
@@ -130,15 +134,17 @@ if __name__ == '__main__':
         print("\n ridx : %2d   ridx_prims.shape %s " % (ridx, str(ridx_prims.shape))) 
 
         midx = prim_meshIdx_(ridx_prims)   
+        numn = prim_numNode_(ridx_prims) 
 
         u_mx, c_mx = np.unique(midx, return_counts=True)  
-        print(" %4s %4s : %60s : %s " % ("u_mx","c_mx", " unique midx prim counts and meshname ", "prs.shape"  ))
+        print(" %4s %4s %4s : %60s : %s " % ("u_mx","c_mx", "nnd", " unique midx prim counts and meshname ", "prs.shape"  ))
         for i in range(len(u_mx)):
             sel = prim_meshIdx_(cf.prim) == u_mx[i]    
             prs = cf.prim[sel] 
             mname = cf.meshname[u_mx[i]]
-            mx = u_mx[i] 
-            cn = c_mx[i]
+            mx = u_mx[i]   # mesh index
+            cn = c_mx[i]   # number of prims with the mesh index
+            nnd = prim_meshIdx_to_numNode[mx]   ## number of nodes of the prim 
 
             bb = midx_prims_bbox_(mx)  
 
@@ -146,7 +152,7 @@ if __name__ == '__main__':
                 skip += 1 
                 continue  
             pass
-            print(" %4d %4d : %60s : %20s : %s  "  % (mx, cn, mname, str(prs.shape), str(bb[0]) ))
+            print(" %4d %4d %4d : %60s : %20s : %s  "  % (mx, cn, nnd, mname, str(prs.shape), str(bb[0]) ))
         pass
     pass
     print(" skip:%d  nmame_skip:%s " % (skip, mname_skip))

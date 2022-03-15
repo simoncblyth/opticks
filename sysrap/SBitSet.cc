@@ -12,7 +12,7 @@ SBitSet* SBitSet::Create(unsigned num_bits, const char* ekey, const char* fallba
 {
     const char* spec = SSys::getenvvar(ekey, fallback) ;
     SBitSet* bs = Create(num_bits, spec); 
-    bs->set_label(ekey); 
+    if(bs) bs->set_label(ekey); 
     return bs ; 
 }
 
@@ -92,9 +92,9 @@ bool SBitSet::all() const { return count() == num_bits ; }
 bool SBitSet::any() const { return count() > 0  ; }
 bool SBitSet::none() const { return count() == 0  ; }
 
-void SBitSet::get_pos( std::vector<unsigned>& pos ) const 
+void SBitSet::get_pos( std::vector<unsigned>& pos, bool value) const 
 {
-    for(unsigned i=0 ; i < num_bits ; i++ ) if(bits[i]) pos.push_back(i) ; 
+    for(unsigned i=0 ; i < num_bits ; i++ ) if(bits[i] == value) pos.push_back(i) ; 
 }
 
 

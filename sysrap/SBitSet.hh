@@ -35,7 +35,7 @@ struct SYSRAP_API SBitSet
     bool        any() const ; 
     bool        none() const ; 
 
-    void get_pos( std::vector<unsigned>& pos ) const ; 
+    void get_pos( std::vector<unsigned>& pos, bool value ) const ; 
 
     std::string desc() const ; 
 };

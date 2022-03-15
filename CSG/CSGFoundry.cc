@@ -154,16 +154,40 @@ const std::string& CSGFoundry::getMeshName(unsigned midx) const
 
 const std::string CSGFoundry::descELV(const SBitSet* elv)
 {
-    std::vector<unsigned> pos ; 
-    elv->get_pos(pos); 
+    std::vector<unsigned> include_pos ; 
+    std::vector<unsigned> exclude_pos ; 
+    elv->get_pos(include_pos, true ); 
+    elv->get_pos(exclude_pos, false); 
+
+    unsigned num_include = include_pos.size()  ; 
+    unsigned num_exclude = exclude_pos.size()  ; 
+    unsigned num_bits = elv->num_bits ; 
+    assert( num_bits == num_include + num_exclude ); 
 
     std::stringstream ss ;  
-    for(unsigned i=0 ; i < pos.size() ; i++)
+    ss << "CSGFoundry::descELV" 
+       << " elv.num_bits " << num_bits 
+       << " include " << num_include
+       << " exclude " << num_exclude
+       << std::endl 
+       ; 
+
+    ss << "INCLUDE:" << include_pos.size() << std::endl << std::endl ;  
+    for(unsigned i=0 ; i < include_pos.size() ; i++)
     {
-        const unsigned& p = pos[i] ; 
+        const unsigned& p = include_pos[i] ; 
         const std::string& mn = getMeshName(p) ; 
         ss << std::setw(3) << i << ":" << mn << std::endl ;  
     }
+
+    ss << "EXCLUDE:" << exclude_pos.size() << std::endl << std::endl ;  
+    for(unsigned i=0 ; i < exclude_pos.size() ; i++)
+    {
+        const unsigned& p = exclude_pos[i] ; 
+        const std::string& mn = getMeshName(p) ; 
+        ss << std::setw(3) << i << ":" << mn << std::endl ;  
+    }
+
     std::string s = ss.str(); 
     return s ; 
 } 

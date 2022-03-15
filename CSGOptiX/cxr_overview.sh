@@ -5,6 +5,8 @@ cxr_overview.sh
 
 ::
 
+   GDB=gdb ./cxr_overview.sh 
+
    EMM=0, ./cxr_overview.sh 
    EMM=1, ./cxr_overview.sh 
 
