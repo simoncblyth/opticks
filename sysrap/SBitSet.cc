@@ -109,11 +109,11 @@ SBitSet::SBitSet( unsigned num_bits_ )
     set(false); 
 }
 
-void SBitSet::set_label(const char* label_)
+void SBitSet::set_label(const char* label_) // eg ELV or EMM 
 {
     label = strdup(label_); 
 }
-void SBitSet::set_spec( const char* spec_)
+void SBitSet::set_spec( const char* spec_)  // eg t or t0 t1 t0,1,2
 {
     spec = strdup(spec_); 
 }

@@ -39,5 +39,12 @@ int main(int argc, char** argv)
         assert( cf == 0 ); 
     }
 
+    LOG(info) << " src.cfbase " << src->cfbase << " elv.spec " << elv->spec ; 
+    if(src->cfbase && elv->spec)
+    {
+        LOG(info) << " src.cfbase " << src->cfbase << " elv.spec " << elv->spec ; 
+    }
+
+
     return 0 ;  
 }

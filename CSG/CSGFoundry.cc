@@ -249,7 +249,7 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
 
     if( mismatch != 0 ) LOG(fatal) << " mismatch FAIL for " << name ;  
     if( mismatch != 0 ) std::cout << " mismatch FAIL for " << name << std::endl ;  
-    assert( mismatch == 0 ); 
+    //assert( mismatch == 0 ); 
     return mismatch ; 
 }
 
@@ -1678,10 +1678,17 @@ void CSGFoundry::load()
 
 void CSGFoundry::load(const char* base, const char* rel) 
 {
+    set_cfbase(base);  
+
     std::stringstream ss ;   
     ss << base << "/" << rel ; 
     std::string dir = ss.str();   
     load(dir.c_str()); 
+}
+
+void CSGFoundry::set_cfbase( const char* cfbase_ )
+{
+    cfbase = strdup(cfbase_); 
 }
 
 

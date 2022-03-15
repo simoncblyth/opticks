@@ -44,8 +44,9 @@ On laptop::
 EOU
 }
 
+# NMM and NLV are maximum index, not counts, so they need to be num-1    
 nmm=${NMM:-9}   # geometry specific 
-nlv=${NLV:-141}
+nlv=${NLV:-140}
 ## hmm could generate a metadata bash script to provide this kinda thing in the geocache
 
 
@@ -63,7 +64,7 @@ scan-emm-()
 
 scan-elv-()
 {
-    for e in $(seq 0 $nlv) ; do echo "t$e" ; done    # disabling each midx one-by-one
+   # for e in $(seq 0 $nlv) ; do echo "t$e" ; done    # disabling each midx one-by-one
     for e in $(seq 0 $nlv) ; do echo "$e" ; done     # enabling each midx one-by-one
 }
 

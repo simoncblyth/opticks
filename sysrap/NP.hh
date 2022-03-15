@@ -154,6 +154,9 @@ struct NP
 
     template<typename T> T    pdomain(const T value, int item=-1, bool dump=false  ) const ; 
     template<typename T> T    interp(T x, int item=-1) const ;                  // requires pshaped 
+    template<typename T> T    interp2D(T x, T y, int item=-1) const ;   
+
+
     template<typename T> T    interpHD(T u, unsigned hd_factor, int item=-1 ) const ; 
     template<typename T> T    interp(unsigned iprop, T x) const ;  // requires NP::Combine of pshaped arrays 
     template<typename T> NP*  cumsum(int axis=0) const ; 
@@ -536,7 +539,25 @@ inline NP::NP(const char* dtype_, int ni, int nj, int nk, int nl, int nm )
 
 inline void NP::init()
 {
-    data.resize( size*ebyte ) ;  // vector of char  
+#ifdef OLD
+    int num_char = size*ebyte ; 
+#else
+    unsigned long long size_ = size ; 
+    unsigned long long ebyte_ = ebyte ; 
+    unsigned long long num_char = size_*ebyte_ ; 
+#endif
+
+#ifdef DEBUG
+    std::cout 
+        << "NP::init"
+        << " size " << size
+        << " ebyte " << ebyte
+        << " num_char " << num_char 
+        << std::endl 
+        ;
+#endif
+
+    data.resize( num_char ) ;  // vector of char  
     std::fill( data.begin(), data.end(), 0 );     
     _prefix.assign(net_hdr::LENGTH, '\0' ); 
     _hdr = make_header(); 
@@ -1749,6 +1770,47 @@ template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) 
     }
     return xv ; 
 }
+
+
+/**
+NP::interp2D
+-------------
+
+* https://en.wikipedia.org/wiki/Bilinear_interpolation
+
+The interpolation formulas used by CUDA textures are documented.
+
+* https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#linear-filtering
+
+::
+
+    J.2. Linear Filtering
+    In this filtering mode, which is only available for floating-point textures, the value returned by the texture fetch is
+
+    tex(x)=(1−α)T[i]+αT[i+1] for a one-dimensional texture,
+
+    tex(x,y)=(1−α)(1−β)T[i,j]+α(1−β)T[i+1,j]+(1−α)βT[i,j+1]+αβT[i+1,j+1] for a two-dimensional texture,
+
+    tex(x,y,z) =
+    (1−α)(1−β)(1−γ)T[i,j,k]+α(1−β)(1−γ)T[i+1,j,k]+
+    (1−α)β(1−γ)T[i,j+1,k]+αβ(1−γ)T[i+1,j+1,k]+
+    (1−α)(1−β)γT[i,j,k+1]+α(1−β)γT[i+1,j,k+1]+
+    (1−α)βγT[i,j+1,k+1]+αβγT[i+1,j+1,k+1]
+
+    for a three-dimensional texture,
+    where:
+
+    i=floor(xB), α=frac(xB), xB=x-0.5,
+    j=floor(yB), β=frac(yB), yB=y-0.5,
+    k=floor(zB), γ=frac(zB), zB= z-0.5,
+    α, β, and γ are stored in 9-bit fixed point format with 8 bits of fractional value (so 1.0 is exactly represented).
+
+
+The use of reduced precision makes it not straightforward to perfectly replicate on the CPU, 
+but you should be able to get very close. 
+
+
+**/
 
 
 /**

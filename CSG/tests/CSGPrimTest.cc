@@ -1,6 +1,5 @@
 #include "SSys.hh"
 #include "scuda.h"
-#include "Opticks.hh"
 #include "CSGFoundry.h"
 #include "CSGName.h"
 
@@ -10,13 +9,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    Opticks ok(argc, argv); 
-    ok.configure(); 
+    CSGFoundry* fd = CSGFoundry::Load(); 
 
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
-    LOG(info) << "cfbase " << cfbase ; 
 
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+
  
     LOG(info) << "foundry " << fd->desc() ; 
     fd->summary(); 

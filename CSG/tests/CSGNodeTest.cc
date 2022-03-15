@@ -10,6 +10,10 @@
 #include "CSGNode.h"
 #include "Sys.h"
 
+#include "SBitSet.hh"
+#include "CSGFoundry.h"
+#include "CSGCopy.h"
+
 #include "OPTICKS_LOG.hh"
 
 void test_copy()
@@ -115,19 +119,41 @@ void test_Depth()
 }
 
 
+void test_elv()
+{
+    CSGFoundry* fdl = CSGFoundry::Load(); 
+
+
+    LOG(info) << "foundry " << fdl->desc() ; 
+    fdl->summary(); 
+
+    SBitSet* elv = SBitSet::Create( fdl->getNumMeshName(), "ELV", nullptr ) ;
+    if(elv)
+    {
+        LOG(info) << elv->desc() << std::endl << fdl->descELV(elv) ;
+    }
+    CSGFoundry* fd = CSGCopy::Select(fdl, elv); 
+
+
+
+    LOG(info) << fd->desc() ;     
+
+}
+
 
 int main(int argc, char** argv)
 {
-    //OPTICKS_LOG(argc, argv);  
+    OPTICKS_LOG(argc, argv);  
 
     /*
     test_zero(); 
     test_sphere(); 
     test_copy();  
     test_change_transform();  
+    test_Depth();  
     */
 
-    test_Depth();  
+    test_elv(); 
 
     return 0 ; 
 }

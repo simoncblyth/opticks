@@ -60,6 +60,7 @@ void CSGPrimSpec::dump(const char* msg, int modulo) const
         << " num_prim " << num_prim 
         << " stride_in_bytes " << stride_in_bytes 
         << " stride_in_floats " << stride_in_floats 
+        << " modulo " << modulo
         << std::endl 
         ; 
 
