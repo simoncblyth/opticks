@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <string>
 #include "SYSRAP_API_EXPORT.hh"
 

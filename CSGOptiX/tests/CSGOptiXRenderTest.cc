@@ -183,7 +183,7 @@ void CSGOptiXRenderTest::initFD(const char* cfbase)
 {
     fdl = CSGFoundry::Load(cfbase, "CSGFoundry"); 
 
-    elv = SSys::hasenvvar("ELV") ? SBitSet::Create( fdl->getNumMeshName(), "ELV", "t" ) : nullptr ;  
+    elv = SBitSet::Create( fdl->getNumMeshName(), "ELV", nullptr ) ;  
 
     if(elv)
     { 

@@ -1,3 +1,4 @@
+#include <cstring>
 #include <sstream>
 #include <iomanip>
 
@@ -17,8 +18,12 @@ SBitSet* SBitSet::Create(unsigned num_bits, const char* ekey, const char* fallba
 
 SBitSet* SBitSet::Create(unsigned num_bits, const char* spec)
 {
-    SBitSet* bs = new SBitSet(num_bits); 
-    bs->parse(spec);  
+    SBitSet* bs = nullptr ; 
+    if(spec)
+    {
+        bs = new SBitSet(num_bits); 
+        bs->parse(spec);  
+    }
     return bs ; 
 }
 
