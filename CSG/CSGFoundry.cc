@@ -1830,8 +1830,11 @@ CSGFoundry* CSGFoundry::Load() // static
 CSGFoundry::Load_
 -------------------
 
+The geometry loaded is sensitive to envvars GEOM, CFBASE, OPTICKS_KEY, OPTICKS_GEOCACHE_PREFIX 
+
 Load precedence:
 
+0. when GEOM envvar is defined the CSGFoundry directory beneath $TMP will be loaded 
 1. when CFBASE envvar is defined the CSGFoundry directory within CFBASE dir will be loaded
 2. otherwise SOpticksResource::CFBase will invoke CGDir to obtain the CSG_GGeo directory 
    corresponding to the current OPTICKS_KEY envvar 
@@ -1840,7 +1843,7 @@ Load precedence:
 
 CSGFoundry* CSGFoundry::Load_() // static
 {
-    const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  // sensitive to OPTICKS_KEY 
+    const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  
     LOG(info) << "cfbase " << cfbase ;
     return Load(cfbase, "CSGFoundry"); 
 }

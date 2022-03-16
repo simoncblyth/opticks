@@ -1,5 +1,12 @@
 #!/bin/bash -l 
 
+default=remote
+arg=${1:-$default}
+
+opticks-switch-key $arg 
+
+
+
 msg="=== $BASH_SOURCE :"
 usage(){ cat << EOU
 csg.sh : using test/CSGIntersectSolidTest.cc tests/CSGIntersectSolidTest.py without GEOM envvar 
@@ -16,9 +23,6 @@ Dumping geometry::
 
 EOU
 }
-
-
-
 
 
 dx=0
@@ -56,11 +60,8 @@ esac
 
 export CEGS=${CEGS:-$cegs}
 
-
 bin=CSGIntersectSolidTest
 script=tests/CSGIntersectSolidTest.py 
-
-
 arg=${1:-run_ana}
 
 
@@ -95,12 +96,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $msg script error && exit 2
 fi
-
-
-
-
-
-
 
 echo 0 
 

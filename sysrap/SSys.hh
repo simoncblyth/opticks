@@ -41,6 +41,7 @@ class SYSRAP_API SSys {
   public:
 
      static const plog::Severity LEVEL ; 
+     static const char* OS ; 
      static const unsigned SIGNBIT32 ;
      static const unsigned OTHERBIT32 ; 
 

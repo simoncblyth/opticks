@@ -490,12 +490,21 @@ CSGPrim* CSG_GGeo_Convert::convertPrim(const GParts* comp, unsigned primIdx )
         << " root_is_compound " << root_is_compound
         ; 
 
-
- 
     if(root_is_compound)
     {
         assert( numParts > 1 ); 
-        assert( int(root_subNum) == int(numParts) ); // <-- THIS WILL BREAK WHEN USE LIST NODES
+        bool tree = int(root_subNum) == int(numParts) ; 
+
+        if( tree == false )
+        {
+           LOG(error) 
+               << " non-tree nodes detected, eg with list-nodes "
+               << " root_subNum " << root_subNum
+               << " root_subOffset " << root_subOffset
+               << " numParts " << numParts
+               ;
+        } 
+
         root->setSubNum( root_subNum ); 
         root->setSubOffset( root_subOffset ); 
     }

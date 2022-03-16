@@ -249,6 +249,12 @@ void test_getenvfloat()
     assert( f2 == f ); 
 }
 
+void test_OS()
+{
+    LOG(info) << SSys::OS ; 
+
+}
+
 
 int main(int argc , char** argv )
 {
@@ -256,39 +262,30 @@ int main(int argc , char** argv )
 
     int rc(0) ;
 
-    //rc = test_OKConfCheck();
-
-    //rc = test_tpmt();
-
-    //rc = test_RC(77);
-
-    //LOG(info) << argv[0] << " rc " << rc ; 
-   
-    //test_DumpEnv();
-
-    //test_IsNegativeZero(); 
-
-    //test_hostname();
-
-    //test_POpen(true);
-    //test_POpen(false);
-
-    //test_POpen2(true);
-    //test_POpen2(false);
-
-    //test_Which(); 
-
-    //test_hexlify();  
-
-
-    //test_getenvintvec(); 
-    //test_getenvintvec_ptr(); 
+    /** 
+    rc = test_OKConfCheck();
+    rc = test_tpmt();
+    rc = test_RC(77);
+    LOG(info) << argv[0] << " rc " << rc ; 
+    test_DumpEnv();
+    test_IsNegativeZero(); 
+    test_hostname();
+    test_POpen(true);
+    test_POpen(false);
+    test_POpen2(true);
+    test_POpen2(false);
+    test_Which(); 
+    test_hexlify();  
+    test_getenvintvec(); 
+    test_getenvintvec_ptr(); 
     test_getenvintvec_non(); 
+    test_getenvfloat(); 
+    test_atof(); 
+    test_RunPythonScript(); 
+    **/
 
-    //test_getenvfloat(); 
-    //test_atof(); 
+    test_OS(); 
 
-    //test_RunPythonScript(); 
 
     return rc  ; 
 }

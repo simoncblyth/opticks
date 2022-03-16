@@ -461,7 +461,7 @@ or the entire string of the char does not occur.
 
 For example::
 
-    SStr::HeadFirst("AltXJFixtureConstruction_OtherSuffix_XZ", '_') -> "AltXJFixtureConstruction_OtherSuffix" 
+    SStr::HeadLast("AltXJFixtureConstruction_OtherSuffix_XZ", '_') -> "AltXJFixtureConstruction_OtherSuffix" 
 
 **/
 

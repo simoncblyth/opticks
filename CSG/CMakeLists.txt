@@ -111,6 +111,7 @@ message(STATUS "CMAKE_BINARY_DIR         : ${CMAKE_BINARY_DIR}")
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
+target_compile_definitions( ${name} PUBLIC WITH_CONTIGUOUS )
 
 # these DEBUG flags are exceedingly verbose : only use for single photons and do not commit with them uncommented
 #target_compile_definitions( ${name} PRIVATE DEBUG )

@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "SSys.hh"
+#include "SStr.hh"
 #include "SPath.hh"
 #include "SOpticksResource.hh"
 #include "SOpticksKey.hh"
@@ -135,6 +136,20 @@ const char* SOpticksResource::CGDir(bool setkey)  // formerally CSG_GGeoDir
 SOpticksResource::CFBase
 --------------------------
 
+Return the directory path within which the CSGFoundry directory 
+will be expected.  The path returned dependes on several 
+environment variables. 
+
+Precedence order:
+
+1. GEOM envvar value such as AltXJfixtureConstruction_FirstSuffix_XY leads for CFBASE folder 
+   such as /tmp/$USER/opticks/GeoChain_Darwin/AltXJfixtureConstruction_FirstSuffix
+
+2. CFBASE envvar values directly providing CFBASE directory 
+
+3. CFBASE directory derived from OPTICKS_KEY and OPTICKS_GEOCACHE_PREFIX 
+
+
 When the *ekey* envvar (default CFBASE) is defined its 
 value is returned otherwise the CFDir obtained from the 
 OPTICKS_KEY is returned.  
@@ -142,11 +157,29 @@ OPTICKS_KEY is returned.
 
 const char* SOpticksResource::CFBase(const char* ekey)
 {
-    const char* cfbase = SSys::getenvvar(ekey) ; 
-    if( cfbase == nullptr )
+    const char* cfbase = nullptr ; 
+    const char* geom = SSys::getenvvar("GEOM"); 
+        
+    if( geom != nullptr )
     {
-        bool setkey = true ; 
-        cfbase = CGDir(setkey); 
+        const char* gcn =  SStr::HeadLast(geom, '_'); 
+
+        int create_dirs = 0 ; 
+#ifdef __APPLE__
+        const char* rel = "GeoChain_Darwin" ; 
+#else
+        const char* rel = "GeoChain" ; 
+#endif
+        cfbase = SPath::Resolve("$TMP", rel, gcn, create_dirs  );    
+    }
+    else
+    {
+        cfbase = SSys::getenvvar(ekey) ; 
+        if( cfbase == nullptr )
+        {
+            bool setkey = true ; 
+            cfbase = CGDir(setkey); 
+        }
     }
     return cfbase ; 
 }

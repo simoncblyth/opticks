@@ -43,6 +43,7 @@
 #include "SPath.hh"
 #include "STime.hh"
 #include "SRngSpec.hh"
+#include "SOpticks.hh"
 
 
 // brap-
@@ -1402,51 +1403,9 @@ void Opticks::writeGeocacheScript(const char* msg) const
 
 
 
-
-const char* Opticks::getCFBaseScriptPath() const 
+void Opticks::WriteCFBaseScript(const char* cfbase, const char* msg) // static
 {
-    std::stringstream ss ; 
-    ss << "/tmp/CFBASE.sh" ; 
-    std::string s = ss.str(); 
-    return strdup(s.c_str()); 
-}
-
-
-std::string Opticks::getCFBaseScriptString(const char* msg) const 
-{
-    const char* cfbase = getFoundryBase("CFBASE") ;  
-    std::stringstream ss ; 
-    ss
-        << "# " << msg  
-        << std::endl 
-        << "# " << STime::Stamp()   
-        << std::endl 
-        << "export CFBASE=" << cfbase
-        << std::endl 
-        << "cfcd(){ cd " << cfbase << "/CSGFoundry ; pwd ; } "    // dont assume the envvar still same when function used
-        << std::endl 
-        << "# "    
-        << std::endl 
-        ;   
-
-    std::string s = ss.str(); 
-    return s ; 
-}
-
-
-void Opticks::writeCFBaseScript(const char* msg) const
-{
-    const char* sh_path = getCFBaseScriptPath() ; 
-    std::string sh = getCFBaseScriptString(msg); 
-
-    LOG(info) 
-        << "writing sh_path " << sh_path << std::endl
-        << "sh [" << std::endl
-        << sh  
-        << "]" 
-        ;
-
-    SStr::Save(sh_path, sh.c_str()) ; 
+    SOpticks::WriteCFBaseScript(cfbase, msg); 
 }
 
 

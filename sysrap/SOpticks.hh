@@ -13,6 +13,7 @@ a really minimal install excluding : brap, NPY, optickscore
 **/
 
 #include <vector>
+#include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
 struct SArgs ; 
@@ -21,6 +22,13 @@ class Composition ;
 
 struct SYSRAP_API SOpticks
 {
+    static const plog::Severity LEVEL ; 
+
+    static const char* CFBaseScriptPath() ; 
+    static std::string CFBaseScriptString(const char* cfbase, const char* msg); 
+    static void WriteCFBaseScript(const char* cfbase, const char* msg);
+
+
     SOpticks(int argc, char** argv, const char* argforced ) ; 
 
     bool                          hasArg(const char* arg) const ; 

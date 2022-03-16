@@ -52,6 +52,18 @@ extern char **environ;
 const plog::Severity SSys::LEVEL = PLOG::EnvLevel("SSys", "DEBUG")  ; 
 
 
+#ifdef __APPLE__
+const char* SSys::OS = "Darwin"  ; 
+#else
+const char* SSys::OS = "Linux"  ; 
+#endif
+
+
+
+
+
+
+
 void SSys::DumpEnv(const char* pfx ) // static
 {
     int i = 1;
@@ -710,5 +722,7 @@ void SSys::Exit(int rc)
     LOG(fatal) << " rc " << rc ; 
     std::raise(SIGINT) ; 
 }
+
+
 
 

@@ -58,15 +58,10 @@ in the more friendly debugging environment of the CPU.::
         re-run with a single photon 
         do this after recompiling with DEBUG flag allows to see the details of the single photon 
 
-
-
-     
-
-
 EOU
 }
 
-#geom=AltXJfixtureConstruction_YZ
+geom=AltXJfixtureConstruction_YZ
 #geom=AltXJfixtureConstruction_XZ
 #geom=AltXJfixtureConstruction_XY
 #geom=AltXJfixtureConstructionU_XY
@@ -74,7 +69,7 @@ EOU
 
 #geom=UnionBoxSphere_XY
 #geom=UnionListBoxSphere_XY
-geom=UnionLLBoxSphere_XY
+#geom=UnionLLBoxSphere_XY
 
 #geom=AnnulusBoxUnion_XY
 #geom=AnnulusTwoBoxUnion_XY
@@ -126,11 +121,16 @@ catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ]
 export GEOM=${GEOM:-$geom}
 gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
 
-if [ "$(uname)" == "Darwin" ] ; then
-   cfbase=$TMP/GeoChain_Darwin/$gcn 
-else
-   cfbase=$TMP/GeoChain/$gcn 
-fi 
+cfbase=$(SOpticksResourceTest --cfbase)
+
+#  moved this into SOpticksResource::CFBase by adding GEOM envvar sensitivity there 
+#
+#if [ "$(uname)" == "Darwin" ] ; then
+#   cfbase=$TMP/GeoChain_Darwin/$gcn 
+#else
+#   cfbase=$TMP/GeoChain/$gcn 
+#fi 
+
 
 case $gcn in 
    AnnulusFourBoxUnion)     gridscale=0.1  ;; 
@@ -214,7 +214,7 @@ export CMDLINE=$cmdline
 export NOTE=$note 
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CEGS=${CEGS:-$cegs}
-export CFBASE=${CFBASE:-$cfbase}
+export CFBASE=${CFBASE:-$cfbase}  ## moved GEOM sensitivity into SOpticksResource::CFBase : BUT still need this for the script
 export CEGS=${CEGS:-$cegs}
 export TOPLINE="$topline"
 export BOTLINE="$note"
@@ -248,9 +248,6 @@ Apply GeoChain conversion to a named geometry::
     b7  # when using OptiX 7
     cd ~/opticks/GeoChain     # or use "gc" shortcut function 
     GEOM=${GEOM%%_*} ./translate.sh 
-
-
-
 
 
 B. Directly from CSGSolid/CSGPrim/CSGNode
@@ -337,7 +334,6 @@ elif [ "${arg/run}" != "$arg" ]; then
         $bin
         [ $? -ne 0 ] && echo $msg error while running binary $bin  && exit 1
     fi 
-
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then
@@ -371,7 +367,6 @@ if [ "${arg/ana}" != "$arg" ]; then
        echo $msg add below with a title to s5_background_image.txt for presenation 
        echo $msg $reldir/$pubname 1280px_720px
     fi 
-
 fi
 
 exit 0
