@@ -60,12 +60,50 @@ class MM(object):
         return "\n".join(self.mm)
 
 
+class LV(object):
+    PTN = re.compile("\d+") 
+    def __init__(self, path):
+        lv = os.path.expandvars(path)
+        lv = open(lv, "r").read().splitlines() if os.path.exists(lv) else None
+        self.lv = lv
+        if lv is None:
+            log.fatal("missing %s, which is now a standard part of CSGFoundry " % path  ) 
+            sys.exit(1)
+        pass
+
+    def ilv(self, elv):
+        return list(map(int, self.PTN.findall(elv))) 
+
+    def label(self, elv):
+        ilv = self.ilv(elv)
+        mns = [self.lv[i] for i in ilv] 
+        mn = " ".join(mns)
+        tilde = elv[0] == "t" 
+        lab = ""
+        if elv == "t":
+            lab = "ALL"
+        else: 
+            lab = ( "EXCL: " if tilde else "ONLY: " ) + mn
+        pass
+        return lab 
+
+    def __str__(self):
+        return "\n".join(self.lv)
+
+    def __repr__(self):
+        return "\n".join(["%3d:%s " % (i, self.lv[i]) for i in range(len(self.lv))]) 
+
+        
+
+
 class DummyCandleSnap(object):
     def __init__(self):
         self.av = 1 
 
 
 class Snap(object):
+    PTN = re.compile("cxr_overview_emm_(?P<emm>\S*)_elv_(?P<elv>\S*)_moi_(?P<moi>\S*)")
+
     @classmethod
     def is_valid(cls, jpg_path):
         #json_path = cls.find_json(jpg_path) 
@@ -74,8 +112,14 @@ class Snap(object):
         log.debug("is_valid %r %r %r " % (jpg_path, json_path, valid ) ) 
         return valid 
 
+    @classmethod
+    def ParseStem(cls, jpg_stem):   
+        m = cls.PTN.match(jpg_stem)
+        return m.groupdict() if not m is None else {}
+
     def __init__(self, jpg_path):
         json_path = jpg_path.replace(".jpg", ".json")
+        jpg_stem = os.path.splitext(os.path.basename(jpg_path))[0]
         log.debug("jpg_path %s json_path %s " % (jpg_path, json_path))          
         js = json.load(open(json_path,"r"))
 
@@ -83,12 +127,30 @@ class Snap(object):
         self.jpg = jpg_path
         self.path = json_path 
         self.av = js['av'] 
-        self.emm = js['emm']
         self.argline = js['argline']
+
+        dstem = self.ParseStem(jpg_stem)
+
+        elv = dstem.get("elv", None)
+        emm = dstem.get("emm", None)
+
+        if not emm is None:
+            assert js["emm"] == emm
+        pass 
+
+        self.elv = elv
+        self.emm = emm 
+
+        if not elv is None:
+            enabled = elv
+        else:
+            enabled = emm
+        pass
+        self.enabled = enabled
 
         # below are set by SnapScan after sorting
         self.sc = None   
-        self.idx = None
+        self.idx = None  
 
     def jpg_(self):
         """
@@ -131,7 +193,6 @@ class Snap(object):
         else:
             ret = "cp %s %s" % (self.jpg, ppath)
         return ret 
- 
 
     def refjpg(self, pfx, afx="1280px_720px", indent="    "): 
         """
@@ -157,11 +218,11 @@ class Snap(object):
     over_slow = property(lambda self:float(self.av)/float(self.sc.slow.av))
     over_candle = property(lambda self:float(self.av)/float(self.sc.candle.av))
 
-    label = property(lambda self:self.sc.mm.label(self.emm))
+    label = property(lambda self:self.sc.label(self.enabled))
     imm = property(lambda self:self.sc.mm.imm(self.emm))
 
     def row(self):
-        return  (int(self.idx), self.emm, self.av, self.over_candle, self.label )
+        return  (int(self.idx), self.enabled, self.av, self.over_candle, self.label )
 
 
     SPACER = "    "
@@ -188,13 +249,16 @@ class Snap(object):
 
 
 class SnapScan(object):
-
     @classmethod
     def MakeSnaps(cls, globptn):
+        """
+        * resolve the globptn into a sorted list of paths, typically of jpg renders
+        * order is based on Snap.av obtained from the sidecar json file
+        """ 
         log.info("globptn %s " % globptn )
         raw_paths = glob.glob(globptn) 
         log.info("raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
-        paths = filter(lambda p:Snap.is_valid(p), raw_paths)
+        paths = filter(lambda p:Snap.is_valid(p), raw_paths)  # seems all paths are for now valid
         snaps = list(map(Snap,paths))
         snaps = sorted(snaps, key=lambda s:s.av)
         return snaps
@@ -212,11 +276,40 @@ class SnapScan(object):
         pass
         return snaps
 
-    def __init__(self, globptn, mm=None, candle_emm="1,2,3,4"):
+    @classmethod
+    def Create(cls, globptn):
+        base = os.path.expandvars(os.path.dirname(globptn)) 
+        cfdigest = CSGFoundry.FindDigest(base)
+        cfdir = CSGFoundry.FindDirUpTree(base)
+        log.info("cfdir %s cfdigest %s " % (cfdir, cfdigest) ) 
+
+        mmlabel_path = os.path.join(cfdir, "mmlabel.txt")
+        log.info("mmlabel_path %s " % mmlabel_path ) 
+        mm = MM(mmlabel_path)
+
+        meshname_path = os.path.join(cfdir, "meshname.txt")
+        log.info("meshname_path %s " % meshname_path ) 
+        lv = LV(meshname_path)
+
+        elv_mode = globptn.find("elv") > -1
+        sc = cls(globptn, mm, lv, elv_mode=elv_mode, cfdigest=cfdigest, cfdir=cfdir  )
+        return sc 
+
+
+    def __init__(self, globptn, mm=None, lv=None, candle_emm="1,2,3,4", elv_mode=False, cfdigest=None, cfdir=None):
         """
-        :param globptn: eg /tmp/blyth/opticks/CSGOptiX/CSGOptiXRender/CSG_GGeo/cvd1/70000/cxr_overview/cam_0_emm_*/*.jpg
+        :param globptn: eg 
+       
+        /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/CSGOptiXRenderTest/
+            cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*.jpg
+ 
         """
         self.mm = mm
+        self.lv = lv
+        self.elv_mode = elv_mode
+        self.cfdigest = cfdigest
+        self.cfdir = cfdir 
+
         all_snaps = self.MakeSnaps(globptn)
         candle = None
         for s in all_snaps:
@@ -240,10 +333,8 @@ class SnapScan(object):
         pass  
         self.candle = candle 
 
-       
-
-
-
+    def label(self, enabled):
+        return self.lv.label(enabled) if self.elv_mode else self.mm.label(enabled)
 
     def table(self):
         table = np.empty([len(self.snaps),len(Snap.LABELS)], dtype=np.object ) 
@@ -251,6 +342,16 @@ class SnapScan(object):
             table[idx] = snap.row()
         pass
         return table
+
+    def rst_table(self):
+        t = self.table()
+
+        labels = Snap.LABELS 
+        labels[-1] += " " + self.cfdigest[:8]
+
+        rst = RSTTable.Render(t, labels, Snap.WIDS, Snap.HFMT, Snap.RFMT, Snap.PRE, Snap.POST )
+        return rst 
+
 
     fast = property(lambda self:self.snaps[0])
     slow = property(lambda self:self.snaps[-1])
@@ -277,7 +378,6 @@ class SnapScan(object):
         return "\n".join(list(map(lambda s:s.pagejpg(),self.snaps)))
 
         
-
 def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
     parser = argparse.ArgumentParser(doc)
@@ -303,19 +403,11 @@ if __name__ == '__main__':
     args = parse_args(__doc__)
     log.debug(" args %s " % str(args))
 
-    base = os.path.dirname(os.path.expandvars(args.globptn)) 
-    log.info("base %s " % (base) ) 
+    globptn = args.globptn
+    log.info("globptn %s " % (globptn) ) 
 
-    cfdigest = CSGFoundry.FindDigest(base)
-    cfdir = CSGFoundry.FindDirUpTree(base)
-    log.info("cfdir %s cfdigest %s " % (cfdir, cfdigest) ) 
-
-    mmlabel_path = os.path.join(cfdir, "mmlabel.txt")
-    log.info("mmlabel_path %s " % mmlabel_path ) 
-
-    mm = MM(mmlabel_path)
-
-    ss = SnapScan(args.globptn, mm) 
+    
+    ss = SnapScan.Create(args.globptn) 
     if args.jpg:
         print(ss.jpg())
     elif args.refjpg:
@@ -331,13 +423,7 @@ if __name__ == '__main__':
     elif args.snaps:
         snaps = ss.snaps
     elif args.rst:
-        t = ss.table()
-
-        labels = Snap.LABELS 
-        labels[-1] += " " + cfdigest[:8]
-
-        rst = RSTTable.Render(t, labels, Snap.WIDS, Snap.HFMT, Snap.RFMT, Snap.PRE, Snap.POST )
-        print(rst)
+        print(ss.rst_table())
     else:
         print(ss) 
     pass

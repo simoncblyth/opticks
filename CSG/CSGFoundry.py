@@ -28,6 +28,16 @@ class CSGFoundry(object):
 
     @classmethod
     def FindDigest(cls, path):
+        if path.find("*") > -1:  # eg with a glob pattern filename element
+            base = os.path.dirname(path)
+        else:
+            base = path
+        pass 
+        base = os.path.expandvars(base)
+        return cls.FindDigest_(base)
+
+    @classmethod
+    def FindDigest_(cls, path):
         """
         :param path: Directory path in which to look for a 32 character digest path element 
         :return 32 character digest or None: 

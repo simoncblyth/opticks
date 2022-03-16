@@ -171,3 +171,39 @@ CSGNodeTest shows unexpected repeated trIdx when ELV in use::
 
     CSGNode    53  sp aabb:   400.0   400.0   400.0   600.0   600.0   600.0  trIdx:    47 subNum:  -1 subOffset::  -1
 
+
+
+
+cxr_scan.sh ELV scan
+-----------------------
+
+
+Problem for ELV=139 and ELV=140 
+
+
+::
+
+    2022-03-16 04:32:22.384 INFO  [5878] [CSGOptiX::initStack@161] 
+    2022-03-16 04:32:22.384 INFO  [5878] [PIP::configureStack@491] (inputs to optixUtilComputeStackSizes)
+     max_trace_depth 1 max_cc_depth 0 max_dc_depth 0
+    2022-03-16 04:32:22.384 INFO  [5878] [PIP::configureStack@513] (outputs from optixUtilComputeStackSizes) 
+     directCallableStackSizeFromTraversal 0
+     directCallableStackSizeFromState 0
+     continuationStackSize 80
+    2022-03-16 04:32:22.384 INFO  [5878] [PIP::configureStack@526] (further inputs to optixPipelineSetStackSize)
+     maxTraversableGraphDepth 2
+    2022-03-16 04:32:22.384 FATAL [5878] [CSGOptiX::initGeometry@185] foundry must be uploaded prior to CSGOptiX::initGeometry 
+    CSGOptiXRenderTest: /data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:186: void CSGOptiX::initGeometry(): Assertion `is_uploaded' failed.
+    ./cxr.sh: line 125:  5878 Aborted                 (core dumped) CSGOptiXRenderTest --nameprefix "cxr_overview_emm_t0_elv_139_moi_" --cvd 1 -e "t0" --size "1280,720,1" --sizescale "1.5" --solid_label ""
+    === render : rc 134
+    === ./cxr.sh : non-zero RC from render
+    140
+    # mo .bashrc VIP_MODE:non N : plain environment for debug CMTEXTRATAGS:
+           CVD : 1 
+           EMM : t0 
+           MOI : -1 
+           EYE : -0.6,0,0,1 
+           TOP : i0 
+
+
+

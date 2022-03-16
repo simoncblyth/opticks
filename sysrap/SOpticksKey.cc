@@ -51,6 +51,11 @@ bool SOpticksKey::IsSet()  // static
 }
 
 
+const char* SOpticksKey::Key()
+{
+    return SSys::getenvvar("OPTICKS_KEY");  
+}
+
 SOpticksKey* SOpticksKey::GetKey()
 {
     // invoked by SOpticksResource::SOpticksResource at Opticks instanciation
@@ -61,6 +66,7 @@ const char* SOpticksKey::StemName( const char* ext, const char* sep )
 {
     return SStr::Concat(IDSTEM, sep, ext );
 }
+
 
 
 /**
@@ -85,7 +91,7 @@ bool SOpticksKey::SetKey(const char* spec)
 
     if(spec == NULL)
     {
-        spec = SSys::getenvvar("OPTICKS_KEY");  
+        spec = Key(); 
         LOG(LEVEL) << "from OPTICKS_KEY envvar " << spec ; 
     } 
 

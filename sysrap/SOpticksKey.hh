@@ -52,6 +52,7 @@ class SYSRAP_API SOpticksKey
         static int         LAYOUT ; 
         static const char* LAYOUT_ ; 
         static bool         IsSet();
+        static const char*  Key(); 
         static SOpticksKey* GetKey();
         static bool         SetKey(const char* spec=nullptr) ;  
         static void         Desc() ;  

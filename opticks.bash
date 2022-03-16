@@ -2958,3 +2958,13 @@ opticks-geom-(){
 opticks-hookup(){ source $OPTICKS_HOME/bin/geocache_hookup.sh ${1:-last} ; }
 
 
+opticks-key-remote(){ echo $OPTICKS_KEY_REMOTE ; }
+opticks-key-remote-dir(){
+   local msg="=== $FUNCNAME "
+   [ -z "$OPTICKS_KEY_REMOTE" ] && echo $msg missing required envvar OPTICKS_KEY_REMOTE && return 1 
+   local opticks_key_remote_dir=$(OPTICKS_KEY=$(opticks-key-remote) OPTICKS_GEOCACHE_PREFIX=.opticks SOpticksResourceTest --keydir)
+   echo $opticks_key_remote_dir
+}
+
+
+

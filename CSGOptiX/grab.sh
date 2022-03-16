@@ -3,9 +3,9 @@ grab_usage(){ cat << EOU
 grab.sh
 =============
 
-Runs rsync between a remote geocache/CSG_GGeo/ directory into which cxs 
-intersect "photon" arrays are persisted and local directories. 
-The remote directory to grab is configurable with envvar OPTICKS_KEYDIR_GRABBED,  eg::
+Runs rsync grabbing into local directories files from a remote geocache/CSG_GGeo/ directory 
+into which cxs jpg renders, json sidecars and intersect "photon" arrays are persisted.
+The remote directory to grab from is configurable with envvar OPTICKS_KEYDIR_GRABBED,  eg::
 
    .opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
 
@@ -20,12 +20,9 @@ arg=${1:-all}
 shift
 
 executable=${EXECUTABLE:-CSGOptiXSimulateTest}
-#default_opticks_keydir_grabbed=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
-default_opticks_keydir_grabbed=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/1ad3e6c8947a2b32dea175bc67816952/1
-opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$default_opticks_keydir_grabbed}
-## OPTICKS_KEYDIR_GRABBED is set in ~/.opticksdev_config
 
-xdir=$opticks_keydir_grabbed/CSG_GGeo/$executable/   ## trailing slash to avoid duplicating path element 
+opticks_key_remote_dir=$(opticks-key-remote-dir)
+xdir=$opticks_key_remote_dir/CSG_GGeo/$executable/   ## trailing slash to avoid duplicating path element 
 
 from=P:$xdir
 to=$HOME/$xdir
@@ -33,15 +30,15 @@ to=$HOME/$xdir
 LOGDIR=/tmp/$USER/opticks/CSGOptiX/$EXECUTABLE
 
 
-printf "arg                    %s \n" "$arg"
-printf "EXECUTABLE             %s \n " "$EXECUTABLE"
-printf "LOGDIR                 %s \n " "$LOGDIR"
-printf "OPTICKS_KEYDIR_GRABBED %s \n " "$OPTICKS_KEYDIR_GRABBED" 
-printf "opticks_keydir_grabbed %s \n " "$opticks_keydir_grabbed" 
+printf "arg                     %s \n" "$arg"
+printf "EXECUTABLE              %s \n " "$EXECUTABLE"
+printf "LOGDIR                  %s \n " "$LOGDIR"
+printf "OPTICKS_KEY_REMOTE      %s \n " "$OPTICKS_KEY_REMOTE" 
+printf "opticks_key_remote_dir  %s \n " "$opticks_key_remote_dir" 
 printf "\n"
-printf "xdir                   %s \n" "$xdir"
-printf "from                   %s \n" "$from" 
-printf "to                     %s \n" "$to" 
+printf "xdir                    %s \n" "$xdir"
+printf "from                    %s \n" "$from" 
+printf "to                      %s \n" "$to" 
 
 mkdir -p $to
 

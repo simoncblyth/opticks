@@ -11,30 +11,32 @@ Making table from .json sidecars grabbed from remote::
 EOU
 }
 
-
-
-
-
-
 executable=${EXECUTABLE:-CSGOptiXRenderTest}
-default_opticks_keydir_grabbed=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/1ad3e6c8947a2b32dea175bc67816952/1
-opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$default_opticks_keydir_grabbed}
-## OPTICKS_KEYDIR_GRABBED is set in ~/.opticksdev_config
+opticks_key_remote_dir=$(opticks-key-remote-dir)
 
-xdir=$opticks_keydir_grabbed/CSG_GGeo/$executable/   ## trailing slash to avoid duplicating path element 
+xdir=$opticks_key_remote_dir/CSG_GGeo/$executable/   ## trailing slash to avoid duplicating path element 
 from=P:$xdir
 to=$HOME/$xdir
+
+#globptn="${to}cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*.jpg"
+globptn="${to}cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*elv*.jpg"
+refjpgpfx="/env/presentation/cxr/cxr_overview"
+
+
 mkdir -p $to
 
-printf "arg                    %s \n" "$arg"
-printf "EXECUTABLE             %s \n " "$EXECUTABLE"
-printf "LOGDIR                 %s \n " "$LOGDIR"
-printf "OPTICKS_KEYDIR_GRABBED %s \n " "$OPTICKS_KEYDIR_GRABBED" 
-printf "opticks_keydir_grabbed %s \n " "$opticks_keydir_grabbed" 
+printf "arg                     %s \n " "$arg"
+printf "EXECUTABLE              %s \n " "$EXECUTABLE"
+printf "LOGDIR                  %s \n " "$LOGDIR"
+printf "OPTICKS_KEY_REMOTE      %s \n " "$OPTICKS_KEY_REMOTE" 
+printf "opticks_key_remote_dir  %s \n " "$opticks_key_remote_dir" 
 printf "\n"
-printf "xdir                   %s \n" "$xdir"
-printf "from                   %s \n" "$from" 
-printf "to                     %s \n" "$to" 
+printf "xdir                    %s \n" "$xdir"
+printf "from                    %s \n" "$from" 
+printf "to                      %s \n" "$to" 
+printf "globptn                 %s \n" "$globptn"
+printf "refjpgpfx               %s \n" "$refjpgpfx"
+  
 
 if [ "$arg" == "grab" ]; then 
 
@@ -42,10 +44,6 @@ if [ "$arg" == "grab" ]; then
     ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.json'`
 fi 
 
-
-globptn="${to}cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*.jpg"
-refjpgpfx="/env/presentation/cxr/cxr_overview"
-
-${IPYTHON:-ipython} -i $(which snap.py) --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $*
+${IPYTHON:-ipython} -i $OPTICKS_HOME/ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $*
 
 
