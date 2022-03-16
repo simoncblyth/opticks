@@ -14,7 +14,7 @@ import os, sys, logging, glob, json, re, argparse
 log = logging.getLogger(__name__)
 import numpy as np
 from opticks.ana.rsttable import RSTTable
-from opticks.CSG.CSGFoundry import CSGFoundry 
+from opticks.CSG.CSGFoundry import CSGFoundry, LV, MM
 
 
 class MM(object):
@@ -58,42 +58,6 @@ class MM(object):
 
     def __repr__(self):
         return "\n".join(self.mm)
-
-
-class LV(object):
-    PTN = re.compile("\d+") 
-    def __init__(self, path):
-        lv = os.path.expandvars(path)
-        lv = open(lv, "r").read().splitlines() if os.path.exists(lv) else None
-        self.lv = lv
-        if lv is None:
-            log.fatal("missing %s, which is now a standard part of CSGFoundry " % path  ) 
-            sys.exit(1)
-        pass
-
-    def ilv(self, elv):
-        return list(map(int, self.PTN.findall(elv))) 
-
-    def label(self, elv):
-        ilv = self.ilv(elv)
-        mns = [self.lv[i] for i in ilv] 
-        mn = " ".join(mns)
-        tilde = elv[0] == "t" 
-        lab = ""
-        if elv == "t":
-            lab = "ALL"
-        else: 
-            lab = ( "EXCL: " if tilde else "ONLY: " ) + mn
-        pass
-        return lab 
-
-    def __str__(self):
-        return "\n".join(self.lv)
-
-    def __repr__(self):
-        return "\n".join(["%3d:%s " % (i, self.lv[i]) for i in range(len(self.lv))]) 
-
-        
 
 
 class DummyCandleSnap(object):

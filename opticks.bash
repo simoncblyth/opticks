@@ -2966,5 +2966,29 @@ opticks-key-remote-dir(){
    echo $opticks_key_remote_dir
 }
 
+opticks-key-remote-dir-cd(){
+   local krd=$(opticks-key-remote-dir) 
+   cd $HOME/$krd/CSG_GGeo/CSGFoundry 
+   pwd
+}
+krcd(){ opticks-key-remote-dir-cd ; }
+
+
+opticks-switch-last(){
+    local opticks_geocache_prefix=$HOME/.opticks
+    local geocache_sh=${OPTICKS_GEOCACHE_PREFIX:-$opticks_geocache_prefix}/geocache/geocache.sh
+    source $geocache_sh
+}
+opticks-switch-key(){
+    : hmm this is doing similar to ~/opticks/bin/geocache_hookup.sh but much more succinctly 
+    local arg=$1
+    case $arg in  
+       remote) export OPTICKS_KEY=$OPTICKS_KEY_REMOTE ; export OPTICKS_GEOCACHE_PREFIX=$HOME/.opticks  ;;  
+          old) export OPTICKS_KEY=$OPTICKS_KEY_OLD  ;;  
+          new) export OPTICKS_KEY=$OPTICKS_KEY_NEW  ;;  
+         last) opticks-switch-last ;;
+         asis)  echo -m ;;
+    esac 
+}
 
 

@@ -22,7 +22,6 @@ to=$HOME/$xdir
 globptn="${to}cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*elv*.jpg"
 refjpgpfx="/env/presentation/cxr/cxr_overview"
 
-
 mkdir -p $to
 
 printf "arg                     %s \n " "$arg"
@@ -39,7 +38,6 @@ printf "refjpgpfx               %s \n" "$refjpgpfx"
   
 
 if [ "$arg" == "grab" ]; then 
-
     rsync -zarv --progress --include="*/" --include="*.jpg" --include="*.json" --exclude="*" "$from" "$to"
     ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.json'`
 fi 

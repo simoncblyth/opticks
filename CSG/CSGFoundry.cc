@@ -1708,12 +1708,27 @@ void CSGFoundry::load( const char* dir_ )
 {
     int create_dirs = 0 ; 
     const char* dir = SPath::Resolve(dir_, create_dirs); 
+    bool readable = SPath::IsReadable(dir); 
+    if( readable == false )
+    {
+        LOG(fatal) << " dir is not readable " << dir ; 
+        return ; 
+    } 
     LOG(LEVEL) << dir ; 
     loaddir = strdup(dir) ; 
 
     NP::ReadNames( dir, "meshname.txt", meshname );  
     NP::ReadNames( dir, "mmlabel.txt", mmlabel );  
-    meta = NP::ReadString( dir, "meta.txt" ); 
+
+    const char* meta_str = NP::ReadString( dir, "meta.txt" ) ; 
+    if(meta_str)
+    {
+       meta = meta_str ; 
+    }
+    else
+    {
+       LOG(warning) << " no meta.txt at " << dir ;  
+    }
 
     loadArray( solid , dir, "solid.npy" ); 
     loadArray( prim  , dir, "prim.npy" ); 

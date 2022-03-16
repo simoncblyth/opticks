@@ -1,10 +1,120 @@
 #!/usr/bin/env python
-import os, numpy as np, logging, datetime
+import os, re,  numpy as np, logging, datetime
 log = logging.getLogger(__name__)
+
+from opticks.ana.key import keydir
+
+
+
+class MM(object):
+    """
+    The input file is now a standard resident of the CSGFoundry directory 
+    Note that the input file was formerly created using::
+
+       ggeo.py --mmtrim > $TMP/mm.txt
+
+    """
+    PTN = re.compile("\d+")
+    def __init__(self, path ):
+        mm = os.path.expandvars(path)
+        mm = open(mm, "r").read().splitlines() if os.path.exists(mm) else None
+        self.mm = mm
+        if mm is None:
+            log.fatal("missing %s, which is now a standard part of CSGFoundry " % path  )
+            sys.exit(1)
+        pass
+
+    def imm(self, emm):
+        return list(map(int, self.PTN.findall(emm)))
+
+    def label(self, emm):
+        imm = self.imm(emm)
+        labs = [self.mm[i] for i in imm]
+        lab = " ".join(labs)
+
+        tilde = emm[0] == "t" or emm[0] == "~"
+        pfx = (  "NOT: " if tilde else "     " )
+
+        if emm == "~0" or emm == "t0":
+            return "ALL"
+        elif imm == [1,2,3,4]:
+            return "ONLY PMT"
+        elif "," in emm:
+            return ( "EXCL: " if tilde else "ONLY: " ) +  lab
+        else:
+            return lab
+        pass
+
+    def __repr__(self):
+        return "\n".join(self.mm)
+
+
+class LV(object):
+    PTN = re.compile("\d+") 
+    def __init__(self, path):
+        lv = os.path.expandvars(path)
+        lv = open(lv, "r").read().splitlines() if os.path.exists(lv) else None
+        self.lv = lv
+        if lv is None:
+            log.fatal("missing %s, which is now a standard part of CSGFoundry " % path  )   
+            sys.exit(1)
+        pass
+
+    def ilv(self, elv):
+        return list(map(int, self.PTN.findall(elv))) 
+
+    def label(self, elv):
+        ilv = self.ilv(elv)
+        mns = [self.lv[i] for i in ilv] 
+        mn = " ".join(mns)
+        tilde = elv[0] == "t" 
+        lab = ""
+        if elv == "t":
+            lab = "ALL"
+        else: 
+            lab = ( "EXCL: " if tilde else "ONLY: " ) + mn
+        pass
+        return lab 
+
+    def __str__(self):
+        return "\n".join(self.lv)
+
+    def __repr__(self):
+        return "\n".join(["%3d:%s " % (i, self.lv[i]) for i in range(len(self.lv))]) 
+
+    
+
+
+
 
 class CSGFoundry(object):
     FOLD = os.path.expandvars("$TMP/CSG_GGeo/CSGFoundry")
     FMT = "   %10s : %20s  : %s "
+
+    @classmethod
+    def CFBase(cls):
+        if "GEOM" in os.environ:
+            geom = os.environ["GEOM"]
+            rel = "GeoChain_Darwin" 
+            cfbase = os.path.expandvars("/tmp/$USER/opticks/%s/%s" %(rel, geom) )  # guess
+        elif "CFBASE" in os.environ:
+            cfbase= os.environ["CFBASE"]
+        elif "OPTICKS_KEY" in os.environ:
+            kd = keydir(os.environ["OPTICKS_KEY"])
+            cfbase = os.path.join(kd, "CSG_GGeo")
+            ## HMM: match against OPTICKS_KEY_* in environ to find the "tag" of this key 
+        else:
+            cfbase = None
+        pass
+        return cfbase
+
+    @classmethod
+    def Load(cls):
+        cfbase = cls.CFBase()
+        print("cfbase:%s " % cfbase)
+        assert not cfbase is None
+        cf = cls(fold=os.path.join(cfbase, "CSGFoundry"))
+        return cf     
 
     @classmethod
     def FindDirUpTree(cls, origpath, name="CSGFoundry"): 
@@ -74,6 +184,10 @@ class CSGFoundry(object):
         self.mokname = "zero one two three four five six seven eight nine".split()
         self.moknamedict = self.namelist_to_namedict(self.mokname)
         self.insnamedict = {}
+
+        self.lv = LV(os.path.join(fold, "meshname.txt"))
+        self.mm = MM(os.path.join(fold, "mmlabel.txt"))
+
 
     def meshIdx(self, primIdx):
         """
@@ -179,29 +293,26 @@ class CSGFoundry(object):
     def dump_node_boundary(self):
         logging.info("dump_node_boundary") 
         node = self.node
-        bndname = self.bndname
 
         node_boundary = node.view(np.uint32)[:,1,2]
         ubs, ubs_count = np.unique(node_boundary, return_counts=True)
 
+        bndname = getattr(self, 'bndname', None)
+
         for ub, ub_count in zip(ubs, ubs_count):
-            print(" %4d : %6d : %s " % (ub, ub_count, bndname[ub]))
+            bn = bndname[ub] if not bndname is None else "-"
+            print(" %4d : %6d : %s " % (ub, ub_count, bn))
         pass 
-
-
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    geom = os.environ.get("GEOM", "body_phys")
-    #rel = "GeoChain" 
-    rel = "GeoChain_Darwin" 
-    base = os.path.expandvars("/tmp/$USER/opticks/%s/%s" %(rel, geom) ) 
-    cf = CSGFoundry(os.path.join(base, "CSGFoundry"))
-    cf.dump_node_boundary()
-
-    d = cf.primIdx_meshname_dict()
-    print(d)    
+    cf = CSGFoundry.Load()
+    print(cf)
+    
+    #cf.dump_node_boundary()
+    #d = cf.primIdx_meshname_dict()
+    #print(d)    
 
 

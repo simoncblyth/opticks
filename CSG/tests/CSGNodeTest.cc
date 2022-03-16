@@ -20,7 +20,6 @@ int main(int argc, char** argv)
         std::cout << std::endl ; 
         //std::cout << pr->desc() << std::endl ; 
 
-
         for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset() + pr->numNode() ; nodeIdx++)
         {
             const CSGNode* nd = fd->getNode(nodeIdx); 

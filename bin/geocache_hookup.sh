@@ -3,6 +3,9 @@ usage(){ cat << EON
 geocache_hookup.sh : by setting OPTICKS_KEY envvar
 =====================================================
 
+See opticks-switch-key which does simular to this more succinctly 
+
+
 The geocache_hookup argument is used to select the geometry:
 
 old
@@ -17,6 +20,10 @@ last
 
         /usr/local/opticks/geocache/geocache.sh 
         ~/.opticks/geocache/geocache.sh
+
+
+
+
 
 EON
 }

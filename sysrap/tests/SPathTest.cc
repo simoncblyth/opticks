@@ -64,6 +64,25 @@ void test_IsReadable()
     assert( readable_non == false ); 
 }
 
+
+const char* PATHS =  R"LITERAL(
+/tmp
+/tmp/nonexisting
+)LITERAL" ;
+
+void test_IsReadable_path()
+{
+    std::stringstream ss(PATHS) ;    
+    std::string line ; 
+    while (std::getline(ss, line))  
+    {   
+        if(line.empty()) continue ;   
+        const char* path = line.c_str(); 
+        bool readable_path = SPath::IsReadable(path); 
+        LOG(info) << " path " << path << " readable_path " << readable_path ; 
+    }
+}
+
 void test_Dirname()
 {
     LOG(info); 
@@ -209,6 +228,10 @@ int main(int argc , char** argv )
     test_Stem();  
     test_GetHomePath();  
     test_IsReadable();  
+*/
+    test_IsReadable_path();  
+
+/*
     test_Dirname(); 
     test_Basename(); 
     test_UserTmpDir(); 
@@ -218,8 +241,8 @@ int main(int argc , char** argv )
     test_MakePath(); 
     test_Resolve_createdirs(); 
     test_getcwd(); 
-*/
     test_mtime(); 
+*/
 
     return 0  ; 
 }
