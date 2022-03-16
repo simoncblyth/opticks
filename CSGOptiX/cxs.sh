@@ -205,11 +205,13 @@ elif [ "$(uname)" == "Darwin" ]; then
         echo $msg CSGOptiXSimulateTest_OUTPUT_DIR $CSGOptiXSimulateTest_OUTPUT_DIR
     else
 
+        opticks_key_remote_dir=$(opticks-key-remote-dir)
+
         cvd_ver=cvd0/70000
         if [ -n "$cfbase" ]; then 
             cxsdir=$cfbase/CSGOptiXSimulateTest/$cvd_ver
         else
-            cxsdir=$HOME/$OPTICKS_KEYDIR_GRABBED/CSG_GGeo/CSGOptiXSimulateTest/$cvd_ver
+            cxsdir=$HOME/$opticks_key_remote_dir/CSG_GGeo/CSGOptiXSimulateTest/$cvd_ver
         fi
 
         if [ ! -d "$cxsdir" ]; then 

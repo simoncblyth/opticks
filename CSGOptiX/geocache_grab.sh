@@ -14,22 +14,21 @@ EOU
 arg=${1:-all}
 shift
 
-default_opticks_keydir_grabbed=.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
-opticks_keydir_grabbed=${OPTICKS_KEYDIR_GRABBED:-$default_opticks_keydir_grabbed}
 
-xdir=$opticks_keydir_grabbed/   ## trailing slash to avoid duplicating path element 
+opticks_key_remote_dir=$(opticks-key-remote-dir)
+xdir=$opticks_key_remote_dir/   ## trailing slash to avoid duplicating path element 
 
 from=P:$xdir
 to=$HOME/$xdir
 
 
-printf "arg                    %s \n" "$arg"
-printf "OPTICKS_KEYDIR_GRABBED %s \n " "$OPTICKS_KEYDIR_GRABBED" 
-printf "opticks_keydir_grabbed %s \n " "$opticks_keydir_grabbed" 
+printf "arg                      %s \n" "$arg"
+printf "OPTICKS_KEY_REMOTE       %s \n " "$OPTICKS_KEY_REMOTE" 
+printf "opticks_key_remote_dir   %s \n " "$opticks_key_remote_dir" 
 printf "\n"
-printf "xdir                   %s \n" "$xdir"
-printf "from                   %s \n" "$from" 
-printf "to                     %s \n" "$to" 
+printf "xdir                     %s \n" "$xdir"
+printf "from                     %s \n" "$from" 
+printf "to                       %s \n" "$to" 
 
 mkdir -p $to
 

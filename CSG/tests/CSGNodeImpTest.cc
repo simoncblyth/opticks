@@ -86,7 +86,8 @@ void test_change_transform()
         nd.setTransform(u0);   
 
         bool c0 = nd.is_complement(); 
-        nd.zeroTransformComplement(); 
+
+        // nd.zeroTransformComplement();   <-- this is cheating, needs to work without it 
 
         nd.setComplement(c0) ; 
         nd.setTransform( u1 );   
@@ -120,6 +121,12 @@ void test_Depth()
 
 
 
+void test_Load()
+{
+    CSGFoundry* fd = CSGFoundry::Load(); 
+    LOG(info) << fd->desc() ;     
+}
+
 
 int main(int argc, char** argv)
 {
@@ -129,13 +136,12 @@ int main(int argc, char** argv)
     test_zero(); 
     test_sphere(); 
     test_copy();  
-    test_change_transform();  
     test_Depth();  
+    test_Load(); 
+
     */
 
-
-    CSGFoundry* fd = CSGFoundry::Load(); 
-    LOG(info) << fd->desc() ;     
+    test_change_transform();  
 
 
 

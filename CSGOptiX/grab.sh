@@ -5,9 +5,13 @@ grab.sh
 
 Runs rsync grabbing into local directories files from a remote geocache/CSG_GGeo/ directory 
 into which cxs jpg renders, json sidecars and intersect "photon" arrays are persisted.
-The remote directory to grab from is configurable with envvar OPTICKS_KEYDIR_GRABBED,  eg::
+The remote directory to grab from is configurable with envvar OPTICKS_KEY_REMOTE 
+which is the OPTICKS_KEY from a remote node. The OPTICKS_KEY_REMOTE is converted
+into a remote directory by bash function opticks-key-remote-dir which uses SOpticksResourceTest 
+executable.
 
-   .opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/3dbec4dc3bdef47884fe48af781a179d/1
+    OPTICKS_KEY_REMOTE     : $OPTICKS_KEY_REMOTE
+    opticks-key-remote-dir : $(opticks-key-remote-dir)
 
 NB to update the CSGFoundry geometry on laptop for correct labelling of volumes use::
 
@@ -18,6 +22,12 @@ EOU
 
 arg=${1:-all}
 shift
+
+if [ "$arg"  == "help" ]; then
+   grab_usage
+   exit 0
+fi 
+
 
 executable=${EXECUTABLE:-CSGOptiXSimulateTest}
 
@@ -52,7 +62,7 @@ find_last(){
 
 relative_path(){
    local path=$1
-   local pfx=${HOME}/${OPTICKS_KEYDIR_GRABBED}/CSG_GGeo/CSGOptiXRenderTest/
+   local pfx=${HOME}/$opticks_key_remote_dir/CSG_GGeo/CSGOptiXRenderTest/
    local rel=""
    case $path in 
       ${pfx}*)  rel=${path/$pfx} ;;    

@@ -192,8 +192,8 @@ struct CSG_API CSGNode
     NODE_METHOD unsigned typemask()  const {      return 1 << q3.u.z ; } //  mask integer suitable for bitwise-oring  
 
     NODE_METHOD void zeroTransformComplement(){         q3.u.w = 0 ; }  
-    NODE_METHOD void setTransform(  unsigned idx ){     q3.u.w |= (idx & 0x7fffffff) ; }
-    NODE_METHOD void setComplement( bool complement ){  q3.u.w |= ( (int(complement) << 31) & 0x80000000) ; }
+    NODE_METHOD void setTransform(  unsigned idx ){     setTransformComplement(idx,  is_complement() )   ; }
+    NODE_METHOD void setComplement( bool complement ){  setTransformComplement( gtransformIdx(), complement) ; }
     NODE_METHOD void setTransformComplement( unsigned idx, bool complement ){ q3.u.w = ( idx & 0x7fffffff ) | ( (int(complement) << 31) & 0x80000000) ; }    
 
     NODE_METHOD unsigned gtransformIdx() const { return q3.u.w & 0x7fffffff ; }  //  gtransformIdx is 1-based, 0 meaning None 
