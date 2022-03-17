@@ -19,6 +19,13 @@ const plog::Severity QBnd::LEVEL = PLOG::EnvLevel("QBnd", "INFO");
 const QBnd* QBnd::INSTANCE = nullptr ; 
 const QBnd* QBnd::Get(){ return INSTANCE ; }
 
+/**
+QBnd::QBnd
+------------
+
+Narrows the NP array if wide and creates GPU texture 
+
+**/
 
 QBnd::QBnd(const NP* buf)
     :
@@ -26,7 +33,7 @@ QBnd::QBnd(const NP* buf)
     src(buf->ebyte == 4 ? buf : NP::MakeNarrow(dsrc)),
     tex(MakeBoundaryTex(src))
 {
-    buf->get_meta(bnames) ; 
+    buf->get_meta(bnames) ;  // vector of string from NP metadata
 
     std::cout << "QBnd::QBnd bnames " << bnames.size() << std::endl ; 
     for(unsigned i=0 ; i < bnames.size() ; i++) std::cout << bnames[i] << std::endl ; 
@@ -49,9 +56,11 @@ unsigned QBnd::getNumBoundary() const
     return bnames.size(); 
 }
 
+const unsigned QBnd::MISSING = ~0u ; 
+
 unsigned QBnd::getBoundaryIndex(const char* spec) const 
 {
-    unsigned idx = ~0u ; 
+    unsigned idx = MISSING ; 
     for(unsigned i=0 ; i < bnames.size() ; i++) 
     {
         if(spec && strcmp(bnames[i].c_str(), spec) == 0) 
@@ -66,14 +75,37 @@ unsigned QBnd::getBoundaryIndex(const char* spec) const
 unsigned QBnd::getBoundaryLine(const char* spec, unsigned j) const 
 {
     unsigned idx = getBoundaryIndex(spec); 
-    assert( idx < bnames.size() ); 
+    bool is_missing = idx == MISSING ; 
+    bool is_valid = !is_missing && idx < bnames.size() ;
+
+    if(!is_valid) 
+    {
+        LOG(error) 
+            << " not is_valid " 
+            << " spec " << spec
+            << " idx " << idx
+            << " is_missing " << is_missing 
+            << " bnames.size " << bnames.size() 
+            ;  
+    }
+
+    assert( is_valid ); 
     unsigned line = 4*idx + j ;    
     return line ;  
 }
 
+/**
+QBnd::getMaterialLine
+-----------------------
+
+Searches the bname spec for the *material* name in omat or imat slots, 
+returning the first found.  
+
+**/
+
 unsigned QBnd::getMaterialLine( const char* material ) const 
 {
-    unsigned line = ~0u ; 
+    unsigned line = MISSING ; 
     for(unsigned i=0 ; i < bnames.size() ; i++) 
     {
         std::vector<std::string> elem ; 
@@ -143,7 +175,10 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     const float* values = buf->cvalues<float>(); 
 
     char filterMode = 'L' ; 
-    QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode ) ; 
+    //bool normalizedCoords = false ; 
+    bool normalizedCoords = true ; 
+
+    QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode, normalizedCoords ) ; 
 
     /*    
     quad domainX ; 
@@ -226,7 +261,7 @@ NP* QBnd::lookup()
     return out ; 
 }
 
-
+// from QBnd.cu
 extern "C" void QBnd_lookup_0(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, quad* lookup, unsigned num_lookup, unsigned width, unsigned height ); 
 
 void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned height )

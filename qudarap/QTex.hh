@@ -21,6 +21,7 @@ struct QUDARAP_API QTex
     size_t       height ; 
     const void*  src ;
     char         filterMode ;  // 'L':cudaFilterModeLinear OR 'P':cudaFilterModePoint 
+    bool         normalizedCoords ; 
     const void*  origin ;  // typically an NP array 
 
 
@@ -32,7 +33,7 @@ struct QUDARAP_API QTex
     quad4*              meta ; 
     quad4*              d_meta ; 
 
-    QTex( size_t width, size_t height, const void* src, char filterMode  );
+    QTex( size_t width, size_t height, const void* src, char filterMode, bool normalizedCoords  );
 
     void     setMetaDomainX( const quad* domx ); 
     void     setMetaDomainY( const quad* domy ); 
@@ -44,6 +45,7 @@ struct QUDARAP_API QTex
     unsigned getHDFactor() const ; 
 
     char     getFilterMode() const ; 
+    bool     getNormalizedCoords() const ; 
 
     virtual ~QTex();  
 

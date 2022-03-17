@@ -87,6 +87,22 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
     return value ? value : fallback ; 
 }
 
+/**
+CSGOptiX::CSGOptiX
+--------------------
+
+In sim mode:
+
+* QSim instanciation populates CPU side sim.sim (qsim.h) which collects 
+  device pointers and texObj and then uploads that to d_sim (qsim.h) available
+  GPU side as *sim*. This can be done as qsim.h collects 
+
+* QEvent instanciation 
+
+
+**/
+
+
 CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_) 
     :
     ok(ok_),
@@ -206,11 +222,26 @@ void CSGOptiX::initRender()
     params->fphoton = frame->getDevicePhoton(); 
 #endif
 }
-void CSGOptiX::initSimulate() // once only (not per-event) simulate setup tasks .. 
+
+/**
+CSGOptiX::initSimulate
+------------------------
+
+* Once only (not per-event) simulate setup tasks ..  perhaps rename initPhys
+
+Sets device pointers for params.sim params.evt so must be after upload 
+
+Q: where are sim and evt uploaded ?
+
+
+
+**/
+
+void CSGOptiX::initSimulate() 
 {
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
     params->evt = evt ? evt->getDevicePtr() : nullptr ;  // qevent*
-    params->tmin = 0.f ;      // perhaps needs to be epsilon to avoid self-intersection off boundaries ?
+    params->tmin = 0.f ;                                 // perhaps needs to be epsilon to avoid self-intersection off boundaries ?
     params->tmax = 1000000.f ; 
 }
 
@@ -256,7 +287,15 @@ void CSGOptiX::setGensteps(const NP* gs)
     evt->setGensteps(gs); 
 }
 
-void CSGOptiX::prepareSimulateParam()   // per-event simulate setup prior to optix launch 
+/**
+CSGOptiX::prepareSimulateParam
+-------------------------------
+
+Per-event simulate setup invoked just prior to optix launch 
+
+**/
+
+void CSGOptiX::prepareSimulateParam()  
 {
     LOG(info) << "[" ; 
     params->num_photons = evt->getNumPhotons() ; 
@@ -382,6 +421,15 @@ void CSGOptiX::prepareRenderParam()
         ; 
 }
 
+/**
+CSGOptiX::prepareParam and upload
+-------------------------------------
+
+This is invoked by CSGOptiX::simulate and CSGOptiX::render just before launch, 
+depending on raygenmode the simulate/render param are prepared and uploaded. 
+
+**/
+
 void CSGOptiX::prepareParam()
 {
     glm::vec4& ce = composition->getCenterExtent();   
@@ -410,7 +458,6 @@ For what happens next, see
 OptiX7Test.cu::__raygen__rg
 
 OptiX6Test.cu::raygen
-
 
 Depending on params.raygenmode the "render" or "simulate" method is called. 
  
@@ -616,7 +663,6 @@ CSGOptiX::snapSimulateTest
 ---------------------------
 
 Saving data for 2D cross sections, used by tests/CSGOptiXSimulateTest.cc 
-
 
 **/
 

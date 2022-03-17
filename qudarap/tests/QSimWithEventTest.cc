@@ -28,6 +28,7 @@ int main(int argc, char** argv)
 
     NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
+    NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
 
     if(icdf == nullptr || bnd == nullptr)
     {
@@ -41,7 +42,7 @@ int main(int argc, char** argv)
         return 1 ; 
     }
 
-    QSim<float>::UploadComponents(icdf, bnd, rindexpath ); 
+    QSim<float>::UploadComponents(icdf, bnd, optical, rindexpath ); 
     QSim<float> qs ; 
 
     QEvent qe ; 

@@ -48,10 +48,10 @@ QCerenkov::MakeTex
 
 **/
 
-QTex<float4>* QCerenkov::MakeTex(const NP* icdf, char filterMode ) // static
+QTex<float4>* QCerenkov::MakeTex(const NP* icdf, char filterMode, bool normalizedCoords ) // static
 {
     LOG(info) << " icdf " << icdf << " icdf.sstr " << icdf->sstr() << " filterMode " << filterMode ; 
-    QTex<float4>* tex = QTexMaker::Make2d_f4(icdf, filterMode ); 
+    QTex<float4>* tex = QTexMaker::Make2d_f4(icdf, filterMode, normalizedCoords ); 
     LOG(info) << " tex " << tex ; 
     return tex ; 
 }
@@ -72,7 +72,8 @@ QCerenkov::QCerenkov(const char* fold_ )
     fold( fold_ ? fold_ : DEFAULT_FOLD ),
     icdf_( nullptr ),
     icdf( nullptr ),
-    filterMode('P'), 
+    filterMode('P'),    // CAUTION: P: is Point mode with interpolation disabled
+    normalizedCoords(true), 
     tex(nullptr),
     look(nullptr)
 {
@@ -103,7 +104,7 @@ void QCerenkov::init()
         << " icdf.meta " << icdf->meta 
         ; 
 
-    tex = MakeTex(icdf, filterMode ) ; 
+    tex = MakeTex(icdf, filterMode, normalizedCoords ) ; 
 
     LOG(info) << " tex " << tex ; 
 

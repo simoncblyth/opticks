@@ -23,6 +23,7 @@ struct NP ;
 struct QUDARAP_API QBnd
 {
     static const plog::Severity LEVEL ;
+    static const unsigned       MISSING ; 
     static const QBnd*          INSTANCE ; 
     static const QBnd*          Get(); 
 

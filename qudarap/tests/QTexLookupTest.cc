@@ -35,8 +35,9 @@ int main(int argc, char** argv)
     char filterMode = 'P' ; 
     unsigned hd_factor = origin->get_meta<unsigned>("hd_factor"); 
     assert( hd_factor > 0 ); 
+    bool normalizedCoords = false ; 
 
-    QTex<float4>* tex = QTexMaker::Make2d_f4(origin, filterMode ); 
+    QTex<float4>* tex = QTexMaker::Make2d_f4(origin, filterMode, normalizedCoords ); 
     assert(tex); 
 
     tex->setHDFactor(hd_factor); 

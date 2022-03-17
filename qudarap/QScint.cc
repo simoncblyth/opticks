@@ -74,7 +74,8 @@ QTex<float>* QScint::MakeScintTex(const NP* src, unsigned hd_factor )  // static
         LOG(fatal) << "QSCINT_DISABLE_INTERPOLATION active using filterMode " << filterMode 
         ; 
 
-    QTex<float>* tx = new QTex<float>(nx, ny, src->cvalues<float>(), filterMode ) ; 
+    bool normalizedCoords = true ; 
+    QTex<float>* tx = new QTex<float>(nx, ny, src->cvalues<float>(), filterMode, normalizedCoords ) ; 
 
     tx->setHDFactor(hd_factor); 
     tx->uploadMeta(); 
@@ -85,6 +86,7 @@ QTex<float>* QScint::MakeScintTex(const NP* src, unsigned hd_factor )  // static
         << " ny (height) " << ny
         << " tx.HDFactor " << tx->getHDFactor() 
         << " tx.filterMode " << tx->getFilterMode()
+        << " tx.normalizedCoords " << tx->getNormalizedCoords()
         ;
 
     return tx ; 

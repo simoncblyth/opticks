@@ -1920,6 +1920,15 @@ NP* NPY<T>::spawn() const
     return NPY<T>::copy_(this) ; 
 }
 
+/**
+NPY::copy_
+-------------
+
+Copy between old templated and new un-templated array types using separate memory allocation.
+Currently no automated metadata transfer between old and new array types.  
+
+**/
+
 template <typename T> 
 NP* NPY<T>::copy_(const NPY<T>* src)   // static  
 {
@@ -1935,8 +1944,6 @@ NP* NPY<T>::copy_(const NPY<T>* src)   // static
     char* sbytes = (char*)src->getBytes();
     char* dbytes = (char*)dst->bytes();
     memcpy( (void*)dbytes, (void*)sbytes, src_bytes );
-
-    // currently no metadata transfer between old and new array types  
 
     return dst ; 
 }

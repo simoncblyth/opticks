@@ -48,6 +48,7 @@ CSGFoundry::CSGFoundry()
     last_added_solid(nullptr),
     last_added_prim(nullptr),
     bnd(nullptr),
+    optical(nullptr),
     icdf(nullptr),
     meta(),
     fold(nullptr),
@@ -1645,6 +1646,7 @@ void CSGFoundry::write(const char* dir_) const
     if(inst.size() > 0 ) NP::Write(dir, "inst.npy",   (float*)inst.data(), inst.size(),   4, 4 ); 
 
     if(bnd)  bnd->save(dir,  "bnd.npy") ; 
+    if(optical) optical->save(dir, "optical.npy") ; 
     if(icdf) icdf->save(dir, "icdf.npy") ; 
 }
 
@@ -1740,6 +1742,7 @@ void CSGFoundry::load( const char* dir_ )
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
     if(NP::Exists(dir, "bnd.npy"))  bnd = NP::Load(dir, "bnd.npy"); 
+    if(NP::Exists(dir, "optical.npy"))  optical = NP::Load(dir, "optical.npy"); 
     if(NP::Exists(dir, "icdf.npy")) icdf = NP::Load(dir, "icdf.npy"); 
 }
 

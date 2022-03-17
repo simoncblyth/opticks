@@ -37,7 +37,9 @@ int main(int argc, char** argv)
     assert( img.channels == 4 );
 
     char filterMode = 'P' ; // cudaFilterModePoint : no interpolation, necessary with uchar4 
-    QTex<uchar4> qtex(img.width, img.height, img.data, filterMode );
+    bool normalizedCoords = false ; 
+
+    QTex<uchar4> qtex(img.width, img.height, img.data, filterMode, normalizedCoords );
 
 
     QTexRotate<uchar4> qrot(&qtex); 

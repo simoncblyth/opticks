@@ -334,6 +334,7 @@ struct CSG_API CSGFoundry
     CSGNode*    last_added_node ; 
 
     NP* bnd ; 
+    NP* optical ; 
     NP* icdf ; 
 
     std::string meta ; 

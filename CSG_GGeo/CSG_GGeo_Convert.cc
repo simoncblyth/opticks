@@ -150,6 +150,16 @@ void CSG_GGeo_Convert::convertAllSolid()  // default
     LOG(LEVEL) << "] numRepeat " << numRepeat ; 
 }
 
+/**
+CSG_GGeo_Convert::convertBndLib
+--------------------------------
+
+Need optical_buffer too see 
+
+
+**/
+
+
 void CSG_GGeo_Convert::convertBndLib() 
 {
     LOG(LEVEL) << "[" ; 
@@ -157,11 +167,15 @@ void CSG_GGeo_Convert::convertBndLib()
 
     bool can_create = blib->canCreateBuffer() ; 
     NP* bnd = nullptr ; 
+    NP* optical = nullptr ; 
 
     if( can_create )
     {
         blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
         bnd = blib->getBuf(); 
+
+        optical = blib->getOpticalBuf();  
+
         const std::vector<std::string>& bndnames = blib->getNameList(); 
         bnd->set_meta( bndnames );  
     }
@@ -171,6 +185,8 @@ void CSG_GGeo_Convert::convertBndLib()
     }
 
     foundry->bnd = bnd ; 
+    foundry->optical = optical ;  
+
     LOG(LEVEL) << "]" ; 
 }
 

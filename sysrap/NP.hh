@@ -174,6 +174,7 @@ struct NP
 
     void clear();   
 
+    static bool Exists(const char* base, const char* rel, const char* name);   
     static bool Exists(const char* dir, const char* name);   
     static bool Exists(const char* path);   
     int load(const char* dir, const char* name);   
@@ -2679,6 +2680,11 @@ inline void NP::clear()
     shape[0] = 0 ;  
 }
 
+inline bool NP::Exists(const char* base, const char* rel,  const char* name) // static 
+{
+    std::string path = form_path(base, rel, name); 
+    return Exists(path.c_str()); 
+}
 inline bool NP::Exists(const char* dir, const char* name) // static 
 {
     std::string path = form_path(dir, name); 

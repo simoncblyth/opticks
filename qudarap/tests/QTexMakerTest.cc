@@ -29,11 +29,12 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const NP* a = make_array( 5, 10, 4 ); 
-    char filterMode = 'P' ; 
+    char filterMode = 'P' ;  // <-- P:Point with interpolation disabled,   L:linear interpolation
     unsigned hd_factor = a->get_meta<unsigned>("hd_factor"); 
     assert( hd_factor > 0 ); 
+    bool normalizedCoords = false ;  
 
-    QTex<float4>* tex = QTexMaker::Make2d_f4(a, filterMode ); 
+    QTex<float4>* tex = QTexMaker::Make2d_f4(a, filterMode, normalizedCoords ); 
     assert(tex); 
 
     tex->setHDFactor(hd_factor); 

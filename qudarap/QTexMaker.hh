@@ -21,8 +21,8 @@ template <typename T> struct QTex ;
 struct QUDARAP_API QTexMaker
 {
     static const plog::Severity LEVEL ; 
-    static QTex<float4>* Make2d_f4( const NP* icdf, char filterMode ); 
-    static QTex<float4>* Make2d_f4_( const NP* a, char filterMode ); 
+    static QTex<float4>* Make2d_f4( const NP* icdf, char filterMode, bool normalizedCoords ); 
+    static QTex<float4>* Make2d_f4_( const NP* a,   char filterMode, bool normalizedCoords ); 
 };
 
 

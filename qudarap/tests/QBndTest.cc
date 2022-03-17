@@ -4,11 +4,13 @@
 #include "SSys.hh"
 #include "SPath.hh"
 #include "NP.hh"
-#include "Opticks.hh"
 
 #ifdef OLD_WAY
+#include "Opticks.hh"
 #include "GGeo.hh"
 #include "GBndLib.hh"
+#else
+#include "SOpticksResource.hh"
 #endif
 
 #include "QBnd.hh"
@@ -21,7 +23,7 @@ void test_descBoundary(QBnd& qb)
     unsigned num_boundary = qb.getNumBoundary(); 
     LOG(info) 
         << " num_boundary " << num_boundary 
-        << "qb.descBoundary " 
+        << " qb.descBoundary " 
         << std::endl 
         << qb.descBoundary()
         ;
@@ -31,6 +33,12 @@ void test_getBoundaryLine(QBnd& qb)
 {
     const char* spec = SSys::getenvvar("QCTX_SPEC", "Acrylic///LS" ); 
     unsigned idx = qb.getBoundaryIndex(spec); 
+    if( idx == QBnd::MISSING ) 
+    {
+        LOG(error) << " QBnd MISSING spec " << spec ; 
+        return ; 
+    }
+
     unsigned num_boundary = qb.getNumBoundary(); 
 
     enum { IMAT = 3 } ;  
@@ -77,7 +85,17 @@ void test_getMaterialLine(QBnd& qb)
     }
 }
 
-void test_lookup(QBnd& qb)
+
+/**
+test_lookup_technical
+----------------------
+
+Technical test doing lookups over the entire texture.
+TODO: a test more like actual usage.
+
+**/
+
+void test_lookup_technical(QBnd& qb)
 {
     NP* lookup = qb.lookup(); 
     int create_dirs = 2 ; // 2:dirpath
@@ -92,25 +110,27 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+#ifdef OLD_WAY
     Opticks ok(argc, argv); 
     ok.configure(); 
-
-#ifdef OLD_WAY
     GGeo* gg = GGeo::Load(&ok); 
     GBndLib* blib = gg->getBndLib(); 
     blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
     NP* bnd = blib->getBuf(); 
 #else
-    const char* cfbase = ok.getFoundryBase("CFBASE"); 
+    const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
+    LOG(info) << " cfbase " << cfbase ; 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 #endif
 
     QBnd qb(bnd) ; 
 
+/*
     test_descBoundary(qb); 
     test_getBoundaryLine(qb); 
     test_getMaterialLine(qb); 
-    test_lookup(qb); 
+*/
+    test_lookup_technical(qb); 
 
     return 0 ; 
 }

@@ -28,6 +28,13 @@ const plog::Severity QEvent::LEVEL = PLOG::EnvLevel("QEvent", "DEBUG");
 const QEvent* QEvent::INSTANCE = nullptr ; 
 const QEvent* QEvent::Get(){ return INSTANCE ; }
 
+/**
+QEvent::QEvent
+----------------
+
+Canonical instance instanciated by CSGOptiX::CSGOptiX
+
+**/
 
 QEvent::QEvent()
     :
@@ -78,7 +85,6 @@ void QEvent::setGensteps(QBuf<float>* dgs) // QBuf::ptr references already uploa
     QU::copy_host_to_device<qevent>(d_evt, evt, 1 );  
 }
 
-
 void QEvent::downloadPhoton( std::vector<quad4>& photon )
 {
     photon.resize(evt->num_photon); 
@@ -122,7 +128,6 @@ std::string QEvent::desc() const
     return ss.str(); 
 }
 
-
 qevent* QEvent::getDevicePtr() const
 {
     return d_evt ; 
@@ -131,7 +136,6 @@ unsigned QEvent::getNumPhotons() const
 {
     return evt->num_photon ; 
 }
-
 
 extern "C" void QEvent_checkEvt(dim3 numBlocks, dim3 threadsPerBlock, qevent* evt, unsigned width, unsigned height ) ; 
 
@@ -148,6 +152,4 @@ void QEvent::checkEvt()
     assert( d_evt ); 
     QEvent_checkEvt(numBlocks, threadsPerBlock, d_evt, width, height );   
 }
-
-
 

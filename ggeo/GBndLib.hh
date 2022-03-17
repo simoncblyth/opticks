@@ -170,7 +170,8 @@ class GGEO_API GBndLib : public GPropertyLib {
   public:
        bool hasIndexBuffer();
        NPY<unsigned int>* getIndexBuffer();
-       NPY<unsigned int>* getOpticalBuffer();
+       NPY<unsigned int>* getOpticalBuffer() const ;
+       NP*                getOpticalBuf() const ;
   public:
        void setIndexBuffer(NPY<unsigned int>* index_buffer);
        void setOpticalBuffer(NPY<unsigned int>* optical_buffer);

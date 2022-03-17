@@ -68,7 +68,7 @@ struct QUDARAP_API QBuf
     static QBuf<T>* Upload( const T* data, unsigned num_items )
     {   
         QBuf<T>* buf = new QBuf<T>() ; 
-        buf->device_alloc(num_items); 
+        buf->device_alloc(num_items);   // sets (ptr, num_items)
         buf->upload( data, num_items );  
         return buf ; 
     }   

@@ -18,20 +18,22 @@ __global__ void _QBnd_lookup_0(cudaTextureObject_t tex, quad4* meta, quad* looku
 
     unsigned nx = meta->q0.u.x  ; 
     unsigned ny = meta->q0.u.y  ; 
+
+    // HMM: this is assuming normalizedCoordinates:true thats not the normal way for boundary_tex
     float x = (float(ix)+0.5f)/float(nx) ;
     float y = (float(iy)+0.5f)/float(ny) ;
 
     quad q ; 
     q.f = tex2D<float4>( tex, x, y );     
 
-    /**
+#ifdef DEBUG
     // debug launch config by returning coordinates 
     printf(" ix %d iy %d index %d nx %d ny %d x %10.3f y %10.3f \n", ix, iy, index, nx, ny, x, y ); 
     q.u.x = ix ; 
     q.u.y = iy ; 
     q.u.z = index ; 
     q.u.w = nx ; 
-    **/
+#endif
  
     lookup[index] = q ; 
 }

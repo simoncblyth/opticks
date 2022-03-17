@@ -247,6 +247,25 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 simulate : uses params for input: gensteps, seeds and output photons 
 ----------------------------------------------------------------------
 
+Contrast with the monolithic old way with OptiXRap/cu/generate.cu:generate 
+
+This method aims to get as much as possible of its functionality from 
+separately implemented and tested headers. 
+
+The big thing that CSGOptiX provides is geometry intersection, only that must be here. 
+Everything else should be implemented and tested elsewhere, mostly in QUDARap headers.
+
+Hence this "simulate" needs to act as a coordinator. 
+Params take central role in enabling this:
+
+
+Params
+~~~~~~~
+
+* CPU side params including qsim.h qevent.h pointers instanciated in CSGOptiX::CSGOptiX 
+  and populated by CSGOptiX::init methods before being uploaded by CSGOptiX::prepareParam 
+
+
 **/
 
 #ifdef WITH_PRD
@@ -264,6 +283,8 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[photon_id] ;    // TODO: skipahead using an event_id 
+
+
     quad4 p ;   
     sim->generate_photon(p, rng, gs, photon_id, genstep_id );  
 

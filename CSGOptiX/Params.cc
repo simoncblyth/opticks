@@ -18,7 +18,6 @@ void Params::setCenterExtent(float x, float y, float z, float w)  // used for "s
     center_extent.w = w ; 
 }
 
-
 void Params::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ )
 {
     eye.x = eye_.x ;
@@ -140,7 +139,5 @@ void Params::upload()
     CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( d_param ), this, sizeof( Params ), cudaMemcpyHostToDevice) ); 
 }
 
-
 #endif
-
 

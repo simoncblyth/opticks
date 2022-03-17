@@ -25,6 +25,9 @@ struct SYSRAP_API SEvent
     static void StandardizeCEGS(        const float4& ce,       std::vector<int>& cegs, float gridscale );
     static void GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale, bool ce_offset ) ; 
 
+
+    static void ConfigureGenstep( quad6& gs,  int gencode, int gridaxes, int gsid, int photons_per_genstep ); 
+
     static NP* MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) ;
     static NP* MakeCountGensteps();
     static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep);

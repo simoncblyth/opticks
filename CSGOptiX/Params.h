@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+Params.h
+===========
+
+* CPU side params instanciated in CSGOptiX::CSGOptiX and populated by CSGOptiX::init methods 
+
+
+**/
+
+
+
 #include <optix.h>
 // TODO: avoid need for optix.h just for OptixTraversableHandle which is "unsigned long long" typedef
 

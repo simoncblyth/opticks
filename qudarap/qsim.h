@@ -19,9 +19,10 @@
 qsim
 =====
 
-This is aiming to replace the OptiX 6 context in a CUDA-centric way.
+NB this is uploaded once only at CSGOptiX instanciation 
+as its state encompasses the physics not the event-by-event by info
 
-Hmm:
+This is aiming to replace the OptiX 6 context in a CUDA-centric way.
 
 * qsim encompasses global info relevant to to all photons, meaning that any changes
   make to the qsim instance from single photon threads must be into thread-owned slots 
@@ -52,12 +53,14 @@ struct qsim
 
     static constexpr T one = T(1.) ;   
 
+    // boundary tex is created/configured CPU side in QBnd
     cudaTextureObject_t boundary_tex ; 
     quad4*              boundary_meta ; 
     unsigned            boundary_tex_MaterialLine_Water ;
     unsigned            boundary_tex_MaterialLine_LS ; 
     // hmm could encapsulate the above group into a qbnd ?
 
+    quad*               optical ;  
     qprop<T>*           prop ;  
 
     static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
@@ -101,6 +104,7 @@ struct qsim
         scint_meta(nullptr),
         boundary_tex(0),
         boundary_meta(nullptr),
+        optical(nullptr),
         prop(nullptr)
     {
     }
@@ -652,6 +656,7 @@ template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
     int gencode = gs.q0.i.x ; 
+    //printf("//qsim.generate_photon gencode %d \n", gencode); 
     switch(gencode)
     {
         case OpticksGenstep_TORCH: generate_photon_torch(p, rng, gs, photon_id, genstep_id) ; break ; 
@@ -672,11 +677,16 @@ The gensteps are for example configured in SEvent::MakeCenterExtentGensteps
 
 NB the sevent.h enum order is different to the python one  eg XYZ=0 
 
+
+TODO: this has not been updated following the cxs torch genstep rejig with transforms into the genstep ?
+
+
 **/
 
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
+
     C4U gsid ;  
 
     //int gencode          = gs.q0.i.x ;   
@@ -684,10 +694,13 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
     gsid.u                 = gs.q0.i.z ; 
     //unsigned num_photons = gs.q0.u.w ; 
 
+
     p.q0.f.x = gs.q1.f.x ;   // start with genstep local frame position, typically origin  (0,0,0)   
     p.q0.f.y = gs.q1.f.y ; 
     p.q0.f.z = gs.q1.f.z ; 
     p.q0.f.w = 1.f ;        
+
+    //printf("//qsim.generate_photon_torch gridaxes %d gs.q1 (%10.4f %10.4f %10.4f %10.4f) \n", gridaxes, gs.q1.f.x, gs.q1.f.y, gs.q1.f.z, gs.q1.f.w ); 
 
     float u0 = curand_uniform(&rng); 
 
@@ -695,8 +708,12 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
     sincosf(2.f*M_PIf*u0,&sinPhi,&cosPhi);
 
     float u1 = curand_uniform(&rng); 
-    float cosTheta = u1 ;  // perhaps use -1:1 ?
-    float sinTheta = sqrtf(1.f-u1*u1) ; 
+    float cosTheta = 2.f*u1 - 1.f ; 
+    float sinTheta = sqrtf(1.f-cosTheta*cosTheta) ; 
+
+    //printf("//qsim.generate_photon_torch u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f \n", u0, sinPhi, cosPhi ); 
+    //printf("//qsim.generate_photon_torch u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n", u1, sinTheta, cosTheta ); 
+    //printf("//qsim.generate_photon_torch  u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n",  u0, sinPhi, cosPhi, u1, sinTheta, cosTheta ); 
 
     switch( gridaxes )
     { 
@@ -709,9 +726,11 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
                     p.q1.f.w = 0.f ; } ; break ;   // previously used XZ
     }
 
+
     qat4 qt(gs) ; // copy 4x4 transform from last 4 quads of genstep 
     qt.right_multiply_inplace( p.q0.f, 1.f );   // position 
     qt.right_multiply_inplace( p.q1.f, 0.f );   // direction 
+
 
     // HMM:  photon_id is global to the launch 
     // but having a  local to the photons of this genstep index is more useful for this id

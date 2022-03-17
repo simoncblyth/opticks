@@ -36,6 +36,9 @@ set(SOURCES
     QBnd.cc
     QBnd.cu
 
+    QOptical.cc
+    QOptical.cu 
+
     QScint.cc
     QScint.cu
 
@@ -82,6 +85,8 @@ SET(HEADERS
     QTexLookup.hh
 
     QBnd.hh
+    QOptical.hh
+
     QScint.hh
     QCerenkovIntegral.hh
     QCerenkov.hh

@@ -174,6 +174,30 @@ unsigned SEvent::GenstepID( int ix, int iy, int iz, int iw )
     return gsid.u ; 
 }
 
+
+
+/**
+SEvent::ConfigureGenstep
+---------------------------
+
+TODO: pack enums to make room for a photon_offset 
+
+* gsid was MOVED from (1,3) to (0,2) when changing genstep to carry transform
+
+**/
+
+void SEvent::ConfigureGenstep( quad6& gs,  int gencode, int gridaxes, int gsid, int photons_per_genstep )
+{
+    assert( gencode == OpticksGenstep_TORCH ); 
+    assert( gridaxes == XYZ ||  gridaxes == YZ || gridaxes == XZ || gridaxes == XY ); 
+
+    gs.q0.i.x = gencode ;
+    gs.q0.i.y = gridaxes ; 
+    gs.q0.u.z = gsid ;     
+    gs.q0.i.w = photons_per_genstep ;
+}
+
+
 /**
 SEvent::MakeCenterExtentGensteps
 ----------------------------------
@@ -219,6 +243,7 @@ frame as are doing the local_translate first.
 
 **/
 
+
 NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) // static
 {
     std::vector<quad6> gensteps ;
@@ -249,12 +274,6 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
         << " GridAxes " << gridaxes
         << " GridAxesName " << GridAxesName(gridaxes)
         ;
-
-    // TODO: pack the enums together to make way for a photon_offset for the genstep 
-    gs.q0.i.x = OpticksGenstep_TORCH ;
-    gs.q0.i.y = gridaxes ; 
-    gs.q0.u.z = 0 ;          // set to gsid below
-    gs.q0.i.w = photons_per_genstep ;
 
     /**
     where should ce offset go to handle global geom
@@ -297,8 +316,7 @@ NP* SEvent::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& c
 
         unsigned gsid = GenstepID(ix,iy,iz,0) ; 
 
-        //gs.q0.u.y = photon_offset ;  TODO: rearrange to allow this
-        gs.q0.u.z = gsid ;   // MOVED from (1,3) to (0,2) 
+        ConfigureGenstep(gs, OpticksGenstep_TORCH, gridaxes, gsid, photons_per_genstep );  
 
         qc->write(gs);  // copy qc into gs.q2,q3,q4,q5
 
@@ -371,20 +389,29 @@ NP* SEvent::MakeCountGensteps() // static
 }
 NP* SEvent::MakeCountGensteps(const std::vector<int>& counts) // static 
 {
-    std::vector<quad6> gs ;
+    int gencode = OpticksGenstep_TORCH ;
+    std::vector<quad6> gensteps ;
     for(unsigned i=0 ; i < counts.size() ; i++)
     {
-        int gencode = OpticksGenstep_TORCH ;
-        quad6 qq ;
-        qq.q0.i.x = gencode  ;   qq.q0.i.y = -1 ;   qq.q0.i.z = -1 ;   qq.q0.i.w = counts[i] ;
-        qq.q1.f.x = 0.f ;  qq.q1.f.y = 0.f ;  qq.q1.f.z = 0.f ;   qq.q1.f.w = 0.f ;
-        qq.q2.i.x = -1 ;   qq.q2.i.y = -1 ;   qq.q2.i.z = -1 ;   qq.q2.i.w = -1 ;
-        qq.q3.i.x = -1 ;   qq.q3.i.y = -1 ;   qq.q3.i.z = -1 ;   qq.q3.i.w = -1 ;
-        qq.q4.i.x = -1 ;   qq.q4.i.y = -1 ;   qq.q4.i.z = -1 ;   qq.q4.i.w = -1 ;
-        qq.q5.i.x = -1 ;   qq.q5.i.y = -1 ;   qq.q5.i.z = -1 ;   qq.q5.i.w = -1 ;
-        gs.push_back(qq);
+        quad6 gs ; gs.zero(); 
+
+        int gridaxes = XYZ ;  
+        int gsid = 0 ;  
+        int photons_per_genstep = counts[i]; 
+
+        ConfigureGenstep(gs, gencode, gridaxes, gsid, photons_per_genstep ); 
+
+        gs.q1.f.x = 0.f ;  gs.q1.f.y = 0.f ;  gs.q1.f.z = 0.f ;  gs.q1.f.w = 0.f ;
+
+        // identity transform to avoid nan 
+        gs.q2.f.x = 1.f ;  gs.q2.f.y = 0.f ;  gs.q2.f.z = 0.f ;  gs.q2.f.w = 0.f ;
+        gs.q3.f.x = 0.f ;  gs.q3.f.y = 1.f ;  gs.q3.f.z = 0.f ;  gs.q3.f.w = 0.f ;
+        gs.q4.f.x = 0.f ;  gs.q4.f.y = 0.f ;  gs.q4.f.z = 1.f ;  gs.q4.f.w = 0.f ;
+        gs.q5.f.x = 0.f ;  gs.q5.f.y = 0.f ;  gs.q5.f.z = 0.f ;  gs.q5.f.w = 1.f ;
+
+        gensteps.push_back(gs);
     }
-    return MakeGensteps(gs);
+    return MakeGensteps(gensteps);
 }
 
 /**

@@ -28,6 +28,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "NP.hh"
 
 #include "NGLM.hpp"
 #include "NPY.hpp"
@@ -307,7 +308,7 @@ void GBndLib::setIndexBuffer(NPY<unsigned int>* index_buffer)
     m_index_buffer = index_buffer ;
 }
 
-NPY<unsigned int>* GBndLib::getOpticalBuffer()
+NPY<unsigned int>* GBndLib::getOpticalBuffer() const 
 {
     return m_optical_buffer ;
 }
@@ -316,6 +317,12 @@ void GBndLib::setOpticalBuffer(NPY<unsigned int>* optical_buffer)
     m_optical_buffer = optical_buffer ;
 }
 
+
+NP* GBndLib::getOpticalBuf() const 
+{
+    NP* optical = m_optical_buffer ? m_optical_buffer->spawn() : nullptr ;  
+    return optical ;
+}
 
 
 

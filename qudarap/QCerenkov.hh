@@ -34,12 +34,13 @@ struct QUDARAP_API QCerenkov
     static const QCerenkov*     Get(); 
     static const char*          DEFAULT_FOLD ; 
     static NP*                  Load(const char* fold, const char* name) ; 
-    static QTex<float4>*        MakeTex(const NP* icdf, char filterMode) ; 
+    static QTex<float4>*        MakeTex(const NP* icdf, char filterMode, bool normalizedCoords) ; 
 
     const char*             fold ; 
     const NP*               icdf_ ; 
     const NP*               icdf ; 
     char                    filterMode ; 
+    bool                    normalizedCoords ; 
     QTex<float4>*           tex ; 
     QTexLookup<float4>*     look ; 
 

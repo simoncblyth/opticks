@@ -14,12 +14,13 @@
 
 
 template<typename T>
-QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_ )
+QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_, bool normalizedCoords_ )
     :   
     width(width_),
     height(height_),
     src(src_),
     filterMode(filterMode_),
+    normalizedCoords(normalizedCoords_), 
     origin(nullptr),
 
     cuArray(nullptr),
@@ -59,6 +60,16 @@ char QTex<T>::getFilterMode() const
 {
     return filterMode ; 
 }
+
+template<typename T>
+bool QTex<T>::getNormalizedCoords() const 
+{
+    return normalizedCoords ; 
+}
+
+
+
+
 
 template<typename T>
 QTex<T>::~QTex()
@@ -195,10 +206,19 @@ void QTex<T>::uploadMeta()
     d_meta = QU::UploadArray<quad4>(meta, 1 );  
 }
 
+/**
+
+normalized:false
+   means texel coordinate addressing 
+
+normalized:true
+   eg reemission generation need normalized
+
+**/
+
 template<typename T>
 void QTex<T>::createTextureObject()
 {
-
     struct cudaResourceDesc resDesc;
     memset(&resDesc, 0, sizeof(resDesc));
     resDesc.resType = cudaResourceTypeArray;
@@ -218,7 +238,7 @@ void QTex<T>::createTextureObject()
     }
 
     texDesc.readMode = cudaReadModeElementType;  // return data of the type of the underlying buffer
-    texDesc.normalizedCoords = 1 ;            // addressing into the texture with floats in range 0:1
+    texDesc.normalizedCoords = normalizedCoords ;   // addressing into the texture with floats in range 0:1 when true
 
     // Create texture object
     cudaCreateTextureObject(&texObj, &resDesc, &texDesc, NULL);

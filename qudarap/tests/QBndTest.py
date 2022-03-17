@@ -12,18 +12,22 @@ QBndTest.py
 import os 
 import numpy as np
 
-np.set_printoptions(suppress=True, precision=3, edgeitems=5 )
+from opticks.ana.fold import Fold
 
-fold="$TMP/QBndTest"
-load_ = lambda name:np.load(os.path.expandvars("%s/%s" % (fold,name)))
+#np.set_printoptions(suppress=True, precision=3, edgeitems=5 )
+
 
 if __name__ == '__main__':
-    src = load_("src.npy")
-    dst = load_("dst.npy")
+
+    bt = Fold.Load("$TMP/QBndTest")
+    src = bt.src    
+    dst = bt.dst    
+
 
     s = src
     d = dst.reshape(src.shape)
     assert np.allclose( s, d )
+
 
     ss = src.reshape(dst.shape)
     dd = dst

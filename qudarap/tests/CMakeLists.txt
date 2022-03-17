@@ -14,6 +14,7 @@ set(TEST_SOURCES
    QPolyTest.cc
    QSimTest.cc
    QBndTest.cc 
+   QOpticalTest.cc 
    QPropTest.cc 
    QSeedTest.cc 
    QEventTest.cc 

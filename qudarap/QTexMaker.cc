@@ -8,7 +8,7 @@
 const plog::Severity QTexMaker::LEVEL = PLOG::EnvLevel("QTexMaker", "DEBUG"); 
 
 
-QTex<float4>* QTexMaker::Make2d_f4( const NP* icdf, char filterMode )  // static 
+QTex<float4>* QTexMaker::Make2d_f4( const NP* icdf, char filterMode, bool normalizedCoords )  // static 
 {
     unsigned ndim = icdf->shape.size(); 
     LOG(info) << " ndim " << ndim ; 
@@ -27,7 +27,7 @@ QTex<float4>* QTexMaker::Make2d_f4( const NP* icdf, char filterMode )  // static
 
     assert( ndim == 3 && icdf->shape[ndim-1] == 4 ); 
 
-    QTex<float4>* tex = QTexMaker::Make2d_f4_(icdf, filterMode ); 
+    QTex<float4>* tex = QTexMaker::Make2d_f4_(icdf, filterMode, normalizedCoords ); 
     tex->setHDFactor(hd_factor); 
     tex->uploadMeta(); 
 
@@ -39,7 +39,7 @@ QTex<float4>* QTexMaker::Make2d_f4( const NP* icdf, char filterMode )  // static
 
 
 
-QTex<float4>* QTexMaker::Make2d_f4_( const NP* a, char filterMode )  // static 
+QTex<float4>* QTexMaker::Make2d_f4_( const NP* a, char filterMode, bool normalizedCoords )  // static 
 {
     assert( a->ebyte == 4 && "need to narrow double precision arrays first ");  
     unsigned ndim = a->shape.size(); 
@@ -56,7 +56,7 @@ QTex<float4>* QTexMaker::Make2d_f4_( const NP* a, char filterMode )  // static
     // note that from the point of view of array content, saying (height, width) 
     // is a more appropriate ordering than the usual contrary convention  
     
-    QTex<float4>* tex = new QTex<float4>( width, height, src, filterMode  );
+    QTex<float4>* tex = new QTex<float4>( width, height, src, filterMode, normalizedCoords  );
     tex->setOrigin(a); 
 
     return tex ; 

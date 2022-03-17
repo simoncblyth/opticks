@@ -9,12 +9,15 @@
 QSim
 ======
 
+TODO: Perhaps rename QPhys ?
+
+The canonical QSim instance is instanciated with CSGOptiX::CSGOptiX
+
 QSim is mostly constant and needs initializing once only 
 corresponding to the geometry and the physics process
-implementations.  Perhaps call it QPhys or QSim ?
+implementations.  
 
-Contrast with the QEvent with a very 
-different event-by-event lifecycle  
+Contrast with the QEvent with a very different event-by-event lifecycle  
 
 TODO: 
 
@@ -26,12 +29,14 @@ functional/testable components
 
 struct NP ; 
 template <typename T> struct QTex ; 
+template <typename T> struct QBuf ; 
 template <typename T> struct QProp ; 
 template <typename T> struct qsim ; 
 
 struct QRng ; 
 struct QScint ;
 struct QBnd ; 
+struct QOptical ; 
 struct QEvent ; 
 
 struct quad4 ; 
@@ -45,11 +50,12 @@ struct QUDARAP_API QSim
     static const QSim* INSTANCE ; 
     static const QSim* Get(); 
 
-    static void UploadComponents(const NP* icdf, const NP* bnd, const char* rindexpath );   
+    static void UploadComponents(const NP* icdf, const NP* bnd, const NP* optical, const char* rindexpath );   
 
-    const QRng*    rng ;     // need to template these too ?
-    const QScint*  scint ; 
-    const QBnd*    bnd ; 
+    const QRng*      rng ;     // need to template these too ?
+    const QScint*    scint ; 
+    const QBnd*      bnd ; 
+    const QOptical*  optical ; 
     const QProp<T>*  prop ; 
 
     qsim<T>*          sim ;  
@@ -62,22 +68,17 @@ struct QUDARAP_API QSim
     qsim<T>* init_upload(); 
     qsim<T>* getDevicePtr() const ; 
 
-
     char getScintTexFilterMode() const ;
-
     std::string desc() const ; 
 
-
-    // TODO : split these off into separte individially testable objects 
+    // TODO : split these off into separate individially testable objects 
 
     void configureLaunch( unsigned width, unsigned height );
     void configureLaunch2D( unsigned width, unsigned height );
 
     void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
-
     void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset ); 
     void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
-
 
     void scint_wavelength(                      T* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
     void cerenkov_wavelength_rejection_sampled( T* wavelength, unsigned num_wavelength ); 

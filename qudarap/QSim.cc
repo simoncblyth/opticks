@@ -17,6 +17,8 @@
 #include "QBnd.hh"
 #include "QProp.hh"
 #include "QEvent.hh"
+#include "QOptical.hh"
+
 #include "QSim.hh"
 
 template <typename T>
@@ -32,6 +34,9 @@ const QSim<T>* QSim<T>::Get(){ return INSTANCE ; }
 QSim::UploadComponents
 -----------------------
 
+This is invoked for example by CSGOptiX/tests/CSGOptiXSimulateTest.cc 
+prior to instanciating CSGOptiX 
+
 This is a once only action for a geometry, encompassing 
 random states, scintillation and boundary textures and 
 property arrays.   It is the simulation physics equivalent 
@@ -43,7 +48,7 @@ instanciation collects together.
 **/
 
 template <typename T>
-void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const char* rindexpath  )
+void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, const char* rindexpath  )
 {
     // on heap, to avoid dtors
 
@@ -76,10 +81,19 @@ void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const char* rind
         LOG(LEVEL) << qbnd->desc(); 
     }
 
+    if( optical == nullptr )
+    {
+        LOG(warning) << " optical null " ; 
+    }
+    else
+    {
+        QOptical* qopt = new QOptical(optical); 
+        LOG(LEVEL) << qopt->desc(); 
+    }
+
     LOG(error) << "[ QProp " ; 
     QProp<T>* qprop = new QProp<T>(rindexpath) ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
     LOG(error) << "] QProp " ; 
-
 
 
     LOG(LEVEL) << qprop->desc(); 
@@ -90,6 +104,11 @@ void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const char* rind
 /**
 QSim:::QSim
 -------------
+
+Canonical instance is instanciated with CSGOptiX::CSGOptiX in sim mode.
+Notice how the instanciation pulls together device pointers from 
+the constituents into the CPU side *sim* and then uploads that to *d_sim*
+which is available as *sim* GPU side. 
 
 Prior to instanciating QSim invoke QSim::Init to prepare the 
 singleton components. 
@@ -102,6 +121,7 @@ QSim<T>::QSim()
     rng(QRng::Get()),
     scint(QScint::Get()),
     bnd(QBnd::Get()),
+    optical(QOptical::Get()),
     prop(QProp<T>::Get()),
     sim(new qsim<T>),
     d_sim(init_upload())
@@ -137,6 +157,7 @@ qsim<T>* QSim<T>::init_upload()
         << " rng " << rng 
         << " scint " << scint
         << " bnd " << bnd
+        << " optical " << optical
         << " prop " << prop
         << " sim " << sim 
         << " d_sim " << d_sim 
@@ -165,6 +186,11 @@ qsim<T>* QSim<T>::init_upload()
         sim->boundary_tex_MaterialLine_Water = bnd->getMaterialLine("Water") ; 
         sim->boundary_tex_MaterialLine_LS    = bnd->getMaterialLine("LS") ; 
     } 
+    if(optical)
+    {
+        LOG(LEVEL) << " optical " << optical->desc() ; 
+        sim->optical = optical->d_optical ; 
+    }
 
     if(prop)
     {
@@ -754,7 +780,9 @@ void QSim<T>::dump_photon( quad4* photon, unsigned num_photon, const char* opt_,
     bool i1 = opt.find("i1") != std::string::npos ; 
     bool i2 = opt.find("i2") != std::string::npos ; 
     bool i3 = opt.find("i3") != std::string::npos ; 
- 
+
+    int wi = 7 ; 
+    int pr = 2 ; 
 
     for(unsigned i=0 ; i < num_photon ; i++)
     {
@@ -762,74 +790,72 @@ void QSim<T>::dump_photon( quad4* photon, unsigned num_photon, const char* opt_,
         {
             const quad4& p = photon[i] ;  
 
-
-
             std::cout 
-                << std::setw(10) << i 
+                << std::setw(wi) << i 
                 ; 
 
             if(f0) std::cout 
-                << " q0.f.xyzw " 
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q0.f.x  
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q0.f.y
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q0.f.z  
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q0.f.w
+                << " f0 " 
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q0.f.x  
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q0.f.y
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q0.f.z  
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q0.f.w
                 ;
 
             if(f1) std::cout 
-                << " q1.f.xyzw " 
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.x  
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.y
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.z  
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q1.f.w
+                << " f1 " 
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q1.f.x  
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q1.f.y
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q1.f.z  
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q1.f.w
                 ;
 
             if(f2) std::cout 
-                << " q2.f.xyzw " 
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.x  
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.y
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.z  
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q2.f.w
+                << " f2 " 
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q2.f.x  
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q2.f.y
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q2.f.z  
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q2.f.w
                 ;
 
             if(f3) std::cout 
-                << " q3.f.xyzw " 
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q3.f.x  
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q3.f.y
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q3.f.z  
-                << std::setw(10) << std::fixed << std::setprecision(3) << p.q3.f.w
+                << " f3 " 
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q3.f.x  
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q3.f.y
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q3.f.z  
+                << std::setw(wi) << std::fixed << std::setprecision(pr) << p.q3.f.w
                 ;
 
             if(i0) std::cout 
-                << " q0.i.xyzw " 
-                << std::setw(10) << p.q0.i.x  
-                << std::setw(10) << p.q0.i.y
-                << std::setw(10) << p.q0.i.z  
-                << std::setw(10) << p.q0.i.w  
+                << " i0 " 
+                << std::setw(wi) << p.q0.i.x  
+                << std::setw(wi) << p.q0.i.y
+                << std::setw(wi) << p.q0.i.z  
+                << std::setw(wi) << p.q0.i.w  
                 ;
 
             if(i1) std::cout 
-                << " q1.i.xyzw " 
-                << std::setw(10) << p.q1.i.x  
-                << std::setw(10) << p.q1.i.y  
-                << std::setw(10) << p.q1.i.z  
-                << std::setw(10) << p.q1.i.w  
+                << " i1 " 
+                << std::setw(wi) << p.q1.i.x  
+                << std::setw(wi) << p.q1.i.y  
+                << std::setw(wi) << p.q1.i.z  
+                << std::setw(wi) << p.q1.i.w  
                 ;
 
             if(i2) std::cout
-                << " q2.i.xyzw " 
-                << std::setw(10) << p.q2.i.x  
-                << std::setw(10) << p.q2.i.y  
-                << std::setw(10) << p.q2.i.z  
-                << std::setw(10) << p.q2.i.w  
+                << " i2 " 
+                << std::setw(wi) << p.q2.i.x  
+                << std::setw(wi) << p.q2.i.y  
+                << std::setw(wi) << p.q2.i.z  
+                << std::setw(wi) << p.q2.i.w  
                 ;
 
             if(i3) std::cout
-                << " q3.i.xyzw " 
-                << std::setw(10) << p.q3.i.x  
-                << std::setw(10) << p.q3.i.y  
-                << std::setw(10) << p.q3.i.z  
-                << std::setw(10) << p.q3.i.w  
+                << " i3 " 
+                << std::setw(wi) << p.q3.i.x  
+                << std::setw(wi) << p.q3.i.y  
+                << std::setw(wi) << p.q3.i.z  
+                << std::setw(wi) << p.q3.i.w  
                 ;
       
             std::cout 
