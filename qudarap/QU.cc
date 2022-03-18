@@ -262,4 +262,15 @@ void QU::ConfigureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned wid
     numBlocks.z = 1 ; 
 }
 
+void QU::ConfigureLaunch16( dim3& numBlocks, dim3& threadsPerBlock ) // static
+{
+    threadsPerBlock.x = 16 ; 
+    threadsPerBlock.y = 1 ; 
+    threadsPerBlock.z = 1 ; 
+
+    numBlocks.x = 1 ; 
+    numBlocks.y = 1 ; 
+    numBlocks.z = 1 ; 
+}
+
 

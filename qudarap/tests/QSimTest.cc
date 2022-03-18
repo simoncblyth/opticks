@@ -1,5 +1,6 @@
 #include <sstream>
 
+#include <cuda_runtime.h>
 #include "OPTICKS_LOG.hh"
 
 #ifdef OLD
@@ -22,6 +23,48 @@
 #include "SEvent.hh"
 
 
+enum { 
+   UNKNOWN,
+   RNG_SEQUENCE_F,
+   WAVELENGTH_S,
+   WAVELENGTH_C,
+   SCINT_PHOTON_P,
+   CERENKOV_PHOTON_K,
+   CERENKOV_PHOTON_ENPROP_E,
+   CERENKOV_PHOTON_EXPT_X,
+   GENERATE_PHOTON_G,
+   BOUNDARY_LOOKUP_ALL_A,
+   BOUNDARY_LOOKUP_LINE_WATER_W,
+   BOUNDARY_LOOKUP_LINE_LS_L,
+   PROP_LOOKUP_Y,
+   FILL_STATE_T
+} ;
+ 
+unsigned TestType( const char* name )
+{
+   unsigned test = UNKNOWN ;  
+   if(strcmp(name,"F") == 0 ) test = RNG_SEQUENCE_F ; 
+   if(strcmp(name,"S") == 0 ) test = WAVELENGTH_S ; 
+   if(strcmp(name,"C") == 0 ) test = WAVELENGTH_C ;
+   if(strcmp(name,"P") == 0 ) test = SCINT_PHOTON_P ;
+   if(strcmp(name,"K") == 0 ) test = CERENKOV_PHOTON_K ;
+   if(strcmp(name,"E") == 0 ) test = CERENKOV_PHOTON_ENPROP_E ;
+   if(strcmp(name,"X") == 0 ) test = CERENKOV_PHOTON_EXPT_X ;
+   if(strcmp(name,"G") == 0 ) test = GENERATE_PHOTON_G ;
+   if(strcmp(name,"A") == 0 ) test = BOUNDARY_LOOKUP_ALL_A ;
+   if(strcmp(name,"L") == 0 ) test = BOUNDARY_LOOKUP_LINE_LS_L ;
+   if(strcmp(name,"Y") == 0 ) test = PROP_LOOKUP_Y ;
+
+   if(strcmp(name,"W") == 0 || strcmp(name,"water") == 0    )  test = BOUNDARY_LOOKUP_LINE_WATER_W ;
+   if(strcmp(name,"T") == 0 || strcmp(name,"fill_state") == 0) test = FILL_STATE_T ;
+   
+   bool known =  test != UNKNOWN  ;
+   if(!known) LOG(fatal) << " test name " << name << " is unknown " ; 
+   assert(known);  
+   return test ; 
+}
+
+
 template <typename T>
 struct QSimTest
 {
@@ -30,7 +73,7 @@ struct QSimTest
 
     QSim<T>& qs ; 
     QSimTest(QSim<T>& qs); 
-    void main(int argc, char** argv, char test); 
+    void main(int argc, char** argv, unsigned test); 
 
     void rng_sequence(unsigned ni, int ni_tranche_size); 
     void wavelength(char mode, unsigned num_wavelength) ; 
@@ -41,11 +84,10 @@ struct QSimTest
     void cerenkov_photon_expt(  unsigned num_photon, int print_id); 
 
     void generate_photon(); 
-
+    void fill_state(); 
 
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material, T x0, T x1, unsigned nx ); 
-
 
     void prop_lookup( int iprop, T x0, T x1, unsigned nx ); 
 
@@ -60,8 +102,6 @@ QSimTest<T>::QSimTest(QSim<T>& qs_)
     qs(qs_) 
 {
 }
-
-
 
 template <typename T>
 void QSimTest<T>::rng_sequence(unsigned ni, int ni_tranche_size_)
@@ -200,6 +240,16 @@ void QSimTest<T>::generate_photon()
 }
  
 
+template <typename T>
+void QSimTest<T>::fill_state()
+{
+    LOG(info) << "[" ; 
+
+    qs.fill_state(); 
+
+    LOG(info) << "]" ; 
+}
+
 
 /**
 QSimTest::boundary_lookup_all
@@ -307,8 +357,9 @@ void QSimTest<T>::prop_lookup( int iprop, T x0, T x1, unsigned nx )
 }
 
 
+
 template<typename T>
-void QSimTest<T>::main(int argc, char** argv, char test )
+void QSimTest<T>::main(int argc, char** argv, unsigned test )
 {
     unsigned num_default = SSys::getenvunsigned("NUM", 1000000u )  ;   
     unsigned num = argc > 1 ? std::atoi(argv[1]) : num_default ; 
@@ -323,26 +374,26 @@ void QSimTest<T>::main(int argc, char** argv, char test )
         << " print_id " << print_id
         ; 
 
-
     T x0 = 80. ; 
     T x1 = 800. ; 
     unsigned nx = 721u ; 
 
     switch(test)
     {
-        case 'F': rng_sequence(num, ni_tranche_size)         ; break ; 
-        case 'S': wavelength('S', num)                       ; break ; 
-        case 'C': wavelength('C', num)                       ; break ; 
-        case 'P': scint_photon(num);                         ; break ; 
-        case 'K': cerenkov_photon(num, print_id);            ; break ; 
-        case 'E': cerenkov_photon_enprop(num, print_id);     ; break ; 
-        case 'X': cerenkov_photon_expt(  num, print_id);     ; break ; 
-        case 'G': generate_photon();                         ; break ; 
-        case 'A': boundary_lookup_all()                      ; break ;  
-        case 'W': boundary_lookup_line("Water", x0, x1, nx)  ; break ;  
-        case 'L': boundary_lookup_line("LS",    x0, x1, nx)  ; break ;  
-        case 'Y': prop_lookup(-1, -1.f,16.f,1701)            ; break ;  
-        default : std::cout << "test unimplemented" << std::endl ; break ; 
+        case RNG_SEQUENCE_F:                rng_sequence(num, ni_tranche_size)         ; break ; 
+        case WAVELENGTH_S  :                wavelength('S', num)                       ; break ; 
+        case WAVELENGTH_C  :                wavelength('C', num)                       ; break ; 
+        case SCINT_PHOTON_P:                scint_photon(num);                         ; break ; 
+        case CERENKOV_PHOTON_K:             cerenkov_photon(num, print_id);            ; break ; 
+        case CERENKOV_PHOTON_ENPROP_E:      cerenkov_photon_enprop(num, print_id);     ; break ; 
+        case CERENKOV_PHOTON_EXPT_X :       cerenkov_photon_expt(  num, print_id);     ; break ; 
+        case GENERATE_PHOTON_G:             generate_photon();                         ; break ; 
+        case BOUNDARY_LOOKUP_ALL_A:         boundary_lookup_all()                      ; break ;  
+        case BOUNDARY_LOOKUP_LINE_WATER_W:  boundary_lookup_line("Water", x0, x1, nx)  ; break ;  
+        case BOUNDARY_LOOKUP_LINE_LS_L:     boundary_lookup_line("LS",    x0, x1, nx)  ; break ;  
+        case PROP_LOOKUP_Y:                 prop_lookup(-1, -1.f,16.f,1701)            ; break ;  
+        case FILL_STATE_T:                  fill_state()                               ; break ;  
+        default :                           std::cout << "unimplemented" << std::endl  ; break ; 
     }
 }
 
@@ -381,10 +432,12 @@ int main(int argc, char** argv)
         return 1 ; 
     }
 
-    char dtest = 'G' ; 
-    char test = SSys::getenvchar("TEST", dtest); 
+    const char* default_testname = "G" ; 
+    const char* testname = SSys::getenvvar("TEST", default_testname); 
+    int test = TestType(testname); 
+
     char type = SSys::getenvchar("TYPE", 'F'); 
-    if( test == 'X') type = 'D' ;   // forced double 
+    if( test == CERENKOV_PHOTON_EXPT_X ) type = 'D' ;   // forced double 
 
     if( type == 'F')
     { 
@@ -402,6 +455,6 @@ int main(int argc, char** argv)
         QSimTest<double> qst(qs) ; 
         qst.main( argc, argv, test ); 
     }
-
+    cudaDeviceSynchronize();
     return 0 ; 
 }

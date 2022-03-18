@@ -180,9 +180,11 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
 
     QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode, normalizedCoords ) ; 
 
-    /*    
+    /*
+    HMM : the bnd_meta is now boundary names, not domain ranges : need  to get ranges from elsewhere ?
+
+    // TODO?: pass the metadata when do MakeFloat, so do not have to remember to get the meta from the original double buf
     quad domainX ; 
-    // TODO: pass the metadata when do MakeFloat, so do not have to remember to get the meta from the original double buf
     domainX.f.x = dsrc->getMeta<float>("domain_low", "0" ); 
     domainX.f.y = dsrc->getMeta<float>("domain_high", "0" ); 
     domainX.f.z = dsrc->getMeta<float>("domain_step", "0" ); 
@@ -202,6 +204,7 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     btex->setMetaDomainX(&domainX); 
     btex->uploadMeta(); 
     */
+
 
     return btex ; 
 }

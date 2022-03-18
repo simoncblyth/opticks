@@ -76,8 +76,6 @@ QTex<T>::~QTex()
 {
     cudaDestroyTextureObject(texObj);
     cudaFreeArray(cuArray);
-
-
 }
 
 template<typename T>
@@ -92,6 +90,9 @@ void QTex<T>::init()
     meta->q0.u.z = 0 ; 
     meta->q0.u.w = 0 ; 
 }
+
+
+
 
 template<typename T>
 void QTex<T>::setMetaDomainX( const quad* domx )

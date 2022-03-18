@@ -71,6 +71,7 @@ struct qsim
 
     static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
  
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
     QSIM_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
@@ -122,6 +123,7 @@ struct qsim
 
 // TODO: get the below to work on CPU with mocked curand and tex2D
 
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
 /**
@@ -155,6 +157,8 @@ return float4 props
 template <typename T>
 inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, unsigned k )
 {
+    printf("//qsim.boundary_lookup nm %10.4f line %d k %d boundary_meta %p  \n", nm, line, k, boundary_meta  ); 
+
     const unsigned& nx = boundary_meta->q0.u.x  ; 
     const unsigned& ny = boundary_meta->q0.u.y  ; 
     const float& nm0 = boundary_meta->q1.f.x ; 
@@ -163,8 +167,11 @@ inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, uns
     float fx = (nm - nm0)/nms ;  
     float x = (fx+0.5f)/float(nx) ;   // ?? +0.5f ??
 
+    //printf("//qsim.boundary_lookup nm %10.4f x %10.4f nx %d \n", nm, x, nx ); 
+
     unsigned iy = _BOUNDARY_NUM_FLOAT4*line + k ;   
     float y = (float(iy)+0.5f)/float(ny) ; 
+
 
     float4 props = tex2D<float4>( boundary_tex, x, y );     
     return props ; 
@@ -215,7 +222,11 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavel
     const int m2_line = cosTheta > 0.f ? line + OMAT : line + IMAT ;   
     const int su_line = cosTheta > 0.f ? line + ISUR : line + OSUR ;   
 
+    printf("//qsim.fill_state boundary %d line %d wavelength %10.4f m1_line %d \n", boundary, line, wavelength, m1_line ); 
+
     s.material1 = boundary_lookup( wavelength, m1_line, 0);  
+
+/*
     s.m1group2  = boundary_lookup( wavelength, m1_line, 1);  
     s.material2 = boundary_lookup( wavelength, m2_line, 0); 
     s.surface   = boundary_lookup( wavelength, su_line, 0);    
@@ -224,6 +235,7 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavel
     s.index.x = optical[m1_line].u.x ; // m1 index
     s.index.y = optical[m2_line].u.x ; // m2 index 
     s.index.z = optical[su_line].u.x ; // su index
+*/
 
     //s.identity = identity ;   // feels pointless holding identity here, as already in callers scope : eg OptiX7Test.cu:simulate : so remove ?
 }

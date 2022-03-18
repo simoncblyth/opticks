@@ -31,6 +31,10 @@ struct qstate
    float4 way1 ;   
 #endif
 
+
 };
+
+
+
 
 

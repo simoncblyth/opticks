@@ -183,6 +183,9 @@ qsim<T>* QSim<T>::init_upload()
         LOG(LEVEL) << " bnd " << bnd->desc() ; 
         sim->boundary_tex = bnd->tex->texObj ; 
         sim->boundary_meta = bnd->tex->d_meta ; 
+
+        assert( sim->boundary_meta != nullptr ); 
+
         sim->boundary_tex_MaterialLine_Water = bnd->getMaterialLine("Water") ; 
         sim->boundary_tex_MaterialLine_LS    = bnd->getMaterialLine("LS") ; 
     } 
@@ -248,6 +251,19 @@ void QSim<T>::configureLaunch2D(unsigned width, unsigned height )
 {
     QU::ConfigureLaunch2D(numBlocks, threadsPerBlock, width, height); 
 }
+
+template<typename T>
+void QSim<T>::configureLaunch16() 
+{
+    QU::ConfigureLaunch16(numBlocks, threadsPerBlock); 
+}
+
+
+
+
+
+
+
 
 
 /**
@@ -578,6 +594,22 @@ void QSim<T>::generate_photon(QEvent* evt)
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+
+template <typename T>
+extern void QSim_fill_state(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim ); 
+
+template <typename T>
+void QSim<T>::fill_state()
+{
+    assert( d_sim ); 
+
+    configureLaunch16(); 
+
+    QSim_fill_state(numBlocks, threadsPerBlock, d_sim );  
+}
+
 
 
 

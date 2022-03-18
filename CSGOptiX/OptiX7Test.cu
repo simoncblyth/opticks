@@ -386,6 +386,12 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 
 }
 
+
+
+
+
+
+
 /**
 float cos_theta = dot(normal,direction);
 

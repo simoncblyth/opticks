@@ -73,6 +73,7 @@ struct QUDARAP_API QSim
 
     // TODO : split these off into separate individially testable objects 
 
+    void configureLaunch16();
     void configureLaunch( unsigned width, unsigned height );
     void configureLaunch2D( unsigned width, unsigned height );
 
@@ -93,6 +94,7 @@ struct QUDARAP_API QSim
     void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 
 
     void generate_photon(QEvent* evt); 
+    void fill_state(); 
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;

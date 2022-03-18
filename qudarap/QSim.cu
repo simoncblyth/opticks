@@ -295,9 +295,38 @@ template void QSim_generate_photon(dim3, dim3, qsim<float>*,  qevent* );
 
 
 
+template <typename T>
+__global__ void _QSim_fill_state(qsim<T>* sim )
+{
+    unsigned photon_id = blockIdx.x*blockDim.x + threadIdx.x;
+    printf("//_QSim_fill_state photon_id %d \n", photon_id ); 
+
+    if (photon_id >= 10) return;
+
+    qstate s ; 
+
+    int boundary = 1 ; 
+    float wavelength = 500.f ; 
+    float cosTheta = 0.5f ; 
+
+    printf("//_QSim_fill_state photon_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", photon_id, boundary, wavelength, cosTheta );  
+
+    sim->fill_state(s, boundary, wavelength, cosTheta ); 
+
+    //printf("//_QSim_fill_state s.material1 %10.4f %10.4f %10.4f %10.4f \n", s.material1.x, s.material1.y, s.material1.z, s.material1.w ); 
+
+}
+
+template <typename T>
+extern void QSim_fill_state(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim )
+{
+    printf("//QSim_fill_state sim %p here \n", sim ); 
+    _QSim_fill_state<T><<<numBlocks,threadsPerBlock>>>( sim );
+} 
 
 
-
+template void QSim_fill_state(dim3, dim3, qsim<double>* ); 
+template void QSim_fill_state(dim3, dim3, qsim<float>*  ); 
 
 
 
