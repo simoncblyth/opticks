@@ -92,8 +92,6 @@ void QTex<T>::init()
 }
 
 
-
-
 template<typename T>
 void QTex<T>::setMetaDomainX( const quad* domx )
 {

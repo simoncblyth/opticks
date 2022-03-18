@@ -201,10 +201,16 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     assert( domainX.f.z > 0.f ); 
     assert( domainX.f.w == domainX.f.y - domainX.f.x ); 
 
-    btex->setMetaDomainX(&domainX); 
-    btex->uploadMeta(); 
     */
 
+    quad domainX ;   // dummy placeholders     
+    domainX.f.x = 0.f ; 
+    domainX.f.y = 0.f ; 
+    domainX.f.z = 1.f ; 
+    domainX.f.w = 0.f ; 
+
+    btex->setMetaDomainX(&domainX); 
+    btex->uploadMeta(); 
 
     return btex ; 
 }
@@ -273,7 +279,7 @@ void QBnd::lookup( quad* lookup, unsigned num_lookup, unsigned width, unsigned h
 
     if( tex->d_meta == nullptr )
     {
-        tex->uploadMeta(); 
+        tex->uploadMeta();    // TODO: not a good place to do this, needs to be more standard
     }
     assert( tex->d_meta != nullptr && "must QTex::uploadMeta() before lookups" );
 

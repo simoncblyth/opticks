@@ -179,8 +179,14 @@ struct NP
     static bool Exists(const char* path);   
     int load(const char* dir, const char* name);   
     int load(const char* path);   
-    int load_meta( const char* path ); 
-    void save_meta(const char* path) const ;  
+
+    int load_string_( const char* path, const char* ext, std::string& str ); 
+    int load_meta(  const char* path ); 
+    int load_names( const char* path ); 
+
+    void save_string_(const char* path, const char* ext, const std::string& str ) const ; 
+    void save_meta( const char* path) const ;  
+    void save_names(const char* path) const ;  
 
     static std::string form_name(const char* stem, const char* ext); 
     static std::string form_path(const char* dir, const char* name);   
@@ -204,6 +210,11 @@ struct NP
 
     void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
     void get_meta( std::vector<std::string>& lines,       char delim='\n' ) const ; 
+
+    void set_names( const std::vector<std::string>& lines, char delim='\n' ); 
+    void get_names( std::vector<std::string>& lines,       char delim='\n' ) const ; 
+
+
 
     static std::string               get_meta_string_(const char* metadata, const char* key);  
     static std::string               get_meta_string( const std::string& meta, const char* key) ;  
@@ -231,6 +242,7 @@ struct NP
     std::vector<char> data ; 
     std::vector<int>  shape ; 
     std::string       meta ; 
+    std::string       names ; 
 
     // non-persisted transients, set on loading 
     std::string lpath ; 
@@ -2219,6 +2231,30 @@ inline void NP::get_meta( std::vector<std::string>& lines, char delim  ) const
 }
 
 
+
+inline void NP::set_names( const std::vector<std::string>& lines, char delim )
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < lines.size() ; i++) ss << lines[i] << delim  ; 
+    names = ss.str(); 
+}
+
+inline void NP::get_names( std::vector<std::string>& lines, char delim  ) const 
+{
+    if(names.empty()) return ; 
+
+    std::stringstream ss ; 
+    ss.str(names.c_str())  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) lines.push_back(s) ; 
+}
+
+
+
+
+
+
+
 /**
 NP::get_meta_string_
 ----------------------
@@ -2734,14 +2770,15 @@ inline int NP::load(const char* path)
     fp.read(bytes(), arr_bytes() );
 
     load_meta( path ); 
+    load_names( path ); 
 
     return 0 ; 
 }
 
-inline int NP::load_meta( const char* path )
+inline int NP::load_string_( const char* path, const char* ext, std::string& str )
 {
-    std::string metapath = U::ChangeExt(path, ".npy", "_meta.txt"); 
-    std::ifstream fp(metapath.c_str(), std::ios::in);
+    std::string str_path = U::ChangeExt(path, ".npy", ext ); 
+    std::ifstream fp(str_path.c_str(), std::ios::in);
     if(fp.fail()) return 1 ; 
 
     std::stringstream ss ;                       
@@ -2750,20 +2787,26 @@ inline int NP::load_meta( const char* path )
     {
         ss << line << std::endl ;   // getline swallows new lines  
     }
-    meta = ss.str(); 
+    str = ss.str(); 
     return 0 ; 
 }
 
-inline void NP::save_meta(const char* path) const 
+inline int NP::load_meta(  const char* path ){  return load_string_( path, "_meta.txt",  meta  ) ; }
+inline int NP::load_names( const char* path ){  return load_string_( path, "_names.txt", names ) ; }
+
+
+
+inline void NP::save_string_(const char* path, const char* ext, const std::string& str ) const 
 {
-    if(meta.empty()) return ; 
-    std::string metapath = U::ChangeExt(path, ".npy", "_meta.txt"); 
-    std::cout << "NP::save_meta metapath [" << metapath  << "]" << std::endl ; 
-    std::ofstream fpm(metapath.c_str(), std::ios::out);
-    fpm << meta ;  
+    if(str.empty()) return ; 
+    std::string str_path = U::ChangeExt(path, ".npy", ext ); 
+    std::cout << "NP::save_string_ str_path [" << str_path  << "]" << std::endl ; 
+    std::ofstream fps(str_path.c_str(), std::ios::out);
+    fps << str ;  
 }
 
-
+inline void NP::save_meta( const char* path) const { save_string_(path, "_meta.txt",  meta  );  }
+inline void NP::save_names(const char* path) const { save_string_(path, "_names.txt", names );  }
 
 
 inline void NP::save_header(const char* path)
@@ -2792,7 +2835,8 @@ inline void NP::save(const char* path, bool verbose) const
     fpa << hdr ; 
     fpa.write( bytes(), arr_bytes() );
 
-    save_meta(path); 
+    save_meta( path); 
+    save_names(path); 
 }
 
 inline void NP::save(const char* dir, const char* reldir, const char* name) const 

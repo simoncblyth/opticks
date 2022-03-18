@@ -177,7 +177,8 @@ void CSG_GGeo_Convert::convertBndLib()
         optical = blib->getOpticalBuf();  
 
         const std::vector<std::string>& bndnames = blib->getNameList(); 
-        bnd->set_meta( bndnames );  
+        bnd->set_names( bndnames );  
+
     }
     else
     {

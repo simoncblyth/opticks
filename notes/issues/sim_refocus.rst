@@ -59,5 +59,23 @@ optical_buffer
 
 
 
+bnd domain range rejig
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+bnd lookups failing for lack of domain metadata
+
+Suspect the domain metadata is getting stomped on by boundary names::
+
+    epsilon:tests blyth$ opticks-f domain_low
+    ./ggeo/GBndLib.cc:    float domain_low = dom.x ; 
+    ./ggeo/GBndLib.cc:    wav->setMeta("domain_low",   domain_low ); 
+    ./qudarap/QBnd.cc:    domainX.f.x = dsrc->getMeta<float>("domain_low", "0" ); 
+    ./qudarap/QBnd.cc:        << " domain_low " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.x  
+    epsilon:opticks blyth$ 
+
+Avoid the stomping by adding set_names/get_names to NP
+
+
+
 
 

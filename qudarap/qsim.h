@@ -153,11 +153,36 @@ k   :  property group index 0/1
 
 return float4 props 
 
+boundary_meta is required to configure access to the texture, 
+it is uploaded by QTex::uploadMeta but requires calls to 
+
+
+QTex::init automatically sets these from tex dimensions
+
+   q0.u.x : nx width  (eg wavelength dimension)
+   q0.u.y : ny hright (eg line dimension)
+
+QTex::setMetaDomainX::
+
+   q1.f.x : nm0  wavelength minimum in nm 
+   q1.f.y : -
+   q1.f.z : nms  wavelength step size in nm   
+
+QTex::setMetaDomainY::
+
+   q2.f.x : 
+   q2.f.y :
+   q2.f.z :
+
+
+
+
+
 **/
 template <typename T>
 inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, unsigned k )
 {
-    printf("//qsim.boundary_lookup nm %10.4f line %d k %d boundary_meta %p  \n", nm, line, k, boundary_meta  ); 
+    //printf("//qsim.boundary_lookup nm %10.4f line %d k %d boundary_meta %p  \n", nm, line, k, boundary_meta  ); 
 
     const unsigned& nx = boundary_meta->q0.u.x  ; 
     const unsigned& ny = boundary_meta->q0.u.y  ; 
@@ -167,7 +192,7 @@ inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, uns
     float fx = (nm - nm0)/nms ;  
     float x = (fx+0.5f)/float(nx) ;   // ?? +0.5f ??
 
-    //printf("//qsim.boundary_lookup nm %10.4f x %10.4f nx %d \n", nm, x, nx ); 
+    printf("//qsim.boundary_lookup nm %10.4f nm0 %10.4f nms %10.4f  x %10.4f nx %d \n", nm, nm0, nms, x, nx ); 
 
     unsigned iy = _BOUNDARY_NUM_FLOAT4*line + k ;   
     float y = (float(iy)+0.5f)/float(ny) ; 
