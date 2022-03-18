@@ -203,10 +203,10 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavel
     s.material2 = boundary_lookup( wavelength, m2_line, 0); 
     s.surface   = boundary_lookup( wavelength, su_line, 0);    
 
-    s.optical = optical[su_line] ;   // index/type/finish/value
-    s.index.x = optical[m1_line].x ; // m1 index
-    s.index.y = optical[m2_line].x ; // m2 index 
-    s.index.z = optical[su_line].x ; // su index
+    s.optical = optical[su_line].u ;   // index/type/finish/value
+    s.index.x = optical[m1_line].u.x ; // m1 index
+    s.index.y = optical[m2_line].u.x ; // m2 index 
+    s.index.z = optical[su_line].u.x ; // su index
 
     //s.identity = identity ;   // feels pointless holding identity here, as already in callers scope : eg OptiX7Test.cu:simulate : so remove ?
 }

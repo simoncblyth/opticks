@@ -27,6 +27,21 @@ union quad
 };
 
 
+inline unsigned int_as_unsigned( int value )
+{
+   UIF uif ; 
+   uif.i = value ; 
+   return uif.u ; 
+}
+
+inline int unsigned_as_int( unsigned value )
+{
+   UIF uif ; 
+   uif.u = value ; 
+   return uif.i ; 
+}
+
+
 
 struct quad4 
 { 

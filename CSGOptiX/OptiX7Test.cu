@@ -141,12 +141,13 @@ static __forceinline__ __device__ void trace(
             p4, p5, p6, p7
             );
 
+    // its unclear where the uint_as_float is defined, seems from optix7.h 
     normal->x = uint_as_float( p0 );
     normal->y = uint_as_float( p1 );
     normal->z = uint_as_float( p2 );
     *t        = uint_as_float( p3 ); 
     *identity = p4 ; 
-    *boundary = p5 ; 
+    *boundary = unsigned_as_int( p5 ) ;   // from squad.h  
     *spare1   = uint_as_float( p6 ); 
     *spare2   = uint_as_float( p7 ); 
 }
@@ -306,6 +307,7 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     float t = prd->t ; 
     const float3& normal = prd->normal ; 
     unsigned identity = prd->identity ;  
+    int boundary = prd->boundary ; 
 #else
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
@@ -330,9 +332,8 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 
 #endif
 
-
-    sim->fill_state(s, boundary 
-
+    const float& wavelength = p.q2.f.w ; 
+    sim->fill_state(s, boundary, wavelength ); 
 
 
 

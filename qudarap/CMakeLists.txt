@@ -84,6 +84,8 @@ SET(HEADERS
     QTexMaker.hh
     QTexLookup.hh
 
+    qstate.h
+
     qbnd.h
     QBnd.hh
     QOptical.hh
