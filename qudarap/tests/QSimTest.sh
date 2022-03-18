@@ -1,5 +1,6 @@
 #!/bin/bash -l 
 
+#export QBnd=INFO
 
 test=fill_state
 #test=water

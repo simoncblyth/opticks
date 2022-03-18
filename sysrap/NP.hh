@@ -122,6 +122,8 @@ struct NP
     template<typename T> void _dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ;   
 
 
+    static void CopyMeta( NP* b, const NP* a ); 
+
     static NP* MakeLike(  const NP* src);  
     static NP* MakeNarrow(const NP* src); 
     static NP* MakeWide(  const NP* src); 
@@ -775,14 +777,21 @@ inline NP* NP::MakeLike(const NP* src) // static
     return dst ; 
 }
 
+inline void NP::CopyMeta( NP* b, const NP* a ) // static
+{
+    b->set_shape( a->shape ); 
+    b->meta = a->meta ;    // pass along the metadata 
+    b->names = a->names ; 
+}
+
+
 inline NP* NP::MakeNarrow(const NP* a) // static 
 {
     assert( a->ebyte == 8 ); 
     std::string b_dtype = NPU::_make_narrow(a->dtype); 
 
     NP* b = new NP(b_dtype.c_str()); 
-    b->set_shape( a->shape ); 
-    b->meta = a->meta ;  // pass along the metadata 
+    CopyMeta(b, a ); 
 
     assert( a->num_values() == b->num_values() ); 
     unsigned nv = a->num_values(); 
@@ -807,14 +816,13 @@ inline NP* NP::MakeNarrow(const NP* a) // static
     return b ; 
 }
 
-
 inline NP* NP::MakeWide(const NP* a) // static 
 {
     assert( a->ebyte == 4 ); 
     std::string b_dtype = NPU::_make_wide(a->dtype); 
 
     NP* b = new NP(b_dtype.c_str()); 
-    b->set_shape( a->shape ); 
+    CopyMeta(b, a ); 
 
     assert( a->num_values() == b->num_values() ); 
     unsigned nv = a->num_values(); 
@@ -842,7 +850,8 @@ inline NP* NP::MakeWide(const NP* a) // static
 inline NP* NP::MakeCopy(const NP* a) // static 
 {
     NP* b = new NP(a->dtype); 
-    b->set_shape( a->shape ); 
+    CopyMeta(b, a ); 
+
     assert( a->arr_bytes() == b->arr_bytes() ); 
 
     memcpy( b->bytes(), a->bytes(), a->arr_bytes() );    

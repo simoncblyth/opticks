@@ -33,7 +33,7 @@ QBnd::QBnd(const NP* buf)
     src(buf->ebyte == 4 ? buf : NP::MakeNarrow(dsrc)),
     tex(MakeBoundaryTex(src))
 {
-    buf->get_meta(bnames) ;  // vector of string from NP metadata
+    buf->get_names(bnames) ;  // vector of string from NP metadata
 
     std::cout << "QBnd::QBnd bnames " << bnames.size() << std::endl ; 
     for(unsigned i=0 ; i < bnames.size() ; i++) std::cout << bnames[i] << std::endl ; 
@@ -180,15 +180,11 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
 
     QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode, normalizedCoords ) ; 
 
-    /*
-    HMM : the bnd_meta is now boundary names, not domain ranges : need  to get ranges from elsewhere ?
-
-    // TODO?: pass the metadata when do MakeFloat, so do not have to remember to get the meta from the original double buf
     quad domainX ; 
-    domainX.f.x = dsrc->getMeta<float>("domain_low", "0" ); 
-    domainX.f.y = dsrc->getMeta<float>("domain_high", "0" ); 
-    domainX.f.z = dsrc->getMeta<float>("domain_step", "0" ); 
-    domainX.f.w = dsrc->getMeta<float>("domain_range", "0" ); 
+    domainX.f.x = buf->get_meta<float>("domain_low",   0.f ); 
+    domainX.f.y = buf->get_meta<float>("domain_high",  0.f ); 
+    domainX.f.z = buf->get_meta<float>("domain_step",  0.f ); 
+    domainX.f.w = buf->get_meta<float>("domain_range", 0.f ); 
 
     LOG(LEVEL)
         << " domain_low " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.x  
@@ -200,14 +196,6 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     assert( domainX.f.y > domainX.f.x ); 
     assert( domainX.f.z > 0.f ); 
     assert( domainX.f.w == domainX.f.y - domainX.f.x ); 
-
-    */
-
-    quad domainX ;   // dummy placeholders     
-    domainX.f.x = 0.f ; 
-    domainX.f.y = 0.f ; 
-    domainX.f.z = 1.f ; 
-    domainX.f.w = 0.f ; 
 
     btex->setMetaDomainX(&domainX); 
     btex->uploadMeta(); 

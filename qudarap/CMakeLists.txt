@@ -21,6 +21,8 @@ set(SOURCES
     QEvent.cc
     QEvent.cu
 
+    QDebug.cc
+
     QU.cc
 
     QRng.cc  
@@ -75,6 +77,9 @@ SET(HEADERS
  
     QEvent.hh
     qevent.h
+
+    QDebug.hh
+    qdebug.h
 
     QU.hh
     QRng.hh

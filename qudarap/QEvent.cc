@@ -132,6 +132,7 @@ qevent* QEvent::getDevicePtr() const
 {
     return d_evt ; 
 }
+
 unsigned QEvent::getNumPhotons() const
 {
     return evt->num_photon ; 

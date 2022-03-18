@@ -10,6 +10,7 @@
 
 #include "qrng.h"
 #include "qsim.h"
+#include "qdebug.h"
 
 #include "QRng.hh"
 #include "QTex.hh"
@@ -17,6 +18,7 @@
 #include "QBnd.hh"
 #include "QProp.hh"
 #include "QEvent.hh"
+#include "QDebug.hh"
 #include "QOptical.hh"
 
 #include "QSim.hh"
@@ -124,7 +126,9 @@ QSim<T>::QSim()
     optical(QOptical::Get()),
     prop(QProp<T>::Get()),
     sim(new qsim<T>),
-    d_sim(init_upload())
+    d_sim(init_upload()),
+    dbg(new qdebug), 
+    d_dbg(init_debug())
 {
     INSTANCE = this ; 
     LOG(LEVEL) << desc() ; 
@@ -211,6 +215,14 @@ qsim<T>* QSim<T>::getDevicePtr() const
     return d_sim ; 
 }
  
+template <typename T>
+qdebug* QSim<T>::init_debug()
+{
+    qdebug* dev_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
+    return dev_dbg ;  
+}
+
+
 
 
 
@@ -598,16 +610,19 @@ void QSim<T>::generate_photon(QEvent* evt)
 
 
 template <typename T>
-extern void QSim_fill_state(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim ); 
+extern void QSim_fill_state(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qdebug* dbg ); 
 
 template <typename T>
-void QSim<T>::fill_state()
+void QSim<T>::fill_state(QDebug* dbg)
 {
+    qdebug* d_dbg = dbg->getDevicePtr(); 
+
     assert( d_sim ); 
+    assert( d_dbg ); 
 
     configureLaunch16(); 
 
-    QSim_fill_state(numBlocks, threadsPerBlock, d_sim );  
+    QSim_fill_state(numBlocks, threadsPerBlock, d_sim, d_dbg  );  
 }
 
 

@@ -8,6 +8,7 @@
 #include "qprop.h"
 #include "qrng.h"
 #include "qevent.h"
+#include "qdebug.h"
 
 
 template <typename T> 
@@ -95,6 +96,7 @@ template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array,
 template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items) ;
 template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items) ;
 template qevent*        QU::UploadArray<qevent>(const qevent* array, unsigned num_items) ;
+template qdebug*        QU::UploadArray<qdebug>(const qdebug* array, unsigned num_items) ;
 
 
 /**
@@ -177,6 +179,7 @@ template unsigned*  QU::device_alloc<unsigned>(unsigned num_items) ;
 template quad*      QU::device_alloc<quad>(unsigned num_items) ;
 template quad4*     QU::device_alloc<quad4>(unsigned num_items) ;
 template qevent*    QU::device_alloc<qevent>(unsigned num_items) ;
+template qdebug*    QU::device_alloc<qdebug>(unsigned num_items) ;
 
 
 

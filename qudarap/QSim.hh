@@ -38,6 +38,10 @@ struct QScint ;
 struct QBnd ; 
 struct QOptical ; 
 struct QEvent ; 
+struct QDebug ; 
+
+
+struct qdebug ; 
 
 struct quad4 ; 
 union  quad ; 
@@ -61,12 +65,19 @@ struct QUDARAP_API QSim
     qsim<T>*          sim ;  
     qsim<T>*          d_sim ;  
 
+    // HMM: these shoud be hidden away inside QDebug 
+    qdebug*           dbg ; 
+    qdebug*           d_dbg ; 
+
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
 
     QSim();
     qsim<T>* init_upload(); 
     qsim<T>* getDevicePtr() const ; 
+
+    qdebug*  init_debug(); 
+
 
     char getScintTexFilterMode() const ;
     std::string desc() const ; 
@@ -94,7 +105,7 @@ struct QUDARAP_API QSim
     void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 
 
     void generate_photon(QEvent* evt); 
-    void fill_state(); 
+    void fill_state(QDebug* dbg); 
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;

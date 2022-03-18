@@ -13,6 +13,7 @@ MORE EASILY TESTED FROM MULTIPLE ENVIRONMENTS HEADERS
 #include "qsim.h"
 #include "qcurand.h"
 #include "qevent.h"
+#include "qdebug.h"
 
 
 /**
@@ -296,7 +297,7 @@ template void QSim_generate_photon(dim3, dim3, qsim<float>*,  qevent* );
 
 
 template <typename T>
-__global__ void _QSim_fill_state(qsim<T>* sim )
+__global__ void _QSim_fill_state(qsim<T>* sim, qdebug* dbg )
 {
     unsigned photon_id = blockIdx.x*blockDim.x + threadIdx.x;
     printf("//_QSim_fill_state photon_id %d \n", photon_id ); 
@@ -305,7 +306,7 @@ __global__ void _QSim_fill_state(qsim<T>* sim )
 
     qstate s ; 
 
-    int boundary = 1 ; 
+    int boundary = photon_id + 1 ; 
     float wavelength = 500.f ; 
     float cosTheta = 0.5f ; 
 
@@ -313,20 +314,27 @@ __global__ void _QSim_fill_state(qsim<T>* sim )
 
     sim->fill_state(s, boundary, wavelength, cosTheta ); 
 
+    dbg->state[photon_id].q0.f = s.material1 ; 
+    dbg->state[photon_id].q1.f = s.m1group2 ; 
+    dbg->state[photon_id].q2.f = s.material2 ; 
+    dbg->state[photon_id].q3.f = s.surface ; 
+    dbg->state[photon_id].q4.u = s.optical ; 
+    dbg->state[photon_id].q5.u = s.index ; 
+
     //printf("//_QSim_fill_state s.material1 %10.4f %10.4f %10.4f %10.4f \n", s.material1.x, s.material1.y, s.material1.z, s.material1.w ); 
 
 }
 
 template <typename T>
-extern void QSim_fill_state(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim )
+extern void QSim_fill_state(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qdebug* dbg )
 {
-    printf("//QSim_fill_state sim %p here \n", sim ); 
-    _QSim_fill_state<T><<<numBlocks,threadsPerBlock>>>( sim );
+    printf("//QSim_fill_state sim %p dbg %p \n", sim, dbg); 
+    _QSim_fill_state<T><<<numBlocks,threadsPerBlock>>>( sim, dbg );
 } 
 
 
-template void QSim_fill_state(dim3, dim3, qsim<double>* ); 
-template void QSim_fill_state(dim3, dim3, qsim<float>*  ); 
+template void QSim_fill_state(dim3, dim3, qsim<double>*, qdebug* ); 
+template void QSim_fill_state(dim3, dim3, qsim<float>* , qdebug* ); 
 
 
 

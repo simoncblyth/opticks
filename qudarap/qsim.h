@@ -192,13 +192,15 @@ inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, uns
     float fx = (nm - nm0)/nms ;  
     float x = (fx+0.5f)/float(nx) ;   // ?? +0.5f ??
 
-    printf("//qsim.boundary_lookup nm %10.4f nm0 %10.4f nms %10.4f  x %10.4f nx %d \n", nm, nm0, nms, x, nx ); 
-
     unsigned iy = _BOUNDARY_NUM_FLOAT4*line + k ;   
     float y = (float(iy)+0.5f)/float(ny) ; 
 
 
     float4 props = tex2D<float4>( boundary_tex, x, y );     
+
+    // printf("//qsim.boundary_lookup nm %10.4f nm0 %10.4f nms %10.4f  x %10.4f nx %d ny %d y %10.4f props.x %10.4f %10.4f %10.4f %10.4f  \n",
+    //     nm, nm0, nms, x, nx, ny, y, props.x, props.y, props.z, props.w ); 
+
     return props ; 
 }
 
@@ -247,11 +249,9 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavel
     const int m2_line = cosTheta > 0.f ? line + OMAT : line + IMAT ;   
     const int su_line = cosTheta > 0.f ? line + ISUR : line + OSUR ;   
 
-    printf("//qsim.fill_state boundary %d line %d wavelength %10.4f m1_line %d \n", boundary, line, wavelength, m1_line ); 
+    //printf("//qsim.fill_state boundary %d line %d wavelength %10.4f m1_line %d \n", boundary, line, wavelength, m1_line ); 
 
     s.material1 = boundary_lookup( wavelength, m1_line, 0);  
-
-/*
     s.m1group2  = boundary_lookup( wavelength, m1_line, 1);  
     s.material2 = boundary_lookup( wavelength, m2_line, 0); 
     s.surface   = boundary_lookup( wavelength, su_line, 0);    
@@ -260,7 +260,8 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavel
     s.index.x = optical[m1_line].u.x ; // m1 index
     s.index.y = optical[m2_line].u.x ; // m2 index 
     s.index.z = optical[su_line].u.x ; // su index
-*/
+
+    //printf("//qsim.fill_state \n"); 
 
     //s.identity = identity ;   // feels pointless holding identity here, as already in callers scope : eg OptiX7Test.cu:simulate : so remove ?
 }

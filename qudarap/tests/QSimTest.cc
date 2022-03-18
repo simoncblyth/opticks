@@ -20,6 +20,9 @@
 #include "QProp.hh"
 #include "QSim.hh"
 #include "QEvent.hh"
+#include "QDebug.hh"
+
+
 #include "SEvent.hh"
 
 
@@ -245,7 +248,12 @@ void QSimTest<T>::fill_state()
 {
     LOG(info) << "[" ; 
 
-    qs.fill_state(); 
+    QDebug* dbg = new QDebug ; 
+
+    qs.fill_state(dbg); 
+
+    // TODO: arrange for downloading the state following qevent downloading 
+
 
     LOG(info) << "]" ; 
 }
