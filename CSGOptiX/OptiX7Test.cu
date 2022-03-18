@@ -112,7 +112,7 @@ static __forceinline__ __device__ void trace(
         float3*                normal, 
         float*                 t, 
         unsigned*              identity,
-        unsigned*              boundary,
+        int*                   boundary,
         float*                 spare1,
         float*                 spare2
         )   // pure 
@@ -214,7 +214,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
     unsigned identity = 0u ; 
-    unsigned boundary = 0u ; 
+    int boundary = 0 ; 
     float spare1 = 0.f ; 
     float spare2 = 0.f ; 
 
@@ -286,6 +286,8 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 
 
     quad4 p ;   
+    qstate s ; 
+
     sim->generate_photon(p, rng, gs, photon_id, genstep_id );  
 
     float3 origin    = make_float3( p.q0.f.x, p.q0.f.y, p.q0.f.z ) ; 
@@ -308,7 +310,7 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
     unsigned identity = 0u ; 
-    unsigned boundary = 0u ; 
+    int boundary = 0 ; 
     float spare1 = 0.f ; 
     float spare2 = 0.f ; 
 
@@ -327,6 +329,11 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     );
 
 #endif
+
+
+    sim->fill_state(s, boundary 
+
+
 
 
     // transform (x,z) intersect position into pixel coordinates (ix,iz)

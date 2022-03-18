@@ -60,7 +60,10 @@ list(APPEND HEADERS
 )
 
 if(OpticksOptiX_VERSION GREATER_EQUAL 70000)
-   list(APPEND CU_SOURCES OptiX7Test.cu)
+   list(APPEND CU_SOURCES 
+        OptiX7Test.cu
+        Check.cu
+    )
    list(APPEND SOURCES  
         Frame.cc 
         Ctx.cc 

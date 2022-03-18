@@ -14,13 +14,17 @@
 #include "qgs.h"
 #include "qprop.h"
 #include "qcurand.h"
+#include "qstate.h"
 
 /**
-qsim
-=====
+qsim.h : GPU side struct prepared CPU side by QSim.hh
+========================================================
 
-NB this is uploaded once only at CSGOptiX instanciation 
-as its state encompasses the physics not the event-by-event by info
+Canonical use is from CSGOptiX/OptiX7Test.cu:simulate 
+
+The qsim.h instance is uploaded once only at CSGOptiX instanciation 
+as this encompasses the physics not the event-by-event info.
+
 
 This is aiming to replace the OptiX 6 context in a CUDA-centric way.
 
@@ -95,6 +99,7 @@ struct qsim
     QSIM_METHOD void    generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
     QSIM_METHOD void    generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
+    QSIM_METHOD void    fill_state(qstate& s, int boundary, float wavelength,  const unsigned& identity ); 
 
 #else
     qsim()
@@ -162,6 +167,54 @@ inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, uns
     float4 props = tex2D<float4>( boundary_tex, x, y );     
     return props ; 
 }
+
+/**
+qsim::fill_state
+-------------------
+
+pick relevant boundary_tex lines depening on boundary sign, ie photon direction relative to normal
+
+For example consider photons arriving at PMT cathode surface geometry normals point outwards 
+so boundary sign will be -ve making line+OSUR the relevant surface
+
+boundary 
+   1 based code, signed by cos_theta of photon direction to outward geometric normal
+   >0 outward going photon
+   <0 inward going photon
+
+NB the line is above the details of the payload (ie how many float4 per matsur) it is just::
+ 
+    boundaryIndex*4  + 0/1/2/3     for OMAT/OSUR/ISUR/IMAT 
+
+**/
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavelength )
+{
+    const int line = ( boundary > 0 ? (boundary - 1) : (-boundary - 1) )*_BOUNDARY_NUM_FLOAT4 ;   
+    const int m1_line = boundary > 0 ? line + IMAT : line + OMAT ;   
+    const int m2_line = boundary > 0 ? line + OMAT : line + IMAT ;   
+    const int su_line = boundary > 0 ? line + ISUR : line + OSUR ;   
+
+    s.material1 = boundary_lookup( wavelength, m1_line, 0);  
+    s.m1group2  = boundary_lookup( wavelength, m1_line, 1);  
+    s.material2 = boundary_lookup( wavelength, m2_line, 0); 
+    s.surface   = boundary_lookup( wavelength, su_line, 0);    
+
+    s.optical = optical[su_line] ;   // index/type/finish/value
+    s.index.x = optical[m1_line].x ; // m1 index
+    s.index.y = optical[m2_line].x ; // m2 index 
+    s.index.z = optical[su_line].x ; // su index
+
+    //s.identity = identity ;   // feels pointless holding identity here, as already in callers scope : eg OptiX7Test.cu:simulate : so remove ?
+}
+
+
+
+
+
+
+
 
 
 template <typename T>
@@ -996,6 +1049,9 @@ inline QSIM_METHOD void qsim<T>::scint_photon(quad4& p, curandStateXORWOW& rng)
 
     scint_photon(p, g, rng); 
 }
+
+
+
 
 
 #endif
