@@ -308,6 +308,7 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     const float3& normal = prd->normal ; 
     unsigned identity = prd->identity ;  
     int boundary = prd->boundary ; 
+
 #else
     float    t = 0.f ; 
     float3   normal   = make_float3( 0.5f, 0.5f, 0.5f );
@@ -332,8 +333,11 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
 
 #endif
 
+    float cosTheta = dot(normal, direction) ; 
+    //int boundary = cosTheta < 0.f ? -(prd->boundary+1) : (prd->boundary+1)  ; 
+
     const float& wavelength = p.q2.f.w ; 
-    sim->fill_state(s, boundary, wavelength ); 
+    sim->fill_state(s, boundary, wavelength, cosTheta ); 
 
 
 
@@ -402,7 +406,7 @@ extern "C" __global__ void __raygen__rg()
     prd.normal = make_float3(0.5f, 0.5f, 0.5f); 
     prd.t        = 0.f ; 
     prd.identity = 0u ; 
-    prd.boundary = 0u ; 
+    prd.boundary = 0 ; 
 
     switch( params.raygenmode )
     {
@@ -425,14 +429,14 @@ extern "C" __global__ void __raygen__rg()
 /**
 *setPayload* is used from __closesthit__ and __miss__ providing communication to __raygen__ optixTrace call
 **/
-static __forceinline__ __device__ void setPayload( float3 normal, float t, unsigned identity, unsigned boundary, float spare1, float spare2  ) // pure? 
+static __forceinline__ __device__ void setPayload( float3 normal, float t, unsigned identity, int boundary, float spare1, float spare2  ) // pure? 
 {
     optixSetPayload_0( float_as_uint( normal.x ) );
     optixSetPayload_1( float_as_uint( normal.y ) );
     optixSetPayload_2( float_as_uint( normal.z ) );
     optixSetPayload_3( float_as_uint( t ) );
     optixSetPayload_4( identity );
-    optixSetPayload_5( boundary );
+    optixSetPayload_5( int_as_unsigned( boundary) );
     optixSetPayload_6( float_as_uint(spare1) );
     optixSetPayload_7( float_as_uint(spare2) );
     // maximum of 8 payload values configured in PIP::PIP 
@@ -450,12 +454,12 @@ extern "C" __global__ void __miss__ms()
     prd->normal.z =  ms->b ;
     prd->t = 0.f ; 
     prd->identity = 0u ; 
-    prd->boundary = 0u ; 
+    prd->boundary = 0 ; 
 #else
     float3 normal = make_float3( ms->r, ms->g, ms->b );   // hmm: this is render specific, but easily ignored
     float t = 0.f ; 
     unsigned identity = 0u ; 
-    unsigned boundary = 0u ; 
+    int boundary = 0 ; 
     setPayload( normal, t, identity, boundary, 0.f, 0.f  );
 #endif
 }
@@ -491,6 +495,8 @@ extern "C" __global__ void __closesthit__ch()
 
     prd->identity = identity ;   
     prd->normal = optixTransformNormalFromObjectToWorldSpace( prd->normal ) ;  
+    //prd->boundary = 
+
 #else
     const float3 local_normal =    // geometry object frame normal at intersection point 
         make_float3(
@@ -500,8 +506,8 @@ extern "C" __global__ void __closesthit__ch()
                 );
    
 
-    const float t = uint_as_float( optixGetAttribute_3() ) ;  
-    unsigned boundary = optixGetAttribute_4() ; 
+    const float t = uint_as_float(  optixGetAttribute_3() ) ;  
+    int boundary = unsigned_as_int( optixGetAttribute_4() ) ; 
 
     const float3 local_point =    // geometry object frame normal at intersection point 
         make_float3(
@@ -559,8 +565,10 @@ extern "C" __global__ void __intersection__is()
     float4 isect ; // .xyz normal .w distance 
     if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))  
     {
-        const unsigned hitKind = 0u ;   // only 8bit : could use to customize how attributes interpreted
-        const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
+        const unsigned hitKind = 0u ;            // only 8bit : could use to customize how attributes interpreted
+        const int boundary = node->boundary() ;  // all nodes of tree have same boundary 
+        // hmm actually the boundary will always be +ve here, but it gets signed later in closesthit 
+
         float3 local_point = ray_origin + isect.w*ray_direction ;        
 
 #ifdef WITH_PRD
@@ -579,14 +587,14 @@ extern "C" __global__ void __intersection__is()
         a1 = float_as_uint( isect.y );
         a2 = float_as_uint( isect.z );
         a3 = float_as_uint( isect.w ) ; // perhaps no need to pass the "t", should be standard access to "t"
-        a4 = boundary ; 
+        a4 = int_as_unsigned( boundary ) ; 
         a5 = float_as_uint( local_point.x ); 
         a6 = float_as_uint( local_point.y ); 
         a7 = float_as_uint( local_point.z ); 
 
+
         optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4, a5, a6, a7 );   
 #endif
-
         // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 
         // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch 
     }

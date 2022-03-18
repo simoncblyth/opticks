@@ -101,7 +101,7 @@ struct qsim
     QSIM_METHOD void    generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
     QSIM_METHOD void    generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
-    QSIM_METHOD void    fill_state(qstate& s, int boundary, float wavelength ); 
+    QSIM_METHOD void    fill_state(qstate& s, int boundary, float wavelength, float cosTheta ); 
 
 #else
     qsim()
@@ -174,15 +174,27 @@ inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, uns
 qsim::fill_state
 -------------------
 
+HMM: perhaps simpler not to bother with signing the boundary, just simply use the
+cosTheta to give that info at raygen level 
+
 pick relevant boundary_tex lines depening on boundary sign, ie photon direction relative to normal
 
-For example consider photons arriving at PMT cathode surface geometry normals point outwards 
-so boundary sign will be -ve making line+OSUR the relevant surface
+
+cosTheta < 0.f 
+   photons direction is against the surface normal, ie are entering the shape
+   so boundary sign convention is -ve making line+OSUR the relevant surface
+   and line+OMAT the relevant first material
+
+cosTheta > 0.f 
+   photons direction is with the surface normal, ie are exiting the shape
+   so boundary sign convention is +ve making line+ISUR the relevant surface
+   and line+IMAT the relevant first material
 
 boundary 
    1 based code, signed by cos_theta of photon direction to outward geometric normal
    >0 outward going photon
    <0 inward going photon
+
 
 NB the line is above the details of the payload (ie how many float4 per matsur) it is just::
  
@@ -191,12 +203,17 @@ NB the line is above the details of the payload (ie how many float4 per matsur) 
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavelength )
+inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavelength, float cosTheta  )
 {
-    const int line = ( boundary > 0 ? (boundary - 1) : (-boundary - 1) )*_BOUNDARY_NUM_MATSUR ;   
-    const int m1_line = boundary > 0 ? line + IMAT : line + OMAT ;   
-    const int m2_line = boundary > 0 ? line + OMAT : line + IMAT ;   
-    const int su_line = boundary > 0 ? line + ISUR : line + OSUR ;   
+    //const int line = ( boundary > 0 ? (boundary - 1) : (-boundary - 1) )*_BOUNDARY_NUM_MATSUR ;   
+    //const int m1_line = boundary > 0 ? line + IMAT : line + OMAT ;   
+    //const int m2_line = boundary > 0 ? line + OMAT : line + IMAT ;   
+    //const int su_line = boundary > 0 ? line + ISUR : line + OSUR ;   
+
+    const int line = (boundary-1)*_BOUNDARY_NUM_MATSUR ;   
+    const int m1_line = cosTheta > 0.f ? line + IMAT : line + OMAT ;   
+    const int m2_line = cosTheta > 0.f ? line + OMAT : line + IMAT ;   
+    const int su_line = cosTheta > 0.f ? line + ISUR : line + OSUR ;   
 
     s.material1 = boundary_lookup( wavelength, m1_line, 0);  
     s.m1group2  = boundary_lookup( wavelength, m1_line, 1);  
