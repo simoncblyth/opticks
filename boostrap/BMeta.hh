@@ -67,6 +67,8 @@ class BRAP_API BMeta {
        const nlohmann::json& cjs() const ;
    public:
        const char* getKey(unsigned idx) const ;
+       const char* getValue(unsigned idx) const ;
+
        const char* getKey_old(unsigned idx) const ;
        unsigned    getNumKeys_old() ;             // non-const as may updateKeys
        unsigned    getNumKeys() const ;           // assumes obj 

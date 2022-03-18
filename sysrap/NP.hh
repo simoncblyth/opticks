@@ -2209,6 +2209,7 @@ inline std::string NP::desc() const
        << " shape.size " << shape.size() 
        << " data.size " << data.size()
        << " meta.size " << meta.size() 
+       << " names.size " << names.size() 
        ;
     return ss.str(); 
 }

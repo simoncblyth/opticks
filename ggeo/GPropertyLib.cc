@@ -228,13 +228,21 @@ NPY<double>* GPropertyLib::getBuffer() const
     return m_buffer ;
 }
 
+/**
+GPropertyLib::getBuf
+----------------------
+
+Convert NPY into NP with metadata and names passed along 
+
+**/
+
 NP* GPropertyLib::getBuf() const
 {
     NP* buf = m_buffer ? m_buffer->spawn() : nullptr ; 
     const std::vector<std::string>& names = getNameList(); 
     if(buf && names.size() > 0)
     {
-        buf->set_meta(names); 
+        buf->set_names(names); 
     }
     return buf ; 
 }

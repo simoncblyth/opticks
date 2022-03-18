@@ -73,6 +73,31 @@ Suspect the domain metadata is getting stomped on by boundary names::
     ./qudarap/QBnd.cc:        << " domain_low " << std::fixed << std::setw(10) << std::setprecision(3) << domainX.f.x  
     epsilon:opticks blyth$ 
 
+
+
+hmm need to hand over metadata between NPY and NP : NPYSpawnNPTest.cc to check addition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    1072     NPY<double>* wav = NPY<double>::make( ni, nj, nk, nl, nm) ;
+    1073     wav->fill( GSurfaceLib::SURFACE_UNSET );
+    1074 
+    1075     float domain_low = dom.x ;
+    1076     float domain_high = dom.y ;
+    1077     float domain_step = dom.z ;
+    1078     float domain_range = dom.w ;
+    1079 
+    1080     wav->setMeta("domain_low",   domain_low );
+    1081     wav->setMeta("domain_high",  domain_high );
+    1082     wav->setMeta("domain_step",  domain_step );
+    1083     wav->setMeta("domain_range", domain_range );
+    1084 
+    1085 
+
+
+
+
 Avoid the stomping by adding set_names/get_names to NP
 
 

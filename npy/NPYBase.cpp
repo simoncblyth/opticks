@@ -23,6 +23,7 @@
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "NPYBase.hpp"
+#include "NP.hh"
 
 #include <cstring>
 #include <sstream>
@@ -306,6 +307,34 @@ T NPYBase::getMeta(const char* key, const char* fallback) const
     assert(m_meta); 
     return m_meta->get<T>(key,fallback);
 }
+
+void NPYBase::getMetaKeys( std::vector<std::string>& keys ) const
+{
+    unsigned num_keys = m_meta->getNumKeys(); 
+    for(unsigned i=0 ; i < num_keys ; i++)
+    {
+        const char* key = m_meta->getKey(i); 
+        keys.push_back(key); 
+    } 
+}
+
+void NPYBase::CopyMeta( NP* dst, const NPYBase* src ) // static 
+{
+    BMeta* meta = src->getMeta(); 
+    unsigned num_keys = meta->getNumKeys();
+
+    meta->kvdump(); 
+
+    for(unsigned i=0 ; i < num_keys ; i++)
+    {
+        const char* k = meta->getKey(i) ; 
+        const char* v = meta->getValue(i) ; 
+        LOG(LEVEL) << " k " << k << " v " << v ; 
+        dst->set_meta<std::string>(k, v ); 
+    } 
+}
+
+
 
 
 
@@ -1119,17 +1148,24 @@ BMeta* NPYBase::LoadMeta( const char* path, const char* ext) // static
 
 
 
-
+template NPY_API void NPYBase::setMeta(const char* key, char value);
+template NPY_API void NPYBase::setMeta(const char* key, unsigned char value);
 template NPY_API void NPYBase::setMeta(const char* key, unsigned value);
+template NPY_API void NPYBase::setMeta(const char* key, unsigned long long value);
+template NPY_API void NPYBase::setMeta(const char* key, short value);
 template NPY_API void NPYBase::setMeta(const char* key, int value);
 template NPY_API void NPYBase::setMeta(const char* key, float value);
 template NPY_API void NPYBase::setMeta(const char* key, double value);
 template NPY_API void NPYBase::setMeta(const char* key, std::string value);
 
-template NPY_API unsigned NPYBase::getMeta(const char* key, const char* fallback) const ; 
-template NPY_API int NPYBase::getMeta(const char* key, const char* fallback) const ; 
-template NPY_API float NPYBase::getMeta(const char* key, const char* fallback) const ; 
-template NPY_API double NPYBase::getMeta(const char* key, const char* fallback) const ; 
-template NPY_API std::string NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API char          NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API unsigned char NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API unsigned      NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API unsigned long long  NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API short         NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API int           NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API float         NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API double        NPYBase::getMeta(const char* key, const char* fallback) const ; 
+template NPY_API std::string   NPYBase::getMeta(const char* key, const char* fallback) const ; 
 
 

@@ -171,13 +171,18 @@ void CSG_GGeo_Convert::convertBndLib()
 
     if( can_create )
     {
-        blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
+        blib->createDynamicBuffers();  
+        // hmm perhaps this is done already on loading now ?
         bnd = blib->getBuf(); 
+
+        LOG(LEVEL) << " bnd.desc " << bnd->desc() ; 
 
         optical = blib->getOpticalBuf();  
 
         const std::vector<std::string>& bndnames = blib->getNameList(); 
         bnd->set_names( bndnames );  
+
+        LOG(LEVEL) << " bnd.set_names " << bndnames.size() ; 
 
     }
     else

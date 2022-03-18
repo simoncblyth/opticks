@@ -210,7 +210,7 @@ void GBndLib::createDynamicBuffers()
     GItemList* names = createNames();     // added Aug 21, 2018
     setNames(names); 
 
-    NPY<double>* buf = createBuffer();
+    NPY<double>* buf = createBuffer();  // createBufferForTex2d
     setBuffer(buf);
 
     NPY<unsigned int>* optical_buffer = createOpticalBuffer();
@@ -1072,10 +1072,10 @@ NPY<double>* GBndLib::createBufferForTex2d()
     NPY<double>* wav = NPY<double>::make( ni, nj, nk, nl, nm) ;
     wav->fill( GSurfaceLib::SURFACE_UNSET ); 
 
-    float domain_low = dom.x ; 
-    float domain_high = dom.y ; 
-    float domain_step = dom.z ; 
-    float domain_range = dom.w ; 
+    double domain_low = dom.x ; 
+    double domain_high = dom.y ; 
+    double domain_step = dom.z ; 
+    double domain_range = dom.w ; 
 
     wav->setMeta("domain_low",   domain_low ); 
     wav->setMeta("domain_high",  domain_high ); 

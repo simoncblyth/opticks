@@ -293,6 +293,17 @@ const char* BMeta::getKey(unsigned i) const
     return strdup(k.c_str()); 
 }
 
+const char* BMeta::getValue(unsigned i) const 
+{
+    nlohmann::json::const_iterator it = m_js.begin() ; 
+    assert( i < m_js.size() );  
+    std::advance( it, i );
+ 
+    std::stringstream ss ;  
+    ss << it.value() ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
 
 
 bool BMeta::hasKey(const char* key) const 
@@ -539,6 +550,9 @@ void BMeta::write(const char* path0, const char* path1) const
 
 
 
+template BRAP_API void BMeta::set(const char* name, short value);
+template BRAP_API void BMeta::set(const char* name, unsigned long long value);
+template BRAP_API void BMeta::set(const char* name, unsigned char value);
 template BRAP_API void BMeta::set(const char* name, bool value);
 template BRAP_API void BMeta::set(const char* name, int value);
 template BRAP_API void BMeta::set(const char* name, unsigned int value);
@@ -548,7 +562,9 @@ template BRAP_API void BMeta::set(const char* name, double  value);
 template BRAP_API void BMeta::set(const char* name, char value);
 //template BRAP_API void BMeta::set(const char* name, const char* value);
 
-
+template BRAP_API void BMeta::add(const char* name, short value);
+template BRAP_API void BMeta::add(const char* name, unsigned long long value);
+template BRAP_API void BMeta::add(const char* name, unsigned char value);
 template BRAP_API void BMeta::add(const char* name, bool value);
 template BRAP_API void BMeta::add(const char* name, int value);
 template BRAP_API void BMeta::add(const char* name, unsigned int value);
@@ -559,34 +575,43 @@ template BRAP_API void BMeta::add(const char* name, char value);
 //template BRAP_API void BMeta::add(const char* name, const char* value);
 
 
-template BRAP_API bool         BMeta::get(const char* name) const ;
-template BRAP_API int          BMeta::get(const char* name) const ;
-template BRAP_API unsigned int BMeta::get(const char* name) const ;
-template BRAP_API std::string  BMeta::get(const char* name) const ;
-template BRAP_API float        BMeta::get(const char* name) const ;
-template BRAP_API double       BMeta::get(const char* name) const ;
-template BRAP_API char         BMeta::get(const char* name) const ;
+template BRAP_API short              BMeta::get(const char* name) const ;
+template BRAP_API unsigned long long BMeta::get(const char* name) const ;
+template BRAP_API unsigned char      BMeta::get(const char* name) const ;
+template BRAP_API bool               BMeta::get(const char* name) const ;
+template BRAP_API int                BMeta::get(const char* name) const ;
+template BRAP_API unsigned int       BMeta::get(const char* name) const ;
+template BRAP_API std::string        BMeta::get(const char* name) const ;
+template BRAP_API float              BMeta::get(const char* name) const ;
+template BRAP_API double             BMeta::get(const char* name) const ;
+template BRAP_API char               BMeta::get(const char* name) const ;
 //template BRAP_API const char*  BMeta::get(const char* name) const ;
 
 
-template BRAP_API bool         BMeta::get(const char* name, const char* fallback) const ;
-template BRAP_API int          BMeta::get(const char* name, const char* fallback) const ;
-template BRAP_API unsigned int BMeta::get(const char* name, const char* fallback) const ;
-template BRAP_API std::string  BMeta::get(const char* name, const char* fallback) const ;
-template BRAP_API float        BMeta::get(const char* name, const char* fallback) const ;
-template BRAP_API double       BMeta::get(const char* name, const char* fallback) const ;
-template BRAP_API char         BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API short              BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API unsigned long long BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API unsigned char      BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API bool               BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API int                BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API unsigned int       BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API std::string        BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API float              BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API double             BMeta::get(const char* name, const char* fallback) const ;
+template BRAP_API char               BMeta::get(const char* name, const char* fallback) const ;
 //template BRAP_API const char*  BMeta::get(const char* name, const char* fallback) const ;
 
 
-template BRAP_API bool         BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
-template BRAP_API int          BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
-template BRAP_API unsigned int BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
-template BRAP_API std::string  BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
-template BRAP_API float        BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
-template BRAP_API double       BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
-template BRAP_API char         BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
-//template BRAP_API const char*  BMeta::Get(const BMeta*,const char* name, const char* fallback) ; 
+template BRAP_API short              BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+template BRAP_API unsigned long long BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+template BRAP_API unsigned char      BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+template BRAP_API bool               BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+template BRAP_API int                BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+template BRAP_API unsigned int       BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+template BRAP_API std::string        BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+template BRAP_API float              BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+template BRAP_API double             BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+template BRAP_API char               BMeta::Get(const BMeta*, const char* name, const char* fallback) ; 
+//template BRAP_API const char*    BMeta::Get(const BMeta*,const char* name, const char* fallback) ; 
 
 
 

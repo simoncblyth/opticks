@@ -30,7 +30,7 @@
 //#include "NGLM.hpp"
 #include <glm/fwd.hpp>
 
-
+struct NP ; 
 class BMeta ; 
 class NLookup ; 
 class NPYSpec ; 
@@ -141,6 +141,8 @@ class NPY_API NPYBase {
    
        template <typename T> void setMeta(const char* key, T value);
        template <typename T> T getMeta(const char* key, const char* fallback) const ;
+       void getMetaKeys( std::vector<std::string>& keys ) const ; 
+       static void CopyMeta( NP* dst, const NPYBase* src ); 
 
        int getArrayContentVersion() const ;
        void setArrayContentVersion(int acv);

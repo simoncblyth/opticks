@@ -12,6 +12,8 @@ set(_TESTS_FAILING_TO_INVESTIGATE_WHEN_IN_CONTEXT
 
 set(_TEST_SOURCES
 
+NPYSpawnNPTest.cc
+
 NContourTest.cc 
 nmat4tripleTest.cc 
 

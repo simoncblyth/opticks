@@ -1945,8 +1945,11 @@ NP* NPY<T>::copy_(const NPY<T>* src)   // static
     char* dbytes = (char*)dst->bytes();
     memcpy( (void*)dbytes, (void*)sbytes, src_bytes );
 
+    CopyMeta(dst, src ); 
+
     return dst ; 
 }
+
 
 
 template <typename T>
