@@ -14,6 +14,7 @@
 #include "qgs.h"
 #include "qprop.h"
 #include "qcurand.h"
+#include "qbnd.h"
 #include "qstate.h"
 
 /**
@@ -53,7 +54,8 @@ struct qsim
     // ... hmm there is commonality between the icdf textures with hd_factor on top 
     // that needs to be profited from 
 
-    enum { _BOUNDARY_NUM_MATSUR = 4,  _BOUNDARY_NUM_FLOAT4 = 2 }; 
+
+    
 
     static constexpr T one = T(1.) ;   
 
@@ -99,7 +101,7 @@ struct qsim
     QSIM_METHOD void    generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
     QSIM_METHOD void    generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
-    QSIM_METHOD void    fill_state(qstate& s, int boundary, float wavelength,  const unsigned& identity ); 
+    QSIM_METHOD void    fill_state(qstate& s, int boundary, float wavelength ); 
 
 #else
     qsim()
@@ -191,7 +193,7 @@ NB the line is above the details of the payload (ie how many float4 per matsur) 
 template <typename T>
 inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavelength )
 {
-    const int line = ( boundary > 0 ? (boundary - 1) : (-boundary - 1) )*_BOUNDARY_NUM_FLOAT4 ;   
+    const int line = ( boundary > 0 ? (boundary - 1) : (-boundary - 1) )*_BOUNDARY_NUM_MATSUR ;   
     const int m1_line = boundary > 0 ? line + IMAT : line + OMAT ;   
     const int m2_line = boundary > 0 ? line + OMAT : line + IMAT ;   
     const int su_line = boundary > 0 ? line + ISUR : line + OSUR ;   
