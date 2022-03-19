@@ -243,12 +243,13 @@ void QSim<T>::init_dbg()
 }
  
 
-
 template <typename T>
-qsim<T>* QSim<T>::get_sim() const 
+qsim<T>* QSim<T>::getDevicePtr() const 
 {
     return d_sim ; 
 }
+
+
 
 
 template <typename T>

@@ -77,7 +77,7 @@ struct QUDARAP_API QSim
     void init_sim(); 
     void init_dbg(); 
 
-    qsim<T>* get_sim() const ; 
+    qsim<T>* getDevicePtr() const ; 
 
     char getScintTexFilterMode() const ;
     std::string desc() const ; 
