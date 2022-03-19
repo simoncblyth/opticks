@@ -18,7 +18,7 @@
 #include "QBnd.hh"
 #include "QProp.hh"
 #include "QEvent.hh"
-#include "QDebug.hh"
+//#include "QDebug.hh"
 #include "QOptical.hh"
 
 #include "QSim.hh"
@@ -39,21 +39,24 @@ QSim::UploadComponents
 This is invoked for example by CSGOptiX/tests/CSGOptiXSimulateTest.cc 
 prior to instanciating CSGOptiX 
 
-This is a once only action for a geometry, encompassing 
-random states, scintillation and boundary textures and 
-property arrays.   It is the simulation physics equivalent 
-of uploading the CSGFoundry geometry. 
+Uploading components is a once only action for a geometry, encompassing:
 
-Instanciates the singleton instances that subsequenct QSim 
-instanciation collects together.
+* random states
+* scintillation textures 
+* boundary textures
+* property arrays
+
+It is the simulation physics equivalent of uploading the CSGFoundry geometry. 
+
+The components are manages by separate singleton instances 
+that subsequent QSim instanciation collects together.
+This structure is used to allow separate testing. 
 
 **/
 
 template <typename T>
 void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, const char* rindexpath  )
 {
-    // on heap, to avoid dtors
-
     QRng* qrng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << qrng->desc(); 
 
@@ -125,17 +128,26 @@ QSim<T>::QSim()
     bnd(QBnd::Get()),
     optical(QOptical::Get()),
     prop(QProp<T>::Get()),
-    sim(new qsim<T>),
-    d_sim(init_upload()),
-    dbg(new qdebug), 
-    d_dbg(init_debug())
+    sim(nullptr),
+    d_sim(nullptr),
+    dbg(nullptr), 
+    d_dbg(nullptr)
 {
+    init(); 
+}
+
+template <typename T>
+void QSim<T>::init()
+{
+    init_sim(); 
+    init_dbg(); 
+
     INSTANCE = this ; 
     LOG(LEVEL) << desc() ; 
 }
 
 /**
-QSim::init_upload
+QSim::init_sim
 --------------------
 
 *sim* (qsim.h) is a host side instance that is populated
@@ -154,9 +166,12 @@ place (qsim.h) to add GPU side functionality.
 In a very real sense it is object oriented GPU launches. 
 
 **/
+
 template <typename T>
-qsim<T>* QSim<T>::init_upload()
+void QSim<T>::init_sim()
 {
+    sim = new qsim<T> ; 
+
     LOG(LEVEL) 
         << " rng " << rng 
         << " scint " << scint
@@ -205,26 +220,33 @@ qsim<T>* QSim<T>::init_upload()
         sim->prop = prop->getDevicePtr() ; 
     }
 
-    qsim<T>* device_sim = QU::UploadArray<qsim<T>>(sim, 1 );  
-    return device_sim ; 
+    d_sim = QU::UploadArray<qsim<T>>(sim, 1 );  
 }
 
+
+/**
+qdebug avoid having to play pass the parameter thru multiple levels of calls  
+to get a value onto the device 
+**/
+
 template <typename T>
-qsim<T>* QSim<T>::getDevicePtr() const 
+void QSim<T>::init_dbg()
+{
+    dbg = new qdebug ; 
+ 
+    dbg->wavelength = 500.f ; 
+    dbg->cosTheta = -0.5f ; 
+
+    d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
+}
+ 
+
+
+template <typename T>
+qsim<T>* QSim<T>::get_sim() const 
 {
     return d_sim ; 
 }
- 
-template <typename T>
-qdebug* QSim<T>::init_debug()
-{
-    qdebug* dev_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
-    return dev_dbg ;  
-}
-
-
-
-
 
 
 template <typename T>
@@ -232,7 +254,6 @@ char QSim<T>::getScintTexFilterMode() const
 {
     return scint->tex->getFilterMode() ; 
 }
-
 
 template<typename T>
 std::string QSim<T>::desc() const
@@ -610,20 +631,46 @@ void QSim<T>::generate_photon(QEvent* evt)
 
 
 template <typename T>
-extern void QSim_fill_state(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qdebug* dbg ); 
+extern void QSim_fill_state_0(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad6* state, unsigned num_state, qdebug* dbg ); 
 
 template <typename T>
-void QSim<T>::fill_state(QDebug* dbg)
+void QSim<T>::fill_state_0(quad6* state, unsigned num_state)
 {
-    qdebug* d_dbg = dbg->getDevicePtr(); 
-
+    assert( num_state <= 16 ); 
     assert( d_sim ); 
     assert( d_dbg ); 
 
     configureLaunch16(); 
 
-    QSim_fill_state(numBlocks, threadsPerBlock, d_sim, d_dbg  );  
+    quad6* d_state = QU::device_alloc<quad6>(num_state) ; 
+
+    QSim_fill_state_0(numBlocks, threadsPerBlock, d_sim, d_state, num_state, d_dbg  );  
+
+    QU::copy_device_to_host_and_free<quad6>( state, d_state, num_state ); 
 }
+
+
+template <typename T>
+extern void QSim_fill_state_1(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qstate* state, unsigned num_state, qdebug* dbg ); 
+
+template <typename T>
+void QSim<T>::fill_state_1(qstate* state, unsigned num_state)
+{
+    assert( num_state <= 16 ); 
+    assert( d_sim ); 
+    assert( d_dbg ); 
+
+    configureLaunch16(); 
+
+    qstate* d_state = QU::device_alloc<qstate>(num_state) ; 
+
+    QSim_fill_state_1(numBlocks, threadsPerBlock, d_sim, d_state, num_state, d_dbg );  
+
+    QU::copy_device_to_host_and_free<qstate>( state, d_state, num_state ); 
+}
+
+
+
 
 
 

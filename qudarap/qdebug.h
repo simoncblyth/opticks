@@ -1,10 +1,13 @@
 #pragma once
 
-struct quad6 ; 
+//struct quad6 ; 
 
 struct qdebug
 {
-    quad6* state ; 
+    float wavelength ; 
+    float cosTheta ; 
+
+    //quad6* state ; 
 }; 
 
 

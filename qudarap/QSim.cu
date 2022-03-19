@@ -297,44 +297,85 @@ template void QSim_generate_photon(dim3, dim3, qsim<float>*,  qevent* );
 
 
 template <typename T>
-__global__ void _QSim_fill_state(qsim<T>* sim, qdebug* dbg )
+__global__ void _QSim_fill_state_0(qsim<T>* sim, quad6* state,  unsigned num_state, qdebug* dbg )
 {
-    unsigned photon_id = blockIdx.x*blockDim.x + threadIdx.x;
-    printf("//_QSim_fill_state photon_id %d \n", photon_id ); 
+    unsigned state_id = blockIdx.x*blockDim.x + threadIdx.x;
+    printf("//_QSim_fill_state_0 state_id %d \n", state_id ); 
 
-    if (photon_id >= 10) return;
+    if (state_id >= 16) return;
 
     qstate s ; 
 
-    int boundary = photon_id + 1 ; 
-    float wavelength = 500.f ; 
-    float cosTheta = 0.5f ; 
+    float wavelength = dbg->wavelength ; 
+    float cosTheta = dbg->cosTheta ;  
+    int boundary = state_id + 1 ; 
 
-    printf("//_QSim_fill_state photon_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", photon_id, boundary, wavelength, cosTheta );  
+    printf("//_QSim_fill_state_0 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );  
 
     sim->fill_state(s, boundary, wavelength, cosTheta ); 
 
-    dbg->state[photon_id].q0.f = s.material1 ; 
-    dbg->state[photon_id].q1.f = s.m1group2 ; 
-    dbg->state[photon_id].q2.f = s.material2 ; 
-    dbg->state[photon_id].q3.f = s.surface ; 
-    dbg->state[photon_id].q4.u = s.optical ; 
-    dbg->state[photon_id].q5.u = s.index ; 
+    state[state_id].q0.f = s.material1 ; 
+    state[state_id].q1.f = s.m1group2 ; 
+    state[state_id].q2.f = s.material2 ; 
+    state[state_id].q3.f = s.surface ; 
+    state[state_id].q4.u = s.optical ; 
+    state[state_id].q5.u = s.index ; 
 
-    //printf("//_QSim_fill_state s.material1 %10.4f %10.4f %10.4f %10.4f \n", s.material1.x, s.material1.y, s.material1.z, s.material1.w ); 
-
+    //printf("//_QSim_fill_state_0 s.material1 %10.4f %10.4f %10.4f %10.4f \n", s.material1.x, s.material1.y, s.material1.z, s.material1.w ); 
 }
 
 template <typename T>
-extern void QSim_fill_state(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qdebug* dbg )
+extern void QSim_fill_state_0(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad6* state, unsigned num_state, qdebug* dbg )
 {
-    printf("//QSim_fill_state sim %p dbg %p \n", sim, dbg); 
-    _QSim_fill_state<T><<<numBlocks,threadsPerBlock>>>( sim, dbg );
+    printf("//QSim_fill_state_0 sim %p state %p num_state %d dbg %p \n", sim, state, num_state, dbg ); 
+    _QSim_fill_state_0<T><<<numBlocks,threadsPerBlock>>>( sim, state, num_state, dbg  );
 } 
 
+template void QSim_fill_state_0(dim3, dim3, qsim<double>*, quad6* , unsigned, qdebug* ); 
+template void QSim_fill_state_0(dim3, dim3, qsim<float>* , quad6* , unsigned, qdebug* ); 
 
-template void QSim_fill_state(dim3, dim3, qsim<double>*, qdebug* ); 
-template void QSim_fill_state(dim3, dim3, qsim<float>* , qdebug* ); 
+
+
+
+
+
+template <typename T>
+__global__ void _QSim_fill_state_1( qsim<T>* sim, qstate* state,  unsigned num_state, qdebug* dbg )
+{
+    unsigned state_id = blockIdx.x*blockDim.x + threadIdx.x;
+    //printf("//_QSim_fill_state_1 state_id %d \n", state_id ); 
+
+    if (state_id >= 16) return;
+
+    qstate s ; 
+
+    float wavelength = dbg->wavelength ; 
+    float cosTheta = dbg->cosTheta ;  
+    int boundary = state_id + 1 ; // boundary is 1-based
+
+    printf("//_QSim_fill_state_1 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );  
+
+    sim->fill_state(s, boundary, wavelength, cosTheta ); 
+
+    state[state_id] = s ; 
+
+    //printf("//_QSim_fill_state_1 s.material1 %10.4f %10.4f %10.4f %10.4f \n", s.material1.x, s.material1.y, s.material1.z, s.material1.w ); 
+}
+
+template <typename T>
+extern void QSim_fill_state_1(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qstate* state, unsigned num_state, qdebug* dbg )
+{
+    printf("//QSim_fill_state_1 sim %p state %p num_state %d dbg %p \n", sim, state, num_state, dbg ); 
+    _QSim_fill_state_1<T><<<numBlocks,threadsPerBlock>>>( sim, state, num_state, dbg  );
+} 
+
+template void QSim_fill_state_1(dim3, dim3, qsim<double>*, qstate* , unsigned, qdebug* ); 
+template void QSim_fill_state_1(dim3, dim3, qsim<float>* , qstate* , unsigned, qdebug* ); 
+
+
+
+
+
 
 
 

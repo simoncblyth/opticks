@@ -15,6 +15,8 @@ template <typename T> struct QBuf ;
 QDebug
 =======
 
+HMM : maybe this is not needed for qdebug 
+unlike QProp QRng QOptical which have inputs to manage 
 
 **/
 

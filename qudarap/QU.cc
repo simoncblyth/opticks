@@ -178,8 +178,10 @@ template double*    QU::device_alloc<double>(unsigned num_items) ;
 template unsigned*  QU::device_alloc<unsigned>(unsigned num_items) ;
 template quad*      QU::device_alloc<quad>(unsigned num_items) ;
 template quad4*     QU::device_alloc<quad4>(unsigned num_items) ;
+template quad6*     QU::device_alloc<quad6>(unsigned num_items) ;
 template qevent*    QU::device_alloc<qevent>(unsigned num_items) ;
 template qdebug*    QU::device_alloc<qdebug>(unsigned num_items) ;
+template qstate*    QU::device_alloc<qstate>(unsigned num_items) ;
 
 
 
@@ -207,6 +209,8 @@ template void QU::copy_device_to_host<float>(  float* h, float* d,  unsigned num
 template void QU::copy_device_to_host<double>( double* h, double* d,  unsigned num_items);
 template void QU::copy_device_to_host<quad>( quad* h, quad* d,  unsigned num_items);
 template void QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_items);
+template void QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
+template void QU::copy_device_to_host<qstate>( qstate* h, qstate* d,  unsigned num_items);
 
 
 
@@ -225,6 +229,8 @@ template void QU::copy_device_to_host_and_free<float>(  float* h, float* d,  uns
 template void QU::copy_device_to_host_and_free<double>( double* h, double* d,  unsigned num_items);
 template void QU::copy_device_to_host_and_free<quad>( quad* h, quad* d,  unsigned num_items);
 template void QU::copy_device_to_host_and_free<quad4>( quad4* h, quad4* d,  unsigned num_items);
+template void QU::copy_device_to_host_and_free<quad6>( quad6* h, quad6* d,  unsigned num_items);
+template void QU::copy_device_to_host_and_free<qstate>( qstate* h, qstate* d,  unsigned num_items);
 
 
 

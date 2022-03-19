@@ -22,6 +22,7 @@
 #include "QEvent.hh"
 #include "QDebug.hh"
 
+#include "qstate.h"
 
 #include "SEvent.hh"
 
@@ -40,7 +41,8 @@ enum {
    BOUNDARY_LOOKUP_LINE_WATER_W,
    BOUNDARY_LOOKUP_LINE_LS_L,
    PROP_LOOKUP_Y,
-   FILL_STATE_T
+   FILL_STATE_0,
+   FILL_STATE_1
 } ;
  
 unsigned TestType( const char* name )
@@ -58,8 +60,9 @@ unsigned TestType( const char* name )
    if(strcmp(name,"L") == 0 ) test = BOUNDARY_LOOKUP_LINE_LS_L ;
    if(strcmp(name,"Y") == 0 ) test = PROP_LOOKUP_Y ;
 
-   if(strcmp(name,"W") == 0 || strcmp(name,"water") == 0    )  test = BOUNDARY_LOOKUP_LINE_WATER_W ;
-   if(strcmp(name,"T") == 0 || strcmp(name,"fill_state") == 0) test = FILL_STATE_T ;
+   if(strcmp(name,"water") == 0    )    test = BOUNDARY_LOOKUP_LINE_WATER_W ;
+   if(strcmp(name,"fill_state_0") == 0) test = FILL_STATE_0 ;
+   if(strcmp(name,"fill_state_1") == 0) test = FILL_STATE_1 ;
    
    bool known =  test != UNKNOWN  ;
    if(!known) LOG(fatal) << " test name " << name << " is unknown " ; 
@@ -67,12 +70,22 @@ unsigned TestType( const char* name )
    return test ; 
 }
 
+std::string MakeName(const char* prefix, unsigned num, const char* ext)
+{
+    std::stringstream ss ; 
+    ss << prefix ; 
+#ifdef FLIP_RANDOM 
+    ss << "FLIP_RANDOM_" ; 
+#endif
+    ss << num << ext ; 
+    return ss.str(); 
+}
+
 
 template <typename T>
 struct QSimTest
 {
     static const char* FOLD ; 
-    static std::string MakeName(const char* prefix, unsigned num, const char* ext);
 
     QSim<T>& qs ; 
     QSimTest(QSim<T>& qs); 
@@ -87,7 +100,8 @@ struct QSimTest
     void cerenkov_photon_expt(  unsigned num_photon, int print_id); 
 
     void generate_photon(); 
-    void fill_state(); 
+    void fill_state_0(); 
+    void fill_state_1(); 
 
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material, T x0, T x1, unsigned nx ); 
@@ -97,12 +111,12 @@ struct QSimTest
 }; 
 
 template <typename T>
-const char* QSimTest<T>::FOLD = "$TMP/QSimTest" ; 
+const char* QSimTest<T>::FOLD = SPath::Resolve("$TMP/QSimTest", 2) ;  // 2:dirpath create 
 
 template <typename T>
 QSimTest<T>::QSimTest(QSim<T>& qs_)
     :
-    qs(qs_) 
+    qs(qs_)
 {
 }
 
@@ -113,11 +127,8 @@ void QSimTest<T>::rng_sequence(unsigned ni, int ni_tranche_size_)
     unsigned nk = 16 ; 
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
 
-    int create_dirs = 2 ; // 2:dirpath
-    const char* fold = SPath::Resolve(FOLD, create_dirs ); 
-    qs.rng_sequence(fold, ni, nj, nk, ni_tranche_size ); 
+    qs.rng_sequence(FOLD, ni, nj, nk, ni_tranche_size ); 
 }
-
 
 template <typename T>
 void QSimTest<T>::wavelength(char mode, unsigned num_wavelength )
@@ -166,21 +177,6 @@ void QSimTest<T>::scint_photon(unsigned num_photon)
     NP::Write( FOLD, name.c_str(),  (float*)p.data(), p.size(), 4, 4  ); 
 }
 
-
-template <typename T>
-std::string QSimTest<T>::MakeName(const char* prefix, unsigned num, const char* ext)
-{
-    std::stringstream ss ; 
-    ss << prefix ; 
-#ifdef FLIP_RANDOM 
-    ss << "FLIP_RANDOM_" ; 
-#endif
-    ss << num << ext ; 
-    return ss.str(); 
-}
-
-
-
 // TODO: elimiate the duplication between these
 
 template <typename T>
@@ -189,7 +185,7 @@ void QSimTest<T>::cerenkov_photon(unsigned num_photon, int print_id)
     std::string name = MakeName("cerenkov_photon_", num_photon, ".npy" ); 
     LOG(info) << name << " print_id " << print_id ; 
     std::vector<quad4> p(num_photon) ; 
-    qs.cerenkov_photon(   p.data(), p.size(), print_id ); 
+    qs.cerenkov_photon(   p.data(), p.size(), print_id ); // alloc on device, generate and copy back into the vector
     qs.dump_photon(       p.data(), p.size() ); 
     NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
 }
@@ -241,22 +237,43 @@ void QSimTest<T>::generate_photon()
 
     LOG(info) << "]" ; 
 }
- 
+
 
 template <typename T>
-void QSimTest<T>::fill_state()
+void QSimTest<T>::fill_state_0()
 {
     LOG(info) << "[" ; 
 
-    QDebug* dbg = new QDebug ; 
+    unsigned num_state = 16 ; 
 
-    qs.fill_state(dbg); 
+    std::vector<quad6> s(num_state) ; 
+    qs.fill_state_0( s.data(), s.size() ); 
 
-    // TODO: arrange for downloading the state following qevent downloading 
-
+    NP::Write( FOLD, "fill_state_0.npy" ,  (float*)s.data(), s.size(), 6, 4   ); 
+    // (6,4) item dimension corresponds to the 6 quads of quad6 
 
     LOG(info) << "]" ; 
 }
+
+
+template <typename T>
+void QSimTest<T>::fill_state_1()
+{
+    LOG(info) << "[" ; 
+
+    unsigned num_state = 16 ; 
+
+    std::vector<qstate> s(num_state) ; 
+    qs.fill_state_1( s.data(), s.size() ); 
+
+    NP::Write( FOLD, "fill_state_1.npy" ,  (float*)s.data(), s.size(), 6, 4   ); 
+    // (6,4) item dimension corresponds to the 6 quads of qstate
+
+    LOG(info) << "]" ; 
+}
+
+
+
 
 
 /**
@@ -321,9 +338,6 @@ void QSimTest<T>::boundary_lookup_line(const char* material, T x0 , T x1, unsign
     NP::Write( FOLD, "boundary_lookup_line_props.npy" ,    (float*)lookup.data(), nx, 4  ); 
     NP::Write( FOLD, "boundary_lookup_line_wavelength.npy" ,  xx, nx ); 
 }
-
-
-
 
 template<typename T>
 void QSimTest<T>::prop_lookup( int iprop, T x0, T x1, unsigned nx )
@@ -400,7 +414,8 @@ void QSimTest<T>::main(int argc, char** argv, unsigned test )
         case BOUNDARY_LOOKUP_LINE_WATER_W:  boundary_lookup_line("Water", x0, x1, nx)  ; break ;  
         case BOUNDARY_LOOKUP_LINE_LS_L:     boundary_lookup_line("LS",    x0, x1, nx)  ; break ;  
         case PROP_LOOKUP_Y:                 prop_lookup(-1, -1.f,16.f,1701)            ; break ;  
-        case FILL_STATE_T:                  fill_state()                               ; break ;  
+        case FILL_STATE_0:                  fill_state_0()                             ; break ;  
+        case FILL_STATE_1:                  fill_state_1()                             ; break ;  
         default :                           std::cout << "unimplemented" << std::endl  ; break ; 
     }
 }
@@ -423,9 +438,11 @@ int main(int argc, char** argv)
 
     int create_dirs = 0 ; 
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs );  
+    // HMM: this is just for one material ... Cerenkov needs this for all 
 
-    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy");  // TODO: need better naming now that can do both scint and ck with icdf, see CSG_GGeo_Convert::convertScintillatorLib 
-    NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
+    // TODO: need better icdf naming now that can do both scint and ck with icdf, see CSG_GGeo_Convert::convertScintillatorLib 
+    NP* icdf    = NP::Load(cfbase, "CSGFoundry", "icdf.npy");  
+    NP* bnd     = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
     NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
 
     if(icdf == nullptr || bnd == nullptr)
@@ -443,8 +460,8 @@ int main(int argc, char** argv)
     const char* default_testname = "G" ; 
     const char* testname = SSys::getenvvar("TEST", default_testname); 
     int test = TestType(testname); 
-
     char type = SSys::getenvchar("TYPE", 'F'); 
+
     if( test == CERENKOV_PHOTON_EXPT_X ) type = 'D' ;   // forced double 
 
     if( type == 'F')
