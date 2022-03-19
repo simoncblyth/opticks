@@ -44,6 +44,12 @@ struct QUDARAP_API QU
     static void ConfigureLaunch16( dim3& numBlocks, dim3& threadsPerBlock );
     static void ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
     static void ConfigureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
+    static void ConfigureLaunch1D( dim3& numBlocks, dim3& threadsPerBlock, unsigned num, unsigned threads_per_block ); 
+
+    static std::string Desc(const dim3& d, int w); 
+    static std::string DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock ); 
+
+
 
 };
 

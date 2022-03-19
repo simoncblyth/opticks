@@ -13,7 +13,7 @@ __global__ void _QOptical_check( quad* optical, unsigned width, unsigned height 
 
     uint4& u = optical[iy].u ; 
 
-    printf("//_QOptical_check ix %d iy %d index %d  optical[iy] (%d %d %d %d)   \n", ix, iy, index, u.x, u.y, u.z, u.w ); 
+    printf("//_QOptical_check ix %3d iy %3d index %3d  optical[iy] (%3d %3d %3d %3d)   \n", ix, iy, index, u.x, u.y, u.z, u.w ); 
 }
 
 extern "C" void QOptical_check(dim3 numBlocks, dim3 threadsPerBlock, quad* optical, unsigned width, unsigned height ) 

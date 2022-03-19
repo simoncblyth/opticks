@@ -309,6 +309,7 @@ void GBndLib::setIndexBuffer(NPY<unsigned int>* index_buffer)
 }
 
 NPY<unsigned int>* GBndLib::getOpticalBuffer() const 
+
 {
     return m_optical_buffer ;
 }
@@ -320,7 +321,22 @@ void GBndLib::setOpticalBuffer(NPY<unsigned int>* optical_buffer)
 
 NP* GBndLib::getOpticalBuf() const 
 {
-    NP* optical = m_optical_buffer ? m_optical_buffer->spawn() : nullptr ;  
+    assert( m_optical_buffer ); 
+
+    NP* optical = m_optical_buffer->spawn() ;  
+    std::string shape0 = optical->sstr() ; 
+
+    assert( optical->shape.size() == 3 ); 
+
+    unsigned ni = optical->shape[0] ; 
+    unsigned nj = optical->shape[1] ; 
+    unsigned nk = optical->shape[2] ; 
+
+    assert( ni > 0 && nj == 4 && nk == 4 ); 
+
+    optical->change_shape( ni*nj , nk );  
+    LOG(info) << " changed optical shape from " << shape0  << " -> " << optical->sstr() ; 
+
     return optical ;
 }
 
@@ -1141,19 +1157,25 @@ NPY<double>* GBndLib::createBufferForTex2d()
 GBndLib::createOpticalBuffer
 -----------------------------
 
-Optical buffer can be derived from the m_bnd array 
-of guint4. It contains omat-osur-isur-imat info, 
-for materials just the material one based index, for 
-surfaces the one based surface index and other optical 
-surface parameters. 
+The optical buffer provides an easy way to access 1-based material and surface indices
+starting from a texture line index. Crucially when there is no associated surface the 
+surface index gives 0.  
 
-As it can be derived it is often not persisted.
+Optical buffer can be derived from the m_bnd array of guint4. 
+It contains omat-osur-isur-imat info, for materials just the material one based index, 
+for surfaces the one based surface index and other optical surface parameters. 
+
+As the optical buffer can be derived from the bnd buffer it is often not persisted.
+
+NB creation dimensions of the optical buffer are::
+
+   (num_bnd, NUM_MATSUR:4 , 4:unsigned ) 
+
+But at point of use the top two dimensions are combined to give line indexing (not boundary indexing)::
+
+   ( num_bnd*NUM_MATSUR,  4 ) 
 
 **/
-
-
-
-
 
 NPY<unsigned>* GBndLib::createOpticalBuffer()
 {
@@ -1163,10 +1185,11 @@ NPY<unsigned>* GBndLib::createOpticalBuffer()
 
     unsigned int ni = getNumBnd();
     unsigned int nj = NUM_MATSUR ;    // om-os-is-im
-    unsigned int nk = 4 ;           // THIS 4 IS NOT RELATED TO NUM_PROP
+    unsigned int nk = 4 ;             // THIS 4 IS NOT RELATED TO NUM_PROP
 
     NPY<unsigned>* optical = NPY<unsigned>::make( ni, nj, nk) ;
     optical->zero(); 
+
     unsigned* odat = optical->getValues();
 
     for(unsigned i=0 ; i < ni ; i++)      // over bnd
@@ -1176,7 +1199,8 @@ NPY<unsigned>* GBndLib::createOpticalBuffer()
         for(unsigned j=0 ; j < nj ; j++)  // over imat/omat/isur/osur
         {
             unsigned offset = nj*nk*i+nk*j ;
-            if(j == IMAT || j == OMAT)    
+
+            if(j == IMAT || j == OMAT)    // 0 or 3   
             {
                 unsigned midx = bnd[j] ;
                 assert(midx != UNSET);
@@ -1187,7 +1211,7 @@ NPY<unsigned>* GBndLib::createOpticalBuffer()
                 odat[offset+3] = 0u ; 
 
             }
-            else if(j == ISUR || j == OSUR)  
+            else if(j == ISUR || j == OSUR)    // 1 or 2 
             {
                 unsigned sidx = bnd[j] ;
                 if(sidx != UNSET)

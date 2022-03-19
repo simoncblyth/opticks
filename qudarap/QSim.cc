@@ -18,7 +18,6 @@
 #include "QBnd.hh"
 #include "QProp.hh"
 #include "QEvent.hh"
-//#include "QDebug.hh"
 #include "QOptical.hh"
 
 #include "QSim.hh"
@@ -93,7 +92,7 @@ void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optica
     else
     {
         QOptical* qopt = new QOptical(optical); 
-        LOG(LEVEL) << qopt->desc(); 
+        LOG(fatal) << qopt->desc(); 
     }
 
     LOG(error) << "[ QProp " ; 
@@ -233,9 +232,12 @@ template <typename T>
 void QSim<T>::init_dbg()
 {
     dbg = new qdebug ; 
+
+    //float cosTheta = -0.5f ; 
+    float cosTheta = 0.5f ; 
  
     dbg->wavelength = 500.f ; 
-    dbg->cosTheta = -0.5f ; 
+    dbg->cosTheta = cosTheta ; 
 
     d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
 }
@@ -272,7 +274,6 @@ std::string QSim<T>::desc() const
 }
 
 
-
 template<typename T>
 void QSim<T>::configureLaunch(unsigned width, unsigned height ) 
 {
@@ -289,6 +290,19 @@ template<typename T>
 void QSim<T>::configureLaunch16() 
 {
     QU::ConfigureLaunch16(numBlocks, threadsPerBlock); 
+}
+
+template<typename T>
+void QSim<T>::configureLaunch1D(unsigned num, unsigned threads_per_block) 
+{
+    QU::ConfigureLaunch1D(numBlocks, threadsPerBlock, num, threads_per_block); 
+}
+
+
+template<typename T>
+std::string QSim<T>::descLaunch() const 
+{
+    return QU::DescLaunch(numBlocks, threadsPerBlock); 
 }
 
 
@@ -636,13 +650,20 @@ extern void QSim_fill_state_0(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim
 template <typename T>
 void QSim<T>::fill_state_0(quad6* state, unsigned num_state)
 {
-    assert( num_state <= 16 ); 
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    configureLaunch16(); 
-
     quad6* d_state = QU::device_alloc<quad6>(num_state) ; 
+
+
+    unsigned threads_per_block = 32 ;  
+    configureLaunch1D( num_state, threads_per_block ); 
+
+    LOG(info) 
+         << " num_state " << num_state 
+         << " threads_per_block  " << threads_per_block
+         << " descLaunch " << descLaunch()
+         ; 
 
     QSim_fill_state_0(numBlocks, threadsPerBlock, d_sim, d_state, num_state, d_dbg  );  
 
@@ -656,13 +677,19 @@ extern void QSim_fill_state_1(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim
 template <typename T>
 void QSim<T>::fill_state_1(qstate* state, unsigned num_state)
 {
-    assert( num_state <= 16 ); 
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    configureLaunch16(); 
-
     qstate* d_state = QU::device_alloc<qstate>(num_state) ; 
+
+    unsigned threads_per_block = 64 ;  
+    configureLaunch1D( num_state, threads_per_block ); 
+
+    LOG(info) 
+         << " num_state " << num_state 
+         << " threads_per_block  " << threads_per_block
+         << " descLaunch " << descLaunch()
+         ; 
 
     QSim_fill_state_1(numBlocks, threadsPerBlock, d_sim, d_state, num_state, d_dbg );  
 

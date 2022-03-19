@@ -56,7 +56,35 @@ unsigned QBnd::getNumBoundary() const
     return bnames.size(); 
 }
 
+const char* QBnd::getBoundarySpec(unsigned idx) const 
+{
+    assert( idx < bnames.size() ); 
+    const std::string& s = bnames[idx]; 
+    return s.c_str(); 
+}
+
+void QBnd::getBoundarySpec(std::vector<std::string>& names, const unsigned* idx , unsigned num_idx ) const 
+{
+    for(unsigned i=0 ; i < num_idx ; i++)
+    {   
+        unsigned index = idx[i] ;  
+        const char* spec = getBoundarySpec(index);   // 0-based 
+        names.push_back(spec); 
+    }   
+} 
+
+
+
+
 const unsigned QBnd::MISSING = ~0u ; 
+
+/**
+QBnd::getBoundaryIndex
+------------------------
+
+returns the index of the first boundary matching *spec*
+
+**/
 
 unsigned QBnd::getBoundaryIndex(const char* spec) const 
 {

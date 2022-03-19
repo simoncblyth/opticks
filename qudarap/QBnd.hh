@@ -38,9 +38,12 @@ struct QUDARAP_API QBnd
     std::string desc() const ; 
 
     unsigned getNumBoundary() const ; 
-    unsigned getBoundaryIndex(const char* spec) const ;
-    unsigned getBoundaryLine(const char* spec, unsigned j) const ; 
-    unsigned getMaterialLine( const char* material ) const ; 
+    const char* getBoundarySpec(unsigned idx) const ; 
+    void        getBoundarySpec(std::vector<std::string>& names, const unsigned* idx , unsigned num_idx ) const ; 
+
+    unsigned    getBoundaryIndex(const char* spec) const ;
+    unsigned    getBoundaryLine(const char* spec, unsigned j) const ; 
+    unsigned    getMaterialLine( const char* material ) const ; 
 
     static QTex<float4>* MakeBoundaryTex(const NP* buf ) ;
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );

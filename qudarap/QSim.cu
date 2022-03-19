@@ -302,7 +302,7 @@ __global__ void _QSim_fill_state_0(qsim<T>* sim, quad6* state,  unsigned num_sta
     unsigned state_id = blockIdx.x*blockDim.x + threadIdx.x;
     printf("//_QSim_fill_state_0 state_id %d \n", state_id ); 
 
-    if (state_id >= 16) return;
+    if (state_id >= num_state) return;
 
     qstate s ; 
 
@@ -343,9 +343,9 @@ template <typename T>
 __global__ void _QSim_fill_state_1( qsim<T>* sim, qstate* state,  unsigned num_state, qdebug* dbg )
 {
     unsigned state_id = blockIdx.x*blockDim.x + threadIdx.x;
-    //printf("//_QSim_fill_state_1 state_id %d \n", state_id ); 
+    printf("//_QSim_fill_state_1 blockIdx.x %d blockDim.x %d threadIdx.x %d state_id %d num_state %d \n", blockIdx.x, blockDim.x, threadIdx.x, state_id, num_state ); 
 
-    if (state_id >= 16) return;
+    if (state_id >= num_state) return;
 
     qstate s ; 
 

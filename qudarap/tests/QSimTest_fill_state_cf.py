@@ -5,7 +5,7 @@ import os, numpy as np
 FOLD = os.path.expandvars("/tmp/$USER/opticks/QSimTest")
 
 if __name__ == '__main__':
-    path_ = lambda ver:os.path.join(FOLD, "fill_state_%d.npy" % ver )
+    path_ = lambda ver:os.path.join(FOLD, "fill_state_%d" % ver, "state.npy")
 
     p0 = path_(0)
     p1 = path_(1)

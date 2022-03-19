@@ -102,5 +102,108 @@ Avoid the stomping by adding set_names/get_names to NP
 
 
 
+Check with cosTheta=0.5f::
+
+fill_state check optical
+---------------------------
+
+Check with cosTheta=-0.5f::
+
+    In [28]: np.c_[np.arange(44), t.state[:,4].view(np.uint32), t.state_names ]                                                                                                                             
+    Out[28]: 
+    array([[0, 0, 0, 0, 0, 'Galactic///Galactic'],
+           [1, 0, 0, 0, 0, 'Galactic///Rock'],
+           [2, 0, 0, 0, 0, 'Rock///Galactic'],
+           [3, 0, 0, 0, 0, 'Rock//Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock/Air'],
+           [4, 0, 0, 0, 0, 'Rock///Rock'],
+           [5, 0, 0, 0, 0, 'Rock//Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox/Air'],
+           [6, 0, 0, 0, 0, 'Air///Steel'],
+           [7, 0, 0, 0, 0, 'Air///Air'],
+           [8, 0, 0, 0, 0, 'Air///LS'],
+           [9, 0, 0, 0, 0, 'Air///Tyvek'],
+           [10, 0, 0, 0, 0, 'Air///Aluminium'],
+           [11, 0, 0, 0, 0, 'Aluminium///Adhesive'],
+           [12, 0, 0, 0, 0, 'Adhesive///TiO2Coating'],
+           [13, 0, 0, 0, 0, 'TiO2Coating///Scintillator'],
+           [14, 0, 0, 0, 0, 'Rock///Tyvek'],
+           [15, 0, 0, 0, 0, 'Tyvek//Implicit_RINDEX_NoRINDEX_pOuterWaterPool_pPoolLining/vetoWater'],
+           [16, 0, 0, 0, 0, 'vetoWater///LatticedShellSteel'],
+           [17, 16, 0, 3, 20, 'vetoWater/CDTyvekSurface//Tyvek'],
+           [18, 0, 0, 0, 0, 'Tyvek//CDInnerTyvekSurface/Water'],
+           [19, 0, 0, 0, 0, 'Water///Acrylic'],
+           [20, 0, 0, 0, 0, 'Acrylic///LS'],
+           [21, 0, 0, 0, 0, 'LS///Acrylic'],
+           [22, 0, 0, 0, 0, 'LS///PE_PA'],
+           [23, 17, 0, 3, 20, 'Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/StrutSteel'],
+           [24, 18, 0, 3, 20, 'Water/Strut2AcrylicOpSurface/Strut2AcrylicOpSurface/StrutSteel'],
+           [25, 0, 0, 0, 0, 'Water///Steel'],
+           [26, 0, 0, 0, 0, 'Water///PE_PA'],
+           [27, 0, 0, 0, 0, 'Water///Water'],
+           [28, 0, 0, 0, 0, 'Water///AcrylicMask'],
+           [29, 19, 0, 3, 20, 'Water/NNVTMaskOpticalSurface/NNVTMaskOpticalSurface/CDReflectorSteel'],
+           [30, 0, 0, 0, 0, 'Water///Pyrex'],
+           [31, 0, 0, 0, 0, 'Pyrex///Pyrex'],
+           [32, 4, 0, 0, 100, 'Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum'],
+           [33, 0, 0, 0, 0, 'Pyrex//NNVTMCPPMT_PMT_20inch_mirror_logsurf1/Vacuum'],
+           [34, 20, 0, 3, 20, 'Water/HamamatsuMaskOpticalSurface/HamamatsuMaskOpticalSurface/CDReflectorSteel'],
+           [35, 7, 0, 0, 100, 'Pyrex/HamamatsuR12860_PMT_20inch_photocathode_logsurf2/HamamatsuR12860_PMT_20inch_photocathode_logsurf1/Vacuum'],
+           [36, 0, 0, 0, 0, 'Pyrex//HamamatsuR12860_PMT_20inch_mirror_logsurf1/Vacuum'],
+           [37, 10, 0, 0, 100, 'Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum'],
+           [38, 0, 0, 0, 0, 'Pyrex//PMT_3inch_absorb_logsurf1/Vacuum'],
+           [39, 0, 0, 0, 0, 'Water///LS'],
+           [40, 21, 0, 3, 20, 'Water/Steel_surface/Steel_surface/Steel'],
+           [41, 0, 0, 0, 0, 'vetoWater///Water'],
+           [42, 15, 0, 0, 100, 'Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum'],
+           [43, 0, 0, 0, 0, 'Pyrex//PMT_20inch_veto_mirror_logsurf1/Vacuum']], dtype=object)
+
+
+Check with cosTheta=0.5f::
+
+    In [1]: np.c_[np.arange(44), t.state[:,4].view(np.uint32), t.state_names ]                                                                                                                              
+    Out[1]: 
+    array([[0, 0, 0, 0, 0, 'Galactic///Galactic'],
+           [1, 0, 0, 0, 0, 'Galactic///Rock'],
+           [2, 0, 0, 0, 0, 'Rock///Galactic'],
+           [3, 22, 1, 1, 100, 'Rock//Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock/Air'],
+           [4, 0, 0, 0, 0, 'Rock///Rock'],
+           [5, 23, 1, 1, 100, 'Rock//Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox/Air'],
+           [6, 0, 0, 0, 0, 'Air///Steel'],
+           [7, 0, 0, 0, 0, 'Air///Air'],
+           [8, 0, 0, 0, 0, 'Air///LS'],
+           [9, 0, 0, 0, 0, 'Air///Tyvek'],
+           [10, 0, 0, 0, 0, 'Air///Aluminium'],
+           [11, 0, 0, 0, 0, 'Aluminium///Adhesive'],
+           [12, 0, 0, 0, 0, 'Adhesive///TiO2Coating'],
+           [13, 0, 0, 0, 0, 'TiO2Coating///Scintillator'],
+           [14, 0, 0, 0, 0, 'Rock///Tyvek'],
+           [15, 24, 1, 1, 100, 'Tyvek//Implicit_RINDEX_NoRINDEX_pOuterWaterPool_pPoolLining/vetoWater'],
+           [16, 0, 0, 0, 0, 'vetoWater///LatticedShellSteel'],
+           [17, 0, 0, 0, 0, 'vetoWater/CDTyvekSurface//Tyvek'],
+           [18, 12, 0, 3, 20, 'Tyvek//CDInnerTyvekSurface/Water'],
+           [19, 0, 0, 0, 0, 'Water///Acrylic'],
+           [20, 0, 0, 0, 0, 'Acrylic///LS'],
+           [21, 0, 0, 0, 0, 'LS///Acrylic'],
+           [22, 0, 0, 0, 0, 'LS///PE_PA'],
+           [23, 17, 0, 3, 20, 'Water/StrutAcrylicOpSurface/StrutAcrylicOpSurface/StrutSteel'],
+           [24, 18, 0, 3, 20, 'Water/Strut2AcrylicOpSurface/Strut2AcrylicOpSurface/StrutSteel'],
+           [25, 0, 0, 0, 0, 'Water///Steel'],
+           [26, 0, 0, 0, 0, 'Water///PE_PA'],
+           [27, 0, 0, 0, 0, 'Water///Water'],
+           [28, 0, 0, 0, 0, 'Water///AcrylicMask'],
+           [29, 19, 0, 3, 20, 'Water/NNVTMaskOpticalSurface/NNVTMaskOpticalSurface/CDReflectorSteel'],
+           [30, 0, 0, 0, 0, 'Water///Pyrex'],
+           [31, 0, 0, 0, 0, 'Pyrex///Pyrex'],
+           [32, 2, 0, 0, 100, 'Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum'],
+           [33, 3, 0, 1, 99, 'Pyrex//NNVTMCPPMT_PMT_20inch_mirror_logsurf1/Vacuum'],
+           [34, 20, 0, 3, 20, 'Water/HamamatsuMaskOpticalSurface/HamamatsuMaskOpticalSurface/CDReflectorSteel'],
+           [35, 5, 0, 0, 100, 'Pyrex/HamamatsuR12860_PMT_20inch_photocathode_logsurf2/HamamatsuR12860_PMT_20inch_photocathode_logsurf1/Vacuum'],
+           [36, 6, 0, 1, 99, 'Pyrex//HamamatsuR12860_PMT_20inch_mirror_logsurf1/Vacuum'],
+           [37, 8, 0, 0, 100, 'Pyrex/PMT_3inch_photocathode_logsurf2/PMT_3inch_photocathode_logsurf1/Vacuum'],
+           [38, 9, 0, 0, 100, 'Pyrex//PMT_3inch_absorb_logsurf1/Vacuum'],
+           [39, 0, 0, 0, 0, 'Water///LS'],
+           [40, 21, 0, 3, 20, 'Water/Steel_surface/Steel_surface/Steel'],
+           [41, 0, 0, 0, 0, 'vetoWater///Water'],
+           [42, 13, 0, 0, 100, 'Pyrex/PMT_20inch_veto_photocathode_logsurf2/PMT_20inch_veto_photocathode_logsurf1/Vacuum'],
+           [43, 14, 0, 1, 99, 'Pyrex//PMT_20inch_veto_mirror_logsurf1/Vacuum']], dtype=object)
 
 

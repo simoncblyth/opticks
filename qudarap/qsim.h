@@ -256,10 +256,16 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavel
     s.material2 = boundary_lookup( wavelength, m2_line, 0); 
     s.surface   = boundary_lookup( wavelength, su_line, 0);    
 
+
+    // HUH: this would imply the optical buffer is 4 times the length of the bnd ? 
+    //     YES it should be see  GBndLib::createOpticalBuffer
+
     s.optical = optical[su_line].u ;   // index/type/finish/value
+
     s.index.x = optical[m1_line].u.x ; // m1 index
     s.index.y = optical[m2_line].u.x ; // m2 index 
     s.index.z = optical[su_line].u.x ; // su index
+    s.index.w = 0u ;                   // avoid undefined memory comparison issues
 
     //printf("//qsim.fill_state \n"); 
 

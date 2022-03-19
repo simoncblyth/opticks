@@ -25,6 +25,7 @@ struct qstate
     float4 m1group2 ;     // group_velocity/spare1/spare2/spare3
     float4 material2 ;   
     float4 surface ;      // detect/absorb/reflect_specular/reflect_diffuse
+
     uint4  optical ;      // x/y/z/w index/type/finish/value  
     uint4  index ;        // indices of m1/m2/surf/sensor
 

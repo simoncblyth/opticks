@@ -29,6 +29,24 @@ void test_descBoundary(QBnd& qb)
         ;
 }
 
+
+void test_getBoundarySpec(const QBnd& qb)
+{
+    unsigned num_boundary = qb.getNumBoundary(); 
+    LOG(info) 
+        << " num_boundary " << num_boundary 
+        ;
+    for(unsigned i=0 ; i < num_boundary ; i++)
+    {
+       std::cout 
+           << std::setw(4) << i 
+           << " : "
+           << qb.getBoundarySpec(i)
+           << std::endl 
+           ;
+    }
+}
+
 void test_getBoundaryLine(QBnd& qb)
 {
     const char* spec = SSys::getenvvar("QCTX_SPEC", "Acrylic///LS" ); 
@@ -106,6 +124,8 @@ void test_lookup_technical(QBnd& qb)
 }
 
 
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -129,8 +149,11 @@ int main(int argc, char** argv)
     test_descBoundary(qb); 
     test_getBoundaryLine(qb); 
     test_getMaterialLine(qb); 
-*/
     test_lookup_technical(qb); 
+*/
+
+    test_getBoundarySpec(qb); 
+
 
     return 0 ; 
 }

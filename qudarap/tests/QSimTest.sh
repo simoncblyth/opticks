@@ -1,26 +1,55 @@
 #!/bin/bash -l 
 
+usage(){ cat << EOU
+QSimTest.sh
+=============
+
+::
+
+    TEST=fill_state_cf ./QSimTest.sh ana
+
+
+EOU
+}
+
+
+arg=${1:-run_ana}
+
 msg="=== $BASH_SOURCE :"
 
 #export QBnd=INFO
 
-#test=fill_state_0
-test=fill_state_1
+test=fill_state_0
+#test=fill_state_1
 #test=water
 
 export TEST=${TEST:-$test}
 
-QSimTest 
+if [ "${arg/run}" != "$arg" ]; then 
+   QSimTest 
+   [ $? -ne 0 ] && echo $msg run error && exit 1 
+fi
 
-case $test in
-   fill_state_*) script=QSimTest_fill_state.py ;;
-              *) script=QSimTest_$test.py      ;;
-esac
 
-if [ -f "$script" ]; then
-    echo $msg invoking analysis script $script
-    ${IPYTHON:-ipython} --pdb -i $script
-else
-    echo $msg there is no analysis script $script
-fi  
+if [ "${arg/ana}" != "$arg" ]; then 
+
+    case $TEST in
+       fill_state_0)  script=QSimTest_fill_state.py ;;
+       fill_state_1)  script=QSimTest_fill_state.py ;;
+       fill_state_cf) script=QSimTest_fill_state_cf.py ;;
+                  *)  script=QSimTest_$TEST.py      ;;
+    esac
+
+    if [ -f "$script" ]; then
+        echo $msg invoking analysis script $script
+        ${IPYTHON:-ipython} --pdb -i $script
+        [ $? -ne 0 ] && echo $msg ana error && exit 2
+    else
+        echo $msg there is no analysis script $script
+    fi  
+
+fi
+
+
+exit 0 
 

@@ -247,7 +247,14 @@ template void QU::copy_host_to_device( unsigned* d, const unsigned* h, unsigned 
 template void QU::copy_host_to_device( qevent* d, const qevent* h, unsigned num_items);
 
 
+/**
+QU::ConfigureLaunch
+---------------------
 
+
+
+
+**/
 
 void QU::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) // static
 {
@@ -271,6 +278,17 @@ void QU::ConfigureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned wid
     numBlocks.z = 1 ; 
 }
 
+void QU::ConfigureLaunch1D( dim3& numBlocks, dim3& threadsPerBlock, unsigned num, unsigned threads_per_block ) // static
+{
+    threadsPerBlock.x = threads_per_block ; 
+    threadsPerBlock.y = 1 ; 
+    threadsPerBlock.z = 1 ; 
+ 
+    numBlocks.x = (num + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
+    numBlocks.y = 1 ; 
+    numBlocks.z = 1 ; 
+}
+
 void QU::ConfigureLaunch16( dim3& numBlocks, dim3& threadsPerBlock ) // static
 {
     threadsPerBlock.x = 16 ; 
@@ -282,4 +300,30 @@ void QU::ConfigureLaunch16( dim3& numBlocks, dim3& threadsPerBlock ) // static
     numBlocks.z = 1 ; 
 }
 
+
+std::string QU::Desc(const dim3& d, int w) // static 
+{
+    std::stringstream ss ; 
+    ss << "( " 
+        << std::setw(w) << d.x 
+        << " " 
+        << std::setw(w) << d.y 
+        << " " 
+        << std::setw(w) << d.z 
+        << ")"
+        ;
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string QU::DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock ) // static
+{
+    std::stringstream ss ; 
+    ss 
+        << " numBlocks " << Desc(numBlocks,4) 
+        << " threadsPerBlock " << Desc(threadsPerBlock, 4)
+        ;
+    std::string s = ss.str(); 
+    return s ; 
+}
 

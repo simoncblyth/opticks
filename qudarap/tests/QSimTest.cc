@@ -100,8 +100,11 @@ struct QSimTest
     void cerenkov_photon_expt(  unsigned num_photon, int print_id); 
 
     void generate_photon(); 
-    void fill_state_0(); 
-    void fill_state_1(); 
+
+    void getStateNames(std::vector<std::string>& names, unsigned num_state) const ; 
+    void fill_state(unsigned version); 
+    void save_state( const char* subfold, const float* data, unsigned num_state  ); 
+
 
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material, T x0, T x1, unsigned nx ); 
@@ -239,38 +242,65 @@ void QSimTest<T>::generate_photon()
 }
 
 
+
+/**
+QSimTest::fill_state
+-----------------------
+
+Doing this for all boundaries with -0.5 and +0.5 for cosTheta will cover 
+all states at a particular wavelength 
+
+**/
+
 template <typename T>
-void QSimTest<T>::fill_state_0()
+void QSimTest<T>::fill_state(unsigned version)
 {
     LOG(info) << "[" ; 
 
-    unsigned num_state = 16 ; 
+    unsigned num_state = qs.bnd->getNumBoundary() ; 
 
-    std::vector<quad6> s(num_state) ; 
-    qs.fill_state_0( s.data(), s.size() ); 
-
-    NP::Write( FOLD, "fill_state_0.npy" ,  (float*)s.data(), s.size(), 6, 4   ); 
-    // (6,4) item dimension corresponds to the 6 quads of quad6 
-
+    if( version == 0 )
+    {
+        std::vector<quad6> s(num_state) ; 
+        qs.fill_state_0( s.data(), s.size() ); 
+        save_state("fill_state_0", (float*)s.data(), num_state );
+    }
+    else if( version == 1 )
+    {
+        std::vector<qstate> s(num_state) ; 
+        qs.fill_state_1( s.data(), s.size() ); 
+        save_state("fill_state_1", (float*)s.data(), num_state );
+    }
     LOG(info) << "]" ; 
 }
 
 
 template <typename T>
-void QSimTest<T>::fill_state_1()
+void QSimTest<T>::save_state( const char* subfold, const float* data, unsigned num_state  )
 {
-    LOG(info) << "[" ; 
+    std::vector<std::string> names ; 
+    getStateNames(names, num_state); 
 
-    unsigned num_state = 16 ; 
+    int create_dirs = 1 ; // 1:filepath 
+    const char* path = SPath::Resolve(FOLD, subfold, "state.npy", create_dirs ); 
 
-    std::vector<qstate> s(num_state) ; 
-    qs.fill_state_1( s.data(), s.size() ); 
-
-    NP::Write( FOLD, "fill_state_1.npy" ,  (float*)s.data(), s.size(), 6, 4   ); 
-    // (6,4) item dimension corresponds to the 6 quads of qstate
-
-    LOG(info) << "]" ; 
+    NP* a = NP::Make<float>( num_state, 6, 4 ); // (6,4) item dimension corresponds to the 6 quads of quad6 
+    a->read( data ); 
+    a->set_names(names); 
+    a->save(path); 
 }
+
+
+template <typename T>
+void QSimTest<T>::getStateNames(std::vector<std::string>& names, unsigned num_state) const 
+{
+    unsigned* idx = new unsigned[num_state] ; 
+    for(unsigned i=0 ; i < num_state ; i++) idx[i] = i ; 
+    qs.bnd->getBoundarySpec(names, idx, num_state ); 
+    delete [] idx ; 
+}
+
+ 
 
 
 
@@ -414,8 +444,8 @@ void QSimTest<T>::main(int argc, char** argv, unsigned test )
         case BOUNDARY_LOOKUP_LINE_WATER_W:  boundary_lookup_line("Water", x0, x1, nx)  ; break ;  
         case BOUNDARY_LOOKUP_LINE_LS_L:     boundary_lookup_line("LS",    x0, x1, nx)  ; break ;  
         case PROP_LOOKUP_Y:                 prop_lookup(-1, -1.f,16.f,1701)            ; break ;  
-        case FILL_STATE_0:                  fill_state_0()                             ; break ;  
-        case FILL_STATE_1:                  fill_state_1()                             ; break ;  
+        case FILL_STATE_0:                  fill_state(0)                              ; break ;  
+        case FILL_STATE_1:                  fill_state(1)                              ; break ;  
         default :                           std::cout << "unimplemented" << std::endl  ; break ; 
     }
 }
