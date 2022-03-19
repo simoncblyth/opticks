@@ -199,7 +199,7 @@ PIP::PIP(const char* ptx_path_ )
     num_attribute_values(2),   // see __intersection__is
 #else
     num_payload_values(6),     // see 
-    num_attribute_values(6),   // see __intersection__is
+    num_attribute_values(5),   // see __intersection__is
 #endif
     pipeline_compile_options(CreatePipelineOptions(num_payload_values,num_attribute_values)),
     program_group_options(CreateProgramGroupOptions()),

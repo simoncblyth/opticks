@@ -102,20 +102,19 @@ static __forceinline__ __device__ void trace(
             missSBTIndex,
             p0, p1, p2, p3, p4, p5
             );
-    // unclear where the uint_as_float is defined, seems from optix7.h but cannot locate 
+    // unclear where the uint_as_float CUDA device function is defined, seems from optix7.h but cannot locate 
     prd->normal.x = uint_as_float( p0 );
     prd->normal.y = uint_as_float( p1 );
     prd->normal.z = uint_as_float( p2 );
     prd->t        = uint_as_float( p3 ); 
     prd->identity = p4 ; 
-    prd->boundary = unsigned_as_int( p5 ) ;   // from squad.h   : actually not signing it now
+    prd->boundary = p5 ;  
 #endif
 }
 
 
-__forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity )  // pure 
+__forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity, unsigned boundary )  // pure 
 {
-    //float scale = iidx % 2u == 0u ? 0.5f : 1.f ; 
     float scale = 1.f ; 
     return make_uchar4(
             static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f )*scale ,
@@ -143,9 +142,9 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 
     const unsigned cameratype = params.cameratype ;  
     const float3 dxyUV = d.x * params.U + d.y * params.V ; 
-    //                           cameratype 0u:perspective,                    1u:orthographic
     const float3 origin    = cameratype == 0u ? params.eye                     : params.eye + dxyUV    ;
     const float3 direction = cameratype == 0u ? normalize( dxyUV + params.W )  : normalize( params.W ) ;
+    //                           cameratype 0u:perspective,                    1u:orthographic
 
     trace( 
         params.handle,
@@ -157,13 +156,11 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     );
 
     float3 position = origin + direction*prd->t ; 
-    float3 diddled_normal = normalize(prd->normal)*0.5f + 0.5f ; // lightens render, with mid-grey "pedestal" 
-    unsigned identity = prd->identity ; 
-    uchar4 color = make_color( diddled_normal, identity );
+    float3 diddled_normal = normalize(prd->normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal" 
     unsigned index = idx.y * params.width + idx.x ;
 
-    params.pixels[index] = color ; 
-    params.isect[index] = make_float4( position.x, position.y, position.z, uint_as_float(identity)) ; 
+    params.pixels[index] = make_color( diddled_normal, prd->identity, prd->boundary ); 
+    params.isect[index]  = make_float4( position.x, position.y, position.z, uint_as_float(prd->identity)) ; 
 }
  
 /**
@@ -222,8 +219,6 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     );
 
     float cosTheta = dot(prd->normal, direction) ; 
-    //int boundary = cosTheta < 0.f ? -(prd->boundary+1) : (prd->boundary+1)  ; 
-
     const float& wavelength = p.q2.f.w ; 
     sim->fill_state(s, prd->boundary, wavelength, cosTheta ); 
 
@@ -290,7 +285,7 @@ extern "C" __global__ void __raygen__rg()
     prd.normal = make_float3(0.5f, 0.5f, 0.5f); 
     prd.t        = 0.f ; 
     prd.identity = 0u ; 
-    prd.boundary = 0 ; 
+    prd.boundary = 0u ; 
 
     switch( params.raygenmode )
     {
@@ -306,15 +301,16 @@ extern "C" __global__ void __raygen__rg()
 /**
 *setPayload* is used from __closesthit__ and __miss__ providing communication to __raygen__ optixTrace call
 **/
-static __forceinline__ __device__ void setPayload( float3 normal, float t, unsigned identity, int boundary   ) // pure? 
+static __forceinline__ __device__ void setPayload( float3 normal, float t, unsigned identity, unsigned boundary   ) // pure? 
 {
     optixSetPayload_0( float_as_uint( normal.x ) );
     optixSetPayload_1( float_as_uint( normal.y ) );
     optixSetPayload_2( float_as_uint( normal.z ) );
     optixSetPayload_3( float_as_uint( t ) );
     optixSetPayload_4( identity );
-    optixSetPayload_5( int_as_unsigned( boundary) );
+    optixSetPayload_5( boundary );
     // maximum of 6 payload values configured in PIP::PIP 
+    // NB : payload is distinct from attributes
 }
 
 #endif
@@ -329,13 +325,13 @@ extern "C" __global__ void __miss__ms()
     prd->normal.z =  ms->b ;
     prd->t = 0.f ; 
     prd->identity = 0u ; 
-    prd->boundary = 0 ; 
+    prd->boundary = 0u ; 
 #else
     float3 normal = make_float3( ms->r, ms->g, ms->b );   // hmm: this is render specific, but easily ignored
     float t = 0.f ; 
     unsigned identity = 0u ; 
-    int boundary = 0 ; 
-    setPayload( normal, t, identity, boundary );
+    unsigned boundary = 0u ; 
+    setPayload( normal, t, identity, boundary );  // communicate ms->rg
 #endif
 }
 
@@ -380,7 +376,7 @@ extern "C" __global__ void __closesthit__ch()
                 );
 
     const float t = uint_as_float(  optixGetAttribute_3() ) ;  
-    int boundary = unsigned_as_int( optixGetAttribute_4() ) ; 
+    unsigned boundary = optixGetAttribute_4() ; 
 
     //unsigned instance_index = optixGetInstanceIndex() ;  0-based index within IAS
     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
@@ -389,7 +385,7 @@ extern "C" __global__ void __closesthit__ch()
 
     float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
 
-    setPayload( normal, t, identity, boundary);  // communicate to raygen 
+    setPayload( normal, t, identity, boundary);  // communicate from ch->rg
 #endif
 }
 
@@ -427,11 +423,7 @@ extern "C" __global__ void __intersection__is()
     if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))  
     {
         const unsigned hitKind = 0u ;            // only 8bit : could use to customize how attributes interpreted
-        const int boundary = node->boundary() ;  // all nodes of tree have same boundary 
-        // hmm actually the boundary will always be +ve here, but it gets signed later in closesthit 
-
-        float3 local_point = ray_origin + isect.w*ray_direction ;        
-
+        const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
         {
@@ -443,22 +435,16 @@ extern "C" __global__ void __intersection__is()
             prd->boundary = boundary ; 
         }   
 #else
-        unsigned a0, a1, a2, a3, a4, a5, a6, a7 ;      
+        unsigned a0, a1, a2, a3, a4  ;      
         a0 = float_as_uint( isect.x );  // isect.xyz is object frame normal of geometry at intersection point 
         a1 = float_as_uint( isect.y );
         a2 = float_as_uint( isect.z );
         a3 = float_as_uint( isect.w ) ; // perhaps no need to pass the "t", should be standard access to "t"
-        a4 = int_as_unsigned( boundary ) ; 
-        a5 = float_as_uint( local_point.x ); 
-        a6 = float_as_uint( local_point.y ); 
-        a7 = float_as_uint( local_point.z ); 
-
-
-        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4, a5, a6, a7 );   
+        a4 = boundary ; 
+        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4 );   
 #endif
         // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 
         // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch 
     }
 }
-
 // story begins with intersection

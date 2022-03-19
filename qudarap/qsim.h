@@ -237,12 +237,9 @@ NB the line is above the details of the payload (ie how many float4 per matsur) 
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavelength, float cosTheta  )
+inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta  )
 {
-    //const int line = ( boundary > 0 ? (boundary - 1) : (-boundary - 1) )*_BOUNDARY_NUM_MATSUR ;   
-    //const int m1_line = boundary > 0 ? line + IMAT : line + OMAT ;   
-    //const int m2_line = boundary > 0 ? line + OMAT : line + IMAT ;   
-    //const int su_line = boundary > 0 ? line + ISUR : line + OSUR ;   
+    // HMM: now that are not signing the boundary could use 0-based 
 
     const int line = (boundary-1)*_BOUNDARY_NUM_MATSUR ;   
     const int m1_line = cosTheta > 0.f ? line + IMAT : line + OMAT ;   
@@ -256,9 +253,8 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavel
     s.material2 = boundary_lookup( wavelength, m2_line, 0); 
     s.surface   = boundary_lookup( wavelength, su_line, 0);    
 
-
     // HUH: this would imply the optical buffer is 4 times the length of the bnd ? 
-    //     YES it should be see  GBndLib::createOpticalBuffer
+    //     YES it should be and now is see  GBndLib::createOpticalBuffer GBndLin::getOpticalBuf
 
     s.optical = optical[su_line].u ;   // index/type/finish/value
 
@@ -268,8 +264,6 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, int boundary, float wavel
     s.index.w = 0u ;                   // avoid undefined memory comparison issues
 
     //printf("//qsim.fill_state \n"); 
-
-    //s.identity = identity ;   // feels pointless holding identity here, as already in callers scope : eg OptiX7Test.cu:simulate : so remove ?
 }
 
 
