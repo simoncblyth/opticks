@@ -90,6 +90,7 @@ SET(HEADERS
     QTexLookup.hh
 
     qstate.h
+    qprd.h
 
     qbnd.h
     QBnd.hh

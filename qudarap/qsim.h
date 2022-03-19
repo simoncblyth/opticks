@@ -102,7 +102,7 @@ struct qsim
     QSIM_METHOD void    generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
     QSIM_METHOD void    generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
-    QSIM_METHOD void    fill_state(qstate& s, int boundary, float wavelength, float cosTheta ); 
+    QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta ); 
 
 #else
     qsim()

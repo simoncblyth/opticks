@@ -29,6 +29,7 @@ JUNO (trunk:Mar 2, 2022)
 #include <curand_kernel.h>
 #include "qsim.h"
 #include "qevent.h"
+#include "qprd.h"
 
 #include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
@@ -36,7 +37,6 @@ JUNO (trunk:Mar 2, 2022)
 
 #include "Binding.h"
 #include "Params.h"
-#include "PRD.h"
 
 #ifdef WITH_PRD
 #include "Pointer.h"
@@ -48,8 +48,12 @@ extern "C" { __constant__ Params params ;  }
 trace : pure function, with no use of params, everything via args
 -------------------------------------------------------------------
 
-See below __closesthit__ch to see where the payload p0-p7 comes from.
+Outcome of trace is to populate *prd* by payload and attribute passing.
+When WITH_PRD macro is defined only 2 32-bit payload values are used to 
+pass the 64-bit  pointer, otherwise more payload and attributes values 
+are used to pass the contents IS->CH->RG. 
 
+See __closesthit__ch to see where the payload p0-p5 comes from.
 **/
 
 static __forceinline__ __device__ void trace(
@@ -58,7 +62,7 @@ static __forceinline__ __device__ void trace(
         float3                 ray_direction,
         float                  tmin,
         float                  tmax,
-        PRD*                   prd
+        qprd*                  prd
         )   
 {
     const float rayTime = 0.0f ; 
@@ -85,7 +89,6 @@ static __forceinline__ __device__ void trace(
             missSBTIndex,
             p0, p1
             );
-    // outcome of optixTrace is to populate *prd* via the packed pointer
 #else
     uint32_t p0, p1, p2, p3, p4, p5 ; 
     optixTrace(
@@ -130,7 +133,7 @@ render : non-pure, uses params for viewpoint inputs and pixels output
 
 **/
 
-static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim, PRD* prd )
+static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim, qprd* prd )
 {
     float2 d = 2.0f * make_float2(
             static_cast<float>(idx.x)/static_cast<float>(dim.x),
@@ -188,7 +191,7 @@ Params
 
 **/
 
-static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim, PRD* prd )
+static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim, qprd* prd )
 {
     qevent* evt      = params.evt ; 
     if (idx.x >= evt->num_photon) return;
@@ -199,7 +202,6 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[photon_id] ;    // TODO: skipahead using an event_id 
-
 
     quad4 p ;   
     qstate s ; 
@@ -281,7 +283,7 @@ extern "C" __global__ void __raygen__rg()
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
-    PRD prd ; 
+    qprd prd ; 
     prd.normal = make_float3(0.5f, 0.5f, 0.5f); 
     prd.t        = 0.f ; 
     prd.identity = 0u ; 
@@ -319,7 +321,7 @@ extern "C" __global__ void __miss__ms()
 {
     MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
 #ifdef WITH_PRD
-    PRD* prd = getPRD<PRD>(); 
+    qprd* prd = getPRD<qprd>(); 
     prd->normal.x =  ms->r ; 
     prd->normal.y =  ms->g ; 
     prd->normal.z =  ms->b ;
@@ -359,7 +361,7 @@ optixGetRayTmax
 extern "C" __global__ void __closesthit__ch()
 {
 #ifdef WITH_PRD
-    PRD* prd = getPRD<PRD>(); 
+    qprd* prd = getPRD<qprd>(); 
     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
     unsigned prim_idx = optixGetPrimitiveIndex() ;  // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ; 
@@ -427,7 +429,7 @@ extern "C" __global__ void __intersection__is()
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
         {
-            PRD* prd = getPRD<PRD>(); 
+            qprd* prd = getPRD<qprd>(); 
             prd->normal.x = isect.x ;  
             prd->normal.y = isect.y ;  
             prd->normal.z = isect.z ;
