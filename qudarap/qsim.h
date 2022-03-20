@@ -110,7 +110,10 @@ struct qsim
     QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta ); 
 
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
+    QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
+
     QSIM_METHOD static void   rotateUz(float3& d, const float3& u ); 
+    QSIM_METHOD static void   rayleigh_scatter_align(quad4& p, curandStateXORWOW& rng ); 
 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
 
@@ -286,15 +289,29 @@ inline QSIM_METHOD float3 qsim<T>::uniform_sphere(curandStateXORWOW& rng)
     return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
 }
 
+template <typename T>
+inline QSIM_METHOD float3 qsim<T>::uniform_sphere(const float u0, const float u1)
+{
+    float phi = u0*2.f*M_PIf;
+    float cosTheta = 2.f*u1 - 1.f ; // -1.f -> 1.f 
+    float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
+    return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
+}
+
+
+
+
+
+
 /**
 qsim::rotateUz
 ---------------
 
-This rotates the reference frame such that the original Z-axis will lie in the
+This rotates the reference frame of a vector such that the original Z-axis will lie in the
 direction of *u*. Many rotations would accomplish this; the one selected
 uses *u* as its third column and is given by: 
 
-Follows the CLHEP implementation used by Geant4::
+The below CUDA implementation follows the CLHEP implementation used by Geant4::
 
      // geant4.10.00.p01/source/externals/clhep/src/ThreeVector.cc
      72 Hep3Vector & Hep3Vector::rotateUz(const Hep3Vector& NewUzVector) {
@@ -351,10 +368,103 @@ inline QSIM_METHOD void qsim<T>::rotateUz(float3& d, const float3& u )
     }      
 }
 
+/**
+qsim::rayleigh_scatter_align
+------------------------------
 
+Following G4OpRayleigh::PostStepDoIt
+
+* https://bugzilla-geant4.kek.jp/show_bug.cgi?id=207 Xin Qian patch
+
+
+Transverse wave nature means::
+
+   dot(p_direction, p_polarization)  = 0 
+   dot(direction,   polarization)  = 0 
+
+*constant* and normalized direction retains transversality thru the candidate scatter::
+
+    pol = p_pol + constant*dir
+
+    dot(pol, dir) = dot(p_pol, dir) + constant* dot(dir, dir)
+                  = dot(p_pol, dir) + constant* 1. 
+                  = dot(p_pol, dir) - dot(p_pol, dir)
+                  = 0.
+      
+**/
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::rayleigh_scatter_align(quad4& p, curandStateXORWOW& rng )
+{
+    float3* p_direction = (float3*)&p.q1.f.x ; 
+    float3* p_polarization = (float3*)&p.q2.f.x ; 
+    float3 direction ; 
+    float3 polarization ; 
+
+    bool looping(true) ;  
+    do 
+    {
+        float u0 = curand_uniform(&rng) ;    
+        float u1 = curand_uniform(&rng) ;    
+        float u2 = curand_uniform(&rng) ;    
+        float u3 = curand_uniform(&rng) ;    
+        float u4 = curand_uniform(&rng) ;    
+
+        float cosTheta = u0 ;
+        float sinTheta = sqrtf(1.0f-u0*u0);
+        if(u1 < 0.5f ) cosTheta = -cosTheta ; 
+        // could use uniform_sphere here : but not doing so to closesly follow G4OpRayleigh
+
+        float sinPhi ; 
+        float cosPhi ; 
+        sincosf(2.f*M_PIf*u2,&sinPhi,&cosPhi);
+       
+        direction.x = sinTheta * cosPhi;
+        direction.y = sinTheta * sinPhi;
+        direction.z = cosTheta ;
+
+        rotateUz(direction, *p_direction );
+
+        float constant = -dot(direction,*p_polarization); 
+
+        polarization.x = p_polarization->x + constant*direction.x ;
+        polarization.y = p_polarization->y + constant*direction.y ;
+        polarization.z = p_polarization->z + constant*direction.z ;
+
+        if(dot(polarization, polarization) == 0.f )
+        {
+            sincosf(2.f*M_PIf*u3,&sinPhi,&cosPhi);
+
+            polarization.x = cosPhi ;
+            polarization.y = sinPhi ;
+            polarization.z = 0.f ;
+
+            rotateUz(polarization, direction);
+        }
+        else
+        {
+            // There are two directions which are perpendicular
+            // to the new momentum direction
+            if(u3 < 0.5f) polarization = -polarization ;
+        }
+        polarization = normalize(polarization);
+
+        // simulate according to the distribution cos^2(theta)
+        // where theta is the angle between old and new polarizations
+        float doCosTheta = dot(polarization,*p_polarization) ;
+        float doCosTheta2 = doCosTheta*doCosTheta ;
+        looping = doCosTheta2 < u4 ;
+
+    } while ( looping ) ;
+
+    *p_direction = direction ;
+    *p_polarization = polarization ;
+}
 
 
 /**
+qsim::propagate_to_boundary
+------------------------------
 
 could return the flag rather than the action and switch on the flag to continue/break/sail 
 

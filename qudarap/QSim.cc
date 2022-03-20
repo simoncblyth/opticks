@@ -740,6 +740,29 @@ void QSim<T>::fill_state_1(qstate* state, unsigned num_state)
 
 
 
+
+template <typename T>
+extern void QSim_rayleigh_scatter_align(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  );
+
+template <typename T>
+void QSim<T>::rayleigh_scatter_align(quad4* photon, unsigned num_photon)
+{
+    assert( d_sim ); 
+    assert( d_dbg ); 
+
+    quad4* d_photon = QU::device_alloc<quad4>(num_photon) ; 
+
+    unsigned threads_per_block = 16 ;  
+    configureLaunch1D( num_photon, threads_per_block ); 
+
+    QSim_rayleigh_scatter_align(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg );  
+
+    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
+}
+ 
+
+
+
 template <typename T>
 extern void QSim_propagate_to_boundary(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  );
 

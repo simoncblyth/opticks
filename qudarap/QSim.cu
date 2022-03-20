@@ -374,6 +374,36 @@ template void QSim_fill_state_1(dim3, dim3, qsim<float>* , qstate* , unsigned, q
 
 
 
+template <typename T>
+__global__ void _QSim_rayleigh_scatter_align( qsim<T>* sim, quad4* photon,  unsigned num_photon, qdebug* dbg )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    printf("//_QSim_rayleigh_scatter_align blockIdx.x %d blockDim.x %d threadIdx.x %d id %d num_photon %d \n", blockIdx.x, blockDim.x, threadIdx.x, id, num_photon ); 
+
+    if (id >= num_photon) return;
+
+    quad4 p = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
+    curandState rng = sim->rngstate[id] ; 
+
+    sim->rayleigh_scatter_align(p, rng);  
+
+    photon[id] = p ; 
+}
+
+template <typename T>
+extern void QSim_rayleigh_scatter_align(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  )
+{
+    printf("//QSim_rayleigh_scatter_align sim %p photon %p num_photon %d dbg %p \n", sim, photon, num_photon, dbg ); 
+    _QSim_rayleigh_scatter_align<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  );
+}
+
+template void QSim_rayleigh_scatter_align(dim3, dim3, qsim<double>*, quad4*, unsigned, qdebug* ); 
+template void QSim_rayleigh_scatter_align(dim3, dim3, qsim<float>*,  quad4*, unsigned, qdebug* ); 
+
+
+
+
+
 
 template <typename T>
 __global__ void _QSim_propagate_to_boundary( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )

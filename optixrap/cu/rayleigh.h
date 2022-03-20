@@ -127,6 +127,22 @@ __device__ void rayleigh_scatter_align(Photon &p, curandState &rng)
 }
 
 
+/**
+rayleigh_scatter
+------------------
+
+Transversality constraint::
+
+   dot(p.direction,  p.polarization)  = 0 
+   dot(newDirection, newPolarization) = 0 
+
+
+~/opticks_refs/rayleigh_polarization_Ch13.1.pdf
+
+
+**/
+
+
 __device__ void rayleigh_scatter(Photon &p, curandState &rng)
 {
 
@@ -152,15 +168,22 @@ __device__ void rayleigh_scatter(Photon &p, curandState &rng)
         float constant = -dot(newDirection,p.polarization);
         newPolarization = p.polarization + constant*newDirection ;
 
-        // newPolarization 
-        // 1. transverse to newDirection (as that component is subtracted) 
-        // 2. same plane as old p.polarization and newDirection (by construction)
         //
-        // There is a corner case, where the Newmomentum direction
-        // is the same as oldpolariztion direction:
+        // newPolarization 
+        // 1. transverse to newDirection 
+        //    (*constant* choice and normalized newDirection ensures transversality with dot(newPol,newDir) = 0) 
+        // 
+        // 2. linear combination of old p.polarization and newDirection (by construction)
+        //
+        // There is a corner case when by chance the newDirection is same as p.polarization::
+        //
+        //      constant = -dot(newDirection, p.polarization) = 1
+        //      newPolarization = p.polarization - newDirection    # OOPS: (0,0,0)
+        // 
         // random generate the azimuthal angle w.r.t. Newmomentum direction
+        //
  
-        if(length(newPolarization) == 0.f )
+        if(length(newPolarization) == 0.f )   // HMM: no need for the sqrtf in length can just dot(newPol, newPol)
         {
             float sinPhi, cosPhi;
             sincosf(2.f*M_PIf*curand_uniform(&rng),&sinPhi,&cosPhi);

@@ -110,6 +110,7 @@ struct QUDARAP_API QSim
     void fill_state_0(quad6*  state, unsigned num_state); 
     void fill_state_1(qstate* state, unsigned num_state); 
 
+    void rayleigh_scatter_align(quad4* photon, unsigned num_photon); 
     void propagate_to_boundary(quad4* photon, unsigned num_photon); 
 
     unsigned getBoundaryTexWidth() const ;
