@@ -108,9 +108,11 @@ struct qsim
     QSIM_METHOD void    generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
     QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta ); 
-    QSIM_METHOD float3  uniform_sphere(curandStateXORWOW& rng); 
-    QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
 
+    QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
+    QSIM_METHOD static void   rotateUz(float3& d, const float3& u ); 
+
+    QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
 
 
 #else
@@ -283,6 +285,74 @@ inline QSIM_METHOD float3 qsim<T>::uniform_sphere(curandStateXORWOW& rng)
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
     return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
 }
+
+/**
+qsim::rotateUz
+---------------
+
+This rotates the reference frame such that the original Z-axis will lie in the
+direction of *u*. Many rotations would accomplish this; the one selected
+uses *u* as its third column and is given by: 
+
+Follows the CLHEP implementation used by Geant4::
+
+     // geant4.10.00.p01/source/externals/clhep/src/ThreeVector.cc
+     72 Hep3Vector & Hep3Vector::rotateUz(const Hep3Vector& NewUzVector) {
+     73   // NewUzVector must be normalized !
+     74 
+     75   double u1 = NewUzVector.x();
+     76   double u2 = NewUzVector.y();
+     77   double u3 = NewUzVector.z();
+     78   double up = u1*u1 + u2*u2;
+     79 
+     80   if (up>0) {
+     81       up = std::sqrt(up);
+     82       double px = dx,  py = dy,  pz = dz;
+     83       dx = (u1*u3*px - u2*py)/up + u1*pz;
+     84       dy = (u2*u3*px + u1*py)/up + u2*pz;
+     85       dz =    -up*px +             u3*pz;
+     86     }
+     87   else if (u3 < 0.) { dx = -dx; dz = -dz; }      // phi=0  teta=pi
+     88   else {};
+     89   return *this;
+     90 }
+
+This implements rotation of (px,py,pz) vector into (dx,dy,dz) 
+using the below rotation matrix, the columns of which must be 
+orthogonal unit vectors.::
+
+                |  u.x * u.z / up   -u.y / up    u.x  |        
+        d  =    |  u.y * u.z / up   +u.x / up    u.y  |      p
+                |   -up               0.         u.z  |      
+    
+Taking dot products between and within columns shows that to 
+be the case for normalized u. See oxrap/rotateUz.h for the algebra. 
+           
+**/
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::rotateUz(float3& d, const float3& u ) 
+{
+    float up = u.x*u.x + u.y*u.y ;
+    if (up>0.f) 
+    {   
+        up = sqrt(up);
+        float px = d.x ;
+        float py = d.y ;
+        float pz = d.z ;
+        d.x = (u.x*u.z*px - u.y*py)/up + u.x*pz;
+        d.y = (u.y*u.z*px + u.x*py)/up + u.y*pz;
+        d.z =    -up*px +                u.z*pz;
+    }   
+    else if (u.z < 0.f ) 
+    {   
+        d.x = -d.x; 
+        d.z = -d.z; 
+    }      
+}
+
+
+
 
 /**
 

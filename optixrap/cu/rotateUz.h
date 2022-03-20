@@ -44,19 +44,38 @@
  90 }
 
 
-    for example
+Example 0 
+
+       u = [0 0 1]
+       up = 0. 
+       u.z < 0. ?  no  
+
+      -> dx,dy,dz  vector is unchanged because original frame Uz already in Z-direction
+
+
+Example 1 
+
        u = [0,0,-1]   
-
        up = 0.   axial z 
-
-       u.z < 0.
+       u.z < 0.  yes
 
                 | -1  0   0  |  
          d ->   |  0  1   0  | d
                 |  0  0  -1  |  
 
+   Flipping X and Z and leaving Y 
 
-        u = [0,1,1]
+        Z 
+        |            
+        +--X        -X---+
+       /                /|
+      Y               Y  -Z
+
+
+
+Example 2 
+
+        u = [0,1,1]     ## it should be normalized
 
 
                  |   0 -1  0  |   
@@ -68,13 +87,48 @@
           y' = 
 
 
-
-
-
                 |  u.x * u.z / up   -u.y / up    u.x  |        
         d  =    |  u.y * u.z / up   +u.x / up    u.y  |      p
                 |   -up               0.         u.z  |      
     
+                                   
+
+The columns of a rotation matrix are orthogonal unit vectors. A rotation matrix
+may transform any set of vectors, so we can consider transforming the three
+unit vectors along the x, y and z axes, which by definition are orthogonal to
+each other.
+
+Conside normalization of the columns
+
+* 3rd column: by requirement that u is normalized
+
+* 1st column also follows:
+
+      ( u.x*u.x + u.y*u.y ) u.z*u.z + up*up =  ux^2 + uy^2 + uz^2 = 1 
+       --------------------
+            up*up
+                                   
+* 2nd column also follows from up being xy radius: 
+  
+           u.y*u.y + u.x*u.x 
+          -------------------- = 1 
+                  up*up 
+
+Consider dot products between the columns, 
+
+* first and third::
+
+      (ux*ux + uy*uy) * uz - up*uz          up*up * uz
+       -------------------            =    ------------  -  up*uz = 0 
+              up                                up
+
+* second and third: clearly zero from x y symmetry 
+* first and second : clearly zero from x y symmetry 
+   
+
+The above observations of the normalization and orthogonality 
+show that it is indeed a rotation matrix. 
+
 
 https://root.cern.ch/phpBB3/viewtopic.php?t=7421
 
@@ -115,15 +169,22 @@ g4-cls ThreeVector::
      49       dx = (u1*u3*px - u2*py)/up + u1*pz;
      50       dy = (u2*u3*px + u1*py)/up + u2*pz;
      51       dz =    -up*px +             u3*pz;
+
+
+
+
+                |  u.x * u.z / up   -u.y / up    u.x  |        
+        d  =    |  u.y * u.z / up   +u.x / up    u.y  |      p
+                |   -up               0.         u.z  |      
+    
+
+
+
      52     }
      53   else if (u3 < 0.) { dx = -dx; dz = -dz; }      // phi=0  teta=pi
      54   else {};
      55   return *this;
      56 }
-
-
-
-
 
 */
 
