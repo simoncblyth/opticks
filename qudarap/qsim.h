@@ -7,6 +7,8 @@
 #endif 
 
 #include "OpticksGenstep.h"
+#include "OpticksPhoton.h"
+
 #include "sqat4.h"
 #include "sc4u.h"
 #include "sevent.h"
@@ -42,6 +44,7 @@ This is aiming to replace the OptiX 6 context in a CUDA-centric way.
 struct curandStateXORWOW ; 
 template <typename T> struct qprop ; 
 
+enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary
 
 template <typename T>
 struct qsim
@@ -75,6 +78,10 @@ struct qsim
     QSIM_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
     QSIM_METHOD float4  boundary_lookup( float nm, unsigned line, unsigned k ); 
 
+
+
+
+
     QSIM_METHOD float   scint_wavelength_hd0(curandStateXORWOW& rng);  
     QSIM_METHOD float   scint_wavelength_hd10(curandStateXORWOW& rng);
     QSIM_METHOD float   scint_wavelength_hd20(curandStateXORWOW& rng);
@@ -101,6 +108,7 @@ struct qsim
     QSIM_METHOD void    generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
     QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta ); 
+    QSIM_METHOD float3  uniform_sphere(curandStateXORWOW& rng); 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
 
 
@@ -267,6 +275,14 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float 
     //printf("//qsim.fill_state \n"); 
 }
 
+template <typename T>
+inline QSIM_METHOD float3 qsim<T>::uniform_sphere(curandStateXORWOW& rng)
+{
+    float phi = curand_uniform(&rng)*2.f*M_PIf;
+    float cosTheta = 2.f*curand_uniform(&rng) - 1.f ; // -1.f -> 1.f 
+    float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
+    return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
+}
 
 /**
 
@@ -291,17 +307,16 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
     float* wavelength = &p.q2.f.w ; 
     int4& flags = p.q3.i ;  
 
-    printf("//qsim.propagate_to_boundary distance_to_boundary %10.4f \n", distance_to_boundary ); 
-
-
-
-/*
     float u_scattering = curand_uniform(&rng) ;
     float u_absorption = curand_uniform(&rng) ;
     float scattering_distance = -scattering_length*logf(u_scattering);   
     float absorption_distance = -absorption_length*logf(u_absorption);
 
-   if (absorption_distance <= scattering_distance) 
+    printf("//qsim.propagate_to_boundary distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f u_scattering %10.4f u_absorption %10.4f \n", 
+      distance_to_boundary, absorption_distance, scattering_distance, u_scattering, u_absorption  ); 
+
+
+    if (absorption_distance <= scattering_distance) 
     {   
         if (absorption_distance <= distance_to_boundary) 
         {   
@@ -312,9 +327,9 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
 
             if (u_reemit < reemission_prob)    
             {   
-                *wavelength = reemission_lookup(curand_uniform(&rng));
-                *direction = uniform_sphere(&rng);
-                *polarization = normalize(cross(uniform_sphere(&rng), *direction));
+                *wavelength = scint_wavelength_hd20(rng);
+                *direction = uniform_sphere(rng);
+                *polarization = normalize(cross(uniform_sphere(rng), *direction));
                 flags.x = 0 ;   // no-boundary-yet for new direction
 
                 flag = BULK_REEMIT ;
@@ -345,7 +360,6 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
         }       
         //  otherwise sail to boundary  
     }     // if scattering_distance < absorption_distance
-*/
 
 
     *position += distance_to_boundary*(*direction) ;

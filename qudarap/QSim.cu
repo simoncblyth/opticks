@@ -383,23 +383,20 @@ __global__ void _QSim_propagate_to_boundary( qsim<T>* sim, quad4* photon, unsign
 
     if (id >= num_photon) return;
 
-    const qprd& prd = dbg->prd ;
-    quad4& p        = dbg->p ;
-    const qstate& s = dbg->s ; 
+    const qprd& prd = dbg->prd ;  // no need for local copy when readonly   
+    const qstate& s = dbg->s ;     
+    quad4 p         = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
 
     curandState rng = sim->rngstate[id] ; 
+
     unsigned flag = 0u ;  
-
     sim->propagate_to_boundary( flag, p, prd, s, rng );  
-
     p.q3.u.w = flag ;  // non-standard
-
     photon[id] = p ; 
 
     const float3* position = (float3*)&p.q0.f.x ; 
     const float& time = p.q0.f.w ; 
     printf("//_QSim_propagate_to_boundary flag %d position %10.4f %10.4f %10.4f  time %10.4f  \n", flag, position->x, position->y, position->z, time ); 
-
 
 }
 
