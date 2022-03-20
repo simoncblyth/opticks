@@ -147,7 +147,6 @@ set(HEADERS
     RenderStyle.hh
     GlobalStyle.hh
 
-    OpticksPhoton.h
     OpticksQuadrant.h
 
     IntersectSDF.hh
@@ -179,22 +178,10 @@ get_filename_component(ANADIR ../ana ABSOLUTE)
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR : ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "ANADIR : ${ANADIR}")
 
-set(HPH ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.h)
-set(IPH ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Enum.ini)
-add_custom_command(
-   OUTPUT 
-         ${IPH}
-   COMMAND 
-          ${ANADIR}/enum_.py ${HPH} --quiet --inipath ${IPH}
-   DEPENDS 
-         ${HPH}
-)
-add_custom_target(PythonPH ALL DEPENDS ${IPH} )
-# ALL : Indicates that this custom target should be added to the 
-# default build target so that it will be run every time.
 
 
-# OpticksGenstep.h moved to sysrap
+# OpticksPhoton.h and _Enum.ini generation moved to sysrap 
+# OpticksGenstep.h and _Enum_ini generation moved to sysrap
 
 
 
@@ -218,6 +205,9 @@ list(APPEND HEADERS
   ${PYJS}
   ${CFGS}
 ) 
+
+
+
 
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)

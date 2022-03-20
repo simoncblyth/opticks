@@ -19,9 +19,10 @@ msg="=== $BASH_SOURCE :"
 
 #export QBnd=INFO
 
-test=fill_state_0
+#test=fill_state_0
 #test=fill_state_1
 #test=water
+test=propagate_to_boundary
 
 export TEST=${TEST:-$test}
 

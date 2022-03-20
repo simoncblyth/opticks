@@ -198,6 +198,7 @@ set(HEADERS
     SCanvas.hh
 
     OpticksGenstep.h
+    OpticksPhoton.h
 )
 
 
@@ -217,6 +218,30 @@ add_custom_command(
          ${HGS}
 )
 add_custom_target(PythonGS ALL DEPENDS ${IGS} )
+
+
+
+
+set(HPH ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.h)
+set(IPH ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Enum.ini)
+add_custom_command(
+   OUTPUT 
+         ${IPH}
+   COMMAND 
+          ${ANADIR}/enum_.py ${HPH} --quiet --inipath ${IPH}
+   DEPENDS 
+         ${HPH}
+)
+add_custom_target(PythonPH ALL DEPENDS ${IPH} )
+# ALL : Indicates that this custom target should be added to the 
+# default build target so that it will be run every time.
+
+
+
+
+
+
+
 
 
 

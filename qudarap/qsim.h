@@ -16,6 +16,7 @@
 #include "qcurand.h"
 #include "qbnd.h"
 #include "qstate.h"
+#include "qprd.h"
 
 /**
 qsim.h : GPU side struct prepared CPU side by QSim.hh
@@ -53,9 +54,6 @@ struct qsim
     // and follow a similar approach for qcerenkov 
     // ... hmm there is commonality between the icdf textures with hd_factor on top 
     // that needs to be profited from 
-
-
-    
 
     static constexpr T one = T(1.) ;   
 
@@ -103,6 +101,9 @@ struct qsim
     QSIM_METHOD void    generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
     QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta ); 
+    QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
+
+
 
 #else
     qsim()
@@ -267,7 +268,91 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float 
 }
 
 
+/**
 
+could return the flag rather than the action and switch on the flag to continue/break/sail 
+
+**/
+
+template <typename T>
+inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng)
+{
+    const float& absorption_length = s.material1.y ; 
+    const float& scattering_length = s.material1.z ; 
+    const float& reemission_prob = s.material1.w ; 
+    const float& group_velocity = s.m1group2.x ; 
+
+    const float& distance_to_boundary = prd.t ; 
+
+    float3* position = (float3*)&p.q0.f.x ; 
+    float* time = &p.q0.f.w ;  
+    float3* direction = (float3*)&p.q1.f.x ; 
+    float3* polarization = (float3*)&p.q2.f.x ; 
+    float* wavelength = &p.q2.f.w ; 
+    int4& flags = p.q3.i ;  
+
+    printf("//qsim.propagate_to_boundary distance_to_boundary %10.4f \n", distance_to_boundary ); 
+
+
+
+/*
+    float u_scattering = curand_uniform(&rng) ;
+    float u_absorption = curand_uniform(&rng) ;
+    float scattering_distance = -scattering_length*logf(u_scattering);   
+    float absorption_distance = -absorption_length*logf(u_absorption);
+
+   if (absorption_distance <= scattering_distance) 
+    {   
+        if (absorption_distance <= distance_to_boundary) 
+        {   
+            *time += absorption_distance/group_velocity ;   
+            *position += absorption_distance*(*direction) ;
+
+            float u_reemit = reemission_prob == 0.f ? 2.f : curand_uniform(&rng);  // avoid consumption at absorption when not scintillator
+
+            if (u_reemit < reemission_prob)    
+            {   
+                *wavelength = reemission_lookup(curand_uniform(&rng));
+                *direction = uniform_sphere(&rng);
+                *polarization = normalize(cross(uniform_sphere(&rng), *direction));
+                flags.x = 0 ;   // no-boundary-yet for new direction
+
+                flag = BULK_REEMIT ;
+                return CONTINUE;
+            }    
+            else 
+            {   
+                flag = BULK_ABSORB ;
+                return BREAK;
+            }    
+        }   
+        //  otherwise sail to boundary  
+    }   
+    else 
+    {   
+        if (scattering_distance <= distance_to_boundary)
+        {
+            *time += scattering_distance/group_velocity ;
+            *position += scattering_distance*(*direction) ;
+
+            //rayleigh_scatter(p, rng);
+            //rayleigh_scatter_align(p, rng);   // consumes 5u at each turn of the loop
+
+            flag = BULK_SCATTER;
+            flags.x = 0 ;  // no-boundary-yet for new direction
+
+            return CONTINUE;
+        }       
+        //  otherwise sail to boundary  
+    }     // if scattering_distance < absorption_distance
+*/
+
+
+    *position += distance_to_boundary*(*direction) ;
+    *time += distance_to_boundary/group_velocity ;  
+
+    return 0 ;
+}
 
 
 

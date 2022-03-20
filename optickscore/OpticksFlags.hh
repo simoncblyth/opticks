@@ -31,6 +31,13 @@ class BMeta ;
 OpticksFlags
 =============
 
+TODO: downwards pressuse to migrate this to sysrap, requires:
+
+1. replacing BMeta with SMeta 
+2. npy/Index.hpp NSequence.hpp 
+
+
+
 Canonical m_flags resides in OpticksResource and is 
 instanciated with it.
 

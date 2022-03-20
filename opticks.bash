@@ -25,6 +25,7 @@ oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
 b7(){  opticks-build7 ; }
 oo7(){ oo ; b7 ; }
 cu(){  local cu ; date ; for cu in *.cu ; do echo touch $cu && touch $cu ; done ; ls -l *.cu ;  } 
+ocu(){ oxrap cu ; }
 
 oot(){ oo ; opticks-t ; : opticks.bash ; }
 t(){ typeset -f $*    ; : opticks.bash ; } 

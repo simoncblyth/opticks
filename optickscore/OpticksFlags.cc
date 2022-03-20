@@ -91,6 +91,13 @@ const char* OpticksFlags::_BAD_FLAG          = "XX" ;
 const char* OpticksFlags::_EFFICIENCY_CULL   = "EX" ; 
 const char* OpticksFlags::_EFFICIENCY_COLLECT = "EC" ; 
 
+/**
+OpticksFlags::MakeAbbrevMeta
+------------------------------
+
+Mapping from flag name string to flag abbreviation string. 
+
+**/
 
 BMeta* OpticksFlags::MakeAbbrevMeta()  // static 
 {

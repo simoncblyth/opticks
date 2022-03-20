@@ -42,7 +42,8 @@ enum {
    BOUNDARY_LOOKUP_LINE_LS_L,
    PROP_LOOKUP_Y,
    FILL_STATE_0,
-   FILL_STATE_1
+   FILL_STATE_1,
+   PROPAGATE_TO_BOUNDARY
 } ;
  
 unsigned TestType( const char* name )
@@ -63,6 +64,7 @@ unsigned TestType( const char* name )
    if(strcmp(name,"water") == 0    )    test = BOUNDARY_LOOKUP_LINE_WATER_W ;
    if(strcmp(name,"fill_state_0") == 0) test = FILL_STATE_0 ;
    if(strcmp(name,"fill_state_1") == 0) test = FILL_STATE_1 ;
+   if(strcmp(name,"propagate_to_boundary") == 0) test = PROPAGATE_TO_BOUNDARY ;
    
    bool known =  test != UNKNOWN  ;
    if(!known) LOG(fatal) << " test name " << name << " is unknown " ; 
@@ -105,11 +107,16 @@ struct QSimTest
     void fill_state(unsigned version); 
     void save_state( const char* subfold, const float* data, unsigned num_state  ); 
 
+    void propagate_to_boundary(unsigned num_photon); 
 
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material, T x0, T x1, unsigned nx ); 
 
     void prop_lookup( int iprop, T x0, T x1, unsigned nx ); 
+
+
+    
+
 
 }; 
 
@@ -215,6 +222,10 @@ void QSimTest<T>::cerenkov_photon_expt(unsigned num_photon, int print_id)
     NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
 }
 
+
+
+
+
 template <typename T>
 void QSimTest<T>::generate_photon()
 {
@@ -301,9 +312,16 @@ void QSimTest<T>::getStateNames(std::vector<std::string>& names, unsigned num_st
 }
 
  
-
-
-
+template <typename T>
+void QSimTest<T>::propagate_to_boundary(unsigned num_photon)
+{
+    LOG(info); 
+    std::vector<quad4> p(num_photon) ; 
+    qs.propagate_to_boundary( p.data(), p.size() ); 
+    int create_dirs = 1 ; // 1:filepath 
+    const char* path = SPath::Resolve(FOLD, "propagate_to_boundary", "p.npy", create_dirs ); 
+    NP::Write( path, (float*)p.data(), p.size(), 4, 4  ); 
+}
 
 
 /**
@@ -446,6 +464,7 @@ void QSimTest<T>::main(int argc, char** argv, unsigned test )
         case PROP_LOOKUP_Y:                 prop_lookup(-1, -1.f,16.f,1701)            ; break ;  
         case FILL_STATE_0:                  fill_state(0)                              ; break ;  
         case FILL_STATE_1:                  fill_state(1)                              ; break ;  
+        case PROPAGATE_TO_BOUNDARY:         propagate_to_boundary(8)                   ; break ;  
         default :                           std::cout << "unimplemented" << std::endl  ; break ; 
     }
 }

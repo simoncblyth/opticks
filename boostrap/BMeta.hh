@@ -33,6 +33,12 @@
 BMeta (formerly NMeta)
 ========================
 
+TODO: there is a more lightweight metadata class sysrap/SMeta that does not use boost, 
+      are aiming to replace use of BMeta with SMeta where possible by migrating 
+      functionality downwards : be guided is this by features needed by users 
+      which also have downwards pressure like okc/OpticksFlags 
+
+
 Metadata persistency using nlohmann::json single header which 
 
 * https://github.com/nlohmann/json

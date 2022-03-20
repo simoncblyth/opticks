@@ -347,14 +347,14 @@ __global__ void _QSim_fill_state_1( qsim<T>* sim, qstate* state,  unsigned num_s
 
     if (state_id >= num_state) return;
 
-    qstate s ; 
 
-    float wavelength = dbg->wavelength ; 
-    float cosTheta = dbg->cosTheta ;  
+    const float& wavelength = dbg->wavelength ; 
+    const float& cosTheta = dbg->cosTheta ;  
     int boundary = state_id + 1 ; // boundary is 1-based
 
     printf("//_QSim_fill_state_1 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );  
 
+    qstate s ; 
     sim->fill_state(s, boundary, wavelength, cosTheta ); 
 
     state[state_id] = s ; 
@@ -375,7 +375,43 @@ template void QSim_fill_state_1(dim3, dim3, qsim<float>* , qstate* , unsigned, q
 
 
 
+template <typename T>
+__global__ void _QSim_propagate_to_boundary( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    //printf("//_QSim_propagate_to_boundary blockIdx.x %d blockDim.x %d threadIdx.x %d propagate_id %d \n", blockIdx.x, blockDim.x, threadIdx.x, propagate_id ); 
 
+    if (id >= num_photon) return;
+
+    const qprd& prd = dbg->prd ;
+    quad4& p        = dbg->p ;
+    const qstate& s = dbg->s ; 
+
+    curandState rng = sim->rngstate[id] ; 
+    unsigned flag = 0u ;  
+
+    sim->propagate_to_boundary( flag, p, prd, s, rng );  
+
+    p.q3.u.w = flag ;  // non-standard
+
+    photon[id] = p ; 
+
+    const float3* position = (float3*)&p.q0.f.x ; 
+    const float& time = p.q0.f.w ; 
+    printf("//_QSim_propagate_to_boundary flag %d position %10.4f %10.4f %10.4f  time %10.4f  \n", flag, position->x, position->y, position->z, time ); 
+
+
+}
+
+template <typename T>
+extern void QSim_propagate_to_boundary(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  )
+{
+    printf("//QSim_propagate_to_boundary sim %p photon %p num_photon %d dbg %p \n", sim, photon, num_photon, dbg ); 
+    _QSim_propagate_to_boundary<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  );
+}
+
+template void QSim_propagate_to_boundary(dim3, dim3, qsim<double>* , quad4* , unsigned, qdebug*  ); 
+template void QSim_propagate_to_boundary(dim3, dim3, qsim<float>*  , quad4* , unsigned, qdebug*  ); 
 
 
 

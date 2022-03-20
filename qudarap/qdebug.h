@@ -1,13 +1,19 @@
 #pragma once
 
-//struct quad6 ; 
+#include "scuda.h"
+#include "squad.h"
+#include "qstate.h"
+#include "qprd.h"
 
 struct qdebug
 {
     float wavelength ; 
     float cosTheta ; 
 
-    //quad6* state ; 
+    qstate s ; 
+    qprd   prd ; 
+    quad4  p ; 
+
 }; 
 
 

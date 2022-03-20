@@ -224,6 +224,10 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     const float& wavelength = p.q2.f.w ; 
     sim->fill_state(s, prd->boundary, wavelength, cosTheta ); 
 
+
+    //int action = sim->propagate( p, prd, s, rng ); 
+
+
     // transform (x,z) intersect position into pixel coordinates (ix,iz)
     float3 ipos = origin + prd->t*direction ; 
 

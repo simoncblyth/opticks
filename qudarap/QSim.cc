@@ -224,8 +224,15 @@ void QSim<T>::init_sim()
 
 
 /**
-qdebug avoid having to play pass the parameter thru multiple levels of calls  
-to get a value onto the device 
+QSim::init_db
+----------------
+
+qdebug avoids having to play pass the parameter thru multiple levels of calls  
+to get values onto the device 
+
+Notice how not using pointers in qdebug provides a simple plain old struct way 
+to get structured info onto the device. 
+
 **/
 
 template <typename T>
@@ -233,11 +240,45 @@ void QSim<T>::init_dbg()
 {
     dbg = new qdebug ; 
 
-    //float cosTheta = -0.5f ; 
+    // miscellaneous used by fill_state testing 
+
     float cosTheta = 0.5f ; 
- 
     dbg->wavelength = 500.f ; 
     dbg->cosTheta = cosTheta ; 
+
+    // qstate: mocking result of fill_state 
+
+    float refractive_index = 1.5f ; 
+    float absorption_length = 1000.f ; 
+    float scattering_length = 1000.f ; 
+    float reemission_prob = 0.f ; 
+    float group_velocity = 300.f ; 
+
+    float detect = 0.f ; 
+    float absorb = 0.f ; 
+    float reflect_specular = 0.f ; 
+    float reflect_diffuse = 0.f ; 
+
+    dbg->s.material1 = make_float4( refractive_index, absorption_length, scattering_length, reemission_prob ); 
+    dbg->s.m1group2  = make_float4( group_velocity, 0.f, 0.f, 0.f ); 
+    dbg->s.material2 = make_float4( refractive_index, absorption_length, scattering_length, reemission_prob );  
+    dbg->s.surface   = make_float4( detect, absorb, reflect_specular, reflect_diffuse ); 
+    dbg->s.optical   = make_uint4( 0u, 0u, 0u, 0u );  // x/y/z/w index/type/finish/value  
+    dbg->s.index     = make_uint4( 0u, 0u, 0u, 0u );  // indices of m1/m2/surf/sensor
+
+    // qprd: mocking per-ray-data result of optix trace calls 
+
+    dbg->prd.normal = make_float3( 1.f, 0.f , 0.f ); 
+    dbg->prd.t =  100.f ; 
+    dbg->prd.identity = 101u ;
+    dbg->prd.boundary = 10u ;
+     
+    // quad4: mocking initial generated photon 
+
+    dbg->p.q0.f = make_float4( 0.f, 0.f, 0.f,   0.f ) ;   // position, time
+    dbg->p.q1.f = make_float4( 1.f, 0.f, 0.f,   1.f ) ;   // direction, weight
+    dbg->p.q2.f = make_float4( 0.f, 1.f, 0.f, 500.f ) ;   // polarization, wavelength
+    dbg->p.q3.u = make_uint4(  0u, 0u, 0u, 0u );         // flags 
 
     d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
 }
@@ -699,6 +740,25 @@ void QSim<T>::fill_state_1(qstate* state, unsigned num_state)
 
 
 
+template <typename T>
+extern void QSim_propagate_to_boundary(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  );
+
+template <typename T>
+void QSim<T>::propagate_to_boundary(quad4* photon, unsigned num_photon)
+{
+    assert( d_sim ); 
+    assert( d_dbg ); 
+
+    quad4* d_photon = QU::device_alloc<quad4>(num_photon) ; 
+
+    unsigned threads_per_block = 16 ;  
+    configureLaunch1D( num_photon, threads_per_block ); 
+
+    QSim_propagate_to_boundary(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg );  
+
+    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
+}
+ 
 
 
 
