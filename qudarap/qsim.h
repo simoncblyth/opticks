@@ -116,6 +116,7 @@ struct qsim
     QSIM_METHOD static void   rayleigh_scatter_align(quad4& p, curandStateXORWOW& rng ); 
 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
+    QSIM_METHOD int     propagate_at_boundary(                quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
 
 
 #else
@@ -485,7 +486,7 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
     float3* direction = (float3*)&p.q1.f.x ; 
     float3* polarization = (float3*)&p.q2.f.x ; 
     float* wavelength = &p.q2.f.w ; 
-    int4& flags = p.q3.i ;  
+    //int4& flags = p.q3.i ;  
 
     float u_scattering = curand_uniform(&rng) ;
     float u_absorption = curand_uniform(&rng) ;
@@ -510,7 +511,7 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
                 *wavelength = scint_wavelength_hd20(rng);
                 *direction = uniform_sphere(rng);
                 *polarization = normalize(cross(uniform_sphere(rng), *direction));
-                flags.x = 0 ;   // no-boundary-yet for new direction
+                //flags.x = 0 ;   // no-boundary-yet for new direction TODO:elimate 
 
                 flag = BULK_REEMIT ;
                 return CONTINUE;
@@ -530,15 +531,14 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
             *time += scattering_distance/group_velocity ;
             *position += scattering_distance*(*direction) ;
 
-            //rayleigh_scatter(p, rng);
-            //rayleigh_scatter_align(p, rng);   // consumes 5u at each turn of the loop
+            rayleigh_scatter_align(p, rng); // changes dir and pol, consumes 5u at each turn of rejection sampling loop
 
             flag = BULK_SCATTER;
-            flags.x = 0 ;  // no-boundary-yet for new direction
+            //flags.x = 0 ;  // no-boundary-yet for new direction : TODO: eliminate 
 
             return CONTINUE;
         }       
-        //  otherwise sail to boundary  
+          //  otherwise sail to boundary  
     }     // if scattering_distance < absorption_distance
 
 
@@ -548,6 +548,143 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
     return 0 ;
 }
 
+/**
+qsim::propagate_at_boundary
+------------------------------------------
+
+This was brought over from oxrap/cu/propagate.h:propagate_at_boundary_geant4_style 
+See env-/g4op-/G4OpBoundaryProcess.cc annotations to follow this
+and compare the Opticks and Geant4 implementations.
+
+Input:
+
+* p.direction
+* p.polarization
+* s.material1.x    : refractive index 
+* s.material2.x    : refractive index
+* prd.normal 
+
+Changes:
+
+* p.direction
+* p.polarization
+
+Consumes one random deciding between BOUNDARY_REFLECT and BOUNDARY_TRANSMIT
+
+Returns: BOUNDARY_REFLECT or BOUNDARY_TRANSMIT
+
+Notes:
+
+* when geometry dictates TIR there is no dependence on u_reflect and always get reflection
+
+
+**/
+
+template <typename T>
+inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng)
+{
+    const float3& surface_normal = prd.normal ; 
+    const float& n1 = s.material1.x ;
+    const float& n2 = s.material2.x ;   
+    float3* direction    = (float3*)&p.q1.f.x ; 
+    float3* polarization = (float3*)&p.q2.f.x ; 
+
+    const float eta = n1/n2 ; 
+    const float c1 = -dot(*direction, surface_normal ); // c1 arranged to be +ve  (G4 "cost1") : when direction against the normal 
+    const float eta_c1 = eta * c1 ; 
+
+    const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law 
+    bool tir = c2c2 < 0.f ; 
+
+
+    const float EdotN = dot(*polarization, surface_normal ) ;  // used for TIR polarization
+
+    const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f : so will always reflect
+
+    //printf("//qsim.propagate_at_boundary n1 %10.4f n2 %10.4f eta %10.4f c1 %10.4f c2c2 %10.4f tir %d c2 %10.4f \n", n1, n2, eta, c1, c2c2, tir, c2 ); 
+
+    const float n1c1 = n1*c1 ; 
+    const float n2c2 = n2*c2 ; 
+    const float n2c1 = n2*c1 ; 
+    const float n1c2 = n1*c2 ; 
+
+    //printf("//qsim.propagate_at_boundary c1 %10.4f n1c1 %10.4f n2c2 %10.4f n2c1 %10.4f n1c2 %10.4f \n", c1, n1c1, n2c2, n2c1, n1c2 ); 
+
+    const float3 A_trans = fabs(c1) > 0.999999f ? *polarization : normalize(cross(*direction, surface_normal)) ;
+
+    //printf("//qsim.propagate_at_boundary A_trans %10.4f %10.4f %10.4f  \n", A_trans.x, A_trans.y, A_trans.z ); 
+    
+    
+    // decompose polarization onto incident orthogonal basis
+
+    const float E1_perp = dot(*polarization, A_trans);   // fraction of E vector perpendicular to plane of incidence, ie S polarization
+    const float3 E1pp = E1_perp * A_trans ;               // S-pol transverse component   
+    const float3 E1pl = *polarization - E1pp ;           // P-pol parallel component 
+    const float E1_parl = length(E1pl) ;
+
+    //printf("//qsim.propagate_at_boundary E1pp ( %10.4f %10.4f %10.4f ) E1pl ( %10.4f %10.4f %10.4f ) E1_parl %10.4f \n", E1pp.x, E1pp.y, E1pp.z, E1pl.x, E1pl.y, E1pl.z, E1_parl ); 
+
+
+    // G4OpBoundaryProcess at normal incidence, mentions Jackson and uses 
+    //      A_trans  = OldPolarization; E1_perp = 0. E1_parl = 1. 
+    // but that seems inconsistent with the above dot product, above is swapped cf that
+
+    const float E2_perp_t = 2.f*n1c1*E1_perp/(n1c1+n2c2);  // Fresnel S-pol transmittance
+    const float E2_parl_t = 2.f*n1c1*E1_parl/(n2c1+n1c2);  // Fresnel P-pol transmittance
+
+    // SUSPECT DEVIATION FROM GEANT4 AT NORMAL INCIDENCE : SHOULD SET E1_perp 0.f E1_parl 1.f FOR NORMAL INCIDENCE 
+
+    printf("//qsim.propagate_at_boundary E2_perp_t %10.4f E2_parl_t %10.4f \n", E2_perp_t, E2_parl_t ); 
+
+    const float E2_perp_r = E2_perp_t - E1_perp;           // Fresnel S-pol reflectance
+    const float E2_parl_r = (n2*E2_parl_t/n1) - E1_parl ;  // Fresnel P-pol reflectance
+
+
+    const float2 E2_t = make_float2( E2_perp_t, E2_parl_t ) ; 
+    const float2 E2_r = make_float2( E2_perp_r, E2_parl_r ) ; 
+
+    const float  E2_total_t = dot(E2_t,E2_t) ; 
+
+
+    const float2 TT = normalize(E2_t) ; 
+    const float2 R = normalize(E2_r) ; 
+
+    const float TransCoeff =  tir ? 0.0f : n2c2*E2_total_t/n1c1 ; 
+    //  above 0.0f was until 2016/3/4 incorrectly a 1.0f 
+    //  resulting in TIR yielding BT where BR is expected
+
+
+    const float u_reflect = curand_uniform(&rng) ;
+    bool reflect = u_reflect > TransCoeff  ;
+
+    printf("//qsim.propagate_at_boundary n2c2 %10.4f E2_total_t %10.4f n1c1 %10.4f u_reflect %10.4f TransCoeff %10.4f (n2c2.E2_total_t/n1c1)  reflect %d \n", 
+        n2c2,  E2_total_t, n1c1, u_reflect, TransCoeff, reflect ); 
+
+
+    *direction = reflect
+                    ?
+                       *direction + 2.0f*c1*surface_normal
+                    :
+                       eta*(*direction) + (eta_c1 - c2)*surface_normal
+                    ;
+
+    const float3 A_paral = normalize(cross(*direction, A_trans));
+
+    *polarization = reflect ?
+                                ( tir ?
+                                        -(*polarization) + 2.f*EdotN*surface_normal
+                                      :
+                                        R.x*A_trans + R.y*A_paral
+                                )
+                            :
+                                TT.x*A_trans + TT.y*A_paral
+                            ;
+
+    //p.flags.i.x = 0 ;  // no-boundary-yet for new direction   TODO: eliminate 
+
+    return reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
+}
+ 
 
 
 

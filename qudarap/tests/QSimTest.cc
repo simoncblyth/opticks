@@ -46,8 +46,11 @@ enum {
    PROP_LOOKUP_Y,
    FILL_STATE_0,
    FILL_STATE_1,
+   RAYLEIGH_SCATTER_ALIGN,
    PROPAGATE_TO_BOUNDARY,
-   RAYLEIGH_SCATTER_ALIGN
+   PROPAGATE_AT_BOUNDARY,
+   PROPAGATE_AT_SURFACE
+
 } ;
  
 unsigned TestType( const char* name )
@@ -68,8 +71,10 @@ unsigned TestType( const char* name )
    if(strcmp(name,"water") == 0    )    test = BOUNDARY_LOOKUP_LINE_WATER_W ;
    if(strcmp(name,"fill_state_0") == 0) test = FILL_STATE_0 ;
    if(strcmp(name,"fill_state_1") == 0) test = FILL_STATE_1 ;
-   if(strcmp(name,"propagate_to_boundary") == 0)  test = PROPAGATE_TO_BOUNDARY ;
    if(strcmp(name,"rayleigh_scatter_align") == 0) test = RAYLEIGH_SCATTER_ALIGN ;
+   if(strcmp(name,"propagate_to_boundary") == 0)  test = PROPAGATE_TO_BOUNDARY ;
+   if(strcmp(name,"propagate_at_boundary") == 0)  test = PROPAGATE_AT_BOUNDARY ;
+   if(strcmp(name,"propagate_at_surface")  == 0)  test = PROPAGATE_AT_SURFACE ;
    
    bool known =  test != UNKNOWN  ;
    if(!known) LOG(fatal) << " test name " << name << " is unknown " ; 
@@ -99,6 +104,11 @@ struct QSimTest
     void main(int argc, char** argv, unsigned test); 
 
     void rng_sequence(unsigned ni, int ni_tranche_size); 
+
+    void boundary_lookup_all();
+    void boundary_lookup_line(const char* material, T x0, T x1, unsigned nx ); 
+    void prop_lookup( int iprop, T x0, T x1, unsigned nx ); 
+
     void wavelength(char mode, unsigned num_wavelength) ; 
 
     void scint_photon(unsigned num_photon); 
@@ -107,19 +117,20 @@ struct QSimTest
     void cerenkov_photon_expt(  unsigned num_photon, int print_id); 
 
     void generate_photon(); 
-
     void getStateNames(std::vector<std::string>& names, unsigned num_state) const ; 
+
+    void save_array(     const char* subfold, const char* name, const float* data, unsigned ni, unsigned nj, unsigned nk ); 
+    void save_photon(    const char* subfold, const char* name, const std::vector<quad4>& p ); 
+    void save_dbg_photon(const char* subfold, const char* name); 
+
     void fill_state(unsigned version); 
     void save_state( const char* subfold, const float* data, unsigned num_state  ); 
 
-    void save_dbg_photon(const char* subfold, const char* name); 
     void rayleigh_scatter_align(unsigned num_photon); 
     void propagate_to_boundary(unsigned num_photon); 
+    void propagate_at_boundary(unsigned num_photon); 
+    void propagate_at_surface(unsigned num_photon); 
 
-    void boundary_lookup_all();
-    void boundary_lookup_line(const char* material, T x0, T x1, unsigned nx ); 
-
-    void prop_lookup( int iprop, T x0, T x1, unsigned nx ); 
 }; 
 
 template <typename T>
@@ -141,6 +152,116 @@ void QSimTest<T>::rng_sequence(unsigned ni, int ni_tranche_size_)
 
     qs.rng_sequence(FOLD, ni, nj, nk, ni_tranche_size ); 
 }
+
+
+/**
+QSimTest::boundary_lookup_all
+-------------------------------
+
+Does lookups at every texel of the 2d float4 boundary texture 
+
+**/
+
+template <typename T>
+void QSimTest<T>::boundary_lookup_all()
+{
+    LOG(info); 
+    unsigned width = qs.getBoundaryTexWidth(); 
+    unsigned height = qs.getBoundaryTexHeight(); 
+    const NP* src = qs.getBoundaryTexSrc(); 
+    unsigned num_lookup = width*height ; 
+
+    std::vector<quad> lookup(num_lookup); 
+    qs.boundary_lookup_all( lookup.data(), width, height ); 
+
+    NP::Write( FOLD, "boundary_lookup_all.npy" ,  (float*)lookup.data(), height, width, 4 ); 
+    src->save( FOLD, "boundary_lookup_all_src.npy" ); 
+}
+
+/**
+QSimTest::boundary_lookup_line
+-------------------------------
+
+hmm need templated quad for this to work with T=double 
+as its relying on 4*T = quad 
+
+Actually no, if just narrow to float/quad at output  
+
+
+**/
+template <typename T>
+void QSimTest<T>::boundary_lookup_line(const char* material, T x0 , T x1, unsigned nx )
+{
+    LOG(info); 
+
+    unsigned line = qs.bnd->getMaterialLine(material); 
+    if( line == ~0u )
+    {
+        LOG(fatal) << " material not in boundary tex " << material ; 
+        assert(0); 
+    }
+
+    LOG(info) << " material " << material << " line " << line ; 
+    unsigned k = 0 ;    // 0 or 1 picking the property float4 group to collect 
+
+
+    NP* x = NP::Linspace<T>(x0,x1,nx); 
+    T* xx = x->values<T>(); 
+
+    std::vector<quad> lookup(nx) ; 
+    qs.boundary_lookup_line( lookup.data(), xx, nx, line, k ); 
+
+    NP::Write( FOLD, "boundary_lookup_line_props.npy" ,    (float*)lookup.data(), nx, 4  ); 
+    NP::Write( FOLD, "boundary_lookup_line_wavelength.npy" ,  xx, nx ); 
+}
+
+template<typename T>
+void QSimTest<T>::prop_lookup( int iprop, T x0, T x1, unsigned nx )
+{
+    unsigned tot_prop = qs.prop->ni ; 
+    const NP* pp = qs.prop->a ; 
+
+    std::vector<unsigned> pids ; 
+    if( iprop == -1 )
+    { 
+        for(unsigned i=0 ; i < tot_prop ; i++ ) pids.push_back(i);
+    }
+    else
+    {
+        pids.push_back(iprop); 
+    } 
+
+    unsigned num_prop = pids.size() ; 
+
+    LOG(info) 
+        << " tot_prop " << tot_prop
+        << " iprop " << iprop
+        << " pids.size " << pids.size()
+        << " num_prop " << num_prop 
+        << " pp " << pp->desc()
+        ; 
+
+
+    NP* yy = NP::Make<T>(num_prop, nx) ; 
+    NP* x = NP::Linspace<T>(x0,x1,nx); 
+
+    qs.prop_lookup_onebyone( yy->values<T>(), x->cvalues<T>(), nx, pids ) ;
+
+    const char* reldir = sizeof(T) == 8 ? "double" : "float" ; 
+
+    pp->save(FOLD, reldir, "prop_lookup_pp.npy" ); 
+    x->save(FOLD, reldir, "prop_lookup_x.npy" ); 
+    yy->save(FOLD, reldir, "prop_lookup_yy.npy" ); 
+}
+
+
+
+
+
+
+
+
+
 
 template <typename T>
 void QSimTest<T>::wavelength(char mode, unsigned num_wavelength )
@@ -313,139 +434,66 @@ void QSimTest<T>::getStateNames(std::vector<std::string>& names, unsigned num_st
 }
 
 
+ 
+template <typename T>
+void QSimTest<T>::save_array(const char* subfold, const char* name, const float* data, unsigned ni, unsigned nj, unsigned nk )
+{
+    const char* path = SPath::Resolve(FOLD, subfold, name, FILEPATH ); 
+    NP::Write( path, data, ni, nj, nk  ); 
+}
+
+template <typename T>
+void QSimTest<T>::save_photon(const char* subfold, const char* name, const std::vector<quad4>& p )
+{
+    save_array(subfold, name, (float*)p.data(), p.size(), 4, 4  );
+}
+
 template <typename T>
 void QSimTest<T>::save_dbg_photon(const char* subfold, const char* name)
 {
     const quad4& p0 = qs.dbg->p ; 
-    const char* path = SPath::Resolve(FOLD, subfold, name, FILEPATH ); 
-    NP::Write( path,  p0.cdata(), 1, 4, 4  ); 
+    save_array(subfold, name, p0.cdata(), 1, 4, 4 );      
 }
- 
+
+
 template <typename T>
 void QSimTest<T>::rayleigh_scatter_align(unsigned num_photon)
 {
-    LOG(info); 
     const char* subfold = "rayleigh_scatter_align" ; 
     std::vector<quad4> p(num_photon) ; 
     qs.rayleigh_scatter_align( p.data(), p.size() ); 
-    const char* path = SPath::Resolve(FOLD, subfold, "p.npy", FILEPATH ); 
-    NP::Write( path, (float*)p.data(), p.size(), 4, 4  ); 
-    save_dbg_photon(subfold, "p0.npy" );      
+    save_photon( subfold, "p.npy", p ); 
+    save_dbg_photon( subfold, "p0.npy"); 
 }
-
  
 template <typename T>
 void QSimTest<T>::propagate_to_boundary(unsigned num_photon)
 {
-    LOG(info); 
+    const char* subfold = "propagate_to_boundary" ; 
     std::vector<quad4> p(num_photon) ; 
     qs.propagate_to_boundary( p.data(), p.size() ); 
-    int create_dirs = 1 ; // 1:filepath 
-    const char* path = SPath::Resolve(FOLD, "propagate_to_boundary", "p.npy", create_dirs ); 
-    NP::Write( path, (float*)p.data(), p.size(), 4, 4  ); 
+    save_photon(subfold,  "p.npy", p ); 
+    save_dbg_photon( subfold, "p0.npy"); 
 }
-
-
-/**
-QSimTest::boundary_lookup_all
--------------------------------
-
-Does lookups at every texel of the 2d float4 boundary texture 
-
-**/
 
 template <typename T>
-void QSimTest<T>::boundary_lookup_all()
+void QSimTest<T>::propagate_at_boundary(unsigned num_photon)
 {
-    LOG(info); 
-    unsigned width = qs.getBoundaryTexWidth(); 
-    unsigned height = qs.getBoundaryTexHeight(); 
-    const NP* src = qs.getBoundaryTexSrc(); 
-    unsigned num_lookup = width*height ; 
-
-    std::vector<quad> lookup(num_lookup); 
-    qs.boundary_lookup_all( lookup.data(), width, height ); 
-
-    NP::Write( FOLD, "boundary_lookup_all.npy" ,  (float*)lookup.data(), height, width, 4 ); 
-    src->save( FOLD, "boundary_lookup_all_src.npy" ); 
+    const char* subfold = "propagate_at_boundary" ; 
+    std::vector<quad4> p(num_photon) ; 
+    qs.propagate_at_boundary( p.data(), p.size() ); 
+    save_photon(subfold,  "p.npy", p ); 
+    save_dbg_photon( subfold, "p0.npy"); 
 }
 
-
-
-/**
-QSimTest::boundary_lookup_line
--------------------------------
-
-hmm need templated quad for this to work with T=double 
-as its relying on 4*T = quad 
-
-Actually no, if just narrow to float/quad at output  
-
-
-**/
 template <typename T>
-void QSimTest<T>::boundary_lookup_line(const char* material, T x0 , T x1, unsigned nx )
+void QSimTest<T>::propagate_at_surface(unsigned num_photon)
 {
-    LOG(info); 
-
-    unsigned line = qs.bnd->getMaterialLine(material); 
-    if( line == ~0u )
-    {
-        LOG(fatal) << " material not in boundary tex " << material ; 
-        assert(0); 
-    }
-
-    LOG(info) << " material " << material << " line " << line ; 
-    unsigned k = 0 ;    // 0 or 1 picking the property float4 group to collect 
-
-
-    NP* x = NP::Linspace<T>(x0,x1,nx); 
-    T* xx = x->values<T>(); 
-
-    std::vector<quad> lookup(nx) ; 
-    qs.boundary_lookup_line( lookup.data(), xx, nx, line, k ); 
-
-    NP::Write( FOLD, "boundary_lookup_line_props.npy" ,    (float*)lookup.data(), nx, 4  ); 
-    NP::Write( FOLD, "boundary_lookup_line_wavelength.npy" ,  xx, nx ); 
-}
-
-template<typename T>
-void QSimTest<T>::prop_lookup( int iprop, T x0, T x1, unsigned nx )
-{
-    unsigned tot_prop = qs.prop->ni ; 
-    const NP* pp = qs.prop->a ; 
-
-    std::vector<unsigned> pids ; 
-    if( iprop == -1 )
-    { 
-        for(unsigned i=0 ; i < tot_prop ; i++ ) pids.push_back(i);
-    }
-    else
-    {
-        pids.push_back(iprop); 
-    } 
-
-    unsigned num_prop = pids.size() ; 
-
-    LOG(info) 
-        << " tot_prop " << tot_prop
-        << " iprop " << iprop
-        << " pids.size " << pids.size()
-        << " num_prop " << num_prop 
-        << " pp " << pp->desc()
-        ; 
-
-
-    NP* yy = NP::Make<T>(num_prop, nx) ; 
-    NP* x = NP::Linspace<T>(x0,x1,nx); 
-
-    qs.prop_lookup_onebyone( yy->values<T>(), x->cvalues<T>(), nx, pids ) ;
-
-    const char* reldir = sizeof(T) == 8 ? "double" : "float" ; 
-
-    pp->save(FOLD, reldir, "prop_lookup_pp.npy" ); 
-    x->save(FOLD, reldir, "prop_lookup_x.npy" ); 
-    yy->save(FOLD, reldir, "prop_lookup_yy.npy" ); 
+    const char* subfold = "propagate_at_surface" ; 
+    std::vector<quad4> p(num_photon) ; 
+    //qs.propagate_at_surface( p.data(), p.size() ); 
+    save_photon(subfold,  "p.npy", p ); 
+    save_dbg_photon( subfold, "p0.npy"); 
 }
 
 
@@ -488,8 +536,10 @@ void QSimTest<T>::main(int argc, char** argv, unsigned test )
         case PROP_LOOKUP_Y:                 prop_lookup(-1, -1.f,16.f,1701)            ; break ;  
         case FILL_STATE_0:                  fill_state(0)                              ; break ;  
         case FILL_STATE_1:                  fill_state(1)                              ; break ;  
-        case PROPAGATE_TO_BOUNDARY:         propagate_to_boundary(8)                   ; break ;  
         case RAYLEIGH_SCATTER_ALIGN:        rayleigh_scatter_align(num)                ; break ;   
+        case PROPAGATE_TO_BOUNDARY:         propagate_to_boundary(8)                   ; break ;  
+        case PROPAGATE_AT_BOUNDARY:         propagate_at_boundary(8)                   ; break ;  
+        case PROPAGATE_AT_SURFACE:          propagate_at_surface(8)                    ; break ;  
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 
     }
 }

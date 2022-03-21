@@ -204,7 +204,6 @@ Inputs:
 * s.material1.x    : refractive index 
 * s.material2.x    : refractive index
 * s.surface_normal 
-* s.cos_theta       (for noting normal incidence)
 
 Outputs:
 

@@ -251,21 +251,26 @@ void QSim<T>::init_dbg()
 
     // qstate: mocking result of fill_state 
 
-    float refractive_index = 1.5f ; 
-    float absorption_length = 1000.f ; 
-    float scattering_length = 1000.f ; 
-    float reemission_prob = 0.f ; 
-    float group_velocity = 300.f ; 
+    float m1_refractive_index = 1.0f ; 
+    float m1_absorption_length = 1000.f ; 
+    float m1_scattering_length = 1000.f ; 
+    float m1_reemission_prob = 0.f ; 
+    float m1_group_velocity = 300.f ; 
 
-    float detect = 0.f ; 
-    float absorb = 0.f ; 
-    float reflect_specular = 0.f ; 
-    float reflect_diffuse = 0.f ; 
+    float m2_refractive_index = 1.5f ; 
+    float m2_absorption_length = 1000.f ; 
+    float m2_scattering_length = 1000.f ; 
+    float m2_reemission_prob = 0.f ; 
 
-    dbg->s.material1 = make_float4( refractive_index, absorption_length, scattering_length, reemission_prob ); 
-    dbg->s.m1group2  = make_float4( group_velocity, 0.f, 0.f, 0.f ); 
-    dbg->s.material2 = make_float4( refractive_index, absorption_length, scattering_length, reemission_prob );  
-    dbg->s.surface   = make_float4( detect, absorb, reflect_specular, reflect_diffuse ); 
+    float su_detect = 0.f ; 
+    float su_absorb = 0.f ; 
+    float su_reflect_specular = 0.f ; 
+    float su_reflect_diffuse = 0.f ; 
+
+    dbg->s.material1 = make_float4( m1_refractive_index, m1_absorption_length, m1_scattering_length, m1_reemission_prob ); 
+    dbg->s.material2 = make_float4( m2_refractive_index, m2_absorption_length, m2_scattering_length, m2_reemission_prob );  
+    dbg->s.m1group2  = make_float4( m1_group_velocity, 0.f, 0.f, 0.f ); 
+    dbg->s.surface   = make_float4( su_detect, su_absorb, su_reflect_specular, su_reflect_diffuse ); 
     dbg->s.optical   = make_uint4( 0u, 0u, 0u, 0u );  // x/y/z/w index/type/finish/value  
     dbg->s.index     = make_uint4( 0u, 0u, 0u, 0u );  // indices of m1/m2/surf/sensor
 
@@ -787,6 +792,38 @@ void QSim<T>::propagate_to_boundary(quad4* photon, unsigned num_photon)
 
     QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 }
+
+
+
+
+
+template <typename T>
+extern void QSim_propagate_at_boundary(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  );
+
+template <typename T>
+void QSim<T>::propagate_at_boundary(quad4* photon, unsigned num_photon)
+{
+    assert( d_sim ); 
+    assert( d_dbg ); 
+
+    quad4* d_photon = QU::device_alloc<quad4>(num_photon) ; 
+
+    unsigned threads_per_block = 16 ;  
+    configureLaunch1D( num_photon, threads_per_block ); 
+
+    QSim_propagate_at_boundary(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg );  
+
+    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
+}
+ 
+
+
+
+
+
+
+
+
  
 
 
