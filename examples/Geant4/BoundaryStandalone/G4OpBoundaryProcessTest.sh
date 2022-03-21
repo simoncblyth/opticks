@@ -2,7 +2,7 @@
 
 msg="=== $BASH_SOURCE :"
 
-srcs=(G4OpBoundaryProcessTest.cc)
+srcs=(G4OpBoundaryProcessTest.cc ../CerenkovStandalone/OpticksUtil.cc)
 name=${srcs[0]}
 name=${name/.cc}
 
@@ -20,6 +20,7 @@ standalone-compile(){
         $* \
          -std=c++11 \
        -I. \
+       -I../CerenkovStandalone \
        -g \
        -I$HOME/np \
        -I$(boost-prefix)/include \
@@ -38,6 +39,7 @@ standalone-compile(){
        -lG4track \
        -lG4tracking \
        -lG4processes \
+       -lG4geometry \
        -lCLHEP \
        -o /tmp/$name/$name 
 EOC
@@ -45,6 +47,8 @@ EOC
 
 
 arg=${1:-build_run_ana}
+
+DEBUG=1
 
 if [ "${arg/build}" != "$arg" ]; then 
     standalone-compile ${srcs[@]}

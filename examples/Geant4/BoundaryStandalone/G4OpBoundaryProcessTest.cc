@@ -1,4 +1,14 @@
+/**
+G4OpBoundaryProcessTest.cc
+============================
 
+Attempt to minimally mockup Geant4 environment needed for G4OpBoundaryProcess::PostStepDoIt 
+looks too difficult because of the access to the surface normal G4Navigator::GetGlobalExitNormal
+plus also there is optical surface checking too. 
+
+Probably easiest to setup a "proper" Geant4 geometry to test within. 
+
+**/
 #include <iostream>
 #include <iomanip>
 
@@ -9,7 +19,11 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4VParticleChange.hh"
+#include "G4NavigationHistory.hh"
+#include "G4TouchableHistory.hh"
+#include "G4TouchableHandle.hh"
 
+#include "OpticksUtil.hh"
 #include "NP.hh"
 
 
@@ -31,6 +45,13 @@ struct G4OpBoundaryProcessTest
     const float3&   mom ; 
     const float3&   pol ; 
 
+    const NP* a_rindex1 ; 
+    const NP* a_rindex2 ; 
+    const G4MaterialPropertyVector* rindex1 ; 
+    const G4MaterialPropertyVector* rindex2 ;
+    const G4Material* material1 ; 
+    const G4Material* material2 ; 
+
     G4OpBoundaryProcess* proc ; 
     G4Track*             track ; 
     G4Step*              step ;  
@@ -48,6 +69,12 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float
     pos(pos_),
     mom(mom_),
     pol(pol_),
+    a_rindex1(NP::Make<double>(1.55/1e6, 1.0, 15.5/1e6, 1.0)), 
+    a_rindex2(NP::Make<double>(1.55/1e6, 1.5, 15.5/1e6, 1.5)), 
+    rindex1(OpticksUtil::MakeProperty(a_rindex1)),
+    rindex2(OpticksUtil::MakeProperty(a_rindex2)),
+    material1(OpticksUtil::MakeMaterial(rindex1, "Material1")),
+    material2(OpticksUtil::MakeMaterial(rindex2, "Material2")),
     proc(new G4OpBoundaryProcess()),
     track(nullptr),
     step(new G4Step)
@@ -71,17 +98,48 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float
     pre->SetPosition(pre_position); 
     post->SetPosition(post_position); 
 
-    G4Material* material = nullptr ; 
+
+    // HMM : MOCKING IS INVOLVED BECAUSE NEED TO GET A SURFACE NORMAL WITH G4Navigator::GetGlobalExitNormal
+
+    // g4-cls G4PathFinder
+
+    G4VPhysicalVolume* prePV = nullptr ; 
+    G4VPhysicalVolume* postPV = nullptr ; 
+
+    G4NavigationHistory* pre_navHist = new G4NavigationHistory ; 
+    pre_navHist->SetFirstEntry( prePV ); 
+
+    G4NavigationHistory* post_navHist = new G4NavigationHistory ; 
+    post_navHist->SetFirstEntry( postPV ); 
+
+    G4TouchableHistory* pre_touchHist = new G4TouchableHistory(*pre_navHist);  
+    G4TouchableHistory* post_touchHist = new G4TouchableHistory(*post_navHist);  
+
+    G4TouchableHandle pre_touchable(pre_touchHist);  
+    G4TouchableHandle post_touchable(post_touchHist);  
+
+    pre->SetTouchableHandle(pre_touchable); 
+    post->SetTouchableHandle(post_touchable); 
+
+    const G4StepStatus postStepStatus = fGeomBoundary ; 
+    post->SetStepStatus( postStepStatus ); 
+
 
     // G4Track::GetMaterial comes from current step preStepPoint 
-    pre->SetMaterial(material); 
-    post->SetMaterial(material); 
 
-    G4double step_length = 0. ; 
+    G4Material* material1_ = const_cast<G4Material*>(material1); 
+    G4Material* material2_ = const_cast<G4Material*>(material2); 
+
+    pre->SetMaterial(material1_);    // HUH: why not const 
+    post->SetMaterial(material2_); 
+
+    G4double step_length = 1. ; 
 
     step->SetPreStepPoint(pre);
     step->SetPostStepPoint(post);
     step->SetStepLength(step_length);
+
+    track->SetStepLength(step_length); 
  
     track->SetStep(step);
 }
@@ -95,8 +153,18 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(unsigned num)
     {
         G4VParticleChange* change = proc->PostStepDoIt(*track, *step) ;
         G4OpBoundaryProcessStatus theStatus = proc->GetStatus(); 
-        bool nab = theStatus == NotAtBoundary ; 
-        std::cout << " theStatus " << theStatus << " NotAtBoundary  " << nab << std::endl ; 
+
+        bool NotAtBoundary_ = theStatus == NotAtBoundary ; 
+        bool StepTooSmall_ = theStatus == StepTooSmall ; 
+        bool NoRINDEX_ = theStatus == NoRINDEX  ; 
+
+        std::cout 
+            << " theStatus " << theStatus 
+            << " NotAtBoundary  " << NotAtBoundary_
+            << " StepTooSmall " << StepTooSmall_
+            << " NoRINDEX " << NoRINDEX_
+            << std::endl 
+            ; 
 
 
         G4ParticleChange* pc = dynamic_cast<G4ParticleChange*>(change);  

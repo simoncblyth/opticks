@@ -7,7 +7,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
-#include "OpticksDebug.hh"
+#include "OpticksUtil.hh"
 #include "NP.hh"
 
 struct RINDEXTest
@@ -28,8 +28,8 @@ const char* RINDEXTest::FOLD = "/tmp/RINDEXTest" ;
 
 RINDEXTest::RINDEXTest( const char* path )
     :
-    a(OpticksDebug::LoadArray(path)),
-    rindex( a ? OpticksDebug::MakeProperty(a) : nullptr)
+    a(OpticksUtil::LoadArray(path)),
+    rindex( a ? OpticksUtil::MakeProperty(a) : nullptr)
 {
     std::cout << "loaded from " << path << std::endl ;  
     assert( a ); 
@@ -62,12 +62,11 @@ void RINDEXTest::save(const char* reldir)
    if( v.size() > 0 ) 
    {
        // creates reldir if needed
-       std::string path = OpticksDebug::prepare_path( FOLD, reldir, "photons.npy" ); 
+       std::string path = OpticksUtil::prepare_path( FOLD, reldir, "photons.npy" ); 
        std::cout << " saving to " << path << std::endl ; 
        NP::Write( FOLD, reldir, "g4_line_lookup.npy", v.data(), v.size()/2, 2 ); 
    }
 }
-
 
 int main(int argc, char** argv)
 {
@@ -81,6 +80,15 @@ int main(int argc, char** argv)
     RINDEXTest t(path); 
     t.g4_line_lookup(80., 800., 0.1); 
     t.save(); 
+
+    std::cout << " t.a " << t.a->sstr() << std::endl ; 
+
+    double dscale = 1e6 ; 
+    t.a->pdump<double>(argv[0], dscale ); 
+
+    
+
+
 
     return 0 ;
 }

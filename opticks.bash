@@ -27,6 +27,10 @@ oo7(){ oo ; b7 ; }
 cu(){  local cu ; date ; for cu in *.cu ; do echo touch $cu && touch $cu ; done ; ls -l *.cu ;  } 
 ocu(){ oxrap cu ; }
 
+bst(){ cd $(opticks-home)/examples/Geant4/BoundaryStandalone ;  }
+yst(){ cd $(opticks-home)/examples/Geant4/RayleighStandalone ;  }
+
+
 oot(){ oo ; opticks-t ; : opticks.bash ; }
 t(){ typeset -f $*    ; : opticks.bash ; } 
 rc(){ local RC=$?; echo RC $RC; return $RC ; : opticks.bash ;  }

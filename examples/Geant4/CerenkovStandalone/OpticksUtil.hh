@@ -13,7 +13,7 @@ struct OpticksUtil
     static NP* LoadRandom(const char* random_path);
 
     static G4MaterialPropertyVector* MakeProperty(const NP* a);
-    static G4Material* MakeMaterial(G4MaterialPropertyVector* rindex) ; 
+    static G4Material* MakeMaterial(const G4MaterialPropertyVector* rindex, const char* name="Water") ; 
 
     static int getenvint(const char* envkey, int fallback);
     static bool ExistsPath(const char* base_, const char* reldir_=nullptr, const char* name_=nullptr );

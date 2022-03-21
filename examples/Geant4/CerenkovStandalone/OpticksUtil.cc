@@ -25,6 +25,7 @@ NP* OpticksUtil::LoadArray(const char* kdpath) // static
     return a ; 
 }
 
+
 G4MaterialPropertyVector* OpticksUtil::MakeProperty(const NP* a)  // static
 {
     unsigned nv = a->num_values() ; 
@@ -52,7 +53,10 @@ G4MaterialPropertyVector* OpticksUtil::MakeProperty(const NP* a)  // static
     return mpv ; 
 }
 
-G4Material* OpticksUtil::MakeMaterial(G4MaterialPropertyVector* rindex)  // static
+
+
+
+G4Material* OpticksUtil::MakeMaterial(const G4MaterialPropertyVector* rindex, const char* name)  // static
 {
     // its Water, but that makes no difference for Cerenkov 
     // the only thing that matters us the rindex property
@@ -60,12 +64,14 @@ G4Material* OpticksUtil::MakeMaterial(G4MaterialPropertyVector* rindex)  // stat
     G4int nelements;
     G4Element* O = new G4Element("Oxygen"  , "O", z=8 , a=16.00*CLHEP::g/CLHEP::mole);
     G4Element* H = new G4Element("Hydrogen", "H", z=1 , a=1.01*CLHEP::g/CLHEP::mole);
-    G4Material* mat = new G4Material("Water", density= 1.0*CLHEP::g/CLHEP::cm3, nelements=2);
+    G4Material* mat = new G4Material(name, density= 1.0*CLHEP::g/CLHEP::cm3, nelements=2);
     mat->AddElement(H, 2);
     mat->AddElement(O, 1);
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
-    mpt->AddProperty("RINDEX", rindex );   
+
+    G4MaterialPropertyVector* rindex_ = const_cast<G4MaterialPropertyVector*>(rindex) ;  // HUH: why not const ?
+    mpt->AddProperty("RINDEX", rindex_ );   
     mat->SetMaterialPropertiesTable(mpt) ;
     return mat ; 
 }
