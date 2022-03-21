@@ -35,6 +35,10 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
 
+    # PYVISTA_KILL_DISPLAY envvar is observed to speedup exiting from ipython after pyvista plotting 
+    # see https://github.com/pyvista/pyvista/blob/main/pyvista/plotting/plotting.py
+    export PYVISTA_KILL_DISPLAY=1
+
     case $TEST in
        fill_state_0)  script=QSimTest_fill_state.py ;;
        fill_state_1)  script=QSimTest_fill_state.py ;;

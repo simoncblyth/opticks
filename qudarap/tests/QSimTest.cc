@@ -23,9 +23,12 @@
 #include "QDebug.hh"
 
 #include "qstate.h"
+#include "qdebug.h"
 
 #include "SEvent.hh"
 
+
+enum { NOOP, FILEPATH, DIRPATH } ; 
 
 enum { 
    UNKNOWN,
@@ -109,6 +112,7 @@ struct QSimTest
     void fill_state(unsigned version); 
     void save_state( const char* subfold, const float* data, unsigned num_state  ); 
 
+    void save_dbg_photon(const char* subfold, const char* name); 
     void rayleigh_scatter_align(unsigned num_photon); 
     void propagate_to_boundary(unsigned num_photon); 
 
@@ -290,8 +294,7 @@ void QSimTest<T>::save_state( const char* subfold, const float* data, unsigned n
     std::vector<std::string> names ; 
     getStateNames(names, num_state); 
 
-    int create_dirs = 1 ; // 1:filepath 
-    const char* path = SPath::Resolve(FOLD, subfold, "state.npy", create_dirs ); 
+    const char* path = SPath::Resolve(FOLD, subfold, "state.npy", FILEPATH ); 
 
     NP* a = NP::Make<float>( num_state, 6, 4 ); // (6,4) item dimension corresponds to the 6 quads of quad6 
     a->read( data ); 
@@ -309,15 +312,25 @@ void QSimTest<T>::getStateNames(std::vector<std::string>& names, unsigned num_st
     delete [] idx ; 
 }
 
+
+template <typename T>
+void QSimTest<T>::save_dbg_photon(const char* subfold, const char* name)
+{
+    const quad4& p0 = qs.dbg->p ; 
+    const char* path = SPath::Resolve(FOLD, subfold, name, FILEPATH ); 
+    NP::Write( path,  p0.cdata(), 1, 4, 4  ); 
+}
+ 
 template <typename T>
 void QSimTest<T>::rayleigh_scatter_align(unsigned num_photon)
 {
     LOG(info); 
+    const char* subfold = "rayleigh_scatter_align" ; 
     std::vector<quad4> p(num_photon) ; 
     qs.rayleigh_scatter_align( p.data(), p.size() ); 
-    int create_dirs = 1 ; // 1:filepath 
-    const char* path = SPath::Resolve(FOLD, "rayleigh_scatter_align", "p.npy", create_dirs ); 
+    const char* path = SPath::Resolve(FOLD, subfold, "p.npy", FILEPATH ); 
     NP::Write( path, (float*)p.data(), p.size(), 4, 4  ); 
+    save_dbg_photon(subfold, "p0.npy" );      
 }
 
  
@@ -440,9 +453,11 @@ void QSimTest<T>::prop_lookup( int iprop, T x0, T x1, unsigned nx )
 template<typename T>
 void QSimTest<T>::main(int argc, char** argv, unsigned test )
 {
-    unsigned num_default = SSys::getenvunsigned("NUM", 1000000u )  ;   
+    unsigned M1   = 1000000u ; // 1 million 
+    unsigned K100 =  100000u ; // default 100k usable with any GPU 
+    unsigned num_default = SSys::getenvunsigned("NUM", M1 )  ;   
     unsigned num = argc > 1 ? std::atoi(argv[1]) : num_default ; 
-    int ni_tranche_size = SSys::getenvint("NI_TRANCHE_SIZE", 100000 ); // default 100k usable with any GPU 
+    int ni_tranche_size = SSys::getenvint("NI_TRANCHE_SIZE", K100 ); 
     int print_id = SSys::getenvint("PINDEX", -1 ); 
 
     LOG(info) 
@@ -474,7 +489,7 @@ void QSimTest<T>::main(int argc, char** argv, unsigned test )
         case FILL_STATE_0:                  fill_state(0)                              ; break ;  
         case FILL_STATE_1:                  fill_state(1)                              ; break ;  
         case PROPAGATE_TO_BOUNDARY:         propagate_to_boundary(8)                   ; break ;  
-        case RAYLEIGH_SCATTER_ALIGN:        rayleigh_scatter_align(8)                  ; break ;   
+        case RAYLEIGH_SCATTER_ALIGN:        rayleigh_scatter_align(num)                ; break ;   
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 
     }
 }

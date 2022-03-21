@@ -1,7 +1,11 @@
 /**
+QSim.cu : extern void CUDA launch functions testing qsim.h methods
+-------------------------------------------------------------------------------------
 
-REMEMBER TO KEEP CODE HERE TO A MINIMUM : PUT AS MUCH AS POSSIBLE INTO THE 
-MORE EASILY TESTED FROM MULTIPLE ENVIRONMENTS HEADERS 
+The launch functions are all invoked from QSim.cc methods with corresponding names.   
+
+
+
 
 **/
 
@@ -378,11 +382,11 @@ template <typename T>
 __global__ void _QSim_rayleigh_scatter_align( qsim<T>* sim, quad4* photon,  unsigned num_photon, qdebug* dbg )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    printf("//_QSim_rayleigh_scatter_align blockIdx.x %d blockDim.x %d threadIdx.x %d id %d num_photon %d \n", blockIdx.x, blockDim.x, threadIdx.x, id, num_photon ); 
+    //printf("//_QSim_rayleigh_scatter_align blockIdx.x %d blockDim.x %d threadIdx.x %d id %d num_photon %d \n", blockIdx.x, blockDim.x, threadIdx.x, id, num_photon ); 
 
     if (id >= num_photon) return;
 
-    quad4 p = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
+    quad4 p = dbg->p ;    // need local copy of photon otherwise would have write interference between threads
     curandState rng = sim->rngstate[id] ; 
 
     sim->rayleigh_scatter_align(p, rng);  

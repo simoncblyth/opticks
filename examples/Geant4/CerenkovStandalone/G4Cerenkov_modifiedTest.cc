@@ -398,10 +398,10 @@ For random aligned running prepare 256M PRECOOKED randoms (1M,16,16)
 in 10 files summing to 1GB with::
 
     cd ~/opticks/qudarap
-    TEST=F QCtxTest
+    TEST=F QSimTest
     
 And uncomment the below random_path to use the precooked
-const char* random_path = "/tmp/QCtxTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ; 
+const char* random_path = "/tmp/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ; 
 
 Then::
 

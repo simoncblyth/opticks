@@ -227,6 +227,9 @@ void QSim<T>::init_sim()
 QSim::init_db
 ----------------
 
+*dbg* is a host side instance that is populated by this method and 
+then uploaded to the device *d_dbg* 
+
 qdebug avoids having to play pass the parameter thru multiple levels of calls  
 to get values onto the device 
 
@@ -283,6 +286,9 @@ void QSim<T>::init_dbg()
     d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
 }
  
+
+
+
 
 template <typename T>
 qsim<T>* QSim<T>::getDevicePtr() const 
@@ -752,7 +758,7 @@ void QSim<T>::rayleigh_scatter_align(quad4* photon, unsigned num_photon)
 
     quad4* d_photon = QU::device_alloc<quad4>(num_photon) ; 
 
-    unsigned threads_per_block = 16 ;  
+    unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
     QSim_rayleigh_scatter_align(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg );  

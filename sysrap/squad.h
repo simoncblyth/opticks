@@ -51,6 +51,8 @@ struct quad4
     quad q3 ;
 
     SUTIL_INLINE SUTIL_HOSTDEVICE void zero();
+    SUTIL_INLINE SUTIL_HOSTDEVICE float* data() ;
+    SUTIL_INLINE SUTIL_HOSTDEVICE const float* cdata() const ;
 };
 
 void quad4::zero() 
@@ -60,6 +62,9 @@ void quad4::zero()
     q2.u.x = 0 ; q2.u.y = 0 ; q2.u.z = 0 ; q2.u.w = 0 ; 
     q3.u.x = 0 ; q3.u.y = 0 ; q3.u.z = 0 ; q3.u.w = 0 ; 
 } 
+
+float*       quad4::data() {         return &q0.f.x ;  }
+const float* quad4::cdata() const  { return &q0.f.x ;  }
 
 
 struct quad6 
