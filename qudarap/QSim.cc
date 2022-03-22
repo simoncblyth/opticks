@@ -276,7 +276,7 @@ void QSim<T>::init_dbg()
 
     // qprd: mocking per-ray-data result of optix trace calls 
 
-    dbg->prd.normal = make_float3( 1.f, 0.f , 0.f ); 
+    dbg->prd.normal = make_float3( -1.f, 0.f , 0.f ); 
     dbg->prd.t =  100.f ; 
     dbg->prd.identity = 101u ;
     dbg->prd.boundary = 10u ;

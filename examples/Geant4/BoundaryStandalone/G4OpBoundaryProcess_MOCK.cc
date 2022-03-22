@@ -1181,6 +1181,8 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
                    << " TransCoeff " << std::setw(10) << std::fixed << std::setprecision(4) << TransCoeff 
                    << " E1_perp " << std::setw(10) << std::fixed << std::setprecision(4) << E1_perp 
                    << " E1_parl " << std::setw(10) << std::fixed << std::setprecision(4) << E1_parl 
+                   << " E2_perp " << std::setw(10) << std::fixed << std::setprecision(4) << E2_perp 
+                   << " E2_parl " << std::setw(10) << std::fixed << std::setprecision(4) << E2_parl 
                    << std::endl
                    ; 
 #endif

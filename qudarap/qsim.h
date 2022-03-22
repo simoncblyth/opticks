@@ -578,6 +578,52 @@ Notes:
 * when geometry dictates TIR there is no dependence on u_reflect and always get reflection
 
 
+::
+
+                    s1
+                  +----+          
+                   \   .   /      ^
+              c1   i\  .  / r    /|\
+                     \ . /        |                      
+        material1     \./         | n
+        ---------------+----------+----------
+        material2      .\
+                       . \
+                  c2   .  \ t
+                       .   \
+                       +----+
+                         s2
+
+
+Snells law::
+
+     s1    n2 
+    --- = ---         s1 n1 = s2 n2         eta = n1/n2     s1 eta = s2 
+     s2    n1
+
+     s1.s1 = 1 - c1.c1   # trig identity
+ 
+     s2.s2 = 1 - c2.c2
+
+    s1 eta = s2          # snell 
+
+    s1s1 eta eta = s2s2 
+
+    ( 1.f - c1c1 ) eta eta = 1.f - c2c2
+ 
+     c2c2 = 1.f - eta eta ( 1.f - c1c1 )    # snell and trig identity 
+
+
+     
+
+
+
+Because the electromagnetic wave is transverse, the field incident onto the
+interface can be decomposed into two polarization components, one P-polarized,
+i.e., with the electric field vector inside the plane of incidence, and the
+other one S-polarized, i.e., orthogonal to that plane.
+
+
 **/
 
 template <typename T>
@@ -592,83 +638,35 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     const float eta = n1/n2 ; 
     const float c1 = -dot(*direction, surface_normal ); // c1 is flipped to be +ve  (G4 "cost1") when direction is against the normal,  1.f at normal incidence
     const bool normal_incidence = fabs(c1) > 0.999999f ; 
-
-    const float eta_c1 = eta * c1 ; 
-
-    const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law 
+    const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
     bool tir = c2c2 < 0.f ; 
-
-
     const float EdotN = dot(*polarization, surface_normal ) ;  // used for TIR polarization
-
     const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f : so will always reflect
-
-    //printf("//qsim.propagate_at_boundary n1 %10.4f n2 %10.4f eta %10.4f c1 %10.4f c2c2 %10.4f tir %d c2 %10.4f \n", n1, n2, eta, c1, c2c2, tir, c2 ); 
-
     const float n1c1 = n1*c1 ; 
     const float n2c2 = n2*c2 ; 
     const float n2c1 = n2*c1 ; 
     const float n1c2 = n1*c2 ; 
-
-    //printf("//qsim.propagate_at_boundary c1 %10.4f n1c1 %10.4f n2c2 %10.4f n2c1 %10.4f n1c2 %10.4f \n", c1, n1c1, n2c2, n2c1, n1c2 ); 
-
-    const float3 A_trans = normal_incidence ? *polarization : normalize(cross(*direction, surface_normal)) ;
-
-    //printf("//qsim.propagate_at_boundary A_trans %10.4f %10.4f %10.4f  \n", A_trans.x, A_trans.y, A_trans.z ); 
-    
-    
-    // decompose polarization onto incident orthogonal basis
-
-    const float E1_perp = dot(*polarization, A_trans);   // fraction of E vector perpendicular to plane of incidence, ie S polarization
-    const float3 E1pp = E1_perp * A_trans ;               // S-pol transverse component   
-    const float3 E1pl = *polarization - E1pp ;           // P-pol parallel component 
-    const float E1_parl = length(E1pl) ;
-
-    //printf("//qsim.propagate_at_boundary E1pp ( %10.4f %10.4f %10.4f ) E1pl ( %10.4f %10.4f %10.4f ) E1_parl %10.4f \n", E1pp.x, E1pp.y, E1pp.z, E1pl.x, E1pl.y, E1pl.z, E1_parl ); 
-
-
-    // G4OpBoundaryProcess at normal incidence, mentions Jackson and uses 
-    //      A_trans  = OldPolarization; E1_perp = 0. E1_parl = 1. 
-    // but that seems inconsistent with the above dot product, above is swapped cf that
-
-    const float E2_perp_t = 2.f*n1c1*E1_perp/(n1c1+n2c2);  // Fresnel S-pol transmittance
-    const float E2_parl_t = 2.f*n1c1*E1_parl/(n2c1+n1c2);  // Fresnel P-pol transmittance
-
-    // SUSPECT DEVIATION FROM GEANT4 AT NORMAL INCIDENCE : SHOULD SET E1_perp 0.f E1_parl 1.f FOR NORMAL INCIDENCE 
-
-    printf("//qsim.propagate_at_boundary E2_perp_t %10.4f E2_parl_t %10.4f \n", E2_perp_t, E2_parl_t ); 
-
-    const float E2_perp_r = E2_perp_t - E1_perp;           // Fresnel S-pol reflectance
-    const float E2_parl_r = (n2*E2_parl_t/n1) - E1_parl ;  // Fresnel P-pol reflectance
-
-
-    const float2 E2_t = make_float2( E2_perp_t, E2_parl_t ) ; 
-    const float2 E2_r = make_float2( E2_perp_r, E2_parl_r ) ; 
-
-    const float  E2_total_t = dot(E2_t,E2_t) ; 
-
-
+    const float3 A_trans = normal_incidence ? *polarization : normalize(cross(*direction, surface_normal)) ; // perpendicular to plane of incidence
+    const float E1_perp = dot(*polarization, A_trans);     //  E vector component perpendicular to plane of incidence, ie S polarization
+    const float2 E1   = normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( *polarization - (E1_perp*A_trans) ) ); 
+    const float2 E2_t = make_float2(  2.f*n1c1*E1.x/(n1c1+n2c2), 2.f*n1c1*E1.y/(n2c1+n1c2) ) ;  // ( S:perp, P:parl )  
+    const float2 E2_r = make_float2( E2_t.x - E1.x             , (n2*E2_t.y/n1) - E1.y     ) ;  // ( S:perp, P:parl )    
+    const float2 RR = normalize(E2_r) ; 
     const float2 TT = normalize(E2_t) ; 
-    const float2 R = normalize(E2_r) ; 
-
-    const float TransCoeff =  tir ? 0.0f : n2c2*E2_total_t/n1c1 ; 
-    //  above 0.0f was until 2016/3/4 incorrectly a 1.0f 
-    //  resulting in TIR yielding BT where BR is expected
-
-
+    const float TransCoeff = tir || n1c1 == 0.f ? 0.f : n2c2*dot(E2_t,E2_t)/n1c1 ; 
     const float u_reflect = curand_uniform(&rng) ;
     bool reflect = u_reflect > TransCoeff  ;
 
-    printf("//qsim.propagate_at_boundary n2c2 %10.4f E2_total_t %10.4f n1c1 %10.4f u_reflect %10.4f TransCoeff %10.4f (n2c2.E2_total_t/n1c1)  reflect %d \n", 
-        n2c2,  E2_total_t, n1c1, u_reflect, TransCoeff, reflect ); 
-
+    //printf("//qsim.propagate_at_boundary n2c2 %10.4f n1c1 %10.4f u_reflect %10.4f TransCoeff %10.4f (n2c2.E2_total_t/n1c1)  reflect %d \n", 
+    //                                          n2c2,  n1c1, u_reflect, TransCoeff, reflect ); 
 
     *direction = reflect
                     ?
                        *direction + 2.0f*c1*surface_normal
                     :
-                       eta*(*direction) + (eta_c1 - c2)*surface_normal
+                       eta*(*direction) + (eta*c1 - c2)*surface_normal
                     ;
+
 
     const float3 A_paral = normalize(cross(*direction, A_trans));
 
@@ -676,17 +674,84 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
                                 ( tir ?
                                         -(*polarization) + 2.f*EdotN*surface_normal
                                       :
-                                        R.x*A_trans + R.y*A_paral
+                                        RR.x*A_trans + RR.y*A_paral
                                 )
                             :
                                 TT.x*A_trans + TT.y*A_paral
                             ;
 
-    //p.flags.i.x = 0 ;  // no-boundary-yet for new direction   TODO: eliminate 
-
     return reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
 }
  
+
+
+/*
+G4OpBoundaryProcess::DielectricDielectric
+
+
+1152               if (sint1 > 0.0) {
+1153                  A_trans = OldMomentum.cross(theFacetNormal);
+1154                  A_trans = A_trans.unit();
+1155                  E1_perp = OldPolarization * A_trans;
+1156                  E1pp    = E1_perp * A_trans;
+1157                  E1pl    = OldPolarization - E1pp;
+1158                  E1_parl = E1pl.mag();
+1159               }
+1160               else {
+1161                  A_trans  = OldPolarization;
+1162                  // Here we Follow Jackson's conventions and we set the
+1163                  // parallel component = 1 in case of a ray perpendicular
+1164                  // to the surface
+1165                  E1_perp  = 0.0;
+1166                  E1_parl  = 1.0;
+1167               }
+1168 
+1169               s1 = Rindex1*cost1;
+1170               E2_perp = 2.*s1*E1_perp/(Rindex1*cost1+Rindex2*cost2);
+1171               E2_parl = 2.*s1*E1_parl/(Rindex2*cost1+Rindex1*cost2);
+1172               E2_total = E2_perp*E2_perp + E2_parl*E2_parl;
+1173               s2 = Rindex2*cost2*E2_total;
+1174 
+1175               if (theTransmittance > 0) TransCoeff = theTransmittance;
+1176               else if (cost1 != 0.0) TransCoeff = s2/s1;
+1177               else TransCoeff = 0.0;
+
+
+reflect
+
+1217                     
+1218                        E2_parl   = Rindex2*E2_parl/Rindex1 - E1_parl;
+1219                        E2_perp   = E2_perp - E1_perp;
+1220                        E2_total  = E2_perp*E2_perp + E2_parl*E2_parl;
+1221                        A_paral   = NewMomentum.cross(A_trans);
+1222                        A_paral   = A_paral.unit();
+1223                        E2_abs    = std::sqrt(E2_total);
+1224                        C_parl    = E2_parl/E2_abs;
+1225                        C_perp    = E2_perp/E2_abs;
+1226 
+1227                        NewPolarization = C_parl*A_paral + C_perp*A_trans;
+1228 
+
+transmit 
+
+1253                    alpha = cost1 - cost2*(Rindex2/Rindex1);
+1254                    NewMomentum = OldMomentum + alpha*theFacetNormal;
+1255                    NewMomentum = NewMomentum.unit();
+1256 //                   PdotN = -cost2;
+1257                    A_paral = NewMomentum.cross(A_trans);
+1258                    A_paral = A_paral.unit();
+
+1259                    E2_abs     = std::sqrt(E2_total);
+1260                    C_parl     = E2_parl/E2_abs;
+1261                    C_perp     = E2_perp/E2_abs;
+1262 
+1263                    NewPolarization = C_parl*A_paral + C_perp*A_trans;
+
+
+*/
+
+
+
 
 
 
