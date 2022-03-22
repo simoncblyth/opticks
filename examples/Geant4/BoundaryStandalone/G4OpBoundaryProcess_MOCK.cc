@@ -1176,6 +1176,15 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
               else if (cost1 != 0.0) TransCoeff = s2/s1;
               else TransCoeff = 0.0;
 
+#ifdef MOCK_DUMP
+              std::cout 
+                   << " TransCoeff " << std::setw(10) << std::fixed << std::setprecision(4) << TransCoeff 
+                   << " E1_perp " << std::setw(10) << std::fixed << std::setprecision(4) << E1_perp 
+                   << " E1_parl " << std::setw(10) << std::fixed << std::setprecision(4) << E1_parl 
+                   << std::endl
+                   ; 
+#endif
+
               if ( !G4BooleanRand(TransCoeff) ) {
 
                  // Simulate reflection

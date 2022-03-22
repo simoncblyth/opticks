@@ -11,5 +11,9 @@ if __name__ == '__main__':
     print(t.p[:,:3]) 
     print(t.p[:,3].view(np.uint32)) 
 
+    flag = t.p[:,3,3].view(np.uint32)
+    print(np.unique(flag, return_counts=True))
+
+
 
     

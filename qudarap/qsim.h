@@ -590,7 +590,9 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     float3* polarization = (float3*)&p.q2.f.x ; 
 
     const float eta = n1/n2 ; 
-    const float c1 = -dot(*direction, surface_normal ); // c1 arranged to be +ve  (G4 "cost1") : when direction against the normal 
+    const float c1 = -dot(*direction, surface_normal ); // c1 is flipped to be +ve  (G4 "cost1") when direction is against the normal,  1.f at normal incidence
+    const bool normal_incidence = fabs(c1) > 0.999999f ; 
+
     const float eta_c1 = eta * c1 ; 
 
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law 
@@ -610,7 +612,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
 
     //printf("//qsim.propagate_at_boundary c1 %10.4f n1c1 %10.4f n2c2 %10.4f n2c1 %10.4f n1c2 %10.4f \n", c1, n1c1, n2c2, n2c1, n1c2 ); 
 
-    const float3 A_trans = fabs(c1) > 0.999999f ? *polarization : normalize(cross(*direction, surface_normal)) ;
+    const float3 A_trans = normal_incidence ? *polarization : normalize(cross(*direction, surface_normal)) ;
 
     //printf("//qsim.propagate_at_boundary A_trans %10.4f %10.4f %10.4f  \n", A_trans.x, A_trans.y, A_trans.z ); 
     

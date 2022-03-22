@@ -810,7 +810,7 @@ void QSim<T>::propagate_at_boundary(quad4* photon, unsigned num_photon)
 
     quad4* d_photon = QU::device_alloc<quad4>(num_photon) ; 
 
-    unsigned threads_per_block = 16 ;  
+    unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
     QSim_propagate_at_boundary(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg );  

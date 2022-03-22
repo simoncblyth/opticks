@@ -182,21 +182,25 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(unsigned num)
         const G4ThreeVector* smom = pc->GetMomentumDirection();
         const G4ThreeVector* spol = pc->GetPolarization();
 
-        std::cout 
-            << " i " << std::setw(6) << i 
-            << " s " << std::setw(2) << theStatus 
-            << " " << std::setw(16) << X4OpBoundaryProcessStatus::Name( theStatus ) 
-            << " " << std::setw(10) << std::setprecision(3) << flat_prior
-            << " mom " 
-            << " " << std::setw(10) << std::setprecision(3) << smom->x() 
-            << " " << std::setw(10) << std::setprecision(3) << smom->y() 
-            << " " << std::setw(10) << std::setprecision(3) << smom->z()
-            << " pol " 
-            << " " << std::setw(10) << std::setprecision(3) << spol->x() 
-            << " " << std::setw(10) << std::setprecision(3) << spol->y() 
-            << " " << std::setw(10) << std::setprecision(3) << spol->z()
-            << std::endl 
-            ;
+        bool dump = i < 10 || ( i % 1000 == 0 ) ;  
+        if(dump) 
+        {
+            std::cout 
+                << " i " << std::setw(6) << i 
+                << " s " << std::setw(2) << theStatus 
+                << " " << std::setw(16) << X4OpBoundaryProcessStatus::Name( theStatus ) 
+                << " " << std::setw(10) << std::setprecision(3) << flat_prior
+                << " mom " 
+                << " " << std::setw(10) << std::setprecision(3) << smom->x() 
+                << " " << std::setw(10) << std::setprecision(3) << smom->y() 
+                << " " << std::setw(10) << std::setprecision(3) << smom->z()
+                << " pol " 
+                << " " << std::setw(10) << std::setprecision(3) << spol->x() 
+                << " " << std::setw(10) << std::setprecision(3) << spol->y() 
+                << " " << std::setw(10) << std::setprecision(3) << spol->z()
+                << std::endl 
+                ;
+        }
 
         quad4 p ; 
         p.q0.f = make_float4( pos.x, pos.y, pos.z, float(flat_prior) );   

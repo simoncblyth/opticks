@@ -49,6 +49,7 @@ standalone-compile(){
        -I../CerenkovStandalone \
        -I../../../extg4 \
        -DMOCK \
+       -DMOCK_DUMP \
        -g \
        -I$HOME/np \
        -I$(boost-prefix)/include \
@@ -76,15 +77,17 @@ EOC
 
 arg=${1:-build_run_ana}
 
+
+seqpath="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
+seqpath=$seqpath/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
+# comment last list to concatenate all 10 tranches giving full 256M randoms 
+
+#num=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
+num=16
+
 #DEBUG=1
-
-
-seqdir="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
-
-#export OPTICKS_RANDOM_SEQPATH=$seqdir     ## full 256M randoms 
-export OPTICKS_RANDOM_SEQPATH=$seqdir/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
-
-
+export OPTICKS_RANDOM_SEQPATH=$seqpath
+export NUM=$num
 
 if [ "${arg/build}" != "$arg" ]; then 
     standalone-compile ${srcs[@]}
@@ -92,12 +95,7 @@ if [ "${arg/build}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg compile error && exit 1 
 fi 
 
-
-
 if [ "${arg/run}" != "$arg" ]; then 
-
-
-    export NUM=1000
 
     if [ -n "$DEBUG" ]; then 
         BP=G4OpBoundaryProcess_MOCK::PostStepDoIt lldb__ /tmp/$name/$name
@@ -105,11 +103,7 @@ if [ "${arg/run}" != "$arg" ]; then
         /tmp/$name/$name
     fi 
     [ $? -ne 0 ] && echo $msg run error && exit 2 
-
 fi 
-
-
-
 
 
 if [ "${arg/ana}" != "$arg" ]; then 

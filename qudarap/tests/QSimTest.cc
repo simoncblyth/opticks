@@ -547,7 +547,7 @@ void QSimTest<T>::main(int argc, char** argv, unsigned test )
         case FILL_STATE_1:                  fill_state(1)                              ; break ;  
         case RAYLEIGH_SCATTER_ALIGN:        rayleigh_scatter_align(num)                ; break ;   
         case PROPAGATE_TO_BOUNDARY:         propagate_to_boundary(8)                   ; break ;  
-        case PROPAGATE_AT_BOUNDARY:         propagate_at_boundary(8)                   ; break ;  
+        case PROPAGATE_AT_BOUNDARY:         propagate_at_boundary(num)                 ; break ;  
         case PROPAGATE_AT_SURFACE:          propagate_at_surface(8)                    ; break ;  
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 
     }
