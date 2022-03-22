@@ -12,7 +12,8 @@ Probably easiest to setup a "proper" Geant4 geometry to test within.
 #include <iostream>
 #include <iomanip>
 
-#include "G4OpBoundaryProcess.hh"
+#include "G4OpBoundaryProcess_MOCK.hh"
+#include "X4OpBoundaryProcessStatus.hh"
 
 #include "G4OpticalPhoton.hh"
 #include "G4ParticleMomentum.hh"
@@ -40,10 +41,12 @@ struct quad4 { quad q0, q1, q2, q3 ; };
 struct G4OpBoundaryProcessTest 
 {
     static const char* FOLD ; 
+    static NP* MakeRindexArray(double rindex); 
 
     const float3&   pos ; 
     const float3&   mom ; 
     const float3&   pol ; 
+    const float3&   nrm ; 
 
     const NP* a_rindex1 ; 
     const NP* a_rindex2 ; 
@@ -52,11 +55,11 @@ struct G4OpBoundaryProcessTest
     const G4Material* material1 ; 
     const G4Material* material2 ; 
 
-    G4OpBoundaryProcess* proc ; 
-    G4Track*             track ; 
-    G4Step*              step ;  
+    G4OpBoundaryProcess_MOCK* proc ; 
+    G4Track*                  track ; 
+    G4Step*                   step ;  
 
-    G4OpBoundaryProcessTest(const float3& pos, const float3& mom, const float3& pol ); 
+    G4OpBoundaryProcessTest(const float3& pos, const float3& mom, const float3& pol, const float3& nrm ); 
 
     void propagate_at_boundary(unsigned num); 
     void save_p0() const ; 
@@ -64,21 +67,32 @@ struct G4OpBoundaryProcessTest
 }; 
 
 
-G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float3& mom_, const float3& pol_)
+NP* G4OpBoundaryProcessTest::MakeRindexArray(double rindex)  // static
+{
+    NP* a = NP::Make<double>( 1.55/1e6, rindex, 15.5/1e6, rindex ) ; 
+    a->change_shape(-1, 2); 
+    a->pdump("G4OpBoundaryProcessTest::MakeRindexArray" , 1e6 ); 
+    return a ; 
+}
+
+G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float3& mom_, const float3& pol_, const float3& nrm_ )
     :
     pos(pos_),
     mom(mom_),
     pol(pol_),
-    a_rindex1(NP::Make<double>(1.55/1e6, 1.0, 15.5/1e6, 1.0)), 
-    a_rindex2(NP::Make<double>(1.55/1e6, 1.5, 15.5/1e6, 1.5)), 
+    nrm(nrm_),
+    a_rindex1(MakeRindexArray(1.f)), 
+    a_rindex2(MakeRindexArray(1.5f)), 
     rindex1(OpticksUtil::MakeProperty(a_rindex1)),
     rindex2(OpticksUtil::MakeProperty(a_rindex2)),
     material1(OpticksUtil::MakeMaterial(rindex1, "Material1")),
     material2(OpticksUtil::MakeMaterial(rindex2, "Material2")),
-    proc(new G4OpBoundaryProcess()),
+    proc(new G4OpBoundaryProcess_MOCK()),
     track(nullptr),
     step(new G4Step)
 {
+    proc->theGlobalNormal_MOCK.set( nrm.x, nrm.y, nrm.z ); 
+
     G4double en = 1.*MeV ; 
     G4ParticleMomentum momentum(mom.x,mom.y,mom.z); 
     G4DynamicParticle* particle = new G4DynamicParticle(G4OpticalPhoton::Definition(),momentum);
@@ -98,10 +112,9 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float
     pre->SetPosition(pre_position); 
     post->SetPosition(post_position); 
 
-
     // HMM : MOCKING IS INVOLVED BECAUSE NEED TO GET A SURFACE NORMAL WITH G4Navigator::GetGlobalExitNormal
-
     // g4-cls G4PathFinder
+    // because of this moved to _MOCK the proc
 
     G4VPhysicalVolume* prePV = nullptr ; 
     G4VPhysicalVolume* postPV = nullptr ; 
@@ -152,20 +165,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(unsigned num)
     for(unsigned i=0 ; i < num ; i++)
     {
         G4VParticleChange* change = proc->PostStepDoIt(*track, *step) ;
-        G4OpBoundaryProcessStatus theStatus = proc->GetStatus(); 
-
-        bool NotAtBoundary_ = theStatus == NotAtBoundary ; 
-        bool StepTooSmall_ = theStatus == StepTooSmall ; 
-        bool NoRINDEX_ = theStatus == NoRINDEX  ; 
-
-        std::cout 
-            << " theStatus " << theStatus 
-            << " NotAtBoundary  " << NotAtBoundary_
-            << " StepTooSmall " << StepTooSmall_
-            << " NoRINDEX " << NoRINDEX_
-            << std::endl 
-            ; 
-
+        G4OpBoundaryProcess_MOCKStatus theStatus = proc->GetStatus(); 
 
         G4ParticleChange* pc = dynamic_cast<G4ParticleChange*>(change);  
 
@@ -173,6 +173,8 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(unsigned num)
         const G4ThreeVector* spol = pc->GetPolarization();
 
         std::cout 
+            << std::setw(2) << theStatus 
+            << " " << std::setw(16) << X4OpBoundaryProcessStatus::Name( theStatus ) 
             << " mom " 
             << " " << std::setw(10) << std::setprecision(3) << smom->x() 
             << " " << std::setw(10) << std::setprecision(3) << smom->y() 
@@ -188,7 +190,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(unsigned num)
         p.q0.f = make_float4( pos.x, pos.y, pos.z, 0.f );   
         p.q1.f = make_float4( smom->x(), smom->y(), smom->z(), 0.f  ) ; 
         p.q2.f = make_float4( spol->x(), spol->y(), spol->z(), 0.f  ) ; 
-        p.q3.u = make_uint4(  0u, 0u, 0u, i );   
+        p.q3.u = make_uint4(  i, 0u, 0u, theStatus );   
 
         pp[i] = p ; 
     }
@@ -212,8 +214,10 @@ int main(int argc, char** argv)
     float3 pos = make_float3( 0.f, 0.f, 0.f ); 
     float3 mom = make_float3( 1.f, 0.f, 0.f ); 
     float3 pol = make_float3( 0.f, 1.f, 0.f ); 
+    float3 nrm = make_float3(-1.f, 0.f, 0.f ); 
+    
 
-    G4OpBoundaryProcessTest t(pos, mom, pol) ; 
+    G4OpBoundaryProcessTest t(pos, mom, pol, nrm) ; 
     t.propagate_at_boundary(10); 
 
     return 0 ; 

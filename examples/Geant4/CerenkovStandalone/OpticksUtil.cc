@@ -25,35 +25,15 @@ NP* OpticksUtil::LoadArray(const char* kdpath) // static
     return a ; 
 }
 
-
 G4MaterialPropertyVector* OpticksUtil::MakeProperty(const NP* a)  // static
 {
-    unsigned nv = a->num_values() ; 
-    std::cout << "a " << a->desc() << " num_values " << nv << std::endl ; 
-    const double* vv = a->cvalues<double>() ; 
+    std::vector<double> d, v ; 
+    a->psplit<double>(d,v);   // split array into domain and values 
+    assert(d.size() == v.size() && d.size() > 1 ); 
 
-    assert( nv %  2 == 0 ); 
-    unsigned entries = nv/2 ;
-
-    // this has to be double for G4 
-    std::vector<double> e(entries, 0.); 
-    std::vector<double> v(entries, 0.); 
-
-    for(unsigned i=0 ; i < entries ; i++)
-    {
-        e[i] = vv[2*i+0] ; 
-        v[i] = vv[2*i+1] ; 
-        std::cout 
-            << " e[i]/eV " << std::fixed << std::setw(10) << std::setprecision(4) << e[i]/eV
-            << " v[i] " << std::fixed << std::setw(10) << std::setprecision(4) << v[i] 
-            << std::endl 
-            ;     
-    }
-    G4MaterialPropertyVector* mpv = new G4MaterialPropertyVector(e.data(), v.data(), entries ); 
+    G4MaterialPropertyVector* mpv = new G4MaterialPropertyVector(d.data(), v.data(), d.size() ); 
     return mpv ; 
 }
-
-
 
 
 G4Material* OpticksUtil::MakeMaterial(const G4MaterialPropertyVector* rindex, const char* name)  // static

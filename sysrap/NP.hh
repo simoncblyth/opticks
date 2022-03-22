@@ -46,6 +46,7 @@ struct NP
     template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
     template<typename T> static NP*  MakeDiv( const NP* src, unsigned mul  ); 
     template<typename T> static NP*  Make( const std::vector<T>& src ); 
+    template<typename T> static NP*  Make( T d0, T v0, T d1, T v1 ); 
     template<typename T> static T To( const char* a ); 
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
 
@@ -54,7 +55,7 @@ struct NP
 
     NP(const char* dtype_="<f4", int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
     void init(); 
-    void set_shape( int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1); 
+    void set_shape( int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1);  // CAUTION: DO NOT USE *set_shape* TO CHANGE SHAPE (as it calls *init*) INSTEAD USE *change_shape* 
     void set_shape( const std::vector<int>& src_shape ); 
     bool has_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ) const ;  
     void change_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1) ;   // one dimension entry left at -1 can be auto-set
@@ -149,11 +150,12 @@ struct NP
     template<typename T> T    psum(unsigned column ) const ;  
     template<typename T> void pscale(T scale, unsigned column);
     template<typename T> void pscale_add(T scale, T add, unsigned column);
-    template<typename T> void pdump(const char* msg="NP::pdump") const ; 
+    template<typename T> void pdump(const char* msg="NP::pdump", T d_scale=1., T v_scale=1.) const ; 
     template<typename T> void minmax(T& mn, T&mx, unsigned j=1, int item=-1 ) const ; 
     template<typename T> void linear_crossings( T value, std::vector<T>& crossings ) const ; 
     template<typename T> NP*  trapz() const ;                      // composite trapezoidal integration, requires pshaped
 
+    template<typename T> void psplit(std::vector<T>& domain, std::vector<T>& values) const ; 
     template<typename T> T    pdomain(const T value, int item=-1, bool dump=false  ) const ; 
     template<typename T> T    interp(T x, int item=-1) const ;                  // requires pshaped 
     template<typename T> T    interp2D(T x, T y, int item=-1) const ;   
@@ -1457,13 +1459,21 @@ template<typename T> inline void NP::pscale(T scale, unsigned column)
 
 
 
-template<typename T> inline void NP::pdump(const char* msg) const  
+template<typename T> inline void NP::pdump(const char* msg, T d_scale, T v_scale) const  
 {
     bool property_shaped = is_pshaped(); 
     assert( property_shaped ); 
 
     unsigned ni = shape[0] ; 
-    std::cout << msg << " ni " << ni << std::endl ; 
+    std::cout 
+        << msg 
+        << " ni " << ni 
+        << " d_scale " 
+        << std::fixed << std::setw(10) << std::setprecision(5) << d_scale
+        << " v_scale " 
+        << std::fixed << std::setw(10) << std::setprecision(5) << v_scale
+        << std::endl
+        ; 
 
     const T* vv = cvalues<T>(); 
 
@@ -1471,8 +1481,8 @@ template<typename T> inline void NP::pdump(const char* msg) const
     {
         std::cout 
              << " i " << std::setw(3) << i 
-             << " px " << std::fixed << std::setw(10) << std::setprecision(5) << vv[2*i+0] 
-             << " py " << std::fixed << std::setw(10) << std::setprecision(5) << vv[2*i+1] 
+             << " d " << std::fixed << std::setw(10) << std::setprecision(5) << vv[2*i+0]*d_scale 
+             << " v " << std::fixed << std::setw(10) << std::setprecision(5) << vv[2*i+1]*v_scale 
              << std::endl
              ; 
     }
@@ -1632,11 +1642,23 @@ template<typename T> inline NP* NP::trapz() const
     return integral ;  
 }
 
+template<typename T> void NP::psplit(std::vector<T>& dom, std::vector<T>& val) const 
+{
+    unsigned nv = num_values() ; 
+    const T* vv = cvalues<T>() ; 
 
+    assert( nv %  2 == 0 );  
+    unsigned entries = nv/2 ;
 
+    dom.resize(entries); 
+    val.resize(entries); 
 
-
-
+    for(unsigned i=0 ; i < entries ; i++)
+    {   
+        dom[i] = vv[2*i+0] ; 
+        val[i] = vv[2*i+1] ; 
+    }   
+}
 
 
 
@@ -3150,6 +3172,13 @@ template <typename T> NP*  NP::Make( const std::vector<T>& src ) // static
     a->read(src.data()); 
     return a ; 
 }
+
+template <typename T> NP*  NP::Make(T d0, T v0, T d1, T v1 ) // static
+{
+    std::vector<T> src = {d0, v1, d1, v1 } ; 
+    return NP::Make<T>(src) ; 
+}
+
 
 template <typename T> T NP::To( const char* a )   // static 
 {   

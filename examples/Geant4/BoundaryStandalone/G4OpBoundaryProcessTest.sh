@@ -1,10 +1,35 @@
 #!/bin/bash -l 
 
+usage(){ cat << EOU
+G4OpBoundaryProcessTest.sh
+============================
+
+Standalone testing of bouundary process using a modified G4OpBoundaryProcess_MOCK
+with externally set surface normal. 
+
+NB this somewhat naughtily uses the NP.hh direct from $HOME/np not the one from sysrap, 
+the reason is that these standalone tests generally avoid using much Opticks code 
+in an effort to stay quite standalone and usable without much installation effort.
+Because of that there is more dependence on NP so it tends to be a good environment 
+to add functionality to NP, making direct use easier for development. 
+
+Get $HOME/np/NP.hh by cloning  : https://github.com/simoncblyth/np/
+
+EOU
+}
+
 msg="=== $BASH_SOURCE :"
 
-srcs=(G4OpBoundaryProcessTest.cc ../CerenkovStandalone/OpticksUtil.cc)
+srcs=(
+    G4OpBoundaryProcessTest.cc 
+    G4OpBoundaryProcess_MOCK.cc
+     ../CerenkovStandalone/OpticksUtil.cc
+   )
+
 name=${srcs[0]}
 name=${name/.cc}
+
+for src in $srcs ; do echo $msg $src ; done
 
 g4-
 clhep-
@@ -21,6 +46,8 @@ standalone-compile(){
          -std=c++11 \
        -I. \
        -I../CerenkovStandalone \
+       -I../../../extg4 \
+       -DMOCK \
        -g \
        -I$HOME/np \
        -I$(boost-prefix)/include \
