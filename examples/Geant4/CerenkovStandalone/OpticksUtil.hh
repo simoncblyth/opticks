@@ -10,7 +10,7 @@ class G4Material ;
 struct OpticksUtil
 {
     static NP* LoadArray(const char* kdpath);
-    static NP* LoadRandom(const char* random_path);
+    static NP* LoadConcat(const char* concat_path);  // formerly LoadRandom
 
     static G4MaterialPropertyVector* MakeProperty(const NP* a);
     static G4Material* MakeMaterial(const G4MaterialPropertyVector* rindex, const char* name="Water") ; 

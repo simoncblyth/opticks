@@ -1,35 +1,30 @@
-#include "NP.hh"
+#include <cstdlib>
+#include <cassert>
+#include <iostream>
+
 #include "OpticksRandom.hh"
 
-struct OpticksRandomTest
+void test_basics(OpticksRandom* rnd)
 {
-    const NP* seq ; 
-    OpticksRandom r ; 
-    OpticksRandomTest(const char* path); 
-    void basics(); 
-};
+    std::cout << "rnd.m_seqpath " << rnd->m_seqpath << std::endl ; 
 
-OpticksRandomTest::OpticksRandomTest(const char* path)
-    :
-    seq(NP::Load(path)),
-    r(seq)
-{
+    std::cout << " rand.dump asis : STANDARD G4UniformRand " << std::endl ; 
+    rnd->dump(); 
+    rnd->setSequenceIndex(0); 
+    std::cout << " rand.dump after OpticksRandom::setSequenceIndex(0) : USING PRECOOKED RANDOMS " << std::endl ; 
+    rnd->dump(); 
+    rnd->setSequenceIndex(-1); 
+    std::cout << " rand.dump after OpticksRandom::setSequenceIndex(-1) : BACK TO STANDARD RANDOMS " << std::endl ; 
+    rnd->dump(); 
 }
-
-void OpticksRandomTest::basics()
-{
-    r.dump(); 
-    r.setSequenceIndex(0); 
-    r.dump(); 
-    r.setSequenceIndex(-1); 
-    r.dump(); 
-}
-
 
 int main()
 {
-    OpticksRandomTest t("/tmp/blyth/opticks/TRngBufTest_0.npy"); 
-    t.basics(); 
+    OpticksRandom* rnd = new OpticksRandom ; 
+    rnd->m_flat_debug = true ; 
+
+    test_basics(rnd); 
+
     return 0 ; 
 }
 

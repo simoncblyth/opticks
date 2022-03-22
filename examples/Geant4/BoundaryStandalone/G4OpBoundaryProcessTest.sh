@@ -24,6 +24,7 @@ srcs=(
     G4OpBoundaryProcessTest.cc 
     G4OpBoundaryProcess_MOCK.cc
      ../CerenkovStandalone/OpticksUtil.cc
+     ../CerenkovStandalone/OpticksRandom.cc
    )
 
 name=${srcs[0]}
@@ -75,7 +76,15 @@ EOC
 
 arg=${1:-build_run_ana}
 
-DEBUG=1
+#DEBUG=1
+
+
+seqdir="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
+
+#export OPTICKS_RANDOM_SEQPATH=$seqdir     ## full 256M randoms 
+export OPTICKS_RANDOM_SEQPATH=$seqdir/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
+
+
 
 if [ "${arg/build}" != "$arg" ]; then 
     standalone-compile ${srcs[@]}
@@ -83,10 +92,15 @@ if [ "${arg/build}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg compile error && exit 1 
 fi 
 
+
+
 if [ "${arg/run}" != "$arg" ]; then 
 
+
+    export NUM=1000
+
     if [ -n "$DEBUG" ]; then 
-        BP=G4OpBoundaryProcess::PostStepDoIt lldb__ /tmp/$name/$name
+        BP=G4OpBoundaryProcess_MOCK::PostStepDoIt lldb__ /tmp/$name/$name
     else
         /tmp/$name/$name
     fi 

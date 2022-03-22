@@ -19,12 +19,13 @@ msg="=== $BASH_SOURCE :"
 
 #export QBnd=INFO
 
+test=rng_sequence
 #test=fill_state_0
 #test=fill_state_1
 #test=water
 #test=rayleigh_scatter_align
 #test=propagate_to_boundary
-test=propagate_at_boundary
+#test=propagate_at_boundary
 #test=propagate_at_surface
 
 export TEST=${TEST:-$test}

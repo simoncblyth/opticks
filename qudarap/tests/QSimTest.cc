@@ -56,7 +56,6 @@ enum {
 unsigned TestType( const char* name )
 {
    unsigned test = UNKNOWN ;  
-   if(strcmp(name,"F") == 0 ) test = RNG_SEQUENCE_F ; 
    if(strcmp(name,"S") == 0 ) test = WAVELENGTH_S ; 
    if(strcmp(name,"C") == 0 ) test = WAVELENGTH_C ;
    if(strcmp(name,"P") == 0 ) test = SCINT_PHOTON_P ;
@@ -68,9 +67,10 @@ unsigned TestType( const char* name )
    if(strcmp(name,"L") == 0 ) test = BOUNDARY_LOOKUP_LINE_LS_L ;
    if(strcmp(name,"Y") == 0 ) test = PROP_LOOKUP_Y ;
 
-   if(strcmp(name,"water") == 0    )    test = BOUNDARY_LOOKUP_LINE_WATER_W ;
-   if(strcmp(name,"fill_state_0") == 0) test = FILL_STATE_0 ;
-   if(strcmp(name,"fill_state_1") == 0) test = FILL_STATE_1 ;
+   if(strcmp(name,"rng_sequence") == 0 )          test = RNG_SEQUENCE_F ; 
+   if(strcmp(name,"water") == 0    )              test = BOUNDARY_LOOKUP_LINE_WATER_W ;
+   if(strcmp(name,"fill_state_0") == 0)           test = FILL_STATE_0 ;
+   if(strcmp(name,"fill_state_1") == 0)           test = FILL_STATE_1 ;
    if(strcmp(name,"rayleigh_scatter_align") == 0) test = RAYLEIGH_SCATTER_ALIGN ;
    if(strcmp(name,"propagate_to_boundary") == 0)  test = PROPAGATE_TO_BOUNDARY ;
    if(strcmp(name,"propagate_at_boundary") == 0)  test = PROPAGATE_AT_BOUNDARY ;
@@ -142,6 +142,15 @@ QSimTest<T>::QSimTest(QSim<T>& qs_)
     qs(qs_)
 {
 }
+
+/**
+QSimTest::rng_sequence
+-------------------------
+
+Default ni and ni_tranche_size_ are 1M and 100k which corresponds to 10 tranche launches
+to generate the 256M randoms.  
+
+**/
 
 template <typename T>
 void QSimTest<T>::rng_sequence(unsigned ni, int ni_tranche_size_)

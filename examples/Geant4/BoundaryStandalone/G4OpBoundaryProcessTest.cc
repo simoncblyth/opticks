@@ -25,6 +25,7 @@ Probably easiest to setup a "proper" Geant4 geometry to test within.
 #include "G4TouchableHandle.hh"
 
 #include "OpticksUtil.hh"
+#include "OpticksRandom.hh"
 #include "NP.hh"
 
 
@@ -47,6 +48,8 @@ struct G4OpBoundaryProcessTest
     const float3&   mom ; 
     const float3&   pol ; 
     const float3&   nrm ; 
+
+    OpticksRandom*  rnd ; 
 
     const NP* a_rindex1 ; 
     const NP* a_rindex2 ; 
@@ -81,6 +84,7 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float
     mom(mom_),
     pol(pol_),
     nrm(nrm_),
+    rnd(new OpticksRandom),
     a_rindex1(MakeRindexArray(1.f)), 
     a_rindex2(MakeRindexArray(1.5f)), 
     rindex1(OpticksUtil::MakeProperty(a_rindex1)),
@@ -91,6 +95,7 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float
     track(nullptr),
     step(new G4Step)
 {
+    //rnd->m_flat_debug = true  ;   // when true dumps a line for every G4UniformRand call 
     proc->theGlobalNormal_MOCK.set( nrm.x, nrm.y, nrm.z ); 
 
     G4double en = 1.*MeV ; 
@@ -164,7 +169,12 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(unsigned num)
     std::vector<quad4> pp(num) ; 
     for(unsigned i=0 ; i < num ; i++)
     {
+        rnd->setSequenceIndex(i);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
         G4VParticleChange* change = proc->PostStepDoIt(*track, *step) ;
+        rnd->setSequenceIndex(-1);  // disable random hijacking 
+
+        double flat_prior = rnd->getFlatPrior(); 
+
         G4OpBoundaryProcess_MOCKStatus theStatus = proc->GetStatus(); 
 
         G4ParticleChange* pc = dynamic_cast<G4ParticleChange*>(change);  
@@ -173,8 +183,10 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(unsigned num)
         const G4ThreeVector* spol = pc->GetPolarization();
 
         std::cout 
-            << std::setw(2) << theStatus 
+            << " i " << std::setw(6) << i 
+            << " s " << std::setw(2) << theStatus 
             << " " << std::setw(16) << X4OpBoundaryProcessStatus::Name( theStatus ) 
+            << " " << std::setw(10) << std::setprecision(3) << flat_prior
             << " mom " 
             << " " << std::setw(10) << std::setprecision(3) << smom->x() 
             << " " << std::setw(10) << std::setprecision(3) << smom->y() 
@@ -187,7 +199,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(unsigned num)
             ;
 
         quad4 p ; 
-        p.q0.f = make_float4( pos.x, pos.y, pos.z, 0.f );   
+        p.q0.f = make_float4( pos.x, pos.y, pos.z, float(flat_prior) );   
         p.q1.f = make_float4( smom->x(), smom->y(), smom->z(), 0.f  ) ; 
         p.q2.f = make_float4( spol->x(), spol->y(), spol->z(), 0.f  ) ; 
         p.q3.u = make_uint4(  i, 0u, 0u, theStatus );   
@@ -215,10 +227,11 @@ int main(int argc, char** argv)
     float3 mom = make_float3( 1.f, 0.f, 0.f ); 
     float3 pol = make_float3( 0.f, 1.f, 0.f ); 
     float3 nrm = make_float3(-1.f, 0.f, 0.f ); 
-    
 
     G4OpBoundaryProcessTest t(pos, mom, pol, nrm) ; 
-    t.propagate_at_boundary(10); 
+
+    unsigned num = OpticksUtil::getenvint("NUM", 10 ); 
+    t.propagate_at_boundary(num); 
 
     return 0 ; 
 }

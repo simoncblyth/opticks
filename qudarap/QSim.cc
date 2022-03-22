@@ -397,7 +397,8 @@ extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_s
 QSim::rng_sequence generate randoms in single CUDA launch
 -------------------------------------------------------------
 
-Each launch generates ni_tranche*nv randoms writing them into seq
+This is invoked for each tranche by the below rng_sequence method.
+Each tranche launch generates ni_tranche*nv randoms writing them into seq
 
 ni_tranche : item tranche size
 
@@ -441,10 +442,11 @@ Splitting the output files also eases management by avoiding huge files.
 template <typename T>
 void QSim<T>::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  )
 {
-    assert( ni % ni_tranche_size == 0 ); 
+    assert( ni >= ni_tranche_size && ni % ni_tranche_size == 0 );   // total size *ni* must be integral multiple of *ni_tranche_size*
     unsigned num_tranche = ni/ni_tranche_size ; 
     unsigned nv = nj*nk ; 
-    unsigned size = ni_tranche_size*nv ; 
+
+    unsigned size = ni_tranche_size*nv ;   // number of randoms to be generated in each launch 
     std::string reldir = QU::rng_sequence_reldir<T>(PREFIX, ni, nj, nk, ni_tranche_size  ) ;  
 
     std::cout 

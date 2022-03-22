@@ -100,6 +100,7 @@ OpticksUtil::ListDir
 -----------------------
 
 From BDir::dirlist, collect names of files within directory *path* with names ending with *ext*.
+The names are sorted using default std::sort lexical ordering. 
 
 **/
 
@@ -125,34 +126,45 @@ void OpticksUtil::ListDir(std::vector<std::string>& names,  const char* path, co
     std::sort( names.begin(), names.end() ); 
 }
 
-NP* OpticksUtil::LoadRandom(const char* random_path)
+/**
+OpticksUtil::LoadConcat
+-------------------------
+
+If *concat_path* ends with ".npy" simply loads it into seq array
+otherwise *concat_path* is assumed to be a directory containing multiple ".npy"
+to be concatenated.  The names of the paths in the directory are obtained using 
+OpticksUtil::ListDir 
+
+**/
+
+NP* OpticksUtil::LoadConcat(const char* concat_path)
 {
     NP* seq = nullptr ; 
-    if(random_path && ExistsPath(random_path))
+    if(concat_path && ExistsPath(concat_path))
     {   
-        if(strlen(random_path) > 4 && strcmp(random_path+strlen(random_path)-4, ".npy") == 0)
+        if(strlen(concat_path) > 4 && strcmp(concat_path+strlen(concat_path)-4, ".npy") == 0)
         {
-            seq = NP::Load(random_path);  
+            seq = NP::Load(concat_path);  
         }   
         else
         {
             std::vector<std::string> names ; 
-            ListDir(names, random_path, ".npy");   
+            ListDir(names, concat_path, ".npy");   
             std::cout 
                 << "OpticksUtil::LoadRandom" 
-                << " directory " << random_path 
+                << " directory " << concat_path 
                 << " contains names.size " << names.size() 
                 << " .npy" 
                 << std::endl
                 ;  
-            seq = NP::Concatenate(random_path, names); 
+            seq = NP::Concatenate(concat_path, names); 
         }
     }
     else
     {
         std::cout 
             << "OpticksUtil::LoadRandom"
-            << " non-existing random_path " << ( random_path ? random_path : "-" ) 
+            << " non-existing concat_path " << ( concat_path ? concat_path : "-" ) 
             << std::endl
             ;   
     }
