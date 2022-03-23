@@ -47,6 +47,7 @@ template <typename T>
 struct QSimTest
 {
     static const char* FOLD ; 
+    static const char* Path(const char* subfold, const char* name ); 
 
     QSim<T>& qs ; 
     QSimTest(QSim<T>& qs); 
@@ -69,13 +70,19 @@ struct QSimTest
     void getStateNames(std::vector<std::string>& names, unsigned num_state) const ; 
 
     void save_array(     const char* subfold, const char* name, const float* data, unsigned ni, unsigned nj, unsigned nk ); 
+    NP*  load_array(     const char* subfold, const char* name); 
+     
     void save_photon(    const char* subfold, const char* name, const std::vector<quad4>& p ); 
+    NP*  load_photon(    const char* subfold, const char* name); 
+
     void save_dbg_photon(const char* subfold, const char* name); 
 
     void fill_state(unsigned version); 
     void save_state( const char* subfold, const float* data, unsigned num_state  ); 
 
     void photon_launch(unsigned num_photon, unsigned type); 
+    void photon_launch_generate(unsigned num_photon, unsigned type); 
+    void photon_launch_mutate(  unsigned num_photon, unsigned type); 
 
 
 }; 
@@ -390,19 +397,46 @@ void QSimTest<T>::getStateNames(std::vector<std::string>& names, unsigned num_st
 }
 
 
+
+template <typename T>
+const char* QSimTest<T>::Path(const char* subfold, const char* name )
+{
+    return SPath::Resolve(FOLD, subfold, name, FILEPATH ); 
+}
  
 template <typename T>
 void QSimTest<T>::save_array(const char* subfold, const char* name, const float* data, unsigned ni, unsigned nj, unsigned nk )
 {
-    const char* path = SPath::Resolve(FOLD, subfold, name, FILEPATH ); 
+    const char* path = Path(subfold, name); 
     NP::Write( path, data, ni, nj, nk  ); 
 }
+
+template <typename T>
+NP* QSimTest<T>::load_array(const char* subfold, const char* name )
+{
+    const char* path = SPath::Resolve(FOLD, subfold, name, FILEPATH ); 
+    NP* a = NP::Load(path); 
+    return a ; 
+}
+
 
 template <typename T>
 void QSimTest<T>::save_photon(const char* subfold, const char* name, const std::vector<quad4>& p )
 {
     save_array(subfold, name, (float*)p.data(), p.size(), 4, 4  );
 }
+
+
+template <typename T>
+NP* QSimTest<T>::load_photon(const char* subfold, const char* name )
+{
+    NP* a = load_array(subfold, name);
+    assert( a ); 
+    assert( a->shape.size() == 3 ); 
+    assert( a->shape[1] == 4 && a->shape[2] == 4 ); 
+    return a ; 
+}
+
 
 template <typename T>
 void QSimTest<T>::save_dbg_photon(const char* subfold, const char* name)
@@ -416,6 +450,19 @@ void QSimTest<T>::save_dbg_photon(const char* subfold, const char* name)
 template <typename T>
 void QSimTest<T>::photon_launch(unsigned num_photon, unsigned type)
 {
+    if(QSimLaunch::IsMutate(type))
+    {
+        photon_launch_mutate(num_photon, type); 
+    }
+    else
+    {
+        photon_launch_generate(num_photon, type); 
+    }
+}
+
+template <typename T>
+void QSimTest<T>::photon_launch_generate(unsigned num_photon, unsigned type)
+{
     const char* subfold = QSimLaunch::Name(type) ; 
     std::vector<quad4> p(num_photon) ; 
     qs.photon_launch( p.data(), p.size(), type ); 
@@ -423,6 +470,26 @@ void QSimTest<T>::photon_launch(unsigned num_photon, unsigned type)
     save_dbg_photon( subfold, "p0.npy"); 
 }
 
+template <typename T>
+void QSimTest<T>::photon_launch_mutate(unsigned num_photon, unsigned type)
+{
+    unsigned src = QSimLaunch::MutateSource(type); 
+    const char* src_subfold = QSimLaunch::Name(src); 
+    const char* dst_subfold = QSimLaunch::Name(type) ; 
+
+    NP* a = load_photon(src_subfold,  "p.npy" ); 
+    LOG(info) << " loaded " << a->sstr() << " from src_subfold " << src_subfold ; 
+    unsigned num_photon_ = a->shape[0] ; 
+    assert( num_photon_ == num_photon ); 
+
+    quad4* photons = (quad4*)a->values<float>() ; 
+    qs.photon_launch_mutate( photons, num_photon, type ); 
+
+    const char* dst_path = Path(dst_subfold, "p.npy"); 
+    a->save(dst_path); 
+
+    save_dbg_photon(dst_subfold, "p0.npy"); 
+}
 
 
 template<typename T>
@@ -470,8 +537,12 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
         case PROPAGATE_TO_BOUNDARY:         photon_launch(8,   type)                   ; break ;  
         case PROPAGATE_AT_SURFACE:          photon_launch(8,   type)                   ; break ;  
         case PROPAGATE_AT_BOUNDARY:         photon_launch(num, type)                   ; break ;  
+
         case HEMISPHERE_S_POLARIZED:        photon_launch(num, type)                   ; break ;  
         case HEMISPHERE_P_POLARIZED:        photon_launch(num, type)                   ; break ;  
+
+        case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  photon_launch_mutate(num, type)       ; break ;  
+        case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  photon_launch_mutate(num, type)       ; break ;  
 
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 
     }

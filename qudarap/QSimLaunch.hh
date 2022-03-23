@@ -25,13 +25,16 @@ enum {
    PROPAGATE_AT_BOUNDARY,
    HEMISPHERE_S_POLARIZED,
    HEMISPHERE_P_POLARIZED,
-   PROPAGATE_AT_SURFACE
-
-} ;
+   PROPAGATE_AT_SURFACE,
+   PROPAGATE_AT_BOUNDARY_S_POLARIZED,
+   PROPAGATE_AT_BOUNDARY_P_POLARIZED
+};
  
 struct QSimLaunch
 {
     static unsigned    Type(const char* name) ;  
+    static bool        IsMutate(unsigned type) ;  
+    static unsigned    MutateSource(unsigned type); 
     static const char* Name(unsigned type ); 
 
     static const char* RNG_SEQUENCE_ ; 
@@ -44,6 +47,8 @@ struct QSimLaunch
     static const char* HEMISPHERE_S_POLARIZED_ ; 
     static const char* HEMISPHERE_P_POLARIZED_ ; 
     static const char* PROPAGATE_AT_SURFACE_ ; 
+    static const char* PROPAGATE_AT_BOUNDARY_S_POLARIZED_ ; 
+    static const char* PROPAGATE_AT_BOUNDARY_P_POLARIZED_ ; 
 };
 
 const char* QSimLaunch::RNG_SEQUENCE_ = "rng_sequence" ; 
@@ -56,6 +61,8 @@ const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_ = "propagate_at_boundary" ;
 const char* QSimLaunch::HEMISPHERE_S_POLARIZED_ = "hemisphere_s_polarized" ; 
 const char* QSimLaunch::HEMISPHERE_P_POLARIZED_ = "hemisphere_p_polarized" ; 
 const char* QSimLaunch::PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ; 
+const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_S_POLARIZED_ = "propagate_at_boundary_s_polarized" ; 
+const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_P_POLARIZED_ = "propagate_at_boundary_p_polarized" ; 
 
 
 inline unsigned QSimLaunch::Type( const char* name )
@@ -82,12 +89,31 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,HEMISPHERE_S_POLARIZED_) == 0) test = HEMISPHERE_S_POLARIZED ;
    if(strcmp(name,HEMISPHERE_P_POLARIZED_) == 0) test = HEMISPHERE_P_POLARIZED ;
    if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)  test = PROPAGATE_AT_SURFACE ;
+
+   if(strcmp(name,PROPAGATE_AT_BOUNDARY_S_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_S_POLARIZED ;
+   if(strcmp(name,PROPAGATE_AT_BOUNDARY_P_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_P_POLARIZED ;
    
    bool known =  test != UNKNOWN  ;
    if(!known) printf("QSimLaunch::Type name [%s] is unknown \n", name) ; 
    assert(known);  
    return test ; 
 }
+
+inline bool QSimLaunch::IsMutate( unsigned type )
+{
+    return type == PROPAGATE_AT_BOUNDARY_S_POLARIZED || PROPAGATE_AT_BOUNDARY_P_POLARIZED    ; 
+}
+inline unsigned QSimLaunch::MutateSource( unsigned type )
+{
+    unsigned src = UNKNOWN ; 
+    switch(type)
+    {
+       case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  src = HEMISPHERE_S_POLARIZED ; break ; 
+       case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  src = HEMISPHERE_P_POLARIZED ; break ; 
+    } 
+    return src ; 
+}
+
 
 inline const char* QSimLaunch::Name( unsigned type )
 {
@@ -104,6 +130,8 @@ inline const char* QSimLaunch::Name( unsigned type )
         case HEMISPHERE_S_POLARIZED: s = HEMISPHERE_S_POLARIZED_ ; break ; 
         case HEMISPHERE_P_POLARIZED: s = HEMISPHERE_P_POLARIZED_ ; break ; 
         case PROPAGATE_AT_SURFACE:   s = PROPAGATE_AT_SURFACE_   ; break ; 
+        case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  s = PROPAGATE_AT_BOUNDARY_S_POLARIZED_  ; break ;  
+        case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  s = PROPAGATE_AT_BOUNDARY_P_POLARIZED_  ; break ;  
     }
     return s; 
 }

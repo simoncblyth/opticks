@@ -28,7 +28,9 @@ msg="=== $BASH_SOURCE :"
 #test=propagate_at_boundary
 #test=propagate_at_surface
 #test=hemisphere_s_polarized
-test=hemisphere_p_polarized
+#test=hemisphere_p_polarized
+#test=propagate_at_boundary_s_polarized
+test=propagate_at_boundary_p_polarized
 
 M1=1000000
 K100=100000
@@ -55,6 +57,8 @@ if [ "${arg/ana}" != "$arg" ]; then
        fill_state_cf)          script=QSimTest_fill_state_cf.py ;;
        hemisphere_s_polarized) script=QSimTest_hemisphere_polarized.py ;;
        hemisphere_p_polarized) script=QSimTest_hemisphere_polarized.py ;;
+       propagate_at_boundary_s_polarized) script=QSimTest_propagate_at_boundary_x_polarized.py ;; 
+       propagate_at_boundary_p_polarized) script=QSimTest_propagate_at_boundary_x_polarized.py ;; 
                             *) script=QSimTest_$TEST.py      ;;
     esac
 

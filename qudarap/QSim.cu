@@ -439,6 +439,28 @@ __global__ void _QSim_propagate_at_boundary( qsim<T>* sim, quad4* photon, unsign
     photon[id] = p ; 
 }
 
+
+template <typename T>
+__global__ void _QSim_propagate_at_boundary_mutate( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    //printf("//_QSim_propagate_at_boundary_mutate blockIdx.x %d blockDim.x %d threadIdx.x %d id %d \n", blockIdx.x, blockDim.x, threadIdx.x, id ); 
+
+    if (id >= num_photon) return;
+
+    const qprd& prd = dbg->prd ; 
+    const qstate& s = dbg->s ;     
+    quad4 p         = photon[id] ; 
+    curandState rng = sim->rngstate[id] ; 
+
+    unsigned flag = sim->propagate_at_boundary( p, prd, s, rng );  
+
+    p.q3.u.w = flag ;  // non-standard
+    photon[id] = p ; 
+}
+
+
+
 template <typename T>
 __global__ void _QSim_hemisphere_polarized( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned polz )
 {
@@ -467,6 +489,9 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* si
         case PROPAGATE_AT_BOUNDARY:  _QSim_propagate_at_boundary<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
         case HEMISPHERE_S_POLARIZED: _QSim_hemisphere_polarized<T><<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 0u  ) ; break ; 
         case HEMISPHERE_P_POLARIZED: _QSim_hemisphere_polarized<T><<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 1u  ) ; break ; 
+
+        case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  _QSim_propagate_at_boundary_mutate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  ) ; break ;
+        case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  _QSim_propagate_at_boundary_mutate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  ) ; break ;
     }
 }
 

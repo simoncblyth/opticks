@@ -777,7 +777,26 @@ void QSim<T>::photon_launch(quad4* photon, unsigned num_photon, unsigned type )
 }
  
 
+/**
+TODO: this needs to upload, mutate and then download
+**/
 
+template <typename T>
+void QSim<T>::photon_launch_mutate(quad4* photon, unsigned num_photon, unsigned type )
+{
+    assert( d_sim ); 
+    assert( d_dbg ); 
+
+    quad4* d_photon = QU::UploadArray<quad4>(photon, num_photon );  
+
+    unsigned threads_per_block = 512 ;  
+    configureLaunch1D( num_photon, threads_per_block ); 
+
+    QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg, type );  
+
+    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
+}
+ 
  
 
 
