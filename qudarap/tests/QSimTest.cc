@@ -471,6 +471,7 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
         case PROPAGATE_AT_SURFACE:          photon_launch(8,   type)                   ; break ;  
         case PROPAGATE_AT_BOUNDARY:         photon_launch(num, type)                   ; break ;  
         case HEMISPHERE_S_POLARIZED:        photon_launch(num, type)                   ; break ;  
+        case HEMISPHERE_P_POLARIZED:        photon_launch(num, type)                   ; break ;  
 
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 
     }

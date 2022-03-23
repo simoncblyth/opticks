@@ -117,7 +117,7 @@ struct qsim
 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
     QSIM_METHOD int     propagate_at_boundary(                quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
-    QSIM_METHOD void    hemisphere_s_polarized(                quad4& p, const qprd& prd, curandStateXORWOW& rng); 
+    QSIM_METHOD void    hemisphere_polarized(   quad4& p, unsigned polz, const qprd& prd, curandStateXORWOW& rng); 
 
 
 
@@ -754,12 +754,65 @@ transmit
 */
 
 
+/**
+qsim::hemisphere_s_polarized
+------------------------------
+
+
+          direction      | surface_normal
+               \         |
+                \        |
+              .  \       |
+          .       \      |
+      .            \     | 
+     within         \    |
+                     \   |
+                      \  |
+                       \ |
+                        \|
+           --------------+------------
+    
+
+*plane of incidence*
+    plane containing *surface_normal* *direction* and *within* vectors 
+               
+*transverse* 
+    vector transverse to the plane of incidence (S polarized)
+    
+*within*
+    vector within the plane of incidence and perpendicular to *direction* (P polarized)
+ 
+**/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::hemisphere_s_polarized(quad4& p, const qprd& prd, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, const qprd& prd, curandStateXORWOW& rng)
 {
- 
+    const float3& surface_normal = prd.normal ; 
 
+    float3* direction    = (float3*)&p.q1.f.x ; 
+    float3* polarization = (float3*)&p.q2.f.x ; 
+
+    //printf("//qsim.hemisphere_s_polarized surface_normal (%10.4f, %10.4f, %10.4f) \n", surface_normal.x, surface_normal.y, surface_normal.z );  
+
+    float phi = curand_uniform(&rng)*2.f*M_PIf;  // 0->2pi
+    float cosTheta = curand_uniform(&rng) ;      // 0->1
+    float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
+
+    direction->x = cosf(phi)*sinTheta ; 
+    direction->y = sinf(phi)*sinTheta ; 
+    direction->z = cosTheta ; 
+
+    rotateUz( *direction, surface_normal ); 
+
+    // what about normal incidence ?
+    const float3 transverse = normalize(cross(*direction, surface_normal)) ; // perpendicular to plane of incidence
+    const float3 within = normalize( cross(*direction, transverse) );  //   within plane of incidence and perpendicular to direction
+
+    switch(polz)
+    {
+        case 0: *polarization = transverse ; break ;   // S-polarizatiom
+        case 1: *polarization = within     ; break ;   // P-polarization
+    }
 }
 
 

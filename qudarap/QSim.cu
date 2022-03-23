@@ -440,17 +440,16 @@ __global__ void _QSim_propagate_at_boundary( qsim<T>* sim, quad4* photon, unsign
 }
 
 template <typename T>
-__global__ void _QSim_hemisphere_s_polarized( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
+__global__ void _QSim_hemisphere_polarized( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned polz )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-
     if (id >= num_photon) return;
 
+    curandState rng = sim->rngstate[id] ; 
     const qprd& prd = dbg->prd ;  
     quad4 p         = dbg->p ;   
-    curandState rng = sim->rngstate[id] ; 
 
-    sim->hemisphere_s_polarized( p, prd, rng );  
+    sim->hemisphere_polarized( p, polz, prd, rng );  
 
     photon[id] = p ; 
 }
@@ -463,10 +462,11 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* si
     printf("//QSim_photon_launch sim %p photon %p num_photon %d dbg %p type %d name %s \n", sim, photon, num_photon, dbg, type, name ); 
     switch(type)
     {
-        case PROPAGATE_TO_BOUNDARY: _QSim_propagate_to_boundary<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon,  dbg )  ; break ;
-        case RAYLEIGH_SCATTER_ALIGN: _QSim_rayleigh_scatter_align<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  ) ; break ;
-        case PROPAGATE_AT_BOUNDARY:  _QSim_propagate_at_boundary<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon,  dbg  ) ; break ;
-        case HEMISPHERE_S_POLARIZED: _QSim_hemisphere_s_polarized<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  ) ; break ; 
+        case PROPAGATE_TO_BOUNDARY:  _QSim_propagate_to_boundary<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
+        case RAYLEIGH_SCATTER_ALIGN: _QSim_rayleigh_scatter_align<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  )   ; break ;
+        case PROPAGATE_AT_BOUNDARY:  _QSim_propagate_at_boundary<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
+        case HEMISPHERE_S_POLARIZED: _QSim_hemisphere_polarized<T><<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 0u  ) ; break ; 
+        case HEMISPHERE_P_POLARIZED: _QSim_hemisphere_polarized<T><<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 1u  ) ; break ; 
     }
 }
 

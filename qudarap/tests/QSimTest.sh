@@ -25,10 +25,15 @@ msg="=== $BASH_SOURCE :"
 #test=water
 #test=rayleigh_scatter_align
 #test=propagate_to_boundary
-test=propagate_at_boundary
+#test=propagate_at_boundary
 #test=propagate_at_surface
+#test=hemisphere_s_polarized
+test=hemisphere_p_polarized
 
-export NUM=16 
+M1=1000000
+K100=100000
+export NUM=$K100
+export NRM=1,1,1
 
 export TEST=${TEST:-$test}
 
@@ -45,10 +50,12 @@ if [ "${arg/ana}" != "$arg" ]; then
     export PYVISTA_KILL_DISPLAY=1
 
     case $TEST in
-       fill_state_0)  script=QSimTest_fill_state.py ;;
-       fill_state_1)  script=QSimTest_fill_state.py ;;
-       fill_state_cf) script=QSimTest_fill_state_cf.py ;;
-                  *)  script=QSimTest_$TEST.py      ;;
+       fill_state_0)           script=QSimTest_fill_state.py ;;
+       fill_state_1)           script=QSimTest_fill_state.py ;;
+       fill_state_cf)          script=QSimTest_fill_state_cf.py ;;
+       hemisphere_s_polarized) script=QSimTest_hemisphere_polarized.py ;;
+       hemisphere_p_polarized) script=QSimTest_hemisphere_polarized.py ;;
+                            *) script=QSimTest_$TEST.py      ;;
     esac
 
     if [ -f "$script" ]; then

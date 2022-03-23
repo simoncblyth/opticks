@@ -2,6 +2,7 @@
 
 import os, numpy as np
 from opticks.ana.fold import Fold
+from opticks.qudarap.tests.pvplt import pvplt_simple, pvplt_photon
 import pyvista as pv
 import matplotlib.pyplot as plt 
 
@@ -9,42 +10,10 @@ GUI = not "NOGUI" in os.environ
 SIZE = np.array([1280, 720])
 
 
-
 FOLD = os.path.expandvars("/tmp/$USER/opticks/QSimTest/$TEST")
 TEST = os.environ["TEST"]
 
 G4_FOLD = "/tmp/G4OpRayleighTest"
-
-
-def pvplt_simple(pl, xyz, label):
-    """  
-    :param pl: pyvista plotter 
-    :param xyz: (n,3) shaped array of positions
-    :param label: to place on plot 
-    """
-    pl.add_text( "pvplt_simple %s " % label, position="upper_left")
-    pl.add_points( xyz, color="white" )     
-
-
-def pvplt_photon( pl, p   ):
-    assert p.shape == (1,4,4)
-    pos = p[:,0,:3]   
-    mom = p[:,1,:3]   
-    pol = p[:,2,:3]   
-
-    pl.add_points( pos, color="magenta", point_size=16.0 )
-
-    lmom = np.zeros( (2, 3), dtype=np.float32 )
-    lmom[0] = pos[0]
-    lmom[1] = pos[0] + mom[0]
-
-    lpol = np.zeros( (2, 3), dtype=np.float32 )
-    lpol[0] = pos[0]
-    lpol[1] = pos[0] + pol[0]
-
-    pl.add_lines( lmom, color="red" ) 
-    pl.add_lines( lpol, color="blue" ) 
-
 
 
 

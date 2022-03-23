@@ -80,6 +80,7 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,PROPAGATE_TO_BOUNDARY_) == 0)  test = PROPAGATE_TO_BOUNDARY ;
    if(strcmp(name,PROPAGATE_AT_BOUNDARY_) == 0)  test = PROPAGATE_AT_BOUNDARY ;
    if(strcmp(name,HEMISPHERE_S_POLARIZED_) == 0) test = HEMISPHERE_S_POLARIZED ;
+   if(strcmp(name,HEMISPHERE_P_POLARIZED_) == 0) test = HEMISPHERE_P_POLARIZED ;
    if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)  test = PROPAGATE_AT_SURFACE ;
    
    bool known =  test != UNKNOWN  ;
@@ -101,6 +102,7 @@ inline const char* QSimLaunch::Name( unsigned type )
         case PROPAGATE_TO_BOUNDARY:  s = PROPAGATE_TO_BOUNDARY_  ; break ;  
         case PROPAGATE_AT_BOUNDARY:  s = PROPAGATE_AT_BOUNDARY_  ; break ;  
         case HEMISPHERE_S_POLARIZED: s = HEMISPHERE_S_POLARIZED_ ; break ; 
+        case HEMISPHERE_P_POLARIZED: s = HEMISPHERE_P_POLARIZED_ ; break ; 
         case PROPAGATE_AT_SURFACE:   s = PROPAGATE_AT_SURFACE_   ; break ; 
     }
     return s; 
