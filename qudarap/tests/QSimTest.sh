@@ -29,18 +29,27 @@ msg="=== $BASH_SOURCE :"
 #test=propagate_at_surface
 #test=hemisphere_s_polarized
 #test=hemisphere_p_polarized
-#test=propagate_at_boundary_s_polarized
-test=propagate_at_boundary_p_polarized
+test=propagate_at_boundary_s_polarized
+#test=propagate_at_boundary_p_polarized
 
 M1=1000000
 K100=100000
-export NUM=$K100
-export NRM=1,1,1
+
+#num=$K100
+num=8
+nrm=0,0,1
+
+export NUM=${NUM:-$num}
+export NRM=${NRM:-$nrm}
 
 export TEST=${TEST:-$test}
 
 if [ "${arg/run}" != "$arg" ]; then 
-   QSimTest 
+   if [ -n "$DEBUG" ]; then 
+       lldb__ QSimTest
+   else
+       QSimTest
+   fi 
    [ $? -ne 0 ] && echo $msg run error && exit 1 
 fi
 
@@ -69,9 +78,7 @@ if [ "${arg/ana}" != "$arg" ]; then
     else
         echo $msg there is no analysis script $script
     fi  
-
 fi
-
 
 exit 0 
 

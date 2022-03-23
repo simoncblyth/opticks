@@ -453,6 +453,9 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim<T>* sim, quad4* photon,
     quad4 p         = photon[id] ; 
     curandState rng = sim->rngstate[id] ; 
 
+    p.q0.f = p.q1.f ;   // non-standard record initial mom and pol into q0, q3
+    p.q3.f = p.q2.f ; 
+
     unsigned flag = sim->propagate_at_boundary( p, prd, s, rng );  
 
     p.q3.u.w = flag ;  // non-standard

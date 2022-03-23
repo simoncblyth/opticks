@@ -39,36 +39,48 @@ union quad { float4 f ; uint4  u ;  };
 struct quad4 { quad q0, q1, q2, q3 ; }; 
 
 
+
 struct G4OpBoundaryProcessTest 
 {
     static const char* FOLD ; 
+    static void Init(quad4& p); 
     static NP* MakeRindexArray(double rindex); 
 
-    const float3&   pos ; 
-    const float3&   mom ; 
-    const float3&   pol ; 
-    const float3&   nrm ; 
-
+    const float3&   normal ; 
     OpticksRandom*  rnd ; 
-
+    float n1 ; 
+    float n2 ; 
     const NP* a_rindex1 ; 
     const NP* a_rindex2 ; 
     const G4MaterialPropertyVector* rindex1 ; 
     const G4MaterialPropertyVector* rindex2 ;
     const G4Material* material1 ; 
     const G4Material* material2 ; 
-
+    G4Material* material1_ ; 
+    G4Material* material2_ ; 
     G4OpBoundaryProcess_MOCK* proc ; 
-    G4Track*                  track ; 
-    G4Step*                   step ;  
 
-    G4OpBoundaryProcessTest(const float3& pos, const float3& mom, const float3& pol, const float3& nrm ); 
+    G4OpBoundaryProcessTest(const float3& normal ); 
+    void init(); 
 
-    void propagate_at_boundary(unsigned num); 
-    void save_p0() const ; 
+    std::string desc() const ; 
+    void propagate_at_boundary( quad4& photon, unsigned idx); 
+    void propagate_at_boundary_(quad4& photon, unsigned idx);
+    void propagate_at_boundary(); 
 
+    void dump( const quad4& photon, unsigned idx ); 
+    void save(const quad4& p, const char* name) const ; 
 }; 
 
+const char* G4OpBoundaryProcessTest::FOLD = "/tmp/G4OpBoundaryProcessTest" ; 
+
+void G4OpBoundaryProcessTest::Init(quad4& p) // static 
+{
+    p.q0.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // pos 
+    p.q1.f = make_float4( 1.f, 0.f, 0.f, 1.f );   // mom 
+    p.q2.f = make_float4( 0.f, 1.f, 0.f, 500.f ); // pol
+    p.q3.f = make_float4( 0.f, 0.f, 0.f, 0.f ); 
+}
 
 NP* G4OpBoundaryProcessTest::MakeRindexArray(double rindex)  // static
 {
@@ -78,37 +90,104 @@ NP* G4OpBoundaryProcessTest::MakeRindexArray(double rindex)  // static
     return a ; 
 }
 
-G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float3& mom_, const float3& pol_, const float3& nrm_ )
+G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& normal_ )
     :
-    pos(pos_),
-    mom(mom_),
-    pol(pol_),
-    nrm(nrm_),
+    normal(normal_),
     rnd(new OpticksRandom),
-    a_rindex1(MakeRindexArray(1.f)), 
-    a_rindex2(MakeRindexArray(1.5f)), 
+    n1(1.f),
+    n2(1.5f),
+    a_rindex1(MakeRindexArray(n1)), 
+    a_rindex2(MakeRindexArray(n2)), 
     rindex1(OpticksUtil::MakeProperty(a_rindex1)),
     rindex2(OpticksUtil::MakeProperty(a_rindex2)),
     material1(OpticksUtil::MakeMaterial(rindex1, "Material1")),
     material2(OpticksUtil::MakeMaterial(rindex2, "Material2")),
-    proc(new G4OpBoundaryProcess_MOCK()),
-    track(nullptr),
-    step(new G4Step)
+    material1_(const_cast<G4Material*>(material1)),
+    material2_(const_cast<G4Material*>(material2)),
+    proc(new G4OpBoundaryProcess_MOCK())
+{
+    init(); 
+}
+
+std::string G4OpBoundaryProcessTest::desc() const 
+{
+    std::stringstream ss ; 
+    ss 
+        << " normal ("
+        << " " << std::setw(10) << std::fixed << std::setprecision(4) << normal.x 
+        << " " << std::setw(10) << std::fixed << std::setprecision(4) << normal.y
+        << " " << std::setw(10) << std::fixed << std::setprecision(4) << normal.z
+        << ")" 
+        << " n1 " << std::setw(10) << std::fixed << std::setprecision(4) << n1
+        << " n2 " << std::setw(10) << std::fixed << std::setprecision(4) << n2
+        ; 
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+void G4OpBoundaryProcessTest::init()
 {
     //rnd->m_flat_debug = true  ;   // when true dumps a line for every G4UniformRand call 
-    proc->theGlobalNormal_MOCK.set( nrm.x, nrm.y, nrm.z ); 
+    proc->theGlobalNormal_MOCK.set( normal.x, normal.y, normal.z ); 
+
+    std::cout 
+        << "G4OpBoundaryProcessTest::init "  << desc() 
+        << std::endl 
+        ;
+}
+ 
+void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, unsigned idx)
+{
+    rnd->setSequenceIndex(idx);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
+
+    propagate_at_boundary_( photon, idx ); 
+
+    double flat_prior = rnd->getFlatPrior(); 
+    photon.q0.f.w = flat_prior ; 
+    rnd->setSequenceIndex(-1);  // disable random hijacking 
+
+    bool dump_ = idx < 10 || ( idx % 1000 == 0 ) ;  
+    if(dump_) dump(photon, idx); 
+}
+
+/**
+G4OpBoundaryProcessTest::propagate_at_boundary_
+-------------------------------------------------
+
+Just leaking as Geant4 not keen on being mocked like this
+with objects on stack.
+
+**/
+
+void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, unsigned idx)
+{
+    float3* mom0 = (float3*)&photon.q0.f.x ; 
+    float3* mom = (float3*)&photon.q1.f.x ; 
+    float3* pol = (float3*)&photon.q2.f.x ; 
+    float3* pol0 = (float3*)&photon.q3.f.x ; 
+
+    // take copy of the initial mom and pol 
+    mom0->x = photon.q1.f.x ; 
+    mom0->y = photon.q1.f.y ; 
+    mom0->z = photon.q1.f.z ; 
+
+    pol0->x = photon.q2.f.x ; 
+    pol0->y = photon.q2.f.y ; 
+    pol0->z = photon.q2.f.z ; 
+
 
     G4double en = 1.*MeV ; 
-    G4ParticleMomentum momentum(mom.x,mom.y,mom.z); 
+    G4ParticleMomentum momentum(mom->x,mom->y,mom->z); 
     G4DynamicParticle* particle = new G4DynamicParticle(G4OpticalPhoton::Definition(),momentum);
-    particle->SetPolarization(pol.x, pol.y, pol.z );  
+    particle->SetPolarization(pol->x, pol->y, pol->z );  
     particle->SetKineticEnergy(en); 
 
-    G4ThreeVector position(pos.x, pos.y, pos.z); 
+    //G4ThreeVector position(pos->x, pos->y, pos->z); 
+    G4ThreeVector position(0.f, 0.f, 0.f); 
     G4double time(0.); 
 
-    track = new G4Track(particle,time,position);
-
+    G4Track* track = new G4Track(particle,time,position);
     G4StepPoint* pre = new G4StepPoint ; 
     G4StepPoint* post = new G4StepPoint ; 
 
@@ -117,17 +196,13 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float
     pre->SetPosition(pre_position); 
     post->SetPosition(post_position); 
 
-    // HMM : MOCKING IS INVOLVED BECAUSE NEED TO GET A SURFACE NORMAL WITH G4Navigator::GetGlobalExitNormal
-    // g4-cls G4PathFinder
-    // because of this moved to _MOCK the proc
-
     G4VPhysicalVolume* prePV = nullptr ; 
     G4VPhysicalVolume* postPV = nullptr ; 
 
     G4NavigationHistory* pre_navHist = new G4NavigationHistory ; 
     pre_navHist->SetFirstEntry( prePV ); 
 
-    G4NavigationHistory* post_navHist = new G4NavigationHistory ; 
+    G4NavigationHistory* post_navHist = new G4NavigationHistory ;  
     post_navHist->SetFirstEntry( postPV ); 
 
     G4TouchableHistory* pre_touchHist = new G4TouchableHistory(*pre_navHist);  
@@ -142,100 +217,112 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& pos_, const float
     const G4StepStatus postStepStatus = fGeomBoundary ; 
     post->SetStepStatus( postStepStatus ); 
 
-
     // G4Track::GetMaterial comes from current step preStepPoint 
-
-    G4Material* material1_ = const_cast<G4Material*>(material1); 
-    G4Material* material2_ = const_cast<G4Material*>(material2); 
-
     pre->SetMaterial(material1_);    // HUH: why not const 
     post->SetMaterial(material2_); 
 
     G4double step_length = 1. ; 
 
+    G4Step* step = new G4Step ; 
     step->SetPreStepPoint(pre);
     step->SetPostStepPoint(post);
     step->SetStepLength(step_length);
-
     track->SetStepLength(step_length); 
- 
     track->SetStep(step);
+
+    G4VParticleChange* change = proc->PostStepDoIt(*track, *step) ;
+
+    G4OpBoundaryProcess_MOCKStatus theStatus = proc->GetStatus(); 
+
+
+    G4ParticleChange* pc = dynamic_cast<G4ParticleChange*>(change);  
+    const G4ThreeVector* smom = pc->GetMomentumDirection();
+    const G4ThreeVector* spol = pc->GetPolarization();
+
+    mom->x =  smom->x() ; 
+    mom->y =  smom->y() ; 
+    mom->z =  smom->z() ; 
+
+    pol->x =  spol->x() ; 
+    pol->y =  spol->y() ; 
+    pol->z =  spol->z() ; 
+
+    photon.q3.u.w = theStatus ; 
+
 }
 
-const char* G4OpBoundaryProcessTest::FOLD = "/tmp/G4OpBoundaryProcessTest" ; 
-
-void G4OpBoundaryProcessTest::propagate_at_boundary(unsigned num)
+void G4OpBoundaryProcessTest::dump( const quad4& photon, unsigned idx )
 {
-    std::vector<quad4> pp(num) ; 
-    for(unsigned i=0 ; i < num ; i++)
+    unsigned status = photon.q3.u.w ; 
+    float flat_prior = photon.q0.f.w ; 
+
+    //float3* pos = (float3*)&photon.q0.f.x ; 
+    float3* mom = (float3*)&photon.q1.f.x ; 
+    float3* pol = (float3*)&photon.q2.f.x ; 
+
+    std::cout 
+        << " i " << std::setw(6) << idx 
+        << " s " << std::setw(2) << status 
+        << " " << std::setw(16) << X4OpBoundaryProcessStatus::Name( status ) 
+        << " " << std::setw(10) << std::setprecision(3) << flat_prior
+        << " mom " 
+        << " " << std::setw(10) << std::setprecision(3) << mom->x
+        << " " << std::setw(10) << std::setprecision(3) << mom->y
+        << " " << std::setw(10) << std::setprecision(3) << mom->z
+        << " pol " 
+        << " " << std::setw(10) << std::setprecision(3) << pol->x
+        << " " << std::setw(10) << std::setprecision(3) << pol->y
+        << " " << std::setw(10) << std::setprecision(3) << pol->z
+        << std::endl 
+        ;
+}
+
+
+void G4OpBoundaryProcessTest::save(const quad4& p, const char* name) const 
+{
+    NP::Write( FOLD, name,  (float*)&p.q0.f.x , 1, 4, 4  );
+}
+
+void G4OpBoundaryProcessTest::propagate_at_boundary()
+{
+    const char* path = getenv("OPTICKS_INPUT_PHOTONS"); 
+    NP* a = NP::Load(path) ; 
+    assert( a->has_shape(-1,4,4) ); 
+    unsigned ni = a->shape[0] ; 
+
+    std::vector<quad4> pp(ni); 
+    float* pp_data = (float*)pp.data() ;
+    a->write<float>(pp_data); 
+
+    for(unsigned i=0 ; i < ni ; i++)
     {
-        rnd->setSequenceIndex(i);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
-        G4VParticleChange* change = proc->PostStepDoIt(*track, *step) ;
-        rnd->setSequenceIndex(-1);  // disable random hijacking 
-
-        double flat_prior = rnd->getFlatPrior(); 
-
-        G4OpBoundaryProcess_MOCKStatus theStatus = proc->GetStatus(); 
-
-        G4ParticleChange* pc = dynamic_cast<G4ParticleChange*>(change);  
-
-        const G4ThreeVector* smom = pc->GetMomentumDirection();
-        const G4ThreeVector* spol = pc->GetPolarization();
-
-        bool dump = i < 10 || ( i % 1000 == 0 ) ;  
-        if(dump) 
-        {
-            std::cout 
-                << " i " << std::setw(6) << i 
-                << " s " << std::setw(2) << theStatus 
-                << " " << std::setw(16) << X4OpBoundaryProcessStatus::Name( theStatus ) 
-                << " " << std::setw(10) << std::setprecision(3) << flat_prior
-                << " mom " 
-                << " " << std::setw(10) << std::setprecision(3) << smom->x() 
-                << " " << std::setw(10) << std::setprecision(3) << smom->y() 
-                << " " << std::setw(10) << std::setprecision(3) << smom->z()
-                << " pol " 
-                << " " << std::setw(10) << std::setprecision(3) << spol->x() 
-                << " " << std::setw(10) << std::setprecision(3) << spol->y() 
-                << " " << std::setw(10) << std::setprecision(3) << spol->z()
-                << std::endl 
-                ;
-        }
-
-        quad4 p ; 
-        p.q0.f = make_float4( pos.x, pos.y, pos.z, float(flat_prior) );   
-        p.q1.f = make_float4( smom->x(), smom->y(), smom->z(), 0.f  ) ; 
-        p.q2.f = make_float4( spol->x(), spol->y(), spol->z(), 0.f  ) ; 
-        p.q3.u = make_uint4(  i, 0u, 0u, theStatus );   
-
-        pp[i] = p ; 
+        quad4& p = pp[i] ; 
+        propagate_at_boundary(p, i); 
     }
 
-    NP::Write( FOLD, "p.npy",  (float*)pp.data(), pp.size(), 4, 4 ); 
-    save_p0(); 
-}
+    NP* b = NP::Make<float>( pp.size(), 4, 4); 
+    b->read(pp_data); 
 
-void G4OpBoundaryProcessTest::save_p0() const 
-{
-    quad4 p ; 
-    p.q0.f = make_float4( pos.x, pos.y, pos.z, 0.f );   
-    p.q1.f = make_float4( mom.x, mom.y, mom.z, 0.f  ) ; 
-    p.q2.f = make_float4( pol.x, pol.y, pol.z, 0.f  ) ; 
-    p.q3.u = make_uint4(  0u, 0u, 0u, 0u );   
-    NP::Write( FOLD, "p0.npy",  (float*)&p.q0.f.x , 1, 4, 4  );
+    b->set_meta<float>("normal_x", normal.x ); 
+    b->set_meta<float>("normal_y", normal.y ); 
+    b->set_meta<float>("normal_z", normal.z ); 
+    b->set_meta<float>("n1", n1 ); 
+    b->set_meta<float>("n2", n2 ); 
+    b->save( FOLD, "p.npy" ); 
 }
 
 int main(int argc, char** argv)
 {
-    float3 pos = make_float3( 0.f, 0.f, 0.f ); 
-    float3 mom = make_float3( 1.f, 0.f, 0.f ); 
-    float3 pol = make_float3( 0.f, 1.f, 0.f ); 
-    float3 nrm = make_float3(-1.f, 0.f, 0.f ); 
+    std::vector<float> vals ;
+    OpticksUtil::qvals( vals, "NRM", "-1,0,0", 3 );
 
-    G4OpBoundaryProcessTest t(pos, mom, pol, nrm) ; 
+    float3 normal ; 
+    normal.x = vals[0] ;
+    normal.y = vals[1] ;
+    normal.z = vals[2] ;
 
-    unsigned num = OpticksUtil::getenvint("NUM", 10 ); 
-    t.propagate_at_boundary(num); 
+    G4OpBoundaryProcessTest t(normal) ; 
+    t.propagate_at_boundary(); 
 
     return 0 ; 
 }

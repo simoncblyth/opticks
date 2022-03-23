@@ -101,7 +101,7 @@ inline unsigned QSimLaunch::Type( const char* name )
 
 inline bool QSimLaunch::IsMutate( unsigned type )
 {
-    return type == PROPAGATE_AT_BOUNDARY_S_POLARIZED || PROPAGATE_AT_BOUNDARY_P_POLARIZED    ; 
+    return type == PROPAGATE_AT_BOUNDARY_S_POLARIZED || type == PROPAGATE_AT_BOUNDARY_P_POLARIZED    ; 
 }
 inline unsigned QSimLaunch::MutateSource( unsigned type )
 {

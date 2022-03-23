@@ -638,6 +638,10 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     float3* direction    = (float3*)&p.q1.f.x ; 
     float3* polarization = (float3*)&p.q2.f.x ; 
 
+    //printf("//qsim.propagate_at_boundary surface_normal (%10.4f, %10.4f, %10.4f) \n", surface_normal.x, surface_normal.y, surface_normal.z );  
+    //printf("//qsim.propagate_at_boundary direction (%10.4f, %10.4f, %10.4f) \n", direction->x, direction->y, direction->z );  
+    //printf("//qsim.propagate_at_boundary polarization (%10.4f, %10.4f, %10.4f) \n", polarization->x, polarization->y, polarization->z );  
+
     const float eta = n1/n2 ; 
     const float c1 = -dot(*direction, surface_normal ); // c1 is flipped to be +ve  (G4 "cost1") when direction is against the normal,  1.f at normal incidence
     const bool normal_incidence = fabs(c1) > 0.999999f ; 
@@ -645,7 +649,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     bool tir = c2c2 < 0.f ; 
     const float EdotN = dot(*polarization, surface_normal ) ;  // used for TIR polarization
     const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f : so will always reflect
-    const float n1c1 = n1*c1 ; 
+    const float n1c1 = abs(n1*c1);  // ad-hoc debug 
     const float n2c2 = n2*c2 ; 
     const float n2c1 = n2*c1 ; 
     const float n1c2 = n1*c2 ; 
@@ -660,8 +664,8 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     const float u_reflect = curand_uniform(&rng) ;
     bool reflect = u_reflect > TransCoeff  ;
 
-    //printf("//qsim.propagate_at_boundary n2c2 %10.4f n1c1 %10.4f u_reflect %10.4f TransCoeff %10.4f (n2c2.E2_total_t/n1c1)  reflect %d \n", 
-    //                                          n2c2,  n1c1, u_reflect, TransCoeff, reflect ); 
+    printf("//qsim.propagate_at_boundary n2c2 %10.4f n1c1 %10.4f u_reflect %10.4f TransCoeff %10.4f (n2c2.E2_total_t/n1c1)  reflect %d \n", 
+                                              n2c2,  n1c1, u_reflect, TransCoeff, reflect ); 
 
     *direction = reflect
                     ?
@@ -792,7 +796,7 @@ inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, c
     float3* direction    = (float3*)&p.q1.f.x ; 
     float3* polarization = (float3*)&p.q2.f.x ; 
 
-    //printf("//qsim.hemisphere_s_polarized surface_normal (%10.4f, %10.4f, %10.4f) \n", surface_normal.x, surface_normal.y, surface_normal.z );  
+    //printf("//qsim.hemisphere_polarized surface_normal (%10.4f, %10.4f, %10.4f) \n", surface_normal.x, surface_normal.y, surface_normal.z );  
 
     float phi = curand_uniform(&rng)*2.f*M_PIf;  // 0->2pi
     float cosTheta = curand_uniform(&rng) ;      // 0->1

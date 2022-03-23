@@ -12,6 +12,19 @@ namespace fs = boost::filesystem;
 #include "G4SystemOfUnits.hh"
 
 
+void OpticksUtil::qvals( std::vector<float>& vals, const char* key, const char* fallback, int num_expect )
+{
+    char* val = getenv(key);
+    char* p = const_cast<char*>( val ? val : fallback );  
+    while (*p) 
+    {   
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-' || *p == '.') vals.push_back(strtof(p, &p)) ; 
+        else p++ ;
+    }   
+    if( num_expect > 0 ) assert( vals.size() == unsigned(num_expect) );  
+}
+
+
 NP* OpticksUtil::LoadArray(const char* kdpath) // static
 {
     const char* keydir = getenv("OPTICKS_KEYDIR") ; 

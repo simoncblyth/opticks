@@ -1215,6 +1215,7 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
 
                     if (sint1 > 0.0) {   // incident ray oblique
 
+
                        E2_parl   = Rindex2*E2_parl/Rindex1 - E1_parl;
                        E2_perp   = E2_perp - E1_perp;
                        E2_total  = E2_perp*E2_perp + E2_parl*E2_parl;
@@ -1226,9 +1227,28 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
 
                        NewPolarization = C_parl*A_paral + C_perp*A_trans;
 
+#ifdef MOCK_DUMP
+                      std::cout 
+                          << " incident ray oblique " 
+                          << " E2_parl " << E2_parl 
+                          << " E2_perp " << E2_perp 
+                          << std::endl 
+                          ; 
+#endif
+
+
+
+
+
                     }
 
                     else {               // incident ray perpendicular
+
+#ifdef MOCK_DUMP
+                      std::cout << " incident ray perpendicular  " << std::endl ; 
+#endif
+
+
 
                        if (Rindex2 > Rindex1) {
                           NewPolarization = - OldPolarization;

@@ -84,10 +84,15 @@ seqpath=$seqpath/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## firs
 
 #num=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
 num=16
+nrm=0,0,1
+
 
 #DEBUG=1
 export OPTICKS_RANDOM_SEQPATH=$seqpath
-export NUM=$num
+export OPTICKS_INPUT_PHOTONS="/tmp/blyth/opticks/QSimTest/hemisphere_s_polarized/p.npy"
+export NUM=${NUM:-$num}
+export NRM=${NRM:-$nrm}
+
 
 if [ "${arg/build}" != "$arg" ]; then 
     standalone-compile ${srcs[@]}

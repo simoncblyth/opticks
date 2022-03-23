@@ -47,7 +47,8 @@ if __name__ == '__main__':
      print( np.unique(flag, return_counts=True) ) 
 
      flat = p[:,0,3] 
-     print( flat[flag==3].min() )  
-     print( flat[flag==2].max() )
+     print(flat)
+     #print( flat[flag==3].min() )  
+     #print( flat[flag==2].max() )
 
 
