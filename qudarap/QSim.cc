@@ -754,11 +754,12 @@ void QSim<T>::fill_state_1(qstate* state, unsigned num_state)
 
 
 
-template <typename T>
-extern void QSim_rayleigh_scatter_align(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  );
 
 template <typename T>
-void QSim<T>::rayleigh_scatter_align(quad4* photon, unsigned num_photon)
+extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned launchcode  );
+
+template <typename T>
+void QSim<T>::photon_launch(quad4* photon, unsigned num_photon, unsigned type )
 {
     assert( d_sim ); 
     assert( d_dbg ); 
@@ -768,62 +769,11 @@ void QSim<T>::rayleigh_scatter_align(quad4* photon, unsigned num_photon)
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
-    QSim_rayleigh_scatter_align(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg );  
+    QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg, type );  
 
     QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 }
  
-
-
-
-template <typename T>
-extern void QSim_propagate_to_boundary(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  );
-
-template <typename T>
-void QSim<T>::propagate_to_boundary(quad4* photon, unsigned num_photon)
-{
-    assert( d_sim ); 
-    assert( d_dbg ); 
-
-    quad4* d_photon = QU::device_alloc<quad4>(num_photon) ; 
-
-    unsigned threads_per_block = 16 ;  
-    configureLaunch1D( num_photon, threads_per_block ); 
-
-    QSim_propagate_to_boundary(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg );  
-
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
-}
-
-
-
-
-
-template <typename T>
-extern void QSim_propagate_at_boundary(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  );
-
-template <typename T>
-void QSim<T>::propagate_at_boundary(quad4* photon, unsigned num_photon)
-{
-    assert( d_sim ); 
-    assert( d_dbg ); 
-
-    quad4* d_photon = QU::device_alloc<quad4>(num_photon) ; 
-
-    unsigned threads_per_block = 512 ;  
-    configureLaunch1D( num_photon, threads_per_block ); 
-
-    QSim_propagate_at_boundary(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg );  
-
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
-}
- 
-
-
-
-
-
-
 
 
  

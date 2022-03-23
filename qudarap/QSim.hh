@@ -106,13 +106,11 @@ struct QUDARAP_API QSim
     void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 
 
     void generate_photon(QEvent* evt); 
-
     void fill_state_0(quad6*  state, unsigned num_state); 
     void fill_state_1(qstate* state, unsigned num_state); 
-    void rayleigh_scatter_align(quad4* photon, unsigned num_photon); 
 
-    void propagate_to_boundary(quad4* photon, unsigned num_photon); 
-    void propagate_at_boundary(quad4* photon, unsigned num_photon); 
+    void photon_launch(quad4* photon, unsigned num_photon, unsigned launchcode ); 
+
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;

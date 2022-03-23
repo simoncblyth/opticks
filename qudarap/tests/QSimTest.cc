@@ -19,6 +19,7 @@
 #include "QBnd.hh"
 #include "QProp.hh"
 #include "QSim.hh"
+#include "QSimLaunch.hh"
 #include "QEvent.hh"
 #include "QDebug.hh"
 
@@ -29,58 +30,6 @@
 
 
 enum { NOOP, FILEPATH, DIRPATH } ; 
-
-enum { 
-   UNKNOWN,
-   RNG_SEQUENCE_F,
-   WAVELENGTH_S,
-   WAVELENGTH_C,
-   SCINT_PHOTON_P,
-   CERENKOV_PHOTON_K,
-   CERENKOV_PHOTON_ENPROP_E,
-   CERENKOV_PHOTON_EXPT_X,
-   GENERATE_PHOTON_G,
-   BOUNDARY_LOOKUP_ALL_A,
-   BOUNDARY_LOOKUP_LINE_WATER_W,
-   BOUNDARY_LOOKUP_LINE_LS_L,
-   PROP_LOOKUP_Y,
-   FILL_STATE_0,
-   FILL_STATE_1,
-   RAYLEIGH_SCATTER_ALIGN,
-   PROPAGATE_TO_BOUNDARY,
-   PROPAGATE_AT_BOUNDARY,
-   PROPAGATE_AT_SURFACE
-
-} ;
- 
-unsigned TestType( const char* name )
-{
-   unsigned test = UNKNOWN ;  
-   if(strcmp(name,"S") == 0 ) test = WAVELENGTH_S ; 
-   if(strcmp(name,"C") == 0 ) test = WAVELENGTH_C ;
-   if(strcmp(name,"P") == 0 ) test = SCINT_PHOTON_P ;
-   if(strcmp(name,"K") == 0 ) test = CERENKOV_PHOTON_K ;
-   if(strcmp(name,"E") == 0 ) test = CERENKOV_PHOTON_ENPROP_E ;
-   if(strcmp(name,"X") == 0 ) test = CERENKOV_PHOTON_EXPT_X ;
-   if(strcmp(name,"G") == 0 ) test = GENERATE_PHOTON_G ;
-   if(strcmp(name,"A") == 0 ) test = BOUNDARY_LOOKUP_ALL_A ;
-   if(strcmp(name,"L") == 0 ) test = BOUNDARY_LOOKUP_LINE_LS_L ;
-   if(strcmp(name,"Y") == 0 ) test = PROP_LOOKUP_Y ;
-
-   if(strcmp(name,"rng_sequence") == 0 )          test = RNG_SEQUENCE_F ; 
-   if(strcmp(name,"water") == 0    )              test = BOUNDARY_LOOKUP_LINE_WATER_W ;
-   if(strcmp(name,"fill_state_0") == 0)           test = FILL_STATE_0 ;
-   if(strcmp(name,"fill_state_1") == 0)           test = FILL_STATE_1 ;
-   if(strcmp(name,"rayleigh_scatter_align") == 0) test = RAYLEIGH_SCATTER_ALIGN ;
-   if(strcmp(name,"propagate_to_boundary") == 0)  test = PROPAGATE_TO_BOUNDARY ;
-   if(strcmp(name,"propagate_at_boundary") == 0)  test = PROPAGATE_AT_BOUNDARY ;
-   if(strcmp(name,"propagate_at_surface")  == 0)  test = PROPAGATE_AT_SURFACE ;
-   
-   bool known =  test != UNKNOWN  ;
-   if(!known) LOG(fatal) << " test name " << name << " is unknown " ; 
-   assert(known);  
-   return test ; 
-}
 
 std::string MakeName(const char* prefix, unsigned num, const char* ext)
 {
@@ -126,10 +75,8 @@ struct QSimTest
     void fill_state(unsigned version); 
     void save_state( const char* subfold, const float* data, unsigned num_state  ); 
 
-    void rayleigh_scatter_align(unsigned num_photon); 
-    void propagate_to_boundary(unsigned num_photon); 
-    void propagate_at_boundary(unsigned num_photon); 
-    void propagate_at_surface(unsigned num_photon); 
+    void photon_launch(unsigned num_photon, unsigned type); 
+
 
 }; 
 
@@ -465,42 +412,13 @@ void QSimTest<T>::save_dbg_photon(const char* subfold, const char* name)
 }
 
 
-template <typename T>
-void QSimTest<T>::rayleigh_scatter_align(unsigned num_photon)
-{
-    const char* subfold = "rayleigh_scatter_align" ; 
-    std::vector<quad4> p(num_photon) ; 
-    qs.rayleigh_scatter_align( p.data(), p.size() ); 
-    save_photon( subfold, "p.npy", p ); 
-    save_dbg_photon( subfold, "p0.npy"); 
-}
- 
-template <typename T>
-void QSimTest<T>::propagate_to_boundary(unsigned num_photon)
-{
-    const char* subfold = "propagate_to_boundary" ; 
-    std::vector<quad4> p(num_photon) ; 
-    qs.propagate_to_boundary( p.data(), p.size() ); 
-    save_photon(subfold,  "p.npy", p ); 
-    save_dbg_photon( subfold, "p0.npy"); 
-}
 
 template <typename T>
-void QSimTest<T>::propagate_at_boundary(unsigned num_photon)
+void QSimTest<T>::photon_launch(unsigned num_photon, unsigned type)
 {
-    const char* subfold = "propagate_at_boundary" ; 
+    const char* subfold = QSimLaunch::Name(type) ; 
     std::vector<quad4> p(num_photon) ; 
-    qs.propagate_at_boundary( p.data(), p.size() ); 
-    save_photon(subfold,  "p.npy", p ); 
-    save_dbg_photon( subfold, "p0.npy"); 
-}
-
-template <typename T>
-void QSimTest<T>::propagate_at_surface(unsigned num_photon)
-{
-    const char* subfold = "propagate_at_surface" ; 
-    std::vector<quad4> p(num_photon) ; 
-    //qs.propagate_at_surface( p.data(), p.size() ); 
+    qs.photon_launch( p.data(), p.size(), type ); 
     save_photon(subfold,  "p.npy", p ); 
     save_dbg_photon( subfold, "p0.npy"); 
 }
@@ -508,7 +426,7 @@ void QSimTest<T>::propagate_at_surface(unsigned num_photon)
 
 
 template<typename T>
-void QSimTest<T>::main(int argc, char** argv, unsigned test )
+void QSimTest<T>::main(int argc, char** argv, unsigned type )
 {
     unsigned M1   = 1000000u ; // 1 million 
     unsigned K100 =  100000u ; // default 100k usable with any GPU 
@@ -520,7 +438,7 @@ void QSimTest<T>::main(int argc, char** argv, unsigned test )
     LOG(info) 
         << " num_default " << num_default 
         << " num " << num 
-        << " test " << test
+        << " type " << type
         << " ni_tranche_size " << ni_tranche_size
         << " print_id " << print_id
         ; 
@@ -529,9 +447,10 @@ void QSimTest<T>::main(int argc, char** argv, unsigned test )
     T x1 = 800. ; 
     unsigned nx = 721u ; 
 
-    switch(test)
+    //TODO: mop up more of these into photon_launch 
+    switch(type)
     {
-        case RNG_SEQUENCE_F:                rng_sequence(num, ni_tranche_size)         ; break ; 
+        case RNG_SEQUENCE:                  rng_sequence(num, ni_tranche_size)         ; break ; 
         case WAVELENGTH_S  :                wavelength('S', num)                       ; break ; 
         case WAVELENGTH_C  :                wavelength('C', num)                       ; break ; 
         case SCINT_PHOTON_P:                scint_photon(num);                         ; break ; 
@@ -543,12 +462,16 @@ void QSimTest<T>::main(int argc, char** argv, unsigned test )
         case BOUNDARY_LOOKUP_LINE_WATER_W:  boundary_lookup_line("Water", x0, x1, nx)  ; break ;  
         case BOUNDARY_LOOKUP_LINE_LS_L:     boundary_lookup_line("LS",    x0, x1, nx)  ; break ;  
         case PROP_LOOKUP_Y:                 prop_lookup(-1, -1.f,16.f,1701)            ; break ;  
+
         case FILL_STATE_0:                  fill_state(0)                              ; break ;  
         case FILL_STATE_1:                  fill_state(1)                              ; break ;  
-        case RAYLEIGH_SCATTER_ALIGN:        rayleigh_scatter_align(num)                ; break ;   
-        case PROPAGATE_TO_BOUNDARY:         propagate_to_boundary(8)                   ; break ;  
-        case PROPAGATE_AT_BOUNDARY:         propagate_at_boundary(num)                 ; break ;  
-        case PROPAGATE_AT_SURFACE:          propagate_at_surface(8)                    ; break ;  
+
+        case RAYLEIGH_SCATTER_ALIGN:        photon_launch(num, type)                   ; break ;   
+        case PROPAGATE_TO_BOUNDARY:         photon_launch(8,   type)                   ; break ;  
+        case PROPAGATE_AT_SURFACE:          photon_launch(8,   type)                   ; break ;  
+        case PROPAGATE_AT_BOUNDARY:         photon_launch(num, type)                   ; break ;  
+        case HEMISPHERE_S_POLARIZED:        photon_launch(num, type)                   ; break ;  
+
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 
     }
 }
@@ -592,7 +515,7 @@ int main(int argc, char** argv)
 
     const char* default_testname = "G" ; 
     const char* testname = SSys::getenvvar("TEST", default_testname); 
-    int test = TestType(testname); 
+    int test = QSimLaunch::Type(testname); 
     char type = SSys::getenvchar("TYPE", 'F'); 
 
     if( test == CERENKOV_PHOTON_EXPT_X ) type = 'D' ;   // forced double 

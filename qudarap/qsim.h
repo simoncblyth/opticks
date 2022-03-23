@@ -117,6 +117,9 @@ struct qsim
 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
     QSIM_METHOD int     propagate_at_boundary(                quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
+    QSIM_METHOD void    hemisphere_s_polarized(                quad4& p, const qprd& prd, curandStateXORWOW& rng); 
+
+
 
 
 #else
@@ -752,6 +755,12 @@ transmit
 
 
 
+template <typename T>
+inline QSIM_METHOD void qsim<T>::hemisphere_s_polarized(quad4& p, const qprd& prd, curandStateXORWOW& rng)
+{
+ 
+
+}
 
 
 

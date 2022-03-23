@@ -9,6 +9,8 @@ The launch functions are all invoked from QSim.cc methods with corresponding nam
 
 **/
 
+
+
 #include "stdio.h"
 #include "curand_kernel.h"
 #include "scuda.h"
@@ -18,6 +20,8 @@ The launch functions are all invoked from QSim.cc methods with corresponding nam
 #include "qcurand.h"
 #include "qevent.h"
 #include "qdebug.h"
+
+#include "QSimLaunch.hh"
 
 
 /**
@@ -340,9 +344,6 @@ template void QSim_fill_state_0(dim3, dim3, qsim<float>* , quad6* , unsigned, qd
 
 
 
-
-
-
 template <typename T>
 __global__ void _QSim_fill_state_1( qsim<T>* sim, qstate* state,  unsigned num_state, qdebug* dbg )
 {
@@ -395,21 +396,6 @@ __global__ void _QSim_rayleigh_scatter_align( qsim<T>* sim, quad4* photon,  unsi
 }
 
 template <typename T>
-extern void QSim_rayleigh_scatter_align(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  )
-{
-    printf("//QSim_rayleigh_scatter_align sim %p photon %p num_photon %d dbg %p \n", sim, photon, num_photon, dbg ); 
-    _QSim_rayleigh_scatter_align<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  );
-}
-
-template void QSim_rayleigh_scatter_align(dim3, dim3, qsim<double>*, quad4*, unsigned, qdebug* ); 
-template void QSim_rayleigh_scatter_align(dim3, dim3, qsim<float>*,  quad4*, unsigned, qdebug* ); 
-
-
-
-
-
-
-template <typename T>
 __global__ void _QSim_propagate_to_boundary( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
@@ -435,28 +421,6 @@ __global__ void _QSim_propagate_to_boundary( qsim<T>* sim, quad4* photon, unsign
 }
 
 template <typename T>
-extern void QSim_propagate_to_boundary(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  )
-{
-    printf("//QSim_propagate_to_boundary sim %p photon %p num_photon %d dbg %p \n", sim, photon, num_photon, dbg ); 
-    _QSim_propagate_to_boundary<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  );
-}
-
-template void QSim_propagate_to_boundary(dim3, dim3, qsim<double>* , quad4* , unsigned, qdebug*  ); 
-template void QSim_propagate_to_boundary(dim3, dim3, qsim<float>*  , quad4* , unsigned, qdebug*  ); 
-
-
-
-
-
-
-
-
-
-
-
-
-
-template <typename T>
 __global__ void _QSim_propagate_at_boundary( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
@@ -476,16 +440,38 @@ __global__ void _QSim_propagate_at_boundary( qsim<T>* sim, quad4* photon, unsign
 }
 
 template <typename T>
-extern void QSim_propagate_at_boundary(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg  )
+__global__ void _QSim_hemisphere_s_polarized( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
 {
-    printf("//QSim_propagate_at_boundary sim %p photon %p num_photon %d dbg %p \n", sim, photon, num_photon, dbg ); 
-    _QSim_propagate_at_boundary<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  );
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+
+    if (id >= num_photon) return;
+
+    const qprd& prd = dbg->prd ;  
+    quad4 p         = dbg->p ;   
+    curandState rng = sim->rngstate[id] ; 
+
+    sim->hemisphere_s_polarized( p, prd, rng );  
+
+    photon[id] = p ; 
 }
 
-template void QSim_propagate_at_boundary(dim3, dim3, qsim<double>* , quad4* , unsigned, qdebug*  ); 
-template void QSim_propagate_at_boundary(dim3, dim3, qsim<float>*  , quad4* , unsigned, qdebug*  ); 
 
+template <typename T>
+extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned type  )
+{
+    const char* name = QSimLaunch::Name(type) ; 
+    printf("//QSim_photon_launch sim %p photon %p num_photon %d dbg %p type %d name %s \n", sim, photon, num_photon, dbg, type, name ); 
+    switch(type)
+    {
+        case PROPAGATE_TO_BOUNDARY: _QSim_propagate_to_boundary<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon,  dbg )  ; break ;
+        case RAYLEIGH_SCATTER_ALIGN: _QSim_rayleigh_scatter_align<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  ) ; break ;
+        case PROPAGATE_AT_BOUNDARY:  _QSim_propagate_at_boundary<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon,  dbg  ) ; break ;
+        case HEMISPHERE_S_POLARIZED: _QSim_hemisphere_s_polarized<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  ) ; break ; 
+    }
+}
 
+template void QSim_photon_launch(dim3, dim3, qsim<double>* , quad4* , unsigned, qdebug*, unsigned  ); 
+template void QSim_photon_launch(dim3, dim3, qsim<float>*  , quad4* , unsigned, qdebug*, unsigned  ); 
 
 
 
