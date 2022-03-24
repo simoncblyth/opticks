@@ -38,6 +38,52 @@ def pvplt_photon( pl, p   ):
 
 
 
+def pvplt_plotter(label="pvplt_plotter"):
+    pl = pv.Plotter(window_size=SIZE*2 )  
+    pl.show_grid()
+    TEST = os.environ["TEST"]
+    pl.add_text( "%s %s " % (label,TEST), position="upper_left")
+    return pl 
+
+
+def pvplt_arrows( pl, pos, vec, color='yellow' ):
+    """
+     
+    glyph.orient
+        Use the active vectors array to orient the glyphs
+    glyph.scale
+        Use the active scalars to scale the glyphs
+    glyph.factor
+        Scale factor applied to sclaing array
+    glyph.geom
+        The geometry to use for the glyph
+
+    """
+    init_pl = pl == None 
+    if init_pl:
+        pl = pvplt_plotter(label="pvplt_arrows")   
+    pass
+    pos_cloud = pv.PolyData(pos)
+    pos_cloud['vec'] = vec
+    vec_arrows = pos_cloud.glyph(orient='vec', scale=False, factor=0.15,)
+
+    pl.add_mesh(pos_cloud, render_points_as_spheres=True, show_scalar_bar=False)
+    pl.add_mesh(vec_arrows, color=color, show_scalar_bar=False)
+
+
+def pvplt_lines( pl, pos, vec, color='white' ):
+    init_pl = pl == None 
+    if init_pl:
+        pl = pvplt_plotter(label="pvplt_line")   
+    pass
+    pos_cloud = pv.PolyData(pos)
+    pos_cloud['vec'] = vec
+    geom = pv.Line(pointa=(0.0, 0., 0.), pointb=(1.0, 0., 0.),)
+    vec_lines = pos_cloud.glyph(orient='vec', scale=False, factor=1.0, geom=geom)
+    pl.add_mesh(pos_cloud, render_points_as_spheres=True, show_scalar_bar=False)
+    pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
+
+
 def pvplt_polarized( pl, pos, mom, pol ):
     """
     https://docs.pyvista.org/examples/00-load/create-point-cloud.html
@@ -46,14 +92,9 @@ def pvplt_polarized( pl, pos, mom, pol ):
     mom_pol_transverse = np.abs(np.sum( mom*pol , axis=1 )).max() 
     assert mom_pol_transverse < 1e-5 
 
-    if pl == None:
-        init_pl = True 
-        pl = pv.Plotter(window_size=SIZE*2 )  
-        pl.show_grid()
-        TEST = os.environ["TEST"]
-        pl.add_text( "pvplt_polarized %s " % TEST, position="upper_left")
-    else:
-        init_pl = False 
+    init_pl = pl == None 
+    if init_pl:
+        pl = pvplt_plotter(label="pvplt_polarized")   
     pass
 
     pos_cloud = pv.PolyData(pos)
@@ -61,9 +102,9 @@ def pvplt_polarized( pl, pos, mom, pol ):
     pos_cloud['pol'] = pol
     mom_arrows = pos_cloud.glyph(orient='mom', scale=False, factor=0.15,)
     pol_arrows = pos_cloud.glyph(orient='pol', scale=False, factor=0.15,)
-    pl.add_mesh(pos_cloud, render_points_as_spheres=True)
-    pl.add_mesh(pol_arrows, color='lightblue')
-    pl.add_mesh(mom_arrows, color='red')
+    pl.add_mesh(pos_cloud, render_points_as_spheres=True, show_scalar_bar=False)
+    pl.add_mesh(pol_arrows, color='lightblue', show_scalar_bar=False)
+    pl.add_mesh(mom_arrows, color='red', show_scalar_bar=False)
 
     if init_pl:
         cp = pl.show() if GUI else None 

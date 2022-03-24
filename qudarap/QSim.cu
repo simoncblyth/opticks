@@ -433,7 +433,7 @@ __global__ void _QSim_propagate_at_boundary( qsim<T>* sim, quad4* photon, unsign
     quad4 p         = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
     curandState rng = sim->rngstate[id] ; 
 
-    unsigned flag = sim->propagate_at_boundary( p, prd, s, rng );  
+    unsigned flag = sim->propagate_at_boundary( p, prd, s, rng, id );  
 
     p.q3.u.w = flag ;  // non-standard
     photon[id] = p ; 
@@ -456,7 +456,7 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim<T>* sim, quad4* photon,
     p.q0.f = p.q1.f ;   // non-standard record initial mom and pol into q0, q3
     p.q3.f = p.q2.f ; 
 
-    unsigned flag = sim->propagate_at_boundary( p, prd, s, rng );  
+    unsigned flag = sim->propagate_at_boundary( p, prd, s, rng, id );  
 
     p.q3.u.w = flag ;  // non-standard
     photon[id] = p ; 
@@ -473,8 +473,9 @@ __global__ void _QSim_hemisphere_polarized( qsim<T>* sim, quad4* photon, unsigne
     curandState rng = sim->rngstate[id] ; 
     const qprd& prd = dbg->prd ;  
     quad4 p         = dbg->p ;   
+    bool inwards = true ; 
 
-    sim->hemisphere_polarized( p, polz, prd, rng );  
+    sim->hemisphere_polarized( p, polz, inwards,  prd, rng );  
 
     photon[id] = p ; 
 }

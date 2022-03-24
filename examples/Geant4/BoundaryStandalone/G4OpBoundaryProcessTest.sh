@@ -48,6 +48,7 @@ standalone-compile(){
        -I. \
        -I../CerenkovStandalone \
        -I../../../extg4 \
+       -I../../../sysrap \
        -DMOCK \
        -DMOCK_DUMP \
        -g \
@@ -79,17 +80,20 @@ arg=${1:-build_run_ana}
 
 
 seqpath="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
-seqpath=$seqpath/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
-# comment last list to concatenate all 10 tranches giving full 256M randoms 
+#seqpath=$seqpath/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
+# comment last list to concatenate all 10 tranches giving full 256M randoms allowing num_photons max of 1M
 
 #num=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
 num=16
 nrm=0,0,1
 
-
 #DEBUG=1
+
 export OPTICKS_RANDOM_SEQPATH=$seqpath
-export OPTICKS_INPUT_PHOTONS="/tmp/blyth/opticks/QSimTest/hemisphere_s_polarized/p.npy"
+srcdir=/tmp/$USER/opticks/QSimTest/hemisphere_s_polarized
+export OPTICKS_INPUT_PRD=$srcdir/prd.npy
+export OPTICKS_INPUT_PHOTONS=$srcdir/p.npy
+
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
 

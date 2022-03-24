@@ -76,6 +76,7 @@ struct QSimTest
     NP*  load_photon(    const char* subfold, const char* name); 
 
     void save_dbg_photon(const char* subfold, const char* name); 
+    void save_dbg_prd(   const char* subfold, const char* name); 
 
     void fill_state(unsigned version); 
     void save_state( const char* subfold, const float* data, unsigned num_state  ); 
@@ -445,6 +446,26 @@ void QSimTest<T>::save_dbg_photon(const char* subfold, const char* name)
     save_array(subfold, name, p0.cdata(), 1, 4, 4 );      
 }
 
+template <typename T>
+void QSimTest<T>::save_dbg_prd(const char* subfold, const char* name)
+{
+    const qprd& qs_prd = qs.dbg->prd ; 
+
+    quad4 prd ;
+    prd.zero(); 
+
+    float3* normal     = (float3*)&prd.q0.f.x ; 
+    float*  t          = (float*)&prd.q0.f.w ; 
+    unsigned* identity = (unsigned*)&prd.q3.u.x ; 
+    unsigned* boundary = (unsigned*)&prd.q3.u.y ; 
+
+    *normal   = qs_prd.normal ; 
+    *t        = qs_prd.t ; 
+    *identity = qs_prd.identity ; 
+    *boundary = qs_prd.boundary ; 
+
+    save_array(subfold, name, prd.cdata(), 1, 4, 4 );      
+}
 
 
 template <typename T>
@@ -467,7 +488,9 @@ void QSimTest<T>::photon_launch_generate(unsigned num_photon, unsigned type)
     std::vector<quad4> p(num_photon) ; 
     qs.photon_launch( p.data(), p.size(), type ); 
     save_photon(subfold,  "p.npy", p ); 
+
     save_dbg_photon( subfold, "p0.npy"); 
+    save_dbg_prd(    subfold, "prd.npy"); 
 }
 
 template <typename T>
@@ -489,6 +512,7 @@ void QSimTest<T>::photon_launch_mutate(unsigned num_photon, unsigned type)
     a->save(dst_path); 
 
     save_dbg_photon(dst_subfold, "p0.npy"); 
+    save_dbg_prd(   dst_subfold, "prd.npy"); 
 }
 
 

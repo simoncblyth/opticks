@@ -24,6 +24,7 @@ Probably easiest to setup a "proper" Geant4 geometry to test within.
 #include "G4TouchableHistory.hh"
 #include "G4TouchableHandle.hh"
 
+#include "OpticksPhoton.h"
 #include "OpticksUtil.hh"
 #include "OpticksRandom.hh"
 #include "NP.hh"
@@ -44,9 +45,12 @@ struct G4OpBoundaryProcessTest
 {
     static const char* FOLD ; 
     static void Init(quad4& p); 
+    static float3 InitNormal(const char* ekey); 
     static NP* MakeRindexArray(double rindex); 
+    static unsigned Status(unsigned status); 
 
-    const float3&   normal ; 
+
+    float3       normal ; 
     OpticksRandom*  rnd ; 
     float n1 ; 
     float n2 ; 
@@ -60,16 +64,20 @@ struct G4OpBoundaryProcessTest
     G4Material* material2_ ; 
     G4OpBoundaryProcess_MOCK* proc ; 
 
-    G4OpBoundaryProcessTest(const float3& normal ); 
+    G4OpBoundaryProcessTest(); 
     void init(); 
 
     std::string desc() const ; 
-    void propagate_at_boundary( quad4& photon, unsigned idx); 
-    void propagate_at_boundary_(quad4& photon, unsigned idx);
-    void propagate_at_boundary(); 
+    void set_prd_normal(const char* ekey); 
+    void propagate_at_boundary( quad4& photon, int idx); 
+    void propagate_at_boundary_(quad4& photon, int idx);
+    void propagate_at_boundary(int idx); 
 
-    void dump( const quad4& photon, unsigned idx ); 
+    void dump( const quad4& photon, int idx ); 
     void save(const quad4& p, const char* name) const ; 
+    void load( std::vector<quad4>& pp, const char* ekey ); 
+
+
 }; 
 
 const char* G4OpBoundaryProcessTest::FOLD = "/tmp/G4OpBoundaryProcessTest" ; 
@@ -82,6 +90,29 @@ void G4OpBoundaryProcessTest::Init(quad4& p) // static
     p.q3.f = make_float4( 0.f, 0.f, 0.f, 0.f ); 
 }
 
+unsigned G4OpBoundaryProcessTest::Status(unsigned status)
+{
+    unsigned st = 0 ; 
+    switch(status)
+    {
+        case FresnelReflection: st = BOUNDARY_REFLECT  ; break ; 
+        case FresnelRefraction: st = BOUNDARY_TRANSMIT ; break ; 
+    }
+    return st ; 
+}
+
+float3 G4OpBoundaryProcessTest::InitNormal(const char* ekey) // static
+{
+    std::vector<float> vals ;
+    OpticksUtil::qvals( vals, ekey, "-1,0,0", 3 );
+    assert( vals.size() == 3 ); 
+    float3 nrm ; 
+    nrm.x = vals[0] ;
+    nrm.y = vals[1] ;
+    nrm.z = vals[2] ;
+    return nrm ; 
+}
+
 NP* G4OpBoundaryProcessTest::MakeRindexArray(double rindex)  // static
 {
     NP* a = NP::Make<double>( 1.55/1e6, rindex, 15.5/1e6, rindex ) ; 
@@ -90,9 +121,11 @@ NP* G4OpBoundaryProcessTest::MakeRindexArray(double rindex)  // static
     return a ; 
 }
 
-G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const float3& normal_ )
+
+
+G4OpBoundaryProcessTest::G4OpBoundaryProcessTest()
     :
-    normal(normal_),
+    normal(InitNormal("NRM")),   // may be overrden by normal from prd
     rnd(new OpticksRandom),
     n1(1.f),
     n2(1.5f),
@@ -137,8 +170,10 @@ void G4OpBoundaryProcessTest::init()
         ;
 }
  
-void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, unsigned idx)
+void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, int idx)
 {
+    assert( idx > -1 ); 
+    proc->photon_idx = idx ; 
     rnd->setSequenceIndex(idx);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
 
     propagate_at_boundary_( photon, idx ); 
@@ -160,7 +195,7 @@ with objects on stack.
 
 **/
 
-void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, unsigned idx)
+void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
 {
     float3* mom0 = (float3*)&photon.q0.f.x ; 
     float3* mom = (float3*)&photon.q1.f.x ; 
@@ -247,11 +282,12 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, unsigned idx
     pol->y =  spol->y() ; 
     pol->z =  spol->z() ; 
 
-    photon.q3.u.w = theStatus ; 
+    photon.q3.u.w = Status(theStatus) ; 
+    photon.q1.f.w = proc->theTransCoeff_MOCK ; 
 
 }
 
-void G4OpBoundaryProcessTest::dump( const quad4& photon, unsigned idx )
+void G4OpBoundaryProcessTest::dump( const quad4& photon, int idx )
 {
     unsigned status = photon.q3.u.w ; 
     float flat_prior = photon.q0.f.w ; 
@@ -283,46 +319,81 @@ void G4OpBoundaryProcessTest::save(const quad4& p, const char* name) const
     NP::Write( FOLD, name,  (float*)&p.q0.f.x , 1, 4, 4  );
 }
 
-void G4OpBoundaryProcessTest::propagate_at_boundary()
+
+void G4OpBoundaryProcessTest::load( std::vector<quad4>& pp, const char* ekey )
 {
-    const char* path = getenv("OPTICKS_INPUT_PHOTONS"); 
+    const char* path = getenv(ekey); 
     NP* a = NP::Load(path) ; 
     assert( a->has_shape(-1,4,4) ); 
     unsigned ni = a->shape[0] ; 
-
-    std::vector<quad4> pp(ni); 
+    pp.resize(ni); 
     float* pp_data = (float*)pp.data() ;
     a->write<float>(pp_data); 
+}
 
-    for(unsigned i=0 ; i < ni ; i++)
+void G4OpBoundaryProcessTest::set_prd_normal(const char* ekey)
+{
+    std::vector<quad4> prds ;
+    load(prds, ekey); 
+
+    assert( prds.size() == 1 ); 
+    const quad4& prd = prds[0]; 
+    const float3* nrm = (float3*)&prd.q0.f.x ; 
+    normal.x = nrm->x ; 
+    normal.y = nrm->y ; 
+    normal.z = nrm->z ; 
+
+    std::cout 
+        << "G4OpBoundaryProcessTest::set_prd_normal " << ekey   
+        << " " << desc()
+        << std::endl 
+        ;
+}
+
+
+void G4OpBoundaryProcessTest::propagate_at_boundary(int idx)
+{
+    std::vector<quad4> pp ;
+    load(pp, "OPTICKS_INPUT_PHOTONS"); 
+
+    if( idx == -1 )
     {
-        quad4& p = pp[i] ; 
-        propagate_at_boundary(p, i); 
+        for(unsigned i=0 ; i < pp.size() ; i++)
+        {
+            quad4& p = pp[i] ; 
+            propagate_at_boundary(p, i);   // mutates the photons
+        }
+
+        float* pp_data = (float*)pp.data() ;
+        NP* b = NP::Make<float>( pp.size(), 4, 4); 
+        b->read(pp_data); 
+
+        b->set_meta<float>("normal_x", normal.x ); 
+        b->set_meta<float>("normal_y", normal.y ); 
+        b->set_meta<float>("normal_z", normal.z ); 
+        b->set_meta<float>("n1", n1 ); 
+        b->set_meta<float>("n2", n2 ); 
+
+        b->save( FOLD, "p.npy" ); 
+    }
+    else
+    {
+        quad4& p = pp[idx] ; 
+        propagate_at_boundary(p, idx);   // mutates the photons
     }
 
-    NP* b = NP::Make<float>( pp.size(), 4, 4); 
-    b->read(pp_data); 
-
-    b->set_meta<float>("normal_x", normal.x ); 
-    b->set_meta<float>("normal_y", normal.y ); 
-    b->set_meta<float>("normal_z", normal.z ); 
-    b->set_meta<float>("n1", n1 ); 
-    b->set_meta<float>("n2", n2 ); 
-    b->save( FOLD, "p.npy" ); 
 }
 
 int main(int argc, char** argv)
 {
-    std::vector<float> vals ;
-    OpticksUtil::qvals( vals, "NRM", "-1,0,0", 3 );
+    G4OpBoundaryProcessTest t ; 
 
-    float3 normal ; 
-    normal.x = vals[0] ;
-    normal.y = vals[1] ;
-    normal.z = vals[2] ;
+    
+    int idx =  251959 ; 
 
-    G4OpBoundaryProcessTest t(normal) ; 
-    t.propagate_at_boundary(); 
+    t.proc->photon_idx_debug = idx ; 
+    t.set_prd_normal("OPTICKS_INPUT_PRD"); 
+    t.propagate_at_boundary(idx); 
 
     return 0 ; 
 }

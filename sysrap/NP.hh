@@ -170,6 +170,7 @@ struct NP
 
     template<typename T> void read(const T* src);
     template<typename T> void read2(const T* src);
+    template<typename T> void write(T* dst); 
 
     template<typename T> std::string _present(T v) const ; 
 
@@ -3027,6 +3028,13 @@ template <typename T> void NP::read2(const T* src)
     assert( sizeof(T) == ebyte ); 
     memcpy( bytes(), src, arr_bytes() );    
 }
+
+template <typename T> void NP::write(T* dst) 
+{
+    assert( sizeof(T) == ebyte ); 
+    memcpy( dst, bytes(), arr_bytes() );    
+}
+
 
 
 template <typename T> NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload ) 

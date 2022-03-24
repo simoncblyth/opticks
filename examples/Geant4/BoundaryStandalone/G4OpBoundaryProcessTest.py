@@ -39,15 +39,17 @@ import os, numpy as np
 FOLD = "/tmp/G4OpBoundaryProcessTest"
 
 if __name__ == '__main__':
-     p0 = np.load(os.path.join(FOLD, "p0.npy"))
      p = np.load(os.path.join(FOLD, "p.npy"))
-     print("p.shape %s p0.shape %s " % ( str(p.shape),str(p0.shape)) )
+     print("p.shape %s " % str(p.shape) )
 
      flag = p[:,3,3].view(np.uint32)  
      print( np.unique(flag, return_counts=True) ) 
 
+     TransCoeff = p[:,1,3]
+     print( "TransCoeff %s " %  TransCoeff  ) 
+
      flat = p[:,0,3] 
-     print(flat)
+     print(" flat %s " % flat)
      #print( flat[flag==3].min() )  
      #print( flat[flag==2].max() )
 

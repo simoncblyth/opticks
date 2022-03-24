@@ -19,7 +19,7 @@ msg="=== $BASH_SOURCE :"
 
 #export QBnd=INFO
 
-#test=rng_sequence
+test=rng_sequence
 #test=fill_state_0
 #test=fill_state_1
 #test=water
@@ -27,16 +27,20 @@ msg="=== $BASH_SOURCE :"
 #test=propagate_to_boundary
 #test=propagate_at_boundary
 #test=propagate_at_surface
+
 #test=hemisphere_s_polarized
-#test=hemisphere_p_polarized
 test=propagate_at_boundary_s_polarized
+
+#test=hemisphere_p_polarized
 #test=propagate_at_boundary_p_polarized
 
 M1=1000000
 K100=100000
 
+num=$M1
 #num=$K100
-num=8
+#num=8
+
 nrm=0,0,1
 
 export NUM=${NUM:-$num}

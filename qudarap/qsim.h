@@ -116,8 +116,8 @@ struct qsim
     QSIM_METHOD static void   rayleigh_scatter_align(quad4& p, curandStateXORWOW& rng ); 
 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
-    QSIM_METHOD int     propagate_at_boundary(                quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
-    QSIM_METHOD void    hemisphere_polarized(   quad4& p, unsigned polz, const qprd& prd, curandStateXORWOW& rng); 
+    QSIM_METHOD int     propagate_at_boundary(                quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
+    QSIM_METHOD void    hemisphere_polarized(   quad4& p, unsigned polz, bool inwards, const qprd& prd, curandStateXORWOW& rng); 
 
 
 
@@ -348,6 +348,18 @@ orthogonal unit vectors.::
     
 Taking dot products between and within columns shows that to 
 be the case for normalized u. See oxrap/rotateUz.h for the algebra. 
+
+Special cases:
+
+u = [0,0,1] (up=0.) 
+   does nothing, effectively identity matrix
+
+u = [0,0,-1] (up=0., u.z<0. ) 
+   flip x, and z which is a rotation of pi/2 about y 
+
+               |   -1    0     0   |
+      d =      |    0    1     0   |   p
+               |    0    0    -1   |
            
 **/
 
@@ -627,10 +639,31 @@ i.e., with the electric field vector inside the plane of incidence, and the
 other one S-polarized, i.e., orthogonal to that plane.
 
 
+inconsistent normal definitions, c1 is expected to be +ve 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The standard normal vector at an intersection position on the surface of a shape 
+is defined to be rigidly oriented outwards away from the shape.  
+This definition is used by *fill_state* to order determine proparties 
+if this material m1 and the next material m2 on the other side of the boundary.   
+
+The below math assumes that the photon direction is always against the normal 
+such that the sign of c1 is +ve. Having -ve c1 leads to non-sensical -ve TranCoeff
+which results in always relecting. 
+
+So what about photons going in the other direction ? 
+Surface normal is used in several places in the below so presumably must 
+arrange to have a local normal that is flipped appropeiately OR perhaps can change the math ?
+
+In summary this is a case of inconsistent definitions of the normal, 
+that will need to be flipped ~half the time. 
+
+TODO: verify this by random aligned matching with examples/Geant4/BoundaryStandalone 
+
 **/
 
 template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng)
+inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id)
 {
     const float3& surface_normal = prd.normal ; 
     const float& n1 = s.material1.x ;
@@ -638,18 +671,17 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     float3* direction    = (float3*)&p.q1.f.x ; 
     float3* polarization = (float3*)&p.q2.f.x ; 
 
-    //printf("//qsim.propagate_at_boundary surface_normal (%10.4f, %10.4f, %10.4f) \n", surface_normal.x, surface_normal.y, surface_normal.z );  
-    //printf("//qsim.propagate_at_boundary direction (%10.4f, %10.4f, %10.4f) \n", direction->x, direction->y, direction->z );  
-    //printf("//qsim.propagate_at_boundary polarization (%10.4f, %10.4f, %10.4f) \n", polarization->x, polarization->y, polarization->z );  
-
     const float eta = n1/n2 ; 
-    const float c1 = -dot(*direction, surface_normal ); // c1 is flipped to be +ve  (G4 "cost1") when direction is against the normal,  1.f at normal incidence
+    const float c1 = -dot(*direction, surface_normal ); 
+    // c1 is flipped to be +ve  (G4 "cost1") when direction is against the normal,  1.f at normal incidence
+    // c1 is expected to be +ve by the below math, if -ve get non-sensical -ve TransCoeff 
+
     const bool normal_incidence = fabs(c1) > 0.999999f ; 
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
     bool tir = c2c2 < 0.f ; 
     const float EdotN = dot(*polarization, surface_normal ) ;  // used for TIR polarization
     const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f : so will always reflect
-    const float n1c1 = abs(n1*c1);  // ad-hoc debug 
+    const float n1c1 = n1*c1 ;
     const float n2c2 = n2*c2 ; 
     const float n2c1 = n2*c1 ; 
     const float n1c2 = n1*c2 ; 
@@ -661,11 +693,28 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     const float2 RR = normalize(E2_r) ; 
     const float2 TT = normalize(E2_t) ; 
     const float TransCoeff = tir || n1c1 == 0.f ? 0.f : n2c2*dot(E2_t,E2_t)/n1c1 ; 
+
+    const float u_boundary_burn = curand_uniform(&rng) ;  // needed for random consumption alignment with Geant4 G4OpBoundaryProcess::PostStepDoIt
     const float u_reflect = curand_uniform(&rng) ;
     bool reflect = u_reflect > TransCoeff  ;
 
-    printf("//qsim.propagate_at_boundary n2c2 %10.4f n1c1 %10.4f u_reflect %10.4f TransCoeff %10.4f (n2c2.E2_total_t/n1c1)  reflect %d \n", 
-                                              n2c2,  n1c1, u_reflect, TransCoeff, reflect ); 
+    //printf("//qsim.propagate_at_boundary n2c2 %10.4f n1c1 %10.4f u_reflect %10.4f TransCoeff %10.4f (n2c2.E2_total_t/n1c1)  reflect %d \n", 
+    //                                          n2c2,  n1c1, u_reflect, TransCoeff, reflect ); 
+
+
+    p.q0.f.w = u_reflect ;   // non-standard 
+    p.q1.f.w = TransCoeff ;  // non-standard replace "weight"
+
+    if(id == 251959)
+    {
+        printf("//qsim.propagate_at_boundary id %d \n", id); 
+        printf("//qsim.propagate_at_boundary surface_normal (%10.4f, %10.4f, %10.4f) \n", surface_normal.x, surface_normal.y, surface_normal.z );  
+        printf("//qsim.propagate_at_boundary direction (%10.4f, %10.4f, %10.4f) \n", direction->x, direction->y, direction->z );  
+        printf("//qsim.propagate_at_boundary polarization (%10.4f, %10.4f, %10.4f) \n", polarization->x, polarization->y, polarization->z );  
+        printf("//qsim.propagate_at_boundary c1 %10.4f normal_incidence %d \n", c1, normal_incidence ); 
+    }
+
+
 
     *direction = reflect
                     ?
@@ -686,6 +735,17 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
                             :
                                 TT.x*A_trans + TT.y*A_paral
                             ;
+
+
+    if(id == 251959)
+    {
+        printf("//qsim.propagate_at_boundary RR.x %10.4f A_trans (%10.4f %10.4f %10.4f )  RR.y %10.4f  A_paral (%10.4f %10.4f %10.4f ) \n", 
+              RR.x, A_trans.x, A_trans.y, A_trans.z,
+              RR.y, A_paral.x, A_paral.y, A_paral.z ); 
+
+        printf("//qsim.propagate_at_boundary reflect %d  tir %d polarization (%10.4f, %10.4f, %10.4f) \n", reflect, tir, polarization->x, polarization->y, polarization->z );  
+    }
+
 
     return reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
 }
@@ -785,11 +845,18 @@ qsim::hemisphere_s_polarized
     
 *within*
     vector within the plane of incidence and perpendicular to *direction* (P polarized)
+
+
+A +ve Z upper hemisphere of *direction* is generated and then rotateUz oriented 
+to adopt the *surface_normal* vector as its Z direction.
+
+For inwards=true the normal direction is flipped to orient all the directions 
+inwards. 
  
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, const qprd& prd, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, bool inwards, const qprd& prd, curandStateXORWOW& rng)
 {
     const float3& surface_normal = prd.normal ; 
 
@@ -806,10 +873,10 @@ inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, c
     direction->y = sinf(phi)*sinTheta ; 
     direction->z = cosTheta ; 
 
-    rotateUz( *direction, surface_normal ); 
+    rotateUz( *direction, surface_normal * ( inwards ? -1.f : 1.f )); 
 
     // what about normal incidence ?
-    const float3 transverse = normalize(cross(*direction, surface_normal)) ; // perpendicular to plane of incidence
+    const float3 transverse = normalize(cross(*direction, surface_normal * ( inwards ? -1.f : 1.f )  )) ; // perpendicular to plane of incidence
     const float3 within = normalize( cross(*direction, transverse) );  //   within plane of incidence and perpendicular to direction
 
     switch(polz)

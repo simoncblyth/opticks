@@ -278,7 +278,6 @@ void QSim<T>::init_dbg()
 
     qvals( dbg->prd.normal, "NRM", "-1,0,0" ); 
     dbg->prd.normal = normalize( dbg->prd.normal ); 
-    
     dbg->prd.t =  100.f ; 
     dbg->prd.identity = 101u ;
     dbg->prd.boundary = 10u ;
@@ -755,10 +754,26 @@ void QSim<T>::fill_state_1(qstate* state, unsigned num_state)
 
 
 
+/**
+extern QSim_photon_launch
+--------------------------
 
+This function is implemented in QSim.cu and it used by *photon_launch* and *photon_launch_mutate* 
+
+**/
 
 template <typename T>
 extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned launchcode  );
+
+
+/**
+QSim::photon_launch
+---------------------
+
+This allocates a photon array on the device, generates photons into it on device and 
+then downloads the generated photons into the host array. Contrast with *photon_launch_mutate*. 
+
+**/
 
 template <typename T>
 void QSim<T>::photon_launch(quad4* photon, unsigned num_photon, unsigned type )
@@ -776,9 +791,12 @@ void QSim<T>::photon_launch(quad4* photon, unsigned num_photon, unsigned type )
     QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 }
  
-
 /**
-TODO: this needs to upload, mutate and then download
+QSim::photon_launch_mutate
+---------------------------
+
+This uploads the photon array provided, mutates it and then downloads the changed array.
+
 **/
 
 template <typename T>

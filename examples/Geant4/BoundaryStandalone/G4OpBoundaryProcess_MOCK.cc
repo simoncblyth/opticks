@@ -1166,6 +1166,8 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
                  E1_parl  = 1.0;
               }
 
+
+
               s1 = Rindex1*cost1;
               E2_perp = 2.*s1*E1_perp/(Rindex1*cost1+Rindex2*cost2);
               E2_parl = 2.*s1*E1_parl/(Rindex2*cost1+Rindex1*cost2);
@@ -1175,6 +1177,19 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
               if (theTransmittance > 0) TransCoeff = theTransmittance;
               else if (cost1 != 0.0) TransCoeff = s2/s1;
               else TransCoeff = 0.0;
+
+#ifdef MOCK
+              theTransCoeff_MOCK = TransCoeff  ; 
+              if( photon_idx == photon_idx_debug )
+              {
+                  std::cout 
+                      << "didi idx " << photon_idx 
+                      << " Rindex1 " << Rindex1 
+                      << " Rindex2 " << Rindex2
+                      << std::endl 
+                      ;
+              }
+#endif
 
 #ifdef MOCK_DUMP
               std::cout 
@@ -1229,9 +1244,19 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
 
 #ifdef MOCK_DUMP
                       std::cout 
+                          << " C_parl " << C_parl 
+                          << " A_paral ( " << A_paral.x() << " " << A_paral.y() << " " << A_paral.z() << ") "
+                          << std::endl 
+                          << " C_perp " << C_perp 
+                          << " A_trans ( " << A_trans.x() << " " << A_trans.y() << " " << A_trans.z() << ") "
+                          << std::endl 
+                          ;
+
+                      std::cout 
                           << " incident ray oblique " 
                           << " E2_parl " << E2_parl 
                           << " E2_perp " << E2_perp 
+                          << "  NewPolarization ( " <<  NewPolarization.x() << " " <<  NewPolarization.y() << " " <<  NewPolarization.z()  << ")" 
                           << std::endl 
                           ; 
 #endif

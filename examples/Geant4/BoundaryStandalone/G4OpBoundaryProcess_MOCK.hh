@@ -270,6 +270,9 @@ private:
 #ifdef MOCK
     public:
        G4ThreeVector theGlobalNormal_MOCK ;      
+       G4double      theTransCoeff_MOCK ; 
+       int           photon_idx ; 
+       int           photon_idx_debug ; 
 #endif
 
 };
