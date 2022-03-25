@@ -19,20 +19,27 @@ msg="=== $BASH_SOURCE :"
 
 #export QBnd=INFO
 
-test=rng_sequence
+#test=rng_sequence
+
 #test=fill_state_0
 #test=fill_state_1
+
 #test=water
 #test=rayleigh_scatter_align
+
 #test=propagate_to_boundary
 #test=propagate_at_boundary
 #test=propagate_at_surface
 
 #test=hemisphere_s_polarized
-#test=propagate_at_boundary_s_polarized
-
 #test=hemisphere_p_polarized
-test=propagate_at_boundary_p_polarized
+#test=hemisphere_x_polarized
+
+#test=propagate_at_boundary_s_polarized
+#test=propagate_at_boundary_p_polarized
+test=propagate_at_boundary_x_polarized
+
+
 
 M1=1000000
 K100=100000
@@ -45,7 +52,6 @@ nrm=0,0,1
 
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
-
 export TEST=${TEST:-$test}
 
 if [ "${arg/run}" != "$arg" ]; then 
@@ -70,8 +76,10 @@ if [ "${arg/ana}" != "$arg" ]; then
        fill_state_cf)          script=QSimTest_fill_state_cf.py ;;
        hemisphere_s_polarized) script=QSimTest_hemisphere_polarized.py ;;
        hemisphere_p_polarized) script=QSimTest_hemisphere_polarized.py ;;
-       propagate_at_boundary_s_polarized) script=QSimTest_propagate_at_boundary_x_polarized.py ;; 
-       propagate_at_boundary_p_polarized) script=QSimTest_propagate_at_boundary_x_polarized.py ;; 
+       hemisphere_x_polarized) script=QSimTest_hemisphere_polarized.py ;;
+       propagate_at_boundary_s_polarized) script=QSimTest_propagate_at_boundary_polarized.py ;; 
+       propagate_at_boundary_p_polarized) script=QSimTest_propagate_at_boundary_polarized.py ;; 
+       propagate_at_boundary_x_polarized) script=QSimTest_propagate_at_boundary_polarized.py ;; 
                             *) script=QSimTest_$TEST.py      ;;
     esac
 

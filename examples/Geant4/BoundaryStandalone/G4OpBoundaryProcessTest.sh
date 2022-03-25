@@ -110,11 +110,13 @@ esac
 
 
 #src=hemisphere_s_polarized
-src=hemisphere_p_polarized
+#src=hemisphere_p_polarized
+src=hemisphere_x_polarized
 
 case $src in 
    hemisphere_s_polarized) dst=propagate_at_boundary_s_polarized ;; 
    hemisphere_p_polarized) dst=propagate_at_boundary_p_polarized ;; 
+   hemisphere_x_polarized) dst=propagate_at_boundary_x_polarized ;; 
 esac
 # TODO: rationalize names 
 

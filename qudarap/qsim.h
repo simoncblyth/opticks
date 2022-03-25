@@ -900,10 +900,12 @@ inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, b
     const float3 transverse = normalize(cross(*direction, surface_normal * ( inwards ? -1.f : 1.f )  )) ; // perpendicular to plane of incidence
     const float3 within = normalize( cross(*direction, transverse) );  //   within plane of incidence and perpendicular to direction
 
+
     switch(polz)
     {
         case 0: *polarization = transverse ; break ;   // S-polarizatiom
         case 1: *polarization = within     ; break ;   // P-polarization
+        case 2: *polarization = normalize( 0.5f*transverse + (1.f-0.5f)*within )  ; break ;  // equal admixture
     }
 }
 

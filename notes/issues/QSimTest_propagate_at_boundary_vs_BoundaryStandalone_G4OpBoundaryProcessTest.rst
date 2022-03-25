@@ -431,3 +431,30 @@ P-polarized comparison : get 1-in-a-million TransCoeff cut edger just like S-pol
 
 
 
+"X"-polarized : equal admixture of S and P : deviation less than 1 in a million
+---------------------------------------------------------------------------------
+
+::
+
+    epsilon:BoundaryStandalone blyth$ ./G4OpBoundaryProcessTest.sh cf
+    === ./G4OpBoundaryProcessTest.sh : G4OpBoundaryProcessTest.cc
+    a_key :  OPTICKS_QSIM_DSTDIR  A_FOLD : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_x_polarized
+    b_key :   OPTICKS_BST_DSTDIR  B_FOLD : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_x_polarized
+    a.shape (1000000, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_x_polarized/p.npy  
+    b.shape (1000000, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_x_polarized/p.npy  
+    a_flag (array([1024, 2048], dtype=uint32), array([ 40034, 959966])) 
+    b_flag (array([1024, 2048], dtype=uint32), array([ 40034, 959966])) 
+    np.where( a_flag != b_flag )  : (array([], dtype=int64),)
+    a_TransCoeff [0.887 0.896 0.736 ... 0.926 0.633 0.96 ] 
+    b_TransCoeff [0.887 0.896 0.736 ... 0.926 0.633 0.96 ] 
+    np.where( np.abs( a_TransCoeff - b_TransCoeff) > 1e-6 )  : (array([], dtype=int64),)
+    a_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
+    b_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
+    np.where( a_flat != b_flat )  : (array([], dtype=int64),)
+    np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+    np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+    np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+    np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+
+
+

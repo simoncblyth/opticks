@@ -564,9 +564,11 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
 
         case HEMISPHERE_S_POLARIZED:        photon_launch(num, type)                   ; break ;  
         case HEMISPHERE_P_POLARIZED:        photon_launch(num, type)                   ; break ;  
+        case HEMISPHERE_X_POLARIZED:        photon_launch(num, type)                   ; break ;  
 
         case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  photon_launch_mutate(num, type)       ; break ;  
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  photon_launch_mutate(num, type)       ; break ;  
+        case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  photon_launch_mutate(num, type)       ; break ;  
 
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 
     }
