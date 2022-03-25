@@ -421,10 +421,10 @@ __global__ void _QSim_propagate_to_boundary( qsim<T>* sim, quad4* photon, unsign
 }
 
 template <typename T>
-__global__ void _QSim_propagate_at_boundary( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
+__global__ void _QSim_propagate_at_boundary_generate( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    //printf("//_QSim_propagate_at_boundary blockIdx.x %d blockDim.x %d threadIdx.x %d propagate_id %d \n", blockIdx.x, blockDim.x, threadIdx.x, propagate_id ); 
+    //printf("//_QSim_propagate_at_boundary_generate blockIdx.x %d blockDim.x %d threadIdx.x %d propagate_id %d \n", blockIdx.x, blockDim.x, threadIdx.x, propagate_id ); 
 
     if (id >= num_photon) return;
 
@@ -433,9 +433,11 @@ __global__ void _QSim_propagate_at_boundary( qsim<T>* sim, quad4* photon, unsign
     quad4 p         = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
     curandState rng = sim->rngstate[id] ; 
 
+    p.q0.f = p.q1.f ;   // non-standard record initial mom and pol into q0, q3
+    p.q3.f = p.q2.f ; 
     unsigned flag = sim->propagate_at_boundary( p, prd, s, rng, id );  
-
     p.q3.u.w = flag ;  // non-standard
+
     photon[id] = p ; 
 }
 
@@ -455,10 +457,9 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim<T>* sim, quad4* photon,
 
     p.q0.f = p.q1.f ;   // non-standard record initial mom and pol into q0, q3
     p.q3.f = p.q2.f ; 
-
     unsigned flag = sim->propagate_at_boundary( p, prd, s, rng, id );  
-
     p.q3.u.w = flag ;  // non-standard
+
     photon[id] = p ; 
 }
 
@@ -490,15 +491,15 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* si
     {
         case PROPAGATE_TO_BOUNDARY:  _QSim_propagate_to_boundary<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
         case RAYLEIGH_SCATTER_ALIGN: _QSim_rayleigh_scatter_align<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  )   ; break ;
-        case PROPAGATE_AT_BOUNDARY:  _QSim_propagate_at_boundary<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
 
         case HEMISPHERE_S_POLARIZED: _QSim_hemisphere_polarized<T><<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 0u  ) ; break ; 
         case HEMISPHERE_P_POLARIZED: _QSim_hemisphere_polarized<T><<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 1u  ) ; break ; 
         case HEMISPHERE_X_POLARIZED: _QSim_hemisphere_polarized<T><<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 2u  ) ; break ; 
 
-        case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  _QSim_propagate_at_boundary_mutate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  ) ; break ;
-        case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  _QSim_propagate_at_boundary_mutate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  ) ; break ;
-        case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  _QSim_propagate_at_boundary_mutate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  ) ; break ;
+        case PROPAGATE_AT_BOUNDARY:              _QSim_propagate_at_boundary_generate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
+        case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  _QSim_propagate_at_boundary_mutate<T><<<numBlocks,threadsPerBlock>>>(    sim, photon, num_photon, dbg  ) ; break ;
+        case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  _QSim_propagate_at_boundary_mutate<T><<<numBlocks,threadsPerBlock>>>(    sim, photon, num_photon, dbg  ) ; break ;
+        case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  _QSim_propagate_at_boundary_mutate<T><<<numBlocks,threadsPerBlock>>>(    sim, photon, num_photon, dbg  ) ; break ;
     }
 }
 

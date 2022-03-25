@@ -109,9 +109,9 @@ case $SRC in
 esac
 
 
-#src=hemisphere_s_polarized
+src=hemisphere_s_polarized
 #src=hemisphere_p_polarized
-src=hemisphere_x_polarized
+#src=hemisphere_x_polarized
 
 case $src in 
    hemisphere_s_polarized) dst=propagate_at_boundary_s_polarized ;; 

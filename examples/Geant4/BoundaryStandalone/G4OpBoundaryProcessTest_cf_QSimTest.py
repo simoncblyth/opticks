@@ -10,15 +10,19 @@ Used via script which sets envvars::
 """
 
 import os, numpy as np
+from opticks.ana.eprint import eprint
+
+def eprint( expr, lprefix="", rprefix="" ):
+    lhs = "%s%s" % (lprefix, expr)
+    rhs = "%s%s" % (rprefix, eval(expr) )
+    print("%s : %s" % ( lhs, rhs )   )   
+
 
 a_key = "OPTICKS_QSIM_DSTDIR"
 b_key = "OPTICKS_BST_DSTDIR"
 
 A_FOLD = os.environ[a_key] 
 B_FOLD = os.environ[b_key] 
-
-def eprint( expr ):
-    print("%s : %s" % ( expr, eval(expr) )   )
 
 
 if __name__ == '__main__':
@@ -28,10 +32,22 @@ if __name__ == '__main__':
      a_path = os.path.join(A_FOLD, "p.npy")
      b_path = os.path.join(B_FOLD, "p.npy")
 
+     aprd_path = os.path.join(A_FOLD, "prd.npy")
+     bprd_path = os.path.join(B_FOLD, "prd.npy")
+
      a = np.load(a_path)
      b = np.load(b_path)
      print("a.shape %10s : %s  " % (str(a.shape), a_path) )
      print("b.shape %10s : %s  " % (str(b.shape), b_path) )
+
+     aprd = np.load(aprd_path)
+     bprd = np.load(bprd_path)
+     print("aprd.shape %10s : %s  " % (str(aprd.shape), aprd_path) )
+     print("bprd.shape %10s : %s  " % (str(bprd.shape), bprd_path) )
+
+     eprint("aprd", lprefix="\n", rprefix="\n" )
+     eprint("bprd", lprefix="\n", rprefix="\n" )
+
 
      a_flag = a[:,3,3].view(np.uint32)  
      b_flag = b[:,3,3].view(np.uint32)  

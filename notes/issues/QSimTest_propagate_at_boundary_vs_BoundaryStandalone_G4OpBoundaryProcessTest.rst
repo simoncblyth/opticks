@@ -458,3 +458,52 @@ P-polarized comparison : get 1-in-a-million TransCoeff cut edger just like S-pol
 
 
 
+
+
+Trying to test "with the normal" directions
+------------------------------------------------
+
+Simply flipping the normal to [0,0,-1] does not test "with the normal" directions
+because the directions are all getting oriented wrt the normal to make them against the 
+normal. 
+
+TODO: test at lower level to check with the normal or provide way to not auto-orient  
+
+::
+
+    epsilon:BoundaryStandalone blyth$ ./G4OpBoundaryProcessTest.sh cf
+    === ./G4OpBoundaryProcessTest.sh : G4OpBoundaryProcessTest.cc
+    a_key :  OPTICKS_QSIM_DSTDIR  A_FOLD : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized
+    b_key :   OPTICKS_BST_DSTDIR  B_FOLD : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized
+    a.shape (1000000, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized/p.npy  
+    b.shape (1000000, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized/p.npy  
+    aprd.shape  (1, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized/prd.npy  
+    bprd.shape  (1, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized/prd.npy  
+
+    aprd : 
+    [[[  0.   0.  -1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+
+    bprd : 
+    [[[  0.   0.  -1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    a_flag (array([1024, 2048], dtype=uint32), array([ 45024, 954976])) 
+    b_flag (array([1024, 2048], dtype=uint32), array([ 45025, 954975])) 
+    np.where( a_flag != b_flag )  : (array([209411]),)
+    a_TransCoeff [0.784 0.799 0.588 ... 0.853 0.481 0.959] 
+    b_TransCoeff [0.784 0.799 0.588 ... 0.853 0.481 0.959] 
+    np.where( np.abs( a_TransCoeff - b_TransCoeff) > 1e-6 )  : (array([], dtype=int64),)
+    a_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
+    b_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
+    np.where( a_flat != b_flat )  : (array([], dtype=int64),)
+    np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+    np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )  : (array([209411, 209411, 209411]), array([0, 1, 2]))
+    np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )  : (array([209411, 209411]), array([0, 1]))
+    np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+
+
+

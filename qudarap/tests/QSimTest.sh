@@ -6,8 +6,11 @@ QSimTest.sh
 
 ::
 
-    TEST=fill_state_cf ./QSimTest.sh ana
+    ./QSimTest.sh 
+        run the executable and invoke the python script  
 
+    TEST=fill_state_cf ./QSimTest.sh ana
+        just invoke the analysis script for the named TEST 
 
 EOU
 }
@@ -28,7 +31,7 @@ msg="=== $BASH_SOURCE :"
 #test=rayleigh_scatter_align
 
 #test=propagate_to_boundary
-#test=propagate_at_boundary
+test=propagate_at_boundary
 #test=propagate_at_surface
 
 #test=hemisphere_s_polarized
@@ -37,18 +40,19 @@ msg="=== $BASH_SOURCE :"
 
 #test=propagate_at_boundary_s_polarized
 #test=propagate_at_boundary_p_polarized
-test=propagate_at_boundary_x_polarized
+#test=propagate_at_boundary_x_polarized
 
 
 
 M1=1000000
-K100=100000
+K2=100000
 
-num=$M1
-#num=$K100
-#num=8
+num=8
+#num=$K2
+#num=$M1
 
-nrm=0,0,1
+#nrm=0,0,1
+nrm=0,0,-1
 
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
@@ -74,13 +78,16 @@ if [ "${arg/ana}" != "$arg" ]; then
        fill_state_0)           script=QSimTest_fill_state.py ;;
        fill_state_1)           script=QSimTest_fill_state.py ;;
        fill_state_cf)          script=QSimTest_fill_state_cf.py ;;
+
        hemisphere_s_polarized) script=QSimTest_hemisphere_polarized.py ;;
        hemisphere_p_polarized) script=QSimTest_hemisphere_polarized.py ;;
        hemisphere_x_polarized) script=QSimTest_hemisphere_polarized.py ;;
+
        propagate_at_boundary_s_polarized) script=QSimTest_propagate_at_boundary_polarized.py ;; 
        propagate_at_boundary_p_polarized) script=QSimTest_propagate_at_boundary_polarized.py ;; 
        propagate_at_boundary_x_polarized) script=QSimTest_propagate_at_boundary_polarized.py ;; 
-                            *) script=QSimTest_$TEST.py      ;;
+
+                                       *) script=QSimTest_$TEST.py      ;;
     esac
 
     if [ -f "$script" ]; then

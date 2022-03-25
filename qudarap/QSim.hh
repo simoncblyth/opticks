@@ -109,8 +109,8 @@ struct QUDARAP_API QSim
     void fill_state_0(quad6*  state, unsigned num_state); 
     void fill_state_1(qstate* state, unsigned num_state); 
 
-    void photon_launch(       quad4* photon, unsigned num_photon, unsigned launchcode ); 
-    void photon_launch_mutate(quad4* photon, unsigned num_photon, unsigned launchcode ); 
+    void photon_launch_generate( quad4* photon, unsigned num_photon, unsigned launchcode ); 
+    void photon_launch_mutate(   quad4* photon, unsigned num_photon, unsigned launchcode ); 
 
 
     unsigned getBoundaryTexWidth() const ;

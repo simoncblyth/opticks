@@ -758,7 +758,7 @@ void QSim<T>::fill_state_1(qstate* state, unsigned num_state)
 extern QSim_photon_launch
 --------------------------
 
-This function is implemented in QSim.cu and it used by *photon_launch* and *photon_launch_mutate* 
+This function is implemented in QSim.cu and it used by *photon_launch_generate* and *photon_launch_mutate* 
 
 **/
 
@@ -767,8 +767,8 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* si
 
 
 /**
-QSim::photon_launch
----------------------
+QSim::photon_launch_generate
+------------------------------
 
 This allocates a photon array on the device, generates photons into it on device and 
 then downloads the generated photons into the host array. Contrast with *photon_launch_mutate*. 
@@ -776,7 +776,7 @@ then downloads the generated photons into the host array. Contrast with *photon_
 **/
 
 template <typename T>
-void QSim<T>::photon_launch(quad4* photon, unsigned num_photon, unsigned type )
+void QSim<T>::photon_launch_generate(quad4* photon, unsigned num_photon, unsigned type )
 {
     assert( d_sim ); 
     assert( d_dbg ); 

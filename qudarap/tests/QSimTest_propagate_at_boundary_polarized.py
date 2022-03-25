@@ -2,8 +2,18 @@
 
 import os, numpy as np
 from opticks.ana.fold import Fold
+from opticks.ana.eprint import epr 
 
 FOLD = os.path.expandvars("/tmp/$USER/opticks/QSimTest/$TEST")
+
+
+def epr(expr, prefix=""):
+    ret = eval(expr)
+    lhs = "%s%s" % (prefix, expr) 
+    print("%-40s : %s " % (lhs, ret)) 
+    return ret 
+
+
 
 if __name__ == '__main__':
     t = Fold.Load(FOLD)
@@ -12,14 +22,15 @@ if __name__ == '__main__':
 
     print(p) 
 
-    flag = p[:,3,3].view(np.uint32)
-    print(np.unique(flag, return_counts=True))
+    print("\n\n")
 
-    TransCoeff = p[:,1,3]
-    print( "TransCoeff %s " %  TransCoeff  )
+    flag = epr("p[:,3,3].view(np.uint32)", "flag=")
 
-    flat = p[:,0,3]
-    print(" flat %s " % flat)
+    epr("np.unique(flag, return_counts=True)")
+
+    TransCoeff = epr("p[:,1,3]", "TransCoeff=")
+
+    flat = epr("p[:,0,3]", "flat=")
 
 
 

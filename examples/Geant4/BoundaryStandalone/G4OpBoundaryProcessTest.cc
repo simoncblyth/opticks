@@ -190,6 +190,8 @@ void G4OpBoundaryProcessTest::init_prd_normal()
     normal.x = nrm->x ; 
     normal.y = nrm->y ; 
     normal.z = nrm->z ; 
+
+    NP::Write(dstdir, "prd.npy",  (float*)&prd.q0.f.x, 1, 4, 4  ); // save the prd to dstfold for python consumption
 }
 
  
