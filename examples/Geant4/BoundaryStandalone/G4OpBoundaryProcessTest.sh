@@ -45,6 +45,7 @@ for src in $srcs ; do echo $msg $src ; done
 g4-
 clhep-
 boost-
+cuda-   # just for vector_functions.h 
 
 standalone-compile(){ 
     local name=$1
@@ -63,6 +64,7 @@ standalone-compile(){
        -DMOCK_DUMP \
        -g \
        -I$HOME/np \
+       -I$(cuda-prefix)/include  \
        -I$(boost-prefix)/include \
        -I$(g4-prefix)/include/Geant4 \
        -I$(clhep-prefix)/include \
@@ -102,50 +104,52 @@ nrm=0,0,1
 export OPTICKS_RANDOM_SEQPATH=$seqpath
 
 
-
-case $SRC in
-    
-
-esac
-
-
-src=hemisphere_s_polarized
+src=ephoton
+#src=hemisphere_s_polarized
 #src=hemisphere_p_polarized
 #src=hemisphere_x_polarized
 
 case $src in 
+                  ephoton) dst=propagate_at_boundary_ephoton     ;;
    hemisphere_s_polarized) dst=propagate_at_boundary_s_polarized ;; 
    hemisphere_p_polarized) dst=propagate_at_boundary_p_polarized ;; 
    hemisphere_x_polarized) dst=propagate_at_boundary_x_polarized ;; 
 esac
-# TODO: rationalize names 
 
 
-srcdir=/tmp/$USER/opticks/QSimTest/$src
-dstdir=/tmp/$USER/opticks/G4OpBoundaryProcessTest/$dst
+if [ "$src" == "ephoton" ]; then
+    srcdir=
+else
+    srcdir=/tmp/$USER/opticks/QSimTest/$src
+fi 
+
 q_dstdir=/tmp/$USER/opticks/QSimTest/$dst
+dstdir=/tmp/$USER/opticks/G4OpBoundaryProcessTest/$dst
 
-export OPTICKS_BST_SRCDIR=$srcdir
-export OPTICKS_BST_DSTDIR=$dstdir
 export OPTICKS_QSIM_DSTDIR=$q_dstdir
-
-
-[ ! -d "$OPTICKS_BST_SRCDIR" ] && echo $msg ERROR OPTICKS_BST_SRCDIR $OPTICKS_BST_SRCDIR does not exist && exit 1 
-
+export OPTICKS_BST_DSTDIR=$dstdir
 mkdir -p $OPTICKS_BST_DSTDIR
 
+
+if [ -n "$srcdir" ]; then 
+    export OPTICKS_BST_SRCDIR=$srcdir
+    [ ! -d "$OPTICKS_BST_SRCDIR" ] && echo $msg ERROR OPTICKS_BST_SRCDIR $OPTICKS_BST_SRCDIR does not exist && exit 1 
+else
+    source ../../../qudarap/tests/ephoton.sh 
+fi
+
 if [ "${arg/cf}" != "$arg" ]; then 
-   [ ! -f "$OPTICKS_BST_DSTDIR/p.npy" ]  && echo $msg ERROR OPTICKS_BST_DSTDIR $OPTICKS_BST_DSTDIR does not contain p.npy  && exit 1 
+
    [ ! -f "$OPTICKS_QSIM_DSTDIR/p.npy" ] && echo $msg ERROR OPTICKS_QSIM_DSTDIR $OPTICKS_QSIM_DSTDIR does not contain p.npy  && exit 1 
+   [ ! -f "$OPTICKS_BST_DSTDIR/p.npy" ]  && echo $msg ERROR OPTICKS_BST_DSTDIR $OPTICKS_BST_DSTDIR does not contain p.npy  && exit 1 
+
    ${IPYTHON:-ipython} --pdb -i G4OpBoundaryProcessTest_cf_QSimTest.py 
    [ $? -ne 0 ] && echo $msg cf error && exit 2 
    exit 0 
 fi 
 
-
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
-
 
 if [ "${arg/build}" != "$arg" ]; then 
     standalone-compile ${srcs[@]}
@@ -162,7 +166,6 @@ if [ "${arg/run}" != "$arg" ]; then
     fi 
     [ $? -ne 0 ] && echo $msg run error && exit 2 
 fi 
-
 
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $name.py   

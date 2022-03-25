@@ -3,7 +3,6 @@
 #include "scuda.h"
 #include "squad.h"
 
-
 void test_qvals_float()
 {
     float  v1 ; 
@@ -42,13 +41,53 @@ void test_qvals_int()
 }
 
 
+void test_qvals_float3_x2()
+{
+    float3 mom ; 
+    float3 pol ; 
+    qvals(mom, pol, "MOM_POL", "1,0,0,0,1,0" ); 
+   
+    std::cout << "mom " << mom << std::endl ; 
+    std::cout << "pol " << pol << std::endl ; 
+}
 
+void test_qvals_float4_x2()
+{
+    float4 momw ; 
+    float4 polw ; 
+    qvals(momw, polw, "MOMW_POLW", "1,0,0,1,0,1,0,1" ); 
+   
+    std::cout << "momw " << momw << std::endl ; 
+    std::cout << "polw " << polw << std::endl ; 
+}
+
+void test_quad4_ephoton()
+{
+    quad4 p ; 
+    p.ephoton(); 
+    std::cout << p.desc() << std::endl ;  
+}
+
+void test_qenvint()
+{
+   int num = qenvint("NUM", "-1"); 
+   std::cout << " num " << num << std::endl ; 
+}
 
 
 int main(int argc, char** argv)
 {
+    /*
     test_qvals_float(); 
     test_qvals_int(); 
+    test_qvals_float3_x2(); 
+    test_qvals_float4_x2(); 
+    test_quad4_ephoton(); 
+    */
+
+    test_qenvint(); 
+
+
 
     return 0 ; 
 }

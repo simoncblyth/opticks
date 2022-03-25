@@ -53,6 +53,12 @@ struct quad4
     SUTIL_INLINE SUTIL_HOSTDEVICE void zero();
     SUTIL_INLINE SUTIL_HOSTDEVICE float* data() ;
     SUTIL_INLINE SUTIL_HOSTDEVICE const float* cdata() const ;
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    std::string desc() const ; 
+    void ephoton() ; 
+#endif
 };
 
 void quad4::zero() 
@@ -125,6 +131,13 @@ inline std::ostream& operator<<(std::ostream& os, const quad6& v)
 
 
 
+inline int qenvint( const char* key, const char* fallback )
+{
+    char* val = getenv(key);
+    char* p = const_cast<char*>( val ? val : fallback ); 
+    return std::atoi(p); 
+}
+
 inline void qvals( std::vector<float>& vals, const char* key, const char* fallback, int num_expect )
 {
     char* val = getenv(key);
@@ -171,6 +184,38 @@ inline void qvals( float3& v,  const char* key, const char* fallback )
     v.y = vals[1] ; 
     v.z = vals[2] ; 
 }
+
+inline void qvals( float3& v0,  float3& v1, const char* key, const char* fallback )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, 6 ); 
+
+    v0.x = vals[0] ; 
+    v0.y = vals[1] ; 
+    v0.z = vals[2] ; 
+
+    v1.x = vals[3] ; 
+    v1.y = vals[4] ; 
+    v1.z = vals[5] ; 
+}
+
+inline void qvals( float4& v0,  float4& v1, const char* key, const char* fallback )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, 8 ); 
+
+    v0.x = vals[0] ; 
+    v0.y = vals[1] ; 
+    v0.z = vals[2] ; 
+    v0.w = vals[3] ; 
+
+    v1.x = vals[4] ; 
+    v1.y = vals[5] ; 
+    v1.z = vals[6] ; 
+    v1.w = vals[7] ; 
+}
+
+
 inline void qvals( float4& v,  const char* key, const char* fallback )
 {
     std::vector<float> vals ; 
@@ -215,6 +260,25 @@ inline void qvals( int4& v,  const char* key, const char* fallback )
 
 
 
+inline std::string quad4::desc() const 
+{
+    std::stringstream ss ;
+    ss 
+        << " post " << q0.f << std::endl
+        << " momw " << q1.f << std::endl
+        << " polw " << q2.f << std::endl
+        << " flag " << q3.i << std::endl
+        ;
+    std::string s = ss.str();
+    return s ;
+}
+
+inline void quad4::ephoton() 
+{
+    qvals( q0.f , "POST" , "0,0,0,0" );                      // position, time
+    qvals( q1.f, q2.f, "MOMW_POLW", "1,0,0,1,0,1,0,500" );  // direction, weight,  polarization, wavelength 
+    qvals( q3.i , "FLAG", "0,0,0,0" );   
+}
 
 
 #endif 

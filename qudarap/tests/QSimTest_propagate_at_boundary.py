@@ -27,6 +27,8 @@ if __name__ == '__main__':
     prd = t.prd 
     p = t.p 
     
+    eprint("p0", rprefix="\n") 
+    eprint("prd", rprefix="\n") 
     eprint("p", rprefix="\n") 
 
     flag = eprint("p[:,3,3].view(np.uint32)")

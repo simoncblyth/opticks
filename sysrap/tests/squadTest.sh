@@ -15,6 +15,8 @@ gcc $name.cc \
 
 [ $? -ne 0 ] && echo compile fail && exit 1
 
+source ../../qudarap/tests/ephoton.sh 
+
 cmd="/tmp/$name"
 echo $cmd
 eval $cmd

@@ -76,6 +76,7 @@ struct QUDARAP_API QSim
     void init(); 
     void init_sim(); 
     void init_dbg(); 
+    std::string desc_dbg_p0() const ; 
 
     qsim<T>* getDevicePtr() const ; 
 

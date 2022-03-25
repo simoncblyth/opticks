@@ -10,7 +10,7 @@ Used via script which sets envvars::
 """
 
 import os, numpy as np
-from opticks.ana.eprint import eprint
+#from opticks.ana.eprint import eprint
 
 def eprint( expr, lprefix="", rprefix="" ):
     lhs = "%s%s" % (lprefix, expr)

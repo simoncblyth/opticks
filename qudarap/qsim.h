@@ -689,13 +689,17 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     const float& n2 = s.material2.x ;   
     float3* direction    = (float3*)&p.q1.f.x ; 
     float3* polarization = (float3*)&p.q2.f.x ; 
-
     const float eta = n1/n2 ; 
     const float c1 = -dot(*direction, surface_normal ); 
-    // c1 is flipped to be +ve  (G4 "cost1") when direction is against the normal,  1.f at normal incidence
-    // c1 is expected to be +ve by the below math, if -ve get non-sensical -ve TransCoeff  ? need local oriented normal perhaps ?
-
     const bool normal_incidence = fabs(c1) == 1.f ; 
+
+    /* 
+    printf("//qsim.propagate_at_boundary id %d nrm   (%10.4f %10.4f %10.4f) \n", id, surface_normal.x, surface_normal.y, surface_normal.z ); 
+    printf("//qsim.propagate_at_boundary id %d mom_0 (%10.4f %10.4f %10.4f) \n", id, direction->x, direction->y, direction->z ); 
+    printf("//qsim.propagate_at_boundary id %d pol_0 (%10.4f %10.4f %10.4f) \n", id, polarization->x, polarization->y, polarization->z ); 
+    printf("//qsim.propagate_at_boundary id %d c1 %10.4f normal_incidence %d \n", id, c1, normal_incidence ); 
+    */
+
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
     bool tir = c2c2 < 0.f ; 
     const float EdotN = dot(*polarization, surface_normal ) ;  // used for TIR polarization
@@ -756,6 +760,11 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
                                 TT.x*A_trans + TT.y*A_paral
                             ;
 
+    /*
+    printf("//qsim.propagate_at_boundary id %d reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", id, reflect, tir, TransCoeff, u_reflect );  
+    printf("//qsim.propagate_at_boundary id %d mom_1 (%10.4f %10.4f %10.4f) \n", id, direction->x, direction->y, direction->z ); 
+    printf("//qsim.propagate_at_boundary id %d pol_1 (%10.4f %10.4f %10.4f) \n", id, polarization->x, polarization->y, polarization->z ); 
+    */
 
     /*
     if(id == 251959)

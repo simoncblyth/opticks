@@ -36,24 +36,34 @@ sub-samplescan see that TransCoeff must be very close to 0.96::
 """
 import os, numpy as np
 
-FOLD = "/tmp/G4OpBoundaryProcessTest"
+def eprint( expr, lprefix="", rprefix="" ):
+    lhs = "%s%s" % (lprefix, expr)
+    rhs = "%s%s" % (rprefix, eval(expr) )
+    print("%s : %s" % ( lhs, rhs )   )   
+pass
 
 if __name__ == '__main__':
-     p = np.load(os.path.join(FOLD, "p.npy"))
-     print("p.shape %s " % str(p.shape) )
 
-     flag = p[:,3,3].view(np.uint32)  
-     print( np.unique(flag, return_counts=True) ) 
+    key = "OPTICKS_BST_DSTDIR"
+    FOLD = os.environ[key] 
+    print("key : %20s  FOLD : %s" % (key, FOLD) )
 
-     TransCoeff = p[:,1,3]
-     print( "TransCoeff %s " %  TransCoeff  ) 
+    p_path = os.path.join(FOLD, "p.npy")
 
-     flat = p[:,0,3] 
-     print(" flat %s " % flat)
-     #print( flat[flag==3].min() )  
-     #print( flat[flag==2].max() )
+    p = np.load(p_path)
+    print("p.shape %10s : %s  " % (str(p.shape), p_path) )
+
+    flag = p[:,3,3].view(np.uint32)  
+    eprint( "np.unique(flag, return_counts=True)" ) 
+
+    TransCoeff = p[:,1,3]
+    print( "TransCoeff %s " %  TransCoeff  ) 
+
+    flat = p[:,0,3] 
+    print(" flat %s " % flat)
+    #print( flat[flag==3].min() )  
+    #print( flat[flag==2].max() )
     
-
 
 
 

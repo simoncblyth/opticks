@@ -284,17 +284,20 @@ void QSim<T>::init_dbg()
      
     // quad4: mocking initial generated photon 
 
-    dbg->p.q0.f = make_float4( 0.f, 0.f, 0.f,   0.f ) ;   // position, time
-    dbg->p.q1.f = make_float4( 1.f, 0.f, 0.f,   1.f ) ;   // direction, weight
-    dbg->p.q2.f = make_float4( 0.f, 1.f, 0.f, 500.f ) ;   // polarization, wavelength
-    dbg->p.q3.u = make_uint4(  0u, 0u, 0u, 0u );         // flags 
+    dbg->p.ephoton() ; // load from evars POST, MOMW_POLW, FLAG
+    LOG(info) << desc_dbg_p0()  ; 
 
     d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
 }
  
-
-
-
+template <typename T>
+std::string QSim<T>::desc_dbg_p0() const 
+{
+    std::stringstream ss ; 
+    ss << "QSim::desc_dbg_p0" << std::endl << dbg->p.desc() ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 template <typename T>
 qsim<T>* QSim<T>::getDevicePtr() const 
