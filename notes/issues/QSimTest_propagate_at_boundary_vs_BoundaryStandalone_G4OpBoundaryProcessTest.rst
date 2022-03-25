@@ -171,7 +171,7 @@ At normal incidence the new polarization comes all from A_paral as RR.x is zero.
     p.shape (1000000, 4, 4) 
 
 
-Notice sign flip for A_paral and A_trans between G4 and OK that us causing the deviation in polarization at normal incidence::
+Notice sign flip for A_paral and A_trans between G4 and OK that is causing the deviation in polarization at normal incidence::
 
 
     1236                        E2_total  = E2_perp*E2_perp + E2_parl*E2_parl;
@@ -225,6 +225,126 @@ Bizarre, surely that cannot be a coincidence ? The two near normal incidence dis
 
     In [25]: np.where( a_flat > 0.999999 )
     Out[25]: (array([251959, 317933]),)
+
+
+
+Cross Product Sign Convention
+--------------------------------
+
+::
+
+    255 inline double Hep3Vector::dot(const Hep3Vector & p) const {
+    256   return dx*p.x() + dy*p.y() + dz*p.z();
+    257 }
+    258 
+
+    259 inline Hep3Vector Hep3Vector::cross(const Hep3Vector & p) const {
+    260   return Hep3Vector(dy*p.z()-p.y()*dz, dz*p.x()-p.z()*dx, dx*p.y()-p.x()*dy);
+    261 }
+
+        d.cross(p) 
+
+
+    0539 /** cross product */
+     540 SUTIL_INLINE SUTIL_HOSTDEVICE float3 cross(const float3& a, const float3& b)
+     541 {
+     542   return make_float3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
+     543 }
+
+        cross(d, p) 
+
+
+       //                  a <-> d
+       //                  b <-> p 
+
+         So : OldMomentum.cross(theFacetNormal) 
+         us  cross( 
+
+
+
+
+    1152               if (sint1 > 0.0) {
+    1153                  A_trans = OldMomentum.cross(theFacetNormal);
+    1154                  A_trans = A_trans.unit();
+    1155                  E1_perp = OldPolarization * A_trans;
+    1156                  E1pp    = E1_perp * A_trans;
+    1157                  E1pl    = OldPolarization - E1pp;
+    1158                  E1_parl = E1pl.mag();
+    1159               }
+    1160               else {
+    1161                  A_trans  = OldPolarization;
+    1162                  // Here we Follow Jackson's conventions and we set the
+    1163                  // parallel component = 1 in case of a ray perpendicular
+    1164                  // to the surface
+    1165                  E1_perp  = 0.0;
+    1166                  E1_parl  = 1.0;
+    1167               }
+
+
+
+
+Aligning normal incidence
+----------------------------
+
+Change normal incidence cut to match Geant4 "sint1==0."::
+
+    -    const bool normal_incidence = fabs(c1) > 0.999999f ; 
+    +    //const bool normal_incidence = fabs(c1) > 0.999999f ; 
+    +    const bool normal_incidence = fabs(c1) == 1.f ; 
+
+
+    2022-03-25 09:51:12.182 INFO  [793717] [QSimTest<float>::photon_launch_mutate@504]  loaded (1000000, 4, 4, ) from src_subfold hemisphere_s_polarized
+    //QSim_photon_launch sim 0x703a40a00 photon 0x7042c0000 num_photon 1000000 dbg 0x703a40c00 type 22 name propagate_at_boundary_s_polarized 
+    //qsim.propagate_at_boundary id 251959 
+    //qsim.propagate_at_boundary surface_normal (    0.0000,     0.0000,     1.0000) 
+    //qsim.propagate_at_boundary direction (   -0.0002,    -0.0011,    -1.0000) 
+    //qsim.propagate_at_boundary polarization (    0.9871,    -0.1603,     0.0000) 
+    //qsim.propagate_at_boundary c1     1.0000 normal_incidence 0 
+    //qsim.propagate_at_boundary RR.x     1.0000 A_trans (   -0.9871     0.1603     0.0000 )  RR.y     0.0000  A_paral (   -0.1603    -0.9871    -0.0011 ) 
+    //qsim.propagate_at_boundary reflect 1  tir 0 polarization (   -0.9871,     0.1603,     0.0000) 
+    NP::Write dtype <f4 ni        1 nj  4 nk  4 nl  -1 nm  -1 path /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized/p0.npy
+    NP::Write dtype <f4 ni        1 nj  4 nk  4 nl  -1 nm  -1 path /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized/prd.npy
+    === ./QSimTest.sh : invoking analysis script QSimTest_propagate_at_boundary_x_polarized.py
+
+
+
+::
+
+    In [1]: a[251959]                                                                                                                                                                               
+    Out[1]: 
+    array([[ -0.   ,  -0.001,  -1.   ,   1.   ],
+           [ -0.   ,  -0.001,   1.   ,   0.96 ],
+           [ -0.987,   0.16 ,   0.   , 500.   ],
+           [  0.987,  -0.16 ,   0.   ,   0.   ]], dtype=float32)
+
+    In [2]: b[251959]                                                                                                                                                                               
+    Out[2]: 
+    array([[ -0.   ,  -0.001,  -1.   ,   1.   ],
+           [ -0.   ,  -0.001,   1.   ,   0.96 ],
+           [ -0.987,   0.16 ,  -0.   , 500.   ],
+           [  0.987,  -0.16 ,   0.   ,   0.   ]], dtype=float32)
+
+    In [3]: np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )                                                                                                                                              
+    Out[3]: (array([209411, 209411]), array([0, 1]))
+
+
+
+
+Now left with the 1 in a million cut edger::
+
+    In [4]: np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )
+    Out[4]: (array([], dtype=int64), array([], dtype=int64))
+
+    In [5]: np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )
+    Out[5]: (array([209411, 209411, 209411]), array([0, 1, 2]))
+
+    In [6]: np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )
+    Out[6]: (array([209411, 209411]), array([0, 1]))
+
+    In [7]: np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )
+    Out[7]: (array([], dtype=int64), array([], dtype=int64))
+
+
 
 
 

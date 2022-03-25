@@ -639,8 +639,13 @@ i.e., with the electric field vector inside the plane of incidence, and the
 other one S-polarized, i.e., orthogonal to that plane.
 
 
-inconsistent normal definitions, c1 is expected to be +ve 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+inconsistent normal definitions, c1 is expected to be +ve and normal needs to be oriented against initial direction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is apparent from reflected direction vector::
+
+      *direction + 2.0f*c1*surface_normal
+
 
 The standard normal vector at an intersection position on the surface of a shape 
 is defined to be rigidly oriented outwards away from the shape.  
@@ -653,12 +658,26 @@ which results in always relecting.
 
 So what about photons going in the other direction ? 
 Surface normal is used in several places in the below so presumably must 
-arrange to have a local normal that is flipped appropeiately OR perhaps can change the math ?
+arrange to have an oriented normal that is flipped appropriately OR perhaps can change the math ?
 
 In summary this is a case of inconsistent definitions of the normal, 
-that will need to be flipped ~half the time. 
+that will need to be oriented ~half the time. 
 
 TODO: verify this by random aligned matching with examples/Geant4/BoundaryStandalone 
+
+
+random aligned matching with examples/Geant/BoundaryStandalone
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* S-polarized now matching, only 1-in-a-million deviant from TransCoeff cut edge float/double 
+* initially had two more deviants at very close to normal incidence that were aligned by changing 
+  the criteria to match Geant4 "sint1 == 0." better::
+
+    //const bool normal_incidence = fabs(c1) > 0.999999f ; 
+    const bool normal_incidence = fabs(c1) == 1.f ; 
+
+* see notes/issues/QSimTest_propagate_at_boundary_vs_BoundaryStandalone_G4OpBoundaryProcessTest.rst
+
 
 **/
 
@@ -674,9 +693,9 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     const float eta = n1/n2 ; 
     const float c1 = -dot(*direction, surface_normal ); 
     // c1 is flipped to be +ve  (G4 "cost1") when direction is against the normal,  1.f at normal incidence
-    // c1 is expected to be +ve by the below math, if -ve get non-sensical -ve TransCoeff 
+    // c1 is expected to be +ve by the below math, if -ve get non-sensical -ve TransCoeff  ? need local oriented normal perhaps ?
 
-    const bool normal_incidence = fabs(c1) > 0.999999f ; 
+    const bool normal_incidence = fabs(c1) == 1.f ; 
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
     bool tir = c2c2 < 0.f ; 
     const float EdotN = dot(*polarization, surface_normal ) ;  // used for TIR polarization
@@ -705,6 +724,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     p.q0.f.w = u_reflect ;   // non-standard 
     p.q1.f.w = TransCoeff ;  // non-standard replace "weight"
 
+    /*
     if(id == 251959)
     {
         printf("//qsim.propagate_at_boundary id %d \n", id); 
@@ -713,7 +733,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
         printf("//qsim.propagate_at_boundary polarization (%10.4f, %10.4f, %10.4f) \n", polarization->x, polarization->y, polarization->z );  
         printf("//qsim.propagate_at_boundary c1 %10.4f normal_incidence %d \n", c1, normal_incidence ); 
     }
-
+   */
 
 
     *direction = reflect
@@ -737,6 +757,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
                             ;
 
 
+    /*
     if(id == 251959)
     {
         printf("//qsim.propagate_at_boundary RR.x %10.4f A_trans (%10.4f %10.4f %10.4f )  RR.y %10.4f  A_paral (%10.4f %10.4f %10.4f ) \n", 
@@ -745,7 +766,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
 
         printf("//qsim.propagate_at_boundary reflect %d  tir %d polarization (%10.4f, %10.4f, %10.4f) \n", reflect, tir, polarization->x, polarization->y, polarization->z );  
     }
-
+    */
 
     return reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
 }
