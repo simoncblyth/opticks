@@ -91,6 +91,8 @@ set(TEST_SOURCES
    SThetaCutTest.cc
    SPhiCutTest.cc
    SCanvasTest.cc 
+
+   OpticksPhotonTest.cc
 )
 
 

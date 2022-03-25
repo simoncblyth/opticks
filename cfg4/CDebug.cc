@@ -21,7 +21,7 @@
 #include "BStr.hh"
 
 #include "OpStatus.hh"
-#include "OpticksFlags.hh"
+#include "OpticksPhoton.hh"
 #include "Opticks.hh"
 
 #include "CCtx.hh"
@@ -212,12 +212,12 @@ void CDebug::dump_brief(const char* msg) const
               ;
     LOG(info) 
               << " seqhis " << std::setw(16) << std::hex << m_photon._seqhis << std::dec 
-              << "    " << OpticksFlags::FlagSequence(m_photon._seqhis, true) 
+              << "    " << OpticksPhoton::FlagSequence(m_photon._seqhis, true) 
               ;
 
     LOG(info) 
               << " mskhis " << std::setw(16) << std::hex << m_photon._mskhis << std::dec 
-              << "    " << OpticksFlags::FlagMask(m_photon._mskhis, true) 
+              << "    " << OpticksPhoton::FlagMask(m_photon._mskhis, true) 
               ;
 
     LOG(info) 
@@ -233,14 +233,14 @@ void CDebug::dump_sequence(const char* msg) const
     for(unsigned int i=0 ; i<npoints ; i++) 
         std::cout << std::setw(4) << i << " "
                   << std::setw(16) << std::hex << m_seqhis_dbg[i] << std::dec 
-                  << " " << OpticksFlags::FlagSequence(m_seqhis_dbg[i], true)
+                  << " " << OpticksPhoton::FlagSequence(m_seqhis_dbg[i], true)
                   << std::endl 
                   ;
 
     for(unsigned int i=0 ; i<npoints ; i++) 
         std::cout << std::setw(4) << i << " "
                   << std::setw(16) << std::hex << m_mskhis_dbg[i] << std::dec 
-                  << " " << OpticksFlags::FlagMask(m_mskhis_dbg[i], true)
+                  << " " << OpticksPhoton::FlagMask(m_mskhis_dbg[i], true)
                   << std::endl 
                   ;
 
@@ -275,7 +275,7 @@ void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4Ste
 #endif
 {
     std::string bs = OpStatus::OpBoundaryAbbrevString(boundary_status) ;
-    const char* flg = OpticksFlags::Abbrev(flag) ;
+    const char* flg = OpticksPhoton::Abbrev(flag) ;
     std::cout << std::setw(3) << flg << std::setw(7) << index << " " << std::setw(18) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
 }
 
@@ -359,8 +359,8 @@ void CDebug::report(const char* msg) const
                         << " ihis " << std::setw(10) << ihis
                         << " rdr " << std::setw(16) << std::hex << rdr << std::dec
                         << " rec " << std::setw(16) << std::hex << rec << std::dec
-                    //    << " rdr " << std::setw(50) << OpticksFlags::FlagSequence(rdr)
-                    //    << " rec " << std::setw(50) << OpticksFlags::FlagSequence(rec)
+                    //    << " rdr " << std::setw(50) << OpticksPhoton::FlagSequence(rdr)
+                    //    << " rec " << std::setw(50) << OpticksPhoton::FlagSequence(rec)
                         << std::endl ; 
           }
           else if(ihis == cut)

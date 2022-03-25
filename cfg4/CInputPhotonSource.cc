@@ -33,7 +33,7 @@
 
 #include "Opticks.hh"
 #include "OpticksGenstep.h"
-#include "OpticksFlags.hh"
+#include "OpticksPhoton.hh"
 #include "GConstant.hh"
 
 // cfg4-
@@ -215,7 +215,7 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
         << " num_photons " << num_photons
         << " gpv_count " << m_gpv_count
         << " event_gencode " << event_gencode
-        << " : " << OpticksFlags::Flag(event_gencode)
+        << " : " << OpticksPhoton::Flag(event_gencode)
         ; 
 
 	for (unsigned i = 0; i < num_photons ; i++) 

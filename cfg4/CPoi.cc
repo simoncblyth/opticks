@@ -22,7 +22,7 @@
 #include "G4StepPoint.hh"
 #include "CPoi.hh"
 #include "CAction.hh"
-#include "OpticksFlags.hh"
+#include "OpticksPhoton.hh"
 #include "OpStatus.hh"
 
 #include "Format.hh"
@@ -87,7 +87,7 @@ std::string CPoi::description() const
 {
     std::stringstream ss ; 
     ss 
-       << " CPoi " << OpticksFlags::Abbrev(m_flag)
+       << " CPoi " << OpticksPhoton::Abbrev(m_flag)
        << "   " << std::setw(5) << OpStatus::OpBoundaryAbbrevString(m_boundary_status) 
        << std::endl 
        << ::Format(m_point, m_origin, "Poi", true ) 

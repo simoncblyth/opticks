@@ -18,6 +18,7 @@
  */
 
 #include "Opticks.hh"
+#include "OpticksPhoton.hh"
 #include "OpticksFlags.hh"
 
 #include "OpticksEvent.hh"
@@ -101,7 +102,7 @@ void OpticksEventCompare::dumpMatchedSeqHis() const
     LOG(info) << "OpticksEventCompare::dumpMatchedSeqHis"
               << " pho_num " << m_a->getNumPhotons()
               << " dbgseqhis " << std::hex << m_dbgseqhis << std::dec 
-              << " dbgseqhis " << OpticksFlags::FlagSequence( m_dbgseqhis, true )
+              << " dbgseqhis " << OpticksPhoton::FlagSequence( m_dbgseqhis, true )
               << " ab_count " << ab_count 
               << " a_count " << a_count 
               << " b_count " << b_count 

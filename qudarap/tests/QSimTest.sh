@@ -29,10 +29,10 @@ test=rng_sequence
 #test=propagate_at_surface
 
 #test=hemisphere_s_polarized
-test=propagate_at_boundary_s_polarized
+#test=propagate_at_boundary_s_polarized
 
 #test=hemisphere_p_polarized
-#test=propagate_at_boundary_p_polarized
+test=propagate_at_boundary_p_polarized
 
 M1=1000000
 K100=100000

@@ -79,6 +79,7 @@
 // okc-
 #include "OpticksSwitches.h"
 #include "OpticksPhoton.h"
+#include "OpticksPhoton.hh"
 #include "OpticksFlags.hh"
 #include "Opticks.hh"
 #include "OpticksResource.hh"
@@ -768,7 +769,7 @@ unsigned Opticks::getMaskSize() const
 unsigned Opticks::getDbgHitMask() const 
 {
     const std::string& _dbghitmask = m_cfg->getDbgHitMask(); 
-    unsigned dbghitmask = OpticksFlags::AbbrevSequenceToMask( _dbghitmask.c_str(), ',' ); 
+    unsigned dbghitmask = OpticksPhoton::AbbrevSequenceToMask( _dbghitmask.c_str(), ',' ); 
     return dbghitmask ; 
 }
 
@@ -2109,7 +2110,7 @@ bool Opticks::getSeqMap(unsigned long long& seqhis, unsigned long long& seqval)
     const std::string& seqmap = m_cfg->getSeqMap();
     if(seqmap.empty()) return false ; 
     char edelim = BStr::HasChar(seqmap, ',') ? ',' : ' ' ; 
-    OpticksFlags::AbbrevToFlagValSequence(seqhis, seqval, seqmap.c_str(), edelim );
+    OpticksPhoton::AbbrevToFlagValSequence(seqhis, seqval, seqmap.c_str(), edelim );
     return true ; 
 }
 
@@ -3963,7 +3964,6 @@ unsigned int Opticks::getSourceCode() const
 const char* Opticks::getSourceType() const
 {
     unsigned int code = getSourceCode();
-    //return OpticksFlags::SourceTypeLowercase(code) ; 
     return OpticksFlags::SourceType(code) ; 
 }
 

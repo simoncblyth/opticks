@@ -1192,14 +1192,17 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
 #endif
 
 #ifdef MOCK_DUMP
-              std::cout 
-                   << " TransCoeff " << std::setw(10) << std::fixed << std::setprecision(4) << TransCoeff 
-                   << " E1_perp " << std::setw(10) << std::fixed << std::setprecision(4) << E1_perp 
-                   << " E1_parl " << std::setw(10) << std::fixed << std::setprecision(4) << E1_parl 
-                   << " E2_perp " << std::setw(10) << std::fixed << std::setprecision(4) << E2_perp 
-                   << " E2_parl " << std::setw(10) << std::fixed << std::setprecision(4) << E2_parl 
-                   << std::endl
-                   ; 
+              if( photon_idx == photon_idx_debug )
+              {
+                  std::cout 
+                       << " TransCoeff " << std::setw(10) << std::fixed << std::setprecision(4) << TransCoeff 
+                       << " E1_perp " << std::setw(10) << std::fixed << std::setprecision(4) << E1_perp 
+                       << " E1_parl " << std::setw(10) << std::fixed << std::setprecision(4) << E1_parl 
+                       << " E2_perp " << std::setw(10) << std::fixed << std::setprecision(4) << E2_perp 
+                       << " E2_parl " << std::setw(10) << std::fixed << std::setprecision(4) << E2_parl 
+                       << std::endl
+                       ; 
+              }
 #endif
 
               if ( !G4BooleanRand(TransCoeff) ) {
@@ -1243,6 +1246,8 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
                        NewPolarization = C_parl*A_paral + C_perp*A_trans;
 
 #ifdef MOCK_DUMP
+              if( photon_idx == photon_idx_debug )
+              {
                       std::cout 
                           << " C_parl " << C_parl 
                           << " A_paral ( " << A_paral.x() << " " << A_paral.y() << " " << A_paral.z() << ") "
@@ -1259,6 +1264,7 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
                           << "  NewPolarization ( " <<  NewPolarization.x() << " " <<  NewPolarization.y() << " " <<  NewPolarization.z()  << ")" 
                           << std::endl 
                           ; 
+              }
 #endif
 
 
@@ -1270,7 +1276,10 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
                     else {               // incident ray perpendicular
 
 #ifdef MOCK_DUMP
+              if( photon_idx == photon_idx_debug )
+              {
                       std::cout << " incident ray perpendicular  " << std::endl ; 
+              }
 #endif
 
 

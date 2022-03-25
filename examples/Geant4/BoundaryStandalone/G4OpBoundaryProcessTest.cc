@@ -49,7 +49,7 @@ struct G4OpBoundaryProcessTest
     static NP* MakeRindexArray(double rindex); 
     static unsigned Status(unsigned status); 
 
-
+    const char*  srcdir ; 
     float3       normal ; 
     OpticksRandom*  rnd ; 
     float n1 ; 
@@ -64,18 +64,18 @@ struct G4OpBoundaryProcessTest
     G4Material* material2_ ; 
     G4OpBoundaryProcess_MOCK* proc ; 
 
-    G4OpBoundaryProcessTest(); 
+    G4OpBoundaryProcessTest(const char* srcdir_ekey); 
     void init(); 
+    void init_prd_normal(); 
 
     std::string desc() const ; 
-    void set_prd_normal(const char* ekey); 
     void propagate_at_boundary( quad4& photon, int idx); 
     void propagate_at_boundary_(quad4& photon, int idx);
     void propagate_at_boundary(int idx); 
 
     void dump( const quad4& photon, int idx ); 
     void save(const quad4& p, const char* name) const ; 
-    void load( std::vector<quad4>& pp, const char* ekey ); 
+    void load( std::vector<quad4>& pp, const char* npy_name ); 
 
 
 }; 
@@ -122,10 +122,10 @@ NP* G4OpBoundaryProcessTest::MakeRindexArray(double rindex)  // static
 }
 
 
-
-G4OpBoundaryProcessTest::G4OpBoundaryProcessTest()
+G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const char* srcdir_ekey)
     :
-    normal(InitNormal("NRM")),   // may be overrden by normal from prd
+    srcdir(getenv(srcdir_ekey)),
+    normal(InitNormal("NRM")),   // may be overrden by normal from init_prd_normal
     rnd(new OpticksRandom),
     n1(1.f),
     n2(1.5f),
@@ -146,6 +146,7 @@ std::string G4OpBoundaryProcessTest::desc() const
 {
     std::stringstream ss ; 
     ss 
+        << srcdir 
         << " normal ("
         << " " << std::setw(10) << std::fixed << std::setprecision(4) << normal.x 
         << " " << std::setw(10) << std::fixed << std::setprecision(4) << normal.y
@@ -161,6 +162,8 @@ std::string G4OpBoundaryProcessTest::desc() const
 
 void G4OpBoundaryProcessTest::init()
 {
+    init_prd_normal(); 
+
     //rnd->m_flat_debug = true  ;   // when true dumps a line for every G4UniformRand call 
     proc->theGlobalNormal_MOCK.set( normal.x, normal.y, normal.z ); 
 
@@ -169,6 +172,21 @@ void G4OpBoundaryProcessTest::init()
         << std::endl 
         ;
 }
+
+void G4OpBoundaryProcessTest::init_prd_normal()
+{
+    std::vector<quad4> prds ;
+    load(prds, "prd.npy"); 
+    assert( prds.size() == 1 );
+ 
+    const quad4& prd = prds[0]; 
+    const float3* nrm = (float3*)&prd.q0.f.x ;
+ 
+    normal.x = nrm->x ; 
+    normal.y = nrm->y ; 
+    normal.z = nrm->z ; 
+}
+
  
 void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, int idx)
 {
@@ -182,7 +200,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, int idx)
     photon.q0.f.w = flat_prior ; 
     rnd->setSequenceIndex(-1);  // disable random hijacking 
 
-    bool dump_ = idx < 10 || ( idx % 1000 == 0 ) ;  
+    bool dump_ = idx < 10 || ( idx % 10000 == 0 ) ;  
     if(dump_) dump(photon, idx); 
 }
 
@@ -190,8 +208,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, int idx)
 G4OpBoundaryProcessTest::propagate_at_boundary_
 -------------------------------------------------
 
-Just leaking as Geant4 not keen on being mocked like this
-with objects on stack.
+Just leaking as Geant4 not keen on being mocked like this with objects on stack.
 
 **/
 
@@ -210,7 +227,6 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
     pol0->x = photon.q2.f.x ; 
     pol0->y = photon.q2.f.y ; 
     pol0->z = photon.q2.f.z ; 
-
 
     G4double en = 1.*MeV ; 
     G4ParticleMomentum momentum(mom->x,mom->y,mom->z); 
@@ -320,10 +336,9 @@ void G4OpBoundaryProcessTest::save(const quad4& p, const char* name) const
 }
 
 
-void G4OpBoundaryProcessTest::load( std::vector<quad4>& pp, const char* ekey )
+void G4OpBoundaryProcessTest::load( std::vector<quad4>& pp, const char* npy_name )
 {
-    const char* path = getenv(ekey); 
-    NP* a = NP::Load(path) ; 
+    NP* a = NP::Load(srcdir, npy_name) ; 
     assert( a->has_shape(-1,4,4) ); 
     unsigned ni = a->shape[0] ; 
     pp.resize(ni); 
@@ -331,30 +346,11 @@ void G4OpBoundaryProcessTest::load( std::vector<quad4>& pp, const char* ekey )
     a->write<float>(pp_data); 
 }
 
-void G4OpBoundaryProcessTest::set_prd_normal(const char* ekey)
-{
-    std::vector<quad4> prds ;
-    load(prds, ekey); 
-
-    assert( prds.size() == 1 ); 
-    const quad4& prd = prds[0]; 
-    const float3* nrm = (float3*)&prd.q0.f.x ; 
-    normal.x = nrm->x ; 
-    normal.y = nrm->y ; 
-    normal.z = nrm->z ; 
-
-    std::cout 
-        << "G4OpBoundaryProcessTest::set_prd_normal " << ekey   
-        << " " << desc()
-        << std::endl 
-        ;
-}
-
 
 void G4OpBoundaryProcessTest::propagate_at_boundary(int idx)
 {
     std::vector<quad4> pp ;
-    load(pp, "OPTICKS_INPUT_PHOTONS"); 
+    load(pp, "p.npy"); 
 
     if( idx == -1 )
     {
@@ -386,13 +382,12 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(int idx)
 
 int main(int argc, char** argv)
 {
-    G4OpBoundaryProcessTest t ; 
+    G4OpBoundaryProcessTest t("OPTICKS_BST_SRCDIR") ; 
 
-    
-    int idx =  251959 ; 
-
+    //int idx =  251959 ; 
+    int idx =  -1 ; 
     t.proc->photon_idx_debug = idx ; 
-    t.set_prd_normal("OPTICKS_INPUT_PRD"); 
+
     t.propagate_at_boundary(idx); 
 
     return 0 ; 

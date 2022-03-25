@@ -23,7 +23,7 @@
 #include "G4Track.hh"
 #include "G4Event.hh"
 
-#include "OpticksFlags.hh"
+#include "OpticksPhoton.hh"
 #include "OpticksGenstep.hh"
 #include "OpticksEvent.hh"
 #include "Opticks.hh"
@@ -661,7 +661,7 @@ void CCtx::ProcessHits( const G4Step* step, bool efficiency_collect )
     LOG(LEVEL) 
         << " hit " << hit.desc() 
         << " efficiency_collect " << efficiency_collect
-        << " _hitflags " << OpticksFlags::FlagMask( _hitflags, false )
+        << " _hitflags " << OpticksPhoton::FlagMask( _hitflags, false )
         ; 
 
 }

@@ -6,7 +6,7 @@
 #include "G4Opticks.hh"
 #include "G4OpticksRecorder.hh"  
 #include "G4OpticksHit.hh"
-#include "OpticksFlags.hh"
+#include "OpticksPhoton.hh"
 
 #include "MockSensorAngularEfficiencyTable.hh"
 
@@ -501,7 +501,7 @@ void G4OKTest::checkHits(int eventID) const
             << " sID "  << std::setw(10) << std::hex << hit.sensor_identifier << std::dec
             << " nm "   << std::setw(8) << hit.wavelength 
             << " ns "   << std::setw(8) << hit.time
-            << " " << std::setw(20) << OpticksFlags::FlagMask(hit.flag_mask, true)
+            << " " << std::setw(20) << OpticksPhoton::FlagMask(hit.flag_mask, true)
             ;
 
         if(hit_extra_ptr)

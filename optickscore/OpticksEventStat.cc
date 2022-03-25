@@ -23,6 +23,7 @@
 #include "RecordsNPY.hpp"
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
+#include "OpticksPhoton.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEventStat.hh"
 
@@ -95,7 +96,7 @@ void OpticksEventStat::dump(const char* msg)
 
         std::cout 
              << " seqhis " << std::setw(16) << std::hex << _seqhis << std::dec
-             << " " << std::setw(64) << OpticksFlags::FlagSequence( _seqhis, true )
+             << " " << std::setw(64) << OpticksPhoton::FlagSequence( _seqhis, true )
              << " tot " << std::setw(6) << tot_ 
              ;
 

@@ -17,7 +17,6 @@ set(TEST_SOURCES
     OpticksFlagsTest.cc
     OpticksPhotonFlagsTest.cc
     OpticksColorsTest.cc
-    OpticksPhotonTest.cc
     OpticksCfgTest.cc
     OpticksCfg2Test.cc
     OpticksTest.cc

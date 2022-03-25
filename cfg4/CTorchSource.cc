@@ -29,7 +29,7 @@
 #include "GLMFormat.hpp"
 
 #include "Opticks.hh"
-#include "OpticksFlags.hh"
+#include "OpticksPhoton.hh"
 #include "OpticksGenstep.hh"
 
 // cfg4-
@@ -292,7 +292,7 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *event)
 
    LOG(info)
         << " event_gencode " << event_gencode
-        << " : " << OpticksFlags::Flag(photon_flag)
+        << " : " << OpticksPhoton::Flag(photon_flag)
         ; 
 
 

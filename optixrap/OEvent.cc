@@ -24,6 +24,7 @@
 // okc-
 #include "Opticks.hh"
 #include "OpticksPhoton.h"  
+#include "OpticksPhoton.hh"  
 #include "OpticksFlags.hh"  
 #include "OpticksEvent.hh"  
 #include "OpticksBufferControl.hh"  
@@ -115,8 +116,8 @@ void OEvent::init()
     LOG(LEVEL)
         << " --dbghit " << ( m_dbghit ? "Y" : "N" )
         << " hitmask 0x" << std::hex << m_hitmask << std::dec
-        << " " << OpticksFlags::FlagMask(m_hitmask, true)
-        << " " << OpticksFlags::FlagMask(m_hitmask, false)
+        << " " << OpticksPhoton::FlagMask(m_hitmask, true)
+        << " " << OpticksPhoton::FlagMask(m_hitmask, false)
         ;
 }
 
@@ -506,8 +507,8 @@ unsigned OEvent::downloadHits()
         << " nhit " << nhit 
         << " --dbghit " << ( m_dbghit ? "Y" : "N" )
         << " hitmask 0x" << std::hex << m_hitmask << std::dec
-        << " " << OpticksFlags::FlagMask(m_hitmask, true)
-        << " " << OpticksFlags::FlagMask(m_hitmask, false)
+        << " " << OpticksPhoton::FlagMask(m_hitmask, true)
+        << " " << OpticksPhoton::FlagMask(m_hitmask, false)
         ;
 
     return nhit ; 
@@ -540,8 +541,8 @@ unsigned OEvent::downloadHiys()
         << " nhiy " << nhiy 
         << " --dbghit " << ( m_dbghit ? "Y" : "N" )
         << " hitmask 0x" << std::hex << m_hitmask << std::dec
-        << " " << OpticksFlags::FlagMask(m_hitmask, true)
-        << " " << OpticksFlags::FlagMask(m_hitmask, false)
+        << " " << OpticksPhoton::FlagMask(m_hitmask, true)
+        << " " << OpticksPhoton::FlagMask(m_hitmask, false)
         ;
 
     return nhiy ; 

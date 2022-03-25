@@ -16,12 +16,25 @@ How to do random aligned propagate_at_boundary comparison between QSim and Geant
     TEST=rng_sequence NUM=1000000 ./QSimTest.sh 
         ##  generate pre-cooked randoms so Geant4 can consume the curand generated random stream 
 
+
+
+
     TEST=hemisphere_s_polarized NUM=1000000 ./QSimTest.sh 
         ## generate a sample of 1M S-polarized photons all incident at origin  
         ## this sample of photons is used by both QSimTest.sh below and G4OpBoundaryProcessTest.sh
 
+    TEST=hemisphere_p_polarized NUM=1000000 ./QSimTest.sh 
+        ## generate a sample of 1M P-polarized photons all incident at origin  
+        ## this sample of photons is used by both QSimTest.sh below and G4OpBoundaryProcessTest.sh
+
+
+
     TEST=propagate_at_boundary_s_polarized NUM=1000000 ./QSimTest.sh 
         ## mutate the hemisphere_s_polarized photons doing boundary reflect or transmit   
+
+    TEST=propagate_at_boundary_p_polarized NUM=1000000 ./QSimTest.sh 
+        ## mutate the hemisphere_p_polarized photons doing boundary reflect or transmit   
+
 
 
     bst 
@@ -346,5 +359,8 @@ Now left with the 1 in a million cut edger::
 
 
 
+
+P-polarized comparison
+------------------------
 
 

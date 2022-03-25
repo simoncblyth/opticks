@@ -96,6 +96,8 @@ set(SOURCES
 
     SCenterExtentFrame.cc
     SCenterExtentGenstep.cc
+
+    OpticksPhoton.cc
 ) 
     
 
@@ -199,6 +201,7 @@ set(HEADERS
 
     OpticksGenstep.h
     OpticksPhoton.h
+    OpticksPhoton.hh
 )
 
 

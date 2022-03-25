@@ -90,10 +90,17 @@ nrm=0,0,1
 #DEBUG=1
 
 export OPTICKS_RANDOM_SEQPATH=$seqpath
-srcdir=/tmp/$USER/opticks/QSimTest/hemisphere_s_polarized
-export OPTICKS_INPUT_PRD=$srcdir/prd.npy
-export OPTICKS_INPUT_PHOTONS=$srcdir/p.npy
 
+
+
+case $SRC in
+    
+
+esac
+
+
+srcdir=/tmp/$USER/opticks/QSimTest/hemisphere_s_polarized
+export OPTICKS_BST_SRCDIR=$srcdir
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
 

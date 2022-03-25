@@ -33,6 +33,7 @@
 #include "TorchStepNPY.hpp"
 
 #include "OpticksPhoton.h"
+#include "OpticksPhoton.hh"
 #include "OpticksFlags.hh"
 #include "OpticksGenstep.hh"
 #include "OpticksEvent.hh"
@@ -73,8 +74,8 @@ std::string OpticksGenstep::Dump()   // static
             << " gencode " << std::setw(3) << gencode 
             << " OpticksGenstep::Gentype " << std::setw(25) << Gentype(gencode)
             << " OpticksGenstep::GenstepToPhotonFlag " << std::setw(10) << flag 
-            << " OpticksFlags::Flag " << std::setw(20) << OpticksFlags::Flag(flag)
-            << " OpticksFlags::Abbrev " << std::setw(5) << OpticksFlags::Abbrev(flag)
+            << " OpticksPhoton::Flag " << std::setw(20) << OpticksPhoton::Flag(flag)
+            << " OpticksPhoton::Abbrev " << std::setw(5) << OpticksPhoton::Abbrev(flag)
             << std::endl
             ;
     } 

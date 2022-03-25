@@ -29,6 +29,7 @@
 #include "NGeoTestConfig.hpp"
 
 #include "Opticks.hh"
+#include "OpticksPhoton.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 #include "OpticksEventAna.hh"
@@ -137,8 +138,8 @@ void OpticksEventAna::checkPointExcursions()
 
     for(unsigned p=0 ; p < 16 ; p++)
     {
-        const char* abbrev = OpticksFlags::PointAbbrev(m_seqmap_his, p );
-        unsigned val1 = OpticksFlags::PointVal1(m_seqmap_val, p );
+        const char* abbrev = OpticksPhoton::PointAbbrev(m_seqmap_his, p );
+        unsigned val1 = OpticksPhoton::PointVal1(m_seqmap_val, p );
 
         if(val1 == 0 ) continue ;  // val1 is 1-based index, 0 meaning None
         unsigned tree = val1 - 1 ;
@@ -214,7 +215,7 @@ void OpticksEventAna::dumpPointExcursions(const char* msg)
     LOG(info) << msg 
               << " seqhis_select "
               << " " << std::hex << m_seqhis_select << std::dec 
-              << " " << OpticksFlags::FlagSequence( m_seqhis_select, true )
+              << " " << OpticksPhoton::FlagSequence( m_seqhis_select, true )
               ;
 
     std::cout << "min/max/avg signed-distance(mm) and time(ns) of each photon step point from each NCSG tree" << std::endl ; 

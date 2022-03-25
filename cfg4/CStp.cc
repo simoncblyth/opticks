@@ -24,7 +24,7 @@
 #include "CStp.hh"
 #include "CRecorder.hh"
 #include "CAction.hh"
-#include "OpticksFlags.hh"
+#include "OpticksPhoton.hh"
 #include "OpStatus.hh"
 
 #include "Format.hh"
@@ -152,7 +152,7 @@ std::string CStp::description() const
 {
     std::stringstream ss ; 
     ss 
-       << " " << OpticksFlags::Abbrev(m_preflag) << "/" << OpticksFlags::Abbrev(m_postflag) 
+       << " " << OpticksPhoton::Abbrev(m_preflag) << "/" << OpticksPhoton::Abbrev(m_postflag) 
        << "   " << std::setw(5) << OpStatus::OpBoundaryAbbrevString(m_boundary_status) 
        << "   " << std::setw(50) << CAction::Action(m_action) 
        << std::endl 

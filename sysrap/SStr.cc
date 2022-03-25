@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <csignal>
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -849,6 +850,41 @@ void SStr::Extract_( std::vector<float>& vals, const char* s )
         else p++ ;
     }
 }
+
+
+
+
+int SStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, char kvdelim)
+{
+    int err = 0 ; 
+    bool warn = true ; 
+    const char* line = strdup(line_);
+    typedef std::pair<std::string,std::string> KV ;   
+    std::istringstream f(line);
+    std::string s;
+    while (getline(f, s, edelim))
+    {   
+        std::vector<std::string> kv ;
+        SStr::Split( s.c_str(), kvdelim, kv );    
+
+        if(kv.size() == 2)
+        {   
+            ekv.push_back(KV(kv[0],kv[1]));
+        }   
+        else
+        {   
+            if(warn)
+            {   
+                LOG(error) << "ignoring malformed kv [" << s.c_str() << "]" ; 
+                LOG(error) << "line [" << line << "]" ; 
+            }   
+            err++ ; 
+            std::raise(SIGINT);
+        }   
+    }   
+    return err ; 
+}
+
 
 
 

@@ -39,7 +39,7 @@
 #include "Opticks.hh"
 #include "OpticksRun.hh"
 #include "OpticksEvent.hh"
-#include "OpticksFlags.hh"
+#include "OpticksPhoton.hh"
 #include "OpticksSwitches.h"
 
 #include "NPY.hpp"
@@ -695,7 +695,7 @@ void CRandomEngine::postStep()
 
     if(m_masked)
     {
-        std::string seq = OpticksFlags::FlagSequence(m_okevt_seqhis, true, m_ctx._step_id_valid + 1  );
+        std::string seq = OpticksPhoton::FlagSequence(m_okevt_seqhis, true, m_ctx._step_id_valid + 1  );
         m_okevt_pt = strdup(seq.c_str()) ;
         LOG(debug) 
            << " m_ctx._record_id:  " << m_ctx._record_id 
@@ -847,7 +847,7 @@ void CRandomEngine::run_ucf_script(unsigned mask_index)
        << " m_ctx._record_id:  " << m_ctx._record_id 
        << " mask_index: " << mask_index 
        << " ( m_okevt_seqhis: " << std::hex << m_okevt_seqhis << std::dec
-       << " " << OpticksFlags::FlagSequence(m_okevt_seqhis) << " ) "
+       << " " << OpticksPhoton::FlagSequence(m_okevt_seqhis) << " ) "
        ;
 
     const char* cmd = BStr::concat<unsigned>("ucf.py ", mask_index, NULL );  

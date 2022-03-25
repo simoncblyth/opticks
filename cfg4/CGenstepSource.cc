@@ -25,7 +25,7 @@
 // okc-
 #include "OpticksGenstep.hh"
 #include "OpticksPhoton.h"
-#include "OpticksFlags.hh"
+#include "OpticksPhoton.hh"
 #include "Opticks.hh"
 
 // g4-
@@ -106,7 +106,7 @@ void CGenstepSource::GeneratePrimaryVertex(G4Event *event)
 
     LOG(info)
         << " event_gencode " << event_gencode
-        << " : " << OpticksFlags::Flag(event_gencode)
+        << " : " << OpticksPhoton::Flag(event_gencode)
         ; 
 
     event->SetUserInformation( new CEventInfo(event_gencode)) ;   
@@ -140,7 +140,7 @@ G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()
     unsigned gencode = getCurrentGencode() ; 
     LOG(info)
         << " gencode " << gencode
-        << " OpticksFlags::Flag(gencode) " << OpticksFlags::Flag(gencode)
+        << " OpticksPhoton::Flag(gencode) " << OpticksPhoton::Flag(gencode)
         ; 
 
     G4VParticleChange* pc = NULL ; 
@@ -156,7 +156,7 @@ G4VParticleChange* CGenstepSource::generatePhotonsFromOneGenstep()
         LOG(fatal) 
             << " failed to generate for "
             << " gencode " << gencode
-            << " flag " << OpticksFlags::Flag(gencode) 
+            << " flag " << OpticksPhoton::Flag(gencode) 
             ; 
    
     assert( pc ); 

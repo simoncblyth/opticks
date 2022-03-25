@@ -148,6 +148,7 @@ class SYSRAP_API SStr {
       static void Extract_( std::vector<long>& vals, const char* s ); 
       static void Extract_( std::vector<float>& vals, const char* s ); 
 
+      static int ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, char kvdelim); 
 
 };
 

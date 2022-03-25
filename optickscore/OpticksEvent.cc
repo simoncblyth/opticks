@@ -74,6 +74,7 @@
 #include "OpticksGenstep.hh"
 #include "OpticksConst.hh"
 #include "OpticksDomain.hh"
+#include "OpticksPhoton.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEventInstrument.hh"
 #include "OpticksEvent.hh"
@@ -2943,7 +2944,7 @@ int OpticksEvent::seedDebugCheck(const char* msg)
 std::string OpticksEvent::getSeqHisString(unsigned photon_id) const 
 {
     unsigned long long seqhis_ = getSeqHis(photon_id); 
-    return OpticksFlags::FlagSequence(seqhis_);
+    return OpticksPhoton::FlagSequence(seqhis_);
 }
 
 
