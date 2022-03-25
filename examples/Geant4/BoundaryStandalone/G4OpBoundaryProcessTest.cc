@@ -15,6 +15,8 @@ Probably easiest to setup a "proper" Geant4 geometry to test within.
 #include "G4OpBoundaryProcess_MOCK.hh"
 #include "X4OpBoundaryProcessStatus.hh"
 
+
+
 #include "G4OpticalPhoton.hh"
 #include "G4ParticleMomentum.hh"
 #include "G4SystemOfUnits.hh"
@@ -25,6 +27,7 @@ Probably easiest to setup a "proper" Geant4 geometry to test within.
 #include "G4TouchableHandle.hh"
 
 #include "OpticksPhoton.h"
+#include "OpticksPhoton.hh"
 #include "OpticksUtil.hh"
 #include "OpticksRandom.hh"
 #include "NP.hh"
@@ -43,13 +46,14 @@ struct quad4 { quad q0, q1, q2, q3 ; };
 
 struct G4OpBoundaryProcessTest 
 {
-    static const char* FOLD ; 
     static void Init(quad4& p); 
     static float3 InitNormal(const char* ekey); 
     static NP* MakeRindexArray(double rindex); 
     static unsigned Status(unsigned status); 
 
     const char*  srcdir ; 
+    const char*  dstdir ; 
+
     float3       normal ; 
     OpticksRandom*  rnd ; 
     float n1 ; 
@@ -64,7 +68,7 @@ struct G4OpBoundaryProcessTest
     G4Material* material2_ ; 
     G4OpBoundaryProcess_MOCK* proc ; 
 
-    G4OpBoundaryProcessTest(const char* srcdir_ekey); 
+    G4OpBoundaryProcessTest(const char* srcdir_ekey, const char* dstdir_ekey); 
     void init(); 
     void init_prd_normal(); 
 
@@ -80,7 +84,6 @@ struct G4OpBoundaryProcessTest
 
 }; 
 
-const char* G4OpBoundaryProcessTest::FOLD = "/tmp/G4OpBoundaryProcessTest" ; 
 
 void G4OpBoundaryProcessTest::Init(quad4& p) // static 
 {
@@ -122,9 +125,10 @@ NP* G4OpBoundaryProcessTest::MakeRindexArray(double rindex)  // static
 }
 
 
-G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const char* srcdir_ekey)
+G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const char* srcdir_ekey, const char* dstdir_ekey)
     :
     srcdir(getenv(srcdir_ekey)),
+    dstdir(getenv(dstdir_ekey)),
     normal(InitNormal("NRM")),   // may be overrden by normal from init_prd_normal
     rnd(new OpticksRandom),
     n1(1.f),
@@ -146,7 +150,8 @@ std::string G4OpBoundaryProcessTest::desc() const
 {
     std::stringstream ss ; 
     ss 
-        << srcdir 
+        << " srcdir " << srcdir 
+        << " dstdir " << dstdir 
         << " normal ("
         << " " << std::setw(10) << std::fixed << std::setprecision(4) << normal.x 
         << " " << std::setw(10) << std::fixed << std::setprecision(4) << normal.y
@@ -315,7 +320,8 @@ void G4OpBoundaryProcessTest::dump( const quad4& photon, int idx )
     std::cout 
         << " i " << std::setw(6) << idx 
         << " s " << std::setw(2) << status 
-        << " " << std::setw(16) << X4OpBoundaryProcessStatus::Name( status ) 
+        //<< " " << std::setw(16) << X4OpBoundaryProcessStatus::Name( status ) 
+        << " " << std::setw(16) << OpticksPhoton::Flag( status ) 
         << " " << std::setw(10) << std::setprecision(3) << flat_prior
         << " mom " 
         << " " << std::setw(10) << std::setprecision(3) << mom->x
@@ -332,7 +338,7 @@ void G4OpBoundaryProcessTest::dump( const quad4& photon, int idx )
 
 void G4OpBoundaryProcessTest::save(const quad4& p, const char* name) const 
 {
-    NP::Write( FOLD, name,  (float*)&p.q0.f.x , 1, 4, 4  );
+    NP::Write( dstdir, name,  (float*)&p.q0.f.x , 1, 4, 4  );
 }
 
 
@@ -370,7 +376,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(int idx)
         b->set_meta<float>("n1", n1 ); 
         b->set_meta<float>("n2", n2 ); 
 
-        b->save( FOLD, "p.npy" ); 
+        b->save( dstdir, "p.npy" ); 
     }
     else
     {
@@ -382,7 +388,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(int idx)
 
 int main(int argc, char** argv)
 {
-    G4OpBoundaryProcessTest t("OPTICKS_BST_SRCDIR") ; 
+    G4OpBoundaryProcessTest t("OPTICKS_BST_SRCDIR", "OPTICKS_BST_DSTDIR") ; 
 
     //int idx =  251959 ; 
     int idx =  -1 ; 

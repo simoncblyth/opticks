@@ -52,5 +52,8 @@ if __name__ == '__main__':
      print(" flat %s " % flat)
      #print( flat[flag==3].min() )  
      #print( flat[flag==2].max() )
+    
+
+
 
 

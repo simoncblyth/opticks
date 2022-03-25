@@ -61,6 +61,33 @@ Random Aligned comparison::
 
     In [1]:                                           
 
+After tidy up filing::
+
+    epsilon:BoundaryStandalone blyth$ ./G4OpBoundaryProcessTest.sh cf
+    === ./G4OpBoundaryProcessTest.sh : G4OpBoundaryProcessTest.cc
+    a_key :  OPTICKS_QSIM_DSTDIR  A_FOLD : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized
+    b_key :   OPTICKS_BST_DSTDIR  B_FOLD : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized
+    a.shape (1000000, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized/p.npy  
+    b.shape (1000000, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized/p.npy  
+    a_flag (array([1024, 2048], dtype=uint32), array([ 45024, 954976])) 
+    b_flag (array([1024, 2048], dtype=uint32), array([ 45025, 954975])) 
+    np.where( a_flag != b_flag )  : (array([209411]),)
+    a_TransCoeff [0.784 0.799 0.588 ... 0.853 0.481 0.959] 
+    b_TransCoeff [0.784 0.799 0.588 ... 0.853 0.481 0.959] 
+    np.where( np.abs( a_TransCoeff - b_TransCoeff) > 1e-6 )  : (array([], dtype=int64),)
+    a_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
+    b_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
+    np.where( a_flat != b_flat )  : (array([], dtype=int64),)
+    np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+    np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )  : (array([209411, 209411, 209411]), array([0, 1, 2]))
+    np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )  : (array([209411, 209411]), array([0, 1]))
+    np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+
+    In [1]:                                    
+
+
+
+
 Once flag discrepancy to chase::
 
     In [2]: np.where( a_flag != b_flag )
@@ -360,7 +387,47 @@ Now left with the 1 in a million cut edger::
 
 
 
-P-polarized comparison
-------------------------
+P-polarized comparison : get 1-in-a-million TransCoeff cut edger just like S-polarized
+-----------------------------------------------------------------------------------------
+
+::
+
+    epsilon:BoundaryStandalone blyth$ ./G4OpBoundaryProcessTest.sh cf
+    === ./G4OpBoundaryProcessTest.sh : G4OpBoundaryProcessTest.cc
+    a_key :  OPTICKS_QSIM_DSTDIR  A_FOLD : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_p_polarized
+    b_key :   OPTICKS_BST_DSTDIR  B_FOLD : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_p_polarized
+    a.shape (1000000, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_p_polarized/p.npy  
+    b.shape (1000000, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_p_polarized/p.npy  
+    a_flag (array([1024, 2048], dtype=uint32), array([ 36015, 963985])) 
+    b_flag (array([1024, 2048], dtype=uint32), array([ 36016, 963984])) 
+    np.where( a_flag != b_flag )  : (array([104859]),)
+    a_TransCoeff [0.99  0.994 0.884 ... 1.    0.784 0.961] 
+    b_TransCoeff [0.99  0.994 0.884 ... 1.    0.784 0.961] 
+    np.where( np.abs( a_TransCoeff - b_TransCoeff) > 1e-6 )  : (array([], dtype=int64),)
+    a_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
+    b_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
+    np.where( a_flat != b_flat )  : (array([], dtype=int64),)
+    np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+    np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )  : (array([104859, 104859, 104859]), array([0, 1, 2]))
+    np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )  : (array([104859, 104859, 104859]), array([0, 1, 2]))
+    np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )  : (array([], dtype=int64), array([], dtype=int64))
+
+    In [1]: a[104859]                                                                                                                                                                               
+    Out[1]: 
+    array([[  0.264,  -0.036,  -0.964,   0.964],
+           [  0.176,  -0.024,  -0.984,   0.964],
+           [ -0.975,   0.133,  -0.178, 500.   ],
+           [  0.955,  -0.13 ,   0.266,   0.   ]], dtype=float32)
+
+    In [2]: b[104859]                                                                                                                                                                               
+    Out[2]: 
+    array([[  0.264,  -0.036,  -0.964,   0.964],
+           [  0.264,  -0.036,   0.964,   0.964],
+           [  0.955,  -0.13 ,  -0.266, 500.   ],
+           [  0.955,  -0.13 ,   0.266,   0.   ]], dtype=float32)
+
+    In [3]:                                                                       
+
+
 
 

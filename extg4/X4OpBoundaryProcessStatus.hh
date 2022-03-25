@@ -50,7 +50,7 @@ const char* X4OpBoundaryProcessStatus::StepTooSmall_ = "StepTooSmall" ;
 const char* X4OpBoundaryProcessStatus::NoRINDEX_ = "NoRINDEX" ; 
 const char* X4OpBoundaryProcessStatus::Other_ = "Other" ; 
 
-const char* X4OpBoundaryProcessStatus::Name(unsigned status)
+inline const char* X4OpBoundaryProcessStatus::Name(unsigned status)
 {
     const char* s = nullptr ; 
     switch(status)

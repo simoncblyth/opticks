@@ -13,26 +13,6 @@
 #include "PLOG.hh"
 const plog::Severity OpticksPhoton::LEVEL = PLOG::EnvLevel("OpticksPhoton", "DEBUG"); 
 #endif
-
-const char* OpticksPhoton::ZERO_              = "." ;
-const char* OpticksPhoton::CERENKOV_          = "CERENKOV" ;
-const char* OpticksPhoton::SCINTILLATION_     = "SCINTILLATION" ;
-const char* OpticksPhoton::MISS_              = "MISS" ;
-const char* OpticksPhoton::BULK_ABSORB_       = "BULK_ABSORB" ;
-const char* OpticksPhoton::BULK_REEMIT_       = "BULK_REEMIT" ;
-const char* OpticksPhoton::BULK_SCATTER_      = "BULK_SCATTER" ; 
-const char* OpticksPhoton::SURFACE_DETECT_    = "SURFACE_DETECT" ;
-const char* OpticksPhoton::SURFACE_ABSORB_    = "SURFACE_ABSORB" ; 
-const char* OpticksPhoton::SURFACE_DREFLECT_  = "SURFACE_DREFLECT" ; 
-const char* OpticksPhoton::SURFACE_SREFLECT_  = "SURFACE_SREFLECT" ; 
-const char* OpticksPhoton::BOUNDARY_REFLECT_  = "BOUNDARY_REFLECT" ; 
-const char* OpticksPhoton::BOUNDARY_TRANSMIT_ = "BOUNDARY_TRANSMIT" ; 
-const char* OpticksPhoton::TORCH_             = "TORCH" ; 
-const char* OpticksPhoton::NAN_ABORT_         = "NAN_ABORT" ; 
-const char* OpticksPhoton::BAD_FLAG_          = "BAD_FLAG" ; 
-const char* OpticksPhoton::EFFICIENCY_CULL_     = "EFFICIENCY_CULL" ; 
-const char* OpticksPhoton::EFFICIENCY_COLLECT_  = "EFFICIENCY_COLLECT" ; 
-
 const char* OpticksPhoton::flag2color = R"LITERAL(
     {
         "CERENKOV":"white",
@@ -101,49 +81,6 @@ void OpticksPhoton::FlagAbbrevPairs( std::vector<std::pair<const char*, const ch
     // HMM: no _BAD_FLAG abbrev ?
 }
 
-
-/**
-
-OpticksPhoton::Flag
---------------------
-
-Are in process of unconflating photon flags and genstep flags 
-
-**/
-
-const char* OpticksPhoton::Flag(const unsigned int flag)
-{
-    const char* s = 0 ; 
-    switch(flag)
-    {
-        case 0:                s=ZERO_;break;
-        case CERENKOV:         s=CERENKOV_;break;
-        case SCINTILLATION:    s=SCINTILLATION_ ;break; 
-        case MISS:             s=MISS_ ;break; 
-        case BULK_ABSORB:      s=BULK_ABSORB_ ;break; 
-        case BULK_REEMIT:      s=BULK_REEMIT_ ;break; 
-        case BULK_SCATTER:     s=BULK_SCATTER_ ;break; 
-        case SURFACE_DETECT:   s=SURFACE_DETECT_ ;break; 
-        case SURFACE_ABSORB:   s=SURFACE_ABSORB_ ;break; 
-        case SURFACE_DREFLECT: s=SURFACE_DREFLECT_ ;break; 
-        case SURFACE_SREFLECT: s=SURFACE_SREFLECT_ ;break; 
-        case BOUNDARY_REFLECT: s=BOUNDARY_REFLECT_ ;break; 
-        case BOUNDARY_TRANSMIT:s=BOUNDARY_TRANSMIT_ ;break; 
-        case TORCH:            s=TORCH_ ;break; 
-        case NAN_ABORT:        s=NAN_ABORT_ ;break; 
-        case EFFICIENCY_CULL:    s=EFFICIENCY_CULL_ ;break; 
-        case EFFICIENCY_COLLECT: s=EFFICIENCY_COLLECT_ ;break; 
-        default:               s=BAD_FLAG_  ;
-
-#ifdef WITH_PLOG
-        LOG(debug) << "OpticksPhoton::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
-#else
-        srd::cerr << "OpticksPhoton::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec << std::endl ;             
-#endif
-
-    }
-    return s;
-}
 
 
 

@@ -4,6 +4,16 @@ usage(){ cat << EOU
 G4OpBoundaryProcessTest.sh
 ============================
 
+Usage::
+
+   ./G4OpBoundaryProcessTest.sh 
+       ## build and run the Geant4 standalone propagate_at_boundary test 
+       ## S or P polarized switch is in the script
+
+   ./G4OpBoundaryProcessTest.sh cf 
+       ## simple numpy a-b comparison of random aligned Opticks and Geant4 propagate_at_boundary 
+
+
 Standalone testing of bouundary process using a modified G4OpBoundaryProcess_MOCK
 with externally set surface normal. 
 
@@ -99,8 +109,38 @@ case $SRC in
 esac
 
 
-srcdir=/tmp/$USER/opticks/QSimTest/hemisphere_s_polarized
+#src=hemisphere_s_polarized
+src=hemisphere_p_polarized
+
+case $src in 
+   hemisphere_s_polarized) dst=propagate_at_boundary_s_polarized ;; 
+   hemisphere_p_polarized) dst=propagate_at_boundary_p_polarized ;; 
+esac
+# TODO: rationalize names 
+
+
+srcdir=/tmp/$USER/opticks/QSimTest/$src
+dstdir=/tmp/$USER/opticks/G4OpBoundaryProcessTest/$dst
+q_dstdir=/tmp/$USER/opticks/QSimTest/$dst
+
 export OPTICKS_BST_SRCDIR=$srcdir
+export OPTICKS_BST_DSTDIR=$dstdir
+export OPTICKS_QSIM_DSTDIR=$q_dstdir
+
+
+[ ! -d "$OPTICKS_BST_SRCDIR" ] && echo $msg ERROR OPTICKS_BST_SRCDIR $OPTICKS_BST_SRCDIR does not exist && exit 1 
+
+mkdir -p $OPTICKS_BST_DSTDIR
+
+if [ "${arg/cf}" != "$arg" ]; then 
+   [ ! -f "$OPTICKS_BST_DSTDIR/p.npy" ]  && echo $msg ERROR OPTICKS_BST_DSTDIR $OPTICKS_BST_DSTDIR does not contain p.npy  && exit 1 
+   [ ! -f "$OPTICKS_QSIM_DSTDIR/p.npy" ] && echo $msg ERROR OPTICKS_QSIM_DSTDIR $OPTICKS_QSIM_DSTDIR does not contain p.npy  && exit 1 
+   ${IPYTHON:-ipython} --pdb -i G4OpBoundaryProcessTest_cf_QSimTest.py 
+   [ $? -ne 0 ] && echo $msg cf error && exit 2 
+   exit 0 
+fi 
+
+
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
 
