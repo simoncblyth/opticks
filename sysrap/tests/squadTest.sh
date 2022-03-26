@@ -1,5 +1,6 @@
 #!/bin/bash -l 
 
+msg="=== $BASH_SOURCE :"
 name=squadTest 
 
 OPTICKS_PREFIX=${OPTICKS_PREFIX:-/usr/local/opticks}
@@ -15,11 +16,14 @@ gcc $name.cc \
 
 [ $? -ne 0 ] && echo compile fail && exit 1
 
+
+export TEST=env
 source ../../qudarap/tests/ephoton.sh 
 
-cmd="/tmp/$name"
-echo $cmd
-eval $cmd
+echo $msg MOMW_POLW : $MOMW_POLW
+
+
+/tmp/$name
 [ $? -ne 0 ] && echo run fail && exit 2
 
 exit 0 

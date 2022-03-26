@@ -31,18 +31,19 @@ msg="=== $BASH_SOURCE :"
 #test=rayleigh_scatter_align
 
 #test=propagate_to_boundary
-#test=propagate_at_boundary
-#test=propagate_at_surface
 
 #test=hemisphere_s_polarized
 #test=hemisphere_p_polarized
 #test=hemisphere_x_polarized
 
-test=propagate_at_boundary_s_polarized
+#test=propagate_at_boundary_s_polarized
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
 
+test=propagate_at_boundary
+#test=propagate_at_boundary_normal_incidence
 
+#test=propagate_at_surface
 
 M1=1000000
 K2=100000
@@ -62,7 +63,7 @@ export TEST=${TEST:-$test}
 source fill_state.sh 
 
 
-if [ "$TEST" == "propagate_at_boundary" ]; then 
+if [ "$TEST" == "propagate_at_boundary_normal_incidence" -o "$TEST" == "propagate_at_boundary" ]; then 
     source ephoton.sh 
 fi
 
@@ -96,12 +97,9 @@ if [ "${arg/ana}" != "$arg" ]; then
        hemisphere_p_polarized) script=QSimTest_hemisphere_polarized.py ;;
        hemisphere_x_polarized) script=QSimTest_hemisphere_polarized.py ;;
 
-       propagate_at_boundary_s_polarized) script=propagate_at_boundary.py ;; 
-       propagate_at_boundary_p_polarized) script=propagate_at_boundary.py ;; 
-       propagate_at_boundary_x_polarized) script=propagate_at_boundary.py ;; 
-       propagate_at_boundary)             script=propagate_at_boundary.py ;; 
+       propagate_at_boundary*) script=propagate_at_boundary.py ;; 
 
-                                       *) script=QSimTest_$TEST.py      ;;
+                            *) script=QSimTest_$TEST.py      ;;
     esac
 
     if [ -f "$script" ]; then

@@ -100,11 +100,13 @@ export OPTICKS_RANDOM_SEQPATH=$seqpath
 M1=1000000
 K3=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
 num=$M1  
-#num=16
+#num=8
 nrm=0,0,1
 
-#test=propagate_at_boundary
-test=propagate_at_boundary_s_polarized
+test=propagate_at_boundary
+#test=propagate_at_boundary_normal_incidence
+
+#test=propagate_at_boundary_s_polarized
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
 
@@ -114,7 +116,8 @@ export NRM=${NRM:-$nrm}
 #DEBUG=1
 
 case $TEST in 
-    propagate_at_boundary)             src=ephoton                  ;;
+    propagate_at_boundary)                  src=ephoton                  ;;
+    propagate_at_boundary_normal_incidence) src=ephoton             ;;
     propagate_at_boundary_s_polarized) src=hemisphere_s_polarized   ;;
     propagate_at_boundary_p_polarized) src=hemisphere_p_polarized   ;;
     propagate_at_boundary_x_polarized) src=hemisphere_x_polarized   ;;

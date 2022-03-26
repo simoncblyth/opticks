@@ -74,6 +74,19 @@ void test_qenvint()
    std::cout << " num " << num << std::endl ; 
 }
 
+void test_quad4_normalize_mom_pol()
+{
+    quad4 p ; 
+    p.zero() ;
+    p.q1.f = make_float4( 1.f, 1.f, 1.f, 1.f ); 
+    p.q2.f = make_float4( 1.f, 1.f, 0.f, 1.f ); 
+ 
+    std::cout << p.desc() << std::endl ;  
+    p.normalize_mom_pol(); 
+    std::cout << p.desc() << std::endl ;  
+
+}
+
 
 int main(int argc, char** argv)
 {
@@ -82,11 +95,11 @@ int main(int argc, char** argv)
     test_qvals_int(); 
     test_qvals_float3_x2(); 
     test_qvals_float4_x2(); 
-    test_quad4_ephoton(); 
+    test_qenvint(); 
+    test_quad4_normalize_mom_pol(); 
     */
 
-    test_qenvint(); 
-
+    test_quad4_ephoton(); 
 
 
     return 0 ; 

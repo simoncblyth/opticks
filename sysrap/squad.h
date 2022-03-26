@@ -58,6 +58,8 @@ struct quad4
 #else
     std::string desc() const ; 
     void ephoton() ; 
+    void normalize_mom_pol(); 
+    void transverse_mom_pol(); 
 #endif
 };
 
@@ -294,6 +296,41 @@ inline void quad4::ephoton()
     qvals( q0.f , "POST" , "0,0,0,0" );                      // position, time
     qvals( q1.f, q2.f, "MOMW_POLW", "1,0,0,1,0,1,0,500" );  // direction, weight,  polarization, wavelength 
     qvals( q3.i , "FLAG", "0,0,0,0" );   
+    normalize_mom_pol(); 
+    transverse_mom_pol(); 
+}
+
+inline void quad4::normalize_mom_pol() 
+{
+    float3* mom = (float3*)&q1.f.x ;  
+    float3* pol = (float3*)&q2.f.x ;
+
+    *mom = normalize(*mom); 
+    *pol = normalize(*pol); 
+}
+
+inline void quad4::transverse_mom_pol() 
+{
+    float3* mom = (float3*)&q1.f.x ;  
+    float3* pol = (float3*)&q2.f.x ;
+    float mom_pol = fabsf( dot(*mom, *pol)) ;  
+    float eps = 1e-5 ; 
+    bool is_transverse = mom_pol < eps ; 
+
+    if(!is_transverse )
+    {
+        std::cout 
+             << " quad4::transverse_mom_pol " 
+             << " FAIL "
+             << " mom " << *mom 
+             << " pol " << *pol 
+             << " mom_pol " << mom_pol 
+             << " eps " << eps 
+             << " is_transverse " << is_transverse
+             << std::endl 
+             ; 
+    }
+    assert(is_transverse); 
 }
 
 

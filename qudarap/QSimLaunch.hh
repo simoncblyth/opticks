@@ -28,6 +28,8 @@ enum {
    HEMISPHERE_P_POLARIZED,
    HEMISPHERE_X_POLARIZED,
 
+   PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE,
+
    PROPAGATE_AT_BOUNDARY_S_POLARIZED,
    PROPAGATE_AT_BOUNDARY_P_POLARIZED,
    PROPAGATE_AT_BOUNDARY_X_POLARIZED,
@@ -54,6 +56,8 @@ struct QSimLaunch
     static const char* HEMISPHERE_P_POLARIZED_ ; 
     static const char* HEMISPHERE_X_POLARIZED_ ; 
  
+    static const char* PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE_ ; 
+
     static const char* PROPAGATE_AT_BOUNDARY_S_POLARIZED_ ; 
     static const char* PROPAGATE_AT_BOUNDARY_P_POLARIZED_ ; 
     static const char* PROPAGATE_AT_BOUNDARY_X_POLARIZED_ ; 
@@ -73,6 +77,8 @@ const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_ = "propagate_at_boundary" ;
 const char* QSimLaunch::HEMISPHERE_S_POLARIZED_ = "hemisphere_s_polarized" ; 
 const char* QSimLaunch::HEMISPHERE_P_POLARIZED_ = "hemisphere_p_polarized" ; 
 const char* QSimLaunch::HEMISPHERE_X_POLARIZED_ = "hemisphere_x_polarized" ; 
+
+const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE_ = "propagate_at_boundary_normal_incidence" ; 
 
 const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_S_POLARIZED_ = "propagate_at_boundary_s_polarized" ; 
 const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_P_POLARIZED_ = "propagate_at_boundary_p_polarized" ; 
@@ -106,6 +112,8 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,HEMISPHERE_S_POLARIZED_) == 0) test = HEMISPHERE_S_POLARIZED ;
    if(strcmp(name,HEMISPHERE_P_POLARIZED_) == 0) test = HEMISPHERE_P_POLARIZED ;
    if(strcmp(name,HEMISPHERE_X_POLARIZED_) == 0) test = HEMISPHERE_X_POLARIZED ;
+
+   if(strcmp(name,PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE_) == 0)  test = PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE ;
 
    if(strcmp(name,PROPAGATE_AT_BOUNDARY_S_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_S_POLARIZED ;
    if(strcmp(name,PROPAGATE_AT_BOUNDARY_P_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_P_POLARIZED ;
@@ -149,6 +157,9 @@ inline const char* QSimLaunch::Name( unsigned type )
         case RAYLEIGH_SCATTER_ALIGN: s = RAYLEIGH_SCATTER_ALIGN_ ; break ;
         case PROPAGATE_TO_BOUNDARY:  s = PROPAGATE_TO_BOUNDARY_  ; break ;  
         case PROPAGATE_AT_BOUNDARY:  s = PROPAGATE_AT_BOUNDARY_  ; break ;  
+
+        case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:  s = PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE_  ; break ;  
+
 
         case HEMISPHERE_S_POLARIZED: s = HEMISPHERE_S_POLARIZED_ ; break ; 
         case HEMISPHERE_P_POLARIZED: s = HEMISPHERE_P_POLARIZED_ ; break ; 

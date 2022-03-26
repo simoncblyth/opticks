@@ -593,15 +593,20 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
         case PROPAGATE_TO_BOUNDARY:         photon_launch_generate(8,   type)          ; break ;  
         case PROPAGATE_AT_SURFACE:          photon_launch_generate(8,   type)          ; break ;  
 
-        case PROPAGATE_AT_BOUNDARY:         photon_launch_generate(num, type)          ; break ;  
+        case PROPAGATE_AT_BOUNDARY:   
+        case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:  
+                                            photon_launch_generate(num, type)          ; break ;  
 
-        case HEMISPHERE_S_POLARIZED:        photon_launch_generate(num, type)          ; break ;  
-        case HEMISPHERE_P_POLARIZED:        photon_launch_generate(num, type)          ; break ;  
-        case HEMISPHERE_X_POLARIZED:        photon_launch_generate(num, type)          ; break ;  
+        case HEMISPHERE_S_POLARIZED:   
+        case HEMISPHERE_P_POLARIZED:  
+        case HEMISPHERE_X_POLARIZED:   
+                                            photon_launch_generate(num, type)          ; break ;  
 
-        case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  photon_launch_mutate(num, type)       ; break ;  
-        case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  photon_launch_mutate(num, type)       ; break ;  
-        case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  photon_launch_mutate(num, type)       ; break ;  
+
+        case PROPAGATE_AT_BOUNDARY_S_POLARIZED: 
+        case PROPAGATE_AT_BOUNDARY_P_POLARIZED:   
+        case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  
+                                                 photon_launch_mutate(num, type)       ; break ;  
 
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 
     }

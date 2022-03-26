@@ -684,17 +684,20 @@ random aligned matching with examples/Geant/BoundaryStandalone
 template <typename T>
 inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id)
 {
-    const float3& surface_normal = prd.normal ; 
     const float& n1 = s.material1.x ;
     const float& n2 = s.material2.x ;   
+    const float eta = n1/n2 ; 
+
     float3* direction    = (float3*)&p.q1.f.x ; 
     float3* polarization = (float3*)&p.q2.f.x ; 
-    const float eta = n1/n2 ; 
-    const float c1 = -dot(*direction, surface_normal ); 
-    const bool normal_incidence = fabs(c1) == 1.f ; 
+
+    const float _c1 = -dot(*direction, prd.normal ); 
+    const float3 oriented_normal = _c1 < 0.f ? -prd.normal : prd.normal ; 
+    const float c1 = fabs(_c1) ; 
+    const bool normal_incidence = c1 == 1.f ; 
 
     /* 
-    printf("//qsim.propagate_at_boundary id %d nrm   (%10.4f %10.4f %10.4f) \n", id, surface_normal.x, surface_normal.y, surface_normal.z ); 
+    printf("//qsim.propagate_at_boundary id %d nrm   (%10.4f %10.4f %10.4f) \n", id, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
     printf("//qsim.propagate_at_boundary id %d mom_0 (%10.4f %10.4f %10.4f) \n", id, direction->x, direction->y, direction->z ); 
     printf("//qsim.propagate_at_boundary id %d pol_0 (%10.4f %10.4f %10.4f) \n", id, polarization->x, polarization->y, polarization->z ); 
     printf("//qsim.propagate_at_boundary id %d c1 %10.4f normal_incidence %d \n", id, c1, normal_incidence ); 
@@ -702,13 +705,13 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
 
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
     bool tir = c2c2 < 0.f ; 
-    const float EdotN = dot(*polarization, surface_normal ) ;  // used for TIR polarization
+    const float EdotN = dot(*polarization, oriented_normal ) ;  // used for TIR polarization
     const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f : so will always reflect
     const float n1c1 = n1*c1 ;
     const float n2c2 = n2*c2 ; 
     const float n2c1 = n2*c1 ; 
     const float n1c2 = n1*c2 ; 
-    const float3 A_trans = normal_incidence ? *polarization : normalize(cross(*direction, surface_normal)) ; // perpendicular to plane of incidence
+    const float3 A_trans = normal_incidence ? *polarization : normalize(cross(*direction, oriented_normal)) ; // perpendicular to plane of incidence
     const float E1_perp = dot(*polarization, A_trans);     //  E vector component perpendicular to plane of incidence, ie S polarization
     const float2 E1   = normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( *polarization - (E1_perp*A_trans) ) ); 
     const float2 E2_t = make_float2(  2.f*n1c1*E1.x/(n1c1+n2c2), 2.f*n1c1*E1.y/(n2c1+n1c2) ) ;  // ( S:perp, P:parl )  
@@ -732,7 +735,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
     if(id == 251959)
     {
         printf("//qsim.propagate_at_boundary id %d \n", id); 
-        printf("//qsim.propagate_at_boundary surface_normal (%10.4f, %10.4f, %10.4f) \n", surface_normal.x, surface_normal.y, surface_normal.z );  
+        printf("//qsim.propagate_at_boundary oriented_normal (%10.4f, %10.4f, %10.4f) \n", oriented_normal.x, oriented_normal.y, oriented_normal.z );  
         printf("//qsim.propagate_at_boundary direction (%10.4f, %10.4f, %10.4f) \n", direction->x, direction->y, direction->z );  
         printf("//qsim.propagate_at_boundary polarization (%10.4f, %10.4f, %10.4f) \n", polarization->x, polarization->y, polarization->z );  
         printf("//qsim.propagate_at_boundary c1 %10.4f normal_incidence %d \n", c1, normal_incidence ); 
@@ -742,9 +745,9 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
 
     *direction = reflect
                     ?
-                       *direction + 2.0f*c1*surface_normal
+                       *direction + 2.0f*c1*oriented_normal
                     :
-                       eta*(*direction) + (eta*c1 - c2)*surface_normal
+                       eta*(*direction) + (eta*c1 - c2)*oriented_normal
                     ;
 
 
@@ -754,7 +757,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
                                          ( reflect ?  *polarization*(n2>n1? -1.f:1.f) : *polarization )
                                       : 
                                          ( reflect ?
-                                                   ( tir ?  -(*polarization) + 2.f*EdotN*surface_normal : RR.x*A_trans + RR.y*A_paral )
+                                                   ( tir ?  -(*polarization) + 2.f*EdotN*oriented_normal : RR.x*A_trans + RR.y*A_paral )
 
                                                    :
                                                        TT.x*A_trans + TT.y*A_paral 
