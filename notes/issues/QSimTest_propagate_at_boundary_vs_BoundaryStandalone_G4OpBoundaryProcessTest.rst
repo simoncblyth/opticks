@@ -507,3 +507,115 @@ TODO: test at lower level to check with the normal or provide way to not auto-or
 
 
 
+
+Normal incidence polarization x-y flip
+------------------------------------------
+
+::
+
+    === ./G4OpBoundaryProcessTest.sh : script_cf ../../../qudarap/tests/propagate_at_boundary_cf.py
+    a_key :               A_FOLD  A_FOLD : /tmp/blyth/opticks/QSimTest/propagate_at_boundary
+    b_key :               B_FOLD  B_FOLD : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary
+    a.shape (100000, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary/p.npy  
+    b.shape (100000, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary/p.npy  
+    aprd.shape  (1, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary/prd.npy  
+
+    aprd                                              : 
+    [[[  0.   0.   1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    a_flag=a[:,3,3].view(np.uint32)                    : [2048 2048 2048 ... 2048 2048 2048]
+    b_flag=b[:,3,3].view(np.uint32)                    : [2048 2048 2048 ... 2048 2048 2048]
+    w_flag=np.where( a_flag != b_flag )                : (array([], dtype=int64),)
+    ua_flag=np.unique(a_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([ 3980, 96020]))
+    ub_flag=np.unique(b_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([ 3980, 96020]))
+    a_TransCoeff=a[:,1,3]                              : [0.96 0.96 0.96 ... 0.96 0.96 0.96]
+    b_TransCoeff=b[:,1,3]                              : [0.96 0.96 0.96 ... 0.96 0.96 0.96]
+    w_TransCoeff=np.where( np.abs( a_TransCoeff - b_TransCoeff) > 1e-6 ) : (array([], dtype=int64),)
+    a_flat=a[:,0,3]                                    : [0.438 0.46  0.25  ... 0.202 0.053 0.44 ]
+    b_flat=b[:,0,3]                                    : [0.438 0.46  0.25  ... 0.202 0.053 0.44 ]
+    w_flat=np.where(a_flat != b_flat)                  : (array([], dtype=int64),)
+    w_ab0=np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+    w_ab1=np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+    w_ab2=np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )   : (array([    0,     0,     1, ..., 99998, 99999, 99999]), array([0, 1, 0, ..., 1, 0, 1]))
+    w_ab3=np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+
+    In [1]: w_ab2                                                                                                                                                                                   
+    Out[1]: 
+    (array([    0,     0,     1, ..., 99998, 99999, 99999]),
+     array([0, 1, 0, ..., 1, 0, 1]))
+
+
+
+    In [4]: a[:,2]                                                                                                                                                                                  
+    Out[4]: 
+    array([[  1.,   0.,   0., 500.],
+           [  1.,   0.,   0., 500.],
+           [  1.,   0.,   0., 500.],
+           ...,
+           [  1.,   0.,   0., 500.],
+           [  1.,   0.,   0., 500.],
+           [  1.,   0.,   0., 500.]], dtype=float32)
+
+    In [5]: b[:,2]                                                                                                                                                                                  
+    Out[5]: 
+    array([[  0.,   1.,   0., 500.],
+           [  0.,   1.,   0., 500.],
+           [  0.,   1.,   0., 500.],
+           ...,
+           [  0.,   1.,   0., 500.],
+           [  0.,   1.,   0., 500.],
+           [  0.,   1.,   0., 500.]], dtype=float32)
+
+
+Geant4 does not change polarization (or direction of course) at for transmission at normal incidence::
+
+    In [6]: b                                                                                                                                                                                       
+    Out[6]: 
+    array([[[  0.   ,   0.   ,  -1.   ,   0.438],
+            [  0.   ,   0.   ,  -1.   ,   0.96 ],
+            [  0.   ,   1.   ,   0.   , 500.   ],
+            [  0.   ,   1.   ,   0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,  -1.   ,   0.46 ],
+            [  0.   ,   0.   ,  -1.   ,   0.96 ],
+            [  0.   ,   1.   ,   0.   , 500.   ],
+            [  0.   ,   1.   ,   0.   ,   0.   ]],
+
+
+
+* aligned this
+
+
+
+Also for reflection at normal incidence Geant4 has a special case handling::
+
+
+    1275 
+    1276                     else {               // incident ray perpendicular
+    1277 
+    1278 #ifdef MOCK_DUMP
+    1279               if( photon_idx == photon_idx_debug )
+    1280               {       
+    1281                       std::cout << " incident ray perpendicular  " << std::endl ;
+    1282               }
+    1283 #endif
+    1284 
+    1285 
+    1286 
+    1287                        if (Rindex2 > Rindex1) {
+    1288                           NewPolarization = - OldPolarization;
+    1289                        }
+    1290                        else {
+    1291                           NewPolarization =   OldPolarization;
+    1292                        }
+    1293 
+    1294                     }
+    1295                  }
+    1296               }
+
+
+
+
+

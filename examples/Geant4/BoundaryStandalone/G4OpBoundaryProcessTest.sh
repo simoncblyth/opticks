@@ -91,12 +91,13 @@ EOC
 arg=${1:-build_run_ana}
 
 
+
 seqpath="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
-#seqpath=$seqpath/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
+seqpath=$seqpath/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
 # comment last list to concatenate all 10 tranches giving full 256M randoms allowing num_photons max of 1M
 
-#num=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
-num=16
+num=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
+#num=16
 nrm=0,0,1
 
 #DEBUG=1
@@ -110,11 +111,21 @@ src=ephoton
 #src=hemisphere_x_polarized
 
 case $src in 
-                  ephoton) dst=propagate_at_boundary_ephoton     ;;
+                  ephoton) dst=propagate_at_boundary             ;;
    hemisphere_s_polarized) dst=propagate_at_boundary_s_polarized ;; 
    hemisphere_p_polarized) dst=propagate_at_boundary_p_polarized ;; 
    hemisphere_x_polarized) dst=propagate_at_boundary_x_polarized ;; 
 esac
+
+
+script_dir=../../../qudarap/tests
+
+case $dst in 
+   propagate_at_boundary*) script_stem=propagate_at_boundary ;;
+esac
+
+script=$script_dir/${script_stem}.py
+script_cf=$script_dir/${script_stem}_cf.py
 
 
 if [ "$src" == "ephoton" ]; then
@@ -128,6 +139,8 @@ dstdir=/tmp/$USER/opticks/G4OpBoundaryProcessTest/$dst
 
 export OPTICKS_QSIM_DSTDIR=$q_dstdir
 export OPTICKS_BST_DSTDIR=$dstdir
+export FOLD=$OPTICKS_BST_DSTDIR
+
 mkdir -p $OPTICKS_BST_DSTDIR
 
 
@@ -140,11 +153,15 @@ fi
 
 if [ "${arg/cf}" != "$arg" ]; then 
 
-   [ ! -f "$OPTICKS_QSIM_DSTDIR/p.npy" ] && echo $msg ERROR OPTICKS_QSIM_DSTDIR $OPTICKS_QSIM_DSTDIR does not contain p.npy  && exit 1 
-   [ ! -f "$OPTICKS_BST_DSTDIR/p.npy" ]  && echo $msg ERROR OPTICKS_BST_DSTDIR $OPTICKS_BST_DSTDIR does not contain p.npy  && exit 1 
+    export A_FOLD=$OPTICKS_QSIM_DSTDIR
+    export B_FOLD=$OPTICKS_BST_DSTDIR
+   [ ! -f "$A_FOLD/p.npy" ] && echo $msg ERROR A_FOLD $A_FOLD does not contain p.npy  && exit 1 
+   [ ! -f "$B_FOLD/p.npy" ] && echo $msg ERROR B_FOLD $B_FOLD does not contain p.npy  && exit 1 
 
-   ${IPYTHON:-ipython} --pdb -i G4OpBoundaryProcessTest_cf_QSimTest.py 
+   echo $msg script_cf $script_cf
+   ${IPYTHON:-ipython} --pdb -i $script_cf
    [ $? -ne 0 ] && echo $msg cf error && exit 2 
+   echo $msg script_cf $script_cf
    exit 0 
 fi 
 
@@ -168,8 +185,12 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $name.py   
+
+    echo $msg ana script $script 
+    ${IPYTHON:-ipython} --pdb -i $script   
     [ $? -ne 0 ] && echo $msg ana error && exit 3
+    echo $msg ana script $script 
+
 fi 
 
 exit 0 

@@ -54,11 +54,17 @@ num=$K2
 nrm=0,0,1
 #nrm=0,0,-1
 
-source ephoton.sh 
 
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
 export TEST=${TEST:-$test}
+
+
+if [ "$TEST" == "propagate_at_boundary" ]; then 
+    source ephoton.sh 
+fi
+
+
 
 if [ "${arg/run}" != "$arg" ]; then 
    if [ -n "$DEBUG" ]; then 
@@ -76,6 +82,9 @@ if [ "${arg/ana}" != "$arg" ]; then
     # see https://github.com/pyvista/pyvista/blob/main/pyvista/plotting/plotting.py
     export PYVISTA_KILL_DISPLAY=1
 
+
+    export FOLD=/tmp/$USER/opticks/QSimTest/$TEST 
+
     case $TEST in
        fill_state_0)           script=QSimTest_fill_state.py ;;
        fill_state_1)           script=QSimTest_fill_state.py ;;
@@ -85,9 +94,10 @@ if [ "${arg/ana}" != "$arg" ]; then
        hemisphere_p_polarized) script=QSimTest_hemisphere_polarized.py ;;
        hemisphere_x_polarized) script=QSimTest_hemisphere_polarized.py ;;
 
-       propagate_at_boundary_s_polarized) script=QSimTest_propagate_at_boundary_polarized.py ;; 
-       propagate_at_boundary_p_polarized) script=QSimTest_propagate_at_boundary_polarized.py ;; 
-       propagate_at_boundary_x_polarized) script=QSimTest_propagate_at_boundary_polarized.py ;; 
+       propagate_at_boundary_s_polarized) script=propagate_at_boundary.py ;; 
+       propagate_at_boundary_p_polarized) script=propagate_at_boundary.py ;; 
+       propagate_at_boundary_x_polarized) script=propagate_at_boundary.py ;; 
+       propagate_at_boundary)             script=propagate_at_boundary.py ;; 
 
                                        *) script=QSimTest_$TEST.py      ;;
     esac

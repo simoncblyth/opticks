@@ -750,15 +750,17 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(quad4& p, const qprd& prd,
 
     const float3 A_paral = normalize(cross(*direction, A_trans));
 
-    *polarization = reflect ?
-                                ( tir ?
-                                        -(*polarization) + 2.f*EdotN*surface_normal
-                                      :
-                                        RR.x*A_trans + RR.y*A_paral
-                                )
-                            :
-                                TT.x*A_trans + TT.y*A_paral
-                            ;
+    *polarization =  normal_incidence ?
+                                         ( reflect ?  *polarization*(n2>n1? -1.f:1.f) : *polarization )
+                                      : 
+                                         ( reflect ?
+                                                   ( tir ?  -(*polarization) + 2.f*EdotN*surface_normal : RR.x*A_trans + RR.y*A_paral )
+
+                                                   :
+                                                       TT.x*A_trans + TT.y*A_paral 
+                                             
+                                                   )
+                                      ;
 
     /*
     printf("//qsim.propagate_at_boundary id %d reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", id, reflect, tir, TransCoeff, u_reflect );  
