@@ -745,4 +745,124 @@ Also for reflection at normal incidence Geant4 has a special case handling::
 Next TIR : need to organise n1 n2 setting in order to check TIR
 ------------------------------------------------------------------
 
+Ahha the TIR differences are in the debug info (flat and TransCoeff) not the actual mom and pol::
+
+    epsilon:BoundaryStandalone blyth$ ./G4OpBoundaryProcessTest.sh cf
+    === ./G4OpBoundaryProcessTest.sh : G4OpBoundaryProcessTest.cc
+    ../../../qudarap/tests/fill_state.sh:fill-state-desc
+    =========================
+
+       M1_REFRACTIVE_INDEX  : 1.5
+       M2_REFRACTIVE_INDEX  : 1.0
+
+
+    === ./G4OpBoundaryProcessTest.sh : script_cf ../../../qudarap/tests/propagate_at_boundary_cf.py A_FOLD /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized B_FOLD /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized
+    a_key :               A_FOLD  A_FOLD : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized
+    b_key :               B_FOLD  B_FOLD : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized
+    a.shape (1000000, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized/p.npy  
+    b.shape (1000000, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized/p.npy  
+    aprd.shape  (1, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized/prd.npy  
+
+    aprd                                              : 
+    [[[  0.   0.   1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    bprd.shape  (1, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized/prd.npy  
+
+    bprd                                              : 
+    [[[  0.   0.   1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    a_flag=a[:,3,3].view(np.uint32)                    : [1024 1024 1024 ... 1024 1024 1024]
+    b_flag=b[:,3,3].view(np.uint32)                    : [1024 1024 1024 ... 1024 1024 1024]
+    w_flag=np.where( a_flag != b_flag )                : (array([], dtype=int64),)
+    ua_flag=np.unique(a_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([869377, 130623]))
+    ub_flag=np.unique(b_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([869377, 130623]))
+    a_TransCoeff=a[:,1,3]                              : [0.    0.    0.    ... 0.    0.    0.958]
+    b_TransCoeff=b[:,1,3]                              : [0.    0.    0.    ... 0.801 0.801 0.958]
+    w_TransCoeff=np.where( np.abs( a_TransCoeff - b_TransCoeff) > 1e-6 ) : (array([     8,      9,     10, ..., 999996, 999997, 999998]),)
+    a_flat=a[:,0,3]                                    : [0.438 0.46  0.25  ... 0.557 0.184 0.992]
+    b_flat=b[:,0,3]                                    : [0.74  0.921 0.039 ... 0.952 0.051 0.992]
+    w_flat=np.where(a_flat != b_flat)                  : (array([     0,      1,      2, ..., 999996, 999997, 999998]),)
+    w_ab0=np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )   : (array([     0,      1,      2, ..., 999996, 999997, 999998]), array([3, 3, 3, ..., 3, 3, 3]))
+    w_ab1=np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )   : (array([     8,      9,     10, ..., 999996, 999997, 999998]), array([3, 3, 3, ..., 3, 3, 3]))
+    w_ab2=np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+    w_ab3=np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+
+    In [1]:                          
+
+
+Exclude the debug info column 3 and get alignment::
+
+    w_ab0=np.where( np.abs(a[:,0,:3] - b[:,0,:3]) > 1e-6 ) : (array([], dtype=int64), array([], dtype=int64))
+    w_ab1=np.where( np.abs(a[:,1,:3] - b[:,1,:3]) > 1e-6 ) : (array([], dtype=int64), array([], dtype=int64))
+    w_ab2=np.where( np.abs(a[:,2,:3] - b[:,2,:3]) > 1e-6 ) : (array([], dtype=int64), array([], dtype=int64))
+    w_ab3=np.where( np.abs(a[:,3,:3] - b[:,3,:3]) > 1e-6 ) : (array([], dtype=int64), array([], dtype=int64))
+
+
+::
+
+    In [1]: w_ab0                                                                                                                                                                                   
+    Out[1]: 
+    (array([     0,      1,      2, ..., 999996, 999997, 999998]),
+     array([3, 3, 3, ..., 3, 3, 3]))
+
+
+
+    epsilon:tests blyth$ ./rng_sequence.sh 
+    fill_state.sh:fill-state-desc
+    =========================
+
+       M1_REFRACTIVE_INDEX  : 1.5
+       M2_REFRACTIVE_INDEX  : 1.0
+
+
+    === ./QSimTest.sh : invoking analysis script QSimTest_rng_sequence.py
+      a     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy
+      b     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset100000.npy
+      c     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset200000.npy
+      d     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset300000.npy
+      e     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset400000.npy
+      f     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset500000.npy
+      g     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset600000.npy
+      h     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset700000.npy
+      i     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset800000.npy
+      j     (100000, 16, 16) /tmp/blyth/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset900000.npy
+    seq.shape (1000000, 16, 16) 
+
+
+    In [3]: seq[:,0,1]
+    Out[3]: array([0.438, 0.46 , 0.25 , ..., 0.557, 0.184, 0.992], dtype=float32)
+    ## a: sees this second in stream 
+
+    In [4]: seq[:,0,0]
+    Out[4]: array([0.74 , 0.921, 0.039, ..., 0.952, 0.051, 0.036], dtype=float32)
+    ## b: sees first in stream with TIR
+
+
+
+* https://en.wikipedia.org/wiki/Total_internal_reflection
+
+Critical angle::
+
+    In [7]: np.arcsin(1./1.5)*180./np.pi
+    Out[7]: 41.810314895778596
+
+    In [8]: w_flag[0].shape    ## hmm there is loadsa TIR
+    Out[8]: (745673,)
+
+
+With qsim TransCoeff is set to zero for TIR::
+
+    In [11]: np.where( a_TransCoeff  == 0. )[0].shape
+    Out[11]: (745673,)
+
+With bst are recording stale TransCoeff for TIR:: 
+
+    In [3]: b_TransCoeff[-20:]
+    Out[3]: array([0.947, 0.947, 0.947, 0.947, 0.947, 0.933, 0.933, 0.933, 0.933, 0.937, 0.937, 0.937, 0.937, 0.937, 0.309, 0.801, 0.801, 0.801, 0.801, 0.958], dtype=float32)
+
+
 

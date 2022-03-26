@@ -280,8 +280,20 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
     G4VParticleChange* change = proc->PostStepDoIt(*track, *step) ;
 
     G4OpBoundaryProcess_MOCKStatus theStatus = proc->GetStatus(); 
-    //bool tir = theStatus == TotalInternalReflection ; 
-    //std::cout << "theStatus "  << X4OpBoundaryProcessStatus::Name( theStatus ) << std::endl ;  
+    unsigned theFlag = Status(theStatus) ; 
+
+    if( theFlag == 0)
+    {
+       bool tir = theStatus == TotalInternalReflection ; 
+        std::cout 
+             << " theStatus "  << X4OpBoundaryProcessStatus::Name( theStatus ) 
+             << " theFlag " << theFlag 
+             << " tir " << tir 
+             << std::endl 
+             ;  
+    }
+
+
 
     G4ParticleChange* pc = dynamic_cast<G4ParticleChange*>(change);  
     const G4ThreeVector* smom = pc->GetMomentumDirection();
@@ -295,7 +307,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
     pol->y =  spol->y() ; 
     pol->z =  spol->z() ; 
 
-    photon.q3.u.w = Status(theStatus) ; 
+    photon.q3.u.w = theFlag ; 
     photon.q1.f.w = proc->theTransCoeff_MOCK ; 
 
 }

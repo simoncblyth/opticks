@@ -80,7 +80,7 @@ if __name__ == '__main__':
      b_flat = epr("b_flat=b[:,0,3]") 
      w_flat = epr("w_flat=np.where(a_flat != b_flat)")
 
-     expr_ = "w_ab%(i)s=np.where( np.abs(a[:,%(i)s] - b[:,%(i)s]) > 1e-6 )" 
+     expr_ = "w_ab%(i)s=np.where( np.abs(a[:,%(i)s,:3] - b[:,%(i)s,:3]) > 1e-6 )" 
      w_ab0 = epr(expr_ % dict(i=0) )
      w_ab1 = epr(expr_ % dict(i=1) )
      w_ab2 = epr(expr_ % dict(i=2) )
