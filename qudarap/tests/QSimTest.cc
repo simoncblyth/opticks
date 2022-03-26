@@ -22,6 +22,7 @@
 #include "QSimLaunch.hh"
 #include "QEvent.hh"
 #include "QDebug.hh"
+#include "QState.hh"
 
 #include "qstate.h"
 #include "qdebug.h"
@@ -51,6 +52,7 @@ struct QSimTest
 
     QSim<T>& qs ; 
     QSimTest(QSim<T>& qs); 
+    void init(); 
     void main(int argc, char** argv, unsigned test); 
 
     void rng_sequence(unsigned ni, int ni_tranche_size); 
@@ -75,7 +77,9 @@ struct QSimTest
     void save_photon(    const char* subfold, const char* name, const std::vector<quad4>& p ); 
     NP*  load_photon(    const char* subfold, const char* name); 
 
+    void save_dbg(const char* subfold); 
     void save_dbg_photon(const char* subfold, const char* name); 
+    void save_dbg_state( const char* subfold, const char* name); 
     void save_dbg_prd(   const char* subfold, const char* name); 
 
     void fill_state(unsigned version); 
@@ -95,7 +99,16 @@ QSimTest<T>::QSimTest(QSim<T>& qs_)
     :
     qs(qs_)
 {
+    init(); 
 }
+
+template <typename T>
+void QSimTest<T>::init()
+{
+    //std::cout << qs.desc_dbg_state() << std::endl ; 
+    //std::cout << qs.desc_dbg_p0() << std::endl ; 
+}
+ 
 
 /**
 QSimTest::rng_sequence
@@ -438,16 +451,40 @@ NP* QSimTest<T>::load_photon(const char* subfold, const char* name )
 }
 
 
+
+
+template <typename T>
+void QSimTest<T>::save_dbg(const char* subfold)
+{
+    LOG(info) << " subfold " << subfold ; 
+    save_dbg_photon( subfold, "p0.npy"); 
+    save_dbg_state(  subfold, "s.npy"); 
+    save_dbg_prd(    subfold, "prd.npy"); 
+}
+
+
 template <typename T>
 void QSimTest<T>::save_dbg_photon(const char* subfold, const char* name)
 {
+    LOG(info) << " subfold " << subfold ; 
     const quad4& p0 = qs.dbg->p ; 
     save_array(subfold, name, p0.cdata(), 1, 4, 4 );      
 }
 
 template <typename T>
+void QSimTest<T>::save_dbg_state(const char* subfold, const char* name)
+{
+    LOG(info) << " subfold " << subfold ; 
+    const char* path = Path(subfold, name); 
+    const qstate& s = qs.dbg->s ; 
+    QState::Save( s, path ); 
+}
+
+
+template <typename T>
 void QSimTest<T>::save_dbg_prd(const char* subfold, const char* name)
 {
+    LOG(info) << " subfold " << subfold ; 
     const qprd& qs_prd = qs.dbg->prd ; 
 
     quad4 prd ;
@@ -478,8 +515,8 @@ void QSimTest<T>::photon_launch_generate(unsigned num_photon, unsigned type)
     qs.photon_launch_generate( p.data(), p.size(), type ); 
 
     save_photon(     subfold, "p.npy", p ); 
-    save_dbg_photon( subfold, "p0.npy"); 
-    save_dbg_prd(    subfold, "prd.npy"); 
+    save_dbg( subfold ); 
+
 }
 
 
@@ -505,9 +542,10 @@ void QSimTest<T>::photon_launch_mutate(unsigned num_photon, unsigned type)
     const char* dst_path = Path(dst_subfold, "p.npy"); 
     a->save(dst_path); 
 
-    save_dbg_photon(dst_subfold, "p0.npy"); 
-    save_dbg_prd(   dst_subfold, "prd.npy"); 
+    save_dbg( dst_subfold ); 
 }
+
+
 
 
 template<typename T>

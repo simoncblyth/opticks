@@ -170,7 +170,7 @@ struct NP
 
     template<typename T> void read(const T* src);
     template<typename T> void read2(const T* src);
-    template<typename T> void write(T* dst); 
+    template<typename T> void write(T* dst) const ; 
 
     template<typename T> std::string _present(T v) const ; 
 
@@ -3029,7 +3029,7 @@ template <typename T> void NP::read2(const T* src)
     memcpy( bytes(), src, arr_bytes() );    
 }
 
-template <typename T> void NP::write(T* dst) 
+template <typename T> void NP::write(T* dst) const 
 {
     assert( sizeof(T) == ebyte ); 
     memcpy( dst, bytes(), arr_bytes() );    

@@ -22,6 +22,7 @@ set(SOURCES
     QEvent.cu
 
     QDebug.cc
+    QState.cc
 
     QU.cc
 
@@ -89,6 +90,7 @@ SET(HEADERS
     QTexMaker.hh
     QTexLookup.hh
 
+    QState.hh
     qstate.h
     qprd.h
 

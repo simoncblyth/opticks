@@ -40,6 +40,14 @@ if __name__ == '__main__':
         prd = None
     pass
 
+    if hasattr(t,'s'):
+        s = t.s 
+        epr("s", tail="\n\n", rprefix="\n" ) 
+    else:
+        s = None
+    pass
+
+
     if hasattr(t,'p'):
         p = t.p 
         epr("p", tail="\n\n", rprefix="\n" ) 

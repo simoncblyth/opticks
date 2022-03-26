@@ -19,6 +19,7 @@
 #include "QProp.hh"
 #include "QEvent.hh"
 #include "QOptical.hh"
+#include "QState.hh"
 
 #include "QSim.hh"
 
@@ -250,29 +251,8 @@ void QSim<T>::init_dbg()
     dbg->cosTheta = cosTheta ; 
 
     // qstate: mocking result of fill_state 
-
-    float m1_refractive_index = 1.0f ; 
-    float m1_absorption_length = 1000.f ; 
-    float m1_scattering_length = 1000.f ; 
-    float m1_reemission_prob = 0.f ; 
-    float m1_group_velocity = 300.f ; 
-
-    float m2_refractive_index = 1.5f ; 
-    float m2_absorption_length = 1000.f ; 
-    float m2_scattering_length = 1000.f ; 
-    float m2_reemission_prob = 0.f ; 
-
-    float su_detect = 0.f ; 
-    float su_absorb = 0.f ; 
-    float su_reflect_specular = 0.f ; 
-    float su_reflect_diffuse = 0.f ; 
-
-    dbg->s.material1 = make_float4( m1_refractive_index, m1_absorption_length, m1_scattering_length, m1_reemission_prob ); 
-    dbg->s.material2 = make_float4( m2_refractive_index, m2_absorption_length, m2_scattering_length, m2_reemission_prob );  
-    dbg->s.m1group2  = make_float4( m1_group_velocity, 0.f, 0.f, 0.f ); 
-    dbg->s.surface   = make_float4( su_detect, su_absorb, su_reflect_specular, su_reflect_diffuse ); 
-    dbg->s.optical   = make_uint4( 0u, 0u, 0u, 0u );  // x/y/z/w index/type/finish/value  
-    dbg->s.index     = make_uint4( 0u, 0u, 0u, 0u );  // indices of m1/m2/surf/sensor
+    dbg->s = QState::Make(); 
+    LOG(info) << desc_dbg_state(); 
 
     // qprd: mocking per-ray-data result of optix trace calls 
 
@@ -288,6 +268,15 @@ void QSim<T>::init_dbg()
     LOG(info) << desc_dbg_p0()  ; 
 
     d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
+}
+
+template <typename T>
+std::string QSim<T>::desc_dbg_state() const 
+{
+    std::stringstream ss ; 
+    ss << "QSim::desc_dbg_state" << std::endl << QState::Desc(dbg->s) ; 
+    std::string s = ss.str(); 
+    return s ; 
 }
  
 template <typename T>

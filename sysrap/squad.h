@@ -131,12 +131,9 @@ inline std::ostream& operator<<(std::ostream& os, const quad6& v)
 
 
 
-inline int qenvint( const char* key, const char* fallback )
-{
-    char* val = getenv(key);
-    char* p = const_cast<char*>( val ? val : fallback ); 
-    return std::atoi(p); 
-}
+
+
+
 
 inline void qvals( std::vector<float>& vals, const char* key, const char* fallback, int num_expect )
 {
@@ -169,6 +166,25 @@ inline void qvals( float& v,   const char* key, const char* fallback )
     qvals( vals, key, fallback, 1 ); 
     v = vals[0] ; 
 }
+
+inline float qenvfloat( const char* key, const char* fallback )
+{
+    float v ; 
+    qvals(v, key, fallback);  
+    return v ; 
+}
+
+inline int qenvint( const char* key, const char* fallback )
+{
+    char* val = getenv(key);
+    char* p = const_cast<char*>( val ? val : fallback ); 
+    return std::atoi(p); 
+}
+
+
+
+
+
 inline void qvals( float2& v,  const char* key, const char* fallback )
 {
     std::vector<float> vals ; 

@@ -1,31 +1,17 @@
-/**
-qstateTest.cc : CPU side test of GPU side header
-==================================================
+#include "QState.hh"
 
-::
-
-   ./qstateTest.sh 
-
-
-**/
-
-#include "scuda.h"
-#include "squad.h"
-#include "qstate.h"
-
+const char* FOLD = "/tmp/QStateTest" ; 
 
 int main(int argc, char** argv)
 {
-    qstate s ; 
+    qstate s0 = QState::Make(); 
+    std::cout << " s0 " << QState::Desc(s0) << std::endl ; 
 
+    QState::Save(s0, FOLD, "s.npy" ); 
 
-    //float f = uint_as_float(0u);   this method is available when using optix7 but unclear from where 
-
-    int i0 = -101 ; 
-    unsigned u0 = int_as_unsigned( i0 ); 
-    int i1 = unsigned_as_int( u0 ); 
-    assert( i1 == i0 ); 
-
+    qstate s1 ; 
+    QState::Load(s1, FOLD, "s.npy" ); 
+    std::cout << " s1 " << QState::Desc(s1) << std::endl ; 
 
     return 0 ; 
 }

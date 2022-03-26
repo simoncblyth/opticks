@@ -93,80 +93,77 @@ arg=${1:-build_run_ana}
 
 
 seqpath="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
-seqpath=$seqpath/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
+#seqpath=$seqpath/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
 # comment last list to concatenate all 10 tranches giving full 256M randoms allowing num_photons max of 1M
+export OPTICKS_RANDOM_SEQPATH=$seqpath
 
-num=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
+M1=1000000
+K3=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
+num=$M1  
 #num=16
 nrm=0,0,1
 
+#test=propagate_at_boundary
+test=propagate_at_boundary_s_polarized
+#test=propagate_at_boundary_p_polarized
+#test=propagate_at_boundary_x_polarized
+
+export TEST=${TEST:-$test}
+export NUM=${NUM:-$num}
+export NRM=${NRM:-$nrm}
 #DEBUG=1
 
-export OPTICKS_RANDOM_SEQPATH=$seqpath
-
-
-src=ephoton
-#src=hemisphere_s_polarized
-#src=hemisphere_p_polarized
-#src=hemisphere_x_polarized
-
-case $src in 
-                  ephoton) dst=propagate_at_boundary             ;;
-   hemisphere_s_polarized) dst=propagate_at_boundary_s_polarized ;; 
-   hemisphere_p_polarized) dst=propagate_at_boundary_p_polarized ;; 
-   hemisphere_x_polarized) dst=propagate_at_boundary_x_polarized ;; 
+case $TEST in 
+    propagate_at_boundary)             src=ephoton                  ;;
+    propagate_at_boundary_s_polarized) src=hemisphere_s_polarized   ;;
+    propagate_at_boundary_p_polarized) src=hemisphere_p_polarized   ;;
+    propagate_at_boundary_x_polarized) src=hemisphere_x_polarized   ;;
 esac
 
-
-script_dir=../../../qudarap/tests
-
-case $dst in 
+case $TEST in 
    propagate_at_boundary*) script_stem=propagate_at_boundary ;;
 esac
 
+script_dir=../../../qudarap/tests
 script=$script_dir/${script_stem}.py
 script_cf=$script_dir/${script_stem}_cf.py
 
 
+qutdir=../../../qudarap/tests
+source $qutdir/fill_state.sh 
+
 if [ "$src" == "ephoton" ]; then
     srcdir=
+    source $qutdir/ephoton.sh 
 else
     srcdir=/tmp/$USER/opticks/QSimTest/$src
+    export OPTICKS_BST_SRCDIR=$srcdir
+    [ ! -d "$OPTICKS_BST_SRCDIR" ] && echo $msg ERROR OPTICKS_BST_SRCDIR $OPTICKS_BST_SRCDIR does not exist && exit 1 
 fi 
 
-q_dstdir=/tmp/$USER/opticks/QSimTest/$dst
-dstdir=/tmp/$USER/opticks/G4OpBoundaryProcessTest/$dst
+q_dstdir=/tmp/$USER/opticks/QSimTest/$TEST
+dstdir=/tmp/$USER/opticks/G4OpBoundaryProcessTest/$TEST
 
 export OPTICKS_QSIM_DSTDIR=$q_dstdir
 export OPTICKS_BST_DSTDIR=$dstdir
-export FOLD=$OPTICKS_BST_DSTDIR
 
+export FOLD=$OPTICKS_BST_DSTDIR
+export A_FOLD=$OPTICKS_QSIM_DSTDIR
+export B_FOLD=$OPTICKS_BST_DSTDIR
 mkdir -p $OPTICKS_BST_DSTDIR
 
 
-if [ -n "$srcdir" ]; then 
-    export OPTICKS_BST_SRCDIR=$srcdir
-    [ ! -d "$OPTICKS_BST_SRCDIR" ] && echo $msg ERROR OPTICKS_BST_SRCDIR $OPTICKS_BST_SRCDIR does not exist && exit 1 
-else
-    source ../../../qudarap/tests/ephoton.sh 
-fi
-
 if [ "${arg/cf}" != "$arg" ]; then 
 
-    export A_FOLD=$OPTICKS_QSIM_DSTDIR
-    export B_FOLD=$OPTICKS_BST_DSTDIR
    [ ! -f "$A_FOLD/p.npy" ] && echo $msg ERROR A_FOLD $A_FOLD does not contain p.npy  && exit 1 
    [ ! -f "$B_FOLD/p.npy" ] && echo $msg ERROR B_FOLD $B_FOLD does not contain p.npy  && exit 1 
 
-   echo $msg script_cf $script_cf
+   echo $msg script_cf $script_cf A_FOLD $A_FOLD B_FOLD $B_FOLD
    ${IPYTHON:-ipython} --pdb -i $script_cf
    [ $? -ne 0 ] && echo $msg cf error && exit 2 
    echo $msg script_cf $script_cf
    exit 0 
 fi 
-
-export NUM=${NUM:-$num}
-export NRM=${NRM:-$nrm}
 
 if [ "${arg/build}" != "$arg" ]; then 
     standalone-compile ${srcs[@]}
@@ -186,10 +183,10 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
 
-    echo $msg ana script $script 
+    echo $msg ana script $script FOLD $FOLD
     ${IPYTHON:-ipython} --pdb -i $script   
     [ $? -ne 0 ] && echo $msg ana error && exit 3
-    echo $msg ana script $script 
+    echo $msg ana script $script FOLD $FOLD
 
 fi 
 

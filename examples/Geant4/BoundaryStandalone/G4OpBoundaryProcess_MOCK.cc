@@ -1136,6 +1136,12 @@ void G4OpBoundaryProcess_MOCK::DielectricDielectric()
                  EdotN = OldPolarization * theFacetNormal;
                  NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
 
+
+#ifdef MOCK_DUMP
+                //std::cout << "TIR" << std::endl ; 
+#endif
+
+
               }
            }
            else if (sint2 < 1.0) {

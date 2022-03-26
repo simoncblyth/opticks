@@ -2727,6 +2727,24 @@ inline std::ostream& operator<<(std::ostream& os, const int4& v)
     return os; 
 }
 
+inline std::ostream& operator<<(std::ostream& os, const uint4& v)
+{
+    int w = 6 ; 
+    os 
+       << "(" 
+       << std::setw(w) << v.x 
+       << "," 
+       << std::setw(w) << v.y
+       << "," 
+       << std::setw(w) << v.z 
+       << "," 
+       << std::setw(w) << v.w 
+       << ") "  
+       ;
+    return os; 
+}
+
+
 
 
 

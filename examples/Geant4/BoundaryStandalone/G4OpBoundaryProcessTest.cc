@@ -34,16 +34,6 @@ Probably easiest to setup a "proper" Geant4 geometry to test within.
 #include "scuda.h"
 #include "squad.h"
 
-/*
-struct float3 { float x,y,z ;  };
-struct float4 { float x,y,z,w ;  };
-struct uint4 {  unsigned x,y,z,w ;  };
-float3 make_float3(float x, float y, float z)          { float3 v ; v.x = x ; v.y = y ; v.z = z ;           return v ; } 
-float4 make_float4(float x, float y, float z, float w ){ float4 v ; v.x = x ; v.y = y ; v.z = z ; v.w = w ; return v ; } 
-uint4  make_uint4(unsigned x, unsigned y, unsigned z, unsigned w ){ uint4 v ; v.x = x ; v.y = y ; v.z = z ; v.w = w ; return v ; } 
-union quad { float4 f ; uint4  u ;  }; 
-struct quad4 { quad q0, q1, q2, q3 ; }; 
-*/
 
 struct G4OpBoundaryProcessTest 
 {
@@ -76,7 +66,7 @@ struct G4OpBoundaryProcessTest
     void propagate_at_boundary( quad4& photon, int idx); 
     void propagate_at_boundary_(quad4& photon, int idx);
     void propagate_at_boundary(int idx); 
-    void propagate_at_boundary_repeat(); 
+    void propagate_at_boundary_ephoton(); 
 
     void dump( const quad4& photon, int idx ); 
     void save(const quad4& p, const char* name) const ; 
@@ -89,8 +79,9 @@ unsigned G4OpBoundaryProcessTest::Status(unsigned status)
     unsigned st = 0 ; 
     switch(status)
     {
-        case FresnelReflection: st = BOUNDARY_REFLECT  ; break ; 
-        case FresnelRefraction: st = BOUNDARY_TRANSMIT ; break ; 
+        case FresnelReflection:       st = BOUNDARY_REFLECT  ; break ; 
+        case TotalInternalReflection: st = BOUNDARY_REFLECT  ; break ; 
+        case FresnelRefraction:       st = BOUNDARY_TRANSMIT ; break ; 
     }
     return st ; 
 }
@@ -128,8 +119,8 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const char* srcdir_ekey, const 
     dstdir(getenv(dstdir_ekey)),
     normal(make_float3(0.f, 0.f, 1.f)),   // may be overrden by normal from init_prd_normal
     rnd(new OpticksRandom),
-    n1(1.f),
-    n2(1.5f),
+    n1(qenvfloat("M1_REFRACTIVE_INDEX","1.0")),
+    n2(qenvfloat("M2_REFRACTIVE_INDEX","1.5")),
     a_rindex1(MakeRindexArray(n1)), 
     a_rindex2(MakeRindexArray(n2)), 
     rindex1(OpticksUtil::MakeProperty(a_rindex1)),
@@ -289,7 +280,8 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
     G4VParticleChange* change = proc->PostStepDoIt(*track, *step) ;
 
     G4OpBoundaryProcess_MOCKStatus theStatus = proc->GetStatus(); 
-
+    //bool tir = theStatus == TotalInternalReflection ; 
+    //std::cout << "theStatus "  << X4OpBoundaryProcessStatus::Name( theStatus ) << std::endl ;  
 
     G4ParticleChange* pc = dynamic_cast<G4ParticleChange*>(change);  
     const G4ThreeVector* smom = pc->GetMomentumDirection();
@@ -320,7 +312,6 @@ void G4OpBoundaryProcessTest::dump( const quad4& photon, int idx )
     std::cout 
         << " i " << std::setw(6) << idx 
         << " s " << std::setw(2) << status 
-        //<< " " << std::setw(16) << X4OpBoundaryProcessStatus::Name( status ) 
         << " " << std::setw(16) << OpticksPhoton::Flag( status ) 
         << " " << std::setw(10) << std::setprecision(3) << flat_prior
         << " mom " 
@@ -380,7 +371,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(int idx)
     }
 }
 
-void G4OpBoundaryProcessTest::propagate_at_boundary_repeat()
+void G4OpBoundaryProcessTest::propagate_at_boundary_ephoton()
 {
     int num_photon = qenvint("NUM", "8");
     std::cout << "G4OpBoundaryProcessTest::propagate_at_boundary_repeat NUM " << num_photon << std::endl ; 
@@ -403,11 +394,20 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_repeat()
 int main(int argc, char** argv)
 {
     G4OpBoundaryProcessTest t("OPTICKS_BST_SRCDIR", "OPTICKS_BST_DSTDIR") ; 
+    std::cout << "t.desc " << t.desc() << std::endl ; 
+
     t.proc->photon_idx_debug = -1 ;  // index for debug output  
 
-    //t.propagate_at_boundary(251959); 
-    //t.propagate_at_boundary(-1); 
-    t.propagate_at_boundary_repeat();   
+    if(t.srcdir == nullptr )
+    {
+        t.propagate_at_boundary_ephoton();   
+    }
+    else
+    {
+        t.propagate_at_boundary(-1); 
+      //t.propagate_at_boundary(251959); 
+    }
 
+    std::cout << "t.desc " << t.desc() << std::endl ; 
     return 0 ; 
 }

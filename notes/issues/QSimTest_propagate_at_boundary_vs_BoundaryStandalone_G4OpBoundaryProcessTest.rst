@@ -1,7 +1,6 @@
 QSimTest_propagate_at_boundary_vs_BoundaryStandalone_G4OpBoundaryProcessTest
 ===============================================================================
 
-
 How to do random aligned propagate_at_boundary comparison between QSim and Geant4
 ------------------------------------------------------------------------------------
 
@@ -18,50 +17,174 @@ How to do random aligned propagate_at_boundary comparison between QSim and Geant
 
 
 
+Generate samples of photons for use by both QSimTest.sh and G4OpBoundaryProcessTest.sh::
 
-    TEST=hemisphere_s_polarized NUM=1000000 ./QSimTest.sh 
-        ## generate a sample of 1M S-polarized photons all incident at origin  
-        ## this sample of photons is used by both QSimTest.sh below and G4OpBoundaryProcessTest.sh
+    TEST=hemisphere_s_polarized NUM=1000000 ./QSimTest.sh  ## 1M S-polarized photons all incident at origin  
+    TEST=hemisphere_p_polarized NUM=1000000 ./QSimTest.sh  ## 1M P-polarized photons all incident at origin  
+    TEST=hemisphere_x_polarized NUM=1000000 ./QSimTest.sh  ## 1M S and P equal admixed photons all incident at origin  
 
-    TEST=hemisphere_p_polarized NUM=1000000 ./QSimTest.sh 
-        ## generate a sample of 1M P-polarized photons all incident at origin  
-        ## this sample of photons is used by both QSimTest.sh below and G4OpBoundaryProcessTest.sh
-
-
+Load and mutate the photons saving into a different directory using ~/opticks/qudarap/tests/QSimTest.sh::
 
     TEST=propagate_at_boundary_s_polarized NUM=1000000 ./QSimTest.sh 
-        ## mutate the hemisphere_s_polarized photons doing boundary reflect or transmit   
-
     TEST=propagate_at_boundary_p_polarized NUM=1000000 ./QSimTest.sh 
-        ## mutate the hemisphere_p_polarized photons doing boundary reflect or transmit   
+    TEST=propagate_at_boundary_x_polarized NUM=1000000 ./QSimTest.sh 
 
-
+Then do the same using ~/opticks/examples/Geant4/BoundaryStandalone/G4OpBoundaryProcessTest.sh::
 
     bst 
         ## OR : cd ~/opticks/examples/Geant4/BoundaryStandalone 
 
-    vi G4OpBoundaryProcessTest.sh
-        ## check the envvars which control where the input pre-cooked randoms and photons will come from 
+    TEST=propagate_at_boundary_s_polarized NUM=1000000  ./G4OpBoundaryProcessTest.sh
+    TEST=propagate_at_boundary_p_polarized NUM=1000000  ./G4OpBoundaryProcessTest.sh
+    TEST=propagate_at_boundary_x_polarized NUM=1000000  ./G4OpBoundaryProcessTest.sh
+        ## compiles and runs loading, mutating and saving then invoked ana script  
 
-    ./G4OpBoundaryProcessTest.sh
-        ## compiles and runs loading the photons from eg hemisphere_s_polarized and bouncing them 
+Then numpy a-b compare propagate_at_boundary mom and pol between QSimTest.sh and G4OpBoundaryProcessTest.sh::
+
+    TEST=propagate_at_boundary_s_polarized NUM=1000000  ./G4OpBoundaryProcessTest.sh cf
+    TEST=propagate_at_boundary_p_polarized NUM=1000000  ./G4OpBoundaryProcessTest.sh cf
+    TEST=propagate_at_boundary_x_polarized NUM=1000000  ./G4OpBoundaryProcessTest.sh cf
 
 
-Random Aligned comparison::
+Last Results
+----------------
 
-    epsilon:BoundaryStandalone blyth$ ./G4OpBoundaryProcessTest_cf_QSimTest.sh
+
+* S and P have single flag jumper from the TransCoeff cut edge
+
+::
+
+    epsilon:BoundaryStandalone blyth$ TEST=propagate_at_boundary_s_polarized NUM=1000000  ./G4OpBoundaryProcessTest.sh cf
+    === ./G4OpBoundaryProcessTest.sh : G4OpBoundaryProcessTest.cc
+    === ./G4OpBoundaryProcessTest.sh : script_cf ../../../qudarap/tests/propagate_at_boundary_cf.py A_FOLD /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized B_FOLD /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized
+    a_key :               A_FOLD  A_FOLD : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized
+    b_key :               B_FOLD  B_FOLD : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized
     a.shape (1000000, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized/p.npy  
-    b.shape (1000000, 4, 4) : /tmp/G4OpBoundaryProcessTest/p.npy  
-     a_flag (array([1024, 2048], dtype=uint32), array([ 45024, 954976])) 
-     b_flag (array([1024, 2048], dtype=uint32), array([ 45025, 954975])) 
-    a_TransCoeff [0.784 0.799 0.588 ... 0.853 0.481 0.959] 
-    b_TransCoeff [0.784 0.799 0.588 ... 0.853 0.481 0.959] 
-     a_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
-     b_flat [0.438 0.46  0.25  ... 0.557 0.184 0.992] 
+    b.shape (1000000, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized/p.npy  
+    aprd.shape  (1, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_s_polarized/prd.npy  
 
-    In [1]:                                           
+    aprd                                              : 
+    [[[  0.   0.   1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    bprd.shape  (1, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_s_polarized/prd.npy  
 
-After tidy up filing::
+    bprd                                              : 
+    [[[  0.   0.   1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    a_flag=a[:,3,3].view(np.uint32)                    : [2048 2048 2048 ... 2048 2048 1024]
+    b_flag=b[:,3,3].view(np.uint32)                    : [2048 2048 2048 ... 2048 2048 1024]
+    w_flag=np.where( a_flag != b_flag )                : (array([209411]),)
+    ua_flag=np.unique(a_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([ 45024, 954976]))
+    ub_flag=np.unique(b_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([ 45025, 954975]))
+    a_TransCoeff=a[:,1,3]                              : [0.784 0.799 0.588 ... 0.853 0.481 0.959]
+    b_TransCoeff=b[:,1,3]                              : [0.784 0.799 0.588 ... 0.853 0.481 0.959]
+    w_TransCoeff=np.where( np.abs( a_TransCoeff - b_TransCoeff) > 1e-6 ) : (array([], dtype=int64),)
+    a_flat=a[:,0,3]                                    : [0.438 0.46  0.25  ... 0.557 0.184 0.992]
+    b_flat=b[:,0,3]                                    : [0.438 0.46  0.25  ... 0.557 0.184 0.992]
+    w_flat=np.where(a_flat != b_flat)                  : (array([], dtype=int64),)
+    w_ab0=np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+    w_ab1=np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )   : (array([209411, 209411, 209411]), array([0, 1, 2]))
+    w_ab2=np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )   : (array([209411, 209411]), array([0, 1]))
+    w_ab3=np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+
+    In [1]:                                                                                                          
+
+
+
+    epsilon:BoundaryStandalone blyth$ TEST=propagate_at_boundary_p_polarized NUM=1000000  ./G4OpBoundaryProcessTest.sh cf
+    === ./G4OpBoundaryProcessTest.sh : G4OpBoundaryProcessTest.cc
+    === ./G4OpBoundaryProcessTest.sh : script_cf ../../../qudarap/tests/propagate_at_boundary_cf.py A_FOLD /tmp/blyth/opticks/QSimTest/propagate_at_boundary_p_polarized B_FOLD /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_p_polarized
+    a_key :               A_FOLD  A_FOLD : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_p_polarized
+    b_key :               B_FOLD  B_FOLD : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_p_polarized
+    a.shape (1000000, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_p_polarized/p.npy  
+    b.shape (1000000, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_p_polarized/p.npy  
+    aprd.shape  (1, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_p_polarized/prd.npy  
+
+    aprd                                              : 
+    [[[  0.   0.   1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    bprd.shape  (1, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_p_polarized/prd.npy  
+
+    bprd                                              : 
+    [[[  0.   0.   1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    a_flag=a[:,3,3].view(np.uint32)                    : [2048 2048 2048 ... 2048 2048 1024]
+    b_flag=b[:,3,3].view(np.uint32)                    : [2048 2048 2048 ... 2048 2048 1024]
+    w_flag=np.where( a_flag != b_flag )                : (array([104859]),)
+    ua_flag=np.unique(a_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([ 36015, 963985]))
+    ub_flag=np.unique(b_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([ 36016, 963984]))
+    a_TransCoeff=a[:,1,3]                              : [0.99  0.994 0.884 ... 1.    0.784 0.961]
+    b_TransCoeff=b[:,1,3]                              : [0.99  0.994 0.884 ... 1.    0.784 0.961]
+    w_TransCoeff=np.where( np.abs( a_TransCoeff - b_TransCoeff) > 1e-6 ) : (array([], dtype=int64),)
+    a_flat=a[:,0,3]                                    : [0.438 0.46  0.25  ... 0.557 0.184 0.992]
+    b_flat=b[:,0,3]                                    : [0.438 0.46  0.25  ... 0.557 0.184 0.992]
+    w_flat=np.where(a_flat != b_flat)                  : (array([], dtype=int64),)
+    w_ab0=np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+    w_ab1=np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )   : (array([104859, 104859, 104859]), array([0, 1, 2]))
+    w_ab2=np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )   : (array([104859, 104859, 104859]), array([0, 1, 2]))
+    w_ab3=np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+
+    In [1]:                                                                
+
+
+
+    epsilon:BoundaryStandalone blyth$ TEST=propagate_at_boundary_x_polarized NUM=1000000  ./G4OpBoundaryProcessTest.sh cf
+    === ./G4OpBoundaryProcessTest.sh : G4OpBoundaryProcessTest.cc
+    === ./G4OpBoundaryProcessTest.sh : script_cf ../../../qudarap/tests/propagate_at_boundary_cf.py A_FOLD /tmp/blyth/opticks/QSimTest/propagate_at_boundary_x_polarized B_FOLD /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_x_polarized
+    a_key :               A_FOLD  A_FOLD : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_x_polarized
+    b_key :               B_FOLD  B_FOLD : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_x_polarized
+    a.shape (1000000, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_x_polarized/p.npy  
+    b.shape (1000000, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_x_polarized/p.npy  
+    aprd.shape  (1, 4, 4) : /tmp/blyth/opticks/QSimTest/propagate_at_boundary_x_polarized/prd.npy  
+
+    aprd                                              : 
+    [[[  0.   0.   1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    bprd.shape  (1, 4, 4) : /tmp/blyth/opticks/G4OpBoundaryProcessTest/propagate_at_boundary_x_polarized/prd.npy  
+
+    bprd                                              : 
+    [[[  0.   0.   1. 100.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]
+      [  0.   0.   0.   0.]]]
+    a_flag=a[:,3,3].view(np.uint32)                    : [2048 2048 2048 ... 2048 2048 1024]
+    b_flag=b[:,3,3].view(np.uint32)                    : [2048 2048 2048 ... 2048 2048 1024]
+    w_flag=np.where( a_flag != b_flag )                : (array([], dtype=int64),)
+    ua_flag=np.unique(a_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([ 40034, 959966]))
+    ub_flag=np.unique(b_flag, return_counts=True)      : (array([1024, 2048], dtype=uint32), array([ 40034, 959966]))
+    a_TransCoeff=a[:,1,3]                              : [0.887 0.896 0.736 ... 0.926 0.633 0.96 ]
+    b_TransCoeff=b[:,1,3]                              : [0.887 0.896 0.736 ... 0.926 0.633 0.96 ]
+    w_TransCoeff=np.where( np.abs( a_TransCoeff - b_TransCoeff) > 1e-6 ) : (array([], dtype=int64),)
+    a_flat=a[:,0,3]                                    : [0.438 0.46  0.25  ... 0.557 0.184 0.992]
+    b_flat=b[:,0,3]                                    : [0.438 0.46  0.25  ... 0.557 0.184 0.992]
+    w_flat=np.where(a_flat != b_flat)                  : (array([], dtype=int64),)
+    w_ab0=np.where( np.abs(a[:,0] - b[:,0]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+    w_ab1=np.where( np.abs(a[:,1] - b[:,1]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+    w_ab2=np.where( np.abs(a[:,2] - b[:,2]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+    w_ab3=np.where( np.abs(a[:,3] - b[:,3]) > 1e-6 )   : (array([], dtype=int64), array([], dtype=int64))
+
+    In [1]:                                                                  
+
+
+
+
+
+
+
+Results During Aligment
+--------------------------
+
+Random Aligned comparison After tidy up filing::
 
     epsilon:BoundaryStandalone blyth$ ./G4OpBoundaryProcessTest.sh cf
     === ./G4OpBoundaryProcessTest.sh : G4OpBoundaryProcessTest.cc
@@ -617,5 +740,9 @@ Also for reflection at normal incidence Geant4 has a special case handling::
 
 
 
+
+
+Next TIR : need to organise n1 n2 setting in order to check TIR
+------------------------------------------------------------------
 
 
