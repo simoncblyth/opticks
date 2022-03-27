@@ -10,8 +10,11 @@ Progress
        :depth: 3
 
 
-Tips for making yearly summaries
+Tips for making monthly summaries
 -----------------------------------
+
+* https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
+
 
 1. review commit messages month by month with eg ``o ; ./month.sh -1`` 
 2. review presentations month by month, find them with presentation-index
@@ -26,12 +29,70 @@ Tips for making yearly summaries
 2022 March
 -------------
 
+Physics
+~~~~~~~~
+
+* 03/17 : switch gears from geometry issues back to non-geometry simulation bringing into QUDARap
+
+  * fill_state, rayleigh_scatter, propagate_to_boundary, propagate_at_boundary : brought over to new qsim.h workflow 
+
+    * maybe simpler to not sign the boundary, instead determining that at raygen level after trace
+    * G4OpBoundaryProcess_MOCK to enable standalone boundary process testing where the surface normal is set externally
+
+  * QSimTest : fine grained testing
+
+    * random aligned comparison qsim-vs-bst : 1-in-a-million level match for S/P/X-polarization/normal-incidence/TIR
+    * P-polarized random aligned comparison of propagate_at_boundary shows 1 in a million TransCoeff cut edger just like S-polarized 
+    * persist the qstate with QState, swap the refractive indices to check TotalInternalReflection
+
+  * Geant4 MOCK environment setup tests:
+
+    * bst opticks/examples/Geant4/BoundaryStandalone
+    * opticks/examples/Geant4/RayleighStandalone 
+
+Geometry
+~~~~~~~~~~
+
+* preparation for deployment of AltXJfixtureConstruction using CSG_CONTIGUOUS to replace slow and spurious isect afflicted solid
+* implemented dynamic CSG prim selection in CSGCopy : needed for investigating geometry slowdown 
+
+  * *working on this due to x3 slowdown in JUNO geometry observed compared with Dec 2021*  
+  * equivalent to being able to dynamically control which G4VSolid instances are present in the geometry
+  * have long been able to dynamically control the higher level compound solids, but 
+    now that bottlenecks are in the global remainder compound solid zero needed finer level control
+    in order to see what is causing the slowdowns in global geometry.  
+  * now can do that at the lower level of Prim 
+  * ELV enabled-logical-volume index selection by CSGCopy applied to the loaded CSGFoundry 
+
+* transform bug motived developing additional volume level testing machinery and simplified geometry switching 
+
+  * X4VolumeMaker for creation for test PV LV volumes for debugging and switch to using that with g4ok/G4OKVolumeTest.sh 
+
+* Act on feedback from NVIDIA engineer at UK GPU Hackathon, with no performance difference (probably geom is otherwise bottlenecked) 
+
+  * WITH_PRD pointer packing : nice for code organization
+  * try CSGOptiX::initStack PIP::configureStack following optixPathTracer example 
+
 * Created repo to share CSGFoundry geometry via tarballs https://github.com/simoncblyth/cfbase
 
+  *  geocache-create-cfbase-tarball
 
-2022 February 
----------------
+* get subNum subOffset CSG generalization thru geometry translation
 
+* XJfixtureConstruction, balanced tree incompatibility issue, CSG list nodes: CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
+
+  * https://simoncblyth.bitbucket.io/env/presentation/opticks_20220307_fixed_global_leaf_placement_issue.html
+  * http://localhost/env/presentation/opticks_20220307_fixed_global_leaf_placement_issue.html 
+
+
+2022 February  : CSG list-node generalization to avoid large trees due to discovery of balanced tree incompatibility 
+----------------------------------------------------------------------------------------------------------------------
+
+* LHCb RICH geometry into CSG model for UK GPU Hackathon
+
+  * https://simoncblyth.bitbucket.io/env/presentation/opticks_20220227_LHCbRich_UK_GPU_HACKATHON.html
+  * http://localhost/env/presentation/opticks_20220227_LHCbRich_UK_GPU_HACKATHON.html
+      
 * CSG_DISCONTIGUOUS : leaf list with simple nearest ENTER/EXIT imp
 
   * added new compound node implemented in CSG/csg_intersect_node.h:intersect_node_discontiguous 
@@ -90,8 +151,16 @@ Tips for making yearly summaries
         rather than with pairs-of-planes and pairs-of-cones 
 
 
+
+* 02/01 : look into primitive ordering of balanced trees, simple cases do not change primitive order
+* 02/01 : find with BoxFourBoxUnion the issues is not due to a change in primitive traversal order with the balanced tree, so it must be from the changed CSG structure
+
+
 2022 January 
 -------------
+
+* 01/31 : confirmed that switching off tree balancing avoids interior constituent boundary spurious intersects as that guarantees no disjoint-union-ness as the postorder tree grows
+
 
 * http://simoncblyth.bitbucket.io/env/presentation/opticks_20220115_innovation_in_hep_workshop_hongkong.html
 * http://localhost/env/presentation/opticks_20220115_innovation_in_hep_workshop_hongkong.html
