@@ -97,6 +97,7 @@ class Snap(object):
 
         elv = dstem.get("elv", None)
         emm = dstem.get("emm", None)
+        moi = dstem.get("moi", None)
 
         if not emm is None:
             assert js["emm"] == emm
@@ -104,6 +105,7 @@ class Snap(object):
 
         self.elv = elv
         self.emm = emm 
+        self.moi = moi
 
         if not elv is None:
             enabled = elv
@@ -214,7 +216,7 @@ class Snap(object):
 
 class SnapScan(object):
     @classmethod
-    def MakeSnaps(cls, globptn):
+    def MakeSnaps(cls, globptn, reverse=False):
         """
         * resolve the globptn into a sorted list of paths, typically of jpg renders
         * order is based on Snap.av obtained from the sidecar json file
@@ -224,11 +226,11 @@ class SnapScan(object):
         log.info("raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
         paths = filter(lambda p:Snap.is_valid(p), raw_paths)  # seems all paths are for now valid
         snaps = list(map(Snap,paths))
-        snaps = sorted(snaps, key=lambda s:s.av)
+        snaps = sorted(snaps, key=lambda s:s.av, reverse=reverse)
         return snaps
 
     @classmethod
-    def SelectSnaps(cls, all_snaps ):
+    def SelectSnaps_imm(cls, all_snaps, selectspec):
         snaps = []
         for s in all_snaps:  
             #print(s.imm)
@@ -241,7 +243,34 @@ class SnapScan(object):
         return snaps
 
     @classmethod
-    def Create(cls, globptn):
+    def SelectSnaps_elv(cls, all_snaps, selectspec):
+        SNAP_LIMIT = int(os.environ.get("SNAP_LIMIT", "256" ))
+        snaps = []
+        for s in all_snaps:  
+            #print("s.elv %s " % s.elv)
+            if selectspec == "all":
+                snaps.append(s)
+            elif selectspec == "not_elv_t":
+                if not s.elv.startswith("t"):
+                    snaps.append(s)
+                pass
+            elif selectspec == "only_elv_t":
+                if s.elv.startswith("t"):
+                    snaps.append(s)
+                pass
+            else: 
+                log.fatal("selectspec %s must be one of : all not_elv_t only_elv_t " % selectspec ) 
+                assert 0
+                pass
+            pass
+        pass
+        lim_snaps = snaps[:SNAP_LIMIT]
+        log.info(" all_snaps %d selectspec %s snaps %d SNAP_LIMIT %d lim_snaps %d " % (len(all_snaps), selectspec, len(snaps), SNAP_LIMIT, len(lim_snaps) ))
+        return lim_snaps
+
+
+    @classmethod
+    def Create(cls, globptn, reverse, selectmode, selectspec):
         base = os.path.expandvars(os.path.dirname(globptn)) 
         cfdigest = CSGFoundry.FindDigest(base)
         cfdir = CSGFoundry.FindDirUpTree(base)
@@ -256,11 +285,11 @@ class SnapScan(object):
         lv = LV(meshname_path)
 
         elv_mode = globptn.find("elv") > -1
-        sc = cls(globptn, mm, lv, elv_mode=elv_mode, cfdigest=cfdigest, cfdir=cfdir  )
+        sc = cls(globptn, mm, lv, elv_mode=elv_mode, cfdigest=cfdigest, cfdir=cfdir, reverse=reverse, selectmode=selectmode, selectspec=selectspec  )
         return sc 
 
-
-    def __init__(self, globptn, mm=None, lv=None, candle_emm="1,2,3,4", elv_mode=False, cfdigest=None, cfdir=None):
+    # SnapScan
+    def __init__(self, globptn, mm=None, lv=None, candle_emm="1,2,3,4", elv_mode=False, cfdigest=None, cfdir=None, reverse=False, selectmode="elv", selectspec=""):
         """
         :param globptn: eg 
        
@@ -274,7 +303,7 @@ class SnapScan(object):
         self.cfdigest = cfdigest
         self.cfdir = cfdir 
 
-        all_snaps = self.MakeSnaps(globptn)
+        all_snaps = self.MakeSnaps(globptn, reverse=reverse)
         candle = None
         for s in all_snaps:
             s.sc = self
@@ -284,8 +313,14 @@ class SnapScan(object):
         pass
 
         # filter out the double emm
-        #snaps = list(filter(lambda s:len(s.imm) != 2, snaps))
-        snaps = self.SelectSnaps(all_snaps)
+
+        if selectmode == "imm":
+            snaps = self.SelectSnaps_imm(all_snaps, selectspec)
+        elif selectmode == "elv":
+            snaps = self.SelectSnaps_elv(all_snaps, selectspec)
+        else:
+            snaps = all_snaps
+        pass
 
         for idx, s in enumerate(snaps):
             s.idx = idx
@@ -357,6 +392,11 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--argline", action="store_true", help="List argline in speed order" ) 
     parser.add_argument(  "--rst", action="store_true", help="Dump table in RST format" ) 
     parser.add_argument(  "--snaps", action="store_true", help="Debug: just create SnapScan " ) 
+    parser.add_argument(  "--outpath", default="/tmp/ana_snap.txt", help="Path where to write output" )
+    parser.add_argument(  "--out" , action="store_true", default=False, help="Enable saving output to *outpath*" )
+    parser.add_argument(  "--reverse", action="store_true", default=False, help="Reverse time order with slowest first")
+    parser.add_argument(  "--selectmode",  default="elv", help="SnapScan selection mode" )
+    parser.add_argument(  "--selectspec",  default="not_elv_t", help="all/only_elv_t/not_elv_t : May be used to configure snap selection" )
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -371,26 +411,33 @@ if __name__ == '__main__':
     log.info("globptn %s " % (globptn) ) 
 
     
-    ss = SnapScan.Create(args.globptn) 
-    if args.jpg:
-        print(ss.jpg())
-    elif args.refjpg:
-        print(ss.refjpg(args.refjpgpfx))
-    elif args.pagejpg:
-        print(ss.pagejpg())
-    elif args.mvjpg:
-        print(ss.mvjpg())
-    elif args.cpjpg:
-        print(ss.cpjpg(args.refjpgpfx, args.s5base))
-    elif args.argline:
-        print(ss.argline())
-    elif args.snaps:
-        snaps = ss.snaps
-    elif args.rst:
-        print(ss.rst_table())
-    else:
-        print(ss) 
-    pass
+    ss = SnapScan.Create(args.globptn, args.reverse, args.selectmode, args.selectspec) 
 
+    out = None
+    if args.jpg:
+        out = str(ss.jpg())
+    elif args.refjpg:
+        out = str(ss.refjpg(args.refjpgpfx))
+    elif args.pagejpg:
+        out = str(ss.pagejpg())
+    elif args.mvjpg:
+        out = str(ss.mvjpg())
+    elif args.cpjpg:
+        out = str(ss.cpjpg(args.refjpgpfx, args.s5base))
+    elif args.argline:
+        out = str(ss.argline())
+    elif args.snaps:
+        out = str(ss.snaps)
+    elif args.rst:
+        out = str(ss.rst_table())
+    else:
+        out = str(ss) 
+    pass
+    if args.out:
+        log.info("--out writing to %s " % args.outpath)
+        open(args.outpath, "w").write(out)
+    else: 
+        print(out)
+    pass
 
 
