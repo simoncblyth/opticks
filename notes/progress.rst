@@ -6,8 +6,7 @@ Progress
     :depth: 3
 
 
-Tips for making monthly summaries
------------------------------------
+**Tips for making monthly summaries**
 
 * https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
 
@@ -212,8 +211,7 @@ Tips for making monthly summaries
 
 
 
-2021 : Very Short Summary JUNO Opticks Progress 
------------------------------------------------
+**2021 : Very Short Summary JUNO Opticks Progress** 
 
 From scratch development of a shared GPU+CPU geometry model enabling 
 state-of-the-art NVIDIA OptiX 7 ray tracing of CSG based detector geometries, 
@@ -226,8 +224,7 @@ This has led to improved geometry modelling, Cerenkov numerical integration
 and sampling and PMT services resulting in substantial improvements to the correctness
 and performance of the JUNO Geant4 and Opticks based simulations.
 
-2021 : Medium Length (600 word) Summary : Broad headings progress
---------------------------------------------------------------------
+**2021 : Medium Length (600 word) Summary : Broad headings progress**
 
 * do all commits and presentation pages fit under these headings : or are some more topics needed ?
 
