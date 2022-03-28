@@ -36,11 +36,11 @@ msg="=== $BASH_SOURCE :"
 #test=hemisphere_p_polarized
 #test=hemisphere_x_polarized
 
-#test=propagate_at_boundary_s_polarized
+test=propagate_at_boundary_s_polarized
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
 
-test=propagate_at_boundary
+#test=propagate_at_boundary
 #test=propagate_at_boundary_normal_incidence
 
 #test=propagate_at_surface
@@ -79,6 +79,25 @@ if [ "${arg/run}" != "$arg" ]; then
 fi
 
 
+
+relative_stem(){
+   local img=$1
+   
+   local geocache=${OPTICKS_GEOCACHE_PREFIX:-$HOME/.opticks}/geocache/
+   local oktmp=/tmp/$USER/opticks/
+   
+   local rel 
+   case $img in 
+      ${geocache}*)  rel=${img/$geocache/} ;;
+      ${oktmp}*)     rel=${img/$oktmp/} ;;
+   esac 
+   rel=${rel/\.jpg}
+   rel=${rel/\.png}
+   
+   echo $rel 
+}
+
+
 if [ "${arg/ana}" != "$arg" ]; then 
 
     # PYVISTA_KILL_DISPLAY envvar is observed to speedup exiting from ipython after pyvista plotting 
@@ -103,9 +122,57 @@ if [ "${arg/ana}" != "$arg" ]; then
     esac
 
     if [ -f "$script" ]; then
+
+        export FOLD="/tmp/$USER/opticks/QSimTest/$TEST"
+
+        export EYE=-1,-1,1 
+        export LOOK=0,0,0.5 
+        export UP=0,0,1 
+        export PARA=1 
+
         echo $msg invoking analysis script $script
         ${IPYTHON:-ipython} --pdb -i $script
         [ $? -ne 0 ] && echo $msg ana error && exit 2
+
+
+        if [ -n "$PUB" ]; then 
+
+            png=$FOLD/figs/pvplt_polarized.png
+            rel=$(relative_stem $png)
+
+            if [ "$PUB" == "1" ]; then
+                ext=""
+            else
+                ext="_${PUB}" 
+            fi 
+
+            s5p=/env/presentation/${rel}${ext}.png
+            pub=$HOME/simoncblyth.bitbucket.io$s5p
+
+            if [ -f "$png" ]; then 
+
+                echo $msg PUB $PUB
+                echo $msg png $png 
+                echo $msg rel $rel
+                echo $msg ext $ext
+                echo $msg pub $pub 
+                echo $msg s5p $s5p 
+              
+                if [ -f "$pub" ]; then 
+                    echo $msg pub $pub exists already : not copying  
+                elif [ "$ext" == "" ]; then 
+                    echo $msg set PUB to short descriptive string 
+                else
+                    mkdir -p $(dirname $pub)
+                    echo $msg copy to pub $pub 
+                    cp $png $pub
+                    echo 
+                    echo $msg s5p $s5p 1280px_720px 
+                fi 
+            fi  
+        fi 
+
+
     else
         echo $msg there is no analysis script $script
     fi  

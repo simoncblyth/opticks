@@ -3,9 +3,14 @@
 import os 
 import numpy as np
 import pyvista as pv
+themes = ["default", "dark", "paraview", "document" ]
+pv.set_plot_theme(themes[1])
 
 GUI = not "NOGUI" in os.environ
 SIZE = np.array([1280, 720])
+eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
+efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
+
 
 def pvplt_simple(pl, xyz, label):
     """  
@@ -15,6 +20,29 @@ def pvplt_simple(pl, xyz, label):
     """
     pl.add_text( "pvplt_simple %s " % label, position="upper_left")
     pl.add_points( xyz, color="white" )     
+
+
+def pvplt_viewpoint(pl, reset=False):
+    eye = eary_("EYE",  "1,1,1.")
+    look = eary_("LOOK", "0,0,0")    
+    up = eary_("UP", "0,0,1")
+    zoom = efloat_("ZOOM", "1")
+
+    PARA = "PARA" in os.environ 
+    print("pvplt_viewpoint reset:%d PARA:%d " % (reset, PARA))
+    print(" eye  : %s " % str(eye) )
+    print(" look : %s " % str(look) )
+    print(" up   : %s " % str(up) )
+    print(" zoom : %s " % str(zoom) )
+
+    
+    if PARA:
+        pl.camera.ParallelProjectionOn()
+    pass
+    pl.set_focus(    look )
+    pl.set_viewup(   up )
+    pl.set_position( eye, reset=reset )   
+    pl.camera.Zoom(zoom)
 
 
 def pvplt_photon( pl, p   ):

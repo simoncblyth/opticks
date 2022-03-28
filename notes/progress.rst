@@ -2,12 +2,8 @@ Progress
 =========
 
 
-.. comment
-   
-    Needs lots of change to titles and splitting by year to make the toc useful 
-
-    .. contents:: Table of Contents https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
-       :depth: 3
+.. contents:: Table of Contents https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
+    :depth: 3
 
 
 Tips for making monthly summaries

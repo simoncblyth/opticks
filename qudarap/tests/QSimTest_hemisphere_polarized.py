@@ -25,6 +25,10 @@ or perpendicular to the plane of incidence (S-polarized).
 
 Notice with S-polarized that the polarization vectors Z-component is zero 
 
+::
+
+   EYE=-1,-1,1 LOOK=0,0,0.5 PARA=1 ./QSimTest.sh ana
+
 
 """
 import os, numpy as np
@@ -32,9 +36,9 @@ from opticks.ana.fold import Fold
 from opticks.qudarap.tests.pvplt import *
 import pyvista as pv
 
-FOLD = os.path.expandvars("/tmp/$USER/opticks/QSimTest/$TEST")
-GUI = not "NOGUI" in os.environ
+FOLD = os.environ["FOLD"]
 TEST = os.environ["TEST"]
+GUI = not "NOGUI" in os.environ
 
 
 if __name__ == '__main__':
@@ -44,6 +48,7 @@ if __name__ == '__main__':
     prd = t.prd
     lim = slice(0,1000)
 
+    print( " TEST : %s " % TEST)
     print( " FOLD : %s " % FOLD)
     print( "p.shape %s " % str(p.shape) )
     print( "prd.shape %s " % str(prd.shape) )
@@ -60,14 +65,23 @@ if __name__ == '__main__':
     print("pol\n", pol) 
     print("pos\n", pos) 
 
-    pl = pvplt_plotter(label="pvplt_polarized")   
+    label = "pvplt_polarized"
+    pl = pvplt_plotter(label=label)   
 
+    pvplt_viewpoint( pl ) 
     pvplt_polarized( pl, pos[lim], mom[lim], pol[lim] )
     pvplt_lines(     pl, pos[lim], mom[lim] )
 
 
     pvplt_arrows( pl, point, normal )
 
-    cp = pl.show() if GUI else None
+    outpath = os.path.join(FOLD, "figs/%s.png" % label )
+    outdir = os.path.dirname(outpath)
+    if not os.path.isdir(outdir):
+        os.makedirs(outdir)
+    pass
+
+    print(" outpath: %s " % outpath ) 
+    cp = pl.show(screenshot=outpath) if GUI else None
 
    

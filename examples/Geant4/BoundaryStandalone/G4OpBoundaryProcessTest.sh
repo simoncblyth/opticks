@@ -103,10 +103,10 @@ num=$M1
 #num=8
 nrm=0,0,1
 
-test=propagate_at_boundary
+#test=propagate_at_boundary
 #test=propagate_at_boundary_normal_incidence
 
-#test=propagate_at_boundary_s_polarized
+test=propagate_at_boundary_s_polarized
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
 
