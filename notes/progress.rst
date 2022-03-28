@@ -2,7 +2,7 @@ Progress
 =========
 
 
-.. contents:: Table of Contents https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
+.. contents:: Table of Contents : https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
     :depth: 3
 
 
@@ -22,14 +22,14 @@ Tips for making monthly summaries
      think about how they related to each other 
 
 
-2022 March
--------------
+2022 March : AltXJfixtureConstruction, Dynamic Prim selection, QSimTest
+------------------------------------------------------------------------------
 
 * https://simoncblyth.bitbucket.io/env/presentation/opticks_20220329_progress_towards_production.html
 * http://localhost/env/presentation/opticks_20220329_progress_towards_production.html
 
-Physics
-~~~~~~~~
+**Physics : QSimTest, BoundaryStandalone, RayleighStandalone**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * 03/17 : switch gears from geometry issues back to non-geometry simulation bringing into QUDARap
 
@@ -49,8 +49,8 @@ Physics
     * bst opticks/examples/Geant4/BoundaryStandalone
     * opticks/examples/Geant4/RayleighStandalone 
 
-Geometry
-~~~~~~~~~~
+**Geometry :  AltXJfixtureConstruction, Prim speed scan using Dynamic Prim Selection**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * preparation for deployment of AltXJfixtureConstruction using CSG_CONTIGUOUS to replace slow and spurious isect afflicted solid
 * implemented dynamic CSG prim selection in CSGCopy : needed for investigating geometry slowdown 
@@ -155,8 +155,8 @@ Geometry
 * 02/01 : find with BoxFourBoxUnion the issues is not due to a change in primitive traversal order with the balanced tree, so it must be from the changed CSG structure
 
 
-2022 January 
--------------
+2022 January : JUNO trunk geom overlap checks, XJfixtureConstruction : atypical spurious, tree balancing implicated     
+----------------------------------------------------------------------------------------------------------------------
 
 * 01/31 : confirmed that switching off tree balancing avoids interior constituent boundary spurious intersects as that guarantees no disjoint-union-ness as the postorder tree grows
 
@@ -212,8 +212,8 @@ Geometry
 
 
 
-JUNO Opticks Progress : Short Summary 2021 : 
-------------------------------------------------------------
+2021 : Very Short Summary JUNO Opticks Progress 
+-----------------------------------------------
 
 From scratch development of a shared GPU+CPU geometry model enabling 
 state-of-the-art NVIDIA OptiX 7 ray tracing of CSG based detector geometries, 
@@ -226,8 +226,7 @@ This has led to improved geometry modelling, Cerenkov numerical integration
 and sampling and PMT services resulting in substantial improvements to the correctness
 and performance of the JUNO Geant4 and Opticks based simulations.
 
-
-Broad headings 2021 progress for a 600 word medium length summary
+2021 : Medium Length (600 word) Summary : Broad headings progress
 --------------------------------------------------------------------
 
 * do all commits and presentation pages fit under these headings : or are some more topics needed ?
@@ -280,8 +279,8 @@ JUNO/Opticks infrastructure integration
     (skip this 9th topic)
     
 
-2021 Dec : work with LHCb RICH people on phicut/thetacut primitive
--------------------------------------------------------------------------------------------
+2021 Dec : Apply ZSolid to cutting PMTs,  Geo Speed Check, work with LHCb RICH people on phicut/thetacut primitive
+---------------------------------------------------------------------------------------------------------------------
 
 * http://simoncblyth.bitbucket.io/env/presentation/opticks_20211223_pre_xmas.html
 * http://localhost/env/presentation/opticks_20211223_pre_xmas.html
@@ -299,8 +298,8 @@ JUNO/Opticks infrastructure integration
 * found spurious Geant4 and Opticks intersects from flush unions in solidXJfixture and solidXJanchor, these could explain the 0.5 percent history mismatch in ab.sh
 
 
-2021 Nov : Z-cutting G4VSolid that actually cuts the CSG tree, Geant4 2D cross-sections with (Q->X4)IntersectSolidTest, (Q->X4)IntersectVolumeTest 
------------------------------------------------------------------------------------------------------------------------------------------------------
+2021 Nov : Develop Z-cutting G4VSolid that actually cuts the CSG tree, Geant4 2D cross-sections with (Q->X4)IntersectSolidTest, (Q->X4)IntersectVolumeTest 
+------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 * http://simoncblyth.bitbucket.io/env/presentation/opticks_20211117.html
 * http://localhost/env/presentation/opticks_20211117.html
@@ -310,7 +309,6 @@ JUNO/Opticks infrastructure integration
   * spurious Geant4 intersects
   * Geant4 geometry 2D cross sections
   * new GeoChain package 
-
 
 * GeoChain testing of the ZCutSolid from j/PMTSIM
 * generalize CXS_CEGS center-extent-gensteps config to allow specification of dx:dy:dz offset grids
@@ -334,7 +332,7 @@ JUNO/Opticks infrastructure integration
 
 
 
-2021 Oct : QUDARap : QTex, QCerenkov : new world order simulation atoms, JUNO Fastenener void subtraction reveals CSG limitation, Geant4 1100 property debug
+2021 Oct : QUDARap : QTex, QCerenkov : new workflow simulation atoms, JUNO Fastenener void subtraction reveals CSG limitation, Geant4 1100 property debug
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 * http://simoncblyth.bitbucket.io/env/presentation/opticks_autumn_20211019.html
@@ -419,11 +417,8 @@ JUNO/Opticks infrastructure integration
 * remove all use of G4PhysicsVector::SetSpline due to Geant4 API change, implicitly assuming the default stays a sensible false 
 
 
-
-
-
-2021 Aug : Cerenkov S2, QRng, QBuf, integrating the new world packages
-------------------------------------------------------------------------
+2021 Aug : Cerenkov S2, QRng, QBuf, integrating the new workflow packages
+----------------------------------------------------------------------------
 
 * doing the G4Cerenkov numerical integration directly on s2 = 1 - BetaInverse*BetaInverse/(n*n)  avoids GetAverageNumberOfPhotons going negative when only a small rindex peak is left 
 * maximally simple use of skipahead still failing within optixrap/cu/generate.cu but no such problem with qudarap QRngTest
@@ -445,7 +440,6 @@ JUNO/Opticks infrastructure integration
 * retire ancient tests CG4Test OKG4Test that are unclear how to bring into the CManager Geant4 integration approach without lots of additional code
 * fix Cerenkov wavelength regression, must reciprocalize otherwise wavelength not properly peaked towards low wavelengths
 * forcing use of common en_cross from full bin integral for the partial bin integrals seems to fix slightly non-monotonic issue with cumulative integrals
-
 
 
 2021 July : QProp, Cerenkov matching 
@@ -481,8 +475,6 @@ JUNO/Opticks infrastructure integration
 * templated QProp/qprop, C++ extern for CUDA calling templated global function QProp.cu _QProp_lookup
 * can the cerenkov rejection sampling be converted into an icdf lookup ? What distinguises situations amenable to icdf ?
 * Cerenkov photon energy sampling via inverse CDF for many BetaInverse in a 2d texture looks like it might work, prototyping in ana/rindex.py
-
-
 
 
 2021 June : Simulation Matching, workarounds for Geant4 implicits/special-cases   
@@ -584,9 +576,8 @@ JUNO/Opticks infrastructure integration
 * use SBit::FromString for --enabledmergedmesh/-e for the brevity/flexibility of bitfield control 
 
 
-
-2021 March : OptiX7 expts in OptiXTest
--------------------------------------------
+2021 March : NVIDIA OptiX 7 expts in OptiXTest, curand skipahead, Start CPU/GPU CSG Model Development
+-------------------------------------------------------------------------------------------------------
 
 * http://simoncblyth.bitbucket.io/env/presentation/opticks_detector_geometry_caf_mar2021.html
 * http://localhost/env/presentation/opticks_detector_geometry_caf_mar2021.html
@@ -602,14 +593,12 @@ JUNO/Opticks infrastructure integration
   * run into identity limitations
 
 
-OptiXTest : 2021/03/11 -> 2021/05/07
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**OptiXTest : 2021/03/11 -> 2021/05/07**
 
 * https://github.com/simoncblyth/OptiXTest/commits/main
 * Geo, Grid, IAS, GAS, Shape, Foundry, Ctx, BI, PIP, PrimSpec
 
-Opticks repo
-~~~~~~~~~~~~~~
+**Opticks repo**
 
 * curand skipahead
 * check for CUDA capable GPU before opticks-full-prepare 
@@ -617,9 +606,8 @@ Opticks repo
 * standalone-ish L4CerenkovTest exercising the branches of L4Cerenkov::GetAverageNumberOfPhotons and plotting NumPhotons vs BetaInverse with branches distinguished
 
 
-
-2021 Feb : first expts with OptiX 7
----------------------------------------
+2021 Feb : First development using new NVIDIA OptiX 7 API
+----------------------------------------------------------
 
 * http://simoncblyth.bitbucket.io/env/presentation/lz_opticks_optix7_20210208.html
 * http://localhost/env/presentation/lz_opticks_optix7_20210208.html
@@ -642,9 +630,8 @@ Opticks repo
 
 
 
-
-2021 Jan : Geant4 1070,  first OptiX 7 expts
--------------------------------------------------
+2021 Jan : Geant4 1070 Followup several bugs reported,  Learning OptiX 7 API
+---------------------------------------------------------------------------------
 
 * http://simoncblyth.bitbucket.io/env/presentation/opticks_jan2021_juno_sim_review.html
 * http://localhost/env/presentation/opticks_jan2021_juno_sim_review.html
