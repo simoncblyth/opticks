@@ -270,7 +270,7 @@ class SnapScan(object):
 
 
     @classmethod
-    def Create(cls, globptn, reverse, selectmode, selectspec):
+    def Create(cls, globptn, reverse, selectmode, selectspec, candle):
         base = os.path.expandvars(os.path.dirname(globptn)) 
         cfdigest = CSGFoundry.FindDigest(base)
         cfdir = CSGFoundry.FindDirUpTree(base)
@@ -285,11 +285,11 @@ class SnapScan(object):
         lv = LV(meshname_path)
 
         elv_mode = globptn.find("elv") > -1
-        sc = cls(globptn, mm, lv, elv_mode=elv_mode, cfdigest=cfdigest, cfdir=cfdir, reverse=reverse, selectmode=selectmode, selectspec=selectspec  )
+        sc = cls(globptn, mm, lv, candle=candle, elv_mode=elv_mode, cfdigest=cfdigest, cfdir=cfdir, reverse=reverse, selectmode=selectmode, selectspec=selectspec  )
         return sc 
 
     # SnapScan
-    def __init__(self, globptn, mm=None, lv=None, candle_emm="1,2,3,4", elv_mode=False, cfdigest=None, cfdir=None, reverse=False, selectmode="elv", selectspec=""):
+    def __init__(self, globptn, mm=None, lv=None, candle="1,2,3,4", elv_mode=False, cfdigest=None, cfdir=None, reverse=False, selectmode="elv", selectspec=""):
         """
         :param globptn: eg 
        
@@ -304,11 +304,11 @@ class SnapScan(object):
         self.cfdir = cfdir 
 
         all_snaps = self.MakeSnaps(globptn, reverse=reverse)
-        candle = None
+        s_candle = None
         for s in all_snaps:
             s.sc = self
-            if s.emm == candle_emm:
-                candle = s
+            if s.enabled == candle:
+                s_candle = s
             pass  
         pass
 
@@ -327,10 +327,10 @@ class SnapScan(object):
         pass
         self.snaps = snaps
 
-        if candle is None:
-            candle = DummyCandleSnap()
+        if s_candle is None:
+            s_candle = DummyCandleSnap()
         pass  
-        self.candle = candle 
+        self.candle = s_candle 
 
     def label(self, enabled):
         return self.lv.label(enabled) if self.elv_mode else self.mm.label(enabled)
@@ -397,6 +397,7 @@ def parse_args(doc, **kwa):
     parser.add_argument(  "--reverse", action="store_true", default=False, help="Reverse time order with slowest first")
     parser.add_argument(  "--selectmode",  default="elv", help="SnapScan selection mode" )
     parser.add_argument(  "--selectspec",  default="not_elv_t", help="all/only_elv_t/not_elv_t : May be used to configure snap selection" )
+    parser.add_argument(  "--candle",  default="t", help="Enabled setting to use as the reference candle for relative column in the table" )
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -411,7 +412,7 @@ if __name__ == '__main__':
     log.info("globptn %s " % (globptn) ) 
 
     
-    ss = SnapScan.Create(args.globptn, args.reverse, args.selectmode, args.selectspec) 
+    ss = SnapScan.Create(args.globptn, args.reverse, args.selectmode, args.selectspec, args.candle) 
 
     out = None
     if args.jpg:
