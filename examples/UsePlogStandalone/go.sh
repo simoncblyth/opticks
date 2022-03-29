@@ -24,13 +24,36 @@ else
 fi 
 
 
+cat << EOS > $name.cc
+
+#include <cstdlib>
+#include <iostream>
+#include <plog/Log.h> 
+
+int main()
+{
+    const char* path = getenv("PLOGPATH") ; 
+    std::cout << "writing to PLOGPATH " << path << std::endl ; 
+
+    plog::init(plog::debug, path ); 
+
+    LOGD << "LOGD";
+    LOG_DEBUG << "LOG_DEBUG"; 
+    LOG(plog::debug) << "LOG(plog::debug)" ; 
+
+    return 0;
+}
+
+EOS
+
+
 echo $msg compile with c++11
-gcc $srcdir/$name.cc -std=c++11 -lstdc++ -I$tmpdir/plog/include -o $tmpdir/$name 
+gcc $name.cc -std=c++11 -lstdc++ -I$tmpdir/plog/include -o $tmpdir/$name 
 [ $? -ne 0 ] && echo $msg compilation error with c++11 && exit 1 
 
 if [ "$(uname)" == "Linux" ]; then 
     echo $msg compile with c++17
-    gcc $srcdir/$name.cc -std=c++17 -lstdc++ -I$tmpdir/plog/include -o $tmpdir/$name 
+    gcc $name.cc -std=c++17 -lstdc++ -I$tmpdir/plog/include -o $tmpdir/$name 
     [ $? -ne 0 ] && echo $msg compilation error with c++17 && exit 1 
 fi
 
