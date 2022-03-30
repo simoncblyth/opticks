@@ -24,6 +24,7 @@
 #include "CStp.hh"
 #include "CRecorder.hh"
 #include "CAction.hh"
+#include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "OpStatus.hh"
 

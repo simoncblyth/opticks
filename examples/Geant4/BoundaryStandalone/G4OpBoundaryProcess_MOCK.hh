@@ -273,6 +273,7 @@ private:
        G4double      theTransCoeff_MOCK ; 
        int           photon_idx ; 
        int           photon_idx_debug ; 
+       G4OpticalSurface* OpticalSurface_MOCK ;
 #endif
 
 };

@@ -168,3 +168,110 @@ Googling for "__gthread_mutex_t _M_mutex = __GTHREAD_MUTEX_INIT"
 
 
 
+
+::
+
+    N[blyth@localhost ~]$ yum whatprovides /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/gthr.h
+
+    ...
+
+    libstdc++-devel-4.8.5-44.el7.x86_64 : Header files and libraries for C++ development
+    Repo        : @base
+    Matched from:
+    Filename    : /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/gthr.h
+
+
+
+    N[blyth@localhost ~]$ yum info  libstdc++-devel-4.8.5-44.el7.x86_64
+    ...
+    Installed Packages
+    Name        : libstdc++-devel
+    Arch        : x86_64
+    Version     : 4.8.5
+    Release     : 44.el7
+    Size        : 8.0 M
+    Repo        : installed
+    From repo   : base
+    Summary     : Header files and libraries for C++ development
+    URL         : http://gcc.gnu.org
+    License     : GPLv3+ and GPLv3+ with exceptions and GPLv2+ with exceptions and LGPLv2+ and BSD
+    Description : This is the GNU implementation of the standard C++ libraries.  This
+                : package includes the header files and libraries needed for C++
+                : development. This includes rewritten implementation of STL.
+
+
+
+    N[blyth@localhost ~]$ yum deplist  libstdc++-devel-4.8.5-44.el7.x86_64
+
+    package: libstdc++-devel.x86_64 4.8.5-44.el7
+      dependency: libstdc++(x86-64) = 4.8.5-44.el7
+       provider: libstdc++.x86_64 4.8.5-44.el7
+    N[blyth@localhost ~]$ 
+
+
+
+    N[blyth@localhost ~]$ yum deplist libstdc++
+    ...
+    package: libstdc++.i686 4.8.5-44.el7
+      dependency: /sbin/ldconfig
+       provider: glibc.x86_64 2.17-325.el7_9
+       provider: glibc.i686 2.17-325.el7_9
+
+      dependency: glibc >= 2.10.90-7
+       provider: glibc.x86_64 2.17-325.el7_9
+       provider: glibc.i686 2.17-325.el7_9
+      dependency: ld-linux.so.2
+       provider: glibc.i686 2.17-325.el7_9
+      dependency: ld-linux.so.2(GLIBC_2.3)
+       provider: glibc.i686 2.17-325.el7_9
+      dependency: libc.so.6(GLIBC_2.4)
+       provider: glibc.i686 2.17-325.el7_9
+      dependency: libgcc_s.so.1
+       provider: libgcc.i686 4.8.5-44.el7
+      dependency: libgcc_s.so.1(GCC_3.0)
+       provider: libgcc.i686 4.8.5-44.el7
+      dependency: libgcc_s.so.1(GCC_3.3)
+       provider: libgcc.i686 4.8.5-44.el7
+      dependency: libgcc_s.so.1(GCC_4.2.0)
+       provider: libgcc.i686 4.8.5-44.el7
+      dependency: libgcc_s.so.1(GLIBC_2.0)
+       provider: libgcc.i686 4.8.5-44.el7
+      dependency: libm.so.6
+       provider: glibc.i686 2.17-325.el7_9
+      dependency: libm.so.6(GLIBC_2.0)
+       provider: glibc.i686 2.17-325.el7_9
+      dependency: rtld(GNU_HASH)
+       provider: glibc.x86_64 2.17-325.el7_9
+       provider: glibc.i686 2.17-325.el7_9
+
+    package: libstdc++.x86_64 4.8.5-44.el7
+      dependency: /sbin/ldconfig
+       provider: glibc.x86_64 2.17-325.el7_9
+       provider: glibc.i686 2.17-325.el7_9
+      dependency: glibc >= 2.10.90-7
+       provider: glibc.x86_64 2.17-325.el7_9
+       provider: glibc.i686 2.17-325.el7_9
+      dependency: ld-linux-x86-64.so.2()(64bit)
+       provider: glibc.x86_64 2.17-325.el7_9
+      dependency: ld-linux-x86-64.so.2(GLIBC_2.3)(64bit)
+       provider: glibc.x86_64 2.17-325.el7_9
+      dependency: libc.so.6(GLIBC_2.14)(64bit)
+       provider: glibc.x86_64 2.17-325.el7_9
+      dependency: libgcc_s.so.1()(64bit)
+       provider: libgcc.x86_64 4.8.5-44.el7
+      dependency: libgcc_s.so.1(GCC_3.0)(64bit)
+       provider: libgcc.x86_64 4.8.5-44.el7
+      dependency: libgcc_s.so.1(GCC_3.3)(64bit)
+       provider: libgcc.x86_64 4.8.5-44.el7
+      dependency: libgcc_s.so.1(GCC_4.2.0)(64bit)
+       provider: libgcc.x86_64 4.8.5-44.el7
+      dependency: libm.so.6()(64bit)
+       provider: glibc.x86_64 2.17-325.el7_9
+      dependency: libm.so.6(GLIBC_2.2.5)(64bit)
+       provider: glibc.x86_64 2.17-325.el7_9
+      dependency: rtld(GNU_HASH)
+       provider: glibc.x86_64 2.17-325.el7_9
+       provider: glibc.i686 2.17-325.el7_9
+    N[blyth@localhost ~]$ 
+
+

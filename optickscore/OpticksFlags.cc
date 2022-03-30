@@ -32,6 +32,7 @@
 #include "Index.hpp"
 
 #include "OpticksGenstep.hh"
+#include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "OpticksFlags.hh"
 

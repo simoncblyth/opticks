@@ -17,6 +17,10 @@
  * limitations under the License.
  */
 
+
+#include <iostream>
+#include <iomanip>
+
 #include "Opticks.hh"
 #include "OpticksPhoton.hh"
 #include "OpticksFlags.hh"

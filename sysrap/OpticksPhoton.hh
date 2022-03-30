@@ -3,11 +3,13 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <iostream>
 
 #ifdef WITH_PLOG
 #include "plog/Severity.h"
 #endif
 
+#include "OpticksPhoton.h"
 
 #ifdef STANDALONE
 struct OpticksPhoton
@@ -16,55 +18,53 @@ struct OpticksPhoton
 struct SYSRAP_API OpticksPhoton
 #endif
 {
-
 #ifdef WITH_PLOG
    static const plog::Severity LEVEL ; 
 #endif
+   static constexpr const char* ZERO_ = ".";
+   static constexpr const char* CERENKOV_ = "CERENKOV";
+   static constexpr const char* SCINTILLATION_ = "SCINTILLATION" ;
+   static constexpr const char* TORCH_ = "TORCH" ;
+   static constexpr const char* MISS_ = "MISS" ;
+   static constexpr const char* BULK_ABSORB_ = "BULK_ABSORB" ;
+   static constexpr const char* BULK_REEMIT_ = "BULK_REEMIT" ;
+   static constexpr const char* BULK_SCATTER_ = "BULK_SCATTER" ;
+   static constexpr const char* SURFACE_DETECT_ = "SURFACE_DETECT" ;
+   static constexpr const char* SURFACE_ABSORB_ = "SURFACE_ABSORB" ;
+   static constexpr const char* SURFACE_DREFLECT_ = "SURFACE_DREFLECT" ;
+   static constexpr const char* SURFACE_SREFLECT_ = "SURFACE_SREFLECT" ;
+   static constexpr const char* BOUNDARY_REFLECT_ = "BOUNDARY_REFLECT" ;
+   static constexpr const char* BOUNDARY_TRANSMIT_ = "BOUNDARY_TRANSMIT" ;
+   static constexpr const char* NAN_ABORT_ = "NAN_ABORT" ;
+   static constexpr const char* EFFICIENCY_CULL_ = "EFFICIENCY_CULL" ;
+   static constexpr const char* EFFICIENCY_COLLECT_ = "EFFICIENCY_COLLECT" ;
+   static constexpr const char* BAD_FLAG_ = "BAD_FLAG" ;
 
-   static const char* ZERO_ ;
-   static const char* CERENKOV_ ;
-   static const char* SCINTILLATION_ ;
-   static const char* TORCH_ ;
-   static const char* MISS_ ;
-   static const char* BULK_ABSORB_ ;
-   static const char* BULK_REEMIT_ ;
-   static const char* BULK_SCATTER_ ;
-   static const char* SURFACE_DETECT_ ;
-   static const char* SURFACE_ABSORB_ ;
-   static const char* SURFACE_DREFLECT_ ;
-   static const char* SURFACE_SREFLECT_ ;
-   static const char* BOUNDARY_REFLECT_ ;
-   static const char* BOUNDARY_TRANSMIT_ ;
-   static const char* NAN_ABORT_ ;
-   static const char* EFFICIENCY_CULL_ ;
-   static const char* EFFICIENCY_COLLECT_ ;
-   static const char* BAD_FLAG_ ;
+   static constexpr const char* _ZERO              = "  "  ;
+   static constexpr const char* _CERENKOV          = "CK" ;
+   static constexpr const char* _SCINTILLATION     = "SI" ; 
+   static constexpr const char* _TORCH             = "TO" ; 
+   static constexpr const char* _MISS              = "MI" ;
+   static constexpr const char* _BULK_ABSORB       = "AB" ;
+   static constexpr const char* _BULK_REEMIT       = "RE" ;
+   static constexpr const char* _BULK_SCATTER      = "SC" ;
+   static constexpr const char* _SURFACE_DETECT    = "SD" ;
+   static constexpr const char* _SURFACE_ABSORB    = "SA" ;
+   static constexpr const char* _SURFACE_DREFLECT  = "DR" ;
+   static constexpr const char* _SURFACE_SREFLECT  = "SR" ;
+   static constexpr const char* _BOUNDARY_REFLECT  = "BR" ;
+   static constexpr const char* _BOUNDARY_TRANSMIT = "BT" ;
+   static constexpr const char* _NAN_ABORT         = "NA" ;
+   static constexpr const char* _EFFICIENCY_COLLECT = "EC" ;
+   static constexpr const char* _EFFICIENCY_CULL    = "EX" ;
+   static constexpr const char* _BAD_FLAG           = "XX" ;
 
-   static const char* Flag(const unsigned flag);
+   static const char* Flag(  const unsigned flag);
+   static const char* Abbrev(const unsigned flag);
+   static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
 
 #ifdef STANDALONE
 #else
-   static const char* _ZERO ;
-   static const char* _CERENKOV ;
-   static const char* _SCINTILLATION ;
-   static const char* _TORCH ;
-   static const char* _MISS ;
-   static const char* _BULK_ABSORB ;
-   static const char* _BULK_REEMIT ;
-   static const char* _BULK_SCATTER ;
-   static const char* _SURFACE_DETECT ;
-   static const char* _SURFACE_ABSORB ;
-   static const char* _SURFACE_DREFLECT ;
-   static const char* _SURFACE_SREFLECT ;
-   static const char* _BOUNDARY_REFLECT ;
-   static const char* _BOUNDARY_TRANSMIT ;
-   static const char* _NAN_ABORT ;
-   static const char* _EFFICIENCY_COLLECT ;
-   static const char* _EFFICIENCY_CULL ;
-   static const char* _BAD_FLAG ;
-
-   static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
-   static const char* Abbrev(const unsigned flag);
    static const char* flag2color ; 
 
    static unsigned EnumFlag(unsigned bitpos);
@@ -80,30 +80,8 @@ struct SYSRAP_API OpticksPhoton
    static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1);
    static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
 #endif
-
 };
 
-
-
-
-const char* OpticksPhoton::ZERO_              = "." ;
-const char* OpticksPhoton::CERENKOV_          = "CERENKOV" ;
-const char* OpticksPhoton::SCINTILLATION_     = "SCINTILLATION" ;
-const char* OpticksPhoton::MISS_              = "MISS" ;
-const char* OpticksPhoton::BULK_ABSORB_       = "BULK_ABSORB" ;
-const char* OpticksPhoton::BULK_REEMIT_       = "BULK_REEMIT" ;
-const char* OpticksPhoton::BULK_SCATTER_      = "BULK_SCATTER" ; 
-const char* OpticksPhoton::SURFACE_DETECT_    = "SURFACE_DETECT" ;
-const char* OpticksPhoton::SURFACE_ABSORB_    = "SURFACE_ABSORB" ; 
-const char* OpticksPhoton::SURFACE_DREFLECT_  = "SURFACE_DREFLECT" ; 
-const char* OpticksPhoton::SURFACE_SREFLECT_  = "SURFACE_SREFLECT" ; 
-const char* OpticksPhoton::BOUNDARY_REFLECT_  = "BOUNDARY_REFLECT" ; 
-const char* OpticksPhoton::BOUNDARY_TRANSMIT_ = "BOUNDARY_TRANSMIT" ; 
-const char* OpticksPhoton::TORCH_             = "TORCH" ; 
-const char* OpticksPhoton::NAN_ABORT_         = "NAN_ABORT" ; 
-const char* OpticksPhoton::BAD_FLAG_          = "BAD_FLAG" ; 
-const char* OpticksPhoton::EFFICIENCY_CULL_     = "EFFICIENCY_CULL" ; 
-const char* OpticksPhoton::EFFICIENCY_COLLECT_  = "EFFICIENCY_COLLECT" ; 
 
 
 /**
@@ -140,5 +118,60 @@ inline const char* OpticksPhoton::Flag(const unsigned int flag)
     }
     return s;
 }
+
+inline const char* OpticksPhoton::Abbrev(const unsigned int flag)
+{
+    const char* s = 0 ; 
+    switch(flag)
+    {
+        case 0:                s=_ZERO;break;
+        case CERENKOV:         s=_CERENKOV;break;
+        case SCINTILLATION:    s=_SCINTILLATION ;break; 
+        case MISS:             s=_MISS ;break; 
+        case BULK_ABSORB:      s=_BULK_ABSORB ;break; 
+        case BULK_REEMIT:      s=_BULK_REEMIT ;break; 
+        case BULK_SCATTER:     s=_BULK_SCATTER ;break; 
+        case SURFACE_DETECT:   s=_SURFACE_DETECT ;break; 
+        case SURFACE_ABSORB:   s=_SURFACE_ABSORB ;break; 
+        case SURFACE_DREFLECT: s=_SURFACE_DREFLECT ;break; 
+        case SURFACE_SREFLECT: s=_SURFACE_SREFLECT ;break; 
+        case BOUNDARY_REFLECT: s=_BOUNDARY_REFLECT ;break; 
+        case BOUNDARY_TRANSMIT:s=_BOUNDARY_TRANSMIT ;break; 
+        case TORCH:            s=_TORCH ;break; 
+        case NAN_ABORT:        s=_NAN_ABORT ;break; 
+        case EFFICIENCY_COLLECT: s=_EFFICIENCY_COLLECT ;break; 
+        case EFFICIENCY_CULL:    s=_EFFICIENCY_CULL ;break; 
+        default:               s=_BAD_FLAG  ;
+                               std::cerr << "OpticksPhoton::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec << std::endl ;             
+    }
+    return s;
+}
+
+
+
+
+inline void OpticksPhoton::FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs )
+{
+    typedef std::pair<const char*,const char*> KV ;
+    pairs.push_back(KV(CERENKOV_ , _CERENKOV));
+    pairs.push_back(KV(SCINTILLATION_ , _SCINTILLATION));
+    pairs.push_back(KV(TORCH_ , _TORCH));
+    pairs.push_back(KV(MISS_ , _MISS)); 
+    pairs.push_back(KV(BULK_ABSORB_ , _BULK_ABSORB)); 
+    pairs.push_back(KV(BULK_REEMIT_ , _BULK_REEMIT)); 
+    pairs.push_back(KV(BULK_SCATTER_ , _BULK_SCATTER)); 
+    pairs.push_back(KV(SURFACE_DETECT_ , _SURFACE_DETECT)); 
+    pairs.push_back(KV(SURFACE_ABSORB_ , _SURFACE_ABSORB)); 
+    pairs.push_back(KV(SURFACE_DREFLECT_ , _SURFACE_DREFLECT)); 
+    pairs.push_back(KV(SURFACE_SREFLECT_ , _SURFACE_SREFLECT)); 
+    pairs.push_back(KV(BOUNDARY_REFLECT_ , _BOUNDARY_REFLECT)); 
+    pairs.push_back(KV(BOUNDARY_TRANSMIT_ , _BOUNDARY_TRANSMIT)); 
+    pairs.push_back(KV(NAN_ABORT_ , _NAN_ABORT)); 
+    pairs.push_back(KV(EFFICIENCY_CULL_ , _EFFICIENCY_CULL)); 
+    pairs.push_back(KV(EFFICIENCY_COLLECT_ , _EFFICIENCY_COLLECT)); 
+
+    // HMM: no _BAD_FLAG abbrev ?
+}
+
 
 

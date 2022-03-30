@@ -24,31 +24,13 @@
 #include "G4OpticalSurface.hh"
 #include "X4.hh"
 #include "X4OpticalSurface.hh"
-#include "GOpticalSurface.hh"
+#include "X4SurfaceProperty.hh"
 
+#include "GOpticalSurface.hh"
 #include "PLOG.hh"
 
 
 const plog::Severity  X4OpticalSurface::LEVEL = PLOG::EnvLevel("X4OpticalSurface", "DEBUG"); 
-
-const char* X4OpticalSurface::Type(G4SurfaceType type)
-{
-   const char* t = NULL ; 
-   switch(type)
-   {
-       case dielectric_metal      : t="dielectric_metal"      ; break ; 
-       case dielectric_dielectric : t="dielectric_dielectric" ; break ; 
-       case dielectric_LUT        : t="dielectric_LUT"        ; break ; 
-#if (G4VERSION_NUMBER >= 1042)
-       case dielectric_LUTDAVIS   : t="dielectric_LUTDAVIS"    ; break ; 
-#endif
-       case dielectric_dichroic   : t="dielectric_dichroic"   ; break ; 
-       case firsov                : t="firsov"                ; break ;
-       case x_ray                 : t="x_ray"                 ; break ;
-       default                    : t="OTHER?"                ; break ; 
-   }
-   return t ; 
-}    
 
 
 GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
@@ -57,19 +39,13 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
     const char* name = X4::Name<G4OpticalSurface>(surf);
 
     G4SurfaceType type = surf->GetType() ; 
-
-    //LOG(LEVEL) << " name " << name << " type " << Type(type) ; 
-
-    switch( type )
+    bool supported = X4SurfaceProperty::IsOpticksSupported(type); 
+    if(!supported)
     {
-        case dielectric_metal       :            ; break ;  // dielectric-metal interface
-        case dielectric_dielectric  :            ; break ;  // dielectric-dielectric interface
-        case dielectric_LUT         :  assert(0) ; break ;  // dielectric-Look-Up-Table interface
-        case dielectric_dichroic    :  assert(0) ; break ;  // dichroic filter interface
-        case firsov                 :  assert(0) ; break ;  // for Firsov Process
-        case x_ray                  :  assert(0) ; break ; 
-        default                     :  assert(0) ; break ; 
+        LOG(fatal) << " name " << name << " type " << X4SurfaceProperty::Name(type) << " supported " << supported ; 
     }
+    assert( supported ); 
+
 
     G4OpticalSurfaceModel model = surf->GetModel(); 
     switch( model )

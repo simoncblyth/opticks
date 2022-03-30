@@ -1,7 +1,8 @@
-// name=OpticksPhotonSTANDALONETest ; gcc $name.cc -I.. -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name
+// ./OpticksPhotonSTANDALONETest.sh
 
 #include <iostream>
 #include <iomanip>
+
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 
@@ -13,7 +14,8 @@ int main(int argc, char** argv)
         std::cout 
             << " i " << std::setw(3) << i 
             << " flag " << std::setw(10) << flag 
-            << " name " << std::setw(20) << OpticksPhoton::Flag(flag) 
+            << " OpticksPhoton::Flag " << std::setw(20)  << OpticksPhoton::Flag(flag) 
+            << " OpticksPhoton::Abbrev " << std::setw(4) << OpticksPhoton::Abbrev(flag) 
             << std::endl 
             ;
     }

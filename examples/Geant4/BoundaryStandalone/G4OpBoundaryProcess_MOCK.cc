@@ -324,6 +324,7 @@ G4OpBoundaryProcess_MOCK::PostStepDoIt(const G4Track& aTrack, const G4Step& aSte
 
 #ifdef MOCK
        // leaving  OpticalSurface NULL
+       OpticalSurface = OpticalSurface_MOCK ; 
 #else
         G4LogicalSurface* Surface = NULL;
 

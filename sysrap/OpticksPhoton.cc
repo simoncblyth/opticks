@@ -37,80 +37,6 @@ const char* OpticksPhoton::flag2color = R"LITERAL(
 
 
 
-const char* OpticksPhoton::_ZERO              = "  " ;
-const char* OpticksPhoton::_CERENKOV          = "CK" ;
-const char* OpticksPhoton::_SCINTILLATION     = "SI" ;
-const char* OpticksPhoton::_TORCH             = "TO" ; 
-const char* OpticksPhoton::_MISS              = "MI" ;
-const char* OpticksPhoton::_BULK_ABSORB       = "AB" ;
-const char* OpticksPhoton::_BULK_REEMIT       = "RE" ;
-const char* OpticksPhoton::_BULK_SCATTER      = "SC" ; 
-const char* OpticksPhoton::_SURFACE_DETECT    = "SD" ;
-const char* OpticksPhoton::_SURFACE_ABSORB    = "SA" ; 
-const char* OpticksPhoton::_SURFACE_DREFLECT  = "DR" ; 
-const char* OpticksPhoton::_SURFACE_SREFLECT  = "SR" ; 
-const char* OpticksPhoton::_BOUNDARY_REFLECT  = "BR" ; 
-const char* OpticksPhoton::_BOUNDARY_TRANSMIT = "BT" ; 
-const char* OpticksPhoton::_NAN_ABORT         = "NA" ; 
-const char* OpticksPhoton::_BAD_FLAG          = "XX" ; 
-const char* OpticksPhoton::_EFFICIENCY_CULL   = "EX" ; 
-const char* OpticksPhoton::_EFFICIENCY_COLLECT = "EC" ; 
-
-
-
-void OpticksPhoton::FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs )
-{
-    typedef std::pair<const char*,const char*> KV ;
-    pairs.push_back(KV(CERENKOV_ , _CERENKOV));
-    pairs.push_back(KV(SCINTILLATION_ , _SCINTILLATION));
-    pairs.push_back(KV(TORCH_ , _TORCH));
-    pairs.push_back(KV(MISS_ , _MISS)); 
-    pairs.push_back(KV(BULK_ABSORB_ , _BULK_ABSORB)); 
-    pairs.push_back(KV(BULK_REEMIT_ , _BULK_REEMIT)); 
-    pairs.push_back(KV(BULK_SCATTER_ , _BULK_SCATTER)); 
-    pairs.push_back(KV(SURFACE_DETECT_ , _SURFACE_DETECT)); 
-    pairs.push_back(KV(SURFACE_ABSORB_ , _SURFACE_ABSORB)); 
-    pairs.push_back(KV(SURFACE_DREFLECT_ , _SURFACE_DREFLECT)); 
-    pairs.push_back(KV(SURFACE_SREFLECT_ , _SURFACE_SREFLECT)); 
-    pairs.push_back(KV(BOUNDARY_REFLECT_ , _BOUNDARY_REFLECT)); 
-    pairs.push_back(KV(BOUNDARY_TRANSMIT_ , _BOUNDARY_TRANSMIT)); 
-    pairs.push_back(KV(NAN_ABORT_ , _NAN_ABORT)); 
-    pairs.push_back(KV(EFFICIENCY_CULL_ , _EFFICIENCY_CULL)); 
-    pairs.push_back(KV(EFFICIENCY_COLLECT_ , _EFFICIENCY_COLLECT)); 
-
-    // HMM: no _BAD_FLAG abbrev ?
-}
-
-
-
-
-const char* OpticksPhoton::Abbrev(const unsigned int flag)
-{
-    const char* s = 0 ; 
-    switch(flag)
-    {
-        case 0:                s=_ZERO;break;
-        case CERENKOV:         s=_CERENKOV;break;
-        case SCINTILLATION:    s=_SCINTILLATION ;break; 
-        case MISS:             s=_MISS ;break; 
-        case BULK_ABSORB:      s=_BULK_ABSORB ;break; 
-        case BULK_REEMIT:      s=_BULK_REEMIT ;break; 
-        case BULK_SCATTER:     s=_BULK_SCATTER ;break; 
-        case SURFACE_DETECT:   s=_SURFACE_DETECT ;break; 
-        case SURFACE_ABSORB:   s=_SURFACE_ABSORB ;break; 
-        case SURFACE_DREFLECT: s=_SURFACE_DREFLECT ;break; 
-        case SURFACE_SREFLECT: s=_SURFACE_SREFLECT ;break; 
-        case BOUNDARY_REFLECT: s=_BOUNDARY_REFLECT ;break; 
-        case BOUNDARY_TRANSMIT:s=_BOUNDARY_TRANSMIT ;break; 
-        case TORCH:            s=_TORCH ;break; 
-        case NAN_ABORT:        s=_NAN_ABORT ;break; 
-        case EFFICIENCY_COLLECT: s=_EFFICIENCY_COLLECT ;break; 
-        case EFFICIENCY_CULL:    s=_EFFICIENCY_CULL ;break; 
-        default:               s=_BAD_FLAG  ;
-                               LOG(verbose) << "OpticksPhoton::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
-    }
-    return s;
-}
 
 
 unsigned OpticksPhoton::EnumFlag(unsigned bitpos)
@@ -153,7 +79,6 @@ Converts seqhis string eg "TO SR SA" into bigint 0x8ad
 
 unsigned long long OpticksPhoton::AbbrevToFlagSequence( const char* abbseq, char delim)
 {
-
    std::vector<std::string> elem ; 
    SStr::Split(abbseq,  delim, elem ); 
 

@@ -38,7 +38,7 @@ class X4_API X4OpticalSurface
 {
         static const plog::Severity LEVEL ; 
     public:
-        static const char* Type(G4SurfaceType type);
+        // static const char* Type(G4SurfaceType type);  moved to X4SurfaceProperty::Name
         static GOpticalSurface* Convert(const G4OpticalSurface* const src );
 };
 

@@ -40,9 +40,14 @@ struct G4OpBoundaryProcessTest
     static unsigned Status(unsigned status); 
     static NP*      MakeRindexArray(double rindex); 
 
+    static G4MaterialPropertiesTable* MakeOpticalProps();  
+    static G4OpticalSurface* MakeOpticalSurface(G4MaterialPropertiesTable* mpt) ;
+
     const char*       srcdir ; 
     const char*       dstdir ; 
     float3            normal ; 
+    G4OpticalSurface* opsurf ; 
+
     OpticksRandom*    rnd ; 
     float             n1 ; 
     float             n2 ; 
@@ -94,6 +99,43 @@ NP* G4OpBoundaryProcessTest::MakeRindexArray(double rindex)  // static
     return a ; 
 }
 
+/**
+
+Relevant props::
+
+   kREFLECTIVITY  (or kREALRINDEX, kIMAGINARYRINDEX)
+
+   kEFFICIENCY
+
+   kTRANSMITTANCE
+
+**/
+
+G4MaterialPropertiesTable* G4OpBoundaryProcessTest::MakeOpticalProps() // static
+{
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable ;
+    return mpt ; 
+}
+
+
+
+
+
+G4OpticalSurface* G4OpBoundaryProcessTest::MakeOpticalSurface(G4MaterialPropertiesTable* mpt) // static
+{
+    G4String name = "surfname" ; 
+    G4OpticalSurfaceModel model = glisur ; 
+    G4OpticalSurfaceFinish finish = polished ; 
+    G4SurfaceType type = dielectric_dielectric ; 
+    G4double value = 1.0 ; 
+
+    G4OpticalSurface* os = new G4OpticalSurface(name, model, finish, type, value); 
+    os->SetMaterialPropertiesTable(mpt); 
+
+    return os ; 
+}
+
+
 std::string G4OpBoundaryProcessTest::desc() const 
 {
     std::stringstream ss ; 
@@ -118,6 +160,7 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const char* srcdir_ekey, const 
     srcdir(getenv(srcdir_ekey)),
     dstdir(getenv(dstdir_ekey)),
     normal(make_float3(0.f, 0.f, 1.f)),   // may be overrden by normal from init_prd_normal
+    opsurf(nullptr), 
     rnd(new OpticksRandom),
     n1(qenvfloat("M1_REFRACTIVE_INDEX","1.0")),
     n2(qenvfloat("M2_REFRACTIVE_INDEX","1.5")),
@@ -150,6 +193,7 @@ void G4OpBoundaryProcessTest::init()
 
     //rnd->m_flat_debug = true  ;   // when true dumps a line for every G4UniformRand call 
     proc->theGlobalNormal_MOCK.set( normal.x, normal.y, normal.z ); 
+    proc->OpticalSurface_MOCK = opsurf ;   // G4OpticalSurface
 
     std::cout 
         << "G4OpBoundaryProcessTest::init "  << desc() 
