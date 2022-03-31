@@ -35,6 +35,7 @@ enum {
    PROPAGATE_AT_BOUNDARY_X_POLARIZED,
 
    RANDOM_DIRECTION_MARSAGLIA, 
+   LAMBERTIAN_DIRECTION,
    PROPAGATE_AT_SURFACE
    
 };
@@ -46,49 +47,29 @@ struct QSimLaunch
     static unsigned    MutateSource(unsigned type); 
     static const char* Name(unsigned type ); 
 
-    static const char* RNG_SEQUENCE_ ; 
-    static const char* WATER_ ; 
-    static const char* FILL_STATE_0_ ;
-    static const char* FILL_STATE_1_ ;
-    static const char* RAYLEIGH_SCATTER_ALIGN_ ;
-    static const char* PROPAGATE_TO_BOUNDARY_ ; 
-    static const char* PROPAGATE_AT_BOUNDARY_ ; 
+    static constexpr const char* RNG_SEQUENCE_ = "rng_sequence" ; 
+    static constexpr const char* WATER_ = "water" ; 
+    static constexpr const char* FILL_STATE_0_ = "fill_state_0" ;
+    static constexpr const char* FILL_STATE_1_ = "fill_state_1" ;
+    static constexpr const char* RAYLEIGH_SCATTER_ALIGN_ = "rayleigh_scatter_align" ;
+    static constexpr const char* PROPAGATE_TO_BOUNDARY_ = "propagate_to_boundary" ; 
+    static constexpr const char* PROPAGATE_AT_BOUNDARY_ = "propagate_at_boundary" ; 
 
-    static const char* HEMISPHERE_S_POLARIZED_ ; 
-    static const char* HEMISPHERE_P_POLARIZED_ ; 
-    static const char* HEMISPHERE_X_POLARIZED_ ; 
+    static constexpr const char* HEMISPHERE_S_POLARIZED_ = "hemisphere_s_polarized" ; 
+    static constexpr const char* HEMISPHERE_P_POLARIZED_ = "hemisphere_p_polarized" ; 
+    static constexpr const char* HEMISPHERE_X_POLARIZED_ = "hemisphere_x_polarized" ; 
  
-    static const char* PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE_ ; 
+    static constexpr const char* PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE_ = "propagate_at_boundary_normal_incidence" ; 
 
-    static const char* PROPAGATE_AT_BOUNDARY_S_POLARIZED_ ; 
-    static const char* PROPAGATE_AT_BOUNDARY_P_POLARIZED_ ; 
-    static const char* PROPAGATE_AT_BOUNDARY_X_POLARIZED_ ; 
+    static constexpr const char* PROPAGATE_AT_BOUNDARY_S_POLARIZED_ = "propagate_at_boundary_s_polarized" ; 
+    static constexpr const char* PROPAGATE_AT_BOUNDARY_P_POLARIZED_ = "propagate_at_boundary_p_polarized" ; 
+    static constexpr const char* PROPAGATE_AT_BOUNDARY_X_POLARIZED_ = "propagate_at_boundary_x_polarized" ; 
 
-    static const char* RANDOM_DIRECTION_MARSAGLIA_ ;
-    static const char* PROPAGATE_AT_SURFACE_ ;
-
+    static constexpr const char* RANDOM_DIRECTION_MARSAGLIA_ = "random_direction_marsaglia" ;
+    static constexpr const char* LAMBERTIAN_DIRECTION_ = "lambertian_direction" ;
+    static constexpr const char* PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ;
 };
 
-const char* QSimLaunch::RNG_SEQUENCE_ = "rng_sequence" ; 
-const char* QSimLaunch::WATER_ = "water" ; 
-const char* QSimLaunch::FILL_STATE_0_ = "fill_state_0" ; 
-const char* QSimLaunch::FILL_STATE_1_ = "fill_state_1" ; 
-const char* QSimLaunch::RAYLEIGH_SCATTER_ALIGN_ = "rayleigh_scatter_align" ; 
-const char* QSimLaunch::PROPAGATE_TO_BOUNDARY_ = "propagate_to_boundary" ; 
-const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_ = "propagate_at_boundary" ; 
-
-const char* QSimLaunch::HEMISPHERE_S_POLARIZED_ = "hemisphere_s_polarized" ; 
-const char* QSimLaunch::HEMISPHERE_P_POLARIZED_ = "hemisphere_p_polarized" ; 
-const char* QSimLaunch::HEMISPHERE_X_POLARIZED_ = "hemisphere_x_polarized" ; 
-
-const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE_ = "propagate_at_boundary_normal_incidence" ; 
-
-const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_S_POLARIZED_ = "propagate_at_boundary_s_polarized" ; 
-const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_P_POLARIZED_ = "propagate_at_boundary_p_polarized" ; 
-const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_X_POLARIZED_ = "propagate_at_boundary_x_polarized" ; 
-
-const char* QSimLaunch::RANDOM_DIRECTION_MARSAGLIA_ = "random_direction_marsaglia" ; 
-const char* QSimLaunch::PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ; 
 
 inline unsigned QSimLaunch::Type( const char* name )
 {
@@ -124,7 +105,8 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,PROPAGATE_AT_BOUNDARY_X_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_X_POLARIZED ;
 
    if(strcmp(name,RANDOM_DIRECTION_MARSAGLIA_) == 0)  test = RANDOM_DIRECTION_MARSAGLIA ;
-   if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)  test = PROPAGATE_AT_SURFACE ;
+   if(strcmp(name,LAMBERTIAN_DIRECTION_) == 0)        test = LAMBERTIAN_DIRECTION ;
+   if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)       test = PROPAGATE_AT_SURFACE ;
 
    
    bool known =  test != UNKNOWN  ;
@@ -165,7 +147,6 @@ inline const char* QSimLaunch::Name( unsigned type )
 
         case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:  s = PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE_  ; break ;  
 
-
         case HEMISPHERE_S_POLARIZED: s = HEMISPHERE_S_POLARIZED_ ; break ; 
         case HEMISPHERE_P_POLARIZED: s = HEMISPHERE_P_POLARIZED_ ; break ; 
         case HEMISPHERE_X_POLARIZED: s = HEMISPHERE_X_POLARIZED_ ; break ; 
@@ -176,6 +157,7 @@ inline const char* QSimLaunch::Name( unsigned type )
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  s = PROPAGATE_AT_BOUNDARY_X_POLARIZED_  ; break ;  
 
         case RANDOM_DIRECTION_MARSAGLIA:   s = RANDOM_DIRECTION_MARSAGLIA_   ; break ; 
+        case LAMBERTIAN_DIRECTION:         s = LAMBERTIAN_DIRECTION_         ; break ; 
         case PROPAGATE_AT_SURFACE:         s = PROPAGATE_AT_SURFACE_         ; break ; 
     }
     return s; 

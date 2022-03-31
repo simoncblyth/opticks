@@ -249,6 +249,8 @@ void QSim<T>::init_dbg()
     float cosTheta = 0.5f ; 
     dbg->wavelength = 500.f ; 
     dbg->cosTheta = cosTheta ; 
+    qvals( dbg->normal , "DBG_NRM", "0,0,1" ); 
+   
 
     // qstate: mocking result of fill_state 
     dbg->s = QState::Make(); 
@@ -760,7 +762,7 @@ This function is implemented in QSim.cu and it used by *quad_launch_generate*
 **/
 
 template <typename T>
-extern void QSim_quad_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad* q, unsigned num_quad, unsigned type  );
+extern void QSim_quad_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad* q, unsigned num_quad, qdebug* dbg, unsigned type  );
 
 
 
@@ -768,13 +770,14 @@ template <typename T>
 void QSim<T>::quad_launch_generate(quad* q, unsigned num_quad, unsigned type )
 {
     assert( d_sim ); 
+    assert( d_dbg ); 
 
     quad* d_q = QU::device_alloc<quad>(num_quad) ; 
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_quad, threads_per_block ); 
 
-    QSim_quad_launch(numBlocks, threadsPerBlock, d_sim, d_q, num_quad, type );  
+    QSim_quad_launch(numBlocks, threadsPerBlock, d_sim, d_q, num_quad, d_dbg, type );  
 
     QU::copy_device_to_host_and_free<quad>( q, d_q, num_quad ); 
 }

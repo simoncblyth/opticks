@@ -112,7 +112,8 @@ struct qsim
 
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
-    QSIM_METHOD static float3 lambertian_rand(const float3& normal, curandStateXORWOW& rng ); 
+
+    QSIM_METHOD static void lambertian_direction(float3* dir, const float3& normal, curandStateXORWOW& rng ); 
     QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng); 
 
     QSIM_METHOD static void   rotateUz(float3& d, const float3& u ); 
@@ -121,8 +122,6 @@ struct qsim
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
     QSIM_METHOD int     propagate_at_boundary(                quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
     QSIM_METHOD void    hemisphere_polarized(   quad4& p, unsigned polz, bool inwards, const qprd& prd, curandStateXORWOW& rng); 
-
-
 
 
 #else
@@ -306,24 +305,60 @@ inline QSIM_METHOD float3 qsim<T>::uniform_sphere(const float u0, const float u1
 }
 
 /**
-qsim::lambertian_rand cf G4LambertianRand 
--------------------------------------------
+qsim::lambertian_direction following G4LambertianRand 
+--------------------------------------------------------
 
-g4-cls G4RandomTools
+g4-cls G4RandomTools::
+
+     59 inline G4ThreeVector G4LambertianRand(const G4ThreeVector& normal)
+     60 {
+     61   G4ThreeVector vect;
+     62   G4double ndotv;
+     63   G4int count=0;
+     64   const G4int max_trials = 1024;
+     65 
+     66   do
+     67   {
+     68     ++count;
+     69     vect = G4RandomDirection();
+     70     ndotv = normal * vect;
+     71 
+     72     if (ndotv < 0.0)
+     73     {
+     74       vect = -vect;
+     75       ndotv = -ndotv;
+     76     }
+     77 
+     78   } while (!(G4UniformRand() < ndotv) && (count < max_trials));
+     79 
+     80   return vect;
+     81 }
+
 
 **/
 template <typename T>
-inline  QSIM_METHOD float3 qsim<T>::lambertian_rand(const float3& normal, curandStateXORWOW& rng )
+inline  QSIM_METHOD void qsim<T>::lambertian_direction(float3* dir, const float3& normal, curandStateXORWOW& rng )
 {
-
-
-
+    float ndotv ; 
+    int count = 0 ; 
+    do
+    {
+        count++ ; 
+        random_direction_marsaglia(dir, rng); 
+        ndotv = dot( *dir, normal ); 
+        if( ndotv < 0.f )
+        {
+            *dir = -1.f*(*dir) ; 
+            ndotv = -1.f*ndotv ; 
+        } 
+    } 
+    while (!(curand_uniform(&rng) < ndotv) && (count < 1024)) ;  
 }
 
 
 /**
-qsim::random_direction_marsaglia
------------------------------------
+qsim::random_direction_marsaglia following G4RandomDirection
+-------------------------------------------------------------
 
 * https://mathworld.wolfram.com/SpherePointPicking.html
 

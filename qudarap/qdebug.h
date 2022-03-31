@@ -9,6 +9,7 @@ struct qdebug
 {
     float wavelength ; 
     float cosTheta ; 
+    float3 normal ; 
 
     qstate s ; 
     qprd   prd ; 

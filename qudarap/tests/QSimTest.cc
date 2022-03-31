@@ -671,6 +671,7 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
                                                  photon_launch_mutate(num, type)       ; break ;  
 
         case RANDOM_DIRECTION_MARSAGLIA:
+        case LAMBERTIAN_DIRECTION:
                                                  quad_launch_generate(num, type)       ; break ; 
 
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 

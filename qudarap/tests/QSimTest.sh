@@ -43,7 +43,8 @@ msg="=== $BASH_SOURCE :"
 #test=propagate_at_boundary
 #test=propagate_at_boundary_normal_incidence
 
-test=random_direction_marsaglia
+#test=random_direction_marsaglia
+test=lambertian_direction
 #test=propagate_at_surface
 
 M1=1000000
@@ -119,6 +120,7 @@ if [ "${arg/ana}" != "$arg" ]; then
 
        propagate_at_boundary*) script=propagate_at_boundary.py ;; 
    random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
+        lambertian_direction)  script=lambertian_direction.py ;; 
 
                             *) script=QSimTest_$TEST.py      ;;
     esac
