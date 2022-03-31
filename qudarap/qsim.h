@@ -9,6 +9,7 @@
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
+#include "sflow.h"
 #include "sqat4.h"
 #include "sc4u.h"
 #include "sevent.h"
@@ -44,7 +45,7 @@ This is aiming to replace the OptiX 6 context in a CUDA-centric way.
 struct curandStateXORWOW ; 
 template <typename T> struct qprop ; 
 
-enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary
+// enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary
 
 template <typename T>
 struct qsim

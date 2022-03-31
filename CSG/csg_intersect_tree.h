@@ -12,6 +12,7 @@
 using std::signbit ; 
 #endif
 
+#include "sflow.h"
 #include "csg_error.h"
 #include "csg_tranche.h"
 #include "csg_stack.h"
@@ -495,7 +496,7 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
 #endif
 
 
-                Action_t act = UNDEFINED ; 
+                unsigned act = UNDEFINED ; 
 
                 if(ctrl < CTRL_LOOP_A) // non-looping : CTRL_RETURN_MISS/CTRL_RETURN_A/CTRL_RETURN_B/CTRL_RETURN_FLIP_B "returning" with a push 
                 {

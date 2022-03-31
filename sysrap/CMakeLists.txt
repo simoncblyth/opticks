@@ -171,6 +171,7 @@ set(HEADERS
 
     scuda.h
     squad.h
+    sflow.h
     sqat4.h
     saabb.h
     stran.h

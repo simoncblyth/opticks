@@ -10,13 +10,14 @@ enum {
 };  
 
 
-typedef enum { 
-     UNDEFINED=0, 
-     CONTINUE=1, 
-     BREAK=2 
-} Action_t ;
-
-
+/*
+// moved to common action enum sflow.h 
+// typedef enum { 
+//     UNDEFINED=0, 
+//     CONTINUE=1, 
+//     BREAK=2 
+// } Action_t ;
+*/
 
 #if defined(DEBUG)  || defined(DEBUG_RECORD)
 static const char* CTRL_RETURN_MISS_   = "RETURN_MISS" ; 
