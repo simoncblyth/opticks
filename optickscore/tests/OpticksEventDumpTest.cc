@@ -26,7 +26,6 @@ OpticksEventDumpTest
 
 #include "OPTICKS_LOG.hh"
 
-#include "BOpticksKey.hh"
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpticksEventDump.hh"
@@ -36,9 +35,6 @@ OpticksEventDumpTest
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-
-    // BOpticksKey::SetKey(NULL);  // <-- makes sensitive to OPTICKS_KEY envvar 
-    // this is done internally at Opticks instanciation when have argument --envkey 
 
     Opticks ok(argc, argv);
     ok.configure();

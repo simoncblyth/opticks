@@ -53,6 +53,7 @@ struct NP
 
     template<typename T> static unsigned NumSteps( T x0, T x1, T dx ); 
 
+    NP(const char* dtype_, const std::vector<int>& shape_ ); 
     NP(const char* dtype_="<f4", int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
     void init(); 
     void set_shape( int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1);  // CAUTION: DO NOT USE *set_shape* TO CHANGE SHAPE (as it calls *init*) INSTEAD USE *change_shape* 
@@ -114,7 +115,10 @@ struct NP
 
     template<typename T> T*       values() ; 
     template<typename T> const T*  cvalues() const  ; 
-    template<typename T> unsigned  index( int i,  int j=0,  int k=0,  int l=0, int m=0) const ; 
+
+    unsigned  index(  int i,  int j=0,  int k=0,  int l=0, int m=0) const ; 
+    unsigned  index0( int i,  int j=-1,  int k=-1,  int l=-1, int m=-1) const ; 
+
     template<typename T> T           get( int i,  int j=0,  int k=0,  int l=0, int m=0) const ; 
     template<typename T> void        set( T val, int i,  int j=0,  int k=0,  int l=0, int m=0 ) ; 
 
@@ -129,6 +133,10 @@ struct NP
     static NP* MakeNarrow(const NP* src); 
     static NP* MakeWide(  const NP* src); 
     static NP* MakeCopy(  const NP* src); 
+
+    static NP* MakeItemCopy(  const NP* src, int i,int j=-1,int k=-1,int l=-1,int m=-1 ); 
+    void  item_shape(std::vector<int>& sub, int i, int j=-1, int k=-1, int l=-1, int m=-1 ) const ; 
+    NP*   spawn_item(  int i, int j=-1, int k=-1, int l=-1, int m=-1  ) const ; 
 
     template<typename T> static NP* MakeCDF(  const NP* src );
     template<typename T> static NP* MakeICDF(  const NP* src, unsigned nu, unsigned hd_factor, bool dump );
@@ -545,6 +553,17 @@ inline char*        NP::bytes() { return (char*)data.data() ;  }
 inline const char*  NP::bytes() const { return (char*)data.data() ;  } 
 
 
+inline NP::NP(const char* dtype_, const std::vector<int>& shape_ )
+    :
+    shape(shape_),
+    dtype(strdup(dtype_)),
+    uifc(NPU::_dtype_uifc(dtype)),
+    ebyte(NPU::_dtype_ebyte(dtype)),
+    size(NPS::size(shape))
+{
+    init(); 
+}
+
 inline NP::NP(const char* dtype_, int ni, int nj, int nk, int nl, int nm )
     :
     dtype(strdup(dtype_)),
@@ -635,7 +654,7 @@ template<typename T> inline const T*  NP::cvalues() const { return (T*)data.data
 template<typename T> inline T*        NP::values() { return (T*)data.data() ;  } 
 
 
-template<typename T> inline unsigned NP::index( int i,  int j,  int k,  int l, int m) const 
+inline unsigned NP::index( int i,  int j,  int k,  int l, int m) const 
 {
     unsigned nd = shape.size() ; 
     unsigned ni = nd > 0 ? shape[0] : 1 ; 
@@ -653,16 +672,48 @@ template<typename T> inline unsigned NP::index( int i,  int j,  int k,  int l, i
     return  ii*nj*nk*nl*nm + jj*nk*nl*nm + kk*nl*nm + ll*nm + mm ;
 }
 
+
+inline unsigned NP::index0( int i,  int j,  int k,  int l, int m) const 
+{
+    unsigned nd = shape.size() ; 
+
+    unsigned ni = nd > 0 ? shape[0] : 1 ; 
+    unsigned nj = nd > 1 ? shape[1] : 1 ; 
+    unsigned nk = nd > 2 ? shape[2] : 1 ; 
+    unsigned nl = nd > 3 ? shape[3] : 1 ; 
+    unsigned nm = nd > 4 ? shape[4] : 1 ; 
+
+    unsigned ii = i < 0 ? 0 : i ; 
+    unsigned jj = j < 0 ? 0 : j ; 
+    unsigned kk = k < 0 ? 0 : k ; 
+    unsigned ll = l < 0 ? 0 : l ; 
+    unsigned mm = m < 0 ? 0 : m ; 
+
+    assert( ii < ni ); 
+    assert( jj < nj ); 
+    assert( kk < nk ); 
+    assert( ll < nl ); 
+    assert( mm < nm ); 
+
+    return  ii*nj*nk*nl*nm + jj*nk*nl*nm + kk*nl*nm + ll*nm + mm ;
+}
+
+
+
+
+
+
+
 template<typename T> inline T NP::get( int i,  int j,  int k,  int l, int m) const 
 {
-    unsigned idx = index<T>(i, j, k, l, m); 
+    unsigned idx = index(i, j, k, l, m); 
     const T* vv = cvalues<T>() ;  
     return vv[idx] ; 
 }
 
 template<typename T> inline void NP::set( T val, int i,  int j,  int k,  int l, int m) 
 {
-    unsigned idx = index<T>(i, j, k, l, m); 
+    unsigned idx = index(i, j, k, l, m); 
     T* vv = values<T>() ;  
     vv[idx] = val ; 
 }
@@ -870,6 +921,97 @@ inline NP* NP::MakeCopy(const NP* a) // static
 
     return b ; 
 }
+
+
+/**
+NP::MakeItemCopy
+------------------
+**/
+
+inline NP* NP::MakeItemCopy(  const NP* src, int i, int j, int k, int l, int m )
+{
+    std::vector<int> sub_shape ; 
+    src->item_shape(sub_shape, i, j, k, l, m ); 
+    unsigned idx = src->index0(i, j, k, l, m ); 
+
+    std::cout 
+        << "NP::MakeItemCopy"
+        << " i " << i 
+        << " j " << j 
+        << " k " << k 
+        << " l " << l 
+        << " m " << m
+        << " idx " << idx
+        << " src.ebyte " << src->ebyte 
+        << " src.shape " << NPS::desc(src->shape)
+        << " sub_shape " << NPS::desc(sub_shape)
+        << std::endl
+        ; 
+
+
+    NP* dst = new NP(src->dtype, sub_shape); 
+    memcpy( dst->bytes(), src->bytes() + idx*src->ebyte , dst->arr_bytes() ); 
+    return dst ;  
+}
+
+
+/**
+NP::item_shape
+---------------
+
+Consider an array of the below shape, which has 6 top level items::
+
+   (6, 2, 4096, 4096, 4)
+
+The *item_shape* method returns sub shapes, for example 
+a single non-negative argument i=0/1/2/3/4/5 
+would yield the the top level items shape:: 
+
+    (2, 4096, 4096, 4 )
+
+Similarly with two non-negative arguments i=0/1/2/3/4/5, j=0/1 
+would give item shape:: 
+
+    (4096, 4096, 4 )
+
+**/
+inline void NP::item_shape(std::vector<int>& sub, int i, int j, int k, int l, int m ) const 
+{
+    unsigned nd = shape.size() ; 
+
+    if(i > -1 && j==-1)
+    {
+        if( nd > 1 ) sub.push_back(shape[1]); 
+        if( nd > 2 ) sub.push_back(shape[2]); 
+        if( nd > 3 ) sub.push_back(shape[3]); 
+        if( nd > 4 ) sub.push_back(shape[4]); 
+    } 
+    else if(i > -1 && j > -1 && k==-1)
+    {
+        if( nd > 2 ) sub.push_back(shape[2]); 
+        if( nd > 3 ) sub.push_back(shape[3]); 
+        if( nd > 4 ) sub.push_back(shape[4]); 
+    }
+    else if(i > -1 && j > -1 && k > -1 && l == -1)
+    {
+        if( nd > 3 ) sub.push_back(shape[3]); 
+        if( nd > 4 ) sub.push_back(shape[4]); 
+    }
+    else if(i > -1 && j > -1 && k > -1 && l >  -1 && m == -1)
+    {
+        if( nd > 4 ) sub.push_back(shape[4]); 
+    }
+    else if(i > -1 && j > -1 && k > -1 && l >  -1 && m > -1 )
+    {
+        sub.push_back(1); 
+    }
+}
+
+inline NP* NP::spawn_item(  int i, int j, int k, int l, int m  ) const 
+{
+    return MakeItemCopy(this, i, j, k, l, m ); 
+}
+
 
 
 /**

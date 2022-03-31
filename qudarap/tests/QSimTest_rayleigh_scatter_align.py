@@ -2,7 +2,7 @@
 
 import os, numpy as np
 from opticks.ana.fold import Fold
-from opticks.qudarap.tests.pvplt import pvplt_simple, pvplt_photon
+from opticks.ana.pvplt import pvplt_simple, pvplt_photon
 import pyvista as pv
 import matplotlib.pyplot as plt 
 

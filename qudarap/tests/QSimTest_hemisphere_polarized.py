@@ -33,7 +33,7 @@ Notice with S-polarized that the polarization vectors Z-component is zero
 """
 import os, numpy as np
 from opticks.ana.fold import Fold
-from opticks.qudarap.tests.pvplt import *
+from opticks.ana.pvplt import *
 import pyvista as pv
 
 FOLD = os.environ["FOLD"]

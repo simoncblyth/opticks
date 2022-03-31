@@ -69,7 +69,7 @@ def pvplt_photon( pl, p   ):
 def pvplt_plotter(label="pvplt_plotter"):
     pl = pv.Plotter(window_size=SIZE*2 )  
     pl.show_grid()
-    TEST = os.environ["TEST"]
+    TEST = os.environ.get("TEST","")
     pl.add_text( "%s %s " % (label,TEST), position="upper_left")
     return pl 
 

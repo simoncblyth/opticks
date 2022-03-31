@@ -29,7 +29,6 @@
 #include "SSys.hh"
 #include "SStr.hh"
 #include "BOpticksResource.hh"
-#include "BOpticksKey.hh"
 #include "NLookup.hpp"
 #include "NPY.hpp"
 #include "TorchStepNPY.hpp"

@@ -10,7 +10,7 @@ random_direction_marsaglia.py
 """
 import os, numpy as np
 from opticks.ana.fold import Fold
-from opticks.qudarap.tests.pvplt import *
+from opticks.ana.pvplt import *
 import pyvista as pv
 
 FOLD = os.environ["FOLD"]

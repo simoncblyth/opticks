@@ -104,6 +104,10 @@ om-install
 om-cleaninstall
    cleans, configures, builds and installs by doing om-clean, om-conf and om-make 
 
+om-prefix-clean
+   really deep clean that deletes the dirs within opticks-prefix : lib lib64 include build
+   after that it is necessary to om-install
+
 om-test
    runs ctests
 
