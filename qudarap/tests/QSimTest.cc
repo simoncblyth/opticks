@@ -107,11 +107,14 @@ struct QSimTest
     void generate_photon(); 
     void getStateNames(std::vector<std::string>& names, unsigned num_state) const ; 
 
-    void save_array(     const char* subfold, const char* name, const float* data, unsigned ni, unsigned nj, unsigned nk ); 
+    void save_array(     const char* subfold, const char* name, const float* data, int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
     NP*  load_array(     const char* subfold, const char* name); 
      
     void save_photon(    const char* subfold, const char* name, const std::vector<quad4>& p ); 
     NP*  load_photon(    const char* subfold, const char* name); 
+
+    void save_quad(      const char* subfold, const char* name, const std::vector<quad>&  q ); 
+
 
     void save_dbg(const char* subfold); 
     void save_dbg_photon(const char* subfold, const char* name); 
@@ -124,6 +127,7 @@ struct QSimTest
     void photon_launch_generate(unsigned num_photon, unsigned type); 
     void photon_launch_mutate(  unsigned num_photon, unsigned type); 
 
+    void quad_launch_generate(unsigned num_photon, unsigned type); 
 
 }; 
 
@@ -454,10 +458,10 @@ const char* QSimTest<T>::Path(const char* subfold, const char* name )
 }
  
 template <typename T>
-void QSimTest<T>::save_array(const char* subfold, const char* name, const float* data, unsigned ni, unsigned nj, unsigned nk )
+void QSimTest<T>::save_array(const char* subfold, const char* name, const float* data, int ni, int nj, int nk, int nl, int nm  )
 {
     const char* path = Path(subfold, name); 
-    NP::Write( path, data, ni, nj, nk  ); 
+    NP::Write( path, data, ni, nj, nk, nl, nm  ); 
 }
 
 template <typename T>
@@ -474,6 +478,13 @@ void QSimTest<T>::save_photon(const char* subfold, const char* name, const std::
 {
     save_array(subfold, name, (float*)p.data(), p.size(), 4, 4  );
 }
+
+template <typename T>
+void QSimTest<T>::save_quad(const char* subfold, const char* name, const std::vector<quad>& q )
+{
+    save_array(subfold, name, (float*)q.data(), q.size(), 4  );
+}
+
 
 
 template <typename T>
@@ -554,6 +565,24 @@ void QSimTest<T>::photon_launch_generate(unsigned num_photon, unsigned type)
     save_dbg( subfold ); 
 
 }
+
+
+template <typename T>
+void QSimTest<T>::quad_launch_generate(unsigned num_quad, unsigned type)
+{
+    assert( QSimLaunch::IsMutate(type)==false ); 
+    const char* subfold = QSimLaunch::Name(type) ; 
+    assert( subfold ); 
+
+    std::vector<quad> q(num_quad) ; 
+    qs.quad_launch_generate( q.data(), q.size(), type ); 
+
+    save_quad( subfold, "q.npy", q ); 
+}
+
+
+
+
 
 
 template <typename T>
@@ -640,6 +669,9 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:   
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  
                                                  photon_launch_mutate(num, type)       ; break ;  
+
+        case RANDOM_DIRECTION_MARSAGLIA:
+                                                 quad_launch_generate(num, type)       ; break ; 
 
         default :                           LOG(fatal) << "unimplemented" << std::endl ; break ; 
     }

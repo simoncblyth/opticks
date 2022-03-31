@@ -482,6 +482,45 @@ __global__ void _QSim_hemisphere_polarized( qsim<T>* sim, quad4* photon, unsigne
 }
 
 
+
+template <typename T>
+__global__ void _QSim_random_direction_marsaglia( qsim<T>* sim, quad* q, unsigned num_quad )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    if (id >= num_quad ) return;
+
+    curandState rng = sim->rngstate[id] ; 
+
+    float3* dir = (float3*)&q[id].f.x ;  
+    sim->random_direction_marsaglia( dir, rng );  
+    q[id].u.w = id ; 
+}
+
+
+
+
+template <typename T>
+extern void QSim_quad_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad* q, unsigned num_quad, unsigned type  )
+{
+    const char* name = QSimLaunch::Name(type) ; 
+    printf("//QSim_quad_launch sim %p quad %p num_quad %d type %d name %s \n", sim, q, num_quad, type, name ); 
+
+    switch(type)
+    {
+        case RANDOM_DIRECTION_MARSAGLIA: _QSim_random_direction_marsaglia<T><<<numBlocks,threadsPerBlock>>>(  sim, q, num_quad )   ; break ;
+    }
+}
+
+template void QSim_quad_launch(dim3, dim3, qsim<double>* , quad* , unsigned, unsigned ); 
+template void QSim_quad_launch(dim3, dim3, qsim<float>*  , quad* , unsigned, unsigned ); 
+
+
+
+
+
+
+
+
 template <typename T>
 extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned type  )
 {

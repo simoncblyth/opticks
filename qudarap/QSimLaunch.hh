@@ -34,7 +34,9 @@ enum {
    PROPAGATE_AT_BOUNDARY_P_POLARIZED,
    PROPAGATE_AT_BOUNDARY_X_POLARIZED,
 
+   RANDOM_DIRECTION_MARSAGLIA, 
    PROPAGATE_AT_SURFACE
+   
 };
  
 struct QSimLaunch
@@ -62,6 +64,7 @@ struct QSimLaunch
     static const char* PROPAGATE_AT_BOUNDARY_P_POLARIZED_ ; 
     static const char* PROPAGATE_AT_BOUNDARY_X_POLARIZED_ ; 
 
+    static const char* RANDOM_DIRECTION_MARSAGLIA_ ;
     static const char* PROPAGATE_AT_SURFACE_ ;
 
 };
@@ -84,6 +87,7 @@ const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_S_POLARIZED_ = "propagate_at_bound
 const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_P_POLARIZED_ = "propagate_at_boundary_p_polarized" ; 
 const char* QSimLaunch::PROPAGATE_AT_BOUNDARY_X_POLARIZED_ = "propagate_at_boundary_x_polarized" ; 
 
+const char* QSimLaunch::RANDOM_DIRECTION_MARSAGLIA_ = "random_direction_marsaglia" ; 
 const char* QSimLaunch::PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ; 
 
 inline unsigned QSimLaunch::Type( const char* name )
@@ -119,6 +123,7 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,PROPAGATE_AT_BOUNDARY_P_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_P_POLARIZED ;
    if(strcmp(name,PROPAGATE_AT_BOUNDARY_X_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_X_POLARIZED ;
 
+   if(strcmp(name,RANDOM_DIRECTION_MARSAGLIA_) == 0)  test = RANDOM_DIRECTION_MARSAGLIA ;
    if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)  test = PROPAGATE_AT_SURFACE ;
 
    
@@ -170,7 +175,8 @@ inline const char* QSimLaunch::Name( unsigned type )
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  s = PROPAGATE_AT_BOUNDARY_P_POLARIZED_  ; break ;  
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  s = PROPAGATE_AT_BOUNDARY_X_POLARIZED_  ; break ;  
 
-        case PROPAGATE_AT_SURFACE:   s = PROPAGATE_AT_SURFACE_   ; break ; 
+        case RANDOM_DIRECTION_MARSAGLIA:   s = RANDOM_DIRECTION_MARSAGLIA_   ; break ; 
+        case PROPAGATE_AT_SURFACE:         s = PROPAGATE_AT_SURFACE_         ; break ; 
     }
     return s; 
 }

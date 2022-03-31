@@ -600,6 +600,9 @@ __device__ void propagate_at_diffuse_reflector(Photon &p, State &s, curandState 
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 }                       
 
+
+
+
 __device__ void propagate_at_diffuse_reflector_geant4_style(Photon &p, State &s, curandState &rng)
 {
     float3 old_direction = p.direction ; 

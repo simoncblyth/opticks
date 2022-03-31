@@ -36,13 +36,14 @@ msg="=== $BASH_SOURCE :"
 #test=hemisphere_p_polarized
 #test=hemisphere_x_polarized
 
-test=propagate_at_boundary_s_polarized
+#test=propagate_at_boundary_s_polarized
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
 
 #test=propagate_at_boundary
 #test=propagate_at_boundary_normal_incidence
 
+test=random_direction_marsaglia
 #test=propagate_at_surface
 
 M1=1000000
@@ -117,6 +118,7 @@ if [ "${arg/ana}" != "$arg" ]; then
        hemisphere_x_polarized) script=QSimTest_hemisphere_polarized.py ;;
 
        propagate_at_boundary*) script=propagate_at_boundary.py ;; 
+   random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
 
                             *) script=QSimTest_$TEST.py      ;;
     esac
@@ -126,7 +128,8 @@ if [ "${arg/ana}" != "$arg" ]; then
         export FOLD="/tmp/$USER/opticks/QSimTest/$TEST"
 
         export EYE=-1,-1,1 
-        export LOOK=0,0,0.5 
+        #export LOOK=0,0,0.5 
+        export LOOK=0,0,0
         export UP=0,0,1 
         export PARA=1 
 

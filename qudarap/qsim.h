@@ -112,6 +112,8 @@ struct qsim
 
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
+    QSIM_METHOD static float3 lambertian_rand(const float3& normal, curandStateXORWOW& rng ); 
+    QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng); 
 
     QSIM_METHOD static void   rotateUz(float3& d, const float3& u ); 
     QSIM_METHOD static void   rayleigh_scatter_align(quad4& p, curandStateXORWOW& rng ); 
@@ -303,8 +305,101 @@ inline QSIM_METHOD float3 qsim<T>::uniform_sphere(const float u0, const float u1
     return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
 }
 
+/**
+qsim::lambertian_rand cf G4LambertianRand 
+-------------------------------------------
+
+g4-cls G4RandomTools
+
+**/
+template <typename T>
+inline  QSIM_METHOD float3 qsim<T>::lambertian_rand(const float3& normal, curandStateXORWOW& rng )
+{
 
 
+
+}
+
+
+/**
+qsim::random_direction_marsaglia
+-----------------------------------
+
+* https://mathworld.wolfram.com/SpherePointPicking.html
+
+Marsaglia (1972) derived an elegant method that consists of picking u and v from independent 
+uniform distributions on (-1,1) and rejecting points for which uu+vv >=1. 
+From the remaining points,
+
+    x=2 u sqrt(1-(uu+vv))	
+    y=2 v sqrt(1-(uu+vv))	
+    z=1-2(uu+vv)
+
+Checking normalization, it reduces to 1::
+
+   xx + yy + zz = 
+         4uu (1-(uu+vv)) 
+         4vv (1-(uu+vv)) +
+        1 -4(uu+vv) + 4(uu+vv)(uu+vv)   
+                = 1 
+
+::
+
+                          v
+                          |
+              +---------.-|- -----------+
+              |      .    |     .       |
+              |   .       |          .  |
+              |           |             |
+              | .         |            .|
+              |           |             |
+          ----+-----------0-------------+---- u
+              |.          |             |
+              |           |            .|
+              | .         |             |
+              |           |          .  |
+              |    .      |      .      |
+              +--------.--|--.----------+
+                          |      
+
+::
+
+     g4-cls G4RandomDirection
+
+     58 // G.Marsaglia (1972) method
+     59 inline G4ThreeVector G4RandomDirection()
+     60 {
+     61   G4double u, v, b;
+     62   do {
+     63     u = 2.*G4UniformRand() - 1.;
+     64     v = 2.*G4UniformRand() - 1.;
+     65     b = u*u + v*v;
+     66   } while (b > 1.);
+     67   G4double a = 2.*std::sqrt(1. - b);
+     68   return G4ThreeVector(a*u, a*v, 2.*b - 1.);
+     69 }
+
+**/
+
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::random_direction_marsaglia(float3* dir,  curandStateXORWOW& rng )
+{
+    float u, v, b, a  ; 
+    do 
+    {
+        u = 2.f*curand_uniform(&rng) - 1.f ; 
+        v = 2.f*curand_uniform(&rng) - 1.f ; 
+        b = u*u + v*v ; 
+    } 
+    while( b > 1.f ) ; 
+
+    a = 2.f*sqrtf( 1.f - b );   
+
+    dir->x = a*u ; 
+    dir->y = a*v ; 
+    dir->z = 2.f*b - 1.f ; 
+}
 
 
 
