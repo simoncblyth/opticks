@@ -15,6 +15,12 @@ Probably easiest to setup a "proper" Geant4 geometry to test within.
 #include "G4OpBoundaryProcess_MOCK.hh"
 #include "X4OpBoundaryProcessStatus.hh"
 
+#include "X4OpticalSurface.hh"
+#include "X4OpticalSurfaceModel.hh"
+#include "X4OpticalSurfaceFinish.hh"
+#include "X4SurfaceType.hh"
+
+
 #include "G4OpticalPhoton.hh"
 #include "G4ParticleMomentum.hh"
 #include "G4SystemOfUnits.hh"
@@ -123,11 +129,14 @@ G4MaterialPropertiesTable* G4OpBoundaryProcessTest::MakeOpticalProps() // static
 
 G4OpticalSurface* G4OpBoundaryProcessTest::MakeOpticalSurface(G4MaterialPropertiesTable* mpt) // static
 {
-    G4String name = "surfname" ; 
-    G4OpticalSurfaceModel model = glisur ; 
-    G4OpticalSurfaceFinish finish = polished ; 
-    G4SurfaceType type = dielectric_dielectric ; 
-    G4double value = 1.0 ; 
+    const char* optical_surface_ = U::GetEnv("OPTICAL_SURFACE", "esurfname,unified,polished,dielectric_dielectric,1.0" ); 
+
+    X4OpticalSurface* xsurf = X4OpticalSurface::FromString(optical_surface_ ); 
+    G4String name = xsurf->name ; 
+    G4OpticalSurfaceModel model = (G4OpticalSurfaceModel)X4OpticalSurfaceModel::Model(xsurf->model) ; 
+    G4OpticalSurfaceFinish finish = (G4OpticalSurfaceFinish)X4OpticalSurfaceFinish::Finish(xsurf->finish); 
+    G4SurfaceType type = (G4SurfaceType)X4SurfaceType::Type(xsurf->type) ; 
+    G4double value = std::atof(xsurf->value) ; 
 
     G4OpticalSurface* os = new G4OpticalSurface(name, model, finish, type, value); 
     os->SetMaterialPropertiesTable(mpt); 

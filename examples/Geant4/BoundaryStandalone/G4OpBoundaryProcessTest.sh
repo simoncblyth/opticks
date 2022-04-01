@@ -63,7 +63,6 @@ standalone-compile(){
        -DMOCK \
        -DMOCK_DUMP \
        -g \
-       -I$HOME/np \
        -I$(cuda-prefix)/include  \
        -I$(boost-prefix)/include \
        -I$(g4-prefix)/include/Geant4 \

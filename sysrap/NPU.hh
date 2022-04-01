@@ -325,7 +325,9 @@ struct U
     static std::string BaseName( const char* path ); 
     static std::string FormName( const char* prefix, int idx, const char* ext ); 
     static std::string FormName( const char* prefix, const char* body, const char* ext ); 
-    static int GetEnvInt( const char* envkey, int fallback );  
+
+    static int         GetEnvInt( const char* envkey, int fallback );  
+    static const char* GetEnv(    const char* envkey, const char* fallback); 
 };
 
 
@@ -336,6 +338,11 @@ inline int U::GetEnvInt(const char* envkey, int fallback)
     return ival ; 
 }
 
+inline const char* U::GetEnv(const char* envkey, const char* fallback)
+{
+    const char* evalue = getenv(envkey);
+    return evalue ? evalue : fallback ; 
+} 
 
 inline bool U::EndsWith( const char* s, const char* q)
 {

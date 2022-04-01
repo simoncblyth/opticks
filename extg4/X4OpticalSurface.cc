@@ -27,10 +27,11 @@
 #include "X4SurfaceType.hh"
 
 #include "GOpticalSurface.hh"
+
+#ifdef WITH_PLOG
 #include "PLOG.hh"
-
-
 const plog::Severity  X4OpticalSurface::LEVEL = PLOG::EnvLevel("X4OpticalSurface", "DEBUG"); 
+#endif
 
 
 GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
@@ -42,7 +43,12 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
     bool supported = X4SurfaceType::IsOpticksSupported(type); 
     if(!supported)
     {
-        LOG(fatal) << " name " << name << " type " << X4SurfaceType::Name(type) << " supported " << supported ; 
+#ifdef WITH_PLOG
+        LOG(fatal) 
+#else
+        std::cerr
+#endif 
+            << " name " << name << " type " << X4SurfaceType::Name(type) << " supported " << supported ; 
     }
     assert( supported ); 
 
@@ -78,7 +84,11 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
     assert( value >= 0. && value <= 1. ); 
     std::string value_s = X4::Value( value ) ;   
 
+#ifdef WITH_PLOG
     LOG(LEVEL) 
+#else
+    std::cout 
+#endif
         << " name " << std::setw(30) << name
         << " type " << type  
         << " model " << model  
@@ -86,6 +96,7 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
         << " value " << value 
         << " value_s " << value_s 
         << " specular " << specular
+        << std::endl 
         ; 
 
     const char* osnam = name ; 
