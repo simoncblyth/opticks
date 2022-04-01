@@ -58,8 +58,9 @@ standalone-compile(){
          -std=c++11 \
        -I. \
        -I../CerenkovStandalone \
-       -I../../../extg4 \
        -I../../../sysrap \
+       -I../../../extg4 \
+       -I../../../qudarap \
        -DMOCK \
        -DMOCK_DUMP \
        -g \
@@ -96,6 +97,14 @@ seqpath="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche1
 # comment last list to concatenate all 10 tranches giving full 256M randoms allowing num_photons max of 1M
 export OPTICKS_RANDOM_SEQPATH=$seqpath
 
+unrandom()
+{
+    unset OPTICKS_RANDOM_SEQPATH 
+    echo $msg unset OPTICKS_RANDOM_SEQPATH  for TEST $TEST to switch off random alignment 
+}
+
+
+
 M1=1000000
 K3=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
 #num=$M1  
@@ -109,7 +118,9 @@ nrm=0,0,1
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
 
-test=propagate_at_surface
+test=random_direction_marsaglia
+#test=lambertian_direction
+#test=propagate_at_surface
 
 
 export TEST=${TEST:-$test}
@@ -121,21 +132,27 @@ case $TEST in
     propagate_at_boundary)                  src=ephoton             ;;
     propagate_at_surface)                   src=ephoton             ;;
     propagate_at_boundary_normal_incidence) src=ephoton             ;;
+    random_direction_marsaglia)             src=ephoton             ;;
+    lambertian_direction)                   src=ephoton             ;; 
+
     propagate_at_boundary_s_polarized) src=hemisphere_s_polarized   ;;
     propagate_at_boundary_p_polarized) src=hemisphere_p_polarized   ;;
     propagate_at_boundary_x_polarized) src=hemisphere_x_polarized   ;;
 esac
 
-if [ "$TEST" == "propagate_at_surface" ]; then
-    unset OPTICKS_RANDOM_SEQPATH 
-    echo $msg unset OPTICKS_RANDOM_SEQPATH  for TEST $TEST to switch off random alignment 
-    export REFLECTIVITY_EFFICIENCY_TRANSMITTANCE=0,0,1
-fi 
+case $TEST in 
+   propagate_at_surface)        unrandom ;; 
+   random_direction_marsaglia)  unrandom ;; 
+   lambertian_direction)        unrandom ;;  
+esac
+
+export REFLECTIVITY_EFFICIENCY_TRANSMITTANCE=0,0,1
 
 
 case $TEST in 
    propagate_at_boundary*) script_stem=propagate_at_boundary ;;
    propagate_at_surface*)  script_stem=propagate_at_surface  ;;
+   lambertian_direction*)  script_stem=lambertian_direction  ;;
 esac
 
 
