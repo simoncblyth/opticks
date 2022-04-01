@@ -96,8 +96,8 @@ set(SOURCES
     X4LogicalBorderSurface.cc
     X4LogicalSkinSurface.cc
     X4LogicalSurface.cc
+
     X4OpticalSurface.cc
-    X4SurfaceProperty.cc
 
     X4Array.cc
     X4MaterialPropertyVector.cc
@@ -168,9 +168,13 @@ set(HEADERS
 
     X4LogicalBorderSurface.hh
     X4LogicalSkinSurface.hh
+
     X4LogicalSurface.hh
     X4OpticalSurface.hh
-    X4SurfaceProperty.hh
+
+    X4OpticalSurfaceFinish.hh
+    X4OpticalSurfaceModel.hh
+    X4SurfaceType.hh
 
     X4Array.hh
     X4MaterialPropertyVector.hh

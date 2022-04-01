@@ -24,7 +24,7 @@
 #include "G4OpticalSurface.hh"
 #include "X4.hh"
 #include "X4OpticalSurface.hh"
-#include "X4SurfaceProperty.hh"
+#include "X4SurfaceType.hh"
 
 #include "GOpticalSurface.hh"
 #include "PLOG.hh"
@@ -39,10 +39,10 @@ GOpticalSurface* X4OpticalSurface::Convert( const G4OpticalSurface* const surf )
     const char* name = X4::Name<G4OpticalSurface>(surf);
 
     G4SurfaceType type = surf->GetType() ; 
-    bool supported = X4SurfaceProperty::IsOpticksSupported(type); 
+    bool supported = X4SurfaceType::IsOpticksSupported(type); 
     if(!supported)
     {
-        LOG(fatal) << " name " << name << " type " << X4SurfaceProperty::Name(type) << " supported " << supported ; 
+        LOG(fatal) << " name " << name << " type " << X4SurfaceType::Name(type) << " supported " << supported ; 
     }
     assert( supported ); 
 

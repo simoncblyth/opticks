@@ -35,10 +35,13 @@ has been ported to Opticks.
 See also:
 
 X4OpticalSurfaceFinish
-    string consts for G4OpticalSurfaceFinish  { polished, polishedfrontpainted, ... }
+    string consts for G4OpticalSurfaceFinish enum { polished, polishedfrontpainted, ... }
 
 X4OpticalSurfaceModel 
-    string consts for G4OpticalSurfaceModel   { glisur, unified, ... }
+    string consts for G4OpticalSurfaceModel enum  { glisur, unified, ... }
+
+X4SurfaceType
+    string consts for G4SurfaceType enum { dielectric_metal, dielectric_dielectric, ... }
 
 **/
 

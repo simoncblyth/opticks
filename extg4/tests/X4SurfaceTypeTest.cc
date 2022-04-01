@@ -1,15 +1,16 @@
+// name=X4SurfaceTypeTest ; gcc $name.cc -g -std=c++11 -lstdc++ -I.. -I/usr/local/opticks_externals/g4_1042/include/Geant4 -o /tmp/$name && /tmp/$name
+
+#include <cassert>
+#include <iostream>
+#include <iomanip>
 #include <vector>
 #include <map>
-#include "OPTICKS_LOG.hh"
-#include "X4SurfaceProperty.hh"
 
-int main(int argc, char** argv)
+#include "X4SurfaceType.hh"
+
+int main()
 {  
-    OPTICKS_LOG(argc, argv); 
-    LOG(info); 
-
     typedef std::pair<const char*, G4SurfaceType> KV ; 
-
     std::vector<KV> kvs = { 
         {"dielectric_metal",      dielectric_metal },
         {"dielectric_dielectric", dielectric_dielectric }
@@ -29,10 +30,10 @@ int main(int argc, char** argv)
             ;
 
 
-        G4SurfaceType type1 = X4SurfaceProperty::Type(name); 
+        G4SurfaceType type1 = X4SurfaceType::Type(name); 
         assert( type == type1 ); 
 
-        const char* name1 = X4SurfaceProperty::Name(type); 
+        const char* name1 = X4SurfaceType::Name(type); 
         assert( strcmp(name, name1) == 0 ); 
     }
 

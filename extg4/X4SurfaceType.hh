@@ -5,7 +5,7 @@
 #include "G4SurfaceProperty.hh"
 
 /**
-X4SurfaceProperty 
+X4SurfaceType
 ==================
 
 The G4SurfaceType enum if defined in G4SurfaceProperty.hh::
@@ -14,7 +14,7 @@ The G4SurfaceType enum if defined in G4SurfaceProperty.hh::
 
 **/
 
-struct X4_API X4SurfaceProperty
+struct X4_API X4SurfaceType
 {
     static bool IsOpticksSupported(G4SurfaceType type); 
     static const char* Name(G4SurfaceType type);
@@ -32,12 +32,12 @@ struct X4_API X4SurfaceProperty
 };
 
 
-inline bool X4SurfaceProperty::IsOpticksSupported(G4SurfaceType type) // static
+inline bool X4SurfaceType::IsOpticksSupported(G4SurfaceType type) // static
 {
     return type == dielectric_metal || type == dielectric_dielectric ; 
 }
 
-inline const char* X4SurfaceProperty::Name(G4SurfaceType type) // static
+inline const char* X4SurfaceType::Name(G4SurfaceType type) // static
 {
    const char* t = NULL ; 
    switch(type)
@@ -55,7 +55,7 @@ inline const char* X4SurfaceProperty::Name(G4SurfaceType type) // static
    return t ; 
 }    
 
-inline G4SurfaceType X4SurfaceProperty::Type(const char* name) // static
+inline G4SurfaceType X4SurfaceType::Type(const char* name) // static
 {
     G4SurfaceType type=dielectric_dielectric ; 
     if(strcmp(name,dielectric_metal_)==0 )       type=dielectric_metal ; 
