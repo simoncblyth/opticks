@@ -4,10 +4,13 @@
 #include "G4Version.hh"
 #include "G4SurfaceProperty.hh"
 
-
 /**
-X4SurfaceProperty
+X4SurfaceProperty 
 ==================
+
+The G4SurfaceType enum if defined in G4SurfaceProperty.hh::
+
+   g4-cls G4SurfaceProperty
 
 **/
 
@@ -17,28 +20,22 @@ struct X4_API X4SurfaceProperty
     static const char* Name(G4SurfaceType type);
     static G4SurfaceType Type(const char* name);
 
-    static const char* dielectric_metal_ ; 
-    static const char* dielectric_dielectric_ ; 
-    static const char* dielectric_LUT_ ; 
+    static constexpr const char* dielectric_metal_      = "dielectric_metal" ; 
+    static constexpr const char* dielectric_dielectric_ = "dielectric_dielectric" ; 
+    static constexpr const char* dielectric_LUT_        = "dielectric_LUT" ; 
 #if (G4VERSION_NUMBER >= 1042)
-    static const char* dielectric_LUTDAVIS_ ; 
+    static constexpr const char* dielectric_LUTDAVIS_   = "dielectric_LUTDAVIS" ; 
 #endif
-    static const char* dielectric_dichroic_ ; 
-    static const char* firsov_ ; 
-    static const char* x_ray_ ; 
+    static constexpr const char* dielectric_dichroic_   = "dielectric_dichroic" ; 
+    static constexpr const char* firsov_                = "firsov" ; 
+    static constexpr const char* x_ray_                 = "x_ray" ; 
 };
 
 
-inline const char* X4SurfaceProperty::dielectric_metal_      = "dielectric_metal" ; 
-inline const char* X4SurfaceProperty::dielectric_dielectric_ = "dielectric_dielectric" ; 
-inline const char* X4SurfaceProperty::dielectric_LUT_        = "dielectric_LUT" ; 
-#if (G4VERSION_NUMBER >= 1042)
-inline const char* X4SurfaceProperty::dielectric_LUTDAVIS_   = "dielectric_LUTDAVIS" ; 
-#endif
-inline const char* X4SurfaceProperty::dielectric_dichroic_   = "dielectric_dichroic" ; 
-inline const char* X4SurfaceProperty::firsov_                = "firsov" ; 
-inline const char* X4SurfaceProperty::x_ray_                 = "x_ray" ; 
-
+inline bool X4SurfaceProperty::IsOpticksSupported(G4SurfaceType type) // static
+{
+    return type == dielectric_metal || type == dielectric_dielectric ; 
+}
 
 inline const char* X4SurfaceProperty::Name(G4SurfaceType type) // static
 {
@@ -71,11 +68,5 @@ inline G4SurfaceType X4SurfaceProperty::Type(const char* name) // static
     if(strcmp(name,firsov_)==0 )                 type=firsov ; 
     if(strcmp(name,x_ray_)==0 )                  type=x_ray ; 
     return type ; 
-}
-
-
-inline bool X4SurfaceProperty::IsOpticksSupported(G4SurfaceType type) // static
-{
-    return type == dielectric_metal || type == dielectric_dielectric ; 
 }
 

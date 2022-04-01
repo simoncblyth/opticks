@@ -32,6 +32,14 @@ X4OpticalSurface
 CAUTION : Only a small fraction of Geant4 optical surface handling 
 has been ported to Opticks.
 
+See also:
+
+X4OpticalSurfaceFinish
+    string consts for G4OpticalSurfaceFinish  { polished, polishedfrontpainted, ... }
+
+X4OpticalSurfaceModel 
+    string consts for G4OpticalSurfaceModel   { glisur, unified, ... }
+
 **/
 
 class X4_API X4OpticalSurface 
