@@ -46,31 +46,30 @@ has been ported to Opticks.
 
 See also:
 
-X4OpticalSurfaceModel 
+X4OpticalSurfaceModel.hh
     string consts for G4OpticalSurfaceModel enum  { glisur, unified, ... }
 
-X4OpticalSurfaceFinish
+X4OpticalSurfaceFinish.hh
     string consts for G4OpticalSurfaceFinish enum { polished, polishedfrontpainted, ... }
 
-X4SurfaceType
+X4SurfaceType.hh
     string consts for G4SurfaceType enum { dielectric_metal, dielectric_dielectric, ... }
 
 **/
 
 struct  X4_API X4OpticalSurface 
 {
-        const char* name ; 
-        const char* model ; 
-        const char* finish ; 
-        const char* type ; 
-        const char* value ; 
+    const char* name ; 
+    const char* model ; 
+    const char* finish ; 
+    const char* type ; 
+    const char* value ; 
 
 #ifdef WITH_PLOG
-        static const plog::Severity LEVEL ; 
+    static const plog::Severity LEVEL ; 
 #endif
-        static X4OpticalSurface* FromString(const char* spec, char delim=','); 
-        static GOpticalSurface* Convert(const G4OpticalSurface* const src );
-
+    static X4OpticalSurface* FromString(const char* spec, char delim=','); 
+    static GOpticalSurface* Convert(const G4OpticalSurface* const src );
 };
 
 

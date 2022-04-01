@@ -44,17 +44,21 @@ Probably easiest to setup a "proper" Geant4 geometry to test within.
 struct G4OpBoundaryProcessTest 
 {
     static unsigned Status(unsigned status); 
-    static NP*      MakeRindexArray(double rindex); 
+    static NP*      MakeValueArray(double value); 
 
-    static G4MaterialPropertiesTable* MakeOpticalProps();  
+    static G4MaterialPropertiesTable* MakeOpticalMPT(
+        const G4MaterialPropertyVector* v_reflectivity,    
+        const G4MaterialPropertyVector* v_efficiency,    
+        const G4MaterialPropertyVector* v_transmittance
+       ); 
     static G4OpticalSurface* MakeOpticalSurface(G4MaterialPropertiesTable* mpt) ;
 
+    OpticksRandom*    rnd ; 
     const char*       srcdir ; 
     const char*       dstdir ; 
     float3            normal ; 
-    G4OpticalSurface* opsurf ; 
 
-    OpticksRandom*    rnd ; 
+    // Materials setup 
     float             n1 ; 
     float             n2 ; 
     const NP*         a_rindex1 ; 
@@ -65,6 +69,27 @@ struct G4OpBoundaryProcessTest
     const G4Material* material2 ; 
     G4Material*       material1_ ; 
     G4Material*       material2_ ; 
+
+
+    // OpticalSurface setup
+    float             reflectivity ;
+    float             efficiency ; 
+    float             transmittance ; 
+
+    int               eload ; 
+
+    const NP*         a_reflectivity ; 
+    const NP*         a_efficiency ; 
+    const NP*         a_transmittance ; 
+
+    const G4MaterialPropertyVector* v_reflectivity ; 
+    const G4MaterialPropertyVector* v_efficiency ; 
+    const G4MaterialPropertyVector* v_transmittance ; 
+
+    G4MaterialPropertiesTable*      optical_mpt ; 
+    G4OpticalSurface*               optical_surf ; 
+
+    // process
     G4OpBoundaryProcess_MOCK* proc ; 
 
 
@@ -84,7 +109,13 @@ struct G4OpBoundaryProcessTest
     void save_photon( const float* data, unsigned num_photon ); 
 }; 
 
+/**
+G4OpBoundaryProcessTest::Status
+--------------------------------
 
+Note info loss here, should probably store origin status for debug purposes too. 
+
+**/
 unsigned G4OpBoundaryProcessTest::Status(unsigned status)
 {
     unsigned st = 0 ; 
@@ -93,43 +124,44 @@ unsigned G4OpBoundaryProcessTest::Status(unsigned status)
         case FresnelReflection:       st = BOUNDARY_REFLECT  ; break ; 
         case TotalInternalReflection: st = BOUNDARY_REFLECT  ; break ; 
         case FresnelRefraction:       st = BOUNDARY_TRANSMIT ; break ; 
+        case Transmission:            st = BOUNDARY_TRANSMIT ; break ; 
+        case Absorption:              st = SURFACE_ABSORB    ; break ; 
+        case Detection:               st = SURFACE_DETECT    ; break ; 
     }
     return st ; 
 }
 
-NP* G4OpBoundaryProcessTest::MakeRindexArray(double rindex)  // static
+NP* G4OpBoundaryProcessTest::MakeValueArray(double value)  // static
 {
-    NP* a = NP::Make<double>( 1.55/1e6, rindex, 15.5/1e6, rindex ) ; 
+    NP* a = NP::Make<double>( 1.55/1e6, value, 15.5/1e6, value ) ; 
     a->change_shape(-1, 2); 
-    a->pdump("G4OpBoundaryProcessTest::MakeRindexArray" , 1e6 ); 
+    a->pdump("G4OpBoundaryProcessTest::MakeValueArray" , 1e6 ); 
     return a ; 
 }
 
 /**
+HMM the Opticks and Geant4 approach are a bit divergent wrt specular and diffuse reflectivity 
+so to match have to carefully arrange prop values in coordination with the surface finish.  
 
-Relevant props::
+Relevant Geant4 property enum::     
 
    kREFLECTIVITY  (or kREALRINDEX, kIMAGINARYRINDEX)
-
    kEFFICIENCY
-
    kTRANSMITTANCE
-
 **/
 
-G4MaterialPropertiesTable* G4OpBoundaryProcessTest::MakeOpticalProps() // static
+G4MaterialPropertiesTable* G4OpBoundaryProcessTest::MakeOpticalMPT(
+    const G4MaterialPropertyVector* v_reflectivity,    
+    const G4MaterialPropertyVector* v_efficiency,    
+    const G4MaterialPropertyVector* v_transmittance
+) 
 {
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable ;
-    return mpt ; 
+    return OpticksUtil::MakeMaterialPropertiesTable( "REFLECTIVITY", v_reflectivity, "EFFICIENCY", v_efficiency, "TRANSMITTANCE", v_transmittance ); 
 }
-
-
-
-
 
 G4OpticalSurface* G4OpBoundaryProcessTest::MakeOpticalSurface(G4MaterialPropertiesTable* mpt) // static
 {
-    const char* optical_surface_ = U::GetEnv("OPTICAL_SURFACE", "esurfname,unified,polished,dielectric_dielectric,1.0" ); 
+    const char* optical_surface_ = U::GetEnv("OPTICAL_SURFACE", "esurfname,glisur,polished,dielectric_dielectric,1.0" ); 
 
     X4OpticalSurface* xsurf = X4OpticalSurface::FromString(optical_surface_ ); 
     G4String name = xsurf->name ; 
@@ -166,21 +198,38 @@ std::string G4OpBoundaryProcessTest::desc() const
 
 G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const char* srcdir_ekey, const char* dstdir_ekey)
     :
+    rnd(OpticksRandom::Enabled() ? new OpticksRandom : nullptr ),
     srcdir(getenv(srcdir_ekey)),
     dstdir(getenv(dstdir_ekey)),
     normal(make_float3(0.f, 0.f, 1.f)),   // may be overrden by normal from init_prd_normal
-    opsurf(nullptr), 
-    rnd(new OpticksRandom),
     n1(qenvfloat("M1_REFRACTIVE_INDEX","1.0")),
     n2(qenvfloat("M2_REFRACTIVE_INDEX","1.5")),
-    a_rindex1(MakeRindexArray(n1)), 
-    a_rindex2(MakeRindexArray(n2)), 
+    a_rindex1(MakeValueArray(n1)), 
+    a_rindex2(MakeValueArray(n2)), 
     rindex1(OpticksUtil::MakeProperty(a_rindex1)),
     rindex2(OpticksUtil::MakeProperty(a_rindex2)),
     material1(OpticksUtil::MakeMaterial(rindex1, "Material1")),
     material2(OpticksUtil::MakeMaterial(rindex2, "Material2")),
     material1_(const_cast<G4Material*>(material1)),
     material2_(const_cast<G4Material*>(material2)),
+
+    reflectivity(0.f),
+    efficiency(0.f),
+    transmittance(0.f),
+
+    eload(qvals3(reflectivity,efficiency,transmittance, "REFLECTIVITY_EFFICIENCY_TRANSMITTANCE", "1,0,0")),
+
+    a_reflectivity(MakeValueArray(reflectivity)),
+    a_efficiency(MakeValueArray(efficiency)),
+    a_transmittance(MakeValueArray(transmittance)),
+
+    v_reflectivity(OpticksUtil::MakeProperty(a_reflectivity)),
+    v_efficiency(OpticksUtil::MakeProperty(a_efficiency)),
+    v_transmittance(OpticksUtil::MakeProperty(a_transmittance)),
+  
+    optical_mpt(MakeOpticalMPT(v_reflectivity,v_efficiency,v_transmittance)),
+    optical_surf(MakeOpticalSurface(optical_mpt)), 
+
     proc(new G4OpBoundaryProcess_MOCK())
 {
     init(); 
@@ -202,7 +251,7 @@ void G4OpBoundaryProcessTest::init()
 
     //rnd->m_flat_debug = true  ;   // when true dumps a line for every G4UniformRand call 
     proc->theGlobalNormal_MOCK.set( normal.x, normal.y, normal.z ); 
-    proc->OpticalSurface_MOCK = opsurf ;   // G4OpticalSurface
+    proc->OpticalSurface_MOCK = optical_surf ;   // G4OpticalSurface
 
     std::cout 
         << "G4OpBoundaryProcessTest::init "  << desc() 
@@ -241,13 +290,15 @@ void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, int idx)
 {
     assert( idx > -1 ); 
     proc->photon_idx = idx ; 
-    rnd->setSequenceIndex(idx);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
+
+    if(rnd) rnd->setSequenceIndex(idx);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
 
     propagate_at_boundary_( photon, idx ); 
 
-    double flat_prior = rnd->getFlatPrior(); 
+    double flat_prior = rnd ? rnd->getFlatPrior() : -1. ; 
     photon.q0.f.w = flat_prior ; 
-    rnd->setSequenceIndex(-1);  // disable random hijacking 
+  
+    if(rnd) rnd->setSequenceIndex(-1);  // disable random hijacking 
 
     bool dump_ = idx < 10 || ( idx % 10000 == 0 ) ;  
     if(dump_) dump(photon, idx); 
@@ -339,7 +390,9 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
     {
        bool tir = theStatus == TotalInternalReflection ; 
         std::cout 
-             << " theStatus "  << X4OpBoundaryProcessStatus::Name( theStatus ) 
+             << "G4OpBoundaryProcessTest::propagate_at_boundary_"
+             << " theStatus " << theStatus  
+             << " theStatus.Name "  << X4OpBoundaryProcessStatus::Name( theStatus ) 
              << " theFlag " << theFlag 
              << " tir " << tir 
              << std::endl 

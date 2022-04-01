@@ -244,6 +244,32 @@ inline void qvals( float4& v,  const char* key, const char* fallback )
     v.w = vals[3] ; 
 }
 
+inline int qvals4( float& x, float& y, float& z, float& w,  const char* key, const char* fallback )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, 4 ); 
+
+    x = vals[0] ; 
+    y = vals[1] ; 
+    z = vals[2] ; 
+    w = vals[3] ; 
+
+    return 0 ; 
+}
+
+inline int qvals3( float& x, float& y, float& z, const char* key, const char* fallback )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, 3 ); 
+
+    x = vals[0] ; 
+    y = vals[1] ; 
+    z = vals[2] ; 
+
+    return 0 ; 
+}
+
+
 
 inline void qvals( int& v,   const char* key, const char* fallback )
 {

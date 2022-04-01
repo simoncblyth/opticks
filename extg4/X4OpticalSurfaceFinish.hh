@@ -28,7 +28,7 @@ struct X4OpticalSurfaceFinish
     static constexpr const char* groundbackpainted_    = "groundbackpainted" ;     // same as 'ground' but with a back-paint
 }; 
 
-const char* X4OpticalSurfaceFinish::Name(unsigned finish)
+inline const char* X4OpticalSurfaceFinish::Name(unsigned finish)
 {
     const char* n = nullptr ; 
     switch(finish)
@@ -43,7 +43,7 @@ const char* X4OpticalSurfaceFinish::Name(unsigned finish)
     return n ; 
 }
 
-unsigned X4OpticalSurfaceFinish::Finish(const char* name)
+inline unsigned X4OpticalSurfaceFinish::Finish(const char* name)
 {
     assert(name); 
     unsigned finish = 0 ; 

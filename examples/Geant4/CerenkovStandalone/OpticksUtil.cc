@@ -48,6 +48,21 @@ G4MaterialPropertyVector* OpticksUtil::MakeProperty(const NP* a)  // static
     return mpv ; 
 }
 
+G4MaterialPropertiesTable*  OpticksUtil::MakeMaterialPropertiesTable( 
+     const char* a_key, const G4MaterialPropertyVector* a_prop,
+     const char* b_key, const G4MaterialPropertyVector* b_prop,
+     const char* c_key, const G4MaterialPropertyVector* c_prop,
+     const char* d_key, const G4MaterialPropertyVector* d_prop
+)
+{
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
+    if(a_key && a_prop) mpt->AddProperty(a_key,const_cast<G4MaterialPropertyVector*>(a_prop));    //  HUH: why not const ?
+    if(b_key && b_prop) mpt->AddProperty(b_key,const_cast<G4MaterialPropertyVector*>(b_prop));   
+    if(c_key && c_prop) mpt->AddProperty(c_key,const_cast<G4MaterialPropertyVector*>(c_prop));   
+    if(d_key && d_prop) mpt->AddProperty(d_key,const_cast<G4MaterialPropertyVector*>(d_prop));   
+    return mpt ; 
+}
+
 
 G4Material* OpticksUtil::MakeMaterial(const G4MaterialPropertyVector* rindex, const char* name)  // static
 {
@@ -61,10 +76,7 @@ G4Material* OpticksUtil::MakeMaterial(const G4MaterialPropertyVector* rindex, co
     mat->AddElement(H, 2);
     mat->AddElement(O, 1);
 
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
-
-    G4MaterialPropertyVector* rindex_ = const_cast<G4MaterialPropertyVector*>(rindex) ;  // HUH: why not const ?
-    mpt->AddProperty("RINDEX", rindex_ );   
+    G4MaterialPropertiesTable* mpt = MakeMaterialPropertiesTable("RINDEX", rindex) ; 
     mat->SetMaterialPropertiesTable(mpt) ;
     return mat ; 
 }

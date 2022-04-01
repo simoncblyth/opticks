@@ -14,41 +14,23 @@ Usage::
 struct X4OpBoundaryProcessStatus
 {
     static const char* Name(unsigned status);  
-
-    static const char* Undefined_ ; 
-    static const char* Transmission_ ; 
-    static const char* FresnelRefraction_ ; 
-    static const char* FresnelReflection_ ; 
-    static const char* TotalInternalReflection_ ;
-    static const char* LambertianReflection_ ; 
-    static const char* LobeReflection_ ; 
-    static const char* SpikeReflection_ ;
-    static const char* BackScattering_ ;
-    static const char* Absorption_ ; 
-    static const char* Detection_ ;
-    static const char* NotAtBoundary_ ;
-    static const char* SameMaterial_ ; 
-    static const char* StepTooSmall_ ; 
-    static const char* NoRINDEX_ ;
-    static const char* Other_ ;  
+    static constexpr const char* Undefined_ = "Undefined" ; 
+    static constexpr const char* Transmission_ = "Transmission" ; 
+    static constexpr const char* FresnelRefraction_ = "FresnelRefraction" ; 
+    static constexpr const char* FresnelReflection_ = "FresnelReflection" ; 
+    static constexpr const char* TotalInternalReflection_ = "TotalInternalReflection" ;
+    static constexpr const char* LambertianReflection_ = "LambertianReflection" ; 
+    static constexpr const char* LobeReflection_ = "LobeReflection" ; 
+    static constexpr const char* SpikeReflection_ = "SpikeReflection" ;
+    static constexpr const char* BackScattering_ = "BackScattering" ;
+    static constexpr const char* Absorption_ = "Absorption" ; 
+    static constexpr const char* Detection_ = "Detection" ;
+    static constexpr const char* NotAtBoundary_ = "NotAtBoundary" ;
+    static constexpr const char* SameMaterial_ = "SameMaterial" ; 
+    static constexpr const char* StepTooSmall_ = "StepTooSmall" ; 
+    static constexpr const char* NoRINDEX_ = "NoRINDEX" ;
+    static constexpr const char* Other_ = "Other" ;  
 };
-
-const char* X4OpBoundaryProcessStatus::Undefined_ = "Undefined" ; 
-const char* X4OpBoundaryProcessStatus::Transmission_ = "Transmission" ; 
-const char* X4OpBoundaryProcessStatus::FresnelRefraction_ = "FresnelRefraction" ; 
-const char* X4OpBoundaryProcessStatus::FresnelReflection_ = "FresnelReflection" ; 
-const char* X4OpBoundaryProcessStatus::TotalInternalReflection_ = "TotalInternalReflection" ; 
-const char* X4OpBoundaryProcessStatus::LambertianReflection_ = "LambertianReflection" ; 
-const char* X4OpBoundaryProcessStatus::LobeReflection_ = "LobeReflection" ; 
-const char* X4OpBoundaryProcessStatus::SpikeReflection_ = "SpikeReflection" ; 
-const char* X4OpBoundaryProcessStatus::BackScattering_ = "BackScattering" ; 
-const char* X4OpBoundaryProcessStatus::Absorption_ = "Absorption" ; 
-const char* X4OpBoundaryProcessStatus::Detection_ = "Detection" ; 
-const char* X4OpBoundaryProcessStatus::NotAtBoundary_ = "NotAtBoundary" ; 
-const char* X4OpBoundaryProcessStatus::SameMaterial_ = "SameMaterial" ; 
-const char* X4OpBoundaryProcessStatus::StepTooSmall_ = "StepTooSmall" ; 
-const char* X4OpBoundaryProcessStatus::NoRINDEX_ = "NoRINDEX" ; 
-const char* X4OpBoundaryProcessStatus::Other_ = "Other" ; 
 
 inline const char* X4OpBoundaryProcessStatus::Name(unsigned status)
 {

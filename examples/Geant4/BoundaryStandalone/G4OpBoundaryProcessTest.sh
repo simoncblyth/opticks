@@ -98,16 +98,19 @@ export OPTICKS_RANDOM_SEQPATH=$seqpath
 
 M1=1000000
 K3=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
-num=$M1  
-#num=8
+#num=$M1  
+num=8
 nrm=0,0,1
 
 #test=propagate_at_boundary
 #test=propagate_at_boundary_normal_incidence
 
-test=propagate_at_boundary_s_polarized
+#test=propagate_at_boundary_s_polarized
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
+
+test=propagate_at_surface
+
 
 export TEST=${TEST:-$test}
 export NUM=${NUM:-$num}
@@ -115,21 +118,30 @@ export NRM=${NRM:-$nrm}
 #DEBUG=1
 
 case $TEST in 
-    propagate_at_boundary)                  src=ephoton                  ;;
+    propagate_at_boundary)                  src=ephoton             ;;
+    propagate_at_surface)                   src=ephoton             ;;
     propagate_at_boundary_normal_incidence) src=ephoton             ;;
     propagate_at_boundary_s_polarized) src=hemisphere_s_polarized   ;;
     propagate_at_boundary_p_polarized) src=hemisphere_p_polarized   ;;
     propagate_at_boundary_x_polarized) src=hemisphere_x_polarized   ;;
 esac
 
+if [ "$TEST" == "propagate_at_surface" ]; then
+    unset OPTICKS_RANDOM_SEQPATH 
+    echo $msg unset OPTICKS_RANDOM_SEQPATH  for TEST $TEST to switch off random alignment 
+    export REFLECTIVITY_EFFICIENCY_TRANSMITTANCE=0,0,1
+fi 
+
+
 case $TEST in 
    propagate_at_boundary*) script_stem=propagate_at_boundary ;;
+   propagate_at_surface*)  script_stem=propagate_at_surface  ;;
 esac
+
 
 script_dir=../../../qudarap/tests
 script=$script_dir/${script_stem}.py
 script_cf=$script_dir/${script_stem}_cf.py
-
 
 qutdir=../../../qudarap/tests
 source $qutdir/fill_state.sh 

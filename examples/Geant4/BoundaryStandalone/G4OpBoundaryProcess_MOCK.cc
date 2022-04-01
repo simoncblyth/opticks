@@ -74,6 +74,15 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+#ifdef MOCK_DUMP
+#include <iostream>
+#include <iomanip>
+#include "X4SurfaceType.hh"
+#include "X4OpticalSurfaceModel.hh"
+#include "X4OpticalSurfaceFinish.hh"
+#endif
+
+
 #include "G4ios.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4OpProcessSubType.hh"
@@ -323,7 +332,6 @@ G4OpBoundaryProcess_MOCK::PostStepDoIt(const G4Track& aTrack, const G4Step& aSte
 
 
 #ifdef MOCK
-       // leaving  OpticalSurface NULL
        OpticalSurface = OpticalSurface_MOCK ; 
 #else
         G4LogicalSurface* Surface = NULL;
@@ -354,11 +362,28 @@ G4OpBoundaryProcess_MOCK::PostStepDoIt(const G4Track& aTrack, const G4Step& aSte
 
 #endif
 
+#ifdef MOCK_DUMP
+     std::cout << "MOCK_DUMP OpticalSurface " << ( OpticalSurface ? "YES" : "NO" ) << std::endl ; 
+#endif
+
         if (OpticalSurface) {
 
            type      = OpticalSurface->GetType();
            theModel  = OpticalSurface->GetModel();
            theFinish = OpticalSurface->GetFinish();
+
+
+#ifdef MOCK_DUMP
+           std::cout 
+               << "MOCK_DUMP"
+               << " type " << X4SurfaceType::Name(type) 
+               << " model " << X4OpticalSurfaceModel::Name(theModel) 
+               << " finish " << X4OpticalSurfaceFinish::Name(theFinish) 
+               << std::endl 
+               ;
+#endif
+
+
 
            aMaterialPropertiesTable = OpticalSurface->
                                         GetMaterialPropertiesTable();
@@ -414,6 +439,16 @@ G4OpBoundaryProcess_MOCK::PostStepDoIt(const G4Track& aTrack, const G4Step& aSte
                       theTransmittance =
                       PropertyPointer->Value(thePhotonMomentum);
               }
+
+#ifdef MOCK_DUMP
+             std::cout 
+                 << "MOCK_DUMP"
+                 << " theReflectivity "  << std::setw(10) << std::fixed << std::setprecision(4) << theReflectivity 
+                 << " theEfficiency "    << std::setw(10) << std::fixed << std::setprecision(4) << theEfficiency 
+                 << " theTransmittance " << std::setw(10) << std::fixed << std::setprecision(4) << theTransmittance 
+                 << std::endl 
+                 ;
+#endif
 
               if (aMaterialPropertiesTable->
                                      ConstPropertyExists("SURFACEROUGHNESS"))

@@ -15,6 +15,11 @@ OpticksRandom* OpticksRandom::Get(){ return INSTANCE ; }
 const char* OpticksRandom::NAME = "OpticksRandom" ;  
 const char* OpticksRandom::OPTICKS_RANDOM_SEQPATH = "OPTICKS_RANDOM_SEQPATH" ; 
 
+bool OpticksRandom::Enabled()
+{
+    const char* seq = getenv(OPTICKS_RANDOM_SEQPATH) ; 
+    return seq != nullptr ; 
+}
 
 /**
 OpticksRandom::OpticksRandom

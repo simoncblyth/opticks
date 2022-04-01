@@ -121,6 +121,11 @@ struct qsim
 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng); 
     QSIM_METHOD int     propagate_at_boundary(                quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
+
+    QSIM_METHOD int     propagate_at_surface( unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
+    QSIM_METHOD void    do_reflection_diffuse(  quad4& p, const qprd& prd, curandStateXORWOW& rng );
+    QSIM_METHOD void    do_reflection_specular( quad4& p, const qprd& prd, curandStateXORWOW& rng );
+
     QSIM_METHOD void    hemisphere_polarized(   quad4& p, unsigned polz, bool inwards, const qprd& prd, curandStateXORWOW& rng); 
 
 
@@ -794,13 +799,16 @@ arrange to have an oriented normal that is flipped appropriately OR perhaps can 
 In summary this is a case of inconsistent definitions of the normal, 
 that will need to be oriented ~half the time. 
 
-TODO: verify this by random aligned matching with examples/Geant4/BoundaryStandalone 
+TODO: try avoiding "float3 oriented_normal" instead just use "bool orient" 
+      and multiply prd.normal by 1.f or -1.f depending on orient at every use
 
 
 random aligned matching with examples/Geant/BoundaryStandalone
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* S-polarized now matching, only 1-in-a-million deviant from TransCoeff cut edge float/double 
+* S/P/"X"-polarized + TIR + normal_incidence all now matching
+* noted a 1-in-a-million deviant from TransCoeff cut edge float/double for S and P
+
 * initially had two more deviants at very close to normal incidence that were aligned by changing 
   the criteria to match Geant4 "sint1 == 0." better::
 
@@ -808,7 +816,6 @@ random aligned matching with examples/Geant/BoundaryStandalone
     const bool normal_incidence = fabs(c1) == 1.f ; 
 
 * see notes/issues/QSimTest_propagate_at_boundary_vs_BoundaryStandalone_G4OpBoundaryProcessTest.rst
-
 
 **/
 
@@ -982,6 +989,116 @@ transmit
 
 
 */
+
+
+
+
+
+
+
+template <typename T>
+inline QSIM_METHOD int qsim<T>::propagate_at_surface(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id)
+{
+    const float& detect = s.surface.x ;
+    const float& absorb = s.surface.y ;
+    //const float& reflect_specular = s.surface.z ; 
+    const float& reflect_diffuse  = s.surface.w ; 
+
+    float u_surface = curand_uniform(&rng);
+    float u_surface_burn = curand_uniform(&rng);
+
+    int action = u_surface < absorb + detect ? BREAK : CONTINUE  ; 
+
+    if( action == BREAK )
+    {
+        flag = u_surface < absorb ? SURFACE_ABSORB : SURFACE_DETECT  ;
+    }
+    else 
+    {
+        flag = u_surface < absorb + detect + reflect_diffuse ?  SURFACE_DREFLECT : SURFACE_SREFLECT ;  
+        switch(flag)
+        {
+            case SURFACE_DREFLECT: do_reflection_diffuse( p, prd, rng); break ; 
+            case SURFACE_SREFLECT: do_reflection_specular(p, prd, rng); break ; 
+        }
+    }
+    return action ; 
+}
+
+
+/**
+qsim::do_reflection cf G4OpBoundaryProcess::DoReflection
+-----------------------------------------------------------
+
+::
+
+    355 inline
+    356 void G4OpBoundaryProcess_MOCK::DoReflection()
+    357 {
+    358         if ( theStatus == LambertianReflection ) {
+    359 
+    360           NewMomentum = G4LambertianRand(theGlobalNormal);
+    361           theFacetNormal = (NewMomentum - OldMomentum).unit();
+    362 
+    363         }
+    364         else if ( theFinish == ground ) {
+    365 
+    366           theStatus = LobeReflection;
+    367           if ( PropertyPointer1 && PropertyPointer2 ){
+    368           } else {
+    369              theFacetNormal =
+    370                  GetFacetNormal(OldMomentum,theGlobalNormal);
+    371           }
+    372           G4double PdotN = OldMomentum * theFacetNormal;
+    373           NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
+    374 
+    375         }
+    376         else {
+    377 
+    378           theStatus = SpikeReflection;
+    379           theFacetNormal = theGlobalNormal;
+    380           G4double PdotN = OldMomentum * theFacetNormal;
+    381           NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
+    382 
+    383         }
+    384         G4double EdotN = OldPolarization * theFacetNormal;
+    385         NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
+    386 }
+
+
+**/
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::do_reflection_diffuse( quad4& p, const qprd& prd, curandStateXORWOW& rng )
+{
+    float3* dir = (float3*)&p.q1.f.x ;  
+    float3* pol = (float3*)&p.q2.f.x ;  
+
+    float3 old_dir = *dir ; 
+
+    const float3& normal = prd.normal ;       // hmm: is any orienting needed ?
+    lambertian_direction(dir, normal, rng );
+
+    float3 facet_normal = normalize( *dir - old_dir ); 
+    const float EdotN = dot( *pol, facet_normal ); 
+    *pol = -1.f*(*pol) + 2.f*EdotN*facet_normal ; 
+}
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::do_reflection_specular( quad4& p, const qprd& prd, curandStateXORWOW& rng )
+{
+    float3* dir = (float3*)&p.q1.f.x ;  
+    float3* pol = (float3*)&p.q2.f.x ;  
+
+    const float3& normal = prd.normal ;       // hmm: is any orienting needed ?
+
+    const float PdotN = dot( *dir, normal ); 
+    *dir = *dir - 2.f*PdotN*normal ; 
+
+    const float EdotN = dot( *pol, normal ); 
+    *pol = -1.f*(*pol) + 2.f*EdotN*normal ; 
+}
+
 
 
 /**

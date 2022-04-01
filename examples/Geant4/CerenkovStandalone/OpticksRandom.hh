@@ -27,6 +27,7 @@ struct OpticksRandom : public CLHEP::HepRandomEngine
     static const char* NAME ; 
     static OpticksRandom* INSTANCE ; 
     static OpticksRandom* Get(); 
+    static bool           Enabled(); 
 
     const char*              m_seqpath ; 
     const NP*                m_seq;  
