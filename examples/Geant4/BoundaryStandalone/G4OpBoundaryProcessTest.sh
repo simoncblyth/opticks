@@ -118,8 +118,8 @@ nrm=0,0,1
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
 
-test=random_direction_marsaglia
-#test=lambertian_direction
+#test=random_direction_marsaglia
+test=lambertian_direction
 #test=propagate_at_surface
 
 
@@ -143,7 +143,7 @@ esac
 case $TEST in 
    propagate_at_surface)        unrandom ;; 
  #  random_direction_marsaglia)  unrandom ;; 
-   lambertian_direction)        unrandom ;;  
+#   lambertian_direction)        unrandom ;;  
 esac
 
 export REFLECTIVITY_EFFICIENCY_TRANSMITTANCE=0,0,1

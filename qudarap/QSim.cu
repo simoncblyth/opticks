@@ -491,7 +491,7 @@ __global__ void _QSim_random_direction_marsaglia( qsim<T>* sim, quad* q, unsigne
     curandState rng = sim->rngstate[id] ; 
 
     float3* dir = (float3*)&q[id].f.x ;  
-    sim->random_direction_marsaglia( dir, rng );  
+    sim->random_direction_marsaglia( dir, rng, id );  
     q[id].u.w = id ; 
 }
 
@@ -504,7 +504,7 @@ __global__ void _QSim_lambertian_direction( qsim<T>* sim, quad* q, unsigned num_
     curandState rng = sim->rngstate[id] ; 
 
     float3* dir = (float3*)&q[id].f.x ;  
-    sim->lambertian_direction( dir, dbg->normal, rng );  
+    sim->lambertian_direction( dir, dbg->normal, rng, id );  
 
     q[id].u.w = id ; 
 }

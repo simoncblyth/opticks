@@ -113,8 +113,8 @@ struct qsim
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
 
-    QSIM_METHOD static void lambertian_direction(float3* dir, const float3& normal, curandStateXORWOW& rng ); 
-    QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng); 
+    QSIM_METHOD static void lambertian_direction(float3* dir, const float3& normal, curandStateXORWOW& rng, unsigned idx  ); 
+    QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng, unsigned idx); 
 
     QSIM_METHOD static void   rotateUz(float3& d, const float3& u ); 
     QSIM_METHOD static void   rayleigh_scatter_align(quad4& p, curandStateXORWOW& rng ); 
@@ -123,7 +123,7 @@ struct qsim
     QSIM_METHOD int     propagate_at_boundary(                quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
 
     QSIM_METHOD int     propagate_at_surface( unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
-    QSIM_METHOD void    do_reflection_diffuse(  quad4& p, const qprd& prd, curandStateXORWOW& rng );
+    QSIM_METHOD void    do_reflection_diffuse(  quad4& p, const qprd& prd, curandStateXORWOW& rng, unsigned idx );
     QSIM_METHOD void    do_reflection_specular( quad4& p, const qprd& prd, curandStateXORWOW& rng );
 
     QSIM_METHOD void    hemisphere_polarized(   quad4& p, unsigned polz, bool inwards, const qprd& prd, curandStateXORWOW& rng); 
@@ -340,24 +340,33 @@ g4-cls G4RandomTools::
      81 }
 
 
+NB: potentially bad for performance for dir pointer to be into global mem
+as opposed to local stack float3 : as this keeps changing the dir before 
+arriving at the final one
+
 **/
 template <typename T>
-inline  QSIM_METHOD void qsim<T>::lambertian_direction(float3* dir, const float3& normal, curandStateXORWOW& rng )
+inline  QSIM_METHOD void qsim<T>::lambertian_direction(float3* dir, const float3& normal, curandStateXORWOW& rng, unsigned idx )
 {
     float ndotv ; 
     int count = 0 ; 
+    float u ; 
     do
     {
         count++ ; 
-        random_direction_marsaglia(dir, rng); 
+        random_direction_marsaglia(dir, rng, idx); 
         ndotv = dot( *dir, normal ); 
         if( ndotv < 0.f )
         {
             *dir = -1.f*(*dir) ; 
             ndotv = -1.f*ndotv ; 
         } 
+        u = curand_uniform(&rng) ; 
+
+        //if( idx == 0u) printf("//qsim.lambertian_direction idx %d count %d  u %10.4f \n", idx, count, u ); 
+
     } 
-    while (!(curand_uniform(&rng) < ndotv) && (count < 1024)) ;  
+    while (!(u < ndotv) && (count < 1024)) ;  
 }
 
 
@@ -423,13 +432,19 @@ Checking normalization, it reduces to 1::
 
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::random_direction_marsaglia(float3* dir,  curandStateXORWOW& rng )
+inline QSIM_METHOD void qsim<T>::random_direction_marsaglia(float3* dir,  curandStateXORWOW& rng, unsigned idx )
 {
+    float u0, u1 ; 
+
     float u, v, b, a  ; 
     do 
     {
-        u = 2.f*curand_uniform(&rng) - 1.f ; 
-        v = 2.f*curand_uniform(&rng) - 1.f ; 
+        u0 = curand_uniform(&rng);
+        u1 = curand_uniform(&rng);
+        //if( idx == 0u ) printf("//qsim.random_direction_marsaglia idx %d u0 %10.4f u1 %10.4f \n", idx, u0, u1 ); 
+
+        u = 2.f*u0 - 1.f ; 
+        v = 2.f*u1 - 1.f ; 
         b = u*u + v*v ; 
     } 
     while( b > 1.f ) ; 
@@ -1069,7 +1084,7 @@ qsim::do_reflection cf G4OpBoundaryProcess::DoReflection
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::do_reflection_diffuse( quad4& p, const qprd& prd, curandStateXORWOW& rng )
+inline QSIM_METHOD void qsim<T>::do_reflection_diffuse( quad4& p, const qprd& prd, curandStateXORWOW& rng, unsigned idx )
 {
     float3* dir = (float3*)&p.q1.f.x ;  
     float3* pol = (float3*)&p.q2.f.x ;  
@@ -1077,7 +1092,7 @@ inline QSIM_METHOD void qsim<T>::do_reflection_diffuse( quad4& p, const qprd& pr
     float3 old_dir = *dir ; 
 
     const float3& normal = prd.normal ;       // hmm: is any orienting needed ?
-    lambertian_direction(dir, normal, rng );
+    lambertian_direction(dir, normal, rng, idx );
 
     float3 facet_normal = normalize( *dir - old_dir ); 
     const float EdotN = dot( *pol, facet_normal ); 
