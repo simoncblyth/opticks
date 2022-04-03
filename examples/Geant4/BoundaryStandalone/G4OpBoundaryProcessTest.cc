@@ -307,24 +307,6 @@ void G4OpBoundaryProcessTest::load( std::vector<quad4>& pp, const char* npy_name
     a->write<float>(pp_data); 
 }
  
-void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, int idx)
-{
-    assert( idx > -1 ); 
-    proc->photon_idx = idx ; 
-
-    if(rnd) rnd->setSequenceIndex(idx);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
-
-    propagate_at_boundary_( photon, idx ); 
-
-    double flat_prior = rnd ? rnd->getFlatPrior() : -1. ; 
-    photon.q0.f.w = flat_prior ; 
-  
-    if(rnd) rnd->setSequenceIndex(-1);  // disable random hijacking 
-
-    bool dump_ = idx < 10 || ( idx % 10000 == 0 ) ;  
-    if(dump_) dump(photon, idx); 
-}
-
 /**
 G4OpBoundaryProcessTest::propagate_at_boundary_
 -------------------------------------------------
@@ -439,6 +421,28 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
 
 }
 
+
+void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, int idx)
+{
+    assert( idx > -1 ); 
+    proc->photon_idx = idx ; 
+
+    if(rnd) rnd->setSequenceIndex(idx);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
+
+    propagate_at_boundary_( photon, idx ); 
+
+    double flat_prior = rnd ? rnd->getFlatPrior() : -1. ; 
+    photon.q0.f.w = flat_prior ; 
+  
+    if(rnd) rnd->setSequenceIndex(-1);  // disable random hijacking 
+
+    bool dump_ = idx < 10 || ( idx % 10000 == 0 ) ;  
+    if(dump_) dump(photon, idx); 
+}
+
+
+
+
 void G4OpBoundaryProcessTest::dump( const quad4& photon, int idx )
 {
     unsigned status = photon.q3.u.w ; 
@@ -551,6 +555,8 @@ int G4OpBoundaryProcessTest::propagate_at_boundary()
 
 void G4OpBoundaryProcessTest::quad_generate(quad& q, unsigned idx)
 {
+    if(rnd) rnd->setSequenceIndex(idx);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
+
     G4ThreeVector dir ; 
     if( test == RANDOM_DIRECTION_MARSAGLIA )
     {
@@ -565,13 +571,19 @@ void G4OpBoundaryProcessTest::quad_generate(quad& q, unsigned idx)
     q.f.y = dir.y(); 
     q.f.z = dir.z(); 
     q.u.w = idx ; 
+
+
+    if(rnd) rnd->setSequenceIndex(-1);
 }
 
 int G4OpBoundaryProcessTest::quad_generate()
 {
     NP* q = NP::Make<float>( num, 4 ); 
     quad* qq = (quad*)q->values<float>(); 
-    for(unsigned idx=0 ; idx < num ; idx++) quad_generate(qq[idx], idx) ; 
+    for(unsigned idx=0 ; idx < num ; idx++) 
+    {
+        quad_generate(qq[idx], idx) ; 
+    }
     assert(dstdir); 
     q->save( dstdir, "q.npy" ); 
     return 0 ; 

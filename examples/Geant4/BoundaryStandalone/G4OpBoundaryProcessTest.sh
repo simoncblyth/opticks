@@ -107,8 +107,8 @@ unrandom()
 
 M1=1000000
 K3=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
-#num=$M1  
-num=8
+num=$M1  
+#num=8
 nrm=0,0,1
 
 #test=propagate_at_boundary
@@ -142,7 +142,7 @@ esac
 
 case $TEST in 
    propagate_at_surface)        unrandom ;; 
-   random_direction_marsaglia)  unrandom ;; 
+ #  random_direction_marsaglia)  unrandom ;; 
    lambertian_direction)        unrandom ;;  
 esac
 
@@ -153,6 +153,13 @@ case $TEST in
    propagate_at_boundary*) script_stem=propagate_at_boundary ;;
    propagate_at_surface*)  script_stem=propagate_at_surface  ;;
    lambertian_direction*)  script_stem=lambertian_direction  ;;
+   random_direction_marsaglia*) script_stem=random_direction_marsaglia ;;
+esac
+
+case $TEST in 
+   lambertian_direction*)       npy_name="q.npy" ;;
+   random_direction_marsaglia*) npy_name="q.npy" ;;
+                             *) npy_name="p.npy" ;;
 esac
 
 
@@ -181,13 +188,15 @@ export OPTICKS_BST_DSTDIR=$dstdir
 export FOLD=$OPTICKS_BST_DSTDIR
 export A_FOLD=$OPTICKS_QSIM_DSTDIR
 export B_FOLD=$OPTICKS_BST_DSTDIR
+export NPY_NAME=$npy_name
+
 mkdir -p $OPTICKS_BST_DSTDIR
 
 
 if [ "${arg/cf}" != "$arg" ]; then 
 
-   [ ! -f "$A_FOLD/p.npy" ] && echo $msg ERROR A_FOLD $A_FOLD does not contain p.npy  && exit 1 
-   [ ! -f "$B_FOLD/p.npy" ] && echo $msg ERROR B_FOLD $B_FOLD does not contain p.npy  && exit 1 
+   [ ! -f "$A_FOLD/$NPY_NAME" ] && echo $msg ERROR A_FOLD $A_FOLD does not contain NPY_NAME $NPY_NAME  && exit 1 
+   [ ! -f "$B_FOLD/$NPY_NAME" ] && echo $msg ERROR B_FOLD $B_FOLD does not contain NPY_NAME $NPY_NAME  && exit 1 
 
    echo $msg script_cf $script_cf A_FOLD $A_FOLD B_FOLD $B_FOLD
    ${IPYTHON:-ipython} --pdb -i $script_cf
@@ -215,13 +224,17 @@ fi
 if [ "${arg/ana}" != "$arg" ]; then 
 
     echo $msg ana script $script FOLD $FOLD
-    ${IPYTHON:-ipython} --pdb -i $script   
-    [ $? -ne 0 ] && echo $msg ana error && exit 3
-    echo $msg ana script $script FOLD $FOLD
+
+    if [ -f "$script" ]; then 
+        ${IPYTHON:-ipython} --pdb -i $script   
+        [ $? -ne 0 ] && echo $msg ana error && exit 3
+        echo $msg ana script $script FOLD $FOLD
+    else
+        echo $msg ERROR script $script does not exist && exit 4 
+    fi 
 
 fi 
 
 exit 0 
-
 
 

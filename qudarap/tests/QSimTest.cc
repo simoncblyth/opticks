@@ -39,12 +39,7 @@ QSimTest.cc
 #include <cuda_runtime.h>
 #include "OPTICKS_LOG.hh"
 
-#ifdef OLD
-#include "Opticks.hh"
-#else
 #include "SOpticksResource.hh"
-#endif
-
 #include "scuda.h"
 #include "squad.h"
 #include "SSys.hh"
@@ -269,13 +264,6 @@ void QSimTest<T>::prop_lookup( int iprop, T x0, T x1, unsigned nx )
     x->save(FOLD, reldir, "prop_lookup_x.npy" ); 
     yy->save(FOLD, reldir, "prop_lookup_yy.npy" ); 
 }
-
-
-
-
-
-
-
 
 
 
@@ -684,15 +672,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-#ifdef OLD
-    Opticks ok(argc, argv); 
-    ok.configure(); 
-    const char* idpath = ok.getIdPath(); 
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
-#else
     const char* idpath = SOpticksResource::IDPath(true);  
     const char* cfbase = SOpticksResource::CFBase(); 
-#endif
 
     int create_dirs = 0 ; 
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs );  

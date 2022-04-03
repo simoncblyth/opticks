@@ -43,8 +43,8 @@ msg="=== $BASH_SOURCE :"
 #test=propagate_at_boundary
 #test=propagate_at_boundary_normal_incidence
 
-#test=random_direction_marsaglia
-test=lambertian_direction
+test=random_direction_marsaglia
+#test=lambertian_direction
 #test=propagate_at_surface
 
 M1=1000000
