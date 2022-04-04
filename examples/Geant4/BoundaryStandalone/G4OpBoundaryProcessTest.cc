@@ -145,11 +145,15 @@ unsigned G4OpBoundaryProcessTest::Status(unsigned status)
     unsigned st = 0 ; 
     switch(status)
     {
-        case FresnelReflection:       st = BOUNDARY_REFLECT  ; break ; 
-        case TotalInternalReflection: st = BOUNDARY_REFLECT  ; break ; 
-        case LambertianReflection:    st = BOUNDARY_REFLECT  ; break ;
-        case FresnelRefraction:       st = BOUNDARY_TRANSMIT ; break ; 
-        case Transmission:            st = BOUNDARY_TRANSMIT ; break ; 
+        case FresnelReflection:       
+        case TotalInternalReflection: 
+        case LambertianReflection:   
+        case SpikeReflection: 
+                                      st = BOUNDARY_REFLECT  ; break ;
+        case FresnelRefraction:       
+        case Transmission:            
+                                      st = BOUNDARY_TRANSMIT ; break ; 
+
         case Absorption:              st = SURFACE_ABSORB    ; break ; 
         case Detection:               st = SURFACE_DETECT    ; break ; 
     }
@@ -332,7 +336,10 @@ void G4OpBoundaryProcessTest::init_surface()
     {
         assert( getOpticalSurfaceFinish() == groundfrontpainted ) ; 
     }
-
+    else if( test == REFLECT_SPECULAR )
+    {
+        assert( getOpticalSurfaceFinish() == polishedfrontpainted ) ; 
+    }
 }
 
 

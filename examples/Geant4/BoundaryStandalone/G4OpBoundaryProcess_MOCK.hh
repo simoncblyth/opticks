@@ -88,6 +88,7 @@
 #include "G4OpticalPhoton.hh"
 #include "G4TransportationManager.hh"
 
+
 // Class Description:
 // Discrete Process -- reflection/refraction at optical interfaces.
 // Class inherits publicly from G4VDiscreteProcess.
@@ -129,6 +130,12 @@ enum G4OpBoundaryProcess_MOCKStatus {  Undefined,
                                   GroundVM2000AirReflection,
                                   GroundVM2000GlueReflection,
                                   Dichroic };
+
+
+#ifdef MOCK_DUMP
+#include "X4OpBoundaryProcessStatus.hh"
+#endif
+
 
 class G4OpBoundaryProcess_MOCK : public G4VDiscreteProcess
 {
@@ -363,25 +370,6 @@ void G4OpBoundaryProcess_MOCK::DoReflection()
 
           NewMomentum = G4LambertianRand(theGlobalNormal);
           theFacetNormal = (NewMomentum - OldMomentum).unit();
-
-
-#ifdef MOCK_DUMP
-          std::cout 
-              << " MOCK_DUMP:DoReflection.LambertianReflection "
-              << " theGlobalNormal (" 
-              << " " << std::setw(10) << std::fixed << std::setprecision(4) << theGlobalNormal.x()
-              << " " << std::setw(10) << std::fixed << std::setprecision(4) << theGlobalNormal.y()
-              << " " << std::setw(10) << std::fixed << std::setprecision(4) << theGlobalNormal.z()
-              << ")" 
-              << " NewMomentum (" 
-              << " " << std::setw(10) << std::fixed << std::setprecision(4) << NewMomentum.x()
-              << " " << std::setw(10) << std::fixed << std::setprecision(4) << NewMomentum.y()
-              << " " << std::setw(10) << std::fixed << std::setprecision(4) << NewMomentum.z()
-              << ")" 
-              << std::endl 
-              ;
-#endif
-
         }
         else if ( theFinish == ground ) {
 
@@ -405,6 +393,30 @@ void G4OpBoundaryProcess_MOCK::DoReflection()
         }
         G4double EdotN = OldPolarization * theFacetNormal;
         NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
+
+
+
+#ifdef MOCK_DUMP
+          std::cout 
+              << " MOCK_DUMP:DoReflection "
+              << " theStatus " << X4OpBoundaryProcessStatus::Name( theStatus )
+              << " theGlobalNormal (" 
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << theGlobalNormal.x()
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << theGlobalNormal.y()
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << theGlobalNormal.z()
+              << ")" 
+              << " NewMomentum (" 
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << NewMomentum.x()
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << NewMomentum.y()
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << NewMomentum.z()
+              << ")" 
+              << std::endl 
+              ;
+#endif
+
+
+
+
 }
 
 #endif /* G4OpBoundaryProcess_MOCK_h */

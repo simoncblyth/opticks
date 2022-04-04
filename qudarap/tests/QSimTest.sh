@@ -45,8 +45,8 @@ msg="=== $BASH_SOURCE :"
 
 #test=random_direction_marsaglia
 #test=lambertian_direction
-test=reflect_diffuse
-#test=reflect_specular
+#test=reflect_diffuse
+test=reflect_specular
 #test=propagate_at_surface
 
 M1=1000000

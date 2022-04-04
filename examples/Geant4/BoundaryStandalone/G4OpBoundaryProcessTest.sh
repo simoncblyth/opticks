@@ -109,8 +109,12 @@ nonalign()
 
 M1=1000000
 K3=100000   # 100k is limit when using a single file OPTICKS_RANDOM_SEQPATH
+
+#num=$K3
 num=$M1  
 #num=8
+
+
 nrm=0,0,1
 
 #test=propagate_at_boundary
@@ -124,7 +128,8 @@ nrm=0,0,1
 #test=lambertian_direction
 #test=propagate_at_surface
 
-test=reflect_diffuse
+#test=reflect_diffuse
+test=reflect_specular
 
 
 export TEST=${TEST:-$test}
@@ -139,6 +144,7 @@ case $TEST in
     random_direction_marsaglia)             src=ephoton             ;;
     lambertian_direction)                   src=ephoton             ;; 
     reflect_diffuse)                        src=ephoton             ;;
+    reflect_specular)                       src=ephoton             ;;
 
     propagate_at_boundary_s_polarized) src=hemisphere_s_polarized   ;;
     propagate_at_boundary_p_polarized) src=hemisphere_p_polarized   ;;
@@ -156,19 +162,19 @@ esac
 ret=0,0,1
 optical_surface="esurfname,glisur,polished,dielectric_dielectric,1.0"
 case $TEST in 
-    reflect_diffuse)  ret=1,0,0 ; optical_surface="esurfname,glisur,groundfrontpainted,dielectric_dielectric,1.0"  ;;
-    reflect_specular) ret=1,0,0  ;;
+    reflect_diffuse)  ret=1,0,0 ; optical_surface="esurfname,glisur,groundfrontpainted,dielectric_dielectric,1.0"     ;;
+    reflect_specular) ret=1,0,0 ; optical_surface="esurfname,glisur,polishedfrontpainted,dielectric_dielectric,1.0"   ;;
 esac    
 export REFLECTIVITY_EFFICIENCY_TRANSMITTANCE=$ret
 export OPTICAL_SURFACE=$optical_surface
 
 case $TEST in 
-   propagate_at_boundary*) script_stem=propagate_at_boundary ;;
-   propagate_at_surface*)  script_stem=propagate_at_surface  ;;
-   lambertian_direction*)  script_stem=lambertian_direction  ;;
-   random_direction_marsaglia*) script_stem=random_direction_marsaglia ;;
-   reflect_diffuse*) script_stem=reflect_diffuse ;; 
-   reflect_specular*) script_stem=reflect_specular ;; 
+   propagate_at_boundary*)       script_stem=propagate_at_boundary ;;
+   propagate_at_surface*)        script_stem=propagate_at_surface  ;;
+   lambertian_direction*)        script_stem=lambertian_direction  ;;
+   random_direction_marsaglia*)  script_stem=random_direction_marsaglia ;;
+   reflect_diffuse*)             script_stem=reflect_diffuse ;; 
+   reflect_specular*)            script_stem=reflect_specular ;; 
 esac
 
 case $TEST in 
@@ -191,7 +197,7 @@ if [ "$src" == "ephoton" ]; then
 else
     srcdir=/tmp/$USER/opticks/QSimTest/$src
     export OPTICKS_BST_SRCDIR=$srcdir
-    [ ! -d "$OPTICKS_BST_SRCDIR" ] && echo $msg ERROR OPTICKS_BST_SRCDIR $OPTICKS_BST_SRCDIR does not exist && exit 1 
+    [ ! -d "$OPTICKS_BST_SRCDIR" ] && echo $msg ERROR OPTICKS_BST_SRCDIR $OPTICKS_BST_SRCDIR does not exist : perhaps setup ephoton src  && exit 1 
 fi 
 
 q_dstdir=/tmp/$USER/opticks/QSimTest/$TEST
