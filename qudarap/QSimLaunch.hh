@@ -36,6 +36,8 @@ enum {
 
    RANDOM_DIRECTION_MARSAGLIA, 
    LAMBERTIAN_DIRECTION,
+   REFLECT_DIFFUSE, 
+   REFLECT_SPECULAR, 
    PROPAGATE_AT_SURFACE
    
 };
@@ -67,6 +69,8 @@ struct QSimLaunch
 
     static constexpr const char* RANDOM_DIRECTION_MARSAGLIA_ = "random_direction_marsaglia" ;
     static constexpr const char* LAMBERTIAN_DIRECTION_ = "lambertian_direction" ;
+    static constexpr const char* REFLECT_DIFFUSE_ = "reflect_diffuse" ;
+    static constexpr const char* REFLECT_SPECULAR_ = "reflect_specular" ;
     static constexpr const char* PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ;
 };
 
@@ -106,6 +110,8 @@ inline unsigned QSimLaunch::Type( const char* name )
 
    if(strcmp(name,RANDOM_DIRECTION_MARSAGLIA_) == 0)  test = RANDOM_DIRECTION_MARSAGLIA ;
    if(strcmp(name,LAMBERTIAN_DIRECTION_) == 0)        test = LAMBERTIAN_DIRECTION ;
+   if(strcmp(name,REFLECT_DIFFUSE_) == 0)             test = REFLECT_DIFFUSE ;
+   if(strcmp(name,REFLECT_SPECULAR_) == 0)            test = REFLECT_SPECULAR ;
    if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)       test = PROPAGATE_AT_SURFACE ;
 
    
@@ -158,6 +164,8 @@ inline const char* QSimLaunch::Name( unsigned type )
 
         case RANDOM_DIRECTION_MARSAGLIA:   s = RANDOM_DIRECTION_MARSAGLIA_   ; break ; 
         case LAMBERTIAN_DIRECTION:         s = LAMBERTIAN_DIRECTION_         ; break ; 
+        case REFLECT_DIFFUSE:              s = REFLECT_DIFFUSE_              ; break ; 
+        case REFLECT_SPECULAR:             s = REFLECT_SPECULAR_             ; break ; 
         case PROPAGATE_AT_SURFACE:         s = PROPAGATE_AT_SURFACE_         ; break ; 
     }
     return s; 

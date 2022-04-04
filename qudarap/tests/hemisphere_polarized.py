@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-QSimTest_hemisphere_polarized.py
+hemisphere_polarized.py
 =================================
 
 As everything is happening at the origin it would be 

@@ -59,7 +59,7 @@ else
     unset POST
     unset MOMW_POLW 
     unset FLAG
-    echo $msg TEST $TEST : unset environment 
+    echo $msg TEST $TEST : unset environment : will use C++ defaults in quad4::ephoton for p0
 fi 
 
 

@@ -123,8 +123,8 @@ struct qsim
     QSIM_METHOD int     propagate_at_boundary(                quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
 
     QSIM_METHOD int     propagate_at_surface( unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
-    QSIM_METHOD void    do_reflection_diffuse(  quad4& p, const qprd& prd, curandStateXORWOW& rng, unsigned idx );
-    QSIM_METHOD void    do_reflection_specular( quad4& p, const qprd& prd, curandStateXORWOW& rng );
+    QSIM_METHOD void    reflect_diffuse(  quad4& p, const qprd& prd, curandStateXORWOW& rng, unsigned idx );
+    QSIM_METHOD void    reflect_specular( quad4& p, const qprd& prd, curandStateXORWOW& rng, unsigned idx );
 
     QSIM_METHOD void    hemisphere_polarized(   quad4& p, unsigned polz, bool inwards, const qprd& prd, curandStateXORWOW& rng); 
 
@@ -1012,12 +1012,12 @@ transmit
 
 
 template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate_at_surface(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned id)
+inline QSIM_METHOD int qsim<T>::propagate_at_surface(unsigned& flag, quad4& p, const qprd& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
 {
     const float& detect = s.surface.x ;
     const float& absorb = s.surface.y ;
-    //const float& reflect_specular = s.surface.z ; 
-    const float& reflect_diffuse  = s.surface.w ; 
+    //const float& reflect_specular_ = s.surface.z ; 
+    const float& reflect_diffuse_  = s.surface.w ; 
 
     float u_surface = curand_uniform(&rng);
     float u_surface_burn = curand_uniform(&rng);
@@ -1030,11 +1030,11 @@ inline QSIM_METHOD int qsim<T>::propagate_at_surface(unsigned& flag, quad4& p, c
     }
     else 
     {
-        flag = u_surface < absorb + detect + reflect_diffuse ?  SURFACE_DREFLECT : SURFACE_SREFLECT ;  
+        flag = u_surface < absorb + detect + reflect_diffuse_ ?  SURFACE_DREFLECT : SURFACE_SREFLECT ;  
         switch(flag)
         {
-            case SURFACE_DREFLECT: do_reflection_diffuse( p, prd, rng); break ; 
-            case SURFACE_SREFLECT: do_reflection_specular(p, prd, rng); break ; 
+            case SURFACE_DREFLECT: reflect_diffuse( p, prd, rng, idx)  ; break ; 
+            case SURFACE_SREFLECT: reflect_specular(p, prd, rng, idx)  ; break ; 
         }
     }
     return action ; 
@@ -1042,7 +1042,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_surface(unsigned& flag, quad4& p, c
 
 
 /**
-qsim::do_reflection cf G4OpBoundaryProcess::DoReflection
+qsim::reflect_diffuse cf G4OpBoundaryProcess::DoReflection
 -----------------------------------------------------------
 
 ::
@@ -1084,7 +1084,7 @@ qsim::do_reflection cf G4OpBoundaryProcess::DoReflection
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::do_reflection_diffuse( quad4& p, const qprd& prd, curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD void qsim<T>::reflect_diffuse( quad4& p, const qprd& prd, curandStateXORWOW& rng, unsigned idx )
 {
     float3* dir = (float3*)&p.q1.f.x ;  
     float3* pol = (float3*)&p.q2.f.x ;  
@@ -1100,7 +1100,7 @@ inline QSIM_METHOD void qsim<T>::do_reflection_diffuse( quad4& p, const qprd& pr
 }
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::do_reflection_specular( quad4& p, const qprd& prd, curandStateXORWOW& rng )
+inline QSIM_METHOD void qsim<T>::reflect_specular( quad4& p, const qprd& prd, curandStateXORWOW& rng, unsigned idx )
 {
     float3* dir = (float3*)&p.q1.f.x ;  
     float3* pol = (float3*)&p.q2.f.x ;  

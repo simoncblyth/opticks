@@ -44,15 +44,17 @@ msg="=== $BASH_SOURCE :"
 #test=propagate_at_boundary_normal_incidence
 
 #test=random_direction_marsaglia
-test=lambertian_direction
+#test=lambertian_direction
+test=reflect_diffuse
+#test=reflect_specular
 #test=propagate_at_surface
 
 M1=1000000
 K2=100000
 
-#num=8
+num=8
 #num=$K2
-num=$M1
+#num=$M1
 
 nrm=0,0,1
 #nrm=0,0,-1
@@ -64,11 +66,12 @@ export TEST=${TEST:-$test}
 
 source fill_state.sh 
 
-
-if [ "$TEST" == "propagate_at_boundary_normal_incidence" -o "$TEST" == "propagate_at_boundary" ]; then 
-    source ephoton.sh 
-fi
-
+case $TEST in 
+   propagate_at_boundary_normal_incidence) source ephoton.sh ;;
+                    propagate_at_boundary) source ephoton.sh ;; 
+                          reflect_diffuse) source ephoton.sh ;;
+                         reflect_specular) source ephoton.sh ;;
+esac
 
 
 if [ "${arg/run}" != "$arg" ]; then 
@@ -110,19 +113,19 @@ if [ "${arg/ana}" != "$arg" ]; then
     export FOLD=/tmp/$USER/opticks/QSimTest/$TEST 
 
     case $TEST in
-       fill_state_0)           script=QSimTest_fill_state.py ;;
-       fill_state_1)           script=QSimTest_fill_state.py ;;
-       fill_state_cf)          script=QSimTest_fill_state_cf.py ;;
+       fill_state_0)           script=fill_state.py ;;
+       fill_state_1)           script=fill_state.py ;;
+       fill_state_cf)          script=fill_state_cf.py ;;
 
-       hemisphere_s_polarized) script=QSimTest_hemisphere_polarized.py ;;
-       hemisphere_p_polarized) script=QSimTest_hemisphere_polarized.py ;;
-       hemisphere_x_polarized) script=QSimTest_hemisphere_polarized.py ;;
+       hemisphere_s_polarized) script=hemisphere_polarized.py ;;
+       hemisphere_p_polarized) script=hemisphere_polarized.py ;;
+       hemisphere_x_polarized) script=hemisphere_polarized.py ;;
 
        propagate_at_boundary*) script=propagate_at_boundary.py ;; 
    random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
         lambertian_direction)  script=lambertian_direction.py ;; 
 
-                            *) script=QSimTest_$TEST.py      ;;
+                            *) script=$TEST.py      ;;
     esac
 
     if [ -f "$script" ]; then

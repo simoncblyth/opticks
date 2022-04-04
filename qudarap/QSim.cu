@@ -482,6 +482,27 @@ __global__ void _QSim_hemisphere_polarized( qsim<T>* sim, quad4* photon, unsigne
 }
 
 
+
+template <typename T>
+__global__ void _QSim_reflect_generate( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned type )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    if (id >= num_photon) return;
+
+    curandState rng = sim->rngstate[id] ; 
+    const qprd& prd = dbg->prd ;  
+    quad4 p         = dbg->p ;   
+
+    switch(type)
+    {
+        case REFLECT_DIFFUSE:   sim->reflect_diffuse(  p, prd, rng, id) ;  break ;  
+        case REFLECT_SPECULAR:  sim->reflect_specular( p, prd, rng, id) ;  break ;  
+    }
+    photon[id] = p ; 
+}
+
+
+
 template <typename T>
 __global__ void _QSim_random_direction_marsaglia( qsim<T>* sim, quad* q, unsigned num_quad )
 {
@@ -550,11 +571,16 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* si
         case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:        
                              _QSim_propagate_at_boundary_generate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
 
-
         case PROPAGATE_AT_BOUNDARY_S_POLARIZED: 
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  
                              _QSim_propagate_at_boundary_mutate<T><<<numBlocks,threadsPerBlock>>>(    sim, photon, num_photon, dbg  ) ; break ;
+
+        case REFLECT_DIFFUSE:  
+        case REFLECT_SPECULAR:  
+                            _QSim_reflect_generate<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg, type ) ; break ;  
+
+
     }
 }
 

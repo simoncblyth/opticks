@@ -317,6 +317,17 @@ inline std::string quad4::desc() const
     return s ;
 }
 
+/**
+quad4::ephoton
+---------------
+
+*ephoton* is used from qudarap/tests/QSimTest generate tests as the initial photon, 
+which gets persisted to p0.npy 
+The script qudarap/tests/ephoton.sh sets the envvars defining the photon 
+depending on the TEST envvar. 
+ 
+**/
+
 inline void quad4::ephoton() 
 {
     qvals( q0.f , "POST" , "0,0,0,0" );                      // position, time

@@ -10,7 +10,7 @@ GUI = not "NOGUI" in os.environ
 SIZE = np.array([1280, 720])
 
 
-FOLD = os.path.expandvars("/tmp/$USER/opticks/QSimTest/$TEST")
+FOLD = os.environ["FOLD"]
 TEST = os.environ["TEST"]
 
 G4_FOLD = "/tmp/G4OpRayleighTest"

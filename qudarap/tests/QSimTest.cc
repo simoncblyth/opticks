@@ -485,9 +485,6 @@ NP* QSimTest<T>::load_photon(const char* subfold, const char* name )
     return a ; 
 }
 
-
-
-
 template <typename T>
 void QSimTest<T>::save_dbg(const char* subfold)
 {
@@ -551,9 +548,7 @@ void QSimTest<T>::photon_launch_generate(unsigned num_photon, unsigned type)
 
     save_photon(     subfold, "p.npy", p ); 
     save_dbg( subfold ); 
-
 }
-
 
 template <typename T>
 void QSimTest<T>::quad_launch_generate(unsigned num_quad, unsigned type)
@@ -567,10 +562,6 @@ void QSimTest<T>::quad_launch_generate(unsigned num_quad, unsigned type)
 
     save_quad( subfold, "q.npy", q ); 
 }
-
-
-
-
 
 
 template <typename T>
@@ -599,8 +590,6 @@ void QSimTest<T>::photon_launch_mutate(unsigned num_photon, unsigned type)
 }
 
 
-
-
 template<typename T>
 void QSimTest<T>::main(int argc, char** argv, unsigned type )
 {
@@ -623,7 +612,6 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
     T x1 = 800. ; 
     unsigned nx = 721u ; 
 
-    //TODO: mop up more of these into photon_launch 
     switch(type)
     {
         case RNG_SEQUENCE:                  rng_sequence(num, ni_tranche_size)         ; break ; 
@@ -648,11 +636,13 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
 
         case PROPAGATE_AT_BOUNDARY:   
         case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:  
-                                            photon_launch_generate(num, type)          ; break ;  
         case HEMISPHERE_S_POLARIZED:   
         case HEMISPHERE_P_POLARIZED:  
         case HEMISPHERE_X_POLARIZED:   
+        case REFLECT_DIFFUSE:
+        case REFLECT_SPECULAR:
                                             photon_launch_generate(num, type)          ; break ;  
+
         case PROPAGATE_AT_BOUNDARY_S_POLARIZED: 
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:   
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  

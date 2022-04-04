@@ -3,9 +3,8 @@
 import os, numpy as np
 from opticks.ana.fold import Fold
 
-FOLD = os.path.expandvars("/tmp/$USER/opticks/QSimTest/$TEST")
-
 if __name__ == '__main__':
+    FOLD = os.environ["FOLD"]
     t = Fold.Load(FOLD)
 
     print(t.p[:,:3]) 
