@@ -52,9 +52,9 @@ test=reflect_diffuse
 M1=1000000
 K2=100000
 
-num=8
+#num=8
 #num=$K2
-#num=$M1
+num=$M1
 
 nrm=0,0,1
 #nrm=0,0,-1

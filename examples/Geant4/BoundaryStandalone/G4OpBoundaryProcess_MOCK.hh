@@ -352,6 +352,10 @@ void G4OpBoundaryProcess_MOCK::DoAbsorption()
               aParticleChange.ProposeTrackStatus(fStopAndKill);
 }
 
+/**
+setting theFinish as groundfrontpainted induces LambertianReflection
+**/
+
 inline
 void G4OpBoundaryProcess_MOCK::DoReflection()
 {
@@ -359,6 +363,24 @@ void G4OpBoundaryProcess_MOCK::DoReflection()
 
           NewMomentum = G4LambertianRand(theGlobalNormal);
           theFacetNormal = (NewMomentum - OldMomentum).unit();
+
+
+#ifdef MOCK_DUMP
+          std::cout 
+              << " MOCK_DUMP:DoReflection.LambertianReflection "
+              << " theGlobalNormal (" 
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << theGlobalNormal.x()
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << theGlobalNormal.y()
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << theGlobalNormal.z()
+              << ")" 
+              << " NewMomentum (" 
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << NewMomentum.x()
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << NewMomentum.y()
+              << " " << std::setw(10) << std::fixed << std::setprecision(4) << NewMomentum.z()
+              << ")" 
+              << std::endl 
+              ;
+#endif
 
         }
         else if ( theFinish == ground ) {

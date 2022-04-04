@@ -52,6 +52,9 @@ standalone-compile(){
     name=${name/.cc}
     mkdir -p /tmp/$name
 
+    local opt="-DMOCK "
+    #local opt="-DMOCK -DMOCK_DUMP"
+
     cat << EOC
     gcc \
         $* \
@@ -61,8 +64,7 @@ standalone-compile(){
        -I../../../sysrap \
        -I../../../extg4 \
        -I../../../qudarap \
-       -DMOCK \
-       -DMOCK_DUMP \
+       $opt \
        -g \
        -I$(cuda-prefix)/include  \
        -I$(boost-prefix)/include \
@@ -97,10 +99,10 @@ seqpath="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche1
 # comment last list to concatenate all 10 tranches giving full 256M randoms allowing num_photons max of 1M
 export OPTICKS_RANDOM_SEQPATH=$seqpath
 
-unrandom()
+nonalign()
 {
     unset OPTICKS_RANDOM_SEQPATH 
-    echo $msg unset OPTICKS_RANDOM_SEQPATH  for TEST $TEST to switch off random alignment 
+    echo $msg $FUNCNAME unset OPTICKS_RANDOM_SEQPATH  for TEST $TEST to switch off random alignment 
 }
 
 
@@ -119,8 +121,10 @@ nrm=0,0,1
 #test=propagate_at_boundary_x_polarized
 
 #test=random_direction_marsaglia
-test=lambertian_direction
+#test=lambertian_direction
 #test=propagate_at_surface
+
+test=reflect_diffuse
 
 
 export TEST=${TEST:-$test}
@@ -134,6 +138,7 @@ case $TEST in
     propagate_at_boundary_normal_incidence) src=ephoton             ;;
     random_direction_marsaglia)             src=ephoton             ;;
     lambertian_direction)                   src=ephoton             ;; 
+    reflect_diffuse)                        src=ephoton             ;;
 
     propagate_at_boundary_s_polarized) src=hemisphere_s_polarized   ;;
     propagate_at_boundary_p_polarized) src=hemisphere_p_polarized   ;;
@@ -141,19 +146,29 @@ case $TEST in
 esac
 
 case $TEST in 
-   propagate_at_surface)        unrandom ;; 
- #  random_direction_marsaglia)  unrandom ;; 
-#   lambertian_direction)        unrandom ;;  
+   propagate_at_surface)         nonalign ;; 
+#  random_direction_marsaglia)   nonalign ;; 
+#   lambertian_direction)        nonalign ;;  
+#   reflect_diffuse)              nonalign ;; 
+   reflect_specular)             nonalign ;; 
 esac
 
-export REFLECTIVITY_EFFICIENCY_TRANSMITTANCE=0,0,1
-
+ret=0,0,1
+optical_surface="esurfname,glisur,polished,dielectric_dielectric,1.0"
+case $TEST in 
+    reflect_diffuse)  ret=1,0,0 ; optical_surface="esurfname,glisur,groundfrontpainted,dielectric_dielectric,1.0"  ;;
+    reflect_specular) ret=1,0,0  ;;
+esac    
+export REFLECTIVITY_EFFICIENCY_TRANSMITTANCE=$ret
+export OPTICAL_SURFACE=$optical_surface
 
 case $TEST in 
    propagate_at_boundary*) script_stem=propagate_at_boundary ;;
    propagate_at_surface*)  script_stem=propagate_at_surface  ;;
    lambertian_direction*)  script_stem=lambertian_direction  ;;
    random_direction_marsaglia*) script_stem=random_direction_marsaglia ;;
+   reflect_diffuse*) script_stem=reflect_diffuse ;; 
+   reflect_specular*) script_stem=reflect_specular ;; 
 esac
 
 case $TEST in 
@@ -232,7 +247,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     else
         echo $msg ERROR script $script does not exist && exit 4 
     fi 
-
 fi 
 
 exit 0 

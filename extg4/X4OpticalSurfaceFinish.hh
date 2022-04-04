@@ -40,6 +40,8 @@ inline const char* X4OpticalSurfaceFinish::Name(unsigned finish)
         case groundfrontpainted:    n = groundfrontpainted_   ; break ;  
         case groundbackpainted:     n = groundbackpainted_    ; break ;  
     }
+
+    assert(n); 
     return n ; 
 }
 
@@ -53,6 +55,10 @@ inline unsigned X4OpticalSurfaceFinish::Finish(const char* name)
     if(strcmp(name, ground_)==0)               finish = ground ; 
     if(strcmp(name, groundfrontpainted_)==0)   finish = groundfrontpainted ; 
     if(strcmp(name, groundbackpainted_)==0)    finish = groundbackpainted ; 
+
+    bool match = strcmp( Name(finish), name ) == 0 ;  
+    assert( match ); 
+
     return finish ; 
 }
 

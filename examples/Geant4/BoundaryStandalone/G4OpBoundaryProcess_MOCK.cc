@@ -376,6 +376,7 @@ G4OpBoundaryProcess_MOCK::PostStepDoIt(const G4Track& aTrack, const G4Step& aSte
 #ifdef MOCK_DUMP
            std::cout 
                << "MOCK_DUMP"
+               << " OpticalSurface " << ( OpticalSurface ? "YES" : "NO" )
                << " type " << X4SurfaceType::Name(type) 
                << " model " << X4OpticalSurfaceModel::Name(theModel) 
                << " finish " << X4OpticalSurfaceFinish::Name(theFinish) 
@@ -545,6 +546,21 @@ G4OpBoundaryProcess_MOCK::PostStepDoIt(const G4Track& aTrack, const G4Step& aSte
           }
           else {
              G4double rand = G4UniformRand();
+#ifdef MOCK_DUMP
+             std::cout 
+                 << " MOCK_DUMP didi " 
+                 << " u_reflect " << rand 
+                 << " theReflectivity " << theReflectivity 
+                 << " theTransmittance " << theTransmittance 
+                 << " [1.-theReflectivity-theTransmittance] " << (1.-theReflectivity-theTransmittance)
+                 << " [0:reflect 1:transmit-or-absorb] " << ( rand > theReflectivity )
+                 << " [0:transmit 1:absorb]  " << (rand > theReflectivity + theTransmittance)   
+                 << std::endl 
+                 //   +--------------------+----------------+-----------------+
+                 //   |  reflect           |   transmit     |   absorb        | 
+                 //   +--------------------+----------------+-----------------+
+                 ;    
+#endif
              if ( rand > theReflectivity ) {
                 if (rand > theReflectivity + theTransmittance) {
                    DoAbsorption();

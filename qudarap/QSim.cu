@@ -493,6 +493,12 @@ __global__ void _QSim_reflect_generate( qsim<T>* sim, quad4* photon, unsigned nu
     const qprd& prd = dbg->prd ;  
     quad4 p         = dbg->p ;   
 
+    p.q0.f = p.q1.f ;   // non-standard record initial mom into p0 and initial pol into q3
+    p.q3.f = p.q2.f ; 
+
+    float u_decision_burn = curand_uniform(&rng);   // aligns consumption 
+    //printf("//_QSim_reflect_generate id %d u_decision_burn %10.4f \n", id, u_decision_burn );  
+
     switch(type)
     {
         case REFLECT_DIFFUSE:   sim->reflect_diffuse(  p, prd, rng, id) ;  break ;  
@@ -525,7 +531,9 @@ __global__ void _QSim_lambertian_direction( qsim<T>* sim, quad* q, unsigned num_
     curandState rng = sim->rngstate[id] ; 
 
     float3* dir = (float3*)&q[id].f.x ;  
-    sim->lambertian_direction( dir, dbg->normal, rng, id );  
+    const float orient = -1.f ; 
+
+    sim->lambertian_direction( dir, dbg->normal, orient, rng, id );  
 
     q[id].u.w = id ; 
 }

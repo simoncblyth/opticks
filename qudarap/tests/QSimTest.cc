@@ -630,6 +630,8 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
         case FILL_STATE_0:                  fill_state(0)                              ; break ;  
         case FILL_STATE_1:                  fill_state(1)                              ; break ;  
 
+        // hmm some conflation here between running from duplicated p0 ephoton and actual photon generation such as scint/cerenkov 
+
         case RAYLEIGH_SCATTER_ALIGN:        photon_launch_generate(num, type)          ; break ;   
         case PROPAGATE_TO_BOUNDARY:         photon_launch_generate(8,   type)          ; break ;  
         case PROPAGATE_AT_SURFACE:          photon_launch_generate(8,   type)          ; break ;  
@@ -647,7 +649,6 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:   
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  
                                                  photon_launch_mutate(num, type)       ; break ;  
-
         case RANDOM_DIRECTION_MARSAGLIA:
         case LAMBERTIAN_DIRECTION:
                                                  quad_launch_generate(num, type)       ; break ; 

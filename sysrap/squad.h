@@ -57,6 +57,7 @@ struct quad4
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     std::string desc() const ; 
+    static quad4 make_ephoton(); 
     void ephoton() ; 
     void normalize_mom_pol(); 
     void transverse_mom_pol(); 
@@ -369,6 +370,14 @@ inline void quad4::transverse_mom_pol()
     }
     assert(is_transverse); 
 }
+
+inline quad4 quad4::make_ephoton()  // static
+{
+    quad4 q ; 
+    q.ephoton(); 
+    return q ; 
+}
+
 
 
 #endif 

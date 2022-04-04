@@ -46,6 +46,7 @@ struct QSimLaunch
 {
     static unsigned    Type(const char* name) ;  
     static bool        IsMutate(unsigned type) ;  
+    static bool        IsSurface(unsigned type) ;  
     static unsigned    MutateSource(unsigned type); 
     static const char* Name(unsigned type ); 
 
@@ -125,6 +126,12 @@ inline bool QSimLaunch::IsMutate( unsigned type )
 {
     return type == PROPAGATE_AT_BOUNDARY_S_POLARIZED || type == PROPAGATE_AT_BOUNDARY_P_POLARIZED || type == PROPAGATE_AT_BOUNDARY_X_POLARIZED   ; 
 }
+
+inline bool QSimLaunch::IsSurface( unsigned type )
+{
+    return type == REFLECT_DIFFUSE || type == REFLECT_SPECULAR ; 
+}
+
 inline unsigned QSimLaunch::MutateSource( unsigned type )
 {
     unsigned src = UNKNOWN ; 

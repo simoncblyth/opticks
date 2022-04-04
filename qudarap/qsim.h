@@ -113,7 +113,7 @@ struct qsim
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
 
-    QSIM_METHOD static void lambertian_direction(float3* dir, const float3& normal, curandStateXORWOW& rng, unsigned idx  ); 
+    QSIM_METHOD static void lambertian_direction(float3* dir, const float3& normal, float orient, curandStateXORWOW& rng, unsigned idx  ); 
     QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng, unsigned idx); 
 
     QSIM_METHOD static void   rotateUz(float3& d, const float3& u ); 
@@ -346,7 +346,7 @@ arriving at the final one
 
 **/
 template <typename T>
-inline  QSIM_METHOD void qsim<T>::lambertian_direction(float3* dir, const float3& normal, curandStateXORWOW& rng, unsigned idx )
+inline  QSIM_METHOD void qsim<T>::lambertian_direction(float3* dir, const float3& normal, float orient, curandStateXORWOW& rng, unsigned idx )
 {
     float ndotv ; 
     int count = 0 ; 
@@ -355,7 +355,7 @@ inline  QSIM_METHOD void qsim<T>::lambertian_direction(float3* dir, const float3
     {
         count++ ; 
         random_direction_marsaglia(dir, rng, idx); 
-        ndotv = dot( *dir, normal ); 
+        ndotv = dot( *dir, normal )*orient ; 
         if( ndotv < 0.f )
         {
             *dir = -1.f*(*dir) ; 
@@ -1089,10 +1089,13 @@ inline QSIM_METHOD void qsim<T>::reflect_diffuse( quad4& p, const qprd& prd, cur
     float3* dir = (float3*)&p.q1.f.x ;  
     float3* pol = (float3*)&p.q2.f.x ;  
 
+    //if(idx == 0 ) printf("//qsim.reflect_diffuse idx %d dir0 (%10.4f %10.4f %10.4f) pol (%10.4f %10.4f %10.4f) \n", idx, dir->x, dir->y, dir->z, pol->x, pol->y, pol->z  ); 
+
     float3 old_dir = *dir ; 
 
-    const float3& normal = prd.normal ;       // hmm: is any orienting needed ?
-    lambertian_direction(dir, normal, rng, idx );
+    const float3& normal = prd.normal ;  
+    const float orient = -1.f ;     // equivalent to G4OpBoundaryProcess::PostStepDoIt early flip  of theGlobalNormal ?
+    lambertian_direction(dir, normal, orient, rng, idx );
 
     float3 facet_normal = normalize( *dir - old_dir ); 
     const float EdotN = dot( *pol, facet_normal ); 
@@ -1105,13 +1108,14 @@ inline QSIM_METHOD void qsim<T>::reflect_specular( quad4& p, const qprd& prd, cu
     float3* dir = (float3*)&p.q1.f.x ;  
     float3* pol = (float3*)&p.q2.f.x ;  
 
-    const float3& normal = prd.normal ;       // hmm: is any orienting needed ?
+    const float3& normal = prd.normal ;      
+    const float orient = -1.f ;     // equivalent to G4OpBoundaryProcess::PostStepDoIt early flip of theGlobalNormal ?
 
-    const float PdotN = dot( *dir, normal ); 
-    *dir = *dir - 2.f*PdotN*normal ; 
+    const float PdotN = dot( *dir, normal )*orient ; 
+    *dir = *dir - 2.f*PdotN*normal*orient ; 
 
-    const float EdotN = dot( *pol, normal ); 
-    *pol = -1.f*(*pol) + 2.f*EdotN*normal ; 
+    const float EdotN = dot( *pol, normal )*orient ; 
+    *pol = -1.f*(*pol) + 2.f*EdotN*normal*orient  ; 
 }
 
 

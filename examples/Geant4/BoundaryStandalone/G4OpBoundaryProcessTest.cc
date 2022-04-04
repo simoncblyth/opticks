@@ -59,9 +59,12 @@ struct G4OpBoundaryProcessTest
         const G4MaterialPropertyVector* v_transmittance
        ); 
     static G4OpticalSurface* MakeOpticalSurface(G4MaterialPropertiesTable* mpt) ;
+    void setOpticalSurfaceFinish(const char* finish_); 
+    unsigned getOpticalSurfaceFinish() const ; 
 
     const char*       name ; 
     unsigned          test ;  
+    bool              surftest ; 
     int               num ; 
     OpticksRandom*    rnd ; 
     const char*       srcdir ; 
@@ -102,27 +105,32 @@ struct G4OpBoundaryProcessTest
     // process
     G4OpBoundaryProcess_MOCK* proc ; 
 
+    // ephoton
+    quad4 p0 ; 
+
 
     std::string desc() const ; 
     G4OpBoundaryProcessTest(const char* srcdir_ekey, const char* dstdir_ekey); 
-    int run(); 
-
     void init(); 
+    void init_normal(); 
     void init_prd_normal(); 
+    void init_surface();
+ 
     void load( std::vector<quad4>& pp, const char* npy_name ); 
 
-    void propagate_at_boundary( quad4& photon, int idx); 
     void propagate_at_boundary_(quad4& photon, int idx);
-    void propagate_at_boundary(int idx); 
-    void propagate_at_boundary_ephoton(); 
-    int  propagate_at_boundary(); 
-
-    void quad_generate(quad& q, unsigned idx); 
-    int  quad_generate(); 
 
     void dump( const quad4& photon, int idx ); 
     void save(const quad4& p, const char* name) const ; 
     void save_photon( const float* data, unsigned num_photon ); 
+
+    void photon_mutate_(quad4& p, int idx); 
+    int  photon_mutate(int idx); 
+
+    void quad_generate(quad& q, unsigned idx); 
+    int  quad_generate(); 
+
+    int run(); 
 }; 
 
 /**
@@ -139,6 +147,7 @@ unsigned G4OpBoundaryProcessTest::Status(unsigned status)
     {
         case FresnelReflection:       st = BOUNDARY_REFLECT  ; break ; 
         case TotalInternalReflection: st = BOUNDARY_REFLECT  ; break ; 
+        case LambertianReflection:    st = BOUNDARY_REFLECT  ; break ;
         case FresnelRefraction:       st = BOUNDARY_TRANSMIT ; break ; 
         case Transmission:            st = BOUNDARY_TRANSMIT ; break ; 
         case Absorption:              st = SURFACE_ABSORB    ; break ; 
@@ -192,6 +201,20 @@ G4OpticalSurface* G4OpBoundaryProcessTest::MakeOpticalSurface(G4MaterialProperti
     return os ; 
 }
 
+void G4OpBoundaryProcessTest::setOpticalSurfaceFinish(const char* finish_)
+{
+    G4OpticalSurfaceFinish finish = (G4OpticalSurfaceFinish)X4OpticalSurfaceFinish::Finish(finish_) ; 
+    std::cout << "G4OpBoundaryProcessTest::setOpticalSurfaceFinish " << finish_ << std::endl ; 
+    optical_surf->SetFinish(finish); 
+}
+
+unsigned G4OpBoundaryProcessTest::getOpticalSurfaceFinish() const 
+{
+    assert(optical_surf); 
+    return optical_surf->GetFinish() ; 
+}
+
+
 
 std::string G4OpBoundaryProcessTest::desc() const 
 {
@@ -199,6 +222,7 @@ std::string G4OpBoundaryProcessTest::desc() const
     ss 
         << " name "   << ( name   ? name : "-" ) 
         << " test " << test 
+        << " surftest " << surftest 
         << " srcdir " << ( srcdir ? srcdir : "-" ) 
         << " dstdir " << ( dstdir ? dstdir : "-" )
         << " normal ("
@@ -218,6 +242,7 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const char* srcdir_ekey, const 
     :
     name(getenv("TEST")),
     test(QSimLaunch::Type(name)),
+    surftest(QSimLaunch::IsSurface(test)),
     num(qenvint("NUM", "8")),
     rnd(OpticksRandom::Enabled() ? new OpticksRandom : nullptr ),
     srcdir(getenv(srcdir_ekey)),
@@ -251,13 +276,22 @@ G4OpBoundaryProcessTest::G4OpBoundaryProcessTest(const char* srcdir_ekey, const 
     optical_mpt(MakeOpticalMPT(v_reflectivity,v_efficiency,v_transmittance)),
     optical_surf(MakeOpticalSurface(optical_mpt)), 
 
-    proc(new G4OpBoundaryProcess_MOCK())
+    proc(new G4OpBoundaryProcess_MOCK()),
+    p0(quad4::make_ephoton())              // load initial photon p0 from envvars 
 {
     init(); 
 }
-
-
 void G4OpBoundaryProcessTest::init()
+{
+    init_normal(); 
+    init_surface(); 
+    std::cout 
+        << "G4OpBoundaryProcessTest::init "  << desc() 
+        << std::endl 
+        ;
+}
+
+void G4OpBoundaryProcessTest::init_normal()
 {
     if( srcdir != nullptr )
     {
@@ -272,12 +306,6 @@ void G4OpBoundaryProcessTest::init()
 
     //rnd->m_flat_debug = true  ;   // when true dumps a line for every G4UniformRand call 
     proc->theGlobalNormal_MOCK.set( normal.x, normal.y, normal.z ); 
-    proc->OpticalSurface_MOCK = test == PROPAGATE_AT_SURFACE ? optical_surf  : nullptr ;   // G4OpticalSurface
-
-    std::cout 
-        << "G4OpBoundaryProcessTest::init "  << desc() 
-        << std::endl 
-        ;
 }
 
 void G4OpBoundaryProcessTest::init_prd_normal()
@@ -296,15 +324,38 @@ void G4OpBoundaryProcessTest::init_prd_normal()
     NP::Write(dstdir, "prd.npy",  (float*)&prd.q0.f.x, 1, 4, 4  ); // save the prd to dstfold for python consumption
 }
 
+
+void G4OpBoundaryProcessTest::init_surface()
+{
+    proc->OpticalSurface_MOCK = surftest ? optical_surf  : nullptr ;   // G4OpticalSurface
+    if( test == REFLECT_DIFFUSE )
+    {
+        assert( getOpticalSurfaceFinish() == groundfrontpainted ) ; 
+    }
+
+}
+
+
+
+
+
 void G4OpBoundaryProcessTest::load( std::vector<quad4>& pp, const char* npy_name )
 {
-    assert( srcdir ); 
-    NP* a = NP::Load(srcdir, npy_name) ; 
-    assert( a->has_shape(-1,4,4) ); 
-    unsigned ni = a->shape[0] ; 
-    pp.resize(ni); 
-    float* pp_data = (float*)pp.data() ;
-    a->write<float>(pp_data); 
+    if( srcdir == nullptr )
+    {
+        pp.resize(num); 
+        for(unsigned i=0 ; i < num ; i++ ) pp[i] = p0 ; 
+    }
+    else
+    { 
+        NP* a = NP::Load(srcdir, npy_name) ; 
+        assert( a->has_shape(-1,4,4) ); 
+        unsigned ni = a->shape[0] ; 
+        pp.resize(ni); 
+        float* pp_data = (float*)pp.data() ;
+        a->write<float>(pp_data); 
+    }
+    std::cout << "G4OpBoundaryProcessTest::load " << pp.size() << std::endl ;  
 }
  
 /**
@@ -394,6 +445,7 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
        bool tir = theStatus == TotalInternalReflection ; 
         std::cout 
              << "G4OpBoundaryProcessTest::propagate_at_boundary_"
+             << " theFlag is ZERO " 
              << " theStatus " << theStatus  
              << " theStatus.Name "  << X4OpBoundaryProcessStatus::Name( theStatus ) 
              << " theFlag " << theFlag 
@@ -401,8 +453,6 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
              << std::endl 
              ;  
     }
-
-
 
     G4ParticleChange* pc = dynamic_cast<G4ParticleChange*>(change);  
     const G4ThreeVector* smom = pc->GetMomentumDirection();
@@ -420,28 +470,6 @@ void G4OpBoundaryProcessTest::propagate_at_boundary_(quad4& photon, int idx)
     photon.q1.f.w = proc->theTransCoeff_MOCK ; 
 
 }
-
-
-void G4OpBoundaryProcessTest::propagate_at_boundary(quad4& photon, int idx)
-{
-    assert( idx > -1 ); 
-    proc->photon_idx = idx ; 
-
-    if(rnd) rnd->setSequenceIndex(idx);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
-
-    propagate_at_boundary_( photon, idx ); 
-
-    double flat_prior = rnd ? rnd->getFlatPrior() : -1. ; 
-    photon.q0.f.w = flat_prior ; 
-  
-    if(rnd) rnd->setSequenceIndex(-1);  // disable random hijacking 
-
-    bool dump_ = idx < 10 || ( idx % 10000 == 0 ) ;  
-    if(dump_) dump(photon, idx); 
-}
-
-
-
 
 void G4OpBoundaryProcessTest::dump( const quad4& photon, int idx )
 {
@@ -475,7 +503,6 @@ void G4OpBoundaryProcessTest::save(const quad4& p, const char* name) const
     NP::Write( dstdir, name,  (float*)&p.q0.f.x , 1, 4, 4  );
 }
 
-
 void G4OpBoundaryProcessTest::save_photon( const float* data, unsigned num_photon )
 {
     assert(dstdir); 
@@ -490,68 +517,77 @@ void G4OpBoundaryProcessTest::save_photon( const float* data, unsigned num_photo
 }
 
 
+/**
+G4OpBoundaryProcessTest::photon_mutate_
+-----------------------------------------
 
+Unlike with quadrap/QSim.cc do not have convenient API methods to fine grain test different things, 
+as most everything happens via G4OpBoundaryProcess::PostStepDoIt 
+Thus instead need to setup the Geant4 environment in such a way to induce the desired thing to happen. 
 
-void G4OpBoundaryProcessTest::propagate_at_boundary(int idx)
+**/
+
+void G4OpBoundaryProcessTest::photon_mutate_(quad4& p, int idx)
+{
+    assert( idx > -1 ); 
+    proc->photon_idx = idx ; 
+    if(rnd) rnd->setSequenceIndex(idx);  // arranges use of pre-cooked randoms by G4UniformRand (hijacks the engine)
+
+    switch(test)
+    {
+        case PROPAGATE_AT_BOUNDARY_S_POLARIZED:
+        case PROPAGATE_AT_BOUNDARY_P_POLARIZED:
+        case PROPAGATE_AT_BOUNDARY_X_POLARIZED:
+        case REFLECT_DIFFUSE:
+        case REFLECT_SPECULAR:
+                                               propagate_at_boundary_(p, idx);    break ; 
+        default:
+                std::cout << "G4OpBoundaryProcessTest::photon_mutate_ ERR not handled test " << test << " name " << name << std::endl ;  
+    }
+
+    double flat_prior = rnd ? rnd->getFlatPrior() : -1. ; 
+    p.q0.f.w = flat_prior ; 
+  
+    if(rnd) rnd->setSequenceIndex(-1);  // disable random hijacking 
+
+    bool dump_ = idx < 10 || ( idx % 10000 == 0 ) ;  
+    if(dump_) dump(p, idx); 
+}
+
+/**
+G4OpBoundaryProcessTest::photon_mutate
+----------------------------------------
+
+Initial photons are loaded from file when srcdir 
+is defined or otherwise duplicated from the p0 ephoton.
+
+For default idx of -1 all photons are mutated, otherwise
+only the idx photon is mutated. 
+
+**/
+
+int G4OpBoundaryProcessTest::photon_mutate(int idx)
 {
     std::vector<quad4> pp ;
-    load(pp, "p.npy"); 
-    unsigned num_photon = pp.size(); 
-
+    load(pp, "p.npy");    
+    unsigned num_photon = pp.size()  ; 
     if( idx == -1 )
     {
         for(unsigned i=0 ; i < num_photon ; i++)
         {
             quad4& p = pp[i] ; 
-            propagate_at_boundary(p, i);   // mutates the photons
+            photon_mutate_(p, i); 
         }
         float* pp_data = (float*)pp.data() ;
         save_photon( pp_data, num_photon ); 
     }
     else
     {
-        // just the idx photon for debugging 
         quad4& p = pp[idx] ; 
-        propagate_at_boundary(p, idx);   // mutates the photons
-    }
-}
-
-void G4OpBoundaryProcessTest::propagate_at_boundary_ephoton()
-{
-    std::cout << "G4OpBoundaryProcessTest::propagate_at_boundary_repeat NUM " << num << std::endl ; 
-
-    quad4 p0 ; 
-    p0.ephoton(); // load initial photon p0 from envvars 
-
-    std::vector<quad4> pp(num) ;
-    for(unsigned idx=0 ; idx < num ; idx++)
-    {
-        pp[idx] = p0 ; 
-        quad4& p = pp[idx] ; 
-        propagate_at_boundary(p, idx);   // mutates the photons
-    } 
-    float* pp_data = (float*)pp.data() ;
-    save_photon( pp_data, num ); 
-
-}
-
-
-int G4OpBoundaryProcessTest::propagate_at_boundary()
-{
-    proc->photon_idx_debug = -1 ;  // index for debug output  
-
-    if(srcdir == nullptr )
-    {
-        propagate_at_boundary_ephoton();   
-    }
-    else
-    {
-        propagate_at_boundary(-1); 
-      //propagate_at_boundary(251959); 
+        photon_mutate_(p, idx); 
     }
     return 0 ; 
 }
-
 
 void G4OpBoundaryProcessTest::quad_generate(quad& q, unsigned idx)
 {
@@ -595,13 +631,30 @@ int G4OpBoundaryProcessTest::run()
     int rc = 0 ;     
     switch(test)
     {
-        case PROPAGATE_AT_BOUNDARY:      
-                                         rc = propagate_at_boundary() ; break ; 
+        case PROPAGATE_AT_BOUNDARY_S_POLARIZED:
+        case PROPAGATE_AT_BOUNDARY_P_POLARIZED:
+        case PROPAGATE_AT_BOUNDARY_X_POLARIZED:
+        case REFLECT_DIFFUSE:
+        case REFLECT_SPECULAR:
+                                         rc = photon_mutate(-1) ; break ; 
         case RANDOM_DIRECTION_MARSAGLIA: 
         case LAMBERTIAN_DIRECTION:       
                                          rc = quad_generate()  ; break ; 
+        default:
+                                         rc = 666 ;  
     }
     std::cout << "desc " << desc() << std::endl ; 
+    if( rc != 0 )
+    {
+        std::cout 
+            << "G4OpBoundaryProcessTest::run ERROR"
+            << " test " << test 
+            << " name " << name 
+            << " rc " << rc 
+            << std::endl 
+            ; 
+    }
+
     return rc ; 
 }
 
