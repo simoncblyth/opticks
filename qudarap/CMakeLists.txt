@@ -6,7 +6,11 @@ include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 set(FLAGS_VERBOSE ON)
 
-find_package(OpticksCore REQUIRED CONFIG) # needed for OpticksEvent OpticksGenstep enum 
+find_package(OpticksCore REQUIRED CONFIG) 
+# currently needed for OpticksEvent OpticksGenstep enum 
+# are moving in direction of reducing this dependency 
+# down to Sysrap as the use of OpticksCore is minimal
+# and its useful for testing for qudarap to be usable with little dependency 
 
 set(OpticksCUDA_VERBOSE ON)
 find_package(OpticksCUDA REQUIRED MODULE)

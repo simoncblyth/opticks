@@ -174,10 +174,10 @@ struct NPS
 {
     NPS(std::vector<int>& shape_ ) : shape(shape_) {}  ; 
 
-    static int set_shape(std::vector<int>& shape_, int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1) 
+    static int set_shape(std::vector<int>& shape_, int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) 
     {
         NPS sh(shape_); 
-        sh.set_shape(ni,nj,nk,nl,nm); 
+        sh.set_shape(ni,nj,nk,nl,nm,no); 
         return sh.size(); 
     }
 
@@ -187,33 +187,35 @@ struct NPS
         return size(dst); 
     }
 
-    static int copy_shape(std::vector<int>& dst, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1) 
+    static int copy_shape(std::vector<int>& dst, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1) 
     {
         if(ni > 0) dst.push_back(ni); 
         if(nj > 0) dst.push_back(nj); 
         if(nk > 0) dst.push_back(nk); 
         if(nl > 0) dst.push_back(nl); 
         if(nm > 0) dst.push_back(nm); 
+        if(no > 0) dst.push_back(no); 
         return size(dst); 
     }
 
-    void set_shape(int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1)
+    void set_shape(int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1)
     {
         if(ni > 0) shape.push_back(ni); 
         if(nj > 0) shape.push_back(nj); 
         if(nk > 0) shape.push_back(nk); 
         if(nl > 0) shape.push_back(nl); 
         if(nm > 0) shape.push_back(nm); 
+        if(no > 0) shape.push_back(no); 
     }
     void set_shape(const std::vector<int>& other)
     {
         copy_shape(shape, other); 
     }
 
-    static int change_shape(std::vector<int>& shp, int ni_, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1)
+    static int change_shape(std::vector<int>& shp, int ni_, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1, int no_=-1)
     {
         unsigned nv0 = size(shp); 
-        unsigned nv1 = std::max(1,ni_)*std::max(1,nj_)*std::max(1,nk_)*std::max(1,nl_)*std::max(1,nm_) ; 
+        unsigned nv1 = std::max(1,ni_)*std::max(1,nj_)*std::max(1,nk_)*std::max(1,nl_)*std::max(1,nm_)*std::max(1,no_) ; 
 
         if( nv0 != nv1 )  // try to devine a missing -1 entry 
         {
@@ -222,8 +224,9 @@ struct NPS
             else if( nk_ < 0 ) nk_ = nv0/nv1 ; 
             else if( nl_ < 0 ) nl_ = nv0/nv1 ; 
             else if( nm_ < 0 ) nm_ = nv0/nv1 ; 
+            else if( no_ < 0 ) no_ = nv0/nv1 ; 
 
-            unsigned nv2 = std::max(1,ni_)*std::max(1,nj_)*std::max(1,nk_)*std::max(1,nl_)*std::max(1,nm_) ; 
+            unsigned nv2 = std::max(1,ni_)*std::max(1,nj_)*std::max(1,nk_)*std::max(1,nl_)*std::max(1,nm_)*std::max(1,no_) ; 
             bool expect = nv0 % nv1 == 0 && nv2 == nv0 ; 
 
             if(!expect) std::cout 
@@ -237,6 +240,7 @@ struct NPS
                 << " nk_ " << nk_
                 << " nl_ " << nl_
                 << " nm_ " << nm_
+                << " no_ " << no_
                 << std::endl
                 ;
 
@@ -244,7 +248,7 @@ struct NPS
         }
          
         shp.clear(); 
-        return copy_shape(shp, ni_, nj_, nk_, nl_, nm_ ); 
+        return copy_shape(shp, ni_, nj_, nk_, nl_, nm_, no_ ); 
     }
 
     static std::string desc(const std::vector<int>& shape)
@@ -293,22 +297,25 @@ struct NPS
     static int nk_(const std::vector<int>& shape) { return shape.size() > 2 ? shape[2] : 1 ;  }
     static int nl_(const std::vector<int>& shape) { return shape.size() > 3 ? shape[3] : 1 ;  }
     static int nm_(const std::vector<int>& shape) { return shape.size() > 4 ? shape[4] : 1 ;  }
+    static int no_(const std::vector<int>& shape) { return shape.size() > 5 ? shape[5] : 1 ;  }
 
     int ni_() const { return ni_(shape) ; }
     int nj_() const { return nj_(shape) ; }
     int nk_() const { return nk_(shape) ; }
     int nl_() const { return nl_(shape) ; }
     int nm_() const { return nm_(shape) ; }
+    int no_() const { return no_(shape) ; }
 
-    int idx(int i, int j, int k, int l, int m)
+    int idx(int i, int j, int k, int l, int m, int o)
     {
         //int ni = ni_() ;
         int nj = nj_() ; 
         int nk = nk_() ; 
         int nl = nl_() ;
         int nm = nm_() ;
+        int no = no_() ;
 
-        return  i*nj*nk*nl*nm + j*nk*nl*nm + k*nl*nm + l*nm + m ;
+        return  i*nj*nk*nl*nm*no + j*nk*nl*nm*no + k*nl*nm*no + l*nm*no + m*no + o ;
     }
 
 
