@@ -46,15 +46,17 @@ msg="=== $BASH_SOURCE :"
 #test=random_direction_marsaglia
 #test=lambertian_direction
 #test=reflect_diffuse
-test=reflect_specular
+#test=reflect_specular
 #test=propagate_at_surface
+
+test=mock_propagate
 
 M1=1000000
 K2=100000
 
-#num=8
+num=8
 #num=$K2
-num=$M1
+#num=$M1
 
 nrm=0,0,1
 #nrm=0,0,-1

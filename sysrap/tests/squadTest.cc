@@ -93,6 +93,13 @@ void test_quad2_eprd()
     std::cout << " prd.desc " << prd.desc() << std::endl ;  
 }
 
+void test_qvals_float4_vec(bool normalize_)
+{
+    std::vector<float4> v ; 
+    qvals(v, "SQUADTEST_F4V", "0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4.5,4.5,4.5,4.5", normalize_ ); 
+    for(unsigned i=0 ; i < v.size() ; i++) std::cout << v[i] << std::endl ; 
+}
+
 
 int main(int argc, char** argv)
 {
@@ -104,9 +111,11 @@ int main(int argc, char** argv)
     test_qenvint(); 
     test_quad4_normalize_mom_pol(); 
     test_quad4_ephoton(); 
+    test_quad2_eprd(); 
     */
 
-    test_quad2_eprd(); 
+    test_qvals_float4_vec(false); 
+    test_qvals_float4_vec(true); 
 
 
     return 0 ; 

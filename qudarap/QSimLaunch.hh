@@ -38,7 +38,9 @@ enum {
    LAMBERTIAN_DIRECTION,
    REFLECT_DIFFUSE, 
    REFLECT_SPECULAR, 
-   PROPAGATE_AT_SURFACE
+   PROPAGATE_AT_SURFACE, 
+
+   MOCK_PROPAGATE
    
 };
  
@@ -73,6 +75,7 @@ struct QSimLaunch
     static constexpr const char* REFLECT_DIFFUSE_ = "reflect_diffuse" ;
     static constexpr const char* REFLECT_SPECULAR_ = "reflect_specular" ;
     static constexpr const char* PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ;
+    static constexpr const char* MOCK_PROPAGATE_ = "mock_propagate" ;
 };
 
 
@@ -114,34 +117,12 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,REFLECT_DIFFUSE_) == 0)             test = REFLECT_DIFFUSE ;
    if(strcmp(name,REFLECT_SPECULAR_) == 0)            test = REFLECT_SPECULAR ;
    if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)       test = PROPAGATE_AT_SURFACE ;
-
+   if(strcmp(name,MOCK_PROPAGATE_)  == 0)             test = MOCK_PROPAGATE ;
    
    bool known =  test != UNKNOWN  ;
    if(!known) printf("QSimLaunch::Type name [%s] is unknown \n", name) ; 
    assert(known);  
    return test ; 
-}
-
-inline bool QSimLaunch::IsMutate( unsigned type )
-{
-    return type == PROPAGATE_AT_BOUNDARY_S_POLARIZED || type == PROPAGATE_AT_BOUNDARY_P_POLARIZED || type == PROPAGATE_AT_BOUNDARY_X_POLARIZED   ; 
-}
-
-inline bool QSimLaunch::IsSurface( unsigned type )
-{
-    return type == REFLECT_DIFFUSE || type == REFLECT_SPECULAR ; 
-}
-
-inline unsigned QSimLaunch::MutateSource( unsigned type )
-{
-    unsigned src = UNKNOWN ; 
-    switch(type)
-    {
-       case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  src = HEMISPHERE_S_POLARIZED ; break ; 
-       case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  src = HEMISPHERE_P_POLARIZED ; break ; 
-       case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  src = HEMISPHERE_X_POLARIZED ; break ; 
-    } 
-    return src ; 
 }
 
 
@@ -174,7 +155,32 @@ inline const char* QSimLaunch::Name( unsigned type )
         case REFLECT_DIFFUSE:              s = REFLECT_DIFFUSE_              ; break ; 
         case REFLECT_SPECULAR:             s = REFLECT_SPECULAR_             ; break ; 
         case PROPAGATE_AT_SURFACE:         s = PROPAGATE_AT_SURFACE_         ; break ; 
+        case MOCK_PROPAGATE:               s = MOCK_PROPAGATE_               ; break ; 
     }
     return s; 
 }
+
+
+inline bool QSimLaunch::IsMutate( unsigned type )
+{
+    return type == PROPAGATE_AT_BOUNDARY_S_POLARIZED || type == PROPAGATE_AT_BOUNDARY_P_POLARIZED || type == PROPAGATE_AT_BOUNDARY_X_POLARIZED || type == MOCK_PROPAGATE  ; 
+}
+
+inline bool QSimLaunch::IsSurface( unsigned type )
+{
+    return type == REFLECT_DIFFUSE || type == REFLECT_SPECULAR ; 
+}
+
+inline unsigned QSimLaunch::MutateSource( unsigned type )
+{
+    unsigned src = UNKNOWN ; 
+    switch(type)
+    {
+       case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  src = HEMISPHERE_S_POLARIZED ; break ; 
+       case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  src = HEMISPHERE_P_POLARIZED ; break ; 
+       case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  src = HEMISPHERE_X_POLARIZED ; break ; 
+    } 
+    return src ; 
+}
+
 

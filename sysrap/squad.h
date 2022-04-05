@@ -171,10 +171,15 @@ inline std::ostream& operator<<(std::ostream& os, const quad6& v)
 }
 
 
+/**
+qvals
+------
 
+qvals extracts a sequence of floats from an environment string without
+specifying a delimiter between the floats instead simply the numerical 
+digits and + - . are used to find the floats.   
 
-
-
+**/
 
 inline void qvals( std::vector<float>& vals, const char* key, const char* fallback, int num_expect )
 {
@@ -270,6 +275,52 @@ inline void qvals( float4& v0,  float4& v1, const char* key, const char* fallbac
     v1.y = vals[5] ; 
     v1.z = vals[6] ; 
     v1.w = vals[7] ; 
+}
+
+inline void qvals( std::vector<float4>& v, const char* key, const char* fallback, bool normalize_ )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, -1 );
+
+    unsigned num_values = vals.size() ; 
+    assert( num_values % 4 == 0 );   
+
+    unsigned num_v = num_values/4 ; 
+    v.resize( num_v ); 
+
+    for(unsigned i=0 ; i < num_v ; i++)
+    {
+        float4 vec = make_float4( vals[i*4+0], vals[i*4+1], vals[i*4+2], vals[i*4+3] ); 
+        float3* v3 = (float3*)&vec.x ; 
+        if(normalize_) *v3 = normalize(*v3); 
+
+        v[i].x = vec.x ; 
+        v[i].y = vec.y ; 
+        v[i].z = vec.z ; 
+        v[i].w = vec.w ; 
+    }
+}
+
+inline void qvals( std::vector<float3>& v, const char* key, const char* fallback, bool normalize_ )
+{
+    std::vector<float> vals ; 
+    qvals( vals, key, fallback, -1 );
+
+    unsigned num_values = vals.size() ; 
+    assert( num_values % 3 == 0 );   
+
+    unsigned num_v = num_values/3 ; 
+    v.resize( num_v ); 
+
+    for(unsigned i=0 ; i < num_v ; i++)
+    {
+        float3 vec = make_float3( vals[i*3+0], vals[i*3+1], vals[i*3+2]) ; 
+        if(normalize_) vec = normalize(vec); 
+
+        v[i].x = vec.x ; 
+        v[i].y = vec.y ; 
+        v[i].z = vec.z ; 
+    }
 }
 
 
@@ -431,6 +482,7 @@ inline quad2 quad2::make_eprd()  // static
     prd.eprd(); 
     return prd ; 
 }
+
 
 inline std::string quad2::desc() const 
 {

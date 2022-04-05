@@ -43,6 +43,8 @@ set(SOURCES
     QBnd.cc
     QBnd.cu
 
+    QPrd.cc
+
     QOptical.cc
     QOptical.cu 
 
@@ -100,6 +102,7 @@ SET(HEADERS
 
     qbnd.h
     QBnd.hh
+    QPrd.hh
     QOptical.hh
 
     QScint.hh

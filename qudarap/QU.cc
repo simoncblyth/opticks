@@ -89,6 +89,7 @@ T* QU::UploadArray(const T* array, unsigned num_items ) // static
 template float*         QU::UploadArray<float>(const float* array, unsigned num_items) ;
 template unsigned*      QU::UploadArray<unsigned>(const unsigned* array, unsigned num_items) ;
 template quad4*         QU::UploadArray<quad4>(const quad4* array, unsigned num_items) ;
+template quad2*         QU::UploadArray<quad2>(const quad2* array, unsigned num_items) ;
 template curandState*   QU::UploadArray<curandState>(const curandState* array, unsigned num_items) ;
 template qsim<float>*   QU::UploadArray<qsim<float>>(const qsim<float>* array, unsigned num_items) ;
 template qsim<double>*  QU::UploadArray<qsim<double>>(const qsim<double>* array, unsigned num_items) ;
@@ -119,6 +120,7 @@ T* QU::DownloadArray(const T* d_array, unsigned num_items ) // static
 template  float*         QU::DownloadArray<float>(const float* d_array, unsigned num_items) ;
 template  unsigned*      QU::DownloadArray<unsigned>(const unsigned* d_array, unsigned num_items) ;
 template  quad4*         QU::DownloadArray<quad4>(const quad4* d_array, unsigned num_items) ;
+template  quad2*         QU::DownloadArray<quad2>(const quad2* d_array, unsigned num_items) ;
 template  curandState*   QU::DownloadArray<curandState>(const curandState* d_array, unsigned num_items) ;
 template  qsim<float>*   QU::DownloadArray<qsim<float>>(const qsim<float>* d_array, unsigned num_items) ;
 template  qsim<double>*  QU::DownloadArray<qsim<double>>(const qsim<double>* d_array, unsigned num_items) ;

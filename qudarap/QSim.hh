@@ -36,6 +36,7 @@ template <typename T> struct qsim ;
 struct QRng ; 
 struct QScint ;
 struct QBnd ; 
+struct QPrd ; 
 struct QOptical ; 
 struct QEvent ; 
 //struct QDebug ; 
@@ -59,6 +60,7 @@ struct QUDARAP_API QSim
     const QRng*      rng ;     // need to template these too ?
     const QScint*    scint ; 
     const QBnd*      bnd ; 
+    const QPrd*      prd ; 
     const QOptical*  optical ; 
     const QProp<T>*  prop ; 
 
@@ -113,8 +115,10 @@ struct QUDARAP_API QSim
     void fill_state_1(qstate* state, unsigned num_state); 
 
     void quad_launch_generate(quad* q, unsigned num_quad, unsigned type ); 
-    void photon_launch_generate( quad4* photon, unsigned num_photon, unsigned launchcode ); 
-    void photon_launch_mutate(   quad4* photon, unsigned num_photon, unsigned launchcode ); 
+    void photon_launch_generate( quad4* photon, unsigned num_photon, unsigned type ); 
+    void photon_launch_mutate(   quad4* photon, unsigned num_photon, unsigned type ); 
+
+    void mock_propagate_launch_mutate(quad4* photon, unsigned num_photon, const quad2* prd, unsigned num_prd, unsigned type ); 
 
 
     unsigned getBoundaryTexWidth() const ;

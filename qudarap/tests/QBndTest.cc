@@ -4,14 +4,7 @@
 #include "SSys.hh"
 #include "SPath.hh"
 #include "NP.hh"
-
-#ifdef OLD_WAY
-#include "Opticks.hh"
-#include "GGeo.hh"
-#include "GBndLib.hh"
-#else
 #include "SOpticksResource.hh"
-#endif
 
 #include "QBnd.hh"
 #include "QTex.hh"
@@ -124,24 +117,26 @@ void test_lookup_technical(QBnd& qb)
 }
 
 
+void test_getBoundaryIndices(const QBnd& qb)
+{
+    const char* bnd_fallback = "Acrylic///LS,Water///Acrylic,Water///Pyrex,Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum" ;  
+    const char* bnd_sequence = SSys::getenvvar("BND_SEQUENCE", bnd_fallback );  
+    LOG(info) << " bnd_sequence " << bnd_sequence ; 
+
+    std::vector<unsigned> bnd_idx ; 
+    qb.getBoundaryIndices( bnd_idx, bnd_sequence, ',' ); 
+    qb.dumpBoundaryIndices( bnd_idx ); 
+}
+
 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-#ifdef OLD_WAY
-    Opticks ok(argc, argv); 
-    ok.configure(); 
-    GGeo* gg = GGeo::Load(&ok); 
-    GBndLib* blib = gg->getBndLib(); 
-    blib->createDynamicBuffers();  // hmm perhaps this is done already on loading now ?
-    NP* bnd = blib->getBuf(); 
-#else
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
     LOG(info) << " cfbase " << cfbase ; 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
-#endif
 
     QBnd qb(bnd) ; 
 
@@ -150,9 +145,10 @@ int main(int argc, char** argv)
     test_getBoundaryLine(qb); 
     test_getMaterialLine(qb); 
     test_lookup_technical(qb); 
+    test_getBoundarySpec(qb); 
 */
 
-    test_getBoundarySpec(qb); 
+    test_getBoundaryIndices(qb); 
 
 
     return 0 ; 

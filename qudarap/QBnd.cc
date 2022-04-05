@@ -3,7 +3,6 @@
 #include <sstream>
 
 #include "SStr.hh"
-
 #include "scuda.h"
 #include "squad.h"
 
@@ -100,6 +99,38 @@ unsigned QBnd::getBoundaryIndex(const char* spec) const
     return idx ;  
 }
 
+void QBnd::getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char* bnd_sequence, char delim ) const 
+{
+    std::vector<std::string> bnd ; 
+    SStr::Split(bnd_sequence,delim, bnd ); 
+
+    bnd_idx.resize( bnd.size() ); 
+    for(unsigned i=0 ; i < bnd.size() ; i++)
+    {
+        const char* spec = bnd[i].c_str(); 
+        unsigned bidx = getBoundaryIndex(spec); 
+        if( bidx == MISSING ) LOG(fatal) << " invalid spec " << spec ;      
+        assert( bidx != MISSING ); 
+        bnd_idx[i] = bidx ; 
+    }
+}
+
+void QBnd::dumpBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const 
+{
+    for(unsigned i=0 ; i < bnd_idx.size() ; i++)
+    {
+        unsigned bidx = bnd_idx[i] ;  
+        const char* spec = getBoundarySpec(bidx); 
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " bidx " << std::setw(3) << bidx
+            << " spec " << spec
+            << std::endl 
+            ;
+    }
+}
+
+
 unsigned QBnd::getBoundaryLine(const char* spec, unsigned j) const 
 {
     unsigned idx = getBoundaryIndex(spec); 
@@ -121,6 +152,7 @@ unsigned QBnd::getBoundaryLine(const char* spec, unsigned j) const
     unsigned line = 4*idx + j ;    
     return line ;  
 }
+
 
 /**
 QBnd::getMaterialLine
