@@ -251,22 +251,15 @@ void QSim<T>::init_dbg()
     dbg->cosTheta = cosTheta ; 
     qvals( dbg->normal , "DBG_NRM", "0,0,1" ); 
    
-
     // qstate: mocking result of fill_state 
     dbg->s = QState::Make(); 
     LOG(info) << desc_dbg_state(); 
 
-    // qprd: mocking per-ray-data result of optix trace calls 
-
-    qvals( dbg->prd.normal, "NRM", "-1,0,0" ); 
-    dbg->prd.normal = normalize( dbg->prd.normal ); 
-    dbg->prd.t =  100.f ; 
-    dbg->prd.identity = 101u ;
-    dbg->prd.boundary = 10u ;
+    // quad2: mocking prd per-ray-data result of optix trace calls 
+    dbg->prd = quad2::make_eprd() ;  // see eprd.sh 
      
     // quad4: mocking initial generated photon 
-
-    dbg->p.ephoton() ; // load from evars POST, MOMW_POLW, FLAG
+    dbg->p.ephoton() ; // see ephoton.sh 
     LOG(info) << desc_dbg_p0()  ; 
 
     d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  

@@ -403,14 +403,14 @@ __global__ void _QSim_propagate_to_boundary( qsim<T>* sim, quad4* photon, unsign
 
     if (id >= num_photon) return;
 
-    const qprd& prd = dbg->prd ;  // no need for local copy when readonly   
-    const qstate& s = dbg->s ;     
-    quad4 p         = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
+    const quad2& prd = dbg->prd ;  // no need for local copy when readonly   
+    const qstate& s  = dbg->s ;     
+    quad4 p          = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
 
     curandState rng = sim->rngstate[id] ; 
 
     unsigned flag = 0u ;  
-    sim->propagate_to_boundary( flag, p, prd, s, rng );  
+    sim->propagate_to_boundary( flag, p, prd, s, rng, id );  
     p.q3.u.w = flag ;  // non-standard
     photon[id] = p ; 
 
@@ -428,14 +428,15 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim<T>* sim, quad4* photo
 
     if (id >= num_photon) return;
 
-    const qprd& prd = dbg->prd ;  // no need for local copy when readonly   
+    const quad2& prd = dbg->prd ;  // no need for local copy when readonly   
     const qstate& s = dbg->s ;     
     quad4 p         = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
     curandState rng = sim->rngstate[id] ; 
 
     p.q0.f = p.q1.f ;   // non-standard record initial mom and pol into q0, q3
     p.q3.f = p.q2.f ; 
-    unsigned flag = sim->propagate_at_boundary( p, prd, s, rng, id );  
+    unsigned flag ; 
+    sim->propagate_at_boundary( flag, p, prd, s, rng, id );  
     p.q3.u.w = flag ;  // non-standard
 
     photon[id] = p ; 
@@ -450,14 +451,15 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim<T>* sim, quad4* photon,
 
     if (id >= num_photon) return;
 
-    const qprd& prd = dbg->prd ; 
+    const quad2& prd = dbg->prd ; 
     const qstate& s = dbg->s ;     
     quad4 p         = photon[id] ; 
     curandState rng = sim->rngstate[id] ; 
 
     p.q0.f = p.q1.f ;   // non-standard record initial mom and pol into q0, q3
     p.q3.f = p.q2.f ; 
-    unsigned flag = sim->propagate_at_boundary( p, prd, s, rng, id );  
+    unsigned flag ; 
+    sim->propagate_at_boundary( flag, p, prd, s, rng, id );  
     p.q3.u.w = flag ;  // non-standard
 
     photon[id] = p ; 
@@ -472,7 +474,7 @@ __global__ void _QSim_hemisphere_polarized( qsim<T>* sim, quad4* photon, unsigne
     if (id >= num_photon) return;
 
     curandState rng = sim->rngstate[id] ; 
-    const qprd& prd = dbg->prd ;  
+    const quad2& prd = dbg->prd ;  
     quad4 p         = dbg->p ;   
     bool inwards = true ; 
 
@@ -490,7 +492,7 @@ __global__ void _QSim_reflect_generate( qsim<T>* sim, quad4* photon, unsigned nu
     if (id >= num_photon) return;
 
     curandState rng = sim->rngstate[id] ; 
-    const qprd& prd = dbg->prd ;  
+    const quad2& prd = dbg->prd ;  
     quad4 p         = dbg->p ;   
 
     p.q0.f = p.q1.f ;   // non-standard record initial mom into p0 and initial pol into q3
@@ -533,7 +535,7 @@ __global__ void _QSim_lambertian_direction( qsim<T>* sim, quad* q, unsigned num_
     float3* dir = (float3*)&q[id].f.x ;  
     const float orient = -1.f ; 
 
-    sim->lambertian_direction( dir, dbg->normal, orient, rng, id );  
+    sim->lambertian_direction( dir, &dbg->normal, orient, rng, id );  
 
     q[id].u.w = id ; 
 }
@@ -595,6 +597,32 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* si
 template void QSim_photon_launch(dim3, dim3, qsim<double>* , quad4* , unsigned, qdebug*, unsigned  ); 
 template void QSim_photon_launch(dim3, dim3, qsim<float>*  , quad4* , unsigned, qdebug*, unsigned  ); 
 
+
+
+
+
+template <typename T>
+__global__ void _QSim_mock_propagate( qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    if (id >= num_photon ) return;
+
+    curandState rng = sim->rngstate[id] ; 
+    quad4 p = photon[id] ;    // TODO: compare performance using reference or pointer into global mem here rather than local stack copy    
+
+    sim->mock_propagate( p, mock_prd, bounce_max, rng, id );  
+
+    photon[id] = p ; 
+}
+
+template <typename T>
+extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max, unsigned type )
+{
+    _QSim_mock_propagate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, mock_prd, bounce_max ); 
+}
+
+template void QSim_mock_propagate_launch(dim3, dim3, qsim<double>* , quad4*,  unsigned, quad2*, int, unsigned ); 
+template void QSim_mock_propagate_launch(dim3, dim3, qsim<float>*  , quad4*,  unsigned, quad2*, int, unsigned ); 
 
 
 

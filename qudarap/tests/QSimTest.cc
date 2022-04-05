@@ -517,8 +517,9 @@ template <typename T>
 void QSimTest<T>::save_dbg_prd(const char* subfold, const char* name)
 {
     LOG(info) << " subfold " << subfold ; 
-    const qprd& qs_prd = qs.dbg->prd ; 
+    const quad2& qs_prd = qs.dbg->prd ; 
 
+   /*
     quad4 prd ;
     prd.zero(); 
 
@@ -531,8 +532,9 @@ void QSimTest<T>::save_dbg_prd(const char* subfold, const char* name)
     *t        = qs_prd.t ; 
     *identity = qs_prd.identity ; 
     *boundary = qs_prd.boundary ; 
+    */
 
-    save_array(subfold, name, prd.cdata(), 1, 4, 4 );      
+    save_array(subfold, name, qs_prd.cdata(), 1, 2, 4 );      
 }
 
 

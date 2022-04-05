@@ -1,31 +1,43 @@
 #!/bin/bash -l 
 
+msg="=== $BASH_SOURCE :"
 ephoton-desc(){ cat << EOD
 $BASH_SOURCE:$FUNCNAME
 =========================
 
-    TEST      : $TEST 
-    POST      : $POST 
-    MOMW_POLW : $MOMW_POLW
-    FLAG      : $FLAG 
+    TEST              : $TEST 
 
+    EPHOTON_POST      : $EPHOTON_POST 
+    EPHOTON_MOMW_POLW : $EPHOTON_MOMW_POLW
+    EPHOTON_FLAG      : $EPHOTON_FLAG 
 
 EOD
 }
 
-msg="=== $BASH_SOURCE :"
+ephoton-set(){
+    local post=$1
+    local momw_polw=$2
+    local flag=$3
+
+    export EPHOTON_POST=${EPHOTON_POST:-$post}
+    export EPHOTON_MOMW_POLW=${EPHOTON_MOMW_POLW:-$momw_polw}
+    export EPHOTON_FLAG=${EPHOTON_FLAG:-$flag}
+}
+
+ephoton-unset(){
+    unset EPHOTON_POST 
+    unset EPHOTON_MOMW_POLW
+    unset EPHOTON_FLAG
+}
+
 
 if [ "$TEST" == "propagate_at_boundary_normal_incidence" ]; then 
 
     post=0,0,0,0
     momw_polw=0,0,-1,1,0,1,0,500
     flag=0,0,0,0
-
-    export POST=$post
-    export MOMW_POLW=$momw_polw
-    export FLAG=$flag
-    ephoton-desc
-
+ 
+    ephoton-set $post $momw_polw $flag 
 
 elif [ "$TEST" == "propagate_at_boundary" ]; then 
 
@@ -37,11 +49,7 @@ elif [ "$TEST" == "propagate_at_boundary" ]; then
     momw_polw=1,0,2,1,0,1,0,500   # steeper incidence with the normal 0,0,1  to avoid TIR
 
     flag=0,0,0,0
-
-    export POST=$post
-    export MOMW_POLW=$momw_polw
-    export FLAG=$flag
-    ephoton-desc
+    ephoton-set $post $momw_polw $flag 
 
 
 elif [ "$TEST" == "env" ]; then 
@@ -50,11 +58,7 @@ elif [ "$TEST" == "env" ]; then
     momw_polw=1,0,-1,1,0,1,0,500
     flag=0,0,0,0
 
-    export POST=${POST:-$post}
-    export MOMW_POLW=${MOMW_POLW:-$momw_polw}
-    export FLAG=${FLAG:-$flag}
-    ephoton-desc
-
+    ephoton-set $post $momw_polw $flag 
 
 elif [ "$TEST" == "reflect_specular" ]; then 
 
@@ -62,19 +66,18 @@ elif [ "$TEST" == "reflect_specular" ]; then
     momw_polw=1,0,-1,1,0,1,0,500
     flag=0,0,0,0
 
-    export POST=${POST:-$post}
-    export MOMW_POLW=${MOMW_POLW:-$momw_polw}
-    export FLAG=${FLAG:-$flag}
-    ephoton-desc
+    ephoton-set $post $momw_polw $flag 
 
 else
-    unset POST
-    unset MOMW_POLW 
-    unset FLAG
+    ephoton-unset 
     echo $msg TEST $TEST : unset environment : will use C++ defaults in quad4::ephoton for p0
 fi 
 
 
+
+if [ -n "$VERBOSE" ]; then 
+   ephoton-desc
+fi 
 
 
 

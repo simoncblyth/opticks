@@ -87,6 +87,12 @@ void test_quad4_normalize_mom_pol()
 
 }
 
+void test_quad2_eprd()
+{
+    quad2 prd = quad2::make_eprd(); 
+    std::cout << " prd.desc " << prd.desc() << std::endl ;  
+}
+
 
 int main(int argc, char** argv)
 {
@@ -97,9 +103,10 @@ int main(int argc, char** argv)
     test_qvals_float4_x2(); 
     test_qenvint(); 
     test_quad4_normalize_mom_pol(); 
+    test_quad4_ephoton(); 
     */
 
-    test_quad4_ephoton(); 
+    test_quad2_eprd(); 
 
 
     return 0 ; 

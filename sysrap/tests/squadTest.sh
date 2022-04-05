@@ -19,9 +19,10 @@ gcc $name.cc \
 
 export TEST=env
 source ../../qudarap/tests/ephoton.sh 
+source ../../qudarap/tests/eprd.sh 
 
-echo $msg MOMW_POLW : $MOMW_POLW
-
+ephoton-desc
+eprd-desc
 
 /tmp/$name
 [ $? -ne 0 ] && echo run fail && exit 2

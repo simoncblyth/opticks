@@ -41,7 +41,45 @@ inline int unsigned_as_int( unsigned value )
    return uif.i ; 
 }
 
+struct quad2
+{ 
+    quad q0 ; 
+    quad q1 ;
 
+
+    SUTIL_INLINE SUTIL_HOSTDEVICE void zero();
+    SUTIL_INLINE SUTIL_HOSTDEVICE float* data() ;
+    SUTIL_INLINE SUTIL_HOSTDEVICE const float* cdata() const ;
+
+    SUTIL_INLINE SUTIL_HOSTDEVICE float3* normal() ;
+    SUTIL_INLINE SUTIL_HOSTDEVICE const float3* normal() const ;
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    std::string desc() const ; 
+    static quad2 make_eprd(); 
+    void eprd() ; 
+#endif
+ 
+
+}; 
+
+void quad2::zero() 
+{
+    q0.u.x = 0 ; q0.u.y = 0 ; q0.u.z = 0 ; q0.u.w = 0 ; 
+    q1.u.x = 0 ; q1.u.y = 0 ; q1.u.z = 0 ; q1.u.w = 0 ; 
+} 
+
+float*         quad2::data() {         return &q0.f.x ;  }
+const float*   quad2::cdata() const  { return &q0.f.x ;  }
+float3*        quad2::normal() {       return (float3*)&q0.f.x ;  }
+const float3*  quad2::normal() const { return (float3*)&q0.f.x ;  }
+
+
+
+
+ 
 
 struct quad4 
 { 
@@ -331,9 +369,9 @@ depending on the TEST envvar.
 
 inline void quad4::ephoton() 
 {
-    qvals( q0.f , "POST" , "0,0,0,0" );                      // position, time
-    qvals( q1.f, q2.f, "MOMW_POLW", "1,0,0,1,0,1,0,500" );  // direction, weight,  polarization, wavelength 
-    qvals( q3.i , "FLAG", "0,0,0,0" );   
+    qvals( q0.f ,      "EPHOTON_POST" , "0,0,0,0" );                      // position, time
+    qvals( q1.f, q2.f, "EPHOTON_MOMW_POLW", "1,0,0,1,0,1,0,500" );  // direction, weight,  polarization, wavelength 
+    qvals( q3.i ,      "EPHOTON_FLAG", "0,0,0,0" );   
     normalize_mom_pol(); 
     transverse_mom_pol(); 
 }
@@ -378,6 +416,32 @@ inline quad4 quad4::make_ephoton()  // static
     return q ; 
 }
 
+
+inline void quad2::eprd()
+{
+   qvals( q0.f, "EPRD_NRMT", "-1,0,0,100" ); 
+   qvals( q1.i, "EPRD_FLAG", "101,0,0,10" ); 
+   float3* nrm = normal(); 
+   *nrm = normalize( *nrm ); 
+}
+
+inline quad2 quad2::make_eprd()  // static
+{
+    quad2 prd ; 
+    prd.eprd(); 
+    return prd ; 
+}
+
+inline std::string quad2::desc() const 
+{
+    std::stringstream ss ;
+    ss 
+        << " nrmt " << q0.f  
+        << " flag " << q1.i 
+        ;
+    std::string s = ss.str();
+    return s ;
+}
 
 
 #endif 

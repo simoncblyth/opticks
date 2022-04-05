@@ -12,7 +12,7 @@ struct qdebug
     float3 normal ; 
 
     qstate s ; 
-    qprd   prd ; 
+    quad2  prd ; 
     quad4  p ; 
 
 }; 
