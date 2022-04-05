@@ -44,7 +44,6 @@ This is aiming to replace the OptiX 6 context in a CUDA-centric way.
 struct curandStateXORWOW ; 
 template <typename T> struct qprop ; 
 
-// enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary
 
 template <typename T>
 struct qsim
@@ -635,7 +634,17 @@ inline QSIM_METHOD void qsim<T>::rayleigh_scatter_align(quad4& p, curandStateXOR
 qsim::propagate_to_boundary
 ------------------------------
 
-could return the flag rather than the action and switch on the flag to continue/break/sail 
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+| flag                |   command        |  changed                                                |  note                                                 |
++=====================+==================+=========================================================+=======================================================+
+|   BULK_REEMIT       |   CONTINUE       |  time, position, direction, polarization, wavelength    | advance to reemit position with everything changed    |
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+|   BULK_SCATTER      |   CONTINUE       |  time, position, direction, polarization                | advance to scatter position, new dir+pol              |
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+|   BULK_ABSORB       |   BREAK          |  time, position                                         | advance to absorption position, dir+pol unchanged     |
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+|   not set "SAIL"    |   UNDEFINED      |  time, position                                         | advanced to border position, dir+pol unchanged        |   
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
 
 **/
 
@@ -679,7 +688,6 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
                 *wavelength = scint_wavelength_hd20(rng);
                 *direction = uniform_sphere(rng);
                 *polarization = normalize(cross(uniform_sphere(rng), *direction));
-                //flags.x = 0 ;   // no-boundary-yet for new direction TODO:elimate 
 
                 flag = BULK_REEMIT ;
                 return CONTINUE;
@@ -702,7 +710,6 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
             rayleigh_scatter_align(p, rng); // changes dir and pol, consumes 5u at each turn of rejection sampling loop
 
             flag = BULK_SCATTER;
-            //flags.x = 0 ;  // no-boundary-yet for new direction : TODO: eliminate 
 
             return CONTINUE;
         }       
@@ -713,7 +720,7 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
     *position += distance_to_boundary*(*direction) ;
     *time += distance_to_boundary/group_velocity ;  
 
-    return 0 ;
+    return UNDEFINED ;
 }
 
 /**
@@ -732,18 +739,19 @@ Input:
 * s.material2.x    : refractive index
 * prd.normal 
 
-Changes:
-
-* p.direction
-* p.polarization
-
 Consumes one random deciding between BOUNDARY_REFLECT and BOUNDARY_TRANSMIT
 
-Returns: BOUNDARY_REFLECT or BOUNDARY_TRANSMIT
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+| output flag         |   command        |  changed                                                |  note                                                 |
++=====================+==================+=========================================================+=======================================================+
+|   BOUNDARY_REFLECT  |    -             |  direction, polarization                                |                                                       |
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+|   BOUNDARY_TRANSMIT |    -             |  direction, polarization                                |                                                       |
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
 
 Notes:
 
-* when geometry dictates TIR there is no dependence on u_reflect and always get reflection
+* when geometry and refractive indices dictates TIR there is no dependence on u_reflect and always get reflection
 
 
 ::
@@ -780,11 +788,6 @@ Snells law::
     ( 1.f - c1c1 ) eta eta = 1.f - c2c2
  
      c2c2 = 1.f - eta eta ( 1.f - c1c1 )    # snell and trig identity 
-
-
-     
-
-
 
 Because the electromagnetic wave is transverse, the field incident onto the
 interface can be decomposed into two polarization components, one P-polarized,
@@ -940,8 +943,6 @@ inline QSIM_METHOD void qsim<T>::propagate_at_boundary(unsigned& flag, quad4& p,
 
     flag = reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
 }
- 
-
 
 /*
 G4OpBoundaryProcess::DielectricDielectric
@@ -1005,9 +1006,26 @@ transmit
 1262 
 1263                    NewPolarization = C_parl*A_paral + C_perp*A_trans;
 
-
 */
 
+
+/**
+qsim::propagate_at_surface
+----------------------------
+
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+| output flag         |   command        |  changed                                                |  note                                                 |
++=====================+==================+=========================================================+=======================================================+
+|   SURFACE_ABSORB    |    BREAK         |                                                         |                                                       |
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+|   SURFACE_DETECT    |    BREAK         |                                                         |                                                       |
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+|   SURFACE_DREFLECT  |    CONTINUE      |   direction, polarization                               |                                                       |
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+|   SURFACE_SREFLECT  |    CONTINUE      |   direction, polarization                               |                                                       |
++---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+
+**/
 
 template <typename T>
 inline QSIM_METHOD int qsim<T>::propagate_at_surface(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
@@ -1122,13 +1140,18 @@ inline QSIM_METHOD void qsim<T>::reflect_specular( quad4& p, const quad2& prd, c
 qsim::mock_propagate
 ----------------------
 
-* NB bounce_max needs to depend on internal mock_quad2 array dimension
-
 TODO: 
 
-* quad2 input array preparation
 * flag saving
-* full step recording
+* full step recording : non-trivial due to the control flow 
+
+  * photons that SAIL to boundary are mutated twice within the while loop (by propagate_to_boundary and propagate_at_boundary/surface) 
+  * only want one representative photon record per turn of the bounce loop 
+  * which version of the photon to save and what flag label to give it 
+  * convention is to record initial photon with the generation flag 
+
+* THOUGHTS: not keen on the fiddly "continue" control flow that makes recording involved  
+
 * compressed step recording  
 
 **/
@@ -1150,25 +1173,26 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
         const quad2& prd = mock_prd[bounce_max*id+bounce] ;   // mock call to OptiX trace 
         const int& boundary = prd.q1.i.w ; 
         const float3* normal = prd.normal(); 
-
         float cosTheta = dot(*dir, *normal ) ;  // sign gives side of boundary  
+
         fill_state(s, boundary, *wavelength, cosTheta ); 
 
         bounce++;           // increment at head, not tail, as CONTINUE skips the tail
 
         command = propagate_to_boundary( flag, p, prd, s, rng, id );  
-        if(command == BREAK)    break ;     // BULK_ABSORB
-        if(command == CONTINUE) continue ;  // BULK_REEMIT/BULK_SCATTER
+        if(command == BREAK)    break ;     // BULK_ABSORB              : time, position changed
+        if(command == CONTINUE) continue ;  // BULK_REEMIT/BULK_SCATTER : most everything changed 
+                                            // "SAIL"                   : time, position changed 
 
         if( s.optical.x > 0 )  // optical surface associated with boundary 
         {
-            command = propagate_at_surface( flag, p, prd, s, rng, id ); 
-            if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
-            if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT
+            command = propagate_at_surface( flag, p, prd, s, rng, id );  
+            if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB     : unchanged 
+            if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT : dir+pol changed 
         }         
         else
         {
-            propagate_at_boundary( flag, p, prd, s, rng, id) ; 
+            propagate_at_boundary( flag, p, prd, s, rng, id) ;  // BOUNDARY_REFLECT/BOUNDARY_TRANSMIT -> trace again
         }
     }
 }

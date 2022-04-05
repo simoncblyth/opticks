@@ -227,6 +227,8 @@ struct NP
     void set_names( const std::vector<std::string>& lines, char delim='\n' ); 
     void get_names( std::vector<std::string>& lines,       char delim='\n' ) const ; 
 
+    int get_name_index( const char* name, char delim='\n' ) const ; 
+
 
 
     static std::string               get_meta_string_(const char* metadata, const char* key);  
@@ -2439,9 +2441,29 @@ inline void NP::get_names( std::vector<std::string>& lines, char delim  ) const
     while (std::getline(ss, s, delim)) lines.push_back(s) ; 
 }
 
+/**
+NP::get_name_index
+--------------------
 
+Returns 0-based index of first matching name, or -1 if the name is not found or the name is nullptr. 
 
+**/
 
+inline int NP::get_name_index( const char* name, char delim  ) const 
+{
+    if(names.empty() || name == nullptr) return -1 ; 
+    std::stringstream ss ; 
+    ss.str(names.c_str())  ;
+    std::string s;
+
+    int idx = -1; 
+    while (std::getline(ss, s, delim)) 
+    {
+       idx += 1 ;  
+       if(strcmp(s.c_str(), name) == 0) return idx ;  
+    }
+    return -1 ; 
+}
 
 
 
