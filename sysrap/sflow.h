@@ -11,6 +11,7 @@ enum {
    UNDEFINED, 
    BREAK, 
    CONTINUE, 
+   BOUNDARY,
    PASS, 
    START, 
    RETURN,
@@ -26,6 +27,7 @@ struct sflow
     static constexpr const char* UNDEFINED_ = "UNDEFINED";
     static constexpr const char* BREAK_     = "BREAK";
     static constexpr const char* CONTINUE_  = "CONTINUE" ;
+    static constexpr const char* BOUNDARY_  = "BOUNDARY" ;
     static constexpr const char* PASS_      = "PASS" ;
     static constexpr const char* START_     = "START" ;
     static constexpr const char* RETURN_    = "RETURN" ;
@@ -39,6 +41,7 @@ inline const char* sflow::desc(unsigned ctrl )
         case UNDEFINED: d = UNDEFINED_ ; break ; 
         case BREAK    : d = BREAK_     ; break ; 
         case CONTINUE : d = CONTINUE_  ; break ; 
+        case BOUNDARY : d = BOUNDARY_  ; break ; 
         case PASS:      d = PASS_      ; break ; 
         case START:     d = START_     ; break ; 
         case RETURN:    d = RETURN_    ; break ; 

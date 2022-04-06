@@ -103,7 +103,7 @@ class Enum(dict):
 
 if __name__ == '__main__':
 
-    default_path = "$OPTICKS_PREFIX/include/OpticksCore/OpticksPhoton.h"
+    default_path = "$OPTICKS_PREFIX/include/sysrap/OpticksPhoton.h"
     ## NB envvar not needed when absolute path argument given   
 
     parser = argparse.ArgumentParser(__doc__)

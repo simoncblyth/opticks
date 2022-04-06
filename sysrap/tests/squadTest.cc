@@ -100,6 +100,58 @@ void test_qvals_float4_vec(bool normalize_)
     for(unsigned i=0 ; i < v.size() ; i++) std::cout << v[i] << std::endl ; 
 }
 
+void test_quad4_set_flags_get_flags()
+{
+    quad4 p ; 
+    p.zero(); 
+
+    unsigned MISSING = ~0u ; 
+    unsigned boundary0 = MISSING ; 
+    unsigned identity0 = MISSING ; 
+    unsigned idx0 = MISSING ; ; 
+    unsigned flag0 = MISSING ; ; 
+    float orient0 = 0.f ; 
+
+    p.get_flags(boundary0, identity0, idx0, flag0, orient0 ); 
+
+    assert( boundary0 == 0u ); 
+    assert( identity0 == 0u ); 
+    assert( idx0 == 0u ); 
+    assert( flag0 == 0u ); 
+    assert( orient0 == 1.f );  
+
+    unsigned boundary1, identity1, idx1, flag1 ;
+    float orient1 ; 
+
+    // test maximum values of the fields  
+    boundary1 = 0xffffu ; 
+    identity1 = 0xffffffffu ; 
+    idx1      = 0x7fffffffu ;  // bit 31 used for orient  
+    flag1     = 0xffffu ; 
+    orient1   = -1.f ; 
+
+    p.set_flags(boundary1, identity1, idx1, flag1, orient1 ); 
+
+    unsigned boundary2, identity2, idx2, flag2  ;
+    float orient2 ; 
+ 
+    p.get_flags(boundary2 , identity2 , idx2 , flag2, orient2  );
+
+    std::cout 
+        << " idx1 " << std::hex << idx1 
+        << " idx2 " << std::hex << idx2
+        << std::dec
+        << std::endl 
+        ; 
+
+    assert( boundary2 == boundary1 ); 
+    assert( identity2 == identity1 ); 
+    assert( idx2 == idx1 );
+    assert( flag2 == flag1 );  
+    assert( orient2 == orient1 );  
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -112,10 +164,10 @@ int main(int argc, char** argv)
     test_quad4_normalize_mom_pol(); 
     test_quad4_ephoton(); 
     test_quad2_eprd(); 
-    */
-
     test_qvals_float4_vec(false); 
     test_qvals_float4_vec(true); 
+    */
+    test_quad4_set_flags_get_flags(); 
 
 
     return 0 ; 

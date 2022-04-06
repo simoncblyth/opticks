@@ -7,6 +7,9 @@ np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 class Fold(object):
     @classmethod
     def Load(cls, *args, **kwa):
+        if len(args) == 0:
+            args = [os.environ["FOLD"]] 
+        pass
         relbase = os.path.join(*args[1:]) if len(args) > 1 else args[0]
         kwa["relbase"] = relbase   # relbase is the dir path excluding the first element 
         base = os.path.join(*args)

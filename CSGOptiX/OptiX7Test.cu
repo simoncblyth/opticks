@@ -29,7 +29,6 @@ JUNO (trunk:Mar 2, 2022)
 #include <curand_kernel.h>
 #include "qsim.h"
 #include "qevent.h"
-#include "qprd.h"
 
 #include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
@@ -62,7 +61,7 @@ static __forceinline__ __device__ void trace(
         float3                 ray_direction,
         float                  tmin,
         float                  tmax,
-        qprd*                  prd
+        quad2*                 prd
         )   
 {
     const float rayTime = 0.0f ; 
@@ -106,12 +105,12 @@ static __forceinline__ __device__ void trace(
             p0, p1, p2, p3, p4, p5
             );
     // unclear where the uint_as_float CUDA device function is defined, seems from optix7.h but cannot locate 
-    prd->normal.x = uint_as_float( p0 );
-    prd->normal.y = uint_as_float( p1 );
-    prd->normal.z = uint_as_float( p2 );
-    prd->t        = uint_as_float( p3 ); 
-    prd->identity = p4 ; 
-    prd->boundary = p5 ;  
+    prd->q0.f.x = uint_as_float( p0 );
+    prd->q0.f.y = uint_as_float( p1 );
+    prd->q0.f.z = uint_as_float( p2 );
+    prd->q0.f.w = uint_as_float( p3 ); 
+    prd->set_identity(p4) ; 
+    prd->set_boundary(p5) ;  
 #endif
 }
 
@@ -133,7 +132,7 @@ render : non-pure, uses params for viewpoint inputs and pixels output
 
 **/
 
-static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim, qprd* prd )
+static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim, quad2* prd )
 {
     float2 d = 2.0f * make_float2(
             static_cast<float>(idx.x)/static_cast<float>(dim.x),
@@ -158,12 +157,13 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         prd
     );
 
-    float3 position = origin + direction*prd->t ; 
-    float3 diddled_normal = normalize(prd->normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal" 
+    float3 position = origin + direction*prd->distance() ;
+    const float3* normal = prd->normal();  
+    float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal" 
     unsigned index = idx.y * params.width + idx.x ;
 
-    params.pixels[index] = make_color( diddled_normal, prd->identity, prd->boundary ); 
-    params.isect[index]  = make_float4( position.x, position.y, position.z, uint_as_float(prd->identity)) ; 
+    params.pixels[index] = make_color( diddled_normal, prd->identity(), prd->boundary() ); 
+    params.isect[index]  = make_float4( position.x, position.y, position.z, uint_as_float(prd->identity())) ; 
 }
  
 /**
@@ -191,7 +191,7 @@ Params
 
 **/
 
-static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim, qprd* prd )
+static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim, quad2* prd )
 {
     qevent* evt      = params.evt ; 
     if (idx.x >= evt->num_photon) return;
@@ -220,23 +220,21 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
         prd
     );
 
-    float cosTheta = dot(prd->normal, direction) ; 
+    const float3* normal = prd->normal(); 
+    float cosTheta = dot(*normal, direction) ; 
     const float& wavelength = p.q2.f.w ; 
-    sim->fill_state(s, prd->boundary, wavelength, cosTheta ); 
+    sim->fill_state(s, prd->boundary(), wavelength, cosTheta ); 
 
 
     //int action = sim->propagate( p, prd, s, rng ); 
 
 
     // transform (x,z) intersect position into pixel coordinates (ix,iz)
-    float3 ipos = origin + prd->t*direction ; 
+    float3 ipos = origin + direction*prd->distance() ; 
 
     // aim to match the CPU side test isect "photons" from CSG/CSGQuery.cc/CSGQuery::intersect_elaborate
 
-    p.q0.f.x = prd->normal.x ; 
-    p.q0.f.y = prd->normal.y ; 
-    p.q0.f.z = prd->normal.z ; 
-    p.q0.f.w = prd->t  ;  
+    p.q0.f  = prd->q0.f ; 
 
     p.q1.f.x = ipos.x ; 
     p.q1.f.y = ipos.y ; 
@@ -251,7 +249,7 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     p.q3.f.x = direction.x ;   
     p.q3.f.y = direction.y ; 
     p.q3.f.z = direction.z ; 
-    p.q3.u.w = prd->identity ; 
+    p.q3.u.w = prd->identity() ; 
 
     evt->photon[photon_id] = p ; 
 
@@ -287,12 +285,9 @@ extern "C" __global__ void __raygen__rg()
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
-    qprd prd ; 
-    prd.normal = make_float3(0.5f, 0.5f, 0.5f); 
-    prd.t        = 0.f ; 
-    prd.identity = 0u ; 
-    prd.boundary = 0u ; 
-
+    quad2 prd ; 
+    prd.zero(); 
+  
     switch( params.raygenmode )
     {
         case 0: render(   idx, dim, &prd ) ; break ;  
@@ -325,13 +320,18 @@ extern "C" __global__ void __miss__ms()
 {
     MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
 #ifdef WITH_PRD
-    qprd* prd = getPRD<qprd>(); 
-    prd->normal.x =  ms->r ; 
-    prd->normal.y =  ms->g ; 
-    prd->normal.z =  ms->b ;
-    prd->t = 0.f ; 
-    prd->identity = 0u ; 
-    prd->boundary = 0u ; 
+    quad2* prd = getPRD<quad2>(); 
+
+    prd->q0.f.x = ms->r ; 
+    prd->q0.f.y = ms->g ; 
+    prd->q0.f.z = ms->b ; 
+    prd->q0.f.w = 0.f ; 
+
+    prd->q1.u.x = 0u ; 
+    prd->q1.u.y = 0u ; 
+    prd->q1.u.z = 0u ; 
+    prd->q1.u.w = 0u ; 
+
 #else
     float3 normal = make_float3( ms->r, ms->g, ms->b );   // hmm: this is render specific, but easily ignored
     float t = 0.f ; 
@@ -365,14 +365,17 @@ optixGetRayTmax
 extern "C" __global__ void __closesthit__ch()
 {
 #ifdef WITH_PRD
-    qprd* prd = getPRD<qprd>(); 
+    quad2* prd = getPRD<quad2>(); 
     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
     unsigned prim_idx = optixGetPrimitiveIndex() ;  // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ; 
 
-    prd->identity = identity ;   
-    prd->normal = optixTransformNormalFromObjectToWorldSpace( prd->normal ) ;  
-    //prd->boundary is set in intersect 
+    prd->set_identity( identity ) ;
+    //boundary is set in intersect 
+
+    float3* normal = prd->normal(); 
+    *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;  
+
 #else
     const float3 local_normal =    // geometry object frame normal at intersection point 
         make_float3(
@@ -433,12 +436,9 @@ extern "C" __global__ void __intersection__is()
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
         {
-            qprd* prd = getPRD<qprd>(); 
-            prd->normal.x = isect.x ;  
-            prd->normal.y = isect.y ;  
-            prd->normal.z = isect.z ;
-            prd->t        = isect.w ;   
-            prd->boundary = boundary ; 
+            quad2* prd = getPRD<quad2>(); 
+            prd->q0.f = isect ; 
+            prd->set_boundary(boundary) ; 
         }   
 #else
         unsigned a0, a1, a2, a3, a4  ;      

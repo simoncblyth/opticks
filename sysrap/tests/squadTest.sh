@@ -12,6 +12,7 @@ gcc $name.cc \
      -I${OPTICKS_PREFIX}/include/SysRap \
      -std=c++11 \
      -lstdc++ \
+     -Wall \
      -o /tmp/$name  
 
 [ $? -ne 0 ] && echo compile fail && exit 1

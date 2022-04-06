@@ -19,66 +19,66 @@ struct SYSRAP_API OpticksPhoton
 #endif
 {
 #ifdef WITH_PLOG
-   static const plog::Severity LEVEL ; 
+    static const plog::Severity LEVEL ; 
 #endif
-   static constexpr const char* ZERO_ = ".";
-   static constexpr const char* CERENKOV_ = "CERENKOV";
-   static constexpr const char* SCINTILLATION_ = "SCINTILLATION" ;
-   static constexpr const char* TORCH_ = "TORCH" ;
-   static constexpr const char* MISS_ = "MISS" ;
-   static constexpr const char* BULK_ABSORB_ = "BULK_ABSORB" ;
-   static constexpr const char* BULK_REEMIT_ = "BULK_REEMIT" ;
-   static constexpr const char* BULK_SCATTER_ = "BULK_SCATTER" ;
-   static constexpr const char* SURFACE_DETECT_ = "SURFACE_DETECT" ;
-   static constexpr const char* SURFACE_ABSORB_ = "SURFACE_ABSORB" ;
-   static constexpr const char* SURFACE_DREFLECT_ = "SURFACE_DREFLECT" ;
-   static constexpr const char* SURFACE_SREFLECT_ = "SURFACE_SREFLECT" ;
-   static constexpr const char* BOUNDARY_REFLECT_ = "BOUNDARY_REFLECT" ;
-   static constexpr const char* BOUNDARY_TRANSMIT_ = "BOUNDARY_TRANSMIT" ;
-   static constexpr const char* NAN_ABORT_ = "NAN_ABORT" ;
-   static constexpr const char* EFFICIENCY_CULL_ = "EFFICIENCY_CULL" ;
-   static constexpr const char* EFFICIENCY_COLLECT_ = "EFFICIENCY_COLLECT" ;
-   static constexpr const char* BAD_FLAG_ = "BAD_FLAG" ;
+    static constexpr const char* ZERO_ = ".";
+    static constexpr const char* CERENKOV_ = "CERENKOV";
+    static constexpr const char* SCINTILLATION_ = "SCINTILLATION" ;
+    static constexpr const char* TORCH_ = "TORCH" ;
+    static constexpr const char* MISS_ = "MISS" ;
+    static constexpr const char* BULK_ABSORB_ = "BULK_ABSORB" ;
+    static constexpr const char* BULK_REEMIT_ = "BULK_REEMIT" ;
+    static constexpr const char* BULK_SCATTER_ = "BULK_SCATTER" ;
+    static constexpr const char* SURFACE_DETECT_ = "SURFACE_DETECT" ;
+    static constexpr const char* SURFACE_ABSORB_ = "SURFACE_ABSORB" ;
+    static constexpr const char* SURFACE_DREFLECT_ = "SURFACE_DREFLECT" ;
+    static constexpr const char* SURFACE_SREFLECT_ = "SURFACE_SREFLECT" ;
+    static constexpr const char* BOUNDARY_REFLECT_ = "BOUNDARY_REFLECT" ;
+    static constexpr const char* BOUNDARY_TRANSMIT_ = "BOUNDARY_TRANSMIT" ;
+    static constexpr const char* NAN_ABORT_ = "NAN_ABORT" ;
+    static constexpr const char* EFFICIENCY_CULL_ = "EFFICIENCY_CULL" ;
+    static constexpr const char* EFFICIENCY_COLLECT_ = "EFFICIENCY_COLLECT" ;
+    static constexpr const char* BAD_FLAG_ = "BAD_FLAG" ;
 
-   static constexpr const char* _ZERO              = "  "  ;
-   static constexpr const char* _CERENKOV          = "CK" ;
-   static constexpr const char* _SCINTILLATION     = "SI" ; 
-   static constexpr const char* _TORCH             = "TO" ; 
-   static constexpr const char* _MISS              = "MI" ;
-   static constexpr const char* _BULK_ABSORB       = "AB" ;
-   static constexpr const char* _BULK_REEMIT       = "RE" ;
-   static constexpr const char* _BULK_SCATTER      = "SC" ;
-   static constexpr const char* _SURFACE_DETECT    = "SD" ;
-   static constexpr const char* _SURFACE_ABSORB    = "SA" ;
-   static constexpr const char* _SURFACE_DREFLECT  = "DR" ;
-   static constexpr const char* _SURFACE_SREFLECT  = "SR" ;
-   static constexpr const char* _BOUNDARY_REFLECT  = "BR" ;
-   static constexpr const char* _BOUNDARY_TRANSMIT = "BT" ;
-   static constexpr const char* _NAN_ABORT         = "NA" ;
-   static constexpr const char* _EFFICIENCY_COLLECT = "EC" ;
-   static constexpr const char* _EFFICIENCY_CULL    = "EX" ;
-   static constexpr const char* _BAD_FLAG           = "XX" ;
+    static constexpr const char* _ZERO              = "ZE" ;
+    static constexpr const char* _CERENKOV          = "CK" ;
+    static constexpr const char* _SCINTILLATION     = "SI" ; 
+    static constexpr const char* _TORCH             = "TO" ; 
+    static constexpr const char* _MISS              = "MI" ;
+    static constexpr const char* _BULK_ABSORB       = "AB" ;
+    static constexpr const char* _BULK_REEMIT       = "RE" ;
+    static constexpr const char* _BULK_SCATTER      = "SC" ;
+    static constexpr const char* _SURFACE_DETECT    = "SD" ;
+    static constexpr const char* _SURFACE_ABSORB    = "SA" ;
+    static constexpr const char* _SURFACE_DREFLECT  = "DR" ;
+    static constexpr const char* _SURFACE_SREFLECT  = "SR" ;
+    static constexpr const char* _BOUNDARY_REFLECT  = "BR" ;
+    static constexpr const char* _BOUNDARY_TRANSMIT = "BT" ;
+    static constexpr const char* _NAN_ABORT         = "NA" ;
+    static constexpr const char* _EFFICIENCY_COLLECT = "EC" ;
+    static constexpr const char* _EFFICIENCY_CULL    = "EX" ;
+    static constexpr const char* _BAD_FLAG           = "XX" ;
 
-   static const char* Flag(  const unsigned flag);
-   static const char* Abbrev(const unsigned flag);
-   static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
+    static const char* Flag(  const unsigned flag);
+    static const char* Abbrev(const unsigned flag);
+    static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
 
 #ifdef STANDALONE
 #else
-   static const char* flag2color ; 
+    static const char* flag2color ; 
 
-   static unsigned EnumFlag(unsigned bitpos);
-   static unsigned BitPos(unsigned flag);
-   static unsigned AbbrevToFlag( const char* abbrev );
-   static unsigned long long AbbrevToFlagSequence( const char* abbseq, char delim=' ');
-   static unsigned AbbrevSequenceToMask( const char* abbseq, char delim=' ');
-   static void AbbrevToFlagValSequence( unsigned long long& seqhis, unsigned long long& seqval, const char* seqmap, char edelim=' ') ;
+    static unsigned EnumFlag(unsigned bitpos);
+    static unsigned BitPos(unsigned flag);
+    static unsigned AbbrevToFlag( const char* abbrev );
+    static unsigned long long AbbrevToFlagSequence( const char* abbseq, char delim=' ');
+    static unsigned AbbrevSequenceToMask( const char* abbseq, char delim=' ');
+    static void AbbrevToFlagValSequence( unsigned long long& seqhis, unsigned long long& seqval, const char* seqmap, char edelim=' ') ;
 
-   static unsigned PointVal1( const unsigned long long& seqval , unsigned bitpos );
-   static unsigned PointFlag( const unsigned long long& seqhis , unsigned bitpos );
-   static const char* PointAbbrev( const unsigned long long& seqhis , unsigned bitpos );
-   static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1);
-   static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
+    static unsigned PointVal1( const unsigned long long& seqval , unsigned bitpos );
+    static unsigned PointFlag( const unsigned long long& seqhis , unsigned bitpos );
+    static const char* PointAbbrev( const unsigned long long& seqhis , unsigned bitpos );
+    static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1);
+    static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
 #endif
 };
 

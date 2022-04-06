@@ -53,6 +53,12 @@ struct quad2
 
     SUTIL_INLINE SUTIL_HOSTDEVICE float3* normal() ;
     SUTIL_INLINE SUTIL_HOSTDEVICE const float3* normal() const ;
+    SUTIL_INLINE SUTIL_HOSTDEVICE float    distance() const ;
+    SUTIL_INLINE SUTIL_HOSTDEVICE unsigned identity() const ;
+    SUTIL_INLINE SUTIL_HOSTDEVICE unsigned boundary() const ;
+
+    SUTIL_INLINE SUTIL_HOSTDEVICE void set_identity(unsigned id);
+    SUTIL_INLINE SUTIL_HOSTDEVICE void set_boundary(unsigned bn);
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -71,15 +77,17 @@ void quad2::zero()
     q1.u.x = 0 ; q1.u.y = 0 ; q1.u.z = 0 ; q1.u.w = 0 ; 
 } 
 
-float*         quad2::data() {         return &q0.f.x ;  }
-const float*   quad2::cdata() const  { return &q0.f.x ;  }
-float3*        quad2::normal() {       return (float3*)&q0.f.x ;  }
-const float3*  quad2::normal() const { return (float3*)&q0.f.x ;  }
+float*         quad2::data() {           return &q0.f.x ;  }
+const float*   quad2::cdata() const  {   return &q0.f.x ;  }
+float3*        quad2::normal() {         return (float3*)&q0.f.x ;  }
+const float3*  quad2::normal() const {   return (float3*)&q0.f.x ;  }
+float          quad2::distance() const { return q0.f.w ;  }
 
+unsigned       quad2::identity() const {   return q1.u.z ;  }
+void           quad2::set_identity(unsigned id) { q1.u.z = id ;  }
+unsigned       quad2::boundary() const {   return q1.u.w ;  }
+void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
 
-
-
- 
 
 struct quad4 
 { 
@@ -91,6 +99,9 @@ struct quad4
     SUTIL_INLINE SUTIL_HOSTDEVICE void zero();
     SUTIL_INLINE SUTIL_HOSTDEVICE float* data() ;
     SUTIL_INLINE SUTIL_HOSTDEVICE const float* cdata() const ;
+    SUTIL_INLINE SUTIL_HOSTDEVICE void set_flags(unsigned  boundary, unsigned  identity, unsigned  idx, unsigned  flag, float  orient ); 
+    SUTIL_INLINE SUTIL_HOSTDEVICE void get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const ;
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -112,6 +123,23 @@ void quad4::zero()
 
 float*       quad4::data() {         return &q0.f.x ;  }
 const float* quad4::cdata() const  { return &q0.f.x ;  }
+
+void quad4::set_flags(unsigned boundary, unsigned identity, unsigned idx, unsigned flag, float orient ) 
+{
+    q3.u.x = ((boundary & 0xffffu ) << 16) | (flag & 0xffffu ) ;    // hmm boundary only needs 8bits 0xff really 
+    q3.u.y = identity ;      // identity needs 32bit as already bit packed primIdx and instanceIdx
+    q3.u.z = ( orient < 0.f ? 0x80000000u : 0u ) | ( idx & 0x7fffffffu ) ;   // ~30bit gets up to a billion, ~2 bits spare  
+    q3.u.w |= flag ;         // OpticksPhoton.h flags up to  0x1 << 15 : bitwise combination needs 16 bits,  16 bits spare  
+    // hmm: could swap the general purpose identity for sensor index when this is a hit ?
+}
+void quad4::get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const
+{
+    boundary = q3.u.x >> 16 ; 
+    flag = q3.u.x & 0xffff ;  
+    identity = q3.u.y ; 
+    idx = ( q3.u.z & 0x7fffffff ) ;
+    orient = ( q3.u.z & 0x80000000 ) != 0 ? -1.f : 1.f ;   
+}
 
 
 struct quad6 
