@@ -170,45 +170,9 @@ target_link_libraries( ${name}
      Opticks::OKConf
 )
 
-
-
-# using absolute ANADIR avoids build environment requiring it in PATH 
-get_filename_component(ANADIR ../ana ABSOLUTE)
-
-message(STATUS "CMAKE_CURRENT_SOURCE_DIR : ${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "ANADIR : ${ANADIR}")
-
-
-
 # OpticksPhoton.h and _Enum.ini generation moved to sysrap 
 # OpticksGenstep.h and _Enum_ini generation moved to sysrap
-
-
-
-set(CCFL ${CMAKE_CURRENT_SOURCE_DIR}/OpticksFlags.cc)
-set(PYJS ${CMAKE_CURRENT_BINARY_DIR}/OpticksFlags_Abbrev.json)
-set(CFGS  ${CMAKE_CURRENT_SOURCE_DIR}/CfgTest.cfg)
-
-add_custom_command(
-   OUTPUT 
-         ${PYJS}
-   COMMAND 
-         ${ANADIR}/OpticksFlags.py ${CCFL} --quiet --jsonpath ${PYJS}
-   DEPENDS 
-         ${CCFL}
-)
-add_custom_target(PythonJSON ALL DEPENDS ${PYJS} )
-
-list(APPEND HEADERS 
-  ${IPH} 
-  ${IGS} 
-  ${PYJS}
-  ${CFGS}
-) 
-
-
-
-
+# generation of OpticksPhoton_Abbrev.json moved to sysrap
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

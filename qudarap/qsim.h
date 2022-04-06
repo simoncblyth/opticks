@@ -1203,20 +1203,13 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
         }
         if(command == BREAK)    
         {
+            p.set_flag(flag); 
             if( bounce+1 < bounce_max ) record[bounce_max*idx+bounce+1] = p ;  
             break ;    
         }
     }
 }
  
-/*
-template <typename T>
-inline QSIM_METHOD void qsim<T>::dummy_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned idx, quad4* record )
-{
-}
- 
-*/
-
 
 
 /**

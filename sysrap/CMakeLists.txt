@@ -211,6 +211,11 @@ set(HEADERS
 # using absolute ANADIR avoids build environment requiring it in PATH 
 get_filename_component(ANADIR ../ana ABSOLUTE)
 
+message(STATUS "CMAKE_CURRENT_SOURCE_DIR : ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "ANADIR : ${ANADIR}")
+
+
+
 set(HGS ${CMAKE_CURRENT_SOURCE_DIR}/OpticksGenstep.h)
 set(IGS ${CMAKE_CURRENT_BINARY_DIR}/OpticksGenstep_Enum.ini)
 add_custom_command(
@@ -242,13 +247,27 @@ add_custom_target(PythonPH ALL DEPENDS ${IPH} )
 
 
 
+set(CCFL ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.hh)
+set(PYJS ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Abbrev.json)
+
+add_custom_command(
+   OUTPUT 
+         ${PYJS}
+   COMMAND 
+         ${ANADIR}/OpticksPhoton.py ${CCFL} --quiet --jsonpath ${PYJS}
+   DEPENDS 
+         ${CCFL}
+)
+add_custom_target(PythonJSON ALL DEPENDS ${PYJS} )
 
 
 
 
-
-
-
+list(APPEND HEADERS 
+  ${IGS} 
+  ${IPH} 
+  ${PYJS}
+) 
 
 
 

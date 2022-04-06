@@ -102,6 +102,9 @@ struct quad4
     SUTIL_INLINE SUTIL_HOSTDEVICE void set_flags(unsigned  boundary, unsigned  identity, unsigned  idx, unsigned  flag, float  orient ); 
     SUTIL_INLINE SUTIL_HOSTDEVICE void get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const ;
 
+    SUTIL_INLINE SUTIL_HOSTDEVICE void set_flag(unsigned  flag); 
+    SUTIL_INLINE SUTIL_HOSTDEVICE void get_flag(unsigned& flag) const ; 
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -132,14 +135,39 @@ void quad4::set_flags(unsigned boundary, unsigned identity, unsigned idx, unsign
     q3.u.w |= flag ;         // OpticksPhoton.h flags up to  0x1 << 15 : bitwise combination needs 16 bits,  16 bits spare  
     // hmm: could swap the general purpose identity for sensor index when this is a hit ?
 }
+void quad4::set_flag( unsigned flag )
+{
+    q3.u.x = ( q3.u.x & 0xffff0000u ) | ( flag & 0xffffu ) ;   // clear flag bits then set them  
+    q3.u.w |= flag ;    // bitwise-OR into flagmask 
+}
+
 void quad4::get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const
 {
     boundary = q3.u.x >> 16 ; 
-    flag = q3.u.x & 0xffff ;  
+    flag = q3.u.x & 0xffffu ;  
     identity = q3.u.y ; 
-    idx = ( q3.u.z & 0x7fffffff ) ;
-    orient = ( q3.u.z & 0x80000000 ) != 0 ? -1.f : 1.f ;   
+    idx = ( q3.u.z & 0x7fffffffu ) ;
+    orient = ( q3.u.z & 0x80000000u ) != 0 ? -1.f : 1.f ;   
 }
+
+void quad4::get_flag( unsigned& flag ) const 
+{
+    flag = q3.u.x & 0xffff ;  
+}
+
+
+/**
+from opticks.ana.hismask import HisMask   
+hm = HisMask()
+
+boundary_ = lambda p:p.view(np.uint32)[3,0] >> 16
+flag_     = lambda p:p.view(np.uint32)[3,0] & 0xffff
+identity_ = lambda p:p.view(np.uint32)[3,1]   
+idx_      = lambda p:p.view(np.uint32)[3,2] & 0x7fffffff
+orient_   = lambda p:p.view(np.uint32)[3,2] >> 31
+flagmask_ = lambda p:p.view(np.uint32)[3,3]
+flagdesc_ = lambda p:" %4d %10s id:%6d ori:%d idx:%6d %10s " % ( boundary_(p), hm.label(flag_(p)), identity_(p), orient_(p), idx_(p), hm.label( flagmask_(p) ))
+**/
 
 
 struct quad6 

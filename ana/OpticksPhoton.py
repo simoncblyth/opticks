@@ -30,7 +30,6 @@ json_save_ = lambda path, d:json.dump(d, open(makedirs_(expand_(path)),"w"))
 log = logging.getLogger(__name__) 
 
 class OpticksPhoton(object):
-    hh_path = "$OPTICKS_HOME/sysrap/OpticksPhoton.hh"
     pfx = "    static constexpr const char* _" 
     ptn = re.compile("^(?P<key>\S*)\s*=\s*\"(?P<val>\S{2})\"\s*;\s*$")
 
@@ -64,8 +63,8 @@ class OpticksPhoton(object):
     def __repr__(self):
         return "\n".join([" %2s : %s " % (kv[1], kv[0]) for kv in self.flag2abbrev.items()])
  
-    def __init__(self):
-        hh_path = os.path.expandvars(self.hh_path)
+    def __init__(self, hh_path):
+        hh_path = os.path.expandvars(hh_path)
         hh_lines = open(hh_path, "r").readlines() 
         log.debug(" hh_path %s hh_lines %d " % (hh_path, len(hh_lines)) )
         self.flag2abbrev = self.Flag2Abbrev(hh_lines)
@@ -75,6 +74,8 @@ class OpticksPhoton(object):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(__doc__)
+    default_path = "$OPTICKS_HOME/sysrap/OpticksPhoton.hh"
+    parser.add_argument(     "path",  nargs="?", help="Path to input OpticksPhoton.hh", default=default_path )
     parser.add_argument(     "--jsonpath", default=None, help="When a path is provided an json file will be written to it." ) 
     parser.add_argument(     "--quiet", action="store_true", default=False, help="Skip dumping" ) 
     parser.add_argument(     "--level", default="info", help="logging level" ) 
@@ -83,8 +84,7 @@ if __name__ == '__main__':
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
 
-
-    flags = OpticksPhoton()
+    flags = OpticksPhoton(args.path)
 
     if not args.quiet:  
         print(flags)

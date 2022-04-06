@@ -151,6 +151,28 @@ void test_quad4_set_flags_get_flags()
     assert( orient2 == orient1 );  
 }
 
+void test_quad4_set_flag_get_flag()
+{
+    quad4 p ; 
+    p.zero(); 
+
+    unsigned flag0[2] ; 
+    flag0[0] = 1024 ; 
+
+    p.set_flag( flag0[0] ); 
+    p.get_flag( flag0[1] ); 
+    assert( flag0[0] == flag0[1] ); 
+    assert( p.q3.u.w == 1024 ); 
+
+    unsigned flag1[2] ; 
+    flag1[0] = 2048 ; 
+
+    p.set_flag( flag1[0] ); 
+    p.get_flag( flag1[1] ); 
+    assert( flag1[0] == flag1[1] ); 
+    
+    assert( p.q3.u.w == (1024 | 2048) ); 
+}
 
 
 int main(int argc, char** argv)
@@ -166,8 +188,9 @@ int main(int argc, char** argv)
     test_quad2_eprd(); 
     test_qvals_float4_vec(false); 
     test_qvals_float4_vec(true); 
-    */
     test_quad4_set_flags_get_flags(); 
+    */
+    test_quad4_set_flag_get_flag(); 
 
 
     return 0 ; 

@@ -356,7 +356,7 @@ class IniFlags(object):
     """
     Formerly from $OPTICKS_INSTALL_CACHE/OKC/GFlagIndexLocal.ini
     """
-    def __init__(self, path="$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton_Enum.ini"):
+    def __init__(self, path="$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Enum.ini"):
         ini = ini_(path)
         assert len(ini) > 0, "IniFlags bad path/flags %s " % path 
 
@@ -402,6 +402,8 @@ class EnumFlags(object):
         self.name2code = dict(zip(names, codes)) 
         self.code2name = dict(zip(codes, names))
 
+    def __repr__(self):
+        return "\n".join([self.__class__.__name__, "names", str(self.names), "codes", str(self.codes), "name2code", str(self.name2code), "code2name", str(self.code2name) ]) 
    
 class PhotonMaskFlags(EnumFlags):
     """
@@ -411,8 +413,10 @@ class PhotonMaskFlags(EnumFlags):
     Former positions of Abbrev : $OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/OpticksCore/OpticksPhoton.h", mask2int=False) 
-        self.abbrev = Abbrev("$OPTICKS_PREFIX/include/OpticksCore/OpticksFlags_Abbrev.json")
+        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/sysrap/OpticksPhoton.h", mask2int=False) 
+        self.abbrev = Abbrev("$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Abbrev.json")
+        ## looks like SysRap suffers case inconsistency 
+
 
 
 class PhotonCodeFlags(EnumFlags):
@@ -420,8 +424,8 @@ class PhotonCodeFlags(EnumFlags):
     This is used by histype.py for seqhis_ana
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/OpticksCore/OpticksPhoton.h", mask2int=True) 
-        self.abbrev = Abbrev("$OPTICKS_PREFIX/include/OpticksCore/OpticksFlags_Abbrev.json")
+        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/sysrap/OpticksPhoton.h", mask2int=True) 
+        self.abbrev = Abbrev("$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Abbrev.json")
 
 
 
@@ -432,19 +436,19 @@ if __name__ == '__main__':
 
 
     lf = ItemList("GMaterialLib")
-    print("ItemList(GMaterialLib).name2code")
+    print("lf:ItemList(GMaterialLib).name2code")
     print("\n".join([" %30s : %s " % (k,v) for k,v in sorted(lf.name2code.items(),key=lambda kv:kv[1])]))
 
     inif = IniFlags()
-    print("IniFlags(photon flags)")
+    print("inif:IniFlags(photon flags)")
     print("\n".join([" %30s : %s " % (k,v) for k,v in sorted(inif.name2code.items(),key=lambda kv:kv[1])]))
 
     phmf = PhotonMaskFlags()
-    print("PhotonMaskFlags()")
+    print("phmf:PhotonMaskFlags()")
     print("\n".join([" %30s : %s " % (k,v) for k,v in sorted(phmf.name2code.items(),key=lambda kv:kv[1])]))
 
     phcf = PhotonCodeFlags()
-    print("PhotonCodeFlags()")
+    print("phcf:PhotonCodeFlags()")
     print("\n".join([" %30s : %s " % (k,v) for k,v in sorted(phcf.name2code.items(),key=lambda kv:kv[1])]))
 
 
