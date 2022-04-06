@@ -10,6 +10,8 @@
 qprd.h
 =========
 
+NB: moving to quad2 instead of this : for easy persisting and mocking 
+
 **/
 
 struct qprd
@@ -17,7 +19,7 @@ struct qprd
     float3   normal ;
     float    t ;   
     unsigned identity ; 
-    unsigned boundary ; 
+    unsigned boundary ;   // fairly small number of distinct boundaries expected : 8 bits probably enough ( 0xff = 255 )
 };
 
 

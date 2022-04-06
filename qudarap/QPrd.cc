@@ -42,8 +42,10 @@ void QPrd::init()
     for(unsigned i=0 ; i < num_prd ; i++)
     {
         quad2& pr = prd[i] ; 
+        pr.zero(); 
         pr.q0.f = nrmt[i] ; 
-        pr.q1.u = make_uint4( i, 0u, 0u, bnd_idx[i] ); 
+        pr.set_boundary( bnd_idx[i] ); 
+        pr.set_identity( i ); 
     }
 }
 

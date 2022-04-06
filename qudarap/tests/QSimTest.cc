@@ -549,23 +549,52 @@ void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned typ
     assert( subfold ); 
 
     const std::vector<quad2>& qs_prd = qs.prd->prd ;  
-
     unsigned max_bounce = qs_prd.size() ; 
     assert( max_bounce > 0 && max_bounce <= 16 ); 
 
-    std::vector<quad4> p(num_photon) ; 
-    std::vector<quad2> prd(num_photon*max_bounce) ; 
 
-    // duplicate the mock prd for all photon
-    for(unsigned p=0 ; p < num_photon ; p++)
+    NP* p   = NP::Make<float>(num_photon,             4, 4 ); 
+    NP* prd = NP::Make<float>(num_photon, max_bounce, 2, 4 ); 
+    NP* r   = NP::Make<float>(num_photon, max_bounce, 4, 4 ); 
+    r->fill<float>(0.f); 
+
+    LOG(info) << " p.desc   : " << p->desc() ; 
+    LOG(info) << " prd.desc : " << prd->desc() ; 
+    LOG(info) << " r.desc   : " << r->desc() ; 
+
+    quad4* p_v   = (quad4*)p->values<float>(); 
+    quad2* prd_v = (quad2*)prd->values<float>();  
+    quad4* r_v   = (quad4*)r->values<float>(); 
+
+    const quad4& p0 = qs.dbg->p ;   // ephoton
+
+    for(unsigned i=0 ; i < num_photon ; i++)
     {
-        for(unsigned b=0 ; b < max_bounce ; b++) prd.push_back(qs_prd[b]);  
+        p_v[i] = p0 ;   // duplicate ephoton 
+
+        for(unsigned j=0 ; j < max_bounce ; j++)  // duplicate the sequence of mock prd for all photon 
+        {
+            const quad2& prd = qs_prd[j] ; 
+            prd_v[i*max_bounce+j] = prd ;    
+        }
     }    
 
-    qs.mock_propagate_launch_mutate( p.data(), p.size(), prd.data(), prd.size(), type ); 
+    unsigned num_prd = num_photon*max_bounce ; 
+    qs.mock_propagate_launch_mutate( p_v, num_photon, prd_v, num_prd, type, r_v ); 
 
-    save_photon( subfold, "p.npy", p ); 
-    save_array(  subfold, "mock_prd.npy", (float*)prd.data(), prd.size(), 2, 4 );      
+    const char* p_path = Path(subfold, "p.npy"); 
+    const char* r_path = Path(subfold, "r.npy"); 
+    const char* prd_path = Path(subfold, "prd.npy"); 
+
+    LOG(info) 
+        << " p_path  " << p_path  
+        << " prd_path  " << prd_path  
+        << " r_path  " << r_path  
+        ;
+
+    p->save(p_path); 
+    prd->save(prd_path); 
+    r->save(r_path); 
 }
 
 

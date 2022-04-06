@@ -843,11 +843,11 @@ void QSim<T>::photon_launch_mutate(quad4* photon, unsigned num_photon, unsigned 
  
  
 template <typename T>
-extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max, unsigned type ); 
+extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max, unsigned type, quad4* record ); 
 
 
 template <typename T>
-void QSim<T>::mock_propagate_launch_mutate(quad4* photon, unsigned num_photon, const quad2* prd, unsigned num_prd, unsigned type )
+void QSim<T>::mock_propagate_launch_mutate(quad4* photon, unsigned num_photon, const quad2* prd, unsigned num_prd, unsigned type, quad4* record  )
 {
     assert( type == MOCK_PROPAGATE ); 
     assert( d_sim ); 
@@ -856,6 +856,8 @@ void QSim<T>::mock_propagate_launch_mutate(quad4* photon, unsigned num_photon, c
     if(is_prd_multiple == false) LOG(fatal) << " num_prd " << num_prd << " num_photon " << num_photon ; 
     assert( is_prd_multiple ); 
     int bounce_max = num_prd/num_photon ; 
+
+    unsigned num_record = num_prd ; 
 
     LOG(info) 
         << " num_prd " << num_prd 
@@ -866,13 +868,16 @@ void QSim<T>::mock_propagate_launch_mutate(quad4* photon, unsigned num_photon, c
 
     quad4* d_photon = QU::UploadArray<quad4>(photon, num_photon );  
     quad2* d_prd = QU::UploadArray<quad2>(prd, num_prd );  
+    quad4* d_record = QU::device_alloc<quad4>(num_record ) ; 
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
-    QSim_mock_propagate_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_prd, bounce_max, type );  
+    QSim_mock_propagate_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_prd, bounce_max, type, d_record );  
 
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
+    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon );
+    QU::copy_device_to_host_and_free<quad4>( record, d_record, num_record );
+ 
 }
  
 

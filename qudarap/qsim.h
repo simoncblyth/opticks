@@ -119,9 +119,9 @@ struct qsim
 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
     QSIM_METHOD int     propagate_at_surface( unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
-    QSIM_METHOD void    propagate_at_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
+    QSIM_METHOD int     propagate_at_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
 
-    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id); 
+    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id, quad4* record ); 
 
 
     QSIM_METHOD void    reflect_diffuse(  quad4& p, const quad2& prd, curandStateXORWOW& rng, unsigned idx );
@@ -643,8 +643,11 @@ qsim::propagate_to_boundary
 +---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
 |   BULK_ABSORB       |   BREAK          |  time, position                                         | advance to absorption position, dir+pol unchanged     |
 +---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
-|   not set "SAIL"    |   UNDEFINED      |  time, position                                         | advanced to border position, dir+pol unchanged        |   
+|   not set "SAIL"    |   BOUNDARY       |  time, position                                         | advanced to border position, dir+pol unchanged        |   
 +---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
+
+
+TODO: whilst in measurement iteration try changing to a single return, not loads of them, by setting command and returning that 
 
 **/
 
@@ -720,7 +723,7 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
     *position += distance_to_boundary*(*direction) ;
     *time += distance_to_boundary/group_velocity ;  
 
-    return UNDEFINED ;
+    return BOUNDARY ;
 }
 
 /**
@@ -840,7 +843,7 @@ random aligned matching with examples/Geant/BoundaryStandalone
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::propagate_at_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned id)
+inline QSIM_METHOD int qsim<T>::propagate_at_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned id)
 {
     const float& n1 = s.material1.x ;
     const float& n2 = s.material2.x ;   
@@ -942,6 +945,7 @@ inline QSIM_METHOD void qsim<T>::propagate_at_boundary(unsigned& flag, quad4& p,
     */
 
     flag = reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
+    return CONTINUE ; 
 }
 
 /*
@@ -1150,55 +1154,68 @@ TODO:
   * which version of the photon to save and what flag label to give it 
   * convention is to record initial photon with the generation flag 
 
-* THOUGHTS: not keen on the fiddly "continue" control flow that makes recording involved  
+* THOUGHTS: not keen on the jumpy control flow that makes recording involved  
 
 * compressed step recording  
 
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id)
+inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned idx, quad4* record )
 {
     float* wavelength = &p.q2.f.w ; 
     float3* dir = (float3*)&p.q1.f.x ;    
 
-
     int bounce = 0 ; 
     int command = START ; 
-    unsigned flag = 0 ; 
+    unsigned flag = TORCH ; 
     qstate s ; 
 
     while( bounce < bounce_max )
     {
-        const quad2& prd = mock_prd[bounce_max*id+bounce] ;   // mock call to OptiX trace 
-        const int& boundary = prd.q1.i.w ; 
-        const float3* normal = prd.normal(); 
-        float cosTheta = dot(*dir, *normal ) ;  // sign gives side of boundary  
+        const quad2& prd = mock_prd[bounce_max*idx+bounce] ;   // mock call to OptiX trace 
 
-        fill_state(s, boundary, *wavelength, cosTheta ); 
-
+        record[bounce_max*idx+bounce] = p ;  
         bounce++;           // increment at head, not tail, as CONTINUE skips the tail
 
-        command = propagate_to_boundary( flag, p, prd, s, rng, id );  
-        if(command == BREAK)    break ;     // BULK_ABSORB              : time, position changed
-        if(command == CONTINUE) continue ;  // BULK_REEMIT/BULK_SCATTER : most everything changed 
-                                            // "SAIL"                   : time, position changed 
+        const unsigned identity = prd.identity() ; 
+        const unsigned boundary = prd.boundary() ; 
+        const float3* normal = prd.normal(); 
+        float cosTheta = dot(*dir, *normal ) ;    // cosTheta sign gives boundary orientation   
 
-        if( s.optical.x > 0 )  // optical surface associated with boundary 
+        // hmm: have to be careful here : prd is looking ahead it does not 
+        // mean that the photon gets there 
+        //
+        // flag at this point is from the previous turn 
+        // but boundary, identity is from the current turn 
+
+        p.set_flags(boundary, identity, idx, flag, cosTheta); 
+        fill_state(s, boundary, *wavelength, cosTheta ); 
+
+        command = propagate_to_boundary( flag, p, prd, s, rng, idx );  
+        if( command == BOUNDARY )
         {
-            command = propagate_at_surface( flag, p, prd, s, rng, id );  
-            if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB     : unchanged 
-            if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT : dir+pol changed 
-        }         
-        else
+            command = s.optical.x > 0 ? 
+                                          propagate_at_surface( flag, p, prd, s, rng, idx ) 
+                                      : 
+                                          propagate_at_boundary( flag, p, prd, s, rng, idx) 
+                                      ;  
+        }
+        if(command == BREAK)    
         {
-            propagate_at_boundary( flag, p, prd, s, rng, id) ;  // BOUNDARY_REFLECT/BOUNDARY_TRANSMIT -> trace again
+            if( bounce+1 < bounce_max ) record[bounce_max*idx+bounce+1] = p ;  
+            break ;    
         }
     }
 }
  
-
-
+/*
+template <typename T>
+inline QSIM_METHOD void qsim<T>::dummy_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned idx, quad4* record )
+{
+}
+ 
+*/
 
 
 
