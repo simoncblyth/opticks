@@ -174,6 +174,72 @@ void test_quad4_set_flag_get_flag()
     assert( p.q3.u.w == (1024 | 2048) ); 
 }
 
+void test_quad4_set_idx_set_prd_get_idx_get_prd()
+{
+    quad4 p ; 
+    {
+        p.zero(); 
+        unsigned idx[2] ; 
+        idx[0] = 0x7fffffff ; 
+        p.set_idx(idx[0]); 
+        p.get_idx(idx[1]); 
+        assert( idx[0] == idx[1] ); 
+    }
+    {
+        p.zero(); 
+        unsigned idx[2] ; 
+        unsigned boundary[2]; 
+        unsigned identity[2]; 
+        float orient[2] ; 
+
+        idx[0] = 0x7fffffff ; 
+        boundary[0] = 0xffff ; 
+        identity[0] = 0xffffffff ; 
+        orient[0] = -1.f ; 
+
+        p.set_idx(idx[0]); 
+        p.set_prd( boundary[0], identity[0], orient[0] ); 
+        p.get_idx(idx[1]); 
+        assert( idx[0] == idx[1] ); 
+
+        p.get_prd( boundary[1], identity[1], orient[1] ); 
+        assert( boundary[0] == boundary[1] ); 
+        assert( identity[0] == identity[1] ); 
+        assert( orient[0] == orient[1] ); 
+
+        p.get_idx(idx[1]); 
+        assert( idx[0] == idx[1] ); 
+    }
+}
+
+void test_quad4_idx_orient()
+{
+    quad4 p ; 
+    p.zero(); 
+
+    unsigned idx[2] ; 
+    float orient[2] ; 
+    
+    for(unsigned i=0 ; i < 1000 ; i++)
+    {
+        idx[0] = i ; 
+        idx[1] = 0 ; 
+
+        orient[0] = i % 2 == 0 ? -1.f : 1.f ; 
+        orient[1] = 0.f ; 
+
+        p.set_idx(idx[0]); 
+        p.set_orient( orient[0] ); 
+
+        p.get_idx(idx[1]); 
+        p.get_orient(orient[1]); 
+
+        assert( idx[0] == idx[1] ); 
+        assert( orient[0] == orient[1] ); 
+    }
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -189,8 +255,11 @@ int main(int argc, char** argv)
     test_qvals_float4_vec(false); 
     test_qvals_float4_vec(true); 
     test_quad4_set_flags_get_flags(); 
-    */
     test_quad4_set_flag_get_flag(); 
+    test_quad4_set_idx_set_prd_get_idx_get_prd(); 
+    */
+
+    test_quad4_idx_orient(); 
 
 
     return 0 ; 

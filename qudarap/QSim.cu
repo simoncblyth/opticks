@@ -597,9 +597,13 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* si
 template void QSim_photon_launch(dim3, dim3, qsim<double>* , quad4* , unsigned, qdebug*, unsigned  ); 
 template void QSim_photon_launch(dim3, dim3, qsim<float>*  , quad4* , unsigned, qdebug*, unsigned  ); 
 
+/**
+_QSim_mock_propagate
+-----------------------
 
+TODO: compare performance using reference or pointer into global mem here rather than local stack copy    
 
-
+**/
 
 template <typename T>
 __global__ void _QSim_mock_propagate( qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max, quad4* record )
@@ -607,21 +611,18 @@ __global__ void _QSim_mock_propagate( qsim<T>* sim, quad4* photon, unsigned num_
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon ) return;
 
-    printf("//_QSim_mock_propagate idx %d num_photon %d \n", idx, num_photon ); 
 
     curandState rng = sim->rngstate[idx] ; 
 
-    quad4 p = photon[idx] ;    // TODO: compare performance using reference or pointer into global mem here rather than local stack copy    
+    quad4 p = photon[idx] ;   
+    p.set_idx(idx); 
 
-    //quad4 p ; 
-    //p.zero(); 
-    //p.q0.f.x = float(idx) ; 
+    printf("//_QSim_mock_propagate idx %d num_photon %d \n", idx, num_photon ); 
 
     sim->mock_propagate( p, mock_prd, bounce_max, rng, idx, record );  
 
-    //for(unsigned i=0 ; i < bounce_max ; i++) record[idx*bounce_max + i ] = p ;   
-
     photon[idx] = p ; 
+
 }
 
 template <typename T>

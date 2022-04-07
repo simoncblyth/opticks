@@ -45,7 +45,7 @@ void QPrd::init()
         pr.zero(); 
         pr.q0.f = nrmt[i] ; 
         pr.set_boundary( bnd_idx[i] ); 
-        pr.set_identity( i ); 
+        pr.set_identity( (i+1)*100 ); 
     }
 }
 

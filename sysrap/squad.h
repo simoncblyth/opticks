@@ -99,10 +99,20 @@ struct quad4
     SUTIL_INLINE SUTIL_HOSTDEVICE void zero();
     SUTIL_INLINE SUTIL_HOSTDEVICE float* data() ;
     SUTIL_INLINE SUTIL_HOSTDEVICE const float* cdata() const ;
-    SUTIL_INLINE SUTIL_HOSTDEVICE void set_flags(unsigned  boundary, unsigned  identity, unsigned  idx, unsigned  flag, float  orient ); 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const ;
 
+    // hmm actually *set_flags* doing all at once makes little sense, 
+    // as idx does not need to be reset and only determine the flag later 
+
+    SUTIL_INLINE SUTIL_HOSTDEVICE void set_flags(unsigned  boundary, unsigned  identity, unsigned  idx, unsigned  flag, float  orient ); 
+    SUTIL_INLINE SUTIL_HOSTDEVICE void set_idx( unsigned  idx); 
+    SUTIL_INLINE SUTIL_HOSTDEVICE void set_orient( float orient ); 
+    SUTIL_INLINE SUTIL_HOSTDEVICE void set_prd( unsigned  boundary, unsigned  identity, float  orient ); 
     SUTIL_INLINE SUTIL_HOSTDEVICE void set_flag(unsigned  flag); 
+
+    SUTIL_INLINE SUTIL_HOSTDEVICE void get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const ;
+    SUTIL_INLINE SUTIL_HOSTDEVICE void get_idx( unsigned& idx); 
+    SUTIL_INLINE SUTIL_HOSTDEVICE void get_orient( float& orient ); 
+    SUTIL_INLINE SUTIL_HOSTDEVICE void get_prd( unsigned& boundary, unsigned& identity, float&  orient ); 
     SUTIL_INLINE SUTIL_HOSTDEVICE void get_flag(unsigned& flag) const ; 
 
 
@@ -127,6 +137,47 @@ void quad4::zero()
 float*       quad4::data() {         return &q0.f.x ;  }
 const float* quad4::cdata() const  { return &q0.f.x ;  }
 
+void quad4::set_idx( unsigned  idx)
+{
+    q3.u.z = ( q3.u.z & 0x80000000u ) | ( 0x7fffffffu & idx ) ;   // retain bit 31 asis 
+}
+void quad4::get_idx( unsigned& idx)
+{
+    idx =  q3.u.z & 0x7fffffffu  ;
+}
+void quad4::set_orient( float orient )  // not typically used as set_prd more convenient, but useful for debug 
+{
+    q3.u.z =  ( q3.u.z & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; 
+}
+void quad4::get_orient( float& orient )
+{
+    orient = ( q3.u.z & 0x80000000u ) ? -1.f : 1.f ;   
+}
+
+void quad4::set_prd( unsigned  boundary, unsigned  identity, float  orient )
+{
+    q3.u.x = ( q3.u.x & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ; 
+    q3.u.y = identity ;  
+    q3.u.z = ( q3.u.z & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; 
+}
+void quad4::get_prd( unsigned& boundary, unsigned& identity, float& orient )
+{
+    boundary = q3.u.x >> 16 ; 
+    identity = q3.u.y ;  
+    orient = ( q3.u.z & 0x80000000u ) ? -1.f : 1.f ;   
+}
+
+void quad4::set_flag( unsigned flag )
+{
+    q3.u.x = ( q3.u.x & 0xffff0000u ) | ( flag & 0xffffu ) ;   // clear flag bits then set them  
+    q3.u.w |= flag ;    // bitwise-OR into flagmask 
+}
+void quad4::get_flag( unsigned& flag ) const 
+{
+    flag = q3.u.x & 0xffff ;  
+}
+
+
 void quad4::set_flags(unsigned boundary, unsigned identity, unsigned idx, unsigned flag, float orient ) 
 {
     q3.u.x = ((boundary & 0xffffu ) << 16) | (flag & 0xffffu ) ;    // hmm boundary only needs 8bits 0xff really 
@@ -135,11 +186,6 @@ void quad4::set_flags(unsigned boundary, unsigned identity, unsigned idx, unsign
     q3.u.w |= flag ;         // OpticksPhoton.h flags up to  0x1 << 15 : bitwise combination needs 16 bits,  16 bits spare  
     // hmm: could swap the general purpose identity for sensor index when this is a hit ?
 }
-void quad4::set_flag( unsigned flag )
-{
-    q3.u.x = ( q3.u.x & 0xffff0000u ) | ( flag & 0xffffu ) ;   // clear flag bits then set them  
-    q3.u.w |= flag ;    // bitwise-OR into flagmask 
-}
 
 void quad4::get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const
 {
@@ -147,12 +193,7 @@ void quad4::get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, uns
     flag = q3.u.x & 0xffffu ;  
     identity = q3.u.y ; 
     idx = ( q3.u.z & 0x7fffffffu ) ;
-    orient = ( q3.u.z & 0x80000000u ) != 0 ? -1.f : 1.f ;   
-}
-
-void quad4::get_flag( unsigned& flag ) const 
-{
-    flag = q3.u.x & 0xffff ;  
+    orient = ( q3.u.z & 0x80000000u ) ? -1.f : 1.f ;   
 }
 
 

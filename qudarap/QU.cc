@@ -186,6 +186,18 @@ template qdebug*    QU::device_alloc<qdebug>(unsigned num_items) ;
 template qstate*    QU::device_alloc<qstate>(unsigned num_items) ;
 
 
+template<typename T>
+void QU::device_memset( T* d, int value, unsigned num_items )
+{
+    size_t size = num_items*sizeof(T) ; 
+    QUDA_CHECK( cudaMemset(d, value, size )); 
+}
+
+template void     QU::device_memset<quad4>(quad4*, int, unsigned ) ;
+
+
+
+
 
 template<typename T>
 void QU::device_free( T* d)

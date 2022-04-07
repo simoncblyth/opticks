@@ -869,6 +869,8 @@ void QSim<T>::mock_propagate_launch_mutate(quad4* photon, unsigned num_photon, c
     quad4* d_photon = QU::UploadArray<quad4>(photon, num_photon );  
     quad2* d_prd = QU::UploadArray<quad2>(prd, num_prd );  
     quad4* d_record = QU::device_alloc<quad4>(num_record ) ; 
+    QU::device_memset<quad4>( d_record, 0, num_record ); 
+
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
@@ -1168,16 +1170,6 @@ void QSim<T>::dump_photon( quad4* photon, unsigned num_photon, const char* opt_,
     }
 }
 
-
-
-
-
-
-
-
-
 template struct QSim<float> ; 
 template struct QSim<double> ;
-
- 
 

@@ -556,7 +556,7 @@ void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned typ
     NP* p   = NP::Make<float>(num_photon,             4, 4 ); 
     NP* prd = NP::Make<float>(num_photon, max_bounce, 2, 4 ); 
     NP* r   = NP::Make<float>(num_photon, max_bounce, 4, 4 ); 
-    r->fill<float>(0.f); 
+    r->fill<float>(0.f);  // no difference, what matters is the on device buffer
 
     LOG(info) << " p.desc   : " << p->desc() ; 
     LOG(info) << " prd.desc : " << prd->desc() ; 

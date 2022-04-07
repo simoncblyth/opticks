@@ -68,6 +68,16 @@ elif [ "$TEST" == "reflect_specular" ]; then
 
     ephoton-set $post $momw_polw $flag 
 
+
+elif [ "$TEST" == "mock_propagate" ]; then 
+
+    post=0,0,0,0
+    momw=1,0,-1,1
+    polw=0,1,0,500
+    flag=0,0,0,0
+
+    ephoton-set $post ${momw},${polw} $flag 
+
 else
     ephoton-unset 
     echo $msg TEST $TEST : unset environment : will use C++ defaults in quad4::ephoton for p0

@@ -652,7 +652,7 @@ TODO: whilst in measurement iteration try changing to a single return, not loads
 **/
 
 template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned id)
+inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
 {
     const float& absorption_length = s.material1.y ; 
     const float& scattering_length = s.material1.z ; 
@@ -673,9 +673,12 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
     float scattering_distance = -scattering_length*logf(u_scattering);   
     float absorption_distance = -absorption_length*logf(u_absorption);
 
-    printf("//qsim.propagate_to_boundary id %d distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f u_scattering %10.4f u_absorption %10.4f \n", 
-      id, distance_to_boundary, absorption_distance, scattering_distance, u_scattering, u_absorption  ); 
-
+    if( idx == 0u )
+    {
+        printf("//qsim.propagate_to_boundary idx %d distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f u_scattering %10.4f u_absorption %10.4f \n", 
+          idx, distance_to_boundary, absorption_distance, scattering_distance, u_scattering, u_absorption  ); 
+    }
+  
 
     if (absorption_distance <= scattering_distance) 
     {   
@@ -1163,35 +1166,46 @@ TODO:
 template <typename T>
 inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned idx, quad4* record )
 {
+    unsigned flag = TORCH ;  
+    p.set_flag(flag);  // setting initial flag : in reality this should be done by generation
+
     float* wavelength = &p.q2.f.w ; 
     float3* dir = (float3*)&p.q1.f.x ;    
 
     int bounce = 0 ; 
     int command = START ; 
-    unsigned flag = TORCH ; 
+
     qstate s ; 
 
     while( bounce < bounce_max )
     {
-        const quad2& prd = mock_prd[bounce_max*idx+bounce] ;   // mock call to OptiX trace 
-
         record[bounce_max*idx+bounce] = p ;  
+
+        // mock call to OptiX trace : doing "geometry lookup"
+        // photon position + direction -> surface normal + distance and identity, boundary 
+        const quad2& prd = mock_prd[bounce_max*idx+bounce] ;  
         bounce++;           // increment at head, not tail, as CONTINUE skips the tail
 
-        const unsigned identity = prd.identity() ; 
         const unsigned boundary = prd.boundary() ; 
+        const unsigned identity = prd.identity() ; 
         const float3* normal = prd.normal(); 
         float cosTheta = dot(*dir, *normal ) ;    // cosTheta sign gives boundary orientation   
 
-        // hmm: have to be careful here : prd is looking ahead it does not 
-        // mean that the photon gets there 
-        //
-        // flag at this point is from the previous turn 
-        // but boundary, identity is from the current turn 
+        
+        if( idx == 0u )
+        {
+           printf("//qsim.mock_propagate idx %d bounce %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n", 
+               idx, bounce, cosTheta, dir->x, dir->y, dir->z, normal->x, normal->y, normal->z ); 
+        }
 
-        p.set_flags(boundary, identity, idx, flag, cosTheta); 
+
+        p.set_prd(boundary, identity, cosTheta); 
+
+        // lookup material/surface properties using boundary and orientation (cosTheta) from geometry lookup 
         fill_state(s, boundary, *wavelength, cosTheta ); 
 
+        // use properties set photon flag and mutate the photon 
+        // HMM: perhaps set flag directly into photon ?
         command = propagate_to_boundary( flag, p, prd, s, rng, idx );  
         if( command == BOUNDARY )
         {
@@ -1201,9 +1215,10 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
                                           propagate_at_boundary( flag, p, prd, s, rng, idx) 
                                       ;  
         }
+        p.set_flag(flag); 
+
         if(command == BREAK)    
         {
-            p.set_flag(flag); 
             if( bounce+1 < bounce_max ) record[bounce_max*idx+bounce+1] = p ;  
             break ;    
         }

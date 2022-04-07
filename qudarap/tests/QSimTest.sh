@@ -67,13 +67,7 @@ export NRM=${NRM:-$nrm}
 export TEST=${TEST:-$test}
 
 source fill_state.sh 
-
-case $TEST in 
-   propagate_at_boundary_normal_incidence) source ephoton.sh ;;
-                    propagate_at_boundary) source ephoton.sh ;; 
-                          reflect_diffuse) source ephoton.sh ;;
-                         reflect_specular) source ephoton.sh ;;
-esac
+source ephoton.sh         # branching on TEST inside ephoton.sh 
 
 
 if [ "${arg/run}" != "$arg" ]; then 
