@@ -118,8 +118,12 @@ struct QUDARAP_API QSim
     void photon_launch_generate( quad4* photon, unsigned num_photon, unsigned type ); 
     void photon_launch_mutate(   quad4* photon, unsigned num_photon, unsigned type ); 
 
-    void mock_propagate_launch_mutate(quad4* photon, unsigned num_photon, const quad2* prd, unsigned num_prd, unsigned type, quad4* record ); 
-
+    void mock_propagate_launch_mutate(
+            quad4* photon, unsigned num_photon, 
+            quad4* record, unsigned num_record, 
+            const quad2* prd, unsigned num_prd, 
+            unsigned type 
+         ); 
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;

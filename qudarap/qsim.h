@@ -121,7 +121,7 @@ struct qsim
     QSIM_METHOD int     propagate_at_surface( unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
     QSIM_METHOD int     propagate_at_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned id); 
 
-    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id, quad4* record ); 
+    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id, quad4* record, int record_max ); 
 
 
     QSIM_METHOD void    reflect_diffuse(  quad4& p, const quad2& prd, curandStateXORWOW& rng, unsigned idx );
@@ -265,9 +265,9 @@ NB the line is above the details of the payload (ie how many float4 per matsur) 
 template <typename T>
 inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta  )
 {
-    // HMM: now that are not signing the boundary could use 0-based 
+    // const int line = (boundary-1)*_BOUNDARY_NUM_MATSUR ;     // formerly used 1-based boundary to allow signing
+    const int line = boundary*_BOUNDARY_NUM_MATSUR ;      // now that are not signing boundary use 0-based
 
-    const int line = (boundary-1)*_BOUNDARY_NUM_MATSUR ;   
     const int m1_line = cosTheta > 0.f ? line + IMAT : line + OMAT ;   
     const int m2_line = cosTheta > 0.f ? line + OMAT : line + IMAT ;   
     const int su_line = cosTheta > 0.f ? line + ISUR : line + OSUR ;   
@@ -1149,7 +1149,6 @@ qsim::mock_propagate
 
 TODO: 
 
-* flag saving
 * full step recording : non-trivial due to the control flow 
 
   * photons that SAIL to boundary are mutated twice within the while loop (by propagate_to_boundary and propagate_at_boundary/surface) 
@@ -1157,14 +1156,13 @@ TODO:
   * which version of the photon to save and what flag label to give it 
   * convention is to record initial photon with the generation flag 
 
-* THOUGHTS: not keen on the jumpy control flow that makes recording involved  
 
 * compressed step recording  
 
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned idx, quad4* record )
+inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned idx, quad4* record, int record_max )
 {
     unsigned flag = TORCH ;  
     p.set_flag(flag);  // setting initial flag : in reality this should be done by generation
@@ -1179,25 +1177,22 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
 
     while( bounce < bounce_max )
     {
-        record[bounce_max*idx+bounce] = p ;  
+        record[record_max*idx+bounce] = p ;  
 
         // mock call to OptiX trace : doing "geometry lookup"
         // photon position + direction -> surface normal + distance and identity, boundary 
         const quad2& prd = mock_prd[bounce_max*idx+bounce] ;  
-        bounce++;           // increment at head, not tail, as CONTINUE skips the tail
 
         const unsigned boundary = prd.boundary() ; 
         const unsigned identity = prd.identity() ; 
         const float3* normal = prd.normal(); 
         float cosTheta = dot(*dir, *normal ) ;    // cosTheta sign gives boundary orientation   
-
         
         if( idx == 0u )
         {
            printf("//qsim.mock_propagate idx %d bounce %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n", 
                idx, bounce, cosTheta, dir->x, dir->y, dir->z, normal->x, normal->y, normal->z ); 
         }
-
 
         p.set_prd(boundary, identity, cosTheta); 
 
@@ -1216,13 +1211,10 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
                                       ;  
         }
         p.set_flag(flag); 
-
-        if(command == BREAK)    
-        {
-            if( bounce+1 < bounce_max ) record[bounce_max*idx+bounce+1] = p ;  
-            break ;    
-        }
+        bounce++;        
+        if(command == BREAK) break ;    
     }
+    if( bounce < record_max ) record[record_max*idx+bounce] = p ;  
 }
  
 

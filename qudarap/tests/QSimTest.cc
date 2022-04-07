@@ -542,21 +542,24 @@ void QSimTest<T>::photon_launch_generate(unsigned num_photon, unsigned type)
 
 
 template <typename T>
-void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned type)
+void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned type )
 {
     assert( QSimLaunch::IsMutate(type)==true ); 
     const char* subfold = QSimLaunch::Name(type) ; 
     assert( subfold ); 
 
     const std::vector<quad2>& qs_prd = qs.prd->prd ;  
-    unsigned max_bounce = qs_prd.size() ; 
-    assert( max_bounce > 0 && max_bounce <= 16 ); 
-
+    unsigned bounce_max = qs_prd.size() ; 
+    assert( bounce_max > 0 && bounce_max <= 16 ); 
+    unsigned record_max = bounce_max + 1 ;  
 
     NP* p   = NP::Make<float>(num_photon,             4, 4 ); 
-    NP* prd = NP::Make<float>(num_photon, max_bounce, 2, 4 ); 
-    NP* r   = NP::Make<float>(num_photon, max_bounce, 4, 4 ); 
+    NP* prd = NP::Make<float>(num_photon, bounce_max, 2, 4 ); 
+    NP* r   = NP::Make<float>(num_photon, record_max, 4, 4 ); 
     r->fill<float>(0.f);  // no difference, what matters is the on device buffer
+
+    unsigned num_prd = num_photon*bounce_max ; 
+    unsigned num_rec = num_photon*record_max ; 
 
     LOG(info) << " p.desc   : " << p->desc() ; 
     LOG(info) << " prd.desc : " << prd->desc() ; 
@@ -572,15 +575,18 @@ void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned typ
     {
         p_v[i] = p0 ;   // duplicate ephoton 
 
-        for(unsigned j=0 ; j < max_bounce ; j++)  // duplicate the sequence of mock prd for all photon 
+        for(unsigned j=0 ; j < bounce_max ; j++)  // duplicate the sequence of mock prd for all photon 
         {
             const quad2& prd = qs_prd[j] ; 
-            prd_v[i*max_bounce+j] = prd ;    
+            prd_v[i*bounce_max+j] = prd ;    
         }
     }    
 
-    unsigned num_prd = num_photon*max_bounce ; 
-    qs.mock_propagate_launch_mutate( p_v, num_photon, prd_v, num_prd, type, r_v ); 
+    qs.mock_propagate_launch_mutate( 
+             p_v,   num_photon, 
+             r_v,   num_rec, 
+             prd_v, num_prd, 
+             type ); 
 
     const char* p_path = Path(subfold, "p.npy"); 
     const char* r_path = Path(subfold, "r.npy"); 

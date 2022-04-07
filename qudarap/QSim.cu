@@ -606,33 +606,33 @@ TODO: compare performance using reference or pointer into global mem here rather
 **/
 
 template <typename T>
-__global__ void _QSim_mock_propagate( qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max, quad4* record )
+__global__ void _QSim_mock_propagate( qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max, quad4* record, int record_max )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon ) return;
-
 
     curandState rng = sim->rngstate[idx] ; 
 
     quad4 p = photon[idx] ;   
     p.set_idx(idx); 
 
-    printf("//_QSim_mock_propagate idx %d num_photon %d \n", idx, num_photon ); 
+    printf("//_QSim_mock_propagate idx %d num_photon %d record_max %d \n", idx, num_photon, record_max ); 
 
-    sim->mock_propagate( p, mock_prd, bounce_max, rng, idx, record );  
+    sim->mock_propagate( p, mock_prd, bounce_max, rng, idx, record, record_max );  
 
     photon[idx] = p ; 
 
 }
 
 template <typename T>
-extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max, unsigned type, quad4* record )
+extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max, unsigned type, 
+     quad4* record, int record_max )
 {
-    _QSim_mock_propagate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, mock_prd, bounce_max, record  ); 
+    _QSim_mock_propagate<T><<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, mock_prd, bounce_max, record, record_max  ); 
 }
 
-template void QSim_mock_propagate_launch(dim3, dim3, qsim<double>* , quad4*,  unsigned, quad2*, int, unsigned, quad4* ); 
-template void QSim_mock_propagate_launch(dim3, dim3, qsim<float>*  , quad4*,  unsigned, quad2*, int, unsigned, quad4* ); 
+template void QSim_mock_propagate_launch(dim3, dim3, qsim<double>* , quad4*,  unsigned, quad2*, int, unsigned, quad4*, int ); 
+template void QSim_mock_propagate_launch(dim3, dim3, qsim<float>*  , quad4*,  unsigned, quad2*, int, unsigned, quad4*, int ); 
 
 
 
