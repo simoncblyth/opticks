@@ -198,16 +198,23 @@ void quad4::get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, uns
 
 
 /**
-from opticks.ana.hismask import HisMask   
-hm = HisMask()
+Full example of numpy reporting of photon and record flags and boundaries in QUDARap/tests/mock_propagate.py::
 
-boundary_ = lambda p:p.view(np.uint32)[3,0] >> 16
-flag_     = lambda p:p.view(np.uint32)[3,0] & 0xffff
-identity_ = lambda p:p.view(np.uint32)[3,1]   
-idx_      = lambda p:p.view(np.uint32)[3,2] & 0x7fffffff
-orient_   = lambda p:p.view(np.uint32)[3,2] >> 31
-flagmask_ = lambda p:p.view(np.uint32)[3,3]
-flagdesc_ = lambda p:" %4d %10s id:%6d ori:%d idx:%6d %10s " % ( boundary_(p), hm.label(flag_(p)), identity_(p), orient_(p), idx_(p), hm.label( flagmask_(p) ))
+    from opticks.ana.hismask import HisMask   
+    hm = HisMask()
+
+    boundary_ = lambda p:p.view(np.uint32)[3,0] >> 16
+    flag_     = lambda p:p.view(np.uint32)[3,0] & 0xffff
+    identity_ = lambda p:p.view(np.uint32)[3,1]   
+    idx_      = lambda p:p.view(np.uint32)[3,2] & 0x7fffffff
+    orient_   = lambda p:p.view(np.uint32)[3,2] >> 31
+    flagmask_ = lambda p:p.view(np.uint32)[3,3]
+    flagdesc_ = lambda p:" %4d %10s id:%6d ori:%d idx:%6d %10s " % ( boundary_(p), hm.label(flag_(p)), identity_(p), orient_(p), idx_(p), hm.label( flagmask_(p) ))
+
+    from opticks.CSG.CSGFoundry import CSGFoundry 
+    cf = CSGFoundry.Load()
+    bflagdesc_ = lambda p:"%s : %s " % ( flagdesc_(p), cf.bndnamedict[boundary_(p)] )
+
 **/
 
 

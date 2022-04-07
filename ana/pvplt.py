@@ -112,7 +112,7 @@ def pvplt_lines( pl, pos, vec, color='white' ):
     pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
 
 
-def pvplt_polarized( pl, pos, mom, pol ):
+def pvplt_polarized( pl, pos, mom, pol, factor=0.15 ):
     """
     https://docs.pyvista.org/examples/00-load/create-point-cloud.html
     https://docs.pyvista.org/examples/01-filter/glyphs.html
@@ -128,8 +128,9 @@ def pvplt_polarized( pl, pos, mom, pol ):
     pos_cloud = pv.PolyData(pos)
     pos_cloud['mom'] = mom
     pos_cloud['pol'] = pol
-    mom_arrows = pos_cloud.glyph(orient='mom', scale=False, factor=0.15,)
-    pol_arrows = pos_cloud.glyph(orient='pol', scale=False, factor=0.15,)
+    mom_arrows = pos_cloud.glyph(orient='mom', scale=False, factor=factor )
+    pol_arrows = pos_cloud.glyph(orient='pol', scale=False, factor=factor )
+
     pl.add_mesh(pos_cloud, render_points_as_spheres=True, show_scalar_bar=False)
     pl.add_mesh(pol_arrows, color='lightblue', show_scalar_bar=False)
     pl.add_mesh(mom_arrows, color='red', show_scalar_bar=False)

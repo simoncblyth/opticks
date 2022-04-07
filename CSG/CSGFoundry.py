@@ -174,8 +174,8 @@ class CSGFoundry(object):
         self.load(fold)
         self.meshnamedict = self.namelist_to_namedict(self.meshname)
 
-        if hasattr(self, 'bnd_meta'):
-             bndnamedict = self.namelist_to_namedict(self.bnd_meta)
+        if hasattr(self, 'bnd_names'):
+             bndnamedict = self.namelist_to_namedict(self.bnd_names)
         else:
              bndnamedict = {}
         pass
@@ -247,11 +247,8 @@ class CSGFoundry(object):
             stamps.append(stamp)
             stem = name[:-4]
             a = np.load(path) if name.endswith(".npy") else self.loadtxt(path)
-            if name == "bnd.txt": stem = "bndname"  ## TODO: avoid clash of stems between bnd.npy and bnd.txt ?
             setattr(self, stem, a)
             stems.append(stem)
-            #globals()[stem] = a 
-            #print(self.FMT % (stem, str(a.shape), path))
         pass
 
         min_stamp = min(stamps)

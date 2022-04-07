@@ -569,11 +569,15 @@ void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned typ
     quad2* prd_v = (quad2*)prd->values<float>();  
     quad4* r_v   = (quad4*)r->values<float>(); 
 
-    const quad4& p0 = qs.dbg->p ;   // ephoton
 
     for(unsigned i=0 ; i < num_photon ; i++)
     {
-        p_v[i] = p0 ;   // duplicate ephoton 
+        quad4 p0 = qs.dbg->p  ;  // start from ephoton 
+
+        //p0.q0.f.x = float(i)*100.f ; 
+        p0.q0.f.y = float(i)*100.f ; 
+
+        p_v[i] = p0 ;   
 
         for(unsigned j=0 ; j < bounce_max ; j++)  // duplicate the sequence of mock prd for all photon 
         {

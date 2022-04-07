@@ -2997,3 +2997,13 @@ opticks-switch-key(){
 }
 
 
+
+opticks-cfbase-(){ SOpticksResourceTest --cfbase ; }
+opticks-cfbase(){ cd $(opticks-cfbase-) ; }
+
+opticks-cf-(){  echo $(opticks-cfbase-)/CSGFoundry ; }
+opticks-cf(){   cd $(opticks-cf-) ; }
+
+
+
+
