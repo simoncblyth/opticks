@@ -98,6 +98,8 @@ set(SOURCES
     SCenterExtentGenstep.cc
 
     OpticksPhoton.cc
+
+    SU.cu 
 ) 
     
 
@@ -203,7 +205,10 @@ set(HEADERS
     OpticksGenstep.h
     OpticksPhoton.h
     OpticksPhoton.hh
+    SU.hh
 )
+
+
 
 
 
@@ -300,6 +305,7 @@ if(WITH_NP)
 endif()
 
 
+#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )

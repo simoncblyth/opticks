@@ -93,6 +93,7 @@ set(TEST_SOURCES
    SCanvasTest.cc 
 
    OpticksPhotonTest.cc
+   #SUTest.cc
 )
 
 

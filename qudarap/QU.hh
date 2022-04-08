@@ -43,6 +43,9 @@ struct QUDARAP_API QU
     template <typename T>
     static void copy_host_to_device( T* d, const T* h,  unsigned num_items);
 
+    //template <typename T>
+    //static select_copy_device_to_host( std::vector<T>& h, T* d, unsigned mask, unsigned num_items ); 
+
 
     static void ConfigureLaunch16( dim3& numBlocks, dim3& threadsPerBlock );
     static void ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
