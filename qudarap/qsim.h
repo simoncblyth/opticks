@@ -235,31 +235,41 @@ inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, uns
 qsim::fill_state
 -------------------
 
-HMM: perhaps simpler not to bother with signing the boundary, just simply use the
-cosTheta to give that info at raygen level 
-
-pick relevant boundary_tex lines depening on boundary sign, ie photon direction relative to normal
-
+Formerly signed the 1-based boundary, now just keeping separate cosTheta to 
+orient the use of the boundary so are using 0-based boundary. 
 
 cosTheta < 0.f 
-   photons direction is against the surface normal, ie are entering the shape
-   so boundary sign convention is -ve making line+OSUR the relevant surface
-   and line+OMAT the relevant first material
+   photon direction is against the surface normal, ie are entering the shape
+   
+   * formerly this corresponded to -ve boundary 
+   * line+OSUR is relevant surface
+   * line+OMAT is relevant first material
 
 cosTheta > 0.f 
-   photons direction is with the surface normal, ie are exiting the shape
-   so boundary sign convention is +ve making line+ISUR the relevant surface
-   and line+IMAT the relevant first material
-
-boundary 
-   1 based code, signed by cos_theta of photon direction to outward geometric normal
-   >0 outward going photon
-   <0 inward going photon
+   photon direction is with the surface normal, ie are exiting the shape
+   
+   * formerly this corresponded to +ve boundary
+   * line+ISUR is relevant surface
+   * line+IMAT is relevant first material
 
 
 NB the line is above the details of the payload (ie how many float4 per matsur) it is just::
  
     boundaryIndex*4  + 0/1/2/3     for OMAT/OSUR/ISUR/IMAT 
+
+
+The optical buffer is 4 times the length of the bnd, which allows
+convenient access to the material and surface indices starting 
+from a texture line.  See notes in:: 
+
+    GBndLib::createOpticalBuffer 
+    GBndLib::getOpticalBuf
+
+Notice that s.optical.x and s.index.z are the same thing. 
+So half of s.index is extraneous and the m1 index and m2 index 
+is not much used.  
+
+Also only one elemnt of m1group2 is actually used 
 
 **/
 
@@ -275,15 +285,12 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float 
 
     //printf("//qsim.fill_state boundary %d line %d wavelength %10.4f m1_line %d \n", boundary, line, wavelength, m1_line ); 
 
-    s.material1 = boundary_lookup( wavelength, m1_line, 0);  
-    s.m1group2  = boundary_lookup( wavelength, m1_line, 1);  
-    s.material2 = boundary_lookup( wavelength, m2_line, 0); 
-    s.surface   = boundary_lookup( wavelength, su_line, 0);    
+    s.material1 = boundary_lookup( wavelength, m1_line, 0);   // refractive_index, absorption_length, scattering_length, reemission_prob
+    s.m1group2  = boundary_lookup( wavelength, m1_line, 1);   // group_velocity ,  (unused          , unused           , unused)  
+    s.material2 = boundary_lookup( wavelength, m2_line, 0);   // refractive_index, (absorption_length, scattering_length, reemission_prob) only m2:refractive index actually used  
+    s.surface   = boundary_lookup( wavelength, su_line, 0);   //  detect,        , absorb            , (reflect_specular), reflect_diffuse     [they add to 1. so one not used] 
 
-    // HUH: this would imply the optical buffer is 4 times the length of the bnd ? 
-    //     YES it should be and now is see  GBndLib::createOpticalBuffer GBndLin::getOpticalBuf
-
-    s.optical = optical[su_line].u ;   // index/type/finish/value
+    s.optical = optical[su_line].u ;   // index/type/finish/value   [only index is actually used, to detect that a surface is present]
 
     s.index.x = optical[m1_line].u.x ; // m1 index
     s.index.y = optical[m2_line].u.x ; // m2 index 
@@ -1164,19 +1171,12 @@ inline QSIM_METHOD void qsim<T>::reflect_specular( quad4& p, const quad2& prd, c
 qsim::mock_propagate
 ----------------------
 
-TODO: 
+TODO
+~~~~~
 
-* full step recording : non-trivial due to the control flow 
-
-  * photons that SAIL to boundary are mutated twice within the while loop (by propagate_to_boundary and propagate_at_boundary/surface) 
-  * only want one representative photon record per turn of the bounce loop 
-  * which version of the photon to save and what flag label to give it 
-  * convention is to record initial photon with the generation flag 
-
-
-* slim qstate, qstate persisting (quad6?quad5?)
+* can qstate be slimmed : seems not very easily 
+* simplify qstate persisting (quad6?quad5?)
 * compressed step *seq* recording  
-
 
 
 Stages within bounce loop
@@ -1191,6 +1191,8 @@ Stages within bounce loop
 
 3. mutate photon and set flag using material properties
 
+  * note that photons that SAIL to boundary are mutated twice within the while loop (by propagate_to_boundary and propagate_at_boundary/surface) 
+
 
 **/
 
@@ -1204,7 +1206,7 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
     float3* dir = (float3*)&p.q1.f.x ;    
 
 #ifdef DEBUG_TIME
-    float* time       = &p.q0.f.w ;  // just debug  
+    float* time       = &p.q0.f.w ;
     if( idx == pidx ) printf("//qsim.mock_propagate idx %d bnc %2d time %10.4f (head)  \n", idx, -1, *time ); 
 #endif
 

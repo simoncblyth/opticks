@@ -1175,6 +1175,20 @@ But at point of use the top two dimensions are combined to give line indexing (n
 
    ( num_bnd*NUM_MATSUR,  4 ) 
 
+This has been used GPU side in qsim::fill_state to give the the material and surface indices
+of an intersect::
+
+     266     const int line = boundary*_BOUNDARY_NUM_MATSUR ;      // now that are not signing boundary use 0-based
+     267 
+     268     const int m1_line = cosTheta > 0.f ? line + IMAT : line + OMAT ;
+     269     const int m2_line = cosTheta > 0.f ? line + OMAT : line + IMAT ;
+     270     const int su_line = cosTheta > 0.f ? line + ISUR : line + OSUR ;
+
+     284     s.index.x = optical[m1_line].u.x ; // m1 index
+     285     s.index.y = optical[m2_line].u.x ; // m2 index 
+     286     s.index.z = optical[su_line].u.x ; // su index
+     287     s.index.w = 0u ;                   // avoid undefined memory comparison issues
+
 **/
 
 NPY<unsigned>* GBndLib::createOpticalBuffer()

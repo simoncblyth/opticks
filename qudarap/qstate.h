@@ -34,12 +34,45 @@ struct qstate
     float4 way1 ;   
 #endif
 
-    // unsigned flag ; 
-    // float3 surface_normal ; 
-    // float distance_to_boundary ;
-    // uint4 identity ;  //  node/mesh/boundary/sensor indices of last intersection
-    // unsigned identity ;  
 };
+
+
+/**
+https://stackoverflow.com/questions/252552/why-do-we-need-c-unions
+
+https://forums.developer.nvidia.com/t/handling-structures-with-bitfields/60628
+
+   njuffa April 24, 2018, 7:02pm #3 : My advice, based on experience gathered over 25 years: Avoid bitfields. 
+
+
+See sysrap/tests/squadUnionTest.cc for idea to have cake and eat it too, ie easy access and easy persisting::
+
+    union qstate2
+    {
+        struct 
+        {   
+            float m1_refractive_index ; 
+            float m1_absorption_length ;
+            float m1_scattering_length ; 
+            float m1_reemission_prob ; 
+
+            float m2_refractive_index ; 
+            float m2_absorption_length ;
+            float m2_scattering_length ; 
+            float m2_reemission_prob ; 
+
+        } field ;   
+                
+        quad2 q ;   
+    };
+
+Actually persisting is not much of a reason as can just cast the 
+entire qstate to a quad6 for example. 
+
+But if decide to pursure streamlined qstate with mixed up fields 
+the named field access would be helpful to isolate user code from changes to the struct. 
+
+**/
 
 
 
