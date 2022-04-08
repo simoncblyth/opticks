@@ -139,6 +139,7 @@ message(STATUS "${name} INTERFACE_LINK_LIBRARIES:${ILL} " )
 target_link_libraries( ${name} ${LIBS})
 #target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP FLIP_RANDOM )
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
+#target_compile_definitions( ${name} PRIVATE DEBUG_TIME )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 # see notes/issues/QUDARap_symbol_visibility_warnings.rst 

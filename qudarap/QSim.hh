@@ -64,6 +64,7 @@ struct QUDARAP_API QSim
     const QOptical*  optical ; 
     const QProp<T>*  prop ; 
 
+    const int         pidx ; 
     qsim<T>*          sim ;  
     qsim<T>*          d_sim ;  
 

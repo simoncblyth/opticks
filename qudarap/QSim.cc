@@ -131,6 +131,7 @@ QSim<T>::QSim()
     prd(new QPrd(bnd)),
     optical(QOptical::Get()),
     prop(QProp<T>::Get()),
+    pidx(SSys::getenvint("PIDX", -1)),
     sim(nullptr),
     d_sim(nullptr),
     dbg(nullptr), 
@@ -181,6 +182,7 @@ void QSim<T>::init_sim()
         << " bnd " << bnd
         << " optical " << optical
         << " prop " << prop
+        << " pidx " << pidx
         << " sim " << sim 
         << " d_sim " << d_sim 
         ;  
@@ -222,6 +224,7 @@ void QSim<T>::init_sim()
         LOG(LEVEL) << " prop " << prop->desc() ; 
         sim->prop = prop->getDevicePtr() ; 
     }
+    sim->pidx = pidx ; 
 
     d_sim = QU::UploadArray<qsim<T>>(sim, 1 );  
 }

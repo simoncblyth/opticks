@@ -54,6 +54,7 @@ def make_record_cells(r):
 if __name__ == '__main__':
 
     t = Fold.Load()
+    PIDX = int(os.environ.get("PIDX","-1"))
 
     p = t.p
     r = t.r
@@ -67,7 +68,6 @@ if __name__ == '__main__':
 
     r_flag_label = hm.label( r_flag )
 
-
     r_cells = make_record_cells( r ) 
 
     r_poly = pv.PolyData() 
@@ -77,19 +77,24 @@ if __name__ == '__main__':
 
     r_tube = r_poly.tube(radius=1) 
 
-    pl = pvplt_plotter()
-    pl.add_mesh( r_tube )
-    pvplt_polarized( pl, r_pos, r_mom, r_pol, factor=60 )
-    pl.add_point_labels(r_poly, "flag_label", point_size=20, font_size=36)
-
-    pl.show() 
+    PLOT = "PLOT" in os.environ
+    if PLOT:
+        pl = pvplt_plotter()
+        pl.add_mesh( r_tube )
+        pvplt_polarized( pl, r_pos, r_mom, r_pol, factor=60 )
+        pl.add_point_labels(r_poly, "flag_label", point_size=20, font_size=36)
+        pl.show() 
+    pass
 
 
     s = str(p[:,:3]) 
     a = np.array( s.split("\n") + [""] ).reshape(-1,4)
 
-    for i in range(len(a)):
 
+
+    for i in range(len(a)):
+        if not (PIDX == -1 or PIDX == i): continue 
+        if PIDX > -1: print("PIDX %d " % PIDX) 
         print("r")
         print(r[i,:,:3]) 
         print("\n\nbflagdesc_")
