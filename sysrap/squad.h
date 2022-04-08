@@ -114,7 +114,7 @@ struct quad4
     SUTIL_INLINE SUTIL_HOSTDEVICE void get_orient( float& orient ); 
     SUTIL_INLINE SUTIL_HOSTDEVICE void get_prd( unsigned& boundary, unsigned& identity, float&  orient ); 
     SUTIL_INLINE SUTIL_HOSTDEVICE void get_flag(unsigned& flag) const ; 
-
+    SUTIL_INLINE SUTIL_HOSTDEVICE unsigned flagmask() const ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -125,6 +125,16 @@ struct quad4
     void transverse_mom_pol(); 
 #endif
 };
+
+
+template<typename T>    // T  needs to have flagmask 
+struct qselector
+{
+    unsigned hitmask ; 
+    qselector(unsigned hitmask_) : hitmask(hitmask_) {}; 
+    SUTIL_INLINE SUTIL_HOSTDEVICE bool operator() (const T& p) const { return ( p.flagmask() & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
+};
+
 
 void quad4::zero() 
 {
@@ -176,6 +186,12 @@ void quad4::get_flag( unsigned& flag ) const
 {
     flag = q3.u.x & 0xffff ;  
 }
+
+unsigned quad4::flagmask() const 
+{
+    return q3.u.w ; 
+}
+
 
 
 void quad4::set_flags(unsigned boundary, unsigned identity, unsigned idx, unsigned flag, float orient ) 

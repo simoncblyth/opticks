@@ -248,6 +248,15 @@ template void QU::copy_device_to_host_and_free<qstate>( qstate* h, qstate* d,  u
 
 
 
+
+
+
+
+
+
+
+
+
 template<typename T>
 void QU::copy_host_to_device( T* d, const T* h, unsigned num_items)
 {

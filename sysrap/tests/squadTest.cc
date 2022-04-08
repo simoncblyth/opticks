@@ -239,6 +239,26 @@ void test_quad4_idx_orient()
     }
 }
 
+void test_qselector()
+{
+    unsigned hitmask = 0xdeadbeef ;
+    qselector<quad4> selector(hitmask) ; 
+
+    quad4 p ; 
+    p.zero(); 
+
+    bool select_0 = selector(p) ; assert( select_0 == false );  
+
+    p.q3.u.w = ~0u ;                                              // all bits set 
+    bool select_1 = selector(p) ; assert( select_1 == true );  
+
+    p.q3.u.w = hitmask  ; 
+    bool select_2 = selector(p) ; assert( select_2 == true );  
+
+    p.q3.u.w = hitmask & 0x7fffffff ;                            // knock out one bit from the 0xd
+    bool select_3 = selector(p) ; assert( select_3 == false );  
+}
+
 
 
 int main(int argc, char** argv)
@@ -257,9 +277,11 @@ int main(int argc, char** argv)
     test_quad4_set_flags_get_flags(); 
     test_quad4_set_flag_get_flag(); 
     test_quad4_set_idx_set_prd_get_idx_get_prd(); 
+    test_quad4_idx_orient(); 
     */
 
-    test_quad4_idx_orient(); 
+    test_qselector(); 
+
 
 
     return 0 ; 
