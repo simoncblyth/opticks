@@ -5,11 +5,18 @@ stream_compaction_into_new_workflow
 * old workflow implemented with a smorgasbord : OEvent, TBuf, TIsHit, CBufSpec, NPY
 * new workflow : need focussed implementation using NP and quadrap/QU and keeping thrust hidden 
 
+  * implemented basis in sysrap/SU.hh SU.cu with test sysrap/tests/SUTest.cc
+
+
+Reference
+------------
 
 * https://github.com/NVIDIA/thrust
 * https://forums.developer.nvidia.com/t/using-thrust-copy-if-with-a-parameter/119735
 
 
+Review of the old way
+------------------------
 
 ::
 

@@ -3,6 +3,9 @@
 QBuf.hh : header only CUDA device buffer
 ------------------------------------------
 
+Hmm: with creater used of QU am unsure regards QBuf ?
+
+
 **/
 
 #include <string>
