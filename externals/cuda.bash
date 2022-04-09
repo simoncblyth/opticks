@@ -36,6 +36,12 @@ See Also
 * env-;cudatex-
 
 
+CUDA CMake
+-----------
+
+* https://developer.nvidia.com/blog/building-cuda-applications-cmake/
+
+
 Getting CUDA : follow NVIDIA instructions
 --------------------------------------------
 

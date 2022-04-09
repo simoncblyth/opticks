@@ -20,7 +20,10 @@ Fortunately thats easy to do by linking with Opticks::OKConf.
 find_package(OKConf REQUIRED CONFIG)
 find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
-find_package(CUDA REQUIRED)
+#find_package(CUDA REQUIRED)
+
+find_package(OpticksCUDA REQUIRED MODULE)
+
 
 include_directories(
     ${OPTICKS_PREFIX}/externals/glm/glm
@@ -266,15 +269,11 @@ add_custom_command(
 add_custom_target(PythonJSON ALL DEPENDS ${PYJS} )
 
 
-
-
 list(APPEND HEADERS 
   ${IGS} 
   ${IPH} 
   ${PYJS}
 ) 
-
-
 
 
 if(NLJSON_FOUND)  
@@ -305,10 +304,10 @@ if(WITH_NP)
 endif()
 
 
-#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 
 
-add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
+#add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 #set_target_properties( ${name} 
 #                       PROPERTIES 
 #                         INTERFACE_DESCRIPTION ${desc}
@@ -319,18 +318,21 @@ set_property( TARGET ${name} PROPERTY INTERFACE_DESCRIPTION ${desc} )
 #set_property( TARGET ${name} PROPERTY INTERFACE_PKG_CONFIG_REQUIRES ${preq} ) 
 
 
-target_link_libraries( ${name} PUBLIC Opticks::PLog Opticks::OKConf )
+#target_link_libraries( ${name} PUBLIC Opticks::PLog Opticks::OKConf )
+target_link_libraries( ${name} Opticks::PLog Opticks::OKConf )
 
 #Opticks::OpticksCUDA 
 
 if(NLJSON_FOUND)
-target_link_libraries(${name} PUBLIC Opticks::NLJSON)
+#target_link_libraries(${name} PUBLIC Opticks::NLJSON)
+target_link_libraries(${name}  Opticks::NLJSON)
 endif()
 
 
 if(UNIX AND NOT APPLE)
 message(STATUS "adding ssl crypto for UNIX AND NOT APPLE")
-target_link_libraries( ${name} PUBLIC ssl crypto )
+#target_link_libraries( ${name} PUBLIC ssl crypto )
+target_link_libraries( ${name} ssl crypto )
 endif()
 
 set(SysRap_VERBOSE OFF)
