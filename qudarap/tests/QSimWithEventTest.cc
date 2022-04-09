@@ -3,7 +3,7 @@
 #include "SSys.hh"
 #include "SPath.hh"
 #include "NP.hh"
-#include "Opticks.hh"
+#include "SOpticksResource.hh"
 
 #include <cuda_runtime.h>
 #include "scuda.h"
@@ -16,14 +16,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    Opticks ok(argc, argv); 
-    ok.configure(); 
-
     int create_dirs = 0 ; 
-    const char* idpath = ok.getIdPath(); 
+    const char* idpath = SOpticksResource::IDPath();  
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs );  
-
-    const char* cfbase = ok.getFoundryBase("CFBASE");  
+    const char* cfbase = SOpticksResource::CFBase(); 
     LOG(info) << " cfbase " << cfbase ; 
 
     NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); 

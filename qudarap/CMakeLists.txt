@@ -6,19 +6,19 @@ include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 set(FLAGS_VERBOSE ON)
 
-#find_package(SysRap REQUIRED CONFIG)
-find_package(OpticksCore REQUIRED CONFIG) 
+set(LIBS  )
 
+
+find_package(SysRap REQUIRED CONFIG)
+set(LIBS ${LIBS} Opticks::SysRap)  
+
+#find_package(OpticksCore REQUIRED CONFIG) 
+#set(LIBS ${LIBS} Opticks::OpticksCore)
 # OpticksCore currently needed for OpticksEvent OpticksGenstep enum 
 # used by tests/QSimWithEventTest.cc
 # are moving in direction of reducing this dependency 
 # down to Sysrap as the use of OpticksCore is minimal
 # and its useful for testing for qudarap to be usable with little dependency 
-
-set(LIBS
-#    Opticks::SysRap
-     Opticks::OpticksCore
-)
 
 
 set(OpticksCUDA_VERBOSE ON)

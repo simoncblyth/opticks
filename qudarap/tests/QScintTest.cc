@@ -1,9 +1,7 @@
 #include "SSys.hh"
 #include "SPath.hh"
 #include "NP.hh"
-
-#include "Opticks.hh"
-
+#include "SOpticksResource.hh"
 #include "QScint.hh"
 #include "scuda.h"
 #include "OPTICKS_LOG.hh"
@@ -28,18 +26,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    Opticks ok(argc, argv); 
-    ok.configure(); 
-
-#ifdef OLD_WAY
-    GScintillatorLib* slib = GScintillatorLib::load(&ok);
-    slib->dump();
-    NP* icdf = slib->getBuf(); 
-#else
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
+    const char* cfbase = SOpticksResource::CFBase(); 
     NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); // HMM: this needs a more destinctive name/location  
-#endif
-    //icdf->dump(); 
 
     unsigned hd_factor = 0u ; 
 

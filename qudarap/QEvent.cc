@@ -7,8 +7,6 @@
 #include "stran.h"
 
 #include "SEvent.hh"
-
-
 #include "NP.hh"
 #include "PLOG.hh"
 
@@ -57,6 +55,37 @@ bool QEvent::hasMeta() const
     return meta.empty() == false ; 
 }
 
+/**
+QEvent::setGensteps
+--------------------
+
+TODO: buffer resize ?
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Currently using QBuf::Upload which allocates every time, better to resize to avoid GPU leaking  
+
+* see optixrap/OEvent.cc OEvent::resizeBuffers OContext::resizeBuffer
+* HMM: CUDA has no realloc the buffer resize is an OptiX < 7 extension 
+* https://stackoverflow.com/questions/5632247/allocating-more-memory-to-an-existing-global-memory-array
+
+* suggests should define maximum buffer sizes as calculated from max number of photons for each launch 
+  and arrange that lanches to never exceed those maximums 
+
+* hence all GPU buffers can get allocated once at initialization 
+  with the configured maximum sizes and simply get reused from event to event 
+  (or more specifically from launch to launch which might not map one-to-one with events)
+
+* this simplifies memory handling as free-ing only needed at termination 
+
+* so there is no need for resizing, other than changing a CPU/GPU side constant eg *num_photons* 
+* just need to ensure that launches are always arranged to be below the max
+
+* how to decide the maximums ? depends on available VRAM and also should be user configurable
+  within some range 
+
+
+**/
+
 void QEvent::setGensteps(const NP* gs_) 
 { 
     gs = gs_ ; 
@@ -66,7 +95,7 @@ void QEvent::setGensteps(const NP* gs_)
     unsigned num_gs = gs->shape[0] ; 
     LOG(info) << " num_gs " << num_gs ; 
 
-    QBuf<float>* dgs = QBuf<float>::Upload( gs );   // TODO: this is allocating every time, better to resize to avoid GPU leaking  
+    QBuf<float>* dgs = QBuf<float>::Upload( gs );   
     setGensteps(dgs); 
 }
 

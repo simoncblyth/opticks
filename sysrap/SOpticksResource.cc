@@ -111,6 +111,13 @@ std::string SOpticksResource::Dump()
     return s ; 
 }
 
+/**
+SOpticksResource::IDPath
+-------------------------
+
+The default setkey:true means that the OPTICKS_KEY from the environment is used. 
+
+**/
 
 const char* SOpticksResource::IDPath(bool setkey) 
 {  

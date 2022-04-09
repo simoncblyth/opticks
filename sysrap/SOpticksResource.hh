@@ -24,8 +24,9 @@ struct SYSRAP_API SOpticksResource
     static const char* RNGDir();
     static const char* RuncacheDir();
 
-    static const char* IDPath(bool setkey);
-    static const char* CGDir(bool setkey);   // formerly CSG_GGeoDir
+    // setkey:true means OPTICKS_KEY envvar gets used 
+    static const char* IDPath(bool setkey=true);
+    static const char* CGDir(bool setkey=true);   // formerly CSG_GGeoDir
     static const char* CFBase(const char* ekey="CFBASE") ; 
 
 

@@ -6,7 +6,6 @@ struct qat4 ;
 struct quad6 ;
 struct NP ; 
 
-
 //template <typename T> struct Tran ; 
 template <typename T> struct QBuf ; 
 

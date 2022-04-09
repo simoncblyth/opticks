@@ -1326,6 +1326,13 @@ Canonical usage is from OEvent::resizeBuffers
 The GPU side OptiX buffer is resized based on the 
 size of the CPU side NPY array.
 
+
+Resizing a buffer is an OptiX extension, CUDA 
+does not have a realloc
+
+https://stackoverflow.com/questions/5632247/allocating-more-memory-to-an-existing-global-memory-array
+
+
 **/
 
 template <typename T>

@@ -128,8 +128,6 @@ class OXRAP_API OEvent
             BOUNDARY = 0x1 << 9
             };
     public:
-
-
         OEvent(Opticks* ok, OContext* ocontext);
         unsigned upload();
         unsigned download();
@@ -144,7 +142,6 @@ class OXRAP_API OEvent
 #endif
         unsigned downloadHitsCompute(OpticksEvent* evt);
         unsigned downloadHitsInterop(OpticksEvent* evt);
-
     public:
         unsigned downloadHiys();
     private:
