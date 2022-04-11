@@ -20,6 +20,9 @@ QEvent
 
 TODO: follow OEvent technique of initial allocation and resizing at each event 
 
+Unlike typical CPU side event classes am thinking of QEvent/qevent being rather "static" 
+with long lived buffers of defined maximum capacity that get reused for each launch.
+
 **/
 
 struct QUDARAP_API QEvent
@@ -40,6 +43,10 @@ struct QUDARAP_API QEvent
 
     void setGensteps(const NP* gs);
     void setGensteps(QBuf<float>* dgs ); 
+
+    unsigned count_genstep_photons(); 
+
+
     void setMeta( const char* meta ); 
     bool hasMeta() const ; 
 

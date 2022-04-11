@@ -24,7 +24,7 @@ QOptical::QOptical(const NP* optical_)
     :
     optical(optical_),
     buf(QBuf<unsigned>::Upload(optical)),
-    d_optical((quad*)buf->ptr)
+    d_optical((quad*)buf->d)
 {
     INSTANCE = this ; 
 } 

@@ -7,6 +7,7 @@
 
 #include "QBuf.hh"
 #include "QSeed.hh"
+#include "QEvent.hh"
 
 extern QBuf<int>* QSeed_create_photon_seeds(QBuf<float>* gs); 
 
@@ -14,6 +15,20 @@ QBuf<int>* QSeed::CreatePhotonSeeds(QBuf<float>* gs)  // static
 {
     return QSeed_create_photon_seeds(gs); 
 }
+
+void QSeed::CreatePhotonSeeds( QEvent* evt )
+{
+    evt->seed = QSeed_create_photon_seeds( evt->genstep ); 
+}
+
+
+/**
+QSeed::ExpectedSeeds
+----------------------
+
+From a vector of counts populate the vector of seeds by simple CPU side duplication.  
+
+**/
 
 void QSeed::ExpectedSeeds(std::vector<int>& seeds,  unsigned& total, const std::vector<int>& counts ) // static 
 {

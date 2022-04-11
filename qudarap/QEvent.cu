@@ -3,6 +3,11 @@
 #include "squad.h"
 #include "qevent.h"
 
+#include "iexpand.h"
+#include "strided_range.h"
+#include <thrust/device_vector.h>
+
+
 __global__ void _QEvent_checkEvt(qevent* evt, unsigned width, unsigned height)
 {
     unsigned ix = blockIdx.x*blockDim.x + threadIdx.x;
@@ -33,5 +38,53 @@ extern "C" void QEvent_checkEvt(dim3 numBlocks, dim3 threadsPerBlock, qevent* ev
     printf("//QEvent_checkEvt width %d height %d \n", width, height );  
     _QEvent_checkEvt<<<numBlocks,threadsPerBlock>>>( evt, width, height  );
 } 
+
+/**
+QEvent_count_genstep_photons
+-------------------------------
+
+NB this needs nvcc compilation for the thrust but 
+the method itself does not run on the device although the 
+things that it invokes do. So the qevent* argument needs
+to be the CPU side copy of the instance that is holding 
+GPU side pointers.
+
+**/
+
+extern "C" unsigned QEvent_count_genstep_photons(qevent* evt)
+{
+    printf("//QEvent_count_genstep_photons \n");      
+
+    typedef typename thrust::device_vector<int>::iterator Iterator;
+
+    thrust::device_ptr<int> t_gs = thrust::device_pointer_cast( (int*)evt->genstep ) ; 
+
+    const unsigned itemsize = 6*4 ; 
+                                          
+    strided_range<Iterator> gs_pho( t_gs + 3, t_gs + evt->num_genstep, itemsize );    // begin, end, stride 
+
+    int num_seeds = thrust::reduce(gs_pho.begin(), gs_pho.end() );
+
+    return num_seeds ; 
+} 
+
+
+
+/*
+
+    QBuf<int>* seed = nullptr ; 
+
+    if( num_seeds > 0 )
+    {
+        seed = QBuf<int>::Alloc(num_seeds); 
+        // TODO: wish to reuse the seed buffer 
+
+        thrust::device_ptr<int> t_seed = thrust::device_pointer_cast((int*)seed->d) ; 
+
+        iexpand(num_pho.begin(), num_pho.end(), t_seed, t_seed + seed->num_items );  
+    }
+    return seed ; 
+*/
+
 
 

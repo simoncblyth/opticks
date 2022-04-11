@@ -22,13 +22,19 @@ Hmm: with creater used of QU am unsure regards QBuf ?
 template <typename T>
 struct QUDARAP_API QBuf 
 {
-    T* ptr ; 
+    void* a ; 
+    T* h ; 
+    T* d ; 
     unsigned num_items ; 
+    unsigned max_items ; 
 
     QBuf()
         :
-        ptr(nullptr),
-        num_items(0)
+        a(nullptr),   // will often be an NP array 
+        h(nullptr),
+        d(nullptr),
+        num_items(0),
+        max_items(0)
     {
     }
 
@@ -36,34 +42,34 @@ struct QUDARAP_API QBuf
     void device_alloc(unsigned num_items_)
     {   
         num_items = num_items_ ; 
-        QUDA_CHECK(cudaMalloc(reinterpret_cast<void**>( &ptr ), num_items*sizeof(T) ));  
+        QUDA_CHECK(cudaMalloc(reinterpret_cast<void**>( &d ), num_items*sizeof(T) ));  
     }   
     void device_set(int value=0)  // Value to set for each byte of specified memory
     {   
-        QUDA_CHECK(cudaMemset(reinterpret_cast<void*>( ptr ), value, num_items*sizeof(T)  ));  
+        QUDA_CHECK(cudaMemset(reinterpret_cast<void*>( d ), value, num_items*sizeof(T)  ));  
     }   
     void device_free()
     {   
-        QUDA_CHECK(cudaFree(ptr)) ; 
-        ptr = nullptr ; 
+        QUDA_CHECK(cudaFree(d)) ; 
+        d = nullptr ; 
         num_items = 0 ; 
     }   
     std::string desc() const 
     {   
         std::stringstream ss ; 
-        ss <<  "QBuf ptr " << ( ptr ? ptr : 0 ) << " num_items " << num_items ; 
+        ss <<  "QBuf d " << ( d ? d : 0 ) << " num_items " << num_items ; 
         return ss.str();   
     }   
     void upload( const T* data, unsigned num_items_ )
     {   
         if( num_items > 0 ) assert( num_items_ == num_items );  
-        QUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>( ptr ), data, sizeof(T)*num_items_, cudaMemcpyHostToDevice )) ; 
+        QUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>( d ), data, sizeof(T)*num_items_, cudaMemcpyHostToDevice )) ; 
     }   
 
     void download( std::vector<T>& vec )
     {
         vec.resize(num_items);  
-        QUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>( vec.data() ), ptr , sizeof(T)*num_items, cudaMemcpyDeviceToHost ));
+        QUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>( vec.data() ), d , sizeof(T)*num_items, cudaMemcpyDeviceToHost ));
     }
 
     void download_dump(const char* msg, unsigned edgeitems);

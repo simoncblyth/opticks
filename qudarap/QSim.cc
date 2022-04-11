@@ -660,6 +660,12 @@ void QSim<T>::scint_photon( quad4* photon, unsigned num_photon )
 template <typename T>
 extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qevent* evt )  ; 
  
+/**
+QSim::generate_photon
+-----------------------
+
+**/
+
 
 template <typename T>
 void QSim<T>::generate_photon(QEvent* evt)

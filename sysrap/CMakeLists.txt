@@ -209,6 +209,7 @@ set(HEADERS
     OpticksPhoton.h
     OpticksPhoton.hh
     SU.hh
+    SEvt.hh 
 )
 
 

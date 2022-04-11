@@ -387,6 +387,16 @@ NP* SEvent::MakeCountGensteps() // static
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
     return MakeCountGensteps(photon_counts_per_genstep);
 }
+
+/**
+SEvent::MakeCountGensteps
+---------------------------
+
+Used by qudarap/tests/QEventTest.cc
+
+**/
+
+
 NP* SEvent::MakeCountGensteps(const std::vector<int>& counts) // static 
 {
     int gencode = OpticksGenstep_TORCH ;
@@ -413,6 +423,16 @@ NP* SEvent::MakeCountGensteps(const std::vector<int>& counts) // static
     }
     return MakeGensteps(gensteps);
 }
+
+unsigned SEvent::SumCounts(const std::vector<int>& counts) // static 
+{
+    unsigned total = 0 ; 
+    for(unsigned i=0 ; i < counts.size() ; i++) total += counts[i] ; 
+    return total ; 
+}
+
+
+
 
 /**
 SEvent::GenerateCenterExtentGenstepsPhotons

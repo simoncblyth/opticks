@@ -5,10 +5,14 @@ struct quad4 ;
 
 struct qevent
 {
+    unsigned num_genstep ; 
     quad6*   genstep ; 
+
+    unsigned num_seed ; 
     int*     seed ;     
-    quad4*   photon ; 
+
     unsigned num_photon ; 
+    quad4*   photon ; 
 }; 
 
 

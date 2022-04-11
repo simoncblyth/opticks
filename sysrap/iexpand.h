@@ -50,11 +50,10 @@ A more specific example:
 Every optical photon generating genstep (Cerenkov or scintillation) 
 specifies the number of photons it will generate.
 Applying iexpand to the genstep photon counts produces
-an array of genstep indices that is stored into the photon buffer
+an array of genstep indices that is stored into the seed buffer
 and provides a reference back to the genstep that produced it.
-This reference index is used within the per-photon OptiX 
-generate.cu program to access the corresponding genstep 
-from the genstep buffer.
+The seed values are used to translate from a photon index to a 
+genstep index. 
 
 **/
 

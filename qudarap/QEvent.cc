@@ -99,19 +99,40 @@ void QEvent::setGensteps(const NP* gs_)
     setGensteps(dgs); 
 }
 
-void QEvent::setGensteps(QBuf<float>* dgs) // QBuf::ptr references already uploaded gensteps
+
+
+
+
+/**
+QEvent::setGensteps
+---------------------
+
+Currently this is allocating seed array on every call. 
+
+**/
+
+void QEvent::setGensteps(QBuf<float>* genstep_ ) // QBuf::ptr references already uploaded gensteps
 {
-    genstep = dgs ; 
+    genstep = genstep_ ;   
+    // HMM: remove excess duplication 
+
+    evt->genstep = (quad6*)genstep->d ; 
+    evt->num_genstep = genstep->num_items ; 
+
+/*
     seed = QSeed::CreatePhotonSeeds(genstep);
     if(!seed) LOG(fatal) << " FAILED to QSeed::CreatePhotonSeeds : problem with gensteps ? " ; 
     assert( seed ); 
 
-    evt->genstep = (quad6*)genstep->ptr ; 
-    evt->seed = seed->ptr ; 
+    evt->seed = seed->d ; 
+    evt->num_seed = seed->num_items ; 
+
     evt->num_photon = seed->num_items ; 
     evt->photon = QU::device_alloc<quad4>(evt->num_photon) ; 
 
     QU::copy_host_to_device<qevent>(d_evt, evt, 1 );  
+*/
+
 }
 
 void QEvent::downloadPhoton( std::vector<quad4>& photon )
@@ -119,6 +140,23 @@ void QEvent::downloadPhoton( std::vector<quad4>& photon )
     photon.resize(evt->num_photon); 
     QU::copy_device_to_host_and_free<quad4>( photon.data(), evt->photon, evt->num_photon ); 
 }
+
+
+extern "C" unsigned QEvent_count_genstep_photons(qevent* evt) ; 
+
+unsigned QEvent::count_genstep_photons()
+{
+   return QEvent_count_genstep_photons( evt );  
+}
+
+
+
+
+
+
+
+
+
 
 void QEvent::savePhoton( const char* dir_, const char* name )
 {
