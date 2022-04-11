@@ -5,13 +5,16 @@ struct quad4 ;
 
 struct qevent
 {
-    unsigned num_genstep ; 
+    static constexpr unsigned genstep_itemsize = 6*4 ; 
+    static constexpr unsigned genstep_numphoton_offset = 3 ; 
+
+    int      num_genstep ; 
     quad6*   genstep ; 
 
-    unsigned num_seed ; 
+    int      num_seed ; 
     int*     seed ;     
 
-    unsigned num_photon ; 
+    int      num_photon ; 
     quad4*   photon ; 
 }; 
 

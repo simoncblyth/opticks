@@ -24,8 +24,6 @@ struct QUDARAP_API QSeed
     // on GPU seeding using thrust 
     static QBuf<int>* CreatePhotonSeeds(QBuf<float>* gs); 
 
-    static void CreatePhotonSeeds( QEvent* evt ); 
-
     // testing 
     static void ExpectedSeeds(std::vector<int>& seeds,  unsigned& total, const std::vector<int>& counts );
     static int  CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ); 

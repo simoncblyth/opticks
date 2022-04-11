@@ -17,15 +17,16 @@
 void test_setGensteps_0()
 {
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
-    unsigned x_total = SEvent::SumCounts( photon_counts_per_genstep) ; 
+    //unsigned x_total = SEvent::SumCounts( photon_counts_per_genstep ) ; 
     const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
 
     QEvent* event = new QEvent ; 
+    LOG(info) << " event.desc " << event->desc() ; 
     event->setGensteps(gs); 
 
-    unsigned count_genstep_photons  = event->count_genstep_photons(); 
-    LOG(info) << " count_genstep_photons " << count_genstep_photons << " x_total " << x_total ; 
-    assert( x_total == count_genstep_photons ); 
+    //unsigned count_genstep_photons  = event->count_genstep_photons(); 
+    //LOG(info) << " count_genstep_photons " << count_genstep_photons << " x_total " << x_total ; 
+    //assert( x_total == count_genstep_photons ); 
 }
 
 void test_setGensteps_1(const NP* gs)
@@ -37,7 +38,7 @@ void test_setGensteps_1(const NP* gs)
     assert( num_photons > 0); 
 
     LOG(info) << event->desc() ; 
-    event->seed->download_dump("event->seed", 10); 
+    //event->seed->download_dump("event->seed", 10); 
     event->checkEvt(); 
 }
 

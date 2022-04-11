@@ -19,6 +19,7 @@ int main(int argc, char** argv)
     qe.setGensteps(gs); 
     assert( qe.getNumPhotons() == xtotal ); 
 
+/*
     qe.seed->download_dump("qe.seed", 15 ); 
 
     std::vector<int> seeds ; 
@@ -27,6 +28,8 @@ int main(int argc, char** argv)
     int mismatch = QSeed::CompareSeeds( seeds, xseeds ); 
     std::cout << " mismatch " << mismatch << std::endl ; 
     assert( mismatch == 0 ); 
+
+*/
 
     return 0 ;  
 }

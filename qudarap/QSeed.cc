@@ -16,11 +16,6 @@ QBuf<int>* QSeed::CreatePhotonSeeds(QBuf<float>* gs)  // static
     return QSeed_create_photon_seeds(gs); 
 }
 
-void QSeed::CreatePhotonSeeds( QEvent* evt )
-{
-    evt->seed = QSeed_create_photon_seeds( evt->genstep ); 
-}
-
 
 /**
 QSeed::ExpectedSeeds

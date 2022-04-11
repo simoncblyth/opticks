@@ -178,6 +178,7 @@ T* QU::device_alloc( unsigned num_items )
 template float*     QU::device_alloc<float>(unsigned num_items) ;
 template double*    QU::device_alloc<double>(unsigned num_items) ;
 template unsigned*  QU::device_alloc<unsigned>(unsigned num_items) ;
+template int*       QU::device_alloc<int>(unsigned num_items) ;
 template quad*      QU::device_alloc<quad>(unsigned num_items) ;
 template quad4*     QU::device_alloc<quad4>(unsigned num_items) ;
 template quad6*     QU::device_alloc<quad6>(unsigned num_items) ;
@@ -264,10 +265,11 @@ void QU::copy_host_to_device( T* d, const T* h, unsigned num_items)
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d ), h , size, cudaMemcpyHostToDevice )); 
 }
 
-template void QU::copy_host_to_device( float* d, const float* h, unsigned num_items);
-template void QU::copy_host_to_device( double* d, const double* h, unsigned num_items);
-template void QU::copy_host_to_device( unsigned* d, const unsigned* h, unsigned num_items);
-template void QU::copy_host_to_device( qevent* d, const qevent* h, unsigned num_items);
+template void QU::copy_host_to_device<float>(    float* d,   const float* h, unsigned num_items);
+template void QU::copy_host_to_device<double>(   double* d,  const double* h, unsigned num_items);
+template void QU::copy_host_to_device<unsigned>( unsigned* d, const unsigned* h, unsigned num_items);
+template void QU::copy_host_to_device<qevent>(   qevent* d,   const qevent* h, unsigned num_items);
+template void QU::copy_host_to_device<quad6>(    quad6* d,    const quad6* h, unsigned num_items);
 
 
 /**
