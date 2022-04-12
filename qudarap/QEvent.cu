@@ -143,6 +143,44 @@ extern "C" void QEvent_fill_seed_buffer(qevent* evt )
 
     thrust::for_each( t_seed,  t_seed + evt->num_seed, printf_functor() );  
 
+}
+
+
+extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(qevent* evt )
+{
+    typedef typename thrust::device_vector<int>::iterator Iterator;
+
+    thrust::device_ptr<int> t_gs = thrust::device_pointer_cast( (int*)evt->genstep ) ; 
+
+#ifdef DEBUG_QEVENT
+    printf("//QEvent_count_genstep_photons qevent::genstep_numphoton_offset %d  qevent::genstep_itemsize  %d  \n", 
+            qevent::genstep_numphoton_offset, qevent::genstep_itemsize ); 
+#endif
+
+    strided_range<Iterator> gs_pho( 
+        t_gs + qevent::genstep_numphoton_offset, 
+        t_gs + evt->num_genstep*qevent::genstep_itemsize , 
+        qevent::genstep_itemsize );    // begin, end, stride 
+
+    evt->num_seed = thrust::reduce(gs_pho.begin(), gs_pho.end() );
+
+
+    printf("//QEvent_count_genstep_photons_and_fill_seed_buffer evt.num_genstep %d evt.num_seed %d \n", evt->num_genstep, evt->num_seed );      
+
+    assert( evt->seed && evt->num_seed > 0 ); 
+
+    thrust::device_ptr<int> t_seed = thrust::device_pointer_cast(evt->seed) ; 
+
+    thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
+
+    iexpand( gs_pho.begin(), gs_pho.end(), t_seed, t_seed + evt->num_seed );  
+
+    thrust::for_each( t_seed,  t_seed + evt->num_seed, printf_functor() );  
 
 }
+
+
+
+
+
 

@@ -169,9 +169,11 @@ void QEvent::setGensteps(const NP* gs_)
     quad6* gs_v = (quad6*)gs->cvalues<float>() ; 
     QU::copy_host_to_device<quad6>( evt->genstep, gs_v, evt->num_genstep ); 
 
-    count_genstep_photons();   // sets evt->num_seed
+    //count_genstep_photons();   // sets evt->num_seed
+    //fill_seed_buffer() ;  // populates seed buffer
 
-    fill_seed_buffer() ;  // populates seed buffer
+    count_genstep_photons_and_fill_seed_buffer(); 
+
 
     setNumPhoton( evt->num_seed ); 
 }
@@ -207,6 +209,14 @@ void QEvent::fill_seed_buffer()
 {
     QEvent_fill_seed_buffer( evt ); 
 }
+
+extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(qevent* evt ); 
+void QEvent::count_genstep_photons_and_fill_seed_buffer()
+{
+    QEvent_count_genstep_photons_and_fill_seed_buffer( evt ); 
+}
+
+
 
 /**
 QEvent::setNumPhoton
