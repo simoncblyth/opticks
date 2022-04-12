@@ -12,8 +12,9 @@
 #include "sflow.h"
 #include "sqat4.h"
 #include "sc4u.h"
-#include "sevent.h"
+#include "sevent.h"   // enum {XYZ .. 
 
+#include "qevent.h"
 #include "qgs.h"
 #include "qprop.h"
 #include "qcurand.h"
@@ -48,6 +49,7 @@ template <typename T> struct qprop ;
 template <typename T>
 struct qsim
 {
+    qevent*             evt ; 
     curandStateXORWOW*  rngstate ; 
 
     cudaTextureObject_t scint_tex ; 
@@ -77,9 +79,6 @@ struct qsim
 
     QSIM_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
     QSIM_METHOD float4  boundary_lookup( float nm, unsigned line, unsigned k ); 
-
-
-
 
 
     QSIM_METHOD float   scint_wavelength_hd0(curandStateXORWOW& rng);  
@@ -118,11 +117,15 @@ struct qsim
     QSIM_METHOD static void   rotateUz(float3& d, const float3& u ); 
     QSIM_METHOD static void   rayleigh_scatter_align(quad4& p, curandStateXORWOW& rng ); 
 
+
+    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id, quad4* record, int record_max ); 
+
+    QSIM_METHOD int     propagate(const int bounce, quad4& p, qstate& s, const quad2& prd, curandStateXORWOW& rng, unsigned idx ); 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
     QSIM_METHOD int     propagate_at_surface( unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
     QSIM_METHOD int     propagate_at_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
 
-    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id, quad4* record, int record_max ); 
+
 
 
     QSIM_METHOD void    reflect_diffuse(  quad4& p, const quad2& prd, curandStateXORWOW& rng, unsigned idx );
@@ -134,6 +137,7 @@ struct qsim
 #else
     qsim()
         :
+        evt(nullptr),
         rngstate(nullptr),
         scint_tex(0),
         scint_meta(nullptr),
@@ -1194,77 +1198,92 @@ Stages within bounce loop
   * note that photons that SAIL to boundary are mutated twice within the while loop (by propagate_to_boundary and propagate_at_boundary/surface) 
 
 
+TODO: record and record_max should come from qevent ?
+
 **/
 
 template <typename T>
 inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned idx, quad4* record, int record_max )
 {
-    unsigned flag = TORCH ;  
-    p.set_flag(flag);  // setting initial flag : in reality this should be done by generation
-
-    float* wavelength = &p.q2.f.w ; 
-    float3* dir = (float3*)&p.q1.f.x ;    
-
-#ifdef DEBUG_TIME
-    float* time       = &p.q0.f.w ;
-    if( idx == pidx ) printf("//qsim.mock_propagate idx %d bnc %2d time %10.4f (head)  \n", idx, -1, *time ); 
-#endif
+    p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
 
     int bounce = 0 ; 
     int command = START ; 
-
     qstate s ; 
-
     while( bounce < bounce_max )
     {
         record[record_max*idx+bounce] = p ;  
-
         const quad2& prd = mock_prd[bounce_max*idx+bounce] ;  
-
-        const unsigned boundary = prd.boundary() ; 
-        const unsigned identity = prd.identity() ; 
-        const float3* normal = prd.normal(); 
-        float cosTheta = dot(*dir, *normal ) ;    
-
-#ifdef DEBUG_COSTHETA
-        if( idx == pidx ) printf("//qsim.mock_propagate idx %d bnc %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n", 
-                 idx, bounce, cosTheta, dir->x, dir->y, dir->z, normal->x, normal->y, normal->z ); 
-#endif
-       
-        p.set_prd(boundary, identity, cosTheta); 
-
-        fill_state(s, boundary, *wavelength, cosTheta ); 
-
-#ifdef DEBUG_TIME
-        if( idx == pidx ) printf("//qsim.mock_propagate idx %d bnc %2d time %10.4f (before to_boundary)  \n", idx, bounce, *time ); 
-#endif
-
-        command = propagate_to_boundary( flag, p, prd, s, rng, idx );  
-
-#ifdef DEBUG_TIME
-        if( idx == pidx ) printf("//qsim.mock_propagate idx %d bnc %2d time %10.4f (after to_boundary)  \n", idx, bounce, *time ); 
-#endif
-
-        if( command == BOUNDARY )
-        {
-            command = s.optical.x > 0 ? 
-                                          propagate_at_surface( flag, p, prd, s, rng, idx ) 
-                                      : 
-                                          propagate_at_boundary( flag, p, prd, s, rng, idx) 
-                                      ;  
-        }
-
-#ifdef DEBUG_TIME
-        if( idx == pidx ) printf("//qsim.mock_propagate idx %d bnc %2d time %10.4f (after at_boundary)  \n", idx, bounce, *time ); 
-#endif
-
-        p.set_flag(flag); 
+        command = propagate(bounce, p, s, prd, rng, idx ); 
         bounce++;        
         if(command == BREAK) break ;    
     }
     if( bounce < record_max ) record[record_max*idx+bounce] = p ;  
 }
- 
+
+/**
+qsim::propagate
+----------------
+
+One propagate_to_boundary/propagate_at_boundary "bounce" 
+
+**/
+
+template <typename T>
+inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s, const quad2& prd, curandStateXORWOW& rng, unsigned idx )
+{
+    int command = START ; 
+    unsigned flag = 0 ;  
+
+    float* wavelength = &p.q2.f.w ; 
+    //float* time       = &p.q0.f.w ;
+    float3* dir = (float3*)&p.q1.f.x ;    
+
+    const unsigned boundary = prd.boundary() ; 
+    const unsigned identity = prd.identity() ; 
+    const float3* normal = prd.normal(); 
+    float cosTheta = dot(*dir, *normal ) ;    
+
+#ifdef DEBUG_COSTHETA
+    if( idx == pidx ) printf("//qsim.propagate idx %d bnc %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n", 
+                 idx, bounce, cosTheta, dir->x, dir->y, dir->z, normal->x, normal->y, normal->z ); 
+#endif
+       
+    p.set_prd(boundary, identity, cosTheta); 
+
+    fill_state(s, boundary, *wavelength, cosTheta ); 
+
+#ifdef DEBUG_TIME
+    if( idx == pidx ) printf("//qsim.propagate idx %d bnc %2d time %10.4f (before to_boundary)  \n", idx, bounce, *time ); 
+#endif
+
+    command = propagate_to_boundary( flag, p, prd, s, rng, idx );  
+
+#ifdef DEBUG_TIME
+     if( idx == pidx ) printf("//qsim.propagate idx %d bnc %2d time %10.4f (after to_boundary)  \n", idx, bounce, *time ); 
+#endif
+
+    if( command == BOUNDARY )
+    {
+        command = s.optical.x > 0 ? 
+                                      propagate_at_surface( flag, p, prd, s, rng, idx ) 
+                                  : 
+                                      propagate_at_boundary( flag, p, prd, s, rng, idx) 
+                                  ;  
+    }
+
+#ifdef DEBUG_TIME
+    if( idx == pidx ) printf("//qsim.propagate idx %d bnc %2d time %10.4f (after at_boundary)  \n", idx, bounce, *time ); 
+#endif
+
+    p.set_flag(flag); 
+
+    return command ; 
+}
+
+
+
+
 
 
 /**
@@ -1832,7 +1851,7 @@ HMM ? state struct to collect this thread locals ?
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
-    int gencode = gs.q0.i.x ; 
+    const int& gencode = gs.q0.i.x ; 
     //printf("//qsim.generate_photon gencode %d \n", gencode); 
     switch(gencode)
     {
@@ -1854,16 +1873,12 @@ The gensteps are for example configured in SEvent::MakeCenterExtentGensteps
 
 NB the sevent.h enum order is different to the python one  eg XYZ=0 
 
-
 TODO: this has not been updated following the cxs torch genstep rejig with transforms into the genstep ?
-
-
 **/
 
 template <typename T>
 inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
-
     C4U gsid ;  
 
     //int gencode          = gs.q0.i.x ;   

@@ -12,6 +12,7 @@
 #include "qsim.h"
 #include "qdebug.h"
 
+#include "QEvent.hh"
 #include "QRng.hh"
 #include "QTex.hh"
 #include "QScint.hh"
@@ -59,6 +60,9 @@ This structure is used to allow separate testing.
 template <typename T>
 void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, const char* rindexpath  )
 {
+    QEvent* event = new QEvent ;   // allocates GPU buffers, using SEventConfig settings 
+    LOG(LEVEL) << event->descMax(); 
+
     QRng* qrng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << qrng->desc(); 
 
@@ -125,10 +129,11 @@ singleton components.
 template <typename T>
 QSim<T>::QSim()
     :
+    event(QEvent::Get()),
     rng(QRng::Get()),
     scint(QScint::Get()),
     bnd(QBnd::Get()),
-    prd(new QPrd(bnd)),
+    prd(QPrd::Get()),
     optical(QOptical::Get()),
     prop(QProp<T>::Get()),
     pidx(SSys::getenvint("PIDX", -1)),
@@ -186,6 +191,12 @@ void QSim<T>::init_sim()
         << " sim " << sim 
         << " d_sim " << d_sim 
         ;  
+
+    if(event)
+    {
+        LOG(LEVEL) << " event " << event->desc() ; 
+        sim->evt = event->d_evt ; 
+    }
 
     if(rng)
     {

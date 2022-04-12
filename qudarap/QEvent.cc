@@ -8,6 +8,7 @@
 #include "stran.h"
 
 #include "SEvent.hh"
+#include "SEventConfig.hh"
 #include "NP.hh"
 #include "PLOG.hh"
 
@@ -23,8 +24,8 @@
 template struct QBuf<quad6> ; 
 
 const plog::Severity QEvent::LEVEL = PLOG::EnvLevel("QEvent", "DEBUG"); 
-const QEvent* QEvent::INSTANCE = nullptr ; 
-const QEvent* QEvent::Get(){ return INSTANCE ; }
+QEvent* QEvent::INSTANCE = nullptr ; 
+QEvent* QEvent::Get(){ return INSTANCE ; }
 
 std::string QEvent::DescGensteps(const NP* gs, int edgeitems) // static 
 {
@@ -69,22 +70,16 @@ std::string QEvent::DescSeed( const std::vector<int>& seed, int edgeitems )  // 
 
 
 
-
-
-
 /**
 QEvent::QEvent
 ----------------
 
-Canonical instance instanciated by CSGOptiX::CSGOptiX
-
-* HMM: config of max_genstep max_photon better done separately eg from lower level SysRap 
-  to make it easy to use during genstep collection 
+Instanciation allocates device buffers with sizes configured by SEventConfig
 
 **/
 
 
-QEvent::QEvent(int max_genstep_, int max_photon_)
+QEvent::QEvent()
     :
     evt(new qevent),
     d_evt(QU::device_alloc<qevent>(1)),
@@ -92,25 +87,40 @@ QEvent::QEvent(int max_genstep_, int max_photon_)
     meta()
 {
     INSTANCE = this ; 
-    init(max_genstep_, max_photon_); 
+    init(); 
 }
 
-void QEvent::init(int max_genstep_, int max_photon_)
+void QEvent::init()
 {
-    evt->max_genstep = max_genstep_ ; 
-    evt->max_photon  = max_photon_ ; 
+    evt->max_genstep = SEventConfig::MaxGenstep() ; 
+    evt->max_photon  = SEventConfig::MaxPhoton()  ; 
+    evt->max_bounce  = SEventConfig::MaxBounce()  ; 
+    evt->max_record  = SEventConfig::MaxRecord()  ; 
 
     evt->num_genstep = 0 ; 
     evt->num_seed  = 0 ; 
     evt->num_photon = 0 ; 
+    evt->num_record = 0 ; 
 
-    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep ); 
-    evt->seed    = QU::device_alloc<int>(   evt->max_photon );   // 1:1 seed:photon
-    evt->photon  = QU::device_alloc<quad4>( evt->max_photon ); 
-
-    //QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
+    evt->genstep = evt->max_genstep > 0 ? QU::device_alloc<quad6>( evt->max_genstep ) : nullptr ; 
+    evt->seed    = evt->max_photon  > 0 ? QU::device_alloc<int>(   evt->max_photon )  : nullptr ;   // 1:1 seed:photon
+    evt->photon  = evt->max_photon  > 0 ? QU::device_alloc<quad4>( evt->max_photon )  : nullptr ; 
+    evt->record  = evt->max_record  > 0 ? QU::device_alloc<quad4>( evt->max_photon * evt->max_record  ) : nullptr ; 
 }
 
+std::string QEvent::descMax() const
+{
+    int w = 5 ; 
+    std::stringstream ss ; 
+    ss 
+        << "QEvent::descMax " 
+        << " evt.max_genstep " << std::setw(w) << evt->max_genstep  
+        << " evt.max_photon  " << std::setw(w) << evt->max_photon  
+        << " evt.max_bounce  " << std::setw(w) << evt->max_bounce 
+        << " evt.max_record  " << std::setw(w) << evt->max_record 
+        ;
+    return ss.str(); 
+}
 
 std::string QEvent::desc() const
 {
@@ -118,9 +128,9 @@ std::string QEvent::desc() const
     std::stringstream ss ; 
     ss 
         << " QEvent " 
-        << " evt.num_genstep " << std::setw(w) << ( evt ? evt->num_genstep : -1 ) 
-        << " evt.num_seed "    << std::setw(w) << ( evt ? evt->num_seed    : -1 ) 
-        << " evt.num_photon "  << std::setw(w) << ( evt ? evt->num_photon  : -1 ) 
+        << " evt.num_genstep " << std::setw(w) << evt->num_genstep 
+        << " evt.num_seed "    << std::setw(w) << evt->num_seed   
+        << " evt.num_photon "  << std::setw(w) << evt->num_photon
         ;
     return ss.str(); 
 }
@@ -158,8 +168,10 @@ QEvent::setGensteps
 
 
 * HMM: find that without zeroing the seed buffer the seed filling gets messed up causing QEventTest fails 
-  doing this in QEvent::init is not sufficient need to do in QEvent::setGensteps.  So far it seems 
-  that no zeroing is needed for the genstep buffer. 
+  doing this in QEvent::init is not sufficient need to do in QEvent::setGensteps.  
+  **This is a documented limitation of sysrap/iexpand.h**
+ 
+  So far it seems that no zeroing is needed for the genstep buffer. 
 
 **/
 
@@ -174,16 +186,15 @@ void QEvent::setGensteps(const NP* gs_)
     if(!num_gs_allowed) LOG(fatal) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ; 
     assert( num_gs_allowed ); 
 
-    quad6* gs_v = (quad6*)gs->cvalues<float>() ; 
-
-    //QU::device_memset<quad6>( evt->genstep, 0, max_genstep ); 
-    QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
+    quad6* gs_h = (quad6*)gs->cvalues<float>() ; 
    
-    QU::copy_host_to_device<quad6>( evt->genstep, gs_v, evt->num_genstep ); 
+    QU::copy_host_to_device<quad6>( evt->genstep, gs_h, evt->num_genstep ); 
+
+    QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
 
     //count_genstep_photons();   // sets evt->num_seed
-    //fill_seed_buffer() ;  // populates seed buffer
-    count_genstep_photons_and_fill_seed_buffer(); 
+    //fill_seed_buffer() ;       // populates seed buffer
+    count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
 
     setNumPhoton( evt->num_seed ); 
 }
@@ -235,7 +246,7 @@ QEvent::setNumPhoton
 Canonically invoked internally from QEvent::setGensteps but may be invoked 
 directly from "friendly" photon only tests without use of gensteps.  
 
-Sets evt->num_photon asserts that is within allowed *max_photon* and calls *uploadEvt*
+Sets evt->num_photon asserts that is within allowed *evt->max_photon* and calls *uploadEvt*
 
 **/
 
@@ -258,8 +269,7 @@ QEvent::uploadEvt
 --------------------
 
 Copies host side *evt* instance (with updated num_genstep and num_photon) to device side  *d_evt*.  
-Note that the evt->genstep and evt->photon pointers are not updated, 
-so the same buffers are reused for each launch. 
+Note that the evt->genstep and evt->photon pointers are not updated, so the same buffers are reused for each launch. 
 
 **/
 
@@ -268,17 +278,35 @@ void QEvent::uploadEvt()
     QU::copy_host_to_device<qevent>(d_evt, evt, 1 );  
 }
 
-void QEvent::downloadPhoton( std::vector<quad4>& photon )
-{
-    photon.resize(evt->num_photon); 
-    QU::copy_device_to_host<quad4>( photon.data(), evt->photon, evt->num_photon ); 
-}
 
+
+void QEvent::downloadGenstep( std::vector<quad6>& genstep )
+{
+    if( evt->genstep == nullptr ) return ; 
+    genstep.resize(evt->num_photon); 
+    QU::copy_device_to_host<quad6>( genstep.data(), evt->genstep, evt->num_genstep ); 
+}
 void QEvent::downloadSeed( std::vector<int>& seed )
 {
+    if( evt->seed == nullptr ) return ; 
     seed.resize(evt->num_seed); 
     QU::copy_device_to_host<int>( seed.data(), evt->seed, evt->num_seed ); 
 }
+void QEvent::downloadPhoton( std::vector<quad4>& photon )
+{
+    if( evt->photon == nullptr ) return ; 
+    photon.resize(evt->num_photon); 
+    QU::copy_device_to_host<quad4>( photon.data(), evt->photon, evt->num_photon ); 
+}
+void QEvent::downloadRecord( std::vector<quad4>& record )
+{
+    if( evt->record == nullptr ) return ; 
+    record.resize(evt->num_record); 
+    QU::copy_device_to_host<quad4>( record.data(), evt->record, evt->num_record ); 
+}
+
+
+
 
 
 void QEvent::savePhoton( const char* dir_, const char* name )

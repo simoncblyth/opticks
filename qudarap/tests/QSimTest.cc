@@ -82,9 +82,10 @@ struct QSimTest
     static const char* FOLD ; 
     static const char* Path(const char* subfold, const char* name ); 
 
-    QSim<T>& qs ; 
-    QSimTest(QSim<T>& qs); 
-    void init(); 
+    QSim<T> qs ; 
+
+    QSimTest(); 
+
     void main(int argc, char** argv, unsigned test); 
 
     void rng_sequence(unsigned ni, int ni_tranche_size); 
@@ -133,20 +134,8 @@ template <typename T>
 const char* QSimTest<T>::FOLD = SPath::Resolve("$TMP/QSimTest", 2) ;  // 2:dirpath create 
 
 template <typename T>
-QSimTest<T>::QSimTest(QSim<T>& qs_)
-    :
-    qs(qs_)
-{
-    init(); 
-}
+QSimTest<T>::QSimTest(){}
 
-template <typename T>
-void QSimTest<T>::init()
-{
-    //std::cout << qs.desc_dbg_state() << std::endl ; 
-    //std::cout << qs.desc_dbg_p0() << std::endl ; 
-}
- 
 
 /**
 QSimTest::rng_sequence
@@ -539,7 +528,16 @@ void QSimTest<T>::photon_launch_generate(unsigned num_photon, unsigned type)
     save_dbg( subfold ); 
 }
 
+/**
+QSimTest::mock_propagate_launch_mutate
+----------------------------------------
 
+TODO: 
+
+* adopt sim->evt->record 
+* move NP setup into common handling in QEvent probably 
+
+**/
 
 template <typename T>
 void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned type )
@@ -556,7 +554,6 @@ void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned typ
     NP* p   = NP::Make<float>(num_photon,             4, 4 ); 
     NP* prd = NP::Make<float>(num_photon, bounce_max, 2, 4 ); 
     NP* r   = NP::Make<float>(num_photon, record_max, 4, 4 ); 
-    r->fill<float>(0.f);  // no difference, what matters is the on device buffer
 
     unsigned num_prd = num_photon*bounce_max ; 
     unsigned num_rec = num_photon*record_max ; 
@@ -623,6 +620,13 @@ void QSimTest<T>::quad_launch_generate(unsigned num_quad, unsigned type)
     save_quad( subfold, "q.npy", q ); 
 }
 
+/**
+QSimTest::photon_launch_mutate
+--------------------------------
+
+How should/could this use QEvent/qevent ?
+
+**/
 
 template <typename T>
 void QSimTest<T>::photon_launch_mutate(unsigned num_photon, unsigned type)
@@ -762,15 +766,13 @@ int main(int argc, char** argv)
         LOG(error) << "[ QSim<float>::UploadComponents" ; 
         QSim<float>::UploadComponents(icdf, bnd, optical, rindexpath ); 
         LOG(error) << "] QSim<float>::UploadComponents" ; 
-        QSim<float> qs ; 
-        QSimTest<float> qst(qs) ; 
+        QSimTest<float> qst  ; 
         qst.main( argc, argv, test ); 
     }
     else if( type == 'D' )
     {
         QSim<double>::UploadComponents(icdf, bnd, optical, rindexpath ); 
-        QSim<double> qs ; 
-        QSimTest<double> qst(qs) ; 
+        QSimTest<double> qst ; 
         qst.main( argc, argv, test ); 
     }
     cudaDeviceSynchronize();

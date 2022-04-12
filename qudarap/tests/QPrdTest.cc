@@ -20,7 +20,7 @@ int main(int argc, char** argv)
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 
     QBnd qb(bnd); 
-    QPrd qp(&qb); 
+    QPrd qp ; 
     qp.dump(); 
 
     return 0 ; 

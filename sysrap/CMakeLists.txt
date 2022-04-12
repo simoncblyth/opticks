@@ -103,6 +103,8 @@ set(SOURCES
     OpticksPhoton.cc
 
     SU.cu 
+
+    SEventConfig.cc
 ) 
     
 
@@ -210,6 +212,8 @@ set(HEADERS
     OpticksPhoton.hh
     SU.hh
     SEvt.hh 
+
+    SEventConfig.hh
 )
 
 

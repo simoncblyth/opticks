@@ -33,13 +33,13 @@ template <typename T> struct QBuf ;
 template <typename T> struct QProp ; 
 template <typename T> struct qsim ; 
 
+struct QEvent ; 
 struct QRng ; 
 struct QScint ;
 struct QBnd ; 
 struct QPrd ; 
 struct QOptical ; 
 struct QEvent ; 
-//struct QDebug ; 
 
 struct qdebug ; 
 struct qstate ; 
@@ -57,7 +57,8 @@ struct QUDARAP_API QSim
 
     static void UploadComponents(const NP* icdf, const NP* bnd, const NP* optical, const char* rindexpath );   
 
-    const QRng*      rng ;     // need to template these too ?
+    QEvent*          event ; 
+    const QRng*      rng ;   
     const QScint*    scint ; 
     const QBnd*      bnd ; 
     const QPrd*      prd ; 

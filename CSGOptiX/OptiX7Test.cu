@@ -188,49 +188,98 @@ Params
 * CPU side params including qsim.h qevent.h pointers instanciated in CSGOptiX::CSGOptiX 
   and populated by CSGOptiX::init methods before being uploaded by CSGOptiX::prepareParam 
 
+TODO: bring over development from qsim::mock_propagate into here 
 
 **/
 
-static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& dim, quad2* prd )
+static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
     qevent* evt      = params.evt ; 
-    if (idx.x >= evt->num_photon) return;
+    if (launch_idx.x >= evt->num_photon) return;
 
-    unsigned photon_id = idx.x ; 
-    unsigned genstep_id = evt->seed[photon_id] ; 
+    unsigned idx = launch_idx.x ;  // aka photon_id
+    unsigned genstep_id = evt->seed[idx] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
      
     qsim<float>* sim = params.sim ; 
-    curandState rng = sim->rngstate[photon_id] ;    // TODO: skipahead using an event_id 
+    curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
 
     quad4 p ;   
     qstate s ; 
 
-    sim->generate_photon(p, rng, gs, photon_id, genstep_id );  
+    sim->generate_photon(p, rng, gs, idx, genstep_id );  
 
-    float3 origin    = make_float3( p.q0.f.x, p.q0.f.y, p.q0.f.z ) ; 
-    float3 direction = make_float3( p.q1.f.x, p.q1.f.y, p.q1.f.z ) ; 
+    float3* origin    = (float3*)&p.q0.f.x ; 
+    float3* direction = (float3*)&p.q1.f.x ;  
+
+    // cf qsim::mock_propagate
+    int command = START ; 
+    int bounce = 0 ;  
+    while( bounce < evt->max_bounce )
+    {    
+        if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
+
+        trace( 
+            params.handle,
+            *origin,
+            *direction,
+            params.tmin,
+            params.tmax,
+            prd
+        );        // populate prd with intersect info 
+
+        command = sim->propagate(bounce, p, s, prd, rng, idx ); 
+        bounce++;     
+        if(command == BREAK) break ;    
+    }    
+
+    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
+    evt->photon[idx] = p ; 
+}
+
+/**
+simulate_trace
+----------------
+
+Used for making 2D cross section views of geometry intersects  
+
+**/
+
+static __forceinline__ __device__ void simulate_trace( const uint3& launch_idx, const uint3& dim, quad2* prd )
+{
+    qevent* evt      = params.evt ; 
+    if (launch_idx.x >= evt->num_photon) return;
+
+    unsigned idx = launch_idx.x ;  // aka photon_id
+    unsigned genstep_id = evt->seed[idx] ; 
+    const quad6& gs     = evt->genstep[genstep_id] ; 
+     
+    qsim<float>* sim = params.sim ; 
+    curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
+
+    quad4 p ;   
+    qstate s ; 
+
+    sim->generate_photon(p, rng, gs, idx, genstep_id );  
+
+    float3* origin    = (float3*)&p.q0.f.x ; 
+    float3* direction = (float3*)&p.q1.f.x ;  
 
     trace( 
         params.handle,
-        origin,
-        direction,
+        *origin,
+        *direction,
         params.tmin,
         params.tmax,
         prd
     );
 
-    const float3* normal = prd->normal(); 
-    float cosTheta = dot(*normal, direction) ; 
-    const float& wavelength = p.q2.f.w ; 
-    sim->fill_state(s, prd->boundary(), wavelength, cosTheta ); 
 
-
-    //int action = sim->propagate( p, prd, s, rng ); 
-
+    //const float3* normal = prd->normal(); 
+    //float cosTheta = dot(*normal, *direction) ; 
 
     // transform (x,z) intersect position into pixel coordinates (ix,iz)
-    float3 ipos = origin + direction*prd->distance() ; 
+    float3 ipos = *origin + (*direction)*prd->distance() ; 
 
     // aim to match the CPU side test isect "photons" from CSG/CSGQuery.cc/CSGQuery::intersect_elaborate
 
@@ -241,17 +290,17 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     p.q1.i.z = ipos.z ; 
     p.q1.i.w = 0.f ;   // TODO: sd 
 
-    p.q2.f.x = origin.x ; 
-    p.q2.f.y = origin.y ; 
-    p.q2.f.z = origin.z ; 
+    p.q2.f.x = origin->x ; 
+    p.q2.f.y = origin->y ; 
+    p.q2.f.z = origin->z ; 
     p.q2.u.w = params.tmin ; 
 
-    p.q3.f.x = direction.x ;   
-    p.q3.f.y = direction.y ; 
-    p.q3.f.z = direction.z ; 
+    p.q3.f.x = direction->x ;   
+    p.q3.f.y = direction->y ; 
+    p.q3.f.z = direction->z ; 
     p.q3.u.w = prd->identity() ; 
 
-    evt->photon[photon_id] = p ; 
+    evt->photon[idx] = p ; 
 
     // Compose frames of pixels, isect and "fphoton" within the cegs window
     // using the positions of the intersect "photons".
@@ -268,6 +317,10 @@ static __forceinline__ __device__ void simulate( const uint3& idx, const uint3& 
     }
     */
 }
+
+
+
+
 
 
 /**

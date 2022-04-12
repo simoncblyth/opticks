@@ -135,7 +135,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     metatran(nullptr),
     simulate_dt(0.),
     sim(raygenmode == 0 ? nullptr : new QSim<float>),
-    evt(raygenmode == 0 ? nullptr : new QEvent)
+    evt(sim == nullptr  ? nullptr : sim->event     )
 {
     init(); 
 }
@@ -233,12 +233,11 @@ Sets device pointers for params.sim params.evt so must be after upload
 
 Q: where are sim and evt uploaded ?
 
-
-
 **/
 
 void CSGOptiX::initSimulate() 
 {
+    // TODO: get d_sim to hold the d_evt 
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
     params->evt = evt ? evt->getDevicePtr() : nullptr ;  // qevent*
     params->tmin = 0.f ;                                 // perhaps needs to be epsilon to avoid self-intersection off boundaries ?

@@ -52,17 +52,15 @@ setGensteps currently using QBuf::Upload which allocates every time, so that is 
 
 struct QUDARAP_API QEvent
 {
-    static constexpr const int M = 1000000 ; 
-    static constexpr const int K = 1000 ; 
     static void  CheckGensteps(const NP* gs); 
     static const plog::Severity LEVEL ; 
-    static const QEvent* INSTANCE ; 
-    static const QEvent* Get(); 
+    static QEvent* INSTANCE ; 
+    static QEvent* Get(); 
     static std::string DescGensteps(const NP* gs, int edgeitems=5) ; 
     static std::string DescSeed( const std::vector<int>& seed, int edgeitems ); 
 
-    QEvent(int max_genstep_=100*K, int max_photon_=1*M); 
-    void init(int max_genstep_, int max_photon_ ); 
+    QEvent(); 
+    void init(); 
 
     // NB members needed on both CPU+GPU or from the QEvent.cu functions 
     // should reside inside the qevent.h instance not up here in QEvent.hh
@@ -71,7 +69,6 @@ struct QUDARAP_API QEvent
     qevent*      d_evt ; 
     const NP*    gs ;  
     std::string  meta ; 
-
 
     void     setGensteps(const NP* gs);
     unsigned count_genstep_photons(); 
@@ -82,24 +79,24 @@ struct QUDARAP_API QEvent
     void     uploadEvt(); 
     unsigned getNumPhoton() const ;  
 
-    void downloadSeed( std::vector<int>& seed ); 
-    void downloadPhoton( std::vector<quad4>& photon ); 
-
-    std::string desc() const ; 
-
-    void setMeta( const char* meta ); 
-    bool hasMeta() const ; 
-
+    void downloadGenstep( std::vector<quad6>& genstep ); 
+    void downloadSeed(    std::vector<int>&   seed ); 
+    void downloadPhoton(  std::vector<quad4>& photon ); 
+    void downloadRecord(  std::vector<quad4>& record ); 
 
     void savePhoton( const char* dir, const char* name); 
     void saveGenstep(const char* dir, const char* name); 
+
+    std::string descMax() const ; 
+    std::string desc() const ; 
+
     void saveMeta(   const char* dir, const char* name); 
- 
+    void setMeta( const char* meta ); 
+    bool hasMeta() const ; 
+
     void checkEvt() ;  // GPU side 
 
     qevent* getDevicePtr() const ;
-
 };
-
 
 

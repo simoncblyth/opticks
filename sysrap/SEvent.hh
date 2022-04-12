@@ -2,6 +2,7 @@
 
 struct NP ; 
 struct quad6 ; 
+struct uint4 ; 
 template <typename T> struct Tran ;
 
 #include <vector>
@@ -13,6 +14,7 @@ template <typename T> struct Tran ;
 struct SYSRAP_API SEvent
 {
     static const plog::Severity LEVEL ; 
+
 
     static const char* XYZ_ ; 
     static const char* YZ_  ; 

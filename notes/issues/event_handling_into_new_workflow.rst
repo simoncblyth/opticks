@@ -22,10 +22,26 @@ What does event handling need to plug into
         render and simulate 
 
 
-
 TODO
 ------
 
+* incorporate QEvent/qevent into QSim/qsim and test utility of qevent encapsulated buffer handling with QSimTest, 
+  if the design is appropriate this should significantly simplify and remove duplication of buffer handling in QSimTest 
+  and become the basis for real event handling  
+
+  * hmm many tests are photon level, with no gensteps so need to check QEvent::setNumPhotons  
+  * actually the main benefit of QEvent/qevent comes when actually generating photons on device
+    which requires use of QEvent::setGensteps with seeding etc.. 
+  * photon level tests are sufficiently different from standard running 
+    that they will not benefit much from QEvent. 
+  * this suggests that need to get generation going in new workflow 
+    before can properly check the QEvent/qevent design  
+
+  * HMM: looking at CSGOptiX/OptiX7Test.cu:simulate the qevent and qsim instances 
+    are kept separate and both come in from params 
+
+
+   
 * review old and new looking for aspects that need to be ported over 
 
 Review Progress already in new workflow
@@ -37,8 +53,7 @@ qudarap/tests/QSimWithEventTest.cc
      * this can act as nucleus for bringing over functionality
 
 QEvent.hh/qevent.h
-     uses QSeed to do the seeding, central role 
-
+     moved QSeed into QEvent for clarity 
 
 What about dependencies:
 
