@@ -16,33 +16,96 @@
 
 void test_setGensteps_0()
 {
+    //                                             0  1  2  3  4  5  6  7  8  
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
-    //unsigned x_total = SEvent::SumCounts( photon_counts_per_genstep ) ; 
+    unsigned x_num_photon = SEvent::SumCounts( photon_counts_per_genstep ) ; 
     const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
 
-    QEvent* event = new QEvent ; 
-    LOG(info) << " event.desc " << event->desc() ; 
-    event->setGensteps(gs); 
+    std::vector<int> x_seed ; 
+    SEvent::ExpectedSeeds(x_seed, photon_counts_per_genstep); 
+    assert( x_seed.size() == x_num_photon ); 
 
-    //unsigned count_genstep_photons  = event->count_genstep_photons(); 
-    //LOG(info) << " count_genstep_photons " << count_genstep_photons << " x_total " << x_total ; 
-    //assert( x_total == count_genstep_photons ); 
+
+    QEvent* event = new QEvent ; 
+    LOG(info) << " event.desc (bef QEvent::setGensteps) " << event->desc() ; 
+    event->setGensteps(gs); 
+    LOG(info) << " event.desc (aft QEvent::setGensteps) " << event->desc() ; 
+
+    unsigned num_photon = event->getNumPhoton();  
+    LOG(info) << " num_photon " << num_photon << " x_num_photon " << x_num_photon ; 
+    assert( x_num_photon == num_photon ); 
+
+    std::vector<int> seed ; 
+    event->downloadSeed(seed); 
+    assert( seed.size() == num_photon ); 
+
+    int seed_mismatch = SEvent::CompareSeeds( seed, x_seed ); 
+
+    LOG(info) << " seed: "   << QEvent::DescSeed(seed, 100 ); 
+    LOG(info) << " x_seed: " << QEvent::DescSeed(x_seed, 100 ); 
+    LOG(info) << " seed_mismatch " << seed_mismatch ; 
 }
 
-void test_setGensteps_1(const NP* gs)
+void test_setGensteps_1()
+{
+    const int num_v = 3 ; 
+
+    typedef std::vector<int> VI ; 
+    VI* v = new VI[num_v] ; 
+    NP** gs = new NP*[num_v] ; 
+    int* x_num_photon = new int[num_v] ; 
+
+    v[0] = {3, 5, 2, 0, 1, 3, 4, 2, 4 } ; 
+    v[1] = { 30, 50, 20, 0, 10, 30, 40, 20, 40 };
+    v[2] = { 300, 500, 200, 0, 100, 300, 400, 200, 400 } ; 
+
+    for(int i=0 ; i < num_v ; i++)
+    {
+        x_num_photon[i] = SEvent::SumCounts( v[i] ) ; 
+        gs[i] = SEvent::MakeCountGensteps( v[i] ); 
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " x_num_photon[i] " << std::setw(5) << x_num_photon[i] 
+            << " gs[i] " << gs[i]->desc() 
+            << std::endl 
+            ; 
+    }
+
+    QEvent* event = new QEvent ; 
+
+    for(int j=0 ; j < num_v*10 ; j++)
+    {
+        int i = j % 3 ; 
+
+        event->setGensteps(gs[i]); 
+        int num_photon = event->getNumPhoton();  
+        assert( x_num_photon[i] == num_photon ); 
+
+        std::cout 
+            << " j " << std::setw(3) << j 
+            << " i " << std::setw(3) << i 
+            << " x_num_photon[i] " << std::setw(5) << x_num_photon[i] 
+            << " num_photon " << std::setw(5) << num_photon 
+            << event->desc() 
+            << std::endl 
+            ; 
+    }
+}
+
+void test_setGensteps_2(const NP* gs)
 {
     QEvent* event = new QEvent ; 
     event->setGensteps(gs); 
 
-    unsigned num_photons = event->getNumPhotons() ; 
-    assert( num_photons > 0); 
+    unsigned num_photon = event->getNumPhoton() ; 
+    assert( num_photon > 0); 
 
     LOG(info) << event->desc() ; 
     //event->seed->download_dump("event->seed", 10); 
     event->checkEvt(); 
 }
 
-void test_setGensteps_1()
+void test_setGensteps_2()
 {
     const char* path_ = "$TMP/sysrap/SEventTest/cegs.npy" ;
     const char* path = SPath::Resolve(path_, 0); 
@@ -59,7 +122,7 @@ void test_setGensteps_1()
     }
 
     gs0->dump(); 
-    test_setGensteps_1(gs0); 
+    test_setGensteps_2(gs0); 
 }
 
 
@@ -69,6 +132,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     test_setGensteps_0(); 
+    //test_setGensteps_1(); 
 
     cudaDeviceSynchronize(); 
     return 0 ; 

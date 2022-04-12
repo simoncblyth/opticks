@@ -73,8 +73,6 @@ set(SOURCES
     QProp.cc
     QProp.cu
 
-    QSeed.cc
-    QSeed.cu
 
     QBuf.cc
 )
@@ -123,7 +121,6 @@ SET(HEADERS
 
     QProp.hh
 
-    QSeed.hh
     QBuf.hh
 )
 

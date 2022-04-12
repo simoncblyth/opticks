@@ -220,6 +220,7 @@ void QU::copy_device_to_host( T* h, T* d,  unsigned num_items)
 }
 
 
+template void QU::copy_device_to_host<int>(  int* h, int* d,  unsigned num_items);
 template void QU::copy_device_to_host<float>(  float* h, float* d,  unsigned num_items);
 template void QU::copy_device_to_host<double>( double* h, double* d,  unsigned num_items);
 template void QU::copy_device_to_host<quad>( quad* h, quad* d,  unsigned num_items);

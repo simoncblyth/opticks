@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
 
     qe.setGensteps(gs); 
-    assert( qe.getNumPhotons() == x_total ); 
+    assert( qe.getNumPhoton() == x_total ); 
 
     LOG(info) << qe.desc() ; 
 

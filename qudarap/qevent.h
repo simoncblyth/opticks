@@ -1,5 +1,21 @@
 #pragma once
 
+/**
+qevent
+=======
+
+Instance used to communicate device buffer pointers 
+and numbers of items between host and device. 
+
+Note that *num_seed* and *num_photon* will be equal in 
+normal operation which uses QEvent::setGensteps. 
+However for clarity separate fields are used to 
+distinguish photon test running that directly uses
+QEvent::setNumPhoton 
+
+**/
+
+
 struct quad6 ; 
 struct quad4 ; 
 
@@ -16,6 +32,8 @@ struct qevent
 
     int      num_photon ; 
     quad4*   photon ; 
+
+
 }; 
 
 

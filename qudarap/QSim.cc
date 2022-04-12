@@ -672,7 +672,7 @@ void QSim<T>::generate_photon(QEvent* evt)
 {
     LOG(LEVEL) << "[" ; 
 
-    unsigned num_photon = evt->getNumPhotons() ;  
+    unsigned num_photon = evt->getNumPhoton() ;  
     LOG(info) << " num_photon " << num_photon ; 
 
     if( num_photon == 0 )

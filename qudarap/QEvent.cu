@@ -53,10 +53,22 @@ which must be is holding GPU side pointers.
 **/
 
 
+//#ifdef DEBUG_QEVENT
 struct printf_functor
 {
     __host__ __device__ void operator()(int x){ printf("printf_functor %d\n", x); }
 };
+//#endif
+
+
+/**
+QEvent_count_genstep_photons
+-----------------------------
+
+Notice how using strided_range needs itemsize stride twice, 
+because are grabbing single ints from each quad6 6*4 genstep 
+
+**/
 
 
 extern "C" unsigned QEvent_count_genstep_photons(qevent* evt)
@@ -65,24 +77,48 @@ extern "C" unsigned QEvent_count_genstep_photons(qevent* evt)
 
     thrust::device_ptr<int> t_gs = thrust::device_pointer_cast( (int*)evt->genstep ) ; 
 
+#ifdef DEBUG_QEVENT
     printf("//QEvent_count_genstep_photons qevent::genstep_numphoton_offset %d  qevent::genstep_itemsize  %d  \n", 
             qevent::genstep_numphoton_offset, qevent::genstep_itemsize ); 
+#endif
 
     strided_range<Iterator> gs_pho( 
         t_gs + qevent::genstep_numphoton_offset, 
         t_gs + evt->num_genstep*qevent::genstep_itemsize , 
         qevent::genstep_itemsize );    // begin, end, stride 
 
-    // surprised to use the stride twice, because are grabbing just single ints from each genstep  ?
-    //thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
-
     evt->num_seed = thrust::reduce(gs_pho.begin(), gs_pho.end() );
 
-    printf("//QEvent_count_genstep_photons evt.num_genstep %d evt.num_seed %d \n", evt->num_genstep, evt->num_seed );      
+#ifdef DEBUG_QEVENT
+    //thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
+    printf("//QEvent_count_genstep_photons evt.num_genstep %d evt.num_seed %d \n", evt->num_genstep, evt->num_seed ); 
+#endif
 
     return evt->num_seed ; 
 } 
 
+
+/**
+QEvent_fill_seed_buffer
+-------------------------
+
+Populates seed buffer using the numbers of photons per genstep from the genstep buffer.
+
+See thrustrap/tests/iexpand_stridedTest.cu for the lead up to this
+
+1. use GPU side genstep array to add the numbers of photons
+   from each genstep giving the total number of photons and seeds *num_seeds*
+   from all the gensteps
+
+2. populate it by repeating genstep indices into it, 
+   according to the number of photons in each genstep 
+   
+t_gs+qevent::genstep_numphoton_offset 
+   q0.u.w of the quad6 genstep, which contains the number of photons 
+   for this genstep
+
+
+**/
 
 extern "C" void QEvent_fill_seed_buffer(qevent* evt )
 {
@@ -96,7 +132,13 @@ extern "C" void QEvent_fill_seed_buffer(qevent* evt )
 
     thrust::device_ptr<int> t_gs = thrust::device_pointer_cast( (int*)evt->genstep ) ; 
 
-    strided_range<Iterator> gs_pho( t_gs + qevent::genstep_numphoton_offset, t_gs + evt->num_genstep, qevent::genstep_itemsize );    // begin, end, stride 
+    strided_range<Iterator> gs_pho( 
+           t_gs + qevent::genstep_numphoton_offset, 
+           t_gs + evt->num_genstep*qevent::genstep_itemsize, 
+           qevent::genstep_itemsize );    // begin, end, stride 
+
+
+    thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
 
     iexpand( gs_pho.begin(), gs_pho.end(), t_seed, t_seed + evt->num_seed );  
 }

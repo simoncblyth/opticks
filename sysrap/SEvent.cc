@@ -432,6 +432,38 @@ unsigned SEvent::SumCounts(const std::vector<int>& counts) // static
 }
 
 
+/**
+SEvent::ExpectedSeeds
+----------------------
+
+From a vector of counts populate the vector of seeds by simple CPU side duplication.  
+
+**/
+
+void SEvent::ExpectedSeeds(std::vector<int>& seeds, const std::vector<int>& counts ) // static 
+{
+    unsigned total = SumCounts(counts);  
+    unsigned ni = counts.size(); 
+    for(unsigned i=0 ; i < ni ; i++)
+    {   
+        int np = counts[i] ; 
+        for(int p=0 ; p < np ; p++) seeds.push_back(i) ; 
+    }   
+    assert( seeds.size() == total );  
+}
+
+int SEvent::CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ) // static 
+{
+    assert( seeds.size() == xseeds.size() );  
+    int mismatch = 0 ; 
+    for(unsigned i=0 ; i < seeds.size() ; i++) if( seeds[i] != xseeds[i] ) mismatch += 1 ; 
+    return mismatch ; 
+}
+
+
+
+
+
 
 
 /**

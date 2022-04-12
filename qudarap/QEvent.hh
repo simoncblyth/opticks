@@ -58,10 +58,12 @@ struct QUDARAP_API QEvent
     static const plog::Severity LEVEL ; 
     static const QEvent* INSTANCE ; 
     static const QEvent* Get(); 
+    static std::string DescGensteps(const NP* gs, int edgeitems=5) ; 
+    static std::string DescSeed( const std::vector<int>& seed, int edgeitems ); 
+
 
     QEvent(int max_genstep_=100*K, int max_photon_=1*M); 
     void init(); 
-    void uploadEvt(); 
 
     int          max_genstep ; 
     int          max_photon ; 
@@ -70,21 +72,24 @@ struct QUDARAP_API QEvent
     const NP*    gs ;  
     std::string  meta ; 
 
-    //QBuf<float>* genstep ; 
-    //QBuf<int>*   seed  ;
 
-    void setGensteps(const NP* gs);
-    std::string descGensteps(int edgeitems=5) const ; 
-    //void setGensteps(QBuf<float>* dgs ); 
-
+    void     setGensteps(const NP* gs);
     unsigned count_genstep_photons(); 
     void     fill_seed_buffer(); 
 
+    void     setNumPhoton(unsigned num_photon) ;  
+    void     uploadEvt(); 
+    unsigned getNumPhoton() const ;  
+
+    void downloadSeed( std::vector<int>& seed ); 
+    void downloadPhoton( std::vector<quad4>& photon ); 
+
+    std::string desc() const ; 
 
     void setMeta( const char* meta ); 
     bool hasMeta() const ; 
 
-    void downloadPhoton( std::vector<quad4>& photon ); 
+
     void savePhoton( const char* dir, const char* name); 
     void saveGenstep(const char* dir, const char* name); 
     void saveMeta(   const char* dir, const char* name); 
@@ -92,8 +97,7 @@ struct QUDARAP_API QEvent
     void checkEvt() ;  // GPU side 
 
     qevent* getDevicePtr() const ;
-    unsigned getNumPhotons() const ;  
-    std::string desc() const ; 
+
 };
 
 
