@@ -39,7 +39,6 @@ For example::
     iexpand([3,0,1]) -> [0,0,0,2]      3*0, 0*1, 1*2
     iexpand([1,3,2]) -> [0,1,1,1,2,2]  1*0, 3*1, 2*2 
 
-
 NB the output device must be zeroed prior to calling iexpand. 
 This is because the iexpand is implemented ending with an inclusive_scan 
 to fill in the non-transition values which relies on initial zeroing.

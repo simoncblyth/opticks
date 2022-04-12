@@ -7,6 +7,13 @@
 #include "strided_range.h"
 #include <thrust/device_vector.h>
 
+/**
+_QEvent_checkEvt
+-----------------
+
+Demonstrates using seed buffer to lookup genstep_id from photon_id 
+
+**/
 
 __global__ void _QEvent_checkEvt(qevent* evt, unsigned width, unsigned height)
 {
@@ -89,10 +96,10 @@ extern "C" unsigned QEvent_count_genstep_photons(qevent* evt)
 
     evt->num_seed = thrust::reduce(gs_pho.begin(), gs_pho.end() );
 
-//#ifdef DEBUG_QEVENT
+#ifdef DEBUG_QEVENT
     //thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
     printf("//QEvent_count_genstep_photons evt.num_genstep %d evt.num_seed %d evt.max_photon %d \n", evt->num_genstep, evt->num_seed, evt->max_photon ); 
-//#endif
+#endif
     assert( evt->num_seed <= evt->max_photon ); 
 
     return evt->num_seed ; 
@@ -118,11 +125,21 @@ t_gs+qevent::genstep_numphoton_offset
    for this genstep
 
 
+WARNING : SOMETHING HERE MESSES UP UNLESS THE SEED BUFFER IS ZEROED PRIOR TO THIS BEING CALLED
+
+ACTUALLY THIS IS DUE TO A A LIMITATION OF IEXPAND, see sysrap/iexpand.h::
+
+    NB the output device must be zeroed prior to calling iexpand. 
+    This is because the iexpand is implemented ending with an inclusive_scan 
+    to fill in the non-transition values which relies on initial zeroing.
+
 **/
 
 extern "C" void QEvent_fill_seed_buffer(qevent* evt )
 {
+#ifdef DEBUG_QEVENT
     printf("//QEvent_fill_seed_buffer evt.num_genstep %d evt.num_seed %d evt.max_photon %d \n", evt->num_genstep, evt->num_seed, evt->max_photon );      
+#endif
 
     assert( evt->seed && evt->num_seed > 0 ); 
     assert( evt->num_seed <= evt->max_photon ); 
@@ -139,14 +156,23 @@ extern "C" void QEvent_fill_seed_buffer(qevent* evt )
            qevent::genstep_itemsize );    // begin, end, stride 
 
 
-    thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
+    //thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
 
     iexpand( gs_pho.begin(), gs_pho.end(), t_seed, t_seed + evt->num_seed );  
 
-    thrust::for_each( t_seed,  t_seed + evt->num_seed, printf_functor() );  
+    //thrust::for_each( t_seed,  t_seed + evt->num_seed, printf_functor() );  
 
 }
 
+
+
+/**
+QEvent_count_genstep_photons_and_fill_seed_buffer
+---------------------------------------------------
+
+This function does the same at the above two functions. 
+
+**/
 
 extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(qevent* evt )
 {
@@ -182,8 +208,6 @@ extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(qevent* evt )
     //thrust::for_each( t_seed,  t_seed + evt->num_seed, printf_functor() );  
 
 }
-
-
 
 
 

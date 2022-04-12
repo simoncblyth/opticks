@@ -64,7 +64,9 @@ struct QUDARAP_API QEvent
     QEvent(int max_genstep_=100*K, int max_photon_=1*M); 
     void init(int max_genstep_, int max_photon_ ); 
 
-    // NB members needed on both CPU+GPU should reside in qevent.h instance not here in QEvent.hh  
+    // NB members needed on both CPU+GPU or from the QEvent.cu functions 
+    // should reside inside the qevent.h instance not up here in QEvent.hh
+  
     qevent*      evt ; 
     qevent*      d_evt ; 
     const NP*    gs ;  
