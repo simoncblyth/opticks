@@ -194,7 +194,9 @@ void QU::device_memset( T* d, int value, unsigned num_items )
     QUDA_CHECK( cudaMemset(d, value, size )); 
 }
 
+template void     QU::device_memset<int>(int*, int, unsigned ) ;
 template void     QU::device_memset<quad4>(quad4*, int, unsigned ) ;
+template void     QU::device_memset<quad6>(quad6*, int, unsigned ) ;
 
 
 

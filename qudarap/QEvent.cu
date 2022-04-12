@@ -91,8 +91,9 @@ extern "C" unsigned QEvent_count_genstep_photons(qevent* evt)
 
 //#ifdef DEBUG_QEVENT
     //thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
-    printf("//QEvent_count_genstep_photons evt.num_genstep %d evt.num_seed %d \n", evt->num_genstep, evt->num_seed ); 
+    printf("//QEvent_count_genstep_photons evt.num_genstep %d evt.num_seed %d evt.max_photon %d \n", evt->num_genstep, evt->num_seed, evt->max_photon ); 
 //#endif
+    assert( evt->num_seed <= evt->max_photon ); 
 
     return evt->num_seed ; 
 } 
@@ -121,9 +122,10 @@ t_gs+qevent::genstep_numphoton_offset
 
 extern "C" void QEvent_fill_seed_buffer(qevent* evt )
 {
-    printf("//QEvent_fill_seed_buffer evt.num_genstep %d evt.num_seed %d \n", evt->num_genstep, evt->num_seed );      
+    printf("//QEvent_fill_seed_buffer evt.num_genstep %d evt.num_seed %d evt.max_photon %d \n", evt->num_genstep, evt->num_seed, evt->max_photon );      
 
     assert( evt->seed && evt->num_seed > 0 ); 
+    assert( evt->num_seed <= evt->max_photon ); 
 
     thrust::device_ptr<int> t_seed = thrust::device_pointer_cast(evt->seed) ; 
 
@@ -164,18 +166,20 @@ extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(qevent* evt )
 
     evt->num_seed = thrust::reduce(gs_pho.begin(), gs_pho.end() );
 
-
-    printf("//QEvent_count_genstep_photons_and_fill_seed_buffer evt.num_genstep %d evt.num_seed %d \n", evt->num_genstep, evt->num_seed );      
+#ifdef DEBUG_QEVENT
+    printf("//QEvent_count_genstep_photons_and_fill_seed_buffer evt.num_genstep %d evt.num_seed %d evt.max_photon %d \n", evt->num_genstep, evt->num_seed, evt->max_photon );      
+#endif
 
     assert( evt->seed && evt->num_seed > 0 ); 
+    assert( evt->num_seed <= evt->max_photon ); 
 
     thrust::device_ptr<int> t_seed = thrust::device_pointer_cast(evt->seed) ; 
 
-    thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
+    //thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
 
     iexpand( gs_pho.begin(), gs_pho.end(), t_seed, t_seed + evt->num_seed );  
 
-    thrust::for_each( t_seed,  t_seed + evt->num_seed, printf_functor() );  
+    //thrust::for_each( t_seed,  t_seed + evt->num_seed, printf_functor() );  
 
 }
 

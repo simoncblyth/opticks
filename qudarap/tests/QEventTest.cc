@@ -81,22 +81,20 @@ void test_setGensteps_1()
 
     QEvent* event = new QEvent ; 
 
-    //int nj = num_v*10 ; 
-    int nj = 2 ; 
+    int nj = num_v*10 ; 
+    //int nj = 2 ; 
 
     for(int j=0 ; j < nj ; j++)
     {
         int i = j % 3 ; 
 
         event->setGensteps(gs[i]); 
-        cudaDeviceSynchronize(); 
 
         int num_photon = event->getNumPhoton();  
         assert( x_num_photon[i] == num_photon ); 
 
         std::vector<int> seed ; 
         event->downloadSeed(seed); 
-        cudaDeviceSynchronize(); 
         assert( int(seed.size()) == num_photon ); 
         int seed_mismatch = SEvent::CompareSeeds( seed, x_seed[i] ); 
  
@@ -108,9 +106,16 @@ void test_setGensteps_1()
             << " seed_mismatch " << std::setw(5) << seed_mismatch 
             << event->desc() 
             << std::endl 
-            << " seed: " << QEvent::DescSeed(seed, 100 )
-            << std::endl 
-            ; 
+            ;
+
+        if( seed_mismatch > 0 )
+        { 
+            std::cout 
+                << " seed: " << QEvent::DescSeed(seed, 100 )
+                << std::endl 
+                ; 
+        }
+        assert( seed_mismatch == 0 ); 
 
     }
 }

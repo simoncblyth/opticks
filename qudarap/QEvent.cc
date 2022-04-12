@@ -86,26 +86,29 @@ Canonical instance instanciated by CSGOptiX::CSGOptiX
 
 QEvent::QEvent(int max_genstep_, int max_photon_)
     :
-    max_genstep(max_genstep_),
-    max_photon(max_photon_),
     evt(new qevent),
     d_evt(QU::device_alloc<qevent>(1)),
     gs(nullptr),
     meta()
 {
     INSTANCE = this ; 
-    init(); 
+    init(max_genstep_, max_photon_); 
 }
 
-void QEvent::init()
+void QEvent::init(int max_genstep_, int max_photon_)
 {
+    evt->max_genstep = max_genstep_ ; 
+    evt->max_photon  = max_photon_ ; 
+
     evt->num_genstep = 0 ; 
     evt->num_seed  = 0 ; 
     evt->num_photon = 0 ; 
 
-    evt->genstep = QU::device_alloc<quad6>( max_genstep ); 
-    evt->seed    = QU::device_alloc<int>(   max_photon );   // 1:1 seed:photon
-    evt->photon  = QU::device_alloc<quad4>( max_photon ); 
+    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep ); 
+    evt->seed    = QU::device_alloc<int>(   evt->max_photon );   // 1:1 seed:photon
+    evt->photon  = QU::device_alloc<quad4>( evt->max_photon ); 
+
+    //QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
 }
 
 
@@ -153,6 +156,11 @@ QEvent::setGensteps
 
 3. invokes setNumPhoton
 
+
+* HMM: find that without zeroing the seed buffer the seed filling gets messed up causing QEventTest fails 
+  doing this in QEvent::init is not sufficient need to do in QEvent::setGensteps.  So far it seems 
+  that no zeroing is needed for the genstep buffer. 
+
 **/
 
 void QEvent::setGensteps(const NP* gs_) 
@@ -162,18 +170,20 @@ void QEvent::setGensteps(const NP* gs_)
     evt->num_genstep = gs->shape[0] ; 
     LOG(LEVEL) << DescGensteps(gs, 10) ;
  
-    bool num_gs_allowed = evt->num_genstep <= max_genstep ;
-    if(!num_gs_allowed) LOG(fatal) << " evt.num_genstep " << evt->num_genstep << " max_genstep " << max_genstep ; 
+    bool num_gs_allowed = evt->num_genstep <= evt->max_genstep ;
+    if(!num_gs_allowed) LOG(fatal) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ; 
     assert( num_gs_allowed ); 
 
     quad6* gs_v = (quad6*)gs->cvalues<float>() ; 
+
+    //QU::device_memset<quad6>( evt->genstep, 0, max_genstep ); 
+    QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
+   
     QU::copy_host_to_device<quad6>( evt->genstep, gs_v, evt->num_genstep ); 
 
     //count_genstep_photons();   // sets evt->num_seed
     //fill_seed_buffer() ;  // populates seed buffer
-
     count_genstep_photons_and_fill_seed_buffer(); 
-
 
     setNumPhoton( evt->num_seed ); 
 }
@@ -232,8 +242,8 @@ Sets evt->num_photon asserts that is within allowed *max_photon* and calls *uplo
 void QEvent::setNumPhoton(unsigned num_photon )
 {
     evt->num_photon = num_photon  ; 
-    bool num_photon_allowed = evt->num_photon <= max_photon ; 
-    if(!num_photon_allowed) LOG(fatal) << " evt.num_photon " << evt->num_photon << " max_photon " << max_photon ; 
+    bool num_photon_allowed = evt->num_photon <= evt->max_photon ; 
+    if(!num_photon_allowed) LOG(fatal) << " evt.num_photon " << evt->num_photon << " evt.max_photon " << evt->max_photon ; 
     assert( num_photon_allowed ); 
     uploadEvt(); 
 }

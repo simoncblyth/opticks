@@ -61,12 +61,10 @@ struct QUDARAP_API QEvent
     static std::string DescGensteps(const NP* gs, int edgeitems=5) ; 
     static std::string DescSeed( const std::vector<int>& seed, int edgeitems ); 
 
-
     QEvent(int max_genstep_=100*K, int max_photon_=1*M); 
-    void init(); 
+    void init(int max_genstep_, int max_photon_ ); 
 
-    int          max_genstep ; 
-    int          max_photon ; 
+    // NB members needed on both CPU+GPU should reside in qevent.h instance not here in QEvent.hh  
     qevent*      evt ; 
     qevent*      d_evt ; 
     const NP*    gs ;  

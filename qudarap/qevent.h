@@ -24,6 +24,9 @@ struct qevent
     static constexpr unsigned genstep_itemsize = 6*4 ; 
     static constexpr unsigned genstep_numphoton_offset = 3 ; 
 
+    int      max_genstep ;  
+    int      max_photon  ;  
+
     int      num_genstep ; 
     quad6*   genstep ; 
 
