@@ -89,14 +89,13 @@ extern "C" unsigned QEvent_count_genstep_photons(qevent* evt)
 
     evt->num_seed = thrust::reduce(gs_pho.begin(), gs_pho.end() );
 
-#ifdef DEBUG_QEVENT
+//#ifdef DEBUG_QEVENT
     //thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
     printf("//QEvent_count_genstep_photons evt.num_genstep %d evt.num_seed %d \n", evt->num_genstep, evt->num_seed ); 
-#endif
+//#endif
 
     return evt->num_seed ; 
 } 
-
 
 /**
 QEvent_fill_seed_buffer
@@ -141,5 +140,9 @@ extern "C" void QEvent_fill_seed_buffer(qevent* evt )
     thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
 
     iexpand( gs_pho.begin(), gs_pho.end(), t_seed, t_seed + evt->num_seed );  
+
+    thrust::for_each( t_seed,  t_seed + evt->num_seed, printf_functor() );  
+
+
 }
 
