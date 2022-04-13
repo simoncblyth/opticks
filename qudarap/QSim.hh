@@ -81,6 +81,8 @@ struct QUDARAP_API QSim
     void init_sim(); 
     void init_dbg(); 
 
+    NP* duplicate_dbg_ephoton(unsigned num_photon); 
+
     std::string desc_dbg_state() const ; 
     std::string desc_dbg_p0() const ; 
 

@@ -23,12 +23,17 @@ QPrd::QPrd()
     INSTANCE = this ; 
 }
 
-void QPrd::dump(const char* msg) const 
+std::string QPrd::desc() const 
 {
-    LOG(info) << msg ; 
-    bnd->dumpBoundaryIndices( bnd_idx ); 
-    for(unsigned i=0 ; i < nrmt.size() ; i++ ) std::cout << nrmt[i] << std::endl ;  
-    for(unsigned i=0 ; i < prd.size() ; i++ )  std::cout << prd[i].desc() << std::endl ;  
+    std::stringstream ss ; 
+    ss << "QPrd.bnd.descBoundaryIndices" << std::endl ; 
+    ss << bnd->descBoundaryIndices( bnd_idx ); 
+    ss << "QPrd.nrmt" << std::endl ;  
+    for(unsigned i=0 ; i < nrmt.size() ; i++ ) ss << nrmt[i] << std::endl ;  
+    ss << "QPrd.prd" << std::endl ;  
+    for(unsigned i=0 ; i < prd.size() ; i++ )  ss << prd[i].desc() << std::endl ;  
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 void QPrd::init()
@@ -58,5 +63,36 @@ void QPrd::init()
         pr.set_identity( (i+1)*100 ); 
     }
 }
+
+/**
+QPrd::duplicate_prd
+---------------------
+
+Duplicate the sequence of mock prd for all photon, 
+if the num_bounce exceeds the prd obtained from environment 
+the prd is wrapped within the photon.  
+
+**/
+
+NP* QPrd::duplicate_prd(unsigned num_photon, unsigned num_bounce) const 
+{
+    unsigned num_prd = prd.size(); 
+    unsigned ni = num_photon ; 
+    unsigned nj = num_bounce ; 
+
+    NP* a_prd = NP::Make<float>(ni, nj, 2, 4 ); 
+
+    quad2* prd_v = (quad2*)a_prd->values<float>();  
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        for(unsigned j=0 ; j < nj ; j++) 
+        {
+             prd_v[i*nj+j] = prd[j % num_prd] ;   // wrap the prd if not enough   
+        }
+    }    
+    return a_prd ; 
+}
+
+
 
 

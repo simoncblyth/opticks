@@ -62,8 +62,6 @@ QSimTest.cc
 #include "SEvent.hh"
 
 
-enum { NOOP, FILEPATH, DIRPATH } ; 
-
 std::string MakeName(const char* prefix, unsigned num, const char* ext)
 {
     std::stringstream ss ; 
@@ -81,6 +79,7 @@ struct QSimTest
 {
     static const char* FOLD ; 
     static const char* Path(const char* subfold, const char* name ); 
+    static void  PreInit(unsigned type); 
 
     QSim<T> qs ; 
 
@@ -542,46 +541,44 @@ TODO:
 template <typename T>
 void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned type )
 {
+    LOG(info) << "[" ; 
+
     assert( QSimLaunch::IsMutate(type)==true ); 
     const char* subfold = QSimLaunch::Name(type) ; 
     assert( subfold ); 
 
-    const std::vector<quad2>& qs_prd = qs.prd->prd ;  
-    unsigned bounce_max = qs_prd.size() ; 
-    assert( bounce_max > 0 && bounce_max <= 16 ); 
-    unsigned record_max = bounce_max + 1 ;  
+    if( qs.prd == nullptr ) LOG(fatal) << " qs.prd is required for mock_propagate, instanciate QPrd before QSim " ; 
+    assert( qs.prd ); 
 
-    NP* p   = NP::Make<float>(num_photon,             4, 4 ); 
-    NP* prd = NP::Make<float>(num_photon, bounce_max, 2, 4 ); 
-    NP* r   = NP::Make<float>(num_photon, record_max, 4, 4 ); 
+    const std::vector<quad2>& qs_prd = qs.prd->prd ;  
+    unsigned bounce_max = qs_prd.size() ;    assert( bounce_max > 0 && bounce_max <= 16 ); 
+    unsigned record_max = bounce_max + 1 ;  
 
     unsigned num_prd = num_photon*bounce_max ; 
     unsigned num_rec = num_photon*record_max ; 
 
-    LOG(info) << " p.desc   : " << p->desc() ; 
-    LOG(info) << " prd.desc : " << prd->desc() ; 
-    LOG(info) << " r.desc   : " << r->desc() ; 
+    LOG(info) 
+        << " bounce_max " << bounce_max 
+        << " record_max " << record_max 
+        << " num_photon " << num_photon 
+        << " num_prd (num_photon*bounce_max) " << num_prd
+        << " num_rec (num_photon*record_max) " << num_rec
+        ;
+
+    NP* p   = qs.duplicate_dbg_ephoton(num_photon); 
+    NP* prd = qs.prd->duplicate_prd(num_photon, bounce_max);  
+    NP* r   = NP::Make<float>(num_photon, record_max, 4, 4 ); 
 
     quad4* p_v   = (quad4*)p->values<float>(); 
     quad2* prd_v = (quad2*)prd->values<float>();  
     quad4* r_v   = (quad4*)r->values<float>(); 
 
+   // p and r are standard things so handling should be in common 
+   // prd as an input is non-standard : so could just be fed in with arguments 
 
-    for(unsigned i=0 ; i < num_photon ; i++)
-    {
-        quad4 p0 = qs.dbg->p  ;  // start from ephoton 
-
-        //p0.q0.f.x = float(i)*100.f ; 
-        p0.q0.f.y = float(i)*100.f ; 
-
-        p_v[i] = p0 ;   
-
-        for(unsigned j=0 ; j < bounce_max ; j++)  // duplicate the sequence of mock prd for all photon 
-        {
-            const quad2& prd = qs_prd[j] ; 
-            prd_v[i*bounce_max+j] = prd ;    
-        }
-    }    
+    LOG(info) << " r.desc   : " << r->desc() ; 
+    LOG(info) << " p.desc   : " << p->desc() ; 
+    LOG(info) << " prd.desc : " << prd->desc() ; 
 
     qs.mock_propagate_launch_mutate( 
              p_v,   num_photon, 
@@ -590,8 +587,8 @@ void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned typ
              type ); 
 
     const char* p_path = Path(subfold, "p.npy"); 
-    const char* r_path = Path(subfold, "r.npy"); 
     const char* prd_path = Path(subfold, "prd.npy"); 
+    const char* r_path = Path(subfold, "r.npy"); 
 
     LOG(info) 
         << " p_path  " << p_path  
@@ -601,7 +598,9 @@ void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned typ
 
     p->save(p_path); 
     prd->save(prd_path); 
-    r->save(r_path); 
+    r->save(r_path);
+ 
+    LOG(info) << "]" ; 
 }
 
 
@@ -655,6 +654,19 @@ void QSimTest<T>::photon_launch_mutate(unsigned num_photon, unsigned type)
 
 
 template<typename T>
+void QSimTest<T>::PreInit(unsigned type )  // static
+{
+    LOG(info) << "[ " <<  QSimLaunch::Name(type) ; 
+    if( type == MOCK_PROPAGATE )
+    {
+        QPrd* prd = new QPrd ; 
+        LOG(info) << prd->desc() ;  
+    }
+    LOG(info) << "] " <<  QSimLaunch::Name(type) ; 
+}
+
+
+template<typename T>
 void QSimTest<T>::main(int argc, char** argv, unsigned type )
 {
     unsigned M1   = 1000000u ; // 1 million 
@@ -675,6 +687,7 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
     T x0 = 80. ; 
     T x1 = 800. ; 
     unsigned nx = 721u ; 
+
 
     switch(type)
     {
@@ -756,24 +769,24 @@ int main(int argc, char** argv)
 
     const char* default_testname = "G" ; 
     const char* testname = SSys::getenvvar("TEST", default_testname); 
-    int test = QSimLaunch::Type(testname); 
-    char type = SSys::getenvchar("TYPE", 'F'); 
+    int type = QSimLaunch::Type(testname); 
+    char FD = SSys::getenvchar("FD", 'F'); // formerly TYPE 
 
-    if( test == CERENKOV_PHOTON_EXPT_X ) type = 'D' ;   // forced double 
+    if( type == CERENKOV_PHOTON_EXPT_X ) FD = 'D' ;   // forced double 
 
-    if( type == 'F')
+    if( FD == 'F')
     { 
-        LOG(error) << "[ QSim<float>::UploadComponents" ; 
         QSim<float>::UploadComponents(icdf, bnd, optical, rindexpath ); 
-        LOG(error) << "] QSim<float>::UploadComponents" ; 
+        QSimTest<float>::PreInit(type)  ; 
         QSimTest<float> qst  ; 
-        qst.main( argc, argv, test ); 
+        qst.main( argc, argv, type ); 
     }
-    else if( type == 'D' )
+    else if( FD == 'D' )
     {
         QSim<double>::UploadComponents(icdf, bnd, optical, rindexpath ); 
+        QSimTest<double>::PreInit(type)  ; 
         QSimTest<double> qst ; 
-        qst.main( argc, argv, test ); 
+        qst.main( argc, argv, type ); 
     }
     cudaDeviceSynchronize();
     return 0 ; 

@@ -6,6 +6,7 @@
 
 #include "NP.hh"
 #include "SOpticksResource.hh"
+#include "SPath.hh"
 #include "QBnd.hh"
 #include "QPrd.hh"
 
@@ -21,7 +22,17 @@ int main(int argc, char** argv)
 
     QBnd qb(bnd); 
     QPrd qp ; 
-    qp.dump(); 
+
+    LOG(info) << qp.desc(); 
+
+    unsigned num_photon = 8 ; 
+    unsigned num_bounce = 6 ; 
+    NP* prd = qp.duplicate_prd(num_photon, num_bounce); 
+    prd->dump(); 
+
+    const char* path = SPath::Resolve("$TMP/QPrdTest/prd.npy", FILEPATH ); 
+    LOG(info) << " path " << path ; 
+    prd->save(path); 
 
     return 0 ; 
 }

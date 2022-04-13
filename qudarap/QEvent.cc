@@ -106,6 +106,7 @@ void QEvent::init()
     evt->seed    = evt->max_photon  > 0 ? QU::device_alloc<int>(   evt->max_photon )  : nullptr ;   // 1:1 seed:photon
     evt->photon  = evt->max_photon  > 0 ? QU::device_alloc<quad4>( evt->max_photon )  : nullptr ; 
     evt->record  = evt->max_record  > 0 ? QU::device_alloc<quad4>( evt->max_photon * evt->max_record  ) : nullptr ; 
+
 }
 
 std::string QEvent::descMax() const

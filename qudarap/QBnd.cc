@@ -115,19 +115,23 @@ void QBnd::getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char* bnd_s
     }
 }
 
-void QBnd::dumpBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const 
+std::string QBnd::descBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const 
 {
+    std::stringstream ss ; 
     for(unsigned i=0 ; i < bnd_idx.size() ; i++)
     {
         unsigned bidx = bnd_idx[i] ;  
         const char* spec = getBoundarySpec(bidx); 
-        std::cout 
+        ss
             << " i " << std::setw(3) << i 
             << " bidx " << std::setw(3) << bidx
             << " spec " << spec
             << std::endl 
             ;
     }
+    std::string s = ss.str(); 
+    return s ; 
+
 }
 
 

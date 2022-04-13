@@ -2,9 +2,11 @@
 
 #include "QUDARAP_API_EXPORT.hh"
 #include <vector>
+#include <string>
 struct float4 ; 
 struct quad2 ; 
 struct QBnd ; 
+struct NP ; 
 
 /**
 QPrd
@@ -30,8 +32,8 @@ struct QUDARAP_API QPrd
 
     QPrd(); 
     void init();   
-    void dump(const char* msg="QPrd::dump") const ; 
-
+    std::string desc() const ; 
+    NP* duplicate_prd(unsigned num_photon, unsigned num_bounce ) const ; 
 };
 
 

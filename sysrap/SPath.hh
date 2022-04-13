@@ -28,6 +28,8 @@ SPath
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
+enum { NOOP, FILEPATH, DIRPATH } ;
+
 class SYSRAP_API SPath {
   public:
       static const plog::Severity LEVEL ; 

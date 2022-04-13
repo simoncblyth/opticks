@@ -282,6 +282,23 @@ void QSim<T>::init_dbg()
     d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
 }
 
+
+template <typename T>
+NP* QSim<T>::duplicate_dbg_ephoton(unsigned num_photon)
+{
+    NP* p = NP::Make<float>(num_photon, 4, 4 );
+    quad4* p_v   = (quad4*)p->values<float>(); 
+
+    for(unsigned i=0 ; i < num_photon ; i++)
+    {   
+        quad4 p0 = dbg->p  ;  // start from ephoton 
+        p0.q0.f.y = float(i)*100.f ; 
+        p_v[i] = p0 ;   
+    }    
+    return p ; 
+}
+
+
 template <typename T>
 std::string QSim<T>::desc_dbg_state() const 
 {
@@ -867,6 +884,19 @@ extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsi
     quad4* record, int record_max  ); 
 
 
+/**
+QSim::mock_propagate_launch_mutate
+------------------------------------
+
+* number of prd must be a multiple of the number of photon, ratio giving bounce_max 
+* number of record must be a multiple of the number of photon, ratio giving record_max 
+* HMM: this is an obtuse way to get bounce_max and record_max 
+
+TODO: get this to use the qevent commonly managed buffers 
+
+
+**/
+
 template <typename T>
 void QSim<T>::mock_propagate_launch_mutate(
          quad4* photon, unsigned num_photon, 
@@ -897,9 +927,10 @@ void QSim<T>::mock_propagate_launch_mutate(
         ;
 
     quad4* d_photon = QU::UploadArray<quad4>(photon, num_photon );  
-    quad2* d_prd = QU::UploadArray<quad2>(prd, num_prd );  
+    quad2* d_prd    = QU::UploadArray<quad2>(prd, num_prd );  
     quad4* d_record = QU::device_alloc<quad4>(num_record ) ; 
     QU::device_memset<quad4>( d_record, 0, num_record ); 
+
 
 
     unsigned threads_per_block = 512 ;  

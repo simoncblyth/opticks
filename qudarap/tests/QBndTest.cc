@@ -125,7 +125,7 @@ void test_getBoundaryIndices(const QBnd& qb)
 
     std::vector<unsigned> bnd_idx ; 
     qb.getBoundaryIndices( bnd_idx, bnd_sequence, ',' ); 
-    qb.dumpBoundaryIndices( bnd_idx ); 
+    LOG(info) << "qb.descBoundaryIndices" << std::endl << qb.descBoundaryIndices( bnd_idx ); 
 }
 
 

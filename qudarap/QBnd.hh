@@ -44,7 +44,7 @@ struct QUDARAP_API QBnd
     unsigned    getBoundaryIndex(const char* spec) const ;
 
     void        getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char* bnd_sequence, char delim=',' ) const ; 
-    void        dumpBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const ; 
+    std::string descBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const ; 
 
     unsigned    getBoundaryLine(const char* spec, unsigned j) const ; 
     unsigned    getMaterialLine( const char* material ) const ; 

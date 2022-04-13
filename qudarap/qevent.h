@@ -16,8 +16,8 @@ QEvent::setNumPhoton
 **/
 
 
-struct quad6 ; 
 struct quad4 ; 
+struct quad6 ; 
 
 struct qevent
 {
@@ -40,6 +40,9 @@ struct qevent
 
     int      num_record ; 
     quad4*   record ; 
+
+
+    // not including prd here as that is clearly for debugging only 
 
 }; 
 
