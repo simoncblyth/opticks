@@ -68,12 +68,19 @@ struct QUDARAP_API QEvent
     qevent*      evt ; 
     qevent*      d_evt ; 
     const NP*    gs ;  
+    const NP*    p  ; 
+
     std::string  meta ; 
 
     void     setGensteps(const NP* gs);
     unsigned count_genstep_photons(); 
     void     fill_seed_buffer(); 
     void     count_genstep_photons_and_fill_seed_buffer(); 
+
+    void     setPhotons( const NP* p );
+    void     getPhotons(       NP* p ) const ;
+    NP*      getPhotons() const ; 
+    NP*      getRecords() const ; 
 
     void     setNumPhoton(unsigned num_photon) ;  
     void     uploadEvt(); 
@@ -87,8 +94,10 @@ struct QUDARAP_API QEvent
     void savePhoton( const char* dir, const char* name); 
     void saveGenstep(const char* dir, const char* name); 
 
-    std::string descMax() const ; 
     std::string desc() const ; 
+    std::string descMax() const ; 
+    std::string descNum() const ; 
+    std::string descBuf() const ; 
 
     void saveMeta(   const char* dir, const char* name); 
     void setMeta( const char* meta ); 

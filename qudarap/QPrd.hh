@@ -33,6 +33,8 @@ struct QUDARAP_API QPrd
     QPrd(); 
     void init();   
     std::string desc() const ; 
+    unsigned getNumBounce() const ; 
+
     NP* duplicate_prd(unsigned num_photon, unsigned num_bounce ) const ; 
 };
 

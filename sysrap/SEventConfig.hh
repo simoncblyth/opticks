@@ -2,6 +2,20 @@
 #include <string>
 #include "SYSRAP_API_EXPORT.hh"
 
+/**
+SEventConfig
+==============
+
+MaxRecord 
+
+   * normally 0, disabling creation of the QEvent record buffer
+   * when greater than zero causes QEvent::init to create the large 
+     record buffer, full recording requires a value of one greater 
+     than the MaxBounce configured  (typically up to 16) 
+
+**/
+
+
 struct SYSRAP_API SEventConfig
 {
     static constexpr const int M = 1000000 ; 

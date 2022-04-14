@@ -49,8 +49,6 @@ void QPrd::init()
     unsigned num_prd = bnd_idx.size() ; 
     assert( num_prd == nrmt.size() ); 
 
-    SEventConfig::SetMaxBounce( num_prd ); 
-    SEventConfig::SetMaxRecord( num_prd+1 ); 
     LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ; 
 
     prd.resize(num_prd); 
@@ -63,6 +61,13 @@ void QPrd::init()
         pr.set_identity( (i+1)*100 ); 
     }
 }
+
+unsigned QPrd::getNumBounce() const 
+{
+    return bnd_idx.size(); 
+}
+
+
 
 /**
 QPrd::duplicate_prd

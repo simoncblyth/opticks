@@ -44,6 +44,27 @@ struct qevent
 
     // not including prd here as that is clearly for debugging only 
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    void zero(); 
+#endif 
+
 }; 
 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+inline void qevent::zero()
+{
+    num_genstep = 0 ; 
+    num_seed  = 0 ; 
+    num_photon = 0 ; 
+    num_record = 0 ; 
+
+    genstep = nullptr ; 
+    seed = nullptr ; 
+    photon = nullptr ; 
+    record = nullptr ; 
+}
+#endif 
 

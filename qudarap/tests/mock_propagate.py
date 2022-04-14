@@ -95,9 +95,9 @@ if __name__ == '__main__':
     for i in range(len(a)):
         if not (PIDX == -1 or PIDX == i): continue 
         if PIDX > -1: print("PIDX %d " % PIDX) 
-        print("r")
+        print("r[i,:,:3]")
         print(r[i,:,:3]) 
-        print("\n\nbflagdesc_")
+        print("\n\nbflagdesc_(r[i,j])")
         for j in range(len(r[i])):
             print(bflagdesc_(r[i,j])  ) 
         pass

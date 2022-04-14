@@ -49,7 +49,8 @@ msg="=== $BASH_SOURCE :"
 #test=reflect_specular
 #test=propagate_at_surface
 
-test=mock_propagate
+#test=mock_propagate
+test=mock_propagate_2
 
 M1=1000000
 K2=100000
@@ -120,6 +121,7 @@ if [ "${arg/ana}" != "$arg" ]; then
        propagate_at_boundary*) script=propagate_at_boundary.py ;; 
    random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
         lambertian_direction)  script=lambertian_direction.py ;; 
+             mock_propagate*)  script=mock_propagate.py ;; 
 
                             *) script=$TEST.py      ;;
     esac

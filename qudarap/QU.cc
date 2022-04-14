@@ -272,6 +272,7 @@ template void QU::copy_host_to_device<float>(    float* d,   const float* h, uns
 template void QU::copy_host_to_device<double>(   double* d,  const double* h, unsigned num_items);
 template void QU::copy_host_to_device<unsigned>( unsigned* d, const unsigned* h, unsigned num_items);
 template void QU::copy_host_to_device<qevent>(   qevent* d,   const qevent* h, unsigned num_items);
+template void QU::copy_host_to_device<quad4>(    quad4* d,    const quad4* h, unsigned num_items);
 template void QU::copy_host_to_device<quad6>(    quad6* d,    const quad6* h, unsigned num_items);
 
 

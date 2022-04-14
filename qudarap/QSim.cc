@@ -60,9 +60,6 @@ This structure is used to allow separate testing.
 template <typename T>
 void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, const char* rindexpath  )
 {
-    QEvent* event = new QEvent ;   // allocates GPU buffers, using SEventConfig settings 
-    LOG(LEVEL) << event->descMax(); 
-
     QRng* qrng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << qrng->desc(); 
 
@@ -109,6 +106,9 @@ void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optica
 
     LOG(LEVEL) << qprop->desc(); 
 
+
+
+
 }
 
 
@@ -129,7 +129,7 @@ singleton components.
 template <typename T>
 QSim<T>::QSim()
     :
-    event(QEvent::Get()),
+    event(new QEvent),
     rng(QRng::Get()),
     scint(QScint::Get()),
     bnd(QBnd::Get()),
@@ -148,6 +148,8 @@ QSim<T>::QSim()
 template <typename T>
 void QSim<T>::init()
 {
+    LOG(LEVEL) << event->descMax(); 
+
     init_sim(); 
     init_dbg(); 
 
@@ -894,7 +896,6 @@ QSim::mock_propagate_launch_mutate
 
 TODO: get this to use the qevent commonly managed buffers 
 
-
 **/
 
 template <typename T>
@@ -928,10 +929,9 @@ void QSim<T>::mock_propagate_launch_mutate(
 
     quad4* d_photon = QU::UploadArray<quad4>(photon, num_photon );  
     quad2* d_prd    = QU::UploadArray<quad2>(prd, num_prd );  
+
     quad4* d_record = QU::device_alloc<quad4>(num_record ) ; 
     QU::device_memset<quad4>( d_record, 0, num_record ); 
-
-
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
@@ -942,8 +942,52 @@ void QSim<T>::mock_propagate_launch_mutate(
     QU::copy_device_to_host_and_free<quad4>( record, d_record, num_record );
  
 }
- 
 
+
+
+template <typename T>
+extern void QSim_mock_propagate_launch_2(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad2* prd, unsigned type);  
+
+
+/**
+QSim::mock_propagate_launch_mutate_2
+---------------------------------------
+
+Aiming to replace the above with a simpler and less duplicitous version by 
+using common QEvent functionality 
+
+**/
+
+template <typename T>
+void QSim<T>::mock_propagate_launch_mutate_2( NP* p, const NP* prd, unsigned type )
+{
+    int num_p = p->shape[0] ; 
+    assert( prd->has_shape( num_p, -1, 2, 4 ) );   
+    assert( prd->shape.size() == 4 && prd->shape[2] == 2 && prd->shape[3] == 4 ); 
+
+    int num_prd = prd->shape[0]*prd->shape[1] ;  
+
+    LOG(info) << "[ num_prd " << num_prd << " prd " << prd->sstr()  ;
+ 
+    event->setPhotons(p); 
+
+    int num_photon = event->evt->num_photon ; 
+    assert( num_photon == num_p ); 
+
+
+    quad2* h_prd = (quad2*)prd->cvalues<float>();    
+    quad2* d_prd = QU::UploadArray<quad2>(h_prd, num_prd );  
+
+    unsigned threads_per_block = 512 ;  
+    configureLaunch1D( num_photon, threads_per_block ); 
+
+    QSim_mock_propagate_launch_2(numBlocks, threadsPerBlock, d_sim, d_prd, type );  
+
+    cudaDeviceSynchronize();
+
+    event->getPhotons(p); 
+    LOG(info) << "]" ; 
+}
 
 
 

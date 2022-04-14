@@ -7,7 +7,8 @@
 int SEventConfig::_MaxGenstep = SSys::getenvint("OPTICKS_MAX_GENSTEP",  1000*K) ; 
 int SEventConfig::_MaxPhoton  = SSys::getenvint("OPTICKS_MAX_PHOTON",      1*M) ; 
 int SEventConfig::_MaxBounce  = SSys::getenvint("OPTICKS_MAX_BOUNCE",       9 ) ; 
-int SEventConfig::_MaxRecord  = SSys::getenvint("OPTICKS_MAX_RECORD",      10 ) ; 
+int SEventConfig::_MaxRecord  = SSys::getenvint("OPTICKS_MAX_RECORD",       0 ) ;   
+
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }

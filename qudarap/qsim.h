@@ -1205,6 +1205,8 @@ TODO: record and record_max should come from qevent ?
 template <typename T>
 inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned idx, quad4* record, int record_max )
 {
+    printf("//qsim.mock_propagate bounce_max %d record_max %d evt.record %p evt.num_record %d \n", bounce_max, record_max, evt->record, evt->num_record ); 
+
     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
 
     int bounce = 0 ; 
@@ -1212,13 +1214,13 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
     qstate s ; 
     while( bounce < bounce_max )
     {
-        record[record_max*idx+bounce] = p ;  
+        if(record) record[record_max*idx+bounce] = p ;  
         const quad2& prd = mock_prd[bounce_max*idx+bounce] ;  
         command = propagate(bounce, p, s, prd, rng, idx ); 
         bounce++;        
         if(command == BREAK) break ;    
     }
-    if( bounce < record_max ) record[record_max*idx+bounce] = p ;  
+    if( record && bounce < record_max ) record[record_max*idx+bounce] = p ;  
 }
 
 /**
@@ -1232,6 +1234,7 @@ One propagate_to_boundary/propagate_at_boundary "bounce"
 template <typename T>
 inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s, const quad2& prd, curandStateXORWOW& rng, unsigned idx )
 {
+
     int command = START ; 
     unsigned flag = 0 ;  
 
@@ -1241,6 +1244,10 @@ inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s,
 
     const unsigned boundary = prd.boundary() ; 
     const unsigned identity = prd.identity() ; 
+
+    printf("//qsim.propagate idx %d bounce %d boundary %d identity %d \n", idx, bounce, boundary, identity ); 
+
+
     const float3* normal = prd.normal(); 
     float cosTheta = dot(*dir, *normal ) ;    
 

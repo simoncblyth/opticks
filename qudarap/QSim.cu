@@ -639,6 +639,37 @@ template void QSim_mock_propagate_launch(dim3, dim3, qsim<float>*  , quad4*,  un
 
 
 
+template <typename T>
+__global__ void _QSim_mock_propagate_2( qsim<T>* sim, quad2* prd )
+{
+    qevent* evt = sim->evt ; 
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= evt->num_photon ) return;
+
+    printf("//_QSim_mock_propagate_2 idx %d evt.num_photon %d evt.max_record %d  \n", idx, evt->num_photon, evt->max_record ); 
+
+    curandState rng = sim->rngstate[idx] ; 
+    quad4 p = evt->photon[idx] ;   
+    p.set_idx(idx); 
+
+    sim->mock_propagate( p, prd, evt->max_bounce, rng, idx, evt->record, evt->max_record );  
+
+    // HMM: sim holds the evt does it make sense to pass config and bufs in as args ?
+
+    evt->photon[idx] = p ; 
+}
+
+
+
+template <typename T>
+extern void QSim_mock_propagate_launch_2(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad2* prd, unsigned type)
+{
+    _QSim_mock_propagate_2<T><<<numBlocks,threadsPerBlock>>>(  sim, prd ); 
+}
+
+template void QSim_mock_propagate_launch_2(dim3, dim3, qsim<double>* , quad2*, unsigned ); 
+template void QSim_mock_propagate_launch_2(dim3, dim3, qsim<float>*  , quad2*, unsigned ); 
+
 
 
 template <typename T>

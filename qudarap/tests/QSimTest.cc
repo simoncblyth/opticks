@@ -40,6 +40,7 @@ QSimTest.cc
 #include "OPTICKS_LOG.hh"
 
 #include "SOpticksResource.hh"
+#include "SEventConfig.hh"
 #include "scuda.h"
 #include "squad.h"
 #include "SSys.hh"
@@ -124,6 +125,7 @@ struct QSimTest
     void photon_launch_mutate(  unsigned num_photon, unsigned type); 
 
     void mock_propagate_launch_mutate(unsigned num_photon, unsigned type); 
+    void mock_propagate_launch_mutate_2(unsigned num_photon, unsigned type); 
 
     void quad_launch_generate(unsigned num_photon, unsigned type); 
 
@@ -606,6 +608,49 @@ void QSimTest<T>::mock_propagate_launch_mutate(unsigned num_photon, unsigned typ
 
 
 
+
+
+template <typename T>
+void QSimTest<T>::mock_propagate_launch_mutate_2(unsigned num_photon, unsigned type )
+{
+    LOG(info) << "[" ; 
+
+    assert( QSimLaunch::IsMutate(type)==true ); 
+    const char* subfold = QSimLaunch::Name(type) ; 
+    assert( subfold ); 
+
+    NP* p   = qs.duplicate_dbg_ephoton(num_photon); 
+
+    int bounce_max = SEventConfig::MaxBounce(); 
+    NP* prd = qs.prd->duplicate_prd(num_photon, bounce_max);  
+
+    qs.mock_propagate_launch_mutate_2( p, prd, type ); 
+
+    const char* p_path = Path(subfold, "p.npy"); 
+    const char* prd_path = Path(subfold, "prd.npy"); 
+    const char* r_path = Path(subfold, "r.npy"); 
+
+    LOG(info) 
+        << " p_path  " << p_path  
+        << " prd_path  " << prd_path  
+        << " r_path  " << r_path  
+        ;
+
+    p->save(p_path); 
+    prd->save(prd_path); 
+
+    LOG(fatal) << "[ qs.event.getRecords " ; 
+    NP* r = qs.event->getRecords(); 
+    LOG(fatal) << "] qs.event.getRecords " ; 
+
+    r->save(r_path);
+}
+
+
+
+
+
+
 template <typename T>
 void QSimTest<T>::quad_launch_generate(unsigned num_quad, unsigned type)
 {
@@ -652,15 +697,32 @@ void QSimTest<T>::photon_launch_mutate(unsigned num_photon, unsigned type)
     save_dbg( dst_subfold ); 
 }
 
+/**
+QSimTest::PreInit
+------------------
+
+SEventConfig settings to configure the QEvent GPU buffers
+must be done prior to QEvent::init which happens when QSim is instanciated.
+
+**/
 
 template<typename T>
 void QSimTest<T>::PreInit(unsigned type )  // static
 {
     LOG(info) << "[ " <<  QSimLaunch::Name(type) ; 
-    if( type == MOCK_PROPAGATE )
+    if( type == MOCK_PROPAGATE || type == MOCK_PROPAGATE_2 )
     {
         QPrd* prd = new QPrd ; 
         LOG(info) << prd->desc() ;  
+        int num_bounce = prd->getNumBounce(); 
+ 
+        // NB better not to hide this inside QPrd
+        SEventConfig::SetMaxGenstep(0);        // MOCK_PROPAGATE starts from input photons do no gensteps needed
+        SEventConfig::SetMaxPhoton(1000000);   // used for QEvent buffer sizing 
+        SEventConfig::SetMaxBounce(num_bounce); 
+        SEventConfig::SetMaxRecord(num_bounce+1); 
+
+        LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
     }
     LOG(info) << "] " <<  QSimLaunch::Name(type) ; 
 }
@@ -730,7 +792,9 @@ void QSimTest<T>::main(int argc, char** argv, unsigned type )
         case LAMBERTIAN_DIRECTION:
                                                  quad_launch_generate(num, type)       ; break ; 
         case MOCK_PROPAGATE:
-                                               mock_propagate_launch_mutate(num, type) ; break ; 
+                                                mock_propagate_launch_mutate(num, type) ; break ; 
+        case MOCK_PROPAGATE_2:
+                                               mock_propagate_launch_mutate_2(num, type) ; break ; 
 
         default :                           
                                                LOG(fatal) << "unimplemented" << std::endl ; break ; 
