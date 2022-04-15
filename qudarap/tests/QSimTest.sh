@@ -49,8 +49,7 @@ msg="=== $BASH_SOURCE :"
 #test=reflect_specular
 #test=propagate_at_surface
 
-#test=mock_propagate
-test=mock_propagate_2
+test=mock_propagate
 
 M1=1000000
 K2=100000

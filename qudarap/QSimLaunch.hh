@@ -40,8 +40,7 @@ enum {
    REFLECT_SPECULAR, 
    PROPAGATE_AT_SURFACE, 
 
-   MOCK_PROPAGATE,
-   MOCK_PROPAGATE_2
+   MOCK_PROPAGATE
 
    
 };
@@ -78,7 +77,6 @@ struct QSimLaunch
     static constexpr const char* REFLECT_SPECULAR_ = "reflect_specular" ;
     static constexpr const char* PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ;
     static constexpr const char* MOCK_PROPAGATE_ = "mock_propagate" ;
-    static constexpr const char* MOCK_PROPAGATE_2_ = "mock_propagate_2" ;
 };
 
 
@@ -121,7 +119,6 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,REFLECT_SPECULAR_) == 0)            test = REFLECT_SPECULAR ;
    if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)       test = PROPAGATE_AT_SURFACE ;
    if(strcmp(name,MOCK_PROPAGATE_)  == 0)             test = MOCK_PROPAGATE ;
-   if(strcmp(name,MOCK_PROPAGATE_2_)  == 0)           test = MOCK_PROPAGATE_2 ;
    
    bool known =  test != UNKNOWN  ;
    if(!known) printf("QSimLaunch::Type name [%s] is unknown \n", name) ; 
@@ -160,7 +157,6 @@ inline const char* QSimLaunch::Name( unsigned type )
         case REFLECT_SPECULAR:             s = REFLECT_SPECULAR_             ; break ; 
         case PROPAGATE_AT_SURFACE:         s = PROPAGATE_AT_SURFACE_         ; break ; 
         case MOCK_PROPAGATE:               s = MOCK_PROPAGATE_               ; break ; 
-        case MOCK_PROPAGATE_2:             s = MOCK_PROPAGATE_2_             ; break ; 
     }
     return s; 
 }
@@ -172,8 +168,7 @@ inline bool QSimLaunch::IsMutate( unsigned type )
         type == PROPAGATE_AT_BOUNDARY_S_POLARIZED || 
         type == PROPAGATE_AT_BOUNDARY_P_POLARIZED || 
         type == PROPAGATE_AT_BOUNDARY_X_POLARIZED || 
-        type == MOCK_PROPAGATE || 
-        type == MOCK_PROPAGATE_2  
+        type == MOCK_PROPAGATE 
         ; 
 }
 

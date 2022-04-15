@@ -118,7 +118,8 @@ struct qsim
     QSIM_METHOD static void   rayleigh_scatter_align(quad4& p, curandStateXORWOW& rng ); 
 
 
-    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id, quad4* record, int record_max ); 
+    //QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id, quad4* record, int record_max ); 
+    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx ); 
 
     QSIM_METHOD int     propagate(const int bounce, quad4& p, qstate& s, const quad2& prd, curandStateXORWOW& rng, unsigned idx ); 
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
@@ -1203,24 +1204,27 @@ TODO: record and record_max should come from qevent ?
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned idx, quad4* record, int record_max )
+inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx )
 {
-    printf("//qsim.mock_propagate bounce_max %d record_max %d evt.record %p evt.num_record %d \n", bounce_max, record_max, evt->record, evt->num_record ); 
-
     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
+
+    quad4* record = evt->record ;  
+    const int& max_record = evt->max_record ; 
+    const int& max_bounce = evt->max_bounce ; 
+    printf("//qsim.mock_propagate evt.max_bounce %d evt.max_record %d evt.record %p evt.num_record %d \n", max_bounce, max_record, record, evt->num_record ); 
 
     int bounce = 0 ; 
     int command = START ; 
     qstate s ; 
-    while( bounce < bounce_max )
+    while( bounce < max_bounce )
     {
-        if(record) record[record_max*idx+bounce] = p ;  
-        const quad2& prd = mock_prd[bounce_max*idx+bounce] ;  
+        if(record) record[max_record*idx+bounce] = p ;  
+        const quad2& prd = mock_prd[max_bounce*idx+bounce] ;  
         command = propagate(bounce, p, s, prd, rng, idx ); 
         bounce++;        
         if(command == BREAK) break ;    
     }
-    if( record && bounce < record_max ) record[record_max*idx+bounce] = p ;  
+    if( record && bounce < max_record ) record[max_record*idx+bounce] = p ;  
 }
 
 /**

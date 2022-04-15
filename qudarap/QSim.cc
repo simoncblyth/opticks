@@ -881,9 +881,9 @@ void QSim<T>::photon_launch_mutate(quad4* photon, unsigned num_photon, unsigned 
 }
  
  
+
 template <typename T>
-extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, quad2* mock_prd, int bounce_max, unsigned type, 
-    quad4* record, int record_max  ); 
+extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad2* prd );  
 
 
 /**
@@ -894,72 +894,13 @@ QSim::mock_propagate_launch_mutate
 * number of record must be a multiple of the number of photon, ratio giving record_max 
 * HMM: this is an obtuse way to get bounce_max and record_max 
 
-TODO: get this to use the qevent commonly managed buffers 
-
-**/
-
-template <typename T>
-void QSim<T>::mock_propagate_launch_mutate(
-         quad4* photon, unsigned num_photon, 
-         quad4* record, unsigned num_record,  
-         const quad2* prd, unsigned num_prd, 
-         unsigned type )
-{
-    assert( type == MOCK_PROPAGATE ); 
-    assert( d_sim ); 
-
-    bool is_prd_photon_multiple = num_prd % num_photon == 0 ; 
-    if(is_prd_photon_multiple == false) LOG(fatal) << " num_prd " << num_prd << " num_photon " << num_photon ; 
-    assert( is_prd_photon_multiple ); 
-    int bounce_max = num_prd/num_photon ; 
-   
-    bool is_record_photon_multiple = num_record % num_photon == 0 ; 
-    if(is_record_photon_multiple == false) LOG(fatal) << " num_record " << num_record << " num_photon " << num_photon ; 
-    assert( is_record_photon_multiple ); 
-    int record_max = num_record/num_photon ; 
-
-
-    LOG(info) 
-        << " num_photon " << num_photon
-        << " num_record " << num_record
-        << " num_prd " << num_prd 
-        << " bounce_max " << bounce_max
-        << " record_max " << record_max
-        ;
-
-    quad4* d_photon = QU::UploadArray<quad4>(photon, num_photon );  
-    quad2* d_prd    = QU::UploadArray<quad2>(prd, num_prd );  
-
-    quad4* d_record = QU::device_alloc<quad4>(num_record ) ; 
-    QU::device_memset<quad4>( d_record, 0, num_record ); 
-
-    unsigned threads_per_block = 512 ;  
-    configureLaunch1D( num_photon, threads_per_block ); 
-
-    QSim_mock_propagate_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_prd, bounce_max, type, d_record, record_max );  
-
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon );
-    QU::copy_device_to_host_and_free<quad4>( record, d_record, num_record );
- 
-}
-
-
-
-template <typename T>
-extern void QSim_mock_propagate_launch_2(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad2* prd, unsigned type);  
-
-
-/**
-QSim::mock_propagate_launch_mutate_2
----------------------------------------
-
 Aiming to replace the above with a simpler and less duplicitous version by 
 using common QEvent functionality 
 
 **/
 
 template <typename T>
-void QSim<T>::mock_propagate_launch_mutate_2( NP* p, const NP* prd, unsigned type )
+void QSim<T>::mock_propagate_launch_mutate( NP* p, const NP* prd, unsigned type )
 {
     int num_p = p->shape[0] ; 
     assert( prd->has_shape( num_p, -1, 2, 4 ) );   
@@ -974,14 +915,12 @@ void QSim<T>::mock_propagate_launch_mutate_2( NP* p, const NP* prd, unsigned typ
     int num_photon = event->evt->num_photon ; 
     assert( num_photon == num_p ); 
 
-
-    quad2* h_prd = (quad2*)prd->cvalues<float>();    
-    quad2* d_prd = QU::UploadArray<quad2>(h_prd, num_prd );  
+    quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd );  
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
-    QSim_mock_propagate_launch_2(numBlocks, threadsPerBlock, d_sim, d_prd, type );  
+    QSim_mock_propagate_launch(numBlocks, threadsPerBlock, d_sim, d_prd );  
 
     cudaDeviceSynchronize();
 

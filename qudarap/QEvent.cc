@@ -295,8 +295,8 @@ void QEvent::count_genstep_photons_and_fill_seed_buffer()
 QEvent::setPhotons
 -------------------
 
-This is only used with non-standard from photon running, 
-eg photon mutatating QSimTest use this.  
+This is only used with non-standard input photon running, 
+eg the photon mutatating QSimTest use this.  
 The normal mode of operation is to start from gensteps using QEvent::setGensteps 
 and seed and generate photons on device.
 
@@ -305,17 +305,21 @@ and seed and generate photons on device.
 void QEvent::setPhotons(const NP* p_)
 {
     p = p_ ; 
+
     int num_photon = p->shape[0] ; 
     
     LOG(info) << "[ " <<  p->sstr() << " num_photon " << num_photon  ; 
 
+    assert( p->has_shape( -1, 4, 4) ); 
+
     setNumPhoton( num_photon ); 
 
-    quad4* p_h = (quad4*)p->cvalues<float>() ; 
-    QU::copy_host_to_device<quad4>( evt->photon, p_h, num_photon ); 
+    QU::copy_host_to_device<quad4>( evt->photon, (quad4*)p->bytes(), num_photon ); 
 
     LOG(info) << "] " <<  p->sstr() << " num_photon " << num_photon  ; 
 }
+
+
 
 /**
 QEvent::getPhotons(NP* p) :  mutating API

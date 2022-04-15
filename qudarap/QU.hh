@@ -1,9 +1,14 @@
 #pragma once
 #include "QUDARAP_API_EXPORT.hh"
+#include "plog/Severity.h"
 #include <vector>
+
+struct NP ; 
 
 struct QUDARAP_API QU
 {
+    static const plog::Severity LEVEL ; 
+
     template <typename T>
     static char typecode() ; 
 
@@ -42,6 +47,12 @@ struct QUDARAP_API QU
 
     template <typename T>
     static void copy_host_to_device( T* d, const T* h,  unsigned num_items);
+
+    template <typename T>
+    static unsigned NumItems( const NP* a ); 
+
+    template <typename T>
+    static unsigned copy_host_to_device( T* d, const NP* a);
 
     //template <typename T>
     //static select_copy_device_to_host( std::vector<T>& h, T* d, unsigned mask, unsigned num_items ); 

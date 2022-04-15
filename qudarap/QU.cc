@@ -1,14 +1,21 @@
 #include <cassert>
 #include "scuda.h"
+
+#include "NP.hh"
 #include "QUDA_CHECK.h"
 #include "QU.hh"
 #include "curand_kernel.h"
+
+#include "PLOG.hh"
 
 #include "qsim.h"
 #include "qprop.h"
 #include "qrng.h"
 #include "qevent.h"
 #include "qdebug.h"
+
+
+const plog::Severity QU::LEVEL = PLOG::EnvLevel("QU", "DEBUG") ; 
 
 
 template <typename T> 
@@ -274,6 +281,99 @@ template void QU::copy_host_to_device<unsigned>( unsigned* d, const unsigned* h,
 template void QU::copy_host_to_device<qevent>(   qevent* d,   const qevent* h, unsigned num_items);
 template void QU::copy_host_to_device<quad4>(    quad4* d,    const quad4* h, unsigned num_items);
 template void QU::copy_host_to_device<quad6>(    quad6* d,    const quad6* h, unsigned num_items);
+
+
+/**
+QU::NumItems
+---------------
+
+Apply heuristics to determine the number of intended GPU buffer items
+using the size of the template type and the shape of the NP array. 
+
+**/
+
+template <typename T>
+unsigned QU::NumItems( const NP* a )
+{
+    unsigned num_items = 0 ; 
+
+    if( sizeof(T) == sizeof(float)*6*4 )   // looks like quad6
+    {
+        if(a->shape.size() == 3 )
+        {
+            assert( a->has_shape( -1, 6, 4) ); 
+            num_items = a->shape[0] ; 
+        }
+    }
+    else if( sizeof(T) == sizeof(float)*4*4 )   // looks like quad4 
+    {
+        if(a->shape.size() == 3 )
+        {
+            assert( a->has_shape( -1, 4, 4) ); 
+            num_items = a->shape[0] ; 
+        }
+        else if(a->shape.size() == 4 )
+        {
+            assert( a->shape[2] == 2 && a->shape[3] == 4 ); 
+            num_items = a->shape[0]*a->shape[1] ; 
+        }
+    }  
+    else if( sizeof(T) == sizeof(float)*4*2 ) // looks like quad2
+    {
+        if(a->shape.size() == 3 )
+        {
+            assert( a->has_shape( -1, 2, 4) ); 
+            num_items = a->shape[0] ; 
+        }
+        else if(a->shape.size() == 4 )
+        {
+            assert( a->shape[2] == 2 && a->shape[3] == 4 ); 
+            num_items = a->shape[0]*a->shape[1] ; 
+        }
+    }  
+    return num_items ; 
+}
+
+template unsigned QU::NumItems<quad2>(const NP* );
+template unsigned QU::NumItems<quad4>(const NP* );
+template unsigned QU::NumItems<quad6>(const NP* );
+
+
+/**
+QU::copy_host_to_device
+------------------------
+
+HMM: encapsulating determination of num_items is less useful than 
+would initially expect because will always need to know 
+and record the num_items in a shared GPU/CPU location like qevent.
+And also will often need to allocate the buffer first too. 
+
+Suggesting should generally use this via QEvent. 
+
+**/
+
+template <typename T>
+unsigned QU::copy_host_to_device( T* d, const NP* a)
+{
+    unsigned num_items = NumItems<T>(a); 
+    if( num_items == 0 )
+    {
+        LOG(fatal) << " failed to devine num_items for array " << a->sstr() << " with template type where sizeof(T) " << sizeof(T) ; 
+    }
+
+    if( num_items > 0 )
+    {
+        copy_host_to_device( d, (T*)a->bytes(), num_items ); 
+    }
+    return num_items ; 
+}
+
+template unsigned QU::copy_host_to_device<quad2>( quad2* , const NP* );   
+template unsigned QU::copy_host_to_device<quad4>( quad4* , const NP* );   
+template unsigned QU::copy_host_to_device<quad6>( quad6* , const NP* );   
+
+
+
 
 
 /**
