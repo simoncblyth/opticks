@@ -297,7 +297,7 @@ Per-event simulate setup invoked just prior to optix launch
 void CSGOptiX::prepareSimulateParam()  
 {
     LOG(info) << "[" ; 
-    params->num_photons = evt->getNumPhotons() ; 
+    params->num_photons = evt->getNumPhoton() ;  // hmm perhaps just provide qevent ?  
 
     LOG(info) << "]" ; 
 }

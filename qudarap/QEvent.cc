@@ -380,6 +380,10 @@ This is due to the expectation that the number of hits will vary greatly from la
 unlike the number of photons which is expected to be rather similar for most launches other than 
 remainder last launches. 
 
+The alternative to this dynamic "busy" handling of hits would be to reuse a fixed hits buffer
+sized to max_photons : that however seems unpalatable due it always doubling up GPU memory for 
+photons and hits.  
+
 **/
 
 NP* QEvent::getHits() const 

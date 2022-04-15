@@ -22,27 +22,52 @@ What does event handling need to plug into
         render and simulate 
 
 
-
 TODO
 ------
 
+* CSGOptix currently depends on OpticksCore
+
+  * see if can move it down to sysrap-qudarap ?
+
+* CSGOptiX with pre-7 : *Six* 
+
+  * review *Six* and its tests : add more tests using very simple geometry if necessary 
+  * update *Six* backwards compat machinery to accomodate recent QUDARap developments 
+  * arrange for the two "branches" to share more code, eg 
+ 
+    * can more use of OptiX 6/CUDA interop be made : using alt view of same CUDA buffers  
+
+
+* CSGOptiX test of recent QUDARap dev both pre-7 and 7 
+
+* get generation going in new workflow to fully check the QEvent/qevent design  
+
+* review old and new looking for aspects that need to be ported over 
+
+  * compressed sequence recording (seqhis seqmat) is needed for OpticksEvent 
+     as the full record is only appropriate for debugging with small numbers of photons 
+
+  * photon indexing (using thrust sorting) needs to be ported over : probably this can be done in sysrap/SU
+    together with stream compaction  
+
+* see if it makes sense to use CSGOptiX directly from G4Opticks OR perhaps via some slim middleware "Engine" 
+
+* OpticksEvent components and hookup to allow ab.py validation machinery to work with new workflow
+
+  * move OpticksEvent down to sysrap : to keep simple primary dependency chain sysrap-qudarap-csgoptix
+
+
+DONE : incorporate SU stream compaction into QEvent::getHits 
+----------------------------------------------------------------
+
 * QEvent/qevent needs hit buffer handling integrating SU stream compaction SU::select_copy_device_to_host_presized
   
-  * can develop this at small scale using mock_propagate with mock_prd 
-  * where to hold the functor ? qselector<quad4> selector(mask); 
-
-* need to get generation going in new workflow 
-  before can fully check the QEvent/qevent design  
-
-* CSGOptiX test of recent QUDARap dev 
-
-* CSGOptiX with pre-7 
-
-* see if can use CSGOptiX direct from G4Opticks OR perhaps via some slim middleware "Engine" 
+  * developed this at small scale using mock_propagate with mock_prd 
+  * holding the selector functor in QEvent
 
 
-DONE 
------
+DONE : incorporate QEvent/qevent into QSim/qsim
+---------------------------------------------------
 
 * incorporate QEvent/qevent into QSim/qsim and test utility of qevent encapsulated buffer handling with QSimTest, 
   if the design is appropriate this should significantly simplify and remove duplication of buffer handling in QSimTest 
@@ -58,7 +83,6 @@ DONE
 
 
    
-* review old and new looking for aspects that need to be ported over 
 
 Review Progress already in new workflow
 ------------------------------------------

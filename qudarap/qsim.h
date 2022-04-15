@@ -1228,30 +1228,19 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
 }
 
 /**
-qsim::propagate
-----------------
-
-One propagate_to_boundary/propagate_at_boundary "bounce" 
+qsim::propagate : one "bounce" propagate_to_boundary/propagate_at_boundary 
+-----------------------------------------------------------------------------
 
 **/
 
 template <typename T>
 inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s, const quad2& prd, curandStateXORWOW& rng, unsigned idx )
 {
-
-    int command = START ; 
-    unsigned flag = 0 ;  
-
     float* wavelength = &p.q2.f.w ; 
-    //float* time       = &p.q0.f.w ;
     float3* dir = (float3*)&p.q1.f.x ;    
 
     const unsigned boundary = prd.boundary() ; 
     const unsigned identity = prd.identity() ; 
-
-    printf("//qsim.propagate idx %d bounce %d boundary %d identity %d \n", idx, bounce, boundary, identity ); 
-
-
     const float3* normal = prd.normal(); 
     float cosTheta = dot(*dir, *normal ) ;    
 
@@ -1264,15 +1253,9 @@ inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s,
 
     fill_state(s, boundary, *wavelength, cosTheta ); 
 
-#ifdef DEBUG_TIME
-    if( idx == pidx ) printf("//qsim.propagate idx %d bnc %2d time %10.4f (before to_boundary)  \n", idx, bounce, *time ); 
-#endif
+    unsigned flag = 0 ;  
 
-    command = propagate_to_boundary( flag, p, prd, s, rng, idx );  
-
-#ifdef DEBUG_TIME
-     if( idx == pidx ) printf("//qsim.propagate idx %d bnc %2d time %10.4f (after to_boundary)  \n", idx, bounce, *time ); 
-#endif
+    int command = propagate_to_boundary( flag, p, prd, s, rng, idx ); 
 
     if( command == BOUNDARY )
     {
@@ -1283,11 +1266,7 @@ inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s,
                                   ;  
     }
 
-#ifdef DEBUG_TIME
-    if( idx == pidx ) printf("//qsim.propagate idx %d bnc %2d time %10.4f (after at_boundary)  \n", idx, bounce, *time ); 
-#endif
-
-    p.set_flag(flag); 
+    p.set_flag(flag);    // hmm could hide this ?
 
     return command ; 
 }
