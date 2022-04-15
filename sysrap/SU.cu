@@ -6,13 +6,6 @@
 #include <thrust/device_ptr.h>
 #include <thrust/copy.h>
 
-template<typename T>
-unsigned SU::select_count( T* d, unsigned num_d,  qselector<T>& selector )
-{
-    thrust::device_ptr<T> td(d);
-    return thrust::count_if(td, td+num_d , selector );
-}
-
 
 template<typename T>
 T* SU::upload(const T* h, unsigned num_items )
@@ -28,6 +21,12 @@ T* SU::upload(const T* h, unsigned num_items )
 /**
 SU::select_copy_device_to_host
 -------------------------------
+
+1. apply thrust::count_if to *d* with *selector* functor yielding *num_select* 
+2. allocate *d_select* with num_select*sizeof(T) bytes
+3. thrust::copy_if from *d* to *d_select* using the *selector* functor
+4. host new T[num_select] allocation 
+5. copies from *d_select* to the *num_select* host array *h* using the selector 
 
 This API is awkward because the number selected is not known when making the call.
 For example it would be difficult to populate an NP array using this without 
@@ -54,12 +53,31 @@ void SU::select_copy_device_to_host( T** h, unsigned& num_select,  T* d, unsigne
 }
 
 
+/**
+SU::select_count
+------------------
+
+1. apply thrust::count_if to *d* with *selector* functor yielding *num_select* 
+
+**/
+
+template<typename T>
+unsigned SU::select_count( T* d, unsigned num_d,  qselector<T>& selector )
+{
+    thrust::device_ptr<T> td(d);
+    return thrust::count_if(td, td+num_d , selector );
+}
+
 
 /**
 SU::select_copy_device_to_host_presized
 -----------------------------------------
 
-The host array must be presized to fit the selection, do so using *select_count* with the same selector. 
+The host array must be presized to fit the selection, determine the size using *select_count* with the same selector. 
+
+1. allocates *d_select* with num_select*sizeof(T) bytes
+2. thrust::copy_if from *d* to *d_select* using the selector functor
+3. copies from *d_select* to the *num_select* presized host array *h* using the selector
 
 **/
 
@@ -74,6 +92,7 @@ void SU::select_copy_device_to_host_presized( T* h, T* d, unsigned num_d, const 
     thrust::device_ptr<T> td_select(d_select);
 
     thrust::copy_if(td, td+num_d , td_select, selector );
+
     cudaMemcpy(h, d_select, num_select*sizeof(T), cudaMemcpyDeviceToHost);
 }
 

@@ -127,7 +127,7 @@ struct quad4
 };
 
 
-template<typename T>    // T  needs to have flagmask 
+template<typename T>    // T  needs to have flagmask method 
 struct qselector
 {
     unsigned hitmask ; 

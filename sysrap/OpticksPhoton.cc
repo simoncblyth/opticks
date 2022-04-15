@@ -94,6 +94,19 @@ unsigned long long OpticksPhoton::AbbrevToFlagSequence( const char* abbseq, char
 }
 
 
+/**
+OpticksPhoton::GetHitMask
+------------------------
+
+Used by SEventConfig::HitMask() 
+
+**/
+
+unsigned OpticksPhoton::GetHitMask(const char* abbrseq, char delim) // static 
+{
+    return AbbrevSequenceToMask( abbrseq, delim ); 
+}
+
 unsigned OpticksPhoton::AbbrevSequenceToMask( const char* abbseq, char delim)  // static
 {
    std::vector<std::string> elem ; 
@@ -102,7 +115,10 @@ unsigned OpticksPhoton::AbbrevSequenceToMask( const char* abbseq, char delim)  /
 
    for(unsigned i=0 ; i < elem.size() ; i++)
    {
-       unsigned flag = AbbrevToFlag( elem[i].c_str() );
+       const char* abb = elem[i].c_str() ; 
+       unsigned flag = AbbrevToFlag( abb );
+       //std::cout << " abb " << std::setw(6) << abb << " flag " << flag << std::endl ; 
+
        mask |= flag  ; 
    }   
    return mask ; 

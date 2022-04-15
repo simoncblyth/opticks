@@ -6,6 +6,7 @@
 #include "squad.h"
 #include "sqat4.h"
 #include "stran.h"
+#include "SU.hh"
 
 #include "SEvent.hh"
 #include "SEventConfig.hh"
@@ -81,6 +82,7 @@ Instanciation allocates device buffers with sizes configured by SEventConfig
 
 QEvent::QEvent()
     :
+    selector(new qselector<quad4>(SEventConfig::HitMask())),
     evt(new qevent),
     d_evt(QU::device_alloc<qevent>(1)),
     gs(nullptr),
@@ -248,6 +250,20 @@ void QEvent::setGensteps(const NP* gs_)
     count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
 
     setNumPhoton( evt->num_seed ); 
+}
+
+
+unsigned QEvent::getNumHit() const 
+{
+    assert( evt->photon ); 
+    assert( evt->num_photon ); 
+
+    unsigned num_hit = SU::select_count( evt->photon, evt->num_photon, *selector );    
+
+    LOG(info) << " evt->photon " << evt->photon << " evt->num_photon " << evt->num_photon << " num_hit " << num_hit ;  
+    // HMM: qevent needs to hold the the hit buffer and num_hit  
+
+    return num_hit ; 
 }
 
 

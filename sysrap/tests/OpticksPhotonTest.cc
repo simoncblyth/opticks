@@ -179,9 +179,9 @@ void test_PointVal1()
 void test_AbbrevSequenceToMask()
 {
     LOG(info); 
-    const char* abrseq = "TO SD BT" ; 
+    const char* abrseq = "TO,SD,BT" ; 
     unsigned x_mask = TORCH | SURFACE_DETECT | BOUNDARY_TRANSMIT ;       
-    char delim = ' ' ; 
+    char delim = ',' ; 
     unsigned mask = OpticksPhoton::AbbrevSequenceToMask( abrseq, delim ); 
 
     assert( mask == x_mask ) ; 

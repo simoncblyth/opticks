@@ -71,6 +71,8 @@ struct SYSRAP_API OpticksPhoton
     static unsigned BitPos(unsigned flag);
     static unsigned AbbrevToFlag( const char* abbrev );
     static unsigned long long AbbrevToFlagSequence( const char* abbseq, char delim=' ');
+
+    static unsigned GetHitMask(const char* abbrseq, char delim=','); 
     static unsigned AbbrevSequenceToMask( const char* abbseq, char delim=' ');
     static void AbbrevToFlagValSequence( unsigned long long& seqhis, unsigned long long& seqval, const char* seqmap, char edelim=' ') ;
 
@@ -142,7 +144,10 @@ inline const char* OpticksPhoton::Abbrev(const unsigned int flag)
         case EFFICIENCY_COLLECT: s=_EFFICIENCY_COLLECT ;break; 
         case EFFICIENCY_CULL:    s=_EFFICIENCY_CULL ;break; 
         default:               s=_BAD_FLAG  ;
-                               std::cerr << "OpticksPhoton::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec << std::endl ;             
+
+        //    std::cerr << "OpticksPhoton::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec << std::endl ;             
+        //    OpticksPhoton::AbbrevToFlag does a "lazy lookup" trying all flags against abb string 
+        //    so getting bad flag is to be expected 
     }
     return s;
 }

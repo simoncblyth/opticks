@@ -6,7 +6,7 @@ struct qat4 ;
 struct quad6 ;
 struct NP ; 
 
-//template <typename T> struct Tran ; 
+template <typename T> struct qselector ; 
 template <typename T> struct QBuf ; 
 
 #include <vector>
@@ -64,7 +64,8 @@ struct QUDARAP_API QEvent
 
     // NB members needed on both CPU+GPU or from the QEvent.cu functions 
     // should reside inside the qevent.h instance not up here in QEvent.hh
-  
+ 
+    qselector<quad4>* selector ; 
     qevent*      evt ; 
     qevent*      d_evt ; 
     const NP*    gs ;  
@@ -73,6 +74,10 @@ struct QUDARAP_API QEvent
     std::string  meta ; 
 
     void     setGensteps(const NP* gs);
+
+    unsigned getNumHit() const ; 
+
+
     unsigned count_genstep_photons(); 
     void     fill_seed_buffer(); 
     void     count_genstep_photons_and_fill_seed_buffer(); 

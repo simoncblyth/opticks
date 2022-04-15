@@ -22,8 +22,27 @@ What does event handling need to plug into
         render and simulate 
 
 
+
 TODO
 ------
+
+* QEvent/qevent needs hit buffer handling integrating SU stream compaction SU::select_copy_device_to_host_presized
+  
+  * can develop this at small scale using mock_propagate with mock_prd 
+  * where to hold the functor ? qselector<quad4> selector(mask); 
+
+* need to get generation going in new workflow 
+  before can fully check the QEvent/qevent design  
+
+* CSGOptiX test of recent QUDARap dev 
+
+* CSGOptiX with pre-7 
+
+* see if can use CSGOptiX direct from G4Opticks OR perhaps via some slim middleware "Engine" 
+
+
+DONE 
+-----
 
 * incorporate QEvent/qevent into QSim/qsim and test utility of qevent encapsulated buffer handling with QSimTest, 
   if the design is appropriate this should significantly simplify and remove duplication of buffer handling in QSimTest 
@@ -34,9 +53,6 @@ TODO
     which requires use of QEvent::setGensteps with seeding etc.. 
   * photon level tests are sufficiently different from standard running 
     that they will not benefit much from QEvent. 
-  * this suggests that need to get generation going in new workflow 
-    before can properly check the QEvent/qevent design  
-
   * HMM: looking at CSGOptiX/OptiX7Test.cu:simulate the qevent and qsim instances 
     are kept separate and both come in from params 
 
