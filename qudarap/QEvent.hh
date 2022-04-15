@@ -75,7 +75,6 @@ struct QUDARAP_API QEvent
 
     void     setGensteps(const NP* gs);
 
-    unsigned getNumHit() const ; 
 
 
     unsigned count_genstep_photons(); 
@@ -86,6 +85,10 @@ struct QUDARAP_API QEvent
     void     getPhotons(       NP* p ) const ;
     NP*      getPhotons() const ; 
     NP*      getRecords() const ; 
+
+    unsigned getNumHit() const ; 
+    NP*      getHits() const ; 
+
 
     void     setNumPhoton(unsigned num_photon) ;  
     void     uploadEvt(); 

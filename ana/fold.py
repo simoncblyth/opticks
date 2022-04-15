@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os, logging, numpy as np, datetime
+from opticks.ana.npmeta import NPMeta
+
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
@@ -54,9 +56,11 @@ class Fold(object):
                 t = np.loadtxt(path, dtype=txt_dtype, delimiter="\t") 
                 if t.shape == (): ## prevent one line file behaving different from multiline 
                     a = np.zeros(1, dtype=txt_dtype)
-                    a[0] = str(t)
+                    a[0] = NPMeta(str(t))   
+                    # HMM: this messes up with double quoting
+                    # workaround that by not writing a single metadata entries 
                 else:
-                    a = t     
+                    a = NPMeta(t)     
                 pass
             pass
 

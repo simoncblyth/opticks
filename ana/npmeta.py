@@ -16,6 +16,10 @@ log = logging.getLogger(__name__)
 class NPMeta(object):
     def __init__(self, meta):
         self.meta = meta   
+
+    def __len__(self):
+        return len(self.meta)  
+
     def find(self, k_start, fallback=None, encoding="utf-8"):
         meta = self.meta
         ii = np.flatnonzero(np.char.startswith(meta, k_start.encode(encoding)))  

@@ -577,16 +577,16 @@ void QSimTest<T>::mock_propagate_launch_mutate()
 
     qs.mock_propagate_launch_mutate( p, prd, type ); 
 
-
     unsigned num_hit = qs.event->getNumHit(); 
-    LOG(info) << " num_hit " << num_hit ; 
-
-
+    LOG(info) << " num_hit " << num_hit ;
+ 
+    NP* h = qs.event->getHits(); 
     NP* r = qs.event->getRecords(); 
 
     save(p,   "p.npy"); 
     save(prd, "prd.npy"); 
     save(r,   "r.npy"); 
+    save(h,   "h.npy"); 
 
     LOG(info) << "]" ; 
 }

@@ -253,21 +253,6 @@ void QEvent::setGensteps(const NP* gs_)
 }
 
 
-unsigned QEvent::getNumHit() const 
-{
-    assert( evt->photon ); 
-    assert( evt->num_photon ); 
-
-    unsigned num_hit = SU::select_count( evt->photon, evt->num_photon, *selector );    
-
-    LOG(info) << " evt->photon " << evt->photon << " evt->num_photon " << evt->num_photon << " num_hit " << num_hit ;  
-    // HMM: qevent needs to hold the the hit buffer and num_hit  
-
-    return num_hit ; 
-}
-
-
-
 /**
 QEvent::count_genstep_photons
 ------------------------------
@@ -367,6 +352,70 @@ NP* QEvent::getRecords() const
     LOG(info) << " evt.num_record " << evt->num_record ; 
     QU::copy_device_to_host<quad4>( (quad4*)r->bytes(), evt->record, evt->num_record ); 
     return r ; 
+}
+
+unsigned QEvent::getNumHit() const 
+{
+    assert( evt->photon ); 
+    assert( evt->num_photon ); 
+    evt->num_hit = SU::count_if<quad4>( evt->photon, evt->num_photon, *selector );    
+    LOG(info) << " evt.photon " << evt->photon << " evt.num_photon " << evt->num_photon << " evt.num_hit " << evt->num_hit ;  
+    return evt->num_hit ; 
+}
+
+/**
+QEvent::getHits
+------------------
+
+1. count *evt.num_hit* passing the photon *selector* 
+2. allocate *evt.hit* GPU buffer
+3. copy_if from *evt.photon* to *evt.hit* using the photon *selector*
+4. host allocate the NP hits array
+5. copy hits from device to the host NP hits array 
+6. free *evt.hit* on device
+7. return NP hits array to caller, who becomes owner of the array 
+
+Note that the device hits array is allocated and freed for each launch.  
+This is due to the expectation that the number of hits will vary greatly from launch to launch 
+unlike the number of photons which is expected to be rather similar for most launches other than 
+remainder last launches. 
+
+**/
+
+NP* QEvent::getHits() const 
+{
+    assert( evt->photon ); 
+
+    assert( evt->num_photon ); 
+
+    evt->num_hit = SU::count_if<quad4>( evt->photon, evt->num_photon, *selector );    
+
+    LOG(info) 
+         << " evt.photon " << evt->photon 
+         << " evt.num_photon " << evt->num_photon 
+         << " evt.num_hit " << evt->num_hit
+         << " selector.hitmask " << selector->hitmask
+         << " SEventConfig::HitMask " << SEventConfig::HitMask()
+         << " SEventConfig::HitMaskDesc " << SEventConfig::HitMaskDesc()
+         ;  
+
+    evt->hit = QU::device_alloc<quad4>( evt->num_hit ); 
+
+    SU::copy_if_device_to_device_presized<quad4>( evt->hit, evt->photon, evt->num_photon, *selector );
+
+    NP* hits = NP::Make<float>( evt->num_hit, 4, 4 ); 
+    hits->set_meta<unsigned>("hitmask", selector->hitmask );  
+    hits->set_meta<std::string>("creator", "QEvent::getHits" );  
+
+    QU::copy_device_to_host<quad4>( (quad4*)hits->bytes(), evt->hit, evt->num_hit );
+
+    QU::device_free<quad4>( evt->hit ); 
+
+    evt->hit = nullptr ; 
+
+    LOG(info) << " hits " << hits->sstr() ; 
+
+    return hits ; 
 }
 
 

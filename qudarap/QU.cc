@@ -218,7 +218,7 @@ void QU::device_free( T* d)
 template void   QU::device_free<float>(float*) ;
 template void   QU::device_free<double>(double*) ;
 template void   QU::device_free<unsigned>(unsigned*) ;
-
+template void   QU::device_free<quad4>(quad4*) ;
 
 
 template<typename T>

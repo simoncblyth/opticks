@@ -41,6 +41,9 @@ struct qevent
     int      num_record ; 
     quad4*   record ; 
 
+    int      num_hit ; 
+    quad4*   hit ; 
+
 
     // not including prd here as that is clearly for debugging only 
 
@@ -60,11 +63,14 @@ inline void qevent::zero()
     num_seed  = 0 ; 
     num_photon = 0 ; 
     num_record = 0 ; 
+    num_hit = 0 ; 
 
     genstep = nullptr ; 
     seed = nullptr ; 
     photon = nullptr ; 
     record = nullptr ; 
+    hit = nullptr ; 
+    
 }
 #endif 
 
