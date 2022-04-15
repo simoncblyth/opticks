@@ -23,21 +23,25 @@
 
 
 /**
-TODO: move necessary functionality from brap and okc down to sysrap 
-      to make it possible to have an extremely minimal opticks install
-      (without brap npy okc)
-      for hackathons, profiling, reporting test cases etc..
+TODO: 
+   move necessary functionality from brap and okc down to sysrap 
+   to make it possible to have an extremely minimal opticks install
+   (without brap npy okc)
+   for hackathons, profiling, reporting test cases etc..
 
-      Started this in sysrap/SOpticks
+   Started this in sysrap/SOpticks
+
 **/
 
 //     
-// brap
-#include "BTimeStamp.hh"
 
 // okc:optickscore
 #include "Opticks.hh"
 #include "Composition.hh"
+/**
+HMM:Composition is a bit of a monster - see if can pull out the essentials into a smaller class
+**/
+
 #include "FlightPath.hh"
 
 // csg 
@@ -464,8 +468,11 @@ Depending on params.raygenmode the "render" or "simulate" method is called.
 
 double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
 {
-    double t0, t1 ; 
-    t0 = BTimeStamp::RealTime();
+    typedef std::chrono::time_point<std::chrono::high_resolution_clock> TP ;
+    typedef std::chrono::duration<double> DT ;
+
+    TP t0 = std::chrono::high_resolution_clock::now();
+
 #if OPTIX_VERSION < 70000
     // hmm width, heigth, deth not used pre-7 ?
     six->launch(); 
@@ -477,8 +484,11 @@ double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
     OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
     CUDA_SYNC_CHECK();
 #endif
-    t1 = BTimeStamp::RealTime();
-    double dt = t1 - t0 ; 
+
+    TP t1 = std::chrono::high_resolution_clock::now();
+    DT _dt = t1 - t0;
+
+    double dt = _dt.count() ; 
     launch_times.push_back(dt);  
 
     LOG(LEVEL) 

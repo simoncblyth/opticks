@@ -32,6 +32,8 @@
 
 void test_timing_1s()
 {
+    LOG(info); 
+
     double t0 = BTimeStamp::RealTime() ; 
     auto s0 = std::chrono::high_resolution_clock::now();    
 
@@ -49,6 +51,57 @@ void test_timing_1s()
     std::cerr << " BTimeStamp::RealTime() t1 " << t1 << std::endl ; 
     std::cerr << " dt = t1 - t0              " << dt << std::endl ; 
     std::cerr << " ds                        " << ds << std::endl ; 
+
+}
+
+void test_timing_1s_noauto()
+{
+    LOG(info); 
+
+    typedef std::chrono::time_point<std::chrono::high_resolution_clock> TP ; 
+    typedef std::chrono::duration<double> DT ; 
+
+    double t0 = BTimeStamp::RealTime() ; 
+    TP s0 = std::chrono::high_resolution_clock::now(); 
+
+    sleep(1);
+
+    double t1 = BTimeStamp::RealTime() ; 
+    TP s1 = std::chrono::high_resolution_clock::now(); 
+
+    float dt = t1 - t0 ; 
+    DT s10 = s1 - s0;
+    double ds = s10.count();     
+
+    std::cerr << " BTimeStamp::RealTime() t0 " << t0 << std::endl ; 
+    std::cerr << " BTimeStamp::RealTime() t1 " << t1 << std::endl ; 
+    std::cerr << " dt = t1 - t0              " << dt << std::endl ; 
+    std::cerr << " std::chrono::high_resolution_clock::now().time_since_epoch().count() " << s0.time_since_epoch().count()  << std::endl ; 
+    std::cerr << " std::chrono::high_resolution_clock::now().time_since_epoch().count() " << s1.time_since_epoch().count()  << std::endl ; 
+    std::cerr << " (s1 - s0).count()                                                    " << ds << std::endl ; 
+    std::cerr << " (s1 - s0).count()                                                    " << (s1 - s0).count() << std::endl ; 
+}
+
+
+void test_timing_1s_std_chrono()
+{
+    LOG(info); 
+
+    typedef std::chrono::time_point<std::chrono::high_resolution_clock> TP ; 
+    typedef std::chrono::duration<double> DT ; 
+
+    TP s0 = std::chrono::high_resolution_clock::now(); 
+
+    sleep(1);
+
+    TP s1 = std::chrono::high_resolution_clock::now(); 
+
+    DT s10 = s1 - s0;
+
+    std::cerr << " std::chrono::high_resolution_clock::now().time_since_epoch().count() " << s0.time_since_epoch().count()  << std::endl ; 
+    std::cerr << " std::chrono::high_resolution_clock::now().time_since_epoch().count() " << s1.time_since_epoch().count()  << std::endl ; 
+    std::cerr << " std::chrono::duration<double>  (s1 - s0).count()                     " << s10.count() << std::endl ; 
+    std::cerr << " (s1 - s0).count()                                                    " << (s1 - s0).count() << std::endl ; 
 }
 
 
@@ -146,7 +199,10 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     LOG(info); 
 
-    test_timing_1s(); 
+    //test_timing_1s(); 
+    //test_timing_1s_noauto(); 
+    //test_timing_1s_std_chrono(); 
+
     //test_counting(); 
     //test_counting_2(); 
     //test_quickfire(); 
