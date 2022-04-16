@@ -1,4 +1,9 @@
 #pragma once
+/**
+Six : backward compatibility layer :  enabling new workflow CSGFoundry geometry to be used with OptiX < 7 
+===========================================================================================================
+
+**/
 
 #include <map>
 #include <vector>
@@ -21,6 +26,8 @@ struct Six
 
     optix::Context     context ;
     optix::Material    material ;
+
+    // TODO: see if these can be replaced by CUDA buffers from Params ?
     optix::Buffer      pixels_buffer ; 
     optix::Buffer      posi_buffer ; 
     optix::Buffer      isect_buffer ; 
@@ -33,7 +40,6 @@ struct Six
     const CSGFoundry* foundry ; 
     int               pindex ; 
 
-    //std::vector<optix::Geometry> solids ; 
     std::map<unsigned, optix::Geometry> solids ; 
 
     std::vector<optix::Group>    groups ; 

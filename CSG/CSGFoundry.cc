@@ -1847,8 +1847,13 @@ Load precedence:
 CSGFoundry* CSGFoundry::Load_() // static
 {
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  
-    LOG(info) << "cfbase " << cfbase ;
-    return Load(cfbase, "CSGFoundry"); 
+
+    //const char* geom = SPath::Basename(cfbase); 
+    //LOG(info) << "cfbase " << cfbase << " geom(from last elem of cfbase) " << geom ;
+
+    CSGFoundry* fd = Load(cfbase, "CSGFoundry"); 
+
+    return fd ; 
 }
 
 CSGFoundry*  CSGFoundry::Load(const char* dir) // static

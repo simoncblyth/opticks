@@ -92,7 +92,7 @@ EOU
 #geom=inner2_solid
 #geom=XJfixtureConstruction
 #geom=AltXJfixtureConstruction
-geom=AltXJfixtureConstructionU
+#geom=AltXJfixtureConstructionU
 #geom=XJanchorConstruction
 #geom=AnnulusBoxUnion 
 #geom=AnnulusTwoBoxUnion 
@@ -100,7 +100,7 @@ geom=AltXJfixtureConstructionU
 #geom=AnnulusCrossTwoBoxUnion 
 #geom=AnnulusFourBoxUnion 
 #geom=CylinderFourBoxUnion 
-#geom=BoxFourBoxUnion 
+geom=BoxFourBoxUnion 
 #geom=BoxFourBoxContiguous 
 #geom=BoxCrossTwoBoxUnion 
 #geom=BoxThreeBoxUnion 
@@ -111,6 +111,8 @@ geom=AltXJfixtureConstructionU
 #geom=SphereWithPhiSegment
 #geom=PolyconeWithMultipleRmin
 #geom=Orb
+
+## NB: CATGEOM LINE BELOW MAY BE OVERRIDING THE ABOVE GEOM SETTING 
 
 catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$(echo ${catgeom%%_*})
 

@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+SBT : OptiX 7 RG,MS,HG program data preparation 
+=================================================
+
+Aim to minimize geometry specifics in here ...
+
+**/
+
 #include <map>
 #include <string>
 #include <vector>
@@ -11,16 +19,9 @@
 #include "IAS.h"
 #include "sqat4.h"
 
-/**
-SBT : RG,MS,HG program data preparation 
-===========================================
-
-Aim to minimize geometry specifics in here ...
-
-
-**/
 
 class Opticks ; 
+// TODO: replace use of Opticks here (only used for solid selection) with a less coupled approach.
 
 struct PIP ; 
 struct CSGFoundry ; 

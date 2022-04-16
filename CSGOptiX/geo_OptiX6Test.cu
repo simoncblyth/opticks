@@ -24,14 +24,14 @@ rtDeclareVariable(unsigned, identity,  ,);
 // per solid context, not global 
 rtBuffer<CSGPrim> prim_buffer;
 
-// global context
+// global context : shim optix::Buffers facade for CUDA buffers setup in Six::createContextBuffers
 rtBuffer<CSGNode> node_buffer;
-rtBuffer<qat4> itra_buffer;
-rtBuffer<float4> plan_buffer;
+rtBuffer<qat4>    itra_buffer;
+rtBuffer<float4>  plan_buffer;
 
 /**
 As the primIdx argument is in 0:num_prim-1 need separate prim_buffer per geometry 
-unlike nodes and itra where s context level node_buffer and itra_buffer allows 
+unlike nodes and itra where context level node_buffer and itra_buffer allows 
 the pre-7 machinery to more closely match optix7
 **/
 

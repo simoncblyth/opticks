@@ -76,7 +76,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
 
 
     QSim<float>* sim ; 
-    QEvent*      evt ;  
+    QEvent*      event ;  
 
     static const char* TOP ; 
     static const char* Top() ; 
@@ -116,9 +116,10 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
 
     static std::string Annotation( double dt, const char* bot_line, const char* extra=nullptr ); 
 
+    const char* getDefaultSnapPath() const ; 
     // [ fulfil SRenderer protocol base
     double render();    
-    void snap(const char* path, const char* bottom_line, const char* top_line=nullptr, unsigned line_height=24); 
+    void snap(const char* path=nullptr, const char* bottom_line=nullptr, const char* top_line=nullptr, unsigned line_height=24); 
     // ]
 
     void writeFramePhoton(const char* dir, const char* name);

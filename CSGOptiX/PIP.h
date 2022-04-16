@@ -1,9 +1,7 @@
 #pragma once
-
-
 /**
-PIP
-=====
+PIP : OptiX 7 Ray Trace Program Pipeline 
+==========================================
 
 Aiming to keep this geometry independent 
 

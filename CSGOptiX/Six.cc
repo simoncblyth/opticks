@@ -15,7 +15,7 @@
 #include "SIMG.hh"
 
 #include "Opticks.hh"
-
+// TODO: replace use of Opticks here (solid selection, emm)
 
 #include "Params.h"
 
@@ -66,6 +66,13 @@ void Six::initPipeline()
     material->setClosestHitProgram(   entry_point_index, context->createProgramFromPTXFile( ptx_path , "closest_hit" ));
 }
 
+/**
+TODO: 
+   try to use common CUDA buffers over interop (createContextBuffer) 
+   rather than creating separate ones here in order to share more code between the branches 
+
+**/
+
 void Six::initFrame()
 {
     LOG(info) << " params.width " << params->width << " params.height " << params->height ;  
@@ -108,6 +115,14 @@ void Six::updateContext()
     context[ "raygenmode"   ]->setUint( params->raygenmode ); 
 }
 
+/**
+Six::createContextBuffer
+-------------------------
+
+Create shim optix::Buffer from CUDA buffer pointers 
+
+**/
+
 template<typename T>
 void Six::createContextBuffer( char typ, T* d_ptr, unsigned num_item, const char* name )
 {
@@ -136,7 +151,7 @@ template void Six::createContextBuffer( char typ, float*,    unsigned, const cha
 template void Six::createContextBuffer( char typ, quad4*,    unsigned, const char* ) ; 
 
 
-void Six::setFoundry(const CSGFoundry* foundry_)  // HMM: maybe makes more sense to get given directly the lower level CSGFoundry ?
+void Six::setFoundry(const CSGFoundry* foundry_) 
 {
     foundry = foundry_ ; 
     createGeom(); 
@@ -153,8 +168,8 @@ void Six::createGeom()
 
 
 /**
-Six::createContextBuffers
----------------------------
+Six::createContextBuffers : Shim optix::Buffer facade from CUDA device pointers
+---------------------------------------------------------------------------------
 
 NB the CSGPrim prim_buffer is not here as that is specific 
 to each geometry "solid"
@@ -163,6 +178,9 @@ These CSGNode float4 planes and qat4 inverse transforms are
 here because those are globally referenced.
 
 This is equivalent to foundry upload with SBT.cc in OptiX 7 
+
+NB no significant uploading is done here, 
+the CSGFoundry buffers having already been uploaded to device.  
 
 **/
 void Six::createContextBuffers()
@@ -176,6 +194,10 @@ void Six::createContextBuffers()
 /**
 Six::createGeometry
 ----------------------
+
+Invoked from Six::createGAS_Standard for each compound solid index. 
+Creates optix::Geometry corresponding to each CSGSolid referencing 
+its CSGPrim via its *prim_buffer*  
 
 **/
 
@@ -309,6 +331,14 @@ optix::Group Six::createIAS(unsigned ias_idx)
     optix::Group ias = createIAS(inst); 
     return ias ; 
 }
+
+/**
+Six::createSolidSelectionIAS
+------------------------------
+
+Non-standard "presentation" geometry.
+
+**/
 
 optix::Group Six::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection)
 {

@@ -1,4 +1,9 @@
 #pragma once
+/**
+Ctx : instanciation creates OptiX 7 optixDeviceContext and populates Properties  
+==================================================================================
+
+**/
 
 #include <optix.h>
 struct Properties ; 

@@ -19,20 +19,19 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv ); 
     ok.configure(); 
-    ok.setRaygenMode(1) ; // override --raygenmode option 
+    ok.setRaygenMode(0) ;  // override --raygenmode option 
 
-
-    const char* default_geom = "BoxFourBoxUnion" ; 
-    int createdirs = 2 ; 
-    const char* default_cfbase = SPath::Resolve("$TMP/GeoChain", default_geom, createdirs );   // 2: dirpath
-    const char* cfbase = SSys::getenvvar("CFBASE", default_cfbase ); 
-    LOG(info) << " cfbase " << cfbase ; 
-    
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+    CSGFoundry* fd = CSGFoundry::Load(); 
     fd->upload(); 
 
     CSGOptiX cx(&ok, fd); 
 
+    float4 ce = make_float4(0.f, 0.f, 0.f, 100.f );  
+    cx.setComposition(ce, nullptr, nullptr); 
+
+    double dt = cx.render(); 
+    LOG(info) << " dt " << dt ;  
+    cx.snap(); 
  
     cudaDeviceSynchronize(); 
     return 0 ; 

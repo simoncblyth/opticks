@@ -12,6 +12,7 @@
 
 
 // sysrap
+#include "NP.hh"
 #include "SStr.hh"
 #include "SSys.hh"
 #include "SMeta.hh"
@@ -39,7 +40,10 @@ TODO:
 #include "Opticks.hh"
 #include "Composition.hh"
 /**
-HMM:Composition is a bit of a monster - see if can pull out the essentials into a smaller class
+HMM:
+   Composition is a bit of a monster - bringing in a boatload of classes 
+   LONGTERM: see if can pull out the essentials into a smaller class
+
 **/
 
 #include "FlightPath.hh"
@@ -50,10 +54,8 @@ HMM:Composition is a bit of a monster - see if can pull out the essentials into 
 #include "CSGView.h"
 
 // qudarap
-#include "QBuf.hh"
 #include "QSim.hh"
 #include "qsim.h"
-#include "QSeed.hh"
 #include "QEvent.hh"
 
 // CSGOptiX
@@ -73,13 +75,11 @@ HMM:Composition is a bit of a monster - see if can pull out the essentials into 
 #include "CSGOptiX.h"
 
 
-
 const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
 
 #if OPTIX_VERSION < 70000 
 const char* CSGOptiX::PTXNAME = "OptiX6Test" ; 
 const char* CSGOptiX::GEO_PTXNAME = "geo_OptiX6Test" ; 
-
 #else
 const char* CSGOptiX::PTXNAME = "OptiX7Test" ; 
 const char* CSGOptiX::GEO_PTXNAME = nullptr ; 
@@ -139,7 +139,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     metatran(nullptr),
     simulate_dt(0.),
     sim(raygenmode == 0 ? nullptr : new QSim<float>),
-    evt(sim == nullptr  ? nullptr : sim->event     )
+    event(sim == nullptr  ? nullptr : sim->event     )
 {
     init(); 
 }
@@ -214,6 +214,15 @@ void CSGOptiX::initGeometry()
     const char* top = Top(); 
     setTop(top); 
 }
+
+/**
+CSGOptiX::initRender
+---------------------
+
+TODO: Six should be able to use the frame from the other branch much more ?
+
+**/
+
 void CSGOptiX::initRender()
 {
 #if OPTIX_VERSION < 70000
@@ -236,14 +245,18 @@ CSGOptiX::initSimulate
 Sets device pointers for params.sim params.evt so must be after upload 
 
 Q: where are sim and evt uploaded ?
+A: QSim::QSim and QSim::init_sim are where sim and evt are populated and uploaded 
+
+
+HMM: get d_sim (qsim.h) now holds d_evt (qevent.h) but this is getting evt again rom QEvent ?
+TODO: eliminate params->evt to make more use of the qsim.h encapsulation 
 
 **/
 
 void CSGOptiX::initSimulate() 
 {
-    // TODO: get d_sim to hold the d_evt 
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
-    params->evt = evt ? evt->getDevicePtr() : nullptr ;  // qevent*
+    params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
     params->tmin = 0.f ;                                 // perhaps needs to be epsilon to avoid self-intersection off boundaries ?
     params->tmax = 1000000.f ; 
 }
@@ -283,11 +296,20 @@ void CSGOptiX::setTop(const char* tspec)
 }
 
 
+/**
+CSGOptiX::setGensteps
+----------------------
+
+Invokes QEvent::setGensteps which uploads gensteps and then 
+clears and re-populates the seed buffer based on the gensteps.
+This prepares device side qevent for photon generation.  
+
+**/
 
 void CSGOptiX::setGensteps(const NP* gs)
 {
-    assert( evt ); 
-    evt->setGensteps(gs); 
+    assert( event ); 
+    event->setGensteps(gs); 
 }
 
 /**
@@ -301,7 +323,8 @@ Per-event simulate setup invoked just prior to optix launch
 void CSGOptiX::prepareSimulateParam()  
 {
     LOG(info) << "[" ; 
-    params->num_photons = evt->getNumPhoton() ;  // hmm perhaps just provide qevent ?  
+    params->num_photons = event->getNumPhoton() ;  // hmm perhaps just provide qevent ?  
+    // TODO: remove params.num_photons that is now handled by qevent  
 
     LOG(info) << "]" ; 
 }
@@ -445,6 +468,7 @@ void CSGOptiX::prepareParam()
     }
 
 #if OPTIX_VERSION < 70000
+    // TODO: why not get six to use the same params ?
     six->updateContext(); 
 #else
     params->upload();  
@@ -539,16 +563,12 @@ double CSGOptiX::render()
 double CSGOptiX::simulate()
 {
     prepareParam(); 
-    assert( raygenmode > 0 ); 
+    if( raygenmode == 0 ) LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::render cx.raygenmode " << raygenmode ; 
+    assert( raygenmode > 0 );  
 
-    if( raygenmode == 0 )
-    {
-        LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::render cx.raygenmode " << raygenmode ; 
-        assert(0); 
-    }
-
-    unsigned num_photons = params->num_photons ; 
+    unsigned num_photons = params->num_photons ; // TODO: num_photons should come from QEvent/qevent not params 
     assert( num_photons > 0 ); 
+
     simulate_dt = launch(num_photons, 1u, 1u );
     LOG(info) << " simulate_dt " << simulate_dt ;
     return simulate_dt ; 
@@ -565,6 +585,14 @@ std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* e
     return anno ; 
 }
 
+const char* CSGOptiX::getDefaultSnapPath() const 
+{
+    assert( foundry );  
+    const char* cfbase = foundry->getOriginCFBase(); 
+    assert( cfbase ); 
+    const char* path = SPath::Resolve(cfbase, "CSGOptiX/snap.jpg" , FILEPATH ); 
+    return path ; 
+}
 
 /**
 CSGOptiX::snap : Download frame pixels and write to file as jpg.
@@ -573,10 +601,10 @@ CSGOptiX::snap : Download frame pixels and write to file as jpg.
 
 void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_line, unsigned line_height)
 {
-    int create_dirs = 1 ; // 1:filepath 
-    const char* path = SPath::Resolve(path_, create_dirs ); 
+    const char* path = path_ ? SPath::Resolve(path_, FILEPATH ) : getDefaultSnapPath() ; 
 
 #if OPTIX_VERSION < 70000
+    LOG(info) << " path " << path ; 
     const char* top_extra = nullptr ;
 #else
     const char* top_extra = pip->desc(); 
@@ -619,7 +647,6 @@ int CSGOptiX::render_flightpath() // for making mp4 movies
 void CSGOptiX::saveMeta(const char* jpg_path) const
 {
     const char* json_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".json"); 
-    //const char* npy_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".npy"); 
 
     nlohmann::json& js = meta->js ;
     js["argline"] = ok->getArgLine();
@@ -648,8 +675,7 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
 
 void CSGOptiX::savePeta(const char* fold, const char* name) const
 {
-    int create_dirs = 1 ; // 1:filepath
-    const char* path = SPath::Resolve(fold, name, create_dirs) ; 
+    const char* path = SPath::Resolve(fold, name, FILEPATH) ; 
     LOG(info) << path ; 
     NP::Write(path, (float*)(&peta->q0.f.x), 1, 4, 4 );
 }
@@ -657,14 +683,11 @@ void CSGOptiX::savePeta(const char* fold, const char* name) const
 void CSGOptiX::saveMetaTran(const char* fold, const char* name) const
 {
     if(metatran == nullptr) return ; 
-
-    int create_dirs = 1 ; // 1:filepath
-    const char* path = SPath::Resolve(fold, name, create_dirs) ; 
+    const char* path = SPath::Resolve(fold, name, FILEPATH) ; 
     LOG(info) << path ; 
-
     NP* mta = NP::Make<double>(3, 4, 4 );  
-    metatran->write( mta->values<double>() ) ; 
-    mta->save(fold, name);  
+    metatran->write( mta->values<double>() ) ;   // Tran<double>::write via NP (TODO:encapsulate)
+    mta->save(path);  
 }
 
 /**
@@ -677,10 +700,10 @@ Saving data for 2D cross sections, used by tests/CSGOptiXSimulateTest.cc
 
 void CSGOptiX::snapSimulateTest(const char* outdir, const char* botline, const char* topline) 
 {
-    evt->setMeta( foundry->meta.c_str() ); 
-    evt->savePhoton( outdir, "photons.npy");   // this one can get very big 
-    evt->saveGenstep(outdir, "genstep.npy");  
-    evt->saveMeta(   outdir, "fdmeta.txt" ); 
+    event->setMeta( foundry->meta.c_str() ); 
+    event->savePhoton( outdir, "photons.npy");   // this one can get very big 
+    event->saveGenstep(outdir, "genstep.npy");  
+    event->saveMeta(   outdir, "fdmeta.txt" ); 
 
     const char* namestem = "CSGOptiXSimulateTest" ; 
     const char* ext = ".jpg" ; 
@@ -711,6 +734,8 @@ CSGOptiX::_OPTIX_VERSION
 This depends on the the optix.h header only which provides the OPTIX_VERSION macro
 so it could be done at the lowest level, no need for it to be 
 up at this "elevation"
+
+TODO: relocate to OKConf or SysRap
 
 **/
 

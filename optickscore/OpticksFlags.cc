@@ -41,7 +41,7 @@ const plog::Severity OpticksFlags::LEVEL = PLOG::EnvLevel("OpticksFlags", "DEBUG
 
 
 const char* OpticksFlags::ABBREV_META_NAME = "OpticksFlagsAbbrevMeta.json" ;
-const char* OpticksFlags::ENUM_HEADER_PATH = "$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h" ;
+const char* OpticksFlags::ENUM_HEADER_PATH = "$OPTICKS_INSTALL_PREFIX/include/SysRap/OpticksPhoton.h" ;
 //  envvar OPTICKS_INSTALL_PREFIX is set internally by OpticksResource based on cmake config 
 
 

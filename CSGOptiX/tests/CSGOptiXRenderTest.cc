@@ -162,8 +162,7 @@ void CSGOptiXRenderTest::InitOutdir(Opticks* ok, const char* cfbase)
         << " cfbase " << cfbase
         ;
 
-    int create_dirs = 2 ;  
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXRenderTest", out_prefix, create_dirs );  
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXRenderTest", out_prefix, DIRPATH );  
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
     LOG(info) << " default_outdir " << default_outdir ; 
     LOG(info) << " outdir " << outdir ; 

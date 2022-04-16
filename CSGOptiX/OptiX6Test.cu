@@ -17,6 +17,8 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 rtDeclareVariable(float,      t, rtIntersectionDistance, );
 
+
+// TODO: replace these "real" optix buffer which shims over CUDA buffers just like the geometry
 rtBuffer<uchar4, 2>   pixels_buffer;
 rtBuffer<float4, 2>   posi_buffer;
 rtBuffer<quad4,  2>   isect_buffer;

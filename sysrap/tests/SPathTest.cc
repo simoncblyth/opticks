@@ -127,6 +127,26 @@ void test_Basename()
     }
 }
 
+void test_Basename_2()
+{
+    const char* path = "/tmp/blyth/opticks/GeoChain_Darwin/XJfixtureConstruction" ; 
+    const char* base = SPath::Basename(path) ;
+
+    LOG(info) 
+        << std::endl
+        << " path [" << path << "]" 
+        << std::endl 
+        << " base [" << base << "]" 
+        << std::endl 
+        ;
+
+    assert( strcmp( base, "XJfixtureConstruction") == 0 ); 
+}
+
+
+
+
+
 void test_UserTmpDir()
 {
     LOG(info); 
@@ -216,10 +236,9 @@ void test_mtime()
 }
 
 
-
 int main(int argc , char** argv )
 {
-    SPath::chdir("$TMP/red/green/blue/logs");  
+    //SPath::chdir("$TMP/red/green/blue/logs");  
     // chdir before OPTICKS_LOG succeeds to write logfile named after executable into that directory 
 
     OPTICKS_LOG(argc, argv);
@@ -228,12 +247,13 @@ int main(int argc , char** argv )
     test_Stem();  
     test_GetHomePath();  
     test_IsReadable();  
-*/
     test_IsReadable_path();  
+*/
+    test_Basename_2(); 
 
 /*
-    test_Dirname(); 
     test_Basename(); 
+    test_Dirname(); 
     test_UserTmpDir(); 
     test_Resolve(); 
     test_ChangeName(); 

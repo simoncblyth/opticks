@@ -37,7 +37,6 @@ Debugging unexpected renders
      make sure get the latest CSG headers
 
 
-
 Debugging blank renders
 ------------------------
 
