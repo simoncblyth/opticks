@@ -74,7 +74,6 @@ HMM:
 
 #include "CSGOptiX.h"
 
-
 const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
 
 #if OPTIX_VERSION < 70000 
@@ -90,6 +89,21 @@ const char* CSGOptiX::ENV(const char* key, const char* fallback)
     const char* value = getenv(key) ; 
     return value ? value : fallback ; 
 }
+
+const char* CSGOptiX::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "CSGOptiX " ; 
+#if OPTIX_VERSION < 70000
+    ss << " Six " ; 
+#else
+    ss << pip->desc() ; 
+#endif
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
+
+
 
 /**
 CSGOptiX::CSGOptiX
@@ -124,19 +138,20 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     geoptxpath(nullptr),
 #endif
     tmin_model(SSys::getenvfloat("TMIN",0.1)), 
-    jpg_quality(SStr::GetEValue<int>("QUALITY", 50)),
     params(new Params(raygenmode, ok->getWidth(), ok->getHeight(), ok->getDepth() )),
 #if OPTIX_VERSION < 70000
     six(new Six(ok, ptxpath, geoptxpath, params)),
+    frame(new Frame(params->width, params->height, params->depth, six->d_pixel, six->d_isect, six->d_photon)), 
 #else
     ctx(new Ctx),
     pip(new PIP(ptxpath)), 
     sbt(new SBT(ok, pip)),
-    frame(new Frame(params->width, params->height, params->depth)),  // CUDA holds the pixels 
+    frame(new Frame(params->width, params->height, params->depth)), 
 #endif
     meta(new SMeta),
     peta(new quad4), 
     metatran(nullptr),
+    render_dt(0.),
     simulate_dt(0.),
     sim(raygenmode == 0 ? nullptr : new QSim<float>),
     event(sim == nullptr  ? nullptr : sim->event     )
@@ -144,18 +159,6 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     init(); 
 }
 
-const char* CSGOptiX::desc() const 
-{
-    std::stringstream ss ; 
-    ss << "CSGOptiX " ; 
-#if OPTIX_VERSION < 70000
-    ss << " Six " ; 
-#else
-    ss << pip->desc() ; 
-#endif
-    std::string s = ss.str(); 
-    return strdup(s.c_str()); 
-}
 
 void CSGOptiX::init()
 {
@@ -225,15 +228,9 @@ TODO: Six should be able to use the frame from the other branch much more ?
 
 void CSGOptiX::initRender()
 {
-#if OPTIX_VERSION < 70000
-    six->initFrame();     
-    // sets params->pixels, isect from optix device pointers
-    // HUH:instanciating Six does this already  
-#else
-    params->pixels = frame->getDevicePixel(); 
-    params->isect  = frame->getDeviceIsect(); 
-    params->fphoton = frame->getDevicePhoton(); 
-#endif
+    params->pixels = frame->d_pixel ;
+    params->isect  = frame->d_isect ; 
+    params->fphoton = frame->d_photon ; 
 }
 
 /**
@@ -259,11 +256,6 @@ void CSGOptiX::initSimulate()
     params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
     params->tmin = 0.f ;                                 // perhaps needs to be epsilon to avoid self-intersection off boundaries ?
     params->tmax = 1000000.f ; 
-}
-
-void CSGOptiX::setMetaTran(const Tran<double>* metatran_ )
-{
-    metatran = metatran_ ; 
 }
 
 
@@ -310,23 +302,6 @@ void CSGOptiX::setGensteps(const NP* gs)
 {
     assert( event ); 
     event->setGensteps(gs); 
-}
-
-/**
-CSGOptiX::prepareSimulateParam
--------------------------------
-
-Per-event simulate setup invoked just prior to optix launch 
-
-**/
-
-void CSGOptiX::prepareSimulateParam()  
-{
-    LOG(info) << "[" ; 
-    params->num_photons = event->getNumPhoton() ;  // hmm perhaps just provide qevent ?  
-    // TODO: remove params.num_photons that is now handled by qevent  
-
-    LOG(info) << "]" ; 
 }
 
 
@@ -447,12 +422,31 @@ void CSGOptiX::prepareRenderParam()
         ; 
 }
 
+
+/**
+CSGOptiX::prepareSimulateParam
+-------------------------------
+
+Per-event simulate setup invoked just prior to optix launch 
+
+**/
+
+void CSGOptiX::prepareSimulateParam()  
+{
+    LOG(info) << "[" ; 
+    params->num_photons = event->getNumPhoton() ;  // hmm perhaps just provide qevent ?  
+    // TODO: remove params.num_photons that is now handled by qevent  
+    LOG(info) << "]" ; 
+}
+
 /**
 CSGOptiX::prepareParam and upload
 -------------------------------------
 
-This is invoked by CSGOptiX::simulate and CSGOptiX::render just before launch, 
+This is invoked by CSGOptiX::launch just before the OptiX launch, 
 depending on raygenmode the simulate/render param are prepared and uploaded. 
+
+TODO: can Six use the same params ?
 
 **/
 
@@ -460,7 +454,6 @@ void CSGOptiX::prepareParam()
 {
     glm::vec4& ce = composition->getCenterExtent();   
     params->setCenterExtent(ce.x, ce.y, ce.z, ce.w); 
-
     switch(raygenmode)
     {
        case 0:prepareRenderParam() ; break ; 
@@ -468,7 +461,6 @@ void CSGOptiX::prepareParam()
     }
 
 #if OPTIX_VERSION < 70000
-    // TODO: why not get six to use the same params ?
     six->updateContext(); 
 #else
     params->upload();  
@@ -480,26 +472,28 @@ void CSGOptiX::prepareParam()
 CSGOptiX::launch
 -------------------
 
-For what happens next, see 
-
-OptiX7Test.cu::__raygen__rg
-
-OptiX6Test.cu::raygen
-
+For what happens next, see OptiX7Test.cu::__raygen__rg OR OptiX6Test.cu::raygen
 Depending on params.raygenmode the "render" or "simulate" method is called. 
  
 **/
 
-double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
+double CSGOptiX::launch()
 {
+    prepareParam(); 
+
+    bool sim = raygenmode > 0 ; 
+    // TODO: num_photons should come from QEvent/qevent not params 
+    unsigned width  = sim ? params->num_photons : params->width ; 
+    unsigned height = sim ?                   1 : params->height ;  
+    unsigned depth  = sim ?                   1 : params->depth ; 
+    assert( width > 0 ); 
+
     typedef std::chrono::time_point<std::chrono::high_resolution_clock> TP ;
     typedef std::chrono::duration<double> DT ;
-
     TP t0 = std::chrono::high_resolution_clock::now();
 
 #if OPTIX_VERSION < 70000
-    // hmm width, heigth, deth not used pre-7 ?
-    six->launch(); 
+    six->launch(width, height, depth ); 
 #else
     CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
     assert( d_param && "must alloc and upload params before launch"); 
@@ -516,63 +510,31 @@ double CSGOptiX::launch(unsigned width, unsigned height, unsigned depth)
     launch_times.push_back(dt);  
 
     LOG(LEVEL) 
-          << " (width, height, depth) ( " << width << "," << height << "," << depth << ")"  
+          << " (width, height, depth) ( " << params->width << "," << params->height << "," << params->depth << ")"  
           << std::fixed << std::setw(7) << std::setprecision(4) << dt  
           ; 
     return dt ; 
 }
 
-/**
-Huh GEOM=Hama_16 ./cxs.sh  with only 14.8M photons causing an exception::
-
-    2021-12-20 19:49:22.143 INFO  [158578] [CSGOptiX::launch@330] [ (width, height, depth) ( 14825700,1,1)
-    terminate called after throwing an instance of 'sutil::CUDA_Exception'
-      what():  CUDA error on synchronize with error 'an illegal memory access was encountered' (/data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:342)
-
-    ./cxs.sh: line 230: 158578 Aborted                 (core dumped) $GDB CSGOptiXSimulateTest
-
-
-094 elif [ "$GEOM" == "Hama_16" ]; then
- 95     
- 96     ##  CUDA error on synchronize with error 'an illegal memory access was encountered' (/data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:342)
- 97     moi=Hama
- 98     cegs=256:0:144:100
- 99     gridscale=0.20
-100     gsplot=0
-101 
-
-
-In [1]: (256*2+1)*(144*2+1)*100
-Out[1]: 14825700
-
-In [2]: (256*2+1)*(144*2+1)*100
-
-
-**/
-
-
 double CSGOptiX::render()
 {
-    prepareParam(); 
+    if( raygenmode > 0 ) LOG(fatal) << "CSGOptiX::render should only be called with cx.raygenmode == 0, not:" << raygenmode ; 
     assert( raygenmode == 0 ); 
-    double dt = launch(params->width, params->height, params->depth );
-    return dt ; 
+    render_dt = launch();
+    LOG(info) << " render_dt " << render_dt ;
+    return render_dt ; 
 }
-
-
 double CSGOptiX::simulate()
 {
-    prepareParam(); 
-    if( raygenmode == 0 ) LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::render cx.raygenmode " << raygenmode ; 
+    if( raygenmode == 0 ) LOG(fatal) << "CSGOptiX::simulate should only be called with cx.raygenmode > 0, not:" << raygenmode ; 
     assert( raygenmode > 0 );  
-
-    unsigned num_photons = params->num_photons ; // TODO: num_photons should come from QEvent/qevent not params 
-    assert( num_photons > 0 ); 
-
-    simulate_dt = launch(num_photons, 1u, 1u );
+    simulate_dt = launch();
     LOG(info) << " simulate_dt " << simulate_dt ;
     return simulate_dt ; 
 }
+
+
+
 
 std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 
 {
@@ -602,9 +564,9 @@ CSGOptiX::snap : Download frame pixels and write to file as jpg.
 void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_line, unsigned line_height)
 {
     const char* path = path_ ? SPath::Resolve(path_, FILEPATH ) : getDefaultSnapPath() ; 
+    LOG(info) << " path " << path ; 
 
 #if OPTIX_VERSION < 70000
-    LOG(info) << " path " << path ; 
     const char* top_extra = nullptr ;
 #else
     const char* top_extra = pip->desc(); 
@@ -614,13 +576,12 @@ void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_
     LOG(LEVEL) << " path_ [" << path_ << "]" ; 
     LOG(LEVEL) << " topline " << topline  ; 
 
-#if OPTIX_VERSION < 70000
-    six->snap(path, bottom_line, topline, line_height); 
-#else
+
     frame->download(); 
     frame->annotate( bottom_line, topline, line_height ); 
-    frame->writeJPG(path, jpg_quality);  
-#endif
+    frame->snap( path  );  
+
+
     if(!flight || SStr::Contains(path,"00000"))
     {
         saveMeta(path); 
@@ -678,6 +639,11 @@ void CSGOptiX::savePeta(const char* fold, const char* name) const
     const char* path = SPath::Resolve(fold, name, FILEPATH) ; 
     LOG(info) << path ; 
     NP::Write(path, (float*)(&peta->q0.f.x), 1, 4, 4 );
+}
+
+void CSGOptiX::setMetaTran(const Tran<double>* metatran_ )
+{
+    metatran = metatran_ ; 
 }
 
 void CSGOptiX::saveMetaTran(const char* fold, const char* name) const

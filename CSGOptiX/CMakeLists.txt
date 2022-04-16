@@ -50,6 +50,7 @@ set(CU_SOURCES)
 list(APPEND SOURCES
     Params.cc 
     CSGOptiX.cc
+    Frame.cc 
     CSGOPTIX_LOG.cc
 )
 
@@ -65,7 +66,6 @@ if(OpticksOptiX_VERSION GREATER_EQUAL 70000)
         Check.cu
     )
    list(APPEND SOURCES  
-        Frame.cc 
         Ctx.cc 
         Properties.cc 
         GAS.cc 

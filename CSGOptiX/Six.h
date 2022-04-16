@@ -17,6 +17,7 @@ struct CSGFoundry ;
 struct CSGSolid ; 
 
 struct Params ; 
+struct Frame ; 
 
 struct Six
 {
@@ -27,10 +28,15 @@ struct Six
     optix::Context     context ;
     optix::Material    material ;
 
-    // TODO: see if these can be replaced by CUDA buffers from Params ?
-    optix::Buffer      pixels_buffer ; 
-    optix::Buffer      posi_buffer ; 
-    optix::Buffer      isect_buffer ; 
+    // note that output buffers cannot with replaced with plain CUDA buffers
+    // so must create these optix::Buffer and then grab their CUDA pointers 
+    optix::Buffer      pixel_buffer ;    // uchar4
+    optix::Buffer      isect_buffer ;    // float4
+    optix::Buffer      photon_buffer ;   // quad4
+
+    uchar4* d_pixel ; 
+    float4* d_isect ; 
+    quad4*  d_photon ; 
 
     Params*           params ; 
     const char*       ptx_path ; 
@@ -46,14 +52,14 @@ struct Six
 
     Six(const Opticks* ok, const char* ptx_path, const char* geo_ptx_path, Params* params_);  
     void initContext();
-    void initFrame();   // hookup pixels and isect buffers
+    void initFrame(); 
 
     void updateContext();  // for changed params such as viewpoint 
     void initPipeline();
     void setFoundry(const CSGFoundry* foundry);
 
     void createGeom();
-    void createContextBuffers();
+    void createContextInputBuffers();
     void createGAS();
     void createGAS_Standard();
     void createGAS_Selection();
@@ -61,7 +67,7 @@ struct Six
     void createIAS_Standard();
     void createIAS_Selection();
 
-    template<typename T> void createContextBuffer( char typ, T* d_ptr, unsigned num_item, const char* name ); 
+    template<typename T> void createContextInputBuffer( T* d_ptr, unsigned num_item, const char* name ); 
     optix::Group              createIAS(unsigned ias_idx);
     optix::Group              createIAS(const std::vector<qat4>& inst );
     optix::Group              createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection);
@@ -71,8 +77,8 @@ struct Six
     optix::Geometry           getGeometry(unsigned solid_idx) const ;  
  
     void setTop(const char* spec);
-    void launch();
+    void launch(unsigned width, unsigned height, unsigned depth);
 
-    void snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height) ;
+    //void snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height) ;
 
 };

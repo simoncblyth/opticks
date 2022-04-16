@@ -18,10 +18,11 @@ rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 rtDeclareVariable(float,      t, rtIntersectionDistance, );
 
 
-// TODO: replace these "real" optix buffer which shims over CUDA buffers just like the geometry
-rtBuffer<uchar4, 2>   pixels_buffer;
-rtBuffer<float4, 2>   posi_buffer;
-rtBuffer<quad4,  2>   isect_buffer;
+// NB: cannot replace these "real" optix buffer as only input buffers can shims over CUDA buffers like geometry buffers
+
+rtBuffer<uchar4, 2>   pixel_buffer;   // formerly pixels_buffer
+rtBuffer<float4, 2>   isect_buffer;   // formerly posi_buffer
+rtBuffer<quad4,  2>   photon_buffer;  // formerly isect_buffer
 
 
 static __device__ __inline__ uchar4 make_color(const float3& c)
@@ -37,7 +38,7 @@ struct PerRayData
 {
     float3   result;
     int      mode ; 
-    float4   posi ; 
+    float4   isect ; 
 };
 
 rtDeclareVariable(float3, position,         attribute position, );  
@@ -53,7 +54,7 @@ RT_PROGRAM void raygen()
 {
     PerRayData prd;
     prd.result = make_float3( 1.f, 0.f, 0.f ) ; 
-    prd.posi = make_float4( 0.f, 0.f, 0.f, 0.f ); 
+    prd.isect  = make_float4( 0.f, 0.f, 0.f, 0.f ); 
     prd.mode = 0 ; 
 
     const float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;
@@ -67,31 +68,31 @@ RT_PROGRAM void raygen()
 
     const bool yflip = true ; 
     uint2 index = make_uint2( launch_index.x , yflip ? launch_dim.y - 1u - launch_index.y : launch_index.y );   
-    pixels_buffer[index] = make_color( prd.result ) ; 
-    posi_buffer[index] = prd.posi ; 
+    pixel_buffer[index] = make_color( prd.result ) ; 
+    isect_buffer[index] = prd.isect ; 
 
-    quad4 isect ; 
-    isect.q0.f.x = prd.result.x ; 
-    isect.q0.f.y = prd.result.y ; 
-    isect.q0.f.z = prd.result.z ;
-    isect.q0.f.w = 0.f ;
+    quad4 photon ; 
+    photon.q0.f.x = prd.result.x ; 
+    photon.q0.f.y = prd.result.y ; 
+    photon.q0.f.z = prd.result.z ;
+    photon.q0.f.w = 0.f ;
 
-    isect.q1.f.x = prd.posi.x ; 
-    isect.q1.f.y = prd.posi.y ; 
-    isect.q1.f.z = prd.posi.z ;
-    isect.q1.f.w = prd.posi.w ;
+    photon.q1.f.x = prd.isect.x ; 
+    photon.q1.f.y = prd.isect.y ; 
+    photon.q1.f.z = prd.isect.z ;
+    photon.q1.f.w = prd.isect.w ;
 
-    isect.q2.f.x = origin.x ; 
-    isect.q2.f.y = origin.y ; 
-    isect.q2.f.z = origin.z ;
-    isect.q2.f.w = tmin ;
+    photon.q2.f.x = origin.x ; 
+    photon.q2.f.y = origin.y ; 
+    photon.q2.f.z = origin.z ;
+    photon.q2.f.w = tmin ;
 
-    isect.q3.f.x = direction.x ; 
-    isect.q3.f.y = direction.y ; 
-    isect.q3.f.z = direction.z ;
-    isect.q3.i.w = prd.mode ;
+    photon.q3.f.x = direction.x ; 
+    photon.q3.f.y = direction.y ; 
+    photon.q3.f.z = direction.z ;
+    photon.q3.i.w = prd.mode ;
 
-    isect_buffer[index] = isect ; 
+    photon_buffer[index] = photon ; 
 
 #ifdef DEBUG_SIX
     //rtPrintf("//DEBUG_SIX/OptiXTest.cu:raygen prd.mode %d \n", prd.mode ); 
@@ -110,7 +111,7 @@ RT_PROGRAM void closest_hit()
 {
     prd.result = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal))*0.5f + 0.5f;
     float3 isect = ray.origin + t*ray.direction ;
-    prd.posi = make_float4( isect, __uint_as_float(intersect_identity) );
+    prd.isect = make_float4( isect, __uint_as_float(intersect_identity) );
     prd.mode = 2 ; 
 }
 

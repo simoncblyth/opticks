@@ -39,10 +39,10 @@ struct Frame ;
 struct CSGOPTIX_API CSGOptiX : public SRenderer 
 {
     static const plog::Severity LEVEL ; 
+    static const char* TOP ; 
     static const char* PTXNAME ; 
     static const char* GEO_PTXNAME ; 
     static const char* ENV(const char* key, const char* fallback);
-    static int   _OPTIX_VERSION() ; 
 
     Opticks*          ok ;  
     int               raygenmode ; 
@@ -67,22 +67,20 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     Ctx* ctx ; 
     PIP* pip ; 
     SBT* sbt ; 
-    Frame* frame ; 
 #endif
+    Frame* frame ; 
     SMeta* meta ; 
     quad4* peta ; 
     const Tran<double>* metatran ; 
+    double render_dt ; 
     double simulate_dt ; 
 
 
     QSim<float>* sim ; 
     QEvent*      event ;  
-
-    static const char* TOP ; 
-    static const char* Top() ; 
  
-    CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
     const char* desc() const ; 
+    CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
 
     void init(); 
     void initStack(); 
@@ -92,45 +90,39 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void initRender();
     void initSimulate();
 
+    static const char* Top() ; 
  private: 
     void setTop(const char* tspec); 
  public: 
+    void setGensteps(const NP* gs);
 
-    // render related 
     void setCEGS(const std::vector<int>& cegs); 
-
     void setComposition(const float4& ce,    const qat4* m2w, const qat4* w2m ); 
     void setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* w2m ); 
-    void setMetaTran(const Tran<double>* metatran ); 
-
     void setNear(float near); 
 
     void prepareRenderParam(); 
     void prepareSimulateParam(); 
     void prepareParam(); 
 
-    int  render_flightpath(); 
-    void saveMeta(const char* jpg_path) const ;
-    void savePeta(const char* fold, const char* name) const ; 
-    void saveMetaTran(const char* fold, const char* name) const ; 
+    double launch(); 
+    double render();     // part of SRenderer protocol base
+    double simulate();    
 
     static std::string Annotation( double dt, const char* bot_line, const char* extra=nullptr ); 
-
     const char* getDefaultSnapPath() const ; 
-    // [ fulfil SRenderer protocol base
-    double render();    
-    void snap(const char* path=nullptr, const char* bottom_line=nullptr, const char* top_line=nullptr, unsigned line_height=24); 
-    // ]
+    void snap(const char* path=nullptr, const char* bottom_line=nullptr, const char* top_line=nullptr, unsigned line_height=24);  // part of SRenderer protocol base
 
     void writeFramePhoton(const char* dir, const char* name);
+    int  render_flightpath(); 
 
-    void setGensteps(const NP* gs);
-    double simulate();    
-    double launch(unsigned width, unsigned height, unsigned depth) ; 
+    void saveMeta(const char* jpg_path) const ;
+    void savePeta(const char* fold, const char* name) const ; 
+    void setMetaTran(const Tran<double>* metatran ); 
+    void saveMetaTran(const char* fold, const char* name) const ; 
 
     void snapSimulateTest(const char* outdir, const char* botline, const char* topline) ; // uses snap, so not const 
 
-
-
+    static int   _OPTIX_VERSION() ; 
 };
 

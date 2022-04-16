@@ -1,4 +1,3 @@
-
 #include <iostream>
 
 #include "PLOG.hh"
@@ -11,9 +10,6 @@
 #include "sqat4.h"
 #include "OpticksCSG.h"
 
-#define SIMG_IMPLEMENTATION 1 
-#include "SIMG.hh"
-
 #include "Opticks.hh"
 // TODO: replace use of Opticks here (solid selection, emm)
 
@@ -24,6 +20,7 @@
 #include "CSGPrim.h"
 #include "CSGNode.h"
 
+#include "Frame.h"
 #include "Six.h"
 
     
@@ -34,6 +31,11 @@ Six::Six(const Opticks* ok_, const char* ptx_path_, const char* geo_ptx_path_, P
     emm(ok->getEMM()),
     context(optix::Context::create()),
     material(context->createMaterial()),
+
+    d_pixel(nullptr),
+    d_isect(nullptr),
+    d_photon(nullptr),
+ 
     params(params_),
     ptx_path(strdup(ptx_path_)),
     geo_ptx_path(strdup(geo_ptx_path_)),
@@ -66,39 +68,25 @@ void Six::initPipeline()
     material->setClosestHitProgram(   entry_point_index, context->createProgramFromPTXFile( ptx_path , "closest_hit" ));
 }
 
-/**
-TODO: 
-   try to use common CUDA buffers over interop (createContextBuffer) 
-   rather than creating separate ones here in order to share more code between the branches 
-
-**/
-
 void Six::initFrame()
 {
-    LOG(info) << " params.width " << params->width << " params.height " << params->height ;  
-    pixels_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, params->width, params->height);
-    context["pixels_buffer"]->set( pixels_buffer );
+    pixel_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_BYTE4, params->width, params->height);
+    context["pixel_buffer"]->set( pixel_buffer );  // formerly pixels_buffer
+    d_pixel = (uchar4*)pixel_buffer->getDevicePointer(optix_device_ordinal); 
 
-    posi_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, params->width, params->height);
-    context["posi_buffer"]->set( posi_buffer );
+    isect_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, params->width, params->height);
+    context["isect_buffer"]->set( isect_buffer );   // formerly posi_buffer
+    d_isect = (float4*)isect_buffer->getDevicePointer(optix_device_ordinal); 
 
-    isect_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_USER, params->width, params->height);
-    isect_buffer->setElementSize( sizeof(quad4) ); 
-    context["isect_buffer"]->set( isect_buffer );
+    photon_buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_USER, params->width, params->height);
+    photon_buffer->setElementSize( sizeof(quad4) ); 
+    context["photon_buffer"]->set( photon_buffer );  // formerly isect_buffer
+    d_photon = (quad4*)photon_buffer->getDevicePointer(optix_device_ordinal); 
 
     LOG(info) 
         << " params->width " << params->width
         << " params->height " << params->height
-        << " sizeof(quad4) " << sizeof(quad4) 
-        ; 
-
-    //params->pixels = (uchar4*)pixels_buffer->getDevicePointer(optix_device_ordinal); 
-    //params->isect = (float4*)posi_buffer->getDevicePointer(optix_device_ordinal); 
-
-    LOG(info) 
         << " optix_device_ordinal " << optix_device_ordinal
-        << " params.pixels " << params->pixels
-        << " params.isect " << params->isect
         ;
 }
 
@@ -116,25 +104,33 @@ void Six::updateContext()
 }
 
 /**
-Six::createContextBuffer
--------------------------
+Six::createContextInputBuffer
+-------------------------------
 
 Create shim optix::Buffer from CUDA buffer pointers 
+
+The setDevicePointer fails for output buffers due to OptiX limitation::
+
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: 
+    Function "RTresult _rtBufferSetDevicePointer(RTbuffer, int, void *)" caught exception: 
+    rtBufferSetPointer() not allowed for output or input/output buffers)
+
+The optix-pdf (OptiX 5.0) p82 documents this limitation::
+
+    Calling rtBufferSetDevicePointer on output or input/output buffers is not allowed.
+
+Worked around this limitation by generalizing Frame to work with externally 
+provided CUDA device pointers obtained from the real OptiX < 7 optix::Buffer  
 
 **/
 
 template<typename T>
-void Six::createContextBuffer( char typ, T* d_ptr, unsigned num_item, const char* name )
+void Six::createContextInputBuffer( T* d_ptr, unsigned num_item, const char* name )
 {
     LOG(info) << name << " " << d_ptr << ( d_ptr == nullptr ? " EMPTY " : "" ); 
 
-    unsigned type ;
-    switch(typ)
-    {
-        case 'I': type = RT_BUFFER_INPUT  ; break ; 
-        case 'O': type = RT_BUFFER_OUTPUT ; break ; 
-    }
-
+    // NB OptiX limitation the setDevicePointer throws exception for non-INPUT buffers
+    unsigned type = RT_BUFFER_INPUT ; 
     RTformat format = RT_FORMAT_USER ; 
     optix::Buffer buffer = context->createBuffer( type, format, num_item );
     buffer->setElementSize( sizeof(T) ); 
@@ -145,10 +141,9 @@ void Six::createContextBuffer( char typ, T* d_ptr, unsigned num_item, const char
     context[name]->set( buffer );
 }
 
-template void Six::createContextBuffer( char typ, CSGNode*,  unsigned, const char* ) ; 
-template void Six::createContextBuffer( char typ, qat4*,     unsigned, const char* ) ; 
-template void Six::createContextBuffer( char typ, float*,    unsigned, const char* ) ; 
-template void Six::createContextBuffer( char typ, quad4*,    unsigned, const char* ) ; 
+template void Six::createContextInputBuffer( CSGNode*,  unsigned, const char* ) ; 
+template void Six::createContextInputBuffer( qat4*,     unsigned, const char* ) ; 
+template void Six::createContextInputBuffer( float*,    unsigned, const char* ) ; 
 
 
 void Six::setFoundry(const CSGFoundry* foundry_) 
@@ -160,7 +155,7 @@ void Six::setFoundry(const CSGFoundry* foundry_)
 void Six::createGeom()
 {
     LOG(info) << "[" ; 
-    createContextBuffers(); 
+    createContextInputBuffers(); 
     createGAS(); 
     createIAS(); 
     LOG(info) << "]" ; 
@@ -168,8 +163,8 @@ void Six::createGeom()
 
 
 /**
-Six::createContextBuffers : Shim optix::Buffer facade from CUDA device pointers
----------------------------------------------------------------------------------
+Six::createContextInputBuffers : Shim optix::Buffer facade from CUDA device pointers
+--------------------------------------------------------------------------------------
 
 NB the CSGPrim prim_buffer is not here as that is specific 
 to each geometry "solid"
@@ -183,11 +178,11 @@ NB no significant uploading is done here,
 the CSGFoundry buffers having already been uploaded to device.  
 
 **/
-void Six::createContextBuffers()
+void Six::createContextInputBuffers()
 {
-    createContextBuffer<CSGNode>( 'I' , foundry->d_node, foundry->getNumNode(), "node_buffer" ); 
-    createContextBuffer<qat4>(    'I' , foundry->d_itra, foundry->getNumItra(), "itra_buffer" ); 
-    createContextBuffer<float4>(  'I' , foundry->d_plan, foundry->getNumPlan(), "plan_buffer" ); 
+    createContextInputBuffer<CSGNode>( foundry->d_node, foundry->getNumNode(), "node_buffer" ); 
+    createContextInputBuffer<qat4>(    foundry->d_itra, foundry->getNumItra(), "itra_buffer" ); 
+    createContextInputBuffer<float4>(  foundry->d_plan, foundry->getNumPlan(), "plan_buffer" ); 
 }
 
 
@@ -440,7 +435,6 @@ optix::Group Six::createIAS(const std::vector<qat4>& inst )
     return group ;
 }
 
-
 optix::GeometryInstance Six::createGeometryInstance(unsigned gas_idx, unsigned ins_idx)
 {
     //LOG(info) << " gas_idx " << gas_idx << " ins_idx " << ins_idx  ;   
@@ -452,7 +446,6 @@ optix::GeometryInstance Six::createGeometryInstance(unsigned gas_idx, unsigned i
     pergi["identity"]->setUint(ins_idx);
     return pergi ; 
 }
-
 
 void Six::setTop(const char* spec)
 {
@@ -483,43 +476,10 @@ void Six::setTop(const char* spec)
     }
 }
 
-void Six::launch()
+void Six::launch(unsigned width, unsigned height, unsigned depth)
 {
-    LOG(info) << "[ params.width " << params->width << " params.height " << params->height ; 
-    context->launch( entry_point_index , params->width, params->height  );  
-    LOG(info) << "]" ; 
-}
-
-
-void Six::snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height)
-{
-    LOG(info) 
-        << "["
-        << " params.width " << params->width   
-        << " params.height " << params->height 
-        ;
-
-    int channels = 4 ; 
-    int quality = 50 ; 
-
-    unsigned char* pixels  = (unsigned char*)pixels_buffer->map();  
-
-    SIMG img(int(params->width), int(params->height), channels,  pixels ); 
-    img.annotate(bottom_line, top_line, line_height ); 
-    img.writeJPG(path, quality); 
-    pixels_buffer->unmap(); 
-
-    const char* posi_path = SStr::ReplaceEnd( path, ".jpg", "_posi.npy");
-    float* posi = (float*)posi_buffer->map() ;
-    NP::Write(posi_path, posi, params->height, params->width, 4 );
-    posi_buffer->unmap(); 
-
-    const char* isect_path = SStr::ReplaceEnd( path, ".jpg", "_isect.npy");
-    float* isect = (float*)isect_buffer->map() ;
-    NP::Write(isect_path, isect, params->height, params->width, 4, 4 );
-    isect_buffer->unmap(); 
-
-
+    LOG(info) << "[ width " << width << " height " << height << " depth " << depth  ; 
+    context->launch( entry_point_index , width, height, depth );  
     LOG(info) << "]" ; 
 }
 

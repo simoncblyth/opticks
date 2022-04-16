@@ -21,23 +21,28 @@ snap=$FOLD/snap.jpg
 
 arg=${1:-run_ana}
 
+
+if [ "${arg/dbg}" != "$arg" ]; then 
+   lldb__ CSGOptiXTest 
+   [ $? -ne 0 ] && echo $msg dbg error && exit 1 
+fi
+
 if [ "${arg/run}" != "$arg" ]; then 
-    if [ -n "$DEBUG" ]; then 
-        lldb__ CSGOptiXTest 
-    else
-        CSGOptiXTest 
-    fi 
+    CSGOptiXTest 
+    [ $? -ne 0 ] && echo $msg run error && exit 2 
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    
 
     if [ -f "$snap" ]; then 
        open $snap
-
        ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXTest.py 
+       [ $? -ne 0 ] && echo $msg ana error && exit 3 
     else
        echo $msg snap $snap does not exist 
     fi 
 fi 
+
+exit 0 
+
 
