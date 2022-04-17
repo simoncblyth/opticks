@@ -1,8 +1,15 @@
 #pragma once
 
 /**
-CSGGenstep.h
-===============
+CSGGenstep.h : Creator of CenterExtent "CE" Gensteps used by CSGOptiXSimulateTest
+==================================================================================
+
+Sensitive to envvars:
+
+CEGS
+   center-extent-genstep
+   expect 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
+
 
 **/
 

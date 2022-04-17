@@ -66,8 +66,7 @@ static __forceinline__ __device__ void trace(
 {
     const float rayTime = 0.0f ; 
     OptixVisibilityMask visibilityMask = 1u  ; 
-    //OptixRayFlags rayFlags = OPTIX_RAY_FLAG_NONE ; 
-    OptixRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ; 
+    OptixRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ;   // OPTIX_RAY_FLAG_NONE 
     const unsigned SBToffset = 0u ; 
     const unsigned SBTstride = 1u ; 
     const unsigned missSBTIndex = 0u ; 

@@ -1,3 +1,42 @@
+/**
+Six.cc
+========
+
+Enables the new workflow CSGFoundry geometry developed for use with the all new OptiX 7 API 
+to be used with the old OptiX API versions 5 and 6. 
+
+BUT it seems that although it has been seen to work with simple geometries 
+this approach is on shaky ground as pointer arithmetic is prohibited in OptiX < 7 code. 
+This is surprising as opticks/CSG CUDA-centric implementation makes lots of 
+use of pointer arithmetic and has proved to work with OptiX 5 on macOS.  
+
+Due to this uncertainty should not put great efforts into this Six backward compatibility code. 
+However some effort is warranted as it enables convenient local laptop development. 
+OptiX 7 not being usable on my ancient macOS laptop due to CUDA version restriction.  
+
+About the shaky ground
+--------------------------
+
+https://forums.developer.nvidia.com/t/sending-float-array-from-host-to-device/65391/2
+
+droettger::
+
+    RT_PROGRAM void func()
+    {
+      // Access floats inside the device copy with index in range [0, bufferOfFloats.size() - 1].
+      // Always use operator[] to access buffer elements!
+      // There is no pointer arithmetic allowed on device side buffers in OptiX.
+      float f = bufferOfFloats[index];
+    }
+
+Why does it work ?
+-------------------
+
+Maybe because pointer arithmetic is all being done on constant input buffers ?
+ 
+
+**/
+
 #include <iostream>
 
 #include "PLOG.hh"
@@ -89,6 +128,15 @@ void Six::initFrame()
         << " optix_device_ordinal " << optix_device_ordinal
         ;
 }
+
+/**
+Six::updateContext
+-------------------
+
+Populates context with values from the hostside params. 
+
+**/
+
 
 void Six::updateContext()
 {

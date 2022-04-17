@@ -25,20 +25,7 @@ What does event handling need to plug into
 TODO
 ------
 
-* CSGOptix currently depends on OpticksCore
-
-  * see if can move it down to sysrap-qudarap ?
-
-* CSGOptiX with pre-7 : *Six* 
-
-  * review *Six* and its tests : add more tests using very simple geometry if necessary 
-  * update *Six* backwards compat machinery to accomodate recent QUDARap developments 
-  * arrange for the two "branches" to share more code, eg 
- 
-    * can more use of OptiX 6/CUDA interop be made : using alt view of same CUDA buffers  
-
-
-* CSGOptiX test of recent QUDARap dev both pre-7 and 7 
+* CSGOptiX test of recent QUDARap dev with OptiX 7 
 
 * get generation going in new workflow to fully check the QEvent/qevent design  
 
@@ -55,6 +42,31 @@ TODO
 * OpticksEvent components and hookup to allow ab.py validation machinery to work with new workflow
 
   * move OpticksEvent down to sysrap : to keep simple primary dependency chain sysrap-qudarap-csgoptix
+
+
+DONE : reviewing CSGOptiX and Six backwards compat
+----------------------------------------------------
+
+* CSGOptix currently depends on OpticksCore
+
+  * see if can move it down to sysrap-qudarap ?
+  * CONCLUDED : USE OF Composition PREVENTS THIS CURRENTLY 
+
+* CSGOptiX with pre-7 : *Six* 
+
+  * review *Six* and its tests : add more tests using very simple geometry if necessary 
+
+    * DONE : added minimal CSGOptiXTest 
+
+  * update *Six* backwards compat machinery to accomodate recent QUDARap developments 
+
+    * CONCLUDED : EFFORT NOT WORTHY OF THE BENEFIT 
+    * **END OF THE LINE FOR OptiX < 7 SIM : OTHER THAN RENDERING**
+
+  * arrange for the two "branches" to share more code, eg 
+ 
+    * can more use of OptiX 6/CUDA interop be made : using alt view of same CUDA buffers  
+    * DONE: now using Frame with both branches 
 
 
 DONE : incorporate SU stream compaction into QEvent::getHits 

@@ -1,3 +1,33 @@
+/**
+CSGOptiX.cc
+============
+
+This code contains two branches for old (OptiX < 7) and new (OptiX 7+) API
+
+Branched aspects:
+
+1. OptiX7Test.cu vs OptiX6Test.cu  
+2. Ctx/SBT/PIP  vs Six
+3. new workflow uses uploaded params extensively from CUDA device code, 
+   old workflow with *Six* uses hostside params to populate the optix context 
+   which then gets used on device
+
+   CSGOptiX::prepareParam (called just before launch)
+
+   * new workflow: uploads param 
+   * old workflow: Six::updateContext passes hostside param into optix context variables 
+
+   Six MATCHING NEEDS DUPLICATION FROM Params INTO CONTEXT VARIABLES AND BUFFERS
+
+
+
+HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort than it is worth 
+
+* would have to shadow it into context variables 
+* CUDA textures would not work without optix textureSamplers 
+
+**/
+
 #include <iostream>
 #include <cstdlib>
 
@@ -446,7 +476,9 @@ CSGOptiX::prepareParam and upload
 This is invoked by CSGOptiX::launch just before the OptiX launch, 
 depending on raygenmode the simulate/render param are prepared and uploaded. 
 
-TODO: can Six use the same params ?
+Q: can Six use the same uploaded params ? 
+A: not from device code it seems : only by using the hostside params to 
+   populate the pre-7 optix::context
 
 **/
 
@@ -461,7 +493,7 @@ void CSGOptiX::prepareParam()
     }
 
 #if OPTIX_VERSION < 70000
-    six->updateContext(); 
+    six->updateContext();  // Populates context with values from the hostside params
 #else
     params->upload();  
     if(!flight) params->dump(" CSGOptiX::prepareParam"); 
