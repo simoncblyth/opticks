@@ -45,6 +45,7 @@ TODO:
 #include "CSGFoundry.h"
 #include "CSGGenstep.h"
 #include "CSGOptiX.h"
+#include "RG.h"
 
 #include "QSim.hh"
 #include "QEvent.hh"
@@ -56,7 +57,9 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv ); 
     ok.configure(); 
-    ok.setRaygenMode(1) ; // override --raygenmode option 
+
+    int raygenmode = RG_SIMTRACE ;  
+    ok.setRaygenMode(raygenmode) ; // override --raygenmode option 
 
     int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
     const char* out_prefix = ok.getOutPrefix(optix_version_override);   
@@ -67,9 +70,7 @@ int main(int argc, char** argv)
         ;
 
     const char* cfbase = ok.getFoundryBase("CFBASE");  // envvar CFBASE can override 
-
-    int create_dirs = 2 ;  
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", out_prefix, create_dirs );  
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", out_prefix, DIRPATH );  
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
 
     ok.setOutDir(outdir); 

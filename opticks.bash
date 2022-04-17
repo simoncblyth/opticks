@@ -35,7 +35,16 @@ oot(){ oo ; opticks-t ; : opticks.bash ; }
 t(){ typeset -f $*    ; : opticks.bash ; } 
 rc(){ local RC=$?; echo RC $RC; return $RC ; : opticks.bash ;  }
 
-geom(){ local path=$HOME/.opticks/GEOM.txt ; vi $path ;   }
+geom(){ 
+   : opticks/opticks.bash 
+   local path=$HOME/.opticks/GEOM.txt 
+   if [ "$1" == "scp" ]; then 
+       scp $path P:.opticks/
+   else
+       vi $path ;
+   fi   
+}
+
 
 opticks-source(){   echo $BASH_SOURCE ; }
 opticks-ldir(){     echo $(dirname $BASH_SOURCE) ; }

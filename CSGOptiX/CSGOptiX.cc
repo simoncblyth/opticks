@@ -30,6 +30,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 
 #include <iostream>
 #include <cstdlib>
+#include <chrono>
 
 #include <optix.h>
 #if OPTIX_VERSION < 70000
@@ -192,7 +193,12 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
 
 void CSGOptiX::init()
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) 
+        << "[" 
+        << " raygenmode " << raygenmode
+        << " RG::Name(raygenmode) " << RG::Name(raygenmode)
+        ;  
+
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     assert( outdir && "expecting OUTDIR envvar " );
 

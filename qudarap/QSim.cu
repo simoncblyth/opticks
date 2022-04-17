@@ -403,7 +403,7 @@ __global__ void _QSim_propagate_to_boundary( qsim<T>* sim, quad4* photon, unsign
 
     if (id >= num_photon) return;
 
-    const quad2& prd = dbg->prd ;  // no need for local copy when readonly   
+    const quad2* prd = &dbg->prd ;  // no need for local copy when readonly   
     const qstate& s  = dbg->s ;     
     quad4 p          = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
 
@@ -428,7 +428,7 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim<T>* sim, quad4* photo
 
     if (id >= num_photon) return;
 
-    const quad2& prd = dbg->prd ;  // no need for local copy when readonly   
+    const quad2* prd = &dbg->prd ;  // no need for local copy when readonly   
     const qstate& s = dbg->s ;     
     quad4 p         = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
     curandState rng = sim->rngstate[id] ; 
@@ -451,7 +451,7 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim<T>* sim, quad4* photon,
 
     if (id >= num_photon) return;
 
-    const quad2& prd = dbg->prd ; 
+    const quad2* prd = &dbg->prd ; 
     const qstate& s = dbg->s ;     
     quad4 p         = photon[id] ; 
     curandState rng = sim->rngstate[id] ; 
@@ -474,7 +474,7 @@ __global__ void _QSim_hemisphere_polarized( qsim<T>* sim, quad4* photon, unsigne
     if (id >= num_photon) return;
 
     curandState rng = sim->rngstate[id] ; 
-    const quad2& prd = dbg->prd ;  
+    const quad2* prd = &dbg->prd ;  
     quad4 p         = dbg->p ;   
     bool inwards = true ; 
 
@@ -492,7 +492,7 @@ __global__ void _QSim_reflect_generate( qsim<T>* sim, quad4* photon, unsigned nu
     if (id >= num_photon) return;
 
     curandState rng = sim->rngstate[id] ; 
-    const quad2& prd = dbg->prd ;  
+    const quad2* prd = &dbg->prd ;  
     quad4 p         = dbg->p ;   
 
     p.q0.f = p.q1.f ;   // non-standard record initial mom into p0 and initial pol into q3

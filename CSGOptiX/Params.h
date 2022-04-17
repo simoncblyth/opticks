@@ -27,10 +27,11 @@ struct quad6 ;
 template <typename T> struct qsim ; 
 struct qevent ; 
 
+#include "RG.h"
 
 struct Params
 {
-    // render/simulation switch 
+    // render/simtrace/simulate switch 
     int32_t    raygenmode ;
 
     // geometry : from Foundry
@@ -77,6 +78,8 @@ struct Params
 
 #ifndef __CUDACC__
     static Params* d_param ; 
+
+    
 
     Params(int raygenmode, unsigned width, unsigned height, unsigned depth); 
     void device_alloc(); 

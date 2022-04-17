@@ -118,21 +118,17 @@ struct qsim
     QSIM_METHOD static void   rayleigh_scatter_align(quad4& p, curandStateXORWOW& rng ); 
 
 
-    //QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, const int bounce_max, curandStateXORWOW& rng, unsigned id, quad4* record, int record_max ); 
-    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx ); 
+    QSIM_METHOD void    mock_propagate( quad4& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx ); 
 
-    QSIM_METHOD int     propagate(const int bounce, quad4& p, qstate& s, const quad2& prd, curandStateXORWOW& rng, unsigned idx ); 
-    QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
-    QSIM_METHOD int     propagate_at_surface( unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
-    QSIM_METHOD int     propagate_at_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
+    QSIM_METHOD int     propagate(const int bounce, quad4& p, qstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx ); 
+    QSIM_METHOD int     propagate_to_boundary(unsigned& flag, quad4& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
+    QSIM_METHOD int     propagate_at_surface( unsigned& flag, quad4& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
+    QSIM_METHOD int     propagate_at_boundary(unsigned& flag, quad4& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
 
+    QSIM_METHOD void    reflect_diffuse(  quad4& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx );
+    QSIM_METHOD void    reflect_specular( quad4& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx );
 
-
-
-    QSIM_METHOD void    reflect_diffuse(  quad4& p, const quad2& prd, curandStateXORWOW& rng, unsigned idx );
-    QSIM_METHOD void    reflect_specular( quad4& p, const quad2& prd, curandStateXORWOW& rng, unsigned idx );
-
-    QSIM_METHOD void    hemisphere_polarized(   quad4& p, unsigned polz, bool inwards, const quad2& prd, curandStateXORWOW& rng); 
+    QSIM_METHOD void    hemisphere_polarized(   quad4& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng); 
 
 
 #else
@@ -665,14 +661,14 @@ TODO: whilst in measurement iteration try changing to a single return, not loads
 **/
 
 template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
+inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
 {
     const float& absorption_length = s.material1.y ; 
     const float& scattering_length = s.material1.z ; 
     const float& reemission_prob = s.material1.w ; 
     const float& group_velocity = s.m1group2.x ; 
 
-    const float& distance_to_boundary = prd.q0.f.w ; 
+    const float& distance_to_boundary = prd->q0.f.w ; 
 
     float3* position = (float3*)&p.q0.f.x ; 
     float* time = &p.q0.f.w ;  
@@ -875,7 +871,7 @@ random aligned matching with examples/Geant/BoundaryStandalone
 **/
 
 template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate_at_boundary(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
+inline QSIM_METHOD int qsim<T>::propagate_at_boundary(unsigned& flag, quad4& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
 {
     const float& n1 = s.material1.x ;
     const float& n2 = s.material2.x ;   
@@ -883,7 +879,7 @@ inline QSIM_METHOD int qsim<T>::propagate_at_boundary(unsigned& flag, quad4& p, 
 
     float3* direction    = (float3*)&p.q1.f.x ; 
     float3* polarization = (float3*)&p.q2.f.x ; 
-    const float3* normal = (float3*)&prd.q0.f.x ; 
+    const float3* normal = (float3*)&prd->q0.f.x ; 
 
     const float _c1 = -dot(*direction, *normal ); 
     const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ; 
@@ -1064,7 +1060,7 @@ qsim::propagate_at_surface
 **/
 
 template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate_at_surface(unsigned& flag, quad4& p, const quad2& prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
+inline QSIM_METHOD int qsim<T>::propagate_at_surface(unsigned& flag, quad4& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
 {
     const float& detect = s.surface.x ;
     const float& absorb = s.surface.y ;
@@ -1138,7 +1134,7 @@ qsim::reflect_diffuse cf G4OpBoundaryProcess::DoReflection
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::reflect_diffuse( quad4& p, const quad2& prd, curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD void qsim<T>::reflect_diffuse( quad4& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
 {
     float3* dir = (float3*)&p.q1.f.x ;  
     float3* pol = (float3*)&p.q2.f.x ;  
@@ -1147,7 +1143,7 @@ inline QSIM_METHOD void qsim<T>::reflect_diffuse( quad4& p, const quad2& prd, cu
 
     float3 old_dir = *dir ; 
 
-    const float3* normal = prd.normal()  ;  
+    const float3* normal = prd->normal()  ;  
     const float orient = -1.f ;     // equivalent to G4OpBoundaryProcess::PostStepDoIt early flip  of theGlobalNormal ?
     lambertian_direction(dir, normal, orient, rng, idx );
 
@@ -1157,12 +1153,12 @@ inline QSIM_METHOD void qsim<T>::reflect_diffuse( quad4& p, const quad2& prd, cu
 }
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::reflect_specular( quad4& p, const quad2& prd, curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD void qsim<T>::reflect_specular( quad4& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
 {
     float3* dir = (float3*)&p.q1.f.x ;  
     float3* pol = (float3*)&p.q2.f.x ;  
 
-    const float3* normal = prd.normal() ;      
+    const float3* normal = prd->normal() ;      
     const float orient = -1.f ;     // equivalent to G4OpBoundaryProcess::PostStepDoIt early flip of theGlobalNormal ?
 
     const float PdotN = dot( *dir, *normal )*orient ; 
@@ -1219,7 +1215,7 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
     while( bounce < max_bounce )
     {
         if(record) record[max_record*idx+bounce] = p ;  
-        const quad2& prd = mock_prd[max_bounce*idx+bounce] ;  
+        const quad2* prd = mock_prd + (max_bounce*idx+bounce) ;  
         command = propagate(bounce, p, s, prd, rng, idx ); 
         bounce++;        
         if(command == BREAK) break ;    
@@ -1234,14 +1230,14 @@ qsim::propagate : one "bounce" propagate_to_boundary/propagate_at_boundary
 **/
 
 template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s, const quad2& prd, curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
 {
     float* wavelength = &p.q2.f.w ; 
     float3* dir = (float3*)&p.q1.f.x ;    
 
-    const unsigned boundary = prd.boundary() ; 
-    const unsigned identity = prd.identity() ; 
-    const float3* normal = prd.normal(); 
+    const unsigned boundary = prd->boundary() ; 
+    const unsigned identity = prd->identity() ; 
+    const float3* normal = prd->normal(); 
     float cosTheta = dot(*dir, *normal ) ;    
 
 #ifdef DEBUG_COSTHETA
@@ -1314,9 +1310,9 @@ inwards.
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, bool inwards, const quad2& prd, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng)
 {
-    const float3* normal = prd.normal() ; 
+    const float3* normal = prd->normal() ; 
 
     float3* direction    = (float3*)&p.q1.f.x ; 
     float3* polarization = (float3*)&p.q2.f.x ; 

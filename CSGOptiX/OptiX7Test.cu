@@ -237,14 +237,14 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 }
 
 /**
-simulate_trace
-----------------
+simtrace
+----------
 
 Used for making 2D cross section views of geometry intersects  
 
 **/
 
-static __forceinline__ __device__ void simulate_trace( const uint3& launch_idx, const uint3& dim, quad2* prd )
+static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
     qevent* evt      = params.evt ; 
     if (launch_idx.x >= evt->num_photon) return;
@@ -257,7 +257,6 @@ static __forceinline__ __device__ void simulate_trace( const uint3& launch_idx, 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
 
     quad4 p ;   
-    qstate s ; 
 
     sim->generate_photon(p, rng, gs, idx, genstep_id );  
 
@@ -342,8 +341,9 @@ extern "C" __global__ void __raygen__rg()
   
     switch( params.raygenmode )
     {
-        case 0: render(   idx, dim, &prd ) ; break ;  
-        case 1: simulate( idx, dim, &prd ) ; break ;  
+        case RG_RENDER:    render(   idx, dim, &prd ) ; break ;  
+        case RG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;  
+        case RG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;  
     }
 } 
 
