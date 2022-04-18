@@ -8,6 +8,7 @@ set(SINGLE_SOURCES
     CSGOptiXVersionTest.cc
     CSGOptiXRenderTest.cc
     CSGOptiXSimtraceTest.cc
+    CSGOptiXSimulateTest.cc
     CSGOptiXTest.cc 
 )
 

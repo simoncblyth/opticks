@@ -11,6 +11,7 @@ see the other tests.
 #include "SPath.hh"
 #include "SSys.hh"
 #include "OPTICKS_LOG.hh"
+#include "SOpticksResource.hh"
 #include "Opticks.hh"
 
 #include "RG.h"
@@ -21,25 +22,27 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    int raygenmode = RG::Type(SSys::getenvvar("RGMODE", "simulate"));
+    LOG(info) 
+        << " raygenmode " << raygenmode 
+        << " RG::Name(raygenmode) " << RG::Name(raygenmode) 
+        ; 
+
     Opticks ok(argc, argv ); 
     ok.configure(); 
-
-    int raygenmode = RG_RENDER ;  
-
-    ok.setRaygenMode(raygenmode) ;  // override --raygenmode option 
+    ok.setRaygenMode(raygenmode); 
 
     CSGFoundry* fd = CSGFoundry::Load(); 
+    if( fd == nullptr ) return 1 ; 
     fd->upload(); 
 
     CSGOptiX cx(&ok, fd); 
-
     float4 ce = make_float4(0.f, 0.f, 0.f, 100.f );  
-    cx.setComposition(ce, nullptr, nullptr); 
+    cx.setComposition(ce); 
 
     if( cx.raygenmode == RG_RENDER )
     {
-        double dt = cx.render(); 
-        LOG(info) << " dt " << dt ;  
+        cx.render(); 
         cx.snap(); 
     }
     else if ( cx.raygenmode == RG_SIMTRACE )

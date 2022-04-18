@@ -22,12 +22,38 @@ What does event handling need to plug into
         render and simulate 
 
 
-TODO : CSGOptiX test of recent QUDARap dev with OptiX 7 
-------------------------------------------------------------
+TODO : check new CSGOptiXSimulateTest with OpticksGenstep_PHOTON_CARRIER and a simple geometry
+--------------------------------------------------------------------------------------------------
 
-* cxs_geochain.sh 
+:: 
+
+    QSim<float>::UploadComponents(fd->icdf, fd->bnd, fd->optical, rindexpath );
+
+* simpler to reuse standard CSGFoundry components together with simple non-standard geometry for the test
+* need way get the boundary index by a string spec lookup 
+* also need API to set the boundary onto the CSGNode tree prior to upload 
+
+  * as same boundary on all CSGNode of a CSGPrim need a CSGPrim::setBoundary method
+  * not quite : has to be CSGFoundry::setPrimBoundary as need to iterate over all CSGNode of the CSGPrim 
+ 
+``OptiX7Test.cu:__intersection__is`` gets boundary from CSGNode::
+
+    489     float4 isect ; // .xyz normal .w distance 
+    490     if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))
+    491     {
+    492         const unsigned hitKind = 0u ;            // only 8bit : could use to customize how attributes interpreted
+    493         const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
+    494 #ifdef WITH_PRD
+    495         if(optixReportIntersection( isect.w, hitKind))
+    496         {
+    497             quad2* prd = getPRD<quad2>();
+    498             prd->q0.f = isect ;
+    499             prd->set_boundary(boundary) ;
+    500         }
 
 
+
+* need "basis" CSGFoundry 
 
 
 TODO
@@ -38,7 +64,7 @@ TODO
 * review old and new looking for aspects that need to be ported over 
 
   * compressed sequence recording (seqhis seqmat) is needed for OpticksEvent 
-     as the full record is only appropriate for debugging with small numbers of photons 
+    as the full record is only appropriate for debugging with small numbers of photons 
 
   * photon indexing (using thrust sorting) needs to be ported over : probably this can be done in sysrap/SU
     together with stream compaction  
@@ -48,6 +74,12 @@ TODO
 * OpticksEvent components and hookup to allow ab.py validation machinery to work with new workflow
 
   * move OpticksEvent down to sysrap : to keep simple primary dependency chain sysrap-qudarap-csgoptix
+
+
+DONE : split off cxs 2D as simtrace running
+-----------------------------------------------
+
+* cxs_geochain.sh running with simple geometry 
 
 
 DONE : reviewing CSGOptiX and Six backwards compat

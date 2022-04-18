@@ -89,7 +89,7 @@ void Params::dump(const char* msg) const
         << std::setw(20) << " origin_y " << std::setw(10) << origin_y  << std::endl 
         << std::setw(20) << " tmin " << std::setw(10) << tmin  << std::endl 
         << std::setw(20) << " tmax " << std::setw(10) << tmax  << std::endl 
-        << std::setw(20) << " num_photons " << std::setw(10) << num_photons  << std::endl 
+       // << std::setw(20) << " num_photons " << std::setw(10) << num_photons  << std::endl 
         << std::endl 
         << "(device pointers)" << std::endl 
         << std::setw(20) << " node " << std::setw(10) << node  << std::endl 
@@ -105,6 +105,31 @@ void Params::dump(const char* msg) const
 
 
 Params::Params(int raygenmode_, unsigned width, unsigned height, unsigned depth)
+    :
+    raygenmode(RG_RENDER),
+    node(nullptr),
+    plan(nullptr),
+    tran(nullptr),
+    itra(nullptr),
+#if OPTIX_VERSION < 70000
+    handle(nullptr),
+#else
+    handle(0),
+#endif
+    pixels(nullptr),
+    isect(nullptr),
+    fphoton(nullptr),
+    width(0),
+    height(0),
+    depth(0),
+    cameratype(0),
+    origin_x(0),
+    origin_y(0),
+    tmin(0.f),
+    tmax(0.f),
+    sim(nullptr),
+    evt(nullptr)
+    //num_photons(0)
 {
     setRaygenMode(raygenmode_); 
     setSize(width, height, depth); 

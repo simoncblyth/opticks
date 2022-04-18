@@ -98,8 +98,8 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void setGensteps(const quad6* gs, unsigned num_gs); 
 
     void setCEGS(const std::vector<int>& cegs); 
-    void setComposition(const float4& ce,    const qat4* m2w, const qat4* w2m ); 
-    void setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* w2m ); 
+    void setComposition(const float4& ce,    const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
+    void setComposition(const glm::vec4& ce, const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
     void setNear(float near); 
 
     void prepareRenderParam(); 

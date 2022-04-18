@@ -34,6 +34,7 @@ class SYSRAP_API SPath {
   public:
       static const plog::Severity LEVEL ; 
       static const char* Stem( const char* name );
+      static bool IsReadable(const char* base, const char* name);
       static bool IsReadable(const char* path);
       static const char* GetHomePath(const char* rel); 
       static const char* Dirname(const char* path); 

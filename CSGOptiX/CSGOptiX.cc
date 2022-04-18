@@ -480,8 +480,10 @@ Per-event simulate setup invoked just prior to optix launch
 void CSGOptiX::prepareSimulateParam()  
 {
     LOG(info) << "[" ; 
-    params->num_photons = event->getNumPhoton() ;  // hmm perhaps just provide qevent ?  
+
+    //params->num_photons = event->getNumPhoton() ;  // hmm perhaps just provide qevent ?  
     // TODO: remove params.num_photons that is now handled by qevent  
+
     LOG(info) << "]" ; 
 }
 
@@ -504,12 +506,13 @@ void CSGOptiX::prepareParam()
     params->setCenterExtent(ce.x, ce.y, ce.z, ce.w); 
     switch(raygenmode)
     {
-       case 0:prepareRenderParam() ; break ; 
-       case 1:prepareSimulateParam() ; break ; 
+        case RG_RENDER   : prepareRenderParam()   ; break ; 
+        case RG_SIMTRACE : prepareSimulateParam() ; break ; 
+        case RG_SIMULATE : prepareSimulateParam() ; break ; 
     }
 
 #if OPTIX_VERSION < 70000
-    six->updateContext();  // Populates context with values from the hostside params
+    six->updateContext();  // Populates optix::context with values from hostside params
 #else
     params->upload();  
     if(!flight) params->dump(" CSGOptiX::prepareParam"); 
@@ -528,12 +531,17 @@ Depending on params.raygenmode the "render" or "simulate" method is called.
 double CSGOptiX::launch()
 {
     prepareParam(); 
-
+   
     bool sim = raygenmode > 0 ; 
-    // TODO: num_photons should come from QEvent/qevent not params 
-    unsigned width  = sim ? params->num_photons : params->width ; 
-    unsigned height = sim ?                   1 : params->height ;  
-    unsigned depth  = sim ?                   1 : params->depth ; 
+    if(sim)
+    {
+        assert( event ); 
+    }
+
+    unsigned width  = sim ? event->getNumPhoton()  : params->width  ; 
+    unsigned height = sim ?                      1 : params->height ;  
+    unsigned depth  = sim ?                      1 : params->depth  ;
+ 
     assert( width > 0 ); 
 
     typedef std::chrono::time_point<std::chrono::high_resolution_clock> TP ;
@@ -541,6 +549,13 @@ double CSGOptiX::launch()
     TP t0 = std::chrono::high_resolution_clock::now();
 
 #if OPTIX_VERSION < 70000
+    LOG(info) 
+         << " width " << width 
+         << " height " << height 
+         << " depth " << depth
+         ;
+
+    assert( width <= 1000000 ); 
     six->launch(width, height, depth ); 
 #else
     CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;

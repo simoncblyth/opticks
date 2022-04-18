@@ -117,6 +117,7 @@ struct CSG_API CSGFoundry
     void setElv(const SBitSet* elv); 
 
     std::string desc() const ;
+    std::string descComp() const ;
     std::string descSolid() const ; 
     std::string descMeshName() const ; 
     std::string descGAS() const ;

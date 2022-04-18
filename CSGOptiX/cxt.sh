@@ -22,9 +22,7 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$(echo ${catgeom%%_*})
-export GEOM=${GEOM:-$geom}
-
+source $PWD/../bin/GEOM.sh trim   ## sets GEOM envvar based on GEOM.txt file 
 
 if [ "$(uname)" == "Linux" ]; then
     cfname=GeoChain/$GEOM            
@@ -32,15 +30,25 @@ else
     cfname=GeoChain_Darwin/$GEOM            
 fi
 
-export CFBASE_remote=/tmp/$USER/opticks/GeoChain/$GEOM
 export CFBASE=/tmp/$USER/opticks/$cfname
-export TMIN=0
-export EYE=-1,-1,-1
-export CAMERATYPE=1
-
+export CFBASE_remote=/tmp/$USER/opticks/GeoChain/$GEOM
 export FOLD=$CFBASE/CSGOptiX 
-snap=$FOLD/snap.jpg
-snap_remote=$CFBASE_remote/CSGOptiX/snap.jpg
+export RGMODE="render" 
+
+if [ "$RGMODE" == "render" ]; then 
+
+    export TMIN=0
+    export EYE=-1,-1,-1
+    export CAMERATYPE=1
+fi 
+
+
+
+if [ "$RGMODE" == "render" ]; then 
+    snap=$FOLD/snap.jpg
+    snap_remote=$CFBASE_remote/CSGOptiX/snap.jpg
+fi 
+
 
 arg=${1:-run_ana}
 
@@ -60,28 +68,34 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
 
-    if [ -f "$snap" ]; then 
-
-       if [ "$(uname)" == "Darwin" ]; then
-           open $snap
-       fi  
-
-       ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXTest.py 
-       [ $? -ne 0 ] && echo $msg ana error && exit 3 
-    else
-       echo $msg snap $snap does not exist 
+    if [ "$RGMODE" == "render" ]; then 
+        if [ -f "$snap" ]; then 
+           if [ "$(uname)" == "Darwin" ]; then
+               open $snap
+           fi  
+        else
+           echo $msg snap $snap does not exist 
+        fi
     fi 
+
+    ${IPYTHON:-ipython} --pdb -i tests/CSGOptiXTest.py 
+    [ $? -ne 0 ] && echo $msg ana error && exit 3 
+
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
-   mkdir -p $(dirname $snap_remote) 
-   grab="scp P:$snap_remote $snap_remote"
-   echo $msg $grab
-   eval $grab 
 
-   if [ "$(uname)" == "Darwin" ]; then
-       open $snap_remote
-   fi  
+   if [ "$RGMODE" == "render" ]; then 
+       mkdir -p $(dirname $snap_remote) 
+       grab="scp P:$snap_remote $snap_remote"
+       echo $msg $grab
+       eval $grab 
+
+       if [ "$(uname)" == "Darwin" ]; then
+           open $snap_remote
+       fi  
+   fi 
+
 fi 
 
 exit 0 

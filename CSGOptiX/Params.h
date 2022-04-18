@@ -73,13 +73,11 @@ struct Params
     // simulation 
     qsim<float>* sim ; 
     qevent*      evt ;         // HMM: inside sim too ?
-    uint32_t     num_photons ; // HMM: inside evt too ? 
+   // uint32_t     num_photons ; // HMM: inside evt too ? 
 
 
 #ifndef __CUDACC__
     static Params* d_param ; 
-
-    
 
     Params(int raygenmode, unsigned width, unsigned height, unsigned depth); 
     void device_alloc(); 

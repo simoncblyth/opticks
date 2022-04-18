@@ -450,13 +450,19 @@ void QEvent::setNumPhoton(unsigned num_photon )
 
     if( evt->photon == nullptr ) 
     {
-        LOG(info) << " device_alloc photon " ; 
         evt->photon = QU::device_alloc<quad4>( evt->max_photon ) ; 
         
         // assumes that the number of photons for subsequent launches does not increase 
         // when collecting records : that is ok during highly controlled debugging 
         evt->num_record = evt->max_record * evt->num_photon ;  
         evt->record  = evt->num_record  > 0 ? QU::device_alloc<quad4>( evt->num_record  ) : nullptr ; 
+
+        LOG(info) 
+            << " device_alloc photon " 
+            << " evt.num_photon " << evt->num_photon 
+            << " evt.max_photon " << evt->max_photon
+            << " evt.num_record " << evt->num_record 
+            ;
     }
 
     uploadEvt(); 

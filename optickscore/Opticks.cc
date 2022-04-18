@@ -2769,6 +2769,8 @@ it is preferable to provide contextual information
 about the output via a relative directory, rather than 
 the absolute directory of OutDir 
 
+
+TODO: relocate this to SOpticks or SOpticksResource : sticking point is getUsedCVD for "--cvd" option
 **/
 
 const char* Opticks::getOutPrefix(int optix_version_override ) const 

@@ -50,6 +50,13 @@ const char* SPath::Stem( const char* name ) // static
     return strdup( base.c_str() ) ; 
 }
 
+bool SPath::IsReadable(const char* base, const char* name)  // static 
+{
+    std::stringstream ss ; 
+    ss << base << "/" << name ; 
+    std::string s = ss.str(); 
+    return IsReadable(s.c_str()); 
+}
 bool SPath::IsReadable(const char* path)  // static 
 {
     std::ifstream fp(path, std::ios::in|std::ios::binary);

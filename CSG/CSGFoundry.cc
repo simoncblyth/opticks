@@ -34,6 +34,18 @@ const unsigned CSGFoundry::IMAX = 50000 ;
 const plog::Severity CSGFoundry::LEVEL = PLOG::EnvLevel("CSGFoundry", "DEBUG" ); 
 const int CSGFoundry::VERBOSE = SSys::getenvint("VERBOSE", 0); 
 
+std::string CSGFoundry::descComp() const 
+{
+    std::stringstream ss ; 
+    ss << "CSGFoundry::descComp"
+       << " bnd " << ( bnd ? bnd->sstr() : "-" ) 
+       << " optical " << ( optical ? optical->sstr() : "-" ) 
+       << " icdf " << ( icdf ? icdf->sstr() : "-" ) 
+       ;  
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 CSGFoundry::CSGFoundry()
     :
     d_prim(nullptr),
@@ -1704,18 +1716,16 @@ const char* CSGFoundry::getOriginCFBase() const
    return origin ? origin->cfbase : cfbase ; 
 }
 
-
-
 void CSGFoundry::load( const char* dir_ )
 {
-    int create_dirs = 0 ; 
-    const char* dir = SPath::Resolve(dir_, create_dirs); 
+    const char* dir = SPath::Resolve(dir_, NOOP ); 
     bool readable = SPath::IsReadable(dir); 
     if( readable == false )
     {
         LOG(fatal) << " dir is not readable " << dir ; 
         return ; 
     } 
+
     LOG(LEVEL) << dir ; 
     loaddir = strdup(dir) ; 
 
@@ -1810,6 +1820,7 @@ CSGFoundry::Load
 CSGFoundry* CSGFoundry::Load() // static
 {
     CSGFoundry* src = CSGFoundry::Load_() ; 
+    if(src == nullptr) return nullptr ; 
    
     const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", nullptr ); 
 
@@ -1847,12 +1858,14 @@ Load precedence:
 CSGFoundry* CSGFoundry::Load_() // static
 {
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  
-
-    //const char* geom = SPath::Basename(cfbase); 
-    //LOG(info) << "cfbase " << cfbase << " geom(from last elem of cfbase) " << geom ;
+    bool readable = SPath::IsReadable(cfbase, "CSGFoundry") ; 
+    if(readable == false)
+    {
+        LOG(fatal) << " cfbase/CSGFoundy directory " << cfbase << "/CSGFoundry" << " IS NOT READABLE " ; 
+        return nullptr ; 
+    }
 
     CSGFoundry* fd = Load(cfbase, "CSGFoundry"); 
-
     return fd ; 
 }
 
@@ -2141,6 +2154,13 @@ void CSGFoundry::kludgeScalePrimBBox( const char* label, float dscale )
     }
 }
 
+/**
+CSGFoundry::kludgeScalePrimBBox
+--------------------------------
+
+Scaling the AABB of all *CSGPrim* of the *solidIdx* 
+
+**/
 
 void CSGFoundry::kludgeScalePrimBBox( unsigned solidIdx, float dscale )
 {
@@ -2171,5 +2191,11 @@ void CSGFoundry::kludgeScalePrimBBox( unsigned solidIdx, float dscale )
 }
 
 
+/*
+void CSGFoundry::dumpPrimBoundary( const CSGPrim* prim ) const 
+{
+
+}
+*/
 
 
