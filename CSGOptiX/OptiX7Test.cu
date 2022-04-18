@@ -267,8 +267,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     quad4 p ;   
 
 
-
-    sim->generate_photon(p, rng, gs, idx, genstep_id );  
+    sim->generate_photon_simtrace(p, rng, gs, idx, genstep_id );  
 
     float3* origin    = (float3*)&p.q0.f.x ; 
     float3* direction = (float3*)&p.q1.f.x ;  

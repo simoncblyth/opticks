@@ -126,8 +126,8 @@ int main(int argc, char** argv)
     cx.setMetaTran(gsm->geotran); 
     cx.setGensteps(gs); 
 
-    cx.simulate();    // actually doing "simtrace" thanks to  
-    cx.snapSimulateTest(outdir, botline, topline ); 
+    cx.simtrace();  
+    cx.snapSimtraceTest(outdir, botline, topline ); 
  
     cudaDeviceSynchronize(); 
     return 0 ; 

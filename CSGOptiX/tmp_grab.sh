@@ -75,7 +75,7 @@ grab_all()
 
 
 echo 
-read -p "$msg Enter YES to proceed with rsync grab from remote " ans
+read -p "$msg Enter YES to proceed with rsync grab from remote : " ans
 if [ "$ans" == "YES" ]; then 
     echo $msg PROCEEDING  
 else

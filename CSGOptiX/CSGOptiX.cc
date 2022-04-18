@@ -339,6 +339,17 @@ void CSGOptiX::setGensteps(const NP* gs)
     event->setGensteps(gs); 
 }
 
+void CSGOptiX::setGensteps(const quad6* gs, unsigned num_gs)
+{
+    assert( event ); 
+    event->setGensteps(gs, num_gs); 
+}
+
+
+
+
+
+
 
 void CSGOptiX::setCEGS(const std::vector<int>& cegs)
 {
@@ -564,9 +575,9 @@ As it is likely better to instead have multiple raygen entry points
 are retaining the distinct methods up here. 
 
 **/
-double CSGOptiX::render(){   return assert(raygenmode == RG_RENDER)   ; launch() ; }   // only still needed to fulfil SRenderer protocol base 
-double CSGOptiX::simtrace(){ return assert(raygenmode == RG_SIMTRACE) ; launch() ; }  
-double CSGOptiX::simulate(){ return assert(raygenmode == RG_SIMULATE) ; launch() ; }   
+double CSGOptiX::render(){   assert(raygenmode == RG_RENDER)   ; return launch() ; }   // only still needed to fulfil SRenderer protocol base 
+double CSGOptiX::simtrace(){ assert(raygenmode == RG_SIMTRACE) ; return launch() ; }  
+double CSGOptiX::simulate(){ assert(raygenmode == RG_SIMULATE) ; return launch() ; }   
 
 
 std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 

@@ -3,6 +3,7 @@
 #include <cuda_runtime.h>
 
 #include "SPath.hh"
+#include "OpticksGenstep.h"
 #include "NP.hh"
 #include "QBuf.hh"
 
@@ -166,17 +167,41 @@ void test_setGensteps_checkEvt()
     event->checkEvt(); 
 }
 
+void test_setGensteps_quad6()
+{
+    quad6 gs ; 
+    gs.q0.u = make_uint4( OpticksGenstep_PHOTON_CARRIER, 0u, 0u, 10u );   
+    gs.q1.u = make_uint4( 0u,0u,0u,0u );  
+    gs.q2.f = make_float4( 0.f, 0.f, 0.f, 0.f );    // post
+    gs.q3.f = make_float4( 1.f, 0.f, 0.f, 1.f );    // dirw
+    gs.q4.f = make_float4( 0.f, 1.f, 0.f, 500.f );  // polw
+    gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );    // flag
+
+    QEvent* event = new QEvent ; 
+    event->setGensteps(&gs, 1); 
+
+    event->gs->dump(); 
+    const char* path = SPath::Resolve("$TMP/QEventTest/test_setGensteps_quad6/gs.npy", FILEPATH); 
+    LOG(info) << path ; 
+    event->gs->save(path); 
+
+    event->checkEvt(); 
+}
+
 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    //test_setGensteps_one(); 
-    //test_setGensteps_many(); 
-    //test_setGensteps_loaded(); 
-
+    /*
+    test_setGensteps_one(); 
+    test_setGensteps_many(); 
+    test_setGensteps_loaded(); 
     test_setGensteps_checkEvt(); 
+    */
+
+    test_setGensteps_quad6(); 
 
 
     cudaDeviceSynchronize(); 

@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """
 
+
+QCtxTest was an early name for QSimTest 
+
 ::
 
     ipython -i QCtxTest.py

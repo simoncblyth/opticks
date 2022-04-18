@@ -89,22 +89,23 @@ struct qsim
     QSIM_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
     QSIM_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);
 
-    QSIM_METHOD void    cerenkov_fabricate_genstep(GS& g, bool energy_range );
 
+
+    QSIM_METHOD void    cerenkov_fabricate_genstep(GS& g, bool energy_range );
     QSIM_METHOD float   cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng, const GS& g);
     QSIM_METHOD float   cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng) ; 
-
     QSIM_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
     QSIM_METHOD void    cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
-
     QSIM_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
     QSIM_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ) ; 
-
     QSIM_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ); 
+
+
+    QSIM_METHOD void    generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
 
     QSIM_METHOD void    generate_photon(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
     QSIM_METHOD void    generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
-    QSIM_METHOD void    generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
+    QSIM_METHOD void    generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
     QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta ); 
 
@@ -1831,7 +1832,29 @@ inline QSIM_METHOD void qsim<T>::cerenkov_photon_expt(quad4& p, unsigned id, cur
 
 
 /**
-HMM ? state struct to collect this thread locals ?
+qsim::generate_photon_carrier
+------------------------------
+
+An input photon carried within the genstep q2:q5 is repeatedly provided. 
+
+**/
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
+{
+    p.q0.f = gs.q2.f ; 
+    p.q1.f = gs.q3.f ; 
+    p.q2.f = gs.q4.f ; 
+    p.q3.f = gs.q5.f ; 
+}
+ 
+
+/**
+qsim::generate_photon
+----------------------
+
+Moved non-standard center-extent gensteps to use qsim::generate_photon_simtrace not this 
+
 **/
 
 template <typename T>
@@ -1841,29 +1864,32 @@ inline QSIM_METHOD void qsim<T>::generate_photon(quad4& p, curandStateXORWOW& rn
     //printf("//qsim.generate_photon gencode %d \n", gencode); 
     switch(gencode)
     {
-        case OpticksGenstep_TORCH: generate_photon_torch(p, rng, gs, photon_id, genstep_id) ; break ; 
-        default:                   generate_photon_dummy(p, rng, gs, photon_id, genstep_id) ; break ; 
+        case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(p, rng, gs, photon_id, genstep_id) ; break ; 
+        default:                             generate_photon_dummy(p, rng, gs, photon_id, genstep_id) ; break ; 
     }
 }
 
 
 /**
-qsim::generate_photon_torch
------------------------------
+qsim::generate_photon_simtrace
+--------------------------------
 
-Acting on the gensteps created eg in QEvent 
+* NB simtrace cxs center-extent-genstep are very different to standard Cerenkov/Scintillation gensteps 
 
-Contrast with CPU implementation sysrap SEvent::GenerateCenterExtentGenstepsPhotons
+These gensteps are for example created in SEvent::MakeCenterExtentGensteps the below generation 
+should be comparable to the CPU implementation SEvent::GenerateCenterExtentGenstepsPhotons
 
-The gensteps are for example configured in SEvent::MakeCenterExtentGensteps
+HMM: note that the photon_id is global to the launch making it potentially a very large number 
+but for identication purposes having a local to the photons of the genstep index would
+be more useful and would allow storage within much less bits.
 
-NB the sevent.h enum order is different to the python one  eg XYZ=0 
+TODO: implement local index by including photon_id offset with the gensteps 
 
-TODO: this has not been updated following the cxs torch genstep rejig with transforms into the genstep ?
+* NB the sevent.h enum order is different to the python one  eg XYZ=0 
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
+inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
 {
     C4U gsid ;  
 
@@ -1909,10 +1935,6 @@ inline QSIM_METHOD void qsim<T>::generate_photon_torch(quad4& p, curandStateXORW
     qt.right_multiply_inplace( p.q0.f, 1.f );   // position 
     qt.right_multiply_inplace( p.q1.f, 0.f );   // direction 
 
-
-    // HMM:  photon_id is global to the launch 
-    // but having a  local to the photons of this genstep index is more useful for this id
-    // so the genstep needs to carry the photon_id offset in order convert into a local index
 
     unsigned char ucj = (photon_id < 255 ? photon_id : 255 ) ;
     gsid.c4.w = ucj ; 

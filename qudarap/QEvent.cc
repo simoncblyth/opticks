@@ -249,6 +249,15 @@ void QEvent::setGensteps(const NP* gs_)
     setNumPhoton( evt->num_seed ); 
 }
 
+void QEvent::setGensteps(const quad6* qgs, unsigned num_gs ) 
+{
+    NP* gs_ = NP::Make<float>( num_gs, 6, 4 ); 
+    gs_->read2( (float*)qgs );   
+    setGensteps( gs_ ); 
+}
+
+
+
 
 /**
 QEvent::count_genstep_photons

@@ -74,8 +74,7 @@ struct QUDARAP_API QEvent
     std::string  meta ; 
 
     void     setGensteps(const NP* gs);
-
-
+    void     setGensteps(const quad6* gs, unsigned num_gs ); 
 
     unsigned count_genstep_photons(); 
     void     fill_seed_buffer(); 

@@ -276,6 +276,7 @@ __global__ void _QSim_generate_photon(qsim<T>* sim, qevent* evt )
    if (photon_id >= evt->num_photon) return;
     
     curandState rng = sim->rngstate[photon_id] ; 
+
     unsigned genstep_id = evt->seed[photon_id] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
 
@@ -294,8 +295,8 @@ template <typename T>
 extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qevent* evt ) 
 {
     printf("//QSim_generate_photon sim %p evt %p \n", sim, evt ); 
-    // NB trying to use the the sim and evt pointers here gives "Bus error" 
-    // thats because this is not yet on GPU, despite being compiled by nvcc
+    // NB trying to de-reference the sim and evt pointers here gives "Bus error" 
+    // because the code of this function is not running on device despite being compiled by nvcc
     _QSim_generate_photon<T><<<numBlocks,threadsPerBlock>>>( sim, evt );
 } 
 

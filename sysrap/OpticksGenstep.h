@@ -32,7 +32,8 @@ enum
     OpticksGenstep_G4GUN                    = 11, 
     OpticksGenstep_PRIMARYSOURCE            = 12, 
     OpticksGenstep_GENSTEPSOURCE            = 13, 
-    OpticksGenstep_NumType                  = 14 
+    OpticksGenstep_PHOTON_CARRIER           = 14,
+    OpticksGenstep_NumType                  = 15
 };
     
   

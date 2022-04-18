@@ -11,6 +11,7 @@
 struct SMeta ; 
 struct NP ; 
 struct quad4 ; 
+struct quad6 ; 
 struct qat4 ; 
 struct float4 ; 
 
@@ -94,6 +95,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void setTop(const char* tspec); 
  public: 
     void setGensteps(const NP* gs);
+    void setGensteps(const quad6* gs, unsigned num_gs); 
 
     void setCEGS(const std::vector<int>& cegs); 
     void setComposition(const float4& ce,    const qat4* m2w, const qat4* w2m ); 
