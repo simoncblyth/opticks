@@ -14,7 +14,7 @@ to=$xdir
 LOGDIR=/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest
 
 
-printf "arg                    %s \n" "$arg"
+printf "arg                    %s  ( the  possibilities are : png jpg mp4 all ) \n" "$arg"
 printf "EXECUTABLE             %s \n " "$EXECUTABLE"
 printf "\n"
 printf "xdir                   %s \n" "$xdir"
@@ -72,6 +72,17 @@ grab_all()
     fi
 
 }
+
+
+echo 
+read -p "$msg Enter YES to proceed with rsync grab from remote " ans
+if [ "$ans" == "YES" ]; then 
+    echo $msg PROCEEDING  
+else
+    echo $msg SKIPPING : perhaps you should use cxs_grab.sh or another script ?
+    exit 1 
+fi 
+
 
 case $arg in 
    png) grab_typ png ;; 

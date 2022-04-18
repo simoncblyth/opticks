@@ -129,6 +129,17 @@ open_last(){
 }
 
 
+
+read -p "$msg Enter YES to proceed with rsync between from and to " ans
+if [ "$ans" == "YES" ]; then 
+   echo $msg proceeding 
+else
+   echo $msg skipping : perhaps you should be using tmp_grab.sh 
+   exit 1 
+fi 
+
+
+
 if [ "$arg" == "tab" ]; then
 
     globptn="${to}cvd1/70000/cxr_overview/cam_0_tmin_0.4/cxr_overview*.jpg"

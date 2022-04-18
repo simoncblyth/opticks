@@ -1013,7 +1013,8 @@ if __name__ == '__main__':
         os.makedirs(outdir)
     pass
 
-    gsmeta = NPMeta(fold.genstep_meta)
+    #gsmeta = NPMeta(fold.genstep_meta)
+    gsmeta = fold.genstep_meta
     gridspec = GridSpec(fold.peta, gsmeta)
 
     local_extent_scale = gridspec.coords == "RTP" 

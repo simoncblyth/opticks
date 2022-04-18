@@ -17,41 +17,21 @@ MASK=t GEOM=AltXJfixtureConstruction_XYZ ./cxs_geochain.sh
 GEOM=AltXJfixtureConstruction_XY ./cxs_geochain.sh 
 
 
+To grab outputs from remote node use::
+
+   cx
+   ./tmp_grab.sh 
 
 
 EOU
 }
 
 
+source $PWD/../bin/GEOM.sh  ## sets GEOM envvar including the projection eg _XZ
+
 
 msg="=== $BASH_SOURCE :"
 
-#geom="dcyl_XZ"
-#geom="bssc_XZ"
-#geom="AdditionAcrylicConstruction_XZ"
-#geom="BoxMinusTubs1_XZ"
-#geom="SphereWithPhiSegment"
-#geom="AnnulusBoxUnion_XY"
-#geom="AnnulusBoxUnion_YZ"
-
-#geom="AnnulusTwoBoxUnion_XY"
-#geom="AnnulusTwoBoxUnion_YZ"
-#geom="AnnulusFourBoxUnion_XY"
-#geom="AnnulusFourBoxUnion_YZ"
-
-#geom="AnnulusOtherTwoBoxUnion_XY"
-#geom="AnnulusOtherTwoBoxUnion_XZ"
-
-#geom="AltXJfixtureConstruction_YZ"
-#geom="AltXJfixtureConstruction_XZ"
-#geom="AltXJfixtureConstruction_XY"
-#geom="AltXJfixtureConstruction_XYZ"
-
-geom="BoxFourBoxUnion_YX"
-#geom="BoxFourBoxContiguous_YX"
-
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$catgeom
-export GEOM=${GEOM:-$geom}
 
 moi=0   # intended to catch the first meshname (which for geochain is usually the only meshname)
 dx=0
@@ -81,14 +61,12 @@ pmt_default()
 
 gcn=${GEOM%%_*}  ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
 
-
 case $GEOM in 
    dcyl_*)    cfbase=$TMP/CSGDemoTest/$gcn  && dcyl     ;;
    bssc_*)    cfbase=$TMP/CSGDemoTest/$gcn  && bssc     ;; 
    Annulus*)  cfbase=$TMP/GeoChain/$gcn     && Annulus  ;;    
    *)         cfbase=$TMP/GeoChain/$gcn     && default  ;;    
 esac
-
 
 case $GEOM in 
    bssc_XZ) note="HMM : box minus sub-sub cylinder NOT showing the spurious intersects, maybe nice round demo numbers effect" ;; 
@@ -117,7 +95,6 @@ esac
 # first axis named is the longer one that is presented on the horizontal in landscape aspect   
 
 echo $msg GEOM $GEOM gcn $gcn cegs $cegs cfbase $cfbase
-
 
 source ./cxs.sh 
 

@@ -101,12 +101,11 @@ msg="=== $BASH_SOURCE :"
 #geom=DiscontiguousBoxSphere
 
 #geom=ContiguousThreeSphere
-geom=OverlapThreeSphere
-
+#geom=OverlapThreeSphere
 #geom=parade
+# export GEOM=${GEOM:-$geom}
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$(echo ${catgeom%%_*})
-export GEOM=${GEOM:-$geom}
+source $PWD/../bin/GEOM.sh  ## sets GEOM envvar 
 
 # cfname picks the CSGFoundry geometry to load
 if [ "$(uname)" == "Linux" ]; then

@@ -197,7 +197,15 @@ extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(qevent* evt )
 #endif
 
     assert( evt->seed && evt->num_seed > 0 ); 
-    assert( evt->num_seed <= evt->max_photon ); 
+
+    bool num_seed_ok = evt->num_seed <= evt->max_photon ;
+
+    if( num_seed_ok == false )
+    {
+        printf("//QEvent_count_genstep_photons_and_fill_seed_buffer FAIL evt.num_seed %d evt.max_photon %d num_seed_ok %d \n", evt->num_seed, evt->max_photon, num_seed_ok  ); 
+    }
+
+    assert( num_seed_ok ); 
 
     thrust::device_ptr<int> t_seed = thrust::device_pointer_cast(evt->seed) ; 
 
