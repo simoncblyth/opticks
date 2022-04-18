@@ -10,7 +10,7 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 
-executable=${EXECUTABLE:-CSGOptiXSimulateTest}
+executable=${EXECUTABLE:-CSGOptiXSimtraceTest}
 
 if [ -n "$cfbase" ]; then 
     new_src_base=$cfbase/$EXECUTABLE

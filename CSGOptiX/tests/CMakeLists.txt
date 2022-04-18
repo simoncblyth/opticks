@@ -7,7 +7,7 @@ set(SINGLE_SOURCES
     CSGOptiXVersion.cc
     CSGOptiXVersionTest.cc
     CSGOptiXRenderTest.cc
-    CSGOptiXSimulateTest.cc
+    CSGOptiXSimtraceTest.cc
     CSGOptiXTest.cc 
 )
 

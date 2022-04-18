@@ -93,12 +93,21 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
     cegs[5] = iz1 ;
     cegs[6] = photons_per_genstep ;
 
+
+    //  +---+---+---+---+
+    // -2  -1   0   1   2
+    
+    unsigned grid_points = (ix1-ix0+1)*(iy1-iy0+1)*(iz1-iz0+1) ;  
+    unsigned tot_photons = grid_points*photons_per_genstep ; 
+
     LOG(info)
         << " CEGS "
         << " ix0 ix1 " << ix0 << " " << ix1
         << " iy0 iy1 " << iy0 << " " << iy1
         << " iz0 iz1 " << iz0 << " " << iz1
         << " photons_per_genstep " << photons_per_genstep
+        << " grid_points (ix1-ix0+1)*(iy1-iy0+1)*(iz1-iz0+1) " << grid_points
+        << " tot_photons (grid_points*photons_per_genstep) " << tot_photons
         ;
 
     float3 mn ; 

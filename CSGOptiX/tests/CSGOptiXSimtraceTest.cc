@@ -1,5 +1,5 @@
 /**
-CSGOptiXSimulateTest
+CSGOptiXSimtraceTest
 ======================
 
 Using as much as possible the CSGOptiX rendering machinery 
@@ -12,8 +12,8 @@ is to be able to see the exact same geometry that the simulation is using.
 
 ::
 
-     MOI=Hama CEGS=5:0:5:1000   CSGOptiXSimulateTest
-     MOI=Hama CEGS=10:0:10:1000 CSGOptiXSimulateTest
+     MOI=Hama CEGS=5:0:5:1000   CSGOptiXSimtraceTest
+     MOI=Hama CEGS=10:0:10:1000 CSGOptiXSimtraceTest
 
 TODO: 
     find way to get sdf distances for all intersects GPU side 
@@ -70,11 +70,11 @@ int main(int argc, char** argv)
         ;
 
     const char* cfbase = ok.getFoundryBase("CFBASE");  // envvar CFBASE can override 
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimulateTest", out_prefix, DIRPATH );  
+    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimtraceTest", out_prefix, DIRPATH );  
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
 
     ok.setOutDir(outdir); 
-    ok.writeOutputDirScript(outdir) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
+    ok.writeOutputDirScript(outdir) ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
 
     const char* outdir2 = ok.getOutDir(); 
     assert( strcmp(outdir2, outdir) == 0 ); 
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
         << " outdir " << outdir
         ; 
 
-    ok.dumpArgv("CSGOptiXSimulateTest"); 
+    ok.dumpArgv("CSGOptiXSimtraceTest"); 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
@@ -108,7 +108,7 @@ int main(int argc, char** argv)
     CSGOptiX cx(&ok, fd); 
 
     // create center-extent gensteps 
-    CSGGenstep* gsm = fd->genstep ; 
+    CSGGenstep* gsm = fd->genstep ;    // THIS IS THE GENSTEP MAKER : NOT THE GS THEMSELVES 
     const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
     bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ; 
     bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;   
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
     cx.setMetaTran(gsm->geotran); 
     cx.setGensteps(gs); 
 
-    cx.simulate();  
+    cx.simulate();    // actually doing "simtrace" thanks to  
     cx.snapSimulateTest(outdir, botline, topline ); 
  
     cudaDeviceSynchronize(); 

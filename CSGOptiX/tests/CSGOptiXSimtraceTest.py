@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-tests/CSGOptiXSimulateTest.py
+tests/CSGOptiXSimtraceTest.py
 ==============================
 
 This is allows interactive visualization of workstation 
@@ -37,7 +37,7 @@ ISEL allows plotting of a selection of feature values only, picked by descending
     cx ; ./cxs_grab.sh 
     cx ; ./cxs.sh 
 
-    cx ; ipython -i tests/CSGOptiXSimulateTest.py   # all boundaries
+    cx ; ipython -i tests/CSGOptiXSimtraceTest.py   # all boundaries
 
     ISEL=0,1         ./cxs.sh    # just the 2 most frequent boundaries
     ISEL=0,1,2,3,4   ./cxs.sh 
@@ -633,7 +633,7 @@ class Plt(object):
         self.pos = pos
         self.gsmeta = gsmeta
 
-        topline = os.environ.get("TOPLINE", "CSGOptiXSimulateTest.py:PH")
+        topline = os.environ.get("TOPLINE", "CSGOptiXSimtraceTest.py:PH")
         botline = os.environ.get("BOTLINE", "cxs") 
         note = os.environ.get("NOTE", "") 
         note1 = os.environ.get("NOTE1", "") 
@@ -955,24 +955,24 @@ if __name__ == '__main__':
 
     GSPLOT = int(os.environ.get("GSPLOT", "0"))
 
-    CSGOptiXSimulateTest_OUTPUT_DIR = os.environ.get("CSGOptiXSimulateTest_OUTPUT_DIR", None) 
-    if CSGOptiXSimulateTest_OUTPUT_DIR is None:
-        log.fatal(" missing required envvar CSGOptiXSimulateTest_OUTPUT_DIR ")
+    CSGOptiXSimtraceTest_OUTPUT_DIR = os.environ.get("CSGOptiXSimtraceTest_OUTPUT_DIR", None) 
+    if CSGOptiXSimtraceTest_OUTPUT_DIR is None:
+        log.fatal(" missing required envvar CSGOptiXSimtraceTest_OUTPUT_DIR ")
         sys.exit(1)
     pass
 
-    CSGFoundry_DIR = CSGFoundry.FindDirUpTree( CSGOptiXSimulateTest_OUTPUT_DIR, "CSGFoundry" )
+    CSGFoundry_DIR = CSGFoundry.FindDirUpTree( CSGOptiXSimtraceTest_OUTPUT_DIR, "CSGFoundry" )
     FOLD = os.path.dirname(CSGFoundry_DIR)
 
     LEAF = os.environ.get("LEAF", None)   ## LEAF is used to hop between geometries in sibling dirs 
 
 
-    print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % CSGOptiXSimulateTest_OUTPUT_DIR )
+    print( " CSGOptiXSimtraceTest_OUTPUT_DIR : %s " % CSGOptiXSimtraceTest_OUTPUT_DIR )
     print( " LEAF                            : %s " % LEAF )
     print( " CSGFoundry_DIR                  : %s " % CSGFoundry_DIR  )
     print( " FOLD                            : %s " % FOLD  )
 
-    outdir = CSGOptiXSimulateTest_OUTPUT_DIR 
+    outdir = CSGOptiXSimtraceTest_OUTPUT_DIR 
     outbase = os.path.dirname(outdir)
     outleaf = os.path.basename(outdir)
     outgeom = outleaf.split("_")[0]  
@@ -989,10 +989,10 @@ if __name__ == '__main__':
         altdir = outdir.replace(outgeom,leafgeom).replace(outleaf,LEAF)
         if os.path.isdir(altdir):
             outdir = altdir
-            print(" OVERRIDE CSGOptiXSimulateTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
-            print( " CSGOptiXSimulateTest_OUTPUT_DIR : %s " % outdir )
+            print(" OVERRIDE CSGOptiXSimtraceTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
+            print( " CSGOptiXSimtraceTest_OUTPUT_DIR : %s " % outdir )
         else:
-            print("FAILED to override CSGOptiXSimulateTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
+            print("FAILED to override CSGOptiXSimtraceTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
         pass
     pass
 

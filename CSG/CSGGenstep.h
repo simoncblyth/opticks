@@ -1,7 +1,7 @@
 #pragma once
 
 /**
-CSGGenstep.h : Creator of CenterExtent "CE" Gensteps used by CSGOptiXSimulateTest
+CSGGenstep.h : Creator of CenterExtent "CE" Gensteps used by CSGOptiXSimtraceTest
 ==================================================================================
 
 Sensitive to envvars:

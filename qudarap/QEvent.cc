@@ -215,7 +215,7 @@ QEvent::setGensteps
     //evt->record  = evt->num_record  > 0 ? QU::device_alloc<quad4>( evt->num_record  ) : nullptr ; 
 
 
-
+HMM: what about simtrace ? ce-gensteps are very different to ordinary gs 
 
 **/
 
@@ -232,16 +232,13 @@ void QEvent::setGensteps(const NP* gs_)
         evt->seed    = QU::device_alloc<int>(   evt->max_photon )  ;
     }
 
-
     LOG(LEVEL) << DescGensteps(gs, 10) ;
  
     bool num_gs_allowed = evt->num_genstep <= evt->max_genstep ;
     if(!num_gs_allowed) LOG(fatal) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ; 
     assert( num_gs_allowed ); 
 
-    quad6* gs_h = (quad6*)gs->cvalues<float>() ; 
-   
-    QU::copy_host_to_device<quad6>( evt->genstep, gs_h, evt->num_genstep ); 
+    QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)gs->bytes(), evt->num_genstep ); 
 
     QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
 

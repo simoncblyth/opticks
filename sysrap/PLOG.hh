@@ -157,7 +157,7 @@ individually controlled for each of the libraries.
 
 Notice that without this hidden visibility you will get perplexing failures, of form::
 
-    CSGOptiXSimulateTest: /data/blyth/junotop/ExternalLibs/opticks/head/externals/plog/include/plog/Logger.h:22: plog::Logger<instance>& plog::Logger<instance>::addAppender(plog::IAppender*) [with     int instance = 0]: Assertion `appender != this' failed.
+    CSGOptiXSimtraceTest: /data/blyth/junotop/ExternalLibs/opticks/head/externals/plog/include/plog/Logger.h:22: plog::Logger<instance>& plog::Logger<instance>::addAppender(plog::IAppender*) [with     int instance = 0]: Assertion `appender != this' failed.
 
 
 For details see notes/issues/plog-appender-not-equal-this-assert.rst

@@ -198,6 +198,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
     unsigned idx = launch_idx.x ;  // aka photon_id
     unsigned genstep_id = evt->seed[idx] ; 
+    if( idx == 0 ) printf("//OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
+
     const quad6& gs     = evt->genstep[genstep_id] ; 
      
     qsim<float>* sim = params.sim ; 
@@ -242,6 +244,10 @@ simtrace
 
 Used for making 2D cross section views of geometry intersects  
 
+Note how seeding is still needed here despite the highly artificial 
+nature of the center-extent grid of gensteps as the threads of the launch 
+still needs to access different gensteps across the grid. 
+
 **/
 
 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
@@ -251,12 +257,16 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
 
     unsigned idx = launch_idx.x ;  // aka photon_id
     unsigned genstep_id = evt->seed[idx] ; 
+
+    if( idx == 0 ) printf("//OptiX7Test.cu:simtrace idx %d genstep_id %d \n", idx, genstep_id ); 
+
     const quad6& gs     = evt->genstep[genstep_id] ; 
      
     qsim<float>* sim = params.sim ; 
-    curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
-
+    curandState rng = sim->rngstate[idx] ;   
     quad4 p ;   
+
+
 
     sim->generate_photon(p, rng, gs, idx, genstep_id );  
 
@@ -272,9 +282,6 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
         prd
     );
 
-
-    //const float3* normal = prd->normal(); 
-    //float cosTheta = dot(*normal, *direction) ; 
 
     // transform (x,z) intersect position into pixel coordinates (ix,iz)
     float3 ipos = *origin + (*direction)*prd->distance() ; 

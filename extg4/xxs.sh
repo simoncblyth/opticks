@@ -121,7 +121,7 @@ fold=$tmp/$reldir
 
 echo $msg reldir $reldir fold $fold 
 
-other_reldir=CSGOptiX/CSGOptiXSimulateTest
+other_reldir=CSGOptiX/CSGOptiXSimtraceTest
 other_fold=$tmp/$other_reldir
 
 if [ -d "$other_fold" ]; then

@@ -113,12 +113,10 @@ geom=BoxFourBoxUnion
 #geom=Orb
 
 ## NB: CATGEOM LINE BELOW MAY BE OVERRIDING THE ABOVE GEOM SETTING 
+#export GEOM=${GEOM:-$geom}
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$(echo ${catgeom%%_*})
+source $PWD/../bin/GEOM.sh trim    ## sets GEOM envvar with projection suffix eg _XZ trimmed 
 
-echo geom [$geom]
-
-export GEOM=${GEOM:-$geom}
 # pick the Solid or Volume binary depending on GEOM
 
 bin=

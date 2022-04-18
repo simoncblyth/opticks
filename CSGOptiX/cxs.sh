@@ -128,7 +128,7 @@ if [ "$(uname)" == "Linux" ]; then
        echo $msg : 2. you want to use a non-standard geometry but have not yet created it : do so as shown below
        echo $msg :
        echo $msg :    \"b7 \; cd ~/opticks/GeoChain\"  
-       echo $msg :    \"gc \; GEOM=$GEOM ./run.sh\" 
+       echo $msg :    \"gc \; GEOM=$GEOM ./translate.sh\" 
        echo $msg :   
        exit 1 
     fi 
@@ -141,7 +141,7 @@ fi
 
 
 pkg=CSGOptiX
-bin=CSGOptiXSimulateTest 
+bin=CSGOptiXSimtraceTest 
 export LOGDIR=/tmp/$USER/opticks/$pkg/$bin
 mkdir -p $LOGDIR 
 cd $LOGDIR 
@@ -176,23 +176,26 @@ if [ "$(uname)" == "Linux" ]; then
 
     if [ "$arg" == "run" ]; then
 
-        $GDB CSGOptiXSimulateTest
-        source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
+        $GDB CSGOptiXSimtraceTest
+        [ $? -ne 0 ] && echo $msg RUN ERROR at LINENO $LINENO && exit 1 
+
+        source CSGOptiXSimtraceTest_OUTPUT_DIR.sh || exit 1  
 
     elif [ "$arg" == "ana" ]; then 
 
-        source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
-        NOGUI=1 ${IPYTHON:-ipython} ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
+        source CSGOptiXSimtraceTest_OUTPUT_DIR.sh || exit 1  
+        NOGUI=1 ${IPYTHON:-ipython} ${BASH_FOLDER}/tests/CSGOptiXSimtraceTest.py 
 
     else
 
-        $GDB CSGOptiXSimulateTest
-        source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
+        $GDB CSGOptiXSimtraceTest
+        [ $? -ne 0 ] && echo $msg RUN ERROR at LINENO $LINENO && exit 1 
+        source CSGOptiXSimtraceTest_OUTPUT_DIR.sh || exit 1  
 
         if [ -n "$PDB" ]; then
-            NOGUI=1 ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
+            NOGUI=1 ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimtraceTest.py 
         else
-            NOGUI=1 ${IPYTHON:-ipython}          ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
+            NOGUI=1 ${IPYTHON:-ipython}          ${BASH_FOLDER}/tests/CSGOptiXSimtraceTest.py 
         fi 
 
     fi
@@ -200,18 +203,18 @@ if [ "$(uname)" == "Linux" ]; then
 elif [ "$(uname)" == "Darwin" ]; then
 
     if [ "$arg" = "lrun" ] ; then 
-        source CSGOptiXSimulateTest_OUTPUT_DIR.sh || exit 1  
+        source CSGOptiXSimtraceTest_OUTPUT_DIR.sh || exit 1  
         echo $msg lrun mode : using the output directory discerned from the last grab
-        echo $msg CSGOptiXSimulateTest_OUTPUT_DIR $CSGOptiXSimulateTest_OUTPUT_DIR
+        echo $msg CSGOptiXSimtraceTest_OUTPUT_DIR $CSGOptiXSimtraceTest_OUTPUT_DIR
     else
 
         opticks_key_remote_dir=$(opticks-key-remote-dir)
 
         cvd_ver=cvd0/70000
         if [ -n "$cfbase" ]; then 
-            cxsdir=$cfbase/CSGOptiXSimulateTest/$cvd_ver
+            cxsdir=$cfbase/CSGOptiXSimtraceTest/$cvd_ver
         else
-            cxsdir=$HOME/$opticks_key_remote_dir/CSG_GGeo/CSGOptiXSimulateTest/$cvd_ver
+            cxsdir=$HOME/$opticks_key_remote_dir/CSG_GGeo/CSGOptiXSimtraceTest/$cvd_ver
         fi
 
         if [ ! -d "$cxsdir" ]; then 
@@ -226,12 +229,12 @@ elif [ "$(uname)" == "Darwin" ]; then
         fi
 
 
-        export CSGOptiXSimulateTest_OUTPUT_DIR=$geomdir
+        export CSGOptiXSimtraceTest_OUTPUT_DIR=$geomdir
         echo $msg non-lrun mode : using the output directory defined by script variable GEOM
-        echo $msg CSGOptiXSimulateTest_OUTPUT_DIR $CSGOptiXSimulateTest_OUTPUT_DIR
+        echo $msg CSGOptiXSimtraceTest_OUTPUT_DIR $CSGOptiXSimtraceTest_OUTPUT_DIR
     fi 
 
-    ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimulateTest.py 
+    ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimtraceTest.py 
 fi 
 
 echo LOGDIR : $LOGDIR

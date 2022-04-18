@@ -14,10 +14,10 @@ Leading to destination base folder ~/simoncblyth.bitbucket.io/env/presentation/Q
 And CSGOptiX/pub.sh::
 
     #!/bin/bash -l 
-    export SRC_BASE=$TMP/CSGOptiX/CSGOptiXSimulateTest
+    export SRC_BASE=$TMP/CSGOptiX/CSGOptiXSimtraceTest
     pub.py $* 
 
-Leading to destination base folder ~/simoncblyth.bitbucket.io/env/presentation/CSGOptiXSimulateTest/
+Leading to destination base folder ~/simoncblyth.bitbucket.io/env/presentation/CSGOptiXSimtraceTest/
 
 And extg4/pub.sh::
 

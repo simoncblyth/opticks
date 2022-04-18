@@ -8,7 +8,7 @@ making it a bit faster.::
     GEOM=body_phys ./grab.sh 
 
 Note that the grab also pull back associated info such as
-the results from CSGOptiXSimulateTest 
+the results from CSGOptiXSimtraceTest 
 
 
 EOU

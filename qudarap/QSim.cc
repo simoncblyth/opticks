@@ -39,7 +39,7 @@ const QSim<T>* QSim<T>::Get(){ return INSTANCE ; }
 QSim::UploadComponents
 -----------------------
 
-This is invoked for example by CSGOptiX/tests/CSGOptiXSimulateTest.cc 
+This is invoked for example by CSGOptiX/tests/CSGOptiXSimtraceTest.cc 
 prior to instanciating CSGOptiX 
 
 Uploading components is a once only action for a geometry, encompassing:

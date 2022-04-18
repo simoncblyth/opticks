@@ -48,7 +48,7 @@ void CSGGenstep::init()
 CSGGenstep::create
 --------------------
 
-Invoked from CSGOptiX/tests/CSGOptiXSimulateTest.cc:main which is used by CSGOptiX/cxs.sh scripts. 
+Invoked from CSGOptiX/tests/CSGOptiXSimtraceTest.cc:main which is used by CSGOptiX/cxs.sh scripts. 
 
 moi
    string identifying piece of geometry mName:mOrdinal:mInstance eg Hama:0:1000

@@ -1,5 +1,5 @@
 #!/bin/bash -l 
 
-EXECUTABLE=CSGOptiXSimulateTest ./grab.sh $* 
+EXECUTABLE=CSGOptiXSimtraceTest ./grab.sh $* 
 
 

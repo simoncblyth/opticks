@@ -11,7 +11,7 @@ xdir=/tmp/blyth/opticks/$EXECUTABLE/     ## NB trailing slash to avoid rsync dup
 from=P:$xdir
 to=$xdir
 
-LOGDIR=/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimulateTest
+LOGDIR=/tmp/$USER/opticks/CSGOptiX/CSGOptiXSimtraceTest
 
 
 printf "arg                    %s  ( the  possibilities are : png jpg mp4 all ) \n" "$arg"
@@ -61,12 +61,12 @@ grab_all()
         fi 
 
         if [ -d "$LOGDIR" ]; then 
-            local script=$LOGDIR/CSGOptiXSimulateTest_OUTPUT_DIR.sh
-            printf "export CSGOptiXSimulateTest_OUTPUT_DIR=$last_outdir\n" > $script 
+            local script=$LOGDIR/CSGOptiXSimtraceTest_OUTPUT_DIR.sh
+            printf "export CSGOptiXSimtraceTest_OUTPUT_DIR=$last_outdir\n" > $script 
             echo $msg script $script
             cat $script
         else
-            echo $msg LOGDIR $LOGDIR does not exist : cannot write CSGOptiXSimulateTest_OUTPUT_DIR.sh based on last_outdir $last_outdir : use arg like jpg to grab renders only 
+            echo $msg LOGDIR $LOGDIR does not exist : cannot write CSGOptiXSimtraceTest_OUTPUT_DIR.sh based on last_outdir $last_outdir : use arg like jpg to grab renders only 
         fi 
 
     fi

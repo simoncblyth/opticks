@@ -1,6 +1,6 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-cxs_geochain.sh : CenterExtentGensteps onto GeoChain GPU geometry using CSGOptiXSimulateTest with OptiX 7
+cxs_geochain.sh : CenterExtentGensteps onto GeoChain GPU geometry using CSGOptiXSimtraceTest with OptiX 7
 =============================================================================================================
 
 NB remember that must run BOTH : "oo" followed by "b7" (or the just now added "oo7") to rebuild 
@@ -17,11 +17,45 @@ MASK=t GEOM=AltXJfixtureConstruction_XYZ ./cxs_geochain.sh
 GEOM=AltXJfixtureConstruction_XY ./cxs_geochain.sh 
 
 
-To grab outputs from remote node use::
+Local-Remote development
+-------------------------
+
+On laptop configure the GeoChain geometry to use and scp that config to remote::
+
+    geom     ## edits the GEOM.txt config file
+    geom scp 
+
+On remote GPU workstation, create the CSGFoundry geometry if not already done::
+
+    gc   ## cd ~/opticks/GeoChain
+    ./translate.sh                 # this uses the GEOM config from GEOM.txt
+
+On remote GPU workstation, run this cxs_geochain.sh script which runs the CSGOptiXSimtraceTest executable, with::
+
+   cx
+   ./cxs_geochain.sh 
+
+Grab outputs from remote GPU workstation to laptop for analysis::
 
    cx
    ./tmp_grab.sh 
+   ./cxs_geochain.sh lrun    # runs python analysis on the the last grabbed geometry 
 
+Edit code on laptop and then scp to remote working copy without committing::
+
+    ~/opticks/bin/git.py put       ## check the scp commands
+    ~/opticks/bin/git.py put | sh  ## invoke the scp commands
+
+    ## cross-node development without committing is useful to avoid 
+    ## very many uninteresting "sync" commits 
+
+On remote GPU workstation::
+
+   # rebuild the updated packages + b7 
+
+At appropriate junctures "git commit/push" on laptop, and 
+use "git checkout ." on remote to clean working copy of all changes before "git pull"
+to avoid merging. 
 
 EOU
 }

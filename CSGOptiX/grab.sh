@@ -29,7 +29,7 @@ if [ "$arg"  == "help" ]; then
 fi 
 
 
-executable=${EXECUTABLE:-CSGOptiXSimulateTest}
+executable=${EXECUTABLE:-CSGOptiXSimtraceTest}
 
 opticks_key_remote_dir=$(opticks-key-remote-dir)
 xdir=$opticks_key_remote_dir/CSG_GGeo/$executable/   ## trailing slash to avoid duplicating path element 
@@ -182,7 +182,7 @@ elif [ "$arg" == "all" ]; then
     ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.mp4' -o -name '*.npy'  `
 
 
-    if [ "$EXECUTABLE" == "CSGOptiXSimulateTest" -o "$EXECUTABLE" == "CSGOptiXRenderTest" ]; then  
+    if [ "$EXECUTABLE" == "CSGOptiXSimtraceTest" -o "$EXECUTABLE" == "CSGOptiXRenderTest" ]; then  
 
         last_npy=$(ls -1rt `find ${to%/} -name '*.npy' ` | tail -1 )
         last_outdir=$(dirname $last_npy)

@@ -72,8 +72,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     SMeta* meta ; 
     quad4* peta ; 
     const Tran<double>* metatran ; 
-    double render_dt ; 
-    double simulate_dt ; 
+    double dt ; 
 
 
     QSim<float>* sim ; 
@@ -105,10 +104,13 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void prepareSimulateParam(); 
     void prepareParam(); 
 
+ private: 
     double launch(); 
+ public: 
     double render();     // part of SRenderer protocol base
+    double simtrace(); 
     double simulate();    
-
+ public: 
     static std::string Annotation( double dt, const char* bot_line, const char* extra=nullptr ); 
     const char* getDefaultSnapPath() const ; 
     void snap(const char* path=nullptr, const char* bottom_line=nullptr, const char* top_line=nullptr, unsigned line_height=24);  // part of SRenderer protocol base
@@ -121,7 +123,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void setMetaTran(const Tran<double>* metatran ); 
     void saveMetaTran(const char* fold, const char* name) const ; 
 
-    void snapSimulateTest(const char* outdir, const char* botline, const char* topline) ; // uses snap, so not const 
+    void snapSimtraceTest(const char* outdir, const char* botline, const char* topline) ; // uses snap, so not const 
 
     static int   _OPTIX_VERSION() ; 
 };

@@ -182,8 +182,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     meta(new SMeta),
     peta(new quad4), 
     metatran(nullptr),
-    render_dt(0.),
-    simulate_dt(0.),
+    dt(0.),
     sim(raygenmode == 0 ? nullptr : new QSim<float>),
     event(sim == nullptr  ? nullptr : sim->event     )
 {
@@ -544,7 +543,7 @@ double CSGOptiX::launch()
     TP t1 = std::chrono::high_resolution_clock::now();
     DT _dt = t1 - t0;
 
-    double dt = _dt.count() ; 
+    dt = _dt.count() ; 
     launch_times.push_back(dt);  
 
     LOG(LEVEL) 
@@ -554,24 +553,20 @@ double CSGOptiX::launch()
     return dt ; 
 }
 
-double CSGOptiX::render()
-{
-    if( raygenmode > 0 ) LOG(fatal) << "CSGOptiX::render should only be called with cx.raygenmode == 0, not:" << raygenmode ; 
-    assert( raygenmode == 0 ); 
-    render_dt = launch();
-    LOG(info) << " render_dt " << render_dt ;
-    return render_dt ; 
-}
-double CSGOptiX::simulate()
-{
-    if( raygenmode == 0 ) LOG(fatal) << "CSGOptiX::simulate should only be called with cx.raygenmode > 0, not:" << raygenmode ; 
-    assert( raygenmode > 0 );  
-    simulate_dt = launch();
-    LOG(info) << " simulate_dt " << simulate_dt ;
-    return simulate_dt ; 
-}
 
+/**
+CSGOptiX::render CSGOptiX::simtrace CSGOptiX::simulate
+---------------------------------------------------------
 
+These three methods currently all call *CSGOptiX::launch* 
+with params.raygenmode switch function inside OptiX7Test.cu:__raygen__rg 
+As it is likely better to instead have multiple raygen entry points 
+are retaining the distinct methods up here. 
+
+**/
+double CSGOptiX::render(){   return assert(raygenmode == RG_RENDER)   ; launch() ; }   // only still needed to fulfil SRenderer protocol base 
+double CSGOptiX::simtrace(){ return assert(raygenmode == RG_SIMTRACE) ; launch() ; }  
+double CSGOptiX::simulate(){ return assert(raygenmode == RG_SIMULATE) ; launch() ; }   
 
 
 std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 
@@ -695,23 +690,34 @@ void CSGOptiX::saveMetaTran(const char* fold, const char* name) const
 }
 
 /**
-CSGOptiX::snapSimulateTest
+CSGOptiX::snapSimtraceTest
 ---------------------------
 
-Saving data for 2D cross sections, used by tests/CSGOptiXSimulateTest.cc 
+Saving data for 2D cross sections, used by tests/CSGOptiXSimtraceTest.cc 
+
+The writing of pixels and frame photon "fphoton.npy" are commented 
+here as they are currently not being filled by OptiX7Test.cu:simtrace
+Although they could be reinstated the photons.npy array is more useful 
+for debugging as that can be copied from remote to laptop enabling local analysis 
+that gives flexible python "rendering" with tests/CSGOptiXSimtraceTest.py 
 
 **/
 
-void CSGOptiX::snapSimulateTest(const char* outdir, const char* botline, const char* topline) 
+void CSGOptiX::snapSimtraceTest(const char* outdir, const char* botline, const char* topline) 
 {
     event->setMeta( foundry->meta.c_str() ); 
     event->savePhoton( outdir, "photons.npy");   // this one can get very big 
     event->saveGenstep(outdir, "genstep.npy");  
     event->saveMeta(   outdir, "fdmeta.txt" ); 
+    savePeta(          outdir, "peta.npy");   
+    saveMetaTran(      outdir, "metatran.npy"); 
 
-    const char* namestem = "CSGOptiXSimulateTest" ; 
+
+/*
+    const char* namestem = "CSGOptiXSimtraceTest" ; 
     const char* ext = ".jpg" ; 
     int index = -1 ;  
+
     const char* outpath = ok->getOutPath(namestem, ext, index ); 
     LOG(error) << " outpath " << outpath ; 
 
@@ -721,12 +727,12 @@ void CSGOptiX::snapSimulateTest(const char* outdir, const char* botline, const c
     extra =  pip->desc(); 
 #endif
 
-    std::string bottom_line = CSGOptiX::Annotation( simulate_dt, botline ); 
+    std::string bottom_line = CSGOptiX::Annotation( dt, botline ); 
     snap(outpath, bottom_line.c_str(), SStr::Concat(topline, extra)  );   
 
     writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
-    savePeta(        outdir, "peta.npy");   
-    saveMetaTran(    outdir, "metatran.npy"); 
+*/
+
 }
 
 

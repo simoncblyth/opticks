@@ -12,7 +12,7 @@ the grab script is is convenient to use "lrun" mode.
     ./cxs_grab.sh 
     ./cxs_solidXJfixture.sh lrun     
 
-The grab writes CSGOptiXSimulateTest_OUTPUT_DIR.sh script
+The grab writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh script
 to the LOGDIR directory which is then sourced by the cxs.sh
 script when run in lrun mode.   
 

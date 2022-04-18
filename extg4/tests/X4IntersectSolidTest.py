@@ -11,7 +11,7 @@ For debugging::
 
 * can be adapted to allow comparison of intersect positions loaded from multiple input Fold 
 
-TODO: factor out the common machinery used in this and ~/opticks/CSGOptiX/tests/CSGOptiXSimulateTest.py
+TODO: factor out the common machinery used in this and ~/opticks/CSGOptiX/tests/CSGOptiXSimtraceTest.py
 
 """
 

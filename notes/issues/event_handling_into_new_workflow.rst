@@ -22,10 +22,16 @@ What does event handling need to plug into
         render and simulate 
 
 
+TODO : CSGOptiX test of recent QUDARap dev with OptiX 7 
+------------------------------------------------------------
+
+* cxs_geochain.sh 
+
+
+
+
 TODO
 ------
-
-* CSGOptiX test of recent QUDARap dev with OptiX 7 
 
 * get generation going in new workflow to fully check the QEvent/qevent design  
 
