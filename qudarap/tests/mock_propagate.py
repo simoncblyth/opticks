@@ -4,6 +4,7 @@ import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
 
+"""
 from opticks.ana.hismask import HisMask   
 hm = HisMask()
 
@@ -23,9 +24,16 @@ flagdesc_ = lambda p:" %6d prd(%3d %3d %1d)  %3s  %10s " % ( idx_(p),  boundary_
 flagmask__ = lambda p:p.view(np.uint32)[:,3,3]
 hit__      = lambda p,msk:p[np.where( ( flagmask__(p) & msk ) == msk)]        
 
+
+
+
 from opticks.CSG.CSGFoundry import CSGFoundry 
 cf = CSGFoundry.Load()
 bflagdesc_ = lambda p:"%s : %s " % ( flagdesc_(p), cf.bndnamedict[boundary_(p)] )
+
+"""
+
+from opticks.ana.p import * 
 
 
 def make_record_cells(r):

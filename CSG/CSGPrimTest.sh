@@ -22,6 +22,8 @@ new
     recent addition
 remote
     grabbed CSGFoundry 
+    (cx:./cf_grab.sh updates this remote geometry via rsync)
+
 asis
     OPTICKS_KEY 
 last

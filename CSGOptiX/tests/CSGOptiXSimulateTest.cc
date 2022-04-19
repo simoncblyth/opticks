@@ -116,6 +116,17 @@ int main(int argc, char** argv)
 
     cx.setGensteps(&gs, 1); 
     cx.simulate();  
+
+    const char* odir = SPath::Resolve(cfbase_local, "CSGOptiXSimulateTest", DIRPATH ); 
+    
+    NP* p = cx.event->getPhotons() ; 
+    NP* r = cx.event->getRecords() ; 
+    LOG(info) << " p " << ( p ? p->sstr() : "-" ) ; 
+    LOG(info) << " r " << ( r ? r->sstr() : "-" ) ; 
+    LOG(info) << " odir " << odir ; 
+    if(p) p->save(odir, "p.npy"); 
+    if(r) r->save(odir, "r.npy"); 
+
  
     cudaDeviceSynchronize(); 
     return 0 ; 

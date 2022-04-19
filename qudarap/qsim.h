@@ -1228,6 +1228,10 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( quad4& p, const quad2* mock_prd
 qsim::propagate : one "bounce" propagate_to_boundary/propagate_at_boundary 
 -----------------------------------------------------------------------------
 
+This is canonically invoked from within the bounce loop of CSGOptiX/OptiX7Test.cu:simulate 
+
+TODO: missing needs to return BREAK   
+
 **/
 
 template <typename T>
@@ -1245,7 +1249,7 @@ inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s,
     if( idx == pidx ) printf("//qsim.propagate idx %d bnc %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n", 
                  idx, bounce, cosTheta, dir->x, dir->y, dir->z, normal->x, normal->y, normal->z ); 
 #endif
-       
+
     p.set_prd(boundary, identity, cosTheta); 
 
     fill_state(s, boundary, *wavelength, cosTheta ); 

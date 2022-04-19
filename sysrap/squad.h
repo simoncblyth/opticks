@@ -88,7 +88,6 @@ void           quad2::set_identity(unsigned id) { q1.u.z = id ;  }
 unsigned       quad2::boundary() const {   return q1.u.w ;  }
 void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
 
-
 struct quad4 
 { 
     quad q0 ; 

@@ -198,7 +198,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
     unsigned idx = launch_idx.x ;  // aka photon_id
     unsigned genstep_id = evt->seed[idx] ; 
-    if( idx == 0 ) printf("//OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
+    //if( idx == 0 ) 
+    printf("//[OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
 
     const quad6& gs     = evt->genstep[genstep_id] ; 
      
@@ -229,6 +230,9 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
             prd
         );        // populate prd with intersect info 
 
+        printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
+        if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
+
         command = sim->propagate(bounce, p, s, prd, rng, idx ); 
         bounce++;     
         if(command == BREAK) break ;    
@@ -236,6 +240,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
     evt->photon[idx] = p ; 
+
+    printf("//]OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
 }
 
 /**
@@ -248,6 +254,18 @@ Note how seeding is still needed here despite the highly artificial
 nature of the center-extent grid of gensteps as the threads of the launch 
 still needs to access different gensteps across the grid. 
 
+TODO: Compose frames of pixels, isect and "fphoton" within the cegs window
+using the positions of the intersect "photons".
+Note that multiple threads may be writing to the same pixel 
+hat is apparently not a problem, just which does it is uncontrolled.
+
+unsigned index = iz * params.width + ix ;
+if( index > 0 )
+{
+    params.pixels[index] = make_uchar4( 255u, 0u, 0u, 255u) ;
+    params.isect[index] = make_float4( ipos.x, ipos.y, ipos.z, uint_as_float(identity)) ; 
+    params.fphoton[index] = p ; 
+}
 **/
 
 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
@@ -305,36 +323,10 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     p.q3.u.w = prd->identity() ; 
 
     evt->photon[idx] = p ; 
-
-    // Compose frames of pixels, isect and "fphoton" within the cegs window
-    // using the positions of the intersect "photons".
-    // Note that multiple threads may be writing to the same pixel 
-    // that is apparently not a problem, just which does it is uncontrolled.
-
-    /*
-    unsigned index = iz * params.width + ix ;
-    if( index > 0 )
-    {
-        params.pixels[index] = make_uchar4( 255u, 0u, 0u, 255u) ;
-        params.isect[index] = make_float4( ipos.x, ipos.y, ipos.z, uint_as_float(identity)) ; 
-        params.fphoton[index] = p ; 
-    }
-    */
 }
 
-
-
-
-
-
 /**
-float cos_theta = dot(normal,direction);
-
-* cos_theta "sign/orient-ing the boundary" up here in raygen unlike oxrap/cu/closest_hit_propagate.cu,
-  avoids having to pass the information from lower level
-  
-* for angular efficiency need intersection point in object frame to get the angles  
-
+for angular efficiency need intersection point in object frame to get the angles  
 **/
 
 extern "C" __global__ void __raygen__rg()
@@ -356,31 +348,43 @@ extern "C" __global__ void __raygen__rg()
 
 #ifdef WITH_PRD
 #else
-
 /**
 *setPayload* is used from __closesthit__ and __miss__ providing communication to __raygen__ optixTrace call
 **/
-static __forceinline__ __device__ void setPayload( float3 normal, float t, unsigned identity, unsigned boundary   ) // pure? 
+static __forceinline__ __device__ void setPayload( float normal_x, float normal_y, float normal_z, float t, unsigned identity, unsigned boundary   ) // pure? 
 {
-    optixSetPayload_0( float_as_uint( normal.x ) );
-    optixSetPayload_1( float_as_uint( normal.y ) );
-    optixSetPayload_2( float_as_uint( normal.z ) );
+    optixSetPayload_0( float_as_uint( normal_x ) );
+    optixSetPayload_1( float_as_uint( normal_y ) );
+    optixSetPayload_2( float_as_uint( normal_z ) );
     optixSetPayload_3( float_as_uint( t ) );
     optixSetPayload_4( identity );
     optixSetPayload_5( boundary );
     // maximum of 6 payload values configured in PIP::PIP 
     // NB : payload is distinct from attributes
 }
-
 #endif
+
+/**
+__miss__ms
+-------------
+
+* missing "normal" is somewhat render specific and this is used for 
+  all raygenmode but Miss should never happen with real simulations 
+* Miss can happen with simple geometry testing however
+
+**/
+
 
 extern "C" __global__ void __miss__ms()
 {
     MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
+    const unsigned identity = 0xffffffffu ; 
+    const unsigned boundary = 0xffffu ;  
+    float t = 0.f ; 
 #ifdef WITH_PRD
     quad2* prd = getPRD<quad2>(); 
 
-    prd->q0.f.x = ms->r ; 
+    prd->q0.f.x = ms->r ;   
     prd->q0.f.y = ms->g ; 
     prd->q0.f.z = ms->b ; 
     prd->q0.f.w = 0.f ; 
@@ -390,12 +394,10 @@ extern "C" __global__ void __miss__ms()
     prd->q1.u.z = 0u ; 
     prd->q1.u.w = 0u ; 
 
+    prd->set_boundary(boundary; 
+    prd->set_identity(identity); 
 #else
-    float3 normal = make_float3( ms->r, ms->g, ms->b );   // hmm: this is render specific, but easily ignored
-    float t = 0.f ; 
-    unsigned identity = 0u ; 
-    unsigned boundary = 0u ; 
-    setPayload( normal, t, identity, boundary );  // communicate ms->rg
+    setPayload( ms->r, ms->g, ms->b, t, identity, boundary );  // communicate from ms->rg
 #endif
 }
 
@@ -430,6 +432,7 @@ extern "C" __global__ void __closesthit__ch()
 
     prd->set_identity( identity ) ;
     //boundary is set in intersect 
+    printf("//__closesthit__ch prd.boundary %d \n", prd->boundary() ); 
 
     float3* normal = prd->normal(); 
     *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;  
@@ -444,6 +447,7 @@ extern "C" __global__ void __closesthit__ch()
 
     const float t = uint_as_float(  optixGetAttribute_3() ) ;  
     unsigned boundary = optixGetAttribute_4() ; 
+    printf("//__closesthit__ch boundary %d \n", boundary ); 
 
     //unsigned instance_index = optixGetInstanceIndex() ;  0-based index within IAS
     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
@@ -452,7 +456,7 @@ extern "C" __global__ void __closesthit__ch()
 
     float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
 
-    setPayload( normal, t, identity, boundary);  // communicate from ch->rg
+    setPayload( normal.x, normal.y, normal.z, t, identity, boundary);  // communicate from ch->rg
 #endif
 }
 
@@ -491,12 +495,15 @@ extern "C" __global__ void __intersection__is()
     {
         const unsigned hitKind = 0u ;            // only 8bit : could use to customize how attributes interpreted
         const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
+        printf("//__intersection__is boundary %d \n", boundary ); 
+
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
         {
             quad2* prd = getPRD<quad2>(); 
             prd->q0.f = isect ; 
             prd->set_boundary(boundary) ; 
+            printf("//__intersection__is prd.set_boundary %d \n", boundary ); 
         }   
 #else
         unsigned a0, a1, a2, a3, a4  ;      
@@ -505,6 +512,7 @@ extern "C" __global__ void __intersection__is()
         a2 = float_as_uint( isect.z );
         a3 = float_as_uint( isect.w ) ; // perhaps no need to pass the "t", should be standard access to "t"
         a4 = boundary ; 
+        printf("//__intersection__is a4.boundary %d \n", a4 ); 
         optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4 );   
 #endif
         // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 

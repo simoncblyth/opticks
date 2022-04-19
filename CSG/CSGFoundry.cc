@@ -167,6 +167,15 @@ void CSGFoundry::CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ) // stati
     assert( src->meshname.size() == dst->meshname.size() );      
 }
 
+/**
+CSGFoundry::CopyBndName
+-------------------------
+
+Note that the NP* bnd also carries names in its metadata,
+TODO: avoid the duplication or at least assert that they match
+
+**/
+
 void CSGFoundry::CopyBndName( CSGFoundry* dst, const CSGFoundry* src ) // static 
 {
     assert( dst->bndname.size() == 0); 

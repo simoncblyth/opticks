@@ -514,15 +514,9 @@ void QEvent::downloadRecord( std::vector<quad4>& record )
     QU::copy_device_to_host<quad4>( record.data(), evt->record, evt->num_record ); 
 }
 
-
-
-
-
 void QEvent::savePhoton( const char* dir_, const char* name )
 {
-    int create_dirs = 2 ;  // 2:dirpath 
-    const char* dir = SPath::Resolve(dir_, create_dirs); 
-
+    const char* dir = SPath::Resolve(dir_, DIRPATH); 
     LOG(info) << dir ; 
     std::vector<quad4> photon ; 
     downloadPhoton(photon); 
