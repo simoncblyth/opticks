@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
-    fd->upload(); 
+    //fd->upload(); 
     LOG(info) << fd->descComp(); 
 
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
@@ -82,7 +82,27 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 
-    CSGOptiX cx(&ok, fd); 
+
+    const char* cfbase_local = SSys::getenvvar("CFBASE_LOCAL") ; 
+    assert(cfbase_local) ; 
+
+    LOG(fatal) << "MIXING CSGFoundry combining basis cfbase with cfbase_local "; 
+    std::cout << std::setw(20) << "cfbase" << ":" << cfbase << std::endl ; 
+    std::cout << std::setw(20) << "cfbase_local" << ":" << cfbase_local  << std::endl ; 
+
+    CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
+    CSGFoundry::CopyBndName(fdl, fd );  
+
+    unsigned primIdx = 0 ; 
+    const char* boundary = "Water///Pyrex" ; 
+    fdl->setPrimBoundary( primIdx, boundary ); 
+
+    std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
+
+
+    fdl->upload(); 
+
+    CSGOptiX cx(&ok, fdl ); 
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  
     cx.setComposition(ce); 
       

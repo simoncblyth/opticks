@@ -30,11 +30,18 @@ TODO : check new CSGOptiXSimulateTest with OpticksGenstep_PHOTON_CARRIER and a s
     QSim<float>::UploadComponents(fd->icdf, fd->bnd, fd->optical, rindexpath );
 
 * simpler to reuse standard CSGFoundry components together with simple non-standard geometry for the test
-* need way get the boundary index by a string spec lookup 
-* also need API to set the boundary onto the CSGNode tree prior to upload 
+* arrange for CSGOptiXSimulateTest to combine:
 
-  * as same boundary on all CSGNode of a CSGPrim need a CSGPrim::setBoundary method
-  * not quite : has to be CSGFoundry::setPrimBoundary as need to iterate over all CSGNode of the CSGPrim 
+1. "basis" standard CSGFoundry components (eg bnd, bndname etc) 
+2. simple GeoChain geometry from another CFBase with boundaries configured with CSGFoundary::setPrimBoundary 
+
+
+DONE : boundary mechanics in CSGFoundry
+-----------------------------------------
+
+* DONE : need way get the boundary index by a string spec lookup 
+* DONE : also need API to set the boundary onto the CSGNode tree prior to upload 
+* DONE : CSGFoundry::setPrimBoundary as need to iterate over all CSGNode of the CSGPrim 
  
 ``OptiX7Test.cu:__intersection__is`` gets boundary from CSGNode::
 
@@ -51,12 +58,9 @@ TODO : check new CSGOptiXSimulateTest with OpticksGenstep_PHOTON_CARRIER and a s
     499             prd->set_boundary(boundary) ;
     500         }
 
-
-
-* add boundary dumping to CSG/CSGPrimTest.cc 
-
-
-* need "basis" CSGFoundry 
+* added bndname handling to CSGFoundry analogous to meshname
+* added CSGFoundry::setPrimBoundary 
+* added boundary dumping CSGFoundry::detailPrim which is used from CSG/CSGPrimTest.cc 
 
 
 TODO
