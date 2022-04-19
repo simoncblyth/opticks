@@ -8,22 +8,101 @@ Old way has an excess of middle-management (eg OKOP) and
 gets embroiled into OptiX and even OpenGL dependency for interop running.  
 
 
-What does event handling need to plug into
----------------------------------------------
+What does event handling plug into with new workflow
+--------------------------------------------------------
 
 ::
 
     CSG/CSGFoundry 
         geometry 
 
-    QUDARap/QSim
+    QUDARap/QSim,QEvent
 
     CSGOptiX/CSGOptiX
-        render and simulate 
+        render, simtrace, simulate 
 
 
-TODO : check new CSGOptiXSimulateTest with OpticksGenstep_PHOTON_CARRIER and a simple geometry
---------------------------------------------------------------------------------------------------
+
+TODO : cxsim.sh 
+-------------------
+
+
+* arrange raindrop simulation to give rainbow histories, so have some 
+  physical histories to use for developing the compressed record
+ 
+* the old perfect surfaces are useful for these kind of tests ? what happened to those ? they were in GGeo ? 
+* GSurfaceLib::addPerfectSurfaces
+* X4PhysicalVolume::convertSurfaces calls m_slib->addPerfectSurfaces(); 
+* BUT: vaguely recall that only used materials and surfaces are actually converted
+
+  * it feels kinda dirty and cheating to do things back at GGeo level like that 
+
+* perhaps could add extra_bnd.npy at QBnd level ?
+
+  * actually starting from a simple Geant4 geometry and doing a conversion on it 
+    is the cleanest way if want to compare the simple simulation with Geant4 anyhow
+
+  * also Yuxiang needs an example like that too 
+
+  * YES: but having a shortcut way to add simple boundaries also useful, as that just 
+    needs some interesting NP gymastics to load the base bnd and create a compatibly shaped 5D array 
+    with the added boundaries followed by NP::Concatenate
+
+    * QBndTest is the natural place to develop this 
+    * hmm would be good to be able to put together any boundary using the material and surface props 
+      already present : so that needs to extract QMaterial and QSurf  
+    * obvious way to test that capability is to pull apart the QBnd into QMateral and QSurf 
+      and then put it back together again and verify get perfect match  
+
+
+::
+
+    1281 void GGeo::prepareMaterialLib()
+    1282 {
+    1283     LOG(verbose) ;
+    1284 
+    1285     GMaterialLib* mlib = getMaterialLib() ;
+    1286 
+    1287     mlib->addTestMaterials();
+    1288 }
+    1289 
+    1290 void GGeo::prepareSurfaceLib()
+    1291 {
+    1292     LOG(verbose) ;
+    1293 
+    1294     GSurfaceLib* slib = getSurfaceLib() ;
+    1295 
+    1296     slib->addPerfectSurfaces();
+    1297 }
+
+
+
+  * probably the perfect surfaces were skipped from the conversion due to not being used in the standard geometry
+  * HMM: shortcut : artificially make a MISS result in surface absorb 
+  * then can develop the compressed history recording so can switch off the expensive full step record
+    and then do some high stats testing with raindrop geometry 
+  
+
+* get generation going in new workflow to fully check the QEvent/qevent design  
+
+* review old and new looking for aspects that need to be ported over 
+
+  * compressed sequence recording (seqhis seqmat) is needed for OpticksEvent 
+    as the full record is only appropriate for debugging with small numbers of photons 
+
+  * photon indexing (using thrust sorting) needs to be ported over : probably this can be done in sysrap/SU
+    together with stream compaction  
+
+* see if it makes sense to use CSGOptiX directly from G4Opticks OR perhaps via some slim middleware "Engine" 
+
+* OpticksEvent components and hookup to allow ab.py validation machinery to work with new workflow
+
+  * move OpticksEvent down to sysrap : to keep simple primary dependency chain sysrap-qudarap-csgoptix
+
+
+
+DONE: in CSGOptiX/cxsim.sh check new CSGOptiXSimulateTest with OpticksGenstep_PHOTON_CARRIER and a simple geometry
+----------------------------------------------------------------------------------------------------------------------
 
 :: 
 
@@ -62,25 +141,6 @@ DONE : boundary mechanics in CSGFoundry
 * added CSGFoundry::setPrimBoundary 
 * added boundary dumping CSGFoundry::detailPrim which is used from CSG/CSGPrimTest.cc 
 
-
-TODO
-------
-
-* get generation going in new workflow to fully check the QEvent/qevent design  
-
-* review old and new looking for aspects that need to be ported over 
-
-  * compressed sequence recording (seqhis seqmat) is needed for OpticksEvent 
-    as the full record is only appropriate for debugging with small numbers of photons 
-
-  * photon indexing (using thrust sorting) needs to be ported over : probably this can be done in sysrap/SU
-    together with stream compaction  
-
-* see if it makes sense to use CSGOptiX directly from G4Opticks OR perhaps via some slim middleware "Engine" 
-
-* OpticksEvent components and hookup to allow ab.py validation machinery to work with new workflow
-
-  * move OpticksEvent down to sysrap : to keep simple primary dependency chain sysrap-qudarap-csgoptix
 
 
 DONE : split off cxs 2D as simtrace running

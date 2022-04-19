@@ -28,10 +28,12 @@ export OPTICKS_MAX_RECORD=10   # change from default of 0, see sysrap/SEventConf
 if [ "${arg/run}" != "$arg" ]; then 
     logdir=/tmp/$USER/opticks/CSGOptiXSimulateTest 
     mkdir -p $logdir
+    iwd=$PWD
     cd $logdir
     CSGOptiXSimulateTest 
     [ $? -ne 0 ] && echo $msg RUN ERROR && exit 1 
     echo $msg logdir $logdir 
+    cd $iwd
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 

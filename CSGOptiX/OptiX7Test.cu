@@ -380,7 +380,6 @@ extern "C" __global__ void __miss__ms()
     MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
     const unsigned identity = 0xffffffffu ; 
     const unsigned boundary = 0xffffu ;  
-    float t = 0.f ; 
 #ifdef WITH_PRD
     quad2* prd = getPRD<quad2>(); 
 
@@ -394,10 +393,10 @@ extern "C" __global__ void __miss__ms()
     prd->q1.u.z = 0u ; 
     prd->q1.u.w = 0u ; 
 
-    prd->set_boundary(boundary; 
+    prd->set_boundary(boundary); 
     prd->set_identity(identity); 
 #else
-    setPayload( ms->r, ms->g, ms->b, t, identity, boundary );  // communicate from ms->rg
+    setPayload( ms->r, ms->g, ms->b, 0.f, identity, boundary );  // communicate from ms->rg
 #endif
 }
 
