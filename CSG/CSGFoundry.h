@@ -138,6 +138,10 @@ struct CSG_API CSGFoundry
     std::string descPrim() const ;
     std::string descPrim(unsigned solidIdx) const  ;
 
+    int getPrimBoundary(unsigned primIdx) const ; 
+    std::string detailPrim() const ; 
+    std::string detailPrim(unsigned primIdx) const ; 
+
     std::string descPrimSpec() const ; 
     std::string descPrimSpec(unsigned solidIdx) const ; 
 
@@ -295,8 +299,15 @@ struct CSG_API CSGFoundry
     unsigned getNumMeshName() const ; 
     unsigned getNumSolidLabel() const ; 
 
+    static void CopyNames(    CSGFoundry* dst, const CSGFoundry* src ); 
+    static void CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ); 
+    static void CopyBndName(  CSGFoundry* dst, const CSGFoundry* src ); 
+
     void getMeshName( std::vector<std::string>& mname ) const ; 
+    void getBndName(  std::vector<std::string>& bname ) const ; 
+
     const std::string& getMeshName(unsigned midx) const ; 
+    const std::string& getBndName(unsigned bidx) const ; 
     const std::string descELV(const SBitSet* elv); 
 
     const std::string& getSolidLabel(unsigned sidx) const ; 
@@ -304,7 +315,8 @@ struct CSG_API CSGFoundry
     void addMeshName(const char* name); 
     void addSolidLabel(const char* label); 
 
-    std::vector<std::string> meshname ;  // meshNames from GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
+    std::vector<std::string> bndname ;   // GGeo::getBoundaryNames/GBndLib
+    std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 
     std::vector<CSGSolid>  solid ;   
@@ -324,7 +336,8 @@ struct CSG_API CSGFoundry
     std::vector<unsigned>  gas ; 
     std::vector<unsigned>  ias ; 
 
-    CSGName*    id ; 
+    CSGName*    id ;   // meshname 
+    CSGName*    bd ;   // bndname
     CSGTarget*  target ; 
     CSGGenstep* genstep ; 
     CSGMaker*   maker ; 

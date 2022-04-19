@@ -56,6 +56,7 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
 void CSG_GGeo_Convert::init()
 {
     ggeo->getMeshNames(foundry->meshname); 
+    ggeo->getBoundaryNames(foundry->bndname); 
     ggeo->getMergedMeshLabels(foundry->mmlabel); 
 
     std::string cxskiplv = ok->getCXSkipLVList() ;  // --cxskiplv

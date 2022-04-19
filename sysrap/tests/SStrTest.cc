@@ -634,6 +634,24 @@ MultipleUnderscoreblue2_cyan_magenta
 }   
 
 
+void test_Format_Ellipsis()
+{
+    LOG(info) << SStr::Format("Hello %d World %10.4f", 101, 50.5 ); 
+
+    for(int i=0 ; i < 1000 ; i+= 100 ) 
+    {
+         std::cout 
+            << " before " 
+            << std::setw(7) << SStr::Format("key:%d", i ) 
+            << " after " 
+            << std::endl 
+            ; 
+    }
+
+    
+}
+
+
 
 int main(int argc , char** argv )
 {
@@ -670,8 +688,9 @@ int main(int argc , char** argv )
     test_Trim(); 
     test_ExtractLong(); 
     test_HeadFirst_HeadLast(); 
-    */
     test_FormatInt(); 
+    */
+    test_Format_Ellipsis(); 
 
     return 0  ; 
 }

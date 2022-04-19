@@ -92,7 +92,7 @@ to implementing Prim selection so must not descend to very low level cloning.
 
 void CSGCopy::copy()
 { 
-    copyMeshName();
+    CSGFoundry::CopyNames(dst, src );  
  
     for(unsigned i=0 ; i < sNumSolid ; i++)
     {
@@ -142,12 +142,6 @@ void CSGCopy::copy()
 }
 
 
-void CSGCopy::copyMeshName()
-{
-    assert( dst->meshname.size() == 0); 
-    src->getMeshName(dst->meshname); 
-    assert( src->meshname.size() == dst->meshname.size() ); 
-}
 
 
 

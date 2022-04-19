@@ -17,13 +17,11 @@ Identity machinery using the foundry vector of meshnames (aka solid names)
 struct CSG_API CSGName
 {
     static const plog::Severity LEVEL ; 
-    const CSGFoundry* foundry ; 
     const std::vector<std::string>& name ; 
     static int ParseIntString(const char* arg, int fallback=-1);
     static void ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr ); 
 
-
-    CSGName( const CSGFoundry* foundry );  
+    CSGName(const std::vector<std::string>& name );  
 
     std::string desc() const ; 
     unsigned getNumName() const;

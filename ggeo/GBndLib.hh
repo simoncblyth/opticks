@@ -108,6 +108,8 @@ class GGEO_API GBndLib : public GPropertyLib {
        unsigned index(const guint4& bnd) const ;
        BMeta* createMeta() ; 
   public:
+       void getBoundaryNames(std::vector<std::string>& boundaryNames) const ; 
+  public:
        // boundary index lookups
        guint4 getBnd(unsigned int boundary) const ;
        void   getBnd(int& omat, int& osur, int& isur, int& imat, unsigned boundary) const ;

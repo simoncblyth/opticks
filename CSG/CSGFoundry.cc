@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <array>
 #include <vector>
+#include <set>
 #include <algorithm>
 #include <cstring>
 
@@ -52,7 +53,8 @@ CSGFoundry::CSGFoundry()
     d_node(nullptr),
     d_plan(nullptr),
     d_itra(nullptr),
-    id(new CSGName(this)),
+    id(new CSGName(meshname)),
+    bd(new CSGName(bndname)),
     target(new CSGTarget(this)),
     genstep(new CSGGenstep(this)),
     maker(new CSGMaker(this)),
@@ -101,6 +103,7 @@ std::string CSGFoundry::desc() const
        << " gas " << gas.size()
        << " ias " << ias.size()
        << " meshname " << meshname.size()
+       << " bndname " << bndname.size()
        << " mmlabel " << mmlabel.size()
        ;
     return ss.str(); 
@@ -151,8 +154,34 @@ unsigned CSGFoundry::getNumSolidLabel() const
 {
     return mmlabel.size() ; 
 }
+void CSGFoundry::CopyNames( CSGFoundry* dst, const CSGFoundry* src ) // static
+{
+    CopyMeshName( dst, src ); 
+    CopyBndName( dst, src ); 
+}
 
+void CSGFoundry::CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ) // static 
+{
+    assert( dst->meshname.size() == 0); 
+    src->getMeshName(dst->meshname); 
+    assert( src->meshname.size() == dst->meshname.size() );      
+}
 
+void CSGFoundry::CopyBndName( CSGFoundry* dst, const CSGFoundry* src ) // static 
+{
+    assert( dst->bndname.size() == 0); 
+    src->getBndName(dst->bndname); 
+    assert( src->bndname.size() == dst->bndname.size() );      
+}
+
+void CSGFoundry::getBndName( std::vector<std::string>& bname ) const 
+{
+    for(unsigned i=0 ; i < bndname.size() ; i++)
+    {
+        const std::string& bn = bndname[i]; 
+        bname.push_back(bn);   
+    }
+}
 void CSGFoundry::getMeshName( std::vector<std::string>& mname ) const 
 {
     for(unsigned i=0 ; i < meshname.size() ; i++)
@@ -167,6 +196,15 @@ const std::string& CSGFoundry::getMeshName(unsigned midx) const
     assert( midx < meshname.size() ); 
     return meshname[midx] ; 
 }
+
+const std::string& CSGFoundry::getBndName(unsigned bidx) const 
+{
+    assert( bidx < bndname.size() ); 
+    return bndname[bidx] ; 
+}
+
+
+
 
 const std::string CSGFoundry::descELV(const SBitSet* elv)
 {
@@ -610,6 +648,88 @@ std::string CSGFoundry::descPrim(unsigned solidIdx) const
     std::string s = ss.str(); 
     return s ; 
 }
+
+/**
+CSGFoundry::detailPrim
+------------------------
+
+Used from CSGPrimTest 
+
+**/
+
+std::string CSGFoundry::detailPrim() const 
+{
+    std::stringstream ss ; 
+    int numPrim = getNumPrim() ; 
+    assert( int(prim.size()) == numPrim );  
+    for(int primIdx=0 ; primIdx < std::min(10000, numPrim) ; primIdx++) ss << detailPrim(primIdx) << std::endl ;   
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+/**
+CSGFoundry::getPrimBoundary
+----------------------------
+
+Gets the boundary index of a prim. 
+Currently this gets the boundary from all CSGNode of the 
+prim and asserts that they are all the same. 
+
+TODO: a faster version that just gets from the first node 
+
+**/
+int CSGFoundry::getPrimBoundary(unsigned primIdx) const
+{
+    std::set<unsigned> bnd ; 
+    const CSGPrim* pr = getPrim(primIdx); 
+    for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset() + pr->numNode() ; nodeIdx++)
+    {
+        const CSGNode* nd = getNode(nodeIdx); 
+        bnd.insert(nd->boundary()); 
+    }
+    assert( bnd.size() == 1 ); 
+    int boundary = bnd.begin() == bnd.end() ? -1 : *bnd.begin() ; 
+    return boundary ; 
+}
+
+std::string CSGFoundry::detailPrim(unsigned primIdx) const 
+{
+    const CSGPrim* pr = getPrim(primIdx); 
+    unsigned gasIdx = pr->repeatIdx(); 
+    unsigned meshIdx = pr->meshIdx(); 
+    unsigned pr_primIdx = pr->primIdx(); 
+    const char* meshName = id->getName(meshIdx);
+
+    int numNode = pr->numNode() ; 
+    int nodeOffset = pr->nodeOffset() ; 
+    int boundary = getPrimBoundary(primIdx); 
+    const char* bndName = bd->getName(boundary);
+
+    float4 ce = pr->ce(); 
+
+    std::stringstream ss ; 
+    ss  
+        << std::setw(10) << SStr::Format(" pri:%d", primIdx )
+        << std::setw(10) << SStr::Format(" lpr:%d", pr_primIdx )
+        << std::setw(8)  << SStr::Format(" gas:%d", gasIdx )
+        << std::setw(8)  << SStr::Format(" msh:%d", meshIdx)
+        << std::setw(8)  << SStr::Format(" bnd:%d", boundary) 
+        << std::setw(8)  << SStr::Format(" nno:%d", numNode )
+        << std::setw(10)  << SStr::Format(" nod:%d", nodeOffset )
+        << " ce " 
+        << "(" << std::setw(10) << std::fixed << std::setprecision(2) << ce.x 
+        << "," << std::setw(10) << std::fixed << std::setprecision(2) << ce.y
+        << "," << std::setw(10) << std::fixed << std::setprecision(2) << ce.z
+        << "," << std::setw(10) << std::fixed << std::setprecision(2) << ce.w
+        << ")" 
+        << " meshName " << std::setw(15) << ( meshName ? meshName : "-" )
+        << " bndName "  << std::setw(15) << ( bndName  ? bndName  : "-" )
+        ;   
+
+    std::string s = ss.str();
+    return s ; 
+}
+
 
 
 
@@ -1646,6 +1766,7 @@ void CSGFoundry::write(const char* dir_) const
     LOG(info) << dir ; 
 
     if(meshname.size() > 0 ) NP::WriteNames( dir, "meshname.txt", meshname );
+    if(bndname.size() > 0 )  NP::WriteNames( dir, "bndname.txt",  bndname );
     if(mmlabel.size() > 0 )  NP::WriteNames( dir, "mmlabel.txt", mmlabel );
     if(hasMeta())  NP::WriteString( dir, "meta.txt", meta.c_str() ); 
               
@@ -1716,6 +1837,15 @@ const char* CSGFoundry::getOriginCFBase() const
    return origin ? origin->cfbase : cfbase ; 
 }
 
+/**
+CSGFoundry::load
+------------------
+
+HMM: bndnames already in NP bnd metadata but as a single string
+TODO: avoid the duplication 
+
+**/
+
 void CSGFoundry::load( const char* dir_ )
 {
     const char* dir = SPath::Resolve(dir_, NOOP ); 
@@ -1730,6 +1860,7 @@ void CSGFoundry::load( const char* dir_ )
     loaddir = strdup(dir) ; 
 
     NP::ReadNames( dir, "meshname.txt", meshname );  
+    NP::ReadNames( dir, "bndname.txt",  bndname );  
     NP::ReadNames( dir, "mmlabel.txt", mmlabel );  
 
     const char* meta_str = NP::ReadString( dir, "meta.txt" ) ; 

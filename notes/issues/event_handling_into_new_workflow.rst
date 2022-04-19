@@ -53,6 +53,9 @@ TODO : check new CSGOptiXSimulateTest with OpticksGenstep_PHOTON_CARRIER and a s
 
 
 
+* add boundary dumping to CSG/CSGPrimTest.cc 
+
+
 * need "basis" CSGFoundry 
 
 

@@ -3,18 +3,16 @@
 #include "SStr.hh"
 #include "PLOG.hh"
 
-#include "scuda.h"
+//#include "scuda.h"
 
-#include "CSGFoundry.h"
 #include "CSGName.h"
 
 
 const plog::Severity CSGName::LEVEL = PLOG::EnvLevel("CSGName", "DEBUG"); 
 
-CSGName::CSGName( const CSGFoundry* foundry_ )
+CSGName::CSGName( const std::vector<std::string>& name_ )
     :
-    foundry(foundry_),
-    name(foundry->meshname)
+    name(name_)
 {
 }
 

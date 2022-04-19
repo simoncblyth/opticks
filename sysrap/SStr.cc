@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <cstdio>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -178,6 +179,7 @@ const char* SStr::Format3( const char* fmt, const char* value1, const char* valu
 }
 
 
+
 template const char* SStr::Format1<256>( const char* , const char* );
 template const char* SStr::Format2<256>( const char* , const char*, const char* );
 template const char* SStr::Format3<256>( const char* , const char*, const char* , const char* );
@@ -196,6 +198,22 @@ const char* SStr::FormatReal(const T value, int w, int p, char fill )
 
 template const char* SStr::FormatReal<float>(const float, int, int, char );
 template const char* SStr::FormatReal<double>(const double, int, int, char );
+
+
+template<typename ... Args>
+std::string SStr::Format( const char* fmt, Args ... args )
+{
+    // see sysrap/tests/StringFormatTest.cc
+    int sz = std::snprintf( nullptr, 0, fmt, args ... ) + 1; // +1 for null termination
+    assert( sz > 0 );  
+    std::vector<char> buf(sz) ;   
+    std::snprintf( buf.data(), sz, fmt, args ... );
+    return std::string( buf.begin(), buf.begin() + sz - 1 );  // exclude null termination 
+}
+
+template std::string SStr::Format( const char* , int, double ); 
+template std::string SStr::Format( const char* , int ); 
+template std::string SStr::Format( const char* , unsigned ); 
 
 
 
@@ -884,9 +902,5 @@ int SStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, co
     }   
     return err ; 
 }
-
-
-
-
 
 

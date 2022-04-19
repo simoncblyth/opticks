@@ -211,6 +211,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         unsigned getBoundary(const char* spec) const ; // 0-based, 0xffffffff UNSET
         int      getSignedBoundary(const char* spec) const ; // 1-based, 0 UNSET    
         int      getSignedBoundary() const ; 
+        void     getBoundaryNames(std::vector<std::string>& boundaryNames) const ; 
    private:
         void init(); 
         void initLibs(); 

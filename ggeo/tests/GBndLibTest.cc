@@ -104,6 +104,23 @@ void test_isSameMaterialBoundary(const GBndLib* blib)
     }
 }
 
+void test_getBoundaryNames(const GBndLib* blib)
+{
+    std::vector<std::string> specs ; 
+    blib->getBoundaryNames(specs); 
+    LOG(info) << " specs.size " << specs.size(); 
+    for(unsigned i=0 ; i < specs.size() ; i++)
+    {
+        const std::string& spec = specs[i] ; 
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " spec " << std::setw(110) << spec 
+            << std::endl 
+            ;
+    }
+}
+
+
 
 
 int main(int argc, char** argv)
@@ -151,6 +168,7 @@ int main(int argc, char** argv)
     test_getBoundary(blib); 
     test_getSignedBoundary(blib); 
     test_isSameMaterialBoundary(blib); 
+    test_getBoundaryNames(blib); 
  
     return 0 ; 
 }

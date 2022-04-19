@@ -453,6 +453,9 @@ unsigned     GGeo::getBoundary(const char* spec) const { return m_bndlib->getBou
 std::string  GGeo::getBoundaryName(unsigned boundary) const { return m_bndlib->shortname(boundary) ; }
 int          GGeo::getSignedBoundary(const char* spec) const { return m_bndlib->getSignedBoundary(spec) ; }  
 bool         GGeo::isSameMaterialBoundary(unsigned boundary) const { return m_bndlib->isSameMaterialBoundary(boundary) ; }
+void         GGeo::getBoundaryNames(std::vector<std::string>& boundaryNames) const { m_bndlib->getBoundaryNames(boundaryNames) ; } 
+
+
 
 
 /**

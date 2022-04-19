@@ -616,6 +616,18 @@ std::string GBndLib::shortname(const guint4& bnd) const
 }
 
 
+void GBndLib::getBoundaryNames(std::vector<std::string>& boundaryNames) const 
+{
+    unsigned num_bnd = getNumBnd(); 
+    for(unsigned boundary=0 ; boundary < num_bnd ; boundary++) 
+    {
+        const guint4& bnd = m_bnd[boundary];
+        std::string spec = shortname(bnd); 
+        boundaryNames.push_back(spec); 
+    }
+}
+
+
 void GBndLib::getBnd(int& omat, int& osur, int& isur, int& imat, unsigned boundary) const 
 {
     unsigned int ni = getNumBnd();
