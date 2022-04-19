@@ -139,6 +139,9 @@ struct CSG_API CSGFoundry
     std::string descPrim(unsigned solidIdx) const  ;
 
     int getPrimBoundary(unsigned primIdx) const ; 
+    void setPrimBoundary(unsigned primIdx, const char* bname) ; 
+    void setPrimBoundary(unsigned primIdx, unsigned boundary) ; 
+
     std::string detailPrim() const ; 
     std::string detailPrim(unsigned primIdx) const ; 
 
@@ -193,6 +196,9 @@ struct CSG_API CSGFoundry
     const qat4*       getTran(unsigned tranIdx) const ;
     const qat4*       getItra(unsigned itraIdx) const ;
     const qat4*       getInst(unsigned instIdx) const ;
+
+    CSGNode*          getNode_(unsigned nodeIdx);
+
 
     void              getNodePlanes(std::vector<float4>& planes, const CSGNode* nd) const ;  
     const CSGPrim*    getSolidPrim(unsigned solidIdx, unsigned primIdxRel) const ;

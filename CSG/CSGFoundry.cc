@@ -692,6 +692,45 @@ int CSGFoundry::getPrimBoundary(unsigned primIdx) const
     return boundary ; 
 }
 
+
+/**
+CSGFoundry::setPrimBoundary
+----------------------------
+
+Sets the boundary index for all CSGNode from the *primIdx* CSGPrim. 
+This is intended for in memory changing of boundaries **within simple test geometries only**.
+It would be unwise to apply this to full geometries and then persist the changed CSGFoundry
+as that would be difficult to manage. 
+
+With full geometries the boundaries should be set during geometry translation in for example CSG_GGeo. 
+
+**/
+
+void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname) 
+{
+    unsigned count = 0 ; 
+    int bnd = bd->getIndex(bname, count ); 
+    assert( count == 1 && bnd > -1 ); 
+    unsigned boundary = bnd ; 
+
+    setPrimBoundary(primIdx, boundary); 
+}
+
+void CSGFoundry::setPrimBoundary(unsigned primIdx, unsigned boundary) 
+{
+    const CSGPrim* pr = getPrim(primIdx); 
+    assert( pr ); 
+    for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset() + pr->numNode() ; nodeIdx++)
+    {
+        CSGNode* nd = getNode_(nodeIdx); 
+        nd->setBoundary(boundary); 
+    }
+}
+
+
+
+
+
 std::string CSGFoundry::detailPrim(unsigned primIdx) const 
 {
     const CSGPrim* pr = getPrim(primIdx); 
@@ -993,6 +1032,8 @@ unsigned CSGFoundry::getNumInst() const  { return inst.size(); }
 const CSGSolid*  CSGFoundry::getSolid(unsigned solidIdx) const { return solidIdx < solid.size() ? solid.data() + solidIdx  : nullptr ; } 
 const CSGPrim*   CSGFoundry::getPrim(unsigned primIdx)   const { return primIdx  < prim.size()  ? prim.data()  + primIdx  : nullptr ; } 
 const CSGNode*   CSGFoundry::getNode(unsigned nodeIdx)   const { return nodeIdx  < node.size()  ? node.data()  + nodeIdx  : nullptr ; }  
+CSGNode*         CSGFoundry::getNode_(unsigned nodeIdx)        { return nodeIdx  < node.size()  ? node.data()  + nodeIdx  : nullptr ; }  
+
 const float4*    CSGFoundry::getPlan(unsigned planIdx)   const { return planIdx  < plan.size()  ? plan.data()  + planIdx  : nullptr ; }
 const qat4*      CSGFoundry::getTran(unsigned tranIdx)   const { return tranIdx  < tran.size()  ? tran.data()  + tranIdx  : nullptr ; }
 const qat4*      CSGFoundry::getItra(unsigned itraIdx)   const { return itraIdx  < itra.size()  ? itra.data()  + itraIdx  : nullptr ; }

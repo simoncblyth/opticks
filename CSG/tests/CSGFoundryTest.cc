@@ -173,6 +173,33 @@ void test_setMeta_getMeta()
     assert( strcmp(s1.c_str(), s1_.c_str()) == 0 ); 
 }
 
+void test_setPrimBoundary()
+{
+    CSGFoundry* fd = CSGFoundry::Load() ; 
+    unsigned numPrim = fd->getNumPrim(); 
+    unsigned primIdx = numPrim - 1 ; 
+    unsigned b0 = fd->getPrimBoundary(primIdx); 
+
+    LOG(info) 
+        << " numPrim " << numPrim
+        << " primIdx " << primIdx 
+        << " b0 " << b0 
+        << " bndname " << fd->getBndName(b0) 
+        ; 
+
+    std::cout << fd->detailPrim(primIdx) << std::endl ; 
+
+    fd->setPrimBoundary( primIdx, 0u );   
+    std::cout << fd->detailPrim(primIdx) << std::endl ; 
+
+    fd->setPrimBoundary(primIdx, "Water///Acrylic" ); 
+    std::cout << fd->detailPrim(primIdx) << std::endl ; 
+
+    fd->setPrimBoundary( primIdx, b0 );   
+    std::cout << fd->detailPrim(primIdx) << std::endl ; 
+
+}
+
 
 int main(int argc, char** argv)
 {
@@ -186,10 +213,10 @@ int main(int argc, char** argv)
     test_Load(); 
     test_getInstanceTransformsGAS() ;
     test_getInstanceGAS() ;
+    test_setMeta_getMeta(); 
     */
 
-    test_setMeta_getMeta(); 
-
+    test_setPrimBoundary(); 
 
     return 0 ; 
 }

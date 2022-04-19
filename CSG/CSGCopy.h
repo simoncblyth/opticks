@@ -29,7 +29,6 @@ struct CSG_API CSGCopy
 
     std::string desc() const ; 
     void copy() ; 
-    void copyMeshName(); 
     void copySolidPrim(AABB& solid_bb, int dPrimOffset, const CSGSolid* sso ); 
     void copyPrimNodes(AABB& prim_bb, const CSGPrim* spr ); 
     void copyNode(     AABB& prim_bb, unsigned nodeIdx ); 
