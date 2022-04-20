@@ -19,7 +19,6 @@
 
 const plog::Severity X4VolumeMaker::LEVEL = PLOG::EnvLevel("X4VolumeMaker", "DEBUG"); 
 
-
 G4VPhysicalVolume* X4VolumeMaker::Make(const char* name)
 {
     G4VPhysicalVolume* pv = nullptr ; 
@@ -138,21 +137,6 @@ G4VPhysicalVolume* X4VolumeMaker::WrapLVOffset( G4LogicalVolume* lv, double tx, 
     return world_pv ;  
 }
 
-
-/**
-
-  000
-  001
-  010
-  011
-  100
-  101
-  110
-  111  
-
-
-**/
-
 G4VPhysicalVolume* X4VolumeMaker::WrapLVTranslate( G4LogicalVolume* lv, double tx, double ty, double tz )
 {
     double halfside = 3.*std::max( std::max( tx, ty ), tz ); 
@@ -173,7 +157,6 @@ G4VPhysicalVolume* X4VolumeMaker::WrapLVTranslate( G4LogicalVolume* lv, double t
     }
     return world_pv ;  
 }
-
 
 G4VPhysicalVolume* X4VolumeMaker::WorldBox( double halfside )
 {
@@ -264,11 +247,6 @@ G4VPhysicalVolume* X4VolumeMaker::WrapLVGrid( std::vector<G4LogicalVolume*>& lvs
     }   
     return world_pv ; 
 }
-
-
-
-
-
 
 
 const char* X4VolumeMaker::GridName(const char* prefix, int ix, int iy, int iz, const char* suffix)

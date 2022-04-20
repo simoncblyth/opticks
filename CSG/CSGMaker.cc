@@ -92,7 +92,7 @@ bssc
 CSGSolid* CSGMaker::make(const char* name)
 {
     CSGSolid* so = nullptr ; 
-    if(     StartsWith("sphe", name))     so = makeSphere(name) ;
+    if(     StartsWith("JustOrb", name))  so = makeSphere(name) ;
     else if(StartsWith("zsph", name))     so = makeZSphere(name) ;
     else if(StartsWith("ZSphere", name))  so = makeZSphere(name) ;
     else if(StartsWith("cone", name))     so = makeCone(name) ;
@@ -199,7 +199,7 @@ void CSGMaker::makeDemoGrid()
 
 
 /**
-Foundary::makeLayered
+CSGMaker::makeLayered
 ----------------------------
 
 NB Each layer is a separate CSGPrim with a single CSGNode 
@@ -254,6 +254,36 @@ CSGSolid* CSGMaker::makeLayered(const char* label, float outer_radius, unsigned 
     }
     return so ; 
 }
+
+
+/*
+CSGSolid* CSGMaker::makeSphereInBox(const char* label)
+{
+    float halfside = 100.f ; 
+    float fullside = 2.f*halfside ; 
+
+    unsigned numPrim = 2 ; 
+    CSGSolid* so = fd->addSolid(numPrim, label); 
+    so->center_extent = make_float4( 0.f, 0.f, 0.f, halfside ) ; 
+
+    int bxNumNode = 1  ; 
+    int bxNodeOffset = -1 ; 
+
+    CSGPrim* p0 = fd->addPrim(bxNumNode, bxNodeOffset );
+    CSGNode bx = CSGNode::Box3(fullside) ;
+    CSGNode* n0 = fd->addNode(bx);  
+
+    int spNumNode = 1 ; 
+    int spNodeOffset = -1 ;  
+    CSGPrim* p1 = fd->addPrim(spNumNode, spNodeOffset ); 
+    CSGNode* n1 = fd->addNode(CSGNode::Sphere(halfside/2.f)) ;
+
+    return so ; 
+}
+*/
+
+
+
 
 /**
 CSGMaker::makeScaled
@@ -379,6 +409,7 @@ CSGSolid* CSGMaker::makeClustered(const char* label,  int i0, int i1, int is, in
 
         unsigned numNode = 1 ; 
         int nodeOffset_ = -1 ;  // -1:use current node count as about to add the declared numNode
+
         CSGPrim* p = fd->addPrim(numNode, nodeOffset_ ); 
         CSGNode bx = CSGNode::Box3(fullside) ;
         CSGNode* n = fd->addNode(bx); 

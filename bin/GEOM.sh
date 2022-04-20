@@ -1,6 +1,4 @@
 #!/bin/bash -l 
-msg="=== $BASH_SOURCE :"
-
 usage(){ cat << EOU
 GEOM.sh
 =========
@@ -54,6 +52,6 @@ unset GEOM
 arg=${1:-asis}
 geom=$(local-opticks-geom $arg)
 export GEOM=$geom
-echo $msg GEOM $GEOM arg $arg local-opticks-home $(local-opticks-home)
+echo === $BASH_SOURCE : GEOM $GEOM arg $arg local-opticks-home $(local-opticks-home)
 
 

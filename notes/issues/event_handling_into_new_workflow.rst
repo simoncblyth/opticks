@@ -31,6 +31,16 @@ TODO : cxsim.sh
 
   * need container box with Rock//perfectAbsorbSurface/Air using new QBnd::Add capabilities
 
+    * GeoChain geometry needs a Geant4 volume as starting point : 
+    * needs some improvements to X4VolumeMaker ?
+    * DONE : pulled eg P4Volume::Transverse out of j/PMTSim : 
+    * this code needs to be relocated as j/PMTSim not standardly available ? 
+    * seems like need a G4 utilities package 
+
+    * HMM: getting involved just to make a simple box and sphere : 
+      suggests do it at CSG level instead with CSGMaker::makeLayered
+
+
   * will need to bring over some of the old TORCH genstep generation as
     need more stats than with the simple duplicating PHOTON_CARRIER
 

@@ -1,4 +1,5 @@
 #!/bin/bash -l 
+source $PWD/../bin/GEOM.sh trim    ## sets GEOM envvar with projection suffix eg _XZ trimmed 
 msg="=== $BASH_SOURCE :"
 usage(){ cat << EOU
 GeoChain/translate.sh  : geometry conversions using GeoChainSolidTest or GeoChainVolumeTest
@@ -72,50 +73,6 @@ NB IF YOU GET PERPLEXING FAILS REBUILD THE BELOW PACKAGES WHICH INCLUDE HEADERS 
 EOU
 }
 
-#geom=body_phys
-#geom=body_phys_pcnk_pdyn
-#geom=body_solid
-
-#geom=hmsk_solidMask
-#geom=hmsk_solidMaskTail
-#geom=nmsk_solidMask
-#geom=nmsk_solidMaskTail
-#geom=AdditionAcrylicConstruction
-#geom=BoxMinusTubs0
-#geom=BoxMinusTubs1
-#geom=UnionOfHemiEllipsoids
-#geom=PolyconeWithMultipleRmin
-#geom=pmt_solid
-#geom=body_solid
-#geom=inner_solid
-#geom=inner1_solid
-#geom=inner2_solid
-#geom=XJfixtureConstruction
-#geom=AltXJfixtureConstruction
-#geom=AltXJfixtureConstructionU
-#geom=XJanchorConstruction
-#geom=AnnulusBoxUnion 
-#geom=AnnulusTwoBoxUnion 
-#geom=AnnulusOtherTwoBoxUnion 
-#geom=AnnulusCrossTwoBoxUnion 
-#geom=AnnulusFourBoxUnion 
-#geom=CylinderFourBoxUnion 
-geom=BoxFourBoxUnion 
-#geom=BoxFourBoxContiguous 
-#geom=BoxCrossTwoBoxUnion 
-#geom=BoxThreeBoxUnion 
-
-#geom=SphereWithPhiSegment
-#geom=SphereWithPhiCutDEV
-#geom=GeneralSphereDEV
-#geom=SphereWithPhiSegment
-#geom=PolyconeWithMultipleRmin
-#geom=Orb
-
-## NB: CATGEOM LINE BELOW MAY BE OVERRIDING THE ABOVE GEOM SETTING 
-#export GEOM=${GEOM:-$geom}
-
-source $PWD/../bin/GEOM.sh trim    ## sets GEOM envvar with projection suffix eg _XZ trimmed 
 
 # pick the Solid or Volume binary depending on GEOM
 
@@ -130,8 +87,6 @@ case $GEOM in
 esac
 
 # TODO: arrange auto-detection of Solid OR Volume so can then have single executable 
-
-
 geoscript=../extg4/${GEOM}.sh 
 
 if [ -f "$geoscript" ]; then

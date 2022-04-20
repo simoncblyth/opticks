@@ -116,7 +116,8 @@ if __name__ == '__main__':
 
     log.info("fold0.base %s " % fold0.base )
 
-    gsmeta = NPMeta(fold0.gs_meta)
+    #gsmeta = NPMeta(fold0.gs_meta)
+    gsmeta = fold0.gs_meta
 
     grid = GridSpec(fold0.peta, gsmeta)
     is_planar = not grid.axes is None and len(grid.axes) == 2 
