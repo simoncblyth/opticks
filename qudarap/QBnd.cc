@@ -11,6 +11,8 @@
 
 #include "QTex.hh"
 #include "QBnd.hh"
+
+#include "NPDigest.hh"
 #include "PLOG.hh"
 
 const plog::Severity QBnd::LEVEL = PLOG::EnvLevel("QBnd", "INFO"); 
@@ -21,40 +23,214 @@ const QBnd* QBnd::Get(){ return INSTANCE ; }
 
 
 /**
+QBnd::DescDigest
+--------------------
 
-Possible split example::
- 
-    (44, 4, 2, 761, 4, ) =>  44*4* (2, 761, 4, )    
+bnd with shape (44, 4, 2, 761, 4, )::
 
-     ni : boundaries
-     nj : 0:omat/1:osur/2:isur/3:imat  
-     nk : 0 or 1 property group
-     nl : wavelengths
-     nm : payload   
+   ni : boundaries
+   nj : 0:omat/1:osur/2:isur/3:imat  
+   nk : 0 or 1 property group
+   nl : wavelengths
+   nm : payload   
 
+::
 
-   NP* omat =  NP::MakeItemCopy(src, b, 0 ); 
-   NP* osur =  NP::MakeItemCopy(src, b, 1 ); 
-   NP* isur =  NP::MakeItemCopy(src, b, 2 ); 
-   NP* imat =  NP::MakeItemCopy(src, b, 3 ); 
+    2022-04-20 14:53:14.544 INFO  [4031964] [test_DescDigest@133] 
+    5acc01c3 79cfae67 79cfae67 5acc01c3  Galactic///Galactic
+    5acc01c3 79cfae67 79cfae67 8b22bf98  Galactic///Rock
+    8b22bf98 79cfae67 79cfae67 5acc01c3  Rock///Galactic
+    8b22bf98 79cfae67 0a5eab3f c2759ba7  Rock//Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock/Air
+    8b22bf98 79cfae67 79cfae67 8b22bf98  Rock///Rock
+    8b22bf98 79cfae67 0a5eab3f c2759ba7  Rock//Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox/Air
+    c2759ba7 79cfae67 79cfae67 8b22bf98  Air///Steel
 
-HMM: dont need to copy the sub items, just need digest of the bytes 
-presented together with the omat/osur/isur/imat name 
+**/
 
-std::string QBnd::Dump(const NP* bnd) 
+std::string QBnd::DescDigest(const NP* bnd, int w ) 
 {
+    int ni = bnd->shape[0] ; 
+    int nj = bnd->shape[1] ;
+ 
+    std::vector<std::string> names ; 
+    bnd->get_names(names); 
+    assert( int(names.size()) == ni ); 
+
     std::stringstream ss ; 
-    unsigned ni = bnd->shape[0] ; 
-    for(unsigned i=0 ; i < ni ; i++)
+    for(int i=0 ; i < ni ; i++)
     {
+        ss << std::setw(3) << i << " " ; 
+        for(int j=0 ; j < nj ; j++) 
+        {
+            std::string dig = NPDigest::ArrayItem(bnd, i, j ) ; 
+            std::string sdig = dig.substr(0, w); 
+            ss << std::setw(w) << sdig << " " ; 
+        }
+        ss << " " << names[i] << std::endl ; 
     }
     std::string s = ss.str();  
     return s ; 
 }
 
+
+/**
+QBnd::Add
+------------------------
+
+Creates new array containing the src array with extra boundaries constructed 
+from materials and surfaces already present in the src array as configured by the 
+specs argument. 
+
+**/
+NP* QBnd::Add( const NP* src, const char* specs_, char delim ) // static 
+{
+    std::vector<std::string> specs ; 
+
+    std::stringstream ss;
+    ss.str(specs_)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) if(strlen(s.c_str()) > 1 ) specs.push_back(s) ; 
+    LOG(info) << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
+
+    return QBnd::Add(src, specs ); 
+}
+
+/**
+QBnd::GetPerfectValues
+-------------------------
+
+bnd with shape (44, 4, 2, 761, 4, )::
+
+   ni : boundaries
+   nj : 0:omat/1:osur/2:isur/3:imat  
+   nk : 0 or 1 property group
+   nl : wavelengths
+   nm : payload   
+
 **/
 
+void QBnd::GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned nl, unsigned nm, const char* name ) // static 
+{
+    LOG(info) << name << " nk " << nk << " nl " << nl << " nm " << nm ; 
 
+    assert( nk == 2 ); 
+    assert( nl > 0 ); 
+    assert( nm == 4 ); 
+
+    float4 payload[2] ; 
+    if(     strstr(name, "perfectDetectSurface"))   payload[0] = make_float4(  1.f, 0.f, 0.f, 0.f );
+    else if(strstr(name, "perfectAbsorbSurface"))   payload[0] = make_float4(  0.f, 1.f, 0.f, 0.f );
+    else if(strstr(name, "perfectSpecularSurface")) payload[0] = make_float4(  0.f, 0.f, 1.f, 0.f );
+    else if(strstr(name, "perfectDiffuseSurface"))  payload[0] = make_float4(  0.f, 0.f, 0.f, 1.f );
+    else                                            payload[0] = make_float4( -1.f, -1.f, -1.f, -1.f ); 
+   
+    payload[1] = make_float4( -1.f, -1.f, -1.f, -1.f ); 
+
+    values.resize( nk*nl*nm ); 
+    unsigned idx = 0 ; 
+    unsigned count = 0 ; 
+    for(unsigned k=0 ; k < nk ; k++)          // over payload groups
+    {
+        const float4& pay = payload[k] ;  
+        for(unsigned l=0 ; l < nl ; l++)      // payload repeated over wavelength samples
+        {
+            for(unsigned m=0 ; m < nm ; m++)  // over payload values 
+            {
+                 idx = k*nl*nm + l*nm + m ;             
+                 assert( idx == count ); 
+                 count += 1 ; 
+                 switch(m)
+                 {
+                     case 0: values[idx] = pay.x ; break ; 
+                     case 1: values[idx] = pay.y ; break ; 
+                     case 2: values[idx] = pay.z ; break ; 
+                     case 3: values[idx] = pay.w ; break ; 
+                 } 
+            }
+        }
+    }
+} 
+
+
+NP* QBnd::Add( const NP* src, const std::vector<std::string>& specs ) // static 
+{
+    unsigned ndim = src->shape.size() ; 
+    assert( ndim == 5 ); 
+    unsigned ni = src->shape[0] ; 
+    unsigned nj = src->shape[1] ; 
+    unsigned nk = src->shape[2] ; 
+    unsigned nl = src->shape[3] ; 
+    unsigned nm = src->shape[4] ;
+
+    assert( src->ebyte == 4 ); 
+    assert( ni > 0 );  
+    assert( nj == 4 );   // expecting 2nd dimension to be 4: omat/osur/isur/imat 
+
+    unsigned src_bytes = src->arr_bytes() ; 
+    unsigned bnd_bytes = src->ebyte*src->itemsize_(0) ; 
+    unsigned sub_bytes = src->ebyte*src->itemsize_(0,0) ; 
+    assert( bnd_bytes == 4*sub_bytes ); 
+
+    NP* dst = new NP(src->dtype);
+
+    std::vector<int> dst_shape(src->shape); 
+    dst_shape[0] += specs.size() ; 
+    dst->set_shape(dst_shape) ; 
+
+    std::vector<std::string> names ; 
+    src->get_names(names); 
+
+    std::vector<std::string> dst_names(names); 
+
+    unsigned offset = 0 ; 
+    memcpy( dst->bytes() + offset, src->bytes(), src_bytes );  
+    offset += src_bytes ; 
+
+    for(unsigned b=0 ; b < specs.size() ; b++)
+    {
+        const char* spec = SStr::Trim(specs[b].c_str());   
+        dst_names.push_back(spec); 
+
+        std::vector<std::string> elem ; 
+        SStr::Split(spec, '/', elem );  
+        assert( elem.size() == 4 ); 
+
+        for(unsigned s=0 ; s < 4 ; s++ )
+        {
+            const char* qname = elem[s].c_str(); 
+            unsigned i, j ; 
+            bool found = FindName(i, j, qname, names ); 
+            
+            const char* ibytes = nullptr ; 
+            unsigned num_bytes = 0 ; 
+
+            if(found)
+            { 
+                src->itembytes_( &ibytes, num_bytes, i, j );         
+            }
+            else if(strstr(qname, "perfect"))
+            {
+                std::vector<float> values ; 
+                GetPerfectValues( values, nk, nl, nm, qname ); 
+                ibytes = (const char*)values.data(); 
+                num_bytes = sizeof(float)*values.size();   
+            }
+            else
+            {
+                LOG(fatal) << " FAILED to find qname " << qname ;  
+                assert( 0 ); 
+            }
+
+            assert( ibytes != nullptr ); 
+            assert( num_bytes == sub_bytes ); 
+
+            memcpy( dst->bytes() + offset,  ibytes, num_bytes ); 
+            offset += sub_bytes ; 
+        }
+    }
+    dst->set_names( dst_names ); 
+    return dst ; 
+}
 
 
 /**
@@ -72,13 +248,17 @@ QBnd::QBnd(const NP* buf)
     tex(MakeBoundaryTex(src))
 {
     buf->get_names(bnames) ;  // vector of string from NP metadata
-
-    std::cout << "QBnd::QBnd bnames " << bnames.size() << std::endl ; 
-    for(unsigned i=0 ; i < bnames.size() ; i++) std::cout << bnames[i] << std::endl ; 
     assert( bnames.size() > 0 ); 
     INSTANCE = this ; 
 } 
 
+std::string QBnd::getItemDigest( int i, int j, int w ) const 
+{
+    std::string dig = NPDigest::ArrayItem(src, i, j ) ; 
+    std::string sdig = dig.substr(0, w); 
+    return sdig ; 
+}
+ 
 
 std::string QBnd::descBoundary() const
 {
@@ -229,6 +409,37 @@ unsigned QBnd::getMaterialLine( const char* material ) const
     }
     return line ; 
 }
+
+
+bool QBnd::findName( unsigned& i, unsigned& j, const char* qname ) const 
+{
+    return FindName(i, j, qname, bnames); 
+}
+
+bool QBnd::FindName( unsigned& i, unsigned& j, const char* qname, const std::vector<std::string>& names ) 
+{
+    i = MISSING ; 
+    j = MISSING ; 
+    for(unsigned b=0 ; b < names.size() ; b++) 
+    {
+        std::vector<std::string> elem ; 
+        SStr::Split(names[b].c_str(), '/', elem );  
+
+        for(unsigned s=0 ; s < 4 ; s++)
+        {
+            const char* name = elem[s].c_str(); 
+            if(strcmp(name, qname) == 0 )
+            {
+                i = b ; 
+                j = s ; 
+                return true ; 
+            }
+        }
+    }
+    return false ;  
+}
+
+
 
 
 /**

@@ -109,8 +109,7 @@ TODO: a test more like actual usage.
 void test_lookup_technical(QBnd& qb)
 {
     NP* lookup = qb.lookup(); 
-    int create_dirs = 2 ; // 2:dirpath
-    const char* dir = SPath::Resolve("$TMP/QBndTest", create_dirs) ; 
+    const char* dir = SPath::Resolve("$TMP/QBndTest", DIRPATH) ; 
     LOG(info) << " save to " << dir  ; 
     lookup->save(dir, "dst.npy"); 
     qb.src->save(dir, "src.npy") ; 
@@ -129,8 +128,79 @@ void test_getBoundaryIndices(const QBnd& qb)
 }
 
 
+void test_DescDigest(const QBnd& qb )
+{
+    LOG(info) << std::endl << QBnd::DescDigest(qb.src,8) ; 
+}
 
+void test_findName(const QBnd& qb)
+{
+    std::vector<std::string> names = {
+        "Air", 
+        "Rock", 
+        "Water", 
+        "Acrylic",
+        "Cream", 
+        "vetoWater", 
+        "Cheese", 
+        "",
+        "Galactic", 
+        "Pyrex", 
+        "PMT_3inch_absorb_logsurf1", 
+        "Steel", 
+        "Steel_surface",
+        "PE_PA",
+        "Candy",
+        ""
+      } ; 
 
+    unsigned i, j ; 
+
+    for(unsigned a=0 ; a < names.size() ; a++ )
+    {
+         const std::string& n = names[a] ; 
+         bool found = qb.findName(i,j,n.c_str() ); 
+
+         std::cout << std::setw(30) << n << " " ; 
+         if(found)  
+         {
+            std::cout 
+                << "(" 
+                << std::setw(3) << i 
+                << ","  
+                << std::setw(3) << j
+                << ")"
+                << " "
+                << qb.getItemDigest(i, j )
+                ;
+         }
+         else
+         {
+            std::cout << "-" ;  
+         }
+         std::cout << std::endl ;  
+    }
+}
+
+void test_Add(const NP* src)
+{
+    const char* spec = R"LITERAL(
+    Air///Water
+    Air///Water
+    Water///Air
+    Water/perfectAbsorbSurface/perfectAbsorbSurface/Air
+    Rock//perfectAbsorbSurface/Air
+)LITERAL" ; 
+
+    std::cout << "src" << std::endl << QBnd::DescDigest(src,8) ; 
+    NP* dst = QBnd::Add(src, spec ); 
+    std::cout << "dst" << std::endl << QBnd::DescDigest(dst,8) ; 
+
+    const char* fold = SPath::Resolve("$TMP/QBndTest/Add", DIRPATH); 
+    LOG(info) << " fold " << fold ; 
+    src->save(fold, "src.npy"); 
+    dst->save(fold, "dst.npy"); 
+}
 
 int main(int argc, char** argv)
 {
@@ -148,9 +218,12 @@ int main(int argc, char** argv)
     test_getMaterialLine(qb); 
     test_lookup_technical(qb); 
     test_getBoundarySpec(qb); 
-*/
-
     test_getBoundaryIndices(qb); 
+
+    test_DescDigest(qb); 
+    test_findName(qb); 
+*/
+    test_Add(qb.src); 
 
 
     return 0 ; 

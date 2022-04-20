@@ -26,9 +26,38 @@ What does event handling plug into with new workflow
 TODO : cxsim.sh 
 -------------------
 
+* arrange raindrop simulation to give rainbow histories, so have some physical histories 
+  for developing the compressed record
 
-* arrange raindrop simulation to give rainbow histories, so have some 
-  physical histories to use for developing the compressed record
+  * need container box with Rock//perfectAbsorbSurface/Air using new QBnd::Add capabilities
+
+  * will need to bring over some of the old TORCH genstep generation as
+    need more stats than with the simple duplicating PHOTON_CARRIER
+
+* compressed sequence recording (seqhis seqmat) is needed for OpticksEvent 
+  as the full record is only appropriate for debugging with small numbers of photons 
+
+* once compressed record operational switch off full recording and bump up stats
+
+* photon indexing (using thrust sorting) needs to be ported over : probably this can be done in sysrap/SU
+  together with the already ported stream compaction for hit downloading
+
+* thence will need OpticksEvent to start becoming complete
+
+* then try switching the G4Opticks engine to use CSGOptiX either directly or via some slim middleware "Engine" 
+ 
+* get generation going in new workflow to fully check the QEvent/qevent design  
+
+* review old and new looking for other aspects that need to be ported over 
+
+* OpticksEvent components and hookup to allow ab.py validation machinery to work with new workflow
+
+  * move OpticksEvent down to sysrap : to keep simple primary dependency chain sysrap-qudarap-csgoptix
+
+
+
+DONE: QBnd::Add QBnd::GetPerfectValues sysrap/NPDigest NP::itembytes QBnd::DescDigest 
+----------------------------------------------------------------------------------------
  
 * the old perfect surfaces are useful for these kind of tests ? what happened to those ? they were in GGeo ? 
 * GSurfaceLib::addPerfectSurfaces
@@ -37,12 +66,10 @@ TODO : cxsim.sh
 
   * it feels kinda dirty and cheating to do things back at GGeo level like that 
 
-* perhaps could add extra_bnd.npy at QBnd level ?
+* perhaps could add extra_bnd.npy at QBnd level ? DONE THIS
 
   * actually starting from a simple Geant4 geometry and doing a conversion on it 
     is the cleanest way if want to compare the simple simulation with Geant4 anyhow
-
-  * also Yuxiang needs an example like that too 
 
   * YES: but having a shortcut way to add simple boundaries also useful, as that just 
     needs some interesting NP gymastics to load the base bnd and create a compatibly shaped 5D array 
@@ -50,9 +77,11 @@ TODO : cxsim.sh
 
     * QBndTest is the natural place to develop this 
     * hmm would be good to be able to put together any boundary using the material and surface props 
-      already present : so that needs to extract QMaterial and QSurf  
+      already present : so that needs to extract QMaterial and QSurf : DID THIS WITHOUT ANY NEW STRUCTS 
     * obvious way to test that capability is to pull apart the QBnd into QMateral and QSurf 
       and then put it back together again and verify get perfect match  
+
+      * DID NOT DO THAT AS THE SUB-ITEM DIGESTS MAKE THE VERACITY PLAIN TO SEE WITH QBnd::DescDigest 
 
 
 ::
@@ -81,24 +110,7 @@ TODO : cxsim.sh
   * HMM: shortcut : artificially make a MISS result in surface absorb 
   * then can develop the compressed history recording so can switch off the expensive full step record
     and then do some high stats testing with raindrop geometry 
-  
-
-* get generation going in new workflow to fully check the QEvent/qevent design  
-
-* review old and new looking for aspects that need to be ported over 
-
-  * compressed sequence recording (seqhis seqmat) is needed for OpticksEvent 
-    as the full record is only appropriate for debugging with small numbers of photons 
-
-  * photon indexing (using thrust sorting) needs to be ported over : probably this can be done in sysrap/SU
-    together with stream compaction  
-
-* see if it makes sense to use CSGOptiX directly from G4Opticks OR perhaps via some slim middleware "Engine" 
-
-* OpticksEvent components and hookup to allow ab.py validation machinery to work with new workflow
-
-  * move OpticksEvent down to sysrap : to keep simple primary dependency chain sysrap-qudarap-csgoptix
-
+ 
 
 
 DONE: in CSGOptiX/cxsim.sh check new CSGOptiXSimulateTest with OpticksGenstep_PHOTON_CARRIER and a simple geometry

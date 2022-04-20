@@ -27,13 +27,23 @@ struct QUDARAP_API QBnd
     static const QBnd*          INSTANCE ; 
     static const QBnd*          Get(); 
 
+    static void GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned nl, unsigned nm, const char* name ); 
+    static NP*  Add( const NP* src, const char* specs, char delim='\n' ); 
+    static NP*  Add( const NP* src, const std::vector<std::string>& specs ); 
+    static std::string DescDigest(const NP* bnd, int w=16) ; 
+
+    static bool FindName( unsigned& i, unsigned& j, const char* qname, const std::vector<std::string>& names ); 
+    bool   findName( unsigned& i, unsigned& j, const char* qname ) const ; 
+
     std::vector<std::string>  bnames ; 
     const NP*      dsrc ;  
     const NP*      src ;  
     QTex<float4>*  tex ; 
 
+    void composeBoundary( std::vector<char>& bytes, const char* spec ) const ; 
     QBnd(const NP* buf); 
 
+    std::string getItemDigest( int i, int j, int w=8 ) const ; 
     std::string descBoundary() const ;
     std::string desc() const ; 
 

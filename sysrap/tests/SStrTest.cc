@@ -685,12 +685,14 @@ int main(int argc , char** argv )
     test_Save_PWD(); 
     test_Extract(); 
     test_Extract_float(); 
+    */
     test_Trim(); 
+    /*
     test_ExtractLong(); 
     test_HeadFirst_HeadLast(); 
     test_FormatInt(); 
-    */
     test_Format_Ellipsis(); 
+    */
 
     return 0  ; 
 }
