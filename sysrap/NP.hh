@@ -118,6 +118,8 @@ struct NP
 
     unsigned  index(  int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0) const ; 
     unsigned  index0( int i,  int j=-1,  int k=-1,  int l=-1, int m=-1, int o=-1) const ; 
+    unsigned  itemsize_(int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1) const ; 
+    void      itembytes_(const char** start,  unsigned& num_bytes, int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1 ) const  ; 
 
     template<typename T> T           get( int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0) const ; 
     template<typename T> void        set( T val, int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0 ) ; 
@@ -677,11 +679,14 @@ inline unsigned NP::index( int i,  int j,  int k,  int l, int m, int o ) const
     return  ii*nj*nk*nl*nm*no + jj*nk*nl*nm*no + kk*nl*nm*no + ll*nm*no + mm*no + oo ;
 }
 
+/**
+NP::index0 : Provides element offset 
+---------------------------------------
+**/
 
 inline unsigned NP::index0( int i,  int j,  int k,  int l, int m, int o) const 
 {
     unsigned nd = shape.size() ; 
-
     unsigned ni = nd > 0 ? shape[0] : 1 ; 
     unsigned nj = nd > 1 ? shape[1] : 1 ; 
     unsigned nk = nd > 2 ? shape[2] : 1 ; 
@@ -706,8 +711,19 @@ inline unsigned NP::index0( int i,  int j,  int k,  int l, int m, int o) const
     return  ii*nj*nk*nl*nm*no + jj*nk*nl*nm*no + kk*nl*nm*no + ll*nm*no + mm*no + oo ;
 }
 
+inline unsigned NP::itemsize_(int i, int j, int k, int l, int m, int o) const
+{
+    return NPS::itemsize_(shape, i, j, k, l, m, o) ; 
+}
 
+inline void NP::itembytes_(const char** start,  unsigned& num_bytes,  int i,  int j,  int k,  int l, int m, int o ) const 
+{
+    unsigned idx0 = index0(i,j,k,l,m,o) ; 
+    *start = bytes() + idx0*ebyte ;  
 
+    unsigned sz = itemsize_(i, j, k, l, m, o) ; 
+    num_bytes = sz*ebyte ; 
+}
 
 
 
@@ -956,7 +972,6 @@ inline NP* NP::MakeItemCopy(  const NP* src, int i, int j, int k, int l, int m, 
         << " sub_shape " << NPS::desc(sub_shape)
         << std::endl
         ; 
-
 
     NP* dst = new NP(src->dtype, sub_shape); 
     memcpy( dst->bytes(), src->bytes() + idx*src->ebyte , dst->arr_bytes() ); 

@@ -75,7 +75,8 @@ class SYSRAP_API SDigest
        static std::string digest( void* buffer, int len );
        static std::string digest( std::vector<std::string>& ss);
        static std::string digest_skipdupe( std::vector<std::string>& ss);
-       
+
+       static std::string Buffer(const char *buffer, int length) ; 
 
    public:
        SDigest();

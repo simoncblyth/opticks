@@ -287,10 +287,51 @@ struct NPS
         return sz ;  
     }
 
+    static int itemsize_(const std::vector<int>& shape, int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1 )
+    {
+        // assert only one transition from valid indices to skipped indices 
+        if( i == -1 )                                                      assert( j == -1 && k == -1 &&  l == -1 && m == -1 && o == -1 ) ;  
+        if( i > -1 && j == -1 )                                            assert(            k == -1 &&  l == -1 && m == -1 && o == -1 ) ;  
+        if( i > -1 && j > -1 && k == -1 )                                  assert(                        l == -1 && m == -1 && o == -1 ) ;  
+        if( i > -1 && j > -1 && k >  -1 && l == -1 )                       assert(                                   m == -1 && o == -1 ) ;  
+        if( i > -1 && j > -1 && k >  -1 && l >  -1 && m == -1 )            assert(                                              o == -1 ) ;  
+        if( i > -1 && j > -1 && k >  -1 && l >  -1 && m >  -1 && o == -1 ) assert(                                              true    ) ;  
+
+        unsigned dim0 = 0 ; 
+        if( i == -1 )                                                      dim0 = 0 ; 
+        if( i > -1 && j == -1 )                                            dim0 = 1 ; 
+        if( i > -1 && j > -1 && k == -1 )                                  dim0 = 2 ; 
+        if( i > -1 && j > -1 && k >  -1 && l == -1 )                       dim0 = 3 ;  
+        if( i > -1 && j > -1 && k >  -1 && l >  -1 && m == -1 )            dim0 = 4 ; 
+        if( i > -1 && j > -1 && k >  -1 && l >  -1 && m >  -1 && o == -1 ) dim0 = 5 ; 
+        if( i > -1 && j > -1 && k >  -1 && l >  -1 && m >  -1 && o >  -1 ) dim0 = 6 ; 
+
+        int sz = 1;
+        if( dim0 < shape.size() )
+        {
+            for(unsigned i=dim0; i<shape.size(); ++i) sz *= shape[i] ;
+        }
+#ifdef DEBUG_NPU
+        std::cout 
+            << "NPS::itemsize_"
+            << "(" << std::setw(3) << i 
+            << " " << std::setw(3) << j
+            << " " << std::setw(3) << k
+            << " " << std::setw(3) << l
+            << " " << std::setw(3) << m
+            << " " << std::setw(3) << o
+            << ")"
+            << " " << sz 
+            << std::endl 
+            ; 
+#endif
+        return sz ;  
+    }
 
     std::string desc() const { return desc(shape) ; }
     std::string json() const { return json(shape) ; }
     int size() const { return size(shape) ; }
+     
 
     static int ni_(const std::vector<int>& shape) { return shape.size() > 0 ? shape[0] : 1 ;  }
     static int nj_(const std::vector<int>& shape) { return shape.size() > 1 ? shape[1] : 1 ;  }

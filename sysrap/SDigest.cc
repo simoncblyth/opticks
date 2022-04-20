@@ -237,6 +237,39 @@ char* md5digest_str2md5_monolithic(const char *buffer, int length)
 }
 
 
+std::string SDigest::Buffer(const char *buffer, int length) 
+{
+    MD5_CTX c;
+    MD5_Init(&c);
+
+    const int blocksize = 512 ; 
+    while (length > 0) 
+    {
+        if (length > blocksize) {
+            MD5_Update(&c, buffer, blocksize);
+        } else {
+            MD5_Update(&c, buffer, length);
+        }
+        length -= blocksize ;
+        buffer += blocksize ;
+    }
+
+    unsigned char digest[16];
+    MD5_Final(digest, &c);
+
+    // 16 binary bytes, into 32 char hex string
+
+    char buf[32+1] ; 
+    for (int n = 0; n < 16; ++n) std::snprintf( &buf[2*n], 32+1, "%02x", (unsigned int)digest[n]) ;
+    buf[32] = '\0' ; 
+
+    return std::string(buf, buf + 32); 
+}
+
+
+
+
+
 
 void md5digest_str2md5_update(MD5_CTX& ctx, char* buffer, int length) 
 {
@@ -308,8 +341,6 @@ void SDigest::update(const std::string& str)
 
 void SDigest::update(char* buffer, int length)
 {
-
-
     md5digest_str2md5_update(m_ctx, buffer, length );
 }
 
@@ -317,9 +348,6 @@ void SDigest::update_str(const char* str )
 {
     md5digest_str2md5_update(m_ctx, (char*)str, strlen(str) );
 }
-
-
-
 
 
 char* SDigest::finalize()
@@ -368,6 +396,7 @@ std::string SDigest::digest_skipdupe( std::vector<std::string>& ss)
     }
     return dig.finalize();
 }
+
 
 
 

@@ -18,6 +18,45 @@ const plog::Severity QBnd::LEVEL = PLOG::EnvLevel("QBnd", "INFO");
 const QBnd* QBnd::INSTANCE = nullptr ; 
 const QBnd* QBnd::Get(){ return INSTANCE ; }
 
+
+
+/**
+
+Possible split example::
+ 
+    (44, 4, 2, 761, 4, ) =>  44*4* (2, 761, 4, )    
+
+     ni : boundaries
+     nj : 0:omat/1:osur/2:isur/3:imat  
+     nk : 0 or 1 property group
+     nl : wavelengths
+     nm : payload   
+
+
+   NP* omat =  NP::MakeItemCopy(src, b, 0 ); 
+   NP* osur =  NP::MakeItemCopy(src, b, 1 ); 
+   NP* isur =  NP::MakeItemCopy(src, b, 2 ); 
+   NP* imat =  NP::MakeItemCopy(src, b, 3 ); 
+
+HMM: dont need to copy the sub items, just need digest of the bytes 
+presented together with the omat/osur/isur/imat name 
+
+std::string QBnd::Dump(const NP* bnd) 
+{
+    std::stringstream ss ; 
+    unsigned ni = bnd->shape[0] ; 
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+    }
+    std::string s = ss.str();  
+    return s ; 
+}
+
+**/
+
+
+
+
 /**
 QBnd::QBnd
 ------------

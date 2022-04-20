@@ -27,6 +27,28 @@
 #include "SDigest.hh"
 #include "OPTICKS_LOG.hh"
 
+
+
+void test_Buffer()
+{
+   char buf[6] ; 
+   buf[0] = 'h' ; 
+   buf[1] = 'e' ; 
+   buf[2] = 'l' ; 
+   buf[3] = 'l' ; 
+   buf[4] = 'o' ; 
+   buf[5] = '\0' ; 
+
+   std::string dig = SDigest::Buffer( buf, 5 ); 
+
+   LOG(info) << buf
+              << " --> "
+              << dig
+              ;
+}
+
+
+
 void test_static()
 {
     const char* str = "hello" ;
@@ -197,16 +219,15 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_static();
-    //test_update();
-
-    //test_digest_vec();
-    //test_IsDigest();
-
-
+    test_Buffer(); 
+    test_static();
+    test_update();
+    /*
+    test_digest_vec();
+    test_IsDigest();
     test_main(argc, argv);
-
-    //test_DigestPathInByteRange(); 
+    test_DigestPathInByteRange(); 
+    */
 
 
     return 0 ; 

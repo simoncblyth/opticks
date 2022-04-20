@@ -28,6 +28,8 @@ set(TEST_SOURCES
    SSortKVTest.cc
    SPairVecTest.cc
    SDigestTest.cc
+   NPDigestTest.cc
+   
    PLogTest.cc 
    PLOG_Test.cc 
    SYSRAP_LOG_Test.cc 
