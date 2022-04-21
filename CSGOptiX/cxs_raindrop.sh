@@ -8,7 +8,11 @@ Grab from remote::
     cx
     ./tmp_grab.sh 
 
-    ./cf_grab.sh    ## HUH: actually the tmp_grab.sh should be getting persisted CSGFoundry from within the GEOM dir 
+    ## ./cf_grab.sh    
+    ##     actually the tmp_grab.sh should be getting the specific persisted CSGFoundry 
+    ##     should not need the remote central one  ?
+
+    PIDX=0 ./cxs_raindrop.sh  
   
 EOU
 }

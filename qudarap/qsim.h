@@ -70,7 +70,7 @@ struct qsim
 
     quad*               optical ;  
     qprop<T>*           prop ;  
-    int                 pidx ; 
+    int                 pidx ;   // from PIDX envvar
 
     static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
  
@@ -668,8 +668,9 @@ inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, quad4& p, 
     const float& scattering_length = s.material1.z ; 
     const float& reemission_prob = s.material1.w ; 
     const float& group_velocity = s.m1group2.x ; 
-
     const float& distance_to_boundary = prd->q0.f.w ; 
+
+
 
     float3* position = (float3*)&p.q0.f.x ; 
     float* time = &p.q0.f.w ;  
@@ -1257,6 +1258,8 @@ inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s,
     unsigned flag = 0 ;  
 
     int command = propagate_to_boundary( flag, p, prd, s, rng, idx ); 
+    //if( idx == 0 ) 
+    printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", idx, bounce, command, flag, s.optical.x  );   
 
     if( command == BOUNDARY )
     {

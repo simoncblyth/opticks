@@ -193,7 +193,7 @@ void test_Add(const NP* src)
 )LITERAL" ; 
 
     std::cout << "src" << std::endl << QBnd::DescDigest(src,8) ; 
-    NP* dst = QBnd::Add(src, spec ); 
+    NP* dst = QBnd::AddBoundary(src, spec ); 
     std::cout << "dst" << std::endl << QBnd::DescDigest(dst,8) ; 
 
     const char* fold = SPath::Resolve("$TMP/QBndTest/Add", DIRPATH); 
@@ -202,17 +202,39 @@ void test_Add(const NP* src)
     dst->save(fold, "dst.npy"); 
 }
 
+void test_Add_2()
+{
+    const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
+    LOG(info) << " cfbase " << cfbase ; 
+
+    std::vector<std::string> specs = {"Air///Water", "Water/perfectAbsorbSurface/perfectAbsorbSurface/Air" } ; 
+
+    NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
+    NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
+
+    LOG(info) << "BEFORE " << std::endl << QBnd::DescOptical(optical, bnd ) << std::endl ; 
+
+    NP* opticalplus = nullptr ; 
+    NP* bndplus = nullptr ; 
+
+    QBnd::Add( &opticalplus, &bndplus, optical, bnd, specs ); 
+
+    LOG(info) << "AFTER " << std::endl << QBnd::DescOptical(opticalplus, bndplus ) << std::endl ; 
+}
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+/*
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
     LOG(info) << " cfbase " << cfbase ; 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 
     QBnd qb(bnd) ; 
 
-/*
     test_descBoundary(qb); 
     test_getBoundaryLine(qb); 
     test_getMaterialLine(qb); 
@@ -222,8 +244,9 @@ int main(int argc, char** argv)
 
     test_DescDigest(qb); 
     test_findName(qb); 
-*/
     test_Add(qb.src); 
+*/
+    test_Add_2(); 
 
 
     return 0 ; 

@@ -72,7 +72,62 @@ std::string QBnd::DescDigest(const NP* bnd, int w )
     return s ; 
 }
 
+/**
+QBnd::Add
+------------
 
+optical buffer has 4 uint for each species 
+and 4 species for each boundary as normal  
+
+Water/Steel_surface/Steel_surface/Steel
+  19    0    0    0 
+  21    0    3   20 
+  21    0    3   20 
+   4    0    0    0 
+
+**/
+
+
+void QBnd::Add( NP** opticalplus, NP** bndplus, const NP* optical, const NP* bnd,  const std::vector<std::string>& specs ) // static 
+{
+    *opticalplus = AddOptical(optical, bnd->names, specs ); 
+    *bndplus = AddBoundary( bnd, specs );     
+}
+
+
+std::string QBnd::DescOptical(const NP* optical, const NP* bnd )
+{
+    bool consistent = optical->shape[0] == bnd->shape[0]*4 && bnd->shape[0] == int(bnd->names.size())  ;   
+
+    std::stringstream ss ; 
+    ss << "QBnd::DescOptical"
+       << " optical " << optical->sstr() 
+       << " bnd " << bnd->sstr() 
+       << " bnd.names " << bnd->names.size()
+       << " consistent " << ( consistent ? "YES" : "NO:ERROR" )   
+       << std::endl 
+       ;   
+
+    //assert(consistent); 
+    assert( optical->shape.size() == 2 );
+
+    unsigned ni = optical->shape[0] ; 
+    unsigned nj = optical->shape[1] ; 
+
+    const unsigned* oo = optical->cvalues<unsigned>();    
+    for(unsigned i=0 ; i < ni ; i++) 
+    {   
+        if( i % 4 == 0 ) 
+        {   
+            unsigned b = i/4 ; 
+            ss << ( b < bnd->names.size() ? bnd->names[b] : "???" )  << std::endl ;   
+        }   
+        for(unsigned j=0 ; j < nj ; j++) ss << std::setw(4) << oo[i*nj+j] << " " ; 
+        ss << std::endl ; 
+    }   
+    std::string s = ss.str() ; 
+    return s ; 
+}
 
 /**
 QBnd::GetPerfectValues
@@ -132,8 +187,10 @@ void QBnd::GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned n
 
 
 
+
+
 /**
-QBnd::Add
+QBnd::AddBoundary
 ------------------------
 
 Creates new array containing the src array with extra boundaries constructed 
@@ -141,7 +198,7 @@ from materials and surfaces already present in the src array as configured by th
 specs argument. 
 
 **/
-NP* QBnd::Add( const NP* src, const char* specs_, char delim ) // static 
+NP* QBnd::AddBoundary( const NP* src, const char* specs_, char delim ) // static 
 {
     std::vector<std::string> specs ; 
     std::stringstream ss;
@@ -149,11 +206,90 @@ NP* QBnd::Add( const NP* src, const char* specs_, char delim ) // static
     std::string s;
     while (std::getline(ss, s, delim)) if(!SStr::Blank(s.c_str())) specs.push_back(s) ;
     LOG(info) << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
-    return QBnd::Add(src, specs ); 
+    return QBnd::AddBoundary(src, specs ); 
+}
+
+void QBnd::GetOpticalValues( uint4& item, unsigned i, unsigned j, const char* qname )
+{
+    item.x = i + 1 ; 
+    item.y = 99u ; 
+    item.z = 99u ; 
+    item.w = 99u ; 
+} 
+
+NP* QBnd::AddOptical( const NP* optical, const std::vector<std::string>& bnames, const std::vector<std::string>& specs )
+{
+    unsigned ndim = optical->shape.size() ; 
+    unsigned num_bnd = bnames.size() ; 
+    unsigned num_add = specs.size()  ; 
+    assert( ndim == 2 ); 
+    unsigned ni = optical->shape[0] ; 
+    unsigned nj = optical->shape[1] ; 
+    assert( 4*num_bnd == ni ); 
+    assert( nj == 4 ); 
+    assert( optical->ebyte == 4 && optical->uifc == 'u' ); 
+
+    unsigned item_bytes = optical->ebyte*optical->itemsize_(0); 
+    assert( item_bytes == 16u ); 
+
+    NP* opticalplus = new NP(optical->dtype); 
+    std::vector<int> opticalplus_shape(optical->shape); 
+    opticalplus_shape[0] += 4*num_add ; 
+    opticalplus->set_shape(opticalplus_shape) ; 
+
+    unsigned offset = 0 ; 
+    unsigned optical_arr_bytes = optical->arr_bytes() ; 
+    memcpy( opticalplus->bytes() + offset, optical->bytes(), optical_arr_bytes );  
+    offset += optical_arr_bytes ; 
+
+    uint4 item = make_uint4( 0u, 0u, 0u, 0u ); 
+
+    for(unsigned b=0 ; b < num_add ; b++)
+    {
+        const char* spec = SStr::Trim(specs[b].c_str());   
+        std::vector<std::string> elem ; 
+        SStr::Split(spec, '/', elem );  
+
+        bool four_elem = elem.size() == 4 ; 
+        if(four_elem == false) LOG(fatal) << " expecting four elem spec [" << spec << "] elem.size " << elem.size() ;  
+        assert(four_elem); 
+
+        for(unsigned s=0 ; s < 4 ; s++ )
+        {
+            const char* qname = elem[s].c_str(); 
+            unsigned i, j ; 
+            bool found = FindName(i, j, qname, bnames ); 
+            unsigned idx = i*4 + j ; 
+
+            const char* ibytes = nullptr ; 
+            unsigned num_bytes = 0 ; 
+
+            if(found)
+            { 
+                optical->itembytes_( &ibytes, num_bytes, idx );         
+            }
+            else if(strstr(qname, "perfect"))
+            {
+                GetOpticalValues(item, i, j, qname ); 
+                ibytes = (const char*)&item; 
+                num_bytes = sizeof(uint4); 
+            }
+            else
+            {
+                LOG(fatal) << " FAILED to find qname " << qname ;  
+                assert( 0 ); 
+            }
+            assert( ibytes != nullptr ); 
+            assert( num_bytes == item_bytes ); 
+            memcpy( opticalplus->bytes() + offset,  ibytes, item_bytes ); 
+            offset += item_bytes ; 
+        }
+    }
+    return opticalplus ; 
 }
 
 
-NP* QBnd::Add( const NP* dsrc, const std::vector<std::string>& specs ) // static 
+NP* QBnd::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) // static 
 {
     const NP* src = NarrowIfWide(dsrc) ;  
 

@@ -255,7 +255,7 @@ struct CSG_API CSGFoundry
 
     void write(const char* dir) const ;
     void write(const char* base, const char* rel) const ;
-    void saveBnd() const ; 
+    void saveOpticalBnd() const ; 
 
 
     // these argumentless methods require CFBASE envvar or geom member to be set 
@@ -320,7 +320,7 @@ struct CSG_API CSGFoundry
 
     void addMeshName(const char* name); 
     void addSolidLabel(const char* label); 
-    void setBnd( NP* bnd ); 
+    void setOpticalBnd( const NP* optical, const NP* bnd ); 
 
     std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
@@ -353,10 +353,10 @@ struct CSG_API CSGFoundry
     CSGPrim*    last_added_prim ; 
     CSGNode*    last_added_node ; 
 
-    NP*        bnd ; 
-    CSGName*    bd ;  // instanciated by setBnd using bnd->names
+    const NP*    optical ; 
+    const NP*        bnd ; 
+    const CSGName*    bd ;  // instanciated by setOpticalBnd using bnd->names
 
-    NP* optical ; 
     NP* icdf ; 
 
     std::string meta ; 

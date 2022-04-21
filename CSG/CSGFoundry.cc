@@ -48,10 +48,12 @@ std::string CSGFoundry::descComp() const
     return s ; 
 }
 
-void CSGFoundry::setBnd(NP* bnd_ )
+void CSGFoundry::setOpticalBnd(const NP* optical_, const NP* bnd_ )
 {
+    optical = optical_ ; 
     bnd = bnd_ ; 
     bd = bnd ? new CSGName(bnd->names) : nullptr  ; 
+
 }
 
 CSGFoundry::CSGFoundry()
@@ -67,9 +69,9 @@ CSGFoundry::CSGFoundry()
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
     last_added_prim(nullptr),
+    optical(nullptr),
     bnd(nullptr),
     bd(nullptr),
-    optical(nullptr),
     icdf(nullptr),
     meta(),
     fold(nullptr),
@@ -1831,8 +1833,8 @@ void CSGFoundry::write(const char* dir_) const
 }
 
 /**
-CSGFoundry::saveBnd
----------------------
+CSGFoundry::saveOpticalBnd
+----------------------------
 
 CAUTION : ONLY APPROPRIATE IN SMALL SCALE TESTING WHEN ARE DOING 
 DIRTY THINGS LIKE ADDING BOUNDARIES WITH QBnd::Add SEE FOR EXAMPLE
@@ -1840,9 +1842,15 @@ CSGOptiX/tests/CXRaindropTest.cc
 
 **/
 
-void CSGFoundry::saveBnd() const 
+void CSGFoundry::saveOpticalBnd() const 
 {
-    if(!bnd) return ; 
+    bool has_optical_bnd = bnd != nullptr && optical != nullptr ; 
+    if(has_optical_bnd == false)
+    {
+        LOG(fatal) << "has_optical_bnd " << has_optical_bnd ; 
+        return ;  
+    }
+
     const char* ocf = getOriginCFBase(); 
     assert(ocf)  ; 
     const char* dir = SPath::Resolve(ocf, RELDIR, DIRPATH );
@@ -1851,6 +1859,7 @@ void CSGFoundry::saveBnd() const
         << " originCFBase " << ocf  
         ;
 
+    optical->save(dir,  "optical.npy" ); 
     bnd->save(dir,  "bnd.npy" ); 
 }
 
@@ -1951,13 +1960,13 @@ void CSGFoundry::load( const char* dir_ )
     loadArray( plan  , dir, "plan.npy" , true );  
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
-    if(NP::Exists(dir, "optical.npy"))  optical = NP::Load(dir, "optical.npy"); 
     if(NP::Exists(dir, "icdf.npy")) icdf = NP::Load(dir, "icdf.npy"); 
 
-    if(NP::Exists(dir, "bnd.npy"))
+    if(NP::Exists(dir, "bnd.npy") && NP::Exists(dir, "optical.npy"))  
     {
-        NP* bnd_ = NP::Load(dir, "bnd.npy"); 
-        setBnd(bnd_); // instanciates bd CSGName using bnd.names
+        NP* optical_ = NP::Load(dir, "optical.npy"); 
+        NP* bnd_     = NP::Load(dir, "bnd.npy"); 
+        setOpticalBnd(optical_, bnd_);       // instanciates bd CSGName using bnd.names
     }
 
 }

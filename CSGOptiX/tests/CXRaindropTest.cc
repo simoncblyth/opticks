@@ -53,6 +53,8 @@ const char* OutDir(const Opticks& ok, const char* cfbase, const char* name)
     return outdir ; 
 }
 
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -78,14 +80,16 @@ int main(int argc, char** argv)
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
     LOG(info) << fd->descComp(); 
 
-    const char* specs = R"LITERAL(
-    Rock//perfectAbsorbSurface/Air
-    Air///Water
-    )LITERAL" ; 
 
-    NP* bndplus = QBnd::Add( fd->bnd, specs ); 
+    std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;  
 
-    QSim<float>::UploadComponents(fd->icdf, bndplus, fd->optical, rindexpath ); 
+    NP* optical_plus = nullptr ; 
+    NP* bnd_plus = nullptr ; 
+    QBnd::Add( &optical_plus, &bnd_plus, fd->optical, fd->bnd, specs );
+  
+    LOG(info) << std::endl << QBnd::DescOptical(optical_plus, bnd_plus)  ; 
+
+    QSim<float>::UploadComponents(fd->icdf, bnd_plus, optical_plus, rindexpath ); 
 
     const char* cfbase_local = SSys::getenvvar("CFBASE_LOCAL") ; 
     assert(cfbase_local) ; 
@@ -95,11 +99,13 @@ int main(int argc, char** argv)
     std::cout << std::setw(20) << "cfbase_local" << ":" << cfbase_local  << std::endl ; 
 
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
-    fdl->setBnd(bndplus);  // instanciates bd CSGName using bndplus.names
-    fdl->saveBnd();   // DIRTY: changing the bnd : ONLY APPROPRIATE IN SMALL TESTS
 
-    fdl->setPrimBoundary( 0, "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air" ); 
-    fdl->setPrimBoundary( 1, "Air///Water" ); 
+    fdl->setOpticalBnd(optical_plus, bnd_plus);    // instanciates bd CSGName using bndplus.names
+    fdl->saveOpticalBnd();   // DIRTY: persisting new bnd and optical : ONLY APPROPRIATE IN SMALL TESTS
+
+    fdl->setPrimBoundary( 0, specs[0].c_str() ); 
+    fdl->setPrimBoundary( 1, specs[1].c_str() );
+ 
     std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
     fdl->upload(); 
 

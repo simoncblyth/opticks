@@ -23,7 +23,7 @@ What does event handling plug into with new workflow
 
 
 
-TODO : cxsim.sh rainbow simulation : CXRaindropTest 
+TODO : cxs_raindrop.sh simulation : CXRaindropTest 
 -------------------------------------------------------
 
 Create raindrop simulation to give rainbow photon histories, 
@@ -37,6 +37,44 @@ so have some physical histories for bringing over compressed recording.
 
 * will need to bring over some of the old TORCH genstep generation as
   need more stats than with the simple duplicating PHOTON_CARRIER
+
+
+shakedown : not getting expected SURFACE_ABSORB
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* probably because forgot to update the optical buffer following additions to the bnd 
+  so that gives inconsistency that is causing surfaces not to kick in 
+
+  * DONE: assert that optical buffer dimensions are consistent with the bnd
+    (optical buffer should be 4* the number of bnd) : then fix that 
+
+  * CSG_GGeo_Convert::convertBndLib invokes GBndLib::getOpticalBuf 
+
+  * DONE: modify QBnd::Add to update both optical and bnd consistently 
+
+
+
+::
+
+    cx
+    ./cxs_raindrop.sh
+
+    //OptiX7Test.cu:simulate idx 8 bounce 1 boundary 45 
+    //OptiX7Test.cu:simulate idx 9 bounce 1 boundary 45 
+    //qsim.propagate idx 0 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 1 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 2 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 3 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 4 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 5 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 6 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 7 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 8 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 9 bounce 1 command 3 flag 0 s.optical.x 0 
+    //OptiX7Test.cu:simulate idx 0 bounce 2 boundary 65535 
+    //OptiX7Test.cu:simulate idx 1 bounce 2 boundary 65535 
+
+
 
 
 TODO : U4 package to house Geant4 Utilities 
