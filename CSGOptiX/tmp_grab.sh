@@ -1,12 +1,16 @@
 #!/bin/bash -l 
 
+source $PWD/../bin/GEOM.sh trim   ## sets GEOM envvar based on GEOM.txt file 
+
 arg=${1:-all}
 shift
 
 msg="=== $BASH_SOURCE :"
 executable=GeoChain
 EXECUTABLE=${EXECUTABLE:-$executable}
-xdir=/tmp/blyth/opticks/$EXECUTABLE/     ## NB trailing slash to avoid rsync duplicating path element 
+xdir=/tmp/blyth/opticks/$EXECUTABLE/$GEOM/     ## NB trailing slash to avoid rsync duplicating path element 
+## formerly did not restrict to the GEOM
+
 
 from=P:$xdir
 to=$xdir

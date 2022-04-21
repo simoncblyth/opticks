@@ -98,7 +98,7 @@ int main(int argc, char** argv)
     fdl->setBnd(bndplus);  // instanciates bd CSGName using bndplus.names
     fdl->saveBnd();   // DIRTY: changing the bnd : ONLY APPROPRIATE IN SMALL TESTS
 
-    fdl->setPrimBoundary( 0, "Rock//perfectAbsorbSurface/Air" ); 
+    fdl->setPrimBoundary( 0, "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air" ); 
     fdl->setPrimBoundary( 1, "Air///Water" ); 
     std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
     fdl->upload(); 

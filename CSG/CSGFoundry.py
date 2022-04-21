@@ -97,6 +97,8 @@ class CSGFoundry(object):
             geom = os.environ["GEOM"]
             rel = "GeoChain_Darwin" 
             cfbase = os.path.expandvars("/tmp/$USER/opticks/%s/%s" %(rel, geom) )  # guess
+        elif "CFBASE_LOCAL" in os.environ:
+            cfbase= os.environ["CFBASE_LOCAL"]
         elif "CFBASE" in os.environ:
             cfbase= os.environ["CFBASE"]
         elif "OPTICKS_KEY" in os.environ:
