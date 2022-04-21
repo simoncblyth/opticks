@@ -307,10 +307,8 @@ struct CSG_API CSGFoundry
 
     static void CopyNames(    CSGFoundry* dst, const CSGFoundry* src ); 
     static void CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ); 
-    static void CopyBndName(  CSGFoundry* dst, const CSGFoundry* src ); 
 
     void getMeshName( std::vector<std::string>& mname ) const ; 
-    void getBndName(  std::vector<std::string>& bname ) const ; 
 
     const std::string& getMeshName(unsigned midx) const ; 
     const std::string& getBndName(unsigned bidx) const ; 
@@ -320,8 +318,8 @@ struct CSG_API CSGFoundry
 
     void addMeshName(const char* name); 
     void addSolidLabel(const char* label); 
+    void setBnd( NP* bnd ); 
 
-    std::vector<std::string> bndname ;   // GGeo::getBoundaryNames/GBndLib
     std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 
@@ -343,7 +341,7 @@ struct CSG_API CSGFoundry
     std::vector<unsigned>  ias ; 
 
     CSGName*    id ;   // meshname 
-    CSGName*    bd ;   // bndname
+
     CSGTarget*  target ; 
     CSGGenstep* genstep ; 
     CSGMaker*   maker ; 
@@ -353,7 +351,9 @@ struct CSG_API CSGFoundry
     CSGPrim*    last_added_prim ; 
     CSGNode*    last_added_node ; 
 
-    NP* bnd ; 
+    NP*        bnd ; 
+    CSGName*    bd ;  // instanciated by setBnd using bnd->names
+
     NP* optical ; 
     NP* icdf ; 
 

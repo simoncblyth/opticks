@@ -216,7 +216,25 @@ template std::string SStr::Format( const char* , int );
 template std::string SStr::Format( const char* , unsigned ); 
 
 
+bool SStr::Blank( const char* s )
+{
+   unsigned n = strlen(s) ; 
+   return n == 0 || All(s, ' ') ; 
+}
 
+bool SStr::All( const char* s , char q )
+{
+   unsigned n = strlen(s) ; 
+   return n > 0 && Count(s, q) == n ; 
+
+}
+unsigned SStr::Count( const char* s , char q )
+{
+   unsigned n = strlen(s) ; 
+   unsigned count = 0 ; 
+   for(unsigned i=0 ; i < n ; i++) if( s[i] == q ) count += 1 ; 
+   return count ;  
+}
 
 bool SStr::Contains( const char* s_ , const char* q_ )
 {

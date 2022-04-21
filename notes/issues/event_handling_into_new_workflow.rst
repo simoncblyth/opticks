@@ -23,7 +23,7 @@ What does event handling plug into with new workflow
 
 
 
-TODO : cxsim.sh rainbow simulation 
+TODO : cxsim.sh rainbow simulation : CXRaindropTest 
 -------------------------------------------------------
 
 Create raindrop simulation to give rainbow photon histories, 

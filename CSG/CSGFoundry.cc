@@ -48,6 +48,12 @@ std::string CSGFoundry::descComp() const
     return s ; 
 }
 
+void CSGFoundry::setBnd(NP* bnd_ )
+{
+    bnd = bnd_ ; 
+    bd = bnd ? new CSGName(bnd->names) : nullptr  ; 
+}
+
 CSGFoundry::CSGFoundry()
     :
     d_prim(nullptr),
@@ -55,7 +61,6 @@ CSGFoundry::CSGFoundry()
     d_plan(nullptr),
     d_itra(nullptr),
     id(new CSGName(meshname)),
-    bd(new CSGName(bndname)),
     target(new CSGTarget(this)),
     genstep(new CSGGenstep(this)),
     maker(new CSGMaker(this)),
@@ -63,6 +68,7 @@ CSGFoundry::CSGFoundry()
     last_added_solid(nullptr),
     last_added_prim(nullptr),
     bnd(nullptr),
+    bd(nullptr),
     optical(nullptr),
     icdf(nullptr),
     meta(),
@@ -104,7 +110,6 @@ std::string CSGFoundry::desc() const
        << " gas " << gas.size()
        << " ias " << ias.size()
        << " meshname " << meshname.size()
-       << " bndname " << bndname.size()
        << " mmlabel " << mmlabel.size()
        ;
     return ss.str(); 
@@ -158,7 +163,6 @@ unsigned CSGFoundry::getNumSolidLabel() const
 void CSGFoundry::CopyNames( CSGFoundry* dst, const CSGFoundry* src ) // static
 {
     CopyMeshName( dst, src ); 
-    CopyBndName( dst, src ); 
 }
 
 void CSGFoundry::CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ) // static 
@@ -168,30 +172,6 @@ void CSGFoundry::CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ) // stati
     assert( src->meshname.size() == dst->meshname.size() );      
 }
 
-/**
-CSGFoundry::CopyBndName
--------------------------
-
-Note that the NP* bnd also carries names in its metadata,
-TODO: avoid the duplication or at least assert that they match
-
-**/
-
-void CSGFoundry::CopyBndName( CSGFoundry* dst, const CSGFoundry* src ) // static 
-{
-    assert( dst->bndname.size() == 0); 
-    src->getBndName(dst->bndname); 
-    assert( src->bndname.size() == dst->bndname.size() );      
-}
-
-void CSGFoundry::getBndName( std::vector<std::string>& bname ) const 
-{
-    for(unsigned i=0 ; i < bndname.size() ; i++)
-    {
-        const std::string& bn = bndname[i]; 
-        bname.push_back(bn);   
-    }
-}
 void CSGFoundry::getMeshName( std::vector<std::string>& mname ) const 
 {
     for(unsigned i=0 ; i < meshname.size() ; i++)
@@ -209,8 +189,9 @@ const std::string& CSGFoundry::getMeshName(unsigned midx) const
 
 const std::string& CSGFoundry::getBndName(unsigned bidx) const 
 {
-    assert( bidx < bndname.size() ); 
-    return bndname[bidx] ; 
+    assert( bnd ); 
+    assert( bidx < bnd->names.size() ); 
+    return bnd->names[bidx] ; 
 }
 
 
@@ -720,7 +701,20 @@ void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname)
 {
     unsigned count = 0 ; 
     int bnd = bd->getIndex(bname, count ); 
-    assert( count == 1 && bnd > -1 ); 
+    bool bname_found = count == 1 && bnd > -1  ;
+    if(!bname_found) 
+       LOG(fatal) 
+          << " primIdx " << primIdx
+          << " bname " << bname
+          << " bnd " << bnd
+          << " count " << count
+          << " bname_found " << bname_found
+          << " bd.getNumName " << bd->getNumName() 
+          << " bd.detail " << std::endl 
+          << bd->detail()
+          ;
+
+    assert( bname_found ); 
     unsigned boundary = bnd ; 
 
     setPrimBoundary(primIdx, boundary); 
@@ -1817,7 +1811,6 @@ void CSGFoundry::write(const char* dir_) const
     LOG(info) << dir ; 
 
     if(meshname.size() > 0 ) NP::WriteNames( dir, "meshname.txt", meshname );
-    if(bndname.size() > 0 )  NP::WriteNames( dir, "bndname.txt",  bndname );
     if(mmlabel.size() > 0 )  NP::WriteNames( dir, "mmlabel.txt", mmlabel );
     if(hasMeta())  NP::WriteString( dir, "meta.txt", meta.c_str() ); 
               
@@ -1892,9 +1885,6 @@ const char* CSGFoundry::getOriginCFBase() const
 CSGFoundry::load
 ------------------
 
-HMM: bndnames already in NP bnd metadata but as a single string
-TODO: avoid the duplication 
-
 **/
 
 void CSGFoundry::load( const char* dir_ )
@@ -1911,7 +1901,6 @@ void CSGFoundry::load( const char* dir_ )
     loaddir = strdup(dir) ; 
 
     NP::ReadNames( dir, "meshname.txt", meshname );  
-    NP::ReadNames( dir, "bndname.txt",  bndname );  
     NP::ReadNames( dir, "mmlabel.txt", mmlabel );  
 
     const char* meta_str = NP::ReadString( dir, "meta.txt" ) ; 
@@ -1933,9 +1922,15 @@ void CSGFoundry::load( const char* dir_ )
     loadArray( plan  , dir, "plan.npy" , true );  
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
-    if(NP::Exists(dir, "bnd.npy"))  bnd = NP::Load(dir, "bnd.npy"); 
     if(NP::Exists(dir, "optical.npy"))  optical = NP::Load(dir, "optical.npy"); 
     if(NP::Exists(dir, "icdf.npy")) icdf = NP::Load(dir, "icdf.npy"); 
+
+    if(NP::Exists(dir, "bnd.npy"))
+    {
+        NP* bnd_ = NP::Load(dir, "bnd.npy"); 
+        setBnd(bnd_); // instanciates bd CSGName using bnd.names
+    }
+
 }
 
 void CSGFoundry::setGeom(const char* geom_)

@@ -1,5 +1,5 @@
 /**
-CSGOptiXSimulateTest
+CXRaindropTest
 ======================
 
 **/
@@ -16,6 +16,7 @@ CSGOptiXSimulateTest
 
 #include "SSys.hh"
 #include "SPath.hh"
+#include "SProc.hh"
 #include "OpticksGenstep.h"
 
 #include "OPTICKS_LOG.hh"
@@ -27,6 +28,7 @@ CSGOptiXSimulateTest
 #include "CSGOptiX.h"
 #include "RG.h"
 
+#include "QBnd.hh"
 #include "QSim.hh"
 #include "QEvent.hh"
 #include "SEvent.hh"
@@ -59,29 +61,31 @@ int main(int argc, char** argv)
     ok.configure(); 
     ok.setRaygenMode(RG_SIMULATE) ; // override --raygenmode option 
 
-    const char* NAME = "CSGOptiXSimulateTest" ; 
+    const char* EXECUTABLE = SProc::ExecutableName();
     const char* cfbase = SOpticksResource::CFBase(); 
-    const char* outdir = OutDir(ok, cfbase, NAME);    
+    const char* outdir = OutDir(ok, cfbase, EXECUTABLE );    
     ok.setOutDir(outdir); 
     ok.writeOutputDirScript(outdir) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
     // TODO: relocate script writing and dir mechanices into SOpticksResource or SOpticks or similar 
-    ok.dumpArgv(NAME); 
+    ok.dumpArgv(EXECUTABLE); 
 
-    // HMM: note use of the standard OPTICKS_KEY geocache 
+    // HMM: note use of the standard OPTICKS_KEY geocache , TODO: add for CF?
     const char* idpath = ok.getIdPath(); 
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
 
+    // BASIS GEOMETRY 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
-    //fd->upload(); 
     LOG(info) << fd->descComp(); 
 
-    // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
-    QSim<float>::UploadComponents(fd->icdf, fd->bnd, fd->optical, rindexpath ); 
+    const char* specs = R"LITERAL(
+    Rock//perfectAbsorbSurface/Air
+    Air///Water
+    )LITERAL" ; 
 
-    LOG(info) << "foundry " << fd->desc() ; 
-    //fd->summary(); 
+    NP* bndplus = QBnd::Add( fd->bnd, specs ); 
 
+    QSim<float>::UploadComponents(fd->icdf, bndplus, fd->optical, rindexpath ); 
 
     const char* cfbase_local = SSys::getenvvar("CFBASE_LOCAL") ; 
     assert(cfbase_local) ; 
@@ -91,7 +95,14 @@ int main(int argc, char** argv)
     std::cout << std::setw(20) << "cfbase_local" << ":" << cfbase_local  << std::endl ; 
 
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
+    fdl->setBnd(bndplus);  // instanciates bd CSGName using bndplus.names
+
+
+    fdl->setPrimBoundary( 0, "Rock//perfectAbsorbSurface/Air" ); 
+    fdl->setPrimBoundary( 1, "Air///Water" ); 
+    std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
     fdl->upload(); 
+
 
     CSGOptiX cx(&ok, fdl ); 
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  
@@ -108,7 +119,7 @@ int main(int argc, char** argv)
     cx.setGensteps(&gs, 1); 
     cx.simulate();  
 
-    const char* odir = SPath::Resolve(cfbase_local, "CSGOptiXSimulateTest", DIRPATH ); 
+    const char* odir = SPath::Resolve(cfbase_local, EXECUTABLE, DIRPATH ); 
     
     NP* p = cx.event->getPhotons() ; 
     NP* r = cx.event->getRecords() ; 
@@ -117,7 +128,6 @@ int main(int argc, char** argv)
     LOG(info) << " odir " << odir ; 
     if(p) p->save(odir, "p.npy"); 
     if(r) r->save(odir, "r.npy"); 
-
  
     cudaDeviceSynchronize(); 
     return 0 ; 

@@ -40,7 +40,7 @@ struct QUDARAP_API QBnd
     const NP*      src ;  
     QTex<float4>*  tex ; 
 
-    void composeBoundary( std::vector<char>& bytes, const char* spec ) const ; 
+    static const NP* NarrowIfWide(const NP* buf ); 
     QBnd(const NP* buf); 
 
     std::string getItemDigest( int i, int j, int w=8 ) const ; 

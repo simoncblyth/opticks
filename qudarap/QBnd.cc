@@ -73,27 +73,6 @@ std::string QBnd::DescDigest(const NP* bnd, int w )
 }
 
 
-/**
-QBnd::Add
-------------------------
-
-Creates new array containing the src array with extra boundaries constructed 
-from materials and surfaces already present in the src array as configured by the 
-specs argument. 
-
-**/
-NP* QBnd::Add( const NP* src, const char* specs_, char delim ) // static 
-{
-    std::vector<std::string> specs ; 
-
-    std::stringstream ss;
-    ss.str(specs_)  ;
-    std::string s;
-    while (std::getline(ss, s, delim)) if(strlen(s.c_str()) > 1 ) specs.push_back(s) ; 
-    LOG(info) << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
-
-    return QBnd::Add(src, specs ); 
-}
 
 /**
 QBnd::GetPerfectValues
@@ -152,8 +131,32 @@ void QBnd::GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned n
 } 
 
 
-NP* QBnd::Add( const NP* src, const std::vector<std::string>& specs ) // static 
+
+/**
+QBnd::Add
+------------------------
+
+Creates new array containing the src array with extra boundaries constructed 
+from materials and surfaces already present in the src array as configured by the 
+specs argument. 
+
+**/
+NP* QBnd::Add( const NP* src, const char* specs_, char delim ) // static 
 {
+    std::vector<std::string> specs ; 
+    std::stringstream ss;
+    ss.str(specs_)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) if(!SStr::Blank(s.c_str())) specs.push_back(s) ;
+    LOG(info) << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
+    return QBnd::Add(src, specs ); 
+}
+
+
+NP* QBnd::Add( const NP* dsrc, const std::vector<std::string>& specs ) // static 
+{
+    const NP* src = NarrowIfWide(dsrc) ;  
+
     unsigned ndim = src->shape.size() ; 
     assert( ndim == 5 ); 
     unsigned ni = src->shape[0] ; 
@@ -161,6 +164,11 @@ NP* QBnd::Add( const NP* src, const std::vector<std::string>& specs ) // static
     unsigned nk = src->shape[2] ; 
     unsigned nl = src->shape[3] ; 
     unsigned nm = src->shape[4] ;
+
+    LOG(info) 
+        << " src.ebyte " << src->ebyte  
+        << " src.desc " << src->desc() 
+        ; 
 
     assert( src->ebyte == 4 ); 
     assert( ni > 0 );  
@@ -181,6 +189,10 @@ NP* QBnd::Add( const NP* src, const std::vector<std::string>& specs ) // static
     src->get_names(names); 
 
     std::vector<std::string> dst_names(names); 
+    LOG(info) 
+        << " dst_names.size before " << dst_names.size() 
+        << " specs.size " << specs.size()   
+        ; 
 
     unsigned offset = 0 ; 
     memcpy( dst->bytes() + offset, src->bytes(), src_bytes );  
@@ -193,7 +205,10 @@ NP* QBnd::Add( const NP* src, const std::vector<std::string>& specs ) // static
 
         std::vector<std::string> elem ; 
         SStr::Split(spec, '/', elem );  
-        assert( elem.size() == 4 ); 
+
+        bool four_elem = elem.size() == 4 ; 
+        if(four_elem == false) LOG(fatal) << " expecting four elem spec [" << spec << "] elem.size " << elem.size() ;  
+        assert(four_elem); 
 
         for(unsigned s=0 ; s < 4 ; s++ )
         {
@@ -228,10 +243,23 @@ NP* QBnd::Add( const NP* src, const std::vector<std::string>& specs ) // static
             offset += sub_bytes ; 
         }
     }
+
+    LOG(info) << " dst_names.size after " << dst_names.size() ; 
+
     dst->set_names( dst_names ); 
+    dst->meta = src->meta ;    // need to pass along the domain metadata 
+
+    std::vector<std::string> dst_names_check ; 
+    dst->get_names(dst_names_check); 
+    LOG(info) << " dst_names_check.size after " << dst_names_check.size() ; 
+
     return dst ; 
 }
 
+const NP* QBnd::NarrowIfWide(const NP* buf )  // static 
+{
+    return buf->ebyte == 4 ? buf : NP::MakeNarrow(buf) ; 
+}
 
 /**
 QBnd::QBnd
@@ -244,7 +272,7 @@ Narrows the NP array if wide and creates GPU texture
 QBnd::QBnd(const NP* buf)
     :
     dsrc(buf->ebyte == 8 ? buf : nullptr),
-    src(buf->ebyte == 4 ? buf : NP::MakeNarrow(dsrc)),
+    src(NarrowIfWide(buf)),
     tex(MakeBoundaryTex(src))
 {
     buf->get_names(bnames) ;  // vector of string from NP metadata
@@ -493,6 +521,10 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     bool normalizedCoords = true ; 
 
     QTex<float4>* btex = new QTex<float4>(nx, ny, values, filterMode, normalizedCoords ) ; 
+
+    bool buf_has_meta = buf->has_meta() ;
+    if(!buf_has_meta) LOG(fatal) << " buf_has_meta FAIL : domain metadata is required to create texture  buf.desc " << buf->desc() ;  
+    assert( buf_has_meta ); 
 
     quad domainX ; 
     domainX.f.x = buf->get_meta<float>("domain_low",   0.f ); 

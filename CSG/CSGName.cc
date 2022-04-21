@@ -19,9 +19,18 @@ CSGName::CSGName( const std::vector<std::string>& name_ )
 std::string CSGName::desc() const 
 {
     unsigned num_name = getNumName() ; 
-
     std::stringstream ss ; 
     ss << "CSGName::desc numName " << num_name << " name[0] " << getName(0) << " name[-1] " <<  getName(num_name-1 ) ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string CSGName::detail() const 
+{
+    unsigned num_name = getNumName() ; 
+    std::stringstream ss ; 
+    ss << " CSGName::detail num_name " << num_name << std::endl ;
+    for(unsigned i=0 ; i < num_name ; i++) ss << getName(i) << std::endl ;  
     std::string s = ss.str(); 
     return s ; 
 }

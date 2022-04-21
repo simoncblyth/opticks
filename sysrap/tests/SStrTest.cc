@@ -557,6 +557,7 @@ void test_Trim(const char* s)
 
 }
 
+
 void test_Trim()
 {
      const char* s0 = "            contents with gaps before whitespace          " ; 
@@ -576,6 +577,35 @@ yellow
 
 
 }
+
+void test_Count()
+{
+    assert( SStr::Count("a bcdefg", ' ') == 1 ); 
+    assert( SStr::Count("a  bcdefg", ' ') == 2 ); 
+    assert( SStr::Count(" ", ' ') == 1 ); 
+    assert( SStr::Count("  ", ' ') == 2 ); 
+    assert( SStr::Count("", ' ') == 0 ); 
+}
+void test_All()
+{
+    assert( SStr::All("aaaaa", 'a') == true ); 
+    assert( SStr::All("aabaa", 'a') == false ); 
+    assert( SStr::All("", 'a') == false ); 
+    assert( SStr::All(" ", ' ') == true ); 
+    assert( SStr::All("  ", ' ') == true ); 
+}
+void test_Blank()
+{
+    assert( SStr::Blank("aaaaa") == false ); 
+    assert( SStr::Blank("") == true ); 
+    assert( SStr::Blank(" ") == true ); 
+    assert( SStr::Blank("  ") == true ); 
+    assert( SStr::Blank("           ") == true ); 
+    assert( SStr::Blank("\n") == false ); 
+}
+
+
+
 
 
 void test_ExtractLong()
@@ -685,8 +715,11 @@ int main(int argc , char** argv )
     test_Save_PWD(); 
     test_Extract(); 
     test_Extract_float(); 
-    */
     test_Trim(); 
+    */
+    test_Count(); 
+    test_All(); 
+    test_Blank(); 
     /*
     test_ExtractLong(); 
     test_HeadFirst_HeadLast(); 

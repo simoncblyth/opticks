@@ -195,11 +195,13 @@ struct NP
     int load(const char* dir, const char* name);   
     int load(const char* path);   
 
-    int load_string_( const char* path, const char* ext, std::string& str ); 
+    int load_string_(  const char* path, const char* ext, std::string& str ); 
+    int load_strings_( const char* path, const char* ext, std::vector<std::string>& vstr ); 
     int load_meta(  const char* path ); 
     int load_names( const char* path ); 
 
-    void save_string_(const char* path, const char* ext, const std::string& str ) const ; 
+    void save_string_( const char* path, const char* ext, const std::string& str ) const ; 
+    void save_strings_(const char* path, const char* ext, const std::vector<std::string>& vstr ) const ; 
     void save_meta( const char* path) const ;  
     void save_names(const char* path) const ;  
 
@@ -226,16 +228,19 @@ struct NP
     void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
     void get_meta( std::vector<std::string>& lines,       char delim='\n' ) const ; 
 
-    void set_names( const std::vector<std::string>& lines, char delim='\n' ); 
-    void get_names( std::vector<std::string>& lines,       char delim='\n' ) const ; 
+    //void set_names_old( const std::vector<std::string>& lines, char delim='\n' ); 
+    //void get_names_old( std::vector<std::string>& lines,       char delim='\n' ) const ; 
+    //int get_name_index_old( const char* name, char delim='\n' ) const ; 
 
-    int get_name_index( const char* name, char delim='\n' ) const ; 
-
+    void set_names( const std::vector<std::string>& lines ) ; 
+    void get_names( std::vector<std::string>& lines ) const ; 
+    int  get_name_index( const char* qname ) const ;  
 
 
     static std::string               get_meta_string_(const char* metadata, const char* key);  
     static std::string               get_meta_string( const std::string& meta, const char* key) ;  
 
+    bool has_meta() const ; 
     template<typename T> static T    get_meta_(const char* metadata, const char* key, T fallback=0) ;  // for T=std::string must set fallback to ""
     template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
     template<typename T> void set_meta(const char* key, T value ) ;  
@@ -259,7 +264,10 @@ struct NP
     std::vector<char> data ; 
     std::vector<int>  shape ; 
     std::string       meta ; 
-    std::string       names ; 
+
+    //std::string       names ;      // CHANGED to vector of string for convenience of reference passing, eg for CSGName
+    std::vector<std::string>  names ; 
+
 
     // non-persisted transients, set on loading 
     std::string lpath ; 
@@ -2439,14 +2447,49 @@ inline void NP::get_meta( std::vector<std::string>& lines, char delim  ) const
 
 
 
-inline void NP::set_names( const std::vector<std::string>& lines, char delim )
+inline void NP::set_names( const std::vector<std::string>& lines )
+{
+    names.clear(); 
+    for(unsigned i=0 ; i < lines.size() ; i++)
+    {
+         const std::string& line = lines[i] ; 
+         names.push_back(line); 
+    }
+}
+
+inline void NP::get_names( std::vector<std::string>& lines ) const 
+{
+    for(unsigned i=0 ; i < names.size() ; i++)
+    {
+         const std::string& name = names[i] ; 
+         lines.push_back(name); 
+    }
+}
+
+//Returns 0-based index of first matching name, or -1 if the name is not found or the name is nullptr. 
+inline int NP::get_name_index( const char* qname ) const 
+{
+    if(names.size() == 0) return -1 ; 
+    for(unsigned idx=0 ; idx < names.size() ; idx++)
+    {
+        const std::string& name = names[idx] ; 
+        if(strcmp(name.c_str(), qname) == 0) return idx ;  
+    }
+    return -1 ; 
+}
+
+
+
+
+/*
+inline void NP::set_names_old( const std::vector<std::string>& lines, char delim )
 {
     std::stringstream ss ; 
     for(unsigned i=0 ; i < lines.size() ; i++) ss << lines[i] << delim  ; 
     names = ss.str(); 
 }
 
-inline void NP::get_names( std::vector<std::string>& lines, char delim  ) const 
+inline void NP::get_names_old( std::vector<std::string>& lines, char delim  ) const 
 {
     if(names.empty()) return ; 
 
@@ -2456,15 +2499,9 @@ inline void NP::get_names( std::vector<std::string>& lines, char delim  ) const
     while (std::getline(ss, s, delim)) lines.push_back(s) ; 
 }
 
-/**
-NP::get_name_index
---------------------
+//Returns 0-based index of first matching name, or -1 if the name is not found or the name is nullptr. 
 
-Returns 0-based index of first matching name, or -1 if the name is not found or the name is nullptr. 
-
-**/
-
-inline int NP::get_name_index( const char* name, char delim  ) const 
+inline int NP::get_name_index_old( const char* name, char delim  ) const 
 {
     if(names.empty() || name == nullptr) return -1 ; 
     std::stringstream ss ; 
@@ -2479,6 +2516,9 @@ inline int NP::get_name_index( const char* name, char delim  ) const
     }
     return -1 ; 
 }
+*/
+
+
 
 
 
@@ -2558,6 +2598,10 @@ template double      NP::GetMeta<double>(     const std::string& , const char*, 
 template std::string NP::GetMeta<std::string>(const std::string& , const char*, std::string ) ; 
 
 
+inline bool NP::has_meta() const 
+{
+    return meta.empty() == false ; 
+}
 
 template<typename T> inline T NP::get_meta(const char* key, T fallback) const 
 {
@@ -3018,9 +3062,20 @@ inline int NP::load_string_( const char* path, const char* ext, std::string& str
     return 0 ; 
 }
 
-inline int NP::load_meta(  const char* path ){  return load_string_( path, "_meta.txt",  meta  ) ; }
-inline int NP::load_names( const char* path ){  return load_string_( path, "_names.txt", names ) ; }
+inline int NP::load_strings_( const char* path, const char* ext, std::vector<std::string>& vstr )
+{
+    std::string vstr_path = U::ChangeExt(path, ".npy", ext ); 
+    std::ifstream fp(vstr_path.c_str(), std::ios::in);
+    if(fp.fail()) return 1 ; 
 
+    std::string line ; 
+    while (std::getline(fp, line)) vstr.push_back(line);  // getline swallows new lines  
+    return 0 ; 
+}
+
+
+inline int NP::load_meta(  const char* path ){  return load_string_( path, "_meta.txt",  meta  ) ; }
+inline int NP::load_names( const char* path ){  return load_strings_( path, "_names.txt", names ) ; }
 
 
 inline void NP::save_string_(const char* path, const char* ext, const std::string& str ) const 
@@ -3032,8 +3087,24 @@ inline void NP::save_string_(const char* path, const char* ext, const std::strin
     fps << str ;  
 }
 
+inline void NP::save_strings_(const char* path, const char* ext, const std::vector<std::string>& vstr ) const 
+{
+    if(vstr.size() == 0) return ; 
+    std::string vstr_path = U::ChangeExt(path, ".npy", ext ); 
+    std::cout << "NP::save_strings_ vstr_path [" << vstr_path  << "]" << std::endl ; 
+
+    char delim = '\n' ; 
+    std::ofstream fps(vstr_path.c_str(), std::ios::out);
+    for(unsigned i=0 ; i < vstr.size() ; i++) 
+    {
+        const std::string& str = vstr[i] ;  
+        fps << str << delim ;  
+    }
+}
+
+
 inline void NP::save_meta( const char* path) const { save_string_(path, "_meta.txt",  meta  );  }
-inline void NP::save_names(const char* path) const { save_string_(path, "_names.txt", names );  }
+inline void NP::save_names(const char* path) const { save_strings_(path, "_names.txt", names );  }
 
 
 inline void NP::save_header(const char* path)

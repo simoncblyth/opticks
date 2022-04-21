@@ -69,6 +69,9 @@ class SYSRAP_API SStr {
       template<typename T>
       static const char* FormatReal(const T value, int w, int p, char fill='0' ) ; 
 
+      static bool Blank(const char* s ); 
+      static bool All(const char* s, char q ); 
+      static unsigned Count(const char* s, char q ); 
 
       static bool Contains(const char* s, const char* q ); 
       static bool EndsWith( const char* s, const char* q);
