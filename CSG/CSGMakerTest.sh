@@ -1,6 +1,5 @@
 #!/bin/bash -l 
 
-source ../bin/GEOM.sh trim 
 
 usage(){ cat << EOU
 CSGMakerTest.sh : Creates CSGFoundry directories of CSGSolid/CSGPrim/CSGNode using CSG/tests/CSGMakerTest.cc
@@ -15,14 +14,18 @@ Used to create small test geometries, often with single solids.::
 
    ./CSGMakerTest.sh        ## reads the GEOM and runs CSGMakerTest to create the CSGFoundry  
 
+Subsequenly visualize the geometry with::
+
+    cd ~/opticks/CSGOptiX   ## OR "cx" shortcut 
+    EYE=-1,-1,-1 ./cxr_geochain.sh       ##  reads the GEOM.txt file to pick the CSGFoundry to load
+
 EOU
 }
 
-msg="=== $BASH_SOURCE :"
+source ../bin/GEOM.sh trim 
 bin=CSGMakerTest 
 
-echo $msg catgeom $catgeom geom $geom GEOM $GEOM bin $bin which $(which $bin)
-
+echo === $BASH_SOURCE :  GEOM $GEOM bin $bin which $(which $bin)
 if [ -n "$DEBUG" ]; then 
     lldb__ $bin
 else

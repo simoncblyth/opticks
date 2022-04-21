@@ -11,6 +11,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "SSys.hh"
+#include "SProc.hh"
 #include "SStr.hh"
 #include "SPath.hh"
 #include "SBitSet.hh"
@@ -1955,7 +1956,7 @@ void CSGFoundry::setElv(const SBitSet* elv_)
 CSGFoundry::MakeGeom
 ----------------------
 
-Intended for creation of small test geometries that are entirely created by this method.
+Intended for creation of small CSGFoundry test geometries that are entirely created by this method.
 
 **/
 
@@ -1972,6 +1973,8 @@ CSGFoundry*  CSGFoundry::MakeGeom(const char* geom) // static
     // avoid tripping some checks 
     fd->addMeshName(geom);   
     fd->addSolidLabel(geom);  
+    fd->setMeta<std::string>("creator", SProc::ExecutableName() ); 
+    fd->setMeta<std::string>("source", "CSGFoundry::MakeGeom" ); 
 
     assert( so ); 
 

@@ -43,7 +43,8 @@ void CSGMaker::GetNames(std::vector<std::string>& names ) // static
 
 
 const char* CSGMaker::NAMES = R"LITERAL(
-sphe
+JustOrb
+BoxedSphere
 zsph
 ZSphere
 cone
@@ -92,7 +93,8 @@ bssc
 CSGSolid* CSGMaker::make(const char* name)
 {
     CSGSolid* so = nullptr ; 
-    if(     StartsWith("JustOrb", name))  so = makeSphere(name) ;
+    if(     StartsWith("JustOrb", name))     so = makeSphere(name) ;
+    else if(StartsWith("BoxedSphere", name)) so = makeBoxedSphere(name) ;
     else if(StartsWith("zsph", name))     so = makeZSphere(name) ;
     else if(StartsWith("ZSphere", name))  so = makeZSphere(name) ;
     else if(StartsWith("cone", name))     so = makeCone(name) ;
@@ -205,15 +207,18 @@ CSGMaker::makeLayered
 NB Each layer is a separate CSGPrim with a single CSGNode 
 
 NB the ordering of addition is prescribed, must stick 
-ridgidly to the below order of addition.  
+ridgidly to the below order of addition:
 
-   addSolid
-   addPrim
-   addNode
+1. addSolid
+2. addPrim
+3. addNode
 
-Note that Node and Prim can be created anytime, the 
-restriction is on the order of addition because 
-of the capturing of offsets.
+And the numbers of Prim and Node added 
+must correspond to the declarations. 
+
+Note that the CSGNode and CSGPrim can be created anytime, the 
+restriction is on the order of addition to the CSGFoundry 
+due to the capturing of offsets at collection. 
 
 **/
 
@@ -256,32 +261,42 @@ CSGSolid* CSGMaker::makeLayered(const char* label, float outer_radius, unsigned 
 }
 
 
-/*
-CSGSolid* CSGMaker::makeSphereInBox(const char* label)
+/**
+CSGMaker::makeBoxedSphere
+--------------------------
+
+Add CSGSolid to CSGFoundry that is comprised of two CSGPrim, 
+each with a single CSGNode.  
+
+**/
+
+CSGSolid* CSGMaker::makeBoxedSphere(const char* label)
 {
     float halfside = 100.f ; 
-    float fullside = 2.f*halfside ; 
+    float radius   = halfside/2.f ; 
 
     unsigned numPrim = 2 ; 
     CSGSolid* so = fd->addSolid(numPrim, label); 
-    so->center_extent = make_float4( 0.f, 0.f, 0.f, halfside ) ; 
+    AABB bb = {} ; 
 
-    int bxNumNode = 1  ; 
-    int bxNodeOffset = -1 ; 
+    for(unsigned i=0 ; i < numPrim ; i++)
+    {
+        CSGPrim* pr = fd->addPrim(1, -1);  // numNode, nodeOffset
+        CSGNode* nd = nullptr ; 
+        switch(i)
+        {
+            case 0: nd = fd->addNode(CSGNode::Box3(2.f*halfside)) ;  break ;   
+            case 1: nd = fd->addNode(CSGNode::Sphere(radius))     ;  break ;   
+        } 
+        pr->setAABB( nd->AABB() ); 
+        bb.include_aabb( nd->AABB() ); 
+    }
 
-    CSGPrim* p0 = fd->addPrim(bxNumNode, bxNodeOffset );
-    CSGNode bx = CSGNode::Box3(fullside) ;
-    CSGNode* n0 = fd->addNode(bx);  
-
-    int spNumNode = 1 ; 
-    int spNodeOffset = -1 ;  
-    CSGPrim* p1 = fd->addPrim(spNumNode, spNodeOffset ); 
-    CSGNode* n1 = fd->addNode(CSGNode::Sphere(halfside/2.f)) ;
+    so->center_extent = bb.center_extent() ;  
+    LOG(info) << " so->center_extent " << so->center_extent ; 
 
     return so ; 
 }
-*/
-
 
 
 
@@ -335,6 +350,7 @@ CSGSolid* CSGMaker::makeScaled(const char* label, const char* demo_node_type, fl
 
     so->center_extent = bb.center_extent() ;  
     LOG(info) << " so->center_extent " << so->center_extent ; 
+
     return so ; 
 }
 

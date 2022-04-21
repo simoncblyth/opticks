@@ -23,26 +23,42 @@ What does event handling plug into with new workflow
 
 
 
-TODO : cxsim.sh 
--------------------
+TODO : cxsim.sh rainbow simulation 
+-------------------------------------------------------
 
-* arrange raindrop simulation to give rainbow histories, so have some physical histories 
-  for developing the compressed record
+Create raindrop simulation to give rainbow photon histories, 
+so have some physical histories for bringing over compressed recording.
 
-  * need container box with Rock//perfectAbsorbSurface/Air using new QBnd::Add capabilities
+* need container box with Rock//perfectAbsorbSurface/Air using new QBnd::Add capabilities
 
-    * GeoChain geometry needs a Geant4 volume as starting point : 
-    * needs some improvements to X4VolumeMaker ?
-    * DONE : pulled eg P4Volume::Transverse out of j/PMTSim : 
-    * this code needs to be relocated as j/PMTSim not standardly available ? 
-    * seems like need a G4 utilities package 
+  * thinking about starting from Geant4 for this revealed the need for a U4 package, 
+    so instead did at CSG level 
+  * DONE : added CSGMaker::makeBoxedSphere
 
-    * HMM: getting involved just to make a simple box and sphere : 
-      suggests do it at CSG level instead with CSGMaker::makeLayered
+* will need to bring over some of the old TORCH genstep generation as
+  need more stats than with the simple duplicating PHOTON_CARRIER
 
 
-  * will need to bring over some of the old TORCH genstep generation as
-    need more stats than with the simple duplicating PHOTON_CARRIER
+TODO : U4 package to house Geant4 Utilities 
+----------------------------------------------
+
+Thinking about making simple Geant4 rainbow geometry reveals 
+problem of Geant4 code organization relying too much on j/PMTSim
+which is not standardly available.
+
+* GeoChain geometry needs a Geant4 volume as starting point : 
+* needs some improvements to X4VolumeMaker ?
+* DONE : pulled eg P4Volume::Transverse out of j/PMTSim : 
+  BUT this code needs to be relocated as j/PMTSim not standardly available ? 
+  seems like a need a G4 utilities package "U4" 
+
+* A LOWER LEVEL U4 PKG JUST ABOVE SysRap for Geant4 Utilities (eg OpticksRandom, P4Volume) MAKES SENSE.
+* X4 FOCUSSES ON TRANSLATION INTO GGeo MAKING IT TOO SPECIFIC AND HIGH LEVEL FOR GENERAL UTILTIES
+* CFG4 ALSO TOO HIGH LEVEL : 
+
+
+TODO : complete OpticksEvent 
+---------------------------------
 
 * compressed sequence recording (seqhis seqmat) is needed for OpticksEvent 
   as the full record is only appropriate for debugging with small numbers of photons 
@@ -54,11 +70,22 @@ TODO : cxsim.sh
 
 * thence will need OpticksEvent to start becoming complete
 
+
+TODO : change the G4Opticks engine to CSGOptiX
+-------------------------------------------------
+
 * then try switching the G4Opticks engine to use CSGOptiX either directly or via some slim middleware "Engine" 
  
+
+TODO : bring generation across
+------------------------------------
+
 * get generation going in new workflow to fully check the QEvent/qevent design  
 
 * review old and new looking for other aspects that need to be ported over 
+
+
+
 
 * OpticksEvent components and hookup to allow ab.py validation machinery to work with new workflow
 

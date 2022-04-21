@@ -26,7 +26,6 @@ Taking a look inside, hunting speckle::
     EYE=0,-0.7,0. UP=0,0,1 TMIN=0. CAM=0  ./cxr_geochain.sh 
 
 
-
 Debugging unexpected renders
 ------------------------------
 
@@ -39,6 +38,9 @@ Debugging unexpected renders
 
 Debugging blank renders
 ------------------------
+
+Arrange a viewpoint from the inside of a shape such that every pixel should intersect. 
+Thence can trace whats happening with any pixel. 
 
 ::
 
