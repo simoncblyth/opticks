@@ -1,6 +1,7 @@
 
 #include <cuda_runtime.h>
 #include <sstream>
+#include <map>
 
 #include "SStr.hh"
 #include "scuda.h"
@@ -99,6 +100,9 @@ std::string QBnd::DescOptical(const NP* optical, const NP* bnd )
 {
     bool consistent = optical->shape[0] == bnd->shape[0]*4 && bnd->shape[0] == int(bnd->names.size())  ;   
 
+    typedef std::map<unsigned, std::string> MUS ; 
+    MUS surf ; 
+
     std::stringstream ss ; 
     ss << "QBnd::DescOptical"
        << " optical " << optical->sstr() 
@@ -108,23 +112,53 @@ std::string QBnd::DescOptical(const NP* optical, const NP* bnd )
        << std::endl 
        ;   
 
-    //assert(consistent); 
+    assert(consistent); 
     assert( optical->shape.size() == 2 );
 
     unsigned ni = optical->shape[0] ; 
     unsigned nj = optical->shape[1] ; 
+    assert( nj == 4 ); 
 
     const unsigned* oo = optical->cvalues<unsigned>();    
+
+    std::vector<std::string> elem ; 
+
     for(unsigned i=0 ; i < ni ; i++) 
-    {   
-        if( i % 4 == 0 ) 
+    {  
+        unsigned b = i/4 ; 
+        unsigned ii = i % 4 ; 
+        if( ii == 0 ) 
         {   
-            unsigned b = i/4 ; 
-            ss << ( b < bnd->names.size() ? bnd->names[b] : "???" )  << std::endl ;   
+            elem.clear();   
+            const std::string& spec = bnd->names[b] ; 
+            SStr::Split( spec.c_str(), '/', elem );  
+            ss << std::setw(4) << b << " " << spec<< std::endl ;   
         }   
-        for(unsigned j=0 ; j < nj ; j++) ss << std::setw(4) << oo[i*nj+j] << " " ; 
-        ss << std::endl ; 
+
+        const std::string& name = elem[ii] ; 
+
+        ss << std::setw(4) << i << " : " << std::setw(4) << ii << " : " ; 
+
+        for(unsigned j=0 ; j < nj ; j++) 
+        {
+            unsigned idx = i*nj + j ; 
+            unsigned val = oo[idx] ; 
+            ss << std::setw(4) << val << " " ; 
+
+            if( j == 0 && val > 0 && ( ii == 1 || ii == 2)  ) 
+            {
+                surf[val] = name ;  
+            }
+        }
+        ss << " " << name << std::endl ; 
     }   
+
+    ss << " surfaces ....... " << std::endl ; 
+    for(MUS::const_iterator it=surf.begin() ; it != surf.end() ; it++)
+    {
+        ss << std::setw(5) << it->first << " : " << it->second << std::endl ; 
+    }
+
     std::string s = ss.str() ; 
     return s ; 
 }
@@ -209,14 +243,6 @@ NP* QBnd::AddBoundary( const NP* src, const char* specs_, char delim ) // static
     return QBnd::AddBoundary(src, specs ); 
 }
 
-void QBnd::GetOpticalValues( uint4& item, unsigned i, unsigned j, const char* qname )
-{
-    item.x = i + 1 ; 
-    item.y = 99u ; 
-    item.z = 99u ; 
-    item.w = 99u ; 
-} 
-
 NP* QBnd::AddOptical( const NP* optical, const std::vector<std::string>& bnames, const std::vector<std::string>& specs )
 {
     unsigned ndim = optical->shape.size() ; 
@@ -270,7 +296,15 @@ NP* QBnd::AddOptical( const NP* optical, const std::vector<std::string>& bnames,
             }
             else if(strstr(qname, "perfect"))
             {
-                GetOpticalValues(item, i, j, qname ); 
+                // HMM : NOPE: when not-found (i,j) will be stale or undefined : probably yielding zero 
+                // SO WHAT SHOULD THE INDEX 
+                assert( s == 1 || s == 2 ); 
+
+                item.x = 99u ; 
+                item.y = 99u ; 
+                item.z = 99u ; 
+                item.w = 99u ; 
+
                 ibytes = (const char*)&item; 
                 num_bytes = sizeof(uint4); 
             }

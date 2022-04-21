@@ -321,7 +321,7 @@ __global__ void _QSim_fill_state_0(qsim<T>* sim, quad6* state,  unsigned num_sta
 
     printf("//_QSim_fill_state_0 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );  
 
-    sim->fill_state(s, boundary, wavelength, cosTheta ); 
+    sim->fill_state(s, boundary, wavelength, cosTheta, state_id ); 
 
     state[state_id].q0.f = s.material1 ; 
     state[state_id].q1.f = s.m1group2 ; 
@@ -356,12 +356,12 @@ __global__ void _QSim_fill_state_1( qsim<T>* sim, qstate* state,  unsigned num_s
 
     const float& wavelength = dbg->wavelength ; 
     const float& cosTheta = dbg->cosTheta ;  
-    int boundary = state_id + 1 ; // boundary is 1-based
+    int boundary = state_id + 1 ; // boundary is 1-based  TOFIX: boundary now 0-based
 
     printf("//_QSim_fill_state_1 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );  
 
     qstate s ; 
-    sim->fill_state(s, boundary, wavelength, cosTheta ); 
+    sim->fill_state(s, boundary, wavelength, cosTheta, state_id ); 
 
     state[state_id] = s ; 
 

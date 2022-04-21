@@ -110,6 +110,9 @@ int main(int argc, char** argv)
     fdl->upload(); 
 
 
+    // HMM : WOULD BE BETTER FOR CONSISTENCY TO HAVE SINGLE UPLOAD API
+
+
     CSGOptiX cx(&ok, fdl ); 
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  
     cx.setComposition(ce); 

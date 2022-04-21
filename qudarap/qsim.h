@@ -107,7 +107,7 @@ struct qsim
     QSIM_METHOD void    generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
     QSIM_METHOD void    generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
-    QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta ); 
+    QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx ); 
 
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
@@ -276,23 +276,26 @@ Also only one elemnt of m1group2 is actually used
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta  )
+inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx  )
 {
-    // const int line = (boundary-1)*_BOUNDARY_NUM_MATSUR ;     // formerly used 1-based boundary to allow signing
     const int line = boundary*_BOUNDARY_NUM_MATSUR ;      // now that are not signing boundary use 0-based
 
     const int m1_line = cosTheta > 0.f ? line + IMAT : line + OMAT ;   
     const int m2_line = cosTheta > 0.f ? line + OMAT : line + IMAT ;   
     const int su_line = cosTheta > 0.f ? line + ISUR : line + OSUR ;   
 
-    //printf("//qsim.fill_state boundary %d line %d wavelength %10.4f m1_line %d \n", boundary, line, wavelength, m1_line ); 
 
     s.material1 = boundary_lookup( wavelength, m1_line, 0);   // refractive_index, absorption_length, scattering_length, reemission_prob
     s.m1group2  = boundary_lookup( wavelength, m1_line, 1);   // group_velocity ,  (unused          , unused           , unused)  
     s.material2 = boundary_lookup( wavelength, m2_line, 0);   // refractive_index, (absorption_length, scattering_length, reemission_prob) only m2:refractive index actually used  
     s.surface   = boundary_lookup( wavelength, su_line, 0);   //  detect,        , absorb            , (reflect_specular), reflect_diffuse     [they add to 1. so one not used] 
 
+    //printf("//qsim.fill_state boundary %d line %d wavelength %10.4f m1_line %d \n", boundary, line, wavelength, m1_line ); 
+
     s.optical = optical[su_line].u ;   // index/type/finish/value   [only index is actually used, to detect that a surface is present]
+
+    printf("//qsim.fill_state idx %d boundary %d line %d wavelength %10.4f m1_line %d m2_line %d su_line %d s.optical.x %d \n", 
+        idx, boundary, line, wavelength, m1_line, m2_line, su_line, s.optical.x ); 
 
     s.index.x = optical[m1_line].u.x ; // m1 index
     s.index.y = optical[m2_line].u.x ; // m2 index 
@@ -1253,7 +1256,7 @@ inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s,
 
     p.set_prd(boundary, identity, cosTheta); 
 
-    fill_state(s, boundary, *wavelength, cosTheta ); 
+    fill_state(s, boundary, *wavelength, cosTheta, idx ); 
 
     unsigned flag = 0 ;  
 

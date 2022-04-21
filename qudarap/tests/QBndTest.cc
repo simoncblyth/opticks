@@ -207,10 +207,10 @@ void test_Add_2()
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
     LOG(info) << " cfbase " << cfbase ; 
 
-    std::vector<std::string> specs = {"Air///Water", "Water/perfectAbsorbSurface/perfectAbsorbSurface/Air" } ; 
+    std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;
 
     NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
-    NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
+    NP* bnd     = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 
     LOG(info) << "BEFORE " << std::endl << QBnd::DescOptical(optical, bnd ) << std::endl ; 
 
