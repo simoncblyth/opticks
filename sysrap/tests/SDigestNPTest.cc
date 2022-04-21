@@ -1,7 +1,7 @@
 #include "OPTICKS_LOG.hh"
 #include "NP.hh"
 #include "SDigest.hh"
-#include "NPDigest.hh"
+#include "SDigestNP.hh"
 
 int main(int argc, char** argv)
 {
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
     for(int i=0 ; i < a->shape[0] ; i++)
     {
-        std::string dig = NPDigest::ArrayItem( a, i ); 
+        std::string dig = SDigestNP::Item( a, i ); 
         std::cout 
             << " i " << std::setw(4) << i 
             << "  dig " << dig

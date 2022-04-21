@@ -1,9 +1,9 @@
 #include <cassert>
 #include "NP.hh"
 #include "SDigest.hh"
-#include "NPDigest.hh" 
+#include "SDigestNP.hh" 
    
-std::string NPDigest::ArrayItem( const NP* a, int i, int j, int k, int l, int m, int o ) // static  
+std::string SDigestNP::Item( const NP* a, int i, int j, int k, int l, int m, int o ) // static  
 {
     const char* start = nullptr ; 
     unsigned num_bytes = 0 ; 

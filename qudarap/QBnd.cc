@@ -12,7 +12,7 @@
 #include "QTex.hh"
 #include "QBnd.hh"
 
-#include "NPDigest.hh"
+#include "SDigestNP.hh"
 #include "PLOG.hh"
 
 const plog::Severity QBnd::LEVEL = PLOG::EnvLevel("QBnd", "INFO"); 
@@ -62,7 +62,7 @@ std::string QBnd::DescDigest(const NP* bnd, int w )
         ss << std::setw(3) << i << " " ; 
         for(int j=0 ; j < nj ; j++) 
         {
-            std::string dig = NPDigest::ArrayItem(bnd, i, j ) ; 
+            std::string dig = SDigestNP::Item(bnd, i, j ) ; 
             std::string sdig = dig.substr(0, w); 
             ss << std::setw(w) << sdig << " " ; 
         }
@@ -254,7 +254,7 @@ QBnd::QBnd(const NP* buf)
 
 std::string QBnd::getItemDigest( int i, int j, int w ) const 
 {
-    std::string dig = NPDigest::ArrayItem(src, i, j ) ; 
+    std::string dig = SDigestNP::Item(src, i, j ) ; 
     std::string sdig = dig.substr(0, w); 
     return sdig ; 
 }

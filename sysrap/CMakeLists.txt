@@ -52,7 +52,7 @@ set(SOURCES
     SMap.cc
     SCount.cc
     SDigest.cc
-    NPDigest.cc
+    SDigestNP.cc
     SDirect.cc
     SArrayDigest.cc
 
@@ -133,7 +133,7 @@ set(HEADERS
     SMap.hh
     SCount.hh
     SDigest.hh
-    NPDigest.hh
+    SDigestNP.hh
     SDirect.hh
     SArrayDigest.hh
 
