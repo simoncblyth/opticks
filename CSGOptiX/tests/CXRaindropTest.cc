@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
     fdl->setBnd(bndplus);  // instanciates bd CSGName using bndplus.names
-
+    fdl->saveBnd();   // DIRTY: changing the bnd : ONLY APPROPRIATE IN SMALL TESTS
 
     fdl->setPrimBoundary( 0, "Rock//perfectAbsorbSurface/Air" ); 
     fdl->setPrimBoundary( 1, "Air///Water" ); 

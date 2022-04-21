@@ -97,7 +97,7 @@ struct CSG_API CSGFoundry
     static CSGFoundry* Load();
     static CSGFoundry* Load_();
     static CSGFoundry* Load(const char* base, const char* rel);
-    static CSGFoundry* Load(const char* dir );
+    //static CSGFoundry* Load(const char* dir );
 
     static int Compare(const CSGFoundry* a , const CSGFoundry* b ); 
 
@@ -255,6 +255,8 @@ struct CSG_API CSGFoundry
 
     void write(const char* dir) const ;
     void write(const char* base, const char* rel) const ;
+    void saveBnd() const ; 
+
 
     // these argumentless methods require CFBASE envvar or geom member to be set 
     void write() const ; 

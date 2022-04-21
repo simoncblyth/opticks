@@ -431,7 +431,7 @@ extern "C" __global__ void __closesthit__ch()
 
     prd->set_identity( identity ) ;
     //boundary is set in intersect 
-    printf("//__closesthit__ch prd.boundary %d \n", prd->boundary() ); 
+    //printf("//__closesthit__ch prd.boundary %d \n", prd->boundary() ); 
 
     float3* normal = prd->normal(); 
     *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;  
@@ -446,7 +446,7 @@ extern "C" __global__ void __closesthit__ch()
 
     const float t = uint_as_float(  optixGetAttribute_3() ) ;  
     unsigned boundary = optixGetAttribute_4() ; 
-    printf("//__closesthit__ch boundary %d \n", boundary ); 
+    //printf("//__closesthit__ch boundary %d \n", boundary ); 
 
     //unsigned instance_index = optixGetInstanceIndex() ;  0-based index within IAS
     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
@@ -494,7 +494,7 @@ extern "C" __global__ void __intersection__is()
     {
         const unsigned hitKind = 0u ;            // only 8bit : could use to customize how attributes interpreted
         const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
-        printf("//__intersection__is boundary %d \n", boundary ); 
+        //printf("//__intersection__is boundary %d \n", boundary ); 
 
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
@@ -502,7 +502,7 @@ extern "C" __global__ void __intersection__is()
             quad2* prd = getPRD<quad2>(); 
             prd->q0.f = isect ; 
             prd->set_boundary(boundary) ; 
-            printf("//__intersection__is prd.set_boundary %d \n", boundary ); 
+            //printf("//__intersection__is prd.set_boundary %d \n", boundary ); 
         }   
 #else
         unsigned a0, a1, a2, a3, a4  ;      
@@ -511,7 +511,7 @@ extern "C" __global__ void __intersection__is()
         a2 = float_as_uint( isect.z );
         a3 = float_as_uint( isect.w ) ; // perhaps no need to pass the "t", should be standard access to "t"
         a4 = boundary ; 
-        printf("//__intersection__is a4.boundary %d \n", a4 ); 
+        //printf("//__intersection__is a4.boundary %d \n", a4 ); 
         optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4 );   
 #endif
         // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 

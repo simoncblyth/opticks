@@ -15,7 +15,11 @@ EOU
 export GEOM=BoxedSphere
 
 if [ "$(uname)" == "Darwin" ]; then 
+
     export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain_Darwin/$GEOM
+    #export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain/$GEOM
+
+    # HMM: when analysing grabbed outputs from Linux on Darwin need to use the Linux dir
 else
     export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain/$GEOM
 fi 

@@ -1806,8 +1806,7 @@ on loading
 **/
 void CSGFoundry::write(const char* dir_) const 
 {
-    int create_dirs = 2 ; // 2:dirpath 
-    const char* dir = SPath::Resolve(dir_, create_dirs); 
+    const char* dir = SPath::Resolve(dir_, DIRPATH); 
     LOG(info) << dir ; 
 
     if(meshname.size() > 0 ) NP::WriteNames( dir, "meshname.txt", meshname );
@@ -1825,6 +1824,30 @@ void CSGFoundry::write(const char* dir_) const
     if(bnd)  bnd->save(dir,  "bnd.npy") ; 
     if(optical) optical->save(dir, "optical.npy") ; 
     if(icdf) icdf->save(dir, "icdf.npy") ; 
+}
+
+/**
+CSGFoundry::saveBnd
+---------------------
+
+CAUTION : ONLY APPROPRIATE IN SMALL SCALE TESTING WHEN ARE DOING 
+DIRTY THINGS LIKE ADDING BOUNDARIES WITH QBnd::Add SEE FOR EXAMPLE
+CSGOptiX/tests/CXRaindropTest.cc 
+
+**/
+
+void CSGFoundry::saveBnd() const 
+{
+    if(!bnd) return ; 
+    const char* ocf = getOriginCFBase(); 
+    assert(ocf)  ; 
+    const char* dir = SPath::Resolve(ocf, RELDIR, DIRPATH );
+    LOG(info)
+        << " save bnd.npy to dir [" << dir << "]" 
+        << " originCFBase " << ocf  
+        ;
+
+    bnd->save(dir,  "bnd.npy" ); 
 }
 
 
@@ -1857,6 +1880,8 @@ void CSGFoundry::load()
     }
     load(cfbase, RELDIR );  
 }
+
+
 
 void CSGFoundry::load(const char* base, const char* rel) 
 {
@@ -2048,13 +2073,6 @@ CSGFoundry* CSGFoundry::Load_() // static
     return fd ; 
 }
 
-CSGFoundry*  CSGFoundry::Load(const char* dir) // static
-{
-    CSGFoundry* fd = new CSGFoundry();  
-    fd->load(dir); 
-    return fd ; 
-} 
-
 CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 {
     if(geom == nullptr) geom = SSys::getenvvar("GEOM", "GeneralSphereDEV") ; 
@@ -2076,18 +2094,11 @@ CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
     return fd ; 
 } 
 
-
-
-/**
-CSGFoundry::Load
------------------
-
-Convention is for rel to be named "CSGFoundry" thus
-
-**/
-
 CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
 {
+    bool conventional = strcmp( rel, RELDIR) == 0  ; 
+    if(!conventional) LOG(fatal) << "Convention is for rel to be named [" << RELDIR << "] not: [" << rel << "]"  ; 
+    assert(conventional); 
     CSGFoundry* fd = new CSGFoundry();  
     fd->load(base, rel); 
     return fd ; 

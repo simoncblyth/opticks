@@ -174,7 +174,7 @@ class CSGFoundry(object):
         self.load(fold)
         self.meshnamedict = self.namelist_to_namedict(self.meshname)
 
-        if hasattr(self, 'bnd_names'):
+        if hasattr(self, 'bnd_names'):  # names list from NP bnd.names metadata 
              bndnamedict = self.namelist_to_namedict(self.bnd_names)
         else:
              bndnamedict = {}

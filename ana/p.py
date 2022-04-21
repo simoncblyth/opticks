@@ -25,8 +25,11 @@ hit__      = lambda p,msk:p[np.where( ( flagmask__(p) & msk ) == msk)]
 
 
 ## hmm need to use opticks-switch-key when analysing event from remote 
+## actually should be using the specific CSGFoundry persisted and grabbed 
+
 from opticks.CSG.CSGFoundry import CSGFoundry 
 cf = CSGFoundry.Load()
+
 bflagdesc_ = lambda p:"%s : %s " % ( flagdesc_(p), cf.bndnamedict[boundary_(p)] )
 
 
