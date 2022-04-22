@@ -6,13 +6,11 @@ Standalone compile and run with::
 
    ./qsim_test.sh 
 
-
 **/
-
-#include "s_mock_curand.h"
 
 #include "scuda.h"
 #include "squad.h"
+#include "qcurand.h"    // this brings in s_mock_curand.h for CPU 
 #include "qsim.h"
 
 void test_generate_photon_dummy(const qsim<float>* sim, curandStateXORWOW& rng)

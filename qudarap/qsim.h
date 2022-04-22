@@ -78,6 +78,7 @@ struct qsim
 // TODO: get more methods to work on CPU as well as GPU for easier testing 
 
     QSIM_METHOD void    generate_photon_dummy(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon_torch(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
 
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
@@ -153,7 +154,6 @@ struct qsim
 }; 
 
 
-// TODO: get more of the below to work on CPU with mocked curand and tex2D
 
 
 template <typename T>
@@ -196,7 +196,7 @@ inline QSIM_METHOD float3 qsim<T>::uniform_sphere(const float u0, const float u1
 }
 
 
-
+// TODO: get more of the below to work on CPU with mocked curand (and in future mocked tex2D and cudaTextureObject_t )
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 

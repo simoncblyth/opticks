@@ -12,6 +12,7 @@ what many of the QUDARap tests do.
 
 HMM: actually mocking curand_uniform is straightforward see sysrap/s_mock_curand.h 
 
+Also mocking tex2D lookups not so difficult see starting point sysrap/s_mock_texture.h 
 
 **/
 
