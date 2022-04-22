@@ -182,33 +182,10 @@ void test_findName(const QBnd& qb)
     }
 }
 
-void test_Add(const NP* src)
-{
-    const char* spec = R"LITERAL(
-    Air///Water
-    Air///Water
-    Water///Air
-    Water/perfectAbsorbSurface/perfectAbsorbSurface/Air
-    Rock//perfectAbsorbSurface/Air
-)LITERAL" ; 
-
-    std::cout << "src" << std::endl << QBnd::DescDigest(src,8) ; 
-    NP* dst = QBnd::AddBoundary(src, spec ); 
-    std::cout << "dst" << std::endl << QBnd::DescDigest(dst,8) ; 
-
-    const char* fold = SPath::Resolve("$TMP/QBndTest/Add", DIRPATH); 
-    LOG(info) << " fold " << fold ; 
-    src->save(fold, "src.npy"); 
-    dst->save(fold, "dst.npy"); 
-}
-
-void test_Add_2()
+void test_Add()
 {
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
     LOG(info) << " cfbase " << cfbase ; 
-
-    std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;
-
     NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
     NP* bnd     = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
 
@@ -216,6 +193,7 @@ void test_Add_2()
 
     NP* opticalplus = nullptr ; 
     NP* bndplus = nullptr ; 
+    std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;
 
     QBnd::Add( &opticalplus, &bndplus, optical, bnd, specs ); 
 
@@ -244,9 +222,8 @@ int main(int argc, char** argv)
 
     test_DescDigest(qb); 
     test_findName(qb); 
-    test_Add(qb.src); 
 */
-    test_Add_2(); 
+    test_Add(); 
 
 
     return 0 ; 

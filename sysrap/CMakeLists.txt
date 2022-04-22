@@ -179,6 +179,7 @@ set(HEADERS
     SBuf.hh
 
     scuda.h
+    s_mock_curand.h
     squad.h
     sflow.h
     sqat4.h

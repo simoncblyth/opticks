@@ -1,10 +1,11 @@
 #pragma once
-#include "curand_kernel.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
    #define QCURAND_METHOD __device__
+   #include "curand_kernel.h"
 #else
    #define QCURAND_METHOD 
+   #include "s_mock_curand.h"
 #endif 
 
 template <typename T>

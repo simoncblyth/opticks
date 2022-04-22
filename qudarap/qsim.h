@@ -75,6 +75,15 @@ struct qsim
     static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
  
 
+// TODO: get more methods to work on CPU as well as GPU for easier testing 
+
+    QSIM_METHOD void    generate_photon_dummy(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+
+    QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
+    QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
+
+// TODO: many of the below could be static   
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
     QSIM_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
@@ -89,8 +98,6 @@ struct qsim
     QSIM_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
     QSIM_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);
 
-
-
     QSIM_METHOD void    cerenkov_fabricate_genstep(GS& g, bool energy_range );
     QSIM_METHOD float   cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng, const GS& g);
     QSIM_METHOD float   cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng) ; 
@@ -101,16 +108,12 @@ struct qsim
     QSIM_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ); 
 
 
-    QSIM_METHOD void    generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
+    QSIM_METHOD void    generate_photon_carrier(    quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon_simtrace(   quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon(            quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
 
-    QSIM_METHOD void    generate_photon(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
-    QSIM_METHOD void    generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
-    QSIM_METHOD void    generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id  ); 
 
     QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx ); 
-
-    QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
-    QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
 
     QSIM_METHOD static void lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, unsigned idx  ); 
     QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng, unsigned idx); 
@@ -150,7 +153,49 @@ struct qsim
 }; 
 
 
-// TODO: get the below to work on CPU with mocked curand and tex2D
+// TODO: get more of the below to work on CPU with mocked curand and tex2D
+
+
+template <typename T>
+inline QSIM_METHOD void qsim<T>::generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+{
+    printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n", 
+       photon_id, 
+       genstep_id, 
+       gs.q0.i.x, 
+       gs.q0.i.y,
+       gs.q0.i.z, 
+       gs.q0.i.w
+      );  
+
+    p.q0.i.x = 1 ; p.q0.i.y = 2 ; p.q0.i.z = 3 ; p.q0.i.w = 4 ; 
+    p.q1.i.x = 1 ; p.q1.i.y = 2 ; p.q1.i.z = 3 ; p.q1.i.w = 4 ; 
+    p.q2.i.x = 1 ; p.q2.i.y = 2 ; p.q2.i.z = 3 ; p.q2.i.w = 4 ; 
+    p.q3.i.x = 1 ; p.q3.i.y = 2 ; p.q3.i.z = 3 ; p.q3.i.w = 4 ; 
+
+    p.set_flag(TORCH); 
+}
+
+
+template <typename T>
+inline QSIM_METHOD float3 qsim<T>::uniform_sphere(curandStateXORWOW& rng)
+{
+    float phi = curand_uniform(&rng)*2.f*M_PIf;
+    float cosTheta = 2.f*curand_uniform(&rng) - 1.f ; // -1.f -> 1.f 
+    float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
+    return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
+}
+
+template <typename T>
+inline QSIM_METHOD float3 qsim<T>::uniform_sphere(const float u0, const float u1)
+{
+    float phi = u0*2.f*M_PIf;
+    float cosTheta = 2.f*u1 - 1.f ; // -1.f -> 1.f 
+    float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
+    return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
+}
+
+
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -171,6 +216,10 @@ inline QSIM_METHOD float4 qsim<T>::boundary_lookup( unsigned ix, unsigned iy )
     float4 props = tex2D<float4>( boundary_tex, x, y );     
     return props ; 
 }
+
+
+
+
 
 /**
 qsim::boundary_lookup nm line k 
@@ -273,6 +322,17 @@ is not much used.
 
 Also only one elemnt of m1group2 is actually used 
 
+
+s.optical.x 
+    used to distinguish between : boundary, surface (and in future multifilm)
+    
+    * currently contains 1-based surface index with 0 meaning "boundary" and anything else "surface"
+
+    * TODO: encode boundary type enum into the high bits of s.optical.x for three way split 
+      (perhaps use trigger strings like MULTIFILM in the boundary spec to configure)
+      THIS WILL NEED TO BE DONE AT x4 translation level (and repeated in QBndOptical for 
+      dynamic boundary adding) 
+
 **/
 
 template <typename T>
@@ -292,10 +352,10 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float 
 
     //printf("//qsim.fill_state boundary %d line %d wavelength %10.4f m1_line %d \n", boundary, line, wavelength, m1_line ); 
 
-    s.optical = optical[su_line].u ;   // index/type/finish/value   [only index is actually used, to detect that a surface is present]
+    s.optical = optical[su_line].u ;   // 1-based-surface-index-0-meaning-boundary/type/finish/value  (type,finish,value not used currently)
 
-    printf("//qsim.fill_state idx %d boundary %d line %d wavelength %10.4f m1_line %d m2_line %d su_line %d s.optical.x %d \n", 
-        idx, boundary, line, wavelength, m1_line, m2_line, su_line, s.optical.x ); 
+    //printf("//qsim.fill_state idx %d boundary %d line %d wavelength %10.4f m1_line %d m2_line %d su_line %d s.optical.x %d \n", 
+    //    idx, boundary, line, wavelength, m1_line, m2_line, su_line, s.optical.x ); 
 
     s.index.x = optical[m1_line].u.x ; // m1 index
     s.index.y = optical[m2_line].u.x ; // m2 index 
@@ -305,23 +365,6 @@ inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float 
     //printf("//qsim.fill_state \n"); 
 }
 
-template <typename T>
-inline QSIM_METHOD float3 qsim<T>::uniform_sphere(curandStateXORWOW& rng)
-{
-    float phi = curand_uniform(&rng)*2.f*M_PIf;
-    float cosTheta = 2.f*curand_uniform(&rng) - 1.f ; // -1.f -> 1.f 
-    float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
-    return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
-}
-
-template <typename T>
-inline QSIM_METHOD float3 qsim<T>::uniform_sphere(const float u0, const float u1)
-{
-    float phi = u0*2.f*M_PIf;
-    float cosTheta = 2.f*u1 - 1.f ; // -1.f -> 1.f 
-    float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
-    return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
-}
 
 /**
 qsim::lambertian_direction following G4LambertianRand 
@@ -1239,7 +1282,7 @@ TODO: missing needs to return BREAK
 **/
 
 template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD int qsim<T>::propagate(const int bounce, quad4& p, qstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx ) 
 {
     float* wavelength = &p.q2.f.w ; 
     float3* dir = (float3*)&p.q1.f.x ;    
@@ -1850,35 +1893,15 @@ An input photon carried within the genstep q2:q5 is repeatedly provided.
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
+inline QSIM_METHOD void qsim<T>::generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
 {
     p.q0.f = gs.q2.f ; 
     p.q1.f = gs.q3.f ; 
     p.q2.f = gs.q4.f ; 
     p.q3.f = gs.q5.f ; 
+
+    p.set_flag(TORCH); 
 }
- 
-
-/**
-qsim::generate_photon
-----------------------
-
-Moved non-standard center-extent gensteps to use qsim::generate_photon_simtrace not this 
-
-**/
-
-template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
-{
-    const int& gencode = gs.q0.i.x ; 
-    //printf("//qsim.generate_photon gencode %d \n", gencode); 
-    switch(gencode)
-    {
-        case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(p, rng, gs, photon_id, genstep_id) ; break ; 
-        default:                             generate_photon_dummy(p, rng, gs, photon_id, genstep_id) ; break ; 
-    }
-}
-
 
 /**
 qsim::generate_photon_simtrace
@@ -1899,7 +1922,7 @@ TODO: implement local index by including photon_id offset with the gensteps
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
+inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
     C4U gsid ;  
 
@@ -1954,24 +1977,25 @@ inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(quad4& p, curandStateX
 
 
 
+/**
+qsim::generate_photon
+----------------------
+
+Moved non-standard center-extent gensteps to use qsim::generate_photon_simtrace not this 
+
+**/
+
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )
+inline QSIM_METHOD void qsim<T>::generate_photon(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
-    printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n", 
-       photon_id, 
-       genstep_id, 
-       gs.q0.i.x, 
-       gs.q0.i.y,
-       gs.q0.i.z, 
-       gs.q0.i.w
-      );  
-
-    p.q0.i.x = 1 ; p.q0.i.y = 2 ; p.q0.i.z = 3 ; p.q0.i.w = 4 ; 
-    p.q1.i.x = 1 ; p.q1.i.y = 2 ; p.q1.i.z = 3 ; p.q1.i.w = 4 ; 
-    p.q2.i.x = 1 ; p.q2.i.y = 2 ; p.q2.i.z = 3 ; p.q2.i.w = 4 ; 
-    p.q3.i.x = 1 ; p.q3.i.y = 2 ; p.q3.i.z = 3 ; p.q3.i.w = 4 ; 
+    const int& gencode = gs.q0.i.x ; 
+    //printf("//qsim.generate_photon gencode %d \n", gencode); 
+    switch(gencode)
+    {
+        case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(p, rng, gs, photon_id, genstep_id) ; break ; 
+        default:                             generate_photon_dummy(p, rng, gs, photon_id, genstep_id) ; break ; 
+    }
 }
-
 
 
 

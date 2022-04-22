@@ -6,6 +6,10 @@ QBnd
 
 CUDA-centric equivalent for optixrap/OBndLib 
 
+TODO: combine QBnd and QOptical into QOpticalBnd 
+      as bnd and optical are closely related and require coordinated changes
+      when adding dynamic boundaries
+
 **/
 
 #include <vector>
@@ -27,10 +31,9 @@ struct QUDARAP_API QBnd
     static const QBnd*          INSTANCE ; 
     static const QBnd*          Get(); 
 
-
     static std::string DescOptical(const NP* optical, const NP* bnd ); 
     static void Add( NP** opticalplus, NP** bndplus, const NP* optical, const NP* bnd,  const std::vector<std::string>& specs ); 
-
+    static void GetSpecsFromString( std::vector<std::string>& specs , const char* specs_, char delim ); 
     static NP*  AddOptical( const NP* optical, const std::vector<std::string>& bnames, const std::vector<std::string>& specs ) ; 
     static void GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned nl, unsigned nm, const char* name ); 
     static NP*  AddBoundary( const NP* src, const char* specs, char delim='\n' ); 

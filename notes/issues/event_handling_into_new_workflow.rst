@@ -29,29 +29,61 @@ TODO : cxs_raindrop.sh simulation : CXRaindropTest
 Create raindrop simulation to give rainbow photon histories, 
 so have some physical histories for bringing over compressed recording.
 
-* need container box with Rock//perfectAbsorbSurface/Air using new QBnd::Add capabilities
-
-  * thinking about starting from Geant4 for this revealed the need for a U4 package, 
-    so instead did at CSG level 
-  * DONE : added CSGMaker::makeBoxedSphere
+TODO : TORCH genstep
+-----------------------
 
 * will need to bring over some of the old TORCH genstep generation as
   need more stats than with the simple duplicating PHOTON_CARRIER
 
+* DONE: fixed omitted p.set_flag in qsim::generate_photon_carrier
 
-shakedown : not getting expected SURFACE_ABSORB
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+optixrap/cu/torchstep.h
+    HMM: there are a great many modes : just need to 
+    bring over a few of them to establish the pattern,
+    subsequently can just bring over as needed 
+
+How to develop torch photon generation in better way than done previously 
+(which was testable only on GPU with OptiX < 7)
+
+* MUST be tested and developed on CPU in low dependency manner with CUDA compatible code (think scuda.h squad.h) 
+* develop in standalone low-dependency SysRap tests based on SEvent.hh or similar  
+* pure CUDA GPU testing can follow sysrap/SU.cu  
+
+Steps:
+
+1. SEvent uses SRng : find way to make CPU random generation code look like curand_uniform on GPU 
+
+   * DONE : see sysrap/s_mock_curand.h sysrap/tests/s_mock_curand_test.cc
+   * DONE : qudarap/tests/qsim_test.cc making some qsim.h methods testable on CPU using mocking 
+
+
+DONE : raindrop geometry with dynamically QBnd::Add added boundaries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Need container box with Rock//perfectAbsorbSurface/Air using new QBnd::Add capabilities
+
+* thinking about starting from Geant4 and using GeoChain translation 
+  for this revealed the need for a U4 package
+
+* so instead defer starting from Geant4 to create test geometries until have setup U4, instead create geometry at CSG level 
+* DONE : added CSGMaker::makeBoxedSphere
+
+FIXED : now get expected SURFACE_ABSORB
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * probably because forgot to update the optical buffer following additions to the bnd 
   so that gives inconsistency that is causing surfaces not to kick in 
 
+  * CONFIRMED : THIS WAS THE PRIMARY REASON 
+
   * DONE: assert that optical buffer dimensions are consistent with the bnd
     (optical buffer should be 4* the number of bnd) : then fix that 
 
-  * CSG_GGeo_Convert::convertBndLib invokes GBndLib::getOpticalBuf 
-
   * DONE: modify QBnd::Add to update both optical and bnd consistently 
 
+  * TODO:combine QBnd and QOptical into QOpticalBnd as consistent handling needed  
+
+  * CSG_GGeo_Convert::convertBndLib invokes GBndLib::getOpticalBuf 
 
 
 ::
@@ -64,11 +96,6 @@ shakedown : not getting expected SURFACE_ABSORB
     //qsim.propagate idx 0 bounce 1 command 3 flag 0 s.optical.x 0 
     //qsim.propagate idx 1 bounce 1 command 3 flag 0 s.optical.x 0 
     //qsim.propagate idx 2 bounce 1 command 3 flag 0 s.optical.x 0 
-    //qsim.propagate idx 3 bounce 1 command 3 flag 0 s.optical.x 0 
-    //qsim.propagate idx 4 bounce 1 command 3 flag 0 s.optical.x 0 
-    //qsim.propagate idx 5 bounce 1 command 3 flag 0 s.optical.x 0 
-    //qsim.propagate idx 6 bounce 1 command 3 flag 0 s.optical.x 0 
-    //qsim.propagate idx 7 bounce 1 command 3 flag 0 s.optical.x 0 
     //qsim.propagate idx 8 bounce 1 command 3 flag 0 s.optical.x 0 
     //qsim.propagate idx 9 bounce 1 command 3 flag 0 s.optical.x 0 
     //OptiX7Test.cu:simulate idx 0 bounce 2 boundary 65535 

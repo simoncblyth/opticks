@@ -1,4 +1,4 @@
-
+// name=SRngTest ; gcc $name.cc -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
 #include <iostream>
 #include <iomanip>
 #include <functional>
@@ -14,6 +14,7 @@ template <typename T> void test_rng( const std::function<T()>& fn )
     do {
         a = fn() ; 
         b = fn() ; 
+
         std::cout 
             << " count " << std::setw(10) <<  count 
             << " a " << std::fixed << std::setw(10) << std::setprecision(4) <<  a 
@@ -37,15 +38,25 @@ template <typename T> void test_rng( const std::function<T()>& fn )
 }
 
 
-int main(int argc, char** argv)
+void test_rng_0()
 {
     unsigned seed = 1u ; 
-    //SRng<double> rng0(seed) ; 
-    //test_rng<double>(rng0); 
+    SRng<double> rng0(seed) ; 
+    test_rng<double>(rng0); 
+}
 
+void test_rng_1()
+{
+    unsigned seed = 1u ; 
     SRng<float> rng1(seed) ; 
     test_rng<float>(rng1); 
+}
 
+
+int main(int argc, char** argv)
+{
+    //test_rng_0();  
+    test_rng_1();  
     return 0;
 }
 

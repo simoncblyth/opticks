@@ -198,10 +198,10 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
     unsigned idx = launch_idx.x ;  // aka photon_id
     unsigned genstep_id = evt->seed[idx] ; 
+    const quad6& gs     = evt->genstep[genstep_id] ; 
+
     //if( idx == 0 ) 
     printf("//[OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
-
-    const quad6& gs     = evt->genstep[genstep_id] ; 
      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 

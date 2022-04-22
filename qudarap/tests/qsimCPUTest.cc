@@ -5,9 +5,13 @@ qsimCPUTest.cc
 Testing GPU code on CPU is a stretch, would need to 
 mock tex2D and curand.
 
+
 More realistic is testing QUDARap code intended to be 
 used with OptiX 7 with CUDA alone.  That is 
 what many of the QUDARap tests do.
+
+HMM: actually mocking curand_uniform is straightforward see sysrap/s_mock_curand.h 
+
 
 **/
 

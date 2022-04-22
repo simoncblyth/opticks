@@ -75,19 +75,12 @@ std::string QBnd::DescDigest(const NP* bnd, int w )
 
 /**
 QBnd::Add
-------------
+-----------
 
-optical buffer has 4 uint for each species 
-and 4 species for each boundary as normal  
-
-Water/Steel_surface/Steel_surface/Steel
-  19    0    0    0 
-  21    0    3   20 
-  21    0    3   20 
-   4    0    0    0 
+Coordinates addition of boundaries to the optical and bnd buffers using the boundary string 
+specification. 
 
 **/
-
 
 void QBnd::Add( NP** opticalplus, NP** bndplus, const NP* optical, const NP* bnd,  const std::vector<std::string>& specs ) // static 
 {
@@ -95,6 +88,14 @@ void QBnd::Add( NP** opticalplus, NP** bndplus, const NP* optical, const NP* bnd
     *bndplus = AddBoundary( bnd, specs );     
 }
 
+void QBnd::GetSpecsFromString( std::vector<std::string>& specs , const char* specs_, char delim )
+{
+    std::stringstream ss;
+    ss.str(specs_)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) if(!SStr::Blank(s.c_str())) specs.push_back(s) ;
+    LOG(info) << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
+}
 
 std::string QBnd::DescOptical(const NP* optical, const NP* bnd )
 {
@@ -219,29 +220,25 @@ void QBnd::GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned n
     }
 } 
 
-
-
-
-
 /**
-QBnd::AddBoundary
-------------------------
+QBnd::AddOptical
+------------------
 
-Creates new array containing the src array with extra boundaries constructed 
-from materials and surfaces already present in the src array as configured by the 
-specs argument. 
+Used from QBnd::Add in coordination with QBnd::AddBoundary.
+Using this alone would break optical:bnd consistency. 
+
+optical buffer has 4 uint for each species and 4 species for each boundary
+
+Water/Steel_surface/Steel_surface/Steel
+  19    0    0    0 
+  21    0    3   20 
+  21    0    3   20 
+   4    0    0    0 
+
+The .x is the 1-based material or surface index with 0 signifying none
+which shoild only ever happen for surfaces.
 
 **/
-NP* QBnd::AddBoundary( const NP* src, const char* specs_, char delim ) // static 
-{
-    std::vector<std::string> specs ; 
-    std::stringstream ss;
-    ss.str(specs_)  ;
-    std::string s;
-    while (std::getline(ss, s, delim)) if(!SStr::Blank(s.c_str())) specs.push_back(s) ;
-    LOG(info) << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
-    return QBnd::AddBoundary(src, specs ); 
-}
 
 NP* QBnd::AddOptical( const NP* optical, const std::vector<std::string>& bnames, const std::vector<std::string>& specs )
 {
@@ -296,10 +293,17 @@ NP* QBnd::AddOptical( const NP* optical, const std::vector<std::string>& bnames,
             }
             else if(strstr(qname, "perfect"))
             {
-                // HMM : NOPE: when not-found (i,j) will be stale or undefined : probably yielding zero 
-                // SO WHAT SHOULD THE INDEX 
-                assert( s == 1 || s == 2 ); 
-
+                assert( s == 1 || s == 2 );  // only expecting "perfect" surfaces not materials
+                 //
+                // NB: when found==false (i,j) will be stale or undefined SO DO NOT USE THEM HERE 
+                //
+                // NB: the only way this item is currently used is checking of item.x (aka s.optical.x)  > 0 
+                //     to indicate that propagate_at_surface should be used and not propagate_at_boundary 
+                //     while the value for .x has traditionally been a 1-based surface index
+                //     that index is at qsim.h level just metadata : it is never used to lookup anything
+                //
+                // TODO: mint a new index to use for added surfaces, rather than here just using 99u 
+                // 
                 item.x = 99u ; 
                 item.y = 99u ; 
                 item.z = 99u ; 
@@ -322,6 +326,18 @@ NP* QBnd::AddOptical( const NP* optical, const std::vector<std::string>& bnames,
     return opticalplus ; 
 }
 
+
+/**
+QBnd::AddBoundary
+------------------------
+
+Canonically invoked from QBnd::Add in coordination with QBnd::AddOptical to maintain consistency. 
+
+Creates new array containing the src array with extra boundaries constructed 
+from materials and surfaces already present in the src array as configured by the 
+specs argument. 
+
+**/
 
 NP* QBnd::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) // static 
 {
