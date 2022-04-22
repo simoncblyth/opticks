@@ -752,7 +752,7 @@ std::string CSGFoundry::detailPrim(unsigned primIdx) const
     int numNode = pr->numNode() ; 
     int nodeOffset = pr->nodeOffset() ; 
     int boundary = getPrimBoundary(primIdx); 
-    const char* bndName = bd->getName(boundary);
+    const char* bndName = bd ? bd->getName(boundary) : "-bd" ;
 
     float4 ce = pr->ce(); 
 

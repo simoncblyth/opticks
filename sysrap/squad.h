@@ -88,6 +88,8 @@ void           quad2::set_identity(unsigned id) { q1.u.z = id ;  }
 unsigned       quad2::boundary() const {   return q1.u.w ;  }
 void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
 
+
+
 struct quad4 
 { 
     quad q0 ; 
@@ -114,6 +116,9 @@ struct quad4
     SUTIL_INLINE SUTIL_HOSTDEVICE void get_prd( unsigned& boundary, unsigned& identity, float&  orient ); 
     SUTIL_INLINE SUTIL_HOSTDEVICE void get_flag(unsigned& flag) const ; 
     SUTIL_INLINE SUTIL_HOSTDEVICE unsigned flagmask() const ; 
+
+    SUTIL_INLINE SUTIL_HOSTDEVICE void set_wavelength( float wl ); 
+    SUTIL_INLINE SUTIL_HOSTDEVICE float wavelength() const ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -146,6 +151,10 @@ void quad4::zero()
 float*       quad4::data() {         return &q0.f.x ;  }
 const float* quad4::cdata() const  { return &q0.f.x ;  }
 
+
+
+// q3.u.z : orient_idx 
+
 void quad4::set_idx( unsigned  idx)
 {
     q3.u.z = ( q3.u.z & 0x80000000u ) | ( 0x7fffffffu & idx ) ;   // retain bit 31 asis 
@@ -165,9 +174,11 @@ void quad4::get_orient( float& orient )
 
 void quad4::set_prd( unsigned  boundary, unsigned  identity, float  orient )
 {
-    q3.u.x = ( q3.u.x & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ; 
+    q3.u.x = ( q3.u.x & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ;  // clear boundary bits then set them 
     q3.u.y = identity ;  
     q3.u.z = ( q3.u.z & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; 
+
+    // HMM: can identity spare a bit for orient : as that would be cleaner ?
 }
 void quad4::get_prd( unsigned& boundary, unsigned& identity, float& orient )
 {
@@ -191,6 +202,8 @@ unsigned quad4::flagmask() const
     return q3.u.w ; 
 }
 
+void quad4::set_wavelength( float wl ){ q2.f.w = wl ; }
+float quad4::wavelength() const { return q2.f.w ; } 
 
 
 void quad4::set_flags(unsigned boundary, unsigned identity, unsigned idx, unsigned flag, float orient ) 
@@ -210,6 +223,112 @@ void quad4::get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, uns
     idx = ( q3.u.z & 0x7fffffffu ) ;
     orient = ( q3.u.z & 0x80000000u ) ? -1.f : 1.f ;   
 }
+
+
+/**
+photon
+---------
+
+**/
+
+struct photon
+{
+    float3 pos ; 
+    float  t ; 
+
+    float3 mom ; 
+    float  weight ; 
+
+    float3 pol ; 
+    float  wavelength ;   
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    std::string desc() const ; 
+#endif 
+
+    unsigned idx() const {      return orient_idx & 0x7fffffffu  ;  }
+    float    orient() const {   return ( orient_idx & 0x80000000u ) ? -1.f : 1.f ; } 
+
+    void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } // clear orient bit and then set it 
+    void set_idx( unsigned idx ){  orient_idx = ( orient_idx & 0x80000000u ) | ( 0x7fffffffu & idx ) ; }   // retain bit 31 asis 
+
+    unsigned flag() const {     return boundary_flag & 0xffffu ; }
+    unsigned boundary() const { return boundary_flag >> 16 ; }
+
+    void     set_flag(unsigned flag) {         boundary_flag = ( boundary_flag & 0xffff0000u ) | ( flag & 0xffffu ) ; flagmask |= flag ;  } // clear flag bits then set them  
+    void     set_boundary(unsigned boundary) { boundary_flag = ( boundary_flag & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ; }        // clear boundary bits then set them 
+
+
+    unsigned boundary_flag ; 
+    unsigned identity ; 
+    unsigned orient_idx ;   
+    unsigned flagmask ; 
+
+   /*
+    MAYBE RE-ARRANGE PAIRINGS
+
+    unsigned idx ; 
+    unsigned orient_identity ; 
+    unsigned boundary_flag ;
+    unsigned flagmask ; 
+
+    idx always exists for a photon, 
+    BUT: orient is only set on intersects together with boundary and identity 
+    (plus flag but that is also be set when no intersect)
+  
+    SO IT WOULD BE BETTER TO HAVE orient_identity and idx alone if identity can spare one bit ?
+
+        identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
+
+    JUNO max prim_idx ~3245 : so thats OK
+
+    In [1]: 0xffff
+    Out[1]: 65535
+
+    In [2]: 0x7fff
+    Out[2]: 32767
+   */
+
+}; 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+inline std::string photon::desc() const 
+{
+    std::stringstream ss ; 
+    ss 
+        << " pos " << pos << " t  " << t << std::endl
+        << " mom " << mom << " wg " << weight << std::endl
+        << " pol " << pol << " wl " << wavelength << std::endl
+        << " bn " << boundary() 
+        << " fl " << std::hex << flag() << std::dec
+        << " id " << identity 
+        << " or " << orient()
+        << " ix " << idx() 
+        << " fm " << std::hex << flagmask  << std::dec 
+        << std::endl 
+        ;
+
+    std::string s = ss.str(); 
+    return s ; 
+} 
+#endif 
+
+
+
+
+
+struct qphoton
+{
+    union 
+    {
+        quad4  q ; 
+        photon p ; 
+    }; 
+};
+
+
 
 
 /**

@@ -60,8 +60,7 @@ npy/NStep.cpp
 
 
 /**
-torch : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/torchstep.h  
---------------------------------------------------------------------------------
+* torch : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/torchstep.h  
 **/
 
 struct torch
@@ -72,10 +71,17 @@ struct torch
     unsigned matline ; 
     unsigned numphotons ; 
     
-    float4   post ;
-    float4   dirw ; 
-    float4   polw ; 
-    float4   zeaz ; 
+    float3   pos ;
+    float    t ; 
+
+    float3   mom ;
+    float    weight ; 
+ 
+    float3   pol ;
+    float    wavelength ; 
+ 
+    float2  zenith ; 
+    float2  azimuth ; 
 
     // beam
     float    radius ; 
@@ -84,7 +90,9 @@ struct torch
     unsigned type ;     // basetype
 };
 
-// union between quad6 and specific genstep types for easy usage and yet no serialize/deserialize needed
+/**
+* qtorch : union between quad6 and specific genstep types for easy usage and yet no serialize/deserialize needed
+**/
 struct qtorch
 {
    union 
@@ -94,7 +102,7 @@ struct qtorch
    };   
 
    // maybe move to torch ?
-   QTORCH_METHOD static void generate( quad4& p, curandStateXORWOW& rng, const torch& gs, unsigned photon_id, unsigned genstep_id ); 
+   QTORCH_METHOD static void generate( photon& p, curandStateXORWOW& rng, const torch& gs, unsigned photon_id, unsigned genstep_id ); 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -103,7 +111,7 @@ struct qtorch
 }; 
 
 
-inline QTORCH_METHOD void qtorch::generate(quad4& p, curandStateXORWOW& rng, const torch& gs, unsigned photon_id, unsigned genstep_id )  // static
+inline QTORCH_METHOD void qtorch::generate( photon& p, curandStateXORWOW& rng, const torch& gs, unsigned photon_id, unsigned genstep_id )  // static
 {
     printf("//qtorch::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphotons(%3d %3d %3d %3d) type %d \n", 
        photon_id, 
@@ -118,13 +126,26 @@ inline QTORCH_METHOD void qtorch::generate(quad4& p, curandStateXORWOW& rng, con
     if( gs.type == T_DISC )
     {
         printf("//qtorch::generate T_DISC gs.type %d gs.mode %d  \n", gs.type, gs.mode ); 
+
+        p.wavelength = gs.wavelength ; 
+        p.t = gs.t ; 
+        p.mom = gs.mom ; 
+
+        float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
+        float u_azimuth = gs.azimuth.x + curand_uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
+
+        float r = gs.radius*u_zenith ;
+
+        float sinPhi, cosPhi;
+        __sincosf(2.f*M_PIf*u_azimuth,&sinPhi,&cosPhi); 
+
+        p.pos.x = r*cosPhi ;
+        p.pos.y = r*sinPhi ; 
+        p.pos.z = 0.f ;   
+
+       
+
     }
-
-
-    p.q0.i.x = 1 ; p.q0.i.y = 2 ; p.q0.i.z = 3 ; p.q0.i.w = 4 ; 
-    p.q1.i.x = 1 ; p.q1.i.y = 2 ; p.q1.i.z = 3 ; p.q1.i.w = 4 ; 
-    p.q2.i.x = 1 ; p.q2.i.y = 2 ; p.q2.i.z = 3 ; p.q2.i.w = 4 ; 
-    p.q3.i.x = 1 ; p.q3.i.y = 2 ; p.q3.i.z = 3 ; p.q3.i.w = 4 ; 
 
     p.set_flag(TORCH); 
 }

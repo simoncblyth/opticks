@@ -259,6 +259,43 @@ void test_qselector()
     bool select_3 = selector(p) ; assert( select_3 == false );  
 }
 
+void test_qphoton()
+{
+    qphoton qp ; 
+    qp.q.zero() ; 
+
+    qp.p.wavelength = 500.f ;   
+    // HMM: curious how much performance difference between struct access and method call 
+
+    assert( qp.q.wavelength()  == 500.f ); 
+
+    qp.q.set_wavelength( 600.f ); 
+    assert( qp.p.wavelength == 600.f ); 
+
+    printf("//test_qphoton qp.p.wavelength %10.4f \n", qp.p.wavelength ); 
+
+    photon& p = qp.p ; 
+
+    unsigned flag     = 0xffffu  ; 
+    unsigned boundary = 0xffffu ;
+    unsigned idx      = 0x7fffffffu ;
+    float orient      = -1.f ;
+    unsigned identity = 0xffffffffu ;
+
+    p.set_flag( flag );  
+    p.set_boundary( boundary );  
+    p.set_idx( idx ); 
+    p.set_orient( orient ); 
+    p.identity = identity ; 
+
+    std::cout << std::endl << p.desc() << std::endl ; 
+
+    assert( p.flag()   == flag ); 
+    assert( p.boundary() == boundary );
+    assert( p.idx() == idx );
+    assert( p.orient() == orient );
+}
+
 
 
 int main(int argc, char** argv)
@@ -278,9 +315,10 @@ int main(int argc, char** argv)
     test_quad4_set_flag_get_flag(); 
     test_quad4_set_idx_set_prd_get_idx_get_prd(); 
     test_quad4_idx_orient(); 
+    test_qselector(); 
     */
 
-    test_qselector(); 
+    test_qphoton(); 
 
 
 

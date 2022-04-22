@@ -42,6 +42,9 @@ optixrap/cu/torchstep.h
     bring over a few of them to establish the pattern,
     subsequently can just bring over as needed 
 
+    * WIP : qudarap/qtorch.h quadrap/torchtype.h 
+
+
 How to develop torch photon generation in better way than done previously 
 (which was testable only on GPU with OptiX < 7)
 
