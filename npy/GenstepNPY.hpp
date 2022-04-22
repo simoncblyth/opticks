@@ -31,28 +31,25 @@ template<typename T> class NPY ;
 #include "NPY_HEAD.hh"
 
 
-/*
-
+/**
 GenstepNPY
 ============
 
 Base class of FabStepNPY and TorchStepNPY 
 
-
-   *setZenithAzimuth*
-
-   Photons directions are generated using two random numbers in range 0:1 
-   which are used scale the zenith and azimuth ranges.
-   Default is a uniform sphere. Changing zenith ranges allows cones or
-   rings to be generated and changing azimuth range allows 
-   to chop the cone, ring or sphere.
+*setZenithAzimuth*
+    Photons directions are generated using two random numbers in range 0:1 
+    which are used scale the zenith and azimuth ranges.
+    Default is a uniform sphere. Changing zenith ranges allows cones or
+    rings to be generated and changing azimuth range allows 
+    to chop the cone, ring or sphere.
 
                        mapped to 0:2pi of azimuth angle    
                     -------
            (0.f,1.f,0.f,1.f)
             --------
               mapped to 0:pi of zenith angle
-*/
+**/
 
 
 class NPY_API GenstepNPY {

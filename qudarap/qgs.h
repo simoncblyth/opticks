@@ -128,6 +128,8 @@ inline QGS_METHOD void QG::zero()
 
 inline QGS_METHOD void QG::load(const quad6* src, unsigned id)
 {
+    // try just equate entire thing ? 
+
     const quad6& sgs = *(src+id) ; 
     q.q0.f = sgs.q0.f ; 
     q.q1.f = sgs.q1.f ; 

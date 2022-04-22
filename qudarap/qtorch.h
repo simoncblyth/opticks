@@ -1,0 +1,133 @@
+#pragma once
+/**
+qtorch.h
+=========
+
+Bringing over some of the old torch genstep generation into the modern workflow 
+with mocking on CPU and pure-CUDA test cababilities. 
+
+Techniques to implement the spirit of the old torch gensteps in much less code
+
+* sharing types and code between GPU and CPU 
+* quad6 and NP and casting between them
+* union between quad6 and simple torch struct eliminates tedious get/set of NStep.hpp
+* macros to use same headers on CPU and GPU, eg enum strings live with enum values in same header 
+  but are hidden from nvcc
+
+
+Old Implementation
+--------------------
+
+optixrap/cu/torchstep.h 
+   OptiX 6 generation 
+
+npy/TorchStepNPY.hpp
+npy/TorchStepNPY.cpp
+   CPU side preparation of the torch gensteps with enum name strings  
+  
+   * parsing config ekv strings into gensteps with param language 
+   * TorchStepNPY::updateAfterSetFrameTransform 
+     frame transform is used to convert from local frame 
+     source, target and polarization into the frame provided.
+  
+npy/GenstepNPY.hpp 
+npy/GenstepNPY.cpp 
+    * holds m_onestep NStep struct 
+    * handles frame targetting 
+
+npy/NStep.hpp
+    6 transport quads that are copied into the genstep buffer by addStep
+    m_ctrl/m_post/m_dirw/m_polw/m_zeaz/m_beam
+
+    m_array NPY<float> of shape (1,6,4)
+
+npy/NStep.cpp
+    NPY::setQuadI NPY::setQuad into the array
+
+**/
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+   #define QTORCH_METHOD __device__
+#else
+   #define QTORCH_METHOD 
+#endif 
+
+#include "OpticksGenstep.h"
+#include "OpticksPhoton.h"
+#include "qcurand.h"
+
+#include "torchtype.h"
+
+
+/**
+torch : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/torchstep.h  
+--------------------------------------------------------------------------------
+**/
+
+struct torch
+{
+    // ctrl
+    unsigned gentype ;  // eg OpticksGenstep_TORCH
+    unsigned trackid ; 
+    unsigned matline ; 
+    unsigned numphotons ; 
+    
+    float4   post ;
+    float4   dirw ; 
+    float4   polw ; 
+    float4   zeaz ; 
+
+    // beam
+    float    radius ; 
+    float    distance ; 
+    unsigned mode ;     // basemode 
+    unsigned type ;     // basetype
+};
+
+// union between quad6 and specific genstep types for easy usage and yet no serialize/deserialize needed
+struct qtorch
+{
+   union 
+   {
+      quad6 q ; 
+      torch t ; 
+   };   
+
+   // maybe move to torch ?
+   QTORCH_METHOD static void generate( quad4& p, curandStateXORWOW& rng, const torch& gs, unsigned photon_id, unsigned genstep_id ); 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+#endif
+
+}; 
+
+
+inline QTORCH_METHOD void qtorch::generate(quad4& p, curandStateXORWOW& rng, const torch& gs, unsigned photon_id, unsigned genstep_id )  // static
+{
+    printf("//qtorch::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphotons(%3d %3d %3d %3d) type %d \n", 
+       photon_id, 
+       genstep_id, 
+       gs.gentype, 
+       gs.trackid,
+       gs.matline, 
+       gs.numphotons,
+       gs.type
+      );  
+
+    if( gs.type == T_DISC )
+    {
+        printf("//qtorch::generate T_DISC gs.type %d gs.mode %d  \n", gs.type, gs.mode ); 
+    }
+
+
+    p.q0.i.x = 1 ; p.q0.i.y = 2 ; p.q0.i.z = 3 ; p.q0.i.w = 4 ; 
+    p.q1.i.x = 1 ; p.q1.i.y = 2 ; p.q1.i.z = 3 ; p.q1.i.w = 4 ; 
+    p.q2.i.x = 1 ; p.q2.i.y = 2 ; p.q2.i.z = 3 ; p.q2.i.w = 4 ; 
+    p.q3.i.x = 1 ; p.q3.i.y = 2 ; p.q3.i.z = 3 ; p.q3.i.w = 4 ; 
+
+    p.set_flag(TORCH); 
+}
+
+
+

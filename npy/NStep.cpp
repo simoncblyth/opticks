@@ -65,7 +65,7 @@ it is handy to be able to set this.
 
 void NStep::setOriginTrackID(unsigned trackID)
 {
-    m_ctrl.y = trackID ;  // eg OpticksGenstep_TORCH
+    m_ctrl.y = trackID ; 
 }
 unsigned NStep::getOriginTrackID() const 
 {

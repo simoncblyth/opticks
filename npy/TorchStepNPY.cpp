@@ -357,7 +357,7 @@ void TorchStepNPY::init()
         }
         else
         {
-            set(p, v);
+            set(p, v);    // cleaner API to set(k, v) and parse inside the set 
         }
     }
 }

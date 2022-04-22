@@ -56,6 +56,7 @@ struct TorchStep
     // transient: derived from beam.z
     unsigned int mode ; 
 
+    // using quad or other union trickery avoids the manual extra transients 
 
 };
 
@@ -89,6 +90,7 @@ __device__ void tsload( TorchStep& ts, optix::buffer<float4>& genstep, unsigned 
     ts.beam = make_float4(beam.f.x, beam.f.y, 0.f, 0.f );
     ts.mode = beam.u.z ; 
     ts.type = beam.u.w ; 
+
     
 }
 

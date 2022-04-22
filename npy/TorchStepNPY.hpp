@@ -74,6 +74,10 @@ currently the only other GenstepNPY subclass is FabStepNPY
 
 class NPY_API TorchStepNPY : public GenstepNPY {
    public:
+
+       static const plog::Severity LEVEL ; 
+       static const char* DEFAULT_CONFIG ; 
+
        typedef enum { TYPE, 
                       MODE, 
                       POLARIZATION, 
@@ -90,10 +94,6 @@ class NPY_API TorchStepNPY : public GenstepNPY {
                       RADIUS, 
                       DISTANCE, 
                       UNRECOGNIZED } Param_t ;
-
-
-       static const plog::Severity LEVEL ; 
-       static const char* DEFAULT_CONFIG ; 
 
        static const char* TYPE_; 
        static const char* MODE_; 

@@ -1,9 +1,15 @@
 #pragma once
 
 /**
-s_mock_texture
-================
+s_mock_texture : exploring CUDA texture lookup API on CPU
+=============================================================
 
+TODO:
+
+* MockTextureManager needs API to collect cudaTextureObject_t indices and 
+  associated NP array pointers to be used for the lookup
+
+* NP arrays need to be the same ones uploaded to create the actual textures 
 
 **/
 

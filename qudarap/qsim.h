@@ -137,6 +137,7 @@ struct qsim
 
 
 #else
+    // instanciated on CPU and copied to device so no ctor in device code
     qsim()
         :
         evt(nullptr),
@@ -175,6 +176,8 @@ inline QSIM_METHOD void qsim<T>::generate_photon_dummy(quad4& p, curandStateXORW
 
     p.set_flag(TORCH); 
 }
+
+
 
 
 template <typename T>
