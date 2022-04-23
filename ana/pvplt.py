@@ -74,7 +74,7 @@ def pvplt_plotter(label="pvplt_plotter"):
     return pl 
 
 
-def pvplt_arrows( pl, pos, vec, color='yellow' ):
+def pvplt_arrows( pl, pos, vec, color='yellow', factor=0.15 ):
     """
      
     glyph.orient
@@ -93,7 +93,7 @@ def pvplt_arrows( pl, pos, vec, color='yellow' ):
     pass
     pos_cloud = pv.PolyData(pos)
     pos_cloud['vec'] = vec
-    vec_arrows = pos_cloud.glyph(orient='vec', scale=False, factor=0.15,)
+    vec_arrows = pos_cloud.glyph(orient='vec', scale=False, factor=factor )
 
     pl.add_mesh(pos_cloud, render_points_as_spheres=True, show_scalar_bar=False)
     pl.add_mesh(vec_arrows, color=color, show_scalar_bar=False)
@@ -112,13 +112,27 @@ def pvplt_lines( pl, pos, vec, color='white' ):
     pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
 
 
-def pvplt_polarized( pl, pos, mom, pol, factor=0.15 ):
+def pvplt_check_transverse( mom, pol, assert_transverse=True ):
+    mom_pol_transverse = np.abs(np.sum( mom*pol , axis=1 )).max() 
+
+    if mom_pol_transverse > 1e-5:
+        print("WARNING mom and pol ARE NOT TRANSVERSE mom_pol_transverse %s assert_transverse %d " % ( mom_pol_transverse , assert_transverse ))
+        if assert_transverse:
+            assert mom_pol_transverse < 1e-5 
+        pass
+    else:
+        print("pvplt_check_transverse  mom_pol_transverse %s " % (mom_pol_transverse  )) 
+    pass  
+
+
+
+
+def pvplt_polarized( pl, pos, mom, pol, factor=0.15, assert_transverse=True ):
     """
     https://docs.pyvista.org/examples/00-load/create-point-cloud.html
     https://docs.pyvista.org/examples/01-filter/glyphs.html
     """
-    mom_pol_transverse = np.abs(np.sum( mom*pol , axis=1 )).max() 
-    assert mom_pol_transverse < 1e-5 
+    pvplt_check_transverse(mom, pol, assert_transverse=assert_transverse) 
 
     init_pl = pl == None 
     if init_pl:

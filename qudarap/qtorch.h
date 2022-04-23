@@ -55,6 +55,7 @@ npy/NStep.cpp
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 #include "qcurand.h"
+#include "qsim.h"
 
 #include "torchtype.h"
 
@@ -69,7 +70,7 @@ struct torch
     unsigned gentype ;  // eg OpticksGenstep_TORCH
     unsigned trackid ; 
     unsigned matline ; 
-    unsigned numphotons ; 
+    unsigned numphoton ; 
     
     float3   pos ;
     float    t ; 
@@ -113,13 +114,13 @@ struct qtorch
 
 inline QTORCH_METHOD void qtorch::generate( photon& p, curandStateXORWOW& rng, const torch& gs, unsigned photon_id, unsigned genstep_id )  // static
 {
-    printf("//qtorch::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphotons(%3d %3d %3d %3d) type %d \n", 
+    printf("//qtorch::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphoton(%3d %3d %3d %3d) type %d \n", 
        photon_id, 
        genstep_id, 
        gs.gentype, 
        gs.trackid,
        gs.matline, 
-       gs.numphotons,
+       gs.numphoton,
        gs.type
       );  
 
@@ -137,13 +138,22 @@ inline QTORCH_METHOD void qtorch::generate( photon& p, curandStateXORWOW& rng, c
         float r = gs.radius*u_zenith ;
 
         float sinPhi, cosPhi;
-        __sincosf(2.f*M_PIf*u_azimuth,&sinPhi,&cosPhi); 
+        __sincosf(2.f*M_PIf*u_azimuth,&sinPhi,&cosPhi);   // HMM: think thats an apple extension 
 
         p.pos.x = r*cosPhi ;
         p.pos.y = r*sinPhi ; 
         p.pos.z = 0.f ;   
+        // 3D rotate the positions to make their disc perpendicular to p.mom for a nice beam   
+        qsim<float>::rotateUz(p.pos, p.mom) ; 
 
-       
+        p.pol.x = sinPhi ;
+        p.pol.y = -cosPhi ; 
+        p.pol.z = 0.f ;    
+        // pol.z zero in initial frame, so rotating the frame to arrange z to be in p.mom direction makes pol transverse to mom
+        qsim<float>::rotateUz(p.pol, p.mom) ; 
+
+
+        // HMM need to rotate to make pol transverse to mom 
 
     }
 
