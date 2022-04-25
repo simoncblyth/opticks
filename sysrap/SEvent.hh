@@ -27,8 +27,11 @@ struct SYSRAP_API SEvent
 
     static NP* MakeDemoGensteps(const char* config=nullptr);  
 
+    static void FillCarrierGenstep( quad6& gs ); 
+    static NP* MakeCarrierGensteps(const char* config); 
 
     static void FillTorchGenstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ); 
+
     static NP* MakeTorchGensteps(const char* config=nullptr);  
     static NP* MakeSeed( const NP* gs ); 
  

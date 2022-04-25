@@ -4,43 +4,13 @@ import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
 from opticks.ana.p import * 
-
-
-def make_record_cells(r):
-    """
-    * indices of the cells reference record points 
-
-    In [1]: cells
-    Out[1]: 
-    array([[ 5,  0,  1,  2,  3,  4],
-           [ 5,  5,  6,  7,  8,  9],
-           [ 5, 10, 11, 12, 13, 14],
-           [ 5, 15, 16, 17, 18, 19],
-           [ 5, 20, 21, 22, 23, 24],
-           [ 5, 25, 26, 27, 28, 29],
-           [ 5, 30, 31, 32, 33, 34],
-           [ 5, 35, 36, 37, 38, 39]])
-
-    """
-    assert r.ndim == 4  
-    assert r.shape[2:] == (4,4)
-    num_pho, max_rec = r.shape[:2]
-    cells = np.zeros( (num_pho,max_rec+1), dtype=np.int ) 
-    offset = 0 
-    for i in range(num_pho):
-        cells[i,0] = max_rec
-        cells[i,1:] = np.arange( 0, max_rec ) + offset 
-        offset += max_rec 
-    pass
-    return cells 
-
+from opticks.ana.r import * 
 
 
 if __name__ == '__main__':
 
     t = Fold.Load()
     PIDX = int(os.environ.get("PIDX","-1"))
-
 
     p = t.p
     r = t.r
@@ -80,8 +50,6 @@ if __name__ == '__main__':
 
     s = str(p[:,:3]) 
     a = np.array( s.split("\n") + [""] ).reshape(-1,4)
-
-
 
     for i in range(len(a)):
         if not (PIDX == -1 or PIDX == i): continue 

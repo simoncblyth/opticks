@@ -25,6 +25,7 @@ NP* SEvent::MakeDemoGensteps(const char* config)
     NP* gs = nullptr ;
     if(     SStr::StartsWith(config, "count")) gs = MakeCountGensteps(config) ;   
     else if(SStr::StartsWith(config, "torch")) gs = MakeTorchGensteps(config) ; 
+    else if(SStr::StartsWith(config, "carrier")) gs = MakeCarrierGensteps(config) ; 
     assert(gs); 
 
     LOG(LEVEL) 
@@ -35,15 +36,45 @@ NP* SEvent::MakeDemoGensteps(const char* config)
     return gs ; 
 }
 
+
+
+void SEvent::FillCarrierGenstep( quad6& gs )
+{
+    gs.q0.u = make_uint4( OpticksGenstep_PHOTON_CARRIER, 0u, 0u, 10u );   
+    gs.q1.u = make_uint4( 0u,0u,0u,0u );  
+    gs.q2.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // post
+    gs.q3.f = make_float4( 1.f, 0.f, 0.f, 1.f );   // dirw
+    gs.q4.f = make_float4( 0.f, 1.f, 0.f, 500.f ); // polw
+    gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // flag 
+}
+/**
+SEvent::MakeCarrierGensteps
+-----------------------------
+
+Carrier gensteps are for debugging only, the genstep simply carries the 
+photon with is copied into existance. 
+
+**/
+
+NP* SEvent::MakeCarrierGensteps(const char* config)
+{
+    unsigned num_gs = 10 ; 
+    NP* gs = NP::Make<float>(num_gs, 6, 4 );  
+    quad6* qq = (quad6*)gs->bytes() ; 
+    for(unsigned i=0 ; i < num_gs ; i++ ) FillCarrierGenstep( qq[i] ) ; 
+    return gs ; 
+}
+
+
 void SEvent::FillTorchGenstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
 {
-    float3 mom = make_float3( 1.f, 1.f, 1.f );  
+    float3 mom = make_float3( 0.f, 0.f, 1.f );  
 
     gs.gentype = OpticksGenstep_TORCH ; 
     gs.wavelength = 501.f ; 
     gs.mom = normalize(mom); 
-    gs.radius = 100.f ; 
-    gs.pos = make_float3( 1000.f, 1000.f, 1000.f );  
+    gs.radius = 50.f ; 
+    gs.pos = make_float3( 0.f, 0.f, -90.f );  
     gs.time = 0.f ; 
     gs.zenith = make_float2( 0.f, 1.f );  
     gs.azimuth = make_float2( 0.f, 1.f );  

@@ -201,7 +201,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     const quad6& gs     = evt->genstep[genstep_id] ; 
 
     //if( idx == 0 ) 
-    printf("//[OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
+    //printf("//[OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
@@ -234,7 +234,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
             prd
         );        // populate prd with intersect info 
 
-        printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
+        //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
 
         command = sim->propagate(bounce, q, s, prd, rng, idx ); 
@@ -245,7 +245,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = q ;  
     evt->photon[idx] = q ; 
 
-    printf("//]OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
+    //printf("//]OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
 }
 
 /**

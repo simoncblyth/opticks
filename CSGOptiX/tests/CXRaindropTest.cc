@@ -112,20 +112,12 @@ int main(int argc, char** argv)
 
     // HMM : WOULD BE BETTER FOR CONSISTENCY TO HAVE SINGLE UPLOAD API
 
-
     CSGOptiX cx(&ok, fdl ); 
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  
     cx.setComposition(ce); 
-      
-    quad6 gs ; 
-    gs.q0.u = make_uint4( OpticksGenstep_PHOTON_CARRIER, 0u, 0u, 10u );   
-    gs.q1.u = make_uint4( 0u,0u,0u,0u ); 
-    gs.q2.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // post
-    gs.q3.f = make_float4( 1.f, 0.f, 0.f, 1.f );   // dirw
-    gs.q4.f = make_float4( 0.f, 1.f, 0.f, 500.f ); // polw
-    gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // flag 
 
-    cx.setGensteps(&gs, 1); 
+    NP* gs = SEvent::MakeTorchGensteps(); 
+    cx.setGensteps(gs);  // HMM: passing thru to QEvent, perhaps should directly talk to QEvent ? 
     cx.simulate();  
 
     const char* odir = SPath::Resolve(cfbase_local, EXECUTABLE, DIRPATH ); 
