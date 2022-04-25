@@ -1,6 +1,6 @@
 #pragma once
 /**
-qtorch.h
+storch.h
 =========
 
 Bringing over some of the old torch genstep generation into the modern workflow 
@@ -47,18 +47,17 @@ npy/NStep.cpp
 **/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-   #define QTORCH_METHOD __device__
+   #define STORCH_METHOD __device__
 #else
-   #define QTORCH_METHOD 
+   #define STORCH_METHOD 
 #endif 
 
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
-#include "qcurand.h"
-#include "qutil.h"
 
-#include "torchtype.h"
-
+#include "scurand.h"
+#include "sutil.h"
+#include "storchtype.h"
 
 /**
 * torch : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/torchstep.h  
@@ -103,7 +102,7 @@ struct qtorch
    };   
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
-   QTORCH_METHOD static void generate( qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
+   STORCH_METHOD static void generate( qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -129,7 +128,7 @@ inline std::string qtorch::desc() const
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
 
-inline QTORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
+inline STORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
 {
     photon& p = qp.p ; 
     const torch& gs = (const torch&)gs_ ;   // casting between union-ed types  
@@ -164,14 +163,14 @@ inline QTORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng,
         p.pos.y = r*sinPhi ; 
         p.pos.z = 0.f ;   
         // 3D rotate the positions to make their disc perpendicular to p.mom for a nice beam   
-        qutil::rotateUz(p.pos, p.mom) ; 
+        sutil::rotateUz(p.pos, p.mom) ; 
         p.pos = p.pos + gs.pos ; // translate position after orienting the disc 
 
         p.pol.x = sinPhi ;
         p.pol.y = -cosPhi ; 
         p.pol.z = 0.f ;    
         // pol.z zero in initial frame, so rotating the frame to arrange z to be in p.mom direction makes pol transverse to mom
-        qutil::rotateUz(p.pol, p.mom) ; 
+        sutil::rotateUz(p.pol, p.mom) ; 
 
 
         // HMM need to rotate to make pol transverse to mom 

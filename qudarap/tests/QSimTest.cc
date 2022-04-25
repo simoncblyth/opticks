@@ -84,7 +84,7 @@ struct QSimTest
     static unsigned Num(int argc, char** argv); 
 
     QSim<T> qs ; 
-    unsigned type ; 
+    unsigned type ;  // QSimLaunch type 
     unsigned num ; 
 
     QSimTest(unsigned type, unsigned num ); 
@@ -356,17 +356,13 @@ void QSimTest<T>::cerenkov_photon_expt(unsigned num_photon, int print_id)
 
 
 
+
 template <typename T>
 void QSimTest<T>::generate_photon()
 {
     LOG(info) << "[" ; 
 
-    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
-    unsigned x_total = 0 ; 
-    for(unsigned i=0 ; i < photon_counts_per_genstep.size() ; i++) x_total += photon_counts_per_genstep[i] ; 
-
-    const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
-
+    const NP* gs = SEvent::MakeDemoGensteps(); 
 
     QEvent* evt = new QEvent  ; 
     evt->setGensteps(gs);
@@ -706,7 +702,11 @@ void QSimTest<T>::main()
         case CERENKOV_PHOTON_K:             cerenkov_photon(num, print_id);            ; break ; 
         case CERENKOV_PHOTON_ENPROP_E:      cerenkov_photon_enprop(num, print_id);     ; break ; 
         case CERENKOV_PHOTON_EXPT_X :       cerenkov_photon_expt(  num, print_id);     ; break ; 
-        case GENERATE_PHOTON_G:             generate_photon();                         ; break ; 
+
+        case GENERATE_PHOTON_G:             
+        case GENTORCH:
+                                            generate_photon();                         ; break ; 
+
         case BOUNDARY_LOOKUP_ALL_A:         boundary_lookup_all()                          ; break ;  
         case BOUNDARY_LOOKUP_LINE_WATER_W:  boundary_lookup_line("Water", 80., 800., 721)  ; break ;  
         case BOUNDARY_LOOKUP_LINE_LS_L:     boundary_lookup_line("LS",    80., 800., 721)  ; break ;  
@@ -717,10 +717,10 @@ void QSimTest<T>::main()
 
         // hmm some conflation here between running from duplicated p0 ephoton and actual photon generation such as scint/cerenkov 
 
-        case RAYLEIGH_SCATTER_ALIGN:        photon_launch_generate()                  ; break ;   
         case PROPAGATE_TO_BOUNDARY:         num=8 ; photon_launch_generate()          ; break ;   
         case PROPAGATE_AT_SURFACE:          num=8 ; photon_launch_generate()          ; break ;  
 
+        case RAYLEIGH_SCATTER_ALIGN: 
         case PROPAGATE_AT_BOUNDARY:   
         case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:  
         case HEMISPHERE_S_POLARIZED:   
@@ -728,7 +728,6 @@ void QSimTest<T>::main()
         case HEMISPHERE_X_POLARIZED:   
         case REFLECT_DIFFUSE:
         case REFLECT_SPECULAR:
-                                            photon_launch_generate()          ; break ;  
 
         case PROPAGATE_AT_BOUNDARY_S_POLARIZED: 
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:   

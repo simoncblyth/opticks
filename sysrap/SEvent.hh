@@ -2,6 +2,7 @@
 
 struct NP ; 
 struct quad6 ; 
+struct torch ; 
 struct uint4 ; 
 template <typename T> struct Tran ;
 
@@ -23,6 +24,14 @@ struct SYSRAP_API SEvent
     static const char* GridAxesName( int gridaxes ); 
     static int GridAxes(int nx, int ny, int nz); 
 
+
+    static NP* MakeDemoGensteps(const char* config=nullptr);  
+
+
+    static void FillTorchGenstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ); 
+    static NP* MakeTorchGensteps(const char* config=nullptr);  
+
+
     static NP* MakeGensteps(const std::vector<quad6>& gs ); 
     static void StandardizeCEGS(        const float4& ce,       std::vector<int>& cegs, float gridscale );
     static void GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale, bool ce_offset ) ; 
@@ -31,7 +40,7 @@ struct SYSRAP_API SEvent
     static void ConfigureGenstep( quad6& gs,  int gencode, int gridaxes, int gsid, int photons_per_genstep ); 
 
     static NP* MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) ;
-    static NP* MakeCountGensteps();
+    static NP* MakeCountGensteps(const char* config=nullptr);
     static unsigned SumCounts(const std::vector<int>& counts); 
 
     static void ExpectedSeeds(std::vector<int>& seeds, const std::vector<int>& counts );

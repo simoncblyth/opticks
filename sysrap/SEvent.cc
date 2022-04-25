@@ -4,6 +4,7 @@
 #include "squad.h"
 #include "sqat4.h"
 #include "stran.h"
+#include "storch.h"
 #include "ssincos.h"
 #include "sc4u.h"
 
@@ -11,11 +12,50 @@
 #include "NP.hh"
 #include "PLOG.hh"
 #include "SRng.hh"
+#include "SStr.hh"
 
 #include "OpticksGenstep.h"
 #include "SEvent.hh"
 
 const plog::Severity SEvent::LEVEL = PLOG::EnvLevel("SEvent", "DEBUG") ; 
+
+
+NP* SEvent::MakeDemoGensteps(const char* config)
+{
+    NP* gs = nullptr ;
+    if(     SStr::StartsWith(config, "count")) gs = MakeCountGensteps(config) ;   
+    else if(SStr::StartsWith(config, "torch")) gs = MakeTorchGensteps(config) ; 
+    assert(gs); 
+    return gs ; 
+}
+
+void SEvent::FillTorchGenstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
+{
+    float3 mom = make_float3( 1.f, 1.f, 1.f );  
+    gs.wavelength = 501.f ; 
+    gs.mom = normalize(mom); 
+    gs.radius = 100.f ; 
+    gs.pos = make_float3( 1000.f, 1000.f, 1000.f );  
+    gs.time = 0.f ; 
+    gs.zenith = make_float2( 0.f, 1.f );  
+    gs.azimuth = make_float2( 0.f, 1.f );  
+    gs.type = storchtype::Type("disc");  
+    gs.mode = 255 ;    //torchmode::Type("...");  
+    gs.numphoton = numphoton_per_genstep  ;   
+}
+
+NP* SEvent::MakeTorchGensteps(const char* config)
+{
+   // TODO: string configured gensteps, rather the the currently fixed and duplicated one  
+    unsigned num_gs = 10 ; 
+    unsigned numphoton_per_genstep = 100 ; 
+
+    NP* gs = NP::Make<float>(num_gs, 6, 4 );  
+    torch* tt = (torch*)gs->bytes() ; 
+    for(unsigned i=0 ; i < num_gs ; i++ ) FillTorchGenstep( tt[i], i, numphoton_per_genstep ) ; 
+    return gs ; 
+}
+
 
 NP* SEvent::MakeGensteps(const std::vector<quad6>& gs ) // static 
 {
@@ -391,10 +431,14 @@ int SEvent::GridAxes(int nx, int ny, int nz)  // static
 
 
 
-NP* SEvent::MakeCountGensteps() // static 
+NP* SEvent::MakeCountGensteps(const char* config) // static 
 {
-    std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
-    return MakeCountGensteps(photon_counts_per_genstep);
+    std::vector<int>* photon_counts_per_genstep = nullptr ; 
+    if( config == nullptr )
+    {
+        (*photon_counts_per_genstep) = { 3, 5, 2, 0, 1, 3, 4, 2, 4 }; 
+    }
+    return MakeCountGensteps(*photon_counts_per_genstep);
 }
 
 /**

@@ -1,10 +1,10 @@
 #pragma once
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-   #define QCURAND_METHOD __device__
+   #define SCURAND_METHOD __device__
    #include "curand_kernel.h"
 #else
-   #define QCURAND_METHOD 
+   #define SCURAND_METHOD 
 
 #ifdef MOCK_CURAND
    #include "s_mock_curand.h"
@@ -13,17 +13,17 @@
 #endif 
 
 template <typename T>
-struct qcurand
+struct scurand
 {
 #if defined(__CUDACC__) || defined(__CUDABE__)
-   static QCURAND_METHOD T uniform( curandStateXORWOW* rng );  
+   static SCURAND_METHOD T uniform( curandStateXORWOW* rng );  
 #endif
 };
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
-template<> inline float qcurand<float>::uniform( curandStateXORWOW* rng ) 
+template<> inline float scurand<float>::uniform( curandStateXORWOW* rng ) 
 { 
 #ifdef FLIP_RANDOM
     return 1.f - curand_uniform(rng) ;
@@ -32,7 +32,7 @@ template<> inline float qcurand<float>::uniform( curandStateXORWOW* rng )
 #endif
 }
 
-template<> inline double qcurand<double>::uniform( curandStateXORWOW* rng ) 
+template<> inline double scurand<double>::uniform( curandStateXORWOW* rng ) 
 { 
 #ifdef FLIP_RANDOM
     return 1. - curand_uniform_double(rng) ;

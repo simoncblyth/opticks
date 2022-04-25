@@ -1,7 +1,10 @@
 #include "stdio.h"
-#include "curand_kernel.h"
+
 #include "scuda.h"
-#include "qcurand.h"
+//#include "curand_kernel.h"
+#include "scurand.h"
+
+
 #include "qrng.h"
 
 /**
@@ -29,7 +32,7 @@ __global__ void _QRng_generate(T* uu, unsigned ni, unsigned nv, curandStateXORWO
 
     for(unsigned v=0 ; v < nv ; v++)
     {
-        T u = qcurand<T>::uniform(&rng) ;
+        T u = scurand<T>::uniform(&rng) ;
 
         //if( id == 0 ) printf("//_QRng_generate id %d v %d u %10.4f  skipahead %d \n", id, v, u, skipahead_  ); 
 
@@ -75,7 +78,7 @@ __global__ void _QRng_generate_2(qrng* qr, unsigned event_idx, T* uu, unsigned n
 
     for(unsigned v=0 ; v < nv ; v++)
     {
-        T u = qcurand<T>::uniform(&rng) ;
+        T u = scurand<T>::uniform(&rng) ;
 
         //if( id == 0 ) printf("//_QRng_generate_2 id %d v %d u %10.4f \n", id, v, u  ); 
 

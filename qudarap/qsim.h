@@ -13,14 +13,14 @@
 #include "sqat4.h"
 #include "sc4u.h"
 #include "sevent.h"   // enum {XYZ .. 
+#include "storch.h"
+#include "scurand.h"
 
 #include "qevent.h"
 #include "qgs.h"
 #include "qprop.h"
-#include "qcurand.h"
 #include "qbnd.h"
 #include "qstate.h"
-#include "qtorch.h"
 
 
 /**
@@ -587,7 +587,7 @@ inline QSIM_METHOD void qsim<T>::rayleigh_scatter_align(quad4& p, curandStateXOR
         direction.y = sinTheta * sinPhi;
         direction.z = cosTheta ;
 
-        qutil::rotateUz(direction, *p_direction );
+        sutil::rotateUz(direction, *p_direction );
 
         float constant = -dot(direction,*p_polarization); 
 
@@ -603,7 +603,7 @@ inline QSIM_METHOD void qsim<T>::rayleigh_scatter_align(quad4& p, curandStateXOR
             polarization.y = sinPhi ;
             polarization.z = 0.f ;
 
-            qutil::rotateUz(polarization, direction);
+            sutil::rotateUz(polarization, direction);
         }
         else
         {
@@ -1321,7 +1321,7 @@ inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, b
     direction->y = sinf(phi)*sinTheta ; 
     direction->z = cosTheta ; 
 
-    qutil::rotateUz( *direction, (*normal) * ( inwards ? -1.f : 1.f )); 
+    sutil::rotateUz( *direction, (*normal) * ( inwards ? -1.f : 1.f )); 
 
     // what about normal incidence ?
     const float3 transverse = normalize(cross(*direction, (*normal) * ( inwards ? -1.f : 1.f )  )) ; // perpendicular to plane of incidence
@@ -1689,7 +1689,7 @@ inline QSIM_METHOD void qsim<T>::cerenkov_photon_enprop(quad4& p, unsigned id, c
 
     do {
 
-        u0 = qcurand<T>::uniform(&rng) ;
+        u0 = scurand<T>::uniform(&rng) ;
 
         energy = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
 
@@ -1699,7 +1699,7 @@ inline QSIM_METHOD void qsim<T>::cerenkov_photon_enprop(quad4& p, unsigned id, c
 
         sin2Theta = (one - cosTheta)*(one + cosTheta);  
 
-        u1 = qcurand<T>::uniform(&rng) ;
+        u1 = scurand<T>::uniform(&rng) ;
 
         u_mxs2_s2 = u1*g.ck1.maxSin2 - sin2Theta ;
 

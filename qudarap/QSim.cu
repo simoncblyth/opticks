@@ -12,12 +12,16 @@ The launch functions are all invoked from QSim.cc methods with corresponding nam
 
 
 #include "stdio.h"
-#include "curand_kernel.h"
+
 #include "scuda.h"
+//#include "curand_kernel.h"
+#include "scurand.h"
+
 #include "qgs.h"
 #include "qprop.h"
 #include "qsim.h"
-#include "qcurand.h"
+
+
 #include "qevent.h"
 #include "qdebug.h"
 
@@ -42,7 +46,7 @@ __global__ void _QSim_rng_sequence(qsim<T>* sim, T* seq, unsigned ni, unsigned n
 
     for(unsigned v=0 ; v < nv ; v++)
     {
-        T u = qcurand<T>::uniform(&rng) ;
+        T u = scurand<T>::uniform(&rng) ;
         seq[ibase+v] = u ;
     } 
 }
@@ -285,8 +289,6 @@ __global__ void _QSim_generate_photon(qsim<T>* sim, qevent* evt )
     qphoton qp ;   
     sim->generate_photon(qp, rng, gs, photon_id, genstep_id ); 
 
-    //p.q0.f.x = 1.f ; p.q0.f.y = 2.f ; p.q0.f.z = 3.f ; 
-
     evt->photon[photon_id] = qp.q ;  // HMM could switch to a qphoton array 
 
 }
@@ -509,6 +511,17 @@ __global__ void _QSim_reflect_generate( qsim<T>* sim, quad4* photon, unsigned nu
     }
     photon[id] = p ; 
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

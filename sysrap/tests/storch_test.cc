@@ -1,10 +1,10 @@
 /**
-qtorch_test.cc : CPU tests of qtorch.h CUDA code using mocking 
+storch_test.cc : CPU tests of storch.h CUDA code using mocking 
 ================================================================
 
 Standalone compile and run with::
 
-   ./qtorch_test.sh 
+   ./storch_test.sh 
 
 **/
 #include <numeric>
@@ -12,13 +12,17 @@ Standalone compile and run with::
 
 #include "scuda.h"
 #include "squad.h"
-#include "qcurand.h"    // this brings in s_mock_curand.h for CPU 
-#include "qsim.h"
-#include "qtorch.h"
+#include "scurand.h"    // this brings in s_mock_curand.h for CPU when MOCK_CURAND macro is defined 
+#include "storch.h"
+
+#include "SEvent.hh"
+
 #include "NP.hh"
 
-const char* FOLD = "/tmp/qtorch_test" ; 
+const char* FOLD = "/tmp/storch_test" ; 
 
+
+/*
 void fill_torch_genstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
 {
    // TODO: string configured gensteps, rather the the currently fixed and duplicated one  
@@ -26,9 +30,11 @@ void fill_torch_genstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_
     gs.wavelength = 501.f ; 
     gs.mom = normalize(mom); 
     gs.radius = 100.f ; 
+    gs.pos = make_float3( 1000.f, 1000.f, 1000.f ); 
+    gs.time = 0.f ; 
     gs.zenith = make_float2( 0.f, 1.f ); 
     gs.azimuth = make_float2( 0.f, 1.f ); 
-    gs.type = torchtype::Type("disc");  
+    gs.type = storchtype::Type("disc");  
     gs.mode = 255 ;    //torchmode::Type("...");  
     gs.numphoton = numphoton_per_genstep  ; 
 }
@@ -40,6 +46,9 @@ NP* make_torch_gs(unsigned num_gs, unsigned numphoton_per_genstep )
     for(unsigned i=0 ; i < num_gs ; i++ ) fill_torch_genstep( tt[i], i, numphoton_per_genstep ) ; 
     return gs ;  
 }
+
+*/
+
 
 NP* make_seed(const NP* gs)
 {
@@ -69,10 +78,9 @@ NP* make_seed(const NP* gs)
 
 NP* make_torch_photon( const NP* gs, const NP* se )
 {
-    const qtorch* gg = (qtorch*)gs->bytes() ;  
+    const quad6* gg = (quad6*)gs->bytes() ;  
     const int*   seed = (int*)se->bytes() ;  
 
-    const qsim<float>* sim = new qsim<float>() ; 
     curandStateXORWOW rng(1u); 
 
     int tot_photon = se->shape[0] ; 
@@ -85,7 +93,7 @@ NP* make_torch_photon( const NP* gs, const NP* se )
         unsigned genstep_id = seed[photon_id] ; 
 
         qphoton& p = pp[photon_id] ; 
-        const qtorch& g = gg[genstep_id] ;  
+        const quad6& g = gg[genstep_id] ;  
         
         qtorch::generate(p, rng, g, photon_id, genstep_id ); 
 
@@ -96,10 +104,11 @@ NP* make_torch_photon( const NP* gs, const NP* se )
 
 void test_generate()
 {
-    unsigned num_gs = 10 ; 
-    unsigned numphoton_per_gs = 100 ; 
+    //unsigned num_gs = 10 ; 
+    //unsigned numphoton_per_gs = 100 ; 
+    //NP* gs = make_torch_gs(num_gs, numphoton_per_gs ) ; 
 
-    NP* gs = make_torch_gs(num_gs, numphoton_per_gs ) ; 
+    NP* gs = SEvent::MakeTorchGensteps(); 
     NP* se = make_seed(gs) ; 
     NP* ph = make_torch_photon(gs, se); 
 
@@ -116,7 +125,7 @@ void test_union_cast()
         qt.q.zero() ; 
         qt.q.q0.u.x = 101 ; 
 
-        torch& t = qt.t ; 
+        torch& t = qt.t ;  // when going down from union type to subtype can just use the union member without casting
         std::cout <<  qt.desc() << std::endl ; 
     }
 

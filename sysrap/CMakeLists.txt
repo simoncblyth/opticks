@@ -179,8 +179,14 @@ set(HEADERS
     SBuf.hh
 
     scuda.h
+    scurand.h  
+    sutil.h 
     s_mock_curand.h
     squad.h
+
+    storch.h
+    storchtype.h
+    
     sflow.h
     sqat4.h
     saabb.h

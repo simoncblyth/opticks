@@ -1,19 +1,19 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-qtorch_test.sh
+storch_test.sh
 ================
 
 CPU test of CUDA code to generate torch photons using s_mock_curand.h::
 
-   ./qtorch_test.sh build
-   ./qtorch_test.sh run
-   ./qtorch_test.sh ana
-   ./qtorch_test.sh build_run_ana   # default 
+   ./storch_test.sh build
+   ./storch_test.sh run
+   ./storch_test.sh ana
+   ./storch_test.sh build_run_ana   # default 
 
 EOU
 }
 
-name=qtorch_test 
+name=storch_test 
 fold=/tmp/$name
 mkdir -p $fold
 
@@ -23,8 +23,10 @@ if [ "${arg/build}" != "$arg" ]; then
     gcc $name.cc -std=c++11 -lstdc++ \
            -DMOCK_CURAND \
            -I.. \
-           -I$OPTICKS_PREFIX/include/SysRap  \
            -I/usr/local/cuda/include \
+           -I$OPTICKS_PREFIX/externals/plog/include \
+           -L$OPTICKS_PREFIX/lib \
+           -lSysRap \
            -o $fold/$name 
 
     [ $? -ne 0 ] && echo $msg build error && exit 1 

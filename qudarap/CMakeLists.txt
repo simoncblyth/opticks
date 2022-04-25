@@ -87,7 +87,6 @@ SET(HEADERS
 
     qgs.h
     qprop.h
-    qcurand.h
  
     QEvent.hh
     qevent.h

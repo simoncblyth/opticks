@@ -729,6 +729,9 @@ void QSim<T>::generate_photon(QEvent* evt)
 
 
 
+
+
+
 template <typename T>
 extern void QSim_fill_state_0(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad6* state, unsigned num_state, qdebug* dbg ); 
 
