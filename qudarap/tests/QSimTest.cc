@@ -360,20 +360,24 @@ void QSimTest<T>::cerenkov_photon_expt(unsigned num_photon, int print_id)
 template <typename T>
 void QSimTest<T>::generate_photon()
 {
-    LOG(info) << "[" ; 
+    const char* gs_config = SSys::getenvvar("GS_CONFIG", "torch" ); 
 
-    const NP* gs = SEvent::MakeDemoGensteps(); 
+    LOG(info) << "[ gs_config " << gs_config ; 
+    const NP* gs = SEvent::MakeDemoGensteps(gs_config); 
 
     QEvent* evt = new QEvent  ; 
     evt->setGensteps(gs);
  
     qs.generate_photon(evt);  
 
-    std::vector<quad4> photon ; 
-    evt->downloadPhoton(photon); 
-    LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
+    //std::vector<quad4> photon ; 
+    //evt->downloadPhoton(photon); 
+    //LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
+    //qs.dump_photon( photon.data(), photon.size(), "f0,f1,i2,i3" ); 
 
-    qs.dump_photon( photon.data(), photon.size(), "f0,f1,i2,i3" ); 
+    NP* p = evt->getPhotons(); 
+    save(p, "p.npy"); 
+
 
     LOG(info) << "]" ; 
 }

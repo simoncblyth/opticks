@@ -49,7 +49,8 @@ msg="=== $BASH_SOURCE :"
 #test=reflect_specular
 #test=propagate_at_surface
 
-test=mock_propagate
+#test=mock_propagate
+test=gentorch
 
 M1=1000000
 K2=100000
@@ -65,6 +66,8 @@ nrm=0,0,1
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
 export TEST=${TEST:-$test}
+
+export SEvent=INFO
 
 source fill_state.sh 
 source ephoton.sh         # branching on TEST inside ephoton.sh 

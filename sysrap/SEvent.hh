@@ -30,8 +30,8 @@ struct SYSRAP_API SEvent
 
     static void FillTorchGenstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ); 
     static NP* MakeTorchGensteps(const char* config=nullptr);  
-
-
+    static NP* MakeSeed( const NP* gs ); 
+ 
     static NP* MakeGensteps(const std::vector<quad6>& gs ); 
     static void StandardizeCEGS(        const float4& ce,       std::vector<int>& cegs, float gridscale );
     static void GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale, bool ce_offset ) ; 

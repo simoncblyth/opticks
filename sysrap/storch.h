@@ -133,7 +133,8 @@ inline STORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng,
     photon& p = qp.p ; 
     const torch& gs = (const torch&)gs_ ;   // casting between union-ed types  
 
-    printf("//qtorch::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphoton(%3d %3d %3d %3d) type %d \n", 
+#ifdef STORCH_DEBUG
+    printf("//storch::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphoton(%3d %3d %3d %3d) type %d \n", 
        photon_id, 
        genstep_id, 
        gs.gentype, 
@@ -142,10 +143,11 @@ inline STORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng,
        gs.numphoton,
        gs.type
       );  
+#endif
 
     if( gs.type == T_DISC )
     {
-        printf("//qtorch::generate T_DISC gs.type %d gs.mode %d  \n", gs.type, gs.mode ); 
+        //printf("//storch::generate T_DISC gs.type %d gs.mode %d  \n", gs.type, gs.mode ); 
 
         p.wavelength = gs.wavelength ; 
         p.time = gs.time ; 
@@ -172,11 +174,10 @@ inline STORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng,
         // pol.z zero in initial frame, so rotating the frame to arrange z to be in p.mom direction makes pol transverse to mom
         sutil::rotateUz(p.pol, p.mom) ; 
 
-
         // HMM need to rotate to make pol transverse to mom 
-
     }
 
+    p.zero_flags(); 
     p.set_flag(TORCH); 
 }
 

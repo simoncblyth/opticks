@@ -284,7 +284,7 @@ __global__ void _QSim_generate_photon(qsim<T>* sim, qevent* evt )
     unsigned genstep_id = evt->seed[photon_id] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
 
-    printf("//_QSim_generate_photon photon_id %4d evt->num_photon %4d genstep_id %4d  \n", photon_id, evt->num_photon, genstep_id );  
+    //printf("//_QSim_generate_photon photon_id %4d evt->num_photon %4d genstep_id %4d  \n", photon_id, evt->num_photon, genstep_id );  
 
     qphoton qp ;   
     sim->generate_photon(qp, rng, gs, photon_id, genstep_id ); 

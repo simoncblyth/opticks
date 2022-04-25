@@ -26,12 +26,20 @@ NP* SEvent::MakeDemoGensteps(const char* config)
     if(     SStr::StartsWith(config, "count")) gs = MakeCountGensteps(config) ;   
     else if(SStr::StartsWith(config, "torch")) gs = MakeTorchGensteps(config) ; 
     assert(gs); 
+
+    LOG(LEVEL) 
+       << " config " << ( config ? config :  "-" )
+       << " gs " << ( gs ? gs->sstr() : "-" )
+       ;
+
     return gs ; 
 }
 
 void SEvent::FillTorchGenstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
 {
     float3 mom = make_float3( 1.f, 1.f, 1.f );  
+
+    gs.gentype = OpticksGenstep_TORCH ; 
     gs.wavelength = 501.f ; 
     gs.mom = normalize(mom); 
     gs.radius = 100.f ; 
@@ -54,6 +62,39 @@ NP* SEvent::MakeTorchGensteps(const char* config)
     torch* tt = (torch*)gs->bytes() ; 
     for(unsigned i=0 ; i < num_gs ; i++ ) FillTorchGenstep( tt[i], i, numphoton_per_genstep ) ; 
     return gs ; 
+}
+
+/**
+SEvent::MakeSeed
+------------------
+
+Normally this is done on device, here is a simple CPU implementation that.
+ 
+**/
+
+NP* SEvent::MakeSeed( const NP* gs )
+{
+    assert( gs->has_shape(-1,6,4) );  
+    int num_gs = gs->shape[0] ; 
+    const torch* tt = (torch*)gs->bytes() ; 
+
+    std::vector<int> gsp(num_gs) ; 
+    for(int i=0 ; i < num_gs ; i++ ) gsp[i] = tt[i].numphoton ;
+
+    int tot_photons = 0 ; 
+    for(int i=0 ; i < num_gs ; i++ ) tot_photons += gsp[i] ; 
+
+    NP* se = NP::Make<int>( tot_photons );  
+    int* sev = se->values<int>();  
+
+    int offset = 0 ; 
+    for(int i=0 ; i < num_gs ; i++) 
+    {   
+        int np = gsp[i] ; 
+        for(int p=0 ; p < np ; p++) sev[offset+p] = i ; 
+        offset += np ; 
+    }   
+    return se ; 
 }
 
 
