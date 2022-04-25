@@ -14,6 +14,7 @@ message(STATUS "OpticksGLFW_MODULE  : ${OpticksGLFW_MODULE} ")
 echo_target_std(Opticks::OpticksGLFW)
 
 add_executable(${name} ${name}.cc)
+
 target_link_libraries(${name} 
   PUBLIC 
     Opticks::GLM 

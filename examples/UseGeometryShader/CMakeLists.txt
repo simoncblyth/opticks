@@ -6,6 +6,12 @@ include(OpticksBuildOptions)
 set(OpticksGLFW_ALT ON)
 set(OpticksGLFW_VERBOSE ON)
 
+#include_directories($ENV{OPTICKS_PREFIX}/include/SysRap)
+
+string(REPLACE ":" ";" INCLUDE_LIST $ENV{HOME}/np)
+include_directories(${INCLUDE_LIST})
+
+
 find_package(GLM         REQUIRED MODULE)
 find_package(OpticksGLEW REQUIRED MODULE)
 find_package(OpticksGLFW REQUIRED MODULE)   

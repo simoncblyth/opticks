@@ -42,19 +42,28 @@ reference on geometry shaders https://open.gl/geometry
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <sstream>
 
+#include "NP.hh"
+
+static const char* SHADER_FOLD = getenv("SHADER_FOLD"); 
+static const char* vertex_shader_text = NP::ReadString(SHADER_FOLD, "vert.glsl"); 
+static const char* geometry_shader_text = NP::ReadString(SHADER_FOLD, "geom.glsl"); 
+static const char* fragment_shader_text = NP::ReadString(SHADER_FOLD, "frag.glsl"); 
+
+static const char* FOLD = getenv("FOLD"); 
+static const NP* photon = NP::Load(FOLD, "p.npy") ; 
+
+
 void check(const char* path, int line)
 {
-
     GLenum err = glGetError() ;  
     bool ok = err == GL_NO_ERROR ;
-   
     const char* s = NULL ; 
     switch(err)
     {   
@@ -67,12 +76,9 @@ void check(const char* path, int line)
         case GL_INVALID_FRAMEBUFFER_OPERATION : s = "GL_INVALID_FRAMEBUFFER_OPERATION" ; break ;
         case GL_CONTEXT_LOST : s = "GL_CONTEXT_LOST" ; break ;
     }   
-
-
     if(!ok) std::cout << "OpenGL ERROR " << path << " : " << line << " : " << std::hex << err << std::dec << " : " << s << std::endl ; 
     assert( ok );  
 }
-
 
 void print_shader_info_log(unsigned id)
 {
@@ -86,87 +92,6 @@ void print_shader_info_log(unsigned id)
     printf ("shader info log for GL index %u:\n%s\n", id, log);
     assert(0);
 }
-
-
-static const char* vertex_shader_text = R"glsl(
-#version 410 core
-
-// axis passthrough to geometry shader
-
-uniform mat4 ModelViewProjection ;
-//uniform mat4 ModelView ;
-uniform vec4 LightPosition ; 
-uniform vec4 Param ;
-
-layout(location = 0) in vec4 vpos ;
-layout(location = 1) in vec4 vdir ;
-layout(location = 2) in vec4 vcol ;
-
-out vec3 position ; 
-out vec3 direction ; 
-out vec3 colour ; 
-
-void main ()  
-{
-    colour = vec3(vcol) ;
-
-    position = vpos.xyz ;
-
-    direction = vdir.xyz ;
-
-    gl_Position = vec4( vec3( LightPosition ) , 1.0);
-}
-
-)glsl";
-
-
-static const char* geometry_shader_text = R"glsl(
-#version 410 core
-
-//uniform mat4 Projection ;
-uniform mat4 ModelViewProjection ;
-uniform vec4 Param ; 
-
-in vec3 direction[];
-in vec3 colour[];
-
-layout (points) in; 
-layout (line_strip, max_vertices = 2) out;
-
-out vec3 fcolour ; 
-
-
-void main ()  
-{
-    gl_Position = ModelViewProjection * gl_in[0].gl_Position ;
-    fcolour = colour[0] ;
-    EmitVertex();
-
-    gl_Position = ModelViewProjection * ( gl_in[0].gl_Position + Param.x*vec4(direction[0], 0.) ) ; 
-    fcolour = colour[0] ;
-    EmitVertex();
-
-    EndPrimitive();
-} 
-
-)glsl";
-
-
-static const char* fragment_shader_text = R"glsl(
-#version 410 core
-
-in vec3 fcolour;
-out vec4 frag_colour;
-
-void main ()  
-{
-   frag_colour = vec4(fcolour, 1.0);
-}
-
-)glsl";
-
-
-
 static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error: %s\n", description);
@@ -206,7 +131,7 @@ std::string to_string(const glm::mat4& m)
 glm::mat4 getMVP(int width, int height, bool verbose)
 {
     // Composition::setCenterExtent 
-    glm::vec4 ce(0.f, 0.f, 0.f, 1000.f );  // center extent of the "model"
+    glm::vec4 ce(0.f, 0.f, 0.f, 100.f );  // center extent of the "model"
 
     glm::vec3 tr(ce.x, ce.y, ce.z);
     glm::vec3 sc(ce.w);
@@ -267,7 +192,7 @@ glm::mat4 getMVP(int width, int height, bool verbose)
     float aspect = float(width)/float(height) ; 
 
     // Camera::aim
-    float basis = 1000.f ;  
+    float basis = 100.f ;  
     float near = basis/10.f ; 
     float far = basis*5.f ; 
     float zoom = 1.0f ; 
@@ -345,7 +270,6 @@ int main(void)
     glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
     
-    //gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
     glewExperimental = GL_TRUE;
     glewInit (); 
     assert( glGetError() == GL_INVALID_ENUM );  // long-standing glew bug apparently 
@@ -364,57 +288,64 @@ int main(void)
     glBindVertexArray (vao);                                                    check(__FILE__, __LINE__);
 
 
+
+/*
+   photons
+
+       pos
+       mom
+       pol
+       flg 
+
+
     const glm::vec4 vertices[] = {
-        glm::vec4( 0.f   ,    0.f,    0.f,   0.f ), 
-        glm::vec4( 1000.f,    0.f,    0.f,   0.f ), 
-        glm::vec4( 1.f   ,    0.f,    0.f,   0.f ), 
+        glm::vec4( 0.f   ,    0.f,    0.f,   0.f ),    // pos : origin 
+        glm::vec4( 1000.f,    0.f,    0.f,   0.f ),    // dir : X axis
+        glm::vec4( 1.f   ,    0.f,    0.f,   0.f ),    // col : red
 
-        glm::vec4( 0.f   ,    0.f,    0.f,   0.f ), 
-        glm::vec4( 0.f   , 1000.f,    0.f,   0.f ), 
-        glm::vec4( 0.f   ,    1.f,    0.f,   0.f ), 
+        glm::vec4( 0.f   ,    0.f,    0.f,   0.f ),    // pos : origin 
+        glm::vec4( 0.f   , 1000.f,    0.f,   0.f ),    // dir : Y axis
+        glm::vec4( 0.f   ,    1.f,    0.f,   0.f ),    // col : green 
 
-        glm::vec4( 0.f   ,    0.f,    0.f,   0.f ),
-        glm::vec4( 0.f   ,    0.f, 1000.f,   0.f ),
-        glm::vec4( 0.f   ,    0.f,    1.f,   0.f )
+        glm::vec4( 0.f   ,    0.f,    0.f,   0.f ),    // pos : origin
+        glm::vec4( 0.f   ,    0.f, 1000.f,   0.f ),    // dir : Z axis
+        glm::vec4( 0.f   ,    0.f,    1.f,   0.f )     // col : blue
     }; 
     assert( sizeof(vertices)/sizeof(glm::vec4) == 9 ); 
+*/
 
 
     GLuint vertex_buffer ; 
     glGenBuffers(1, &vertex_buffer);                                            check(__FILE__, __LINE__);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);                               check(__FILE__, __LINE__);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  check(__FILE__, __LINE__);
-
+    
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  check(__FILE__, __LINE__);
+    glBufferData(GL_ARRAY_BUFFER, photon->arr_bytes(), photon->bytes(), GL_STATIC_DRAW);  check(__FILE__, __LINE__);
 
     int params = -1; 
-    GLuint vertex_shader ;
-    vertex_shader = glCreateShader(GL_VERTEX_SHADER);                           check(__FILE__, __LINE__);
+    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    check(__FILE__, __LINE__);
     glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);                check(__FILE__, __LINE__);
     glCompileShader(vertex_shader);                                             check(__FILE__, __LINE__);
     glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &params);
     if (GL_TRUE != params) print_shader_info_log(vertex_shader) ; 
 
-    GLuint geometry_shader ; 
-    geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);                       check(__FILE__, __LINE__);
+    GLuint geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);                check(__FILE__, __LINE__);
     glShaderSource(geometry_shader, 1, &geometry_shader_text, NULL);            check(__FILE__, __LINE__);
     glCompileShader(geometry_shader);                                           check(__FILE__, __LINE__);
     glGetShaderiv (geometry_shader, GL_COMPILE_STATUS, &params);
     if (GL_TRUE != params) print_shader_info_log(geometry_shader) ; 
 
-    GLuint fragment_shader ; 
-    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                       check(__FILE__, __LINE__);
+    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                check(__FILE__, __LINE__);
     glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            check(__FILE__, __LINE__);
     glCompileShader(fragment_shader);                                           check(__FILE__, __LINE__);
     glGetShaderiv (fragment_shader, GL_COMPILE_STATUS, &params);
     if (GL_TRUE != params) print_shader_info_log(fragment_shader) ; 
 
-    GLuint program;
-    program = glCreateProgram();               check(__FILE__, __LINE__);
+    GLuint program = glCreateProgram();        check(__FILE__, __LINE__);
     glAttachShader(program, vertex_shader);    check(__FILE__, __LINE__);
     glAttachShader(program, geometry_shader);  check(__FILE__, __LINE__);
     glAttachShader(program, fragment_shader);  check(__FILE__, __LINE__);
     glLinkProgram(program);                    check(__FILE__, __LINE__);
-
 
     GLint LightPosition_location ; 
     GLint ModelViewProjection_location ; 
@@ -423,37 +354,49 @@ int main(void)
     ModelViewProjection_location = glGetUniformLocation(program, "ModelViewProjection");   check(__FILE__, __LINE__);
     Param_location = glGetUniformLocation(program, "Param");                               check(__FILE__, __LINE__);
 
-    GLint vpos_location ; 
-    GLint vdir_location ; 
-    GLint vcol_location ; 
-    vpos_location = glGetAttribLocation(program, "vpos");  check(__FILE__, __LINE__);
-    vdir_location = glGetAttribLocation(program, "vdir");  check(__FILE__, __LINE__);
-    vcol_location = glGetAttribLocation(program, "vcol");  check(__FILE__, __LINE__);
+    GLint vpos_location = glGetAttribLocation(program, "vpos");  check(__FILE__, __LINE__);
+    GLint vdir_location = glGetAttribLocation(program, "vdir");  check(__FILE__, __LINE__);
+    GLint vcol_location = glGetAttribLocation(program, "vcol");  check(__FILE__, __LINE__);
 
     std::cout << " vpos_location " << vpos_location << std::endl ; 
     std::cout << " vdir_location " << vdir_location << std::endl ; 
     std::cout << " vcol_location " << vcol_location << std::endl ; 
 
-
     glUseProgram(program);
+
+    GLsizei stride = sizeof(float)*4*3 ; // 12 floats 
+
+    /**
+    photon (4,4) layout 
+
+    00:pos  
+    04:mom
+    08:pol
+    12:flg 
+    **/
+
+    const void* vpos_offset = (void*)(sizeof(float)*0) ; 
+    const void* vdir_offset = (void*)(sizeof(float)*8) ; 
+    const void* vcol_offset = (void*)(sizeof(float)*8) ; 
 
     if(vpos_location > 0)  // it gets optimized away if not actually used in program as a whole ?
     {
-        glEnableVertexAttribArray(vpos_location);                                                                     check(__FILE__, __LINE__);
-        glVertexAttribPointer(vpos_location, 4, GL_FLOAT, GL_FALSE, sizeof(float)*4*3, (void*)(sizeof(float)*0));     check(__FILE__, __LINE__);
+        glEnableVertexAttribArray(vpos_location);                                              check(__FILE__, __LINE__);
+        glVertexAttribPointer(vpos_location, 4, GL_FLOAT, GL_FALSE, stride, vpos_offset );     check(__FILE__, __LINE__);
     }
 
-    glEnableVertexAttribArray(vdir_location);                                                                     check(__FILE__, __LINE__);
-    glVertexAttribPointer(vdir_location, 4, GL_FLOAT, GL_FALSE, sizeof(float)*4*3, (void*)(sizeof(float)*4));     check(__FILE__, __LINE__);
+    glEnableVertexAttribArray(vdir_location);                                             check(__FILE__, __LINE__);
+    glVertexAttribPointer(vdir_location, 4, GL_FLOAT, GL_FALSE, stride, vdir_offset);     check(__FILE__, __LINE__);
 
-    glEnableVertexAttribArray(vcol_location);                                                                     check(__FILE__, __LINE__);
-    glVertexAttribPointer(vcol_location, 4, GL_FLOAT, GL_FALSE, sizeof(float)*4*3, (void*)(sizeof(float)*8));     check(__FILE__, __LINE__);
-
+    glEnableVertexAttribArray(vcol_location);                                             check(__FILE__, __LINE__);
+    glVertexAttribPointer(vcol_location, 4, GL_FLOAT, GL_FALSE, stride, vcol_offset);     check(__FILE__, __LINE__);
 
     bool verbose(true) ; 
     bool exitloop(false);
+    int renderlooplimit(2000);
     int count(0); 
-    int renderlooplimit(200);
+
+    GLsizei photon_count = photon->shape[0] ; 
 
     while (!glfwWindowShouldClose(window) && !exitloop)
     {
@@ -473,7 +416,8 @@ int main(void)
         glUniform4fv(LightPosition_location, 1, glm::value_ptr(LightPosition) );
         glUniform4fv(Param_location, 1, glm::value_ptr(Param) );
 
-        glDrawArrays(GL_POINTS, 0, 3);
+        GLint first = 0 ; 
+        glDrawArrays(GL_POINTS, first, photon_count);
         glfwSwapBuffers(window);
         glfwPollEvents();
       
@@ -484,21 +428,4 @@ int main(void)
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -92,9 +92,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     int modifiers = getModifiers(); 
     if(modifiers != 0)
     std::cout << descModifiers(modifiers) << std::endl ; 
-
 }
-
 
 int main(void)
 {
