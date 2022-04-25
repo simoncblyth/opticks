@@ -206,25 +206,29 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
 
-    quad4 p ;   
+    qphoton qp ;   
     qstate s ; 
 
-    sim->generate_photon(p, rng, gs, idx, genstep_id );  
+    sim->generate_photon(qp, rng, gs, idx, genstep_id );  
 
-    float3* origin    = (float3*)&p.q0.f.x ; 
-    float3* direction = (float3*)&p.q1.f.x ;  
+    photon& p = qp.p ; 
+    quad4& q  = qp.q ;   
+    // two union-ed types referencing the same memory 
+
+    //float3* origin    = (float3*)&p.q0.f.x ; 
+    //float3* direction = (float3*)&p.q1.f.x ;  
 
     // cf qsim::mock_propagate
     int command = START ; 
     int bounce = 0 ;  
     while( bounce < evt->max_bounce )
     {    
-        if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
+        if(evt->record) evt->record[evt->max_record*idx+bounce] = q ;  
 
         trace( 
             params.handle,
-            *origin,
-            *direction,
+            p.pos,
+            p.mom,
             params.tmin,
             params.tmax,
             prd
@@ -233,13 +237,13 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
         printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
 
-        command = sim->propagate(bounce, p, s, prd, rng, idx ); 
+        command = sim->propagate(bounce, q, s, prd, rng, idx ); 
         bounce++;     
         if(command == BREAK) break ;    
     }    
 
-    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
-    evt->photon[idx] = p ; 
+    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = q ;  
+    evt->photon[idx] = q ; 
 
     printf("//]OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
 }
@@ -282,18 +286,18 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;   
-    quad4 p ;   
+    qphoton qp ;  
+    photon& p = qp.p ;  
 
+    sim->generate_photon_simtrace(qp, rng, gs, idx, genstep_id );  
 
-    sim->generate_photon_simtrace(p, rng, gs, idx, genstep_id );  
-
-    float3* origin    = (float3*)&p.q0.f.x ; 
-    float3* direction = (float3*)&p.q1.f.x ;  
+    //float3* origin    = (float3*)&p.q0.f.x ; 
+    //float3* direction = (float3*)&p.q1.f.x ;  
 
     trace( 
         params.handle,
-        *origin,
-        *direction,
+        p.pos,
+        p.mom,
         params.tmin,
         params.tmax,
         prd
@@ -301,28 +305,33 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
 
 
     // transform (x,z) intersect position into pixel coordinates (ix,iz)
-    float3 ipos = *origin + (*direction)*prd->distance() ; 
+    //float3 ipos = *origin + (*direction)*prd->distance() ; 
+    float3 ipos = p.pos + (p.mom)*prd->distance() ; 
 
     // aim to match the CPU side test isect "photons" from CSG/CSGQuery.cc/CSGQuery::intersect_elaborate
 
-    p.q0.f  = prd->q0.f ; 
 
-    p.q1.f.x = ipos.x ; 
-    p.q1.f.y = ipos.y ; 
-    p.q1.i.z = ipos.z ; 
-    p.q1.i.w = 0.f ;   // TODO: sd 
+    // as simtrace "photon" is hightly non-standard use a quad4 separate from the above photon
+    quad4 a ;  
 
-    p.q2.f.x = origin->x ; 
-    p.q2.f.y = origin->y ; 
-    p.q2.f.z = origin->z ; 
-    p.q2.u.w = params.tmin ; 
+    a.q0.f  = prd->q0.f ; 
 
-    p.q3.f.x = direction->x ;   
-    p.q3.f.y = direction->y ; 
-    p.q3.f.z = direction->z ; 
-    p.q3.u.w = prd->identity() ; 
+    a.q1.f.x = ipos.x ; 
+    a.q1.f.y = ipos.y ; 
+    a.q1.i.z = ipos.z ; 
+    a.q1.i.w = 0.f ;   // TODO: sd 
 
-    evt->photon[idx] = p ; 
+    a.q2.f.x = p.pos.x ; 
+    a.q2.f.y = p.pos.y ; 
+    a.q2.f.z = p.pos.z ; 
+    a.q2.u.w = params.tmin ; 
+
+    a.q3.f.x = p.mom.x ;   
+    a.q3.f.y = p.mom.y ; 
+    a.q3.f.z = p.mom.z ; 
+    a.q3.u.w = prd->identity() ; 
+
+    evt->photon[idx] = a ; 
 }
 
 /**

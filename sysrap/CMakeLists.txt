@@ -180,7 +180,7 @@ set(HEADERS
 
     scuda.h
     scurand.h  
-    sutil.h 
+    smath.h 
     s_mock_curand.h
     squad.h
 

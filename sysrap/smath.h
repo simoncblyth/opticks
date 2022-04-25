@@ -2,20 +2,20 @@
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-   #define SUTIL_METHOD __device__
+   #define SMATH_METHOD __device__
 #else
-   #define SUTIL_METHOD 
+   #define SMATH_METHOD 
 #endif 
 
 
-struct sutil
+struct smath
 {
-    SUTIL_METHOD static void rotateUz(float3& d, const float3& u ); 
+    SMATH_METHOD static void rotateUz(float3& d, const float3& u ); 
 }; 
 
 
 /**
-sutil::rotateUz
+smath::rotateUz
 -----------------
 
 This rotates the reference frame of a vector such that the original Z-axis will lie in the
@@ -70,7 +70,7 @@ u = [0,0,-1] (up=0., u.z<0. )
            
 **/
 
-inline SUTIL_METHOD void sutil::rotateUz(float3& d, const float3& u ) 
+inline SMATH_METHOD void smath::rotateUz(float3& d, const float3& u ) 
 {
     float up = u.x*u.x + u.y*u.y ;
     if (up>0.f) 

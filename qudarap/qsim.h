@@ -587,7 +587,7 @@ inline QSIM_METHOD void qsim<T>::rayleigh_scatter_align(quad4& p, curandStateXOR
         direction.y = sinTheta * sinPhi;
         direction.z = cosTheta ;
 
-        sutil::rotateUz(direction, *p_direction );
+        smath::rotateUz(direction, *p_direction );
 
         float constant = -dot(direction,*p_polarization); 
 
@@ -603,7 +603,7 @@ inline QSIM_METHOD void qsim<T>::rayleigh_scatter_align(quad4& p, curandStateXOR
             polarization.y = sinPhi ;
             polarization.z = 0.f ;
 
-            sutil::rotateUz(polarization, direction);
+            smath::rotateUz(polarization, direction);
         }
         else
         {
@@ -1321,7 +1321,7 @@ inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, b
     direction->y = sinf(phi)*sinTheta ; 
     direction->z = cosTheta ; 
 
-    sutil::rotateUz( *direction, (*normal) * ( inwards ? -1.f : 1.f )); 
+    smath::rotateUz( *direction, (*normal) * ( inwards ? -1.f : 1.f )); 
 
     // what about normal incidence ?
     const float3 transverse = normalize(cross(*direction, (*normal) * ( inwards ? -1.f : 1.f )  )) ; // perpendicular to plane of incidence

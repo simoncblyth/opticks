@@ -56,7 +56,7 @@ npy/NStep.cpp
 #include "OpticksPhoton.h"
 
 #include "scurand.h"
-#include "sutil.h"
+#include "smath.h"
 #include "storchtype.h"
 
 /**
@@ -165,14 +165,14 @@ inline STORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng,
         p.pos.y = r*sinPhi ; 
         p.pos.z = 0.f ;   
         // 3D rotate the positions to make their disc perpendicular to p.mom for a nice beam   
-        sutil::rotateUz(p.pos, p.mom) ; 
+        smath::rotateUz(p.pos, p.mom) ; 
         p.pos = p.pos + gs.pos ; // translate position after orienting the disc 
 
         p.pol.x = sinPhi ;
         p.pol.y = -cosPhi ; 
         p.pol.z = 0.f ;    
         // pol.z zero in initial frame, so rotating the frame to arrange z to be in p.mom direction makes pol transverse to mom
-        sutil::rotateUz(p.pol, p.mom) ; 
+        smath::rotateUz(p.pol, p.mom) ; 
 
         // HMM need to rotate to make pol transverse to mom 
     }
