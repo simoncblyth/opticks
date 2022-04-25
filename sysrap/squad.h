@@ -1,6 +1,13 @@
 #pragma once
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
+#    define SQUAD_METHOD __host__ __device__ __forceinline__
+#else
+#    define SQUAD_METHOD inline 
+#endif
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    #include <iostream>
    #include <iomanip>
@@ -47,18 +54,18 @@ struct quad2
     quad q1 ;
 
 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void zero();
-    SUTIL_INLINE SUTIL_HOSTDEVICE float* data() ;
-    SUTIL_INLINE SUTIL_HOSTDEVICE const float* cdata() const ;
+    SQUAD_METHOD void zero();
+    SQUAD_METHOD float* data() ;
+    SQUAD_METHOD const float* cdata() const ;
 
-    SUTIL_INLINE SUTIL_HOSTDEVICE float3* normal() ;
-    SUTIL_INLINE SUTIL_HOSTDEVICE const float3* normal() const ;
-    SUTIL_INLINE SUTIL_HOSTDEVICE float    distance() const ;
-    SUTIL_INLINE SUTIL_HOSTDEVICE unsigned identity() const ;
-    SUTIL_INLINE SUTIL_HOSTDEVICE unsigned boundary() const ;
+    SQUAD_METHOD float3* normal() ;
+    SQUAD_METHOD const float3* normal() const ;
+    SQUAD_METHOD float    distance() const ;
+    SQUAD_METHOD unsigned identity() const ;
+    SQUAD_METHOD unsigned boundary() const ;
 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void set_identity(unsigned id);
-    SUTIL_INLINE SUTIL_HOSTDEVICE void set_boundary(unsigned bn);
+    SQUAD_METHOD void set_identity(unsigned id);
+    SQUAD_METHOD void set_boundary(unsigned bn);
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -97,28 +104,28 @@ struct quad4
     quad q2 ; 
     quad q3 ;
 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void zero();
-    SUTIL_INLINE SUTIL_HOSTDEVICE float* data() ;
-    SUTIL_INLINE SUTIL_HOSTDEVICE const float* cdata() const ;
+    SQUAD_METHOD void zero();
+    SQUAD_METHOD float* data() ;
+    SQUAD_METHOD const float* cdata() const ;
 
     // hmm actually *set_flags* doing all at once makes little sense, 
     // as idx does not need to be reset and only determine the flag later 
 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void set_flags(unsigned  boundary, unsigned  identity, unsigned  idx, unsigned  flag, float  orient ); 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void set_idx( unsigned  idx); 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void set_orient( float orient ); 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void set_prd( unsigned  boundary, unsigned  identity, float  orient ); 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void set_flag(unsigned  flag); 
+    SQUAD_METHOD void set_flags(unsigned  boundary, unsigned  identity, unsigned  idx, unsigned  flag, float  orient ); 
+    SQUAD_METHOD void set_idx( unsigned  idx); 
+    SQUAD_METHOD void set_orient( float orient ); 
+    SQUAD_METHOD void set_prd( unsigned  boundary, unsigned  identity, float  orient ); 
+    SQUAD_METHOD void set_flag(unsigned  flag); 
 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const ;
-    SUTIL_INLINE SUTIL_HOSTDEVICE void get_idx( unsigned& idx); 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void get_orient( float& orient ); 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void get_prd( unsigned& boundary, unsigned& identity, float&  orient ); 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void get_flag(unsigned& flag) const ; 
-    SUTIL_INLINE SUTIL_HOSTDEVICE unsigned flagmask() const ; 
+    SQUAD_METHOD void get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const ;
+    SQUAD_METHOD void get_idx( unsigned& idx); 
+    SQUAD_METHOD void get_orient( float& orient ); 
+    SQUAD_METHOD void get_prd( unsigned& boundary, unsigned& identity, float&  orient ); 
+    SQUAD_METHOD void get_flag(unsigned& flag) const ; 
+    SQUAD_METHOD unsigned flagmask() const ; 
 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void set_wavelength( float wl ); 
-    SUTIL_INLINE SUTIL_HOSTDEVICE float wavelength() const ; 
+    SQUAD_METHOD void set_wavelength( float wl ); 
+    SQUAD_METHOD float wavelength() const ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -136,7 +143,7 @@ struct qselector
 {
     unsigned hitmask ; 
     qselector(unsigned hitmask_) : hitmask(hitmask_) {}; 
-    SUTIL_INLINE SUTIL_HOSTDEVICE bool operator() (const T& p) const { return ( p.flagmask() & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
+    SQUAD_METHOD bool operator() (const T& p) const { return ( p.flagmask() & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
 };
 
 
@@ -234,7 +241,7 @@ photon
 struct photon
 {
     float3 pos ; 
-    float  t ; 
+    float  time ; 
 
     float3 mom ; 
     float  weight ; 
@@ -247,17 +254,17 @@ struct photon
     std::string desc() const ; 
 #endif 
 
-    unsigned idx() const {      return orient_idx & 0x7fffffffu  ;  }
-    float    orient() const {   return ( orient_idx & 0x80000000u ) ? -1.f : 1.f ; } 
+    SQUAD_METHOD unsigned idx() const {      return orient_idx & 0x7fffffffu  ;  }
+    SQUAD_METHOD float    orient() const {   return ( orient_idx & 0x80000000u ) ? -1.f : 1.f ; } 
 
-    void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } // clear orient bit and then set it 
-    void set_idx( unsigned idx ){  orient_idx = ( orient_idx & 0x80000000u ) | ( 0x7fffffffu & idx ) ; }   // retain bit 31 asis 
+    SQUAD_METHOD void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } // clear orient bit and then set it 
+    SQUAD_METHOD void set_idx( unsigned idx ){  orient_idx = ( orient_idx & 0x80000000u ) | ( 0x7fffffffu & idx ) ; }   // retain bit 31 asis 
 
-    unsigned flag() const {     return boundary_flag & 0xffffu ; }
-    unsigned boundary() const { return boundary_flag >> 16 ; }
+    SQUAD_METHOD unsigned flag() const {     return boundary_flag & 0xffffu ; }
+    SQUAD_METHOD unsigned boundary() const { return boundary_flag >> 16 ; }
 
-    void     set_flag(unsigned flag) {         boundary_flag = ( boundary_flag & 0xffff0000u ) | ( flag & 0xffffu ) ; flagmask |= flag ;  } // clear flag bits then set them  
-    void     set_boundary(unsigned boundary) { boundary_flag = ( boundary_flag & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ; }        // clear boundary bits then set them 
+    SQUAD_METHOD void     set_flag(unsigned flag) {         boundary_flag = ( boundary_flag & 0xffff0000u ) | ( flag & 0xffffu ) ; flagmask |= flag ;  } // clear flag bits then set them  
+    SQUAD_METHOD void     set_boundary(unsigned boundary) { boundary_flag = ( boundary_flag & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ; }        // clear boundary bits then set them 
 
 
     unsigned boundary_flag ; 
@@ -298,7 +305,7 @@ inline std::string photon::desc() const
 {
     std::stringstream ss ; 
     ss 
-        << " pos " << pos << " t  " << t << std::endl
+        << " pos " << pos << " t  " << time << std::endl
         << " mom " << mom << " wg " << weight << std::endl
         << " pol " << pol << " wl " << wavelength << std::endl
         << " bn " << boundary() 
@@ -361,7 +368,7 @@ struct quad6
     quad q4 ;
     quad q5 ;
 
-    SUTIL_INLINE SUTIL_HOSTDEVICE void zero();
+    SQUAD_METHOD void zero();
 
 };
 

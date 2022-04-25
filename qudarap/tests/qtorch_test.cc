@@ -69,7 +69,7 @@ NP* make_seed(const NP* gs)
 
 NP* make_torch_photon( const NP* gs, const NP* se )
 {
-    const torch* gg = (torch*)gs->bytes() ;  
+    const qtorch* gg = (qtorch*)gs->bytes() ;  
     const int*   seed = (int*)se->bytes() ;  
 
     const qsim<float>* sim = new qsim<float>() ; 
@@ -77,24 +77,24 @@ NP* make_torch_photon( const NP* gs, const NP* se )
 
     int tot_photon = se->shape[0] ; 
     NP* ph = NP::Make<float>( tot_photon, 4, 4); 
-    photon* pp = (photon*)ph->bytes() ; 
+    qphoton* pp = (qphoton*)ph->bytes() ; 
 
     for(int i=0 ; i < tot_photon ; i++ )
     {
         unsigned photon_id = i ; 
         unsigned genstep_id = seed[photon_id] ; 
 
-        photon& p = pp[photon_id] ; 
-        const torch& g = gg[genstep_id] ;  
+        qphoton& p = pp[photon_id] ; 
+        const qtorch& g = gg[genstep_id] ;  
         
         qtorch::generate(p, rng, g, photon_id, genstep_id ); 
 
-        std::cout << p.desc() << std::endl;  
+        std::cout << p.p.desc() << std::endl;  
     }
     return ph ; 
 }
 
-int main(int argc, char** argv)
+void test_generate()
 {
     unsigned num_gs = 10 ; 
     unsigned numphoton_per_gs = 100 ; 
@@ -107,6 +107,46 @@ int main(int argc, char** argv)
     gs->save(FOLD, "gs.npy"); 
     se->save(FOLD, "se.npy"); 
     ph->save(FOLD, "ph.npy"); 
+}
+
+void test_union_cast()
+{
+    {
+        qtorch qt ; 
+        qt.q.zero() ; 
+        qt.q.q0.u.x = 101 ; 
+
+        torch& t = qt.t ; 
+        std::cout <<  qt.desc() << std::endl ; 
+    }
+
+    {
+        quad6 gs ; 
+        gs.zero(); 
+        gs.q0.u.x = 202 ; 
+
+        torch& t = (torch&)gs ;   // bolshy : simply cast across from one of the union-ed types to the other 
+
+        std::cout <<  "t.gentype " << t.gentype << std::endl ; 
+    }
+
+    {
+        quad6 gs ; 
+        gs.zero(); 
+        gs.q0.u.x = 303 ; 
+
+        qtorch& qt = (qtorch&)gs ;   // simply cast from one of the union types up to the union type
+
+        std::cout <<  qt.desc() << std::endl ; 
+    }
+}
+
+
+
+int main(int argc, char** argv)
+{
+    test_generate(); 
+    //test_union_cast(); 
 
     return 0 ; 
 }

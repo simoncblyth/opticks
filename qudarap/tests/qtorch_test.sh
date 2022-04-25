@@ -21,6 +21,7 @@ arg=${1:-build_run_ana}
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc -std=c++11 -lstdc++ \
+           -DMOCK_CURAND \
            -I.. \
            -I$OPTICKS_PREFIX/include/SysRap  \
            -I/usr/local/cuda/include \

@@ -25,14 +25,14 @@ struct torchtype
     static const char* Name(unsigned type); 
 }; 
 
-unsigned torchtype::Type(const char* name) 
+inline unsigned torchtype::Type(const char* name) 
 {
     unsigned type = T_UNDEF ;
     if(strcmp(name,T_DISC_)==0) type = T_DISC ; 
     return type ; 
 }
 
-const char* torchtype::Name(unsigned type)
+inline const char* torchtype::Name(unsigned type)
 {
     const char* n = T_UNDEF_ ; 
     switch(type)

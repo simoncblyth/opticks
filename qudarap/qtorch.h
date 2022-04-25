@@ -55,7 +55,7 @@ npy/NStep.cpp
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 #include "qcurand.h"
-#include "qsim.h"
+#include "qutil.h"
 
 #include "torchtype.h"
 
@@ -73,7 +73,7 @@ struct torch
     unsigned numphoton ; 
     
     float3   pos ;
-    float    t ; 
+    float    time ; 
 
     float3   mom ;
     float    weight ; 
@@ -102,18 +102,38 @@ struct qtorch
       torch t ; 
    };   
 
-   // maybe move to torch ?
-   QTORCH_METHOD static void generate( photon& p, curandStateXORWOW& rng, const torch& gs, unsigned photon_id, unsigned genstep_id ); 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
+   QTORCH_METHOD static void generate( qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
+#endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+   std::string desc() const ; 
 #endif
 
 }; 
 
-
-inline QTORCH_METHOD void qtorch::generate( photon& p, curandStateXORWOW& rng, const torch& gs, unsigned photon_id, unsigned genstep_id )  // static
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+inline std::string qtorch::desc() const 
 {
+    std::stringstream ss ; 
+    ss << "qtorch::desc"
+       << " gentype " << t.gentype 
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+} 
+#endif
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
+
+inline QTORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
+{
+    photon& p = qp.p ; 
+    const torch& gs = (const torch&)gs_ ;   // casting between union-ed types  
+
     printf("//qtorch::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphoton(%3d %3d %3d %3d) type %d \n", 
        photon_id, 
        genstep_id, 
@@ -129,7 +149,7 @@ inline QTORCH_METHOD void qtorch::generate( photon& p, curandStateXORWOW& rng, c
         printf("//qtorch::generate T_DISC gs.type %d gs.mode %d  \n", gs.type, gs.mode ); 
 
         p.wavelength = gs.wavelength ; 
-        p.t = gs.t ; 
+        p.time = gs.time ; 
         p.mom = gs.mom ; 
 
         float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
@@ -144,14 +164,14 @@ inline QTORCH_METHOD void qtorch::generate( photon& p, curandStateXORWOW& rng, c
         p.pos.y = r*sinPhi ; 
         p.pos.z = 0.f ;   
         // 3D rotate the positions to make their disc perpendicular to p.mom for a nice beam   
-        qsim<float>::rotateUz(p.pos, p.mom) ; 
+        qutil::rotateUz(p.pos, p.mom) ; 
         p.pos = p.pos + gs.pos ; // translate position after orienting the disc 
 
         p.pol.x = sinPhi ;
         p.pol.y = -cosPhi ; 
         p.pol.z = 0.f ;    
         // pol.z zero in initial frame, so rotating the frame to arrange z to be in p.mom direction makes pol transverse to mom
-        qsim<float>::rotateUz(p.pol, p.mom) ; 
+        qutil::rotateUz(p.pol, p.mom) ; 
 
 
         // HMM need to rotate to make pol transverse to mom 
@@ -161,5 +181,5 @@ inline QTORCH_METHOD void qtorch::generate( photon& p, curandStateXORWOW& rng, c
     p.set_flag(TORCH); 
 }
 
-
+#endif
 

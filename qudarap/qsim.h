@@ -20,6 +20,8 @@
 #include "qcurand.h"
 #include "qbnd.h"
 #include "qstate.h"
+#include "qtorch.h"
+
 
 /**
 qsim.h : GPU side struct prepared CPU side by QSim.hh
@@ -77,11 +79,9 @@ struct qsim
 
 // TODO: get more methods to work on CPU as well as GPU for easier testing 
 
-    QSIM_METHOD void    generate_photon_dummy(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-    QSIM_METHOD void    generate_photon_torch(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon_dummy( qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
-    QSIM_METHOD static void   rotateUz(float3& d, const float3& u ); 
 
 // TODO: many of the below could be static, and many can work on CPU so bring them up here 
 //       NB must also move the implementation
@@ -117,9 +117,9 @@ struct qsim
     QSIM_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng, int print_id = -1 ); 
 
 
-    QSIM_METHOD void    generate_photon_carrier(    quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-    QSIM_METHOD void    generate_photon_simtrace(   quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-    QSIM_METHOD void    generate_photon(            quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon_carrier(    qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon_simtrace(   qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon(            qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
 
 
     QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx ); 
@@ -165,8 +165,10 @@ struct qsim
 
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim<T>::generate_photon_dummy(qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
+    quad4& p = qp.q ; 
+
     printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n", 
        photon_id, 
        genstep_id, 
@@ -207,83 +209,6 @@ inline QSIM_METHOD float3 qsim<T>::uniform_sphere(const float u0, const float u1
     float cosTheta = 2.f*u1 - 1.f ; // -1.f -> 1.f 
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
     return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
-}
-
-/**
-qsim::rotateUz
----------------
-
-This rotates the reference frame of a vector such that the original Z-axis will lie in the
-direction of *u*. Many rotations would accomplish this; the one selected
-uses *u* as its third column and is given by the below matrix.
-
-The below CUDA implementation follows the CLHEP implementation used by Geant4::
-
-     // geant4.10.00.p01/source/externals/clhep/src/ThreeVector.cc
-     72 Hep3Vector & Hep3Vector::rotateUz(const Hep3Vector& NewUzVector) {
-     73   // NewUzVector must be normalized !
-     74 
-     75   double u1 = NewUzVector.x();
-     76   double u2 = NewUzVector.y();
-     77   double u3 = NewUzVector.z();
-     78   double up = u1*u1 + u2*u2;
-     79 
-     80   if (up>0) {
-     81       up = std::sqrt(up);
-     82       double px = dx,  py = dy,  pz = dz;
-     83       dx = (u1*u3*px - u2*py)/up + u1*pz;
-     84       dy = (u2*u3*px + u1*py)/up + u2*pz;
-     85       dz =    -up*px +             u3*pz;
-     86     }
-     87   else if (u3 < 0.) { dx = -dx; dz = -dz; }      // phi=0  teta=pi
-     88   else {};
-     89   return *this;
-     90 }
-
-This implements rotation of (px,py,pz) vector into (dx,dy,dz) 
-using the below rotation matrix, the columns of which must be 
-orthogonal unit vectors.::
-
-                |  u.x * u.z / up   -u.y / up    u.x  |        
-        d  =    |  u.y * u.z / up   +u.x / up    u.y  |      p
-                |   -up               0.         u.z  |      
-    
-Taking dot products between and within columns shows that to 
-be the case for normalized u. See oxrap/rotateUz.h for the algebra. 
-
-Special cases:
-
-u = [0,0,1] (up=0.) 
-   does nothing, effectively identity matrix
-
-u = [0,0,-1] (up=0., u.z<0. ) 
-   flip x, and z which is a rotation of pi/2 about y 
-
-               |   -1    0     0   |
-      d =      |    0    1     0   |   p
-               |    0    0    -1   |
-           
-**/
-
-template <typename T>
-inline QSIM_METHOD void qsim<T>::rotateUz(float3& d, const float3& u ) 
-{
-    float up = u.x*u.x + u.y*u.y ;
-    if (up>0.f) 
-    {   
-        up = sqrt(up);
-        float px = d.x ;
-        float py = d.y ;
-        float pz = d.z ;
-        d.x = (u.x*u.z*px - u.y*py)/up + u.x*pz;
-        d.y = (u.y*u.z*px + u.x*py)/up + u.y*pz;
-        d.z =    -up*px +                u.z*pz;
-    }   
-    else if (u.z < 0.f ) 
-    {   
-        d.x = -d.x; 
-        d.z = -d.z; 
-    }      
 }
 
 
@@ -662,7 +587,7 @@ inline QSIM_METHOD void qsim<T>::rayleigh_scatter_align(quad4& p, curandStateXOR
         direction.y = sinTheta * sinPhi;
         direction.z = cosTheta ;
 
-        rotateUz(direction, *p_direction );
+        qutil::rotateUz(direction, *p_direction );
 
         float constant = -dot(direction,*p_polarization); 
 
@@ -678,7 +603,7 @@ inline QSIM_METHOD void qsim<T>::rayleigh_scatter_align(quad4& p, curandStateXOR
             polarization.y = sinPhi ;
             polarization.z = 0.f ;
 
-            rotateUz(polarization, direction);
+            qutil::rotateUz(polarization, direction);
         }
         else
         {
@@ -1396,7 +1321,7 @@ inline QSIM_METHOD void qsim<T>::hemisphere_polarized(quad4& p, unsigned polz, b
     direction->y = sinf(phi)*sinTheta ; 
     direction->z = cosTheta ; 
 
-    rotateUz( *direction, (*normal) * ( inwards ? -1.f : 1.f )); 
+    qutil::rotateUz( *direction, (*normal) * ( inwards ? -1.f : 1.f )); 
 
     // what about normal incidence ?
     const float3 transverse = normalize(cross(*direction, (*normal) * ( inwards ? -1.f : 1.f )  )) ; // perpendicular to plane of incidence
@@ -1908,8 +1833,11 @@ An input photon carried within the genstep q2:q5 is repeatedly provided.
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+inline QSIM_METHOD void qsim<T>::generate_photon_carrier(qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
 {
+    //quad4& p = (quad4&)qp ; // cast from union type down to unioned-ed subtype  
+    quad4& p = qp.q ;  // alternatively, dont cast just use the union member 
+
     p.q0.f = gs.q2.f ; 
     p.q1.f = gs.q3.f ; 
     p.q2.f = gs.q4.f ; 
@@ -1937,8 +1865,10 @@ TODO: implement local index by including photon_id offset with the gensteps
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
+    quad4& p = qp.q ; 
+
     C4U gsid ;  
 
     //int gencode          = gs.q0.i.x ;   
@@ -1952,7 +1882,7 @@ inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(quad4& p, curandStateX
     p.q0.f.z = gs.q1.f.z ; 
     p.q0.f.w = 1.f ;        
 
-    //printf("//qsim.generate_photon_torch gridaxes %d gs.q1 (%10.4f %10.4f %10.4f %10.4f) \n", gridaxes, gs.q1.f.x, gs.q1.f.y, gs.q1.f.z, gs.q1.f.w ); 
+    //printf("//qsim.generate_photon_simtrace gridaxes %d gs.q1 (%10.4f %10.4f %10.4f %10.4f) \n", gridaxes, gs.q1.f.x, gs.q1.f.y, gs.q1.f.z, gs.q1.f.w ); 
 
     float u0 = curand_uniform(&rng); 
 
@@ -1963,9 +1893,9 @@ inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(quad4& p, curandStateX
     float cosTheta = 2.f*u1 - 1.f ; 
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta) ; 
 
-    //printf("//qsim.generate_photon_torch u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f \n", u0, sinPhi, cosPhi ); 
-    //printf("//qsim.generate_photon_torch u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n", u1, sinTheta, cosTheta ); 
-    //printf("//qsim.generate_photon_torch  u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n",  u0, sinPhi, cosPhi, u1, sinTheta, cosTheta ); 
+    //printf("//qsim.generate_photon_simtrace u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f \n", u0, sinPhi, cosPhi ); 
+    //printf("//qsim.generate_photon_simtrace u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n", u1, sinTheta, cosTheta ); 
+    //printf("//qsim.generate_photon_simtrace  u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n",  u0, sinPhi, cosPhi, u1, sinTheta, cosTheta ); 
 
     switch( gridaxes )
     { 
@@ -2001,14 +1931,15 @@ Moved non-standard center-extent gensteps to use qsim::generate_photon_simtrace 
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim<T>::generate_photon(qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
     const int& gencode = gs.q0.i.x ; 
     //printf("//qsim.generate_photon gencode %d \n", gencode); 
     switch(gencode)
     {
-        case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(p, rng, gs, photon_id, genstep_id) ; break ; 
-        default:                             generate_photon_dummy(p, rng, gs, photon_id, genstep_id) ; break ; 
+        case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(p, rng, gs, photon_id, genstep_id)  ; break ; 
+        case OpticksGenstep_TORCH:           qtorch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
+        default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ; 
     }
 }
 

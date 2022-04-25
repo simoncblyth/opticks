@@ -31,6 +31,9 @@ union HW_Register2
 }; 
 
 
+
+
+
 #include <cstdio>
 
 int main()
@@ -45,6 +48,9 @@ int main()
     printf("// reg.bytes.byte1  %x \n" , reg.bytes.byte1 ); 
     printf("// reg.bytes.byte2  %x \n" , reg.bytes.byte2 ); 
     printf("// reg.bytes.byte3  %x \n" , reg.bytes.byte3 ); 
+
+
+
 
     return 0 ; 
 }

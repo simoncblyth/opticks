@@ -282,12 +282,12 @@ __global__ void _QSim_generate_photon(qsim<T>* sim, qevent* evt )
 
     printf("//_QSim_generate_photon photon_id %4d evt->num_photon %4d genstep_id %4d  \n", photon_id, evt->num_photon, genstep_id );  
 
-    quad4 p ;   
-    sim->generate_photon(p, rng, gs, photon_id, genstep_id ); 
+    qphoton qp ;   
+    sim->generate_photon(qp, rng, gs, photon_id, genstep_id ); 
 
     //p.q0.f.x = 1.f ; p.q0.f.y = 2.f ; p.q0.f.z = 3.f ; 
 
-    evt->photon[photon_id] = p ; 
+    evt->photon[photon_id] = qp.q ;  // HMM could switch to a qphoton array 
 
 }
 
