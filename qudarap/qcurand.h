@@ -5,7 +5,11 @@
    #include "curand_kernel.h"
 #else
    #define QCURAND_METHOD 
+
+#ifdef MOCK_CURAND
    #include "s_mock_curand.h"
+#endif
+
 #endif 
 
 template <typename T>

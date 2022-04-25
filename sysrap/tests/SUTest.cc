@@ -5,6 +5,15 @@
 #include "SU.hh"
 #include "OPTICKS_LOG.hh"
 
+/**
+populate : mockup photon array with one third marked as hits
+--------------------------------------------------------------
+
+Zeros pp photon array and for a third of the entries sets the flagmask entry 
+in p.q3.u.w to the mask parameter.   
+
+**/
+
 unsigned populate( quad4* pp, unsigned num_p, unsigned mask )
 {
     unsigned num_hit = 0 ; 
@@ -45,6 +54,16 @@ void dump( const quad4* pp, unsigned num_p, unsigned mask )
     }
 }
 
+/**
+test_monolithic
+-----------------
+
+1. populate pp
+2. *SU::upload*
+3. *SU::deprecated_select_copy_device_to_host*  
+
+**/
+
 void test_monolithic()
 {
     LOG(info); 
@@ -66,6 +85,18 @@ void test_monolithic()
     dump( hit, num_hit, mask );
 }
 
+/**
+test_presized
+---------------
+
+1. populate pp 
+2. *SU::upload* pp to device
+3. *SU::count_if* the hits on device
+4. *SU::device_alloc* device buffer sized for the number of hits
+5. *SU::copy_if_device_to_device_presized* from photons to hits buffer
+6. *SU::copy_device_to_host_presized* : copy back the hits 
+
+**/
 void test_presized()
 {
     LOG(info); 

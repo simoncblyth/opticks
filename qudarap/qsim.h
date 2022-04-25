@@ -80,12 +80,18 @@ struct qsim
     QSIM_METHOD void    generate_photon_dummy(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD void    generate_photon_torch(      quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
 
-    QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
     QSIM_METHOD static void   rotateUz(float3& d, const float3& u ); 
 
 // TODO: many of the below could be static, and many can work on CPU so bring them up here 
 //       NB must also move the implementation
+
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+    QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
+#endif
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
@@ -180,6 +186,7 @@ inline QSIM_METHOD void qsim<T>::generate_photon_dummy(quad4& p, curandStateXORW
 
 
 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
 
 template <typename T>
 inline QSIM_METHOD float3 qsim<T>::uniform_sphere(curandStateXORWOW& rng)
@@ -189,6 +196,9 @@ inline QSIM_METHOD float3 qsim<T>::uniform_sphere(curandStateXORWOW& rng)
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
     return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
 }
+
+#endif
+
 
 template <typename T>
 inline QSIM_METHOD float3 qsim<T>::uniform_sphere(const float u0, const float u1)

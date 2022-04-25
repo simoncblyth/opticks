@@ -145,6 +145,7 @@ inline QTORCH_METHOD void qtorch::generate( photon& p, curandStateXORWOW& rng, c
         p.pos.z = 0.f ;   
         // 3D rotate the positions to make their disc perpendicular to p.mom for a nice beam   
         qsim<float>::rotateUz(p.pos, p.mom) ; 
+        p.pos = p.pos + gs.pos ; // translate position after orienting the disc 
 
         p.pol.x = sinPhi ;
         p.pol.y = -cosPhi ; 

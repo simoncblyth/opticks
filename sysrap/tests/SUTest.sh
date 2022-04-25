@@ -1,4 +1,16 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+SUTest.sh
+===========
+
+
+SU.cu
+SU.hh
+SUTest.cc
+
+
+EOU
+}
 
 msg="=== $BASH_SOURCE :"
 name=SUTest
