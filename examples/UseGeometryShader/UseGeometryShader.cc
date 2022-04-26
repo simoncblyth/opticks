@@ -1,30 +1,24 @@
-/*
- * Copyright (c) 2019 Opticks Team. All Rights Reserved.
- *
- * This file is part of Opticks
- * (see https://bitbucket.org/simoncblyth/opticks).
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License.  
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
- * See the License for the specific language governing permissions and 
- * limitations under the License.
- */
-
 /**
 UseGeometryShader
 =================
 
 Started from https://www.glfw.org/docs/latest/quick.html#quick_example
 
-
 reference on geometry shaders https://open.gl/geometry
+
+
+Review oglrap flying point rendering 
+--------------------------------------
+
+oglrap/gl/rec/geom.glsl::
+  
+    47 layout (lines) in;
+    48 layout (points, max_vertices = 1) out;
+
+    59     uint photon_id = gl_PrimitiveIDIn/MAXREC ;     // implies flat step-records are fed in 
+    63     vec4 p0 = gl_in[0].gl_Position  ;
+    64     vec4 p1 = gl_in[1].gl_Position  ; 
+
 
 
 **/
@@ -36,12 +30,6 @@ reference on geometry shaders https://open.gl/geometry
 #define GLFW_TRUE true
 #endif
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/string_cast.hpp>
-
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
@@ -49,16 +37,8 @@ reference on geometry shaders https://open.gl/geometry
 #include <string>
 #include <sstream>
 
+#include "SGLM.hh"
 #include "NP.hh"
-
-static const char* SHADER_FOLD = getenv("SHADER_FOLD"); 
-static const char* vertex_shader_text = NP::ReadString(SHADER_FOLD, "vert.glsl"); 
-static const char* geometry_shader_text = NP::ReadString(SHADER_FOLD, "geom.glsl"); 
-static const char* fragment_shader_text = NP::ReadString(SHADER_FOLD, "frag.glsl"); 
-
-static const char* FOLD = getenv("FOLD"); 
-static const NP* photon = NP::Load(FOLD, "p.npy") ; 
-
 
 void check(const char* path, int line)
 {
@@ -102,139 +82,27 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
+static const char* SHADER_FOLD = getenv("SHADER_FOLD"); 
+static const char* vertex_shader_text = NP::ReadString(SHADER_FOLD, "vert.glsl"); 
+static const char* geometry_shader_text = NP::ReadString(SHADER_FOLD, "geom.glsl"); 
+static const char* fragment_shader_text = NP::ReadString(SHADER_FOLD, "frag.glsl"); 
 
-std::string to_string(const glm::vec3& v)
+static const char* FOLD = getenv("FOLD"); 
+
+
+int main()
 {
-    std::stringstream ss ; 
-    for (int i=0; i<3; i++) ss << std::fixed << std::setprecision(3) << std::setw(10) << v[i] ;
-    ss << std::endl ;
-    return ss.str(); 
-}
-std::string to_string(const glm::vec4& v)
-{
-    std::stringstream ss ; 
-    for (int i=0; i<4; i++) ss << std::fixed << std::setprecision(3) << std::setw(10) << v[i] ;
-    ss << std::endl ;
-    return ss.str(); 
-}
-std::string to_string(const glm::mat4& m)
-{
-    std::stringstream ss ; 
-    for (int j=0; j<4; j++)
-    {   
-        for (int i=0; i<4; i++) ss << std::fixed << std::setprecision(3) << std::setw(10) << m[i][j] ;
-        ss << std::endl ;
-    }   
-    return ss.str(); 
-}
+    std::cout << " vertex_shader_text " << std::endl << vertex_shader_text << std::endl ; 
+    std::cout << " geometry_shader_text " << std::endl << ( geometry_shader_text ? geometry_shader_text : "-" )  << std::endl ; 
+    std::cout << " fragment_shader_text " << std::endl << fragment_shader_text << std::endl ; 
 
-glm::mat4 getMVP(int width, int height, bool verbose)
-{
-    // Composition::setCenterExtent 
-    glm::vec4 ce(0.f, 0.f, 0.f, 100.f );  // center extent of the "model"
+    NP* record = NP::Load(FOLD, "r.npy") ; 
+    std::cout <<  " record " << record->sstr() << std::endl ; 
+    GLsizei record_count = record->shape[0]*record->shape[1] ; 
 
-    glm::vec3 tr(ce.x, ce.y, ce.z);
-    glm::vec3 sc(ce.w);
-    glm::vec3 isc(1.f/ce.w);
-
-    glm::mat4 model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
-    glm::mat4 world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
-
-    // View::getTransforms
-    glm::vec4 eye_m( -1.f,-1.f,0.f,1.f);   //  viewpoint in unit model frame 
-    glm::vec4 look_m( 0.f, 0.f,0.f,1.f); 
-    glm::vec4 up_m(   0.f, 0.f,1.f,1.f); 
-    glm::vec4 gze_m( look_m - eye_m ) ; 
-
-    const glm::mat4& m2w = model2world ; 
-    glm::vec3 eye = glm::vec3( m2w * eye_m ) ; 
-    glm::vec3 look = glm::vec3( m2w * look_m ) ; 
-    glm::vec3 up = glm::vec3( m2w * up_m ) ; 
-    glm::vec3 gaze = glm::vec3( m2w * gze_m ) ;    
-
-
-    if(verbose)
-    {
-       std::cout << " model2world \n" << to_string( model2world ) << std::endl ; 
-       std::cout << " world2model \n" << to_string( world2model ) << std::endl ; 
-       std::cout << " eye \n" << to_string( eye ) << std::endl ; 
-       std::cout << " look \n" << to_string( look ) << std::endl ; 
-       std::cout << " up \n" << to_string( up ) << std::endl ; 
-       std::cout << " gaze \n" << to_string( gaze ) << std::endl ; 
-    }
-
-
-    glm::vec3 forward_ax = glm::normalize(gaze);
-    glm::vec3 right_ax   = glm::normalize(glm::cross(forward_ax,up)); 
-    glm::vec3 top_ax     = glm::normalize(glm::cross(right_ax,forward_ax));
-
-    // OpenGL eye space convention : -Z is forward, +X to right, +Y up
-    glm::mat4 rot(1.0) ; 
-    rot[0] = glm::vec4( right_ax, 0.f );  
-    rot[1] = glm::vec4( top_ax  , 0.f );  
-    rot[2] = glm::vec4( -forward_ax, 0.f );  
-
-    glm::mat4 ti(glm::translate(glm::vec3(eye)));
-    glm::mat4 t(glm::translate(glm::vec3(-eye)));  // eye to origin 
-
-    float gazelength = glm::length(gaze);
-    glm::mat4 eye2look = glm::translate( glm::mat4(1.), glm::vec3(0,0,gazelength));
-    glm::mat4 look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-gazelength));
-
-    glm::mat4 world2camera = glm::transpose(rot) * t  ;   
-    glm::mat4 camera2world = ti * rot ;                   
-
-    //glm::vec4 gaze = glm::vec4( gze, 0.f );
-
-    // Composition::update
-    glm::mat4 world2eye = world2camera ; // no look rotation or trackballing  
-
-    float aspect = float(width)/float(height) ; 
-
-    // Camera::aim
-    float basis = 100.f ;  
-    float near = basis/10.f ; 
-    float far = basis*5.f ; 
-    float zoom = 1.0f ; 
-
-    // Camera::getFrustum
-    bool parallel = false ; 
-    float orthoscale = 1.0f ; 
-    float scale = parallel ? orthoscale : near   ; 
-   
-    float left = -aspect*scale/zoom ; 
-    float right = aspect*scale/zoom ; 
-
-    float top = scale/zoom ; 
-    float bottom = -scale/zoom ; 
-   
-    glm::mat4 projection = glm::frustum( left, right, bottom, top, near, far ); 
-    glm::mat4 world2clip = projection * world2eye ;    //  ModelViewProjection 
-
-
-    if(verbose)
-    {
-       std::cout << " rot  \n" << to_string( rot ) << std::endl ; 
-       std::cout << " eye2look  \n" << to_string( eye2look ) << std::endl ; 
-       std::cout << " look2eye  \n" << to_string( look2eye ) << std::endl ; 
-       std::cout << " world2camera \n" << to_string( world2camera ) << std::endl ; 
-       std::cout << " camera2world \n" << to_string( camera2world ) << std::endl ; 
-       std::cout << " projection \n" << to_string( projection ) << std::endl ; 
-       std::cout << " world2clip \n" << to_string( world2clip ) << std::endl ; 
-    }
-
-
-    return world2clip ; 
-} 
-
-
-int main(void)
-{
     glfwSetErrorCallback(error_callback);
     if (!glfwInit()) exit(EXIT_FAILURE);
-
-  // version specifies the minimum
-
+    // version specifies the minimum
 #if defined __APPLE__
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3); 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2); 
@@ -259,9 +127,8 @@ int main(void)
     // Frame::gl_init_window OpenGL version supported 4.1.0 NVIDIA 418.56
 #endif
 
-
     GLFWwindow* window;
-    window = glfwCreateWindow(640, 480, "UseGeometryShader", NULL, NULL);
+    window = glfwCreateWindow(1024, 768, "UseGeometryShader", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -281,46 +148,14 @@ int main(void)
     printf(" version %s \n", version ); 
 
     glfwSwapInterval(1);
-
-    unsigned vao ; 
-    check(__FILE__, __LINE__);
+    unsigned vao ;                                                              check(__FILE__, __LINE__); 
     glGenVertexArrays (1, &vao);                                                check(__FILE__, __LINE__);
     glBindVertexArray (vao);                                                    check(__FILE__, __LINE__);
-
-
-
-/*
-   photons
-
-       pos
-       mom
-       pol
-       flg 
-
-
-    const glm::vec4 vertices[] = {
-        glm::vec4( 0.f   ,    0.f,    0.f,   0.f ),    // pos : origin 
-        glm::vec4( 1000.f,    0.f,    0.f,   0.f ),    // dir : X axis
-        glm::vec4( 1.f   ,    0.f,    0.f,   0.f ),    // col : red
-
-        glm::vec4( 0.f   ,    0.f,    0.f,   0.f ),    // pos : origin 
-        glm::vec4( 0.f   , 1000.f,    0.f,   0.f ),    // dir : Y axis
-        glm::vec4( 0.f   ,    1.f,    0.f,   0.f ),    // col : green 
-
-        glm::vec4( 0.f   ,    0.f,    0.f,   0.f ),    // pos : origin
-        glm::vec4( 0.f   ,    0.f, 1000.f,   0.f ),    // dir : Z axis
-        glm::vec4( 0.f   ,    0.f,    1.f,   0.f )     // col : blue
-    }; 
-    assert( sizeof(vertices)/sizeof(glm::vec4) == 9 ); 
-*/
-
 
     GLuint vertex_buffer ; 
     glGenBuffers(1, &vertex_buffer);                                            check(__FILE__, __LINE__);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);                               check(__FILE__, __LINE__);
-    
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  check(__FILE__, __LINE__);
-    glBufferData(GL_ARRAY_BUFFER, photon->arr_bytes(), photon->bytes(), GL_STATIC_DRAW);  check(__FILE__, __LINE__);
+    glBufferData(GL_ARRAY_BUFFER, record->arr_bytes(), record->bytes(), GL_STATIC_DRAW);  check(__FILE__, __LINE__);
 
     int params = -1; 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    check(__FILE__, __LINE__);
@@ -329,11 +164,15 @@ int main(void)
     glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &params);
     if (GL_TRUE != params) print_shader_info_log(vertex_shader) ; 
 
-    GLuint geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);                check(__FILE__, __LINE__);
-    glShaderSource(geometry_shader, 1, &geometry_shader_text, NULL);            check(__FILE__, __LINE__);
-    glCompileShader(geometry_shader);                                           check(__FILE__, __LINE__);
-    glGetShaderiv (geometry_shader, GL_COMPILE_STATUS, &params);
-    if (GL_TRUE != params) print_shader_info_log(geometry_shader) ; 
+    GLuint geometry_shader = 0 ;
+    if( geometry_shader_text )
+    {
+        geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);                       check(__FILE__, __LINE__);
+        glShaderSource(geometry_shader, 1, &geometry_shader_text, NULL);            check(__FILE__, __LINE__);
+        glCompileShader(geometry_shader);                                           check(__FILE__, __LINE__);
+        glGetShaderiv (geometry_shader, GL_COMPILE_STATUS, &params);
+        if (GL_TRUE != params) print_shader_info_log(geometry_shader) ; 
+    }
 
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                check(__FILE__, __LINE__);
     glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            check(__FILE__, __LINE__);
@@ -343,17 +182,18 @@ int main(void)
 
     GLuint program = glCreateProgram();        check(__FILE__, __LINE__);
     glAttachShader(program, vertex_shader);    check(__FILE__, __LINE__);
-    glAttachShader(program, geometry_shader);  check(__FILE__, __LINE__);
+    if( geometry_shader > 0 ) glAttachShader(program, geometry_shader);  check(__FILE__, __LINE__);
     glAttachShader(program, fragment_shader);  check(__FILE__, __LINE__);
     glLinkProgram(program);                    check(__FILE__, __LINE__);
 
-    GLint LightPosition_location ; 
-    GLint ModelViewProjection_location ; 
-    GLint Param_location ; 
-    LightPosition_location = glGetUniformLocation(program, "LightPosition");               check(__FILE__, __LINE__);
-    ModelViewProjection_location = glGetUniformLocation(program, "ModelViewProjection");   check(__FILE__, __LINE__);
-    Param_location = glGetUniformLocation(program, "Param");                               check(__FILE__, __LINE__);
+    GLint LightPosition_location       = glGetUniformLocation(program, "LightPosition");         check(__FILE__, __LINE__);
+    GLint ModelViewProjection_location = glGetUniformLocation(program, "ModelViewProjection");   check(__FILE__, __LINE__);
+    GLint Param_location               = glGetUniformLocation(program, "Param");                 check(__FILE__, __LINE__);
 
+
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE); // otherwise gl_PointSize setting ignored 
+
+    // grab locations from vert.glsl 
     GLint vpos_location = glGetAttribLocation(program, "vpos");  check(__FILE__, __LINE__);
     GLint vdir_location = glGetAttribLocation(program, "vdir");  check(__FILE__, __LINE__);
     GLint vcol_location = glGetAttribLocation(program, "vcol");  check(__FILE__, __LINE__);
@@ -364,60 +204,70 @@ int main(void)
 
     glUseProgram(program);
 
-    GLsizei stride = sizeof(float)*4*3 ; // 12 floats 
+    GLsizei stride = sizeof(float)*4*4 ;  
 
-    /**
-    photon (4,4) layout 
+    const void* vpos_offset = (void*)(sizeof(float)*0) ;   // pos
+    const void* vdir_offset = (void*)(sizeof(float)*8) ;   // pol
+    const void* vcol_offset = (void*)(sizeof(float)*8) ;   // pol 
 
-    00:pos  
-    04:mom
-    08:pol
-    12:flg 
-    **/
-
-    const void* vpos_offset = (void*)(sizeof(float)*0) ; 
-    const void* vdir_offset = (void*)(sizeof(float)*8) ; 
-    const void* vcol_offset = (void*)(sizeof(float)*8) ; 
-
-    if(vpos_location > 0)  // it gets optimized away if not actually used in program as a whole ?
-    {
+    if( vpos_location > -1 )
+    { 
         glEnableVertexAttribArray(vpos_location);                                              check(__FILE__, __LINE__);
         glVertexAttribPointer(vpos_location, 4, GL_FLOAT, GL_FALSE, stride, vpos_offset );     check(__FILE__, __LINE__);
     }
 
-    glEnableVertexAttribArray(vdir_location);                                             check(__FILE__, __LINE__);
-    glVertexAttribPointer(vdir_location, 4, GL_FLOAT, GL_FALSE, stride, vdir_offset);     check(__FILE__, __LINE__);
+    if( vdir_location > -1 )
+    {
+        glEnableVertexAttribArray(vdir_location);                                             check(__FILE__, __LINE__);
+        glVertexAttribPointer(vdir_location, 4, GL_FLOAT, GL_FALSE, stride, vdir_offset);     check(__FILE__, __LINE__);
+    }
 
-    glEnableVertexAttribArray(vcol_location);                                             check(__FILE__, __LINE__);
-    glVertexAttribPointer(vcol_location, 4, GL_FLOAT, GL_FALSE, stride, vcol_offset);     check(__FILE__, __LINE__);
+    if( vcol_location > -1 )
+    {
+        glEnableVertexAttribArray(vcol_location);                                             check(__FILE__, __LINE__);
+        glVertexAttribPointer(vcol_location, 4, GL_FLOAT, GL_FALSE, stride, vcol_offset);     check(__FILE__, __LINE__);
+    }
 
-    bool verbose(true) ; 
     bool exitloop(false);
     int renderlooplimit(2000);
     int count(0); 
 
-    GLsizei photon_count = photon->shape[0] ; 
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+ 
+    SGLM sglm ; 
+    sglm.width = width ; 
+    sglm.height = height ; 
+    sglm.zoom = 1.f ;   
+
+    sglm.eye_m.x = -2.f ; 
+    sglm.eye_m.y = -2.f ; 
+    sglm.eye_m.z = 0.f ; 
+
+    sglm.setExtent(100.f); 
+    sglm.update(); 
+    sglm.dump(); 
+
+    const glm::mat4& world2clip = sglm.world2clip ; 
+    const GLfloat* mvp = (const GLfloat*) glm::value_ptr(world2clip) ;  
+
+    //SGLM::GetMVP(width, height, verbose) ; 
+
+    glm::vec4 LightPosition(0.f, 0.f, 0.f, 1.0);
+    glm::vec4 Param(1.f, 0.f, 0.f, 0.0);
 
     while (!glfwWindowShouldClose(window) && !exitloop)
     {
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glm::mat4 world2clip = getMVP(width, height, verbose) ; 
-        verbose = false ; 
-
-        glm::vec4 LightPosition(0.f, 0.f, 0.f, 1.0);
-        glm::vec4 Param(1.f, 0.f, 0.f, 0.0);
-
         glUseProgram(program);
-        glUniformMatrix4fv(ModelViewProjection_location, 1, GL_FALSE, (const GLfloat*) glm::value_ptr( world2clip ) );
-        glUniform4fv(LightPosition_location, 1, glm::value_ptr(LightPosition) );
-        glUniform4fv(Param_location, 1, glm::value_ptr(Param) );
+        glUniformMatrix4fv(ModelViewProjection_location, 1, GL_FALSE, mvp );
+        glUniform4fv(      LightPosition_location,       1, glm::value_ptr(LightPosition) );
+        glUniform4fv(      Param_location,               1, glm::value_ptr(Param) );
 
         GLint first = 0 ; 
-        glDrawArrays(GL_POINTS, first, photon_count);
+        glDrawArrays(GL_POINTS, first, record_count);
         glfwSwapBuffers(window);
         glfwPollEvents();
       

@@ -38,7 +38,12 @@ make install
 
 echo executing $name
 
-export SHADER_FOLD=$sdir
+
+
+
+#export SHADER_FOLD=$sdir/orig
+export SHADER_FOLD=$sdir/pos
+
 export FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
 
 $name
