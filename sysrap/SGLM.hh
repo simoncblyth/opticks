@@ -16,9 +16,19 @@
 
 #include "SYSRAP_API_EXPORT.hh"
 
+/**
+SGLM
+
+* https://learnopengl.com/Getting-started/Camera
+
+TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
+
+**/
 
 struct SYSRAP_API SGLM
 {
+    static SGLM* INSTANCE ; 
+
     template <typename T>
     static T ato_( const char* a );
 
@@ -105,6 +115,8 @@ struct SYSRAP_API SGLM
     void dump() const ; 
 };
 
+SGLM* SGLM::INSTANCE = nullptr ; 
+
 
 SGLM::SGLM() 
     :
@@ -145,6 +157,7 @@ SGLM::SGLM()
     setExtent(ce.w); 
 
     update(); 
+    INSTANCE = this ; 
 }
 
 void SGLM::update()  
