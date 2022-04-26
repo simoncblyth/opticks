@@ -6,8 +6,16 @@ UseGeometryShader : flying point visualization of uncompressed step-by-step phot
 * reference on geometry shaders https://open.gl/geometry
 * see notes/issues/geometry-shader-flying-photon-visualization.rst
 
-TODO: more encapsulation/centralization of GLFW/OpenGL mechanics and viz math down 
-      into the header only imps: SGLFW.hh and SGLM.hh
+TODO: 
+
+1. more encapsulation/centralization of GLFW/OpenGL mechanics and viz math down 
+   into the header only imps: SGLFW.hh and SGLM.hh
+
+2. WASD navigation controls using SGLFW callback passing messages to SGLM::INSTANCE
+
+3. expand to working with compressed records when have implemented those
+
+4. bring back seqhis photon history selection 
 
 **/
 
