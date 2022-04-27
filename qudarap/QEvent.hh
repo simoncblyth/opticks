@@ -83,7 +83,8 @@ struct QUDARAP_API QEvent
     void     setPhotons( const NP* p );
     void     getPhotons(       NP* p ) const ;
     NP*      getPhotons() const ; 
-    NP*      getRecords() const ; 
+    NP*      getRecords() const ; // full step records
+    NP*      getRec() const  ;    // compressed step record
 
     unsigned getNumHit() const ; 
     NP*      getHits() const ; 

@@ -18,16 +18,19 @@ int SEventConfig::_MaxPhoton  = SSys::getenvint("OPTICKS_MAX_PHOTON",      3*M) 
 
 int SEventConfig::_MaxBounce  = SSys::getenvint("OPTICKS_MAX_BOUNCE",       9 ) ; 
 int SEventConfig::_MaxRecord  = SSys::getenvint("OPTICKS_MAX_RECORD",       0 ) ;   
+int SEventConfig::_MaxRec     = SSys::getenvint("OPTICKS_MAX_REC",          0 ) ;  // compressed record  
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
 int SEventConfig::MaxBounce(){   return _MaxBounce ; }
 int SEventConfig::MaxRecord(){   return _MaxRecord ; }
+int SEventConfig::MaxRec(){      return _MaxRec ; }
 
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; Check() ; }
 void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; Check() ; }
 void SEventConfig::SetMaxBounce( int max_bounce){  _MaxBounce  = max_bounce  ; Check() ; }
 void SEventConfig::SetMaxRecord( int max_record){  _MaxRecord  = max_record  ; Check() ; }
+void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; Check() ; }
 
 
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar("OPTICKS_HITMASK", "SD" )) ;   
@@ -40,14 +43,16 @@ void SEventConfig::Check()
 {
    assert( _MaxBounce >  0 && _MaxBounce <  16 ) ; 
    assert( _MaxRecord >= 0 && _MaxRecord <= 16 ) ; 
+   assert( _MaxRec    >= 0 && _MaxRec    <= 16 ) ; 
 }
 
-void SEventConfig::SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_ )
+void SEventConfig::SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_, int max_rec_ )
 { 
     SetMaxGenstep( max_genstep_ ); 
     SetMaxPhoton(  max_photon_  ); 
     SetMaxBounce(  max_bounce_  ); 
     SetMaxRecord(  max_record_  ); 
+    SetMaxRec(     max_rec_  ); 
 }
   
 std::string SEventConfig::Desc()
@@ -57,7 +62,8 @@ std::string SEventConfig::Desc()
        << " MaxGenstep " << MaxGenstep()
        << " MaxPhoton " << MaxPhoton()
        << " MaxBounce " << MaxBounce()
-       << " MaxRecord " << MaxRecord()
+       << " MaxRecord(full) " << MaxRecord()
+       << " MaxRec(compressed) " << MaxRec()
        << " HitMask " << HitMask()
        << " HitMaskDesc " << HitMaskDesc()
        ;

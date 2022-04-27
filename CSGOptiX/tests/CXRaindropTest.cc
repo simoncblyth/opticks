@@ -53,8 +53,6 @@ const char* OutDir(const Opticks& ok, const char* cfbase, const char* name)
     return outdir ; 
 }
 
-
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -119,17 +117,26 @@ int main(int argc, char** argv)
     NP* gs = SEvent::MakeTorchGensteps(); 
     cx.setGensteps(gs);  // HMM: passing thru to QEvent, perhaps should directly talk to QEvent ? 
     cx.simulate();  
+    cudaDeviceSynchronize(); 
 
     const char* odir = SPath::Resolve(cfbase_local, EXECUTABLE, DIRPATH ); 
+
+
+    // TODO: consolidated saving using QEvent method with standardized naming 
     
     NP* p = cx.event->getPhotons() ; 
-    NP* r = cx.event->getRecords() ; 
+    NP* f = cx.event->getRecords() ; 
+    NP* r = cx.event->getRec() ;
+ 
     LOG(info) << " p " << ( p ? p->sstr() : "-" ) ; 
+    LOG(info) << " f " << ( f ? f->sstr() : "-" ) ; 
     LOG(info) << " r " << ( r ? r->sstr() : "-" ) ; 
     LOG(info) << " odir " << odir ; 
+
     if(p) p->save(odir, "p.npy"); 
+    if(f) f->save(odir, "f.npy"); 
     if(r) r->save(odir, "r.npy"); 
  
-    cudaDeviceSynchronize(); 
+
     return 0 ; 
 }

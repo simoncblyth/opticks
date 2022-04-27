@@ -1,6 +1,24 @@
 compressed-record-into-new-workflow
 =====================================
 
+integrate compressed records srec.h into QEvent/qevent
+----------------------------------------------------------
+
+* how to configure full or compressed or both  record/rec ? DONE in SEventConfig with _RECORD and _REC  
+* where to allocate ?
+  
+  * QEvent::setNumPhoton allocates photons and records when they are configured in SEventConfig 
+
+
+Check the compressed rec in CXRaindropTest::
+
+    119     NP* gs = SEvent::MakeTorchGensteps();
+    120     cx.setGensteps(gs);  // HMM: passing thru to QEvent, perhaps should directly talk to QEvent ? 
+    121     cx.simulate();
+
+
+
+
 domain compression
 ----------------------
 

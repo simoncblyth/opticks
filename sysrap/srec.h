@@ -1,7 +1,19 @@
 #pragma once
 /**
-srec.h : highly compressed photon step records used for debugging only
-=========================================================================
+srec.h : highly domain compressed photon step records used for debugging only
+==============================================================================
+
+Domain compression means that must carry around domain metadata in order to 
+encode or decode the arrays. 
+
+NB seqhis seqmat histories are defined at photon level, so it does not 
+make sense to include them here at step-record level 
+
+For persisting srec arrays use::
+
+   NP* rec = NP<short>::Make(num_rec, max_rec, 4, 2)
+
+
 
 **/
 
@@ -19,7 +31,7 @@ struct srec
 {
     short4 post ; // position and time into 4*int16 = 64 bits 
     uchar4 polw ; // tightly packed, polarization and wavelength into 4*int8 = 32 bits 
-    uchar4 flag ;   
+    uchar4 flag ; // 4*int8 = 32 bits   
 
     void zero(); 
 

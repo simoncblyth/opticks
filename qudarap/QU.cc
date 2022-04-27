@@ -13,6 +13,7 @@
 #include "qrng.h"
 #include "qevent.h"
 #include "qdebug.h"
+#include "srec.h"
 
 
 const plog::Severity QU::LEVEL = PLOG::EnvLevel("QU", "DEBUG") ; 
@@ -194,6 +195,7 @@ template QUDARAP_API quad6*     QU::device_alloc<quad6>(unsigned num_items) ;
 template QUDARAP_API qevent*    QU::device_alloc<qevent>(unsigned num_items) ;
 template QUDARAP_API qdebug*    QU::device_alloc<qdebug>(unsigned num_items) ;
 template QUDARAP_API qstate*    QU::device_alloc<qstate>(unsigned num_items) ;
+template QUDARAP_API srec*      QU::device_alloc<srec>(unsigned num_items) ;
 
 
 template<typename T>
@@ -238,6 +240,7 @@ template void QU::copy_device_to_host<quad>( quad* h, quad* d,  unsigned num_ite
 template void QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_items);
 template void QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
 template void QU::copy_device_to_host<qstate>( qstate* h, qstate* d,  unsigned num_items);
+template void QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_items);
 
 
 

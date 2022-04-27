@@ -92,22 +92,25 @@ QEvent::QEvent()
     init(); 
 }
 
+/**
+QEvent::init
+--------------
+
+Only configures limits, no allocation yet. Allocation happens in QEvent::setGensteps QEvent::setNumPhoton
+
+**/
+
 void QEvent::init()
 {
     evt->max_genstep = SEventConfig::MaxGenstep() ; 
     evt->max_photon  = SEventConfig::MaxPhoton()  ; 
     evt->max_bounce  = SEventConfig::MaxBounce()  ; 
-    evt->max_record  = SEventConfig::MaxRecord()  ; 
+    evt->max_record  = SEventConfig::MaxRecord()  ;  // full step record
+    evt->max_rec     = SEventConfig::MaxRec()  ;     // compressed step record 
 
     LOG(fatal) << descMax() ; 
 
     evt->zero(); 
-
-    //evt->genstep = evt->max_genstep > 0 ? QU::device_alloc<quad6>( evt->max_genstep ) : nullptr ; 
-    //evt->seed    = evt->max_photon  > 0 ? QU::device_alloc<int>(   evt->max_photon )  : nullptr ;   // 1:1 seed:photon
-    //evt->photon  = evt->max_photon  > 0 ? QU::device_alloc<quad4>( evt->max_photon )  : nullptr ; 
-    //evt->record  = evt->num_record  > 0 ? QU::device_alloc<quad4>( evt->num_record  ) : nullptr ; 
-
     LOG(fatal) << descBuf() ; 
 }
 
@@ -123,6 +126,7 @@ std::string QEvent::desc() const
 
 std::string QEvent::descMax() const
 {
+    // TODO: move imp into qevent
     int w = 5 ; 
     std::stringstream ss ; 
     ss 
@@ -131,6 +135,7 @@ std::string QEvent::descMax() const
         << " evt.max_photon  " << std::setw(w) << evt->max_photon  
         << " evt.max_bounce  " << std::setw(w) << evt->max_bounce 
         << " evt.max_record  " << std::setw(w) << evt->max_record 
+        << " evt.max_rec  "    << std::setw(w) << evt->max_rec
         ;
 
     std::string s = ss.str();  
@@ -139,6 +144,7 @@ std::string QEvent::descMax() const
 
 std::string QEvent::descNum() const
 {
+    // TODO: move imp into qevent
     int w = 5 ; 
     std::stringstream ss ; 
     ss 
@@ -154,6 +160,7 @@ std::string QEvent::descNum() const
 
 std::string QEvent::descBuf() const
 {
+    // TODO: move imp into qevent
     int w = 5 ; 
     std::stringstream ss ; 
     ss 
@@ -199,7 +206,7 @@ QEvent::setGensteps
 
 3. *fill_seed_buffer* populates seed buffer using num photons per genstep from genstep buffer
 
-3. invokes setNumPhoton
+3. invokes setNumPhoton which may allocate records
 
 
 * HMM: find that without zeroing the seed buffer the seed filling gets messed up causing QEventTest fails 
@@ -207,13 +214,6 @@ QEvent::setGensteps
   **This is a documented limitation of sysrap/iexpand.h**
  
   So far it seems that no zeroing is needed for the genstep buffer. 
-
-
-    //evt->genstep = evt->max_genstep > 0 ? QU::device_alloc<quad6>( evt->max_genstep ) : nullptr ; 
-    //evt->seed    = evt->max_photon  > 0 ? QU::device_alloc<int>(   evt->max_photon )  : nullptr ;   // 1:1 seed:photon
-    //evt->photon  = evt->max_photon  > 0 ? QU::device_alloc<quad4>( evt->max_photon )  : nullptr ; 
-    //evt->record  = evt->num_record  > 0 ? QU::device_alloc<quad4>( evt->num_record  ) : nullptr ; 
-
 
 HMM: what about simtrace ? ce-gensteps are very different to ordinary gs 
 
@@ -246,7 +246,7 @@ void QEvent::setGensteps(const NP* gs_)
     //fill_seed_buffer() ;       // populates seed buffer
     count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
 
-    setNumPhoton( evt->num_seed ); 
+    setNumPhoton( evt->num_seed );  // photon, rec, record may be allocated here depending on SEventConfig
 }
 
 void QEvent::setGensteps(const quad6* qgs, unsigned num_gs ) 
@@ -350,7 +350,7 @@ NP* QEvent::getPhotons() const
 
 NP* QEvent::getRecords() const 
 {
-    if( evt->max_record == 0 ) LOG(fatal) << "evt.max_record " << evt->max_record << " SO record buffer is disabled " ; 
+    if( evt->max_record == 0 ) LOG(fatal) << "evt.max_record " << evt->max_record << " SO full step record buffer is disabled " ; 
     if( evt->max_record == 0 ) return nullptr ; 
 
     NP* r = NP::Make<float>( evt->num_photon, evt->max_record, 4, 4);
@@ -359,6 +359,27 @@ NP* QEvent::getRecords() const
     QU::copy_device_to_host<quad4>( (quad4*)r->bytes(), evt->record, evt->num_record ); 
     return r ; 
 }
+
+NP* QEvent::getRec() const 
+{
+    if( evt->max_rec == 0 ) LOG(fatal) << "evt.max_rec " << evt->max_rec << " SO compressed step rec buffer is disabled " ; 
+    if( evt->max_rec == 0 ) return nullptr ; 
+
+    NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 4, 2);
+
+    LOG(info) 
+        << " evt.num_photon " << evt->num_photon 
+        << " evt.max_rec " << evt->max_rec 
+        << " evt.num_rec " << evt->num_rec  
+        << " evt.num_photon*evt.max_rec " << evt->num_photon*evt->max_rec  
+        ;
+
+    assert( evt->num_photon*evt->max_rec == evt->num_rec );  
+
+    QU::copy_device_to_host<srec>( (srec*)r->bytes(), evt->rec, evt->num_rec ); 
+    return r ; 
+}
+
 
 unsigned QEvent::getNumHit() const 
 {
@@ -454,14 +475,21 @@ void QEvent::setNumPhoton(unsigned num_photon )
         
         // assumes that the number of photons for subsequent launches does not increase 
         // when collecting records : that is ok during highly controlled debugging 
+
         evt->num_record = evt->max_record * evt->num_photon ;  
-        evt->record  = evt->num_record  > 0 ? QU::device_alloc<quad4>( evt->num_record  ) : nullptr ; 
+        evt->record     = evt->num_record  > 0 ? QU::device_alloc<quad4>( evt->num_record  ) : nullptr ; 
+
+        evt->num_rec    = evt->max_rec * evt->num_photon ;  
+        evt->rec        = evt->num_rec  > 0 ? QU::device_alloc<srec>(  evt->num_rec  ) : nullptr ; 
+
+        // use SEventConfig code or envvars to config the maxima
 
         LOG(info) 
             << " device_alloc photon " 
             << " evt.num_photon " << evt->num_photon 
             << " evt.max_photon " << evt->max_photon
             << " evt.num_record " << evt->num_record 
+            << " evt.num_rec    " << evt->num_rec 
             ;
     }
 
@@ -488,6 +516,12 @@ void QEvent::uploadEvt()
 }
 
 
+/**
+QEvent::downloadGenstep
+------------------------
+
+Are these needed with the NP getters ?
+**/
 
 void QEvent::downloadGenstep( std::vector<quad6>& genstep )
 {
