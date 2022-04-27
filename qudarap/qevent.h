@@ -18,15 +18,30 @@ QEvent::setNumPhoton
 
 **/
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#    define QEVENT_METHOD __device__ __forceinline__
+#else
+#    define QEVENT_METHOD inline 
+#endif
 
+
+
+struct float4 ; 
+struct float2 ; 
 struct quad4 ; 
 struct quad6 ; 
 struct srec ; 
+struct sphoton ; 
 
 struct qevent
 {
     static constexpr unsigned genstep_itemsize = 6*4 ; 
     static constexpr unsigned genstep_numphoton_offset = 3 ; 
+
+    float4 center_extent ; 
+    float2 time_domain ; 
+    float2 wavelength_domain ; 
+
 
     // values here come from SEventConfig 
     int      max_genstep ; // eg:      100,000
@@ -55,11 +70,13 @@ struct qevent
     quad4*   hit ; 
 
 
+    QEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
+
     // not including prd here as that is clearly for debugging only 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-    void zero(); 
+    QEVENT_METHOD void zero(); 
 #endif 
 
 }; 
@@ -67,7 +84,7 @@ struct qevent
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-inline void qevent::zero()
+QEVENT_METHOD void qevent::zero()
 {
     num_genstep = 0 ; 
     num_seed  = 0 ; 
@@ -86,3 +103,14 @@ inline void qevent::zero()
 }
 #endif 
 
+
+QEVENT_METHOD void  qevent::add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p )
+{
+    r.set_position(     p.pos,  center_extent ); 
+    r.set_time(         p.time, time_domain ); 
+    r.set_polarization( p.pol ); 
+    r.set_wavelength(   p.wavelength, wavelength_domain ); 
+    // flags ?
+
+    rec[max_rec*idx+bounce] = r ;      
+}

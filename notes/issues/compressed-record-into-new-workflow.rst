@@ -1,6 +1,98 @@
 compressed-record-into-new-workflow
 =====================================
 
+hmm : need to get the domains ce/td/wd onto device for encoding the srec and into python and OpenGL for analysis
+-----------------------------------------------------------------------------------------------------------------
+
+* where to carry the domains ? they are only needed for compressed rec so it belongs in NP rec metadata on host. 
+* on device need to keep it somewhere like in qevent ? so QEvent needs to orchestrate the domains. 
+
+
+new way of managing domains
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* do not like depending on OpticksCore for such a basic thing, domains belongs in QEvent 
+* needed both on GPU/CPU and are constants so should live in qevent 
+
+
+old way of managing domains on device was simply OptiX context globals grabbed from Opticks::getSpaceDomain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    epsilon:optixrap blyth$ grep boundary_domain *.*
+    OBndLib.cc:    m_context["boundary_domain"]->setFloat(dom.x, dom.y, dom.z, dom.w); 
+    OBndLib.cc:    m_context["boundary_domain_reciprocal"]->setFloat(rdom.x, rdom.y, rdom.z, rdom.w); 
+    OBndLib.cc:        << "boundary_domain_reciprocal "
+
+    epsilon:optixrap blyth$ grep time_domain *.*
+    OPropagator.cc:    m_context["time_domain"]->setFloat(   make_float4( td.x, td.y, td.z, td.w ));
+
+    epsilon:optixrap blyth$ grep center_extent *.*
+    OPropagator.cc:    m_context["center_extent"]->setFloat( make_float4( ce.x, ce.y, ce.z, ce.w ));
+
+
+oxrap/OPropagator.cc::
+
+    104 void OPropagator::initParameters()
+    105 {
+    ...
+    135     const glm::vec4& ce = m_ok->getSpaceDomain();
+    136     const glm::vec4& td = m_ok->getTimeDomain();
+    137 
+    138     m_context["center_extent"]->setFloat( make_float4( ce.x, ce.y, ce.z, ce.w ));
+    139     m_context["time_domain"]->setFloat(   make_float4( td.x, td.y, td.z, td.w ));
+    140 }
+    141 
+
+
+
+ocu/boundary_lookup.h which gets included into generate.cu::
+
+    038 #include "GPropertyLib.hh"
+     39 
+     40 rtTextureSampler<float4, 2>  boundary_texture ;
+     41 rtDeclareVariable(float4, boundary_domain, , );
+     42 rtDeclareVariable(float4, boundary_domain_reciprocal, , );
+     43 rtDeclareVariable(uint4,  boundary_bounds, , );
+     44 rtDeclareVariable(uint4,  boundary_texture_dim, , );
+
+ocu/generate.cu::
+
+    131 rtDeclareVariable(float4,        center_extent, , );
+    132 rtDeclareVariable(float4,        time_domain  , , );
+    133 rtDeclareVariable(uint4,         debug_control , , );
+    134 rtDeclareVariable(float,         propagate_epsilon, , );
+
+
+    192 #define RSAVE(seqhis, seqmat, p, s, slot, slot_offset)  \
+    193 {    \
+    194     unsigned int shift = slot*4 ; \
+    195     unsigned long long his = __ffs((s).flag) & 0xF ; \
+    196     unsigned long long mat = (s).index.x < 0xF ? (s).index.x : 0xF ; \
+    197     seqhis |= his << shift ; \
+    198     seqmat |= mat << shift ; \
+    199     rsave((p), (s).flag, (s).index, _record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain, boundary_domain );  \
+    200 }   \
+    201 
+
+ocu/photon.h::
+
+    162 PHOTON_METHOD void rsave( Photon& p, unsigned s_flag, uint4& s_index, short4* rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain, float4& boundary_domain )
+    163 {
+    164     rbuffer[record_offset+0] = make_short4(    // 4*int16 = 64 bits 
+    165                     shortnorm(p.position.x, center_extent.x, center_extent.w),
+    166                     shortnorm(p.position.y, center_extent.y, center_extent.w),
+    167                     shortnorm(p.position.z, center_extent.z, center_extent.w),
+    168                     shortnorm(p.time      , time_domain.x  , time_domain.y  )
+    169                     );
+    170 
+    171     float nwavelength = 255.f*(p.wavelength - boundary_domain.x)/boundary_domain.w ; // 255.f*0.f->1.f 
+    172 
+
+
+
+
 integrate compressed records srec.h into QEvent/qevent
 ----------------------------------------------------------
 
@@ -15,7 +107,6 @@ Check the compressed rec in CXRaindropTest::
     119     NP* gs = SEvent::MakeTorchGensteps();
     120     cx.setGensteps(gs);  // HMM: passing thru to QEvent, perhaps should directly talk to QEvent ? 
     121     cx.simulate();
-
 
 
 

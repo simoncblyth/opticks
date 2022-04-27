@@ -19,8 +19,6 @@ Branched aspects:
 
    Six MATCHING NEEDS DUPLICATION FROM Params INTO CONTEXT VARIABLES AND BUFFERS
 
-
-
 HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort than it is worth 
 
 * would have to shadow it into context variables 
@@ -40,7 +38,6 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 
 #include <cuda_runtime.h>
 #include <glm/glm.hpp>
-
 
 // sysrap
 #include "NP.hh"
@@ -348,8 +345,16 @@ void CSGOptiX::setGensteps(const quad6* gs, unsigned num_gs)
 
 
 
+/**
+CSGOptiX::setCEGS Center-Extent gensteps
+------------------------------------------
+
+From cegs vector into peta quad4 
+
+HMM: seems peta is not uploaded ?
 
 
+**/
 
 void CSGOptiX::setCEGS(const std::vector<int>& cegs)
 {
@@ -386,6 +391,11 @@ void CSGOptiX::setComposition(const float4& v, const qat4* m2w, const qat4* w2m 
 /**
 CSGOptiX::setComposition
 -------------------------
+
+TODO: there is no OptiX dependency to this, so this should be elsewhere  ?
+
+This is interacting with the external Composition instance and internal 
+peta metadata. 
 
 **/
 
@@ -479,12 +489,6 @@ Per-event simulate setup invoked just prior to optix launch
 
 void CSGOptiX::prepareSimulateParam()  
 {
-    LOG(info) << "[" ; 
-
-    //params->num_photons = event->getNumPhoton() ;  // hmm perhaps just provide qevent ?  
-    // TODO: remove params.num_photons that is now handled by qevent  
-
-    LOG(info) << "]" ; 
 }
 
 /**
@@ -737,28 +741,6 @@ void CSGOptiX::snapSimtraceTest(const char* outdir, const char* botline, const c
     event->saveMeta(   outdir, "fdmeta.txt" ); 
     savePeta(          outdir, "peta.npy");   
     saveMetaTran(      outdir, "metatran.npy"); 
-
-
-/*
-    const char* namestem = "CSGOptiXSimtraceTest" ; 
-    const char* ext = ".jpg" ; 
-    int index = -1 ;  
-
-    const char* outpath = ok->getOutPath(namestem, ext, index ); 
-    LOG(error) << " outpath " << outpath ; 
-
-    const char* extra = nullptr ; 
-#if OPTIX_VERSION < 70000
-#else
-    extra =  pip->desc(); 
-#endif
-
-    std::string bottom_line = CSGOptiX::Annotation( dt, botline ); 
-    snap(outpath, bottom_line.c_str(), SStr::Concat(topline, extra)  );   
-
-    writeFramePhoton(outdir, "fphoton.npy" );   // as only 1 possible frame photon per-pixel the size never gets very big 
-*/
-
 }
 
 

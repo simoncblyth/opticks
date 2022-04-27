@@ -9,8 +9,6 @@
 QSim
 ======
 
-TODO: Perhaps rename QPhys ?
-
 The canonical QSim instance is instanciated with CSGOptiX::CSGOptiX
 
 QSim is mostly constant and needs initializing once only 
@@ -19,11 +17,7 @@ implementations.
 
 Contrast with the QEvent with a very different event-by-event lifecycle  
 
-TODO: 
-
-too much of implementation is directly done in QSim, 
-it needs to be more of an umbrella holding individually 
-functional/testable components 
+TODO: more modularization, do less directly in QSim
 
 **/
 

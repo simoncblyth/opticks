@@ -5,17 +5,17 @@ QSim.cu : extern void CUDA launch functions testing qsim.h methods
 The launch functions are all invoked from QSim.cc methods with corresponding names.   
 
 
-
-
 **/
-
 
 
 #include "stdio.h"
 
 #include "scuda.h"
-//#include "curand_kernel.h"
+#include "squad.h"
 #include "scurand.h"
+#include "sphoton.h"
+#include "srec.h"
+
 
 #include "qgs.h"
 #include "qprop.h"

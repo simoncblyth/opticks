@@ -66,7 +66,7 @@ NP* SEvent::MakeCarrierGensteps(const char* config)
 }
 
 
-void SEvent::FillTorchGenstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
+void SEvent::FillTorchGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
 {
     float3 mom = make_float3( 0.f, 0.f, 1.f );  
 
@@ -90,7 +90,7 @@ NP* SEvent::MakeTorchGensteps(const char* config)
     unsigned numphoton_per_genstep = 100 ; 
 
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
-    torch* tt = (torch*)gs->bytes() ; 
+    storch* tt = (storch*)gs->bytes() ; 
     for(unsigned i=0 ; i < num_gs ; i++ ) FillTorchGenstep( tt[i], i, numphoton_per_genstep ) ; 
     return gs ; 
 }
@@ -107,7 +107,7 @@ NP* SEvent::MakeSeed( const NP* gs )
 {
     assert( gs->has_shape(-1,6,4) );  
     int num_gs = gs->shape[0] ; 
-    const torch* tt = (torch*)gs->bytes() ; 
+    const storch* tt = (storch*)gs->bytes() ; 
 
     std::vector<int> gsp(num_gs) ; 
     for(int i=0 ; i < num_gs ; i++ ) gsp[i] = tt[i].numphoton ;

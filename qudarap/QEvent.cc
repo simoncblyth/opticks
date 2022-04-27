@@ -4,6 +4,8 @@
 #include "SPath.hh"
 #include "scuda.h"
 #include "squad.h"
+#include "sphoton.h"
+#include "srec.h"
 #include "sqat4.h"
 #include "stran.h"
 #include "SU.hh"

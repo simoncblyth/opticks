@@ -105,12 +105,7 @@ void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optica
 
 
     LOG(LEVEL) << qprop->desc(); 
-
-
-
-
 }
-
 
 /**
 QSim:::QSim

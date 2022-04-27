@@ -73,7 +73,6 @@ struct Params
     // simulation 
     qsim<float>* sim ; 
     qevent*      evt ;         // HMM: inside sim too ?
-   // uint32_t     num_photons ; // HMM: inside evt too ? 
 
 
 #ifndef __CUDACC__

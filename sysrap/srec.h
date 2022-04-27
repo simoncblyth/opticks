@@ -20,6 +20,13 @@ For persisting srec arrays use::
 #include "scuda.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
+#    define SREC_METHOD __device__ __forceinline__
+#else
+#    define SREC_METHOD inline 
+#endif
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 #include <string>
 #include <iostream>
@@ -33,37 +40,30 @@ struct srec
     uchar4 polw ; // tightly packed, polarization and wavelength into 4*int8 = 32 bits 
     uchar4 flag ; // 4*int8 = 32 bits   
 
-    void zero(); 
+    SREC_METHOD void zero(); 
 
-    void set_position(const float3& pos, const float4& ce );  
-    void get_position(      float3& pos, const float4& ce ) const ; 
+    SREC_METHOD void set_position(const float3& pos, const float4& ce );  
+    SREC_METHOD void get_position(      float3& pos, const float4& ce ) const ; 
 
-    void set_time( const float  t, const float2& td );  
-    void get_time(       float& t, const float2& td ) const ; 
+    SREC_METHOD void set_time( const float  t, const float2& td );  
+    SREC_METHOD void get_time(       float& t, const float2& td ) const ; 
 
-    void set_polarization( const float3& pol );  
-    void get_polarization(       float3& pol ) const ; 
+    SREC_METHOD void set_polarization( const float3& pol );  
+    SREC_METHOD void get_polarization(       float3& pol ) const ; 
 
-    void set_wavelength( const float  w, const float2& wd );  
-    void get_wavelength(       float& w, const float2& wd ) const ; 
+    SREC_METHOD void set_wavelength( const float  w, const float2& wd );  
+    SREC_METHOD void get_wavelength(       float& w, const float2& wd ) const ; 
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-    std::string desc() const ; 
+    SREC_METHOD std::string desc() const ; 
 #endif
 
 };
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#define FLOAT2UINT_RN __float2uint_rn 
-#else
-#define FLOAT2UINT_RN lrint  
-#endif 
-
-
-void srec::zero()
+SREC_METHOD void srec::zero()
 {
     post.x = 0 ; 
     post.y = 0 ; 
@@ -85,7 +85,7 @@ void srec::zero()
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 
-std::string srec::desc() const 
+SREC_METHOD std::string srec::desc() const 
 {
     std::stringstream ss ; 
     ss 
@@ -100,6 +100,14 @@ std::string srec::desc() const
 #endif
 
 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#define FLOAT2UINT_RN(x) (__float2uint_rn(x)) 
+#else
+#define FLOAT2UINT_RN(x) (lrint(x))  
+#endif 
+
+
 /**
 srec::set_position
 -------------------
@@ -111,7 +119,9 @@ the region of interest.
 
 **/
 
-inline void srec::set_position( const float3& pos, const float4& ce )
+
+
+SREC_METHOD void srec::set_position( const float3& pos, const float4& ce )
 {
     post.x = FLOAT2UINT_RN( 32767.0f * (pos.x - ce.x)/ce.w ) ;
     post.y = FLOAT2UINT_RN( 32767.0f * (pos.y - ce.y)/ce.w ) ;
@@ -128,19 +138,19 @@ because it simplifies analysis to treat times the same as positions.
 
 **/
 
-inline void srec::set_time( const float  t, const float2& td )
+SREC_METHOD void srec::set_time( const float  t, const float2& td )
 {
     post.w = FLOAT2UINT_RN(  32767.0f*(t - td.x)/td.y );
 }
 
-inline void srec::get_position( float3& pos, const float4& ce ) const
+SREC_METHOD void srec::get_position( float3& pos, const float4& ce ) const
 {
     pos.x = float(post.x)*ce.w/32767.0f + ce.x ;
     pos.y = float(post.y)*ce.w/32767.0f + ce.y ;
     pos.z = float(post.z)*ce.w/32767.0f + ce.z ;
 }
 
-inline void srec::get_time(       float& t, const float2& td ) const
+SREC_METHOD void srec::get_time(       float& t, const float2& td ) const
 {
     t = float(post.w)*td.y/32767.0f + td.x ;
 }
@@ -156,14 +166,14 @@ Components of polarization have implicit domain of -1.f to 1.f
 * pol+1 :   0. -> 2.f   
 
 **/
-inline void srec::set_polarization( const float3& pol )
+SREC_METHOD void srec::set_polarization( const float3& pol )
 {
     polw.x = FLOAT2UINT_RN((pol.x+1.f)*127.f );
     polw.y = FLOAT2UINT_RN((pol.y+1.f)*127.f );
     polw.z = FLOAT2UINT_RN((pol.z+1.f)*127.f );
 }
 
-inline void srec::get_polarization( float3& pol ) const
+SREC_METHOD void srec::get_polarization( float3& pol ) const
 {
     pol.x = (float(polw.x)/127.f) - 1.f ;
     pol.y = (float(polw.y)/127.f) - 1.f ;
@@ -179,11 +189,11 @@ unlike other domains that are specified by a center point and an extent.
 
 **/
 
-inline void srec::set_wavelength( const float  w, const float2& wd )
+SREC_METHOD void srec::set_wavelength( const float  w, const float2& wd )
 {
     polw.w = FLOAT2UINT_RN( 255.f * ( w - wd.x) / wd.y ) ;
 }
-inline void srec::get_wavelength(       float& w, const float2& wd ) const
+SREC_METHOD void srec::get_wavelength(       float& w, const float2& wd ) const
 {
     w = float(polw.w)*wd.y/255.f + wd.x ;
 }

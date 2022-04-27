@@ -183,6 +183,7 @@ set(HEADERS
     smath.h 
     s_mock_curand.h
     squad.h
+    sphoton.h
     srec.h 
 
     storch.h

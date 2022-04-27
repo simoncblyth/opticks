@@ -1,6 +1,9 @@
 #include <stdio.h>
+
 #include "scuda.h"
 #include "squad.h"
+#include "srec.h"
+#include "sphoton.h"
 #include "qevent.h"
 
 #include "iexpand.h"

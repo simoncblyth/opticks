@@ -63,7 +63,7 @@ npy/NStep.cpp
 * torch : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/torchstep.h  
 **/
 
-struct torch
+struct storch
 {
     // ctrl
     unsigned gentype ;  // eg OpticksGenstep_TORCH
@@ -97,8 +97,8 @@ struct qtorch
 {
    union 
    {
-      quad6 q ; 
-      torch t ; 
+      quad6  q ; 
+      storch t ; 
    };   
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
@@ -130,8 +130,8 @@ inline std::string qtorch::desc() const
 
 inline STORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
 {
-    photon& p = qp.p ; 
-    const torch& gs = (const torch&)gs_ ;   // casting between union-ed types  
+    sphoton& p = qp.p ; 
+    const storch& gs = (const storch&)gs_ ;   // casting between union-ed types  
 
 #ifdef STORCH_DEBUG
     printf("//storch::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphoton(%3d %3d %3d %3d) type %d \n", 

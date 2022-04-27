@@ -2,7 +2,7 @@
 
 struct NP ; 
 struct quad6 ; 
-struct torch ; 
+struct storch ; 
 struct uint4 ; 
 template <typename T> struct Tran ;
 
@@ -30,7 +30,7 @@ struct SYSRAP_API SEvent
     static void FillCarrierGenstep( quad6& gs ); 
     static NP* MakeCarrierGensteps(const char* config); 
 
-    static void FillTorchGenstep( torch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ); 
+    static void FillTorchGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ); 
 
     static NP* MakeTorchGensteps(const char* config=nullptr);  
     static NP* MakeSeed( const NP* gs ); 

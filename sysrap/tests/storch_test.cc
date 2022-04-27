@@ -13,6 +13,7 @@ Standalone compile and run with::
 #include "scuda.h"
 #include "squad.h"
 #include "scurand.h"    // this brings in s_mock_curand.h for CPU when MOCK_CURAND macro is defined 
+#include "sphoton.h"
 #include "storch.h"
 
 #include "SEvent.hh"
@@ -66,7 +67,7 @@ void test_union_cast()
         qt.q.zero() ; 
         qt.q.q0.u.x = 101 ; 
 
-        torch& t = qt.t ;  // when going down from union type to subtype can just use the union member without casting
+        storch& t = qt.t ;  // when going down from union type to subtype can just use the union member without casting
         std::cout <<  qt.desc() << std::endl ; 
     }
 
@@ -75,7 +76,7 @@ void test_union_cast()
         gs.zero(); 
         gs.q0.u.x = 202 ; 
 
-        torch& t = (torch&)gs ;   // bolshy : simply cast across from one of the union-ed types to the other 
+        storch& t = (storch&)gs ;   // bolshy : simply cast across from one of the union-ed types to the other 
 
         std::cout <<  "t.gentype " << t.gentype << std::endl ; 
     }

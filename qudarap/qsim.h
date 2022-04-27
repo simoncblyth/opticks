@@ -13,7 +13,9 @@
 #include "sqat4.h"
 #include "sc4u.h"
 #include "sevent.h"   // enum {XYZ .. 
+#include "sphoton.h"
 #include "storch.h"
+#include "srec.h"
 #include "scurand.h"
 
 #include "qevent.h"

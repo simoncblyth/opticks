@@ -200,8 +200,6 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     unsigned genstep_id = evt->seed[idx] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
 
-    //if( idx == 0 ) 
-    //printf("//[OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
@@ -215,15 +213,17 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     quad4& q  = qp.q ;   
     // two union-ed types referencing the same memory 
 
-    //float3* origin    = (float3*)&p.q0.f.x ; 
-    //float3* direction = (float3*)&p.q1.f.x ;  
-
     // cf qsim::mock_propagate
     int command = START ; 
     int bounce = 0 ;  
     while( bounce < evt->max_bounce )
     {    
         if(evt->record) evt->record[evt->max_record*idx+bounce] = q ;  
+
+        //if(evt->rec) 
+        //{
+        //   evt->rec[evt->max_rec*idx+bounce] = r ;  
+        //}
 
         trace( 
             params.handle,
@@ -245,7 +245,6 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = q ;  
     evt->photon[idx] = q ; 
 
-    //printf("//]OptiX7Test.cu:simulate idx %d genstep_id %d \n", idx, genstep_id ); 
 }
 
 /**
