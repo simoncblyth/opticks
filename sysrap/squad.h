@@ -28,10 +28,23 @@ union UIF
 
 union quad
 {
-   float4 f ; 
-   int4   i ; 
-   uint4  u ; 
+    float4 f ; 
+    int4   i ; 
+    uint4  u ; 
 };
+
+union hquad
+{
+    short4  s ; 
+    ushort4 u ; 
+}; 
+
+struct hquad2
+{ 
+    hquad q0 ; 
+    hquad q1 ;
+}; 
+
 
 
 inline unsigned int_as_unsigned( int value )
@@ -325,6 +338,17 @@ inline std::string photon::desc() const
 #endif 
 
 
+
+/**
+// HMM: try bare union 
+
+union qphoton
+{
+    quad4 p; 
+    photon p ; 
+}; 
+
+**/
 
 
 

@@ -1,6 +1,30 @@
 compressed-record-into-new-workflow
 =====================================
 
+domain compression
+----------------------
+
+1. domain compression requires domains: 
+
+   * center_extent, time_domain, wavelength_domain :  ce/td/wd
+
+
+encapsulated domain compressed record : in sysrap/srec.h
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hmm how to do this compression more simply and cleanly and more self-contained ?
+
+
+* design a dedicated compressed record type to live within squad.h 
+  that unions with short4 and has compression and decompression methods 
+
+  * needs to be testable on CPU but should use CUDA intrinsics on device 
+
+  * DONE : implemented in sysrap/srec.h see also sysrap/tests/srec_test.cc
+
+
+old way domain compression
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ocu/photon.h::
 
@@ -70,6 +94,10 @@ ocu/quad.h::
      46 };
 
 
+
+
+
+
 ::
 
     160 // optix::buffer<short4>& rbuffer
@@ -92,9 +120,24 @@ ocu/quad.h::
     177     qpolw.uchar_.w = __float2uint_rn(nwavelength)  ;
     178 
     179     // tightly packed, polarization and wavelength into 4*int8 = 32 bits (1st 2 npy columns) 
+
+
     180     hquad polw ;    // union of short4, ushort4
     181     polw.ushort_.x = qpolw.uchar_.x | qpolw.uchar_.y << 8 ;
     182     polw.ushort_.y = qpolw.uchar_.z | qpolw.uchar_.w << 8 ;
+
+
+
+* https://docs.nvidia.com/cuda/cuda-math-api/group__CUDA__MATH__INTRINSIC__CAST.html
+
+::
+
+    __device__ unsigned int __float2uint_rn ( float  x )
+        Convert a float to an unsigned integer in round-to-nearest-even mode. 
+
+
+::
+
     183 
     184 
     185 #ifdef IDENTITY_CHECK
