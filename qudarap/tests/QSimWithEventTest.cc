@@ -8,6 +8,8 @@
 #include <cuda_runtime.h>
 #include "scuda.h"
 #include "squad.h"
+#include "sphoton.h"
+
 #include "QSim.hh"
 #include "SEvent.hh"
 #include "QEvent.hh"
@@ -41,7 +43,7 @@ int main(int argc, char** argv)
     QSim<float>::UploadComponents(icdf, bnd, optical, rindexpath ); 
     QSim<float> qs ; 
 
-    QEvent qe ; 
+    QEvent event ; 
 
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
     unsigned x_total = 0 ; 
@@ -49,17 +51,18 @@ int main(int argc, char** argv)
 
     const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
 
-    qe.setGensteps(gs); 
-    assert( qe.getNumPhoton() == x_total ); 
+    event.setGensteps(gs); 
+    assert( event.getNumPhoton() == x_total ); 
 
-    LOG(info) << qe.desc() ; 
+    LOG(info) << event.desc() ; 
 
-    qe.checkEvt(); 
+    event.checkEvt(); 
 
-    qs.generate_photon(&qe); 
+    qs.generate_photon(&event); 
 
+    // TODO: switch to NP
     std::vector<quad4> photon ; 
-    qe.downloadPhoton(photon); 
+    event.downloadPhoton(photon); 
     LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
 
     qs.dump_photon( photon.data(), photon.size(), "f0,f1,f2,i3" );  

@@ -2,6 +2,7 @@
 
 #include "scuda.h"
 #include "squad.h"
+#include "sphoton.h"
 
 #include <thrust/device_ptr.h>
 #include <thrust/copy.h>
@@ -63,13 +64,25 @@ SU::count_if
 **/
 
 template<typename T>
-unsigned SU::count_if( const T* d, unsigned num_d,  qselector<T>& selector )
+unsigned SU::count_if( const T* d, unsigned num_d,  const qselector<T>& selector )
 {
     thrust::device_ptr<const T> td(d);
     return thrust::count_if(td, td+num_d , selector );
 }
 
-template SYSRAP_API unsigned SU::count_if( const quad4* , unsigned, qselector<quad4>& ); 
+template SYSRAP_API unsigned SU::count_if( const quad4* , unsigned, const qselector<quad4>& ); 
+
+
+
+unsigned SU::count_if_sphoton( const sphoton* d, unsigned num_d,  const sphoton_selector& selector )
+{
+    thrust::device_ptr<const sphoton> td(d);
+    return thrust::count_if(td, td+num_d , selector );
+}
+
+
+
+
 
 
 /**
@@ -118,6 +131,15 @@ void SU::copy_if_device_to_device_presized( T* d_select, const T* d, unsigned nu
 }
 
 template SYSRAP_API void SU::copy_if_device_to_device_presized( quad4*, const quad4*, unsigned, const qselector<quad4>& ); 
+
+
+void SU::copy_if_device_to_device_presized_sphoton( sphoton* d_select, const sphoton* d, unsigned num_d, const sphoton_selector& selector )
+{
+    thrust::device_ptr<const sphoton> td(d);
+    thrust::device_ptr<sphoton> td_select(d_select);
+    thrust::copy_if(td, td+num_d , td_select, selector );
+}
+
 
 
 template<typename T>

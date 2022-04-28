@@ -113,6 +113,7 @@ struct QSimTest
     void save_array(     const char* subfold, const char* name, const float* data, int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
     NP*  load_array(     const char* subfold, const char* name); 
      
+    void save_photon(    const std::vector<sphoton>& vec,  const char* name ); 
     void save_photon(    const std::vector<quad4>& vec,  const char* name ); 
     NP*  load_photon(    const char* subfold, const char* name); 
 
@@ -130,7 +131,7 @@ struct QSimTest
     void photon_launch_generate(); 
     void photon_launch_mutate(); 
 
-    void mock_propagate_launch_mutate(); 
+    void mock_propagate(); 
 
     void quad_launch_generate(); 
 
@@ -483,6 +484,19 @@ void QSimTest<T>::save_photon( const std::vector<quad4>& p, const char* name )
 }
 
 template <typename T>
+void QSimTest<T>::save_photon( const std::vector<sphoton>& p, const char* name )
+{
+    const char* subfold = QSimLaunch::Name(type) ; 
+    assert( subfold ); 
+    save_array(subfold, name, (float*)p.data(), p.size(), 4, 4  );
+}
+
+
+
+
+
+
+template <typename T>
 void QSimTest<T>::save_quad(const char* subfold, const char* name, const std::vector<quad>& q )
 {
     save_array(subfold, name, (float*)q.data(), q.size(), 4  );
@@ -514,8 +528,8 @@ template <typename T>
 void QSimTest<T>::save_dbg_photon(const char* subfold, const char* name)
 {
     LOG(info) << " subfold " << subfold ; 
-    const quad4& p0 = qs.dbg->p ; 
-    save_array(subfold, name, p0.cdata(), 1, 4, 4 );      
+    const sphoton& p = qs.dbg->p ; 
+    save_array(subfold, name, p.cdata(), 1, 4, 4 );      
 }
 
 template <typename T>
@@ -544,7 +558,7 @@ void QSimTest<T>::photon_launch_generate()
     const char* subfold = QSimLaunch::Name(type) ; 
     assert( subfold ); 
 
-    std::vector<quad4> p(num) ; 
+    std::vector<sphoton> p(num) ; 
     qs.photon_launch_generate( p.data(), p.size(), type ); 
 
     save_photon( p, "p.npy" ); 
@@ -553,7 +567,7 @@ void QSimTest<T>::photon_launch_generate()
 }
 
 /**
-QSimTest::mock_propagate_launch_mutate
+QSimTest::mock_propagate
 ----------------------------------------
 
 TODO: 
@@ -565,7 +579,7 @@ TODO:
 
 
 template <typename T>
-void QSimTest<T>::mock_propagate_launch_mutate()
+void QSimTest<T>::mock_propagate()
 {
     assert( QSimLaunch::IsMutate(type)==true ); 
     LOG(info) << "[" ; 
@@ -575,7 +589,7 @@ void QSimTest<T>::mock_propagate_launch_mutate()
     int bounce_max = SEventConfig::MaxBounce(); 
     NP* prd = qs.prd->duplicate_prd(num, bounce_max);  
 
-    qs.mock_propagate_launch_mutate( p, prd, type ); 
+    qs.mock_propagate( p, prd, type ); 
 
     unsigned num_hit = qs.event->getNumHit(); 
     LOG(info) << " num_hit " << num_hit ;
@@ -630,8 +644,8 @@ void QSimTest<T>::photon_launch_mutate()
     LOG(info) << " loaded " << a->sstr() << " from src_subfold " << src_subfold ; 
     unsigned num_photon_ = a->shape[0] ; 
     assert( num_photon_ == num_photon ); 
-    quad4* photons = (quad4*)a->values<float>() ; 
 
+    sphoton* photons = (sphoton*)a->bytes() ; 
     qs.photon_launch_mutate( photons, num_photon, type ); 
 
     const char* dst_path = Path(dst_subfold, "p.npy"); 
@@ -741,7 +755,7 @@ void QSimTest<T>::main()
         case LAMBERTIAN_DIRECTION:
                                                  quad_launch_generate()       ; break ; 
         case MOCK_PROPAGATE:
-                                                mock_propagate_launch_mutate() ; break ; 
+                                                mock_propagate()              ; break ; 
 
         default :                           
                                                LOG(fatal) << "unimplemented" << std::endl ; break ; 

@@ -84,7 +84,7 @@ Instanciation allocates device buffers with sizes configured by SEventConfig
 
 QEvent::QEvent()
     :
-    selector(new qselector<quad4>(SEventConfig::HitMask())),
+    selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new qevent),
     d_evt(QU::device_alloc<qevent>(1)),
     gs(nullptr),
@@ -323,7 +323,7 @@ void QEvent::setPhotons(const NP* p_)
 
     setNumPhoton( num_photon ); 
 
-    QU::copy_host_to_device<quad4>( evt->photon, (quad4*)p->bytes(), num_photon ); 
+    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)p->bytes(), num_photon ); 
 
     LOG(info) << "] " <<  p->sstr() << " num_photon " << num_photon  ; 
 }
@@ -339,7 +339,7 @@ void QEvent::getPhotons(NP* p) const
 {
     LOG(fatal) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ; 
     assert( p->has_shape(evt->num_photon, 4, 4) ); 
-    QU::copy_device_to_host<quad4>( (quad4*)p->bytes(), evt->photon, evt->num_photon ); 
+    QU::copy_device_to_host<sphoton>( (sphoton*)p->bytes(), evt->photon, evt->num_photon ); 
     LOG(fatal) << "] evt.num_photon " << evt->num_photon  ; 
 }
 
@@ -358,7 +358,7 @@ NP* QEvent::getRecords() const
     NP* r = NP::Make<float>( evt->num_photon, evt->max_record, 4, 4);
 
     LOG(info) << " evt.num_record " << evt->num_record ; 
-    QU::copy_device_to_host<quad4>( (quad4*)r->bytes(), evt->record, evt->num_record ); 
+    QU::copy_device_to_host<sphoton>( (sphoton*)r->bytes(), evt->record, evt->num_record ); 
     return r ; 
 }
 
@@ -387,7 +387,9 @@ unsigned QEvent::getNumHit() const
 {
     assert( evt->photon ); 
     assert( evt->num_photon ); 
-    evt->num_hit = SU::count_if<quad4>( evt->photon, evt->num_photon, *selector );    
+
+    evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );    
+
     LOG(info) << " evt.photon " << evt->photon << " evt.num_photon " << evt->num_photon << " evt.num_hit " << evt->num_hit ;  
     return evt->num_hit ; 
 }
@@ -421,7 +423,7 @@ NP* QEvent::getHits() const
 
     assert( evt->num_photon ); 
 
-    evt->num_hit = SU::count_if<quad4>( evt->photon, evt->num_photon, *selector );    
+    evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );    
 
     LOG(info) 
          << " evt.photon " << evt->photon 
@@ -432,17 +434,17 @@ NP* QEvent::getHits() const
          << " SEventConfig::HitMaskDesc " << SEventConfig::HitMaskDesc()
          ;  
 
-    evt->hit = QU::device_alloc<quad4>( evt->num_hit ); 
+    evt->hit = QU::device_alloc<sphoton>( evt->num_hit ); 
 
-    SU::copy_if_device_to_device_presized<quad4>( evt->hit, evt->photon, evt->num_photon, *selector );
+    SU::copy_if_device_to_device_presized_sphoton( evt->hit, evt->photon, evt->num_photon,  *selector );
 
     NP* hits = NP::Make<float>( evt->num_hit, 4, 4 ); 
     hits->set_meta<unsigned>("hitmask", selector->hitmask );  
     hits->set_meta<std::string>("creator", "QEvent::getHits" );  
 
-    QU::copy_device_to_host<quad4>( (quad4*)hits->bytes(), evt->hit, evt->num_hit );
+    QU::copy_device_to_host<sphoton>( (sphoton*)hits->bytes(), evt->hit, evt->num_hit );
 
-    QU::device_free<quad4>( evt->hit ); 
+    QU::device_free<sphoton>( evt->hit ); 
 
     evt->hit = nullptr ; 
 
@@ -473,13 +475,13 @@ void QEvent::setNumPhoton(unsigned num_photon )
 
     if( evt->photon == nullptr ) 
     {
-        evt->photon = QU::device_alloc<quad4>( evt->max_photon ) ; 
+        evt->photon = QU::device_alloc<sphoton>( evt->max_photon ) ; 
         
         // assumes that the number of photons for subsequent launches does not increase 
         // when collecting records : that is ok during highly controlled debugging 
 
         evt->num_record = evt->max_record * evt->num_photon ;  
-        evt->record     = evt->num_record  > 0 ? QU::device_alloc<quad4>( evt->num_record  ) : nullptr ; 
+        evt->record     = evt->num_record  > 0 ? QU::device_alloc<sphoton>( evt->num_record  ) : nullptr ; 
 
         evt->num_rec    = evt->max_rec * evt->num_photon ;  
         evt->rec        = evt->num_rec  > 0 ? QU::device_alloc<srec>(  evt->num_rec  ) : nullptr ; 
@@ -541,13 +543,13 @@ void QEvent::downloadPhoton( std::vector<quad4>& photon )
 {
     if( evt->photon == nullptr ) return ; 
     photon.resize(evt->num_photon); 
-    QU::copy_device_to_host<quad4>( photon.data(), evt->photon, evt->num_photon ); 
+    QU::copy_device_to_host<quad4>( photon.data(), (quad4*)evt->photon, evt->num_photon ); 
 }
 void QEvent::downloadRecord( std::vector<quad4>& record )
 {
     if( evt->record == nullptr ) return ; 
     record.resize(evt->num_record); 
-    QU::copy_device_to_host<quad4>( record.data(), evt->record, evt->num_record ); 
+    QU::copy_device_to_host<quad4>( record.data(), (quad4*)evt->record, evt->num_record ); 
 }
 
 void QEvent::savePhoton( const char* dir_, const char* name )

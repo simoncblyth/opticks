@@ -1,7 +1,16 @@
 #pragma once
+/**
+qdebug.h
+==========
+
+Instanciation managed from QSim
+
+**/
 
 #include "scuda.h"
 #include "squad.h"
+#include "sphoton.h"
+
 #include "qstate.h"
 #include "qprd.h"
 
@@ -13,7 +22,7 @@ struct qdebug
 
     qstate s ; 
     quad2  prd ; 
-    quad4  p ; 
+    sphoton  p ; 
 
 }; 
 

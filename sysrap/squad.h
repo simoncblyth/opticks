@@ -151,16 +151,7 @@ struct quad4
 };
 
 
-template<typename T>    // T  needs to have flagmask method 
-struct qselector
-{
-    unsigned hitmask ; 
-    qselector(unsigned hitmask_) : hitmask(hitmask_) {}; 
-    SQUAD_METHOD bool operator() (const T& p) const { return ( p.flagmask() & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
-};
-
-
-void quad4::zero() 
+SQUAD_METHOD void quad4::zero() 
 {
     q0.u.x = 0 ; q0.u.y = 0 ; q0.u.z = 0 ; q0.u.w = 0 ; 
     q1.u.x = 0 ; q1.u.y = 0 ; q1.u.z = 0 ; q1.u.w = 0 ; 
@@ -168,31 +159,31 @@ void quad4::zero()
     q3.u.x = 0 ; q3.u.y = 0 ; q3.u.z = 0 ; q3.u.w = 0 ; 
 } 
 
-float*       quad4::data() {         return &q0.f.x ;  }
-const float* quad4::cdata() const  { return &q0.f.x ;  }
+SQUAD_METHOD float*       quad4::data() {         return &q0.f.x ;  }
+SQUAD_METHOD const float* quad4::cdata() const  { return &q0.f.x ;  }
 
 
 
 // q3.u.z : orient_idx 
 
-void quad4::set_idx( unsigned  idx)
+SQUAD_METHOD void quad4::set_idx( unsigned  idx)
 {
     q3.u.z = ( q3.u.z & 0x80000000u ) | ( 0x7fffffffu & idx ) ;   // retain bit 31 asis 
 }
-void quad4::get_idx( unsigned& idx)
+SQUAD_METHOD void quad4::get_idx( unsigned& idx)
 {
     idx =  q3.u.z & 0x7fffffffu  ;
 }
-void quad4::set_orient( float orient )  // not typically used as set_prd more convenient, but useful for debug 
+SQUAD_METHOD void quad4::set_orient( float orient )  // not typically used as set_prd more convenient, but useful for debug 
 {
     q3.u.z =  ( q3.u.z & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; 
 }
-void quad4::get_orient( float& orient )
+SQUAD_METHOD void quad4::get_orient( float& orient )
 {
     orient = ( q3.u.z & 0x80000000u ) ? -1.f : 1.f ;   
 }
 
-void quad4::set_prd( unsigned  boundary, unsigned  identity, float  orient )
+SQUAD_METHOD void quad4::set_prd( unsigned  boundary, unsigned  identity, float  orient )
 {
     q3.u.x = ( q3.u.x & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ;  // clear boundary bits then set them 
     q3.u.y = identity ;  
@@ -200,33 +191,33 @@ void quad4::set_prd( unsigned  boundary, unsigned  identity, float  orient )
 
     // HMM: can identity spare a bit for orient : as that would be cleaner ?
 }
-void quad4::get_prd( unsigned& boundary, unsigned& identity, float& orient )
+SQUAD_METHOD void quad4::get_prd( unsigned& boundary, unsigned& identity, float& orient )
 {
     boundary = q3.u.x >> 16 ; 
     identity = q3.u.y ;  
     orient = ( q3.u.z & 0x80000000u ) ? -1.f : 1.f ;   
 }
 
-void quad4::set_flag( unsigned flag )
+SQUAD_METHOD void quad4::set_flag( unsigned flag )
 {
     q3.u.x = ( q3.u.x & 0xffff0000u ) | ( flag & 0xffffu ) ;   // clear flag bits then set them  
     q3.u.w |= flag ;    // bitwise-OR into flagmask 
 }
-void quad4::get_flag( unsigned& flag ) const 
+SQUAD_METHOD void quad4::get_flag( unsigned& flag ) const 
 {
     flag = q3.u.x & 0xffff ;  
 }
 
-unsigned quad4::flagmask() const 
+SQUAD_METHOD unsigned quad4::flagmask() const 
 {
     return q3.u.w ; 
 }
 
-void quad4::set_wavelength( float wl ){ q2.f.w = wl ; }
-float quad4::wavelength() const { return q2.f.w ; } 
+SQUAD_METHOD void quad4::set_wavelength( float wl ){ q2.f.w = wl ; }
+SQUAD_METHOD float quad4::wavelength() const { return q2.f.w ; } 
 
 
-void quad4::set_flags(unsigned boundary, unsigned identity, unsigned idx, unsigned flag, float orient ) 
+SQUAD_METHOD void quad4::set_flags(unsigned boundary, unsigned identity, unsigned idx, unsigned flag, float orient ) 
 {
     q3.u.x = ((boundary & 0xffffu ) << 16) | (flag & 0xffffu ) ;    // hmm boundary only needs 8bits 0xff really 
     q3.u.y = identity ;      // identity needs 32bit as already bit packed primIdx and instanceIdx
@@ -235,7 +226,7 @@ void quad4::set_flags(unsigned boundary, unsigned identity, unsigned idx, unsign
     // hmm: could swap the general purpose identity for sensor index when this is a hit ?
 }
 
-void quad4::get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const
+SQUAD_METHOD void quad4::get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, unsigned& flag, float& orient ) const
 {
     boundary = q3.u.x >> 16 ; 
     flag = q3.u.x & 0xffffu ;  
@@ -244,12 +235,22 @@ void quad4::get_flags(unsigned& boundary, unsigned& identity, unsigned& idx, uns
     orient = ( q3.u.z & 0x80000000u ) ? -1.f : 1.f ;   
 }
 
+struct quad4_selector
+{
+    unsigned hitmask ; 
+    quad4_selector(unsigned hitmask_) : hitmask(hitmask_) {}; 
+    SQUAD_METHOD bool operator() (const quad4& p) const { return ( p.flagmask() & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
+};
 
-/**
-photon
----------
+template <typename T>
+struct qselector
+{
+    unsigned hitmask ; 
+    qselector(unsigned hitmask_) : hitmask(hitmask_) {}; 
+    SQUAD_METHOD bool operator() (const T& p) const { return ( p.flagmask() & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
+};
 
-**/
+
 
 
 

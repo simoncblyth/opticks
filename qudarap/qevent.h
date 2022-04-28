@@ -58,16 +58,16 @@ struct qevent
     int*     seed ;     
 
     int      num_photon ; 
-    quad4*   photon ; 
+    sphoton* photon ; 
 
     int      num_record ; 
-    quad4*   record ; 
+    sphoton* record ; 
 
     int      num_rec ; 
     srec*    rec ; 
 
     int      num_hit ; 
-    quad4*   hit ; 
+    sphoton* hit ; 
 
 
     QEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 

@@ -39,6 +39,7 @@ struct qdebug ;
 struct qstate ; 
 
 struct quad4 ; 
+struct sphoton ; 
 union  quad ; 
 
 template <typename T>
@@ -113,9 +114,10 @@ struct QUDARAP_API QSim
     void fill_state_1(qstate* state, unsigned num_state); 
 
     void quad_launch_generate(quad* q, unsigned num_quad, unsigned type ); 
-    void photon_launch_generate( quad4* photon, unsigned num_photon, unsigned type ); 
-    void photon_launch_mutate(   quad4* photon, unsigned num_photon, unsigned type ); 
-    void mock_propagate_launch_mutate( NP* photon, const NP* prd, unsigned type ); 
+    void photon_launch_generate( sphoton* photon, unsigned num_photon, unsigned type ); 
+    void photon_launch_mutate(   sphoton* photon, unsigned num_photon, unsigned type ); 
+
+    void mock_propagate( NP* photon, const NP* prd, unsigned type ); 
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;

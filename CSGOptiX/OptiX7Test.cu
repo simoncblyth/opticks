@@ -23,6 +23,7 @@ JUNO (trunk:Mar 2, 2022)
 
 #include "scuda.h"
 #include "squad.h"
+#include "sphoton.h"
 #include "sqat4.h"
 
 // simulation 
@@ -209,8 +210,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
     sim->generate_photon(qp, rng, gs, idx, genstep_id );  
 
-    photon& p = qp.p ; 
-    quad4& q  = qp.q ;   
+    sphoton& p = qp.p ; 
+    quad4& q   = qp.q ;   
     // two union-ed types referencing the same memory 
 
     // cf qsim::mock_propagate
@@ -285,13 +286,12 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;   
+
     qphoton qp ;  
-    photon& p = qp.p ;  
+    sphoton& p = qp.p ;  
 
     sim->generate_photon_simtrace(qp, rng, gs, idx, genstep_id );  
 
-    //float3* origin    = (float3*)&p.q0.f.x ; 
-    //float3* direction = (float3*)&p.q1.f.x ;  
 
     trace( 
         params.handle,
@@ -310,7 +310,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     // aim to match the CPU side test isect "photons" from CSG/CSGQuery.cc/CSGQuery::intersect_elaborate
 
 
-    // as simtrace "photon" is hightly non-standard use a quad4 separate from the above photon
+    // as simtrace "photon" is highly non-standard use a quad4 separate from the above photon
     quad4 a ;  
 
     a.q0.f  = prd->q0.f ; 

@@ -2,11 +2,14 @@
 
 struct qevent ; 
 struct quad4 ;
+struct sphoton ; 
 struct qat4 ; 
 struct quad6 ;
 struct NP ; 
 
 template <typename T> struct qselector ; 
+struct sphoton_selector ; 
+
 template <typename T> struct QBuf ; 
 
 #include <vector>
@@ -57,7 +60,8 @@ struct QUDARAP_API QEvent
     // NB members needed on both CPU+GPU or from the QEvent.cu functions 
     // should reside inside the qevent.h instance not up here in QEvent.hh
  
-    qselector<quad4>* selector ; 
+    sphoton_selector* selector ; 
+
     qevent*      evt ; 
     qevent*      d_evt ; 
     const NP*    gs ;  

@@ -145,16 +145,16 @@ template void QSim_cerenkov_wavelength_rejection_sampled(dim3, dim3, qsim<float>
 template <typename T>
 __global__ void _QSim_cerenkov_photon(qsim<T>* sim, quad4* photon, unsigned num_photon, int print_id )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_photon) return;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[id]; 
+    curandState rng = sim->rngstate[idx]; 
 
     quad4 p ;   
-    sim->cerenkov_photon(p, id, rng, print_id);   
+    sim->cerenkov_photon(p, idx, rng, print_id);   
 
-    if(id % 100000 == 0) printf("//_QSim_cerenkov_photon id %d \n", id  ); 
-    photon[id] = p ; 
+    if(idx % 100000 == 0) printf("//_QSim_cerenkov_photon idx %d \n", idx  ); 
+    photon[idx] = p ; 
 }
 
 template <typename T>
@@ -165,7 +165,7 @@ extern void QSim_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* 
 } 
 
 template void QSim_cerenkov_photon(dim3, dim3, qsim<double>*, quad4*, unsigned, int ); 
-template void QSim_cerenkov_photon(dim3, dim3, qsim<float>*, quad4*, unsigned, int ); 
+template void QSim_cerenkov_photon(dim3, dim3, qsim<float>*,  quad4*, unsigned, int ); 
 
 
 
@@ -177,16 +177,16 @@ template void QSim_cerenkov_photon(dim3, dim3, qsim<float>*, quad4*, unsigned, i
 template <typename T>
 __global__ void _QSim_cerenkov_photon_enprop(qsim<T>* sim, quad4* photon, unsigned num_photon, int print_id )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_photon) return;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[id]; 
+    curandState rng = sim->rngstate[idx]; 
 
     quad4 p ;   
-    sim->cerenkov_photon_enprop(p, id, rng, print_id);   
+    sim->cerenkov_photon_enprop(p, idx, rng, print_id);   
 
-    if(id % 100000 == 0) printf("//_QSim_cerenkov_photon_enprop id %d \n", id  ); 
-    photon[id] = p ; 
+    if(idx % 100000 == 0) printf("//_QSim_cerenkov_photon_enprop idx %d \n", idx  ); 
+    photon[idx] = p ; 
 }
 
 template <typename T>
@@ -209,16 +209,16 @@ template void QSim_cerenkov_photon_enprop(dim3, dim3, qsim<float>*, quad4*, unsi
 template <typename T>
 __global__ void _QSim_cerenkov_photon_expt(qsim<T>* sim, quad4* photon, unsigned num_photon, int print_id )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_photon) return;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[id]; 
+    curandState rng = sim->rngstate[idx]; 
 
     quad4 p ;   
-    sim->cerenkov_photon_expt(p, id, rng, print_id);   
+    sim->cerenkov_photon_expt(p, idx, rng, print_id);   
 
-    if(id % 100000 == 0) printf("//_QSim_cerenkov_photon_expt id %d \n", id  ); 
-    photon[id] = p ; 
+    if(idx % 100000 == 0) printf("//_QSim_cerenkov_photon_expt idx %d \n", idx  ); 
+    photon[idx] = p ; 
 }
 
 template <typename T>
@@ -246,18 +246,18 @@ template void QSim_cerenkov_photon_expt(dim3, dim3, qsim<float>*, quad4*, unsign
 template <typename T>
 __global__ void _QSim_scint_photon(qsim<T>* sim, quad4* photon, unsigned num_photon )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_photon) return;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= num_photon) return;
     
     //sim->r += id ;   
     //  would be problematic, do not want to change the the rng_states in global mem and get interference between threads
 
-    curandState rng = sim->rngstate[id] ; 
+    curandState rng = sim->rngstate[idx] ; 
 
     quad4 p ;   
     sim->scint_photon(p, rng); 
 
-    photon[id] = p ; 
+    photon[idx] = p ; 
 }
 
 template <typename T>
@@ -275,21 +275,19 @@ template void QSim_scint_photon(dim3, dim3, qsim<float>*, quad4*, unsigned );
 template <typename T>
 __global__ void _QSim_generate_photon(qsim<T>* sim, qevent* evt )
 {
-    unsigned photon_id = blockIdx.x*blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= evt->num_photon) return;
     
-   if (photon_id >= evt->num_photon) return;
-    
-    curandState rng = sim->rngstate[photon_id] ; 
-
-    unsigned genstep_id = evt->seed[photon_id] ; 
+    curandState rng = sim->rngstate[idx] ; 
+    unsigned genstep_id = evt->seed[idx] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
 
-    //printf("//_QSim_generate_photon photon_id %4d evt->num_photon %4d genstep_id %4d  \n", photon_id, evt->num_photon, genstep_id );  
+    //printf("//_QSim_generate_photon idx %4d evt->num_photon %4d genstep_id %4d  \n", idx, evt->num_photon, genstep_id );  
 
     qphoton qp ;   
-    sim->generate_photon(qp, rng, gs, photon_id, genstep_id ); 
+    sim->generate_photon(qp, rng, gs, idx, genstep_id ); 
 
-    evt->photon[photon_id] = qp.q ;  // HMM could switch to a qphoton array 
+    evt->photon[idx] = qp.p ;  
 
 }
 
@@ -383,133 +381,147 @@ template void QSim_fill_state_1(dim3, dim3, qsim<float>* , qstate* , unsigned, q
 
 
 template <typename T>
-__global__ void _QSim_rayleigh_scatter_align( qsim<T>* sim, quad4* photon,  unsigned num_photon, qdebug* dbg )
+__global__ void _QSim_rayleigh_scatter_align( qsim<T>* sim, sphoton* photon,  unsigned num_photon, qdebug* dbg )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     //printf("//_QSim_rayleigh_scatter_align blockIdx.x %d blockDim.x %d threadIdx.x %d id %d num_photon %d \n", blockIdx.x, blockDim.x, threadIdx.x, id, num_photon ); 
 
-    if (id >= num_photon) return;
+    if (idx >= num_photon) return;
 
-    quad4 p = dbg->p ;    // need local copy of photon otherwise would have write interference between threads
-    curandState rng = sim->rngstate[id] ; 
+    sphoton p = dbg->p ;    // need local copy of photon otherwise would have write interference between threads
+    curandState rng = sim->rngstate[idx] ; 
 
-    sim->rayleigh_scatter_align(p, rng);  
+    sim->rayleigh_scatter(p, rng);  
 
-    photon[id] = p ; 
+    photon[idx] = p ; 
 }
 
 template <typename T>
-__global__ void _QSim_propagate_to_boundary( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
+__global__ void _QSim_propagate_to_boundary( qsim<T>* sim, sphoton* photon, unsigned num_photon, qdebug* dbg )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     //printf("//_QSim_propagate_to_boundary blockIdx.x %d blockDim.x %d threadIdx.x %d propagate_id %d \n", blockIdx.x, blockDim.x, threadIdx.x, propagate_id ); 
 
-    if (id >= num_photon) return;
+    if (idx >= num_photon) return;
 
     const quad2* prd = &dbg->prd ;  // no need for local copy when readonly   
     const qstate& s  = dbg->s ;     
-    quad4 p          = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
+    sphoton p        = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
 
-    curandState rng = sim->rngstate[id] ; 
+    curandState rng = sim->rngstate[idx] ; 
 
     unsigned flag = 0u ;  
-    sim->propagate_to_boundary( flag, p, prd, s, rng, id );  
-    p.q3.u.w = flag ;  // non-standard
-    photon[id] = p ; 
+    sim->propagate_to_boundary( flag, p, prd, s, rng, idx );  
+    p.set_flag(flag); 
 
-    const float3* position = (float3*)&p.q0.f.x ; 
-    const float& time = p.q0.f.w ; 
-    printf("//_QSim_propagate_to_boundary flag %d position %10.4f %10.4f %10.4f  time %10.4f  \n", flag, position->x, position->y, position->z, time ); 
+    photon[idx] = p ; 
+
+    //const float3* position = (float3*)&p.q0.f.x ; 
+    //const float& time = p.q0.f.w ; 
+
+    printf("//_QSim_propagate_to_boundary flag %d position %10.4f %10.4f %10.4f  time %10.4f  \n", flag, p.pos.x, p.pos.y, p.pos.z, p.time ); 
 
 }
 
 template <typename T>
-__global__ void _QSim_propagate_at_boundary_generate( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
+__global__ void _QSim_propagate_at_boundary_generate( qsim<T>* sim, sphoton* photon, unsigned num_photon, qdebug* dbg )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     //printf("//_QSim_propagate_at_boundary_generate blockIdx.x %d blockDim.x %d threadIdx.x %d propagate_id %d \n", blockIdx.x, blockDim.x, threadIdx.x, propagate_id ); 
 
-    if (id >= num_photon) return;
+    if (idx >= num_photon) return;
 
     const quad2* prd = &dbg->prd ;  // no need for local copy when readonly   
     const qstate& s = dbg->s ;     
-    quad4 p         = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
-    curandState rng = sim->rngstate[id] ; 
 
-    p.q0.f = p.q1.f ;   // non-standard record initial mom and pol into q0, q3
-    p.q3.f = p.q2.f ; 
-    unsigned flag ; 
-    sim->propagate_at_boundary( flag, p, prd, s, rng, id );  
-    p.q3.u.w = flag ;  // non-standard
+    sphoton p = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
+    quad4& q = (quad4&)p ; 
 
-    photon[id] = p ; 
+    curandState rng = sim->rngstate[idx] ; 
+
+    q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
+    q.q3.f = q.q2.f ; 
+
+    unsigned flag = 0 ; 
+    sim->propagate_at_boundary( flag, p, prd, s, rng, idx );  
+
+    q.q3.u.w = flag ;  // non-standard
+
+    photon[idx] = p ; 
 }
 
 
 template <typename T>
-__global__ void _QSim_propagate_at_boundary_mutate( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg )
+__global__ void _QSim_propagate_at_boundary_mutate( qsim<T>* sim, sphoton* photon, unsigned num_photon, qdebug* dbg )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     //printf("//_QSim_propagate_at_boundary_mutate blockIdx.x %d blockDim.x %d threadIdx.x %d id %d \n", blockIdx.x, blockDim.x, threadIdx.x, id ); 
 
-    if (id >= num_photon) return;
+    if (idx >= num_photon) return;
 
     const quad2* prd = &dbg->prd ; 
     const qstate& s = dbg->s ;     
-    quad4 p         = photon[id] ; 
-    curandState rng = sim->rngstate[id] ; 
 
-    p.q0.f = p.q1.f ;   // non-standard record initial mom and pol into q0, q3
-    p.q3.f = p.q2.f ; 
-    unsigned flag ; 
-    sim->propagate_at_boundary( flag, p, prd, s, rng, id );  
-    p.q3.u.w = flag ;  // non-standard
+    sphoton p  = photon[idx] ; 
+    quad4&  q  = (quad4&)p ; 
 
-    photon[id] = p ; 
+    curandState rng = sim->rngstate[idx] ; 
+
+    q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
+    q.q3.f = q.q2.f ;
+ 
+    unsigned flag = 0 ; 
+    sim->propagate_at_boundary( flag, p, prd, s, rng, idx );  
+
+    q.q3.u.w = flag ;  // non-standard
+
+    photon[idx] = p ; 
 }
 
 
 
 template <typename T>
-__global__ void _QSim_hemisphere_polarized( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned polz )
+__global__ void _QSim_hemisphere_polarized( qsim<T>* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned polz )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_photon) return;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[id] ; 
+    curandState rng = sim->rngstate[idx] ; 
     const quad2* prd = &dbg->prd ;  
-    quad4 p         = dbg->p ;   
+    sphoton p        = dbg->p ;   
     bool inwards = true ; 
 
     sim->hemisphere_polarized( p, polz, inwards,  prd, rng );  
 
-    photon[id] = p ; 
+    photon[idx] = p ; 
 }
 
 
 
 template <typename T>
-__global__ void _QSim_reflect_generate( qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned type )
+__global__ void _QSim_reflect_generate( qsim<T>* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned type )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_photon) return;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[id] ; 
+    curandState rng = sim->rngstate[idx] ; 
     const quad2* prd = &dbg->prd ;  
-    quad4 p         = dbg->p ;   
 
-    p.q0.f = p.q1.f ;   // non-standard record initial mom into p0 and initial pol into q3
-    p.q3.f = p.q2.f ; 
+    sphoton p = dbg->p ;   
+    quad4& q = (quad4&)p ; 
+
+    q.q0.f = q.q1.f ;   // non-standard record initial mom into p0 and initial pol into q3
+    q.q3.f = q.q2.f ; 
 
     float u_decision_burn = curand_uniform(&rng);   // aligns consumption 
     //printf("//_QSim_reflect_generate id %d u_decision_burn %10.4f \n", id, u_decision_burn );  
 
     switch(type)
     {
-        case REFLECT_DIFFUSE:   sim->reflect_diffuse(  p, prd, rng, id) ;  break ;  
-        case REFLECT_SPECULAR:  sim->reflect_specular( p, prd, rng, id) ;  break ;  
+        case REFLECT_DIFFUSE:   sim->reflect_diffuse(  p, prd, rng, idx) ;  break ;  
+        case REFLECT_SPECULAR:  sim->reflect_specular( p, prd, rng, idx) ;  break ;  
     }
-    photon[id] = p ; 
+    photon[idx] = p ; 
 }
 
 
@@ -528,30 +540,30 @@ __global__ void _QSim_reflect_generate( qsim<T>* sim, quad4* photon, unsigned nu
 template <typename T>
 __global__ void _QSim_random_direction_marsaglia( qsim<T>* sim, quad* q, unsigned num_quad )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_quad ) return;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= num_quad ) return;
 
-    curandState rng = sim->rngstate[id] ; 
+    curandState rng = sim->rngstate[idx] ; 
 
-    float3* dir = (float3*)&q[id].f.x ;  
-    sim->random_direction_marsaglia( dir, rng, id );  
-    q[id].u.w = id ; 
+    float3* dir = (float3*)&q[idx].f.x ;  
+    sim->random_direction_marsaglia( dir, rng, idx );  
+    q[idx].u.w = idx ; 
 }
 
 template <typename T>
 __global__ void _QSim_lambertian_direction( qsim<T>* sim, quad* q, unsigned num_quad, qdebug* dbg )
 {
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_quad ) return;
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    if (idx >= num_quad ) return;
 
-    curandState rng = sim->rngstate[id] ; 
+    curandState rng = sim->rngstate[idx] ; 
 
-    float3* dir = (float3*)&q[id].f.x ;  
+    float3* dir = (float3*)&q[idx].f.x ;  
     const float orient = -1.f ; 
 
-    sim->lambertian_direction( dir, &dbg->normal, orient, rng, id );  
+    sim->lambertian_direction( dir, &dbg->normal, orient, rng, idx );  
 
-    q[id].u.w = id ; 
+    q[idx].u.w = idx ; 
 }
 
 
@@ -577,7 +589,7 @@ template void QSim_quad_launch(dim3, dim3, qsim<float>*  , quad* , unsigned, qde
 
 
 template <typename T>
-extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned type  )
+extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned type  )
 {
     const char* name = QSimLaunch::Name(type) ; 
     printf("//QSim_photon_launch sim %p photon %p num_photon %d dbg %p type %d name %s \n", sim, photon, num_photon, dbg, type, name ); 
@@ -608,8 +620,8 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* si
     }
 }
 
-template void QSim_photon_launch(dim3, dim3, qsim<double>* , quad4* , unsigned, qdebug*, unsigned  ); 
-template void QSim_photon_launch(dim3, dim3, qsim<float>*  , quad4* , unsigned, qdebug*, unsigned  ); 
+template void QSim_photon_launch(dim3, dim3, qsim<double>* , sphoton* , unsigned, qdebug*, unsigned  ); 
+template void QSim_photon_launch(dim3, dim3, qsim<float>*  , sphoton* , unsigned, qdebug*, unsigned  ); 
 
 /**
 _QSim_mock_propagate
@@ -629,7 +641,7 @@ __global__ void _QSim_mock_propagate( qsim<T>* sim, quad2* prd )
     printf("//_QSim_mock_propagate idx %d evt.num_photon %d evt.max_record %d  \n", idx, evt->num_photon, evt->max_record ); 
 
     curandState rng = sim->rngstate[idx] ; 
-    quad4 p = evt->photon[idx] ;   
+    sphoton p = evt->photon[idx] ;   
     p.set_idx(idx); 
 
     sim->mock_propagate( p, prd, rng, idx );  

@@ -272,7 +272,6 @@ void QSim<T>::init_dbg()
     // quad2: mocking prd per-ray-data result of optix trace calls 
     dbg->prd = quad2::make_eprd() ;  // see eprd.sh 
      
-    // quad4: mocking initial generated photon 
     dbg->p.ephoton() ; // see ephoton.sh 
     LOG(info) << desc_dbg_p0()  ; 
 
@@ -283,16 +282,15 @@ void QSim<T>::init_dbg()
 template <typename T>
 NP* QSim<T>::duplicate_dbg_ephoton(unsigned num_photon)
 {
-    NP* p = NP::Make<float>(num_photon, 4, 4 );
-    quad4* p_v   = (quad4*)p->values<float>(); 
-
+    NP* ph = NP::Make<float>(num_photon, 4, 4 );
+    sphoton* pp  = (sphoton*)ph->bytes(); 
     for(unsigned i=0 ; i < num_photon ; i++)
     {   
-        quad4 p0 = dbg->p  ;  // start from ephoton 
-        p0.q0.f.y = float(i)*100.f ; 
-        p_v[i] = p0 ;   
+        sphoton p = dbg->p  ;  // start from ephoton 
+        p.pos.y = float(i)*100.f ; 
+        pp[i] = p ;   
     }    
-    return p ; 
+    return ph ; 
 }
 
 
@@ -826,7 +824,7 @@ This function is implemented in QSim.cu and it used by *photon_launch_generate* 
 **/
 
 template <typename T>
-extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad4* photon, unsigned num_photon, qdebug* dbg, unsigned type  );
+extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned type  );
 
 
 /**
@@ -839,19 +837,19 @@ then downloads the generated photons into the host array. Contrast with *photon_
 **/
 
 template <typename T>
-void QSim<T>::photon_launch_generate(quad4* photon, unsigned num_photon, unsigned type )
+void QSim<T>::photon_launch_generate(sphoton* photon, unsigned num_photon, unsigned type )
 {
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    quad4* d_photon = QU::device_alloc<quad4>(num_photon) ; 
+    sphoton* d_photon = QU::device_alloc<sphoton>(num_photon) ; 
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
     QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg, type );  
 
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
+    QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, num_photon ); 
 }
  
 /**
@@ -863,19 +861,19 @@ This uploads the photon array provided, mutates it and then downloads the change
 **/
 
 template <typename T>
-void QSim<T>::photon_launch_mutate(quad4* photon, unsigned num_photon, unsigned type )
+void QSim<T>::photon_launch_mutate(sphoton* photon, unsigned num_photon, unsigned type )
 {
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    quad4* d_photon = QU::UploadArray<quad4>(photon, num_photon );  
+    sphoton* d_photon = QU::UploadArray<sphoton>(photon, num_photon );  
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
     QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg, type );  
 
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
+    QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, num_photon ); 
 }
  
  
@@ -898,10 +896,11 @@ using common QEvent functionality
 **/
 
 template <typename T>
-void QSim<T>::mock_propagate_launch_mutate( NP* p, const NP* prd, unsigned type )
+void QSim<T>::mock_propagate( NP* p, const NP* prd, unsigned type )
 {
     int num_p = p->shape[0] ; 
-    assert( prd->has_shape( num_p, -1, 2, 4 ) );   
+
+    assert( prd->has_shape( num_p, -1, 2, 4 ) );    // TODO: evt->max_record checking 
     assert( prd->shape.size() == 4 && prd->shape[2] == 2 && prd->shape[3] == 4 ); 
 
     int num_prd = prd->shape[0]*prd->shape[1] ;  
@@ -914,6 +913,7 @@ void QSim<T>::mock_propagate_launch_mutate( NP* p, const NP* prd, unsigned type 
     assert( num_photon == num_p ); 
 
     quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd );  
+    // prd non-standard so appropriate to upload here 
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
