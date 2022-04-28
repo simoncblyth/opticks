@@ -284,10 +284,10 @@ __global__ void _QSim_generate_photon(qsim<T>* sim, qevent* evt )
 
     //printf("//_QSim_generate_photon idx %4d evt->num_photon %4d genstep_id %4d  \n", idx, evt->num_photon, genstep_id );  
 
-    qphoton qp ;   
-    sim->generate_photon(qp, rng, gs, idx, genstep_id ); 
+    sphoton p ;   
+    sim->generate_photon(p, rng, gs, idx, genstep_id ); 
 
-    evt->photon[idx] = qp.p ;  
+    evt->photon[idx] = p ;  
 
 }
 

@@ -44,6 +44,16 @@ This is aiming to replace the OptiX 6 context in a CUDA-centric way.
 * temporary working state local to each photon is currently being passed by reference args, 
   would be cleaner to use a collective state struct to hold this local structs 
 
+
+TODO:
+
+0. many of the below methods could be static (or const)
+1. some methods have too many parameters that could be avoided using 
+   some carefully chosen members, eg print_id/pidx
+2. get more methods to work on CPU as well as GPU for easier testing 
+   NB must move decl and implementation to do this 
+3. more encapsulation of sub-concerns eg boundary 
+
 **/
 
 struct curandStateXORWOW ; 
@@ -53,41 +63,31 @@ template <typename T> struct qprop ;
 template <typename T>
 struct qsim
 {
+    static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
+
     qevent*             evt ; 
     curandStateXORWOW*  rngstate ; 
 
     cudaTextureObject_t scint_tex ; 
     quad4*              scint_meta ;
-    // hmm could encapsulate the above group into a qscint ? 
-    // and follow a similar approach for qcerenkov 
-    // ... hmm there is commonality between the icdf textures with hd_factor on top 
-    // that needs to be profited from 
 
     static constexpr T one = T(1.) ;   
 
-    // boundary tex is created/configured CPU side in QBnd
+    // boundary tex is created/configured CPU side in QBnd : so should encapsulate into a qbnd ?
+    // bnd and optical are closely related so they must be kept together
     cudaTextureObject_t boundary_tex ; 
     quad4*              boundary_meta ; 
     unsigned            boundary_tex_MaterialLine_Water ;
     unsigned            boundary_tex_MaterialLine_LS ; 
-    // hmm could encapsulate the above group into a qbnd ?
-
     quad*               optical ;  
+
+
     qprop<T>*           prop ;  
     int                 pidx ;   // from PIDX envvar
-
-    static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
  
 
-// TODO: get more methods to work on CPU as well as GPU for easier testing 
-
-    QSIM_METHOD void    generate_photon_dummy( qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-
+    QSIM_METHOD void    generate_photon_dummy( quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
-
-// TODO: many of the below could be static, and many can work on CPU so bring them up here 
-//       NB must also move the implementation
-
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
@@ -122,12 +122,9 @@ struct qsim
     QSIM_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng,              int print_id = -1 ) ; 
     QSIM_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng,              int print_id = -1 ); 
 
-
-
-
-    QSIM_METHOD void    generate_photon_carrier(    qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-    QSIM_METHOD void    generate_photon_simtrace(   qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-    QSIM_METHOD void    generate_photon(            qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon_carrier(    quad4&   p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon_simtrace(   quad4&   p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon(            sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
 
 
     QSIM_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx ); 
@@ -149,11 +146,11 @@ struct qsim
     QSIM_METHOD void    reflect_specular( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx );
 
     QSIM_METHOD void    hemisphere_polarized( sphoton& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng); 
+#endif
 
-
+#if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-    // instanciated on CPU and copied to device so no ctor in device code
-    qsim()
+    qsim()    // instanciated on CPU and copied to device so no ctor in device code
         :
         evt(nullptr),
         rngstate(nullptr),
@@ -173,10 +170,8 @@ struct qsim
 
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_dummy(qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim<T>::generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
-    quad4& p = qp.q ; 
-
     printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n", 
        photon_id, 
        genstep_id, 
@@ -1848,16 +1843,12 @@ An input photon carried within the genstep q2:q5 is repeatedly provided.
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_carrier(qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+inline QSIM_METHOD void qsim<T>::generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
 {
-    //quad4& p = (quad4&)qp ; // cast from union type down to unioned-ed subtype  
-    quad4& p = qp.q ;  // alternatively, dont cast just use the union member 
-
     p.q0.f = gs.q2.f ; 
     p.q1.f = gs.q3.f ; 
     p.q2.f = gs.q4.f ; 
     p.q3.f = gs.q5.f ; 
-
     p.set_flag(TORCH); 
 }
 
@@ -1880,10 +1871,8 @@ TODO: implement local index by including photon_id offset with the gensteps
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
-    quad4& p = qp.q ; 
-
     C4U gsid ;  
 
     //int gencode          = gs.q0.i.x ;   
@@ -1946,15 +1935,16 @@ Moved non-standard center-extent gensteps to use qsim::generate_photon_simtrace 
 **/
 
 template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon(qphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim<T>::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
+    quad4& q = (quad4&)p ; 
     const int& gencode = gs.q0.i.x ; 
-    //printf("//qsim.generate_photon gencode %d \n", gencode); 
+
     switch(gencode)
     {
-        case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(p, rng, gs, photon_id, genstep_id)  ; break ; 
-        case OpticksGenstep_TORCH:           qtorch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
-        default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ; 
+        case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(q, rng, gs, photon_id, genstep_id)  ; break ; 
+        case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
+        default:                             generate_photon_dummy(  q, rng, gs, photon_id, genstep_id)  ; break ; 
     }
 }
 

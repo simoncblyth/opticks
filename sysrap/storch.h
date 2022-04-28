@@ -60,7 +60,7 @@ npy/NStep.cpp
 #include "storchtype.h"
 
 /**
-* torch : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/torchstep.h  
+* storch.h : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/torchstep.h  
 **/
 
 struct storch
@@ -88,21 +88,9 @@ struct storch
     float    distance ; 
     unsigned mode ;     // basemode 
     unsigned type ;     // basetype
-};
-
-/**
-* qtorch : union between quad6 and specific genstep types for easy usage and yet no serialize/deserialize needed
-**/
-struct qtorch
-{
-   union 
-   {
-      quad6  q ; 
-      storch t ; 
-   };   
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
-   STORCH_METHOD static void generate( qphoton& qp, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
+   STORCH_METHOD static void generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -110,15 +98,18 @@ struct qtorch
    std::string desc() const ; 
 #endif
 
-}; 
+};
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-inline std::string qtorch::desc() const 
+inline std::string storch::desc() const 
 {
     std::stringstream ss ; 
-    ss << "qtorch::desc"
-       << " gentype " << t.gentype 
+    ss << "storch::desc"
+       << " gentype " << gentype 
+       << " mode " << mode 
+       << " type " << type 
        ;
     std::string s = ss.str(); 
     return s ; 
@@ -128,9 +119,8 @@ inline std::string qtorch::desc() const
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
 
-inline STORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
+STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
 {
-    sphoton& p = qp.p ; 
     const storch& gs = (const storch&)gs_ ;   // casting between union-ed types  
 
 #ifdef STORCH_DEBUG
@@ -182,4 +172,18 @@ inline STORCH_METHOD void qtorch::generate( qphoton& qp, curandStateXORWOW& rng,
 }
 
 #endif
+
+
+
+/**
+* qtorch : union between quad6 and specific genstep types for easy usage and yet no serialize/deserialize needed
+**/
+
+union qtorch
+{
+   quad6  q ; 
+   storch t ; 
+};   
+
+
 

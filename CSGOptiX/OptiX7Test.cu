@@ -211,7 +211,6 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     sim->generate_photon(qp, rng, gs, idx, genstep_id );  
 
     sphoton& p = qp.p ; 
-    quad4& q   = qp.q ;   
     // two union-ed types referencing the same memory 
 
     // cf qsim::mock_propagate
@@ -219,7 +218,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     int bounce = 0 ;  
     while( bounce < evt->max_bounce )
     {    
-        if(evt->record) evt->record[evt->max_record*idx+bounce] = q ;  
+        if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
 
         //if(evt->rec) 
         //{
@@ -238,13 +237,13 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
         //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
 
-        command = sim->propagate(bounce, q, s, prd, rng, idx ); 
+        command = sim->propagate(bounce, p, s, prd, rng, idx ); 
         bounce++;     
         if(command == BREAK) break ;    
     }    
 
-    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = q ;  
-    evt->photon[idx] = q ; 
+    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
+    evt->photon[idx] = p ; 
 
 }
 

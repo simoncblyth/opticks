@@ -570,6 +570,8 @@ void QSimTest<T>::photon_launch_generate()
 QSimTest::mock_propagate
 ----------------------------------------
 
+NB QSimTest::PreInit does MOCK_PROPAGATE specific SEventConfig setup of event maxima 
+
 TODO: 
 
 * adopt sim->evt->record 
@@ -583,6 +585,7 @@ void QSimTest<T>::mock_propagate()
 {
     assert( QSimLaunch::IsMutate(type)==true ); 
     LOG(info) << "[" ; 
+    LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
 
     NP* p   = qs.duplicate_dbg_ephoton(num); 
 
@@ -591,15 +594,19 @@ void QSimTest<T>::mock_propagate()
 
     qs.mock_propagate( p, prd, type ); 
 
-    unsigned num_hit = qs.event->getNumHit(); 
+    QEvent* event = qs.event ; 
+
+    unsigned num_hit = event->getNumHit(); 
     LOG(info) << " num_hit " << num_hit ;
  
-    NP* h = qs.event->getHits(); 
-    NP* r = qs.event->getRecords(); 
+    NP* h = event->getHits(); 
+    NP* r = event->getRecords(); 
+    NP* c = event->getRec(); 
 
     save(p,   "p.npy"); 
     save(prd, "prd.npy"); 
     save(r,   "r.npy"); 
+    save(c,   "c.npy"); 
     save(h,   "h.npy"); 
 
     LOG(info) << "]" ; 
@@ -678,6 +685,7 @@ void QSimTest<T>::PreInit(unsigned type )  // static
         SEventConfig::SetMaxPhoton(1000000);   // used for QEvent buffer sizing 
         SEventConfig::SetMaxBounce(num_bounce); 
         SEventConfig::SetMaxRecord(num_bounce+1); 
+        SEventConfig::SetMaxRec(num_bounce+1); 
 
         LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
     }

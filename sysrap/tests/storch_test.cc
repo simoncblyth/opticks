@@ -31,19 +31,19 @@ NP* make_torch_photon( const NP* gs, const NP* se )
 
     int tot_photon = se->shape[0] ; 
     NP* ph = NP::Make<float>( tot_photon, 4, 4); 
-    qphoton* pp = (qphoton*)ph->bytes() ; 
+    sphoton* pp = (sphoton*)ph->bytes() ; 
 
     for(int i=0 ; i < tot_photon ; i++ )
     {
         unsigned photon_id = i ; 
         unsigned genstep_id = seed[photon_id] ; 
 
-        qphoton& p = pp[photon_id] ; 
+        sphoton& p = pp[photon_id] ; 
         const quad6& g = gg[genstep_id] ;  
         
-        qtorch::generate(p, rng, g, photon_id, genstep_id ); 
+        storch::generate(p, rng, g, photon_id, genstep_id ); 
 
-        std::cout << p.p.desc() << std::endl;  
+        std::cout << p.desc() << std::endl;  
     }
     return ph ; 
 }
@@ -68,7 +68,7 @@ void test_union_cast()
         qt.q.q0.u.x = 101 ; 
 
         storch& t = qt.t ;  // when going down from union type to subtype can just use the union member without casting
-        std::cout <<  qt.desc() << std::endl ; 
+        std::cout <<  t.desc() << std::endl ; 
     }
 
     {
@@ -86,9 +86,9 @@ void test_union_cast()
         gs.zero(); 
         gs.q0.u.x = 303 ; 
 
-        qtorch& qt = (qtorch&)gs ;   // simply cast from one of the union types up to the union type
+        storch& t = (storch&)gs ;   // simply casting between union types
 
-        std::cout <<  qt.desc() << std::endl ; 
+        std::cout <<  t.desc() << std::endl ; 
     }
 }
 
