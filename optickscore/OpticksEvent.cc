@@ -1624,22 +1624,6 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
     //  vpol  xxxx yyyy zzzz wwww    polarization weight      [:,2,:4] 
     //  iflg  xxxx yyyy zzzz wwww                             [:,3,:4]
     //
-    //
-    //  record array
-    //  ~~~~~~~~~~~~~~
-    //       
-    //              4*short(snorm)
-    //          ________
-    //  rpos    xxyyzzww 
-    //  rpol->  xyzwaabb <-rflg 
-    //          ----^^^^
-    //     4*ubyte     2*ushort   
-    //     (unorm)     (iatt)
-    //
-    //
-    //
-    // corresponds to GPU side cu/photon.h:psave and rsave 
-    //
 }
 
 void OpticksEvent::setSourceData(NPY<float>* source_data_, bool clone_ )
@@ -1736,10 +1720,19 @@ rpos
 
 
 rflq
-    
 
+record array
+~~~~~~~~~~~~~
 
+        4*short(snorm)
+        ________
+rpos    xxyyzzww 
+rpol->  xyzwaabb <-rflg 
+        ----^^^^
+        4*ubyte     2*ushort   
+        (unorm)     (iatt)
 
+corresponds to GPU side cu/photon.h:psave and rsave 
 
 **/
 
@@ -1750,13 +1743,15 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
 
     //                                               j k l  sz   type                  norm   iatt   item_from_dim
     ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0 ,4,ViewNPY::SHORT          ,true,  false, 2);
-    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,0,1,0 ,4,ViewNPY::UNSIGNED_BYTE  ,true,  false, 2);   
+    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,0,1,0 ,4,ViewNPY::UNSIGNED_BYTE  ,true,  false, 2);    
 
-    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,0,1,2 ,2,ViewNPY::UNSIGNED_SHORT ,false, true,  2);   
+    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,0,1,2 ,2,ViewNPY::UNSIGNED_SHORT ,false, true,  2);     // UNSIGNED_SHORT 16 bit 
     // NB l=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
 
-    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,0,1,2 ,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);   
+    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,0,1,2 ,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);     // UNSIGNED_BYTES  8 bit 
     // NB l=2 again : UBYTE view of the same data for access to  m1,m2,boundary,flag
+
+
 
     m_record_attr = new MultiViewNPY("record_attr");
 

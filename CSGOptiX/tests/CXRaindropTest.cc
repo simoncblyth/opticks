@@ -16,6 +16,7 @@ CXRaindropTest
 
 #include "SSys.hh"
 #include "SPath.hh"
+#include "SEventConfig.hh"
 #include "SProc.hh"
 #include "OpticksGenstep.h"
 

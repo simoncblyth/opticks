@@ -8,6 +8,97 @@ hmm : need to get the domains ce/td/wd onto device for encoding the srec and int
 * on device need to keep it somewhere like in qevent ? so QEvent needs to orchestrate the domains. 
 
 
+using domains from OpenGL shaders : how ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Was expecting uniforms for all the domains, but seems only TimeDomain done that way, see oglrap/gl/rec/geom.glsl 
+
+* trick is to view the data with different types, offsets, iatt etc.. 
+
+::
+
+    1739 void OpticksEvent::setRecordData(NPY<short>* record_data)
+    1740 {
+    1741     setBufferControl(record_data);
+    1742     m_record_data = record_data  ;
+    1743     
+    1744     //                                               j k l  sz   type                  norm   iatt   item_from_dim
+    1745     ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0 ,4,ViewNPY::SHORT          ,true,  false, 2);
+    1746     ViewNPY* rpol = new ViewNPY("rpol",m_record_data,0,1,0 ,4,ViewNPY::UNSIGNED_BYTE  ,true,  false, 2);     
+    1747 
+    1748     ViewNPY* rflg = new ViewNPY("rflg",m_record_data,0,1,2 ,2,ViewNPY::UNSIGNED_SHORT ,false, true,  2);     // UNSIGNED_SHORT 16 bit 
+    1749     // NB l=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
+    1750 
+    1751     ViewNPY* rflq = new ViewNPY("rflq",m_record_data,0,1,2 ,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);     // UNSIGNED_BYTES  8 bit 
+    1752     // NB l=2 again : UBYTE view of the same data for access to  m1,m2,boundary,flag
+    1753 
+    1754     
+
+Expect can replace this old heavy approach (ViewNPY/MultiViewNPY) with just some attribute metadata 
+strings associated with the array data. 
+
+* NB attribute type is independant of the array type 
+
+
+
+
+The attribute metadata needs to carry what is needed for attribute setup::
+
+    404 void Rdr::address(ViewNPY* vnpy)
+    405 {
+    406     const char* name = vnpy->getName();
+    407     GLint location = m_shader->attribute(name, false);
+    ...
+    415     GLenum type = GL_FLOAT  ;              //  of each component in the array
+    416     switch(vnpy->getType())
+    417     {   
+    418         case ViewNPY::BYTE:                         type = GL_BYTE           ; break ;
+    419         case ViewNPY::UNSIGNED_BYTE:                type = GL_UNSIGNED_BYTE  ; break ;
+    420         case ViewNPY::SHORT:                        type = GL_SHORT          ; break ;
+    421         case ViewNPY::UNSIGNED_SHORT:               type = GL_UNSIGNED_SHORT ; break ;
+    422         case ViewNPY::INT:                          type = GL_INT            ; break ;
+    423         case ViewNPY::UNSIGNED_INT:                 type = GL_UNSIGNED_INT   ; break ;
+    424         case ViewNPY::HALF_FLOAT:                   type = GL_HALF_FLOAT     ; break ;
+    425         case ViewNPY::FLOAT:                        type = GL_FLOAT          ; break ;     
+    426         case ViewNPY::DOUBLE:                       type = GL_DOUBLE         ; break ;     
+    427         case ViewNPY::FIXED:                        type = GL_FIXED                        ; break ;
+    428         case ViewNPY::INT_2_10_10_10_REV:           type = GL_INT_2_10_10_10_REV           ; break ; 
+    429         case ViewNPY::UNSIGNED_INT_2_10_10_10_REV:  type = GL_UNSIGNED_INT_2_10_10_10_REV  ; break ; 
+    430         //case ViewNPY::UNSIGNED_INT_10F_11F_11F_REV: type = GL_UNSIGNED_INT_10F_11F_11D_REV ; break ; 
+    431         default: assert(0)                                                                 ; break ;
+    432     }
+    ...
+    461     if( vnpy->getIatt() )
+    462     {
+    463         glVertexAttribIPointer(index, size, type, stride, offset);
+    464     }
+    465     else
+    466     {
+    467         glVertexAttribPointer(index, size, type, norm, stride, offset);
+    468     }
+
+
+* in new workflow the natural place to parse the attribute metadata is SGLFW 
+
+* https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml
+
+::
+
+    void glVertexAttribPointer( 	
+        GLuint index,
+        GLint size,
+        GLenum type,
+        GLboolean normalized,
+        GLsizei stride,
+        const void * pointer);
+
+::
+    // size,type,normalized,stride,offset,iatt 
+
+    att_vpos:4,GL_SHORT,1,16,0,0  
+
+
+
 new way of managing domains
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
