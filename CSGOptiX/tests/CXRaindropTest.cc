@@ -116,6 +116,10 @@ int main(int argc, char** argv)
 
     // HMM : WOULD BE BETTER FOR CONSISTENCY TO HAVE SINGLE UPLOAD API
 
+    // must do this config before QEvent::init which happens with CSGOptiX instanciation 
+    SEventConfig::SetMaxExtent( ce.w ); 
+    SEventConfig::SetMaxTime( 10.f ); 
+
     CSGOptiX cx(&ok, fdl );   // QSim QEvent instanciated here 
     cx.setComposition(ce); 
 
@@ -127,9 +131,7 @@ int main(int argc, char** argv)
 
     const char* odir = SPath::Resolve(cfbase_local, EXECUTABLE, DIRPATH ); 
 
-
-    // TODO: consolidated saving using QEvent method with standardized naming 
-    // and using the max
+    // TODO: consolidate below into QEvent::save method with standardized naming and using the max config
     
     NP* p = event->getPhotons() ; 
     NP* f = event->getRecords() ; 

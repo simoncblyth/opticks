@@ -592,22 +592,27 @@ void QSimTest<T>::mock_propagate()
     int bounce_max = SEventConfig::MaxBounce(); 
     NP* prd = qs.prd->duplicate_prd(num, bounce_max);  
 
+
     qs.mock_propagate( p, prd, type ); 
 
-    QEvent* event = qs.event ; 
+    const QEvent* event = qs.event ; 
 
     unsigned num_hit = event->getNumHit(); 
     LOG(info) << " num_hit " << num_hit ;
  
+    // TODO: centralize and standardize the below into QEvent::save with base directory argument 
+
     NP* h = event->getHits(); 
     NP* r = event->getRecords(); 
     NP* c = event->getRec(); 
+    NP* d = event->getDomain() ; 
 
     save(p,   "p.npy"); 
     save(prd, "prd.npy"); 
     save(r,   "r.npy"); 
     save(c,   "c.npy"); 
     save(h,   "h.npy"); 
+    save(d,   "d.npy"); 
 
     LOG(info) << "]" ; 
 }

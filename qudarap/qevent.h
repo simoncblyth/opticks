@@ -78,6 +78,8 @@ struct qevent
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+    QEVENT_METHOD void init_domain(float extent, float time_max); 
+    QEVENT_METHOD void get_domain(quad4& dom) const ; 
     QEVENT_METHOD void zero(); 
 #endif 
 
@@ -86,6 +88,50 @@ struct qevent
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+QEVENT_METHOD void qevent::init_domain(float extent, float time_max)
+{
+    center_extent.x = 0.f ; 
+    center_extent.y = 0.f ; 
+    center_extent.z = 0.f ; 
+    center_extent.w = extent ; 
+
+    time_domain.x = 0.f ; 
+    time_domain.y = time_max ; 
+   
+    wavelength_domain.x = 80.f ; 
+    wavelength_domain.y = 800.f ; 
+}
+
+/**
+qevent::get_domain
+-------------------
+
+HMM: could also use metadata (key, value) pairs on the domain NP array 
+**/
+
+
+QEVENT_METHOD void qevent::get_domain( quad4& dom ) const 
+{
+   dom.q0.f = center_extent ;
+
+   dom.q1.f.x = time_domain.x  ; 
+   dom.q1.f.y = time_domain.y  ; 
+   dom.q1.f.z = wavelength_domain.x  ; 
+   dom.q1.f.w = wavelength_domain.y  ; 
+
+   dom.q2.u.x = max_genstep ; 
+   dom.q2.u.y = max_photon ; 
+   dom.q2.u.z = max_bounce ; 
+   dom.q2.u.w = 0u ; 
+
+   dom.q3.u.x = max_record ; 
+   dom.q3.u.y = max_rec ; 
+   dom.q3.u.z = 0u ; 
+   dom.q3.u.w = 0u ; 
+}
+
+
 QEVENT_METHOD void qevent::zero()
 {
     num_genstep = 0 ; 

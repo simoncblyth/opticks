@@ -6,6 +6,12 @@
 SEventConfig
 ==============
 
+Primary user of this config is QEvent::init 
+
+
+MaxPhoton
+   TODO: the actual maximum depends on rngstate : need to hook into that 
+
 MaxRec
     normally 0, disabling creation of the QEvent domain compressed step record buffer
 
@@ -14,6 +20,13 @@ MaxRecord
     When greater than zero causes QEvent::setNumPhoton to allocate the full
     step record buffer, full recording requires a value of one greater 
     than the MaxBounce configured  (typically up to 16) 
+
+MaxExtent (mm)
+    only relevant to the domain compression of the compressed step records
+
+MaxTime (ns)
+    only relevant to the domain compression of the compressed step records
+
 
 **/
 
@@ -29,12 +42,17 @@ struct SYSRAP_API SEventConfig
     static int MaxRecord();  // full photon step record  
     static int MaxRec();     // compressed photon step record
 
+    static float MaxExtent() ; 
+    static float MaxTime() ; 
 
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 
     static void SetMaxBounce( int max_bounce); 
     static void SetMaxRecord( int max_record); 
     static void SetMaxRec(    int max_rec); 
+
+    static void SetMaxExtent( float max_extent); 
+    static void SetMaxTime(   float max_time ); 
 
     static unsigned HitMask(); 
     static void SetHitMask(const char* abrseq, char delim=',' ); 
@@ -50,6 +68,9 @@ struct SYSRAP_API SEventConfig
     static int _MaxBounce ; 
     static int _MaxRecord ; 
     static int _MaxRec ; 
+
+    static float _MaxExtent ; 
+    static float _MaxTime  ; 
 
     static unsigned _HitMask ; 
 }; 

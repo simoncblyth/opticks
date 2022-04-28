@@ -110,11 +110,29 @@ void QEvent::init()
     evt->max_record  = SEventConfig::MaxRecord()  ;  // full step record
     evt->max_rec     = SEventConfig::MaxRec()  ;     // compressed step record 
 
-    LOG(fatal) << descMax() ; 
 
     evt->zero(); 
     LOG(fatal) << descBuf() ; 
+
+    float extent = SEventConfig::MaxExtent() ; 
+    float time_max = SEventConfig::MaxTime() ; 
+
+    evt->init_domain( extent, time_max );  
+
+
+    LOG(fatal) << descMax() ; 
 }
+
+
+NP* QEvent::getDomain() const 
+{
+    quad4 dom ; 
+    evt->get_domain(dom); 
+    NP* d = NP::Make<float>( 1, 4, 4 ); 
+    d->read2( dom.cdata() ); 
+    return d ; 
+}
+
 
 std::string QEvent::desc() const
 {
@@ -362,12 +380,13 @@ NP* QEvent::getRecords() const
     return r ; 
 }
 
+
 NP* QEvent::getRec() const 
 {
     if( evt->max_rec == 0 ) LOG(fatal) << "evt.max_rec " << evt->max_rec << " SO compressed step rec buffer is disabled " ; 
     if( evt->max_rec == 0 ) return nullptr ; 
 
-    NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 4, 2);
+    NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 2, 4);
 
     LOG(info) 
         << " evt.num_photon " << evt->num_photon 
