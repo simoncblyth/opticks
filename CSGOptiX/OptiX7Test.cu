@@ -1,21 +1,13 @@
 /**
-cxr_overview.sh render times with JUNO 
-=======================================
+OptiX7Test.cu 
+===================
 
-JUNO (trunk:Dec, 2021)
-   without   0.0054 
+TODO: come up with a better name for this 
 
-JUNO (trunk:Mar 2, 2022)
-
-   without  0.0126
-   WITH_PRD 0.0143
-   without  0.0126
-   without  0.0125  
-   WITH_PRD 0.0143   (here and above WITH_PRD used attribs and payload values at 8 without reason)
-   WITH_PRD 0.0125   (now with attribs and payload values reduced to 2)
-   WITH_PRD 0.0124  
-
-   WITH_PRD not-WITH_CONTIGUOUS 0.0123
+NB: ONLY CODE THAT MUST BE HERE DUE TO OPTIX DEPENDENCY SHOULD BE HERE
+everything else should be located elsewhere : mostly in qudarap: qevent, qsim 
+or the sysrap basis types sphoton quad4 quad2 etc.. where the code is reusable 
+and more easily tested. 
 
 **/
 
@@ -205,13 +197,11 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
 
-    qphoton qp ;   
+    sphoton p ;   
     qstate s ; 
 
-    sim->generate_photon(qp, rng, gs, idx, genstep_id );  
+    sim->generate_photon(p, rng, gs, idx, genstep_id );  
 
-    sphoton& p = qp.p ; 
-    // two union-ed types referencing the same memory 
 
     // cf qsim::mock_propagate
     int command = START ; 
@@ -273,63 +263,35 @@ if( index > 0 )
 
 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
-    qevent* evt      = params.evt ; 
-    if (launch_idx.x >= evt->num_photon) return;
-
     unsigned idx = launch_idx.x ;  // aka photon_id
-    unsigned genstep_id = evt->seed[idx] ; 
+    qevent* evt  = params.evt ; 
+    if (idx >= evt->num_photon) return;
 
-    if( idx == 0 ) printf("//OptiX7Test.cu:simtrace idx %d genstep_id %d \n", idx, genstep_id ); 
+    unsigned genstep_id = evt->seed[idx] ; 
+    if(idx == 0) printf("//OptiX7Test.cu:simtrace idx %d genstep_id %d \n", idx, genstep_id ); 
 
     const quad6& gs     = evt->genstep[genstep_id] ; 
      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;   
 
-    qphoton qp ;  
-    sphoton& p = qp.p ;  
+    quad4 p ;  
+    sim->generate_photon_simtrace(p, rng, gs, idx, genstep_id );  
 
-    sim->generate_photon_simtrace(qp, rng, gs, idx, genstep_id );  
-
+    const float3& pos = (const float3&)p.q0.f  ; 
+    const float3& mom = (const float3&)p.q1.f ; 
 
     trace( 
         params.handle,
-        p.pos,
-        p.mom,
+        pos,
+        mom,
         params.tmin,
         params.tmax,
         prd
     );
 
+    evt->add_simtrace( idx, p, prd, params.tmin ); 
 
-    // transform (x,z) intersect position into pixel coordinates (ix,iz)
-    //float3 ipos = *origin + (*direction)*prd->distance() ; 
-    float3 ipos = p.pos + (p.mom)*prd->distance() ; 
-
-    // aim to match the CPU side test isect "photons" from CSG/CSGQuery.cc/CSGQuery::intersect_elaborate
-
-
-    // as simtrace "photon" is highly non-standard use a quad4 separate from the above photon
-    quad4 a ;  
-
-    a.q0.f  = prd->q0.f ; 
-
-    a.q1.f.x = ipos.x ; 
-    a.q1.f.y = ipos.y ; 
-    a.q1.i.z = ipos.z ; 
-    a.q1.i.w = 0.f ;   // TODO: sd 
-
-    a.q2.f.x = p.pos.x ; 
-    a.q2.f.y = p.pos.y ; 
-    a.q2.f.z = p.pos.z ; 
-    a.q2.u.w = params.tmin ; 
-
-    a.q3.f.x = p.mom.x ;   
-    a.q3.f.y = p.mom.y ; 
-    a.q3.f.z = p.mom.z ; 
-    a.q3.u.w = prd->identity() ; 
-
-    evt->photon[idx] = a ; 
 }
 
 /**

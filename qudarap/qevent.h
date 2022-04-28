@@ -71,6 +71,8 @@ struct qevent
 
 
     QEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
+    QEVENT_METHOD void add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin ); 
+
 
     // not including prd here as that is clearly for debugging only 
 
@@ -114,3 +116,34 @@ QEVENT_METHOD void  qevent::add_rec( srec& r, unsigned idx, unsigned bounce, con
 
     rec[max_rec*idx+bounce] = r ;      
 }
+
+
+QEVENT_METHOD void qevent::add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin )
+{
+    float t = prd->distance() ; 
+    quad4 a ;  
+
+    a.q0.f  = prd->q0.f ; 
+
+    a.q1.f.x = p.q0.f.x + t*p.q1.f.x ; 
+    a.q1.f.y = p.q0.f.y + t*p.q1.f.y ; 
+    a.q1.f.z = p.q0.f.z + t*p.q1.f.z ; 
+    a.q1.i.w = 0.f ;  
+
+    a.q2.f.x = p.q0.f.x ; 
+    a.q2.f.y = p.q0.f.y ; 
+    a.q2.f.z = p.q0.f.z ; 
+    a.q2.u.w = tmin ; 
+
+    a.q3.f.x = p.q1.f.x ;
+    a.q3.f.y = p.q1.f.y ;
+    a.q3.f.z = p.q1.f.z ;
+    a.q3.u.w = prd->identity() ;
+
+    const sphoton& s = (sphoton&)a ; 
+    photon[idx] = s ;
+}
+
+
+
+

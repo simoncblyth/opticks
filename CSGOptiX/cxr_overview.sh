@@ -13,6 +13,24 @@ cxr_overview.sh
 
 
 
+* cxr_overview.sh render times with JUNO 
+
+JUNO (trunk:Dec, 2021)
+   without   0.0054 
+
+JUNO (trunk:Mar 2, 2022)
+
+   without  0.0126
+   WITH_PRD 0.0143
+   without  0.0126
+   without  0.0125  
+   WITH_PRD 0.0143   (here and above WITH_PRD used attribs and payload values at 8 without reason)
+   WITH_PRD 0.0125   (now with attribs and payload values reduced to 2)
+   WITH_PRD 0.0124  
+
+   WITH_PRD not-WITH_CONTIGUOUS 0.0123
+
+
 EOU
 }
 
