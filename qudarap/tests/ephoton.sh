@@ -63,13 +63,25 @@ ephoton-reflect_specular(){
     ephoton-set $post $momw_polw $flag 
 }
 
-ephoton-mock_propagate(){
+
+ephoton-mock_propagate_old(){
     local post=0,0,0,0
     local momw=1,0,-1,1
     local polw=0,1,0,500
     local flag=0,0,0,0
     ephoton-set $post ${momw},${polw} $flag 
 }
+
+ephoton-mock_propagate(){
+    local post=0,0,0,0
+    local momw=0,0,1,1
+    local polw=0,1,0,500
+    local flag=0,0,0,0
+    ephoton-set $post ${momw},${polw} $flag 
+}
+
+
+
 
 ephoton-default(){
     ephoton-unset 

@@ -674,14 +674,14 @@ void QSimTest<T>::mock_propagate()
     NP* h = event->getHits(); 
     NP* r = event->getRecords(); 
     NP* c = event->getRec(); 
-    NP* d = event->getDomain() ; 
+    NP* domain = event->getDomain() ; 
 
     save(p,   "p.npy"); 
     save(prd, "prd.npy"); 
     save(r,   "r.npy"); 
     save(c,   "c.npy"); 
     save(h,   "h.npy"); 
-    save(d,   "d.npy"); 
+    save(domain, "domain.npy"); 
 
     LOG(info) << "]" ; 
 }

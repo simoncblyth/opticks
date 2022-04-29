@@ -1,6 +1,6 @@
 #version 410 core
 
-layout(location = 0) in vec4  rpos;
+layout(location = 0) in vec4 rpos;
 
 void main () 
 {

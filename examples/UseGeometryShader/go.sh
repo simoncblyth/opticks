@@ -18,37 +18,37 @@
 ## limitations under the License.
 ##
 
-
-opticks-
-oe-
-om-
-
+arg=${1:-build_run}
 sdir=$(pwd)
 name=$(basename $sdir)
-bdir=/tmp/$USER/opticks/$name/build 
 
-rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+if [ "${arg/build}" != "$arg" ] ; then 
 
+    opticks-
+    oe-
+    om-
+    bdir=/tmp/$USER/opticks/$name/build 
+    rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+    om-cmake $sdir
+    make
+    [ $? -ne 0 ] && exit 1
 
-om-cmake $sdir
-make
-[ $? -ne 0 ] && exit 1
-
-make install   
-
-echo executing $name
-
-
-
-
-export SHADER_FOLD=$sdir/rec_flying_point
-export ARRAY_FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
-
-if [ -n "$DEBUG" ]; then 
-    lldb__ $name
-else
-    $name
+    make install   
 fi 
 
+
+if [ "${arg/run}" != "$arg" ] ; then 
+
+    echo executing $name
+    export SHADER_FOLD=$sdir/rec_flying_point
+    #export ARRAY_FOLD=/tmp/$USER/opticks/GeoChain/BoxedSphere/CXRaindropTest
+    export ARRAY_FOLD=/tmp/$USER/opticks/QSimTest/mock_propagate
+
+    if [ -n "$DEBUG" ]; then 
+        lldb__ $name 
+    else
+        $name
+    fi 
+fi
 
 

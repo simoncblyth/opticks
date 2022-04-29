@@ -303,9 +303,9 @@ void QSim<T>::init_dbg()
     LOG(info) << desc_dbg_state(); 
 
     // quad2: mocking prd per-ray-data result of optix trace calls 
-    dbg->prd = quad2::make_eprd() ;  // see eprd.sh 
+    dbg->prd = quad2::make_eprd() ;  // see qudarap/tests/eprd.sh 
      
-    dbg->p.ephoton() ; // see ephoton.sh 
+    dbg->p.ephoton() ; // see qudarap/tests/ephoton.sh 
     LOG(info) << desc_dbg_p0()  ; 
 
     d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  

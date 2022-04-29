@@ -11,7 +11,7 @@ set(OpticksGLFW_VERBOSE ON)
 #include_directories(${INCLUDE_LIST})
 
 include_directories($ENV{OPTICKS_HOME}/sysrap)   ## just header-only structs not the full shebang  
-#include_directories($ENV{HOME}/np)
+include_directories(/usr/local/cuda/include)
 
 
 find_package(GLM         REQUIRED MODULE)

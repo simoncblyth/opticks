@@ -19,13 +19,17 @@ if __name__ == '__main__':
 
     c = t.c 
 
-    dom = t.d 
-    post_center, post_extent, polw_center, polw_extent = dom[0]  
+    domain = t.domain 
+    post_center, post_extent, polw_center, polw_extent = domain[0]  
 
-    c_post = c[:,:,0].astype(np.float32)/32767.0*post_extent + post_center   
-    c_polw = c[:,:,1,0:2].copy().view(np.int8).astype(np.float32)/127.*polw_extent + polw_center 
+    # domain compression means these should fit into -1:1 
+    c_post_ = c[:,:,0].astype(np.float32)/32767.0
+    c_polw_ = c[:,:,1,0:2].copy().view(np.int8).astype(np.float32)/127.
 
-    # self.rx[:,recs,1,0:2].copy().view(np.uint8).astype(np.float32)/127.-1.
+    # then scale that back to originals that should be close to full step records 
+    c_post = c_post_*post_extent + post_center   
+    c_polw = c_polw_*polw_extent + polw_center 
+
 
 
     hitmask = np.uint32(t.h_meta.find("hitmask:"))  

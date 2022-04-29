@@ -2,6 +2,8 @@
 
 uniform mat4 ModelViewProjection ;
 uniform vec4 Param ; 
+uniform vec4 post_center ; 
+uniform vec4 post_extent ; 
 
 layout (lines) in;
 layout (points, max_vertices = 1) out;
@@ -10,11 +12,16 @@ out vec4 fcolor ;
 
 void main () 
 {
-    vec4 p0 = gl_in[0].gl_Position  ;
-    vec4 p1 = gl_in[1].gl_Position  ;
+    //vec4 p0 = gl_in[0].gl_Position*post_extent + post_center ;
+    //vec4 p1 = gl_in[1].gl_Position*post_extent + post_center ;
+
+    vec4 p0 = gl_in[0].gl_Position ; 
+    vec4 p1 = gl_in[1].gl_Position ; 
+
+
     float tc = Param.w  ;
 
-    uint valid  = (uint(p0.w >= 0.)  << 0) + (uint(p1.w >= 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
+    uint valid  = (uint(p0.w >= 0.) << 0) + (uint(p1.w >= 0.) << 1) + (uint(p1.w > p0.w) << 2) ; 
     uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (0x1 << 2 )  ;  
     uint vselect = valid & select ; 
 
