@@ -3291,7 +3291,9 @@ template <typename T> void NP::read(const T* src)
 
 template <typename T> void NP::read2(const T* src) 
 {
-    assert( sizeof(T) == ebyte ); 
+    bool consistent = sizeof(T) == ebyte ; 
+    if(!consistent) std::cout << "NP::read2 FAIL not consistent sizeof(T): " << sizeof(T) << " and ebyte: " << ebyte ;  
+    assert( consistent ); 
     memcpy( bytes(), src, arr_bytes() );    
 }
 

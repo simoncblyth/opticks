@@ -37,11 +37,14 @@ struct qevent
 {
     static constexpr unsigned genstep_itemsize = 6*4 ; 
     static constexpr unsigned genstep_numphoton_offset = 3 ; 
+    static constexpr float w_lo = 80.f ; 
+    static constexpr float w_hi = 800.f ; 
+    static constexpr float w_center = (w_lo+w_hi)/2.f ; // convert wavelength range into center-extent form 
+    static constexpr float w_extent = (w_hi-w_lo)/2.f ; 
 
     float4 center_extent ; 
     float2 time_domain ; 
     float2 wavelength_domain ; 
-
 
     // values here come from SEventConfig 
     int      max_genstep ; // eg:      100,000
@@ -80,6 +83,7 @@ struct qevent
 #else
     QEVENT_METHOD void init_domain(float extent, float time_max); 
     QEVENT_METHOD void get_domain(quad4& dom) const ; 
+    QEVENT_METHOD void get_config(quad4& cfg) const ; 
     QEVENT_METHOD void zero(); 
 #endif 
 
@@ -98,9 +102,9 @@ QEVENT_METHOD void qevent::init_domain(float extent, float time_max)
 
     time_domain.x = 0.f ; 
     time_domain.y = time_max ; 
-   
-    wavelength_domain.x = 80.f ; 
-    wavelength_domain.y = 800.f ; 
+  
+    wavelength_domain.x = w_center ;  // TODO: try to make this constexpr 
+    wavelength_domain.y = w_extent ; 
 }
 
 /**
@@ -108,27 +112,53 @@ qevent::get_domain
 -------------------
 
 HMM: could also use metadata (key, value) pairs on the domain NP array 
+
+ana/evt.py::
+
+    2052         post_center, post_extent = self.post_center_extent()  # center and extent are quads, created by combining position and time domain ce 
+    2053         p = self.rx[:,recs,0].astype(np.float32)*post_extent/32767.0 + post_center
+
 **/
 
 
 QEVENT_METHOD void qevent::get_domain( quad4& dom ) const 
 {
-   dom.q0.f = center_extent ;
+   float4 post_center = make_float4( center_extent.x, center_extent.y, center_extent.z, time_domain.x ); 
+   float4 post_extent = make_float4( center_extent.w, center_extent.w, center_extent.w, time_domain.y ); 
+   float4 polw_center = make_float4( 0.f, 0.f, 0.f, wavelength_domain.x  );  
+   float4 polw_extent = make_float4( 1.f, 1.f, 1.f, wavelength_domain.y );  
 
-   dom.q1.f.x = time_domain.x  ; 
-   dom.q1.f.y = time_domain.y  ; 
-   dom.q1.f.z = wavelength_domain.x  ; 
-   dom.q1.f.w = wavelength_domain.y  ; 
+   dom.q0.f = post_center ; 
+   dom.q1.f = post_extent ; 
+   dom.q2.f = polw_center ; 
+   dom.q3.f = polw_extent ; 
 
-   dom.q2.u.x = max_genstep ; 
-   dom.q2.u.y = max_photon ; 
-   dom.q2.u.z = max_bounce ; 
-   dom.q2.u.w = 0u ; 
+   // xyz duplication allows position and time to be decompressed together 
+   // also polarization and wavelength can be decompressed together using same trick 
+}
 
-   dom.q3.u.x = max_record ; 
-   dom.q3.u.y = max_rec ; 
-   dom.q3.u.z = 0u ; 
-   dom.q3.u.w = 0u ; 
+
+QEVENT_METHOD void qevent::get_config( quad4& cfg ) const 
+{
+   cfg.q0.u.x = max_genstep ; 
+   cfg.q0.u.y = max_photon ; 
+   cfg.q0.u.z = max_bounce ; 
+   cfg.q0.u.w = 0 ; 
+
+   cfg.q1.u.x = max_record ; 
+   cfg.q1.u.y = max_rec ; 
+   cfg.q1.u.z = 0 ; 
+   cfg.q1.u.w = 0 ;
+
+   cfg.q2.u.x = num_genstep ; 
+   cfg.q2.u.y = num_seed ; 
+   cfg.q2.u.z = num_photon ; 
+   cfg.q2.u.w = num_hit ; 
+
+   cfg.q3.u.x = num_record ; 
+   cfg.q3.u.y = num_rec ; 
+   cfg.q3.u.z = 0 ; 
+   cfg.q3.u.w = 0 ;
 }
 
 

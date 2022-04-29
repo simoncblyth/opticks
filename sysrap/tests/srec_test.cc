@@ -11,7 +11,12 @@
 void test_polw()
 {
     assert( sizeof(srec) == sizeof(short4)*2 );
-    float2 wd = make_float2( 80.f, 800.f ); 
+
+
+    float w0 = 80.f ; 
+    float w1 = 800.f ; 
+
+    float2 wd = make_float2( (w0+w1)/2.f, (w1-w0)/2.f ); 
 
     srec r ;
 
@@ -20,9 +25,9 @@ void test_polw()
     float4 ipolw[num] ;
     float4 opolw[num] ;
 
-    ipolw[0] = make_float4( -1.f  , 0.f, 1.f,  wd.x  )  ;
-    ipolw[1] = make_float4( -0.5f , 0.f, 0.5f, (wd.x + wd.y)/2.f        )  ;
-    ipolw[2] = make_float4( -0.1f , 0.f, 0.1f, wd.y  )  ;
+    ipolw[0] = make_float4( -1.f  , 0.f, 1.f,  w0  )  ;
+    ipolw[1] = make_float4( -0.5f , 0.f, 0.5f, (w0+w1)/2.f )  ;
+    ipolw[2] = make_float4( -0.1f , 0.f, 0.1f, w1  )  ;
 
     for(unsigned i=0 ; i < num ; i++)
     {
@@ -40,7 +45,7 @@ void test_polw()
 
         std::cout << " ipolw " << ipolw[i] << " opolw " << opolw[i] << std::endl ;
 
-        std::cout << r.desc() << std::endl ; 
+        //std::cout << r.desc() << std::endl ; 
     }
 }
 
@@ -82,10 +87,24 @@ void test_post()
 }
 
 
+void test_FLOAT2INT_RN()
+{
+    for(float f=-100.f ; f <= 100.f ; f+= 10.f )
+    {
+        std::cout 
+            << " f " << std::setw(10) << std::fixed << std::setprecision(3) << f
+            << " FLOAT2INT_RN(f) "  << std::setw(5) << FLOAT2INT_RN(f)  
+            << std::endl
+            ; 
+    }
+}
+
 int main()
 {
+    //test_FLOAT2INT_RN(); 
     test_polw(); 
     //test_post(); 
+
 
     return 0 ; 
 }

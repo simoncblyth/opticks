@@ -319,7 +319,7 @@ void QSimTest<T>::multifilm_lookup_all(){
     float* output =  result->values<float>();
     // convert quad2 to float
     
-    for(int i = 0 ; i < num_sample; i++){
+    for(unsigned i = 0 ; i < num_sample; i++){
          output[i*num_item+0] =(float)(h_quad2_result[i].q0.u.x);
          output[i*num_item+1] =(float)(h_quad2_result[i].q0.u.y);
          output[i*num_item+2] = h_quad2_result[i].q0.f.z;

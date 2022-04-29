@@ -2761,8 +2761,22 @@ inline std::ostream& operator<<(std::ostream& os, const uchar4& v)
     return os; 
 }
 
-
-
+inline std::ostream& operator<<(std::ostream& os, const char4& v)
+{
+    int w = 4 ; 
+    os 
+       << "(" 
+       << std::setw(w) << int(v.x)     // avoid trying to output char  
+       << "," 
+       << std::setw(w) << int(v.y)
+       << "," 
+       << std::setw(w) << int(v.z) 
+       << "," 
+       << std::setw(w) << int(v.w) 
+       << ") "  
+       ;
+    return os; 
+}
 
 
 

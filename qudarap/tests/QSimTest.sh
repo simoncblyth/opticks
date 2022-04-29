@@ -108,9 +108,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     # see https://github.com/pyvista/pyvista/blob/main/pyvista/plotting/plotting.py
     export PYVISTA_KILL_DISPLAY=1
 
-
-    export FOLD=/tmp/$USER/opticks/QSimTest/$TEST 
-
     case $TEST in
        fill_state_0)           script=fill_state.py ;;
        fill_state_1)           script=fill_state.py ;;
@@ -133,7 +130,6 @@ if [ "${arg/ana}" != "$arg" ]; then
         export FOLD="/tmp/$USER/opticks/QSimTest/$TEST"
 
         export EYE=-1,-1,1 
-        #export LOOK=0,0,0.5 
         export LOOK=0,0,0
         export UP=0,0,1 
         export PARA=1 

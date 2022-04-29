@@ -6,6 +6,8 @@ srec.h : highly domain compressed photon step records used for debugging only
 Domain compression means that must carry around domain metadata in order to 
 encode or decode the arrays. 
 
+Principal user of srec.h is qevent::add_rec
+
 NB seqhis seqmat histories are defined at photon level, so it does not 
 make sense to include them here at step-record level 
 
@@ -37,7 +39,7 @@ For persisting srec arrays use::
 struct srec 
 {
     short4 post ; // position and time into 4*int16 = 64 bits 
-    uchar4 polw ; // tightly packed, polarization and wavelength into 4*int8 = 32 bits 
+    char4  polw ; // tightly packed, polarization and wavelength into 4*int8 = 32 bits 
     uchar4 flag ; // 4*int8 = 32 bits   
 
     SREC_METHOD void zero(); 
@@ -102,9 +104,9 @@ SREC_METHOD std::string srec::desc() const
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-#define FLOAT2UINT_RN(x) (__float2uint_rn(x)) 
+#define FLOAT2INT_RN(x) (__float2int_rn(x)) 
 #else
-#define FLOAT2UINT_RN(x) (lrint(x))  
+#define FLOAT2INT_RN(x) (lrint(x))  
 #endif 
 
 
@@ -123,9 +125,9 @@ the region of interest.
 
 SREC_METHOD void srec::set_position( const float3& pos, const float4& ce )
 {
-    post.x = FLOAT2UINT_RN( 32767.0f * (pos.x - ce.x)/ce.w ) ;
-    post.y = FLOAT2UINT_RN( 32767.0f * (pos.y - ce.y)/ce.w ) ;
-    post.z = FLOAT2UINT_RN( 32767.0f * (pos.z - ce.z)/ce.w ) ;
+    post.x = FLOAT2INT_RN( 32767.0f * (pos.x - ce.x)/ce.w ) ;
+    post.y = FLOAT2INT_RN( 32767.0f * (pos.y - ce.y)/ce.w ) ;
+    post.z = FLOAT2INT_RN( 32767.0f * (pos.z - ce.z)/ce.w ) ;
 }
 
 /**
@@ -140,7 +142,7 @@ because it simplifies analysis to treat times the same as positions.
 
 SREC_METHOD void srec::set_time( const float  t, const float2& td )
 {
-    post.w = FLOAT2UINT_RN(  32767.0f*(t - td.x)/td.y );
+    post.w = FLOAT2INT_RN(  32767.0f*(t - td.x)/td.y );
 }
 
 SREC_METHOD void srec::get_position( float3& pos, const float4& ce ) const
@@ -162,40 +164,38 @@ srec::set_polarization
 
 Components of polarization have implicit domain of -1.f to 1.f 
 
-* pol   :  -1.f -> 1.f
-* pol+1 :   0. -> 2.f   
-
 **/
 SREC_METHOD void srec::set_polarization( const float3& pol )
 {
-    polw.x = FLOAT2UINT_RN((pol.x+1.f)*127.f );
-    polw.y = FLOAT2UINT_RN((pol.y+1.f)*127.f );
-    polw.z = FLOAT2UINT_RN((pol.z+1.f)*127.f );
+    polw.x = FLOAT2INT_RN(pol.x*127.f );
+    polw.y = FLOAT2INT_RN(pol.y*127.f );
+    polw.z = FLOAT2INT_RN(pol.z*127.f );
 }
 
 SREC_METHOD void srec::get_polarization( float3& pol ) const
 {
-    pol.x = (float(polw.x)/127.f) - 1.f ;
-    pol.y = (float(polw.y)/127.f) - 1.f ;
-    pol.z = (float(polw.z)/127.f) - 1.f ;
+    pol.x = (float(polw.x)/127.f) ;
+    pol.y = (float(polw.y)/127.f) ;
+    pol.z = (float(polw.z)/127.f) ;
 }
 
 /**
 srec::set_wavelength
 ----------------------
 
-Wavelength domain is specified by a range from wd.x to wd.y, 
-unlike other domains that are specified by a center point and an extent. 
+Wavelength domain was previous specificed by a range, 
+are now using a symmetrical center-extent form for consistency with other
+domains, see qevent.h 
 
 **/
 
-SREC_METHOD void srec::set_wavelength( const float  w, const float2& wd )
+SREC_METHOD void srec::set_wavelength( const float w, const float2& wd )
 {
-    polw.w = FLOAT2UINT_RN( 255.f * ( w - wd.x) / wd.y ) ;
+    polw.w = FLOAT2INT_RN(( w - wd.x)*127.f/ wd.y ) ;
 }
 SREC_METHOD void srec::get_wavelength(       float& w, const float2& wd ) const
 {
-    w = float(polw.w)*wd.y/255.f + wd.x ;
+    w = float(polw.w)*wd.y/127.f + wd.x ;
 }
 
 

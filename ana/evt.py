@@ -2049,8 +2049,8 @@ class Evt(object):
         away unused edge bins according to the plotted range. 
         """
         pass 
-        center, extent = self.post_center_extent()  # center and extent are quads 
-        p = self.rx[:,recs,0].astype(np.float32)*extent/32767.0 + center 
+        post_center, post_extent = self.post_center_extent()  # center and extent are quads, created by combining position and time domain ce 
+        p = self.rx[:,recs,0].astype(np.float32)*post_extent/32767.0 + post_center 
         return p 
 
     def rpostr(self, recs=slice(None)):

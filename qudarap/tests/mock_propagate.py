@@ -17,10 +17,22 @@ if __name__ == '__main__':
     prd = t.prd
     h = t.h
 
+    c = t.c 
+
+    dom = t.d 
+    post_center, post_extent, polw_center, polw_extent = dom[0]  
+
+    c_post = c[:,:,0].astype(np.float32)/32767.0*post_extent + post_center   
+    c_polw = c[:,:,1,0:2].copy().view(np.int8).astype(np.float32)/127.*polw_extent + polw_center 
+
+    # self.rx[:,recs,1,0:2].copy().view(np.uint8).astype(np.float32)/127.-1.
+
+
     hitmask = np.uint32(t.h_meta.find("hitmask:"))  
     pyhit = hit__(p, hitmask)  # hits selected in python 
     assert np.all( pyhit == h ) 
 
+    r_post = r[:,:,0]
 
     r_pos = r[:,:,0,:3].reshape(-1,3)   
     r_mom = r[:,:,1,:3].reshape(-1,3) 

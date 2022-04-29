@@ -126,10 +126,11 @@ void QEvent::init()
 
 NP* QEvent::getDomain() const 
 {
-    quad4 dom ; 
-    evt->get_domain(dom); 
-    NP* d = NP::Make<float>( 1, 4, 4 ); 
-    d->read2( dom.cdata() ); 
+    quad4 dom[2] ; 
+    evt->get_domain(dom[0]); 
+    evt->get_config(dom[1]); 
+    NP* d = NP::Make<float>( 2, 4, 4 ); 
+    d->read2<float>( (float*)&dom[0] ); 
     return d ; 
 }
 
@@ -373,7 +374,8 @@ NP* QEvent::getRecords() const
     if( evt->max_record == 0 ) LOG(fatal) << "evt.max_record " << evt->max_record << " SO full step record buffer is disabled " ; 
     if( evt->max_record == 0 ) return nullptr ; 
 
-    NP* r = NP::Make<float>( evt->num_photon, evt->max_record, 4, 4);
+    NP* r = NP::Make<float>( evt->num_photon, evt->max_record, 4, 4);  // stride: sizeof(float)*4*4 = 4*4*4 = 64
+    r->set_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false" );  // eg used by examples/UseGeometryShader
 
     LOG(info) << " evt.num_record " << evt->num_record ; 
     QU::copy_device_to_host<sphoton>( (sphoton*)r->bytes(), evt->record, evt->num_record ); 
@@ -386,7 +388,8 @@ NP* QEvent::getRec() const
     if( evt->max_rec == 0 ) LOG(fatal) << "evt.max_rec " << evt->max_rec << " SO compressed step rec buffer is disabled " ; 
     if( evt->max_rec == 0 ) return nullptr ; 
 
-    NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 2, 4);
+    NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 2, 4);   // stride:  sizeof(short)*2*4 = 2*2*4 = 16   
+    r->set_meta<std::string>("rpos", "4,GL_SHORT,GL_TRUE,16,0,false" );  // eg used by examples/UseGeometryShader
 
     LOG(info) 
         << " evt.num_photon " << evt->num_photon 
