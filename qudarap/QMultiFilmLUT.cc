@@ -72,7 +72,7 @@ void QMultiFilmLUT::makeMultiFilmAllTex(){
     std::vector<std::string> pmtTypeList;
     src -> get_names( pmtTypeList );
     assert( pmtTypeList.size() == 3);
-    for(int i = 0 ; i < pmtTypeList.size() ; i++){
+    for(unsigned i = 0 ; i < pmtTypeList.size() ; i++){
 
         std::string pmtName = pmtTypeList[i];
 	//NP* pmt_src = src -> spawn_item(i);
