@@ -41,7 +41,8 @@ enum {
    PROPAGATE_AT_SURFACE, 
 
    MOCK_PROPAGATE,
-   GENTORCH
+   GENTORCH,
+   MULTIFILM_LOOKUP
    
 };
  
@@ -78,6 +79,7 @@ struct QSimLaunch
     static constexpr const char* PROPAGATE_AT_SURFACE_ = "propagate_at_surface" ;
     static constexpr const char* MOCK_PROPAGATE_ = "mock_propagate" ;
     static constexpr const char* GENTORCH_ = "gentorch" ;
+    static constexpr const char* MULTIFILM_LOOKUP_ = "multifilm_lookup";
 };
 
 
@@ -121,7 +123,8 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,PROPAGATE_AT_SURFACE_)  == 0)       test = PROPAGATE_AT_SURFACE ;
    if(strcmp(name,MOCK_PROPAGATE_)  == 0)             test = MOCK_PROPAGATE ;
    if(strcmp(name,GENTORCH_)  == 0)                   test = GENTORCH ;
-   
+   if(strcmp(name,MULTIFILM_LOOKUP_ )  == 0)          test = MULTIFILM_LOOKUP ;
+  
    bool known =  test != UNKNOWN  ;
    if(!known) printf("QSimLaunch::Type name [%s] is unknown \n", name) ; 
    assert(known);  
@@ -160,6 +163,7 @@ inline const char* QSimLaunch::Name( unsigned type )
         case PROPAGATE_AT_SURFACE:         s = PROPAGATE_AT_SURFACE_         ; break ; 
         case MOCK_PROPAGATE:               s = MOCK_PROPAGATE_               ; break ; 
         case GENTORCH:                     s = GENTORCH_                     ; break ; 
+        case MULTIFILM_LOOKUP:             s = MULTIFILM_LOOKUP_             ; break ;
     }
     return s; 
 }

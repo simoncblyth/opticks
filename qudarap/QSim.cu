@@ -767,4 +767,49 @@ template void QSim_prop_lookup_one(dim3, dim3, qsim<float>*, float*, const float
 
 
 
+template <typename T>
+__global__ void _QSim_multifilm_lookup_all(qsim<T>* sim, quad2* sample,  quad2* result,  unsigned width, unsigned height )
+{
+    unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned iy = blockIdx.y * blockDim.y + threadIdx.y;
+    unsigned index = iy * width + ix ;
+    if (ix >= width | iy >= height ) return;
+    
+    unsigned pmtType = sample[index].q0.u.x;
+    unsigned bnd =     sample[index].q0.u.y;
+    
+    float    wv      = sample[index].q0.f.z;
+    float    aoi     = sample[index].q0.f.w;
+
+    float4 res = sim->multifilm_lookup( pmtType , bnd , wv, aoi );
+     
+    result[index].q0.u.x = pmtType;
+    result[index].q0.u.y = bnd ;
+    result[index].q0.f.z = wv ;
+    result[index].q0.f.w = aoi;
+    result[index].q1.f.x = res.x;
+    result[index].q1.f.y = res.y;
+    result[index].q1.f.z = res.z;
+    result[index].q1.f.w = res.w;
+
+    if(index < 100)
+    {printf( "//index %d res.x %10.4f res.y %10.4f res.z %10.4f res.w %10.4f sample.x %10.4f sample.y %10.4f sample.z %10.4f sample.w %10.4f\n ",index,  res.x, res.y, res.z, res.w,  sample[index].q1.f.x, sample[index].q1.f.y, sample[index].q1.f.z, sample[index].q1.f.w); 
+     }    
+
+}
+
+
+template <typename T>
+extern void QSim_multifilm_lookup_all(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad2* sample, quad2* result,  unsigned width, unsigned height )
+{
+    printf("//QSim_multifilm_lookup width %d  height %d \n", width, height ); 
+    _QSim_multifilm_lookup_all<T><<<numBlocks,threadsPerBlock>>>( sim, sample,result , width, height );
+}
+
+template void QSim_multifilm_lookup_all(dim3, dim3, qsim<double>*, quad2*, quad2* , unsigned, unsigned ); 
+template void QSim_multifilm_lookup_all(dim3, dim3, qsim<float>*, quad2*,quad2*, unsigned, unsigned ); 
+
+
+    
+
 

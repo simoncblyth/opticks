@@ -19,6 +19,7 @@
 #include "QBnd.hh"
 #include "QPrd.hh"
 #include "QProp.hh"
+#include "QMultiFilmLUT.hh"
 #include "QEvent.hh"
 #include "QOptical.hh"
 #include "QState.hh"
@@ -107,6 +108,31 @@ void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optica
     LOG(LEVEL) << qprop->desc(); 
 }
 
+/*
+ QSim<T>::UploadMultiFilmLUT
+  
+ instance QMultiFilmLUT and upload the component : lookup table
+
+ */
+
+template <typename T>
+void QSim<T>::UploadMultiFilmLUT( const NP* multi_film_lut ){
+
+    if( multi_film_lut == nullptr )
+    {
+        LOG(warning) << " multi_film null ";
+    }
+    else
+    {
+        QMultiFilmLUT* qmul = new QMultiFilmLUT( multi_film_lut ); 
+        LOG(LEVEL) << qmul->desc();
+    
+    }
+}
+
+
+
+
 /**
 QSim:::QSim
 -------------
@@ -131,6 +157,7 @@ QSim<T>::QSim()
     prd(QPrd::Get()),
     optical(QOptical::Get()),
     prop(QProp<T>::Get()),
+    multi_film(QMultiFilmLUT::Get()),
     pidx(SSys::getenvint("PIDX", -1)),
     sim(nullptr),
     d_sim(nullptr),
@@ -232,6 +259,12 @@ void QSim<T>::init_sim()
         LOG(LEVEL) << " prop " << prop->desc() ; 
         sim->prop = prop->getDevicePtr() ; 
     }
+
+    if(multi_film)
+    {
+        sim->qmultifilm = multi_film->getDevicePtr();
+    }   
+
     sim->pidx = pidx ; 
 
     d_sim = QU::UploadArray<qsim<T>>(sim, 1 );  
@@ -611,6 +644,8 @@ void QSim<T>::cerenkov_photon_enprop( quad4* photon, unsigned num_photon, int pr
 
     LOG(LEVEL) << "]" ; 
 }
+
+
 
 
 
@@ -1089,6 +1124,43 @@ void QSim<T>::prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_
 
     QU::device_free<T>( d_domain ); 
 
+    LOG(LEVEL) << "]" ; 
+}
+
+template <typename T>
+extern void QSim_multifilm_lookup_all(    dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad2* sample, quad2* result,  unsigned width, unsigned height ); 
+
+template <typename T>
+void QSim<T>::multifilm_lookup_all( quad2 * sample , quad2 * result ,  unsigned width, unsigned height )
+{
+    LOG(LEVEL) << "[" ; 
+    unsigned num_lookup = width*height ; 
+    unsigned size = num_lookup ;
+  
+    LOG(LEVEL) 
+        << " width " << width 
+        << " height " << height 
+        << " num_lookup " << num_lookup
+        << " size "<<size
+        ;
+
+    configureLaunch2D(width, height );
+
+    //const float * c_sample = sample; 
+    quad2* d_sample = QU::device_alloc<quad2>(size) ;
+    
+    quad2* d_result = QU::device_alloc<quad2>(size) ;
+    LOG(LEVEL)
+       <<" copy_host_to_device<quad2>( d_sample, sample , size) before";
+    QU::copy_host_to_device<quad2>( d_sample, sample , size);
+    LOG(LEVEL)
+       <<" copy_host_to_device<quad2>( d_sample, sample , size) after";
+
+    QSim_multifilm_lookup_all(numBlocks, threadsPerBlock, d_sim, d_sample, d_result, width, height );  
+    QU::copy_device_to_host_and_free<quad2>( result , d_result , size); 
+    QU::device_free<quad2>(d_sample);
+    
+    cudaDeviceSynchronize();
     LOG(LEVEL) << "]" ; 
 }
 

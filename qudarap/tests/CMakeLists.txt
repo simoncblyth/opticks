@@ -23,6 +23,7 @@ set(TEST_SOURCES
    QTexMakerTest.cc
    QTexLookupTest.cc
    QBufTest.cc
+   QMultiFilmLUTTest.cc
 
 )
 

@@ -32,6 +32,7 @@ struct QRng ;
 struct QScint ;
 struct QBnd ; 
 struct QPrd ; 
+struct QMultiFilmLUT;
 struct QOptical ; 
 struct QEvent ; 
 
@@ -39,6 +40,7 @@ struct qdebug ;
 struct qstate ; 
 
 struct quad4 ; 
+struct quad2 ; 
 struct sphoton ; 
 union  quad ; 
 
@@ -51,7 +53,8 @@ struct QUDARAP_API QSim
     static const QSim* Get(); 
 
     static void UploadComponents(const NP* icdf, const NP* bnd, const NP* optical, const char* rindexpath );   
-
+    static void UploadMultiFilmLUT(const NP * multi_film_lut );
+ 
     QEvent*          event ; 
     const QRng*      rng ;   
     const QScint*    scint ; 
@@ -59,6 +62,7 @@ struct QUDARAP_API QSim
     const QPrd*      prd ; 
     const QOptical*  optical ; 
     const QProp<T>*  prop ; 
+    const QMultiFilmLUT * multi_film;// correspond New PMT optical model;
 
     const int         pidx ; 
     qsim<T>*          sim ;  
@@ -128,6 +132,8 @@ struct QUDARAP_API QSim
 
     void prop_lookup(          T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
     void prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
+    
+    void multifilm_lookup_all( quad2* sample , quad2* result ,  unsigned width, unsigned height );
 };
 
 

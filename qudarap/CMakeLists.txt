@@ -73,6 +73,8 @@ set(SOURCES
     QProp.cc
     QProp.cu
 
+    QMultiFilmLUT.cc
+    QMultiFilmLUT.cu
 
     QBuf.cc
 )
@@ -119,6 +121,8 @@ SET(HEADERS
     QPoly.hh
 
     QProp.hh
+    
+    QMultiFilmLUT.hh
 
     QBuf.hh
 )
