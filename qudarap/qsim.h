@@ -21,6 +21,7 @@
 #include "qevent.h"
 #include "qgs.h"
 #include "qprop.h"
+#include "qmultifilmlut.h"
 #include "qbnd.h"
 #include "qstate.h"
 
@@ -85,6 +86,9 @@ struct qsim
     qprop<T>*           prop ;  
     int                 pidx ;   // from PIDX envvar
  
+    // MultiFilmLUT  Texture 
+    qmultifilmlut*  qmultifilm;
+             
 
     QSIM_METHOD void    generate_photon_dummy( quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
@@ -100,6 +104,7 @@ struct qsim
     QSIM_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
     QSIM_METHOD float4  boundary_lookup( float nm, unsigned line, unsigned k ); 
 
+    QSIM_METHOD float4  multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi);
 
     QSIM_METHOD float   scint_wavelength_hd0(curandStateXORWOW& rng);  
     QSIM_METHOD float   scint_wavelength_hd10(curandStateXORWOW& rng);
@@ -301,6 +306,22 @@ inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, uns
 
     return props ; 
 }
+
+/*
+ qsim::multifilm_lookup
+-------------------
+
+ 
+ */
+
+template <typename T>
+inline QSIM_METHOD float4 qsim<T>::multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi){
+
+    float4 value = qmultifilm -> multifilm_lookup(pmtType, boundary, nm, aoi);
+    return value;
+}
+
+
 
 /**
 qsim::fill_state

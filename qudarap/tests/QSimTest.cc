@@ -95,6 +95,8 @@ struct QSimTest
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material, T x0, T x1, unsigned nx ); 
     void prop_lookup( int iprop, T x0, T x1, unsigned nx ); 
+   
+    void multifilm_lookup_all();
 
     void wavelength(char mode, unsigned num_wavelength) ; 
 
@@ -267,6 +269,73 @@ void QSimTest<T>::prop_lookup( int iprop, T x0, T x1, unsigned nx )
     pp->save(FOLD, reldir, "prop_lookup_pp.npy" ); 
     x->save(FOLD, reldir, "prop_lookup_x.npy" ); 
     yy->save(FOLD, reldir, "prop_lookup_yy.npy" ); 
+}
+
+template <typename T>
+void QSimTest<T>::multifilm_lookup_all(){
+
+    /*
+     sample.npy : num * 8 array 
+      
+      pmtType , bnd , wavelength , aoi , R_s ,R_p, T_s ,T_p ,           
+     */
+    NP * sample = NP::Load("/tmp/debug_multi_film_table/","sample.npy");
+       
+    assert(sample);
+    float * h_sample = sample->values<float>();
+    
+    unsigned num_item = sample->shape[1];
+    unsigned num_sample = sample->shape[0];
+     
+    unsigned width = 512 ;
+    unsigned height= num_sample/width;
+    std::cout<<"  width  = "<< width
+             <<"  height = "<< height
+             <<"  num_sample ="<< num_sample
+             <<std::endl;
+   
+    assert( height*width == num_sample);
+    // convert float to quad2  
+    
+    quad2 h_quad2_sample[num_sample];
+    for(unsigned i = 0 ; i < num_sample ; i++){
+        h_quad2_sample[i].q0.u.x = (unsigned) h_sample[num_item*i+0];
+        h_quad2_sample[i].q0.u.y = (unsigned) h_sample[num_item*i+1];
+        h_quad2_sample[i].q0.f.z =  h_sample[num_item*i+2];
+        h_quad2_sample[i].q0.f.w =  h_sample[num_item*i+3];
+        h_quad2_sample[i].q1.f.x =  h_sample[num_item*i+4];
+        h_quad2_sample[i].q1.f.y =  h_sample[num_item*i+5];
+        h_quad2_sample[i].q1.f.z =  h_sample[num_item*i+6];
+        h_quad2_sample[i].q1.f.w =  h_sample[num_item*i+7];
+   }   
+
+
+   quad2 h_quad2_result[num_sample];
+
+    qs.multifilm_lookup_all(  h_quad2_sample ,  h_quad2_result ,  width,  height );
+
+    assert(h_quad2_result);
+    NP * result = NP::Make<float>(width*height , num_item);
+    float* output =  result->values<float>();
+    // convert quad2 to float
+    
+    for(int i = 0 ; i < num_sample; i++){
+         output[i*num_item+0] =(float)(h_quad2_result[i].q0.u.x);
+         output[i*num_item+1] =(float)(h_quad2_result[i].q0.u.y);
+         output[i*num_item+2] = h_quad2_result[i].q0.f.z;
+         output[i*num_item+3] = h_quad2_result[i].q0.f.w;
+         output[i*num_item+4] = h_quad2_result[i].q1.f.x;
+         output[i*num_item+5] = h_quad2_result[i].q1.f.y;
+         output[i*num_item+6] = h_quad2_result[i].q1.f.z;
+         output[i*num_item+7] = h_quad2_result[i].q1.f.w;
+    }   
+        
+    int create_dirs = 2 ; // 2:dirpath
+    const char* fold = SPath::Resolve(FOLD, create_dirs ); 
+
+    std::cout<<" save multifilm_lut_result.npy in FOLD = "<< fold 
+             <<std::endl;
+    result->save(fold,"multifilm_lut_result.npy");
 }
 
 
@@ -742,6 +811,7 @@ void QSimTest<T>::main()
         case BOUNDARY_LOOKUP_LINE_WATER_W:  boundary_lookup_line("Water", 80., 800., 721)  ; break ;  
         case BOUNDARY_LOOKUP_LINE_LS_L:     boundary_lookup_line("LS",    80., 800., 721)  ; break ;  
         case PROP_LOOKUP_Y:                 prop_lookup(-1, -1.f,16.f,1701)                ; break ;  
+        case MULTIFILM_LOOKUP:              multifilm_lookup_all()                     ; break ;
 
         case FILL_STATE_0:                  fill_state(0)                              ; break ;  
         case FILL_STATE_1:                  fill_state(1)                              ; break ;  
@@ -809,8 +879,16 @@ int main(int argc, char** argv)
     const char* testname = SSys::getenvvar("TEST", default_testname); 
     int type = QSimLaunch::Type(testname); 
     char FD = SSys::getenvchar("FD", 'F'); // formerly TYPE 
+    //char EM = SSys::getenvchar("EM", 'F'); //
 
     if( type == CERENKOV_PHOTON_EXPT_X ) FD = 'D' ;   // forced double 
+    if( type == MULTIFILM_LOOKUP )  { 
+         
+        NP* multifilm_lut = NP::Load("/tmp/debug_multi_film_table/","all_table.npy");
+        assert(multifilm_lut);
+        QSim<float>::UploadMultiFilmLUT(multifilm_lut);
+
+      } //enable multifilm : True
 
     if( FD == 'F')
     { 

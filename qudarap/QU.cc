@@ -14,6 +14,7 @@
 #include "qevent.h"
 #include "qdebug.h"
 #include "srec.h"
+#include "qmultifilmlut.h"
 
 
 const plog::Severity QU::LEVEL = PLOG::EnvLevel("QU", "DEBUG") ; 
@@ -104,6 +105,7 @@ template qsim<float>*   QU::UploadArray<qsim<float>>(const qsim<float>* array, u
 template qsim<double>*  QU::UploadArray<qsim<double>>(const qsim<double>* array, unsigned num_items) ;
 template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items) ;
 template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items) ;
+template qmultifilmlut* QU::UploadArray<qmultifilmlut>(const qmultifilmlut* array, unsigned num_items) ;
 template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items) ;
 template qevent*        QU::UploadArray<qevent>(const qevent* array, unsigned num_items) ;
 template qdebug*        QU::UploadArray<qdebug>(const qdebug* array, unsigned num_items) ;
@@ -191,6 +193,7 @@ template QUDARAP_API int*       QU::device_alloc<int>(unsigned num_items) ;
 template QUDARAP_API uchar4*    QU::device_alloc<uchar4>(unsigned num_items) ;
 template QUDARAP_API float4*    QU::device_alloc<float4>(unsigned num_items) ;
 template QUDARAP_API quad*      QU::device_alloc<quad>(unsigned num_items) ;
+template QUDARAP_API quad2*     QU::device_alloc<quad2>(unsigned num_items) ;
 template QUDARAP_API quad4*     QU::device_alloc<quad4>(unsigned num_items) ;
 template QUDARAP_API quad6*     QU::device_alloc<quad6>(unsigned num_items) ;
 template QUDARAP_API qevent*    QU::device_alloc<qevent>(unsigned num_items) ;
@@ -224,6 +227,7 @@ void QU::device_free( T* d)
 template void   QU::device_free<float>(float*) ;
 template void   QU::device_free<double>(double*) ;
 template void   QU::device_free<unsigned>(unsigned*) ;
+template void   QU::device_free<quad2>(quad2*) ;
 template void   QU::device_free<quad4>(quad4*) ;
 template void   QU::device_free<sphoton>(sphoton*) ;
 
@@ -240,6 +244,7 @@ template void QU::copy_device_to_host<int>(  int* h, int* d,  unsigned num_items
 template void QU::copy_device_to_host<float>(  float* h, float* d,  unsigned num_items);
 template void QU::copy_device_to_host<double>( double* h, double* d,  unsigned num_items);
 template void QU::copy_device_to_host<quad>( quad* h, quad* d,  unsigned num_items);
+template void QU::copy_device_to_host<quad2>( quad2* h, quad2* d,  unsigned num_items);
 template void QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_items);
 template void QU::copy_device_to_host<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
 template void QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
@@ -262,6 +267,7 @@ void QU::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items)
 template void QU::copy_device_to_host_and_free<float>(  float* h, float* d,  unsigned num_items);
 template void QU::copy_device_to_host_and_free<double>( double* h, double* d,  unsigned num_items);
 template void QU::copy_device_to_host_and_free<quad>( quad* h, quad* d,  unsigned num_items);
+template void QU::copy_device_to_host_and_free<quad2>( quad2* h, quad2* d,  unsigned num_items);
 template void QU::copy_device_to_host_and_free<quad4>( quad4* h, quad4* d,  unsigned num_items);
 template void QU::copy_device_to_host_and_free<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
 template void QU::copy_device_to_host_and_free<quad6>( quad6* h, quad6* d,  unsigned num_items);
@@ -292,7 +298,7 @@ template void QU::copy_host_to_device<qevent>(   qevent* d,   const qevent* h, u
 template void QU::copy_host_to_device<quad4>(    quad4* d,    const quad4* h, unsigned num_items);
 template void QU::copy_host_to_device<sphoton>(  sphoton* d,  const sphoton* h, unsigned num_items);
 template void QU::copy_host_to_device<quad6>(    quad6* d,    const quad6* h, unsigned num_items);
-
+template void QU::copy_host_to_device<quad2>(    quad2* d,    const quad2* h, unsigned num_items);
 
 /**
 QU::NumItems
