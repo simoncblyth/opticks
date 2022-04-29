@@ -41,11 +41,14 @@ echo executing $name
 
 
 
-#export SHADER_FOLD=$sdir/orig
-#export SHADER_FOLD=$sdir/pos
 export SHADER_FOLD=$sdir/rec_flying_point
+export ARRAY_FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
 
-export FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
+if [ -n "$DEBUG" ]; then 
+    lldb__ $name
+else
+    $name
+fi 
 
-$name
+
 
