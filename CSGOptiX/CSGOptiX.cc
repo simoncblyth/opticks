@@ -321,25 +321,25 @@ void CSGOptiX::setTop(const char* tspec)
 
 
 /**
-CSGOptiX::setGensteps
+CSGOptiX::setGenstep
 ----------------------
 
-Invokes QEvent::setGensteps which uploads gensteps and then 
+Invokes QEvent::setGenstep which uploads gensteps and then 
 clears and re-populates the seed buffer based on the gensteps.
 This prepares device side qevent for photon generation.  
 
 **/
 
-void CSGOptiX::setGensteps(const NP* gs)
+void CSGOptiX::setGenstep(const NP* gs)
 {
     assert( event ); 
-    event->setGensteps(gs); 
+    event->setGenstep(gs); 
 }
 
-void CSGOptiX::setGensteps(const quad6* gs, unsigned num_gs)
+void CSGOptiX::setGenstep(const quad6* gs, unsigned num_gs)
 {
     assert( event ); 
-    event->setGensteps(gs, num_gs); 
+    event->setGenstep(gs, num_gs); 
 }
 
 

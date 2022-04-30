@@ -107,6 +107,7 @@ SET(HEADERS
     QState.hh
     qstate.h
     qprd.h
+    qmultifilmlut.h 
 
     qbnd.h
     QBnd.hh

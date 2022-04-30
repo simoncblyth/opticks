@@ -5,6 +5,7 @@ from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
 from opticks.ana.p import * 
 from opticks.ana.r import * 
+from opticks.ana.s import * 
 
 
 if __name__ == '__main__':
@@ -14,6 +15,7 @@ if __name__ == '__main__':
 
     p = t.photon
     r = t.record
+    seq = t.seq
     prd = t.prd
     h = t.hit
     h_meta = t.hit_meta
@@ -80,7 +82,9 @@ if __name__ == '__main__':
         print("\n") 
         print("p")
         print("\n".join(a[i]))
-        print(bflagdesc_(p[i]))
+        print(bflagdesc_(p[i])) 
+        print("\n") 
+        print(seqhis_(seq[i,0])) 
         print("\n") 
 
         print("\n\n") 

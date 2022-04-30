@@ -1230,10 +1230,9 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( sphoton& p, const quad2* mock_p
     int bounce = 0 ; 
     int command = START ; 
 
-
-    qstate s ; 
-    srec r ;    // compressed step record 
-    sseq seq ;  // seqhis..
+    qstate state = {} ; 
+    srec rec = {} ;    // compressed step record 
+    sseq seq = {} ;  // seqhis..
 
     // should this state live in evt ? NO, this state must be "thread" local, 
     // the evt instance is shared by all threads and always saves into (idx, bounce) 
@@ -1248,20 +1247,20 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( sphoton& p, const quad2* mock_p
         //  evt->step(idx, bounce,  
 
         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
-        if(evt->rec)    evt->add_rec(r, idx, bounce, p ); 
+        if(evt->rec)    evt->add_rec(rec, idx, bounce, p ); 
         if(evt->seq)    seq.add_step( bounce, p.flag(), p.boundary() ); 
 
 
         const quad2* prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
 
-        command = propagate(bounce, p, s, prd, rng, idx ); 
+        command = propagate(bounce, p, state, prd, rng, idx ); 
         bounce++;        
 
         if(command == BREAK) break ;    
     }
 
     if(evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
-    if(evt->rec    && bounce < evt->max_rec    ) evt->add_rec(r, idx, bounce, p ); 
+    if(evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p ); 
     if(evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() ); 
 
     if(evt->seq) evt->seq[idx] = seq ; 

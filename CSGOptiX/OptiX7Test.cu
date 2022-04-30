@@ -180,7 +180,8 @@ Params
 * CPU side params including qsim.h qevent.h pointers instanciated in CSGOptiX::CSGOptiX 
   and populated by CSGOptiX::init methods before being uploaded by CSGOptiX::prepareParam 
 
-TODO: bring over development from qsim::mock_propagate into here 
+
+COMPARE WITH qsim::mock_propagate
 
 **/
 
@@ -192,28 +193,25 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     unsigned idx = launch_idx.x ;  // aka photon_id
     unsigned genstep_id = evt->seed[idx] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
-
      
     qsim<float>* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
 
-    sphoton p ;   
-    qstate s ; 
+    sphoton p = {} ;   
 
     sim->generate_photon(p, rng, gs, idx, genstep_id );  
 
+    qstate state = {} ; 
+    srec rec = {} ; 
+    sseq seq = {} ;  // seqhis..
 
-    // cf qsim::mock_propagate
     int command = START ; 
     int bounce = 0 ;  
     while( bounce < evt->max_bounce )
     {    
         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
-
-        //if(evt->rec) 
-        //{
-        //   evt->rec[evt->max_rec*idx+bounce] = r ;  
-        //}
+        if(evt->rec) evt->add_rec( rec, idx, bounce, p ); 
+        if(evt->seq) seq.add_step( bounce, p.flag(), p.boundary() ); 
 
         trace( 
             params.handle,
@@ -227,14 +225,17 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
         //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
 
-        command = sim->propagate(bounce, p, s, prd, rng, idx ); 
+        command = sim->propagate(bounce, p, state, prd, rng, idx ); 
         bounce++;     
         if(command == BREAK) break ;    
     }    
 
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
-    evt->photon[idx] = p ; 
+    if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p ); 
+    if( evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() );
 
+    evt->photon[idx] = p ; 
+    if(evt->seq) evt->seq[idx] = seq ;
 }
 
 /**

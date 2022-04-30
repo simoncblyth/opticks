@@ -32,6 +32,7 @@ CFBASE
 
 #include "SPath.hh"
 #include "SSys.hh"
+#include "SOpticks.hh"
 #include "SOpticksResource.hh"
 #include "SBitSet.hh"
 #include "OPTICKS_LOG.hh"
@@ -168,7 +169,7 @@ void CSGOptiXRenderTest::InitOutdir(Opticks* ok, const char* cfbase)
     LOG(info) << " outdir " << outdir ; 
 
     ok->setOutDir(outdir); 
-    ok->writeOutputDirScript(outdir) ; // writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
+    SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
 
     const char* outdir2 = ok->getOutDir(); 
     assert( strcmp(outdir2, outdir) == 0 ); 

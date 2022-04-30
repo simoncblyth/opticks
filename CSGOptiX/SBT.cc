@@ -9,7 +9,9 @@
 #include <optix_stubs.h>
 #include <cuda_runtime.h>
 
-#include "Opticks.hh"
+
+#include "Opticks.hh"  // TODO: eliminate 
+
 #include "SSys.hh"
 #include "SVec.hh"
 #include "scuda.h"  
@@ -34,9 +36,7 @@
 #include "SBT.h"
 
 #include "CU.h"
-
 #include "PLOG.hh"
-
 
 /**
 SBT
@@ -47,13 +47,18 @@ access to their corresponding program groups (PGs).
 This is one aspect of establishing the connection between the 
 PGs and their data.
 
+TODO: extracate Opticks dependency 
+
+1. Opticks::getSolidSelection
+2. Opticks::getEMM Opticks::isEnabledMergedMesh (these are the same info)
+
 **/
 
 SBT::SBT(const Opticks* ok_, const PIP* pip_)
     :
     ok(ok_),
-    solid_selection(ok->getSolidSelection()),
-    emm(ok->getEMM()),
+    solid_selection(ok->getSolidSelection()),   // vector<unsigned>
+    emm(ok->getEMM()),                          // unsigned long long  
     pip(pip_),
     raygen(nullptr),
     miss(nullptr),

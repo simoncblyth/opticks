@@ -1,6 +1,7 @@
 #include "SArgs.hh"
 #include "STime.hh"
 #include "SStr.hh"
+#include "SProc.hh"
 #include "SOpticks.hh"
 
 #include "PLOG.hh"
@@ -98,6 +99,44 @@ void SOpticks::WriteCFBaseScript(const char* cfbase, const char* msg)
 
 
 
+/**
+SOpticks::WriteOutputDirScript
+------------------------------
+
+When an output directory is determined by an executable it 
+is useful to write a small script with an export line showing 
+the output directory such that scripts and executables that are subsequently 
+run can access the output without having pre-knowledge of the directory.  
+
+**/
+
+void SOpticks::WriteOutputDirScript(const char* outdir) // static
+{
+    const char* exename = SProc::ExecutableName() ;
+    const char* envvar = SStr::Concat(exename,  "_OUTPUT_DIR" ); 
+    const char* sh_path = SStr::Concat(exename, "_OUTPUT_DIR" , ".sh")   ;    
+
+    std::stringstream ss ; 
+    ss   
+        << "# Opticks::writeOutputDirScript " << std::endl 
+        << "# " << STime::Stamp() << std::endl 
+        << std::endl 
+        << "export " << envvar << "=" << outdir  
+        << std::endl 
+        ;    
+  
+    std::string sh = ss.str(); 
+
+    LOG(info) 
+        << "writing sh_path " << sh_path << std::endl
+        << "sh [" << std::endl
+        << sh   
+        << "]"  
+        ;    
+
+    int create_dirs = 0 ;  
+    SStr::Save(sh_path, sh.c_str(), create_dirs ) ;  
+}
 
 
 

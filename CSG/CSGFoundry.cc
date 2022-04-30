@@ -545,6 +545,7 @@ void CSGFoundry::dumpSolid(unsigned solidIdx) const
     } 
 }
 
+
 int CSGFoundry::findSolidIdx(const char* label) const 
 {
     int idx = -1 ; 
@@ -567,6 +568,8 @@ Find multiple idx with labels starting with the provided string, eg "r1", "r2", 
 This uses SStr:SimpleMatch which implements simple pattern matching with '$' 
 indicating the terminator forcing exact entire match of what is prior to the '$'
 
+Q: why the awkward external solid_selection vector ?
+
 **/
 
 void CSGFoundry::findSolidIdx(std::vector<unsigned>& solid_idx, const char* label) const 
@@ -586,7 +589,7 @@ void CSGFoundry::findSolidIdx(std::vector<unsigned>& solid_idx, const char* labe
             const CSGSolid& so = solid[j]; 
 
             bool match = SStr::SimpleMatch(so.label, ele.c_str()) ;
-            unsigned count = std::count(ss.begin(), ss.end(), j ); 
+            unsigned count = std::count(ss.begin(), ss.end(), j );  // count if j is already collected 
             if(match && count == 0) ss.push_back(j) ; 
         }
     }

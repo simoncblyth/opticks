@@ -16,6 +16,7 @@ CSGOptiXSimulateTest
 
 #include "SSys.hh"
 #include "SPath.hh"
+#include "SOpticks.hh"
 #include "OpticksGenstep.h"
 
 #include "OPTICKS_LOG.hh"
@@ -63,7 +64,8 @@ int main(int argc, char** argv)
     const char* cfbase = SOpticksResource::CFBase(); 
     const char* outdir = OutDir(ok, cfbase, NAME);    
     ok.setOutDir(outdir); 
-    ok.writeOutputDirScript(outdir) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
+
+    SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
     // TODO: relocate script writing and dir mechanices into SOpticksResource or SOpticks or similar 
     ok.dumpArgv(NAME); 
 
@@ -105,19 +107,12 @@ int main(int argc, char** argv)
     gs.q4.f = make_float4( 0.f, 1.f, 0.f, 500.f ); // polw
     gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // flag 
 
-    cx.setGensteps(&gs, 1); 
+    cx.setGenstep(&gs, 1); 
     cx.simulate();  
 
     const char* odir = SPath::Resolve(cfbase_local, "CSGOptiXSimulateTest", DIRPATH ); 
-    
-    NP* p = cx.event->getPhotons() ; 
-    NP* r = cx.event->getRecords() ; 
-    LOG(info) << " p " << ( p ? p->sstr() : "-" ) ; 
-    LOG(info) << " r " << ( r ? r->sstr() : "-" ) ; 
     LOG(info) << " odir " << odir ; 
-    if(p) p->save(odir, "p.npy"); 
-    if(r) r->save(odir, "r.npy"); 
-
+    cx.event->save(odir); 
  
     cudaDeviceSynchronize(); 
     return 0 ; 

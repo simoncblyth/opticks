@@ -7,8 +7,8 @@ Collecting the subset of Opticks API needed in CSGOptiX as it
 would be helpful to be able to build CSGOptiXRenderTest with 
 a really minimal install excluding : brap, NPY, optickscore
 
-
-
+The major difficulty with that is Composition which brings in a large number of classes. 
+TODO: review Composition and dependents and see how difficult to relocate to sysrap 
 
 **/
 
@@ -27,7 +27,7 @@ struct SYSRAP_API SOpticks
     static const char* CFBaseScriptPath() ; 
     static std::string CFBaseScriptString(const char* cfbase, const char* msg); 
     static void WriteCFBaseScript(const char* cfbase, const char* msg);
-
+    static void WriteOutputDirScript(const char* outdir); 
 
     SOpticks(int argc, char** argv, const char* argforced ) ; 
 

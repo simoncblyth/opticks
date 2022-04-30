@@ -18,11 +18,12 @@ CXRaindropTest
 #include "SPath.hh"
 #include "SEventConfig.hh"
 #include "SProc.hh"
+#include "SOpticks.hh"
+#include "SOpticksResource.hh"
 #include "OpticksGenstep.h"
 
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
-#include "SOpticksResource.hh"
 
 #include "CSGFoundry.h"
 #include "CSGGenstep.h"
@@ -35,10 +36,13 @@ CXRaindropTest
 #include "SEvent.hh"
 
 
+
+
+
 const char* OutDir(const Opticks& ok, const char* cfbase, const char* name)
 {
     int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
-    const char* out_prefix = ok.getOutPrefix(optix_version_override);   
+    const char* out_prefix = ok.getOutPrefix(optix_version_override);     // eg cvd1/70000/$OPTICKS_GEOM/$OPTICKS_RELDIR
     // out_prefix includes values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined
     const char* default_outdir = SPath::Resolve(cfbase, name, out_prefix, DIRPATH );  
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
@@ -63,12 +67,16 @@ int main(int argc, char** argv)
     ok.setRaygenMode(RG_SIMULATE) ; // override --raygenmode option 
 
     const char* EXECUTABLE = SProc::ExecutableName();
+    ok.dumpArgv(EXECUTABLE); 
+
     const char* cfbase = SOpticksResource::CFBase(); 
     const char* outdir = OutDir(ok, cfbase, EXECUTABLE );    
     ok.setOutDir(outdir); 
-    ok.writeOutputDirScript(outdir) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
     // TODO: relocate script writing and dir mechanices into SOpticksResource or SOpticks or similar 
-    ok.dumpArgv(EXECUTABLE); 
+
+    LOG(info) << " outdir [" << outdir << "]"  ; 
+
+    SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
 
     // HMM: note use of the standard OPTICKS_KEY geocache , TODO: add for CF?
     const char* idpath = ok.getIdPath(); 
@@ -123,7 +131,7 @@ int main(int argc, char** argv)
     cx.setComposition(ce); 
 
     QEvent* event = cx.event ; 
-    event->setGensteps(SEvent::MakeTorchGensteps());     
+    event->setGenstep(SEvent::MakeTorchGensteps());     
 
     cx.simulate();  
     cudaDeviceSynchronize(); 

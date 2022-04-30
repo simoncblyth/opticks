@@ -1417,46 +1417,6 @@ void Opticks::WriteCFBaseScript(const char* cfbase, const char* msg) // static
 
 
 
-/**
-Opticks::writeOutputDirScript
-------------------------------
-
-When an output directory is determined by an executable it 
-is useful to write a small script with an export line showing 
-the output directory such that scripts and executables that are subsequently 
-run can access the output without having pre-knowledge of the directory.  
-
-**/
-
-void Opticks::writeOutputDirScript(const char* outdir) const
-{
-    const char* exename = SProc::ExecutableName() ;
-    const char* envvar = SStr::Concat(exename,  "_OUTPUT_DIR" ); 
-    const char* sh_path = SStr::Concat(exename, "_OUTPUT_DIR" , ".sh")   ; 
-
-    std::stringstream ss ; 
-    ss 
-        << "# Opticks::writeOutputDirScript " << std::endl 
-        << "# " << STime::Stamp() << std::endl 
-        << std::endl 
-        << "export " << envvar << "=" << outdir  
-        << std::endl 
-        ; 
-  
-    std::string sh = ss.str(); 
-
-    LOG(info) 
-        << "writing sh_path " << sh_path << std::endl
-        << "sh [" << std::endl
-        << sh  
-        << "]" 
-        ;
-
-    int create_dirs = 0 ; 
-    SStr::Save(sh_path, sh.c_str(), create_dirs ) ; 
-}
-
-
 bool Opticks::isPrintEnabled() const   // --printenabled
 {
     return m_cfg->hasOpt("printenabled") ;
@@ -2769,8 +2729,11 @@ it is preferable to provide contextual information
 about the output via a relative directory, rather than 
 the absolute directory of OutDir 
 
-
 TODO: relocate this to SOpticks or SOpticksResource : sticking point is getUsedCVD for "--cvd" option
+
+HMM: more flexible to define this kind of thing in bash scripts and feed in via envvar,
+can use mini executables for some aspects  
+
 **/
 
 const char* Opticks::getOutPrefix(int optix_version_override ) const 

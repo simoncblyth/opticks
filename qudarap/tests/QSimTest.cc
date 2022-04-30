@@ -737,6 +737,7 @@ void QSimTest<T>::PreInit(unsigned type )  // static
         SEventConfig::SetMaxBounce(num_bounce); 
         SEventConfig::SetMaxRecord(num_bounce+1); 
         SEventConfig::SetMaxRec(num_bounce+1); 
+        SEventConfig::SetMaxSeq(num_bounce+1); 
 
         LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
     }

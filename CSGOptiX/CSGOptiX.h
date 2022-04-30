@@ -94,8 +94,8 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
  private: 
     void setTop(const char* tspec); 
  public: 
-    void setGensteps(const NP* gs);
-    void setGensteps(const quad6* gs, unsigned num_gs); 
+    void setGenstep(const NP* gs);
+    void setGenstep(const quad6* gs, unsigned num_gs); 
 
     void setCEGS(const std::vector<int>& cegs); 
     void setComposition(const float4& ce,    const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 

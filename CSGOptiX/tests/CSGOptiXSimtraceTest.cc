@@ -38,6 +38,7 @@ TODO:
 
 #include "SSys.hh"
 #include "SPath.hh"
+#include "SOpticks.hh"
 
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
@@ -74,7 +75,7 @@ int main(int argc, char** argv)
     const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
 
     ok.setOutDir(outdir); 
-    ok.writeOutputDirScript(outdir) ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
+    SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
 
     const char* outdir2 = ok.getOutDir(); 
     assert( strcmp(outdir2, outdir) == 0 ); 
@@ -124,7 +125,7 @@ int main(int argc, char** argv)
     cx.setComposition(gsm->ce, gsm->m2w, gsm->w2m ); 
     cx.setCEGS(gsm->cegs);   // sets peta metadata
     cx.setMetaTran(gsm->geotran); 
-    cx.setGensteps(gs); 
+    cx.setGenstep(gs); 
 
     cx.simtrace();  
     cx.snapSimtraceTest(outdir, botline, topline ); 
