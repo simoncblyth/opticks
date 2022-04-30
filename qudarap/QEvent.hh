@@ -69,22 +69,38 @@ struct QUDARAP_API QEvent
 
     std::string  meta ; 
 
-    void     setGensteps(const NP* gs);
-    void     setGensteps(const quad6* gs, unsigned num_gs ); 
+    void      setGenstep(const NP* gs);
+    void      setGenstep(const quad6* gs, unsigned num_gs ); 
+    const NP* getGenstep() const ; 
+
+
+    bool hasGenstep() const ; 
+    bool hasSeed() const ; 
+    bool hasPhoton() const ; 
+    bool hasRecord() const ; 
+    bool hasRec() const ; 
+    bool hasSeq() const ; 
+    bool hasHit() const ; 
 
     unsigned count_genstep_photons(); 
     void     fill_seed_buffer(); 
     void     count_genstep_photons_and_fill_seed_buffer(); 
 
-    void     setPhotons( const NP* p );
-    void     getPhotons(       NP* p ) const ;
-    NP*      getPhotons() const ; 
-    NP*      getRecords() const ; // full step records
+    void     setPhoton( const NP* p );
+    void     getPhoton(       NP* p ) const ;
+    void     getSeq(          NP* seq) const ; 
+
+    NP*      getPhoton() const ; 
+    NP*      getSeq() const ;     // seqhis..
+    NP*      getRecord() const ; // full step records
     NP*      getRec() const  ;    // compressed step record
     NP*      getDomain() const ; 
 
     unsigned getNumHit() const ; 
-    NP*      getHits() const ; 
+    NP*      getHit() const ; 
+
+    void save(const char* dir) const ; 
+    void save(const char* base, const char* reldir ) const ; 
 
 
     void     setNumPhoton(unsigned num_photon) ;  
@@ -109,6 +125,8 @@ struct QUDARAP_API QEvent
     bool hasMeta() const ; 
 
     void checkEvt() ;  // GPU side 
+
+
 
     qevent* getDevicePtr() const ;
 };

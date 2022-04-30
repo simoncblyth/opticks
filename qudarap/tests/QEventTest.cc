@@ -15,7 +15,7 @@
 
 // some tests moved down to sysrap/tests/SEventTest.cc
 
-void test_setGensteps_one()
+void test_setGenstep_one()
 {
     //                                             0  1  2  3  4  5  6  7  8  
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
@@ -28,9 +28,9 @@ void test_setGensteps_one()
 
 
     QEvent* event = new QEvent ; 
-    //LOG(info) << " event.desc (bef QEvent::setGensteps) " << event->desc() ; 
-    event->setGensteps(gs); 
-    //LOG(info) << " event.desc (aft QEvent::setGensteps) " << event->desc() ; 
+    //LOG(info) << " event.desc (bef QEvent::setGenstep) " << event->desc() ; 
+    event->setGenstep(gs); 
+    //LOG(info) << " event.desc (aft QEvent::setGenstep) " << event->desc() ; 
 
     unsigned num_photon = event->getNumPhoton();  
     //LOG(info) << " num_photon " << num_photon << " x_num_photon " << x_num_photon ; 
@@ -47,7 +47,7 @@ void test_setGensteps_one()
     LOG(info) << " seed_mismatch " << seed_mismatch ; 
 }
 
-void test_setGensteps_many()
+void test_setGenstep_many()
 {
     const int num_v = 3 ; 
 
@@ -89,7 +89,7 @@ void test_setGensteps_many()
     {
         int i = j % 3 ; 
 
-        event->setGensteps(gs[i]); 
+        event->setGenstep(gs[i]); 
 
         int num_photon = event->getNumPhoton();  
         assert( x_num_photon[i] == num_photon ); 
@@ -121,10 +121,10 @@ void test_setGensteps_many()
     }
 }
 
-void test_setGensteps_loaded(const NP* gs)
+void test_setGenstep_loaded(const NP* gs)
 {
     QEvent* event = new QEvent ; 
-    event->setGensteps(gs); 
+    event->setGenstep(gs); 
 
     unsigned num_photon = event->getNumPhoton() ; 
     assert( num_photon > 0); 
@@ -134,7 +134,7 @@ void test_setGensteps_loaded(const NP* gs)
     event->checkEvt(); 
 }
 
-void test_setGensteps_loaded()
+void test_setGenstep_loaded()
 {
     const char* path_ = "$TMP/sysrap/SEventTest/cegs.npy" ;
     const char* path = SPath::Resolve(path_, 0); 
@@ -151,11 +151,11 @@ void test_setGensteps_loaded()
     }
 
     gs0->dump(); 
-    test_setGensteps_loaded(gs0); 
+    test_setGenstep_loaded(gs0); 
 }
 
 
-void test_setGensteps_checkEvt()
+void test_setGenstep_checkEvt()
 {
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
     unsigned x_num_photon = SEvent::SumCounts( photon_counts_per_genstep ) ; 
@@ -163,11 +163,11 @@ void test_setGensteps_checkEvt()
     const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
 
     QEvent* event = new QEvent ; 
-    event->setGensteps(gs); 
+    event->setGenstep(gs); 
     event->checkEvt(); 
 }
 
-void test_setGensteps_quad6()
+void test_setGenstep_quad6()
 {
     quad6 gs ; 
     gs.q0.u = make_uint4( OpticksGenstep_PHOTON_CARRIER, 0u, 0u, 10u );   
@@ -178,10 +178,10 @@ void test_setGensteps_quad6()
     gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );    // flag
 
     QEvent* event = new QEvent ; 
-    event->setGensteps(&gs, 1); 
+    event->setGenstep(&gs, 1); 
 
     event->gs->dump(); 
-    const char* path = SPath::Resolve("$TMP/QEventTest/test_setGensteps_quad6/gs.npy", FILEPATH); 
+    const char* path = SPath::Resolve("$TMP/QEventTest/test_setGenstep_quad6/gs.npy", FILEPATH); 
     LOG(info) << path ; 
     event->gs->save(path); 
 
@@ -195,13 +195,13 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     /*
-    test_setGensteps_one(); 
-    test_setGensteps_many(); 
-    test_setGensteps_loaded(); 
-    test_setGensteps_checkEvt(); 
+    test_setGenstep_one(); 
+    test_setGenstep_many(); 
+    test_setGenstep_loaded(); 
+    test_setGenstep_checkEvt(); 
     */
 
-    test_setGensteps_quad6(); 
+    test_setGenstep_quad6(); 
 
 
     cudaDeviceSynchronize(); 

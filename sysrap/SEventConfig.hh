@@ -41,7 +41,7 @@ struct SYSRAP_API SEventConfig
     static int MaxBounce(); 
     static int MaxRecord();  // full photon step record  
     static int MaxRec();     // compressed photon step record
-
+    static int MaxSeq();     // seqhis slots
     static float MaxExtent() ; 
     static float MaxTime() ; 
 
@@ -50,7 +50,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxBounce( int max_bounce); 
     static void SetMaxRecord( int max_record); 
     static void SetMaxRec(    int max_rec); 
-
+    static void SetMaxSeq(    int max_seq); 
     static void SetMaxExtent( float max_extent); 
     static void SetMaxTime(   float max_time ); 
 
@@ -60,7 +60,7 @@ struct SYSRAP_API SEventConfig
 
     static void Check(); 
 
-    static void SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_, int max_rec_ ); 
+    static void SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_, int max_rec_, int max_seq_ ); 
     static std::string Desc(); 
 
     static int _MaxGenstep ; 
@@ -68,6 +68,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxBounce ; 
     static int _MaxRecord ; 
     static int _MaxRec ; 
+    static int _MaxSeq ; 
 
     static float _MaxExtent ; 
     static float _MaxTime  ; 

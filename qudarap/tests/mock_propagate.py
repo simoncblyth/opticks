@@ -12,12 +12,13 @@ if __name__ == '__main__':
     t = Fold.Load()
     PIDX = int(os.environ.get("PIDX","-1"))
 
-    p = t.p
-    r = t.r
+    p = t.photon
+    r = t.record
     prd = t.prd
-    h = t.h
+    h = t.hit
+    h_meta = t.hit_meta
 
-    c = t.c 
+    c = t.rec
 
     domain = t.domain 
     post_center, post_extent, polw_center, polw_extent = domain[0]  
@@ -31,8 +32,7 @@ if __name__ == '__main__':
     c_polw = c_polw_*polw_extent + polw_center 
 
 
-
-    hitmask = np.uint32(t.h_meta.find("hitmask:"))  
+    hitmask = np.uint32(h_meta.find("hitmask:"))  
     pyhit = hit__(p, hitmask)  # hits selected in python 
     assert np.all( pyhit == h ) 
 

@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 
     const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
 
-    event.setGensteps(gs); 
+    event.setGenstep(gs); 
     assert( event.getNumPhoton() == x_total ); 
 
     LOG(info) << event.desc() ; 

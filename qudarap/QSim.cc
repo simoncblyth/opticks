@@ -942,7 +942,7 @@ void QSim<T>::mock_propagate( NP* p, const NP* prd, unsigned type )
 
     LOG(info) << "[ num_prd " << num_prd << " prd " << prd->sstr()  ;
  
-    event->setPhotons(p); 
+    event->setPhoton(p); 
 
     int num_photon = event->evt->num_photon ; 
     assert( num_photon == num_p ); 
@@ -957,7 +957,7 @@ void QSim<T>::mock_propagate( NP* p, const NP* prd, unsigned type )
 
     cudaDeviceSynchronize();
 
-    event->getPhotons(p); 
+    event->getPhoton(p); 
     LOG(info) << "]" ; 
 }
 

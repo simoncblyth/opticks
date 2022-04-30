@@ -46,6 +46,7 @@ JUNO max prim_idx ~3245 : so thats OK
 #endif
 
 
+
 struct sphoton
 {
     float3 pos ; 

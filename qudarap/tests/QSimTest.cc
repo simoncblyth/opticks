@@ -80,12 +80,14 @@ struct QSimTest
 {
     static const char* FOLD ; 
     static const char* Path(const char* subfold, const char* name ); 
+    static const char* Dir(unsigned type) ; 
     static void  PreInit(unsigned type); 
     static unsigned Num(int argc, char** argv); 
 
     QSim<T> qs ; 
     unsigned type ;  // QSimLaunch type 
     unsigned num ; 
+    const char* dir ; 
 
     QSimTest(unsigned type, unsigned num ); 
     void main(); 
@@ -109,7 +111,7 @@ struct QSimTest
     void getStateNames(std::vector<std::string>& names, unsigned num_state) const ; 
 
 
-    void save(const NP* a, const char* name); 
+    //void save(const NP* a, const char* name); 
 
 
     void save_array(     const char* subfold, const char* name, const float* data, int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1 ); 
@@ -146,7 +148,8 @@ template <typename T>
 QSimTest<T>::QSimTest(unsigned type_, unsigned num_)
     :
     type(type_),
-    num(num_)
+    num(num_),
+    dir(Dir(type))
 {
 }
 
@@ -435,19 +438,13 @@ void QSimTest<T>::generate_photon()
     LOG(info) << "[ gs_config " << gs_config ; 
     const NP* gs = SEvent::MakeDemoGensteps(gs_config); 
 
-    QEvent* evt = new QEvent  ; 
-    evt->setGensteps(gs);
+    QEvent* event = new QEvent  ; 
+    event->setGenstep(gs);
  
-    qs.generate_photon(evt);  
+    qs.generate_photon(event);  
 
-    //std::vector<quad4> photon ; 
-    //evt->downloadPhoton(photon); 
-    //LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
-    //qs.dump_photon( photon.data(), photon.size(), "f0,f1,i2,i3" ); 
-
-    NP* p = evt->getPhotons(); 
-    save(p, "p.npy"); 
-
+    NP* p = event->getPhoton(); 
+    p->save(dir, "p.npy"); 
 
     LOG(info) << "]" ; 
 }
@@ -519,14 +516,13 @@ const char* QSimTest<T>::Path(const char* subfold, const char* name )
 }
 
 template <typename T>
-void QSimTest<T>::save(const NP* a, const char* name)
+const char* QSimTest<T>::Dir(unsigned type)   // static
 {
     const char* subfold = QSimLaunch::Name(type) ; 
     assert( subfold ); 
-    const char* path = Path(subfold, name ); 
-    LOG(info) << " save " << name << " path " << path << " shape " << a->sstr() ; 
-    a->save(path); 
+    return SPath::Resolve(FOLD, subfold, DIRPATH ); 
 }
+
 
  
 template <typename T>
@@ -641,11 +637,6 @@ QSimTest::mock_propagate
 
 NB QSimTest::PreInit does MOCK_PROPAGATE specific SEventConfig setup of event maxima 
 
-TODO: 
-
-* adopt sim->evt->record 
-* move NP setup into common handling in QEvent probably 
-
 **/
 
 
@@ -660,28 +651,14 @@ void QSimTest<T>::mock_propagate()
 
     int bounce_max = SEventConfig::MaxBounce(); 
     NP* prd = qs.prd->duplicate_prd(num, bounce_max);  
-
+    prd->save(dir, "prd.npy"); 
 
     qs.mock_propagate( p, prd, type ); 
 
     const QEvent* event = qs.event ; 
-
     unsigned num_hit = event->getNumHit(); 
     LOG(info) << " num_hit " << num_hit ;
- 
-    // TODO: centralize and standardize the below into QEvent::save with base directory argument 
-
-    NP* h = event->getHits(); 
-    NP* r = event->getRecords(); 
-    NP* c = event->getRec(); 
-    NP* domain = event->getDomain() ; 
-
-    save(p,   "p.npy"); 
-    save(prd, "prd.npy"); 
-    save(r,   "r.npy"); 
-    save(c,   "c.npy"); 
-    save(h,   "h.npy"); 
-    save(domain, "domain.npy"); 
+    event->save(dir); 
 
     LOG(info) << "]" ; 
 }

@@ -6,6 +6,7 @@
 #include "squad.h"
 #include "sphoton.h"
 #include "srec.h"
+#include "sseq.h"
 #include "sqat4.h"
 #include "stran.h"
 #include "SU.hh"
@@ -109,7 +110,7 @@ void QEvent::init()
     evt->max_bounce  = SEventConfig::MaxBounce()  ; 
     evt->max_record  = SEventConfig::MaxRecord()  ;  // full step record
     evt->max_rec     = SEventConfig::MaxRec()  ;     // compressed step record 
-
+    evt->max_seq     = SEventConfig::MaxSeq()  ;     // seqhis 
 
     evt->zero(); 
     LOG(fatal) << descBuf() ; 
@@ -216,7 +217,7 @@ void QEvent::CheckGensteps(const NP* gs)  // static
 
 
 /**
-QEvent::setGensteps
+QEvent::setGenstep
 --------------------
 
 1. gensteps uploaded to QEvent::init allocated evt->genstep device buffer, 
@@ -240,7 +241,7 @@ HMM: what about simtrace ? ce-gensteps are very different to ordinary gs
 
 **/
 
-void QEvent::setGensteps(const NP* gs_) 
+void QEvent::setGenstep(const NP* gs_) 
 { 
     gs = gs_ ; 
     CheckGensteps(gs); 
@@ -270,12 +271,25 @@ void QEvent::setGensteps(const NP* gs_)
     setNumPhoton( evt->num_seed );  // photon, rec, record may be allocated here depending on SEventConfig
 }
 
-void QEvent::setGensteps(const quad6* qgs, unsigned num_gs ) 
+void QEvent::setGenstep(const quad6* qgs, unsigned num_gs ) 
 {
     NP* gs_ = NP::Make<float>( num_gs, 6, 4 ); 
     gs_->read2( (float*)qgs );   
-    setGensteps( gs_ ); 
+    setGenstep( gs_ ); 
 }
+
+const NP* QEvent::getGenstep() const 
+{
+    return gs ; 
+}
+
+bool QEvent::hasGenstep() const { return evt->genstep != nullptr ; }
+bool QEvent::hasSeed() const {    return evt->seed != nullptr ; }
+bool QEvent::hasPhoton() const {  return evt->photon != nullptr ; }
+bool QEvent::hasRecord() const { return evt->record != nullptr ; }
+bool QEvent::hasRec() const    { return evt->rec != nullptr ; }
+bool QEvent::hasSeq() const    { return evt->seq != nullptr ; }
+bool QEvent::hasHit() const    { return evt->hit != nullptr ; }
 
 
 
@@ -330,7 +344,7 @@ and seed and generate photons on device.
 
 **/
 
-void QEvent::setPhotons(const NP* p_)
+void QEvent::setPhoton(const NP* p_)
 {
     p = p_ ; 
 
@@ -350,11 +364,11 @@ void QEvent::setPhotons(const NP* p_)
 
 
 /**
-QEvent::getPhotons(NP* p) :  mutating API
+QEvent::getPhoton(NP* p) :  mutating API
 -------------------------------------------
 **/
 
-void QEvent::getPhotons(NP* p) const 
+void QEvent::getPhoton(NP* p) const 
 {
     LOG(fatal) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ; 
     assert( p->has_shape(evt->num_photon, 4, 4) ); 
@@ -362,17 +376,34 @@ void QEvent::getPhotons(NP* p) const
     LOG(fatal) << "] evt.num_photon " << evt->num_photon  ; 
 }
 
-NP* QEvent::getPhotons() const 
+NP* QEvent::getPhoton() const 
 {
     NP* p = NP::Make<float>( evt->num_photon, 4, 4);
-    getPhotons(p); 
+    getPhoton(p); 
     return p ; 
 }
 
-NP* QEvent::getRecords() const 
+
+void QEvent::getSeq(NP* seq) const 
 {
-    if( evt->max_record == 0 ) LOG(fatal) << "evt.max_record " << evt->max_record << " SO full step record buffer is disabled " ; 
-    if( evt->max_record == 0 ) return nullptr ; 
+    if(!hasSeq()) return ; 
+    LOG(fatal) << "[ evt.num_seq " << evt->num_seq << " seq.sstr " << seq->sstr() << " evt.seq " << evt->seq ; 
+    assert( seq->has_shape(evt->num_seq, 2) ); 
+    QU::copy_device_to_host<sseq>( (sseq*)seq->bytes(), evt->seq, evt->num_seq ); 
+    LOG(fatal) << "] evt.num_seq " << evt->num_seq  ; 
+}
+
+NP* QEvent::getSeq() const 
+{
+    if(!hasSeq()) return nullptr ;  
+    NP* seq = NP::Make<unsigned long long>( evt->num_seq, 2);
+    getSeq(seq); 
+    return seq ; 
+}
+
+NP* QEvent::getRecord() const 
+{
+    if(!hasRecord()) return nullptr ;  
 
     NP* r = NP::Make<float>( evt->num_photon, evt->max_record, 4, 4);  // stride: sizeof(float)*4*4 = 4*4*4 = 64
     r->set_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false" );  // eg used by examples/UseGeometryShader
@@ -382,11 +413,9 @@ NP* QEvent::getRecords() const
     return r ; 
 }
 
-
 NP* QEvent::getRec() const 
 {
-    if( evt->max_rec == 0 ) LOG(fatal) << "evt.max_rec " << evt->max_rec << " SO compressed step rec buffer is disabled " ; 
-    if( evt->max_rec == 0 ) return nullptr ; 
+    if(!hasRec()) return nullptr ;  
 
     NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 2, 4);   // stride:  sizeof(short)*2*4 = 2*2*4 = 16   
     r->set_meta<std::string>("rpos", "4,GL_SHORT,GL_TRUE,16,0,false" );  // eg used by examples/UseGeometryShader
@@ -417,7 +446,7 @@ unsigned QEvent::getNumHit() const
 }
 
 /**
-QEvent::getHits
+QEvent::getHit
 ------------------
 
 1. count *evt.num_hit* passing the photon *selector* 
@@ -439,7 +468,7 @@ photons and hits.
 
 **/
 
-NP* QEvent::getHits() const 
+NP* QEvent::getHit() const 
 {
     assert( evt->photon ); 
 
@@ -477,6 +506,65 @@ NP* QEvent::getHits() const
 
 
 
+
+/**
+QEvent::save
+--------------
+
+QEvent::save persists NP arrays into the directory argument provided.
+Unlike its predecessor, OpticksEvent, organization of 
+the directory structure is left to the caller.   
+
+TODO: a separate struct to yield such directory paths handling things
+like event tags. 
+
+**/
+
+void QEvent::save(const char* dir_) const 
+{
+    const char* dir = SPath::Resolve(dir_, DIRPATH); 
+    LOG(info) << " dir " << dir ; 
+
+    NP* hit = getHit() ;
+
+    const NP* genstep = getGenstep() ; 
+
+    NP* photon = getPhoton() ; 
+    NP* record = getRecord() ; 
+    NP* rec = getRec() ;
+    NP* seq = getSeq() ;
+    NP* domain = getDomain() ;
+ 
+    LOG(info) << " hit " << ( hit ? hit->sstr() : "-" ) ; 
+    LOG(info) << " genstep " << ( genstep ? genstep->sstr() : "-" ) ; 
+    LOG(info) << " photon " << ( photon ? photon->sstr() : "-" ) ; 
+    LOG(info) << " record " << ( record ? record->sstr() : "-" ) ; 
+    LOG(info) << " rec " << ( rec ? rec->sstr() : "-" ) ; 
+    LOG(info) << " seq " << ( seq ? seq->sstr() : "-" ) ; 
+    LOG(info) << " domain " << ( domain ? domain->sstr() : "-" ) ; 
+
+    if(hit)     hit->save(dir, "hit.npy"); 
+    if(genstep) genstep->save(dir, "gs.npy"); 
+    if(photon)  photon->save(dir, "photon.npy"); 
+    if(record)  record->save(dir, "record.npy"); 
+    if(rec)     rec->save(dir, "rec.npy"); 
+    if(seq)     seq->save(dir, "seq.npy"); 
+    if(domain)  domain->save(dir, "domain.npy"); 
+
+}
+
+void QEvent::save(const char* base, const char* reldir ) const 
+{
+    const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
+    save(dir); 
+}
+
+
+
+
+
+
+
 /**
 QEvent::setNumPhoton
 ---------------------
@@ -498,6 +586,9 @@ void QEvent::setNumPhoton(unsigned num_photon )
     if( evt->photon == nullptr ) 
     {
         evt->photon = QU::device_alloc<sphoton>( evt->max_photon ) ; 
+
+        evt->num_seq = evt->max_seq > 0 ? evt->num_photon : 0 ; 
+        evt->seq     = evt->num_seq > 0 ? QU::device_alloc<sseq>(  evt->num_seq  ) : nullptr ; 
         
         // assumes that the number of photons for subsequent launches does not increase 
         // when collecting records : that is ok during highly controlled debugging 
@@ -507,6 +598,7 @@ void QEvent::setNumPhoton(unsigned num_photon )
 
         evt->num_rec    = evt->max_rec * evt->num_photon ;  
         evt->rec        = evt->num_rec  > 0 ? QU::device_alloc<srec>(  evt->num_rec  ) : nullptr ; 
+
 
         // use SEventConfig code or envvars to config the maxima
 
@@ -620,4 +712,7 @@ void QEvent::checkEvt()
     assert( d_evt ); 
     QEvent_checkEvt(numBlocks, threadsPerBlock, d_evt, width, height );   
 }
+
+
+
 

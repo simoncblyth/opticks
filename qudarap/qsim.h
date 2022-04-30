@@ -16,6 +16,7 @@
 #include "sphoton.h"
 #include "storch.h"
 #include "srec.h"
+#include "sseq.h"
 #include "scurand.h"
 
 #include "qevent.h"
@@ -1212,6 +1213,9 @@ Stages within bounce loop
 
 TODO: record and record_max should come from qevent ?
 
+
+HMM: seqhis/seqmat should not depend on rec collection, and it must be optional 
+
 **/
 
 template <typename T>
@@ -1226,22 +1230,41 @@ inline QSIM_METHOD void qsim<T>::mock_propagate( sphoton& p, const quad2* mock_p
     int bounce = 0 ; 
     int command = START ; 
 
+
     qstate s ; 
     srec r ;    // compressed step record 
+    sseq seq ;  // seqhis..
+
+    // should this state live in evt ? NO, this state must be "thread" local, 
+    // the evt instance is shared by all threads and always saves into (idx, bounce) 
+    // slotted locations   
+    //
+    // want the ability to easily eliminate parts of the state that are not needed 
+    // via macros : so this current structure manages that simply  
 
     while( bounce < evt->max_bounce )
     {
+         // HMM: encapsulate this step saving 
+        //  evt->step(idx, bounce,  
+
         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
-        if(evt->rec) evt->add_rec(r, idx, bounce, p ); 
+        if(evt->rec)    evt->add_rec(r, idx, bounce, p ); 
+        if(evt->seq)    seq.add_step( bounce, p.flag(), p.boundary() ); 
+
 
         const quad2* prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
+
         command = propagate(bounce, p, s, prd, rng, idx ); 
         bounce++;        
+
         if(command == BREAK) break ;    
     }
 
     if(evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
     if(evt->rec    && bounce < evt->max_rec    ) evt->add_rec(r, idx, bounce, p ); 
+    if(evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() ); 
+
+    if(evt->seq) evt->seq[idx] = seq ; 
 }
 
 /**

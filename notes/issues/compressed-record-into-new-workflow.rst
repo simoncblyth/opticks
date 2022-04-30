@@ -1,10 +1,44 @@
 compressed-record-into-new-workflow
 =====================================
 
+reviewing OpticksEvent, clearly QEvent needs to replace it in new workflow
+-----------------------------------------------------------------------------
+
+* not aiming for compatibility, but QEvent needs to be reminscent of OpticksEvent 
+  in order to make updating the numpy analysis machinery to use persisted QEvents easier 
+
+
+What does QEvent lack compared to OpticksEvent ? 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* many things that will try living without 
+* seqhis+seqmat sequence array (photon level 64-bit uint) 
+  
+  * THIS IS A MUST HAVE AS ITS THE BASIS FOR HISTORY TABLES 
+  * implementing in sseq.h 
+
+what about persisting directory layout ?
+
+::
+
+    2110 void OpticksEvent::savePhotonData()
+    2111 {
+    2112     NPY<float>* ox = getPhotonData();
+    2113     if(ox) ox->save(m_pfx, "ox", m_typ,  m_tag, m_udet);
+    2114 }
+ 
+Am inclined for QEvent directory handling to be deferred to the 
+user of QEvent with QEvent just concerned with the content of the directory. 
+
+
+
 hmm : need to get the domains ce/td/wd onto device for encoding the srec and into python and OpenGL for analysis
 -----------------------------------------------------------------------------------------------------------------
 
 * where to carry the domains ? they are only needed for compressed rec so it belongs in NP rec metadata on host. 
+
+  * managing this is qevent.h  
+
 * on device need to keep it somewhere like in qevent ? so QEvent needs to orchestrate the domains. 
 
 

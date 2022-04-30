@@ -14,6 +14,7 @@
 #include "qevent.h"
 #include "qdebug.h"
 #include "srec.h"
+#include "sseq.h"
 #include "qmultifilmlut.h"
 
 
@@ -200,6 +201,7 @@ template QUDARAP_API qevent*    QU::device_alloc<qevent>(unsigned num_items) ;
 template QUDARAP_API qdebug*    QU::device_alloc<qdebug>(unsigned num_items) ;
 template QUDARAP_API qstate*    QU::device_alloc<qstate>(unsigned num_items) ;
 template QUDARAP_API srec*      QU::device_alloc<srec>(unsigned num_items) ;
+template QUDARAP_API sseq*      QU::device_alloc<sseq>(unsigned num_items) ;
 template QUDARAP_API sphoton*   QU::device_alloc<sphoton>(unsigned num_items) ;
 
 
@@ -250,6 +252,7 @@ template void QU::copy_device_to_host<sphoton>( sphoton* h, sphoton* d,  unsigne
 template void QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
 template void QU::copy_device_to_host<qstate>( qstate* h, qstate* d,  unsigned num_items);
 template void QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_items);
+template void QU::copy_device_to_host<sseq>( sseq* h, sseq* d,  unsigned num_items);
 
 
 

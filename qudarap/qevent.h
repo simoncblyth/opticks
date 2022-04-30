@@ -31,6 +31,7 @@ struct float2 ;
 struct quad4 ; 
 struct quad6 ; 
 struct srec ; 
+struct sseq ; 
 struct sphoton ; 
 
 struct qevent
@@ -52,6 +53,7 @@ struct qevent
     int      max_bounce  ; // eg:            9 
     int      max_record  ; // eg:           10  full step record 
     int      max_rec     ; // eg:           10  compressed step record
+    int      max_seq     ; // eg:           16  seqhis/seqbnd
 
 
     int      num_genstep ; 
@@ -68,6 +70,9 @@ struct qevent
 
     int      num_rec ; 
     srec*    rec ; 
+
+    int      num_seq ; 
+    sseq*    seq ; 
 
     int      num_hit ; 
     sphoton* hit ; 
@@ -147,7 +152,7 @@ QEVENT_METHOD void qevent::get_config( quad4& cfg ) const
 
    cfg.q1.u.x = max_record ; 
    cfg.q1.u.y = max_rec ; 
-   cfg.q1.u.z = 0 ; 
+   cfg.q1.u.z = max_seq ; 
    cfg.q1.u.w = 0 ;
 
    cfg.q2.u.x = num_genstep ; 
@@ -157,7 +162,7 @@ QEVENT_METHOD void qevent::get_config( quad4& cfg ) const
 
    cfg.q3.u.x = num_record ; 
    cfg.q3.u.y = num_rec ; 
-   cfg.q3.u.z = 0 ; 
+   cfg.q3.u.z = num_seq ; 
    cfg.q3.u.w = 0 ;
 }
 
@@ -169,6 +174,7 @@ QEVENT_METHOD void qevent::zero()
     num_photon = 0 ; 
     num_record = 0 ; 
     num_rec = 0 ; 
+    num_seq = 0 ; 
     num_hit = 0 ; 
 
     genstep = nullptr ; 
@@ -176,6 +182,7 @@ QEVENT_METHOD void qevent::zero()
     photon = nullptr ; 
     record = nullptr ; 
     rec = nullptr ; 
+    seq = nullptr ; 
     hit = nullptr ; 
     
 }

@@ -185,6 +185,8 @@ set(HEADERS
     squad.h
     sphoton.h
     srec.h 
+    srec.h 
+    sseq.h 
 
     storch.h
     storchtype.h

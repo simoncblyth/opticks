@@ -18,15 +18,16 @@ int SEventConfig::_MaxPhoton  = SSys::getenvint("OPTICKS_MAX_PHOTON",      3*M) 
 int SEventConfig::_MaxBounce  = SSys::getenvint("OPTICKS_MAX_BOUNCE",       9 ) ; 
 int SEventConfig::_MaxRecord  = SSys::getenvint("OPTICKS_MAX_RECORD",       0 ) ;    // full step record
 int SEventConfig::_MaxRec     = SSys::getenvint("OPTICKS_MAX_REC",          0 ) ;    // compressed record  
+int SEventConfig::_MaxSeq     = SSys::getenvint("OPTICKS_MAX_SEQ",          0 ) ;    // compressed record  
 float SEventConfig::_MaxExtent = SSys::getenvfloat("OPTICKS_MAX_EXTENT",  1000.f );  // mm 
 float SEventConfig::_MaxTime   = SSys::getenvfloat("OPTICKS_MAX_TIME",    10.f );    // ns
-
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
 int SEventConfig::MaxBounce(){   return _MaxBounce ; }
 int SEventConfig::MaxRecord(){   return _MaxRecord ; }
 int SEventConfig::MaxRec(){      return _MaxRec ; }
+int SEventConfig::MaxSeq(){      return _MaxSeq ; }
 float SEventConfig::MaxExtent(){ return _MaxExtent ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
 
@@ -35,30 +36,31 @@ void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; C
 void SEventConfig::SetMaxBounce( int max_bounce){  _MaxBounce  = max_bounce  ; Check() ; }
 void SEventConfig::SetMaxRecord( int max_record){  _MaxRecord  = max_record  ; Check() ; }
 void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; Check() ; }
+void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; Check() ; }
 void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; Check() ; }
 void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; Check() ; }
-
 
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar("OPTICKS_HITMASK", "SD" )) ;   
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
 void SEventConfig::SetHitMask(const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
 std::string SEventConfig::HitMaskDesc(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
 
-
 void SEventConfig::Check()
 {
    assert( _MaxBounce >  0 && _MaxBounce <  16 ) ; 
    assert( _MaxRecord >= 0 && _MaxRecord <= 16 ) ; 
    assert( _MaxRec    >= 0 && _MaxRec    <= 16 ) ; 
+   assert( _MaxSeq    >= 0 && _MaxSeq    <= 16 ) ; 
 }
 
-void SEventConfig::SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_, int max_rec_ )
+void SEventConfig::SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_, int max_rec_, int max_seq_ )
 { 
     SetMaxGenstep( max_genstep_ ); 
     SetMaxPhoton(  max_photon_  ); 
     SetMaxBounce(  max_bounce_  ); 
     SetMaxRecord(  max_record_  ); 
     SetMaxRec(     max_rec_  ); 
+    SetMaxSeq(     max_seq_  ); 
 }
   
 std::string SEventConfig::Desc()
@@ -70,6 +72,7 @@ std::string SEventConfig::Desc()
        << " MaxBounce " << MaxBounce()
        << " MaxRecord(full) " << MaxRecord()
        << " MaxRec(compressed) " << MaxRec()
+       << " MaxSeq(seqhis..) " << MaxSeq()
        << " HitMask " << HitMask()
        << " HitMaskDesc " << HitMaskDesc()
        << " MaxExtent " << MaxExtent()

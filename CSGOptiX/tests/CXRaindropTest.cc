@@ -94,12 +94,10 @@ int main(int argc, char** argv)
 
     QSim<float>::UploadComponents(fd->icdf, bnd_plus, optical_plus, rindexpath ); 
 
-
     const char* cfbase_local = SSys::getenvvar("CFBASE_LOCAL") ; assert(cfbase_local) ; 
     LOG(fatal) << "MIXING CSGFoundry combining basis cfbase with cfbase_local "; 
     std::cout << std::setw(20) << "cfbase" << ":" << cfbase << std::endl ; 
     std::cout << std::setw(20) << "cfbase_local" << ":" << cfbase_local  << std::endl ; 
-
 
     // load raindrop geometry and customize to use the boundaries added above 
 
@@ -111,15 +109,15 @@ int main(int argc, char** argv)
     std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
     fdl->upload(); 
 
-
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );   // TODO: this should come from the geometry 
 
-
     // HMM : WOULD BE BETTER FOR CONSISTENCY TO HAVE SINGLE UPLOAD API
-
     // must do this config before QEvent::init which happens with CSGOptiX instanciation 
     SEventConfig::SetMaxExtent( ce.w ); 
     SEventConfig::SetMaxTime( 10.f ); 
+
+
+    // HMM: perhaps instanciate QEvent/QSim separately and give it as argument to CSGOptiX 
 
     CSGOptiX cx(&ok, fdl );   // QSim QEvent instanciated here 
     cx.setComposition(ce); 
@@ -130,23 +128,7 @@ int main(int argc, char** argv)
     cx.simulate();  
     cudaDeviceSynchronize(); 
 
-    const char* odir = SPath::Resolve(cfbase_local, EXECUTABLE, DIRPATH ); 
-
-    // TODO: consolidate below into QEvent::save method with standardized naming and using the max config
-    
-    NP* p = event->getPhotons() ; 
-    NP* f = event->getRecords() ; 
-    NP* r = event->getRec() ;
- 
-    LOG(info) << " p " << ( p ? p->sstr() : "-" ) ; 
-    LOG(info) << " f " << ( f ? f->sstr() : "-" ) ; 
-    LOG(info) << " r " << ( r ? r->sstr() : "-" ) ; 
-    LOG(info) << " odir " << odir ; 
-
-    if(p) p->save(odir, "p.npy"); 
-    if(f) f->save(odir, "f.npy"); 
-    if(r) r->save(odir, "r.npy"); 
- 
+    event->save(cfbase_local, EXECUTABLE); 
 
     return 0 ; 
 }
