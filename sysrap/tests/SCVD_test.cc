@@ -4,7 +4,7 @@
 
 int main()
 {
-    SCVD::ConfigureDevices(); 
+    SCVD::ConfigureVisibleDevices(); 
 
     std::cout << "[" << SCVD::Label() << "]" << std::endl ; 
 
