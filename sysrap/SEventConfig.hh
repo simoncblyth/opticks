@@ -36,10 +36,22 @@ struct SYSRAP_API SEventConfig
     static void Check(); 
     static void SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_, int max_rec_, int max_seq_ ); 
     static std::string Desc(); 
-    static std::string HitMaskDesc(); 
+    static std::string HitMaskLabel(); 
 
     static constexpr const int M = 1000000 ; 
     static constexpr const int K = 1000 ; 
+
+    static constexpr const char* kMaxGenstep = "OPTICKS_MAX_GENSTEP" ; 
+    static constexpr const char* kMaxPhoton  = "OPTICKS_MAX_PHOTON" ; 
+    static constexpr const char* kMaxBounce  = "OPTICKS_MAX_BOUNCE" ; 
+    static constexpr const char* kMaxRecord  = "OPTICKS_MAX_RECORD" ; 
+    static constexpr const char* kMaxRec     = "OPTICKS_MAX_REC" ; 
+    static constexpr const char* kMaxSeq     = "OPTICKS_MAX_SEQ" ; 
+    static constexpr const char* kMaxExtent  = "OPTICKS_MAX_EXTENT" ; 
+    static constexpr const char* kMaxTime    = "OPTICKS_MAX_TIME" ; 
+    static constexpr const char* kOutFold    = "OPTICKS_OUT_FOLD" ; 
+    static constexpr const char* kHitMask    = "OPTICKS_HIT_MASK" ; 
+    static constexpr const char* kRGMode     = "OPTICKS_RG_MODE" ; 
 
     static int MaxGenstep(); 
     static int MaxPhoton(); 
@@ -51,6 +63,8 @@ struct SYSRAP_API SEventConfig
     static float MaxTime() ; 
     static const char* OutFold(); 
     static unsigned HitMask(); 
+    static int RGMode(); 
+    static const char* RGModeLabel(); 
 
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 
@@ -62,6 +76,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxTime(   float max_time ); 
     static void SetOutFold( const char* out_fold); 
     static void SetHitMask(const char* abrseq, char delim=',' ); 
+    static void SetRGMode( const char* rg_mode) ; 
 
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
@@ -73,6 +88,8 @@ struct SYSRAP_API SEventConfig
     static float _MaxTime  ; 
     static const char* _OutFold ; 
     static unsigned _HitMask ; 
+    static int _RGMode ; 
+
 }; 
 
 

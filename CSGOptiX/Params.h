@@ -6,9 +6,7 @@ Params.h
 
 * CPU side params instanciated in CSGOptiX::CSGOptiX and populated by CSGOptiX::init methods 
 
-
 **/
-
 
 
 #include <optix.h>
@@ -27,7 +25,6 @@ struct quad6 ;
 template <typename T> struct qsim ; 
 struct qevent ; 
 
-#include "RG.h"
 
 struct Params
 {

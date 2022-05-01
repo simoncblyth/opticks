@@ -1,4 +1,16 @@
 #pragma once
+/**
+SGLM : Header Only OpenGL viz projection maths 
+=================================================
+
+* https://learnopengl.com/Getting-started/Camera
+
+TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
+
+TODO: provide a single header replacement for the boatload of classes used by okc/Composition
+
+**/
+
 
 #include <string>
 #include <vector>
@@ -16,14 +28,6 @@
 
 #include "SYSRAP_API_EXPORT.hh"
 
-/**
-SGLM
-
-* https://learnopengl.com/Getting-started/Camera
-
-TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
-
-**/
 
 struct SYSRAP_API SGLM
 {

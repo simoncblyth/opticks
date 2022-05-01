@@ -1,3 +1,4 @@
+#include "SRG.h"
 #include "Params.h"
 
 #ifndef __CUDACC__
@@ -106,7 +107,7 @@ void Params::dump(const char* msg) const
 
 Params::Params(int raygenmode_, unsigned width, unsigned height, unsigned depth)
     :
-    raygenmode(RG_RENDER),
+    raygenmode(SRG_RENDER),
     node(nullptr),
     plan(nullptr),
     tran(nullptr),

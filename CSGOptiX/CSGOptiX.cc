@@ -41,6 +41,8 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 
 // sysrap
 #include "NP.hh"
+#include "SRG.h"
+#include "SEventConfig.hh"
 #include "SStr.hh"
 #include "SSys.hh"
 #include "SMeta.hh"
@@ -67,10 +69,13 @@ TODO:
 // okc:optickscore
 #include "Opticks.hh"
 #include "Composition.hh"
+
 /**
-HMM:
-   Composition is a bit of a monster - bringing in a boatload of classes 
-   LONGTERM: see if can pull out the essentials into a smaller class
+HMM: Composition is a bit of a monster - bringing in a boatload of classes 
+LONGTERM: see if can pull out the essentials into a smaller class
+
+* SGLM.hh is already on the way to doing this kinda thing in a single header 
+* Composition::getEyeUVW is the crux method needed 
 
 **/
 
@@ -105,10 +110,10 @@ HMM:
 const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
 
 #if OPTIX_VERSION < 70000 
-const char* CSGOptiX::PTXNAME = "OptiX6Test" ; 
-const char* CSGOptiX::GEO_PTXNAME = "geo_OptiX6Test" ; 
+const char* CSGOptiX::PTXNAME = "CSGOptiX6" ; 
+const char* CSGOptiX::GEO_PTXNAME = "CSGOptiX6geo" ; 
 #else
-const char* CSGOptiX::PTXNAME = "OptiX7Test" ; 
+const char* CSGOptiX::PTXNAME = "CSGOptiX7" ; 
 const char* CSGOptiX::GEO_PTXNAME = nullptr ; 
 #endif
 
@@ -152,7 +157,7 @@ In sim mode:
 CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_) 
     :
     ok(ok_),
-    raygenmode(ok->getRaygenMode()),
+    raygenmode(SEventConfig::RGMode()),
     flight(ok->hasArg("--flightconfig")),
     composition(ok->getComposition()),
     foundry(foundry_),
@@ -192,7 +197,7 @@ void CSGOptiX::init()
     LOG(LEVEL) 
         << "[" 
         << " raygenmode " << raygenmode
-        << " RG::Name(raygenmode) " << RG::Name(raygenmode)
+        << " SRG::Name(raygenmode) " << SRG::Name(raygenmode)
         ;  
 
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
@@ -510,9 +515,9 @@ void CSGOptiX::prepareParam()
     params->setCenterExtent(ce.x, ce.y, ce.z, ce.w); 
     switch(raygenmode)
     {
-        case RG_RENDER   : prepareRenderParam()   ; break ; 
-        case RG_SIMTRACE : prepareSimulateParam() ; break ; 
-        case RG_SIMULATE : prepareSimulateParam() ; break ; 
+        case SRG_RENDER   : prepareRenderParam()   ; break ; 
+        case SRG_SIMTRACE : prepareSimulateParam() ; break ; 
+        case SRG_SIMULATE : prepareSimulateParam() ; break ; 
     }
 
 #if OPTIX_VERSION < 70000
@@ -594,9 +599,9 @@ As it is likely better to instead have multiple raygen entry points
 are retaining the distinct methods up here. 
 
 **/
-double CSGOptiX::render(){   assert(raygenmode == RG_RENDER)   ; return launch() ; }   // only still needed to fulfil SRenderer protocol base 
-double CSGOptiX::simtrace(){ assert(raygenmode == RG_SIMTRACE) ; return launch() ; }  
-double CSGOptiX::simulate(){ assert(raygenmode == RG_SIMULATE) ; return launch() ; }   
+double CSGOptiX::render(){   assert(raygenmode == SRG_RENDER)   ; return launch() ; }   // only still needed to fulfil SRenderer protocol base 
+double CSGOptiX::simtrace(){ assert(raygenmode == SRG_SIMTRACE) ; return launch() ; }  
+double CSGOptiX::simulate(){ assert(raygenmode == SRG_SIMULATE) ; return launch() ; }   
 
 
 std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 

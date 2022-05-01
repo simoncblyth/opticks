@@ -27,18 +27,19 @@ TODO:
 **/
 
 #include <cuda_runtime.h>
-#include <algorithm>
-#include <csignal>
-#include <iterator>
 
 #include "scuda.h"
 #include "sqat4.h"
 #include "stran.h"
+#include "SRG.h"
 #include "NP.hh"
-
 #include "SSys.hh"
 #include "SPath.hh"
 #include "SOpticks.hh"
+#include "SOpticksResource.hh"
+#include "SEvent.hh"
+#include "SEventConfig.hh"
+
 
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
@@ -46,11 +47,9 @@ TODO:
 #include "CSGFoundry.h"
 #include "CSGGenstep.h"
 #include "CSGOptiX.h"
-#include "RG.h"
 
 #include "QSim.hh"
 #include "QEvent.hh"
-#include "SEvent.hh"
 
 int main(int argc, char** argv)
 {
@@ -59,40 +58,24 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv ); 
     ok.configure(); 
 
-    int raygenmode = RG_SIMTRACE ;  
-    ok.setRaygenMode(raygenmode) ; // override --raygenmode option 
+    SEventConfig::SetRGMode("simtrace"); 
 
-    int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
-    const char* out_prefix = ok.getOutPrefix(optix_version_override);   
-    // out_prefix includes values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined
-    LOG(info) 
-        << " optix_version_override " << optix_version_override
-        << " out_prefix [" << out_prefix << "]" 
-        ;
+    const char* cfbase = SOpticksResource::CFBase(); 
+    //const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimtraceTest", out_prefix, DIRPATH );  
+    const char* outfold = SEventConfig::OutFold();  
 
-    const char* cfbase = ok.getFoundryBase("CFBASE");  // envvar CFBASE can override 
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimtraceTest", out_prefix, DIRPATH );  
-    const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
-
-    ok.setOutDir(outdir); 
-    SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
-
-    const char* outdir2 = ok.getOutDir(); 
-    assert( strcmp(outdir2, outdir) == 0 ); 
+    SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
 
     LOG(info) 
         << " cfbase " << cfbase 
-        << " default_outdir " << default_outdir
-        << " outdir " << outdir
+        << " outfold " << outfold
         ; 
-
-    ok.dumpArgv("CSGOptiXSimtraceTest"); 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
 
-    const char* idpath = ok.getIdPath(); 
+    const char* idpath = SOpticksResource::IDPath();  // HMM: using OPTICKS_KEY geocache, not CSGFoundry
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
     
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
@@ -128,7 +111,7 @@ int main(int argc, char** argv)
     cx.setGenstep(gs); 
 
     cx.simtrace();  
-    cx.snapSimtraceTest(outdir, botline, topline ); 
+    cx.snapSimtraceTest(outfold, botline, topline ); 
  
     cudaDeviceSynchronize(); 
     return 0 ; 

@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "SCVD.hh"
+#include "SCVD.h"
 int main()
 {
     SCVD::ConfigureVisibleDevices(); 

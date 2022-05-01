@@ -56,6 +56,12 @@ The components are manages by separate singleton instances
 that subsequent QSim instanciation collects together.
 This structure is used to allow separate testing. 
 
+
+TODO: Most of the component arguments come from CSGFoundry but it is not possible
+to consolidate to just CSGFoundry argument as that would add CSG dependency to QUDARap
+which is not acceptable. PERHAPS: accept single argument "std::map<std::string, const NP*>&" 
+argument with meaningful standardized keys. 
+
 **/
 
 template <typename T>

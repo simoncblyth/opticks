@@ -87,7 +87,6 @@ set(SOURCES
 
     CheckGeo.cc
 
-    SGLM.cc
     SLabelCache.cc
 
     SMath.cc
@@ -208,7 +207,9 @@ set(HEADERS
 
     SOpticks.hh
     SOpticksResource.hh
-    SCVD.hh
+
+    SCVD.h
+    SRG.h
 
     SOpticksKey.hh
     SMath.hh

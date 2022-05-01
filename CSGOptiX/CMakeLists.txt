@@ -62,7 +62,7 @@ list(APPEND HEADERS
 
 if(OpticksOptiX_VERSION GREATER_EQUAL 70000)
    list(APPEND CU_SOURCES 
-        OptiX7Test.cu
+        CSGOptiX7.cu
         Check.cu
     )
    list(APPEND SOURCES  
@@ -77,7 +77,10 @@ if(OpticksOptiX_VERSION GREATER_EQUAL 70000)
     )
 else()
    # TODO: note that have to manually touch .cu in order to pick up changed CSG headers in build, find way to fix this  
-   list(APPEND CU_SOURCES OptiX6Test.cu  geo_OptiX6Test.cu )
+   list(APPEND CU_SOURCES 
+        CSGOptiX6.cu  
+        CSGOptiX6geo.cu 
+   )
    list(APPEND SOURCES  
         Six.cc 
    )

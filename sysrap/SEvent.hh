@@ -1,6 +1,7 @@
 #pragma once
 
 struct NP ; 
+struct quad4 ; 
 struct quad6 ; 
 struct storch ; 
 struct uint4 ; 
