@@ -1,8 +1,6 @@
 /**
-OptiX7Test.cu 
+CSGOptiX7.cu 
 ===================
-
-TODO: come up with a better name for this 
 
 NB: ONLY CODE THAT MUST BE HERE DUE TO OPTIX DEPENDENCY SHOULD BE HERE
 everything else should be located elsewhere : mostly in qudarap: qevent, qsim 
@@ -13,6 +11,7 @@ and more easily tested.
 
 #include <optix.h>
 
+#include "SRG.h"
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
@@ -309,9 +308,9 @@ extern "C" __global__ void __raygen__rg()
   
     switch( params.raygenmode )
     {
-        case RG_RENDER:    render(   idx, dim, &prd ) ; break ;  
-        case RG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;  
-        case RG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;  
+        case SRG_RENDER:    render(   idx, dim, &prd ) ; break ;  
+        case SRG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;  
+        case SRG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;  
     }
 } 
 

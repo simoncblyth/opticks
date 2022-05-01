@@ -1,3 +1,9 @@
+/**
+CSGOptiX6.cu : incomplete backwards compat for new geometry model
+=====================================================================
+
+**/
+
 #include "scuda.h"
 #include "squad.h"
 #include <optix_device.h>

@@ -10,6 +10,7 @@ enum { SRG_RENDER, SRG_SIMTRACE, SRG_SIMULATE } ;
 
 
 #ifndef __CUDACC__
+#include <cstdint>
 #include <cstring>
 struct SRG 
 {

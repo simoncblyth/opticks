@@ -482,7 +482,7 @@ NP* QEvent::getHit() const
          << " evt.num_hit " << evt->num_hit
          << " selector.hitmask " << selector->hitmask
          << " SEventConfig::HitMask " << SEventConfig::HitMask()
-         << " SEventConfig::HitMaskDesc " << SEventConfig::HitMaskDesc()
+         << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
          ;  
 
     evt->hit = QU::device_alloc<sphoton>( evt->num_hit ); 
