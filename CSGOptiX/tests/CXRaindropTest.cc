@@ -15,6 +15,7 @@ CXRaindropTest
 #include "NP.hh"
 
 #include "SSys.hh"
+#include "SCVD.hh"
 #include "SPath.hh"
 #include "SEventConfig.hh"
 #include "SProc.hh"
@@ -35,53 +36,24 @@ CXRaindropTest
 #include "QEvent.hh"
 #include "SEvent.hh"
 
-
-
-
-
-const char* OutDir(const Opticks& ok, const char* cfbase, const char* name)
-{
-    int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
-    const char* out_prefix = ok.getOutPrefix(optix_version_override);     // eg cvd1/70000/$OPTICKS_GEOM/$OPTICKS_RELDIR
-    // out_prefix includes values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined
-    const char* default_outdir = SPath::Resolve(cfbase, name, out_prefix, DIRPATH );  
-    const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
-
-    LOG(info) 
-        << " optix_version_override " << optix_version_override
-        << " out_prefix [" << out_prefix << "]" 
-        << " cfbase " << cfbase 
-        << " default_outdir " << default_outdir
-        << " outdir " << outdir
-        ;
-
-    return outdir ; 
-}
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+    SCVD::ConfigureVisibleDevices(); 
 
     Opticks ok(argc, argv ); 
     ok.configure(); 
     ok.setRaygenMode(RG_SIMULATE) ; // override --raygenmode option 
 
     const char* EXECUTABLE = SProc::ExecutableName();
-    ok.dumpArgv(EXECUTABLE); 
 
     const char* cfbase = SOpticksResource::CFBase(); 
-    const char* outdir = OutDir(ok, cfbase, EXECUTABLE );    
-    ok.setOutDir(outdir); 
-    // TODO: relocate script writing and dir mechanices into SOpticksResource or SOpticks or similar 
+    const char* outfold = SEventConfig::OutFold();  
+    LOG(info) << " outfold [" << outfold << "]"  ; 
 
-    LOG(info) << " outdir [" << outdir << "]"  ; 
-
-    SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
-
-    // HMM: note use of the standard OPTICKS_KEY geocache , TODO: add for CF?
-    const char* idpath = ok.getIdPath(); 
+    SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
+    const char* idpath = SOpticksResource::IDPath();  // HMM: using OPTICKS_KEY geocache, not CSGFoundry
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
-
 
     // BASIS GEOMETRY : LOADED IN ORDER TO RAID ITS BOUNDARIES FOR MATERIALS,SURFACES
 
@@ -135,8 +107,7 @@ int main(int argc, char** argv)
 
     cx.simulate();  
     cudaDeviceSynchronize(); 
-
-    event->save(cfbase_local, EXECUTABLE); 
+    event->save(outfold); 
 
     return 0 ; 
 }

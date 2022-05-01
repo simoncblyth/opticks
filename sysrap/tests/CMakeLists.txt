@@ -97,6 +97,8 @@ set(TEST_SOURCES
    OpticksPhotonTest.cc
    SUTest.cc
    SEventConfigTest.cc
+
+   SCVDLabel.cc 
 )
 
 

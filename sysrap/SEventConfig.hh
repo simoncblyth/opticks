@@ -33,6 +33,11 @@ MaxTime (ns)
 
 struct SYSRAP_API SEventConfig
 {
+    static void Check(); 
+    static void SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_, int max_rec_, int max_seq_ ); 
+    static std::string Desc(); 
+    static std::string HitMaskDesc(); 
+
     static constexpr const int M = 1000000 ; 
     static constexpr const int K = 1000 ; 
 
@@ -44,6 +49,8 @@ struct SYSRAP_API SEventConfig
     static int MaxSeq();     // seqhis slots
     static float MaxExtent() ; 
     static float MaxTime() ; 
+    static const char* OutFold(); 
+    static unsigned HitMask(); 
 
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 
@@ -53,15 +60,8 @@ struct SYSRAP_API SEventConfig
     static void SetMaxSeq(    int max_seq); 
     static void SetMaxExtent( float max_extent); 
     static void SetMaxTime(   float max_time ); 
-
-    static unsigned HitMask(); 
+    static void SetOutFold( const char* out_fold); 
     static void SetHitMask(const char* abrseq, char delim=',' ); 
-    static std::string HitMaskDesc(); 
-
-    static void Check(); 
-
-    static void SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_, int max_rec_, int max_seq_ ); 
-    static std::string Desc(); 
 
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
@@ -69,10 +69,9 @@ struct SYSRAP_API SEventConfig
     static int _MaxRecord ; 
     static int _MaxRec ; 
     static int _MaxSeq ; 
-
     static float _MaxExtent ; 
     static float _MaxTime  ; 
-
+    static const char* _OutFold ; 
     static unsigned _HitMask ; 
 }; 
 

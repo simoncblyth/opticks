@@ -208,6 +208,8 @@ set(HEADERS
 
     SOpticks.hh
     SOpticksResource.hh
+    SCVD.hh
+
     SOpticksKey.hh
     SMath.hh
     SEvent.hh

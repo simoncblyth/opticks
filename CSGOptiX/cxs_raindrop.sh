@@ -42,8 +42,10 @@ fi
 unset GEOM                     # MUST unset GEOM for CSGFoundry::Load_ to load OPTICKS_KEY basis geometry 
 export OPTICKS_MAX_RECORD=10   # change from default of 0, see sysrap/SEventConfig.cc
 
-
 bin=CXRaindropTest
+
+export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
+
 
 if [ "${arg/run}" != "$arg" -o "${arg/dru}" != "$arg" ]; then 
     logdir=/tmp/$USER/opticks/$bin

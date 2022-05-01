@@ -1300,7 +1300,7 @@ inline QSIM_METHOD int qsim<T>::propagate(const int bounce, sphoton& p, qstate& 
 
     int command = propagate_to_boundary( flag, p, prd, s, rng, idx ); 
     //if( idx == 0 ) 
-    printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", idx, bounce, command, flag, s.optical.x  );   
+    //printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", idx, bounce, command, flag, s.optical.x  );   
 
     if( command == BOUNDARY )
     {

@@ -21,6 +21,7 @@ int SEventConfig::_MaxRec     = SSys::getenvint("OPTICKS_MAX_REC",          0 ) 
 int SEventConfig::_MaxSeq     = SSys::getenvint("OPTICKS_MAX_SEQ",          0 ) ;    // compressed record  
 float SEventConfig::_MaxExtent = SSys::getenvfloat("OPTICKS_MAX_EXTENT",  1000.f );  // mm 
 float SEventConfig::_MaxTime   = SSys::getenvfloat("OPTICKS_MAX_TIME",    10.f );    // ns
+const char* SEventConfig::_OutFold = SSys::getenvvar("OPTICKS_OUT_FOLD",  "$TMP" ); 
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
@@ -30,6 +31,8 @@ int SEventConfig::MaxRec(){      return _MaxRec ; }
 int SEventConfig::MaxSeq(){      return _MaxSeq ; }
 float SEventConfig::MaxExtent(){ return _MaxExtent ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
+const char* SEventConfig::OutFold(){   return _OutFold ; }
+
 
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; Check() ; }
 void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; Check() ; }
@@ -39,6 +42,7 @@ void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; C
 void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; Check() ; }
 void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; Check() ; }
 void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; Check() ; }
+void SEventConfig::SetOutFold(   const char* out_fold){   _OutFold = strdup(out_fold) ; Check() ; }
 
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar("OPTICKS_HITMASK", "SD" )) ;   
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
