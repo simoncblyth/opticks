@@ -1,4 +1,5 @@
 #include <sstream>
+#include <cstring>
 #include <cassert>
 
 #include "SSys.hh"
