@@ -37,7 +37,6 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv ); 
     ok.configure(); 
 
-    const char* NAME = "CSGOptiXSimulateTest" ; 
     const char* cfbase = SOpticksResource::CFBase(); 
     const char* outfold = SEventConfig::OutFold();  
     LOG(info) << " outfold [" << outfold << "]"  ; 

@@ -17,12 +17,16 @@ TODO:
 
 4. bring back seqhis photon history selection 
 
+5. rotation 
+
 
 Both compressed and full record visualization work but currently they 
 need adhoc time+space scalings to make them behave similar to each other.
-Need a better way to make them behave like each other. 
-Attempt to control everything via domain uniforms adds 
-lots of complication, is there a better way ?
+Need a better way to make them behave like each other and automate the setting 
+of extents. 
+
+Attempt to control everything via domain uniforms adds lots of complication, 
+is there a better way ?
 
     ARG=r ./go.sh run   ## this is default 
     ARG=c ./go.sh run
@@ -52,33 +56,34 @@ int main(int argc, char** argv)
 {
     const char* ARG = getenv("ARG"); 
     char arg = ARG == nullptr ? 'r' : ARG[0] ; 
-
     const char* ARRAY_NAME = nullptr ; 
     switch(arg)
     {
-        case 'c': ARRAY_NAME = "c.npy" ; break ; 
-        case 'r': ARRAY_NAME = "r.npy" ; break ; 
-        default : ARRAY_NAME = "r.npy" ; break ; 
+        case 'c': ARRAY_NAME = "rec.npy" ; break ; 
+        case 'r': ARRAY_NAME = "record.npy" ; break ; 
+        default : ARRAY_NAME = "record.npy" ; break ; 
     }
+    // record.npy : full step record with shape like (10000, 10, 4, 4) and type np.float32 
+    // rec.npy    : compressed step record with shape like (10000, 10, 2, 4) and type np.int16 
 
-    NP* record = NP::Load(ARRAY_FOLD, ARRAY_NAME) ;   // expecting shape like (10000, 10, 4, 4)
-    assert(record->shape.size() == 4);   
-    bool is_compressed = record->ebyte == 2 ; 
-    GLsizei record_count = record->shape[0]*record->shape[1] ;  
-    GLint   record_first = 0 ; 
+    NP* a = NP::Load(ARRAY_FOLD, ARRAY_NAME) ;   // expecting shape like (10000, 10, 4, 4)
+    assert(a->shape.size() == 4);   
+    bool is_compressed = a->ebyte == 2 ; 
+    GLsizei a_count = a->shape[0]*a->shape[1] ;  
+    GLint   a_first = 0 ; 
 
     std::cout 
         << " arg " << arg 
         << " ARRAY_NAME " << ARRAY_NAME  
-        << " record " << record->sstr() 
+        << " a.sstr " << a->sstr() 
         << " is_compressed " << is_compressed 
-        << " record_count " << record_count 
+        << " a_count " << a_count 
         << std::endl 
         ; 
 
     float4 post_center = make_float4( 0.f, 0.f, 0.f, 0.f ); 
     float4 post_extent = make_float4( 1.f, 1.f, 1.f, 5.f ); 
-    float extent = is_compressed ? 1.f : 1000.f ; 
+    float extent = is_compressed ? 1.f : 100.f ; 
 
 /*
     if( is_compressed )
@@ -107,12 +112,9 @@ int main(int argc, char** argv)
     // Param.w is incremented from .x to .y by ,z  
     glm::vec4 Param(0.f, post_extent.w, post_extent.w/1000.f , 0.f);    // t0, t1, dt, tc 
 
-    // expecting full step record with shape like (10000, 10, 4, 4) and type np.float32 
-    // or compressed step record with shape like (10000, 10, 2, 4) and type np.int16 
-    //record->set_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false" );   
-    // ATT CONFIG BELONGS IN QEvent 
-
-    SGLFW sglfw(1280, 720, ARRAY_NAME );    
+    //TODO: SGLM needs width, height too, SEventConfig? envvar control, consolidation 
+    const char* title = ARRAY_NAME ; 
+    SGLFW sglfw(1280, 720, title );   
     sglfw.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text ); 
 
     GLint ModelViewProjection_location = glGetUniformLocation(sglfw.program, "ModelViewProjection");   SGLFW::check(__FILE__, __LINE__);
@@ -125,12 +127,12 @@ int main(int argc, char** argv)
     glGenVertexArrays (1, &vao);                                                                       SGLFW::check(__FILE__, __LINE__);
     glBindVertexArray (vao);                                                                           SGLFW::check(__FILE__, __LINE__);
 
-    GLuint record_buffer ; 
-    glGenBuffers(1, &record_buffer);                                                      SGLFW::check(__FILE__, __LINE__);
-    glBindBuffer(GL_ARRAY_BUFFER, record_buffer);                                         SGLFW::check(__FILE__, __LINE__);
-    glBufferData(GL_ARRAY_BUFFER, record->arr_bytes(), record->bytes(), GL_STATIC_DRAW);  SGLFW::check(__FILE__, __LINE__);
+    GLuint a_buffer ; 
+    glGenBuffers(1, &a_buffer);                                                 SGLFW::check(__FILE__, __LINE__);
+    glBindBuffer(GL_ARRAY_BUFFER, a_buffer);                                    SGLFW::check(__FILE__, __LINE__);
+    glBufferData(GL_ARRAY_BUFFER, a->arr_bytes(), a->bytes(), GL_STATIC_DRAW);  SGLFW::check(__FILE__, __LINE__);
 
-    std::string rpos_spec = record->get_meta<std::string>("rpos", "");  
+    std::string rpos_spec = a->get_meta<std::string>("rpos", "");  
     sglfw.enableArrayAttribute("rpos", rpos_spec.c_str() ); 
  
     int width, height;
@@ -168,7 +170,7 @@ int main(int argc, char** argv)
         glUniform4fv( post_center_location,              1, &post_center.x );
         glUniform4fv( post_extent_location,              1, &post_extent.x );
 
-        glDrawArrays(GL_LINE_STRIP, record_first, record_count);
+        glDrawArrays(GL_LINE_STRIP, a_first, a_count);
 
         glfwSwapBuffers(sglfw.window);
         glfwPollEvents();

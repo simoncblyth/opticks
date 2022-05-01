@@ -78,6 +78,7 @@ struct SYSRAP_API SEventConfig
     static void SetHitMask(const char* abrseq, char delim=',' ); 
     static void SetRGMode( const char* rg_mode) ; 
 
+    static int _MaxPhotonDefault ; 
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
     static int _MaxBounce ; 

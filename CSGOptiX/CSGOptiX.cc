@@ -76,6 +76,7 @@ LONGTERM: see if can pull out the essentials into a smaller class
 
 * SGLM.hh is already on the way to doing this kinda thing in a single header 
 * Composition::getEyeUVW is the crux method needed 
+* Composition or its replacement only relevant for rendering, not for simulation 
 
 **/
 
@@ -117,12 +118,6 @@ const char* CSGOptiX::PTXNAME = "CSGOptiX7" ;
 const char* CSGOptiX::GEO_PTXNAME = nullptr ; 
 #endif
 
-const char* CSGOptiX::ENV(const char* key, const char* fallback)
-{
-    const char* value = getenv(key) ; 
-    return value ? value : fallback ; 
-}
-
 const char* CSGOptiX::desc() const 
 {
     std::stringstream ss ; 
@@ -135,8 +130,6 @@ const char* CSGOptiX::desc() const
     std::string s = ss.str(); 
     return strdup(s.c_str()); 
 }
-
-
 
 /**
 CSGOptiX::CSGOptiX
@@ -161,8 +154,8 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     flight(ok->hasArg("--flightconfig")),
     composition(ok->getComposition()),
     foundry(foundry_),
-    prefix(ENV("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
-    outdir(ok->getOutDir()),    // evar:OUTDIR default overridden by --outdir option   
+    prefix(SSys::getenvvar("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
+    outdir(SEventConfig::OutFold()),    
     cmaketarget("CSGOptiX"),  
     ptxpath(SStr::PTXPath( prefix, cmaketarget, PTXNAME )),
 #if OPTIX_VERSION < 70000 

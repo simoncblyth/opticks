@@ -41,8 +41,10 @@ if [ "${arg/run}" != "$arg" ] ; then
 
     echo executing $name
     export SHADER_FOLD=$sdir/rec_flying_point
+
     #export ARRAY_FOLD=/tmp/$USER/opticks/GeoChain/BoxedSphere/CXRaindropTest
-    export ARRAY_FOLD=/tmp/$USER/opticks/QSimTest/mock_propagate
+    export ARRAY_FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest/SCVD0/70000
+    #export ARRAY_FOLD=/tmp/$USER/opticks/QSimTest/mock_propagate
 
     if [ -n "$DEBUG" ]; then 
         lldb__ $name 

@@ -26,26 +26,34 @@ esac
 
 msg="=== $BASH_SOURCE :"
 arg=${1:-$argdef}
+bin=CXRaindropTest
 
 if [ "$(uname)" == "Darwin" ]; then 
     if [ "$arg" == "dru" -o "$arg" == "dan" ]; then  
         echo $msg dru or dan mode is local Darwin running and analysis 
         export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain_Darwin/$GEOM
+        export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
     else
         echo $msg run or ana mode handles Linux generated results grabbed from remote 
         export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain/$GEOM
+        export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/SCVD0/70000
     fi 
 else
     export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain/$GEOM
+    export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
 fi 
+
+
+vars="arg bin GEOM CFBASE_LOCAL OPTICKS_OUT_FOLD FOLD"
+dumpvars(){ for var in $vars ; do printf "%25s : %s \n" $var ${!var} ; done ; }
+dumpvars 
+
+if [ "${arg/info}" != "$arg" ]; then
+    exit 0 
+fi  
 
 unset GEOM                     # MUST unset GEOM for CSGFoundry::Load_ to load OPTICKS_KEY basis geometry 
 export OPTICKS_MAX_RECORD=10   # change from default of 0, see sysrap/SEventConfig.cc
-
-bin=CXRaindropTest
-
-export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
-
 
 if [ "${arg/run}" != "$arg" -o "${arg/dru}" != "$arg" ]; then 
     logdir=/tmp/$USER/opticks/$bin
@@ -66,14 +74,9 @@ fi
 
 if [ "${arg/ana}" != "$arg" -o "${arg/dan}" != "$arg" ]; then 
 
-    #if [ "$(uname)" == "Darwin" ]; then
-    #    opticks-switch-key remote   ## cx;cf_grab.sh to update local copy of the remote CSGFoundry for analysis consistency  
-    #fi
-    #  HMM NO SHOULD NOT USE THE CENTRALIZED STANDARD ONE : NEED TO USE THE SPECIFIC CSGFoundry FOR THIS TEST  
-
-    export FOLD=$CFBASE_LOCAL/$bin
+    export FOLD=$OPTICKS_OUT_FOLD
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py  
 fi 
 
-
+dumpvars 
 exit 0 

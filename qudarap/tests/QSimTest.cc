@@ -647,6 +647,9 @@ void QSimTest<T>::mock_propagate()
     LOG(info) << "[" ; 
     LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
 
+
+
+
     NP* p   = qs.duplicate_dbg_ephoton(num); 
 
     int bounce_max = SEventConfig::MaxBounce(); 
@@ -738,6 +741,7 @@ void QSimTest<T>::PreInit(unsigned type )  // static
         SEventConfig::SetMaxRecord(num_bounce+1); 
         SEventConfig::SetMaxRec(num_bounce+1); 
         SEventConfig::SetMaxSeq(num_bounce+1); 
+        //SEventConfig::SetHitMask("SD,SC", ',');  // change hitmask to check what happens when no hits 
 
         LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
     }

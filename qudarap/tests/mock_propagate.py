@@ -13,17 +13,21 @@ if __name__ == '__main__':
     t = Fold.Load()
     PIDX = int(os.environ.get("PIDX","-1"))
 
+    domain = t.domain
+    post_center, post_extent, polw_center, polw_extent = domain[0]  
+
+    domain_meta = t.domain_meta
+    hitmask = np.uint32(domain_meta.find("hitmask:"))  
+
     p = t.photon
     r = t.record
     seq = t.seq
     prd = t.prd
-    h = t.hit
-    h_meta = t.hit_meta
+    h = t.hit if hasattr(t,"hit") else None
+    h_meta = t.hit_meta 
 
     c = t.rec
 
-    domain = t.domain 
-    post_center, post_extent, polw_center, polw_extent = domain[0]  
 
     # domain compression means these should fit into -1:1 
     c_post_ = c[:,:,0].astype(np.float32)/32767.0
@@ -33,8 +37,7 @@ if __name__ == '__main__':
     c_post = c_post_*post_extent + post_center   
     c_polw = c_polw_*polw_extent + polw_center 
 
-
-    hitmask = np.uint32(h_meta.find("hitmask:"))  
+    ## HMM:makes more sense to put this meta data on the domain, for when no hits
     pyhit = hit__(p, hitmask)  # hits selected in python 
     assert np.all( pyhit == h ) 
 

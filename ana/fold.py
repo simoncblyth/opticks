@@ -24,6 +24,10 @@ class Fold(object):
         pass
         return fold
 
+    def __getattr__(self, name):
+        """Only called when there is no *name* attr"""
+        return None
+
     def __init__(self, base, **kwa):
         self.base = base
         self.kwa = kwa 
@@ -98,9 +102,10 @@ class Fold(object):
 
     def desc(self, stem):
         a = getattr(self, stem)
-        ext = ".txt" if a.dtype == 'O' else ".npy"
+        ext = ".txt" if a.__class__.__name__ == 'NPMeta' else ".npy"
         path = os.path.join(self.base, "%s%s" % (stem,ext))
-        return " %15s : %15s : %s " % ( stem, str(a.shape), path )
+        sh = str(len(a)) if ext == ".txt" else str(a.shape)
+        return " %15s : %15s : %s " % ( stem, sh, path )
 
     def __repr__(self):
         return "\n".join(self.desc(stem) for stem in self.stems)    

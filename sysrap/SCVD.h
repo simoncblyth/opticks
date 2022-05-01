@@ -68,7 +68,8 @@ inline void SCVD::ConfigureVisibleDevices()  // static
     std::string s = ss.str(); 
     char* ekv = const_cast<char*>(s.c_str()); 
     putenv(ekv); 
-    std::cout << "SCVD::ConfigureVisibleDevices putenv " << ekv << std::endl ; 
+
+    if(getenv("VERBOSE")) std::cerr << "SCVD::ConfigureVisibleDevices putenv " << ekv << std::endl ; 
 }
 
 

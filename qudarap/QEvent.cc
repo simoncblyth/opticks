@@ -130,9 +130,13 @@ NP* QEvent::getDomain() const
     quad4 dom[2] ; 
     evt->get_domain(dom[0]); 
     evt->get_config(dom[1]); 
-    NP* d = NP::Make<float>( 2, 4, 4 ); 
-    d->read2<float>( (float*)&dom[0] ); 
-    return d ; 
+    NP* domain = NP::Make<float>( 2, 4, 4 ); 
+    domain->read2<float>( (float*)&dom[0] ); 
+    // actually makes more sense to be on the domain than on the hits 
+    // as domain will always be there 
+    domain->set_meta<unsigned>("hitmask", selector->hitmask );  
+    domain->set_meta<std::string>("creator", "QEvent::getDomain" );  
+    return domain ; 
 }
 
 
@@ -466,6 +470,10 @@ The alternative to this dynamic "busy" handling of hits would be to reuse a fixe
 sized to max_photons : that however seems unpalatable due it always doubling up GPU memory for 
 photons and hits.  
 
+hitmask metadata was formerly placed on the hit array, 
+subsequently moved to domain_meta as domain should 
+always be present, unlike hits. 
+
 **/
 
 NP* QEvent::getHit() const 
@@ -485,26 +493,28 @@ NP* QEvent::getHit() const
          << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
          ;  
 
+    NP* hit = evt->num_hit > 0 ? getHit_() : nullptr ; 
+
+    return hit ; 
+}
+
+NP* QEvent::getHit_() const 
+{
     evt->hit = QU::device_alloc<sphoton>( evt->num_hit ); 
 
     SU::copy_if_device_to_device_presized_sphoton( evt->hit, evt->photon, evt->num_photon,  *selector );
 
-    NP* hits = NP::Make<float>( evt->num_hit, 4, 4 ); 
-    hits->set_meta<unsigned>("hitmask", selector->hitmask );  
-    hits->set_meta<std::string>("creator", "QEvent::getHits" );  
+    NP* hit = NP::Make<float>( evt->num_hit, 4, 4 ); 
 
-    QU::copy_device_to_host<sphoton>( (sphoton*)hits->bytes(), evt->hit, evt->num_hit );
+    QU::copy_device_to_host<sphoton>( (sphoton*)hit->bytes(), evt->hit, evt->num_hit );
 
     QU::device_free<sphoton>( evt->hit ); 
 
     evt->hit = nullptr ; 
+    LOG(info) << " hit.sstr " << hit->sstr() ; 
 
-    LOG(info) << " hits " << hits->sstr() ; 
-
-    return hits ; 
+    return hit ; 
 }
-
-
 
 
 /**

@@ -98,6 +98,7 @@ struct QUDARAP_API QEvent
 
     unsigned getNumHit() const ; 
     NP*      getHit() const ; 
+    NP*      getHit_() const ; 
 
     void save(const char* dir) const ; 
     void save(const char* base, const char* reldir ) const ; 

@@ -12,8 +12,8 @@ PIDX = int(os.environ.get("PIDX","-1"))
 
 if __name__ == '__main__':
     t = Fold.Load()
-    r = t.r if hasattr(t,'r') else None
-    p = t.p if hasattr(t,'p') else None
+    r = t.record if hasattr(t,'record') else None
+    p = t.photon if hasattr(t,'photon') else None
 
     if p is None:
         print("FATAL : no photons loaded" ) 
