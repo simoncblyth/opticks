@@ -292,6 +292,49 @@ void test_getPixelFactor(const Opticks* ok)
     LOG(info) << " coord2pixel " << coord2pixel ; 
 }
 
+void test_getEyeUVW(const Opticks* ok)
+{
+    Composition* comp = new Composition(ok) ;
+
+    // CSGOptiX::setComposition 
+
+    glm::vec4 ce(0.f, 0.f, 0.f, 100.f ); 
+    bool autocam = true ;
+    const qat4* m2w = nullptr ; 
+    const qat4* w2m = nullptr ; 
+    comp->setCenterExtent( ce, autocam, m2w, w2m ); 
+
+    float extent = ce.w ;
+    float tmin_model = 0.1f ; 
+    float tmin = extent*tmin_model ;
+    comp->setNear(tmin); 
+
+    glm::vec3 eye ;
+    glm::vec3 U ; 
+    glm::vec3 V ; 
+    glm::vec3 W ; 
+    glm::vec4 ZProj ;
+
+    comp->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
+
+    float tmin_ = comp->getNear(); 
+    float tmax = comp->getFar(); 
+    unsigned cameratype = comp->getCameraType(); 
+
+    LOG(info)
+        << " extent " << extent
+        << " tmin " << tmin 
+        << " tmin_ " << tmin_ 
+        << " tmax " << tmax 
+        << " eye (" << eye.x << " " << eye.y << " " << eye.z << " ) "
+        << " U (" << U.x << " " << U.y << " " << U.z << " ) "
+        << " V (" << V.x << " " << V.y << " " << V.z << " ) "
+        << " W (" << W.x << " " << W.y << " " << W.z << " ) "
+        << " cameratype " << cameratype
+        ;   
+
+}
+
 
 
 int main(int argc, char** argv)
@@ -305,12 +348,14 @@ int main(int argc, char** argv)
     test_rotate();
     test_setCenterExtent();
     test_center_extent(&ok);
-    test_setCenterExtent();
     test_depth(&ok);
     test_snapconfig(&ok);      
+    test_getPixelFactor(&ok); 
     */
 
-    test_getPixelFactor(&ok); 
+    test_getEyeUVW(&ok); 
+
+
 
     return 0 ;
 }

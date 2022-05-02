@@ -150,8 +150,8 @@ class OKCORE_API Composition : public NConfigurable {
       static const glm::vec3 Y ; 
       static const glm::vec3 Z ; 
   public:
-      Composition(Opticks* ok);
-      Opticks* getOpticks() const ; 
+      Composition(const Opticks* ok);
+      const Opticks* getOpticks() const ; 
       void addConstituentConfigurables(NState* state);
       virtual ~Composition();
    public:
@@ -526,7 +526,7 @@ class OKCORE_API Composition : public NConfigurable {
 
   private:
       // residents
-      Opticks*    m_ok ; 
+      const Opticks*    m_ok ; 
       Animator*   m_animator ; 
       Animator*   m_rotator ; 
       Camera*    m_camera ;

@@ -1,67 +1,61 @@
-// name=SGLM_test ; glm- ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I$(glm-idir) -o /tmp/$name && /tmp/$name
+// name=SGLM_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I$OPTICKS_PREFIX/externals/glm/glm -o /tmp/$name && /tmp/$name
 
-#include <cassert>
 #include "SGLM.hh"
 
-void test_GetEVec()
+struct test_Assignment
 {
-    glm::vec3 v(0.f, 0.f, 0.f ); 
-    SGLM::GetEVec(v, "VEC3" , "1,2,3" );  
+    glm::tmat4x4<double> md  ;
+    glm::tmat4x4<float>  mf  ; 
 
-    assert( v.x == 1.f ); 
-    assert( v.y == 2.f ); 
-    assert( v.z == 3.f ); 
+    test_Assignment()
+       :
+       md(SGLM::DemoMatrix<double>(1.)),
+       mf(SGLM::DemoMatrix<float>(2.f)) 
+    {
+        std::cout << "SGLM::DemoMatrix<double> md " << std::endl << SGLM::Present_<double>(md) << std::endl ;  
+        std::cout << "SGLM::DemoMatrix<float>  mf"  << std::endl << SGLM::Present_<float>(mf) << std::endl ;  
+    }
+    static void Widening()
+    {
+        test_Assignment t ; 
+        t.md = t.mf ;  
+        std::cout << "SGLM::DemoMatrix<double> t.md (after t.md = t.mf    widening mf values into md)  " << std::endl << SGLM::Present_<double>(t.md) << std::endl ;  
+    }
+    static void Narrowing()
+    {
+        test_Assignment t ; 
+        t.mf = t.md ;  
+        std::cout << "SGLM::DemoMatrix<float> t.mf (after t.mf = t.md    narrowing md values into mf)  " << std::endl << SGLM::Present_<float>(t.mf) << std::endl ;  
+    }
+}; 
 
-    const char* key = "VEC4" ; 
 
-    glm::vec4 f(SGLM::EVec4(key, "10,20,30,40"));
-
-    std::cout << std::setw(10) << key << SGLM::Present(f) << std::endl ; 
+void test_SGLM()
+{
+    // setenv("WH", "1024,768", true ); 
+    // setenv("CE", "0,0,0,100", true) ; 
+    // setenv("EYE", "-1,-1,0", true ); 
+    // NB it is too late for setenv to influence SGLM as the static initialization would have happened already : 
+    // must use static methods to change the inputs that OR export envvars in the invoking script to configure defaults
    
-    assert( f.x == 10.f ); 
-    assert( f.y == 20.f ); 
-    assert( f.z == 30.f ); 
-    assert( f.w == 40.f ); 
-}
+    // SGLM::SetWH(1024,768); 
 
-
-void test_GetMVP()
-{
-    glm::mat4 world2clip = SGLM::GetMVP( 1024, 768, true );  
-    std::cout << "world2clip\n" << SGLM::Present(world2clip) << std::endl ; 
-
-}
-
-void test_SGLM_cf()
-{
     SGLM sglm ; 
     sglm.dump(); 
-    
-    glm::mat4 GetMVP_world2clip = SGLM::GetMVP( 1024, 768, false );  
-    std::cout << "GetMVP_world2clip\n" << SGLM::Present(GetMVP_world2clip) << std::endl ; 
-    std::cout << "sglm.world2clip\n" << SGLM::Present(sglm.world2clip) << std::endl ; 
-}
-
-void test_SGLM_update()
-{
-    SGLM sglm ; 
-    sglm.dump(); 
-
-    sglm.zoom = 10.f ; 
-    sglm.update(); 
-    sglm.dump(); 
-
 }
 
 
 
-int main(int argc, char** argv)
+
+int main()
 {
-    //test_GetEVec(); 
-    //test_GetMVP(); 
-    //test_SGLM_cf();
- 
-    test_SGLM_update(); 
- 
+    /*
+    test_Assignment::Widening(); 
+    test_Assignment::Narrowing(); 
+    */
+
+    test_SGLM(); 
+
+
     return 0 ; 
 }

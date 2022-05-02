@@ -3,6 +3,14 @@
 #include "SPresent.hh"
 #include "SCenterExtentFrame.hh"
 
+/**
+SCenterExtentFrame::CartesianToSpherical
+-----------------------------------------
+
+Obtains (radius, theta, phi) from the xyz of the xyzw (NB w is not used). 
+
+**/
+
 template<typename T>
 void SCenterExtentFrame<T>::CartesianToSpherical( glm::tvec3<T>& radius_theta_phi, const glm::tvec4<T>& xyzw ) // static
 {
@@ -19,6 +27,13 @@ void SCenterExtentFrame<T>::CartesianToSpherical( glm::tvec3<T>& radius_theta_ph
     radius_theta_phi.y = theta ; 
     radius_theta_phi.z = phi ; 
 }
+/**
+SCenterExtentFrame::SphericalToCartesian
+-------------------------------------------
+
+Obtains xyz from the spherical coordinates. NB the xyzw.w is set to 1.
+
+**/
 
 template<typename T>
 void SCenterExtentFrame<T>::SphericalToCartesian( glm::tvec4<T>& xyzw, const glm::tvec3<T>& radius_theta_phi ) // static
@@ -39,6 +54,16 @@ void SCenterExtentFrame<T>::SphericalToCartesian( glm::tvec4<T>& xyzw, const glm
     xyzw.w = w ; 
 }
 
+/**
+SCenterExtentFrame::XYZ_to_RTP
+--------------------------------
+
+Returns rotation matrix needed for transforming cartesian (x,y,z) 
+to a specific tangential frame at a (theta, phi) point on an imaginary sphere. 
+NB just the rotation here, no translation 
+
+**/
+
 template<typename T>
 glm::tmat4x4<T> SCenterExtentFrame<T>::XYZ_to_RTP( T theta, T phi )  // static
 {
@@ -50,6 +75,7 @@ glm::tmat4x4<T> SCenterExtentFrame<T>::XYZ_to_RTP( T theta, T phi )  // static
       }} ;
     return glm::make_mat4x4<T>(_rot.data()) ;
 }
+
 
 template<typename T>
 glm::tmat4x4<T> SCenterExtentFrame<T>::RTP_to_XYZ(  T theta, T phi ) // static
@@ -84,7 +110,7 @@ SCenterExtentFrame<T>::SCenterExtentFrame( double _cx, double _cy, double _cz, d
 template<typename T>
 void SCenterExtentFrame<T>::init()
 { 
-    CartesianToSpherical(rtp, ce); 
+    CartesianToSpherical(rtp, ce);     // ce.w the extent is not used here, just the center ce.xyz
     SphericalToCartesian(xyzw, rtp); 
 
     const T extent = ce.w ; 
@@ -93,8 +119,10 @@ void SCenterExtentFrame<T>::init()
     glm::tvec3<T> isc(T(1.)/extent) ;  
     glm::tvec3<T> tr(ce) ;  
 
-    rotate     = rtp_tangential ? XYZ_to_RTP(rtp.y, rtp.z) : glm::tmat4x4<T>(1.0) ; 
-    irotate    = rtp_tangential ? RTP_to_XYZ(rtp.y, rtp.z) : glm::tmat4x4<T>(1.0) ; 
+    T theta = rtp.y ; 
+    T phi = rtp.z ; 
+    rotate     = rtp_tangential ? XYZ_to_RTP(theta, phi) : glm::tmat4x4<T>(1.0) ; 
+    irotate    = rtp_tangential ? RTP_to_XYZ(theta, phi) : glm::tmat4x4<T>(1.0) ; 
     scale      = glm::scale(     glm::tmat4x4<T>(1.), sc ) ; 
     iscale     = glm::scale(     glm::tmat4x4<T>(1.), isc ) ; 
     translate  = glm::translate( glm::tmat4x4<T>(1.), tr ) ; 

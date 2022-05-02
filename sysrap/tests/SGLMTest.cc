@@ -4,10 +4,9 @@
 #include "OPTICKS_LOG.hh"
 #include "SGLM.hh"
 
-int main(int argc, char** argv)
-{
-    OPTICKS_LOG(argc, argv); 
 
+void test_GetEVec()
+{
     glm::vec3 v(0.f, 0.f, 0.f ); 
     SGLM::GetEVec(v, "VEC3" , "1,2,3" );  
 
@@ -25,6 +24,27 @@ int main(int argc, char** argv)
     assert( f.y == 20.f ); 
     assert( f.z == 30.f ); 
     assert( f.w == 40.f ); 
+}
+
+
+void test_Narrow()
+{
+    glm::tmat4x4<double> md = SGLM::DemoMatrix<double>(1.); 
+    glm::tmat4x4<float>  mf = SGLM::DemoMatrix<float>(2.f); 
+    std::cout << "SGLM::DemoMatrix<double> md " << std::endl << SGLM::Present_<double>(md) << std::endl ;  
+    std::cout << "SGLM::DemoMatrix<float>  mf"  << std::endl << SGLM::Present_<float>(mf) << std::endl ;  
+
+    mf = md ; 
+    std::cout << "SGLM::DemoMatrix<float>  mf (after mf = md )"  << std::endl << SGLM::Present_<float>(mf) << std::endl ;  
+}
+
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+
+    test_Narrow(); 
 
     return 0 ; 
 }

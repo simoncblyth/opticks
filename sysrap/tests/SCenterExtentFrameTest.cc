@@ -128,6 +128,16 @@ void SCenterExtentFrameTest<T>::check(char m)
     }
 }
 
+
+
+void test_Narrow()
+{
+
+
+
+}
+
+
 int main(int argc, char** argv)
 {
     double cx = 100. ; 

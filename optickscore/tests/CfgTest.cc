@@ -54,7 +54,9 @@ void test_configure_one(int argc, char** argv)
 
 BCfg* test_configure_tree(Composition* m_composition)
 {
-    Opticks*  m_ok = m_composition->getOpticks(); 
+    const Opticks*  m_ok = m_composition->getOpticks(); 
+    Opticks* ok = const_cast<Opticks*>(m_ok); 
+
 
     // the below instanciations canonically in OpticksHub::OpticksHub  
     BCfg*                 m_cfg = new BCfg("umbrella", false);  
@@ -70,13 +72,13 @@ BCfg* test_configure_tree(Composition* m_composition)
 
     m_cfg->commandline(argc, argv);
 
-    m_ok->configure();        // <--  HUH ? its already added to the umbrella
+    ok->configure();        // <--  HUH ? its already added to the umbrella
 
     if(m_fcfg->hasError())
     {   
         LOG(fatal) << "parse error " << m_fcfg->getErrorMessage() ; 
         m_fcfg->dump("OpticksHub::config m_fcfg");
-        m_ok->setExit(true);
+        ok->setExit(true);
     }
 
     return m_cfg ; 

@@ -1,6 +1,11 @@
 remove-OpticksCore-dependency-from-CSGOptiX
 =============================================
 
+Reimplementing the Composition tree of classes for the new workflow ?
+-----------------------------------------------------------------------------------
+
+* :doc:`reimplement_Composition`
+
 
 CVD control needs to be moved  : DONE : simple headeronly replacement im SCVD.hh
 -----------------------------------------------------------------------------------

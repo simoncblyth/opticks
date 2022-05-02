@@ -163,7 +163,7 @@ const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style
 
 
 
-Composition::Composition(Opticks* ok)
+Composition::Composition(const Opticks* ok)
   :
   m_lodcut(5000.f,10000.f,0.f,0.f),
   m_model2world(1.f),
@@ -255,7 +255,7 @@ void Composition::init()
 
 
 
-Opticks* Composition::getOpticks() const 
+const Opticks* Composition::getOpticks() const 
 {
    return m_ok ;  
 }
@@ -1464,6 +1464,7 @@ void Composition::setModel2World_ce(const glm::vec4& ce, bool rtp_tangential )
     SCenterExtentFrame<double> cef( ce.x, ce.y, ce.z, ce.w, rtp_tangential ); 
     m_model2world = cef.model2world ;
     m_world2model = cef.world2model ;
+    // HUH : this is narrowing from mat4 in double to one in float, does that work ?
 
     dump("Composition::setModel2World_ce"); 
 }
