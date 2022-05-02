@@ -11,7 +11,7 @@ Six : backward compatibility layer :  enabling new workflow CSGFoundry geometry 
 
 struct qat4 ; 
 
-class Opticks ; 
+//class Opticks ; 
 
 struct CSGFoundry ; 
 struct CSGSolid ; 
@@ -21,8 +21,10 @@ struct Frame ;
 
 struct Six
 {
-    const Opticks*          ok ; 
-    const std::vector<unsigned>&  solid_selection ; 
+    //const Opticks*          ok ; 
+    //const std::vector<unsigned>&  solid_selection ; 
+
+    std::vector<unsigned>   solid_selection ; 
     unsigned long long      emm ; 
 
     optix::Context     context ;
@@ -50,7 +52,7 @@ struct Six
 
     std::vector<optix::Group>    groups ; 
 
-    Six(const Opticks* ok, const char* ptx_path, const char* geo_ptx_path, Params* params_);  
+    Six(const char* ptx_path, const char* geo_ptx_path, Params* params_);  
     void initContext();
     void initFrame(); 
 

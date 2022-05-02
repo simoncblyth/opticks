@@ -15,6 +15,11 @@ struct quad6 ;
 struct qat4 ; 
 struct float4 ; 
 
+
+#ifdef WITH_SGLM
+struct SGLM ; 
+#endif
+
 struct CSGFoundry ; 
 struct CSGView ; 
 
@@ -44,11 +49,14 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     static const char* PTXNAME ; 
     static const char* GEO_PTXNAME ; 
 
-    Opticks*          ok ;  
-    int               raygenmode ; 
+#ifdef WITH_SGLM
+    SGLM*             sglm ; 
     bool              flight ; 
+#else
+    Opticks*          ok ;  
     Composition*      composition ; 
- 
+    bool              flight ; 
+#endif
     const CSGFoundry* foundry ; 
     const char*       prefix ; 
     const char*       outdir ; 
@@ -60,6 +68,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
 
     std::vector<double>  launch_times ;
 
+    int               raygenmode ; 
     Params*           params  ; 
 #if OPTIX_VERSION < 70000
     Six* six ;  
@@ -79,7 +88,12 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     QEvent*      event ;  
  
     const char* desc() const ; 
+
+#ifdef WITH_SGLM
+    CSGOptiX(const CSGFoundry* foundry ); 
+#else
     CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
+#endif
 
     void init(); 
     void initStack(); 

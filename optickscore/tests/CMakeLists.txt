@@ -34,6 +34,7 @@ set(TEST_SOURCES
     OpticksSwitchesTest.cc
 
     CompositionTest.cc
+    Composition_vs_SGLM_Test.cc
     ViewTest.cc
     CtrlTest.cc
 

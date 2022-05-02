@@ -9,9 +9,7 @@
 #include <optix_stubs.h>
 #include <cuda_runtime.h>
 
-
-#include "Opticks.hh"  // TODO: eliminate 
-
+#include "SGeoConfig.hh"
 #include "SSys.hh"
 #include "SVec.hh"
 #include "scuda.h"  
@@ -47,18 +45,11 @@ access to their corresponding program groups (PGs).
 This is one aspect of establishing the connection between the 
 PGs and their data.
 
-TODO: extracate Opticks dependency 
-
-1. Opticks::getSolidSelection
-2. Opticks::getEMM Opticks::isEnabledMergedMesh (these are the same info)
-
 **/
 
-SBT::SBT(const Opticks* ok_, const PIP* pip_)
+SBT::SBT(const PIP* pip_)
     :
-    ok(ok_),
-    solid_selection(ok->getSolidSelection()),   // vector<unsigned>
-    emm(ok->getEMM()),                          // unsigned long long  
+    emm(SGeoConfig::EMM), 
     pip(pip_),
     raygen(nullptr),
     miss(nullptr),
@@ -232,7 +223,7 @@ void SBT::createGAS_Standard()
     {
         unsigned gas_idx = i ; 
 
-        bool enabled = ok->isEnabledMergedMesh(gas_idx) ;
+        bool enabled = SGeoConfig::IsEnabledMergedMesh(gas_idx) ;
         bool enabled2 = emm & ( 0x1 << gas_idx ) ;  
         assert( enabled == enabled2 );  
 
@@ -658,7 +649,6 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
         unsigned gas_idx = it->first ; 
         const GAS& gas = it->second ; 
 
-        //assert( ok->isEnabledMergedMesh(gas_idx) ); 
         unsigned num_bi = gas.bis.size(); 
         assert(num_bi == 1); 
 
@@ -703,7 +693,7 @@ unsigned SBT::getTotalRec() const
     {
         unsigned gas_idx = it->first ; 
 
-        bool enabled = ok->isEnabledMergedMesh(gas_idx)  ; 
+        bool enabled = SGeoConfig::IsEnabledMergedMesh(gas_idx)  ; 
         if(enabled == false) LOG(error) << "gas_idx " << gas_idx << " enabled " << enabled ; 
 
 
@@ -751,7 +741,7 @@ std::string SBT::descGAS() const
         unsigned gas_idx = it->first ; 
         const GAS& gas = it->second ; 
 
-        bool enabled = ok->isEnabledMergedMesh(gas_idx)  ; 
+        bool enabled = SGeoConfig::IsEnabledMergedMesh(gas_idx)  ; 
         if(enabled == false) LOG(error) << "gas_idx " << gas_idx << " enabled " << enabled ; 
 
         unsigned num_bi = gas.bis.size(); 
@@ -826,8 +816,6 @@ void SBT::createHitgroup()
     {
         unsigned gas_idx = it->first ; 
         const GAS& gas = it->second ; 
-
-        //assert( ok->isEnabledMergedMesh(gas_idx) );  would expect YES
 
         unsigned num_bi = gas.bis.size(); 
         assert( num_bi == 1 ); 

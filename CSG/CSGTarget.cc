@@ -1,7 +1,7 @@
 #include "PLOG.hh"
 #include "scuda.h"
 #include "sqat4.h"
-#include "SCenterExtentFrame.hh"
+#include "SCenterExtentFrame.h"
 
 #include "CSGFoundry.h"
 #include "CSGTarget.h"

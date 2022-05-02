@@ -1,7 +1,66 @@
+#pragma once
+/**
+SCenterExtentFrame
+===================
+
+See also 
+
+* ana/tangential.py
+* ana/pvprim.py
+* ana/pvprim1.py
+* ana/symtran.py
+* ana/tangential.cc
+
+**/
+#include <glm/glm.hpp>
+
+
+
+#include "SYSRAP_API_EXPORT.hh"
+
+template<typename T>
+struct SYSRAP_API SCenterExtentFrame 
+{
+    // convert between coordinate systems
+    static void CartesianToSpherical( glm::tvec3<T>& radius_theta_phi, const glm::tvec4<T>& xyzw ); 
+    static void SphericalToCartesian( glm::tvec4<T>& xyzw, const glm::tvec3<T>& radius_theta_phi );
+
+    // rotation matrices between conventional XYZ and tangential RTP cartesian frames 
+    static glm::tmat4x4<T> XYZ_to_RTP( T theta, T phi );
+    static glm::tmat4x4<T> RTP_to_XYZ( T theta, T phi );
+
+    SCenterExtentFrame( float  _cx, float  _cy, float  _cz, float  _extent, bool rtp_tangential ) ; 
+    SCenterExtentFrame( double _cx, double _cy, double _cz, double _extent, bool rtp_tangential ) ; 
+
+    void init();  
+    void dump(const char* msg="SCenterExtentFrame::dump") const ; 
+
+    glm::tvec4<T> ce ;    // center extent 
+    bool          rtp_tangential ; 
+
+    glm::tvec3<T> rtp ;   // radius_theta_phi 
+    glm::tvec4<T> xyzw ;  
+
+    glm::tmat4x4<T> scale ; 
+    glm::tmat4x4<T> iscale ; 
+    glm::tmat4x4<T> translate ; 
+    glm::tmat4x4<T> itranslate ; 
+    glm::tmat4x4<T> rotate ; 
+    glm::tmat4x4<T> irotate ; 
+
+    glm::tmat4x4<T> model2world ; 
+    glm::tmat4x4<T> world2model ; 
+
+    const T* model2world_data ; 
+    const T* world2model_data ; 
+
+
+}; 
+
 #include <iostream>
 #include <array>
-#include "SPresent.hh"
-#include "SCenterExtentFrame.hh"
+#include "SPresent.h"
+
 
 /**
 SCenterExtentFrame::CartesianToSpherical
@@ -12,7 +71,7 @@ Obtains (radius, theta, phi) from the xyz of the xyzw (NB w is not used).
 **/
 
 template<typename T>
-void SCenterExtentFrame<T>::CartesianToSpherical( glm::tvec3<T>& radius_theta_phi, const glm::tvec4<T>& xyzw ) // static
+inline void SCenterExtentFrame<T>::CartesianToSpherical( glm::tvec3<T>& radius_theta_phi, const glm::tvec4<T>& xyzw ) // static
 {
     const T x = xyzw.x ; 
     const T y = xyzw.y ; 
@@ -36,7 +95,7 @@ Obtains xyz from the spherical coordinates. NB the xyzw.w is set to 1.
 **/
 
 template<typename T>
-void SCenterExtentFrame<T>::SphericalToCartesian( glm::tvec4<T>& xyzw, const glm::tvec3<T>& radius_theta_phi ) // static
+inline void SCenterExtentFrame<T>::SphericalToCartesian( glm::tvec4<T>& xyzw, const glm::tvec3<T>& radius_theta_phi ) // static
 {
     const T radius = radius_theta_phi.x ;
     const T theta  = radius_theta_phi.y ;
@@ -65,7 +124,7 @@ NB just the rotation here, no translation
 **/
 
 template<typename T>
-glm::tmat4x4<T> SCenterExtentFrame<T>::XYZ_to_RTP( T theta, T phi )  // static
+inline glm::tmat4x4<T> SCenterExtentFrame<T>::XYZ_to_RTP( T theta, T phi )  // static
 {
     std::array<T, 16> _rot = {{
         T(sin(theta)*cos(phi)),  T(sin(theta)*sin(phi)),  T(cos(theta)),  T(0.) ,
@@ -78,7 +137,7 @@ glm::tmat4x4<T> SCenterExtentFrame<T>::XYZ_to_RTP( T theta, T phi )  // static
 
 
 template<typename T>
-glm::tmat4x4<T> SCenterExtentFrame<T>::RTP_to_XYZ(  T theta, T phi ) // static
+inline glm::tmat4x4<T> SCenterExtentFrame<T>::RTP_to_XYZ(  T theta, T phi ) // static
 {
     std::array<T, 16> _iro = {{
         T(sin(theta)*cos(phi)),   T(cos(theta)*cos(phi)),  T(-sin(phi)),   T(0.) ,
@@ -90,7 +149,7 @@ glm::tmat4x4<T> SCenterExtentFrame<T>::RTP_to_XYZ(  T theta, T phi ) // static
 }
 
 template<typename T>
-SCenterExtentFrame<T>::SCenterExtentFrame( float _cx, float _cy, float _cz, float _extent, bool _rtp_tangential  )
+inline SCenterExtentFrame<T>::SCenterExtentFrame( float _cx, float _cy, float _cz, float _extent, bool _rtp_tangential  )
     :
     ce(_cx, _cy, _cz, _extent),
     rtp_tangential(_rtp_tangential)
@@ -99,7 +158,7 @@ SCenterExtentFrame<T>::SCenterExtentFrame( float _cx, float _cy, float _cz, floa
 }
 
 template<typename T>
-SCenterExtentFrame<T>::SCenterExtentFrame( double _cx, double _cy, double _cz, double _extent, bool _rtp_tangential  )
+inline SCenterExtentFrame<T>::SCenterExtentFrame( double _cx, double _cy, double _cz, double _extent, bool _rtp_tangential  )
     :
     ce(_cx, _cy, _cz, _extent),
     rtp_tangential(_rtp_tangential)
@@ -108,7 +167,7 @@ SCenterExtentFrame<T>::SCenterExtentFrame( double _cx, double _cy, double _cz, d
 }
 
 template<typename T>
-void SCenterExtentFrame<T>::init()
+inline void SCenterExtentFrame<T>::init()
 { 
     CartesianToSpherical(rtp, ce);     // ce.w the extent is not used here, just the center ce.xyz
     SphericalToCartesian(xyzw, rtp); 
@@ -145,7 +204,7 @@ void SCenterExtentFrame<T>::init()
 }
 
 template<typename T>
-void SCenterExtentFrame<T>::dump(const char* msg) const 
+inline void SCenterExtentFrame<T>::dump(const char* msg) const 
 {
     std::cout << msg << std::endl ; 
     std::cout << SPresent( ce  , "ce") << " " << ( rtp_tangential ? "RTP_TANGENTIAL" : "ORDINARY" ) << std::endl ; 

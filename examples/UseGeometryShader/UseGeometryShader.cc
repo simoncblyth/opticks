@@ -42,8 +42,9 @@ is there a better way ?
 
 #include "scuda.h"
 #include "squad.h"
-#include "SGLFW.hh"
-#include "SGLM.hh"
+#include "SGLFW.h"
+#include "SGLM.h"
+
 #include "NP.hh"
 
 static const char* SHADER_FOLD = getenv("SHADER_FOLD"); 
@@ -83,7 +84,7 @@ int main(int argc, char** argv)
 
     float4 post_center = make_float4( 0.f, 0.f, 0.f, 0.f ); 
     float4 post_extent = make_float4( 1.f, 1.f, 1.f, 5.f ); 
-    float extent = is_compressed ? 1.f : 100.f ; 
+    //float extent = is_compressed ? 1.f : 100.f ; 
 
 /*
     if( is_compressed )
@@ -140,14 +141,6 @@ int main(int argc, char** argv)
     std::cout << " width " << width << " height " << height << std::endl ; 
 
     SGLM sglm ; 
-    sglm.width = width ; 
-    sglm.height = height ; 
-    sglm.zoom = 1.f ;   
-    sglm.eye_m.x = -2.f ; 
-    sglm.eye_m.y = 0.f ; 
-    sglm.eye_m.z = 0.f ; 
-    sglm.setExtent(extent); 
-    sglm.update(); 
     sglm.dump(); 
 
     const glm::mat4& world2clip = sglm.world2clip ; 

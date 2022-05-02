@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 #include "OPTICKS_LOG.hh"
-#include "SGLM.hh"
+#include "SGLM.h"
 
 
 void test_GetEVec()

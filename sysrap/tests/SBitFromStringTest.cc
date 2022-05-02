@@ -175,14 +175,32 @@ void test_FromString()
     }
 }
 
-int main(int argc, char** argv)
+void test_FromString_args(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
-    test_FromString();  
-
     LOG(info) << " from arguments argc " << argc ;  
     for(int i=1 ; i < argc ; i++) std::cout << std::setw(5) << i << " : " << argv[i] << std::endl  ; 
     for(int i=1 ; i < argc ; i++) test_FromString_(argv[i]) ; 
+}
+
+void test_FromEString()
+{
+    unsigned long long emm = SBit::FromEString("EMM"); 
+    LOG(info) << " emm " << SBit::HexString(emm) << " 0x" << std::hex << emm << std::dec << std::endl ; 
+}
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+
+    /*
+    test_FromString();  
+    test_FromString_args(argc, argv);  
+    */ 
+
+    test_FromEString();  
+
+
     return 0 ; 
 }
 

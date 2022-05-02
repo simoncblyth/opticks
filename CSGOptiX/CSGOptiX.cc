@@ -40,6 +40,11 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include <glm/glm.hpp>
 
 // sysrap
+
+#ifdef WITH_SGLM
+#include "SGLM.h"
+#endif
+
 #include "NP.hh"
 #include "SRG.h"
 #include "SEventConfig.hh"
@@ -66,9 +71,14 @@ TODO:
 
 //     
 
-// okc:optickscore
+
+#ifdef WITH_SGLM
+#include "SGLM.h"
+#else
 #include "Opticks.hh"
 #include "Composition.hh"
+#endif
+
 
 /**
 HMM: Composition is a bit of a monster - bringing in a boatload of classes 
@@ -147,12 +157,18 @@ In sim mode:
 **/
 
 
+#ifdef WITH_SGLM
+CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
+    :
+    sglm(new SGLM),
+    flight(false),
+#else
 CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_) 
     :
     ok(ok_),
-    raygenmode(SEventConfig::RGMode()),
-    flight(ok->hasArg("--flightconfig")),
     composition(ok->getComposition()),
+    flight(ok->hasArg("--flightconfig")),
+#endif
     foundry(foundry_),
     prefix(SSys::getenvvar("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
     outdir(SEventConfig::OutFold()),    
@@ -164,14 +180,15 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     geoptxpath(nullptr),
 #endif
     tmin_model(SSys::getenvfloat("TMIN",0.1)), 
+    raygenmode(SEventConfig::RGMode()),
     params(new Params(raygenmode, ok->getWidth(), ok->getHeight(), ok->getDepth() )),
 #if OPTIX_VERSION < 70000
-    six(new Six(ok, ptxpath, geoptxpath, params)),
+    six(new Six(ptxpath, geoptxpath, params)),
     frame(new Frame(params->width, params->height, params->depth, six->d_pixel, six->d_isect, six->d_photon)), 
 #else
     ctx(new Ctx),
     pip(new PIP(ptxpath)), 
-    sbt(new SBT(ok, pip)),
+    sbt(new SBT(pip)),
     frame(new Frame(params->width, params->height, params->depth)), 
 #endif
     meta(new SMeta),
@@ -404,12 +421,19 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
     peta->q2.f.z = ce.z ; 
     peta->q2.f.w = ce.w ; 
 
-    bool autocam = true ; 
-
-    composition->setCenterExtent(ce, autocam, m2w, w2m );  // model2world view setup 
-
     float extent = ce.w ; 
     float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
+    bool autocam = true ; 
+
+#ifdef WITH_SGLM
+    sglm->set_ce(ce.x, ce.y, ce.z, ce.w ); 
+    sglm->set_m2w(m2w, w2m);
+    sglm->near = tmin ; 
+    sglm->update();  
+#else
+    composition->setCenterExtent(ce, autocam, m2w, w2m );  // model2world view setup 
+    composition->setNear(tmin); 
+#endif
 
     LOG(info) 
         << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
@@ -421,8 +445,6 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
 
     if(m2w) LOG(info) << "m2w " << *m2w ; 
     if(w2m) LOG(info) << "w2m " << *w2m ; 
-
-    composition->setNear(tmin); 
 }
 
 
@@ -435,26 +457,43 @@ TODO: not getting what is set eg 0.1., investigate
 
 void CSGOptiX::setNear(float near)
 {
+#ifdef WITH_SGLM
+    sglm->near = near ; 
+#else
     composition->setNear(near); 
+#endif
 }
-
 
 
 void CSGOptiX::prepareRenderParam()
 {
-    float extent = composition->getExtent(); 
-
     glm::vec3 eye ;
     glm::vec3 U ; 
     glm::vec3 V ; 
     glm::vec3 W ; 
     glm::vec4 ZProj ;
 
-    composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
+    float tmin ; 
+    float tmax ; 
+    unsigned cameratype ; 
+    float extent ; 
 
-    float tmin = composition->getNear(); 
-    float tmax = composition->getFar(); 
-    unsigned cameratype = composition->getCameraType(); 
+#ifdef WITH_SGLM
+    extent = sglm->ce.w ; 
+    eye = sglm->e ; 
+    U = sglm->u ; 
+    V = sglm->v ; 
+    W = sglm->w ; 
+    tmin = sglm->near ; 
+    tmax = sglm->far ; 
+    cameratype = sglm->parallel ? 1 : 0 ; 
+#else
+    extent = composition->getExtent(); 
+    composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
+    tmin = composition->getNear(); 
+    tmax = composition->getFar(); 
+    cameratype = composition->getCameraType(); 
+#endif
 
     if(!flight) LOG(info)
         << " extent " << extent

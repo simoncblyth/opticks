@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
-#include "SGLFW.hh"
+
+#include "SGLFW.h"
 
 void test_SGLFW_GLenum(const char* name)
 {

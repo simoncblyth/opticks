@@ -33,6 +33,9 @@ TODO: provide a single header replacement for the boatload of classes used by ok
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include "scuda.h"
+#include "sqat4.h"
+#include "SCenterExtentFrame.h"
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -42,7 +45,7 @@ struct SYSRAP_API SGLM
     static SGLM* INSTANCE ; 
 
     static glm::ivec2 WH ; 
-    static glm::vec4 CE ; 
+    static glm::vec4 CE ;    // static default, can be overridden by *ce* member 
     static glm::vec4 EYE ;    // model frame 
     static glm::vec4 LOOK ; 
     static glm::vec4 UP ; 
@@ -89,20 +92,32 @@ struct SYSRAP_API SGLM
     static glm::vec3 EVec3(const char* key, const char* fallback); 
     static glm::vec4 EVec4(const char* key, const char* fallback, float missing=1.f ); 
 
-    static glm::mat4 monolithic_GetMVP(int width, int height, bool verbose); 
-
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale); 
+
+
 
     SGLM(); 
 
+    glm::vec4 ce ; 
+    const qat4* m2w ; 
+    const qat4* w2m ; 
     glm::mat4 model2world ; 
     glm::mat4 world2model ; 
-    void updateModelMatrix();  // depends on CE
+    bool rtp_tangential ; 
+
+    void set_ce(  float x, float y, float z, float w ); 
+    void set_m2w( const qat4* m2w_, const qat4* w2m_ ); 
+    void set_rtp_tangential( bool rtp_tangential_ ); 
+
+    void updateModelMatrix();  // depends on ce, unless valid m2w and w2m matrices provided
+
 
     float basis ; 
     float near ; 
     float far ; 
-    void updateNearFar(float basis_=0.f);   // when 0.f basis is taken from CE.w 
+    void set_basis(float basis_=0.f) ; // when 0.f basis is taken from ce.w 
+
+    float scale ; 
 
     glm::vec3 eye ;  // world frame  
     glm::vec3 look ; 
@@ -125,9 +140,6 @@ struct SYSRAP_API SGLM
 
     bool parallel ;  
     float orthoscale ; 
-    float scale0 ; 
-
-    // and scaled to focal plane dimensions 
 
     glm::vec3 u ; 
     glm::vec3 v ; 
@@ -140,7 +152,10 @@ struct SYSRAP_API SGLM
     glm::mat4 projection ; 
     glm::mat4 world2clip ; 
 
+    float getScaleDefault() const ; 
     float getScale() const ; 
+    void setScale(float scale) ; 
+
     void updateProjection(); 
     std::string descProjection() const ; 
 
@@ -173,12 +188,18 @@ float SGLM::Aspect() { return float(WH.x)/float(WH.y) ; }
 
 SGLM::SGLM() 
     :
+    ce(CE),
+    m2w(nullptr),
+    w2m(nullptr),
     model2world(1.f), 
     world2model(1.f),
+    rtp_tangential(false),
 
-    basis(CE.w),
+    basis(ce.w),
     near(basis/10.f), 
     far(basis*5.f),
+
+    scale(0.f),
 
     forward_ax(0.f,0.f,0.f),
     right_ax(0.f,0.f,0.f),
@@ -187,7 +208,6 @@ SGLM::SGLM()
 
     parallel(false),
     orthoscale(1.f),
-    scale0(1.f), 
 
     projection(1.f),
     world2clip(1.f)
@@ -198,9 +218,9 @@ SGLM::SGLM()
 
 void SGLM::update()  
 {
-    // *dirty*  toggle a bit pointless as changing almost any member would require update  
     updateModelMatrix(); 
-    updateNearFar(); 
+    set_basis(); 
+
     updateELU(); 
     updateEyeSpace(); 
     updateEyeBasis(); 
@@ -239,32 +259,71 @@ std::string SGLM::DescInput() // static
     return s ; 
 }
 
-void SGLM::updateModelMatrix()
+void SGLM::set_ce( float x, float y, float z, float w )
 {
-    glm::vec3 tr(CE.x, CE.y, CE.z) ;  
-    glm::vec3 sc(CE.w, CE.w, CE.w) ; 
-    glm::vec3 isc(1.f/CE.w, 1.f/CE.w, 1.f/CE.w) ; 
-
-    model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
-    world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
+    ce.x = x ; 
+    ce.y = y ; 
+    ce.z = z ; 
+    ce.w = w ; 
 }
 
-void SGLM::updateNearFar(float basis_)
+void SGLM::set_rtp_tangential(bool rtp_tangential_ )
 {
-    // Camera::aim
-    basis = basis_ == 0 ? CE.w : basis_ ;
+    rtp_tangential = rtp_tangential_ ; 
+}
+
+
+void SGLM::set_m2w( const qat4* m2w_, const qat4* w2m_ )
+{
+    m2w = m2w_ ; 
+    w2m = w2m_ ; 
+}
+
+/**
+SGLM::updateModelMatrix
+------------------------
+
+Called by SGLM::update. The matrices are set based on center--extent OR directly from the set_m2w matrices 
+
+**/
+
+void SGLM::updateModelMatrix()
+{
+    if( m2w && w2m )
+    {
+        model2world = glm::make_mat4x4<float>(m2w->cdata());
+        world2model = glm::make_mat4x4<float>(w2m->cdata());
+    }
+    else if( rtp_tangential )
+    {
+        SCenterExtentFrame<double> cef( ce.x, ce.y, ce.z, ce.w, rtp_tangential );
+        model2world = cef.model2world ;
+        world2model = cef.world2model ;
+    }
+    else
+    {
+        glm::vec3 tr(ce.x, ce.y, ce.z) ;  
+        glm::vec3 sc(ce.w, ce.w, ce.w) ; 
+        glm::vec3 isc(1.f/ce.w, 1.f/ce.w, 1.f/ce.w) ; 
+
+        model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
+        world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
+    }
+}
+
+void SGLM::set_basis(float basis_)
+{
+    basis = basis_ == 0 ? ce.w : basis_ ;
     near = basis/10.f ;
     far = basis*5.f ;
 }
 
-
 void SGLM::updateELU() // eye, look, up, gaze into world frame 
 {
-    const glm::mat4& m2w = model2world ; 
-    eye = glm::vec3( m2w * EYE ) ; 
-    look = glm::vec3( m2w * LOOK ) ; 
-    up = glm::vec3( m2w * UP ) ; 
-    gaze = glm::vec3( m2w * (LOOK - EYE) ) ;    
+    eye  = glm::vec3( model2world * EYE ) ; 
+    look = glm::vec3( model2world * LOOK ) ; 
+    up   = glm::vec3( model2world * UP ) ; 
+    gaze = glm::vec3( model2world * (LOOK - EYE) ) ;    
 }
 
 std::string SGLM::descELU() const 
@@ -309,8 +368,8 @@ std::string SGLM::descEyeSpace() const
     std::stringstream ss ; 
     ss << "SGLM::descEyeSpace" << std::endl ; 
     ss << std::setw(15) << "sglm.forward_ax" << Present(forward_ax) << std::endl ;  
-    ss << std::setw(15) << "sglm.right_ax" << Present(right_ax) << std::endl ;  
-    ss << std::setw(15) << "sglm.top_ax" << Present(top_ax) << std::endl ;  
+    ss << std::setw(15) << "sglm.right_ax"   << Present(right_ax) << std::endl ;  
+    ss << std::setw(15) << "sglm.top_ax"     << Present(top_ax) << std::endl ;  
     ss << std::endl ; 
 
     ss << " sglm.world2camera \n" << Present( world2camera ) << std::endl ; 
@@ -321,36 +380,53 @@ std::string SGLM::descEyeSpace() const
     return s ; 
 }
 
-float SGLM::getScale() const { return (parallel ? orthoscale : near )/ZOOM ; } 
+float SGLM::getScaleDefault() const { return (parallel ? orthoscale : near )/ZOOM ; } 
+float SGLM::getScale() const { return scale > 0 ? scale : getScaleDefault() ; } 
+void  SGLM::setScale(float scale_) { scale = scale_ ; }
+
+
 void SGLM::updateProjection()
 {
-    float scale = getScale() ; 
+    float sc = getScale() ; 
+
     float aspect = Aspect(); 
-    float left   = -aspect*scale ;
-    float right  = aspect*scale ;
-    float bottom = -scale ;
-    float top    = scale ;
+    float left   = -aspect*sc ;
+    float right  =  aspect*sc ;
+    float bottom = -sc ;
+    float top    =  sc ;
 
     projection = glm::frustum( left, right, bottom, top, near, far );
 
     const glm::mat4& world2eye = world2camera ; // no look rotation or trackballing  
-    world2clip = projection * world2eye ;    //  ModelViewProjection 
+    world2clip = projection * world2eye ;       //  ModelViewProjection 
 }
+
+/**
+SGLM::updateEyeBasis
+---------------------
+
+HMM: to match Composition have to use focalplane_scale of the gazelength  
+but have been using scale of near/ZOOM 
+
+**/
 
 void SGLM::updateEyeBasis()
 {
     glm::vec4 rht( 1., 0., 0., 0.); 
     glm::vec4 top( 0., 1., 0., 0.); 
     glm::vec4 gaz( 0., 0.,-1., 0.);   // towards -Z
-    glm::vec4 ori(0., 0., 0., 1.); 
+    glm::vec4 ori( 0., 0., 0., 1.); 
 
     float aspect = Aspect() ; 
-    float scale = getScale() ; 
+    float sc = getScale() ; 
     float gazlen = glm::length(gaze) ; 
 
-    u = glm::vec3( camera2world * rht ) * scale * aspect ;  
-    v = glm::vec3( camera2world * top ) * scale  ;  
-    w = glm::vec3( camera2world * gaz ) * gazlen  ;    
+    float focalplane_scale = sc ; 
+    //float focalplane_scale = gazlen ; 
+
+    u = glm::vec3( camera2world * rht ) * focalplane_scale * aspect ;  
+    v = glm::vec3( camera2world * top ) * focalplane_scale  ;  
+    w = glm::vec3( camera2world * gaz ) * gazlen ;    
     e = glm::vec3( camera2world * ori );   
 }
 
@@ -361,16 +437,16 @@ std::string SGLM::descEyeBasis() const
     int wid = 15 ; 
 
     float aspect = Aspect() ; 
-    float scale = getScale() ;
+    float sc = getScale() ;
     float gazlen = glm::length(gaze) ; 
 
     ss << std::setw(wid) << "aspect" << Present(aspect) << std::endl ;
     ss << std::setw(wid) << "near " << Present(near) << std::endl ;
     ss << std::setw(wid) << "ZOOM " << Present(ZOOM) << std::endl ;
-    ss << std::setw(wid) << "scale " << Present(scale) << " (parallel ? orthoscale : near )/ZOOM " << std::endl ;
+    ss << std::setw(wid) << "scale " << Present(sc) << " (parallel ? orthoscale : near )/ZOOM " << std::endl ;
     ss << std::setw(wid) << "gazlen " << Present(gazlen) << std::endl ;
-    ss << std::setw(wid) << "sglm.u " << Present(u) << " glm::vec3( camera2world * rht ) * scale * aspect " << std::endl ; 
-    ss << std::setw(wid) << "sglm.v " << Present(v) << " glm::vec3( camera2world * top ) * scale  " << std::endl ; 
+    ss << std::setw(wid) << "sglm.u " << Present(u) << " glm::vec3( camera2world * rht ) * sc * aspect " << std::endl ; 
+    ss << std::setw(wid) << "sglm.v " << Present(v) << " glm::vec3( camera2world * top ) * sc  " << std::endl ; 
     ss << std::setw(wid) << "sglm.w " << Present(w) << " glm::vec3( camera2world * gaz ) * gazlen  " << std::endl ; 
     ss << std::setw(wid) << "sglm.e " << Present(e) << " glm::vec3( camera2world * ori ) " << std::endl ; 
     std::string s = ss.str(); 

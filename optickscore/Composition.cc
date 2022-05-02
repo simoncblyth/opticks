@@ -38,7 +38,7 @@
 #include "NGLM.hpp"
 #include "SCtrl.hh"
 #include "SSys.hh"
-#include "SCenterExtentFrame.hh"
+#include "SCenterExtentFrame.h"
 
 
 // npy-
@@ -2281,13 +2281,8 @@ float Composition::getClipDepth(const glm::vec4& position_world)
 }
 
 
-
-
-
-void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj )
+float Composition::getLength() const 
 {
-    update();
-
     Camera::Style_t camstyle = m_camera->getStyle() ;
     float scale = m_camera->getScale(); 
 
@@ -2299,34 +2294,14 @@ void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec
         case Camera::EQUIRECTANGULAR_CAMERA:  length = m_gazelength ; break ;   // placeholder, as dont know what to put 
         default:                              assert(0) ; 
     }
+    return length ; 
+}
 
-   /*
-    float near  = m_camera->getNear();  
-    float basis = m_camera->getBasis() ; 
-    LOG(info) 
-         << " camstyle " << camstyle 
-         << " scale " << scale 
-         << " basis " << basis 
-         << " near " << near 
-         << " m_gazelength " << m_gazelength 
-         << " length " << length
-         ;
-    */
-
-
-    float tanYfov = m_camera->getTanYfov();  // reciprocal of camera zoom
-    float aspect = m_camera->getAspect();
-
-    m_camera->fillZProjection(ZProj); // 3rd row of projection matrix
-
-    //float v_half_height = m_gazelength * tanYfov ;  
-    float v_half_height = length * tanYfov ;  
-    float u_half_width  = v_half_height * aspect ; 
-    float w_depth       = m_gazelength ; 
-
+/**
+Composition::getEyeUVW
+------------------------
    
-    /*
-    //  Eye frame axes and origin transformed into world frame
+Eye frame axes and origin transformed into world frame
 
 
           top        
@@ -2344,12 +2319,25 @@ void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec
          /
        +Z
 
-    */
+**/
+
+void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj )
+{
+    update();
+
+    float length = getLength(); 
+    float tanYfov = m_camera->getTanYfov();  // reciprocal of camera zoom
+    float aspect = m_camera->getAspect();
+
+    m_camera->fillZProjection(ZProj); // 3rd row of projection matrix
+
+    float v_half_height = length * tanYfov ;  
+    float u_half_width  = v_half_height * aspect ; 
+    float w_depth       = m_gazelength ; 
 
     glm::vec4 right( 1., 0., 0., 0.);
     glm::vec4   top( 0., 1., 0., 0.);
     glm::vec4  gaze( 0., 0.,-1., 0.);   // towards -Z
-
     glm::vec4 origin(0., 0., 0., 1.);
 
     // and scaled to focal plane dimensions 
@@ -2357,9 +2345,39 @@ void Composition::getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec
     U = glm::vec3( m_eye2world * right ) * u_half_width ;  
     V = glm::vec3( m_eye2world * top   ) * v_half_height ;  
     W = glm::vec3( m_eye2world * gaze  ) * w_depth  ;  
-
     eye = glm::vec3( m_eye2world * origin );   
+}
 
+std::string Composition::descEyeBasis() 
+{  
+     glm::vec3 eye, U, V, W ; 
+     glm::vec4 ZProj ; 
+     getEyeUVW(eye, U, V, W, ZProj ); 
+
+    float length = getLength(); 
+    float tanYfov = m_camera->getTanYfov();  // reciprocal of camera zoom
+    float aspect = m_camera->getAspect();
+
+    std::stringstream ss ;  
+    ss << "Composition::descEyeBasis"
+       << Desc("length", length) << std::endl
+       << Desc("tanYfov", tanYfov) << std::endl
+       << Desc("aspect", aspect) << std::endl
+       << Desc("gazelength", m_gazelength) << std::endl
+       << std::endl 
+       << Desc("eye2world", m_eye2world )  
+       << std::endl 
+       << Desc("eye", eye )  
+       << std::endl 
+       << Desc("U", U )   
+       << std::endl 
+       << Desc("V", V )  
+       << std::endl 
+       << Desc("W", W )  
+       << std::endl 
+       ;
+    std::string s = ss.str();
+    return s ; 
 }
 
     
@@ -2508,6 +2526,17 @@ std::string Composition::Desc( const char* label, const glm::vec3& v ) // static
     return s ;
 }
 
+std::string Composition::Desc( const char* label, float v ) // static
+{
+    std::stringstream ss ; 
+    ss  
+       << std::setw(20) << label 
+       << std::setw(10) << std::fixed << std::setprecision(3) << v
+       ;
+    std::string s = ss.str();
+    return s ;
+}
+
 std::string Composition::Desc( const char* label, const glm::vec4& v ) // static
 {
     std::stringstream ss ; 
@@ -2520,6 +2549,23 @@ std::string Composition::Desc( const char* label, const glm::vec4& v ) // static
        << std::setw(10) << std::fixed << std::setprecision(3) << v.w
        << " ) "
        ;
+    std::string s = ss.str();
+    return s ;
+}
+
+std::string Composition::Desc( const char* label, const glm::mat4& m  ) // static
+{
+    int wid = 10 ; 
+    int prec = 3 ; 
+
+    std::stringstream ss ; 
+    ss << std::setw(20) << label << " ( " << std::endl ; 
+    for (int j=0; j<4; j++)
+    {   
+        for (int i=0; i<4; i++) ss << std::fixed << std::setprecision(prec) << std::setw(wid) << m[i][j] ;
+        ss << std::endl ;
+    }   
+    ss << " ) " ;
     std::string s = ss.str();
     return s ;
 }

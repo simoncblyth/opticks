@@ -49,7 +49,7 @@ Maybe because pointer arithmetic is all being done on constant input buffers ?
 #include "sqat4.h"
 #include "OpticksCSG.h"
 
-#include "Opticks.hh"
+//#include "Opticks.hh"
 // TODO: replace use of Opticks here (solid selection, emm)
 
 #include "Params.h"
@@ -62,12 +62,12 @@ Maybe because pointer arithmetic is all being done on constant input buffers ?
 #include "Frame.h"
 #include "Six.h"
 
+#include "SGeoConfig.hh"
+
     
-Six::Six(const Opticks* ok_, const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
+Six::Six(const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
     :
-    ok(ok_), 
-    solid_selection(ok->getSolidSelection()),
-    emm(ok->getEMM()),
+    emm(SGeoConfig::EMM),
     context(optix::Context::create()),
     material(context->createMaterial()),
 
@@ -290,7 +290,7 @@ void Six::createGAS_Standard()
 
     for(unsigned i=0 ; i < num_solid ; i++)
     {
-        if(ok->isEnabledMergedMesh(i))
+        if(SGeoConfig::IsEnabledMergedMesh(i))
         {
             LOG(info) << " create optix::Geometry solid/ mm " << i ; 
             optix::Geometry solid = createGeometry(i); 

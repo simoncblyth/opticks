@@ -19,6 +19,7 @@
 
 #include "SBit.hh"
 
+#include <cstdlib>
 #include <iostream>
 #include <cstring>
 #include <cassert>
@@ -358,6 +359,13 @@ unsigned long long SBit::FromPosString(const char* str_, char delim)
 }
 
 
+
+unsigned long long SBit::FromEString(const char* ekey, const char* fallback)
+{
+    const char* str = getenv(ekey) ; 
+    return SBit::FromString(str ? str : fallback);
+}
+
 /**
 SBit::FromString
 ---------------------
@@ -375,6 +383,7 @@ those bit positions are set. For example::
 
 
 **/
+
 
 unsigned long long SBit::FromString(const char* str )
 {

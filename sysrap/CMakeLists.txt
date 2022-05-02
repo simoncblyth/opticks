@@ -97,7 +97,6 @@ set(SOURCES
     SThetaCut.cc 
     SPhiCut.cc 
 
-    SCenterExtentFrame.cc
     SCenterExtentGenstep.cc
 
     OpticksPhoton.cc
@@ -105,6 +104,7 @@ set(SOURCES
     SU.cu 
 
     SEventConfig.cc
+    SGeoConfig.cc
 ) 
     
 
@@ -171,7 +171,6 @@ set(HEADERS
     SRngSpec.hh
 
     CheckGeo.hh
-    SGLM.hh
     SLabelCache.hh
 
     SRng.hh
@@ -208,6 +207,8 @@ set(HEADERS
     SOpticks.hh
     SOpticksResource.hh
 
+    SGLM.h
+    SGLFW.h
     SCVD.h
     SRG.h
 
@@ -218,9 +219,10 @@ set(HEADERS
     SPhiCut.hh
 
 
-    SCenterExtentFrame.hh
+    SCenterExtentFrame.h
+    SPresent.h
+
     SCenterExtentGenstep.hh 
-    SPresent.hh
     SCanvas.hh
 
     OpticksGenstep.h
@@ -230,6 +232,7 @@ set(HEADERS
     SEvt.hh 
 
     SEventConfig.hh
+    SGeoConfig.hh
 )
 
 

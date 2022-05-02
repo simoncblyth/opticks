@@ -29,9 +29,8 @@ struct CSGPrim ;
 
 struct SBT 
 {
-    const Opticks*  ok ; 
     static bool ValidSpec(const char* spec); 
-    const std::vector<unsigned>&  solid_selection ; 
+    std::vector<unsigned>  solid_selection ; 
     unsigned long long emm ; 
     const PIP*      pip ; 
     Raygen*       raygen ;
@@ -51,7 +50,7 @@ struct SBT
     std::map<unsigned, GAS> vgas ; 
     std::vector<IAS> vias ; 
 
-    SBT(const Opticks* ok, const PIP* pip_ ); 
+    SBT(const PIP* pip_ ); 
 
 
     AS* getAS(const char* spec) const ;

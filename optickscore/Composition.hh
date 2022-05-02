@@ -379,6 +379,7 @@ class OKCORE_API Composition : public NConfigurable {
       void test_getEyeUVW();
       unsigned getCameraType() const ;   // formerly getParallel
       unsigned getTimeTrace() const ;
+      float getLength() const ; 
       void getEyeUVW(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W, glm::vec4& ZProj);
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
@@ -612,8 +613,12 @@ class OKCORE_API Composition : public NConfigurable {
 
   public: 
       std::string desc() ;
+      std::string descEyeBasis() ; 
+
+      static std::string Desc( const char* label, float v ); 
       static std::string Desc( const char* label, const glm::vec3& v ); 
       static std::string Desc( const char* label, const glm::vec4& v ); 
+      static std::string Desc( const char* label, const glm::mat4& m ); 
   public: 
       void setNear(float near);
 
