@@ -185,7 +185,7 @@ opts=""
 #opts="$opts --x4tubsnudgeskip 0"
 #opts="$opts --skipsolidname ${GEOM}_body_solid_1_9   " 
 
-DEBUG=1
+#DEBUG=1
 if [ -n "$DEBUG" ]; then 
     if [ "$(uname)" == "Darwin" ]; then 
         lldb__ $bin $opts 

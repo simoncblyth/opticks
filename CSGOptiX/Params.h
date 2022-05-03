@@ -8,7 +8,6 @@ Params.h
 
 **/
 
-
 #include <optix.h>
 // TODO: avoid need for optix.h just for OptixTraversableHandle which is "unsigned long long" typedef
 
@@ -16,6 +15,7 @@ Params.h
 
 #ifndef __CUDACC__
 #include <glm/glm.hpp>
+#include <string>
 #endif
 
 struct CSGNode ; 
@@ -78,6 +78,8 @@ struct Params
     Params(int raygenmode, unsigned width, unsigned height, unsigned depth); 
     void device_alloc(); 
     void upload(); 
+
+    std::string desc() const ; 
     void dump(const char* msg="Params::dump") const ; 
 
     void setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_ );

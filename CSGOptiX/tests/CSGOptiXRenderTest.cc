@@ -31,33 +31,41 @@ CFBASE
 #include <csignal>
 
 #include "SPath.hh"
+#include "SStr.hh"
 #include "SSys.hh"
 #include "SOpticks.hh"
+#include "SEventConfig.hh"
 #include "SOpticksResource.hh"
 #include "SBitSet.hh"
+#include "SGeoConfig.hh"
+
 #include "OPTICKS_LOG.hh"
 #include "scuda.h"
 #include "sqat4.h"
 
-// TODO: avoid use of Opticks.hh here 
+#include "SGLM.h"
+
+#ifdef WITH_SGLM
+#else
 #include "Opticks.hh"
+#endif
 
 #include "CSGFoundry.h"
 #include "CSGCopy.h"
 #include "CSGOptiX.h"
 
-
 struct CSGOptiXRenderTest
 {
-    static Opticks* InitOpticks(int argc, char** argv);  
-    static void InitOutdir(Opticks* ok, const char* cfbase); 
+    CSGOptiXRenderTest() ; 
 
-
-    CSGOptiXRenderTest(int argc, char** argv ) ; 
-
+#ifdef WITH_SGLM
+    static constexpr const char* VARIANT = "SGLM" ;    
+#else
+    static constexpr const char* VARIANT = "Comp" ;    
     Opticks*    ok ; 
-    const char* solid_label ; 
-    std::vector<unsigned>& solid_selection ; 
+#endif
+
+    const char* solid_selection ; 
 
     CSGFoundry* fdl    ; // as loaded
     const SBitSet* elv ; 
@@ -67,7 +75,8 @@ struct CSGOptiXRenderTest
 
     const char* topline ; 
     const char* botline ; 
-    bool        flight ; 
+    const char* flight ; 
+
     float4      ce ; 
     qat4*       m2w ; 
     qat4*       w2m ; 
@@ -78,6 +87,7 @@ struct CSGOptiXRenderTest
 
     void initFD(); 
     void initCX(); 
+    void initSS(); 
     void initArgs(); 
 
     void setCE(const char* moi); 
@@ -86,16 +96,18 @@ struct CSGOptiXRenderTest
 };
 
 
-CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
+CSGOptiXRenderTest::CSGOptiXRenderTest()
     : 
-    ok(InitOpticks(argc, argv)),
-    solid_label(ok->getSolidLabel()),         // --solid_label   used for selecting solids from the geometry 
-    solid_selection(ok->getSolidSelection()), //  NB its not set yet, that happens below 
+#ifdef WITH_SGLM
+#else
+    ok(Opticks::Get()),
+#endif
+    solid_selection(SGeoConfig::SolidSelection()),   //  formerly from --solid_label option used for selecting solids from the geometry 
     fd(CSGFoundry::Load()), 
     cx(nullptr),
     topline(SSys::getenvvar("TOPLINE", "CSGOptiXRenderTest")),
     botline(SSys::getenvvar("BOTLINE", nullptr )),
-    flight(ok->hasArg("--flightconfig")),
+    flight(SGeoConfig::FlightConfig()),
     ce(make_float4(0.f, 0.f, 0.f, 1000.f )),
     m2w(qat4::identity()),
     w2m(qat4::identity()),
@@ -103,84 +115,26 @@ CSGOptiXRenderTest::CSGOptiXRenderTest(int argc, char** argv)
 {
     initFD(); 
     initCX(); 
+    initSS(); 
     initArgs(); 
 }
 
-/**
-TODO: eliminate use of Opticks here, its doing little 
-**/
 
-Opticks* CSGOptiXRenderTest::InitOpticks(int argc, char** argv)
-{
-    Opticks* ok = new Opticks(argc, argv);  
-    ok->configure(); 
-    ok->setRaygenMode(0);  // override --raygenmode option 
-    return ok ; 
-}
 
 void CSGOptiXRenderTest::initFD()
 {
     fd->upload(); 
-    if( solid_label )
-    {
-        fd->findSolidIdx(solid_selection, solid_label); 
-        std::string solsel = fd->descSolidIdx(solid_selection); 
-        LOG(error) 
-            << " --solid_label " << solid_label
-            << " solid_selection.size  " << solid_selection.size() 
-            << " solid_selection " << solsel 
-            ;
-    }
-
-    const char* origin_cfbase = fd->getOriginCFBase(); 
-    LOG(info) 
-        << "fd " << fd->desc() 
-        << " origin_cfbase " << origin_cfbase
-        ; 
-
-    InitOutdir(ok, origin_cfbase ); 
-    //fd->summary(); 
 }
-
-/**
-CSGOptiXRenderTest::InitOutdir
--------------------------------
-
-The out_prefix depends on values of envvars OPTICKS_GEOM and OPTICKS_RELDIR when defined.
-
-TODO: wean off Opticks, move file handling basics down to sysrap 
-
-**/
-
-void CSGOptiXRenderTest::InitOutdir(Opticks* ok, const char* cfbase)
-{
-    int optix_version_override = CSGOptiX::_OPTIX_VERSION(); 
-    const char* out_prefix = ok->getOutPrefix(optix_version_override);
-
-    LOG(info) 
-        << " optix_version_override " << optix_version_override
-        << " out_prefix " << out_prefix
-        << " cfbase " << cfbase
-        ;
-
-    const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXRenderTest", out_prefix, DIRPATH );  
-    const char* outdir = SSys::getenvvar("OPTICKS_OUTDIR", default_outdir );  
-    LOG(info) << " default_outdir " << default_outdir ; 
-    LOG(info) << " outdir " << outdir ; 
-
-    ok->setOutDir(outdir); 
-    SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
-
-    const char* outdir2 = ok->getOutDir(); 
-    assert( strcmp(outdir2, outdir) == 0 ); 
-}
-
-
 
 
 void CSGOptiXRenderTest::initCX()
 {
+
+#ifdef WITH_SGLM
+    cx = new CSGOptiX(fd);
+#else 
     cx = new CSGOptiX(ok, fd ); 
+#endif
 
     if( cx->raygenmode > 0 )
     {
@@ -189,19 +143,35 @@ void CSGOptiXRenderTest::initCX()
     }
 }
 
+void CSGOptiXRenderTest::initSS()
+{
+    if( solid_selection == nullptr  ) return ; 
+
+    fd->findSolidIdx(cx->solid_selection, solid_selection); 
+    std::string solsel = fd->descSolidIdx(cx->solid_selection); 
+    LOG(error) 
+        << " solid_selection " << solid_selection
+        << " cx.solid_selection.size  " << cx->solid_selection.size() 
+        << " solsel " << solsel 
+        ;
+
+}
+
+
+
 void CSGOptiXRenderTest::initArgs()
 {
-    unsigned num_select = solid_selection.size();  
-    if( solid_label )
+    unsigned num_select = cx->solid_selection.size();  
+    if( solid_selection )
     {
         assert( num_select > 0 ); 
     }
 
-    const std::vector<std::string>& arglist = ok->getArgList() ;  // --arglist /path/to/arglist.txt
+    std::vector<std::string>* arglist = SGeoConfig::Arglist() ;
 
-    if( arglist.size() > 0 )
+    if( arglist && arglist->size() > 0 )
     {    
-        std::copy(arglist.begin(), arglist.end(), std::back_inserter(args));
+        std::copy(arglist->begin(), arglist->end(), std::back_inserter(args));
     }
     else
     {
@@ -210,7 +180,7 @@ void CSGOptiXRenderTest::initArgs()
 
     LOG(info) 
         << " default_arg " << default_arg
-        << " arglist.size " << arglist.size()
+        << " arglist->size " << ( arglist ? arglist->size() : 0 ) 
         << " args.size " << args.size()
         ;
 }
@@ -257,25 +227,28 @@ void CSGOptiXRenderTest::setCE(const char* moi)
 
 void CSGOptiXRenderTest::setCE_sla()
 {
-    assert( solid_label ); 
-    fd->gasCE(ce, solid_selection );    
+    assert( solid_selection ); 
+    fd->gasCE(ce, cx->solid_selection );    
 
     LOG(info) 
-        << " solid_label " << solid_label
-        << " solid_selection.size " << solid_selection.size()
+        << " solid_selection " << solid_selection
+        << " cx.solid_selection.size " << cx->solid_selection.size()
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
        ; 
 
     cx->setComposition(ce, nullptr, nullptr);   // establish the coordinate system 
 }
 
+
 void CSGOptiXRenderTest::render_snap(const char* namestem)
 {
     double dt = cx->render();  
-    const char* outpath = ok->getOutPath(namestem, ".jpg", -1 ); 
+    std::string name = SStr::Format("%s_%s", VARIANT, namestem ); 
 
+    const char* outpath = SEventConfig::OutPath(name.c_str(), -1, ".jpg" );
     LOG(error)  
           << " namestem " << namestem 
+          << " name " << name 
           << " outpath " << outpath 
           << " dt " << dt 
           ; 
@@ -289,13 +262,24 @@ void CSGOptiXRenderTest::render_snap(const char* namestem)
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+    SEventConfig::SetRGMode("render"); 
 
-    CSGOptiXRenderTest t(argc, argv); 
+#ifdef WITH_SGLM
+#else
+    Opticks ok(argc, argv);  
+    ok.configure(); 
+#endif
 
-    if( t.solid_label )
+    const char* outdir = SEventConfig::OutDir(); 
+    SOpticks::WriteOutputDirScript(outdir) ; // writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
+
+
+    CSGOptiXRenderTest t; 
+
+    if( t.solid_selection )
     {
         const char* arg = SSys::getenvvar("NAMESTEM", "") ; 
-        LOG(info) << " t.solid_label " << t.solid_label << " arg " << arg ; 
+        LOG(info) << " t.solid_selection " << t.solid_selection << " arg " << arg ; 
         t.setCE_sla(); 
         t.render_snap(arg); 
     }

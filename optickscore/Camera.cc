@@ -542,13 +542,12 @@ float Camera::getScaleMax()
 
 
 
-void Camera::Print(const char* msg)
+void Camera::Print(const char* msg) const 
 {
     printf("%s type %d  near %10.3f far %10.3f zoom %10.3f scale %10.3f \n", msg, m_type, m_near, m_far, m_zoom, getScale() );
 }
 
-
-void Camera::Summary(const char* msg)
+std::string Camera::desc(const char* msg) const 
 {
     std::stringstream ss ; 
     ss 
@@ -598,8 +597,13 @@ void Camera::Summary(const char* msg)
         ;
 
     std::string s = ss.str(); 
-    LOG(info) << std::endl << s ; 
+    return s ; 
+}
 
+
+void Camera::Summary(const char* msg) const 
+{
+    LOG(info) << std::endl << desc(msg)  ; 
 
     printf("%s  type %d \n", msg, m_type );
     printf(" width %5d height %5d  aspect %10.3f \n", m_size[0], m_size[1], getAspect() );
@@ -631,13 +635,13 @@ void Camera::Summary(const char* msg)
 }     
 
 
-glm::mat4 Camera::getProjection()
+glm::mat4 Camera::getProjection() const 
 {
     return isOrthographic() ? getOrtho() : getFrustum() ; 
 }
 
 
-void Camera::fillZProjection(glm::vec4& zProj)
+void Camera::fillZProjection(glm::vec4& zProj) const 
 {
     glm::mat4 proj = getProjection() ;
     zProj.x = proj[0][2] ; 
@@ -646,15 +650,15 @@ void Camera::fillZProjection(glm::vec4& zProj)
     zProj.w = proj[3][2] ; 
 }
 
-glm::mat4 Camera::getPerspective()
+glm::mat4 Camera::getPerspective() const 
 {
     return glm::perspective(getYfov(), getAspect(), getNear(), getFar());
 }
-glm::mat4 Camera::getOrtho()
+glm::mat4 Camera::getOrtho() const 
 {
     return glm::ortho( getLeft(), getRight(), getBottom(), getTop(), getNear(), getFar() );
 }
-glm::mat4 Camera::getFrustum()
+glm::mat4 Camera::getFrustum() const 
 {
     return glm::frustum( getLeft(), getRight(), getBottom(), getTop(), getNear(), getFar() );
 }

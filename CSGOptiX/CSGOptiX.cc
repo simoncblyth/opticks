@@ -40,14 +40,12 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include <glm/glm.hpp>
 
 // sysrap
-
-#ifdef WITH_SGLM
 #include "SGLM.h"
-#endif
-
 #include "NP.hh"
 #include "SRG.h"
+#include "SCAM.h"
 #include "SEventConfig.hh"
+#include "SGeoConfig.hh"
 #include "SStr.hh"
 #include "SSys.hh"
 #include "SMeta.hh"
@@ -57,26 +55,11 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "scuda.h"
 #include "squad.h"
 
-
-/**
-TODO: 
-   move necessary functionality from brap and okc down to sysrap 
-   to make it possible to have an extremely minimal opticks install
-   (without brap npy okc)
-   for hackathons, profiling, reporting test cases etc..
-
-   Started this in sysrap/SOpticks
-
-**/
-
-//     
-
-
 #ifdef WITH_SGLM
-#include "SGLM.h"
 #else
 #include "Opticks.hh"
 #include "Composition.hh"
+#include "FlightPath.hh"
 #endif
 
 
@@ -87,10 +70,7 @@ LONGTERM: see if can pull out the essentials into a smaller class
 * SGLM.hh is already on the way to doing this kinda thing in a single header 
 * Composition::getEyeUVW is the crux method needed 
 * Composition or its replacement only relevant for rendering, not for simulation 
-
 **/
-
-#include "FlightPath.hh"
 
 // csg 
 #include "CSGPrim.h"
@@ -160,15 +140,14 @@ In sim mode:
 #ifdef WITH_SGLM
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
     :
-    sglm(new SGLM),
-    flight(false),
 #else
 CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_) 
     :
     ok(ok_),
     composition(ok->getComposition()),
-    flight(ok->hasArg("--flightconfig")),
 #endif
+    sglm(new SGLM),   // instanciate always to allow view matrix comparisons
+    flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
     prefix(SSys::getenvvar("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
     outdir(SEventConfig::OutFold()),    
@@ -181,7 +160,12 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
 #endif
     tmin_model(SSys::getenvfloat("TMIN",0.1)), 
     raygenmode(SEventConfig::RGMode()),
+#ifdef WITH_SGLM
+    params(new Params(raygenmode, sglm->Width(), sglm->Height(), 1 )),
+#else
     params(new Params(raygenmode, ok->getWidth(), ok->getHeight(), ok->getDepth() )),
+#endif
+
 #if OPTIX_VERSION < 70000
     six(new Six(ptxpath, geoptxpath, params)),
     frame(new Frame(params->width, params->height, params->depth, six->d_pixel, six->d_isect, six->d_photon)), 
@@ -423,16 +407,25 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
 
     float extent = ce.w ; 
     float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
-    bool autocam = true ; 
 
-#ifdef WITH_SGLM
     sglm->set_ce(ce.x, ce.y, ce.z, ce.w ); 
     sglm->set_m2w(m2w, w2m);
-    sglm->near = tmin ; 
+    sglm->set_near(tmin_model) ; 
+    sglm->setFocalScaleToGazeLength();    // makes SGLM behave more like Composition
+    sglm->set_basis_to_gazelength() ;   // makes SGLM do simililar to Camera::aim used by Composition
+
     sglm->update();  
+    LOG(info) << "sglm.desc:" << std::endl << sglm->desc() ; 
+
+
+#ifdef WITH_SGLM
 #else
+    bool autocam = true ; 
     composition->setCenterExtent(ce, autocam, m2w, w2m );  // model2world view setup 
     composition->setNear(tmin); 
+
+    
+
 #endif
 
     LOG(info) 
@@ -448,22 +441,6 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
 }
 
 
-/**
-CSGOptiX::setNear
--------------------
-
-TODO: not getting what is set eg 0.1., investigate 
-**/
-
-void CSGOptiX::setNear(float near)
-{
-#ifdef WITH_SGLM
-    sglm->near = near ; 
-#else
-    composition->setNear(near); 
-#endif
-}
-
 
 void CSGOptiX::prepareRenderParam()
 {
@@ -471,7 +448,6 @@ void CSGOptiX::prepareRenderParam()
     glm::vec3 U ; 
     glm::vec3 V ; 
     glm::vec3 W ; 
-    glm::vec4 ZProj ;
 
     float tmin ; 
     float tmax ; 
@@ -484,10 +460,11 @@ void CSGOptiX::prepareRenderParam()
     U = sglm->u ; 
     V = sglm->v ; 
     W = sglm->w ; 
-    tmin = sglm->near ; 
-    tmax = sglm->far ; 
-    cameratype = sglm->parallel ? 1 : 0 ; 
+    tmin = sglm->get_near_abs() ; 
+    tmax = sglm->get_far_abs() ; 
+    cameratype = sglm->cam ; 
 #else
+    glm::vec4 ZProj ;
     extent = composition->getExtent(); 
     composition->getEyeUVW(eye, U, V, W, ZProj); // must setModelToWorld in composition first
     tmin = composition->getNear(); 
@@ -495,24 +472,49 @@ void CSGOptiX::prepareRenderParam()
     cameratype = composition->getCameraType(); 
 #endif
 
+
     if(!flight) LOG(info)
-        << " extent " << extent
-        << " tmin " << tmin 
-        << " tmax " << tmax 
-        << " eye (" << eye.x << " " << eye.y << " " << eye.z << " ) "
-        << " U (" << U.x << " " << U.y << " " << U.z << " ) "
-        << " V (" << V.x << " " << V.y << " " << V.z << " ) "
-        << " W (" << W.x << " " << W.y << " " << W.z << " ) "
-        << " cameratype " << cameratype
+        << std::endl 
+        << std::setw(20) << " extent "     << extent << std::endl 
+        << std::setw(20) << " sglm.ce.w "  << sglm->ce.w << std::endl 
+        << std::setw(20) << " tmin "       << tmin  << std::endl 
+        << std::setw(20) << " sglm.near "  << sglm->near  << std::endl 
+        << std::setw(20) << " sglm.get_near_abs "  << sglm->get_near_abs()  << std::endl 
+        << std::setw(20) << " tmax "       << tmax  << std::endl 
+        << std::setw(20) << " sglm.far "   << sglm->far  << std::endl 
+        << std::setw(20) << " sglm.get_far_abs "   << sglm->get_far_abs()  << std::endl 
+        << std::setw(20) << " eye ("       << eye.x << " " << eye.y << " " << eye.z << " ) " << std::endl 
+        << std::setw(20) << " U ("         << U.x << " " << U.y << " " << U.z << " ) " << std::endl
+        << std::setw(20) << " V ("         << V.x << " " << V.y << " " << V.z << " ) " << std::endl
+        << std::setw(20) << " W ("         << W.x << " " << W.y << " " << W.z << " ) " << std::endl
+        << std::setw(20) << " cameratype " << cameratype << " " << SCAM::Name(cameratype) << std::endl 
         ;
+
+    std::cout << "SGLM basis "        << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
+    std::cout << "Composition basis " << std::endl << SGLM::DescEyeBasis( eye, U, V, W ) << std::endl ;
+
+    std::cout << "sglm.descELU " << std::endl << sglm->descELU() << std::endl ; 
 
     params->setView(eye, U, V, W);
     params->setCamera(tmin, tmax, cameratype ); 
 
-    if(!flight) LOG(info)
+    LOG(info) << std::endl << params->desc() << std::endl ; 
+
+
+    if(flight) return ; 
+
+#ifdef WITH_SGLM
+    LOG(info)
+        << "sglm.desc " << std::endl 
+        << sglm->desc() 
+        ; 
+#else
+    LOG(info)
         << "composition.desc " << std::endl 
         << composition->desc() 
         ; 
+#endif
+
 }
 
 
@@ -543,7 +545,12 @@ A: not from device code it seems : only by using the hostside params to
 
 void CSGOptiX::prepareParam()
 {
-    glm::vec4& ce = composition->getCenterExtent();   
+#ifdef WITH_SGLM
+    const glm::vec4& ce = sglm->ce ;   
+#else
+    const glm::vec4& ce = composition->getCenterExtent();   
+#endif
+
     params->setCenterExtent(ce.x, ce.y, ce.z, ce.w); 
     switch(raygenmode)
     {
@@ -700,8 +707,13 @@ void CSGOptiX::writeFramePhoton(const char* dir, const char* name)
 
 int CSGOptiX::render_flightpath() // for making mp4 movies
 {
+#ifdef WITH_SGLM
+    LOG(fatal) << "flightpath rendering not yet implemented in WITH_SGLM branch " ; 
+    int rc = 1 ; 
+#else
     FlightPath* fp = ok->getFlightPath();   // FlightPath lazily instanciated here (held by Opticks)
     int rc = fp->render( (SRenderer*)this  );
+#endif
     return rc ; 
 }
 
@@ -710,10 +722,16 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     const char* json_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".json"); 
 
     nlohmann::json& js = meta->js ;
+    js["jpg"] = jpg_path ; 
+
+#ifdef WITH_SGLM
+    js["emm"] = SGeoConfig::EnabledMergedMesh() ;
+#else
+    js["emm"] = ok->getEnabledMergedMesh() ;
     js["argline"] = ok->getArgLine();
     js["nameprefix"] = ok->getNamePrefix() ;
-    js["jpg"] = jpg_path ; 
-    js["emm"] = ok->getEnabledMergedMesh() ;
+#endif
+
     if(foundry->hasMeta())
     {
         js["cfmeta"] = foundry->meta ; 

@@ -14,11 +14,7 @@ struct quad4 ;
 struct quad6 ; 
 struct qat4 ; 
 struct float4 ; 
-
-
-#ifdef WITH_SGLM
 struct SGLM ; 
-#endif
 
 struct CSGFoundry ; 
 struct CSGView ; 
@@ -50,13 +46,13 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     static const char* GEO_PTXNAME ; 
 
 #ifdef WITH_SGLM
-    SGLM*             sglm ; 
-    bool              flight ; 
 #else
     Opticks*          ok ;  
     Composition*      composition ; 
-    bool              flight ; 
 #endif
+    SGLM*             sglm ; 
+
+    const char*       flight ; 
     const CSGFoundry* foundry ; 
     const char*       prefix ; 
     const char*       outdir ; 
@@ -66,6 +62,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     float             tmin_model ; 
     int               jpg_quality ; 
 
+    std::vector<unsigned>  solid_selection ;
     std::vector<double>  launch_times ;
 
     int               raygenmode ; 
@@ -113,7 +110,6 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     void setCEGS(const std::vector<int>& cegs); 
     void setComposition(const float4& ce,    const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
     void setComposition(const glm::vec4& ce, const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
-    void setNear(float near); 
 
     void prepareRenderParam(); 
     void prepareSimulateParam(); 

@@ -1,15 +1,37 @@
+#include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <bitset>
 
+#include "SSys.hh"
+#include "SStr.hh"
 #include "SBit.hh"
 #include "SGeoConfig.hh"
 
-unsigned long long SGeoConfig::EMM = SBit::FromEString("EMM", "~0");  
+unsigned long long SGeoConfig::_EMM = SBit::FromEString(kEMM, "~0");  
+const char* SGeoConfig::_SolidSelection = SSys::getenvvar(kSolidSelection, nullptr ); 
+const char* SGeoConfig::_FlightConfig   = SSys::getenvvar(kFlightConfig  , nullptr ); 
+const char* SGeoConfig::_ArglistPath    = SSys::getenvvar(kArglistPath  , nullptr ); 
+
+void SGeoConfig::SetSolidSelection(const char* ss){  _SolidSelection = ss ? strdup(ss) : nullptr ; }
+void SGeoConfig::SetFlightConfig(  const char* fc){  _FlightConfig   = fc ? strdup(fc) : nullptr ; }
+void SGeoConfig::SetArglistPath(   const char* ap){  _ArglistPath    = ap ? strdup(ap) : nullptr ; }
+
+unsigned long long SGeoConfig::EnabledMergedMesh(){  return _EMM ; } 
+const char* SGeoConfig::SolidSelection(){ return _SolidSelection ; }
+const char* SGeoConfig::FlightConfig(){   return _FlightConfig ; }
+const char* SGeoConfig::ArglistPath(){    return _ArglistPath ; }
+
+
 
 std::string SGeoConfig::Desc()
 {
     std::stringstream ss ; 
-    ss << " EMM " << SBit::HexString(EMM) << " 0x" << std::hex << EMM << std::dec ;  
+    ss << std::endl ; 
+    ss << std::setw(25) << kEMM << " : " << SBit::HexString(_EMM) << " 0x" << std::hex << _EMM << std::dec << std::endl ;
+    ss << std::setw(25) << kSolidSelection << " : " << ( _SolidSelection ? _SolidSelection : "-" ) << std::endl ;    
+    ss << std::setw(25) << kFlightConfig << " : " << ( _FlightConfig ? _FlightConfig : "-" ) << std::endl ;    
+    ss << std::setw(25) << kArglistPath << " : " << ( _ArglistPath ? _ArglistPath : "-" ) << std::endl ;    
     std::string s = ss.str(); 
     return s ; 
 }
@@ -20,7 +42,7 @@ bool SGeoConfig::IsEnabledMergedMesh(unsigned mm) // static
     bool emm = true ;   
     if(mm < 64) 
     {   
-        std::bitset<64> bs(EMM); 
+        std::bitset<64> bs(_EMM); 
         emm = bs.count() == 0 ? emptylistdefault : bs[mm] ;   
     }   
     return emm ; 
@@ -37,5 +59,12 @@ std::string SGeoConfig::DescEMM()
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+std::vector<std::string>*  SGeoConfig::Arglist() 
+{
+    return SStr::LoadList( _ArglistPath, '\n' );  
+}
+
 
 

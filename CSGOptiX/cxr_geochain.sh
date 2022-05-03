@@ -5,17 +5,28 @@ cxr_geochain.sh : 3D renders using CSGOptiXRenderTest
 
 Rendering CSGFoundry geometry created from
 Geant4 C++ solid specification by GeoChain 
-executable. Usage::
+executable. 
+
+Usage:
+
+1. create a CSGFoundry geometry folder by conversion from a Geant4 geometry using GeoChain::
 
     cd ~/opticks/GeoChain   # gc 
-    ./run.sh                # create geometry CF folder
+    ./translate.sh                # create geometry CF folder
 
-    cd ~/opticks/CSGOptiX
-    ./cxr_geochain.sh      # render jpg 
-    EYE=0,0,1,1 ./cxr_geochain.sh  
+2. alternatively some geometry is only implemnented at CSG level, create CSGFoundry with::
+
+    cd ~/opticks/CSG   # c 
+    ./CSGMakerTest.sh 
+
+3. run the render, this works with OptiX 7 (needs manual b7 build) and also by virtue of CSGOptiX/Six.cc with OptiX 5 or 6:: 
+ 
+    cd ~/opticks/CSGOptiX    # cx
+
+    ./cxr_geochain.sh                 # render jpg 
+    EYE=0,0,1,1 ./cxr_geochain.sh     # change viewpoint 
 
 The EYE, LOOK, UP envvars set the okc/View::home defaults 
-
 
 DONE: avoid outdir having -1 elem in the path, as thats tedious to handle from shell 
 DONE: add PUB=1 sensitivity to copy renders into standardized publication dirs based on the outdir 
@@ -107,7 +118,7 @@ msg="=== $BASH_SOURCE :"
 #geom=parade
 # export GEOM=${GEOM:-$geom}
 
-source $PWD/../bin/GEOM.sh  ## sets GEOM envvar 
+source $PWD/../bin/GEOM.sh trim   ## sets GEOM envvar 
 
 # cfname picks the CSGFoundry geometry to load
 if [ "$(uname)" == "Linux" ]; then

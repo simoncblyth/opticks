@@ -96,6 +96,42 @@ const char* SStr::Load(const char* path_ )
 }
 
 
+void SStr::LoadList(const char* arg, std::vector<std::string>& lines, char delim  )
+{
+    if(arg == nullptr) return ; 
+
+    if(SPath::LooksLikePath(arg) && delim == '\n' )  // eg starts with slash
+    {   
+        std::ifstream ifs(arg);
+        std::string line;
+        while(std::getline(ifs, line)) lines.push_back(line) ; 
+    }   
+    else if( delim == ',' )
+    {   
+        SStr::Split( arg,  delim, lines );    
+        std::cout << "SStr::LoadList split " << arg << " into " << lines.size() << std::endl ; 
+    }   
+    else
+    {   
+        lines.push_back(arg);
+    }   
+}
+
+std::vector<std::string>* SStr::LoadList( const char* arg, char delim )
+{
+    if(arg == nullptr) return nullptr ; 
+    typedef std::vector<std::string> VS ; 
+    VS* lines = new VS ; 
+    LoadList(arg, *lines, delim ); 
+    return lines ; 
+}
+
+
+
+
+
+
+
 
 
 void SStr::FillFromULL( char* dest, unsigned long long value, char unprintable)
@@ -211,9 +247,13 @@ std::string SStr::Format( const char* fmt, Args ... args )
     return std::string( buf.begin(), buf.begin() + sz - 1 );  // exclude null termination 
 }
 
+template std::string SStr::Format( const char*, const char* ); 
 template std::string SStr::Format( const char* , int, double ); 
 template std::string SStr::Format( const char* , int ); 
+template std::string SStr::Format( const char* , int, const char* ); 
 template std::string SStr::Format( const char* , unsigned ); 
+template std::string SStr::Format( const char*, const char* , const char* ); 
+template std::string SStr::Format( const char*, const char* , int, const char* ); 
 
 
 bool SStr::Blank( const char* s )

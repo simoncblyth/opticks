@@ -159,12 +159,12 @@ class OKCORE_API Camera : public NConfigurable  {
 
      Camera(int width, int height, float basis=1000.f ) ;
 
-     glm::mat4 getProjection();
-     glm::mat4 getPerspective();
-     glm::mat4 getOrtho();
-     glm::mat4 getFrustum();
+     glm::mat4 getProjection() const ;
+     glm::mat4 getPerspective() const ;
+     glm::mat4 getOrtho() const ;
+     glm::mat4 getFrustum() const ;
 
-     void fillZProjection(glm::vec4& zProj);
+     void fillZProjection(glm::vec4& zProj) const ;
 
      bool hasChanged();
      void setChanged(bool changed); 
@@ -276,8 +276,9 @@ class OKCORE_API Camera : public NConfigurable  {
      float getLeft() const ;
      float getRight() const ;
   public:
-     void Print(const char* msg="Camera::Print");
-     void Summary(const char* msg="Camera::Summary");
+     void Print(const char* msg="Camera::Print") const ;
+     void Summary(const char* msg="Camera::Summary") const ;
+     std::string desc(const char* msg="Camera::desc") const ; 
 
    private:
      int   m_size[2] ;

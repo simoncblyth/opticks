@@ -235,6 +235,38 @@ void test_mtime()
     LOG(info) << " path " << path << " mtime " << mtime ; 
 }
 
+void test_MakeName()
+{
+    const char* stem = "cogent_stem_" ; 
+    int index = 101 ; 
+    const char* ext = ".jpg" ; 
+    std::string name = SPath::MakeName( stem, index, ext ); 
+    const char* x_name = "cogent_stem_00101.jpg" ; 
+    assert( strcmp( name.c_str(), x_name) == 0 ); 
+}
+
+void test_Make()
+{
+    const char* base = "/tmp/SPathTest/base" ; 
+    const char* relname = "some/informative/relname" ; 
+    const char* stem = "cogent_stem_" ; 
+    int index = 101 ; 
+    const char* ext = ".jpg" ; 
+
+    const char* path_0 = SPath::Make(base, relname, stem, index, ext, FILEPATH ); 
+    const char* x_path_0 = "/tmp/SPathTest/base/some/informative/relname/cogent_stem_00101.jpg" ; 
+    assert( strcmp( path_0, x_path_0) == 0 ); 
+
+    const char* path_1 = SPath::Make(base, nullptr, stem, index, ext, FILEPATH ); 
+    const char* x_path_1 = "/tmp/SPathTest/base/cogent_stem_00101.jpg" ; 
+    assert( strcmp( path_1, x_path_1) == 0 ); 
+
+    const char* path_2 = SPath::Make(base, nullptr, stem, -1, ext, FILEPATH ); 
+    const char* x_path_2 = "/tmp/SPathTest/base/cogent_stem_.jpg" ; 
+    assert( strcmp( path_2, x_path_2) == 0 ); 
+}
+
+
 
 int main(int argc , char** argv )
 {
@@ -248,8 +280,8 @@ int main(int argc , char** argv )
     test_GetHomePath();  
     test_IsReadable();  
     test_IsReadable_path();  
-*/
     test_Basename_2(); 
+*/
 
 /*
     test_Basename(); 
@@ -262,6 +294,8 @@ int main(int argc , char** argv )
     test_Resolve_createdirs(); 
     test_getcwd(); 
     test_mtime(); 
+    test_MakeName(); 
+    test_Make(); 
 */
 
     return 0  ; 

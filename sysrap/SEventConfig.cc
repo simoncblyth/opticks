@@ -5,6 +5,7 @@
 #include <iomanip>
 
 #include "SSys.hh"
+#include "SPath.hh"
 #include "SEventConfig.hh"
 #include "SRG.h"
 #include "OpticksPhoton.hh"
@@ -24,6 +25,7 @@ int SEventConfig::_MaxSeq     = SSys::getenvint(kMaxSeq,          0 ) ;    // co
 float SEventConfig::_MaxExtent = SSys::getenvfloat(kMaxExtent,  1000.f );  // mm 
 float SEventConfig::_MaxTime   = SSys::getenvfloat(kMaxTime,    10.f );    // ns
 const char* SEventConfig::_OutFold = SSys::getenvvar(kOutFold,  "$TMP" ); 
+const char* SEventConfig::_OutName = SSys::getenvvar(kOutName,  nullptr ); 
 int SEventConfig::_RGMode = SRG::Type(SSys::getenvvar(kRGMode, "simulate")) ;    
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar(kHitMask, "SD" )) ;   
 
@@ -36,6 +38,7 @@ int SEventConfig::MaxSeq(){      return _MaxSeq ; }
 float SEventConfig::MaxExtent(){ return _MaxExtent ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
+const char* SEventConfig::OutName(){   return _OutName ; }
 int SEventConfig::RGMode(){  return _RGMode ; } 
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
 
@@ -47,7 +50,8 @@ void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; C
 void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; Check() ; }
 void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; Check() ; }
 void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; Check() ; }
-void SEventConfig::SetOutFold(   const char* out_fold){   _OutFold = strdup(out_fold) ; Check() ; }
+void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? strdup(outfold) : nullptr ; Check() ; }
+void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? strdup(outname) : nullptr ; Check() ; }
 void SEventConfig::SetRGMode(   const char* rg_mode){   _RGMode = SRG::Type(rg_mode) ; Check() ; }
 void SEventConfig::SetHitMask(const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
 
@@ -103,8 +107,35 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " RGModeLabel " << " : " << RGModeLabel() << std::endl 
        << std::setw(25) << kOutFold
        << std::setw(20) << " OutFold " << " : " << OutFold() << std::endl 
+       << std::setw(25) << kOutName
+       << std::setw(20) << " OutName " << " : " << ( OutName() ? OutName() : "-" )  << std::endl 
        ;
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+const char* SEventConfig::OutDir()
+{
+    return SPath::Resolve( OutFold(), OutName(), DIRPATH ); 
+}
+const char* SEventConfig::OutPath( const char* stem, int index, const char* ext )
+{
+     return SPath::Make( OutFold(), OutName(), stem, index, ext, FILEPATH);  // HMM: an InPath would use NOOP to not create the dir
+}
+
+
+
+const char* SEventConfig::OutDir(const char* reldir)
+{
+    return SPath::Resolve( OutFold(), OutName(), reldir, DIRPATH ); 
+}
+const char* SEventConfig::OutPath( const char* reldir, const char* stem, int index, const char* ext )
+{
+     return SPath::Make( OutFold(), OutName(), reldir, stem, index, ext, FILEPATH ); 
+}
+
+
+
 

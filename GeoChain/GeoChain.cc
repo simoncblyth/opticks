@@ -149,6 +149,7 @@ Doing something similar in CSG/tests/CSGMakerTest.cc
 
 void GeoChain::convertName(const char* name)
 {
+    LOG(fatal) << "NOTE THAT SOME GEOMETRY IS IMPLEMENTED ONLY AT CSG LEVEL : see CSG/CSGMakerTest.sh " ; 
     assert(0); 
 }
 

@@ -97,6 +97,8 @@ export OPTICKS_GEOM=$GEOM
 
 
 
+
+
 IFS=: read -a cegs_arr <<< "$CEGS"
 
 # quotes on the in variable due to bug fixed in bash 4.3 according to 
@@ -134,19 +136,22 @@ if [ "$(uname)" == "Linux" ]; then
     fi 
 fi
 
+
+
+pkg=CSGOptiX
+bin=CSGOptiXSimtraceTest 
+export TMPDIR=/tmp/$USER/opticks
+export LOGDIR=$TMPDIR/$pkg/$bin
+mkdir -p $LOGDIR 
+cd $LOGDIR 
+
+
 if [ -n "$cfbase" ]; then 
     echo $msg cfbase $cfbase defined setting CFBASE to override standard geometry default 
     export CFBASE=${CFBASE:-$cfbase}   ## setting CFBASE only appropriate for non-standard geometry 
 fi 
 
-
-pkg=CSGOptiX
-bin=CSGOptiXSimtraceTest 
-export LOGDIR=/tmp/$USER/opticks/$pkg/$bin
-mkdir -p $LOGDIR 
-cd $LOGDIR 
-
-
+export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
 
 botline="MOI $MOI CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE"
 
@@ -167,7 +172,7 @@ export TOPLINE="${TOPLINE:-$topline}"
 ##  trumps any changes from analysis running
 ## ... hmm that is kinda not appropriate for cosmetic presentation changes like differnt XX ZZ etc.. 
 
-vars="GEOM LOGDIR BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE NOTE GSPLOT ISEL XX YY ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR"
+vars="GEOM LOGDIR BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE NOTE GSPLOT ISEL XX YY ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR OPTICKS_OUT_FOLD"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 

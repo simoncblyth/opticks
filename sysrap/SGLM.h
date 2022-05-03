@@ -36,6 +36,7 @@ TODO: provide a single header replacement for the boatload of classes used by ok
 #include "scuda.h"
 #include "sqat4.h"
 #include "SCenterExtentFrame.h"
+#include "SCAM.h"
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -50,6 +51,7 @@ struct SYSRAP_API SGLM
     static glm::vec4 LOOK ; 
     static glm::vec4 UP ; 
     static float ZOOM ; 
+    static int   CAM ; 
 
     static constexpr const char* kWH = "WH" ; 
     static constexpr const char* kCE = "CE" ; 
@@ -57,6 +59,7 @@ struct SYSRAP_API SGLM
     static constexpr const char* kLOOK = "LOOK" ; 
     static constexpr const char* kUP = "UP" ; 
     static constexpr const char* kZOOM = "ZOOM" ; 
+    static constexpr const char* kCAM = "CAM" ; 
 
     static void SetWH( int width, int height ); 
     static void SetCE( float x, float y, float z, float extent ); 
@@ -64,12 +67,15 @@ struct SYSRAP_API SGLM
     static void SetLOOK( float x, float y, float z ); 
     static void SetUP( float x, float y, float z ); 
     static void SetZOOM( float v ); 
+    static void SetCAM( const char* cam ); 
 
     static std::string DescInput() ; 
+    std::string descInput() const ; 
 
     static int Width() ; 
     static int Height() ; 
     static float Aspect(); 
+    static const char* CAMLabel() ; 
 
     template <typename T> static T ato_( const char* a );
     template <typename T> static void GetEVector(std::vector<T>& vec, const char* key, const char* fallback );
@@ -99,11 +105,14 @@ struct SYSRAP_API SGLM
     SGLM(); 
 
     glm::vec4 ce ; 
+    int  cam ; 
+
     const qat4* m2w ; 
     const qat4* w2m ; 
     glm::mat4 model2world ; 
     glm::mat4 world2model ; 
     bool rtp_tangential ; 
+    int updateModelMatrix_branch ; 
 
     void set_ce(  float x, float y, float z, float w ); 
     void set_m2w( const qat4* m2w_, const qat4* w2m_ ); 
@@ -115,9 +124,24 @@ struct SYSRAP_API SGLM
     float basis ; 
     float near ; 
     float far ; 
-    void set_basis(float basis_=0.f) ; // when 0.f basis is taken from ce.w 
 
-    float scale ; 
+    void set_basis(float basis_ ) ; // when 0.f basis is taken from ce.w 
+    void set_near( float near_ ); 
+    void set_far( float far_ ); 
+    void set_basis_to_gazelength() ; 
+
+    float get_basis() const ;  // when not set return default of ce.w  
+    float get_near() const ;  
+    float get_far() const ;  
+
+    float get_near_abs() const ;  
+    float get_far_abs() const ;  
+
+
+    std::string descBasis() const ; 
+
+    float focalscale ; 
+    float orthoscale ; 
 
     glm::vec3 eye ;  // world frame  
     glm::vec3 look ; 
@@ -126,7 +150,6 @@ struct SYSRAP_API SGLM
 
     void updateELU();   // depends on CE and EYE, LOOK, UP 
     std::string descELU() const ; 
-
 
     glm::vec3 forward_ax ; 
     glm::vec3 right_ax ; 
@@ -137,9 +160,7 @@ struct SYSRAP_API SGLM
 
     void updateEyeSpace(); 
     std::string descEyeSpace() const ; 
-
-    bool parallel ;  
-    float orthoscale ; 
+    static std::string DescEyeBasis( const glm::vec3& E, const glm::vec3& U, const glm::vec3& V, const glm::vec3& W ); 
 
     glm::vec3 u ; 
     glm::vec3 v ; 
@@ -152,9 +173,12 @@ struct SYSRAP_API SGLM
     glm::mat4 projection ; 
     glm::mat4 world2clip ; 
 
-    float getScaleDefault() const ; 
-    float getScale() const ; 
-    void setScale(float scale) ; 
+    float getFocalScaleDefault() const ; 
+    float getFocalScale() const ; 
+    void setFocalScale(float fsc) ; 
+    void setOrthoScale(float osc) ; 
+    void setFocalScaleToGazeLength() ; 
+    float getGazeLength() const ; 
 
     void updateProjection(); 
     std::string descProjection() const ; 
@@ -172,6 +196,7 @@ glm::vec4  SGLM::EYE  = EVec4(kEYE, "-1,-1,0,1") ;
 glm::vec4  SGLM::LOOK = EVec4(kLOOK, "0,0,0,1") ; 
 glm::vec4  SGLM::UP  =  EVec4(kUP,   "0,0,1,0") ; 
 float      SGLM::ZOOM = EValue<float>(kZOOM, "1"); 
+int        SGLM::CAM  = SCAM::EValue(kCAM, "perspective") ; 
 
 void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
@@ -179,36 +204,35 @@ void SGLM::SetEYE( float x, float y, float z){ EYE.x = x  ; EYE.y = y  ; EYE.z =
 void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; LOOK.z = z ;  LOOK.w = 1.f ; }
 void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 1.f ; }
 void SGLM::SetZOOM( float v ){ ZOOM = v ; }
+void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
 
 int SGLM::Width(){  return WH.x ; }
 int SGLM::Height(){ return WH.y ; }
 float SGLM::Aspect() { return float(WH.x)/float(WH.y) ; } 
-
-
+const char* SGLM::CAMLabel(){ return SCAM::Name(CAM) ; }
 
 SGLM::SGLM() 
     :
     ce(CE),
+    cam(CAM),
     m2w(nullptr),
     w2m(nullptr),
     model2world(1.f), 
     world2model(1.f),
     rtp_tangential(false),
+    updateModelMatrix_branch(-1), 
 
-    basis(ce.w),
-    near(basis/10.f), 
-    far(basis*5.f),
+    basis(0.f),
+    near(0.1f),   // units of basis
+    far(5.f),     // units of basis
 
-    scale(0.f),
+    focalscale(0.f),
+    orthoscale(1.f),
 
     forward_ax(0.f,0.f,0.f),
     right_ax(0.f,0.f,0.f),
     top_ax(0.f,0.f,0.f),
     rot_ax(1.f),
-
-    parallel(false),
-    orthoscale(1.f),
-
     projection(1.f),
     world2clip(1.f)
 {
@@ -219,8 +243,6 @@ SGLM::SGLM()
 void SGLM::update()  
 {
     updateModelMatrix(); 
-    set_basis(); 
-
     updateELU(); 
     updateEyeSpace(); 
     updateEyeBasis(); 
@@ -231,10 +253,12 @@ std::string SGLM::desc() const
 {
     std::stringstream ss ; 
     ss << DescInput() << std::endl ; 
+    ss << descInput() << std::endl ; 
     ss << descELU() << std::endl ; 
     ss << descEyeSpace() << std::endl ; 
     ss << descEyeBasis() << std::endl ; 
     ss << descProjection() << std::endl ; 
+    ss << descBasis() << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -248,6 +272,7 @@ std::string SGLM::DescInput() // static
 {
     std::stringstream ss ; 
     ss << "SGLM::DescInput" << std::endl ; 
+    ss << std::setw(15) << kCAM   << " " << CAMLabel() << std::endl ; 
     ss << std::setw(15) << kWH    << Present( WH )   << " Aspect " << Aspect() << std::endl ; 
     ss << std::setw(15) << kCE    << Present( CE )   << std::endl ; 
     ss << std::setw(15) << kEYE   << Present( EYE )  << std::endl ; 
@@ -258,6 +283,18 @@ std::string SGLM::DescInput() // static
     std::string s = ss.str(); 
     return s ; 
 }
+
+std::string SGLM::descInput() const 
+{
+    std::stringstream ss ; 
+    ss << "SGLM::descInput" << std::endl ; 
+    ss << std::setw(15) << "ce"    << Present( ce )   << std::endl ; 
+    ss << std::setw(15) << "cam"   << SCAM::Name(cam) << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+ 
+
 
 void SGLM::set_ce( float x, float y, float z, float w )
 {
@@ -289,19 +326,27 @@ Called by SGLM::update. The matrices are set based on center--extent OR directly
 
 void SGLM::updateModelMatrix()
 {
-    if( m2w && w2m )
+    updateModelMatrix_branch = 0 ; 
+
+    bool m2w_valid = m2w && m2w->is_identity() == false ;
+    bool w2m_valid = w2m && w2m->is_identity() == false ;
+
+    if( m2w_valid && w2m_valid )
     {
+        updateModelMatrix_branch = 1 ; 
         model2world = glm::make_mat4x4<float>(m2w->cdata());
         world2model = glm::make_mat4x4<float>(w2m->cdata());
     }
     else if( rtp_tangential )
     {
+        updateModelMatrix_branch = 2 ; 
         SCenterExtentFrame<double> cef( ce.x, ce.y, ce.z, ce.w, rtp_tangential );
         model2world = cef.model2world ;
         world2model = cef.world2model ;
     }
     else
     {
+        updateModelMatrix_branch = 3 ; 
         glm::vec3 tr(ce.x, ce.y, ce.z) ;  
         glm::vec3 sc(ce.w, ce.w, ce.w) ; 
         glm::vec3 isc(1.f/ce.w, 1.f/ce.w, 1.f/ce.w) ; 
@@ -311,11 +356,36 @@ void SGLM::updateModelMatrix()
     }
 }
 
-void SGLM::set_basis(float basis_)
+void SGLM::set_basis(float basis_){ basis = basis_ ; }
+void SGLM::set_near( float near_ ){ near = near_ ; }
+void SGLM::set_far(  float far_ ){  far = far_ ; }
+void SGLM::set_basis_to_gazelength() { set_basis( getGazeLength()) ; }
+
+
+float SGLM::get_basis() const { return basis == 0.f ? ce.w : basis ; }
+float SGLM::get_near() const  { return near ; }  
+float SGLM::get_far()  const  { return far  ; }  
+
+float SGLM::get_near_abs() const { return near*get_basis() ; }
+float SGLM::get_far_abs() const { return   far*get_basis() ; }
+
+
+std::string SGLM::descBasis() const 
 {
-    basis = basis_ == 0 ? ce.w : basis_ ;
-    near = basis/10.f ;
-    far = basis*5.f ;
+    int wid = 25 ; 
+    std::stringstream ss ; 
+    ss << "SGLM::descBasis" << std::endl ; 
+    ss << std::setw(wid) << " sglm.ce.w  "     << Present( ce.w )  << std::endl ; 
+    ss << std::setw(wid) << " sglm.getGazeLength  " << Present( getGazeLength() ) << std::endl ; 
+    ss << std::setw(wid) << " sglm.basis "     << Present( basis ) << std::endl ; 
+    ss << std::setw(wid) << " sglm.get_basis " << Present( get_basis() ) << std::endl ; 
+    ss << std::setw(wid) << " sglm.near  "     << Present( near )  << " (units of basis) " << std::endl ; 
+    ss << std::setw(wid) << " sglm.far   "     << Present( far )   << " (units of basis) " << std::endl ; 
+    ss << std::setw(wid) << " sglm.get_near_abs  " << Present( get_near_abs() ) << std::endl ; 
+    ss << std::setw(wid) << " sglm.get_far_abs  " << Present( get_far_abs() ) << std::endl ; 
+    ss << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 void SGLM::updateELU() // eye, look, up, gaze into world frame 
@@ -332,6 +402,13 @@ std::string SGLM::descELU() const
     ss << "SGLM::descELU" << std::endl ; 
     ss << " sglm.model2world \n" << Present( model2world ) << std::endl ; 
     ss << " sglm.world2model \n" << Present( world2model ) << std::endl ; 
+    ss << " sglm.updateModelMatrix_branch " << updateModelMatrix_branch << std::endl ; 
+    ss << std::endl ; 
+    ss << std::setw(15) << " sglm.EYE "  << Present( EYE )  << std::endl ; 
+    ss << std::setw(15) << " sglm.LOOK " << Present( LOOK ) << std::endl ; 
+    ss << std::setw(15) << " sglm.UP "   << Present( UP )   << std::endl ; 
+    ss << std::setw(15) << " sglm.GAZE " << Present( LOOK-EYE ) << std::endl ; 
+    ss << std::endl ; 
     ss << std::setw(15) << " sglm.eye "  << Present( eye )  << std::endl ; 
     ss << std::setw(15) << " sglm.look " << Present( look ) << std::endl ; 
     ss << std::setw(15) << " sglm.up "   << Present( up )   << std::endl ; 
@@ -361,8 +438,6 @@ void SGLM::updateEyeSpace()
     camera2world = ti * rot_ax ;
 }
 
-
-
 std::string SGLM::descEyeSpace() const 
 {
     std::stringstream ss ; 
@@ -380,26 +455,69 @@ std::string SGLM::descEyeSpace() const
     return s ; 
 }
 
-float SGLM::getScaleDefault() const { return (parallel ? orthoscale : near )/ZOOM ; } 
-float SGLM::getScale() const { return scale > 0 ? scale : getScaleDefault() ; } 
-void  SGLM::setScale(float scale_) { scale = scale_ ; }
 
+
+float SGLM::getFocalScaleDefault() const { return (cam == CAM_ORTHOGRAPHIC ? orthoscale : near )/ZOOM ; } 
+float SGLM::getFocalScale() const { return focalscale > 0 ? focalscale : getFocalScaleDefault() ; } 
+void  SGLM::setFocalScale(float focalscale_) { focalscale = focalscale_ ; }
+void  SGLM::setOrthoScale(float orthoscale_) { orthoscale = orthoscale_ ; }
+
+void SGLM::setFocalScaleToGazeLength(){ setFocalScale( glm::length(gaze) ) ; }
+float SGLM::getGazeLength() const { return glm::length(gaze) ; } 
 
 void SGLM::updateProjection()
 {
-    float sc = getScale() ; 
-
+    float fsc = getFocalScale() ; 
     float aspect = Aspect(); 
-    float left   = -aspect*sc ;
-    float right  =  aspect*sc ;
-    float bottom = -sc ;
-    float top    =  sc ;
 
-    projection = glm::frustum( left, right, bottom, top, near, far );
+    float left   = -aspect*fsc ;
+    float right  =  aspect*fsc ;
+    float bottom = -fsc ;
+    float top    =  fsc ;
 
-    const glm::mat4& world2eye = world2camera ; // no look rotation or trackballing  
-    world2clip = projection * world2eye ;       //  ModelViewProjection 
+    float near_abs   = get_near_abs() ; 
+    float far_abs    = get_far_abs()  ; 
+
+    projection = glm::frustum( left, right, bottom, top, near_abs, far_abs );
+
+    world2clip = projection * world2camera ;  //  ModelViewProjection :  no look rotation or trackballing   
 }
+
+
+
+std::string SGLM::descProjection() const 
+{
+    float fsc = getFocalScale() ; 
+    float aspect = Aspect(); 
+    float left   = -aspect*fsc ;
+    float right  =  aspect*fsc ;
+    float bottom = -fsc ;
+    float top    =  fsc ;
+    float near_abs   = get_near_abs() ; 
+    float far_abs    = get_far_abs()  ; 
+
+
+    int wid = 25 ; 
+    std::stringstream ss ;
+    ss << "SGLM::descProjection" << std::endl ; 
+    ss << std::setw(wid) << "Aspect" << Present(aspect) << std::endl ;  
+    ss << std::setw(wid) << "getFocalScale" << Present(fsc) << std::endl ;  
+    ss << std::setw(wid) << "ZOOM" << Present(ZOOM) << std::endl ;  
+    ss << std::setw(wid) << "left"   << Present(left) << std::endl ;  
+    ss << std::setw(wid) << "right"  << Present(right) << std::endl ;  
+    ss << std::setw(wid) << "top"    << Present(top) << std::endl ;  
+    ss << std::setw(wid) << "bottom" << Present(bottom) << std::endl ;  
+    ss << std::setw(wid) << "get_near_abs" << Present(near_abs) << std::endl ;  
+    ss << std::setw(wid) << "get_far_abs" << Present(far_abs) << std::endl ;  
+
+    ss << std::setw(wid) << "near" << Present(near) << std::endl ;  
+    ss << std::setw(wid) << "far"  << Present(far) << std::endl ;  
+    ss << std::setw(wid) << "sglm.projection\n" << Present(projection) << std::endl ; 
+    ss << std::setw(wid) << "sglm.world2clip\n" << Present(world2clip) << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 /**
 SGLM::updateEyeBasis
@@ -418,14 +536,11 @@ void SGLM::updateEyeBasis()
     glm::vec4 ori( 0., 0., 0., 1.); 
 
     float aspect = Aspect() ; 
-    float sc = getScale() ; 
-    float gazlen = glm::length(gaze) ; 
+    float gazlen = getGazeLength() ; 
+    float fsc = getFocalScale() ; 
 
-    float focalplane_scale = sc ; 
-    //float focalplane_scale = gazlen ; 
-
-    u = glm::vec3( camera2world * rht ) * focalplane_scale * aspect ;  
-    v = glm::vec3( camera2world * top ) * focalplane_scale  ;  
+    u = glm::vec3( camera2world * rht ) * fsc * aspect ;  
+    v = glm::vec3( camera2world * top ) * fsc  ;  
     w = glm::vec3( camera2world * gaz ) * gazlen ;    
     e = glm::vec3( camera2world * ori );   
 }
@@ -434,40 +549,45 @@ std::string SGLM::descEyeBasis() const
 {
     std::stringstream ss ;
     ss << "SGLM::descEyeBasis : camera frame basis vectors transformed into world and focal plane scaled " << std::endl ; 
-    int wid = 15 ; 
 
+    int wid = 25 ; 
     float aspect = Aspect() ; 
-    float sc = getScale() ;
-    float gazlen = glm::length(gaze) ; 
+    float fscd = getFocalScaleDefault() ;
+    float fsc = getFocalScale() ;
+    float gazlen = getGazeLength() ; 
 
     ss << std::setw(wid) << "aspect" << Present(aspect) << std::endl ;
     ss << std::setw(wid) << "near " << Present(near) << std::endl ;
     ss << std::setw(wid) << "ZOOM " << Present(ZOOM) << std::endl ;
-    ss << std::setw(wid) << "scale " << Present(sc) << " (parallel ? orthoscale : near )/ZOOM " << std::endl ;
-    ss << std::setw(wid) << "gazlen " << Present(gazlen) << std::endl ;
-    ss << std::setw(wid) << "sglm.u " << Present(u) << " glm::vec3( camera2world * rht ) * sc * aspect " << std::endl ; 
-    ss << std::setw(wid) << "sglm.v " << Present(v) << " glm::vec3( camera2world * top ) * sc  " << std::endl ; 
-    ss << std::setw(wid) << "sglm.w " << Present(w) << " glm::vec3( camera2world * gaz ) * gazlen  " << std::endl ; 
+    ss << std::setw(wid) << "getFocalScaleDefault " << Present(fscd) << std::endl ;
+    ss << std::setw(wid) << "getFocalScale:fsc" << Present(fsc) << std::endl ;
+    ss << std::setw(wid) << "getGazeLength " << Present(gazlen) << std::endl ;
+
     ss << std::setw(wid) << "sglm.e " << Present(e) << " glm::vec3( camera2world * ori ) " << std::endl ; 
+    ss << std::setw(wid) << "sglm.u " << Present(u) << " glm::vec3( camera2world * rht ) * fsc * aspect " << std::endl ; 
+    ss << std::setw(wid) << "sglm.v " << Present(v) << " glm::vec3( camera2world * top ) * fsc  " << std::endl ; 
+    ss << std::setw(wid) << "sglm.w " << Present(w) << " glm::vec3( camera2world * gaz ) * gazlen  " << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
 
-std::string SGLM::descProjection() const 
+std::string SGLM::DescEyeBasis( const glm::vec3& E, const glm::vec3& U, const glm::vec3& V, const glm::vec3& W )
 {
     int wid = 15 ; 
     std::stringstream ss ;
-    ss << "SGLM::descProjection" << std::endl ; 
-    ss << std::setw(wid) << "Aspect" << std::setw(10) << std::fixed << std::setprecision(4) << Aspect() << std::endl ;  
-    ss << std::setw(wid) << "scale" << std::setw(10) << std::fixed << std::setprecision(4) << getScale() << std::endl ;  
-    ss << std::setw(wid) << "ZOOM" << std::setw(10) << std::fixed << std::setprecision(4) << ZOOM << std::endl ;  
-    ss << std::setw(wid) << "near" << std::setw(10) << std::fixed << std::setprecision(4) << near << std::endl ;  
-    ss << std::setw(wid) << "far" << std::setw(10) << std::fixed << std::setprecision(4) << far << std::endl ;  
-    ss << std::setw(wid) << "sglm.projection\n" << Present(projection) << std::endl ; 
-    ss << std::setw(wid) << "sglm.world2clip\n" << Present(world2clip) << std::endl ; 
+    ss << "SGLM::DescEyeBasis E,U,V,W " << std::endl ; 
+    ss << std::setw(wid) << "E " << Present(E) << std::endl ; 
+    ss << std::setw(wid) << "U " << Present(U) << std::endl ; 
+    ss << std::setw(wid) << "V " << Present(V) << std::endl ; 
+    ss << std::setw(wid) << "W " << Present(W) << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+
+
 
 
 

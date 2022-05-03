@@ -62,16 +62,27 @@ void Params::setCamera(float tmin_, float tmax_, unsigned cameratype_ )
     tmin = tmin_ ; 
     tmax = tmax_ ; 
     cameratype = cameratype_ ; 
+}
 
-    /*
-    std::cout << "Params::setCamera"
-              << " tmin " << tmin  
-              << " tmax " << tmax
-              << " cameratype " << cameratype
-              << std::endl 
-              ;  
-     */
+std::string Params::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "Params::desc"
+       << std::endl 
+       << std::setw(20) << " raygenmode " << std::setw(10) << raygenmode  << std::endl 
+       << std::setw(20) << " handle " << std::setw(10) << handle  << std::endl 
+       << std::setw(20) << " width " << std::setw(10) << width  << std::endl 
+       << std::setw(20) << " height " << std::setw(10) << height  << std::endl 
+       << std::setw(20) << " depth " << std::setw(10) << depth  << std::endl 
+       << std::setw(20) << " cameratype " << std::setw(10) << cameratype  << std::endl 
+       << std::setw(20) << " origin_x " << std::setw(10) << origin_x  << std::endl 
+       << std::setw(20) << " origin_y " << std::setw(10) << origin_y  << std::endl 
+       << std::setw(20) << " tmin " << std::setw(10) << tmin  << std::endl 
+       << std::setw(20) << " tmax " << std::setw(10) << tmax  << std::endl 
+       ;
 
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 void Params::dump(const char* msg) const 
@@ -80,17 +91,7 @@ void Params::dump(const char* msg) const
         << msg << std::endl 
         << std::endl 
         << "(values)" << std::endl 
-        << std::setw(20) << " raygenmode " << std::setw(10) << raygenmode  << std::endl 
-        << std::setw(20) << " handle " << std::setw(10) << handle  << std::endl 
-        << std::setw(20) << " width " << std::setw(10) << width  << std::endl 
-        << std::setw(20) << " height " << std::setw(10) << height  << std::endl 
-        << std::setw(20) << " depth " << std::setw(10) << depth  << std::endl 
-        << std::setw(20) << " cameratype " << std::setw(10) << cameratype  << std::endl 
-        << std::setw(20) << " origin_x " << std::setw(10) << origin_x  << std::endl 
-        << std::setw(20) << " origin_y " << std::setw(10) << origin_y  << std::endl 
-        << std::setw(20) << " tmin " << std::setw(10) << tmin  << std::endl 
-        << std::setw(20) << " tmax " << std::setw(10) << tmax  << std::endl 
-       // << std::setw(20) << " num_photons " << std::setw(10) << num_photons  << std::endl 
+        << desc()
         << std::endl 
         << "(device pointers)" << std::endl 
         << std::setw(20) << " node " << std::setw(10) << node  << std::endl 
@@ -130,7 +131,6 @@ Params::Params(int raygenmode_, unsigned width, unsigned height, unsigned depth)
     tmax(0.f),
     sim(nullptr),
     evt(nullptr)
-    //num_photons(0)
 {
     setRaygenMode(raygenmode_); 
     setSize(width, height, depth); 

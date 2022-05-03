@@ -46,6 +46,8 @@ class SYSRAP_API SStr {
       static void Save(const char* path, const std::vector<std::string>& a, char delim='\n' );    
       static void Save(const char* path_, const char* txt, int create_dirs=1 ); // 1:filepath 
       static const char* Load(const char* path_ ); 
+      static void LoadList(const char* path, std::vector<std::string>& lines, char delim='\n' ) ; 
+      static std::vector<std::string>* LoadList( const char* arg, char delim='\n' ); 
   public:
       static void FillFromULL( char* dest, unsigned long long value, char unprintable='.') ; 
       static const char* FromULL(unsigned long long value, char unprintable='.'); 

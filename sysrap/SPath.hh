@@ -25,6 +25,7 @@ SPath
 
 **/
 
+#include <string>
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -54,6 +55,9 @@ class SYSRAP_API SPath {
       static const char* Resolve(const char* dir, const char* reldir, const char* rel2dir, const char* name, int create_dirs);
       static const char* Resolve(const char* dir, const char* reldir, const char* rel2dir, const char* rel3dir, const char* name, int create_dirs);
 
+
+
+
       // mode:(0 do nothing, 1:assume file path, 2:assume dir path) 
       static void CreateDirs(const char* path, int mode); 
 
@@ -63,6 +67,12 @@ class SYSRAP_API SPath {
       static const char* getcwd() ; 
 
       template<typename T> static const char* MakePath( const char* prefix, const char* reldir, const T real, const char* name); 
+
+
+      static std::string MakeName( const char* stem, int index, const char* ext ); 
+      static const char* Make( const char* base, const char* reldir,                      const char* stem, int index, const char* ext, int create_dirs ); 
+      static const char* Make( const char* base, const char* reldir, const char* reldir2, const char* stem, int index, const char* ext, int create_dirs ); 
+
 
 };
 

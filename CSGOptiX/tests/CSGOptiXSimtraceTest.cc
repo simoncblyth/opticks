@@ -40,9 +40,12 @@ TODO:
 #include "SEvent.hh"
 #include "SEventConfig.hh"
 
-
 #include "OPTICKS_LOG.hh"
+
+#ifdef WITH_SGLM
+#else
 #include "Opticks.hh"
+#endif
 
 #include "CSGFoundry.h"
 #include "CSGGenstep.h"
@@ -55,8 +58,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+#ifdef WITH_SGLM
+#else
     Opticks ok(argc, argv ); 
     ok.configure(); 
+#endif
 
     SEventConfig::SetRGMode("simtrace"); 
 
@@ -89,7 +95,11 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 
+#ifdef WITH_SGLM
+    CSGOptiX cx(fd); 
+#else
     CSGOptiX cx(&ok, fd); 
+#endif
 
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ;    // THIS IS THE GENSTEP MAKER : NOT THE GS THEMSELVES 

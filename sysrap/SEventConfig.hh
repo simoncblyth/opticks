@@ -38,6 +38,13 @@ struct SYSRAP_API SEventConfig
     static std::string Desc(); 
     static std::string HitMaskLabel(); 
 
+    static const char* OutDir( const char* reldir); 
+    static const char* OutPath( const char* reldir, const char* stem, int index, const char* ext ); 
+
+    static const char* OutDir(); 
+    static const char* OutPath( const char* stem, int index, const char* ext ); 
+
+
     static constexpr const int M = 1000000 ; 
     static constexpr const int K = 1000 ; 
 
@@ -50,6 +57,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxExtent  = "OPTICKS_MAX_EXTENT" ; 
     static constexpr const char* kMaxTime    = "OPTICKS_MAX_TIME" ; 
     static constexpr const char* kOutFold    = "OPTICKS_OUT_FOLD" ; 
+    static constexpr const char* kOutName    = "OPTICKS_OUT_NAME" ; 
     static constexpr const char* kHitMask    = "OPTICKS_HIT_MASK" ; 
     static constexpr const char* kRGMode     = "OPTICKS_RG_MODE" ; 
 
@@ -62,6 +70,7 @@ struct SYSRAP_API SEventConfig
     static float MaxExtent() ; 
     static float MaxTime() ; 
     static const char* OutFold(); 
+    static const char* OutName(); 
     static unsigned HitMask(); 
     static int RGMode(); 
     static const char* RGModeLabel(); 
@@ -75,6 +84,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxExtent( float max_extent); 
     static void SetMaxTime(   float max_time ); 
     static void SetOutFold( const char* out_fold); 
+    static void SetOutName( const char* out_name); 
     static void SetHitMask(const char* abrseq, char delim=',' ); 
     static void SetRGMode( const char* rg_mode) ; 
 
@@ -88,6 +98,7 @@ struct SYSRAP_API SEventConfig
     static float _MaxExtent ; 
     static float _MaxTime  ; 
     static const char* _OutFold ; 
+    static const char* _OutName ; 
     static unsigned _HitMask ; 
     static int _RGMode ; 
 

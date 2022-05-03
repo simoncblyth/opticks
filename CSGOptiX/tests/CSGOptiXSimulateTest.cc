@@ -34,8 +34,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+#ifdef WITH_SGLM
+#else
     Opticks ok(argc, argv ); 
     ok.configure(); 
+#endif
 
     const char* cfbase = SOpticksResource::CFBase(); 
     const char* outfold = SEventConfig::OutFold();  
@@ -67,7 +70,11 @@ int main(int argc, char** argv)
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
     fdl->upload(); 
 
+#ifdef WITH_SGLM
+    CSGOptiX cx(fdl ); 
+#else
     CSGOptiX cx(&ok, fdl ); 
+#endif
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  
     cx.setComposition(ce); 
       

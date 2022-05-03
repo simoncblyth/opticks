@@ -324,23 +324,7 @@ void OpticksDbg::postgeometrySkipSolidName()
 
 void OpticksDbg::postconfigure(const std::string&  path, std::vector<std::string>& lines, char delim  )
 {
-    if(path.empty()) return ; 
-
-    if(SPath::LooksLikePath(path.c_str()) && delim == '\n' )  // eg starts with slash
-    {
-        std::ifstream ifs(path.c_str());
-        std::string line;
-        while(std::getline(ifs, line)) lines.push_back(line) ; 
-    }
-    else if( delim == ',' )
-    {
-        SStr::Split( path.c_str(),  delim, lines );           
-        LOG(LEVEL) << " split " << path << " into " << lines.size() ; 
-    }
-    else
-    {
-        lines.push_back(path.c_str());
-    }
+    SStr::LoadList( path.c_str(), lines, delim ); 
 }
 
 void OpticksDbg::postconfigure(const std::string& spec, std::vector<std::pair<int, int> >& pairs )

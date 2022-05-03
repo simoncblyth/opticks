@@ -1694,6 +1694,10 @@ void Composition::aim(const glm::vec4& ce, bool verbose)
 
 
 
+std::string Composition::getCameraDesc(const char* msg) const 
+{
+    return m_camera->desc(msg) ; 
+}
 
 unsigned Composition::getCameraType() const 
 {

@@ -82,9 +82,6 @@ export SIZESCALE=${SIZESCALE:-$sizescale}
 export CAMERATYPE=$CAM     # okc/Camera::Camera default 
 export OPTICKS_GEOM=${OPTICKS_GEOM:-$MOI}  # "sweeper" role , used by Opticks::getOutPrefix   
 
-vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE"
-for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
-
 optix_version=$(CSGOptiXVersion 2>/dev/null)
 
 
@@ -96,11 +93,26 @@ reldir=top_${TOP}_
 export OPTICKS_RELDIR=${OPTICKS_RELDIR:-$reldir}  
 
 
-export LOGDIR=/tmp/$USER/opticks/$pkg/$bin
+export TMPDIR=/tmp/$USER/opticks
+export LOGDIR=$TMPDIR/$pkg/$bin
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 
 
+export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$(SCVDLabel)/$optix_version
+export OPTICKS_OUT_NAME=$MOI
+# envvars used by SEventConfig::OutPath 
+
+vars="CVD EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE CFBASE OPTICKS_OUT_FOLD OPTICKS_OUT_NAME"
+for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
+
+
+if [ -n "$DEBUG" ]; then 
+    case $(uname) in 
+       Darwin) GDB=lldb__ ;;
+       Linux)  GDB=gdb    ;;
+    esac
+fi 
 
 DIV=""
 [ -n "$GDB" ] && DIV="--" 

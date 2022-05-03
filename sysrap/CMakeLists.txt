@@ -211,6 +211,7 @@ set(HEADERS
     SGLFW.h
     SCVD.h
     SRG.h
+    SCAM.h
 
     SOpticksKey.hh
     SMath.hh

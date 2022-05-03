@@ -67,7 +67,7 @@ Maybe because pointer arithmetic is all being done on constant input buffers ?
     
 Six::Six(const char* ptx_path_, const char* geo_ptx_path_, Params* params_)
     :
-    emm(SGeoConfig::EMM),
+    emm(SGeoConfig::EnabledMergedMesh()),
     context(optix::Context::create()),
     material(context->createMaterial()),
 

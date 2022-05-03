@@ -214,16 +214,20 @@ void SPath::CreateDirs(const char* path, int mode)  // static
 }
 
 
+
+
 const char* SPath::Resolve(const char* dir, const char* name, int create_dirs)
 {
     LOG(LEVEL) 
         << " dir [" << dir << "]"
-        << " name [" << name << "]"
+        << " name [" << ( name  ? name : "-" )<< "]"
         << " create_dirs [" << create_dirs << "]"
         ;
 
     std::stringstream ss ; 
-    ss << dir << "/" << name ; 
+    ss << dir ; 
+    if(name) ss << "/" << name ; 
+
     std::string s = ss.str(); 
     return Resolve(s.c_str(), create_dirs); 
 }
@@ -238,7 +242,7 @@ const char* SPath::Resolve(const char* dir, const char* reldir, const char* name
         ;
 
     std::stringstream ss ; 
-    ss << dir << "/" ; 
+    if(dir)    ss << dir << "/" ; 
     if(reldir) ss << reldir << "/" ; 
     ss << name ; 
 
@@ -259,7 +263,7 @@ const char* SPath::Resolve(const char* dir, const char* reldir, const char* rel2
         ;
 
     std::stringstream ss ; 
-    ss << dir << "/" ; 
+    if(dir)    ss << dir << "/" ; 
     if(reldir) ss << reldir << "/" ; 
     if(rel2dir) ss << rel2dir << "/" ; 
     if(name) ss << name ; 
@@ -376,4 +380,97 @@ const char* SPath::MakePath( const char* prefix, const char* reldir, const T rea
 
 template const char* SPath::MakePath<float>( const char*, const char*, const float, const char* ); 
 template const char* SPath::MakePath<double>( const char*, const char*, const double, const char* ); 
+
+
+/**
+SPath::MakeName
+------------------
+
+Form a name from the arguments::
+
+    <stem><index><ext>
+
+stem
+    can be null
+index
+    ignored when < 0, otherwise yields %0.5d formatted string 
+ext 
+    typically includes dot, eg ".jpg" or ".npy"
+
+
+**/
+
+std::string SPath::MakeName( const char* stem, int index, const char* ext )
+{ 
+    std::string name ; 
+    if( index > -1 )
+    {
+        if( stem && ext )
+        {
+            name = SStr::Format("%s%0.5d%s", stem, index, ext ) ; 
+        }
+        else if( stem == nullptr && ext )
+        {
+            name = SStr::Format("%0.5d%s", index, ext ) ; 
+        }
+    }
+    else
+    {
+        if( stem && ext )
+        {
+            std::stringstream ss ; 
+            ss << stem << ext ; 
+            name = ss.str(); 
+        }
+        else if( stem == nullptr && ext )
+        {
+            name = ext ; 
+        }
+    }
+    return name ; 
+}
+
+
+/**
+SPath::Make
+-------------
+
+Creates a path from the arguments::
+
+    <base>/<reldir>/<stem><index><ext>
+
+* base and relname can be nullptr 
+* the stem index and ext are formatted using SPath::MakeName
+* directory is created 
+
+**/
+
+const char* SPath::Make( const char* base, const char* reldir, const char* stem, int index, const char* ext, int create_dirs )
+{
+    assert( create_dirs == NOOP || create_dirs == FILEPATH ); 
+    std::string name = MakeName(stem, index, ext); 
+    const char* path = SPath::Resolve(base, reldir, name.c_str(), create_dirs ) ; 
+    return path ; 
+}
+
+/**
+SPath::Make
+-------------
+
+    <base>/<reldir>/<reldir2>/<stem><index><ext>
+
+**/
+
+const char* SPath::Make( const char* base, const char* reldir, const char* reldir2, const char* stem, int index, const char* ext, int create_dirs )
+{
+    assert( create_dirs == NOOP || create_dirs == FILEPATH ); 
+    std::string name = MakeName(stem, index, ext); 
+    const char* path = SPath::Resolve(base, reldir, reldir2, name.c_str(), create_dirs ) ; 
+    return path ; 
+}
+
+
+
+
+
 

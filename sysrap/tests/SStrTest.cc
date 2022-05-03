@@ -21,7 +21,11 @@
 
 #include <cassert>
 #include <string>
+#include <iostream>
+#include <iomanip>
+
 #include "SStr.hh"
+#include "SPath.hh"
 
 #include "OPTICKS_LOG.hh"
 
@@ -219,6 +223,45 @@ void test_Save()
     const char* path = "$TMP/SStrTest_test_Save.txt" ; 
     SStr::Save(path, v ); 
 }
+
+
+void test_LoadList()
+{
+    std::vector<std::string> v0 = { "red", "green", "blue", "cyan", "magenta", "yellow", "green" } ; 
+    
+    const char* path = SPath::Resolve("$TMP/SStrTest/test_LoadList.txt", FILEPATH) ; 
+    SStr::Save(path, v0 ); 
+
+    std::vector<std::string> v1 ;    
+    SStr::LoadList(path, v1 ); 
+    assert( v0.size() == v1.size() ); 
+
+
+    std::vector<std::string>* v2p = SStr::LoadList(path);  
+    assert( v2p ); 
+    const std::vector<std::string>& v2 = *v2p ; 
+
+    assert( v2.size() == v0.size() ); 
+
+
+    for( unsigned i=0 ; i < v0.size() ; i++) 
+         std::cout 
+             << std::setw(20) << v0[i] 
+             << " : " 
+             << std::setw(20) << v1[i] 
+             << " : " 
+             << std::setw(20) << v2[i] 
+             << " : " 
+             << std::endl
+             ; 
+}
+
+
+
+
+
+
+
 
 
 const char* TXT = R"LITERAL(
@@ -716,16 +759,16 @@ int main(int argc , char** argv )
     test_Extract(); 
     test_Extract_float(); 
     test_Trim(); 
-    */
     test_Count(); 
     test_All(); 
     test_Blank(); 
-    /*
     test_ExtractLong(); 
     test_HeadFirst_HeadLast(); 
     test_FormatInt(); 
     test_Format_Ellipsis(); 
     */
+
+    test_LoadList(); 
 
     return 0  ; 
 }
