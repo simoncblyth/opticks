@@ -288,8 +288,8 @@ std::string SGLM::descInput() const
 {
     std::stringstream ss ; 
     ss << "SGLM::descInput" << std::endl ; 
-    ss << std::setw(15) << "ce"    << Present( ce )   << std::endl ; 
-    ss << std::setw(15) << "cam"   << SCAM::Name(cam) << std::endl ; 
+    ss << std::setw(15) << " ce "  << Present( ce )   << std::endl ; 
+    ss << std::setw(15) << " cam " << SCAM::Name(cam) << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -456,13 +456,12 @@ std::string SGLM::descEyeSpace() const
 }
 
 
-
-float SGLM::getFocalScaleDefault() const { return (cam == CAM_ORTHOGRAPHIC ? orthoscale : near )/ZOOM ; } 
+float SGLM::getFocalScaleDefault() const { return (cam == CAM_ORTHOGRAPHIC ? orthoscale : get_near_abs() )/ZOOM ; } 
 float SGLM::getFocalScale() const { return focalscale > 0 ? focalscale : getFocalScaleDefault() ; } 
 void  SGLM::setFocalScale(float focalscale_) { focalscale = focalscale_ ; }
 void  SGLM::setOrthoScale(float orthoscale_) { orthoscale = orthoscale_ ; }
 
-void SGLM::setFocalScaleToGazeLength(){ setFocalScale( glm::length(gaze) ) ; }
+void SGLM::setFocalScaleToGazeLength(){ setFocalScale( getGazeLength() ) ; }
 float SGLM::getGazeLength() const { return glm::length(gaze) ; } 
 
 void SGLM::updateProjection()

@@ -23,7 +23,11 @@ CXRaindropTest
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
 
+#ifdef WITH_SGLM
+#else
 #include "Opticks.hh"
+#endif
+
 
 int main(int argc, char** argv)
 {
@@ -31,14 +35,18 @@ int main(int argc, char** argv)
     SCVD::ConfigureVisibleDevices(); 
     SEventConfig::SetRGMode("simulate"); 
 
+#ifdef WITH_SGLM
+#else
     Opticks ok(argc, argv ); 
     ok.configure(); 
+#endif
 
     const char* cfbase = SOpticksResource::CFBase(); 
     const char* outfold = SEventConfig::OutFold();  
     LOG(info) << " outfold [" << outfold << "]"  ; 
-
     SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
+
+
     const char* idpath = SOpticksResource::IDPath();  // HMM: using OPTICKS_KEY geocache, not CSGFoundry
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
 
@@ -54,6 +62,9 @@ int main(int argc, char** argv)
     NP* bnd_plus = nullptr ; 
     QBnd::Add( &optical_plus, &bnd_plus, fd->optical, fd->bnd, specs );
     LOG(info) << std::endl << QBnd::DescOptical(optical_plus, bnd_plus)  ; 
+
+    // HMM : THE COMPONENTS ARE MORE RELEVANT TO QSim THAN TO CSGFoundry 
+    // PERHAPS SHOULD USE QSim TO MANAGE THEM WITHIN A QSim FOLDER WITHIN CSGFoundry 
 
     QSim<float>::UploadComponents(fd->icdf, bnd_plus, optical_plus, rindexpath ); 
 
@@ -88,6 +99,7 @@ int main(int argc, char** argv)
     event->setGenstep(SEvent::MakeTorchGensteps());     
 
     cx.simulate();  
+
     cudaDeviceSynchronize(); 
     event->save(outfold); 
 

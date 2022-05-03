@@ -38,9 +38,10 @@ if __name__ == '__main__':
     PLOT = not "NOPLOT" in os.environ
     if PLOT:
         pl = pvplt_plotter()
-        pl.add_mesh( r_tube )
-        pvplt_polarized( pl, r_pos, r_mom, r_pol, factor=60 )
-        pl.add_point_labels(r_poly, "flag_label", point_size=20, font_size=36)
+        #pl.add_mesh( r_tube )
+        #pvplt_polarized( pl, r_pos, r_mom, r_pol, factor=60 )
+        #pl.add_point_labels(r_poly, "flag_label", point_size=20, font_size=36)
+        pl.add_points( r_pos )
         pl.show()
     pass
 

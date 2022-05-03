@@ -113,9 +113,17 @@ int main(int argc, char** argv)
     // Param.w is incremented from .x to .y by ,z  
     glm::vec4 Param(0.f, post_extent.w, post_extent.w/1000.f , 0.f);    // t0, t1, dt, tc 
 
-    //TODO: SGLM needs width, height too, SEventConfig? envvar control, consolidation 
+
+    SGLM sglm ; 
+    sglm.set_ce( 0.f, 0.f, 0.f, 50.f ); 
+    sglm.setFocalScaleToGazeLength();
+    sglm.set_basis_to_gazelength() ; 
+    sglm.update(); 
+    std::cout << sglm.desc() << std::endl ; 
+
+
     const char* title = ARRAY_NAME ; 
-    SGLFW sglfw(1280, 720, title );   
+    SGLFW sglfw(sglm.Width(), sglm.Height(), title );   
     sglfw.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text ); 
 
     GLint ModelViewProjection_location = glGetUniformLocation(sglfw.program, "ModelViewProjection");   SGLFW::check(__FILE__, __LINE__);
@@ -139,9 +147,6 @@ int main(int argc, char** argv)
     int width, height;
     glfwGetFramebufferSize(sglfw.window, &width, &height); // windows can be resized, so need to grab it 
     std::cout << " width " << width << " height " << height << std::endl ; 
-
-    SGLM sglm ; 
-    sglm.dump(); 
 
     const glm::mat4& world2clip = sglm.world2clip ; 
     const GLfloat* mvp = (const GLfloat*) glm::value_ptr(world2clip) ;  

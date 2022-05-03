@@ -49,7 +49,7 @@ PGs and their data.
 
 SBT::SBT(const PIP* pip_)
     :
-    emm(SGeoConfig::EMM), 
+    emm(SGeoConfig::EnabledMergedMesh()), 
     pip(pip_),
     raygen(nullptr),
     miss(nullptr),

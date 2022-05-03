@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <sstream>
 #include <bitset>
+#include <cstring>
 
 #include "SSys.hh"
 #include "SStr.hh"
