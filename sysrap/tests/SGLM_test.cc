@@ -67,10 +67,10 @@ int main()
     /*
     test_Assignment::Widening(); 
     test_Assignment::Narrowing(); 
-    test_SGLM(); 
-    */
-
     test_SGLM_basis(); 
+    */
+    test_SGLM(); 
+
 
 
     return 0 ; 

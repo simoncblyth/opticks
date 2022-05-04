@@ -2285,6 +2285,7 @@ float Composition::getClipDepth(const glm::vec4& position_world)
 }
 
 
+
 float Composition::getLength() const 
 {
     Camera::Style_t camstyle = m_camera->getStyle() ;

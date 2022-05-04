@@ -243,15 +243,19 @@ void CSGOptiXRenderTest::render_snap(const char* namestem)
     std::string name = SStr::Format("%s_%s", VARIANT, namestem ); 
 
     const char* outpath = SEventConfig::OutPath(name.c_str(), -1, ".jpg" );
+    std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
+    const char* botline = bottom_line.c_str() ; 
+
     LOG(error)  
           << " namestem " << namestem 
           << " name " << name 
           << " outpath " << outpath 
           << " dt " << dt 
+          << " topline [" <<  topline << "]"
+          << " botline [" <<  botline << "]"
           ; 
 
-    std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
-    cx->snap(outpath, bottom_line.c_str(), topline  );   
+    cx->snap(outpath, botline, topline  );   
 }
 
 

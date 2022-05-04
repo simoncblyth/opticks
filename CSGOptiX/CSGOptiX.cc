@@ -415,13 +415,9 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
 
     sglm->set_ce(ce.x, ce.y, ce.z, ce.w ); 
     sglm->set_m2w(m2w, w2m);
-
-    sglm->setFocalScaleToGazeLength();    // makes SGLM behave more like Composition
-    sglm->set_basis_to_gazelength() ;        
-    //sglm->set_basis_to_extent() ;        
     sglm->set_near_abs(tmin) ; 
-
     sglm->update();  
+
     LOG(info) << "sglm.desc:" << std::endl << sglm->desc() ; 
 
 
@@ -460,6 +456,7 @@ void CSGOptiX::prepareRenderParam()
     float tmax ; 
     unsigned cameratype ; 
     float extent ; 
+    float length ; 
 
 #ifdef WITH_SGLM
     extent = sglm->ce.w ; 
@@ -470,6 +467,7 @@ void CSGOptiX::prepareRenderParam()
     tmin = sglm->get_near_abs() ; 
     tmax = sglm->get_far_abs() ; 
     cameratype = sglm->cam ; 
+    length = 0.f ; 
 #else
     glm::vec4 ZProj ;
     extent = composition->getExtent(); 
@@ -477,6 +475,7 @@ void CSGOptiX::prepareRenderParam()
     tmin = composition->getNear(); 
     tmax = composition->getFar(); 
     cameratype = composition->getCameraType(); 
+    length = composition->getLength(); 
 #endif
 
 
@@ -486,17 +485,23 @@ void CSGOptiX::prepareRenderParam()
             << std::endl 
             << std::setw(20) << " extent "     << extent << std::endl 
             << std::setw(20) << " sglm.ce.w "  << sglm->ce.w << std::endl 
+            << std::setw(20) << " sglm.getGazeLength "  << sglm->getGazeLength()  << std::endl 
+            << std::setw(20) << " comp.length"   << length 
             << std::endl 
             << std::setw(20) << " tmin "       << tmin  << std::endl 
+            << std::setw(20) << " tmax "       << tmax  << std::endl 
+            << std::endl 
             << std::setw(20) << " sglm.near "  << sglm->near  << std::endl 
             << std::setw(20) << " sglm.get_near_abs "  << sglm->get_near_abs()  << std::endl 
             << std::endl 
-            << std::setw(20) << " sglm.getGazeLength "  << sglm->getGazeLength()  << std::endl 
-            << std::setw(20) << " sglm.get_basis "  << sglm->get_basis()  << std::endl 
-            << std::endl 
-            << std::setw(20) << " tmax "       << tmax  << std::endl 
             << std::setw(20) << " sglm.far "   << sglm->far  << std::endl 
             << std::setw(20) << " sglm.get_far_abs "   << sglm->get_far_abs()  << std::endl 
+            << std::endl 
+            << std::setw(25) << " sglm.get_nearfar_basis "  << sglm->get_nearfar_basis()  
+            << std::setw(25) << " sglm.get_nearfar_mode "  << sglm->get_nearfar_mode()  
+            << std::endl 
+            << std::setw(25) << " sglm.get_focal_basis "  << sglm->get_focal_basis()  
+            << std::setw(25) << " sglm.get_focal_mode "  << sglm->get_focal_mode()  
             << std::endl 
             << std::setw(20) << " eye ("       << eye.x << " " << eye.y << " " << eye.z << " ) " << std::endl 
             << std::setw(20) << " U ("         << U.x << " " << U.y << " " << U.z << " ) " << std::endl
@@ -507,9 +512,12 @@ void CSGOptiX::prepareRenderParam()
             << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
             ;
 
-        std::cout << "SGLM basis "        << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
+        std::cout << "SGLM::DescEyeBasis (sglm->e,w,v,w) " << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
+        std::cout <<  "sglm.descEyeBasis " << std::endl << sglm->descEyeBasis() << std::endl ; 
         std::cout << "Composition basis " << std::endl << SGLM::DescEyeBasis( eye, U, V, W ) << std::endl ;
         LOG(info) << std::endl  << "sglm.descELU " << std::endl << sglm->descELU() << std::endl ; 
+        LOG(info) << std::endl << "sglm.descLog " << std::endl << sglm->descLog() << std::endl ; 
+
     }
 
 

@@ -80,9 +80,8 @@ export SIZE=${SIZE:-$size}
 export SIZESCALE=${SIZESCALE:-$sizescale} 
 
 
-
-export CAMERATYPE=$ICAM     # okc/Camera::Camera default 
-
+# okc Composition/Camera::Camera needs CAMERATYPE integer 
+export CAMERATYPE=$ICAM     
 # SGLM needs string sname 
 case $ICAM in
   0) export CAM="perspective" ;;

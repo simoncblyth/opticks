@@ -37,13 +37,13 @@ EOU
 moi=-1
 tmin=0.4
 eye=-0.6,0,0,1
-cam=0
+icam=0
 zoom=1.5
 
 export MOI=${MOI:-$moi} 
 export TMIN=${TMIN:-$tmin} 
 export EYE=${EYE:-$eye}
-export CAM=${CAM:-$cam} 
+export ICAM=${ICAM:-$icam} 
 export ZOOM=${ZOOM:-$zoom}
 
 export QUALITY=90 
@@ -61,13 +61,17 @@ export EMM=${EMM:-$emm}
 export ELV=${ELV:-$elv}
 
 export NAMEPREFIX=cxr_overview_emm_${EMM}_elv_${ELV}_moi_      # MOI gets appended by the executable
-export OPTICKS_RELDIR=cam_${CAM}_tmin_${TMIN}       # this can contain slashes
+export OPTICKS_RELDIR=cam_${ICAM}_tmin_${TMIN}       # this can contain slashes
 
 stamp=$(date +"%Y-%m-%d %H:%M")
 version=$(CSGOptiXVersion 2>/dev/null)
 
-export TOPLINE="./cxr_overview.sh    # EYE $EYE MOI $MOI ZOOM $ZOOM   $stamp  $version " 
+export TOPLINE="./cxr_overview.sh    # EYE $EYE MOI $MOI ZOOM $ZOOM stamp $stamp version $version done" 
 export BOTLINE=" RELDIR $OPTICKS_RELDIR NAMEPREFIX $NAMEPREFIX SCANNER $SCANNER "
+
+vars="stamp version TOPLINE BOTLINE"
+for var in $vars ; do printf "%20s : %s \n" $var "${!var}" ; done
+
 
 source ./cxr.sh  
 
