@@ -140,7 +140,11 @@ Populates context with values from the hostside params.
 
 void Six::updateContext()
 {
-    LOG(info); 
+    LOG(info) 
+        << " params.cameratype " << params->cameratype 
+        << " params.tmin " << params->tmin
+        ; 
+
     context[ "tmin"]->setFloat( params->tmin );  
     context[ "eye"]->setFloat( params->eye.x, params->eye.y, params->eye.z  );  
     context[ "U"  ]->setFloat( params->U.x, params->U.y, params->U.z  );  
@@ -149,6 +153,8 @@ void Six::updateContext()
     context[ "radiance_ray_type"   ]->setUint( 0u );  
     context[ "cameratype"   ]->setUint( params->cameratype );  
     context[ "raygenmode"   ]->setUint( params->raygenmode ); 
+
+
 }
 
 /**

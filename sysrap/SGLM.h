@@ -196,7 +196,7 @@ glm::vec4  SGLM::EYE  = EVec4(kEYE, "-1,-1,0,1") ;
 glm::vec4  SGLM::LOOK = EVec4(kLOOK, "0,0,0,1") ; 
 glm::vec4  SGLM::UP  =  EVec4(kUP,   "0,0,1,0") ; 
 float      SGLM::ZOOM = EValue<float>(kZOOM, "1"); 
-int        SGLM::CAM  = SCAM::EValue(kCAM, "perspective") ; 
+int        SGLM::CAM  = SCAM::EGet(kCAM, "perspective") ; 
 
 void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
@@ -272,7 +272,8 @@ std::string SGLM::DescInput() // static
 {
     std::stringstream ss ; 
     ss << "SGLM::DescInput" << std::endl ; 
-    ss << std::setw(15) << kCAM   << " " << CAMLabel() << std::endl ; 
+    ss << std::setw(15) << "SGLM::CAM"  << " " << SGLM::CAM << std::endl ; 
+    ss << std::setw(15) << kCAM << " " << CAMLabel() << std::endl ; 
     ss << std::setw(15) << kWH    << Present( WH )   << " Aspect " << Aspect() << std::endl ; 
     ss << std::setw(15) << kCE    << Present( CE )   << std::endl ; 
     ss << std::setw(15) << kEYE   << Present( EYE )  << std::endl ; 
@@ -288,8 +289,9 @@ std::string SGLM::descInput() const
 {
     std::stringstream ss ; 
     ss << "SGLM::descInput" << std::endl ; 
-    ss << std::setw(15) << " ce "  << Present( ce )   << std::endl ; 
-    ss << std::setw(15) << " cam " << SCAM::Name(cam) << std::endl ; 
+    ss << std::setw(25) << " sglm.ce "  << Present( ce )   << std::endl ; 
+    ss << std::setw(25) << " sglm.cam " << cam << std::endl ; 
+    ss << std::setw(25) << " SCAM::Name(sglm.cam) " << SCAM::Name(cam) << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }

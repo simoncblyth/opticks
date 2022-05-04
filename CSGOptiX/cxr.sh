@@ -59,7 +59,7 @@ moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
 top=i0           # hmm difficuly to support other than i0
 sla=             # solid_label selection 
-cam=0            # 0:perpective 1:orthographic 2:equirect (2:not supported in CSGOptiX(7) yet)
+icam=0           # 0:perpective 1:orthographic 2:equirect (2:not supported in CSGOptiX(7) yet)
 tmin=0.1         # near in units of extent, so typical range is 0.1-2.0 for visibility, depending on EYE->LOOK distance
 zoom=1.0
 size=1280,720,1
@@ -73,13 +73,23 @@ export MOI=${MOI:-$moi}    # evar:MOI OR --arglist when MOI=ALL
 export EYE=${EYE:-$eye}    # evar:EYE 
 export TOP=$top            # evar:TOP? getting TOP=0 from somewhere causing crash
 export SLA="${SLA:-$sla}"  # --solid_label
-export CAM=${CAM:-$cam}    # evar:CAMERATYPE
+export ICAM=${ICAM:-$icam} # evar:CAMERATYPE  NB caller script ICAM overrides
 export TMIN=${TMIN:-$tmin} # evar:TMIN
 export ZOOM=${ZOOM:-$zoom} 
 export SIZE=${SIZE:-$size} 
 export SIZESCALE=${SIZESCALE:-$sizescale} 
 
-export CAMERATYPE=$CAM     # okc/Camera::Camera default 
+
+
+export CAMERATYPE=$ICAM     # okc/Camera::Camera default 
+
+# SGLM needs string sname 
+case $ICAM in
+  0) export CAM="perspective" ;;
+  1) export CAM="orthographic" ;;
+esac
+
+
 export OPTICKS_GEOM=${OPTICKS_GEOM:-$MOI}  # "sweeper" role , used by Opticks::getOutPrefix   
 
 optix_version=$(CSGOptiXVersion 2>/dev/null)

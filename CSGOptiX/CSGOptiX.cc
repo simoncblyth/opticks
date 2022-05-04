@@ -370,6 +370,9 @@ void CSGOptiX::setCEGS(const std::vector<int>& cegs)
     peta->q1.i.w = 0 ;     // TODO: gridscale according to ana/gridspec.py 
 }
 
+
+
+
 /**
 CSGOptiX::setCE
 ------------------
@@ -411,6 +414,7 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
     sglm->set_ce(ce.x, ce.y, ce.z, ce.w ); 
     sglm->set_m2w(m2w, w2m);
     sglm->set_near(tmin_model) ; 
+
     sglm->setFocalScaleToGazeLength();    // makes SGLM behave more like Composition
     sglm->set_basis_to_gazelength() ;   // makes SGLM do simililar to Camera::aim used by Composition
 
@@ -477,17 +481,25 @@ void CSGOptiX::prepareRenderParam()
         << std::endl 
         << std::setw(20) << " extent "     << extent << std::endl 
         << std::setw(20) << " sglm.ce.w "  << sglm->ce.w << std::endl 
+        << std::endl 
         << std::setw(20) << " tmin "       << tmin  << std::endl 
         << std::setw(20) << " sglm.near "  << sglm->near  << std::endl 
         << std::setw(20) << " sglm.get_near_abs "  << sglm->get_near_abs()  << std::endl 
+        << std::endl 
+        << std::setw(20) << " sglm.getGazeLength "  << sglm->getGazeLength()  << std::endl 
+        << std::setw(20) << " sglm.get_basis "  << sglm->get_basis()  << std::endl 
+        << std::endl 
         << std::setw(20) << " tmax "       << tmax  << std::endl 
         << std::setw(20) << " sglm.far "   << sglm->far  << std::endl 
         << std::setw(20) << " sglm.get_far_abs "   << sglm->get_far_abs()  << std::endl 
+        << std::endl 
         << std::setw(20) << " eye ("       << eye.x << " " << eye.y << " " << eye.z << " ) " << std::endl 
         << std::setw(20) << " U ("         << U.x << " " << U.y << " " << U.z << " ) " << std::endl
         << std::setw(20) << " V ("         << V.x << " " << V.y << " " << V.z << " ) " << std::endl
         << std::setw(20) << " W ("         << W.x << " " << W.y << " " << W.z << " ) " << std::endl
-        << std::setw(20) << " cameratype " << cameratype << " " << SCAM::Name(cameratype) << std::endl 
+        << std::endl 
+        << std::setw(20) << " cameratype " << cameratype << " "           << SCAM::Name(cameratype) << std::endl 
+        << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
         ;
 
     std::cout << "SGLM basis "        << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;

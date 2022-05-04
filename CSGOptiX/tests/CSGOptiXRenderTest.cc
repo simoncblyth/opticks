@@ -90,8 +90,9 @@ struct CSGOptiXRenderTest
     void initSS(); 
     void initArgs(); 
 
-    void setCE(const char* moi); 
-    void setCE_sla(); 
+    void setComposition(const char* moi); 
+    void setComposition_sla(); 
+
     void render_snap(const char* namestem);
 };
 
@@ -119,28 +120,21 @@ CSGOptiXRenderTest::CSGOptiXRenderTest()
     initArgs(); 
 }
 
-
-
 void CSGOptiXRenderTest::initFD()
 {
     fd->upload(); 
 }
 
-
 void CSGOptiXRenderTest::initCX()
 {
-
 #ifdef WITH_SGLM
     cx = new CSGOptiX(fd);
 #else 
     cx = new CSGOptiX(ok, fd ); 
 #endif
-
-    if( cx->raygenmode > 0 )
-    {
-        LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::simulate cx.raygenmode " << cx->raygenmode ; 
-        assert(0); 
-    }
+    bool expect =  cx->raygenmode == 0 ;  
+    if(!expect) LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::simulate cx.raygenmode " << cx->raygenmode ; 
+    assert(expect); 
 }
 
 void CSGOptiXRenderTest::initSS()
@@ -185,10 +179,25 @@ void CSGOptiXRenderTest::initArgs()
         ;
 }
 
+void CSGOptiXRenderTest::setComposition_sla()
+{
+    assert( solid_selection ); 
+    fd->gasCE(ce, cx->solid_selection );    
+
+    LOG(info) 
+        << " solid_selection " << solid_selection
+        << " cx.solid_selection.size " << cx->solid_selection.size()
+        << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
+       ; 
+
+    cx->setComposition(ce, nullptr, nullptr);   // establish the coordinate system 
+}
+
+
 
 /**
-CSGOptiXRenderTest::setCE
----------------------------
+CSGOptiXRenderTest::setComposition
+------------------------------------
 
 HMM: solid selection leads to creation of an IAS referencing each of the 
      selected solids so for generality should be using IAS targetting 
@@ -203,13 +212,13 @@ iidx -2
 iidx -3
     rtp tangential frame calulated by SCenterExtentFrame
 
-
 **/
-void CSGOptiXRenderTest::setCE(const char* moi)
+void CSGOptiXRenderTest::setComposition(const char* moi)
 {
     int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
     fd->parseMOI(midx, mord, iidx,  moi );  
 
+    // m2w and w2m are initialized to identity, the below call may set them 
     int rc = fd->getCenterExtent(ce, midx, mord, iidx, m2w, w2m ) ;
 
     LOG(info) 
@@ -225,19 +234,7 @@ void CSGOptiXRenderTest::setCE(const char* moi)
     cx->setComposition(ce, m2w, w2m );   // establish the coordinate system 
 }
 
-void CSGOptiXRenderTest::setCE_sla()
-{
-    assert( solid_selection ); 
-    fd->gasCE(ce, cx->solid_selection );    
 
-    LOG(info) 
-        << " solid_selection " << solid_selection
-        << " cx.solid_selection.size " << cx->solid_selection.size()
-        << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
-       ; 
-
-    cx->setComposition(ce, nullptr, nullptr);   // establish the coordinate system 
-}
 
 
 void CSGOptiXRenderTest::render_snap(const char* namestem)
@@ -264,6 +261,9 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     SEventConfig::SetRGMode("render"); 
 
+    LOG(info) << " getenv.CAM " << getenv("CAM") ; 
+    LOG(info) << " getenv.CAMERATYPE " << getenv("CAMERATYPE") ; 
+
 #ifdef WITH_SGLM
 #else
     Opticks ok(argc, argv);  
@@ -280,7 +280,7 @@ int main(int argc, char** argv)
     {
         const char* arg = SSys::getenvvar("NAMESTEM", "") ; 
         LOG(info) << " t.solid_selection " << t.solid_selection << " arg " << arg ; 
-        t.setCE_sla(); 
+        t.setComposition_sla(); 
         t.render_snap(arg); 
     }
     else if( t.flight )
@@ -288,7 +288,7 @@ int main(int argc, char** argv)
         const std::string& _arg = t.args[0];
         const char* arg = _arg.c_str(); 
         LOG(info) << " t.flight arg " << arg  ; 
-        t.setCE(arg); 
+        t.setComposition(arg); 
         t.cx->render_flightpath(); 
     }
     else
@@ -298,7 +298,7 @@ int main(int argc, char** argv)
         {
             const std::string& _arg = t.args[i];
             const char* arg = _arg.c_str(); 
-            t.setCE(arg);
+            t.setComposition(arg); 
             t.render_snap(arg); 
         }
     }

@@ -6,7 +6,7 @@
 int main()
 {
     const char* key = "CAM" ; 
-    int cam = SCAM::EValue(key, "orthographic" ); 
+    int cam = SCAM::EGet(key, "orthographic" ); 
     const char * name = SCAM::Name(cam) ; 
     std::cout 
         << key << " " << cam << " name " << name << std::endl ; 

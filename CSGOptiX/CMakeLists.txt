@@ -98,7 +98,7 @@ message(STATUS "_generated_PTX_files ${_generated_PTX_files}")
 add_library( ${name} SHARED ${SOURCES} ${HEADERS}  ${_generated_OBJ_files} ${_generated_PTX_files}   )
 #target_compile_definitions( ${name} PRIVATE DEBUG_SIX )
 target_compile_definitions( ${name} PRIVATE WITH_PRD )  # using Pointer trick means can reduce attrib and payload to 2 
-#target_compile_definitions( ${name} PUBLIC WITH_SGLM )  # needs to be PUBLIC as the tests need to see it too 
+target_compile_definitions( ${name} PUBLIC WITH_SGLM )  # needs to be PUBLIC as the tests need to see it too 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSGOPTIX )
 
 target_link_libraries(${name} 
