@@ -41,10 +41,25 @@ void test_SGLM()
     // SGLM::SetWH(1024,768); 
 
     SGLM sglm ; 
-    sglm.dump(); 
+    sglm.dump();
 }
 
+void test_SGLM_basis()
+{
+    SGLM sglm ; 
+    std::cout << sglm.descBasis();
 
+    float near_abs = 7.f ; 
+    float far_abs = 700.f ; 
+    sglm.set_near_abs(near_abs); 
+    sglm.set_far_abs(far_abs); 
+
+    std::cout << sglm.descBasis();
+
+    assert( sglm.get_near_abs() == near_abs ); 
+    assert( sglm.get_far_abs() == far_abs ); 
+
+}
 
 
 int main()
@@ -52,9 +67,10 @@ int main()
     /*
     test_Assignment::Widening(); 
     test_Assignment::Narrowing(); 
+    test_SGLM(); 
     */
 
-    test_SGLM(); 
+    test_SGLM_basis(); 
 
 
     return 0 ; 

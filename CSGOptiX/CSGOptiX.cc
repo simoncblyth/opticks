@@ -403,6 +403,8 @@ peta metadata.
 
 void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* w2m )
 {
+    LOG(info) << "[" ; 
+
     peta->q2.f.x = ce.x ;   // moved from q1
     peta->q2.f.y = ce.y ; 
     peta->q2.f.z = ce.z ; 
@@ -413,11 +415,11 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
 
     sglm->set_ce(ce.x, ce.y, ce.z, ce.w ); 
     sglm->set_m2w(m2w, w2m);
-    sglm->set_near(tmin_model) ; 
 
     sglm->setFocalScaleToGazeLength();    // makes SGLM behave more like Composition
-    //sglm->set_basis_to_gazelength() ;        
-    sglm->set_basis_to_extent() ;        
+    sglm->set_basis_to_gazelength() ;        
+    //sglm->set_basis_to_extent() ;        
+    sglm->set_near_abs(tmin) ; 
 
     sglm->update();  
     LOG(info) << "sglm.desc:" << std::endl << sglm->desc() ; 
@@ -428,9 +430,7 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
     bool autocam = true ; 
     composition->setCenterExtent(ce, autocam, m2w, w2m );  // model2world view setup 
     composition->setNear(tmin); 
-
-    
-
+    LOG(info) << std::endl << composition->getCameraDesc() ;  
 #endif
 
     LOG(info) 
@@ -443,6 +443,8 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
 
     if(m2w) LOG(info) << "m2w " << *m2w ; 
     if(w2m) LOG(info) << "w2m " << *w2m ; 
+
+    LOG(info) << "]" ; 
 }
 
 
@@ -478,35 +480,38 @@ void CSGOptiX::prepareRenderParam()
 #endif
 
 
-    if(!flight) LOG(info)
-        << std::endl 
-        << std::setw(20) << " extent "     << extent << std::endl 
-        << std::setw(20) << " sglm.ce.w "  << sglm->ce.w << std::endl 
-        << std::endl 
-        << std::setw(20) << " tmin "       << tmin  << std::endl 
-        << std::setw(20) << " sglm.near "  << sglm->near  << std::endl 
-        << std::setw(20) << " sglm.get_near_abs "  << sglm->get_near_abs()  << std::endl 
-        << std::endl 
-        << std::setw(20) << " sglm.getGazeLength "  << sglm->getGazeLength()  << std::endl 
-        << std::setw(20) << " sglm.get_basis "  << sglm->get_basis()  << std::endl 
-        << std::endl 
-        << std::setw(20) << " tmax "       << tmax  << std::endl 
-        << std::setw(20) << " sglm.far "   << sglm->far  << std::endl 
-        << std::setw(20) << " sglm.get_far_abs "   << sglm->get_far_abs()  << std::endl 
-        << std::endl 
-        << std::setw(20) << " eye ("       << eye.x << " " << eye.y << " " << eye.z << " ) " << std::endl 
-        << std::setw(20) << " U ("         << U.x << " " << U.y << " " << U.z << " ) " << std::endl
-        << std::setw(20) << " V ("         << V.x << " " << V.y << " " << V.z << " ) " << std::endl
-        << std::setw(20) << " W ("         << W.x << " " << W.y << " " << W.z << " ) " << std::endl
-        << std::endl 
-        << std::setw(20) << " cameratype " << cameratype << " "           << SCAM::Name(cameratype) << std::endl 
-        << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
-        ;
+    if(!flight) 
+    {
+        LOG(info)
+            << std::endl 
+            << std::setw(20) << " extent "     << extent << std::endl 
+            << std::setw(20) << " sglm.ce.w "  << sglm->ce.w << std::endl 
+            << std::endl 
+            << std::setw(20) << " tmin "       << tmin  << std::endl 
+            << std::setw(20) << " sglm.near "  << sglm->near  << std::endl 
+            << std::setw(20) << " sglm.get_near_abs "  << sglm->get_near_abs()  << std::endl 
+            << std::endl 
+            << std::setw(20) << " sglm.getGazeLength "  << sglm->getGazeLength()  << std::endl 
+            << std::setw(20) << " sglm.get_basis "  << sglm->get_basis()  << std::endl 
+            << std::endl 
+            << std::setw(20) << " tmax "       << tmax  << std::endl 
+            << std::setw(20) << " sglm.far "   << sglm->far  << std::endl 
+            << std::setw(20) << " sglm.get_far_abs "   << sglm->get_far_abs()  << std::endl 
+            << std::endl 
+            << std::setw(20) << " eye ("       << eye.x << " " << eye.y << " " << eye.z << " ) " << std::endl 
+            << std::setw(20) << " U ("         << U.x << " " << U.y << " " << U.z << " ) " << std::endl
+            << std::setw(20) << " V ("         << V.x << " " << V.y << " " << V.z << " ) " << std::endl
+            << std::setw(20) << " W ("         << W.x << " " << W.y << " " << W.z << " ) " << std::endl
+            << std::endl 
+            << std::setw(20) << " cameratype " << cameratype << " "           << SCAM::Name(cameratype) << std::endl 
+            << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
+            ;
 
-    std::cout << "SGLM basis "        << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
-    std::cout << "Composition basis " << std::endl << SGLM::DescEyeBasis( eye, U, V, W ) << std::endl ;
+        std::cout << "SGLM basis "        << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
+        std::cout << "Composition basis " << std::endl << SGLM::DescEyeBasis( eye, U, V, W ) << std::endl ;
+        LOG(info) << std::endl  << "sglm.descELU " << std::endl << sglm->descELU() << std::endl ; 
+    }
 
-    std::cout << "sglm.descELU " << std::endl << sglm->descELU() << std::endl ; 
 
     params->setView(eye, U, V, W);
     params->setCamera(tmin, tmax, cameratype ); 

@@ -158,6 +158,9 @@ export EYE=${EYE:-$eye}
 export ICAM=${ICAM:-$icam}    # 0:perspective 1:ortho  
 export ZOOM=${ZOOM:-$zoom}
 
+
+export Camera=INFO
+
 export NAMEPREFIX=cxr_geochain_${GEOM}_   # MOI is appended by tests/CSGOptiXRender.cc when --solid_label yields no solids
 export RELDIR=cxr_geochain/cam_${ICAM}
 export TOPLINE="./cxr_geochain.sh $MOI      # EYE $EYE  $stamp  $version $GEOM   " 

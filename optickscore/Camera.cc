@@ -218,7 +218,6 @@ void Camera::aim(float basis)
    setNear( a_near );
    setFar(  a_far );
 
-
    setScale( a_scale );  // scale should be renamed to Ortho scale, as only relevant to Orthographic projection
 
 
@@ -385,13 +384,16 @@ void Camera::setNear(float near_)
     else if( near_ > m_nearclip[1] )  m_near = m_nearclip[1] ;
     else                             m_near = near_ ;
     m_changed = true ; 
+    LOG(LEVEL) << " m_near " << m_near ; 
 }
 void Camera::setFar(float far_)
 {
     if(      far_ < m_farclip[0] )  m_far = m_farclip[0] ;
     else if( far_ > m_farclip[1] )  m_far = m_farclip[1] ;
     else                           m_far = far_ ;
+
     m_changed = true ; 
+    LOG(LEVEL) << " m_far " << m_far ; 
 }
 void Camera::setZoom(float zoom)
 {
@@ -554,44 +556,45 @@ std::string Camera::desc(const char* msg) const
         <<  msg 
         << " type " << m_type 
         << std::endl  
-        << " width " << std::setw(5) << m_size[0]
-        << " height " << std::setw(5) << m_size[1]
-        << " aspect " 
-        << std::setw(10) << std::fixed << std::setprecision(3) << getAspect() 
+        << std::setw(10) << " width "  << std::setw(10) << m_size[0]
+        << std::setw(10) << " height " << std::setw(10) << m_size[1]
+        << std::setw(10) << " aspect " << std::setw(10) << std::fixed << std::setprecision(3) << getAspect() 
         << std::endl 
-        << " near " 
+        << std::setw(10) << " basis " << std::setw(10) << std::fixed << std::setprecision(3) << getBasis() 
+        << std::endl 
+        << std::setw(10) << " near " 
         << std::setw(10) << std::fixed << std::setprecision(3) << m_near
-        << " clip " 
+        << std::setw(10) << " clip " 
         << std::setw(10) << std::fixed << std::setprecision(3) << m_nearclip[0]
         << std::setw(10) << std::fixed << std::setprecision(3) << m_nearclip[1]
         << std::endl 
-        << " far " 
+        << std::setw(10) << " far " 
         << std::setw(10) << std::fixed << std::setprecision(3) << m_far
-        << " clip " 
+        << std::setw(10) << " clip " 
         << std::setw(10) << std::fixed << std::setprecision(3) << m_farclip[0]
         << std::setw(10) << std::fixed << std::setprecision(3) << m_farclip[1]
         << std::endl 
-        << " scale "
+        << std::setw(10) << " scale "
         << std::setw(10) << std::fixed << std::setprecision(3) << m_scale
-        << " clip " 
+        << std::setw(10) << " clip " 
         << std::setw(10) << std::fixed << std::setprecision(3) << m_scaleclip[0]
         << std::setw(10) << std::fixed << std::setprecision(3) << m_scaleclip[1]
         << std::endl 
-        << " zoom "
+        << std::setw(10) << " zoom "
         << std::setw(10) << std::fixed << std::setprecision(3) << m_zoom
-        << " clip " 
+        << std::setw(10) << " clip " 
         << std::setw(10) << std::fixed << std::setprecision(3) << m_zoomclip[0]
         << std::setw(10) << std::fixed << std::setprecision(3) << m_zoomclip[1]
         << std::endl 
-        << " top "
+        << std::setw(10) << " top "
         << std::setw(10) << std::fixed << std::setprecision(3) << getTop()
-        << " bot "
+        << std::setw(10) << " bot "
         << std::setw(10) << std::fixed << std::setprecision(3) << getBottom()
-        << " left "
+        << std::setw(10) << " left "
         << std::setw(10) << std::fixed << std::setprecision(3) << getLeft()
-        << " right "
+        << std::setw(10) << " right "
         << std::setw(10) << std::fixed << std::setprecision(3) << getRight()
-        << " tanYfov "
+        << std::setw(10) << " tanYfov "
         << std::setw(10) << std::fixed << std::setprecision(3) << getTanYfov()
         << std::endl 
         ;

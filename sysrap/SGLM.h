@@ -129,6 +129,9 @@ struct SYSRAP_API SGLM
     void set_near( float near_ ); 
     void set_far( float far_ ); 
 
+    void set_near_abs( float near_abs_ ); 
+    void set_far_abs( float far_abs_ ); 
+
     void set_basis_to_gazelength() ;  // near/far are in units of basis  
     void set_basis_to_extent() ; 
 
@@ -361,16 +364,20 @@ void SGLM::updateModelMatrix()
 }
 
 void SGLM::set_basis(float basis_){ basis = basis_ ; }
-void SGLM::set_near( float near_ ){ near = near_ ; }
-void SGLM::set_far(  float far_ ){  far = far_ ; }
-
 void SGLM::set_basis_to_gazelength() { set_basis( getGazeLength()) ; }
 void SGLM::set_basis_to_extent() {     set_basis( ce.w ) ; }
 
-
 float SGLM::get_basis() const { return basis == 0.f ? ce.w : basis ; }
+
+
+void SGLM::set_near( float near_ ){ near = near_ ; }
+void SGLM::set_far(  float far_ ){  far = far_ ; }
+
 float SGLM::get_near() const  { return near ; }  
 float SGLM::get_far()  const  { return far  ; }  
+
+void SGLM::set_near_abs( float near_abs_ ){ near = near_abs_/get_basis()  ; }
+void SGLM::set_far_abs(  float far_abs_ ){  far = far_abs_/get_basis()    ; }
 
 float SGLM::get_near_abs() const { return near*get_basis() ; }
 float SGLM::get_far_abs() const { return   far*get_basis() ; }
