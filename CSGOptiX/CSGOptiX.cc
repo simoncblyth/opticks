@@ -416,7 +416,8 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
     sglm->set_near(tmin_model) ; 
 
     sglm->setFocalScaleToGazeLength();    // makes SGLM behave more like Composition
-    sglm->set_basis_to_gazelength() ;   // makes SGLM do simililar to Camera::aim used by Composition
+    //sglm->set_basis_to_gazelength() ;        
+    sglm->set_basis_to_extent() ;        
 
     sglm->update();  
     LOG(info) << "sglm.desc:" << std::endl << sglm->desc() ; 
