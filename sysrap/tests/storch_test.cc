@@ -95,28 +95,20 @@ void test_union_cast()
 void test_ref_cast()
 {
     float4 a = make_float4( 1.f, 2.f, 3.f, 4.f ); 
-
     const float3& b = (const float3&)a ; 
     const float2& c = (const float2&)a ; 
     const float3& d = (const float3&)a.x ; 
-
-
     std::cout << " a " << a << std::endl ;   
     std::cout << " b " << b << std::endl ;   
     std::cout << " c " << c << std::endl ;   
     std::cout << " d " << d << std::endl ;   
-
-
 }
-
-
 
 int main(int argc, char** argv)
 {
-    //test_generate(); 
+    test_generate(); 
     //test_union_cast(); 
-    test_ref_cast(); 
-   
+    //test_ref_cast(); 
     return 0 ; 
 }
 

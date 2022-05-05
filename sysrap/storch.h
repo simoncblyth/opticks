@@ -1,10 +1,15 @@
 #pragma once
 /**
-storch.h
-=========
+storch.h : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/torchstep.h  
+===================================================================================
+
+NB sizeof storch struct is **CONSTRAINED TO MATCH quad6** like all gensteps 
 
 Bringing over some of the old torch genstep generation into the modern workflow 
 with mocking on CPU and pure-CUDA test cababilities. 
+
+Notes
+--------
 
 Techniques to implement the spirit of the old torch gensteps in much less code
 
@@ -52,6 +57,7 @@ npy/NStep.cpp
    #define STORCH_METHOD 
 #endif 
 
+
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
@@ -60,7 +66,6 @@ npy/NStep.cpp
 #include "storchtype.h"
 
 /**
-* storch.h : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/torchstep.h  
 **/
 
 struct storch
@@ -89,12 +94,15 @@ struct storch
     unsigned mode ;     // basemode 
     unsigned type ;     // basetype
 
+    // NB : organized into 6 quads : are constained not to change that 
+
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
    STORCH_METHOD static void generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+   static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
    std::string desc() const ; 
 #endif
 
@@ -103,6 +111,24 @@ struct storch
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
+{
+    float3 mom = make_float3( 0.f, 0.f, 1.f );  
+
+    gs.gentype = OpticksGenstep_TORCH ; 
+    gs.wavelength = 501.f ; 
+    gs.mom = normalize(mom); 
+    gs.radius = 50.f ; 
+    gs.pos = make_float3( 0.f, 0.f, -90.f );  
+    gs.time = 0.f ; 
+    gs.zenith = make_float2( 0.f, 1.f );  
+    gs.azimuth = make_float2( 0.f, 1.f );  
+    gs.type = storchtype::Type("disc");  
+    gs.mode = 255 ;    //torchmode::Type("...");  
+    gs.numphoton = numphoton_per_genstep  ;   
+}
+
+
 inline std::string storch::desc() const 
 {
     std::stringstream ss ; 

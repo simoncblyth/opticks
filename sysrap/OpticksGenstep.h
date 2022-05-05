@@ -33,7 +33,9 @@ enum
     OpticksGenstep_PRIMARYSOURCE            = 12, 
     OpticksGenstep_GENSTEPSOURCE            = 13, 
     OpticksGenstep_PHOTON_CARRIER           = 14,
-    OpticksGenstep_NumType                  = 15
+    OpticksGenstep_CERENKOV                 = 15,
+    OpticksGenstep_SCINTILLATION            = 16,
+    OpticksGenstep_NumType                  = 17
 };
     
   

@@ -3,21 +3,48 @@
 SGLM : Header Only OpenGL viz projection maths 
 =================================================
 
-Normal inputs WH, CE, EYE, LOOK, UP 
-are held in static variables with envvar defaults 
+This is the starting point for a simple single header 
+replacement of a boatload of classes used by okc. 
+
+* Composition, View, Camera, ...
+
+Using this aims to enable CSGOptiX to drop dependency
+on okc, npy, brap and instead depend only on QUDARap, SysRap, CSG. 
+
+* Note that animated interpolation between views available 
+  in the old machinery is not yet implemented in the new workflow
+  as that currently focusses on snap renders. 
+
+* because of this incomplete nature have to keep SGLM reliance (not usage) 
+  behind WITH_SGLM and retain the old Composition based version of CSGOptiX (and okc dependency) 
+
+* note that the with Composition version of CSGOptiX also uses SGLM 
+  to allow easy comparison of frames and matrices between the two approaches
+
+* ALSO this needs to be tested by comparing rasterized and ray-traced renders
+  in order to achieve full consistency. Usage with interactive changing of camera and view etc.. 
+  and interactive flipping between rasterized and ray traced is the way consistency 
+  of the projective and ray traced maths was achieved for okc/Composition. 
+
+Normal inputs WH, CE, EYE, LOOK, UP are held in static variables with envvar defaults 
 These can be changed with static methods before instanciating SGLM. 
 NB it will usually be too late for setenv in code to influence SGLM 
 as the static initialization would have happened already 
  
-
 * https://learnopengl.com/Getting-started/Camera
 
 TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
 
-TODO: provide a single header replacement for the boatload of classes used by okc/Composition
+
+TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state 
+      would be best to group that for clarity 
+
+
+* hmm probably using nested structs makes sense, or just use SGLM namespace with 
+* https://riptutorial.com/cplusplus/example/11914/nested-classes-structures
+* https://www.geeksforgeeks.org/nested-structure-in-c-with-examples/
 
 **/
-
 
 #include <string>
 #include <vector>
@@ -45,28 +72,30 @@ TODO: provide a single header replacement for the boatload of classes used by ok
 struct SYSRAP_API SGLM
 {
     static SGLM* INSTANCE ; 
-
-    static glm::ivec2 WH ; 
-    static glm::vec4 CE ;    // static default, can be overridden by *ce* member 
-    static glm::vec4 EYE ;    // model frame 
-    static glm::vec4 LOOK ; 
-    static glm::vec4 UP ; 
-    static float ZOOM ; 
-
-    static int   CAM ; 
-    static int   NEARFAR ; 
-    static int   FOCAL ; 
-
     static constexpr const char* kWH = "WH" ; 
     static constexpr const char* kCE = "CE" ; 
     static constexpr const char* kEYE = "EYE" ; 
     static constexpr const char* kLOOK = "LOOK" ; 
     static constexpr const char* kUP = "UP" ; 
     static constexpr const char* kZOOM = "ZOOM" ; 
-
     static constexpr const char* kCAM = "CAM" ; 
     static constexpr const char* kNEARFAR = "NEARFAR" ; 
     static constexpr const char* kFOCAL = "FOCAL" ; 
+
+    // static defaults, some can be overridden in the instance 
+    static glm::ivec2 WH ; 
+
+    static glm::vec4 CE ;    
+    static glm::vec4 EYE ; 
+    static glm::vec4 LOOK ; 
+    static glm::vec4 UP ; 
+
+    static float ZOOM ; 
+    static int   CAM ; 
+    static int   NEARFAR ; 
+    static int   FOCAL ; 
+
+    // ~1.5 quad4
 
     static void SetWH( int width, int height ); 
     static void SetCE( float x, float y, float z, float extent ); 
@@ -74,18 +103,15 @@ struct SYSRAP_API SGLM
     static void SetLOOK( float x, float y, float z ); 
     static void SetUP( float x, float y, float z ); 
     static void SetZOOM( float v ); 
-
     static void SetCAM( const char* cam ); 
     static void SetNEARFAR( const char* nearfar ); 
     static void SetFOCAL( const char* focal ); 
 
+    // querying of static defaults 
     static std::string DescInput() ; 
-    std::string descInput() const ; 
-
     static int Width() ; 
     static int Height() ; 
     static float Aspect(); 
-
     static const char* CAM_Label() ; 
     static const char* NEARFAR_Label() ; 
     static const char* FOCAL_Label() ; 
@@ -93,7 +119,6 @@ struct SYSRAP_API SGLM
     template <typename T> static T ato_( const char* a );
     template <typename T> static void GetEVector(std::vector<T>& vec, const char* key, const char* fallback );
     template <typename T> static std::string Present(std::vector<T>& vec);
-
 
     static std::string Present(const glm::ivec2& v, int wid=6 );
     static std::string Present(const float v, int wid=10, int prec=3);
@@ -114,23 +139,39 @@ struct SYSRAP_API SGLM
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale); 
 
 
+    // member methods
+    std::string descInput() const ; 
 
     SGLM(); 
 
     glm::vec4 ce ;
- 
+
+    // modes
     int  cam ; 
     int  nearfar ;
     int  focal ;  
 
+    // manual input matrices
     const qat4* m2w ; 
     const qat4* w2m ; 
+    bool rtp_tangential ; 
+
+    // ~1.5+3 quad4
+
+ 
+    // derived matrices depending on ce 
     glm::mat4 model2world ; 
     glm::mat4 world2model ; 
-    bool rtp_tangential ; 
     int updateModelMatrix_branch ; 
-    std::vector<std::string> log ; 
 
+    float nearfar_manual ; 
+    float focal_manual ; 
+    float near ; 
+    float far ; 
+
+    // ~1.5+3+3 quad4
+
+    std::vector<std::string> log ; 
 
     void set_ce(  float x, float y, float z, float w ); 
     void set_m2w( const qat4* m2w_, const qat4* w2m_ ); 
@@ -138,38 +179,30 @@ struct SYSRAP_API SGLM
 
     void updateModelMatrix();  // depends on ce, unless valid m2w and w2m matrices provided
 
-    float nearfar_manual ; 
-    float focal_manual ; 
-    float orthoscale ; 
-
-    float near ; 
-    float far ; 
-
-    void set_basis_manual(float basis_ ) ; // when 0.f basis is taken from ce.w 
     void set_near( float near_ ); 
     void set_far( float far_ ); 
-
     void set_near_abs( float near_abs_ ); 
     void set_far_abs(  float far_abs_ ); 
 
-    float get_basis() const ;  // when not set return default of ce.w  
     float get_near() const ;  
     float get_far() const ;  
-
     float get_near_abs() const ;  
     float get_far_abs() const ;  
 
-
     std::string descBasis() const ; 
 
-    glm::vec3 eye ;  // world frame  
+    // world frame View converted from static model frame
+    glm::vec3 eye ;  
     glm::vec3 look ; 
     glm::vec3 up ; 
     glm::vec3 gaze ; 
 
+    // 1.5 +3+3+1
+
     void updateELU();   // depends on CE and EYE, LOOK, UP 
-    std::string descLog() const ; 
     std::string descELU() const ; 
+
+    // results from updateEyeSpace
 
     glm::vec3 forward_ax ; 
     glm::vec3 right_ax ; 
@@ -178,28 +211,33 @@ struct SYSRAP_API SGLM
     glm::mat4 world2camera ; 
     glm::mat4 camera2world ; 
 
+    // 1.5 +3+3+1+4   ~13 quad4 
+
+
+
     void updateEyeSpace(); 
     std::string descEyeSpace() const ; 
-    static std::string DescEyeBasis( const glm::vec3& E, const glm::vec3& U, const glm::vec3& V, const glm::vec3& W ); 
 
+    // results from updateEyeBasis
     glm::vec3 u ; 
     glm::vec3 v ; 
     glm::vec3 w ; 
     glm::vec3 e ; 
     void updateEyeBasis(); 
+    static std::string DescEyeBasis( const glm::vec3& E, const glm::vec3& U, const glm::vec3& V, const glm::vec3& W ); 
     std::string descEyeBasis() const ; 
+
 
     glm::mat4 projection ; 
     glm::mat4 world2clip ; 
+
+    // ~16 quad4 
 
     float getGazeLength() const ; 
 
     void updateProjection(); 
     std::string descProjection() const ; 
 
-    void update(); 
-    void addlog( const char* label, float value       ) ; 
-    void addlog( const char* label, const char* value ) ; 
 
     void set_nearfar_mode(const char* mode); 
     void set_focal_mode(const char* mode); 
@@ -215,7 +253,12 @@ struct SYSRAP_API SGLM
 
 
     std::string desc() const ; 
+    std::string descLog() const ; 
+
+    void addlog( const char* label, float value       ) ; 
+    void addlog( const char* label, const char* value ) ; 
     void dump() const ; 
+    void update(); 
 };
 
 SGLM* SGLM::INSTANCE = nullptr ; 
@@ -255,17 +298,16 @@ SGLM::SGLM()
     focal(FOCAL),
     m2w(nullptr),
     w2m(nullptr),
+    rtp_tangential(false),
     model2world(1.f), 
     world2model(1.f),
-    rtp_tangential(false),
     updateModelMatrix_branch(-1), 
 
     nearfar_manual(0.f),
     focal_manual(0.f),
-    orthoscale(1.f),
 
-    near(0.1f),   // units of basis
-    far(5.f),     // units of basis
+    near(0.1f),   // units of get_nearfar_basis
+    far(5.f),     // units of get_nearfar_basis
 
     forward_ax(0.f,0.f,0.f),
     right_ax(0.f,0.f,0.f),
@@ -338,8 +380,6 @@ std::string SGLM::descInput() const
     std::string s = ss.str(); 
     return s ; 
 }
- 
-
 
 void SGLM::set_ce( float x, float y, float z, float w )
 {
@@ -347,7 +387,6 @@ void SGLM::set_ce( float x, float y, float z, float w )
     ce.y = y ; 
     ce.z = z ; 
     ce.w = w ; 
-
     addlog("set_ce", ce.w);
 }
 
@@ -356,7 +395,6 @@ void SGLM::set_rtp_tangential(bool rtp_tangential_ )
     rtp_tangential = rtp_tangential_ ; 
     addlog("set_rtp_tangential", rtp_tangential );
 }
-
 
 void SGLM::set_m2w( const qat4* m2w_, const qat4* w2m_ )
 {
@@ -432,7 +470,7 @@ const char* SGLM::get_nearfar_mode() const { return SBAS::Name(nearfar) ; }
 const char* SGLM::get_focal_mode() const {   return SBAS::Name(focal) ; } 
 
 void SGLM::set_nearfar_manual(float nearfar_manual_ ){ addlog("set_nearfar_manual", nearfar_manual_ ) ; nearfar_manual = nearfar_manual_  ; }
-void SGLM::set_focal_manual(float focal_manual_ ){ addlog("set_focal_manual", focal_manual_ ) ; focal_manual = focal_manual_  ; }
+void SGLM::set_focal_manual(float focal_manual_ ){     addlog("set_focal_manual", focal_manual_ )     ; focal_manual = focal_manual_  ; }
 
 
 float SGLM::get_nearfar_basis() const 
@@ -547,6 +585,31 @@ std::string SGLM::descELU() const
     return s ; 
 }
 
+/**
+SGLM::updateEyeSpace
+---------------------
+
+Normalized eye space oriented via gaze and up directions.  
+
+        +Y    -Z
+     top_ax  forward_ax  
+         |  /
+         | /
+         |/    
+         +----- right_ax  (+X)
+        .
+       .
+      .
+    -forward_ax
+    +Z 
+
+
+world2camera
+    first translates a world frame point to the eye point, 
+    making eye point the origin then rotates to get into camera frame
+    using the OpenGL eye space convention : -Z is forward, +X to right, +Y up
+
+**/
 
 void SGLM::updateEyeSpace()
 {
@@ -642,17 +705,28 @@ std::string SGLM::descProjection() const
     return s ; 
 }
 
+
+/**
+SGLM::updateEyeBasis
+----------------------
+
+NB this uses the *camera2world* matrix obtained from SGLM::updateEyeSpace
+with the same OpenGL eye frame convention to yield a scaled set of basis
+vectors.  
+
+**/
+
 void SGLM::updateEyeBasis()
 {
-    glm::vec4 rht( 1., 0., 0., 0.); 
-    glm::vec4 top( 0., 1., 0., 0.); 
-    glm::vec4 gaz( 0., 0.,-1., 0.);   // towards -Z
+    glm::vec4 rht( 1., 0., 0., 0.);  // +X
+    glm::vec4 top( 0., 1., 0., 0.);  // +Y
+    glm::vec4 gaz( 0., 0.,-1., 0.);  // -Z
     glm::vec4 ori( 0., 0., 0., 1.); 
 
     float aspect = Aspect() ; 
     float fsc = get_focal_basis() ; 
     float fscz = fsc/ZOOM  ; 
-    float gazlen = getGazeLength() ; 
+    float gazlen = getGazeLength() ;  // HMM: maybe get_nearfar_basis for consistency
 
     u = glm::vec3( camera2world * rht ) * fscz * aspect ;  
     v = glm::vec3( camera2world * top ) * fscz  ;  

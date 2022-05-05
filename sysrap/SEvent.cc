@@ -4,7 +4,10 @@
 #include "squad.h"
 #include "sqat4.h"
 #include "stran.h"
+
 #include "storch.h"
+#include "scerenkov.h"
+
 #include "ssincos.h"
 #include "sc4u.h"
 
@@ -24,10 +27,9 @@ NP* SEvent::MakeDemoGensteps(const char* config)
 {
     NP* gs = nullptr ;
     if(     SStr::StartsWith(config, "count")) gs = MakeCountGensteps(config) ;   
-    else if(SStr::StartsWith(config, "torch")) gs = MakeTorchGensteps(config) ; 
+    else if(SStr::StartsWith(config, "torch")) gs = MakeTorchGensteps() ; 
     else if(SStr::StartsWith(config, "carrier")) gs = MakeCarrierGensteps(config) ; 
     assert(gs); 
-
     LOG(LEVEL) 
        << " config " << ( config ? config :  "-" )
        << " gs " << ( gs ? gs->sstr() : "-" )
@@ -58,42 +60,39 @@ photon with is copied into existance.
 
 NP* SEvent::MakeCarrierGensteps(const char* config)
 {
-    unsigned num_gs = 10 ; 
+    int num_gs = 10 ; 
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
     quad6* qq = (quad6*)gs->bytes() ; 
-    for(unsigned i=0 ; i < num_gs ; i++ ) FillCarrierGenstep( qq[i] ) ; 
+    for(int i=0 ; i < num_gs ; i++ ) FillCarrierGenstep( qq[i] ) ; 
     return gs ; 
 }
 
+NP* SEvent::MakeTorchGensteps(){    return MakeGensteps( OpticksGenstep_TORCH ) ; }
+NP* SEvent::MakeCerenkovGensteps(){ return MakeGensteps( OpticksGenstep_CERENKOV ) ; }
 
-void SEvent::FillTorchGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
+NP* SEvent::MakeGensteps( int gentype )
 {
-    float3 mom = make_float3( 0.f, 0.f, 1.f );  
-
-    gs.gentype = OpticksGenstep_TORCH ; 
-    gs.wavelength = 501.f ; 
-    gs.mom = normalize(mom); 
-    gs.radius = 50.f ; 
-    gs.pos = make_float3( 0.f, 0.f, -90.f );  
-    gs.time = 0.f ; 
-    gs.zenith = make_float2( 0.f, 1.f );  
-    gs.azimuth = make_float2( 0.f, 1.f );  
-    gs.type = storchtype::Type("disc");  
-    gs.mode = 255 ;    //torchmode::Type("...");  
-    gs.numphoton = numphoton_per_genstep  ;   
-}
-
-NP* SEvent::MakeTorchGensteps(const char* config)
-{
-   // TODO: string configured gensteps, rather the the currently fixed and duplicated one  
     unsigned num_gs = 10 ; 
     unsigned numphoton_per_genstep = 100 ; 
-
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
-    storch* tt = (storch*)gs->bytes() ; 
-    for(unsigned i=0 ; i < num_gs ; i++ ) FillTorchGenstep( tt[i], i, numphoton_per_genstep ) ; 
+    switch(gentype)
+    {
+        case  OpticksGenstep_TORCH:    FillGensteps<storch>(   gs, numphoton_per_genstep) ; break ; 
+        case  OpticksGenstep_CERENKOV: FillGensteps<scerenkov>(gs, numphoton_per_genstep) ; break ; 
+    }
     return gs ; 
 }
+
+template<typename T>
+void SEvent::FillGensteps( NP* gs, unsigned numphoton_per_genstep )
+{
+    T* tt = (T*)gs->bytes() ; 
+    for(int i=0 ; i < gs->shape[0] ; i++ ) T::FillGenstep( tt[i], i, numphoton_per_genstep ) ; 
+}
+
+template void SEvent::FillGensteps<storch>(    NP* gs, unsigned numphoton_per_genstep ); 
+template void SEvent::FillGensteps<scerenkov>( NP* gs, unsigned numphoton_per_genstep ); 
+
 
 /**
 SEvent::MakeSeed

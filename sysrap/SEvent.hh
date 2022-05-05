@@ -33,7 +33,16 @@ struct SYSRAP_API SEvent
 
     static void FillTorchGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ); 
 
-    static NP* MakeTorchGensteps(const char* config=nullptr);  
+    // example gensteps used for testing 
+    static NP* MakeTorchGensteps();  
+    static NP* MakeCerenkovGensteps();  
+
+    static NP* MakeGensteps(int gentype); 
+
+    template <typename T> 
+    static void FillGensteps( NP* gs, unsigned numphoton_per_genstep ) ; 
+
+
     static NP* MakeSeed( const NP* gs ); 
  
     static NP* MakeGensteps(const std::vector<quad6>& gs ); 

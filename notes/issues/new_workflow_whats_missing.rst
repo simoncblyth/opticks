@@ -22,6 +22,38 @@ Generation
      using float precision  
 
 
+Approach : scerenkov.h sscintillation.h
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Follow the pattern established in:: 
+
+     sysrap/storch.h
+     sysrap/tests/storch_test.cc
+     sysrap/tests/storch_test.py
+     sysrap/tests/storch_test.sh  
+
+
+Integrate into qsim::
+
+    1980 template <typename T>
+    1981 inline QSIM_METHOD void qsim<T>::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+    1982 {
+    1983     quad4& q = (quad4&)p ;
+    1984     const int& gencode = gs.q0.i.x ;
+    1985 
+    1986     switch(gencode)
+    1987     {
+    1988         case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(q, rng, gs, photon_id, genstep_id)  ; break ;
+    1989         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ;
+    1990         default:                             generate_photon_dummy(  q, rng, gs, photon_id, genstep_id)  ; break ;
+    1991     }
+    1992 }
+
+
+
+
+
+
 Engine Change
 ----------------
 
