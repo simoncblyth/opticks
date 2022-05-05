@@ -2,8 +2,8 @@
 
 msg="=== $BASH_SOURCE :"
 
-##defpath=/tmp/blyth/opticks/CSGOptiX/CSGOptiXRenderTest/SCVD1/70000/-1/SGLM_-1.jpg
-defpath=/tmp/blyth/opticks/CSGOptiX/CSGOptiXRenderTest/SCVD1/70000/-1/Comp_-1.jpg
+defpath=/tmp/blyth/opticks/CSGOptiX/CSGOptiXRenderTest/SCVD1/70000/-1/SGLM_-1.jpg
+#defpath=/tmp/blyth/opticks/CSGOptiX/CSGOptiXRenderTest/SCVD1/70000/-1/Comp_-1.jpg
 
 path=${1:-$defpath}
 

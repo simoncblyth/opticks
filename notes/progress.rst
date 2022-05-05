@@ -21,6 +21,27 @@ Progress
      think about how they related to each other 
 
 
+
+2022 April
+-------------
+
+* 04/30 : QEvent::save and QEvent standardization, with sseq.h for encapsulated seqhis recording 
+* 04/29 : merged in new PMT optical model
+* 04/29 : standardize wavelength domain compression to use center-extent form for consistency with other domains and common handling, fix uchar4/char4 bug
+* 04/26 : examples/UseGeometryShader : standalone flying point viz working, start flexible centralization of OpenGL/GLFW mechanincs into header-only-imp SGLFW.hh
+* 04/25 : CXRaindopTest now providing photon histories, need compressed recording to push to higher stats for the history table
+* 04/25 : integrating torch into QSim for on device GENTORCH QSimTest, relocate basis types storch.h scurand.d down from QUDARap to SysRap for SEvent genstep creation
+* 04/22 : mocking curand_uniform with s_mock_curand.h enables CPU testing of some qsim.h methods in qsim_test.cc, textures not so easy to mock
+* 04/21 : CSGMaker::makeBoxedSphere for raindrop geometry
+* 04/20 : QBnd::Add using NP::itembytes to extract surfaces and materials from the boundary array plus QBnd::GetPerfectValues for things like perfectAbsorbSurface
+* 04/12 : start integrating QEvent/qevent with QSim/qsim
+* 04/12 : move QSeed functionality into QEvent and SEvent for clarity of control
+* 04/08 : hit handling, encapsulating stream compation into SU.hh SU.cu tests/SUTest.cc 
+* 04/05 : mock_propagate step-by-step photon recording debug 
+* 04/05 : prepare for qsim::mock_propagate testing, switch from qprd to quad2 for easy loading of mock_prd 
+* 04/04 : qudarap reflect_diffuse reflect_specular 
+
+
 2022 March : AltXJfixtureConstruction, Dynamic Prim selection, QSimTest
 ------------------------------------------------------------------------------
 

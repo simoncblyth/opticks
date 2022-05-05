@@ -415,6 +415,7 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
 
     sglm->set_ce(ce.x, ce.y, ce.z, ce.w ); 
     sglm->set_m2w(m2w, w2m);
+    sglm->update();  
     sglm->set_near_abs(tmin) ; 
     sglm->update();  
 

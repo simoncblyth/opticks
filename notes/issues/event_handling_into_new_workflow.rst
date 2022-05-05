@@ -29,7 +29,7 @@ TODO : cxs_raindrop.sh simulation : CXRaindropTest
 Create raindrop simulation to give rainbow photon histories, 
 so have some physical histories for bringing over compressed recording.
 
-TODO : TORCH genstep
+DONE : TORCH genstep
 -----------------------
 
 * will need to bring over some of the old TORCH genstep generation as
@@ -128,7 +128,7 @@ which is not standardly available.
 TODO : complete OpticksEvent 
 ---------------------------------
 
-* compressed sequence recording (seqhis seqmat) is needed for OpticksEvent 
+* DONE : compressed sequence recording (seqhis seqmat) is needed for OpticksEvent 
   as the full record is only appropriate for debugging with small numbers of photons 
 
 * once compressed record operational switch off full recording and bump up stats
@@ -137,6 +137,7 @@ TODO : complete OpticksEvent
   together with the already ported stream compaction for hit downloading
 
 * thence will need OpticksEvent to start becoming complete
+
 
 
 TODO : change the G4Opticks engine to CSGOptiX
@@ -351,6 +352,9 @@ How to migrate from old to new workflow ? What level to make switch over ?
   middle management needs to be scrapped 
 
 * OpticksEvent format can stay almost exactly the same, just with NPY replaced by NP
+
+  * NOPE : DECICED TO GO FOR NEW QEvent, BUT IT HAS SIMILARITIES
+
 * G4Opticks interface can stay almost exactly the same, just with NPY replaced by NP
 
   * what about internals okop/OpMgr ? 
@@ -434,6 +438,7 @@ All Packages : Thinking of their future (or not)
     180          OKG4 :          okg4 :          okg4 :          OKG4 : OK CFG4  
 
               GRAPHICS RELATED DEVELOPMENT ON HOLD AS DIFFICULT TO DO INTEROP IN REMOTE WORKING MODE
+              HOWEVER ARE MOVING TO SIMPLE HEADERONLY IMPS EG SGLM.h SGLFW.h 
 
     190          G4OK :          g4ok :          g4ok :          G4OK : CFG4 ExtG4 OKOP  
 
