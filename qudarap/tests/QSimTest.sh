@@ -23,6 +23,7 @@ msg="=== $BASH_SOURCE :"
 #export QBnd=INFO
 
 #test=rng_sequence
+test=boundary_lookup_all
 
 #test=fill_state_0
 #test=fill_state_1
@@ -49,7 +50,7 @@ msg="=== $BASH_SOURCE :"
 #test=reflect_specular
 #test=propagate_at_surface
 
-test=mock_propagate
+#test=mock_propagate
 #test=gentorch
 
 M1=1000000
@@ -62,10 +63,15 @@ num=8
 nrm=0,0,1
 #nrm=0,0,-1
 
+export TEST=${TEST:-$test}
+case $TEST in
+    rng_sequence) num=$M1 ;; 
+esac
+
 
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
-export TEST=${TEST:-$test}
+
 
 export SEvent=INFO
 
@@ -76,13 +82,14 @@ source ephoton.sh         # branching on TEST inside ephoton.sh
 
 
 if [ "${arg/run}" != "$arg" ]; then 
-   if [ -n "$DEBUG" ]; then 
-       lldb__ QSimTest
-   else
-       QSimTest
-   fi 
+   QSimTest
+   [ $? -ne 0 ] && echo $msg run error && exit 1 
+
+elif [ "${arg/dbg}" != "$arg" ]; then 
+   lldb__ QSimTest
    [ $? -ne 0 ] && echo $msg run error && exit 1 
 fi
+
 
 
 

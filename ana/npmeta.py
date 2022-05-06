@@ -35,6 +35,9 @@ class NPMeta(object):
         pass
         return ret 
 
+    def __repr__(self):
+        return "\n".join(map(str,self.meta))
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

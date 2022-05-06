@@ -6,6 +6,7 @@
 enum { 
    UNKNOWN,
    RNG_SEQUENCE,
+   BOUNDARY_LOOKUP_ALL,
    WAVELENGTH_S,
    WAVELENGTH_C,
    SCINT_PHOTON_P,
@@ -13,7 +14,6 @@ enum {
    CERENKOV_PHOTON_ENPROP_E,
    CERENKOV_PHOTON_EXPT_X,
    GENERATE_PHOTON_G,
-   BOUNDARY_LOOKUP_ALL_A,
    BOUNDARY_LOOKUP_LINE_WATER_W,
    WATER,  
    BOUNDARY_LOOKUP_LINE_LS_L,
@@ -55,6 +55,8 @@ struct QSimLaunch
     static const char* Name(unsigned type ); 
 
     static constexpr const char* RNG_SEQUENCE_ = "rng_sequence" ; 
+    static constexpr const char* BOUNDARY_LOOKUP_ALL_ = "boundary_lookup_all" ; 
+
     static constexpr const char* WATER_ = "water" ; 
     static constexpr const char* FILL_STATE_0_ = "fill_state_0" ;
     static constexpr const char* FILL_STATE_1_ = "fill_state_1" ;
@@ -93,11 +95,11 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,"E") == 0 ) test = CERENKOV_PHOTON_ENPROP_E ;
    if(strcmp(name,"X") == 0 ) test = CERENKOV_PHOTON_EXPT_X ;
    if(strcmp(name,"G") == 0 ) test = GENERATE_PHOTON_G ;
-   if(strcmp(name,"A") == 0 ) test = BOUNDARY_LOOKUP_ALL_A ;
    if(strcmp(name,"L") == 0 ) test = BOUNDARY_LOOKUP_LINE_LS_L ;
    if(strcmp(name,"Y") == 0 ) test = PROP_LOOKUP_Y ;
 
    if(strcmp(name,RNG_SEQUENCE_) == 0 )          test = RNG_SEQUENCE ; 
+   if(strcmp(name,BOUNDARY_LOOKUP_ALL_) == 0 )   test = BOUNDARY_LOOKUP_ALL ; 
    if(strcmp(name,WATER_) == 0    )              test = BOUNDARY_LOOKUP_LINE_WATER_W ;
    if(strcmp(name,FILL_STATE_0_) == 0)           test = FILL_STATE_0 ;
    if(strcmp(name,FILL_STATE_1_) == 0)           test = FILL_STATE_1 ;
@@ -138,6 +140,7 @@ inline const char* QSimLaunch::Name( unsigned type )
     switch(type)
     {
         case RNG_SEQUENCE:           s = RNG_SEQUENCE_           ; break ; 
+        case BOUNDARY_LOOKUP_ALL:    s = BOUNDARY_LOOKUP_ALL_    ; break ; 
         case WATER:                  s = WATER_                  ; break ; 
         case FILL_STATE_0:           s = FILL_STATE_0_           ; break ; 
         case FILL_STATE_1:           s = FILL_STATE_1_           ; break ; 

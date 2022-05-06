@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, logging, numpy as np, datetime
+import os, logging, numpy as np, datetime, builtins
 from opticks.ana.npmeta import NPMeta
 
 log = logging.getLogger(__name__)
@@ -22,6 +22,8 @@ class Fold(object):
         if fold is None and quiet == False:
             log.error("failed to load from base [%s]" % base )
         pass
+        print(repr(fold))
+        print(str(fold))
         return fold
 
     def __getattr__(self, name):
@@ -38,19 +40,20 @@ class Fold(object):
 
         names = os.listdir(base)
         stems = []
-        stamps = []
+        abbrev = []
+        symbols = "abcdefghijklmnopqrsTuvwxyz"
+        txts = {}
 
-        for name in filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),names):
+        for i, name in enumerate(filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),names)):
             path = os.path.join(base, name)
-            st = os.stat(path)
-            stamp = datetime.datetime.fromtimestamp(st.st_ctime)
-
-            stamps.append(stamp)
+            symbol = symbols[i]
 
             is_npy = name.endswith(".npy")
             is_txt = name.endswith(".txt")
+
             stem = name[:-4]
             stems.append(stem)
+            abbrev.append(symbol) 
 
             txt_dtype = "|S100" if stem.endswith("_meta") else np.object 
 
@@ -66,6 +69,7 @@ class Fold(object):
                 else:
                     a = NPMeta(t)     
                 pass
+                txts[name] = a
             pass
 
             # use non-present delim so lines with spaces do not cause errors
@@ -74,41 +78,68 @@ class Fold(object):
             ashape = str(a.shape) if is_npy else len(a)    
             if self.globals:
                 gstem = self.globals_prefix + stem
-                globals()[gstem] = a 
-                print(" %20s : %15s : %20s : %20s : %s " % (stem, gstem, ashape, str(stamp), name ))  
-            else:
-                print(" %20s : %15s : %20s :  %s " % (stem, ashape, str(stamp), name ))  
+                setattr( builtins, gstem, a )
+                setattr( builtins, symbol, a )
+                print("setting builtins symbol:%s gstem:%s" % (symbol, gstem) ) 
             pass
         pass
+        self.stems = stems
+        self.abbrev = abbrev
+        self.txts = txts
 
+    def desc(self):
+        now_stamp = datetime.datetime.now()
+        l = []
+        l.append("t")
+        l.append("")
+        l.append(self.base)
+        l.append("")
+        stamps = []
+
+        for i in range(len(self.stems)):
+            stem = self.stems[i]
+            abbrev = self.abbrev[i]
+
+            a = getattr(self, stem)
+            ext = ".txt" if a.__class__.__name__ == 'NPMeta' else ".npy"
+            name = "%s%s" % (stem,ext)
+            aname = "t.%s" % stem
+
+            path = os.path.join(self.base, name)
+            st = os.stat(path)
+            stamp = datetime.datetime.fromtimestamp(st.st_ctime)
+            age_stamp = now_stamp - stamp
+            stamps.append(stamp)
+
+            sh = str(len(a)) if ext == ".txt" else str(a.shape)
+            abbrev_ = abbrev if self.globals else " " 
+            line = "%1s : %-50s : %20s : %s " % ( abbrev_, aname, sh, age_stamp )
+            l.append(line)
+        pass
+        l.append("")
         min_stamp = min(stamps)
         max_stamp = max(stamps)
         dif_stamp = max_stamp - min_stamp 
-
-        now_stamp = datetime.datetime.now()
         age_stamp = now_stamp - max_stamp
-
-        print(" min_stamp : %s " % str(min_stamp))
-        print(" max_stamp : %s " % str(max_stamp))
-        print(" dif_stamp : %s " % str(dif_stamp))
-        print(" age_stamp : %s " % str(age_stamp))
-
+        l.append(" min_stamp : %s " % str(min_stamp))
+        l.append(" max_stamp : %s " % str(max_stamp))
+        l.append(" dif_stamp : %s " % str(dif_stamp))
+        l.append(" age_stamp : %s " % str(age_stamp))
         assert dif_stamp.microseconds < 1e6, "stamp divergence detected microseconds %d : so are seeing mixed up results from multiple runs " % dif_stamp.microseconds 
-        
-
-
-        self.stems = stems
-        self.stamps = stamps
-
-    def desc(self, stem):
-        a = getattr(self, stem)
-        ext = ".txt" if a.__class__.__name__ == 'NPMeta' else ".npy"
-        path = os.path.join(self.base, "%s%s" % (stem,ext))
-        sh = str(len(a)) if ext == ".txt" else str(a.shape)
-        return " %15s : %15s : %s " % ( stem, sh, path )
+        return l 
 
     def __repr__(self):
-        return "\n".join(self.desc(stem) for stem in self.stems)    
+        return "\n".join(self.desc())    
+
+    def __str__(self):
+        l = []
+        for k in self.txts:
+            l.append("")
+            l.append(k)
+            l.append("")
+            l.append(str(self.txts[k]))
+        pass
+        return "\n".join(l) 
   
 
 if __name__  == '__main__':

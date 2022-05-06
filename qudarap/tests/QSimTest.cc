@@ -167,8 +167,7 @@ void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
     unsigned nj = 16 ; 
     unsigned nk = 16 ; 
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
-
-    qs.rng_sequence<float>(FOLD, ni, nj, nk, ni_tranche_size ); 
+    qs.rng_sequence<float>(dir, ni, nj, nk, ni_tranche_size ); 
 }
 
 
@@ -182,17 +181,21 @@ Does lookups at every texel of the 2d float4 boundary texture
 
 void QSimTest::boundary_lookup_all()
 {
-    LOG(info); 
+    LOG(info) << " dir [" << dir << "]" ; 
     unsigned width = qs.getBoundaryTexWidth(); 
     unsigned height = qs.getBoundaryTexHeight(); 
-    const NP* src = qs.getBoundaryTexSrc(); 
-    unsigned num_lookup = width*height ; 
+    assert( height % 8 == 0 ); 
 
+    unsigned num_bnd = height/8 ;  
+
+    const NP* src = qs.getBoundaryTexSrc(); 
+
+    unsigned num_lookup = width*height ; 
     std::vector<quad> lookup(num_lookup); 
     qs.boundary_lookup_all( lookup.data(), width, height ); 
 
-    NP::Write( FOLD, "boundary_lookup_all.npy" ,  (float*)lookup.data(), height, width, 4 ); 
-    src->save( FOLD, "boundary_lookup_all_src.npy" ); 
+    NP::Write( dir, "boundary_lookup_all.npy" ,  (float*)lookup.data(), num_bnd, 4, 2, width, 4 ); 
+    src->save( dir, "boundary_lookup_all_src.npy" ); 
 }
 
 /**
@@ -756,7 +759,7 @@ void QSimTest::main()
         case GENTORCH:
                                             generate_photon();                         ; break ; 
 
-        case BOUNDARY_LOOKUP_ALL_A:         boundary_lookup_all()                          ; break ;  
+        case BOUNDARY_LOOKUP_ALL:           boundary_lookup_all()                          ; break ;  
         case BOUNDARY_LOOKUP_LINE_WATER_W:  boundary_lookup_line("Water", 80., 800., 721)  ; break ;  
         case BOUNDARY_LOOKUP_LINE_LS_L:     boundary_lookup_line("LS",    80., 800., 721)  ; break ;  
         case PROP_LOOKUP_Y:                 prop_lookup(-1, -1.f,16.f,1701)                ; break ;  
