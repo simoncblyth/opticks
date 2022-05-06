@@ -22,13 +22,21 @@ HMM: instanciation API does not match the real one, does that matter ?
 struct curandStateXORWOW
 {
     std::mt19937_64 engine ;
-    std::uniform_real_distribution<float>  dist ; 
-    curandStateXORWOW(unsigned seed_) : dist(0,1) { engine.seed(seed_) ; }
-    float generate(){ return dist(engine) ; } 
+
+    std::uniform_real_distribution<float>   fdist ; 
+    std::uniform_real_distribution<double>  ddist ; 
+
+    curandStateXORWOW(unsigned seed_) : fdist(0,1), ddist(0,1) { engine.seed(seed_) ; }
+
+    float  generate_float(){  return fdist(engine) ; } 
+    double generate_double(){ return ddist(engine) ; } 
 }; 
 
 typedef curandStateXORWOW curandState_t ; 
 
-float curand_uniform(curandState_t* state ){ return state->generate() ; }
+float curand_uniform(curandState_t* state ){ return state->generate_float() ; }
+
+double curand_uniform_double(curandState_t* state ){ return state->generate_double() ; }
+
 
 

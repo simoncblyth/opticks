@@ -116,10 +116,8 @@ int main(int argc, char** argv)
 
     SGLM sglm ; 
     sglm.set_ce( 0.f, 0.f, 0.f, 50.f ); 
-    sglm.setFocalScaleToGazeLength();
-    sglm.set_basis_to_gazelength() ; 
     sglm.update(); 
-    std::cout << sglm.desc() << std::endl ; 
+    sglm.dump();
 
 
     const char* title = ARRAY_NAME ; 

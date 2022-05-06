@@ -27,14 +27,11 @@
 
 #include "QSim.hh"
 
-template <typename T>
-const plog::Severity QSim<T>::LEVEL = PLOG::EnvLevel("QSim", "INFO"); 
+const plog::Severity QSim::LEVEL = PLOG::EnvLevel("QSim", "INFO"); 
 
-template <typename T>
-const QSim<T>* QSim<T>::INSTANCE = nullptr ; 
+const QSim* QSim::INSTANCE = nullptr ; 
 
-template <typename T>
-const QSim<T>* QSim<T>::Get(){ return INSTANCE ; }
+const QSim* QSim::Get(){ return INSTANCE ; }
 
 /**
 QSim::UploadComponents
@@ -64,8 +61,7 @@ argument with meaningful standardized keys.
 
 **/
 
-template <typename T>
-void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, const char* rindexpath  )
+void QSim::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, const char* rindexpath  )
 {
     QRng* qrng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << qrng->desc(); 
@@ -107,22 +103,22 @@ void QSim<T>::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optica
     }
 
     LOG(error) << "[ QProp " ; 
-    QProp<T>* qprop = new QProp<T>(rindexpath) ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
+    QProp<float>* qprop = new QProp<float>(rindexpath) ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
     LOG(error) << "] QProp " ; 
 
 
     LOG(LEVEL) << qprop->desc(); 
 }
 
-/*
- QSim<T>::UploadMultiFilmLUT
+/**
+QSim::UploadMultiFilmLUT
+--------------------------
   
  instance QMultiFilmLUT and upload the component : lookup table
 
- */
+**/
 
-template <typename T>
-void QSim<T>::UploadMultiFilmLUT( const NP* multi_film_lut ){
+void QSim::UploadMultiFilmLUT( const NP* multi_film_lut ){
 
     if( multi_film_lut == nullptr )
     {
@@ -153,8 +149,7 @@ singleton components.
 
 **/
 
-template <typename T>
-QSim<T>::QSim()
+QSim::QSim()
     :
     event(new QEvent),
     rng(QRng::Get()),
@@ -162,7 +157,7 @@ QSim<T>::QSim()
     bnd(QBnd::Get()),
     prd(QPrd::Get()),
     optical(QOptical::Get()),
-    prop(QProp<T>::Get()),
+    prop(QProp<float>::Get()),
     multi_film(QMultiFilmLUT::Get()),
     pidx(SSys::getenvint("PIDX", -1)),
     sim(nullptr),
@@ -173,8 +168,7 @@ QSim<T>::QSim()
     init(); 
 }
 
-template <typename T>
-void QSim<T>::init()
+void QSim::init()
 {
     LOG(LEVEL) << event->descMax(); 
 
@@ -206,10 +200,9 @@ In a very real sense it is object oriented GPU launches.
 
 **/
 
-template <typename T>
-void QSim<T>::init_sim()
+void QSim::init_sim()
 {
-    sim = new qsim<T> ; 
+    sim = new qsim ; 
 
     LOG(LEVEL) 
         << " rng " << rng 
@@ -273,7 +266,7 @@ void QSim<T>::init_sim()
 
     sim->pidx = pidx ; 
 
-    d_sim = QU::UploadArray<qsim<T>>(sim, 1 );  
+    d_sim = QU::UploadArray<qsim>(sim, 1 );  
 }
 
 
@@ -292,8 +285,7 @@ to get structured info onto the device.
 
 **/
 
-template <typename T>
-void QSim<T>::init_dbg()
+void QSim::init_dbg()
 {
     dbg = new qdebug ; 
 
@@ -318,8 +310,7 @@ void QSim<T>::init_dbg()
 }
 
 
-template <typename T>
-NP* QSim<T>::duplicate_dbg_ephoton(unsigned num_photon)
+NP* QSim::duplicate_dbg_ephoton(unsigned num_photon)
 {
     NP* ph = NP::Make<float>(num_photon, 4, 4 );
     sphoton* pp  = (sphoton*)ph->bytes(); 
@@ -333,8 +324,7 @@ NP* QSim<T>::duplicate_dbg_ephoton(unsigned num_photon)
 }
 
 
-template <typename T>
-std::string QSim<T>::desc_dbg_state() const 
+std::string QSim::desc_dbg_state() const 
 {
     std::stringstream ss ; 
     ss << "QSim::desc_dbg_state" << std::endl << QState::Desc(dbg->s) ; 
@@ -342,8 +332,7 @@ std::string QSim<T>::desc_dbg_state() const
     return s ; 
 }
  
-template <typename T>
-std::string QSim<T>::desc_dbg_p0() const 
+std::string QSim::desc_dbg_p0() const 
 {
     std::stringstream ss ; 
     ss << "QSim::desc_dbg_p0" << std::endl << dbg->p.desc() ; 
@@ -351,8 +340,7 @@ std::string QSim<T>::desc_dbg_p0() const
     return s ; 
 }
 
-template <typename T>
-qsim<T>* QSim<T>::getDevicePtr() const 
+qsim* QSim::getDevicePtr() const 
 {
     return d_sim ; 
 }
@@ -360,14 +348,12 @@ qsim<T>* QSim<T>::getDevicePtr() const
 
 
 
-template <typename T>
-char QSim<T>::getScintTexFilterMode() const 
+char QSim::getScintTexFilterMode() const 
 {
     return scint->tex->getFilterMode() ; 
 }
 
-template<typename T>
-std::string QSim<T>::desc() const
+std::string QSim::desc() const
 {
     std::stringstream ss ; 
     ss << "QSim"
@@ -383,33 +369,28 @@ std::string QSim<T>::desc() const
 }
 
 
-template<typename T>
-void QSim<T>::configureLaunch(unsigned width, unsigned height ) 
+void QSim::configureLaunch(unsigned width, unsigned height ) 
 {
     QU::ConfigureLaunch(numBlocks, threadsPerBlock, width, height); 
 }
 
-template<typename T>
-void QSim<T>::configureLaunch2D(unsigned width, unsigned height ) 
+void QSim::configureLaunch2D(unsigned width, unsigned height ) 
 {
     QU::ConfigureLaunch2D(numBlocks, threadsPerBlock, width, height); 
 }
 
-template<typename T>
-void QSim<T>::configureLaunch16() 
+void QSim::configureLaunch16() 
 {
     QU::ConfigureLaunch16(numBlocks, threadsPerBlock); 
 }
 
-template<typename T>
-void QSim<T>::configureLaunch1D(unsigned num, unsigned threads_per_block) 
+void QSim::configureLaunch1D(unsigned num, unsigned threads_per_block) 
 {
     QU::ConfigureLaunch1D(numBlocks, threadsPerBlock, num, threads_per_block); 
 }
 
 
-template<typename T>
-std::string QSim<T>::descLaunch() const 
+std::string QSim::descLaunch() const 
 {
     return QU::DescLaunch(numBlocks, threadsPerBlock); 
 }
@@ -446,7 +427,7 @@ Upping to 1M would be 100x 20M = 2000M  2GB
 
 
 template <typename T>
-extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* seq, unsigned ni, unsigned nj, unsigned id_offset ); 
+extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, T* seq, unsigned ni, unsigned nj, unsigned id_offset ); 
 
 
 /**
@@ -465,7 +446,7 @@ id_offset : acts on the rngstates array
 **/
 
 template <typename T>
-void QSim<T>::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_offset )
+void QSim::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_offset )
 {
     configureLaunch(ni_tranche, 1 ); 
 
@@ -479,8 +460,7 @@ void QSim<T>::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned i
 }
 
 
-template <typename T>
-const char* QSim<T>::PREFIX = "rng_sequence" ; 
+const char* QSim::PREFIX = "rng_sequence" ; 
 
 /**
 QSim::rng_sequence
@@ -496,7 +476,7 @@ Splitting the output files also eases management by avoiding huge files.
 **/
 
 template <typename T>
-void QSim<T>::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  )
+void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  )
 {
     assert( ni >= ni_tranche_size && ni % ni_tranche_size == 0 );   // total size *ni* must be integral multiple of *ni_tranche_size*
     unsigned num_tranche = ni/ni_tranche_size ; 
@@ -548,6 +528,10 @@ void QSim<T>::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned 
 
 
 
+template void QSim::rng_sequence<float>(  const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  ); 
+template void QSim::rng_sequence<double>( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  ); 
+
+
 
 /**
 QSim::scint_wavelength
@@ -559,11 +543,9 @@ the typical values of 10 or 20 which depend on the buffer creation.
 
 **/
 
-template <typename T>
-extern void QSim_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
+extern void QSim_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
 
-template <typename T>
-void QSim<T>::scint_wavelength( T* wavelength, unsigned num_wavelength, unsigned& hd_factor )
+void QSim::scint_wavelength( float* wavelength, unsigned num_wavelength, unsigned& hd_factor )
 {
     bool qsim_disable_hd = SSys::getenvbool("QSIM_DISABLE_HD"); 
     hd_factor = qsim_disable_hd ? 0u : scint->tex->getHDFactor() ; 
@@ -572,11 +554,11 @@ void QSim<T>::scint_wavelength( T* wavelength, unsigned num_wavelength, unsigned
 
     configureLaunch(num_wavelength, 1 ); 
 
-    T* d_wavelength = QU::device_alloc<T>(num_wavelength); 
+    float* d_wavelength = QU::device_alloc<float>(num_wavelength); 
 
-    QSim_scint_wavelength<T>(numBlocks, threadsPerBlock, d_sim, d_wavelength, num_wavelength, hd_factor );  
+    QSim_scint_wavelength(numBlocks, threadsPerBlock, d_sim, d_wavelength, num_wavelength, hd_factor );  
 
-    QU::copy_device_to_host_and_free<T>( wavelength, d_wavelength, num_wavelength ); 
+    QU::copy_device_to_host_and_free<float>( wavelength, d_wavelength, num_wavelength ); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -587,21 +569,19 @@ QSim::cerenkov_wavelength
 
 **/
 
-template <typename T>
-extern void QSim_cerenkov_wavelength_rejection_sampled(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* wavelength, unsigned num_wavelength ); 
+extern void QSim_cerenkov_wavelength_rejection_sampled(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, float* wavelength, unsigned num_wavelength ); 
 
-template <typename T>
-void QSim<T>::cerenkov_wavelength_rejection_sampled( T* wavelength, unsigned num_wavelength )
+void QSim::cerenkov_wavelength_rejection_sampled( float* wavelength, unsigned num_wavelength )
 {
     LOG(LEVEL) << "[ num_wavelength " << num_wavelength ;
  
     configureLaunch(num_wavelength, 1 ); 
 
-    T* d_wavelength = QU::device_alloc<T>(num_wavelength); 
+    float* d_wavelength = QU::device_alloc<float>(num_wavelength); 
 
     QSim_cerenkov_wavelength_rejection_sampled(numBlocks, threadsPerBlock, d_sim, d_wavelength, num_wavelength );  
 
-    QU::copy_device_to_host_and_free<T>( wavelength, d_wavelength, num_wavelength ); 
+    QU::copy_device_to_host_and_free<float>( wavelength, d_wavelength, num_wavelength ); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -609,12 +589,10 @@ void QSim<T>::cerenkov_wavelength_rejection_sampled( T* wavelength, unsigned num
 
 
 
-template <typename T>
-extern void QSim_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, quad4* photon, unsigned num_photon, int print_id );
+extern void QSim_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
 
 
-template <typename T>
-void QSim<T>::cerenkov_photon( quad4* photon, unsigned num_photon, int print_id )
+void QSim::cerenkov_photon( quad4* photon, unsigned num_photon )
 {
     LOG(LEVEL) << "[ num_photon " << num_photon ;
  
@@ -622,7 +600,7 @@ void QSim<T>::cerenkov_photon( quad4* photon, unsigned num_photon, int print_id 
 
     quad4* d_photon = QU::device_alloc<quad4>(num_photon); 
 
-    QSim_cerenkov_photon<T>(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, print_id );  
+    QSim_cerenkov_photon(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon );  
 
     QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 
@@ -632,11 +610,11 @@ void QSim<T>::cerenkov_photon( quad4* photon, unsigned num_photon, int print_id 
 
 
 template <typename T>
-extern void QSim_cerenkov_photon_enprop(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, quad4* photon, unsigned num_photon, int print_id );
+extern void QSim_cerenkov_photon_enprop(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
 
 
-template <typename T>
-void QSim<T>::cerenkov_photon_enprop( quad4* photon, unsigned num_photon, int print_id )
+template<typename T>
+void QSim::cerenkov_photon_enprop( quad4* photon, unsigned num_photon )
 {
     LOG(LEVEL) << "[ num_photon " << num_photon ;
  
@@ -644,7 +622,32 @@ void QSim<T>::cerenkov_photon_enprop( quad4* photon, unsigned num_photon, int pr
 
     quad4* d_photon = QU::device_alloc<quad4>(num_photon); 
 
-    QSim_cerenkov_photon_enprop<T>(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, print_id );  
+    QSim_cerenkov_photon_enprop<T>(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon );  
+
+    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
+
+    LOG(LEVEL) << "]" ; 
+}
+
+template void QSim::cerenkov_photon_enprop<float>(  quad4*, unsigned ); 
+template void QSim::cerenkov_photon_enprop<double>( quad4*, unsigned ); 
+
+
+
+
+
+extern void QSim_cerenkov_photon_expt(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
+
+
+void QSim::cerenkov_photon_expt( quad4* photon, unsigned num_photon )
+{
+    LOG(LEVEL) << "[ num_photon " << num_photon ;
+ 
+    configureLaunch(num_photon, 1 ); 
+
+    quad4* d_photon = QU::device_alloc<quad4>(num_photon); 
+
+    QSim_cerenkov_photon_expt(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon );  
 
     QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
 
@@ -655,33 +658,7 @@ void QSim<T>::cerenkov_photon_enprop( quad4* photon, unsigned num_photon, int pr
 
 
 
-
-template <typename T>
-extern void QSim_cerenkov_photon_expt(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, quad4* photon, unsigned num_photon, int print_id );
-
-
-template <typename T>
-void QSim<T>::cerenkov_photon_expt( quad4* photon, unsigned num_photon, int print_id )
-{
-    LOG(LEVEL) << "[ num_photon " << num_photon ;
- 
-    configureLaunch(num_photon, 1 ); 
-
-    quad4* d_photon = QU::device_alloc<quad4>(num_photon); 
-
-    QSim_cerenkov_photon_expt<T>(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, print_id );  
-
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
-
-    LOG(LEVEL) << "]" ; 
-}
-
-
-
-
-
-template <typename T>
-void QSim<T>::dump_wavelength( T* wavelength, unsigned num_wavelength, unsigned edgeitems )
+void QSim::dump_wavelength( float* wavelength, unsigned num_wavelength, unsigned edgeitems )
 {
     LOG(LEVEL); 
     for(unsigned i=0 ; i < num_wavelength ; i++)
@@ -698,12 +675,10 @@ void QSim<T>::dump_wavelength( T* wavelength, unsigned num_wavelength, unsigned 
 }
 
 
-template <typename T>
-extern void QSim_scint_photon( dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, quad4* photon , unsigned num_photon ); 
+extern void QSim_scint_photon( dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon , unsigned num_photon ); 
 
 
-template <typename T>
-void QSim<T>::scint_photon( quad4* photon, unsigned num_photon )
+void QSim::scint_photon( quad4* photon, unsigned num_photon )
 {
     LOG(LEVEL) << "[" ; 
 
@@ -721,8 +696,7 @@ void QSim<T>::scint_photon( quad4* photon, unsigned num_photon )
 
 
 
-template <typename T>
-extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qevent* evt )  ; 
+extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qevent* evt )  ; 
  
 /**
 QSim::generate_photon
@@ -731,8 +705,7 @@ QSim::generate_photon
 **/
 
 
-template <typename T>
-void QSim<T>::generate_photon(QEvent* evt)
+void QSim::generate_photon(QEvent* evt)
 {
     LOG(LEVEL) << "[" ; 
 
@@ -766,11 +739,9 @@ void QSim<T>::generate_photon(QEvent* evt)
 
 
 
-template <typename T>
-extern void QSim_fill_state_0(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad6* state, unsigned num_state, qdebug* dbg ); 
+extern void QSim_fill_state_0(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad6* state, unsigned num_state, qdebug* dbg ); 
 
-template <typename T>
-void QSim<T>::fill_state_0(quad6* state, unsigned num_state)
+void QSim::fill_state_0(quad6* state, unsigned num_state)
 {
     assert( d_sim ); 
     assert( d_dbg ); 
@@ -793,11 +764,9 @@ void QSim<T>::fill_state_0(quad6* state, unsigned num_state)
 }
 
 
-template <typename T>
-extern void QSim_fill_state_1(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, qstate* state, unsigned num_state, qdebug* dbg ); 
+extern void QSim_fill_state_1(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qstate* state, unsigned num_state, qdebug* dbg ); 
 
-template <typename T>
-void QSim<T>::fill_state_1(qstate* state, unsigned num_state)
+void QSim::fill_state_1(qstate* state, unsigned num_state)
 {
     assert( d_sim ); 
     assert( d_dbg ); 
@@ -833,13 +802,11 @@ This function is implemented in QSim.cu and it used by *quad_launch_generate*
 
 **/
 
-template <typename T>
-extern void QSim_quad_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad* q, unsigned num_quad, qdebug* dbg, unsigned type  );
+extern void QSim_quad_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad* q, unsigned num_quad, qdebug* dbg, unsigned type  );
 
 
 
-template <typename T>
-void QSim<T>::quad_launch_generate(quad* q, unsigned num_quad, unsigned type )
+void QSim::quad_launch_generate(quad* q, unsigned num_quad, unsigned type )
 {
     assert( d_sim ); 
     assert( d_dbg ); 
@@ -864,8 +831,7 @@ This function is implemented in QSim.cu and it used by *photon_launch_generate* 
 
 **/
 
-template <typename T>
-extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned type  );
+extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned type  );
 
 
 /**
@@ -877,8 +843,7 @@ then downloads the generated photons into the host array. Contrast with *photon_
 
 **/
 
-template <typename T>
-void QSim<T>::photon_launch_generate(sphoton* photon, unsigned num_photon, unsigned type )
+void QSim::photon_launch_generate(sphoton* photon, unsigned num_photon, unsigned type )
 {
     assert( d_sim ); 
     assert( d_dbg ); 
@@ -901,8 +866,7 @@ This uploads the photon array provided, mutates it and then downloads the change
 
 **/
 
-template <typename T>
-void QSim<T>::photon_launch_mutate(sphoton* photon, unsigned num_photon, unsigned type )
+void QSim::photon_launch_mutate(sphoton* photon, unsigned num_photon, unsigned type )
 {
     assert( d_sim ); 
     assert( d_dbg ); 
@@ -919,8 +883,7 @@ void QSim<T>::photon_launch_mutate(sphoton* photon, unsigned num_photon, unsigne
  
  
 
-template <typename T>
-extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad2* prd );  
+extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad2* prd );  
 
 
 /**
@@ -936,8 +899,7 @@ using common QEvent functionality
 
 **/
 
-template <typename T>
-void QSim<T>::mock_propagate( NP* p, const NP* prd, unsigned type )
+void QSim::mock_propagate( NP* p, const NP* prd, unsigned type )
 {
     int num_p = p->shape[0] ; 
 
@@ -969,11 +931,9 @@ void QSim<T>::mock_propagate( NP* p, const NP* prd, unsigned type )
 
 
 
-template <typename T>
-extern void QSim_boundary_lookup_all(    dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, quad* lookup  , unsigned width, unsigned height ); 
+extern void QSim_boundary_lookup_all(    dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad* lookup, unsigned width, unsigned height ); 
 
-template <typename T>
-void QSim<T>::boundary_lookup_all(quad* lookup, unsigned width, unsigned height )
+void QSim::boundary_lookup_all(quad* lookup, unsigned width, unsigned height )
 {
     LOG(LEVEL) << "[" ; 
     assert( bnd ); 
@@ -1000,12 +960,10 @@ void QSim<T>::boundary_lookup_all(quad* lookup, unsigned width, unsigned height 
 
 }
 
-template <typename T>
-extern void QSim_boundary_lookup_line(    dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, quad* lookup, T* domain, unsigned num_lookup, unsigned line, unsigned k ); 
+extern void QSim_boundary_lookup_line(    dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k ); 
 
 
-template <typename T>
-void QSim<T>::boundary_lookup_line( quad* lookup, T* domain, unsigned num_lookup, unsigned line, unsigned k ) 
+void QSim::boundary_lookup_line( quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k ) 
 {
     LOG(LEVEL) 
         << "[" 
@@ -1016,17 +974,17 @@ void QSim<T>::boundary_lookup_line( quad* lookup, T* domain, unsigned num_lookup
 
     configureLaunch(num_lookup, 1  ); 
 
-    T* d_domain = QU::device_alloc<T>(num_lookup) ; 
+    float* d_domain = QU::device_alloc<float>(num_lookup) ; 
 
-    QU::copy_host_to_device<T>( d_domain, domain, num_lookup ); 
+    QU::copy_host_to_device<float>( d_domain, domain, num_lookup ); 
 
     quad* d_lookup = QU::device_alloc<quad>(num_lookup) ; 
 
-    QSim_boundary_lookup_line<T>(numBlocks, threadsPerBlock, d_sim, d_lookup, d_domain, num_lookup, line, k );  
+    QSim_boundary_lookup_line(numBlocks, threadsPerBlock, d_sim, d_lookup, d_domain, num_lookup, line, k );  
 
     QU::copy_device_to_host_and_free<quad>( lookup, d_lookup, num_lookup ); 
 
-    QU::device_free<T>( d_domain ); 
+    QU::device_free<float>( d_domain ); 
 
 
     LOG(LEVEL) << "]" ; 
@@ -1048,10 +1006,10 @@ below *prop_lookup_onebyone*
 
 
 template <typename T>
-extern void QSim_prop_lookup( dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* lookup, const T* domain, unsigned domain_width, unsigned* pids, unsigned num_pids ); 
+extern void QSim_prop_lookup( dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, T* lookup, const T* domain, unsigned domain_width, unsigned* pids, unsigned num_pids ); 
 
 template <typename T>
-void QSim<T>::prop_lookup( T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) 
+void QSim::prop_lookup( T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) 
 {
     unsigned num_pids = pids.size() ; 
     unsigned num_lookup = num_pids*domain_width ; 
@@ -1091,7 +1049,7 @@ template <typename T>
 extern void QSim_prop_lookup_one(
     dim3 numBlocks, 
     dim3 threadsPerBlock, 
-    qsim<T>* sim, 
+    qsim* sim, 
     T* lookup, 
     const T* domain, 
     unsigned domain_width, 
@@ -1101,7 +1059,7 @@ extern void QSim_prop_lookup_one(
 );
 
 template <typename T>
-void QSim<T>::prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) 
+void QSim::prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) 
 {
     unsigned num_pids = pids.size() ; 
     unsigned num_lookup = num_pids*domain_width ; 
@@ -1133,11 +1091,18 @@ void QSim<T>::prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_
     LOG(LEVEL) << "]" ; 
 }
 
-template <typename T>
-extern void QSim_multifilm_lookup_all(    dim3 numBlocks, dim3 threadsPerBlock, qsim<T>* sim, quad2* sample, quad2* result,  unsigned width, unsigned height ); 
 
-template <typename T>
-void QSim<T>::multifilm_lookup_all( quad2 * sample , quad2 * result ,  unsigned width, unsigned height )
+template void QSim::prop_lookup_onebyone( float*, const float* ,   unsigned, const std::vector<unsigned>& ); 
+template void QSim::prop_lookup_onebyone( double*, const double* , unsigned, const std::vector<unsigned>& ); 
+
+
+
+
+
+
+extern void QSim_multifilm_lookup_all(    dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad2* sample, quad2* result,  unsigned width, unsigned height ); 
+
+void QSim::multifilm_lookup_all( quad2 * sample , quad2 * result ,  unsigned width, unsigned height )
 {
     LOG(LEVEL) << "[" ; 
     unsigned num_lookup = width*height ; 
@@ -1173,24 +1138,20 @@ void QSim<T>::multifilm_lookup_all( quad2 * sample , quad2 * result ,  unsigned 
 
 
 
-template <typename T>
-unsigned QSim<T>::getBoundaryTexWidth() const 
+unsigned QSim::getBoundaryTexWidth() const 
 {
     return bnd->tex->width ; 
 }
-template <typename T>
-unsigned QSim<T>::getBoundaryTexHeight() const 
+unsigned QSim::getBoundaryTexHeight() const 
 {
     return bnd->tex->height ; 
 }
-template <typename T>
-const NP* QSim<T>::getBoundaryTexSrc() const
+const NP* QSim::getBoundaryTexSrc() const
 {
     return bnd->src ; 
 }
 
-template <typename T>
-void QSim<T>::dump_photon( quad4* photon, unsigned num_photon, const char* opt_, unsigned edgeitems )
+void QSim::dump_photon( quad4* photon, unsigned num_photon, const char* opt_, unsigned edgeitems )
 {
     LOG(LEVEL); 
 
@@ -1290,6 +1251,4 @@ void QSim<T>::dump_photon( quad4* photon, unsigned num_photon, const char* opt_,
     }
 }
 
-template struct QSim<float> ; 
-template struct QSim<double> ;
 

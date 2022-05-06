@@ -15,13 +15,13 @@
 template <typename T>
 struct scurand
 {
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND)
    static SCURAND_METHOD T uniform( curandStateXORWOW* rng );  
 #endif
 };
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND)
 
 template<> inline float scurand<float>::uniform( curandStateXORWOW* rng ) 
 { 

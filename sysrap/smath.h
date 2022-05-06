@@ -10,6 +10,7 @@
 
 struct smath
 {
+    static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
     SMATH_METHOD static void rotateUz(float3& d, const float3& u ); 
 }; 
 

@@ -75,7 +75,6 @@ std::string MakeName(const char* prefix, unsigned num, const char* ext)
 }
 
 
-template <typename T>
 struct QSimTest
 {
     static const char* FOLD ; 
@@ -84,7 +83,7 @@ struct QSimTest
     static void  PreInit(unsigned type); 
     static unsigned Num(int argc, char** argv); 
 
-    QSim<T> qs ; 
+    QSim qs ; 
     unsigned type ;  // QSimLaunch type 
     unsigned num ; 
     const char* dir ; 
@@ -95,7 +94,9 @@ struct QSimTest
     void rng_sequence(unsigned ni, int ni_tranche_size); 
 
     void boundary_lookup_all();
-    void boundary_lookup_line(const char* material, T x0, T x1, unsigned nx ); 
+    void boundary_lookup_line(const char* material, float x0, float x1, unsigned nx ); 
+
+    template<typename T>
     void prop_lookup( int iprop, T x0, T x1, unsigned nx ); 
    
     void multifilm_lookup_all();
@@ -103,9 +104,9 @@ struct QSimTest
     void wavelength(char mode, unsigned num_wavelength) ; 
 
     void scint_photon(unsigned num_photon); 
-    void cerenkov_photon(unsigned num_photon, int print_id); 
-    void cerenkov_photon_enprop(unsigned num_photon, int print_id); 
-    void cerenkov_photon_expt(  unsigned num_photon, int print_id); 
+    void cerenkov_photon(       unsigned num_photon ); 
+    void cerenkov_photon_enprop(unsigned num_photon ); 
+    void cerenkov_photon_expt(  unsigned num_photon ); 
 
     void generate_photon(); 
     void getStateNames(std::vector<std::string>& names, unsigned num_state) const ; 
@@ -141,11 +142,9 @@ struct QSimTest
 
 }; 
 
-template <typename T>
-const char* QSimTest<T>::FOLD = SPath::Resolve("$TMP/QSimTest", DIRPATH) ;  // 2:dirpath create 
+const char* QSimTest::FOLD = SPath::Resolve("$TMP/QSimTest", DIRPATH) ;  // 2:dirpath create 
 
-template <typename T>
-QSimTest<T>::QSimTest(unsigned type_, unsigned num_)
+QSimTest::QSimTest(unsigned type_, unsigned num_)
     :
     type(type_),
     num(num_),
@@ -163,14 +162,13 @@ to generate the 256M randoms.
 
 **/
 
-template <typename T>
-void QSimTest<T>::rng_sequence(unsigned ni, int ni_tranche_size_)
+void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
 {
     unsigned nj = 16 ; 
     unsigned nk = 16 ; 
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
 
-    qs.rng_sequence(FOLD, ni, nj, nk, ni_tranche_size ); 
+    qs.rng_sequence<float>(FOLD, ni, nj, nk, ni_tranche_size ); 
 }
 
 
@@ -182,8 +180,7 @@ Does lookups at every texel of the 2d float4 boundary texture
 
 **/
 
-template <typename T>
-void QSimTest<T>::boundary_lookup_all()
+void QSimTest::boundary_lookup_all()
 {
     LOG(info); 
     unsigned width = qs.getBoundaryTexWidth(); 
@@ -209,8 +206,7 @@ Actually no, if just narrow to float/quad at output
 
 
 **/
-template <typename T>
-void QSimTest<T>::boundary_lookup_line(const char* material, T x0 , T x1, unsigned nx )
+void QSimTest::boundary_lookup_line(const char* material, float x0 , float x1, unsigned nx )
 {
     LOG(info); 
 
@@ -225,8 +221,8 @@ void QSimTest<T>::boundary_lookup_line(const char* material, T x0 , T x1, unsign
     unsigned k = 0 ;    // 0 or 1 picking the property float4 group to collect 
 
 
-    NP* x = NP::Linspace<T>(x0,x1,nx); 
-    T* xx = x->values<T>(); 
+    NP* x = NP::Linspace<float>(x0,x1,nx); 
+    float* xx = x->values<float>(); 
 
     std::vector<quad> lookup(nx) ; 
     qs.boundary_lookup_line( lookup.data(), xx, nx, line, k ); 
@@ -236,7 +232,7 @@ void QSimTest<T>::boundary_lookup_line(const char* material, T x0 , T x1, unsign
 }
 
 template<typename T>
-void QSimTest<T>::prop_lookup( int iprop, T x0, T x1, unsigned nx )
+void QSimTest::prop_lookup( int iprop, T x0, T x1, unsigned nx )
 {
     unsigned tot_prop = qs.prop->ni ; 
     const NP* pp = qs.prop->a ; 
@@ -274,8 +270,11 @@ void QSimTest<T>::prop_lookup( int iprop, T x0, T x1, unsigned nx )
     yy->save(FOLD, reldir, "prop_lookup_yy.npy" ); 
 }
 
-template <typename T>
-void QSimTest<T>::multifilm_lookup_all(){
+
+
+
+
+void QSimTest::multifilm_lookup_all(){
 
     /*
      sample.npy : num * 8 array 
@@ -343,12 +342,11 @@ void QSimTest<T>::multifilm_lookup_all(){
 
 
 
-template <typename T>
-void QSimTest<T>::wavelength(char mode, unsigned num_wavelength )
+void QSimTest::wavelength(char mode, unsigned num_wavelength )
 {
     assert( mode == 'S' || mode == 'C' ) ;
 
-    std::vector<T> w(num_wavelength, 0.f) ; 
+    std::vector<float> w(num_wavelength, 0.f) ; 
 
     std::stringstream ss ; 
     ss << "wavelength" ; ; 
@@ -377,8 +375,7 @@ void QSimTest<T>::wavelength(char mode, unsigned num_wavelength )
     NP::Write( FOLD, name ,  w ); 
 }
 
-template <typename T>
-void QSimTest<T>::scint_photon(unsigned num_photon)
+void QSimTest::scint_photon(unsigned num_photon)
 {
     std::string name = MakeName("photon_", num_photon, ".npy" ); 
     LOG(info) << name ; 
@@ -390,37 +387,30 @@ void QSimTest<T>::scint_photon(unsigned num_photon)
     NP::Write( FOLD, name.c_str(),  (float*)p.data(), p.size(), 4, 4  ); 
 }
 
-// TODO: elimiate the duplication between these
 
-template <typename T>
-void QSimTest<T>::cerenkov_photon(unsigned num_photon, int print_id)
+void QSimTest::cerenkov_photon(unsigned num_photon)
 {
     std::string name = MakeName("cerenkov_photon_", num_photon, ".npy" ); 
-    LOG(info) << name << " print_id " << print_id ; 
     std::vector<quad4> p(num_photon) ; 
-    qs.cerenkov_photon(   p.data(), p.size(), print_id ); // alloc on device, generate and copy back into the vector
+    qs.cerenkov_photon(   p.data(), p.size() ); // alloc on device, generate and copy back into the vector
     qs.dump_photon(       p.data(), p.size() ); 
     NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
 }
 
-template <typename T>
-void QSimTest<T>::cerenkov_photon_enprop(unsigned num_photon, int print_id)
+void QSimTest::cerenkov_photon_enprop(unsigned num_photon)
 {
     std::string name = MakeName("cerenkov_photon_enprop_", num_photon, ".npy" ); 
-    LOG(info) << name << " print_id " << print_id ; 
     std::vector<quad4> p(num_photon) ; 
-    qs.cerenkov_photon_enprop(   p.data(), p.size(), print_id ); 
-    qs.dump_photon(              p.data(), p.size() ); 
+    qs.cerenkov_photon_enprop<float>(   p.data(), p.size() ); 
+    qs.dump_photon(                     p.data(), p.size() ); 
     NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
 }
 
-template <typename T>
-void QSimTest<T>::cerenkov_photon_expt(unsigned num_photon, int print_id)
+void QSimTest::cerenkov_photon_expt(unsigned num_photon )
 {
     std::string name = MakeName("cerenkov_photon_expt_", num_photon, ".npy" ); 
-    LOG(info) << name << " print_id " << print_id ; 
     std::vector<quad4> p(num_photon) ; 
-    qs.cerenkov_photon_expt(   p.data(), p.size(), print_id ); 
+    qs.cerenkov_photon_expt(   p.data(), p.size() ); 
     qs.dump_photon(            p.data(), p.size() ); 
     NP::Write( FOLD, name.c_str() ,  (float*)p.data(), p.size(), 4, 4  ); 
 }
@@ -430,8 +420,7 @@ void QSimTest<T>::cerenkov_photon_expt(unsigned num_photon, int print_id)
 
 
 
-template <typename T>
-void QSimTest<T>::generate_photon()
+void QSimTest::generate_photon()
 {
     const char* gs_config = SSys::getenvvar("GS_CONFIG", "torch" ); 
 
@@ -460,8 +449,7 @@ all states at a particular wavelength
 
 **/
 
-template <typename T>
-void QSimTest<T>::fill_state(unsigned version)
+void QSimTest::fill_state(unsigned version)
 {
     LOG(info) << "[" ; 
 
@@ -483,8 +471,7 @@ void QSimTest<T>::fill_state(unsigned version)
 }
 
 
-template <typename T>
-void QSimTest<T>::save_state( const char* subfold, const float* data, unsigned num_state  )
+void QSimTest::save_state( const char* subfold, const float* data, unsigned num_state  )
 {
     std::vector<std::string> names ; 
     getStateNames(names, num_state); 
@@ -498,8 +485,7 @@ void QSimTest<T>::save_state( const char* subfold, const float* data, unsigned n
 }
 
 
-template <typename T>
-void QSimTest<T>::getStateNames(std::vector<std::string>& names, unsigned num_state) const 
+void QSimTest::getStateNames(std::vector<std::string>& names, unsigned num_state) const 
 {
     unsigned* idx = new unsigned[num_state] ; 
     for(unsigned i=0 ; i < num_state ; i++) idx[i] = i ; 
@@ -509,14 +495,12 @@ void QSimTest<T>::getStateNames(std::vector<std::string>& names, unsigned num_st
 
 
 
-template <typename T>
-const char* QSimTest<T>::Path(const char* subfold, const char* name )
+const char* QSimTest::Path(const char* subfold, const char* name )
 {
     return SPath::Resolve(FOLD, subfold, name, FILEPATH ); 
 }
 
-template <typename T>
-const char* QSimTest<T>::Dir(unsigned type)   // static
+const char* QSimTest::Dir(unsigned type)   // static
 {
     const char* subfold = QSimLaunch::Name(type) ; 
     assert( subfold ); 
@@ -525,31 +509,27 @@ const char* QSimTest<T>::Dir(unsigned type)   // static
 
 
  
-template <typename T>
-void QSimTest<T>::save_array(const char* subfold, const char* name, const float* data, int ni, int nj, int nk, int nl, int nm  )
+void QSimTest::save_array(const char* subfold, const char* name, const float* data, int ni, int nj, int nk, int nl, int nm  )
 {
     const char* path = Path(subfold, name); 
     NP::Write( path, data, ni, nj, nk, nl, nm  ); 
 }
 
-template <typename T>
-NP* QSimTest<T>::load_array(const char* subfold, const char* name )
+NP* QSimTest::load_array(const char* subfold, const char* name )
 {
     const char* path = SPath::Resolve(FOLD, subfold, name, FILEPATH ); 
     NP* a = NP::Load(path); 
     return a ; 
 }
 
-template <typename T>
-void QSimTest<T>::save_photon( const std::vector<quad4>& p, const char* name )
+void QSimTest::save_photon( const std::vector<quad4>& p, const char* name )
 {
     const char* subfold = QSimLaunch::Name(type) ; 
     assert( subfold ); 
     save_array(subfold, name, (float*)p.data(), p.size(), 4, 4  );
 }
 
-template <typename T>
-void QSimTest<T>::save_photon( const std::vector<sphoton>& p, const char* name )
+void QSimTest::save_photon( const std::vector<sphoton>& p, const char* name )
 {
     const char* subfold = QSimLaunch::Name(type) ; 
     assert( subfold ); 
@@ -561,16 +541,14 @@ void QSimTest<T>::save_photon( const std::vector<sphoton>& p, const char* name )
 
 
 
-template <typename T>
-void QSimTest<T>::save_quad(const char* subfold, const char* name, const std::vector<quad>& q )
+void QSimTest::save_quad(const char* subfold, const char* name, const std::vector<quad>& q )
 {
     save_array(subfold, name, (float*)q.data(), q.size(), 4  );
 }
 
 
 
-template <typename T>
-NP* QSimTest<T>::load_photon(const char* subfold, const char* name )
+NP* QSimTest::load_photon(const char* subfold, const char* name )
 {
     NP* a = load_array(subfold, name);
     assert( a ); 
@@ -579,8 +557,7 @@ NP* QSimTest<T>::load_photon(const char* subfold, const char* name )
     return a ; 
 }
 
-template <typename T>
-void QSimTest<T>::save_dbg(const char* subfold)
+void QSimTest::save_dbg(const char* subfold)
 {
     LOG(info) << " subfold " << subfold ; 
     save_dbg_photon( subfold, "p0.npy"); 
@@ -589,16 +566,14 @@ void QSimTest<T>::save_dbg(const char* subfold)
 }
 
 
-template <typename T>
-void QSimTest<T>::save_dbg_photon(const char* subfold, const char* name)
+void QSimTest::save_dbg_photon(const char* subfold, const char* name)
 {
     LOG(info) << " subfold " << subfold ; 
     const sphoton& p = qs.dbg->p ; 
     save_array(subfold, name, p.cdata(), 1, 4, 4 );      
 }
 
-template <typename T>
-void QSimTest<T>::save_dbg_state(const char* subfold, const char* name)
+void QSimTest::save_dbg_state(const char* subfold, const char* name)
 {
     LOG(info) << " subfold " << subfold ; 
     const char* path = Path(subfold, name); 
@@ -607,8 +582,7 @@ void QSimTest<T>::save_dbg_state(const char* subfold, const char* name)
 }
 
 
-template <typename T>
-void QSimTest<T>::save_dbg_prd(const char* subfold, const char* name)
+void QSimTest::save_dbg_prd(const char* subfold, const char* name)
 {
     LOG(info) << " subfold " << subfold ; 
     const quad2& qs_prd = qs.dbg->prd ; 
@@ -616,8 +590,7 @@ void QSimTest<T>::save_dbg_prd(const char* subfold, const char* name)
 }
 
 
-template <typename T>
-void QSimTest<T>::photon_launch_generate()
+void QSimTest::photon_launch_generate()
 {
     assert( QSimLaunch::IsMutate(type)==false ); 
     const char* subfold = QSimLaunch::Name(type) ; 
@@ -640,8 +613,7 @@ NB QSimTest::PreInit does MOCK_PROPAGATE specific SEventConfig setup of event ma
 **/
 
 
-template <typename T>
-void QSimTest<T>::mock_propagate()
+void QSimTest::mock_propagate()
 {
     assert( QSimLaunch::IsMutate(type)==true ); 
     LOG(info) << "[" ; 
@@ -668,8 +640,7 @@ void QSimTest<T>::mock_propagate()
 
 
 
-template <typename T>
-void QSimTest<T>::quad_launch_generate()
+void QSimTest::quad_launch_generate()
 {
     assert( QSimLaunch::IsMutate(type)==false ); 
     const char* subfold = QSimLaunch::Name(type) ; 
@@ -689,8 +660,7 @@ How should/could this use QEvent/qevent ?
 
 **/
 
-template <typename T>
-void QSimTest<T>::photon_launch_mutate()
+void QSimTest::photon_launch_mutate()
 {
     assert( QSimLaunch::IsMutate(type)==true ); 
 
@@ -724,8 +694,7 @@ must be done prior to QEvent::init which happens when QSim is instanciated.
 
 **/
 
-template<typename T>
-void QSimTest<T>::PreInit(unsigned type )  // static
+void QSimTest::PreInit(unsigned type )  // static
 {
     LOG(info) << "[ " <<  QSimLaunch::Name(type) ; 
     if( type == MOCK_PROPAGATE )
@@ -749,8 +718,7 @@ void QSimTest<T>::PreInit(unsigned type )  // static
 }
 
 
-template<typename T>
-unsigned QSimTest<T>::Num(int argc, char** argv)
+unsigned QSimTest::Num(int argc, char** argv)
 {
     unsigned M1   = 1000000u ; // 1 million 
     unsigned num_default = SSys::getenvunsigned("NUM", M1 )  ;   
@@ -758,8 +726,7 @@ unsigned QSimTest<T>::Num(int argc, char** argv)
     return num ; 
 }
 
-template<typename T>
-void QSimTest<T>::main()
+void QSimTest::main()
 {
     unsigned K100 =  100000u ; // default 100k usable with any GPU 
     int ni_tranche_size = SSys::getenvint("NI_TRANCHE_SIZE", K100 ); 
@@ -781,9 +748,9 @@ void QSimTest<T>::main()
         case WAVELENGTH_S  :                wavelength('S', num)                       ; break ; 
         case WAVELENGTH_C  :                wavelength('C', num)                       ; break ; 
         case SCINT_PHOTON_P:                scint_photon(num);                         ; break ; 
-        case CERENKOV_PHOTON_K:             cerenkov_photon(num, print_id);            ; break ; 
-        case CERENKOV_PHOTON_ENPROP_E:      cerenkov_photon_enprop(num, print_id);     ; break ; 
-        case CERENKOV_PHOTON_EXPT_X :       cerenkov_photon_expt(  num, print_id);     ; break ; 
+        case CERENKOV_PHOTON_K:             cerenkov_photon(       num );              ; break ; 
+        case CERENKOV_PHOTON_ENPROP_E:      cerenkov_photon_enprop(num );              ; break ; 
+        case CERENKOV_PHOTON_EXPT_X :       cerenkov_photon_expt(  num );              ; break ; 
 
         case GENERATE_PHOTON_G:             
         case GENTORCH:
@@ -868,26 +835,16 @@ int main(int argc, char** argv)
          
         NP* multifilm_lut = NP::Load("/tmp/debug_multi_film_table/","all_table.npy");
         assert(multifilm_lut);
-        QSim<float>::UploadMultiFilmLUT(multifilm_lut);
+        QSim::UploadMultiFilmLUT(multifilm_lut);
+    } 
 
-      } //enable multifilm : True
+    QSim::UploadComponents(icdf, bnd, optical, rindexpath ); 
+    QSimTest::PreInit(type)  ; 
+    unsigned num = QSimTest::Num(argc, argv); 
+    QSimTest qst(type, num)  ; 
+    qst.main(); 
 
-    if( FD == 'F')
-    { 
-        QSim<float>::UploadComponents(icdf, bnd, optical, rindexpath ); 
-        QSimTest<float>::PreInit(type)  ; 
-        unsigned num = QSimTest<float>::Num(argc, argv); 
-        QSimTest<float> qst(type, num)  ; 
-        qst.main(); 
-    }
-    else if( FD == 'D' )
-    {
-        QSim<double>::UploadComponents(icdf, bnd, optical, rindexpath ); 
-        QSimTest<double>::PreInit(type)  ; 
-        unsigned num = QSimTest<double>::Num(argc, argv); 
-        QSimTest<double> qst(type, num) ; 
-        qst.main(); 
-    }
+
     cudaDeviceSynchronize();
     return 0 ; 
 }

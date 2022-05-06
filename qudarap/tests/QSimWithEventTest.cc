@@ -40,8 +40,8 @@ int main(int argc, char** argv)
         return 1 ; 
     }
 
-    QSim<float>::UploadComponents(icdf, bnd, optical, rindexpath ); 
-    QSim<float> qs ; 
+    QSim::UploadComponents(icdf, bnd, optical, rindexpath ); 
+    QSim qs ; 
 
     QEvent event ; 
 

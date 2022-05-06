@@ -14,13 +14,17 @@
 #include "sc4u.h"
 #include "sevent.h"   // enum {XYZ .. 
 #include "sphoton.h"
+
 #include "storch.h"
+//#include "scerenkov.h"
+
 #include "srec.h"
 #include "sseq.h"
 #include "scurand.h"
 
 #include "qevent.h"
 #include "qgs.h"
+
 #include "qprop.h"
 #include "qmultifilmlut.h"
 #include "qbnd.h"
@@ -62,10 +66,10 @@ struct curandStateXORWOW ;
 template <typename T> struct qprop ; 
 
 
-template <typename T>
+
+
 struct qsim
 {
-    static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
 
     qevent*             evt ; 
     curandStateXORWOW*  rngstate ; 
@@ -73,7 +77,6 @@ struct qsim
     cudaTextureObject_t scint_tex ; 
     quad4*              scint_meta ;
 
-    static constexpr T one = T(1.) ;   
 
     // boundary tex is created/configured CPU side in QBnd : so should encapsulate into a qbnd ?
     // bnd and optical are closely related so they must be kept together
@@ -84,7 +87,7 @@ struct qsim
     quad*               optical ;  
 
 
-    qprop<T>*           prop ;  
+    qprop<float>*       prop ;  
     int                 pidx ;   // from PIDX envvar
  
     // MultiFilmLUT  Texture 
@@ -117,16 +120,9 @@ struct qsim
     QSIM_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
     QSIM_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);
 
-    QSIM_METHOD void    cerenkov_fabricate_genstep(GS& g, bool energy_range );
-    QSIM_METHOD float   cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng, const GS& g);
-    QSIM_METHOD float   cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng) ; 
 
-    //not using sphoton as these generate nothing like a real photon : they are for debugging 
-    QSIM_METHOD void    cerenkov_photon(       quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
-    QSIM_METHOD void    cerenkov_photon(       quad4& p, unsigned id, curandStateXORWOW& rng,              int print_id = -1 ) ; 
-    QSIM_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id = -1 ) ; 
-    QSIM_METHOD void    cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng,              int print_id = -1 ) ; 
-    QSIM_METHOD void    cerenkov_photon_expt(  quad4& p, unsigned id, curandStateXORWOW& rng,              int print_id = -1 ); 
+
+
 
     QSIM_METHOD void    generate_photon_carrier(    quad4&   p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD void    generate_photon_simtrace(   quad4&   p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
@@ -173,10 +169,7 @@ struct qsim
 }; 
 
 
-
-
-template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim::generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
     printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n", 
        photon_id, 
@@ -199,8 +192,7 @@ inline QSIM_METHOD void qsim<T>::generate_photon_dummy(quad4& p, curandStateXORW
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
 
-template <typename T>
-inline QSIM_METHOD float3 qsim<T>::uniform_sphere(curandStateXORWOW& rng)
+inline QSIM_METHOD float3 qsim::uniform_sphere(curandStateXORWOW& rng)
 {
     float phi = curand_uniform(&rng)*2.f*M_PIf;
     float cosTheta = 2.f*curand_uniform(&rng) - 1.f ; // -1.f -> 1.f 
@@ -211,8 +203,7 @@ inline QSIM_METHOD float3 qsim<T>::uniform_sphere(curandStateXORWOW& rng)
 #endif
 
 
-template <typename T>
-inline QSIM_METHOD float3 qsim<T>::uniform_sphere(const float u0, const float u1)
+inline QSIM_METHOD float3 qsim::uniform_sphere(const float u0, const float u1)
 {
     float phi = u0*2.f*M_PIf;
     float cosTheta = 2.f*u1 - 1.f ; // -1.f -> 1.f 
@@ -232,8 +223,7 @@ qsim::boundary_lookup ix iy : Low level integer addressing lookup
 
 **/
 
-template <typename T>
-inline QSIM_METHOD float4 qsim<T>::boundary_lookup( unsigned ix, unsigned iy )
+inline QSIM_METHOD float4 qsim::boundary_lookup( unsigned ix, unsigned iy )
 {
     const unsigned& nx = boundary_meta->q0.u.x  ; 
     const unsigned& ny = boundary_meta->q0.u.y  ; 
@@ -283,8 +273,7 @@ QTex::setMetaDomainY::
 
 
 **/
-template <typename T>
-inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, unsigned k )
+inline QSIM_METHOD float4 qsim::boundary_lookup( float nm, unsigned line, unsigned k )
 {
     //printf("//qsim.boundary_lookup nm %10.4f line %d k %d boundary_meta %p  \n", nm, line, k, boundary_meta  ); 
 
@@ -315,10 +304,9 @@ inline QSIM_METHOD float4 qsim<T>::boundary_lookup( float nm, unsigned line, uns
  
  */
 
-template <typename T>
-inline QSIM_METHOD float4 qsim<T>::multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi){
+inline QSIM_METHOD float4 qsim::multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi){
 
-    float4 value = qmultifilm -> multifilm_lookup(pmtType, boundary, nm, aoi);
+    float4 value = qmultifilm->multifilm_lookup(pmtType, boundary, nm, aoi);
     return value;
 }
 
@@ -377,8 +365,7 @@ s.optical.x
 
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx  )
+inline QSIM_METHOD void qsim::fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx  )
 {
     const int line = boundary*_BOUNDARY_NUM_MATSUR ;      // now that are not signing boundary use 0-based
 
@@ -444,8 +431,7 @@ as opposed to local stack float3 : as this keeps changing the dir before
 arriving at the final one
 
 **/
-template <typename T>
-inline  QSIM_METHOD void qsim<T>::lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, unsigned idx )
+inline  QSIM_METHOD void qsim::lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, unsigned idx )
 {
     float ndotv ; 
     int count = 0 ; 
@@ -530,8 +516,7 @@ Checking normalization, it reduces to 1::
 **/
 
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::random_direction_marsaglia(float3* dir,  curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD void qsim::random_direction_marsaglia(float3* dir,  curandStateXORWOW& rng, unsigned idx )
 {
     float u0, u1 ; 
 
@@ -582,12 +567,8 @@ Transverse wave nature means::
       
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::rayleigh_scatter(sphoton& p, curandStateXORWOW& rng )
+inline QSIM_METHOD void qsim::rayleigh_scatter(sphoton& p, curandStateXORWOW& rng )
 {
-    //float3* p_direction = (float3*)&p.q1.f.x ; 
-    //float3* p_polarization = (float3*)&p.q2.f.x ;
-
     float3* p_direction = &p.mom ; 
     float3* p_polarization = &p.pol ;
 
@@ -677,20 +658,13 @@ TODO: whilst in measurement iteration try changing to a single return, not loads
 
 **/
 
-template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
+inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
 {
     const float& absorption_length = s.material1.y ; 
     const float& scattering_length = s.material1.z ; 
     const float& reemission_prob = s.material1.w ; 
     const float& group_velocity = s.m1group2.x ; 
     const float& distance_to_boundary = prd->q0.f.w ; 
-
-    //float3* position = (float3*)&p.q0.f.x ; 
-    //float* time = &p.q0.f.w ;  
-    //float3* direction = (float3*)&p.q1.f.x ; 
-    //float3* polarization = (float3*)&p.q2.f.x ; 
-    //float* wavelength = &p.q2.f.w ; 
 
     float u_scattering = curand_uniform(&rng) ;
     float u_absorption = curand_uniform(&rng) ;
@@ -885,8 +859,7 @@ random aligned matching with examples/Geant/BoundaryStandalone
 
 **/
 
-template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
+inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
 {
     const float& n1 = s.material1.x ;
     const float& n2 = s.material2.x ;   
@@ -1075,8 +1048,7 @@ qsim::propagate_at_surface
 
 **/
 
-template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate_at_surface(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
+inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
 {
     const float& detect = s.surface.x ;
     const float& absorb = s.surface.y ;
@@ -1149,14 +1121,8 @@ qsim::reflect_diffuse cf G4OpBoundaryProcess::DoReflection
 
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::reflect_diffuse( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD void qsim::reflect_diffuse( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
 {
-    //float3* dir = (float3*)&p.q1.f.x ;  
-    //float3* pol = (float3*)&p.q2.f.x ;  
-
-    //if(idx == 0 ) printf("//qsim.reflect_diffuse idx %d dir0 (%10.4f %10.4f %10.4f) pol (%10.4f %10.4f %10.4f) \n", idx, dir->x, dir->y, dir->z, pol->x, pol->y, pol->z  ); 
-
     float3 old_mom = p.mom ; 
 
     const float3* normal = prd->normal()  ;  
@@ -1168,12 +1134,8 @@ inline QSIM_METHOD void qsim<T>::reflect_diffuse( sphoton& p, const quad2* prd, 
     p.pol = -1.f*(p.pol) + 2.f*EdotN*facet_normal ; 
 }
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::reflect_specular( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD void qsim::reflect_specular( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
 {
-    //float3* dir = (float3*)&p.q1.f.x ;  
-    //float3* pol = (float3*)&p.q2.f.x ;  
-
     const float3* normal = prd->normal() ;      
     const float orient = -1.f ;     // equivalent to G4OpBoundaryProcess::PostStepDoIt early flip of theGlobalNormal ?
 
@@ -1218,8 +1180,7 @@ HMM: seqhis/seqmat should not depend on rec collection, and it must be optional
 
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::mock_propagate( sphoton& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx )
 {
     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
 
@@ -1276,12 +1237,8 @@ TODO: missing needs to return BREAK
 
 **/
 
-template <typename T>
-inline QSIM_METHOD int qsim<T>::propagate(const int bounce, sphoton& p, qstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx ) 
+inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, qstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx ) 
 {
-    //float* wavelength = &p.q2.f.w ; 
-    //float3* dir = (float3*)&p.q1.f.x ;    
-
     const unsigned boundary = prd->boundary() ; 
     const unsigned identity = prd->identity() ; 
     const float3* normal = prd->normal(); 
@@ -1358,8 +1315,7 @@ inwards.
  
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::hemisphere_polarized(sphoton& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng)
 {
     const float3* normal = prd->normal() ; 
 
@@ -1391,8 +1347,7 @@ inline QSIM_METHOD void qsim<T>::hemisphere_polarized(sphoton& p, unsigned polz,
 
 
 
-template <typename T>
-inline QSIM_METHOD float qsim<T>::scint_wavelength_hd0(curandStateXORWOW& rng) 
+inline QSIM_METHOD float qsim::scint_wavelength_hd0(curandStateXORWOW& rng) 
 {
     constexpr float y0 = 0.5f/3.f ; 
     float u0 = curand_uniform(&rng); 
@@ -1411,8 +1366,7 @@ icdf texture can share some of teh implementation
 
 **/
 
-template <typename T>
-inline QSIM_METHOD float qsim<T>::scint_wavelength_hd10(curandStateXORWOW& rng) 
+inline QSIM_METHOD float qsim::scint_wavelength_hd10(curandStateXORWOW& rng) 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
@@ -1438,8 +1392,7 @@ inline QSIM_METHOD float qsim<T>::scint_wavelength_hd10(curandStateXORWOW& rng)
 
 
 
-template <typename T>
-inline QSIM_METHOD float qsim<T>::scint_wavelength_hd20(curandStateXORWOW& rng) 
+inline QSIM_METHOD float qsim::scint_wavelength_hd20(curandStateXORWOW& rng) 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
@@ -1463,418 +1416,6 @@ inline QSIM_METHOD float qsim<T>::scint_wavelength_hd20(curandStateXORWOW& rng)
     return wl ; 
 }
 
-/**
-qsim::cerenkov_wavelength_rejection_sampled
----------------------------------------------
-
-wavelength between Wmin and Wmax is uniform-reciprocal-sampled 
-to mimic uniform energy range sampling without taking reciprocals
-twice
-
-g4-cls G4Cerenkov::
-
-    251   G4double Pmin = Rindex->GetMinLowEdgeEnergy();
-    252   G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
-    253   G4double dp = Pmax - Pmin;
-    254 
-    255   G4double nMax = Rindex->GetMaxValue();
-    256 
-    257   G4double BetaInverse = 1./beta;
-    258 
-    259   G4double maxCos = BetaInverse / nMax;
-    260   G4double maxSin2 = (1.0 - maxCos) * (1.0 + maxCos);
-    261 
-    ...
-    270   for (G4int i = 0; i < fNumPhotons; i++) {
-    271   
-    272       // Determine photon energy
-    273   
-    274       G4double rand;
-    275       G4double sampledEnergy, sampledRI;
-    276       G4double cosTheta, sin2Theta;
-    277 
-    278       // sample an energy
-    279 
-    280       do {
-    281          rand = G4UniformRand();
-    282          sampledEnergy = Pmin + rand * dp;                // linear energy sample in Pmin -> Pmax
-    283          sampledRI = Rindex->Value(sampledEnergy);
-    284          cosTheta = BetaInverse / sampledRI;              // what cone angle that energy sample corresponds to 
-    285 
-    286          sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);   
-    287          rand = G4UniformRand();
-    288 
-    289         // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
-    290       } while (rand*maxSin2 > sin2Theta);                // constrain   
-    291 
-
-::
-
-                        
-                        
-                  \    B    /                        
-              \    .   |   .    /                            AC     ct / n          1         i       BetaInverse 
-          \    C       |       C    /             cos th =  ---- =  --------   =  ------ =   ---  =  -------------
-      \    .    \      |      /    .     /                   AB       bct           b n       n        sampledRI
-       .         \    bct    /          .
-                  \    |    /                                  BetaInverse
-                   \   |   /  ct                  maxCos  =  ----------------- 
-                    \  |th/  ----                                nMax                                                
-                     \ | /    n
-                      \|/
-                       A
-
-    Particle travels AB, light travels AC,  ACB is right angle 
-
-
-     Only get Cerenkov radiation when   
-
-            cos th <= 1 , 
-
-            beta >= beta_min = 1/n        BetaInverse <= BetaInverse_max = n 
-
-
-     At the small beta threshold AB = AC,   beta = beta_min = 1/n     eg for n = 1.333, beta_min = 0.75  
-
-            cos th = 1,  th = 0         light is in direction of the particle 
-
-
-     For ultra relativistic particle beta = 1, there is a maximum angle 
-
-            th = arccos( 1/n )      
-
-    In [5]: np.arccos(0.75)*180./np.pi
-    Out[5]: 41.40962210927086
-
-
-     So the beta range to have Cerenkov is  : 
-
-                1/n       slowest, cos th = 1, th = 0   
-
-          ->    1         ultra-relativistic, maximum cone angle th  arccos(1/n)     
- 
-
-     Corresponds to BetaInverse range 
-
-           BetaInverse =  n            slowest, cos th = 1, th = 0    cone in particle direction 
-    
-           BetaInverse  = 1           
-
-
-
-                
-     The above considers a fixed refractive index.
-     Actually refractive index varies with wavelength resulting in 
-     a range of cone angles for a fixed particle beta.
-
-
-    * https://www2.physics.ox.ac.uk/sites/default/files/2013-08-20/external_pergamon_jelley_pdf_18410.pdf
-    * ~/opticks_refs/external_pergamon_jelley_pdf_18410.pdf
-
-
-**/
-
-template <typename T>
-inline QSIM_METHOD float qsim<T>::cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng, const GS& g) 
-{
-    float u0 ;
-    float u1 ; 
-    float w ; 
-    float wavelength ;
-
-    float sampledRI ;
-    float cosTheta ;
-    float sin2Theta ;
-    float u_maxSin2 ;
-
-    // should be MaterialLine no ?
-    unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
-
-    do {
-        u0 = curand_uniform(&rng) ;
-
-        w = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
-
-        wavelength = g.ck1.Wmin*g.ck1.Wmax/w ;  
-
-        float4 props = boundary_lookup(wavelength, line, 0u); 
-
-        sampledRI = props.x ;
-
-
-        cosTheta = g.ck1.BetaInverse / sampledRI ;
-
-        sin2Theta = fmaxf( 0.0001f, (1.f - cosTheta)*(1.f + cosTheta));  // avoid going -ve 
-
-        u1 = curand_uniform(&rng) ;
-
-        u_maxSin2 = u1*g.ck1.maxSin2 ;
-
-    } while ( u_maxSin2 > sin2Theta);
-
-
-    if( id == 0u )
-    {
-        printf("// qsim::cerenkov_wavelength_rejection_sampled id %d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f \n", id, sampledRI, cosTheta, sin2Theta, wavelength );  
-    }
-
-    return wavelength ; 
-}
-
-/**
-FOR NOW NOT THE USUAL PHOTON : BUT DEBUGGING THE WAVELENGTH SAMPLING 
-**/
-
-
-
-template <typename T>
-inline QSIM_METHOD void qsim<T>::cerenkov_photon(quad4& q, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
-{
-    float u0 ;
-    float u1 ; 
-
-
-    float w_linear ; 
-    float wavelength ;
-
-    float sampledRI ;
-    float cosTheta ;
-    float sin2Theta ;
-    float u_mxs2_s2 ;
-
-    // should be MaterialLine no ?
-    unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
-
-    unsigned loop = 0u ; 
-
-    do {
-
-#ifdef FLIP_RANDOM
-        u0 = 1.f - curand_uniform(&rng) ;
-#else
-        u0 = curand_uniform(&rng) ;
-#endif
-
-        w_linear = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
-
-        wavelength = g.ck1.Wmin*g.ck1.Wmax/w_linear ;  
-
-        float4 props = boundary_lookup( wavelength, line, 0u); 
-
-        sampledRI = props.x ;
-
-        cosTheta = g.ck1.BetaInverse / sampledRI ;
-
-        sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);  
-
-#ifdef FLIP_RANDOM
-        u1 = 1.f - curand_uniform(&rng) ;
-#else
-        u1 = curand_uniform(&rng) ;
-#endif
-
-        u_mxs2_s2 = u1*g.ck1.maxSin2 - sin2Theta ;
-
-        loop += 1 ; 
-
-        if( id == print_id )
-        {
-            printf("//qsim::cerenkov_photon id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
-        }
-
-
-    } while ( u_mxs2_s2 > 0.f );
-
-    float energy = hc_eVnm/wavelength ; 
-
-    q.q0.f.x = energy ; 
-    q.q0.f.y = wavelength ; 
-    q.q0.f.z = sampledRI ; 
-    q.q0.f.w = cosTheta ; 
-
-    q.q1.f.x = sin2Theta ; 
-    q.q1.u.y = 0u ; 
-    q.q1.u.z = 0u ; 
-    q.q1.f.w = g.ck1.BetaInverse ; 
-
-    q.q2.f.x = w_linear ;    // linear sampled wavelenth
-    q.q2.f.y = wavelength ;  // reciprocalized trick : does it really work  
-    q.q2.f.z = u0 ; 
-    q.q2.f.w = u1 ; 
-
-    q.q3.u.x = line ; 
-    q.q3.u.y = loop ; 
-    q.q3.f.z = 0.f ; 
-    q.q3.f.w = 0.f ; 
-} 
-
-
-
-/**
-qsim::cerenkov_photon_enprop
-------------------------------
-
-Variation assuming Wmin, Wmax contain Pmin Pmax and using qprop::interpolate 
-to sample the RINDEX
-
-**/
-
-
-
-
-template <typename T>
-inline QSIM_METHOD void qsim<T>::cerenkov_photon_enprop(quad4& q, unsigned id, curandStateXORWOW& rng, const GS& g, int print_id )
-{
-    T u0 ;
-    T u1 ; 
-    T energy ; 
-    T sampledRI ;
-    T cosTheta ;
-    T sin2Theta ;
-    T u_mxs2_s2 ;
-
-    // should be MaterialLine no ?
-    unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
-
-    unsigned loop = 0u ; 
-
-    do {
-
-        u0 = scurand<T>::uniform(&rng) ;
-
-        energy = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
-
-        sampledRI = prop->interpolate( 0u, energy ); 
-
-        cosTheta = g.ck1.BetaInverse / sampledRI ;
-
-        sin2Theta = (one - cosTheta)*(one + cosTheta);  
-
-        u1 = scurand<T>::uniform(&rng) ;
-
-        u_mxs2_s2 = u1*g.ck1.maxSin2 - sin2Theta ;
-
-        loop += 1 ; 
-
-        if( id == print_id )
-        {
-            printf("//qsim::cerenkov_photon_enprop id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
-        }
-
-
-    } while ( u_mxs2_s2 > 0.f );
-
-
-    float wavelength = hc_eVnm/energy ; 
-
-
-
-    q.q0.f.x = energy ; 
-    q.q0.f.y = wavelength ; 
-    q.q0.f.z = sampledRI ; 
-    q.q0.f.w = cosTheta ; 
-
-    q.q1.f.x = sin2Theta ; 
-    q.q1.u.y = 0u ; 
-    q.q1.u.z = 0u ; 
-    q.q1.f.w = g.ck1.BetaInverse ; 
-
-    q.q2.f.x = 0.f ; 
-    q.q2.f.y = 0.f ; 
-    q.q2.f.z = u0 ; 
-    q.q2.f.w = u1 ; 
-
-    q.q3.u.x = line ; 
-    q.q3.u.y = loop ; 
-    q.q3.f.z = 0.f ; 
-    q.q3.f.w = 0.f ; 
-} 
-
-
-
-
-
-
-
-
-
-/**
-qsim::cerenkov_photon_expt
--------------------------------------
-
-This does the sampling all in double, narrowing to 
-float just for the photon output.
-
-Note that this is not using a genstep.
-
-Which things have most need to be  double to make any difference ?
-
-**/
-
-template <typename T>
-inline QSIM_METHOD void qsim<T>::cerenkov_photon_expt(quad4& q, unsigned id, curandStateXORWOW& rng, int print_id )
-{
-    double BetaInverse = 1.5 ; 
-    double Pmin = 1.55 ; 
-    double Pmax = 15.5 ; 
-    double nMax = 1.793 ; 
-
-    //double maxOneMinusCosTheta = (nMax - BetaInverse) / nMax;   
-
-    double maxCos = BetaInverse / nMax;
-    double maxSin2 = ( 1. - maxCos )*( 1. + maxCos ); 
-    double cosTheta ;
-    double sin2Theta ;
-
-    double reject ;
-    double u0 ;
-    double u1 ; 
-    double energy ; 
-    double sampledRI ;
-
-    //double oneMinusCosTheta ;
-
-    unsigned loop = 0u ; 
-
-    do {
-        u0 = curand_uniform_double(&rng) ;
-        u1 = curand_uniform_double(&rng) ;
-        energy = Pmin + u0*(Pmax - Pmin) ; 
-        sampledRI = prop->interpolate( 0u, energy ); 
-        //oneMinusCosTheta = (sampledRI - BetaInverse) / sampledRI ; 
-        //reject = u1*maxOneMinusCosTheta - oneMinusCosTheta ;
-        loop += 1 ; 
-
-        cosTheta = BetaInverse / sampledRI ;
-        sin2Theta = (1. - cosTheta)*(1. + cosTheta);  
-        reject = u1*maxSin2 - sin2Theta ;
-
-    } while ( reject > 0. );
-
-
-    // narrowing for output 
-    q.q0.f.x = energy ; 
-    q.q0.f.y = hc_eVnm/energy ;
-    q.q0.f.z = sampledRI ; 
-    //p.q0.f.w = 1. - oneMinusCosTheta ; 
-    q.q0.f.w = cosTheta ; 
-
-    q.q1.f.x = sin2Theta ; 
-    q.q1.u.y = 0u ; 
-    q.q1.u.z = 0u ; 
-    q.q1.f.w = BetaInverse ; 
-
-    q.q2.f.x = reject ; 
-    q.q2.f.y = 0.f ; 
-    q.q2.f.z = u0 ; 
-    q.q2.f.w = u1 ; 
-
-    q.q3.f.x = 0.f ; 
-    q.q3.u.y = loop ; 
-    q.q3.f.z = 0.f ; 
-    q.q3.f.w = 0.f ; 
-} 
-
 
 
 /**
@@ -1885,8 +1426,7 @@ An input photon carried within the genstep q2:q5 is repeatedly provided.
 
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+inline QSIM_METHOD void qsim::generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
 {
     p.q0.f = gs.q2.f ; 
     p.q1.f = gs.q3.f ; 
@@ -1913,8 +1453,7 @@ TODO: implement local index by including photon_id offset with the gensteps
 * NB the sevent.h enum order is different to the python one  eg XYZ=0 
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
     C4U gsid ;  
 
@@ -1977,8 +1516,7 @@ Moved non-standard center-extent gensteps to use qsim::generate_photon_simtrace 
 
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
     quad4& q = (quad4&)p ; 
     const int& gencode = gs.q0.i.x ; 
@@ -1987,113 +1525,10 @@ inline QSIM_METHOD void qsim<T>::generate_photon(sphoton& p, curandStateXORWOW& 
     {
         case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(q, rng, gs, photon_id, genstep_id)  ; break ; 
         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
+       // case OpticksGenstep_CERENKOV:        qcerenkov::generate(    p, rng, gs, photon_id, genstep_id ) ; break ; 
         default:                             generate_photon_dummy(  q, rng, gs, photon_id, genstep_id)  ; break ; 
     }
 }
-
-
-
-
-
-/**
-qsim::cerenkov_wavelength with a fabricated genstep for testing
------------------------------------------------------------------
-
-**/
-
-template <typename T>
-inline QSIM_METHOD void qsim<T>::cerenkov_fabricate_genstep(GS& g, bool energy_range )
-{
-    // picks the material line from which to get RINDEX
-    unsigned MaterialLine = boundary_tex_MaterialLine_LS ;  
-    float nMax = 1.793f ; 
-    float BetaInverse = 1.500f ; 
-
-    float maxCos = BetaInverse / nMax;
-    float maxSin2 = (1.f - maxCos) * (1.f + maxCos) ;
-
-    g.st.Id = 0 ; 
-    g.st.ParentId = 0 ; 
-    g.st.MaterialIndex = MaterialLine ; 
-    g.st.NumPhotons = 0 ; 
-
-    g.st.x0.x = 100.f ; 
-    g.st.x0.y = 100.f ; 
-    g.st.x0.z = 100.f ; 
-    g.st.t0 = 20.f ; 
-
-    g.st.DeltaPosition.x = 1000.f ; 
-    g.st.DeltaPosition.y = 1000.f ; 
-    g.st.DeltaPosition.z = 1000.f ; 
-    g.st.step_length = 1000.f ; 
-
-    g.ck1.code = 0 ; 
-    g.ck1.charge = 1.f ; 
-    g.ck1.weight = 1.f ; 
-    g.ck1.preVelocity = 0.f ; 
-
-    float Pmin = 1.55f ; 
-    float Pmax = 15.5f ; 
-
-    g.ck1.BetaInverse = BetaInverse ;      //  g.ck1.BetaInverse/sampledRI  : yields the cone angle cosTheta
-
-    if(energy_range)
-    {
-        g.ck1.Wmin = Pmin ;    
-        g.ck1.Wmax = Pmax ; 
-    }
-    else
-    {
-        g.ck1.Wmin = hc_eVnm/Pmax ;            // close to: 1240./15.5 = 80.               
-        g.ck1.Wmax = hc_eVnm/Pmin ;            // close to: 1240./1.55 = 800.              
-    }
-
-    g.ck1.maxCos = maxCos  ;               //  is this used?          
-
-    g.ck1.maxSin2 = maxSin2 ;              // constrains cone angle rejection sampling   
-    g.ck1.MeanNumberOfPhotons1 = 0.f ; 
-    g.ck1.MeanNumberOfPhotons2 = 0.f ; 
-    g.ck1.postVelocity = 0.f ; 
-
-} 
-
-
-template <typename T>
-inline QSIM_METHOD float qsim<T>::cerenkov_wavelength_rejection_sampled(unsigned id, curandStateXORWOW& rng ) 
-{
-    QG qg ;      
-    qg.zero();  
-    GS& g = qg.g ; 
-    bool energy_range = false ; 
-    cerenkov_fabricate_genstep(g, energy_range); 
-    float wavelength = cerenkov_wavelength_rejection_sampled(id, rng, g);   
-    return wavelength ; 
-}
-
-template <typename T>
-inline QSIM_METHOD void qsim<T>::cerenkov_photon(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
-{
-    QG qg ;      
-    qg.zero();  
-    GS& g = qg.g ; 
-    bool energy_range = false ; 
-    cerenkov_fabricate_genstep(g, energy_range); 
-    cerenkov_photon(p, id, rng, g, print_id); 
-}
-
-template <typename T>
-inline QSIM_METHOD void qsim<T>::cerenkov_photon_enprop(quad4& p, unsigned id, curandStateXORWOW& rng, int print_id ) 
-{
-    QG qg ;      
-    qg.zero();  
-    GS& g = qg.g ; 
-    bool energy_range = true ; 
-    cerenkov_fabricate_genstep(g, energy_range); 
-    cerenkov_photon_enprop(p, id, rng, g, print_id); 
-}
-
-
-
 
 
 
@@ -2111,8 +1546,7 @@ NB no position, time.
 
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::scint_dirpol(quad4& p, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim::scint_dirpol(quad4& p, curandStateXORWOW& rng)
 {
     float u0 = curand_uniform(&rng) ; 
     float u1 = curand_uniform(&rng) ; 
@@ -2159,16 +1593,14 @@ the Geant4 properties directly.  What about geocache ? Can hold/persist with GSc
 
 **/
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim::reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng)
 {
     scint_dirpol(p, rng); 
     float u4 = curand_uniform(&rng) ; 
     p.q0.f.w += -scintillationTime*logf(u4) ;
 }
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::scint_photon(quad4& p, GS& g, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim::scint_photon(quad4& p, GS& g, curandStateXORWOW& rng)
 {
     p.zero(); 
     scint_dirpol(p, rng); 
@@ -2183,8 +1615,7 @@ inline QSIM_METHOD void qsim<T>::scint_photon(quad4& p, GS& g, curandStateXORWOW
 }
 
 
-template <typename T>
-inline QSIM_METHOD void qsim<T>::scint_photon(quad4& p, curandStateXORWOW& rng)
+inline QSIM_METHOD void qsim::scint_photon(quad4& p, curandStateXORWOW& rng)
 {
     QG qg ;      
     qg.zero();  

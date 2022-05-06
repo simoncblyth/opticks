@@ -25,7 +25,8 @@ struct NP ;
 template <typename T> struct QTex ; 
 template <typename T> struct QBuf ; 
 template <typename T> struct QProp ; 
-template <typename T> struct qsim ; 
+
+struct qsim ; 
 
 struct QEvent ; 
 struct QRng ; 
@@ -44,7 +45,6 @@ struct quad2 ;
 struct sphoton ; 
 union  quad ; 
 
-template <typename T>
 struct QUDARAP_API QSim
 {
     static const plog::Severity LEVEL ; 
@@ -61,12 +61,13 @@ struct QUDARAP_API QSim
     const QBnd*      bnd ; 
     const QPrd*      prd ; 
     const QOptical*  optical ; 
-    const QProp<T>*  prop ; 
+
+    const QProp<float>*  prop ; 
     const QMultiFilmLUT * multi_film;// correspond New PMT optical model;
 
     const int         pidx ; 
-    qsim<T>*          sim ;  
-    qsim<T>*          d_sim ;  
+    qsim*             sim ;  
+    qsim*           d_sim ;  
 
     qdebug*           dbg ; 
     qdebug*           d_dbg ; 
@@ -85,7 +86,7 @@ struct QUDARAP_API QSim
     std::string desc_dbg_state() const ; 
     std::string desc_dbg_p0() const ; 
 
-    qsim<T>* getDevicePtr() const ; 
+    qsim* getDevicePtr() const ; 
 
     char getScintTexFilterMode() const ;
     std::string desc() const ; 
@@ -97,19 +98,28 @@ struct QUDARAP_API QSim
     std::string descLaunch() const ; 
 
 
-    void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qsim<T>* d_sim, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
+    template<typename T>
+    void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qsim* d_sim, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
+
+    template<typename T>
     void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset ); 
+
+    template<typename T>
     void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
 
-    void scint_wavelength(                      T* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
-    void cerenkov_wavelength_rejection_sampled( T* wavelength, unsigned num_wavelength ); 
-    void dump_wavelength(                       T* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
+
+
+    void scint_wavelength(                      float* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
+    void cerenkov_wavelength_rejection_sampled( float* wavelength, unsigned num_wavelength ); 
+    void dump_wavelength(                       float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 
     // hmm need to template quad4 ? or narrowing on output ?
     void scint_photon(           quad4* photon, unsigned num_photon ); 
-    void cerenkov_photon(        quad4* photon, unsigned num_photon, int print_id ) ; 
-    void cerenkov_photon_enprop( quad4* photon, unsigned num_photon, int print_id ) ;
-    void cerenkov_photon_expt(   quad4* photon, unsigned num_photon, int print_id ) ;
+    void cerenkov_photon(        quad4* photon, unsigned num_photon ) ; 
+
+    template<typename T> void cerenkov_photon_enprop( quad4* photon, unsigned num_photon ) ;
+
+    void cerenkov_photon_expt(   quad4* photon, unsigned num_photon ) ;
 
     void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 
 
@@ -128,12 +138,20 @@ struct QUDARAP_API QSim
     const NP* getBoundaryTexSrc() const ; 
 
     void boundary_lookup_all(  quad* lookup, unsigned width, unsigned height ) ; 
-    void boundary_lookup_line( quad* lookup, T* domain, unsigned num_lookup, unsigned line, unsigned k ) ; 
+    void boundary_lookup_line( quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k ) ; 
 
+
+    template<typename T>
     void prop_lookup(          T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
+
+    template<typename T>
     void prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
+
+
     
     void multifilm_lookup_all( quad2* sample , quad2* result ,  unsigned width, unsigned height );
+
+
 };
 
 
