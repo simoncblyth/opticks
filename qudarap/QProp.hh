@@ -1,8 +1,8 @@
 #pragma once
 
 /**
-QProp
-=========
+QProp : setup to allow direct (no texture) interpolated property access on device 
+=====================================================================================
 
 See ~/np/tests/NPInterp.py 
 

@@ -37,9 +37,11 @@ qprop<T>* QProp<T>::getDevicePtr() const
 QProp::Load_Mockup
 -------------------
 
-Mockup a real set of multiple properties.
-The source properties are assumed to be provided in double precision 
-(ie direct from Geant4) with energies in MeV which are scaled to eV.
+Mockup a real set of multiple properties, by loading 
+a single property multiple times and applying scalings. 
+
+The source property is assumed to be provided in double precision 
+(ie direct from Geant4 originals) with energies in MeV which are scaled to eV.
 Also the properties are narrowed to float when the template type is float.
 
 **/
@@ -60,11 +62,11 @@ const NP* QProp<T>::Load_Mockup(const char* path_ )  // static
     a->pscale<double>(1e6, 0u);   // energy scale from MeV to eV,   1.55 to 15.5 eV
 
     NP* b = NP::Load(path); 
-    b->pscale<double>(1e6, 0u); 
+    b->pscale<double>(1e6,  0u); 
     b->pscale<double>(1.05, 1u); 
 
     NP* c = NP::Load(path); 
-    c->pscale<double>(1e6, 0u); 
+    c->pscale<double>(1e6,  0u); 
     c->pscale<double>(0.95, 1u); 
 
     std::vector<const NP*> aa = {a, b, c } ; 

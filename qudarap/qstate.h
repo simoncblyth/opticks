@@ -34,7 +34,30 @@ struct qstate
     float4 way1 ;   
 #endif
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    void save(const char* dir) const ; 
+#endif
+
+
 };
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+#include "NP.hh"
+inline void qstate::save(const char* dir) const 
+{
+    NP* st = NP::Make<float>(1, 6, 4 ); 
+    st->read2( (float*)&material1.x  ); 
+    st->save(dir, "s.npy"); 
+    // see QState::Save for a more fussy alternative
+}
+#endif
+
+
+
+
+
 
 
 /**

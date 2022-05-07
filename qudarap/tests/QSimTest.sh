@@ -23,12 +23,13 @@ msg="=== $BASH_SOURCE :"
 #export QBnd=INFO
 
 #test=rng_sequence
-test=boundary_lookup_all
+#test=boundary_lookup_all
+test=boundary_lookup_water
+#test=boundary_lookup_ls
 
 #test=fill_state_0
 #test=fill_state_1
 
-#test=water
 #test=rayleigh_scatter_align
 
 #test=propagate_to_boundary
@@ -118,6 +119,10 @@ if [ "${arg/ana}" != "$arg" ]; then
     export PYVISTA_KILL_DISPLAY=1
 
     case $TEST in
+       boundary_lookup_all)    script=boundary_lookup_all.py ;;
+       boundary_lookup_water)  script=boundary_lookup_line.py ;;
+       boundary_lookup_ls)     script=boundary_lookup_line.py ;;
+
        fill_state_0)           script=fill_state.py ;;
        fill_state_1)           script=fill_state.py ;;
        fill_state_cf)          script=fill_state_cf.py ;;

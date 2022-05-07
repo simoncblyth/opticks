@@ -670,11 +670,9 @@ template void QSim_prop_lookup(dim3, dim3, qsim*,  float*,  float const*, unsign
 
 
 
-
-
-
 /**
-ipid : index of the lookup outputs for that pid, which may differ from index of the pid   
+ipid
+   output index for that pid, which will usually differ from the index of the pid   
 **/
 
 template <typename T>

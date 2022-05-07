@@ -108,18 +108,12 @@ struct QUDARAP_API QSim
     void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
 
 
-
-    void scint_wavelength(                      float* wavelength, unsigned num_wavelength, unsigned& hd_factor ); 
-    void cerenkov_wavelength_rejection_sampled( float* wavelength, unsigned num_wavelength ); 
+    NP* scint_wavelength( unsigned num_wavelength, unsigned& hd_factor ); 
+    NP* cerenkov_wavelength_rejection_sampled( unsigned num_wavelength ); 
     void dump_wavelength(                       float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 
-    // hmm need to template quad4 ? or narrowing on output ?
-    void scint_photon(           quad4* photon, unsigned num_photon ); 
-    void cerenkov_photon(        quad4* photon, unsigned num_photon ) ; 
-
-    template<typename T> void cerenkov_photon_enprop( quad4* photon, unsigned num_photon ) ;
-
-    void cerenkov_photon_expt(   quad4* photon, unsigned num_photon ) ;
+    NP* scint_photon(unsigned num_photon ); 
+    NP* cerenkov_photon(unsigned num_photon, unsigned test ); 
 
     void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 
 
@@ -127,8 +121,10 @@ struct QUDARAP_API QSim
     void fill_state_0(quad6*  state, unsigned num_state); 
     void fill_state_1(qstate* state, unsigned num_state); 
 
-    void quad_launch_generate(quad* q, unsigned num_quad, unsigned type ); 
-    void photon_launch_generate( sphoton* photon, unsigned num_photon, unsigned type ); 
+    NP* quad_launch_generate(unsigned num_quad, unsigned type ); 
+    NP* photon_launch_generate(unsigned num_photon, unsigned type ); 
+
+
     void photon_launch_mutate(   sphoton* photon, unsigned num_photon, unsigned type ); 
 
     void mock_propagate( NP* photon, const NP* prd, unsigned type ); 
@@ -137,8 +133,8 @@ struct QUDARAP_API QSim
     unsigned getBoundaryTexHeight() const ;
     const NP* getBoundaryTexSrc() const ; 
 
-    void boundary_lookup_all(  quad* lookup, unsigned width, unsigned height ) ; 
-    void boundary_lookup_line( quad* lookup, float* domain, unsigned num_lookup, unsigned line, unsigned k ) ; 
+    NP* boundary_lookup_all( unsigned width, unsigned height ) ; 
+    NP* boundary_lookup_line( float* domain, unsigned num_lookup, unsigned line, unsigned k ) ; 
 
 
     template<typename T>

@@ -7,15 +7,16 @@ enum {
    UNKNOWN,
    RNG_SEQUENCE,
    BOUNDARY_LOOKUP_ALL,
+   BOUNDARY_LOOKUP_WATER,
+   BOUNDARY_LOOKUP_LS,
    WAVELENGTH_S,
    WAVELENGTH_C,
-   SCINT_PHOTON_P,
-   CERENKOV_PHOTON_K,
-   CERENKOV_PHOTON_ENPROP_E,
-   CERENKOV_PHOTON_EXPT_X,
+   SCINT_PHOTON,
+   CERENKOV_PHOTON,
+   CERENKOV_PHOTON_ENPROP_FLOAT,
+   CERENKOV_PHOTON_ENPROP_DOUBLE,
+   CERENKOV_PHOTON_EXPT,
    GENERATE_PHOTON_G,
-   BOUNDARY_LOOKUP_LINE_WATER_W,
-   WATER,  
    BOUNDARY_LOOKUP_LINE_LS_L,
    PROP_LOOKUP_Y,
    FILL_STATE_0,
@@ -56,8 +57,17 @@ struct QSimLaunch
 
     static constexpr const char* RNG_SEQUENCE_ = "rng_sequence" ; 
     static constexpr const char* BOUNDARY_LOOKUP_ALL_ = "boundary_lookup_all" ; 
+    static constexpr const char* BOUNDARY_LOOKUP_WATER_ = "boundary_lookup_water" ; 
+    static constexpr const char* BOUNDARY_LOOKUP_LS_ = "boundary_lookup_ls" ; 
 
-    static constexpr const char* WATER_ = "water" ; 
+    static constexpr const char* CERENKOV_PHOTON_ = "cerenkov_photon" ; 
+    static constexpr const char* CERENKOV_PHOTON_ENPROP_FLOAT_ = "cerenkov_photon_enprop_float" ; 
+    static constexpr const char* CERENKOV_PHOTON_ENPROP_DOUBLE_ = "cerenkov_photon_enprop_double" ; 
+    static constexpr const char* CERENKOV_PHOTON_EXPT_ = "cerenkov_photon_expt" ; 
+
+    static constexpr const char* SCINT_PHOTON_ = "scint_photon" ; 
+
+
     static constexpr const char* FILL_STATE_0_ = "fill_state_0" ;
     static constexpr const char* FILL_STATE_1_ = "fill_state_1" ;
     static constexpr const char* RAYLEIGH_SCATTER_ALIGN_ = "rayleigh_scatter_align" ;
@@ -90,17 +100,25 @@ inline unsigned QSimLaunch::Type( const char* name )
    unsigned test = UNKNOWN ;  
    if(strcmp(name,"S") == 0 ) test = WAVELENGTH_S ; 
    if(strcmp(name,"C") == 0 ) test = WAVELENGTH_C ;
-   if(strcmp(name,"P") == 0 ) test = SCINT_PHOTON_P ;
-   if(strcmp(name,"K") == 0 ) test = CERENKOV_PHOTON_K ;
-   if(strcmp(name,"E") == 0 ) test = CERENKOV_PHOTON_ENPROP_E ;
-   if(strcmp(name,"X") == 0 ) test = CERENKOV_PHOTON_EXPT_X ;
+
+   if(strcmp(name,CERENKOV_PHOTON_) == 0 )               test = CERENKOV_PHOTON ;
+   if(strcmp(name,CERENKOV_PHOTON_ENPROP_FLOAT_) == 0 )  test = CERENKOV_PHOTON_ENPROP_FLOAT ;
+   if(strcmp(name,CERENKOV_PHOTON_ENPROP_DOUBLE_) == 0 ) test = CERENKOV_PHOTON_ENPROP_DOUBLE ;
+   if(strcmp(name,CERENKOV_PHOTON_EXPT_) == 0 )          test = CERENKOV_PHOTON_EXPT ;
+
+   if(strcmp(name,SCINT_PHOTON_) == 0 ) test = SCINT_PHOTON ;
+
+
    if(strcmp(name,"G") == 0 ) test = GENERATE_PHOTON_G ;
    if(strcmp(name,"L") == 0 ) test = BOUNDARY_LOOKUP_LINE_LS_L ;
    if(strcmp(name,"Y") == 0 ) test = PROP_LOOKUP_Y ;
 
    if(strcmp(name,RNG_SEQUENCE_) == 0 )          test = RNG_SEQUENCE ; 
    if(strcmp(name,BOUNDARY_LOOKUP_ALL_) == 0 )   test = BOUNDARY_LOOKUP_ALL ; 
-   if(strcmp(name,WATER_) == 0    )              test = BOUNDARY_LOOKUP_LINE_WATER_W ;
+   if(strcmp(name,BOUNDARY_LOOKUP_WATER_) == 0 ) test = BOUNDARY_LOOKUP_WATER ;
+   if(strcmp(name,BOUNDARY_LOOKUP_LS_) == 0 )    test = BOUNDARY_LOOKUP_LS ;
+
+
    if(strcmp(name,FILL_STATE_0_) == 0)           test = FILL_STATE_0 ;
    if(strcmp(name,FILL_STATE_1_) == 0)           test = FILL_STATE_1 ;
    if(strcmp(name,RAYLEIGH_SCATTER_ALIGN_) == 0) test = RAYLEIGH_SCATTER_ALIGN ;
@@ -141,7 +159,17 @@ inline const char* QSimLaunch::Name( unsigned type )
     {
         case RNG_SEQUENCE:           s = RNG_SEQUENCE_           ; break ; 
         case BOUNDARY_LOOKUP_ALL:    s = BOUNDARY_LOOKUP_ALL_    ; break ; 
-        case WATER:                  s = WATER_                  ; break ; 
+        case BOUNDARY_LOOKUP_WATER:  s = BOUNDARY_LOOKUP_WATER_  ; break ; 
+        case BOUNDARY_LOOKUP_LS:     s = BOUNDARY_LOOKUP_LS_     ; break ; 
+
+        case CERENKOV_PHOTON:                s = CERENKOV_PHOTON_                ; break ; 
+        case CERENKOV_PHOTON_ENPROP_FLOAT:   s = CERENKOV_PHOTON_ENPROP_FLOAT_   ; break ; 
+        case CERENKOV_PHOTON_ENPROP_DOUBLE:  s = CERENKOV_PHOTON_ENPROP_DOUBLE_  ; break ; 
+        case CERENKOV_PHOTON_EXPT:           s = CERENKOV_PHOTON_EXPT_           ; break ; 
+
+        case SCINT_PHOTON:                   s = SCINT_PHOTON_           ; break ; 
+
+
         case FILL_STATE_0:           s = FILL_STATE_0_           ; break ; 
         case FILL_STATE_1:           s = FILL_STATE_1_           ; break ; 
         case RAYLEIGH_SCATTER_ALIGN: s = RAYLEIGH_SCATTER_ALIGN_ ; break ;
