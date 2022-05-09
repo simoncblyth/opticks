@@ -87,6 +87,8 @@ SET(HEADERS
     QSim.hh
     qsim.h
 
+
+
     qgs.h
     qprop.h
  
@@ -115,9 +117,10 @@ SET(HEADERS
     QOptical.hh
 
     QScint.hh
+    qscint.h
+
     QCerenkovIntegral.hh
     QCerenkov.hh
-
 
     QPoly.hh
 

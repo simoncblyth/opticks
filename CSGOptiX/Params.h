@@ -22,7 +22,7 @@ struct CSGNode ;
 struct qat4 ; 
 struct quad4 ; 
 struct quad6 ; 
-template <typename T> struct qsim ; 
+struct qsim ; 
 struct qevent ; 
 
 
@@ -68,7 +68,7 @@ struct Params
     uint4      cegs ; 
 
     // simulation 
-    qsim<float>* sim ; 
+    qsim*        sim ; 
     qevent*      evt ;         // HMM: inside sim too ?
 
 

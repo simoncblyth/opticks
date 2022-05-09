@@ -14,9 +14,12 @@ qscint.h
 
 struct quad4 ; 
 struct curandStateXORWOW ; 
+struct quad6 ; 
+struct sphoton ; 
+
 //#include "stdio.h"
 
-#include "qgs.h"  // TODO: get rid of this 
+#include "qgs.h"  // TODO: get rid of this, adopt a new sscint.h analogous to scerenkov.h 
 
 
 struct qscint
@@ -25,27 +28,61 @@ struct qscint
     quad4*              scint_meta ; // HUH: not used ? 
     unsigned            hd_factor ; 
 
-
 #if defined(__CUDACC__) || defined(__CUDABE__)
-    QSCINT_METHOD float   wavelength(curandStateXORWOW& rng); 
+    QSCINT_METHOD void    generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSCINT_METHOD float   wavelength(curandStateXORWOW& rng) const ; 
+    QSCINT_METHOD float   wavelength_hd0(curandStateXORWOW& rng) const ;  
+    QSCINT_METHOD float   wavelength_hd10(curandStateXORWOW& rng) const ;
+    QSCINT_METHOD float   wavelength_hd20(curandStateXORWOW& rng) const ;
 
-    QSCINT_METHOD float   wavelength_hd0(curandStateXORWOW& rng);  
-    QSCINT_METHOD float   wavelength_hd10(curandStateXORWOW& rng);
-    QSCINT_METHOD float   wavelength_hd20(curandStateXORWOW& rng);
-
-    //not using sphoton as these generate nothing like a real photon : they are for debugging 
-    QSCINT_METHOD void    scint_dirpol( quad4& p, curandStateXORWOW& rng); 
+    // TODO: scint_dirpol, reemit_photon should be using sphoton 
+    QSCINT_METHOD void    scint_dirpol( quad4& p, curandStateXORWOW& rng); // changes direction, polarization and wavelength as needed by reemission 
     QSCINT_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
+
+    //not using sphoton for below as these generate nothing like a real photon : they are for debugging 
     QSCINT_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
-    QSCINT_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);
+    QSCINT_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);  // kludge fabricate genstep and then call above
 #endif
 
 }; 
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
+/**
+qscint::generate_photon
+------------------------
 
-inline QSCINT_METHOD float qscint::wavelength(curandStateXORWOW& rng) 
+
+
+**/
+
+inline QSCINT_METHOD void qscint::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+{
+
+
+    // translation of  DsG4Scintillation.cc
+
+    // Generate random photon direction
+    float cost = 1.f - 2.f*curand_uniform(&rng);
+    float sint = sqrt((1.f-cost)*(1.f+cost));
+    float phi = 2.f*M_PIf*curand_uniform(&rng);
+    float sinp = sin(phi);
+    float cosp = cos(phi);
+    p.mom.x = sint*cosp;  
+    p.mom.y = sint*sinp;
+    p.mom.z = cost ;  
+
+    // Determine polarization of new photon 
+    p.pol.x = cost*cosp ; 
+    p.pol.y = cost*sinp ; 
+    p.pol.z = -sint ;
+
+
+}
+
+
+
+inline QSCINT_METHOD float qscint::wavelength(curandStateXORWOW& rng) const 
 {
     float wl ;  
     switch(hd_factor)
@@ -60,7 +97,7 @@ inline QSCINT_METHOD float qscint::wavelength(curandStateXORWOW& rng)
 }
 
 
-inline QSCINT_METHOD float qscint::wavelength_hd0(curandStateXORWOW& rng) 
+inline QSCINT_METHOD float qscint::wavelength_hd0(curandStateXORWOW& rng) const 
 {
     constexpr float y0 = 0.5f/3.f ; 
     float u0 = curand_uniform(&rng); 
@@ -79,7 +116,7 @@ icdf texture can share some of teh implementation
 
 **/
 
-inline QSCINT_METHOD float qscint::wavelength_hd10(curandStateXORWOW& rng) 
+inline QSCINT_METHOD float qscint::wavelength_hd10(curandStateXORWOW& rng) const 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
@@ -105,7 +142,7 @@ inline QSCINT_METHOD float qscint::wavelength_hd10(curandStateXORWOW& rng)
 
 
 
-inline QSCINT_METHOD float qscint::wavelength_hd20(curandStateXORWOW& rng) 
+inline QSCINT_METHOD float qscint::wavelength_hd20(curandStateXORWOW& rng) const 
 {
     float u0 = curand_uniform(&rng); 
     float wl ; 
@@ -136,24 +173,22 @@ inline QSCINT_METHOD float qscint::wavelength_hd20(curandStateXORWOW& rng)
 
 
 /**
-qscint::scint_dirpol
---------------------
-
-Fills the photon quad4 struct with the below:
-
-* direction, weight
-* polarization, wavelength 
-
-NB no position, time.
+qscint::scint_dirpol : changes direction, polarization and wavelength as needed for reemission
+-----------------------------------------------------------------------------------------------
+ 
+TODO: this should use sphoton as a indicator that it is no longer just debugging 
 
 **/
 
 inline QSCINT_METHOD void qscint::scint_dirpol(quad4& p, curandStateXORWOW& rng)
 {
+
     float u0 = curand_uniform(&rng) ; 
     float u1 = curand_uniform(&rng) ; 
     float u2 = curand_uniform(&rng) ;   
     float u3 = curand_uniform(&rng) ;   
+
+    // TODO: compare this with DsG4Scintillation.cc
 
     float ct = 1.0f - 2.0f*u1 ;                 // -1.: 1. 
     float st = sqrtf( (1.0f-ct)*(1.0f+ct)) ; 
@@ -177,7 +212,7 @@ inline QSCINT_METHOD void qscint::scint_dirpol(quad4& p, curandStateXORWOW& rng)
     p.q2.f.x = pol1.x ; 
     p.q2.f.y = pol1.y ; 
     p.q2.f.z = pol1.z ; 
-    p.q2.f.w = wavelength(rng); // hmm should this switch on hd_factor  
+    p.q2.f.w = wavelength(rng);
 }
 
 /**
@@ -202,6 +237,19 @@ inline QSCINT_METHOD void qscint::reemit_photon(quad4& p, float scintillationTim
     p.q0.f.w += -scintillationTime*logf(u4) ;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 inline QSCINT_METHOD void qscint::scint_photon(quad4& p, GS& g, curandStateXORWOW& rng)
 {
     p.zero(); 
@@ -216,6 +264,12 @@ inline QSCINT_METHOD void qscint::scint_photon(quad4& p, GS& g, curandStateXORWO
     p.q0.f.w = g.st.t0   + fraction*g.st.step_length/g.sc1.midVelocity - g.sc1.ScintillationTime*logf(u4) ;
 }
 
+/**
+qscint::scint_photon
+---------------------
+
+kludge fabricate a genstep and then invoke above scint_photon
+**/
 
 inline QSCINT_METHOD void qscint::scint_photon(quad4& p, curandStateXORWOW& rng)
 {

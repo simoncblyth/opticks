@@ -689,8 +689,9 @@ void QSim::dump_wavelength( float* wavelength, unsigned num_wavelength, unsigned
 }
 
 
-extern void QSim_scint_photon( dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon , unsigned num_photon ); 
 
+
+extern void QSim_scint_photon( dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon , unsigned num_photon ); 
 
 NP* QSim::scint_photon(unsigned num_photon )
 {
