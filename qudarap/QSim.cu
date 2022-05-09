@@ -220,26 +220,23 @@ extern void QSim_cerenkov_photon_expt(dim3 numBlocks, dim3 threadsPerBlock, qsim
 
 
 
-__global__ void _QSim_scint_photon(qsim* sim, quad4* photon, unsigned num_photon )
+__global__ void _QSim_scint_generate(qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
-    
-    //sim->r += id ;   
-    //  would be problematic, do not want to change the the rng_states in global mem and get interference between threads
 
     curandState rng = sim->rngstate[idx] ; 
 
-    quad4 p ;   
-    sim->scint->scint_photon(p, rng); 
+    sphoton p ;   
+    sim->scint->generate(p, rng, dbg->scint_gs, idx, -1 ); 
 
     photon[idx] = p ; 
 }
 
-extern void QSim_scint_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon ) 
+extern void QSim_scint_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon ) 
 {
-    printf("//QSim_scint_photon num_photon %d \n", num_photon ); 
-    _QSim_scint_photon<<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
+    printf("//QSim_scint_generate num_photon %d \n", num_photon ); 
+    _QSim_scint_generate<<<numBlocks,threadsPerBlock>>>( sim, dbg, photon, num_photon );
 } 
 
 

@@ -118,13 +118,8 @@ struct QG
     };
 
     QGS_METHOD void load(const quad6* src, unsigned id);
-    QGS_METHOD void zero(); 
 }; 
 
-inline QGS_METHOD void QG::zero()
-{ 
-    q.zero();    
-}
 
 inline QGS_METHOD void QG::load(const quad6* src, unsigned id)
 {

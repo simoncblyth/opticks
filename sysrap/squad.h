@@ -285,11 +285,20 @@ struct quad6
     quad q4 ;
     quad q5 ;
 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
     SQUAD_METHOD void zero();
+    SQUAD_METHOD const float* cdata() const ;
+#endif
 
 };
 
-void quad6::zero() 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+
+inline void quad6::zero() 
 {
     q0.u.x = 0 ; q0.u.y = 0 ; q0.u.z = 0 ; q0.u.w = 0 ; 
     q1.u.x = 0 ; q1.u.y = 0 ; q1.u.z = 0 ; q1.u.w = 0 ; 
@@ -299,7 +308,9 @@ void quad6::zero()
     q5.u.x = 0 ; q5.u.y = 0 ; q5.u.z = 0 ; q5.u.w = 0 ; 
 } 
 
+inline const float* quad6::cdata() const { return &q0.f.x ; }
 
+#endif
 
 
 

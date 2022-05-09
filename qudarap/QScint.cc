@@ -4,6 +4,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "sscint.h"
 
 #include <sstream>
 

@@ -76,6 +76,7 @@ struct scerenkov
    std::string desc() const ; 
 #endif
 
+
 };
 
 #if defined(__CUDACC__) || defined(__CUDABE__)

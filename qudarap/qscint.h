@@ -17,9 +17,8 @@ struct curandStateXORWOW ;
 struct quad6 ; 
 struct sphoton ; 
 
-//#include "stdio.h"
 
-#include "qgs.h"  // TODO: get rid of this, adopt a new sscint.h analogous to scerenkov.h 
+//#include "stdio.h"
 
 
 struct qscint
@@ -29,55 +28,116 @@ struct qscint
     unsigned            hd_factor ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-    QSCINT_METHOD void    generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-    QSCINT_METHOD float   wavelength(curandStateXORWOW& rng) const ; 
-    QSCINT_METHOD float   wavelength_hd0(curandStateXORWOW& rng) const ;  
+    QSCINT_METHOD void    generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, int photon_id, int genstep_id ) const ; 
+    QSCINT_METHOD void    reemit(   sphoton& p, curandStateXORWOW& rng, float scintillationTime) const ;
+    QSCINT_METHOD void    momw_polw(sphoton& p, curandStateXORWOW& rng) const ; 
+    // sets direction, polarization and wavelength as needed by both generate and reemit
+
+    QSCINT_METHOD float   wavelength(     curandStateXORWOW& rng) const ; 
+    QSCINT_METHOD float   wavelength_hd0( curandStateXORWOW& rng) const ;  
     QSCINT_METHOD float   wavelength_hd10(curandStateXORWOW& rng) const ;
     QSCINT_METHOD float   wavelength_hd20(curandStateXORWOW& rng) const ;
 
-    // TODO: scint_dirpol, reemit_photon should be using sphoton 
-    QSCINT_METHOD void    scint_dirpol( quad4& p, curandStateXORWOW& rng); // changes direction, polarization and wavelength as needed by reemission 
-    QSCINT_METHOD void    reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng);
-
-    //not using sphoton for below as these generate nothing like a real photon : they are for debugging 
-    QSCINT_METHOD void    scint_photon( quad4& p, GS& g, curandStateXORWOW& rng);
-    QSCINT_METHOD void    scint_photon( quad4& p, curandStateXORWOW& rng);  // kludge fabricate genstep and then call above
 #endif
 
 }; 
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
+
+#include "sscint.h"
+
+
+
 /**
 qscint::generate_photon
 ------------------------
 
+**/
 
+inline QSCINT_METHOD void qscint::generate(sphoton& p, curandStateXORWOW& rng, const quad6& _gs, int photon_id, int genstep_id ) const 
+{
+    momw_polw(p, rng ); 
+
+    const sscint& gs = (const sscint&)_gs ; 
+
+    float fraction = gs.charge == 0.f  ? 1.f : curand_uniform(&rng) ;   
+    p.pos = gs.pos + fraction*gs.DeltaPosition ; 
+
+    float u4 = curand_uniform(&rng) ; 
+    float deltaTime = fraction*gs.step_length/gs.meanVelocity - gs.ScintillationTime*logf(u4) ;
+
+    p.time = gs.time + deltaTime ; 
+}
+
+
+/**
+qscint::reemit_photon
+------------------------
+
+OLD NOTES IN NEED OF REVIST : HOW TO HANDLE REEMISSION scintillationTime ?
+
+As reemission happens inside scintillators for photons arising from Cerenkov (or Torch) 
+gensteps need to special case the handing of the reemission scintillationTime somehow
+because do not have access to scintillation gensteps when handling cerenkov or torch photons. 
+
+Could carry the single float (could be domain compressed, it is eg 1.5 ns) in other gensteps ? 
+But it is material specific (if you had more than one scintillator) 
+just like REEMISSIONPROB so its more appropriate 
+to live in the boundary_tex alongside the REEMISSIONPROB ?
+
+But it could be carried in the genstep(or anywhere) as its use is "gated" by a non-zero REEMISSIONPROB.
+
+Prefer to just hold it in the context, and provide G4Opticks::setReemissionScintillationTime API 
+for setting it (default 0.) that is used from detector specific code which can read from 
+the Geant4 properties directly.  What about geocache ? Can hold/persist with GScintillatorLib metadata.
 
 **/
 
-inline QSCINT_METHOD void qscint::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSCINT_METHOD void qscint::reemit(sphoton& p, curandStateXORWOW& rng, float scintillationTime) const 
 {
+    momw_polw(p, rng); 
+    float u3 = curand_uniform(&rng) ; 
+    p.time += -scintillationTime*logf(u3) ;
+}
 
 
-    // translation of  DsG4Scintillation.cc
+/**
+qscint::momw_polw : dir,pol and wavelength do not depend on genstep param
+--------------------------------------------------------------------------------
 
-    // Generate random photon direction
-    float cost = 1.f - 2.f*curand_uniform(&rng);
+Translation of "jcv DsG4Scintillation"
+
+**/
+
+inline QSCINT_METHOD void qscint::momw_polw(sphoton& p, curandStateXORWOW& rng) const 
+{
+    float u0 = curand_uniform(&rng); 
+    float u1 = curand_uniform(&rng); 
+    float u2 = curand_uniform(&rng); 
+
+    float cost = 1.f - 2.f*u0;
     float sint = sqrt((1.f-cost)*(1.f+cost));
-    float phi = 2.f*M_PIf*curand_uniform(&rng);
+    float phi = 2.f*M_PIf*u1;
     float sinp = sin(phi);
     float cosp = cos(phi);
+
     p.mom.x = sint*cosp;  
     p.mom.y = sint*sinp;
     p.mom.z = cost ;  
+    p.weight = 1.f ; 
 
     // Determine polarization of new photon 
     p.pol.x = cost*cosp ; 
     p.pol.y = cost*sinp ; 
     p.pol.z = -sint ;
 
+    phi = 2.f*M_PIf*u2 ;
+    sinp = sin(phi); 
+    cosp = cos(phi); 
 
+    p.pol = normalize( cosp*p.pol + sinp*cross(p.mom, p.pol) ) ;   
+    p.wavelength = wavelength(rng);
 }
 
 
@@ -164,152 +224,6 @@ inline QSCINT_METHOD float qscint::wavelength_hd20(curandStateXORWOW& rng) const
         wl = tex2D<float>(scint_tex, u0,  y0 ); 
     }
     return wl ; 
-}
-
-
-
-
-
-
-
-/**
-qscint::scint_dirpol : changes direction, polarization and wavelength as needed for reemission
------------------------------------------------------------------------------------------------
- 
-TODO: this should use sphoton as a indicator that it is no longer just debugging 
-
-**/
-
-inline QSCINT_METHOD void qscint::scint_dirpol(quad4& p, curandStateXORWOW& rng)
-{
-
-    float u0 = curand_uniform(&rng) ; 
-    float u1 = curand_uniform(&rng) ; 
-    float u2 = curand_uniform(&rng) ;   
-    float u3 = curand_uniform(&rng) ;   
-
-    // TODO: compare this with DsG4Scintillation.cc
-
-    float ct = 1.0f - 2.0f*u1 ;                 // -1.: 1. 
-    float st = sqrtf( (1.0f-ct)*(1.0f+ct)) ; 
-    float phi = 2.f*M_PIf*u2 ;
-    float sp = sinf(phi); 
-    float cp = cosf(phi); 
-    float3 dir0 = make_float3( st*cp, st*sp,  ct ); 
-
-    p.q1.f.x = dir0.x ; 
-    p.q1.f.y = dir0.y ; 
-    p.q1.f.z = dir0.z ; 
-    p.q1.f.w = 1.f ;    // weight   
-
-    float3 pol0 = make_float3( ct*cp, ct*sp, -st );
-    float3 perp = cross( dir0, pol0 ); 
-    float az =  2.f*M_PIf*u3 ; 
-    float sz = sin(az);
-    float cz = cos(az);
-    float3 pol1 = normalize( cz*pol0 + sz*perp ) ; 
-
-    p.q2.f.x = pol1.x ; 
-    p.q2.f.y = pol1.y ; 
-    p.q2.f.z = pol1.z ; 
-    p.q2.f.w = wavelength(rng);
-}
-
-/**
-Because reemission is possible (inside scintillators) for photons arising from Cerenkov (or Torch) 
-gensteps need to special case handle the scintillationTime somehow ? 
-
-Could carry the single float (could be domain compressed, it is eg 1.5 ns) in other gensteps ? 
-But it is material specific just like REEMISSIONPROB so its more appropriate 
-to live in the boundary_tex alongside the REEMISSIONPROB. 
-But it could be carried in the genstep(or anywhere) as its use is "gated" by a non-zero REEMISSIONPROB.
-
-Prefer to just hold it in the context, and provide G4Opticks::setReemissionScintillationTime API 
-for setting it (default 0.) that is used from detector specific code which can read from 
-the Geant4 properties directly.  What about geocache ? Can hold/persist with GScintillatorLib metadata.
-
-**/
-
-inline QSCINT_METHOD void qscint::reemit_photon(quad4& p, float scintillationTime, curandStateXORWOW& rng)
-{
-    scint_dirpol(p, rng); 
-    float u4 = curand_uniform(&rng) ; 
-    p.q0.f.w += -scintillationTime*logf(u4) ;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-inline QSCINT_METHOD void qscint::scint_photon(quad4& p, GS& g, curandStateXORWOW& rng)
-{
-    p.zero(); 
-    scint_dirpol(p, rng); 
-
-    float fraction = g.sc1.charge == 0.f  ? 1.f : curand_uniform(&rng) ;   
-    float u4 = curand_uniform(&rng) ; 
-
-    p.q0.f.x = g.st.x0.x + fraction*g.st.DeltaPosition.x ; 
-    p.q0.f.y = g.st.x0.y + fraction*g.st.DeltaPosition.y ; 
-    p.q0.f.z = g.st.x0.z + fraction*g.st.DeltaPosition.z ; 
-    p.q0.f.w = g.st.t0   + fraction*g.st.step_length/g.sc1.midVelocity - g.sc1.ScintillationTime*logf(u4) ;
-}
-
-/**
-qscint::scint_photon
----------------------
-
-kludge fabricate a genstep and then invoke above scint_photon
-**/
-
-inline QSCINT_METHOD void qscint::scint_photon(quad4& p, curandStateXORWOW& rng)
-{
-    QG qg ;      
-    qg.zero();  
-
-    GS& g = qg.g ; 
-
-    // fabricate some values for the genstep
-    g.st.Id = 0 ; 
-    g.st.ParentId = 0 ; 
-    g.st.MaterialIndex = 0 ; 
-    g.st.NumPhotons = 0 ; 
-
-    g.st.x0.x = 100.f ; 
-    g.st.x0.y = 100.f ; 
-    g.st.x0.z = 100.f ; 
-    g.st.t0 = 20.f ; 
-
-    g.st.DeltaPosition.x = 1000.f ; 
-    g.st.DeltaPosition.y = 1000.f ; 
-    g.st.DeltaPosition.z = 1000.f ; 
-    g.st.step_length = 1000.f ; 
-
-    g.sc1.code = 1 ; 
-    g.sc1.charge = 1.f ;
-    g.sc1.weight = 1.f ;
-    g.sc1.midVelocity = 0.f ; 
-
-    g.sc1.scnt = 0 ;
-    g.sc1.f41 = 0.f ;   
-    g.sc1.f42 = 0.f ;   
-    g.sc1.f43 = 0.f ;   
-
-    g.sc1.ScintillationTime = 10.f ;
-    g.sc1.f51 = 0.f ;
-    g.sc1.f52 = 0.f ;
-    g.sc1.f53 = 0.f ;
-
-    scint_photon(p, g, rng); 
 }
 
 

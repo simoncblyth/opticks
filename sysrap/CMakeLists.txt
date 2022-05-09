@@ -181,13 +181,16 @@ set(HEADERS
     smath.h 
     s_mock_curand.h
     squad.h
+
     sphoton.h
     srec.h 
     srec.h 
     sseq.h 
 
-    storch.h
     storchtype.h
+    storch.h
+    scerenkov.h
+    sscint.h
     
     sflow.h
     sqat4.h

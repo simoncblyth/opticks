@@ -24,6 +24,8 @@
 #include "QOptical.hh"
 #include "QState.hh"
 #include "QSimLaunch.hh"
+#include "QDebug.hh"
+
 
 #include "QSim.hh"
 
@@ -106,6 +108,9 @@ void QSim::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, 
 
 
 
+    QDebug* debug_ = new QDebug ; 
+    LOG(info) << debug_->desc() ; 
+
 
 
     LOG(error) << "[ QProp " ; 
@@ -163,13 +168,14 @@ QSim::QSim()
     bnd(QBnd::Get()),
     prd(QPrd::Get()),
     optical(QOptical::Get()),
+    debug_(QDebug::Get()), 
     prop(QProp<float>::Get()),
     multi_film(QMultiFilmLUT::Get()),
     pidx(SSys::getenvint("PIDX", -1)),
     sim(nullptr),
     d_sim(nullptr),
-    dbg(nullptr), 
-    d_dbg(nullptr)
+    dbg(debug_->dbg), 
+    d_dbg(debug_->d_dbg)
 {
     init(); 
 }
@@ -179,7 +185,6 @@ void QSim::init()
     LOG(LEVEL) << event->descMax(); 
 
     init_sim(); 
-    init_dbg(); 
 
     INSTANCE = this ; 
     LOG(LEVEL) << desc() ; 
@@ -234,20 +239,7 @@ void QSim::init_sim()
     } 
     if(scint)
     {
-        /**
-
-        unsigned hd_factor = scint->tex->getHDFactor() ;  // HMM: perhaps get this from sim rather than occupying an argument slot  
-        LOG(LEVEL) 
-            << " scint.desc " << scint->desc() 
-            << " hd_factor " << hd_factor 
-            ;
-
-        sim->scint_tex = scint->tex->texObj ; 
-        sim->scint_meta = scint->tex->d_meta ; 
-
-        **/
         sim->scint = scint->d_scint ; 
-
     } 
     if(bnd)
     {
@@ -283,45 +275,6 @@ void QSim::init_sim()
 }
 
 
-/**
-QSim::init_db
-----------------
-
-*dbg* is a host side instance that is populated by this method and 
-then uploaded to the device *d_dbg* 
-
-qdebug avoids having to play pass the parameter thru multiple levels of calls  
-to get values onto the device 
-
-Notice how not using pointers in qdebug provides a simple plain old struct way 
-to get structured info onto the device. 
-
-**/
-
-void QSim::init_dbg()
-{
-    dbg = new qdebug ; 
-
-    // miscellaneous used by fill_state testing 
-
-    float cosTheta = 0.5f ; 
-    dbg->wavelength = 500.f ; 
-    dbg->cosTheta = cosTheta ; 
-    qvals( dbg->normal , "DBG_NRM", "0,0,1" ); 
-   
-    // qstate: mocking result of fill_state 
-    dbg->s = QState::Make(); 
-    LOG(info) << desc_dbg_state(); 
-
-    // quad2: mocking prd per-ray-data result of optix trace calls 
-    dbg->prd = quad2::make_eprd() ;  // see qudarap/tests/eprd.sh 
-     
-    dbg->p.ephoton() ; // see qudarap/tests/ephoton.sh 
-    LOG(info) << desc_dbg_p0()  ; 
-
-    d_dbg = QU::UploadArray<qdebug>(dbg, 1 );  
-}
-
 
 NP* QSim::duplicate_dbg_ephoton(unsigned num_photon)
 {
@@ -337,28 +290,10 @@ NP* QSim::duplicate_dbg_ephoton(unsigned num_photon)
 }
 
 
-std::string QSim::desc_dbg_state() const 
-{
-    std::stringstream ss ; 
-    ss << "QSim::desc_dbg_state" << std::endl << QState::Desc(dbg->s) ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
- 
-std::string QSim::desc_dbg_p0() const 
-{
-    std::stringstream ss ; 
-    ss << "QSim::desc_dbg_p0" << std::endl << dbg->p.desc() ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
-
 qsim* QSim::getDevicePtr() const 
 {
     return d_sim ; 
 }
-
-
 
 
 char QSim::getScintTexFilterMode() const 
@@ -689,21 +624,20 @@ void QSim::dump_wavelength( float* wavelength, unsigned num_wavelength, unsigned
 }
 
 
+extern void QSim_scint_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon ); 
 
-
-extern void QSim_scint_photon( dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon , unsigned num_photon ); 
-
-NP* QSim::scint_photon(unsigned num_photon )
+NP* QSim::scint_generate(unsigned num_photon )
 {
     configureLaunch( num_photon, 1 ); 
-    quad4* d_photon = QU::device_alloc<quad4>(num_photon) ; 
-    QSim_scint_photon(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon );  
+    sphoton* d_photon = QU::device_alloc<sphoton>(num_photon) ; 
+    QU::device_memset<sphoton>(d_photon, 0, num_photon); 
+
+    QSim_scint_generate(numBlocks, threadsPerBlock, d_sim, d_dbg, d_photon, num_photon );  
+
     NP* p = NP::Make<float>(num_photon, 4, 4); 
-    QU::copy_device_to_host_and_free<quad4>( (quad4*)p->bytes(), d_photon, num_photon ); 
+    QU::copy_device_to_host_and_free<sphoton>( (sphoton*)p->bytes(), d_photon, num_photon ); 
     return p ; 
 }
-
-
 
 
 extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qevent* evt )  ; 

@@ -550,7 +550,6 @@ Makes much more sense to fabricate genstep on CPU and upload it.
 inline QCERENKOV_METHOD float qcerenkov::cerenkov_wavelength_rejection_sampled(qsim* sim, unsigned id, curandStateXORWOW& rng ) 
 {
     QG qg ;      
-    qg.zero();  
     GS& g = qg.g ; 
     bool energy_range = false ; 
     cerenkov_fabricate_genstep(sim, g, energy_range); 
@@ -561,7 +560,6 @@ inline QCERENKOV_METHOD float qcerenkov::cerenkov_wavelength_rejection_sampled(q
 inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon(qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ) 
 {
     QG qg ;      
-    qg.zero();  
     GS& g = qg.g ; 
     bool energy_range = false ; 
     cerenkov_fabricate_genstep(sim, g, energy_range); 
@@ -572,7 +570,6 @@ template<typename T>
 inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon_enprop(qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng) 
 {
     QG qg ;      
-    qg.zero();  
     GS& g = qg.g ; 
     bool energy_range = true ; 
     cerenkov_fabricate_genstep(sim, g, energy_range); 

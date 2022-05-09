@@ -11,7 +11,7 @@ enum {
    BOUNDARY_LOOKUP_LS,
    WAVELENGTH_SCINTILLATION,
    WAVELENGTH_CERENKOV,
-   SCINT_PHOTON,
+   SCINT_GENERATE,
    CERENKOV_PHOTON,
    CERENKOV_PHOTON_ENPROP_FLOAT,
    CERENKOV_PHOTON_ENPROP_DOUBLE,
@@ -68,7 +68,7 @@ struct QSimLaunch
     static constexpr const char* CERENKOV_PHOTON_ENPROP_DOUBLE_ = "cerenkov_photon_enprop_double" ; 
     static constexpr const char* CERENKOV_PHOTON_EXPT_ = "cerenkov_photon_expt" ; 
 
-    static constexpr const char* SCINT_PHOTON_ = "scint_photon" ; 
+    static constexpr const char* SCINT_GENERATE_ = "scint_generate" ; 
 
 
     static constexpr const char* FILL_STATE_0_ = "fill_state_0" ;
@@ -107,7 +107,7 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,CERENKOV_PHOTON_ENPROP_DOUBLE_) == 0 ) test = CERENKOV_PHOTON_ENPROP_DOUBLE ;
    if(strcmp(name,CERENKOV_PHOTON_EXPT_) == 0 )          test = CERENKOV_PHOTON_EXPT ;
 
-   if(strcmp(name,SCINT_PHOTON_) == 0 ) test = SCINT_PHOTON ;
+   if(strcmp(name,SCINT_GENERATE_) == 0 ) test = SCINT_GENERATE ;
 
    if(strcmp(name,WAVELENGTH_SCINTILLATION_) == 0 ) test = WAVELENGTH_SCINTILLATION ;
    if(strcmp(name,WAVELENGTH_CERENKOV_) == 0 )      test = WAVELENGTH_CERENKOV ;
@@ -174,7 +174,7 @@ inline const char* QSimLaunch::Name( unsigned type )
         case CERENKOV_PHOTON_ENPROP_DOUBLE:  s = CERENKOV_PHOTON_ENPROP_DOUBLE_  ; break ; 
         case CERENKOV_PHOTON_EXPT:           s = CERENKOV_PHOTON_EXPT_           ; break ; 
 
-        case SCINT_PHOTON:                   s = SCINT_PHOTON_           ; break ; 
+        case SCINT_GENERATE:                 s = SCINT_GENERATE_           ; break ; 
 
 
         case FILL_STATE_0:           s = FILL_STATE_0_           ; break ; 

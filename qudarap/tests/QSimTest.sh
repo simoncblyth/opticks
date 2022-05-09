@@ -28,8 +28,11 @@ msg="=== $BASH_SOURCE :"
 #test=boundary_lookup_ls
 
 
-test=wavelength_scintillation
+#test=wavelength_scintillation
 #test=wavelength_cerenkov
+
+test=scint_generate
+
 
 #test=fill_state_0
 #test=fill_state_1
@@ -74,6 +77,7 @@ export TEST=${TEST:-$test}
 case $TEST in
     rng_sequence) num=$M1 ;; 
      wavelength*) num=$M1 ;; 
+  scint_generate) num=$M1 ;;
 esac
 
 
@@ -129,6 +133,7 @@ if [ "${arg/ana}" != "$arg" ]; then
        boundary_lookup_all)    script=boundary_lookup_all.py ;;
        boundary_lookup_water)  script=boundary_lookup_line.py ;;
        boundary_lookup_ls)     script=boundary_lookup_line.py ;;
+           scint_generate)     script=scint_generate.py  ;;
 
        fill_state_0)           script=fill_state.py ;;
        fill_state_1)           script=fill_state.py ;;
@@ -143,7 +148,7 @@ if [ "${arg/ana}" != "$arg" ]; then
         lambertian_direction)  script=lambertian_direction.py ;; 
              mock_propagate*)  script=mock_propagate.py ;; 
 
-                            *) script=$TEST.py      ;;
+                            *) script=generic.py      ;;
     esac
 
     if [ -f "$script" ]; then

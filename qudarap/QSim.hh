@@ -36,6 +36,7 @@ struct QPrd ;
 struct QMultiFilmLUT;
 struct QOptical ; 
 struct QEvent ; 
+struct QDebug ; 
 
 struct qdebug ; 
 struct qstate ; 
@@ -61,6 +62,7 @@ struct QUDARAP_API QSim
     const QBnd*      bnd ; 
     const QPrd*      prd ; 
     const QOptical*  optical ; 
+    const QDebug*    debug_ ; 
 
     const QProp<float>*  prop ; 
     const QMultiFilmLUT * multi_film;// correspond New PMT optical model;
@@ -72,6 +74,8 @@ struct QUDARAP_API QSim
     qdebug*           dbg ; 
     qdebug*           d_dbg ; 
 
+
+
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
 
@@ -79,12 +83,8 @@ struct QUDARAP_API QSim
 
     void init(); 
     void init_sim(); 
-    void init_dbg(); 
 
     NP* duplicate_dbg_ephoton(unsigned num_photon); 
-
-    std::string desc_dbg_state() const ; 
-    std::string desc_dbg_p0() const ; 
 
     qsim* getDevicePtr() const ; 
 
@@ -112,7 +112,7 @@ struct QUDARAP_API QSim
     NP* cerenkov_wavelength_rejection_sampled( unsigned num_wavelength ); 
     void dump_wavelength(                       float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 
-    NP* scint_photon(unsigned num_photon ); 
+    NP* scint_generate(unsigned num_photon ); 
     NP* cerenkov_photon(unsigned num_photon, unsigned test ); 
 
     void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 

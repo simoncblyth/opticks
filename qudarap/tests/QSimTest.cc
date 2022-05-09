@@ -61,7 +61,7 @@ struct QSimTest
 
     void wavelength() ; 
 
-    void scint_photon(); 
+    void scint_generate(); 
     void cerenkov_photon(); 
 
     void generate_photon(); 
@@ -320,11 +320,13 @@ void QSimTest::wavelength()
     w->save( dir, name ); 
 }
 
-void QSimTest::scint_photon()
+void QSimTest::scint_generate()
 {
-    NP* p = qs.scint_photon(num); 
+    NP* p = qs.scint_generate(num); 
     p->save(dir, "p.npy"); 
+    qs.dbg->save_scint_gs(dir);  
 }
+
 void QSimTest::cerenkov_photon()
 {
     NP* p = qs.cerenkov_photon( num, type ); 
@@ -543,6 +545,7 @@ void QSimTest::main()
         << " subfold " << subfold
         << " ni_tranche_size " << ni_tranche_size
         << " print_id " << print_id
+        << " dir " << dir
         ; 
 
     switch(type)
@@ -554,7 +557,7 @@ void QSimTest::main()
                                             wavelength()                               ; break ; 
 
 
-        case SCINT_PHOTON:                  scint_photon();                            ; break ; 
+        case SCINT_GENERATE:                scint_generate();                            ; break ; 
 
         case CERENKOV_PHOTON:             
         case CERENKOV_PHOTON_ENPROP_FLOAT:

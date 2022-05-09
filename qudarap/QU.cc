@@ -217,6 +217,7 @@ void QU::device_memset( T* d, int value, unsigned num_items )
 template void     QU::device_memset<int>(int*, int, unsigned ) ;
 template void     QU::device_memset<quad4>(quad4*, int, unsigned ) ;
 template void     QU::device_memset<quad6>(quad6*, int, unsigned ) ;
+template void     QU::device_memset<sphoton>(sphoton*, int, unsigned ) ;
 
 
 
