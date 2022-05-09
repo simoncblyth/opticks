@@ -113,7 +113,7 @@ struct QUDARAP_API QSim
     void dump_wavelength(                       float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 
     NP* scint_generate(unsigned num_photon ); 
-    NP* cerenkov_photon(unsigned num_photon, unsigned test ); 
+    NP* cerenkov_generate(unsigned num_photon, unsigned test ); 
 
     void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 
 

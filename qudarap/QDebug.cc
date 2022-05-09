@@ -5,6 +5,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sscint.h"
+#include "scerenkov.h"
 
 #include "QDebug.hh"
 #include "QState.hh"
@@ -40,12 +41,14 @@ qdebug* QDebug::MakeInstance()   // static
     // quad2: mocking prd per-ray-data result of optix trace calls 
     dbg->prd = quad2::make_eprd() ;  // see qudarap/tests/eprd.sh 
      
-    quad6& scint_gs = dbg->scint_gs ; 
+    sscint& scint_gs = dbg->scint_gs ; 
     sscint::FillGenstep( scint_gs, 0, 100 ); 
+
+    scerenkov& cerenkov_gs = dbg->cerenkov_gs ; 
+    scerenkov::FillGenstep( cerenkov_gs, 0, 100 ); 
 
     return dbg ; 
 }
-
 
 QDebug::QDebug()
     :
@@ -55,7 +58,6 @@ QDebug::QDebug()
     INSTANCE = this ; 
     LOG(info) << desc() ; 
 }
-
 
 qdebug* QDebug::getDevicePtr() const
 {

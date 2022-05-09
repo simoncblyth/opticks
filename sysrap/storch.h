@@ -102,6 +102,7 @@ struct storch
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+   float* cdata() const {  return (float*)&gentype ; }
    static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
    std::string desc() const ; 
 #endif

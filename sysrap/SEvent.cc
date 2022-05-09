@@ -7,6 +7,7 @@
 
 #include "storch.h"
 #include "scerenkov.h"
+#include "sscint.h"
 
 #include "ssincos.h"
 #include "sc4u.h"
@@ -69,6 +70,8 @@ NP* SEvent::MakeCarrierGensteps(const char* config)
 
 NP* SEvent::MakeTorchGensteps(){    return MakeGensteps( OpticksGenstep_TORCH ) ; }
 NP* SEvent::MakeCerenkovGensteps(){ return MakeGensteps( OpticksGenstep_CERENKOV ) ; }
+NP* SEvent::MakeScintGensteps(){    return MakeGensteps( OpticksGenstep_SCINTILLATION ) ; }
+
 
 NP* SEvent::MakeGensteps( int gentype )
 {
@@ -77,8 +80,9 @@ NP* SEvent::MakeGensteps( int gentype )
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
     switch(gentype)
     {
-        case  OpticksGenstep_TORCH:    FillGensteps<storch>(   gs, numphoton_per_genstep) ; break ; 
-        case  OpticksGenstep_CERENKOV: FillGensteps<scerenkov>(gs, numphoton_per_genstep) ; break ; 
+        case  OpticksGenstep_TORCH:         FillGensteps<storch>(   gs, numphoton_per_genstep) ; break ; 
+        case  OpticksGenstep_CERENKOV:      FillGensteps<scerenkov>(gs, numphoton_per_genstep) ; break ; 
+        case  OpticksGenstep_SCINTILLATION: FillGensteps<sscint>(   gs, numphoton_per_genstep) ; break ; 
     }
     return gs ; 
 }
@@ -92,6 +96,7 @@ void SEvent::FillGensteps( NP* gs, unsigned numphoton_per_genstep )
 
 template void SEvent::FillGensteps<storch>(    NP* gs, unsigned numphoton_per_genstep ); 
 template void SEvent::FillGensteps<scerenkov>( NP* gs, unsigned numphoton_per_genstep ); 
+template void SEvent::FillGensteps<sscint>(    NP* gs, unsigned numphoton_per_genstep ); 
 
 
 /**

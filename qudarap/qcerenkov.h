@@ -34,17 +34,17 @@ struct qcerenkov
     QCERENKOV_METHOD static float   cerenkov_wavelength_rejection_sampled( qsim* sim, unsigned id, curandStateXORWOW& rng) ; 
     QCERENKOV_METHOD static float   cerenkov_wavelength_rejection_sampled( qsim* sim, unsigned id, curandStateXORWOW& rng, const GS& g);
 
-    QCERENKOV_METHOD static void    cerenkov_photon(                       qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ) ; 
+    QCERENKOV_METHOD static void    cerenkov_generate(                       qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ) ; 
 
     template<typename T>
-    QCERENKOV_METHOD static void    cerenkov_photon_enprop(                qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ) ; 
+    QCERENKOV_METHOD static void    cerenkov_generate_enprop(                qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ) ; 
 
     template<typename T>
-    QCERENKOV_METHOD static void    cerenkov_photon_enprop(                qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g ) ; 
+    QCERENKOV_METHOD static void    cerenkov_generate_enprop(                qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g ) ; 
 
 
-    QCERENKOV_METHOD static void    cerenkov_photon(                       qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g ) ; 
-    QCERENKOV_METHOD static void    cerenkov_photon_expt(                  qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ); 
+    QCERENKOV_METHOD static void    cerenkov_generate(                       qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng, const GS& g ) ; 
+    QCERENKOV_METHOD static void    cerenkov_generate_expt(                  qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ); 
 
 };
 
@@ -59,7 +59,7 @@ qcerenkov::cerenkov_fabricate_genstep
 * as this code could be arranged to be used on CPU only that is perfectly feasible  
 * the focus of this fabricated genstep is wavelength generation 
 
-TODO: move this down to storch for typical use on CPU only 
+TODO: move this down to scerenkov for typical use on CPU only 
    
 **/
 
@@ -287,7 +287,7 @@ inline QCERENKOV_METHOD float qcerenkov::cerenkov_wavelength_rejection_sampled(q
 
 
 
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon(qsim* sim, quad4& q, unsigned id, curandStateXORWOW& rng, const GS& g )
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& q, unsigned id, curandStateXORWOW& rng, const GS& g )
 {
     float u0 ;
     float u1 ; 
@@ -338,7 +338,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon(qsim* sim, quad4& q, uns
 
         if( id == sim->pidx )
         {
-            printf("//qcerenkov::cerenkov_photon id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
+            printf("//qcerenkov::cerenkov_generate id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
         }
 
 
@@ -370,7 +370,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon(qsim* sim, quad4& q, uns
 
 
 /**
-qcerenkov::cerenkov_photon_enprop
+qcerenkov::cerenkov_generate_enprop
 -----------------------------------
 
 Variation assuming Wmin, Wmax contain Pmin Pmax and using qprop::interpolate 
@@ -381,7 +381,7 @@ to sample the RINDEX
 
 
 template<typename T>
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon_enprop(qsim* sim, quad4& q, unsigned id, curandStateXORWOW& rng, const GS& g )
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad4& q, unsigned id, curandStateXORWOW& rng, const GS& g )
 {
     T u0 ;
     T u1 ; 
@@ -417,7 +417,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon_enprop(qsim* sim, quad4&
 
         if( id == sim->pidx )
         {
-            printf("//qcerenkov::cerenkov_photon_enprop id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
+            printf("//qcerenkov::cerenkov_generate_enprop id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
         }
 
 
@@ -458,7 +458,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon_enprop(qsim* sim, quad4&
 
 
 /**
-qcerenkov::cerenkov_photon_expt
+qcerenkov::cerenkov_generate_expt
 -------------------------------------
 
 This does the sampling all in double, narrowing to 
@@ -470,7 +470,7 @@ Which things have most need to be  double to make any difference ?
 
 **/
 
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon_expt(qsim* sim, quad4& q, unsigned id, curandStateXORWOW& rng )
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_expt(qsim* sim, quad4& q, unsigned id, curandStateXORWOW& rng )
 {
     double BetaInverse = 1.5 ; 
     double Pmin = 1.55 ; 
@@ -557,23 +557,23 @@ inline QCERENKOV_METHOD float qcerenkov::cerenkov_wavelength_rejection_sampled(q
     return wavelength ; 
 }
 
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon(qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ) 
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ) 
 {
     QG qg ;      
     GS& g = qg.g ; 
     bool energy_range = false ; 
     cerenkov_fabricate_genstep(sim, g, energy_range); 
-    cerenkov_photon(sim, p, id, rng, g ); 
+    cerenkov_generate(sim, p, id, rng, g ); 
 }
 
 template<typename T>
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_photon_enprop(qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng) 
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng) 
 {
     QG qg ;      
     GS& g = qg.g ; 
     bool energy_range = true ; 
     cerenkov_fabricate_genstep(sim, g, energy_range); 
 
-    cerenkov_photon_enprop<T>(sim, p, id, rng, g ); 
+    cerenkov_generate_enprop<T>(sim, p, id, rng, g ); 
 }
 

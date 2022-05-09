@@ -5,6 +5,8 @@ QSim.cu : extern void CUDA launch functions testing qsim.h methods
 The launch functions are all invoked from QSim.cc methods with corresponding names.   
 
 
+TODO: split off debug functions from actually used functions
+
 **/
 
 
@@ -130,7 +132,11 @@ extern void QSim_cerenkov_wavelength_rejection_sampled(dim3 numBlocks, dim3 thre
 
 
 
-__global__ void _QSim_cerenkov_photon(qsim* sim, quad4* photon, unsigned num_photon )
+
+
+
+
+__global__ void _QSim_cerenkov_generate(qsim* sim, quad4* photon, unsigned num_photon )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
@@ -138,28 +144,20 @@ __global__ void _QSim_cerenkov_photon(qsim* sim, quad4* photon, unsigned num_pho
     curandState rng = sim->rngstate[idx]; 
 
     quad4 p ;   
-    qcerenkov::cerenkov_photon(sim, p, idx, rng);   
+    qcerenkov::cerenkov_generate(sim, p, idx, rng);   
 
-    if(idx % 100000 == 0) printf("//_QSim_cerenkov_photon idx %d \n", idx  ); 
+    if(idx % 100000 == 0) printf("//_QSim_cerenkov_generate idx %d \n", idx  ); 
     photon[idx] = p ; 
 }
 
-extern void QSim_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon ) 
+extern void QSim_cerenkov_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon ) 
 {
-    printf("//QSim_cerenkov_photon num_photon %d \n", num_photon ); 
-    _QSim_cerenkov_photon<<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
+    printf("//QSim_cerenkov_generate num_photon %d \n", num_photon ); 
+    _QSim_cerenkov_generate<<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
 } 
 
-
-
-
-
-
-
-
-
 template<typename T>
-__global__ void _QSim_cerenkov_photon_enprop(qsim* sim, quad4* photon, unsigned num_photon )
+__global__ void _QSim_cerenkov_generate_enprop(qsim* sim, quad4* photon, unsigned num_photon )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
@@ -167,27 +165,25 @@ __global__ void _QSim_cerenkov_photon_enprop(qsim* sim, quad4* photon, unsigned 
     curandState rng = sim->rngstate[idx]; 
 
     quad4 p ;   
-    qcerenkov::cerenkov_photon_enprop<T>(sim, p, idx, rng);   
+    qcerenkov::cerenkov_generate_enprop<T>(sim, p, idx, rng);   
 
-    if(idx % 100000 == 0) printf("//_QSim_cerenkov_photon_enprop idx %d \n", idx  ); 
+    if(idx % 100000 == 0) printf("//_QSim_cerenkov_generate_enprop idx %d \n", idx  ); 
     photon[idx] = p ; 
 }
 
 
 template<typename T>
-extern void QSim_cerenkov_photon_enprop(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon) 
+extern void QSim_cerenkov_generate_enprop(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon) 
 {
-    printf("//QSim_cerenkov_photon_enprop num_photon %d \n", num_photon ); 
-    _QSim_cerenkov_photon_enprop<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
+    printf("//QSim_cerenkov_generate_enprop num_photon %d \n", num_photon ); 
+    _QSim_cerenkov_generate_enprop<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
 } 
 
 
-template void QSim_cerenkov_photon_enprop<float>(dim3, dim3, qsim*, quad4*, unsigned ); 
-template void QSim_cerenkov_photon_enprop<double>(dim3, dim3, qsim*, quad4*, unsigned ); 
+template void QSim_cerenkov_generate_enprop<float>(dim3, dim3, qsim*, quad4*, unsigned ); 
+template void QSim_cerenkov_generate_enprop<double>(dim3, dim3, qsim*, quad4*, unsigned ); 
 
-
-
-__global__ void _QSim_cerenkov_photon_expt(qsim* sim, quad4* photon, unsigned num_photon )
+__global__ void _QSim_cerenkov_generate_expt(qsim* sim, quad4* photon, unsigned num_photon )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
@@ -195,24 +191,17 @@ __global__ void _QSim_cerenkov_photon_expt(qsim* sim, quad4* photon, unsigned nu
     curandState rng = sim->rngstate[idx]; 
 
     quad4 p ;   
-    qcerenkov::cerenkov_photon_expt(sim, p, idx, rng);   
+    qcerenkov::cerenkov_generate_expt(sim, p, idx, rng);   
 
-    if(idx % 100000 == 0) printf("//_QSim_cerenkov_photon_expt idx %d \n", idx  ); 
+    if(idx % 100000 == 0) printf("//_QSim_cerenkov_generate_expt idx %d \n", idx  ); 
     photon[idx] = p ; 
 }
 
-extern void QSim_cerenkov_photon_expt(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon ) 
+extern void QSim_cerenkov_generate_expt(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon ) 
 {
-    printf("//QSim_cerenkov_photon_expt num_photon %d \n", num_photon ); 
-    _QSim_cerenkov_photon_expt<<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
+    printf("//QSim_cerenkov_generate_expt num_photon %d \n", num_photon ); 
+    _QSim_cerenkov_generate_expt<<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
 } 
-
-
-
-
-
-
-
 
 
 
@@ -227,8 +216,9 @@ __global__ void _QSim_scint_generate(qsim* sim, qdebug* dbg, sphoton* photon, un
 
     curandState rng = sim->rngstate[idx] ; 
 
+    const quad6& gs = (const quad6&)dbg->scint_gs ; 
     sphoton p ;   
-    sim->scint->generate(p, rng, dbg->scint_gs, idx, -1 ); 
+    sim->scint->generate(p, rng, gs, idx, -1 ); 
 
     photon[idx] = p ; 
 }

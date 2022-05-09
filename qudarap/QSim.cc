@@ -545,26 +545,26 @@ NP* QSim::cerenkov_wavelength_rejection_sampled(unsigned num_wavelength )
 
 
 
-extern void QSim_cerenkov_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
+extern void QSim_cerenkov_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
 
 template <typename T>
-extern void QSim_cerenkov_photon_enprop(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
+extern void QSim_cerenkov_generate_enprop(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
 
-extern void QSim_cerenkov_photon_expt(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
+extern void QSim_cerenkov_generate_expt(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
 
 
 
-NP* QSim::cerenkov_photon(unsigned num_photon, unsigned test )
+NP* QSim::cerenkov_generate(unsigned num_photon, unsigned test )
 {
     configureLaunch(num_photon, 1 ); 
     quad4* d_photon = QU::device_alloc<quad4>(num_photon); 
 
     switch(test)
     {
-        case CERENKOV_PHOTON:                QSim_cerenkov_photon(              numBlocks,  threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
-        case CERENKOV_PHOTON_ENPROP_FLOAT:   QSim_cerenkov_photon_enprop<float>(numBlocks,  threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
-        case CERENKOV_PHOTON_ENPROP_DOUBLE:  QSim_cerenkov_photon_enprop<double>(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
-        case CERENKOV_PHOTON_EXPT:           QSim_cerenkov_photon_expt(          numBlocks, threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
+        case CERENKOV_GENERATE:                QSim_cerenkov_generate(              numBlocks,  threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
+        case CERENKOV_GENERATE_ENPROP_FLOAT:   QSim_cerenkov_generate_enprop<float>(numBlocks,  threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
+        case CERENKOV_GENERATE_ENPROP_DOUBLE:  QSim_cerenkov_generate_enprop<double>(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
+        case CERENKOV_GENERATE_EXPT:           QSim_cerenkov_generate_expt(          numBlocks, threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
     }
 
     NP* p = NP::Make<float>( num_photon, 4, 4); 

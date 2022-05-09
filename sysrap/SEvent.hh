@@ -36,6 +36,7 @@ struct SYSRAP_API SEvent
     // example gensteps used for testing 
     static NP* MakeTorchGensteps();  
     static NP* MakeCerenkovGensteps();  
+    static NP* MakeScintGensteps();  
 
     static NP* MakeGensteps(int gentype); 
 

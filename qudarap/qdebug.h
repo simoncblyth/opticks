@@ -11,6 +11,7 @@ Instanciation managed from QSim
 #include "squad.h"
 #include "sphoton.h"
 #include "sscint.h"
+#include "scerenkov.h"
 
 #include "qstate.h"
 #include "qprd.h"
@@ -33,12 +34,14 @@ struct qdebug
     qstate s ; 
     quad2  prd ; 
     sphoton  p ; 
-    quad6    scint_gs ; 
+    sscint    scint_gs ; 
+    scerenkov cerenkov_gs ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     void save(const char* dir) const ; 
     void save_scint_gs(const char* dir) const ; 
+    void save_cerenkov_gs(const char* dir) const ; 
 #endif
 
 }; 
@@ -65,6 +68,13 @@ inline void qdebug::save_scint_gs(const char* dir) const
     NP* gs = NP::Make<float>(1,6,4) ; 
     gs->read2( (float*)scint_gs.cdata() ); 
     gs->save(dir, "scint_gs.npy"); 
+}
+
+inline void qdebug::save_cerenkov_gs(const char* dir) const 
+{
+    NP* gs = NP::Make<float>(1,6,4) ; 
+    gs->read2( (float*)cerenkov_gs.cdata() ); 
+    gs->save(dir, "cerenkov_gs.npy"); 
 }
 
 

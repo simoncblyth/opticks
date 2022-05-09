@@ -12,10 +12,10 @@ enum {
    WAVELENGTH_SCINTILLATION,
    WAVELENGTH_CERENKOV,
    SCINT_GENERATE,
-   CERENKOV_PHOTON,
-   CERENKOV_PHOTON_ENPROP_FLOAT,
-   CERENKOV_PHOTON_ENPROP_DOUBLE,
-   CERENKOV_PHOTON_EXPT,
+   CERENKOV_GENERATE,
+   CERENKOV_GENERATE_ENPROP_FLOAT,
+   CERENKOV_GENERATE_ENPROP_DOUBLE,
+   CERENKOV_GENERATE_EXPT,
    GENERATE_PHOTON_G,
    BOUNDARY_LOOKUP_LINE_LS_L,
    PROP_LOOKUP_Y,
@@ -63,10 +63,10 @@ struct QSimLaunch
     static constexpr const char* WAVELENGTH_SCINTILLATION_ = "wavelength_scintillation" ; 
     static constexpr const char* WAVELENGTH_CERENKOV_ = "wavelength_cerenkov" ; 
 
-    static constexpr const char* CERENKOV_PHOTON_ = "cerenkov_photon" ; 
-    static constexpr const char* CERENKOV_PHOTON_ENPROP_FLOAT_ = "cerenkov_photon_enprop_float" ; 
-    static constexpr const char* CERENKOV_PHOTON_ENPROP_DOUBLE_ = "cerenkov_photon_enprop_double" ; 
-    static constexpr const char* CERENKOV_PHOTON_EXPT_ = "cerenkov_photon_expt" ; 
+    static constexpr const char* CERENKOV_GENERATE_ = "cerenkov_generate" ; 
+    static constexpr const char* CERENKOV_GENERATE_ENPROP_FLOAT_ = "cerenkov_generate_enprop_float" ; 
+    static constexpr const char* CERENKOV_GENERATE_ENPROP_DOUBLE_ = "cerenkov_generate_enprop_double" ; 
+    static constexpr const char* CERENKOV_GENERATE_EXPT_ = "cerenkov_generate_expt" ; 
 
     static constexpr const char* SCINT_GENERATE_ = "scint_generate" ; 
 
@@ -102,10 +102,10 @@ inline unsigned QSimLaunch::Type( const char* name )
 {
    unsigned test = UNKNOWN ;  
 
-   if(strcmp(name,CERENKOV_PHOTON_) == 0 )               test = CERENKOV_PHOTON ;
-   if(strcmp(name,CERENKOV_PHOTON_ENPROP_FLOAT_) == 0 )  test = CERENKOV_PHOTON_ENPROP_FLOAT ;
-   if(strcmp(name,CERENKOV_PHOTON_ENPROP_DOUBLE_) == 0 ) test = CERENKOV_PHOTON_ENPROP_DOUBLE ;
-   if(strcmp(name,CERENKOV_PHOTON_EXPT_) == 0 )          test = CERENKOV_PHOTON_EXPT ;
+   if(strcmp(name,CERENKOV_GENERATE_) == 0 )               test = CERENKOV_GENERATE ;
+   if(strcmp(name,CERENKOV_GENERATE_ENPROP_FLOAT_) == 0 )  test = CERENKOV_GENERATE_ENPROP_FLOAT ;
+   if(strcmp(name,CERENKOV_GENERATE_ENPROP_DOUBLE_) == 0 ) test = CERENKOV_GENERATE_ENPROP_DOUBLE ;
+   if(strcmp(name,CERENKOV_GENERATE_EXPT_) == 0 )          test = CERENKOV_GENERATE_EXPT ;
 
    if(strcmp(name,SCINT_GENERATE_) == 0 ) test = SCINT_GENERATE ;
 
@@ -169,10 +169,10 @@ inline const char* QSimLaunch::Name( unsigned type )
         case WAVELENGTH_SCINTILLATION: s = WAVELENGTH_SCINTILLATION_   ; break ; 
         case WAVELENGTH_CERENKOV:      s = WAVELENGTH_CERENKOV_        ; break ; 
 
-        case CERENKOV_PHOTON:                s = CERENKOV_PHOTON_                ; break ; 
-        case CERENKOV_PHOTON_ENPROP_FLOAT:   s = CERENKOV_PHOTON_ENPROP_FLOAT_   ; break ; 
-        case CERENKOV_PHOTON_ENPROP_DOUBLE:  s = CERENKOV_PHOTON_ENPROP_DOUBLE_  ; break ; 
-        case CERENKOV_PHOTON_EXPT:           s = CERENKOV_PHOTON_EXPT_           ; break ; 
+        case CERENKOV_GENERATE:                s = CERENKOV_GENERATE_                ; break ; 
+        case CERENKOV_GENERATE_ENPROP_FLOAT:   s = CERENKOV_GENERATE_ENPROP_FLOAT_   ; break ; 
+        case CERENKOV_GENERATE_ENPROP_DOUBLE:  s = CERENKOV_GENERATE_ENPROP_DOUBLE_  ; break ; 
+        case CERENKOV_GENERATE_EXPT:           s = CERENKOV_GENERATE_EXPT_           ; break ; 
 
         case SCINT_GENERATE:                 s = SCINT_GENERATE_           ; break ; 
 

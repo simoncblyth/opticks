@@ -32,6 +32,7 @@ msg="=== $BASH_SOURCE :"
 #test=wavelength_cerenkov
 
 test=scint_generate
+#test=cerenkov_generate
 
 
 #test=fill_state_0

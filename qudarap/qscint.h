@@ -17,9 +17,7 @@ struct curandStateXORWOW ;
 struct quad6 ; 
 struct sphoton ; 
 
-
 //#include "stdio.h"
-
 
 struct qscint
 {
@@ -46,8 +44,6 @@ struct qscint
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
 #include "sscint.h"
-
-
 
 /**
 qscint::generate_photon

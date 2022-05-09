@@ -62,7 +62,8 @@ struct QSimTest
     void wavelength() ; 
 
     void scint_generate(); 
-    void cerenkov_photon(); 
+    void cerenkov_generate(); 
+
 
     void generate_photon(); 
     void getStateNames(std::vector<std::string>& names, unsigned num_state) const ; 
@@ -327,10 +328,11 @@ void QSimTest::scint_generate()
     qs.dbg->save_scint_gs(dir);  
 }
 
-void QSimTest::cerenkov_photon()
+void QSimTest::cerenkov_generate()
 {
-    NP* p = qs.cerenkov_photon( num, type ); 
+    NP* p = qs.cerenkov_generate(num, type ); 
     p->save(dir, "p.npy"); 
+    qs.dbg->save_cerenkov_gs(dir);  
 }
 
 
@@ -559,11 +561,11 @@ void QSimTest::main()
 
         case SCINT_GENERATE:                scint_generate();                            ; break ; 
 
-        case CERENKOV_PHOTON:             
-        case CERENKOV_PHOTON_ENPROP_FLOAT:
-        case CERENKOV_PHOTON_ENPROP_DOUBLE:
-        case CERENKOV_PHOTON_EXPT :      
-                                             cerenkov_photon();              ; break ; 
+        case CERENKOV_GENERATE:             
+        case CERENKOV_GENERATE_ENPROP_FLOAT:
+        case CERENKOV_GENERATE_ENPROP_DOUBLE:
+        case CERENKOV_GENERATE_EXPT :      
+                                             cerenkov_generate();              ; break ; 
 
 
         case GENERATE_PHOTON_G:             

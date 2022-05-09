@@ -22,6 +22,9 @@ For now just implemnet for JUNO specific variant : collectGenstep_DsG4Scintillat
 
 #include "scurand.h"
 #include "smath.h"
+#include "scuda.h"
+#include "squad.h"
+
 
 
 struct sscint
@@ -56,7 +59,8 @@ struct sscint
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-   static void FillGenstep( quad6& gs_, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
+   float* cdata() const {  return (float*)&gentype ; }
+   static void FillGenstep( sscint& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
 #endif
 
 }; 
@@ -64,10 +68,8 @@ struct sscint
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-inline void sscint::FillGenstep( quad6& gs_, unsigned genstep_id, unsigned numphoton_per_genstep )
+inline void sscint::FillGenstep( sscint& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
 {
-    sscint& gs = (sscint&)gs_ ; 
-
     gs.gentype = OpticksGenstep_SCINTILLATION ; 
     gs.numphoton = numphoton_per_genstep  ;   
 

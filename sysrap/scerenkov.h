@@ -19,27 +19,23 @@ scerenkov.h : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/cerenkov
 
 #include "scurand.h"
 #include "smath.h"
+#include "scuda.h"
+#include "squad.h"
+
 
 // HMM could have scerenkovtype.h (like scerenkovtype.h) if need to handle different versions 
 
 
 struct scerenkov
 {
-    //int Id    ;   
-    //int ParentId ;
-    //int MaterialIndex  ;
-    //int NumPhotons ;
-
     // ctrl
-    unsigned gentype ;  
-    unsigned trackid ; 
-    unsigned matline ; 
-    unsigned numphoton ; 
+    unsigned gentype ;   // formerly Id
+    unsigned trackid ;   // formerly ParentId
+    unsigned matline ;   // formerly MaterialIndex
+    unsigned numphoton ; // formerly NumPhotons 
  
-    //float3 x0 ;
-    //float  t0 ;
-    float3   pos ;
-    float    time ; 
+    float3   pos ;  // formerly x0
+    float    time ; // formerly t0  
 
     float3 DeltaPosition ;
     float  step_length ;
@@ -72,6 +68,7 @@ struct scerenkov
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+   float* cdata() const {  return (float*)&gentype ; }
    static void FillGenstep( scerenkov& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
    std::string desc() const ; 
 #endif
@@ -85,6 +82,9 @@ inline void scerenkov::FillGenstep( scerenkov& gs, unsigned genstep_id, unsigned
 {
     gs.gentype = OpticksGenstep_CERENKOV ; 
     gs.numphoton = numphoton_per_genstep  ;   
+
+    // TODO: complete this
+
 }
 
 inline std::string scerenkov::desc() const 
@@ -124,12 +124,15 @@ SCERENKOV_METHOD void scerenkov::generate( sphoton& p, curandStateXORWOW& rng, c
 
 /**
 * qcerenkov : union between quad6 and specific genstep types for easy usage and yet no serialize/deserialize needed
-**/
 
 union qcerenkov
 {
    quad6     q ; 
    scerenkov c ; 
 };   
+
+**/
+
+
 
 
