@@ -23,6 +23,10 @@ struct curandStateXORWOW ;
 
 struct qcerenkov
 {
+
+    //QCERENKOV_METHOD static void generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id );
+
+
     // so far not using sphoton as generate nothing like a real photon 
     QCERENKOV_METHOD static void cerenkov_fabricate_genstep(               qsim* sim, GS& g, bool energy_range );
 

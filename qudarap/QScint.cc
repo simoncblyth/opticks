@@ -6,26 +6,51 @@
 #include <sstream>
 
 #include "NP.hh"
-
 #include "QUDA_CHECK.h"
 #include "QRng.hh"
 #include "QScint.hh"
 #include "QTex.hh"
+#include "QU.hh"
+
+#include "qscint.h"
+
 
 const plog::Severity QScint::LEVEL = PLOG::EnvLevel("QScint", "INFO"); 
 
 const QScint* QScint::INSTANCE = nullptr ; 
 const QScint* QScint::Get(){ return INSTANCE ;  }
 
+/**
+QScint::QScint
+----------------
+
+1. Uploads icdf array into GPU texture
+2. Creates qscint instance hooked up with the scint_tex and uploads the instance   
+
+**/
 
 QScint::QScint(const NP* icdf, unsigned hd_factor )
     :
     dsrc(icdf->ebyte == 8 ? icdf : nullptr),
     src( icdf->ebyte == 4 ? icdf : NP::MakeNarrow(dsrc) ), 
-    tex(MakeScintTex(src, hd_factor))
+    tex(MakeScintTex(src, hd_factor)),
+    scint(MakeInstance(tex)),
+    d_scint(QU::UploadArray<qscint>(scint, 1))
 {
     INSTANCE = this ; 
 }
+
+
+qscint* QScint::MakeInstance(const QTex<float>* tex) // static 
+{
+    qscint* scint = new qscint ; 
+    scint->scint_tex = tex->texObj ; 
+    scint->scint_meta = tex->d_meta ;
+    bool qscint_disable_hd = SSys::getenvbool("QSCINT_DISABLE_HD"); 
+    scint->hd_factor = qscint_disable_hd ? 0u : tex->getHDFactor() ;
+    return scint ; 
+}
+
 
 std::string QScint::desc() const
 {
@@ -63,7 +88,7 @@ QTex<float>* QScint::MakeScintTex(const NP* src, unsigned hd_factor )  // static
     assert( nj == 4096 ); 
     assert( nk == 1 ); 
 
-    unsigned ny = ni ; // height  
+    unsigned ny = ni ; // height : 1 or 3  (3 is primitive multi-resolution for improved tail resolution) 
     unsigned nx = nj ; // width 
   
 
@@ -123,6 +148,8 @@ void QScint::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned w
         << ")" 
         ;
 }
+
+
 
 void QScint::check()
 {

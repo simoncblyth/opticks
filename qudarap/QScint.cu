@@ -16,6 +16,13 @@ TODO
 * simplify this using a qscint.h helper instance that collects the resources : texObj, photon,  etc.. 
   in order to modularize  
 
+See::
+
+* qsim::scint_wavelength_hd0
+* qsim::scint_wavelength_hd10
+* qsim::scint_wavelength_hd20
+
+
 **/
 
 __global__ void _QScint_check(unsigned width, unsigned height)

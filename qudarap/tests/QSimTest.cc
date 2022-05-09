@@ -59,7 +59,7 @@ struct QSimTest
    
     void multifilm_lookup_all();
 
-    void wavelength(char mode, unsigned num_wavelength) ; 
+    void wavelength() ; 
 
     void scint_photon(); 
     void cerenkov_photon(); 
@@ -287,37 +287,34 @@ void QSimTest::multifilm_lookup_all(){
 
 
 
-void QSimTest::wavelength(char mode, unsigned num_wavelength )
+void QSimTest::wavelength()
 {
-    assert( mode == 'S' || mode == 'C' ) ;
-
-
     NP* w = nullptr ; 
 
     std::stringstream ss ; 
     ss << "wavelength" ; ; 
-    if( mode == 'S' )
+    if( type == WAVELENGTH_SCINTILLATION )
     {
         unsigned hd_factor(~0u) ; 
-        w = qs.scint_wavelength( num_wavelength, hd_factor );  // hd_factor is an output argument
+        w = qs.scint_wavelength( num, hd_factor );  // hd_factor is an output argument
         assert( hd_factor == 0 || hd_factor == 10 || hd_factor == 20 ); 
         ss << "_scint_hd" << hd_factor ; 
 
         char scintTexFilterMode = qs.getScintTexFilterMode() ; 
         if(scintTexFilterMode == 'P') ss << "_cudaFilterModePoint" ; 
     }
-    else if( mode == 'C' )
+    else if( type == WAVELENGTH_CERENKOV )
     {
-        w = qs.cerenkov_wavelength_rejection_sampled(num_wavelength); 
+        w = qs.cerenkov_wavelength_rejection_sampled(num); 
         ss << "_cerenkov" ; 
     }
 
-    ss << "_" << num_wavelength << ".npy" ; 
+    ss << "_" << num << ".npy" ; 
     std::string s = ss.str();
     const char* name = s.c_str(); 
 
     float* ww = w->values<float>(); 
-    qs.dump_wavelength( ww, num_wavelength ); 
+    qs.dump_wavelength( ww, num ); 
    
     LOG(info) << " name " << name ; 
     w->save( dir, name ); 
@@ -551,8 +548,12 @@ void QSimTest::main()
     switch(type)
     {
         case RNG_SEQUENCE:                  rng_sequence(num, ni_tranche_size)         ; break ; 
-        case WAVELENGTH_S  :                wavelength('S', num)                       ; break ; 
-        case WAVELENGTH_C  :                wavelength('C', num)                       ; break ; 
+
+        case WAVELENGTH_SCINTILLATION:      
+        case WAVELENGTH_CERENKOV:           
+                                            wavelength()                               ; break ; 
+
+
         case SCINT_PHOTON:                  scint_photon();                            ; break ; 
 
         case CERENKOV_PHOTON:             

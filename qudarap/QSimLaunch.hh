@@ -9,8 +9,8 @@ enum {
    BOUNDARY_LOOKUP_ALL,
    BOUNDARY_LOOKUP_WATER,
    BOUNDARY_LOOKUP_LS,
-   WAVELENGTH_S,
-   WAVELENGTH_C,
+   WAVELENGTH_SCINTILLATION,
+   WAVELENGTH_CERENKOV,
    SCINT_PHOTON,
    CERENKOV_PHOTON,
    CERENKOV_PHOTON_ENPROP_FLOAT,
@@ -60,6 +60,9 @@ struct QSimLaunch
     static constexpr const char* BOUNDARY_LOOKUP_WATER_ = "boundary_lookup_water" ; 
     static constexpr const char* BOUNDARY_LOOKUP_LS_ = "boundary_lookup_ls" ; 
 
+    static constexpr const char* WAVELENGTH_SCINTILLATION_ = "wavelength_scintillation" ; 
+    static constexpr const char* WAVELENGTH_CERENKOV_ = "wavelength_cerenkov" ; 
+
     static constexpr const char* CERENKOV_PHOTON_ = "cerenkov_photon" ; 
     static constexpr const char* CERENKOV_PHOTON_ENPROP_FLOAT_ = "cerenkov_photon_enprop_float" ; 
     static constexpr const char* CERENKOV_PHOTON_ENPROP_DOUBLE_ = "cerenkov_photon_enprop_double" ; 
@@ -98,8 +101,6 @@ struct QSimLaunch
 inline unsigned QSimLaunch::Type( const char* name )
 {
    unsigned test = UNKNOWN ;  
-   if(strcmp(name,"S") == 0 ) test = WAVELENGTH_S ; 
-   if(strcmp(name,"C") == 0 ) test = WAVELENGTH_C ;
 
    if(strcmp(name,CERENKOV_PHOTON_) == 0 )               test = CERENKOV_PHOTON ;
    if(strcmp(name,CERENKOV_PHOTON_ENPROP_FLOAT_) == 0 )  test = CERENKOV_PHOTON_ENPROP_FLOAT ;
@@ -107,6 +108,9 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,CERENKOV_PHOTON_EXPT_) == 0 )          test = CERENKOV_PHOTON_EXPT ;
 
    if(strcmp(name,SCINT_PHOTON_) == 0 ) test = SCINT_PHOTON ;
+
+   if(strcmp(name,WAVELENGTH_SCINTILLATION_) == 0 ) test = WAVELENGTH_SCINTILLATION ;
+   if(strcmp(name,WAVELENGTH_CERENKOV_) == 0 )      test = WAVELENGTH_CERENKOV ;
 
 
    if(strcmp(name,"G") == 0 ) test = GENERATE_PHOTON_G ;
@@ -161,6 +165,9 @@ inline const char* QSimLaunch::Name( unsigned type )
         case BOUNDARY_LOOKUP_ALL:    s = BOUNDARY_LOOKUP_ALL_    ; break ; 
         case BOUNDARY_LOOKUP_WATER:  s = BOUNDARY_LOOKUP_WATER_  ; break ; 
         case BOUNDARY_LOOKUP_LS:     s = BOUNDARY_LOOKUP_LS_     ; break ; 
+
+        case WAVELENGTH_SCINTILLATION: s = WAVELENGTH_SCINTILLATION_   ; break ; 
+        case WAVELENGTH_CERENKOV:      s = WAVELENGTH_CERENKOV_        ; break ; 
 
         case CERENKOV_PHOTON:                s = CERENKOV_PHOTON_                ; break ; 
         case CERENKOV_PHOTON_ENPROP_FLOAT:   s = CERENKOV_PHOTON_ENPROP_FLOAT_   ; break ; 

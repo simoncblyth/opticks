@@ -74,29 +74,24 @@ HMM hd_factor is more appropriate as a property of the uploaded texture than it 
 TODO: rearrange hd_factor 
 **/
 
-__global__ void _QSim_scint_wavelength(qsim* sim, float* wavelength, unsigned num_wavelength, unsigned hd_factor )
+__global__ void _QSim_scint_wavelength(qsim* sim, float* wavelength, unsigned num_wavelength )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
 
     curandState rng = sim->rngstate[id]; 
 
-    float wl ; 
-    switch(hd_factor)
-    {
-        case 0:  wl = sim->scint_wavelength_hd0(rng)  ; break ; 
-        case 10: wl = sim->scint_wavelength_hd10(rng) ; break ; 
-        case 20: wl = sim->scint_wavelength_hd20(rng) ; break ; 
-        default: wl = 0.f ; 
-    }
-    if(id % 100000 == 0) printf("//_QSim_scint_wavelength id %d hd_factor %d wl %10.4f    \n", id, hd_factor, wl  ); 
+    float wl = sim->scint->wavelength(rng) ; 
+ 
+    if(id % 100000 == 0) printf("//_QSim_scint_wavelength id %d  wl %10.4f    \n", id, wl  ); 
+
     wavelength[id] = wl ; 
 }
 
-extern void QSim_scint_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, float* wavelength, unsigned num_wavelength, unsigned hd_factor ) 
+extern void QSim_scint_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, float* wavelength, unsigned num_wavelength ) 
 {
     printf("//QSim_scint_wavelength num_wavelength %d \n", num_wavelength ); 
-    _QSim_scint_wavelength<<<numBlocks,threadsPerBlock>>>( sim, wavelength, num_wavelength, hd_factor );
+    _QSim_scint_wavelength<<<numBlocks,threadsPerBlock>>>( sim, wavelength, num_wavelength );
 } 
 
 
@@ -236,7 +231,7 @@ __global__ void _QSim_scint_photon(qsim* sim, quad4* photon, unsigned num_photon
     curandState rng = sim->rngstate[idx] ; 
 
     quad4 p ;   
-    sim->scint_photon(p, rng); 
+    sim->scint->scint_photon(p, rng); 
 
     photon[idx] = p ; 
 }

@@ -24,11 +24,17 @@ msg="=== $BASH_SOURCE :"
 
 #test=rng_sequence
 #test=boundary_lookup_all
-test=boundary_lookup_water
+#test=boundary_lookup_water
 #test=boundary_lookup_ls
+
+
+test=wavelength_scintillation
+#test=wavelength_cerenkov
 
 #test=fill_state_0
 #test=fill_state_1
+
+
 
 #test=rayleigh_scatter_align
 
@@ -67,6 +73,7 @@ nrm=0,0,1
 export TEST=${TEST:-$test}
 case $TEST in
     rng_sequence) num=$M1 ;; 
+     wavelength*) num=$M1 ;; 
 esac
 
 

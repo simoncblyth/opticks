@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""
+
+
+* histo plotting of domain compressed wavelength ?
+
+"""
 
 import os, sys, logging, numpy as np
 import matplotlib.pyplot as plt

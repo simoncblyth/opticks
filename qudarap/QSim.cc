@@ -76,11 +76,13 @@ void QSim::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, 
     }
     else
     {
-        unsigned hd_factor = 0u ;  // 0,10,20
+        unsigned hd_factor = 20u ;  // 0,10,20
         QScint* qscint = new QScint( icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
         LOG(LEVEL) << qscint->desc(); 
     }
 
+
+    // TODO: combine QOptical and QBnd as very closely related 
 
     if( bnd == nullptr )
     {
@@ -101,6 +103,10 @@ void QSim::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, 
         QOptical* qopt = new QOptical(optical); 
         LOG(fatal) << qopt->desc(); 
     }
+
+
+
+
 
     LOG(error) << "[ QProp " ; 
     QProp<float>* qprop = new QProp<float>(rindexpath) ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
@@ -228,13 +234,20 @@ void QSim::init_sim()
     } 
     if(scint)
     {
+        /**
+
         unsigned hd_factor = scint->tex->getHDFactor() ;  // HMM: perhaps get this from sim rather than occupying an argument slot  
         LOG(LEVEL) 
             << " scint.desc " << scint->desc() 
             << " hd_factor " << hd_factor 
             ;
+
         sim->scint_tex = scint->tex->texObj ; 
         sim->scint_meta = scint->tex->d_meta ; 
+
+        **/
+        sim->scint = scint->d_scint ; 
+
     } 
     if(bnd)
     {
@@ -358,8 +371,7 @@ std::string QSim::desc() const
     std::stringstream ss ; 
     ss << "QSim"
        << " sim->rngstate " << sim->rngstate 
-       << " sim->scint_tex " << sim->scint_tex 
-       << " sim->scint_meta " << sim->scint_meta
+       << " sim->scint " << sim->scint 
        << " sim->boundary_tex " << sim->boundary_tex 
        << " sim->boundary_meta " << sim->boundary_meta
        << " d_sim " << d_sim 
@@ -543,10 +555,11 @@ the typical values of 10 or 20 which depend on the buffer creation.
 
 **/
 
-extern void QSim_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, float* wavelength, unsigned num_wavelength, unsigned hd_factor ); 
+extern void QSim_scint_wavelength(   dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, float* wavelength, unsigned num_wavelength ); 
 
 NP* QSim::scint_wavelength(unsigned num_wavelength, unsigned& hd_factor )
 {
+
     bool qsim_disable_hd = SSys::getenvbool("QSIM_DISABLE_HD"); 
     hd_factor = qsim_disable_hd ? 0u : scint->tex->getHDFactor() ; 
     // HMM: perhaps get this from sim rather than occupying an argument slot  
@@ -556,7 +569,7 @@ NP* QSim::scint_wavelength(unsigned num_wavelength, unsigned& hd_factor )
 
     float* d_wavelength = QU::device_alloc<float>(num_wavelength); 
 
-    QSim_scint_wavelength(numBlocks, threadsPerBlock, d_sim, d_wavelength, num_wavelength, hd_factor );  
+    QSim_scint_wavelength(numBlocks, threadsPerBlock, d_sim, d_wavelength, num_wavelength );  
 
     NP* w = NP::Make<float>(num_wavelength) ; 
 

@@ -469,7 +469,7 @@ extern "C" __global__ void __intersection__is()
         if(optixReportIntersection( isect.w, hitKind))
         {
             quad2* prd = getPRD<quad2>(); 
-            prd->q0.f = isect ; 
+            prd->q0.f = isect ;  // .w:distance and .xyz:normal which starts as the local frame one 
             prd->set_boundary(boundary) ; 
             //printf("//__intersection__is prd.set_boundary %d \n", boundary ); 
         }   

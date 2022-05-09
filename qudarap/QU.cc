@@ -13,6 +13,7 @@
 #include "qrng.h"
 #include "qevent.h"
 #include "qdebug.h"
+#include "qscint.h"
 #include "srec.h"
 #include "sseq.h"
 #include "qmultifilmlut.h"
@@ -109,6 +110,10 @@ template qmultifilmlut* QU::UploadArray<qmultifilmlut>(const qmultifilmlut* arra
 template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items) ;
 template qevent*        QU::UploadArray<qevent>(const qevent* array, unsigned num_items) ;
 template qdebug*        QU::UploadArray<qdebug>(const qdebug* array, unsigned num_items) ;
+template qscint*        QU::UploadArray<qscint>(const qscint* array, unsigned num_items) ;
+
+
+
 
 
 /**
