@@ -2,6 +2,8 @@
 #include "PLOG.hh"
 #include "SSys.hh"
 #include "scuda.h"
+#include "squad.h"
+#include "sphoton.h"
 
 #include <sstream>
 

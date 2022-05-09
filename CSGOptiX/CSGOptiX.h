@@ -19,8 +19,8 @@ struct SGLM ;
 struct CSGFoundry ; 
 struct CSGView ; 
 
-template <typename T> struct QSim ; 
 template <typename T> struct Tran ; 
+struct QSim ; 
 struct QEvent ; 
 
 struct Params ; 
@@ -81,7 +81,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
     double dt ; 
 
 
-    QSim<float>* sim ; 
+    QSim*        sim ; 
     QEvent*      event ;  
  
     const char* desc() const ; 

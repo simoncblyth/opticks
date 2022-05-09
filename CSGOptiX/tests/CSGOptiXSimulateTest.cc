@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     LOG(info) << fd->descComp(); 
 
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
-    QSim<float>::UploadComponents(fd->icdf, fd->bnd, fd->optical, rindexpath ); 
+    QSim::UploadComponents(fd->icdf, fd->bnd, fd->optical, rindexpath ); 
 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 

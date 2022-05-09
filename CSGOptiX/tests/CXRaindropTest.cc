@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     // HMM : THE COMPONENTS ARE MORE RELEVANT TO QSim THAN TO CSGFoundry 
     // PERHAPS SHOULD USE QSim TO MANAGE THEM WITHIN A QSim FOLDER WITHIN CSGFoundry 
 
-    QSim<float>::UploadComponents(fd->icdf, bnd_plus, optical_plus, rindexpath ); 
+    QSim::UploadComponents(fd->icdf, bnd_plus, optical_plus, rindexpath ); 
 
     const char* cfbase_local = SSys::getenvvar("CFBASE_LOCAL") ; assert(cfbase_local) ; 
     LOG(fatal) << "MIXING CSGFoundry combining basis cfbase with cfbase_local "; 

@@ -3,8 +3,9 @@
 #include "curand_kernel.h"
 #include "scuda.h"
 #include "squad.h"
-
+#include "sphoton.h"
 #include "qscint.h"
+
 #include "stdio.h"
 
 /**

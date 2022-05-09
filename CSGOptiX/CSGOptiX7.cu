@@ -193,7 +193,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     unsigned genstep_id = evt->seed[idx] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
      
-    qsim<float>* sim = params.sim ; 
+    qsim* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
 
     sphoton p = {} ;   
@@ -272,7 +272,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
 
     const quad6& gs     = evt->genstep[genstep_id] ; 
      
-    qsim<float>* sim = params.sim ; 
+    qsim* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;   
 
     quad4 p ;  

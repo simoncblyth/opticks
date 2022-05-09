@@ -179,7 +179,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     peta(new quad4), 
     metatran(nullptr),
     dt(0.),
-    sim(raygenmode == 0 ? nullptr : new QSim<float>),
+    sim(raygenmode == 0 ? nullptr : new QSim),
     event(sim == nullptr  ? nullptr : sim->event     )
 {
     init(); 
