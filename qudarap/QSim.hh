@@ -19,6 +19,9 @@ Contrast with the QEvent with a very different event-by-event lifecycle
 
 TODO: more modularization, do less directly in QSim
 
+
+HMM : MOST OF THIS API IS FOR TESTING ONLY  : TODO: Move lots to QSimTest perhaps ?
+
 **/
 
 struct NP ; 
@@ -28,12 +31,14 @@ template <typename T> struct QProp ;
 
 struct qsim ; 
 
+struct QBase ; 
 struct QEvent ; 
 struct QRng ; 
 struct QScint ;
+struct QCerenkov ;
 struct QBnd ; 
 struct QPrd ; 
-struct QMultiFilmLUT;
+struct QMultiFilm;
 struct QOptical ; 
 struct QEvent ; 
 struct QDebug ; 
@@ -54,42 +59,43 @@ struct QUDARAP_API QSim
     static const QSim* Get(); 
 
     static void UploadComponents(const NP* icdf, const NP* bnd, const NP* optical, const char* rindexpath );   
-    static void UploadMultiFilmLUT(const NP * multi_film_lut );
- 
+    static void UploadMultiFilm(const NP * multi_film_lut );
+
+    const QBase*     base ; 
     QEvent*          event ; 
     const QRng*      rng ;   
     const QScint*    scint ; 
+    const QCerenkov* cerenkov ; 
     const QBnd*      bnd ; 
     const QPrd*      prd ; 
     const QOptical*  optical ; 
     const QDebug*    debug_ ; 
 
     const QProp<float>*  prop ; 
-    const QMultiFilmLUT * multi_film;// correspond New PMT optical model;
+    const QMultiFilm*    multifilm ;
 
-    const int         pidx ; 
     qsim*             sim ;  
     qsim*           d_sim ;  
 
     qdebug*           dbg ; 
     qdebug*           d_dbg ; 
 
-
-
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
 
+
     QSim();
-
     void init(); 
-    void init_sim(); 
-
-    NP* duplicate_dbg_ephoton(unsigned num_photon); 
 
     qsim* getDevicePtr() const ; 
+    std::string desc() const ; 
+
+    // TODO: relocate non-essential methods elsewhere into testing  ?
+    
+    NP* duplicate_dbg_ephoton(unsigned num_photon); 
+
 
     char getScintTexFilterMode() const ;
-    std::string desc() const ; 
 
     void configureLaunch16();
     void configureLaunch( unsigned width, unsigned height );
@@ -112,8 +118,9 @@ struct QUDARAP_API QSim
     NP* cerenkov_wavelength_rejection_sampled( unsigned num_wavelength ); 
     void dump_wavelength(                       float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 
-    NP* scint_generate(unsigned num_photon ); 
-    NP* cerenkov_generate(unsigned num_photon, unsigned test ); 
+
+    NP* dbg_gs_generate(unsigned num_photon, unsigned type ); 
+
 
     void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 
 
@@ -143,8 +150,6 @@ struct QUDARAP_API QSim
     template<typename T>
     void prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_width, const std::vector<unsigned>& pids ) ;
 
-
-    
     void multifilm_lookup_all( quad2* sample , quad2* result ,  unsigned width, unsigned height );
 
 

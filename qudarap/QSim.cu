@@ -17,10 +17,13 @@ TODO: split off debug functions from actually used functions
 #include "scurand.h"
 #include "sphoton.h"
 #include "srec.h"
+#include "scerenkov.h"
 
 
-#include "qgs.h"
+//#include "qgs.h"
 #include "qprop.h"
+#include "qstate.h"
+#include "qbnd.h"
 #include "qsim.h"
 #include "qcerenkov.h"
 
@@ -70,12 +73,6 @@ template void QSim_rng_sequence(dim3, dim3, qsim*, double*, unsigned, unsigned, 
 
 
 
-
-/**
-HMM hd_factor is more appropriate as a property of the uploaded texture than it is an input argument 
-TODO: rearrange hd_factor 
-**/
-
 __global__ void _QSim_scint_wavelength(qsim* sim, float* wavelength, unsigned num_wavelength )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
@@ -103,131 +100,38 @@ extern void QSim_scint_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qsim* si
 
 
 
-/**
-genstep provisioning ? gensteps need to be uploaded with pointer held in qsim 
-but for testing need to be able to manually fabricate a genstep
-**/
 
-__global__ void _QSim_cerenkov_wavelength_rejection_sampled(qsim* sim, float* wavelength, unsigned num_wavelength )
-{
-    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
-    if (id >= num_wavelength) return;
-
-    curandState rng = sim->rngstate[id]; 
-
-    float wl = qcerenkov::cerenkov_wavelength_rejection_sampled(sim, id, rng);   
-
-    if(id % 100000 == 0) printf("//_QSim_cerenkov_wavelength_rejection_sampled id %d wl %10.4f    \n", id, wl  ); 
-    wavelength[id] = wl ; 
-}
-
-
-extern void QSim_cerenkov_wavelength_rejection_sampled(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, float* wavelength, unsigned num_wavelength ) 
-{
-    printf("//QSim_cerenkov_wavelength_rejection_sampled num_wavelength %d \n", num_wavelength ); 
-    _QSim_cerenkov_wavelength_rejection_sampled<<<numBlocks,threadsPerBlock>>>( sim, wavelength, num_wavelength );
-} 
-
-
-
-
-
-
-
-
-
-__global__ void _QSim_cerenkov_generate(qsim* sim, quad4* photon, unsigned num_photon )
-{
-    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
-    if (idx >= num_photon) return;
-
-    curandState rng = sim->rngstate[idx]; 
-
-    quad4 p ;   
-    qcerenkov::cerenkov_generate(sim, p, idx, rng);   
-
-    if(idx % 100000 == 0) printf("//_QSim_cerenkov_generate idx %d \n", idx  ); 
-    photon[idx] = p ; 
-}
-
-extern void QSim_cerenkov_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon ) 
-{
-    printf("//QSim_cerenkov_generate num_photon %d \n", num_photon ); 
-    _QSim_cerenkov_generate<<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
-} 
-
-template<typename T>
-__global__ void _QSim_cerenkov_generate_enprop(qsim* sim, quad4* photon, unsigned num_photon )
-{
-    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
-    if (idx >= num_photon) return;
-
-    curandState rng = sim->rngstate[idx]; 
-
-    quad4 p ;   
-    qcerenkov::cerenkov_generate_enprop<T>(sim, p, idx, rng);   
-
-    if(idx % 100000 == 0) printf("//_QSim_cerenkov_generate_enprop idx %d \n", idx  ); 
-    photon[idx] = p ; 
-}
-
-
-template<typename T>
-extern void QSim_cerenkov_generate_enprop(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon) 
-{
-    printf("//QSim_cerenkov_generate_enprop num_photon %d \n", num_photon ); 
-    _QSim_cerenkov_generate_enprop<T><<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
-} 
-
-
-template void QSim_cerenkov_generate_enprop<float>(dim3, dim3, qsim*, quad4*, unsigned ); 
-template void QSim_cerenkov_generate_enprop<double>(dim3, dim3, qsim*, quad4*, unsigned ); 
-
-__global__ void _QSim_cerenkov_generate_expt(qsim* sim, quad4* photon, unsigned num_photon )
-{
-    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
-    if (idx >= num_photon) return;
-
-    curandState rng = sim->rngstate[idx]; 
-
-    quad4 p ;   
-    qcerenkov::cerenkov_generate_expt(sim, p, idx, rng);   
-
-    if(idx % 100000 == 0) printf("//_QSim_cerenkov_generate_expt idx %d \n", idx  ); 
-    photon[idx] = p ; 
-}
-
-extern void QSim_cerenkov_generate_expt(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad4* photon, unsigned num_photon ) 
-{
-    printf("//QSim_cerenkov_generate_expt num_photon %d \n", num_photon ); 
-    _QSim_cerenkov_generate_expt<<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon );
-} 
-
-
-
-
-
-
-
-__global__ void _QSim_scint_generate(qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon )
+__global__ void _QSim_dbg_gs_generate(qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon, unsigned type )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
 
     curandState rng = sim->rngstate[idx] ; 
-
-    const quad6& gs = (const quad6&)dbg->scint_gs ; 
     sphoton p ;   
-    sim->scint->generate(p, rng, gs, idx, -1 ); 
+
+    if( type == CERENKOV_GENERATE ) // TODO: other flavors of ck gen 
+    {
+        const quad6& gs = (const quad6&)dbg->cerenkov_gs ; 
+        sim->cerenkov->generate(p, rng, gs, idx, -1 ); 
+    }
+    else if( type == SCINT_GENERATE )
+    {
+        const quad6& gs = (const quad6&)dbg->scint_gs ; 
+        sim->scint->generate(p, rng, gs, idx, -1 ); 
+    }
 
     photon[idx] = p ; 
 }
 
-extern void QSim_scint_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon ) 
+
+extern void QSim_dbg_gs_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon, unsigned type ) 
 {
-    printf("//QSim_scint_generate num_photon %d \n", num_photon ); 
-    _QSim_scint_generate<<<numBlocks,threadsPerBlock>>>( sim, dbg, photon, num_photon );
+    printf("//QSim_dbg_gs_generate num_photon %d type %d \n", num_photon, type ); 
+    _QSim_dbg_gs_generate<<<numBlocks,threadsPerBlock>>>( sim, dbg, photon, num_photon, type );
 } 
+
+
+
 
 
 
@@ -275,7 +179,7 @@ __global__ void _QSim_fill_state_0(qsim* sim, quad6* state,  unsigned num_state,
 
     printf("//_QSim_fill_state_0 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );  
 
-    sim->fill_state(s, boundary, wavelength, cosTheta, state_id ); 
+    sim->bnd->fill_state(s, boundary, wavelength, cosTheta, state_id ); 
 
     state[state_id].q0.f = s.material1 ; 
     state[state_id].q1.f = s.m1group2 ; 
@@ -311,7 +215,7 @@ __global__ void _QSim_fill_state_1( qsim* sim, qstate* state,  unsigned num_stat
     printf("//_QSim_fill_state_1 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );  
 
     qstate s ; 
-    sim->fill_state(s, boundary, wavelength, cosTheta, state_id ); 
+    sim->bnd->fill_state(s, boundary, wavelength, cosTheta, state_id ); 
 
     state[state_id] = s ; 
 
@@ -593,7 +497,7 @@ __global__ void _QSim_boundary_lookup_all(qsim* sim, quad* lookup, unsigned widt
     if (ix >= width | iy >= height ) return;
 
     quad q ; 
-    q.f = sim->boundary_lookup( ix, iy ); 
+    q.f = sim->bnd->boundary_lookup( ix, iy ); 
     lookup[index] = q ; 
 }
 
@@ -611,7 +515,7 @@ __global__ void _QSim_boundary_lookup_line(qsim* sim, quad* lookup, float* domai
     if (id >= num_lookup) return;
     float wavelength = domain[id] ;  
     quad q ; 
-    q.f = sim->boundary_lookup( wavelength, line, k ); 
+    q.f = sim->bnd->boundary_lookup( wavelength, line, k ); 
     lookup[id] = q ; 
 }
 
@@ -634,7 +538,7 @@ __global__ void _QSim_prop_lookup(qsim* sim, T* lookup, const T* domain, unsigne
     T x = domain[ix] ;  
     unsigned pid = pids[iy] ; 
 
-    T y = sim->prop->interpolate( pid, x ); 
+    T y = sim->cerenkov->prop->interpolate( pid, x ); 
     lookup[iy*domain_width + ix] = y ; 
 }
 
@@ -664,7 +568,7 @@ __global__ void _QSim_prop_lookup_one(qsim* sim, T* lookup, const T* domain, uns
     if (ix >= domain_width || pid >= num_pids  ) return;
 
     T x = domain[ix] ;  
-    T y = sim->prop->interpolate( pid, x ); 
+    T y = sim->cerenkov->prop->interpolate( pid, x ); 
 
     lookup[ipid*domain_width + ix] = y ; 
 }

@@ -1,4 +1,11 @@
 #pragma once
+/**
+QMultiFilm.hh
+===============
+
+For the 3 PMT Types : boundary * resolution * wavelength * aoi * payload 
+
+**/
 
 #include <string>
 #include <vector>
@@ -9,26 +16,24 @@ union quad;
 struct dim3 ; 
 struct NP ; 
 struct float4;
-struct qmultifilmlut;
+struct qmultifilm ;
 template <typename T> struct QTex ; 
 
-struct QUDARAP_API QMultiFilmLUT
+struct QUDARAP_API QMultiFilm
 {
     static const plog::Severity LEVEL ; 
-    static const QMultiFilmLUT*        INSTANCE ; 
-    static const QMultiFilmLUT*        Get(); 
+    static const QMultiFilm*        INSTANCE ; 
+    static const QMultiFilm*        Get(); 
 
     const NP*      dsrc ; 
     const NP*      src ; 
+    QTex<float4>* tex_nnvt_normal[4];
+    QTex<float4>* tex_nnvt_highqe[4];
+    QTex<float4>* tex_hama[4];
 
-    /* 
-       3 PMT Type   
-       each PMT :  boundary *  resolution * wavelength * aoi * payload 
-    */
-    QTex<float4>  * tex_nnvt_normal[4];
-    QTex<float4>  * tex_nnvt_highqe[4];
-    QTex<float4>  * tex_hama[4];
-    
+    qmultifilm*   multifilm ;
+    qmultifilm*   d_multifilm ;
+ 
     /* 4 = 2 * 2 ( boundary , resolution)     */
    
     void makeMultiFilmAllTex();
@@ -36,14 +41,11 @@ struct QUDARAP_API QMultiFilmLUT
     QTex<float4>* makeMultiFilmOneTex(int pmtcatIdx , int bndIdx , int resIdx);
 
 
-    QMultiFilmLUT(const NP* lut ); 
+    QMultiFilm(const NP* lut ); 
 
     void init(); 
     void uploadMultifilmlut();
-    qmultifilmlut* getDevicePtr() const;
-    qmultifilmlut* multifilmlut;
-    qmultifilmlut* d_multifilmlut;
-    
+    qmultifilm* getDevicePtr() const;
     std::string desc() const ; 
 
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
@@ -58,8 +60,6 @@ struct QUDARAP_API QMultiFilmLUT
   
     float4 multifilm_lookup( unsigned pmtType, unsigned boundary, float nm, float aoi );
     QTex<float4> ** choose_tex(int pmtcatIdx);
-
-
 };
 
 

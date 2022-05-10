@@ -12,14 +12,16 @@
 #include "qsim.h"
 #include "qdebug.h"
 
+#include "QBase.hh"
 #include "QEvent.hh"
 #include "QRng.hh"
 #include "QTex.hh"
 #include "QScint.hh"
+#include "QCerenkov.hh"
 #include "QBnd.hh"
 #include "QPrd.hh"
 #include "QProp.hh"
-#include "QMultiFilmLUT.hh"
+#include "QMultiFilm.hh"
 #include "QEvent.hh"
 #include "QOptical.hh"
 #include "QState.hh"
@@ -65,36 +67,16 @@ argument with meaningful standardized keys.
 
 void QSim::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, const char* rindexpath  )
 {
-    QRng* qrng = new QRng ;  // loads and uploads curandState 
-    LOG(LEVEL) << qrng->desc(); 
+    QBase* base = new QBase ; 
+    LOG(LEVEL) << base->desc(); 
+
+    QRng* rng = new QRng ;  // loads and uploads curandState 
+    LOG(LEVEL) << rng->desc(); 
 
     const char* qsim_icdf_path = SSys::getenvvar("QSIM_ICDF_PATH", nullptr ); 
     const NP* override_icdf = qsim_icdf_path ?  NP::Load(qsim_icdf_path) : nullptr ;
     const NP* icdf = override_icdf ? override_icdf : icdf_ ; 
  
-    if( icdf == nullptr )
-    {
-        LOG(warning) << " icdf null " ; 
-    }
-    else
-    {
-        unsigned hd_factor = 20u ;  // 0,10,20
-        QScint* qscint = new QScint( icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
-        LOG(LEVEL) << qscint->desc(); 
-    }
-
-
-    // TODO: combine QOptical and QBnd as very closely related 
-
-    if( bnd == nullptr )
-    {
-        LOG(warning) << " bnd null " ; 
-    }
-    else
-    {
-        QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
-        LOG(LEVEL) << qbnd->desc(); 
-    }
 
     if( optical == nullptr )
     {
@@ -107,39 +89,62 @@ void QSim::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, 
     }
 
 
+    if( bnd == nullptr )
+    {
+        LOG(warning) << " bnd null " ; 
+    }
+    else
+    {
+        QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
+        LOG(LEVEL) << qbnd->desc(); 
+    }
+
 
     QDebug* debug_ = new QDebug ; 
     LOG(info) << debug_->desc() ; 
 
 
-
     LOG(error) << "[ QProp " ; 
-    QProp<float>* qprop = new QProp<float>(rindexpath) ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
+    QProp<float>* prop = new QProp<float>(rindexpath) ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
     LOG(error) << "] QProp " ; 
+    LOG(LEVEL) << prop->desc(); 
 
 
-    LOG(LEVEL) << qprop->desc(); 
-}
-
-/**
-QSim::UploadMultiFilmLUT
---------------------------
-  
- instance QMultiFilmLUT and upload the component : lookup table
-
-**/
-
-void QSim::UploadMultiFilmLUT( const NP* multi_film_lut ){
-
-    if( multi_film_lut == nullptr )
+    if( icdf == nullptr )
     {
-        LOG(warning) << " multi_film null ";
+        LOG(warning) << " icdf null " ; 
     }
     else
     {
-        QMultiFilmLUT* qmul = new QMultiFilmLUT( multi_film_lut ); 
-        LOG(LEVEL) << qmul->desc();
-    
+        unsigned hd_factor = 20u ;  // 0,10,20
+        QScint* scint = new QScint( icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
+        LOG(LEVEL) << scint->desc(); 
+    }
+
+
+    QCerenkov* cerenkov = new QCerenkov  ; 
+    LOG(LEVEL) << cerenkov->desc(); 
+
+}
+
+/**
+QSim::UploadMultiFilm
+--------------------------
+  
+ instance QMultiFilm and upload the component : lookup table
+
+**/
+
+void QSim::UploadMultiFilm( const NP* lut )
+{
+    if(lut == nullptr)
+    {
+        LOG(warning) << " lut null ";
+    }
+    else
+    {
+        QMultiFilm* mul = new QMultiFilm( lut ); 
+        LOG(LEVEL) << mul->desc();
     }
 }
 
@@ -162,16 +167,16 @@ singleton components.
 
 QSim::QSim()
     :
+    base(QBase::Get()),
     event(new QEvent),
     rng(QRng::Get()),
     scint(QScint::Get()),
+    cerenkov(QCerenkov::Get()),
     bnd(QBnd::Get()),
     prd(QPrd::Get()),
-    optical(QOptical::Get()),
     debug_(QDebug::Get()), 
     prop(QProp<float>::Get()),
-    multi_film(QMultiFilmLUT::Get()),
-    pidx(SSys::getenvint("PIDX", -1)),
+    multifilm(QMultiFilm::Get()),
     sim(nullptr),
     d_sim(nullptr),
     dbg(debug_->dbg), 
@@ -180,19 +185,10 @@ QSim::QSim()
     init(); 
 }
 
-void QSim::init()
-{
-    LOG(LEVEL) << event->descMax(); 
-
-    init_sim(); 
-
-    INSTANCE = this ; 
-    LOG(LEVEL) << desc() ; 
-}
 
 /**
-QSim::init_sim
---------------------
+QSim::init
+------------
 
 *sim* (qsim.h) is a host side instance that is populated
 with device side pointers and handles and then uploaded 
@@ -207,73 +203,24 @@ The advantage of this approach is it avoids kernel
 launches having very long argument lists and provides a natural 
 place (qsim.h) to add GPU side functionality. 
 
-In a very real sense it is object oriented GPU launches. 
-
 **/
 
-void QSim::init_sim()
+void QSim::init()
 {
     sim = new qsim ; 
-
-    LOG(LEVEL) 
-        << " rng " << rng 
-        << " scint " << scint
-        << " bnd " << bnd
-        << " optical " << optical
-        << " prop " << prop
-        << " pidx " << pidx
-        << " sim " << sim 
-        << " d_sim " << d_sim 
-        ;  
-
-    if(event)
-    {
-        LOG(LEVEL) << " event " << event->desc() ; 
-        sim->evt = event->d_evt ; 
-    }
-
-    if(rng)
-    {
-        LOG(LEVEL) << " rng " << rng->desc() ; 
-        sim->rngstate = rng->qr->rng_states ; 
-    } 
-    if(scint)
-    {
-        sim->scint = scint->d_scint ; 
-    } 
-    if(bnd)
-    {
-        LOG(LEVEL) << " bnd " << bnd->desc() ; 
-        sim->boundary_tex = bnd->tex->texObj ; 
-        sim->boundary_meta = bnd->tex->d_meta ; 
-
-        assert( sim->boundary_meta != nullptr ); 
-
-        sim->boundary_tex_MaterialLine_Water = bnd->getMaterialLine("Water") ; 
-        sim->boundary_tex_MaterialLine_LS    = bnd->getMaterialLine("LS") ; 
-    } 
-    if(optical)
-    {
-        LOG(LEVEL) << " optical " << optical->desc() ; 
-        sim->optical = optical->d_optical ; 
-    }
-
-    if(prop)
-    {
-        LOG(LEVEL) << " prop " << prop->desc() ; 
-        sim->prop = prop->getDevicePtr() ; 
-    }
-
-    if(multi_film)
-    {
-        sim->qmultifilm = multi_film->getDevicePtr();
-    }   
-
-    sim->pidx = pidx ; 
+    sim->base = base ? base->d_base : nullptr ; 
+    sim->evt = event ? event->d_evt : nullptr ; 
+    sim->rngstate = rng ? rng->qr->rng_states : nullptr ; 
+    sim->bnd = bnd ? bnd->d_bnd : nullptr ; 
+    sim->multifilm = multifilm ? multifilm->d_multifilm : nullptr ; 
+    sim->cerenkov = cerenkov ? cerenkov->d_cerenkov : nullptr ; 
+    sim->scint = scint ? scint->d_scint : nullptr ; 
 
     d_sim = QU::UploadArray<qsim>(sim, 1 );  
-}
 
+    INSTANCE = this ; 
+    LOG(LEVEL) << desc() ; 
+}
 
 
 NP* QSim::duplicate_dbg_ephoton(unsigned num_photon)
@@ -306,9 +253,11 @@ std::string QSim::desc() const
     std::stringstream ss ; 
     ss << "QSim"
        << " sim->rngstate " << sim->rngstate 
+       << " sim->base" << sim->base 
+       << " sim->bnd " << sim->bnd 
        << " sim->scint " << sim->scint 
-       << " sim->boundary_tex " << sim->boundary_tex 
-       << " sim->boundary_meta " << sim->boundary_meta
+       << " sim->cerenkov " << sim->cerenkov
+       << " sim " << sim 
        << " d_sim " << d_sim 
        ; 
     std::string s = ss.str(); 
@@ -515,94 +464,7 @@ NP* QSim::scint_wavelength(unsigned num_wavelength, unsigned& hd_factor )
     return w ; 
 }
 
-/**
-QSim::cerenkov_wavelength
----------------------------
 
-**/
-
-extern void QSim_cerenkov_wavelength_rejection_sampled(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, float* wavelength, unsigned num_wavelength ); 
-
-NP* QSim::cerenkov_wavelength_rejection_sampled(unsigned num_wavelength )
-{
-    LOG(LEVEL) << "[ num_wavelength " << num_wavelength ;
- 
-    configureLaunch(num_wavelength, 1 ); 
-
-    float* d_wavelength = QU::device_alloc<float>(num_wavelength); 
-
-    QSim_cerenkov_wavelength_rejection_sampled(numBlocks, threadsPerBlock, d_sim, d_wavelength, num_wavelength );  
-
-    NP* w = NP::Make<float>(num_wavelength) ; 
-
-    QU::copy_device_to_host_and_free<float>( (float*)w->bytes(), d_wavelength, num_wavelength ); 
-
-    LOG(LEVEL) << "]" ; 
-
-    return w ; 
-}
-
-
-
-
-extern void QSim_cerenkov_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
-
-template <typename T>
-extern void QSim_cerenkov_generate_enprop(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
-
-extern void QSim_cerenkov_generate_expt(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, quad4* photon, unsigned num_photon );
-
-
-
-NP* QSim::cerenkov_generate(unsigned num_photon, unsigned test )
-{
-    configureLaunch(num_photon, 1 ); 
-    quad4* d_photon = QU::device_alloc<quad4>(num_photon); 
-
-    switch(test)
-    {
-        case CERENKOV_GENERATE:                QSim_cerenkov_generate(              numBlocks,  threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
-        case CERENKOV_GENERATE_ENPROP_FLOAT:   QSim_cerenkov_generate_enprop<float>(numBlocks,  threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
-        case CERENKOV_GENERATE_ENPROP_DOUBLE:  QSim_cerenkov_generate_enprop<double>(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
-        case CERENKOV_GENERATE_EXPT:           QSim_cerenkov_generate_expt(          numBlocks, threadsPerBlock, d_sim, d_photon, num_photon ); break ; 
-    }
-
-    NP* p = NP::Make<float>( num_photon, 4, 4); 
-    quad4* pp = (quad4*)p->bytes() ; 
-    QU::copy_device_to_host_and_free<quad4>( pp, d_photon, num_photon ); 
-    return p ; 
-}
-
-
-/*
-void QSim::cerenkov_photon( quad4* photon, unsigned num_photon )
-{
-    configureLaunch(num_photon, 1 ); 
-    quad4* d_photon = QU::device_alloc<quad4>(num_photon); 
-    QSim_cerenkov_photon(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon );  
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
-}
-
-template<typename T>
-void QSim::cerenkov_photon_enprop( quad4* photon, unsigned num_photon )
-{
-    configureLaunch(num_photon, 1 ); 
-    quad4* d_photon = QU::device_alloc<quad4>(num_photon); 
-    QSim_cerenkov_photon_enprop<T>(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon );  
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
-}
-
-template void QSim::cerenkov_photon_enprop<float>(  quad4*, unsigned ); 
-template void QSim::cerenkov_photon_enprop<double>( quad4*, unsigned ); 
-
-void QSim::cerenkov_photon_expt( quad4* photon, unsigned num_photon )
-{
-    configureLaunch(num_photon, 1 ); 
-    quad4* d_photon = QU::device_alloc<quad4>(num_photon); 
-    QSim_cerenkov_photon_expt(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon );  
-    QU::copy_device_to_host_and_free<quad4>( photon, d_photon, num_photon ); 
-}
-*/
 
 
 
@@ -624,20 +486,21 @@ void QSim::dump_wavelength( float* wavelength, unsigned num_wavelength, unsigned
 }
 
 
-extern void QSim_scint_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon ); 
+extern void QSim_dbg_gs_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon, unsigned type ) ; 
 
-NP* QSim::scint_generate(unsigned num_photon )
+NP* QSim::dbg_gs_generate(unsigned num_photon, unsigned type )
 {
     configureLaunch( num_photon, 1 ); 
     sphoton* d_photon = QU::device_alloc<sphoton>(num_photon) ; 
     QU::device_memset<sphoton>(d_photon, 0, num_photon); 
 
-    QSim_scint_generate(numBlocks, threadsPerBlock, d_sim, d_dbg, d_photon, num_photon );  
+    QSim_dbg_gs_generate(numBlocks, threadsPerBlock, d_sim, d_dbg, d_photon, num_photon, type );  
 
     NP* p = NP::Make<float>(num_photon, 4, 4); 
     QU::copy_device_to_host_and_free<sphoton>( (sphoton*)p->bytes(), d_photon, num_photon ); 
     return p ; 
 }
+
 
 
 extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qevent* evt )  ; 

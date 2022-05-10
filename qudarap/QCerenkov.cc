@@ -6,15 +6,22 @@
 #include "SSys.hh"
 #include "SPath.hh"
 #include "scuda.h"
+#include "squad.h"
+#include "sphoton.h"
+#include "scerenkov.h"
+#include "qcerenkov.h"
 
 #include "NP.hh"
 
 #include "QUDA_CHECK.h"
+#include "QBase.hh"
 #include "QCerenkov.hh"
 #include "QTex.hh"
 #include "QTexMaker.hh"
 #include "QTexLookup.hh"
-
+#include "QBnd.hh"
+#include "QProp.hh"
+#include "QU.hh"
 #include "QCK.hh"
 
 
@@ -56,6 +63,25 @@ QTex<float4>* QCerenkov::MakeTex(const NP* icdf, char filterMode, bool normalize
     return tex ; 
 }
 
+qcerenkov* QCerenkov::MakeInstance() // static 
+{
+    const QBase* base = QBase::Get(); 
+    assert( base );  
+
+    const QBnd* bnd = QBnd::Get(); 
+    assert( bnd );  
+
+    const QProp<float>* prop = QProp<float>::Get(); 
+    assert(prop); 
+
+    qcerenkov* cerenkov= new qcerenkov ; 
+    cerenkov->base = base->d_base ;  
+    cerenkov->bnd = bnd->d_bnd ;  
+    cerenkov->prop = prop->d_prop ; 
+    return cerenkov ; 
+}
+
+
 
 /**
 QCerenkov::QCerenkov
@@ -69,20 +95,50 @@ TODO: formalize icdf creation into the pre-cache geometry conversion and icdf lo
 
 QCerenkov::QCerenkov(const char* fold_ )
     :
-    fold( fold_ ? fold_ : DEFAULT_FOLD ),
+    fold(fold_),
     icdf_( nullptr ),
     icdf( nullptr ),
     filterMode('P'),    // CAUTION: P: is Point mode with interpolation disabled
     normalizedCoords(true), 
     tex(nullptr),
-    look(nullptr)
+    look(nullptr),
+    cerenkov(MakeInstance()),
+    d_cerenkov(QU::UploadArray<qcerenkov>(cerenkov, 1))
 {
     init(); 
 }
 
+QCerenkov::QCerenkov()
+    :
+    fold(nullptr),
+    icdf_(nullptr),
+    icdf(nullptr),
+    filterMode('P'),
+    normalizedCoords(true),
+    tex(nullptr),
+    look(nullptr),
+    cerenkov(MakeInstance()),
+    d_cerenkov(QU::UploadArray<qcerenkov>(cerenkov, 1))
+{
+    init(); 
+}
+
+
+
+/**
+QCerenkov::init
+----------------
+
+TODO: move most of this into statics
+
+**/
+
+
 void QCerenkov::init()
 {
     INSTANCE = this ; 
+    if(fold == nullptr) return ; 
+
     icdf_ = Load(fold, "icdf.npy"); 
     if( icdf_ == nullptr )
     {

@@ -2,20 +2,18 @@
 #include "SPath.hh"
 #include "NP.hh"
 
-//#include "Opticks.hh"
-
-#include "QMultiFilmLUT.hh"
+#include "QMultiFilm.hh"
 #include "scuda.h"
 #include "OPTICKS_LOG.hh"
 
 
-void test_check(QMultiFilmLUT& sc)
+void test_check(QMultiFilm& sc)
 {
     std::cout<< sc.desc()<<std::endl;
     sc.check(); 
 }
 
-void test_lookup(QMultiFilmLUT& sc)
+void test_lookup(QMultiFilm& sc)
 {
 
     int pmtcatDim = sc.src->shape[0];
@@ -24,7 +22,7 @@ void test_lookup(QMultiFilmLUT& sc)
 
     //NP* dst = sc.lookup(); 
     int create_dirs = 2 ; // 2:dirpath
-    const char* fold = SPath::Resolve("$TMP/QMultiFilmLUTTest", create_dirs) ; 
+    const char* fold = SPath::Resolve("$TMP/QMultiFilmTest", create_dirs) ; 
     LOG(info) << " save to " << fold ; 
     for(int pmtcatIdx = 0 ; pmtcatIdx < pmtcatDim ; pmtcatIdx++){
         for(int bndIdx = 0 ; bndIdx < bndDim ; bndIdx++){
@@ -65,7 +63,7 @@ int main(int argc, char** argv)
 */
     NP* icdf = NP::Load("/tmp/debug_multi_film_table/","all_table.npy");
 
-    QMultiFilmLUT sc(icdf);     // uploads reemission texture  
+    QMultiFilm sc(icdf);     // uploads reemission texture  
 
     test_lookup(sc); 
     //test_check(sc); 

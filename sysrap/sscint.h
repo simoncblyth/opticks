@@ -71,6 +71,8 @@ struct sscint
 inline void sscint::FillGenstep( sscint& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
 {
     gs.gentype = OpticksGenstep_SCINTILLATION ; 
+    gs.trackid = 0u ; 
+    gs.matline = 0u ;
     gs.numphoton = numphoton_per_genstep  ;   
 
     // fabricate some values for the genstep

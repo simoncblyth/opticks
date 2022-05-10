@@ -9,14 +9,16 @@
 #include "PLOG.hh"
 
 #include "qsim.h"
+#include "qbase.h"
 #include "qprop.h"
 #include "qrng.h"
 #include "qevent.h"
 #include "qdebug.h"
 #include "qscint.h"
+#include "qcerenkov.h"
 #include "srec.h"
 #include "sseq.h"
-#include "qmultifilmlut.h"
+#include "qmultifilm.h"
 
 
 const plog::Severity QU::LEVEL = PLOG::EnvLevel("QU", "DEBUG") ; 
@@ -106,14 +108,14 @@ template curandState*   QU::UploadArray<curandState>(const curandState* array, u
 template qsim*          QU::UploadArray<qsim>(const qsim* array, unsigned num_items) ;
 template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items) ;
 template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items) ;
-template qmultifilmlut* QU::UploadArray<qmultifilmlut>(const qmultifilmlut* array, unsigned num_items) ;
+template qmultifilm*    QU::UploadArray<qmultifilm>(const qmultifilm* array, unsigned num_items) ;
 template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items) ;
+template qbnd*          QU::UploadArray<qbnd>(const qbnd* array, unsigned num_items) ;
 template qevent*        QU::UploadArray<qevent>(const qevent* array, unsigned num_items) ;
 template qdebug*        QU::UploadArray<qdebug>(const qdebug* array, unsigned num_items) ;
 template qscint*        QU::UploadArray<qscint>(const qscint* array, unsigned num_items) ;
-
-
-
+template qcerenkov*     QU::UploadArray<qcerenkov>(const qcerenkov* array, unsigned num_items) ;
+template qbase*         QU::UploadArray<qbase>(const qbase* array, unsigned num_items) ;
 
 
 /**

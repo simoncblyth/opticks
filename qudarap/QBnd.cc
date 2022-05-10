@@ -4,14 +4,19 @@
 #include <map>
 
 #include "SStr.hh"
+#include "NP.hh"
+
 #include "scuda.h"
 #include "squad.h"
 
 #include "QUDA_CHECK.h"
-#include "NP.hh"
 
+#include "QU.hh"
 #include "QTex.hh"
+#include "QOptical.hh"
 #include "QBnd.hh"
+
+#include "qbnd.h"
 
 #include "SDigestNP.hh"
 #include "PLOG.hh"
@@ -447,6 +452,27 @@ const NP* QBnd::NarrowIfWide(const NP* buf )  // static
     return buf->ebyte == 4 ? buf : NP::MakeNarrow(buf) ; 
 }
 
+
+qbnd* QBnd::MakeInstance(const QTex<float4>* tex, const std::vector<std::string>& names )
+{
+    qbnd* bnd = new qbnd ; 
+
+    bnd->boundary_tex = tex->texObj ; 
+    bnd->boundary_meta = tex->d_meta ; 
+    bnd->boundary_tex_MaterialLine_Water = GetMaterialLine("Water", names) ; 
+    bnd->boundary_tex_MaterialLine_LS    = GetMaterialLine("LS", names) ; 
+
+    const QOptical* optical = QOptical::Get() ; 
+    assert( optical ); 
+    LOG(LEVEL) << " optical " << optical->desc() ; 
+
+    bnd->optical = optical->d_optical ; 
+
+    assert( bnd->boundary_meta != nullptr ); 
+    return bnd ; 
+}
+
+
 /**
 QBnd::QBnd
 ------------
@@ -459,7 +485,9 @@ QBnd::QBnd(const NP* buf)
     :
     dsrc(buf->ebyte == 8 ? buf : nullptr),
     src(NarrowIfWide(buf)),
-    tex(MakeBoundaryTex(src))
+    tex(MakeBoundaryTex(src)),
+    bnd(MakeInstance(tex, buf->names)),
+    d_bnd(QU::UploadArray<qbnd>(bnd,1))
 {
     buf->get_names(bnames) ;  // vector of string from NP metadata
     assert( bnames.size() > 0 ); 
@@ -591,22 +619,15 @@ unsigned QBnd::getBoundaryLine(const char* spec, unsigned j) const
 }
 
 
-/**
-QBnd::getMaterialLine
------------------------
 
-Searches the bname spec for the *material* name in omat or imat slots, 
-returning the first found.  
 
-**/
-
-unsigned QBnd::getMaterialLine( const char* material ) const 
+unsigned QBnd::GetMaterialLine( const char* material, const std::vector<std::string>& specs ) // static
 {
     unsigned line = MISSING ; 
-    for(unsigned i=0 ; i < bnames.size() ; i++) 
+    for(unsigned i=0 ; i < specs.size() ; i++) 
     {
         std::vector<std::string> elem ; 
-        SStr::Split(bnames[i].c_str(), '/', elem );  
+        SStr::Split(specs[i].c_str(), '/', elem );  
         const char* omat = elem[0].c_str(); 
         const char* imat = elem[3].c_str(); 
 
@@ -622,6 +643,21 @@ unsigned QBnd::getMaterialLine( const char* material ) const
         }
     }
     return line ; 
+}
+
+
+/**
+QBnd::getMaterialLine
+-----------------------
+
+Searches the bname spec for the *material* name in omat or imat slots, 
+returning the first found.  
+
+**/
+
+unsigned QBnd::getMaterialLine( const char* material ) const 
+{
+    return GetMaterialLine(material, bnames); 
 }
 
 

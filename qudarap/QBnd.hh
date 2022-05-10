@@ -20,6 +20,7 @@ TODO: combine QBnd and QOptical into QOpticalBnd
 union quad ; 
 struct float4 ; 
 struct dim3 ; 
+struct qbnd ; 
 
 template <typename T> struct QTex ; 
 struct NP ; 
@@ -40,6 +41,8 @@ struct QUDARAP_API QBnd
     static NP*  AddBoundary( const NP* src, const std::vector<std::string>& specs ); 
     static std::string DescDigest(const NP* bnd, int w=16) ; 
 
+    static qbnd* MakeInstance( const QTex<float4>* tex, const std::vector<std::string>& names ); 
+    static unsigned GetMaterialLine( const char* material, const std::vector<std::string>& specs ); 
     static bool FindName( unsigned& i, unsigned& j, const char* qname, const std::vector<std::string>& names ); 
     bool   findName( unsigned& i, unsigned& j, const char* qname ) const ; 
 
@@ -47,6 +50,10 @@ struct QUDARAP_API QBnd
     const NP*      dsrc ;  
     const NP*      src ;  
     QTex<float4>*  tex ; 
+
+    qbnd*          bnd ; 
+    qbnd*          d_bnd ; 
+
 
     static const NP* NarrowIfWide(const NP* buf ); 
     QBnd(const NP* buf); 

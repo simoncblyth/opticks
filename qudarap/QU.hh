@@ -4,6 +4,7 @@
 #include <vector>
 
 struct NP ; 
+struct dim3 ; 
 
 struct QUDARAP_API QU
 {
@@ -53,9 +54,6 @@ struct QUDARAP_API QU
 
     template <typename T>
     static unsigned copy_host_to_device( T* d, const NP* a);
-
-    //template <typename T>
-    //static select_copy_device_to_host( std::vector<T>& h, T* d, unsigned mask, unsigned num_items ); 
 
 
     static void ConfigureLaunch16( dim3& numBlocks, dim3& threadsPerBlock );

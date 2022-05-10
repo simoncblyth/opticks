@@ -1694,7 +1694,7 @@ CGenstep G4Opticks::collectGenstep_G4Cerenkov_1042(
          deltaPosition.x(),                             // DeltaPosition.x    (2)
          deltaPosition.y(),                             // DeltaPosition.y    
          deltaPosition.z(),                             // DeltaPosition.z    
-         aStep->GetStepLength(),                        // step_length 
+         aStep->GetStepLength(),                        // step_length  TODO: if step_length is always length of DeltaPosition can normalize that 
 
          aParticle->GetDefinition()->GetPDGEncoding(),  // (int)code          (3) 
          aParticle->GetDefinition()->GetPDGCharge(),    // charge

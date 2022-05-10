@@ -49,6 +49,7 @@ set(SOURCES
     QTexLookup.cc
     QTexLookup.cu
 
+    QBase.cc
     QBnd.cc
     QBnd.cu
 
@@ -73,8 +74,8 @@ set(SOURCES
     QProp.cc
     QProp.cu
 
-    QMultiFilmLUT.cc
-    QMultiFilmLUT.cu
+    QMultiFilm.cc
+    QMultiFilm.cu
 
     QBuf.cc
 )
@@ -108,12 +109,18 @@ SET(HEADERS
 
     QState.hh
     qstate.h
-    qprd.h
-    qmultifilmlut.h 
 
-    qbnd.h
+    qmultifilm.h 
+
+    QBase.hh
+    qbase.h 
+
     QBnd.hh
+    qbnd.h
+
     QPrd.hh
+    qprd.h
+
     QOptical.hh
 
     QScint.hh
@@ -121,12 +128,13 @@ SET(HEADERS
 
     QCerenkovIntegral.hh
     QCerenkov.hh
+    qcerenkov.h
 
     QPoly.hh
 
     QProp.hh
     
-    QMultiFilmLUT.hh
+    QMultiFilm.hh
 
     QBuf.hh
 )

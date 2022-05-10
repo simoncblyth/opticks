@@ -11,25 +11,21 @@
 #include "QUDA_CHECK.h"
 #include "QRng.hh"
 #include "QU.hh"
-#include "QMultiFilmLUT.hh"
+#include "QMultiFilm.hh"
 #include "QTex.hh"
-#include "qmultifilmlut.h"
+#include "qmultifilm.h"
 
-const plog::Severity QMultiFilmLUT::LEVEL = PLOG::EnvLevel("QMultiFilmLUT", "INFO"); 
-
-const QMultiFilmLUT* QMultiFilmLUT::INSTANCE = nullptr ; 
-const QMultiFilmLUT* QMultiFilmLUT::Get(){ return INSTANCE ;  }
-
+const plog::Severity QMultiFilm::LEVEL = PLOG::EnvLevel("QMultiFilm", "DEBUG"); 
+const QMultiFilm* QMultiFilm::INSTANCE = nullptr ; 
+const QMultiFilm* QMultiFilm::Get(){ return INSTANCE ;  }
 
 
-
-
-QMultiFilmLUT::QMultiFilmLUT(const NP* lut )
+QMultiFilm::QMultiFilm(const NP* lut )
     :
     dsrc(lut->ebyte == 8 ? lut : nullptr),
     src( lut->ebyte == 4 ? lut : NP::MakeNarrow(dsrc)),
-    multifilmlut(new qmultifilmlut),
-    d_multifilmlut(nullptr) 
+    multifilm(new qmultifilm),
+    d_multifilm(nullptr) 
 {
     
     makeMultiFilmAllTex();
@@ -38,35 +34,35 @@ QMultiFilmLUT::QMultiFilmLUT(const NP* lut )
     //uploadMultifilmlut();
 }
 
-qmultifilmlut* QMultiFilmLUT::getDevicePtr() const
+qmultifilm* QMultiFilm::getDevicePtr() const
 {   
-    return d_multifilmlut ;
+    return d_multifilm ;
 }
 
-
-void QMultiFilmLUT::init(){
+void QMultiFilm::init(){
 
      uploadMultifilmlut();
      
 }
 
-void QMultiFilmLUT::uploadMultifilmlut(){
-
+void QMultiFilm::uploadMultifilmlut()
+{
     int num = 4 ;
-    for(int i = 0 ; i < num ; i++){
-           multifilmlut->nnvt_normal_tex[i] = tex_nnvt_normal[i]->texObj ;
-           multifilmlut->nnvt_highqe_tex[i] = tex_nnvt_highqe[i]->texObj ;
-           multifilmlut->hama_tex[i]        = tex_hama[i]       ->texObj ;
+    for(int i = 0 ; i < num ; i++)
+    {
+        multifilm->nnvt_normal_tex[i] = tex_nnvt_normal[i]->texObj ;
+        multifilm->nnvt_highqe_tex[i] = tex_nnvt_highqe[i]->texObj ;
+        multifilm->hama_tex[i]        = tex_hama[i]       ->texObj ;
            
-           multifilmlut->nnvt_normal_meta[i]= tex_nnvt_normal[i]->d_meta ;
-           multifilmlut->nnvt_highqe_meta[i]= tex_nnvt_highqe[i]->d_meta ;
-           multifilmlut->hama_meta[i]       = tex_hama[i]       ->d_meta ; 
+        multifilm->nnvt_normal_meta[i]= tex_nnvt_normal[i]->d_meta ;
+        multifilm->nnvt_highqe_meta[i]= tex_nnvt_highqe[i]->d_meta ;
+        multifilm->hama_meta[i]       = tex_hama[i]       ->d_meta ; 
     }
-    d_multifilmlut = QU::UploadArray<qmultifilmlut>(multifilmlut, 1 );
+    d_multifilm = QU::UploadArray<qmultifilm>(multifilm, 1 );
 }
 
 
-void QMultiFilmLUT::makeMultiFilmAllTex(){
+void QMultiFilm::makeMultiFilmAllTex(){
    
     assert( src->has_shape(3,2,2,1024,1024,4));
     std::vector<std::string> pmtTypeList;
@@ -94,7 +90,7 @@ void QMultiFilmLUT::makeMultiFilmAllTex(){
     }
 }
 
-void QMultiFilmLUT::makeMultiFilmOnePMTTex(  int pmtcatIdx , QTex<float4> ** tex_pmt  ){
+void QMultiFilm::makeMultiFilmOnePMTTex(  int pmtcatIdx , QTex<float4> ** tex_pmt  ){
 
  //   int bndDimIdx = src->get_meta<int>("boundary");
  //   int resDimIdx = src->get_meta<int>("resolution");
@@ -115,7 +111,7 @@ void QMultiFilmLUT::makeMultiFilmOnePMTTex(  int pmtcatIdx , QTex<float4> ** tex
     }     
 }
 
-QTex<float4>* QMultiFilmLUT::makeMultiFilmOneTex( int pmtcatIdx , int bndIdx , int resIdx ){
+QTex<float4>* QMultiFilm::makeMultiFilmOneTex( int pmtcatIdx , int bndIdx , int resIdx ){
   
       
 //    assert( src->has_shape(2048,2048,4));
@@ -187,10 +183,10 @@ QTex<float4>* QMultiFilmLUT::makeMultiFilmOneTex( int pmtcatIdx , int bndIdx , i
 
 }
 
-std::string QMultiFilmLUT::desc() const
+std::string QMultiFilm::desc() const
 {
     std::stringstream ss ; 
-    ss << "QMultiFilmLUT"
+    ss << "QMultiFilm"
        << " dsrc " << ( dsrc ? dsrc->desc() : "-" )
        << " src " << ( src ? src->desc() : "-" )
        ; 
@@ -212,10 +208,10 @@ std::string QMultiFilmLUT::desc() const
 
 
 
-extern "C" void QMultiFilmLUT_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height  ); 
-extern "C" void QMultiFilmLUT_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, float4* lookup, unsigned num_lookup, unsigned width, unsigned height); 
+extern "C" void QMultiFilm_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height  ); 
+extern "C" void QMultiFilm_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, float4* lookup, unsigned num_lookup, unsigned width, unsigned height); 
 
-void QMultiFilmLUT::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
+void QMultiFilm::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
 {
     threadsPerBlock.x = 32 ; 
     threadsPerBlock.y = 32 ; 
@@ -244,13 +240,13 @@ void QMultiFilmLUT::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, uns
         ;
 }
 
-void QMultiFilmLUT::check(){
+void QMultiFilm::check(){
   
     check( tex_hama[0] );
 
 }
 
-void QMultiFilmLUT::check( QTex<float4> *tex )
+void QMultiFilm::check( QTex<float4> *tex )
 {
     unsigned width = tex->width ; 
     unsigned height = tex->height ; 
@@ -263,12 +259,12 @@ void QMultiFilmLUT::check( QTex<float4> *tex )
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, width, height ); 
-    QMultiFilmLUT_check(numBlocks, threadsPerBlock, width, height );  
+    QMultiFilm_check(numBlocks, threadsPerBlock, width, height );  
 
     cudaDeviceSynchronize();
 }
 
-NP* QMultiFilmLUT::lookup(int pmtcatIdx , int bndIdx , int resIdx ){
+NP* QMultiFilm::lookup(int pmtcatIdx , int bndIdx , int resIdx ){
     
     QTex<float4> **tex = choose_tex(pmtcatIdx);
     int offset = bndIdx*2+ resIdx;
@@ -276,7 +272,7 @@ NP* QMultiFilmLUT::lookup(int pmtcatIdx , int bndIdx , int resIdx ){
     return out;
 }
 
-QTex<float4> ** QMultiFilmLUT::choose_tex(int pmtcatIdx){
+QTex<float4> ** QMultiFilm::choose_tex(int pmtcatIdx){
 
     QTex<float4> **tex = nullptr;
     switch(pmtcatIdx){
@@ -289,7 +285,7 @@ QTex<float4> ** QMultiFilmLUT::choose_tex(int pmtcatIdx){
 }
 
 
-NP* QMultiFilmLUT::lookup( QTex<float4> *tex  )
+NP* QMultiFilm::lookup( QTex<float4> *tex  )
 {
     unsigned width = tex->width ; 
     unsigned height = tex->height; 
@@ -310,7 +306,7 @@ NP* QMultiFilmLUT::lookup( QTex<float4> *tex  )
     return out ; 
 }
 
-void QMultiFilmLUT::lookup( QTex<float4> *tex, float4* lookup, unsigned num_lookup, unsigned width, unsigned height)
+void QMultiFilm::lookup( QTex<float4> *tex, float4* lookup, unsigned num_lookup, unsigned width, unsigned height)
 {
     LOG(LEVEL) << "[" ; 
     dim3 numBlocks ; 
@@ -334,11 +330,11 @@ void QMultiFilmLUT::lookup( QTex<float4> *tex, float4* lookup, unsigned num_look
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_lookup ), size )); 
 
     LOG(LEVEL)
-        <<" QMultiFilmLUT_lookup (";
-    QMultiFilmLUT_lookup(numBlocks, threadsPerBlock, tex->texObj, tex->d_meta, d_lookup, num_lookup, width, height);  
+        <<" QMultiFilm_lookup (";
+    QMultiFilm_lookup(numBlocks, threadsPerBlock, tex->texObj, tex->d_meta, d_lookup, num_lookup, width, height);  
         
     LOG(LEVEL)
-        <<" QMultiFilmLUT_lookup )";
+        <<" QMultiFilm_lookup )";
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( lookup ), d_lookup, size, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d_lookup) ); 
 
@@ -350,7 +346,7 @@ void QMultiFilmLUT::lookup( QTex<float4> *tex, float4* lookup, unsigned num_look
 }
 
 
-void QMultiFilmLUT::dump( float4* lookup, unsigned num_lookup, unsigned edgeitems  )
+void QMultiFilm::dump( float4* lookup, unsigned num_lookup, unsigned edgeitems  )
 {
     LOG(LEVEL); 
     for(unsigned i=0 ; i < num_lookup ; i++)

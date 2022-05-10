@@ -61,8 +61,7 @@ struct QSimTest
 
     void wavelength() ; 
 
-    void scint_generate(); 
-    void cerenkov_generate(); 
+    void dbg_gs_generate(); 
 
 
     void generate_photon(); 
@@ -306,7 +305,8 @@ void QSimTest::wavelength()
     }
     else if( type == WAVELENGTH_CERENKOV )
     {
-        w = qs.cerenkov_wavelength_rejection_sampled(num); 
+      //  w = qs.cerenkov_wavelength_rejection_sampled(num); 
+        assert(0); 
         ss << "_cerenkov" ; 
     }
 
@@ -321,19 +321,20 @@ void QSimTest::wavelength()
     w->save( dir, name ); 
 }
 
-void QSimTest::scint_generate()
+void QSimTest::dbg_gs_generate()
 {
-    NP* p = qs.scint_generate(num); 
+    NP* p = qs.dbg_gs_generate(num, type); 
     p->save(dir, "p.npy"); 
-    qs.dbg->save_scint_gs(dir);  
+    if( type == SCINT_GENERATE )
+    {
+        qs.dbg->save_scint_gs(dir);  
+    }
+    else if( type == CERENKOV_GENERATE )
+    {
+        qs.dbg->save_cerenkov_gs(dir);  
+    }
 }
 
-void QSimTest::cerenkov_generate()
-{
-    NP* p = qs.cerenkov_generate(num, type ); 
-    p->save(dir, "p.npy"); 
-    qs.dbg->save_cerenkov_gs(dir);  
-}
 
 
 void QSimTest::generate_photon()
@@ -558,15 +559,14 @@ void QSimTest::main()
         case WAVELENGTH_CERENKOV:           
                                             wavelength()                               ; break ; 
 
-
-        case SCINT_GENERATE:                scint_generate();                            ; break ; 
-
+        case SCINT_GENERATE:           
         case CERENKOV_GENERATE:             
+                                             dbg_gs_generate()               ; break ; 
+
         case CERENKOV_GENERATE_ENPROP_FLOAT:
         case CERENKOV_GENERATE_ENPROP_DOUBLE:
         case CERENKOV_GENERATE_EXPT :      
-                                             cerenkov_generate();              ; break ; 
-
+                                              assert(0)                       ;   break ; 
 
         case GENERATE_PHOTON_G:             
         case GENTORCH:
@@ -645,11 +645,11 @@ int main(int argc, char** argv)
     const char* testname = SSys::getenvvar("TEST", default_testname); 
     int type = QSimLaunch::Type(testname); 
 
-    if( type == MULTIFILM_LOOKUP )  { 
-         
-        NP* multifilm_lut = NP::Load("/tmp/debug_multi_film_table","all_table.npy");
-        assert(multifilm_lut);
-        QSim::UploadMultiFilmLUT(multifilm_lut);
+    if( type == MULTIFILM_LOOKUP )  
+    { 
+        NP* lut = NP::Load("/tmp/debug_multi_film_table/all_table.npy");
+        assert(lut);
+        QSim::UploadMultiFilm(lut);
     } 
 
     QSim::UploadComponents(icdf, bnd, optical, rindexpath ); 

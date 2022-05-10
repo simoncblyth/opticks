@@ -25,6 +25,11 @@ scerenkov.h : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/cerenkov
 
 // HMM could have scerenkovtype.h (like scerenkovtype.h) if need to handle different versions 
 
+/**
+
+Hmm some flip-flop between energy and wavelength ranges, see G4Opticks::collectGenstep_G4Cerenkov_1042
+
+**/
 
 struct scerenkov
 {
@@ -37,7 +42,7 @@ struct scerenkov
     float3   pos ;  // formerly x0
     float    time ; // formerly t0  
 
-    float3 DeltaPosition ;
+    float3 DeltaPosition ;  // aka p0 in G4Cerenkov,  G4Step::GetDeltaPosition is not normalized 
     float  step_length ;
 
     int code; 
@@ -48,8 +53,8 @@ struct scerenkov
     /// the above first 4 quads are common to both CerenkovStep and ScintillationStep 
 
     float BetaInverse ; 
-    float Pmin ;   //   misleadingly this may be Wmin see G4Opticks::collectGenstep_G4Cerenkov_1042
-    float Pmax ;   //   misleadingly this may be Wmax see G4Opticks::collectGenstep_G4Cerenkov_1042  
+    float Wmin ;   
+    float Wmax ;   
     float maxCos ; 
  
     float maxSin2 ;
@@ -57,33 +62,78 @@ struct scerenkov
     float MeanNumberOfPhotons2 ; 
     float postVelocity ; 
 
-    // above are loaded parameters, below are derived from them
-    //float MeanNumberOfPhotonsMax ; 
-    //float3 p0 ;
-    // NB : organized into 6 quads : are constained not to change that 
-
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
-   SCERENKOV_METHOD static void generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
-#endif
+    SCERENKOV_METHOD float Pmin() const { return smath::hc_eVnm/Wmax ; } 
+    SCERENKOV_METHOD float Pmax() const { return smath::hc_eVnm/Wmin ; } 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    float* cdata() const {  return (float*)&gentype ; }
-   static void FillGenstep( scerenkov& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
+   static void FillGenstep( scerenkov& gs, unsigned matline, unsigned numphoton_per_genstep ) ; 
    std::string desc() const ; 
 #endif
-
 
 };
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-inline void scerenkov::FillGenstep( scerenkov& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
+
+
+
+/**
+scerenkov::FillGenstep : fabricate some values for a demo genstep
+---------------------------------------------------------------------
+
+Uses hard coded values depending on RINDEX of material (LS) that will be used : ie fixing the cone angle.
+A better way of doing this would use the MaterialLine as input and obtain the values from the RINDEX, 
+  
+* (as this code is only needed on CPU only it would be perfectly feasible to read RINDEX arrays)  
+* however this is debugging code so non-general techniques are acceptable
+* NB matline is crucial as that determines which materials RINDEX is used 
+
+**/
+
+inline void scerenkov::FillGenstep( scerenkov& gs, unsigned matline, unsigned numphoton_per_genstep )
 {
+    float nMax = 1.793f ; 
+    float BetaInverse = 1.500f ; 
+    float maxCos = BetaInverse / nMax;
+    float maxSin2 = (1.f - maxCos) * (1.f + maxCos) ;
+
+    float Pmin = 1.55f ;    // eV
+    float Pmax = 15.5f ; 
+    float Wmin = smath::hc_eVnm/Pmax ; // close to: 1240./15.5 = 80. 
+    float Wmax = smath::hc_eVnm/Pmin ;  // close to: 1240./1.55 = 800.  
+    // NB in reality this should not use standard domain, but rather the domain of the RINDEX property 
+
     gs.gentype = OpticksGenstep_CERENKOV ; 
+    gs.trackid = 0u ; 
+    gs.matline = matline ; 
     gs.numphoton = numphoton_per_genstep  ;   
 
-    // TODO: complete this
+    gs.pos.x = 100.f ; 
+    gs.pos.y = 100.f ; 
+    gs.pos.z = 100.f ; 
+    gs.time = 20.f ; 
+
+    gs.DeltaPosition.x = 1000.f ;    // aka p0
+    gs.DeltaPosition.y = 1000.f ; 
+    gs.DeltaPosition.z = 1000.f ; 
+    gs.step_length = 1000.f ; 
+
+    gs.code = 1 ; 
+    gs.charge = 1.f ;
+    gs.weight = 1.f ;
+    gs.preVelocity = 10.f ; 
+
+    gs.BetaInverse = BetaInverse ;
+    gs.Wmin = Wmin ; 
+    gs.Wmax = Wmax ; 
+    gs.maxCos = maxCos ;  // NOT USED ?
+
+    gs.maxSin2 = maxSin2 ;              // constrains cone angle rejection sampling   
+    gs.MeanNumberOfPhotons1 = 100.f ;   // used for profile sampling to decide where along the step 
+    gs.MeanNumberOfPhotons2 = 200.f ; 
+    gs.postVelocity = 20.f ; 
 
 }
 
@@ -98,40 +148,6 @@ inline std::string scerenkov::desc() const
 } 
 #endif
 
-
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
-
-SCERENKOV_METHOD void scerenkov::generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
-{
-    const scerenkov& gs = (const scerenkov&)gs_ ;   // casting between union-ed types  
-
-#ifdef SCERENKOV_DEBUG
-    printf("//scerenkov::generate photon_id %3d genstep_id %3d  gs gentype/trackid/matline/numphoton(%3d %3d %3d %3d) type %d \n", 
-       photon_id, 
-       genstep_id, 
-       gs.gentype, 
-       gs.trackid,
-       gs.matline, 
-       gs.numphoton
-      );  
-#endif
-
-}
-
-#endif
-
-
-
-/**
-* qcerenkov : union between quad6 and specific genstep types for easy usage and yet no serialize/deserialize needed
-
-union qcerenkov
-{
-   quad6     q ; 
-   scerenkov c ; 
-};   
-
-**/
 
 
 

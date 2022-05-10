@@ -1,8 +1,14 @@
 #pragma once
 
 /**
-QCerenkov
-===========
+QCerenkov : using ICDF lookup
+=================================
+
+Normally Cerenkov is simulated using rejection sampling, BUT that 
+is problematic on GPU as the rejection sampling of RINDEX is 
+very sensitive to the use of float or double. 
+
+Lookup sampling from ICDF is less sensitive. 
 
 Loads icdf and creates GPU texture from it ready for energy sampling. 
 
@@ -22,6 +28,8 @@ ana/rindex.py
 #include "plog/Severity.h"
 
 struct float4 ; 
+struct qcerenkov ; 
+
 struct NP ; 
 template <typename T> struct QTex ; 
 template <typename T> struct QTexLookup ; 
@@ -36,6 +44,8 @@ struct QUDARAP_API QCerenkov
     static NP*                  Load(const char* fold, const char* name) ; 
     static QTex<float4>*        MakeTex(const NP* icdf, char filterMode, bool normalizedCoords) ; 
 
+    static qcerenkov* MakeInstance(); 
+
     const char*             fold ; 
     const NP*               icdf_ ; 
     const NP*               icdf ; 
@@ -43,8 +53,11 @@ struct QUDARAP_API QCerenkov
     bool                    normalizedCoords ; 
     QTex<float4>*           tex ; 
     QTexLookup<float4>*     look ; 
+    qcerenkov*              cerenkov ; 
+    qcerenkov*              d_cerenkov ; 
 
-    QCerenkov(const char* fold=nullptr); 
+    QCerenkov(); 
+    QCerenkov(const char* fold); 
     void init(); 
     std::string desc() const ; 
 

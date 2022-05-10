@@ -110,6 +110,10 @@ void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
 
 
 
+
+
+
+
 struct quad4 
 { 
     quad q0 ; 
