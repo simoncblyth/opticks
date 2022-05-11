@@ -332,12 +332,15 @@ __global__ void _QSim_hemisphere_polarized( qsim* sim, sphoton* photon, unsigned
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
 
+    //printf("//_QSim_hemisphere_polarized idx %d num_photon %d polz %d \n", idx, num_photon, polz ); 
+
     curandState rng = sim->rngstate[idx] ; 
     const quad2* prd = &dbg->prd ;  
     sphoton p        = dbg->p ;   
     bool inwards = true ; 
 
     sim->hemisphere_polarized( p, polz, inwards,  prd, rng );  
+
 
     photon[idx] = p ; 
 }
@@ -422,6 +425,11 @@ extern void QSim_quad_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qu
     }
 }
 
+/**
+QSim_photon_launch
+--------------------
+
+**/
 
 extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned type  )
 {
@@ -429,22 +437,26 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, 
     printf("//QSim_photon_launch sim %p photon %p num_photon %d dbg %p type %d name %s \n", sim, photon, num_photon, dbg, type, name ); 
     switch(type)
     {
-        case PROPAGATE_TO_BOUNDARY:  _QSim_propagate_to_boundary<<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
+        case PROPAGATE_TO_BOUNDARY:  
+                                     _QSim_propagate_to_boundary<<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
 
-        case RAYLEIGH_SCATTER_ALIGN: _QSim_rayleigh_scatter_align<<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  )   ; break ;
+        case RAYLEIGH_SCATTER_ALIGN: 
+                                     _QSim_rayleigh_scatter_align<<<numBlocks,threadsPerBlock>>>( sim, photon, num_photon, dbg  )   ; break ;
 
-        case HEMISPHERE_S_POLARIZED: _QSim_hemisphere_polarized<<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 0u  ) ; break ; 
-        case HEMISPHERE_P_POLARIZED: _QSim_hemisphere_polarized<<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 1u  ) ; break ; 
-        case HEMISPHERE_X_POLARIZED: _QSim_hemisphere_polarized<<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, 2u  ) ; break ; 
-
-        case PROPAGATE_AT_BOUNDARY:        
-        case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:        
-                             _QSim_propagate_at_boundary_generate<<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
+        case HEMISPHERE_S_POLARIZED: 
+        case HEMISPHERE_P_POLARIZED: 
+        case HEMISPHERE_X_POLARIZED: 
+                                     _QSim_hemisphere_polarized<<<numBlocks,threadsPerBlock>>>(   sim, photon, num_photon, dbg, type - HEMISPHERE_S_POLARIZED  ) ; break ; 
 
         case PROPAGATE_AT_BOUNDARY_S_POLARIZED: 
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  
                              _QSim_propagate_at_boundary_mutate<<<numBlocks,threadsPerBlock>>>(    sim, photon, num_photon, dbg  ) ; break ;
+
+        case PROPAGATE_AT_BOUNDARY:        
+        case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:        
+                             _QSim_propagate_at_boundary_generate<<<numBlocks,threadsPerBlock>>>(  sim, photon, num_photon, dbg  )   ; break ;
+
 
         case REFLECT_DIFFUSE:  
         case REFLECT_SPECULAR:  

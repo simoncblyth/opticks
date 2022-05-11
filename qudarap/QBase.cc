@@ -23,6 +23,12 @@ QBase::QBase()
     base(MakeInstance()),
     d_base(QU::UploadArray<qbase>(base,1))
 {
+    init(); 
+}
+
+void QBase::init()
+{
+    INSTANCE = this ; 
 }
 
 std::string QBase::desc() const 

@@ -59,7 +59,8 @@ if __name__ == '__main__':
     pos = -mom          # illustrative choice of position on unit hemisphere 
 
     normal = prd[:,0,:3]  # saved from qprd 
-    point =  prd[:,2,:3]  # not really position but its all zeros... so will do 
+    #point =  prd[:,1,:3]  # not really position but its all zeros... so will do 
+    point = np.array( [0,0,0], dtype=np.float32 )
 
     print("mom\n", mom) 
     print("pol\n", pol) 

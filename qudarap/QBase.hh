@@ -15,6 +15,7 @@ struct QUDARAP_API QBase
     static qbase* MakeInstance();
 
     QBase();  
+    void init(); 
     std::string desc() const ; 
 
     qbase*  base ; 

@@ -53,10 +53,9 @@ Uploading components is a once only action for a geometry, encompassing:
 
 It is the simulation physics equivalent of uploading the CSGFoundry geometry. 
 
-The components are manages by separate singleton instances 
+The components are managed by separate singleton instances 
 that subsequent QSim instanciation collects together.
 This structure is used to allow separate testing. 
-
 
 TODO: Most of the component arguments come from CSGFoundry but it is not possible
 to consolidate to just CSGFoundry argument as that would add CSG dependency to QUDARap
@@ -639,7 +638,7 @@ NP* QSim::quad_launch_generate(unsigned num_quad, unsigned type )
 extern QSim_photon_launch
 --------------------------
 
-This function is implemented in QSim.cu and it used by *photon_launch_generate* and *photon_launch_mutate* 
+This function is implemented in QSim.cu and it used by BOTH *photon_launch_generate* and *photon_launch_mutate* 
 
 **/
 
@@ -661,12 +660,18 @@ NP* QSim::photon_launch_generate(unsigned num_photon, unsigned type )
     assert( d_dbg ); 
 
     sphoton* d_photon = QU::device_alloc<sphoton>(num_photon) ; 
+    QU::device_memset<sphoton>(d_photon, 0, num_photon); 
+
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
+    QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg, type );  
+
     NP* p = NP::Make<float>(num_photon, 4, 4); 
     sphoton* photon = (sphoton*)p->bytes() ; 
+
     QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, num_photon ); 
+
     return p ; 
 }
 

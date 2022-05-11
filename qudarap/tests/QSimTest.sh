@@ -79,6 +79,9 @@ case $TEST in
     rng_sequence) num=$M1 ;; 
      wavelength*) num=$M1 ;; 
   scint_generate) num=$M1 ;;
+   hemisphere_s_polarized|propagate_at_boundary_s_polarized) num=$M1 ;; 
+   hemisphere_p_polarized|propagate_at_boundary_p_polarized) num=$M1 ;; 
+   hemisphere_x_polarized|propagate_at_boundary_x_polarized) num=$M1 ;; 
 esac
 
 

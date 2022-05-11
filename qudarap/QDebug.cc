@@ -40,7 +40,9 @@ qdebug* QDebug::MakeInstance()   // static
 
     // quad2: mocking prd per-ray-data result of optix trace calls 
     dbg->prd = quad2::make_eprd() ;  // see qudarap/tests/eprd.sh 
-     
+    
+    dbg->p.ephoton() ; 
+ 
     sscint& scint_gs = dbg->scint_gs ; 
     sscint::FillGenstep( scint_gs, 0, 100 ); 
 

@@ -180,7 +180,7 @@ std::string QCerenkov::desc() const
 {
     std::stringstream ss ; 
     ss << "QCerenkov"
-       << " fold " << fold
+       << " fold " << ( fold ? fold : "-" )
        << " icdf_ " << ( icdf_ ? icdf_->sstr() : "-" )
        << " icdf " << ( icdf ? icdf->sstr() : "-" )
        << " tex " << tex 

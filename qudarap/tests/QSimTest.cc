@@ -45,6 +45,7 @@ struct QSimTest
     unsigned num ; 
     const char* subfold ; 
     const char* dir ; 
+    int rc ; 
 
     QSimTest(unsigned type, unsigned num ); 
     void main(); 
@@ -85,7 +86,8 @@ QSimTest::QSimTest(unsigned type_, unsigned num_)
     type(type_),
     num(num_),
     subfold(QSimLaunch::Name(type)),
-    dir(SPath::Resolve(FOLD, subfold, DIRPATH))
+    dir(SPath::Resolve(FOLD, subfold, DIRPATH)),
+    rc(0)
 {
 }
 
@@ -410,10 +412,6 @@ void QSimTest::getStateNames(std::vector<std::string>& names, unsigned num_state
     delete [] idx ; 
 }
 
-
-
-
-
 void QSimTest::photon_launch_generate()
 {
     assert( QSimLaunch::IsMutate(type)==false ); 
@@ -436,7 +434,6 @@ void QSimTest::mock_propagate()
     assert( QSimLaunch::IsMutate(type)==true ); 
     LOG(info) << "[" ; 
     LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
-
 
     NP* p   = qs.duplicate_dbg_ephoton(num); 
 
@@ -481,6 +478,20 @@ void QSimTest::photon_launch_mutate()
 
     unsigned num_photon = num ; 
     NP* a = NP::Load(FOLD, src_subfold,  "p.npy" ); 
+
+    if( a == nullptr )
+    {
+        LOG(fatal) 
+             << "failed to NP::Load photons from "
+             << " FOLD " << FOLD
+             <<  " src_subfold " << src_subfold   
+             << std::endl 
+             << " YOU PROBABLY NEED TO RUN ANOTHER TEST FIRST TO GENERATE THE PHOTONS "
+             ;
+        rc = 101 ; 
+        return ; 
+    } 
+
     LOG(info) << " loaded " << a->sstr() << " from src_subfold " << src_subfold ; 
     unsigned num_photon_ = a->shape[0] ; 
     assert( num_photon_ == num_photon ); 
@@ -590,12 +601,13 @@ void QSimTest::main()
         case RAYLEIGH_SCATTER_ALIGN: 
         case PROPAGATE_AT_BOUNDARY:   
         case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:  
+        case REFLECT_DIFFUSE:
+        case REFLECT_SPECULAR:
+                                                 assert(0) ; break ; 
         case HEMISPHERE_S_POLARIZED:   
         case HEMISPHERE_P_POLARIZED:  
         case HEMISPHERE_X_POLARIZED:   
-        case REFLECT_DIFFUSE:
-        case REFLECT_SPECULAR:
-
+                                                 photon_launch_generate()       ; break ;  
         case PROPAGATE_AT_BOUNDARY_S_POLARIZED: 
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:   
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  
@@ -658,7 +670,8 @@ int main(int argc, char** argv)
     QSimTest qst(type, num)  ; 
     qst.main(); 
 
-
     cudaDeviceSynchronize();
-    return 0 ; 
+
+    LOG(info) << " qst.rc " << qst.rc ; 
+    return qst.rc  ; 
 }

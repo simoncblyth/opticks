@@ -1113,7 +1113,7 @@ inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bo
 {
     const float3* normal = prd->normal() ; 
 
-    //printf("//qsim.hemisphere_polarized normal (%10.4f, %10.4f, %10.4f) \n", normal->x, normal->y, normal->z );  
+    //printf("//qsim.hemisphere_polarized polz %d normal (%10.4f, %10.4f, %10.4f) \n", polz, normal->x, normal->y, normal->z );  
 
     float phi = curand_uniform(&rng)*2.f*M_PIf;  // 0->2pi
     float cosTheta = curand_uniform(&rng) ;      // 0->1
@@ -1124,6 +1124,8 @@ inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bo
     p.mom.z = cosTheta ; 
 
     smath::rotateUz( p.mom, (*normal) * ( inwards ? -1.f : 1.f )); 
+
+    //printf("//qsim.hemisphere_polarized polz %d p.mom (%10.4f, %10.4f, %10.4f) \n", polz, p.mom.x, p.mom.y, p.mom.z );  
 
     // what about normal incidence ?
     const float3 transverse = normalize(cross(p.mom, (*normal) * ( inwards ? -1.f : 1.f )  )) ; // perpendicular to plane of incidence
