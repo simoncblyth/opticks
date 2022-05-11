@@ -53,13 +53,17 @@ struct qcerenkov
 #if defined(__CUDACC__) || defined(__CUDABE__)
 inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, curandStateXORWOW& rng, const quad6& _gs, int idx, int gsid ) const 
 {
+    printf("//qcerenkov::generate idx %d \n", idx ); 
+
     const scerenkov& gs = (const scerenkov&)_gs ;
-    const float3 p0 = normalize(gs.DeltaPosition) ;   // TODO: see of can normalize inside the genstep at collection  
+    const float3 p0 = normalize(gs.DeltaPosition) ;   // TODO: see if can normalize inside the genstep at collection  
 
     float wavelength ; 
     float cosTheta ; 
     float sin2Theta ; 
 
+    //wavelength = 500.f ; cosTheta = 0.70710678f ; sin2Theta = 0.5f ; 
+   
     wavelength_sampled_bndtex(wavelength, cosTheta, sin2Theta, rng, gs, idx, gsid) ;  
     //wavelength_sampled_enprop<float>(wavelength, cosTheta, sin2Theta, rng, gs, idx, gsid) ;  
     //wavelength_sampled_enprop<double>(wavelength, cosTheta, sin2Theta, rng, gs, idx, gsid) ;  
@@ -143,11 +147,10 @@ inline QCERENKOV_METHOD void qcerenkov::fraction_sampled(float& fraction, float&
         N = u * MeanNumberOfPhotonsMax ;
 
     } while (N > NumberOfPhotons);
+
+    printf("//qcerenkov::fraction_sampled fraction %10.4f delta %10.4f \n", fraction, delta ); 
+
 }
-
-
-
-
 
 
 
@@ -260,26 +263,38 @@ g4-cls G4Cerenkov::
     * ~/opticks_refs/external_pergamon_jelley_pdf_18410.pdf
 
 
+HMM: when there is no permissable cerenkov for the material RINDEX this is just going to infinite spin ? 
+Added the loop count to prevent that.  BUT whats the proper way to avoid that ?
+
+The numphotons should be zero in that situation : so this is an issue of testing with 
+fabricated gensteps that should not be an issue with real gensteps.  
+
+
 **/
 
 inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelength, float& cosTheta, float& sin2Theta, curandStateXORWOW& rng, const scerenkov& gs, int idx, int gsid ) const 
 {
+    printf("//qcerenkov::wavelength_sampled_bndtex bnd %p gs.matline %d \n", bnd, gs.matline ); 
     float u0 ;
     float u1 ; 
     float w ; 
     float sampledRI ;
     float u_maxSin2 ;
 
+    unsigned count = 0 ; 
+
     do {
         u0 = curand_uniform(&rng) ;
 
         w = gs.Wmin + u0*(gs.Wmax - gs.Wmin) ; 
 
-        wavelength = gs.Wmin*gs.Wmax/w ; // arranges flat energy distribution, expressed in wavelength 
+        wavelength = gs.Wmin*gs.Wmax/w ; // reciprocalization : arranges flat energy distribution, expressed in wavelength 
 
         float4 props = bnd->boundary_lookup(wavelength, gs.matline, 0u); 
 
         sampledRI = props.x ;
+
+        printf("//qcerenkov::wavelength_sampled_bndtex count %d wavelength %10.4f sampledRI %10.4f \n", count, wavelength, sampledRI );  
 
         cosTheta = gs.BetaInverse / sampledRI ;
 
@@ -289,14 +304,13 @@ inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelen
 
         u_maxSin2 = u1*gs.maxSin2 ;
 
-    } while ( u_maxSin2 > sin2Theta );
+        count += 1 ; 
+
+    } while ( u_maxSin2 > sin2Theta && count < 10 );
 
 
-    if( idx == 0u )
-    {
-        printf("// qcerenkov::cerenkov_wavelength_rejection_sampled idx %d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f \n", 
-              idx , sampledRI, cosTheta, sin2Theta, wavelength );  
-    }
+    printf("//qcerenkov::wavelength_sampled_bndtex idx %d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d \n", 
+              idx , sampledRI, cosTheta, sin2Theta, wavelength, count );  
 }
 
 

@@ -7,6 +7,9 @@
 #include "sscint.h"
 #include "scerenkov.h"
 
+#include "QBnd.hh"
+#include "qbnd.h"
+
 #include "QDebug.hh"
 #include "QState.hh"
 #include "qdebug.h"
@@ -47,7 +50,11 @@ qdebug* QDebug::MakeInstance()   // static
     sscint::FillGenstep( scint_gs, 0, 100 ); 
 
     scerenkov& cerenkov_gs = dbg->cerenkov_gs ; 
-    scerenkov::FillGenstep( cerenkov_gs, 0, 100 ); 
+
+    assert( QBnd::Get() ); // MUST INSTANCIATE QBnd BEFORE QDebug 
+    unsigned cerenkov_matline = QBnd::Get()->bnd->boundary_tex_MaterialLine_LS ;   
+    LOG(info) << " cerenkov_matline " << cerenkov_matline ;
+    scerenkov::FillGenstep( cerenkov_gs, cerenkov_matline, 100 ); 
 
     return dbg ; 
 }
