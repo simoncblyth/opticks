@@ -17,9 +17,9 @@ For example::
 
 def eprint( expr, g, l, lprefix="", rprefix="", tail="" ):
     """
-    Returns formatted line showing:
-   
-    1. lhs : numpy or python expression 
+    Returns the evaluated expression and prints a formatted line showing:
+ 
+    1. lhs : numpy/python expression 
     2. rhs : evaluated result of the expression 
 
     :param expr: expression to be evaluated
@@ -28,7 +28,7 @@ def eprint( expr, g, l, lprefix="", rprefix="", tail="" ):
     :param lprefix: lhs prefix before the expression
     :param rprefix: rhs prefix before the result
     :param tail: after the result 
-    :return line:  formatted line string
+    :return ret: result of the evaluation 
     """
     ret = eval(expr, g, l)
     lhs = "%s%s" % (lprefix, expr)
@@ -38,20 +38,21 @@ def eprint( expr, g, l, lprefix="", rprefix="", tail="" ):
 
 def epr(arg, g, l, **kwa):
     """
-    :param arg:
+    :param arg: 
     :param g: globals() from calling scope
     :param l: locals() from calling scope
     :param kwa: named args passed to eprint 
+    :return ret: evaluated result 
     """
     p = arg.find("=")  
     if p > -1: 
-        var_eq = arg[:p+1]
-        expr = arg[p+1:]
-        label = var_eq
+        var_eq = arg[:p+1]  # chars before the first "=" in arg
+        expr = arg[p+1:]    # chars following the first "=" in arg 
+        lprefix = var_eq
     else:
-        label, expr = "", arg 
+        lprefix, expr = "", arg 
     pass
-    return eprint(expr, g, l,  lprefix=label,  **kwa)
+    return eprint(expr, g, l,  lprefix=lprefix,  **kwa)
 
 
 

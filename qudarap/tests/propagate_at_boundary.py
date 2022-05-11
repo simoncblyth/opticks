@@ -11,7 +11,6 @@ if __name__ == '__main__':
     g = globals()
     l = locals()
 
-
     epr("FOLD",          g, l )
     p0  = epr("t.p0",    g, l,  tail="\n\n", rprefix="\n"  ) 
     prd = epr("t.prd",   g, l,  tail="\n\n", rprefix="\n"  ) 

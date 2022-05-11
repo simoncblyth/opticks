@@ -326,7 +326,9 @@ void QSimTest::wavelength()
 void QSimTest::dbg_gs_generate()
 {
     NP* p = qs.dbg_gs_generate(num, type); 
+
     p->save(dir, "p.npy"); 
+
     if( type == SCINT_GENERATE )
     {
         qs.dbg->save_scint_gs(dir);  
@@ -334,6 +336,10 @@ void QSimTest::dbg_gs_generate()
     else if( type == CERENKOV_GENERATE )
     {
         qs.dbg->save_cerenkov_gs(dir);  
+    }
+    else
+    {
+        LOG(fatal) << "unexpected type " << type << " subfold " << subfold ; 
     }
 }
 

@@ -32,7 +32,7 @@ msg="=== $BASH_SOURCE :"
 #test=wavelength_cerenkov
 
 #test=scint_generate
-#test=cerenkov_generate
+test=cerenkov_generate
 
 
 #test=fill_state_0
@@ -48,7 +48,7 @@ msg="=== $BASH_SOURCE :"
 #test=hemisphere_p_polarized
 #test=hemisphere_x_polarized
 
-test=propagate_at_boundary_s_polarized
+#test=propagate_at_boundary_s_polarized
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
 
@@ -78,22 +78,46 @@ export TEST=${TEST:-$test}
 case $TEST in
     rng_sequence) num=$M1 ;; 
      wavelength*) num=$M1 ;; 
-  scint_generate) num=$M1 ;;
+  scint_generate) num=8 ;;
+  cerenkov_generate) num=8 ;;
    hemisphere_s_polarized|propagate_at_boundary_s_polarized) num=$M1 ;; 
    hemisphere_p_polarized|propagate_at_boundary_p_polarized) num=$M1 ;; 
    hemisphere_x_polarized|propagate_at_boundary_x_polarized) num=$M1 ;; 
 esac
 
 
+case $TEST in
+   boundary_lookup_all)    script=boundary_lookup_all.py ;;
+   boundary_lookup_water)  script=boundary_lookup_line.py ;;
+   boundary_lookup_ls)     script=boundary_lookup_line.py ;;
+       scint_generate)     script=scint_generate.py  ;;
+    cerenkov_generate)     script=cerenkov_generate.py  ;;
+
+   fill_state_0)           script=fill_state.py ;;
+   fill_state_1)           script=fill_state.py ;;
+   fill_state_cf)          script=fill_state_cf.py ;;
+
+   hemisphere_s_polarized) script=hemisphere_polarized.py ;;
+   hemisphere_p_polarized) script=hemisphere_polarized.py ;;
+   hemisphere_x_polarized) script=hemisphere_polarized.py ;;
+
+   propagate_at_boundary*) script=propagate_at_boundary.py ;; 
+
+random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
+    lambertian_direction)  script=lambertian_direction.py ;; 
+         mock_propagate*)  script=mock_propagate.py ;; 
+
+                        *) script=generic.py      ;;
+esac
+
+
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
-
 
 export SEvent=INFO
 
 source fill_state.sh 
 source ephoton.sh         # branching on TEST inside ephoton.sh 
-
 
 
 
@@ -132,28 +156,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     # PYVISTA_KILL_DISPLAY envvar is observed to speedup exiting from ipython after pyvista plotting 
     # see https://github.com/pyvista/pyvista/blob/main/pyvista/plotting/plotting.py
     export PYVISTA_KILL_DISPLAY=1
-
-    case $TEST in
-       boundary_lookup_all)    script=boundary_lookup_all.py ;;
-       boundary_lookup_water)  script=boundary_lookup_line.py ;;
-       boundary_lookup_ls)     script=boundary_lookup_line.py ;;
-           scint_generate)     script=scint_generate.py  ;;
-
-       fill_state_0)           script=fill_state.py ;;
-       fill_state_1)           script=fill_state.py ;;
-       fill_state_cf)          script=fill_state_cf.py ;;
-
-       hemisphere_s_polarized) script=hemisphere_polarized.py ;;
-       hemisphere_p_polarized) script=hemisphere_polarized.py ;;
-       hemisphere_x_polarized) script=hemisphere_polarized.py ;;
-
-       propagate_at_boundary*) script=propagate_at_boundary.py ;; 
-   random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
-        lambertian_direction)  script=lambertian_direction.py ;; 
-             mock_propagate*)  script=mock_propagate.py ;; 
-
-                            *) script=generic.py      ;;
-    esac
 
     if [ -f "$script" ]; then
 

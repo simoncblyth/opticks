@@ -107,6 +107,9 @@ __global__ void _QSim_dbg_gs_generate(qsim* sim, qdebug* dbg, sphoton* photon, u
     if (idx >= num_photon) return;
 
     curandState rng = sim->rngstate[idx] ; 
+    
+    printf("//_QSim_dbg_gs_generate sim.cerenkov %p sim.scint %p \n", sim->cerenkov, sim->scint ); 
+
     sphoton p ;   
 
     if( type == CERENKOV_GENERATE ) // TODO: other flavors of ck gen 
@@ -126,7 +129,8 @@ __global__ void _QSim_dbg_gs_generate(qsim* sim, qdebug* dbg, sphoton* photon, u
 
 extern void QSim_dbg_gs_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon, unsigned type ) 
 {
-    printf("//QSim_dbg_gs_generate num_photon %d type %d \n", num_photon, type ); 
+    printf("//QSim_dbg_gs_generate sim %p dbg %p photon %p num_photon %d type %d name %s \n", sim, dbg, photon, num_photon, type, QSimLaunch::Name(type) ); 
+
     _QSim_dbg_gs_generate<<<numBlocks,threadsPerBlock>>>( sim, dbg, photon, num_photon, type );
 } 
 

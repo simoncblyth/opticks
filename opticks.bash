@@ -2497,8 +2497,9 @@ c(){  cd $(opticks-home)/CSG ; pwd ; }
 cg(){ cd $(opticks-home)/CSG_GGeo ; pwd ; }
 gc(){ cd $(opticks-home)/GeoChain ; pwd ; }
 cx(){ cd $(opticks-home)/CSGOptiX ; pwd ; }
-qu(){ qudarap $* ; }
-sy(){ sysrap $* ; }
+qu(){ qudarap $* ; pwd ; }
+qt(){ qudarap tests ; pwd ; }
+sy(){ sysrap $* ; pwd ; }
 
 
 

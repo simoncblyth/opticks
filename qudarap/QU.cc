@@ -267,6 +267,8 @@ template<typename T>
 void QU::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items)
 {
     size_t size = num_items*sizeof(T) ; 
+    LOG(info) << "copy " << num_items << " sizeof(T) " << sizeof(T) ;  
+
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d) ); 
 }

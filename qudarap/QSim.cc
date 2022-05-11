@@ -487,8 +487,11 @@ void QSim::dump_wavelength( float* wavelength, unsigned num_wavelength, unsigned
 
 extern void QSim_dbg_gs_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon, unsigned type ) ; 
 
+
 NP* QSim::dbg_gs_generate(unsigned num_photon, unsigned type )
 {
+    assert( type == SCINT_GENERATE || type == CERENKOV_GENERATE ); 
+
     configureLaunch( num_photon, 1 ); 
     sphoton* d_photon = QU::device_alloc<sphoton>(num_photon) ; 
     QU::device_memset<sphoton>(d_photon, 0, num_photon); 
