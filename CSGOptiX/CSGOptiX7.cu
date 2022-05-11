@@ -14,11 +14,13 @@ and more easily tested.
 #include "SRG.h"
 #include "scuda.h"
 #include "squad.h"
-#include "sphoton.h"
 #include "sqat4.h"
+#include "sphoton.h"
 
 // simulation 
 #include <curand_kernel.h>
+
+#include "qstate.h"
 #include "qsim.h"
 #include "qevent.h"
 

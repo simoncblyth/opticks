@@ -17,8 +17,6 @@ QTex.hh
 QBnd.hh
     ggeo/GBndLib -> QTex "boundary texture"
 
-    * TODO: qbnd.h encapsulation
-
 QScint.hh
     ggeo/GScintillatorLib -> QTex "scintillation inverse-CDF texture"
 

@@ -31,7 +31,7 @@ msg="=== $BASH_SOURCE :"
 #test=wavelength_scintillation
 #test=wavelength_cerenkov
 
-test=scint_generate
+#test=scint_generate
 #test=cerenkov_generate
 
 
@@ -48,7 +48,7 @@ test=scint_generate
 #test=hemisphere_p_polarized
 #test=hemisphere_x_polarized
 
-#test=propagate_at_boundary_s_polarized
+test=propagate_at_boundary_s_polarized
 #test=propagate_at_boundary_p_polarized
 #test=propagate_at_boundary_x_polarized
 

@@ -2,10 +2,29 @@
 CSGOptiX6.cu : incomplete backwards compat for new geometry model
 =====================================================================
 
+NOTE THAT MANY OF THE BELOW HEADERS NOT USED AS SIMULATION NOT BROUGHT TO 6 
+BUT THE UNUSED HEADERS ARE HELPFUL SO THAT COMPILATION ERRORS FROM 6 
+ARE SIMILAR TO THOSE FROM 7 : FOR EARLY WARNING ON LAPTOP WHICH CANNOT RUN 7 
+
+TODO: COMBINE GEOM INTO HERE TO MAKE 6 MORE LIKE 7 
+
+
 **/
 
 #include "scuda.h"
 #include "squad.h"
+
+
+#include "sqat4.h"
+#include "sphoton.h"
+
+#include "qstate.h"
+#include "qsim.h"
+#include "qevent.h"
+
+
+
+
 #include <optix_device.h>
 
 rtDeclareVariable(float3,        eye, , );
