@@ -53,7 +53,7 @@ struct qcerenkov
 #if defined(__CUDACC__) || defined(__CUDABE__)
 inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, curandStateXORWOW& rng, const quad6& _gs, int idx, int gsid ) const 
 {
-    printf("//qcerenkov::generate idx %d \n", idx ); 
+    //printf("//qcerenkov::generate idx %d \n", idx ); 
 
     const scerenkov& gs = (const scerenkov&)_gs ;
     const float3 p0 = normalize(gs.DeltaPosition) ;   // TODO: see if can normalize inside the genstep at collection  
@@ -148,7 +148,7 @@ inline QCERENKOV_METHOD void qcerenkov::fraction_sampled(float& fraction, float&
 
     } while (N > NumberOfPhotons);
 
-    printf("//qcerenkov::fraction_sampled fraction %10.4f delta %10.4f \n", fraction, delta ); 
+    //printf("//qcerenkov::fraction_sampled fraction %10.4f delta %10.4f \n", fraction, delta ); 
 
 }
 
@@ -274,7 +274,7 @@ fabricated gensteps that should not be an issue with real gensteps.
 
 inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelength, float& cosTheta, float& sin2Theta, curandStateXORWOW& rng, const scerenkov& gs, int idx, int gsid ) const 
 {
-    printf("//qcerenkov::wavelength_sampled_bndtex bnd %p gs.matline %d \n", bnd, gs.matline ); 
+    //printf("//qcerenkov::wavelength_sampled_bndtex bnd %p gs.matline %d \n", bnd, gs.matline ); 
     float u0 ;
     float u1 ; 
     float w ; 
@@ -294,7 +294,7 @@ inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelen
 
         sampledRI = props.x ;
 
-        printf("//qcerenkov::wavelength_sampled_bndtex count %d wavelength %10.4f sampledRI %10.4f \n", count, wavelength, sampledRI );  
+        //printf("//qcerenkov::wavelength_sampled_bndtex count %d wavelength %10.4f sampledRI %10.4f \n", count, wavelength, sampledRI );  
 
         cosTheta = gs.BetaInverse / sampledRI ;
 
@@ -306,10 +306,10 @@ inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelen
 
         count += 1 ; 
 
-    } while ( u_maxSin2 > sin2Theta && count < 10 );
+    } while ( u_maxSin2 > sin2Theta && count < 100 );
 
-
-    printf("//qcerenkov::wavelength_sampled_bndtex idx %d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d \n", 
+    if(count > 50)
+    printf("//qcerenkov::wavelength_sampled_bndtex idx %6d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d \n", 
               idx , sampledRI, cosTheta, sin2Theta, wavelength, count );  
 }
 

@@ -108,7 +108,7 @@ __global__ void _QSim_dbg_gs_generate(qsim* sim, qdebug* dbg, sphoton* photon, u
 
     curandState rng = sim->rngstate[idx] ; 
     
-    printf("//_QSim_dbg_gs_generate sim.cerenkov %p sim.scint %p \n", sim->cerenkov, sim->scint ); 
+    //printf("//_QSim_dbg_gs_generate sim.cerenkov %p sim.scint %p \n", sim->cerenkov, sim->scint ); 
 
     sphoton p ;   
 

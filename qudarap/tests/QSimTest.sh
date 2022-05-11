@@ -20,25 +20,21 @@ arg=${1:-run_ana}
 
 msg="=== $BASH_SOURCE :"
 
-#export QBnd=INFO
 
 #test=rng_sequence
-#test=boundary_lookup_all
+test=boundary_lookup_all
 #test=boundary_lookup_water
 #test=boundary_lookup_ls
-
 
 #test=wavelength_scintillation
 #test=wavelength_cerenkov
 
 #test=scint_generate
-test=cerenkov_generate
+#test=cerenkov_generate
 
 
 #test=fill_state_0
 #test=fill_state_1
-
-
 
 #test=rayleigh_scatter_align
 
@@ -77,9 +73,11 @@ nrm=0,0,1
 export TEST=${TEST:-$test}
 case $TEST in
     rng_sequence) num=$M1 ;; 
+    random_direction_marsaglia) num=$M1 ;; 
+    lambertian_direction) num=$M1 ;; 
      wavelength*) num=$M1 ;; 
-  scint_generate) num=8 ;;
-  cerenkov_generate) num=8 ;;
+  scint_generate) num=$M1 ;;
+  cerenkov_generate) num=$M1 ;;
    hemisphere_s_polarized|propagate_at_boundary_s_polarized) num=$M1 ;; 
    hemisphere_p_polarized|propagate_at_boundary_p_polarized) num=$M1 ;; 
    hemisphere_x_polarized|propagate_at_boundary_x_polarized) num=$M1 ;; 
@@ -87,6 +85,8 @@ esac
 
 
 case $TEST in
+           rng_sequence)   script=rng_sequence.py   ;;
+random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
    boundary_lookup_all)    script=boundary_lookup_all.py ;;
    boundary_lookup_water)  script=boundary_lookup_line.py ;;
    boundary_lookup_ls)     script=boundary_lookup_line.py ;;
@@ -103,7 +103,6 @@ case $TEST in
 
    propagate_at_boundary*) script=propagate_at_boundary.py ;; 
 
-random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
     lambertian_direction)  script=lambertian_direction.py ;; 
          mock_propagate*)  script=mock_propagate.py ;; 
 
@@ -114,7 +113,8 @@ esac
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
 
-export SEvent=INFO
+#export QBnd=INFO
+#export SEvent=INFO
 
 source fill_state.sh 
 source ephoton.sh         # branching on TEST inside ephoton.sh 

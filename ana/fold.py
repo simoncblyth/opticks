@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 
-import os, logging, numpy as np, datetime, builtins
+import os, sys, logging, numpy as np, datetime, builtins
 from opticks.ana.npmeta import NPMeta
+
+#import inspect
+#SOURCE = inspect.getfile(inspect.currentframe())
+
+CMDLINE = " ".join(sys.argv)
+
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -92,7 +98,8 @@ class Fold(object):
         l = []
         l.append("t")
         l.append("")
-        l.append(self.base)
+        l.append("CMDLINE:%s" % CMDLINE )
+        l.append("t.base:%s" % self.base )
         l.append("")
         stamps = []
 
@@ -117,15 +124,20 @@ class Fold(object):
             l.append(line)
         pass
         l.append("")
-        min_stamp = min(stamps)
-        max_stamp = max(stamps)
-        dif_stamp = max_stamp - min_stamp 
-        age_stamp = now_stamp - max_stamp
-        l.append(" min_stamp : %s " % str(min_stamp))
-        l.append(" max_stamp : %s " % str(max_stamp))
-        l.append(" dif_stamp : %s " % str(dif_stamp))
-        l.append(" age_stamp : %s " % str(age_stamp))
-        assert dif_stamp.microseconds < 1e6, "stamp divergence detected microseconds %d : so are seeing mixed up results from multiple runs " % dif_stamp.microseconds 
+
+        if len(stamps) > 0:
+            min_stamp = min(stamps)
+            max_stamp = max(stamps)
+            dif_stamp = max_stamp - min_stamp 
+            age_stamp = now_stamp - max_stamp
+            l.append(" min_stamp : %s " % str(min_stamp))
+            l.append(" max_stamp : %s " % str(max_stamp))
+            l.append(" dif_stamp : %s " % str(dif_stamp))
+            l.append(" age_stamp : %s " % str(age_stamp))
+            assert dif_stamp.microseconds < 1e6, "stamp divergence detected microseconds %d : so are seeing mixed up results from multiple runs " % dif_stamp.microseconds 
+        else:
+            l.append("WARNING THERE ARE NO TIME STAMPS")
+        pass
         return l 
 
     def __repr__(self):

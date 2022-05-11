@@ -24,7 +24,7 @@ pass
 
 
 if __name__ == '__main__':
-    base = "/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
+    base = "/tmp/$USER/opticks/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
     rng_sequence(base) 
     print("seq.shape %s " % str(seq.shape))
 pass
