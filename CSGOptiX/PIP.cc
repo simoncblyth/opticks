@@ -190,16 +190,19 @@ PIP::PIP
 
 PTX read from *ptx_path_* is used to CreateModule
 
+* num_payload_values and num_attribute_values MUST MATCH payload and attribute slots 
+  used in the PTX, see CSGOptiX7.cu  
+
 **/
 PIP::PIP(const char* ptx_path_ ) 
     :
     max_trace_depth(MAX_TRACE_DEPTH),
 #ifdef WITH_PRD
-    num_payload_values(2),     // see 
+    num_payload_values(2),     // see trace
     num_attribute_values(2),   // see __intersection__is
 #else
-    num_payload_values(6),     // see 
-    num_attribute_values(5),   // see __intersection__is
+    num_payload_values(7),     // see trace and setPayload 
+    num_attribute_values(6),   // see __intersection__is
 #endif
     pipeline_compile_options(CreatePipelineOptions(num_payload_values,num_attribute_values)),
     program_group_options(CreateProgramGroupOptions()),

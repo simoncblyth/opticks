@@ -80,6 +80,9 @@ struct quad2
     SQUAD_METHOD void set_identity(unsigned id);
     SQUAD_METHOD void set_boundary(unsigned bn);
 
+    SQUAD_METHOD void  set_lposcost(float lpc);
+    SQUAD_METHOD float get_lposcost() const ;
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -97,18 +100,17 @@ void quad2::zero()
     q1.u.x = 0 ; q1.u.y = 0 ; q1.u.z = 0 ; q1.u.w = 0 ; 
 } 
 
-float*         quad2::data() {           return &q0.f.x ;  }
-const float*   quad2::cdata() const  {   return &q0.f.x ;  }
-float3*        quad2::normal() {         return (float3*)&q0.f.x ;  }
-const float3*  quad2::normal() const {   return (float3*)&q0.f.x ;  }
-float          quad2::distance() const { return q0.f.w ;  }
-
-unsigned       quad2::identity() const {   return q1.u.z ;  }
-void           quad2::set_identity(unsigned id) { q1.u.z = id ;  }
-unsigned       quad2::boundary() const {   return q1.u.w ;  }
-void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
-
-
+SQUAD_METHOD float*         quad2::data() {           return &q0.f.x ;  }
+SQUAD_METHOD const float*   quad2::cdata() const  {   return &q0.f.x ;  }
+SQUAD_METHOD float3*        quad2::normal() {         return (float3*)&q0.f.x ;  }
+SQUAD_METHOD const float3*  quad2::normal() const {   return (float3*)&q0.f.x ;  }
+SQUAD_METHOD float          quad2::distance() const { return q0.f.w ;  }
+SQUAD_METHOD unsigned       quad2::identity() const {   return q1.u.z ;  }
+SQUAD_METHOD void           quad2::set_identity(unsigned id) { q1.u.z = id ;  }
+SQUAD_METHOD unsigned       quad2::boundary() const {   return q1.u.w ;  }
+SQUAD_METHOD void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
+SQUAD_METHOD void           quad2::set_lposcost(float lpc){ q1.f.x = lpc ; }
+SQUAD_METHOD float          quad2::get_lposcost() const { return q1.f.x ; }
 
 
 

@@ -80,7 +80,7 @@ static __forceinline__ __device__ void trace(
             p0, p1
             );
 #else
-    uint32_t p0, p1, p2, p3, p4, p5 ; 
+    uint32_t p0, p1, p2, p3, p4, p5, p6  ; 
     optixTrace(
             handle,
             ray_origin,
@@ -93,15 +93,16 @@ static __forceinline__ __device__ void trace(
             SBToffset,
             SBTstride,
             missSBTIndex,
-            p0, p1, p2, p3, p4, p5
+            p0, p1, p2, p3, p4, p5, p6
             );
-    // unclear where the uint_as_float CUDA device function is defined, seems from optix7.h but cannot locate 
+    // unclear where the uint_as_float CUDA device function is defined, seems CUDA intrinsic without header ?
     prd->q0.f.x = uint_as_float( p0 );
     prd->q0.f.y = uint_as_float( p1 );
     prd->q0.f.z = uint_as_float( p2 );
     prd->q0.f.w = uint_as_float( p3 ); 
     prd->set_identity(p4) ; 
     prd->set_boundary(p5) ;  
+    prd->set_lposcost(uint_as_float(p6)) ;  
 #endif
 }
 
@@ -320,15 +321,17 @@ extern "C" __global__ void __raygen__rg()
 /**
 *setPayload* is used from __closesthit__ and __miss__ providing communication to __raygen__ optixTrace call
 **/
-static __forceinline__ __device__ void setPayload( float normal_x, float normal_y, float normal_z, float t, unsigned identity, unsigned boundary   ) // pure? 
+static __forceinline__ __device__ void setPayload( float normal_x, float normal_y, float normal_z, float distance, unsigned identity, unsigned boundary, float lposcost )
 {
     optixSetPayload_0( float_as_uint( normal_x ) );
     optixSetPayload_1( float_as_uint( normal_y ) );
     optixSetPayload_2( float_as_uint( normal_z ) );
-    optixSetPayload_3( float_as_uint( t ) );
+    optixSetPayload_3( float_as_uint( distance ) );
     optixSetPayload_4( identity );
     optixSetPayload_5( boundary );
-    // maximum of 6 payload values configured in PIP::PIP 
+    optixSetPayload_6( lposcost );  
+
+    // num_payload_values PIP::PIP must match the payload slots used up to maximum of 8 
     // NB : payload is distinct from attributes
 }
 #endif
@@ -348,7 +351,9 @@ extern "C" __global__ void __miss__ms()
 {
     MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
     const unsigned identity = 0xffffffffu ; 
-    const unsigned boundary = 0xffffu ;  
+    const unsigned boundary = 0xffffu ;
+    const float lposcost = 0.f ; 
+  
 #ifdef WITH_PRD
     quad2* prd = getPRD<quad2>(); 
 
@@ -364,8 +369,9 @@ extern "C" __global__ void __miss__ms()
 
     prd->set_boundary(boundary); 
     prd->set_identity(identity); 
+    prd->set_lposcost(lposcost); 
 #else
-    setPayload( ms->r, ms->g, ms->b, 0.f, identity, boundary );  // communicate from ms->rg
+    setPayload( ms->r, ms->g, ms->b, 0.f, identity, boundary, lposcost );  // communicate from ms->rg
 #endif
 }
 
@@ -392,16 +398,16 @@ optixGetRayTmax
 
 extern "C" __global__ void __closesthit__ch()
 {
-#ifdef WITH_PRD
-    quad2* prd = getPRD<quad2>(); 
+    //unsigned instance_index = optixGetInstanceIndex() ;  0-based index within IAS
     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
     unsigned prim_idx = optixGetPrimitiveIndex() ;  // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ; 
 
-    prd->set_identity( identity ) ;
-    //boundary is set in intersect 
-    //printf("//__closesthit__ch prd.boundary %d \n", prd->boundary() ); 
+#ifdef WITH_PRD
+    quad2* prd = getPRD<quad2>(); 
 
+    prd->set_identity( identity ) ;
+    //printf("//__closesthit__ch prd.boundary %d \n", prd->boundary() );  // boundary set in IS for WITH_PRD
     float3* normal = prd->normal(); 
     *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;  
 
@@ -413,18 +419,12 @@ extern "C" __global__ void __closesthit__ch()
                 uint_as_float( optixGetAttribute_2() )
                 );
 
-    const float t = uint_as_float(  optixGetAttribute_3() ) ;  
+    const float distance = uint_as_float(  optixGetAttribute_3() ) ;  
     unsigned boundary = optixGetAttribute_4() ; 
-    //printf("//__closesthit__ch boundary %d \n", boundary ); 
-
-    //unsigned instance_index = optixGetInstanceIndex() ;  0-based index within IAS
-    unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
-    unsigned prim_idx = optixGetPrimitiveIndex() ;  // see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
-    unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ; 
-
+    const float lposcost = uint_as_float( optixGetAttribute_5() ) ; 
     float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
 
-    setPayload( normal.x, normal.y, normal.z, t, identity, boundary);  // communicate from ch->rg
+    setPayload( normal.x, normal.y, normal.z, distance, identity, boundary, lposcost );  // communicate from ch->rg
 #endif
 }
 
@@ -461,6 +461,7 @@ extern "C" __global__ void __intersection__is()
     float4 isect ; // .xyz normal .w distance 
     if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))  
     {
+        const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  
         const unsigned hitKind = 0u ;            // only 8bit : could use to customize how attributes interpreted
         const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
         //printf("//__intersection__is boundary %d \n", boundary ); 
@@ -471,17 +472,18 @@ extern "C" __global__ void __intersection__is()
             quad2* prd = getPRD<quad2>(); 
             prd->q0.f = isect ;  // .w:distance and .xyz:normal which starts as the local frame one 
             prd->set_boundary(boundary) ; 
+            prd->set_lposcost(lposcost); 
             //printf("//__intersection__is prd.set_boundary %d \n", boundary ); 
         }   
 #else
-        unsigned a0, a1, a2, a3, a4  ;      
-        a0 = float_as_uint( isect.x );  // isect.xyz is object frame normal of geometry at intersection point 
+        unsigned a0, a1, a2, a3, a4, a5  ; // MUST CORRESPOND TO num_attribute_values in PIP::PIP 
+        a0 = float_as_uint( isect.x );     // isect.xyz is object frame normal of geometry at intersection point 
         a1 = float_as_uint( isect.y );
         a2 = float_as_uint( isect.z );
-        a3 = float_as_uint( isect.w ) ; // perhaps no need to pass the "t", should be standard access to "t"
+        a3 = float_as_uint( isect.w ) ; 
         a4 = boundary ; 
-        //printf("//__intersection__is a4.boundary %d \n", a4 ); 
-        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4 );   
+        a5 = float_as_uint( lposcost ); 
+        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4, a5 );   
 #endif
         // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 
         // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch 

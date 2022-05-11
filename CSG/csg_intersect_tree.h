@@ -617,9 +617,14 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
     return isect.w > 0.f ;  // ? 
 }
 
+/**
+intersect_prim
+----------------
 
+Canonically invoked from CSGOptiX/CSGOptiX7.cu:__intersection__is 
+with object frame ray_origin and ray_direction 
 
-
+**/
 
 TREE_FUNC
 bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )

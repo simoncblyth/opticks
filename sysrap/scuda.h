@@ -555,6 +555,12 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float3 normalize(const float3& v)
   return v * invLen;
 }
 
+SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_z(const float3& v)
+{
+  return v.z / sqrtf(dot(v, v)); 
+}
+
+
 /** floor */
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 floor(const float3& v)
 {
