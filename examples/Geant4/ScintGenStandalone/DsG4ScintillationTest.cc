@@ -5,7 +5,6 @@
 #include "DsG4Scintillation.h"
 
 
-
 G4Material* GetScintillator(const char* name)
 {
     const char* idpath = SOpticksResource::IDPath(true);
@@ -14,7 +13,6 @@ G4Material* GetScintillator(const char* name)
     std::cout << " dir " << dir << std::endl ; 
     return nullptr ; 
 }
-
 
 
 int main()

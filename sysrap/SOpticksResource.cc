@@ -8,6 +8,8 @@
 #include "SOpticksKey.hh"
 #include "PLOG.hh"
 
+#include "NP.hh"
+
 
 const plog::Severity SOpticksResource::LEVEL = PLOG::EnvLevel("SOpticksResource", "DEBUG"); 
 
@@ -129,6 +131,14 @@ const char* SOpticksResource::IDPath(bool setkey)
     const SOpticksKey* key = SOpticksKey::GetKey() ; 
     return key == nullptr ? nullptr : key->getIdPath(base)  ;  
 }
+
+const NP* SOpticksResource::IDLoad(const char* relpath)
+{
+    const char* idpath = SOpticksResource::IDPath();
+    return NP::Load(idpath, relpath) ; 
+}
+
+
 
 const char* SOpticksResource::CGDir(bool setkey)  // formerally CSG_GGeoDir 
 {

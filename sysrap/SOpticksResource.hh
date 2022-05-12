@@ -3,6 +3,8 @@
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
+struct NP ; 
+
 struct SYSRAP_API SOpticksResource
 {
     static const plog::Severity LEVEL ; 
@@ -26,6 +28,8 @@ struct SYSRAP_API SOpticksResource
 
     // setkey:true means OPTICKS_KEY envvar gets used 
     static const char* IDPath(bool setkey=true);
+    static const NP* IDLoad(const char* relpath); 
+
     static const char* CGDir(bool setkey=true);   // formerly CSG_GGeoDir
     static const char* CFBase(const char* ekey="CFBASE") ; 
 

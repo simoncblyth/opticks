@@ -81,6 +81,14 @@ G4Material* OpticksUtil::MakeMaterial(const G4MaterialPropertyVector* rindex, co
     return mat ; 
 }
 
+int OpticksUtil::getenvint(const char* envkey, int fallback)
+{
+    char* val = getenv(envkey);
+    int ival = val ? std::atoi(val) : fallback ;
+    return ival ; 
+}
+
+
 
 bool OpticksUtil::ExistsPath(const char* base_, const char* reldir_, const char* name_ )
 {
@@ -91,15 +99,6 @@ bool OpticksUtil::ExistsPath(const char* base_, const char* reldir_, const char*
     std::cout << "OpticksUtil::ExistsPath " << ( x ? "Y" : "N" ) << " " << fpath.string().c_str() << std::endl ; 
     return x ; 
 }
-
-int OpticksUtil::getenvint(const char* envkey, int fallback)
-{
-    char* val = getenv(envkey);
-    int ival = val ? std::atoi(val) : fallback ;
-    return ival ; 
-}
-
-
 std::string OpticksUtil::prepare_path(const char* dir_, const char* reldir_, const char* name )
 {   
     fs::path fdir(dir_);
@@ -119,7 +118,6 @@ std::string OpticksUtil::prepare_path(const char* dir_, const char* reldir_, con
     return fpath.string();
 }
 
-
 /**
 OpticksUtil::ListDir
 -----------------------
@@ -132,7 +130,8 @@ The names are sorted using default std::sort lexical ordering.
 void OpticksUtil::ListDir(std::vector<std::string>& names,  const char* path, const char* ext) // static
 {
     fs::path dir(path);
-    if(!( fs::exists(dir) && fs::is_directory(dir))) return ; 
+    bool dir_exists = fs::exists(dir) && fs::is_directory(dir) ; 
+    if(!dir_exists) return ; 
 
     fs::directory_iterator it(dir) ;
     fs::directory_iterator end ;
@@ -150,6 +149,9 @@ void OpticksUtil::ListDir(std::vector<std::string>& names,  const char* path, co
 
     std::sort( names.begin(), names.end() ); 
 }
+
+
+
 
 /**
 OpticksUtil::LoadConcat

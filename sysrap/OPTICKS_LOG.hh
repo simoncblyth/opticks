@@ -63,9 +63,13 @@ What you need to do to get logging to work for a package
 #ifdef OPTICKS_SYSRAP
 #include "SYSRAP_LOG.hh"
 #endif
+#ifdef OPTICKS_U4
+#include "U4_LOG.hh"
+#endif
 #ifdef OPTICKS_BRAP
 #include "BRAP_LOG.hh"
 #endif
+
 #ifdef OPTICKS_NPY
 #include "NPY_LOG.hh"
 #endif
@@ -155,9 +159,13 @@ class SYSRAP_API OPTICKS_LOG_ {
 #ifdef OPTICKS_SYSRAP
     SYSRAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "SYSRAP"), app1, NULL );
 #endif
+#ifdef OPTICKS_U4
+    U4_LOG::Initialize(instance->prefixlevel_parse( max_level, "U4"), app1, NULL );
+#endif
 #ifdef OPTICKS_BRAP
     BRAP_LOG::Initialize(instance->prefixlevel_parse( max_level, "BRAP"), app1, NULL );
 #endif
+
 #ifdef OPTICKS_NPY
     NPY_LOG::Initialize(instance->prefixlevel_parse( max_level, "NPY"), app1, NULL );
 #endif
@@ -244,6 +252,12 @@ class SYSRAP_API OPTICKS_LOG_ {
     SYSRAP_LOG::Check("SYSRAP");
 #else
     printf("%s\n", "!OPTICKS_SYSRAP" ); 
+#endif
+#ifdef OPTICKS_U4
+    printf("%s\n", "OPTICKS_U4" ); 
+    U4_LOG::Check("U4");
+#else
+    printf("%s\n", "!OPTICKS_U4" ); 
 #endif
 #ifdef OPTICKS_BRAP
     printf("%s\n", "OPTICKS_BRAP" ); 
