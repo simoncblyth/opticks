@@ -10,16 +10,60 @@ Generation
 
 1. cerenkov generation : needs integrating and testing 
 
+   * DONE : integrated the standard rejection sampling approach in QCerenkov/qcerenkov
+
    * complicated by float precision rejection sampling giving 
      poor wavelength match
    * technique enabling float precision wavelength matching requires 
      preparation of icdf for all materials, currently tested only with LS
    * plus need machinery to use the appropriate icdf on device 
 
+
+   * TODO: CerenkovStandalone mocking Geant4 to do what QSimTest cerenkov_generate 
+     does with from the same input QDebug cerenkov_gs : then random aligned comparison ?
+
+     * HMM: easier to do scint first as lots of history of working on similar with Cerenkov 
+
+
 2. scintillation generation, reemission : needs integrating
+
 
    * expect straightforward as wavelength matched OK previously
      using float precision  
+
+   * DONE : integrated standard lookup approach in QScint/qscint 
+
+   * TODO: focussed validation ScintillationStandalone mocking Geant4 to do what QSimTest scint_generate 
+     does from the same input QDebug scint_gs  : then random aligned comparison ?
+
+     * this requies hacking geant4 scintillation generation loop to accept gensteps as input
+       "jcv DsG4Scintillation" BUT without changing the code too much, 
+       the point is comparison afterall 
+
+     * note this is easier than BoundaryStandalone because it is only the 
+       generation loop part of DsG4Scintillation::PostStepDoIt that gets done 
+       on GPU so it is only that which needs comparison with the GPU implementation
+
+       * ScintGenStandalone is more appropriate name 
+       * ScintillationIntegral is the most involved part, done in qscint.h with scint_tex  
+       * HMM: recall doing something like this before, but cannot find it. 
+
+
+
+Pass the parcel ? Maybe use an SSim to hold the simulation input arrays::
+
+     * CSGFoundry that is focussed on geometry holding the icdf feels wrong 
+
+     200 void CSG_GGeo_Convert::convertScintillatorLib()
+     201 {
+     202     GScintillatorLib* slib = ggeo->getScintillatorLib();
+     203     NP* icdf = slib->getBuf();   // assuming 1 scintillator
+     204     foundry->icdf = icdf ;
+     205 }
+
+
+
+
 
 
 Approach : scerenkov.h sscintillation.h

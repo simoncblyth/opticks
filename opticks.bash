@@ -28,6 +28,7 @@ cu(){  local cu ; date ; for cu in *.cu ; do echo touch $cu && touch $cu ; done 
 ocu(){ oxrap cu ; }
 
 bst(){ cd $(opticks-home)/examples/Geant4/BoundaryStandalone ;  }
+sgs(){ cd $(opticks-home)/examples/Geant4/ScintGenStandalone ;  }
 yst(){ cd $(opticks-home)/examples/Geant4/RayleighStandalone ;  }
 
 

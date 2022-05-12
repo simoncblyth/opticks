@@ -640,9 +640,11 @@ int main(int argc, char** argv)
 
     int create_dirs = 0 ; 
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs );  
-    // HMM: this is just for one material ... Cerenkov needs this for all 
 
+    // HMM: this is just for one material ... Cerenkov needs this for all 
     // TODO: need better icdf naming now that can do both scint and ck with icdf, see CSG_GGeo_Convert::convertScintillatorLib 
+    // HMM: this placement of simulation input arrays directly under CSGFoundry seems off, manage with QSim or SSim ? 
+
     NP* icdf    = NP::Load(cfbase, "CSGFoundry", "icdf.npy");  
     NP* bnd     = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
     NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
@@ -658,6 +660,8 @@ int main(int argc, char** argv)
             ;
         return 1 ; 
     }
+
+
 
     const char* default_testname = "G" ; 
     const char* testname = SSys::getenvvar("TEST", default_testname); 

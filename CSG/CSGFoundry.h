@@ -320,7 +320,9 @@ struct CSG_API CSGFoundry
 
     void addMeshName(const char* name); 
     void addSolidLabel(const char* label); 
-    void setOpticalBnd( const NP* optical, const NP* bnd ); 
+
+    void setOpticalBnd( const NP* optical, const NP* bnd ); // "foreigner" ? TODO:SSim
+
 
     std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
@@ -353,11 +355,15 @@ struct CSG_API CSGFoundry
     CSGPrim*    last_added_prim ; 
     CSGNode*    last_added_node ; 
 
+
+    // holding these "foreign" QSim input arrays directly here feels wrong, 
+    // better to manage in SSim wrapper struct singleton to avoid playing pass the parcel
     const NP*    optical ; 
     const NP*        bnd ; 
     const CSGName*    bd ;  // instanciated by setOpticalBnd using bnd->names
+    NP* icdf ;              // scintillation icdf  
 
-    NP* icdf ; 
+
 
     std::string meta ; 
     const char* fold ; 
