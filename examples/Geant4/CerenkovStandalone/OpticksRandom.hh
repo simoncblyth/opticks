@@ -56,6 +56,7 @@ struct OpticksRandom : public CLHEP::HepRandomEngine
 
     static const char* OPTICKS_RANDOM_SEQPATH ; 
     OpticksRandom(const char* seq_path=nullptr, const char* seqmask_path=nullptr); 
+    std::string detail() const ; 
 
     virtual ~OpticksRandom(); 
 

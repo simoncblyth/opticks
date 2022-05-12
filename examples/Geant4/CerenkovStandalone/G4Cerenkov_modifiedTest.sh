@@ -29,6 +29,9 @@ if [ $docompile -eq 1 ]; then
     [ $? -ne 0 ] && echo cks-compile FAIL && exit 1 
 fi 
 
+
+export OPTICKS_RANDOM_SEQPATH=/tmp/$USER/opticks/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000
+
 cks-run $name 
 eval $(cks-run $name) $*
 [ $? -ne 0 ] && echo run FAIL && exit 2

@@ -67,7 +67,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 HMM: Composition is a bit of a monster - bringing in a boatload of classes 
 LONGTERM: see if can pull out the essentials into a smaller class
 
-* SGLM.hh is already on the way to doing this kinda thing in a single header 
+* SGLM.h is already on the way to doing this kinda thing in a single header 
 * Composition::getEyeUVW is the crux method needed 
 * Composition or its replacement only relevant for rendering, not for simulation 
 **/

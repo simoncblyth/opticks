@@ -4,6 +4,9 @@ usage(){ cat << EOU
 G4OpBoundaryProcessTest.sh
 ============================
 
+
+
+
 Usage::
 
    ./G4OpBoundaryProcessTest.sh 
@@ -94,7 +97,7 @@ arg=${1:-build_run_ana}
 
 
 
-seqpath="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
+seqpath="/tmp/$USER/opticks/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
 #seqpath=$seqpath/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy     ## first tenth of full 256M randoms 
 # comment last list to concatenate all 10 tranches giving full 256M randoms allowing num_photons max of 1M
 export OPTICKS_RANDOM_SEQPATH=$seqpath

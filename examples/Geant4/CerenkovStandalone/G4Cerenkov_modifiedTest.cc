@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <cstdlib>
 
 #include "G4Cerenkov_modified.hh"
 #include "G4Electron.hh"
@@ -28,12 +29,10 @@ struct G4Cerenkov_modifiedTest
     G4Cerenkov_modified*      proc ; 
     OpticksDebug<T>*          par ; 
     OpticksDebug<T>*          gen ;
-    NP*                       seq ;  
-    NP*                       seqmask ;  
     OpticksRandom*            rnd ; 
     long                      seed ; 
 
-    G4Cerenkov_modifiedTest(const char* rindex_path, const char* random_path, const char* seqmask_path, long seed ) ;  
+    G4Cerenkov_modifiedTest(const char* rindex_path, long seed ) ;  
 
     double GetAverageNumberOfPhotons(double BetaInverse, double charge, bool s2, double& dt );
     NP* scan_GetAverageNumberOfPhotons(double v0, double v1, unsigned nx) ; 
@@ -56,7 +55,7 @@ that contains ".npy" arrays to be concatenated.
 
 
 template <typename T>
-G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, const char* random_path, const char* seqmask_path, long seed_ )
+G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, long seed_ )
     :
     a(OpticksUtil::LoadArray(rindex_path)),
     rindex( a ? OpticksUtil::MakeProperty(a) : nullptr),
@@ -64,18 +63,12 @@ G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, co
     proc(new G4Cerenkov_modified()),
     par(new OpticksDebug<T>(8,"Params")),
     gen(new OpticksDebug<T>(8,"GenWavelength")),
-    seq(OpticksUtil::LoadRandom(random_path)),
-    seqmask(seqmask_path ? NP::Load(seqmask_path) : nullptr),
-    rnd(seq ? new OpticksRandom(seq, seqmask) : nullptr ),
+    rnd(OpticksRandom::Enabled() ? new OpticksRandom : nullptr ),
     seed(seed_)
 {
     std::cout 
         << "loaded from "
         << " rindex_path " << rindex_path 
-        << " random_path " << ( random_path ? random_path : "-" )
-        << " seqmask_path " << ( seqmask_path ? seqmask_path : "-" )
-        << " seq " << ( seq ? seq->desc() : "-" )
-        << " seqmask " << ( seqmask ? seqmask->desc() : "-" )
         << " seed " << seed 
         << std::endl
         ;  
@@ -151,28 +144,37 @@ NP* G4Cerenkov_modifiedTest<T>::scan_GetAverageNumberOfPhotons(double v0, double
     double* aa = a->values<double>();   
 
     G4double charge = 1. ; 
+
+    std::cout << "G4Cerenkov_modifiedTest::scan_GetAverageNumberOfPhotons BetaInverse scan (g4,s2,s2-g4) with timings " << std::endl ; 
+
     for(unsigned i=0 ; i < nx ; i++)
     {
         double bi = v0 + (v1-v0)*(double(i)/ double(nx - 1)) ;  
 
-        double dt ; 
+        double dt_g4 ; 
         double dt_s2 ; 
 
-        G4double averageNumberOfPhotons = GetAverageNumberOfPhotons( bi, charge, false,   dt ); 
-        G4double averageNumberOfPhotons_s2 = GetAverageNumberOfPhotons( bi, charge, true, dt_s2 ); 
+        G4double averageNumberOfPhotons_g4 = GetAverageNumberOfPhotons( bi, charge, false, dt_g4 ); 
+        G4double averageNumberOfPhotons_s2 = GetAverageNumberOfPhotons( bi, charge, true,  dt_s2 ); 
 
         aa[5*i+0] = bi ; 
-        aa[5*i+1] = averageNumberOfPhotons ; 
+        aa[5*i+1] = averageNumberOfPhotons_g4 ; 
         aa[5*i+2] = averageNumberOfPhotons_s2 ; 
-        aa[5*i+3] = dt ; 
+        aa[5*i+3] = dt_g4 ; 
         aa[5*i+4] = dt_s2 ; 
 
         std::cout 
             << " bi " << std::setw(10) << std::fixed << std::setprecision(4) << bi 
-            << " averageNumberOfPhotons " << std::setw(10) << std::fixed << std::setprecision(4) <<  averageNumberOfPhotons
-            << " averageNumberOfPhotons_s2 " << std::setw(10) << std::fixed << std::setprecision(4) <<  averageNumberOfPhotons_s2
-            << " dt " << std::setw(10) << std::fixed << std::setprecision(4) << dt
-            << " dt_s2 " << std::setw(10) << std::fixed << std::setprecision(4) << dt_s2 
+            << " averageNumberOfPhotons (g4,s2,s2-g4) " 
+            << "(" << std::setw(10) << std::fixed << std::setprecision(4) <<  averageNumberOfPhotons_g4
+            << " " << std::setw(10) << std::fixed << std::setprecision(4) <<  averageNumberOfPhotons_s2
+            << " " << std::setw(10) << std::fixed << std::setprecision(4) <<  (averageNumberOfPhotons_s2 - averageNumberOfPhotons_g4)
+            << ")"
+            << " time (g4,s2,s2-g4) "
+            << "(" << std::setw(10) << std::fixed << std::setprecision(4) << dt_g4
+            << " " << std::setw(10) << std::fixed << std::setprecision(4) << dt_s2 
+            << " " << std::setw(10) << std::fixed << std::setprecision(4) << (dt_s2-dt_g4)
+            << ")"
             << std::endl 
             ;
     }
@@ -397,8 +399,8 @@ G4Cerenkov_modifiedTest.cc
 For random aligned running prepare 256M PRECOOKED randoms (1M,16,16) 
 in 10 files summing to 1GB with::
 
-    cd ~/opticks/qudarap
-    TEST=F QSimTest
+    cd ~/opticks/qudarap/tests
+    TEST=rng_sequence ./QSimTest.sh
     
 And uncomment the below random_path to use the precooked
 const char* random_path = "/tmp/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ; 
@@ -411,7 +413,6 @@ Then::
 
 int main(int argc, char** argv)
 {
-
     double default_BetaInverse = 1.5 ; 
     double default_step_length = 100.*1000. ;  // (mm) : large to bump up the photon stats
     default_step_length = 100. ; 
@@ -420,18 +421,14 @@ int main(int argc, char** argv)
     double BetaInverse = argc > 1 ? std::stod(argv[1]) : default_BetaInverse ;  
     double step_length = argc > 2 ? std::stod(argv[2]) : default_step_length ; 
     int override_fNumPhotons = argc > 3 ? atoi(argv[3]) : default_override_fNumPhotons ; 
+
     long seed = OpticksUtil::getenvint("SEED", 0 ); 
 
     const char* rindex_path = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
 
-    //const char* random_path = "/tmp/QCtxTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ; 
-    const char* random_path = nullptr ; 
-    const char* mask_path = nullptr ;   // "/tmp/wavelength_deviant_mask.npy" ; 
-
     double hc_eVnm = h_Planck*c_light/(eV*nm) ; 
     std::cout 
          << " rindex_path " << rindex_path 
-         << " random_path " << ( random_path ? random_path : "-" ) 
          << " BetaInverse " << std::setw(10) << std::fixed << std::setprecision(4) << BetaInverse 
          << " step_length " << std::setw(10) << std::fixed << std::setprecision(4) << step_length
          << " override_fNumPhotons " << override_fNumPhotons
@@ -439,7 +436,7 @@ int main(int argc, char** argv)
          << std::endl 
          ;
 
-    G4Cerenkov_modifiedTest<double> t(rindex_path, random_path, mask_path, seed); 
+    G4Cerenkov_modifiedTest<double> t(rindex_path, seed); 
 
     //double numPhotons = t.GetAverageNumberOfPhotons(1.5, 1.) ; 
 

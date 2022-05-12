@@ -9,7 +9,7 @@ UseGeometryShader : flying point visualization of uncompressed step-by-step phot
 TODO: 
 
 1. more encapsulation/centralization of GLFW/OpenGL mechanics and viz math down 
-   into the header only imps: SGLFW.hh and SGLM.hh
+   into the header only imps: SGLFW.h and SGLM.h
 
 2. WASD navigation controls using SGLFW callback passing messages to SGLM::INSTANCE
 

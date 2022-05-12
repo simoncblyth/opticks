@@ -61,14 +61,22 @@ OpticksRandom::OpticksRandom(const char* seq, const char* seqmask)
     m_flat_prior(0.)
 {
     INSTANCE = this ; 
-    if( m_seq )
-    {
-        std::cout << " m_seq " << ( m_seq ? m_seq->desc() : "-" ) << std::endl ; 
-        std::cout << " m_seqmask " << ( m_seqmask ? m_seqmask->desc() : "-" ) << std::endl ; 
-        std::cout << " desc " << desc() << std::endl ; 
-        std::cout << " m_cur " << ( m_cur ? m_cur->desc() : "-" ) << std::endl ; 
-    }
+    std::cout << detail() ; 
 }
+
+std::string OpticksRandom::detail() const 
+{
+    std::stringstream ss ; 
+    ss << "OpticksRandom::detail"
+       << " m_seq " << ( m_seq ? m_seq->desc() : "-" ) << std::endl 
+       << " m_seqmask " << ( m_seqmask ? m_seqmask->desc() : "-" ) << std::endl
+       << " desc " << desc() << std::endl 
+       << " m_cur " << ( m_cur ? m_cur->desc() : "-" ) << std::endl 
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 /**
 OpticksRandom::getNumIndices

@@ -260,8 +260,21 @@ template void QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_ite
 template void QU::copy_device_to_host<sseq>( sseq* h, sseq* d,  unsigned num_items);
 
 
+/**
+QU::copy_device_to_host_and_free
+----------------------------------
 
+* Summary: when you get cudaMemcpy copyback errors look for infinite loops in kernels
+* Find the problem by doing things like adding loop limiters
 
+When a kernel misbehaves, such as going into an infinite loop for example, the
+connection to the GPU might timeout. Subsequent attempts to copyback arrays that 
+should have been written by the kernel would then fail during the cudaMemcpy 
+presumably because the CUDA context is lost as a result of the timeout making 
+all the device pointers invalid. The copyback is the usual thing to fail because 
+it is the normally the first thing to use the stale pointers after the kernel launch. 
+
+**/
 
 template<typename T>
 void QU::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items)

@@ -25,7 +25,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "SGLM.hh"
+#include "SGLM.h"
 
 #include "NGLM.hpp"
 #include "NPY.hpp"
