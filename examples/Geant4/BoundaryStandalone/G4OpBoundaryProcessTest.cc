@@ -342,9 +342,13 @@ void G4OpBoundaryProcessTest::init_surface()
     }
 }
 
+/**
+G4OpBoundaryProcessTest::load
+-------------------------------
 
+For srcdir null the p0 photon is duplicated.
 
-
+**/
 
 void G4OpBoundaryProcessTest::load( std::vector<quad4>& pp, const char* npy_name )
 {
@@ -569,7 +573,7 @@ Initial photons are loaded from file when srcdir
 is defined or otherwise duplicated from the p0 ephoton.
 
 For default idx of -1 all photons are mutated, otherwise
-only the idx photon is mutated. 
+only the idx photon is mutated, for debugging single photons.
 
 **/
 
@@ -619,14 +623,19 @@ void G4OpBoundaryProcessTest::quad_generate(quad& q, unsigned idx)
     if(rnd) rnd->setSequenceIndex(-1);
 }
 
+/**
+G4OpBoundaryProcessTest::quad_generate
+----------------------------------------
+
+Generate and save an array of shape (num, 4) to dstdir/q.npy 
+
+**/
+
 int G4OpBoundaryProcessTest::quad_generate()
 {
     NP* q = NP::Make<float>( num, 4 ); 
-    quad* qq = (quad*)q->values<float>(); 
-    for(unsigned idx=0 ; idx < num ; idx++) 
-    {
-        quad_generate(qq[idx], idx) ; 
-    }
+    quad* qq = (quad*)q->bytes(); 
+    for(unsigned idx=0 ; idx < num ; idx++) quad_generate(qq[idx], idx) ; 
     assert(dstdir); 
     q->save( dstdir, "q.npy" ); 
     return 0 ; 

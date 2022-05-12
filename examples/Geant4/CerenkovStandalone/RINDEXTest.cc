@@ -39,20 +39,24 @@ RINDEXTest::RINDEXTest( const char* path )
 
 void RINDEXTest::g4_line_lookup(double nm0, double nm1, double nm_step)
 {
+    std::cout << "RINDEXTest::g4_line_lookup" << std::endl ; 
+    unsigned count = 0 ; 
     for(double wavelength=nm0 ; wavelength < nm1 ; wavelength += nm_step )
     {
         double energy = h_Planck*c_light/(wavelength*nm) ; 
         double value = rindex->Value(energy); 
+        v.push_back(wavelength); 
+        v.push_back(value); 
 
-        std::cout 
+        if(count % 100 == 0 ) std::cout 
+            << " count " << std::setw(6) << count 
             << " wavelength " << std::setw(10) << std::fixed << std::setprecision(4) << wavelength
             << " energy/eV " << std::setw(10) << std::fixed << std::setprecision(4) << energy/eV 
             << " value " << std::setw(10) << std::fixed << std::setprecision(4) << value
             << std::endl 
             ;
 
-         v.push_back(wavelength); 
-         v.push_back(value); 
+        count += 1 ; 
     }
 }
 
@@ -85,8 +89,6 @@ int main(int argc, char** argv)
 
     double dscale = 1e6 ; 
     t.a->pdump<double>(argv[0], dscale ); 
-
-    
 
 
 

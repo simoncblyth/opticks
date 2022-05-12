@@ -1,4 +1,11 @@
 #pragma once
+/**
+OpticksUtil.hh
+=================
+
+TODO: rename this (U4Util perhaps) and relocate into more easily reusable U4 package 
+
+**/
 
 #include <vector>
 #include <string>

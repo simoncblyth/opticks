@@ -5,7 +5,7 @@ cks-env
 
 msg="=== $BASH_SOURCE :"
 
-srcs=(RINDEXTest.cc OpticksDebug.cc OpticksUtil.cc)
+srcs=(RINDEXTest.cc OpticksUtil.cc)
 for src in ${srcs[@]} ; do echo $src ; done
 
 name=${srcs[0]}

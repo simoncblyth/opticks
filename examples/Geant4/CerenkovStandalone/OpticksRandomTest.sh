@@ -23,7 +23,7 @@ if [ $docompile -eq 1 ]; then
 fi 
 
 
-seqdir="/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
+seqdir="/tmp/$USER/opticks/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000"
 #export OPTICKS_RANDOM_SEQPATH=$seqdir
 export OPTICKS_RANDOM_SEQPATH=$seqdir/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy 
 

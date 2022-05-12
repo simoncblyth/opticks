@@ -111,7 +111,7 @@ G4MaterialPropertyVector* L4Cerenkov::MakeProperty(const NP* a)
 {
     unsigned nv = a->num_values() ; 
     std::cout << "a " << a->desc() << " num_values " << nv << std::endl ; 
-    const double* vv = a->values<double>() ; 
+    const double* vv = a->cvalues<double>() ; 
 
     assert( nv %  2 == 0 ); 
     unsigned entries = nv/2 ; 
