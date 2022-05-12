@@ -34,6 +34,7 @@ standalone-compile(){
        -I. \
        -I../CerenkovStandalone \
        -I../../../sysrap \
+       -I../../../u4 \
        -I../../../extg4 \
        -I../../../qudarap \
        $opt \
@@ -52,6 +53,7 @@ standalone-compile(){
        -lboost_system \
        -lboost_filesystem \
        -lSysRap \
+       -lU4 \
        -lG4global \
        -lG4materials \
        -lG4particles \
@@ -74,13 +76,15 @@ if [ "${arg/build}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg compile error && exit 1
 fi
 
+export DsG4Scintillation_verboseLevel=2 
+
+
 if [ "${arg/dbg}" != "$arg" ]; then
-    lldb__ /tmp/$name/$name
+    BP=DsG4Scintillation::PostStepDoIt lldb__ /tmp/$name/$name
     [ $? -ne 0 ] && echo $msg dbg error && exit 2
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-
     /tmp/$name/$name
     [ $? -ne 0 ] && echo $msg run error && exit 2
 fi

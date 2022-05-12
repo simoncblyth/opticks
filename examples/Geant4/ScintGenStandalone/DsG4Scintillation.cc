@@ -151,6 +151,16 @@ DsG4Scintillation::DsG4Scintillation(G4int opticksMode, const G4String& processN
     //verboseLevel = 2;
     //G4cout << " DsG4Scintillation set verboseLevel by hand to " << verboseLevel << G4endl;
 
+#ifdef STANDALONE
+    {
+        const char* level_ = getenv("DsG4Scintillation_verboseLevel") ;
+        const char* fallback = "0" ;  
+        int level =  std::atoi(level_ ? level_ : fallback) ;
+        SetVerboseLevel(level); 
+        std::cout << " level " << level << " verboseLevel " << verboseLevel << std::endl ;  
+    }
+#endif
+
     if (verboseLevel > 0) {
         G4cout << GetProcessName() << " is created " << G4endl;
     }

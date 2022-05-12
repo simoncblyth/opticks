@@ -3,7 +3,9 @@
 OpticksUtil.hh
 =================
 
-TODO: rename this (U4Util perhaps) and relocate into more easily reusable U4 package 
+DONT USE THIS IN NEW DEVELOPMENT USE u4/U4 instead 
+
+TODO: switch over all use of OpticksUtil to U4 
 
 **/
 
