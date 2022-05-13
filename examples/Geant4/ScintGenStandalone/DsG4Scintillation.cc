@@ -66,6 +66,7 @@
 //--------------------------------------------------------------------
 //
 #ifdef STANDALONE
+#include "U4.hh"
 #else
 #include <boost/python.hpp>
 #endif

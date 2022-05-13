@@ -1,4 +1,8 @@
 #pragma once
+/**
+sgs.h : Aiming to replace cfg4/CGenstep 
+-----------------------------------------
+**/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #    define SGS_METHOD __host__ __device__ __forceinline__

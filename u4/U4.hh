@@ -7,6 +7,8 @@ struct NP ;
 class G4MaterialPropertiesTable ; 
 class G4Material ; 
 class G4VParticleChange ; 
+class G4Track ; 
+class G4Step ; 
 
 #include "U4_API_EXPORT.hh"
 
@@ -43,7 +45,13 @@ struct U4_API U4
 
     static NP* CollectOpticalSecondaries(const G4VParticleChange* pc ); 
 
-
+    static void CollectGenstep_DsG4Scintillation_r4695( 
+         const G4Track* aTrack,
+         const G4Step* aStep,
+         G4int    numPhotons,
+         G4int    scnt,        
+         G4double ScintillationTime
+    ); 
 
 };
 

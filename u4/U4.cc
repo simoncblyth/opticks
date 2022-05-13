@@ -13,6 +13,9 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "sscint.h"
+#include "OpticksGenstep.h"
+
 
 #include "SDir.h"
 #include "SOpticksResource.hh"
@@ -284,6 +287,63 @@ NP* U4::CollectOpticalSecondaries(const G4VParticleChange* pc )
     }
     return p ; 
 } 
+
+
+void U4::CollectGenstep_DsG4Scintillation_r4695( 
+     const G4Track* aTrack,
+     const G4Step* aStep,
+     G4int    numPhotons,
+     G4int    scnt,        
+     G4double ScintillationTime
+    )
+{
+    G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
+    G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
+
+    G4ThreeVector x0 = pPreStepPoint->GetPosition();
+    G4double      t0 = pPreStepPoint->GetGlobalTime();
+    G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
+    G4double meanVelocity = (pPreStepPoint->GetVelocity()+pPostStepPoint->GetVelocity())/2. ;
+
+    const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
+    //const G4Material* aMaterial = aTrack->GetMaterial();
+
+    sscint gs = {} ; 
+
+    gs.gentype = OpticksGenstep_DsG4Scintillation_r4695 ;
+    gs.trackid = aTrack->GetTrackID() ;
+    gs.matline = 0u ; //  aMaterial->GetIndex()   // not used for scintillation
+    gs.numphoton = numPhotons ;  
+
+    gs.pos.x = x0.x() ; 
+    gs.pos.y = x0.y() ; 
+    gs.pos.z = x0.z() ; 
+    gs.time = t0 ; 
+
+    gs.DeltaPosition.x = deltaPosition.x() ; 
+    gs.DeltaPosition.y = deltaPosition.y() ; 
+    gs.DeltaPosition.z = deltaPosition.z() ; 
+    gs.step_length = aStep->GetStepLength() ;
+
+    gs.code = aParticle->GetDefinition()->GetPDGEncoding() ;
+    gs.charge = aParticle->GetDefinition()->GetPDGCharge() ;
+    gs.weight = aTrack->GetWeight() ;
+    gs.meanVelocity = meanVelocity ; 
+
+    gs.scnt = scnt ; 
+    gs.f41 = 0.f ;  
+    gs.f42 = 0.f ;  
+    gs.f43 = 0.f ; 
+
+    gs.ScintillationTime = ScintillationTime ;
+    gs.f51 = 0.f ;
+    gs.f52 = 0.f ;
+    gs.f53 = 0.f ;
+     
+
+}
+
+
 
 
 

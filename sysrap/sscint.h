@@ -21,11 +21,15 @@ For now just implemnet for JUNO specific variant : collectGenstep_DsG4Scintillat
 #include "OpticksPhoton.h"
 
 #include "scurand.h"
-#include "smath.h"
 #include "scuda.h"
+#include "smath.h"
 #include "squad.h"
 
-
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+#include <string>
+#endif
+ 
 
 struct sscint
 {
@@ -61,6 +65,7 @@ struct sscint
 #else
    float* cdata() const {  return (float*)&gentype ; }
    static void FillGenstep( sscint& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
+   std::string desc() const ; 
 #endif
 
 }; 
@@ -68,6 +73,8 @@ struct sscint
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+#include <sstream>
+
 inline void sscint::FillGenstep( sscint& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
 {
     gs.gentype = OpticksGenstep_SCINTILLATION ; 
@@ -102,6 +109,24 @@ inline void sscint::FillGenstep( sscint& gs, unsigned genstep_id, unsigned numph
     gs.f52 = 0.f ;
     gs.f53 = 0.f ;
 }
+
+inline std::string sscint::desc() const 
+{   
+    std::stringstream ss ; 
+    ss << "sscint::desc"
+       << " gentype " << gentype
+       << " numphoton " << numphoton
+       << " pos (" 
+       << " " << std::setw(7) << std::fixed << std::setprecision(2) << pos.x 
+       << " " << std::setw(7) << std::fixed << std::setprecision(2) << pos.y
+       << " " << std::setw(7) << std::fixed << std::setprecision(2) << pos.z 
+       << ") " 
+       << " ScintillationTime " << ScintillationTime
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 #endif
 

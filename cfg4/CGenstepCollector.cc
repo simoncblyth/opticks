@@ -93,6 +93,7 @@ void CGenstepCollector::reset()
     m_torch_emitsource_count = 0 ; 
     m_machinery_count = 0 ; 
     m_photon_count = 0 ; 
+
     m_genstep->reset(); 
     m_gs_photons.clear(); 
     m_gs_offset.clear(); 

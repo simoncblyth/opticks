@@ -186,6 +186,7 @@ class CFG4_API CGenstepCollector
 
          unsigned          m_genstep_itemsize ; 
          float*            m_genstep_values ;  
+
          unsigned          m_scintillation_count ; 
          unsigned          m_cerenkov_count ; 
          unsigned          m_torch_count ; 
@@ -196,5 +197,5 @@ class CFG4_API CGenstepCollector
          std::vector<unsigned> m_gs_photons ; 
          std::vector<unsigned> m_gs_offset ; 
          std::vector<char>     m_gs_type ; 
-         std::vector<CGenstep> m_gs ; 
+         std::vector<CGenstep> m_gs ;   // huh: doesnt this duplicate the info of the above three ? 
 };
