@@ -43,22 +43,6 @@
 
 const plog::Severity OpticksGenstep::LEVEL = PLOG::EnvLevel("OpticksGenstep", "DEBUG"); 
 
-const char* OpticksGenstep::INVALID_                 = "INVALID" ;
-const char* OpticksGenstep::G4Cerenkov_1042_         = "G4Cerenkov_1042" ;
-const char* OpticksGenstep::G4Scintillation_1042_    = "G4Scintillation_1042" ;
-const char* OpticksGenstep::DsG4Cerenkov_r3971_      = "DsG4Cerenkov_r3971" ;
-const char* OpticksGenstep::DsG4Scintillation_r3971_ = "DsG4Scintillation_r3971" ;
-const char* OpticksGenstep::DsG4Scintillation_r4695_ = "DsG4Scintillation_r4695" ;
-const char* OpticksGenstep::TORCH_                   = "torch" ;
-const char* OpticksGenstep::FABRICATED_              = "fabricated" ;
-const char* OpticksGenstep::EMITSOURCE_              = "emitsource" ;
-const char* OpticksGenstep::NATURAL_                 = "natural" ;
-const char* OpticksGenstep::MACHINERY_               = "machinery" ;
-const char* OpticksGenstep::G4GUN_                   = "g4gun" ;
-const char* OpticksGenstep::PRIMARYSOURCE_           = "primarysource" ;
-const char* OpticksGenstep::GENSTEPSOURCE_           = "genstepsource" ;
-
-
 
 std::string OpticksGenstep::Dump()   // static
 {
@@ -69,11 +53,11 @@ std::string OpticksGenstep::Dump()   // static
     for(int i=i0 ; i < i1 ; i++)
     { 
          unsigned gencode = i ; 
-         unsigned flag = OpticksGenstep::GenstepToPhotonFlag(gencode); 
+         unsigned flag = OpticksGenstep_::GenstepToPhotonFlag(gencode); 
          ss 
             << " gencode " << std::setw(3) << gencode 
-            << " OpticksGenstep::Gentype " << std::setw(25) << Gentype(gencode)
-            << " OpticksGenstep::GenstepToPhotonFlag " << std::setw(10) << flag 
+            << " OpticksGenstep_::Name " << std::setw(25) << OpticksGenstep_::Name(gencode)
+            << " OpticksGenstep_::GenstepToPhotonFlag " << std::setw(10) << flag 
             << " OpticksPhoton::Flag " << std::setw(20) << OpticksPhoton::Flag(flag)
             << " OpticksPhoton::Abbrev " << std::setw(5) << OpticksPhoton::Abbrev(flag)
             << std::endl
@@ -81,141 +65,6 @@ std::string OpticksGenstep::Dump()   // static
     } 
     return ss.str(); 
 }
-
-
-
-const char* OpticksGenstep::Gentype(int gentype)  // static
-{
-    const char* s = 0 ;
-    switch(gentype)
-    {
-        case OpticksGenstep_INVALID:                 s=INVALID_                  ; break ; 
-        case OpticksGenstep_G4Cerenkov_1042:         s=G4Cerenkov_1042_          ; break ; 
-        case OpticksGenstep_G4Scintillation_1042:    s=G4Scintillation_1042_     ; break ; 
-        case OpticksGenstep_DsG4Cerenkov_r3971:      s=DsG4Cerenkov_r3971_       ; break ; 
-        case OpticksGenstep_DsG4Scintillation_r3971: s=DsG4Scintillation_r3971_  ; break ; 
-        case OpticksGenstep_DsG4Scintillation_r4695: s=DsG4Scintillation_r4695_  ; break ; 
-        case OpticksGenstep_TORCH:                   s=TORCH_                    ; break ; 
-        case OpticksGenstep_FABRICATED:              s=FABRICATED_               ; break ; 
-        case OpticksGenstep_EMITSOURCE:              s=EMITSOURCE_               ; break ; 
-        case OpticksGenstep_NATURAL:                 s=NATURAL_                  ; break ; 
-        case OpticksGenstep_MACHINERY:               s=MACHINERY_                ; break ; 
-        case OpticksGenstep_G4GUN:                   s=G4GUN_                    ; break ; 
-        case OpticksGenstep_PRIMARYSOURCE:           s=PRIMARYSOURCE_            ; break ; 
-        case OpticksGenstep_GENSTEPSOURCE:           s=GENSTEPSOURCE_            ; break ; 
-        case OpticksGenstep_NumType:                 s=INVALID_                  ; break ; 
-        default:                                     s=INVALID_  ;
-    }
-    return s;
-}
-
-unsigned OpticksGenstep::SourceCode(const char* type) // static
-{
-    unsigned int code = OpticksGenstep_INVALID  ; 
-    if(     strcmp(type,G4Cerenkov_1042_)==0)          code = OpticksGenstep_G4Cerenkov_1042 ;
-    else if(strcmp(type,G4Scintillation_1042_)==0)     code = OpticksGenstep_G4Scintillation_1042 ;
-    else if(strcmp(type,DsG4Cerenkov_r3971_ )==0)      code = OpticksGenstep_DsG4Cerenkov_r3971 ;
-    else if(strcmp(type,DsG4Scintillation_r3971_)==0)  code = OpticksGenstep_DsG4Scintillation_r3971 ;
-    else if(strcmp(type,DsG4Scintillation_r4695_)==0)  code = OpticksGenstep_DsG4Scintillation_r4695 ;
-    else if(strcmp(type,TORCH_  )==0)                  code = OpticksGenstep_TORCH ;
-    else if(strcmp(type,FABRICATED_)==0)               code = OpticksGenstep_FABRICATED ;
-    else if(strcmp(type,EMITSOURCE_)==0)               code = OpticksGenstep_EMITSOURCE ;
-    else if(strcmp(type,NATURAL_)==0)                  code = OpticksGenstep_NATURAL ;
-    else if(strcmp(type,MACHINERY_)==0)                code = OpticksGenstep_MACHINERY ;
-    else if(strcmp(type,G4GUN_)==0)                    code = OpticksGenstep_G4GUN ;
-    else if(strcmp(type,PRIMARYSOURCE_)==0)            code = OpticksGenstep_PRIMARYSOURCE ;
-    else if(strcmp(type,GENSTEPSOURCE_)==0)            code = OpticksGenstep_GENSTEPSOURCE ;
-    return code ; 
-}
-
-bool OpticksGenstep::IsValid(int gentype)   // static 
-{
-   const char* s = Gentype(gentype); 
-   bool invalid = strcmp(s, INVALID_) == 0 ;   
-   return !invalid ; 
-}
-
-bool OpticksGenstep::IsCerenkov(int gentype)  // static
-{
-   return gentype == OpticksGenstep_G4Cerenkov_1042  || gentype == OpticksGenstep_DsG4Cerenkov_r3971 ; 
-}
-bool OpticksGenstep::IsScintillation(int gentype)  // static
-{
-   return gentype == OpticksGenstep_G4Scintillation_1042 || gentype == OpticksGenstep_DsG4Scintillation_r3971 || gentype == OpticksGenstep_DsG4Scintillation_r4695 ; 
-}
-bool OpticksGenstep::IsTorchLike(int gentype)   // static
-{
-   return gentype == OpticksGenstep_TORCH || gentype == OpticksGenstep_FABRICATED || gentype == OpticksGenstep_EMITSOURCE ; 
-}  
-bool OpticksGenstep::IsEmitSource(int gentype)   // static
-{
-   return gentype == OpticksGenstep_EMITSOURCE ; 
-}  
-bool OpticksGenstep::IsMachinery(int gentype)  // static
-{
-   return gentype == OpticksGenstep_MACHINERY ; 
-}
-
-
-/**
-OpticksGenstep::GenstepToPhotonFlag
--------------------------------------
-
-Translate gentype from Genstep to Photon.
-
-Used by CG4Ctx::setEvent 
-
-**/
-
-unsigned OpticksGenstep::GenstepToPhotonFlag(int gentype)  // static
-{
-    unsigned phcode = 0 ;  
-    if(!OpticksGenstep::IsValid(gentype))
-    {
-        LOG(fatal) << "invalid gentype " << gentype ; 
-        phcode = NAN_ABORT ; 
-    }
-    else if(OpticksGenstep::IsCerenkov(gentype))
-    {
-        phcode = CERENKOV ; 
-    }
-    else if(OpticksGenstep::IsScintillation(gentype))
-    {
-        phcode = SCINTILLATION ; 
-    }
-    else if(OpticksGenstep::IsTorchLike(gentype))
-    {
-        phcode = TORCH ; 
-    }
-    else
-    {
-        LOG(fatal) << "unexpected gentype " << gentype ; 
-        phcode = NAN_ABORT ; 
-    }
-    return phcode ;   
-}
-
-unsigned OpticksGenstep::GentypeToPhotonFlag(char gentype)  // static
-{
-    unsigned phcode = 0 ;  
-    switch(gentype)
-    {
-        case 'C': phcode = CERENKOV          ; break ; 
-        case 'S': phcode = SCINTILLATION     ; break ; 
-        case 'T': phcode = TORCH             ; break ;  
-        default:  phcode = NAN_ABORT         ; break ; 
-    }
-
-    if( phcode == NAN_ABORT) 
-    {
-        LOG(fatal) 
-           << "unexpected gentype " << gentype 
-           << " phcode " << phcode
-           ;
-    }
-    return phcode ;   
-}
-
 
 
 OpticksGenstep::OpticksGenstep(const NPY<float>* gs) 

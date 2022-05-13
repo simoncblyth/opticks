@@ -1488,11 +1488,11 @@ const glm::vec4& OpticksEvent::getGenstepCenterExtent()
 
 bool OpticksEvent::isTorchType()
 {    
-   return strcmp(m_typ, OpticksGenstep::TORCH_) == 0 ; 
+   return strcmp(m_typ, OpticksGenstep_::TORCH_) == 0 ; 
 }
 bool OpticksEvent::isMachineryType()
 {    
-   return strcmp(m_typ, OpticksGenstep::MACHINERY_) == 0 ; 
+   return strcmp(m_typ, OpticksGenstep_::MACHINERY_) == 0 ; 
 }
 
 

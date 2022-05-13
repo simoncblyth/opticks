@@ -266,7 +266,10 @@ add_custom_command(
 )
 add_custom_target(PythonGS ALL DEPENDS ${IGS} )
 
+#[=[
 
+   cd ~/opticks/sysrap ; ../ana/enum_.py OpticksGenstep.h --quiet --simple --inipath /tmp/OpticksGenstep_Enum.ini && cat /tmp/OpticksGenstep_Enum.ini 
+#]=]
 
 
 set(HPH ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.h)

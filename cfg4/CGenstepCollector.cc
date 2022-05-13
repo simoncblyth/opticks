@@ -147,10 +147,10 @@ void CGenstepCollector::import()
         unsigned gentype = m_genstep->getInt(i,0u,0u);
         unsigned numPhotons = m_genstep->getInt(i,0u,3u);
 
-        if(OpticksGenstep::IsScintillation(gentype))  m_scintillation_count += 1 ;       
-        else if(OpticksGenstep::IsCerenkov(gentype))  m_cerenkov_count += 1 ;       
-        else if(OpticksGenstep::IsTorchLike(gentype))  m_torch_count += 1 ;       
-        else if(OpticksGenstep::IsMachinery(gentype)) m_machinery_count += 1 ;       
+        if(OpticksGenstep_::IsScintillation(gentype))  m_scintillation_count += 1 ;       
+        else if(OpticksGenstep_::IsCerenkov(gentype))  m_cerenkov_count += 1 ;       
+        else if(OpticksGenstep_::IsTorchLike(gentype))  m_torch_count += 1 ;       
+        else if(OpticksGenstep_::IsMachinery(gentype)) m_machinery_count += 1 ;       
 
         m_gs_photons.push_back(numPhotons); 
         m_photon_count += numPhotons ; 
@@ -370,7 +370,7 @@ CGenstep CGenstepCollector::collectScintillationStep
 
      m_scintillation_count += 1 ;   // 1-based index
 
-     assert( OpticksGenstep::IsScintillation(gentype) ); 
+     assert( OpticksGenstep_::IsScintillation(gentype) ); 
 
      uif_t uifa[4] ;
      uifa[0].i = gentype ; 
@@ -462,13 +462,13 @@ CGenstep CGenstepCollector::collectCerenkovStep
 
      LOG(LEVEL)
           << " gentype " << gentype
-          << " gentype " << OpticksGenstep::Gentype(gentype)
+          << " gentype " << OpticksGenstep_::Name(gentype)
           << " pdgCode " << pdgCode
           << " numPhotons " << numPhotons 
           << desc()
           ;
 
-     assert( OpticksGenstep::IsCerenkov(gentype) ); 
+     assert( OpticksGenstep_::IsCerenkov(gentype) ); 
 
      uif_t uifa[4] ;
      uifa[0].i = gentype ; 
@@ -530,7 +530,7 @@ Duplicates the gentype as a float into normal genstep itemsize.
 
 CGenstep CGenstepCollector::collectMachineryStep(unsigned gentype)
 {
-    assert( OpticksGenstep::IsMachinery(gentype) ); 
+    assert( OpticksGenstep_::IsMachinery(gentype) ); 
 
     CGenstep gs = addGenstep(0, 'M');
 
@@ -586,11 +586,11 @@ CGenstep CGenstepCollector::collectTorchGenstep(const OpticksGenstep* gs)
             << " numPhotons " << numPhotons
             ;
 
-        if( OpticksGenstep::IsTorchLike(gentype) )
+        if( OpticksGenstep_::IsTorchLike(gentype) )
         {
             m_torch_count += 1 ;  
 
-            bool emitsource = OpticksGenstep::IsEmitSource(gentype) ; 
+            bool emitsource = OpticksGenstep_::IsEmitSource(gentype) ; 
             m_torch_emitsource_count += int(emitsource) ;  
 
             const float* src_values = src->getValuesConst(idx);  

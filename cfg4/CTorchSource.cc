@@ -288,7 +288,7 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *event)
     unsigned event_gencode = OpticksGenstep_TORCH ; 
     event->SetUserInformation( new CEventInfo(event_gencode)) ;
 
-    unsigned photon_flag = OpticksGenstep::GenstepToPhotonFlag(event_gencode); 
+    unsigned photon_flag = OpticksGenstep_::GenstepToPhotonFlag(event_gencode); 
 
    LOG(info)
         << " event_gencode " << event_gencode

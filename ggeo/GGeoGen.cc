@@ -23,7 +23,7 @@ const OpticksGenstep* GGeoGen::createDefaultTorchStep(unsigned num_photons, int 
     const char* config = NULL ;    
     // encompasses a default number of photons, distribution, polarization
 
-    assert( OpticksGenstep::IsTorchLike(gentype) ); 
+    assert( OpticksGenstep_::IsTorchLike(gentype) ); 
 
     LOG(LEVEL) << " gentype " << gentype ; 
 

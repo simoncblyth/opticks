@@ -45,9 +45,9 @@
 
 const plog::Severity CCtx::LEVEL = PLOG::EnvLevel("CCtx", "DEBUG") ; 
 
-const unsigned CCtx::CK = OpticksGenstep::SourceCode("G4Cerenkov_1042");   
-const unsigned CCtx::SI = OpticksGenstep::SourceCode("G4Scintillation_1042"); 
-const unsigned CCtx::TO = OpticksGenstep::SourceCode("fabricated");   
+const unsigned CCtx::CK = OpticksGenstep_::Type("G4Cerenkov_1042");   
+const unsigned CCtx::SI = OpticksGenstep_::Type("G4Scintillation_1042"); 
+const unsigned CCtx::TO = OpticksGenstep_::Type("FABRICATED");   
 
 
 CCtx::CCtx(Opticks* ok)
@@ -341,7 +341,7 @@ void CCtx::setGentype(char gentype)
 
 unsigned CCtx::getGenflag() const
 {
-    return OpticksGenstep::GentypeToPhotonFlag(_gentype); 
+    return OpticksGenstep_::GentypeToPhotonFlag(_gentype); 
 }
 
 

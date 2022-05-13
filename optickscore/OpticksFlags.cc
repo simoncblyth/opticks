@@ -80,12 +80,12 @@ BMeta* OpticksFlags::MakeFlag2ColorMeta()  // static
 
 const char* OpticksFlags::SourceType( int code )
 {
-    return OpticksGenstep::Gentype(code) ; 
+    return OpticksGenstep_::Name(code) ; 
 }
 
 unsigned int OpticksFlags::SourceCode(const char* type)
 {
-    return OpticksGenstep::SourceCode(type); 
+    return OpticksGenstep_::Type(type); 
 }
 
 

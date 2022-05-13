@@ -56,37 +56,14 @@ class OKCORE_API OpticksGenstep {
 
     public:
        static const plog::Severity LEVEL ; 
-       static const char* Gentype(int gentype);
-       static unsigned SourceCode(const char* type);
-       static bool IsValid(int gentype);
-       static bool IsCerenkov(int gentype);
-       static bool IsScintillation(int gentype);
-       static bool IsTorchLike(int gentype);
-       static bool IsEmitSource(int gentype);
-       static bool IsMachinery(int gentype);
+
+     // several static methods  moved down to sysrap/OpticksGenstep.h struct OpticksGenstep_ 
     public:
        static NPY<float>* MakeCandle(unsigned num_photons, unsigned tagoffset );
        static OpticksGenstep* MakeInputPhotonCarrier(NPY<float>* input_photons, unsigned tagoffset, int repeat=0, const char* wavelength=nullptr, int eventID=0 ); 
     public:
-       static unsigned GenstepToPhotonFlag(int gentype);   
-       static unsigned GentypeToPhotonFlag(char gentype); // 'C' 'S' 'T' -> CK, SI, TO
     public:
        static std::string Dump();  
-    public:
-       static const char* INVALID_ ;
-       static const char* G4Cerenkov_1042_ ;
-       static const char* G4Scintillation_1042_ ;
-       static const char* DsG4Cerenkov_r3971_ ;
-       static const char* DsG4Scintillation_r3971_ ;
-       static const char* DsG4Scintillation_r4695_ ;
-       static const char* TORCH_ ;
-       static const char* FABRICATED_ ;
-       static const char* EMITSOURCE_ ;
-       static const char* NATURAL_ ;
-       static const char* MACHINERY_ ;
-       static const char* G4GUN_ ;
-       static const char* PRIMARYSOURCE_ ;
-       static const char* GENSTEPSOURCE_ ;
     public:  
         static void Dump(const NPY<float>* gs, unsigned modulo, unsigned margin, const char* msg) ;
     public:  

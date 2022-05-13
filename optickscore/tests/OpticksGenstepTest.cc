@@ -63,7 +63,7 @@ void test_torchstep()
     unsigned num_step = 1 ;  
     const char* config = NULL ;    
 
-    assert( OpticksGenstep::IsTorchLike(gentype) ); 
+    assert( OpticksGenstep_::IsTorchLike(gentype) ); 
 
     LOG(info) << " gentype " << gentype ; 
 
@@ -98,19 +98,19 @@ void test_torchstep()
             << " gentype " << gentype
             ;   
 
-        if( OpticksGenstep::IsCerenkov(gentype) )
+        if( OpticksGenstep_::IsCerenkov(gentype) )
         {   
             assert(0); 
         }   
-        else if( OpticksGenstep::IsScintillation(gentype) )
+        else if( OpticksGenstep_::IsScintillation(gentype) )
         {   
             assert(0); 
         }   
-        else if( OpticksGenstep::IsTorchLike(gentype) )
+        else if( OpticksGenstep_::IsTorchLike(gentype) )
         {   
             LOG(info) << " torch like " ; 
         }   
-        else if( OpticksGenstep::IsMachinery(gentype) )
+        else if( OpticksGenstep_::IsMachinery(gentype) )
         {   
             assert(0); 
         }   

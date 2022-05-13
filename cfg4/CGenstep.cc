@@ -27,7 +27,7 @@ CGenstep::CGenstep( unsigned index_ , unsigned photons_, unsigned offset_, char 
 
 unsigned CGenstep::getGenflag() const
 {
-    return OpticksGenstep::GentypeToPhotonFlag(gentype); 
+    return OpticksGenstep_::GentypeToPhotonFlag(gentype); 
 }
 
 

@@ -363,7 +363,7 @@ void G4Opticks::initSkipGencode()
     for(unsigned i=0 ; i < m_skip_gencode.size() ; i++)
     {
         unsigned gencode = m_skip_gencode[i] ;
-        LOG(fatal) << " m_skip_gencode[" << i <<"] " << gencode << " " << OpticksGenstep::Gentype(gencode) ;    
+        LOG(fatal) << " m_skip_gencode[" << i <<"] " << gencode << " " << OpticksGenstep_::Name(gencode) ;    
         m_skip_gencode_totals[gencode] = 0 ; 
     }
 }
@@ -400,7 +400,7 @@ void G4Opticks::dumpSkipGencode() const
             <<"] " 
             << std::setw(6) << total 
             << " " 
-            << OpticksGenstep::Gentype(gencode)
+            << OpticksGenstep_::Name(gencode)
             ;    
     }
 }

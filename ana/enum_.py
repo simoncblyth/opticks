@@ -22,10 +22,17 @@
 enum_.py
 =================
 
-Canonical usage is for parsing OpticksPhoton.h 
+Canonical usage is for parsing sysrap/OpticksPhoton.h and sysrap/OpticksGenstep.h
 which is done from custom commands in optickscore/CMakeLists.txt
 
 Renaming to enum_ was required due to a py3 module name clash.
+
+Test this with::
+
+   cd ~/opticks/sysrap ; ../ana/enum_.py OpticksGenstep.h --quiet --simple --inipath /tmp/OpticksGenstep_Enum.ini && cat /tmp/OpticksGenstep_Enum.ini
+   cd ~/opticks/sysrap ; ../ana/enum_.py OpticksPhoton.h --quiet --inipath /tmp/OpticksPhoton_Enum.ini && cat /tmp/OpticksPhoton_Enum.ini
+
+The non-simple form is for parsing enum values of form "0x1 << 4" 
 
 """
 import os, re, argparse
@@ -35,7 +42,9 @@ log = logging.getLogger(__name__)
 class Enum(dict):
     lptn = re.compile("^\s*(\w+)\s*=\s*(.*?),*\s*?$")
     vptn = re.compile("^0x1 <<\s*(\d+)$")
-    def __init__(self, path, mskval=True, simple=False):
+    END = "};" 
+
+    def __init__(self, path, mskval=True, simple=False, end=True):
         """
         :param path:
         :param mskval:
@@ -45,6 +54,8 @@ class Enum(dict):
         log.debug("parsing %s " % path )
         path = os.path.expandvars(path)
         log.debug("path expands to %s " % path )
+
+        self.end = end
 
         if simple:
             self.parse_simple(path)
@@ -64,7 +75,9 @@ class Enum(dict):
         """
         lines = list(map(str.strip,open(path,"r").readlines()))
         for line in lines:
+            if self.end and line.startswith(self.END): break  
             lm = self.lptn.match(line)
+
             if not lm: continue
             lg = lm.groups()
             assert len(lg) == 2 
@@ -79,6 +92,7 @@ class Enum(dict):
         """
         lines = list(map(str.strip,open(path,"r").readlines()))
         for line in lines:
+            if self.end and line.startswith(self.END): break  
             lm = self.lptn.match(line)
             if not lm: continue
 
@@ -113,6 +127,7 @@ if __name__ == '__main__':
     parser.add_argument(     "--mskval", action="store_true", default=False, help="Store the mask value rather than the smaller power of two int" ) 
     parser.add_argument(     "--simple", action="store_true", default=False, help="Simple value enum without bit shifting for masks " ) 
     parser.add_argument(     "--level", default="info", help="logging level" ) 
+    parser.add_argument(     "--noend", dest="end", default=True, action="store_false", help="inhibit ending of parse at END" ) 
     args = parser.parse_args()
 
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
@@ -126,7 +141,7 @@ if __name__ == '__main__':
         log.info("using argument input path %s " % args.path) 
     pass  
 
-    d = Enum(args.path, mskval=args.mskval, simple=args.simple)
+    d = Enum(args.path, mskval=args.mskval, simple=args.simple, end=args.end)
 
     if not args.quiet:
         print(d)
