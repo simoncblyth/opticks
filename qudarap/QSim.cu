@@ -327,6 +327,8 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
     q.q3.u.w = flag ;  // non-standard
 
     photon[idx] = p ; 
+
+    //printf("//_QSim_propagate_at_boundary_mutate idx %d ", idx); 
 }
 
 

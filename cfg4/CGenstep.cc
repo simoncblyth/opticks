@@ -37,6 +37,7 @@ CGenstep::~CGenstep()
     delete mask ; 
 }
 
+#ifdef WITH_CGENSTEP_MASK
 void CGenstep::set(unsigned i)
 {
     assert( i < photons);
@@ -57,6 +58,8 @@ unsigned CGenstep::count() const
     return mask ? mask->count() : 0 ; 
 }
 
+#endif
+
 
 std::string CGenstep::desc(const char* msg) const
 {
@@ -70,6 +73,7 @@ std::string CGenstep::desc(const char* msg) const
        << " off " << std::setw(6) << offset 
        ;
 
+#ifdef WITH_CGENSTEP_MASK
    if(mask)
    {
       ss 
@@ -80,6 +84,7 @@ std::string CGenstep::desc(const char* msg) const
       if( mask->size() >= 100 ) ss << std::endl ; 
       ss << " mask " << *mask ;
    }
+#endif
 
    std::string s = ss.str(); 
    return s; 

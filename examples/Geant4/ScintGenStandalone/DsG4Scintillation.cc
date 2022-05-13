@@ -587,6 +587,10 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         }
 #endif
 
+#ifdef STANDALONE
+       U4::CollectGenstep_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime);
+#endif
+
          if( m_opticksMode == 0 || (m_opticksMode & 2) )
          {
 

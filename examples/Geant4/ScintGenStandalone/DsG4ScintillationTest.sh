@@ -76,7 +76,11 @@ if [ "${arg/build}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg compile error && exit 1
 fi
 
-export DsG4Scintillation_verboseLevel=2 
+
+export DsG4Scintillation_verboseLevel=0   # 0/1/2
+
+logdir=/tmp/$name
+cd $logdir 
 
 
 if [ "${arg/dbg}" != "$arg" ]; then
@@ -90,6 +94,9 @@ if [ "${arg/run}" != "$arg" ]; then
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then
+
+
+    export FOLD=/tmp/$USER/opticks/DsG4ScintillationTest
     script=$name.py 
     echo $msg ana script $script FOLD $FOLD
 

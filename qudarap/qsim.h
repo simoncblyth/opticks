@@ -130,6 +130,7 @@ struct qsim
 
 inline QSIM_METHOD void qsim::generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
+    //printf("//qsim::generate_photon_dummy photon_id %d ", photon_id ); 
     printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n", 
        photon_id, 
        genstep_id, 

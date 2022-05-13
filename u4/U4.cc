@@ -6,19 +6,33 @@
 #include "G4MaterialPropertiesTable.hh"
 #include "G4MaterialPropertyVector.hh"
 
+#include "G4VParticleChange.hh"
+#include "G4Track.hh"
+#include "G4OpticalPhoton.hh"
+
+#include "scuda.h"
+#include "squad.h"
+#include "sphoton.h"
+
 #include "SDir.h"
 #include "SOpticksResource.hh"
 #include "SPath.hh"
 #include "SStr.hh"
 #include "NP.hh"
+#include "PLOG.hh"
 
 #include "U4.hh" 
+
+const plog::Severity U4::LEVEL = PLOG::EnvLevel("U4", "DEBUG"); 
+
 
 G4MaterialPropertyVector* U4::MakeProperty(const NP* a)  // static
 {
     std::vector<double> d, v ; 
     a->psplit<double>(d,v);   // split array into domain and values 
-    assert(d.size() == v.size() && d.size() > 1 );  
+    assert(d.size() == v.size());
+
+    //assert(d.size() > 1 );  // OpticalCONSTANT (scint time fraction property misusage) breaks this  
 
     G4MaterialPropertyVector* mpv = new G4MaterialPropertyVector(d.data(), v.data(), d.size() );  
     return mpv ; 
@@ -69,60 +83,106 @@ G4MaterialPropertiesTable* U4::MakeMaterialPropertiesTable(const char* reldir, c
     return mpt ; 
 } 
 
+/**
+U4::Classify
+-------------
 
-G4MaterialPropertiesTable* U4::MakeMaterialPropertiesTable(const char* reldir)
+Heuristic to distinguish ConstProperty from Property based on array size and content
+and identify fractional property. 
+
+C
+   ConstProperty
+P
+   Property
+F
+   Property that looks like a fractional split with a small number of values summing to 1.
+
+**/
+
+char U4::Classify(const NP* a)
 {
+    assert(a); 
+    assert(a->shape.size() == 2); 
+    assert(a->has_shape(-1,2) && a->ebyte == 8 && a->uifc == 'f' ); 
+    const double* values = a->cvalues<double>() ; 
+    char type = a->has_shape(2,2) && values[1] == values[3] ? 'C' : 'P' ; 
+
+    int numval = a->shape[0]*a->shape[1] ; 
+    double fractot = 0. ; 
+    if(type == 'P' && numval <= 8) 
+    {
+        for(int i=0 ; i < numval ; i++) if(i%2==1) fractot += values[i] ;   
+        if( fractot == 1. ) type = 'F' ;  
+    }  
+    return type ; 
+}
+
+
+std::string U4::Desc(const char* key, const NP* a )
+{
+    char type = Classify(a); 
+    const double* values = a->cvalues<double>() ; 
+    int numval = a->shape[0]*a->shape[1] ; 
+    double value = type == 'C' ? values[1] : 0. ; 
+
+    std::stringstream ss ; 
+
+    ss << std::setw(20) << key 
+       << " " << std::setw(10) << a->sstr() 
+       << " type " << type
+       << " value " << std::setw(10) << std::fixed << std::setprecision(3) << value 
+       << " : " 
+       ; 
+
+    double tot = 0. ; 
+    if(numval <= 8) 
+    {
+        for(int i=0 ; i < numval ; i++) if(i%2==1) tot += values[i] ;   
+        for(int i=0 ; i < numval ; i++) ss << std::setw(10) << std::fixed << std::setprecision(3) << values[i] << " " ;
+        ss << " tot: " << std::setw(10) << std::fixed << std::setprecision(3) << tot << " " ; 
+    } 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+G4MaterialPropertiesTable* U4::MakeMaterialPropertiesTable(const char* reldir )
+{
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
+
     const char* idpath = SOpticksResource::IDPath(); 
     const char* matdir = SPath::Resolve(idpath, reldir, NOOP); 
 
     std::vector<std::string> names ; 
     SDir::List(names, matdir, ".npy" ); 
 
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
+    std::stringstream ss ; 
+    ss << "reldir " << reldir << " names " << names.size() << std::endl ; 
+
     for(unsigned i=0 ; i < names.size() ; i++)
     {
-        const std::string& name_ = names[i]; 
-        const char* name = name_.c_str(); 
+        const char* name = names[i].c_str(); 
         const char* key = SStr::HeadFirst(name, '.'); 
 
-        std::cout << " name " << name << std::endl ; 
-
         NP* a = NP::Load(idpath, reldir, name  );         
-        assert(a); 
-        assert(a->has_shape(-1,2) && a->ebyte == 8); 
+
+        char type = Classify(a); 
         double* values = a->values<double>() ; 
-
-        bool is_cprop = a->has_shape(2,2) ; 
-        bool is_prop = a->shape[0] > 2 ; 
-        bool is_skip = is_cprop == false && is_prop == false ; 
-
-        double value = is_cprop ? values[1] : 0. ; 
-
-        std::cout 
-             << " name " << std::setw(15) << name 
-             << " key " << std::setw(15) << key
-             << " is_cprop " << is_cprop
-             << " is_prop " << is_prop
-             << " is_skip " << is_skip
-             << " value " << value 
-             << " a.sstr " << a->sstr() 
-             << " a.desc " << a->desc() 
-             << std::endl 
-             ; 
-
-        if(is_cprop)
+        ss << Desc(key, a) << std::endl ;   
+        
+        switch(type)
         {
-             assert( values[1] == values[3] );         
-             mpt->AddConstProperty(key, value ); 
+            case 'C': mpt->AddConstProperty(key, values[1])    ; break ; 
+            case 'P': mpt->AddProperty(key, MakeProperty(a))   ; break ; 
+            case 'F': mpt->AddProperty(key, MakeProperty(a))   ; break ; 
         }
-        else if(is_prop)
-        {
-            G4MaterialPropertyVector* v = MakeProperty(a); 
-            mpt->AddProperty(key, v);    
-        }
- 
-          
     }
+
+    std::string s = ss.str(); 
+    
+    LOG(LEVEL) << s ; 
+    std::cout << s << std::endl ; 
+    
     return mpt ; 
 } 
 
@@ -158,7 +218,7 @@ G4Material* U4::MakeMaterial(const char* name, const char* reldir, const char* p
     return mat ;
 }
 
-G4Material* U4::MakeMaterial(const char* name, const char* reldir )
+G4Material* U4::MakeMaterial(const char* name, const char* reldir)
 {
     G4Material* mat = MakeWater(name); 
     G4MaterialPropertiesTable* mpt = MakeMaterialPropertiesTable(reldir); 
@@ -166,16 +226,64 @@ G4Material* U4::MakeMaterial(const char* name, const char* reldir )
     return mat ;
 }
 
-G4Material* U4::MakeScintillator()
+G4Material* U4::MakeScintillatorOld()
 {
-    //G4Material* mat = MakeMaterial("LS", "GScintillatorLib/LS_ori", "RINDEX,FASTCOMPONENT,SLOWCOMPONENT,REEMISSIONPROB,GammaCONSTANT,OpticalCONSTANT");  
-    //G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable(); 
-    //mpt->AddConstProperty("SCINTILLATIONYIELD", 1000.f ); 
-
-    G4Material* mat = MakeMaterial("LS", "GScintillatorLib/LS_ori");  
-
+    G4Material* mat = MakeMaterial("LS", "GScintillatorLib/LS_ori", "RINDEX,FASTCOMPONENT,SLOWCOMPONENT,REEMISSIONPROB,GammaCONSTANT,OpticalCONSTANT");  
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable(); 
+    mpt->AddConstProperty("SCINTILLATIONYIELD", 1000.f );   // ACTUALLY BETTER TO LOAD THIS LIKE THE REST 
     return mat ; 
 }
+
+/**
+U4::MakeScintillator
+----------------------
+
+Creates material with Water G4Element and density and then loads the properties of LS into its MPT 
+
+**/
+
+G4Material* U4::MakeScintillator()
+{
+    G4Material* mat = MakeMaterial("LS", "GScintillatorLib/LS_ori");  
+    return mat ; 
+}
+
+
+G4MaterialPropertyVector* U4::GetProperty(const G4Material* mat, const char* name)
+{
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    return mpt->GetProperty(name) ; 
+}
+
+
+NP* U4::CollectOpticalSecondaries(const G4VParticleChange* pc )
+{
+    G4int num = pc->GetNumberOfSecondaries();
+
+    std::cout << "U4::CollectOpticalSecondaries num " << num << std::endl ; 
+
+    NP* p = NP::Make<float>(num, 4, 4); 
+    sphoton* pp = (sphoton*)p->bytes() ; 
+
+    for(int i=0 ; i < num ; i++)
+    {   
+        G4Track* track =  pc->GetSecondary(i) ;
+        assert( track->GetParticleDefinition() == G4OpticalPhoton::Definition() );
+        const G4DynamicParticle* ph = track->GetDynamicParticle() ;
+        const G4ThreeVector& pmom = ph->GetMomentumDirection() ;
+        const G4ThreeVector& ppol = ph->GetPolarization() ;
+        sphoton& sp = pp[i] ; 
+
+        sp.mom.x = pmom.x(); 
+        sp.mom.y = pmom.y(); 
+        sp.mom.z = pmom.z(); 
+
+        sp.pol.x = ppol.x(); 
+        sp.pol.y = ppol.y(); 
+        sp.pol.z = ppol.z(); 
+    }
+    return p ; 
+} 
 
 
 

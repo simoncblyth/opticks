@@ -1,6 +1,4 @@
 
-//#include <boost/dynamic_bitset.hpp>
-
 #include "OPTICKS_LOG.hh"
 #include "CGenstep.hh"
 
@@ -13,7 +11,10 @@ void test_mask()
     char gentype = 'C' ; 
 
     CGenstep gs(index, photons, offset, gentype); 
+
+#ifdef WITH_CGENSTEP_MASK
     for(int i=0 ; i < int(photons) ; i++) if(i % 10 == 0 ) gs.set(i) ; 
+#endif
 
     LOG(info) << gs.desc() ;
 }

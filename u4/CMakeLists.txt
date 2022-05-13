@@ -14,6 +14,11 @@ U4
 find_package(SysRap REQUIRED CONFIG)
 find_package(G4 REQUIRED MODULE)
 
+find_package(CLHEP  REQUIRED CONFIG) 
+# Geant4 should have found CLHEP already, but when using Randomize get 
+# undefined symbols CLHEP::HepRandom::getTheEngine()
+
+
 set(SOURCES
     U4_LOG.cc 
     U4.cc
@@ -31,6 +36,7 @@ add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_link_libraries( ${name} PUBLIC
     Opticks::G4
     Opticks::SysRap 
+    CLHEP::CLHEP
 )
 
 target_include_directories( ${name} PUBLIC 

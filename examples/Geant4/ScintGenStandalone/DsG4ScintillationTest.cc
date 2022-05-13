@@ -4,7 +4,11 @@
 #include "G4PhysicalConstants.hh"
 #include "G4Electron.hh"
 
+#include "SPath.hh"
+#include "NP.hh"
+#include "OPTICKS_LOG.hh"
 #include "U4.hh"
+
 #include "DsG4Scintillation.h"
 
 
@@ -25,14 +29,18 @@ DsG4ScintillationTest::DsG4ScintillationTest()
 */
 
 
+const char* FOLD = SPath::Resolve("$TMP/DsG4ScintillationTest", DIRPATH) ; 
 
-int main()
+
+int main(int argc, char** argv)
 {
+    OPTICKS_LOG(argc, argv); 
+
     G4Material* material = U4::MakeScintillator(); 
     assert(material); 
     G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable(); 
-    G4double ScintillationYield = mpt->GetConstProperty("SCINTILLATIONYIELD");
 
+    G4double ScintillationYield = mpt->GetConstProperty("SCINTILLATIONYIELD");
     std::cout << "ScintillationYield " << ScintillationYield << std::endl ; 
     
     DsG4Scintillation* proc = new DsG4Scintillation ; 
@@ -51,7 +59,7 @@ int main()
 
 
     G4double BetaInverse = 1.5 ; 
-    G4double en = 1.*MeV ;  
+    G4double en = 1.*MeV ;           // HMM: what about consistency here, does it matter for scintillation ?
     G4double step_length = 1.0*mm  ; 
 
 
@@ -102,24 +110,11 @@ int main()
     G4VParticleChange* pc = proc->PostStepDoIt(*track, *step) ; 
     assert( pc ) ; 
 
-    G4int numberOfSecondaries = pc->GetNumberOfSecondaries();
-    std::cout << "numberOfSecondaries " << numberOfSecondaries << std::endl ; 
 
-/*
-    for( G4int i=0 ; i < numberOfSecondaries ; i++)
-    {
-        G4Track* track =  pc->GetSecondary(i) ;
+    NP* p = U4::CollectOpticalSecondaries(pc);  
 
-        assert( track->GetParticleDefinition() == G4OpticalPhoton::Definition() );
-
-        const G4DynamicParticle* aCerenkovPhoton = track->GetDynamicParticle() ;
-
-        const G4ThreeVector& photonMomentum = aCerenkovPhoton->GetMomentumDirection() ;
-
-        const G4ThreeVector& photonPolarization = aCerenkovPhoton->GetPolarization() ;
-
-*/
-
+    LOG(info) << " save to " << FOLD ; 
+    p->save(FOLD, "p.npy"); 
 
 
     return 0 ; 
