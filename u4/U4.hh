@@ -16,6 +16,10 @@ struct U4_API U4
 {
     static const plog::Severity LEVEL ;
 
+
+    template<typename T>
+    static T* GetUserInfo(const G4Track* track); 
+
     static G4MaterialPropertyVector* MakeProperty(const NP* a); 
 
     static G4MaterialPropertiesTable*  MakeMaterialPropertiesTable_FromProp(

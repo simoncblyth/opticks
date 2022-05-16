@@ -5,6 +5,7 @@ include(OpticksBuildOptions)
 
 set(TEST_SOURCES
    U4Test.cc
+   U4PhotonInfoTest.cc
 )
 
 

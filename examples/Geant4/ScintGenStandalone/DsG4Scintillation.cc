@@ -523,17 +523,11 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 //-------------------------------------------------//
 
 #ifdef WITH_G4OPTICKS
-    /**
-    * non-optical tracks are not labelled 
-    * optical photon tracks produced by S or C processes are always labelled
-    * optical photon tracks from input_photons (T/torch) process are not labelled
-      as GenTools mutate operates on HepMC objects which get internally converted to Geant4 
-    * thus the below "when_unlabelled_fabricate_trackid_photon" is only appropriate for optical photons
-    **/
-    bool is_optical_track = aTrack.GetDefinition() == G4OpticalPhoton::OpticalPhoton() ;  
-    bool when_unlabelled_fabricate_trackid_photon = is_optical_track  ; 
-    CPho ancestor = CPhotonInfo::Get(&aTrack, when_unlabelled_fabricate_trackid_photon ); 
+
+    CPho ancestor = CPhotonInfo::Get(&aTrack); 
     int ancestor_id = ancestor.get_id() ; 
+
+
     /**
     ancestor_id:-1 
         normal case, meaning that aTrack was not a photon
@@ -545,7 +539,14 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         ancestor_id is the absolute id of the primary parent photon, 
         this id is retained thru any subsequent remission secondary generations
     **/
+
 #endif
+
+#ifdef STANDALONE
+    spho ancestor = U4::GetPhotonInfo(
+
+#endif
+
 
 //-------------------------------------------------//
 

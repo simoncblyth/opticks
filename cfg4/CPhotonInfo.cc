@@ -31,12 +31,33 @@ unsigned CPhotonInfo::id() const { return pho.id ; } // 0-based absolute photon 
 unsigned CPhotonInfo::gn() const { return pho.gn ; } // 0-based generation index incremented at each reemission  
 
 
+bool CPhotonInfo::Exists(const G4Track* track )
+{
+    G4VUserTrackInformation* ui = track->GetUserInformation() ;
+    CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ; 
+    return  cpui != nullptr ; 
+}
+
+
+
 /**
 CPhotonInfo::Get
 ------------------
 
 Canonically invoked from DsG4Scintillation::PostStepDoIt prior to the scnt loop 
 in order to link reemission photon lineage. 
+
+
+* non-optical tracks are not labelled 
+
+* optical photon tracks produced by S or C processes are always labelled
+* reemitted photons should always be labelled 
+
+* optical photon tracks from input_photons (T/torch) process are not labelled
+  as GenTools mutate operates on HepMC objects which get internally converted to Geant4 
+
+* thus the below "when_unlabelled_fabricate_trackid_photon" is only appropriate for optical photons
+
 
 Extract the CPho label from the G4VUserTrackInformation
 
@@ -49,11 +70,10 @@ BUT: this gets called with non-opticals too
 
 **/
 
-CPho CPhotonInfo::Get(const G4Track* optical_photon_track, bool when_unlabelled_fabricate_trackid_photon)   // static 
+CPho CPhotonInfo::Get(const G4Track* track)   // static 
 {
-    G4VUserTrackInformation* ui = optical_photon_track->GetUserInformation() ;
+    G4VUserTrackInformation* ui = track->GetUserInformation() ;
     CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ; 
-    unsigned track_id = CTrack::Id(optical_photon_track) ;   // 0-based id 
     CPho pho ; 
 
     if(cpui) 
@@ -62,13 +82,24 @@ CPho CPhotonInfo::Get(const G4Track* optical_photon_track, bool when_unlabelled_
     }
     else
     {
+        // THIS BRANCH SHOULD ONLY HAPPEN WITH ARTIFICAL INPUT PHOTONS 
+        bool is_optical = track->GetDefinition() == G4OpticalPhoton::OpticalPhoton() ;
+        bool when_unlabelled_fabricate_trackid_photon = is_optical ; 
+
         if(when_unlabelled_fabricate_trackid_photon)
         {
+            unsigned track_id = CTrack::Id(optical_photon_track) ;   // 0-based id 
             pho = CPho::FabricateTrackIdPhoton(track_id) ;  
         }
     }
     return pho  ; 
 }
+
+
+
+
+
+
 
 /**
 CPhotonInfo::MakeScintillation
@@ -92,6 +123,11 @@ ancestor_id>-1
     ix : ancestor.ix
     id : ancestor.id
     gn : ancestor.gn + 1 
+
+
+HMM: it would be cleaner for the history mechanics spho.h sgs.h 
+to happen separately from from Geant4 storage mechanics 
+such that U4PhotonInfo can be trivial just accepting the spho struct 
 
 **/
 

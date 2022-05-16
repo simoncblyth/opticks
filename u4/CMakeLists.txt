@@ -28,6 +28,8 @@ set(HEADERS
     U4_LOG.hh
     U4_API_EXPORT.hh
     U4.hh
+    U4Track.h
+    U4PhotonInfo.h
 )
 
 
