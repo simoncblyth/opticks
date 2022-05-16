@@ -18,6 +18,7 @@ struct SYSRAP_API SEvent
     static const plog::Severity LEVEL ; 
 
 
+
     static const char* XYZ_ ; 
     static const char* YZ_  ; 
     static const char* XZ_  ; 

@@ -296,6 +296,14 @@ struct quad6
 #else
     SQUAD_METHOD void zero();
     SQUAD_METHOD const float* cdata() const ;
+
+    SQUAD_METHOD unsigned gentype() const {   return q0.u.x ; }
+    SQUAD_METHOD unsigned numphoton() const { return q0.u.w ; }
+
+    SQUAD_METHOD void set_gentype(  unsigned gt) { q0.u.x = gt ; }
+    SQUAD_METHOD void set_numphoton(unsigned np) { q0.u.w = np ; }
+
+
 #endif
 
 };

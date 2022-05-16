@@ -35,6 +35,9 @@ unsigned CPhotonInfo::gn() const { return pho.gn ; } // 0-based generation index
 CPhotonInfo::Get
 ------------------
 
+Canonically invoked from DsG4Scintillation::PostStepDoIt prior to the scnt loop 
+in order to link reemission photon lineage. 
+
 Extract the CPho label from the G4VUserTrackInformation
 
 As S+C photon tracks should always be labelled 
@@ -50,7 +53,7 @@ CPho CPhotonInfo::Get(const G4Track* optical_photon_track, bool when_unlabelled_
 {
     G4VUserTrackInformation* ui = optical_photon_track->GetUserInformation() ;
     CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ; 
-    unsigned track_id = CTrack::Id(optical_photon_track) ; 
+    unsigned track_id = CTrack::Id(optical_photon_track) ;   // 0-based id 
     CPho pho ; 
 
     if(cpui) 
