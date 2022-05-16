@@ -1,6 +1,9 @@
 #pragma once
 
 struct NP ; 
+//struct sscint ; 
+struct quad6 ; 
+
 #include <string>
 #include "plog/Severity.h"
 #include "G4MaterialPropertyVector.hh"
@@ -49,7 +52,7 @@ struct U4_API U4
 
     static NP* CollectOpticalSecondaries(const G4VParticleChange* pc ); 
 
-    static void CollectGenstep_DsG4Scintillation_r4695( 
+    static quad6 MakeGenstep_DsG4Scintillation_r4695( 
          const G4Track* aTrack,
          const G4Step* aStep,
          G4int    numPhotons,

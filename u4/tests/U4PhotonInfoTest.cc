@@ -2,20 +2,26 @@
 #include "U4Track.h"
 #include <iostream>
 
+void test_SetGet()
+{
+    G4Track* track = U4Track::MakePhoton(); 
+    spho p0 = {1, 2, 3, 4} ; 
+    U4PhotonInfo::Set(track, p0 ); 
+    const G4Track* ctrack = track ; 
+    spho p1 = U4PhotonInfo::Get(ctrack); 
+    assert( p1.isEqual(p0) ); 
+
+    std::cout 
+        << " track " << track << std::endl 
+        << " p0 " << p0.desc() << std::endl 
+        << " p1 " << p1.desc() << std::endl 
+        ; 
+}
+
 
 int main()
 {
-    G4Track* track = U4Track::MakePhoton(); 
-    std::cout << "track " << track << std::endl ; 
-
-    //p->SetUserInformation(U4PhotonInfo::MakeScintillation(gs, i, ancestor ));
-
-    spho pho = {1, 2, 3, 4} ; 
-
-    U4PhotonInfo* pin = new U4PhotonInfo(pho) ; 
-    track->SetUserInformation(pin);
-
-    std::cout << " pin " << pin->desc() << std::endl ;  
+    test_SetGet(); 
 
 
     return 0 ; 

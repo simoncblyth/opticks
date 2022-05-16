@@ -23,6 +23,8 @@
 #include "SStr.hh"
 #include "NP.hh"
 #include "PLOG.hh"
+#include "sscint.h"
+
 
 #include "U4.hh" 
 
@@ -292,7 +294,7 @@ NP* U4::CollectOpticalSecondaries(const G4VParticleChange* pc )
 } 
 
 
-void U4::CollectGenstep_DsG4Scintillation_r4695( 
+quad6 U4::MakeGenstep_DsG4Scintillation_r4695( 
      const G4Track* aTrack,
      const G4Step* aStep,
      G4int    numPhotons,
@@ -311,7 +313,11 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
     const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
     //const G4Material* aMaterial = aTrack->GetMaterial();
 
-    sscint gs = {} ; 
+
+    quad6 _gs ;
+    _gs.zero() ; 
+    
+    sscint& gs = (sscint&)_gs ; 
 
     gs.gentype = OpticksGenstep_DsG4Scintillation_r4695 ;
     gs.trackid = aTrack->GetTrackID() ;
@@ -342,8 +348,8 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
     gs.f51 = 0.f ;
     gs.f52 = 0.f ;
     gs.f53 = 0.f ;
-     
 
+    return _gs ; 
 }
 
 

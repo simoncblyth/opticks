@@ -28,6 +28,7 @@ struct SEvt
 {
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
+    static sgs AddGenstep(const quad6& q); 
 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
@@ -37,7 +38,7 @@ struct SEvt
     void clear() ; 
     unsigned getNumGenstep() const ; 
     unsigned getNumPhoton() const ; 
-    void add(const quad6& q) ; 
+    sgs addGenstep(const quad6& q) ; 
 
     std::string desc() const ; 
 };
@@ -45,6 +46,15 @@ struct SEvt
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 SEvt* SEvt::Get(){ return INSTANCE ; }
+
+sgs SEvt::AddGenstep(const quad6& q)
+{
+    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::AddGenstep  " << std::endl ; 
+    assert(INSTANCE); 
+    return INSTANCE->addGenstep(q); 
+}
+
+
 inline SEvt::SEvt(){ INSTANCE = this ; }
 
 
@@ -67,7 +77,7 @@ inline unsigned SEvt::getNumPhoton() const
     return tot ; 
 }
 
-inline void SEvt::add(const quad6& q)
+inline sgs SEvt::addGenstep(const quad6& q)
 {
     sgs s = {} ; 
 
@@ -78,6 +88,8 @@ inline void SEvt::add(const quad6& q)
 
     gs.push_back(s) ; 
     genstep.push_back(q) ; 
+
+    return s ; 
 }
 
 inline std::string SEvt::desc() const 

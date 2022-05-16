@@ -66,7 +66,13 @@
 //--------------------------------------------------------------------
 //
 #ifdef STANDALONE
+#include "scuda.h"
+#include "squad.h"
+#include "spho.h"
+#include "sgs.h"
+#include "SEvt.h"
 #include "U4.hh"
+#include "U4PhotonInfo.h"
 #else
 #include <boost/python.hpp>
 #endif
@@ -543,8 +549,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 #ifdef STANDALONE
-    spho ancestor = U4::GetPhotonInfo(
-
+    spho ancestor = U4PhotonInfo::Get(&aTrack); 
 #endif
 
 
@@ -581,8 +586,9 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 #ifdef WITH_G4OPTICKS
         if(flagReemission) assert( NumPhoton == 0 || NumPhoton == 1);   // expecting only 0 or 1 remission photons
-        CGenstep gs ; 
         bool is_opticks_genstep = NumPhoton > 0 && !flagReemission ; 
+
+        CGenstep gs ; 
         if(is_opticks_genstep && (m_opticksMode & 1))
         {
             gs = G4Opticks::Get()->collectGenstep_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime); 
@@ -590,7 +596,15 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 #ifdef STANDALONE
-       U4::CollectGenstep_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime);
+        if(flagReemission) assert( NumPhoton == 0 || NumPhoton == 1);   // expecting only 0 or 1 remission photons
+        bool is_opticks_genstep = NumPhoton > 0 && !flagReemission ; 
+
+        sgs gs = {} ; 
+        if(is_opticks_genstep && (m_opticksMode & 1))
+        {
+            quad6 gs_ = U4::MakeGenstep_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime);
+            gs = SEvt::AddGenstep(gs_);  
+        }
 #endif
 
          if( m_opticksMode == 0 || (m_opticksMode & 2) )
@@ -600,6 +614,12 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #ifdef WITH_G4OPTICKS
            G4Opticks::Get()->setAlignIndex( ancestor_id > -1 ? ancestor_id : gs.offset + i );  // aka photon_id
 #endif
+#ifdef STANDALONE
+           spho pho = gs.MakePho(i, ancestor); 
+           int align_id = ancestor.isPlaceholder() ? gs.offset + i : ancestor.id ; 
+           assert( pho.id == align_id ); 
+#endif
+
            G4double sampledEnergy;
            if ( !flagReemission ) {
                 // normal scintillation
@@ -735,6 +755,11 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
            aSecondaryTrack->SetUserInformation(CPhotonInfo::MakeScintillation(gs, i, ancestor ));  
            G4Opticks::Get()->setAlignIndex(-1);
 #endif
+
+#ifdef STANDALONE
+           U4PhotonInfo::Set(aSecondaryTrack, gs.MakePho(i, ancestor)); 
+#endif
+
 
          }    // i:genloop over NumPhoton
   
