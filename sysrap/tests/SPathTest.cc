@@ -267,6 +267,33 @@ void test_Make()
 }
 
 
+void test_MakeEmpty()
+{
+    const char* path = "$TMP/SPathTest/file.gdml" ; 
+    bool exists_0 = SPath::Exists(path);  
+    SPath::MakeEmpty(path); 
+    bool exists_1 = SPath::Exists(path);  
+    LOG(info) 
+        << " path " << path 
+        << " exists_0 " << exists_0 
+        << " exists_1 " << exists_1 
+        ; 
+}
+
+void test_Remove()
+{
+    const char* path = "$TMP/SPathTest/file.gdml" ; 
+    bool exists_0 = SPath::Exists(path);  
+    int rc = SPath::Remove(path);  
+    bool exists_1 = SPath::Exists(path);  
+    LOG(info) 
+        << " path " << path << " rc " << rc 
+        << " exists_0 " << exists_0 
+        << " exists_1 " << exists_1 
+        ; 
+}
+
+
 
 int main(int argc , char** argv )
 {
@@ -282,12 +309,12 @@ int main(int argc , char** argv )
     test_IsReadable_path();  
     test_Basename_2(); 
 */
+    test_Resolve(); 
 
 /*
     test_Basename(); 
     test_Dirname(); 
     test_UserTmpDir(); 
-    test_Resolve(); 
     test_ChangeName(); 
     test_MakeDirs(); 
     test_MakePath(); 
@@ -296,6 +323,8 @@ int main(int argc , char** argv )
     test_mtime(); 
     test_MakeName(); 
     test_Make(); 
+    test_MakeEmpty(); 
+    test_Remove(); 
 */
 
     return 0  ; 

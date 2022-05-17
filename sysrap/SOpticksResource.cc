@@ -1,5 +1,6 @@
 #include <cassert>
 #include <sstream>
+#include <cstdlib>
 
 #include "SSys.hh"
 #include "SStr.hh"
@@ -201,6 +202,43 @@ const char* SOpticksResource::CFBase(const char* ekey)
     return cfbase ; 
 }
 
+const char* SOpticksResource::KEYS = "IDPath CFBase GeocacheDir RuncacheDir RNGDir" ; 
+const char* SOpticksResource::Get(const char* key) // static
+{
+    const char* tok = getenv(key) ; 
+    if(tok) return tok ;  
+
+    if(      strcmp(key, "IDPath")==0)      tok = SOpticksResource::IDPath(); 
+    else if( strcmp(key, "CFBase")==0)      tok = SOpticksResource::CFBase(); 
+    else if( strcmp(key, "GeocacheDir")==0) tok = SOpticksResource::GeocacheDir(); 
+    else if( strcmp(key, "RuncacheDir")==0) tok = SOpticksResource::RuncacheDir(); 
+    else if( strcmp(key, "RNGDir")==0)      tok = SOpticksResource::RNGDir(); 
+    return tok ;  
+}
+
+
+std::string SOpticksResource::Desc() 
+{
+    std::vector<std::string> keys ; 
+    SStr::Split(KEYS, ' ', keys); 
+
+    std::stringstream ss ; 
+    ss << "SOpticksResource::Desc" << std::endl ; 
+    for(unsigned i=0 ; i < keys.size() ; i++ ) 
+    {
+        const char* key = keys[i].c_str() ; 
+        std::string lab = SStr::Format("SOpticksResource::Get(\"%s\") ", key) ; 
+        const char* val = Get(key); 
+
+        ss 
+            << std::setw(50) << lab.c_str() 
+            << ( val ? val : "-" ) 
+            << std::endl 
+            ;
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 

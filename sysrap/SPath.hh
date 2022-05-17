@@ -66,6 +66,12 @@ class SYSRAP_API SPath {
       static void chdir(const char* path, int create_dirs=2 ); 
       static const char* getcwd() ; 
 
+      static void MakeEmpty(const char* path_); 
+      static bool Exists(const char* path_); 
+      static const char* PickFirstExisting(const char* path0, const char* path1, const char* path2=nullptr ); 
+
+      static int Remove(const char* path_); 
+
       template<typename T> static const char* MakePath( const char* prefix, const char* reldir, const T real, const char* name); 
 
 

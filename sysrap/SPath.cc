@@ -37,6 +37,7 @@
 
 #include "SStr.hh"
 #include "SPath.hh"
+#include "SOpticksResource.hh"
 #include "PLOG.hh"
 
 
@@ -128,6 +129,7 @@ const char* SPath::UserTmpDir(const char* pfx, const char* user_envvar, const ch
     return strdup(s.c_str()); 
 }
 
+
 /**
 SPath::Resolve
 ---------------
@@ -135,6 +137,8 @@ SPath::Resolve
 Resolves tokenized paths such as "$PREFIX/name.ext" where PREFIX must 
 be an existing envvar. Special handling if "$TMP" is provided that defaults 
 the TMP envvar to "/tmp/username/opticks" 
+
+HUH: the special handling like it only works for "$TMP" not eg for "$TMP/some/thing.txt"
 
 Hmm need to distinguish when the path is a folder or a file for create_dirs ?
 
@@ -147,25 +151,34 @@ const char* SPath::Resolve(const char* spec_, int create_dirs)
         << " create_dirs [" << create_dirs << "]"
         ;
 
-    if(!spec_) return NULL ;       
+    if(!spec_) return nullptr ;       
 
     char* spec = strdup(spec_);            // copy to allow modifications 
     char sep = '/' ; 
-    char* spec_sep = strchr(spec, sep);    // pointer to first separator
+    char* spec_sep = strchr(spec, sep);    // pointer to first separator : so its the string starting from the first sep 
     char* spec_end = strchr(spec, '\0') ;  // pointer to null terminator
 
+    LOG(LEVEL) 
+        << " spec " << spec 
+        << " spec_sep " << spec_sep
+        << " spec_end " << spec_end
+        ;
+
+    bool tok_rel = spec[0] == '$' && spec_sep && spec_end && spec_sep != spec_end ; 
+    bool tok_only = spec[0] == '$' && spec_sep == nullptr ; 
+
     std::stringstream ss ; 
-    if(spec[0] == '$' && spec_sep && spec_end && spec_sep != spec_end)
+    if(tok_rel)
     {
-        *spec_sep = '\0' ; // temporarily null terminate at the first slash  
-        char* pfx = getenv(spec+1); 
-        *spec_sep = sep ;  // put back the separator
+        *spec_sep = '\0' ;                 // temporarily null terminate at the first slash  
+        const char* pfx = SOpticksResource::Get(spec+1);      // start one past the dollar terminated at first slash  
+        *spec_sep = sep ;                  // put back the separator
         const char* prefix = pfx ? pfx : UserTmpDir() ; 
         ss << prefix << spec_sep ; 
     }
-    else if( spec[0] == '$' && spec_sep == nullptr )
+    else if(tok_only)
     {
-        char* pfx = getenv(spec+1); 
+        const char* pfx = SOpticksResource::Get(spec+1); 
         const char* prefix = pfx ? pfx : UserTmpDir() ;
         ss << prefix ; 
     }
@@ -357,6 +370,34 @@ const char* SPath::getcwd()  // static
     return ret == nullptr ? nullptr : strdup(path); 
 }
 
+void SPath::MakeEmpty(const char* path_)
+{
+    const char* path = SPath::Resolve(path_, FILEPATH); 
+    std::ofstream fp(path);
+}
+
+bool SPath::Exists(const char* path_) // static 
+{
+    const char* path = SPath::Resolve(path_, FILEPATH); 
+    std::ifstream fp(path, std::ios::in|std::ios::binary);
+    return fp.fail() ? false : true ; 
+}
+
+const char* SPath::PickFirstExisting(const char* path0, const char* path1, const char* path2 )
+{
+    if(SPath::Exists(path0)) return path0 ; 
+    if(SPath::Exists(path1)) return path1 ; 
+    if(SPath::Exists(path2)) return path2 ; 
+    return nullptr ; 
+}
+
+
+int SPath::Remove(const char* path_)
+{
+    const char* path = SPath::Resolve(path_, FILEPATH); 
+    assert( strlen(path) > 2 ); 
+    return remove(path);  
+}
 
 int SPath::mtime(const char* path)
 {

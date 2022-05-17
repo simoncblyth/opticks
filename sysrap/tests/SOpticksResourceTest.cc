@@ -1,6 +1,7 @@
 #include "OPTICKS_LOG.hh"
 #include "SOpticksResource.hh"
 #include "SOpticksKey.hh"
+#include "SStr.hh"
 
 int main(int argc, char** argv)
 {
@@ -28,5 +29,9 @@ int main(int argc, char** argv)
     {
         LOG(error) << " arg [" << arg << "] is not handled " ; 
     }
+
+ 
+    std::cout << SOpticksResource::Desc() << std::endl ; 
+ 
     return 0 ; 
 }
