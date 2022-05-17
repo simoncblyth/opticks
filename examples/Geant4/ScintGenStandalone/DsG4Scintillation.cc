@@ -70,9 +70,12 @@
 #include "squad.h"
 #include "spho.h"
 #include "sgs.h"
-#include "SEvt.h"
 #include "U4.hh"
 #include "U4PhotonInfo.h"
+
+#include "SEvt.hh"
+
+
 #else
 #include <boost/python.hpp>
 #endif
@@ -550,6 +553,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 #ifdef STANDALONE
     spho ancestor = U4PhotonInfo::Get(&aTrack); 
+    std::cout << "DsG4Scintillation::PostStepDoIt ancestor " << ancestor.desc() << std::endl ;   
 #endif
 
 

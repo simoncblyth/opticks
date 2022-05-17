@@ -1,7 +1,7 @@
-// name=SEvt_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I/usr/local/cuda/include -o /tmp/$name && /tmp/$name
+// ./SEvt_test.sh 
 
 #include "OpticksGenstep.h"
-#include "SEvt.h"
+#include "SEvt.hh"
 
 int main()
 {
@@ -13,10 +13,11 @@ int main()
        q.set_numphoton(1000) ; 
        unsigned gentype = i % 2 == 0 ? OpticksGenstep_SCINTILLATION : OpticksGenstep_CERENKOV ;  
        q.set_gentype(gentype); 
-       evt.add(q);    
+
+       SEvt::AddGenstep(q);    
    }
 
-   std::cout << evt.desc() << std::endl ; 
+   std::cout << SEvt::Get()->desc() << std::endl ; 
 
    return 0 ; 
 }

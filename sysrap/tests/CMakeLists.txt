@@ -100,6 +100,8 @@ set(TEST_SOURCES
    SGeoConfigTest.cc
 
    SCVDLabel.cc 
+
+   SEvtTest.cc
 )
 
 

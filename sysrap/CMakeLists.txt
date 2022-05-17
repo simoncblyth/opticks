@@ -105,6 +105,9 @@ set(SOURCES
 
     SEventConfig.cc
     SGeoConfig.cc
+
+    SEvt.cc
+
 ) 
     
 
@@ -141,6 +144,7 @@ set(HEADERS
     SCtrl.hh
     SGeo.hh
     SConstant.hh
+    SEvt.hh
 
     STimes.hh
     SLog.hh
@@ -219,6 +223,8 @@ set(HEADERS
     SCAM.h
     SBAS.h
 
+    SEvt.hh 
+
     SOpticksKey.hh
     SMath.hh
     SEvent.hh
@@ -236,7 +242,7 @@ set(HEADERS
     OpticksPhoton.h
     OpticksPhoton.hh
     SU.hh
-    SEvt.hh 
+    SComponent.hh 
 
     SEventConfig.hh
     SGeoConfig.hh

@@ -55,7 +55,8 @@ inline std::string spho::desc() const
 {
     std::stringstream ss ;
     ss << "spho" ;
-    ss << " gs " << gs << " ix " << ix << " id " << id << " gn " << gn ;
+    if(isPlaceholder())  ss << " isPlaceholder " ; 
+    else ss << " gs " << gs << " ix " << ix << " id " << id << " gn " << gn ;
     std::string s = ss.str();
     return s ;
 }

@@ -1,9 +1,8 @@
-
-
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4Electron.hh"
 
+#include "SEvt.hh"
 #include "SPath.hh"
 #include "NP.hh"
 #include "OPTICKS_LOG.hh"
@@ -12,38 +11,39 @@
 #include "DsG4Scintillation.h"
 
 
-
-/*
 struct DsG4ScintillationTest
 {
-    DsG4ScintillationTest();  
+    static const char* FOLD ; 
+
+    SEvt*              evt ; 
+    G4Material*        material ; 
+    DsG4Scintillation* proc ; 
+    G4VParticleChange* change  ; 
+
+    DsG4ScintillationTest(int opticksMode);  
+    void dump() const ; 
+    void PostStepDoIt() ; 
+    void save() const ; 
 };
 
-DsG4ScintillationTest::DsG4ScintillationTest()
+const char* DsG4ScintillationTest::FOLD = SPath::Resolve("$TMP/DsG4ScintillationTest", DIRPATH) ; 
+
+DsG4ScintillationTest::DsG4ScintillationTest(int opticksMode)
+    :
+    evt(new SEvt),
+    material(U4::MakeScintillator()),
+    proc(new DsG4Scintillation(opticksMode)),
+    change(nullptr)
 {
-
-
-
 }
 
-*/
-
-
-const char* FOLD = SPath::Resolve("$TMP/DsG4ScintillationTest", DIRPATH) ; 
-
-
-int main(int argc, char** argv)
+void DsG4ScintillationTest::dump() const 
 {
-    OPTICKS_LOG(argc, argv); 
-
-    G4Material* material = U4::MakeScintillator(); 
     assert(material); 
     G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable(); 
-
     G4double ScintillationYield = mpt->GetConstProperty("SCINTILLATIONYIELD");
     std::cout << "ScintillationYield " << ScintillationYield << std::endl ; 
-    
-    DsG4Scintillation* proc = new DsG4Scintillation ; 
+
 
     G4PhysicsTable* slow = proc->getSlowIntegralTable();
     G4PhysicsTable* fast = proc->getFastIntegralTable();
@@ -56,8 +56,10 @@ int main(int argc, char** argv)
          << " reem " << reem << std::endl
          ; 
     //proc->DumpPhysicsTable(); 
+}
 
-
+void DsG4ScintillationTest::PostStepDoIt() 
+{
     G4double BetaInverse = 1.5 ; 
     G4double en = 1.*MeV ;           // HMM: what about consistency here, does it matter for scintillation ?
     G4double step_length = 1.0*mm  ; 
@@ -106,16 +108,25 @@ int main(int argc, char** argv)
    
     track->SetStep(step); 
 
+    change = proc->PostStepDoIt(*track, *step) ; 
+}
 
-    G4VParticleChange* pc = proc->PostStepDoIt(*track, *step) ; 
-    assert( pc ) ; 
-
-
-    NP* p = U4::CollectOpticalSecondaries(pc);  
-
+void DsG4ScintillationTest::save() const 
+{
+    NP* p = U4::CollectOpticalSecondaries(change);  
     LOG(info) << " save to " << FOLD ; 
     p->save(FOLD, "p.npy"); 
+    evt->saveGenstep(FOLD); 
+}
 
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+
+    int opticksMode = 3 ; 
+    DsG4ScintillationTest t(opticksMode); 
+    t.PostStepDoIt(); 
+    t.save(); 
 
     return 0 ; 
 }

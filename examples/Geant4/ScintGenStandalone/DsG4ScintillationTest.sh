@@ -78,10 +78,12 @@ fi
 
 
 export DsG4Scintillation_verboseLevel=0   # 0/1/2
+export SEvt=INFO
 
+
+iwd=$PWD
 logdir=/tmp/$name
 cd $logdir 
-
 
 if [ "${arg/dbg}" != "$arg" ]; then
     BP=DsG4Scintillation::PostStepDoIt lldb__ /tmp/$name/$name
@@ -92,6 +94,9 @@ if [ "${arg/run}" != "$arg" ]; then
     /tmp/$name/$name
     [ $? -ne 0 ] && echo $msg run error && exit 2
 fi
+
+
+cd $iwd
 
 if [ "${arg/ana}" != "$arg" ]; then
 

@@ -1,27 +1,22 @@
-// name=SEvtTest ; gcc $name.cc -g -std=c++11 -lstdc++ -I.. -o /tmp/$name && lldb__ /tmp/$name
-
-#include <vector>
-#include <iostream>
-#include <iomanip>
+#include "OpticksGenstep.h"
 #include "SEvt.hh"
 
-int main(int argc, char** argv)
+int main()
 {
-    std::vector<const char*> names = {"photon.npy", "genstep.npy", "hit.npy" } ; 
+   SEvt evt ; 
 
-    for(unsigned i=0 ; i < 20 + names.size() ; i++) 
-    {
-        const char* name = i < 20 ? SEvt::Name(i) : names[i-20] ;  
-        unsigned comp = SEvt::Component(name); 
-        const char* compname = SEvt::Name(comp); 
-        std::cout 
-            << " i " << std::setw(3) << i 
-            << " name " << std::setw(20) << ( name ? name : "-" )
-            << " comp " << std::setw(3)   << comp 
-            << " compname " << std::setw(20) << ( compname ? compname : "-" )
-            << std::endl 
-            ; 
-    }
+   for(unsigned i=0 ; i < 10 ; i++)
+   {
+       quad6 q ; 
+       q.set_numphoton(1000) ; 
+       unsigned gentype = i % 2 == 0 ? OpticksGenstep_SCINTILLATION : OpticksGenstep_CERENKOV ;  
+       q.set_gentype(gentype); 
 
-    return 0 ; 
+       SEvt::AddGenstep(q);    
+   }
+
+   std::cout << SEvt::Get()->desc() << std::endl ; 
+
+   return 0 ; 
 }
+
