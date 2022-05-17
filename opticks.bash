@@ -2500,6 +2500,7 @@ gc(){ cd $(opticks-home)/GeoChain ; pwd ; }
 cx(){ cd $(opticks-home)/CSGOptiX ; pwd ; }
 u4(){ cd $(opticks-home)/u4 ; pwd ; }
 gx(){ cd $(opticks-home)/g4cx ; pwd ; }
+gd(){ cd $(opticks-home)/gdxml ; pwd ; }
 
 qu(){ qudarap $* ; pwd ; }
 qt(){ qudarap tests ; pwd ; }

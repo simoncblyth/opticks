@@ -1,12 +1,12 @@
 #pragma once
 /**
-CGDMLKludge.hh
+GDXML.hh
 ================
 
 
 
 **/
-#include "CFG4_API_EXPORT.hh"
+#include "GDXML_API_EXPORT.hh"
 
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/util/PlatformUtils.hpp>
@@ -16,23 +16,23 @@ CGDMLKludge.hh
 
 #include "plog/Severity.h"
 
-struct CGDMLKludgeRead ; 
-struct CGDMLKludgeWrite ; 
+struct GDXMLRead ; 
+struct GDXMLWrite ; 
 
-struct CFG4_API CGDMLKludge
+struct GDXML_API GDXML
 {
     static const plog::Severity LEVEL ; 
 
     static const char* Fix(const char* srcpath); 
 
-    CGDMLKludge(const char* srcpath) ; 
-    virtual ~CGDMLKludge(); 
+    GDXML(const char* srcpath) ; 
+    virtual ~GDXML(); 
 
     const char*             srcpath ; 
     const char*             dstpath ; 
 
     bool                    kludge_truncated_matrix ;
-    CGDMLKludgeRead*        reader ; 
+    GDXMLRead*              reader ; 
     xercesc::DOMDocument*   doc  ; 
     xercesc::DOMElement*    defineElement ; 
 
@@ -42,7 +42,7 @@ struct CFG4_API CGDMLKludge
     unsigned                num_truncated_matrixElement ;  
     unsigned                num_constants ; 
 
-    CGDMLKludgeWrite*       writer ;  
+    GDXMLWrite*             writer ;  
     bool                    issues ; 
 
 

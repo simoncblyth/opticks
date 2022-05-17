@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv)
 {
-    const char* path0 = SPath::Resolve("$IDPath/origin.gdml", NOOP ); 
+    const char* path0 = SPath::Resolve("$IDPath/origin_CGDMLKludge.gdml", NOOP ); 
     const char* path1 = SPath::Resolve("$OPTICKS_PREFIX/origin_CGDMLKludge_02mar2022.gdml", NOOP) ; 
     const char* path = SPath::PickFirstExisting(path0, path1); 
 

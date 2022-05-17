@@ -3,9 +3,9 @@
 #include <cstring>
 #include <sstream>
 
-#include "CGDMLKludgeRead.hh"
-#include "CGDMLKludgeWrite.hh"
-#include "CGDMLKludge.hh"
+#include "GDXMLRead.hh"
+#include "GDXMLWrite.hh"
+#include "GDXML.hh"
 
 #include "PLOG.hh"
 
@@ -32,41 +32,41 @@ const char* ReplaceEnd( const char* s, const char* q, const char* r  )
     return strdup(n.c_str());
 }
 
-const plog::Severity CGDMLKludge::LEVEL = PLOG::EnvLevel("CGDMLKludge", "DEBUG" ); 
+const plog::Severity GDXML::LEVEL = PLOG::EnvLevel("GDXML", "DEBUG" ); 
 
 /**
-CGDMLKludge::Fix
+GDXML::Fix
 -------------------
 
 1. reads source "example.gdml" using xercesc 
 2. examines the xml at xercesc level to find issues 
 3. fixes the issues  
-4. writes the fixed xml to path "example_CGDMLKludge.gdml"
+4. writes the fixed xml to path "example_GDXML.gdml"
 5. returns the new path OR nullptr if there were no issues to fix 
 
 **/
 
-const char* CGDMLKludge::Fix(const char* srcpath)  // static
+const char* GDXML::Fix(const char* srcpath)  // static
 {
 
-   CGDMLKludge kludge(srcpath);  
+   GDXML kludge(srcpath);  
    return kludge.issues ? kludge.dstpath : nullptr ;  
 }
 
 
-CGDMLKludge::CGDMLKludge(const char* srcpath_)
+GDXML::GDXML(const char* srcpath_)
     :
     srcpath(strdup(srcpath_)),
-    dstpath(ReplaceEnd(srcpath, ".gdml", "_CGDMLKludge.gdml")),
+    dstpath(ReplaceEnd(srcpath, ".gdml", "_GDXML.gdml")),
     kludge_truncated_matrix(true), 
-    reader(new CGDMLKludgeRead(srcpath, kludge_truncated_matrix)), 
+    reader(new GDXMLRead(srcpath, kludge_truncated_matrix)), 
     doc(const_cast<xercesc::DOMDocument*>(reader->doc)), 
     defineElement(reader->the_defineElement), 
     num_duplicated_matrixElement(reader->checkDuplicatedMatrix()),
     num_pruned_matrixElement(reader->pruneDuplicatedMatrix()),
     num_truncated_matrixElement(reader->truncated_matrixElement.size()),
     num_constants(reader->constants.size()), 
-    writer(new CGDMLKludgeWrite(doc)),
+    writer(new GDXMLWrite(doc)),
     issues(false) 
 {
     LOG(info)
@@ -93,12 +93,12 @@ CGDMLKludge::CGDMLKludge(const char* srcpath_)
 }
 
 
-CGDMLKludge::~CGDMLKludge()
+GDXML::~GDXML()
 {
 }
 
 
-void CGDMLKludge::replaceAllConstantWithMatrix()
+void GDXML::replaceAllConstantWithMatrix()
 {
     assert( defineElement );  
     for(unsigned i=0 ; i < num_constants ; i++)
