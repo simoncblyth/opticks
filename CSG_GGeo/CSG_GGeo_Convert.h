@@ -1,9 +1,12 @@
 #pragma once
 
+#include <vector>
 #include "plog/Severity.h"
 
 #include "CSG_GGEO_API_EXPORT.hh"
 
+
+struct float4 ; 
 struct CSGFoundry ;
 struct CSGSolid ; 
 struct CSGPrim ; 
@@ -14,12 +17,12 @@ class GParts ;
 
 struct CSG_GGEO_API CSG_GGeo_Convert
 {   
+    static CSGFoundry* Translate(const GGeo* ggeo); 
     static const plog::Severity LEVEL ; 
-    static unsigned CountSolidPrim( const GParts* comp, const Opticks* ok ); 
+    static unsigned CountSolidPrim( const GParts* comp ); 
 
     CSGFoundry* foundry ; 
     const GGeo* ggeo ; 
-    const Opticks* ok ; 
     bool reverse ; 
     int dump_ridx ; 
     const char* meta ; 

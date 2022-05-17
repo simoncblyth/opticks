@@ -91,6 +91,20 @@ class  GGeoGen ;
 GGeo
 =====
 
+HMM: thoughts on removing m_ok okc/Opticks to rebase this on top of sysrap skipping NPY and BRAP ?
+
+* removal is too big of a change, as it gets threaded thru most of the geo libs
+
+  * also longterm this class can disappear once have a more direct G4->CSGFoundry 
+    translation : so it is not worthwhile doing such extreme surgery  
+
+* could however change type from okc/Opticks to sysrap/SOpticks with just the subset of Opticks needed
+  much more readily ? 
+
+  * BUT: there is a lot of code here based in NPY, BRAP so maybe not worthwile trying 
+    to change that until implement direct  G4->CSGFoundry 
+
+
 **/
 
 class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {

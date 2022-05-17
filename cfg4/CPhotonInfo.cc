@@ -1,6 +1,7 @@
 #include "PLOG.hh"
 #include "G4Track.hh"
 #include "CTrack.hh"
+#include "G4OpticalPhoton.hh"
 #include "CPhotonInfo.hh"
 
 const plog::Severity CPhotonInfo::LEVEL = PLOG::EnvLevel("CPhotonInfo", "DEBUG") ; 
@@ -88,7 +89,7 @@ CPho CPhotonInfo::Get(const G4Track* track)   // static
 
         if(when_unlabelled_fabricate_trackid_photon)
         {
-            unsigned track_id = CTrack::Id(optical_photon_track) ;   // 0-based id 
+            unsigned track_id = CTrack::Id(track) ;   // 0-based id 
             pho = CPho::FabricateTrackIdPhoton(track_id) ;  
         }
     }
@@ -96,7 +97,26 @@ CPho CPhotonInfo::Get(const G4Track* track)   // static
 }
 
 
+CPho CPhotonInfo::Get(const G4Track* track, bool fabricate_unlabelled)   // static 
+{
+    G4VUserTrackInformation* ui = track->GetUserInformation() ;
+    CPhotonInfo* cpui = ui ? dynamic_cast<CPhotonInfo*>(ui) : nullptr ; 
+    CPho pho ; 
 
+    if(cpui) 
+    {
+        pho = cpui->pho ; 
+    }
+    else
+    {
+        if(fabricate_unlabelled)
+        {
+            unsigned track_id = CTrack::Id(track) ;   // 0-based id 
+            pho = CPho::FabricateTrackIdPhoton(track_id) ;  
+        }
+    }
+    return pho ; 
+}
 
 
 

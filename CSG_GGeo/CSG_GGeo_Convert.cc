@@ -9,12 +9,10 @@
 #include "sqat4.h"
 #include "saabb.h"
 #include "PLOG.hh"
-
+#include "SGeoConfig.hh"
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
-
-#include "Opticks.hh"
 
 #include "GGeo.hh"
 #include "GGeoLib.hh"
@@ -31,6 +29,29 @@
 
 #include "CSG_GGeo_Convert.h"
 
+CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo)
+{
+    CSGFoundry* fd = new CSGFoundry  ; 
+    LOG(error) << "[ convert ggeo " ; 
+    CSG_GGeo_Convert conv(fd, ggeo ) ; 
+    conv.convert(); 
+
+    bool ops = SSys::getenvbool("ONE_PRIM_SOLID"); 
+    if(ops) conv.addOnePrimSolid(); 
+
+    bool ons = SSys::getenvbool("ONE_NODE_SOLID"); 
+    if(ons) conv.addOneNodeSolid(); 
+
+    bool dcs = SSys::getenvbool("DEEP_COPY_SOLID"); 
+    if(dcs) conv.addDeepCopySolid(); 
+
+    bool ksb = SSys::getenvbool("KLUDGE_SCALE_PRIM_BBOX"); 
+    if(ksb) conv.kludgeScalePrimBBox();  
+
+
+    LOG(error) << "] convert ggeo " ; 
+    return fd ; 
+}
 
 const plog::Severity CSG_GGeo_Convert::LEVEL = PLOG::EnvLevel("CSG_GGeo_Convert", "DEBUG"); 
 
@@ -39,7 +60,6 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
     : 
     foundry(foundry_),
     ggeo(ggeo_),
-    ok(ggeo->getOpticks()),
     reverse(SSys::getenvbool("REVERSE")),
     dump_ridx(SSys::getenvint("DUMP_RIDX", -1)),
     meta(nullptr)
@@ -59,23 +79,16 @@ void CSG_GGeo_Convert::init()
     // ggeo->getBoundaryNames(foundry->bndname);   // boundary names now travel with the NP bnd.names 
     ggeo->getMergedMeshLabels(foundry->mmlabel); 
 
-    std::string cxskiplv = ok->getCXSkipLVList() ;  // --cxskiplv
+    std::string cxskiplv = SGeoConfig::CXSkipLV() ; 
+
     LOG(LEVEL) << " --cxskiplv  " << cxskiplv ; 
 
     foundry->setMeta("cxskiplv", cxskiplv ); 
 
     LOG(LEVEL) << " foundry.meshname.size " << foundry->meshname.size() ; 
 
-    bool gparts_transform_offset = ok->isGPartsTransformOffset() ; 
-    if(!gparts_transform_offset)
-    {
-        LOG(fatal) 
-            << " GParts geometry requires use of --gparts_transform_offset "
-            << " for interoperation with the CSGFoundry single array of transforms approach "
-            << " failing to use this results in incorrect transforms "
-            ;
-    }
-    assert(gparts_transform_offset); 
+    
+
 }
 
 void CSG_GGeo_Convert::convert()
@@ -138,7 +151,7 @@ void CSG_GGeo_Convert::convertAllSolid()  // default
     LOG(LEVEL) << "[ numRepeat " << numRepeat ; 
     for(unsigned repeatIdx=0 ; repeatIdx < numRepeat ; repeatIdx++)
     {
-        if(ok->isEnabledMergedMesh(repeatIdx))
+        if(SGeoConfig::IsEnabledMergedMesh(repeatIdx))
         {
             LOG(error) << "proceeding with convert for repeatIdx " << repeatIdx ;  
             convertSolid(reverse ? numRepeat - 1 - repeatIdx : repeatIdx ); 
@@ -253,14 +266,14 @@ CSG_GGeo_Convert::CountSolidPrim
 
 **/
 
-unsigned CSG_GGeo_Convert::CountSolidPrim( const GParts* comp, const Opticks* ok )
+unsigned CSG_GGeo_Convert::CountSolidPrim( const GParts* comp )
 {
     unsigned solidPrim = 0 ; 
     unsigned numPrim = comp->getNumPrim();
     for(unsigned primIdx=0 ; primIdx < numPrim ; primIdx++) 
     {   
         unsigned meshIdx   = comp->getMeshIndex(primIdx);   // from idxBuffer aka lvIdx 
-        bool cxskip = ok->isCXSkipLV(meshIdx); 
+        bool cxskip = SGeoConfig::IsCXSkipLV(meshIdx); 
         if(cxskip)
         {
             LOG(LEVEL) << " cxskip meshIdx " << meshIdx  ; 
@@ -302,7 +315,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
     std::string rlabel = CSGSolid::MakeLabel('r',repeatIdx) ; 
 
     bool dump = dump_ridx > -1 && dump_ridx == int(repeatIdx) ;  
-    unsigned solidPrim = CountSolidPrim(comp, ok);  
+    unsigned solidPrim = CountSolidPrim(comp);  
 
     LOG(LEVEL)
         << " repeatIdx " << repeatIdx 
@@ -328,7 +341,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
     {   
         unsigned meshIdx   = comp->getMeshIndex(primIdx);   // from idxBuffer aka lvIdx 
         const char* mname = foundry->getName(meshIdx); 
-        bool cxskip = ok->isCXSkipLV(meshIdx); 
+        bool cxskip = SGeoConfig::IsCXSkipLV(meshIdx); 
         
         LOG(LEVEL) << " cxskip " << cxskip << " meshIdx " << meshIdx << " mname " << mname ;   
         if(cxskip) 

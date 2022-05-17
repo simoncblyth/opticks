@@ -117,6 +117,70 @@ Engine Change
      * boundary properties
 
 
+G4Opticks Into New workflow ?
+--------------------------------
+
+* event handling is near fully reimplemented in QUDARap/QSim/QEvent 
+  (replacing that part of OptiXRap etc..)
+ 
+* geometry handling needs work to bring across 
+
+  * GGeo* G4Opticks::translateGeometry( const G4VPhysicalVolume* top )
+  * TODO: can most of this be moved down to GGeo or extg4 statics ? 
+  
+
+New Workflow Top Level Package
+----------------------------------
+
+G4Opticks is too involved (and dependencies too different between workflows) 
+to change it from inside, easier to make a new pkg+class that duplicates the 
+important parts of the old API but is built upon the 
+new workflow components:
+
+This means any necessary functionality from old G4Opticks
+that needs to be used in new workflow should if possible 
+be shifted downwards to (eg down to extg4, ggeo) to both simplify 
+the old G4Opticks and enable reuse in the new workflow.  
+
+
+CSGOptiX 
+    needs CSGFoundry geometry, sim (eg NP gensteps) passed thru to QEvent  
+QUDARap
+    QSim, QEvent 
+
+
+CSG_GGeo
+    GGeo->CSGFoundry translation 
+
+    CSGFoundry* fd0 = CSG_GGeo_Convert::Translate(ggeo);
+
+extg4
+     Geant4->GGeo translation 
+
+     * this brings GGeo, OpticksCore, NPY, BRAP deps 
+
+
+
+Future Direct Geometry Workflow
+----------------------------------
+
+Currently the geometry chain is long:
+
+* Geant4 -> x4 (NPY,GGeo) -> GGeo -> CSGFoundry 
+
+It would be perfectly possible to do this much more directly.   
+But it is significant work.  
+
+* SO DEFER UNTIL NEW WORKFLOW OPERATIONAL
+
+* this means the initial new workflow top package
+  will have to be a franken-package combining dependencies 
+  from old and new worlds
+
+  * simulation, event handing mostly fully reimplemnented
+  * geometry mostly using old workflow 
+
+
 New Event Handling
 -----------------------
 

@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-set(name U4Test)
+set(name G4CXTest)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
 set(TEST_SOURCES
-   U4Test.cc
-   U4PhotonInfoTest.cc
-   U4GDMLTest.cc
+   G4CXTest.cc
 )
 
 
@@ -16,7 +14,7 @@ foreach(SRC ${TEST_SOURCES})
 
     add_test(${name}.${TGT} ${TGT})
 
-    target_link_libraries(${TGT} U4)
+    target_link_libraries(${TGT} G4CX)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

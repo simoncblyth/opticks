@@ -141,8 +141,8 @@ live=true instanciation only used from G4Opticks::translateGeometry
 GGeo::GGeo(Opticks* ok, bool live)
   :
    m_log(new SLog("GGeo::GGeo","",verbose)),
-   m_ok(ok), 
-   m_enabled_legacy_g4dae(ok->isEnabledLegacyG4DAE()),   // --enabled_legacy_g4dae
+   m_ok(ok ? ok : Opticks::Instance() ), 
+   m_enabled_legacy_g4dae(m_ok ? m_ok->isEnabledLegacyG4DAE() : false),   // --enabled_legacy_g4dae
    m_live(live),    // live=false  by default, only true when translated from Geant4 tree 
    m_composition(NULL), 
    m_instancer(NULL), 

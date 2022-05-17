@@ -30,6 +30,7 @@ struct CFG4_API CPhotonInfo : public G4VUserTrackInformation
     static bool         Exists(const G4Track* track );
  
     static CPho         Get(const G4Track* track); 
+    static CPho         Get(const G4Track* track, bool fabricate_unlabelled); 
     static CPhotonInfo* MakeScintillation(const CGenstep& gs, unsigned i, const CPho& ancestor ); 
     static CPhotonInfo* MakeCerenkov(     const CGenstep& gs, unsigned i ) ; 
 

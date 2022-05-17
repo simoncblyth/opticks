@@ -19,6 +19,18 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv, argforced );
     ok.configure(); 
 
+    bool gparts_transform_offset = ok.isGPartsTransformOffset() ; 
+    if(gparts_transform_offset == false)
+    {
+        LOG(fatal) 
+            << " GParts geometry requires use of --gparts_transform_offset "
+            << " for interoperation with the CSGFoundry single array of transforms approach "
+            << " failing to use this results in incorrect transforms "
+            ;
+    }
+    assert(gparts_transform_offset == true ); 
+
+
     unsigned numCXSkipLV = ok.getNumCXSkipLV();  // --cxskiplv 1,101,202
     LOG(info) << " numCXSkipLV " << numCXSkipLV ; 
       
@@ -34,39 +46,19 @@ int main(int argc, char** argv)
         return 0 ; 
     }  
 
-    CSGFoundry foundry ; 
-
-    LOG(error) << "[ convert ggeo " ; 
-    CSG_GGeo_Convert conv(&foundry, ggeo ) ; 
-    conv.convert(); 
-    LOG(error) << "] convert ggeo " ; 
-
-
-    bool ops = SSys::getenvbool("ONE_PRIM_SOLID"); 
-    if(ops) conv.addOnePrimSolid(); 
-
-    bool ons = SSys::getenvbool("ONE_NODE_SOLID"); 
-    if(ons) conv.addOneNodeSolid(); 
-
-    bool dcs = SSys::getenvbool("DEEP_COPY_SOLID"); 
-    if(dcs) conv.addDeepCopySolid(); 
-
-    bool ksb = SSys::getenvbool("KLUDGE_SCALE_PRIM_BBOX"); 
-    if(ksb) conv.kludgeScalePrimBBox();  
-
+    CSGFoundry* fd0 = CSG_GGeo_Convert::Translate(ggeo); 
 
     const char* cfbase = ok.getFoundryBase("CFBASE"); 
-    const char* rel = "CSGFoundry" ; 
 
-    LOG(error) << "[ write foundry to CFBASE " << cfbase << " rel " << rel  ; 
-    foundry.write(cfbase, rel );   
+    LOG(error) << "[ write foundry to CFBASE " << cfbase   ; 
+    fd0->write(cfbase, "CSGFoundry" );   
     LOG(error) << "] write foundry " ; 
 
     LOG(error) << "[ load foundry " ; 
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, rel);  // load foundary and check identical bytes
+    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry");  // load foundary and check identical bytes
     LOG(error) << "] load foundry " ; 
 
-    assert( 0 == CSGFoundry::Compare(&foundry, fd ) );  
+    assert( 0 == CSGFoundry::Compare(fd0, fd ) );  
 
     LOG(info) << "CSGFoundry saved to cfbase " << cfbase ; 
     LOG(info) << "logs are written to logdir " << logdir ; 
