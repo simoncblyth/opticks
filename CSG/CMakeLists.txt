@@ -28,7 +28,6 @@ list(APPEND SOURCES
     CSGFoundry.cc
     CSGCopy.cc
     CSGMaker.cc
-    CSGName.cc
     CSGGenstep.cc
     CSGTarget.cc
     CSGScan.cc

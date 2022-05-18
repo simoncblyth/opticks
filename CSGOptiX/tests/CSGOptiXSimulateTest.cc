@@ -2,13 +2,30 @@
 CSGOptiXSimulateTest
 ======================
 
+Canonically used by cxsim.sh combining CFBASE_LOCAL simple test geometry (eg GeoChain) 
+with standard CFBASE basis geometry  
+
+BUT: the basis "geometry" (the first CSGFoundry loaded) is not actually needed, 
+it is the basis QSim components that are required. 
+
+Having to load the full CSGFoundry geometry and then not use it just seems wrong. 
+ 
+Better for QSim to manage its own components that are persisted within a 
+subdirectory(or sibling) of the CSGFoundry dir.  
+Then can do QSim::Load and pass QSim instance to CSGOptiX 
+
+That better reflects the intention for a rather loose relationship between CSGFoundry and QSim. 
+
+This means CSG_GGeo needs to convert the traditional GGeo into both CSGFoundry and QSim
+instances/directories rather than the QSim components living as foreign NP inside CSGFoundry. 
+
 **/
 
 #include <cuda_runtime.h>
 
 #include "scuda.h"
 #include "sqat4.h"
-//#include "stran.h"
+#include "scarrier.h"
 #include "NP.hh"
 
 #include "SSys.hh"
@@ -36,8 +53,7 @@ int main(int argc, char** argv)
 
 #ifdef WITH_SGLM
 #else
-    Opticks ok(argc, argv ); 
-    ok.configure(); 
+    Opticks::Configure(argc, argv ); 
 #endif
 
     const char* cfbase = SOpticksResource::CFBase(); 
@@ -51,7 +67,6 @@ int main(int argc, char** argv)
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
-    //fd->upload(); 
     LOG(info) << fd->descComp(); 
 
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
@@ -68,20 +83,14 @@ int main(int argc, char** argv)
     std::cout << std::setw(20) << "cfbase_local" << ":" << cfbase_local  << std::endl ; 
 
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
-    //fdl->upload(); 
 
     CSGOptiX* cx = CSGOptiX::Create(fdl); 
 
-    float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  
-    cx->setComposition(ce); 
+    //float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  
+    //cx->setComposition(ce);   // HMM: does this matter for sim ?
       
     quad6 gs ; 
-    gs.q0.u = make_uint4( OpticksGenstep_PHOTON_CARRIER, 0u, 0u, 10u );   
-    gs.q1.u = make_uint4( 0u,0u,0u,0u ); 
-    gs.q2.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // post
-    gs.q3.f = make_float4( 1.f, 0.f, 0.f, 1.f );   // dirw
-    gs.q4.f = make_float4( 0.f, 1.f, 0.f, 500.f ); // polw
-    gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // flag 
+    scarrier::FillGenstep(gs, 10u); 
 
     cx->setGenstep(&gs, 1); 
     cx->simulate();  

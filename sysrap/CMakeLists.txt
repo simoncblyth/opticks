@@ -193,7 +193,9 @@ set(HEADERS
     sseq.h 
 
     storchtype.h
+
     storch.h
+    scarrier.h
     scerenkov.h
     sscint.h
     
