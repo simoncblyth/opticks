@@ -73,6 +73,11 @@ struct SYSRAP_API SEventConfig
     static const char* OutName(); 
     static unsigned HitMask(); 
     static int RGMode(); 
+
+    static bool IsRGModeRender(); 
+    static bool IsRGModeSimtrace(); 
+    static bool IsRGModeSimulate(); 
+
     static const char* RGModeLabel(); 
 
     static void SetMaxGenstep(int max_genstep); 

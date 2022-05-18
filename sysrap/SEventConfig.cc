@@ -40,6 +40,12 @@ float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
 int SEventConfig::RGMode(){  return _RGMode ; } 
+
+bool SEventConfig::IsRGModeRender(){   return RGMode() == SRG_RENDER   ; } 
+bool SEventConfig::IsRGModeSimtrace(){ return RGMode() == SRG_SIMTRACE ; } 
+bool SEventConfig::IsRGModeSimulate(){ return RGMode() == SRG_SIMULATE ; } 
+
+
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
 
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; Check() ; }
