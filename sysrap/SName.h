@@ -8,6 +8,7 @@ Identity machinery using the foundry vector of meshnames (aka solid names)
 
 **/
 
+#include <cstring>
 #include <vector>
 #include <string>
 #include <sstream>

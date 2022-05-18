@@ -45,7 +45,11 @@ instances/directories rather than the QSim components living as foreign NP insid
 #include "QSim.hh"
 #include "QEvent.hh"
 
+#ifdef WITH_SGLM
+// SGLM replaces Composition, preventing the need for Opticks instance
+#else
 #include "Opticks.hh"
+#endif
 
 int main(int argc, char** argv)
 {
@@ -53,9 +57,8 @@ int main(int argc, char** argv)
 
 #ifdef WITH_SGLM
 #else
-    Opticks::Configure(argc, argv ); 
+    Opticks::Configure(argc, argv );  
 #endif
-
     const char* cfbase = SOpticksResource::CFBase(); 
     const char* outfold = SEventConfig::OutFold();  
     LOG(info) << " outfold [" << outfold << "]"  ; 
@@ -71,6 +74,11 @@ int main(int argc, char** argv)
 
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
     QSim::UploadComponents(fd->icdf, fd->bnd, fd->optical, rindexpath ); 
+
+    QSim* sim = new QSim ; 
+    LOG(info) << sim->desc(); 
+    // TODO:QSim::Load, QSim::upload 
+
 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
@@ -95,10 +103,11 @@ int main(int argc, char** argv)
     cx->setGenstep(&gs, 1); 
     cx->simulate();  
 
+    cudaDeviceSynchronize(); 
+
     const char* odir = SPath::Resolve(cfbase_local, "CSGOptiXSimulateTest", DIRPATH ); 
     LOG(info) << " odir " << odir ; 
     cx->event->save(odir); 
  
-    cudaDeviceSynchronize(); 
     return 0 ; 
 }

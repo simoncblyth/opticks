@@ -37,8 +37,7 @@ int main(int argc, char** argv)
 
 #ifdef WITH_SGLM
 #else
-    Opticks ok(argc, argv ); 
-    ok.configure(); 
+    Opticks::Configure(argc, argv ); 
 #endif
 
     const char* cfbase = SOpticksResource::CFBase(); 

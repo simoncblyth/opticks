@@ -3,6 +3,8 @@
 Temporarily : G4CXOpticks, Aiming to replace G4Opticks  
 =========================================================
 
+* KEEP THIS MINIMAL : PROVIDING TOP LEVEL INTERFACE AND COORDINARION 
+* EVERYTHING THAT CAN BE IMPLEMENTED AT LOWER LEVELS SHOULD BE IMPLEMENTED AT LOWER LEVELS 
 
 HMM: instanciating CSGOptiX instanciates QSim for raygenmode other than zero 
 and that needs the upload of QSim components first ?
@@ -24,6 +26,7 @@ struct G4CX_API G4CXOpticks
     const G4VPhysicalVolume* wd ; 
     const GGeo*             gg ;
     CSGFoundry* fd ; 
+
     CSGOptiX*   cx ; 
 
     G4CXOpticks(); 
@@ -34,7 +37,6 @@ struct G4CX_API G4CXOpticks
     void setGeometry(CSGFoundry* fd); 
 
     void render_snap(); 
-
 };
 
 

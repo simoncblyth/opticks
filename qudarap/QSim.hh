@@ -55,8 +55,8 @@ struct QUDARAP_API QSim
 {
     static const plog::Severity LEVEL ; 
     static const char* PREFIX ; 
-    static const QSim* INSTANCE ; 
-    static const QSim* Get(); 
+    static QSim* INSTANCE ; 
+    static QSim* Get(); 
 
     static void UploadComponents(const NP* icdf, const NP* bnd, const NP* optical, const char* rindexpath );   
     static void UploadMultiFilm(const NP * multi_film_lut );

@@ -33,9 +33,8 @@
 
 const plog::Severity QSim::LEVEL = PLOG::EnvLevel("QSim", "INFO"); 
 
-const QSim* QSim::INSTANCE = nullptr ; 
-
-const QSim* QSim::Get(){ return INSTANCE ; }
+QSim* QSim::INSTANCE = nullptr ; 
+QSim* QSim::Get(){ return INSTANCE ; }
 
 /**
 QSim::UploadComponents
@@ -61,6 +60,8 @@ TODO: Most of the component arguments come from CSGFoundry but it is not possibl
 to consolidate to just CSGFoundry argument as that would add CSG dependency to QUDARap
 which is not acceptable. PERHAPS: accept single argument "std::map<std::string, const NP*>&" 
 argument with meaningful standardized keys. 
+
+BETTER: Use an SSim instance for holding onto components which is consulted by QSim::Create
 
 **/
 

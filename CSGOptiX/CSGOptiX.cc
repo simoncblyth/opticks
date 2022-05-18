@@ -198,8 +198,8 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     peta(new quad4), 
     metatran(nullptr),
     dt(0.),
-    sim(raygenmode == 0 ? nullptr : new QSim),
-    event(sim == nullptr  ? nullptr : sim->event     )
+    sim(QSim::Get()),  
+    event(sim == nullptr  ? nullptr : sim->event)
 {
     init(); 
 }
@@ -271,9 +271,6 @@ void CSGOptiX::initGeometry()
 /**
 CSGOptiX::initRender
 ---------------------
-
-TODO: Six should be able to use the frame from the other branch much more ?
-
 **/
 
 void CSGOptiX::initRender()
@@ -302,6 +299,12 @@ TODO: eliminate params->evt to make more use of the qsim.h encapsulation
 
 void CSGOptiX::initSimulate() 
 {
+    if(SEventConfig::IsRGModeRender() == false)
+    {
+        if(sim == nullptr) LOG(fatal) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ; 
+        assert(sim); 
+    }
+
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
     params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
     params->tmin = 0.f ;                                 // perhaps needs to be epsilon to avoid self-intersection off boundaries ?
