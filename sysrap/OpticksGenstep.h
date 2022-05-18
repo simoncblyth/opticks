@@ -32,7 +32,7 @@ enum
     OpticksGenstep_G4GUN                    = 11, 
     OpticksGenstep_PRIMARYSOURCE            = 12, 
     OpticksGenstep_GENSTEPSOURCE            = 13, 
-    OpticksGenstep_PHOTON_CARRIER           = 14,
+    OpticksGenstep_CARRIER                  = 14,
     OpticksGenstep_CERENKOV                 = 15,
     OpticksGenstep_SCINTILLATION            = 16,
     OpticksGenstep_NumType                  = 17
@@ -60,7 +60,7 @@ struct OpticksGenstep_
     static constexpr const char* G4GUN_                   = "G4GUN" ;
     static constexpr const char* PRIMARYSOURCE_           = "PRIMARYSOURCE" ;
     static constexpr const char* GENSTEPSOURCE_           = "GENSTEPSOURCE" ;
-    static constexpr const char* PHOTON_CARRIER_          = "PHOTON_CARRIER" ;
+    static constexpr const char* CARRIER_                 = "CARRIER" ;
     static constexpr const char* CERENKOV_                = "CERENKOV" ;
     static constexpr const char* SCINTILLATION_           = "SCINTILLATION" ;
 
@@ -94,7 +94,7 @@ inline unsigned OpticksGenstep_::Type(const char* name)
     if(strcmp(name,G4GUN_)==0)                    type = OpticksGenstep_G4GUN ;
     if(strcmp(name,PRIMARYSOURCE_)==0)            type = OpticksGenstep_PRIMARYSOURCE ;
     if(strcmp(name,GENSTEPSOURCE_)==0)            type = OpticksGenstep_GENSTEPSOURCE ;
-    if(strcmp(name,PHOTON_CARRIER_)==0)           type = OpticksGenstep_PHOTON_CARRIER ;
+    if(strcmp(name,CARRIER_)==0)                  type = OpticksGenstep_CARRIER ;
     if(strcmp(name,CERENKOV_)==0)                 type = OpticksGenstep_CERENKOV ;
     if(strcmp(name,SCINTILLATION_)==0)            type = OpticksGenstep_SCINTILLATION ;
     return type ; 
@@ -119,7 +119,7 @@ inline const char* OpticksGenstep_::Name(unsigned type)
         case OpticksGenstep_G4GUN:                   n = G4GUN_                   ; break ; 
         case OpticksGenstep_PRIMARYSOURCE:           n = PRIMARYSOURCE_           ; break ; 
         case OpticksGenstep_GENSTEPSOURCE:           n = GENSTEPSOURCE_           ; break ; 
-        case OpticksGenstep_PHOTON_CARRIER:          n = PHOTON_CARRIER_          ; break ; 
+        case OpticksGenstep_CARRIER:                 n = CARRIER_                 ; break ; 
         case OpticksGenstep_CERENKOV:                n = CERENKOV_                ; break ; 
         case OpticksGenstep_SCINTILLATION:           n = SCINTILLATION_           ; break ; 
         case OpticksGenstep_NumType:                 n = INVALID_                 ; break ; 

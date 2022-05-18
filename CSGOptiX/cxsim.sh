@@ -13,11 +13,34 @@ usage(){ cat << EOU
 cxsim.sh : CSGOptiXSimulateTest combining CFBASE_LOCAL simple test geometry with standard CFBASE basis geometry  
 =================================================================================================================
 
+Create the geometry, at CSG level::
+
+   c
+   ./CSGMakerTest.sh   
+   ## TODO: confusingly this writes into GeoChain directory, switch to CSGMakerTest     
+   ## OR change to a more appropriately named location for test geometries
+
+OR translate from G4 using the GeoChain::
+
+   gc
+   ./translate.sh 
+
+Run the sim::
+
+   cx
+   ./cxsim.sh 
+
 Grab from remote::
 
     cx
     ./tmp_grab.sh 
     ./cf_grab.sh 
+
+
+Laptop analysis::
+
+   cx
+   ./cxsim.sh ana
   
 EOU
 }
@@ -26,12 +49,18 @@ export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain/$GEOM
 unset GEOM   # MUST unset GEOM for CSGFoundry::Load_ to load OPTICKS_KEY basis geometry 
 export OPTICKS_MAX_RECORD=10   # change from default of 0, see sysrap/SEventConfig.cc
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then 
     logdir=/tmp/$USER/opticks/CSGOptiXSimulateTest 
     mkdir -p $logdir
     iwd=$PWD
     cd $logdir
-    CSGOptiXSimulateTest 
+
+    if [ "${arg/run}" != "$arg" ] ; then
+        CSGOptiXSimulateTest 
+    elif [ "${arg/dbg}" != "$arg" ] ; then
+        gdb CSGOptiXSimulateTest 
+    fi  
+
     [ $? -ne 0 ] && echo $msg RUN ERROR && exit 1 
     echo $msg logdir $logdir 
     cd $iwd

@@ -94,13 +94,7 @@ int main(int argc, char** argv)
 
     CSGOptiX* cx = CSGOptiX::Create(fdl); 
 
-    //float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  
-    //cx->setComposition(ce);   // HMM: does this matter for sim ?
-      
-    quad6 gs ; 
-    scarrier::FillGenstep(gs, 10u); 
-
-    cx->setGenstep(&gs, 1); 
+    cx->setGenstep(SEvent::MakeCarrierGensteps());     
     cx->simulate();  
 
     cudaDeviceSynchronize(); 

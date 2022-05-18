@@ -273,6 +273,7 @@ struct CSG_API CSGFoundry
     template<typename T> void loadArray( std::vector<T>& vec, const char* dir, const char* name, bool optional=false ); 
 
     void upload();
+    bool isUploaded() const ; 
     void inst_find_unique(); 
 
     unsigned getNumUniqueIAS() const ;

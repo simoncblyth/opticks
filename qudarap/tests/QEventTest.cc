@@ -170,7 +170,7 @@ void test_setGenstep_checkEvt()
 void test_setGenstep_quad6()
 {
     quad6 gs ; 
-    gs.q0.u = make_uint4( OpticksGenstep_PHOTON_CARRIER, 0u, 0u, 10u );   
+    gs.q0.u = make_uint4( OpticksGenstep_CARRIER, 0u, 0u, 10u );   
     gs.q1.u = make_uint4( 0u,0u,0u,0u );  
     gs.q2.f = make_float4( 0.f, 0.f, 0.f, 0.f );    // post
     gs.q3.f = make_float4( 1.f, 0.f, 0.f, 1.f );    // dirw

@@ -46,6 +46,7 @@ TODO:
 #include "sphoton.h"
 
 #include "storch.h"
+#include "scarrier.h"
 
 #include "srec.h"
 #include "sseq.h"
@@ -57,7 +58,9 @@ TODO:
 #include "qmultifilm.h"
 #include "qbnd.h"
 #include "qstate.h"
+
 #include "qscint.h"
+#include "qcerenkov.h"
 
 struct curandStateXORWOW ; 
 struct qcerenkov ; 
@@ -1146,23 +1149,6 @@ inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bo
 
 
 /**
-qsim::generate_photon_carrier
-------------------------------
-
-An input photon carried within the genstep q2:q5 is repeatedly provided. 
-
-**/
-
-inline QSIM_METHOD void qsim::generate_photon_carrier(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
-{
-    p.q0.f = gs.q2.f ; 
-    p.q1.f = gs.q3.f ; 
-    p.q2.f = gs.q4.f ; 
-    p.q3.f = gs.q5.f ; 
-    p.set_flag(TORCH); 
-}
-
-/**
 qsim::generate_photon_simtrace
 --------------------------------
 
@@ -1250,15 +1236,13 @@ inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng
 
     switch(gencode)
     {
-        case OpticksGenstep_PHOTON_CARRIER:  generate_photon_carrier(q, rng, gs, photon_id, genstep_id)  ; break ; 
+        case OpticksGenstep_CARRIER:         scarrier::generate(     q, rng, gs, photon_id, genstep_id)  ; break ; 
         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
-       // case OpticksGenstep_CERENKOV:        qcerenkov::generate(    p, rng, gs, photon_id, genstep_id ) ; break ; 
+        case OpticksGenstep_CERENKOV:        cerenkov->generate(     p, rng, gs, photon_id, genstep_id ) ; break ; 
+        case OpticksGenstep_SCINTILLATION:   scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ; 
         default:                             generate_photon_dummy(  q, rng, gs, photon_id, genstep_id)  ; break ; 
     }
 }
-
-
-
 
 
 #endif

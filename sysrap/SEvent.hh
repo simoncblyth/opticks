@@ -26,19 +26,13 @@ struct SYSRAP_API SEvent
     static const char* GridAxesName( int gridaxes ); 
     static int GridAxes(int nx, int ny, int nz); 
 
-
     static NP* MakeDemoGensteps(const char* config=nullptr);  
-
-    static void FillCarrierGenstep( quad6& gs ); 
-    static NP* MakeCarrierGensteps(const char* config); 
-
-    static void FillTorchGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ); 
 
     // example gensteps used for testing 
     static NP* MakeTorchGensteps();  
     static NP* MakeCerenkovGensteps();  
     static NP* MakeScintGensteps();  
-
+    static NP* MakeCarrierGensteps(); 
     static NP* MakeGensteps(int gentype); 
 
     template <typename T> 

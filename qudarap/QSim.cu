@@ -110,19 +110,19 @@ __global__ void _QSim_dbg_gs_generate(qsim* sim, qdebug* dbg, sphoton* photon, u
     
     //printf("//_QSim_dbg_gs_generate sim.cerenkov %p sim.scint %p \n", sim->cerenkov, sim->scint ); 
 
+    int gsid = -1 ; 
     sphoton p ;   
 
     if( type == CERENKOV_GENERATE ) // TODO: other flavors of ck gen 
     {
         const quad6& gs = (const quad6&)dbg->cerenkov_gs ; 
-        sim->cerenkov->generate(p, rng, gs, idx, -1 ); 
+        sim->cerenkov->generate(p, rng, gs, idx, gsid ); 
     }
     else if( type == SCINT_GENERATE )
     {
         const quad6& gs = (const quad6&)dbg->scint_gs ; 
-        sim->scint->generate(p, rng, gs, idx, -1 ); 
+        sim->scint->generate(p, rng, gs, idx, gsid ); 
     }
-
     photon[idx] = p ; 
 }
 

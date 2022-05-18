@@ -108,20 +108,25 @@ class Fold(object):
             abbrev = self.abbrev[i]
 
             a = getattr(self, stem)
-            ext = ".txt" if a.__class__.__name__ == 'NPMeta' else ".npy"
+
+            kls = a.__class__.__name__
+            ext = ".txt" if kls == 'NPMeta' else ".npy"
             name = "%s%s" % (stem,ext)
             aname = "t.%s" % stem
-
             path = os.path.join(self.base, name)
-            st = os.stat(path)
-            stamp = datetime.datetime.fromtimestamp(st.st_ctime)
-            age_stamp = now_stamp - stamp
-            stamps.append(stamp)
 
-            sh = str(len(a)) if ext == ".txt" else str(a.shape)
-            abbrev_ = abbrev if self.globals else " " 
-            line = "%1s : %-50s : %20s : %s " % ( abbrev_, aname, sh, age_stamp )
-            l.append(line)
+            if os.path.exists(path):
+                st = os.stat(path)
+                stamp = datetime.datetime.fromtimestamp(st.st_ctime)
+                age_stamp = now_stamp - stamp
+                stamps.append(stamp)
+                sh = str(len(a)) if ext == ".txt" else str(a.shape)
+                abbrev_ = abbrev if self.globals else " " 
+                line = "%1s : %-50s : %20s : %s " % ( abbrev_, aname, sh, age_stamp )
+                l.append(line)
+            else:
+                print("ERROR non-existing stem %s kls %s ext %s name %s aname %s path %s " % (stem, kls, ext, name, aname, path ))
+            pass
         pass
         l.append("")
 

@@ -2197,7 +2197,17 @@ void CSGFoundry::upload()
     d_itra = itra.size() > 0 ? CU::UploadArray<qat4>(itra.data(), itra.size() ) : nullptr ; 
 
     LOG(info) << "]"  ; 
+
+    bool is_uploaded = isUploaded(); 
+    if(!is_uploaded) LOG(fatal) << "FAILED TO UPLOAD" ; 
+    assert(is_uploaded); 
 }
+
+bool CSGFoundry::isUploaded() const
+{
+    return d_prim != nullptr && d_node != nullptr ; 
+}
+
 
 void CSGFoundry::inst_find_unique()
 {

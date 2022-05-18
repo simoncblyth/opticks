@@ -1,13 +1,19 @@
 #!/usr/bin/env python
-import numpy as np
+import sys, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 PIDX = int(os.environ.get("PIDX","-1"))
 
 if __name__ == '__main__':
     t = Fold.Load()
-    r = t.r if hasattr(t,'r') else None
-    p = t.p if hasattr(t,'p') else None
+    r = t.record if hasattr(t,'record') else None
+    p = t.photon if hasattr(t,'photon') else None
+
+    if p is None:
+       print("ERROR p is None")
+       sys.exit(0)
+    pass 
+
     s = str(p[:,:3])
     a = np.array( s.split("\n") + [""] ).reshape(-1,4)
 
