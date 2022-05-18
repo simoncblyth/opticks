@@ -1,8 +1,8 @@
 #pragma once
 
 /**
-CSGName.h
-===========
+SName.h  : formerly CSG/CSGName.h
+=====================================
 
 Identity machinery using the foundry vector of meshnames (aka solid names) 
 
@@ -10,10 +10,11 @@ Identity machinery using the foundry vector of meshnames (aka solid names)
 
 #include <vector>
 #include <string>
+#include <sstream>
+#include <iostream>
+#include "SStr.hh"
 
-#include "CSG_API_EXPORT.hh"
-
-struct CSG_API CSGName
+struct SName
 {
     static constexpr const char* parseArg_ALL = "ALL" ; 
 
@@ -22,7 +23,7 @@ struct CSG_API CSGName
 
     const std::vector<std::string>& name ; 
 
-    CSGName(const std::vector<std::string>& name );  
+    SName(const std::vector<std::string>& name );  
 
     std::string desc() const ; 
     std::string detail() const ; 
@@ -38,62 +39,53 @@ struct CSG_API CSGName
     int parseArg(const char* arg, unsigned& count ) const ;
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ;
 
-
 }; 
 
 
-#include <sstream>
-#include <iostream>
-
-#include "SStr.hh"
-#include "CSGName.h"
-
-
-
-inline CSGName::CSGName( const std::vector<std::string>& name_ )
+inline SName::SName( const std::vector<std::string>& name_ )
     :
     name(name_)
 {
 }
 
-inline std::string CSGName::desc() const 
+inline std::string SName::desc() const 
 {
     unsigned num_name = getNumName() ; 
     std::stringstream ss ; 
-    ss << "CSGName::desc numName " << num_name << " name[0] " << getName(0) << " name[-1] " <<  getName(num_name-1 ) ; 
+    ss << "SName::desc numName " << num_name << " name[0] " << getName(0) << " name[-1] " <<  getName(num_name-1 ) ; 
     std::string s = ss.str(); 
     return s ; 
 }
 
-inline std::string CSGName::detail() const 
+inline std::string SName::detail() const 
 {
     unsigned num_name = getNumName() ; 
     std::stringstream ss ; 
-    ss << " CSGName::detail num_name " << num_name << std::endl ;
+    ss << " SName::detail num_name " << num_name << std::endl ;
     for(unsigned i=0 ; i < num_name ; i++) ss << getName(i) << std::endl ;  
     std::string s = ss.str(); 
     return s ; 
 }
 
 
-inline unsigned CSGName::getNumName() const
+inline unsigned SName::getNumName() const
 {
     return name.size(); 
 }
-inline const char* CSGName::getName(unsigned idx) const 
+inline const char* SName::getName(unsigned idx) const 
 {
     return idx < name.size() ? name[idx].c_str() : nullptr ; 
 }
 
 /**
-CSGName::getAbbr
+SName::getAbbr
 ------------------
 
 Return the shortest string that still yields the same index 
 
 **/
 
-inline const char* CSGName::getAbbr(unsigned idx) const
+inline const char* SName::getAbbr(unsigned idx) const
 {
     const char* name = getName(idx); 
    
@@ -151,7 +143,7 @@ inline const char* CSGName::getAbbr(unsigned idx) const
 
 
 /**
-CSGName::getIndex
+SName::getIndex
 --------------------
 
 Returns the index of the first listed name that exactly matches the query string.
@@ -160,7 +152,7 @@ Returns -1 if not found.
 
 **/
 
-inline int CSGName::getIndex(const char* query, unsigned& count) const 
+inline int SName::getIndex(const char* query, unsigned& count) const 
 {
     int result(-1); 
     count = 0 ; 
@@ -178,7 +170,7 @@ inline int CSGName::getIndex(const char* query, unsigned& count) const
 
 
 /**
-CSGName::findIndex
+SName::findIndex
 --------------------
 
 Returns the index of the first listed name that starts with the query string.
@@ -192,7 +184,7 @@ Returns -1 if not found.
 
 **/
 
-inline int CSGName::findIndex(const char* starting, unsigned& count, int max_count ) const 
+inline int SName::findIndex(const char* starting, unsigned& count, int max_count ) const 
 {  
     int result(-1); 
     count = 0 ; 
@@ -210,7 +202,7 @@ inline int CSGName::findIndex(const char* starting, unsigned& count, int max_cou
 }
 
 /**
-CSGName::parseArg
+SName::parseArg
 -------------------
 
 An arg of "ALL" is special cased yielding -1 otherwise parsing the string
@@ -222,7 +214,7 @@ otherwise -1 is returned.
 **/
 
 
-inline int CSGName::parseArg(const char* arg, unsigned& count) const 
+inline int SName::parseArg(const char* arg, unsigned& count) const 
 {
     count = 0 ; 
 
@@ -252,7 +244,7 @@ inline int CSGName::parseArg(const char* arg, unsigned& count) const
 }
 
 /**
-CSGName::ParseIntString
+SName::ParseIntString
 -------------------------
 
 If the entire arg can be parsed as an integer that is returned,  
@@ -260,7 +252,7 @@ otherwise the fallback integer is returned.
 
 **/
 
-inline int CSGName::ParseIntString(const char* arg, int fallback)  // static 
+inline int SName::ParseIntString(const char* arg, int fallback)  // static 
 {
     char* end ;   
     char** endptr = &end ; 
@@ -284,11 +276,11 @@ inline int CSGName::ParseIntString(const char* arg, int fallback)  // static
 
 
 /**
-CSGName::ParseSOPR
+SName::ParseSOPR
 --------------------
 **/
 
-inline void CSGName::ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr_ ) // static
+inline void SName::ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr_ ) // static
 {
     const char* sopr = SStr::ReplaceChars(sopr_, "_", ':'); 
 
@@ -316,7 +308,7 @@ inline void CSGName::ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr_
 
 
 /**
-CSGName::parseMOI
+SName::parseMOI
 -------------------
 
 Parses MOI string into three integers:
@@ -344,7 +336,7 @@ subsequent elements are expected to be integers.
 
 **/
 
-inline void CSGName::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const 
+inline void SName::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const 
 {
     std::stringstream ss; 
     ss.str(moi)  ;

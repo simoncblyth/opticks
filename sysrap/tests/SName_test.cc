@@ -1,4 +1,4 @@
-// name=SNameTest ; gcc $name.cc -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name 
+// name=SName_test ; gcc $name.cc -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name 
 #include <iostream>
 #include <iomanip>
 #include <cstring>

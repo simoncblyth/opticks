@@ -51,6 +51,7 @@ set(TEST_SOURCES
    S_get_option_Test.cc
 
    SIdTest.cc
+
    ArrayTest.cc
    SBacktraceTest.cc
    SFrameTest.cc

@@ -54,7 +54,6 @@ list(APPEND CSG_HEADERS
     CSGFoundry.h
     CSGCopy.h
     CSGMaker.h
-    CSGName.h
     CSGGenstep.h
     CSGTarget.h
     CSGScan.h

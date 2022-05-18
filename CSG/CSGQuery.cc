@@ -4,7 +4,7 @@
 #include "sc4u.h"
 
 #include "CSGFoundry.h"
-#include "CSGName.h"
+#include "SName.h"
 #include "CSGQuery.h"
 #include "CSGGrid.h"
 
@@ -60,7 +60,7 @@ void CSGQuery::init()
     int primIdxRel = 0 ; 
 
     const char* sopr = SSys::getenvvar("SOPR", "0:0" ); 
-    CSGName::ParseSOPR(solidIdx, primIdxRel, sopr );    
+    SName::ParseSOPR(solidIdx, primIdxRel, sopr );    
 
     LOG(info) << " sopr " << sopr << " solidIdx " << solidIdx << " primIdxRel " << primIdxRel ; 
     selectPrim(solidIdx, primIdxRel );  

@@ -1,17 +1,17 @@
 #include "SSys.hh"
-#include "Opticks.hh"
+#include "SName.h"
+
 #include "OPTICKS_LOG.hh"
 #include "scuda.h"
 #include "CSGFoundry.h"
-#include "CSGName.h"
 
 
-void test_getNumName( const CSGName* id )
+void test_getNumName( const SName* id )
 {
     LOG(info) << " id.getNumName " << id->getNumName() ; 
 }
 
-void test_getName( const CSGName* id )
+void test_getName( const SName* id )
 {
     for(unsigned i=0 ; i < id->getNumName() ; i++)
     {
@@ -22,7 +22,7 @@ void test_getName( const CSGName* id )
 
 
 
-void test_findIndex( const CSGName* id )
+void test_findIndex( const SName* id )
 {
     for(unsigned i=0 ; i < id->getNumName() ; i++)
     {
@@ -44,7 +44,7 @@ void test_findIndex( const CSGName* id )
 }
 
 
-void test_getAbbr( const CSGName* id )
+void test_getAbbr( const SName* id )
 {
     for(unsigned i=0 ; i < id->getNumName() ; i++)
     {
@@ -61,7 +61,7 @@ void test_getAbbr( const CSGName* id )
     }
 }
 
-void test_parseArg( const CSGName* id, const char* arg )
+void test_parseArg( const SName* id, const char* arg )
 {
     unsigned count = 0 ; 
     int idx = id->parseArg(arg, count);
@@ -77,14 +77,14 @@ void test_parseArg( const CSGName* id, const char* arg )
        ;
 }
 
-void test_parseArg( const CSGName* id, int argc, char** argv )
+void test_parseArg( const SName* id, int argc, char** argv )
 {
     std::vector<std::string> args = {"uni", "130", "sWat" } ; 
     for(int i=0 ; i < int(args.size()) ; i++) test_parseArg(id, args[i].c_str()) ;
     for(int i=1 ; i < argc             ; i++) test_parseArg(id, argv[i]);  
 }
 
-void test_parseMOI( const CSGName* id, const char* moi )
+void test_parseMOI( const SName* id, const char* moi )
 {
     int midx, mord, iidx ; 
     id->parseMOI(midx, mord, iidx, moi);  
@@ -103,7 +103,7 @@ void test_parseMOI( const CSGName* id, const char* moi )
        ;
 }
 
-void test_parseMOI( const CSGName* id, int argc, char** argv )
+void test_parseMOI( const SName* id, int argc, char** argv )
 {
     std::vector<std::string> args = {"uni", "130", "sWat" } ; 
     for(int i=0 ; i < int(args.size()) ; i++) test_parseMOI(id, args[i].c_str()) ;
@@ -129,17 +129,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    Opticks ok(argc, argv); 
-    ok.configure(); 
-
-    const char* cfbase = ok.getFoundryBase("CFBASE") ; 
-    LOG(info) << "cfbase " << cfbase ; 
-
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+    CSGFoundry* fd = CSGFoundry::Load(); 
     LOG(info) << "foundry " << fd->desc() ; 
     fd->summary(); 
 
-    const CSGName* id = fd->id ; 
+    const SName* id = fd->id ; 
     LOG(info) << id->desc(); 
 
     LOG(info) << "[ descMeshPrim " ;  

@@ -19,7 +19,6 @@ NB to control which geometry is loaded invoke this executable via the CSGPrimTes
 #include "SSys.hh"
 #include "scuda.h"
 #include "CSGFoundry.h"
-#include "CSGName.h"
 
 #include "OPTICKS_LOG.hh"
 

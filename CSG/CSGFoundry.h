@@ -15,7 +15,7 @@ struct NP ;
 #include "stran.h"
 
 
-struct CSGName ; 
+struct SName ; 
 struct CSGTarget ; 
 struct CSGMaker ; 
 struct CSGGenstep ; 
@@ -344,7 +344,7 @@ struct CSG_API CSGFoundry
     std::vector<unsigned>  gas ; 
     std::vector<unsigned>  ias ; 
 
-    CSGName*    id ;   // meshname 
+    SName*    id ;   // meshname 
 
     CSGTarget*  target ; 
     CSGGenstep* genstep ; 
@@ -360,7 +360,7 @@ struct CSG_API CSGFoundry
     // better to manage in SSim wrapper struct singleton to avoid playing pass the parcel
     const NP*    optical ; 
     const NP*        bnd ; 
-    const CSGName*    bd ;  // instanciated by setOpticalBnd using bnd->names
+    const SName*    bd ;  // instanciated by setOpticalBnd using bnd->names
     NP* icdf ;              // scintillation icdf  
 
 

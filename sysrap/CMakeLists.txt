@@ -180,6 +180,8 @@ set(HEADERS
     SRng.hh
     SBuf.hh
 
+    SName.h 
+
     scuda.h
     scurand.h  
     smath.h 

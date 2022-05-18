@@ -25,7 +25,7 @@
 #include "CSGSolid.h"
 #include "CU.h"
 #include "CSGFoundry.h"
-#include "CSGName.h"
+#include "SName.h"
 #include "CSGTarget.h"
 #include "CSGGenstep.h"
 #include "CSGMaker.h"
@@ -52,7 +52,7 @@ void CSGFoundry::setOpticalBnd(const NP* optical_, const NP* bnd_ )
 {
     optical = optical_ ; 
     bnd = bnd_ ; 
-    bd = bnd ? new CSGName(bnd->names) : nullptr  ; 
+    bd = bnd ? new SName(bnd->names) : nullptr  ; 
 
 }
 
@@ -62,7 +62,7 @@ CSGFoundry::CSGFoundry()
     d_node(nullptr),
     d_plan(nullptr),
     d_itra(nullptr),
-    id(new CSGName(meshname)),
+    id(new SName(meshname)),
     target(new CSGTarget(this)),
     genstep(new CSGGenstep(this)),
     maker(new CSGMaker(this)),
@@ -1969,7 +1969,7 @@ void CSGFoundry::load( const char* dir_ )
     {
         NP* optical_ = NP::Load(dir, "optical.npy"); 
         NP* bnd_     = NP::Load(dir, "bnd.npy"); 
-        setOpticalBnd(optical_, bnd_);       // instanciates bd CSGName using bnd.names
+        setOpticalBnd(optical_, bnd_);       // instanciates bd SName using bnd.names
     }
 
 }
