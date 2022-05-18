@@ -89,6 +89,7 @@ struct QUDARAP_API QSim
 
     qsim* getDevicePtr() const ; 
     std::string desc() const ; 
+    std::string checkComponents() const ; 
 
     // TODO: relocate non-essential methods elsewhere into testing  ?
     

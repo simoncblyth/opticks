@@ -136,6 +136,17 @@ In sim mode:
 
 **/
 
+CSGOptiX* CSGOptiX::Create(const CSGFoundry* fd)
+{
+    fd->upload(); 
+#ifdef WITH_SGLM
+    CSGOptiX* cx = new CSGOptiX(fd) ; 
+#else
+    Opticks* ok = Opticks::Instance(); 
+    CSGOptiX* cx = new CSGOptiX(ok, fd) ; 
+#endif
+    return cx ; 
+}
 
 #ifdef WITH_SGLM
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 

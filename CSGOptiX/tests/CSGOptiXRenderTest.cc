@@ -84,8 +84,6 @@ struct CSGOptiXRenderTest
     const char* default_arg ; 
     std::vector<std::string> args ; 
 
-
-    void initFD(); 
     void initCX(); 
     void initSS(); 
     void initArgs(); 
@@ -105,7 +103,7 @@ CSGOptiXRenderTest::CSGOptiXRenderTest()
 #endif
     solid_selection(SGeoConfig::SolidSelection()),   //  formerly from --solid_label option used for selecting solids from the geometry 
     fd(CSGFoundry::Load()), 
-    cx(nullptr),
+    cx(CSGOptiX::Create(fd)),   // uploads fd and then instanciates 
     topline(SSys::getenvvar("TOPLINE", "CSGOptiXRenderTest")),
     botline(SSys::getenvvar("BOTLINE", nullptr )),
     flight(SGeoConfig::FlightConfig()),
@@ -114,24 +112,14 @@ CSGOptiXRenderTest::CSGOptiXRenderTest()
     w2m(qat4::identity()),
     default_arg(SSys::getenvvar("MOI", "sWorld:0:0"))  
 {
-    initFD(); 
     initCX(); 
     initSS(); 
     initArgs(); 
 }
 
-void CSGOptiXRenderTest::initFD()
-{
-    fd->upload(); 
-}
-
 void CSGOptiXRenderTest::initCX()
 {
-#ifdef WITH_SGLM
-    cx = new CSGOptiX(fd);
-#else 
-    cx = new CSGOptiX(ok, fd ); 
-#endif
+    assert(cx); 
     bool expect =  cx->raygenmode == 0 ;  
     if(!expect) LOG(fatal) << " WRONG EXECUTABLE FOR CSGOptiX::simulate cx.raygenmode " << cx->raygenmode ; 
     assert(expect); 
@@ -150,8 +138,6 @@ void CSGOptiXRenderTest::initSS()
         ;
 
 }
-
-
 
 void CSGOptiXRenderTest::initArgs()
 {

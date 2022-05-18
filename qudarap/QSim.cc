@@ -148,8 +148,6 @@ void QSim::UploadMultiFilm( const NP* lut )
 }
 
 
-
-
 /**
 QSim:::QSim
 -------------
@@ -178,8 +176,8 @@ QSim::QSim()
     multifilm(QMultiFilm::Get()),
     sim(nullptr),
     d_sim(nullptr),
-    dbg(debug_->dbg), 
-    d_dbg(debug_->d_dbg)
+    dbg(debug_ ? debug_->dbg : nullptr), 
+    d_dbg(debug_ ? debug_->d_dbg : nullptr)
 {
     init(); 
 }
@@ -204,6 +202,7 @@ place (qsim.h) to add GPU side functionality.
 
 **/
 
+
 void QSim::init()
 {
     sim = new qsim ; 
@@ -219,6 +218,7 @@ void QSim::init()
 
     INSTANCE = this ; 
     LOG(LEVEL) << desc() ; 
+    LOG(info) << checkComponents() ; 
 }
 
 
@@ -262,6 +262,30 @@ std::string QSim::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+std::string QSim::checkComponents() const 
+{
+    std::stringstream ss ; 
+    ss << std::endl ;  
+    ss << " base       " << ( base ? "Y" : "N" )  << std::endl ; 
+    ss << " event      " << ( event ? "Y" : "N" )  << std::endl ; 
+    ss << " rng        " << ( rng ? "Y" : "N" )  << std::endl ; 
+    ss << " scint      " << ( scint ? "Y" : "N" )  << std::endl ; 
+    ss << " cerenkov   " << ( cerenkov ? "Y" : "N" )  << std::endl ;  
+    ss << " bnd        " << ( bnd ? "Y" : "N" )  << std::endl ; 
+    ss << " prd        " << ( prd ? "Y" : "N" )  << std::endl ; 
+    ss << " prop       " << ( prop ? "Y" : "N" )  << std::endl ; 
+    ss << " multifilm  " << ( multifilm ? "Y" : "N" )  << std::endl  ; 
+    ss << " sim        " << ( sim ? "Y" : "N" )  << std::endl ; 
+    ss << " d_sim      " << ( d_sim ? "Y" : "N" )  << std::endl ; 
+    ss << " dbg        " << ( dbg ? "Y" : "N" )  << std::endl ; 
+    ss << " d_dbg      " << ( d_dbg ? "Y" : "N" )  << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
 
 
 void QSim::configureLaunch(unsigned width, unsigned height ) 

@@ -68,15 +68,12 @@ int main(int argc, char** argv)
     std::cout << std::setw(20) << "cfbase_local" << ":" << cfbase_local  << std::endl ; 
 
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
-    fdl->upload(); 
+    //fdl->upload(); 
 
-#ifdef WITH_SGLM
-    CSGOptiX cx(fdl ); 
-#else
-    CSGOptiX cx(&ok, fdl ); 
-#endif
+    CSGOptiX* cx = CSGOptiX::Create(fdl); 
+
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  
-    cx.setComposition(ce); 
+    cx->setComposition(ce); 
       
     quad6 gs ; 
     gs.q0.u = make_uint4( OpticksGenstep_PHOTON_CARRIER, 0u, 0u, 10u );   
@@ -86,12 +83,12 @@ int main(int argc, char** argv)
     gs.q4.f = make_float4( 0.f, 1.f, 0.f, 500.f ); // polw
     gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // flag 
 
-    cx.setGenstep(&gs, 1); 
-    cx.simulate();  
+    cx->setGenstep(&gs, 1); 
+    cx->simulate();  
 
     const char* odir = SPath::Resolve(cfbase_local, "CSGOptiXSimulateTest", DIRPATH ); 
     LOG(info) << " odir " << odir ; 
-    cx.event->save(odir); 
+    cx->event->save(odir); 
  
     cudaDeviceSynchronize(); 
     return 0 ; 

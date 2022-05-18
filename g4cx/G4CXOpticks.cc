@@ -17,9 +17,20 @@ G4CXOpticks::G4CXOpticks()
 
 void G4CXOpticks::setGeometry(const char* gdmlpath)
 {
-    const G4VPhysicalVolume* world = U4GDML::Parse(gdmlpath);
+    const G4VPhysicalVolume* world = U4GDML::Read(gdmlpath);
     setGeometry(world); 
 }
+
+
+/**
+G4CXOpticks::setGeometry
+--------------------------
+
+HMM: instanciating CSGOptiX instanciates QSim for raygenmode other than zero 
+and that needs the upload of QSim components first ?
+
+**/
+
 
 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world)
 {

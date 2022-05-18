@@ -37,27 +37,23 @@ int main(int argc, char** argv)
 
     CSGFoundry* fd = CSGFoundry::Load(); 
     if( fd == nullptr ) return 1 ; 
-    fd->upload(); 
 
-#ifdef WITH_SGLM
-    CSGOptiX cx(fd); 
-#else
-    CSGOptiX cx(&ok, fd); 
-#endif
+    CSGOptiX* cx = CSGOptiX::Create(fd); 
+
 
     float4 ce = make_float4(0.f, 0.f, 0.f, 100.f );  
-    cx.setComposition(ce); 
+    cx->setComposition(ce); 
 
-    if( cx.raygenmode == SRG_RENDER )
+    if( cx->raygenmode == SRG_RENDER )
     {
-        cx.render(); 
-        cx.snap(); 
+        cx->render(); 
+        cx->snap(); 
     }
-    else if ( cx.raygenmode == SRG_SIMTRACE )
+    else if ( cx->raygenmode == SRG_SIMTRACE )
     {
 
     }
-    else if ( cx.raygenmode == SRG_SIMULATE )
+    else if ( cx->raygenmode == SRG_SIMULATE )
     {
 
     }

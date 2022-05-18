@@ -87,7 +87,7 @@ int main(int argc, char** argv)
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
 
-    fd->upload(); 
+    //fd->upload();  // moved into CSGOptiX::Create
 
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
     QSim::UploadComponents(fd->icdf, fd->bnd, fd->optical, rindexpath ); 
@@ -95,11 +95,8 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
 
-#ifdef WITH_SGLM
-    CSGOptiX cx(fd); 
-#else
-    CSGOptiX cx(&ok, fd); 
-#endif
+    CSGOptiX* cx = CSGOptiX::Create(fd); 
+
 
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ;    // THIS IS THE GENSTEP MAKER : NOT THE GS THEMSELVES 
@@ -115,13 +112,13 @@ int main(int argc, char** argv)
     gs->set_meta<std::string>("TOPLINE", topline ); 
     gs->set_meta<std::string>("BOTLINE", botline ); 
 
-    cx.setComposition(gsm->ce, gsm->m2w, gsm->w2m ); 
-    cx.setCEGS(gsm->cegs);   // sets peta metadata
-    cx.setMetaTran(gsm->geotran); 
-    cx.setGenstep(gs); 
+    cx->setComposition(gsm->ce, gsm->m2w, gsm->w2m ); 
+    cx->setCEGS(gsm->cegs);   // sets peta metadata
+    cx->setMetaTran(gsm->geotran); 
+    cx->setGenstep(gs); 
 
-    cx.simtrace();  
-    cx.snapSimtraceTest(outfold, botline, topline ); 
+    cx->simtrace();  
+    cx->snapSimtraceTest(outfold, botline, topline ); 
  
     cudaDeviceSynchronize(); 
     return 0 ; 

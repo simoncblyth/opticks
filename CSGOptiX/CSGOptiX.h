@@ -86,6 +86,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
  
     const char* desc() const ; 
 
+    static CSGOptiX* Create(const CSGFoundry* foundry);  
 #ifdef WITH_SGLM
     CSGOptiX(const CSGFoundry* foundry ); 
 #else

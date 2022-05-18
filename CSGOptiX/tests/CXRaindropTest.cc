@@ -88,17 +88,12 @@ int main(int argc, char** argv)
     SEventConfig::SetMaxTime( 10.f ); 
 
     // HMM: perhaps instanciate QEvent/QSim separately and give it as argument to CSGOptiX 
-#ifdef WITH_SGLM
-    CSGOptiX cx(fdl ); 
-#else
-    CSGOptiX cx(&ok, fdl ); 
-#endif
-    cx.setComposition(ce); 
 
-    QEvent* event = cx.event ; 
-    event->setGenstep(SEvent::MakeTorchGensteps());     
+    CSGOptiX* cx = CSGOptiX::Create(fdl); 
 
-    cx.simulate();  
+    cx->setComposition(ce); 
+    cx->setGenstep(SEvent::MakeTorchGensteps());     
+    cx->simulate();  
 
     cudaDeviceSynchronize(); 
     event->save(outfold); 
