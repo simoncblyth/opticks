@@ -33,7 +33,7 @@ struct G4CX_API G4CXOpticks
     void setGeometry(const GGeo* gg); 
     void setGeometry(CSGFoundry* fd); 
 
-    void snap(); 
+    void render_snap(); 
 
 };
 

@@ -52,6 +52,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
 #endif
     SGLM*             sglm ; 
 
+    const char*       moi ; 
     const char*       flight ; 
     const CSGFoundry* foundry ; 
     const char*       prefix ; 
@@ -110,6 +111,8 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
 
     void setCEGS(const std::vector<int>& cegs); 
 
+    void setComposition();
+    void setComposition(const char* moi);
     void setComposition(const float4& ce,    const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
     void setComposition(const glm::vec4& ce, const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
 
@@ -120,6 +123,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
  private: 
     double launch(); 
  public: 
+    void render_snap(const char* name=nullptr); 
     double render();     // part of SRenderer protocol base
     double simtrace(); 
     double simulate();    

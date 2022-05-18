@@ -237,7 +237,7 @@ template const char* SStr::FormatReal<double>(const double, int, int, char );
 
 
 template<typename ... Args>
-std::string SStr::Format( const char* fmt, Args ... args )
+std::string SStr::Format_( const char* fmt, Args ... args )
 {
     // see sysrap/tests/StringFormatTest.cc
     int sz = std::snprintf( nullptr, 0, fmt, args ... ) + 1; // +1 for null termination
@@ -247,13 +247,34 @@ std::string SStr::Format( const char* fmt, Args ... args )
     return std::string( buf.begin(), buf.begin() + sz - 1 );  // exclude null termination 
 }
 
-template std::string SStr::Format( const char*, const char* ); 
-template std::string SStr::Format( const char* , int, double ); 
-template std::string SStr::Format( const char* , int ); 
-template std::string SStr::Format( const char* , int, const char* ); 
-template std::string SStr::Format( const char* , unsigned ); 
-template std::string SStr::Format( const char*, const char* , const char* ); 
-template std::string SStr::Format( const char*, const char* , int, const char* ); 
+template std::string SStr::Format_( const char*, const char* ); 
+template std::string SStr::Format_( const char* , int, double ); 
+template std::string SStr::Format_( const char* , int ); 
+template std::string SStr::Format_( const char* , int, const char* ); 
+template std::string SStr::Format_( const char* , unsigned ); 
+template std::string SStr::Format_( const char*, const char* , const char* ); 
+template std::string SStr::Format_( const char*, const char* , int, const char* ); 
+
+
+template<typename ... Args>
+const char* SStr::Format( const char* fmt, Args ... args )
+{
+    std::string s = Format_(fmt, args...) ; 
+    return strdup(s.c_str()); 
+}
+
+template const char* SStr::Format( const char*, const char* ); 
+template const char* SStr::Format( const char* , int, double ); 
+template const char* SStr::Format( const char* , int ); 
+template const char* SStr::Format( const char* , int, const char* ); 
+template const char* SStr::Format( const char* , unsigned ); 
+template const char* SStr::Format( const char*, const char* , const char* ); 
+template const char* SStr::Format( const char*, const char* , int, const char* ); 
+
+
+
+
+
 
 
 bool SStr::Blank( const char* s )

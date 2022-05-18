@@ -156,7 +156,12 @@ class SYSRAP_API SStr {
       static int ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, char kvdelim); 
 
       template<typename ... Args>
-      static std::string Format( const char* fmt, Args ... args ); 
+      static std::string Format_( const char* fmt, Args ... args ); 
+
+      template<typename ... Args>
+      static const char* Format( const char* fmt, Args ... args ); 
+
+
  
 };
 

@@ -709,6 +709,7 @@ MultipleUnderscoreblue2_cyan_magenta
 
 void test_Format_Ellipsis()
 {
+    LOG(info) << SStr::Format_("Hello %d World %10.4f", 101, 50.5 ); 
     LOG(info) << SStr::Format("Hello %d World %10.4f", 101, 50.5 ); 
 
     for(int i=0 ; i < 1000 ; i+= 100 ) 
@@ -765,10 +766,10 @@ int main(int argc , char** argv )
     test_ExtractLong(); 
     test_HeadFirst_HeadLast(); 
     test_FormatInt(); 
-    test_Format_Ellipsis(); 
-    */
-
     test_LoadList(); 
+    */
+    test_Format_Ellipsis(); 
+
 
     return 0  ; 
 }

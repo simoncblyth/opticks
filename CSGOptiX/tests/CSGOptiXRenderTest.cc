@@ -73,8 +73,6 @@ struct CSGOptiXRenderTest
     CSGFoundry* fd ;  // possibly with selection applied
     CSGOptiX*   cx ; 
 
-    const char* topline ; 
-    const char* botline ; 
     const char* flight ; 
 
     float4      ce ; 
@@ -104,8 +102,6 @@ CSGOptiXRenderTest::CSGOptiXRenderTest()
     solid_selection(SGeoConfig::SolidSelection()),   //  formerly from --solid_label option used for selecting solids from the geometry 
     fd(CSGFoundry::Load()), 
     cx(CSGOptiX::Create(fd)),   // uploads fd and then instanciates 
-    topline(SSys::getenvvar("TOPLINE", "CSGOptiXRenderTest")),
-    botline(SSys::getenvvar("BOTLINE", nullptr )),
     flight(SGeoConfig::FlightConfig()),
     ce(make_float4(0.f, 0.f, 0.f, 1000.f )),
     m2w(qat4::identity()),
@@ -201,49 +197,16 @@ iidx -3
 **/
 void CSGOptiXRenderTest::setComposition(const char* moi)
 {
-    int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
-    fd->parseMOI(midx, mord, iidx,  moi );  
-
-    // m2w and w2m are initialized to identity, the below call may set them 
-    int rc = fd->getCenterExtent(ce, midx, mord, iidx, m2w, w2m ) ;
-
-    LOG(info) 
-        << " moi " << moi 
-        << " midx " << midx << " mord " << mord << " iidx " << iidx 
-        << " rc [" << rc << "]" 
-        << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
-        << " m2w (" << *m2w << ")"    
-        << " w2m (" << *w2m << ")"    
-        ; 
-
-    assert(rc==0); 
-    cx->setComposition(ce, m2w, w2m );   // establish the coordinate system 
+    cx->setComposition(moi);  
 }
-
 
 
 
 void CSGOptiXRenderTest::render_snap(const char* namestem)
 {
-    double dt = cx->render();  
     std::string name = SStr::Format("%s_%s", VARIANT, namestem ); 
-
-    const char* outpath = SEventConfig::OutPath(name.c_str(), -1, ".jpg" );
-    std::string bottom_line = CSGOptiX::Annotation(dt, botline ); 
-    const char* botline = bottom_line.c_str() ; 
-
-    LOG(error)  
-          << " namestem " << namestem 
-          << " name " << name 
-          << " outpath " << outpath 
-          << " dt " << dt 
-          << " topline [" <<  topline << "]"
-          << " botline [" <<  botline << "]"
-          ; 
-
-    cx->snap(outpath, botline, topline  );   
+    cx->render_snap(name.c_str()); 
 }
-
 
 
 int main(int argc, char** argv)

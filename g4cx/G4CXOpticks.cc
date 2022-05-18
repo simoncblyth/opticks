@@ -41,12 +41,11 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
     cx = CSGOptiX::Create(fd); 
 }
 
-void G4CXOpticks::snap()
+void G4CXOpticks::render_snap()
 {
     assert( cx ); 
     assert( SEventConfig::IsRGModeRender() ); 
-    cx->render() ; 
-    cx->snap("/tmp/out.jpg"); 
+    cx->render_snap() ; 
 }
 
     

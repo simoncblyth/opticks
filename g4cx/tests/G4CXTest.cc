@@ -11,14 +11,16 @@ int main(int argc, char** argv)
 
     SEventConfig::SetRGMode("render");  
 
-    Opticks::Configure(argc, argv, "--gparts_transform_offset" );  // GGeo machinery still needs Opticks instance,  TODO: avoid this
+    // GGeo machinery, needed when starting from a gdml path or live G4 pv,  
+    // still needs Opticks instance,  TODO: avoid this
+    Opticks::Configure(argc, argv, "--gparts_transform_offset" );  
 
     G4CXOpticks gx ;  
 
     //gx.setGeometry(SPath::SomeGDMLPath()); 
     gx.setGeometry(CSGFoundry::Load()); 
 
-    gx.snap(); 
+    gx.render_snap();  // sensitive to MOI, EYE, LOOK, UP
  
     return 0 ; 
 }

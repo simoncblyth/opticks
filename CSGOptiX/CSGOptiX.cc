@@ -40,6 +40,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include <glm/glm.hpp>
 
 // sysrap
+#include "SProc.hh"
 #include "SGLM.h"
 #include "NP.hh"
 #include "SRG.h"
@@ -145,6 +146,12 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd)   // cannot be const as upload sets d
     Opticks* ok = Opticks::Instance(); 
     CSGOptiX* cx = new CSGOptiX(ok, fd) ; 
 #endif
+
+    if(SEventConfig::IsRGModeRender())
+    {
+        cx->setComposition(); // MOI 
+        // HMM: no need for simulate, but what about simtrace ? Nope
+    }
     return cx ; 
 }
 
@@ -158,6 +165,7 @@ CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_)
     composition(ok->getComposition()),
 #endif
     sglm(new SGLM),   // instanciate always to allow view matrix comparisons
+    moi("-1"),
     flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
     prefix(SSys::getenvvar("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
@@ -384,9 +392,62 @@ void CSGOptiX::setCEGS(const std::vector<int>& cegs)
 
 
 
+
 /**
-CSGOptiX::setCE
-------------------
+CSGOptiX::setComposition
+--------------------------
+
+The no argument method uses MOI envvar or default of "-1"
+
+For global geometry which typically uses default iidx of 0 there is special 
+handling of iidx -1/-2/-3 implemented in CSGTarget::getCenterExtent
+
+
+iidx -2
+    ordinary xyzw frame calulated by SCenterExtentFrame
+
+iidx -3
+    rtp tangential frame calulated by SCenterExtentFrame
+
+**/
+
+void CSGOptiX::setComposition()
+{
+    setComposition(SSys::getenvvar("MOI", "-1")); 
+}
+
+void CSGOptiX::setComposition(const char* moi_)
+{
+    moi = moi_ ? strdup(moi_) : "-1" ;  
+
+    int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
+    foundry->parseMOI(midx, mord, iidx,  moi );  
+
+    float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
+
+    // m2w and w2m are initialized to identity, the below call may set them 
+    qat4* m2w = qat4::identity() ; 
+    qat4* w2m = qat4::identity() ; 
+
+    int rc = foundry->getCenterExtent(ce, midx, mord, iidx, m2w, w2m ) ;
+
+    LOG(info) 
+        << " moi " << moi 
+        << " midx " << midx << " mord " << mord << " iidx " << iidx 
+        << " rc [" << rc << "]" 
+        << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
+        << " m2w (" << *m2w << ")"    
+        << " w2m (" << *w2m << ")"    
+        ; 
+
+    assert(rc==0); 
+    setComposition(ce, m2w, w2m );   // establish the coordinate system 
+}
+
+
+/**
+CSGOptiX::setComposition
+--------------------------
 
 Setting CE center-extent establishes the coordinate system
 via calls to Composition::setCenterExtent which results in the 
@@ -700,6 +761,35 @@ const char* CSGOptiX::getDefaultSnapPath() const
     const char* path = SPath::Resolve(cfbase, "CSGOptiX/snap.jpg" , FILEPATH ); 
     return path ; 
 }
+
+
+
+
+void CSGOptiX::render_snap( const char* name_ )
+{
+    const char* name = name_ ? name_ : SStr::Format("cx%s", moi ) ; 
+
+    double dt = render();  
+
+    const char* topline = SSys::getenvvar("TOPLINE", SProc::ExecutableName() ); 
+    const char* botline_ = SSys::getenvvar("BOTLINE", nullptr ); 
+    const char* outpath = SEventConfig::OutPath(name, -1, ".jpg" );
+    std::string bottom_line = CSGOptiX::Annotation(dt, botline_ ); 
+    const char* botline = bottom_line.c_str() ; 
+
+    LOG(error)  
+          << " name " << name 
+          << " outpath " << outpath 
+          << " dt " << dt 
+          << " topline [" <<  topline << "]"
+          << " botline [" <<  botline << "]"
+          ; 
+
+    snap(outpath, botline, topline  );   
+}
+
+
+
 
 /**
 CSGOptiX::snap : Download frame pixels and write to file as jpg.
