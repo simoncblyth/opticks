@@ -136,7 +136,7 @@ In sim mode:
 
 **/
 
-CSGOptiX* CSGOptiX::Create(const CSGFoundry* fd)
+CSGOptiX* CSGOptiX::Create(CSGFoundry* fd)   // cannot be const as upload sets device pointers
 {
     fd->upload(); 
 #ifdef WITH_SGLM

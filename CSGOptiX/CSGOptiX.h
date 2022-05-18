@@ -86,7 +86,7 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
  
     const char* desc() const ; 
 
-    static CSGOptiX* Create(const CSGFoundry* foundry);  
+    static CSGOptiX* Create(CSGFoundry* foundry); // not const as upload sets device pointers
 #ifdef WITH_SGLM
     CSGOptiX(const CSGFoundry* foundry ); 
 #else

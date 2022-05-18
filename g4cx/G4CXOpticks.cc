@@ -10,8 +10,9 @@
 
 G4CXOpticks::G4CXOpticks()
     :
-    foundry(nullptr), 
-    engine(nullptr)
+    gg(nullptr),
+    fd(nullptr), 
+    cx(nullptr)
 {
 }
 
@@ -34,9 +35,9 @@ and that needs the upload of QSim components first ?
 
 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world)
 {
-    GGeo* ggeo = X4Geo::Translate(world) ; 
-    foundry = CSG_GGeo_Convert::Translate(ggeo) ; 
-    engine = new CSGOptiX(foundry); 
+    gg = X4Geo::Translate(world) ; 
+    fd = CSG_GGeo_Convert::Translate(gg) ; 
+    cx = CSGOptiX::Create(foundry); 
 }
 
     

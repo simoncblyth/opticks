@@ -37,6 +37,7 @@ struct SYSRAP_API SOpticksResource
     static const char* KEYS ; 
     static const char* Get(const char* key); 
     static std::string Desc() ; 
+
 };
 
 

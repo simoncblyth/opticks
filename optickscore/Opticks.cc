@@ -218,6 +218,8 @@ glm::vec4 Opticks::getDomainSpec(bool fine)
 
 
 
+
+
 glm::vec4 Opticks::getDefaultDomainReciprocalSpec()
 {
     glm::vec4 rd ;

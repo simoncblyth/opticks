@@ -88,6 +88,7 @@ int main(int argc, char** argv)
     SEventConfig::SetMaxTime( 10.f ); 
 
     // HMM: perhaps instanciate QEvent/QSim separately and give it as argument to CSGOptiX 
+    // for simulation 
 
     CSGOptiX* cx = CSGOptiX::Create(fdl); 
 
@@ -96,7 +97,7 @@ int main(int argc, char** argv)
     cx->simulate();  
 
     cudaDeviceSynchronize(); 
-    event->save(outfold); 
+    cx->event->save(outfold); 
 
     return 0 ; 
 }

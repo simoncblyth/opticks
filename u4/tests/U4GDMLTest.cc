@@ -3,16 +3,18 @@
 
 int main(int argc, char** argv)
 {
-    // TODO: use GDXML instead of the old CGDMLKludge 
-    const char* path0 = SPath::Resolve("$IDPath/origin_CGDMLKludge.gdml", NOOP );  
-    const char* path1 = SPath::Resolve("$OPTICKS_PREFIX/origin_CGDMLKludge_02mar2022.gdml", NOOP) ; 
-    const char* path = SPath::PickFirstExisting(path0, path1); 
-    std::cout << " path " << path << std::endl ;    
+    const char* ipath = SPath::SomeGDMLPath(); 
+    const char* opath = SPath::Resolve("$TMP/U4GDMLTest/out.gdml", FILEPATH) ; 
 
-    G4VPhysicalVolume* world = U4GDML::Read(path) ;  
-    std::cout << " world " << world << std::endl ;    
+    G4VPhysicalVolume* world = U4GDML::Read(ipath) ;  
 
-    U4GDML::Write(world, "/tmp/out.gdml"); 
+    U4GDML::Write(world, opath ); 
+
+    std::cout 
+        << " ipath " << ipath << std::endl 
+        << " opath " << opath << std::endl 
+        << " world " << world << std::endl  
+        ;
 
     return 0 ; 
 

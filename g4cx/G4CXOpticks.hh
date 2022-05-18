@@ -6,6 +6,7 @@ Temporarily : G4CXOpticks, Aiming to replace G4Opticks
 
 **/
 
+class GGeo ; 
 struct CSGFoundry ; 
 struct CSGOptiX ; 
 class G4VPhysicalVolume ;  
@@ -17,8 +18,9 @@ struct G4CX_API G4CXOpticks
 {
     static const plog::Severity LEVEL ;
 
-    CSGFoundry* foundry ; 
-    CSGOptiX*   engine ; 
+    GGeo*       gg ;
+    CSGFoundry* fd ; 
+    CSGOptiX*   cx ; 
 
     G4CXOpticks(); 
 
