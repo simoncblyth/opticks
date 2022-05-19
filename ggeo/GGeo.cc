@@ -26,6 +26,10 @@
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SLog.hh"
+#include "SSim.hh"
+#include "NP.hh"
+
+
 #include "BStr.hh"
 #include "BMap.hh"
 #include "BTxt.hh"
@@ -2325,5 +2329,61 @@ void GGeo::dryrun_convert()
     m_geolib->dryrun_convert(); 
 }
 
+
+void GGeo::convertSim() const 
+{
+    convertSim_BndLib(); 
+    convertSim_ScintillatorLib(); 
+}
+
+/**
+GGeo::convertSim_BndLib
+------------------------
+
+Migrated down from CSG_GGeo_Convert::convertBndLib
+
+**/
+
+void GGeo::convertSim_BndLib() const 
+{
+    LOG(LEVEL) << "[" ; 
+    GBndLib* blib = getBndLib(); 
+
+    bool can_create = blib->canCreateBuffer() ; 
+    NP* bnd = nullptr ; 
+    NP* optical = nullptr ; 
+
+    if( can_create )
+    {    
+        blib->createDynamicBuffers();  
+        // hmm perhaps this is done already on loading now ?
+        bnd = blib->getBuf(); 
+
+        LOG(LEVEL) << " bnd.desc " << bnd->desc() ; 
+
+        optical = blib->getOpticalBuf();  
+
+        const std::vector<std::string>& bndnames = blib->getNameList(); 
+        bnd->set_names( bndnames );   
+
+        LOG(LEVEL) << " bnd.set_names " << bndnames.size() ; 
+
+        SSim* sim = SSim::Get();   // instanciates if not existing 
+        sim->add("bnd.npy", bnd ); 
+        sim->add("optical.npy", optical ); 
+    }    
+    else 
+    {    
+        LOG(error) << "cannot create GBndLib buffer : no materials ? " ; 
+    }    
+}
+
+void GGeo::convertSim_ScintillatorLib() const 
+{
+    GScintillatorLib* slib = getScintillatorLib();
+    NP* icdf = slib->getBuf();   // assuming 1 scintillator
+    SSim* sim = SSim::Get();   // instanciates if not existing 
+    sim->add("icdf.npy", icdf); 
+}
 
 

@@ -41,21 +41,14 @@ std::string CSGFoundry::descComp() const
 {
     std::stringstream ss ; 
     ss << "CSGFoundry::descComp"
-#ifdef WITH_FOREIGN
-       << " bnd " << ( bnd ? bnd->sstr() : "-" ) 
-       << " optical " << ( optical ? optical->sstr() : "-" ) 
-       << " icdf " << ( icdf ? icdf->sstr() : "-" ) 
-#else
        << " sim " << ( sim ? sim->desc() : "" )
-#endif
        ;  
     std::string s = ss.str(); 
     return s ; 
 }
 
 
-#ifdef WITH_FOREIGN
-
+/*
 const std::string& CSGFoundry::getBndName(unsigned bidx) const 
 {
     assert( bnd );
@@ -69,36 +62,15 @@ void CSGFoundry::setOpticalBnd(const NP* optical_, const NP* bnd_ )
     bnd = bnd_ ; 
     bd = bnd ? new SName(bnd->names) : nullptr  ; 
 }
+*/
+
 
 void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname ) 
 {
-    unsigned count = 0 ; 
-    int bnd = bd->getIndex(bname, count ); 
-    bool bname_found = count == 1 && bnd > -1  ;
-    if(!bname_found) 
-       LOG(fatal) 
-          << " primIdx " << primIdx
-          << " bname " << bname
-          << " bnd " << bnd
-          << " count " << count
-          << " bname_found " << bname_found
-          << " bd.getNumName " << bd->getNumName() 
-          << " bd.detail " << std::endl 
-          << bd->detail()
-          ;
-
-    assert( bname_found ); 
-    unsigned boundary = bnd ; 
-
-    setPrimBoundary(primIdx, boundary); 
+    int bidx = sim->getBndIndex(bname); 
+    assert( bidx > -1 ); 
+    setPrimBoundary(primIdx, bidx); 
 }
-
-#else
-
-// TODO: relocate parts of the above down to SSim
-
-#endif
-
 
 CSGFoundry::CSGFoundry()
     :
@@ -113,12 +85,7 @@ CSGFoundry::CSGFoundry()
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
     last_added_prim(nullptr),
-#ifdef WITH_FOREIGN
-    optical(nullptr),
-    bnd(nullptr),
-    bd(nullptr),
-    icdf(nullptr),
-#endif
+    sim(SSim::Get()),
     meta(),
     fold(nullptr),
     cfbase(nullptr),
@@ -771,12 +738,7 @@ std::string CSGFoundry::detailPrim(unsigned primIdx) const
     int numNode = pr->numNode() ; 
     int nodeOffset = pr->nodeOffset() ; 
     int boundary = getPrimBoundary(primIdx); 
-
-#ifdef WITH_FOREIGN
-    const char* bndName = bd ? bd->getName(boundary) : "-bd" ;
-#else
-    const char* bndName = nullptr ; 
-#endif
+    const char* bndName = sim ? sim->getBndName(boundary) : "-bd" ;
 
     float4 ce = pr->ce(); 
 
@@ -1851,11 +1813,7 @@ void CSGFoundry::write(const char* dir_) const
     if(itra.size() > 0 ) NP::Write(dir, "itra.npy",   (float*)itra.data(), itra.size(),   4, 4 ); 
     if(inst.size() > 0 ) NP::Write(dir, "inst.npy",   (float*)inst.data(), inst.size(),   4, 4 ); 
 
-#ifdef WITH_FOREIGN
-    if(bnd)  bnd->save(dir,  "bnd.npy") ; 
-    if(optical) optical->save(dir, "optical.npy") ; 
-    if(icdf) icdf->save(dir, "icdf.npy") ; 
-#endif
+    if(sim) sim->save(dir, "SSim");  
 }
 
 
@@ -1993,19 +1951,7 @@ void CSGFoundry::load( const char* dir_ )
     loadArray( plan  , dir, "plan.npy" , true );  
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
-#ifdef WITH_FOREIGN
-    if(NP::Exists(dir, "icdf.npy")) icdf = NP::Load(dir, "icdf.npy"); 
-
-    if(NP::Exists(dir, "bnd.npy") && NP::Exists(dir, "optical.npy"))  
-    {
-        NP* optical_ = NP::Load(dir, "optical.npy"); 
-        NP* bnd_     = NP::Load(dir, "bnd.npy"); 
-        setOpticalBnd(optical_, bnd_);       // instanciates bd SName using bnd.names
-    }
-
-
-#endif
-
+    sim = NP::Exists(dir, "SSim") ? SSim::Load(dir, "SSim") : nullptr ; 
 
 }
 

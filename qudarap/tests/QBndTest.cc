@@ -2,6 +2,7 @@
 #include "scuda.h"
 #include "SStr.hh"
 #include "SSys.hh"
+#include "SSim.hh"
 #include "SPath.hh"
 #include "NP.hh"
 #include "SOpticksResource.hh"
@@ -130,76 +131,8 @@ void test_getBoundaryIndices(const QBnd& qb)
 
 void test_DescDigest(const QBnd& qb )
 {
-    LOG(info) << std::endl << QBnd::DescDigest(qb.src,8) ; 
+    LOG(info) << std::endl << SSim::DescDigest(qb.src,8) ; 
 }
-
-void test_findName(const QBnd& qb)
-{
-    std::vector<std::string> names = {
-        "Air", 
-        "Rock", 
-        "Water", 
-        "Acrylic",
-        "Cream", 
-        "vetoWater", 
-        "Cheese", 
-        "",
-        "Galactic", 
-        "Pyrex", 
-        "PMT_3inch_absorb_logsurf1", 
-        "Steel", 
-        "Steel_surface",
-        "PE_PA",
-        "Candy",
-        ""
-      } ; 
-
-    unsigned i, j ; 
-
-    for(unsigned a=0 ; a < names.size() ; a++ )
-    {
-         const std::string& n = names[a] ; 
-         bool found = qb.findName(i,j,n.c_str() ); 
-
-         std::cout << std::setw(30) << n << " " ; 
-         if(found)  
-         {
-            std::cout 
-                << "(" 
-                << std::setw(3) << i 
-                << ","  
-                << std::setw(3) << j
-                << ")"
-                << " "
-                << qb.getItemDigest(i, j )
-                ;
-         }
-         else
-         {
-            std::cout << "-" ;  
-         }
-         std::cout << std::endl ;  
-    }
-}
-
-void test_Add()
-{
-    const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
-    LOG(info) << " cfbase " << cfbase ; 
-    NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
-    NP* bnd     = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
-
-    LOG(info) << "BEFORE " << std::endl << QBnd::DescOptical(optical, bnd ) << std::endl ; 
-
-    NP* opticalplus = nullptr ; 
-    NP* bndplus = nullptr ; 
-    std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;
-
-    QBnd::Add( &opticalplus, &bndplus, optical, bnd, specs ); 
-
-    LOG(info) << "AFTER " << std::endl << QBnd::DescOptical(opticalplus, bndplus ) << std::endl ; 
-}
-
 
 
 int main(int argc, char** argv)
@@ -214,19 +147,14 @@ int main(int argc, char** argv)
 
     test_descBoundary(qb); 
 
-
 /*
     test_getBoundaryLine(qb); 
     test_getMaterialLine(qb); 
     test_lookup_technical(qb); 
     test_getBoundarySpec(qb); 
     test_getBoundaryIndices(qb); 
-
     test_DescDigest(qb); 
     test_findName(qb); 
-    test_Add(); 
 */
-
-
     return 0 ; 
 }

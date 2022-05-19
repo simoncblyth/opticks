@@ -32,11 +32,10 @@ struct CSG_GGEO_API CSG_GGeo_Convert
 
     void convert();   
 
-    // collect inputs for creating GPU boundary and scintillation textures 
-    void convertBndLib() ;
-    void convertScintillatorLib() ;
     void convertGeometry(int repeatIdx=-1,  int primIdx=-1, int partIdxRel=-1 );
 
+    // collect inputs for creating GPU boundary and scintillation textures 
+    void convertSim() ;
 
     // below all for geometry conversion 
 

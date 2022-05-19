@@ -354,10 +354,10 @@ struct CSG_API CSGFoundry
     CSGNode*    last_added_node ; 
 
 
+    void setPrimBoundary(unsigned primIdx, const char* bname) ; 
 #ifdef WITH_FOREIGN
     const std::string& getBndName(unsigned bidx) const ; 
     void setOpticalBnd( const NP* optical, const NP* bnd ); // "foreigner" ? TODO:SSim
-    void setPrimBoundary(unsigned primIdx, const char* bname) ; 
     void saveOpticalBnd() const ; 
     // holding these "foreign" QSim input arrays directly here feels wrong, 
     // better to manage in SSim wrapper struct singleton to avoid playing pass the parcel

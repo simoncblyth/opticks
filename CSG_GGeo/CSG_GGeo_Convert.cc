@@ -95,8 +95,7 @@ void CSG_GGeo_Convert::convert()
 {
     LOG(LEVEL) << "[" ; 
     convertGeometry(); 
-    convertBndLib(); 
-    convertScintillatorLib(); 
+    convertSim(); 
     LOG(LEVEL) << "]" ; 
 }
 
@@ -165,60 +164,14 @@ void CSG_GGeo_Convert::convertAllSolid()  // default
 }
 
 /**
-CSG_GGeo_Convert::convertBndLib
+CSG_GGeo_Convert::convertSim
 --------------------------------
-
-Need optical_buffer too see 
-
 
 **/
 
-
-void CSG_GGeo_Convert::convertBndLib() 
+void CSG_GGeo_Convert::convertSim() 
 {
-    LOG(LEVEL) << "[" ; 
-    GBndLib* blib = ggeo->getBndLib(); 
-
-    bool can_create = blib->canCreateBuffer() ; 
-    NP* bnd = nullptr ; 
-    NP* optical = nullptr ; 
-
-    if( can_create )
-    {
-        blib->createDynamicBuffers();  
-        // hmm perhaps this is done already on loading now ?
-        bnd = blib->getBuf(); 
-
-        LOG(LEVEL) << " bnd.desc " << bnd->desc() ; 
-
-        optical = blib->getOpticalBuf();  
-
-        const std::vector<std::string>& bndnames = blib->getNameList(); 
-        bnd->set_names( bndnames );  
-
-        LOG(LEVEL) << " bnd.set_names " << bndnames.size() ; 
-
-    }
-    else
-    {
-        LOG(error) << "cannot create GBndLib buffer : no materials ? " ; 
-    }
-
-#ifdef WITH_FOREIGN
-    foundry->bnd = bnd ; 
-    foundry->optical = optical ;  
-#endif
-
-    LOG(LEVEL) << "]" ; 
-}
-
-void CSG_GGeo_Convert::convertScintillatorLib() 
-{
-#ifdef WITH_FOREIGN
-    GScintillatorLib* slib = ggeo->getScintillatorLib(); 
-    NP* icdf = slib->getBuf();   // assuming 1 scintillator
-    foundry->icdf = icdf ; 
-#endif
+    ggeo->convertSim() ; 
 }
 
 

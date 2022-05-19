@@ -419,6 +419,11 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
     public:
         void dryrun_convert() ;
     public:
+        void convertSim() const  ; 
+    private:
+        void convertSim_BndLib() const ; 
+        void convertSim_ScintillatorLib() const ; 
+    public:
         void setPickFace(std::string pickface);
         void setPickFace(const glm::ivec4& pickface);
         void setFaceTarget(unsigned int face_index, unsigned int volume_index, unsigned int mesh_index);

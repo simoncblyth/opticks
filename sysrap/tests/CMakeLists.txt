@@ -103,6 +103,7 @@ set(TEST_SOURCES
    SCVDLabel.cc 
 
    SEvtTest.cc
+   SSimTest.cc
 )
 
 

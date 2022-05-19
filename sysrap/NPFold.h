@@ -38,6 +38,7 @@ struct NPFold
     static constexpr const char* INDEX = "NPFold_index.txt" ; 
     static bool IsNPY(const char* k); 
     static NPFold* Load(const char* base); 
+    static NPFold* Load(const char* base, const char* rel); 
 
     static int Compare(const FTSENT** one, const FTSENT** two); 
     static void Indent(int i); 
@@ -49,8 +50,12 @@ struct NPFold
     void add(const char* k, const NP* a); 
     int find(const char* k) const ; 
     const NP* get(const char* k) const ; 
+
     void save(const char* base) const ; 
+    void save(const char* base, const char* rel) const ; 
     int load(const char* base) ; 
+    int load(const char* base, const char* rel) ; 
+
     int  load_fts(const char* base) ; 
     int  load_index(const char* base) ; 
     void load_array(const char* base, const char* relp); 
@@ -64,6 +69,14 @@ inline NPFold* NPFold::Load(const char* base)
     nf->load(base); 
     return nf ;  
 }
+
+inline NPFold* NPFold::Load(const char* base, const char* rel)
+{
+    NPFold* nf = new NPFold ; 
+    nf->load(base, rel); 
+    return nf ;  
+}
+
 inline void NPFold::check() const
 {
     assert( kk.size() == aa.size() ); 
@@ -109,6 +122,18 @@ inline void NPFold::save(const char* base) const
     }
     // this motivated adding directory creation to NP::save 
 }
+
+inline void NPFold::save(const char* base_, const char* rel) const 
+{
+    std::string base = NP::form_path(base_, rel); 
+    save(base.c_str()); 
+}
+
+
+
+
+
+
 
 inline int NPFold::Compare(const FTSENT** one, const FTSENT** two)
 {
@@ -167,6 +192,16 @@ inline int NPFold::load(const char* base)
     bool has_index = NP::Exists(base, INDEX) ; 
     return has_index ? load_index(base) : load_fts(base) ; 
 }
+inline int NPFold::load(const char* base_, const char* rel) 
+{
+    std::string base = NP::form_path(base_, rel); 
+    return load(base.c_str()); 
+}
+
+
+
+
+
 
 inline std::string NPFold::desc() const  
 {

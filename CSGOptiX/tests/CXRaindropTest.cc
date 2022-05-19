@@ -16,6 +16,7 @@ CXRaindropTest
 #include "SEvent.hh"
 #include "OPTICKS_LOG.hh"
 
+#include "SSim.hh"
 #include "QBnd.hh"
 #include "QSim.hh"
 #include "QEvent.hh"
@@ -53,15 +54,17 @@ int main(int argc, char** argv)
 
     // fabricate some additional boundaries from the basis ones for this simple test 
     std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;  
+
     NP* optical_plus = nullptr ; 
     NP* bnd_plus = nullptr ; 
-    QBnd::Add( &optical_plus, &bnd_plus, fd->optical, fd->bnd, specs );
+    SSim* ssim = fd->sim ; 
+    QBnd::Add( &optical_plus, &bnd_plus, ssim->get("optical.npy"), ssim->get("bnd.npy"), specs );
     LOG(info) << std::endl << QBnd::DescOptical(optical_plus, bnd_plus)  ; 
 
     // HMM : THE COMPONENTS ARE MORE RELEVANT TO QSim THAN TO CSGFoundry 
     // PERHAPS SHOULD USE QSim TO MANAGE THEM WITHIN A QSim FOLDER WITHIN CSGFoundry 
 
-    QSim::UploadComponents(fd->icdf, bnd_plus, optical_plus, rindexpath ); 
+    QSim::UploadComponents(ssim->get("icdf.npy"), bnd_plus, optical_plus, rindexpath ); 
 
     QSim* sim = new QSim ; 
     std::cout << "sim.desc " << sim->desc() << std::endl ; 
