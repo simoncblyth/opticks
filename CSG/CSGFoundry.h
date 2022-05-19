@@ -7,6 +7,7 @@
 
 struct SBitSet ; 
 struct NP ; 
+struct SSim ; 
 
 #include "scuda.h"
 #include "squad.h"
@@ -364,6 +365,8 @@ struct CSG_API CSGFoundry
     const NP*        bnd ; 
     const SName*    bd ;  // instanciated by setOpticalBnd using bnd->names
     NP* icdf ;              // scintillation icdf  
+#else
+    SSim* sim ; 
 #endif
 
     std::string meta ; 

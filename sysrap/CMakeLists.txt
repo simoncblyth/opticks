@@ -107,6 +107,7 @@ set(SOURCES
     SGeoConfig.cc
 
     SEvt.cc
+    SSim.cc
 
 ) 
     
@@ -250,6 +251,14 @@ set(HEADERS
 
     SEventConfig.hh
     SGeoConfig.hh
+
+
+
+    NP.hh  
+    NPU.hh 
+    NPFold.h 
+    SSim.hh
+
 )
 
 
@@ -343,9 +352,6 @@ endif()
 
 
 set(WITH_NP YES)
-if(WITH_NP)
-    list(APPEND HEADERS   NP.hh  NPU.hh  )
-endif()
 
 
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} )

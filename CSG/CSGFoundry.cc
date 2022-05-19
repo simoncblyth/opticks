@@ -17,6 +17,7 @@
 #include "SBitSet.hh"
 #include "SOpticksResource.hh"
 #include "NP.hh"
+#include "SSim.hh"
 #include "PLOG.hh"
 
 #include "scuda.h"
@@ -44,6 +45,8 @@ std::string CSGFoundry::descComp() const
        << " bnd " << ( bnd ? bnd->sstr() : "-" ) 
        << " optical " << ( optical ? optical->sstr() : "-" ) 
        << " icdf " << ( icdf ? icdf->sstr() : "-" ) 
+#else
+       << " sim " << ( sim ? sim->desc() : "" )
 #endif
        ;  
     std::string s = ss.str(); 
@@ -55,7 +58,7 @@ std::string CSGFoundry::descComp() const
 
 const std::string& CSGFoundry::getBndName(unsigned bidx) const 
 {
-    assert( bnd ); 
+    assert( bnd );
     assert( bidx < bnd->names.size() ); 
     return bnd->names[bidx] ; 
 }
@@ -89,6 +92,10 @@ void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname )
 
     setPrimBoundary(primIdx, boundary); 
 }
+
+#else
+
+// TODO: relocate parts of the above down to SSim
 
 #endif
 
@@ -1995,6 +2002,8 @@ void CSGFoundry::load( const char* dir_ )
         NP* bnd_     = NP::Load(dir, "bnd.npy"); 
         setOpticalBnd(optical_, bnd_);       // instanciates bd SName using bnd.names
     }
+
+
 #endif
 
 
