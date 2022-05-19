@@ -139,7 +139,6 @@ struct CSG_API CSGFoundry
     std::string descPrim(unsigned solidIdx) const  ;
 
     int getPrimBoundary(unsigned primIdx) const ; 
-    void setPrimBoundary(unsigned primIdx, const char* bname) ; 
     void setPrimBoundary(unsigned primIdx, unsigned boundary) ; 
 
     std::string detailPrim() const ; 
@@ -255,7 +254,6 @@ struct CSG_API CSGFoundry
 
     void write(const char* dir) const ;
     void write(const char* base, const char* rel) const ;
-    void saveOpticalBnd() const ; 
 
 
     // these argumentless methods require CFBASE envvar or geom member to be set 
@@ -314,7 +312,6 @@ struct CSG_API CSGFoundry
     void getMeshName( std::vector<std::string>& mname ) const ; 
 
     const std::string& getMeshName(unsigned midx) const ; 
-    const std::string& getBndName(unsigned bidx) const ; 
     const std::string descELV(const SBitSet* elv); 
 
     const std::string& getSolidLabel(unsigned sidx) const ; 
@@ -322,7 +319,6 @@ struct CSG_API CSGFoundry
     void addMeshName(const char* name); 
     void addSolidLabel(const char* label); 
 
-    void setOpticalBnd( const NP* optical, const NP* bnd ); // "foreigner" ? TODO:SSim
 
 
     std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
@@ -357,14 +353,18 @@ struct CSG_API CSGFoundry
     CSGNode*    last_added_node ; 
 
 
+#ifdef WITH_FOREIGN
+    const std::string& getBndName(unsigned bidx) const ; 
+    void setOpticalBnd( const NP* optical, const NP* bnd ); // "foreigner" ? TODO:SSim
+    void setPrimBoundary(unsigned primIdx, const char* bname) ; 
+    void saveOpticalBnd() const ; 
     // holding these "foreign" QSim input arrays directly here feels wrong, 
     // better to manage in SSim wrapper struct singleton to avoid playing pass the parcel
     const NP*    optical ; 
     const NP*        bnd ; 
     const SName*    bd ;  // instanciated by setOpticalBnd using bnd->names
     NP* icdf ;              // scintillation icdf  
-
-
+#endif
 
     std::string meta ; 
     const char* fold ; 

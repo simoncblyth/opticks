@@ -117,6 +117,10 @@ Engine Change
      * boundary properties
 
 
+* WIP : "gx" g4cx 
+
+
+
 G4Opticks Into New workflow ?
 --------------------------------
 
@@ -129,12 +133,12 @@ G4Opticks Into New workflow ?
   * TODO: can most of this be moved down to GGeo or extg4 statics ? 
   
 
-New Workflow Top Level Package
-----------------------------------
+New Workflow Top Level Package : g4cx
+---------------------------------------
 
-G4Opticks is too involved (and dependencies too different between workflows) 
-to change it from inside, easier to make a new pkg+class that duplicates the 
-important parts of the old API but is built upon the 
+g4ok/G4Opticks is too involved and the dependencies too different between workflows
+to change it from inside, easier to make a new pkg+class (g4cx/G4CXOpticks) 
+that duplicates the important parts of the old API but is built upon the 
 new workflow components:
 
 This means any necessary functionality from old G4Opticks

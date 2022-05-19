@@ -206,7 +206,6 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-/*
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
     LOG(info) << " cfbase " << cfbase ; 
     NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
@@ -214,6 +213,9 @@ int main(int argc, char** argv)
     QBnd qb(bnd) ; 
 
     test_descBoundary(qb); 
+
+
+/*
     test_getBoundaryLine(qb); 
     test_getMaterialLine(qb); 
     test_lookup_technical(qb); 
@@ -222,8 +224,8 @@ int main(int argc, char** argv)
 
     test_DescDigest(qb); 
     test_findName(qb); 
-*/
     test_Add(); 
+*/
 
 
     return 0 ; 

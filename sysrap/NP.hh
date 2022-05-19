@@ -3128,6 +3128,9 @@ inline void NP::save(const char* path, bool verbose) const
     if(verbose)
     std::cout << "NP::save path [" << path  << "]" << std::endl ; 
 
+    int rc = U::MakeDirsForFile(path); 
+    assert( rc == 0 ); 
+
     std::string hdr = make_header(); 
     std::ofstream fpa(path, std::ios::out|std::ios::binary);
     fpa << hdr ; 

@@ -463,10 +463,10 @@ qbnd* QBnd::MakeInstance(const QTex<float4>* tex, const std::vector<std::string>
     bnd->boundary_tex_MaterialLine_LS    = GetMaterialLine("LS", names) ; 
 
     const QOptical* optical = QOptical::Get() ; 
-    assert( optical ); 
-    LOG(LEVEL) << " optical " << optical->desc() ; 
+    //assert( optical ); 
+    LOG(LEVEL) << " optical " << ( optical ? optical->desc() : "MISSING" ) ; 
 
-    bnd->optical = optical->d_optical ; 
+    bnd->optical = optical ? optical->d_optical : nullptr ; 
 
     assert( bnd->boundary_meta != nullptr ); 
     return bnd ; 

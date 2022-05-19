@@ -28,23 +28,19 @@ CXRaindropTest
 #include "Opticks.hh"
 #endif
 
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     SCVD::ConfigureVisibleDevices(); 
     SEventConfig::SetRGMode("simulate"); 
-
 #ifdef WITH_SGLM
 #else
     Opticks::Configure(argc, argv ); 
 #endif
-
     const char* cfbase = SOpticksResource::CFBase(); 
     const char* outfold = SEventConfig::OutFold();  
     LOG(info) << " outfold [" << outfold << "]"  ; 
     SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
-
 
     const char* idpath = SOpticksResource::IDPath();  // HMM: using OPTICKS_KEY geocache, not CSGFoundry
     const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
@@ -67,6 +63,9 @@ int main(int argc, char** argv)
 
     QSim::UploadComponents(fd->icdf, bnd_plus, optical_plus, rindexpath ); 
 
+    QSim* sim = new QSim ; 
+    std::cout << "sim.desc " << sim->desc() << std::endl ; 
+
     const char* cfbase_local = SSys::getenvvar("CFBASE_LOCAL") ; assert(cfbase_local) ; 
     LOG(fatal) << "MIXING CSGFoundry combining basis cfbase with cfbase_local "; 
     std::cout << std::setw(20) << "cfbase" << ":" << cfbase << std::endl ; 
@@ -86,10 +85,7 @@ int main(int argc, char** argv)
     SEventConfig::SetMaxExtent( ce.w );  // must do this config before QEvent::init which happens with CSGOptiX instanciation
     SEventConfig::SetMaxTime( 10.f ); 
 
-    // HMM: perhaps instanciate QEvent/QSim separately and give it as argument to CSGOptiX 
-    // for simulation 
-
-    CSGOptiX* cx = CSGOptiX::Create(fdl); 
+    CSGOptiX* cx = CSGOptiX::Create(fdl);  // QSim is QSim::Get is teleported into CSGOptiX 
 
     cx->setComposition(ce); 
     cx->setGenstep(SEvent::MakeTorchGensteps());     

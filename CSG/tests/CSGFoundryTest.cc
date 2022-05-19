@@ -184,7 +184,9 @@ void test_setPrimBoundary()
         << " numPrim " << numPrim
         << " primIdx " << primIdx 
         << " b0 " << b0 
+#ifdef WITH_FOREIGN
         << " bndname " << fd->getBndName(b0) 
+#endif
         ; 
 
     std::cout << fd->detailPrim(primIdx) << std::endl ; 
@@ -192,8 +194,10 @@ void test_setPrimBoundary()
     fd->setPrimBoundary( primIdx, 0u );   
     std::cout << fd->detailPrim(primIdx) << std::endl ; 
 
+#ifdef WITH_FOREIGN
     fd->setPrimBoundary(primIdx, "Water///Acrylic" ); 
     std::cout << fd->detailPrim(primIdx) << std::endl ; 
+#endif
 
     fd->setPrimBoundary( primIdx, b0 );   
     std::cout << fd->detailPrim(primIdx) << std::endl ; 

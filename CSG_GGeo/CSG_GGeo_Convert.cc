@@ -204,17 +204,21 @@ void CSG_GGeo_Convert::convertBndLib()
         LOG(error) << "cannot create GBndLib buffer : no materials ? " ; 
     }
 
+#ifdef WITH_FOREIGN
     foundry->bnd = bnd ; 
     foundry->optical = optical ;  
+#endif
 
     LOG(LEVEL) << "]" ; 
 }
 
 void CSG_GGeo_Convert::convertScintillatorLib() 
 {
+#ifdef WITH_FOREIGN
     GScintillatorLib* slib = ggeo->getScintillatorLib(); 
     NP* icdf = slib->getBuf();   // assuming 1 scintillator
     foundry->icdf = icdf ; 
+#endif
 }
 
 

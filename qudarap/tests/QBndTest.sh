@@ -1,6 +1,6 @@
 #!/bin/bash -l 
 
-ipython -i QBndTest.py
+${IPYTHON:-ipython} -i QBndTest.py
 
 
 
