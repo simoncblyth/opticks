@@ -1849,13 +1849,21 @@ void CSGFoundry::load()
 
 
 
-void CSGFoundry::load(const char* base, const char* rel) 
+void CSGFoundry::load(const char* base_, const char* rel) 
 {
+    if(base_ == nullptr) LOG(fatal) << " base null, missing envvar ? probably run script not executable directly " ; 
+    assert(base_); 
+    bool conventional = strcmp( rel, RELDIR) == 0  ; 
+    if(!conventional) LOG(fatal) << "Convention is for rel to be named [" << RELDIR << "] not: [" << rel << "]"  ; 
+    assert(conventional); 
+
+    const char* base = SPath::Resolve(base_, NOOP); 
     setCFBase(base);  
 
     std::stringstream ss ;   
     ss << base << "/" << rel ; 
     std::string dir = ss.str();   
+
     load(dir.c_str()); 
 }
 
@@ -1984,13 +1992,10 @@ CSGFoundry* CSGFoundry::Load() // static
 {
     CSGFoundry* src = CSGFoundry::Load_() ; 
     if(src == nullptr) return nullptr ; 
-   
-    const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", nullptr ); 
 
-    if(elv)
-    {
-        LOG(info) << elv->desc() << std::endl << src->descELV(elv) ; 
-    }
+    // HMM: the below dynamic prim selection is only for this Load method, not the others
+    const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", nullptr ); 
+    if(elv) LOG(info) << elv->desc() << std::endl << src->descELV(elv) ; 
 
     CSGFoundry* dst = CSGCopy::Select(src, elv ); 
 
@@ -1999,8 +2004,6 @@ CSGFoundry* CSGFoundry::Load() // static
 
     return dst ; 
 }
-
-
 
 
 /**
@@ -2055,11 +2058,6 @@ CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 
 CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
 {
-    if(base == nullptr) LOG(fatal) << " base null, missing envvar ? probably run script not executable directly " ; 
-    assert(base); 
-    bool conventional = strcmp( rel, RELDIR) == 0  ; 
-    if(!conventional) LOG(fatal) << "Convention is for rel to be named [" << RELDIR << "] not: [" << rel << "]"  ; 
-    assert(conventional); 
     CSGFoundry* fd = new CSGFoundry();  
     fd->load(base, rel); 
     return fd ; 
