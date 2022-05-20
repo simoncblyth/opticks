@@ -204,8 +204,8 @@ inline const NP* NPFold::get(const char* k) const
 
 inline void NPFold::save(const char* base) const 
 {
-    NP::WriteNames(base, INDEX, kk );  
     //std::cout << "NPFold::save " << base << std::endl ; 
+    NP::WriteNames(base, INDEX, kk );  
     for(unsigned i=0 ; i < kk.size() ; i++) 
     {
         const char* k = kk[i].c_str() ; 
@@ -215,6 +215,8 @@ inline void NPFold::save(const char* base) const
         a->save(base, k ); 
     }
     // this motivated adding directory creation to NP::save 
+
+
 }
 
 inline void NPFold::save(const char* base_, const char* rel) const 

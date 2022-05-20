@@ -61,7 +61,9 @@ int main(int argc, char** argv)
 
     // load raindrop geometry and customize to use the boundaries added above 
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
-    sim->save(cfbase_local, "CSGFoundry/SSim" );  // DIRTY: persisting new bnd and optical into the source directory : ONLY APPROPRIATE IN SMALL TESTS
+
+    // DIRTY: persisting new bnd and optical into the source directory : FOR USE FROM PYTHON
+    ssim->save(cfbase_local, "CSGFoundry/SSim" );   // ONLY APPROPRIATE IN SMALL TESTS
  
 
     fdl->setPrimBoundary( 0, specs[0].c_str() ); 

@@ -2751,6 +2751,15 @@ inline int NP::DumpCompare( const NP* a, const NP* b , unsigned a_column, unsign
     return mismatch ; 
 }
 
+/**
+NP::Memcmp
+-----------
+
+* -1: array lengths differ
+* 0:bytes of the two arrays match
+* other value indicating the array bytes differ 
+
+**/
 
 inline int NP::Memcmp(const NP* a, const NP* b ) // static
 {
@@ -3573,6 +3582,9 @@ inline void NP::WriteNames(const char* dir, const char* reldir, const char* name
 
 inline void NP::WriteNames(const char* path, const std::vector<std::string>& names, unsigned num_names_ )
 {
+    int rc = U::MakeDirsForFile(path); 
+    assert( rc == 0 ); 
+
     unsigned num_names = num_names_ == 0 ? names.size() : num_names_ ; 
     assert( num_names <= names.size() ); 
     std::ofstream stream(path, std::ios::out|std::ios::binary);
