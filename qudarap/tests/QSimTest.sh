@@ -22,16 +22,15 @@ msg="=== $BASH_SOURCE :"
 
 
 #test=rng_sequence
-test=boundary_lookup_all
+#test=boundary_lookup_all
 #test=boundary_lookup_water
 #test=boundary_lookup_ls
 
 #test=wavelength_scintillation
 #test=wavelength_cerenkov
 
-#test=scint_generate
+test=scint_generate
 #test=cerenkov_generate
-
 
 #test=fill_state_0
 #test=fill_state_1

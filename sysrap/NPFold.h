@@ -158,10 +158,14 @@ inline void NPFold::add(const char* k, const NP* a)
 inline void NPFold::set(const char* k, const NP* a) 
 {
     int idx = find(k); 
-    if(idx == -1)  add(k, a); 
-
-     // HMM: leaking the old one  
-     aa[idx] = a ; 
+    if(idx == -1)  
+    {
+        add(k, a); 
+    }
+    else
+    {
+        aa[idx] = a ;  // HMM: are leaking the old one  
+    }
 }
 
 
