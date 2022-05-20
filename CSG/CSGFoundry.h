@@ -90,7 +90,6 @@ struct CSG_API CSGFoundry
     static const char* BASE ; 
     static const char* RELDIR ; 
 
-
     static CSGFoundry* MakeGeom(const char* geom);
     static CSGFoundry* LoadGeom(const char* geom=nullptr); 
 

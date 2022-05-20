@@ -10,6 +10,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "SGeo.hh"
 #include "SSys.hh"
 #include "SSim.hh"
 #include "SProc.hh"
@@ -1735,6 +1736,7 @@ void CSGFoundry::DumpAABB(const char* msg, const float* aabb) // static
 
 
 
+
 #ifdef __APPLE__
 const char* CSGFoundry::BASE = "$TMP/GeoChain_Darwin" ;
 #else
@@ -2053,6 +2055,8 @@ CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 
 CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
 {
+    if(base == nullptr) LOG(fatal) << " base null, missing envvar ? probably run script not executable directly " ; 
+    assert(base); 
     bool conventional = strcmp( rel, RELDIR) == 0  ; 
     if(!conventional) LOG(fatal) << "Convention is for rel to be named [" << RELDIR << "] not: [" << rel << "]"  ; 
     assert(conventional); 
@@ -2142,6 +2146,8 @@ void CSGFoundry::upload()
     bool is_uploaded = isUploaded(); 
     if(!is_uploaded) LOG(fatal) << "FAILED TO UPLOAD" ; 
     assert(is_uploaded); 
+
+    SGeo::SetLastUploadCFBase(cfbase) ; 
 }
 
 bool CSGFoundry::isUploaded() const

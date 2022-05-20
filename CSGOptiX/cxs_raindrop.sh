@@ -20,8 +20,10 @@ Analysis of outputs::
     cx
     ./cxs_raindrop.sh ana 
 
-TODO: need python level updates for SSim
+Photon step record OpenGL animation::
 
+    cd ~/opticks/examples/UseGeometryShader
+    ./go.sh 
 
 EOU
 }

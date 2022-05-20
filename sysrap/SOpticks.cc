@@ -128,6 +128,7 @@ void SOpticks::WriteOutputDirScript(const char* outdir) // static
     std::string sh = ss.str(); 
 
     LOG(info) 
+        << " outdir " << outdir 
         << "writing sh_path " << sh_path << std::endl
         << "sh [" << std::endl
         << sh   

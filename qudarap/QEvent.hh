@@ -100,8 +100,10 @@ struct QUDARAP_API QEvent
     NP*      getHit() const ; 
     NP*      getHit_() const ; 
 
+
     void save(const char* dir) const ; 
     void save(const char* base, const char* reldir ) const ; 
+    void save() const ; 
 
 
     void     setNumPhoton(unsigned num_photon) ;  

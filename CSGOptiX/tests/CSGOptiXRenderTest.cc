@@ -219,8 +219,7 @@ int main(int argc, char** argv)
 
 #ifdef WITH_SGLM
 #else
-    Opticks ok(argc, argv);  
-    ok.configure(); 
+    Opticks::Configure(argc, argv);  
 #endif
 
     const char* outdir = SEventConfig::OutDir(); 
@@ -238,8 +237,7 @@ int main(int argc, char** argv)
     }
     else if( t.flight )
     {
-        const std::string& _arg = t.args[0];
-        const char* arg = _arg.c_str(); 
+        const char* arg = t.args[0].c_str(); 
         LOG(info) << " t.flight arg " << arg  ; 
         t.setComposition(arg); 
         t.cx->render_flightpath(); 
@@ -249,13 +247,11 @@ int main(int argc, char** argv)
         LOG(info) << " t.args.size " << t.args.size()  ; 
         for(unsigned i=0 ; i < t.args.size() ; i++)
         {
-            const std::string& _arg = t.args[i];
-            const char* arg = _arg.c_str(); 
+            const char* arg = t.args[i].c_str(); 
             t.setComposition(arg); 
             t.render_snap(arg); 
         }
     }
     return 0 ; 
 }
-
 

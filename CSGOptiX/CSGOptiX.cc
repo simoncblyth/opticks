@@ -123,16 +123,23 @@ const char* CSGOptiX::desc() const
 }
 
 /**
-CSGOptiX::CSGOptiX
+CSGOptiX::Create
 --------------------
 
-In sim mode:
+Q: Should CSGOptiX::Create do QSim::UploadComponents and QSim instanciation ?
+A: No, prefer the flexibility of keeping geometry and simulation setup somewhat separate 
+   at this level even though the SSim is persisted at CSGFoundry/SSim.
 
-* QSim instanciation populates CPU side sim.sim (qsim.h) which collects 
-  device pointers and texObj and then uploads that to d_sim (qsim.h) available
-  GPU side as *sim*. This can be done as qsim.h collects 
 
-* QEvent instanciation 
+Advantages of this separation:
+
+1. QUDARap/QSim tests work with no geometry uploaded
+2. CSGOptiX rendering can work with no SSim/QSim arrays uploaded   
+
+Such integration is appropriate somewhere, but where ? 
+G4CX/G4CXOpticks seems wrong as setting genstep, launching 
+and handling hits does not need Geant4, so it should not be up there. 
+(Thats event by event simulation call, not the setup call)
 
 
 **/
@@ -922,9 +929,12 @@ that gives flexible python "rendering" with tests/CSGOptiXSimtraceTest.py
 void CSGOptiX::snapSimtraceTest(const char* outdir, const char* botline, const char* topline) 
 {
     event->setMeta( foundry->meta.c_str() ); 
+
+    // HMM: QEvent rather than here ?  
     event->savePhoton( outdir, "photons.npy");   // this one can get very big 
     event->saveGenstep(outdir, "genstep.npy");  
     event->saveMeta(   outdir, "fdmeta.txt" ); 
+
     savePeta(          outdir, "peta.npy");   
     saveMetaTran(      outdir, "metatran.npy"); 
 }

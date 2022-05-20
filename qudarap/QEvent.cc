@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 #include <sstream>
 
+#include "SGeo.hh"
 #include "SPath.hh"
 #include "scuda.h"
 #include "squad.h"
@@ -569,7 +570,12 @@ void QEvent::save(const char* base, const char* reldir ) const
     save(dir); 
 }
 
-
+void QEvent::save() const 
+{
+    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
+    const char* dir = dir_ ? dir_ : "$TMP"  ; 
+    save(dir); 
+}
 
 
 
