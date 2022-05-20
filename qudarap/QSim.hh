@@ -58,8 +58,9 @@ struct QUDARAP_API QSim
     static QSim* INSTANCE ; 
     static QSim* Get(); 
 
-    static void UploadComponents(const NP* icdf, const NP* bnd, const NP* optical, const char* rindexpath );   
+    static void UploadComponents(const NP* icdf, const NP* bnd, const NP* optical, const NP* propcom );   
     static void UploadMultiFilm(const NP * multi_film_lut );
+
 
     const QBase*     base ; 
     QEvent*          event ; 

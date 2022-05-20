@@ -30,6 +30,8 @@ instances/directories rather than the QSim components living as foreign NP insid
 
 #include "SSys.hh"
 #include "SPath.hh"
+#include "SProp.hh"
+#include "SSim.hh"
 #include "SOpticks.hh"
 #include "OPTICKS_LOG.hh"
 #include "SOpticksResource.hh"
@@ -65,15 +67,20 @@ int main(int argc, char** argv)
 
     SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
 
-    const char* idpath = SOpticksResource::IDPath();  // HMM: using OPTICKS_KEY geocache, not CSGFoundry
-    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
     LOG(info) << fd->descComp(); 
 
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
-    QSim::UploadComponents(fd->icdf, fd->bnd, fd->optical, rindexpath ); 
+
+    const NP* icdf = fd->sim->get("icdf.npy"); 
+    const NP* bnd = fd->sim->get("bnd.npy"); 
+    const NP* optical = fd->sim->get("optical.npy"); 
+    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
+
+
+    QSim::UploadComponents(icdf, bnd, optical, propcom ); 
 
     QSim* sim = new QSim ; 
     LOG(info) << sim->desc(); 

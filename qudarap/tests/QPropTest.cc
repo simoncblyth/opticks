@@ -2,6 +2,7 @@
 #include "SOpticksResource.hh"
 #include "NP.hh"
 
+#include "SProp.hh"
 #include "QProp.hh"
 #include "OPTICKS_LOG.hh"
 
@@ -35,20 +36,15 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* idpath = SOpticksResource::IDPath();  
-    int create_dirs = 0 ; 
-    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", create_dirs ); 
-    LOG(info) << " rindexpath " << rindexpath ; 
+    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
 
     unsigned nx = 1601u ; 
     //unsigned nx = 161u ; 
 
-    //QProp<float> qpf(rindexpath) ; 
+    //QProp<float> qpf(propcom) ; 
     //test_lookup<float>(qpf, 0.f, 16.f, nx , "float" );
 
-    
-
-    QProp<double> qpd(rindexpath) ; 
+    QProp<double> qpd(propcom) ; 
     test_lookup<double>(qpd, 0., 16., nx , "double" );
 
 

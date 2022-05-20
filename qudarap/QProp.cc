@@ -16,11 +16,6 @@ template<typename T>
 const plog::Severity QProp<T>::LEVEL = PLOG::EnvLevel("QProp", "INFO"); 
 
 template<typename T>
-const char* QProp<T>::DEFAULT_PATH = "$OPTICKS_KEYDIR/GScintillatorLib/LS_ori/RINDEX.npy" ;
-//const char* QProp::DEFAULT_PATH = "/tmp/np/test_compound_np_interp.npy" ; 
-
-
-template<typename T>
 const QProp<T>* QProp<T>::INSTANCE = nullptr ; 
 
 template<typename T>
@@ -34,102 +29,12 @@ qprop<T>* QProp<T>::getDevicePtr() const
 
 
 /**
-QProp::Load_Mockup
--------------------
-
-Mockup a real set of multiple properties, by loading 
-a single property multiple times and applying scalings. 
-
-The source property is assumed to be provided in double precision 
-(ie direct from Geant4 originals) with energies in MeV which are scaled to eV.
-Also the properties are narrowed to float when the template type is float.
-
-**/
-
-template<typename T>
-const NP* QProp<T>::Load_Mockup(const char* path_ )  // static 
-{
-    int create_dirs = 0 ;  // 0:nop
-    const char* path = SPath::Resolve(path_, create_dirs); 
-    LOG(LEVEL) 
-        << "path_ " << path_  
-        << "path " << path  
-        ;
-
-    if( path == nullptr ) return nullptr ; 
-    NP* a = NP::Load(path) ; 
-    assert( strcmp( a->dtype, "<f8") == 0 ); 
-    a->pscale<double>(1e6, 0u);   // energy scale from MeV to eV,   1.55 to 15.5 eV
-
-    NP* b = NP::Load(path); 
-    b->pscale<double>(1e6,  0u); 
-    b->pscale<double>(1.05, 1u); 
-
-    NP* c = NP::Load(path); 
-    c->pscale<double>(1e6,  0u); 
-    c->pscale<double>(0.95, 1u); 
-
-    std::vector<const NP*> aa = {a, b, c } ; 
-    const NP* com = Combine(aa); 
-
-   LOG(LEVEL) 
-        << " com " << ( com ? com->desc() : "-" )
-        ;
-
-    return com ; 
-}
-
-
-/**
-QProp<T>::Combine
--------------------
-
-Only implemented for float template specialization.
-
-Combination using NP::Combine which pads shorter properties
-allowing all to be combined into a single array, with final 
-extra column used to record the payload column count.
-
-**/
-
-template<typename T>
-const NP* QProp<T>::Combine(const std::vector<const NP*>& aa )   // static
-{
-    assert(0); 
-    return nullptr ;  
-}
-
-template<>
-const NP* QProp<float>::Combine(const std::vector<const NP*>& aa )   // static
-{
-    LOG(LEVEL) << " narrowing double to float " ; 
-    std::vector<const NP*> nn ; 
-    for(unsigned i=0 ; i < aa.size() ; i++)
-    {
-        const NP* a = aa[i] ; 
-        const NP* n = NP::MakeNarrow( a );
-        nn.push_back(n); 
-    }
-    NP* com = NP::Combine(nn) ; 
-    return com ;  
-}
-
-template<>
-const NP* QProp<double>::Combine(const std::vector<const NP*>& aa )   // static
-{
-    LOG(LEVEL) << " not-narrowing retaining double " ; 
-    NP* com = NP::Combine(aa) ;
-    return com ;  
-}
-
-
-/**
 QProp<T>::QProp
 -----------------
 
 Instanciation:
 
-1. loads properties from file
+1. examines input combined array dimensions 
 2. creates host qprop<T> instance, and populates it 
    with device pointers and metadata such as dimensions 
 3. uploads the host qprop<T> instance to the device, 
@@ -138,10 +43,9 @@ Instanciation:
 **/
 
 template<typename T>
-QProp<T>::QProp(const char* path_)
+QProp<T>::QProp(const NP* a_)
     :
-    path(path_ ? strdup(path_) : DEFAULT_PATH),
-    a(Load_Mockup(path)),
+    a(a_),
     pp(a ? a->cvalues<T>() : nullptr),
     nv(a ? a->num_values() : 0),
     ni(a ? a->shape[0] : 0 ),
@@ -196,7 +100,6 @@ std::string QProp<T>::desc() const
 {
     std::stringstream ss ; 
     ss << "QProp::desc"
-       << " path " << ( path ? path : "-" ) 
        << " a " << ( a ? a->desc() : "-" )
        << " nv " << nv
        << " ni " << ni

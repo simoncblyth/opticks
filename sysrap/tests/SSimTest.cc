@@ -32,6 +32,7 @@ void test_findName(const SSim* sim)
         "Cream", 
         "vetoWater", 
         "Cheese", 
+        "NextIsBlank",
         "",
         "Galactic", 
         "Pyrex", 
@@ -40,7 +41,9 @@ void test_findName(const SSim* sim)
         "Steel_surface",
         "PE_PA",
         "Candy",
-        ""
+        "NextIsBlank",
+        "",
+        "Steel"
       } ; 
 
     unsigned i, j ; 

@@ -108,6 +108,7 @@ set(SOURCES
 
     SEvt.cc
     SSim.cc
+    SProp.cc
 
 ) 
     
@@ -258,6 +259,7 @@ set(HEADERS
     NPU.hh 
     NPFold.h 
     SSim.hh
+    SProp.hh
 
 )
 

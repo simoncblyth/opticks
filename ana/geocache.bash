@@ -505,7 +505,8 @@ geocache-jun28(){
     # get skips from current tds3
     local skipsolidname="mask_PMT_20inch_vetosMask_virtual,NNVTMCPPMT_body_solid,HamamatsuR12860_body_solid_1_9,PMT_20inch_veto_body_solid_1_2"
     #GTree=INFO OpticksDbg=INFO GInstancer=INFO 
-    GScintillatorLib=INFO GPropertyLib=INFO geocache-create- --gdmlpath $path -D --noviz  --skipsolidname $skipsolidname $*  
+    #GScintillatorLib=INFO GPropertyLib=INFO 
+    geocache-create- --gdmlpath $path -D --noviz  --skipsolidname $skipsolidname $*  
 }
 
 

@@ -16,7 +16,9 @@ CXRaindropTest
 #include "SEvent.hh"
 #include "OPTICKS_LOG.hh"
 
+#include "SProp.hh"
 #include "SSim.hh"
+
 #include "QBnd.hh"
 #include "QSim.hh"
 #include "QEvent.hh"
@@ -43,8 +45,8 @@ int main(int argc, char** argv)
     LOG(info) << " outfold [" << outfold << "]"  ; 
     SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
 
-    const char* idpath = SOpticksResource::IDPath();  // HMM: using OPTICKS_KEY geocache, not CSGFoundry
-    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
+
+    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
 
     // BASIS GEOMETRY : LOADED IN ORDER TO RAID ITS BOUNDARIES FOR MATERIALS,SURFACES
 
@@ -58,13 +60,15 @@ int main(int argc, char** argv)
     NP* optical_plus = nullptr ; 
     NP* bnd_plus = nullptr ; 
     SSim* ssim = fd->sim ; 
-    QBnd::Add( &optical_plus, &bnd_plus, ssim->get("optical.npy"), ssim->get("bnd.npy"), specs );
-    LOG(info) << std::endl << QBnd::DescOptical(optical_plus, bnd_plus)  ; 
+    SSim::Add( &optical_plus, &bnd_plus, ssim->get("optical.npy"), ssim->get("bnd.npy"), specs );
+    LOG(info) << std::endl << SSim::DescOptical(optical_plus, bnd_plus)  ; 
 
     // HMM : THE COMPONENTS ARE MORE RELEVANT TO QSim THAN TO CSGFoundry 
     // PERHAPS SHOULD USE QSim TO MANAGE THEM WITHIN A QSim FOLDER WITHIN CSGFoundry 
 
-    QSim::UploadComponents(ssim->get("icdf.npy"), bnd_plus, optical_plus, rindexpath ); 
+    QSim::UploadComponents(ssim->get("icdf.npy"), bnd_plus, optical_plus, propcom ); 
+
+
 
     QSim* sim = new QSim ; 
     std::cout << "sim.desc " << sim->desc() << std::endl ; 
@@ -76,8 +80,13 @@ int main(int argc, char** argv)
 
     // load raindrop geometry and customize to use the boundaries added above 
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
-    fdl->setOpticalBnd(optical_plus, bnd_plus);    // instanciates bd CSGName using bndplus.names
-    fdl->saveOpticalBnd();                         // DIRTY: persisting new bnd and optical into the source directory : ONLY APPROPRIATE IN SMALL TESTS
+
+
+    
+    // fdl->setOpticalBnd(optical_plus, bnd_plus);    // instanciates bd CSGName using bndplus.names
+    // fdl->saveOpticalBnd();                         // DIRTY: persisting new bnd and optical into the source directory : ONLY APPROPRIATE IN SMALL TESTS
+
+
     fdl->setPrimBoundary( 0, specs[0].c_str() ); 
     fdl->setPrimBoundary( 1, specs[1].c_str() );   // HMM: notice these boundary changes are not persisted 
     std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 

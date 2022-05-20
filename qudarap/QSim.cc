@@ -65,7 +65,7 @@ BETTER: Use an SSim instance for holding onto components which is consulted by Q
 
 **/
 
-void QSim::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, const char* rindexpath  )
+void QSim::UploadComponents( const NP* icdf, const NP* bnd, const NP* optical, const NP* propcom  )
 {
     QBase* base = new QBase ; 
     LOG(LEVEL) << base->desc(); 
@@ -73,28 +73,16 @@ void QSim::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, 
     QRng* rng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << rng->desc(); 
 
-    const char* qsim_icdf_path = SSys::getenvvar("QSIM_ICDF_PATH", nullptr ); 
-    const NP* override_icdf = qsim_icdf_path ?  NP::Load(qsim_icdf_path) : nullptr ;
-    const NP* icdf = override_icdf ? override_icdf : icdf_ ; 
- 
 
-    if( optical == nullptr )
+    if( optical == nullptr && bnd == nullptr )
     {
-        LOG(warning) << " optical null " ; 
+        LOG(warning) << " optical and bnd null " ; 
     }
     else
     {
+       // TODO: combine the below as optical and bnd MUST travel together 
         QOptical* qopt = new QOptical(optical); 
         LOG(fatal) << qopt->desc(); 
-    }
-
-
-    if( bnd == nullptr )
-    {
-        LOG(warning) << " bnd null " ; 
-    }
-    else
-    {
         QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
         LOG(LEVEL) << qbnd->desc(); 
     }
@@ -104,10 +92,14 @@ void QSim::UploadComponents( const NP* icdf_, const NP* bnd, const NP* optical, 
     LOG(info) << debug_->desc() ; 
 
 
-    LOG(error) << "[ QProp " ; 
-    QProp<float>* prop = new QProp<float>(rindexpath) ;  // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
-    LOG(error) << "] QProp " ; 
-    LOG(LEVEL) << prop->desc(); 
+    if( propcom )
+    {
+        LOG(error) << "[ QProp " ; 
+        QProp<float>* prop = new QProp<float>(propcom) ;  
+        // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
+        LOG(error) << "] QProp " ; 
+        LOG(LEVEL) << prop->desc(); 
+    }
 
 
     if( icdf == nullptr )

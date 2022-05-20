@@ -25,19 +25,15 @@ union quad ;
 struct float4 ; 
 struct dim3 ; 
 template <typename T> struct qprop ; 
-
 struct NP ; 
-
 
 template <typename T>
 struct QUDARAP_API QProp
 {
     static const plog::Severity LEVEL ;
-    static const char*  DEFAULT_PATH ;
     static const QProp<T>*  INSTANCE ; 
     static const QProp<T>*  Get(); 
 
-    const char* path ; 
     const NP* a  ;  
     const T* pp ; 
     unsigned nv ; 
@@ -49,10 +45,8 @@ struct QUDARAP_API QProp
     qprop<T>* prop ; 
     qprop<T>* d_prop ; 
 
-    static const NP* Load_Mockup(const char* path_ ); 
-    static const NP* Combine(const std::vector<const NP*>& aa ); 
+    QProp(const NP* a); 
 
-    QProp(const char* path=nullptr); 
     virtual ~QProp(); 
     void init(); 
     void uploadProps(); 

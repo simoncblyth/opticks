@@ -154,7 +154,6 @@ int main(int argc, char** argv)
     test_getBoundarySpec(qb); 
     test_getBoundaryIndices(qb); 
     test_DescDigest(qb); 
-    test_findName(qb); 
 */
     return 0 ; 
 }

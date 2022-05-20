@@ -35,6 +35,8 @@ TODO:
 #include "NP.hh"
 #include "SSys.hh"
 #include "SPath.hh"
+#include "SSim.hh"
+#include "SProp.hh"
 #include "SOpticks.hh"
 #include "SOpticksResource.hh"
 #include "SEvent.hh"
@@ -81,16 +83,18 @@ int main(int argc, char** argv)
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
 
-    const char* idpath = SOpticksResource::IDPath();  // HMM: using OPTICKS_KEY geocache, not CSGFoundry
-    const char* rindexpath = SPath::Resolve(idpath, "GScintillatorLib/LS_ori/RINDEX.npy", 0 );  
     
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
 
-    //fd->upload();  // moved into CSGOptiX::Create
-
     // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
-    QSim::UploadComponents(fd->icdf, fd->bnd, fd->optical, rindexpath ); 
+
+    const NP* icdf = fd->sim->get("icdf.npy"); 
+    const NP* bnd = fd->sim->get("bnd.npy"); 
+    const NP* optical = fd->sim->get("optical.npy"); 
+    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
+
+    QSim::UploadComponents(icdf, bnd, optical, propcom ); 
 
     LOG(info) << "foundry " << fd->desc() ; 
     //fd->summary(); 
