@@ -50,19 +50,14 @@ Generation
 
 
 
-Pass the parcel ? Maybe use an SSim to hold the simulation input arrays::
+DONE : SSim, input array management
+---------------------------------------
 
-     * CSGFoundry that is focussed on geometry holding the icdf feels wrong 
-
-     200 void CSG_GGeo_Convert::convertScintillatorLib()
-     201 {
-     202     GScintillatorLib* slib = ggeo->getScintillatorLib();
-     203     NP* icdf = slib->getBuf();   // assuming 1 scintillator
-     204     foundry->icdf = icdf ;
-     205 }
-
-
-
+1. avoids setup duplication and passing the parcel 
+2. establishes more separation of concerns between CSGFoundry and SSim 
+   whilst still persisting SSim into a subfolder of CSGFoundry 
+3. moved SSim population into GGeo::convertSim, from CSG_GGeo_Convert::convertSim
+ 
 
 
 

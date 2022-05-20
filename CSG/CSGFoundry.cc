@@ -1812,41 +1812,6 @@ void CSGFoundry::write(const char* dir_) const
 }
 
 
-#ifdef WITH_FOREIGN
-/**
-CSGFoundry::saveOpticalBnd  THIS FUNCTIONALITY NEEDS TO MOVE TO SSim
------------------------------------------------------------------------
-
-CAUTION : ONLY APPROPRIATE IN SMALL SCALE TESTING WHEN ARE DOING 
-DIRTY THINGS LIKE ADDING BOUNDARIES WITH QBnd::Add SEE FOR EXAMPLE
-CSGOptiX/tests/CXRaindropTest.cc 
-
-**/
-
-void CSGFoundry::saveOpticalBnd() const 
-{
-    bool has_optical_bnd = bnd != nullptr && optical != nullptr ; 
-    if(has_optical_bnd == false)
-    {
-        LOG(fatal) << "has_optical_bnd " << has_optical_bnd ; 
-        return ;  
-    }
-
-    const char* ocf = getOriginCFBase(); 
-    assert(ocf)  ; 
-    const char* dir = SPath::Resolve(ocf, RELDIR, DIRPATH );
-    LOG(info)
-        << " save bnd.npy to dir [" << dir << "]" 
-        << " originCFBase " << ocf  
-        ;
-
-    optical->save(dir,  "optical.npy" ); 
-    bnd->save(dir,  "bnd.npy" ); 
-}
-#endif
-
-
-
 
 
 
@@ -2382,12 +2347,5 @@ void CSGFoundry::kludgeScalePrimBBox( unsigned solidIdx, float dscale )
     } 
 }
 
-
-/*
-void CSGFoundry::dumpPrimBoundary( const CSGPrim* prim ) const 
-{
-
-}
-*/
 
 

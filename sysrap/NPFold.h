@@ -19,6 +19,7 @@ There are two load/save modes:
 **/
 
 #include <string>
+#include <algorithm> 
 #include <iterator> 
 #include <vector> 
 #include <cstdlib>

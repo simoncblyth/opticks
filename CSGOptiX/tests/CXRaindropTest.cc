@@ -40,47 +40,29 @@ int main(int argc, char** argv)
 #else
     Opticks::Configure(argc, argv ); 
 #endif
-    const char* cfbase = SOpticksResource::CFBase(); 
     const char* outfold = SEventConfig::OutFold();  
     LOG(info) << " outfold [" << outfold << "]"  ; 
     SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
 
 
-
-    // BASIS GEOMETRY : LOADED IN ORDER TO RAID ITS BOUNDARIES FOR MATERIALS,SURFACES
-
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
-    if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
-    LOG(info) << fd->descComp(); 
-
-
-    SSim* ssim = fd->sim ; 
-
+    SSim* ssim = SSim::Load();  // $CFBase/CSGFoundry/SSim
     // fabricate some additional boundaries from the basis ones for this simple test 
     std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;  
     ssim->addFake(specs); 
-
     LOG(info) << std::endl << ssim->descOptical()  ; 
-
     QSim::UploadComponents(ssim); 
-
 
     QSim* sim = new QSim ; 
     std::cout << "sim.desc " << sim->desc() << std::endl ; 
 
     const char* cfbase_local = SSys::getenvvar("CFBASE_LOCAL") ; assert(cfbase_local) ; 
     LOG(fatal) << "MIXING CSGFoundry combining basis cfbase with cfbase_local "; 
-    std::cout << std::setw(20) << "cfbase" << ":" << cfbase << std::endl ; 
     std::cout << std::setw(20) << "cfbase_local" << ":" << cfbase_local  << std::endl ; 
 
     // load raindrop geometry and customize to use the boundaries added above 
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
-
-
-    
-    // fdl->setOpticalBnd(optical_plus, bnd_plus);    // instanciates bd CSGName using bndplus.names
-    // fdl->saveOpticalBnd();                         // DIRTY: persisting new bnd and optical into the source directory : ONLY APPROPRIATE IN SMALL TESTS
-
+    sim->save(cfbase_local, "CSGFoundry/SSim" );  // DIRTY: persisting new bnd and optical into the source directory : ONLY APPROPRIATE IN SMALL TESTS
+ 
 
     fdl->setPrimBoundary( 0, specs[0].c_str() ); 
     fdl->setPrimBoundary( 1, specs[1].c_str() );   // HMM: notice these boundary changes are not persisted 

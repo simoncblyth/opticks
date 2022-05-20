@@ -113,8 +113,10 @@ int SSim::getBndIndex(const char* bname) const
 
 
 void SSim::addFake( const std::vector<std::string>& specs )
-{   
-    assert( hasOptical() );  
+{  
+    bool has_optical = hasOptical(); 
+    if(!has_optical) LOG(fatal) << " optical+bnd are required, you probably need to redo the GGeo to CSGFoundry conversion in CSG_GGeo cg " ;  
+    assert(has_optical);  
 
     const NP* optical = fold->get(OPTICAL); 
     const NP* bnd = fold->get(BND); 

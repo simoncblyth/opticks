@@ -16,6 +16,7 @@ and more easily tested.
 #include "squad.h"
 #include "sqat4.h"
 #include "sphoton.h"
+#include "scerenkov.h"
 
 // simulation 
 #include <curand_kernel.h>
