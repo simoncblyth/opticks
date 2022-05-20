@@ -28,17 +28,15 @@ TODO:
 
 #include <cuda_runtime.h>
 
-#include "scuda.h"
-#include "sqat4.h"
-#include "stran.h"
-#include "SRG.h"
+//#include "scuda.h"
+//#include "sqat4.h"
+//#include "stran.h"
+
 #include "NP.hh"
 #include "SSys.hh"
 #include "SPath.hh"
 #include "SSim.hh"
-#include "SProp.hh"
 #include "SOpticks.hh"
-#include "SOpticksResource.hh"
 #include "SEvent.hh"
 #include "SEventConfig.hh"
 
@@ -62,45 +60,28 @@ int main(int argc, char** argv)
 
 #ifdef WITH_SGLM
 #else
-    Opticks ok(argc, argv ); 
-    ok.configure(); 
+    Opticks::Configure(argc, argv ); 
 #endif
 
     SEventConfig::SetRGMode("simtrace"); 
 
-    const char* cfbase = SOpticksResource::CFBase(); 
-    //const char* default_outdir = SPath::Resolve(cfbase, "CSGOptiXSimtraceTest", out_prefix, DIRPATH );  
     const char* outfold = SEventConfig::OutFold();  
-
     SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
 
-    LOG(info) 
-        << " cfbase " << cfbase 
-        << " outfold " << outfold
-        ; 
+    LOG(info) << " outfold " << outfold ; 
 
     const char* top    = SSys::getenvvar("TOP", "i0" ); 
     const char* topline = SSys::getenvvar("TOPLINE", "CSGOptiXRender") ; 
     const char* botline = SSys::getenvvar("BOTLINE", nullptr ) ; 
-
     
-    CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry"); 
+    CSGFoundry* fd = CSGFoundry::Load(); 
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
-
-    // GPU physics uploads : boundary+scintillation textures, property+randomState arrays    
-
-    const NP* icdf = fd->sim->get("icdf.npy"); 
-    const NP* bnd = fd->sim->get("bnd.npy"); 
-    const NP* optical = fd->sim->get("optical.npy"); 
-    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
-
-    QSim::UploadComponents(icdf, bnd, optical, propcom ); 
-
     LOG(info) << "foundry " << fd->desc() ; 
-    //fd->summary(); 
+
+    const SSim* ssim = fd->sim ; 
+    QSim::UploadComponents(ssim); 
 
     CSGOptiX* cx = CSGOptiX::Create(fd); 
-
 
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ;    // THIS IS THE GENSTEP MAKER : NOT THE GS THEMSELVES 

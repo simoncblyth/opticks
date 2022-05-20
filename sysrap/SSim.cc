@@ -8,6 +8,7 @@
 
 #include "PLOG.hh"
 #include "SSim.hh"
+#include "SOpticksResource.hh"
 
 const plog::Severity SSim::LEVEL = PLOG::EnvLevel("SSim", "DEBUG"); 
 SSim* SSim::INSTANCE = nullptr ; 
@@ -15,17 +16,31 @@ const unsigned SSim::MISSING = ~0u ;
 
 SSim* SSim::Get()
 { 
-   if(INSTANCE == nullptr) new SSim ; 
    return INSTANCE ; 
 }
 
+int SSim::Compare( const SSim* a , const SSim* b, bool dump  )
+{
+    return NPFold::Compare(a->fold, b->fold, dump ) ;    
+}
+
+SSim* SSim::Create()
+{
+    if(INSTANCE) LOG(fatal) << "replacing SSim::INSTANCE" ; 
+    new SSim ; 
+    return INSTANCE ;  
+}
+
+SSim* SSim::Load()
+{
+    return Load(SOpticksResource::CFBase(), "CSGFoundry/SSim"); 
+}
 SSim* SSim::Load(const char* base)
 {
     SSim* sim = new SSim ; 
     sim->load(base);  
     return sim ; 
 }
-
 SSim* SSim::Load(const char* base, const char* rel)
 {
     SSim* sim = new SSim ; 
@@ -43,13 +58,25 @@ SSim::SSim()
 
 void SSim::add(const char* k, const NP* a )
 { 
+    assert(k); 
+    if(a == nullptr) LOG(fatal) << "k:" << k  << " a null " ; 
+    if(a == nullptr) return ; 
+
     fold->add(k,a);  
     if(strcmp(k, BND)==0) bd = new SName(a->names) ; 
 }
 const NP* SSim::get(const char* k) const { return fold->get(k);  }
 
-void SSim::load(const char* base){ fold->load(base);  }
-void SSim::load(const char* base, const char* rel){ fold->load(base, rel);  }
+void SSim::load(const char* base){ fold->load(base); postload() ; }
+void SSim::load(const char* base, const char* rel){ fold->load(base, rel);  postload() ;  }
+
+void SSim::postload()
+{
+    const NP* bnd = fold->get(BND); 
+    if(bnd) bd = new SName(bnd->names); 
+}
+
+
 
 void SSim::save(const char* base) const { fold->save(base); }
 void SSim::save(const char* base, const char* rel) const { fold->save(base, rel); }
@@ -82,6 +109,24 @@ int SSim::getBndIndex(const char* bname) const
 
     assert( bname_found ); 
     return bidx ; 
+}
+
+
+void SSim::addFake( const std::vector<std::string>& specs )
+{   
+    assert( hasOptical() );  
+
+    const NP* optical = fold->get(OPTICAL); 
+    const NP* bnd = fold->get(BND); 
+ 
+    NP* opticalplus = nullptr ; 
+    NP* bndplus = nullptr ; 
+
+    Add( &opticalplus, &bndplus, optical, bnd, specs ); 
+
+    //NOTE: are leaking the old ones 
+    fold->set(OPTICAL, opticalplus); 
+    fold->set(BND,     bndplus); 
 }
 
 
@@ -417,6 +462,22 @@ void SSim::GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned n
 } 
 
 
+bool SSim::hasOptical() const 
+{
+    const NP* optical = get(OPTICAL); 
+    const NP* bnd = get(BND); 
+    bool has_optical = optical != nullptr && bnd != nullptr ; 
+    return has_optical ; 
+}
+
+std::string SSim::descOptical() const 
+{
+    const NP* optical = get(OPTICAL); 
+    const NP* bnd = get(BND); 
+
+    if(optical == nullptr && bnd == nullptr) return "SSim::descOptical null" ; 
+    return DescOptical(optical, bnd); 
+}
 
 std::string SSim::DescOptical(const NP* optical, const NP* bnd )
 {
@@ -426,7 +487,7 @@ std::string SSim::DescOptical(const NP* optical, const NP* bnd )
     MUS surf ; 
 
     std::stringstream ss ; 
-    ss << "QBnd::DescOptical"
+    ss << "SSim::DescOptical"
        << " optical " << optical->sstr() 
        << " bnd " << bnd->sstr() 
        << " bnd.names " << bnd->names.size()

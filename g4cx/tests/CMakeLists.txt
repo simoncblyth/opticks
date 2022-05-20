@@ -4,7 +4,8 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
 set(TEST_SOURCES
-   G4CXTest.cc
+   G4CXRenderTest.cc
+   G4CXSimulateTest.cc
 )
 
 

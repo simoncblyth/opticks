@@ -47,6 +47,7 @@ int main(int argc, char** argv)
     }  
 
     CSGFoundry* fd0 = CSG_GGeo_Convert::Translate(ggeo); 
+    assert( fd0->sim ); 
 
     const char* cfbase = ok.getFoundryBase("CFBASE"); 
 
@@ -56,6 +57,7 @@ int main(int argc, char** argv)
 
     LOG(error) << "[ load foundry " ; 
     CSGFoundry* fd = CSGFoundry::Load(cfbase, "CSGFoundry");  // load foundary and check identical bytes
+    assert( fd->sim ); 
     LOG(error) << "] load foundry " ; 
 
     assert( 0 == CSGFoundry::Compare(fd0, fd ) );  

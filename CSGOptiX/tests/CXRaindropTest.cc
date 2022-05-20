@@ -46,7 +46,6 @@ int main(int argc, char** argv)
     SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
 
 
-    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
 
     // BASIS GEOMETRY : LOADED IN ORDER TO RAID ITS BOUNDARIES FOR MATERIALS,SURFACES
 
@@ -54,20 +53,16 @@ int main(int argc, char** argv)
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
     LOG(info) << fd->descComp(); 
 
+
+    SSim* ssim = fd->sim ; 
+
     // fabricate some additional boundaries from the basis ones for this simple test 
     std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;  
+    ssim->addFake(specs); 
 
-    NP* optical_plus = nullptr ; 
-    NP* bnd_plus = nullptr ; 
-    SSim* ssim = fd->sim ; 
-    SSim::Add( &optical_plus, &bnd_plus, ssim->get("optical.npy"), ssim->get("bnd.npy"), specs );
-    LOG(info) << std::endl << SSim::DescOptical(optical_plus, bnd_plus)  ; 
+    LOG(info) << std::endl << ssim->descOptical()  ; 
 
-    // HMM : THE COMPONENTS ARE MORE RELEVANT TO QSim THAN TO CSGFoundry 
-    // PERHAPS SHOULD USE QSim TO MANAGE THEM WITHIN A QSim FOLDER WITHIN CSGFoundry 
-
-    QSim::UploadComponents(ssim->get("icdf.npy"), bnd_plus, optical_plus, propcom ); 
-
+    QSim::UploadComponents(ssim); 
 
 
     QSim* sim = new QSim ; 

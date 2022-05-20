@@ -11,6 +11,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "SSys.hh"
+#include "SSim.hh"
 #include "SProc.hh"
 #include "SStr.hh"
 #include "SPath.hh"
@@ -48,23 +49,6 @@ std::string CSGFoundry::descComp() const
 }
 
 
-/*
-const std::string& CSGFoundry::getBndName(unsigned bidx) const 
-{
-    assert( bnd );
-    assert( bidx < bnd->names.size() ); 
-    return bnd->names[bidx] ; 
-}
-
-void CSGFoundry::setOpticalBnd(const NP* optical_, const NP* bnd_ )
-{
-    optical = optical_ ; 
-    bnd = bnd_ ; 
-    bd = bnd ? new SName(bnd->names) : nullptr  ; 
-}
-*/
-
-
 void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname ) 
 {
     int bidx = sim->getBndIndex(bname); 
@@ -85,7 +69,7 @@ CSGFoundry::CSGFoundry()
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
     last_added_prim(nullptr),
-    sim(SSim::Get()),
+    sim(SSim::Create()),
     meta(),
     fold(nullptr),
     cfbase(nullptr),
@@ -277,6 +261,9 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
     mismatch += CompareVec( "ias"  , a->ias , b->ias ); 
     if( mismatch != 0 ) LOG(fatal) << " mismatch FAIL ";  
     //assert( mismatch == 0 ); 
+
+    mismatch += SSim::Compare( a->sim, b->sim, true ); 
+
     return mismatch ; 
 }
 
@@ -1813,14 +1800,22 @@ void CSGFoundry::write(const char* dir_) const
     if(itra.size() > 0 ) NP::Write(dir, "itra.npy",   (float*)itra.data(), itra.size(),   4, 4 ); 
     if(inst.size() > 0 ) NP::Write(dir, "inst.npy",   (float*)inst.data(), inst.size(),   4, 4 ); 
 
-    if(sim) sim->save(dir, "SSim");  
+    if(sim)
+    {
+        LOG(fatal) << " SSim::save " << dir ;  
+        sim->save(dir, "SSim");  
+    }
+    else
+    {
+        LOG(fatal) << " CANNOT SSim::save AS sim null " ;  
+    }
 }
 
 
 #ifdef WITH_FOREIGN
 /**
-CSGFoundry::saveOpticalBnd
-----------------------------
+CSGFoundry::saveOpticalBnd  THIS FUNCTIONALITY NEEDS TO MOVE TO SSim
+-----------------------------------------------------------------------
 
 CAUTION : ONLY APPROPRIATE IN SMALL SCALE TESTING WHEN ARE DOING 
 DIRTY THINGS LIKE ADDING BOUNDARIES WITH QBnd::Add SEE FOR EXAMPLE

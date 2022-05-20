@@ -14,6 +14,7 @@ int main(int argc, char** argv)
     // still needs Opticks instance,  
     // TODO: avoid this by replacing with automated SOpticks 
     // instanciated by OPTICKS_LOG
+
     Opticks::Configure(argc, argv, "--gparts_transform_offset" );  
 
     G4CXOpticks gx ;  
@@ -21,8 +22,6 @@ int main(int argc, char** argv)
     //gx.setGeometry(SPath::SomeGDMLPath()); 
     gx.setGeometry(CSGFoundry::Load()); 
 
-
-    gx.setGenstep
     gx.simulate(); 
  
     return 0 ; 

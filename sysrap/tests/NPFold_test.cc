@@ -23,6 +23,11 @@ int main()
     NPFold* nf1 = NPFold::Load(base); 
 
     std::cout << "nf1" << std::endl << nf1->desc()  ; 
+
+
+    int cf = NPFold::Compare(&nf0, nf1, true ); 
+    assert( cf == 0 ); 
+
    
 
     return 0 ; 

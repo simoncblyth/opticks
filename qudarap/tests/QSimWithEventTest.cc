@@ -2,7 +2,7 @@
 
 #include "SSys.hh"
 #include "SPath.hh"
-#include "SProp.hh"
+#include "SSim.hh"
 #include "NP.hh"
 #include "SOpticksResource.hh"
 
@@ -19,28 +19,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    // TODO: adopt SSim for centralized management (in one place) of QSim input arrays 
-
-    const char* cfbase = SOpticksResource::CFBase(); 
-    LOG(info) << " cfbase " << cfbase ; 
-    NP* icdf = NP::Load(cfbase, "CSGFoundry", "icdf.npy"); 
-    NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
-    NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
-    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
-
-    if(icdf == nullptr || bnd == nullptr)
-    {
-        LOG(fatal) 
-            << " MISSING QSim CSGFoundry input arrays "
-            << " cfbase " << cfbase 
-            << " icdf " << icdf 
-            << " bnd " << bnd 
-            << " (recreate these with : \"c ; om ; cg ; om ; ./run.sh \" ) "
-            ;
-        return 1 ; 
-    }
-
-    QSim::UploadComponents(icdf, bnd, optical, propcom ); 
+    const SSim* ssim = SSim::Load(); 
+    QSim::UploadComponents(ssim); 
 
     QSim qs ; 
 

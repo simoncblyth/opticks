@@ -41,7 +41,7 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
     cx = CSGOptiX::Create(fd); 
 }
 
-void G4CXOpticks::render_snap()
+void G4CXOpticks::render()
 {
     assert( cx ); 
     assert( SEventConfig::IsRGModeRender() ); 
@@ -61,6 +61,20 @@ Needs to:
 HMM: all that does not need G4, so can do that at CSGOptiX level 
 
 **/
+
+void G4CXOpticks::simulate()
+{
+    assert(cx); 
+    assert( SEventConfig::IsRGModeSimulate() ); 
+    cx->simulate(); 
+}
+
+void G4CXOpticks::simtrace()
+{
+    assert(cx); 
+    assert( SEventConfig::IsRGModeSimtrace() ); 
+    cx->simtrace(); 
+}
 
 
     

@@ -17,14 +17,13 @@ implementations.
 
 Contrast with the QEvent with a very different event-by-event lifecycle  
 
-TODO: more modularization, do less directly in QSim
-
-
 HMM : MOST OF THIS API IS FOR TESTING ONLY  : TODO: Move lots to QSimTest perhaps ?
 
 **/
 
 struct NP ; 
+struct SSim ; 
+
 template <typename T> struct QTex ; 
 template <typename T> struct QBuf ; 
 template <typename T> struct QProp ; 
@@ -58,9 +57,7 @@ struct QUDARAP_API QSim
     static QSim* INSTANCE ; 
     static QSim* Get(); 
 
-    static void UploadComponents(const NP* icdf, const NP* bnd, const NP* optical, const NP* propcom );   
-    static void UploadMultiFilm(const NP * multi_film_lut );
-
+    static void UploadComponents(const SSim* ssim);   
 
     const QBase*     base ; 
     QEvent*          event ; 

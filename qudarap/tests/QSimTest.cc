@@ -15,7 +15,7 @@ QSimTest.cc
 #include "squad.h"
 #include "SSys.hh"
 #include "SPath.hh"
-#include "SProp.hh"
+#include "SSim.hh"
 #include "NP.hh"
 
 #include "QRng.hh"
@@ -636,49 +636,15 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* default_testname = "G" ; 
-    const char* testname = SSys::getenvvar("TEST", default_testname); 
+    const char* testname = SSys::getenvvar("TEST", "hemisphere_s_polarized"); 
     int type = QSimLaunch::Type(testname); 
 
-
-    // TODO: QSim/SSim centralized control of inputs 
-    {
-        const char* cfbase = SOpticksResource::CFBase(); 
-
-        // HMM: this is just for one material ... Cerenkov needs this for all 
-        // TODO: need better icdf naming now that can do both scint and ck with icdf, see CSG_GGeo_Convert::convertScintillatorLib 
-        // HMM: this placement of simulation input arrays directly under CSGFoundry seems off, manage with QSim or SSim ? 
-
-        NP* icdf    = NP::Load(cfbase, "CSGFoundry", "icdf.npy");  
-        NP* bnd     = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
-        NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
-        const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
-
-        if(icdf == nullptr || bnd == nullptr)
-        {
-            LOG(fatal) 
-                << " MISSING QSim CSGFoundry input arrays "
-                << " cfbase " << cfbase 
-                << " icdf " << icdf 
-                << " bnd " << bnd 
-                << " (recreate these with : \"c ; om ; cg ; om ; ./run.sh \" ) "
-                ;
-            return 1 ; 
-        }
-
-        if( type == MULTIFILM_LOOKUP )  
-        { 
-            NP* lut = NP::Load("/tmp/debug_multi_film_table/all_table.npy");
-            assert(lut);
-            QSim::UploadMultiFilm(lut);
-        } 
-
-        QSim::UploadComponents(icdf, bnd, optical, propcom); 
-    }
-
+    SSim* ssim = SSim::Load(); 
+    QSim::UploadComponents(ssim); 
 
     QSimTest::PreInit(type)  ; 
     unsigned num = QSimTest::Num(argc, argv); 
+
     QSimTest qst(type, num)  ; 
     qst.main(); 
 

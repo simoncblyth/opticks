@@ -39,6 +39,7 @@ struct NPFold
     static bool IsNPY(const char* k); 
     static NPFold* Load(const char* base); 
     static NPFold* Load(const char* base, const char* rel); 
+    static int Compare(const NPFold* a, const NPFold* b, bool dump ); 
 
     static int Compare(const FTSENT** one, const FTSENT** two); 
     static void Indent(int i); 
@@ -48,7 +49,15 @@ struct NPFold
 
     void check() const ; 
     void add(const char* k, const NP* a); 
+    void set(const char* k, const NP* a); 
+
+    int num_items() const ; 
+    const char* get_key(unsigned idx) const ; 
+    const NP*   get_array(unsigned idx) const ; 
+
     int find(const char* k) const ; 
+    bool has_key(const char* k) const ; 
+
     const NP* get(const char* k) const ; 
 
     void save(const char* base) const ; 
@@ -60,8 +69,12 @@ struct NPFold
     int  load_index(const char* base) ; 
     void load_array(const char* base, const char* relp); 
 
+
+
     std::string desc() const ; 
 }; 
+
+
 
 inline NPFold* NPFold::Load(const char* base)
 {
@@ -77,6 +90,49 @@ inline NPFold* NPFold::Load(const char* base, const char* rel)
     return nf ;  
 }
 
+inline int NPFold::Compare(const NPFold* a, const NPFold* b, bool dump)
+{
+    int na = a->num_items(); 
+    int nb = b->num_items(); 
+    bool item_match = na == nb ;  
+
+    if(dump) std::cout << " na " << na << " nb " << nb << " item_match " << item_match << std::endl ; 
+    if(!item_match ) return -1 ; 
+
+    int mismatch = 0 ; 
+    for(int i=0 ; i < na ; i++)
+    {
+        const char* a_key = a->get_key(i); 
+        const char* b_key = b->get_key(i); 
+        const NP*   a_arr = a->get_array(i); 
+        const NP*   b_arr = b->get_array(i); 
+
+        bool key_match = strcmp(a_key, b_key) == 0 ; 
+        if(dump) std::cout 
+            << " a_key " << std::setw(40) << a_key 
+            << " b_key " << std::setw(40) << b_key 
+            << " key_match " << key_match 
+            << std::endl 
+            ; 
+        if(!key_match) mismatch += 1  ; 
+
+        bool arr_match = NP::Memcmp(a_arr, b_arr) == 0 ; 
+        if(dump) std::cout 
+            << " a_arr " << std::setw(40) << a_arr->sstr() 
+            << " b_arr " << std::setw(40) << b_arr->sstr() 
+            << " arr_match " << arr_match 
+            << std::endl
+            ; 
+
+        if(!arr_match) mismatch += 1 ; 
+    }
+
+    if(dump) std::cout << "NPFold::Compare mismatch " << mismatch << std::endl ; 
+    return mismatch ; 
+}
+
+
+
 inline void NPFold::check() const
 {
     assert( kk.size() == aa.size() ); 
@@ -87,6 +143,8 @@ inline bool NPFold::IsNPY(const char* k)
     return strlen(k) > strlen(EXT) && strcmp( k + strlen(k) - strlen(EXT), EXT ) == 0 ; 
 }
 
+
+
 inline void NPFold::add(const char* k, const NP* a) 
 {
     bool is_npy = IsNPY(k); 
@@ -96,10 +154,41 @@ inline void NPFold::add(const char* k, const NP* a)
     kk.push_back(k); 
     aa.push_back(a); 
 }
+
+inline void NPFold::set(const char* k, const NP* a) 
+{
+    int idx = find(k); 
+    if(idx == -1)  add(k, a); 
+
+     // HMM: leaking the old one  
+     aa[idx] = a ; 
+}
+
+
+inline int NPFold::num_items() const 
+{
+    check(); 
+    return kk.size(); 
+}
+inline const char* NPFold::get_key(unsigned idx) const 
+{
+    return idx < kk.size() ? kk[idx].c_str() : nullptr ;
+}
+inline const NP* NPFold::get_array(unsigned idx) const 
+{
+    return idx < aa.size() ? aa[idx] : nullptr ;
+}
+
 inline int NPFold::find(const char* k) const
 {
     size_t idx = std::distance( kk.begin(), std::find( kk.begin(), kk.end(), k )) ; 
     return idx < kk.size() ? idx : -1 ; 
+}
+
+inline bool NPFold::has_key(const char* k) const 
+{
+    int idx = find(k); 
+    return idx > -1 ; 
 }
 
 inline const NP* NPFold::get(const char* k) const 

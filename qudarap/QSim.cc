@@ -1,5 +1,6 @@
 #include "PLOG.hh"
 #include "SSys.hh"
+#include "SSim.hh"
 #include "SPath.hh"
 #include "scuda.h"
 #include "squad.h"
@@ -65,7 +66,7 @@ BETTER: Use an SSim instance for holding onto components which is consulted by Q
 
 **/
 
-void QSim::UploadComponents( const NP* icdf, const NP* bnd, const NP* optical, const NP* propcom  )
+void QSim::UploadComponents( const SSim* ssim  )
 {
     QBase* base = new QBase ; 
     LOG(LEVEL) << base->desc(); 
@@ -73,6 +74,9 @@ void QSim::UploadComponents( const NP* icdf, const NP* bnd, const NP* optical, c
     QRng* rng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << rng->desc(); 
 
+
+    const NP* optical = ssim->get(SSim::OPTICAL); 
+    const NP* bnd = ssim->get(SSim::BND); 
 
     if( optical == nullptr && bnd == nullptr )
     {
@@ -91,7 +95,7 @@ void QSim::UploadComponents( const NP* icdf, const NP* bnd, const NP* optical, c
     QDebug* debug_ = new QDebug ; 
     LOG(info) << debug_->desc() ; 
 
-
+    const NP* propcom = ssim->get(SSim::PROPCOM); 
     if( propcom )
     {
         LOG(error) << "[ QProp " ; 
@@ -102,6 +106,7 @@ void QSim::UploadComponents( const NP* icdf, const NP* bnd, const NP* optical, c
     }
 
 
+    const NP* icdf = ssim->get(SSim::ICDF); 
     if( icdf == nullptr )
     {
         LOG(warning) << " icdf null " ; 
@@ -117,25 +122,15 @@ void QSim::UploadComponents( const NP* icdf, const NP* bnd, const NP* optical, c
     QCerenkov* cerenkov = new QCerenkov  ; 
     LOG(LEVEL) << cerenkov->desc(); 
 
-}
 
-/**
-QSim::UploadMultiFilm
---------------------------
-  
- instance QMultiFilm and upload the component : lookup table
-
-**/
-
-void QSim::UploadMultiFilm( const NP* lut )
-{
-    if(lut == nullptr)
+    const NP* multifilm = ssim->get(SSim::MULTIFILM); 
+    if(multifilm == nullptr)
     {
-        LOG(warning) << " lut null ";
+        LOG(warning) << " multifilm null ";
     }
     else
     {
-        QMultiFilm* mul = new QMultiFilm( lut ); 
+        QMultiFilm* mul = new QMultiFilm( multifilm ); 
         LOG(LEVEL) << mul->desc();
     }
 }

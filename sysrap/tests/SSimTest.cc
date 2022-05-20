@@ -4,25 +4,13 @@
 #include "OPTICKS_LOG.hh"
 
 
-void test_Add()
+void test_Load()
 {
-    const char* cfbase = SOpticksResource::CFBase() ; 
-    LOG(info) << " cfbase " << cfbase ; 
-    NP* optical = NP::Load(cfbase, "CSGFoundry", "optical.npy"); 
-    NP* bnd     = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
-
-    LOG(info) << "BEFORE " << std::endl << SSim::DescOptical(optical, bnd ) << std::endl ; 
-
-    NP* opticalplus = nullptr ; 
-    NP* bndplus = nullptr ; 
-    std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;
-
-    SSim::Add( &opticalplus, &bndplus, optical, bnd, specs ); 
-
-    LOG(info) << "AFTER " << std::endl << SSim::DescOptical(opticalplus, bndplus ) << std::endl ; 
+    SSim* sim = SSim::Load(); 
+    std::cout << sim->desc() ;  
 }
 
-void test_findName(const SSim* sim)
+void test_findName()
 {
     std::vector<std::string> names = {
         "Air", 
@@ -46,13 +34,17 @@ void test_findName(const SSim* sim)
         "Steel"
       } ; 
 
-    unsigned i, j ; 
 
+    const SSim* sim = SSim::Load(); 
     const NP* bnd = sim->get(SSim::BND); 
+    std::cout << " bnd " << bnd->sstr() << std::endl ; 
+    std::cout << " bnd.names " << bnd->names.size() << std::endl ; 
+
 
     for(unsigned a=0 ; a < names.size() ; a++ )
     {
          const std::string& n = names[a] ; 
+         unsigned i, j ; 
          bool found = sim->findName(i,j,n.c_str() ); 
 
          std::cout << std::setw(30) << n << " " ; 
@@ -77,21 +69,34 @@ void test_findName(const SSim* sim)
 }
 
 
+void test_addFake()
+{
+    SSim* sim = SSim::Load(); 
+    std::string bef = sim->desc(); 
+
+    LOG(info) << "BEFORE " << std::endl << sim->descOptical() << std::endl ; 
+
+    std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;
+    sim->addFake(specs); 
+    std::string aft = sim->desc(); 
+
+    LOG(info) << "AFTER " << std::endl << sim->descOptical() << std::endl ; 
+
+    std::cout << "bef" << std::endl << bef << std::endl ; 
+    std::cout << "aft" << std::endl << aft << std::endl ; 
+}
+
 
 
 int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
-
-    const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
-    LOG(info) << " cfbase " << cfbase ; 
-    NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
-
-    SSim* sim = SSim::Get(); 
-    sim->add(SSim::BND, bnd); 
- 
-    //test_Add();     
-    test_findName(sim); 
+   
+    /*
+    test_Load(); 
+    test_findName(); 
+    */
+    test_addFake();     
 
 
     return 0 ; 

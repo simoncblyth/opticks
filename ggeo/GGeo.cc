@@ -27,6 +27,7 @@
 #include "SStr.hh"
 #include "SLog.hh"
 #include "SSim.hh"
+#include "SProp.hh"
 #include "NP.hh"
 
 
@@ -2332,8 +2333,14 @@ void GGeo::dryrun_convert()
 
 void GGeo::convertSim() const 
 {
-    convertSim_BndLib(); 
-    convertSim_ScintillatorLib(); 
+    SSim* sim = SSim::Get();
+    if(sim == nullptr) LOG(fatal) << "SSim should have been created by CSGFoundry::CSGFoundry " ; 
+    assert(sim);  
+
+    convertSim_BndLib(sim); 
+    convertSim_ScintillatorLib(sim); 
+    convertSim_Prop(sim); 
+    convertSim_MultiFilm(sim); 
 }
 
 /**
@@ -2344,7 +2351,7 @@ Migrated down from CSG_GGeo_Convert::convertBndLib
 
 **/
 
-void GGeo::convertSim_BndLib() const 
+void GGeo::convertSim_BndLib(SSim* sim) const 
 {
     LOG(LEVEL) << "[" ; 
     GBndLib* blib = getBndLib(); 
@@ -2368,9 +2375,8 @@ void GGeo::convertSim_BndLib() const
 
         LOG(LEVEL) << " bnd.set_names " << bndnames.size() ; 
 
-        SSim* sim = SSim::Get();   // instanciates if not existing 
-        sim->add("bnd.npy", bnd ); 
-        sim->add("optical.npy", optical ); 
+        sim->add(SSim::BND, bnd ); 
+        sim->add(SSim::OPTICAL, optical ); 
     }    
     else 
     {    
@@ -2378,12 +2384,31 @@ void GGeo::convertSim_BndLib() const
     }    
 }
 
-void GGeo::convertSim_ScintillatorLib() const 
+void GGeo::convertSim_ScintillatorLib(SSim* sim) const 
 {
     GScintillatorLib* slib = getScintillatorLib();
     NP* icdf = slib->getBuf();   // assuming 1 scintillator
-    SSim* sim = SSim::Get();   // instanciates if not existing 
-    sim->add("icdf.npy", icdf); 
+    sim->add(SSim::ICDF, icdf); 
 }
+
+void GGeo::convertSim_Prop(SSim* sim) const 
+{
+    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
+    sim->add(SSim::PROPCOM, propcom); 
+}
+
+
+void GGeo::convertSim_MultiFilm(SSim* sim) const 
+{
+    const char* defpath = "/tmp/debug_multi_film_table/all_table.npy" ; 
+    const char* path = SSys::getenvvar("SSIM_MULTIFILM_PATH", defpath); 
+    if(NP::Exists(path))
+    {
+        const NP* multifilm = NP::Load(path);  
+        sim->add(SSim::MULTIFILM, multifilm ); 
+    }
+}
+
+
 
 
