@@ -35,7 +35,7 @@ hit__      = lambda p,msk:p[np.where( ( flagmask__(p) & msk ) == msk)]
 from opticks.CSG.CSGFoundry import CSGFoundry 
 cf = CSGFoundry.Load()
 
-bflagdesc_ = lambda p:"%s : %s " % ( flagdesc_(p), cf.bndnamedict[boundary_(p)] )
+bflagdesc_ = lambda p:"%s : %s " % ( flagdesc_(p), cf.sim.bndnamedict[boundary_(p)] )
 
 
 

@@ -3,17 +3,26 @@ usage(){ cat << EOU
 cxs_raindrop.sh : CXRaindropTest combining CFBASE_LOCAL raindrop geometry with standard CFBASE basis geometry  
 =================================================================================================================
 
-Grab from remote::
+Run on remote::
 
     cx
-    ./tmp_grab.sh 
+    ./cxs_raindrop.sh 
+    PIDX=0 ./cxs_raindrop.sh     # debug print index control via envvar 
 
-    ## ./cf_grab.sh    
-    ##     actually the tmp_grab.sh should be getting the specific persisted CSGFoundry 
-    ##     should not need the remote central one  ?
+Grab from remote to laptop::
 
-    PIDX=0 ./cxs_raindrop.sh  
-  
+    cx
+    ./tmp_grab.sh   ## grabs CSGFoundry, SSim inputs and output photons etc.. 
+
+
+Analysis of outputs::
+
+    cx
+    ./cxs_raindrop.sh ana 
+
+TODO: need python level updates for SSim
+
+
 EOU
 }
 
@@ -62,7 +71,10 @@ if [ "${arg/run}" != "$arg" -o "${arg/dru}" != "$arg" ]; then
     cd $logdir
 
     if [ -n "$DEBUG" ]; then 
-        lldb__  $bin
+        case $(uname) in
+           Darwin) lldb__  $bin  ;;
+           Linux)  gdb $bin ;;
+        esac 
     else
         $bin
     fi 

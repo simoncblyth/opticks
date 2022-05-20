@@ -6,6 +6,9 @@ from opticks.ana.key import keydir
 
 
 
+
+
+
 class MM(object):
     """
     The input file is now a standard resident of the CSGFoundry directory 
@@ -84,6 +87,89 @@ class LV(object):
 
     
 
+class NPFold(object):
+    INDEX = "NPFold_index.txt"
+
+    @classmethod
+    def IndexPath(cls, fold):
+        return os.path.join(fold, cls.INDEX)
+
+    @classmethod
+    def HasIndex(cls, fold):
+        return os.path.exists(cls.IndexPath(fold))
+
+    @classmethod
+    def namelist_to_namedict(cls, namelist):
+        nd = {} 
+        if not namelist is None:
+            nd = dict(zip(range(len(namelist)),list(map(str,namelist)))) 
+        pass
+        return nd
+
+    def __init__(self, fold):
+        self.fold = fold
+        if self.HasIndex(fold):
+            self.load_idx(fold)
+        else:
+            self.load_fts(fold)
+        pass
+
+    def load_fts(self, fold):
+        assert 0 
+
+    def load_idx(self, fold):
+        kk = open(self.IndexPath(fold),"r").read().splitlines()
+        aa = []
+        for k in kk:
+            path = os.path.join(fold, k)
+            assert os.path.exists(path)
+            a = np.load(path)
+            aa.append(a)
+        pass
+        self.kk = kk 
+        self.aa = aa
+
+    def find(self, k):
+        return self.kk.index(k) if k in self.kk else -1 
+
+    def has_key(self, k):
+        return self.find(k) > -1  
+
+    def __repr__(self):
+        lines = []
+        lines.append("NPFold %s " % self.fold )
+        for i in range(len(self.kk)):
+            k = self.kk[i]
+            a = self.aa[i] 
+            stem, ext = os.path.splitext(os.path.basename(k))
+            path = os.path.join(self.fold, k)  
+            lines.append("%10s : %20s : %s " % (stem, str(a.shape), k ))
+        pass
+        return "\n".join(lines) 
+        
+
+class SSim(NPFold):
+    BND = "bnd.npy"
+    @classmethod
+    def Load(cls, simbase):
+        sim = cls(fold=os.path.join(simbase, "SSim"))  
+        return sim
+
+    def __init__(self, fold):
+        NPFold.__init__(self, fold) 
+        if self.has_key(self.BND):
+            bnpath = os.path.join(fold, "bnd_names.txt")
+            assert os.path.exists(bnpath)
+            bnd_names = open(bnpath,"r").read().splitlines()
+            self.bnd_names = bnd_names
+        pass
+        if hasattr(self, 'bnd_names'):  # names list from NP bnd.names metadata 
+             bndnamedict = NPFold.namelist_to_namedict(self.bnd_names)
+        else:
+             bndnamedict = {}
+        pass
+        self.bndnamedict = bndnamedict
+        pass
 
 
 
@@ -163,28 +249,14 @@ class CSGFoundry(object):
         pass
         return digest 
 
-
-    @classmethod
-    def namelist_to_namedict(cls, namelist):
-        nd = {} 
-        if not namelist is None:
-            nd = dict(zip(range(len(namelist)),list(map(str,namelist)))) 
-        pass
-        return nd
- 
-    def __init__(self, fold=FOLD):
+    #def __init__(self, fold=FOLD):
+    def __init__(self, fold):
         self.load(fold)
-        self.meshnamedict = self.namelist_to_namedict(self.meshname)
-
-        if hasattr(self, 'bnd_names'):  # names list from NP bnd.names metadata 
-             bndnamedict = self.namelist_to_namedict(self.bnd_names)
-        else:
-             bndnamedict = {}
-        pass
-        self.bndnamedict = bndnamedict
+        self.meshnamedict = NPFold.namelist_to_namedict(self.meshname)
+        self.sim = SSim.Load(fold)
 
         self.mokname = "zero one two three four five six seven eight nine".split()
-        self.moknamedict = self.namelist_to_namedict(self.mokname)
+        self.moknamedict = NPFold.namelist_to_namedict(self.mokname)
         self.insnamedict = {}
 
         self.lv = LV(os.path.join(fold, "meshname.txt"))

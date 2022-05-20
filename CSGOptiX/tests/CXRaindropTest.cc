@@ -1,6 +1,6 @@
 /**
-CXRaindropTest
-======================
+CXRaindropTest : Used from cxs_raindrop.sh 
+==============================================
 
 **/
 
