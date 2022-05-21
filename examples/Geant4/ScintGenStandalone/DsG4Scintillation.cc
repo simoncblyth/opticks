@@ -555,9 +555,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 #ifdef STANDALONE
-    U4::GetPhotonInfoAncestor(&aTrack);  //  with hidden holding of the ancestor
-    //spho ancestor = U4PhotonInfo::Get(&aTrack); 
-    //std::cout << "DsG4Scintillation::PostStepDoIt ancestor " << ancestor.desc() << std::endl ;   
+    U4::GenPhotonAncestor(&aTrack);  
 #endif
 
 
@@ -620,7 +618,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
            G4Opticks::Get()->setAlignIndex( ancestor_id > -1 ? ancestor_id : gs.offset + i );  // aka photon_id
 #endif
 #ifdef STANDALONE
-           U4::SetAlignIndex(i);  // trying to do this without baring soul ? 
+           U4::GenPhotonBegin(i); 
 #endif
 
            G4double sampledEnergy;
@@ -760,7 +758,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 #ifdef STANDALONE
-           U4::SetPhotonInfoSecondary(aSecondaryTrack, i) ;  
+           U4::GenPhotonEnd(i, aSecondaryTrack);  
 #endif
 
          }    // i:genloop over NumPhoton
@@ -773,12 +771,18 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 
+    G4VParticleChange* change = G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep); 
+
+#ifdef STANDALONE
+    U4::GenPhotonSecondaries(&aTrack, change);  
+#endif
+
     if (verboseLevel > 0) {
         G4cout << "\n Exiting from G4Scintillation::DoIt -- NumberOfSecondaries = " 
                << aParticleChange.GetNumberOfSecondaries() << G4endl;
     }
 
-    return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
+    return change ; 
 }
 
 

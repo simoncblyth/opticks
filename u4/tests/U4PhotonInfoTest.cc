@@ -9,7 +9,7 @@ void test_SetGet()
     U4PhotonInfo::Set(track, p0 ); 
     const G4Track* ctrack = track ; 
     spho p1 = U4PhotonInfo::Get(ctrack); 
-    assert( p1.isEqual(p0) ); 
+    assert( p1.isIdentical(p0) ); 
 
     std::cout 
         << " track " << track << std::endl 

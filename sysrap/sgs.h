@@ -38,10 +38,24 @@ struct sgs
 #include <iomanip>
 #include "OpticksGenstep.h"
 
+/**
+sgs::MakePho
+-------------
+
+ancestor.isDefined:false
+    the more common case, when generating primary optical 
+    photons via the Cerenkov or Scintillation processes 
+
+    HMM: "ancestor" should more correctly be called "reemissionAncestorPhoton"
+
+ancestor.isDefined:true
+    when a photon undergoes reemission the ancestor is the parent photon
+
+**/
 
 inline spho sgs::MakePho(unsigned idx, const spho& ancestor)
 {
-    return ancestor.isPlaceholder() ? spho::MakePho(index, idx, offset + idx, 0) : ancestor.make_reemit() ; 
+    return ancestor.isDefined() ? ancestor.make_reemit() : spho::MakePho(index, idx, offset + idx, 0) ; 
 }
 
 inline std::string sgs::desc() const 

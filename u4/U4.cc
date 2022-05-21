@@ -94,38 +94,63 @@ static quad6 MakeGenstep_DsG4Scintillation_r4695(
 }
 
 
-// TU-local entity ?
+/**
+Here are holding the state of the genstep collection in 
+translation-unit-local static variables. 
+
+An alternative more o.o. approach would be to use a U4Private/U4Impl struct
+that a U4 instance holds a pointer to and passes along messages to.  
+That is like the PImpl pattern : pointer to implementation.
+
+* https://www.geeksforgeeks.org/pimpl-idiom-in-c-with-examples/
+* https://www.cppstories.com/2018/01/pimpl/
+
+**/
+
 static sgs gs = {} ; 
 static spho ancestor = {} ; 
 static spho pho = {} ; 
 static spho secondary = {} ; 
+static bool dump = false ; 
 
-void U4::GetPhotonInfoAncestor( const G4Track* aTrack )
+
+void U4::GenPhotonAncestor( const G4Track* aTrack )
 {
     ancestor = U4PhotonInfo::Get(aTrack) ; 
-    std::cout << "U4::GetPhotonInfoAncestor " << ancestor.desc() << std::endl ;  
+    if(dump) std::cout << "U4::GenPhotonAncestor " << ancestor.desc() << std::endl ;  
 }
-void U4::SetPhotonInfoSecondary(G4Track* aSecondaryTrack, int genloop_idx )
-{
-     secondary = gs.MakePho(genloop_idx, ancestor) ; 
-     std::cout << "U4::SetPhotonInfoSecondary " << secondary.desc() << std::endl ; 
-     U4PhotonInfo::Set(aSecondaryTrack, secondary ); 
-}
-void U4::SetAlignIndex( int genloop_idx )
-{
-    if(genloop_idx == -1) return ; 
-    pho = gs.MakePho(genloop_idx, ancestor); 
-    int align_id = ancestor.isPlaceholder() ? gs.offset + genloop_idx : ancestor.id ; 
 
-    std::cout 
-        << "U4::SetAlignIndex"
+void U4::GenPhotonBegin( int genloop_idx )
+{
+    assert(genloop_idx > -1); 
+    pho = gs.MakePho(genloop_idx, ancestor); 
+
+    int align_id = ancestor.isPlaceholder() ? gs.offset + genloop_idx : ancestor.id ; 
+    assert( pho.id == align_id );     
+
+    if(dump) std::cout 
+        << "U4::GenPhotonBegin"
         << " genloop_idx " << std::setw(6) << genloop_idx 
         << " gs.offset " << std::setw(6) << gs.offset 
         << " pho.id " << std::setw(6) << pho.id
         << std::endl 
         ; 
+}
 
-    assert( pho.id == align_id );     
+void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
+{
+    assert(genloop_idx > -1); 
+    secondary = gs.MakePho(genloop_idx, ancestor) ; 
+
+    assert( secondary.isIdentical(pho) ); 
+
+    if(dump) std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ; 
+    U4PhotonInfo::Set(aSecondaryTrack, secondary ); 
+}
+
+void U4::GenPhotonSecondaries( const G4Track* aTrack, const G4VParticleChange* change )
+{
+    if(dump) std::cout << "U4::GenPhotonSecondaries" << std::endl ; 
 }
 
 
@@ -137,9 +162,12 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
          G4double ScintillationTime
     )
 {
+    if(dump) std::cout << "U4::CollectGenstep_DsG4Scintillation_r4695" << std::endl ; 
     quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
     gs = SEvt::AddGenstep(gs_);  
 }
+
+
 
 
 G4MaterialPropertyVector* U4::MakeProperty(const NP* a)  // static

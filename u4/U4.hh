@@ -61,9 +61,10 @@ struct U4_API U4
 
 
 
-    static void GetPhotonInfoAncestor(const G4Track* aTrack ); 
-    static void SetPhotonInfoSecondary(G4Track* aSecondaryTrack, int genloop_idx ); 
-    static void SetAlignIndex( int genloop_idx ); 
+    static void GenPhotonAncestor(const G4Track* aTrack );                    // prior to photon generation loop(s)
+    static void GenPhotonBegin( int genloop_idx );                            // start of generation loop
+    static void GenPhotonEnd(   int genloop_idx, G4Track* aSecondaryTrack );  // end of generation loop
+    static void GenPhotonSecondaries(const G4Track* aTrack, const G4VParticleChange* change ); 
 
     static void CollectGenstep_DsG4Scintillation_r4695( 
          const G4Track* aTrack,
