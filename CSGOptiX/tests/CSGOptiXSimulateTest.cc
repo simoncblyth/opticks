@@ -18,7 +18,7 @@ using the intentional arms length relationship between CSGFoundry and SSim.
 #include "SOpticks.hh"
 #include "OPTICKS_LOG.hh"
 #include "SEvent.hh"
-#include "SEventConfig.hh"
+//#include "SEventConfig.hh"
 
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
@@ -30,7 +30,7 @@ using the intentional arms length relationship between CSGFoundry and SSim.
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    SOpticks::WriteOutputDirScript(SEventConfig::OutFold()) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
+    //SOpticks::WriteOutputDirScript(SEventConfig::OutFold()) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
 
     const SSim* ssim = SSim::Load() ;  // standard CFBase/CSGFoundry/SSim
     QSim::UploadComponents(ssim); 
@@ -41,13 +41,9 @@ int main(int argc, char** argv)
 
     CSGOptiX* cx = CSGOptiX::Create(fdl);  // uploads geometry 
 
-    // Thru to QEvent, uploads and creates seed buffer
-    cx->setGenstep(SEvent::MakeCarrierGensteps());     
-
+    cx->setGenstep(SEvent::MakeCarrierGensteps());  // Thru to QEvent, uploads and creates seed buffer
     cx->simulate();   // does OptiX launch 
-
     cudaDeviceSynchronize(); 
-
     cx->event->save();
  
     return 0 ; 

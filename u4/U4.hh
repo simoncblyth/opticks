@@ -1,8 +1,15 @@
 #pragma once
+/**
+U4.hh
+======
 
+
+
+**/
+
+// HMM: try to keep Opticks types out of this header, for sure avoid needing their headers
 struct NP ; 
-//struct sscint ; 
-struct quad6 ; 
+//struct quad6 ; 
 
 #include <string>
 #include "plog/Severity.h"
@@ -52,13 +59,20 @@ struct U4_API U4
 
     static NP* CollectOpticalSecondaries(const G4VParticleChange* pc ); 
 
-    static quad6 MakeGenstep_DsG4Scintillation_r4695( 
+
+
+    static void GetPhotonInfoAncestor(const G4Track* aTrack ); 
+    static void SetPhotonInfoSecondary(G4Track* aSecondaryTrack, int genloop_idx ); 
+    static void SetAlignIndex( int genloop_idx ); 
+
+    static void CollectGenstep_DsG4Scintillation_r4695( 
          const G4Track* aTrack,
          const G4Step* aStep,
          G4int    numPhotons,
          G4int    scnt,        
          G4double ScintillationTime
     ); 
+
 
 };
 

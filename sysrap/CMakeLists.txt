@@ -192,6 +192,7 @@ set(HEADERS
 
     sphoton.h
     spho.h
+    sgs.h 
     srec.h 
     srec.h 
     sseq.h 

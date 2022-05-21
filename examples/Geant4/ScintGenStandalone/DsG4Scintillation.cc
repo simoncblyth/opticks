@@ -66,15 +66,18 @@
 //--------------------------------------------------------------------
 //
 #ifdef STANDALONE
-#include "scuda.h"
-#include "squad.h"
-#include "spho.h"
-#include "sgs.h"
+
+// HMM: how to collect gensteps less disruptively in higher level way, with just the one header ?
+// this is baring everything ... try keeping genstep implementation behind the curtains ?
+
+//#include "scuda.h"
+//#include "squad.h"
+//#include "sgs.h"
+
+//#include "spho.h"
 #include "U4.hh"
-#include "U4PhotonInfo.h"
-
-#include "SEvt.hh"
-
+//#include "U4PhotonInfo.h"
+//#include "SEvt.hh"
 
 #else
 #include <boost/python.hpp>
@@ -552,8 +555,9 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 #ifdef STANDALONE
-    spho ancestor = U4PhotonInfo::Get(&aTrack); 
-    std::cout << "DsG4Scintillation::PostStepDoIt ancestor " << ancestor.desc() << std::endl ;   
+    U4::GetPhotonInfoAncestor(&aTrack);  //  with hidden holding of the ancestor
+    //spho ancestor = U4PhotonInfo::Get(&aTrack); 
+    //std::cout << "DsG4Scintillation::PostStepDoIt ancestor " << ancestor.desc() << std::endl ;   
 #endif
 
 
@@ -602,12 +606,9 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #ifdef STANDALONE
         if(flagReemission) assert( NumPhoton == 0 || NumPhoton == 1);   // expecting only 0 or 1 remission photons
         bool is_opticks_genstep = NumPhoton > 0 && !flagReemission ; 
-
-        sgs gs = {} ; 
         if(is_opticks_genstep && (m_opticksMode & 1))
         {
-            quad6 gs_ = U4::MakeGenstep_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime);
-            gs = SEvt::AddGenstep(gs_);  
+            U4::CollectGenstep_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime); 
         }
 #endif
 
@@ -619,9 +620,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
            G4Opticks::Get()->setAlignIndex( ancestor_id > -1 ? ancestor_id : gs.offset + i );  // aka photon_id
 #endif
 #ifdef STANDALONE
-           spho pho = gs.MakePho(i, ancestor); 
-           int align_id = ancestor.isPlaceholder() ? gs.offset + i : ancestor.id ; 
-           assert( pho.id == align_id ); 
+           U4::SetAlignIndex(i);  // trying to do this without baring soul ? 
 #endif
 
            G4double sampledEnergy;
@@ -761,9 +760,8 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 #ifdef STANDALONE
-           U4PhotonInfo::Set(aSecondaryTrack, gs.MakePho(i, ancestor)); 
+           U4::SetPhotonInfoSecondary(aSecondaryTrack, i) ;  
 #endif
-
 
          }    // i:genloop over NumPhoton
   

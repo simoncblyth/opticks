@@ -11,12 +11,6 @@
 #include "CSGFoundry.h"
 #include "CSGGenstep.h"
 
-//#include "SCenterExtentGenstep.hh"
-
-/**
-TODO: adopt SCenterExtentGenstep.hh
-**/
-
 
 const plog::Severity CSGGenstep::LEVEL = PLOG::EnvLevel("CSGGenstep", "DEBUG"); 
 
@@ -171,7 +165,9 @@ void CSGGenstep::override_locate()
 CSGGenstep::configure_grid
 ----------------------------
 
-Config grid to probe the geometry 
+Standarizes the grid param and uses the param to obtain the mn mx bounds of the grid. 
+
+HUH : the mn/mx not actually used ? just for debug 
 
 **/
 
@@ -180,7 +176,7 @@ void CSGGenstep::configure_grid()
     SEvent::StandardizeCEGS(ce, cegs, gridscale ); 
     assert( cegs.size() == 7 ); 
 
-    float3 mn ; 
+    float3 mn ;   
     float3 mx ; 
 
     bool ce_offset_bb = true ; 
@@ -217,8 +213,7 @@ void CSGGenstep::generate_photons_cpu()
 
 void CSGGenstep::save(const char* basedir) const 
 {
-    enum { e_dirpath = 2 } ; 
-    const char* base = SPath::Resolve(basedir, moi, e_dirpath ); 
+    const char* base = SPath::Resolve(basedir, moi, DIRPATH ); 
     LOG(info) << " save to " << base ; 
     if(gs) gs->save(base, "gs.npy"); 
     if(pp) pp->save(base, "pp.npy"); 

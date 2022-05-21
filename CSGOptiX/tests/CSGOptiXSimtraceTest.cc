@@ -1,6 +1,6 @@
 /**
-CSGOptiXSimtraceTest
-======================
+CSGOptiXSimtraceTest : used from cxs.sh
+===========================================
 
 Using as much as possible the CSGOptiX rendering machinery 
 to do simulation. Using CSGOptiX raygen mode 1 which flips the case statement 
@@ -79,9 +79,11 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
 
     const SSim* ssim = fd->sim ; 
-    QSim::UploadComponents(ssim); 
+    QSim::UploadComponents(ssim);  // HMM: no QSim instanciation ?
 
     CSGOptiX* cx = CSGOptiX::Create(fd); 
+
+
 
     // create center-extent gensteps 
     CSGGenstep* gsm = fd->genstep ;    // THIS IS THE GENSTEP MAKER : NOT THE GS THEMSELVES 
@@ -89,6 +91,9 @@ int main(int argc, char** argv)
     bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ; 
     bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;   
     // TODO: eliminate the need for this switches by standardizing on model2world transforms
+
+
+
 
     gsm->create(moi, ce_offset, ce_scale ); // SEvent::MakeCenterExtentGensteps
 

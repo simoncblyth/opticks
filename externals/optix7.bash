@@ -36,6 +36,38 @@ TODO
 revisit optix7c-cd and SDK 
 
 
+
+Multi GPU
+-----------
+
+
+* https://github.com/NVIDIA/OptiX_Apps
+
+::
+
+    rtigo3 is meant as a testbed for multi-GPU rendering distribution and OpenGL
+    interoperability. There are different multi-GPU strategies implemented (single
+    GPU, dual GPU peer-to-peer, multi-GPU pinned memory, multi-GPU local
+    distribution and compositing). Then there are three different OpenGL interop
+    modes (none, render to pixel buffer object, copy to mapped texture array).
+
+* :google:`single GPU, dual GPU peer-to-peer, multi-GPU pinned memory, multi-GPU local distribution`
+
+
+Given that the simulation of every genstep is independent of all others, 
+optical photon simulation on multiple GPUs should be able to use the simplest 
+of multi-GPU techniques. Thats got to be good for development time and performance. 
+
+* https://medium.com/@evtushenko.georgy
+* https://medium.com/gpgpu/multi-gpu-programming-6768eeb42e2c
+* https://github.com/senior-zero?tab=repositories
+
+The above has a simple example of using multiple CPU threads where each CPU thread 
+talks with a different GPU cudaSetDevice. 
+
+
+
+
 Program Group Creation
 -------------------------
 

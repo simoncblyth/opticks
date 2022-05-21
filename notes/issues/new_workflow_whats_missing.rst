@@ -50,8 +50,58 @@ Generation
 
 
 
+sgs : examples/Geant4/ScintGenStandalone 
+---------------------------------------------
+
+* TODO: encapsulate the details of genstep collection, with higher level API
+
+::
+
+      68 #ifdef STANDALONE
+      69 
+      70 // HMM: how to collect gensteps less disruptively in higher level way, with just the one header ?
+      71 // this is baring everything ... try keeping genstep implementation behind the curtains ?
+      72 
+      73 #include "scuda.h"
+      74 #include "squad.h"
+      75 #include "sgs.h"
+      76 
+      77 #include "spho.h"
+      78 #include "U4.hh"
+      79 #include "U4PhotonInfo.h"
+      80 #include "SEvt.hh"
+      81 
+
+
+
+
+Handling VRAM MAX_PHOTON limits ? Launch during genstep collection or split launches at end of event, or across multiple events 
+---------------------------------------------------------------------------------------------------------------------------------
+
+Suspect its simpler to collect all gensteps and then do split launches at end
+of event if the total photon count exceeds configured limits. 
+Doing the launch during collection means you do not know the future 
+gensteps to be collected so you cannot arrange splits optimally. 
+This is especially the case when there are multiple GPUs with different VRAM
+and hence different photon limits. 
+
+Given that the simulation of every genstep is independent of all others, 
+optical photon simulation on multiple GPUs should be able to use the simplest 
+of multi-GPU techniques. Thats got to be good for development time and performance. 
+
+* https://medium.com/gpgpu/multi-gpu-programming-6768eeb42e2c
+
+The above has a simple example of using multiple CPU threads where each CPU thread 
+talks with a different GPU cudaSetDevice. 
+
+It would be simplest to duplicate the geometry buffers and textures on
+all GPUs : only if those were very large would it be worth trying to share them.
+
+
+
 DONE : SSim, input array management
 ---------------------------------------
+:w
 
 1. avoids setup duplication and passing the parcel 
 2. establishes more separation of concerns between CSGFoundry and SSim 

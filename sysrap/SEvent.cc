@@ -207,6 +207,15 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
     GetBoundingBox( mn, mx, ce, cegs, gridscale, ce_offset ); 
 }
 
+/**
+SEvent::GetBoundingBox
+-----------------------
+
+Uses CE center-extent and gridscale together with the cegs grid parameters to provide 
+the float3 mn and mx bounds of the CE grid.  NB no use of any transforms here.   
+
+**/
+
 void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale, bool ce_offset ) // static 
 {
     assert( standardized_cegs.size() == 7 ) ; 

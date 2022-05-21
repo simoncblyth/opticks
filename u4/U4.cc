@@ -10,9 +10,12 @@
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
 
+#include "SEvt.hh"
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "sgs.h"
+#include "spho.h"
 #include "sscint.h"
 #include "OpticksGenstep.h"
 
@@ -25,13 +28,118 @@
 #include "PLOG.hh"
 #include "sscint.h"
 
-
+#include "U4PhotonInfo.h"
 #include "U4.hh" 
 
 const plog::Severity U4::LEVEL = PLOG::EnvLevel("U4", "DEBUG"); 
 
 
+// hidden function only usable from this translation unit  
+// allows keeping Opticks types like quad6 out of the header 
+static quad6 MakeGenstep_DsG4Scintillation_r4695( 
+     const G4Track* aTrack,
+     const G4Step* aStep,
+     G4int    numPhotons,
+     G4int    scnt,        
+     G4double ScintillationTime
+    )
+{
+    G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
+    G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
 
+    G4ThreeVector x0 = pPreStepPoint->GetPosition();
+    G4double      t0 = pPreStepPoint->GetGlobalTime();
+    G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
+    G4double meanVelocity = (pPreStepPoint->GetVelocity()+pPostStepPoint->GetVelocity())/2. ;
+
+    const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
+    //const G4Material* aMaterial = aTrack->GetMaterial();
+
+    quad6 _gs ;
+    _gs.zero() ; 
+    
+    sscint& gs = (sscint&)_gs ; 
+
+    gs.gentype = OpticksGenstep_DsG4Scintillation_r4695 ;
+    gs.trackid = aTrack->GetTrackID() ;
+    gs.matline = 0u ; //  aMaterial->GetIndex()   // not used for scintillation
+    gs.numphoton = numPhotons ;  
+
+    gs.pos.x = x0.x() ; 
+    gs.pos.y = x0.y() ; 
+    gs.pos.z = x0.z() ; 
+    gs.time = t0 ; 
+
+    gs.DeltaPosition.x = deltaPosition.x() ; 
+    gs.DeltaPosition.y = deltaPosition.y() ; 
+    gs.DeltaPosition.z = deltaPosition.z() ; 
+    gs.step_length = aStep->GetStepLength() ;
+
+    gs.code = aParticle->GetDefinition()->GetPDGEncoding() ;
+    gs.charge = aParticle->GetDefinition()->GetPDGCharge() ;
+    gs.weight = aTrack->GetWeight() ;
+    gs.meanVelocity = meanVelocity ; 
+
+    gs.scnt = scnt ; 
+    gs.f41 = 0.f ;  
+    gs.f42 = 0.f ;  
+    gs.f43 = 0.f ; 
+
+    gs.ScintillationTime = ScintillationTime ;
+    gs.f51 = 0.f ;
+    gs.f52 = 0.f ;
+    gs.f53 = 0.f ;
+
+    return _gs ; 
+}
+
+
+// TU-local entity ?
+static sgs gs = {} ; 
+static spho ancestor = {} ; 
+static spho pho = {} ; 
+static spho secondary = {} ; 
+
+void U4::GetPhotonInfoAncestor( const G4Track* aTrack )
+{
+    ancestor = U4PhotonInfo::Get(aTrack) ; 
+    std::cout << "U4::GetPhotonInfoAncestor " << ancestor.desc() << std::endl ;  
+}
+void U4::SetPhotonInfoSecondary(G4Track* aSecondaryTrack, int genloop_idx )
+{
+     secondary = gs.MakePho(genloop_idx, ancestor) ; 
+     std::cout << "U4::SetPhotonInfoSecondary " << secondary.desc() << std::endl ; 
+     U4PhotonInfo::Set(aSecondaryTrack, secondary ); 
+}
+void U4::SetAlignIndex( int genloop_idx )
+{
+    if(genloop_idx == -1) return ; 
+    pho = gs.MakePho(genloop_idx, ancestor); 
+    int align_id = ancestor.isPlaceholder() ? gs.offset + genloop_idx : ancestor.id ; 
+
+    std::cout 
+        << "U4::SetAlignIndex"
+        << " genloop_idx " << std::setw(6) << genloop_idx 
+        << " gs.offset " << std::setw(6) << gs.offset 
+        << " pho.id " << std::setw(6) << pho.id
+        << std::endl 
+        ; 
+
+    assert( pho.id == align_id );     
+}
+
+
+void U4::CollectGenstep_DsG4Scintillation_r4695( 
+         const G4Track* aTrack,
+         const G4Step* aStep,
+         G4int    numPhotons,
+         G4int    scnt,        
+         G4double ScintillationTime
+    )
+{
+    quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
+    gs = SEvt::AddGenstep(gs_);  
+}
 
 
 G4MaterialPropertyVector* U4::MakeProperty(const NP* a)  // static
@@ -75,8 +183,8 @@ G4MaterialPropertiesTable* U4::MakeMaterialPropertiesTable(const char* reldir, c
     {
         const std::string& key_ = keys[i]; 
         const char* key = key_.c_str(); 
-        std::string name = SStr::Format("%s.npy", key );   
-        NP* a = NP::Load(idpath, reldir, name.c_str() );         
+        const char* name = SStr::Format("%s.npy", key );   
+        NP* a = NP::Load(idpath, reldir, name );         
         assert(a); 
 
         std::cout 
@@ -292,65 +400,6 @@ NP* U4::CollectOpticalSecondaries(const G4VParticleChange* pc )
     }
     return p ; 
 } 
-
-
-quad6 U4::MakeGenstep_DsG4Scintillation_r4695( 
-     const G4Track* aTrack,
-     const G4Step* aStep,
-     G4int    numPhotons,
-     G4int    scnt,        
-     G4double ScintillationTime
-    )
-{
-    G4StepPoint* pPreStepPoint  = aStep->GetPreStepPoint();
-    G4StepPoint* pPostStepPoint = aStep->GetPostStepPoint();
-
-    G4ThreeVector x0 = pPreStepPoint->GetPosition();
-    G4double      t0 = pPreStepPoint->GetGlobalTime();
-    G4ThreeVector deltaPosition = aStep->GetDeltaPosition() ;
-    G4double meanVelocity = (pPreStepPoint->GetVelocity()+pPostStepPoint->GetVelocity())/2. ;
-
-    const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
-    //const G4Material* aMaterial = aTrack->GetMaterial();
-
-
-    quad6 _gs ;
-    _gs.zero() ; 
-    
-    sscint& gs = (sscint&)_gs ; 
-
-    gs.gentype = OpticksGenstep_DsG4Scintillation_r4695 ;
-    gs.trackid = aTrack->GetTrackID() ;
-    gs.matline = 0u ; //  aMaterial->GetIndex()   // not used for scintillation
-    gs.numphoton = numPhotons ;  
-
-    gs.pos.x = x0.x() ; 
-    gs.pos.y = x0.y() ; 
-    gs.pos.z = x0.z() ; 
-    gs.time = t0 ; 
-
-    gs.DeltaPosition.x = deltaPosition.x() ; 
-    gs.DeltaPosition.y = deltaPosition.y() ; 
-    gs.DeltaPosition.z = deltaPosition.z() ; 
-    gs.step_length = aStep->GetStepLength() ;
-
-    gs.code = aParticle->GetDefinition()->GetPDGEncoding() ;
-    gs.charge = aParticle->GetDefinition()->GetPDGCharge() ;
-    gs.weight = aTrack->GetWeight() ;
-    gs.meanVelocity = meanVelocity ; 
-
-    gs.scnt = scnt ; 
-    gs.f41 = 0.f ;  
-    gs.f42 = 0.f ;  
-    gs.f43 = 0.f ; 
-
-    gs.ScintillationTime = ScintillationTime ;
-    gs.f51 = 0.f ;
-    gs.f52 = 0.f ;
-    gs.f53 = 0.f ;
-
-    return _gs ; 
-}
 
 
 

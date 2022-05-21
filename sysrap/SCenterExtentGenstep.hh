@@ -1,4 +1,20 @@
 #pragma once
+/**
+SCenterExtentGenstep.hh
+==========================
+
+NB this was demoted from extg4/X4Intersect as its all generally applicable 
+and hence belongs at a lower level 
+
+Used from::
+
+   CSG/CSGGeometry.cc
+   extg4/X4Intersect.cc
+
+TODO: compare this with CSG/CSGGenstep and consolidate to avoid duplication 
+
+
+**/
 
 struct NP ; 
 struct quad6 ; 
@@ -9,13 +25,7 @@ template <typename T> struct Tran ;
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
-/**
 
-
-NB this was demoted from extg4/X4Intersect as its all generally applicable 
-and hence belongs at a lower level 
-
-**/
 
 struct SYSRAP_API SCenterExtentGenstep
 {
