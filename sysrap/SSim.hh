@@ -60,7 +60,6 @@ struct SYSRAP_API SSim
 
     void addFake_( const std::vector<std::string>& specs ); 
 
-
     NPFold* fold ; 
 
 

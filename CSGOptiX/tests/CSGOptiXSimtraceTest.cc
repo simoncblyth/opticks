@@ -47,7 +47,9 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     SEventConfig::SetRGMode("simtrace"); 
     SOpticks::WriteOutputDirScript() ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
-    
+   
+    SEvt evt ; 
+ 
     CSGFoundry* fd = CSGFoundry::Load(); 
     if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
     LOG(info) << "foundry " << fd->desc() ; 

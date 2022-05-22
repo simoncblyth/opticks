@@ -23,11 +23,13 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    SEvt evt ; 
+
     const SSim* ssim = SSim::Load() ;  // standard CFBase/CSGFoundry/SSim
 
     CSGFoundry* fdl = CSGFoundry::Load("$CFBASE_LOCAL", "CSGFoundry") ;  // local geometry 
 
-    fdl->setOverrideSim(ssim);   // local geometry with standard SSim inputs 
+    fdl->setOverrideSim(ssim);    // local geometry with standard SSim inputs 
 
     CSGOptiX* cx = CSGOptiX::Create(fdl);  // uploads geometry, instaciates QSim 
 
