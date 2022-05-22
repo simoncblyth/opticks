@@ -151,6 +151,9 @@ Returns the index of the first listed name that exactly matches the query string
 A count of the number of matches is also provided.
 Returns -1 if not found.
 
+NB NP::get_name_index does the same as this, it can be simpler to use that 
+method when an array is being updated
+
 **/
 
 inline int SName::getIndex(const char* query, unsigned& count) const 

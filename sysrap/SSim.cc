@@ -1,8 +1,6 @@
 #include <map>
 
-
 #include "NPFold.h"
-#include "SName.h"
 #include "scuda.h"
 #include "squad.h"
 #include "SDigestNP.hh"
@@ -54,8 +52,7 @@ SSim* SSim::Load(const char* base, const char* rel)
 
 SSim::SSim()
     :
-    fold(new NPFold),
-    bd(nullptr)
+    fold(new NPFold)
 {
     INSTANCE = this ; 
 }
@@ -67,20 +64,11 @@ void SSim::add(const char* k, const NP* a )
     if(a == nullptr) return ; 
 
     fold->add(k,a);  
-    if(strcmp(k, BND)==0) bd = new SName(a->names) ; 
 }
 const NP* SSim::get(const char* k) const { return fold->get(k);  }
 
-void SSim::load(const char* base){ fold->load(base); postload() ; }
-void SSim::load(const char* base, const char* rel){ fold->load(base, rel);  postload() ;  }
-
-void SSim::postload()
-{
-    const NP* bnd = fold->get(BND); 
-    if(bnd) bd = new SName(bnd->names); 
-}
-
-
+void SSim::load(const char* base){ fold->load(base) ; }
+void SSim::load(const char* base, const char* rel){ fold->load(base, rel);  }
 
 void SSim::save(const char* base) const { fold->save(base); }
 void SSim::save(const char* base, const char* rel) const { fold->save(base, rel); }
@@ -98,24 +86,21 @@ const char* SSim::getBndName(unsigned bidx) const
 int SSim::getBndIndex(const char* bname) const
 {
     unsigned count = 0 ;  
-    int bidx = bd->getIndex(bname, count ); 
+    const NP* bnd = fold->get(BND); 
+    int bidx = bnd->get_name_index(bname, count ); 
     bool bname_found = count == 1 && bidx > -1  ;
+
     if(!bname_found) 
        LOG(fatal) 
           << " bname " << bname
           << " bidx " << bidx
           << " count " << count
           << " bname_found " << bname_found
-          << " bd.getNumName " << bd->getNumName() 
-          << " bd.detail " << std::endl 
-          << bd->detail()
           ;    
 
     assert( bname_found ); 
     return bidx ; 
 }
-
-
 
 
 template<typename ... Args>
@@ -130,6 +115,13 @@ template void SSim::addFake( const char* );
 template void SSim::addFake( const char*, const char* ); 
 template void SSim::addFake( const char*, const char*, const char* ); 
 
+/**
+SSim::addFake_
+----------------
+
+Fabricates boundaries and appends them to the bnd and optical arrays
+
+**/
 
 void SSim::addFake_( const std::vector<std::string>& specs )
 {  
@@ -397,9 +389,17 @@ const NP* SSim::NarrowIfWide(const NP* buf )  // static
 }
 
 
+
+/**
+SSim::findName
+----------------
+
+**/
+
 bool SSim::findName( unsigned& i, unsigned& j, const char* qname ) const 
 {
-    return bd ? FindName(i, j, qname, bd->name) : false ; 
+    const NP* bnd = fold->get(BND); 
+    return bnd ? FindName(i, j, qname, bnd->names) : false ; 
 }
 
 bool SSim::FindName( unsigned& i, unsigned& j, const char* qname, const std::vector<std::string>& names ) 

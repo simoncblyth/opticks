@@ -62,15 +62,19 @@ int main(int argc, char** argv)
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
 
     fdl->setOverrideSim(ssim);  
+    fdl->setPrimBoundary( 0, Rock_Air ); 
+    fdl->setPrimBoundary( 1, Air_Water );   
+    // HMM: notice these boundary changes are not persisted 
+    std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
 
     // DIRTY: persisting new bnd and optical into the source directory : FOR USE FROM PYTHON
     ssim->save(cfbase_local, "CSGFoundry/SSim" );   // ONLY APPROPRIATE IN SMALL TESTS
 
 
-    fdl->setPrimBoundary( 0, Rock_Air ); 
-    fdl->setPrimBoundary( 1, Air_Water );   // HMM: notice these boundary changes are not persisted 
-    std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
-    fdl->upload(); 
+
+
+    fdl->upload();  // HMM: WILL CAUSE ASSERT IN CSGOptiX::Create AS CANNOT UPLOAD TWICE 
+
 
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );   // TODO: this should come from the geometry 
 
