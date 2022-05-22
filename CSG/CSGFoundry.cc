@@ -2063,6 +2063,18 @@ CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
     return fd ; 
 } 
 
+
+void CSGFoundry::setOverrideSim( const SSim* override_sim )
+{
+    sim = override_sim ; 
+}
+const SSim* CSGFoundry::getSim() const 
+{
+    return sim ; 
+}
+
+
+
 void CSGFoundry::setFold(const char* fold_)
 {
     const char* rel = SPath::Basename(fold_); 
@@ -2133,6 +2145,10 @@ void CSGFoundry::upload()
     LOG(info) << "[ " << desc() ; 
     assert( tran.size() == itra.size() ); 
 
+    bool is_uploaded_0 = isUploaded(); 
+    if(is_uploaded_0) LOG(fatal) << "HAVE ALREADY UPLOADED : THIS CANNOT BE REDONE" ; 
+    assert(is_uploaded_0 == false); 
+
     // allocates and copies
     d_prim = prim.size() > 0 ? CU::UploadArray<CSGPrim>(prim.data(), prim.size() ) : nullptr ; 
     d_node = node.size() > 0 ? CU::UploadArray<CSGNode>(node.data(), node.size() ) : nullptr ; 
@@ -2141,9 +2157,9 @@ void CSGFoundry::upload()
 
     LOG(info) << "]"  ; 
 
-    bool is_uploaded = isUploaded(); 
-    if(!is_uploaded) LOG(fatal) << "FAILED TO UPLOAD" ; 
-    assert(is_uploaded); 
+    bool is_uploaded_1 = isUploaded(); 
+    if(!is_uploaded_1) LOG(fatal) << "FAILED TO UPLOAD" ; 
+    assert(is_uploaded_1 == true); 
 
     SGeo::SetLastUploadCFBase(cfbase) ; 
 }

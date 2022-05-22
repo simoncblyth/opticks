@@ -48,20 +48,6 @@ void G4CXOpticks::render()
     cx->render_snap() ; 
 }
 
-/**
-G4CXOpticks::simulate
------------------------
-
-Needs to: 
-
-1. pass gensteps from SEvt to cx
-2. launch the sim 
-3. download event 
-
-HMM: all that does not need G4, so can do that at CSGOptiX level 
-
-**/
-
 void G4CXOpticks::simulate()
 {
     assert(cx); 

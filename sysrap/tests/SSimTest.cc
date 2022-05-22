@@ -77,13 +77,22 @@ void test_addFake()
     LOG(info) << "BEFORE " << std::endl << sim->descOptical() << std::endl ; 
 
     std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;
-    sim->addFake(specs); 
+    sim->addFake_(specs); 
     std::string aft = sim->desc(); 
 
     LOG(info) << "AFTER " << std::endl << sim->descOptical() << std::endl ; 
 
     std::cout << "bef" << std::endl << bef << std::endl ; 
     std::cout << "aft" << std::endl << aft << std::endl ; 
+}
+
+void test_addFake_ellipsis()
+{
+    SSim* sim = SSim::Load(); 
+    sim->addFake("Air///Water"); 
+    sim->addFake("Air///Water", "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air"); 
+    sim->addFake("Air///Water", "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Water///Air" ); 
+
 }
 
 
@@ -95,8 +104,9 @@ int main(int argc, char** argv)
     /*
     test_Load(); 
     test_findName(); 
-    */
     test_addFake();     
+    */
+    test_addFake_ellipsis();     
 
 
     return 0 ; 

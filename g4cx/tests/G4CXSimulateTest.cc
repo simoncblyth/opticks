@@ -10,11 +10,8 @@ int main(int argc, char** argv)
 
     SEventConfig::SetRGMode("simulate");  
 
-    // GGeo creation done when starting from a gdml or live G4,  
-    // still needs Opticks instance,  
-    // TODO: avoid this by replacing with automated SOpticks 
-    // instanciated by OPTICKS_LOG
-
+    // GGeo creation done when starting from a gdml or live G4, still needs Opticks instance,  
+    // TODO: avoid this by replacing with automated SOpticks instanciated by OPTICKS_LOG
     Opticks::Configure(argc, argv, "--gparts_transform_offset" );  
 
     G4CXOpticks gx ;  

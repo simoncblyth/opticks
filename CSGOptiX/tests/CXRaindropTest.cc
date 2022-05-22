@@ -45,15 +45,14 @@ int main(int argc, char** argv)
     SOpticks::WriteOutputDirScript(outfold) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
 
 
-    SSim* ssim = SSim::Load();  // $CFBase/CSGFoundry/SSim
-    // fabricate some additional boundaries from the basis ones for this simple test 
-    std::vector<std::string> specs = { "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Air///Water" } ;  
-    ssim->addFake(specs); 
-    LOG(info) << std::endl << ssim->descOptical()  ; 
-    QSim::UploadComponents(ssim); 
+    const char* Rock_Air = "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air" ; 
+    const char* Air_Water = "Air///Water" ; 
 
-    QSim* sim = new QSim ; 
-    std::cout << "sim.desc " << sim->desc() << std::endl ; 
+    // load standard SSim input arrays $CFBase/CSGFoundry/SSim  and some additional boundaries 
+    SSim* ssim = SSim::Load();
+    ssim->addFake(Rock_Air, Air_Water); 
+    LOG(info) << std::endl << ssim->descOptical()  ; 
+
 
     const char* cfbase_local = SSys::getenvvar("CFBASE_LOCAL") ; assert(cfbase_local) ; 
     LOG(fatal) << "MIXING CSGFoundry combining basis cfbase with cfbase_local "; 
@@ -62,12 +61,14 @@ int main(int argc, char** argv)
     // load raindrop geometry and customize to use the boundaries added above 
     CSGFoundry* fdl = CSGFoundry::Load(cfbase_local, "CSGFoundry") ; 
 
+    fdl->setOverrideSim(ssim);  
+
     // DIRTY: persisting new bnd and optical into the source directory : FOR USE FROM PYTHON
     ssim->save(cfbase_local, "CSGFoundry/SSim" );   // ONLY APPROPRIATE IN SMALL TESTS
- 
 
-    fdl->setPrimBoundary( 0, specs[0].c_str() ); 
-    fdl->setPrimBoundary( 1, specs[1].c_str() );   // HMM: notice these boundary changes are not persisted 
+
+    fdl->setPrimBoundary( 0, Rock_Air ); 
+    fdl->setPrimBoundary( 1, Air_Water );   // HMM: notice these boundary changes are not persisted 
     std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
     fdl->upload(); 
 
@@ -76,9 +77,8 @@ int main(int argc, char** argv)
     SEventConfig::SetMaxExtent( ce.w );  // must do this config before QEvent::init which happens with CSGOptiX instanciation
     SEventConfig::SetMaxTime( 10.f ); 
 
-    CSGOptiX* cx = CSGOptiX::Create(fdl);  // QSim is QSim::Get is teleported into CSGOptiX 
+    CSGOptiX* cx = CSGOptiX::Create(fdl);  
 
-    cx->setComposition(ce); 
     cx->setGenstep(SEvent::MakeTorchGensteps());     
     cx->simulate();  
 

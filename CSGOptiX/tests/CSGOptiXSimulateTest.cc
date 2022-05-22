@@ -32,18 +32,26 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     //SOpticks::WriteOutputDirScript(SEventConfig::OutFold()) ; // writes CSGOptiXSimulateTest_OUTPUT_DIR.sh in PWD 
 
-    const SSim* ssim = SSim::Load() ;  // standard CFBase/CSGFoundry/SSim
-    QSim::UploadComponents(ssim); 
-    QSim* sim = new QSim ; 
-    LOG(info) << sim->desc(); 
 
-    CSGFoundry* fdl = CSGFoundry::Load("$CFBASE_LOCAL", "CSGFoundry") ; 
+    const SSim* ssim = SSim::Load() ;  // standard CFBase/CSGFoundry/SSim
+
+    CSGFoundry* fdl = CSGFoundry::Load("$CFBASE_LOCAL", "CSGFoundry") ;  // local geometry 
+
+    fdl->setOverrideSim(ssim);   // local geometry with standard SSim inputs 
+
 
     CSGOptiX* cx = CSGOptiX::Create(fdl);  // uploads geometry 
 
+    // TODO: to be more like real running should collect gensteps down to SEvt, 
+    //       and then simulate can do the same in test or real running
+    //       ie pick up the collected gensteps and launch 
+
     cx->setGenstep(SEvent::MakeCarrierGensteps());  // Thru to QEvent, uploads and creates seed buffer
+
     cx->simulate();   // does OptiX launch 
+
     cudaDeviceSynchronize(); 
+
     cx->event->save();
  
     return 0 ; 

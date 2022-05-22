@@ -55,7 +55,11 @@ struct SYSRAP_API SSim
     static std::string DescDigest(const NP* bnd, int w=16) ; 
     static std::string GetItemDigest( const NP* bnd, int i, int j, int w ); 
 
-    void addFake( const std::vector<std::string>& specs ); 
+
+    template<typename ... Args>
+    void addFake( Args ... args ); 
+
+    void addFake_( const std::vector<std::string>& specs ); 
 
 
     NPFold* fold ; 

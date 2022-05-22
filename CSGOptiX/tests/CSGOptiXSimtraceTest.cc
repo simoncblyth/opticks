@@ -28,9 +28,6 @@ TODO:
 
 #include <cuda_runtime.h>
 
-//#include "scuda.h"
-//#include "sqat4.h"
-//#include "stran.h"
 
 #include "NP.hh"
 #include "SSys.hh"

@@ -97,7 +97,10 @@ struct CSG_API CSGFoundry
     static CSGFoundry* Load();
     static CSGFoundry* Load_();
     static CSGFoundry* Load(const char* base, const char* rel);
-    //static CSGFoundry* Load(const char* dir );
+
+    void setOverrideSim( const SSim* ssim ); 
+    const SSim* getSim() const ; 
+
 
     static int Compare(const CSGFoundry* a , const CSGFoundry* b ); 
 
@@ -354,7 +357,7 @@ struct CSG_API CSGFoundry
 
 
     void setPrimBoundary(unsigned primIdx, const char* bname) ; 
-    SSim* sim ; 
+    const SSim* sim ; 
 
     std::string meta ; 
     const char* fold ; 

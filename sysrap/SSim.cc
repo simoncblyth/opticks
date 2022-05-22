@@ -1,5 +1,6 @@
 #include <map>
 
+
 #include "NPFold.h"
 #include "SName.h"
 #include "scuda.h"
@@ -7,8 +8,11 @@
 #include "SDigestNP.hh"
 
 #include "PLOG.hh"
-#include "SSim.hh"
+#include "SStr.hh"
 #include "SOpticksResource.hh"
+
+#include "SSim.hh"
+
 
 const plog::Severity SSim::LEVEL = PLOG::EnvLevel("SSim", "DEBUG"); 
 SSim* SSim::INSTANCE = nullptr ; 
@@ -112,7 +116,22 @@ int SSim::getBndIndex(const char* bname) const
 }
 
 
-void SSim::addFake( const std::vector<std::string>& specs )
+
+
+template<typename ... Args>
+void SSim::addFake( Args ... args )
+{
+    std::vector<std::string> specs = {args...};
+    LOG(LEVEL) << "specs.size " << specs.size()  ; 
+    addFake_(specs); 
+
+}
+template void SSim::addFake( const char* ); 
+template void SSim::addFake( const char*, const char* ); 
+template void SSim::addFake( const char*, const char*, const char* ); 
+
+
+void SSim::addFake_( const std::vector<std::string>& specs )
 {  
     bool has_optical = hasOptical(); 
     if(!has_optical) LOG(fatal) << " optical+bnd are required, you probably need to redo the GGeo to CSGFoundry conversion in CSG_GGeo cg " ;  

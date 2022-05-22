@@ -122,43 +122,44 @@ const char* CSGOptiX::desc() const
     return strdup(s.c_str()); 
 }
 
+
+void CSGOptiX::InitGeo(  CSGFoundry* fd )
+{
+    fd->upload(); 
+}
+
+void CSGOptiX::InitSim( const CSGFoundry* fd  )
+{
+    if(SEventConfig::IsRGModeRender()) return ; 
+
+    const SSim* ssim = fd->sim ; 
+    if(ssim == nullptr) LOG(fatal) << "simulate/simtrace modes require SSim/QSim setup" ;
+    assert(ssim);  
+
+    QSim::UploadComponents(ssim);  
+
+    QSim* sim = new QSim ; 
+    LOG(info) << sim->desc() ; 
+}
+
+
 /**
 CSGOptiX::Create
 --------------------
 
-Q: Should CSGOptiX::Create do QSim::UploadComponents and QSim instanciation ?
-A: No, prefer the flexibility of keeping geometry and simulation setup somewhat separate 
-   at this level even though the SSim is persisted at CSGFoundry/SSim.
-
-
-Advantages of this separation:
-
-1. QUDARap/QSim tests work with no geometry uploaded
-2. CSGOptiX rendering can work with no SSim/QSim arrays uploaded   
-
-Such integration is appropriate somewhere, but where ? 
-G4CX/G4CXOpticks seems wrong as setting genstep, launching 
-and handling hits does not need Geant4, so it should not be up there. 
-(Thats event by event simulation call, not the setup call)
-
-
 **/
 
-CSGOptiX* CSGOptiX::Create(CSGFoundry* fd)   // cannot be const as upload sets device pointers
+CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )   
 {
-    fd->upload(); 
+    InitSim(fd); 
+    InitGeo(fd); 
+
 #ifdef WITH_SGLM
     CSGOptiX* cx = new CSGOptiX(fd) ; 
 #else
     Opticks* ok = Opticks::Instance(); 
     CSGOptiX* cx = new CSGOptiX(ok, fd) ; 
 #endif
-
-    if(SEventConfig::IsRGModeRender())
-    {
-        cx->setComposition(); // MOI 
-        // HMM: no need for simulate, but what about simtrace ? Nope
-    }
     return cx ; 
 }
 
@@ -282,6 +283,11 @@ CSGOptiX::initRender
 
 void CSGOptiX::initRender()
 {
+    if(SEventConfig::IsRGModeRender()) 
+    {
+        setComposition(); // MOI 
+    }
+
     params->pixels = frame->d_pixel ;
     params->isect  = frame->d_isect ; 
     params->fphoton = frame->d_photon ; 

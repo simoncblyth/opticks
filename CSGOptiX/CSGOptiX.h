@@ -87,7 +87,13 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
  
     const char* desc() const ; 
 
-    static CSGOptiX* Create(CSGFoundry* foundry); // not const as upload sets device pointers
+private:
+    static void InitGeo(  CSGFoundry* fd ); 
+    static void InitSim( const CSGFoundry* fd ); 
+public:
+    static CSGOptiX* Create(CSGFoundry* foundry ); 
+
+
 #ifdef WITH_SGLM
     CSGOptiX(const CSGFoundry* foundry ); 
 #else
