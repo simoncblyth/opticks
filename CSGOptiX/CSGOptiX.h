@@ -112,8 +112,7 @@ public:
  private: 
     void setTop(const char* tspec); 
  public: 
-    void setGenstep(const NP* gs);
-    void setGenstep(const quad6* gs, unsigned num_gs); 
+    void uploadGenstep();
 
     void setCEGS(const std::vector<int>& cegs); 
 
@@ -146,7 +145,7 @@ public:
     void setMetaTran(const Tran<double>* metatran ); 
     void saveMetaTran(const char* fold, const char* name) const ; 
 
-    void snapSimtraceTest(const char* outdir, const char* botline, const char* topline) ; // uses snap, so not const 
+    void snapSimtraceTest() const ;
 
     static int   _OPTIX_VERSION() ; 
 };

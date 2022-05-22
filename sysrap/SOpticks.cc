@@ -3,6 +3,7 @@
 #include "SStr.hh"
 #include "SProc.hh"
 #include "SOpticks.hh"
+#include "SEventConfig.hh"
 
 #include "PLOG.hh"
 
@@ -109,6 +110,12 @@ the output directory such that scripts and executables that are subsequently
 run can access the output without having pre-knowledge of the directory.  
 
 **/
+
+void SOpticks::WriteOutputDirScript() // static
+{
+    const char* outfold = SEventConfig::OutFold();
+    WriteOutputDirScript(outfold); 
+}
 
 void SOpticks::WriteOutputDirScript(const char* outdir) // static
 {

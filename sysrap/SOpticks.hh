@@ -28,6 +28,7 @@ struct SYSRAP_API SOpticks
     static std::string CFBaseScriptString(const char* cfbase, const char* msg); 
     static void WriteCFBaseScript(const char* cfbase, const char* msg);
     static void WriteOutputDirScript(const char* outdir); 
+    static void WriteOutputDirScript(); 
 
     SOpticks(int argc, char** argv, const char* argforced ) ; 
 

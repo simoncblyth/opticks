@@ -3,6 +3,9 @@
 SEvt.hh
 =========
 
+Q: Where is this instanciated canonically ?
+
+
 Attempting to do this header only gives duplicate symbol for the SEvt::INSTANCE.
 It seems c++17 would allow "static inline SEvt* INSTANCE"  but c++17 
 is problematic on laptop, so use separate header and implementation
@@ -34,7 +37,7 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "scuda.h"
 #include "squad.h"
 #include "sgs.h"
-
+struct NP ; 
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -44,7 +47,14 @@ struct SYSRAP_API SEvt
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
     static sgs AddGenstep(const quad6& q); 
+    static sgs AddGenstep(const NP* a); 
+
+    static void AddCarrierGenstep(); 
+    static void AddTorchGenstep(); 
+
+
     static int GetNumPhoton(); 
+    static NP* GetGenstep(); 
 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
@@ -55,7 +65,10 @@ struct SYSRAP_API SEvt
     unsigned getNumGenstep() const ; 
     unsigned getNumPhoton() const ; 
     sgs addGenstep(const quad6& q) ; 
+    sgs addGenstep(const NP* a) ; 
+
     void saveGenstep(const char* dir) const ; 
+    NP* getGenstep() const ; 
 
     std::string desc() const ; 
 };

@@ -49,6 +49,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "SGeoConfig.hh"
 #include "SStr.hh"
 #include "SSys.hh"
+#include "SEvt.hh"
 #include "SMeta.hh"
 #include "SPath.hh"
 #include "SVec.hh"
@@ -351,29 +352,6 @@ void CSGOptiX::setTop(const char* tspec)
 #endif
 
     LOG(LEVEL) << "]" << " tspec " << tspec ; 
-}
-
-
-/**
-CSGOptiX::setGenstep
-----------------------
-
-Invokes QEvent::setGenstep which uploads gensteps and then 
-clears and re-populates the seed buffer based on the gensteps.
-This prepares device side qevent for photon generation.  
-
-**/
-
-void CSGOptiX::setGenstep(const NP* gs)
-{
-    assert( event ); 
-    event->setGenstep(gs); 
-}
-
-void CSGOptiX::setGenstep(const quad6* gs, unsigned num_gs)
-{
-    assert( event ); 
-    event->setGenstep(gs, num_gs); 
 }
 
 
@@ -752,10 +730,34 @@ with params.raygenmode switch function inside OptiX7Test.cu:__raygen__rg
 As it is likely better to instead have multiple raygen entry points 
 are retaining the distinct methods up here. 
 
+*render* is still needed to fulfil SRenderer protocol base 
+
 **/
-double CSGOptiX::render(){   assert(raygenmode == SRG_RENDER)   ; return launch() ; }   // only still needed to fulfil SRenderer protocol base 
-double CSGOptiX::simtrace(){ assert(raygenmode == SRG_SIMTRACE) ; return launch() ; }  
-double CSGOptiX::simulate(){ assert(raygenmode == SRG_SIMULATE) ; return launch() ; }   
+double CSGOptiX::render()
+{  
+    assert(raygenmode == SRG_RENDER) ; 
+    return launch() ; 
+}   
+double CSGOptiX::simtrace()
+{ 
+    assert(raygenmode == SRG_SIMTRACE) ; 
+    uploadGenstep(); 
+    return launch() ; 
+}  
+double CSGOptiX::simulate()
+{ 
+    assert(raygenmode == SRG_SIMULATE) ; 
+    uploadGenstep(); 
+    return launch() ;
+}   
+
+void CSGOptiX::uploadGenstep()
+{
+    NP* gs = SEvt::GetGenstep();  
+    if(gs == nullptr) LOG(fatal) << "Must SEvt::AddGenstep before calling CSGOptiX::simulate " ; 
+    assert(gs); 
+    event->setGenstep(gs); 
+}
 
 
 std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 
@@ -922,6 +924,8 @@ void CSGOptiX::saveMetaTran(const char* fold, const char* name) const
 CSGOptiX::snapSimtraceTest
 ---------------------------
 
+TODO: eliminate this, instead just use normal QEvent::save  
+
 Saving data for 2D cross sections, used by tests/CSGOptiXSimtraceTest.cc 
 
 The writing of pixels and frame photon "fphoton.npy" are commented 
@@ -932,8 +936,10 @@ that gives flexible python "rendering" with tests/CSGOptiXSimtraceTest.py
 
 **/
 
-void CSGOptiX::snapSimtraceTest(const char* outdir, const char* botline, const char* topline) 
+void CSGOptiX::snapSimtraceTest() const  
 {
+    const char* outdir = SEventConfig::OutFold();
+
     event->setMeta( foundry->meta.c_str() ); 
 
     // HMM: QEvent rather than here ?  

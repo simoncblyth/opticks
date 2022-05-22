@@ -1,6 +1,7 @@
 #include "PLOG.hh"
 #include "NP.hh"
 #include "SEvt.hh"
+#include "SEvent.hh"
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
 
@@ -16,12 +17,37 @@ sgs SEvt::AddGenstep(const quad6& q)
     assert(INSTANCE); 
     return INSTANCE->addGenstep(q); 
 }
+sgs SEvt::AddGenstep(const NP* a)
+{
+    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::AddGenstep  " << std::endl ; 
+    assert(INSTANCE); 
+    return INSTANCE->addGenstep(a); 
+}
+
+
+void SEvt::AddCarrierGenstep()
+{
+    AddGenstep(SEvent::MakeCarrierGensteps());
+}
+void SEvt::AddTorchGenstep()
+{
+    AddGenstep(SEvent::MakeTorchGensteps());
+}
+
+
+
+
+
 
 int SEvt::GetNumPhoton()
 {
    return INSTANCE ? INSTANCE->getNumPhoton() : -1 ;
 }
 
+NP* SEvt::GetGenstep() 
+{
+   return INSTANCE ? INSTANCE->getGenstep() : nullptr ;
+}
 
 void SEvt::clear()
 {
@@ -44,7 +70,7 @@ unsigned SEvt::getNumPhoton() const
 
 sgs SEvt::addGenstep(const quad6& q)
 {
-    sgs s = {} ; 
+    sgs s = {} ;   // genstep summary struct 
 
     s.index = genstep.size() ;  // 0-based genstep index in event (actually since last reset)  
     s.photons = q.numphoton() ;  
@@ -56,22 +82,45 @@ sgs SEvt::addGenstep(const quad6& q)
 
     return s ; 
 }
+/**
+SEvt::addGenstep
+------------------
 
-void SEvt::saveGenstep(const char* dir) const 
+The sgs summary struct of the last genstep is returned. 
+
+**/
+
+sgs SEvt::addGenstep(const NP* a)
 {
-    unsigned num_gs = genstep.size() ; 
-    LOG(LEVEL) << " num_gs " << num_gs << " dir " << dir ; 
-    std::cout << " num_gs " << num_gs << " dir " << dir << std::endl  ; 
-    if(num_gs > 0)
-    {
-        NP* gs = NP::Make<float>( num_gs, 6, 4 );  
-        gs->read2( (float*)genstep.data() );  
-        gs->save(dir, "gs.npy"); 
-    }
+    int num_gs = a ? a->shape[0] : -1 ; 
+    assert( num_gs > 0 ); 
+    quad6* qq = (quad6*)a->bytes(); 
+    sgs s = {} ; 
+    for(int i=0 ; i < num_gs ; i++) s = addGenstep(qq[i]) ; 
+    return s ; 
 }
 
 
 
+NP* SEvt::getGenstep() const 
+{
+    unsigned num_gs = genstep.size() ; 
+    NP* a = nullptr ; 
+    if(num_gs > 0)
+    {
+        a = NP::Make<float>( num_gs, 6, 4 );  
+        a->read2( (float*)genstep.data() );  
+    }
+    return a ; 
+}
+
+void SEvt::saveGenstep(const char* dir) const 
+{
+    NP* a = getGenstep(); 
+    if(a == nullptr) return ; 
+    LOG(LEVEL) << a->sstr() << " dir " << dir ; 
+    a->save(dir, "gs.npy"); 
+}
 
 std::string SEvt::desc() const 
 {
@@ -80,7 +129,5 @@ std::string SEvt::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
-
-
 
 

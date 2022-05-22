@@ -9,6 +9,7 @@
 #include "SStr.hh"
 #include "SOpticksResource.hh"
 
+#include "SPath.hh"
 #include "SSim.hh"
 
 
@@ -70,8 +71,16 @@ const NP* SSim::get(const char* k) const { return fold->get(k);  }
 void SSim::load(const char* base){ fold->load(base) ; }
 void SSim::load(const char* base, const char* rel){ fold->load(base, rel);  }
 
-void SSim::save(const char* base) const { fold->save(base); }
-void SSim::save(const char* base, const char* rel) const { fold->save(base, rel); }
+void SSim::save(const char* base_) const 
+{ 
+    const char* base = SPath::Resolve(base_, DIRPATH); 
+    fold->save(base); 
+}
+void SSim::save(const char* base_, const char* rel) const 
+{ 
+    const char* base = SPath::Resolve(base_, DIRPATH); 
+    fold->save(base, rel); 
+}
 
 std::string SSim::desc() const { return fold->desc() ; }
 
