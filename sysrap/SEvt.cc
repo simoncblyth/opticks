@@ -17,6 +17,12 @@ sgs SEvt::AddGenstep(const quad6& q)
     return INSTANCE->addGenstep(q); 
 }
 
+int SEvt::GetNumPhoton()
+{
+   return INSTANCE ? INSTANCE->getNumPhoton() : -1 ;
+}
+
+
 void SEvt::clear()
 {
     genstep.clear();

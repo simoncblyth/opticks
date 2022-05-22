@@ -44,6 +44,7 @@ struct SYSRAP_API SEvt
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
     static sgs AddGenstep(const quad6& q); 
+    static int GetNumPhoton(); 
 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 

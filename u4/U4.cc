@@ -151,6 +151,18 @@ void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
 void U4::GenPhotonSecondaries( const G4Track* aTrack, const G4VParticleChange* change )
 {
     if(dump) std::cout << "U4::GenPhotonSecondaries" << std::endl ; 
+
+    int numphoton = SEvt::GetNumPhoton() ; 
+    bool consistent = numphoton > -1 && numphoton - 1  == pho.id ;  
+    // HMM: only works for 1st genstep of event perhaps ?
+    //if( dump || !consistent )
+    { 
+        std::cout << " consistent " << consistent << std::endl ; 
+        std::cout << " SEvt::GetNumPhoton " << numphoton << std::endl ; 
+        std::cout << " pho " << pho.desc() << std::endl ; 
+        std::cout << " gs " << gs.desc() << std::endl ; 
+    }
+    assert(consistent); 
 }
 
 
