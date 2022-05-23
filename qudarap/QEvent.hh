@@ -69,8 +69,10 @@ struct QUDARAP_API QEvent
 
     std::string  meta ; 
 
-    void      setGenstep(const NP* gs);
-    void      setGenstep(const quad6* gs, unsigned num_gs ); 
+    int setGenstep();
+    int setGenstep(const NP* gs);
+    int setGenstep(const quad6* gs, unsigned num_gs ); 
+
     const NP* getGenstep() const ; 
 
 

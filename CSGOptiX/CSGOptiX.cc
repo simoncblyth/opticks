@@ -729,7 +729,7 @@ with params.raygenmode switch function inside OptiX7Test.cu:__raygen__rg
 As it is likely better to instead have multiple raygen entry points 
 are retaining the distinct methods up here. 
 
-*render* is still needed to fulfil SRenderer protocol base 
+*render* is also still needed to fulfil SRenderer protocol base 
 
 **/
 double CSGOptiX::render()
@@ -740,23 +740,15 @@ double CSGOptiX::render()
 double CSGOptiX::simtrace()
 { 
     assert(raygenmode == SRG_SIMTRACE) ; 
-    uploadGenstep(); 
-    return launch() ; 
+    int rc = event->setGenstep(); 
+    return rc == 0 ? launch() : -1. ; 
 }  
 double CSGOptiX::simulate()
 { 
     assert(raygenmode == SRG_SIMULATE) ; 
-    uploadGenstep(); 
-    return launch() ;
+    int rc = event->setGenstep(); 
+    return rc == 0 ? launch() : -1. ;
 }   
-
-void CSGOptiX::uploadGenstep()
-{
-    NP* gs = SEvt::GetGenstep();  
-    if(gs == nullptr) LOG(fatal) << "Must SEvt::AddGenstep before calling CSGOptiX::simulate " ; 
-    assert(gs); 
-    event->setGenstep(gs); 
-}
 
 
 std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 

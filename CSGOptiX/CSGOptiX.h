@@ -108,7 +108,6 @@ public:
  private: 
     void setTop(const char* tspec); 
  public: 
-    void uploadGenstep();
 
     void setCEGS(const std::vector<int>& cegs); 
 

@@ -13,6 +13,7 @@
 #include "SU.hh"
 
 #include "SEvent.hh"
+#include "SEvt.hh"
 #include "SEventConfig.hh"
 #include "NP.hh"
 #include "PLOG.hh"
@@ -100,7 +101,7 @@ QEvent::QEvent()
 QEvent::init
 --------------
 
-Only configures limits, no allocation yet. Allocation happens in QEvent::setGensteps QEvent::setNumPhoton
+Only configures limits, no allocation yet. Allocation happens in QEvent::setGenstep QEvent::setNumPhoton
 
 **/
 
@@ -225,6 +226,8 @@ void QEvent::CheckGensteps(const NP* gs)  // static
 QEvent::setGenstep
 --------------------
 
+Canonically invoked from CSGOptiX::simulate and CSGOptiX::simulate just prior to launch 
+
 1. gensteps uploaded to QEvent::init allocated evt->genstep device buffer, 
    overwriting any prior gensteps and evt->num_genstep is set 
 
@@ -237,7 +240,7 @@ QEvent::setGenstep
 
 
 * HMM: find that without zeroing the seed buffer the seed filling gets messed up causing QEventTest fails 
-  doing this in QEvent::init is not sufficient need to do in QEvent::setGensteps.  
+  doing this in QEvent::init is not sufficient need to do in QEvent::setGenstep.  
   **This is a documented limitation of sysrap/iexpand.h**
  
   So far it seems that no zeroing is needed for the genstep buffer. 
@@ -246,7 +249,14 @@ HMM: what about simtrace ? ce-gensteps are very different to ordinary gs
 
 **/
 
-void QEvent::setGenstep(const NP* gs_) 
+int QEvent::setGenstep()
+{
+    NP* gs = SEvt::GetGenstep(); 
+    if(gs == nullptr) LOG(fatal) << "Must SEvt::AddGenstep before calling QEvent::setGenstep " ;
+    return gs == nullptr ? -1 : setGenstep(gs) ; 
+} 
+
+int QEvent::setGenstep(const NP* gs_) 
 { 
     gs = gs_ ; 
     CheckGensteps(gs); 
@@ -274,13 +284,15 @@ void QEvent::setGenstep(const NP* gs_)
     count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
 
     setNumPhoton( evt->num_seed );  // photon, rec, record may be allocated here depending on SEventConfig
+
+    return 0 ; 
 }
 
-void QEvent::setGenstep(const quad6* qgs, unsigned num_gs ) 
+int QEvent::setGenstep(const quad6* qgs, unsigned num_gs ) 
 {
     NP* gs_ = NP::Make<float>( num_gs, 6, 4 ); 
     gs_->read2( (float*)qgs );   
-    setGenstep( gs_ ); 
+    return setGenstep( gs_ ); 
 }
 
 const NP* QEvent::getGenstep() const 
@@ -344,7 +356,7 @@ QEvent::setPhotons
 
 This is only used with non-standard input photon running, 
 eg the photon mutatating QSimTest use this.  
-The normal mode of operation is to start from gensteps using QEvent::setGensteps 
+The normal mode of operation is to start from gensteps using QEvent::setGenstep
 and seed and generate photons on device.
 
 **/
@@ -585,7 +597,7 @@ void QEvent::save() const
 QEvent::setNumPhoton
 ---------------------
 
-Canonically invoked internally from QEvent::setGensteps but may be invoked 
+Canonically invoked internally from QEvent::setGenstep but may be invoked 
 directly from "friendly" photon only tests without use of gensteps.  
 
 Sets evt->num_photon asserts that is within allowed *evt->max_photon* and calls *uploadEvt*
