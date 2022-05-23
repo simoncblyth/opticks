@@ -2,11 +2,11 @@
 CSGOptiXSimulateTest
 ======================
 
-Canonically used by cxsim.sh combining CFBASE_LOCAL simple test geometry (eg GeoChain) 
+Canonically used by cxsimulate.sh combining CFBASE_LOCAL simple test geometry (eg GeoChain) 
 with standard CFBASE basis CSGFoundry/SSim input arrays. 
 
-Notice that the basis SSim input arrays are loaded without the standard geometry
-using the intentional arms length relationship between CSGFoundry and SSim. 
+Notice that the standard SSim input arrays are loaded without the corresponding standard geometry
+using the intentional arms length (SSim subdirectory/NPFold) relationship between CSGFoundry and SSim. 
 
 **/
 
@@ -25,13 +25,13 @@ int main(int argc, char** argv)
 
     SEvt evt ; 
 
-    const SSim* ssim = SSim::Load() ;  // standard CFBase/CSGFoundry/SSim
+    const SSim* ssim = SSim::Load() ;  // standard $CFBase/CSGFoundry/SSim
 
     CSGFoundry* fdl = CSGFoundry::Load("$CFBASE_LOCAL", "CSGFoundry") ;  // local geometry 
 
     fdl->setOverrideSim(ssim);    // local geometry with standard SSim inputs 
 
-    CSGOptiX* cx = CSGOptiX::Create(fdl);  // uploads geometry, instaciates QSim 
+    CSGOptiX* cx = CSGOptiX::Create(fdl);  // uploads geometry, instanciates QSim 
 
     SEvt::AddCarrierGenstep(); 
 
