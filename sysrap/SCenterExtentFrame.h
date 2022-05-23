@@ -1,8 +1,19 @@
 #pragma once
 /**
-SCenterExtentFrame
-===================
+SCenterExtentFrame : forms glm::tmat4x4<T> model2world and world2model transforms from CE center_extent  
+==========================================================================================================
 
+rtp_tangential:false
+    no rotation is included in the model2world and world2model transforms
+
+rtp_tangential:true 
+    (radius,theta,phi) is obtained from the CE center_extent and (theta,phi) is used to 
+    identity a position on an imaginary sphere at which to obtain "RTP" tangential rotations 
+    that are incorporated into the model2world and world2model transforms.
+
+    This "RTP-tangential" frame facilitates orientation with respect to a shape placed 
+    on the surface of a sphere.    
+ 
 See also 
 
 * ana/tangential.py
@@ -13,8 +24,6 @@ See also
 
 **/
 #include <glm/glm.hpp>
-
-
 
 #include "SYSRAP_API_EXPORT.hh"
 

@@ -75,36 +75,32 @@ int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* m
         int lrc = getLocalCenterExtent(ce, midx, mord); 
         if(lrc != 0) return 1 ; 
 
-        SCenterExtentFrame<double> cef_rtpw( ce.x, ce.y, ce.z, ce.w, true );  
-        qat4 world2model_rtpw(cef_rtpw.world2model_data);  // converting to qat4 narrows to float 
-        qat4 model2world_rtpw(cef_rtpw.model2world_data); 
-
-        SCenterExtentFrame<double> cef_xyzw( ce.x, ce.y, ce.z, ce.w, false );  
-        qat4 world2model_xyzw(cef_xyzw.world2model_data);  // converting to qat4 narrows to float
-        qat4 model2world_xyzw(cef_xyzw.model2world_data); 
-
         if( iidx == -2 )
         {
-            qat4::copy(*m2w, model2world_xyzw) ; 
-            qat4::copy(*w2m, world2model_xyzw) ; 
+            SCenterExtentFrame<double> cef_xyzw( ce.x, ce.y, ce.z, ce.w, false );  
+            m2w->read_narrow(cef_xyzw.model2world_data); 
+            w2m->read_narrow(cef_xyzw.world2model_data); 
         }
         else if( iidx == -3 )
         {
-            qat4::copy(*m2w, model2world_rtpw) ; 
-            qat4::copy(*w2m, world2model_rtpw) ; 
+            SCenterExtentFrame<double> cef_rtpw( ce.x, ce.y, ce.z, ce.w, true );  
+            m2w->read_narrow(cef_rtpw.model2world_data); 
+            w2m->read_narrow(cef_rtpw.world2model_data);  
         }
     }
     else
     {
-        int grc = getGlobalCenterExtent(ce, midx, mord, iidx, m2w ); // TODO: paired transforms also ?
+        int grc = getGlobalCenterExtent(ce, midx, mord, iidx, m2w ); 
+        // TODO: paired transforms also ?
+        //  HMM: the m2w here populated is from the (midx, mord, iidx) instance transform, with identity info 
         if(grc != 0) return 2 ;
     }
     return 0 ; 
 }
 
 /**
-CSGTarget::getLocalCenterExtent
----------------------------------
+CSGTarget::getLocalCenterExtent : finds the (midx,mord) CSGPrim and returns its CE
+-------------------------------------------------------------------------------------
 
 Collects prim matching the *midx* and selects the *mord* ordinal one
 from which to read the localCE 
@@ -165,7 +161,9 @@ CSGTarget::getGlobalCenterExtent
 *iidx*
     input instance index, for example this could select a particular PMT 
 *qptr*
-    output instance transform pointer
+    output instance transform pointer. When non-null the instance
+    transform will be copied into this qat4 which will contain 
+    identity integers in its fourth column 
 
 
 TODO: check this with global non-instanced geometry 
@@ -240,16 +238,10 @@ int CSGTarget::getTransform(qat4& q, int midx, int mord, int iidx) const
 CSGTarget::getInstanceTransform
 ---------------------------------
 
-This method was added to eliminate duplication between CSGTarget::getTransform and  CSGTarget::getGlobalCenterExtent 
+1. *getMeshPrim* finds the (midx, mord) CSGPrim which gives the repeatIdx (aka:gas_idx or compound solid index) 
+2. *getInstanceGAS* finds the (gas_idx, iidx) instance transform 
 
-Formally used temporary vector of qat4 transforms::
-
-   std::vector<qat4> inst ; 
-   foundry->getInstanceTransformsGAS(inst, gas_idx ); 
-
-But that makes usage difficult due to the limited lifetime of the 
-temporary inst vector. So instead have switched to collecting pointers 
-to the actual original instances from CSGFoundry not copies of them. 
+This method avoids duplication between CSGTarget::getTransform and  CSGTarget::getGlobalCenterExtent 
 
 **/
 
@@ -278,4 +270,9 @@ const qat4* CSGTarget::getInstanceTransform(int midx, int mord, int iidx) const
     const qat4* qi = foundry->getInstanceGAS(gas_idx, iidx ); 
     return qi ; 
 }
+
+
+
+
+
 

@@ -80,8 +80,8 @@ void CSGGenstep::create(const char* moi_, bool ce_offset, bool ce_scale )
     }
     else
     {
-        locate(moi); 
-        configure_grid(); 
+        locate(moi);        // sets: ce, geotran 
+        configure_grid();   // standardize cegs 
         gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale ); 
     }
 
@@ -111,6 +111,14 @@ Using CSGGenstepTest observed that with global non-instanced geometry
 are just using the identity transform from the single global "instance". 
 Have added experimental way to use the tangential rtp transforms.
 
+
+HMM: try encapsulating this into::
+   
+    Tran<double>* CSGTarget::getFrame(const char* moi) const ;  
+
+So can elimate CSGGenstep, and move CE-gensteps creation down to SEvent
+by passing the "geotran" ? 
+
 **/
 
 void CSGGenstep::locate(const char* moi_)
@@ -138,9 +146,6 @@ void CSGGenstep::locate(const char* moi_)
     LOG(info) << "w2m" << *w2m ;
  
     geotran = Tran<double>::FromPair( m2w, w2m, 1e-6 );    // Tran from stran.h 
-
-    //geotran = Tran<double>::ConvertToTran( qt );    // Tran from stran.h 
-    // matrix gets inverted by Tran<double>
 
     //override_locate(); 
 }
