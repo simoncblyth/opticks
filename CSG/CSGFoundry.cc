@@ -1881,15 +1881,9 @@ const char* CSGFoundry::getCFBase() const
 }
 const char* CSGFoundry::getOriginCFBase() const 
 {
+   // HMM: maybe just pass the pointer, as keep forgetting about this 
     return origin ? origin->cfbase : cfbase ; 
 }
-
-
-//  HMM: clearer to pass the pointer ?
-//const SSim* CSGFoundry::getOriginSim() const 
-//{
-//    return origin ? origin->sim : sim ; 
-//}
 
 
 
@@ -2181,7 +2175,7 @@ void CSGFoundry::upload()
     assert( tran.size() == itra.size() ); 
 
     bool is_uploaded_0 = isUploaded(); 
-    if(is_uploaded_0) LOG(fatal) << "HAVE ALREADY UPLOADED : THIS CANNOT BE REDONE" ; 
+    if(is_uploaded_0) LOG(fatal) << "HAVE ALREADY UPLOADED : THIS CANNOT BE DONE MORE THAN ONCE " ; 
     assert(is_uploaded_0 == false); 
 
     // allocates and copies
@@ -2196,7 +2190,8 @@ void CSGFoundry::upload()
     if(!is_uploaded_1) LOG(fatal) << "FAILED TO UPLOAD" ; 
     assert(is_uploaded_1 == true); 
 
-    SGeo::SetLastUploadCFBase(cfbase) ; 
+    const char* ocfb = getOriginCFBase(); 
+    SGeo::SetLastUploadCFBase(ocfb) ; 
 }
 
 bool CSGFoundry::isUploaded() const

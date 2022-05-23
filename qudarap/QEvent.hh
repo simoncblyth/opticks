@@ -106,9 +106,9 @@ public:
     NP*      getHit_() const ; 
 
 
-    void save(const char* dir) const ; 
-    void save(const char* base, const char* reldir ) const ; 
     void save() const ; 
+    void save(const char* base, const char* reldir ) const ; 
+    void save(const char* dir) const ; 
 
 
     void     setNumPhoton(unsigned num_photon) ;  

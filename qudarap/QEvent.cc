@@ -537,6 +537,8 @@ NP* QEvent::getHit_() const
 QEvent::save
 --------------
 
+Canonically invoked from QSim::save 
+
 QEvent::save persists NP arrays into the directory argument provided.
 Unlike its predecessor, OpticksEvent, organization of 
 the directory structure is left to the caller.   
@@ -545,6 +547,20 @@ TODO: a separate struct to yield such directory paths handling things
 like event tags. 
 
 **/
+
+
+void QEvent::save() const 
+{
+    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
+    LOG(info) << "SGeo::LastUploadCFBase_OutDir " << dir_ ; 
+    const char* dir = dir_ ? dir_ : "$TMP"  ; 
+    save(dir); 
+}
+void QEvent::save(const char* base, const char* reldir ) const 
+{
+    const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
+    save(dir); 
+}
 
 void QEvent::save(const char* dir_) const 
 {
@@ -578,21 +594,6 @@ void QEvent::save(const char* dir_) const
     if(domain)  domain->save(dir, "domain.npy"); 
 
 }
-
-void QEvent::save(const char* base, const char* reldir ) const 
-{
-    const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
-    save(dir); 
-}
-
-void QEvent::save() const 
-{
-    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
-    const char* dir = dir_ ? dir_ : "$TMP"  ; 
-    save(dir); 
-}
-
-
 
 
 

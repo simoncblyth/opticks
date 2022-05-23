@@ -5,6 +5,14 @@
 
 const char* SGeo::LAST_UPLOAD_CFBASE = nullptr ;
 
+/**
+SGeo::SetLastUploadCFBase
+---------------------------
+
+Canonically invoked from CSGFoundry::upload with CSGFoundry::getOriginCFBase
+
+**/
+
 void SGeo::SetLastUploadCFBase(const char* cfbase)
 {
     LAST_UPLOAD_CFBASE = cfbase ? strdup(cfbase) : nullptr ; 
@@ -26,8 +34,8 @@ const char* SGeo::LastUploadCFBase_OutDir()
 {
     const char* cfbase = LastUploadCFBase(); 
     if(cfbase == nullptr) return nullptr ; 
-    const char* execname = SProc::ExecutableName(); 
-    const char* outdir = SPath::Resolve(cfbase, execname, DIRPATH );  
+    const char* exename = SProc::ExecutableName(); 
+    const char* outdir = SPath::Resolve(cfbase, exename, DIRPATH );  
     return outdir ; 
 }
 
