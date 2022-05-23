@@ -1877,12 +1877,21 @@ void CSGFoundry::setCFBase( const char* cfbase_ )
 }
 const char* CSGFoundry::getCFBase() const 
 {
-   return cfbase ; 
+    return cfbase ; 
 }
 const char* CSGFoundry::getOriginCFBase() const 
 {
-   return origin ? origin->cfbase : cfbase ; 
+    return origin ? origin->cfbase : cfbase ; 
 }
+
+
+//  HMM: clearer to pass the pointer ?
+//const SSim* CSGFoundry::getOriginSim() const 
+//{
+//    return origin ? origin->sim : sim ; 
+//}
+
+
 
 std::string CSGFoundry::descBase() const 
 {
@@ -2019,6 +2028,10 @@ CSGFoundry* CSGFoundry::Load() // static
 
     dst->setOrigin(src); 
     dst->setElv(elv); 
+
+    dst->setOverrideSim(src->sim);   
+    // pass the SSim pointer from the loaded src instance, 
+    // overriding the empty dst SSim instance 
 
     return dst ; 
 }
