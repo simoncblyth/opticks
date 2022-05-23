@@ -16,6 +16,7 @@ QSimTest.cc
 #include "SSys.hh"
 #include "SPath.hh"
 #include "SSim.hh"
+#include "SEvt.hh"
 #include "NP.hh"
 
 #include "QRng.hh"
@@ -353,12 +354,12 @@ void QSimTest::generate_photon()
     LOG(info) << "[ gs_config " << gs_config ; 
     const NP* gs = SEvent::MakeDemoGensteps(gs_config); 
 
-    QEvent* event = new QEvent  ; 
-    event->setGenstep(gs);
- 
-    qs.generate_photon(event);  
+    SEvt evt ; 
+    SEvt::AddGenstep(gs); 
 
-    NP* p = event->getPhoton(); 
+    qs.generate_photon();  
+
+    NP* p = qs.event->getPhoton(); 
     p->save(dir, "p.npy"); 
 
     LOG(info) << "]" ; 

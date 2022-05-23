@@ -226,7 +226,9 @@ void QEvent::CheckGensteps(const NP* gs)  // static
 QEvent::setGenstep
 --------------------
 
-Canonically invoked from CSGOptiX::simulate and CSGOptiX::simulate just prior to launch 
+Canonically invoked from QSim::simulate and QSim::simtrace 
+just prior to cx->launch 
+
 
 1. gensteps uploaded to QEvent::init allocated evt->genstep device buffer, 
    overwriting any prior gensteps and evt->num_genstep is set 
@@ -252,6 +254,7 @@ HMM: what about simtrace ? ce-gensteps are very different to ordinary gs
 int QEvent::setGenstep()
 {
     NP* gs = SEvt::GetGenstep(); 
+    SEvt::Clear();   // clear the quad6 vector, ready to collect more genstep
     if(gs == nullptr) LOG(fatal) << "Must SEvt::AddGenstep before calling QEvent::setGenstep " ;
     return gs == nullptr ? -1 : setGenstep(gs) ; 
 } 

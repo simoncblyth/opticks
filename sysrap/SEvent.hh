@@ -49,14 +49,14 @@ struct SYSRAP_API SEvent
     static void ConfigureGenstep( quad6& gs,  int gencode, int gridaxes, int gsid, int photons_per_genstep ); 
 
     static NP* MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) ;
-    static NP* MakeCountGensteps(const char* config=nullptr);
+    static NP* MakeCountGensteps(const char* config=nullptr, int* total=nullptr);
     static unsigned SumCounts(const std::vector<int>& counts); 
 
     static void ExpectedSeeds(std::vector<int>& seeds, const std::vector<int>& counts );
     static int  CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ); 
 
 
-    static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep);
+    static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep, int* total );
     static void GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale ); 
     static NP* GenerateCenterExtentGenstepsPhotons_( const NP* gsa, float gridscale ) ; 
 

@@ -140,9 +140,12 @@ extern void QSim_dbg_gs_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim
 
 
 
-__global__ void _QSim_generate_photon(qsim* sim, qevent* evt )
+__global__ void _QSim_generate_photon(qsim* sim)
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+
+    qevent* evt = sim->evt ; 
+
     if (idx >= evt->num_photon) return;
     
     curandState rng = sim->rngstate[idx] ; 
@@ -157,12 +160,12 @@ __global__ void _QSim_generate_photon(qsim* sim, qevent* evt )
     evt->photon[idx] = p ;  
 }
 
-extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qevent* evt ) 
+extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim ) 
 {
-    printf("//QSim_generate_photon sim %p evt %p \n", sim, evt ); 
+    printf("//QSim_generate_photon sim %p \n", sim ); 
     // NB trying to de-reference the sim and evt pointers here gives "Bus error" 
     // because the code of this function is not running on device despite being compiled by nvcc
-    _QSim_generate_photon<<<numBlocks,threadsPerBlock>>>( sim, evt );
+    _QSim_generate_photon<<<numBlocks,threadsPerBlock>>>( sim );
 } 
 
 

@@ -19,9 +19,8 @@ const char* BASE = "$TMP/sysrap/SEventTest" ;
 const NP* test_MakeCountGensteps()
 {
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
-    unsigned x_total = 0 ; 
-    for(unsigned i=0 ; i < photon_counts_per_genstep.size() ; i++) x_total += photon_counts_per_genstep[i] ; 
-    const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ; 
+    int x_total = 0 ; 
+    const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_total ) ; 
 
     int create_dirs = 2 ; // 2:dirpath
     const char* fold = SPath::Resolve(BASE, create_dirs );  

@@ -47,6 +47,8 @@ and singular with long lived buffers of defined maximum capacity that get reused
 
 struct QUDARAP_API QEvent
 {
+    friend struct QEventTest ; 
+
     static void  CheckGensteps(const NP* gs); 
     static const plog::Severity LEVEL ; 
     static QEvent* INSTANCE ; 
@@ -70,9 +72,10 @@ struct QUDARAP_API QEvent
     std::string  meta ; 
 
     int setGenstep();
+private:
     int setGenstep(const NP* gs);
     int setGenstep(const quad6* gs, unsigned num_gs ); 
-
+public:
     const NP* getGenstep() const ; 
 
 

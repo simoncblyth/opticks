@@ -222,12 +222,14 @@ void QSim::setLauncher(SCSGOptiX* cx_ )
 double QSim::simulate()
 {
    int rc = event->setGenstep(); 
-   return rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
+   double dt = rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
+   return dt ; 
 }
 double QSim::simtrace()
 {
    int rc = event->setGenstep(); 
-   return rc == 0 && cx != nullptr ? cx->simtrace() : -1. ;
+   double dt = rc == 0 && cx != nullptr ? cx->simtrace() : -1. ;
+   return dt ; 
 }
 
 void QSim::save() const 
@@ -544,7 +546,7 @@ NP* QSim::dbg_gs_generate(unsigned num_photon, unsigned type )
 
 
 
-extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qevent* evt )  ; 
+extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim )  ; 
  
 /**
 QSim::generate_photon
@@ -553,11 +555,13 @@ QSim::generate_photon
 **/
 
 
-void QSim::generate_photon(QEvent* evt)
+void QSim::generate_photon()
 {
     LOG(LEVEL) << "[" ; 
 
-    unsigned num_photon = evt->getNumPhoton() ;  
+    event->setGenstep(); 
+
+    unsigned num_photon = event->getNumPhoton() ;  
     LOG(info) << " num_photon " << num_photon ; 
 
     if( num_photon == 0 )
@@ -568,16 +572,13 @@ void QSim::generate_photon(QEvent* evt)
         return ; 
     }
 
-    qevent* d_evt = evt->getDevicePtr(); 
-
-    assert( d_evt ); 
     assert( d_sim ); 
 
     configureLaunch( num_photon, 1 ); 
 
     LOG(info) << "QSim_generate_photon... " ; 
 
-    QSim_generate_photon(numBlocks, threadsPerBlock, d_sim, d_evt );  
+    QSim_generate_photon(numBlocks, threadsPerBlock, d_sim );  
 
     LOG(LEVEL) << "]" ; 
 }

@@ -24,6 +24,15 @@ sgs SEvt::AddGenstep(const NP* a)
     return INSTANCE->addGenstep(a); 
 }
 
+void SEvt::Clear()
+{
+    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::Clear  " << std::endl ; 
+    assert(INSTANCE); 
+    INSTANCE->clear(); 
+}
+
+
+
 
 void SEvt::AddCarrierGenstep()
 {
@@ -100,7 +109,16 @@ sgs SEvt::addGenstep(const NP* a)
     return s ; 
 }
 
+/**
+SEvt::getGenstep
+-----------------
 
+The returned array takes a full copy of the genstep quad6 vector
+with all gensteps collected since the last SEvt::clear. 
+The array is thus independent from quad6 vector, and hence is untouched
+by SEvt::clear 
+
+**/
 
 NP* SEvt::getGenstep() const 
 {

@@ -490,14 +490,14 @@ int SEvent::GridAxes(int nx, int ny, int nz)  // static
 
 
 
-NP* SEvent::MakeCountGensteps(const char* config) // static 
+NP* SEvent::MakeCountGensteps(const char* config, int* total ) // static 
 {
     std::vector<int>* photon_counts_per_genstep = nullptr ; 
     if( config == nullptr )
     {
         (*photon_counts_per_genstep) = { 3, 5, 2, 0, 1, 3, 4, 2, 4 }; 
     }
-    return MakeCountGensteps(*photon_counts_per_genstep);
+    return MakeCountGensteps(*photon_counts_per_genstep, total);
 }
 
 /**
@@ -509,10 +509,12 @@ Used by qudarap/tests/QEventTest.cc
 **/
 
 
-NP* SEvent::MakeCountGensteps(const std::vector<int>& counts) // static 
+NP* SEvent::MakeCountGensteps(const std::vector<int>& counts, int* total ) // static 
 {
     int gencode = OpticksGenstep_TORCH ;
     std::vector<quad6> gensteps ;
+
+    if(total) *total = 0 ; 
     for(unsigned i=0 ; i < counts.size() ; i++)
     {
         quad6 gs ; gs.zero(); 
@@ -520,6 +522,8 @@ NP* SEvent::MakeCountGensteps(const std::vector<int>& counts) // static
         int gridaxes = XYZ ;  
         int gsid = 0 ;  
         int photons_per_genstep = counts[i]; 
+
+        if(total) *total += photons_per_genstep ; 
 
         ConfigureGenstep(gs, gencode, gridaxes, gsid, photons_per_genstep ); 
 

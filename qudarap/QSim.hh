@@ -133,7 +133,7 @@ struct QUDARAP_API QSim
 
     void dump_photon(            quad4* photon, unsigned num_photon, const char* opt="f0,f1,f2,i3", unsigned egdeitems=10 ); 
 
-    void generate_photon(QEvent* evt); 
+    void generate_photon(); 
     void fill_state_0(quad6*  state, unsigned num_state); 
     void fill_state_1(qstate* state, unsigned num_state); 
 

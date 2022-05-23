@@ -48,6 +48,7 @@ struct SYSRAP_API SEvt
     static SEvt* Get() ; 
     static sgs AddGenstep(const quad6& q); 
     static sgs AddGenstep(const NP* a); 
+    static void Clear(); 
 
     static void AddCarrierGenstep(); 
     static void AddTorchGenstep(); 
