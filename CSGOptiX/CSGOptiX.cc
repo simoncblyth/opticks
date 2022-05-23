@@ -150,7 +150,9 @@ CSGOptiX::Create
 
 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )   
 {
-    LOG(info) << "fd.cfbase " << fd->cfbase ; 
+    LOG(info) << "fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
+    std::cout << "fd.descBase " << ( fd ? fd->descBase() : "-" ) << std::endl ; 
+
     InitSim(fd->sim); 
     InitGeo(fd); 
 

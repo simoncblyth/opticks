@@ -115,6 +115,10 @@ std::string CSGFoundry::desc() const
     return ss.str(); 
 }
 
+
+
+
+
 std::string CSGFoundry::descSolid() const
 {
     unsigned num_total = getNumSolidTotal(); 
@@ -1879,6 +1883,20 @@ const char* CSGFoundry::getOriginCFBase() const
 {
    return origin ? origin->cfbase : cfbase ; 
 }
+
+std::string CSGFoundry::descBase() const 
+{
+    const char* cfb = getCFBase(); 
+    const char* ocfb = getOriginCFBase(); 
+    std::stringstream ss ; 
+    ss << "CSGFoundry.descBase "
+       << " CFBase " << ( cfb ? cfb : "-" )
+       << " OriginCFBase " << ( ocfb ? ocfb : "-" ) 
+       ;
+    return ss.str(); 
+}
+
+
 
 /**
 CSGFoundry::load
