@@ -34,7 +34,12 @@ Laptop analysis::
 EOU
 }
 
+
+
 export OPTICKS_MAX_RECORD=10   # change from default of 0, see sysrap/SEventConfig.cc
+export OPTICKS_MAX_REC=10
+export OPTICKS_MAX_SEQ=10
+
 
 if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then 
     logdir=/tmp/$USER/opticks/$bin

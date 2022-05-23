@@ -598,37 +598,45 @@ std::string QEvent::descSave(
     const NP* domain ) const 
 {
     std::stringstream ss ; 
-    ss << "QEvent::descSave" << std::endl 
+    ss << "QEvent::descSave" 
+       << std::endl 
        << std::setw(20) << "hit" << " " 
-       << std::setw(20) << ( hit ? hit->sstr() : "-" )  
+       << std::setw(20) << ( hit ? hit->sstr() : "-" ) 
+       << " "
        << std::endl
        << std::setw(20) << "genstep" << " " 
-       << std::setw(20) << ( genstep ? genstep->sstr() : "-" )  
-       << std::setw(20) << "SEventConfig::MaxGenstep" 
+       << std::setw(20) << ( genstep ? genstep->sstr() : "-" ) 
+       << " "
+       << std::setw(30) << "SEventConfig::MaxGenstep" 
        << std::setw(20) << evt->max_genstep
        << std::endl
        << std::setw(20) << "photon" << " " 
-       << std::setw(20) << ( photon ? photon->sstr() : "-" )  
-       << std::setw(20) << "SEventConfig::MaxPhoton"
+       << std::setw(20) << ( photon ? photon->sstr() : "-" ) 
+       << " "
+       << std::setw(30) << "SEventConfig::MaxPhoton"
        << std::setw(20) << evt->max_photon
        << std::endl
        << std::setw(20) << "record" << " " 
-       << std::setw(20) << ( record ? record->sstr() : "-" )  
-       << std::setw(20) << "SEventConfig::MaxRecord"
+       << std::setw(20) << ( record ? record->sstr() : "-" ) 
+       << " " 
+       << std::setw(30) << "SEventConfig::MaxRecord"
        << std::setw(20) << evt->max_record
        << std::endl
        << std::setw(20) << "rec" << " " 
-       << std::setw(20) << ( rec ? rec->sstr() : "-" )  
-       << std::setw(20) << "SEventConfig::MaxRec"
+       << std::setw(20) << ( rec ? rec->sstr() : "-" ) 
+       << " "
+       << std::setw(30) << "SEventConfig::MaxRec"
        << std::setw(20) << evt->max_rec
        << std::endl
        << std::setw(20) << "seq" << " " 
-       << std::setw(20) << ( seq ? seq->sstr() : "-" )  
-       << std::setw(20) << "SEventConfig::MaxSeq"
+       << std::setw(20) << ( seq ? seq->sstr() : "-" ) 
+       << " " 
+       << std::setw(30) << "SEventConfig::MaxSeq"
        << std::setw(20) << evt->max_seq
        << std::endl
        << std::setw(20) << "domain" << " " 
        << std::setw(20) << ( domain ? domain->sstr() : "-" ) 
+       << " "
        << std::endl
        ;
     std::string s = ss.str(); 
