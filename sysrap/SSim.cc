@@ -29,7 +29,7 @@ int SSim::Compare( const SSim* a , const SSim* b, bool dump  )
 
 SSim* SSim::Create()
 {
-    if(INSTANCE) LOG(fatal) << "replacing SSim::INSTANCE" ; 
+    if(INSTANCE) LOG(LEVEL) << "replacing SSim::INSTANCE" ; 
     new SSim ; 
     return INSTANCE ;  
 }

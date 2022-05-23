@@ -16,13 +16,17 @@ CSGTargetTest
     MOI=P              CSGTargetTest
     MOI=uni_acrylic3:0:100 CSGTargetTest 
 
-    MOI=
+Check a few different iidx of midx 120::     
+
+    MOI=120:0:0 CSGTargetTest 
+    MOI=120:0:1 CSGTargetTest 
+    MOI=120:0:2 CSGTargetTest 
 
 
 **/
 #include "SSys.hh"
 #include "SStr.hh"
-#include "Opticks.hh"
+#include "SOpticksResource.hh"
 #include "OPTICKS_LOG.hh"
 
 #include "scuda.h"
@@ -32,29 +36,25 @@ CSGTargetTest
 
 struct CSGTargetTest
 {
-    Opticks*        ok ; 
-    const char* cfbase ; 
     CSGFoundry*     fd ; 
     float4          ce ; 
 
     qat4 q0 ; 
     qat4 q1 ; 
 
-    CSGTargetTest(int argc, char** argv); 
+    CSGTargetTest(); 
     void dumpMOI(const char* MOI); 
     void dumpALL(); 
 };
 
 
-CSGTargetTest::CSGTargetTest(int argc, char** argv)
+CSGTargetTest::CSGTargetTest()
     :
-    ok(Opticks::Configure(argc, argv)), 
-    cfbase(ok->getFoundryBase("CFBASE")),
-    fd(CSGFoundry::Load(cfbase, "CSGFoundry")),
+    fd(CSGFoundry::Load()),
     ce(make_float4( 0.f, 0.f, 0.f, 1000.f ))
 {
-    LOG(info) << "cfbase " << cfbase ; 
-    LOG(info) << "foundry " << fd->desc() ; 
+    //LOG(info) << fd->descBase() ; 
+    //LOG(info) << fd->desc() ; 
     //fd->summary(); 
 
     q0.zero(); 
@@ -76,6 +76,9 @@ void CSGTargetTest::dumpMOI( const char* MOI )
 
         int midx, mord, iidx ; 
         fd->parseMOI(midx, mord, iidx,  moi );  
+
+        //std::cout << "------- after parseMOI " << std::endl ; 
+
         const char* name = midx > -1 ? fd->getName(midx) : nullptr ; 
 
         fd->getCenterExtent(ce, midx, mord, iidx, &q0 );  
@@ -151,19 +154,33 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    CSGTargetTest tt(argc, argv); 
+    CSGTargetTest tt ; 
+    CSGFoundry* fd = tt.fd ; 
 
-    const char* MOI = SSys::getenvvar("MOI", nullptr ); 
+    const char* METH = SSys::getenvvar("METH", "MOI"); 
 
-    if(MOI) 
+    if( strcmp(METH, "MOI") == 0)
     {
-        tt.dumpMOI(MOI); 
+        const char* MOI = SSys::getenvvar("MOI", nullptr ); 
+        if(MOI) 
+        {
+            tt.dumpMOI(MOI); 
+        }
+        else
+        {
+            tt.dumpALL(); 
+        }
     }
-    else
+    else if( strcmp(METH, "descInst") == 0 )
     {
-        tt.dumpALL(); 
+        unsigned ias_idx = 0 ; 
+        unsigned long long emm = 0ull ;  
+        std::cout << "fd.descInst" << std::endl << fd->descInst(ias_idx, emm) << std::endl ;          
     }
-
+    else if( strcmp(METH, "descInstance") == 0 )
+    {
+        std::cout << fd->descInstance() ; // IDX=0,10,100 envvar           
+    }
     return 0 ; 
 }
 

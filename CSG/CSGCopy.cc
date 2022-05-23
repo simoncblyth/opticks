@@ -32,7 +32,7 @@ CSGFoundry* CSGCopy::Select(const CSGFoundry* src, const SBitSet* elv )
 {
     CSGCopy cpy(src, elv); 
     cpy.copy(); 
-    LOG(info) << cpy.desc(); 
+    LOG(LEVEL) << cpy.desc(); 
     return cpy.dst ; 
 }
 

@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 
 import numpy as np
+import hashlib
 from opticks.ana.hismask import HisMask   
+from opticks.ana.histype import HisType  
+
 hm = HisMask()
+ht = HisType()
+
+seqhis_ = lambda s:ht.label(s)
+
+digest_ = lambda a:hashlib.md5(a.data.tobytes()).hexdigest()  
 
 
 boundary__ = lambda p:p.view(np.uint32)[:,3,0] >> 16
@@ -32,9 +40,10 @@ hit__      = lambda p,msk:p[np.where( ( flagmask__(p) & msk ) == msk)]
 from opticks.CSG.CSGFoundry import CSGFoundry 
 cf = CSGFoundry.Load()
 
-bflagdesc_ = lambda p:"%s : %s " % ( flagdesc_(p), cf.sim.bndnamedict[boundary_(p)] )
+bflagdesc_ = lambda p:"%s : %40s : %s " % ( flagdesc_(p), cf.sim.bndnamedict[boundary_(p)], digest_(p[:3]) )
 
 
+ridiff_ = lambda ri:ri[1:,:3] - ri[:-1,:3]     
 
 
 

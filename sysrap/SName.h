@@ -18,6 +18,7 @@ Identity machinery using the foundry vector of meshnames (aka solid names)
 struct SName
 {
     static constexpr const char* parseArg_ALL = "ALL" ; 
+    static const bool dump = false ; 
 
     static int ParseIntString(const char* arg, int fallback=-1);
     static void ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr ); 
@@ -41,6 +42,8 @@ struct SName
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ;
 
 }; 
+
+
 
 
 inline SName::SName( const std::vector<std::string>& name_ )
@@ -243,7 +246,7 @@ inline int SName::parseArg(const char* arg, unsigned& count) const
         }
     }
 
-    std::cout << " arg " << arg << " idx " << idx << " count " << count << " is_all " << is_all << std::endl ; 
+    if(dump) std::cout << " arg " << arg << " idx " << idx << " count " << count << " is_all " << is_all << std::endl ; 
     return idx ; 
 }
 
@@ -266,7 +269,7 @@ inline int SName::ParseIntString(const char* arg, int fallback)  // static
     int result = int(uli) ; 
     int ret = end_points_to_terminator ? result : fallback ;
 
-    std::cout  
+    if(dump) std::cout  
          << " arg [" << arg << "] " 
          << " uli " << uli 
          << " end_points_to_terminator " << end_points_to_terminator
@@ -300,7 +303,7 @@ inline void SName::ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr_ )
     solidIdx = num_elem > 0 ? ParseIntString( elem[0].c_str() ) : 0 ; 
     primIdxRel = num_elem > 1 ? ParseIntString( elem[1].c_str() ) : 0 ; 
 
-    std::cout 
+    if(dump) std::cout 
         << " sopr_ " << sopr_ 
         << " sopr " << sopr 
         << " solidIdx " << solidIdx 
@@ -340,7 +343,7 @@ subsequent elements are expected to be integers.
 
 **/
 
-inline void SName::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const 
+inline void SName::parseMOI(int& midx, int& mord, int& iidx, const char* moi ) const 
 {
     std::stringstream ss; 
     ss.str(moi)  ;
@@ -356,7 +359,7 @@ inline void SName::parseMOI(int& midx, int& mord, int& iidx, const char* moi) co
     mord = num_elem > 1 ? ParseIntString( elem[1].c_str() ) : 0 ; 
     iidx = num_elem > 2 ? ParseIntString( elem[2].c_str() ) : 0 ; 
 
-    std::cout
+    if(dump) std::cout
         << " moi " << moi 
         << " num_elem " << num_elem
         << " count " << count 

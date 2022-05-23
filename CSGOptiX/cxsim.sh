@@ -72,5 +72,17 @@ if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py  
 fi 
 
+if [ "${arg/geo}" != "$arg" ]; then 
+    EXECUTABLE=$bin source cachegrab.sh env
+
+    echo CFBASE $CFBASE
+
+    CSGTargetTest
+fi 
+
+
+
+
+
 
 exit 0 

@@ -130,6 +130,9 @@ struct CSG_API CSGFoundry
     std::string descSolids() const ;
     std::string descInst(unsigned ias_idx_, unsigned long long emm=~0ull ) const ;
 
+    std::string descInstance() const ;   // IDX=0,10,100,1000,10000
+    std::string descInstance(unsigned idx) const ; 
+
     void dump() const ;
     void dumpSolid() const ;
     void dumpSolid(unsigned solidIdx ) const ;

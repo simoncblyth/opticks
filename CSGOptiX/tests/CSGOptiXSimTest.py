@@ -16,20 +16,25 @@ if __name__ == '__main__':
     for i in range(len(p)):
         if not (PIDX == -1 or PIDX == i): continue 
         if PIDX > -1: print("PIDX %d " % PIDX) 
-        print("r[i,:,:3]")
+        print("r[%d,:,:3]" % i)
         print(r[i,:,:3]) 
-        print("\n\nbflagdesc_(r[i,j])")
+        print("\n\nbflagdesc_(r[%d,j])" % i)
         for j in range(len(r[i])):
-            print(bflagdesc_(r[i,j])  )   
+            print(bflagdesc_(r[i,j]))   
         pass
 
+        print("ridiff_(r[%d])*1000." % i)
+        print(ridiff_(r[i])*1000.)   
+
         print("\n") 
-        print("p")
+        print("p[%d]" % i)
         print(p[i])
         print("\n") 
+        print("bflagdesc_(p[%d])" % i)
         print(bflagdesc_(p[i])) 
         print("\n") 
         if not seq is None:
+            print("seqhis_(seq[%d,0])" % i) 
             print(seqhis_(seq[i,0])) 
             print("\n") 
         pass

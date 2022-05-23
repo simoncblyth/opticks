@@ -329,9 +329,11 @@ struct qat4
              const qat4& q = qv[i] ; 
              unsigned ins_idx,  gas_idx, ias_idx ; 
              q.getIdentity(ins_idx,  gas_idx, ias_idx);  
+
              if(std::find(ins.begin(), ins.end(), ins_idx) == ins.end() ) ins.push_back(ins_idx); 
              if(std::find(gas.begin(), gas.end(), gas_idx) == gas.end() ) gas.push_back(gas_idx); 
              if(std::find(ias.begin(), ias.end(), ias_idx) == ias.end() ) ias.push_back(ias_idx); 
+
          }
     } 
 

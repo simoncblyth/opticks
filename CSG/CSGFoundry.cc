@@ -339,8 +339,57 @@ std::string CSGFoundry::descSolids() const
     return s ; 
 }
 
+std::string CSGFoundry::descInstance() const
+{
+    std::vector<int>* idxs = SSys::getenvintvec("IDX", ',');
+    std::stringstream ss ; 
+    if(idxs == nullptr)
+    {
+        ss << " no IDX " << std::endl ; 
+    }
+    else
+    {
+        for(unsigned i=0 ; i < idxs->size() ; i++)
+        {
+            int idx = (*idxs)[i] ; 
+            ss << descInstance(idx) ;          
+        }
+    } 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
+std::string CSGFoundry::descInstance(unsigned idx) const
+{
+    std::stringstream ss ; 
+    ss << "CSGFoundry::descInstance"
+       << " idx " << std::setw(7) << idx 
+       << " inst.size " << std::setw(7) << inst.size()
+        ; 
 
+    if(idx >= inst.size() ) 
+    {
+        ss << " idx OUT OF RANGE " ; 
+    }
+    else
+    {
+        const qat4& q = inst[idx] ;      
+        unsigned ins_idx, gas_idx, ias_idx ; 
+        q.getIdentity(ins_idx, gas_idx, ias_idx);
+
+        const CSGSolid* so = getSolid(gas_idx); 
+ 
+        ss << " idx " << std::setw(7) << idx               
+           << " ins " << std::setw(5) << ins_idx                
+           << " gas " << std::setw(2) << gas_idx                
+           << " ias " << std::setw(1) << ias_idx                
+           << " so " << so->desc()
+           ;
+    }
+    ss << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 std::string CSGFoundry::descInst(unsigned ias_idx_, unsigned long long emm ) const
@@ -356,6 +405,7 @@ std::string CSGFoundry::descInst(unsigned ias_idx_, unsigned long long emm ) con
         {
             const CSGSolid* so = getSolid(gas_idx); 
             ss 
+                << " i " << std::setw(5) << i               
                 << " ins " << std::setw(5) << ins_idx                
                 << " gas " << std::setw(2) << gas_idx                
                 << " ias " << std::setw(1) << ias_idx                
@@ -2051,7 +2101,6 @@ CSGFoundry* CSGFoundry::Load_() // static
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  
     bool readable = SPath::IsReadable(cfbase, "CSGFoundry") ; 
 
-    std::cout << "CSGFoundry::Load_ " << ( cfbase ? cfbase : "-" ) << " readable " << readable << std::endl ; 
     LOG(LEVEL) << " cfbase " << cfbase << " readable " << readable ; 
 
     if(readable == false)
