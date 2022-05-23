@@ -219,18 +219,46 @@ void QSim::setLauncher(SCSGOptiX* cx_ )
     cx = cx_ ; 
 }
 
+/**
+QSim::simulate
+---------------
+
+Canonically invoked from G4CXOpticks::simulate
+Collected genstep are uploaded and the CSGOptiX kernel is launched to generate and propagate. 
+
+**/
+
 double QSim::simulate()
 {
    int rc = event->setGenstep(); 
    double dt = rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
    return dt ; 
 }
+
+/**
+QSim::simtrace
+---------------
+
+Canonically invoked from G4CXOpticks::simtrace
+Collected genstep are uploaded and the CSGOptiX kernel is launched to generate and propagate. 
+
+**/
+
+
 double QSim::simtrace()
 {
    int rc = event->setGenstep(); 
    double dt = rc == 0 && cx != nullptr ? cx->simtrace() : -1. ;
    return dt ; 
 }
+
+/**
+QSim::save
+------------
+
+TODO: automated event array pullback (with configuration of which arrays to pull)
+
+**/
 
 void QSim::save() const 
 {

@@ -11,10 +11,12 @@ and that needs the upload of QSim components first ?
 
 **/
 
+class G4VPhysicalVolume ;  
+
 class GGeo ; 
 struct CSGFoundry ; 
 struct CSGOptiX ; 
-class G4VPhysicalVolume ;  
+struct QSim ; 
 
 #include "plog/Severity.h"
 #include "G4CX_API_EXPORT.hh"
@@ -28,6 +30,7 @@ struct G4CX_API G4CXOpticks
     CSGFoundry* fd ; 
 
     CSGOptiX*   cx ; 
+    QSim*       qs ; 
 
     G4CXOpticks(); 
 

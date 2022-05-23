@@ -76,7 +76,7 @@ void CSGGenstep::create(const char* moi_, bool ce_offset, bool ce_scale )
     if( strcmp(moi, "FAKE") == 0 ) 
     {
         std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };
-        gs = SEvent::MakeCountGensteps(photon_counts_per_genstep) ;
+        gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, nullptr ) ;
     }
     else
     {

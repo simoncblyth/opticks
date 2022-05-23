@@ -7,6 +7,8 @@
 #include "CSG_GGeo_Convert.h"
 #include "CSGOptiX.h"
 
+#include "QSim.hh"
+
 #include "G4CXOpticks.hh"
 
 G4CXOpticks::G4CXOpticks()
@@ -14,7 +16,8 @@ G4CXOpticks::G4CXOpticks()
     wd(nullptr),
     gg(nullptr),
     fd(nullptr), 
-    cx(nullptr)
+    cx(nullptr),
+    qs(nullptr)
 {
 }
 
@@ -39,6 +42,7 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
     fd = fd_ ; 
     cx = CSGOptiX::Create(fd);  
+    qs = cx->sim ; 
 }
 
 void G4CXOpticks::render()
@@ -51,15 +55,13 @@ void G4CXOpticks::render()
 void G4CXOpticks::simulate()
 {
     assert(cx); 
-    assert( SEventConfig::IsRGModeSimulate() ); 
-    cx->simulate(); 
+    qs->simulate(); 
 }
 
 void G4CXOpticks::simtrace()
 {
     assert(cx); 
-    assert( SEventConfig::IsRGModeSimtrace() ); 
-    cx->simtrace(); 
+    qs->simtrace(); 
 }
 
 
