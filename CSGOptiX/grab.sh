@@ -31,7 +31,7 @@ fi
 
 executable=${EXECUTABLE:-CSGOptiXSimtraceTest}
 
-opticks_key_remote_dir=$(opticks-key-remote-dir)
+opticks_key_remote_dir=$(opticks-key-remote-dir)    ## eg .opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1
 xdir=$opticks_key_remote_dir/CSG_GGeo/$executable/   ## trailing slash to avoid duplicating path element 
 
 from=P:$xdir
@@ -68,10 +68,7 @@ relative_path(){
       ${pfx}*)  rel=${path/$pfx} ;;    
    esac
    echo $rel   
-   #cvd1/70000/RichTbR1MagShBox/cam_0_t0/cxr_view___eye_1,-2.2,0__zoom_1__tmin_0.4_RichTbR1MagShBox.jpg
-   #cvd1/70000/RichTbR1MagShBox/cam_0_t0/cxr_view___eye_1,-2.2,0__zoom_1__tmin_0.4_RichTbR1MagShBox.jpg
 }
-
 
 pub_path(){
     local msg="=== $FUNCNAME :"

@@ -127,6 +127,14 @@ public:
     std::string descMax() const ; 
     std::string descNum() const ; 
     std::string descBuf() const ; 
+    std::string descSave( 
+        const NP* hit, 
+        const NP* genstep, 
+        const NP* photon, 
+        const NP* record, 
+        const NP* rec, 
+        const NP* seq, 
+        const NP* domain ) const ; 
 
     void saveMeta(   const char* dir, const char* name); 
     void setMeta( const char* meta ); 

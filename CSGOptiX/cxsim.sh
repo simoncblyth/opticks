@@ -13,22 +13,18 @@ cxsim.sh : $bin : standard geometry and SSim inputs
 
 Create the standard geometry::
 
-   cg
-   ./run.sh 
-
+    cg
+    ./run.sh 
 
 Run the sim::
 
-   cx
-   ./cxsim.sh 
+    cx
+    ./cxsim.sh 
 
 Grab from remote::
 
     cx
-    #?
-    #./tmp_grab.sh 
-    #./cf_grab.sh 
-
+    ./cxsim.sh grab
 
 Laptop analysis::
 
@@ -57,9 +53,19 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
     cd $iwd
 fi 
 
-#if [ "${arg/ana}" != "$arg" ]; then 
-    #${IPYTHON:-ipython} --pdb -i tests/$bin.py  
-#fi 
+
+if [ "${arg/grab}" != "$arg" ]; then 
+    EXECUTABLE=$bin       source cachegrab.sh grab
+    EXECUTABLE=CSGFoundry source cachegrab.sh grab
+fi 
+
+
+if [ "${arg/ana}" != "$arg" ]; then 
+    # HMM: this assumes remote running, local analysis 
+    EXECUTABLE=$bin source cachegrab.sh env
+    echo FOLD $FOLD 
+    ${IPYTHON:-ipython} --pdb -i tests/$bin.py  
+fi 
 
 
 exit 0 

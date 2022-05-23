@@ -28,10 +28,7 @@ hit__      = lambda p,msk:p[np.where( ( flagmask__(p) & msk ) == msk)]
 
 
 
-
-## hmm need to use opticks-switch-key when analysing event from remote 
-## actually should be using the specific CSGFoundry persisted and grabbed 
-
+## TO PICK THE GEOMETRY APPROPRIATE TO THE RESULT ARRAYS SET CFBASE envvar 
 from opticks.CSG.CSGFoundry import CSGFoundry 
 cf = CSGFoundry.Load()
 

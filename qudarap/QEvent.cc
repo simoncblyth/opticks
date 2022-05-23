@@ -539,7 +539,9 @@ QEvent::save
 
 Canonically invoked from QSim::save 
 
-QEvent::save persists NP arrays into the directory argument provided.
+QEvent::save persists NP arrays into the default directory 
+or the directory argument provided.
+
 Unlike its predecessor, OpticksEvent, organization of 
 the directory structure is left to the caller.   
 
@@ -547,7 +549,6 @@ TODO: a separate struct to yield such directory paths handling things
 like event tags. 
 
 **/
-
 
 void QEvent::save() const 
 {
@@ -568,22 +569,15 @@ void QEvent::save(const char* dir_) const
     LOG(info) << " dir " << dir ; 
 
     NP* hit = getHit() ;
-
     const NP* genstep = getGenstep() ; 
-
     NP* photon = getPhoton() ; 
     NP* record = getRecord() ; 
-    NP* rec = getRec() ;
+    NP* rec = getRec() ;   // compressed record
     NP* seq = getSeq() ;
     NP* domain = getDomain() ;
- 
-    LOG(info) << " hit " << ( hit ? hit->sstr() : "-" ) ; 
-    LOG(info) << " genstep " << ( genstep ? genstep->sstr() : "-" ) ; 
-    LOG(info) << " photon " << ( photon ? photon->sstr() : "-" ) ; 
-    LOG(info) << " record " << ( record ? record->sstr() : "-" ) ; 
-    LOG(info) << " rec " << ( rec ? rec->sstr() : "-" ) ; 
-    LOG(info) << " seq " << ( seq ? seq->sstr() : "-" ) ; 
-    LOG(info) << " domain " << ( domain ? domain->sstr() : "-" ) ; 
+
+    // HMM: could handle these all togethr using NPFold 
+    LOG(info) << descSave(hit,genstep,photon,record,rec,seq,domain) ; 
 
     if(hit)     hit->save(dir, "hit.npy"); 
     if(genstep) genstep->save(dir, "gs.npy"); 
@@ -592,9 +586,54 @@ void QEvent::save(const char* dir_) const
     if(rec)     rec->save(dir, "rec.npy"); 
     if(seq)     seq->save(dir, "seq.npy"); 
     if(domain)  domain->save(dir, "domain.npy"); 
-
 }
 
+std::string QEvent::descSave( 
+    const NP* hit, 
+    const NP* genstep, 
+    const NP* photon, 
+    const NP* record, 
+    const NP* rec, 
+    const NP* seq, 
+    const NP* domain ) const 
+{
+    std::stringstream ss ; 
+    ss << "QEvent::descSave" << std::endl 
+       << std::setw(20) << "hit" << " " 
+       << std::setw(20) << ( hit ? hit->sstr() : "-" )  
+       << std::endl
+       << std::setw(20) << "genstep" << " " 
+       << std::setw(20) << ( genstep ? genstep->sstr() : "-" )  
+       << std::setw(20) << "SEventConfig::MaxGenstep" 
+       << std::setw(20) << evt->max_genstep
+       << std::endl
+       << std::setw(20) << "photon" << " " 
+       << std::setw(20) << ( photon ? photon->sstr() : "-" )  
+       << std::setw(20) << "SEventConfig::MaxPhoton"
+       << std::setw(20) << evt->max_photon
+       << std::endl
+       << std::setw(20) << "record" << " " 
+       << std::setw(20) << ( record ? record->sstr() : "-" )  
+       << std::setw(20) << "SEventConfig::MaxRecord"
+       << std::setw(20) << evt->max_record
+       << std::endl
+       << std::setw(20) << "rec" << " " 
+       << std::setw(20) << ( rec ? rec->sstr() : "-" )  
+       << std::setw(20) << "SEventConfig::MaxRec"
+       << std::setw(20) << evt->max_rec
+       << std::endl
+       << std::setw(20) << "seq" << " " 
+       << std::setw(20) << ( seq ? seq->sstr() : "-" )  
+       << std::setw(20) << "SEventConfig::MaxSeq"
+       << std::setw(20) << evt->max_seq
+       << std::endl
+       << std::setw(20) << "domain" << " " 
+       << std::setw(20) << ( domain ? domain->sstr() : "-" ) 
+       << std::endl
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 /**
@@ -620,16 +659,17 @@ void QEvent::setNumPhoton(unsigned num_photon )
         evt->photon = QU::device_alloc<sphoton>( evt->max_photon ) ; 
 
         evt->num_seq = evt->max_seq > 0 ? evt->num_photon : 0 ; 
-        evt->seq     = evt->num_seq > 0 ? QU::device_alloc<sseq>(  evt->num_seq  ) : nullptr ; 
+        evt->seq     = evt->num_seq > 0 ? QU::device_alloc_zero<sseq>(  evt->num_seq  ) : nullptr ; 
         
         // assumes that the number of photons for subsequent launches does not increase 
         // when collecting records : that is ok during highly controlled debugging 
 
         evt->num_record = evt->max_record * evt->num_photon ;  
-        evt->record     = evt->num_record  > 0 ? QU::device_alloc<sphoton>( evt->num_record  ) : nullptr ; 
+        evt->record     = evt->num_record  > 0 ? QU::device_alloc_zero<sphoton>( evt->num_record  ) : nullptr ; 
+
 
         evt->num_rec    = evt->max_rec * evt->num_photon ;  
-        evt->rec        = evt->num_rec  > 0 ? QU::device_alloc<srec>(  evt->num_rec  ) : nullptr ; 
+        evt->rec        = evt->num_rec  > 0 ? QU::device_alloc_zero<srec>(  evt->num_rec  ) : nullptr ; 
 
 
         // use SEventConfig code or envvars to config the maxima

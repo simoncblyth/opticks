@@ -188,6 +188,7 @@ T* QU::device_alloc( unsigned num_items )
     size_t size = num_items*sizeof(T) ; 
     T* d ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
+
     return d ; 
 }
 
@@ -210,6 +211,26 @@ template QUDARAP_API sphoton*   QU::device_alloc<sphoton>(unsigned num_items) ;
 
 
 template<typename T>
+T* QU::device_alloc_zero(unsigned num_items )
+{
+    size_t size = num_items*sizeof(T) ; 
+    T* d ;  
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
+
+    int value = 0 ; 
+    QUDA_CHECK( cudaMemset(d, value, size )); 
+
+    return d ; 
+}
+
+template QUDARAP_API sphoton*   QU::device_alloc_zero<sphoton>(unsigned num_items) ;
+template QUDARAP_API srec*      QU::device_alloc_zero<srec>(unsigned num_items) ;
+template QUDARAP_API sseq*      QU::device_alloc_zero<sseq>(unsigned num_items) ;
+
+
+
+
+template<typename T>
 void QU::device_memset( T* d, int value, unsigned num_items )
 {
     size_t size = num_items*sizeof(T) ; 
@@ -220,6 +241,11 @@ template void     QU::device_memset<int>(int*, int, unsigned ) ;
 template void     QU::device_memset<quad4>(quad4*, int, unsigned ) ;
 template void     QU::device_memset<quad6>(quad6*, int, unsigned ) ;
 template void     QU::device_memset<sphoton>(sphoton*, int, unsigned ) ;
+
+
+
+
+
 
 
 

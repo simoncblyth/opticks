@@ -32,6 +32,9 @@ struct QUDARAP_API QU
     static T*   device_alloc( unsigned num_items ) ; 
 
     template <typename T>
+    static T*   device_alloc_zero( unsigned num_items ) ; 
+
+    template <typename T>
     static void device_memset( T* d, int value, unsigned num_items ); 
 
     template <typename T>
