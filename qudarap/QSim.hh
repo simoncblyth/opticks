@@ -50,6 +50,8 @@ struct quad2 ;
 struct sphoton ; 
 union  quad ; 
 
+struct SCSGOptiX ; 
+
 struct QUDARAP_API QSim
 {
     static const plog::Severity LEVEL ; 
@@ -78,12 +80,20 @@ struct QUDARAP_API QSim
     qdebug*           dbg ; 
     qdebug*           d_dbg ; 
 
+    SCSGOptiX*        cx ; 
+
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
 
 
     QSim();
     void init(); 
+    void setLauncher(SCSGOptiX* cx_ ); 
+
+    double simulate();  // via cx launch 
+    double simtrace();
+    void save() const ; 
+
 
     qsim* getDevicePtr() const ; 
     std::string desc() const ; 

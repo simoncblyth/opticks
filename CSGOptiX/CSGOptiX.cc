@@ -102,6 +102,14 @@ LONGTERM: see if can pull out the essentials into a smaller class
 
 const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
 
+CSGOptiX* CSGOptiX::INSTANCE = nullptr ; 
+CSGOptiX* CSGOptiX::Get()
+{
+    return INSTANCE ; 
+}
+
+
+
 #if OPTIX_VERSION < 70000 
 const char* CSGOptiX::PTXNAME = "CSGOptiX6" ; 
 const char* CSGOptiX::GEO_PTXNAME = "CSGOptiX6geo" ; 
@@ -156,12 +164,9 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     InitSim(fd->sim); 
     InitGeo(fd); 
 
-#ifdef WITH_SGLM
     CSGOptiX* cx = new CSGOptiX(fd) ; 
-#else
-    Opticks* ok = Opticks::Instance(); 
-    CSGOptiX* cx = new CSGOptiX(ok, fd) ; 
-#endif
+    QSim::Get()->setLauncher(cx); 
+
     return cx ; 
 }
 
@@ -731,6 +736,9 @@ are retaining the distinct methods up here.
 
 *render* is also still needed to fulfil SRenderer protocol base 
 
+The *simulate* and *simtrace*  are typically invoked from QSim::simulate 
+and QSim::simtrace
+
 **/
 double CSGOptiX::render()
 {  
@@ -740,14 +748,12 @@ double CSGOptiX::render()
 double CSGOptiX::simtrace()
 { 
     assert(raygenmode == SRG_SIMTRACE) ; 
-    int rc = event->setGenstep(); 
-    return rc == 0 ? launch() : -1. ; 
+    return launch() ; 
 }  
 double CSGOptiX::simulate()
 { 
     assert(raygenmode == SRG_SIMULATE) ; 
-    int rc = event->setGenstep(); 
-    return rc == 0 ? launch() : -1. ;
+    return launch()  ;
 }   
 
 

@@ -197,6 +197,9 @@ set(HEADERS
     srec.h 
     sseq.h 
 
+    sframe.h
+    SCSGOptiX.h 
+
     storchtype.h
 
     storch.h

@@ -4,6 +4,7 @@
 #include "SPath.hh"
 #include "scuda.h"
 #include "squad.h"
+#include "SCSGOptiX.h"
 
 #include "NP.hh"
 #include "QUDA_CHECK.h"
@@ -164,7 +165,8 @@ QSim::QSim()
     sim(nullptr),
     d_sim(nullptr),
     dbg(debug_ ? debug_->dbg : nullptr), 
-    d_dbg(debug_ ? debug_->d_dbg : nullptr)
+    d_dbg(debug_ ? debug_->d_dbg : nullptr),
+    cx(nullptr)
 {
     init(); 
 }
@@ -207,6 +209,32 @@ void QSim::init()
     LOG(LEVEL) << desc() ; 
     LOG(info) << checkComponents() ; 
 }
+
+/**
+QSim::setLauncher
+
+**/
+void QSim::setLauncher(SCSGOptiX* cx_ )
+{
+    cx = cx_ ; 
+}
+
+double QSim::simulate()
+{
+   int rc = event->setGenstep(); 
+   return rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
+}
+double QSim::simtrace()
+{
+   int rc = event->setGenstep(); 
+   return rc == 0 && cx != nullptr ? cx->simtrace() : -1. ;
+}
+
+void QSim::save() const 
+{
+    event->save(); 
+}
+
 
 
 NP* QSim::duplicate_dbg_ephoton(unsigned num_photon)

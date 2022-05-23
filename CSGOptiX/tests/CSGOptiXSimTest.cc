@@ -12,7 +12,7 @@ Canonically used by cxsim.sh
 #include "SEvt.hh"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
-#include "QEvent.hh"
+#include "QSim.hh"
 
 int main(int argc, char** argv)
 {
@@ -26,11 +26,13 @@ int main(int argc, char** argv)
 
     SEvt::AddCarrierGenstep(); 
 
-    cx->simulate(); 
+    QSim* qs = cx->sim ; 
+
+    qs->simulate(); 
 
     cudaDeviceSynchronize(); 
 
-    cx->event->save();
+    qs->save();
  
     return 0 ; 
 }

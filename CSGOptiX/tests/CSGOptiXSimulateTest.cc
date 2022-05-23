@@ -17,7 +17,7 @@ using the intentional arms length (SSim subdirectory/NPFold) relationship betwee
 #include "SEvt.hh"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
-#include "QEvent.hh"
+#include "QSim.hh"
 
 int main(int argc, char** argv)
 {
@@ -33,13 +33,15 @@ int main(int argc, char** argv)
 
     CSGOptiX* cx = CSGOptiX::Create(fdl);  // uploads geometry, instanciates QSim 
 
+    QSim* qs = cx->sim ; 
+
     SEvt::AddCarrierGenstep(); 
 
-    cx->simulate(); 
+    qs->simulate(); 
 
     cudaDeviceSynchronize(); 
 
-    cx->event->save();
+    qs->save();
  
     return 0 ; 
 }

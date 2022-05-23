@@ -40,7 +40,7 @@ TODO:
 #include "CSGFoundry.h"
 #include "CSGGenstep.h"
 #include "CSGOptiX.h"
-#include "QEvent.hh"
+#include "QSim.hh"
 
 int main(int argc, char** argv)
 {
@@ -55,6 +55,7 @@ int main(int argc, char** argv)
     LOG(info) << "foundry " << fd->desc() ; 
 
     CSGOptiX* cx = CSGOptiX::Create(fd); 
+    QSim* qs = cx->sim ; 
 
 
     // TODO: rejig the below to be more like torch or carrier gensteps 
@@ -75,11 +76,11 @@ int main(int argc, char** argv)
         SEvt::AddGenstep(gs); 
     }
 
-    cx->simtrace();  
+    qs->simtrace();  
 
     cudaDeviceSynchronize(); 
 
-    cx->snapSimtraceTest(); 
+    cx->snapSimtraceTest();   // TODO: use QSim/QEvent for this 
  
     return 0 ; 
 }

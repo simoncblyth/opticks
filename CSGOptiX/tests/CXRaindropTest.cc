@@ -11,7 +11,7 @@ CXRaindropTest : Used from cxs_raindrop.sh
 #include "SEventConfig.hh"
 #include "SEvt.hh"
 #include "SSim.hh"
-#include "QEvent.hh"
+#include "QSim.hh"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
 
@@ -46,12 +46,16 @@ int main(int argc, char** argv)
 
     CSGOptiX* cx = CSGOptiX::Create(fdl); // encumbent SSim used for QSim setup in here 
 
+    QSim* qs = cx->sim ; 
+
     SEvt::AddTorchGenstep();      
 
-    cx->simulate();  
+    qs->simulate();  
 
     cudaDeviceSynchronize(); 
 
-    cx->event->save();  // TODO: this should talk to QEvent not cx as event handling does not need CSGOptiX 
+    qs->save();
+
+
     return 0 ; 
 }

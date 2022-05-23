@@ -37,11 +37,16 @@ struct SBT ;
 #endif
 struct Frame ; 
 
-#include "SRenderer.hh"
+#include "SCSGOptiX.h"
 
-struct CSGOPTIX_API CSGOptiX : public SRenderer 
+struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 {
+    friend struct QSim ; 
+
     static const plog::Severity LEVEL ; 
+    static CSGOptiX*   INSTANCE ; 
+    static CSGOptiX*   Get(); 
+
     static const char* TOP ; 
     static const char* PTXNAME ; 
     static const char* GEO_PTXNAME ; 
@@ -124,7 +129,10 @@ public:
     double launch(); 
  public: 
     void render_snap(const char* name=nullptr); 
-    double render();     // part of SRenderer protocol base
+ public: 
+    // these methods fulfil SCSGOptix protocal base
+    double render();   
+ private: 
     double simtrace(); 
     double simulate();    
  public: 
