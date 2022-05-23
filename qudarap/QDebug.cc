@@ -51,7 +51,7 @@ qdebug* QDebug::MakeInstance()   // static
 
     scerenkov& cerenkov_gs = dbg->cerenkov_gs ; 
 
-    QBnd* qb = QBnd::Get() ; 
+    const QBnd* qb = QBnd::Get() ; 
 
     unsigned cerenkov_matline = qb ? qb->bnd->boundary_tex_MaterialLine_LS : 0 ;   
 

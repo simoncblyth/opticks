@@ -2025,6 +2025,10 @@ CSGFoundry* CSGFoundry::Load_() // static
 {
     const char* cfbase = SOpticksResource::CFBase("CFBASE") ;  
     bool readable = SPath::IsReadable(cfbase, "CSGFoundry") ; 
+
+    std::cout << "CSGFoundry::Load_ " << ( cfbase ? cfbase : "-" ) << " readable " << readable << std::endl ; 
+    LOG(LEVEL) << " cfbase " << cfbase << " readable " << readable ; 
+
     if(readable == false)
     {
         LOG(fatal) << " cfbase/CSGFoundy directory " << cfbase << "/CSGFoundry" << " IS NOT READABLE " ; 
