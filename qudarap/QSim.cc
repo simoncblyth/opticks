@@ -91,7 +91,6 @@ void QSim::UploadComponents( const SSim* ssim  )
         LOG(LEVEL) << qbnd->desc(); 
     }
 
-
     QDebug* debug_ = new QDebug ; 
     LOG(info) << debug_->desc() ; 
 

@@ -129,11 +129,9 @@ void CSGOptiX::InitGeo(  CSGFoundry* fd )
     fd->upload(); 
 }
 
-void CSGOptiX::InitSim( const CSGFoundry* fd  )
+void CSGOptiX::InitSim( const SSim* ssim  )
 {
     if(SEventConfig::IsRGModeRender()) return ; 
-
-    const SSim* ssim = fd->sim ; 
     if(ssim == nullptr) LOG(fatal) << "simulate/simtrace modes require SSim/QSim setup" ;
     assert(ssim);  
 
@@ -152,7 +150,8 @@ CSGOptiX::Create
 
 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )   
 {
-    InitSim(fd); 
+    LOG(info) << "fd.cfbase " << fd->cfbase ; 
+    InitSim(fd->sim); 
     InitGeo(fd); 
 
 #ifdef WITH_SGLM
@@ -164,13 +163,11 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     return cx ; 
 }
 
-#ifdef WITH_SGLM
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
     :
+#ifdef WITH_SGLM
 #else
-CSGOptiX::CSGOptiX(Opticks* ok_, const CSGFoundry* foundry_) 
-    :
-    ok(ok_),
+    ok(Opticks::Instance()),
     composition(ok->getComposition()),
 #endif
     sglm(new SGLM),   // instanciate always to allow view matrix comparisons

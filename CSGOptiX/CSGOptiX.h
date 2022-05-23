@@ -15,6 +15,7 @@ struct quad6 ;
 struct qat4 ; 
 struct float4 ; 
 struct SGLM ; 
+struct SSim ; 
 
 struct CSGFoundry ; 
 struct CSGView ; 
@@ -89,16 +90,11 @@ struct CSGOPTIX_API CSGOptiX : public SRenderer
 
 private:
     static void InitGeo(  CSGFoundry* fd ); 
-    static void InitSim( const CSGFoundry* fd ); 
+    static void InitSim( const SSim* ssim ); 
 public:
     static CSGOptiX* Create(CSGFoundry* foundry ); 
 
-
-#ifdef WITH_SGLM
     CSGOptiX(const CSGFoundry* foundry ); 
-#else
-    CSGOptiX(Opticks* ok, const CSGFoundry* foundry ); 
-#endif
 
     void init(); 
     void initStack(); 

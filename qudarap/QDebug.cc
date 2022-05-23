@@ -51,9 +51,17 @@ qdebug* QDebug::MakeInstance()   // static
 
     scerenkov& cerenkov_gs = dbg->cerenkov_gs ; 
 
-    assert( QBnd::Get() ); // MUST INSTANCIATE QBnd BEFORE QDebug 
-    unsigned cerenkov_matline = QBnd::Get()->bnd->boundary_tex_MaterialLine_LS ;   
-    LOG(info) << " cerenkov_matline " << cerenkov_matline ;
+    QBnd* qb = QBnd::Get() ; 
+
+    unsigned cerenkov_matline = qb ? qb->bnd->boundary_tex_MaterialLine_LS : 0 ;   
+
+    if(qb == nullptr) LOG(error) 
+         << "AS NO QBnd at QDebug::MakeInstance the qdebug cerenkov genstep is using default matline of zero " << std::endl 
+         << "THIS MEANS qdebug CERENKOV GENERATION WILL LIKELY INFINITE LOOP AND TIMEOUT " << std::endl 
+         << " cerenkov_matline " << cerenkov_matline  << std::endl
+         << " TO FIX THIS YOU PROBABLY NEED TO RERUN THE GEOMETRY CONVERSION TO UPDATE THE PERSISTED SSim IN CSGFoundry/SSim "
+         ;
+
     scerenkov::FillGenstep( cerenkov_gs, cerenkov_matline, 100 ); 
 
     return dbg ; 
