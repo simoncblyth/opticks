@@ -1,3 +1,12 @@
+/**
+QBndTest.cc
+------------
+
+TOOD: consolidate QBnd and QOptical 
+
+
+
+**/
 
 #include "scuda.h"
 #include "SStr.hh"
@@ -139,9 +148,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
+    const char* cfbase = SOpticksResource::CFBase() ; 
     LOG(info) << " cfbase " << cfbase ; 
-    NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
+    NP* bnd = NP::Load(cfbase, "CSGFoundry/SSim/bnd.npy"); 
 
     QBnd qb(bnd) ; 
 

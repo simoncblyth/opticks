@@ -16,11 +16,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
+    const char* cfbase = SOpticksResource::CFBase() ; 
     LOG(info) << " cfbase " << cfbase ; 
-    NP* bnd = NP::Load(cfbase, "CSGFoundry", "bnd.npy"); 
+    NP* bnd = NP::Load(cfbase, "CSGFoundry/SSim/bnd.npy"); 
 
-    QBnd qb(bnd); 
+    QBnd qb(bnd);  // TODO: consolidate with QOptical  
     QPrd qp ; 
 
     LOG(info) << qp.desc(); 

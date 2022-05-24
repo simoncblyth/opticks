@@ -172,7 +172,7 @@ export TOPLINE="${TOPLINE:-$topline}"
 ##  trumps any changes from analysis running
 ## ... hmm that is kinda not appropriate for cosmetic presentation changes like differnt XX ZZ etc.. 
 
-vars="GEOM LOGDIR BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE NOTE GSPLOT ISEL XX YY ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR OPTICKS_OUT_FOLD"
+vars="GEOM CFBASE LOGDIR BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE NOTE GSPLOT ISEL XX YY ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR OPTICKS_OUT_FOLD"
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 

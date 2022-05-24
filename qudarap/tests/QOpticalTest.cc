@@ -1,3 +1,12 @@
+/**
+QOpticalTest.cc
+===================
+
+TODO: combine optical with bnd as they are so closely related it 
+makes no sense to treat them separately 
+
+
+**/
 #include <cuda_runtime.h>
 #include "scuda.h"
 #include "SStr.hh"
@@ -21,12 +30,12 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* cfbase = SOpticksResource::CFBase("CFBASE") ; 
+    const char* cfbase = SOpticksResource::CFBase() ; 
     LOG(info) << " cfbase " << cfbase ; 
 
-    bool exists = NP::Exists(cfbase, "CSGFoundry/optical.npy") ; 
+    bool exists = NP::Exists(cfbase, "CSGFoundry/SSim/optical.npy") ; 
 
-    NP* optical = exists ? NP::Load(cfbase, "CSGFoundry/optical.npy") : nullptr ; 
+    NP* optical = exists ? NP::Load(cfbase, "CSGFoundry/SSim/optical.npy") : nullptr ; 
 
     if( optical == nullptr )
     {

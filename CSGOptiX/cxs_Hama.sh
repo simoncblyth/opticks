@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 
 #geom=Hama_1
-#geom=HamaXZ_1
+geom=HamaXZ_1
 #geom=HamaYZ_1
 #geom=HamaXY_1
 

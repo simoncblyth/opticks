@@ -89,6 +89,7 @@ std::string SOpticksResource::Dump()
     const char* idpath = IDPath(setkey) ; 
     const char* cgdir = CGDir(setkey) ; 
     const char* cfbase = CFBase(); 
+    const char* cfbase_fg = CFBaseFromGEOM(); 
 
 
     std::stringstream ss ; 
@@ -108,6 +109,7 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::IDPath(true)             " << ( idpath ? idpath : "-" ) << std::endl  
         << "SOpticksResource::CGDir(true)              " << ( cgdir ? cgdir : "-" )  << std::endl 
         << "SOpticksResource::CFBase()                 " << ( cfbase ? cfbase : "-" ) << std::endl 
+        << "SOpticksResource::CFBaseFromGEOM()         " << ( cfbase_fg ? cfbase_fg : "-" ) << std::endl 
         ;
 
     std::string s = ss.str(); 
@@ -155,17 +157,14 @@ SOpticksResource::CFBase
 --------------------------
 
 Return the directory path within which the CSGFoundry directory 
-will be expected.  The path returned dependes on several 
-environment variables. 
+will be expected.  The path returned dependes on 
+environment variables : CFBASE, OPTICKS_KEY, OPTICKS_GEOCACHE_PREFIX
 
 Precedence order:
 
-1. GEOM envvar value such as AltXJfixtureConstruction_FirstSuffix_XY leads for CFBASE folder 
-   such as /tmp/$USER/opticks/GeoChain_Darwin/AltXJfixtureConstruction_FirstSuffix
+1. CFBASE envvar values directly providing CFBASE directory 
 
-2. CFBASE envvar values directly providing CFBASE directory 
-
-3. CFBASE directory derived from OPTICKS_KEY and OPTICKS_GEOCACHE_PREFIX 
+2. CFBASE directory derived from OPTICKS_KEY and OPTICKS_GEOCACHE_PREFIX 
 
 
 When the *ekey* envvar (default CFBASE) is defined its 
@@ -173,34 +172,49 @@ value is returned otherwise the CFDir obtained from the
 OPTICKS_KEY is returned.  
 **/
 
-const char* SOpticksResource::CFBase(const char* ekey)
+
+const char* SOpticksResource::CFBase()
+{
+    const char* cfbase = SSys::getenvvar("CFBASE") ; 
+    if( cfbase == nullptr )
+    {
+        bool setkey = true ; 
+        cfbase = CGDir(setkey); 
+    }
+    return cfbase ; 
+}
+
+/**
+SOpticksResource::CFBaseFromGEOM
+----------------------------------
+
+Construct a CFBASE directory from GEOM envvar.
+
+Have stopped using this automatically from SOpticksResource::CFBase
+as GEOM envvar is too commonly used that this can kick in unexpectedly. 
+
+GEOM envvar value such as AltXJfixtureConstruction_FirstSuffix_XY leads for CFBASE folder 
+such as /tmp/$USER/opticks/GeoChain_Darwin/AltXJfixtureConstruction_FirstSuffix
+
+**/
+
+const char* SOpticksResource::CFBaseFromGEOM()
 {
     const char* cfbase = nullptr ; 
     const char* geom = SSys::getenvvar("GEOM"); 
-        
     if( geom != nullptr )
     {
         const char* gcn =  SStr::HeadLast(geom, '_'); 
-
-        int create_dirs = 0 ; 
 #ifdef __APPLE__
         const char* rel = "GeoChain_Darwin" ; 
 #else
         const char* rel = "GeoChain" ; 
 #endif
-        cfbase = SPath::Resolve("$TMP", rel, gcn, create_dirs  );    
+        cfbase = SPath::Resolve("$TMP", rel, gcn, NOOP  );    
     }
-    else
-    {
-        cfbase = SSys::getenvvar(ekey) ; 
-        if( cfbase == nullptr )
-        {
-            bool setkey = true ; 
-            cfbase = CGDir(setkey); 
-        }
-    }
-    return cfbase ; 
+    return cfbase ;  
 }
+
 
 const char* SOpticksResource::KEYS = "IDPath CFBase GeocacheDir RuncacheDir RNGDir" ; 
 const char* SOpticksResource::Get(const char* key) // static

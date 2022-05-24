@@ -31,7 +31,8 @@ struct SYSRAP_API SOpticksResource
     static const NP* IDLoad(const char* relpath); 
 
     static const char* CGDir(bool setkey=true);   // formerly CSG_GGeoDir
-    static const char* CFBase(const char* ekey="CFBASE") ; 
+    static const char* CFBase();
+    static const char* CFBaseFromGEOM();
     static std::string Dump(); 
 
     static const char* KEYS ; 
