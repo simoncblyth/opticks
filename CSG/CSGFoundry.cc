@@ -5,6 +5,7 @@
 #include <set>
 #include <algorithm>
 #include <cstring>
+#include <csignal>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -196,7 +197,7 @@ const std::string& CSGFoundry::getMeshName(unsigned midx) const
 
 
 
-const std::string CSGFoundry::descELV(const SBitSet* elv)
+const std::string CSGFoundry::descELV(const SBitSet* elv) const 
 {
     std::vector<unsigned> include_pos ; 
     std::vector<unsigned> exclude_pos ; 
@@ -1392,7 +1393,10 @@ void CSGFoundry::addNodeTran(CSGNode* nd )
 CSGFoundry::addInstance
 ------------------------
 
-Used for example from CSG_GGeo_Convert::addInstances
+Used for example from 
+
+1. CSG_GGeo_Convert::addInstances when creating CSGFoundry from GGeo
+2. CSGCopy::copy/CSGCopy::copySolidInstances when copy a loaded CSGFoundry to apply a selection
 
 **/
 
@@ -2060,28 +2064,30 @@ CSGFoundry*  CSGFoundry::MakeDemo()
 CSGFoundry::Load
 -------------------
 
-
 **/
 CSGFoundry* CSGFoundry::Load() // static
 {
     CSGFoundry* src = CSGFoundry::Load_() ; 
     if(src == nullptr) return nullptr ; 
-
     // HMM: the below dynamic prim selection is only for this Load method, not the others
     const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", nullptr ); 
-    if(elv) LOG(info) << elv->desc() << std::endl << src->descELV(elv) ; 
+    CSGFoundry* dst = elv ? CSGFoundry::CopySelect(src, elv) : src  ; 
+    return dst ; 
+}
 
+CSGFoundry* CSGFoundry::CopySelect(const CSGFoundry* src, const SBitSet* elv )
+{
+    assert(elv);
+    LOG(info) << elv->desc() << std::endl << src->descELV(elv) ; 
     CSGFoundry* dst = CSGCopy::Select(src, elv ); 
-
     dst->setOrigin(src); 
     dst->setElv(elv); 
-
     dst->setOverrideSim(src->sim);   
     // pass the SSim pointer from the loaded src instance, 
     // overriding the empty dst SSim instance 
-
     return dst ; 
 }
+
 
 
 /**
