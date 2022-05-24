@@ -86,8 +86,8 @@ struct CSGOptiXRenderTest
     void initSS(); 
     void initArgs(); 
 
-    void setComposition(const char* moi); 
-    void setComposition_sla(); 
+    void setFrame(const char* moi); 
+    void setFrame_sla(); 
 
     void render_snap(const char* namestem);
 };
@@ -161,7 +161,7 @@ void CSGOptiXRenderTest::initArgs()
         ;
 }
 
-void CSGOptiXRenderTest::setComposition_sla()
+void CSGOptiXRenderTest::setFrame_sla()
 {
     assert( solid_selection ); 
     fd->gasCE(ce, cx->solid_selection );    
@@ -172,13 +172,13 @@ void CSGOptiXRenderTest::setComposition_sla()
         << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
        ; 
 
-    cx->setComposition(ce, nullptr, nullptr);   // establish the coordinate system 
+    cx->setFrame(ce); 
 }
 
 
 
 /**
-CSGOptiXRenderTest::setComposition
+CSGOptiXRenderTest::setFrame
 ------------------------------------
 
 HMM: solid selection leads to creation of an IAS referencing each of the 
@@ -195,9 +195,9 @@ iidx -3
     rtp tangential frame calulated by SCenterExtentFrame
 
 **/
-void CSGOptiXRenderTest::setComposition(const char* moi)
+void CSGOptiXRenderTest::setFrame(const char* moi)
 {
-    cx->setComposition(moi);  
+    cx->setFrame(moi);  
 }
 
 
@@ -232,14 +232,14 @@ int main(int argc, char** argv)
     {
         const char* arg = SSys::getenvvar("NAMESTEM", "") ; 
         LOG(info) << " t.solid_selection " << t.solid_selection << " arg " << arg ; 
-        t.setComposition_sla(); 
+        t.setFrame_sla(); 
         t.render_snap(arg); 
     }
     else if( t.flight )
     {
         const char* arg = t.args[0].c_str(); 
         LOG(info) << " t.flight arg " << arg  ; 
-        t.setComposition(arg); 
+        t.setFrame(arg); 
         t.cx->render_flightpath(); 
     }
     else
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
         for(unsigned i=0 ; i < t.args.size() ; i++)
         {
             const char* arg = t.args[i].c_str(); 
-            t.setComposition(arg); 
+            t.setFrame(arg); 
             t.render_snap(arg); 
         }
     }

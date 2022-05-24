@@ -26,8 +26,6 @@ int main(int argc, char** argv)
 
     CSGOptiX* cx = CSGOptiX::Create(fd); 
 
-    float4 ce = make_float4(0.f, 0.f, 0.f, 100.f );  
-    cx->setComposition(ce); 
 
     if( cx->raygenmode == SRG_RENDER )
     {

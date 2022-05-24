@@ -15,7 +15,7 @@ struct SSim ;
 #include "saabb.h"
 #include "stran.h"
 
-
+struct sframe ; 
 struct SName ; 
 struct CSGTarget ; 
 struct CSGMaker ; 
@@ -291,8 +291,8 @@ struct CSG_API CSGFoundry
     void     getInstanceTransformsGAS(std::vector<qat4>&  select_qv, unsigned gas_idx ) const ;  // collecting by value : TODO eliminate, swiching to getInstancePointersGAS
     void     getInstancePointersGAS(  std::vector<const qat4*>& select_qi, unsigned gas_idx ) const ;  // collecting pointers to the actual instances 
 
+    int       getInstanceIndex(unsigned gas_idx_ , unsigned ordinal) const ; 
     const qat4* getInstanceGAS(unsigned gas_idx_ , unsigned ordinal=0) const  ;
-
 
     // target  
     int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
@@ -301,6 +301,11 @@ struct CSG_API CSGFoundry
     // id 
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ; 
     const char* getName(unsigned midx) const ;  
+
+    sframe getFrame() const ; 
+    sframe getFrame(const char* arg) const ; 
+    sframe getFrame(int midx, int mord, int iidxg) const ; 
+
 
     template <typename T> void setMeta( const char* key, T value ); 
     template <typename T> T    getMeta( const char* key, T fallback); 

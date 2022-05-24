@@ -28,6 +28,10 @@ TODO:
 
 #include <cuda_runtime.h>
 
+#include "scuda.h"
+#include "sqat4.h"
+#include "sframe.h"
+
 #include "NP.hh"
 #include "SSys.hh"
 #include "SSim.hh"
@@ -69,7 +73,15 @@ int main(int argc, char** argv)
         gsm->create(moi, ce_offset, ce_scale ); // SEvent::MakeCenterExtentGensteps
         NP* gs = gsm->gs ; 
 
-        cx->setComposition(gsm->ce, gsm->m2w, gsm->w2m ); 
+        sframe fr ; 
+        fr.ce = gsm->ce ; 
+        qat4::copy(fr.m2w, *gsm->m2w); 
+        qat4::copy(fr.w2m, *gsm->w2m); 
+   
+        //cx->setComposition(gsm->ce, gsm->m2w, gsm->w2m ); 
+        cx->setFrame(fr); 
+
+
         cx->setCEGS(gsm->cegs);   // sets peta metadata
         cx->setMetaTran(gsm->geotran); 
 

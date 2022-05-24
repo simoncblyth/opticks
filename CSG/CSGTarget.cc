@@ -1,6 +1,7 @@
 #include "PLOG.hh"
 #include "scuda.h"
 #include "sqat4.h"
+#include "sframe.h"
 #include "SCenterExtentFrame.h"
 
 #include "CSGFoundry.h"
@@ -58,30 +59,30 @@ Used by CSGFoundry::getCenterExtent
 
 **/
 
-int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* m2w, qat4* w2m ) const 
+int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4* m2w, qat4* w2m ) const 
 {
-    LOG(LEVEL) << " (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ") " ;  
-    if( iidx == -1 )
+    LOG(LEVEL) << " (midx mord iidxg) " << "(" << midx << " " << mord << " " << iidxg << ") " ;  
+    if( iidxg == -1 )
     {
-        // HMM: CSGFoundry::getCenterExtent BRANCHES FOR iidx == -1 SO THIS WILL NOT BE CALLED 
+        // HMM: CSGFoundry::getCenterExtent BRANCHES FOR iidxg == -1 SO THIS WILL NOT BE CALLED 
 
-        LOG(info) << "(iidx == -1) qptr transform will not be set, typically defaulting to identity " ; 
+        LOG(info) << "(iidxg == -1) qptr transform will not be set, typically defaulting to identity " ; 
         int lrc = getLocalCenterExtent(ce, midx, mord); 
         if(lrc != 0) return 1 ; 
     }
-    else if( iidx == -2 || iidx == -3 )
+    else if( iidxg == -2 || iidxg == -3 )
     {
-        LOG(info) << "(iidx == -2/-3  EXPERIMENTAL qptr transform will be set to SCenterExtentFrame transforms " ; 
+        LOG(info) << "(iidxg == -2/-3  EXPERIMENTAL qptr transform will be set to SCenterExtentFrame transforms " ; 
         int lrc = getLocalCenterExtent(ce, midx, mord); 
         if(lrc != 0) return 1 ; 
 
-        if( iidx == -2 )
+        if( iidxg == -2 )
         {
             SCenterExtentFrame<double> cef_xyzw( ce.x, ce.y, ce.z, ce.w, false );  
             m2w->read_narrow(cef_xyzw.model2world_data); 
             w2m->read_narrow(cef_xyzw.world2model_data); 
         }
-        else if( iidx == -3 )
+        else if( iidxg == -3 )
         {
             SCenterExtentFrame<double> cef_rtpw( ce.x, ce.y, ce.z, ce.w, true );  
             m2w->read_narrow(cef_rtpw.model2world_data); 
@@ -90,13 +91,46 @@ int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* m
     }
     else
     {
-        int grc = getGlobalCenterExtent(ce, midx, mord, iidx, m2w ); 
+        int grc = getGlobalCenterExtent(ce, midx, mord, iidxg, m2w ); 
         // TODO: paired transforms also ?
-        //  HMM: the m2w here populated is from the (midx, mord, iidx) instance transform, with identity info 
+        //  HMM: the m2w here populated is from the (midx, mord, iidxg) instance transform, with identity info 
         if(grc != 0) return 2 ;
     }
     return 0 ; 
 }
+
+
+/**
+CSGTarget::getFrame
+----------------------
+
+**/
+
+int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const 
+{
+    return getCenterExtent( fr.ce, midx, mord, iidxg, &fr.m2w , &fr.w2m ); 
+}
+
+int CSGTarget::getFrame(sframe& fr, int inst_idx ) const 
+{
+    const qat4* qi = foundry->getInst(inst_idx); 
+    
+    qat4 q(qi->cdata());   // copy the instance (transform and identity info)
+
+    unsigned ins_idx, gas_idx, ias_idx ; 
+    q.getIdentity(ins_idx, gas_idx, ias_idx )  ;
+    assert( int(ins_idx) == inst_idx ); 
+
+    q.clearIdentity();           // clear before doing any transforming 
+
+
+    // TODO: find way to get the ce from here + invert the instance transform for w2m 
+
+    return 0 ; 
+}
+
+
+
 
 /**
 CSGTarget::getLocalCenterExtent : finds the (midx,mord) CSGPrim and returns its CE
@@ -158,8 +192,11 @@ CSGTarget::getGlobalCenterExtent
     input mesh ordinal : this is particularly useful with the global geometry where there are 
     no instances to select between. But there are repeated uses of the mesh that 
     this ordinal picks between. For instanced geometry this will mostly be zero(?)
-*iidx*
+*iidxg*
     input instance index, for example this could select a particular PMT 
+
+    * NB this is not the global instance index, it is the GAS ordinael 
+
 *qptr*
     output instance transform pointer. When non-null the instance
     transform will be copied into this qat4 which will contain 

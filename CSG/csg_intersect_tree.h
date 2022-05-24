@@ -144,9 +144,12 @@ float distance_list( const float3& global_position, const CSGNode* node, const f
 intersect_tree
 -----------------
 
-http://xrt.wikidot.com/doc:csg
+The principal of the approach is described in a note by Andrew Kensler
+"Ray Tracing CSG Objects Using Single Hit Intersections",  available from
+the below link together with a discussion of the technique as used in the XRT raytracer.
 
-http://xrt.wdfiles.com/local--files/doc%3Acsg/CSG.pdf
+* http://xrt.wikidot.com/doc:csg 
+* http://xrt.wdfiles.com/local--files/doc%3Acsg/CSG.pdf
 
 
                    

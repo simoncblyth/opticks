@@ -56,6 +56,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "PLOG.hh"
 #include "scuda.h"
 #include "squad.h"
+#include "sframe.h"
 
 #ifdef WITH_SGLM
 #else
@@ -290,7 +291,7 @@ void CSGOptiX::initRender()
 {
     if(SEventConfig::IsRGModeRender()) 
     {
-        setComposition(); // MOI 
+        setFrame(); // MOI 
     }
 
     params->pixels = frame->d_pixel ;
@@ -389,10 +390,8 @@ void CSGOptiX::setCEGS(const std::vector<int>& cegs)
 
 
 
-
-
 /**
-CSGOptiX::setComposition
+CSGOptiX::setFrame
 --------------------------
 
 The no argument method uses MOI envvar or default of "-1"
@@ -407,45 +406,7 @@ iidx -2
 iidx -3
     rtp tangential frame calulated by SCenterExtentFrame
 
-**/
 
-void CSGOptiX::setComposition()
-{
-    setComposition(SSys::getenvvar("MOI", "-1")); 
-}
-
-void CSGOptiX::setComposition(const char* moi_)
-{
-    moi = moi_ ? strdup(moi_) : "-1" ;  
-
-    int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
-    foundry->parseMOI(midx, mord, iidx,  moi );  
-
-    float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
-
-    // m2w and w2m are initialized to identity, the below call may set them 
-    qat4* m2w = qat4::identity() ; 
-    qat4* w2m = qat4::identity() ; 
-
-    int rc = foundry->getCenterExtent(ce, midx, mord, iidx, m2w, w2m ) ;
-
-    LOG(info) 
-        << " moi " << moi 
-        << " midx " << midx << " mord " << mord << " iidx " << iidx 
-        << " rc [" << rc << "]" 
-        << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
-        << " m2w (" << *m2w << ")"    
-        << " w2m (" << *w2m << ")"    
-        ; 
-
-    assert(rc==0); 
-    setComposition(ce, m2w, w2m );   // establish the coordinate system 
-}
-
-
-/**
-CSGOptiX::setComposition
---------------------------
 
 Setting CE center-extent establishes the coordinate system
 via calls to Composition::setCenterExtent which results in the 
@@ -454,25 +415,37 @@ reference used by the EYE LOOK UP navigation controls.
 
 **/
 
-void CSGOptiX::setComposition(const float4& v, const qat4* m2w, const qat4* w2m )
+
+void CSGOptiX::setFrame()
 {
-    glm::vec4 ce(v.x, v.y, v.z, v.w); 
-    setComposition(ce, m2w, w2m ); 
+    setFrame(SSys::getenvvar("MOI", "-1"));  // TODO: generalize to FRS
+}
+void CSGOptiX::setFrame(const char* frs)
+{
+    sframe fr = foundry->getFrame(frs) ; 
+    setFrame(fr); 
 }
 
 /**
-CSGOptiX::setComposition
--------------------------
+CSGOptiX::setFrame
+--------------------
 
-TODO: there is no OptiX dependency to this, so this should be elsewhere  ?
-
-This is interacting with the external Composition instance and internal 
-peta metadata. 
+Formerly CSGOptiX::setComposition( const glm::vec4& ce, const qat4* m2w, const qat4* w2m )
 
 **/
-
-void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* w2m )
+void CSGOptiX::setFrame(const float4& ce )
 {
+    sframe fr ;   // m2w w2m default to identity 
+    fr.ce = ce ;      
+    setFrame(fr); 
+}
+
+void CSGOptiX::setFrame(const sframe& fr )
+{
+    const float4& ce = fr.ce ; 
+    const qat4* m2w = &fr.m2w ; 
+    const qat4* w2m = &fr.w2m ; 
+
     LOG(info) << "[" ; 
 
     peta->q2.f.x = ce.x ;   // moved from q1
@@ -514,6 +487,52 @@ void CSGOptiX::setComposition(const glm::vec4& ce, const qat4* m2w, const qat4* 
     LOG(info) << "]" ; 
 }
 
+
+
+
+
+
+
+
+/**
+void CSGOptiX::setComposition()   // TODO: replace with setFrame 
+{
+    setComposition(SSys::getenvvar("MOI", "-1")); 
+}
+void CSGOptiX::setComposition(const char* moi) // TODO: replace this with setFrame
+{
+    moi = moi_ ? strdup(moi_) : "-1" ;  
+
+    int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
+    foundry->parseMOI(midx, mord, iidx,  moi );  
+
+    float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
+
+    // m2w and w2m are initialized to identity, the below call may populate them 
+    qat4* m2w = qat4::identity() ; 
+    qat4* w2m = qat4::identity() ; 
+    int rc = foundry->getCenterExtent(ce, midx, mord, iidx, m2w, w2m ) ;
+
+    LOG(info) 
+        << " moi " << moi 
+        << " midx " << midx << " mord " << mord << " iidx " << iidx 
+        << " rc [" << rc << "]" 
+        << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
+        << " m2w (" << *m2w << ")"    
+        << " w2m (" << *w2m << ")"    
+        ; 
+
+    assert(rc==0); 
+    setComposition(ce, m2w, w2m );   // establish the coordinate system 
+}
+
+void CSGOptiX::setComposition(const float4& v, const qat4* m2w, const qat4* w2m )
+{
+    glm::vec4 ce(v.x, v.y, v.z, v.w); 
+    setComposition(ce, m2w, w2m ); 
+}
+
+**/
 
 
 void CSGOptiX::prepareRenderParam()

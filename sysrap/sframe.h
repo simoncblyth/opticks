@@ -1,15 +1,24 @@
 #pragma once
 
 #include "scuda.h"
-#include "stran.h"
+#include "sqat4.h"
 
-template <typename T>
 struct sframe
 {
-    glm::tvec4<T> ce ;  
-    Tran<T>*  geotran ;    
+    float4 ce = {} ; 
+    qat4   m2w ; 
+    qat4   w2m ; 
 }; 
 
+inline std::ostream& operator<<(std::ostream& os, const sframe& fr)
+{
+    os 
+       << " ce  " << fr.ce << std::endl 
+       << " m2w " << fr.m2w << std::endl 
+       << " w2m " << fr.w2m << std::endl 
+       ;
+    return os; 
+}
 
 
 

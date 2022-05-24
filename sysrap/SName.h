@@ -318,6 +318,9 @@ inline void SName::ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr_ )
 SName::parseMOI
 -------------------
 
+Used from CSGFoundry::parseMOI
+
+
 Parses MOI string into three integers:
 
 midx
@@ -326,6 +329,7 @@ mord
     mesh ordinal 
 iidx
     instance index
+    (not the global instance index)
 
 
 MOI are strings delimited by colons of form::

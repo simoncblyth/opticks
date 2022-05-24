@@ -5,10 +5,9 @@
 
 int main(int argc, char** argv)
 {
-    sframe<double> sf ; 
+    sframe sf ; 
 
-
-
+    std::cout << sf << std::endl ; 
 
 
     return 0 ; 

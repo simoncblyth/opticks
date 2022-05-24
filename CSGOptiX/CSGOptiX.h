@@ -14,6 +14,8 @@ struct quad4 ;
 struct quad6 ; 
 struct qat4 ; 
 struct float4 ; 
+
+struct sframe ; 
 struct SGLM ; 
 struct SSim ; 
 
@@ -116,10 +118,19 @@ public:
 
     void setCEGS(const std::vector<int>& cegs); 
 
+
+    /*
     void setComposition();
     void setComposition(const char* moi);
     void setComposition(const float4& ce,    const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
     void setComposition(const glm::vec4& ce, const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
+    */
+
+    void setFrame(); 
+    void setFrame(const char* moi);
+    void setFrame(const float4& ce); 
+    void setFrame(const sframe& fr); 
+
 
     void prepareRenderParam(); 
     void prepareSimulateParam(); 

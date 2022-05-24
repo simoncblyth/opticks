@@ -23,6 +23,9 @@
 #include "PLOG.hh"
 
 #include "scuda.h"
+#include "sqat4.h"
+#include "sframe.h"
+
 
 #include "OpticksCSG.h"
 #include "CSGSolid.h"
@@ -2294,9 +2297,35 @@ void CSGFoundry::getInstancePointersGAS(std::vector<const qat4*>& select_qi, uns
     qat4::select_instance_pointers_gas(inst, select_qi, gas_idx ) ;
 }
 
+/**
+CSGFoundry::getInstanceIndex
+------------------------------
+
+Returns index of the ordinal-th instance with the provided gas_idx or -1 if not found
+Note that the ordinal is confusingly referred to as the iidx by some users 
+of this. But that is not the global instance index it is the index 
+within occurences of the gas_idx_ GAS/compositeSolid
+
+**/
+int CSGFoundry::getInstanceIndex(unsigned gas_idx_ , unsigned ordinal) const 
+{
+    return qat4::find_instance_gas(inst, gas_idx_, ordinal);
+}
+
+/**
+CSGFoundry::getInstanceGAS
+----------------------------
+
+Instance transform using gas local ordinal (not the global instance index).
+
+NB the method *CSGFoundry::getInst* provides the instance transform 
+from the global instance index argument. 
+
+**/
+
 const qat4* CSGFoundry::getInstanceGAS(unsigned gas_idx_ , unsigned ordinal) const 
 {
-    int index = qat4::find_instance_gas(inst, gas_idx_, ordinal);
+    int index = getInstanceIndex(gas_idx_, ordinal); 
     return index > -1 ? &inst[index] : nullptr ; 
 }
 
@@ -2333,12 +2362,59 @@ MOI lookups Meshidx-meshOrdinal-Instanceidx, examples of moi strings::
 **/
 void CSGFoundry::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const 
 {
-    id->parseMOI(midx, mord, iidx, moi ); 
+    id->parseMOI(midx, mord, iidx, moi );  // SName::parseMOI
 }
 const char* CSGFoundry::getName(unsigned midx) const 
 {
     return id->getName(midx); 
 }
+
+
+/**
+CSGFoundry::getFrame
+---------------------
+
+Replacing most of CSGOptiX::setComposition
+
+**/
+
+sframe CSGFoundry::getFrame() const 
+{
+    const char* moi = SSys::getenvvar("MOI", "-1");  
+    return getFrame(moi); 
+}
+
+sframe CSGFoundry::getFrame(const char* moi ) const 
+{
+    int midx, mord, iidx ;  // mesh-index, mesh-ordinal, gas-instance-index
+    parseMOI(midx, mord, iidx,  moi );  
+    return getFrame(midx, mord, iidx); 
+}
+
+sframe CSGFoundry::getFrame(int midx, int mord, int iidxg) const 
+{
+    sframe fr ; 
+    int rc = 0 ; 
+    if( midx == -1 )
+    { 
+        unsigned long long emm = 0ull ;   // hmm instance var ?
+        iasCE(fr.ce, emm); 
+    }
+    else
+    {
+        rc = target->getFrame( fr, midx, mord, iidxg );  
+    }
+
+    LOG(info) 
+        << " midx " << midx << " mord " << mord << " iidxg " << iidxg  << std::endl 
+        << " fr " << fr
+        ;  
+
+    assert( rc == 0 ); 
+    return fr ; 
+}
+
+
 
 /**
 CSGFoundry::getCenterExtent
@@ -2350,19 +2426,21 @@ otherwise uses CSGTarget to lookup the center extent.
 For global geometry which typically means a default iidx of 0 
 there is special handling for iidx -1/-2/-3 in CSGTarget::getCenterExtent
 
-iidx -1
+iidxg -1
     uses getLocalCenterExtent
 
-iidx -2
+iidxg -2
     uses SCenterExtentFrame xyzw : ordinary XYZ frame 
 
-iidx -3
+iidxg -3
     uses SCenterExtentFrame rtpw : tangential RTP frame 
 
 
+NB iidxg is the gas ordinal index, that is NOT the global instance index 
+
 **/
 
-int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* m2w, qat4* w2m  ) const 
+int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4* m2w, qat4* w2m  ) const 
 {
     int rc = 0 ; 
     if( midx == -1 )
@@ -2372,7 +2450,7 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidx, qat4* 
     }
     else
     {
-        rc = target->getCenterExtent(ce, midx, mord, iidx, m2w, w2m );    // should use emm ?
+        rc = target->getCenterExtent(ce, midx, mord, iidxg, m2w, w2m );   
     }
 
     if( rc != 0 )
@@ -2387,8 +2465,6 @@ int CSGFoundry::getTransform(qat4& q, int midx, int mord, int iidx) const
 {
     return target->getTransform(q, midx, mord, iidx); 
 }
-
-
 
 
 
