@@ -61,30 +61,21 @@ int main(int argc, char** argv)
     CSGOptiX* cx = CSGOptiX::Create(fd); 
     QSim* qs = cx->sim ; 
 
-
     // TODO: rejig the below to be more like torch or carrier gensteps 
     {
-        // create center-extent gensteps 
         CSGGenstep* gsm = fd->genstep ;    // THIS IS THE GENSTEP MAKER : NOT THE GS THEMSELVES 
         const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
         bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ; 
         bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;   
-        // TODO: eliminate the need for this switches by standardizing on model2world transforms
         gsm->create(moi, ce_offset, ce_scale ); // SEvent::MakeCenterExtentGensteps
         NP* gs = gsm->gs ; 
-
         sframe fr ; 
         fr.ce = gsm->ce ; 
         qat4::copy(fr.m2w, *gsm->m2w); 
         qat4::copy(fr.w2m, *gsm->w2m); 
-   
-        //cx->setComposition(gsm->ce, gsm->m2w, gsm->w2m ); 
         cx->setFrame(fr); 
-
-
         cx->setCEGS(gsm->cegs);   // sets peta metadata
         cx->setMetaTran(gsm->geotran); 
-
         SEvt::AddGenstep(gs); 
     }
 
@@ -92,7 +83,13 @@ int main(int argc, char** argv)
 
     cudaDeviceSynchronize(); 
 
-    cx->snapSimtraceTest();   // TODO: use QSim/QEvent for this 
+    //cx->snapSimtraceTest();  
+    qs->save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
+
+    const char* dir = QEvent::DefaultDir(); 
+    cx->fr->save(dir);  
+
+
  
     return 0 ; 
 }

@@ -19,6 +19,7 @@ which inevitably risks numerical issues.
 **/
 
 #include "sqat4.h"
+#include "NP.hh"
 #include "glm/glm.hpp"
 
 #include <vector>
@@ -50,6 +51,8 @@ struct Tran
     std::string brief(bool only_tlate=false, char mat='t', unsigned wid=6, unsigned prec=1) const ;  
  
     void write(T* dst, unsigned num_values=3*4*4) const ; 
+    void save(const char* dir, const char* name="stran.npy") const ; 
+
 
     const T* tdata() const ; 
     const T* vdata() const ; 
@@ -367,7 +370,16 @@ void Tran<T>::write(T* dst, unsigned num_values) const
     memcpy( dst_bytes + 1*matrix_bytes , (char*)glm::value_ptr(v), matrix_bytes );
     memcpy( dst_bytes + 2*matrix_bytes , (char*)glm::value_ptr(i), matrix_bytes );
 }
- 
+
+template<typename T>
+void Tran<T>::save(const char* dir, const char* name) const 
+{
+    NP* a = NP::Make<T>(3, 4, 4 );  
+    unsigned num_values = 3*4*4 ; 
+    write( a->values<T>(), num_values ) ; 
+    a->save(dir, name);
+}
+
 
 
 template struct Tran<float> ;

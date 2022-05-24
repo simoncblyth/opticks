@@ -45,12 +45,9 @@ int main(int argc, char** argv)
 
 
 
-    // TODO: switch to NP
-    std::vector<quad4> photon ; 
-    qs.event->downloadPhoton(photon); 
-    LOG(info) << " downloadPhoton photon.size " << photon.size() ; 
+    NP* photon = qs.event->getPhoton();  
+    photon->dump(); 
 
-    qs.dump_photon( photon.data(), photon.size(), "f0,f1,f2,i3" );  
 
     cudaDeviceSynchronize(); 
 

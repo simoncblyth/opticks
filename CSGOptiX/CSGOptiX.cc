@@ -166,7 +166,12 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     InitGeo(fd); 
 
     CSGOptiX* cx = new CSGOptiX(fd) ; 
-    QSim::Get()->setLauncher(cx); 
+
+    QSim* qs = QSim::Get() ; 
+
+    qs->setLauncher(cx); 
+    QEvent* event = qs->event ; 
+    event->setMeta( fd->meta.c_str() );
 
     return cx ; 
 }
@@ -435,13 +440,14 @@ Formerly CSGOptiX::setComposition( const glm::vec4& ce, const qat4* m2w, const q
 **/
 void CSGOptiX::setFrame(const float4& ce )
 {
-    sframe fr ;   // m2w w2m default to identity 
-    fr.ce = ce ;      
-    setFrame(fr); 
+    sframe fr_ ;   // m2w w2m default to identity 
+    fr_.ce = ce ;      
+    setFrame(fr_); 
 }
 
-void CSGOptiX::setFrame(const sframe& fr )
+void CSGOptiX::setFrame(const sframe& fr_ )
 {
+    fr = fr_ ; 
     const float4& ce = fr.ce ; 
     const qat4* m2w = &fr.m2w ; 
     const qat4* w2m = &fr.w2m ; 
@@ -456,6 +462,7 @@ void CSGOptiX::setFrame(const sframe& fr )
     float extent = ce.w ; 
     float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
 
+    // HMM:SGLM::set_frame ?
     sglm->set_ce(ce.x, ce.y, ce.z, ce.w ); 
     sglm->set_m2w(m2w, w2m);
     sglm->update();  
@@ -775,6 +782,10 @@ double CSGOptiX::simulate()
     return launch()  ;
 }   
 
+const CSGFoundry* CSGOptiX::getFoundry() const 
+{
+    return foundry ; 
+}
 
 std::string CSGOptiX::Annotation( double dt, const char* bot_line, const char* extra )  // static 
 {
@@ -914,6 +925,13 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     LOG(info) << json_path ; 
 }
 
+
+
+
+
+
+
+
 void CSGOptiX::savePeta(const char* fold, const char* name) const
 {
     const char* path = SPath::Resolve(fold, name, FILEPATH) ; 
@@ -921,19 +939,9 @@ void CSGOptiX::savePeta(const char* fold, const char* name) const
     NP::Write(path, (float*)(&peta->q0.f.x), 1, 4, 4 );
 }
 
-void CSGOptiX::setMetaTran(const Tran<double>* metatran_ )
+void CSGOptiX::setMetaTran(const Tran<double>* metatran_ ) // only from CSGOptiXSimtraceTest.cc
 {
     metatran = metatran_ ; 
-}
-
-void CSGOptiX::saveMetaTran(const char* fold, const char* name) const
-{
-    if(metatran == nullptr) return ; 
-    const char* path = SPath::Resolve(fold, name, FILEPATH) ; 
-    LOG(info) << path ; 
-    NP* mta = NP::Make<double>(3, 4, 4 );  
-    metatran->write( mta->values<double>() ) ;   // Tran<double>::write via NP (TODO:encapsulate)
-    mta->save(path);  
 }
 
 /**
@@ -950,9 +958,8 @@ Although they could be reinstated the photons.npy array is more useful
 for debugging as that can be copied from remote to laptop enabling local analysis 
 that gives flexible python "rendering" with tests/CSGOptiXSimtraceTest.py 
 
-**/
 
-void CSGOptiX::snapSimtraceTest() const  
+void CSGOptiX::snapSimtraceTest() const    // only from CSGOptiXSimtraceTest.cc
 {
     const char* outdir = SEventConfig::OutFold();
 
@@ -964,8 +971,11 @@ void CSGOptiX::snapSimtraceTest() const
     event->saveMeta(   outdir, "fdmeta.txt" ); 
 
     savePeta(          outdir, "peta.npy");   
-    saveMetaTran(      outdir, "metatran.npy"); 
+
+    if(metatran) metatran->save(outdir, "metatran.npy");
+
 }
+**/
 
 
 

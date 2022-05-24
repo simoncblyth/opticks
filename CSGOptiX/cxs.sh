@@ -191,7 +191,7 @@ if [ "$(uname)" == "Linux" ]; then
         source CSGOptiXSimtraceTest_OUTPUT_DIR.sh || exit 1  
         NOGUI=1 ${IPYTHON:-ipython} ${BASH_FOLDER}/tests/CSGOptiXSimtraceTest.py 
 
-    else
+    elif [ "$arg" == "run_ana" ]; then 
 
         $GDB CSGOptiXSimtraceTest
         [ $? -ne 0 ] && echo $msg RUN ERROR at LINENO $LINENO && exit 1 
@@ -248,7 +248,5 @@ if [ -n "$cfbase" ]; then
    echo $msg cross section intersects onto non-standard geometry are stored into tmp directories
    echo $msg to grab these to laptop use cx tmp_grab.sh 
 fi 
-
-
 
 exit 0

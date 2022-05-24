@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 
     cudaDeviceSynchronize(); 
 
-    qs->save();
+    qs->save();  // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry  
  
     return 0 ; 
 }

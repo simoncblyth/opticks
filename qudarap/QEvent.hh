@@ -110,6 +110,8 @@ public:
     void save(const char* base, const char* reldir ) const ; 
     void save(const char* dir) const ; 
 
+    static const char* FALLBACK_DIR ; 
+    static const char* DefaultDir() ; 
 
     void     setNumPhoton(unsigned num_photon) ;  
     void     uploadEvt(); 
@@ -117,10 +119,11 @@ public:
 
     void downloadGenstep( std::vector<quad6>& genstep ); 
     void downloadSeed(    std::vector<int>&   seed ); 
-    void downloadPhoton(  std::vector<quad4>& photon ); 
-    void downloadRecord(  std::vector<quad4>& record ); 
 
-    void savePhoton( const char* dir, const char* name); 
+    //void downloadPhoton(  std::vector<quad4>& photon ); 
+    //void savePhoton( const char* dir, const char* name); 
+    //void downloadRecord(  std::vector<quad4>& record ); 
+
     void saveGenstep(const char* dir, const char* name); 
 
     std::string desc() const ; 
@@ -136,7 +139,7 @@ public:
         const NP* seq, 
         const NP* domain ) const ; 
 
-    void saveMeta(   const char* dir, const char* name); 
+    void saveMeta(   const char* dir, const char* name) const ; 
     void setMeta( const char* meta ); 
     bool hasMeta() const ; 
 

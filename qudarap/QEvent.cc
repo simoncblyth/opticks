@@ -207,7 +207,7 @@ std::string QEvent::descBuf() const
 
 void QEvent::setMeta(const char* meta_)
 {
-    meta = meta_ ; 
+    meta = meta_ ;   // std::string
 } 
 
 bool QEvent::hasMeta() const 
@@ -552,11 +552,21 @@ like event tags.
 
 void QEvent::save() const 
 {
-    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
-    LOG(info) << "SGeo::LastUploadCFBase_OutDir " << dir_ ; 
-    const char* dir = dir_ ? dir_ : "$TMP"  ; 
+    const char* dir = DefaultDir(); 
+    LOG(info) << "DefaultDir " << dir ; 
     save(dir); 
 }
+
+const char* QEvent::FALLBACK_DIR = "$TMP" ; 
+
+const char* QEvent::DefaultDir() 
+{
+    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
+    const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
+    return dir ; 
+}
+
+
 void QEvent::save(const char* base, const char* reldir ) const 
 {
     const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
@@ -586,6 +596,8 @@ void QEvent::save(const char* dir_) const
     if(rec)     rec->save(dir, "rec.npy"); 
     if(seq)     seq->save(dir, "seq.npy"); 
     if(domain)  domain->save(dir, "domain.npy"); 
+
+    saveMeta(dir, "fdmeta.txt" );
 }
 
 std::string QEvent::descSave( 
@@ -733,19 +745,20 @@ void QEvent::downloadSeed( std::vector<int>& seed )
     seed.resize(evt->num_seed); 
     QU::copy_device_to_host<int>( seed.data(), evt->seed, evt->num_seed ); 
 }
-void QEvent::downloadPhoton( std::vector<quad4>& photon )
-{
-    if( evt->photon == nullptr ) return ; 
-    photon.resize(evt->num_photon); 
-    QU::copy_device_to_host<quad4>( photon.data(), (quad4*)evt->photon, evt->num_photon ); 
-}
+
+/*
 void QEvent::downloadRecord( std::vector<quad4>& record )
 {
     if( evt->record == nullptr ) return ; 
     record.resize(evt->num_record); 
     QU::copy_device_to_host<quad4>( record.data(), (quad4*)evt->record, evt->num_record ); 
 }
-
+void QEvent::downloadPhoton( std::vector<quad4>& photon )
+{
+    if( evt->photon == nullptr ) return ; 
+    photon.resize(evt->num_photon); 
+    QU::copy_device_to_host<quad4>( photon.data(), (quad4*)evt->photon, evt->num_photon ); 
+}
 void QEvent::savePhoton( const char* dir_, const char* name )
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
@@ -754,6 +767,10 @@ void QEvent::savePhoton( const char* dir_, const char* name )
     downloadPhoton(photon); 
     NP::Write( dir, name,  (float*)photon.data(), photon.size(), 4, 4  );
 }
+*/
+
+
+
 
 void QEvent::saveGenstep( const char* dir_, const char* name)
 {
@@ -763,11 +780,10 @@ void QEvent::saveGenstep( const char* dir_, const char* name)
     gs->save(path); 
 }
 
-void QEvent::saveMeta( const char* dir_, const char* name)
+void QEvent::saveMeta( const char* dir_, const char* name) const 
 {     
     if(!hasMeta()) return ; 
-    int create_dirs = 1 ;  // 1:filepath 
-    const char* path = SPath::Resolve(dir_, name, create_dirs); 
+    const char* path = SPath::Resolve(dir_, name, FILEPATH); 
     NP::WriteString(path, meta.c_str() ); 
 }
 

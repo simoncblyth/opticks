@@ -5,6 +5,7 @@
 #include <string>
 #include <glm/fwd.hpp>
 #include "plog/Severity.h"
+#include "sframe.h"
 
 #include "CSGOPTIX_API_EXPORT.hh"
 
@@ -15,7 +16,6 @@ struct quad6 ;
 struct qat4 ; 
 struct float4 ; 
 
-struct sframe ; 
 struct SGLM ; 
 struct SSim ; 
 
@@ -58,6 +58,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     Opticks*          ok ;  
     Composition*      composition ; 
 #endif
+    sframe            fr ; 
     SGLM*             sglm ; 
 
     const char*       moi ; 
@@ -147,6 +148,7 @@ public:
     double simtrace(); 
     double simulate();    
  public: 
+    const CSGFoundry* getFoundry() const ; 
     static std::string Annotation( double dt, const char* bot_line, const char* extra=nullptr ); 
     const char* getDefaultSnapPath() const ; 
     void snap(const char* path=nullptr, const char* bottom_line=nullptr, const char* top_line=nullptr, unsigned line_height=24);  // part of SRenderer protocol base
@@ -157,9 +159,8 @@ public:
     void saveMeta(const char* jpg_path) const ;
     void savePeta(const char* fold, const char* name) const ; 
     void setMetaTran(const Tran<double>* metatran ); 
-    void saveMetaTran(const char* fold, const char* name) const ; 
 
-    void snapSimtraceTest() const ;
+    //void snapSimtraceTest() const ;
 
     static int   _OPTIX_VERSION() ; 
 };
