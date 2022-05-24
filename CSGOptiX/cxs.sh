@@ -1,6 +1,10 @@
 #!/bin/bash -l 
 
-arg=${1:-run_ana}
+case $(uname) in 
+   Linux)  argdef="run" ;; 
+   Darwin) argdef="ana" ;;
+esac 
+arg=${1:-$argdef}
 
 BASH_FOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -143,7 +147,6 @@ bin=CSGOptiXSimtraceTest
 export TMPDIR=/tmp/$USER/opticks
 export LOGDIR=$TMPDIR/$pkg/$bin
 mkdir -p $LOGDIR 
-cd $LOGDIR 
 
 
 if [ -n "$cfbase" ]; then 
@@ -176,31 +179,35 @@ vars="GEOM CFBASE LOGDIR BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRID
 for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 
 
+bin=CSGOptiXSimtraceTest
 
 if [ "$(uname)" == "Linux" ]; then 
 
     if [ "$arg" == "run" ]; then
 
-        $GDB CSGOptiXSimtraceTest
+        cd $LOGDIR 
+        $GDB $bin 
         [ $? -ne 0 ] && echo $msg RUN ERROR at LINENO $LINENO && exit 1 
 
-        source CSGOptiXSimtraceTest_OUTPUT_DIR.sh || exit 1  
+        source ${bin}_OUTPUT_DIR.sh || exit 1  
 
     elif [ "$arg" == "ana" ]; then 
 
-        source CSGOptiXSimtraceTest_OUTPUT_DIR.sh || exit 1  
-        NOGUI=1 ${IPYTHON:-ipython} ${BASH_FOLDER}/tests/CSGOptiXSimtraceTest.py 
+        cd $LOGDIR 
+        source ${bin}_OUTPUT_DIR.sh || exit 1  
+        NOGUI=1 ${IPYTHON:-ipython} ${BASH_FOLDER}/tests/$bin.py 
 
     elif [ "$arg" == "run_ana" ]; then 
 
-        $GDB CSGOptiXSimtraceTest
+        cd $LOGDIR 
+        $GDB $bin
         [ $? -ne 0 ] && echo $msg RUN ERROR at LINENO $LINENO && exit 1 
-        source CSGOptiXSimtraceTest_OUTPUT_DIR.sh || exit 1  
+        source ${bin}_OUTPUT_DIR.sh || exit 1  
 
         if [ -n "$PDB" ]; then
-            NOGUI=1 ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimtraceTest.py 
+            NOGUI=1 ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/$bin.py 
         else
-            NOGUI=1 ${IPYTHON:-ipython}          ${BASH_FOLDER}/tests/CSGOptiXSimtraceTest.py 
+            NOGUI=1 ${IPYTHON:-ipython}          ${BASH_FOLDER}/tests/$bin.py 
         fi 
 
     fi
@@ -208,18 +215,28 @@ if [ "$(uname)" == "Linux" ]; then
 elif [ "$(uname)" == "Darwin" ]; then
 
     if [ "$arg" = "lrun" ] ; then 
-        source CSGOptiXSimtraceTest_OUTPUT_DIR.sh || exit 1  
+
+        cd $LOGDIR 
+        source ${bin}_OUTPUT_DIR.sh || exit 1  
         echo $msg lrun mode : using the output directory discerned from the last grab
-        echo $msg CSGOptiXSimtraceTest_OUTPUT_DIR $CSGOptiXSimtraceTest_OUTPUT_DIR
-    else
+        echo $msg ${bin}_OUTPUT_DIR $${bin}_OUTPUT_DIR
+
+    elif [ "${arg/grab}" != "$arg" ]; then 
+
+        pwd
+        EXECUTABLE=$bin       source cachegrab.sh grab
+        EXECUTABLE=CSGFoundry source cachegrab.sh grab
+
+    elif [ "${arg/ana}" != "$arg" ]; then 
+
 
         opticks_key_remote_dir=$(opticks-key-remote-dir)
 
         cvd_ver=cvd0/70000
         if [ -n "$cfbase" ]; then 
-            cxsdir=$cfbase/CSGOptiXSimtraceTest/$cvd_ver
+            cxsdir=$cfbase/$bin/$cvd_ver
         else
-            cxsdir=$HOME/$opticks_key_remote_dir/CSG_GGeo/CSGOptiXSimtraceTest/$cvd_ver
+            cxsdir=$HOME/$opticks_key_remote_dir/CSG_GGeo/$bin/$cvd_ver
         fi
 
         if [ ! -d "$cxsdir" ]; then 
@@ -234,12 +251,12 @@ elif [ "$(uname)" == "Darwin" ]; then
         fi
 
 
-        export CSGOptiXSimtraceTest_OUTPUT_DIR=$geomdir
+        export ${bin}_OUTPUT_DIR=$geomdir
         echo $msg non-lrun mode : using the output directory defined by script variable GEOM
-        echo $msg CSGOptiXSimtraceTest_OUTPUT_DIR $CSGOptiXSimtraceTest_OUTPUT_DIR
+        echo $msg ${bin}_OUTPUT_DIR $${bin}_OUTPUT_DIR
     fi 
 
-    ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/CSGOptiXSimtraceTest.py 
+    ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/$bin.py 
 fi 
 
 echo LOGDIR : $LOGDIR

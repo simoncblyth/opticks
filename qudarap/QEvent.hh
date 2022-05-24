@@ -53,6 +53,8 @@ struct QUDARAP_API QEvent
     static const plog::Severity LEVEL ; 
     static QEvent* INSTANCE ; 
     static QEvent* Get(); 
+    static const char* FALLBACK_DIR ; 
+    static const char* DefaultDir() ; 
     static std::string DescGensteps(const NP* gs, int edgeitems=5) ; 
     static std::string DescSeed( const std::vector<int>& seed, int edgeitems ); 
 
@@ -109,9 +111,6 @@ public:
     void save() const ; 
     void save(const char* base, const char* reldir ) const ; 
     void save(const char* dir) const ; 
-
-    static const char* FALLBACK_DIR ; 
-    static const char* DefaultDir() ; 
 
     void     setNumPhoton(unsigned num_photon) ;  
     void     uploadEvt(); 

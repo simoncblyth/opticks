@@ -79,5 +79,5 @@ else
 
 fi
 
-source ./cxs.sh 
+source ./cxs.sh $*
 

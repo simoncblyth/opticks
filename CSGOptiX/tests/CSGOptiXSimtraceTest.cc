@@ -39,6 +39,7 @@ TODO:
 #include "SEvt.hh"
 #include "SEvent.hh"
 #include "SEventConfig.hh"
+#include "QEvent.hh"
 
 #include "OPTICKS_LOG.hh"
 #include "CSGFoundry.h"
@@ -87,7 +88,7 @@ int main(int argc, char** argv)
     qs->save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
 
     const char* dir = QEvent::DefaultDir(); 
-    cx->fr->save(dir);  
+    cx->fr.save(dir);  
 
 
  

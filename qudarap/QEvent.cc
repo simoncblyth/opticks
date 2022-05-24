@@ -33,6 +33,15 @@ const plog::Severity QEvent::LEVEL = PLOG::EnvLevel("QEvent", "DEBUG");
 QEvent* QEvent::INSTANCE = nullptr ; 
 QEvent* QEvent::Get(){ return INSTANCE ; }
 
+const char* QEvent::FALLBACK_DIR = "$TMP" ; 
+const char* QEvent::DefaultDir() 
+{
+    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
+    const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
+    return dir ; 
+}
+
+
 std::string QEvent::DescGensteps(const NP* gs, int edgeitems) // static 
 {
     int num_genstep = gs ? gs->shape[0] : 0 ; 
@@ -555,15 +564,6 @@ void QEvent::save() const
     const char* dir = DefaultDir(); 
     LOG(info) << "DefaultDir " << dir ; 
     save(dir); 
-}
-
-const char* QEvent::FALLBACK_DIR = "$TMP" ; 
-
-const char* QEvent::DefaultDir() 
-{
-    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
-    const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
-    return dir ; 
 }
 
 
