@@ -16,25 +16,35 @@ EOU
 }
 
 
+
 #geom=HamaXZ_0
-#geom=HamaXZ_1000
-geom=XJfixtureConstruction_0
+geom=HamaXZ_1000
+#geom=XJfixtureConstruction_0
+#geom=sWorld_XZ
+
 
 export GEOM=${GEOM:-$geom}
 ce_offset=0
 
-if [ "$GEOM" == "HamaXZ_0" ]; then
+if [ "$GEOM" == "sWorld_XZ" ]; then
+
+    moi=sWorld
+    cegs=16:0:9:-24   
+    gridscale=$(( 60000 / 16 ))  
+
+elif [ "$GEOM" == "HamaXZ_0" ]; then
 
     moi=Hama
-    cegs=16:0:9:500   
+    cegs=16:0:9:-24
     gridscale=0.10
     ce_offset=0
 
 elif [ "$GEOM" == "HamaXZ_1000" ]; then
 
     moi=Hama:0:1000
-    cegs=16:0:9:500   
-    gridscale=0.10
+    cegs=16:0:9:-24   
+    #gridscale=0.10
+    gridscale=100
     ce_offset=0
 
 elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
@@ -52,7 +62,7 @@ elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
     moi="solidXJfixture:10:$iidx"
 
     #cegs=16:0:9:100                # XZ/RP     (XYZ)->(RTP) 
-    cegs=0:16:9:100                 # YZ/TP
+    cegs=0:16:9:-24                 # YZ/TP
     gridscale=0.05
 
     #ce_offset=1   # already in the transform
@@ -61,7 +71,7 @@ fi
 
 
 export MOI=${MOI:-$moi}
-export CXS_CEGS=${CXS_CEGS:-$cegs}
+export CEGS=${CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 
@@ -69,16 +79,24 @@ bin=CSGFoundry_MakeCenterExtentGensteps_Test
 
 arg=${1:-run_ana}
 
+
 if [ "${arg/run}" != "$arg" ]; then  
+
+     $bin
+    [ $? -ne 0 ] && echo $msg runtime error && exit 1 
+
+elif [ "${arg/dbg}" != "$arg" ]; then  
+
     if [ "$(uname)" == "Darwin" ]; then
         lldb__ $bin
     else
-        $bin
+        gdb $bin
     fi 
     [ $? -ne 0 ] && echo $msg runtime error && exit 1 
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then  
+    export PYVISTA_KILL_DISPLAY=1
     export FOLD=/tmp/$USER/opticks/CSG/$bin
     ${IPYTHON:-ipython} --pdb -i $bin.py 
 fi

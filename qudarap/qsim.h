@@ -1282,7 +1282,6 @@ inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, curandStateXORW
     gsid.u                 = gs.q0.i.z ; 
     //unsigned num_photons = gs.q0.u.w ; 
 
-
     p.q0.f.x = gs.q1.f.x ;   // start with genstep local frame position, typically origin  (0,0,0)   
     p.q0.f.y = gs.q1.f.y ; 
     p.q0.f.z = gs.q1.f.z ; 

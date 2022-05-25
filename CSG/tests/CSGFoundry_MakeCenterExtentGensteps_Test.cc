@@ -30,10 +30,10 @@ int main(int argc, char** argv)
     std::cout << " fr " << std::endl << fr << std::endl ; 
 
 
+
     // HMM: want to use SEvt for saving not QEvent 
     const char* dir = SPath::Resolve("$TMP/CSG/CSGFoundry_MakeCenterExtentGensteps_Test", DIRPATH); 
     std::cout << dir << std::endl ; 
-
     gs->save(dir, "genstep.npy"); 
     pp->save(dir, "photon.npy"); 
     fr.save(dir) ; 

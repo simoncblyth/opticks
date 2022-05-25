@@ -131,6 +131,9 @@ def pvplt_polarized( pl, pos, mom, pol, factor=0.15, assert_transverse=True ):
     """
     https://docs.pyvista.org/examples/00-load/create-point-cloud.html
     https://docs.pyvista.org/examples/01-filter/glyphs.html
+
+    Note bizarre issue of arrows only in one direction appearing ?
+
     """
     pvplt_check_transverse(mom, pol, assert_transverse=assert_transverse) 
 

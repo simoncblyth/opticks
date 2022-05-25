@@ -190,7 +190,7 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
     // -2  -1   0   1   2
     
     unsigned grid_points = (ix1-ix0+1)*(iy1-iy0+1)*(iz1-iz0+1) ;  
-    unsigned tot_photons = grid_points*photons_per_genstep ; 
+    unsigned tot_photons = grid_points*std::abs(photons_per_genstep) ; 
 
     LOG(info)
         << " CEGS "
@@ -696,7 +696,8 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
         int gencode           = gs.q0.i.x ; 
         int gridaxes          = gs.q0.i.y ; 
         gsid.u                = gs.q0.u.z ;     // formerly gs.q1.u.w 
-        int      num_photons_ = gs.q0.i.w ; 
+        int      num_photons_ = gs.q0.i.w ;     // -ve num_photons_ doesnt use random u0 so creates phi wheels
+
         unsigned num_photons  = std::abs(num_photons_);  
 
         assert( gencode == OpticksGenstep_TORCH );
@@ -706,12 +707,21 @@ void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const 
         double u0, u1 ; 
         double phi, sinPhi,   cosPhi ; 
         double sinTheta, cosTheta ; 
+
+        
         
         for(unsigned j=0 ; j < num_photons ; j++)
         {   
-            // this inner loop should be similar to quadarap/qsim.h/generate_photon_torch
-            // TODO: arrange a header such that can actually use the same code via some curand_uniform macro refinition trickery
-            // -ve num_photons uses regular, not random azimuthal spray of directions
+
+            /**
+            This inner loop should be similar to qudarap/qsim.h/generate_photon_simtrace
+
+            TODO: arrange a header such that can actually use the same code via some curand_uniform 
+            macro refinition trickery
+
+            -ve num_photons uses regular, not random azimuthal spray of directions
+            **/
+
 
             u0 = num_photons_ < 0 ? double(j)/double(num_photons-1) : rng() ;
 
