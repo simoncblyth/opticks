@@ -658,7 +658,9 @@ Contrast this CPU implementation of CEGS generation with qudarap/qsim.h qsim<T>:
 void SEvent::GenerateCenterExtentGenstepsPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale )
 {
     LOG(info) << " gsa " << gsa->sstr() ; 
+
     assert( gsa->shape.size() == 3 && gsa->shape[1] == 6 && gsa->shape[2] == 4 );
+    assert( gsa->has_shape(-1,6,4) ); 
 
     std::vector<quad6> gsv(gsa->shape[0]) ; 
     memcpy( gsv.data(), gsa->bytes(), gsa->arr_bytes() );

@@ -18,7 +18,8 @@ set(TEST_SOURCES
     CSGNameTest.cc
     CSGTargetTest.cc
     CSGTargetGlobalTest.cc
-    CSGGenstepTest.cc
+    CSGFoundry_MakeCenterExtentGensteps_Test.cc
+
     CSGScanTest.cc
     CUTest.cc
     CSGLogTest.cc

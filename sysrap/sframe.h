@@ -1,5 +1,23 @@
 #pragma once
 
+/**
+sframe.h
+===========
+
+Persisted into (3,4,4) array.
+Any extension should be in quad4 blocks 
+for persisting, alignment and numpy convenience
+
+Note that some variables like *frs* are
+persisted in metadata, not in the array. 
+
+Currently *frs* is usually the same as *moi* from MOI envvar
+but are using *frs* to indicate intension for generalization 
+to frame specification using global instance index rather than MOI
+which uses the gas specific instance index. 
+
+**/
+
 #include <cassert>
 #include <vector>
 #include "scuda.h"
@@ -10,22 +28,21 @@
 
 struct sframe
 {
-    static constexpr const unsigned NUM_VALUES = 3*4*4 ; 
     static constexpr const char* NAME = "sframe.npy" ; 
-
     static sframe Load(const char* dir, const char* name=NAME); 
-
-    // HMM: member vars like moi would be problematic for persisting 
+    static constexpr const unsigned NUM_VALUES = 3*4*4 ; 
 
     float4 ce = {} ; 
     quad   q1 = {} ; 
     quad   q2 = {} ; 
     quad   q3 = {} ; 
+
     qat4   m2w ; 
     qat4   w2m ; 
 
+
     // on the edge, the above are memcpy in/out by load/save
-    const char* moi = nullptr ; 
+    const char* frs = nullptr ; 
 
     void set_grid(const std::vector<int>& cegs, float gridscale); 
     int ix0() const ; 
@@ -135,7 +152,8 @@ inline NP* sframe::make_array() const
 inline void sframe::save(const char* dir, const char* name) const
 {
     NP* a = make_array(); 
-    if(moi) a->set_meta<std::string>("moi", moi); 
+    a->set_meta<std::string>("creator", "sframe::save"); 
+    if(frs) a->set_meta<std::string>("frs", frs); 
     a->save(dir, name); 
 }
 inline void sframe::load(const char* dir, const char* name) 
@@ -143,14 +161,14 @@ inline void sframe::load(const char* dir, const char* name)
     NP* a = NP::Load(dir, name); 
     read( a->values<float>() , NUM_VALUES );   
 
-    std::string _moi = a->get_meta<std::string>("moi", ""); 
-    if(!_moi.empty()) moi = strdup(_moi.c_str()); 
+    std::string _frs = a->get_meta<std::string>("frs", ""); 
+    if(!_frs.empty()) frs = strdup(_frs.c_str()); 
 }
 
 inline std::ostream& operator<<(std::ostream& os, const sframe& fr)
 {
     os 
-       << " moi " << ( fr.moi ? fr.moi : "-" ) << std::endl 
+       << " frs " << ( fr.frs ? fr.frs : "-" ) << std::endl 
        << " ce  " << fr.ce 
        << std::endl 
        << " m2w " << fr.m2w 

@@ -32,8 +32,6 @@ TODO:
 #include "sqat4.h"
 #include "sframe.h"
 
-#include "NP.hh"
-#include "SSys.hh"
 #include "SSim.hh"
 #include "SOpticks.hh"
 #include "SEvt.hh"
@@ -43,7 +41,6 @@ TODO:
 
 #include "OPTICKS_LOG.hh"
 #include "CSGFoundry.h"
-#include "CSGGenstep.h"
 #include "CSGOptiX.h"
 #include "QSim.hh"
 
@@ -56,32 +53,28 @@ int main(int argc, char** argv)
     SEvt evt ; 
  
     CSGFoundry* fd = CSGFoundry::Load(); 
-    if(fd->hasMeta()) LOG(info) << "fd.meta\n" << fd->meta ; 
-    LOG(info) << "foundry " << fd->desc() ; 
-
-    CSGOptiX* cx = CSGOptiX::Create(fd); 
-    QSim* qs = cx->sim ; 
 
     sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
     SEvt::AddGenstep( SEvent::MakeCenterExtentGensteps(fr) ); 
 
 
+    CSGOptiX* cx = CSGOptiX::Create(fd); 
+    QSim* qs = cx->sim ; 
+
     cx->setFrame(fr);  
     // DONT LIKE THIS, WHEN ITS NOT USED FOR ANYTHING OTHER THAN A PLACE TO PARK IT 
     // PERHAPS PARK INSIDE CSGFoundry OR BETTER SEvt ?
     // BUT IT IS IN CX THERE BECAUSE IT ACTUALLY IS NEEDED FOR RENDER 
-
  
     qs->simtrace();  
 
     cudaDeviceSynchronize(); 
 
     qs->save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
-
+    // BETTER FOR THIS TO HAPPEN VIA SEvt not QSim 
 
     const char* dir = QEvent::DefaultDir(); 
     cx->fr.save(dir);  
-
  
     return 0 ; 
 }

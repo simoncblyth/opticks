@@ -1,13 +1,11 @@
 #!/bin/bash -l 
 
 usage(){ cat << EOU
-CSGGenstepTest.sh
-===================
+CSGFoundry_MakeCenterExtentGensteps_Test.sh
+===============================================
 
-CSGGenstepTest checks the center-extent-gensteps used in CSGOptiX/cxs.sh 
+This checks the center-extent-gensteps used in CSGOptiX/cxs.sh 
 by generating some photons on CPU from them and loading into python. 
-
-
 
 
 2022-01-03 15:04:33.973 INFO  [5323710] [CSGGenstep::locate@115]  rc 0 MOI.ce (-10093.4 11882.9 11467.3 365.057)
@@ -67,20 +65,22 @@ export CXS_CEGS=${CXS_CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 
+bin=CSGFoundry_MakeCenterExtentGensteps_Test
 
 arg=${1:-run_ana}
 
 if [ "${arg/run}" != "$arg" ]; then  
     if [ "$(uname)" == "Darwin" ]; then
-        lldb__ CSGGenstepTest
+        lldb__ $bin
     else
-        CSGGenstepTest
+        $bin
     fi 
     [ $? -ne 0 ] && echo $msg runtime error && exit 1 
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then  
-    ${IPYTHON:-ipython} -i CSGGenstepTest.py 
+    export FOLD=/tmp/$USER/opticks/CSG/$bin
+    ${IPYTHON:-ipython} --pdb -i $bin.py 
 fi
 
 exit 0 

@@ -19,7 +19,6 @@ struct sframe ;
 struct SName ; 
 struct CSGTarget ; 
 struct CSGMaker ; 
-struct CSGGenstep ; 
 
 #include "CSGEnum.h"
 #include "CSGSolid.h"
@@ -357,7 +356,6 @@ struct CSG_API CSGFoundry
     SName*    id ;   // meshname 
 
     CSGTarget*  target ; 
-    CSGGenstep* genstep ; 
     CSGMaker*   maker ; 
     bool        deepcopy_everynode_transform ; 
 

@@ -34,7 +34,6 @@
 #include "CSGFoundry.h"
 #include "SName.h"
 #include "CSGTarget.h"
-#include "CSGGenstep.h"
 #include "CSGMaker.h"
 #include "CSGCopy.h"
 
@@ -69,7 +68,6 @@ CSGFoundry::CSGFoundry()
     d_itra(nullptr),
     id(new SName(meshname)),
     target(new CSGTarget(this)),
-    genstep(new CSGGenstep(this)),
     maker(new CSGMaker(this)),
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
@@ -2395,6 +2393,7 @@ sframe CSGFoundry::getFrame(const char* moi ) const
     parseMOI(midx, mord, iidx,  moi );  
 
     sframe fr = getFrame(midx, mord, iidx); 
+    fr.frs = strdup(moi); 
 
     return fr ; 
 }
@@ -2415,7 +2414,7 @@ sframe CSGFoundry::getFrame(int midx, int mord, int iidxg) const
         rc = target->getFrame( fr, midx, mord, iidxg );  
     }
 
-    LOG(info) << " fr " << fr ;  
+    LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
     assert( rc == 0 ); 
     return fr ; 
 }

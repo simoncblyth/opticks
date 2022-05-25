@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 
     sframe a ; 
 
-    a.moi = msg ; 
+    a.frs = msg ; 
 
     a.ce.x = 1.f ; 
     a.ce.y = 2.f ; 
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
  
     std::cout << "b" << std::endl << b << std::endl ; 
 
-    assert( strcmp(a.moi, b.moi) == 0 ); 
+    assert( strcmp(a.frs, b.frs) == 0 ); 
 
     return 0 ; 
 }
