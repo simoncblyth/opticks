@@ -7,7 +7,12 @@ const char* FOLD = "/tmp/sframe_test" ;
 
 int main(int argc, char** argv)
 {
+    //const char* msg = "a_test_of_persisting_via_metadata" ; 
+    const char* msg = "a test of persisting via metadata" ; 
+
     sframe a ; 
+
+    a.moi = msg ; 
 
     a.ce.x = 1.f ; 
     a.ce.y = 2.f ; 
@@ -21,6 +26,8 @@ int main(int argc, char** argv)
     sframe b = sframe::Load(FOLD);  
  
     std::cout << "b" << std::endl << b << std::endl ; 
+
+    assert( strcmp(a.moi, b.moi) == 0 ); 
 
     return 0 ; 
 }

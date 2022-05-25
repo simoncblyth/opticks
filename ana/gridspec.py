@@ -209,6 +209,9 @@ class GridSpec(object):
         """
         :param peta:
         :param gsmeta:
+
+        
+
         """
         moi = gsmeta.find("moi:", None)
         midx = gsmeta.find("midx:", None)
@@ -217,6 +220,9 @@ class GridSpec(object):
 
         coords = "RTP" if not iidx is None and int(iidx) == -3 else "XYZ"   ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
         log.info(" moi %s midx %s mord %s iidx %s coords %s " % (moi, midx, mord, iidx, coords))
+
+
+        ## CSGOptiX::setCEGS tests/CSGOptiXSimtraceTest.cc
 
         ix0,ix1,iy0,iy1 = peta[0,0].view(np.int32)
         iz0,iz1,photons_per_genstep,_ = peta[0,1].view(np.int32)

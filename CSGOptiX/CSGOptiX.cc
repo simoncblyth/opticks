@@ -214,8 +214,6 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     frame(new Frame(params->width, params->height, params->depth)), 
 #endif
     meta(new SMeta),
-    peta(new quad4), 
-    metatran(nullptr),
     dt(0.),
     sim(QSim::Get()),  
     event(sim == nullptr  ? nullptr : sim->event)
@@ -239,7 +237,6 @@ void CSGOptiX::init()
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
     initStack(); 
-    initPeta(); 
     initParams(); 
     initGeometry();
     initRender(); 
@@ -258,10 +255,7 @@ void CSGOptiX::initStack()
 
 }
 
-void CSGOptiX::initPeta()
-{ 
-    peta->zero(); 
-}
+
 void CSGOptiX::initParams()
 {
     params->device_alloc(); 
@@ -367,33 +361,6 @@ void CSGOptiX::setTop(const char* tspec)
 
 
 
-/**
-CSGOptiX::setCEGS Center-Extent gensteps
-------------------------------------------
-
-From cegs vector into peta quad4 
-
-HMM: seems peta is not uploaded ?
-
-
-**/
-
-void CSGOptiX::setCEGS(const std::vector<int>& cegs)
-{
-    assert( cegs.size() == 7 );   // use QEvent::StandardizeCEGS to convert 4 to 7  
-
-    peta->q0.i.x = cegs[0] ;  // ix0
-    peta->q0.i.y = cegs[1] ;  // ix1
-    peta->q0.i.z = cegs[2] ;  // iy0 
-    peta->q0.i.w = cegs[3] ;  // iy1
-
-    peta->q1.i.x = cegs[4] ;  // iz0
-    peta->q1.i.y = cegs[5] ;  // iz1 
-    peta->q1.i.z = cegs[6] ;  // num_photons
-    peta->q1.i.w = 0 ;     // TODO: gridscale according to ana/gridspec.py 
-}
-
-
 
 /**
 CSGOptiX::setFrame
@@ -412,14 +379,16 @@ iidx -3
     rtp tangential frame calulated by SCenterExtentFrame
 
 
-
 Setting CE center-extent establishes the coordinate system
 via calls to Composition::setCenterExtent which results in the 
 definition of a model2world 4x4 matrix which becomes the frame of 
 reference used by the EYE LOOK UP navigation controls.  
 
-**/
 
+Q: CSGOptiX::setFrame is clearly needed for render but is it needed for simtrace, simulate ?
+A: Currently think that it is just a bookkeeping convenience for simtrace and not needed for simulate. 
+
+**/
 
 void CSGOptiX::setFrame()
 {
@@ -430,21 +399,12 @@ void CSGOptiX::setFrame(const char* frs)
     sframe fr = foundry->getFrame(frs) ; 
     setFrame(fr); 
 }
-
-/**
-CSGOptiX::setFrame
---------------------
-
-Formerly CSGOptiX::setComposition( const glm::vec4& ce, const qat4* m2w, const qat4* w2m )
-
-**/
 void CSGOptiX::setFrame(const float4& ce )
 {
     sframe fr_ ;   // m2w w2m default to identity 
     fr_.ce = ce ;      
     setFrame(fr_); 
 }
-
 void CSGOptiX::setFrame(const sframe& fr_ )
 {
     fr = fr_ ; 
@@ -453,11 +413,6 @@ void CSGOptiX::setFrame(const sframe& fr_ )
     const qat4* w2m = &fr.w2m ; 
 
     LOG(info) << "[" ; 
-
-    peta->q2.f.x = ce.x ;   // moved from q1
-    peta->q2.f.y = ce.y ; 
-    peta->q2.f.z = ce.z ; 
-    peta->q2.f.w = ce.w ; 
 
     float extent = ce.w ; 
     float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
@@ -498,48 +453,6 @@ void CSGOptiX::setFrame(const sframe& fr_ )
 
 
 
-
-
-
-/**
-void CSGOptiX::setComposition()   // TODO: replace with setFrame 
-{
-    setComposition(SSys::getenvvar("MOI", "-1")); 
-}
-void CSGOptiX::setComposition(const char* moi) // TODO: replace this with setFrame
-{
-    moi = moi_ ? strdup(moi_) : "-1" ;  
-
-    int midx, mord, iidx ;  // mesh-index, mesh-ordinal, instance-index
-    foundry->parseMOI(midx, mord, iidx,  moi );  
-
-    float4 ce = make_float4(0.f, 0.f, 0.f, 1000.f ); 
-
-    // m2w and w2m are initialized to identity, the below call may populate them 
-    qat4* m2w = qat4::identity() ; 
-    qat4* w2m = qat4::identity() ; 
-    int rc = foundry->getCenterExtent(ce, midx, mord, iidx, m2w, w2m ) ;
-
-    LOG(info) 
-        << " moi " << moi 
-        << " midx " << midx << " mord " << mord << " iidx " << iidx 
-        << " rc [" << rc << "]" 
-        << " ce (" << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << ") " 
-        << " m2w (" << *m2w << ")"    
-        << " w2m (" << *w2m << ")"    
-        ; 
-
-    assert(rc==0); 
-    setComposition(ce, m2w, w2m );   // establish the coordinate system 
-}
-
-void CSGOptiX::setComposition(const float4& v, const qat4* m2w, const qat4* w2m )
-{
-    glm::vec4 ce(v.x, v.y, v.z, v.w); 
-    setComposition(ce, m2w, w2m ); 
-}
-
-**/
 
 
 void CSGOptiX::prepareRenderParam()
@@ -856,11 +769,9 @@ void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_
     LOG(LEVEL) << " path_ [" << path_ << "]" ; 
     LOG(LEVEL) << " topline " << topline  ; 
 
-
     frame->download(); 
     frame->annotate( bottom_line, topline, line_height ); 
     frame->snap( path  );  
-
 
     if(!flight || SStr::Contains(path,"00000"))
     {
@@ -928,57 +839,6 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
 
 
 
-
-
-
-
-void CSGOptiX::savePeta(const char* fold, const char* name) const
-{
-    const char* path = SPath::Resolve(fold, name, FILEPATH) ; 
-    LOG(info) << path ; 
-    NP::Write(path, (float*)(&peta->q0.f.x), 1, 4, 4 );
-}
-
-void CSGOptiX::setMetaTran(const Tran<double>* metatran_ ) // only from CSGOptiXSimtraceTest.cc
-{
-    metatran = metatran_ ; 
-}
-
-/**
-CSGOptiX::snapSimtraceTest
----------------------------
-
-TODO: eliminate this, instead just use normal QEvent::save  
-
-Saving data for 2D cross sections, used by tests/CSGOptiXSimtraceTest.cc 
-
-The writing of pixels and frame photon "fphoton.npy" are commented 
-here as they are currently not being filled by OptiX7Test.cu:simtrace
-Although they could be reinstated the photons.npy array is more useful 
-for debugging as that can be copied from remote to laptop enabling local analysis 
-that gives flexible python "rendering" with tests/CSGOptiXSimtraceTest.py 
-
-
-void CSGOptiX::snapSimtraceTest() const    // only from CSGOptiXSimtraceTest.cc
-{
-    const char* outdir = SEventConfig::OutFold();
-
-    event->setMeta( foundry->meta.c_str() ); 
-
-    // HMM: QEvent rather than here ?  
-    event->savePhoton( outdir, "photons.npy");   // this one can get very big 
-    event->saveGenstep(outdir, "genstep.npy");  
-    event->saveMeta(   outdir, "fdmeta.txt" ); 
-
-    savePeta(          outdir, "peta.npy");   
-
-    if(metatran) metatran->save(outdir, "metatran.npy");
-
-}
-**/
-
-
-
 /**
 CSGOptiX::_OPTIX_VERSION
 -------------------------
@@ -987,7 +847,7 @@ This depends on the the optix.h header only which provides the OPTIX_VERSION mac
 so it could be done at the lowest level, no need for it to be 
 up at this "elevation"
 
-TODO: relocate to OKConf or SysRap
+TODO: relocate to OKConf or SysRap, BUT this must wait until switch to full proj 7 
 
 **/
 

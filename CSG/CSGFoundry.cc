@@ -2393,12 +2393,17 @@ sframe CSGFoundry::getFrame(const char* moi ) const
 {
     int midx, mord, iidx ;  // mesh-index, mesh-ordinal, gas-instance-index
     parseMOI(midx, mord, iidx,  moi );  
-    return getFrame(midx, mord, iidx); 
+
+    sframe fr = getFrame(midx, mord, iidx); 
+
+    return fr ; 
 }
 
 sframe CSGFoundry::getFrame(int midx, int mord, int iidxg) const 
 {
     sframe fr ; 
+    fr.set_midx_mord_iidx( midx, mord, iidxg ); 
+
     int rc = 0 ; 
     if( midx == -1 )
     { 
@@ -2410,11 +2415,7 @@ sframe CSGFoundry::getFrame(int midx, int mord, int iidxg) const
         rc = target->getFrame( fr, midx, mord, iidxg );  
     }
 
-    LOG(info) 
-        << " midx " << midx << " mord " << mord << " iidxg " << iidxg  << std::endl 
-        << " fr " << fr
-        ;  
-
+    LOG(info) << " fr " << fr ;  
     assert( rc == 0 ); 
     return fr ; 
 }

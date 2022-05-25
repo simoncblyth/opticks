@@ -4,6 +4,7 @@
 #include "squad.h"
 #include "sqat4.h"
 #include "stran.h"
+#include "sframe.h"
 
 #include "storch.h"
 #include "scerenkov.h"
@@ -18,6 +19,7 @@
 #include "PLOG.hh"
 #include "SRng.hh"
 #include "SStr.hh"
+#include "SSys.hh"
 
 #include "OpticksGenstep.h"
 #include "SEvent.hh"
@@ -207,6 +209,10 @@ void SEvent::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, float gr
     GetBoundingBox( mn, mx, ce, cegs, gridscale, ce_offset ); 
 }
 
+
+
+
+
 /**
 SEvent::GetBoundingBox
 -----------------------
@@ -261,6 +267,9 @@ void SEvent::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std
         ;
 }
 
+
+
+
 /**
 SEvent::GenstepID
 -------------------
@@ -304,6 +313,45 @@ void SEvent::ConfigureGenstep( quad6& gs,  int gencode, int gridaxes, int gsid, 
     gs.q0.u.z = gsid ;     
     gs.q0.i.w = photons_per_genstep ;
 }
+
+/**
+SEvent::MakeCenterExtentGensteps
+-----------------------------------
+
+
+**/
+
+
+NP* SEvent::MakeCenterExtentGensteps(sframe& fr)
+{
+    const float4& ce = fr.ce ; 
+    float gridscale = SSys::getenvfloat("GRIDSCALE", 1.0 ) ; 
+
+    // CSGGenstep::init
+    std::vector<int> cegs ; 
+    SSys::getenvintvec("CEGS", cegs, ':', "5:0:5:1000" );
+
+    SEvent::StandardizeCEGS(ce, cegs, gridscale );  // ce is informational here 
+    assert( cegs.size() == 7 );
+
+    fr.set_grid(cegs, gridscale); 
+   
+    bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ;
+    bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;
+
+    Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 ); 
+
+    NP* gs = MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
+
+    //gs->set_meta<std::string>("moi", moi );
+    gs->set_meta<int>("midx", fr.midx() );
+    gs->set_meta<int>("mord", fr.mord() );
+    gs->set_meta<int>("iidx", fr.iidx() );
+    gs->set_meta<float>("gridscale", fr.gridscale() );
+
+    return gs ; 
+}
+
 
 
 /**

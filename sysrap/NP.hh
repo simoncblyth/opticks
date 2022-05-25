@@ -228,10 +228,6 @@ struct NP
     void set_meta( const std::vector<std::string>& lines, char delim='\n' ); 
     void get_meta( std::vector<std::string>& lines,       char delim='\n' ) const ; 
 
-    //void set_names_old( const std::vector<std::string>& lines, char delim='\n' ); 
-    //void get_names_old( std::vector<std::string>& lines,       char delim='\n' ) const ; 
-    //int get_name_index_old( const char* name, char delim='\n' ) const ; 
-
     void set_names( const std::vector<std::string>& lines ) ; 
     void get_names( std::vector<std::string>& lines ) const ; 
     int  get_name_index( const char* qname ) const ;  
@@ -351,6 +347,26 @@ inline std::istream& operator>>(std::istream& is, NP& a)
     //is.setstate(std::ios::failbit);
     return is;
 }
+
+
+
+template <typename T> inline T NP::To( const char* a )   // static 
+{   
+    std::string s(a);
+    std::istringstream iss(s);
+    T v ;   
+    iss >> v ; 
+    return v ; 
+}
+
+// specialization for std::string as the above truncates at the first blank in the string, see tests/NP_set_meta_get_meta_test.cc  
+template<> inline std::string NP::To(const char* a ) 
+{
+    std::string s(a); 
+    return s ; 
+}
+
+
 
 
 
@@ -2577,9 +2593,13 @@ template<typename T> inline T NP::GetMeta(const std::string& mt, const char* key
 {
     if(mt.empty()) return fallback ; 
     std::string s = get_meta_string( mt, key); 
+#ifdef DEBUG
+    std::cout << "NP::GetMeta[" << s << "]" << std::endl ;
+#endif
     if(s.empty()) return fallback ; 
     return To<T>(s.c_str()) ; 
 }
+
 
 template int         NP::GetMeta<int>(        const std::string& , const char*, int ) ; 
 template unsigned    NP::GetMeta<unsigned>(   const std::string& , const char*, unsigned ) ; 
@@ -3458,14 +3478,7 @@ template <typename T> NP*  NP::Make(T d0, T v0, T d1, T v1 ) // static
 }
 
 
-template <typename T> T NP::To( const char* a )   // static 
-{   
-    std::string s(a);
-    std::istringstream iss(s);
-    T v ;   
-    iss >> v ; 
-    return v ; 
-}
+
 
 template <typename T> NP* NP::FromString(const char* str, char delim)  // static 
 {   

@@ -573,6 +573,10 @@ void QEvent::save(const char* base, const char* reldir ) const
     save(dir); 
 }
 
+
+
+
+
 void QEvent::save(const char* dir_) const 
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
@@ -586,16 +590,18 @@ void QEvent::save(const char* dir_) const
     NP* seq = getSeq() ;
     NP* domain = getDomain() ;
 
-    // HMM: could handle these all togethr using NPFold 
+
+    // HMM: could handle these all togethr using NPFold : maybe within SEvent/SEvt ?
+    // need to standardize naming 
     LOG(info) << descSave(hit,genstep,photon,record,rec,seq,domain) ; 
 
-    if(hit)     hit->save(dir, "hit.npy"); 
-    if(genstep) genstep->save(dir, "gs.npy"); 
-    if(photon)  photon->save(dir, "photon.npy"); 
-    if(record)  record->save(dir, "record.npy"); 
-    if(rec)     rec->save(dir, "rec.npy"); 
-    if(seq)     seq->save(dir, "seq.npy"); 
-    if(domain)  domain->save(dir, "domain.npy"); 
+    if(hit)     hit->save(    dir, "hit.npy"); 
+    if(genstep) genstep->save(dir, "genstep.npy"); 
+    if(photon)  photon->save( dir, "photon.npy"); 
+    if(record)  record->save( dir, "record.npy"); 
+    if(rec)     rec->save(    dir, "rec.npy"); 
+    if(seq)     seq->save(    dir, "seq.npy"); 
+    if(domain)  domain->save( dir, "domain.npy"); 
 
     saveMeta(dir, "fdmeta.txt" );
 }

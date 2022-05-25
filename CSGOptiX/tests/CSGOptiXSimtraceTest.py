@@ -438,25 +438,42 @@ class Gensteps(object):
     * gs[igs,1] local frame center position
     * gs[igs,2:] 4x4 transform  
 
+  
+    From SEvent::ConfigureGenstep::
+
+        * gsid was MOVED from (1,3) to (0,2) when changing genstep to carry transform
+
     """
     def __init__(self, genstep, metatran, grid, local=True, local_extent_scale=False ):
+        """
+        :param genstep: (num_gs,6,4) array with grid transforms in 2: and position in 1 
+        :param metatran: array of 3 transforms
+        :param grid: 
+
+        TODO: combine metatran, grid, peta into the sframe.h  and create 
+        SFrame.py to manage the python side of this 
+        """
         gs = genstep
-        mtr = metatran
 
-        numpho = gs.view(np.int32)[:,0,3] 
+        numpho = gs.view(np.int32)[:,0,3]  # top right values from all gensteps
+        gsid = gs.view(np.int32)[:,0,2].copy()  # SEvent::ConfigureGenstep
+        all_one = np.all( gs[:,1,3] == 1. ) 
+        assert all_one   # from SEvent::MakeCenterExtentGensteps that q1.f.w should always to 1.f
 
-        #gsid = gs.view(np.int32)[:,1,3].copy()
-        ##gs[:,1,3] = 1.    # copy the identity and set to 1. for transforming as position 
-
-        gsid = gs.view(np.int32)[:,0,2].copy()
-
-        all_one = np.all( gs[:,1,3] == 1. )
-        assert all_one 
-
+        ## apply the 4x4 transform in rows 2: to the position in row 1 
         centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
+        for igs in range(len(gs)): 
+            centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
+        pass
 
-        for igs in range(len(gs)): centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
+        ## Notice that every genstep has its own transform with slightly 
+        ## different translations according to the different grid points 
+        ##  
+        ## Conversely there is only one overall metatran/frame transform
+        ## which corresponds to the targetted piece of geometry.
+        ##
 
+        mtr = metatran
         if not mtr is None:
              tran = mtr[1]
         else:
@@ -464,6 +481,7 @@ class Gensteps(object):
              log.warning("metatran is None : no transform metadata : assming local frame, such as with geochain test solids")
         pass
         centers_local = np.dot( centers, tran )  # use metatran.v to transform back to local frame
+
 
         if local and local_extent_scale:
             extent = grid.ce[3]

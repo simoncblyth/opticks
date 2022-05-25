@@ -46,6 +46,9 @@ struct NP ;
 struct CSG_API CSGGenstep
 {
     CSGGenstep( const CSGFoundry* foundry );  
+
+    NP* create();  // MOI, ...
+
     void create(const char* moi, bool ce_offset, bool ce_scale );
     void generate_photons_cpu();
     void save(const char* basedir) const ; 

@@ -86,8 +86,6 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 #endif
     Frame* frame ; 
     SMeta* meta ; 
-    quad4* peta ; 
-    const Tran<double>* metatran ; 
     double dt ; 
 
 
@@ -106,7 +104,6 @@ public:
 
     void init(); 
     void initStack(); 
-    void initPeta();
     void initParams();
     void initGeometry();
     void initRender();
@@ -116,16 +113,6 @@ public:
  private: 
     void setTop(const char* tspec); 
  public: 
-
-    void setCEGS(const std::vector<int>& cegs); 
-
-
-    /*
-    void setComposition();
-    void setComposition(const char* moi);
-    void setComposition(const float4& ce,    const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
-    void setComposition(const glm::vec4& ce, const qat4* m2w=nullptr, const qat4* w2m=nullptr ); 
-    */
 
     void setFrame(); 
     void setFrame(const char* moi);
@@ -157,10 +144,7 @@ public:
     int  render_flightpath(); 
 
     void saveMeta(const char* jpg_path) const ;
-    void savePeta(const char* fold, const char* name) const ; 
-    void setMetaTran(const Tran<double>* metatran ); 
 
-    //void snapSimtraceTest() const ;
 
     static int   _OPTIX_VERSION() ; 
 };

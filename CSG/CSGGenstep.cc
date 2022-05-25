@@ -67,6 +67,18 @@ TODO: eliminate ce_offset/ce_scale by using transform approach always
 
 **/
 
+NP* CSGGenstep::create()
+{
+    const char* moi = SSys::getenvvar("MOI", "sWorld:0:0");  
+    bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ; 
+    bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;   
+
+    create(moi, ce_offset, ce_scale ); // SEvent::MakeCenterExtentGensteps
+
+    return gs ; 
+}
+
+
 void CSGGenstep::create(const char* moi_, bool ce_offset, bool ce_scale )
 {
     moi = strdup(moi_); 

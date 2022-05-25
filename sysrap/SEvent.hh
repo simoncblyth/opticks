@@ -5,6 +5,8 @@ struct quad4 ;
 struct quad6 ; 
 struct storch ; 
 struct uint4 ; 
+struct sframe ; 
+
 template <typename T> struct Tran ;
 
 #include <vector>
@@ -48,6 +50,7 @@ struct SYSRAP_API SEvent
 
     static void ConfigureGenstep( quad6& gs,  int gencode, int gridaxes, int gsid, int photons_per_genstep ); 
 
+    static NP* MakeCenterExtentGensteps(sframe& fr); 
     static NP* MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) ;
     static NP* MakeCountGensteps(const char* config=nullptr, int* total=nullptr);
     static unsigned SumCounts(const std::vector<int>& counts); 
