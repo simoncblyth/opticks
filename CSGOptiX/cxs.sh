@@ -176,7 +176,8 @@ export TOPLINE="${TOPLINE:-$topline}"
 ## ... hmm that is kinda not appropriate for cosmetic presentation changes like differnt XX ZZ etc.. 
 
 vars="GEOM CFBASE LOGDIR BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE NOTE GSPLOT ISEL XX YY ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR OPTICKS_OUT_FOLD"
-for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+dumpvars(){  local var ; local vars=$1 ; shift ; echo $* ; for var in $vars ; do printf "%20s : %s\n" $var ${!var} ; done  ; }
+dumpvars "$vars" initial
 
 
 bin=CSGOptiXSimtraceTest
@@ -214,56 +215,22 @@ if [ "$(uname)" == "Linux" ]; then
 
 elif [ "$(uname)" == "Darwin" ]; then
 
-    if [ "$arg" = "lrun" ] ; then 
+    echo $msg Darwin $(pwd)
 
-        cd $LOGDIR 
-        source ${bin}_OUTPUT_DIR.sh || exit 1  
-        echo $msg lrun mode : using the output directory discerned from the last grab
-        echo $msg ${bin}_OUTPUT_DIR $${bin}_OUTPUT_DIR
-
-    elif [ "${arg/grab}" != "$arg" ]; then 
-
-        pwd
+    if [ "${arg/grab}" != "$arg" ]; then 
+        echo $msg grab  
         EXECUTABLE=$bin       source cachegrab.sh grab
         EXECUTABLE=CSGFoundry source cachegrab.sh grab
+    fi  
 
-    elif [ "${arg/ana}" != "$arg" ]; then 
+    if [ "${arg/ana}" != "$arg" ]; then 
+        echo $msg ana
+        EXECUTABLE=$bin       source cachegrab.sh env
+        dumpvars "FOLD CFBASE" after cachegrab.sh env
 
-
-        opticks_key_remote_dir=$(opticks-key-remote-dir)
-
-        cvd_ver=cvd0/70000
-        if [ -n "$cfbase" ]; then 
-            cxsdir=$cfbase/$bin/$cvd_ver
-        else
-            cxsdir=$HOME/$opticks_key_remote_dir/CSG_GGeo/$bin/$cvd_ver
-        fi
-
-        if [ ! -d "$cxsdir" ]; then 
-            echo $msg ERROR no cxsdir : $cxsdir  
-            exit 1 
-        fi
-
-        geomdir=$cxsdir/$GEOM
-        if [ ! -d "$geomdir" ]; then 
-            echo $msg ERROR no geomdir : $geomdir  
-            exit 1 
-        fi
-
-
-        export ${bin}_OUTPUT_DIR=$geomdir
-        echo $msg non-lrun mode : using the output directory defined by script variable GEOM
-        echo $msg ${bin}_OUTPUT_DIR $${bin}_OUTPUT_DIR
+        ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/$bin.py 
     fi 
 
-    ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/$bin.py 
-fi 
-
-echo LOGDIR : $LOGDIR
-if [ -n "$cfbase" ]; then 
-   echo $msg cfbase $cfbase is defined : are using non-standard geometry 
-   echo $msg cross section intersects onto non-standard geometry are stored into tmp directories
-   echo $msg to grab these to laptop use cx tmp_grab.sh 
 fi 
 
 exit 0

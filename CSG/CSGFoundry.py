@@ -179,14 +179,26 @@ class CSGFoundry(object):
 
     @classmethod
     def CFBase(cls):
-        if "GEOM" in os.environ:
-            geom = os.environ["GEOM"]
-            rel = "GeoChain_Darwin" 
-            cfbase = os.path.expandvars("/tmp/$USER/opticks/%s/%s" %(rel, geom) )  # guess
-        elif "CFBASE_LOCAL" in os.environ:
+        """
+        Precedence order for which envvar is used to derive the CFBase folder
+        This allows scripts such as CSGOptiX/cxsim.sh to set envvars to control 
+        the geometry arrays loaded. For example this is used such that local 
+        analysis on laptop can use the geometry rsynced from remote.  
+
+        1. CFBASE_LOCAL
+        2. CFBASE
+        3. GEOM
+        4. OPTICKS_KEY
+
+        """
+        if "CFBASE_LOCAL" in os.environ:
             cfbase= os.environ["CFBASE_LOCAL"]
         elif "CFBASE" in os.environ:
             cfbase= os.environ["CFBASE"]
+        elif "GEOM" in os.environ:
+            geom = os.environ["GEOM"]
+            rel = "GeoChain_Darwin" 
+            cfbase = os.path.expandvars("/tmp/$USER/opticks/%s/%s" %(rel, geom) )  # guess
         elif "OPTICKS_KEY" in os.environ:
             kd = keydir(os.environ["OPTICKS_KEY"])
             cfbase = os.path.join(kd, "CSG_GGeo")

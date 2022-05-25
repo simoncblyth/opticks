@@ -3,11 +3,7 @@
 import os, sys, logging, numpy as np, datetime, builtins
 from opticks.ana.npmeta import NPMeta
 
-#import inspect
-#SOURCE = inspect.getfile(inspect.currentframe())
-
 CMDLINE = " ".join(sys.argv)
-
 
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
@@ -36,15 +32,37 @@ class Fold(object):
         """Only called when there is no *name* attr"""
         return None
 
+
+    @classmethod
+    def LoadTxt(cls, path): 
+        """
+        # HMM: this messes up with double quoting
+        # workaround that by not writing a single metadata entries 
+        """
+        name = os.path.basename(path)
+        stem = name[:-4]
+        txt_dtype = "|S100" if stem.endswith("_meta") else np.object 
+
+        t = np.loadtxt(path, dtype=txt_dtype, delimiter="\t") 
+        if t.shape == (): ## prevent one line file behaving different from multiline 
+            a = np.zeros(1, dtype=txt_dtype)
+            a[0] = NPMeta(str(t))   
+        else:
+            a = NPMeta(t)     
+        pass
+        return a 
+
     def __init__(self, base, **kwa):
         self.base = base
         self.kwa = kwa 
         self.relbase = kwa.get("relbase")
         self.globals = kwa.get("globals", False) == True
         self.globals_prefix = kwa.get("globals_prefix", "") 
-        print("Fold : loading from base %s setting globals %s globals_prefix %s " % (base, self.globals, self.globals_prefix)) 
+        print("Fold : setting globals %s globals_prefix %s " % (self.globals, self.globals_prefix)) 
 
         names = os.listdir(base)
+
+        paths = []
         stems = []
         abbrev = []
         symbols = "abcdefghijklmnopqrsTuvwxyz"
@@ -53,34 +71,25 @@ class Fold(object):
         for i, name in enumerate(filter(lambda n:n.endswith(".npy") or n.endswith(".txt"),names)):
             path = os.path.join(base, name)
             symbol = symbols[i]
-
-            is_npy = name.endswith(".npy")
-            is_txt = name.endswith(".txt")
-
             stem = name[:-4]
+
+            paths.append(path)
             stems.append(stem)
             abbrev.append(symbol) 
 
-            txt_dtype = "|S100" if stem.endswith("_meta") else np.object 
+            is_npy = name.endswith(".npy")
 
             if is_npy:
                 a = np.load(path)
-            else: 
-                t = np.loadtxt(path, dtype=txt_dtype, delimiter="\t") 
-                if t.shape == (): ## prevent one line file behaving different from multiline 
-                    a = np.zeros(1, dtype=txt_dtype)
-                    a[0] = NPMeta(str(t))   
-                    # HMM: this messes up with double quoting
-                    # workaround that by not writing a single metadata entries 
-                else:
-                    a = NPMeta(t)     
-                pass
-                txts[name] = a
+            elif name.endswith("_meta.txt"):
+                a = self.LoadTxt(path)
+                txts[name] = a 
+            elif name.endswith(".txt"):
+                a = self.LoadTxt(path)
+                txts[name] = self.LoadTxt(path)
             pass
-
-            # use non-present delim so lines with spaces do not cause errors
-            #list(map(str.strip,open(path).readlines())) 
             setattr(self, stem, a ) 
+
             ashape = str(a.shape) if is_npy else len(a)    
             if self.globals:
                 gstem = self.globals_prefix + stem
@@ -89,6 +98,7 @@ class Fold(object):
                 print("setting builtins symbol:%s gstem:%s" % (symbol, gstem) ) 
             pass
         pass
+        self.paths = paths
         self.stems = stems
         self.abbrev = abbrev
         self.txts = txts
@@ -103,7 +113,8 @@ class Fold(object):
         l.append("")
         stamps = []
 
-        for i in range(len(self.stems)):
+        for i in range(len(self.paths)):
+            path = self.paths[i]
             stem = self.stems[i]
             abbrev = self.abbrev[i]
 
@@ -113,7 +124,6 @@ class Fold(object):
             ext = ".txt" if kls == 'NPMeta' else ".npy"
             name = "%s%s" % (stem,ext)
             aname = "t.%s" % stem
-            path = os.path.join(self.base, name)
 
             if os.path.exists(path):
                 st = os.stat(path)
@@ -125,7 +135,8 @@ class Fold(object):
                 line = "%1s : %-50s : %20s : %s " % ( abbrev_, aname, sh, age_stamp )
                 l.append(line)
             else:
-                print("ERROR non-existing stem %s kls %s ext %s name %s aname %s path %s " % (stem, kls, ext, name, aname, path ))
+                msg = "ERROR non-existing path for : stem %s kls %s ext %s name %s aname %s path %s " % (stem, kls, ext, name, aname, path )
+                l.append(msg)
             pass
         pass
         l.append("")

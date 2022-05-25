@@ -62,6 +62,9 @@ ALLOWED_MASK = ("pos", "t" )
 log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 from opticks.CSG.CSGFoundry import CSGFoundry 
+
+from opticks.ana.p import *   # including cf 
+
 from opticks.ana.fold import Fold
 from opticks.ana.npmeta import NPMeta
 from opticks.ana.gridspec import GridSpec, X, Y, Z
@@ -950,63 +953,18 @@ def test_mok(cf):
     print(ph.mokfeat)
 
 
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     GSPLOT = int(os.environ.get("GSPLOT", "0"))
 
-    CSGOptiXSimtraceTest_OUTPUT_DIR = os.environ.get("CSGOptiXSimtraceTest_OUTPUT_DIR", None) 
-    if CSGOptiXSimtraceTest_OUTPUT_DIR is None:
-        log.fatal(" missing required envvar CSGOptiXSimtraceTest_OUTPUT_DIR ")
-        sys.exit(1)
-    pass
+    fold = Fold.Load(); 
 
-    CSGFoundry_DIR = CSGFoundry.FindDirUpTree( CSGOptiXSimtraceTest_OUTPUT_DIR, "CSGFoundry" )
-    FOLD = os.path.dirname(CSGFoundry_DIR)
-
-    LEAF = os.environ.get("LEAF", None)   ## LEAF is used to hop between geometries in sibling dirs 
-
-
-    print( " CSGOptiXSimtraceTest_OUTPUT_DIR : %s " % CSGOptiXSimtraceTest_OUTPUT_DIR )
-    print( " LEAF                            : %s " % LEAF )
-    print( " CSGFoundry_DIR                  : %s " % CSGFoundry_DIR  )
-    print( " FOLD                            : %s " % FOLD  )
-
-    outdir = CSGOptiXSimtraceTest_OUTPUT_DIR 
-    outbase = os.path.dirname(outdir)
-    outleaf = os.path.basename(outdir)
-    outgeom = outleaf.split("_")[0]  
-
-    outdir2 = os.path.join(outbase, outleaf)  
-    assert outdir == outdir2 
-    print( " outleaf                         : %s " % outleaf )
-
-    leaves = list(filter(lambda _:_.startswith(outleaf[:10]),os.listdir(outbase)))
-    print("\n".join(leaves))
-
-    if not LEAF is None and LEAF != outleaf:
-        leafgeom = LEAF.split("_")[0]
-        altdir = outdir.replace(outgeom,leafgeom).replace(outleaf,LEAF)
-        if os.path.isdir(altdir):
-            outdir = altdir
-            print(" OVERRIDE CSGOptiXSimtraceTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
-            print( " CSGOptiXSimtraceTest_OUTPUT_DIR : %s " % outdir )
-        else:
-            print("FAILED to override CSGOptiXSimtraceTest_OUTPUT_DIR VIA LEAF envvar %s " % LEAF )
-        pass
-    pass
-
-
-    cf = CSGFoundry(os.path.join(FOLD, "CSGFoundry"))
-    #test_mok(cf)
-
-    fold = Fold.Load(outdir) 
-
-    num_photons = len(fold.photons )
-    landing_count = np.count_nonzero( fold.photons[:,0,3] )
-    landing_msg = "ERROR NO PHOTONS LANDED" if landing_count == 0 else ""
-    print(" num_photons: %d : landing_count : %d   %s " % (num_photons, landing_count, landing_msg) )
-
+    num_photon = len(fold.photon)
+    landing_count = np.count_nonzero( fold.photon[:,0,3] )
+    landing_msg = "ERROR NO PHOTON LANDED" if landing_count == 0 else ""
+    print(" num_photon: %d : landing_count : %d   %s " % (num_photon, landing_count, landing_msg) )
 
     outdir = os.path.join(fold.base, "figs")
     if not os.path.isdir(outdir):
@@ -1031,7 +989,7 @@ if __name__ == '__main__':
     assert mask in ALLOWED_MASK, "mask %s is not in ALLOWED_MASK list %s " % (mask, str(ALLOWED_MASK))
     #without mask=pos means that the legend is filled with features that are not visible in the frame 
 
-    pos = Positions(fold.photons, gs, gridspec, local=True, mask=mask, local_extent_scale=local_extent_scale )
+    pos = Positions(fold.photon, gs, gridspec, local=True, mask=mask, local_extent_scale=local_extent_scale )
 
     if SIM:
         pvplt_simple(pos.gpos[:,:3], "pos.gpos[:,:3]" )
