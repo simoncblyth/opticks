@@ -187,6 +187,7 @@ set(HEADERS
     scuda.h
     scurand.h  
     smath.h 
+    tcomplex.h
     s_mock_curand.h
     squad.h
 
