@@ -65,6 +65,7 @@ int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4* 
     if( iidxg == -1 )
     {
         // HMM: CSGFoundry::getCenterExtent BRANCHES FOR iidxg == -1 SO THIS WILL NOT BE CALLED 
+        // HMM: maybe not that branch is for midx -1 ? 
 
         LOG(info) << "(iidxg == -1) qptr transform will not be set, typically defaulting to identity " ; 
         int lrc = getLocalCenterExtent(ce, midx, mord); 
@@ -91,7 +92,7 @@ int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4* 
     }
     else
     {
-        int grc = getGlobalCenterExtent(ce, midx, mord, iidxg, m2w ); 
+        int grc = getGlobalCenterExtent(ce, midx, mord, iidxg, m2w, w2m ); 
         // TODO: paired transforms also ?
         //  HMM: the m2w here populated is from the (midx, mord, iidxg) instance transform, with identity info 
         if(grc != 0) return 2 ;
@@ -113,18 +114,15 @@ int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const
 
 int CSGTarget::getFrame(sframe& fr, int inst_idx ) const 
 {
-    const qat4* qi = foundry->getInst(inst_idx); 
+    const qat4* _t = foundry->getInst(inst_idx); 
     
-    qat4 q(qi->cdata());   // copy the instance (transform and identity info)
+    qat4 t(_t->cdata());   // copy the instance (transform and identity info)
+    const qat4* v = Tran<double>::Invert(t);     // identity gets cleared in here 
 
-    unsigned ins_idx, gas_idx, ias_idx ; 
-    q.getIdentity(ins_idx, gas_idx, ias_idx )  ;
-    assert( int(ins_idx) == inst_idx ); 
+    qat4::copy(fr.m2w,  t);  
+    qat4::copy(fr.w2m, *v);  
 
-    q.clearIdentity();           // clear before doing any transforming 
-
-
-    // TODO: find way to get the ce from here + invert the instance transform for w2m 
+    // TODO: find way to populate fr.ce  : presumably via a gas/solid/prim lookup 
 
     return 0 ; 
 }
@@ -207,10 +205,10 @@ TODO: check this with global non-instanced geometry
 
 **/
 
-int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, qat4* qptr ) const 
+int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, qat4* m2w, qat4* w2m ) const 
 {
-    const qat4* qi = getInstanceTransform(midx, mord, iidx); 
-    if(qi == nullptr)
+    const qat4* t = getInstanceTransform(midx, mord, iidx); 
+    if(t == nullptr)
     {
         LOG(fatal) 
             << " failed to get InstanceTransform (midx mord iidx) " 
@@ -219,9 +217,14 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
         return 1 ;  
     }
 
-    if(qptr) qat4::copy(*qptr, *qi);  
+    const qat4* v = Tran<double>::Invert(t );    
+    // TODO: avoid this Invert by collecting paired instance transforms from Geant4 source 
 
-    qat4 q(qi->cdata());   // copy the instance (transform and identity info)
+    if(m2w) qat4::copy(*m2w, *t);  
+    if(w2m) qat4::copy(*w2m, *v);  
+
+
+    qat4 q(t->cdata());   // copy the instance (transform and identity info)
 
     unsigned ins_idx, gas_idx, ias_idx ; 
     q.getIdentity(ins_idx, gas_idx, ias_idx )  ;

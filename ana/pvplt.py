@@ -132,8 +132,10 @@ def pvplt_polarized( pl, pos, mom, pol, factor=0.15, assert_transverse=True ):
     https://docs.pyvista.org/examples/00-load/create-point-cloud.html
     https://docs.pyvista.org/examples/01-filter/glyphs.html
 
-    Note bizarre issue of arrows only in one direction appearing ?
+    Note bizarre issue of mom arrows only in one direction appearing ?
 
+    Managed to get them to appear using add_arrows and fiddling with mag 
+    in CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.py
     """
     pvplt_check_transverse(mom, pol, assert_transverse=assert_transverse) 
 

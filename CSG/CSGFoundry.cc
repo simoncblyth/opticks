@@ -2305,8 +2305,8 @@ CSGFoundry::getInstanceIndex
 ------------------------------
 
 Returns index of the ordinal-th instance with the provided gas_idx or -1 if not found
-Note that the ordinal is confusingly referred to as the iidx by some users 
-of this. But that is not the global instance index it is the index 
+Note that the gas ordinal is confusingly referred to as the iidx in many places.
+BUT that iidx is not the global instance index it is the index 
 within occurences of the gas_idx_ GAS/compositeSolid
 
 **/
@@ -2383,24 +2383,40 @@ Replacing most of CSGOptiX::setComposition
 
 sframe CSGFoundry::getFrame() const 
 {
-    const char* moi = SSys::getenvvar("MOI", "-1");  
-    return getFrame(moi); 
-}
-
-sframe CSGFoundry::getFrame(const char* moi ) const 
-{
-    int midx, mord, iidx ;  // mesh-index, mesh-ordinal, gas-instance-index
-    parseMOI(midx, mord, iidx,  moi );  
-
-    sframe fr = getFrame(midx, mord, iidx); 
-    fr.frs = strdup(moi); 
-
+    const char* moi = SSys::getenvvar("MOI","-1");  
+    sframe fr ; 
+    getFrame(fr, moi);
     return fr ; 
 }
 
-sframe CSGFoundry::getFrame(int midx, int mord, int iidxg) const 
+
+void CSGFoundry::getFrame(sframe& fr, const char* frs ) const 
 {
-    sframe fr ; 
+    if( strstr(frs, ":") || strcmp(frs,"-1") == 0 )
+    {
+        int midx, mord, iidx ;  // mesh-index, mesh-ordinal, gas-instance-index
+        parseMOI(midx, mord, iidx,  frs );  
+        getFrame(fr, midx, mord, iidx); 
+    }
+    else
+    {
+         int inst_idx = SName::ParseIntString(frs, 0) ; 
+         getFrame(fr, inst_idx); 
+    }
+        
+    fr.frs = strdup(frs); 
+    LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
+}
+
+void CSGFoundry::getFrame(sframe& fr, int inst_idx) const
+{
+    fr.set_inst( inst_idx ); 
+    int rc = target->getFrame( fr, inst_idx );  
+    assert( rc == 0 ); 
+}
+ 
+void CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const 
+{
     fr.set_midx_mord_iidx( midx, mord, iidxg ); 
 
     int rc = 0 ; 
@@ -2413,12 +2429,8 @@ sframe CSGFoundry::getFrame(int midx, int mord, int iidxg) const
     {
         rc = target->getFrame( fr, midx, mord, iidxg );  
     }
-
-    LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
     assert( rc == 0 ); 
-    return fr ; 
 }
-
 
 
 /**

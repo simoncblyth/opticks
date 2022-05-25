@@ -29,6 +29,8 @@ struct Tran
 {
     // TODO: on stack ctors 
 
+    static constexpr const T EPSILON = 1e-6 ; 
+
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz, const T sc);
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz);
     static const Tran<T>* make_identity();
@@ -39,16 +41,20 @@ struct Tran
     static const Tran<T>* product(const Tran<T>* a, const Tran<T>* b, const Tran<T>* c, bool reverse);
     static const Tran<T>* product(const std::vector<const Tran<T>*>& tt, bool reverse );
 
-    static Tran<T>* ConvertToTran( const qat4* q ); 
-    static Tran<T>* FromPair( const qat4* t, const qat4* v, T epsilon=1e-6 ); // WIDENS from float  
+    static Tran<T>* ConvertToTran( const qat4* q, T epsilon=EPSILON ); 
+    static const qat4* Invert( const qat4* q, T epsilon=EPSILON ); 
+    static Tran<T>* FromPair( const qat4* t, const qat4* v, T epsilon=EPSILON ); // WIDENS from float  
     static glm::tmat4x4<T> MatFromQat(const qat4* q );
     static qat4*    ConvertFrom(const glm::tmat4x4<T>& tr ); 
 
     Tran( const T* transform, const T* inverse ) ;
     Tran( const glm::tmat4x4<T>& transform, const glm::tmat4x4<T>& inverse ) ;
 
+    T    maxdiff_from_identity(char mat='t') const ; 
     bool is_identity(char mat='t', T epsilon=1e-6) const ; 
     std::string brief(bool only_tlate=false, char mat='t', unsigned wid=6, unsigned prec=1) const ;  
+    std::string desc() const ; 
+    bool checkIsIdentity(char mat='i', const char* caller="caller", T epsilon=EPSILON); 
  
     void write(T* dst, unsigned num_values=3*4*4) const ; 
     void save(const char* dir, const char* name="stran.npy") const ; 
@@ -249,18 +255,26 @@ inline const T*  Tran<T>::vdata() const
 
 
 template<typename T>
-inline bool Tran<T>::is_identity(char mat, T epsilon) const 
+inline T Tran<T>::maxdiff_from_identity(char mat) const 
 {
-    const glm::mat4& m = mat == 't' ? t : ( mat == 'v' ? v : i ) ; 
-    unsigned mismatch = 0 ; 
+    const glm::tmat4x4<T>& m = mat == 't' ? t : ( mat == 'v' ? v : i ) ; 
+    T mxdif = 0. ; 
     for(int j=0 ; j < 4 ; j++ ) 
     for(int k=0 ; k < 4 ; k++ ) 
     {
         T val = m[j][k] ; 
         T xval = j == k ? T(1) : T(0) ; 
-        if( std::abs( val - xval ) > epsilon )  mismatch += 1 ; 
+        T dif = std::abs( val - xval ) ; 
+        if(dif > mxdif) mxdif = dif ; 
     }
-    return mismatch == 0 ; 
+    return mxdif ; 
+}
+
+template<typename T>
+inline bool Tran<T>::is_identity(char mat, T epsilon) const 
+{
+    T mxdif = maxdiff_from_identity(mat) ; 
+    return mxdif < epsilon ; 
 }
 
 
@@ -275,7 +289,7 @@ inline std::string Tran<T>::brief(bool only_tlate, char mat, unsigned wid, unsig
     }
     else
     {
-        const glm::mat4& m = mat == 't' ? t : ( mat == 'v' ? v : i ) ; 
+        const glm::tmat4x4<T>& m = mat == 't' ? t : ( mat == 'v' ? v : i ) ; 
         int j0 = only_tlate ? 3 : 0 ; 
         for(int j=j0 ; j < 4 ; j++ ) 
         {
@@ -288,21 +302,60 @@ inline std::string Tran<T>::brief(bool only_tlate, char mat, unsigned wid, unsig
     return s ; 
 }
 
+template<typename T>
+inline std::string Tran<T>::desc() const 
+{
+    bool only_tlate = false ; 
+    std::stringstream ss ; 
+    ss << brief(only_tlate, 't' ) << std::endl ; 
+    ss << brief(only_tlate, 'v' ) << std::endl ; 
+    ss << brief(only_tlate, 'i' ) << std::endl ; 
+    std::string s = ss.str() ; 
+    return s ; 
+}
 
 template<typename T>
-Tran<T>* Tran<T>::ConvertToTran(const qat4* q )
+bool Tran<T>::checkIsIdentity(char mat, const char* caller, T epsilon)
 {
-    const float* qdata = q->cdata(); 
+    bool ok = is_identity('i', epsilon); 
+    if(!ok)
+    {
+        T mxdif = maxdiff_from_identity('i'); 
+        std::cerr 
+            << "Tran::checkIsIdentity fail from " << caller 
+            << " epsilon " << epsilon
+            << " mxdif_from_identity " << mxdif
+            << std::endl 
+            ;  
+    }
+    return ok ; 
+}
 
-    glm::tmat4x4<T> tran(1.);
+template<typename T>
+Tran<T>* Tran<T>::ConvertToTran(const qat4* q_, T epsilon )
+{
+    qat4 q(q_->cdata()); 
+    q.clearIdentity();  
 
-    T* ptr = glm::value_ptr(tran) ;
-
-    for(int i=0 ; i < 16 ; i++) ptr[i] = T(qdata[i]) ; 
-
+    glm::tmat4x4<T> tran = MatFromQat(&q) ; 
     glm::tmat4x4<T> itra = glm::inverse(tran) ;     
+    Tran<T>* tr = new Tran<T>(tran, itra) ; 
+    tr->checkIsIdentity('i', "ConvertToTran"); 
+    return tr ; 
+}
 
-    return new Tran<T>(tran, itra) ; 
+template<typename T>
+const qat4* Tran<T>::Invert( const qat4* q, T epsilon )
+{
+    unsigned ins_idx, gas_idx, ias_idx ;
+    q->getIdentity(ins_idx, gas_idx, ias_idx )  ;
+
+    Tran<T>* tr = ConvertToTran(q) ; 
+
+    qat4* v = ConvertFrom(tr->v);
+    v->setIdentity(ins_idx, gas_idx, ias_idx ) ;
+
+    return v ; 
 }
 
 
@@ -312,17 +365,7 @@ Tran<T>* Tran<T>::FromPair(const qat4* t, const qat4* v, T epsilon ) // static
     glm::tmat4x4<T> tran = MatFromQat(t) ; 
     glm::tmat4x4<T> itra = MatFromQat(v) ; 
     Tran<T>* tr = new Tran<T>(tran, itra) ; 
-
-    bool ok = tr->is_identity('i', epsilon); 
-
-    if(!ok)
-    {
-        std::cerr 
-            << " Tran::FromPair is_identity fail with epsilon " << epsilon
-            << std::endl 
-            ;  
-    }
-
+    tr->checkIsIdentity('i', "FromPair", epsilon ); 
     return tr ; 
 }
 

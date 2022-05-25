@@ -60,6 +60,9 @@ struct sframe
     int mord() const ; 
     int iidx() const ; 
 
+    void set_inst(int inst); 
+    int inst() const ; 
+
     float* data() ; 
     const float* cdata() const ; 
 
@@ -109,12 +112,19 @@ inline void sframe::set_midx_mord_iidx(int midx, int mord, int iidx)
     q3.i.x = midx ; 
     q3.i.y = mord ; 
     q3.i.z = iidx ; 
-    q3.i.w = 0 ; 
 }
+
 
 inline int sframe::midx() const { return q3.i.x ; }
 inline int sframe::mord() const { return q3.i.y ; }
 inline int sframe::iidx() const { return q3.i.z ; }
+
+
+inline void sframe::set_inst(int inst)
+{
+    q3.i.w = inst ; 
+}
+inline int sframe::inst() const { return q3.i.w ; }
 
 
 inline const float* sframe::cdata() const 
@@ -178,6 +188,8 @@ inline std::ostream& operator<<(std::ostream& os, const sframe& fr)
        << " midx " << std::setw(4) << fr.midx()
        << " mord " << std::setw(4) << fr.mord()
        << " iidx " << std::setw(4) << fr.iidx()
+       << std::endl 
+       << " inst " << std::setw(4) << fr.inst()
        << std::endl 
        << " ix0  " << std::setw(4) << fr.ix0()
        << " ix1  " << std::setw(4) << fr.ix1()

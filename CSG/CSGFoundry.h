@@ -304,9 +304,9 @@ struct CSG_API CSGFoundry
     const char* getName(unsigned midx) const ;  
 
     sframe getFrame() const ; 
-    sframe getFrame(const char* arg) const ; 
-    sframe getFrame(int midx, int mord, int iidxg) const ; 
-
+    void getFrame(sframe& fr, const char* arg) const ; 
+    void getFrame(sframe& fr, int midx, int mord, int iidxg) const ; 
+    void getFrame(sframe& fr, int ins_idx ) const ; 
 
     template <typename T> void setMeta( const char* key, T value ); 
     template <typename T> T    getMeta( const char* key, T fallback); 
