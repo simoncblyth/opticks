@@ -80,6 +80,10 @@ case $TEST in
    hemisphere_s_polarized|propagate_at_boundary_s_polarized) num=$M1 ;; 
    hemisphere_p_polarized|propagate_at_boundary_p_polarized) num=$M1 ;; 
    hemisphere_x_polarized|propagate_at_boundary_x_polarized) num=$M1 ;; 
+   propagate_at_multifilm_s_polarized) num=$M1;;
+   propagate_at_multifilm_p_polarized) num=$M1;; 
+   propagate_at_multifilm_x_polarized) num=$M1;;   
+
 esac
 
 
@@ -101,6 +105,7 @@ random_direction_marsaglia) script=random_direction_marsaglia.py ;;
    hemisphere_x_polarized) script=hemisphere_polarized.py ;;
 
    propagate_at_boundary*) script=propagate_at_boundary.py ;; 
+   propagate_at_multifilm*) script=propagate_at_multifilm.py ;;
 
     lambertian_direction)  script=lambertian_direction.py ;; 
          mock_propagate*)  script=mock_propagate.py ;; 
@@ -117,7 +122,7 @@ export NRM=${NRM:-$nrm}
 
 source fill_state.sh 
 source ephoton.sh         # branching on TEST inside ephoton.sh 
-
+source eprd.sh
 
 
 if [ "${arg/run}" != "$arg" ]; then 

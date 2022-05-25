@@ -226,7 +226,7 @@ void QSimTest::multifilm_lookup_all(){
     /*
      sample.npy : num * 8 array 
       
-      pmtType , bnd , wavelength , aoi , R_s ,R_p, T_s ,T_p ,           
+      pmtType , bnd , wavelength , aoi , R_s, T_s , R_p, T_p ,           
      */
     NP * sample = NP::Load("/tmp/debug_multi_film_table/","sample.npy");
        
@@ -619,7 +619,10 @@ void QSimTest::main()
         case PROPAGATE_AT_BOUNDARY_S_POLARIZED: 
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:   
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  
-                                                 photon_launch_mutate()       ; break ;  
+	case PROPAGATE_AT_MULTIFILM_S_POLARIZED: 
+	case PROPAGATE_AT_MULTIFILM_P_POLARIZED: 
+	case PROPAGATE_AT_MULTIFILM_X_POLARIZED:
+                                                 photon_launch_mutate()         ; break ;  
         case RANDOM_DIRECTION_MARSAGLIA:
         case LAMBERTIAN_DIRECTION:
                                                  quad_launch_generate()       ; break ; 

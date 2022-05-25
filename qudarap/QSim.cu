@@ -335,6 +335,40 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
 }
 
 
+__global__ void _QSim_propagate_at_multifilm_mutate( qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg ){
+
+    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    //printf("//_QSim_propagate_at_multifilm_mutate : Thread index: idx = %d ", idx);    
+
+    if (idx >= num_photon) return;
+
+    const quad2* prd = &dbg->prd ; 
+    const qstate& s = dbg->s ; 
+    
+    
+    sphoton p  = photon[idx] ; 
+    quad4&  q  = (quad4&)p ; 
+    curandState rng = sim->rngstate[idx] ; 
+
+
+    unsigned long long jump = 1000;
+    skipahead(jump, &rng);    
+    q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
+    q.q3.f = q.q2.f ;
+   
+
+
+    unsigned flag = 0u ; 
+    sim->propagate_at_multifilm(flag, p, prd, s, rng, idx);  
+    //printf("//_QSim_propagate_at_multifilm_mutate : Thread index: idx = %d  flag = %d", idx, flag );    
+
+    q.q3.u.w = flag ;  // non-standard
+    photon[idx] = p ; 
+}
+
+
+
+
 
 __global__ void _QSim_hemisphere_polarized( qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned polz )
 {
@@ -461,6 +495,13 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, 
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  
                              _QSim_propagate_at_boundary_mutate<<<numBlocks,threadsPerBlock>>>(    sim, photon, num_photon, dbg  ) ; break ;
+
+        case PROPAGATE_AT_MULTIFILM_S_POLARIZED:
+        case PROPAGATE_AT_MULTIFILM_P_POLARIZED:
+        case PROPAGATE_AT_MULTIFILM_X_POLARIZED:
+                             _QSim_propagate_at_multifilm_mutate<<<numBlocks,threadsPerBlock>>>(    sim, photon, num_photon, dbg  ) ; break ;
+      
+
 
         case PROPAGATE_AT_BOUNDARY:        
         case PROPAGATE_AT_BOUNDARY_NORMAL_INCIDENCE:        

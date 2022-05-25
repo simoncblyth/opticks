@@ -155,19 +155,26 @@ QTex<float4>* QMultiFilm::makeMultiFilmOneTex( int pmtcatIdx , int bndIdx , int 
     QTex<float4>* tx = new QTex<float4>(nx, ny, src->cvalues<float>()+offset , filterMode , 1 ) ; 
 
     //tx->setHDFactor(hd_factor); 
-     
+    float wv_low  = src->get_meta<float>("wv_low");
+    float wv_high = src->get_meta<float>("wv_high");
+
+    float aoi_low = src->get_meta<float>("aoi_low");
+    float aoi_high = src->get_meta<float>("aoi_high");
+    float aoi_sublow = src->get_meta<float>("aoi_sublow");
+    float aoi_subhigh = src->get_meta<float>("aoi_subhigh");
+  
     quad domainX;
-    domainX.f.x = 0.f;
-    domainX.f.y = 90.f;
-    domainX.f.z = 41.0f;
-    domainX.f.w = 43.5f;
+    domainX.f.x = aoi_low;
+    domainX.f.y = aoi_high;
+    domainX.f.z = aoi_sublow ;
+    domainX.f.w = aoi_subhigh;
     tx->setMetaDomainX(&domainX);
 
     quad domainY;
-    domainY.f.x = 80.f;
-    domainY.f.y = 800.f;
+    domainY.f.x = wv_low;
+    domainY.f.y = wv_high;
     tx->setMetaDomainY(&domainY);
-  
+ 
     tx->uploadMeta(); 
 
     LOG(LEVEL)

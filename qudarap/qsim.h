@@ -62,6 +62,8 @@ TODO:
 #include "qscint.h"
 #include "qcerenkov.h"
 
+#include "tcomplex.h"
+
 struct curandStateXORWOW ; 
 struct qcerenkov ; 
 
@@ -106,6 +108,7 @@ struct qsim
     QSIM_METHOD int     propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
     QSIM_METHOD int     propagate_at_surface( unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
     QSIM_METHOD int     propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx); 
+    QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx);
 
     QSIM_METHOD void    reflect_diffuse(  sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx );
     QSIM_METHOD void    reflect_specular( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx );
@@ -763,6 +766,9 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     return CONTINUE ; 
 }
 
+
+
+
 /*
 G4OpBoundaryProcess::DielectricDielectric
 
@@ -828,6 +834,107 @@ transmit
 */
 
 
+/*
+ qsim::propagate_at_multifilm
+ ==============================
+ based on https://juno.ihep.ac.cn/trac/browser/offline/trunk/Simulation/DetSimV2/PMTSim/src/junoPMTOpticalModel.cc 
+
+ Rs: s-component reflect probability
+ Ts: s-component transmit probability
+ Rp: p-component reflect probability
+ Tp: p-component reflect probability
+
+ TODO:
+   access the qe
+   access the multifilm catagory
+   optical photon polarization
+
+
+*/
+
+
+
+inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx){ 
+ 
+   
+    const float& n1 = s.material1.x ; 
+    const float& n2 = s.material2.x ;    
+    const float eta = n1/n2 ;  
+
+    const float3* normal = prd->normal() ;
+    const float _c1 = dot(p.mom,(*normal));
+    const float3 oriented_normal = _c1 < 0.f ? (*normal) : -(*normal) ;
+
+    const float c1 = fabs(_c1) ;  
+    unsigned boundaryIdx = _c1 < 0.f ? 0u : 1u ; // if _c1 < 0 , thus the photon position is in glass ( kInGlass = 0 ) . 
+    unsigned pmtType = 0u ;  //Fix me the pmtType need to find  
+    float wavelength = p.wavelength ; 
+    //boundaryIdx = 1u ;//just use to test
+     
+    float4 RsTsRpTp = multifilm -> lookup(pmtType, boundaryIdx, wavelength, c1);
+    float s1 = sqrtf(1.f-c1*c1);
+    cuComplex s2 = make_cuComplex(s1*eta, 0.f) ;
+    cuComplex s2s2 = cuCmulf(s2,s2);
+
+    cuComplex one= make_cuComplex (1.f , 0.f) ;
+    cuComplex c2 = tcomplex::cuSqrtf( cuCsubf( one,s2s2) );
+   
+    float EsEs = 0.f ;
+    
+    if( s1 > 0.f){
+        EsEs = dot(p.pol, cross( p.mom, *normal))/s1; // Es component value
+        EsEs *= EsEs;
+    }
+    else
+    {   EsEs = 0.f ; }  
+   
+    float3 ART ;
+    ART.z = RsTsRpTp.y*EsEs + RsTsRpTp.w*(1.f - EsEs);
+    ART.y = RsTsRpTp.x*EsEs + RsTsRpTp.z*(1.f - EsEs);
+    ART.x = 1.f - (ART.y+ART.z);
+
+    const float u_absorb = curand_uniform(&rng) ;
+    const float u_escap = curand_uniform(&rng) ;
+
+    if(u_absorb < ART.x){
+         // absorbed
+         float4 RsTsRpTpNormal = multifilm -> lookup(pmtType, 0u , wavelength, 1.f ); // photon is in glass, aoi = 90deg cos_theta = 1.f
+         float3 ART_normal;
+         ART_normal.z = 0.5f*(RsTsRpTpNormal.y + RsTsRpTpNormal.w);
+         ART_normal.y = 0.5f*(RsTsRpTpNormal.x + RsTsRpTpNormal.z);
+         ART_normal.x = 1.f -(ART_normal.y + ART_normal.z) ;  
+         
+         //TODO: need to get qe.
+         float _qe = 0.3f; 
+         float escape_fac  = _qe / ART_normal.x;
+
+         if( u_escap < escape_fac ){
+              // detected
+              flag = SURFACE_DETECT; // TODO
+              return BREAK;                
+         }
+         flag = SURFACE_ABSORB;    
+         return BREAK;
+    }else if(u_absorb < (ART.x+ART.y)){
+       // reflected
+         p.mom -= 2.f * dot( p.mom, -oriented_normal)*(-oriented_normal);
+         p.pol -= 2.f * dot( p.pol, -oriented_normal)*(-oriented_normal);
+
+         flag = BOUNDARY_REFLECT ;
+         return CONTINUE;  
+  
+    }else{
+       // transmitted
+        p.mom = normalize( (cuCrealf(c2) - c1*eta)*(-oriented_normal) + eta*p.mom );
+        p.pol = normalize((p.pol - dot(p.pol,p.mom)*p.mom));
+       flag = BOUNDARY_TRANSMIT;
+       return CONTINUE;   
+    }
+ }
+
+
+
+          
 /**
 qsim::propagate_at_surface
 ----------------------------

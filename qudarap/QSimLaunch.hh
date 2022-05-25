@@ -35,6 +35,11 @@ enum {
    PROPAGATE_AT_BOUNDARY_P_POLARIZED,
    PROPAGATE_AT_BOUNDARY_X_POLARIZED,
 
+   PROPAGATE_AT_MULTIFILM_S_POLARIZED,
+   PROPAGATE_AT_MULTIFILM_P_POLARIZED,
+   PROPAGATE_AT_MULTIFILM_X_POLARIZED,
+
+
    RANDOM_DIRECTION_MARSAGLIA, 
    LAMBERTIAN_DIRECTION,
    REFLECT_DIFFUSE, 
@@ -86,7 +91,12 @@ struct QSimLaunch
     static constexpr const char* PROPAGATE_AT_BOUNDARY_S_POLARIZED_ = "propagate_at_boundary_s_polarized" ; 
     static constexpr const char* PROPAGATE_AT_BOUNDARY_P_POLARIZED_ = "propagate_at_boundary_p_polarized" ; 
     static constexpr const char* PROPAGATE_AT_BOUNDARY_X_POLARIZED_ = "propagate_at_boundary_x_polarized" ; 
+    
+    static constexpr const char* PROPAGATE_AT_MULTIFILM_S_POLARIZED_ = "propagate_at_multifilm_s_polarized";
+    static constexpr const char* PROPAGATE_AT_MULTIFILM_P_POLARIZED_ = "propagate_at_multifilm_p_polarized";
+    static constexpr const char* PROPAGATE_AT_MULTIFILM_X_POLARIZED_ = "propagate_at_multifilm_x_polarized";
 
+    
     static constexpr const char* RANDOM_DIRECTION_MARSAGLIA_ = "random_direction_marsaglia" ;
     static constexpr const char* LAMBERTIAN_DIRECTION_ = "lambertian_direction" ;
     static constexpr const char* REFLECT_DIFFUSE_ = "reflect_diffuse" ;
@@ -95,6 +105,7 @@ struct QSimLaunch
     static constexpr const char* MOCK_PROPAGATE_ = "mock_propagate" ;
     static constexpr const char* GENTORCH_ = "gentorch" ;
     static constexpr const char* MULTIFILM_LOOKUP_ = "multifilm_lookup";
+
 };
 
 
@@ -139,6 +150,10 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,PROPAGATE_AT_BOUNDARY_S_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_S_POLARIZED ;
    if(strcmp(name,PROPAGATE_AT_BOUNDARY_P_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_P_POLARIZED ;
    if(strcmp(name,PROPAGATE_AT_BOUNDARY_X_POLARIZED_) == 0)  test = PROPAGATE_AT_BOUNDARY_X_POLARIZED ;
+   
+   if(strcmp(name,PROPAGATE_AT_MULTIFILM_S_POLARIZED_ )  == 0) test = PROPAGATE_AT_MULTIFILM_S_POLARIZED; 
+   if(strcmp(name,PROPAGATE_AT_MULTIFILM_P_POLARIZED_ )  == 0) test = PROPAGATE_AT_MULTIFILM_P_POLARIZED;
+   if(strcmp(name,PROPAGATE_AT_MULTIFILM_X_POLARIZED_ )  == 0) test = PROPAGATE_AT_MULTIFILM_X_POLARIZED;
 
    if(strcmp(name,RANDOM_DIRECTION_MARSAGLIA_) == 0)  test = RANDOM_DIRECTION_MARSAGLIA ;
    if(strcmp(name,LAMBERTIAN_DIRECTION_) == 0)        test = LAMBERTIAN_DIRECTION ;
@@ -193,6 +208,11 @@ inline const char* QSimLaunch::Name( unsigned type )
         case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  s = PROPAGATE_AT_BOUNDARY_S_POLARIZED_  ; break ;  
         case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  s = PROPAGATE_AT_BOUNDARY_P_POLARIZED_  ; break ;  
         case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  s = PROPAGATE_AT_BOUNDARY_X_POLARIZED_  ; break ;  
+        
+        case PROPAGATE_AT_MULTIFILM_S_POLARIZED: s = PROPAGATE_AT_MULTIFILM_S_POLARIZED_ ; break ;
+        case PROPAGATE_AT_MULTIFILM_P_POLARIZED: s = PROPAGATE_AT_MULTIFILM_P_POLARIZED_ ; break ;
+        case PROPAGATE_AT_MULTIFILM_X_POLARIZED: s = PROPAGATE_AT_MULTIFILM_X_POLARIZED_ ; break ;
+
 
         case RANDOM_DIRECTION_MARSAGLIA:   s = RANDOM_DIRECTION_MARSAGLIA_   ; break ; 
         case LAMBERTIAN_DIRECTION:         s = LAMBERTIAN_DIRECTION_         ; break ; 
@@ -213,6 +233,10 @@ inline bool QSimLaunch::IsMutate( unsigned type )
         type == PROPAGATE_AT_BOUNDARY_S_POLARIZED || 
         type == PROPAGATE_AT_BOUNDARY_P_POLARIZED || 
         type == PROPAGATE_AT_BOUNDARY_X_POLARIZED || 
+        type == PROPAGATE_AT_MULTIFILM_S_POLARIZED||
+        type == PROPAGATE_AT_MULTIFILM_P_POLARIZED||
+        type == PROPAGATE_AT_MULTIFILM_X_POLARIZED||
+
         type == MOCK_PROPAGATE 
         ; 
 }
@@ -227,8 +251,11 @@ inline unsigned QSimLaunch::MutateSource( unsigned type )
     unsigned src = UNKNOWN ; 
     switch(type)
     {
+       case PROPAGATE_AT_MULTIFILM_S_POLARIZED:
        case PROPAGATE_AT_BOUNDARY_S_POLARIZED:  src = HEMISPHERE_S_POLARIZED ; break ; 
-       case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  src = HEMISPHERE_P_POLARIZED ; break ; 
+       case PROPAGATE_AT_MULTIFILM_P_POLARIZED:
+       case PROPAGATE_AT_BOUNDARY_P_POLARIZED:  src = HEMISPHERE_P_POLARIZED ; break ;
+       case PROPAGATE_AT_MULTIFILM_X_POLARIZED: 
        case PROPAGATE_AT_BOUNDARY_X_POLARIZED:  src = HEMISPHERE_X_POLARIZED ; break ; 
     } 
     return src ; 
