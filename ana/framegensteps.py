@@ -26,29 +26,35 @@ class FrameGensteps(object):
         """
         :param genstep: (num_gs,6,4) array with grid transforms in 2: and position in 1 
         :param frame: sframe instance replacing former metatran array of 3 transforms and grid GridSpec instance
-
+        :param local:
+        :param local_extent_scale: SUSPECT THIS SHOULD NO LONGER EVER BE TRUE
         """
         gs = genstep
 
-        numpho = gs.view(np.int32)[:,0,3]  # top right values from all gensteps
-        gsid = gs.view(np.int32)[:,0,2].copy()  # SEvent::ConfigureGenstep
-        all_one = np.all( gs[:,1,3] == 1. ) 
+        numpho = gs.view(np.int32)[:,0,3]        # q0.i.w  top right values from all gensteps
+        gsid = gs.view(np.int32)[:,0,2].copy()   # q0.i.z  SEvent::ConfigureGenstep
+        all_one = np.all( gs[:,1,3] == 1. )      # q1.f.w 
         assert all_one   # from SEvent::MakeCenterExtentGensteps that q1.f.w should always to 1.f
+
 
         ## apply the 4x4 transform in rows 2: to the position in row 1 
         centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
         for igs in range(len(gs)): 
-            centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
+            gs_pos = gs[igs,1]
+            gs_tran = gs[igs,2:] 
+            centers[igs] = np.dot( gs_pos, gs_tran )  
         pass
 
-        tran = frame.w2m 
-        centers_local = np.dot( centers, tran )  # use metatran.v to transform back to local frame
+        w2m = frame.w2m 
+        centers_local = np.dot( centers, w2m )  
+        # use w2m to transform global frame centers back to local frame
 
         if local and local_extent_scale:
             extent = frame.ce[3]
-            centers_local[:,:3] *= extent 
+            centers_local[:,:3] *= extent    
+            ## HUH:confusing, surely the horse has left the stable ?
+            ## what was done on device is what matters, so why scale here ?
         pass
-
         ugsc = centers_local if local else centers  
 
         lim = {}
@@ -63,12 +69,11 @@ class FrameGensteps(object):
         self.centers_local = centers_local
         self.ugsc = ugsc
         self.lim = lim 
-
-        log.info("Gensteps\n %s " % repr(self))
-
+        log.info(repr(self))
 
     def __repr__(self):
         return "\n".join([
+                   "FrameGensteps",
                    "gs.gs %s " % str(self.gs.shape),
                    "gs.numpho %s " % self.numpho,
                    "gs.lim[X] %s " % str(self.lim[X]),

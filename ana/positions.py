@@ -32,6 +32,9 @@ class Positions(object):
         :param p: photons array  (should be called "simtrace" really)
         :param gs: Gensteps instance
         :param frame: formerly GridSpec instance 
+        :param local:
+        :param mask:
+        :param local_extent_scale: SUSPECT THIS WAS AN RTP KLUDGE 
         """
         isect = p[:,0]
 

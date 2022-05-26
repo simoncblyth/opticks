@@ -1,10 +1,18 @@
 #!/usr/bin/env python
 """
+CSGFoundry_MakeCenterExtentGensteps_Test.py
+=============================================
 
 
+Mysterious issue with pvplt_polarized yielding 
+only arrows in one direction. 
 
+When use add_arrows succeed to get them in 
+all directions, but the issue is not resolved. 
 
-
+With add_arrows it was necessary to tune mag 
+to get something visible depending 
+on the size of the region that is plotted
 
 """
 import numpy as np
@@ -22,15 +30,11 @@ if __name__ == '__main__':
     gs = t.genstep
     p = t.photon
     frame = sframe.Load(t.base)
-
     print(frame)
-
 
     pos = p[:,0,:3] 
     mom = p[:,1,:3] 
     pol = p[:,2,:3] 
-
-
 
     pl = pv.Plotter(window_size=2*np.array([1280, 720]))
 
@@ -38,9 +42,6 @@ if __name__ == '__main__':
 
     #sphere = pv.Sphere(radius=17800)
     #pl.add_mesh(sphere, color="white", show_edges=True, style="wireframe")
-
-    # have to diddle mag to get something visible depending 
-    # on the size of the region that is plotted
 
     pl.add_arrows( pos, mom, mag=50, show_scalar_bar=False, color="red" )
 

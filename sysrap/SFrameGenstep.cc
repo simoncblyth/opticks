@@ -56,10 +56,6 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
     return gs ; 
 }
 
-
-
-
-
 /**
 SFrameGenstep::MakeCenterExtentGensteps
 ----------------------------------
@@ -104,6 +100,8 @@ ce_offset:false
 ce_scale:true
    grid translate offsets *local_scale* set to ce.w*gridscale 
 
+   SEEMS LIKE THIS SHOULD ALWAYS BE USED ?
+
 ce_scale:false
    grid translate offsets *local_scale* set to gridscale 
 
@@ -127,7 +125,6 @@ When using reverse=false get all the tilts the same so local XZ single plane sta
 frame as are doing the local_translate first. 
 
 **/
-
 
 NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) // static
 {
@@ -178,15 +175,12 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
     // hmm: when using SCenterExtentFrame model2world transform the 
     // extent is already handled within the transform so must not apply extent scaling 
 
-
     unsigned photon_offset = 0 ; 
 
     for(int ix=ix0 ; ix < ix1+1 ; ix++ )
     for(int iy=iy0 ; iy < iy1+1 ; iy++ )
     for(int iz=iz0 ; iz < iz1+1 ; iz++ )
     {
-        //LOG(LEVEL) << " ix " << ix << " iy " << iy << " iz " << iz  ;
-
         double tx = double(ix)*local_scale ;
         double ty = double(iy)*local_scale ;
         double tz = double(iz)*local_scale ;

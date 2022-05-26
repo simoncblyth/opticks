@@ -15,16 +15,14 @@ qt( 0.384,-0.452, 0.806, 0.000) (-0.762,-0.647, 0.000, 0.000) ( 0.522,-0.614,-0.
 EOU
 }
 
-
-
 #geom=HamaXZ_0
 geom=HamaXZ_1000
 #geom=XJfixtureConstruction_0
 #geom=sWorld_XZ
 
-
 export GEOM=${GEOM:-$geom}
 ce_offset=0
+ce_scale=1   
 
 if [ "$GEOM" == "sWorld_XZ" ]; then
 
@@ -73,6 +71,7 @@ fi
 export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
+export CE_SCALE=${CE_SCALE:-$ce_scale}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 
 bin=CSGFoundry_MakeCenterExtentGensteps_Test

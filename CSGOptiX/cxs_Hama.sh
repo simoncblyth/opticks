@@ -15,7 +15,7 @@ export GEOM=${GEOM:-$geom}
 isel=
 cfbase=
 ce_offset=0
-ce_scale=0
+ce_scale=1   
 gsplot=1
 
 

@@ -6,6 +6,12 @@ tests/CSGOptiXSimtraceTest.py
 * see notes/issues/simtrace-shakedown.rst
 
 
+See also:
+
+csg/tests/CSGFoundry_MakeCenterExtentGensteps_Test.sh
+
+
+
 This is allows interactive visualization of workstation 
 generated intersect data fphoton.npy on remote machines such as 
 user laptops that support pyvista. 
