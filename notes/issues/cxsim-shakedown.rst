@@ -99,6 +99,30 @@ The maximum iidx that midx 117 stretches to is 12614::
     CSGFoundry::descInstance idx   48477 inst.size   48477 idx OUT OF RANGE 
 
 
+::
+
+    epsilon:tests blyth$ INST=37684 CSGFoundry_getFrame_Test
+     INST 37684
+     fr 
+     frs -
+     ce  ( 0.000, 0.000, 0.025,264.050) 
+     m2w ( 0.155, 0.890, 0.429, 0.000) (-0.985, 0.171,-0.000, 0.000) (-0.074,-0.423, 0.903, 0.000) (1430.869,8223.110,-17550.311, 1.000) 
+     w2m ( 0.155,-0.985,-0.074, 0.000) ( 0.890, 0.171,-0.423, 0.000) ( 0.429,-0.000, 0.903, 0.000) ( 0.009,-0.005,19434.000, 1.000) 
+     midx    0 mord    0 iidx    0
+     inst 37684
+     ix0     0 ix1     0 iy0     0 iy1     0 iz0     0 iz1     0 num_photon    0
+     ins  37684 gas     2 ias     0
+
+
+    descInstance
+    CSGFoundry::descInstance idx   37684 inst.size   48477 idx   37684 ins 37684 gas  2 ias 0 so CSGSolid               r2 primNum/Offset     7 3094 ce ( 0.000, 0.000, 0.025,264.050) 
+
+
+
+
+
+
+
 
 
 

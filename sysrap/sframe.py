@@ -158,6 +158,17 @@ class sframe(object):
         self.id = np.dot( m2w, w2m )  
 
 
+        ins = i[3,0,0]
+        gas = i[3,0,1]
+        ias = i[3,0,2]
+
+        ins_gas_ias = " ins %(ins)6d gas %(gas)4d ias %(ias)4d " % locals()
+
+        self.ins = ins
+        self.gas = gas
+        self.ias = ias
+        self.ins_gas_ias = ins_gas_ias
+
         self.init_grid()
         self.init_view()
 
@@ -234,10 +245,11 @@ class sframe(object):
 
     def __repr__(self):
 
-        l_ = lambda k,v:"%-10s : %s" % (k, v) 
+        l_ = lambda k,v:"%-12s : %s" % (k, v) 
 
         return "\n".join(
-                  [ l_("sframe",""),
+                  [ 
+                    l_("sframe",""),
                     l_("path",self.path), 
                     l_("meta",repr(self.meta)), 
                     l_("ce", repr(self.ce)), 
@@ -246,7 +258,9 @@ class sframe(object):
                     l_("qat4id", self.qat4id), 
                     l_("m2w",""), repr(self.m2w), "", 
                     l_("w2m",""), repr(self.w2m), "", 
-                    l_("id",""),  repr(self.id) ])
+                    l_("id",""),  repr(self.id) ,
+                    l_("ins_gas_ias",self.ins_gas_ias)  
+                   ])
     
  
 

@@ -113,6 +113,7 @@ int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const
     return getCenterExtent( fr.ce, midx, mord, iidxg, &fr.m2w , &fr.w2m ); 
 }
 
+
 int CSGTarget::getFrame(sframe& fr, int inst_idx ) const 
 {
     const qat4* _t = foundry->getInst(inst_idx); 
@@ -122,6 +123,10 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
 
     assert( int(ins_idx) == inst_idx ); 
     fr.set_inst(inst_idx); 
+   
+    // HMM: these values are already there inside the matrices ? 
+    fr.set_ins_gas_ias(ins_idx, gas_idx, ias_idx ) ; 
+
 
     qat4 t(_t->cdata());   // copy the instance (transform and identity info)
     const qat4* v = Tran<double>::Invert(&t);     // identity gets cleared in here 
@@ -129,7 +134,12 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
     qat4::copy(fr.m2w,  t);  
     qat4::copy(fr.w2m, *v);  
 
-    // TODO: find way to populate fr.ce  : presumably via a gas/solid/prim lookup 
+    const CSGSolid* solid = foundry->getSolid(gas_idx); 
+    fr.ce = solid->center_extent ;  
+
+    // although there can be multiple CSGPrim within the CSGSolid
+    // there is not way from the inst_idx to tell which one is needed
+    // so use the CSGSolid one as that should combined the ce of all the CSGPrim
 
     return 0 ; 
 }

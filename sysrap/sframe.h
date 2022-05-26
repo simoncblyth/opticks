@@ -30,15 +30,19 @@ struct sframe
 {
     static constexpr const char* NAME = "sframe.npy" ; 
     static sframe Load(const char* dir, const char* name=NAME); 
-    static constexpr const unsigned NUM_VALUES = 3*4*4 ; 
+    static constexpr const unsigned NUM_4x4 = 4 ; 
+    static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
 
-    float4 ce = {} ; 
+
+    float4 ce = {} ;   // 0
     quad   q1 = {} ; 
     quad   q2 = {} ; 
     quad   q3 = {} ; 
+   
+    qat4   m2w ;       // 1
+    qat4   w2m ;       // 2
 
-    qat4   m2w ; 
-    qat4   w2m ; 
+    quad4  aux = {} ;  // 3
 
 
     // on the edge, the above are memcpy in/out by load/save
@@ -62,6 +66,12 @@ struct sframe
 
     void set_inst(int inst); 
     int inst() const ; 
+
+    void set_ins_gas_ias(int ins, int gas, int ias); 
+    int ins() const ; 
+    int gas() const ; 
+    int ias() const ; 
+
 
     float* data() ; 
     const float* cdata() const ; 
@@ -113,19 +123,24 @@ inline void sframe::set_midx_mord_iidx(int midx, int mord, int iidx)
     q3.i.y = mord ; 
     q3.i.z = iidx ; 
 }
-
-
 inline int sframe::midx() const { return q3.i.x ; }
 inline int sframe::mord() const { return q3.i.y ; }
 inline int sframe::iidx() const { return q3.i.z ; }
 
 
-inline void sframe::set_inst(int inst)
-{
-    q3.i.w = inst ; 
-}
+inline void sframe::set_inst(int inst){ q3.i.w = inst ; }
 inline int sframe::inst() const { return q3.i.w ; }
 
+inline void sframe::set_ins_gas_ias(int ins, int gas, int ias)
+{
+    aux.q0.i.x = ins ; 
+    aux.q0.i.y = gas ; 
+    aux.q0.i.z = ias ; 
+}
+
+inline int sframe::ins() const { return aux.q0.i.x ; }
+inline int sframe::gas() const { return aux.q0.i.y ; }
+inline int sframe::ias() const { return aux.q0.i.z ; }
 
 inline const float* sframe::cdata() const 
 {
@@ -155,8 +170,8 @@ inline void sframe::read( const float* src, unsigned num_values )
 
 inline NP* sframe::make_array() const 
 {
-    NP* a = NP::Make<float>(3, 4, 4) ; 
-    write( a->values<float>(), 3*4*4 ) ; 
+    NP* a = NP::Make<float>(NUM_4x4, 4, 4) ; 
+    write( a->values<float>(), NUM_4x4*4*4 ) ; 
     return a ; 
 }
 inline void sframe::save(const char* dir, const char* name) const
@@ -199,8 +214,12 @@ inline std::ostream& operator<<(std::ostream& os, const sframe& fr)
        << " iz1  " << std::setw(4) << fr.iz1()
        << " num_photon " << std::setw(4) << fr.num_photon()
        << std::endl 
- 
+       << " ins  " << std::setw(4) << fr.ins()
+       << " gas  " << std::setw(4) << fr.gas()
+       << " ias  " << std::setw(4) << fr.ias()
+       << std::endl 
        ;
+
     return os; 
 }
 

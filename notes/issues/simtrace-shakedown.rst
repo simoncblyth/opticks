@@ -25,9 +25,12 @@ Issue 2 : getting small range with mp, SIM gives a PMT shape but not as expected
 * FIXED : when not disabling MASK get array dimension mismatch, must not use the t.photon with PhotonFeatures 
   as t.photon is not changed by applying the mask causing the inconsistency between selector and selectee
 
-* the rays are all coming from a tiny genstep grid in middle of PMT which explains the partial shape probably 
+* FIXED : the rays were all coming from a tiny genstep grid in middle of PMT which explains the partial shape
+  
+  * FIX was to use g ce_scale:1 (which would seem to be always needed, perhaps issue with RTP transforms
+    is why keep the flexibility ?) 
 
-
+ 
 
 Issue 1 : FIXED :  MOI Hama lacked colon and was being interpreted as global inst_idx yielding identity transforms
 --------------------------------------------------------------------------------------------------------------------
