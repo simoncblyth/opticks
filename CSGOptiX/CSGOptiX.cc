@@ -396,7 +396,8 @@ void CSGOptiX::setFrame()
 }
 void CSGOptiX::setFrame(const char* frs)
 {
-    sframe fr = foundry->getFrame(frs) ; 
+    sframe fr ; 
+    foundry->getFrame(fr, frs) ; 
     setFrame(fr); 
 }
 void CSGOptiX::setFrame(const float4& ce )

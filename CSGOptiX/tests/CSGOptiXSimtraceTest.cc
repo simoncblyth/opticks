@@ -35,7 +35,7 @@ TODO:
 #include "SSim.hh"
 #include "SOpticks.hh"
 #include "SEvt.hh"
-#include "SEvent.hh"
+#include "SFrameGenstep.hh"
 #include "SEventConfig.hh"
 #include "QEvent.hh"
 
@@ -55,24 +55,27 @@ int main(int argc, char** argv)
     CSGFoundry* fd = CSGFoundry::Load(); 
 
     sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
-    SEvt::AddGenstep( SEvent::MakeCenterExtentGensteps(fr) ); 
+
+    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(fr) ); 
 
 
     CSGOptiX* cx = CSGOptiX::Create(fd); 
     QSim* qs = cx->sim ; 
 
     cx->setFrame(fr);  
-    // DONT LIKE THIS, WHEN ITS NOT USED FOR ANYTHING OTHER THAN A PLACE TO PARK IT 
-    // PERHAPS PARK INSIDE CSGFoundry OR BETTER SEvt ?
-    // BUT IT IS IN CX THERE BECAUSE IT ACTUALLY IS NEEDED FOR RENDER 
- 
+
+    // TODO: the sframe should not live in CSGOptiX, it should reside in SEvt
+    // making it accessible from everywhere   
+
     qs->simtrace();  
 
     cudaDeviceSynchronize(); 
 
     qs->save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
-    // BETTER FOR THIS TO HAPPEN VIA SEvt not QSim 
 
+
+    // TODO: move save control to SEvt not QSim/QEvent 
+    // for example CPU only tests need to save too, so it makes no sense for them to reach up to QUDARap to control that 
     const char* dir = QEvent::DefaultDir(); 
     cx->fr.save(dir);  
  

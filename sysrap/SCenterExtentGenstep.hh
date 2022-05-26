@@ -1,7 +1,7 @@
 #pragma once
 /**
-SCenterExtentGenstep.hh
-==========================
+SCenterExtentGenstep.hh : TODO REPLACE THIS WITH SFrameGenstep
+=================================================================
 
 NB this was demoted from extg4/X4Intersect as its all generally applicable 
 and hence belongs at a lower level 
@@ -11,7 +11,12 @@ Used from::
    CSG/CSGGeometry.cc
    extg4/X4Intersect.cc
 
-TODO: compare this with CSG/CSGGenstep and consolidate to avoid duplication 
+HMM: compare this with CSG/CSGGenstep and consolidate to avoid duplication 
+
+* CSG/CSGGenstep has been removed from the build and will be deleted
+* TODO: compare SCenterExtentGenstep to SFrameGenstep and consolidate
+
+  * probably duplication arose from separate dev for Geant4 and Opticks sides
 
 
 **/
