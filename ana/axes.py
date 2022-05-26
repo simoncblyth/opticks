@@ -2,6 +2,8 @@
 
 import numpy as np
 
+X,Y,Z = 0,1,2 
+
 
 class XZ(object):
     """

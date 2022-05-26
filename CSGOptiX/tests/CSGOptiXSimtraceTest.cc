@@ -58,6 +58,8 @@ int main(int argc, char** argv)
 
     SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(fr) ); 
 
+    std::cout << fr << std::endl ; 
+
 
     CSGOptiX* cx = CSGOptiX::Create(fd); 
     QSim* qs = cx->sim ; 

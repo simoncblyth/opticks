@@ -4,12 +4,36 @@ simtrace-shakedown
 
 After run and grab with new sframe based machinery::
 
-    epsilon:CSGOptiX blyth$ ./cxs_Hama.sh ana
+    epsilon:CSGOptiX blyth$ ./cxs_Hama.sh run   # remote 
+    epsilon:CSGOptiX blyth$ ./cxs_Hama.sh grab  # local 
+    epsilon:CSGOptiX blyth$ ./cxs_Hama.sh ana   # local  
 
+
+
+
+
+Issue 2 : getting small range with mp, SIM gives a PMT shape but not as expected, also some miss dots
+---------------------------------------------------------------------------------------------------------
+
+::
+    
+    SIM=1 ./cxs_Hama.sh ana
+
+    MASK=non ./cxs_Hama.sh ana
+
+
+* FIXED : when not disabling MASK get array dimension mismatch, must not use the t.photon with PhotonFeatures 
+  as t.photon is not changed by applying the mask causing the inconsistency between selector and selectee
+
+* the rays are all coming from a tiny genstep grid in middle of PMT which explains the partial shape probably 
+
+
+
+Issue 1 : FIXED :  MOI Hama lacked colon and was being interpreted as global inst_idx yielding identity transforms
+--------------------------------------------------------------------------------------------------------------------
 
 * analysis giving blank, with just genstep points. unsurprisingly. 
 * range of plotting window too small, gridscale extent ?
-
 
 Checking with SIM plotting shows a big ring so it appears
 are not actually starting the rays from the desired points 
@@ -20,17 +44,14 @@ on the genstep grid.::
 ::
 
 
-In [2]: t.photon[:,0,3]                                                                                                                                                                                   
-Out[2]: array([17699.006, 17700.979, 17701.773, 17701.395, 17701.018, ..., 17699.848, 17698.197, 17699.15 , 17701.758, 17698.188], dtype=float32)
+    In [2]: t.photon[:,0,3]                                                                                                                                                                                   
+    Out[2]: array([17699.006, 17700.979, 17701.773, 17701.395, 17701.018, ..., 17699.848, 17698.197, 17699.15 , 17701.758, 17698.188], dtype=float32)
 
-In [3]: t.photon[:,0,3].min()                                                                                                                                                                             
-Out[3]: 17698.164
+    In [3]: t.photon[:,0,3].min()                                                                                                                                                                             
+    Out[3]: 17698.164
 
-In [4]: t.photon[:,0,3].max()                                                                                                                                                                             
-Out[4]: 17829.307
-
-
-
+    In [4]: t.photon[:,0,3].max()                                                                                                                                                                             
+    Out[4]: 17829.307
 
 
 ::

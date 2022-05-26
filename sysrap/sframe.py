@@ -8,7 +8,6 @@ eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).sp
 
 from opticks.ana.eget import efloat_
 
-X,Y,Z = 0,1,2 
 
 class sframe(object):
     @classmethod

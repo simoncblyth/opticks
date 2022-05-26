@@ -3,10 +3,12 @@
 tests/CSGOptiXSimtraceTest.py
 ==============================
 
+* see notes/issues/simtrace-shakedown.rst
+
+
 This is allows interactive visualization of workstation 
 generated intersect data fphoton.npy on remote machines such as 
 user laptops that support pyvista. 
-
 
 issue : TR inversion of pv vs mp
 -----------------------------------
@@ -20,6 +22,14 @@ pyvista GUI keys
 
 * to zoom out/in : slide two fingers up/down on trackpad. 
 * to pan : hold down shift and one finger tap-lock, then move finger around  
+
+
+Too many items in the legend
+-----------------------------
+
+When not using MASK=pos the legend may be filled with feature item lines 
+that are not visible in the frame 
+
 
 FramePhotons vs Photons
 ---------------------------
@@ -50,27 +60,31 @@ ISEL allows plotting of a selection of feature values only, picked by descending
 
 """
 import os, sys, logging, numpy as np
+log = logging.getLogger(__name__)
+
+SIZE = np.array([1280, 720])
 GUI = not "NOGUI" in os.environ
 MP =  not "NOMP" in os.environ 
 PV =  not "NOPV" in os.environ 
-PVG = "PVG" in os.environ
-SIM = "SIM" in os.environ
-#LES = not "NOLES" in os.environ
+LEGEND =  not "NOLEGEND" in os.environ # when not MASK=pos legend often too many lines, so can switch it off 
+PVGRID = "PVGRID" in os.environ
+SIMPLE = "SIMPLE" in os.environ
 MASK = os.environ.get("MASK", "pos")
-ALLOWED_MASK = ("pos", "t" )
+ALLOWED_MASK = ("pos", "t", "non" )
+assert MASK in ALLOWED_MASK, "MASK %s is not in ALLOWED_MASK list %s " % (MASK, str(ALLOWED_MASK))
+GSPLOT = int(os.environ.get("GSPLOT", "0"))
 
-log = logging.getLogger(__name__)
+
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
+
 from opticks.CSG.CSGFoundry import CSGFoundry 
-
 from opticks.ana.p import *   # including cf 
-
 from opticks.ana.fold import Fold
+from opticks.ana.feature import PhotonFeatures
+from opticks.ana.positions import Positions
+from opticks.ana.framegensteps import FrameGensteps
 from opticks.ana.npmeta import NPMeta
 from opticks.sysrap.sframe import sframe , X, Y, Z
-
-SIZE = np.array([1280, 720])
-
 
 import matplotlib
 if GUI == False:
@@ -91,23 +105,19 @@ pass
 if PV:
     try:
         import pyvista as pv
-        from pyvista.plotting.colors import hexcolors  
         themes = ["default", "dark", "paraview", "document" ]
         pv.set_plot_theme(themes[1])
     except ImportError:
         pv = None
-        hexcolors = None
     pass
 else:
     pv = None
 pass
-#pv=None
 
 if GUI == False:
     log.info("disabling pv as GUI False")
     pv = None
 pass
-#print("pv:%s" % str(pv))
 
 
 def pvplt_simple(xyz, label):
@@ -125,513 +135,24 @@ def pvplt_simple(xyz, label):
     return cp
 
 
-
-
-def make_colors():
-    """
-    :return colors: large list of color names with easily recognisable ones first 
-    """
-    #colors = ["red","green","blue","cyan","magenta","yellow","pink","purple"]
-    all_colors = list(hexcolors.keys()) if not hexcolors is None else []
-    easy_colors = "red green blue cyan magenta yellow pink".split()
-    skip_colors = "bisque beige white aliceblue antiquewhite".split()    # skip colors that look too alike 
-
-    colors = easy_colors 
-    for c in all_colors:
-        if c in skip_colors: 
-            continue
-        if not c in colors: 
-            colors.append(c) 
-        pass
-    pass
-    return colors
-
-COLORS = make_colors()
-
-
-def copyref( l, g, s, kps ):
-    """
-    Copy selected references between scopes::
-        
-        copyref( locals(), globals(), self, "bnd,ubnd" )
-
-    :param l: locals() 
-    :param g: globals() or None
-    :param s: self or None
-    :param kps: space delimited string identifying quantities to be copied
-
-    The advantage with using this is that can benefit from developing 
-    fresh code directly into classes whilst broadcasting the locals from the 
-    classes into globals for easy debugging. 
-    """
-    for k,v in l.items():
-        kmatch = np.any(np.array([k.startswith(kp) for kp in kps.split()]))
-        if kmatch:
-            if not g is None: g[k] = v
-            if not s is None: setattr(s, k, v )
-            print(k)
-        pass
-    pass
-
-
-def fromself( l, s, kk ):
-    # nope seems cannot update locals() like this
-    # possibly generate some simple code and eval it is a workaround 
-    for k in kk.split(): 
-        log.info(k)
-        l[k] = getattr(s, k)
-    pass
-
-def shorten_bname(bname):
-    elem = bname.split("/")
-    if len(elem) == 4:
-        omat,osur,isur,imat = elem
-        bn = "/".join([omat,osur[:3],isur[:3],imat])
-    else:
-        bn = bname
-    pass 
-    return bn
-
-class Photons(object):
-    """
-    feat contriols how to select positions, eg  via boundary or identity 
-    allow plotting of subsets with different colors
-    """
-    @classmethod
-    def SubMock(cls, i, num):
-        p = np.zeros([num, 4, 4], dtype=np.float32)  
-        offset = i*100
-        for j in range(10):
-            for k in range(10): 
-                idx = j*10+k
-                if idx < num:
-                    p[idx,0,0] = float(offset+j*10)
-                    p[idx,0,1] = 0
-                    p[idx,0,2] = float(offset+k*10)
-                    p.view(np.int32)[idx,3,3] = i << 16
-                pass
-            pass
-        pass
-        return p
-
-    @classmethod
-    def Mock(cls):
-        """
-        Random number of items between 50 and 100 for each of 10 categories 
-        """
-        aa = []
-        for i in range(10):
-            aa.append(cls.SubMock(i, np.random.randint(0,100)))
-        pass
-        return np.concatenate(tuple(aa))
-
-    def __init__(self, pos, cf=None, featname="pid", do_mok=False ):
-
-        p = pos.p
-            
-        log.info("[Photons p.ndim %d p.shape %s " % (int(p.ndim), str(p.shape)) )
-        assert featname in ["pid", "bnd", "ins", "mok"]
-        if p.ndim == 3:
-            bnd = p[:,2,3].view(np.int32)
-            ids = p[:,3,3].view(np.int32) 
-        elif p.ndim == 4:
-            bnd = p.view(np.int32)[:,:,2,3]
-            ids = p.view(np.int32)[:,:,3,3] 
-        else:
-            log.info("unexpected p.shape %s " % str(p.shape))
-        pass
-        pid = ids >> 16
-        ins = ids & 0xffff   # ridx?    
-
-        log.info("[ Photons.bndfeat ")
-        bnd_namedict = {} if cf is None else cf.sim.bndnamedict 
-        bndfeat = Feature("bnd", bnd, bnd_namedict)
-        log.info("] Photons.bndfeat ")
-
-        log.info("[ Photons.pidfeat ")
-        pid_namedict = {} if cf is None else cf.primIdx_meshname_dict()
-        log.info(" pid_namedict: %d  " % len(pid_namedict))
-        pidfeat = Feature("pid", pid, pid_namedict)
-        log.info("] Photons.pidfeat ")
-
-        log.info("[ Photons.insfeat ")
-        ins_namedict = {} if cf is None else cf.insnamedict
-        log.info(" ins_namedict: %d  " % len(ins_namedict))
-        insfeat = Feature("ins", ins, ins_namedict)
-        log.info("] Photons.insfeat ")
-
-        if do_mok:
-            log.info("[ Photons.mokfeat ")
-            mok_namedict = {} if cf is None else cf.moknamedict 
-            mokfeat = Feature("mok", pid, mok_namedict)
-            log.info("] Photons.mokfeat ")
-        else: 
-            mokfeat = None
-        pass
-
-        if featname=="pid":
-            feat = pidfeat
-        elif featname == "bnd":
-            feat = bndfeat
-        elif featname == "ins":
-            feat = insfeat
-        elif featname == "mok":
-            feat = mokfeat
-        else:
-            feat = None
-        pass
-
-        self.cf = cf
-        self.p = p 
-        self.bnd = bnd
-        self.ids = ids
-        self.bndfeat = bndfeat
-        self.pidfeat = pidfeat
-        self.insfeat = insfeat
-        self.mokfeat = mokfeat
-        self.feat = feat
-        log.info("]Photons")
-
-    def __repr__(self):
-        return "\n".join([
-               "p %s" % str(self.p.shape), 
-               ])
-
-
-class Feature(object):
-    """
-    Trying to generalize feature handling 
-    """
-    def __init__(self, name, val, vname={}):
-        """
-        :param name: string eg "bnd" or "primIdx"
-        :param val: large array of integer feature values 
-        :param namedict: dict relating feature integers to string names 
-
-        The is an implicit assumption that the number of unique feature values is not enormous,
-        for example boundary values or prim identity values.
-        """
-        uval, ucount = np.unique(val, return_counts=True)
-
-        if len(vname) == 0:
-            nn = ["%s%d" % (name,i) for i in uval]
-            vname = dict(zip(uval,nn)) 
-        pass
-        pass 
-        idxdesc = np.argsort(ucount)[::-1]  
-        # indices of uval and ucount that reorder those arrays into descending count order
-
-        ocount = [ucount[j]       for j in idxdesc]
-        ouval  = [uval[j]         for j in idxdesc]
-
-        # vname needs absolutes to get the names 
-        onames = [vname[uval[j]]  for j in idxdesc]
-
-
-        self.name = name
-        self.val = val
-        self.vname = vname
-
-        self.uval = uval
-        self.unum = len(uval) 
-        self.ucount = ucount
-        self.idxdesc = idxdesc
-        self.onames = onames
-        self.ocount = ocount
-        self.ouval = ouval
-
-        ISEL = os.environ.get("ISEL","")  
-        isel = self.parse_ISEL(ISEL, onames) 
-        sisel = ",".join(map(str, isel))
-
-        print( "Feature name %s ISEL: [%s] isel: [%s] sisel [%s] " % (name, ISEL, str(isel), sisel))
-
-        self.isel = isel 
-        self.sisel = sisel 
-
-    @classmethod
-    def parse_ISEL(cls, ISEL, onames):
-        """ 
-        :param ISEL: comma delimited list of strings or integers 
-        :param onames: names ordered in descending frequency order
-        :return isels: list of frequency order indices 
-
-        Integers in the ISEL are interpreted as frequency order indices. 
-
-        Strings are interpreted as fragments to look for in the ordered names,
-        (which could be boundary names or prim names for example) 
-        eg use Hama or NNVT to yield the list of frequency order indices 
-        with corresponding names containing those strings. 
-        """
-        ISELS = list(filter(None,ISEL.split(",")))
-        isels = []
-        for i in ISELS:
-            if i.isnumeric(): 
-                isels.append(int(i))
-            else:
-                for idesc, nam in enumerate(onames):
-                    if i in nam: 
-                        isels.append(idesc)
-                    pass
-                pass
-            pass
-        pass    
-        return isels 
-
-    def __call__(self, idesc):
-        """
-        :param idesc: zero based index less than unum
-
-        for frame photons, empty pixels give zero : so not including 0 in ISEL allows to skip
-        if uval==0 and not 0 in isel: continue 
-
-        """
-        assert idesc > -1 and idesc < self.unum
-        fname = self.onames[idesc]
-        uval = self.ouval[idesc] 
-        count = self.ocount[idesc] 
-        isel = self.isel  
-
-        if fname[0] == "_":
-            fname = fname[1:]
-        pass
-        #label = "%s:%s" % (idesc, fname)
-        label = "%s" % (fname)
-        label = label.replace("solid","s")
-        color = COLORS[idesc % len(COLORS)]  # gives the more frequent boundary the easy_color names 
-        msg = " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, uval, count, color, fname, label )
-        selector = self.val == uval
-
-        if len(isel) == 0:
-            skip = False
-        else:
-            skip = idesc not in isel
-        pass 
-        return uval, selector, label, color, skip, msg 
-
-    def __str__(self):
-        lines = []
-        lines.append(self.desc)  
-        for idesc in range(self.unum):
-            uval, selector, label, color, skip, msg = self(idesc)
-            lines.append(msg)
-        pass
-        return "\n".join(lines)
-
-    desc = property(lambda self:"ph.%sfeat : %s " % (self.name, str(self.val.shape)))
-
-    def __repr__(self):
-        return "\n".join([
-            "Feature name %s val %s" % (self.name, str(self.val.shape)),
-            "uval %s " % str(self.uval),
-            "ucount %s " % str(self.ucount),
-            "idxdesc %s " % str(self.idxdesc),
-            "onames %s " % " ".join(self.onames),
-            "ocount %s " % str(self.ocount),
-            "ouval %s " % " ".join(map(str,self.ouval)),
-            ])
-
-class Gensteps(object):
-    """
-    Transform enabled gensteps:
-
-    * gs[igs,0,3] photons to generate for genstep *igs* 
-    * gs[igs,1] local frame center position
-    * gs[igs,2:] 4x4 transform  
-
-  
-    From SEvent::ConfigureGenstep::
-
-        * gsid was MOVED from (1,3) to (0,2) when changing genstep to carry transform
-
-
-    Notice that every genstep has its own transform with slightly 
-    different translations according to the different grid points 
-    Conversely there is only one overall frame transform
-    which corresponds to the targetted piece of geometry.
-    """
-    def __init__(self, genstep, frame, local=True, local_extent_scale=False ):
-        """
-        :param genstep: (num_gs,6,4) array with grid transforms in 2: and position in 1 
-        :param frame: sframe instance replacing former metatran array of 3 transforms and grid GridSpec instance
-
-        """
-        gs = genstep
-
-        numpho = gs.view(np.int32)[:,0,3]  # top right values from all gensteps
-        gsid = gs.view(np.int32)[:,0,2].copy()  # SEvent::ConfigureGenstep
-        all_one = np.all( gs[:,1,3] == 1. ) 
-        assert all_one   # from SEvent::MakeCenterExtentGensteps that q1.f.w should always to 1.f
-
-        ## apply the 4x4 transform in rows 2: to the position in row 1 
-        centers = np.zeros( (len(gs), 4 ), dtype=np.float32 )
-        for igs in range(len(gs)): 
-            centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
-        pass
-
-        tran = frame.w2m 
-        centers_local = np.dot( centers, tran )  # use metatran.v to transform back to local frame
-
-        if local and local_extent_scale:
-            extent = frame.ce[3]
-            centers_local[:,:3] *= extent 
-        pass
-
-        ugsc = centers_local if local else centers  
-
-        lim = {}
-        lim[X] = np.array([ugsc[:,X].min(), ugsc[:,X].max()])
-        lim[Y] = np.array([ugsc[:,Y].min(), ugsc[:,Y].max()])  
-        lim[Z] = np.array([ugsc[:,Z].min(), ugsc[:,Z].max()])  
-
-        self.gs = gs
-        self.gsid = gsid
-        self.numpho = numpho
-        self.centers = centers 
-        self.centers_local = centers_local
-        self.ugsc = ugsc
-        self.lim = lim 
-
-        log.info("Gensteps\n %s " % repr(self))
-
-
-    def __repr__(self):
-        return "\n".join([
-                   "gs.gs %s " % str(self.gs.shape),
-                   "gs.numpho %s " % self.numpho,
-                   "gs.lim[X] %s " % str(self.lim[X]),
-                   "gs.lim[Y] %s " % str(self.lim[Y]),
-                   "gs.lim[Z] %s " % str(self.lim[Z]),
-              ])
-
-
-class Positions(object):
-    """
-    Transforms global intersect positions into local frame 
-
-    HMM: the local frame positions are model frame in extent units  
-    when using tangential ... not so convenient would be better 
-    with real mm dimensions in local : kludge this with local_extent_scale=True
- 
-    """
-    def __init__(self, p, gs, frame, local=True, mask="pos", local_extent_scale=False ):
-        """
-        :param p: photons array  (should be called isect really)
-        :param gs: Gensteps instance
-        :param frame: formerly GridSpec instance 
-        """
-
-
-        isect = p[:,0]
-
-        gpos = p[:,1].copy()            # global frame intersect positions
-        gpos[:,3] = 1  
-
-        lpos = np.dot( gpos, frame.w2m )   # local frame intersect positions
-
-        if local and local_extent_scale:
-            extent = frame.ce[3]
-            lpos[:,:3] *= extent 
-        pass
-
-        upos = lpos if local else gpos
-
-        poslim = {}
-        poslim[X] = np.array([upos[:,X].min(), upos[:,X].max()])
-        poslim[Y] = np.array([upos[:,Y].min(), upos[:,Y].max()])  
-        poslim[Z] = np.array([upos[:,Z].min(), upos[:,Z].max()])  
-
-        self.poslim = poslim 
-        self.gs = gs
-        self.frame = frame 
-
-        self.p = p 
-
-        self.isect = isect
-        self.gpos = gpos
-        self.lpos = lpos
-        self.upos = upos
-
-        self.local = local
-
-        #self.make_histogram()
-
-
-        if mask == "pos":
-            self.apply_pos_mask()
-        elif mask == "t":
-            self.apply_t_mask()
-        else: 
-            pass
-        pass
-
-
-    def apply_pos_mask(self):
-        lim = self.gs.lim  
-
-        xmin, xmax = lim[0] 
-        ymin, ymax = lim[1] 
-        zmin, zmax = lim[2] 
-
-        upos = self.upos
-        xmask = np.logical_and( upos[:,0] >= xmin, upos[:,0] <= xmax )
-        ymask = np.logical_and( upos[:,1] >= ymin, upos[:,1] <= ymax )
-        xy_mask = np.logical_and( xmask, ymask )
-
-        zmask = np.logical_and( upos[:,2] >= zmin, upos[:,2] <= zmax )
-        xyz_mask = np.logical_and( xy_mask, zmask )
-
-        mask = xyz_mask 
-
-        log.info("apply_pos_mask")
-        self.set_mask(mask)
-
-    def apply_t_mask(self):
-        log.info("apply_t_mask")
-        t = self.p[:,2,2]
-        mask = t > 0. 
-        self.set_mask( mask) 
-
-    def set_mask(self, mask):
-        self.mask = mask
-        self.p = self.p[mask]
-        self.upos = self.upos[mask]
-
-    def make_histogram(self):
-        lim = self.gs.lim  
-        nx = self.frame.nx
-        ny = self.frame.ny
-        nz = self.frame.nz
-        upos = self.upos
-
-        # bizarrely some python3 versions think the below are SyntaxError without the num= 
-        #      SyntaxError: only named arguments may follow *expression
-        
-        binx = np.linspace(*lim[X], num=2*nx+1)
-        biny = np.linspace(*lim[Y], num=max(2*ny+1,2) )
-        binz = np.linspace(*lim[Z], num=2*nz+2)
-
-        bins = ( binx, biny, binz )
-
-        h3d, bins2 = np.histogramdd(upos[:,:3], bins=bins )   
-        ## TODO: use the 3d histo to sparse-ify gensteps positions, to avoiding shooting rays from big voids 
-
-        self.h3d = h3d
-        self.bins = bins 
-        self.bins2 = bins2 
-
-
-
 class Plt(object):
-    def __init__(self, outdir, feat, gs, frame, pos):
+    def __init__(self, feat, gs, frame, pos, outdir ):
         """
-        :param outdir:
-        :param feat:
-        :param gs:
-        :param frame: formerly grid
-        :param pos:
-        """
+        :param feat: Feature instance 
+        :param gs: FrameGensteps instance
+        :param frame: sframe instance
+        :param pos: Positions instance
+        :param outdir: str
 
+        ## hmm regarding annotation, what should come from remote and what local ?
+
+        XX,YY,ZZ 
+           lists of ordinates for drawing lines parallel to axes
+
+        """
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir)
+        pass
         self.outdir = outdir 
         self.feat = feat
         self.gs = gs
@@ -642,9 +163,7 @@ class Plt(object):
         botline = os.environ.get("BOTLINE", "cxs") 
         note = os.environ.get("NOTE", "") 
         note1 = os.environ.get("NOTE1", "") 
-   
 
-        ## hmm what should come from remote and what local ?
         self.topline = topline 
         self.botline = botline 
         self.note = note 
@@ -674,7 +193,7 @@ class Plt(object):
         if len(axes) == 2:
             self.positions_mpplt_2D(legend=legend, gsplot=gsplot)
         else:
-            pass
+            log.info("mp skip 3D plotting as PV is so much better at that")
         pass
 
     def positions_mpplt_2D(self, legend=True, gsplot=0):
@@ -684,13 +203,12 @@ class Plt(object):
         
         when Z is vertical lines of constant Z appear horizontal 
         when Z is horizontal lines of constant Z appear vertical 
-
         """
-        upos = self.pos.upos
+        upos = self.pos.upos  # may have mask applied 
         ugsc = self.gs.ugsc
         lim = self.gs.lim
 
-        H,V = self.frame.axes    ## traditionally H,V = X,Z  but are now generalizing 
+        H,V = self.frame.axes       # traditionally H,V = X,Z  but now generalized
         _H,_V = self.frame.axlabels
 
         log.info(" grid.axes H:%s V:%s " % (_H, _V))  
@@ -719,11 +237,14 @@ class Plt(object):
              mp.text(0.01, 0.95, note1, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
         pass
 
-
+        # loop over unique values of the feature 
         for idesc in range(feat.unum):
             uval, selector, label, color, skip, msg = feat(idesc)
             if skip: continue
-            pos = upos[selector] 
+            pos = upos[selector]    
+            ## hmm any masking needs be applied to both upos and selector ?
+            ## alternatively could apply the mask early and use that from the Feature machinery 
+
             ax.scatter( pos[:,H], pos[:,V], label=label, color=color, s=sz )
         pass
 
@@ -937,7 +458,7 @@ class Plt(object):
         pl.set_position( eye, reset=True )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
         pl.camera.Zoom(2)
 
-        if PVG:
+        if PVGRID:
             pl.show_grid()
         pass
 
@@ -947,73 +468,41 @@ class Plt(object):
         return cp
 
 
-def test_mok(cf):
-    mock_photons = Photons.Mock()
-    ph = Photons(mock_photons, cf, featname="mok", do_mok=True)
-    print(ph.mokfeat)
-
-
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    GSPLOT = int(os.environ.get("GSPLOT", "0"))
-
     t = Fold.Load(); 
-
-    num_photon = len(t.photon)
-    landing_count = np.count_nonzero( t.photon[:,0,3] )
-    landing_msg = "ERROR NO PHOTON LANDED" if landing_count == 0 else ""
-    print(" num_photon: %d : landing_count : %d   %s " % (num_photon, landing_count, landing_msg) )
-
-    outdir = os.path.join(t.base, "figs")
-    if not os.path.isdir(outdir):
-        os.makedirs(outdir)
-    pass
-
     frame = sframe.Load(t.base, "sframe.npy")
 
-    local_extent_scale = frame.coords == "RTP" 
+    Positions.Check(t.photon)
 
+    local_extent_scale = frame.coords == "RTP"  ## 
 
-    gs = Gensteps(t.genstep, frame, local_extent_scale=local_extent_scale )
+    gs = FrameGensteps(t.genstep, frame, local_extent_scale=local_extent_scale )
 
-    mask = MASK   # default is "pos" 
-    assert mask in ALLOWED_MASK, "mask %s is not in ALLOWED_MASK list %s " % (mask, str(ALLOWED_MASK))
-    #without mask=pos means that the legend is filled with features that are not visible in the frame 
+    pos = Positions(t.photon, gs, frame, local=True, mask=MASK, local_extent_scale=local_extent_scale )
+    upos = pos.upos
 
-    pos = Positions(t.photon, gs, frame, local=True, mask=mask, local_extent_scale=local_extent_scale )
-
-    if SIM:
+    if SIMPLE:
         pvplt_simple(pos.gpos[:,:3], "pos.gpos[:,:3]" )
         pvplt_simple(pos.lpos[:,:3], "pos.lpos[:,:3]" )
     else:
         featname = os.environ.get("FEAT", "pid" )  
         assert featname in ["pid", "bnd", "ins" ]    # pid:meshname, bnd:boundary, ins:instance
 
-        ph = Photons(pos, cf, featname=featname ) 
-        print(ph.bndfeat)
-        print(ph.pidfeat)
-        print(ph.insfeat)
-        feat = ph.feat 
+        pf = PhotonFeatures(pos, cf, featname=featname ) 
 
-        plt = Plt(outdir, feat, gs, frame, pos )
-
-        upos = plt.pos.upos
+        plt = Plt(pf.feat, gs, frame, pos, outdir=os.path.join(t.base, "figs") )
 
         if not mp is None:
-            plt.positions_mpplt(legend=True, gsplot=GSPLOT )
-            #plt.positions_mpplt(legend=False, gsplot=GSPLOT )   # when not using pos_mask legend often too big, so can switch it off 
+            plt.positions_mpplt(legend=LEGEND, gsplot=GSPLOT )
         pass
 
         if not pv is None:
             plt.positions_pvplt()
         pass
-        #print("leaves:")
-        #print("\n".join(leaves))
         pl = getattr(plt, 'pl', None)
         if pl is None:
             print("plt.pl is None")
         pass
     pass
-

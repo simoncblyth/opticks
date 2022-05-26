@@ -239,12 +239,12 @@ QEVENT_METHOD void qevent::add_simtrace( unsigned idx, const quad4& p, const qua
     a.q2.f.x = p.q0.f.x ; 
     a.q2.f.y = p.q0.f.y ; 
     a.q2.f.z = p.q0.f.z ; 
-    a.q2.u.w = tmin ; 
+    a.q2.u.w = prd->boundary() ; // was tmin, but expecting bnd from CSGOptiXSimtraceTest.py:Photons
 
     a.q3.f.x = p.q1.f.x ;
     a.q3.f.y = p.q1.f.y ;
     a.q3.f.z = p.q1.f.z ;
-    a.q3.u.w = prd->identity() ;
+    a.q3.u.w = prd->identity() ;  // identity from __closesthit__ch (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) 
 
     const sphoton& s = (sphoton&)a ; 
     photon[idx] = s ;

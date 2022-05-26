@@ -41,3 +41,50 @@
     pass
 
 
+
+def copyref( l, g, s, kps ):
+    """
+    Copy selected references between scopes::
+        
+        copyref( locals(), globals(), self, "bnd,ubnd" )
+
+    :param l: locals() 
+    :param g: globals() or None
+    :param s: self or None
+    :param kps: space delimited string identifying quantities to be copied
+
+    The advantage with using this is that can benefit from developing 
+    fresh code directly into classes whilst broadcasting the locals from the 
+    classes into globals for easy debugging. 
+    """
+    for k,v in l.items():
+        kmatch = np.any(np.array([k.startswith(kp) for kp in kps.split()]))
+        if kmatch:
+            if not g is None: g[k] = v
+            if not s is None: setattr(s, k, v )
+            print(k)
+        pass
+    pass
+
+
+def fromself( l, s, kk ):
+    # nope seems cannot update locals() like this
+    # possibly generate some simple code and eval it is a workaround 
+    for k in kk.split(): 
+        log.info(k)
+        l[k] = getattr(s, k)
+    pass
+
+
+def shorten_bname(bname):
+    elem = bname.split("/")
+    if len(elem) == 4:
+        omat,osur,isur,imat = elem
+        bn = "/".join([omat,osur[:3],isur[:3],imat])
+    else:
+        bn = bname
+    pass 
+    return bn
+
+
+
