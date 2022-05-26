@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 
 from opticks.ana.npmeta import NPMeta
-import numpy as np
+from opticks.ana.axes import * 
+
+import os, numpy as np
+eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
+
+from opticks.ana.eget import efloat_
+
+X,Y,Z = 0,1,2 
 
 class sframe(object):
     @classmethod
@@ -12,6 +19,43 @@ class sframe(object):
         path = os.path.join(fold, name)
         return cls(path)
 
+
+    @classmethod
+    def DetermineAxes(cls, nx, ny, nz):
+        """
+        :param nx:
+        :param nx:
+        :param nx:
+
+        With planar axes the order is arranged to make the longer axis the first horizontal one 
+        followed by the shorter axis as the vertical one.  
+
+            +------+
+            |      |  nz     ->  ( Y, Z )    ny_over_nz > 1 
+            +------+
+               ny
+
+            +------+
+            |      |  ny     ->  ( Z, Y )    ny_over_nz < 1 
+            +------+
+               nz
+
+        """
+        if nx == 0 and ny > 0 and nz > 0:
+            ny_over_nz = float(ny)/float(nz)
+            axes = (Y,Z) if ny_over_nz > 1 else (Z,Y)
+        elif nx > 0 and ny == 0 and nz > 0:
+            nx_over_nz = float(nx)/float(nz)
+            axes = (X,Z) if nx_over_nz > 1 else (Z,X)
+        elif nx > 0 and ny > 0 and nz == 0:
+            nx_over_ny = float(nx)/float(ny)
+            axes = (X,Y) if nx_over_ny > 1 else (Y,X)
+        else:
+            axes = (X,Y,Z)
+        pass
+        return axes
+
+
     def __init__(self, path, clear_identity=True ):
         """
         Whether clear_identity makes any material difference depends on the identity values. 
@@ -20,15 +64,11 @@ class sframe(object):
 
         metapath = path.replace(".npy", "_meta.txt")
         if os.path.exists(metapath):
-            mtxt = np.loadtxt(metapath, dtype="|S100", delimiter="\t" )
-            meta = NPMeta(mtxt)
+            meta = NPMeta.Load(metapath)
         else:
-            mtxt = None
             meta = None
         pass   
-        self.mtxt = mtxt
         self.meta = meta 
-
 
         a = np.load(path)
         i = a.view(np.int32)
@@ -42,14 +82,17 @@ class sframe(object):
         iz0,iz1,num_photon = i[0,2,:3]     # q2.i.xyz  
         gridscale = a[0,2,3]               # q2.f.w
 
+
         midx, mord, iidx = i[0,3,:3]       # q3.i.xyz
         inst = i[0,3,3]     # q3.i.w
 
         self.midx = midx
         self.mord = mord
         self.iidx = iidx
-
         self.inst = inst
+         
+        ## replacing ana/gridspec.py:GridSpec
+         
 
 
         grid = "".join(["ix0 %(ix0)4d ix1 %(ix1)4d ",
@@ -114,6 +157,81 @@ class sframe(object):
         self.m2w = m2w
         self.w2m = w2m
         self.id = np.dot( m2w, w2m )  
+
+
+        self.init_grid()
+        self.init_view()
+
+
+    def init_grid(self):
+        """
+        replacing ana/gridspec.py 
+        """
+        iidx = self.iidx  
+        ix0 = self.ix0 
+        ix1 = self.ix1 
+        iy0 = self.iy0 
+        iy1 = self.iy1 
+        iz0 = self.iz0 
+        iz1 = self.iz1 
+        nx = (ix1 - ix0)//2   
+        ny = (iy1 - iy0)//2
+        nz = (iz1 - iz0)//2
+        coords = "RTP" if iidx == -3 else "XYZ"   ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
+        axes = self.DetermineAxes(nx, ny, nz)
+        planar = len(axes) == 2 
+
+        if planar:
+            H, V = axes
+            axlabels =  coords[H], coords[V]
+        else:
+            H, V, D = axes
+            axlabels =  coords[H], coords[V], coords[D]
+        pass 
+
+        self.nx = nx
+        self.ny = ny
+        self.nz = nz
+        self.coords = coords
+        self.axes = axes 
+        self.axlabels = axlabels 
+
+
+    def init_view(self):
+        ce = self.ce 
+        axes = self.axes
+        planar = len(axes) == 2 
+
+        # below default from envvars are overridden for planar data
+        eye = eary_("EYE","1.,1.,1.")
+        up  = eary_("UP","0.,0.,1.")
+        off  = eary_("OFF","0.,0.,1.")
+        #look = eary_("LOOK","0.,0.,0.")
+        EYES = efloat_("EYES", "6.")   # TODO: why 6 ? how to control FOV to gain more control of this
+
+        look = ce[:3]
+        if planar:
+            H, V = axes
+            up  = Axes.Up(H,V)
+            off = Axes.Off(H,V)
+            eye = look + ce[3]*off*EYES
+        else:
+            H, V, D = axes
+            axlabels =  coords[H], coords[V], coords[D]
+
+            up = XYZ.up
+            off = XYZ.off
+            ## hmm in 3D case makes less sense : better to just use the input EYE
+
+            eye = ce[3]*eye*EYES 
+        pass 
+
+        self.look = look
+        self.up = up
+        self.off = off
+        self.eye = eye 
+        self.thirdline = "thirdline"
+
 
     def __repr__(self):
 

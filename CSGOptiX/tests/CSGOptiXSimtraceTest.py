@@ -67,7 +67,8 @@ from opticks.ana.p import *   # including cf
 
 from opticks.ana.fold import Fold
 from opticks.ana.npmeta import NPMeta
-from opticks.ana.gridspec import GridSpec, X, Y, Z
+from opticks.sysrap.sframe import sframe , X, Y, Z
+
 SIZE = np.array([1280, 720])
 
 
@@ -243,7 +244,7 @@ class Photons(object):
         ins = ids & 0xffff   # ridx?    
 
         log.info("[ Photons.bndfeat ")
-        bnd_namedict = {} if cf is None else cf.bndnamedict 
+        bnd_namedict = {} if cf is None else cf.sim.bndnamedict 
         bndfeat = Feature("bnd", bnd, bnd_namedict)
         log.info("] Photons.bndfeat ")
 
@@ -443,15 +444,17 @@ class Gensteps(object):
 
         * gsid was MOVED from (1,3) to (0,2) when changing genstep to carry transform
 
+
+    Notice that every genstep has its own transform with slightly 
+    different translations according to the different grid points 
+    Conversely there is only one overall frame transform
+    which corresponds to the targetted piece of geometry.
     """
-    def __init__(self, genstep, metatran, grid, local=True, local_extent_scale=False ):
+    def __init__(self, genstep, frame, local=True, local_extent_scale=False ):
         """
         :param genstep: (num_gs,6,4) array with grid transforms in 2: and position in 1 
-        :param metatran: array of 3 transforms
-        :param grid: 
+        :param frame: sframe instance replacing former metatran array of 3 transforms and grid GridSpec instance
 
-        TODO: combine metatran, grid, peta into the sframe.h  and create 
-        SFrame.py to manage the python side of this 
         """
         gs = genstep
 
@@ -466,25 +469,11 @@ class Gensteps(object):
             centers[igs] = np.dot( gs[igs,1], gs[igs,2:] )  
         pass
 
-        ## Notice that every genstep has its own transform with slightly 
-        ## different translations according to the different grid points 
-        ##  
-        ## Conversely there is only one overall metatran/frame transform
-        ## which corresponds to the targetted piece of geometry.
-        ##
-
-        mtr = metatran
-        if not mtr is None:
-             tran = mtr[1]
-        else:
-             tran = np.eye(4) 
-             log.warning("metatran is None : no transform metadata : assming local frame, such as with geochain test solids")
-        pass
+        tran = frame.w2m 
         centers_local = np.dot( centers, tran )  # use metatran.v to transform back to local frame
 
-
         if local and local_extent_scale:
-            extent = grid.ce[3]
+            extent = frame.ce[3]
             centers_local[:,:3] *= extent 
         pass
 
@@ -497,7 +486,6 @@ class Gensteps(object):
 
         self.gs = gs
         self.gsid = gsid
-        self.mtr = mtr 
         self.numpho = numpho
         self.centers = centers 
         self.centers_local = centers_local
@@ -510,7 +498,6 @@ class Gensteps(object):
     def __repr__(self):
         return "\n".join([
                    "gs.gs %s " % str(self.gs.shape),
-                   "gs.mtr %s " % str(self.mtr.shape),
                    "gs.numpho %s " % self.numpho,
                    "gs.lim[X] %s " % str(self.lim[X]),
                    "gs.lim[Y] %s " % str(self.lim[Y]),
@@ -527,24 +514,23 @@ class Positions(object):
     with real mm dimensions in local : kludge this with local_extent_scale=True
  
     """
-    def __init__(self, p, gs, grid, local=True, mask="pos", local_extent_scale=False ):
+    def __init__(self, p, gs, frame, local=True, mask="pos", local_extent_scale=False ):
         """
         :param p: photons array  (should be called isect really)
         :param gs: Gensteps instance
-        :param grid: GridSpec instance 
+        :param frame: formerly GridSpec instance 
         """
 
-        mtr = gs.mtr                    # transform
 
         isect = p[:,0]
 
         gpos = p[:,1].copy()            # global frame intersect positions
         gpos[:,3] = 1  
 
-        lpos = np.dot( gpos, mtr[1] )   # local frame intersect positions
+        lpos = np.dot( gpos, frame.w2m )   # local frame intersect positions
 
         if local and local_extent_scale:
-            extent = grid.ce[3]
+            extent = frame.ce[3]
             lpos[:,:3] *= extent 
         pass
 
@@ -557,7 +543,7 @@ class Positions(object):
 
         self.poslim = poslim 
         self.gs = gs
-        self.grid = grid 
+        self.frame = frame 
 
         self.p = p 
 
@@ -613,9 +599,9 @@ class Positions(object):
 
     def make_histogram(self):
         lim = self.gs.lim  
-        nx = self.grid.nx
-        ny = self.grid.ny
-        nz = self.grid.nz
+        nx = self.frame.nx
+        ny = self.frame.ny
+        nz = self.frame.nz
         upos = self.upos
 
         # bizarrely some python3 versions think the below are SyntaxError without the num= 
@@ -637,30 +623,26 @@ class Positions(object):
 
 
 class Plt(object):
-    def __init__(self, outdir, feat, gs, grid, pos, gsmeta ):
+    def __init__(self, outdir, feat, gs, frame, pos):
         """
         :param outdir:
         :param feat:
         :param gs:
-        :param grid:
+        :param frame: formerly grid
         :param pos:
-        :param gsmeta:
         """
 
         self.outdir = outdir 
         self.feat = feat
         self.gs = gs
-        self.grid = grid
+        self.frame = frame
         self.pos = pos
-        self.gsmeta = gsmeta
 
         topline = os.environ.get("TOPLINE", "CSGOptiXSimtraceTest.py:PH")
         botline = os.environ.get("BOTLINE", "cxs") 
         note = os.environ.get("NOTE", "") 
         note1 = os.environ.get("NOTE1", "") 
    
-        gsmeta_topline = gsmeta.find("TOPLINE:", topline )
-        gsmeta_botline = gsmeta.find("BOTLINE:", botline )
 
         ## hmm what should come from remote and what local ?
         self.topline = topline 
@@ -688,7 +670,7 @@ class Plt(object):
         return os.path.join(self.outdir,"%s_%s_%s.png" % (stem, ptype, self.feat.name)) 
 
     def positions_mpplt(self, legend=True, gsplot=0):
-        axes = self.grid.axes   
+        axes = self.frame.axes   
         if len(axes) == 2:
             self.positions_mpplt_2D(legend=legend, gsplot=gsplot)
         else:
@@ -708,8 +690,8 @@ class Plt(object):
         ugsc = self.gs.ugsc
         lim = self.gs.lim
 
-        H,V = self.grid.axes    ## traditionally H,V = X,Z  but are now generalizing 
-        _H,_V = self.grid.axlabels
+        H,V = self.frame.axes    ## traditionally H,V = X,Z  but are now generalizing 
+        _H,_V = self.frame.axlabels
 
         log.info(" grid.axes H:%s V:%s " % (_H, _V))  
 
@@ -723,7 +705,7 @@ class Plt(object):
 
         igs = slice(None) if len(ugsc) > 1 else 0
 
-        title = [self.topline, self.botline, self.grid.thirdline]
+        title = [self.topline, self.botline, self.frame.thirdline]
 
         fig, ax = mp.subplots(figsize=SIZE/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
@@ -794,7 +776,7 @@ class Plt(object):
                  H=X
 
         """
-        H,V = self.grid.axes    
+        H,V = self.frame.axes    
         hlim = self.gs.lim[H]
         vlim = self.gs.lim[V]
 
@@ -844,7 +826,7 @@ class Plt(object):
 
 
     def positions_pvplt(self):
-        axes = self.grid.axes   
+        axes = self.frame.axes   
         if len(axes) == 2:
             self.positions_pvplt_2D()
         else:
@@ -909,15 +891,15 @@ class Plt(object):
         ylim = lim[Y]
         zlim = lim[Z]
 
-        H,V = self.grid.axes      ## traditionally H,V = X,Z  but are now generalizing 
+        H,V = self.frame.axes      ## traditionally H,V = X,Z  but are now generalizing 
  
         upos = self.pos.upos
 
         feat = self.feat 
         zoom = self.zoom
-        look = self.grid.look if self.pos.local else self.grid.ce[:3]
-        eye = look + self.grid.off
-        up = self.grid.up
+        look = self.frame.look if self.pos.local else self.frame.ce[:3]
+        eye = look + self.frame.off
+        up = self.frame.up
 
         pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
         self.pl = pl 
@@ -927,7 +909,7 @@ class Plt(object):
         pl.camera.ParallelProjectionOn()  
         pl.add_text(self.topline, position="upper_left")
         pl.add_text(self.botline, position="lower_left")
-        pl.add_text(self.grid.thirdline, position="lower_right")
+        pl.add_text(self.frame.thirdline, position="lower_right")
 
         print("positions_pvplt feat.name %s " % feat.name )
 
@@ -939,7 +921,7 @@ class Plt(object):
             pl.add_points( pos[:,:3], color=color )
         pass
 
-        showgrid = not gridspec.axes is None  # too obscuring with 3D
+        showgrid = len(self.frame.axes) == 2 # too obscuring with 3D
         if showgrid:
             pl.add_points( ugsc[:,:3], color="white" )   # genstep grid
         pass   
@@ -977,37 +959,30 @@ if __name__ == '__main__':
 
     GSPLOT = int(os.environ.get("GSPLOT", "0"))
 
-    fold = Fold.Load(); 
+    t = Fold.Load(); 
 
-    num_photon = len(fold.photon)
-    landing_count = np.count_nonzero( fold.photon[:,0,3] )
+    num_photon = len(t.photon)
+    landing_count = np.count_nonzero( t.photon[:,0,3] )
     landing_msg = "ERROR NO PHOTON LANDED" if landing_count == 0 else ""
     print(" num_photon: %d : landing_count : %d   %s " % (num_photon, landing_count, landing_msg) )
 
-    outdir = os.path.join(fold.base, "figs")
+    outdir = os.path.join(t.base, "figs")
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
     pass
 
-    #gsmeta = NPMeta(fold.genstep_meta)
-    gsmeta = fold.genstep_meta
-    gridspec = GridSpec(fold.peta, gsmeta)
+    frame = sframe.Load(t.base, "sframe.npy")
 
-    local_extent_scale = gridspec.coords == "RTP" 
+    local_extent_scale = frame.coords == "RTP" 
 
-    metatran = getattr(fold, "metatran", None) 
-    if metatran is None:
-        log.warning("using placeholder identity metatran") 
-        metatran = np.vstack( [np.eye(4) , np.eye(4), np.eye(4) ] ).reshape(-1,4,4)
-    pass    
 
-    gs = Gensteps(fold.genstep, metatran, gridspec, local_extent_scale=local_extent_scale )
+    gs = Gensteps(t.genstep, frame, local_extent_scale=local_extent_scale )
 
     mask = MASK   # default is "pos" 
     assert mask in ALLOWED_MASK, "mask %s is not in ALLOWED_MASK list %s " % (mask, str(ALLOWED_MASK))
     #without mask=pos means that the legend is filled with features that are not visible in the frame 
 
-    pos = Positions(fold.photon, gs, gridspec, local=True, mask=mask, local_extent_scale=local_extent_scale )
+    pos = Positions(t.photon, gs, frame, local=True, mask=mask, local_extent_scale=local_extent_scale )
 
     if SIM:
         pvplt_simple(pos.gpos[:,:3], "pos.gpos[:,:3]" )
@@ -1022,7 +997,7 @@ if __name__ == '__main__':
         print(ph.insfeat)
         feat = ph.feat 
 
-        plt = Plt(outdir, feat, gs, gridspec, pos, gsmeta )
+        plt = Plt(outdir, feat, gs, frame, pos )
 
         upos = plt.pos.upos
 
@@ -1034,8 +1009,8 @@ if __name__ == '__main__':
         if not pv is None:
             plt.positions_pvplt()
         pass
-        print("leaves:")
-        print("\n".join(leaves))
+        #print("leaves:")
+        #print("\n".join(leaves))
         pl = getattr(plt, 'pl', None)
         if pl is None:
             print("plt.pl is None")

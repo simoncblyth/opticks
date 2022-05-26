@@ -33,25 +33,6 @@ class Fold(object):
         return None
 
 
-    @classmethod
-    def LoadTxt(cls, path): 
-        """
-        # HMM: this messes up with double quoting
-        # workaround that by not writing a single metadata entries 
-        """
-        name = os.path.basename(path)
-        stem = name[:-4]
-        txt_dtype = "|S100" if stem.endswith("_meta") else np.object 
-
-        t = np.loadtxt(path, dtype=txt_dtype, delimiter="\t") 
-        if t.shape == (): ## prevent one line file behaving different from multiline 
-            a = np.zeros(1, dtype=txt_dtype)
-            a[0] = NPMeta(str(t))   
-        else:
-            a = NPMeta(t)     
-        pass
-        return a 
-
     def __init__(self, base, **kwa):
         self.base = base
         self.kwa = kwa 
@@ -82,11 +63,11 @@ class Fold(object):
             if is_npy:
                 a = np.load(path)
             elif name.endswith("_meta.txt"):
-                a = self.LoadTxt(path)
+                a = NPMeta.Load(path)
                 txts[name] = a 
             elif name.endswith(".txt"):
-                a = self.LoadTxt(path)
-                txts[name] = self.LoadTxt(path)
+                a = NPMeta.Load(path)
+                txts[name] = a
             pass
             setattr(self, stem, a ) 
 

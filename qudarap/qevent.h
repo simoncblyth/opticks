@@ -200,6 +200,29 @@ QEVENT_METHOD void  qevent::add_rec( srec& r, unsigned idx, unsigned bounce, con
     rec[max_rec*idx+bounce] = r ;      
 }
 
+/**
+qevent::add_simtrace
+----------------------
+
+NB simtrace "photon" *a* is very different from real ones
+
+TODO: rename the simtrace output array from photon to simtrace for clarity
+
+
+a.q0.f
+    prd.q0.f normal, distance, aka "isect" 
+
+a.q1
+    intersect position from pos+t*dir, 0.
+
+a.q2
+    initial pos, tmin
+
+a.q3 
+    initial dir, prd.identity
+
+
+**/
 
 QEVENT_METHOD void qevent::add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin )
 {

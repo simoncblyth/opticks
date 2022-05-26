@@ -18,10 +18,10 @@ class NPMeta(object):
     ENCODING = "utf-8"
 
     @classmethod
-    def AsDict(cls, meta):
+    def AsDict(cls, lines):
         d = {}
-        for item in meta:
-            line = item.decode(cls.ENCODING)
+        for line in lines:
+            #line = item.decode(cls.ENCODING)
             dpos = line.find(":") 
             if dpos > -1:
                key = line[:dpos]
@@ -31,14 +31,36 @@ class NPMeta(object):
         pass    
         return d 
 
-    def __init__(self, meta):
-        self.meta = meta  
-        self.d = self.AsDict(meta)
+ 
+    @classmethod
+    def Load(cls, path):
+        name = os.path.basename(path)
+        lines = open(path, "r").read().splitlines()
+        return cls(lines) 
+
+        #txt_dtype = "|S100" if stem.endswith("_meta") else np.object 
+        #t = np.loadtxt(path, dtype=txt_dtype, delimiter="\t") 
+        #if t.shape == (): ## prevent one line file behaving different from multiline 
+        #    a = np.zeros(1, dtype=txt_dtype)
+        #    a[0] = cls(str(t))   
+        #else:
+        #    a = cls(t)     
+        #pass
+
+    def __init__(self, lines):
+        self.lines = lines  
+        self.d = self.AsDict(lines)
            
     def __len__(self):
-        return len(self.meta)  
+        return len(self.lines)  
 
-    def find(self, k_start, fallback=None, encoding=ENCODING):
+    def find(self, k, fallback=None):
+        return self.d.get(k, fallback)
+
+    def __getattr__(self, k):
+        return self.find(k)
+
+    def oldfind(self, k_start, fallback=None, encoding=ENCODING):
         meta = self.meta
         ii = np.flatnonzero(np.char.startswith(meta, k_start.encode(encoding)))  
         log.debug( " ii %s len(ii) %d  " % (str(ii), len(ii)) )
@@ -54,7 +76,7 @@ class NPMeta(object):
         return ret 
 
     def __str__(self):
-        return "\n".join(map(str,self.meta))
+        return "\n".join(self.lines)
     def __repr__(self):
         return repr(self.d)
 
@@ -62,9 +84,14 @@ class NPMeta(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    path = "/tmp/t.txt"
-    meta = np.loadtxt(path, dtype="|S100", delimiter="\t" )
-    pm = NPMeta(meta)
+    path = "/tmp/t_meta.txt"
+    multiline = "hello:world\nmoi:red\nmidx:green\nmord:blue\niidx:grey\nTOPLINE:yellow\nBOTLINE:red\n"
+    oneline = "hello:world\n"
+    test = oneline
+    open(path, "w").write(test)
+
+
+    pm = NPMeta.Load(path)
 
     moi = pm.find("moi:")
     midx = pm.find("midx:")
