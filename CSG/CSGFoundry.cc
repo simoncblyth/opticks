@@ -2403,7 +2403,8 @@ sframe CSGFoundry::getFrame() const
 
 void CSGFoundry::getFrame(sframe& fr, const char* frs ) const 
 {
-    if( strstr(frs, ":") || strcmp(frs,"-1") == 0 )
+    bool looks_like_moi = SStr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ; 
+    if(looks_like_moi)
     {
         int midx, mord, iidx ;  // mesh-index, mesh-ordinal, gas-instance-index
         parseMOI(midx, mord, iidx,  frs );  

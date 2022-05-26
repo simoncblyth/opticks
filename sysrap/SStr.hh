@@ -78,6 +78,10 @@ class SYSRAP_API SStr {
       static bool Contains(const char* s, const char* q ); 
       static bool EndsWith( const char* s, const char* q);
       static bool StartsWith( const char* s, const char* q);
+
+      static const char* AZaz ; 
+      static bool StartsWithLetterAZaz(const char* q ); // A-Za-z
+
       static bool SimpleMatch(const char* s, const char* q );
       static bool Match(const char* s, const char* q);    // q may contain wildcard chars '?' for 1 character and '*' for several  
 

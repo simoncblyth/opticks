@@ -316,6 +316,9 @@ const char* SStr::StripPrefix_(const char* s, const char* pfx )
     return strdup(ss); 
 }
 
+
+
+
 const char* SStr::StripPrefix(const char* s, const char* pfx0, const char* pfx1, const char* pfx2 )
 {
     if(      pfx0 && StartsWith(s,pfx0) )  return StripPrefix_(s, pfx0) ; 
@@ -334,6 +337,18 @@ bool SStr::StartsWith( const char* s, const char* q)
 {
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
 }
+
+const char* SStr::AZaz = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" ; 
+
+bool SStr::StartsWithLetterAZaz(const char* q )
+{
+   const char* p = q != nullptr && strlen(q) > 0 ? strchr(AZaz, q[0]) : nullptr ; 
+   return p != nullptr ;  
+}
+
+
+
+
 
 /**
 SStr::SimpleMatch

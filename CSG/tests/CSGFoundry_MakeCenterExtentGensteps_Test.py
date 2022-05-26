@@ -10,6 +10,8 @@
 import numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import * 
+from opticks.sysrap.sframe import sframe 
+
 import pyvista as pv 
 
 if __name__ == '__main__':
@@ -19,6 +21,10 @@ if __name__ == '__main__':
 
     gs = t.genstep
     p = t.photon
+    frame = sframe.Load(t.base)
+
+    print(frame)
+
 
     pos = p[:,0,:3] 
     mom = p[:,1,:3] 

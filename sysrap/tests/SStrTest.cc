@@ -726,6 +726,21 @@ void test_Format_Ellipsis()
 }
 
 
+void test_StartsWithLetterAZaz()
+{
+    assert( SStr::StartsWithLetterAZaz(nullptr) == false ); 
+    assert( SStr::StartsWithLetterAZaz("") == false ); 
+    assert( SStr::StartsWithLetterAZaz(" ") == false ); 
+    assert( SStr::StartsWithLetterAZaz("0") == false ); 
+    assert( SStr::StartsWithLetterAZaz("0a") == false ); 
+    assert( SStr::StartsWithLetterAZaz(" a") == false ); 
+
+    assert( SStr::StartsWithLetterAZaz("a") == true ); 
+    assert( SStr::StartsWithLetterAZaz("abcd") == true ); 
+    assert( SStr::StartsWithLetterAZaz("Abcd") == true ); 
+}
+
+
 
 int main(int argc , char** argv )
 {
@@ -767,9 +782,9 @@ int main(int argc , char** argv )
     test_HeadFirst_HeadLast(); 
     test_FormatInt(); 
     test_LoadList(); 
-    */
     test_Format_Ellipsis(); 
-
+    */
+    test_StartsWithLetterAZaz(); 
 
     return 0  ; 
 }
