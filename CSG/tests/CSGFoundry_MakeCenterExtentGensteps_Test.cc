@@ -7,7 +7,7 @@
 #include "SSys.hh"
 #include "SPath.hh"
 #include "SEvt.hh"
-#include "SEvent.hh"
+#include "SFrameGenstep.hh"
 #include "NP.hh"
 #include "OPTICKS_LOG.hh"
 #include "CSGFoundry.h"
@@ -22,10 +22,10 @@ int main(int argc, char** argv)
 
     sframe fr = fd->getFrame() ;  // depends on MOI, GRIDSCALE, ...  fr.ce fr.m2w fr.w2m are set by CSGTarget::getFrame 
 
-    SEvt::AddGenstep( SEvent::MakeCenterExtentGensteps(fr) ); 
+    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(fr) ); 
 
     NP* gs = SEvt::GetGenstep(); 
-    NP* pp = SEvent::GenerateCenterExtentGenstepsPhotons_( gs, fr.gridscale() );  
+    NP* pp = SFrameGenstep::GenerateCenterExtentGenstepsPhotons_( gs, fr.gridscale() );  
 
     std::cout << " fr " << std::endl << fr << std::endl ; 
 

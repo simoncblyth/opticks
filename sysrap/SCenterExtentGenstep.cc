@@ -5,7 +5,11 @@
 #include "SSys.hh"
 #include "SPath.hh"
 #include "SEvent.hh"
+
+#include "SGenstep.hh"
+#include "SFrameGenstep.hh"
 #include "SCenterExtentGenstep.hh"
+
 #include "NP.hh"
 
 #include "PLOG.hh"
@@ -58,7 +62,7 @@ void SCenterExtentGenstep::DumpBoundingBox(const float4& ce, const std::vector<i
     for( int i=0 ; i < 2 ; i++)
     {
         bool ce_offset_bb = i == 1 ; 
-        SEvent::GetBoundingBox(mn, mx, ce, cegs, gridscale, ce_offset_bb ); 
+        SFrameGenstep::GetBoundingBox(mn, mx, ce, cegs, gridscale, ce_offset_bb ); 
         std::cout 
             << " ce_offset_bb " << ce_offset_bb
             << " mn " << mn 
@@ -104,7 +108,7 @@ void SCenterExtentGenstep::init()
     // input CEGS are 4 or 7 ints delimited by colon nx:ny:nz:num_pho OR nx:px:ny:py:nz:py:num_pho 
 
  
-    SEvent::StandardizeCEGS(ce, cegs, gridscale );
+    SFrameGenstep::StandardizeCEGS(ce, cegs, gridscale );
     assert( cegs.size() == 7 );
 
     int ix0 = cegs[0] ;
@@ -118,14 +122,14 @@ void SCenterExtentGenstep::init()
     nx = (ix1 - ix0)/2 ;
     ny = (iy1 - iy0)/2 ;
     nz = (iz1 - iz0)/2 ;
-    int gridaxes = SEvent::GridAxes(nx, ny, nz);
+    int gridaxes = SGenstep::GridAxes(nx, ny, nz);
 
     LOG(info)
         << " nx " << nx
         << " ny " << ny
         << " nz " << nz
         << " GridAxes " << gridaxes
-        << " GridAxesName " << SEvent::GridAxesName(gridaxes)
+        << " GridAxesName " << SGenstep::GridAxesName(gridaxes)
         ;
 
     peta->q0.i.x = ix0 ;
@@ -165,14 +169,14 @@ void SCenterExtentGenstep::init()
     bool ce_offset = false ;
     bool ce_scale = true ;
 
-    gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
+    gs = SFrameGenstep::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
 
     const char* topline = SSys::getenvvar("TOPLINE", "SCenterExtentGenstep.topline") ; 
     const char* botline = SSys::getenvvar("BOTLINE", "SCenterExtentGenstep.botline" ) ; 
     set_meta<std::string>("TOPLINE", topline );
     set_meta<std::string>("BOTLINE", botline );
 
-    SEvent::GenerateCenterExtentGenstepsPhotons( pp, gs, gridscale );
+    SFrameGenstep::GenerateCenterExtentGenstepsPhotons( pp, gs, gridscale );
 
     LOG(info) << "]" ;
 }

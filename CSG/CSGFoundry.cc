@@ -361,6 +361,17 @@ std::string CSGFoundry::descInstance() const
     return s ; 
 }
 
+/**
+CSGFoundry::descInstance
+---------------------------
+
+::
+
+    c ; IDX=0,10,100 METH=descInstance ./CSGTargetTest.sh remote 
+  
+
+**/
+
 std::string CSGFoundry::descInstance(unsigned idx) const
 {
     std::stringstream ss ; 
@@ -2410,16 +2421,12 @@ void CSGFoundry::getFrame(sframe& fr, const char* frs ) const
 
 void CSGFoundry::getFrame(sframe& fr, int inst_idx) const
 {
-    fr.set_inst( inst_idx ); 
     int rc = target->getFrame( fr, inst_idx );  
     assert( rc == 0 ); 
 }
  
 void CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const 
 {
-    fr.set_midx_mord_iidx( midx, mord, iidxg ); 
-
-    int rc = 0 ; 
     if( midx == -1 )
     { 
         unsigned long long emm = 0ull ;   // hmm instance var ?
@@ -2427,9 +2434,9 @@ void CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const
     }
     else
     {
-        rc = target->getFrame( fr, midx, mord, iidxg );  
+        int rc = target->getFrame( fr, midx, mord, iidxg );  
+        assert( rc == 0 ); 
     }
-    assert( rc == 0 ); 
 }
 
 

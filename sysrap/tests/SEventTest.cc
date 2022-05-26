@@ -9,6 +9,7 @@
 
 #include "SPath.hh"
 #include "SEvent.hh"
+#include "SFrameGenstep.hh"
 #include "SCenterExtentGenstep.hh"
 #include "SRng.hh"
 
@@ -73,7 +74,7 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz, const float4* ce
     std::vector<int> cegs = {{nx, ny, nz, 10 }} ; 
     float gridscale = 1.f ; 
 
-    SEvent::StandardizeCEGS(ce, cegs, gridscale );
+    SFrameGenstep::StandardizeCEGS(ce, cegs, gridscale );
     SCenterExtentGenstep::DumpBoundingBox(ce, cegs, gridscale ); 
 
     bool ce_offset = false ; 
@@ -81,7 +82,7 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz, const float4* ce
 
     const Tran<double>* geotran = GetTestTransform(0) ; 
 
-    const NP* gs = SEvent::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );  
+    const NP* gs = SFrameGenstep::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );  
 
     int create_dirs = 2 ; // 2:dirpath
     const char* fold = SPath::Resolve(BASE, create_dirs );
@@ -97,7 +98,7 @@ void test_GenerateCenterExtentGensteps_0( const NP* gsa )
 
     float gridscale = 1.f ; // not usually used
     std::vector<quad4> pp ;
-    SEvent::GenerateCenterExtentGenstepsPhotons( pp, gsa, gridscale ); 
+    SFrameGenstep::GenerateCenterExtentGenstepsPhotons( pp, gsa, gridscale ); 
     NP* ppa = NP::Make<float>( pp.size(), 4, 4 ); 
     memcpy( ppa->bytes(),  (float*)pp.data(), ppa->arr_bytes() );
    
@@ -111,7 +112,7 @@ void test_GenerateCenterExtentGensteps_1( const NP* gsa )
 {   
     LOG(info); 
     float gridscale = 1.f ; // not usually used
-    NP* ppa = SEvent::GenerateCenterExtentGenstepsPhotons_( gsa, gridscale ); 
+    NP* ppa = SFrameGenstep::GenerateCenterExtentGenstepsPhotons_( gsa, gridscale ); 
     int create_dirs = 2 ; // 2:dirpath
     const char* fold = SPath::Resolve(BASE, create_dirs );
     LOG(info) << "ppa " << ppa->sstr() << " saving ppa.npy to " << fold  ;

@@ -28,7 +28,6 @@ list(APPEND SOURCES
     CSGFoundry.cc
     CSGCopy.cc
     CSGMaker.cc
-    CSGGenstep.cc
     CSGTarget.cc
     CSGScan.cc
     CSGView.cc
@@ -41,6 +40,7 @@ list(APPEND SOURCES
     CSG_LOG.cc
 )
     
+#    CSGGenstep.cc
 
 list(APPEND CSG_HEADERS
     CSGNode.h 
@@ -54,7 +54,6 @@ list(APPEND CSG_HEADERS
     CSGFoundry.h
     CSGCopy.h
     CSGMaker.h
-    CSGGenstep.h
     CSGTarget.h
     CSGScan.h
     CSGView.h
@@ -69,6 +68,11 @@ list(APPEND CSG_HEADERS
     CSG_LOG.hh 
     CSG_API_EXPORT.hh 
 )
+
+
+#    CSGGenstep.h
+
+
 
 list(APPEND INTERSECT_HEADERS
     csg_intersect_leaf.h 

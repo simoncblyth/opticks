@@ -90,7 +90,11 @@ set(SOURCES
     SLabelCache.cc
 
     SMath.cc
+
     SEvent.cc
+    SGenstep.cc
+    SFrameGenstep.cc
+
     SOpticks.cc
     SOpticksResource.cc
     SOpticksKey.cc
@@ -238,7 +242,11 @@ set(HEADERS
 
     SOpticksKey.hh
     SMath.hh
+
     SEvent.hh
+    SGenstep.hh
+    SFrameGenstep.hh
+
     SThetaCut.hh
     SPhiCut.hh
 

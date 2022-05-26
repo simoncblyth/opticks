@@ -109,15 +109,22 @@ CSGTarget::getFrame
 
 int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const 
 {
+    fr.set_midx_mord_iidx( midx, mord, iidxg ); 
     return getCenterExtent( fr.ce, midx, mord, iidxg, &fr.m2w , &fr.w2m ); 
 }
 
 int CSGTarget::getFrame(sframe& fr, int inst_idx ) const 
 {
     const qat4* _t = foundry->getInst(inst_idx); 
-    
+
+    unsigned ins_idx, gas_idx, ias_idx ; 
+    _t->getIdentity(ins_idx, gas_idx, ias_idx )  ;
+
+    assert( int(ins_idx) == inst_idx ); 
+    fr.set_inst(inst_idx); 
+
     qat4 t(_t->cdata());   // copy the instance (transform and identity info)
-    const qat4* v = Tran<double>::Invert(t);     // identity gets cleared in here 
+    const qat4* v = Tran<double>::Invert(&t);     // identity gets cleared in here 
 
     qat4::copy(fr.m2w,  t);  
     qat4::copy(fr.w2m, *v);  
@@ -235,6 +242,7 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
 
     CSGPrim gpr = {} ; 
     CSGPrim::Copy(gpr, *lpr);   // start global prim from local 
+
     q.transform_aabb_inplace( gpr.AABB_() ); 
 
     LOG(LEVEL) 
