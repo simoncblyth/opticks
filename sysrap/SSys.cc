@@ -436,13 +436,49 @@ int SSys::getenvintvec( const char* envkey, std::vector<int>& ivec, char delim, 
     char* line = getenv(envkey);
     std::stringstream ss; 
     ss.str(line ? line : fallback)  ;
-
     std::string s;
     while (std::getline(ss, s, delim)) ivec.push_back(atoi_(s.c_str())) ; 
-    
     return ivec.size(); 
 }
 
+std::string SSys::Desc(const std::vector<int>* ivec)
+{
+    std::stringstream ss ; 
+    if(ivec == nullptr) ss << "ivec null" ; 
+    else for(unsigned i=0 ; i < ivec->size() ; i++ ) ss << std::setw(7) << (*ivec)[i] << " " ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+std::vector<float>* SSys::getenvfloatvec(const char* envkey, const char* fallback, char delim  )
+{
+    std::vector<float>* fvec = new std::vector<float>() ; 
+    int nitem = getenvfloatvec(envkey, *fvec,fallback, delim  ); 
+    LOG(LEVEL) << " nitem " << nitem ; 
+    return fvec ; 
+}
+
+int  SSys::getenvfloatvec( const char* envkey, std::vector<float>& fvec, const char* fallback, char delim )
+{
+    char* line = getenv(envkey);
+    std::stringstream ss; 
+    ss.str(line ? line : fallback)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) fvec.push_back(atof_(s.c_str())) ; 
+    return fvec.size(); 
+}
+
+
+std::string SSys::Desc(const std::vector<float>* fvec)
+{
+    std::stringstream ss ; 
+    if(fvec == nullptr) ss << "fvec null" ; 
+    else for(unsigned i=0 ; i < fvec->size() ; i++ ) ss << std::setw(10) << std::fixed << std::setprecision(4) << (*fvec)[i] << " " ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 

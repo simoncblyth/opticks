@@ -16,7 +16,6 @@ int main(int argc, char** argv)
 
     LOG(info) << " cegs " << cegs->desc();   
 
-    cegs->dumpBoundingBox(); 
 
     cegs->save(); 
 

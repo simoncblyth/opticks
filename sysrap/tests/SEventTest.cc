@@ -75,9 +75,8 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz, const float4* ce
     float gridscale = 1.f ; 
 
     SFrameGenstep::StandardizeCEGS(ce, cegs, gridscale );
-    SCenterExtentGenstep::DumpBoundingBox(ce, cegs, gridscale ); 
 
-    bool ce_offset = false ; 
+    float3 ce_offset = make_float3(0.f, 0.f, 0.f) ; 
     bool ce_scale = true ; 
 
     const Tran<double>* geotran = GetTestTransform(0) ; 

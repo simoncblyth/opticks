@@ -255,6 +255,16 @@ void test_OS()
 
 }
 
+void test_getenvfloatvec()
+{
+    const char* ekey = "CE_OFFSET" ; 
+    SSys::setenvvar(ekey, "1.5,-2.1,+3.3"); 
+    std::vector<float>* fvec = SSys::getenvfloatvec(ekey);
+    std::cout << SSys::Desc(fvec) << std::endl ; 
+}
+
+
+
 
 int main(int argc , char** argv )
 {
@@ -282,9 +292,10 @@ int main(int argc , char** argv )
     test_getenvfloat(); 
     test_atof(); 
     test_RunPythonScript(); 
+    test_OS(); 
     **/
 
-    test_OS(); 
+    test_getenvfloatvec(); 
 
 
     return rc  ; 

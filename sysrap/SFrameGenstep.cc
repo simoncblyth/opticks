@@ -18,6 +18,38 @@
 
 const plog::Severity SFrameGenstep::LEVEL = PLOG::EnvLevel("SFrameGenstep", "DEBUG" ); 
 
+/**
+SFrameGenstep::CE_OFFSET
+-------------------------
+
+Typically CE_OFFSET "0.,0.,0." corresponding to local frame origin.
+The string "CE" is special cased for the offset to be set as ce. 
+
+**/
+
+void SFrameGenstep::CE_OFFSET(float3& ce_offset, const float4& ce ) // static
+{
+    const char* ekey = "CE_OFFSET" ; 
+    const char* val = SSys::getenvvar(ekey); 
+
+    if(strcmp(val, "CE")== 0 || strcmp(val, "ce")== 0  )   // this is not typically used anymore
+    {
+        ce_offset.x = ce.x ; 
+        ce_offset.y = ce.y ; 
+        ce_offset.z = ce.z ; 
+    }
+    else
+    {
+        std::vector<float>* fvec = SSys::getenvfloatvec(ekey, "0,0,0"); 
+        assert(fvec); 
+        assert( fvec->size() == 3 ); 
+
+        ce_offset.x = (*fvec)[0] ; 
+        ce_offset.x = (*fvec)[1] ; 
+        ce_offset.x = (*fvec)[2] ; 
+    }
+}
+
 
 /**
 SFrameGenstep::MakeCenterExtentGensteps
@@ -39,8 +71,9 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
     assert( cegs.size() == 7 );
 
     fr.set_grid(cegs, gridscale); 
-   
-    bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ;
+
+    float3 ce_offset ;  
+    CE_OFFSET(ce_offset, ce); 
 
     bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ; // TODO: ELIMINATE AFTER RTP CHECK 
     if(ce_scale == false) LOG(fatal) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 
@@ -84,20 +117,8 @@ gridscale
    To expand the area when using a finer grid increase the nx:ny:nz, however
    that will lead to a slower render. 
 
-ce_offset:true
-   gs.q1.f.xyxz is set to (ce.xyz,1.)
-
-   HMM: when m2w transform is being used it seems wrong to do this.
-   This is presumably a kludge for global geom, used prior 
-   to developing RTP transforms ?
-
-   HMM: that assumes ce.xyz is global, it could be local ? 
-
-   TODO: eliminate this setting, once confirmed the above  
-
-ce_offset:false
-   gs.q1.f.xyzw is set to (0.,0.,0.,1.)
-
+ce_offset:float3 
+   typically local frame origin (0.,0.,0.) 
 
 ce_scale:true
    grid translate offsets *local_scale* set to ce.w*gridscale 
@@ -128,7 +149,7 @@ frame as are doing the local_translate first.
 
 **/
 
-NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, bool ce_offset, bool ce_scale ) // static
+NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const float3& ce_offset, bool ce_scale ) // static
 {
     std::vector<quad6> gensteps ;
     quad6 gs ; gs.zero();
@@ -168,9 +189,9 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
     local frame position : currently origin, same for all gensteps : only the transform is changed   
 
     **/
-    gs.q1.f.x = ce_offset ? ce.x : 0.f ;    // ce_offset:true is NOT typically used anymore TODO: ELIMINATE
-    gs.q1.f.y = ce_offset ? ce.y : 0.f ;
-    gs.q1.f.z = ce_offset ? ce.z : 0.f ;
+    gs.q1.f.x = ce_offset.x ; 
+    gs.q1.f.y = ce_offset.y ; 
+    gs.q1.f.z = ce_offset.z ; 
     gs.q1.f.w = 1.f ;
 
     double local_scale = ce_scale ? double(gridscale)*ce.w : double(gridscale) ; // ce_scale:true is almost always expected 
@@ -302,11 +323,6 @@ void SFrameGenstep::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, f
         << " tot_photons (grid_points*photons_per_genstep) " << tot_photons
         ;
 
-    float3 mn ; 
-    float3 mx ; 
-
-    bool ce_offset = true ; 
-    GetBoundingBox( mn, mx, ce, cegs, gridscale, ce_offset ); 
 }
 
 
@@ -319,7 +335,7 @@ the float3 mn and mx bounds of the CE grid.  NB no use of any transforms here.
 
 **/
 
-void SFrameGenstep::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale, bool ce_offset ) // static 
+void SFrameGenstep::GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale, const float3& ce_offset ) // static 
 {
     assert( standardized_cegs.size() == 7 ) ; 
 
@@ -332,14 +348,14 @@ void SFrameGenstep::GetBoundingBox( float3& mn, float3& mx, const float4& ce, co
     int photons_per_genstep = standardized_cegs[6] ;
 
 
-    float x0 = float(ix0)*gridscale*ce.w + ( ce_offset ? ce.x : 0.f ) ;
-    float x1 = float(ix1)*gridscale*ce.w + ( ce_offset ? ce.x : 0.f ) ;
+    float x0 = float(ix0)*gridscale*ce.w + ce_offset.x ;   // ce_offset is usually local fram origin (0.f,0.f,0.f)
+    float x1 = float(ix1)*gridscale*ce.w + ce_offset.x ;
 
-    float y0 = float(iy0)*gridscale*ce.w + ( ce_offset ? ce.y : 0.f ) ;
-    float y1 = float(iy1)*gridscale*ce.w + ( ce_offset ? ce.y : 0.f ) ;
+    float y0 = float(iy0)*gridscale*ce.w + ce_offset.y ; 
+    float y1 = float(iy1)*gridscale*ce.w + ce_offset.y ;
 
-    float z0 = float(iz0)*gridscale*ce.w + ( ce_offset ? ce.z : 0.f ) ;
-    float z1 = float(iz1)*gridscale*ce.w + ( ce_offset ? ce.z : 0.f ) ;
+    float z0 = float(iz0)*gridscale*ce.w + ce_offset.z ;
+    float z1 = float(iz1)*gridscale*ce.w + ce_offset.z ;
 
     mn.x = x0 ; 
     mx.x = x1 ; 

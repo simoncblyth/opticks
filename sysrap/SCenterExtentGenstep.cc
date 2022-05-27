@@ -54,30 +54,6 @@ template<typename T> void SCenterExtentGenstep::set_meta(const char* key, T valu
 }
 
 
-void SCenterExtentGenstep::DumpBoundingBox(const float4& ce, const std::vector<int>& cegs, float gridscale )
-{ 
-    float3 mn ; 
-    float3 mx ; 
-    std::cout << " SEvent::GetBoundingBox without and with ce_offset " << std::endl ; 
-    for( int i=0 ; i < 2 ; i++)
-    {
-        bool ce_offset_bb = i == 1 ; 
-        SFrameGenstep::GetBoundingBox(mn, mx, ce, cegs, gridscale, ce_offset_bb ); 
-        std::cout 
-            << " ce_offset_bb " << ce_offset_bb
-            << " mn " << mn 
-            << " mx " << mx
-            << std::endl
-            ;  
-    }
-}
-
-void SCenterExtentGenstep::dumpBoundingBox() const 
-{
-    DumpBoundingBox(ce, cegs, gridscale); 
-}
-
-
 SCenterExtentGenstep::SCenterExtentGenstep(const float4* ce_)
     :
     gs(nullptr),
@@ -166,7 +142,7 @@ void SCenterExtentGenstep::init()
     peta->q2.f.z = ce.z ;
     peta->q2.f.w = ce.w ;
 
-    bool ce_offset = false ;
+    float3 ce_offset = make_float3(0.f, 0.f, 0.f ) ;
     bool ce_scale = true ;
 
     gs = SFrameGenstep::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
