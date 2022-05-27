@@ -71,18 +71,22 @@ import os, sys, logging, numpy as np
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 log = logging.getLogger(__name__)
 
+from opticks.ana.eget import eint_
+
 SIZE = np.array([1280, 720])
+XCOMPARE_SIMPLE = "XCOMPARE_SIMPLE" in os.environ
+XCOMPARE = "XCOMPARE" in os.environ
 GUI = not "NOGUI" in os.environ
 MP =  not "NOMP" in os.environ 
 PV =  not "NOPV" in os.environ 
 LEGEND =  not "NOLEGEND" in os.environ # when not MASK=pos legend often too many lines, so can switch it off 
-PVGRID = "PVGRID" in os.environ
 SIMPLE = "SIMPLE" in os.environ
 MASK = os.environ.get("MASK", "pos")
 FEAT = os.environ.get("FEAT", "pid" )  
 ALLOWED_MASK = ("pos", "t", "non" )
 assert MASK in ALLOWED_MASK, "MASK %s is not in ALLOWED_MASK list %s " % (MASK, str(ALLOWED_MASK))
-GSPLOT = int(os.environ.get("GSPLOT", "0"))
+GSPLOT = eint_("GSPLOT", "0")
+PIDX = eint_("PIDX", "0")
 
 
 from opticks.CSG.CSGFoundry import CSGFoundry 
@@ -93,6 +97,7 @@ from opticks.ana.simtrace_positions import SimtracePositions
 from opticks.ana.framegensteps import FrameGensteps
 from opticks.ana.npmeta import NPMeta
 from opticks.sysrap.sframe import sframe , X, Y, Z
+from opticks.ana.pvplt import * 
 
 import matplotlib
 if GUI == False:
@@ -189,7 +194,6 @@ class SimtracePlot(object):
 
         self.aa = aa
         self.sz = float(os.environ.get("SZ","1.0"))
-        self.zoom = float(os.environ.get("ZOOM","3.0"))
 
         log.info(" aa[X] %s " % str(self.aa[X]))
         log.info(" aa[Y] %s " % str(self.aa[Y]))
@@ -411,13 +415,9 @@ class SimtracePlot(object):
             pl.add_points( pos[:,:3], color=color, point_size=10  )
         pass
         pl.enable_eye_dome_lighting()  
-        ##
         ## improves depth peception for point cloud, especially from a distance
         ## https://www.kitware.com/eye-dome-lighting-a-non-photorealistic-shading-technique/
-        ##
         pl.show_grid()
-        cp = pl.show() if GUI else None
-        return cp
 
 
     def positions_pvplt_2D(self):
@@ -437,7 +437,6 @@ class SimtracePlot(object):
 
         In parallel mode, decrease the parallel scale by the specified factor.
         A value greater than 1 is a zoom-in, a value less than 1 is a zoom-out.       
-
         """
 
         lim = self.gs.lim
@@ -452,17 +451,13 @@ class SimtracePlot(object):
         upos = self.pos.upos
 
         feat = self.feat 
-        zoom = self.zoom
-        look = self.frame.look if self.pos.local else self.frame.ce[:3]
-        eye = look + self.frame.off
-        up = self.frame.up
+
+
 
 
         pl = self.get_pv_plotter()
 
-        #pl.view_xz()   ## TODO: see if view_xz is doing anything when subsequently set_focus/viewup/position 
 
-        pl.camera.ParallelProjectionOn()  
         pl.add_text(self.topline, position="upper_left")
         pl.add_text(self.botline, position="lower_left")
         pl.add_text(self.frame.thirdline, position="lower_right")
@@ -477,25 +472,21 @@ class SimtracePlot(object):
             pl.add_points( pos[:,:3], color=color )
         pass
 
-        showgrid = len(self.frame.axes) == 2 # too obscuring with 3D
-        if showgrid:
-            pl.add_points( ugsc[:,:3], color="white" )   # genstep grid
+        if hasattr(self, 'x_lpos'):
+            pvplt_add_contiguous_line_segments(pl, self.x_lpos[:,:3])
+        pass
+
+        show_genstep_grid = len(self.frame.axes) == 2 # too obscuring with 3D
+        if show_genstep_grid:
+            pl.add_points( ugsc[:,:3], color="white" ) 
         pass   
 
         ## the lines need reworking 
-
         self.lines_plt(None, pl)
 
-        # TODO: use gridspec.pv_compose 
+        self.frame.pv_compose(pl, local=True) 
 
-        pl.set_focus(    look )
-        pl.set_viewup(   up )
-        pl.set_position( eye, reset=True )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
-        pl.camera.Zoom(2)
 
-        if PVGRID:
-            pl.show_grid()
-        pass
 
     def positions_pvplt_show(self):
         outpath = self.outpath_("positions","pvplt")
@@ -513,6 +504,12 @@ if __name__ == '__main__':
 
     x = Fold.Load("$CFBASE/CSGOptiXSimTest", symbol="x")
 
+    if not x is None:
+        x_gpos_ = x.record[PIDX,:,0,:3]  # global frame photon step record positions of single PIDX photon
+        x_gpos  = np.ones( (len(x_gpos_), 4 ), dtype=np.float32 )
+        x_gpos[:,:3] = x_gpos_
+        x_lpos = np.dot( x_gpos, frame.w2m ) 
+    pass
 
     SimtracePositions.Check(simtrace)
 
@@ -523,11 +520,28 @@ if __name__ == '__main__':
     pos = SimtracePositions(simtrace, gs, frame, local=local, mask=MASK )
     upos = pos.upos
 
+
     if SIMPLE:
         pvplt_simple(pos.gpos[:,:3], "pos.gpos[:,:3]" )
         pvplt_simple(pos.lpos[:,:3], "pos.lpos[:,:3]" )
         raise Exception("SIMPLE done")
     pass
+
+    if XCOMPARE_SIMPLE and not x is None:
+        pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
+        x_global = False
+        if x_global:
+            pl.add_points( pos.gpos[:,:3], color="white" )        
+            pvplt_add_contiguous_line_segments(pl, x_gpos[:,:3])
+        else:
+            pl.add_points( pos.lpos[:,:3], color="white" )        
+            pvplt_add_contiguous_line_segments(pl, x_lpos[:,:3])
+        pass
+        pl.show_grid()
+        cp = pl.show() if GUI else None
+        raise Exception("XCOMPARE done")
+    pass
+
 
     pf = SimtraceFeatures(pos, cf, featname=FEAT ) 
 
@@ -540,7 +554,14 @@ if __name__ == '__main__':
     pass
 
     if not pv is None:
+
+        if XCOMPARE and not x is None:       
+            log.info("pvplt_add_contiguous_line_segments")
+            pvplt_add_contiguous_line_segments(pl, x_lpos[:,:3])   
+        pass
+        plt.x_lpos = x_lpos   # HMM: need "y" perpendicular shift for the simtrace to get the cross-section to correspond to the hit "y" 
         plt.positions_pvplt()
+
         plt.positions_pvplt_show()
     pass
 

@@ -11,6 +11,12 @@ After run and grab with new sframe based machinery::
 
 
 
+Issue 3 : lots of simtrace "hits" ?
+----------------------------------------
+
+* qevent::add_simtrace uses [3,3] for prd.identity not the history flag, so meaningless hits
+* TODO: use SEventConfig to configure what gets downloaded by QEvent for management within SEvt, change to simtrace.npy for clarity  
+ 
 
 Issue 2 : getting small range with mp, SIM gives a PMT shape but not as expected, also some miss dots
 ---------------------------------------------------------------------------------------------------------

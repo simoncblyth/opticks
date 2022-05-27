@@ -5,7 +5,16 @@ import os
 efloat_ = lambda ekey, fallback:float(os.environ.get(ekey,fallback))
 efloatlist_ = lambda ekey,fallback:list(map(float, filter(None, os.environ.get(ekey,fallback).split(","))))
 
-eint_ = lambda ekey, fallback:int(os.environ.get(ekey,fallback))
+def eint_(ekey, fallback):
+    """
+    A blank value is special cased to return zero 
+    """
+    val = os.environ.get(ekey, fallback)
+    if val == "":
+        val = "0"
+    pass
+    return int(val)
+
 
 def eintlist_(ekey, fallback):
     """ 

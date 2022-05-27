@@ -243,6 +243,45 @@ class sframe(object):
         self.thirdline = "thirdline"
 
 
+    def pv_compose(self, pl, local=True):
+        """
+        #pl.view_xz()   ## TODO: see if view_xz is doing anything when subsequently set_focus/viewup/position 
+        """
+
+        RESET = "RESET" in os.environ 
+        PARA = "PARA" in os.environ 
+        ZOOM = efloat_("ZOOM", "1.")
+        PVGRID = "PVGRID" in os.environ
+
+        if PARA:
+            pl.camera.ParallelProjectionOn()
+        pass 
+
+        look = self.look if local else self.ce[:3]   ## HMM: same ?
+        eye = look + self.off
+        up = self.up
+
+        ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
+        
+        #eye = look + self.off
+
+        look = self.look 
+        eye = self.eye
+        up = self.up
+
+        print("frame.pv_compose look:%s eye: %s up:%s  PARA:%s RESET:%d ZOOM:%s  " % (str(look), str(eye), str(up), RESET, PARA, ZOOM ))
+
+        pl.set_focus(    look )
+        pl.set_viewup(   up )
+        pl.set_position( eye, reset=RESET )   ## for reset=True to succeed to auto-set the view, must do this after add_points etc.. 
+        pl.camera.Zoom(ZOOM)
+
+        if PVGRID:
+            pl.show_grid()
+        pass
+
+
+
     def __repr__(self):
 
         l_ = lambda k,v:"%-12s : %s" % (k, v) 

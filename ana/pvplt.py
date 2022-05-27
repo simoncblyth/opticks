@@ -112,6 +112,68 @@ def pvplt_lines( pl, pos, vec, color='white' ):
     pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
 
 
+def pvplt_add_contiguous_line_segments( pl, xpos ):
+    """
+    :param pl: plotter
+    :param xpos: (n,3) array of positions 
+    
+    Adds red points at *xpos* and joins them with blue line segments using add_lines.
+    This has been used only for small numbers of positions such as order less than 10 
+    photon step positions.
+
+
+    """
+    pl.add_points( xpos, color="red" )        
+    xseg = pvplt_contiguous_line_segments(xpos)
+    pl.add_lines( xseg, color="blue" )
+
+
+def pvplt_contiguous_line_segments( pos ):
+    """
+    :param pos: (n,3) array of positions 
+    :return seg: ( 2*(n-1),3) array of line segments suitable for pl.add_lines 
+
+    Note that while the pos is assumed to represent a contiguous sequence of points
+    such as photon step record positions the output line segments *seg* 
+    are all independent so they could be concatenated to draw line sequences 
+    for multiple photons with a single pl.add_lines
+
+    A set of three positions (3,3):: 
+
+        [0, 0, 0], [1, 0, 0], [1, 1, 0]
+
+    Would give seg (2,2,3)::
+
+         [[0,0,0],[1,0,0]],
+         [[1,0,0],[1,1,0]]
+
+    Which is reshaped to (4,3)::
+
+         [[0, 0, 0], [1, 0, 0], [1, 0, 0], [1, 1, 0]])
+
+    That is the form needed to represent line segments between the points
+    with pl.add_lines 
+
+    """
+    assert len(pos.shape) == 2 and pos.shape[1] == 3 and pos.shape[0] > 1 
+    num_seg = len(pos) - 1
+    seg = np.zeros( (num_seg, 2, 3), dtype=pos.dtype )
+    seg[:,0] = pos[:-1]   # first points of line segments skips the last position
+    seg[:,1] = pos[1:]    # second points of line segments skipd the first position
+    return seg.reshape(-1,3)
+    
+
+def test_pvplt_contiguous_line_segments():
+    pos = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0]])
+    seg = pvplt_contiguous_line_segments(pos)
+    x_seg = np.array([[0, 0, 0], [1, 0, 0], [1, 0, 0], [1, 1, 0]])
+
+    print(pos)
+    print(seg)
+    assert np.all( x_seg == seg )
+
+
+
 def pvplt_check_transverse( mom, pol, assert_transverse=True ):
     mom_pol_transverse = np.abs(np.sum( mom*pol , axis=1 )).max() 
 
@@ -160,4 +222,9 @@ def pvplt_polarized( pl, pos, mom, pol, factor=0.15, assert_transverse=True ):
         cp = None 
     pass    
     return cp 
+
+
+if __name__ == '__main__':
+    test_pvplt_contiguous_line_segments()
+pass
 
