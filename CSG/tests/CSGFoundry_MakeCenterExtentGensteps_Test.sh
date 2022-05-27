@@ -21,29 +21,27 @@ geom=HamaXZ_1000
 #geom=sWorld_XZ
 
 export GEOM=${GEOM:-$geom}
-ce_offset=0
+ce_offset=0,0,0
 ce_scale=1   
+gridscale=0.10
+
 
 if [ "$GEOM" == "sWorld_XZ" ]; then
 
     moi=sWorld
     cegs=16:0:9:-24   
-    gridscale=$(( 60000 / 16 ))  
 
 elif [ "$GEOM" == "HamaXZ_0" ]; then
 
     moi=Hama
     cegs=16:0:9:-24
-    gridscale=0.10
-    ce_offset=0
 
 elif [ "$GEOM" == "HamaXZ_1000" ]; then
 
     moi=Hama:0:1000
     cegs=16:0:9:-24   
     #gridscale=0.10
-    gridscale=100
-    ce_offset=0
+    ce_offset=0,-666.6,0
 
 elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
 
@@ -63,8 +61,6 @@ elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
     cegs=0:16:9:-24                 # YZ/TP
     gridscale=0.05
 
-    #ce_offset=1   # already in the transform
-    ce_offset=0
 fi 
 
 

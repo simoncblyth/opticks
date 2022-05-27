@@ -32,7 +32,9 @@ void SFrameGenstep::CE_OFFSET(float3& ce_offset, const float4& ce ) // static
     const char* ekey = "CE_OFFSET" ; 
     const char* val = SSys::getenvvar(ekey); 
 
-    if(strcmp(val, "CE")== 0 || strcmp(val, "ce")== 0  )   // this is not typically used anymore
+    bool is_CE = strcmp(val, "CE")== 0 || strcmp(val, "ce")== 0  ; 
+
+    if(is_CE)   // this is not typically used anymore
     {
         ce_offset.x = ce.x ; 
         ce_offset.y = ce.y ; 
@@ -45,9 +47,19 @@ void SFrameGenstep::CE_OFFSET(float3& ce_offset, const float4& ce ) // static
         assert( fvec->size() == 3 ); 
 
         ce_offset.x = (*fvec)[0] ; 
-        ce_offset.x = (*fvec)[1] ; 
-        ce_offset.x = (*fvec)[2] ; 
+        ce_offset.y = (*fvec)[1] ; 
+        ce_offset.z = (*fvec)[2] ; 
     }
+
+
+    LOG(info) 
+         << "ekey " << ekey 
+         << " val " << val 
+         << " is_CE " << is_CE
+         << " ce_offset " << ce_offset 
+         << " ce " << ce 
+         ; 
+
 }
 
 
@@ -72,8 +84,14 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 
     fr.set_grid(cegs, gridscale); 
 
-    float3 ce_offset ;  
+    float3 ce_offset = make_float3( 0.f, 0.f, 0.f ) ;  
     CE_OFFSET(ce_offset, ce); 
+
+    LOG(info) 
+        << " ce " << ce 
+        << " ce_offset " << ce_offset 
+        ;
+
 
     bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ; // TODO: ELIMINATE AFTER RTP CHECK 
     if(ce_scale == false) LOG(fatal) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 

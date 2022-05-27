@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 
     CSGFoundry* fd = CSGFoundry::Load();
 
-    sframe fr = fd->getFrame() ;  // depends on MOI, GRIDSCALE, ...  fr.ce fr.m2w fr.w2m are set by CSGTarget::getFrame 
+    sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m are set by CSGTarget::getFrame 
 
     SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(fr) ); 
 

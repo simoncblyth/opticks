@@ -258,7 +258,9 @@ void test_OS()
 void test_getenvfloatvec()
 {
     const char* ekey = "CE_OFFSET" ; 
-    SSys::setenvvar(ekey, "1.5,-2.1,+3.3"); 
+    const char* ceo = "0.0,-666.6,0.0" ; 
+    SSys::setenvvar(ekey, ceo ); 
+
     std::vector<float>* fvec = SSys::getenvfloatvec(ekey);
     std::cout << SSys::Desc(fvec) << std::endl ; 
 }
