@@ -7,7 +7,7 @@ from opticks.ana.axes import X, Y, Z
 log = logging.getLogger(__name__)
 
 
-class Positions(object):
+class SimtracePositions(object):
     """
     Transforms global intersect positions into local frame 
 
@@ -27,19 +27,19 @@ class Positions(object):
         print(" num_photon: %d : landing_count : %d   %s " % (num_photon, landing_count, landing_msg) )
 
 
-    def __init__(self, p, gs, frame, local=True, mask="pos", local_extent_scale=False ):
+    def __init__(self, p, gs, frame, local=True, mask="pos"):
         """
-        :param p: photons array  (should be called "simtrace" really)
-        :param gs: Gensteps instance
-        :param frame: formerly GridSpec instance 
+        :param p: photons array  (TODO: rename to "simtrace" really)
+        :param gs: FrameGensteps instance, used for gs.lim position masking 
+        :param frame: sframe instance
         :param local:
         :param mask:
-        :param local_extent_scale: SUSPECT THIS WAS AN RTP KLUDGE 
         """
+        local_extent_scale = frame.coords == "RTP"  ## KINDA KLUDGE DUE TO EXTENT HANDLING BEING DONE BY THE RTP TRANSFORM
         isect = p[:,0]
 
-        gpos = p[:,1].copy()            # global frame intersect positions
-        gpos[:,3] = 1  
+        gpos = p[:,1].copy()              # global frame intersect positions
+        gpos[:,3] = 1.  
 
         lpos = np.dot( gpos, frame.w2m )   # local frame intersect positions
 
@@ -149,4 +149,6 @@ class Positions(object):
         self.bins2 = bins2 
 
 
+if __name__ == '__main__':
+    pass
 

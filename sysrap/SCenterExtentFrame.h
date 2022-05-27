@@ -13,6 +13,14 @@ rtp_tangential:true
 
     This "RTP-tangential" frame facilitates orientation with respect to a shape placed 
     on the surface of a sphere.    
+
+
+TODO: 
+    see SFrameGenstep::MakeCenterExtentGensteps it is confusing that the transform
+    here already has extent scaling, which requires to use CE_SCALE:0  which 
+    is contrary to non-RTP frame handling 
+
+
  
 See also 
 

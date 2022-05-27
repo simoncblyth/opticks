@@ -36,6 +36,7 @@ class Fold(object):
     def __init__(self, base, **kwa):
         self.base = base
         self.kwa = kwa 
+        self.symbol = kwa.get("symbol", "t")
         self.relbase = kwa.get("relbase")
         self.globals = kwa.get("globals", False) == True
         self.globals_prefix = kwa.get("globals_prefix", "") 
@@ -87,10 +88,10 @@ class Fold(object):
     def desc(self):
         now_stamp = datetime.datetime.now()
         l = []
-        l.append("t")
+        l.append(self.symbol)
         l.append("")
         l.append("CMDLINE:%s" % CMDLINE )
-        l.append("t.base:%s" % self.base )
+        l.append("%s.base:%s" % (self.symbol,self.base) )
         l.append("")
         stamps = []
 
@@ -104,7 +105,7 @@ class Fold(object):
             kls = a.__class__.__name__
             ext = ".txt" if kls == 'NPMeta' else ".npy"
             name = "%s%s" % (stem,ext)
-            aname = "t.%s" % stem
+            aname = "%s.%s" % (self.symbol,stem)
 
             if os.path.exists(path):
                 st = os.stat(path)

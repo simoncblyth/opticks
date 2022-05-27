@@ -38,14 +38,12 @@ EXECUTABLE=${EXECUTABLE:-$executable}
 opticks_key_remote_dir=$(opticks-key-remote-dir)    ## eg .opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1
 
 xbase=$opticks_key_remote_dir/CSG_GGeo 
-xdir=$xbase/$EXECUTABLE/                   ## trailing slash to avoid rsync duplicating path element 
+xdir=$xbase/$EXECUTABLE/             ## trailing slash to avoid rsync duplicating path element 
 
 from=P:$xdir
 to=$HOME/$xdir
-
-fold=$to
 cfbase=$HOME/$xbase
-
+fold=$cfbase/$EXECUTABLE
 
 printf "arg                     %s \n" "$arg"
 printf "EXECUTABLE              %s \n " "$EXECUTABLE"

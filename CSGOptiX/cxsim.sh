@@ -16,7 +16,7 @@ Create the standard geometry::
     cg
     ./run.sh 
 
-Run the sim::
+Run the sim using CSGOptiXSimTest executable::
 
     cx
     ./cxsim.sh 
@@ -26,7 +26,7 @@ Grab from remote::
     cx
     ./cxsim.sh grab
 
-Laptop analysis::
+Laptop analysis using CSGOptiXSimTest.py script::
 
    cx
    ./cxsim.sh ana

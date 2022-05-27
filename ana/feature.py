@@ -51,6 +51,8 @@ class Feature(object):
         The is an implicit assumption that the number of unique feature values is not enormous,
         for example boundary values or prim identity values.
         """
+
+
         uval, ucount = np.unique(val, return_counts=True)
 
         if len(vname) == 0:
@@ -172,7 +174,7 @@ class Feature(object):
             ])
 
 
-class PhotonFeatures(object):
+class SimtraceFeatures(object):
     """
     feat contriols how to select positions, eg  via boundary or identity 
     allow plotting of subsets with different colors
@@ -207,7 +209,7 @@ class PhotonFeatures(object):
 
     def __init__(self, pos, cf=None, featname="pid", do_mok=False ):
         """
-        :param pos: Positions instance
+        :param pos: SimtracePositions instance
 
         Although at first sight it looks like could use photons array 
         argument rather than Positions instance, that is not the case when masks are applied. 

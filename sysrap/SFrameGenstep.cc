@@ -41,7 +41,10 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
     fr.set_grid(cegs, gridscale); 
    
     bool ce_offset = SSys::getenvint("CE_OFFSET", 0) > 0 ;
-    bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ;
+
+    bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ; // TODO: ELIMINATE AFTER RTP CHECK 
+    if(ce_scale == false) LOG(fatal) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 
+ 
 
     Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 ); 
 
@@ -94,7 +97,6 @@ ce_offset:true
 
 ce_offset:false
    gs.q1.f.xyzw is set to (0.,0.,0.,1.)
-
 
 
 ce_scale:true
@@ -166,14 +168,16 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
     local frame position : currently origin, same for all gensteps : only the transform is changed   
 
     **/
-    gs.q1.f.x = ce_offset ? ce.x : 0.f ;  
+    gs.q1.f.x = ce_offset ? ce.x : 0.f ;    // ce_offset:true is NOT typically used anymore TODO: ELIMINATE
     gs.q1.f.y = ce_offset ? ce.y : 0.f ;
     gs.q1.f.z = ce_offset ? ce.z : 0.f ;
     gs.q1.f.w = 1.f ;
 
-    double local_scale = ce_scale ? double(gridscale)*ce.w : double(gridscale) ; 
+    double local_scale = ce_scale ? double(gridscale)*ce.w : double(gridscale) ; // ce_scale:true is almost always expected 
+
     // hmm: when using SCenterExtentFrame model2world transform the 
     // extent is already handled within the transform so must not apply extent scaling 
+    // THIS IS CONFUSING : TODO FIND WAY TO AVOID THE CONFUSION BY MAKING THE DIFFERENT TYPES OF TRANSFORM MORE CONSISTENT
 
     unsigned photon_offset = 0 ; 
 

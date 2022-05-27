@@ -50,15 +50,17 @@ ISEL allows plotting of a selection of feature values only, picked by descending
 
 ::
 
-    cx ; ./cxs_grab.sh 
-    cx ; ./cxs.sh 
+    cx ; ./cxs_Hama.sh  grab
+    cx ; ./cxs_Hama.sh  ana 
 
-    cx ; ipython -i tests/CSGOptiXSimtraceTest.py   # all boundaries
+Old instructions, not recently exercised::
 
-    ISEL=0,1         ./cxs.sh    # just the 2 most frequent boundaries
+    cx ; ./cxs_grab.sh   ## NO LONGER USED ?
+
+    ISEL=0,1         ./cxs.sh    # ISEL=0,1 picks the 2 most frequent feature values (eg boundaries when FEAT=bnd)
     ISEL=0,1,2,3,4   ./cxs.sh 
 
-    ISEL=Hama        ./cxs.sh    # select boundaries via strings in the bndnames
+    ISEL=Hama        ./cxs.sh    # select boundaries via strings in the bndnames, assuming FEAT=bnd
     ISEL=NNVT        ./cxs.sh 
     ISEL=Pyrex       ./cxs.sh 
     ISEL=Pyrex,Water ./cxs.sh 
@@ -66,6 +68,7 @@ ISEL allows plotting of a selection of feature values only, picked by descending
 
 """
 import os, sys, logging, numpy as np
+np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 log = logging.getLogger(__name__)
 
 SIZE = np.array([1280, 720])
@@ -76,18 +79,17 @@ LEGEND =  not "NOLEGEND" in os.environ # when not MASK=pos legend often too many
 PVGRID = "PVGRID" in os.environ
 SIMPLE = "SIMPLE" in os.environ
 MASK = os.environ.get("MASK", "pos")
+FEAT = os.environ.get("FEAT", "pid" )  
 ALLOWED_MASK = ("pos", "t", "non" )
 assert MASK in ALLOWED_MASK, "MASK %s is not in ALLOWED_MASK list %s " % (MASK, str(ALLOWED_MASK))
 GSPLOT = int(os.environ.get("GSPLOT", "0"))
 
 
-np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
-
 from opticks.CSG.CSGFoundry import CSGFoundry 
-from opticks.ana.p import *   # including cf 
+from opticks.ana.p import *       # including cf loaded from CFBASE
 from opticks.ana.fold import Fold
-from opticks.ana.feature import PhotonFeatures
-from opticks.ana.positions import Positions
+from opticks.ana.feature import SimtraceFeatures
+from opticks.ana.simtrace_positions import SimtracePositions
 from opticks.ana.framegensteps import FrameGensteps
 from opticks.ana.npmeta import NPMeta
 from opticks.sysrap.sframe import sframe , X, Y, Z
@@ -141,9 +143,10 @@ def pvplt_simple(xyz, label):
     return cp
 
 
-class Plt(object):
-    def __init__(self, feat, gs, frame, pos, outdir ):
+class SimtracePlot(object):
+    def __init__(self, pl, feat, gs, frame, pos, outdir ):
         """
+        :param pl: pyvista plotter instance, can be None
         :param feat: Feature instance 
         :param gs: FrameGensteps instance
         :param frame: sframe instance
@@ -159,11 +162,13 @@ class Plt(object):
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
         pass
-        self.outdir = outdir 
+        self.pl = pl
         self.feat = feat
         self.gs = gs
         self.frame = frame
         self.pos = pos
+        self.outdir = outdir 
+        self.pl = None
 
         topline = os.environ.get("TOPLINE", "CSGOptiXSimtraceTest.py:PH")
         botline = os.environ.get("BOTLINE", "cxs") 
@@ -194,10 +199,10 @@ class Plt(object):
         sisel = self.feat.sisel
         return os.path.join(self.outdir,"%s_%s_%s.png" % (stem, ptype, self.feat.name)) 
 
-    def positions_mpplt(self, legend=True, gsplot=0):
+    def positions_mpplt(self):
         axes = self.frame.axes   
         if len(axes) == 2:
-            self.positions_mpplt_2D(legend=legend, gsplot=gsplot)
+            self.positions_mpplt_2D(legend=LEGEND, gsplot=GSPLOT)
         else:
             log.info("mp skip 3D plotting as PV is so much better at that")
         pass
@@ -217,7 +222,7 @@ class Plt(object):
         H,V = self.frame.axes       # traditionally H,V = X,Z  but now generalized
         _H,_V = self.frame.axlabels
 
-        log.info(" grid.axes H:%s V:%s " % (_H, _V))  
+        log.info(" frame.axes H:%s V:%s " % (_H, _V))  
 
         feat = self.feat
         sz = self.sz
@@ -289,6 +294,14 @@ class Plt(object):
 
     def lines_plt(self, ax, pl):
         """
+        Draws axis parallel line segments in matplotlib and pyvista.
+        The segments extend across the genstep grid limits.
+        Lines to draw are configured using comma delimited value lists 
+        in envvars XX, YY, ZZ
+
+        :param ax: matplotlib axis
+        :param pl: pyvista plot 
+
 
                +----------------------+
                |                      |
@@ -360,18 +373,33 @@ class Plt(object):
             self.positions_pvplt_3D()
         pass
 
+    @classmethod
+    def MakePVPlotter(cls):
+        log.info("MakePVPlotter")
+        pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
+        return pl 
+
+    def get_pv_plotter(self):
+        if self.pl is None:  
+            pl = self.MakePVPlotter()
+            self.pl = pl
+        else:
+            pl = self.pl
+            log.info("using preexisting plotter")
+        pass
+        return pl 
+
+
     def positions_pvplt_3D(self):
         """
         Could try to reconstruct solid surface from the point cloud of intersects 
         https://docs.pyvista.org/api/core/_autosummary/pyvista.PolyDataFilters.reconstruct_surface.html#pyvista.PolyDataFilters.reconstruct_surface
         """
         pass
+        pl = self.get_pv_plotter()
+
         feat = self.feat 
         upos = self.pos.upos   ## typically local frame 
-
-
-        pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
-        self.pl = pl
 
         log.info("feat.unum %d " % feat.unum)
 
@@ -411,6 +439,7 @@ class Plt(object):
         A value greater than 1 is a zoom-in, a value less than 1 is a zoom-out.       
 
         """
+
         lim = self.gs.lim
         ugsc = self.gs.ugsc
 
@@ -428,8 +457,8 @@ class Plt(object):
         eye = look + self.frame.off
         up = self.frame.up
 
-        pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
-        self.pl = pl 
+
+        pl = self.get_pv_plotter()
 
         #pl.view_xz()   ## TODO: see if view_xz is doing anything when subsequently set_focus/viewup/position 
 
@@ -468,9 +497,10 @@ class Plt(object):
             pl.show_grid()
         pass
 
+    def positions_pvplt_show(self):
         outpath = self.outpath_("positions","pvplt")
         print(outpath)
-        cp = pl.show(screenshot=outpath)
+        cp = self.pl.show(screenshot=outpath)
         return cp
 
 
@@ -478,37 +508,40 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     t = Fold.Load(); 
-    frame = sframe.Load(t.base, "sframe.npy")
+    frame = sframe.Load(t.base, "sframe.npy")  # TODO: automate specialized loading in Fold
+    simtrace = t.photon # TODO:rename array to simtrace.npy as contents nothing like photon 
 
-    Positions.Check(t.photon)
+    x = Fold.Load("$CFBASE/CSGOptiXSimTest", symbol="x")
 
-    local_extent_scale = frame.coords == "RTP"  ## 
 
-    gs = FrameGensteps(t.genstep, frame, local_extent_scale=local_extent_scale )
+    SimtracePositions.Check(simtrace)
 
-    pos = Positions(t.photon, gs, frame, local=True, mask=MASK, local_extent_scale=local_extent_scale )
+    local = True 
+
+    gs = FrameGensteps(t.genstep, frame, local=local)  ## get gs positions in target frame
+
+    pos = SimtracePositions(simtrace, gs, frame, local=local, mask=MASK )
     upos = pos.upos
 
     if SIMPLE:
         pvplt_simple(pos.gpos[:,:3], "pos.gpos[:,:3]" )
         pvplt_simple(pos.lpos[:,:3], "pos.lpos[:,:3]" )
-    else:
-        featname = os.environ.get("FEAT", "pid" )  
-        assert featname in ["pid", "bnd", "ins" ]    # pid:meshname, bnd:boundary, ins:instance
-
-        pf = PhotonFeatures(pos, cf, featname=featname ) 
-
-        plt = Plt(pf.feat, gs, frame, pos, outdir=os.path.join(t.base, "figs") )
-
-        if not mp is None:
-            plt.positions_mpplt(legend=LEGEND, gsplot=GSPLOT )
-        pass
-
-        if not pv is None:
-            plt.positions_pvplt()
-        pass
-        pl = getattr(plt, 'pl', None)
-        if pl is None:
-            print("plt.pl is None")
-        pass
+        raise Exception("SIMPLE done")
     pass
+
+    pf = SimtraceFeatures(pos, cf, featname=FEAT ) 
+
+    pl = SimtracePlot.MakePVPlotter()
+
+    plt = SimtracePlot(pl, pf.feat, gs, frame, pos, outdir=os.path.join(t.base, "figs") )
+
+    if not mp is None:
+        plt.positions_mpplt()
+    pass
+
+    if not pv is None:
+        plt.positions_pvplt()
+        plt.positions_pvplt_show()
+    pass
+
+pass
