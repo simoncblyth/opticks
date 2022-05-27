@@ -25,6 +25,11 @@ JUNO max prim_idx ~3245 : so thats OK
 
     In [2]: 0x7fff
     Out[2]: 32767
+
+
+NB locations and packing here need to match ana/p.py 
+
+
 **/
 
 

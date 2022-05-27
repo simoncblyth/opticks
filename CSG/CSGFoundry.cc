@@ -2400,6 +2400,16 @@ sframe CSGFoundry::getFrame() const
     return fr ; 
 }
 
+/**
+CSGFoundry::getFrame
+---------------------
+
+TODO: method to convert the flat global inst_idx into a more informative MOI mname:mord:gas_iidx
+      that is likely to last longer before changing its meaning 
+      (although there can be several CSGPrim within the GAS inst_idx could simply use the first 
+       which should be the outer one)
+
+**/
 
 void CSGFoundry::getFrame(sframe& fr, const char* frs ) const 
 {

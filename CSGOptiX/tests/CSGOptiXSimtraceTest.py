@@ -507,7 +507,7 @@ class SimtracePlot(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    t = Fold.Load(); 
+    t = Fold.Load(symbol="t"); 
     frame = sframe.Load(t.base, "sframe.npy")  # TODO: automate specialized loading in Fold
     simtrace = t.photon # TODO:rename array to simtrace.npy as contents nothing like photon 
 
