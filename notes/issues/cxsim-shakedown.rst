@@ -220,6 +220,34 @@ HMM : would be good to see a simtrace in this region
 * see :doc:`simtrace-shakedown`
 
 
+::
+
+   cx 
+   ./cxs_debug.sh 
+
+
+    epsilon:CSGOptiX blyth$ cat cxs_debug.sh 
+    #!/bin/bash -l 
+
+    moi=37684
+    ce_offset=0,-64.59664,0    # -Y shift aligning slice plane with a cxsim photon 0 hit with microsteps 
+    ce_scale=1   
+    cegs=16:0:9:500   
+    gridscale=0.10
+
+    export ZOOM=2
+    export LOOK=209.774,-64.59664,129.752
+
+    source ./cxs.sh $*
+
+
+
+The microsteps are very close to::
+
+      0 : 3094 :  46346 :                  red :         NNVTMCPPMTsMask_virtual0x5f5f0e0 : NNVTMCPPMTsMask_virtual0x5f5f0e0  
+
+ 
+That solid looks like a doubled slightly offset surface ?
 
 
 

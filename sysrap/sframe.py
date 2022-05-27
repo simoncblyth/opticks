@@ -216,15 +216,17 @@ class sframe(object):
         eye = eary_("EYE","1.,1.,1.")
         up  = eary_("UP","0.,0.,1.")
         off  = eary_("OFF","0.,0.,1.")
-        #look = eary_("LOOK","0.,0.,0.")
-        EYES = efloat_("EYES", "6.")   # TODO: why 6 ? how to control FOV to gain more control of this
+        look = eary_("LOOK","0.,0.,0.")
+        #look = ce[:3]
 
-        look = ce[:3]
+        EYES = efloat_("EYES", "6.")   # TODO: why 6 ? how to control FOV to gain more control of this
+        extent = ce[3]
+
         if planar:
             H, V = axes
             up  = Axes.Up(H,V)
             off = Axes.Off(H,V)
-            eye = look + ce[3]*off*EYES
+            eye = look + extent*off*EYES
         else:
             H, V, D = axes
             axlabels =  coords[H], coords[V], coords[D]
