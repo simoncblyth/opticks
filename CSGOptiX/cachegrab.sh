@@ -23,17 +23,21 @@ EOU
 }
 
 msg="=== $BASH_SOURCE :"
-arg=${1:-grab}
+grab_arg=${1:-grab}
 shift
 
-if [ "$arg"  == "help" ]; then
+if [ "${grab_arg}"  == "help" ]; then
    usage
    exit 0
 fi 
 
-
 executable=CSGOptiXSimTest
 EXECUTABLE=${EXECUTABLE:-$executable}
+case $EXECUTABLE in 
+   CSGOptiXSimTest)      echo $msg expected EXECUTABLE $EXECUTABLE  ;; 
+   CSGOptiXSimtraceTest) echo $msg expected EXECUTABLE $EXECUTABLE  ;;
+                      *) echo $msg unexpected EXECUTABLE $EXECUTABLE  ;;
+esac
 
 opticks_key_remote_dir=$(opticks-key-remote-dir)    ## eg .opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1
 
@@ -45,22 +49,20 @@ to=$HOME/$xdir
 cfbase=$HOME/$xbase
 fold=$cfbase/$EXECUTABLE
 
-printf "arg                     %s \n" "$arg"
-printf "EXECUTABLE              %s \n " "$EXECUTABLE"
-printf "OPTICKS_KEY_REMOTE      %s \n " "$OPTICKS_KEY_REMOTE" 
-printf "opticks_key_remote_dir  %s \n " "$opticks_key_remote_dir" 
-printf "\n"
-printf "xdir                    %s \n" "$xdir"
-printf "from                    %s \n" "$from" 
-printf "to                      %s \n" "$to" 
+vars="grab_arg EXECUTABLE OPTICKS_KEY_REMOTE opticks_key_remote_dir xdir from to"
+dumpvars(){ for var in $vars ; do printf "%-30s : %s \n" $var "${!var}" ; done ; }
+dumpvars
 
-
-if [ "$arg" == "env" ]; then 
-    export FOLD=$fold        # used by opticks.ana.fold
+if [ "${grab_arg}" == "env" ]; then 
+    export FOLD=$cfbase/$EXECUTABLE        # used by opticks.ana.fold
     export CFBASE=$cfbase    # used by opticks.CSG.CSGFoundry 
+    export CAP_BASE=$cfbase/$EXECUTABLE/figs
+    ## CAP_REL and CAP_STEM are set by specific scripts such as cxs_debug.sh 
+    vars="FOLD CFBASE CAP_BASE"
+    dumpvars
 fi 
 
-if [ "$arg" == "grab" ]; then 
+if [ "${grab_arg}" == "grab" ]; then 
     read -p "$msg Enter YES to proceed with rsync between from and to " ans
     if [ "$ans" == "YES" ]; then 
        echo $msg proceeding 

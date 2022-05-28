@@ -1,10 +1,10 @@
 #!/bin/bash -l 
-
+cxs_msg="=== $BASH_SOURCE : "
 case $(uname) in 
    Linux)  argdef="run" ;; 
    Darwin) argdef="ana" ;;
 esac 
-arg=${1:-$argdef}
+cxs_arg=${1:-$argdef}
 
 BASH_FOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -66,20 +66,19 @@ Otherwise inner layers can be missed.
 EOU
 }
 
-msg="=== $BASH_SOURCE : "
 
 export GEOM=${GEOM:-$geom}
 
 if [ -z "$moi" -o -z "$cegs" -o -z "$ce_offset" -o -z "$ce_scale" -o -z "$gridscale" ]; then 
 
-    echo $msg the cxs.sh script must now be sourced from other scripts that define a set of local variables
-    echo $msg see for example cxs_solidXJfixture.sh
+    echo $cxs_msg the cxs.sh script must now be sourced from other scripts that define a set of local variables
+    echo $cxs_msg see for example cxs_solidXJfixture.sh
 
-    [ -z "$moi" ]  && echo $msg missing moi 
-    [ -z "$cegs" ] && echo $msg missing cegs
-    [ -z "$ce_offset" ] && echo $msg missing ce_offset
-    [ -z "$ce_scale" ] && echo $msg missing ce_scale
-    [ -z "$gridscale" ] && echo $msg missing gridscale 
+    [ -z "$moi" ]  && echo $cxs_msg missing moi 
+    [ -z "$cegs" ] && echo $cxs_msg missing cegs
+    [ -z "$ce_offset" ] && echo $cxs_msg missing ce_offset
+    [ -z "$ce_scale" ] && echo $cxs_msg missing ce_scale
+    [ -z "$gridscale" ] && echo $cxs_msg missing gridscale 
 
     exit 1     
 fi 
@@ -100,9 +99,6 @@ export ZZ=${ZZ:-$zz}
 export OPTICKS_GEOM=$GEOM 
 
 
-
-
-
 IFS=: read -a cegs_arr <<< "$CEGS"
 
 # quotes on the in variable due to bug fixed in bash 4.3 according to 
@@ -111,31 +107,26 @@ IFS=: read -a cegs_arr <<< "$CEGS"
 cegs_elem=${#cegs_arr[@]}
 
 case $cegs_elem in 
-   4) echo $msg 4 element CEGS $CEGS ;; 
-   7) echo $msg 7 element CEGS $CEGS ;; 
-   *) echo $msg ERROR UNEXPECTED $cegs_elem element CEGS $CEGS && exit 1  ;; 
+   4) echo $cxs_msg 4 element CEGS $CEGS ;; 
+   7) echo $cxs_msg 7 element CEGS $CEGS ;; 
+   *) echo $cxs_msg ERROR UNEXPECTED $cegs_elem element CEGS $CEGS && exit 1  ;; 
 esac
-
-
-
-
-
 
 
 if [ "$(uname)" == "Linux" ]; then
     if [ -n "$cfbase" -a ! -d "$cfbase/CSGFoundry" ]; then
 
-       echo $msg : ERROR cfbase $cfbase is defined signalling to use a non-standard CSGFoundry geometry 
-       echo $msg : BUT no such CSGFoundry directory exists 
-       echo $msg :
-       echo $msg : Possibilities: 
-       echo $msg :
-       echo $msg : 1. you intended to use the standard geometry but the GEOM $GEOM envvar does not match any of the if branches 
-       echo $msg : 2. you want to use a non-standard geometry but have not yet created it : do so as shown below
-       echo $msg :
-       echo $msg :    \"b7 \; cd ~/opticks/GeoChain\"  
-       echo $msg :    \"gc \; GEOM=$GEOM ./translate.sh\" 
-       echo $msg :   
+       echo $cxs_msg : ERROR cfbase $cfbase is defined signalling to use a non-standard CSGFoundry geometry 
+       echo $cxs_msg : BUT no such CSGFoundry directory exists 
+       echo $cxs_msg :
+       echo $cxs_msg : Possibilities: 
+       echo $cxs_msg :
+       echo $cxs_msg : 1. you intended to use the standard geometry but the GEOM $GEOM envvar does not match any of the if branches 
+       echo $cxs_msg : 2. you want to use a non-standard geometry but have not yet created it : do so as shown below
+       echo $cxs_msg :
+       echo $cxs_msg :    \"b7 \; cd ~/opticks/GeoChain\"  
+       echo $cxs_msg :    \"gc \; GEOM=$GEOM ./translate.sh\" 
+       echo $cxs_msg :   
        exit 1 
     fi 
 fi
@@ -150,7 +141,7 @@ mkdir -p $LOGDIR
 
 
 if [ -n "$cfbase" ]; then 
-    echo $msg cfbase $cfbase defined setting CFBASE to override standard geometry default 
+    echo $cxs_msg cfbase $cfbase defined setting CFBASE to override standard geometry default 
     export CFBASE=${CFBASE:-$cfbase}   ## setting CFBASE only appropriate for non-standard geometry 
 fi 
 
@@ -176,33 +167,84 @@ export TOPLINE="${TOPLINE:-$topline}"
 ## ... hmm that is kinda not appropriate for cosmetic presentation changes like differnt XX ZZ etc.. 
 
 vars="GEOM CFBASE LOGDIR BASH_FOLDER MOI CE_OFFSET CE_SCALE CXS_CEGS CXS_OVERRIDE_CE GRIDSCALE TOPLINE BOTLINE NOTE GSPLOT ISEL XX YY ZZ FOLD OPTICKS_GEOM OPTICKS_RELDIR OPTICKS_OUT_FOLD"
-dumpvars(){  local var ; local vars=$1 ; shift ; echo $* ; for var in $vars ; do printf "%20s : %s\n" $var ${!var} ; done  ; }
-dumpvars "$vars" initial
+cxs_dumpvars(){  local var ; local vars=$1 ; shift ; echo $* ; for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done  ; }
+cxs_dumpvars "$vars" initial
+
+cxs_relative_stem()
+{
+   local path=$1
+   local geocache=$HOME/.opticks/geocache/
+   local rel 
+   case $path in 
+      ${geocache}*)  rel=${path/$geocache/} ;;
+   esac 
+   rel=${rel/\.jpg}
+   rel=${rel/\.png}
+   echo $rel 
+}
+
+
+cxs_pub()
+{
+    local msg="$FUNCNAME :"
+    local cap_path=$1
+    local cap_ext=$2
+    local rel_stem=$(cxs_relative_stem ${cap_path})
+
+    if [ "$PUB" == "1" ]; then 
+        local extra=""    ## use PUB=1 to debug the paths 
+    else
+        local extra="_${PUB}" 
+    fi 
+
+    local s5p=/env/presentation/${rel_stem}${extra}${cap_ext}
+    local pub=$HOME/simoncblyth.bitbucket.io$s5p
+    local s5p_line="$s5p 1280px_720px"
+
+    local vars="cap_path cap_ext rel_stem PUB extra s5p pub s5p_line"
+    for var in $vars ; do printf "%20s : %s\n" $var "${!var}" ; done  
+
+    mkdir -p $(dirname $pub)
+
+    if [ "$PUB" == "" ]; then 
+        echo $msg skipping copy : to do the copy you must set PUB to some descriptive string 
+    elif [ "$PUB" == "1" ]; then 
+        echo $msg skipping copy : to do the copy you must set PUB to some descriptive string 
+    elif [ -f "$pub" ]; then 
+        echo $msg published path exists already : NOT COPYING : delete it or set PUB to some different extra string to distinguish the name 
+        echo $msg skipping copy : to do the copy you must set PUB to some descriptive string rather than just using PUB=1
+    else
+        echo $msg copying cap_path to pub 
+        cp $cap_path $pub
+        echo $msg add s5p_line to s5_background_image.txt
+    fi 
+}
+
 
 
 bin=CSGOptiXSimtraceTest
 
 if [ "$(uname)" == "Linux" ]; then 
 
-    if [ "$arg" == "run" ]; then
+    if [ "${cxs_arg}" == "run" ]; then
 
         cd $LOGDIR 
         $GDB $bin 
-        [ $? -ne 0 ] && echo $msg RUN ERROR at LINENO $LINENO && exit 1 
+        [ $? -ne 0 ] && echo $cxs_msg RUN ERROR at LINENO $LINENO && exit 1 
 
         source ${bin}_OUTPUT_DIR.sh || exit 1  
 
-    elif [ "$arg" == "ana" ]; then 
+    elif [ "${cxs_arg}" == "ana" ]; then 
 
         cd $LOGDIR 
         source ${bin}_OUTPUT_DIR.sh || exit 1  
         NOGUI=1 ${IPYTHON:-ipython} ${BASH_FOLDER}/tests/$bin.py 
 
-    elif [ "$arg" == "run_ana" ]; then 
+    elif [ "${cxs_arg}" == "run_ana" ]; then 
 
         cd $LOGDIR 
         $GDB $bin
-        [ $? -ne 0 ] && echo $msg RUN ERROR at LINENO $LINENO && exit 1 
+        [ $? -ne 0 ] && echo $cxs_msg RUN ERROR at LINENO $LINENO && exit 1 
         source ${bin}_OUTPUT_DIR.sh || exit 1  
 
         if [ -n "$PDB" ]; then
@@ -215,21 +257,34 @@ if [ "$(uname)" == "Linux" ]; then
 
 elif [ "$(uname)" == "Darwin" ]; then
 
-    echo $msg Darwin $(pwd)
+    echo $cxs_msg Darwin $(pwd) LINENO $LINENO
 
-    if [ "${arg/grab}" != "$arg" ]; then 
-        echo $msg grab  
+    if [ "${cxs_arg}" == "grab" ]; then 
+        echo $cxs_msg grab LINENO $LINENO 
         EXECUTABLE=$bin       source cachegrab.sh grab
         EXECUTABLE=CSGFoundry source cachegrab.sh grab
-    fi  
-
-    if [ "${arg/ana}" != "$arg" ]; then 
-        echo $msg ana
+    else
+        echo $cxs_msg cxs_arg $cxs_arg LINENO $LINENO
         EXECUTABLE=$bin       source cachegrab.sh env
-        dumpvars "FOLD CFBASE" after cachegrab.sh env
+        cxs_dumpvars "FOLD CFBASE" after cachegrab.sh env
 
-        ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/$bin.py 
-    fi 
+        case ${cxs_arg} in 
+           ana) ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/$bin.py  ;; 
+           pvcap) source pvcap.sh ;;  
+           mpcap) source mpcap.sh ;;  
+           pvpub) source pvcap.sh env ;;
+           mppub) source mpcap.sh env ;;
+        esac
+
+        echo $cxs_msg cxs_arg $cxs_arg LINENO $LINENO
+
+        if [ "${cxs_arg/pub}" != "${cxs_arg}" ]; then
+           cxs_dumpvars "cxs_msg cxs_arg CAP_BASE CAP_REL CAP_PATH CAP_EXT" 
+           cxs_pub $CAP_PATH $CAP_EXT 
+        else
+           echo not pub cxs_arg $cxs_arg
+        fi 
+    fi  
 
 fi 
 
