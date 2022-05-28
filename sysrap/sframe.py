@@ -15,7 +15,11 @@ class sframe(object):
         if fold is None:
             fold = os.environ.get("FOLD", "")
         pass
-        path = os.path.join(fold, name)
+        if fold.endswith(name):
+            path = fold
+        else:   
+            path = os.path.join(fold, name)
+        pass
         return cls(path)
 
 
@@ -72,6 +76,7 @@ class sframe(object):
         a = np.load(path)
         i = a.view(np.int32)
 
+        self.shape = a.shape  # for fold to treat like np.array
         self.path = path 
         self.a = a
         self.i = i
@@ -208,6 +213,9 @@ class sframe(object):
 
 
     def init_view(self):
+        """
+        HMM: input EYE is ignored for planar 
+        """
         ce = self.ce 
         axes = self.axes
         planar = len(axes) == 2 

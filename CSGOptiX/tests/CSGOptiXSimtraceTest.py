@@ -73,7 +73,7 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.eget import eint_
 
-SIZE = np.array([1280, 720])
+SIZE = np.array([1280, 720])   ## SIZE*2 [2560, 1440]
 XCOMPARE_SIMPLE = "XCOMPARE_SIMPLE" in os.environ
 XCOMPARE = "XCOMPARE" in os.environ
 GUI = not "NOGUI" in os.environ
@@ -132,20 +132,6 @@ if GUI == False:
     pv = None
 pass
 
-
-def pvplt_simple(xyz, label):
-    """
-    :param xyz: (n,3) shaped array of positions
-    :param label: to place on plot 
-
-    KEEP THIS SIMPLE : FOR DEBUGGING WHEN LESS BELLS AND WHISTLES IS AN ADVANTAGE
-    """
-    pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
-    pl.add_text( "pvplt_simple %s " % label, position="upper_left")
-    pl.add_points( xyz, color="white" )        
-    pl.show_grid()
-    cp = pl.show() if GUI else None
-    return cp
 
 
 class SimtracePlot(object):
@@ -452,11 +438,7 @@ class SimtracePlot(object):
 
         feat = self.feat 
 
-
-
-
         pl = self.get_pv_plotter()
-
 
         pl.add_text(self.topline, position="upper_left")
         pl.add_text(self.botline, position="lower_left")
@@ -481,88 +463,128 @@ class SimtracePlot(object):
             pl.add_points( ugsc[:,:3], color="white" ) 
         pass   
 
-        ## the lines need reworking 
+
+
         self.lines_plt(None, pl)
 
         self.frame.pv_compose(pl, local=True) 
 
 
-
-    def positions_pvplt_show(self):
         outpath = self.outpath_("positions","pvplt")
         print(outpath)
-        cp = self.pl.show(screenshot=outpath)
-        return cp
+        cp = pl.show(screenshot=outpath)
+
+        #img = pl.screenshot(outpath, return_img=True)
+        #print("img.shape %s " % str(img.shape) )
+        #self.img = img 
+
+        return cp 
+
+
+    def mp_show(self):
+        """
+        Fatal Python error: Segmentation fault 
+        """
+        if hasattr(self, 'img'):
+            mp.imshow(self.img)
+            mp.show()               
+        pass
+          
+
+
+def pvplt_simple(xyz, label):
+    """
+    :param xyz: (n,3) shaped array of positions
+    :param label: to place on plot 
+
+    KEEP THIS SIMPLE : FOR DEBUGGING WHEN LESS BELLS AND WHISTLES IS AN ADVANTAGE
+    """
+    pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
+    pl.add_text( "pvplt_simple %s " % label, position="upper_left")
+    pl.add_points( xyz, color="white" )        
+    pl.show_grid()
+    cp = pl.show() if GUI else None
+    return cp
+
+
+
+def xcompare_simple( pos, x_gpos, x_lpos, local=True ):
+    """
+    :param pos: SimtracePositions instance
+    :param x_gpos: global photon step positions
+    :param x_lpos: local photon step positions
+    """
+    pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
+    if local == False:
+        pl.add_points( pos.gpos[:,:3], color="white" )        
+        pvplt_add_contiguous_line_segments(pl, x_gpos[:,:3])
+    else:
+        pl.add_points( pos.lpos[:,:3], color="white" )        
+        pvplt_add_contiguous_line_segments(pl, x_lpos[:,:3])
+    pass
+    pl.show_grid()
+
+    outpath = "/tmp/xcompare_simple.png" 
+    log.info("outpath %s " % outpath)
+    #pl.screenshot(outpath)  segments
+
+    cp = pl.show(screenshot=outpath) if GUI else None
+    return pl 
+
+
+def simple(pos):
+    """
+    :param pos: SimtracePositions instance
+    """
+    pvplt_simple(pos.gpos[:,:3], "pos.gpos[:,:3]" )
+    pvplt_simple(pos.lpos[:,:3], "pos.lpos[:,:3]" )
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    t = Fold.Load(symbol="t"); 
-    frame = sframe.Load(t.base, "sframe.npy")  # TODO: automate specialized loading in Fold
-    simtrace = t.photon # TODO:rename array to simtrace.npy as contents nothing like photon 
-
+    t = Fold.Load("$CFBASE/CSGOptiXSimtraceTest", symbol="t"); 
     x = Fold.Load("$CFBASE/CSGOptiXSimTest", symbol="x")
 
     if not x is None:
         x_gpos_ = x.record[PIDX,:,0,:3]  # global frame photon step record positions of single PIDX photon
         x_gpos  = np.ones( (len(x_gpos_), 4 ), dtype=np.float32 )
         x_gpos[:,:3] = x_gpos_
-        x_lpos = np.dot( x_gpos, frame.w2m ) 
+        x_lpos = np.dot( x_gpos, t.sframe.w2m ) 
     pass
 
-    SimtracePositions.Check(simtrace)
+    SimtracePositions.Check(t.photon)
 
     local = True 
 
-    gs = FrameGensteps(t.genstep, frame, local=local)  ## get gs positions in target frame
+    gs = FrameGensteps(t.genstep, t.sframe, local=local)  ## get gs positions in target frame
 
-    pos = SimtracePositions(simtrace, gs, frame, local=local, mask=MASK )
-    upos = pos.upos
-
+    t_pos = SimtracePositions(t.photon, gs, t.sframe, local=local, mask=MASK )
 
     if SIMPLE:
-        pvplt_simple(pos.gpos[:,:3], "pos.gpos[:,:3]" )
-        pvplt_simple(pos.lpos[:,:3], "pos.lpos[:,:3]" )
-        raise Exception("SIMPLE done")
+       simple(t_pos)
+       raise Exception("SIMPLE done")
     pass
-
     if XCOMPARE_SIMPLE and not x is None:
-        pl = pv.Plotter(window_size=SIZE*2 )  # retina 2x ?
-        x_global = False
-        if x_global:
-            pl.add_points( pos.gpos[:,:3], color="white" )        
-            pvplt_add_contiguous_line_segments(pl, x_gpos[:,:3])
-        else:
-            pl.add_points( pos.lpos[:,:3], color="white" )        
-            pvplt_add_contiguous_line_segments(pl, x_lpos[:,:3])
-        pass
-        pl.show_grid()
-        cp = pl.show() if GUI else None
-        raise Exception("XCOMPARE done")
+       pl = xcompare_simple( t_pos, x_gpos, x_lpos, local=True )
+       #raise Exception("XCOMPARE done")
     pass
 
-
-    pf = SimtraceFeatures(pos, cf, featname=FEAT ) 
+    pf = SimtraceFeatures(t_pos, cf, featname=FEAT ) 
 
     pl = SimtracePlot.MakePVPlotter()
 
-    plt = SimtracePlot(pl, pf.feat, gs, frame, pos, outdir=os.path.join(t.base, "figs") )
+    plt = SimtracePlot(pl, pf.feat, gs, t.sframe, t_pos, outdir=os.path.join(t.base, "figs") )
+
+    if not x is None:       
+        plt.x_lpos = x_lpos   
+    pass
 
     if not mp is None:
         plt.positions_mpplt()
     pass
 
     if not pv is None:
-
-        if XCOMPARE and not x is None:       
-            log.info("pvplt_add_contiguous_line_segments")
-            pvplt_add_contiguous_line_segments(pl, x_lpos[:,:3])   
-        pass
-        plt.x_lpos = x_lpos   # HMM: need "y" perpendicular shift for the simtrace to get the cross-section to correspond to the hit "y" 
         plt.positions_pvplt()
-
-        plt.positions_pvplt_show()
     pass
-
 pass

@@ -3,6 +3,10 @@
 import os, sys, logging, numpy as np, datetime, builtins
 from opticks.ana.npmeta import NPMeta
 
+from opticks.sysrap.sframe import sframe
+
+
+
 CMDLINE = " ".join(sys.argv)
 
 log = logging.getLogger(__name__)
@@ -33,6 +37,8 @@ class Fold(object):
         return None
 
 
+    SFRAME = "sframe.npy"
+
     def __init__(self, base, **kwa):
         self.base = base
         self.kwa = kwa 
@@ -61,7 +67,9 @@ class Fold(object):
 
             is_npy = name.endswith(".npy")
 
-            if is_npy:
+            if name == self.SFRAME:
+                a = sframe.Load(path)
+            elif is_npy:
                 a = np.load(path)
             elif name.endswith("_meta.txt"):
                 a = NPMeta.Load(path)
@@ -72,7 +80,6 @@ class Fold(object):
             pass
             setattr(self, stem, a ) 
 
-            ashape = str(a.shape) if is_npy else len(a)    
             if self.globals:
                 gstem = self.globals_prefix + stem
                 setattr( builtins, gstem, a )
