@@ -238,7 +238,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
 
         unsigned gsid = SGenstep::GenstepID(ix,iy,iz,0) ; 
 
-        SGenstep::ConfigureGenstep(gs, OpticksGenstep_TORCH, gridaxes, gsid, photons_per_genstep );  
+        SGenstep::ConfigureGenstep(gs, OpticksGenstep_FRAME, gridaxes, gsid, photons_per_genstep );  
 
         qc->write(gs);  // copy qc into gs.q2,q3,q4,q5
 

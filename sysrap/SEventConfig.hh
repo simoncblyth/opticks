@@ -50,6 +50,7 @@ struct SYSRAP_API SEventConfig
 
     static constexpr const char* kMaxGenstep = "OPTICKS_MAX_GENSTEP" ; 
     static constexpr const char* kMaxPhoton  = "OPTICKS_MAX_PHOTON" ; 
+    static constexpr const char* kMaxSimtrace  = "OPTICKS_MAX_SIMTRACE" ; 
     static constexpr const char* kMaxBounce  = "OPTICKS_MAX_BOUNCE" ; 
     static constexpr const char* kMaxRecord  = "OPTICKS_MAX_RECORD" ; 
     static constexpr const char* kMaxRec     = "OPTICKS_MAX_REC" ; 
@@ -63,6 +64,7 @@ struct SYSRAP_API SEventConfig
 
     static int MaxGenstep(); 
     static int MaxPhoton(); 
+    static int MaxSimtrace(); 
     static int MaxBounce(); 
     static int MaxRecord();  // full photon step record  
     static int MaxRec();     // compressed photon step record
@@ -82,6 +84,7 @@ struct SYSRAP_API SEventConfig
 
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 
+    static void SetMaxSimtrace( int max_simtrace); 
     static void SetMaxBounce( int max_bounce); 
     static void SetMaxRecord( int max_record); 
     static void SetMaxRec(    int max_rec); 
@@ -94,8 +97,11 @@ struct SYSRAP_API SEventConfig
     static void SetRGMode( const char* rg_mode) ; 
 
     static int _MaxPhotonDefault ; 
+    static int _MaxSimtraceDefault ; 
+
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
+    static int _MaxSimtrace ; 
     static int _MaxBounce ; 
     static int _MaxRecord ; 
     static int _MaxRec ; 

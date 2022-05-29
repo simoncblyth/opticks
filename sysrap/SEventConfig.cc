@@ -12,12 +12,15 @@
 
 #ifdef __APPLE__
 int  SEventConfig::_MaxPhotonDefault = 1*M ; 
+int  SEventConfig::_MaxSimtraceDefault = 1*M ; 
 #else
 int  SEventConfig::_MaxPhotonDefault = 3*M ; 
+int  SEventConfig::_MaxSimtraceDefault = 3*M ; 
 #endif
 
 int SEventConfig::_MaxGenstep = SSys::getenvint(kMaxGenstep,  1000*K) ; 
 int SEventConfig::_MaxPhoton  = SSys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
+int SEventConfig::_MaxSimtrace  = SSys::getenvint(kMaxSimtrace,   _MaxSimtraceDefault ) ; 
 int SEventConfig::_MaxBounce  = SSys::getenvint(kMaxBounce, 9 ) ; 
 int SEventConfig::_MaxRecord  = SSys::getenvint(kMaxRecord, 0 ) ;    // full step record
 int SEventConfig::_MaxRec     = SSys::getenvint(kMaxRec, 0 ) ;    // compressed record  
@@ -31,6 +34,7 @@ unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar(kHi
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
+int SEventConfig::MaxSimtrace(){   return _MaxSimtrace ; }
 int SEventConfig::MaxBounce(){   return _MaxBounce ; }
 int SEventConfig::MaxRecord(){   return _MaxRecord ; }
 int SEventConfig::MaxRec(){      return _MaxRec ; }
@@ -50,6 +54,7 @@ unsigned SEventConfig::HitMask(){     return _HitMask ; }
 
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; Check() ; }
 void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; Check() ; }
+void SEventConfig::SetMaxSimtrace( int max_simtrace){  _MaxSimtrace  = max_simtrace  ; Check() ; }
 void SEventConfig::SetMaxBounce( int max_bounce){  _MaxBounce  = max_bounce  ; Check() ; }
 void SEventConfig::SetMaxRecord( int max_record){  _MaxRecord  = max_record  ; Check() ; }
 void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; Check() ; }
@@ -91,6 +96,8 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " MaxGenstep " << " : " << MaxGenstep() << std::endl 
        << std::setw(25) << kMaxPhoton 
        << std::setw(20) << " MaxPhoton " << " : " << MaxPhoton() << std::endl 
+       << std::setw(25) << kMaxSimtrace 
+       << std::setw(20) << " MaxSimtrace " << " : " << MaxSimtrace() << std::endl 
        << std::setw(25) << kMaxBounce
        << std::setw(20) << " MaxBounce " << " : " << MaxBounce() << std::endl 
        << std::setw(25) << kMaxRecord

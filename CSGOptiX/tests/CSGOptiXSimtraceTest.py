@@ -172,7 +172,6 @@ class SimtracePlot(object):
         self.note = note 
         self.note1 = note1 
 
-        efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
         self.lookce = elookce_(extent=10)
 
 

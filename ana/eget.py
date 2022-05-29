@@ -3,7 +3,7 @@
 import os, numpy as np
 
 efloat_ = lambda ekey, fallback:float(os.environ.get(ekey,fallback))
-efloatlist_ = lambda ekey,fallback:list(map(float, filter(None, os.environ.get(ekey,fallback).split(","))))
+efloatlist_ = lambda ekey,fallback="":list(map(float, filter(None, os.environ.get(ekey,fallback).split(","))))
 
 def eint_(ekey, fallback):
     """
@@ -26,12 +26,16 @@ def eintlist_(ekey, fallback):
     return list(map(int, filter(None, slis)))
 
 def elookce_(extent=10., ekey="LOOK"):
+    """
+    :param extent: float, is overridden by LOOKCE envvar
+    :param ekey: typically "LOOK" specifting envvar that contains look coordinates eg "10.5,10.5,10.5" 
+    """
     if not ekey in os.environ:
          ce = None
     else:
         ce = np.zeros( (4,), dtype=np.float32 )     
         ce[:3] = efloatlist_(ekey, "0,0,0")
-        ce[3] = extent
+        ce[3] = efloat_("LOOKCE", extent)
     pass
     return ce 
 

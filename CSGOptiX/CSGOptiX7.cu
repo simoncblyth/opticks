@@ -269,7 +269,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
 {
     unsigned idx = launch_idx.x ;  // aka photon_id
     qevent* evt  = params.evt ; 
-    if (idx >= evt->num_photon) return;
+    if (idx >= evt->num_simtrace) return;
 
     unsigned genstep_id = evt->seed[idx] ; 
     if(idx == 0) printf("//OptiX7Test.cu:simtrace idx %d genstep_id %d \n", idx, genstep_id ); 

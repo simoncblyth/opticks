@@ -16,7 +16,47 @@ Issue 3 : lots of simtrace "hits" ?
 
 * qevent::add_simtrace uses [3,3] for prd.identity not the history flag, so meaningless hits
 * TODO: use SEventConfig to configure what gets downloaded by QEvent for management within SEvt, change to simtrace.npy for clarity  
- 
+
+::
+
+    In [4]: t.photon.view(np.uint32)[:,3,3]                                                                                                                                                            
+    Out[4]: array([203199284, 203199284, 203133748, 203199284, 203199284, ..., 203270126, 202803356, 152502272, 202806068, 203268944], dtype=uint32)
+
+    In [5]: t.hit.view(np.uint32)[:,3,3]                                                                                                                                                               
+    Out[5]: array([202806485, 202806485, 203270126, 202806485, 203270338, ..., 203270126, 202805837, 203270126, 203270126, 203268944], dtype=uint32)
+
+    In [6]: t.hit.view(np.uint32)[:,3,3].shape                                                                                                                                                         
+    Out[6]: (93710,)
+
+    In [7]: t.photon.view(np.uint32)[:,3,3].shape                                                                                                                                                      
+    Out[7]: (313500,)
+
+    In [8]: mask = 0x1 << 6                                                                                                                                                                            
+
+    In [9]: t.photon.view(np.uint32)[:,3,3] & mask                                                                                                                                                     
+    Out[9]: array([ 0,  0,  0,  0,  0, ..., 64,  0,  0,  0, 64], dtype=uint32)
+
+    In [10]: np.count_nonzero(t.photon.view(np.uint32)[:,3,3] & mask )                                                                                                                                 
+    Out[10]: 93710
+
+
+
+
+sysrap/OpticksPhoton.h::
+
+     22 enum
+     23 {
+     24     CERENKOV          = 0x1 <<  0,
+     25     SCINTILLATION     = 0x1 <<  1,
+     26     MISS              = 0x1 <<  2,
+     27     BULK_ABSORB       = 0x1 <<  3,
+     28     BULK_REEMIT       = 0x1 <<  4,
+     29     BULK_SCATTER      = 0x1 <<  5,
+     30     SURFACE_DETECT    = 0x1 <<  6,
+     31     SURFACE_ABSORB    = 0x1 <<  7,
+     32     SURFACE_DREFLECT  = 0x1 <<  8,
+
+     
 
 Issue 2 : getting small range with mp, SIM gives a PMT shape but not as expected, also some miss dots
 ---------------------------------------------------------------------------------------------------------

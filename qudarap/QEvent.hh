@@ -49,7 +49,6 @@ struct QUDARAP_API QEvent
 {
     friend struct QEventTest ; 
 
-    static void  CheckGensteps(const NP* gs); 
     static const plog::Severity LEVEL ; 
     static QEvent* INSTANCE ; 
     static QEvent* Get(); 
@@ -88,6 +87,7 @@ public:
     bool hasRec() const ; 
     bool hasSeq() const ; 
     bool hasHit() const ; 
+    bool hasSimtrace() const ; 
 
     unsigned count_genstep_photons(); 
     void     fill_seed_buffer(); 
@@ -95,9 +95,11 @@ public:
 
     void     setPhoton( const NP* p );
     void     getPhoton(       NP* p ) const ;
+    void     getSimtrace(     NP* t ) const ;
     void     getSeq(          NP* seq) const ; 
 
     NP*      getPhoton() const ; 
+    NP*      getSimtrace() const ; 
     NP*      getSeq() const ;     // seqhis..
     NP*      getRecord() const ; // full step records
     NP*      getRec() const  ;    // compressed step record
@@ -113,15 +115,13 @@ public:
     void save(const char* dir) const ; 
 
     void     setNumPhoton(unsigned num_photon) ;  
+    void     setNumSimtrace(unsigned num_simtrace) ;  
     void     uploadEvt(); 
     unsigned getNumPhoton() const ;  
 
     void downloadGenstep( std::vector<quad6>& genstep ); 
     void downloadSeed(    std::vector<int>&   seed ); 
 
-    //void downloadPhoton(  std::vector<quad4>& photon ); 
-    //void savePhoton( const char* dir, const char* name); 
-    //void downloadRecord(  std::vector<quad4>& record ); 
 
     void saveGenstep(const char* dir, const char* name); 
 

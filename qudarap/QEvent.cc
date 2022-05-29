@@ -12,6 +12,7 @@
 #include "stran.h"
 #include "SU.hh"
 
+#include "SGenstep.hh"
 #include "SEvent.hh"
 #include "SEvt.hh"
 #include "SEventConfig.hh"
@@ -41,30 +42,6 @@ const char* QEvent::DefaultDir()
     return dir ; 
 }
 
-
-std::string QEvent::DescGensteps(const NP* gs, int edgeitems) // static 
-{
-    int num_genstep = gs ? gs->shape[0] : 0 ; 
-
-    quad6* gs_v = (quad6*)gs->cvalues<float>() ; 
-    std::stringstream ss ; 
-    ss << "QEvent::DescGensteps gs.shape[0] " << num_genstep << " (" ; 
-
-    int total = 0 ; 
-    for(int i=0 ; i < num_genstep ; i++)
-    {
-        const quad6& _gs = gs_v[i]; 
-        unsigned gs_pho = _gs.q0.u.w  ; 
-
-        if( i < edgeitems || i > num_genstep - edgeitems ) ss << gs_pho << " " ; 
-        else if( i == edgeitems )  ss << "... " ; 
-
-        total += gs_pho ; 
-    } 
-    ss << ") total " << total  ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
 
 std::string QEvent::DescSeed( const std::vector<int>& seed, int edgeitems )  // static 
 {
@@ -118,6 +95,7 @@ void QEvent::init()
 {
     evt->max_genstep = SEventConfig::MaxGenstep() ; 
     evt->max_photon  = SEventConfig::MaxPhoton()  ; 
+    evt->max_simtrace  = SEventConfig::MaxSimtrace()  ; 
     evt->max_bounce  = SEventConfig::MaxBounce()  ; 
     evt->max_record  = SEventConfig::MaxRecord()  ;  // full step record
     evt->max_rec     = SEventConfig::MaxRec()  ;     // compressed step record 
@@ -170,6 +148,7 @@ std::string QEvent::descMax() const
         << "QEvent::descMax " 
         << " evt.max_genstep " << std::setw(w) << evt->max_genstep  
         << " evt.max_photon  " << std::setw(w) << evt->max_photon  
+        << " evt.max_simtrace  " << std::setw(w) << evt->max_simtrace  
         << " evt.max_bounce  " << std::setw(w) << evt->max_bounce 
         << " evt.max_record  " << std::setw(w) << evt->max_record 
         << " evt.max_rec  "    << std::setw(w) << evt->max_rec
@@ -189,6 +168,7 @@ std::string QEvent::descNum() const
         << " evt.num_genstep " << std::setw(w) << evt->num_genstep 
         << " evt.num_seed "    << std::setw(w) << evt->num_seed   
         << " evt.num_photon "  << std::setw(w) << evt->num_photon
+        << " evt.num_simtrace "  << std::setw(w) << evt->num_simtrace
         << " evt.num_record "  << std::setw(w) << evt->num_record
         ;
     std::string s = ss.str();  
@@ -205,6 +185,7 @@ std::string QEvent::descBuf() const
         << " evt.genstep " << std::setw(w) << ( evt->genstep ? "Y" : "N" )
         << " evt.seed "    << std::setw(w) << ( evt->seed    ? "Y" : "N" )  
         << " evt.photon "  << std::setw(w) << ( evt->photon  ? "Y" : "N" ) 
+        << " evt.simtrace "  << std::setw(w) << ( evt->simtrace  ? "Y" : "N" ) 
         << " evt.record "  << std::setw(w) << ( evt->record  ? "Y" : "N" )
         ;
     std::string s = ss.str();  
@@ -222,12 +203,6 @@ void QEvent::setMeta(const char* meta_)
 bool QEvent::hasMeta() const 
 {
     return meta.empty() == false ; 
-}
-
-void QEvent::CheckGensteps(const NP* gs)  // static
-{ 
-    assert( gs->uifc == 'f' && gs->ebyte == 4 ); 
-    assert( gs->has_shape(-1, 6, 4) ); 
 }
 
 
@@ -271,7 +246,7 @@ int QEvent::setGenstep()
 int QEvent::setGenstep(const NP* gs_) 
 { 
     gs = gs_ ; 
-    CheckGensteps(gs); 
+    SGenstep::Check(gs); 
     evt->num_genstep = gs->shape[0] ; 
 
     if( evt->genstep == nullptr && evt->seed == nullptr ) 
@@ -281,7 +256,7 @@ int QEvent::setGenstep(const NP* gs_)
         evt->seed    = QU::device_alloc<int>(   evt->max_photon )  ;
     }
 
-    LOG(LEVEL) << DescGensteps(gs, 10) ;
+    LOG(LEVEL) << SGenstep::Desc(gs, 10) ;
  
     bool num_gs_allowed = evt->num_genstep <= evt->max_genstep ;
     if(!num_gs_allowed) LOG(fatal) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ; 
@@ -295,8 +270,17 @@ int QEvent::setGenstep(const NP* gs_)
     //fill_seed_buffer() ;       // populates seed buffer
     count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
 
-    setNumPhoton( evt->num_seed );  // photon, rec, record may be allocated here depending on SEventConfig
 
+    int gencode0 = SGenstep::GetGencode(gs, 0); // gencode of first genstep   
+
+    if(OpticksGenstep_::IsFrame(gencode0))
+    {
+        setNumSimtrace( evt->num_seed ); 
+    }
+    else
+    {
+        setNumPhoton( evt->num_seed );  // photon, rec, record may be allocated here depending on SEventConfig
+    }
     return 0 ; 
 }
 
@@ -319,6 +303,7 @@ bool QEvent::hasRecord() const { return evt->record != nullptr ; }
 bool QEvent::hasRec() const    { return evt->rec != nullptr ; }
 bool QEvent::hasSeq() const    { return evt->seq != nullptr ; }
 bool QEvent::hasHit() const    { return evt->hit != nullptr ; }
+bool QEvent::hasSimtrace() const  { return evt->simtrace != nullptr ; }
 
 
 
@@ -411,6 +396,23 @@ NP* QEvent::getPhoton() const
     getPhoton(p); 
     return p ; 
 }
+
+void QEvent::getSimtrace(NP* t) const 
+{
+    LOG(fatal) << "[ evt.num_simtrace " << evt->num_simtrace << " t.sstr " << t->sstr() << " evt.simtrace " << evt->simtrace ; 
+    assert( t->has_shape(evt->num_simtrace, 4, 4) ); 
+    QU::copy_device_to_host<quad4>( (quad4*)t->bytes(), evt->simtrace, evt->num_simtrace ); 
+    LOG(fatal) << "] evt.num_simtrace " << evt->num_simtrace  ; 
+}
+NP* QEvent::getSimtrace() const 
+{
+    NP* t = NP::Make<float>( evt->num_simtrace, 4, 4);
+    getSimtrace(t); 
+    return t ; 
+}
+
+
+
 
 
 void QEvent::getSeq(NP* seq) const 
@@ -574,8 +576,20 @@ void QEvent::save(const char* base, const char* reldir ) const
 }
 
 
+/**
+QEvent::save
+--------------
 
+This need to be configurable, eg it makes no sense for simtrace to getHit  
+Currently only weakly configurable via the SEventConfig setting that 
+will make some arrays like rec and record null when corresponding max are zero.
 
+Need a getSimtrace for simtrace running as arrays very different from photon 
+although still quad4
+
+Also array management should be handled by SEvt using NPFold with SComp component naming 
+
+**/
 
 void QEvent::save(const char* dir_) const 
 {
@@ -591,8 +605,6 @@ void QEvent::save(const char* dir_) const
     NP* domain = getDomain() ;
 
 
-    // HMM: could handle these all togethr using NPFold : maybe within SEvent/SEvt ?
-    // need to standardize naming 
     LOG(info) << descSave(hit,genstep,photon,record,rec,seq,domain) ; 
 
     if(hit)     hit->save(    dir, "hit.npy"); 
@@ -711,6 +723,28 @@ void QEvent::setNumPhoton(unsigned num_photon )
 
     uploadEvt(); 
 }
+
+void QEvent::setNumSimtrace(unsigned num_simtrace)
+{
+    evt->num_simtrace = num_simtrace ; 
+    bool num_simtrace_allowed = evt->num_simtrace <= evt->max_simtrace ; 
+    if(!num_simtrace_allowed) LOG(fatal) << " evt.num_simtrace " << evt->num_simtrace << " evt.max_simtrace " << evt->max_simtrace ; 
+    assert( num_simtrace_allowed ); 
+
+    if( evt->simtrace == nullptr ) 
+    {
+        evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace ) ; 
+    
+        LOG(info) 
+            << " device_alloc simtrace " 
+            << " evt.num_simtrace " << evt->num_simtrace 
+            << " evt.max_simtrace " << evt->max_simtrace
+            ;
+    }
+    uploadEvt(); 
+}
+ 
+
 
 unsigned QEvent::getNumPhoton() const
 {

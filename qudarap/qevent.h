@@ -49,12 +49,12 @@ struct qevent
 
     // values here come from SEventConfig 
     int      max_genstep ; // eg:      100,000
-    int      max_photon  ; // eg: 100,000,0000
+    int      max_photon  ; // eg:  100,000,000
+    int      max_simtrace ; // eg: 100,000,000
     int      max_bounce  ; // eg:            9 
     int      max_record  ; // eg:           10  full step record 
     int      max_rec     ; // eg:           10  compressed step record
     int      max_seq     ; // eg:           16  seqhis/seqbnd
-
 
     int      num_genstep ; 
     quad6*   genstep ; 
@@ -76,6 +76,9 @@ struct qevent
 
     int      num_hit ; 
     sphoton* hit ; 
+
+    int      num_simtrace ; 
+    quad4*   simtrace ; 
 
 
     QEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
@@ -176,6 +179,7 @@ QEVENT_METHOD void qevent::zero()
     num_rec = 0 ; 
     num_seq = 0 ; 
     num_hit = 0 ; 
+    num_simtrace = 0 ; 
 
     genstep = nullptr ; 
     seed = nullptr ; 
@@ -184,6 +188,7 @@ QEVENT_METHOD void qevent::zero()
     rec = nullptr ; 
     seq = nullptr ; 
     hit = nullptr ; 
+    simtrace = nullptr ; 
     
 }
 #endif 
@@ -246,8 +251,7 @@ QEVENT_METHOD void qevent::add_simtrace( unsigned idx, const quad4& p, const qua
     a.q3.f.z = p.q1.f.z ;
     a.q3.u.w = prd->identity() ;  // identity from __closesthit__ch (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) 
 
-    const sphoton& s = (sphoton&)a ; 
-    photon[idx] = s ;
+    simtrace[idx] = a ;
 }
 
 

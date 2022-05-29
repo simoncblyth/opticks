@@ -147,7 +147,7 @@ fi
 
 export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$pkg/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
 
-botline="MOI $MOI CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE"
+botline="MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE"
 
 
 [ -n "$ZOOM" ] && botline="$botline ZOOM $ZOOM"
@@ -156,7 +156,10 @@ botline="MOI $MOI CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE"
 [ -n "$YY" ]   && botline="$botline YY $YY"
 [ -n "$ZZ" ]   && botline="$botline ZZ $ZZ"
 
-topline="cxs.sh MOI $MOI CXS_CEGS $CXS_CEGS GRIDSCALE $GRIDSCALE"
+
+topline="cxs.sh MOI $MOI CEGS $CEGS GRIDSCALE $GRIDSCALE"
+[ -n "$LOOKCE" ] && topline="$topline LOOKCE $LOOKCE"
+
 
 export BOTLINE="${BOTLINE:-$botline}"
 export TOPLINE="${TOPLINE:-$topline}"
