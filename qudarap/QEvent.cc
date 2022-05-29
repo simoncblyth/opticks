@@ -12,6 +12,7 @@
 #include "stran.h"
 #include "SU.hh"
 
+#include "SComp.h"
 #include "SGenstep.hh"
 #include "SEvent.hh"
 #include "SEvt.hh"
@@ -580,14 +581,14 @@ void QEvent::save(const char* base, const char* reldir ) const
 QEvent::save
 --------------
 
-This need to be configurable, eg it makes no sense for simtrace to getHit  
-Currently only weakly configurable via the SEventConfig setting that 
-will make some arrays like rec and record null when corresponding max are zero.
+TODO: move array management to SEvt/NPFold 
 
-Need a getSimtrace for simtrace running as arrays very different from photon 
-although still quad4
+The component arrays downloaded from the device and passed to SEvt/NPFold 
+for saving are now configurable via SEventConfig::SetCompMask (using SComp.h) 
 
-Also array management should be handled by SEvt using NPFold with SComp component naming 
+NB SEventConfig maximums and the comp mask need to be coordinated. 
+
+TODO: protections 
 
 **/
 
@@ -596,24 +597,28 @@ void QEvent::save(const char* dir_) const
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
     LOG(info) << " dir " << dir ; 
 
-    NP* hit = getHit() ;
-    const NP* genstep = getGenstep() ; 
-    NP* photon = getPhoton() ; 
-    NP* record = getRecord() ; 
-    NP* rec = getRec() ;   // compressed record
-    NP* seq = getSeq() ;
-    NP* domain = getDomain() ;
+    unsigned mask = SEventConfig::CompMask(); 
 
+    const NP* genstep = SComp::IsGenstep(mask) ? getGenstep() : nullptr ; 
+    NP* hit      = SComp::IsHit(mask)      ? getHit()      : nullptr ;
+    NP* photon   = SComp::IsPhoton(mask)   ? getPhoton()   : nullptr ; 
+    NP* record   = SComp::IsRecord(mask)   ? getRecord()   : nullptr ; 
+    NP* rec      = SComp::IsRec(mask)      ? getRec()      : nullptr ;   // compressed record
+    NP* seq      = SComp::IsSeq(mask)      ? getSeq()      : nullptr ; ;
+    NP* domain   = SComp::IsDomain(mask)   ? getDomain()   : nullptr ;
+    NP* simtrace = SComp::IsSimtrace(mask) ? getSimtrace() : nullptr ;
+    // TODO: getSeed 
 
-    LOG(info) << descSave(hit,genstep,photon,record,rec,seq,domain) ; 
+    LOG(info) << descSave(hit,genstep,photon,record,rec,seq,domain, simtrace) ; 
 
-    if(hit)     hit->save(    dir, "hit.npy"); 
-    if(genstep) genstep->save(dir, "genstep.npy"); 
-    if(photon)  photon->save( dir, "photon.npy"); 
-    if(record)  record->save( dir, "record.npy"); 
-    if(rec)     rec->save(    dir, "rec.npy"); 
-    if(seq)     seq->save(    dir, "seq.npy"); 
-    if(domain)  domain->save( dir, "domain.npy"); 
+    if(hit)      hit->save(      dir, "hit.npy"); 
+    if(genstep)  genstep->save(  dir, "genstep.npy"); 
+    if(photon)   photon->save(   dir, "photon.npy"); 
+    if(record)   record->save(   dir, "record.npy"); 
+    if(rec)      rec->save(      dir, "rec.npy"); 
+    if(seq)      seq->save(      dir, "seq.npy"); 
+    if(domain)   domain->save(   dir, "domain.npy"); 
+    if(simtrace) simtrace->save( dir, "simtrace.npy"); 
 
     saveMeta(dir, "fdmeta.txt" );
 }
@@ -625,7 +630,9 @@ std::string QEvent::descSave(
     const NP* record, 
     const NP* rec, 
     const NP* seq, 
-    const NP* domain ) const 
+    const NP* domain,
+    const NP* simtrace
+    ) const 
 {
     std::stringstream ss ; 
     ss << "QEvent::descSave" 
@@ -666,6 +673,10 @@ std::string QEvent::descSave(
        << std::endl
        << std::setw(20) << "domain" << " " 
        << std::setw(20) << ( domain ? domain->sstr() : "-" ) 
+       << " "
+       << std::endl
+       << std::setw(20) << "simtrace" << " " 
+       << std::setw(20) << ( simtrace ? simtrace->sstr() : "-" ) 
        << " "
        << std::endl
        ;
@@ -785,30 +796,6 @@ void QEvent::downloadSeed( std::vector<int>& seed )
     seed.resize(evt->num_seed); 
     QU::copy_device_to_host<int>( seed.data(), evt->seed, evt->num_seed ); 
 }
-
-/*
-void QEvent::downloadRecord( std::vector<quad4>& record )
-{
-    if( evt->record == nullptr ) return ; 
-    record.resize(evt->num_record); 
-    QU::copy_device_to_host<quad4>( record.data(), (quad4*)evt->record, evt->num_record ); 
-}
-void QEvent::downloadPhoton( std::vector<quad4>& photon )
-{
-    if( evt->photon == nullptr ) return ; 
-    photon.resize(evt->num_photon); 
-    QU::copy_device_to_host<quad4>( photon.data(), (quad4*)evt->photon, evt->num_photon ); 
-}
-void QEvent::savePhoton( const char* dir_, const char* name )
-{
-    const char* dir = SPath::Resolve(dir_, DIRPATH); 
-    LOG(info) << dir ; 
-    std::vector<quad4> photon ; 
-    downloadPhoton(photon); 
-    NP::Write( dir, name,  (float*)photon.data(), photon.size(), 4, 4  );
-}
-*/
-
 
 
 

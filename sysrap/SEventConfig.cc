@@ -8,6 +8,7 @@
 #include "SPath.hh"
 #include "SEventConfig.hh"
 #include "SRG.h"
+#include "SComp.h"
 #include "OpticksPhoton.hh"
 
 #ifdef __APPLE__
@@ -17,6 +18,9 @@ int  SEventConfig::_MaxSimtraceDefault = 1*M ;
 int  SEventConfig::_MaxPhotonDefault = 3*M ; 
 int  SEventConfig::_MaxSimtraceDefault = 3*M ; 
 #endif
+
+const char* SEventConfig::_CompMaskDefault = SComp::ALL_ ; 
+
 
 int SEventConfig::_MaxGenstep = SSys::getenvint(kMaxGenstep,  1000*K) ; 
 int SEventConfig::_MaxPhoton  = SSys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
@@ -31,6 +35,7 @@ const char* SEventConfig::_OutFold = SSys::getenvvar(kOutFold,  "$TMP" );
 const char* SEventConfig::_OutName = SSys::getenvvar(kOutName,  nullptr ); 
 int SEventConfig::_RGMode = SRG::Type(SSys::getenvvar(kRGMode, "simulate")) ;    
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar(kHitMask, "SD" )) ;   
+unsigned SEventConfig::_CompMask  = SComp::Mask(SSys::getenvvar(kCompMask, _CompMaskDefault )) ;   
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
@@ -44,6 +49,7 @@ float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
 int SEventConfig::RGMode(){  return _RGMode ; } 
+unsigned SEventConfig::CompMask(){  return _CompMask; } 
 
 bool SEventConfig::IsRGModeRender(){   return RGMode() == SRG_RENDER   ; } 
 bool SEventConfig::IsRGModeSimtrace(){ return RGMode() == SRG_SIMTRACE ; } 
@@ -65,9 +71,11 @@ void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? st
 void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? strdup(outname) : nullptr ; Check() ; }
 void SEventConfig::SetRGMode(   const char* rg_mode){   _RGMode = SRG::Type(rg_mode) ; Check() ; }
 void SEventConfig::SetHitMask(const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
+void SEventConfig::SetCompMask(const char* names, char delim){  _CompMask = SComp::Mask(names,delim) ; }
 
 const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
+std::string SEventConfig::CompMaskLabel(){ return SComp::Desc( _CompMask ) ; }
 
 
 void SEventConfig::Check()
@@ -118,6 +126,10 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " RGMode " << " : " << RGMode() << std::endl 
        << std::setw(25) << ""
        << std::setw(20) << " RGModeLabel " << " : " << RGModeLabel() << std::endl 
+       << std::setw(25) << kCompMask
+       << std::setw(20) << " CompMask " << " : " << CompMask() << std::endl 
+       << std::setw(25) << ""
+       << std::setw(20) << " CompMaskLabel " << " : " << CompMaskLabel() << std::endl 
        << std::setw(25) << kOutFold
        << std::setw(20) << " OutFold " << " : " << OutFold() << std::endl 
        << std::setw(25) << kOutName

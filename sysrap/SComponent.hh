@@ -3,7 +3,8 @@
 SComponent.hh : naming array components of Opticks Event 
 =============================================================
 
-HMM: maybe rename SComponent ?
+NB new workflow uses SComp.h NOT THIS 
+
 
 Pulling out parts of okc/OpticksEvent to allow development of less repetitive sysrap/SOpticksEvent
 

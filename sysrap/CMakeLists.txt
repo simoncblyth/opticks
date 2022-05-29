@@ -262,6 +262,7 @@ set(HEADERS
     OpticksPhoton.hh
     SU.hh
     SComponent.hh 
+    SComp.h 
 
     SEventConfig.hh
     SGeoConfig.hh

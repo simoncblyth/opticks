@@ -136,7 +136,9 @@ public:
         const NP* record, 
         const NP* rec, 
         const NP* seq, 
-        const NP* domain ) const ; 
+        const NP* domain,
+        const NP* simtrace
+         ) const ; 
 
     void saveMeta(   const char* dir, const char* name) const ; 
     void setMeta( const char* meta ); 

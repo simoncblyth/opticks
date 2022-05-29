@@ -48,6 +48,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     SEventConfig::SetRGMode("simtrace"); 
+    SEventConfig::SetCompMask("genstep,simtrace"); 
+
     SOpticks::WriteOutputDirScript() ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
    
     SEvt evt ; 
