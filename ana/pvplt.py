@@ -185,7 +185,7 @@ def mpplt_ce(ax, ce, axes, linewidths=2, colors="blue"):
     assert len(axes) == 2 
     box_lseg = ce_line_segments(ce, axes)
     box_lseg_2D = box_lseg[:,:,axes]
-    lc = mp_collections.LineCollection(box_lseg_2D, linewidths=linewidths, colors=colors) 
+    lc = mp_collections.LineCollection(box_lseg_2D, linewidths=linewidths, colors=colors, label="ce %10.4f" % ce[3]) 
     ax.add_collection(lc)
 
 def pvplt_ce(pl, ce, axes, color="blue"):

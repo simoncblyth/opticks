@@ -231,6 +231,8 @@ class SimtracePlot(object):
         fig, ax = mp.subplots(figsize=SIZE/100.)  # mpl uses dpi 100
         fig.suptitle("\n".join(title))
               
+        self.ax = ax  # TODO: arrange to pass this in 
+
         note = self.note
         note1 = self.note1
         if len(note) > 0:
@@ -263,7 +265,11 @@ class SimtracePlot(object):
         pass
 
         if not self.lookce is None:
-            mpplt_ce(ax, self.lookce, axes=self.frame.axes) 
+
+            lookce_colors = ["red","green", "blue", "cyan", "magenta", "yellow", "black"] 
+            for i, ce in enumerate(self.lookce):
+                mpplt_ce(ax, ce, axes=self.frame.axes,colors=lookce_colors[i%len(lookce_colors)] ) 
+            pass
         pass
 
         label = "gs_center XZ"
@@ -470,7 +476,9 @@ class SimtracePlot(object):
         pass
 
         if not self.lookce is None:
-            pvplt_ce(pl, self.lookce, axes=self.frame.axes) 
+            for ce in self.lookce:
+                pvplt_ce(pl, ce, axes=self.frame.axes) 
+            pass
         pass
 
 
@@ -598,6 +606,7 @@ if __name__ == '__main__':
 
     if not mp is None:
         plt.positions_mpplt()
+        ax = plt.ax
     pass
 
     if not pv is None:

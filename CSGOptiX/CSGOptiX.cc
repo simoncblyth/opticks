@@ -627,9 +627,9 @@ double CSGOptiX::launch()
     unsigned depth  = 0 ; 
     switch(raygenmode)
     {
-        SRG_RENDER:    { width = params->width           ; height = params->height ; depth = params->depth ; } ; break ;  
-        SRG_SIMTRACE:  { width = event->getNumSimtrace() ; height = 1              ; depth = 1             ; } ; break ;   
-        SRG_SIMULATE:  { width = event->getNumPhoton()   ; height = 1              ; depth = 1             ; } ; break ; 
+        case SRG_RENDER:    { width = params->width           ; height = params->height ; depth = params->depth ; } ; break ;  
+        case SRG_SIMTRACE:  { width = event->getNumSimtrace() ; height = 1              ; depth = 1             ; } ; break ;   
+        case SRG_SIMULATE:  { width = event->getNumPhoton()   ; height = 1              ; depth = 1             ; } ; break ; 
     }
     assert( width > 0 ); 
 

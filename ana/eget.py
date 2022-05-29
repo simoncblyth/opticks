@@ -25,18 +25,21 @@ def eintlist_(ekey, fallback):
     slis = slis.split(",")
     return list(map(int, filter(None, slis)))
 
-def elookce_(extent=10., ekey="LOOK"):
+def elookce_(extent="10.", ekey="LOOK"):
     """
     :param extent: float, is overridden by LOOKCE envvar
     :param ekey: typically "LOOK" specifting envvar that contains look coordinates eg "10.5,10.5,10.5" 
     """
     if not ekey in os.environ:
-         ce = None
-    else:
-        ce = np.zeros( (4,), dtype=np.float32 )     
-        ce[:3] = efloatlist_(ekey, "0,0,0")
-        ce[3] = efloat_("LOOKCE", extent)
+         return None
     pass
+    look = efloatlist_(ekey, "0,0,0")
+    extents = efloatlist_("LOOKCE", extent)
+    ce = np.zeros( (len(extents), 4,), dtype=np.float32 )     
+    for i in range(len(extents)):
+        ce[i,:3] = look 
+        ce[i, 3] = extents[i]
+    pass 
     return ce 
 
 
