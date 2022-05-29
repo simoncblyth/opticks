@@ -761,6 +761,13 @@ unsigned QEvent::getNumPhoton() const
 {
     return evt->num_photon ; 
 }
+unsigned QEvent::getNumSimtrace() const
+{
+    return evt->num_simtrace ; 
+}
+
+
+
 
 /**
 QEvent::uploadEvt 

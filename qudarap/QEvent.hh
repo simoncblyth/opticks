@@ -118,6 +118,7 @@ public:
     void     setNumSimtrace(unsigned num_simtrace) ;  
     void     uploadEvt(); 
     unsigned getNumPhoton() const ;  
+    unsigned getNumSimtrace() const ;  
 
     void downloadGenstep( std::vector<quad6>& genstep ); 
     void downloadSeed(    std::vector<int>&   seed ); 

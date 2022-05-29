@@ -604,6 +604,10 @@ void CSGOptiX::prepareParam()
 #endif
 }
 
+
+
+
+
 /**
 CSGOptiX::launch
 -------------------
@@ -616,17 +620,17 @@ Depending on params.raygenmode the "render" or "simulate" method is called.
 double CSGOptiX::launch()
 {
     prepareParam(); 
-   
-    bool sim = raygenmode > 0 ; 
-    if(sim)
-    {
-        assert( event ); 
-    }
+    if(raygenmode != SRG_RENDER) assert(event) ; 
 
-    unsigned width  = sim ? event->getNumPhoton()  : params->width  ; 
-    unsigned height = sim ?                      1 : params->height ;  
-    unsigned depth  = sim ?                      1 : params->depth  ;
- 
+    unsigned width = 0 ; 
+    unsigned height = 0 ; 
+    unsigned depth  = 0 ; 
+    switch(raygenmode)
+    {
+        SRG_RENDER:    { width = params->width           ; height = params->height ; depth = params->depth ; } ; break ;  
+        SRG_SIMTRACE:  { width = event->getNumSimtrace() ; height = 1              ; depth = 1             ; } ; break ;   
+        SRG_SIMULATE:  { width = event->getNumPhoton()   ; height = 1              ; depth = 1             ; } ; break ; 
+    }
     assert( width > 0 ); 
 
     typedef std::chrono::time_point<std::chrono::high_resolution_clock> TP ;

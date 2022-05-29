@@ -96,7 +96,7 @@ TODO: pack enums to make room for a photon_offset
 
 void SGenstep::ConfigureGenstep( quad6& gs,  int gencode, int gridaxes, int gsid, int photons_per_genstep )
 {
-    assert( gencode == OpticksGenstep_TORCH ); 
+    assert( gencode == OpticksGenstep_TORCH || gencode == OpticksGenstep_FRAME ); 
     assert( gridaxes == XYZ ||  gridaxes == YZ || gridaxes == XZ || gridaxes == XY ); 
 
     gs.q0.i.x = gencode ;

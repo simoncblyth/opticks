@@ -569,13 +569,13 @@ if __name__ == '__main__':
         x_lpos = np.dot( x_gpos, t.sframe.w2m ) 
     pass
 
-    SimtracePositions.Check(t.photon)
+    SimtracePositions.Check(t.simtrace)
 
     local = True 
 
     gs = FrameGensteps(t.genstep, t.sframe, local=local)  ## get gs positions in target frame
 
-    t_pos = SimtracePositions(t.photon, gs, t.sframe, local=local, mask=MASK )
+    t_pos = SimtracePositions(t.simtrace, gs, t.sframe, local=local, mask=MASK )
 
     if SIMPLE:
        simple(t_pos)
