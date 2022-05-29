@@ -194,11 +194,15 @@ class sframe(object):
         nz = (iz1 - iz0)//2
         coords = "RTP" if iidx == -3 else "XYZ"   ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
         axes = self.DetermineAxes(nx, ny, nz)
+        other_axis = Axes.OtherAxis(axes)
         planar = len(axes) == 2 
 
         if planar:
             H, V = axes
             axlabels =  coords[H], coords[V]
+
+            
+
         else:
             H, V, D = axes
             axlabels =  coords[H], coords[V], coords[D]
@@ -209,6 +213,7 @@ class sframe(object):
         self.nz = nz
         self.coords = coords
         self.axes = axes 
+        self.other_axis = other_axis
         self.axlabels = axlabels 
 
 

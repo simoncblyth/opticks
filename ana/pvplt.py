@@ -3,6 +3,9 @@
 import os 
 import numpy as np
 import pyvista as pv
+from matplotlib import collections  as mp_collections
+from opticks.ana.axes import Axes
+
 themes = ["default", "dark", "paraview", "document" ]
 pv.set_plot_theme(themes[1])
 
@@ -114,21 +117,85 @@ def pvplt_lines( pl, pos, vec, color='white' ):
 
 def pvplt_add_contiguous_line_segments( pl, xpos ):
     """
-    :param pl: plotter
+    :param pl: pyvista plotter
     :param xpos: (n,3) array of positions 
     
     Adds red points at *xpos* and joins them with blue line segments using add_lines.
     This has been used only for small numbers of positions such as order less than 10 
     photon step positions.
-
-
     """
     pl.add_points( xpos, color="red" )        
-    xseg = pvplt_contiguous_line_segments(xpos)
+    xseg = contiguous_line_segments(xpos)
     pl.add_lines( xseg, color="blue" )
 
 
-def pvplt_contiguous_line_segments( pos ):
+def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2):
+    """
+    :param ax: matplotlib 2D axis 
+    :param xpos: (n,3) array of positions
+    :param axes: (2,)  2-tuple identifying axes to pick from the where X=0, Y=1, Z=2  
+    """
+    assert len(axes) == 2 
+    xseg = contiguous_line_segments(xpos[:,:3]).reshape(-1,2,3)  # (n,2,3) 
+    xseg2D = xseg[:,:,axes]   #  (n,2,2)    same as xseg[...,axes]  see https://numpy.org/doc/stable/user/basics.indexing.html 
+
+    lc = mp_collections.LineCollection(xseg2D, linewidths=linewidths, colors="red") 
+    ax.add_collection(lc)
+
+
+def ce_line_segments( ce, axes ):
+    """
+    :param ce: center-extent array of shape (4,)
+    :param axes: tuple of length 2 picking axes from X=0 Y=1 Z=2
+    :return box_lseg: box line segments of shape (4, 2, 3) 
+
+
+       tl            tr = c + [e,e]
+         +----------+
+         |          |
+         |----c-----| 
+         |          |
+         +----------+
+       bl            br = c + [e,-e]
+ 
+    """    
+    assert len(axes) == 2 
+    other_axis = Axes.OtherAxis(axes)
+
+    c = ce[:3]
+    e = ce[3]
+
+    h = e*Axes.UnitVector(axes[0])
+    v = e*Axes.UnitVector(axes[1])
+
+    tr = c + h + v 
+    bl = c - h - v 
+    tl = c - h + v    
+    br = c + h - v  
+
+    box_lseg = np.empty( (4,2,3), dtype=np.float32 )
+    box_lseg[0] = (tl, tr) 
+    box_lseg[1] = (tr, br) 
+    box_lseg[2] = (br, bl)
+    box_lseg[3] = (bl, tl)
+    return box_lseg 
+
+
+def mpplt_ce(ax, ce, axes, linewidths=2, colors="blue"):
+    assert len(axes) == 2 
+    box_lseg = ce_line_segments(ce, axes)
+    box_lseg_2D = box_lseg[:,:,axes]
+    lc = mp_collections.LineCollection(box_lseg_2D, linewidths=linewidths, colors=colors) 
+    ax.add_collection(lc)
+
+def pvplt_ce(pl, ce, axes, color="blue"):
+    assert len(axes) == 2 
+    box_lseg = ce_line_segments(ce, axes)
+    box_lseg_pv = box_lseg.reshape(-1,3)
+    pl.add_lines( box_lseg_pv, color=color )
+
+
+def contiguous_line_segments( pos ):
     """
     :param pos: (n,3) array of positions 
     :return seg: ( 2*(n-1),3) array of line segments suitable for pl.add_lines 

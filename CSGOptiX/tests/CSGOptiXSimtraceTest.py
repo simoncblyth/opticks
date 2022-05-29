@@ -96,6 +96,7 @@ from opticks.ana.feature import SimtraceFeatures
 from opticks.ana.simtrace_positions import SimtracePositions
 from opticks.ana.framegensteps import FrameGensteps
 from opticks.ana.npmeta import NPMeta
+from opticks.ana.eget import efloatlist_, elookce_
 from opticks.sysrap.sframe import sframe , X, Y, Z
 from opticks.ana.pvplt import * 
 
@@ -172,6 +173,8 @@ class SimtracePlot(object):
         self.note1 = note1 
 
         efloatlist_ = lambda ekey:list(map(float, filter(None, os.environ.get(ekey,"").split(","))))
+        self.lookce = elookce_(extent=10)
+
 
         aa = {} 
         aa[X] = efloatlist_("XX")
@@ -255,6 +258,15 @@ class SimtracePlot(object):
 
         self.lines_plt(ax, None)
 
+        if hasattr(self, 'x_lpos'):
+            ax.scatter( x_lpos[:,H], x_lpos[:,V], label="x_lpos", s=10 )
+            mpplt_add_contiguous_line_segments(ax, x_lpos, axes=self.frame.axes, linewidths=2)
+        pass
+
+        if not self.lookce is None:
+            mpplt_ce(ax, self.lookce, axes=self.frame.axes) 
+        pass
+
         label = "gs_center XZ"
 
         if gsplot > 0:
@@ -307,8 +319,8 @@ class SimtracePlot(object):
 
         """
         H,V = self.frame.axes    
-        hlim = self.gs.lim[H]
-        vlim = self.gs.lim[V]
+        hlim = self.gs.lim[H]  # canonically (xmin,xmax)
+        vlim = self.gs.lim[V]  # canonically (zmin,zmax)
 
         for i in [X,Y,Z]: 
             aa = self.aa[i]
@@ -457,6 +469,11 @@ class SimtracePlot(object):
         if hasattr(self, 'x_lpos'):
             pvplt_add_contiguous_line_segments(pl, self.x_lpos[:,:3])
         pass
+
+        if not self.lookce is None:
+            pvplt_ce(pl, self.lookce, axes=self.frame.axes) 
+        pass
+
 
         show_genstep_grid = len(self.frame.axes) == 2 # too obscuring with 3D
         if show_genstep_grid:

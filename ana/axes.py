@@ -168,6 +168,26 @@ class Axes(object):
 
     offs["XYZ"] = XYZ.off
 
+    @classmethod
+    def OtherAxis(cls, axes):
+        assert len(axes) == 2
+        if not X in axes: return X 
+        if not Y in axes: return Y 
+        if not Z in axes: return Z
+        return -1 
+
+    @classmethod
+    def UnitVector(cls, axis, dtype=np.float32):
+        if axis == X:
+            v = np.array((1,0,0), dtype=dtype)
+        elif axis == Y:
+            v = np.array((0,1,0), dtype=dtype)
+        elif axis == Z:
+            v =  np.array((0,0,1), dtype=dtype)
+        else:
+            v = np.array( (0,0,0), dtype=dtype)
+        return v
+
 
     @classmethod
     def HV_(cls, H, V, axes="XYZ"):

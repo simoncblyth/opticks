@@ -24,13 +24,19 @@ EOU
 }
 
 
-moi=37684
-ce_offset=0,-64.59664,0    # -Y shift aligning slice plane with a cxsim photon 0 hit with microsteps 
-ce_scale=1   
-cegs=16:0:9:500   
-gridscale=0.10
+moi=37684         # flat instance index obtained from cxsim p.py prd debug output of the microstep photon
 
-export ZOOM=2
+#ce_offset=0,-64.59664,0    # -Y shift aligning slice plane with a cxsim photon 0 hit with microsteps 
+ce_offset=209.774,-64.59664,129.752    # center the grid on the microstep points
+
+ce_scale=1   
+cegs=16:0:9:500 
+  
+#gridscale=0.1
+gridscale=0.05
+#gridscale=0.0001   # closeup look 
+
+export ZOOM=${ZOOM:-2}
 export LOOK=209.774,-64.59664,129.752
 
 # CAP_BASE depends on geometry and thus is set by "source cachegrab.sh env"

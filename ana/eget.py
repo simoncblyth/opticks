@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+import os, numpy as np
 
 efloat_ = lambda ekey, fallback:float(os.environ.get(ekey,fallback))
 efloatlist_ = lambda ekey,fallback:list(map(float, filter(None, os.environ.get(ekey,fallback).split(","))))
@@ -25,6 +25,15 @@ def eintlist_(ekey, fallback):
     slis = slis.split(",")
     return list(map(int, filter(None, slis)))
 
+def elookce_(extent=10., ekey="LOOK"):
+    if not ekey in os.environ:
+         ce = None
+    else:
+        ce = np.zeros( (4,), dtype=np.float32 )     
+        ce[:3] = efloatlist_(ekey, "0,0,0")
+        ce[3] = extent
+    pass
+    return ce 
 
 
 if __name__ == '__main__':
