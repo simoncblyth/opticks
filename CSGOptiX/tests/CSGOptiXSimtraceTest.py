@@ -172,6 +172,7 @@ class SimtracePlot(object):
         self.note = note 
         self.note1 = note1 
 
+        self.look = efloatlist_("LOOK", "0,0,0")
         self.lookce = elookce_(extent=10)
 
 
@@ -257,7 +258,7 @@ class SimtracePlot(object):
         log.info(" ylim[0] %8.4f ylim[1] %8.4f " % (ylim[0], ylim[1]) )
         log.info(" zlim[0] %8.4f zlim[1] %8.4f " % (zlim[0], zlim[1]) )
 
-        self.lines_plt(ax, None)
+        mpplt_parallel_lines(ax, self.gs.lim, self.aa, self.frame.axes, self.look ) 
 
         if hasattr(self, 'x_lpos'):
             ax.scatter( x_lpos[:,H], x_lpos[:,V], label="x_lpos", s=10 )
@@ -265,15 +266,14 @@ class SimtracePlot(object):
         pass
 
         if not self.lookce is None:
-
-            lookce_colors = ["red","green", "blue", "cyan", "magenta", "yellow", "black"] 
-            for i, ce in enumerate(self.lookce):
-                mpplt_ce(ax, ce, axes=self.frame.axes,colors=lookce_colors[i%len(lookce_colors)] ) 
-            pass
+            mpplt_ce_multiple(ax, self.lookce, axes=self.frame.axes)
         pass
 
-        label = "gs_center XZ"
 
+
+
+
+        label = "gs_center XZ"
         if gsplot > 0:
             ax.scatter( ugsc[igs, H], ugsc[igs,V], label=None, s=sz )
         pass
@@ -297,78 +297,6 @@ class SimtracePlot(object):
         outpath = self.outpath_("positions",ptype )
         print(outpath)
         fig.savefig(outpath)
-
-
-    def lines_plt(self, ax, pl):
-        """
-        Draws axis parallel line segments in matplotlib and pyvista.
-        The segments extend across the genstep grid limits.
-        Lines to draw are configured using comma delimited value lists 
-        in envvars XX, YY, ZZ
-
-        :param ax: matplotlib axis
-        :param pl: pyvista plot 
-
-
-               +----------------------+
-               |                      |
-               |                      |
-               +----------------------+      
-               |                      |   
-               +----------------------+      
-               |                      |
-               |                      |   V=Z
-               +----------------------+
-
-                 H=X
-
-        """
-        H,V = self.frame.axes    
-        hlim = self.gs.lim[H]  # canonically (xmin,xmax)
-        vlim = self.gs.lim[V]  # canonically (zmin,zmax)
-
-        for i in [X,Y,Z]: 
-            aa = self.aa[i]
-            if len(aa) > 0:
-                for a in aa:
-                    if V == i:
-                        if not ax is None:
-                            ax.plot( hlim, [a,a] )
-                        elif not pl is None:
-                            pass
-                            lo = np.array( [0, 0, 0])
-                            hi = np.array( [0, 0, 0])
-
-                            lo[H] = hlim[0] 
-                            hi[H] = hlim[1] 
-                            lo[i] = a 
-                            hi[i] = a 
-
-                            hline = pv.Line(lo, hi)
-                            pl.add_mesh(hline, color="w")
-                        pass
-                    elif H == i:
-                        if not ax is None:
-                            ax.plot( [a,a], vlim )
-                        elif not pl is None:
-                            pass
-                            lo = np.array( [0, 0, 0])
-                            hi = np.array( [0, 0, 0])
-
-                            lo[V] = vlim[0] 
-                            hi[V] = vlim[1] 
-                            lo[i] = a 
-                            hi[i] = a 
-
-                            vline = pv.Line(lo, hi)
-                            pl.add_mesh(vline, color="w")
-                        pass
-                    else:
-                        pass
-                    pass
-                pass
-            pass
-        pass
 
 
 
@@ -476,20 +404,16 @@ class SimtracePlot(object):
         pass
 
         if not self.lookce is None:
-            for ce in self.lookce:
-                pvplt_ce(pl, ce, axes=self.frame.axes) 
-            pass
+            pvplt_ce_multiple(pl, self.lookce, axes=self.frame.axes)
         pass
-
+ 
 
         show_genstep_grid = len(self.frame.axes) == 2 # too obscuring with 3D
         if show_genstep_grid:
             pl.add_points( ugsc[:,:3], color="white" ) 
         pass   
 
-
-
-        self.lines_plt(None, pl)
+        pvplt_parallel_lines(pl, self.gs.lim, self.aa, self.frame.axes, self.look ) 
 
         self.frame.pv_compose(pl, local=True) 
 

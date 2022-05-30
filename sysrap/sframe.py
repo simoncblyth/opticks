@@ -104,8 +104,12 @@ class sframe(object):
                         "iz0 %(iz0)4d iz1 %(iz1)4d ",
                         "num_photon %(num_photon)4d gridscale %(gridscale)10.4f"]) % locals() 
 
-        self.grid = grid
 
+
+
+
+
+        self.grid = grid
         self.ce = ce 
         self.ix0 = ix0
         self.ix1 = ix1
@@ -115,6 +119,7 @@ class sframe(object):
         self.iz1 = iz1
         self.num_photon = num_photon
         self.gridscale = gridscale
+
 
 
         target = "midx %(midx)6d mord %(mord)6d iidx %(iidx)6d       inst %(inst)7d   " % locals() 
@@ -189,6 +194,11 @@ class sframe(object):
         iy1 = self.iy1 
         iz0 = self.iz0 
         iz1 = self.iz1 
+        gridscale = self.gridscale
+        ce = self.ce
+        extent = ce[3]
+        s_extent = "e:%7.3f" % extent 
+
         nx = (ix1 - ix0)//2   
         ny = (iy1 - iy0)//2
         nz = (iz1 - iz0)//2
@@ -197,16 +207,24 @@ class sframe(object):
         other_axis = Axes.OtherAxis(axes)
         planar = len(axes) == 2 
 
+        bbox = np.zeros( (2,3), dtype=np.float32 )
+        bbox[0] = list(map(float,[ix0,iy0,iz0]))
+        bbox[1] = list(map(float,[ix1,iy1,iz1]))
+        bbox *= gridscale*ce[3]
+
+
         if planar:
             H, V = axes
             axlabels =  coords[H], coords[V]
-
-            
-
+            s_bbox = "bb "
+            s_bbox += "  %7.4f %7.4f " % tuple(bbox[0,axes])    
+            s_bbox += "  %7.4f %7.4f " % tuple(bbox[1,axes])    
         else:
             H, V, D = axes
             axlabels =  coords[H], coords[V], coords[D]
+            s_bbox = "bb %7.4f %7.4f %7.4f    %7.4f %7.4f %7.4f " % tuple(bbox.ravel())    
         pass 
+
 
         self.nx = nx
         self.ny = ny
@@ -215,6 +233,13 @@ class sframe(object):
         self.axes = axes 
         self.other_axis = other_axis
         self.axlabels = axlabels 
+
+        self.bbox = bbox  # without ce_offset 
+        self.s_bbox = s_bbox 
+
+        self.extent = extent 
+        self.s_extent = s_extent 
+   
 
 
     def init_view(self):
@@ -255,7 +280,7 @@ class sframe(object):
         self.up = up
         self.off = off
         self.eye = eye 
-        self.thirdline = "thirdline"
+        self.thirdline = self.s_bbox + self.s_extent
 
 
     def pv_compose(self, pl, local=True):
@@ -308,6 +333,7 @@ class sframe(object):
                     l_("meta",repr(self.meta)), 
                     l_("ce", repr(self.ce)), 
                     l_("grid", self.grid), 
+                    l_("bbox", repr(self.bbox)), 
                     l_("target", self.target), 
                     l_("qat4id", self.qat4id), 
                     l_("m2w",""), repr(self.m2w), "", 

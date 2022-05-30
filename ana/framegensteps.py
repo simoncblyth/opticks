@@ -94,6 +94,7 @@ class FrameGensteps(object):
         self.gs = gs
         self.gsid = gsid
         self.numpho = numpho
+        self.totpho = np.sum(numpho)
         self.centers = world_frame_centers 
         self.centers_local = centers_local
         self.ugsc = ugsc
@@ -102,9 +103,9 @@ class FrameGensteps(object):
 
     def __repr__(self):
         return "\n".join([
-                   "FrameGensteps",
-                   "gs.gs %s " % str(self.gs.shape),
-                   "gs.numpho %s " % self.numpho,
+                   "FrameGensteps gs.gs %s " % str(self.gs.shape),
+                   "gs.numpho[0] %d " % self.numpho[0] ,
+                   "gs.totpho    %d " % self.totpho ,
                    "gs.lim[X] %s " % str(self.lim[X]),
                    "gs.lim[Y] %s " % str(self.lim[Y]),
                    "gs.lim[Z] %s " % str(self.lim[Z]),

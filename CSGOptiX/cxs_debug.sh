@@ -39,7 +39,7 @@ gridscale=0.0001   # closeup look
 
 export ZOOM=${ZOOM:-2}
 export LOOK=209.774,-64.59664,129.752
-export LOOKCE=${LOOKCE:-0.001,0.01,0.1,1}
+export LOOKCE=${LOOKCE:-1,0.1,0.01,0.001}
 
 # CAP_BASE depends on geometry and thus is set by "source cachegrab.sh env"
 export CAP_REL=cxs_debug

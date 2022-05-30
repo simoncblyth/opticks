@@ -17,6 +17,47 @@ Local::
 
 
 
+review propagate_epsilonn from old workflow : how big should it be to avoid boundary launch self intersection ?
+-----------------------------------------------------------------------------------------------------------------
+
+::
+
+    epsilon:cu blyth$ grep propagate_epsilon *.*
+    csg_intersect_boolean.h:    float tA_min = propagate_epsilon ;  
+    csg_intersect_boolean.h:            x_tmin[side] = isect[side].w + propagate_epsilon ; 
+    csg_intersect_boolean.h:                    float tminAdvanced = fabsf(csg.data[loopside].w) + propagate_epsilon ;
+    csg_intersect_boolean.h:                 tX_min[side] = _side.w + propagate_epsilon ;  // classification as well as intersect needs the advance
+    csg_intersect_boolean.h:                     tX_min[side] = isect[side+LEFT].w + propagate_epsilon ; 
+    csg_intersect_boolean.h:        tX_min[side] = _side.w + propagate_epsilon ;
+    generate.cu:rtDeclareVariable(float,         propagate_epsilon, , );
+    generate.cu:    rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
+    generate.cu:        rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
+    intersect_analytic.cu:rtDeclareVariable(float, propagate_epsilon, , );
+    epsilon:cu blyth$ 
+
+    epsilon:optixrap blyth$ grep propagate_epsilon *.*
+    OPropagator.cc:    m_context[ "propagate_epsilon"]->setFloat( m_ok->getEpsilon() );       // TODO: check impact of changing propagate_epsilon
+    epsilon:optixrap blyth$ 
+
+    4571 float Opticks::getEpsilon() const {            return m_cfg->getEpsilon()  ; }
+
+    2167 template <class Listener>
+    2168 float OpticksCfg<Listener>::getEpsilon() const
+    2169 {
+    2170     return m_epsilon ;
+    2171 }
+
+    124     m_epsilon(0.1f),       
+
+    0986    char epsilon[128];
+     987    snprintf(epsilon,128, "OptiX propagate epsilon. Default %10.4f", m_epsilon);
+     988    m_desc.add_options()
+     989        ("epsilon",  boost::program_options::value<float>(&m_epsilon), epsilon );
+     990 
+
+
+
+
 water-water micro steps ?
 ----------------------------
 

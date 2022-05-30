@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-import os 
+import os, logging
+log = logging.getLogger(__name__)
 import numpy as np
 import pyvista as pv
 from matplotlib import collections  as mp_collections
-from opticks.ana.axes import Axes
+from opticks.ana.axes import Axes, X,Y,Z
 
 themes = ["default", "dark", "paraview", "document" ]
 pv.set_plot_theme(themes[1])
@@ -160,7 +161,6 @@ def ce_line_segments( ce, axes ):
  
     """    
     assert len(axes) == 2 
-    other_axis = Axes.OtherAxis(axes)
 
     c = ce[:3]
     e = ce[3]
@@ -180,6 +180,93 @@ def ce_line_segments( ce, axes ):
     box_lseg[3] = (bl, tl)
     return box_lseg 
 
+def pvplt_parallel_lines(pl, gslim , aa, axes, look ):
+    """
+    For example with canonical XZ axes with envvar XX=x0,x1,x2
+    will get 3 parallel vertical lines spanning between the gslim Z-limits  
+    at the provided x positions
+
+         +---+------------+
+         |   |            |
+         |   |            |    Z
+         |   |            |    |
+         +---+------------+    +-- X
+        x0  x1            x2
+ 
+
+    gslim {0: array([209.35 , 210.197], dtype=float32), 1: array([-64.597, -64.597], dtype=float32), 2: array([129.514, 129.992], dtype=float32)} 
+    aa    {0: [209.5, 210.0], 1: [], 2: []} 
+    axes  (0, 2) 
+    look  [209.774, -64.59664, 129.752] 
+    """
+    print("pvplt_parallel_lines")
+    print("gslim %s " % str(gslim) )
+    print("aa    %s " % str(aa) )
+    print("axes  %s " % str(axes) )
+    print("look  %s " % str(look) )
+    assert len(axes) == 2 
+    H,V = axes 
+    for i in [X,Y,Z]: 
+        if len(aa[i]) == 0: continue
+        for a in aa[i]:
+            lo = look.copy()
+            hi = look.copy()
+            lo[i] = a 
+            hi[i] = a 
+            if i == H:  # i:horizontal axis, so create vertical lines
+                lo[V] = gslim[V][0] 
+                hi[V] = gslim[V][1] 
+            elif i == V:  #  i:vertical axis, so create horizontal lines
+                lo[H] = gslim[H][0] 
+                hi[H] = gslim[H][1] 
+            pass
+            line = pv.Line(lo, hi)
+            pl.add_mesh(line, color="w")
+            log.info("i %d pv horizontal  lo %s hi %s " % (i, str(lo), str(hi)))
+        pass 
+    pass
+
+def mpplt_parallel_lines(ax, gslim, aa, axes, look ):
+    """
+    Draws axis parallel line segments in matplotlib and pyvista.
+    The segments extend across the genstep grid limits.
+    Lines to draw are configured using comma delimited value lists 
+    in envvars XX, YY, ZZ
+
+    :param ax: matplotlib axis
+    :param aa: {X:XX, Y:YY, Z:ZZ } dict of values 
+    :param axes: tuple eg (0,2) 
+    :param look: (3,) position   (NOT USED)
+
+           +----------------------+
+           |                      |
+           |                      |
+           +----------------------+      
+           |                      |   
+           +----------------------+      
+           |                      |
+           |                      |   V=Z
+           +----------------------+
+
+             H=X
+
+    """
+    if ax is None: return
+    H,V = axes    
+    log.info("mpplt_parallel_lines gslim[H] %s gslim[V] %s aa %s " % (str(gslim[H]), str(gslim[V]), str(aa)))
+    for i in [X,Y,Z]: 
+        if len(aa[i]) == 0: continue
+        for a in aa[i]:
+            if V == i:  # vertical ordinate -> horizontal line 
+                ax.plot( gslim[H], [a,a] )
+            elif H == i:  # horizontal ordinate -> vertical line
+                ax.plot( [a,a], gslim[V] )
+            pass
+        pass
+    pass
+
+
+
 
 def mpplt_ce(ax, ce, axes, linewidths=2, colors="blue"):
     assert len(axes) == 2 
@@ -193,6 +280,22 @@ def pvplt_ce(pl, ce, axes, color="blue"):
     box_lseg = ce_line_segments(ce, axes)
     box_lseg_pv = box_lseg.reshape(-1,3)
     pl.add_lines( box_lseg_pv, color=color )
+
+
+LOOKCE_COLORS = ["red","green", "blue", "cyan", "magenta", "yellow", "black"]
+def lookce_color(i):
+    return LOOKCE_COLORS[i%len(LOOKCE_COLORS)]
+
+def mpplt_ce_multiple(ax, lookce, axes):
+    for i, ce in enumerate(lookce):
+        mpplt_ce(ax, ce, axes=axes,colors=lookce_color(i) ) 
+    pass
+
+def pvplt_ce_multiple(pl, lookce, axes):
+    for i,ce in enumerate(lookce):
+        pvplt_ce(pl, ce, axes=axes, color=lookce_color(i)) 
+    pass
+
 
 
 def contiguous_line_segments( pos ):

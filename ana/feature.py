@@ -232,22 +232,22 @@ class SimtraceFeatures(object):
         pid = ids >> 16
         ins = ids & 0xffff   # ridx?    
 
-        log.info("[ Photons.bndfeat ")
+        log.debug("[ Photons.bndfeat ")
         bnd_namedict = {} if cf is None else cf.sim.bndnamedict 
         bndfeat = Feature("bnd", bnd, bnd_namedict)
-        log.info("] Photons.bndfeat ")
+        log.debug("] Photons.bndfeat ")
 
-        log.info("[ Photons.pidfeat ")
+        log.debug("[ Photons.pidfeat ")
         pid_namedict = {} if cf is None else cf.primIdx_meshname_dict()
         log.info(" pid_namedict: %d  " % len(pid_namedict))
         pidfeat = Feature("pid", pid, pid_namedict)
-        log.info("] Photons.pidfeat ")
+        log.debug("] Photons.pidfeat ")
 
-        log.info("[ Photons.insfeat ")
+        log.debug("[ Photons.insfeat ")
         ins_namedict = {} if cf is None else cf.insnamedict
         log.info(" ins_namedict: %d  " % len(ins_namedict))
         insfeat = Feature("ins", ins, ins_namedict)
-        log.info("] Photons.insfeat ")
+        log.debug("] Photons.insfeat ")
 
         if do_mok:
             log.info("[ Photons.mokfeat ")
