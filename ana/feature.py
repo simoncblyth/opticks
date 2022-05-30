@@ -14,6 +14,18 @@ else:
     hexcolors = None
 pass
 
+def shorten_surfname(name=None, cut=20):
+    if name is None: name="HamamatsuR12860_PMT_20inch_photocathode_logsurf2"
+    name = name[:cut//2] + "..." + name[-cut//2:]
+    return name 
+
+def shorten_bndname(name=None, cut=20):
+    if name is None: name = "Pyrex/HamamatsuR12860_PMT_20inch_photocathode_logsurf2/HamamatsuR12860_PMT_20inch_photocathode_logsurf1/Vacuum"
+    elem = name.split("/")
+    assert len(elem) == 4 
+    if len(elem[1]) > cut: elem[1] = shorten_surfname(elem[1], cut) 
+    if len(elem[2]) > cut: elem[2] = shorten_surfname(elem[2], cut) 
+    return "/".join(elem)
 
 
 def make_colors():
@@ -23,7 +35,7 @@ def make_colors():
     #colors = ["red","green","blue","cyan","magenta","yellow","pink","purple"]
     all_colors = list(hexcolors.keys()) if not hexcolors is None else []
     easy_colors = "red green blue cyan magenta yellow pink".split()
-    skip_colors = "bisque beige white aliceblue antiquewhite".split()    # skip colors that look too alike 
+    skip_colors = "bisque beige white aliceblue antiquewhite aqua".split()    # skip colors that look too alike 
 
     colors = easy_colors 
     for c in all_colors:
@@ -69,7 +81,7 @@ class Feature(object):
         # vname needs absolutes to get the names 
         onames = [vname[uval[j]]  for j in idxdesc]
 
-
+        self.is_bnd = name == "bnd"
         self.name = name
         self.val = val
         self.vname = vname
@@ -130,6 +142,8 @@ class Feature(object):
         """
         assert idesc > -1 and idesc < self.unum
         fname = self.onames[idesc]
+        if self.is_bnd: fname = shorten_bndname(fname)
+
         uval = self.ouval[idesc] 
         count = self.ocount[idesc] 
         isel = self.isel  
@@ -137,11 +151,8 @@ class Feature(object):
         if fname[0] == "_":
             fname = fname[1:]
         pass
-        #label = "%s:%s" % (idesc, fname)
-        label = "%s" % (fname)
-        label = label.replace("solid","s")
         color = COLORS[idesc % len(COLORS)]  # gives the more frequent boundary the easy_color names 
-        msg = " %2d : %4d : %6d : %20s : %40s : %s " % (idesc, uval, count, color, fname, label )
+        msg = " %2d : %5d : %6d : %20s : %80s " % (idesc, uval, count, color, fname  )
         selector = self.val == uval
 
         if len(isel) == 0:
@@ -149,13 +160,13 @@ class Feature(object):
         else:
             skip = idesc not in isel
         pass 
-        return uval, selector, label, color, skip, msg 
+        return uval, selector, fname, color, skip, msg 
 
     def __str__(self):
         lines = []
         lines.append(self.desc)  
         for idesc in range(self.unum):
-            uval, selector, label, color, skip, msg = self(idesc)
+            uval, selector, fname, color, skip, msg = self(idesc)
             lines.append(msg)
         pass
         return "\n".join(lines)
@@ -215,6 +226,50 @@ class SimtraceFeatures(object):
         argument rather than Positions instance, that is not the case when masks are applied. 
         The pos.p is changed by the mask as is needed such that feature 
         selectors can be used within the masked arrays. 
+          
+        HMM: identity access is only fully applicable to simtrace, not photons
+
+        bnd = p[:,2,3].view(np.int32)
+        ids = p[:,3,3].view(np.int32)
+        pid = ids >> 16          # prim_idx
+        ins = ids & 0xffff       # instance_id  
+
+             +  +  +  +
+             +  +  +  +
+             +  +  + bnd
+             +  +  + ids
+
+        qudarap/qevent.h::
+
+            232 QEVENT_METHOD void qevent::add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin )
+            233 {
+            234     float t = prd->distance() ;
+            235     quad4 a ;
+            236 
+            237     a.q0.f  = prd->q0.f ;
+            238 
+            239     a.q1.f.x = p.q0.f.x + t*p.q1.f.x ;
+            240     a.q1.f.y = p.q0.f.y + t*p.q1.f.y ;
+            241     a.q1.f.z = p.q0.f.z + t*p.q1.f.z ;
+            242     a.q1.i.w = 0.f ;
+            243 
+            244     a.q2.f.x = p.q0.f.x ;
+            245     a.q2.f.y = p.q0.f.y ;
+            246     a.q2.f.z = p.q0.f.z ;
+            247     a.q2.u.w = prd->boundary() ; // used by ana/feature.py from CSGOpitXSimtraceTest,py 
+            248 
+            249     a.q3.f.x = p.q1.f.x ;
+            250     a.q3.f.y = p.q1.f.y ;
+            251     a.q3.f.z = p.q1.f.z ;
+            252     a.q3.u.w = prd->identity() ;  // identity from __closesthit__ch (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) 
+            253 
+            254     simtrace[idx] = a ;
+            255 }
+
+        TODO: try to pass along the gas_idx in the prd ?  
+        HMM: but maybe that would not distinguish between HighQE and ordinary probably ?
+        suggests will need to do instance id lookup
+
         """
         p = pos.p
             

@@ -63,6 +63,11 @@ boundary_  = lambda p:p.view(np.uint32)[3,0] >> 16
 flag__    = lambda p:p.view(np.uint32)[:,3,0] & 0xffff
 flag_     = lambda p:p.view(np.uint32)[3,0] & 0xffff
 
+identity__ = lambda p:p.view(np.uint32)[:,3,1]   
+primIdx__   = lambda p:identity__(p) >> 16 
+instanceId__  = lambda p:identity__(p) & 0xffff  
+
+
 identity_ = lambda p:p.view(np.uint32)[3,1]   
 primIdx_   = lambda p:identity_(p) >> 16 
 instanceId_  = lambda p:identity_(p) & 0xffff  

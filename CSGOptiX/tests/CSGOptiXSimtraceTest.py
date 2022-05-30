@@ -16,11 +16,36 @@ This is allows interactive visualization of workstation
 generated intersect data fphoton.npy on remote machines such as 
 user laptops that support pyvista. 
 
-issue : TR inversion of pv vs mp
------------------------------------
 
-* PR cross section matches, TR is inverted in T direction
- 
+FEAT envvar controlling intersect coloring and legend titles
+--------------------------------------------------------------
+
+pid
+    uses cf.primIdx_meshname_dict()
+bnd
+    uses cf.sim.bndnamedict
+ins
+    uses cf.insnamedict
+
+    instance identity : less different feature colors normally 
+    but interesting to see what is in which instance and what is in ins0 the global instance, 
+    the legend names are for example : ins37684 ins42990 ins0 ins43029
+
+
+ISEL envvar selects simtrace geometry intersects by their features, according to frequency order
+-------------------------------------------------------------------------------------------------------
+
+FEAT=ins ISEL=0
+    only show the instance with the most intersects
+FEAT=ins ISEL=0,1
+    only show the two instances with the most and 2nd most intersects
+FEAT=bnd ISEL=0,1
+    ditto for boundaries
+
+FEAT=pid ISEL=0,1
+
+
+
 pyvista GUI keys
 ----------------------
 
@@ -79,6 +104,7 @@ XCOMPARE = "XCOMPARE" in os.environ
 GUI = not "NOGUI" in os.environ
 MP =  not "NOMP" in os.environ 
 PV =  not "NOPV" in os.environ 
+PVGRID = not "NOPVGRID" in os.environ
 LEGEND =  not "NOLEGEND" in os.environ # when not MASK=pos legend often too many lines, so can switch it off 
 SIMPLE = "SIMPLE" in os.environ
 MASK = os.environ.get("MASK", "pos")
@@ -405,7 +431,7 @@ class SimtracePlot(object):
         pass
 
         if hasattr(self, 'x_lpos'):
-            pvplt_add_contiguous_line_segments(pl, self.x_lpos[:,:3])
+            pvplt_add_contiguous_line_segments(pl, self.x_lpos[:,:3], point_size=25 )
         pass
 
         if not self.look_ce is None:
@@ -417,7 +443,7 @@ class SimtracePlot(object):
         pass
 
         show_genstep_grid = len(self.frame.axes) == 2 # too obscuring with 3D
-        if show_genstep_grid:
+        if show_genstep_grid and PVGRID:
             pl.add_points( ugsc[:,:3], color="white" ) 
         pass   
 

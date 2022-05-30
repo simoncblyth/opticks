@@ -17,8 +17,107 @@ Now testing with::
 
 
 
+TODO : more identity info
+----------------------------
 
-TODO : multiple plane slices at track points ? 
+simtrace identity info qevent.h::
+
+    232 QEVENT_METHOD void qevent::add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin )
+    233 {
+    234     float t = prd->distance() ;
+    235     quad4 a ;
+    236 
+    237     a.q0.f  = prd->q0.f ;
+    238 
+    239     a.q1.f.x = p.q0.f.x + t*p.q1.f.x ;
+    240     a.q1.f.y = p.q0.f.y + t*p.q1.f.y ;
+    241     a.q1.f.z = p.q0.f.z + t*p.q1.f.z ;
+    242     a.q1.i.w = 0.f ;
+    243 
+    244     a.q2.f.x = p.q0.f.x ;
+    245     a.q2.f.y = p.q0.f.y ;
+    246     a.q2.f.z = p.q0.f.z ;
+    247     a.q2.u.w = prd->boundary() ; // was tmin, but expecting bnd from CSGOptiXSimtraceTest.py:Photons
+    248 
+    249     a.q3.f.x = p.q1.f.x ;
+    250     a.q3.f.y = p.q1.f.y ;
+    251     a.q3.f.z = p.q1.f.z ;
+    252     a.q3.u.w = prd->identity() ;  // identity from __closesthit__ch (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) 
+    253 
+    254     simtrace[idx] = a ;
+    255 }
+
+photon identity, qsim.h::
+
+    1145 inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, qstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
+    1146 {
+    1147     const unsigned boundary = prd->boundary() ;
+    1148     const unsigned identity = prd->identity() ;
+    1149     const float3* normal = prd->normal();
+    1150     float cosTheta = dot(p.mom, *normal ) ;
+    1151 
+    1152 #ifdef DEBUG_COSTHETA
+    1153     if( idx == pidx ) printf("//qsim.propagate idx %d bnc %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n",
+    1154                  idx, bounce, cosTheta, p.mom.x, p.mom.y, p.mom.z, normal->x, normal->y, normal->z );
+    1155 #endif
+    1156 
+    1157     p.set_prd(boundary, identity, cosTheta);
+    1158 
+    1159     bnd->fill_state(s, boundary, p.wavelength, cosTheta, idx );
+
+
+    055 struct sphoton
+     56 {
+     57     float3 pos ;
+     58     float  time ;
+     59 
+     60     float3 mom ;
+     61     float  weight ;
+     62 
+     63     float3 pol ;
+     64     float  wavelength ;  
+     65 
+     66     unsigned boundary_flag ;
+     67     unsigned identity ;
+     68     unsigned orient_idx ;  
+     69     unsigned flagmask ;
+
+    110 SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, float  orient_ )
+    111 {
+    112     set_boundary(boundary_);
+    113     identity = identity_ ;
+    114     set_orient( orient_ );
+    115 }
+
+    077     SPHOTON_METHOD void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } // clear orient bit and then set it 
+     78     SPHOTON_METHOD void set_idx( unsigned idx ){  orient_idx = ( orient_idx & 0x80000000u ) | ( 0x7fffffffu & idx ) ; }   // retain bit 31 asis 
+     79 
+     80     SPHOTON_METHOD unsigned flag() const {     return boundary_flag & 0xffffu ; }
+     81     SPHOTON_METHOD unsigned boundary() const { return boundary_flag >> 16 ; }
+     82 
+     83     SPHOTON_METHOD void     set_flag(unsigned flag) {         boundary_flag = ( boundary_flag & 0xffff0000u ) | ( flag & 0xffffu ) ; flagmask |= flag ;  } // clear flag bits then set them  
+     84     SPHOTON_METHOD void     set_boundary(unsigned boundary) { boundary_flag = ( boundary_flag & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ; }        // clear boundary bits then set the
+
+
+::
+
+    In [1]: instanceId__(x.photon)                                                                                                                                                                                             
+    Out[1]: array([37684, 25721, 40780, 35167, 26344, 40780, 40780,     0,     0, 40780], dtype=uint32)
+
+
+
+
+The instance transform carries : ins_gas_ias
+
+::
+
+    TODO: try to pass along the gas_idx in the prd ?  
+    HMM: but maybe that would not distinguish between HighQE and ordinary probably ?
+    suggests will need to do instance id lookup
+
+
+
+DONE : multiple plane slices at track points ? 
 -------------------------------------------------
 
 Track points and sliced geometry only line up at the ce_offset positions,
@@ -31,7 +130,6 @@ and splitting generation between them::
 
 The grid can use the third dimension, but that is not convenient 
 its easier to have multiple planes.
-
 
 
 FIXED : Issue 4 : absorbed photons give spurious endline back to global origin due to empty record

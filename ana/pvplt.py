@@ -116,7 +116,7 @@ def pvplt_lines( pl, pos, vec, color='white' ):
     pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
 
 
-def pvplt_add_contiguous_line_segments( pl, xpos ):
+def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="white", line_color="white" ):
     """
     :param pl: pyvista plotter
     :param xpos: (n,3) array of positions 
@@ -125,9 +125,9 @@ def pvplt_add_contiguous_line_segments( pl, xpos ):
     This has been used only for small numbers of positions such as order less than 10 
     photon step positions.
     """
-    pl.add_points( xpos, color="red" )        
+    pl.add_points( xpos, color=point_color, render_points_as_spheres=True, point_size=point_size )        
     xseg = contiguous_line_segments(xpos)
-    pl.add_lines( xseg, color="blue" )
+    pl.add_lines( xseg, color=line_color )
 
 
 def mpplt_add_contiguous_line_segments(ax, xpos, axes, linewidths=2):

@@ -50,8 +50,22 @@ NB locations and packing here need to match ana/p.py
    #include <cassert>
 #endif
 
+/**
+See ana/p.py for python accessors such as::
 
+    boundary_  = lambda p:p.view(np.uint32)[3,0] >> 16    
+    flag_      = lambda p:p.view(np.uint32)[3,0] & 0xffff
 
+    identity_ = lambda p:p.view(np.uint32)[3,1]   
+    primIdx_   = lambda p:identity_(p) >> 16  
+    instanceId_  = lambda p:identity_(p) & 0xffff  
+
+    idx_      = lambda p:p.view(np.uint32)[3,2] & 0x7fffffff
+    orient_   = lambda p:p.view(np.uint32)[3,2] >> 31
+
+    flagmask_ = lambda p:p.view(np.uint32)[3,3]
+
+**/
 struct sphoton
 {
     float3 pos ; 
@@ -63,7 +77,7 @@ struct sphoton
     float3 pol ; 
     float  wavelength ;   
 
-    unsigned boundary_flag ; 
+    unsigned boundary_flag ;   
     unsigned identity ; 
     unsigned orient_idx ;   
     unsigned flagmask ; 
