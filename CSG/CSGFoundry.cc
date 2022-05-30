@@ -18,6 +18,7 @@
 #include "SStr.hh"
 #include "SPath.hh"
 #include "SBitSet.hh"
+#include "SEventConfig.hh"
 #include "SOpticksResource.hh"
 #include "NP.hh"
 #include "SSim.hh"
@@ -2425,7 +2426,8 @@ void CSGFoundry::getFrame(sframe& fr, const char* frs ) const
          int inst_idx = SName::ParseIntString(frs, 0) ; 
          getFrame(fr, inst_idx); 
     }
-        
+
+    fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() ); 
     fr.frs = strdup(frs); 
     LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
 }

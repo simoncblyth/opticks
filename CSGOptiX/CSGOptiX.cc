@@ -173,6 +173,8 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     QEvent* event = qs->event ; 
     event->setMeta( fd->meta.c_str() );
 
+    // TODO: setup QEvent as SProvider of NP arrays to SEvt so SEvt can control QEvent download
+
     return cx ; 
 }
 
@@ -196,7 +198,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
 #else
     geoptxpath(nullptr),
 #endif
-    tmin_model(SSys::getenvfloat("TMIN",0.1)), 
+    tmin_model(SSys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation 
     raygenmode(SEventConfig::RGMode()),
 #ifdef WITH_SGLM
     params(new Params(raygenmode, sglm->Width(), sglm->Height(), 1 )),
@@ -325,7 +327,7 @@ void CSGOptiX::initSimulate()
 
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
     params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
-    params->tmin = 0.f ;                                 // perhaps needs to be epsilon to avoid self-intersection off boundaries ?
+    params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
     params->tmax = 1000000.f ; 
 }
 

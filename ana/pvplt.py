@@ -182,6 +182,9 @@ def ce_line_segments( ce, axes ):
 
 def pvplt_parallel_lines(pl, gslim , aa, axes, look ):
     """
+    HMM: seems no simple way to make dotted or dashed lines with pyvista ? 
+    The Chart system which has linestyles seems entirely separate from 3D plotting. 
+
     For example with canonical XZ axes with envvar XX=x0,x1,x2
     will get 3 parallel vertical lines spanning between the gslim Z-limits  
     at the provided x positions
@@ -220,13 +223,13 @@ def pvplt_parallel_lines(pl, gslim , aa, axes, look ):
                 lo[H] = gslim[H][0] 
                 hi[H] = gslim[H][1] 
             pass
-            line = pv.Line(lo, hi)
+            line = pv.Line(lo, hi, resolution=10)
             pl.add_mesh(line, color="w")
             log.info("i %d pv horizontal  lo %s hi %s " % (i, str(lo), str(hi)))
         pass 
     pass
 
-def mpplt_parallel_lines(ax, gslim, aa, axes, look ):
+def mpplt_parallel_lines(ax, gslim, aa, axes, look, linestyle=None  ):
     """
     Draws axis parallel line segments in matplotlib and pyvista.
     The segments extend across the genstep grid limits.
@@ -258,9 +261,9 @@ def mpplt_parallel_lines(ax, gslim, aa, axes, look ):
         if len(aa[i]) == 0: continue
         for a in aa[i]:
             if V == i:  # vertical ordinate -> horizontal line 
-                ax.plot( gslim[H], [a,a] )
+                ax.plot( gslim[H], [a,a], linestyle=linestyle )
             elif H == i:  # horizontal ordinate -> vertical line
-                ax.plot( [a,a], gslim[V] )
+                ax.plot( [a,a], gslim[V], linestyle=linestyle )
             pass
         pass
     pass

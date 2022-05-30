@@ -20,6 +20,8 @@ See notes/issues/cxsim-shakedown.rst
 
     PUB=repeated_step_point ./cxs_debug.sh pvpub
 
+    PUB=yellow_epsilon_looks_appropriate ./cxs_debug.sh mppub
+
 EOU
 }
 

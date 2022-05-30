@@ -273,8 +273,8 @@ elif [ "$(uname)" == "Darwin" ]; then
 
         case ${cxs_arg} in 
            ana) ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/$bin.py  ;; 
-           pvcap) source pvcap.sh ;;  
-           mpcap) source mpcap.sh ;;  
+           pvcap) source pvcap.sh cap ;;  
+           mpcap) source mpcap.sh cap ;;  
            pvpub) source pvcap.sh env ;;
            mppub) source mpcap.sh env ;;
         esac

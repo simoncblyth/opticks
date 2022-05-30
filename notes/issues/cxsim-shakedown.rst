@@ -56,6 +56,59 @@ review propagate_epsilonn from old workflow : how big should it be to avoid boun
      990 
 
 
+CSGOptiX/CSGOptiX7.cu::
+
+    203     sphoton p = {} ;
+    204 
+    205     sim->generate_photon(p, rng, gs, idx, genstep_id );
+    206 
+    207     qstate state = {} ;
+    208     srec rec = {} ;
+    209     sseq seq = {} ;  // seqhis..
+    210 
+    211     int command = START ;
+    212     int bounce = 0 ;
+    213     while( bounce < evt->max_bounce )
+    214     {
+    215         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;
+    216         if(evt->rec) evt->add_rec( rec, idx, bounce, p );
+    217         if(evt->seq) seq.add_step( bounce, p.flag(), p.boundary() );
+    218 
+    219         trace(
+    220             params.handle,
+    221             p.pos,
+    222             p.mom,
+    223             params.tmin,
+    224             params.tmax,
+    225             prd
+    226         );        // populate prd with intersect info 
+    227 
+    228         //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
+    229         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
+    230 
+    231         command = sim->propagate(bounce, p, state, prd, rng, idx );
+    232         bounce++;
+    233         if(command == BREAK) break ;
+    234     }
+
+
+::
+
+    320 void CSGOptiX::initSimulate() 
+    321 {
+    322     if(SEventConfig::IsRGModeRender() == false)
+    323     {
+    324         if(sim == nullptr) LOG(fatal) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ;
+    325         assert(sim); 
+    326     }
+    327 
+    328     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
+    329     params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
+    330     params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
+    331     params->tmax = 1000000.f ;        
+    332 }   
+
+
 
 
 water-water micro steps ?

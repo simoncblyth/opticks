@@ -11,6 +11,19 @@
 #include "SComp.h"
 #include "OpticksPhoton.hh"
 
+
+int SEventConfig::_MaxGenstepDefault = 1000*K ; 
+int SEventConfig::_MaxBounceDefault = 9 ; 
+int SEventConfig::_MaxRecordDefault = 0 ; 
+int SEventConfig::_MaxRecDefault = 0 ; 
+int SEventConfig::_MaxSeqDefault = 0 ; 
+float SEventConfig::_MaxExtentDefault = 1000.f ;  // mm  : domain compression used by *rec*
+float SEventConfig::_MaxTimeDefault = 10.f ; // ns 
+const char* SEventConfig::_OutFoldDefault = "$TMP" ; 
+const char* SEventConfig::_OutNameDefault = nullptr ; 
+const char* SEventConfig::_RGModeDefault = "simulate" ; 
+const char* SEventConfig::_HitMaskDefault = "SD" ; 
+
 #ifdef __APPLE__
 int  SEventConfig::_MaxPhotonDefault = 1*M ; 
 int  SEventConfig::_MaxSimtraceDefault = 1*M ; 
@@ -20,22 +33,26 @@ int  SEventConfig::_MaxSimtraceDefault = 3*M ;
 #endif
 
 const char* SEventConfig::_CompMaskDefault = SComp::ALL_ ; 
+float SEventConfig::_PropagateEpsilonDefault = 0.05f ; 
 
 
-int SEventConfig::_MaxGenstep = SSys::getenvint(kMaxGenstep,  1000*K) ; 
-int SEventConfig::_MaxPhoton  = SSys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
+
+int SEventConfig::_MaxGenstep   = SSys::getenvint(kMaxGenstep,  _MaxGenstepDefault ) ; 
+int SEventConfig::_MaxPhoton    = SSys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
 int SEventConfig::_MaxSimtrace  = SSys::getenvint(kMaxSimtrace,   _MaxSimtraceDefault ) ; 
-int SEventConfig::_MaxBounce  = SSys::getenvint(kMaxBounce, 9 ) ; 
-int SEventConfig::_MaxRecord  = SSys::getenvint(kMaxRecord, 0 ) ;    // full step record
-int SEventConfig::_MaxRec     = SSys::getenvint(kMaxRec, 0 ) ;    // compressed record  
-int SEventConfig::_MaxSeq     = SSys::getenvint(kMaxSeq,          0 ) ;    // compressed record  
-float SEventConfig::_MaxExtent = SSys::getenvfloat(kMaxExtent,  1000.f );  // mm 
-float SEventConfig::_MaxTime   = SSys::getenvfloat(kMaxTime,    10.f );    // ns
-const char* SEventConfig::_OutFold = SSys::getenvvar(kOutFold,  "$TMP" ); 
-const char* SEventConfig::_OutName = SSys::getenvvar(kOutName,  nullptr ); 
-int SEventConfig::_RGMode = SRG::Type(SSys::getenvvar(kRGMode, "simulate")) ;    
-unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar(kHitMask, "SD" )) ;   
+int SEventConfig::_MaxBounce    = SSys::getenvint(kMaxBounce, _MaxBounceDefault ) ; 
+int SEventConfig::_MaxRecord    = SSys::getenvint(kMaxRecord, _MaxRecordDefault ) ;    
+int SEventConfig::_MaxRec       = SSys::getenvint(kMaxRec, _MaxRecDefault ) ;   
+int SEventConfig::_MaxSeq       = SSys::getenvint(kMaxSeq,  _MaxSeqDefault ) ;  
+float SEventConfig::_MaxExtent  = SSys::getenvfloat(kMaxExtent, _MaxExtentDefault );  
+float SEventConfig::_MaxTime    = SSys::getenvfloat(kMaxTime,   _MaxTimeDefault );    // ns
+const char* SEventConfig::_OutFold = SSys::getenvvar(kOutFold, _OutFoldDefault ); 
+const char* SEventConfig::_OutName = SSys::getenvvar(kOutName, _OutNameDefault ); 
+int SEventConfig::_RGMode = SRG::Type(SSys::getenvvar(kRGMode, _RGModeDefault)) ;    
+unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar(kHitMask, _HitMaskDefault )) ;   
 unsigned SEventConfig::_CompMask  = SComp::Mask(SSys::getenvvar(kCompMask, _CompMaskDefault )) ;   
+float SEventConfig::_PropagateEpsilon = SSys::getenvfloat(kPropagateEpsilon, _PropagateEpsilonDefault ) ; 
+
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
@@ -49,14 +66,11 @@ float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
 int SEventConfig::RGMode(){  return _RGMode ; } 
-unsigned SEventConfig::CompMask(){  return _CompMask; } 
-
-bool SEventConfig::IsRGModeRender(){   return RGMode() == SRG_RENDER   ; } 
-bool SEventConfig::IsRGModeSimtrace(){ return RGMode() == SRG_SIMTRACE ; } 
-bool SEventConfig::IsRGModeSimulate(){ return RGMode() == SRG_SIMULATE ; } 
-
-
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
+unsigned SEventConfig::CompMask(){  return _CompMask; } 
+float SEventConfig::PropagateEpsilon(){ return _PropagateEpsilon ; }
+
+
 
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; Check() ; }
 void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; Check() ; }
@@ -72,6 +86,13 @@ void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? st
 void SEventConfig::SetRGMode(   const char* rg_mode){   _RGMode = SRG::Type(rg_mode) ; Check() ; }
 void SEventConfig::SetHitMask(const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
 void SEventConfig::SetCompMask(const char* names, char delim){  _CompMask = SComp::Mask(names,delim) ; }
+void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; Check() ; }
+
+
+
+bool SEventConfig::IsRGModeRender(){   return RGMode() == SRG_RENDER   ; } 
+bool SEventConfig::IsRGModeSimtrace(){ return RGMode() == SRG_SIMTRACE ; } 
+bool SEventConfig::IsRGModeSimulate(){ return RGMode() == SRG_SIMULATE ; } 
 
 const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
@@ -134,6 +155,8 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " OutFold " << " : " << OutFold() << std::endl 
        << std::setw(25) << kOutName
        << std::setw(20) << " OutName " << " : " << ( OutName() ? OutName() : "-" )  << std::endl 
+       << std::setw(25) << kPropagateEpsilon
+       << std::setw(20) << " PropagateEpsilon " << " : " << std::fixed << std::setw(10) << std::setprecision(4) << PropagateEpsilon() << std::endl 
        ;
     std::string s = ss.str(); 
     return s ; 

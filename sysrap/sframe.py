@@ -90,6 +90,8 @@ class sframe(object):
         midx, mord, iidx = i[0,3,:3]       # q3.i.xyz
         inst = i[0,3,3]     # q3.i.w
 
+
+
         self.midx = midx
         self.mord = mord
         self.iidx = iidx
@@ -168,9 +170,12 @@ class sframe(object):
         self.id = np.dot( m2w, w2m )  
 
 
-        ins = i[3,0,0]
+        ins = i[3,0,0]   # aux.q0.i.x  
         gas = i[3,0,1]
         ias = i[3,0,2]
+
+        propagate_epsilon = a[3,1,0]   # aux.q1.f.x 
+
 
         ins_gas_ias = " ins %(ins)6d gas %(gas)4d ias %(ias)4d " % locals()
 
@@ -178,6 +183,7 @@ class sframe(object):
         self.gas = gas
         self.ias = ias
         self.ins_gas_ias = ins_gas_ias
+        self.propagate_epsilon = propagate_epsilon 
 
         self.init_grid()
         self.init_view()

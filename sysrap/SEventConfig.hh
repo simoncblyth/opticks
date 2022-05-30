@@ -62,6 +62,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kHitMask    = "OPTICKS_HIT_MASK" ; 
     static constexpr const char* kRGMode     = "OPTICKS_RG_MODE" ; 
     static constexpr const char* kCompMask   = "OPTICKS_COMP_MASK" ; 
+    static constexpr const char* kPropagateEpsilon = "OPTICKS_PROPAGATE_EPSILON" ; 
 
     static int MaxGenstep(); 
     static int MaxPhoton(); 
@@ -77,6 +78,7 @@ struct SYSRAP_API SEventConfig
     static unsigned HitMask(); 
     static int RGMode(); 
     static unsigned CompMask(); 
+    static float PropagateEpsilon(); 
 
 
     static bool IsRGModeRender(); 
@@ -100,10 +102,25 @@ struct SYSRAP_API SEventConfig
     static void SetHitMask(const char* abrseq, char delim=',' ); 
     static void SetRGMode( const char* rg_mode) ; 
     static void SetCompMask(const char* names, char delim=',') ; 
+    static void SetPropagateEpsilon( float eps) ; 
 
+
+    static int _MaxGenstepDefault ; 
     static int _MaxPhotonDefault ; 
     static int _MaxSimtraceDefault ; 
+    static int _MaxBounceDefault ; 
+    static int _MaxRecordDefault ; 
+    static int _MaxRecDefault ; 
+    static int _MaxSeqDefault ; 
+    static float _MaxExtentDefault ; 
+    static float _MaxTimeDefault  ; 
+    static const char* _OutFoldDefault ; 
+    static const char* _OutNameDefault ; 
+    static const char* _HitMaskDefault ; 
+    static const char* _RGModeDefault ; 
     static const char* _CompMaskDefault ; 
+    static float _PropagateEpsilonDefault  ; 
+
 
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
@@ -119,6 +136,7 @@ struct SYSRAP_API SEventConfig
     static unsigned _HitMask ; 
     static int _RGMode ; 
     static unsigned _CompMask ; 
+    static float _PropagateEpsilon ;
 
 }; 
 

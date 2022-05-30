@@ -25,6 +25,17 @@ def eintlist_(ekey, fallback):
     slis = slis.split(",")
     return list(map(int, filter(None, slis)))
 
+
+def elook_epsilon_(epsilon, ekey="LOOK"):
+    if not ekey in os.environ:
+         return None
+    pass
+    look = efloatlist_(ekey, "0,0,0")
+    ce = np.zeros( (4,), dtype=np.float32 )     
+    ce[:3] = look 
+    ce[3] = epsilon
+    return ce 
+
 def elookce_(extent="10.", ekey="LOOK"):
     """
     :param extent: float, is overridden by LOOKCE envvar

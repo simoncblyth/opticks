@@ -4,7 +4,7 @@
 sframe.h
 ===========
 
-Persisted into (3,4,4) array.
+Persisted into (4,4,4) array.
 Any extension should be in quad4 blocks 
 for persisting, alignment and numpy convenience
 
@@ -72,6 +72,8 @@ struct sframe
     int gas() const ; 
     int ias() const ; 
 
+    void set_propagate_epsilon(float eps); 
+    float propagate_epsilon() const ; 
 
     float* data() ; 
     const float* cdata() const ; 
@@ -136,6 +138,15 @@ inline void sframe::set_ins_gas_ias(int ins, int gas, int ias)
     aux.q0.i.x = ins ; 
     aux.q0.i.y = gas ; 
     aux.q0.i.z = ias ; 
+}
+
+inline void sframe::set_propagate_epsilon(float eps)
+{
+    aux.q1.f.x = eps ; 
+}
+inline float sframe::propagate_epsilon() const 
+{
+    return aux.q1.f.x ; 
 }
 
 inline int sframe::ins() const { return aux.q0.i.x ; }

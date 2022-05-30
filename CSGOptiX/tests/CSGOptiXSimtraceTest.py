@@ -71,7 +71,7 @@ import os, sys, logging, numpy as np
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 log = logging.getLogger(__name__)
 
-from opticks.ana.eget import eint_
+from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 
 SIZE = np.array([1280, 720])   ## SIZE*2 [2560, 1440]
 XCOMPARE_SIMPLE = "XCOMPARE_SIMPLE" in os.environ
@@ -96,7 +96,6 @@ from opticks.ana.feature import SimtraceFeatures
 from opticks.ana.simtrace_positions import SimtracePositions
 from opticks.ana.framegensteps import FrameGensteps
 from opticks.ana.npmeta import NPMeta
-from opticks.ana.eget import efloatlist_, elookce_
 from opticks.sysrap.sframe import sframe , X, Y, Z
 from opticks.ana.pvplt import * 
 
@@ -173,7 +172,12 @@ class SimtracePlot(object):
         self.note1 = note1 
 
         self.look = efloatlist_("LOOK", "0,0,0")
-        self.lookce = elookce_(extent=10)
+        self.look_ce = elookce_(extent=10)
+
+
+        epsilon = self.frame.propagate_epsilon
+        if epsilon == 0.: epsilon = 0.05 
+        self.look_epsilon = elook_epsilon_(epsilon)
 
 
         aa = {} 
@@ -258,19 +262,20 @@ class SimtracePlot(object):
         log.info(" ylim[0] %8.4f ylim[1] %8.4f " % (ylim[0], ylim[1]) )
         log.info(" zlim[0] %8.4f zlim[1] %8.4f " % (zlim[0], zlim[1]) )
 
-        mpplt_parallel_lines(ax, self.gs.lim, self.aa, self.frame.axes, self.look ) 
+        mpplt_parallel_lines(ax, self.gs.lim, self.aa, self.frame.axes, self.look, linestyle="dashed" ) 
 
         if hasattr(self, 'x_lpos'):
             ax.scatter( x_lpos[:,H], x_lpos[:,V], label="x_lpos", s=10 )
             mpplt_add_contiguous_line_segments(ax, x_lpos, axes=self.frame.axes, linewidths=2)
         pass
 
-        if not self.lookce is None:
-            mpplt_ce_multiple(ax, self.lookce, axes=self.frame.axes)
+        if not self.look_ce is None:
+            mpplt_ce_multiple(ax, self.look_ce, axes=self.frame.axes)
         pass
 
-
-
+        if not self.look_epsilon is None:
+            mpplt_ce(ax, self.look_epsilon, axes=self.frame.axes, colors="yellow" ) 
+        pass
 
 
         label = "gs_center XZ"
@@ -403,10 +408,13 @@ class SimtracePlot(object):
             pvplt_add_contiguous_line_segments(pl, self.x_lpos[:,:3])
         pass
 
-        if not self.lookce is None:
-            pvplt_ce_multiple(pl, self.lookce, axes=self.frame.axes)
+        if not self.look_ce is None:
+            pvplt_ce_multiple(pl, self.look_ce, axes=self.frame.axes)
         pass
- 
+
+        if not self.look_epsilon is None:
+            pvplt_ce(pl, self.look_epsilon, axes=self.frame.axes, color="yellow" ) 
+        pass
 
         show_genstep_grid = len(self.frame.axes) == 2 # too obscuring with 3D
         if show_genstep_grid:
