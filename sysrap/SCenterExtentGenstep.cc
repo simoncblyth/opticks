@@ -142,8 +142,11 @@ void SCenterExtentGenstep::init()
     peta->q2.f.z = ce.z ;
     peta->q2.f.w = ce.w ;
 
-    float3 ce_offset = make_float3(0.f, 0.f, 0.f ) ;
     bool ce_scale = true ;
+
+    float3 offset = make_float3(0.f, 0.f, 0.f ) ;
+    std::vector<float3> ce_offset ; 
+    ce_offset.push_back(offset);   
 
     gs = SFrameGenstep::MakeCenterExtentGensteps(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
 

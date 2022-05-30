@@ -9,6 +9,7 @@ Canonically used by cxsim.sh
 #include <cuda_runtime.h>
 
 #include "OPTICKS_LOG.hh"
+#include "SEventConfig.hh"
 #include "SEvt.hh"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
@@ -18,7 +19,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    //SEventConfig::SetCompMask("genstep,photon,hit,domain,record,rec,seq")
+    SEventConfig::SetCompMask("genstep,photon,hit,domain,record,rec,seq");  // NB no "simtrace" here
 
     SEvt evt ;  // holds gensteps 
 

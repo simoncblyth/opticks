@@ -11,11 +11,15 @@ Create the standard geometry::
 Run the sim using CSGOptiXSimTest executable::
 
     cx
-    ./cxsim.sh run   # remote, "run" is default arg on Linux, "ana" on Darwin 
+    ./cxsim.sh run   # remote, "run" is default on Linux, "ana" on Darwin 
     ./cxsim.sh dbg   # remote, run under gdb 
 
-    ./cxsim.sh grab  # on local, grabbing from remote
-    ./cxsim.sh ana   # on local analysis using CSGOptiXSimTest.py script
+    ./cxsim.sh grab  # local, grabbing from remote
+    ./cxsim.sh ana   # local "ana" is default on Darwin, analysis using CSGOptiXSimTest.py script
+
+
+    PIDX=0 ./cxsim.sh  #  restrict photon level python output to a single photon index
+
   
 NB the cxs_debug.sh simtrace script also loads and presents cxsim 
 photons together with the simtrace geometry. 

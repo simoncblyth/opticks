@@ -1,8 +1,8 @@
 #!/bin/bash -l 
 
 usage(){ cat << EOU
-cxs_debug.sh
-=============
+cxs_debug.sh : simtrace running for sliced geometry 
+=====================================================
 
 See notes/issues/cxsim-shakedown.rst 
 
@@ -25,6 +25,14 @@ See notes/issues/cxsim-shakedown.rst
     PUB=yellow_epsilon_looks_appropriate ./cxs_debug.sh mppub   
          # copy capture to presentation tree
 
+
+
+In [5]: x_lpos[4:,:3].ravel()
+Out[5]: array([209.774, -64.597, 129.752, 207.807, -50.949, 113.643, 206.   , -44.666, 105.551, 185.963, 124.008, -90.678, 185.963, 124.008, -90.678], dtype=float32)
+
+
+
+
 EOU
 }
 
@@ -32,15 +40,16 @@ EOU
 moi=37684         # flat instance index obtained from cxsim p.py prd debug output of the microstep photon
 
 #ce_offset=0,-64.59664,0    # -Y shift aligning slice plane with a cxsim photon 0 hit with microsteps 
-ce_offset=209.774,-64.59664,129.752    # center the grid on the microstep points
+#ce_offset=209.774,-64.59664,129.752    # center the grid on the microstep points
+ce_offset=209.774,-64.597,129.752,207.807,-50.949,113.643,206.,-44.666,105.551,185.963,124.008,-90.678
 
 ce_scale=1   
 cegs=16:0:9:500 
   
-#gridscale=0.1
+gridscale=0.1      # ordinary view covering full extent with grid
 #gridscale=0.01
 #gridscale=0.001
-gridscale=0.0001   # closeup look 
+#gridscale=0.0001   # ultra closeup look 
 
 export ZOOM=${ZOOM:-2}
 export LOOK=209.774,-64.59664,129.752

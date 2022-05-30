@@ -23,44 +23,66 @@ SFrameGenstep::CE_OFFSET
 -------------------------
 
 Typically CE_OFFSET "0.,0.,0." corresponding to local frame origin.
-The string "CE" is special cased for the offset to be set as ce. 
+The string "CE" is special cased for the offset to be set at the geometry ce. 
 
 **/
 
-void SFrameGenstep::CE_OFFSET(float3& ce_offset, const float4& ce ) // static
+void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce ) // static
 {
     const char* ekey = "CE_OFFSET" ; 
     const char* val = SSys::getenvvar(ekey); 
 
     bool is_CE = strcmp(val, "CE")== 0 || strcmp(val, "ce")== 0  ; 
+    float3 offset = make_float3(0.f, 0.f, 0.f ); 
 
     if(is_CE)   // this is not typically used anymore
     {
-        ce_offset.x = ce.x ; 
-        ce_offset.y = ce.y ; 
-        ce_offset.z = ce.z ; 
+        offset.x = ce.x ; 
+        offset.y = ce.y ; 
+        offset.z = ce.z ; 
+        ce_offset.push_back(offset); 
     }
     else
     {
         std::vector<float>* fvec = SSys::getenvfloatvec(ekey, "0,0,0"); 
+        unsigned num_values = fvec->size() ;  
         assert(fvec); 
-        assert( fvec->size() == 3 ); 
-
-        ce_offset.x = (*fvec)[0] ; 
-        ce_offset.y = (*fvec)[1] ; 
-        ce_offset.z = (*fvec)[2] ; 
+        assert( num_values % 3 == 0 ); 
+        unsigned num_offset = num_values/3 ; 
+        for(unsigned i=0 ; i < num_offset ; i++)
+        {
+            offset.x = (*fvec)[i*3+0] ; 
+            offset.y = (*fvec)[i*3+1] ; 
+            offset.z = (*fvec)[i*3+2] ; 
+            ce_offset.push_back(offset); 
+        }
     }
-
 
     LOG(info) 
          << "ekey " << ekey 
          << " val " << val 
          << " is_CE " << is_CE
-         << " ce_offset " << ce_offset 
+         << " ce_offset.size " << ce_offset.size() 
          << " ce " << ce 
          ; 
 
+    std::cout << Desc(ce_offset) << std::endl ; 
+
 }
+
+std::string SFrameGenstep::Desc(const std::vector<float3>& ce_offset )
+{
+    std::stringstream ss ; 
+    ss << "SFrameGenstep::Desc ce_offset.size " << ce_offset.size() << std::endl ; 
+    for(unsigned i=0 ; i < ce_offset.size() ; i++) 
+    {
+        const float3& offset = ce_offset[i] ; 
+        ss << std::setw(4) << i << " : " << offset << std::endl ;   
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 
 /**
@@ -84,12 +106,13 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 
     fr.set_grid(cegs, gridscale); 
 
-    float3 ce_offset = make_float3( 0.f, 0.f, 0.f ) ;  
+
+    std::vector<float3> ce_offset ; 
     CE_OFFSET(ce_offset, ce); 
 
     LOG(info) 
         << " ce " << ce 
-        << " ce_offset " << ce_offset 
+        << " ce_offset.size " << ce_offset.size() 
         ;
 
 
@@ -167,7 +190,7 @@ frame as are doing the local_translate first.
 
 **/
 
-NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const float3& ce_offset, bool ce_scale ) // static
+NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const std::vector<float3>& ce_offset, bool ce_scale ) // static
 {
     std::vector<quad6> gensteps ;
     quad6 gs ; gs.zero();
@@ -187,9 +210,10 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
     int nz = (iz1 - iz0)/2 ; 
 
     int gridaxes = SGenstep::GridAxes(nx, ny, nz);   // { XYZ, YZ, XZ, XY }
+    int num_offset = int(ce_offset.size()) ; 
 
     LOG(info) 
-        << " ce_offset " << ce_offset 
+        << " num_offset " << num_offset
         << " ce_scale " << ce_scale
         << " nx " << nx 
         << " ny " << ny 
@@ -198,54 +222,54 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(const float4& ce, const std::vector<
         << " GridAxesName " << SGenstep::GridAxesName(gridaxes)
         ;
 
-    /**
-    where should ce offset go to handle global geom
-
-    1. q1 of the genstep
-    2. translation held in the genstep transform
-    
-    local frame position : currently origin, same for all gensteps : only the transform is changed   
-
-    **/
-    gs.q1.f.x = ce_offset.x ; 
-    gs.q1.f.y = ce_offset.y ; 
-    gs.q1.f.z = ce_offset.z ; 
-    gs.q1.f.w = 1.f ;
-
     double local_scale = ce_scale ? double(gridscale)*ce.w : double(gridscale) ; // ce_scale:true is almost always expected 
-
     // hmm: when using SCenterExtentFrame model2world transform the 
     // extent is already handled within the transform so must not apply extent scaling 
     // THIS IS CONFUSING : TODO FIND WAY TO AVOID THE CONFUSION BY MAKING THE DIFFERENT TYPES OF TRANSFORM MORE CONSISTENT
 
     unsigned photon_offset = 0 ; 
 
-    for(int ix=ix0 ; ix < ix1+1 ; ix++ )
-    for(int iy=iy0 ; iy < iy1+1 ; iy++ )
-    for(int iz=iz0 ; iz < iz1+1 ; iz++ )
+
+    for(int ip=0 ; ip < num_offset ; ip++)   // planes
     {
-        double tx = double(ix)*local_scale ;
-        double ty = double(iy)*local_scale ;
-        double tz = double(iz)*local_scale ;
+        const float3& offset = ce_offset[ip] ; 
 
-        const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz ); 
-        // grid shifts 
+        gs.q1.f.x = offset.x ; 
+        gs.q1.f.y = offset.y ; 
+        gs.q1.f.z = offset.z ; 
+        gs.q1.f.w = 1.f ;
 
-        bool reverse = false ;
-        const Tran<double>* transform = Tran<double>::product( geotran, local_translate, reverse );
+        for(int ix=ix0 ; ix < ix1+1 ; ix++ )
+        for(int iy=iy0 ; iy < iy1+1 ; iy++ )
+        for(int iz=iz0 ; iz < iz1+1 ; iz++ )
+        {
+            double tx = double(ix)*local_scale ;
+            double ty = double(iy)*local_scale ;
+            double tz = double(iz)*local_scale ;
 
-        qat4* qc = Tran<double>::ConvertFrom( transform->t ) ;
+            const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz ); 
+            // grid shifts 
 
-        unsigned gsid = SGenstep::GenstepID(ix,iy,iz,0) ; 
+            bool reverse = false ;
+            const Tran<double>* transform = Tran<double>::product( geotran, local_translate, reverse );
 
-        SGenstep::ConfigureGenstep(gs, OpticksGenstep_FRAME, gridaxes, gsid, photons_per_genstep );  
+            qat4* qc = Tran<double>::ConvertFrom( transform->t ) ;
 
-        qc->write(gs);  // copy qc into gs.q2,q3,q4,q5
+            unsigned gsid = SGenstep::GenstepID(ix,iy,iz,ip) ; 
 
-        gensteps.push_back(gs);
-        photon_offset += std::abs(photons_per_genstep) ; 
+            SGenstep::ConfigureGenstep(gs, OpticksGenstep_FRAME, gridaxes, gsid, photons_per_genstep );  
+
+            qc->write(gs);  // copy qc into gs.q2,q3,q4,q5
+
+            gensteps.push_back(gs);
+            photon_offset += std::abs(photons_per_genstep) ; 
+        }
     }
-    LOG(LEVEL) << " gensteps.size " << gensteps.size() ;
+
+    LOG(LEVEL) 
+         << " num_offset " << num_offset 
+         << " gensteps.size " << gensteps.size() 
+         ;
     return SGenstep::MakeArray(gensteps);
 }
 

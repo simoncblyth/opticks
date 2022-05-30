@@ -17,103 +17,25 @@ Local::
 
 
 
-review propagate_epsilonn from old workflow : how big should it be to avoid boundary launch self intersection ?
------------------------------------------------------------------------------------------------------------------
-
-::
-
-    epsilon:cu blyth$ grep propagate_epsilon *.*
-    csg_intersect_boolean.h:    float tA_min = propagate_epsilon ;  
-    csg_intersect_boolean.h:            x_tmin[side] = isect[side].w + propagate_epsilon ; 
-    csg_intersect_boolean.h:                    float tminAdvanced = fabsf(csg.data[loopside].w) + propagate_epsilon ;
-    csg_intersect_boolean.h:                 tX_min[side] = _side.w + propagate_epsilon ;  // classification as well as intersect needs the advance
-    csg_intersect_boolean.h:                     tX_min[side] = isect[side+LEFT].w + propagate_epsilon ; 
-    csg_intersect_boolean.h:        tX_min[side] = _side.w + propagate_epsilon ;
-    generate.cu:rtDeclareVariable(float,         propagate_epsilon, , );
-    generate.cu:    rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
-    generate.cu:        rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
-    intersect_analytic.cu:rtDeclareVariable(float, propagate_epsilon, , );
-    epsilon:cu blyth$ 
-
-    epsilon:optixrap blyth$ grep propagate_epsilon *.*
-    OPropagator.cc:    m_context[ "propagate_epsilon"]->setFloat( m_ok->getEpsilon() );       // TODO: check impact of changing propagate_epsilon
-    epsilon:optixrap blyth$ 
-
-    4571 float Opticks::getEpsilon() const {            return m_cfg->getEpsilon()  ; }
-
-    2167 template <class Listener>
-    2168 float OpticksCfg<Listener>::getEpsilon() const
-    2169 {
-    2170     return m_epsilon ;
-    2171 }
-
-    124     m_epsilon(0.1f),       
-
-    0986    char epsilon[128];
-     987    snprintf(epsilon,128, "OptiX propagate epsilon. Default %10.4f", m_epsilon);
-     988    m_desc.add_options()
-     989        ("epsilon",  boost::program_options::value<float>(&m_epsilon), epsilon );
-     990 
-
-
-CSGOptiX/CSGOptiX7.cu::
-
-    203     sphoton p = {} ;
-    204 
-    205     sim->generate_photon(p, rng, gs, idx, genstep_id );
-    206 
-    207     qstate state = {} ;
-    208     srec rec = {} ;
-    209     sseq seq = {} ;  // seqhis..
-    210 
-    211     int command = START ;
-    212     int bounce = 0 ;
-    213     while( bounce < evt->max_bounce )
-    214     {
-    215         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;
-    216         if(evt->rec) evt->add_rec( rec, idx, bounce, p );
-    217         if(evt->seq) seq.add_step( bounce, p.flag(), p.boundary() );
-    218 
-    219         trace(
-    220             params.handle,
-    221             p.pos,
-    222             p.mom,
-    223             params.tmin,
-    224             params.tmax,
-    225             prd
-    226         );        // populate prd with intersect info 
-    227 
-    228         //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
-    229         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
-    230 
-    231         command = sim->propagate(bounce, p, state, prd, rng, idx );
-    232         bounce++;
-    233         if(command == BREAK) break ;
-    234     }
-
-
-::
-
-    320 void CSGOptiX::initSimulate() 
-    321 {
-    322     if(SEventConfig::IsRGModeRender() == false)
-    323     {
-    324         if(sim == nullptr) LOG(fatal) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ;
-    325         assert(sim); 
-    326     }
-    327 
-    328     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
-    329     params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
-    330     params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
-    331     params->tmax = 1000000.f ;        
-    332 }   
 
 
 
 
-water-water micro steps ?
-----------------------------
 
+Issue 2 : water-water virtuals 
+-----------------------------------
+
+* the other aspect of this issue is that such water/water virtuals should be skipped 
+  from Opticks geometry as they are just there for Geant4 performance reasons that are 
+  unhelpful and probably slow down Opticks
+
+
+
+FIXED : Issue 1 : water-water micro steps ? Fix using PropagateEpsilon of 0.05 mm 
+------------------------------------------------------------------------------
+
+* taking a look at the precision of intersects motivated reduction of the old propagate_epsilon 
+   by factor of 2 : down from 0.10 mm to 0.05 mm 
 
 
 Looks like repeated step records 4,5,6,7,8,9::
@@ -304,6 +226,100 @@ Take a look at bnd:27::
       pri:3094     lpr:0   gas:2 msh:117  bnd:27   nno:7 nod:23214 ce (      0.00,      0.00,      5.41,    264.05) meshName NNVTMCPPMTsMask_virtual0x5f5f0e0 bndName   Water///Water
       pri:3101     lpr:0   gas:3 msh:110  bnd:27   nno:7 nod:23247 ce (      0.00,      0.00,      8.41,    264.05) meshName HamamatsuR12860sMask_virtual0x5f50520 bndName   Water///Water
     epsilon:CSG blyth$ 
+
+
+
+review propagate_epsilonn from old workflow : how big should it be to avoid boundary launch self intersection ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    epsilon:cu blyth$ grep propagate_epsilon *.*
+    csg_intersect_boolean.h:    float tA_min = propagate_epsilon ;  
+    csg_intersect_boolean.h:            x_tmin[side] = isect[side].w + propagate_epsilon ; 
+    csg_intersect_boolean.h:                    float tminAdvanced = fabsf(csg.data[loopside].w) + propagate_epsilon ;
+    csg_intersect_boolean.h:                 tX_min[side] = _side.w + propagate_epsilon ;  // classification as well as intersect needs the advance
+    csg_intersect_boolean.h:                     tX_min[side] = isect[side+LEFT].w + propagate_epsilon ; 
+    csg_intersect_boolean.h:        tX_min[side] = _side.w + propagate_epsilon ;
+    generate.cu:rtDeclareVariable(float,         propagate_epsilon, , );
+    generate.cu:    rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
+    generate.cu:        rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
+    intersect_analytic.cu:rtDeclareVariable(float, propagate_epsilon, , );
+    epsilon:cu blyth$ 
+
+    epsilon:optixrap blyth$ grep propagate_epsilon *.*
+    OPropagator.cc:    m_context[ "propagate_epsilon"]->setFloat( m_ok->getEpsilon() );       // TODO: check impact of changing propagate_epsilon
+    epsilon:optixrap blyth$ 
+
+    4571 float Opticks::getEpsilon() const {            return m_cfg->getEpsilon()  ; }
+
+    2167 template <class Listener>
+    2168 float OpticksCfg<Listener>::getEpsilon() const
+    2169 {
+    2170     return m_epsilon ;
+    2171 }
+
+    124     m_epsilon(0.1f),       
+
+    0986    char epsilon[128];
+     987    snprintf(epsilon,128, "OptiX propagate epsilon. Default %10.4f", m_epsilon);
+     988    m_desc.add_options()
+     989        ("epsilon",  boost::program_options::value<float>(&m_epsilon), epsilon );
+     990 
+
+
+CSGOptiX/CSGOptiX7.cu::
+
+    203     sphoton p = {} ;
+    204 
+    205     sim->generate_photon(p, rng, gs, idx, genstep_id );
+    206 
+    207     qstate state = {} ;
+    208     srec rec = {} ;
+    209     sseq seq = {} ;  // seqhis..
+    210 
+    211     int command = START ;
+    212     int bounce = 0 ;
+    213     while( bounce < evt->max_bounce )
+    214     {
+    215         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;
+    216         if(evt->rec) evt->add_rec( rec, idx, bounce, p );
+    217         if(evt->seq) seq.add_step( bounce, p.flag(), p.boundary() );
+    218 
+    219         trace(
+    220             params.handle,
+    221             p.pos,
+    222             p.mom,
+    223             params.tmin,
+    224             params.tmax,
+    225             prd
+    226         );        // populate prd with intersect info 
+    227 
+    228         //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
+    229         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
+    230 
+    231         command = sim->propagate(bounce, p, state, prd, rng, idx );
+    232         bounce++;
+    233         if(command == BREAK) break ;
+    234     }
+
+
+::
+
+    320 void CSGOptiX::initSimulate() 
+    321 {
+    322     if(SEventConfig::IsRGModeRender() == false)
+    323     {
+    324         if(sim == nullptr) LOG(fatal) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ;
+    325         assert(sim); 
+    326     }
+    327 
+    328     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
+    329     params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
+    330     params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
+    331     params->tmax = 1000000.f ;        
+    332 }   
+
 
 
 

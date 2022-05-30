@@ -11,6 +11,7 @@ if __name__ == '__main__':
     p = t.photon if hasattr(t, "photon") else None
     r = t.record if hasattr(t, "record") else None
     seq = t.seq if hasattr(t, "seq") else None
+    nib = seqnib_(seq[:,0])  if not seq is None else None
 
 
     for i in range(len(p)):
@@ -34,8 +35,8 @@ if __name__ == '__main__':
         print(bflagdesc_(p[i])) 
         print("\n") 
         if not seq is None:
-            print("seqhis_(seq[%d,0])" % i) 
-            print(seqhis_(seq[i,0])) 
+            print("seqhis_(seq[%d,0]) nib[%d]  " % (i,i) ) 
+            print(" %s : %s "% ( seqhis_(seq[i,0]), nib[i] ))
             print("\n") 
         pass
         print("\n\n") 

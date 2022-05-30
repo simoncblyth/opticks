@@ -503,7 +503,8 @@ if __name__ == '__main__':
     x = Fold.Load("$CFBASE/CSGOptiXSimTest", symbol="x")
 
     if not x is None:
-        x_gpos_ = x.record[PIDX,:,0,:3]  # global frame photon step record positions of single PIDX photon
+        x_nib = seqnib_(x.seq[:,0])  # valid steppoint records from seqhis count_nibbles
+        x_gpos_ = x.record[PIDX,:x_nib[PIDX],0,:3]  # global frame photon step record positions of single PIDX photon
         x_gpos  = np.ones( (len(x_gpos_), 4 ), dtype=np.float32 )
         x_gpos[:,:3] = x_gpos_
         x_lpos = np.dot( x_gpos, t.sframe.w2m ) 

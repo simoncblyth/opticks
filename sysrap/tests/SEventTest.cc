@@ -76,8 +76,10 @@ const NP* test_MakeCenterExtentGensteps(int nx, int ny, int nz, const float4* ce
 
     SFrameGenstep::StandardizeCEGS(ce, cegs, gridscale );
 
-    float3 ce_offset = make_float3(0.f, 0.f, 0.f) ; 
     bool ce_scale = true ; 
+    float3 offset = make_float3(0.f, 0.f, 0.f) ; 
+    std::vector<float3> ce_offset ; 
+    ce_offset.push_back(offset);  
 
     const Tran<double>* geotran = GetTestTransform(0) ; 
 

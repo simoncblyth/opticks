@@ -42,11 +42,17 @@ import numpy as np
 import hashlib
 from opticks.ana.hismask import HisMask   
 from opticks.ana.histype import HisType  
+from opticks.ana.nibble import count_nibbles 
+
 
 hm = HisMask()
 ht = HisType()
 
 seqhis_ = lambda s:ht.label(s)
+seqnib_ = lambda s:count_nibbles(s)
+
+#seqdesc_ = lambda s:"seqdesc_ %20s " % 
+
 
 digest_ = lambda a:hashlib.md5(a.data.tobytes()).hexdigest()  
 

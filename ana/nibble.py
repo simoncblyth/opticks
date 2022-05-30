@@ -26,17 +26,43 @@
 
 """
 from collections import OrderedDict as odict 
+from functools import reduce
 import numpy as np
 
 
 msk_ = lambda n:(1 << 4*n) - 1  # msk_(0)=0x0 msk_(1)=0xf msk_(2)=0xff msk_(3)=0xfff 
 
-def make_msk(n):
-   msk = np.zeros( n, dtype=np.uint64  )
-   for i in range(n): 
-       msk[i] = msk_(i)
-   pass
-   return msk 
+desc_ = lambda _:"\n".join( "%0.16x" % m for m in _ )  
+
+
+def make_msk(n=16):
+    """
+    :param n: normally 16
+    :return msk: array of shape (n,) with nibble masks 
+
+    In [11]: print( "\n".join( "%0.16x" % m for m in msk ) )
+    0000000000000000
+    000000000000000f
+    00000000000000ff
+    0000000000000fff
+    000000000000ffff
+    00000000000fffff
+    0000000000ffffff
+    000000000fffffff
+    00000000ffffffff
+    0000000fffffffff
+    000000ffffffffff
+    00000fffffffffff
+    0000ffffffffffff
+    000fffffffffffff
+    00ffffffffffffff
+    0fffffffffffffff
+    """
+    msk = np.zeros( n, dtype=np.uint64  )
+    for i in range(n): 
+        msk[i] = msk_(i)
+    pass
+    return msk 
 
 
 nib_ = lambda n:( 0xf << 4*(n-1) ) if n > 0 else 0    # nib_(0)=0xf nib_(1)=0xf0 nib_(2)=0xf00 nib_(3)=0xf000
@@ -44,6 +70,26 @@ nib_ = lambda n:( 0xf << 4*(n-1) ) if n > 0 else 0    # nib_(0)=0xf nib_(1)=0xf0
 def make_nib(n):
     """
     :return nib: array of n uint64 with nibble masks of 4 bits each for slots from 0 to n-1 
+
+    HMM: because of the zero its missing top nibble, should be using n=17 ?
+
+    In [13]: print("\n".join( "%0.16x" % m for m in nib ))
+    0000000000000000
+    000000000000000f
+    00000000000000f0
+    0000000000000f00
+    000000000000f000
+    00000000000f0000
+    0000000000f00000
+    000000000f000000
+    00000000f0000000
+    0000000f00000000
+    000000f000000000
+    00000f0000000000
+    0000f00000000000
+    000f000000000000
+    00f0000000000000
+    0f00000000000000
     """  
     nib = np.zeros( n, dtype=np.uint64  )
     for i in range(n): 
@@ -52,10 +98,26 @@ def make_nib(n):
     return nib
 
 
-def count_nibbles(x):
+def count_nibbles(x_):
     """
+    :param x: array of uint64, eq seqhis
+    :return count: number of filled nibbles 
+
+    HMM works for arrays but not single values::
+
+         ufunc 'right_shift' not supported for the input types, 
+         and the inputs could not be safely coerced to any supported types according to the casting rule ''safe'' 
+
+
     https://stackoverflow.com/questions/38225571/count-number-of-zero-nibbles-in-an-unsigned-64-bit-integer
+
+    In [14]: count_nibbles(msk)
+    Out[14]: array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15], dtype=uint64)
+
+    In [15]: count_nibbles(nib)
+    Out[15]: array([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=uint64)
     """
+    x = x_.copy()
 
     ## gather the zeroness (the OR of all 4 bits)
     x |= x >> 1               # or-with-1bit-right-shift-self is or-of-each-consequtive-2-bits 
@@ -108,20 +170,54 @@ def make_tst(n):
 
 
 def make_tst2(n):
-   """
-   Create array of 64bit uints as standin for seqhis
-   photon histories with 4 bits per recorded step point
-   """
-   tst = np.zeros( 2*n, dtype=np.uint64 )
-   xpo = np.zeros( 2*n, dtype=np.uint64 )
-   for i in range(n):   
-       tst[i] = tst_(i)
-       xpo[i] = i 
-   for i in range(n):   
-       tst[n+i] = tst_(n-1-i)
-       xpo[n+i] = n-1-i 
-   pass
-   return tst, xpo
+    """
+    Create array of 64bit uints as standin for seqhis
+    photon histories with 4 bits per recorded step point
+
+    In [3]: print(desc_(tst))
+    0000000000000000
+    0000000000000001
+    0000000000000011
+    0000000000000111
+    0000000000001111
+    0000000000011111
+    0000000000111111
+    0000000001111111
+    0000000011111111
+    0000000111111111
+    0000001111111111
+    0000011111111111
+    0000111111111111
+    0001111111111111
+    0011111111111111
+    0111111111111111
+    0111111111111111
+    0011111111111111
+    0001111111111111
+    0000111111111111
+    0000011111111111
+    0000001111111111
+    0000000111111111
+    0000000011111111
+    0000000001111111
+    0000000000111111
+    0000000000011111
+    0000000000001111
+    0000000000000111
+    0000000000000011
+    0000000000000001
+    0000000000000000
+    """
+    tst = np.zeros( 2*n, dtype=np.uint64 )
+    xpo = np.zeros( 2*n, dtype=np.uint64 )
+    for i in range(n):   
+        tst[i] = tst_(i)
+        xpo[i] = i 
+    for i in range(n):   
+        tst[n+i] = tst_(n-1-i)
+        xpo[n+i] = n-1-i 
+    pass
+    return tst, xpo
 
 
 def dump_msk_nib(msk, nib):

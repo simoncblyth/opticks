@@ -17,7 +17,91 @@ Now testing with::
 
 
 
-Issue 3 : lots of simtrace "hits" ?  FIXED by using separate simtrace array and making downloaded components configurable
+
+TODO : multiple plane slices at track points ? 
+-------------------------------------------------
+
+Track points and sliced geometry only line up at the ce_offset positions,
+so it would be good to have multiple of them.  
+
+This means having a few local frame ce_offset triplets 
+and splitting generation between them::
+
+    ce_offset=209.774,-64.59664,129.752    # center the grid on the microstep points
+
+The grid can use the third dimension, but that is not convenient 
+its easier to have multiple planes.
+
+
+
+FIXED : Issue 4 : absorbed photons give spurious endline back to global origin due to empty record
+--------------------------------------------------------------------------------------------------------
+
+Fixed by using seq history to get the number of valid step points using count_nibbles
+
+::
+
+    In [1]: seqhis_(seq[0,0])
+    Out[1]: 'TO SC BT BT BT BT BT DR AB'
+
+    In [9]: from opticks.ana.nibble import count_nibbles
+    In [10]: count_nibbles(x.seq[:,0])
+    Out[10]: array([ 9,  9, 10, 10,  9, 10,  9,  2,  6, 10], dtype=uint64)
+
+
+::
+
+    503     x = Fold.Load("$CFBASE/CSGOptiXSimTest", symbol="x")
+    504 
+    505     if not x is None:
+    506         x_nib = seqnib_(x.seq[:,0])  # valid steppoint records from seqhis count_nibbles
+    507         x_gpos_ = x.record[PIDX,:x_nib[PIDX],0,:3]  # global frame photon step record positions of single PIDX photon
+    508         x_gpos  = np.ones( (len(x_gpos_), 4 ), dtype=np.float32 )
+    509         x_gpos[:,:3] = x_gpos_
+    510         x_lpos = np.dot( x_gpos, t.sframe.w2m )
+    511     pass
+    512     
+
+
+
+
+
+::
+
+    In [1]: x_lpos                                                                                                                                                                                     
+    Out[1]: 
+    array([[     0.009,     -0.005,  19434.   ,      1.   ],
+           [  2067.648, -13157.915,  18450.66 ,      1.   ],
+           [   410.542,  -1458.959,   1799.008,      1.   ],
+           [   397.528,  -1366.996,   1666.943,      1.   ],
+           [   209.774,    -64.597,    129.752,      1.   ],
+           [   207.807,    -50.949,    113.643,      1.   ],
+           [   206.   ,    -44.666,    105.551,      1.   ],
+           [   185.963,    124.008,    -90.678,      1.   ],
+           [   185.963,    124.008,    -90.678,      1.   ],
+           [     0.009,     -0.005,  19434.   ,      1.   ]], dtype=float32)
+
+    In [2]: x_lpos.shape                                                                                                                                                                               
+    Out[2]: (10, 4)
+
+    In [3]: x_gpos                                                                                                                                                                                     
+    Out[3]: 
+    array([[     0.   ,      0.   ,      0.   ,      1.   ],
+           [ 13355.625,      0.   ,      0.   ,      1.   ],
+           [  2799.331,   7577.046, -15749.353,      1.   ],
+           [  2716.439,   7637.113, -15874.207,      1.   ],
+           [  1517.433,   8343.771, -17343.04 ,      1.   ],
+           [  1504.869,   8351.177, -17358.432,      1.   ],
+           [  1498.995,   8354.07 , -17366.516,      1.   ],
+           [  1344.164,   8448.189, -17552.33 ,      1.   ],
+           [  1344.163,   8448.189, -17552.33 ,      1.   ],
+           [     0.   ,      0.   ,      0.   ,      1.   ]], dtype=float32)
+
+
+
+
+
+FIXED : Issue 3 : lots of simtrace "hits" ?  Fix using separate simtrace array and making downloaded components configurable
 -------------------------------------------------------------------------------------------------------------------------------
 
 * qevent::add_simtrace uses [3,3] for prd.identity not the history flag, so meaningless hits

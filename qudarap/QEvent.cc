@@ -507,10 +507,15 @@ always be present, unlike hits.
 
 NP* QEvent::getHit() const 
 {
-    if(!hasHit()) LOG(fatal) << " getHit called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    // hasHit at this juncture is misleadingly always false, 
+    // because the hits array is derived by *getHit_* which  selects from the photons 
+    if(!hasPhoton()) LOG(fatal) << " getHit called when there is no photon array " ; 
+    if(!hasPhoton()) return nullptr ; 
+
     assert( evt->photon ); 
     assert( evt->num_photon ); 
     evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );    
+
     LOG(info) 
          << " evt.photon " << evt->photon 
          << " evt.num_photon " << evt->num_photon 
