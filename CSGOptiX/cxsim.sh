@@ -1,14 +1,6 @@
 #!/bin/bash -l 
-msg="=== $BASH_SOURCE :"
-case $(uname) in 
-   Linux)  argdef=run  ;;
-   Darwin) argdef=ana  ;;
-esac
-arg=${1:-$argdef}
-bin=CSGOptiXSimTest
-
 usage(){ cat << EOU
-cxsim.sh : $bin : standard geometry and SSim inputs 
+cxsim.sh : CSGOptiXSimTest : standard geometry and SSim inputs 
 ===============================================================
 
 Create the standard geometry::
@@ -19,22 +11,25 @@ Create the standard geometry::
 Run the sim using CSGOptiXSimTest executable::
 
     cx
-    ./cxsim.sh 
+    ./cxsim.sh run   # remote, "run" is default arg on Linux, "ana" on Darwin 
+    ./cxsim.sh dbg   # remote, run under gdb 
 
-Grab from remote::
-
-    cx
-    ./cxsim.sh grab
-
-Laptop analysis using CSGOptiXSimTest.py script::
-
-   cx
-   ./cxsim.sh ana
+    ./cxsim.sh grab  # on local, grabbing from remote
+    ./cxsim.sh ana   # on local analysis using CSGOptiXSimTest.py script
   
+NB the cxs_debug.sh simtrace script also loads and presents cxsim 
+photons together with the simtrace geometry. 
+
 EOU
 }
 
-
+msg="=== $BASH_SOURCE :"
+case $(uname) in 
+   Linux)  argdef=run  ;;
+   Darwin) argdef=ana  ;;
+esac
+arg=${1:-$argdef}
+bin=CSGOptiXSimTest
 
 export OPTICKS_MAX_RECORD=10   # change from default of 0, see sysrap/SEventConfig.cc
 export OPTICKS_MAX_REC=10

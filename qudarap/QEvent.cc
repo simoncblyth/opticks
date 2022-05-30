@@ -407,14 +407,12 @@ void QEvent::getSimtrace(NP* t) const
 }
 NP* QEvent::getSimtrace() const 
 {
+    if(!hasSimtrace()) LOG(fatal) << " getSimtrace called when there is no such array, use SEventConfig::SetCompMask to avoid " ;
+    if(!hasSimtrace()) return nullptr ;  
     NP* t = NP::Make<float>( evt->num_simtrace, 4, 4);
     getSimtrace(t); 
     return t ; 
 }
-
-
-
-
 
 void QEvent::getSeq(NP* seq) const 
 {
@@ -427,6 +425,7 @@ void QEvent::getSeq(NP* seq) const
 
 NP* QEvent::getSeq() const 
 {
+    if(!hasSeq()) LOG(fatal) << " getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasSeq()) return nullptr ;  
     NP* seq = NP::Make<unsigned long long>( evt->num_seq, 2);
     getSeq(seq); 
@@ -435,6 +434,7 @@ NP* QEvent::getSeq() const
 
 NP* QEvent::getRecord() const 
 {
+    if(!hasRecord()) LOG(fatal) << " getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasRecord()) return nullptr ;  
 
     NP* r = NP::Make<float>( evt->num_photon, evt->max_record, 4, 4);  // stride: sizeof(float)*4*4 = 4*4*4 = 64
@@ -447,6 +447,7 @@ NP* QEvent::getRecord() const
 
 NP* QEvent::getRec() const 
 {
+    if(!hasRec()) LOG(fatal) << " getRec called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasRec()) return nullptr ;  
 
     NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 2, 4);   // stride:  sizeof(short)*2*4 = 2*2*4 = 16   
@@ -506,12 +507,10 @@ always be present, unlike hits.
 
 NP* QEvent::getHit() const 
 {
+    if(!hasHit()) LOG(fatal) << " getHit called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     assert( evt->photon ); 
-
     assert( evt->num_photon ); 
-
     evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );    
-
     LOG(info) 
          << " evt.photon " << evt->photon 
          << " evt.num_photon " << evt->num_photon 

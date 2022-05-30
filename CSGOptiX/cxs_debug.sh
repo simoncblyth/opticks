@@ -14,13 +14,16 @@ See notes/issues/cxsim-shakedown.rst
     ./cxs_debug.sh ana   # local python script
 
     ./cxs_debug.sh pvcap # local pyvista screen captures
-    ./cxs_debug.sh mpcap # local matplotlib screen captures  
 
     ./cxs_debug.sh # Darwin default is ana  
 
     PUB=repeated_step_point ./cxs_debug.sh pvpub
 
-    PUB=yellow_epsilon_looks_appropriate ./cxs_debug.sh mppub
+    ./cxs_debug.sh mpcap   
+         # screencapture with window cropping appropriate for matplotlib 
+
+    PUB=yellow_epsilon_looks_appropriate ./cxs_debug.sh mppub   
+         # copy capture to presentation tree
 
 EOU
 }
