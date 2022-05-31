@@ -43,8 +43,11 @@ CSGPrim::MakeSpec
 
 Specification providing pointers to access all the AABB of *numPrim* CSGPrim, 
 canonically invoked by CSGFoundry::getPrimSpecHost and CSGFoundry::getPrimSpecDevice
-which provide the CSGPrim bbox pointers for all CSGPrim within a CSGSolid. 
+which provide the CSGPrim bbox pointers for all CSGPrim within a CSGSolid.::
 
+    1075     const CSGSolid* so = solid.data() + solidIdx ;  // get the primOffset from CPU side solid
+    1076     CSGPrimSpec ps = CSGPrim::MakeSpec( d_prim,  so->primOffset, so->numPrim ); ;
+    
 This can be done very simply for both host and device due to the contiguous storage 
 of the CSGPrim in the foundry and fixed strides. 
 
@@ -75,6 +78,10 @@ This suggests addition of selected_prim to CSGFoundry::
 
 Must also ensure no blind passing of primOffsets as they 
 will be invalid. 
+
+
+
+
 
 **/
 

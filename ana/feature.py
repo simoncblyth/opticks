@@ -232,6 +232,8 @@ class SimtraceFeatures(object):
         * ACTUALLY THE SAME INFO IS PRESENT IN PHOTON ARRAYS BUT IN DIFFERENT POSITIONS
         * TODO: accomodate the photon layout as well as the simtrace one by using 
           some common method names with different imps for SimtracePositions and PhotonPositions
+
+          * OR: standardize the flag/identity layout between photons and simtrace ?
         
 
         bnd = p[:,2,3].view(np.int32)

@@ -22,6 +22,43 @@ namelist-based-elv-skip-string
   no longer be converted into the integers
 
 
+cxskiplv
+----------
+
+::
+
+    226 unsigned CSG_GGeo_Convert::CountSolidPrim( const GParts* comp )
+    227 {
+    228     unsigned solidPrim = 0 ;
+    229     unsigned numPrim = comp->getNumPrim();
+    230     for(unsigned primIdx=0 ; primIdx < numPrim ; primIdx++)
+    231     {
+    232         unsigned meshIdx   = comp->getMeshIndex(primIdx);   // from idxBuffer aka lvIdx 
+    233         bool cxskip = SGeoConfig::IsCXSkipLV(meshIdx);
+    234         if(cxskip)
+    235         {
+    236             LOG(LEVEL) << " cxskip meshIdx " << meshIdx  ;
+    237         }
+    238         else
+    239         {
+    240             solidPrim += 1 ;
+    241         }
+    242     }
+    243     LOG(LEVEL) << " numPrim " << numPrim  << " solidPrim " << solidPrim ;
+    244     return solidPrim ;
+    245 }
+
+
+
+
+Where meshnames come from and how are skips handled ?
+------------------------------------------------------------
+
+
+:doc:`primIdx-and-skips`
+
+
+
 
 Seemed to apply with the cut hatbox removed in the simtrace plot of intersects but the virtual name is still in simtrace legend ?
 ------------------------------------------------------------------------------------------------------------------------------------

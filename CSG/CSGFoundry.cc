@@ -68,7 +68,7 @@ CSGFoundry::CSGFoundry()
     d_node(nullptr),
     d_plan(nullptr),
     d_itra(nullptr),
-    id(new SName(meshname)),
+    id(new SName(meshname)),   // SName takes a reference of the meshname vector of strings 
     target(new CSGTarget(this)),
     maker(new CSGMaker(this)),
     deepcopy_everynode_transform(true),
@@ -213,6 +213,13 @@ int CSGFoundry::findMeshIndex(const char* qname) const
     return midx ; 
 }
 
+/**
+CSGFoundry::descELV
+----------------------
+
+TODO: move elsewhwre, as it all can be done with SBitSet and SName instances 
+
+**/
 
 const std::string CSGFoundry::descELV(const SBitSet* elv) const 
 {

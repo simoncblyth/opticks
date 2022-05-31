@@ -297,7 +297,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
     for(unsigned primIdx=0 ; primIdx < numPrim ; primIdx++) 
     {   
         unsigned meshIdx   = comp->getMeshIndex(primIdx);   // from idxBuffer aka lvIdx 
-        const char* mname = foundry->getName(meshIdx); 
+        const char* mname = foundry->getName(meshIdx);      //  
         bool cxskip = SGeoConfig::IsCXSkipLV(meshIdx); 
         
         LOG(LEVEL) << " cxskip " << cxskip << " meshIdx " << meshIdx << " mname " << mname ;   
@@ -319,6 +319,15 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 
         solidPrimChk += 1 ; 
     }   
+    // NB when SGeoConfig::IsCXSkipLV skips are used the primIdx set by CSGPrim::setPrimIdx will not be contiguous   
+    // Q: Does the OptiX identity machinery accomodate this assigned primIdx  ?
+    // A: I think the answer is currently NO 
+    //    
+    //    The value returned from optixGetPrimitiveIndex is the 0-based index of the bbox within the GAS plus a bias 
+    //    that is passed into the GAS and currently comes from CSGSolid so->primOffset which is just the number of 
+    //    primitives so far collected. 
+    //  
+
 
     assert( solidPrim == solidPrimChk ); 
 

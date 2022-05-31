@@ -61,11 +61,24 @@ inline int unsigned_as_int( unsigned value )
    return uif.i ; 
 }
 
+
+/**
+quad2
+-------
+
+::
+
+    +------------+------------+------------+---------------+
+    | normal_x   | normal_y   | normal_z   | distance      |
+    +------------+------------+------------+---------------+
+    | lposcost   | iindex     | identity   | boundary      |
+    +------------+------------+------------+---------------+
+
+**/
 struct quad2
 { 
     quad q0 ; 
     quad q1 ;
-
 
     SQUAD_METHOD void zero();
     SQUAD_METHOD float* data() ;
@@ -74,15 +87,16 @@ struct quad2
     SQUAD_METHOD float3* normal() ;
     SQUAD_METHOD const float3* normal() const ;
     SQUAD_METHOD float    distance() const ;
+
+    SQUAD_METHOD float lposcost() const ;
+    SQUAD_METHOD unsigned iindex() const ;
     SQUAD_METHOD unsigned identity() const ;
     SQUAD_METHOD unsigned boundary() const ;
 
+    SQUAD_METHOD void set_lposcost(float lpc);
+    SQUAD_METHOD void set_iindex(  unsigned ii);
     SQUAD_METHOD void set_identity(unsigned id);
     SQUAD_METHOD void set_boundary(unsigned bn);
-
-    SQUAD_METHOD void  set_lposcost(float lpc);
-    SQUAD_METHOD float get_lposcost() const ;
-
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -90,8 +104,6 @@ struct quad2
     static quad2 make_eprd(); 
     void eprd() ; 
 #endif
- 
-
 }; 
 
 void quad2::zero() 
@@ -100,19 +112,23 @@ void quad2::zero()
     q1.u.x = 0 ; q1.u.y = 0 ; q1.u.z = 0 ; q1.u.w = 0 ; 
 } 
 
-SQUAD_METHOD float*         quad2::data() {           return &q0.f.x ;  }
-SQUAD_METHOD const float*   quad2::cdata() const  {   return &q0.f.x ;  }
-SQUAD_METHOD float3*        quad2::normal() {         return (float3*)&q0.f.x ;  }
-SQUAD_METHOD const float3*  quad2::normal() const {   return (float3*)&q0.f.x ;  }
-SQUAD_METHOD float          quad2::distance() const { return q0.f.w ;  }
-SQUAD_METHOD unsigned       quad2::identity() const {   return q1.u.z ;  }
+
+SQUAD_METHOD float*         quad2::data() {           return &q0.f.x ; }
+SQUAD_METHOD const float*   quad2::cdata() const  {   return &q0.f.x ; }
+
+SQUAD_METHOD float3*        quad2::normal() {           return (float3*)&q0.f.x ; }
+SQUAD_METHOD const float3*  quad2::normal() const {     return (float3*)&q0.f.x ; }
+SQUAD_METHOD float          quad2::distance() const {   return q0.f.w ; }
+
+SQUAD_METHOD float          quad2::lposcost() const {   return q1.f.x ; }
+SQUAD_METHOD unsigned       quad2::iindex() const {     return q1.u.y ; }
+SQUAD_METHOD unsigned       quad2::identity() const {   return q1.u.z ; }
+SQUAD_METHOD unsigned       quad2::boundary() const {   return q1.u.w ; }
+
+SQUAD_METHOD void           quad2::set_lposcost(float lpc)   { q1.f.x = lpc ; }
+SQUAD_METHOD void           quad2::set_iindex(  unsigned ii) { q1.u.y = ii ;  }
 SQUAD_METHOD void           quad2::set_identity(unsigned id) { q1.u.z = id ;  }
-SQUAD_METHOD unsigned       quad2::boundary() const {   return q1.u.w ;  }
 SQUAD_METHOD void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
-SQUAD_METHOD void           quad2::set_lposcost(float lpc){ q1.f.x = lpc ; }
-SQUAD_METHOD float          quad2::get_lposcost() const { return q1.f.x ; }
-
-
 
 
 

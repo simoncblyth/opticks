@@ -83,7 +83,7 @@ static __forceinline__ __device__ void trace(
             p0, p1
             );
 #else
-    uint32_t p0, p1, p2, p3, p4, p5, p6  ; 
+    uint32_t p0, p1, p2, p3, p4, p5, p6, p7  ; 
     optixTrace(
             handle,
             ray_origin,
@@ -96,7 +96,7 @@ static __forceinline__ __device__ void trace(
             SBToffset,
             SBTstride,
             missSBTIndex,
-            p0, p1, p2, p3, p4, p5, p6
+            p0, p1, p2, p3, p4, p5, p6, p7
             );
     // unclear where the uint_as_float CUDA device function is defined, seems CUDA intrinsic without header ?
     prd->q0.f.x = uint_as_float( p0 );
@@ -106,6 +106,7 @@ static __forceinline__ __device__ void trace(
     prd->set_identity(p4) ; 
     prd->set_boundary(p5) ;  
     prd->set_lposcost(uint_as_float(p6)) ;  
+    prd->set_iindex(p7) ;  
 #endif
 }
 
@@ -324,7 +325,7 @@ extern "C" __global__ void __raygen__rg()
 /**
 *setPayload* is used from __closesthit__ and __miss__ providing communication to __raygen__ optixTrace call
 **/
-static __forceinline__ __device__ void setPayload( float normal_x, float normal_y, float normal_z, float distance, unsigned identity, unsigned boundary, float lposcost )
+static __forceinline__ __device__ void setPayload( float normal_x, float normal_y, float normal_z, float distance, unsigned identity, unsigned boundary, float lposcost, unsigned iindex )
 {
     optixSetPayload_0( float_as_uint( normal_x ) );
     optixSetPayload_1( float_as_uint( normal_y ) );
@@ -333,6 +334,7 @@ static __forceinline__ __device__ void setPayload( float normal_x, float normal_
     optixSetPayload_4( identity );
     optixSetPayload_5( boundary );
     optixSetPayload_6( lposcost );  
+    optixSetPayload_7( iindex   );  
 
     // num_payload_values PIP::PIP must match the payload slots used up to maximum of 8 
     // NB : payload is distinct from attributes
@@ -401,15 +403,16 @@ optixGetRayTmax
 
 extern "C" __global__ void __closesthit__ch()
 {
-    //unsigned instance_index = optixGetInstanceIndex() ;  0-based index within IAS
+    unsigned iindex = optixGetInstanceIndex() ;    // 0-based index within IAS
     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
-    unsigned prim_idx = optixGetPrimitiveIndex() ;  // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+    unsigned prim_idx = optixGetPrimitiveIndex() ; // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ; 
 
 #ifdef WITH_PRD
     quad2* prd = getPRD<quad2>(); 
 
     prd->set_identity( identity ) ;
+    prd->set_iindex(   iindex ) ;
     //printf("//__closesthit__ch prd.boundary %d \n", prd->boundary() );  // boundary set in IS for WITH_PRD
     float3* normal = prd->normal(); 
     *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;  
@@ -427,7 +430,7 @@ extern "C" __global__ void __closesthit__ch()
     const float lposcost = uint_as_float( optixGetAttribute_5() ) ; 
     float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
 
-    setPayload( normal.x, normal.y, normal.z, distance, identity, boundary, lposcost );  // communicate from ch->rg
+    setPayload( normal.x, normal.y, normal.z, distance, identity, boundary, lposcost, iindex );  // communicate from ch->rg
 #endif
 }
 
