@@ -55,6 +55,8 @@ export ZOOM=${ZOOM:-2}
 export LOOK=209.774,-64.59664,129.752
 export LOOKCE=${LOOKCE:-1,0.1,0.01,0.001}
 
+export NOPVGRID=1 
+
 # CAP_BASE depends on geometry and thus is set by "source cachegrab.sh env"
 export CAP_REL=cxs_debug
 export CAP_STEM=cxs_debug_moi${moi}

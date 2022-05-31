@@ -16,6 +16,36 @@ Local::
 
 
 
+
+TODO: add prim name to p dumping
+-----------------------------------
+
+::
+
+    000 pd = cf.primIdx_meshname_dict()
+
+     76 ## using ellipsis avoids having to duplicate for photons and records 
+     77 ident_ = lambda p:p.view(np.uint32)[...,3,1]
+     78 prim_  = lambda p:ident_(p) >> 16
+     79 inst_  = lambda p:ident_(p) & 0xffff
+     80 
+
+
+    In [29]: list(map(lambda _:pd[_], prim_(r)[0] ))                                                                                                                                                                                          
+    Out[29]: 
+    ['sWorld0x577dcb0',
+     'sTarget0x5829390',
+     'sTarget0x5829390',
+     'sAcrylic0x5828d70',
+     'NNVTMCPPMTsMask_virtual0x5f5f0e0',
+     'NNVTMCPPMTsMask0x5f60190',
+     'NNVTMCPPMTsMask0x5f60190',
+     'NNVTMCPPMTTail0x5f614d0',
+     'NNVTMCPPMTTail0x5f614d0',
+     'sWorld0x577dcb0']
+
+
+
 Issue 2 : skipping water-water virtuals 
 -----------------------------------------
 

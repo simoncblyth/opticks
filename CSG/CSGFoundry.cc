@@ -2127,7 +2127,7 @@ const char* CSGFoundry::ELVString(const SName* id)
     const char* elv = nullptr ; 
     if( elv_selection_ )
     {
-        bool has_names = is->hasNames(elv_selection_);  
+        bool has_names = id->hasNames(elv_selection_);  
         if(has_names)
         {
             elv = id->get_ELV_fromNames(elv_selection_) ; 

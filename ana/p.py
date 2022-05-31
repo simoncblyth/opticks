@@ -63,14 +63,23 @@ boundary_  = lambda p:p.view(np.uint32)[3,0] >> 16
 flag__    = lambda p:p.view(np.uint32)[:,3,0] & 0xffff
 flag_     = lambda p:p.view(np.uint32)[3,0] & 0xffff
 
+
+
 identity__ = lambda p:p.view(np.uint32)[:,3,1]   
 primIdx__   = lambda p:identity__(p) >> 16 
 instanceId__  = lambda p:identity__(p) & 0xffff  
 
-
 identity_ = lambda p:p.view(np.uint32)[3,1]   
 primIdx_   = lambda p:identity_(p) >> 16 
 instanceId_  = lambda p:identity_(p) & 0xffff  
+
+## using ellipsis avoids having to duplicate for photons and records 
+ident_ = lambda p:p.view(np.uint32)[...,3,1]
+prim_  = lambda p:ident_(p) >> 16
+inst_  = lambda p:ident_(p) & 0xffff
+
+
+
 
 idx_      = lambda p:p.view(np.uint32)[3,2] & 0x7fffffff
 orient_   = lambda p:p.view(np.uint32)[3,2] >> 31
@@ -88,8 +97,14 @@ hit__      = lambda p,msk:p[np.where( ( flagmask__(p) & msk ) == msk)]
 ## TO PICK THE GEOMETRY APPROPRIATE TO THE RESULT ARRAYS SET CFBASE envvar 
 from opticks.CSG.CSGFoundry import CSGFoundry 
 cf = CSGFoundry.Load()
+pd = cf.primIdx_meshname_dict() 
+
 
 bflagdesc_ = lambda p:"%s : %40s : %s " % ( flagdesc_(p), cf.sim.bndnamedict[boundary_(p)], digest_(p[:3]) )
+
+
+ 
+#primdesc_ = lambda p:"%4d : %s " % ( prim_(p), pd 
 
 
 ridiff_ = lambda ri:ri[1:,:3] - ri[:-1,:3]     
