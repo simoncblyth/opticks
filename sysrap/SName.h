@@ -55,6 +55,11 @@ struct SName
     int findIndex(const char* starting) const ;
     void findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq ) const ; 
 
+    bool hasName(  const char* q ) const ; 
+    bool hasNames( const char* qq, char delim=',' ) const ; 
+    bool hasNames( const std::vector<std::string>& qq ) const ; 
+
+
     void findIndices(std::vector<unsigned>& idxs, const char* query, char qt='S' ) const ; 
     std::string descIndices(const std::vector<unsigned>& idxs) const ; 
 
@@ -275,6 +280,32 @@ inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::
     }
 }
 
+inline bool SName::hasName(  const char* q ) const 
+{
+    int idx = findIndex(q); 
+    bool has = idx > -1 ; 
+    return has ; 
+}
+inline bool SName::hasNames( const char* qq_, char delim ) const 
+{
+    std::vector<std::string> qq; 
+    SStr::Split(qq_, delim, qq); 
+    return hasNames(qq); 
+}
+inline bool SName::hasNames( const std::vector<std::string>& qq ) const 
+{
+    std::vector<unsigned> idxs ; 
+    findIndicesFromNames(idxs, qq); 
+    bool has_all = qq.size() == idxs.size() ; 
+    return has_all ; 
+}
+
+
+
+
+
+
+
 inline const char* SName::QLabel(unsigned qtype)  // static
 {
     const char* s = nullptr ; 
@@ -349,6 +380,13 @@ inline const char* SName::get_ELV_fromSearch( const char* names_containing ) con
     const char* prefix = "t" ; 
     return ELVString(idxs, prefix); 
 }  
+
+
+
+
+
+
+
 
 inline std::string SName::descIndices(const std::vector<unsigned>& idxs) const 
 {

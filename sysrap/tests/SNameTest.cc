@@ -16,6 +16,7 @@ struct SNameTest
     void test_findIndices(int argc, char** argv); 
     void test_get_ELV_fromSearch(); 
     void test_get_ELV_fromNames(); 
+    void test_hasNames(); 
 };
 
 
@@ -32,6 +33,7 @@ SNameTest::SNameTest(int argc, char** argv)
     test_findIndices(argc, argv); 
     test_get_ELV_fromSearch();
     test_get_ELV_fromNames();
+    test_hasNames(); 
 } 
 
 void SNameTest::test_desc()
@@ -114,10 +116,17 @@ void SNameTest::test_get_ELV_fromNames()
      assert( strcmp( elv, x_elv) == 0 ); 
 }
 
-
-
-
-
+void SNameTest::test_hasNames()
+{
+     const char* names = "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x" ; 
+     bool has = id->hasNames(names); 
+     std::cout 
+         << "test_hasNames"
+         << " names [" << names << "]"
+         << " has " << has
+         << std::endl 
+         ;
+}
 
 int main(int argc, char** argv)
 {

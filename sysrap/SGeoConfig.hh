@@ -7,10 +7,14 @@ SGeoConfig
 
 #include <string>
 #include <vector>
+#include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
+
+struct SName ; 
 
 struct SYSRAP_API SGeoConfig
 {
+    static const plog::Severity LEVEL ; 
     static std::string Desc(); 
     static std::string DescEMM(); 
 
@@ -52,6 +56,8 @@ struct SYSRAP_API SGeoConfig
     static bool IsCXSkipLV(int lv); 
 
     static std::vector<std::string>*  Arglist() ; 
+    static void GeometrySpecificSetup(const SName* id); 
+
 
 
 };

@@ -23,6 +23,14 @@ Issue 2 : skipping water-water virtuals
 * implementing mostly in SName which is used from CSGFoundry in the *id* instance 
 
 
+Where to deploy ? Dont really want tests to do JUNO specific things as thats 
+confusing for general users. 
+
+* recall doing something like this via metadata in geocache previously, but that seems inconvenient
+* could simply detect that a selection is applicable based on existance of the names in the geometry 
+* try using SGeoConfig::GeometrySpecificSetup which is invoked from the argumentless CSGFoundry::Load, 
+  this detects a geometry based in the names within it  
+
 
 FIXED : Issue 1 : water-water micro steps ? Fix using PropagateEpsilon of 0.05 mm 
 ------------------------------------------------------------------------------

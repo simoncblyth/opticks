@@ -2111,6 +2111,8 @@ there is no selection.  The value is obtained from either:
    mesh names is expected, for example: 
    "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x"
 
+   If any of the names are not found in the geometry the selection request is ignored.   
+
 2. ELV envvar which is expected to be a comma delimited list of mesh indices, eg "t110,117,134"
 
 
@@ -2125,7 +2127,15 @@ const char* CSGFoundry::ELVString(const SName* id)
     const char* elv = nullptr ; 
     if( elv_selection_ )
     {
-        elv = id->get_ELV_fromNames(elv_selection_) ; 
+        bool has_names = is->hasNames(elv_selection_);  
+        if(has_names)
+        {
+            elv = id->get_ELV_fromNames(elv_selection_) ; 
+        }
+        else
+        {
+            LOG(fatal) << "geometry does not have all the elv_selection_ names [" << elv_selection_ << "] NO SELECTION WILL BE APPLIED " ; 
+        }
     }
     else
     {
@@ -2164,6 +2174,9 @@ CSGFoundry* CSGFoundry::Load() // static
 {
     CSGFoundry* src = CSGFoundry::Load_() ; 
     if(src == nullptr) return nullptr ; 
+
+    SGeoConfig::GeometrySpecificSetup(src->id); 
+
     const SBitSet* elv = ELV(src->id); 
     CSGFoundry* dst = elv ? CSGFoundry::CopySelect(src, elv) : src  ; 
     return dst ; 

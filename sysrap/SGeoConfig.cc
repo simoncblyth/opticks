@@ -9,6 +9,12 @@
 #include "SStr.hh"
 #include "SBit.hh"
 #include "SGeoConfig.hh"
+#include "SName.h"
+
+#include "PLOG.hh"
+
+const plog::Severity SGeoConfig::LEVEL = PLOG::EnvLevel("SGeoConfig", "DEBUG"); 
+
 
 unsigned long long SGeoConfig::_EMM = SBit::FromEString(kEMM, "~0");  
 const char* SGeoConfig::_ELVSelection   = SSys::getenvvar(kELVSelection, nullptr ); 
@@ -83,5 +89,34 @@ std::vector<std::string>*  SGeoConfig::Arglist()
     return SStr::LoadList( _ArglistPath, '\n' );  
 }
 
+/**
+SGeoConfig::GeometrySpecificSetup
+-----------------------------------
+
+This is invoked from the argumentless CSGFoundry::Load 
+it detects if a geometry appears to be JUNO by the presence
+of certain mesh names within it and if JUNO is detected
+some JUNO specific static method calls are made.  
+
+This avoids repeating these settings in tests or fiddling 
+with envvars to configure these things. 
+
+Previously did something simular using metadata in geocache
+or from the Opticks setup code within detector specific code. 
+However do not want to require writing cache and prefer to minimize 
+detector specific Opticks  setup code as it is much easier 
+to test in isolation than as an appendage to a detector framework. 
+
+**/
+void SGeoConfig::GeometrySpecificSetup(const SName* id)  // static
+{
+    const char* JUNO_names = "HamamatsuR12860sMask0x,HamamatsuR12860_PMT_20inch,NNVTMCPPMT_PMT_20inch" ;  
+    bool JUNO_detect = id->hasNames(JUNO_names); 
+    LOG(info) << " JUNO_detect " << JUNO_detect ; 
+    if(JUNO_detect)
+    {
+        SetELVSelection("NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x");
+    }
+}
 
 
