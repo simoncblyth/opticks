@@ -11,17 +11,20 @@
 #include "SGeoConfig.hh"
 
 unsigned long long SGeoConfig::_EMM = SBit::FromEString(kEMM, "~0");  
+const char* SGeoConfig::_ELVSelection   = SSys::getenvvar(kELVSelection, nullptr ); 
 const char* SGeoConfig::_SolidSelection = SSys::getenvvar(kSolidSelection, nullptr ); 
 const char* SGeoConfig::_FlightConfig   = SSys::getenvvar(kFlightConfig  , nullptr ); 
 const char* SGeoConfig::_ArglistPath    = SSys::getenvvar(kArglistPath  , nullptr ); 
 const char* SGeoConfig::_CXSkipLV       = SSys::getenvvar(kCXSkipLV  , nullptr ); 
 
+void SGeoConfig::SetELVSelection(  const char* es){  _ELVSelection   = es ? strdup(es) : nullptr ; }
 void SGeoConfig::SetSolidSelection(const char* ss){  _SolidSelection = ss ? strdup(ss) : nullptr ; }
 void SGeoConfig::SetFlightConfig(  const char* fc){  _FlightConfig   = fc ? strdup(fc) : nullptr ; }
 void SGeoConfig::SetArglistPath(   const char* ap){  _ArglistPath    = ap ? strdup(ap) : nullptr ; }
 void SGeoConfig::SetCXSkipLV(      const char* cx){  _CXSkipLV       = cx ? strdup(cx) : nullptr ; }
 
 unsigned long long SGeoConfig::EnabledMergedMesh(){  return _EMM ; } 
+const char* SGeoConfig::ELVSelection(){   return _ELVSelection ; }
 const char* SGeoConfig::SolidSelection(){ return _SolidSelection ; }
 const char* SGeoConfig::FlightConfig(){   return _FlightConfig ; }
 const char* SGeoConfig::ArglistPath(){    return _ArglistPath ; }
@@ -33,6 +36,7 @@ std::string SGeoConfig::Desc()
     std::stringstream ss ; 
     ss << std::endl ; 
     ss << std::setw(25) << kEMM << " : " << SBit::HexString(_EMM) << " 0x" << std::hex << _EMM << std::dec << std::endl ;
+    ss << std::setw(25) << kELVSelection << " : " << ( _ELVSelection ? _ELVSelection : "-" ) << std::endl ;    
     ss << std::setw(25) << kSolidSelection << " : " << ( _SolidSelection ? _SolidSelection : "-" ) << std::endl ;    
     ss << std::setw(25) << kFlightConfig << " : " << ( _FlightConfig ? _FlightConfig : "-" ) << std::endl ;    
     ss << std::setw(25) << kArglistPath << " : " << ( _ArglistPath ? _ArglistPath : "-" ) << std::endl ;    

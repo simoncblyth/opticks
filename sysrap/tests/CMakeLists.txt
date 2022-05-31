@@ -29,6 +29,7 @@ set(TEST_SOURCES
    SPairVecTest.cc
    SDigestTest.cc
    SDigestNPTest.cc
+
    
    PLogTest.cc 
    PLOG_Test.cc 
@@ -105,6 +106,7 @@ set(TEST_SOURCES
    SEvtTest.cc
    SSimTest.cc
    SPropTest.cc
+   SNameTest.cc
 )
 
 

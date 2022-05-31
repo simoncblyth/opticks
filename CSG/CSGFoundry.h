@@ -93,8 +93,12 @@ struct CSG_API CSGFoundry
     static CSGFoundry* LoadGeom(const char* geom=nullptr); 
 
     static CSGFoundry* MakeDemo(); 
+
+    static const char* ELVString(const SName* id); 
+    static const SBitSet* ELV(const SName* id); 
     static CSGFoundry* Load();
     static CSGFoundry* CopySelect(const CSGFoundry* src, const SBitSet* elv ); 
+
 
     static CSGFoundry* Load_();
     static CSGFoundry* Load(const char* base, const char* rel);
@@ -323,7 +327,9 @@ struct CSG_API CSGFoundry
 
     void getMeshName( std::vector<std::string>& mname ) const ; 
 
+
     const std::string& getMeshName(unsigned midx) const ; 
+    int findMeshIndex(const char* qname) const ; 
     const std::string descELV(const SBitSet* elv) const ; 
 
     const std::string& getSolidLabel(unsigned sidx) const ; 

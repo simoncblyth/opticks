@@ -229,6 +229,11 @@ class SimtraceFeatures(object):
           
         HMM: identity access is only fully applicable to simtrace, not photons
 
+        * ACTUALLY THE SAME INFO IS PRESENT IN PHOTON ARRAYS BUT IN DIFFERENT POSITIONS
+        * TODO: accomodate the photon layout as well as the simtrace one by using 
+          some common method names with different imps for SimtracePositions and PhotonPositions
+        
+
         bnd = p[:,2,3].view(np.int32)
         ids = p[:,3,3].view(np.int32)
         pid = ids >> 16          # prim_idx

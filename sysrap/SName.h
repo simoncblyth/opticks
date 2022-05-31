@@ -13,15 +13,31 @@ Identity machinery using the foundry vector of meshnames (aka solid names)
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
+#include <fstream>
+
 #include "SStr.hh"
+
+
+enum { SName_EXACT, SName_START, SName_CONTAIN } ; 
 
 struct SName
 {
+    static constexpr const char* EXACT = "EXACT" ; 
+    static constexpr const char* START = "START" ; 
+    static constexpr const char* CONTAIN = "CONTAIN" ; 
+
+    static unsigned QType(char qt); 
+    static const char* QLabel(unsigned qtype); 
+    static const char* QTypeLabel(char qt); 
+    static bool Match( const char* n, const char* q, unsigned qtype ); 
+    static SName* Load(const char* path); 
+
     static constexpr const char* parseArg_ALL = "ALL" ; 
     static const bool dump = false ; 
-
     static int ParseIntString(const char* arg, int fallback=-1);
     static void ParseSOPR(int& solidIdx, int& primIdxRel, const char* sopr ); 
+
 
     const std::vector<std::string>& name ; 
 
@@ -36,6 +52,17 @@ struct SName
 
     int getIndex( const char* name    , unsigned& count) const ;
     int findIndex(const char* starting, unsigned& count, int max_count=-1) const ;
+    int findIndex(const char* starting) const ;
+    void findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq ) const ; 
+
+    void findIndices(std::vector<unsigned>& idxs, const char* query, char qt='S' ) const ; 
+    std::string descIndices(const std::vector<unsigned>& idxs) const ; 
+
+    static const char* ELVString(const std::vector<unsigned>& idxs, const char* prefix="t" ); 
+
+    const char* get_ELV_fromNames( const char* names, char delim=',' ) const ;  
+    const char* get_ELV_fromNames( const std::vector<std::string>& names ) const ; 
+    const char* get_ELV_fromSearch( const char* names_containing="_virtual0x" ) const;   
 
 
     int parseArg(const char* arg, unsigned& count ) const ;
@@ -43,7 +70,18 @@ struct SName
 
 }; 
 
+inline SName* SName::Load(const char* path)
+{
+    typedef std::vector<std::string> VS ; 
+    VS* names = new VS ; 
 
+    std::ifstream ifs(path);
+    std::string line;
+    while(std::getline(ifs, line)) names->push_back(line) ; 
+
+    SName* id = new SName(*names) ; 
+    return id ;
+}
 
 
 inline SName::SName( const std::vector<std::string>& name_ )
@@ -65,7 +103,7 @@ inline std::string SName::detail() const
 {
     unsigned num_name = getNumName() ; 
     std::stringstream ss ; 
-    ss << " SName::detail num_name " << num_name << std::endl ;
+    ss << "SName::detail num_name " << num_name << std::endl ;
     for(unsigned i=0 ; i < num_name ; i++) ss << getName(i) << std::endl ;  
     std::string s = ss.str(); 
     return s ; 
@@ -183,6 +221,14 @@ SName::findIndex
 Returns the index of the first listed name that starts with the query string.
 A count of the number of matches is also provided.
 
+Start strings are used to allow names with pointer suffixes such as
+the below to be found without including the pointer suffix in the query string::
+
+   HamamatsuR12860sMask_virtual0x5f50520
+   HamamatsuR12860sMask_virtual0x
+
+It is recommended to make the point by using query strings ending in 0x 
+
 When max_count argument > -1  is provided, eg max_count=1 
 the number of occurences of the match is required to be less than 
 or equal to *max_count*.
@@ -207,6 +253,125 @@ inline int SName::findIndex(const char* starting, unsigned& count, int max_count
     bool count_ok = max_count == -1 || count <= unsigned(max_count) ; 
     return count_ok ? result : -1 ;   
 }
+
+inline int SName::findIndex(const char* starting) const 
+{
+    unsigned count = 0 ;  
+    int max_count = -1 ; 
+    int idx = findIndex(starting, count, max_count); 
+    return idx ; 
+}
+
+inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq ) const 
+{
+    for(unsigned i=0 ; i < qq.size() ; i++)
+    {   
+        const char* q = qq[i].c_str(); 
+        int idx = findIndex(q) ;  
+        bool found = idx > -1 ; 
+        if(!found) std::cerr << "SName::findIndicesfromNames FAILED to find q [" << q << "]" << std::endl ; 
+        assert(found);  
+        idxs.push_back(idx) ;  
+    }
+}
+
+inline const char* SName::QLabel(unsigned qtype)  // static
+{
+    const char* s = nullptr ; 
+    switch(qtype)
+    {
+       case SName_EXACT :   s = EXACT ; break ;  
+       case SName_START :   s = START ; break ;  
+       case SName_CONTAIN : s = CONTAIN ; break ;  
+    }
+    return s ; 
+}
+
+inline unsigned SName::QType(char qt)  // static
+{
+    unsigned qtype = SName_EXACT ; 
+    switch(qt) 
+    {
+        case 'E': qtype = SName_EXACT   ; break ; 
+        case 'S': qtype = SName_START   ; break ; 
+        case 'C': qtype = SName_CONTAIN ; break ; 
+    }
+    return qtype ; 
+}
+inline const char* SName::QTypeLabel(char qt) // static 
+{
+    unsigned qtype = QType(qt); 
+    return QLabel(qtype); 
+}
+
+
+inline bool SName::Match( const char* n, const char* q, unsigned qtype ) // static
+{
+    bool match = false ; 
+    switch( qtype )
+    {
+        case SName_EXACT:   match = strcmp(n,q) == 0       ; break ;  // n exactly matches q string  
+        case SName_START:   match = SStr::StartsWith(n,q)  ; break ;  // n starts with q string  
+        case SName_CONTAIN: match = SStr::Contains(n,q)    ; break ;  // n contains the q string
+    }
+    return match ; 
+}
+
+inline void SName::findIndices(std::vector<unsigned>& idxs, const char* q, char qt ) const 
+{
+    unsigned qtype = QType(qt); 
+    for(unsigned i=0 ; i < name.size() ; i++)
+    {   
+        const char* n = name[i].c_str() ;
+        if(Match(n,q,qtype)) idxs.push_back(i) ;  
+    }
+}
+
+
+inline const char* SName::get_ELV_fromNames( const char* names_, char delim ) const 
+{
+    std::vector<std::string> names ; 
+    SStr::Split(names_, delim, names); 
+    return get_ELV_fromNames( names); 
+}
+inline const char* SName::get_ELV_fromNames( const std::vector<std::string>& qq ) const 
+{
+    std::vector<unsigned> idxs ; 
+    findIndicesFromNames(idxs, qq); 
+    assert( qq.size() == idxs.size() ); 
+    const char* prefix = "t" ; 
+    return ELVString(idxs, prefix); 
+}
+inline const char* SName::get_ELV_fromSearch( const char* names_containing ) const 
+{  
+    std::vector<unsigned> idxs ; 
+    findIndices(idxs, names_containing, 'C' ); 
+    const char* prefix = "t" ; 
+    return ELVString(idxs, prefix); 
+}  
+
+inline std::string SName::descIndices(const std::vector<unsigned>& idxs) const 
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < idxs.size() ; i++)
+    {
+        unsigned idx = idxs[i] ; 
+        ss << std::setw(4) << idx << " : " << name[idx] << std::endl ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+inline const char* SName::ELVString(const std::vector<unsigned>& idxs, const char* prefix ) // static
+{
+    unsigned num_idx = idxs.size() ; 
+    std::stringstream ss ; 
+    ss << prefix ; 
+    for(unsigned i=0 ; i < num_idx ; i++) ss << idxs[i] <<  ( i < num_idx - 1 ? "," : "" ) ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
+
 
 /**
 SName::parseArg

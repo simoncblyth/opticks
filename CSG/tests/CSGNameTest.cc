@@ -1,3 +1,11 @@
+/**
+CSGNameTest.cc
+===============
+
+See also sysrap/SNameTest.cc
+
+**/
+
 #include "SSys.hh"
 #include "SName.h"
 

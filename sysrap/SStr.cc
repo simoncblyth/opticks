@@ -332,11 +332,22 @@ const char* SStr::MaterialBaseName(const char* s )
     return StripPrefix(s, "/dd/Materials/", "_dd_Materials_" );  
 }
 
+/**
+SStr::StartsWith
+------------------
+
+The 2nd query string must be less than or equal to the length of the first string and 
+the all the characters of the query string must match with the first string.  
+
+**/
 
 bool SStr::StartsWith( const char* s, const char* q)
 {
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
 }
+
+
+
 
 const char* SStr::AZaz = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" ; 
 

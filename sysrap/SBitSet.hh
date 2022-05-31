@@ -1,4 +1,18 @@
 #pragma once
+/**
+SBitSet.hh
+=============
+
+Used for example from CSGFoundry::Load to implement dynamic prim selection. 
+
+For example with ELV the num_bits_ would be the number of unique solid shapes in the geometry, 
+with is around 140 for JUNO.  So the bitset provides a way to represent a selection 
+over those shapes. 
+
+Note that at this level, there are no geometry specifics like names etc... its 
+just a collection of booleans. 
+
+**/
 
 #include <vector>
 #include <string>

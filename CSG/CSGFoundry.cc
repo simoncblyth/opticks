@@ -19,6 +19,7 @@
 #include "SPath.hh"
 #include "SBitSet.hh"
 #include "SEventConfig.hh"
+#include "SGeoConfig.hh"
 #include "SOpticksResource.hh"
 #include "NP.hh"
 #include "SSim.hh"
@@ -194,6 +195,23 @@ const std::string& CSGFoundry::getMeshName(unsigned midx) const
     return meshname[midx] ; 
 }
 
+/**
+CSGFoundry::findMeshIndex
+--------------------------
+
+SName::findIndex uses "name starts with query string" matching
+so names like HamamatsuR12860sMask_virtual0x5f50520
+can be matched without the pointer suffix. 
+
+**/
+
+int CSGFoundry::findMeshIndex(const char* qname) const 
+{
+    unsigned count = 0 ; 
+    int max_count = 1 ; 
+    int midx = id->findIndex(qname, count, max_count); 
+    return midx ; 
+}
 
 
 const std::string CSGFoundry::descELV(const SBitSet* elv) const 
@@ -221,7 +239,14 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
     {
         const unsigned& p = include_pos[i] ; 
         const std::string& mn = getMeshName(p) ; 
-        ss << std::setw(3) << p << ":" << mn << std::endl ;  
+        int midx = findMeshIndex(mn.c_str()); 
+        //assert( int(p) == midx );  
+
+        ss 
+            << std::setw(3) << p << ":" 
+            << std::setw(3) << midx << ":" 
+            << mn << std::endl 
+            ;  
     }
 
     ss << "EXCLUDE:" << exclude_pos.size() << std::endl << std::endl ;  
@@ -229,13 +254,19 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
     {
         const unsigned& p = exclude_pos[i] ; 
         const std::string& mn = getMeshName(p) ; 
-        ss << std::setw(3) << p << ":" << mn << std::endl ;  
+        int midx = findMeshIndex(mn.c_str()); 
+        //assert( int(p) == midx );  
+
+        ss 
+           << std::setw(3) << p << ":" 
+           << std::setw(3) << midx << ":" 
+           << mn << std::endl 
+           ;  
     }
 
     std::string s = ss.str(); 
     return s ; 
 } 
-
 
 
 const std::string& CSGFoundry::getSolidLabel(unsigned sidx) const 
@@ -2068,19 +2099,72 @@ CSGFoundry*  CSGFoundry::MakeDemo()
 }
 
 
+/**
+CSGFoundry::ELVString
+-----------------------
+
+String configuring dynamic shape selection of form : t110,117,134 or null when 
+there is no selection.  The value is obtained from either:
+
+1. SGeoConfig::ELVSelection() which defaults to the OPTICKS_ELV_SELECTION envvar value 
+   and can be changed by the SGeoConfig::SetELVSelection static, a comma delimited list of 
+   mesh names is expected, for example: 
+   "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x"
+
+2. ELV envvar which is expected to be a comma delimited list of mesh indices, eg "t110,117,134"
+
+
+HMM: could detect the indices or names form in use and parse accordingly, then would only need one envvar
+or simply remove the lower level ELV form or obfuscate it with a long envvar key 
+
+**/
+
+const char* CSGFoundry::ELVString(const SName* id)
+{
+    const char* elv_selection_ = SGeoConfig::ELVSelection() ; 
+    const char* elv = nullptr ; 
+    if( elv_selection_ )
+    {
+        elv = id->get_ELV_fromNames(elv_selection_) ; 
+    }
+    else
+    {
+        elv = SSys::getenvvar("ELV", nullptr ); 
+    }
+
+    LOG(LEVEL) 
+        << " elv_selection_ " << elv_selection_
+        << " elv " << elv
+        ; 
+
+    return elv ; 
+}
+
+const SBitSet* CSGFoundry::ELV(const SName* id)
+{
+    unsigned num_meshname = id->getNumName(); 
+    const char* elv_ = ELVString(id); 
+    SBitSet* elv = elv_ ? SBitSet::Create(num_meshname, elv_ ) : nullptr ; 
+    return elv ; 
+}
 
 
 /**
 CSGFoundry::Load
 -------------------
 
+This argumentless Load method is special, unlike other methods 
+it provides dynamic prim selection based in the ELV envvar which uses
+CSGFoundry::CopySelect to dynamically create a CSGFoundry based
+on the elv SBitSet
+
+
 **/
 CSGFoundry* CSGFoundry::Load() // static
 {
     CSGFoundry* src = CSGFoundry::Load_() ; 
     if(src == nullptr) return nullptr ; 
-    // HMM: the below dynamic prim selection is only for this Load method, not the others
-    const SBitSet* elv = SBitSet::Create( src->getNumMeshName(), "ELV", nullptr ); 
+    const SBitSet* elv = ELV(src->id); 
     CSGFoundry* dst = elv ? CSGFoundry::CopySelect(src, elv) : src  ; 
     return dst ; 
 }

@@ -16,18 +16,11 @@ Local::
 
 
 
+Issue 2 : skipping water-water virtuals 
+-----------------------------------------
 
-
-
-
-
-
-Issue 2 : water-water virtuals 
------------------------------------
-
-* the other aspect of this issue is that such water/water virtuals should be skipped 
-  from Opticks geometry as they are just there for Geant4 performance reasons that are 
-  unhelpful and probably slow down Opticks
+* :doc:`namelist-based-elv-skip-string`
+* implementing mostly in SName which is used from CSGFoundry in the *id* instance 
 
 
 

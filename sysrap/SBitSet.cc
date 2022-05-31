@@ -97,8 +97,6 @@ void SBitSet::get_pos( std::vector<unsigned>& pos, bool value) const
     for(unsigned i=0 ; i < num_bits ; i++ ) if(bits[i] == value) pos.push_back(i) ; 
 }
 
-
-
 SBitSet::SBitSet( unsigned num_bits_ )
     :
     num_bits(num_bits_),
