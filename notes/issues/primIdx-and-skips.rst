@@ -1,7 +1,100 @@
 primIdx-and-skips
 ====================
 
-* HMM: CSG_GGeo_Convert just passes across all names independent of skips 
+
+
+
+TODO : trace detail of where the mis-naming happens
+----------------------------------------------------
+
+ana/feature.py::
+
+    cf.primIdx_meshname_dict()
+
+CSG/CSGFoundry.py::
+
+    278     def meshIdx(self, primIdx):
+    279         """
+    280         """
+    281         assert primIdx < len(self.prim)
+    282         midx = self.prim[primIdx].view(np.uint32)[1,1]
+    283         return midx 
+    284         
+    285     def primIdx_meshname_dict(self):
+    286         """
+    287         See notes/issues/cxs_2d_plotting_labels_suggest_meshname_order_inconsistency.rst
+    288         """
+    289         d = {}
+    290         for primIdx in range(len(self.prim)):
+    291             midx = self.meshIdx (primIdx)      # meshIdx method with contiguous primIdx argumnet
+    292             assert midx < len(self.meshname)
+    293             mnam = self.meshname[midx]
+    294             d[primIdx] = mnam
+    295             #print("CSGFoundry:primIdx_meshname_dict primIdx %5d midx %5d meshname %s " % (primIdx, midx, mnam))
+    296         pass
+    297         return d
+    298         
+
+
+
+TODO : work out way to handle prim skips with proper identity
+---------------------------------------------------------------
+
+From below, the primIdx in the OptiX machinery is the flat contiguous index 
+from the uploaded CSGFoundry geometry. 
+
+
+The CSGCopy just passes over the meshIdx::
+
+
+    156 void CSGCopy::copySolidPrim(AABB& solid_bb, int dPrimOffset, const CSGSolid* sso )
+    157 {
+    158     unsigned dump_ = Dump(sSolidIdx);
+    159     bool dump_prim = ( dump_ & 0x2 ) != 0u ;
+    160 
+    161     for(int primIdx=sso->primOffset ; primIdx < sso->primOffset+sso->numPrim ; primIdx++)
+    162     {
+    163          const CSGPrim* spr = src->getPrim(primIdx);
+    164          unsigned meshIdx = spr->meshIdx() ;
+    165          unsigned repeatIdx = spr->repeatIdx() ;
+    166          bool selected = elv == nullptr ? true : elv->is_set(meshIdx) ;
+    167          if( selected == false ) continue ;
+    168 
+    169          unsigned numNode = spr->numNode()  ;  // not envisaging node selection, so this will be same in src and dst 
+    170          unsigned dPrimIdx_global = dst->getNumPrim() ;            // destination numPrim prior to prim addition
+    171          unsigned dPrimIdx_local = dPrimIdx_global - dPrimOffset ; // make the PrimIdx local to the solid 
+    172 
+    173          CSGPrim* dpr = dst->addPrim(numNode, -1 );
+    174          if( elv == nullptr ) assert( dpr->nodeOffset() == spr->nodeOffset() );
+    175 
+    176          dpr->setMeshIdx(meshIdx);
+    177          dpr->setRepeatIdx(repeatIdx);
+    178          dpr->setPrimIdx(dPrimIdx_local);
+    179 
+    180          AABB prim_bb = {} ;
+    181          copyPrimNodes(prim_bb, spr );
+    182          dpr->setAABB( prim_bb.data() );
+    183          //dpr->setAABB( spr->AABB() );  // will not be so with selection 
+    184 
+
+
+
+Try to simply write the dynamic geometry to CFBaseAlt so have consistency
+------------------------------------------------------------------------------
+
+
+
+
+HMM: CSG_GGeo_Convert just passes across all names independent of skips 
+----------------------------------------------------------------------------
+
+* YES: but this is not the problem, I think issue must be from using the old prim.npy 
+
+
+* CSG::CopySelect 
+
+
+
 
 ::
 
@@ -281,12 +374,6 @@ TODO : compare optixGetInstanceId with optixGetInstanceIndex
 * one downside is would need to occupy the last of the quad2 PRD slots 
 
 DONE : added set_iindex to quad2 and machinery to populate it in CSGOptiX7.cu 
-
-
-TODO : work out way to handle prim skips with proper identity
----------------------------------------------------------------
-
-Simplest for CSGFoundry is to do it at GGeo level ? But that just shifts the burden. 
 
 
 

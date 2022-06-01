@@ -89,6 +89,7 @@ std::string SOpticksResource::Dump()
     const char* idpath = IDPath(setkey) ; 
     const char* cgdir = CGDir(setkey) ; 
     const char* cfbase = CFBase(); 
+    const char* cfbase_alt = CFBaseAlt(); 
     const char* cfbase_fg = CFBaseFromGEOM(); 
 
 
@@ -109,6 +110,7 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::IDPath(true)             " << ( idpath ? idpath : "-" ) << std::endl  
         << "SOpticksResource::CGDir(true)              " << ( cgdir ? cgdir : "-" )  << std::endl 
         << "SOpticksResource::CFBase()                 " << ( cfbase ? cfbase : "-" ) << std::endl 
+        << "SOpticksResource::CFBaseAlt()              " << ( cfbase_alt ? cfbase_alt : "-" ) << std::endl 
         << "SOpticksResource::CFBaseFromGEOM()         " << ( cfbase_fg ? cfbase_fg : "-" ) << std::endl 
         ;
 
@@ -142,14 +144,18 @@ const NP* SOpticksResource::IDLoad(const char* relpath)
 }
 
 
-
-const char* SOpticksResource::CGDir(bool setkey)  // formerally CSG_GGeoDir 
+const char* SOpticksResource::CGDir_NAME = "CSG_GGeo" ; 
+const char* SOpticksResource::CGDir(bool setkey){ return CGDir_(setkey, CGDir_NAME) ; }
+const char* SOpticksResource::CGDir_(bool setkey, const char* rel)  
 {
     const char* idpath = IDPath(setkey) ; 
     assert( idpath ); 
-    int create_dirs = 0 ; 
-    return SPath::Resolve( idpath, "CSG_GGeo" , create_dirs ); 
+    return SPath::Resolve( idpath, rel , NOOP ); 
 }
+
+const char* SOpticksResource::CGDir_NAME_Alt = "CSG_GGeo_Alt" ; 
+const char* SOpticksResource::CGDirAlt(bool setkey){ return CGDir_(setkey, CGDir_NAME_Alt) ; }
+
 
 
 /**
@@ -165,7 +171,6 @@ Precedence order:
 1. CFBASE envvar values directly providing CFBASE directory 
 
 2. CFBASE directory derived from OPTICKS_KEY and OPTICKS_GEOCACHE_PREFIX 
-
 
 When the *ekey* envvar (default CFBASE) is defined its 
 value is returned otherwise the CFDir obtained from the 
@@ -183,6 +188,19 @@ const char* SOpticksResource::CFBase()
     }
     return cfbase ; 
 }
+
+const char* SOpticksResource::CFBaseAlt()
+{
+    const char* cfbase = SSys::getenvvar("CFBASE_ALT") ; 
+    if( cfbase == nullptr )
+    {
+        bool setkey = true ; 
+        cfbase = CGDirAlt(setkey); 
+    }
+    return cfbase ; 
+}
+
+
 
 /**
 SOpticksResource::CFBaseFromGEOM
@@ -216,7 +234,7 @@ const char* SOpticksResource::CFBaseFromGEOM()
 }
 
 
-const char* SOpticksResource::KEYS = "IDPath CFBase GeocacheDir RuncacheDir RNGDir" ; 
+const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir" ; 
 const char* SOpticksResource::Get(const char* key) // static
 {
     const char* tok = getenv(key) ; 
@@ -224,6 +242,7 @@ const char* SOpticksResource::Get(const char* key) // static
 
     if(      strcmp(key, "IDPath")==0)      tok = SOpticksResource::IDPath(); 
     else if( strcmp(key, "CFBase")==0)      tok = SOpticksResource::CFBase(); 
+    else if( strcmp(key, "CFBaseAlt")==0)   tok = SOpticksResource::CFBaseAlt(); 
     else if( strcmp(key, "GeocacheDir")==0) tok = SOpticksResource::GeocacheDir(); 
     else if( strcmp(key, "RuncacheDir")==0) tok = SOpticksResource::RuncacheDir(); 
     else if( strcmp(key, "RNGDir")==0)      tok = SOpticksResource::RNGDir(); 

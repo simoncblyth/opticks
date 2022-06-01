@@ -50,8 +50,8 @@ Issue 2 : skipping water-water virtuals
 -----------------------------------------
 
 * :doc:`namelist-based-elv-skip-string`
+* :doc:`primIdx-and-skips`
 * implementing mostly in SName which is used from CSGFoundry in the *id* instance 
-
 
 Where to deploy ? Dont really want tests to do JUNO specific things as thats 
 confusing for general users. 

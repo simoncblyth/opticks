@@ -1857,8 +1857,7 @@ const char* CSGFoundry::RELDIR = "CSGFoundry"  ;
 
 const char* CSGFoundry::getBaseDir(bool create) const
 {
-    int create_dirs = create ? 2 : 0 ; // 2:dirpath 0:noop
-    const char* fold = geom ? SPath::Resolve(BASE, geom, create_dirs ) : nullptr ;
+    const char* fold = geom ? SPath::Resolve(BASE, geom, create ? DIRPATH : NOOP ) : nullptr ;
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );  
     return cfbase ? strdup(cfbase) : nullptr ; 
 }
@@ -1881,6 +1880,36 @@ void CSGFoundry::write(const char* base, const char* rel) const
     std::string dir = ss.str();   
     write(dir.c_str()); 
 }
+
+/**
+CSGFoundry::writeAlt
+-----------------------
+
+Write geometry to $CFBaseAlt/CSGFoundry currently used as workaround so 
+that the python view of dynamic prim selection geometry can match 
+the actual uploaded geometry. 
+
+See notes/issues/primIdx-and-skips.rst
+**/
+
+void CSGFoundry::writeAlt() const 
+{
+    const char* cfbase_alt = SOpticksResource::CFBaseAlt(); 
+    if( cfbase && cfbase_alt && strcmp(cfbase, cfbase_alt) == 0 )
+    {
+        LOG(fatal) 
+            << "cannot writeAlt as cfbase_alt directory matched the loaded directory "
+            << " cfbase " << cfbase
+            << " cfbase_alt " << cfbase_alt
+            ;
+    } 
+    else
+    {
+        LOG(info) << " cfbase " << cfbase << " cfbase_alt " << cfbase_alt ; 
+        write(cfbase_alt, RELDIR); 
+    }
+}
+
 
 /**
 CSGFoundry::write
@@ -2177,6 +2206,9 @@ on the elv SBitSet
 
 
 **/
+
+bool CSGFoundry::Load_writeAlt = SSys::getenvbool("CSGFoundry_Load_writeAlt") ; 
+
 CSGFoundry* CSGFoundry::Load() // static
 {
     CSGFoundry* src = CSGFoundry::Load_() ; 
@@ -2186,6 +2218,15 @@ CSGFoundry* CSGFoundry::Load() // static
 
     const SBitSet* elv = ELV(src->id); 
     CSGFoundry* dst = elv ? CSGFoundry::CopySelect(src, elv) : src  ; 
+
+    if( elv != nullptr && Load_writeAlt)
+    {
+        LOG(error) << " non-standard dynamic selection CSGFoundry_Load_writeAlt " ; 
+        dst->writeAlt() ; 
+    }
+
+
+
     return dst ; 
 }
 

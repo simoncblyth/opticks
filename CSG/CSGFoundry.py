@@ -285,10 +285,17 @@ class CSGFoundry(object):
     def primIdx_meshname_dict(self):
         """
         See notes/issues/cxs_2d_plotting_labels_suggest_meshname_order_inconsistency.rst
+        this method resolved an early naming bug 
+
+        CSG/CSGPrim.h:: 
+
+             95     PRIM_METHOD unsigned  meshIdx() const {           return q1.u.y ; }  // aka lvIdx
+             96     PRIM_METHOD void   setMeshIdx(unsigned midx){     q1.u.y = midx ; }
+
         """
         d = {}
         for primIdx in range(len(self.prim)):
-            midx = self.meshIdx (primIdx) 
+            midx = self.meshIdx (primIdx)      # meshIdx method with contiguous primIdx argument
             assert midx < len(self.meshname)
             mnam = self.meshname[midx]
             d[primIdx] = mnam
