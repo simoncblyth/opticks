@@ -1146,6 +1146,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, qstate& s, 
 {
     const unsigned boundary = prd->boundary() ; 
     const unsigned identity = prd->identity() ; 
+    const unsigned iindex = prd->iindex() ; 
     const float3* normal = prd->normal(); 
     float cosTheta = dot(p.mom, *normal ) ;    
 
@@ -1154,7 +1155,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, qstate& s, 
                  idx, bounce, cosTheta, p.mom.x, p.mom.y, p.mom.z, normal->x, normal->y, normal->z ); 
 #endif
 
-    p.set_prd(boundary, identity, cosTheta); 
+    p.set_prd(boundary, identity, cosTheta, iindex ); 
 
     bnd->fill_state(s, boundary, p.wavelength, cosTheta, idx ); 
 

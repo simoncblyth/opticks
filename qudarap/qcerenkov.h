@@ -100,7 +100,8 @@ inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, curandStateXORWOW&
     smath::rotateUz(p.pol, p0 ); 
 
     p.wavelength = wavelength ;  
-    p.weight = 1.f ; 
+    //p.weight = 1.f ; 
+    p.iindex = 0u ; 
 
     float fraction ; 
     float delta ; 

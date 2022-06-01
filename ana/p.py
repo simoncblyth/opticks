@@ -97,14 +97,11 @@ hit__      = lambda p,msk:p[np.where( ( flagmask__(p) & msk ) == msk)]
 ## TO PICK THE GEOMETRY APPROPRIATE TO THE RESULT ARRAYS SET CFBASE envvar 
 from opticks.CSG.CSGFoundry import CSGFoundry 
 cf = CSGFoundry.Load()
-pd = cf.primIdx_meshname_dict() 
 
+cf_bnd_  = lambda p:cf.sim.bndnamedict[boundary_(p)]
+cf_prim_ = lambda p:cf.primIdx_meshname_dict[prim_(p)]
 
-bflagdesc_ = lambda p:"%s : %40s : %s " % ( flagdesc_(p), cf.sim.bndnamedict[boundary_(p)], digest_(p[:3]) )
-
-
- 
-#primdesc_ = lambda p:"%4d : %s " % ( prim_(p), pd 
+bflagdesc_ = lambda p:"%s : %60s : %s : %s " % ( flagdesc_(p), cf_prim_(p) , digest_(p[:3])[:8], cf_bnd_(p) )
 
 
 ridiff_ = lambda ri:ri[1:,:3] - ri[:-1,:3]     

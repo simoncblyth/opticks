@@ -72,7 +72,8 @@ struct sphoton
     float  time ; 
 
     float3 mom ; 
-    float  weight ; 
+    //float  weight ; 
+    unsigned iindex ; 
 
     float3 pol ; 
     float  wavelength ;   
@@ -83,7 +84,7 @@ struct sphoton
     unsigned flagmask ; 
 
 
-    SPHOTON_METHOD void set_prd( unsigned  boundary, unsigned  identity, float  orient );
+    SPHOTON_METHOD void set_prd( unsigned  boundary, unsigned  identity, float  orient, unsigned iindex );
 
     SPHOTON_METHOD unsigned idx() const {      return orient_idx & 0x7fffffffu  ;  }
     SPHOTON_METHOD float    orient() const {   return ( orient_idx & 0x80000000u ) ? -1.f : 1.f ; } 
@@ -105,7 +106,7 @@ struct sphoton
     SPHOTON_METHOD void zero()
     { 
        pos.x = 0.f ; pos.y = 0.f ; pos.z = 0.f ; time = 0.f ; 
-       mom.x = 0.f ; mom.y = 0.f ; mom.z = 0.f ; weight = 0.f ; 
+       mom.x = 0.f ; mom.y = 0.f ; mom.z = 0.f ; iindex = 0u ; 
        pol.x = 0.f ; pol.y = 0.f ; pol.z = 0.f ; wavelength = 0.f ; 
        boundary_flag = 0u ; identity = 0u ; orient_idx = 0u ; flagmask = 0u ;  
     }
@@ -121,11 +122,12 @@ struct sphoton
 
 }; 
 
-SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, float  orient_ )
+SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, float  orient_, unsigned iindex_ )
 {
     set_boundary(boundary_); 
     identity = identity_ ; 
     set_orient( orient_ );  
+    iindex = iindex_ ; 
 }
 
 
@@ -137,9 +139,15 @@ SPHOTON_METHOD std::string sphoton::desc() const
 {
     std::stringstream ss ; 
     ss 
-        << " pos " << pos << " t  " << time << std::endl
-        << " mom " << mom << " wg " << weight << std::endl
-        << " pol " << pol << " wl " << wavelength << std::endl
+        << " pos " << pos 
+        << " t  " << time 
+        << std::endl
+        << " mom " << mom 
+        << " iindex " << iindex 
+        << std::endl
+        << " pol " << pol 
+        << " wl " << wavelength 
+        << std::endl
         << " bn " << boundary() 
         << " fl " << std::hex << flag() << std::dec
         << " id " << identity 

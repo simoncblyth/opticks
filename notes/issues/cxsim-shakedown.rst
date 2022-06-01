@@ -16,13 +16,12 @@ Local::
 
 
 
-
-TODO: add prim name to p dumping
+DONE : add prim name to p dumping
 -----------------------------------
 
 ::
 
-    000 pd = cf.primIdx_meshname_dict()
+    000 pd = cf.primIdx_meshname_dict
 
      76 ## using ellipsis avoids having to duplicate for photons and records 
      77 ident_ = lambda p:p.view(np.uint32)[...,3,1]

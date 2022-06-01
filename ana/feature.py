@@ -300,7 +300,7 @@ class SimtraceFeatures(object):
         log.debug("] Photons.bndfeat ")
 
         log.debug("[ Photons.pidfeat ")
-        pid_namedict = {} if cf is None else cf.primIdx_meshname_dict()
+        pid_namedict = {} if cf is None else cf.primIdx_meshname_dict
         log.info(" pid_namedict: %d  " % len(pid_namedict))
         pidfeat = Feature("pid", pid, pid_namedict)
         log.debug("] Photons.pidfeat ")

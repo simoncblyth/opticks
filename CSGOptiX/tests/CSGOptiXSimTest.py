@@ -18,14 +18,14 @@ if __name__ == '__main__':
         if not (PIDX == -1 or PIDX == i): continue 
         if PIDX > -1: print("PIDX %d " % PIDX) 
         print("r[%d,:,:3]" % i)
-        print(r[i,:,:3]) 
+        print(r[i,:nib[i],:3]) 
         print("\n\nbflagdesc_(r[%d,j])" % i)
-        for j in range(len(r[i])):
+        for j in range(nib[i]):
             print(bflagdesc_(r[i,j]))   
         pass
 
-        print("ridiff_(r[%d])*1000." % i)
-        print(ridiff_(r[i])*1000.)   
+        #print("ridiff_(r[%d])*1000." % i)
+        #print(ridiff_(r[i])*1000.)   
 
         print("\n") 
         print("p[%d]" % i)

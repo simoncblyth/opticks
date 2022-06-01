@@ -16,6 +16,13 @@ with that changed geometry "cfbase".   Then have to only be concerned with a sin
 
 BUT thats quite a rigmarole. 
 
+* CONCLUDED BY MOVING THE LONG LIVED SKIPS TO TRANSLATON TIME NOT LOAD TIME
+
+See:
+
+1. SGeoConfig::IsCXSkipLV
+2. SGeoConfig::GeometrySpecificSetup 
+
 
 Consider using CSGOptiXSimtraceTest and CSGOptiXSimTest together
 -------------------------------------------------------------------

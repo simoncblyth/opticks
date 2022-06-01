@@ -265,6 +265,8 @@ class CSGFoundry(object):
     def __init__(self, fold):
         self.load(fold)
         self.meshnamedict = NPFold.namelist_to_namedict(self.meshname)
+        self.primIdx_meshname_dict = self.make_primIdx_meshname_dict()  
+
         self.sim = SSim.Load(fold)
 
         self.mokname = "zero one two three four five six seven eight nine".split()
@@ -282,7 +284,7 @@ class CSGFoundry(object):
         midx = self.prim[primIdx].view(np.uint32)[1,1]
         return midx 
 
-    def primIdx_meshname_dict(self):
+    def make_primIdx_meshname_dict(self):
         """
         See notes/issues/cxs_2d_plotting_labels_suggest_meshname_order_inconsistency.rst
         this method resolved an early naming bug 
