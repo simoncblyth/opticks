@@ -2015,7 +2015,11 @@ const char* CSGFoundry::getCFBase() const
 }
 const char* CSGFoundry::getOriginCFBase() const 
 {
-   // HMM: maybe just pass the pointer, as keep forgetting about this 
+    // HMM: maybe just pass the pointer, as keep forgetting about this 
+    // NOPE: that would be wrong need to save into a new cfbase 
+    // for consistency between results and geometry 
+
+    LOG(error) << " CAUTION HOW YOU USE THIS : MISUSE CAN EASILY LEAD TO INCONSISTENCY BETWEEN RESULTS AND GEOMETRY " ; 
     return origin ? origin->cfbase : cfbase ; 
 }
 
@@ -2402,8 +2406,11 @@ void CSGFoundry::upload()
     if(!is_uploaded_1) LOG(fatal) << "FAILED TO UPLOAD" ; 
     assert(is_uploaded_1 == true); 
 
-    const char* ocfb = getOriginCFBase(); 
-    SGeo::SetLastUploadCFBase(ocfb) ; 
+    //const char* ocfb = getOriginCFBase(); 
+    //   actually that means results will be placed in folder inconsistent with the geometry 
+
+    const char* cfb = getCFBase(); 
+    SGeo::SetLastUploadCFBase(cfb) ; 
 }
 
 bool CSGFoundry::isUploaded() const

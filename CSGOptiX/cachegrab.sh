@@ -33,6 +33,8 @@ fi
 
 executable=CSGOptiXSimTest
 EXECUTABLE=${EXECUTABLE:-$executable}
+CGREL=${CGREL:-CSG_GGeo}
+
 case $EXECUTABLE in 
    CSGOptiXSimTest)      echo $msg expected EXECUTABLE $EXECUTABLE  ;; 
    CSGOptiXSimtraceTest) echo $msg expected EXECUTABLE $EXECUTABLE  ;;
@@ -41,7 +43,7 @@ esac
 
 opticks_key_remote_dir=$(opticks-key-remote-dir)    ## eg .opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1
 
-xbase=$opticks_key_remote_dir/CSG_GGeo 
+xbase=$opticks_key_remote_dir/$CGREL
 xdir=$xbase/$EXECUTABLE/             ## trailing slash to avoid rsync duplicating path element 
 
 from=P:$xdir
@@ -65,16 +67,14 @@ fi
 if [ "${grab_arg}" == "grab" ]; then 
     read -p "$msg Enter YES to proceed with rsync between from and to " ans
     if [ "$ans" == "YES" ]; then 
-       echo $msg proceeding 
+        echo $msg proceeding 
+        mkdir -p $to
+        rsync -zarv --progress --include="*/" --include="*.txt" --include="*.npy" --include="*.jpg" --include="*.mp4" --include "*.json" --exclude="*" "$from" "$to"
+        ls -1rt `find ${to%/} -name '*.json' -o -name '*.txt' `
+        ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.mp4' -o -name '*.npy'  `
     else
        echo $msg skipping : perhaps you should be using tmp_grab.sh 
-       exit 1 
     fi 
-
-    mkdir -p $to
-    rsync -zarv --progress --include="*/" --include="*.txt" --include="*.npy" --include="*.jpg" --include="*.mp4" --include "*.json" --exclude="*" "$from" "$to"
-    ls -1rt `find ${to%/} -name '*.json' -o -name '*.txt' `
-    ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.mp4' -o -name '*.npy'  `
 fi 
 
 

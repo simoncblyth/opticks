@@ -61,5 +61,7 @@ export NOPVGRID=1
 export CAP_REL=cxs_debug
 export CAP_STEM=cxs_debug_moi${moi}
 
+export CSGFoundry_Load_writeAlt=1 
+
 source ./cxs.sh $*
 

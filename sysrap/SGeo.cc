@@ -2,6 +2,9 @@
 #include "SPath.hh"
 #include "SProc.hh"
 #include "SGeo.hh"
+#include "PLOG.hh"
+
+const plog::Severity SGeo::LEVEL = PLOG::EnvLevel("SGeo", "DEBUG"); 
 
 const char* SGeo::LAST_UPLOAD_CFBASE = nullptr ;
 
@@ -11,10 +14,21 @@ SGeo::SetLastUploadCFBase
 
 Canonically invoked from CSGFoundry::upload with CSGFoundry::getOriginCFBase
 
+HMM: actually when dynamic prim selection has been applied should be minting 
+and using a new CFBase for consistency between results and geometry
+
 **/
 
 void SGeo::SetLastUploadCFBase(const char* cfbase)
 {
+    if(cfbase == nullptr)
+    {
+        LOG(error) << " cfbase IS NULL : will not be able to save results together with geometry as cfbase not available " ; 
+    }
+    else
+    {
+        LOG(error) << " cfbase " << cfbase ;  
+    }
     LAST_UPLOAD_CFBASE = cfbase ? strdup(cfbase) : nullptr ; 
 }   
 const char* SGeo::LastUploadCFBase() 
@@ -38,8 +52,6 @@ const char* SGeo::LastUploadCFBase_OutDir()
     const char* outdir = SPath::Resolve(cfbase, exename, DIRPATH );  
     return outdir ; 
 }
-
-
 
 
 

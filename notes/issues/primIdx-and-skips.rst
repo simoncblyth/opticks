@@ -1,10 +1,161 @@
 primIdx-and-skips
 ====================
 
+Summary 
+---------
+
+The identity/naming machinery is working just fine the problem
+is consistency on making dynamic geometry selections. Specifically the problem
+us using results from a dynamically changed geometry with the unchanged geometry
+as reference. The inconsistency gives mis-namings.  
+
+To avoid the bookkeeping kludges it is necessary that when a dynamic prim selection 
+is done changing the geometry that the cfbase of the dst geometry is changed 
+and the changed geometry is saved to it and all outputs are then associated 
+with that changed geometry "cfbase".   Then have to only be concerned with a single CFBase. 
+
+
+How to act on that and avoid having to kludge to keep consistent ?
+---------------------------------------------------------------------
+
+CSGOptiXSimtraceTest.cc::
+
+     78     qs->save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
+     79 
+     80 
+     81     // TODO: move save control to SEvt not QSim/QEvent 
+     82     // for example CPU only tests need to save too, so it makes no sense for them to reach up to QUDARap to control that 
+     83     const char* dir = QEvent::DefaultDir();
+     84     cx->fr.save(dir);
+     85 
+     86     return 0 ;
+     87 }
+
+
+::
+
+    0263 void QSim::save() const
+     264 {
+     265     event->save();
+     266 }
+
+    569 void QEvent::save() const
+    570 {
+    571     const char* dir = DefaultDir();
+    572     LOG(info) << "DefaultDir " << dir ;
+    573     save(dir);
+    574 }
+
+    038 const char* QEvent::FALLBACK_DIR = "$TMP" ;
+     39 const char* QEvent::DefaultDir()
+     40 {
+     41     const char* dir_ = SGeo::LastUploadCFBase_OutDir();
+     42     const char* dir = dir_ ? dir_ : FALLBACK_DIR  ;
+     43     return dir ;
+     44 }
+
+
+    008 /**
+      9 SGeo::SetLastUploadCFBase
+     10 ---------------------------
+     11 
+     12 Canonically invoked from CSGFoundry::upload with CSGFoundry::getOriginCFBase
+     13 
+     14 **/
+     15 
+     16 void SGeo::SetLastUploadCFBase(const char* cfbase)
+     17 {
+     18     LAST_UPLOAD_CFBASE = cfbase ? strdup(cfbase) : nullptr ;
+     19 }
+     20 const char* SGeo::LastUploadCFBase()
+     21 {
+     22     return LAST_UPLOAD_CFBASE ;
+     23 }
+     24 
+     25 /**
+     26 SGeo::LastUploadCFBase_OutDir
+     27 ------------------------------
+     28 
+     29 This provides a default output directory to QEvent::save
+     30 which is within the last uploaded CFBase/ExeName
+     31 
+     32 **/
+     33 const char* SGeo::LastUploadCFBase_OutDir()
+     34 {
+     35     const char* cfbase = LastUploadCFBase();
+     36     if(cfbase == nullptr) return nullptr ;
+     37     const char* exename = SProc::ExecutableName();
+     38     const char* outdir = SPath::Resolve(cfbase, exename, DIRPATH );
+     39     return outdir ;
+     40 }
 
 
 
-TODO : trace detail of where the mis-naming happens
+
+Try to simply write the dynamic geometry to CFBaseAlt so have consistency
+------------------------------------------------------------------------------
+
+HMM but that means the outputs should really be there in Alt together with the actual geometry::
+
+    epsilon:1 blyth$ pwd
+    /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1
+
+    epsilon:1 blyth$ l
+    total 0
+    0 drwxr-xr-x  3 blyth  staff   96 Jun  1 14:40 CSG_GGeo_Alt
+    0 drwxr-xr-x  4 blyth  staff  128 Jun  1 14:40 .
+    0 drwxr-xr-x  8 blyth  staff  256 May 24 15:45 CSG_GGeo
+    0 drwxr-xr-x  3 blyth  staff   96 Mar  4 14:06 ..
+    epsilon:1 blyth$ 
+    epsilon:1 blyth$ 
+    epsilon:1 blyth$ l CSG_GGeo/
+    total 0
+    0 drwxr-xr-x   4 blyth  staff  128 Jun  1 14:40 ..
+    0 drwxr-xr-x  14 blyth  staff  448 May 30 15:38 CSGOptiXSimTest
+    0 drwxr-xr-x  13 blyth  staff  416 May 29 20:35 CSGOptiXSimtraceTest
+    0 drwxr-xr-x   8 blyth  staff  256 May 24 15:45 .
+    0 drwxr-xr-x  20 blyth  staff  640 May 20 16:44 CSGFoundry
+    0 drwxr-xr-x   3 blyth  staff   96 Mar 16 17:57 CSGIntersectSolidTest
+    0 drwxr-xr-x   2 blyth  staff   64 Mar  4 14:23 CSGOptiXSimulateTest
+    0 drwxr-xr-x   3 blyth  staff   96 Mar  4 14:04 CSGOptiXRenderTest
+    epsilon:1 blyth$ l CSG_GGeo_Alt/
+    total 0
+    0 drwxr-xr-x   3 blyth  staff   96 Jun  1 14:40 .
+    0 drwxr-xr-x   4 blyth  staff  128 Jun  1 14:40 ..
+    0 drwxr-xr-x  11 blyth  staff  352 Jun  1 14:31 CSGFoundry
+    epsilon:1 blyth$ 
+    epsilon:1 blyth$ 
+
+
+Kludge it with symbolic links, for now::
+
+    epsilon:CSG_GGeo_Alt blyth$ ln -s ../CSG_GGeo/CSGOptiXSimtraceTest
+    epsilon:CSG_GGeo_Alt blyth$ ln -s ../CSG_GGeo/CSGOptiXSimTest
+
+
+cachegrab.sh::
+
+    261 elif [ "$(uname)" == "Darwin" ]; then
+    262 
+    263     echo $cxs_msg Darwin $(pwd) LINENO $LINENO
+    264 
+    265     
+    266     if [ "${cxs_arg}" == "grab" ]; then
+    267         echo $cxs_msg grab LINENO $LINENO 
+    268         EXECUTABLE=$bin       source cachegrab.sh grab
+    269         CGREL=CSG_GGeo_Alt EXECUTABLE=CSGFoundry source cachegrab.sh grab
+    270         ## NASTY MIXED CFBase THATS ONLY WORKING DUE TO KLUDGE SYMBOLIC LINKS IN CSG_GGeo_Alt/CSGOptiXSimtraceTest  
+    271     else
+    272         echo $cxs_msg cxs_arg $cxs_arg LINENO $LINENO
+    273         CGREL=CSG_GGeo_Alt EXECUTABLE=$bin       source cachegrab.sh env
+    274         ## NASTY MIXED CFBase THATS ONLY WORKING DUE TO KLUDGE SYMBOLIC LINKS IN CSG_GGeo_Alt/CSGOptiXSimtraceTest  
+    275         
+    276         cxs_dumpvars "FOLD CFBASE CGREL" after cachegrab.sh env
+    277         
+ 
+
+
+Trace detail of where the mis-naming happens
 ----------------------------------------------------
 
 ana/feature.py::
@@ -37,14 +188,11 @@ CSG/CSGFoundry.py::
 
 
 
-TODO : work out way to handle prim skips with proper identity
----------------------------------------------------------------
+DONE : work out way to handle prim skips with proper identity : JUST NEED TO ARRANGE CONSISTENTLY KEEPING RESULTS TOGETHER WITH THE CORRESPONDING GEOMETRY
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 From below, the primIdx in the OptiX machinery is the flat contiguous index 
-from the uploaded CSGFoundry geometry. 
-
-
-The CSGCopy just passes over the meshIdx::
+from the uploaded CSGFoundry geometry. The CSGCopy just passes over the meshIdx::
 
 
     156 void CSGCopy::copySolidPrim(AABB& solid_bb, int dPrimOffset, const CSGSolid* sso )
@@ -78,22 +226,13 @@ The CSGCopy just passes over the meshIdx::
     184 
 
 
-
-Try to simply write the dynamic geometry to CFBaseAlt so have consistency
-------------------------------------------------------------------------------
-
-
-
+  
 
 HMM: CSG_GGeo_Convert just passes across all names independent of skips 
 ----------------------------------------------------------------------------
 
-* YES: but this is not the problem, I think issue must be from using the old prim.npy 
-
-
-* CSG::CopySelect 
-
-
+* YES: but this is just fine : the CSGPrim references the meshIdx, and do not remove meshIdx as change geometry : just treat those as absolute
+* the issue is using old geometry with results from a new geometry, the new geometry having had the CSG::CopySelect skips applied
 
 
 ::
@@ -222,26 +361,8 @@ __closesthit__ch
     408 
 
 
-
-optixGetPrimitiveIndex : returns primitive index within build array plus the primitiveIndexOffset
----------------------------------------------------------------------------------------------------
-
-::
-
-    513 /// For a given OptixBuildInputTriangleArray the number of primitives is defined as
-    514 /// (OptixBuildInputTriangleArray::indexBuffer == nullptr) ? OptixBuildInputTriangleArray::numVertices/3 :
-    515 ///                                                          OptixBuildInputTriangleArray::numIndices/3;
-    516 ///
-    517 /// For a given OptixBuildInputCustomPrimitiveArray the number of primitives is defined as
-    518 /// numAabbs.  The primitive index returns is the index into the corresponding build array
-    519 /// plus the primitiveIndexOffset.
-    520 ///
-    521 /// In Intersection and AH this corresponds to the currently intersected primitive.
-    522 /// In CH this corresponds to the primitive index of the closest intersected primitive.
-    523 /// In EX with exception code OPTIX_EXCEPTION_CODE_TRAVERSAL_INVALID_HIT_SBT corresponds 
-            to the active primitive index. Returns zero for all other exceptions.
-    524 static __forceinline__ __device__ unsigned int optixGetPrimitiveIndex();
-
+primitiveIndexOffset is crucial bias applied to what *optixGetPrimitiveIndex* returns
+----------------------------------------------------------------------------------------
 
 ::
 
@@ -335,6 +456,29 @@ optixGetPrimitiveIndex : returns primitive index within build array plus the pri
 
 
 
+
+
+optixGetPrimitiveIndex : returns primitive index within build array plus the primitiveIndexOffset
+---------------------------------------------------------------------------------------------------
+
+::
+
+    513 /// For a given OptixBuildInputTriangleArray the number of primitives is defined as
+    514 /// (OptixBuildInputTriangleArray::indexBuffer == nullptr) ? OptixBuildInputTriangleArray::numVertices/3 :
+    515 ///                                                          OptixBuildInputTriangleArray::numIndices/3;
+    516 ///
+    517 /// For a given OptixBuildInputCustomPrimitiveArray the number of primitives is defined as
+    518 /// numAabbs.  The primitive index returns is the index into the corresponding build array
+    519 /// plus the primitiveIndexOffset.
+    520 ///
+    521 /// In Intersection and AH this corresponds to the currently intersected primitive.
+    522 /// In CH this corresponds to the primitive index of the closest intersected primitive.
+    523 /// In EX with exception code OPTIX_EXCEPTION_CODE_TRAVERSAL_INVALID_HIT_SBT corresponds 
+            to the active primitive index. Returns zero for all other exceptions.
+    524 static __forceinline__ __device__ unsigned int optixGetPrimitiveIndex();
+
+
+
 optixGetInstanceId : returns OptixInstance::instanceId of intersected instance
 --------------------------------------------------------------------------------
 
@@ -368,14 +512,11 @@ TODO : compare optixGetInstanceId with optixGetInstanceIndex
 -------------------------------------------------------------
 
 * currently I think they should be giving the same thing  
-* if so : it means that there is a full 32 bits per instance going free 
+* if so : it means that there is a full 32 bits per instance going free (actually 31 bits as ~0u means not-an-instance)
 * can use this for packed gas_idx/sensor_type/sensor_index without needing 
   to do a lookup into an identity array from the instance index 
 * one downside is would need to occupy the last of the quad2 PRD slots 
 
 DONE : added set_iindex to quad2 and machinery to populate it in CSGOptiX7.cu 
-
-
-
 
 

@@ -33,12 +33,14 @@ is accessible from anywhere. (HMM: an alt approach would be to set an envvar for
 
 **/
 
+#include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
 class SYSRAP_API SGeo 
 {
     private:
         static const char* LAST_UPLOAD_CFBASE ;
+        static plog::Severity LEVEL ; 
     public:
         static void SetLastUploadCFBase(const char* cfbase);   
         static const char* LastUploadCFBase() ; 
