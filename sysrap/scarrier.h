@@ -58,7 +58,10 @@ inline void scarrier::FillGenstep( scarrier& gs, unsigned matline, unsigned nump
     gs.q2.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // post
     gs.q3.f = make_float4( 1.f, 0.f, 0.f, 1.f );   // dirw
     gs.q4.f = make_float4( 0.f, 1.f, 0.f, 500.f ); // polw
-    gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // flag 
+    gs.q5.f = make_float4( 0.f, 0.f, 0.f, 0.f );   // flag
+
+    gs.q3.u.w = 0u ; // former weight from "dirw" is now being used for prd.iindex
+ 
 }
 #endif
 

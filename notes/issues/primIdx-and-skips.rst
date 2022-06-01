@@ -532,15 +532,74 @@ optixGetInstanceIndex : returns 0-based index within the IAS
     541 static __forceinline__ __device__ unsigned int optixGetInstanceIndex();
 
 
-TODO : compare optixGetInstanceId with optixGetInstanceIndex 
+DONE : compare optixGetInstanceId with optixGetInstanceIndex 
 -------------------------------------------------------------
 
-* currently I think they should be giving the same thing  
-* if so : it means that there is a full 32 bits per instance going free (actually 31 bits as ~0u means not-an-instance)
+* currently I think they should be giving the same thing  : YES, CONFIRMED 
+* this means that there is a full 32 bits per instance going free (actually 31 bits as ~0u means not-an-instance)
 * can use this for packed gas_idx/sensor_type/sensor_index without needing 
   to do a lookup into an identity array from the instance index 
 * one downside is would need to occupy the last of the quad2 PRD slots 
 
 DONE : added set_iindex to quad2 and machinery to populate it in CSGOptiX7.cu 
 
+
+
+ana/p.py::
+
+     76 ## using ellipsis avoids having to duplicate for photons and records 
+     77 ident_ = lambda p:p.view(np.uint32)[...,3,1]
+     78 prim_  = lambda p:ident_(p) >> 16
+     79 inst_  = lambda p:ident_(p) & 0xffff
+     80 
+     81 iindex_ = lambda p:p.view(np.uint32)[...,1,3]
+
+
+
+::
+
+    In [5]: r[...,1,3].view(np.uint32)                                                                                                                                              
+    Out[5]: 
+    array([[1065353216,          0,          0,          0,      37684,      37684,      37684,          0,          0,          0],
+           [1065353216,          0,          0,          0,      25721,      25721,      25721,      25721,          0,          0],
+           [1065353216,          0,          0,      40780,      40780,      40780,      40780,      40780,      40780,      40780],
+           [1065353216,          0,          0,          0,      35167,      35167,      35167,      35167,          0,          0],
+           [1065353216,          0,          0,          0,      26344,      26344,      26344,      26344,          0,          0],
+           [1065353216,          0,          0,      40780,      40780,      40780,      40780,      40780,      40780,          0],
+           [1065353216,          0,          0,      40780,      40780,      40780,      40780,      40780,      40780,          0],
+           [1065353216,          0,          0,          0,          0,          0,          0,          0,          0,          0],
+           [1065353216,          0,          0,          0,          0,          0,          0,          0,          0,          0],
+           [1065353216,          0,          0,      31794,      31794,      31794,      31794,      31794,          0,          0]], dtype=uint32)
+
+    In [1]: iindex_(r)                                                                                                                                                         
+    Out[1]: 
+    array([[1065353216,          0,          0,          0,      37684,      37684,      37684,          0,          0,          0],
+           [1065353216,          0,          0,          0,      25721,      25721,      25721,      25721,          0,          0],
+           [1065353216,          0,          0,      40780,      40780,      40780,      40780,      40780,      40780,      40780],
+           [1065353216,          0,          0,          0,      35167,      35167,      35167,      35167,          0,          0],
+           [1065353216,          0,          0,          0,      26344,      26344,      26344,      26344,          0,          0],
+           [1065353216,          0,          0,      40780,      40780,      40780,      40780,      40780,      40780,          0],
+           [1065353216,          0,          0,      40780,      40780,      40780,      40780,      40780,      40780,          0],
+           [1065353216,          0,          0,          0,          0,          0,          0,          0,          0,          0],
+           [1065353216,          0,          0,          0,          0,          0,          0,          0,          0,          0],
+           [1065353216,          0,          0,      31794,      31794,      31794,      31794,      31794,          0,          0]], dtype=uint32)
+
+
+* something is initializing the former weight slot (now iindex) to 1.f  : IT IS scarrier::FillGenstep 
+
+
+    In [6]: inst_(r)                                                                                                                                                           
+    Out[6]: 
+    array([[    0,     0,     0,     0, 37684, 37684, 37684,     0,     0,     0],
+           [    0,     0,     0,     0, 25721, 25721, 25721, 25721,     0,     0],
+           [    0,     0,     0, 40780, 40780, 40780, 40780, 40780, 40780, 40780],
+           [    0,     0,     0,     0, 35167, 35167, 35167, 35167,     0,     0],
+           [    0,     0,     0,     0, 26344, 26344, 26344, 26344,     0,     0],
+           [    0,     0,     0, 40780, 40780, 40780, 40780, 40780, 40780,     0],
+           [    0,     0,     0, 40780, 40780, 40780, 40780, 40780, 40780,     0],
+           [    0,     0,     0,     0,     0,     0,     0,     0,     0,     0],
+           [    0,     0,     0,     0,     0,     0,     0,     0,     0,     0],
+           [    0,     0,     0, 31794, 31794, 31794, 31794, 31794,     0,     0]], dtype=uint32)
+
+    In [7]:                                                            
 
