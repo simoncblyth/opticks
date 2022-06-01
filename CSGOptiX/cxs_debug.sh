@@ -27,10 +27,11 @@ See notes/issues/cxsim-shakedown.rst
 
 
 
-In [5]: x_lpos[4:,:3].ravel()
-Out[5]: array([209.774, -64.597, 129.752, 207.807, -50.949, 113.643, 206.   , -44.666, 105.551, 185.963, 124.008, -90.678, 185.963, 124.008, -90.678], dtype=float32)
+::
 
-
+    from opticks.ana.nbase import np_string  
+    np_string(x_lpos[-3:,:3].ravel())                                                                                                                                                                                                
+    Out[5]: '207.807,-50.949,113.643,206.,-44.666,105.551,185.963,124.008,-90.678'
 
 
 EOU
@@ -41,7 +42,9 @@ moi=37684         # flat instance index obtained from cxsim p.py prd debug outpu
 
 #ce_offset=0,-64.59664,0    # -Y shift aligning slice plane with a cxsim photon 0 hit with microsteps 
 #ce_offset=209.774,-64.59664,129.752    # center the grid on the microstep points
-ce_offset=209.774,-64.597,129.752,207.807,-50.949,113.643,206.,-44.666,105.551,185.963,124.008,-90.678
+#ce_offset=209.774,-64.597,129.752,207.807,-50.949,113.643,206.,-44.666,105.551,185.963,124.008,-90.678
+
+ce_offset=207.807,-50.949,113.643,206.,-44.666,105.551,185.963,124.008,-90.678
 
 ce_scale=1   
 cegs=16:0:9:500 
@@ -61,7 +64,7 @@ export NOPVGRID=1
 export CAP_REL=cxs_debug
 export CAP_STEM=cxs_debug_moi${moi}
 
-export CSGFoundry_Load_writeAlt=1 
+#export CSGFoundry_Load_writeAlt=1 
 
 source ./cxs.sh $*
 

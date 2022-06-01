@@ -104,6 +104,34 @@ void SGeoConfig::SetCXSkipLV_IDXList(const SName* id)
     _CXSkipLV_IDXList = has_names ? id->getIDXListFromNames(cxskiplv_, ',' ) : nullptr ; 
 }
 
+/**
+SGeoConfig::IsCXSkipLV
+------------------------
+
+This controls mesh/solid skipping during GGeo to CSGFoundry 
+translation as this is called from:
+
+1. CSG_GGeo_Convert::CountSolidPrim
+2. CSG_GGeo_Convert::convertSolid
+
+For any skips to be applied the below SGeoConfig::GeometrySpecificSetup 
+must have been called. 
+
+For example this is used for long term skipping of Water///Water 
+virtual solids that are only there for Geant4 performance reasons, 
+and do nothing useful for Opticks. 
+
+Note that ELVSelection does something similar to this, but 
+that is applied at every CSGFoundry::Load providing dynamic prim selection. 
+As maintaining consistency between results and geometry is problematic
+with dynamic prim selection it is best to only use the dynamic approach 
+for geometry render scanning to find bottlenecks. 
+
+When creating longer lived geometry for analysis with multiple executables
+it is more appropriate to use CXSkipLV to effect skipping at translation. 
+
+**/
+
 bool SGeoConfig::IsCXSkipLV(int lv) // static
 {
     if( _CXSkipLV_IDXList == nullptr ) return false ; 

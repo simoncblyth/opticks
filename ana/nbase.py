@@ -37,7 +37,9 @@ except ImportError:
     _chi2 = None 
 
 
-
+def np_string(a):
+    s = np.array2string(a, separator=",")
+    return s.strip('[]').replace(' ', '')
 
 
 def np_tostring(a, scale=1e6):

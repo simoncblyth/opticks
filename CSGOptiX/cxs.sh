@@ -266,14 +266,12 @@ elif [ "$(uname)" == "Darwin" ]; then
     if [ "${cxs_arg}" == "grab" ]; then 
         echo $cxs_msg grab LINENO $LINENO 
         EXECUTABLE=$bin       source cachegrab.sh grab
-        CGREL=CSG_GGeo_Alt EXECUTABLE=CSGFoundry source cachegrab.sh grab
-        ## NASTY MIXED CFBase THATS ONLY WORKING DUE TO KLUDGE SYMBOLIC LINKS IN CSG_GGeo_Alt/CSGOptiXSimtraceTest  
+        EXECUTABLE=CSGFoundry source cachegrab.sh grab
     else
         echo $cxs_msg cxs_arg $cxs_arg LINENO $LINENO
-        CGREL=CSG_GGeo_Alt EXECUTABLE=$bin       source cachegrab.sh env
-        ## NASTY MIXED CFBase THATS ONLY WORKING DUE TO KLUDGE SYMBOLIC LINKS IN CSG_GGeo_Alt/CSGOptiXSimtraceTest  
+        EXECUTABLE=$bin       source cachegrab.sh env
 
-        cxs_dumpvars "FOLD CFBASE CGREL" after cachegrab.sh env
+        cxs_dumpvars "FOLD CFBASE" after cachegrab.sh env
 
         case ${cxs_arg} in 
            ana) ${IPYTHON:-ipython} --pdb -i ${BASH_FOLDER}/tests/$bin.py  ;; 

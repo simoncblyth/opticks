@@ -10,6 +10,7 @@
 #include "saabb.h"
 #include "PLOG.hh"
 #include "SGeoConfig.hh"
+#include "SName.h"
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
@@ -86,8 +87,8 @@ void CSG_GGeo_Convert::init()
 
     const char* cxskiplv = SGeoConfig::CXSkipLV() ; 
     const char* cxskiplv_idxlist = SGeoConfig::CXSkipLV_IDXList() ;  
-    foundry->setMeta("cxskiplv", cxskiplv ? cxskiplv : "-" ); 
-    foundry->setMeta("cxskiplv_idxlist", cxskiplv_idxlist ? cxskiplv_idxlist : "-" ); 
+    foundry->setMeta<std::string>("cxskiplv", cxskiplv ? cxskiplv : "-" ); 
+    foundry->setMeta<std::string>("cxskiplv_idxlist", cxskiplv_idxlist ? cxskiplv_idxlist : "-" ); 
     LOG(error) 
         << " cxskiplv  " << cxskiplv 
         << " cxskiplv   " << cxskiplv
