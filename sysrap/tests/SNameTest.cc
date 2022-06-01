@@ -5,7 +5,6 @@
 
 struct SNameTest
 {
-    const char* path ; 
     SName* id ; 
     char qt ; 
 
@@ -14,16 +13,15 @@ struct SNameTest
     void test_detail(); 
     void test_findIndex(int argc, char** argv); 
     void test_findIndices(int argc, char** argv); 
-    void test_get_ELV_fromSearch(); 
-    void test_get_ELV_fromNames(); 
+    void test_getIDXListFromSearch(); 
+    void test_getIDXListFromNames(); 
     void test_hasNames(); 
 };
 
 
 SNameTest::SNameTest(int argc, char** argv)
     :
-    path(SPath::Resolve("$CFBase/CSGFoundry/meshname.txt", NOOP)),
-    id(SName::Load(path)),
+    id(SName::Load("$CFBase/CSGFoundry/meshname.txt")),
     qt(SSys::getenvchar("QTYPE", 'S'))
 {
     assert( qt == 'S' || qt == 'E' || qt == 'C' ); 
@@ -31,8 +29,8 @@ SNameTest::SNameTest(int argc, char** argv)
     //test_detail(); 
     test_findIndex(argc, argv); 
     test_findIndices(argc, argv); 
-    test_get_ELV_fromSearch();
-    test_get_ELV_fromNames();
+    test_getIDXListFromSearch();
+    test_getIDXListFromNames();
     test_hasNames(); 
 } 
 
@@ -71,7 +69,7 @@ void SNameTest::test_findIndices( int argc, char** argv )
          std::vector<unsigned> idxs ;   
          id->findIndices(idxs, arg, qt); 
 
-         const char* elv = SName::ELVString(idxs); 
+         const char* elv = SName::IDXList(idxs); 
          std::cout 
              << " findIndices " << std::setw(80) << arg 
              << " idxs.size " << std::setw(3) << idxs.size() 
@@ -87,12 +85,12 @@ void SNameTest::test_findIndices( int argc, char** argv )
     }
 }
 
-void SNameTest::test_get_ELV_fromSearch()
+void SNameTest::test_getIDXListFromSearch()
 {
      const char* contain = "_virtual0x" ; 
-     const char* elv = id->get_ELV_fromSearch(contain); 
+     const char* elv = id->getIDXListFromSearch(contain); 
      std::cout 
-         << "test_get_ELV_fromSearch" 
+         << "test_getIDXListFromSearch" 
          << " contain [" << contain << "]"
          << " elv [" << elv << "]"
          << std::endl 
@@ -100,13 +98,15 @@ void SNameTest::test_get_ELV_fromSearch()
 }
 
 
-void SNameTest::test_get_ELV_fromNames()
+void SNameTest::test_getIDXListFromNames()
 {
      const char* x_elv = "t110,117,134" ; 
      const char* names = "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x" ; 
-     const char* elv = id->get_ELV_fromNames(names); 
+     char delim = ',' ; 
+     const char* prefix = "t" ; 
+     const char* elv = id->getIDXListFromNames(names, delim, prefix); 
      std::cout 
-         << "test_get_ELV_fromNames" 
+         << "test_getIDXListFromNames" 
          << " names [" << names << "]"
          << " elv [" << elv << "]"
          << " x_elv [" << x_elv << "]"

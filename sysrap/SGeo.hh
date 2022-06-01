@@ -40,7 +40,7 @@ class SYSRAP_API SGeo
 {
     private:
         static const char* LAST_UPLOAD_CFBASE ;
-        static plog::Severity LEVEL ; 
+        static const plog::Severity LEVEL ; 
     public:
         static void SetLastUploadCFBase(const char* cfbase);   
         static const char* LastUploadCFBase() ; 

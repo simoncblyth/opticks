@@ -2170,7 +2170,7 @@ const char* CSGFoundry::ELVString(const SName* id)
         bool has_names = id->hasNames(elv_selection_);  
         if(has_names)
         {
-            elv = id->get_ELV_fromNames(elv_selection_) ; 
+            elv = id->getIDXListFromNames(elv_selection_, ',', "t" ); 
         }
         else
         {
@@ -2208,6 +2208,12 @@ it provides dynamic prim selection based in the ELV envvar which uses
 CSGFoundry::CopySelect to dynamically create a CSGFoundry based
 on the elv SBitSet
 
+Dynamic prim selection (using ELV) without saving the CSGFoundry of the modified geometry 
+can be useful for render performance scanning to find geometry bottlenecks 
+but it is just not appropriate when wishing to run multiple executables over the same geometry 
+and do detailed analysis of the results. In this situation it is vital to have a more constant 
+CSGFoundry geometry folder that is read by multiple executables including rendering and 
+python analysis machinery. 
 
 **/
 
@@ -2228,9 +2234,6 @@ CSGFoundry* CSGFoundry::Load() // static
         LOG(error) << " non-standard dynamic selection CSGFoundry_Load_writeAlt " ; 
         dst->writeAlt() ; 
     }
-
-
-
     return dst ; 
 }
 

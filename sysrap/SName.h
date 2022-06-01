@@ -16,6 +16,7 @@ Identity machinery using the foundry vector of meshnames (aka solid names)
 #include <iomanip>
 #include <fstream>
 
+#include "SPath.hh"
 #include "SStr.hh"
 
 
@@ -63,11 +64,11 @@ struct SName
     void findIndices(std::vector<unsigned>& idxs, const char* query, char qt='S' ) const ; 
     std::string descIndices(const std::vector<unsigned>& idxs) const ; 
 
-    static const char* ELVString(const std::vector<unsigned>& idxs, const char* prefix="t" ); 
 
-    const char* get_ELV_fromNames( const char* names, char delim=',' ) const ;  
-    const char* get_ELV_fromNames( const std::vector<std::string>& names ) const ; 
-    const char* get_ELV_fromSearch( const char* names_containing="_virtual0x" ) const;   
+    const char* getIDXListFromNames( const char* names, char delim=',', const char* prefix=nullptr) const ;  
+    const char* getIDXListFromNames( const std::vector<std::string>& names, const char* prefix=nullptr ) const ; 
+    const char* getIDXListFromSearch( const char* names_containing="_virtual0x", const char* prefix=nullptr ) const;   
+    static const char* IDXList(const std::vector<unsigned>& idxs, const char* prefix=nullptr ); 
 
 
     int parseArg(const char* arg, unsigned& count ) const ;
@@ -75,8 +76,9 @@ struct SName
 
 }; 
 
-inline SName* SName::Load(const char* path)
+inline SName* SName::Load(const char* path_)
 {
+    const char* path = SPath::Resolve(path_, NOOP); 
     typedef std::vector<std::string> VS ; 
     VS* names = new VS ; 
 
@@ -359,33 +361,34 @@ inline void SName::findIndices(std::vector<unsigned>& idxs, const char* q, char 
 }
 
 
-inline const char* SName::get_ELV_fromNames( const char* names_, char delim ) const 
+inline const char* SName::getIDXListFromNames( const char* names_, char delim, const char* prefix) const 
 {
     std::vector<std::string> names ; 
     SStr::Split(names_, delim, names); 
-    return get_ELV_fromNames( names); 
+    return getIDXListFromNames( names, prefix ); 
 }
-inline const char* SName::get_ELV_fromNames( const std::vector<std::string>& qq ) const 
+inline const char* SName::getIDXListFromNames( const std::vector<std::string>& qq, const char* prefix ) const 
 {
     std::vector<unsigned> idxs ; 
     findIndicesFromNames(idxs, qq); 
     assert( qq.size() == idxs.size() ); 
-    const char* prefix = "t" ; 
-    return ELVString(idxs, prefix); 
+    return IDXList(idxs, prefix); 
 }
-inline const char* SName::get_ELV_fromSearch( const char* names_containing ) const 
+inline const char* SName::getIDXListFromSearch( const char* names_containing, const char* prefix) const 
 {  
     std::vector<unsigned> idxs ; 
     findIndices(idxs, names_containing, 'C' ); 
-    const char* prefix = "t" ; 
-    return ELVString(idxs, prefix); 
+    return IDXList(idxs, prefix); 
 }  
-
-
-
-
-
-
+inline const char* SName::IDXList(const std::vector<unsigned>& idxs, const char* prefix ) // static
+{
+    unsigned num_idx = idxs.size() ; 
+    std::stringstream ss ; 
+    if(prefix) ss << prefix ; 
+    for(unsigned i=0 ; i < num_idx ; i++) ss << idxs[i] <<  ( i < num_idx - 1 ? "," : "" ) ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
 
 
 inline std::string SName::descIndices(const std::vector<unsigned>& idxs) const 
@@ -399,17 +402,6 @@ inline std::string SName::descIndices(const std::vector<unsigned>& idxs) const
     std::string s = ss.str(); 
     return s ; 
 }
-
-inline const char* SName::ELVString(const std::vector<unsigned>& idxs, const char* prefix ) // static
-{
-    unsigned num_idx = idxs.size() ; 
-    std::stringstream ss ; 
-    ss << prefix ; 
-    for(unsigned i=0 ; i < num_idx ; i++) ss << idxs[i] <<  ( i < num_idx - 1 ? "," : "" ) ; 
-    std::string s = ss.str(); 
-    return strdup(s.c_str()); 
-}
-
 
 /**
 SName::parseArg

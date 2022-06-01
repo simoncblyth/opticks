@@ -23,7 +23,8 @@ struct SYSRAP_API SGeoConfig
     static constexpr const char* kSolidSelection = "OPTICKS_SOLID_SELECTION" ; 
     static constexpr const char* kFlightConfig   = "OPTICKS_FLIGHT_CONFIG" ; 
     static constexpr const char* kArglistPath    = "OPTICKS_ARGLIST_PATH" ; 
-    static constexpr const char* kCXSkipLV       = "OPTICKS_CXSKIPLV" ; 
+    static constexpr const char* kCXSkipLV       = "OPTICKS_CXSKIPLV" ;           // names
+    static constexpr const char* kCXSkipLV_IDXList = "OPTICKS_CXSKIPLV_IDXLIST" ; // idxs
 
     static constexpr const char* kEMM_desc = "CSGFoundry enabled merged mesh control" ; 
     static constexpr const char* kELVSelection_desc = "string control of included/excluded meshes" ; 
@@ -38,6 +39,7 @@ struct SYSRAP_API SGeoConfig
     static const char* _FlightConfig ;   
     static const char* _ArglistPath ;   
     static const char* _CXSkipLV ; 
+    static const char* _CXSkipLV_IDXList ; 
 
     static unsigned long long EnabledMergedMesh() ; 
     static const char* ELVSelection(); 
@@ -45,6 +47,9 @@ struct SYSRAP_API SGeoConfig
     static const char* FlightConfig(); 
     static const char* ArglistPath(); 
     static const char* CXSkipLV(); 
+    static const char* CXSkipLV_IDXList(); 
+
+    static void SetCXSkipLV_IDXList(const SName* id); 
 
     static void SetSolidSelection( const char* ss ); 
     static void SetELVSelection(   const char* es ); 

@@ -6,13 +6,30 @@ Summary
 
 The identity/naming machinery is working just fine the problem
 is consistency on making dynamic geometry selections. Specifically the problem
-us using results from a dynamically changed geometry with the unchanged geometry
+is using results from a dynamically changed geometry with the unchanged geometry
 as reference. The inconsistency gives mis-namings.  
 
 To avoid the bookkeeping kludges it is necessary that when a dynamic prim selection 
 is done changing the geometry that the cfbase of the dst geometry is changed 
 and the changed geometry is saved to it and all outputs are then associated 
 with that changed geometry "cfbase".   Then have to only be concerned with a single CFBase. 
+
+BUT thats quite a rigmarole. 
+
+
+Consider using CSGOptiXSimtraceTest and CSGOptiXSimTest together
+-------------------------------------------------------------------
+
+It is problematic to apply dynamic prim selection twice by both those executables.
+Much clearer to do the prim selection for the skips once when translating geometry
+yielding a single CSGFoundry.   
+
+Dynamic prim selection without saving the CSGFoundry of the modified geometry 
+can be useful for render performance scanning to find geometry bottlenecks 
+but it is just not appropriate when wishing to run multiple executables over the same geometry 
+and do detailed analysis of the results. In this situation its vital to have a more constant 
+CSGFoundry geometry folder that is read by multiple executables including python analysis
+machinery. 
 
 
 How to act on that and avoid having to kludge to keep consistent ?
@@ -47,7 +64,7 @@ CSGOptiXSimtraceTest.cc::
     574 }
 
     038 const char* QEvent::FALLBACK_DIR = "$TMP" ;
-     39 const char* QEvent::DefaultDir()
+     39 const char* QEvent::efaultDir()
      40 {
      41     const char* dir_ = SGeo::LastUploadCFBase_OutDir();
      42     const char* dir = dir_ ? dir_ : FALLBACK_DIR  ;

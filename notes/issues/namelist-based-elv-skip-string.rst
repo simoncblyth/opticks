@@ -15,11 +15,20 @@ namelist-based-elv-skip-string
     so can easily reinstate the virtuals without needing a different geocache  
     if want to do step to step comparison
 
-* TODO : virtual skipping with more robust interface than ELV integers
+* DONE : virtual skipping with more robust interface than ELV integers
 
 * problem with ELV integers is that they silently change their meanings as the geometry changes, 
   so need to instead accept names which at least can fail loudly when the names can 
   no longer be converted into the integers
+
+
+ELV not such a good way for  Water///Water skipping
+------------------------------------------------------
+
+Am forming the opinion that ELV is not the appropriate way to do more long lived skips
+like virtual Water///Water skipping. Better to use cxskiplv and do the skips during initial CSGFoundry 
+creation. 
+
 
 
 cxskiplv

@@ -73,23 +73,29 @@ CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ )
 }
 
 
+
+
+
 void CSG_GGeo_Convert::init()
 {
     ggeo->getMeshNames(foundry->meshname); 
-    // ggeo->getBoundaryNames(foundry->bndname);   // boundary names now travel with the NP bnd.names 
     ggeo->getMergedMeshLabels(foundry->mmlabel); 
+    // boundary names now travel with the NP bnd.names 
 
-    std::string cxskiplv = SGeoConfig::CXSkipLV() ; 
+    SGeoConfig::GeometrySpecificSetup(foundry->id);
 
-    LOG(LEVEL) << " --cxskiplv  " << cxskiplv ; 
-
-    foundry->setMeta("cxskiplv", cxskiplv ); 
-
-    LOG(LEVEL) << " foundry.meshname.size " << foundry->meshname.size() ; 
-
-    
-
+    const char* cxskiplv = SGeoConfig::CXSkipLV() ; 
+    const char* cxskiplv_idxlist = SGeoConfig::CXSkipLV_IDXList() ;  
+    foundry->setMeta("cxskiplv", cxskiplv ? cxskiplv : "-" ); 
+    foundry->setMeta("cxskiplv_idxlist", cxskiplv_idxlist ? cxskiplv_idxlist : "-" ); 
+    LOG(error) 
+        << " cxskiplv  " << cxskiplv 
+        << " cxskiplv   " << cxskiplv
+        << " foundry.meshname.size " << foundry->meshname.size()
+        << " foundry.id.getNumName " << foundry->id->getNumName()
+        ; 
 }
+
 
 void CSG_GGeo_Convert::convert()
 {
@@ -129,7 +135,8 @@ void CSG_GGeo_Convert::convertGeometry(int repeatIdx,  int primIdx, int partIdxR
     {   
         LOG(info) << "convert all nodes in a single Prim " ; 
         const GParts* comp = ggeo->getCompositeParts(repeatIdx) ; 
-        convertPrim(comp, primIdx);
+        convertPrim(comp, primIdx); // Creates and adds a CSGPrim and its CSGNode(s) to CSGFoundry and returns the CSGPrim pointer. 
+
     }
     else if( repeatIdx > -1 )  
     {   
@@ -307,7 +314,7 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
             continue ; 
         }
 
-        CSGPrim* prim = convertPrim(comp, primIdx); 
+        CSGPrim* prim = convertPrim(comp, primIdx); // Creates and adds a CSGPrim and its CSGNode(s) to CSGFoundry and returns the CSGPrim pointer. 
         bb.include_aabb( prim->AABB() );
 
         unsigned sbtIdx = prim->sbtIndexOffset() ;  // from CSGFoundry::addPrim
@@ -315,15 +322,17 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
         assert( sbtIdx == solidPrimChk  );   
 
         prim->setRepeatIdx(repeatIdx); 
-        prim->setPrimIdx(primIdx); 
+        prim->setPrimIdx(primIdx); // TODO: Check, this primIdx is not contiguous when cxskip used : SO NOT CONSISTENT WITH REAL primIdx
 
         solidPrimChk += 1 ; 
     }   
     // NB when SGeoConfig::IsCXSkipLV skips are used the primIdx set by CSGPrim::setPrimIdx will not be contiguous   
     // Q: Does the OptiX identity machinery accomodate this assigned primIdx  ?
     // A: I think the answer is currently NO 
-    //    
-    //    The value returned from optixGetPrimitiveIndex is the 0-based index of the bbox within the GAS plus a bias 
+    //
+    //    I suspect the above dis-contiguous primIdx is not used for anything. 
+    //    The real primIdx as used by the optix identity machinery 
+    //    is the value returned from optixGetPrimitiveIndex, which is the 0-based index of the bbox within the GAS plus a bias 
     //    that is passed into the GAS and currently comes from CSGSolid so->primOffset which is just the number of 
     //    primitives so far collected. 
     //  
@@ -347,6 +356,8 @@ CSGSolid* CSG_GGeo_Convert::convertSolid( unsigned repeatIdx )
 /**
 CSG_GGeo_Convert::convertPrim
 --------------------------------
+
+Creates and adds a CSGPrim and its CSGNode(s) to CSGFoundry and returns the CSGPrim pointer. 
 
 A CSGPrim (tree of nodes) corresponds to a non-composite GParts selected from a 
 composite with *primIdx*. The CSGPrim is often(but not always) one-to-one related with a G4VSolid. 
