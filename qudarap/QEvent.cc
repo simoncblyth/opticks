@@ -35,31 +35,7 @@ const plog::Severity QEvent::LEVEL = PLOG::EnvLevel("QEvent", "DEBUG");
 QEvent* QEvent::INSTANCE = nullptr ; 
 QEvent* QEvent::Get(){ return INSTANCE ; }
 
-const char* QEvent::FALLBACK_DIR = "$TMP" ; 
-const char* QEvent::DefaultDir() 
-{
-    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
-    const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
-    return dir ; 
-}
 
-
-std::string QEvent::DescSeed( const std::vector<int>& seed, int edgeitems )  // static 
-{
-    int num_seed = int(seed.size()) ; 
-
-    std::stringstream ss ; 
-    ss << "QEvent::DescSeed seed.size " << num_seed << " (" ;
-
-    for(int i=0 ; i < num_seed ; i++)
-    {
-        if( i < edgeitems || i > num_seed - edgeitems ) ss << seed[i] << " " ; 
-        else if( i == edgeitems )  ss << "... " ; 
-    } 
-    ss << ")"  ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
 
 
 
@@ -94,13 +70,13 @@ Only configures limits, no allocation yet. Allocation happens in QEvent::setGens
 
 void QEvent::init()
 {
-    evt->max_genstep = SEventConfig::MaxGenstep() ; 
-    evt->max_photon  = SEventConfig::MaxPhoton()  ; 
-    evt->max_simtrace  = SEventConfig::MaxSimtrace()  ; 
-    evt->max_bounce  = SEventConfig::MaxBounce()  ; 
-    evt->max_record  = SEventConfig::MaxRecord()  ;  // full step record
-    evt->max_rec     = SEventConfig::MaxRec()  ;     // compressed step record 
-    evt->max_seq     = SEventConfig::MaxSeq()  ;     // seqhis 
+    evt->max_genstep  = SEventConfig::MaxGenstep() ; 
+    evt->max_photon   = SEventConfig::MaxPhoton()  ; 
+    evt->max_simtrace = SEventConfig::MaxSimtrace()  ; 
+    evt->max_bounce   = SEventConfig::MaxBounce()  ; 
+    evt->max_record   = SEventConfig::MaxRecord()  ;  // full step record
+    evt->max_rec      = SEventConfig::MaxRec()  ;     // compressed step record 
+    evt->max_seq      = SEventConfig::MaxSeq()  ;     // seqhis 
 
     evt->zero(); 
     LOG(fatal) << descBuf() ; 
@@ -122,8 +98,8 @@ NP* QEvent::getDomain() const
     evt->get_config(dom[1]); 
     NP* domain = NP::Make<float>( 2, 4, 4 ); 
     domain->read2<float>( (float*)&dom[0] ); 
-    // actually makes more sense to be on the domain than on the hits 
-    // as domain will always be there 
+    // actually it makes more sense to place metadata on domain than hits 
+    // as domain will always be available
     domain->set_meta<unsigned>("hitmask", selector->hitmask );  
     domain->set_meta<std::string>("creator", "QEvent::getDomain" );  
     return domain ; 
@@ -244,7 +220,7 @@ int QEvent::setGenstep()
     return gs == nullptr ? -1 : setGenstep(gs) ; 
 } 
 
-int QEvent::setGenstep(const NP* gs_) 
+int QEvent::setGenstep(NP* gs_) 
 { 
     gs = gs_ ; 
     SGenstep::Check(gs); 
@@ -285,17 +261,20 @@ int QEvent::setGenstep(const NP* gs_)
     return 0 ; 
 }
 
-int QEvent::setGenstep(const quad6* qgs, unsigned num_gs ) 
+
+
+
+
+
+int QEvent::setGenstep(quad6* qgs, unsigned num_gs ) 
 {
     NP* gs_ = NP::Make<float>( num_gs, 6, 4 ); 
     gs_->read2( (float*)qgs );   
     return setGenstep( gs_ ); 
 }
 
-const NP* QEvent::getGenstep() const 
-{
-    return gs ; 
-}
+
+
 
 bool QEvent::hasGenstep() const { return evt->genstep != nullptr ; }
 bool QEvent::hasSeed() const {    return evt->seed != nullptr ; }
@@ -378,6 +357,39 @@ void QEvent::setPhoton(const NP* p_)
 
 
 
+
+NP* QEvent::getGenstep() const 
+{
+    return gs ; 
+}
+
+/**
+QEvent::getGenstepFromDevice
+-----------------------------
+
+Gensteps originate on host and are uploaded to device, so downloading
+them from device is not usually done. 
+
+**/
+
+NP* QEvent::getGenstepFromDevice() const 
+{
+    NP* a = NP::Make<float>( evt->num_genstep, 6, 4 ); 
+    QU::copy_device_to_host<quad6>( (quad6*)a->bytes(), evt->genstep, evt->num_genstep ); 
+    return a ; 
+}
+
+
+NP* QEvent::getSeed() const 
+{
+    if(!hasSeed()) LOG(fatal) << " getSeed called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasSeed()) return nullptr ;  
+    NP* s = NP::Make<int>( evt->num_seed ); 
+    QU::copy_device_to_host<int>( (int*)s->bytes(), evt->seed, evt->num_seed ); 
+    return s ; 
+}
+
+
 /**
 QEvent::getPhoton(NP* p) :  mutating API
 -------------------------------------------
@@ -397,6 +409,9 @@ NP* QEvent::getPhoton() const
     getPhoton(p); 
     return p ; 
 }
+
+
+
 
 void QEvent::getSimtrace(NP* t) const 
 {
@@ -549,36 +564,31 @@ NP* QEvent::getHit_() const
 }
 
 
-/**
-QEvent::save
---------------
-
-Canonically invoked from QSim::save 
-
-QEvent::save persists NP arrays into the default directory 
-or the directory argument provided.
-
-Unlike its predecessor, OpticksEvent, organization of 
-the directory structure is left to the caller.   
-
-TODO: a separate struct to yield such directory paths handling things
-like event tags. 
-
-**/
-
-void QEvent::save() const 
+NP* QEvent::getComponent(unsigned comp) const 
 {
-    const char* dir = DefaultDir(); 
-    LOG(info) << "DefaultDir " << dir ; 
-    save(dir); 
+    unsigned mask = SEventConfig::CompMask(); 
+    return mask & comp ? getComponent_(comp) : nullptr ; 
+}
+
+NP* QEvent::getComponent_(unsigned comp) const 
+{
+    NP* a = nullptr ; 
+    switch(comp)
+    {   
+        case SCOMP_GENSTEP:   a = getGenstep()  ; break ;   
+        case SCOMP_PHOTON:    a = getPhoton()   ; break ;   
+        case SCOMP_RECORD:    a = getRecord()   ; break ;   
+        case SCOMP_REC:       a = getRec()      ; break ;   
+        case SCOMP_SEQ:       a = getSeq()      ; break ;   
+        case SCOMP_SEED:      a = getSeed()     ; break ;   
+        case SCOMP_HIT:       a = getHit()      ; break ;   
+        case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   
+        case SCOMP_DOMAIN:    a = getDomain()   ; break ;   
+    }   
+    return a ; 
 }
 
 
-void QEvent::save(const char* base, const char* reldir ) const 
-{
-    const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
-    save(dir); 
-}
 
 
 /**
@@ -590,12 +600,31 @@ TODO: move array management to SEvt/NPFold
 The component arrays downloaded from the device and passed to SEvt/NPFold 
 for saving are now configurable via SEventConfig::SetCompMask (using SComp.h) 
 
-NB SEventConfig maximums and the comp mask need to be coordinated. 
-
-TODO: protections 
+QEvent::save persists NP arrays into the default directory 
+or the directory argument provided.
 
 **/
 
+
+const char* QEvent::FALLBACK_DIR = "$TMP" ; 
+const char* QEvent::DefaultDir()   // TODO: DOES NOT BELONG : MOVE TO SEvt 
+{
+    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
+    const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
+    return dir ; 
+}
+
+void QEvent::save() const 
+{
+    const char* dir = DefaultDir(); 
+    LOG(info) << "DefaultDir " << dir ; 
+    save(dir); 
+}
+void QEvent::save(const char* base, const char* reldir ) const 
+{
+    const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
+    save(dir); 
+}
 void QEvent::save(const char* dir_) const 
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
@@ -603,26 +632,28 @@ void QEvent::save(const char* dir_) const
 
     unsigned mask = SEventConfig::CompMask(); 
 
-    const NP* genstep = SComp::IsGenstep(mask) ? getGenstep() : nullptr ; 
+    NP* genstep  = SComp::IsGenstep(mask)  ? getGenstep()  : nullptr ; 
+    NP* seed     = SComp::IsSeed(mask)     ? getSeed()     : nullptr ;
     NP* hit      = SComp::IsHit(mask)      ? getHit()      : nullptr ;
     NP* photon   = SComp::IsPhoton(mask)   ? getPhoton()   : nullptr ; 
     NP* record   = SComp::IsRecord(mask)   ? getRecord()   : nullptr ; 
-    NP* rec      = SComp::IsRec(mask)      ? getRec()      : nullptr ;   // compressed record
-    NP* seq      = SComp::IsSeq(mask)      ? getSeq()      : nullptr ; ;
+    NP* rec      = SComp::IsRec(mask)      ? getRec()      : nullptr ;
+    NP* seq      = SComp::IsSeq(mask)      ? getSeq()      : nullptr ; 
     NP* domain   = SComp::IsDomain(mask)   ? getDomain()   : nullptr ;
     NP* simtrace = SComp::IsSimtrace(mask) ? getSimtrace() : nullptr ;
-    // TODO: getSeed 
 
     LOG(info) << descSave(hit,genstep,photon,record,rec,seq,domain, simtrace) ; 
 
-    if(hit)      hit->save(      dir, "hit.npy"); 
     if(genstep)  genstep->save(  dir, "genstep.npy"); 
+    if(seed)     seed->save(     dir, "seed.npy"); 
+    if(hit)      hit->save(      dir, "hit.npy"); 
     if(photon)   photon->save(   dir, "photon.npy"); 
     if(record)   record->save(   dir, "record.npy"); 
     if(rec)      rec->save(      dir, "rec.npy"); 
     if(seq)      seq->save(      dir, "seq.npy"); 
     if(domain)   domain->save(   dir, "domain.npy"); 
     if(simtrace) simtrace->save( dir, "simtrace.npy"); 
+
 
     saveMeta(dir, "fdmeta.txt" );
 }
@@ -785,27 +816,6 @@ Note that the evt->genstep and evt->photon pointers are not updated, so the same
 void QEvent::uploadEvt()
 {
     QU::copy_host_to_device<qevent>(d_evt, evt, 1 );  
-}
-
-
-/**
-QEvent::downloadGenstep
-------------------------
-
-Are these needed with the NP getters ?
-**/
-
-void QEvent::downloadGenstep( std::vector<quad6>& genstep )
-{
-    if( evt->genstep == nullptr ) return ; 
-    genstep.resize(evt->num_photon); 
-    QU::copy_device_to_host<quad6>( genstep.data(), evt->genstep, evt->num_genstep ); 
-}
-void QEvent::downloadSeed( std::vector<int>& seed )
-{
-    if( evt->seed == nullptr ) return ; 
-    seed.resize(evt->num_seed); 
-    QU::copy_device_to_host<int>( seed.data(), evt->seed, evt->num_seed ); 
 }
 
 

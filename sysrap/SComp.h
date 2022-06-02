@@ -13,6 +13,8 @@ NB: the old OpticksEvent analog of this is SComponent.hh
 #include <cstring>
 #include "SYSRAP_API_EXPORT.hh"
 
+struct NP ; 
+
 enum {
     SCOMP_UNDEFINED = 0x1 <<  0, 
     SCOMP_GENSTEP   = 0x1 <<  1, 
@@ -25,6 +27,11 @@ enum {
     SCOMP_SEQ       = 0x1 <<  8,
     SCOMP_DOMAIN    = 0x1 <<  9
 };
+
+struct SYSRAP_API SCompProvider
+{
+    virtual NP* getComponent(unsigned comp) const = 0 ; 
+}; 
 
 struct SYSRAP_API SComp
 {

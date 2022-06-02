@@ -19,7 +19,7 @@ struct QEventTest
 { 
     static void test_setGenstep_one() ; 
     static void test_setGenstep_many() ; 
-    static void test_setGenstep_loaded(const NP* gs); 
+    static void test_setGenstep_loaded(NP* gs); 
     static void test_setGenstep_loaded(); 
     static void test_setGenstep_checkEvt(); 
     static void test_setGenstep_quad6(); 
@@ -31,11 +31,12 @@ void QEventTest::test_setGenstep_one()
     //                                             0  1  2  3  4  5  6  7  8  
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
     int x_num_photon = 0  ; 
-    const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_num_photon ) ; 
+    NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_num_photon ) ; 
 
-    std::vector<int> x_seed ; 
-    SEvent::ExpectedSeeds(x_seed, photon_counts_per_genstep); 
-    assert( int(x_seed.size()) == x_num_photon ); 
+    std::vector<int> xseed ; 
+    SEvent::ExpectedSeeds(xseed, photon_counts_per_genstep); 
+    assert( int(xseed.size()) == x_num_photon ); 
+    const int* xseed_v = xseed.data(); 
 
 
     QEvent* event = new QEvent ; 
@@ -47,14 +48,17 @@ void QEventTest::test_setGenstep_one()
     //LOG(info) << " num_photon " << num_photon << " x_num_photon " << x_num_photon ; 
     assert( x_num_photon == num_photon ); 
 
-    std::vector<int> seed ; 
-    event->downloadSeed(seed); 
-    assert( int(seed.size()) == num_photon ); 
 
-    int seed_mismatch = SEvent::CompareSeeds( seed, x_seed ); 
+    NP* seed = event->getSeed(); 
+    const int* seed_v = seed->values<int>(); 
+    int num_seed = seed->shape[0] ; 
 
-    LOG(info) << " seed: "   << QEvent::DescSeed(seed, 100 ); 
-    LOG(info) << " x_seed: " << QEvent::DescSeed(x_seed, 100 ); 
+    assert( num_seed == num_photon ); 
+
+    int seed_mismatch = SEvent::CompareSeeds( seed_v, xseed_v, num_seed ); 
+
+    LOG(info) << " seed: "   << SEvent::DescSeed(seed_v, num_seed, 100 ); 
+    LOG(info) << " x_seed: " << SEvent::DescSeed(xseed_v, num_seed, 100 ); 
     LOG(info) << " seed_mismatch " << seed_mismatch ; 
 }
 
@@ -88,7 +92,7 @@ void QEventTest::test_setGenstep_many()
             << " x_num_photon[i] " << std::setw(5) << x_num_photon[i] 
             << " gs[i] " << gs[i]->desc() 
             << std::endl 
-            << " x_seed: " << QEvent::DescSeed(x_seed[i], 100 )
+            << " x_seed: " << SEvent::DescSeed(x_seed[i].data(), x_seed[i].size(), 100 )
             << std::endl 
             ; 
     }
@@ -107,10 +111,13 @@ void QEventTest::test_setGenstep_many()
         int num_photon = event->getNumPhoton();  
         assert( x_num_photon[i] == num_photon ); 
 
-        std::vector<int> seed ; 
-        event->downloadSeed(seed); 
-        assert( int(seed.size()) == num_photon ); 
-        int seed_mismatch = SEvent::CompareSeeds( seed, x_seed[i] ); 
+
+        NP* seed_ = event->getSeed(); 
+        const int* seed = seed_->values<int>();   
+        int num_seed = seed_->shape[0] ;
+
+        assert( num_seed  == num_photon ); 
+        int seed_mismatch = SEvent::CompareSeeds( seed, x_seed[i].data(), x_seed[i].size() ); 
  
         std::cout 
             << " j " << std::setw(3) << j 
@@ -125,7 +132,7 @@ void QEventTest::test_setGenstep_many()
         if( seed_mismatch > 0 )
         { 
             std::cout 
-                << " seed: " << QEvent::DescSeed(seed, 100 )
+                << " seed: " << SEvent::DescSeed(seed, num_seed, 100 )
                 << std::endl 
                 ; 
         }
@@ -134,7 +141,7 @@ void QEventTest::test_setGenstep_many()
     }
 }
 
-void QEventTest::test_setGenstep_loaded(const NP* gs)
+void QEventTest::test_setGenstep_loaded(NP* gs)
 {
     QEvent* event = new QEvent ; 
     event->setGenstep(gs); 
@@ -151,7 +158,7 @@ void QEventTest::test_setGenstep_loaded()
 {
     const char* path_ = "$TMP/sysrap/SEventTest/cegs.npy" ;
     const char* path = SPath::Resolve(path_, 0); 
-    const NP* gs0 = NP::Load(path); 
+    NP* gs0 = NP::Load(path); 
 
     if( gs0 == nullptr )
     {
@@ -175,7 +182,7 @@ void QEventTest::test_setGenstep_checkEvt()
     std::cout << " x_num_photon " << x_num_photon << std::endl ; 
 
     int x_total = 0 ; 
-    const NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_total) ; 
+    NP* gs = SEvent::MakeCountGensteps(photon_counts_per_genstep, &x_total) ; 
     assert( x_num_photon == x_total ) ; 
 
     QEvent* event = new QEvent ; 

@@ -15,6 +15,7 @@ template <typename T> struct QBuf ;
 #include <vector>
 #include <string>
 #include "plog/Severity.h"
+#include "SComp.h"
 #include "QUDARAP_API_EXPORT.hh"
 
 /**
@@ -45,7 +46,7 @@ and singular with long lived buffers of defined maximum capacity that get reused
 
 **/
 
-struct QUDARAP_API QEvent
+struct QUDARAP_API QEvent : public SCompProvider
 {
     friend struct QEventTest ; 
 
@@ -55,7 +56,6 @@ struct QUDARAP_API QEvent
     static const char* FALLBACK_DIR ; 
     static const char* DefaultDir() ; 
     static std::string DescGensteps(const NP* gs, int edgeitems=5) ; 
-    static std::string DescSeed( const std::vector<int>& seed, int edgeitems ); 
 
     QEvent(); 
     void init(); 
@@ -67,17 +67,17 @@ struct QUDARAP_API QEvent
 
     qevent*      evt ; 
     qevent*      d_evt ; 
-    const NP*    gs ;  
+
+    NP*    gs ;  
     const NP*    p  ; 
 
     std::string  meta ; 
 
     int setGenstep();
 private:
-    int setGenstep(const NP* gs);
-    int setGenstep(const quad6* gs, unsigned num_gs ); 
+    int setGenstep(NP* gs);
+    int setGenstep(quad6* gs, unsigned num_gs ); 
 public:
-    const NP* getGenstep() const ; 
 
 
     bool hasGenstep() const ; 
@@ -94,25 +94,37 @@ public:
     void     count_genstep_photons_and_fill_seed_buffer(); 
 
     void     setPhoton( const NP* p );
+
     void     getPhoton(       NP* p ) const ;
     void     getSimtrace(     NP* t ) const ;
     void     getSeq(          NP* seq) const ; 
 
+    NP*      getComponent(unsigned comp) const ; 
+
+    NP*      getGenstep() const ; 
+    NP*      getGenstepFromDevice() const ; 
+    NP*      getSeed() const ; 
     NP*      getPhoton() const ; 
     NP*      getSimtrace() const ; 
-    NP*      getSeq() const ;     // seqhis..
-    NP*      getRecord() const ; // full step records
-    NP*      getRec() const  ;    // compressed step record
+    NP*      getSeq() const ;       // seqhis..
+    NP*      getRecord() const ;    // full step records
+    NP*      getRec() const  ;      // compressed step record
     NP*      getDomain() const ; 
-
-    unsigned getNumHit() const ; 
     NP*      getHit() const ; 
+
+private:
+    NP*      getComponent_(unsigned comp) const ; 
     NP*      getHit_() const ; 
+public:
+    unsigned getNumHit() const ; 
 
 
+    // TODO: move saving down to SEvt 
     void save() const ; 
     void save(const char* base, const char* reldir ) const ; 
     void save(const char* dir) const ; 
+
+
 
     void     setNumPhoton(unsigned num_photon) ;  
     void     setNumSimtrace(unsigned num_simtrace) ;  
@@ -120,8 +132,6 @@ public:
     unsigned getNumPhoton() const ;  
     unsigned getNumSimtrace() const ;  
 
-    void downloadGenstep( std::vector<quad6>& genstep ); 
-    void downloadSeed(    std::vector<int>&   seed ); 
 
 
     void saveGenstep(const char* dir, const char* name); 

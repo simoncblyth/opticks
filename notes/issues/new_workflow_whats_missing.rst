@@ -5,8 +5,31 @@ Most items have been done before in the old workflow, so
 just needs to be revisited and brought over to new environment. 
 
 
-Generation
---------------
+Validation Machinery : G4OpticksRecorder Needs reimplemented on top of SEvt
+-------------------------------------------------------------------------------
+
+* 1st : move event array saving from QEvent down to SEvt/NPFold, then 
+  U4Recorder can depend only on sysrap, U4 (as it makes no sense for 
+  it to depend on QEvent)
+
+* machinery for Opticks vs Geant4 comparison
+* Geant4 CFG4/CRecorder needs reworking to to write SEvt
+* python analysis comparison machinery needs update
+
+* :doc:`reimplement-G4OpticksRecorder-CManager-for-new-workflow`
+
+
+Identity on device : Surface type/Sensor type etc.. needed by QMultiFilm
+----------------------------------------------------------------------------
+
+* try ideas re: u4/U4InstanceIdentifier.h and using optixGetInstanceId 31 bits 
+  per instance to hold the identity info without needing an extra lookup on device
+
+* :doc:`instanceIdentity-into-new-workflow`
+
+
+Generation : DONE BUT NEEDS DETAILED VALIDATION
+-----------------------------------------------------
 
 1. cerenkov generation : needs integrating and testing 
 
@@ -101,15 +124,12 @@ all GPUs : only if those were very large would it be worth trying to share them.
 
 DONE : SSim, input array management
 ---------------------------------------
-:w
 
 1. avoids setup duplication and passing the parcel 
 2. establishes more separation of concerns between CSGFoundry and SSim 
    whilst still persisting SSim into a subfolder of CSGFoundry 
 3. moved SSim population into GGeo::convertSim, from CSG_GGeo_Convert::convertSim
  
-
-
 
 Approach : scerenkov.h sscintillation.h
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,8 +163,8 @@ Integrate into qsim::
 
 
 
-Engine Change
-----------------
+Engine Change : WIP "gx" G4CXOpticks
+-------------------------------------------
 
 3. change G4Opticks "engine" to use CSGOptiX/CSGOptiX 
 
@@ -236,10 +256,6 @@ New Event Handling
 * :doc:`event_handling_into_new_workflow`
 
 4. okc/OpticksEvent replaced by qudarap/QEvent
-
-   * machinery for Opticks vs Geant4 comparison
-   * Geant4 CFG4/CRecorder needs reworking to to write QEvent (plan U4 pkg to do this) 
-   * python analysis comparison machinery needs update
 
 5. GPU launch during event genstep collection (not just at end of event)
 

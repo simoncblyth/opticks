@@ -192,13 +192,29 @@ void SEvent::ExpectedSeeds(std::vector<int>& seeds, const std::vector<int>& coun
     assert( seeds.size() == total );  
 }
 
-int SEvent::CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ) // static 
+int SEvent::CompareSeeds( const int* seeds, const int* xseeds, int num_seed ) // static 
 {
-    assert( seeds.size() == xseeds.size() );  
     int mismatch = 0 ; 
-    for(unsigned i=0 ; i < seeds.size() ; i++) if( seeds[i] != xseeds[i] ) mismatch += 1 ; 
+    for(int i=0 ; i < num_seed ; i++) if( seeds[i] != xseeds[i] ) mismatch += 1 ; 
     return mismatch ; 
 }
+
+
+std::string SEvent::DescSeed( const int* seed, int num_seed, int edgeitems )  // static 
+{
+    std::stringstream ss ; 
+    ss << "SEvent::DescSeed num_seed " << num_seed << " (" ;
+
+    for(int i=0 ; i < num_seed ; i++)
+    {   
+        if( i < edgeitems || i > num_seed - edgeitems ) ss << seed[i] << " " ; 
+        else if( i == edgeitems )  ss << "... " ; 
+    }   
+    ss << ")"  ;   
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 
 

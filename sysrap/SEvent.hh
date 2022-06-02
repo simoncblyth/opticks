@@ -41,7 +41,8 @@ struct SYSRAP_API SEvent
     static unsigned SumCounts(const std::vector<int>& counts); 
 
     static void ExpectedSeeds(std::vector<int>& seeds, const std::vector<int>& counts );
-    static int  CompareSeeds( const std::vector<int>& seeds, const std::vector<int>& xseeds ); 
+    static int  CompareSeeds( const int* seeds, const int* xseeds, int num_seed ); 
+    static std::string DescSeed( const int* seed, int num_seed, int edgeitems ); 
 
 
     static NP* MakeCountGensteps(const std::vector<int>& photon_counts_per_genstep, int* total );
