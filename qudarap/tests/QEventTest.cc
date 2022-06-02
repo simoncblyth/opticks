@@ -10,6 +10,7 @@
 #include "scuda.h"
 #include "squad.h"
 
+#include "SEvt.hh"
 #include "SEvent.hh"
 #include "QEvent.hh"
 
@@ -204,11 +205,10 @@ void QEventTest::test_setGenstep_quad6()
     event->setGenstep(&gs, 1); 
 
     event->gs->dump(); 
-    const char* path = SPath::Resolve("$TMP/QEventTest/test_setGenstep_quad6/gs.npy", FILEPATH); 
-    LOG(info) << path ; 
-    event->gs->save(path); 
-
     event->checkEvt(); 
+
+    cudaDeviceSynchronize(); 
+    SEvt::Save( "$TMP/QEventTest/test_setGenstep_quad6" ); 
 }
 
 
@@ -216,6 +216,9 @@ void QEventTest::test_setGenstep_quad6()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+
+    SEvt evt ; 
+
 
     /*
     QEventTest::test_setGenstep_one(); 
@@ -227,7 +230,6 @@ int main(int argc, char** argv)
     QEventTest::test_setGenstep_quad6(); 
 
 
-    cudaDeviceSynchronize(); 
     return 0 ; 
 }
 

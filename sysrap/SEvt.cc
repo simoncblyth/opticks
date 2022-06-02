@@ -12,7 +12,12 @@ const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG");
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
-SEvt::SEvt(){ INSTANCE = this ; }
+SEvt::SEvt()
+    :
+    fold(new NPFold)
+{ 
+    INSTANCE = this ; 
+}
 
 SEvt* SEvt::Get(){ return INSTANCE ; }
 
@@ -203,12 +208,19 @@ void SEvt::gather_components()
         unsigned comp = comps[i] ;   
         if((comp & mask) == 0) continue ; 
         NP* a = provider->getComponent(comp); 
+        if(a == nullptr) continue ;  
         const char* k = SComp::Name(comp);    
         fold->add(k, a); 
     }
     fold->meta = provider->getMeta();  
     // persisted metadata will now be in NPFold_meta.txt (previously fdmeta.txt)
 }
+
+std::string SEvt::descFold() const 
+{
+    return fold->desc(); 
+}
+
 
 
 /**
@@ -258,6 +270,9 @@ void SEvt::save(const char* dir_)
 
     gather_components(); 
 
+    LOG(info) << descComponent() ; 
+    LOG(info) << descFold() ; 
+
     fold->save(dir); 
 }
 
@@ -277,6 +292,7 @@ std::string SEvt::descComponent() const
     std::stringstream ss ; 
     ss << "SEvt::descComponent" 
        << std::endl 
+       << std::setw(20) << " SEventConfig::CompMaskLabel " << SEventConfig::CompMaskLabel() << std::endl  
        << std::setw(20) << "hit" << " " 
        << std::setw(20) << ( hit ? hit->sstr() : "-" ) 
        << " "

@@ -234,9 +234,14 @@ inline void NPFold::save(const char* base) const
     {
         const char* k = kk[i].c_str() ; 
         const NP* a = aa[i] ; 
-        assert(a); 
-        //std::cout << " base " << base << " k " << k << std::endl ;   
-        a->save(base, k ); 
+        if( a == nullptr )
+        {
+            std::cout << " base " << base << " k " << k << " ERROR MISSING ARRAY FOR KEY " << std::endl ;   
+        }
+        else
+        { 
+            a->save(base, k );  
+        }
     }
     // this motivated adding directory creation to NP::save 
 

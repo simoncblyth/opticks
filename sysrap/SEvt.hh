@@ -83,7 +83,6 @@ struct SYSRAP_API SEvt
     void saveGenstep(const char* dir) const ; 
     NP* getGenstep() const ; 
 
-    std::string desc() const ; 
     void gather_components() ; 
 
 
@@ -97,6 +96,8 @@ struct SYSRAP_API SEvt
     void save(const char* base, const char* reldir ); 
     void save(const char* dir); 
 
+    std::string desc() const ; 
+    std::string descFold() const ; 
     std::string descComponent() const ; 
 
 
