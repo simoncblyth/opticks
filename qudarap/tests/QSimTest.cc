@@ -454,7 +454,9 @@ void QSimTest::mock_propagate()
     const QEvent* event = qs.event ; 
     unsigned num_hit = event->getNumHit(); 
     LOG(info) << " num_hit " << num_hit ;
-    event->save(dir); 
+
+    SEvt::Save(dir); 
+
 
     LOG(info) << "]" ; 
 }

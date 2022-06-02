@@ -38,6 +38,8 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "squad.h"
 #include "sgs.h"
 struct NP ; 
+struct NPFold ; 
+struct SCompProvider ; 
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -50,6 +52,13 @@ struct SYSRAP_API SEvt
     static sgs AddGenstep(const NP* a); 
     static void Clear(); 
 
+    static void Save() ; 
+    static void Save(const char* base, const char* reldir ); 
+    static void Save(const char* dir); 
+
+
+
+
     static void AddCarrierGenstep(); 
     static void AddTorchGenstep(); 
 
@@ -59,8 +68,11 @@ struct SYSRAP_API SEvt
 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
+    const SCompProvider*  provider ; 
+    NPFold*   fold ; 
 
     SEvt(); 
+    void setCompProvider(const SCompProvider* provider); 
 
     void clear() ; 
     unsigned getNumGenstep() const ; 
@@ -72,6 +84,22 @@ struct SYSRAP_API SEvt
     NP* getGenstep() const ; 
 
     std::string desc() const ; 
+    void gather_components() ; 
+
+
+
+
+    static const char* FALLBACK_DIR ; 
+    static const char* DefaultDir() ; 
+
+    // save methods not const as calls gather_components 
+    void save() ; 
+    void save(const char* base, const char* reldir ); 
+    void save(const char* dir); 
+
+    std::string descComponent() const ; 
+
+
 };
 
 

@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
     SEventConfig::SetCompMask("genstep,photon,hit,domain,record,rec,seq");  // NB no "simtrace" here
 
-    SEvt evt ;  // holds gensteps 
+    SEvt evt ;  // holds gensteps and output NPFold of component arrays
 
     CSGFoundry* fd = CSGFoundry::Load() ;  // standard OPTICKS_KEY CFBase/CSGFoundry geometry and SSim
 
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     cudaDeviceSynchronize(); 
 
-    qs->save();  // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry  
+    evt.save();  // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry  
  
     return 0 ; 
 }

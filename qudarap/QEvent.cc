@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 #include <sstream>
 
+#include "SEvt.hh"
 #include "SGeo.hh"
 #include "SPath.hh"
 #include "scuda.h"
@@ -70,6 +71,11 @@ Only configures limits, no allocation yet. Allocation happens in QEvent::setGens
 
 void QEvent::init()
 {
+    SEvt* sev = SEvt::Get(); 
+    if(sev) sev->setCompProvider(this);  
+    if(!sev) LOG(fatal) << "QEvent instanciated before SEvt instanciated : this is not going to fly " ; 
+    assert(sev); 
+
     evt->max_genstep  = SEventConfig::MaxGenstep() ; 
     evt->max_photon   = SEventConfig::MaxPhoton()  ; 
     evt->max_simtrace = SEventConfig::MaxSimtrace()  ; 
@@ -570,6 +576,13 @@ NP* QEvent::getComponent(unsigned comp) const
     return mask & comp ? getComponent_(comp) : nullptr ; 
 }
 
+
+std::string QEvent::getMeta() const 
+{     
+    return meta ; 
+}
+
+
 NP* QEvent::getComponent_(unsigned comp) const 
 {
     NP* a = nullptr ; 
@@ -588,136 +601,6 @@ NP* QEvent::getComponent_(unsigned comp) const
     return a ; 
 }
 
-
-
-
-/**
-QEvent::save
---------------
-
-TODO: move array management to SEvt/NPFold 
-
-The component arrays downloaded from the device and passed to SEvt/NPFold 
-for saving are now configurable via SEventConfig::SetCompMask (using SComp.h) 
-
-QEvent::save persists NP arrays into the default directory 
-or the directory argument provided.
-
-**/
-
-
-const char* QEvent::FALLBACK_DIR = "$TMP" ; 
-const char* QEvent::DefaultDir()   // TODO: DOES NOT BELONG : MOVE TO SEvt 
-{
-    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
-    const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
-    return dir ; 
-}
-
-void QEvent::save() const 
-{
-    const char* dir = DefaultDir(); 
-    LOG(info) << "DefaultDir " << dir ; 
-    save(dir); 
-}
-void QEvent::save(const char* base, const char* reldir ) const 
-{
-    const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
-    save(dir); 
-}
-void QEvent::save(const char* dir_) const 
-{
-    const char* dir = SPath::Resolve(dir_, DIRPATH); 
-    LOG(info) << " dir " << dir ; 
-
-    unsigned mask = SEventConfig::CompMask(); 
-
-    NP* genstep  = SComp::IsGenstep(mask)  ? getGenstep()  : nullptr ; 
-    NP* seed     = SComp::IsSeed(mask)     ? getSeed()     : nullptr ;
-    NP* hit      = SComp::IsHit(mask)      ? getHit()      : nullptr ;
-    NP* photon   = SComp::IsPhoton(mask)   ? getPhoton()   : nullptr ; 
-    NP* record   = SComp::IsRecord(mask)   ? getRecord()   : nullptr ; 
-    NP* rec      = SComp::IsRec(mask)      ? getRec()      : nullptr ;
-    NP* seq      = SComp::IsSeq(mask)      ? getSeq()      : nullptr ; 
-    NP* domain   = SComp::IsDomain(mask)   ? getDomain()   : nullptr ;
-    NP* simtrace = SComp::IsSimtrace(mask) ? getSimtrace() : nullptr ;
-
-    LOG(info) << descSave(hit,genstep,photon,record,rec,seq,domain, simtrace) ; 
-
-    if(genstep)  genstep->save(  dir, "genstep.npy"); 
-    if(seed)     seed->save(     dir, "seed.npy"); 
-    if(hit)      hit->save(      dir, "hit.npy"); 
-    if(photon)   photon->save(   dir, "photon.npy"); 
-    if(record)   record->save(   dir, "record.npy"); 
-    if(rec)      rec->save(      dir, "rec.npy"); 
-    if(seq)      seq->save(      dir, "seq.npy"); 
-    if(domain)   domain->save(   dir, "domain.npy"); 
-    if(simtrace) simtrace->save( dir, "simtrace.npy"); 
-
-
-    saveMeta(dir, "fdmeta.txt" );
-}
-
-std::string QEvent::descSave( 
-    const NP* hit, 
-    const NP* genstep, 
-    const NP* photon, 
-    const NP* record, 
-    const NP* rec, 
-    const NP* seq, 
-    const NP* domain,
-    const NP* simtrace
-    ) const 
-{
-    std::stringstream ss ; 
-    ss << "QEvent::descSave" 
-       << std::endl 
-       << std::setw(20) << "hit" << " " 
-       << std::setw(20) << ( hit ? hit->sstr() : "-" ) 
-       << " "
-       << std::endl
-       << std::setw(20) << "genstep" << " " 
-       << std::setw(20) << ( genstep ? genstep->sstr() : "-" ) 
-       << " "
-       << std::setw(30) << "SEventConfig::MaxGenstep" 
-       << std::setw(20) << evt->max_genstep
-       << std::endl
-       << std::setw(20) << "photon" << " " 
-       << std::setw(20) << ( photon ? photon->sstr() : "-" ) 
-       << " "
-       << std::setw(30) << "SEventConfig::MaxPhoton"
-       << std::setw(20) << evt->max_photon
-       << std::endl
-       << std::setw(20) << "record" << " " 
-       << std::setw(20) << ( record ? record->sstr() : "-" ) 
-       << " " 
-       << std::setw(30) << "SEventConfig::MaxRecord"
-       << std::setw(20) << evt->max_record
-       << std::endl
-       << std::setw(20) << "rec" << " " 
-       << std::setw(20) << ( rec ? rec->sstr() : "-" ) 
-       << " "
-       << std::setw(30) << "SEventConfig::MaxRec"
-       << std::setw(20) << evt->max_rec
-       << std::endl
-       << std::setw(20) << "seq" << " " 
-       << std::setw(20) << ( seq ? seq->sstr() : "-" ) 
-       << " " 
-       << std::setw(30) << "SEventConfig::MaxSeq"
-       << std::setw(20) << evt->max_seq
-       << std::endl
-       << std::setw(20) << "domain" << " " 
-       << std::setw(20) << ( domain ? domain->sstr() : "-" ) 
-       << " "
-       << std::endl
-       << std::setw(20) << "simtrace" << " " 
-       << std::setw(20) << ( simtrace ? simtrace->sstr() : "-" ) 
-       << " "
-       << std::endl
-       ;
-    std::string s = ss.str(); 
-    return s ; 
-}
 
 
 /**
@@ -802,8 +685,6 @@ unsigned QEvent::getNumSimtrace() const
 }
 
 
-
-
 /**
 QEvent::uploadEvt 
 --------------------
@@ -818,28 +699,10 @@ void QEvent::uploadEvt()
     QU::copy_host_to_device<qevent>(d_evt, evt, 1 );  
 }
 
-
-
-void QEvent::saveGenstep( const char* dir_, const char* name)
-{
-    if(!gs) return ; 
-    int create_dirs = 1 ;  // 1:filepath 
-    const char* path = SPath::Resolve(dir_, name, create_dirs); 
-    gs->save(path); 
-}
-
-void QEvent::saveMeta( const char* dir_, const char* name) const 
-{     
-    if(!hasMeta()) return ; 
-    const char* path = SPath::Resolve(dir_, name, FILEPATH); 
-    NP::WriteString(path, meta.c_str() ); 
-}
-
 qevent* QEvent::getDevicePtr() const
 {
     return d_evt ; 
 }
-
 
 extern "C" void QEvent_checkEvt(dim3 numBlocks, dim3 threadsPerBlock, qevent* evt, unsigned width, unsigned height ) ; 
 
@@ -856,7 +719,5 @@ void QEvent::checkEvt()
     assert( d_evt ); 
     QEvent_checkEvt(numBlocks, threadsPerBlock, d_evt, width, height );   
 }
-
-
 
 

@@ -37,6 +37,8 @@ struct NPFold
 {
     static constexpr const char* EXT = ".npy" ; 
     static constexpr const char* INDEX = "NPFold_index.txt" ; 
+    static constexpr const char* META  = "NPFold_meta.txt" ; 
+
     static bool IsNPY(const char* k); 
     static NPFold* Load(const char* base); 
     static NPFold* Load(const char* base, const char* rel); 
@@ -47,6 +49,7 @@ struct NPFold
 
     std::vector<std::string> kk ; 
     std::vector<const NP*>   aa ; 
+    std::string meta ; 
 
     void check() const ; 
     void add(const char* k, const NP* a); 
@@ -69,7 +72,6 @@ struct NPFold
     int  load_fts(const char* base) ; 
     int  load_index(const char* base) ; 
     void load_array(const char* base, const char* relp); 
-
 
 
     std::string desc() const ; 
@@ -144,15 +146,19 @@ inline bool NPFold::IsNPY(const char* k)
     return strlen(k) > strlen(EXT) && strcmp( k + strlen(k) - strlen(EXT), EXT ) == 0 ; 
 }
 
+/**
+NPFold::add
+------------
 
+If added keys do not end with the EXT ".npy" then the EXT is added prior to collection. 
+
+**/
 
 inline void NPFold::add(const char* k, const NP* a) 
 {
-    bool is_npy = IsNPY(k); 
-    if(!is_npy) std::cout << "NPFold::add ERROR keys must end with " << EXT << "[" << k << "]" << std::endl ; 
-    assert(is_npy); 
-
-    kk.push_back(k); 
+    std::string key = k ;   
+    if(!IsNPY(k)) key += EXT ;  
+    kk.push_back(key.c_str()); 
     aa.push_back(a); 
 }
 
@@ -184,9 +190,19 @@ inline const NP* NPFold::get_array(unsigned idx) const
     return idx < aa.size() ? aa[idx] : nullptr ;
 }
 
+/**
+NPFold::find
+-------------
+
+If the key *k* does not ext with EXT ".npy" then that is added before searching.
+
+**/
 inline int NPFold::find(const char* k) const
 {
-    size_t idx = std::distance( kk.begin(), std::find( kk.begin(), kk.end(), k )) ; 
+    std::string key = k ; 
+    if(!IsNPY(k)) key += EXT ; 
+
+    size_t idx = std::distance( kk.begin(), std::find( kk.begin(), kk.end(), key.c_str() )) ; 
     return idx < kk.size() ? idx : -1 ; 
 }
 
@@ -216,7 +232,7 @@ inline void NPFold::save(const char* base) const
     }
     // this motivated adding directory creation to NP::save 
 
-
+   if(!meta.empty()) NP::WriteString(base, META, meta.c_str() );  
 }
 
 inline void NPFold::save(const char* base_, const char* rel) const 
@@ -235,7 +251,7 @@ inline int NPFold::Compare(const FTSENT** one, const FTSENT** two)
 {
     return (strcmp((*one)->fts_name, (*two)->fts_name));
 }
-void NPFold::Indent(int i)
+inline void NPFold::Indent(int i)
 { 
     for(; i > 0; i--) printf("    ");
 }
@@ -285,6 +301,9 @@ inline int NPFold::load_index(const char* base)
 
 inline int NPFold::load(const char* base) 
 {
+    bool has_meta = NP::Exists(base, META) ; 
+    if(has_meta) meta = NP::ReadString( base, META ); 
+
     bool has_index = NP::Exists(base, INDEX) ; 
     return has_index ? load_index(base) : load_fts(base) ; 
 }

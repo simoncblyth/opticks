@@ -1,7 +1,12 @@
 #include "PLOG.hh"
 #include "NP.hh"
+#include "NPFold.h"
+#include "SPath.hh"
+#include "SGeo.hh"
 #include "SEvt.hh"
 #include "SEvent.hh"
+#include "SEventConfig.hh"
+#include "SComp.h"
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
 
@@ -30,6 +35,31 @@ void SEvt::Clear()
     assert(INSTANCE); 
     INSTANCE->clear(); 
 }
+
+void SEvt::Save()
+{
+    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::Save  " << std::endl ; 
+    assert(INSTANCE); 
+    INSTANCE->save(); 
+}
+void SEvt::Save(const char* dir)
+{
+    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::Save  " << std::endl ; 
+    assert(INSTANCE); 
+    INSTANCE->save(dir); 
+}
+void SEvt::Save(const char* dir, const char* rel)
+{
+    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::Save  " << std::endl ; 
+    assert(INSTANCE); 
+    INSTANCE->save(dir, rel ); 
+}
+
+
+
+
+
+
 
 
 
@@ -62,6 +92,11 @@ void SEvt::clear()
 {
     genstep.clear();
     gs.clear(); 
+}
+
+void SEvt::setCompProvider(const SCompProvider* provider_)
+{
+    provider = provider_ ; 
 }
 
 unsigned SEvt::getNumGenstep() const 
@@ -132,7 +167,7 @@ NP* SEvt::getGenstep() const
     return a ; 
 }
 
-void SEvt::saveGenstep(const char* dir) const 
+void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE 
 {
     NP* a = getGenstep(); 
     if(a == nullptr) return ; 
@@ -140,10 +175,156 @@ void SEvt::saveGenstep(const char* dir) const
     a->save(dir, "gs.npy"); 
 }
 
+
 std::string SEvt::desc() const 
 {
     std::stringstream ss ; 
     for(unsigned i=0 ; i < getNumGenstep() ; i++) ss << gs[i].desc() << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+/**
+SEvt::gather_components
+--------------------------
+
+Collects the components configured by SEventConfig::CompMask
+into NPFold by for example downloading from the QEvent provider. 
+
+**/
+
+void SEvt::gather_components() 
+{
+    unsigned mask = SEventConfig::CompMask();
+    std::vector<unsigned> comps ; 
+    SComp::CompListAll(comps );
+    for(unsigned i=0 ; i < comps.size() ; i++)
+    {
+        unsigned comp = comps[i] ;   
+        if((comp & mask) == 0) continue ; 
+        NP* a = provider->getComponent(comp); 
+        const char* k = SComp::Name(comp);    
+        fold->add(k, a); 
+    }
+    fold->meta = provider->getMeta();  
+    // persisted metadata will now be in NPFold_meta.txt (previously fdmeta.txt)
+}
+
+
+/**
+SEvt::save
+--------------
+
+This was formerly implemented up in qudarap/QEvent but it makes no 
+sense for CPU only tests that need to save events to reach up to qudarap 
+to control persisting. 
+
+
+The component arrays are downloaded from the device by SEvt::gather_components
+that are added to the NPFold and then saved. 
+
+Which components to gather and save is configured via SEventConfig::SetCompMask
+using the SComp enumeration. 
+
+SEvt::save persists NP arrays into the default directory 
+or the directory argument provided.
+
+**/
+
+
+const char* SEvt::FALLBACK_DIR = "$TMP" ; 
+const char* SEvt::DefaultDir()   // TODO: DOES NOT BELONG : MOVE TO SEvt 
+{
+    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
+    const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
+    return dir ; 
+}
+
+void SEvt::save() 
+{
+    const char* dir = DefaultDir(); 
+    LOG(info) << "DefaultDir " << dir ; 
+    save(dir); 
+}
+void SEvt::save(const char* base, const char* reldir ) 
+{
+    const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
+    save(dir); 
+}
+void SEvt::save(const char* dir_) 
+{
+    const char* dir = SPath::Resolve(dir_, DIRPATH); 
+    LOG(info) << " dir " << dir ; 
+
+    gather_components(); 
+
+    fold->save(dir); 
+}
+
+
+std::string SEvt::descComponent() const 
+{
+    const NP* genstep  = fold->get(SComp::Name(SCOMP_GENSTEP)) ; 
+    const NP* seed     = fold->get(SComp::Name(SCOMP_SEED)) ;  
+    const NP* photon   = fold->get(SComp::Name(SCOMP_PHOTON)) ; 
+    const NP* hit      = fold->get(SComp::Name(SCOMP_HIT)) ; 
+    const NP* record   = fold->get(SComp::Name(SCOMP_RECORD)) ; 
+    const NP* rec      = fold->get(SComp::Name(SCOMP_REC)) ;  
+    const NP* seq      = fold->get(SComp::Name(SCOMP_SEQ)) ; 
+    const NP* domain   = fold->get(SComp::Name(SCOMP_DOMAIN)) ; 
+    const NP* simtrace = fold->get(SComp::Name(SCOMP_SIMTRACE)) ; 
+
+    std::stringstream ss ; 
+    ss << "SEvt::descComponent" 
+       << std::endl 
+       << std::setw(20) << "hit" << " " 
+       << std::setw(20) << ( hit ? hit->sstr() : "-" ) 
+       << " "
+       << std::endl
+       << std::setw(20) << "seed" << " " 
+       << std::setw(20) << ( seed ? seed->sstr() : "-" ) 
+       << " "
+       << std::endl
+       << std::setw(20) << "genstep" << " " 
+       << std::setw(20) << ( genstep ? genstep->sstr() : "-" ) 
+       << " "
+       << std::setw(30) << "SEventConfig::MaxGenstep" 
+       << std::setw(20) << SEventConfig::MaxGenstep()
+       << std::endl
+
+       << std::setw(20) << "photon" << " " 
+       << std::setw(20) << ( photon ? photon->sstr() : "-" ) 
+       << " "
+       << std::setw(30) << "SEventConfig::MaxPhoton"
+       << std::setw(20) << SEventConfig::MaxPhoton()
+       << std::endl
+       << std::setw(20) << "record" << " " 
+       << std::setw(20) << ( record ? record->sstr() : "-" ) 
+       << " " 
+       << std::setw(30) << "SEventConfig::MaxRecord"
+       << std::setw(20) << SEventConfig::MaxRecord()
+       << std::endl
+       << std::setw(20) << "rec" << " " 
+       << std::setw(20) << ( rec ? rec->sstr() : "-" ) 
+       << " "
+       << std::setw(30) << "SEventConfig::MaxRec"
+       << std::setw(20) << SEventConfig::MaxRec()
+       << std::endl
+       << std::setw(20) << "seq" << " " 
+       << std::setw(20) << ( seq ? seq->sstr() : "-" ) 
+       << " " 
+       << std::setw(30) << "SEventConfig::MaxSeq"
+       << std::setw(20) << SEventConfig::MaxSeq()
+       << std::endl
+       << std::setw(20) << "domain" << " " 
+       << std::setw(20) << ( domain ? domain->sstr() : "-" ) 
+       << " "
+       << std::endl
+       << std::setw(20) << "simtrace" << " " 
+       << std::setw(20) << ( simtrace ? simtrace->sstr() : "-" ) 
+       << " "
+       << std::endl
+       ;
     std::string s = ss.str(); 
     return s ; 
 }

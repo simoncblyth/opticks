@@ -75,13 +75,9 @@ int main(int argc, char** argv)
 
     cudaDeviceSynchronize(); 
 
-    qs->save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
+    evt.save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
 
-
-    // TODO: move save control to SEvt not QSim/QEvent 
-    // for example CPU only tests need to save too, so it makes no sense for them to reach up to QUDARap to control that 
-    const char* dir = QEvent::DefaultDir(); 
-    cx->fr.save(dir);  
+    cx->fr.save( SEvt::DefaultDir());  
  
     return 0 ; 
 }

@@ -31,6 +31,7 @@ enum {
 struct SYSRAP_API SCompProvider
 {
     virtual NP* getComponent(unsigned comp) const = 0 ; 
+    virtual std::string getMeta() const = 0 ; 
 }; 
 
 struct SYSRAP_API SComp
@@ -51,7 +52,9 @@ struct SYSRAP_API SComp
     static unsigned    Comp(const char* name); 
     static const char* Name(unsigned comp); 
     static std::string Desc(unsigned mask); 
+    static void CompList(std::vector<unsigned>& comps, const char* names, char delim=','); 
     static unsigned    Mask(const char* names, char delim=','); 
+    static void CompListAll(std::vector<unsigned>& comps ); 
 
     static bool IsGenstep( unsigned mask){ return mask & SCOMP_GENSTEP ; }
     static bool IsPhoton(  unsigned mask){ return mask & SCOMP_PHOTON ; }
@@ -120,13 +123,26 @@ inline std::string SComp::Desc(unsigned mask)
     std::string s = ss.str(); 
     return s ; 
 }
-inline unsigned SComp::Mask(const char* names, char delim)
+    
+inline void SComp::CompList(std::vector<unsigned>& comps, const char* names, char delim )
 {
-    unsigned mask = 0 ; 
     std::stringstream ss;  
     ss.str(names)  ;
     std::string s;
-    while (std::getline(ss, s, delim)) mask |= Comp(s.c_str())  ; 
+    while (std::getline(ss, s, delim)) comps.push_back( Comp(s.c_str()) ) ; 
+}
+
+inline void SComp::CompListAll(std::vector<unsigned>& comps )
+{
+    CompList(comps, ALL_, ',' ); 
+}
+
+inline unsigned SComp::Mask(const char* names, char delim)
+{
+    std::vector<unsigned> comps ; 
+    CompList(comps, names, delim );  
+    unsigned mask = 0 ; 
+    for(unsigned i=0 ; i < comps.size() ; i++)  mask |= comps[i] ; 
     return mask ; 
 }
 

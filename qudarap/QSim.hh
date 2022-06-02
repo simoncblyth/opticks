@@ -92,7 +92,6 @@ struct QUDARAP_API QSim
 
     double simulate();  // via cx launch 
     double simtrace();
-    void save() const ; 
 
 
     qsim* getDevicePtr() const ; 

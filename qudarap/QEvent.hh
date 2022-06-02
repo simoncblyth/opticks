@@ -53,8 +53,7 @@ struct QUDARAP_API QEvent : public SCompProvider
     static const plog::Severity LEVEL ; 
     static QEvent* INSTANCE ; 
     static QEvent* Get(); 
-    static const char* FALLBACK_DIR ; 
-    static const char* DefaultDir() ; 
+
     static std::string DescGensteps(const NP* gs, int edgeitems=5) ; 
 
     QEvent(); 
@@ -79,7 +78,6 @@ private:
     int setGenstep(quad6* gs, unsigned num_gs ); 
 public:
 
-
     bool hasGenstep() const ; 
     bool hasSeed() const ; 
     bool hasPhoton() const ; 
@@ -99,7 +97,8 @@ public:
     void     getSimtrace(     NP* t ) const ;
     void     getSeq(          NP* seq) const ; 
 
-    NP*      getComponent(unsigned comp) const ; 
+    NP*         getComponent(unsigned comp) const ; 
+    std::string getMeta() const ; 
 
     NP*      getGenstep() const ; 
     NP*      getGenstepFromDevice() const ; 
@@ -117,47 +116,21 @@ private:
     NP*      getHit_() const ; 
 public:
     unsigned getNumHit() const ; 
-
-
-    // TODO: move saving down to SEvt 
-    void save() const ; 
-    void save(const char* base, const char* reldir ) const ; 
-    void save(const char* dir) const ; 
-
-
+    unsigned getNumPhoton() const ;  
+    unsigned getNumSimtrace() const ;  
 
     void     setNumPhoton(unsigned num_photon) ;  
     void     setNumSimtrace(unsigned num_simtrace) ;  
     void     uploadEvt(); 
-    unsigned getNumPhoton() const ;  
-    unsigned getNumSimtrace() const ;  
-
-
-
-    void saveGenstep(const char* dir, const char* name); 
 
     std::string desc() const ; 
     std::string descMax() const ; 
     std::string descNum() const ; 
     std::string descBuf() const ; 
-    std::string descSave( 
-        const NP* hit, 
-        const NP* genstep, 
-        const NP* photon, 
-        const NP* record, 
-        const NP* rec, 
-        const NP* seq, 
-        const NP* domain,
-        const NP* simtrace
-         ) const ; 
 
-    void saveMeta(   const char* dir, const char* name) const ; 
     void setMeta( const char* meta ); 
     bool hasMeta() const ; 
-
     void checkEvt() ;  // GPU side 
-
-
 
     qevent* getDevicePtr() const ;
 };

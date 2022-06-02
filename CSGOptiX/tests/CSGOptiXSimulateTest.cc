@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
     cudaDeviceSynchronize(); 
 
-    qs->save();
+    evt.save();
  
     return 0 ; 
 }

@@ -252,19 +252,6 @@ double QSim::simtrace()
    return dt ; 
 }
 
-/**
-QSim::save
-------------
-
-TODO: automated event array pullback (with configuration of which arrays to pull)
-
-**/
-
-void QSim::save() const 
-{
-    event->save(); 
-}
-
 
 
 NP* QSim::duplicate_dbg_ephoton(unsigned num_photon)
