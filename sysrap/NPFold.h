@@ -40,6 +40,7 @@ struct NPFold
     static constexpr const char* META  = "NPFold_meta.txt" ; 
 
     static bool IsNPY(const char* k); 
+    static std::string FormKey(const char* k); 
     static NPFold* Load(const char* base); 
     static NPFold* Load(const char* base, const char* rel); 
     static int Compare(const NPFold* a, const NPFold* b, bool dump ); 
@@ -146,6 +147,16 @@ inline bool NPFold::IsNPY(const char* k)
     return strlen(k) > strlen(EXT) && strcmp( k + strlen(k) - strlen(EXT), EXT ) == 0 ; 
 }
 
+inline std::string NPFold::FormKey(const char* k)
+{
+    std::stringstream ss ; 
+    ss << k ; 
+    if(!IsNPY(k)) ss << EXT ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 /**
 NPFold::add
 ------------
@@ -156,9 +167,8 @@ If added keys do not end with the EXT ".npy" then the EXT is added prior to coll
 
 inline void NPFold::add(const char* k, const NP* a) 
 {
-    std::string key = k ;   
-    if(!IsNPY(k)) key += EXT ;  
-    kk.push_back(key.c_str()); 
+    std::string key = FormKey(k); 
+    kk.push_back(key); 
     aa.push_back(a); 
 }
 
@@ -199,9 +209,7 @@ If the key *k* does not ext with EXT ".npy" then that is added before searching.
 **/
 inline int NPFold::find(const char* k) const
 {
-    std::string key = k ; 
-    if(!IsNPY(k)) key += EXT ; 
-
+    std::string key = FormKey(k); 
     size_t idx = std::distance( kk.begin(), std::find( kk.begin(), kk.end(), key.c_str() )) ; 
     return idx < kk.size() ? idx : -1 ; 
 }
