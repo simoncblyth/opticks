@@ -7,6 +7,7 @@ set(TEST_SOURCES
    U4Test.cc
    U4PhotonInfoTest.cc
    U4GDMLTest.cc
+   U4RecorderTest.cc
 )
 
 

@@ -262,13 +262,24 @@ std::string SOpticksResource::Desc()
         const char* key = keys[i].c_str() ; 
         std::string lab = SStr::Format("SOpticksResource::Get(\"%s\") ", key) ; 
         const char* val = Get(key); 
-
         ss 
-            << std::setw(50) << lab.c_str() 
+            << std::setw(70) << lab.c_str() 
+            << " : "
             << ( val ? val : "-" ) 
             << std::endl 
             ;
     }
+
+
+    const char* gdml_key = "$IDPath/origin_GDMLKludge.gdml" ; 
+    const char* gdml_path = SPath::Resolve(gdml_key, NOOP );
+    ss 
+        << std::setw(70) << gdml_key 
+        << " : "
+        << ( gdml_path ? gdml_path : "-" )
+        << std::endl 
+        ;
+
     std::string s = ss.str(); 
     return s ; 
 }

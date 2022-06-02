@@ -28,6 +28,7 @@ set(SOURCES
     U4SolidTree.cc
     U4Material.cc
     U4VolumeMaker.cc
+    U4Recorder.cc
 ) 
 
 set(HEADERS
@@ -41,6 +42,7 @@ set(HEADERS
     U4SolidTree.hh
     U4Material.hh
     U4VolumeMaker.hh
+    U4Recorder.hh
 )
 
 

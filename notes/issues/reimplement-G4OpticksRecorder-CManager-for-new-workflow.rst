@@ -33,6 +33,10 @@ How to proceed
 
    * ScintStandalone (starting from sgs:ScintGenStandalone) with some simple geometry 
    * (eg big sphere of scintillator and a single standalone PMT, from PMTSim)
+   * take look at ckm CerenkovMinimal
+
+   * HMM: actually thats too involved for initial test...
+   * start dev with U4RecorderTest 
 
 
 Test Environmnent : ScintStandalone
