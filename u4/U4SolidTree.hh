@@ -1,8 +1,4 @@
 #pragma once
-/**
-TODO: replace this with u4/U4SolidTree
-**/
-
 
 class G4VSolid ; 
 class G4Ellipsoid ; 
@@ -23,32 +19,26 @@ class G4Box ;
 
 
 /**
-X4SolidTree : CSG tree manipulations  
+U4SolidTree : CSG tree manipulations  
 ======================================
 
-X4SolidTree was developed initially as j/PMTSim/ZSolid 
+U4SolidTree was developed initially as j/PMTSim/ZSolid 
 
-Even though X4SolidTree.h is a "private" header it still needs to be 
+Even though U4SolidTree.h is a "private" header it still needs to be 
 used across compilation units (eg for tests) hence assume that 
 the API_EXPORT is needed 
 **/
 
 struct SCanvas ; 
 
-#ifdef PMTSIM_STANDALONE
-#include "PMTSIM_API_EXPORT.hh"
-struct PMTSIM_API X4SolidTree   
+#include "U4_API_EXPORT.hh"
+struct U4_API U4SolidTree   
 {
-#else
-#include "X4_API_EXPORT.hh"
-struct X4_API X4SolidTree   
-{
-#endif
     // primary API
     static const plog::Severity LEVEL ; 
     static const bool verbose ; 
     static G4VSolid* ApplyZCutTree( const G4VSolid* original, double zcut ); 
-    static void Draw(const G4VSolid* original, const char* msg="X4SolidTree::Draw" ); 
+    static void Draw(const G4VSolid* original, const char* msg="U4SolidTree::Draw" ); 
 
     // members
     const G4VSolid* original ; 
@@ -86,7 +76,7 @@ struct X4_API X4SolidTree
     std::vector<G4VSolid*>* crux ; 
 
     // object methods
-    X4SolidTree(const G4VSolid* root ); 
+    U4SolidTree(const G4VSolid* root ); 
 
 
     void init(); 
@@ -171,13 +161,13 @@ struct X4_API X4SolidTree
     void collectNodes( std::vector<const G4VSolid*>& nodes, const G4VSolid* top, int query_zcls  );
     void collectNodes_r( std::vector<const G4VSolid*>& nodes, const G4VSolid* node_, int query_zcls, int depth  );
 
-    void draw(const char* msg="X4SolidTree::draw", int pass=-1); 
+    void draw(const char* msg="U4SolidTree::draw", int pass=-1); 
     void draw_r( const G4VSolid* n, int mode); 
 
-    void dumpNames(const char* msg="X4SolidTree::dumpNames") const  ; 
+    void dumpNames(const char* msg="U4SolidTree::dumpNames") const  ; 
 
 
-    void zdump(const char* msg="X4SolidTree::zdump") const ; 
+    void zdump(const char* msg="U4SolidTree::zdump") const ; 
     void zdump_r( const G4VSolid* node_, int mode ) const ; 
 
 
@@ -185,12 +175,12 @@ struct X4_API X4SolidTree
     int maxdepth() const  ;
     static int Maxdepth_r( const G4VSolid* node_, int depth); 
 
-    void dump(const char* msg="X4SolidTree::dump") const ; 
+    void dump(const char* msg="U4SolidTree::dump") const ; 
 
-    void dumpUp(const char* msg="X4SolidTree::dumpUp") const ; 
+    void dumpUp(const char* msg="U4SolidTree::dumpUp") const ; 
     void dumpUp_r(const G4VSolid* node, int depth) const ; 
 
-    void dumpTree(const char* msg="X4SolidTree::dumpTree" ) const ; 
+    void dumpTree(const char* msg="U4SolidTree::dumpTree" ) const ; 
     void dumpTree_r( const G4VSolid* node, int depth ) const ; 
 
     // enumerations

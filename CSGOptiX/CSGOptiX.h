@@ -132,6 +132,7 @@ public:
     // these methods fulfil SCSGOptix protocal base
     double render();   
  private: 
+    // these methods get invoked from QSim::simtrace QSim::simulate following genstep uploading   
     double simtrace(); 
     double simulate();    
  public: 

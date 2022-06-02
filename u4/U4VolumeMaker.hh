@@ -1,7 +1,4 @@
 #pragma once
-/**
-TODO: replace this with u4/U4VolumeMaker
-**/
 
 #include <string>
 #include <vector>
@@ -9,10 +6,10 @@ class G4LogicalVolume ;
 class G4VPhysicalVolume ; 
 
 #include "G4ThreeVector.hh"
-#include "X4_API_EXPORT.hh"
+#include "U4_API_EXPORT.hh"
 #include "plog/Severity.h"
 
-struct X4_API X4VolumeMaker
+struct U4_API U4VolumeMaker
 {
     static const plog::Severity LEVEL ; 
     

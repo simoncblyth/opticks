@@ -24,6 +24,10 @@ find_package(OpticksXercesC REQUIRED MODULE)
 set(SOURCES
     U4_LOG.cc 
     U4.cc
+    U4SolidMaker.cc
+    U4SolidTree.cc
+    U4Material.cc
+    U4VolumeMaker.cc
 ) 
 
 set(HEADERS
@@ -33,6 +37,10 @@ set(HEADERS
     U4Track.h
     U4PhotonInfo.h
     U4GDML.h
+    U4SolidMaker.hh
+    U4SolidTree.hh
+    U4Material.hh
+    U4VolumeMaker.hh
 )
 
 

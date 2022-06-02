@@ -1,7 +1,4 @@
 #pragma once
-/**
-TODO: replace this with u4/U4SolidMaker
-**/
 
 #include <string>
 #include <vector>
@@ -9,10 +6,10 @@ TODO: replace this with u4/U4SolidMaker
 class G4VSolid ; 
 class G4Box ; 
 
-#include "X4_API_EXPORT.hh"
+#include "U4_API_EXPORT.hh"
 #include "plog/Severity.h"
 
-struct X4_API X4SolidMaker
+struct U4_API U4SolidMaker
 {
     static const plog::Severity LEVEL ; 
     static const char* NAMES ; 
