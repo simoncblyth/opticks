@@ -7,6 +7,7 @@ class G4GDMLParser ;
 struct U4GDML
 {
     static plog::Severity LEVEL ; 
+    static G4VPhysicalVolume* Read();
     static G4VPhysicalVolume* Read(const char* path);
     static void Write(G4VPhysicalVolume* world, const char* path);
 
@@ -31,6 +32,22 @@ struct U4GDML
 #include "G4GDMLParser.hh"
 
 
+/**
+U4GDML::Read 
+-------------
+
+TODO: the default path here needs to be standardly written when doing the Geant4 to Opticks translation 
+in order for the origin GDML to always be available for tests. 
+For GDML kludging see the gdxml package which loads GDML using XercesC and does 
+GDML fixups that allow Geant4 to parse the JUNO GDML. 
+
+**/
+
+inline G4VPhysicalVolume* U4GDML::Read()
+{
+    return Read("$IDPath/origin_GDMLKludge.gdml"); 
+}
+
 inline G4VPhysicalVolume* U4GDML::Read(const char* path)
 {
     U4GDML g ; 
@@ -54,8 +71,10 @@ inline U4GDML::U4GDML(G4VPhysicalVolume* world_)
 {
 }
 
-inline void U4GDML::read(const char* path)
+inline void U4GDML::read(const char* path_)
 {
+    const char* path = SPath::Resolve(path_, NOOP); 
+
     parser->SetStripFlag(read_trim); 
     parser->Read(path, read_validate); 
     const G4String setupName = "Default" ;

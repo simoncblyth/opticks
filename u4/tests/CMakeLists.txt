@@ -7,7 +7,6 @@ set(TEST_SOURCES
    U4Test.cc
    U4PhotonInfoTest.cc
    U4GDMLTest.cc
-   U4RecorderTest.cc
 )
 
 
@@ -21,4 +20,11 @@ foreach(SRC ${TEST_SOURCES})
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
+
+
+set(TGT U4RecorderTest)
+add_executable(${TGT} ${TGT}.cc DsG4Scintillation.cc)
+
+target_link_libraries(${TGT} U4)
+install(TARGETS ${TGT} DESTINATION lib)
 

@@ -4,6 +4,7 @@
 #include <vector>
 class G4LogicalVolume ; 
 class G4VPhysicalVolume ; 
+class G4Material ; 
 
 #include "G4ThreeVector.hh"
 #include "U4_API_EXPORT.hh"
@@ -31,7 +32,9 @@ struct U4_API U4VolumeMaker
     static G4VPhysicalVolume* WrapLVGrid( G4LogicalVolume* lv, int nx, int ny, int nz  ); 
     static G4VPhysicalVolume* WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  ); 
 
-    static G4VPhysicalVolume* WorldBox( double halfside ); 
+    static G4VPhysicalVolume* WorldBoxOfScintillator( double halfside ); 
+    static G4VPhysicalVolume* WorldBox( double halfside, G4Material* material  ); 
+    static G4VPhysicalVolume* WorldBox( double halfside, const char* mat="Vacuum" ); 
     static G4VPhysicalVolume* Wrap( G4LogicalVolume* lv, double halfside  ); 
 
     static std::string Desc( const G4ThreeVector& tla ); 

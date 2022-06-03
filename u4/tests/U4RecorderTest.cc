@@ -5,28 +5,15 @@
 #include "G4UserEventAction.hh"
 #include "G4UserTrackingAction.hh"
 #include "G4UserSteppingAction.hh"
-#include "G4VUserPhysicsList.hh"
-
-#include "G4ParticleGun.hh"  
-#include "G4Scintillation.hh"
-#include "G4OpAbsorption.hh"
-#include "G4OpRayleigh.hh"
-#include "G4OpBoundaryProcess.hh"
-#include "G4ParticleGun.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleTable.hh"
 #include "G4ParticleGun.hh"
 
-#include "G4BosonConstructor.hh"
-#include "G4LeptonConstructor.hh"
-
-
-
-#include "SPath.hh"
-#include "U4GDML.h"
 #include "OPTICKS_LOG.hh"
+#include "U4VolumeMaker.hh"
 #include "U4Recorder.hh"
+#include "U4Physics.hh"
 
 struct U4RecorderTest
     : 
@@ -35,22 +22,15 @@ struct U4RecorderTest
     public G4UserTrackingAction,
     public G4UserSteppingAction,
     public G4VUserPrimaryGeneratorAction,
-    public G4VUserDetectorConstruction,
-    public G4VUserPhysicsList
+    public G4VUserDetectorConstruction
 {
     static G4ParticleGun* InitGun(); 
 
     U4Recorder*           fRecorder ; 
-
     G4RunManager*         fRunMgr ;
     G4ParticleGun*        fGun ;  
-    G4OpAbsorption*       fAbsorption ;
-    G4OpRayleigh*         fRayleigh ;
-    G4OpBoundaryProcess*  fBoundary ;
 
     G4VPhysicalVolume* Construct(); 
-    void               ConstructParticle();
-    void               ConstructProcess();
 
     void GeneratePrimaries(G4Event* evt); 
 
@@ -65,10 +45,9 @@ struct U4RecorderTest
 
     void UserSteppingAction(const G4Step*);
 
-    U4RecorderTest(); 
+    U4RecorderTest(G4RunManager* runMgr); 
     void init(); 
 };
-
 
 G4ParticleGun* U4RecorderTest::InitGun()
 {
@@ -84,14 +63,11 @@ G4ParticleGun* U4RecorderTest::InitGun()
     return gun ; 
 }
 
-U4RecorderTest::U4RecorderTest()
+U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     :
     fRecorder(new U4Recorder),
-    fRunMgr(new G4RunManager),
-    fGun(InitGun()),
-    fAbsorption(new G4OpAbsorption),
-    fRayleigh(new G4OpRayleigh),
-    fBoundary(new G4OpBoundaryProcess)
+    fRunMgr(runMgr),
+    fGun(InitGun())
 {
     init(); 
 }
@@ -99,7 +75,6 @@ U4RecorderTest::U4RecorderTest()
 void U4RecorderTest::init()
 {
     fRunMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
-    fRunMgr->SetUserInitialization((G4VUserPhysicsList*)this); 
     fRunMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
     fRunMgr->SetUserAction((G4UserRunAction*)this);
     fRunMgr->SetUserAction((G4UserEventAction*)this);
@@ -108,28 +83,8 @@ void U4RecorderTest::init()
     fRunMgr->Initialize(); 
 }
 
-void U4RecorderTest::ConstructParticle()
-{
-    G4BosonConstructor::ConstructParticle(); 
-    G4LeptonConstructor::ConstructParticle();
-}
-void U4RecorderTest::ConstructProcess()
-{
-    AddTransportation();
-
-    // TODO: bring over extracts of PhysicsList from ckm
-}
-
-G4VPhysicalVolume* U4RecorderTest::Construct()
-{
-    const char* gdmlpath = SPath::Resolve("$IDPath/origin_GDMLKludge.gdml", NOOP ); 
-    LOG(info) << " gdmlpath " << gdmlpath ; 
-    G4VPhysicalVolume* world = U4GDML::Read(gdmlpath); 
-    return world ; 
-}
-
+G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::WorldBoxOfScintillator( 1000. ); }
 void U4RecorderTest::GeneratePrimaries(G4Event* evt){  fGun->GeneratePrimaryVertex(evt); }
-
 
 // pass along the message to the recorder
 void U4RecorderTest::BeginOfRunAction(const G4Run* run){         fRecorder->BeginOfRunAction(run);   }
@@ -140,9 +95,29 @@ void U4RecorderTest::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreU
 void U4RecorderTest::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
 void U4RecorderTest::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction(step); }
 
+
+/**
+This below constraint forces instanciating G4RunManager first in order to hookup physics before the main instanciation::
+
+    You are instantiating G4UserRunAction BEFORE your G4VUserPhysicsList is
+    instantiated and assigned to G4RunManager.
+    Such an instantiation is prohibited by Geant4 version 8.0. To fix this problem,
+    please make sure that your main() instantiates G4VUserPhysicsList AND
+    set it to G4RunManager before instantiating other user action classes
+    such as G4UserRunAction.
+**/
+
 int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
-    U4RecorderTest t ;  
+
+    G4RunManager* runMgr = new G4RunManager ; 
+    U4Physics* phys = new U4Physics ;  
+    runMgr->SetUserInitialization((G4VUserPhysicsList*)phys); 
+
+    U4RecorderTest t(runMgr) ;  
+
+    runMgr->BeamOn(1); 
+
     return 0 ; 
 }

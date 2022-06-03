@@ -9,6 +9,7 @@
 #include "SStr.hh"
 #include "PLOG.hh"
 
+#include "U4.hh"
 #include "U4Material.hh"
 #include "U4SolidMaker.hh"
 #include "U4VolumeMaker.hh"
@@ -137,6 +138,42 @@ G4VPhysicalVolume* U4VolumeMaker::WrapLVOffset( G4LogicalVolume* lv, double tx, 
     return world_pv ;  
 }
 
+/**
+U4VolumeMaker::WrapLVTranslate
+-------------------------------
+
+Place the lv at 8 positions at the corners of a cube. 
+
+  ZYX
+0 000
+1 001
+2 010          
+3 011         
+4 100        
+5 101           
+6 110
+7 111
+
+              110             111
+                +-----------+
+               /|          /| 
+              / |         / | 
+             /  |        /  |
+            +-----------+   |
+            |   +-------|---+ 011
+            |  /        |  / 
+            | /         | /
+            |/          |/
+            +-----------+
+          000          001
+            
+   Z   Y
+   | /   
+   |/
+   0-- X
+
+**/
+
 G4VPhysicalVolume* U4VolumeMaker::WrapLVTranslate( G4LogicalVolume* lv, double tx, double ty, double tz )
 {
     double halfside = 3.*std::max( std::max( tx, ty ), tz ); 
@@ -158,14 +195,34 @@ G4VPhysicalVolume* U4VolumeMaker::WrapLVTranslate( G4LogicalVolume* lv, double t
     return world_pv ;  
 }
 
-G4VPhysicalVolume* U4VolumeMaker::WorldBox( double halfside )
+/**
+U4VolumeMaker::WorldBox
+--------------------------
+
+
+**/
+
+G4VPhysicalVolume* U4VolumeMaker::WorldBox( double halfside, const char* mat )
+{
+    G4Material* material= U4Material::Get(mat); 
+    return WorldBox(halfside, material); 
+}
+
+G4VPhysicalVolume* U4VolumeMaker::WorldBox( double halfside, G4Material* material )
 {
     G4Box* solid = new G4Box("World_solid", halfside, halfside, halfside );  
-    G4Material* vacuum = U4Material::Get("Vacuum"); 
-    G4LogicalVolume* lv = new G4LogicalVolume(solid,vacuum,"World_lv",0,0,0); 
+    G4LogicalVolume* lv = new G4LogicalVolume(solid,material,"World_lv",0,0,0); 
     G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv ,"World_pv",0,false,0);
     return pv ; 
 }
+
+G4VPhysicalVolume* U4VolumeMaker::WorldBoxOfScintillator( double halfside )
+{
+    G4Material* mat = U4::MakeScintillator() ; 
+    return WorldBox(halfside, mat);
+}
+
+
 
 
 /**
@@ -173,7 +230,7 @@ U4VolumeMaker::WrapLVGrid
 ---------------------------
 
 Returns a physical volume with the argument lv placed multiple times 
-in a grid specified by (nx,ny,nz) integers.
+in a grid specified by (nx,ny,nz) integers. (1,1,1) yields 3x3x3 grid.
 
 **/
 
@@ -199,6 +256,25 @@ std::string U4VolumeMaker::Desc( const G4ThreeVector& tla )
     return s ; 
 }
 
+/**
+U4VolumeMaker::WrapLVGrid
+---------------------------
+
+The LV provided in the lvs vector are arranged in a grid this is placed within a box. 
+Grid ranges::
+
+    -nx:nx+1
+    -ny:ny+1
+    -nz:nz+1
+
+Example (nx,ny,nz):
+
+1,1,1 
+     yields a grid with 3 elements on each side, for 3*3*3=27 
+0,0,0
+     yields a single element 
+
+**/
 
 G4VPhysicalVolume* U4VolumeMaker::WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  )
 {
@@ -257,6 +333,14 @@ const char* U4VolumeMaker::GridName(const char* prefix, int ix, int iy, int iz, 
     return strdup(s.c_str()); 
 }
 
+/**
+U4VolumeMaker::Wrap
+---------------------
+
+The LV provided is placed within a WorldBox of halfside extent and the world PV is returned. 
+
+**/
+
 G4VPhysicalVolume* U4VolumeMaker::Wrap( G4LogicalVolume* lv, double halfside  )
 {
     G4VPhysicalVolume* world_pv = WorldBox(halfside); 
@@ -268,7 +352,6 @@ G4VPhysicalVolume* U4VolumeMaker::Wrap( G4LogicalVolume* lv, double halfside  )
     G4ThreeVector tla(0.,0.,0.); 
     G4VPhysicalVolume* pv_item = new G4PVPlacement(0, tla, lv ,name,world_lv,false,0);
     assert( pv_item );
-  
 
     return world_pv ; 
 }
