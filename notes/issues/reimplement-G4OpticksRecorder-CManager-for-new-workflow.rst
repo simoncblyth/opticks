@@ -58,12 +58,30 @@ New Approach : Whats different
 2. SEvt/NPfold array holding and persisting 
 3. NP (not NPY) arrays : NP does not yet have an extend method 
 4. replace Opticks instance for config with SGeoConfig SEventConfig and others if needed
-5. populate sphoton.h struct rather than writing directly into arrays
-6. would be good to follow qsim.h but Opticks and Geant4 models
-   are so different that is probably not realistic 
+5. populate exact same structs used by qsim.h : sphoton.h srec.h (rather than writing directly into arrays)
+6. would be good to follow qsim.h but Opticks and Geant4 models are so different that is probably not realistic 
+
+   * true at high level, but at low level can reuse exactly the same struct methods that qsim.h uses
+   * nevetherless the point is to match qsim.h so have to keep in firmly in mind
+
+
+Old Approach : how G4OpticksRecorder was hooked up to Geant4 within JUNO framework
+------------------------------------------------------------------------------------
+
+Using optional G4OpticksAnaMgr within JUNO code.::
+
+    epsilon:g4ok blyth$ jcv G4OpticksAnaMgr
+    2 files to edit
+    ./Simulation/DetSimV2/AnalysisCode/include/G4OpticksAnaMgr.hh
+    ./Simulation/DetSimV2/AnalysisCode/src/G4OpticksAnaMgr.cc
+    epsilon:offline blyth$ 
+
+Looks straightforward for that class to be adapted to work with U4Recorder. 
+
 
 Old Approach : using Opticks, OpticksEvent
 ----------------------------------------------
+
 
 g4ok/G4OpticksRecorder 
     G4 object collector passing thru to cfg4/CManager

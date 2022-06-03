@@ -196,7 +196,7 @@ void QSim::init()
 {
     sim = new qsim ; 
     sim->base = base ? base->d_base : nullptr ; 
-    sim->evt = event ? event->d_evt : nullptr ; 
+    sim->evt = event ? event->getDevicePtr() : nullptr ; 
     sim->rngstate = rng ? rng->qr->rng_states : nullptr ; 
     sim->bnd = bnd ? bnd->d_bnd : nullptr ; 
     sim->multifilm = multifilm ? multifilm->d_multifilm : nullptr ; 
@@ -790,7 +790,8 @@ void QSim::mock_propagate( NP* p, const NP* prd, unsigned type )
  
     event->setPhoton(p); 
 
-    int num_photon = event->evt->num_photon ; 
+    //int num_photon = event->evt->num_photon ; 
+    int num_photon = event->getNumPhoton(); 
     assert( num_photon == num_p ); 
 
     quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd );  

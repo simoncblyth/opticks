@@ -38,6 +38,10 @@ QEvent* QEvent::Get(){ return INSTANCE ; }
 
 
 
+qevent* QEvent::getDevicePtr() const
+{
+    return d_evt ; 
+}
 
 
 /**
@@ -55,11 +59,16 @@ QEvent::QEvent()
     evt(new qevent),
     d_evt(QU::device_alloc<qevent>(1)),
     gs(nullptr),
+    p(nullptr),
     meta()
 {
     INSTANCE = this ; 
     init(); 
 }
+
+
+
+
 
 /**
 QEvent::init
@@ -193,9 +202,7 @@ bool QEvent::hasMeta() const
 QEvent::setGenstep
 --------------------
 
-Canonically invoked from QSim::simulate and QSim::simtrace 
-just prior to cx->launch 
-
+Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->launch 
 
 1. gensteps uploaded to QEvent::init allocated evt->genstep device buffer, 
    overwriting any prior gensteps and evt->num_genstep is set 
@@ -272,7 +279,7 @@ int QEvent::setGenstep(NP* gs_)
 
 
 
-int QEvent::setGenstep(quad6* qgs, unsigned num_gs ) 
+int QEvent::setGenstep(quad6* qgs, unsigned num_gs )  // TODO: what uses this ? eliminate ?
 {
     NP* gs_ = NP::Make<float>( num_gs, 6, 4 ); 
     gs_->read2( (float*)qgs );   
@@ -334,7 +341,7 @@ void QEvent::count_genstep_photons_and_fill_seed_buffer()
 
 
 /**
-QEvent::setPhotons
+QEvent::setPhoton
 -------------------
 
 This is only used with non-standard input photon running, 
@@ -697,11 +704,6 @@ Note that the evt->genstep and evt->photon pointers are not updated, so the same
 void QEvent::uploadEvt()
 {
     QU::copy_host_to_device<qevent>(d_evt, evt, 1 );  
-}
-
-qevent* QEvent::getDevicePtr() const
-{
-    return d_evt ; 
 }
 
 extern "C" void QEvent_checkEvt(dim3 numBlocks, dim3 threadsPerBlock, qevent* evt, unsigned width, unsigned height ) ; 

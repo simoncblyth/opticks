@@ -54,30 +54,36 @@ struct QUDARAP_API QEvent : public SCompProvider
     static QEvent* INSTANCE ; 
     static QEvent* Get(); 
 
-    static std::string DescGensteps(const NP* gs, int edgeitems=5) ; 
+    qevent* getDevicePtr() const ;
 
     QEvent(); 
+
+private:
     void init(); 
 
     // NB members needed on both CPU+GPU or from the QEvent.cu functions 
     // should reside inside the qevent.h instance not up here in QEvent.hh
  
     sphoton_selector* selector ; 
-
     qevent*      evt ; 
     qevent*      d_evt ; 
-
     NP*    gs ;  
     const NP*    p  ; 
-
     std::string  meta ; 
 
-    int setGenstep();
+
+public:
+    int   setGenstep();
+    void  setPhoton( const NP* p );   // non-standard input photon running
 private:
     int setGenstep(NP* gs);
     int setGenstep(quad6* gs, unsigned num_gs ); 
-public:
+    unsigned count_genstep_photons(); 
+    void     fill_seed_buffer(); 
+    void     count_genstep_photons_and_fill_seed_buffer(); 
 
+public:
+    // who uses these ? TODO: switch to comp based 
     bool hasGenstep() const ; 
     bool hasSeed() const ; 
     bool hasPhoton() const ; 
@@ -86,20 +92,11 @@ public:
     bool hasSeq() const ; 
     bool hasHit() const ; 
     bool hasSimtrace() const ; 
-
-    unsigned count_genstep_photons(); 
-    void     fill_seed_buffer(); 
-    void     count_genstep_photons_and_fill_seed_buffer(); 
-
-    void     setPhoton( const NP* p );
-
-    void     getPhoton(       NP* p ) const ;
-    void     getSimtrace(     NP* t ) const ;
-    void     getSeq(          NP* seq) const ; 
-
-    NP*         getComponent(unsigned comp) const ; 
+public:
+    // SCompProvider methods
     std::string getMeta() const ; 
-
+    NP*      getComponent(unsigned comp) const ; 
+public:
     NP*      getGenstep() const ; 
     NP*      getGenstepFromDevice() const ; 
     NP*      getSeed() const ; 
@@ -110,7 +107,11 @@ public:
     NP*      getRec() const  ;      // compressed step record
     NP*      getDomain() const ; 
     NP*      getHit() const ; 
-
+public:
+    // mutating interface. TODO: Suspect only the photon mutating API actually needed for some QSimTest, remove the others
+    void     getPhoton(       NP* p ) const ;
+    void     getSimtrace(     NP* t ) const ;
+    void     getSeq(          NP* seq) const ; 
 private:
     NP*      getComponent_(unsigned comp) const ; 
     NP*      getHit_() const ; 
@@ -118,11 +119,11 @@ public:
     unsigned getNumHit() const ; 
     unsigned getNumPhoton() const ;  
     unsigned getNumSimtrace() const ;  
-
+private:
     void     setNumPhoton(unsigned num_photon) ;  
     void     setNumSimtrace(unsigned num_simtrace) ;  
     void     uploadEvt(); 
-
+public:
     std::string desc() const ; 
     std::string descMax() const ; 
     std::string descNum() const ; 
@@ -132,7 +133,6 @@ public:
     bool hasMeta() const ; 
     void checkEvt() ;  // GPU side 
 
-    qevent* getDevicePtr() const ;
 };
 
 
