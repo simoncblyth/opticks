@@ -107,11 +107,19 @@ That is like the PImpl pattern : pointer to implementation.
 
 **/
 
-static sgs gs = {} ; 
-static spho ancestor = {} ; 
-static spho pho = {} ; 
-static spho secondary = {} ; 
-static bool dump = false ; 
+static spho ancestor = {} ;     // updated by U4::GenPhotonAncestor prior to the photon generation loop(s)
+static sgs gs = {} ;            // updated by eg U4::CollectGenstep_DsG4Scintillation_r4695 prior to each photon generation loop 
+static spho pho = {} ;          // updated by U4::GenPhotonBegin at start of photon generation loop
+static spho secondary = {} ;    // updated by U4::GenPhotonEnd   at end of photon generation loop 
+
+static bool dump = true ; 
+
+
+// HMM: will these all be long gone at stepping time ? 
+spho* U4::Ancestor(){  return &ancestor ; }
+sgs*  U4::Genstep(){   return &gs ; }
+spho* U4::Photon(){    return &pho ; }
+spho* U4::Secondary(){ return &secondary ; }
 
 
 void U4::GenPhotonAncestor( const G4Track* aTrack )
@@ -128,6 +136,7 @@ void U4::GenPhotonBegin( int genloop_idx )
     int align_id = ancestor.isPlaceholder() ? gs.offset + genloop_idx : ancestor.id ; 
     assert( pho.id == align_id );     
 
+#ifdef DEBUG
     if(dump) std::cout 
         << "U4::GenPhotonBegin"
         << " genloop_idx " << std::setw(6) << genloop_idx 
@@ -135,6 +144,7 @@ void U4::GenPhotonBegin( int genloop_idx )
         << " pho.id " << std::setw(6) << pho.id
         << std::endl 
         ; 
+#endif
 }
 
 void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
@@ -144,14 +154,20 @@ void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
 
     assert( secondary.isIdentical(pho) ); 
 
+#ifdef DEBUG
     if(dump) std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ; 
+#endif
+
     U4PhotonInfo::Set(aSecondaryTrack, secondary ); 
 }
 
 void U4::GenPhotonSecondaries( const G4Track* aTrack, const G4VParticleChange* change )
 {
-    if(dump) std::cout << "U4::GenPhotonSecondaries" << std::endl ; 
+    G4int numSecondaries = change->GetNumberOfSecondaries() ; 
+    if(dump) std::cout << "U4::GenPhotonSecondaries  numSecondaries " << numSecondaries << std::endl ; 
 
+
+    /*
     int numphoton = SEvt::GetNumPhoton() ; 
     bool consistent = numphoton > -1 && numphoton - 1  == pho.id ;  
     // HMM: only works for 1st genstep of event perhaps ?
@@ -163,6 +179,7 @@ void U4::GenPhotonSecondaries( const G4Track* aTrack, const G4VParticleChange* c
         std::cout << " gs " << gs.desc() << std::endl ; 
     }
     assert(consistent); 
+    */
 }
 
 
@@ -174,9 +191,10 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
          G4double ScintillationTime
     )
 {
-    if(dump) std::cout << "U4::CollectGenstep_DsG4Scintillation_r4695" << std::endl ; 
     quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
     gs = SEvt::AddGenstep(gs_);  
+
+    if(dump) std::cout << "U4::CollectGenstep_DsG4Scintillation_r4695 " << gs.desc() << std::endl ; 
 }
 
 

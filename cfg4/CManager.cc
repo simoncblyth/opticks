@@ -446,6 +446,8 @@ void CManager::postStep()
 CManager::setStep
 -------------------------
 
+Invoked from CManager::UserSteppingAction.
+
 For a look into Geant4 ZeroStepping see notes/issues/review_alignment.rst 
 
 **/

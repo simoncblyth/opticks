@@ -14,6 +14,10 @@ class G4Event ;
 class G4Track ; 
 class G4Step ; 
 
+#include "scuda.h"
+#include "squad.h"
+#include "sphoton.h"
+
 #include "plog/Severity.h"
 #include "U4_API_EXPORT.hh"
 
@@ -23,6 +27,8 @@ struct U4_API U4Recorder
     static U4Recorder* INSTANCE ; 
     static U4Recorder* Get(); 
     
+    sphoton p ; 
+
     U4Recorder(); 
 
     void BeginOfRunAction(const G4Run*);

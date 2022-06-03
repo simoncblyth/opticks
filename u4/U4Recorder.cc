@@ -1,5 +1,6 @@
 #include "PLOG.hh"
 #include "U4Recorder.hh"
+#include "U4Track.h"
 
 
 const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG"); 
@@ -30,16 +31,17 @@ void U4Recorder::EndOfEventAction(const G4Event*)
 {
     LOG(info); 
 }
-void U4Recorder::PreUserTrackingAction(const G4Track*)
+void U4Recorder::PreUserTrackingAction(const G4Track* track)
 {
-    LOG(info); 
+    LOG(info) << U4Track::Desc(track) ; 
 }
+
 void U4Recorder::PostUserTrackingAction(const G4Track*)
 {
-    LOG(info); 
+    //LOG(info); 
 }
 void U4Recorder::UserSteppingAction(const G4Step*)
 {
-    LOG(info); 
+    //LOG(info); 
 }
 

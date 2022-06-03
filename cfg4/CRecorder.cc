@@ -78,6 +78,17 @@ unsigned long long CRecorder::getSeqMat() const
 
 /**
 dynamic:false is for when gensteps are available ahead of time
+
+Q: But doesnt BeginOfGenstep signalling mean that always know the number of photons 
+   for each genstep before getting its tracks  ? 
+
+A: Probably dynamic:false means you have all gensteps for the event ahead of time 
+   (not just one by one) so memory allocations can be done once only for the event. 
+
+
+Q: how does the bookkeeping work for cerenkov photons that undergo reemission ?
+A: 
+
 **/
 
 CRecorder::CRecorder(CCtx& ctx) 

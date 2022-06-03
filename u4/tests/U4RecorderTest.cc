@@ -11,6 +11,8 @@
 #include "G4ParticleGun.hh"
 
 #include "OPTICKS_LOG.hh"
+#include "SEvt.hh"
+
 #include "U4VolumeMaker.hh"
 #include "U4Recorder.hh"
 #include "U4Physics.hh"
@@ -54,12 +56,14 @@ G4ParticleGun* U4RecorderTest::InitGun()
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* particle = particleTable->FindParticle("e+");
 
+    LOG(info) << " particle " << particle ; 
+
     G4ParticleGun* gun = new G4ParticleGun(1) ;   
     gun->SetParticleDefinition(particle);
     gun->SetParticleTime(0.0*CLHEP::ns);
     gun->SetParticlePosition(G4ThreeVector(0.0*CLHEP::cm,0.0*CLHEP::cm,0.0*CLHEP::cm));
     gun->SetParticleMomentumDirection(G4ThreeVector(1.,0.,0.));
-    gun->SetParticleEnergy(0.8*MeV);   // few photons at ~0.7*MeV loads from ~ 0.8*MeV
+    gun->SetParticleEnergy(0.1*MeV); 
     return gun ; 
 }
 
@@ -105,11 +109,23 @@ This below constraint forces instanciating G4RunManager first in order to hookup
     please make sure that your main() instantiates G4VUserPhysicsList AND
     set it to G4RunManager before instantiating other user action classes
     such as G4UserRunAction.
+
+G4GeometryManager::OpenGeometry is needed to avoid cleanup warning::
+
+    WARNING - Attempt to delete the physical volume store while geometry closed !
+    WARNING - Attempt to delete the logical volume store while geometry closed !
+    WARNING - Attempt to delete the solid store while geometry closed !
+    WARNING - Attempt to delete the region store while geometry closed !
+
 **/
+
+#include "G4GeometryManager.hh"
 
 int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
+
+    SEvt evt ;   // required for genstep collection 
 
     G4RunManager* runMgr = new G4RunManager ; 
     U4Physics* phys = new U4Physics ;  
@@ -118,6 +134,8 @@ int main(int argc, char** argv)
     U4RecorderTest t(runMgr) ;  
 
     runMgr->BeamOn(1); 
+
+    G4GeometryManager::GetInstance()->OpenGeometry(); 
 
     return 0 ; 
 }

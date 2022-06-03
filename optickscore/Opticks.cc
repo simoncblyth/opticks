@@ -4735,7 +4735,7 @@ Returns the absolute path to the origin gdml file within the geocache directory.
 If a kludged gdml file eg origin_CGDMLKludge.gdml exists then the path to the 
 kludged file is returned in preference to any origin.gdml
 
-Too create the kludged file it is necessary to use G4Opticks::translateGeometry
+To create the kludged file it is necessary to use G4Opticks::translateGeometry
 with the "--gdmlkludge" option enabled.
 
 **/
@@ -4765,6 +4765,8 @@ const char* Opticks::getCurrentGDMLPath() const
     }
     else
     {
+        LOG(fatal) << " OriginGDMLPath " << origin << " origin_exists " <<  origin_exists ; 
+        LOG(fatal) << " OriginGDMLPathKludged " << kludge << " kludge_exists " << kludge_exists ; 
         LOG(fatal) << "RETURNING NULL PATH" ; 
     }
     return path ; 

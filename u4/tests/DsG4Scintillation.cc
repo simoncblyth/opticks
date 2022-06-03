@@ -67,18 +67,8 @@
 //
 #ifdef STANDALONE
 
-// HMM: how to collect gensteps less disruptively in higher level way, with just the one header ?
-// this is baring everything ... try keeping genstep implementation behind the curtains ?
-
-//#include "scuda.h"
-//#include "squad.h"
-//#include "sgs.h"
-
-//#include "spho.h"
+#include "PLOG.hh"
 #include "U4.hh"
-//#include "U4PhotonInfo.h"
-//#include "SEvt.hh"
-
 #else
 #include <boost/python.hpp>
 #endif
@@ -136,7 +126,7 @@ using namespace std;
 DsG4Scintillation::DsG4Scintillation(G4int opticksMode, const G4String& processName,
                                      G4ProcessType type)
     : G4VRestDiscreteProcess(processName, type)
-    , doReemission(true)
+    , doReemission(false)   // SCB set false to simplify debug
     , doBothProcess(true)
     , doReemissionOnly(false)
     , fEnableQuenching(true)
@@ -181,7 +171,7 @@ DsG4Scintillation::DsG4Scintillation(G4int opticksMode, const G4String& processN
     BuildThePhysicsTable();
 
     // FORCE reemission only
-    doReemissionOnly = true;
+    //doReemissionOnly = true;   // SCB commented
 }
 
 ////////////////
@@ -278,6 +268,11 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     }
 
     G4double TotalEnergyDeposit = aStep.GetTotalEnergyDeposit();
+#ifdef STANDALONE
+    //LOG(info) << "TotalEnergyDeposit " << TotalEnergyDeposit ; 
+#endif
+
+
     if (verboseLevel > 0 ) { 
       G4cout << " TotalEnergyDeposit " << TotalEnergyDeposit 
              << " material " << aTrack.GetMaterial()->GetName() << G4endl;
@@ -1065,6 +1060,14 @@ void DsG4Scintillation::BuildThePhysicsTable()
         theSlowIntegralTable->insertAt(i,bPhysicsOrderedFreeVector);
         theReemissionIntegralTable->insertAt(i,cPhysicsOrderedFreeVector);
     }
+
+    if (verboseLevel > 0) {
+      G4cout << " theFastIntegralTable " << theFastIntegralTable 
+             << " theSlowIntegralTable " << theSlowIntegralTable 
+             << " theReemissionIntegralTable " << theReemissionIntegralTable << G4endl;
+    }
+ 
+
 }
 
 // GetMeanFreePath

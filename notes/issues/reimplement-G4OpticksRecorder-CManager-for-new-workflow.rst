@@ -28,25 +28,59 @@ Preliminaries : DONE
 How to proceed
 -----------------
 
-1. setup test environment in which to develop and exercise the U4Recorder in standalone way 
+1. DONE : setup test environment in which to develop and exercise the U4Recorder in standalone way 
    for fast development cycle on laptop.  
 
-   * ScintStandalone (starting from sgs:ScintGenStandalone) with some simple geometry 
-   * (eg big sphere of scintillator and a single standalone PMT, from PMTSim)
-   * take look at ckm CerenkovMinimal
+   * DONE : created u4/tests/U4RecorderTest that combines stuff from ckm:CerenkovMinimal and sgs:ScintGenStandalone 
+     to run Geant4 generating run/evt/track/step objects to exercise the recorder with 
 
-   * HMM: actually thats too involved for initial test...
-   * start dev with U4RecorderTest 
+2. review CManager/CRecorder/... and document them, see if can find simpler way for U4 
+
+   * can skip non-optical CStepRec recording 
+   * central CCtx record of Geant4 state updated by the Geant4 messages is convenient
+   * better to keep saving very separate, handled by SEvt/NPFold 
+   * also better to keep random engine control separate 
+   * genstep signally should use the new SEvt::AddGenstep machinery 
+   * TODO: SEvt::SetIndex(int idx) for 1,2,3,-1,-2,-3 event tags for saving 
+
+   * TODO: contrast with qsim.h to see what can be shared : sphoton.h srec.h    
+   * recall that U4 genstep collection holds state in translation-unit-local static variables
+
+   * NB: for now are not collecting Cerenkov gensteps 
+  
+ 
+U4.cc::
+
+    110 static spho ancestor = {} ;     // updated by U4::GenPhotonAncestor prior to the photon generation loop(s)
+    111 static sgs gs = {} ;            // updated by eg U4::CollectGenstep_DsG4Scintillation_r4695 prior to each photon generation loop 
+    112 static spho pho = {} ;          // updated by U4::GenPhotonBegin at start of photon generation loop
+    113 static spho secondary = {} ;    // updated by U4::GenPhotonEnd   at end of photon generation loop 
+
+cfg4/CCtx.hh::
+
+    133     // CCtx::setTrackOptical
+    134     CPhotonInfo* _cpui ;  
+    135     CPho     _pho ;
+    136     CGenstep _gs ; 
 
 
-Test Environmnent : ScintStandalone
----------------------------------------
+* standard U4 genstep bookkeping is duplicating some of what was done by recording,  
+  specifically the pairs CPho/spho and CGenstep/sgs are doing the same thing  
+ 
+
+3. check that can follow reemission lineage, reusing the functionality 
+
+
+
+
+Test Environmnent : u4/tests/U4RecorderTest 
+------------------------------------------------
 
 Depends on: 
 
 1. sysrap/SEvt+NPFold+NP array holding and persisting 
 2. u4/U4Recorder Geant4 object collecting 
-3. need to migrate some volume setup machinery from X4 to U4, eg X4VolumeMaker 
+3. DONE : migrated some U4VolumeMaker from X4
 4. quite a few classes from CFG4 need to be migrated to U4 to do the Opticks mocking 
 
 

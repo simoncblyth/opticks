@@ -82,6 +82,7 @@ void CGDMLDetector::init()
               << " path " << path
               ; 
 
+         assert(0); 
          setValid(false);  
          return ; 
     }

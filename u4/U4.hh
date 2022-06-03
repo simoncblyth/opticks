@@ -9,6 +9,9 @@ U4.hh
 
 // HMM: try to keep Opticks types out of this header, for sure avoid needing their headers
 struct NP ; 
+struct spho ; 
+struct sgs ; 
+
 //struct quad6 ; 
 
 #include <string>
@@ -73,6 +76,15 @@ struct U4_API U4
          G4int    scnt,        
          G4double ScintillationTime
     ); 
+
+
+    static spho* Ancestor(); 
+    static sgs*  Genstep(); 
+    static spho* Photon(); 
+    static spho* Secondary(); 
+
+
+
 
 
 };

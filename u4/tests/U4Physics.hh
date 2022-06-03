@@ -7,6 +7,7 @@ This is intended solely for use from U4RecorderTest
 
 **/
 
+#include <cstdlib>
 #include "G4VUserPhysicsList.hh"
 
 class G4Cerenkov ; 
@@ -18,6 +19,8 @@ class G4OpBoundaryProcess ;
 
 struct U4Physics : public G4VUserPhysicsList
 {
+    static int EInt(const char* key, const char* fallback="0"); 
+
     G4Cerenkov*           fCerenkov ; 
     DsG4Scintillation*    fScintillation ; 
     G4OpAbsorption*       fAbsorption ;
@@ -152,16 +155,31 @@ inline void U4Physics::ConstructEM()
 #include "G4OpBoundaryProcess.hh"
 
 
+
+inline int U4Physics::EInt(const char* key, const char* fallback)  // static 
+{
+    const char* val_ = getenv(key) ;
+    int val =  std::atoi(val_ ? val_ : fallback) ;
+    return val ; 
+}
+
 inline void U4Physics::ConstructOp()
 {
-    fCerenkov = new G4Cerenkov ;
-    fCerenkov->SetMaxNumPhotonsPerStep(10000);
-    fCerenkov->SetMaxBetaChangePerStep(10.0);
-    fCerenkov->SetTrackSecondariesFirst(true);   
-    fCerenkov->SetVerboseLevel(3);
+    if(EInt("G4Cerenkov_DISABLE", "0") == 0 )
+    {
+        fCerenkov = new G4Cerenkov ;
+        fCerenkov->SetMaxNumPhotonsPerStep(10000);
+        fCerenkov->SetMaxBetaChangePerStep(10.0);
+        fCerenkov->SetTrackSecondariesFirst(true);   
+        fCerenkov->SetVerboseLevel(EInt("G4Cerenkov_verboseLevel", "0"));
+    }
 
-    fScintillation = new DsG4Scintillation ; 
-    fScintillation->SetTrackSecondariesFirst(true);
+    if(EInt("DsG4Scintillation_DISABLE", "0") == 0 )
+    {
+        fScintillation = new DsG4Scintillation(EInt("DsG4Scintillation_opticksMode","0")) ; 
+        fScintillation->SetTrackSecondariesFirst(true);
+    }
+
 
     fAbsorption = new G4OpAbsorption();
     fRayleigh = new G4OpRayleigh();
