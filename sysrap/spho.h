@@ -17,15 +17,15 @@ isIdentical
 
 struct spho
 {
-    static spho MakePho(int gs_, int ix_, int id_, int gn_); 
-    static spho Fabricate(int track_id); 
-    static spho Placeholder() ; 
-
     int gs ; // 0-based genstep index within the event
     int ix ; // 0-based photon index within the genstep
     int id ; // 0-based photon identity index within the event 
     int gn ; // 0-based reemission index incremented at each reemission 
-    
+
+    static spho MakePho(int gs_, int ix_, int id_, int gn_); 
+    static spho Fabricate(int track_id); 
+    static spho Placeholder() ; 
+
     bool isSameLineage(const spho& other) const { return gs == other.gs && ix == other.ix && id == other.id ; }
     bool isIdentical(const spho& other) const { return isSameLineage(other) && gn == other.gn ; }
 
@@ -37,6 +37,7 @@ struct spho
 };
 
 #include <sstream>
+#include <iomanip>
 
 inline spho spho::MakePho(int gs_, int ix_, int id_, int gn_)
 {
@@ -64,7 +65,11 @@ inline std::string spho::desc() const
     std::stringstream ss ;
     ss << "spho" ;
     if(isPlaceholder())  ss << " isPlaceholder " ; 
-    else ss << " gs " << gs << " ix " << ix << " id " << id << " gn " << gn ;
+    else ss << " gs " << std::setw(3) << gs 
+            << " ix " << std::setw(4) << ix 
+            << " id " << std::setw(5) << id 
+            << " gn " << std::setw(2) << gn
+            ;
     std::string s = ss.str();
     return s ;
 }

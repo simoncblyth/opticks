@@ -14,9 +14,11 @@ class G4Event ;
 class G4Track ; 
 class G4Step ; 
 
+#include <vector>
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "spho.h"
 
 #include "plog/Severity.h"
 #include "U4_API_EXPORT.hh"
@@ -28,6 +30,7 @@ struct U4_API U4Recorder
     static U4Recorder* Get(); 
     
     sphoton p ; 
+    std::vector<spho> labels ; 
 
     U4Recorder(); 
 

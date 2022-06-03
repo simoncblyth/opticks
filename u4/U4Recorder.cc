@@ -34,6 +34,9 @@ void U4Recorder::EndOfEventAction(const G4Event*)
 void U4Recorder::PreUserTrackingAction(const G4Track* track)
 {
     LOG(info) << U4Track::Desc(track) ; 
+
+    spho sp = U4Track::Label(track); 
+    if(sp.isDefined()) labels.push_back(sp); 
 }
 
 void U4Recorder::PostUserTrackingAction(const G4Track*)

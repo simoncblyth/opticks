@@ -11,7 +11,7 @@ struct U4Track
     static int Id(const G4Track* track); 
     static bool IsOptical(const G4Track* track); 
     static std::string Desc(const G4Track* track); 
-    static spho Ancestor(const G4Track* track);   // returns placeholders when not photon or no ancesto
+    static spho Label(const G4Track* track);   // returns placeholders when track has no label  
 };
 
 
@@ -46,20 +46,20 @@ bool U4Track::IsOptical(const G4Track* track)
     return particle == G4OpticalPhoton::OpticalPhotonDefinition() ; 
 }
 
-spho U4Track::Ancestor(const G4Track* track)  // returns placeholders when not photon or no ancestor
+spho U4Track::Label(const G4Track* track)  // returns placeholders when track has no label 
 {
     return U4PhotonInfo::Get(track) ;
 }
 
 std::string U4Track::Desc(const G4Track* track)
 {
-    spho ancestor = Ancestor(track); 
+    spho sp = Label(track); 
 
     std::stringstream ss ; 
     ss << "U4Track::Desc"
        << " Id " << std::setw(5) << Id(track)
        << " Op " << std::setw(1) << IsOptical(track)
-       << " anc " << ancestor.desc() 
+       << " sp " << sp.desc() 
        ;
 
     std::string s = ss.str(); 
