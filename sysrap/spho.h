@@ -11,6 +11,9 @@ isSameLineage
 isIdentical
     requires isSameLineage and same reemission generation
 
+
+* HMM: spho lacks gentype, to get that must reference corresponding sgs struct using the gs index 
+
 **/
 
 #include <string>

@@ -22,8 +22,15 @@ endforeach()
 
 
 
+set(U4RecorderTest_SOURCES
+   U4RecorderTest.cc
+   DsG4Scintillation.cc
+   G4Cerenkov_modified.cc
+)
+
+
 set(TGT U4RecorderTest)
-add_executable(${TGT} ${TGT}.cc DsG4Scintillation.cc)
+add_executable(${TGT} ${U4RecorderTest_SOURCES})
 
 target_link_libraries(${TGT} U4)
 install(TARGETS ${TGT} DESTINATION lib)

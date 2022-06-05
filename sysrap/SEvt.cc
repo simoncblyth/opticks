@@ -116,16 +116,29 @@ void SEvt::addPho(const spho& sp)
 
 NP* SEvt::getPho0() const 
 {
-    NP* a = NP::Make<int>( pho0.size(), 4 );  
+    unsigned num_pho0 = pho0.size() ; 
+    if(num_pho0 == 0) return nullptr ; 
+    NP* a = NP::Make<int>( num_pho0, 4 );  
     a->read2( (int*)pho0.data()  );  
     return a ; 
 }
 NP* SEvt::getPho() const 
 {
-    NP* a = NP::Make<int>( pho.size(), 4 );  
+    unsigned num_pho = pho.size() ; 
+    if(num_pho == 0) return nullptr ; 
+    NP* a = NP::Make<int>( num_pho, 4 );  
     a->read2( (int*)pho.data()  );  
     return a ; 
 }
+NP* SEvt::getGS() const
+{
+    unsigned num_gs = gs.size() ; 
+    if(num_gs == 0) return nullptr ; 
+    NP* a = NP::Make<int>( num_gs, 4 );  
+    a->read2( (int*)gs.data() );  
+    return a ; 
+}
+
 void SEvt::savePho(const char* dir_) const 
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH );  
@@ -133,13 +146,16 @@ void SEvt::savePho(const char* dir_) const
 
     NP* a0 = getPho0();  
     LOG(info) << " a0 " << ( a0 ? a0->sstr() : "-" ) ; 
-    a0->save(dir, "pho0.npy"); 
+    if(a0) a0->save(dir, "pho0.npy"); 
 
     NP* a = getPho();  
-    LOG(info) << " aa " << ( a ? a->sstr() : "-" ) ; 
-    a->save(dir, "pho.npy"); 
-}
+    LOG(info) << " a " << ( a ? a->sstr() : "-" ) ; 
+    if(a) a->save(dir, "pho.npy"); 
 
+    NP* g = getGS(); 
+    LOG(info) << " g " << ( g ? g->sstr() : "-" ) ; 
+    if(g) g->save(dir, "gs.npy"); 
+}
 
 
 

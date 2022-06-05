@@ -39,7 +39,7 @@ void U4Recorder::EndOfEventAction(const G4Event*)
 }
 void U4Recorder::PreUserTrackingAction(const G4Track* track)
 {
-
+    bool op = U4Track::IsOptical(track) ; 
     spho sp = U4Track::Label(track); 
 
     if(sp.isDefined()) 
@@ -48,10 +48,8 @@ void U4Recorder::PreUserTrackingAction(const G4Track* track)
     }
     else
     {
-         LOG(info) << " unlabelled " << U4Track::Desc(track) ; 
+        if(op) LOG(fatal) << " unlabelled photon " << U4Track::Desc(track) ; 
     }
-
-
 }
 
 void U4Recorder::PostUserTrackingAction(const G4Track*)

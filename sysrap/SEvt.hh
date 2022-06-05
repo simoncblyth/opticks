@@ -85,6 +85,7 @@ struct SYSRAP_API SEvt
 
     NP* getPho0() const ;   // unordered push_back as they come 
     NP* getPho() const ;    // resized at genstep and slotted in 
+    NP* getGS() const ;   // genstep labels from std::vector<sgs>  
     void savePho(const char* dir) const ; 
 
     void saveGenstep(const char* dir) const ; 

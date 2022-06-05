@@ -65,7 +65,7 @@ G4ParticleGun* U4RecorderTest::InitGun()
     gun->SetParticleTime(0.0*CLHEP::ns);
     gun->SetParticlePosition(G4ThreeVector(0.0*CLHEP::cm,0.0*CLHEP::cm,0.0*CLHEP::cm));
     gun->SetParticleMomentumDirection(G4ThreeVector(1.,0.,0.));
-    gun->SetParticleEnergy(0.1*MeV); 
+    gun->SetParticleEnergy(1.0*MeV); 
     return gun ; 
 }
 

@@ -17,26 +17,32 @@ arg=${1:-run_ana}
 
 srcdir=$PWD
 logdir=/tmp/$USER/opticks/U4RecorderTest
+mkdir -p $logdir 
 
 export FOLD=/tmp/$USER/opticks/U4RecorderTest
 #export DsG4Scintillation_verboseLevel=3
 #export G4Cerenkov_verboseLevel=3
 export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 generation loop too 
-export G4Cerenkov_DISABLE=1
+
+#export G4Cerenkov_DISABLE=1
 #export DsG4Scintillation_DISABLE=1
 
 
 if [ "${arg/run}" != "${arg}" ]; then 
-
-    mkdir -p $logdir 
     cd $logdir 
-
     #export BP=DsG4Scintillation::PostStepDoIt
     #lldb__ U4RecorderTest
-
     U4RecorderTest
     echo $msg logdir $logdir
 fi 
+
+if [ "${arg/dbg}" != "${arg}" ]; then 
+    cd $logdir 
+    #export BP=DsG4Scintillation::PostStepDoIt
+    lldb__ U4RecorderTest
+    echo $msg logdir $logdir
+fi 
+
 
 
 if [ "${arg/ana}" != "${arg}" ]; then 

@@ -126,7 +126,7 @@ using namespace std;
 DsG4Scintillation::DsG4Scintillation(G4int opticksMode, const G4String& processName,
                                      G4ProcessType type)
     : G4VRestDiscreteProcess(processName, type)
-    , doReemission(false)   // SCB set false to simplify debug
+    , doReemission(true)   // SCB set false to simplify debug
     , doBothProcess(true)
     , doReemissionOnly(false)
     , fEnableQuenching(true)

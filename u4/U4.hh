@@ -77,14 +77,25 @@ struct U4_API U4
          G4double ScintillationTime
     ); 
 
+    static void CollectGenstep_G4Cerenkov_modified( 
+        const G4Track* aTrack,
+        const G4Step* aStep,
+        G4int    numPhotons,
+        G4double    betaInverse,
+        G4double    pmin,
+        G4double    pmax,
+        G4double    maxCos,
 
-    static spho* Ancestor(); 
-    static sgs*  Genstep(); 
-    static spho* Photon(); 
-    static spho* Secondary(); 
+        G4double    maxSin2,
+        G4double    meanNumberOfPhotons1,
+        G4double    meanNumberOfPhotons2
+    );
 
 
-
+    //static spho* Ancestor(); 
+    //static sgs*  Genstep(); 
+    //static spho* Photon(); 
+    //static spho* Secondary(); 
 
 
 };

@@ -10,7 +10,7 @@ This is intended solely for use from U4RecorderTest
 #include <cstdlib>
 #include "G4VUserPhysicsList.hh"
 
-class G4Cerenkov ; 
+class G4Cerenkov_modified ; 
 class DsG4Scintillation ; 
 class G4OpAbsorption ;
 class G4OpRayleigh ;
@@ -21,7 +21,7 @@ struct U4Physics : public G4VUserPhysicsList
 {
     static int EInt(const char* key, const char* fallback="0"); 
 
-    G4Cerenkov*           fCerenkov ; 
+    G4Cerenkov_modified*  fCerenkov ; 
     DsG4Scintillation*    fScintillation ; 
     G4OpAbsorption*       fAbsorption ;
     G4OpRayleigh*         fRayleigh ;
@@ -148,7 +148,9 @@ inline void U4Physics::ConstructEM()
   }
 }
 
-#include "G4Cerenkov.hh"
+//#include "G4Cerenkov.hh"
+#include "G4Cerenkov_modified.hh"
+
 #include "DsG4Scintillation.h"
 #include "G4OpAbsorption.hh"
 #include "G4OpRayleigh.hh"
@@ -167,7 +169,7 @@ inline void U4Physics::ConstructOp()
 {
     if(EInt("G4Cerenkov_DISABLE", "0") == 0 )
     {
-        fCerenkov = new G4Cerenkov ;
+        fCerenkov = new G4Cerenkov_modified ;
         fCerenkov->SetMaxNumPhotonsPerStep(10000);
         fCerenkov->SetMaxBetaChangePerStep(10.0);
         fCerenkov->SetTrackSecondariesFirst(true);   

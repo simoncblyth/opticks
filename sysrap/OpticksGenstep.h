@@ -36,7 +36,8 @@ enum
     OpticksGenstep_CERENKOV                 = 15,
     OpticksGenstep_SCINTILLATION            = 16,
     OpticksGenstep_FRAME                    = 17,
-    OpticksGenstep_NumType                  = 18
+    OpticksGenstep_G4Cerenkov_modified      = 18,
+    OpticksGenstep_NumType                  = 19
 };
     
 
@@ -65,6 +66,7 @@ struct OpticksGenstep_
     static constexpr const char* CERENKOV_                = "CERENKOV" ;
     static constexpr const char* SCINTILLATION_           = "SCINTILLATION" ;
     static constexpr const char* FRAME_                   = "FRAME" ;
+    static constexpr const char* G4Cerenkov_modified_     = "G4Cerenkov_modified" ;
 
     static unsigned Type(const char* name); 
     static const char* Name(unsigned type); 
@@ -87,6 +89,7 @@ inline unsigned OpticksGenstep_::Type(const char* name)
     if(strcmp(name,G4Cerenkov_1042_ )==0)         type = OpticksGenstep_G4Cerenkov_1042 ; 
     if(strcmp(name,G4Scintillation_1042_ )==0)    type = OpticksGenstep_G4Scintillation_1042 ; 
     if(strcmp(name,DsG4Cerenkov_r3971_ )==0)      type = OpticksGenstep_DsG4Cerenkov_r3971 ; 
+    if(strcmp(name,G4Cerenkov_modified_ )==0)     type = OpticksGenstep_G4Cerenkov_modified ; 
     if(strcmp(name,DsG4Scintillation_r3971_ )==0) type = OpticksGenstep_DsG4Scintillation_r3971 ; 
     if(strcmp(name,DsG4Scintillation_r4695_ )==0) type = OpticksGenstep_DsG4Scintillation_r4695 ; 
     if(strcmp(name,TORCH_)==0)                    type = OpticksGenstep_TORCH ;
@@ -113,6 +116,7 @@ inline const char* OpticksGenstep_::Name(unsigned type)
         case OpticksGenstep_G4Cerenkov_1042:         n = G4Cerenkov_1042_         ; break ; 
         case OpticksGenstep_G4Scintillation_1042:    n = G4Scintillation_1042_    ; break ; 
         case OpticksGenstep_DsG4Cerenkov_r3971:      n = DsG4Cerenkov_r3971_      ; break ; 
+        case OpticksGenstep_G4Cerenkov_modified:     n = G4Cerenkov_modified_     ; break ; 
         case OpticksGenstep_DsG4Scintillation_r3971: n = DsG4Scintillation_r3971_ ; break ; 
         case OpticksGenstep_DsG4Scintillation_r4695: n = DsG4Scintillation_r4695_ ; break ; 
         case OpticksGenstep_TORCH:                   n = TORCH_                   ; break ; 
@@ -145,7 +149,8 @@ inline bool OpticksGenstep_::IsCerenkov(int gentype)  // static
 {
    return gentype == OpticksGenstep_G4Cerenkov_1042  || 
           gentype == OpticksGenstep_DsG4Cerenkov_r3971 || 
-          gentype == OpticksGenstep_CERENKOV
+          gentype == OpticksGenstep_CERENKOV ||
+          gentype == OpticksGenstep_G4Cerenkov_modified
           ;
 }
 inline bool OpticksGenstep_::IsScintillation(int gentype)  // static

@@ -83,6 +83,50 @@ cfg4/CCtx.hh::
 
 
 
+U4RecorderTest with S+C being collected and reemission disabled
+------------------------------------------------------------------
+
+* FIXED : assert due to cerenkov photon not being labelled because 
+  the ancestor was not being set for cerenkov by a call to U4::GenPhotonAncestor
+  prior to the generation loop(s)
+
+::
+
+    237 /**
+    238 U4::GenPhotonAncestor
+    239 ----------------------
+    240 
+    241 NB calling this prior to generation loops to get the ancestor 
+    242 is needed for BOTH Scintillation and Cerenkov in order for photon G4Track 
+    243 labelling done by U4::GenPhotonEnd to work. 
+    244 
+    245 **/
+    246 
+    247 void U4::GenPhotonAncestor( const G4Track* aTrack )
+    248 {
+    249     ancestor = U4PhotonInfo::Get(aTrack) ;
+    250     if(dump) std::cout << "U4::GenPhotonAncestor " << ancestor.desc() << std::endl ;
+    251 }
+
+::
+
+    271 void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
+    272 {
+    273     assert(genloop_idx > -1);
+    274     secondary = gs.MakePho(genloop_idx, ancestor) ;
+    275 
+    276     assert( secondary.isIdentical(pho) );
+    277 
+    278 #ifdef DEBUG
+    279     if(dump) std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ;
+    280 #endif
+    281 
+    282     U4PhotonInfo::Set(aSecondaryTrack, secondary );
+    283 }
+
+
+
+
 
 Test Environmnent : u4/tests/U4RecorderTest 
 ------------------------------------------------
