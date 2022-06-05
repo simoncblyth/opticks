@@ -22,7 +22,7 @@ if __name__ == '__main__':
      t = Fold.Load() 
      print(t)
 
-     l = t.labels
+     l = t.pho0
 
      gs = l[:,0]
      ix = l[:,1]

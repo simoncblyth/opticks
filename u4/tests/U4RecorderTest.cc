@@ -136,14 +136,8 @@ int main(int argc, char** argv)
     U4RecorderTest t(runMgr) ;  
 
     runMgr->BeamOn(1); 
-
-    const std::vector<spho>& labels = U4Recorder::Get()->labels ; 
-    const char* path = SPath::Resolve("$TMP/U4RecorderTest/labels.npy", FILEPATH ); 
-    NP* l = NP::Make<int>( labels.size(), 4 ); 
-    l->read2( (int*)labels.data()  ); 
-    l->save(path); 
-    LOG(info) << path ; 
-
+  
+    evt.savePho("$TMP/U4RecorderTest"); 
 
     G4GeometryManager::GetInstance()->OpenGeometry(); 
 

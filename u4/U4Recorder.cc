@@ -1,4 +1,10 @@
+#include "scuda.h"
+#include "squad.h"
+#include "sphoton.h"
+#include "spho.h"
+#include "SEvt.hh"
 #include "PLOG.hh"
+
 #include "U4Recorder.hh"
 #include "U4Track.h"
 
@@ -33,10 +39,19 @@ void U4Recorder::EndOfEventAction(const G4Event*)
 }
 void U4Recorder::PreUserTrackingAction(const G4Track* track)
 {
-    LOG(info) << U4Track::Desc(track) ; 
 
     spho sp = U4Track::Label(track); 
-    if(sp.isDefined()) labels.push_back(sp); 
+
+    if(sp.isDefined()) 
+    {
+        SEvt::AddPho(sp); 
+    }
+    else
+    {
+         LOG(info) << " unlabelled " << U4Track::Desc(track) ; 
+    }
+
+
 }
 
 void U4Recorder::PostUserTrackingAction(const G4Track*)

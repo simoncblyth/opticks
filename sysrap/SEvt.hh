@@ -45,31 +45,33 @@ struct SCompProvider ;
 
 struct SYSRAP_API SEvt
 {
+    std::vector<quad6> genstep ; 
+    std::vector<sgs>   gs ; 
+    std::vector<spho>  pho0 ;  // unordered as they come 
+    std::vector<spho>  pho ; 
+
+    const SCompProvider*  provider ; 
+    NPFold*   fold ; 
+
+
     static const plog::Severity LEVEL ; 
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
+
+    static void Check(); 
     static sgs AddGenstep(const quad6& q); 
     static sgs AddGenstep(const NP* a); 
-    static void Clear(); 
+    static void AddCarrierGenstep(); 
+    static void AddTorchGenstep(); 
+    static void AddPho(const spho& sp); 
 
+    static void Clear(); 
     static void Save() ; 
     static void Save(const char* base, const char* reldir ); 
     static void Save(const char* dir); 
-
-
-
-
-    static void AddCarrierGenstep(); 
-    static void AddTorchGenstep(); 
-
-
     static int GetNumPhoton(); 
     static NP* GetGenstep(); 
 
-    std::vector<quad6> genstep ; 
-    std::vector<sgs>   gs ; 
-    const SCompProvider*  provider ; 
-    NPFold*   fold ; 
 
     SEvt(); 
     void setCompProvider(const SCompProvider* provider); 
@@ -79,14 +81,16 @@ struct SYSRAP_API SEvt
     unsigned getNumPhoton() const ; 
     sgs addGenstep(const quad6& q) ; 
     sgs addGenstep(const NP* a) ; 
+    void addPho(const spho& sp); 
+
+    NP* getPho0() const ;   // unordered push_back as they come 
+    NP* getPho() const ;    // resized at genstep and slotted in 
+    void savePho(const char* dir) const ; 
 
     void saveGenstep(const char* dir) const ; 
     NP* getGenstep() const ; 
 
     void gather_components() ; 
-
-
-
 
     static const char* FALLBACK_DIR ; 
     static const char* DefaultDir() ; 
@@ -99,8 +103,6 @@ struct SYSRAP_API SEvt
     std::string desc() const ; 
     std::string descFold() const ; 
     std::string descComponent() const ; 
-
-
 };
 
 

@@ -66,6 +66,17 @@ cfg4/CCtx.hh::
 
 * standard U4 genstep bookkeping is duplicating some of what was done by recording,  
   specifically the pairs CPho/spho and CGenstep/sgs are doing the same thing  
+
+* DONE: SEvt::AddPho collects into SEvt::pho SEvt::pho0 vectors of sphoton 
+
+  * pho0: simple push_back
+  * pho: using resize at each genstep and slotting in using spho.id 
+
+* TODO: check that works with both C+S gensteps and when reemission enabled 
+  
+  * with reemission, the appropriate thing to do is replace the spho with the reemission one in same slot    
+
+* TODO: exapnd to collecting records and rec 
  
 
 3. check that can follow reemission lineage, reusing the functionality 

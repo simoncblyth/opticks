@@ -192,7 +192,7 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
     )
 {
     quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
-    gs = SEvt::AddGenstep(gs_);  
+    gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label 
 
     if(dump) std::cout << "U4::CollectGenstep_DsG4Scintillation_r4695 " << gs.desc() << std::endl ; 
 }

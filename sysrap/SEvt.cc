@@ -21,84 +21,32 @@ SEvt::SEvt()
 
 SEvt* SEvt::Get(){ return INSTANCE ; }
 
-sgs SEvt::AddGenstep(const quad6& q)
+void SEvt::Check()
 {
-    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::AddGenstep  " << std::endl ; 
+    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before using most SEvt methods" << std::endl ; 
     assert(INSTANCE); 
-    return INSTANCE->addGenstep(q); 
-}
-sgs SEvt::AddGenstep(const NP* a)
-{
-    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::AddGenstep  " << std::endl ; 
-    assert(INSTANCE); 
-    return INSTANCE->addGenstep(a); 
-}
-
-void SEvt::Clear()
-{
-    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::Clear  " << std::endl ; 
-    assert(INSTANCE); 
-    INSTANCE->clear(); 
-}
-
-void SEvt::Save()
-{
-    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::Save  " << std::endl ; 
-    assert(INSTANCE); 
-    INSTANCE->save(); 
-}
-void SEvt::Save(const char* dir)
-{
-    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::Save  " << std::endl ; 
-    assert(INSTANCE); 
-    INSTANCE->save(dir); 
-}
-void SEvt::Save(const char* dir, const char* rel)
-{
-    if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before SEvt::Save  " << std::endl ; 
-    assert(INSTANCE); 
-    INSTANCE->save(dir, rel ); 
 }
 
 
+sgs SEvt::AddGenstep(const quad6& q){ Check(); return INSTANCE->addGenstep(q);  }
+sgs SEvt::AddGenstep(const NP* a){    Check(); return INSTANCE->addGenstep(a); }
+void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
+void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
+void SEvt::AddPho( const spho& sp ){ Check() ; INSTANCE->addPho(sp) ; }
 
+void SEvt::Clear(){ Check() ; INSTANCE->clear();  }
+void SEvt::Save(){  Check() ; INSTANCE->save(); }
+void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir); }
+void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
 
-
-
-
-
-
-
-void SEvt::AddCarrierGenstep()
-{
-    AddGenstep(SEvent::MakeCarrierGensteps());
-}
-void SEvt::AddTorchGenstep()
-{
-    AddGenstep(SEvent::MakeTorchGensteps());
-}
-
-
-
-
-
-
-int SEvt::GetNumPhoton()
-{
-   return INSTANCE ? INSTANCE->getNumPhoton() : -1 ;
-}
-
-NP* SEvt::GetGenstep() 
-{
-   return INSTANCE ? INSTANCE->getGenstep() : nullptr ;
-}
+int SEvt::GetNumPhoton(){ return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
+NP* SEvt::GetGenstep() {  return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
 
 void SEvt::clear()
 {
     genstep.clear();
     gs.clear(); 
 }
-
 void SEvt::setCompProvider(const SCompProvider* provider_)
 {
     provider = provider_ ; 
@@ -117,20 +65,6 @@ unsigned SEvt::getNumPhoton() const
     return tot ; 
 }
 
-sgs SEvt::addGenstep(const quad6& q)
-{
-    sgs s = {} ;   // genstep summary struct 
-
-    s.index = genstep.size() ;  // 0-based genstep index in event (actually since last reset)  
-    s.photons = q.numphoton() ;  
-    s.offset = getNumPhoton() ; // number of photons in event before this genstep  (actually single last reset)  
-    s.gentype = q.gentype() ; 
-
-    gs.push_back(s) ; 
-    genstep.push_back(q) ; 
-
-    return s ; 
-}
 /**
 SEvt::addGenstep
 ------------------
@@ -148,6 +82,66 @@ sgs SEvt::addGenstep(const NP* a)
     for(int i=0 ; i < num_gs ; i++) s = addGenstep(qq[i]) ; 
     return s ; 
 }
+
+
+sgs SEvt::addGenstep(const quad6& q)
+{
+    sgs s = {} ;   // genstep summary struct 
+
+    unsigned offset = getNumPhoton() ; // number of photons in event before this genstep  (actually since last reset) 
+    unsigned q_numphoton = q.numphoton() ; 
+
+    s.index = genstep.size() ;  // 0-based genstep index in event (actually since last reset)  
+    s.photons = q_numphoton ;  
+    s.offset = offset ;   
+    s.gentype = q.gentype() ; 
+
+    gs.push_back(s) ; 
+    genstep.push_back(q) ; 
+
+    pho.resize( offset + q_numphoton );  
+
+    return s ; 
+}
+
+void SEvt::addPho(const spho& sp)
+{
+    pho0.push_back(sp);   // unorded
+
+    unsigned id = sp.id ; 
+    assert( id < pho.size() );  
+    pho[id] = sp ; 
+
+}
+
+NP* SEvt::getPho0() const 
+{
+    NP* a = NP::Make<int>( pho0.size(), 4 );  
+    a->read2( (int*)pho0.data()  );  
+    return a ; 
+}
+NP* SEvt::getPho() const 
+{
+    NP* a = NP::Make<int>( pho.size(), 4 );  
+    a->read2( (int*)pho.data()  );  
+    return a ; 
+}
+void SEvt::savePho(const char* dir_) const 
+{
+    const char* dir = SPath::Resolve(dir_, DIRPATH );  
+    LOG(info) << dir ; 
+
+    NP* a0 = getPho0();  
+    LOG(info) << " a0 " << ( a0 ? a0->sstr() : "-" ) ; 
+    a0->save(dir, "pho0.npy"); 
+
+    NP* a = getPho();  
+    LOG(info) << " aa " << ( a ? a->sstr() : "-" ) ; 
+    a->save(dir, "pho.npy"); 
+}
+
+
+
 
 /**
 SEvt::getGenstep
