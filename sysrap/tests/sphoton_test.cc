@@ -5,6 +5,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "OpticksPhoton.h"
 
 
 void test_qphoton()
@@ -47,13 +48,47 @@ void test_sphoton_selector()
 }
 
 
+#include <bitset>
+
+void test_sphoton_change_flagmask()
+{
+    unsigned flagmask = 0u ; 
+
+    flagmask |= CERENKOV ; 
+    flagmask |= SCINTILLATION ;
+    flagmask |= MISS ; 
+    flagmask |= BULK_ABSORB ; 
+    flagmask |= BULK_REEMIT ;
+    flagmask |= BULK_SCATTER ;
+    flagmask |= SURFACE_DETECT ;
+    flagmask |= SURFACE_ABSORB ;  
+    flagmask |= SURFACE_DREFLECT ; 
+    flagmask |= SURFACE_SREFLECT ;
+    flagmask |= BOUNDARY_REFLECT  ;
+    flagmask |= BOUNDARY_TRANSMIT ;
+    flagmask |= TORCH ;
+    flagmask |= NAN_ABORT ; 
+    flagmask |= EFFICIENCY_CULL ;
+    flagmask |= EFFICIENCY_COLLECT ; 
+
+    std::cout << std::setw(20) << " init " << std::bitset<32>(flagmask) << std::endl ; 
+
+    flagmask &= ~BULK_ABSORB ; std::cout << std::setw(20) << " &= ~BULK_ABSORB  " << std::bitset<32>(flagmask) << std::endl ; 
+    flagmask &= ~BULK_REEMIT ; std::cout << std::setw(20) << " &= ~BULK_REEMIT  " << std::bitset<32>(flagmask) << std::endl ; 
+    flagmask |=  BULK_REEMIT ; std::cout << std::setw(20) << " |= BULK_REEMIT  "  << std::bitset<32>(flagmask) << std::endl ; 
+    flagmask |=  BULK_ABSORB ; std::cout << std::setw(20) << " |= BULK_ABSORB  "  << std::bitset<32>(flagmask) << std::endl ; 
+}
+
 
 int main()
 {
+    /*
     test_qphoton(); 
     test_cast(); 
     test_ephoton(); 
     test_sphoton_selector(); 
+    */
+    test_sphoton_change_flagmask(); 
 
     return 0 ; 
 }

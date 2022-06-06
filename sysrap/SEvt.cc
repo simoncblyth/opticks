@@ -7,6 +7,7 @@
 #include "SEvent.hh"
 #include "SEventConfig.hh"
 #include "OpticksGenstep.h"
+#include "OpticksPhoton.h"
 #include "SComp.h"
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
@@ -113,6 +114,22 @@ sgs SEvt::addGenstep(const quad6& q)
     return s ; 
 }
 
+
+/**
+SEvt::get_gs
+--------------
+
+Lookup sgs genstep label corresponding to spho photon label 
+
+**/
+
+const sgs& SEvt::get_gs(const spho& sp)
+{
+    assert( sp.gs < int(gs.size()) ); 
+    const sgs& _gs =  gs[sp.gs] ; 
+    return _gs ; 
+}
+
 /**
 SEvt::beginPhoton
 ------------------
@@ -129,12 +146,10 @@ void SEvt::beginPhoton(const spho& sp)
     pho[id] = sp ;        // slot in the label  
     current_pho = sp ; 
 
-    // use gs index from the spho label to lookup genstep type 
-    assert( sp.gs < int(gs.size()) ); 
-    const sgs& _gs =  gs[sp.gs] ; 
+    const sgs& _gs = get_gs(sp);  
     int gentype = _gs.gentype ;
-
     unsigned genflag = OpticksGenstep_::GenstepToPhotonFlag(gentype); 
+
     assert( genflag == CERENKOV || genflag == SCINTILLATION || genflag == TORCH ); 
 
     LOG(info) << " _gs " << _gs.desc() ; 
@@ -145,11 +160,15 @@ void SEvt::beginPhoton(const spho& sp)
 }
 
 /**
-SEvt::rejoinPhoton
--------------------
+SEvt::continuePhoton
+----------------------
 
 Called from U4Recorder::PreUserTrackingAction_Optical for G4Track with 
 pho label indicating a reemission generation greater than zero.
+
+Note that this will mostly be called for photons that originate from 
+scintillation gensteps BUT it will also happen for Cerenkov genstep 
+generated photons within a scintillator due to reemission of the Cerenkov photons. 
 
 **/
 void SEvt::continuePhoton(const spho& sp)
@@ -161,6 +180,13 @@ void SEvt::continuePhoton(const spho& sp)
     const spho& parent_pho = pho[id]; 
     assert( sp.isSameLineage( parent_pho) ); 
     assert( sp.gn == parent_pho.gn + 1 ); 
+
+    const sgs& _gs = get_gs(sp);  
+    bool sc = OpticksGenstep_::IsScintillation(_gs.gentype); 
+    bool ck = OpticksGenstep_::IsCerenkov(_gs.gentype); 
+    bool sc_xor_ck = sc ^ ck ; 
+    LOG(info) << " sc " << sc << " ck " << ck << " sc_xor_ck " << sc_xor_ck ;
+    assert(sc_xor_ck); 
  
     const sphoton& parent_photon = photon[id] ; 
     unsigned parent_idx = parent_photon.idx() ; 
@@ -169,7 +195,15 @@ void SEvt::continuePhoton(const spho& sp)
     // replace label and current_photon
     pho[id] = sp ;   
     current_pho = sp ; 
+
+    // HMM: could directly change photon[id] via ref ? 
+    // But are here taking a copy to current_photon, and relying on copyback at SEvt::endPhoton
     current_photon = photon[id] ; 
+
+    //assert( current_photon.flagmask & BULK_ABSORB  );   // all continuedPhoton should have BULK_ABSORB in flagmask, but not yet 
+
+    current_photon.flagmask &= ~BULK_ABSORB  ; // scrub BULK_ABSORB from flagmask
+    current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
 }
 
 void SEvt::endPhoton(const spho& sp)

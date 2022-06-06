@@ -364,3 +364,44 @@ Looks like the C current_gs gets stomped on by S::
 Seems cannot rely on current_gs, so instead use spho::gs index to access the genstep corresponding to the photon. 
 
 
+HMM: how to scrub BULK_ABSORB and replace with BULK_REEMIT ?
+----------------------------------------------------------------
+
+::
+
+    epsilon:cfg4 blyth$ grep BULK_ABSORB *.*
+    CPhoton.cc:    if(flag == BULK_REEMIT) scrub_mskhis(BULK_ABSORB)  ;
+    CPhoton.cc:    if(flag == BULK_REEMIT) scrub_mskhis(BULK_ABSORB)  ;
+    CPhoton.cc:so need to scrub the AB (BULK_ABSORB) when a RE (BULK_REEMIT) from rejoining
+    CPhoton.cc:    bool flag_done = ( _flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS)) != 0 ;
+    CPhoton.cc:        if(_state._topslot_rewrite == 1 && _flag == BULK_REEMIT && _flag_prior  == BULK_ABSORB)
+    CRecorder.cc:        bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
+    CRecorder.cc:             m_state.decrementSlot();   // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
+    CRecorderLive.cc:        decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
+    CRecorderLive.cc:    bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS)) != 0 ;
+    CWriter.cc:    if( flag == BULK_ABSORB )
+    CWriter.cc:   a some photons that previously ended with an "AB" BULK_ABSORB to ones with 
+    OpStatus.cc:    return (flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
+    OpStatus.cc:        flag = BULK_ABSORB ;
+    epsilon:cfg4 blyth$ 
+
+
+::
+
+    175 void SEvt::continuePhoton(const spho& sp)
+    176 {   
+    177     unsigned id = sp.id ; 
+    178     assert( id < pho.size() );
+    ...
+    200     // HMM: could directly change photon[id] via ref ? 
+    201     // But are here taking a copy to current_photon, and relying on copyback at SEvt::endPhoton
+    202     current_photon = photon[id] ; 
+    203     current_photon.flagmask &= ~BULK_ABSORB  ; // scrub BULK_ABSORB from flagmask
+    204     current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
+    205 }
+
+
+
+
+
+

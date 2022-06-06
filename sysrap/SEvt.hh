@@ -49,16 +49,14 @@ struct SYSRAP_API SEvt
 {
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
-
-    std::vector<spho>  pho0 ;  // unordered as they come 
+    std::vector<spho>  pho0 ;  // unordered push_back as they come 
     std::vector<spho>  pho ;   // spho are label structs holding 4*int 
     std::vector<sphoton> photon ; 
-
+    std::vector<sphoton> record ; 
 
     //sgs  current_gs ;   NOT USEFUL AS S OFTEN TRUMPS C, NEED TO USE THE GS index in the pho label to get actual sgs genstep label 
     spho current_pho ; 
     sphoton current_photon ; 
-
 
     const SCompProvider*  provider ; 
     NPFold*   fold ; 
@@ -68,7 +66,6 @@ struct SYSRAP_API SEvt
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
     static bool RECORD_PHOTON ; 
-
 
     static void Check(); 
     static sgs AddGenstep(const quad6& q); 
@@ -92,6 +89,7 @@ struct SYSRAP_API SEvt
     unsigned getNumPhoton() const ; 
     sgs addGenstep(const quad6& q) ; 
     sgs addGenstep(const NP* a) ; 
+    const sgs& get_gs(const spho& sp); // lookup sgs genstep label corresponding to spho photon label  
 
     void beginPhoton(const spho& sp); 
     void continuePhoton(const spho& sp); 

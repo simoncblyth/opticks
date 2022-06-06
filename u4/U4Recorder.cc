@@ -89,7 +89,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
 
     sphoton& photon = evt->current_photon ;
     //photon.set_flag( flag ); 
- 
     U4StepPoint::Update(photon, post_point); 
 }
 void U4Recorder::PostUserTrackingAction_Optical(const  G4Track* track)
