@@ -4,8 +4,10 @@ U4Recorder
 ===========
 
 U4Recorder is NOT a G4UserRunAction, G4UserEventAction, ... despite 
-having the corresponding method names. The U4Recorder relies on the RunAction 
-etc.. calling its methods.  
+having the corresponding method names. 
+
+The U4Recorder relies on the RunAction, EventAction  etc.. classes 
+calling those lifecycle methods.   
 
 **/
 
@@ -37,6 +39,11 @@ struct U4_API U4Recorder
     void PostUserTrackingAction(const G4Track*);
 
     void UserSteppingAction(const G4Step*);
+
+
+    void PreUserTrackingAction_Optical(const G4Track*);
+    void PostUserTrackingAction_Optical(const G4Track*);
+    void UserSteppingAction_Optical(const G4Track* track, const G4Step* step); 
 };
 
 

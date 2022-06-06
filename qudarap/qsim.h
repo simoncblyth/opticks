@@ -1055,6 +1055,12 @@ inline QSIM_METHOD void qsim::reflect_specular( sphoton& p, const quad2* prd, cu
 qsim::mock_propagate
 ----------------------
 
+This uses mock input prd (quad2) to provide a CUDA only (no OptiX, no geometry) 
+test of qsim propagation machinery. 
+
+* NB: qsim::mock_propagate is intended to be very similar to CSGOptiX/CSGOptiX7.cu::simulate 
+
+
 TODO
 ~~~~~
 

@@ -29,6 +29,8 @@ set(SOURCES
     U4Material.cc
     U4VolumeMaker.cc
     U4Recorder.cc
+    U4OpBoundaryProcess.cc
+    U4StepPoint.cc
 ) 
 
 set(HEADERS
@@ -43,6 +45,8 @@ set(HEADERS
     U4Material.hh
     U4VolumeMaker.hh
     U4Recorder.hh
+    U4OpBoundaryProcess.hh
+    U4StepPoint.hh
 )
 
 

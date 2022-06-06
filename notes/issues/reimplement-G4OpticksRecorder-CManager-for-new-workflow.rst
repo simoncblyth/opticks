@@ -125,6 +125,34 @@ U4RecorderTest with S+C being collected and reemission disabled
     283 }
 
 
+Switching on reemission triggers the assert again with pho0, not with pho
+----------------------------------------------------------------------------
+
+* YEP: the assert is expected with pho0 (push_back labels) when reemission is enabled, 
+  as without the reemission "re-join" bookkeeping it looks like have more photons than genstep slots.
+
+* with the slotted-in persisting the constraints are expected to be followed, they are currently
+
+
+::
+
+    AssertionError                            Traceback (most recent call last)
+    ~/opticks/u4/tests/U4RecorderTest.py in <module>
+         50 
+         51      # pho: labels are collected within U4Recorder::PreUserTrackingAction
+    ---> 52      check_pho_labels(t.pho0)
+         53      check_pho_labels(t.pho)
+         54 
+
+    ~/opticks/u4/tests/U4RecorderTest.py in check_pho_labels(l)
+         31 
+         32      id_u, id_c = np.unique( id_, return_counts=True  )
+    ---> 33      assert np.all( id_c == 1 )
+         34      # expecting the photon identity index to be unique within event, so these should all be 1
+         35      # if not then that points to problem with offsetting ?
+
+     
+
 
 
 
@@ -184,11 +212,32 @@ cfg4/CCtx
     * aspects close to Geant4 can be migrated verbatim 
     
 cfg4/CRecorder
+    * lifecycle 
     * RE-joining : reemission photon history 
+    * CRecorder::Record
 
 cfg4/CWriter
     * CWriter::expand invoked by CWriter::BeginOfGenstep extends the NPY arrays by gs_photons
     * HMM: maybe can do this more simply with std::vector push_back, or concatenating sub NP arrays
       for the photons, records from each genstep 
+
+
+cfg4/CRec
+    holds the CCtx (like many others)
+
+    * CRec::add collects CStp
+
+
+
+General re-implementation approach
+-------------------------------------
+
+* arrays -> resized at genstep vectors of structs : sphoton, srec, sseq
+* spho::id mimicking CUDA photon index 
+
+
+
+
+
 
 

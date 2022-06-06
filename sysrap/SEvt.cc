@@ -32,7 +32,6 @@ sgs SEvt::AddGenstep(const quad6& q){ Check(); return INSTANCE->addGenstep(q);  
 sgs SEvt::AddGenstep(const NP* a){    Check(); return INSTANCE->addGenstep(a); }
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
 void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
-void SEvt::AddPho( const spho& sp ){ Check() ; INSTANCE->addPho(sp) ; }
 
 void SEvt::Clear(){ Check() ; INSTANCE->clear();  }
 void SEvt::Save(){  Check() ; INSTANCE->save(); }
@@ -83,61 +82,90 @@ sgs SEvt::addGenstep(const NP* a)
     return s ; 
 }
 
+bool SEvt::RECORD_PHOTON = true ; 
 
 sgs SEvt::addGenstep(const quad6& q)
 {
-    sgs s = {} ;   // genstep summary struct 
-
     unsigned offset = getNumPhoton() ; // number of photons in event before this genstep  (actually since last reset) 
     unsigned q_numphoton = q.numphoton() ; 
 
+    sgs s = {} ;                // genstep summary struct 
     s.index = genstep.size() ;  // 0-based genstep index in event (actually since last reset)  
-    s.photons = q_numphoton ;  
-    s.offset = offset ;   
+    s.photons = q_numphoton ;   // numphoton in the genstep 
+    s.offset = offset ;         // event global photon offset 
     s.gentype = q.gentype() ; 
 
+    current_gs = s ; 
+
+    // gs labels and gensteps in order of collection
     gs.push_back(s) ; 
     genstep.push_back(q) ; 
 
-    pho.resize( offset + q_numphoton );  
+    if(RECORD_PHOTON)
+    {
+        unsigned tot_numphoton = offset + q_numphoton ;   // numphotons from all gensteps in event so far plus this one just added
+        pho.resize(    tot_numphoton );  
+        photon.resize( tot_numphoton ); 
+    }
 
     return s ; 
 }
 
-void SEvt::addPho(const spho& sp)
+/**
+SEvt::beginPhoton
+------------------
+
+
+**/
+void SEvt::beginPhoton(const spho& sp)
 {
-    pho0.push_back(sp);   // unorded
+    if(!RECORD_PHOTON) return ; 
 
     unsigned id = sp.id ; 
     assert( id < pho.size() );  
-    pho[id] = sp ; 
 
+    pho0.push_back(sp);   // push_back asis
+    pho[id] = sp ;        // slotted in 
+
+
+    current_pho = sp ; 
+    current_photon.zero() ; 
+    current_photon.set_idx(id); 
 }
 
-NP* SEvt::getPho0() const 
+/**
+SEvt::checkPhoton
+-------------------
+
+Called from  U4Recorder::UserSteppingAction
+
+**/
+
+void SEvt::checkPhoton(const spho& sp) const 
 {
-    unsigned num_pho0 = pho0.size() ; 
-    if(num_pho0 == 0) return nullptr ; 
-    NP* a = NP::Make<int>( num_pho0, 4 );  
-    a->read2( (int*)pho0.data()  );  
-    return a ; 
+    assert( sp.isIdentical(current_pho) ); 
 }
-NP* SEvt::getPho() const 
+
+void SEvt::endPhoton(const spho& sp)
 {
-    unsigned num_pho = pho.size() ; 
-    if(num_pho == 0) return nullptr ; 
-    NP* a = NP::Make<int>( num_pho, 4 );  
-    a->read2( (int*)pho.data()  );  
-    return a ; 
+    assert( sp.isIdentical(current_pho) ); 
+    unsigned id = sp.id ; 
+    photon[id] = current_photon ; 
 }
-NP* SEvt::getGS() const
-{
-    unsigned num_gs = gs.size() ; 
-    if(num_gs == 0) return nullptr ; 
-    NP* a = NP::Make<int>( num_gs, 4 );  
-    a->read2( (int*)gs.data() );  
-    return a ; 
-}
+
+NP* SEvt::getPho0() const { return NP::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
+NP* SEvt::getPho() const {  return NP::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
+NP* SEvt::getGS() const {   return NP::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
+NP* SEvt::getPhoton() const { return NP::Make<float>( (float*)photon.data(), int(photon.size()), 4, 4 ); } 
+
+
+/**
+SEvt::savePho
+--------------
+
+TODO: this just temporary, should be using NPFold for standardized persisting 
+
+**/
 
 void SEvt::savePho(const char* dir_) const 
 {
@@ -155,6 +183,11 @@ void SEvt::savePho(const char* dir_) const
     NP* g = getGS(); 
     LOG(info) << " g " << ( g ? g->sstr() : "-" ) ; 
     if(g) g->save(dir, "gs.npy"); 
+
+    NP* p = getPhoton(); 
+    LOG(info) << " p " << ( p ? p->sstr() : "-" ) ; 
+    if(p) p->save(dir, "p.npy"); 
+
 }
 
 

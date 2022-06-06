@@ -7,6 +7,11 @@
 
 #include "U4Recorder.hh"
 #include "U4Track.h"
+#include "U4StepPoint.hh"
+#include "U4OpBoundaryProcess.hh"
+#include "G4OpBoundaryProcess.hh"
+#include "U4OpBoundaryProcessStatus.h"
+
 
 
 const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG"); 
@@ -39,25 +44,50 @@ void U4Recorder::EndOfEventAction(const G4Event*)
 }
 void U4Recorder::PreUserTrackingAction(const G4Track* track)
 {
-    bool op = U4Track::IsOptical(track) ; 
+    if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); 
+}
+void U4Recorder::PostUserTrackingAction(const G4Track* track)
+{ 
+    if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical(track); 
+}
+void U4Recorder::UserSteppingAction(const G4Step* step)
+{
+    G4Track* track = step->GetTrack(); 
+    if(U4Track::IsOptical(track)) UserSteppingAction_Optical(track, step); 
+}
+
+
+void U4Recorder::PreUserTrackingAction_Optical(const  G4Track* track)
+{
+    SEvt* evt = SEvt::Get(); 
+    spho sp = U4Track::Label(track);  // just label, not sphoton 
+    assert( sp.isDefined() );         // all photons are expected to be labelled, TODO: torch photons
+    evt->beginPhoton(sp);       
+}
+
+void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* step)
+{
+    SEvt* evt = SEvt::Get(); 
     spho sp = U4Track::Label(track); 
+    assert( sp.isDefined() );   // all photons are expected to be labelled, TODO: torch photons
 
-    if(sp.isDefined()) 
-    {
-        SEvt::AddPho(sp); 
-    }
-    else
-    {
-        if(op) LOG(fatal) << " unlabelled photon " << U4Track::Desc(track) ; 
-    }
+    evt->checkPhoton(sp); 
+
+    //unsigned status = U4OpBoundaryProcess::GetStatus() ; 
+    //const char* name = U4OpBoundaryProcessStatus::Name(status) ; 
+    //LOG(info) << " status " << status << " name " << name ; 
+
+    //const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+
+    U4StepPoint::Update(evt->current_photon, post ); 
+}
+void U4Recorder::PostUserTrackingAction_Optical(const  G4Track* track)
+{
+    SEvt* evt = SEvt::Get(); 
+    spho sp = U4Track::Label(track);  // just label, not sphoton 
+    assert( sp.isDefined() );         // all photons are expected to be labelled, TODO: torch photons
+    evt->endPhoton(sp);       
 }
 
-void U4Recorder::PostUserTrackingAction(const G4Track*)
-{
-    //LOG(info); 
-}
-void U4Recorder::UserSteppingAction(const G4Step*)
-{
-    //LOG(info); 
-}
 

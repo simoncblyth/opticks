@@ -46,9 +46,13 @@ struct NP
     template<typename T> static NP*  Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
     template<typename T> static NP*  MakeDiv( const NP* src, unsigned mul  ); 
     template<typename T> static NP*  Make( const std::vector<T>& src ); 
+    
+    template<typename T, typename... Args> static NP*  Make(const T* src, Args ... shape );  // Make_ellipsis
+
     template<typename T> static NP*  Make( T d0, T v0, T d1, T v1 ); 
     template<typename T> static T To( const char* a ); 
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
+
 
 
     template<typename T> static unsigned NumSteps( T x0, T x1, T dx ); 
@@ -3514,6 +3518,37 @@ template <typename T> NP* NP::Make( int ni_, int nj_, int nk_, int nl_, int nm_,
     return a ; 
 }
 
+/**
+NP::Make "Make_ellipsis"
+--------------------------
+
+This "Make_ellipsis" method combines allocation of the array and populating it 
+from the src data. This is intended to facilitate creating arrays from vectors
+of struct, by using simple template types  (int, float, double etc.. )  
+together with array item shapes appropriate to the elements of the struct. 
+For example::
+
+   struct demo { int x,y,z,w ; } ; 
+   std::vector<demo> dd ; 
+   dd.push_back( {1,2,3,4} ); 
+
+   NP* a = NP::Make<int>( (int*)dd.data() , int(dd.size()) , 4 ); 
+
+The product of the shape integers MUST correspond to the number of 
+values provided from the src data. 
+When the first int shape dimension is zero a nullptr is returned.
+
+**/
+
+template<typename T, typename... Args> NP* NP::Make(const T* src, Args ... args ) 
+{
+    std::string dtype = descr_<T>::dtype() ; 
+    std::vector<int> shape = {args...};
+    if(shape.size() > 0 && shape[0] == 0) return nullptr ; 
+    NP* a = new NP(dtype.c_str(), shape ); 
+    a->read2(src);  
+    return a ; 
+}
 
 
 template <typename T> void NP::Write(const char* dir, const char* reldir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
