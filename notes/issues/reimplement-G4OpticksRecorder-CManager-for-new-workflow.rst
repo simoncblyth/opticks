@@ -228,6 +228,9 @@ cfg4/CRec
     * CRec::add collects CStp
 
 
+cfg4/CStp
+    takes a copy of G4Step
+
 
 General re-implementation approach
 -------------------------------------
@@ -236,8 +239,128 @@ General re-implementation approach
 * spho::id mimicking CUDA photon index 
 
 
+Flag setting is involved in the old way
+-------------------------------------------
+
+* CRecorder::postTrackWriteSteps looks ahead to status of next step... so have to collect steps ?
+
+* maybe treat BULK_REEMIT like CERENKOV and SCINTILLATION generation flags for step zero 
+  then can avoid the stage argument 
+
+* Q: where does initial flag get recorded ?
+
+
+::
+
+    345 unsigned int OpStatus::OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
+    346 #endif
+    347 {
+    348     G4StepStatus status = point->GetStepStatus()  ;
+    349     // TODO: cache the relevant process objects, so can just compare pointers ?
+    350     const G4VProcess* process = point->GetProcessDefinedStep() ;
+    351     const G4String& processName = process ? process->GetProcessName() : "NoProc" ;
+    352 
+    353     bool transportation = strcmp(processName,"Transportation") == 0 ;
+    354     bool scatter = strcmp(processName, "OpRayleigh") == 0 ;
+    355     bool absorption = strcmp(processName, "OpAbsorption") == 0 ;
+    356 
+    357     unsigned flag(0);
+    358 
+    359     // hmm stage and REJOINing look kinda odd here, do elsewhere ?
+    360     // moving it first, breaks seqhis matching for multi-RE lines 
+    361 
+    362     if(absorption && status == fPostStepDoItProc )
+    363     {
+    364         flag = BULK_ABSORB ;
+    365     }
+    366     else if(scatter && status == fPostStepDoItProc )
+    367     {
+    368         flag = BULK_SCATTER ;
+    369     }
+    370     else if( stage == CStage::REJOIN )
+    371     {
+    372         flag = BULK_REEMIT ;
+    373     }
+    374     else if(transportation && status == fGeomBoundary )
+    375     {
 
 
 
+Q: Where does initial genflag come from ?
+-------------------------------------------
+
+::
+
+    epsilon:sysrap blyth$ opticks-f GentypeToPhotonFlag
+    ./cfg4/CGenstep.cc:    return OpticksGenstep_::GentypeToPhotonFlag(gentype); 
+    ./cfg4/CCtx.cc:    return OpticksGenstep_::GentypeToPhotonFlag(_gentype); 
+    ./sysrap/OpticksGenstep.h:    static unsigned GentypeToPhotonFlag(char gentype); // 'C' 'S' 'T' -> CK, SI, TO
+    ./sysrap/OpticksGenstep.h:inline unsigned OpticksGenstep_::GentypeToPhotonFlag(char gentype)  // static
+
+::
+
+    337 void CCtx::setGentype(char gentype)
+    338 {
+    339     _gentype = gentype ;
+    340 }
+    341 
+    342 unsigned CCtx::getGenflag() const
+    343 {
+    344     return OpticksGenstep_::GentypeToPhotonFlag(_gentype);
+    345 }
+    346 
+
+    epsilon:opticks blyth$ opticks-f getGenflag 
+    ./cfg4/CGenstep.cc:unsigned CGenstep::getGenflag() const
+    ./cfg4/CCtx.cc:unsigned CCtx::getGenflag() const
+    ./cfg4/CRecorder.cc:        unsigned preFlag = first ? m_ctx._gs.getGenflag() : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
+    ./cfg4/CCtx.hh:    unsigned  getGenflag() const ;
+    ./cfg4/CGenstep.hh:    unsigned getGenflag() const ;  // SI CK TO from gentype 'C' 'S' 'T'
+    ./cfg4/CRec.cc:                                                 m_ctx._gs.getGenflag()
+    epsilon:opticks blyth$ 
+
+::
+
+    479 void CRecorder::postTrackWriteSteps()
+    480 {
+    ...
+    632 
+    633         unsigned preFlag = first ? m_ctx._gs.getGenflag() : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
+    634 
+
+
+::
+
+    np.unique(t.p.view(np.uint32)[:,3,3] , return_counts=True )  
+
+
+Hmm all flags are scintillation when running with both S+C::
+
+    In [1]: np.unique(t.p.view(np.uint32)[:,3,3] , return_counts=True )                                                                                                                                     
+    Out[1]: (array([2], dtype=uint32), array([23548]))
+
+
+
+Looks like the C current_gs gets stomped on by S::
+
+    2022-06-06 18:34:25.598 INFO  [16587114] [U4Recorder::BeginOfRunAction@31] 
+    2022-06-06 18:34:25.598 INFO  [16587114] [U4Recorder::BeginOfEventAction@39] 
+    2022-06-06 18:34:25.598 INFO  [16587114] [SEvt::addGenstep@99]  s.desc sgs: idx   0 pho    62 off      0 typ G4Cerenkov_modified
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::addGenstep@99]  s.desc sgs: idx   1 pho     1 off     62 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::addGenstep@99]  s.desc sgs: idx   2 pho     1 off     63 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::addGenstep@99]  s.desc sgs: idx   3 pho     1 off     64 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::addGenstep@99]  s.desc sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.599 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.600 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+    2022-06-06 18:34:25.600 INFO  [16587114] [SEvt::beginPhoton@143]  gentype 5 current_gs sgs: idx   4 pho     1 off     65 typ DsG4Scintillation_r4695
+
+Seems cannot rely on current_gs, so instead use spho::gs index to access the genstep corresponding to the photon. 
 
 

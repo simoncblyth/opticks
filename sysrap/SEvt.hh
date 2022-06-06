@@ -55,7 +55,7 @@ struct SYSRAP_API SEvt
     std::vector<sphoton> photon ; 
 
 
-    sgs  current_gs ; 
+    //sgs  current_gs ;   NOT USEFUL AS S OFTEN TRUMPS C, NEED TO USE THE GS index in the pho label to get actual sgs genstep label 
     spho current_pho ; 
     sphoton current_photon ; 
 
@@ -94,6 +94,7 @@ struct SYSRAP_API SEvt
     sgs addGenstep(const NP* a) ; 
 
     void beginPhoton(const spho& sp); 
+    void continuePhoton(const spho& sp); 
     void checkPhoton(const spho& sp) const ; 
     void endPhoton(const spho& sp); 
 

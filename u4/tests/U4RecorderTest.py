@@ -64,3 +64,12 @@ if __name__ == '__main__':
      gn = l[:,3]
 
 
+     idx = t.p.view(np.uint32)[:,3,2] 
+     assert np.all( np.arange( len(t.p) ) == idx ) 
+
+     flagmask_u, flagmask_c = np.unique(t.p.view(np.uint32)[:,3,3], return_counts=True)    
+     print("flagmask_u:%s " % str(flagmask_u))
+     print("flagmask_c:%s " % str(flagmask_c))
+
+
+

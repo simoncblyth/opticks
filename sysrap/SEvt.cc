@@ -6,6 +6,7 @@
 #include "SEvt.hh"
 #include "SEvent.hh"
 #include "SEventConfig.hh"
+#include "OpticksGenstep.h"
 #include "SComp.h"
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
@@ -95,7 +96,7 @@ sgs SEvt::addGenstep(const quad6& q)
     s.offset = offset ;         // event global photon offset 
     s.gentype = q.gentype() ; 
 
-    current_gs = s ; 
+    LOG(info) << " s.desc " << s.desc() ; 
 
     // gs labels and gensteps in order of collection
     gs.push_back(s) ; 
@@ -103,7 +104,8 @@ sgs SEvt::addGenstep(const quad6& q)
 
     if(RECORD_PHOTON)
     {
-        unsigned tot_numphoton = offset + q_numphoton ;   // numphotons from all gensteps in event so far plus this one just added
+        // numphotons from all gensteps in event so far plus this one just added
+        unsigned tot_numphoton = offset + q_numphoton ;   
         pho.resize(    tot_numphoton );  
         photon.resize( tot_numphoton ); 
     }
@@ -119,18 +121,62 @@ SEvt::beginPhoton
 **/
 void SEvt::beginPhoton(const spho& sp)
 {
-    if(!RECORD_PHOTON) return ; 
-
     unsigned id = sp.id ; 
     assert( id < pho.size() );  
 
-    pho0.push_back(sp);   // push_back asis
-    pho[id] = sp ;        // slotted in 
+    pho0.push_back(sp);   // push_back asis : just for initial dev, TODO: remove 
 
-
+    pho[id] = sp ;        // slot in the label  
     current_pho = sp ; 
+
+    // use gs index from the spho label to lookup genstep type 
+    assert( sp.gs < int(gs.size()) ); 
+    const sgs& _gs =  gs[sp.gs] ; 
+    int gentype = _gs.gentype ;
+
+    unsigned genflag = OpticksGenstep_::GenstepToPhotonFlag(gentype); 
+    assert( genflag == CERENKOV || genflag == SCINTILLATION || genflag == TORCH ); 
+
+    LOG(info) << " _gs " << _gs.desc() ; 
+
     current_photon.zero() ; 
     current_photon.set_idx(id); 
+    current_photon.set_flag(genflag); 
+}
+
+/**
+SEvt::rejoinPhoton
+-------------------
+
+Called from U4Recorder::PreUserTrackingAction_Optical for G4Track with 
+pho label indicating a reemission generation greater than zero.
+
+**/
+void SEvt::continuePhoton(const spho& sp)
+{
+    unsigned id = sp.id ; 
+    assert( id < pho.size() );  
+
+    // check labels of parent and child are as expected
+    const spho& parent_pho = pho[id]; 
+    assert( sp.isSameLineage( parent_pho) ); 
+    assert( sp.gn == parent_pho.gn + 1 ); 
+ 
+    const sphoton& parent_photon = photon[id] ; 
+    unsigned parent_idx = parent_photon.idx() ; 
+    assert( parent_idx == id ); 
+
+    // replace label and current_photon
+    pho[id] = sp ;   
+    current_pho = sp ; 
+    current_photon = photon[id] ; 
+}
+
+void SEvt::endPhoton(const spho& sp)
+{
+    assert( sp.isSameLineage(current_pho) ); 
+    unsigned id = sp.id ; 
+    photon[id] = current_photon ; 
 }
 
 /**
@@ -143,15 +189,9 @@ Called from  U4Recorder::UserSteppingAction
 
 void SEvt::checkPhoton(const spho& sp) const 
 {
-    assert( sp.isIdentical(current_pho) ); 
+    assert( sp.isSameLineage(current_pho) ); 
 }
 
-void SEvt::endPhoton(const spho& sp)
-{
-    assert( sp.isIdentical(current_pho) ); 
-    unsigned id = sp.id ; 
-    photon[id] = current_photon ; 
-}
 
 NP* SEvt::getPho0() const { return NP::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
 NP* SEvt::getPho() const {  return NP::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
@@ -187,8 +227,8 @@ void SEvt::savePho(const char* dir_) const
     NP* p = getPhoton(); 
     LOG(info) << " p " << ( p ? p->sstr() : "-" ) ; 
     if(p) p->save(dir, "p.npy"); 
-
 }
+
 
 
 
@@ -203,17 +243,8 @@ by SEvt::clear
 
 **/
 
-NP* SEvt::getGenstep() const 
-{
-    unsigned num_gs = genstep.size() ; 
-    NP* a = nullptr ; 
-    if(num_gs > 0)
-    {
-        a = NP::Make<float>( num_gs, 6, 4 );  
-        a->read2( (float*)genstep.data() );  
-    }
-    return a ; 
-}
+NP* SEvt::getGenstep() const { return NP::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
+
 
 void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE 
 {
