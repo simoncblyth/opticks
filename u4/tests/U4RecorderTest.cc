@@ -13,6 +13,7 @@
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
 #include "SPath.hh"
+#include "SEventConfig.hh"
 #include "NP.hh"
 
 #include "U4VolumeMaker.hh"
@@ -126,6 +127,12 @@ G4GeometryManager::OpenGeometry is needed to avoid cleanup warning::
 int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
+
+    unsigned num_bounce = 9 ; 
+    SEventConfig::SetMaxBounce(num_bounce); 
+    SEventConfig::SetMaxRecord(num_bounce+1); 
+    SEventConfig::SetMaxRec(num_bounce+1); 
+    SEventConfig::SetMaxSeq(num_bounce+1); 
 
     SEvt evt ;   // required for genstep collection 
 

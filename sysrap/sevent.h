@@ -16,6 +16,10 @@ However for clarity separate fields are used to
 distinguish photon test running that directly uses
 QEvent::setNumPhoton 
 
+In CPU only Geant4 running an sevent.h instance is 
+instanciated by U4Recorder::U4Recorder to assist with 
+Geant4 mocking of Opticks events.  
+
 **/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -23,8 +27,6 @@ QEvent::setNumPhoton
 #else
 #    define SEVENT_METHOD inline 
 #endif
-
-
 
 struct float4 ; 
 struct float2 ; 

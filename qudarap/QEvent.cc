@@ -4,14 +4,16 @@
 #include "SEvt.hh"
 #include "SGeo.hh"
 #include "SPath.hh"
+
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
 #include "srec.h"
 #include "sseq.h"
+#include "sevent.h"
+
 #include "sqat4.h"
 #include "stran.h"
-#include "sevent.h"
 #include "SU.hh"
 
 #include "SComp.h"
@@ -36,13 +38,10 @@ const plog::Severity QEvent::LEVEL = PLOG::EnvLevel("QEvent", "DEBUG");
 QEvent* QEvent::INSTANCE = nullptr ; 
 QEvent* QEvent::Get(){ return INSTANCE ; }
 
-
-
 sevent* QEvent::getDevicePtr() const
 {
     return d_evt ; 
 }
-
 
 /**
 QEvent::QEvent
@@ -50,14 +49,16 @@ QEvent::QEvent
 
 Instanciation allocates device buffers with sizes configured by SEventConfig
 
-* As selector is only needed CPU side it is not down in sevent.h
+* As selector is only needed CPU side it is not down in sevent.h 
+  but it could be in SEvt.hh 
 
 **/
 
 QEvent::QEvent()
     :
-    selector(new sphoton_selector(SEventConfig::HitMask())),  
-    evt(new sevent),
+    sev(SEvt::Get()),
+    selector(sev ? sev->selector : nullptr),
+    evt(sev ? sev->evt : nullptr),
     d_evt(QU::device_alloc<sevent>(1)),
     gs(nullptr),
     p(nullptr),
@@ -67,49 +68,29 @@ QEvent::QEvent()
     init(); 
 }
 
-
-
-
-
 /**
 QEvent::init
 --------------
 
 Only configures limits, no allocation yet. Allocation happens in QEvent::setGenstep QEvent::setNumPhoton
 
+HMM: hostside sevent.h instance could reside in SEvt together with selector then hostside setup
+can be common between the branches 
+
 **/
 
 void QEvent::init()
 {
-    SEvt* sev = SEvt::Get(); 
-    if(sev) sev->setCompProvider(this);  
     if(!sev) LOG(fatal) << "QEvent instanciated before SEvt instanciated : this is not going to fly " ; 
+
     assert(sev); 
+    assert(evt); 
+    assert(selector); 
 
-    evt->init();  
-    LOG(fatal) << evt->desc() ; 
+    sev->setCompProvider(this);  
 }
 
-/**
-QEvent::getDomain
-------------------
-
-HMM: down to sevent.h perhaps ?
-**/
-
-NP* QEvent::getDomain() const 
-{
-    quad4 dom[2] ; 
-    evt->get_domain(dom[0]); 
-    evt->get_config(dom[1]); 
-    NP* domain = NP::Make<float>( 2, 4, 4 ); 
-    domain->read2<float>( (float*)&dom[0] ); 
-    // actually it makes more sense to place metadata on domain than hits 
-    // as domain will always be available
-    domain->set_meta<unsigned>("hitmask", selector->hitmask );  
-    domain->set_meta<std::string>("creator", "QEvent::getDomain" );  
-    return domain ; 
-}
+NP* QEvent::getDomain() const { return sev ? sev->getDomain() : nullptr ; }
 
 
 std::string QEvent::desc() const

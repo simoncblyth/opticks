@@ -4,6 +4,7 @@ SEvt.hh
 =========
 
 Q: Where is this instanciated canonically ?
+A: So far in the mains of tests
 
 
 Attempting to do this header only gives duplicate symbol for the SEvt::INSTANCE.
@@ -14,7 +15,6 @@ for simplicity.
 It is possible with c++11 but is non-intuitive
 
 * https://stackoverflow.com/questions/11709859/how-to-have-static-data-members-in-a-header-only-library
-
 
 Replacing cfg4/CGenstepCollector
 
@@ -39,6 +39,8 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "sphoton.h"
 #include "sgs.h"
 
+struct sphoton_selector ; 
+struct sevent ; 
 struct NP ; 
 struct NPFold ; 
 struct SCompProvider ; 
@@ -47,6 +49,9 @@ struct SCompProvider ;
 
 struct SYSRAP_API SEvt
 {
+    sphoton_selector* selector ; 
+    sevent* evt ; 
+
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
     std::vector<spho>  pho0 ;  // unordered push_back as they come 
@@ -82,7 +87,9 @@ struct SYSRAP_API SEvt
 
 
     SEvt(); 
+    void init(); 
     void setCompProvider(const SCompProvider* provider); 
+    NP* getDomain() const ; 
 
     void clear() ; 
     unsigned getNumGenstep() const ; 

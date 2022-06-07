@@ -2,6 +2,9 @@
 #include "squad.h"
 #include "sphoton.h"
 #include "spho.h"
+#include "srec.h"
+#include "sevent.h"
+
 #include "SEvt.hh"
 #include "PLOG.hh"
 
@@ -18,8 +21,6 @@ const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG");
 
 U4Recorder* U4Recorder::INSTANCE = nullptr ; 
 U4Recorder* U4Recorder::Get(){ return INSTANCE ; }
-
-
 
 U4Recorder::U4Recorder()
 {
@@ -60,15 +61,15 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
     spho sp = U4Track::Label(track);  // just label, not sphoton 
     assert( sp.isDefined() );         // all photons are expected to be labelled, TODO: torch+input photons
-    SEvt* evt = SEvt::Get(); 
+    SEvt* sev = SEvt::Get(); 
 
     if(sp.gn == 0)
     {
-        evt->beginPhoton(sp);       
+        sev->beginPhoton(sp);       
     }
     else if( sp.gn > 0 )
     {
-        evt->continuePhoton(sp); 
+        sev->continuePhoton(sp); 
     }
 }
 
@@ -114,8 +115,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     spho sp = U4Track::Label(track); 
     assert( sp.isDefined() );   // all photons are expected to be labelled, TODO: torch+input photons
 
-    SEvt* evt = SEvt::Get(); 
-    evt->checkPhoton(sp); 
+    SEvt* sev = SEvt::Get(); 
+    sev->checkPhoton(sp); 
 
     //unsigned status = U4OpBoundaryProcess::GetStatus() ; 
     //const char* name = U4OpBoundaryProcessStatus::Name(status) ; 
@@ -124,7 +125,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
-    sphoton& photon = evt->current_photon ;
+    sphoton& photon = sev->current_photon ;
 
     bool single_bit = photon.flagmask_count() == 1 ; 
     // single bit genflag gets set by SEvt::beginPhoton, so the flagmask will 
@@ -133,7 +134,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     if(single_bit)
     { 
         U4StepPoint::Update(photon, pre);
-        evt->pointPhoton(sp); 
+        sev->pointPhoton(sp); 
     }
 
     U4StepPoint::Update(photon, post); 
@@ -141,7 +142,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     unsigned flag = 10 ; 
 
     photon.set_flag( flag );
-    evt->pointPhoton(sp); 
+    sev->pointPhoton(sp); 
 }
      
 

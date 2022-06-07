@@ -1,3 +1,11 @@
+
+#include "scuda.h"
+#include "squad.h"
+#include "sphoton.h"
+#include "srec.h"
+#include "sseq.h"
+#include "sevent.h"
+
 #include "PLOG.hh"
 #include "NP.hh"
 #include "NPFold.h"
@@ -16,13 +24,46 @@ SEvt* SEvt::INSTANCE = nullptr ;
 
 SEvt::SEvt()
     :
+    selector(new sphoton_selector(SEventConfig::HitMask())),
+    evt(new sevent),
     fold(new NPFold)
 { 
-    INSTANCE = this ; 
+    init(); 
 }
 
-SEvt* SEvt::Get(){ return INSTANCE ; }
+/**
+SEvt::init
+-----------
 
+Only configures limits, no allocation yet. 
+Device side allocation happens in QEvent::setGenstep QEvent::setNumPhoton
+
+**/
+
+void SEvt::init()
+{
+    INSTANCE = this ; 
+    evt->init(); 
+    LOG(fatal) << evt->desc() ;
+}
+
+NP* SEvt::getDomain() const
+{
+    quad4 dom[2] ;
+    evt->get_domain(dom[0]);
+    evt->get_config(dom[1]);
+    NP* domain = NP::Make<float>( 2, 4, 4 );
+    domain->read2<float>( (float*)&dom[0] );
+    // actually it makes more sense to place metadata on domain than hits 
+    // as domain will always be available
+    domain->set_meta<unsigned>("hitmask", selector->hitmask );
+    domain->set_meta<std::string>("creator", "SEvt::getDomain" );
+    return domain ;
+}
+
+
+
+SEvt* SEvt::Get(){ return INSTANCE ; }
 void SEvt::Check()
 {
     if(INSTANCE == nullptr) std::cout << "FATAL: must instanciate SEvt before using most SEvt methods" << std::endl ; 

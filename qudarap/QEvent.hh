@@ -7,10 +7,9 @@ struct qat4 ;
 struct quad6 ;
 struct NP ; 
 
-template <typename T> struct qselector ; 
+struct SEvt ; 
 struct sphoton_selector ; 
 
-template <typename T> struct QBuf ; 
 
 #include <vector>
 #include <string>
@@ -63,14 +62,14 @@ private:
 
     // NB members needed on both CPU+GPU or from the QEvent.cu functions 
     // should reside inside the sevent.h instance not up here in QEvent.hh
- 
-    sphoton_selector* selector ; 
-    sevent*      evt ; 
-    sevent*      d_evt ; 
-    NP*    gs ;  
-    const NP*    p  ; 
-    std::string  meta ; 
 
+    SEvt*             sev ;  
+    sphoton_selector* selector ; 
+    sevent*           evt ; 
+    sevent*           d_evt ; 
+    NP*               gs ;  
+    const NP*         p  ; 
+    std::string       meta ; 
 
 public:
     int   setGenstep();
@@ -125,9 +124,6 @@ private:
     void     uploadEvt(); 
 public:
     std::string desc() const ; 
-    std::string descMax() const ; 
-    std::string descNum() const ; 
-    std::string descBuf() const ; 
 
     void setMeta( const char* meta ); 
     bool hasMeta() const ; 
