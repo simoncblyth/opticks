@@ -4,7 +4,7 @@
 sevent : host/device communication instance
 =============================================
 
-Instantiation of sevent is done by QEvent::init 
+Instantiation of sevent is done by QEvent::QEvent
 and the instance is subsequently uploaded to the device after 
 device buffer allocations hence the sevent instance
 provides event config and device buffer pointers 
@@ -33,6 +33,14 @@ struct quad6 ;
 struct srec ; 
 struct sseq ; 
 struct sphoton ; 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include "SEventConfig.hh"
+#endif
 
 struct sevent
 {
@@ -89,7 +97,14 @@ struct sevent
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+    SEVENT_METHOD void init(); 
     SEVENT_METHOD void init_domain(float extent, float time_max); 
+
+    SEVENT_METHOD std::string descMax() const ; 
+    SEVENT_METHOD std::string descNum() const ; 
+    SEVENT_METHOD std::string descBuf() const ; 
+    SEVENT_METHOD std::string desc() const ; 
+
     SEVENT_METHOD void get_domain(quad4& dom) const ; 
     SEVENT_METHOD void get_config(quad4& cfg) const ; 
     SEVENT_METHOD void zero(); 
@@ -101,6 +116,23 @@ struct sevent
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 
+SEVENT_METHOD void sevent::init()
+{
+    max_genstep  = SEventConfig::MaxGenstep() ; 
+    max_photon   = SEventConfig::MaxPhoton()  ; 
+    max_simtrace = SEventConfig::MaxSimtrace()  ; 
+    max_bounce   = SEventConfig::MaxBounce()  ; 
+    max_record   = SEventConfig::MaxRecord()  ;  // full step record
+    max_rec      = SEventConfig::MaxRec()  ;     // compressed step record 
+    max_seq      = SEventConfig::MaxSeq()  ;     // seqhis 
+
+    zero(); 
+
+    float extent = SEventConfig::MaxExtent() ; 
+    float time_max = SEventConfig::MaxTime() ; 
+
+    init_domain( extent, time_max );  
+}
 SEVENT_METHOD void sevent::init_domain(float extent, float time_max)
 {
     center_extent.x = 0.f ; 
@@ -114,6 +146,71 @@ SEVENT_METHOD void sevent::init_domain(float extent, float time_max)
     wavelength_domain.x = w_center ;  // TODO: try to make this constexpr 
     wavelength_domain.y = w_extent ; 
 }
+
+SEVENT_METHOD std::string sevent::descMax() const
+{
+    int w = 5 ; 
+    std::stringstream ss ; 
+    ss 
+        << "sevent::descMax " 
+        << " evt.max_genstep "   << std::setw(w) << max_genstep  
+        << " evt.max_photon  "   << std::setw(w) << max_photon  
+        << " evt.max_simtrace  " << std::setw(w) << max_simtrace  
+        << " evt.max_bounce  "   << std::setw(w) << max_bounce 
+        << " evt.max_record  "   << std::setw(w) << max_record 
+        << " evt.max_rec  "      << std::setw(w) << max_rec
+        ;
+
+    std::string s = ss.str();  
+    return s ; 
+}
+
+SEVENT_METHOD std::string sevent::descNum() const
+{
+    int w = 5 ; 
+    std::stringstream ss ; 
+    ss 
+        << " sevent::descNum  " 
+        << " evt.num_genstep " << std::setw(w) << num_genstep 
+        << " evt.num_seed "    << std::setw(w) << num_seed   
+        << " evt.num_photon "  << std::setw(w) << num_photon
+        << " evt.num_simtrace "  << std::setw(w) << num_simtrace
+        << " evt.num_record "  << std::setw(w) << num_record
+        ;
+    std::string s = ss.str();  
+    return s ; 
+}
+
+SEVENT_METHOD std::string sevent::descBuf() const
+{
+    int w = 5 ; 
+    std::stringstream ss ; 
+    ss 
+        << " sevent::descBuf  " 
+        << " evt.genstep " << std::setw(w) << ( genstep ? "Y" : "N" )
+        << " evt.seed "    << std::setw(w) << ( seed    ? "Y" : "N" )  
+        << " evt.photon "  << std::setw(w) << ( photon  ? "Y" : "N" ) 
+        << " evt.simtrace "  << std::setw(w) << ( simtrace  ? "Y" : "N" ) 
+        << " evt.record "  << std::setw(w) << ( record  ? "Y" : "N" )
+        ;
+    std::string s = ss.str();  
+    return s ; 
+}
+
+
+SEVENT_METHOD std::string sevent::desc() const
+{
+    std::stringstream ss ; 
+    ss << descMax() << std::endl ;
+    ss << descBuf() << std::endl ;
+    ss << descNum() << std::endl ;
+    std::string s = ss.str();  
+    return s ; 
+}
+
+
+
+
 
 /**
 sevent::get_domain

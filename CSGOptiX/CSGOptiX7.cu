@@ -3,7 +3,7 @@ CSGOptiX7.cu
 ===================
 
 NB: ONLY CODE THAT MUST BE HERE DUE TO OPTIX DEPENDENCY SHOULD BE HERE
-everything else should be located elsewhere : mostly in qudarap: qevent, qsim 
+everything else should be located elsewhere : mostly in qudarap: sevent, qsim 
 or the sysrap basis types sphoton quad4 quad2 etc.. where the code is reusable 
 and more easily tested. 
 
@@ -23,7 +23,7 @@ and more easily tested.
 
 #include "qstate.h"
 #include "qsim.h"
-#include "qevent.h"
+#include "sevent.h"
 
 #include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
@@ -181,7 +181,7 @@ Params take central role in enabling this:
 Params
 ~~~~~~~
 
-* CPU side params including qsim.h qevent.h pointers instanciated in CSGOptiX::CSGOptiX 
+* CPU side params including qsim.h sevent.h pointers instanciated in CSGOptiX::CSGOptiX 
   and populated by CSGOptiX::init methods before being uploaded by CSGOptiX::prepareParam 
 
 
@@ -191,7 +191,7 @@ COMPARE WITH qsim::mock_propagate
 
 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
-    qevent* evt      = params.evt ; 
+    sevent* evt      = params.evt ; 
     if (launch_idx.x >= evt->num_photon) return;
 
     unsigned idx = launch_idx.x ;  // aka photon_id
@@ -269,7 +269,7 @@ if( index > 0 )
 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
     unsigned idx = launch_idx.x ;  // aka photon_id
-    qevent* evt  = params.evt ; 
+    sevent* evt  = params.evt ; 
     if (idx >= evt->num_simtrace) return;
 
     unsigned genstep_id = evt->seed[idx] ; 

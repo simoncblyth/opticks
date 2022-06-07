@@ -50,12 +50,13 @@ QEvent::QEvent
 
 Instanciation allocates device buffers with sizes configured by SEventConfig
 
-**/
+* As selector is only needed CPU side it is not down in sevent.h
 
+**/
 
 QEvent::QEvent()
     :
-    selector(new sphoton_selector(SEventConfig::HitMask())),
+    selector(new sphoton_selector(SEventConfig::HitMask())),  
     evt(new sevent),
     d_evt(QU::device_alloc<sevent>(1)),
     gs(nullptr),
@@ -85,26 +86,16 @@ void QEvent::init()
     if(!sev) LOG(fatal) << "QEvent instanciated before SEvt instanciated : this is not going to fly " ; 
     assert(sev); 
 
-    evt->max_genstep  = SEventConfig::MaxGenstep() ; 
-    evt->max_photon   = SEventConfig::MaxPhoton()  ; 
-    evt->max_simtrace = SEventConfig::MaxSimtrace()  ; 
-    evt->max_bounce   = SEventConfig::MaxBounce()  ; 
-    evt->max_record   = SEventConfig::MaxRecord()  ;  // full step record
-    evt->max_rec      = SEventConfig::MaxRec()  ;     // compressed step record 
-    evt->max_seq      = SEventConfig::MaxSeq()  ;     // seqhis 
-
-    evt->zero(); 
-    LOG(fatal) << descBuf() ; 
-
-    float extent = SEventConfig::MaxExtent() ; 
-    float time_max = SEventConfig::MaxTime() ; 
-
-    evt->init_domain( extent, time_max );  
-
-
-    LOG(fatal) << descMax() ; 
+    evt->init();  
+    LOG(fatal) << evt->desc() ; 
 }
 
+/**
+QEvent::getDomain
+------------------
+
+HMM: down to sevent.h perhaps ?
+**/
 
 NP* QEvent::getDomain() const 
 {
@@ -124,67 +115,10 @@ NP* QEvent::getDomain() const
 std::string QEvent::desc() const
 {
     std::stringstream ss ; 
-    ss << descMax() << std::endl ;
-    ss << descBuf() << std::endl ;
-    ss << descNum() << std::endl ;
+    ss << evt->desc() << std::endl ;
     std::string s = ss.str();  
     return s ; 
 }
-
-std::string QEvent::descMax() const
-{
-    // TODO: move imp into sevent
-    int w = 5 ; 
-    std::stringstream ss ; 
-    ss 
-        << "QEvent::descMax " 
-        << " evt.max_genstep " << std::setw(w) << evt->max_genstep  
-        << " evt.max_photon  " << std::setw(w) << evt->max_photon  
-        << " evt.max_simtrace  " << std::setw(w) << evt->max_simtrace  
-        << " evt.max_bounce  " << std::setw(w) << evt->max_bounce 
-        << " evt.max_record  " << std::setw(w) << evt->max_record 
-        << " evt.max_rec  "    << std::setw(w) << evt->max_rec
-        ;
-
-    std::string s = ss.str();  
-    return s ; 
-}
-
-std::string QEvent::descNum() const
-{
-    // TODO: move imp into sevent
-    int w = 5 ; 
-    std::stringstream ss ; 
-    ss 
-        << " QEvent::descNum  " 
-        << " evt.num_genstep " << std::setw(w) << evt->num_genstep 
-        << " evt.num_seed "    << std::setw(w) << evt->num_seed   
-        << " evt.num_photon "  << std::setw(w) << evt->num_photon
-        << " evt.num_simtrace "  << std::setw(w) << evt->num_simtrace
-        << " evt.num_record "  << std::setw(w) << evt->num_record
-        ;
-    std::string s = ss.str();  
-    return s ; 
-}
-
-std::string QEvent::descBuf() const
-{
-    // TODO: move imp into sevent
-    int w = 5 ; 
-    std::stringstream ss ; 
-    ss 
-        << " QEvent::descBuf  " 
-        << " evt.genstep " << std::setw(w) << ( evt->genstep ? "Y" : "N" )
-        << " evt.seed "    << std::setw(w) << ( evt->seed    ? "Y" : "N" )  
-        << " evt.photon "  << std::setw(w) << ( evt->photon  ? "Y" : "N" ) 
-        << " evt.simtrace "  << std::setw(w) << ( evt->simtrace  ? "Y" : "N" ) 
-        << " evt.record "  << std::setw(w) << ( evt->record  ? "Y" : "N" )
-        ;
-    std::string s = ss.str();  
-    return s ; 
-}
-
-
 
 
 void QEvent::setMeta(const char* meta_)
