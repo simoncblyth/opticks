@@ -5,7 +5,7 @@
 struct quad6 ; 
 struct NP ; 
 
-#include "sevent.h"  // just enum { XYZ, YZ, XZ, XY } ;   TODO: eliminate 
+#include "sxyz.h" 
 #include "SYSRAP_API_EXPORT.hh"
 
 struct SYSRAP_API SGenstep

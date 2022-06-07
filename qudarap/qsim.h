@@ -42,7 +42,7 @@ TODO:
 #include "sflow.h"
 #include "sqat4.h"
 #include "sc4u.h"
-#include "sevent.h"  
+#include "sxyz.h"  
 #include "sphoton.h"
 
 #include "storch.h"
@@ -1277,7 +1277,7 @@ be more useful and would allow storage within much less bits.
 
 TODO: implement local index by including photon_id offset with the gensteps 
 
-* NB the sevent.h enum order is different to the python one  eg XYZ=0 
+* NB the sxyz.h enum order is different to the python one  eg XYZ=0 
 **/
 
 inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 

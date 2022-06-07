@@ -217,7 +217,7 @@ set(HEADERS
     saabb.h
     stran.h
     ssincos.h
-    sevent.h
+    sxyz.h
     sc4u.h
     sbit_.h
     sbibit.h

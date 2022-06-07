@@ -11,7 +11,7 @@
 #include "sscint.h"
 #include "scarrier.h"
 
-#include "sevent.h"   // enum {XYZ, ...
+#include "sxyz.h" 
 
 
 #include "NP.hh"
