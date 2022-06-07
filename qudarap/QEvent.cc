@@ -11,6 +11,7 @@
 #include "sseq.h"
 #include "sqat4.h"
 #include "stran.h"
+#include "sevent.h"
 #include "SU.hh"
 
 #include "SComp.h"
@@ -28,7 +29,6 @@
 #include "QBuf.hh"
 #include "QU.hh"
 
-#include "qevent.h"
 
 template struct QBuf<quad6> ; 
 
@@ -38,7 +38,7 @@ QEvent* QEvent::Get(){ return INSTANCE ; }
 
 
 
-qevent* QEvent::getDevicePtr() const
+sevent* QEvent::getDevicePtr() const
 {
     return d_evt ; 
 }
@@ -56,8 +56,8 @@ Instanciation allocates device buffers with sizes configured by SEventConfig
 QEvent::QEvent()
     :
     selector(new sphoton_selector(SEventConfig::HitMask())),
-    evt(new qevent),
-    d_evt(QU::device_alloc<qevent>(1)),
+    evt(new sevent),
+    d_evt(QU::device_alloc<sevent>(1)),
     gs(nullptr),
     p(nullptr),
     meta()
@@ -133,7 +133,7 @@ std::string QEvent::desc() const
 
 std::string QEvent::descMax() const
 {
-    // TODO: move imp into qevent
+    // TODO: move imp into sevent
     int w = 5 ; 
     std::stringstream ss ; 
     ss 
@@ -152,7 +152,7 @@ std::string QEvent::descMax() const
 
 std::string QEvent::descNum() const
 {
-    // TODO: move imp into qevent
+    // TODO: move imp into sevent
     int w = 5 ; 
     std::stringstream ss ; 
     ss 
@@ -169,7 +169,7 @@ std::string QEvent::descNum() const
 
 std::string QEvent::descBuf() const
 {
-    // TODO: move imp into qevent
+    // TODO: move imp into sevent
     int w = 5 ; 
     std::stringstream ss ; 
     ss 
@@ -309,7 +309,7 @@ thrust::reduce using strided iterator summing over GPU side gensteps
 
 **/
 
-extern "C" unsigned QEvent_count_genstep_photons(qevent* evt) ; 
+extern "C" unsigned QEvent_count_genstep_photons(sevent* evt) ; 
 unsigned QEvent::count_genstep_photons()
 {
    return QEvent_count_genstep_photons( evt );  
@@ -327,13 +327,13 @@ and the genstep required to generate it.
 
 **/
 
-extern "C" void QEvent_fill_seed_buffer(qevent* evt ); 
+extern "C" void QEvent_fill_seed_buffer(sevent* evt ); 
 void QEvent::fill_seed_buffer()
 {
     QEvent_fill_seed_buffer( evt ); 
 }
 
-extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(qevent* evt ); 
+extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(sevent* evt ); 
 void QEvent::count_genstep_photons_and_fill_seed_buffer()
 {
     QEvent_count_genstep_photons_and_fill_seed_buffer( evt ); 
@@ -703,10 +703,10 @@ Note that the evt->genstep and evt->photon pointers are not updated, so the same
 
 void QEvent::uploadEvt()
 {
-    QU::copy_host_to_device<qevent>(d_evt, evt, 1 );  
+    QU::copy_host_to_device<sevent>(d_evt, evt, 1 );  
 }
 
-extern "C" void QEvent_checkEvt(dim3 numBlocks, dim3 threadsPerBlock, qevent* evt, unsigned width, unsigned height ) ; 
+extern "C" void QEvent_checkEvt(dim3 numBlocks, dim3 threadsPerBlock, sevent* evt, unsigned width, unsigned height ) ; 
 
 void QEvent::checkEvt() 
 { 

@@ -1,6 +1,6 @@
 #pragma once
 
-struct qevent ; 
+struct sevent ; 
 struct quad4 ;
 struct sphoton ; 
 struct qat4 ; 
@@ -24,7 +24,7 @@ QEvent
 
 Canonical *event* instanciated within QSim::QSim 
 
-Unlike typical CPU side event classes with many instances the QEvent/qevent is rather "static"
+Unlike typical CPU side event classes with many instances the QEvent/sevent is rather "static"
 and singular with long lived buffers of defined maximum capacity that get reused for each launch.
 
 * Note that CUDA has no realloc the old OContext::resizeBuffer is an OptiX < 7 extension.
@@ -54,7 +54,7 @@ struct QUDARAP_API QEvent : public SCompProvider
     static QEvent* INSTANCE ; 
     static QEvent* Get(); 
 
-    qevent* getDevicePtr() const ;
+    sevent* getDevicePtr() const ;
 
     QEvent(); 
 
@@ -62,11 +62,11 @@ private:
     void init(); 
 
     // NB members needed on both CPU+GPU or from the QEvent.cu functions 
-    // should reside inside the qevent.h instance not up here in QEvent.hh
+    // should reside inside the sevent.h instance not up here in QEvent.hh
  
     sphoton_selector* selector ; 
-    qevent*      evt ; 
-    qevent*      d_evt ; 
+    sevent*      evt ; 
+    sevent*      d_evt ; 
     NP*    gs ;  
     const NP*    p  ; 
     std::string  meta ; 

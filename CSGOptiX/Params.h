@@ -23,7 +23,7 @@ struct qat4 ;
 struct quad4 ; 
 struct quad6 ; 
 struct qsim ; 
-struct qevent ; 
+struct sevent ; 
 
 
 struct Params
@@ -69,7 +69,7 @@ struct Params
 
     // simulation 
     qsim*        sim ; 
-    qevent*      evt ;         // HMM: inside sim too ?
+    sevent*      evt ;         // HMM: inside sim too ?
 
 
 #ifndef __CUDACC__

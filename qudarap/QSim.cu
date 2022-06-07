@@ -18,6 +18,7 @@ TODO: split off debug functions from actually used functions
 #include "sphoton.h"
 #include "srec.h"
 #include "scerenkov.h"
+#include "sevent.h"
 
 
 //#include "qgs.h"
@@ -28,7 +29,6 @@ TODO: split off debug functions from actually used functions
 #include "qcerenkov.h"
 
 
-#include "qevent.h"
 #include "qdebug.h"
 
 #include "QSimLaunch.hh"
@@ -144,7 +144,7 @@ __global__ void _QSim_generate_photon(qsim* sim)
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
 
-    qevent* evt = sim->evt ; 
+    sevent* evt = sim->evt ; 
 
     if (idx >= evt->num_photon) return;
     
@@ -527,7 +527,7 @@ TODO: compare performance using reference or pointer into global mem here rather
 
 __global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
 {
-    qevent* evt = sim->evt ; 
+    sevent* evt = sim->evt ; 
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= evt->num_photon ) return;
 

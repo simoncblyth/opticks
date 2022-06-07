@@ -1,12 +1,12 @@
 #pragma once
 
 /**
-qevent : host/device communication instance
+sevent : host/device communication instance
 =============================================
 
-Instantiation of qevent is done by QEvent::init 
+Instantiation of sevent is done by QEvent::init 
 and the instance is subsequently uploaded to the device after 
-device buffer allocations hence the qevent instance
+device buffer allocations hence the sevent instance
 provides event config and device buffer pointers 
 both on device and host. 
 
@@ -19,9 +19,9 @@ QEvent::setNumPhoton
 **/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-#    define QEVENT_METHOD __device__ __forceinline__
+#    define SEVENT_METHOD __device__ __forceinline__
 #else
-#    define QEVENT_METHOD inline 
+#    define SEVENT_METHOD inline 
 #endif
 
 
@@ -34,7 +34,7 @@ struct srec ;
 struct sseq ; 
 struct sphoton ; 
 
-struct qevent
+struct sevent
 {
     static constexpr unsigned genstep_itemsize = 6*4 ; 
     static constexpr unsigned genstep_numphoton_offset = 3 ; 
@@ -81,18 +81,18 @@ struct qevent
     quad4*   simtrace ; 
 
 
-    QEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
-    QEVENT_METHOD void add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin ); 
+    SEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
+    SEVENT_METHOD void add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin ); 
 
 
     // not including prd here as that is clearly for debugging only 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-    QEVENT_METHOD void init_domain(float extent, float time_max); 
-    QEVENT_METHOD void get_domain(quad4& dom) const ; 
-    QEVENT_METHOD void get_config(quad4& cfg) const ; 
-    QEVENT_METHOD void zero(); 
+    SEVENT_METHOD void init_domain(float extent, float time_max); 
+    SEVENT_METHOD void get_domain(quad4& dom) const ; 
+    SEVENT_METHOD void get_config(quad4& cfg) const ; 
+    SEVENT_METHOD void zero(); 
 #endif 
 
 }; 
@@ -101,7 +101,7 @@ struct qevent
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 
-QEVENT_METHOD void qevent::init_domain(float extent, float time_max)
+SEVENT_METHOD void sevent::init_domain(float extent, float time_max)
 {
     center_extent.x = 0.f ; 
     center_extent.y = 0.f ; 
@@ -116,7 +116,7 @@ QEVENT_METHOD void qevent::init_domain(float extent, float time_max)
 }
 
 /**
-qevent::get_domain
+sevent::get_domain
 -------------------
 
 HMM: could also use metadata (key, value) pairs on the domain NP array 
@@ -129,7 +129,7 @@ ana/evt.py::
 **/
 
 
-QEVENT_METHOD void qevent::get_domain( quad4& dom ) const 
+SEVENT_METHOD void sevent::get_domain( quad4& dom ) const 
 {
    float4 post_center = make_float4( center_extent.x, center_extent.y, center_extent.z, time_domain.x ); 
    float4 post_extent = make_float4( center_extent.w, center_extent.w, center_extent.w, time_domain.y ); 
@@ -146,7 +146,7 @@ QEVENT_METHOD void qevent::get_domain( quad4& dom ) const
 }
 
 
-QEVENT_METHOD void qevent::get_config( quad4& cfg ) const 
+SEVENT_METHOD void sevent::get_config( quad4& cfg ) const 
 {
    cfg.q0.u.x = max_genstep ; 
    cfg.q0.u.y = max_photon ; 
@@ -170,7 +170,7 @@ QEVENT_METHOD void qevent::get_config( quad4& cfg ) const
 }
 
 
-QEVENT_METHOD void qevent::zero()
+SEVENT_METHOD void sevent::zero()
 {
     num_genstep = 0 ; 
     num_seed  = 0 ; 
@@ -194,7 +194,7 @@ QEVENT_METHOD void qevent::zero()
 #endif 
 
 
-QEVENT_METHOD void  qevent::add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p )
+SEVENT_METHOD void  sevent::add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p )
 {
     r.set_position(     p.pos,  center_extent ); 
     r.set_time(         p.time, time_domain ); 
@@ -206,7 +206,7 @@ QEVENT_METHOD void  qevent::add_rec( srec& r, unsigned idx, unsigned bounce, con
 }
 
 /**
-qevent::add_simtrace
+sevent::add_simtrace
 ----------------------
 
 NB simtrace "photon" *a* is very different from real ones
@@ -229,7 +229,7 @@ a.q3
 
 **/
 
-QEVENT_METHOD void qevent::add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin )
+SEVENT_METHOD void sevent::add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin )
 {
     float t = prd->distance() ; 
     quad4 a ;  

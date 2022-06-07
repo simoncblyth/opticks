@@ -51,9 +51,9 @@ TODO:
 #include "srec.h"
 #include "sseq.h"
 #include "scurand.h"
+#include "sevent.h"
 
 #include "qbase.h"
-#include "qevent.h"
 #include "qprop.h"
 #include "qmultifilm.h"
 #include "qbnd.h"
@@ -70,7 +70,7 @@ struct qcerenkov ;
 struct qsim
 {
     qbase*              base ; 
-    qevent*             evt ; 
+    sevent*             evt ; 
     curandStateXORWOW*  rngstate ; 
     qbnd*               bnd ; 
     qmultifilm*         multifilm;
@@ -1084,7 +1084,7 @@ Stages within bounce loop
   * note that photons that SAIL to boundary are mutated twice within the while loop (by propagate_to_boundary and propagate_at_boundary/surface) 
 
 
-TODO: record and record_max should come from qevent ?
+TODO: record and record_max should come from sevent ?
 
 
 HMM: seqhis/seqmat should not depend on rec collection, and it must be optional 

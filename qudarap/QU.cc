@@ -1,23 +1,27 @@
 #include <cassert>
-#include "scuda.h"
 
 #include "NP.hh"
+#include "PLOG.hh"
+
+#include "scuda.h"
+#include "squad.h"
+#include "srec.h"
+#include "sseq.h"
+#include "sphoton.h"
+#include "sevent.h"
+
 #include "QUDA_CHECK.h"
 #include "QU.hh"
 #include "curand_kernel.h"
-
-#include "PLOG.hh"
 
 #include "qsim.h"
 #include "qbase.h"
 #include "qprop.h"
 #include "qrng.h"
-#include "qevent.h"
 #include "qdebug.h"
 #include "qscint.h"
 #include "qcerenkov.h"
-#include "srec.h"
-#include "sseq.h"
+
 #include "qmultifilm.h"
 
 
@@ -111,7 +115,7 @@ template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* arra
 template qmultifilm*    QU::UploadArray<qmultifilm>(const qmultifilm* array, unsigned num_items) ;
 template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items) ;
 template qbnd*          QU::UploadArray<qbnd>(const qbnd* array, unsigned num_items) ;
-template qevent*        QU::UploadArray<qevent>(const qevent* array, unsigned num_items) ;
+template sevent*        QU::UploadArray<sevent>(const sevent* array, unsigned num_items) ;
 template qdebug*        QU::UploadArray<qdebug>(const qdebug* array, unsigned num_items) ;
 template qscint*        QU::UploadArray<qscint>(const qscint* array, unsigned num_items) ;
 template qcerenkov*     QU::UploadArray<qcerenkov>(const qcerenkov* array, unsigned num_items) ;
@@ -202,7 +206,7 @@ template QUDARAP_API quad*      QU::device_alloc<quad>(unsigned num_items) ;
 template QUDARAP_API quad2*     QU::device_alloc<quad2>(unsigned num_items) ;
 template QUDARAP_API quad4*     QU::device_alloc<quad4>(unsigned num_items) ;
 template QUDARAP_API quad6*     QU::device_alloc<quad6>(unsigned num_items) ;
-template QUDARAP_API qevent*    QU::device_alloc<qevent>(unsigned num_items) ;
+template QUDARAP_API sevent*    QU::device_alloc<sevent>(unsigned num_items) ;
 template QUDARAP_API qdebug*    QU::device_alloc<qdebug>(unsigned num_items) ;
 template QUDARAP_API qstate*    QU::device_alloc<qstate>(unsigned num_items) ;
 template QUDARAP_API srec*      QU::device_alloc<srec>(unsigned num_items) ;
@@ -343,7 +347,7 @@ void QU::copy_host_to_device( T* d, const T* h, unsigned num_items)
 template void QU::copy_host_to_device<float>(    float* d,   const float* h, unsigned num_items);
 template void QU::copy_host_to_device<double>(   double* d,  const double* h, unsigned num_items);
 template void QU::copy_host_to_device<unsigned>( unsigned* d, const unsigned* h, unsigned num_items);
-template void QU::copy_host_to_device<qevent>(   qevent* d,   const qevent* h, unsigned num_items);
+template void QU::copy_host_to_device<sevent>(   sevent* d,   const sevent* h, unsigned num_items);
 template void QU::copy_host_to_device<quad4>(    quad4* d,    const quad4* h, unsigned num_items);
 template void QU::copy_host_to_device<sphoton>(  sphoton* d,  const sphoton* h, unsigned num_items);
 template void QU::copy_host_to_device<quad6>(    quad6* d,    const quad6* h, unsigned num_items);
@@ -411,7 +415,7 @@ QU::copy_host_to_device
 
 HMM: encapsulating determination of num_items is less useful than 
 would initially expect because will always need to know 
-and record the num_items in a shared GPU/CPU location like qevent.
+and record the num_items in a shared GPU/CPU location like sevent.
 And also will often need to allocate the buffer first too. 
 
 Suggesting should generally use this via QEvent. 

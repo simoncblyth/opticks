@@ -94,7 +94,6 @@ SET(HEADERS
     qprop.h
  
     QEvent.hh
-    qevent.h
 
     QDebug.hh
     qdebug.h
