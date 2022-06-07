@@ -1135,6 +1135,8 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
     if(evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p ); 
     if(evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() ); 
 
+    //TODO: evt->photon[idx] = p ; 
+
     if(evt->seq) evt->seq[idx] = seq ; 
 }
 

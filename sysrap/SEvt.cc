@@ -38,14 +38,30 @@ SEvt::init
 Only configures limits, no allocation yet. 
 Device side allocation happens in QEvent::setGenstep QEvent::setNumPhoton
 
+Initially SEvt is set as its own SCompProvider, 
+allowing U4RecorderTest/SEvt::save to gather the component 
+arrays provided from SEvt.
+
+For device running the SCompProvider  is overridden to 
+become QEvent allowing SEvt::save to persist the 
+components gatherered from device buffers. 
+
 **/
 
 void SEvt::init()
 {
     INSTANCE = this ; 
     evt->init(); 
+
+    setCompProvider(this); // overridden for device running from QEvent::init 
     LOG(fatal) << evt->desc() ;
 }
+
+void SEvt::setCompProvider(const SCompProvider* provider_)
+{
+    provider = provider_ ; 
+}
+
 
 NP* SEvt::getDomain() const
 {
@@ -89,10 +105,6 @@ void SEvt::clear()
     genstep.clear();
     gs.clear(); 
 }
-void SEvt::setCompProvider(const SCompProvider* provider_)
-{
-    provider = provider_ ; 
-}
 
 unsigned SEvt::getNumGenstep() const 
 {
@@ -125,7 +137,7 @@ sgs SEvt::addGenstep(const NP* a)
     return s ; 
 }
 
-bool SEvt::RECORD_PHOTON = true ; 
+bool SEvt::RECORDING = true ;  // TODO: needs to be normally false
 
 sgs SEvt::addGenstep(const quad6& q)
 {
@@ -144,16 +156,29 @@ sgs SEvt::addGenstep(const quad6& q)
     gs.push_back(s) ; 
     genstep.push_back(q) ; 
 
-    if(RECORD_PHOTON)
-    {
-        // numphotons from all gensteps in event so far plus this one just added
-        unsigned tot_numphoton = offset + q_numphoton ;   
-        pho.resize(    tot_numphoton );  
-        photon.resize( tot_numphoton ); 
-    }
-
+    // numphotons from all gensteps in event so far plus this one just added
+    if(RECORDING) resize(offset + q_numphoton); 
     return s ; 
 }
+
+void SEvt::resize( unsigned numphoton )
+{
+    pho.resize(  numphoton );  
+    slot.resize( numphoton ); 
+
+    if(evt->max_photon > 0) photon.resize(numphoton);
+    if(evt->max_record > 0) record.resize(evt->max_record*numphoton); 
+    if(evt->max_rec    > 0) rec.resize(evt->max_rec*numphoton); 
+    if(evt->max_seq    > 0) rec.resize(evt->max_rec*numphoton); 
+
+    if(evt->max_photon > 0) evt->photon = photon.data() ; 
+    if(evt->max_record > 0) evt->record = record.data() ; 
+    if(evt->max_rec    > 0) evt->rec = rec.data() ; 
+    if(evt->max_seq    > 0) evt->seq = seq.data() ; 
+
+    evt->num_photon = numphoton ; 
+}
+
 
 
 /**
@@ -179,12 +204,13 @@ SEvt::beginPhoton
 **/
 void SEvt::beginPhoton(const spho& sp)
 {
-    unsigned id = sp.id ; 
-    assert( id < pho.size() );  
+    unsigned idx = sp.id ; 
+    assert( idx < pho.size() );  
 
     pho0.push_back(sp);   // push_back asis : just for initial dev, TODO: remove 
 
-    pho[id] = sp ;        // slot in the label  
+    pho[idx] = sp ;        // slot in the label  
+    slot[idx] = 0 ; 
     current_pho = sp ; 
 
     const sgs& _gs = get_gs(sp);  
@@ -195,7 +221,7 @@ void SEvt::beginPhoton(const spho& sp)
     LOG(info) << " _gs " << _gs.desc() ; 
 
     current_photon.zero() ; 
-    current_photon.set_idx(id); 
+    current_photon.set_idx(idx); 
     current_photon.set_flag(genflag); 
     assert( current_photon.flagmask_count() == 1 ); 
 }
@@ -214,11 +240,11 @@ generated photons within a scintillator due to reemission of the Cerenkov photon
 **/
 void SEvt::continuePhoton(const spho& sp)
 {
-    unsigned id = sp.id ; 
-    assert( id < pho.size() );  
+    unsigned idx = sp.id ; 
+    assert( idx < pho.size() );  
 
     // check labels of parent and child are as expected
-    const spho& parent_pho = pho[id]; 
+    const spho& parent_pho = pho[idx]; 
     assert( sp.isSameLineage( parent_pho) ); 
     assert( sp.gn == parent_pho.gn + 1 ); 
 
@@ -229,19 +255,24 @@ void SEvt::continuePhoton(const spho& sp)
     LOG(info) << " sc " << sc << " ck " << ck << " sc_xor_ck " << sc_xor_ck ;
     assert(sc_xor_ck); 
  
-    const sphoton& parent_photon = photon[id] ; 
+    const sphoton& parent_photon = photon[idx] ; 
     unsigned parent_idx = parent_photon.idx() ; 
-    assert( parent_idx == id ); 
+    assert( parent_idx == idx ); 
 
     // replace label and current_photon
-    pho[id] = sp ;   
+    pho[idx] = sp ;   
     current_pho = sp ; 
 
-    // HMM: could directly change photon[id] via ref ? 
+    // HMM: could directly change photon[idx] via ref ? 
     // But are here taking a copy to current_photon, and relying on copyback at SEvt::endPhoton
-    current_photon = photon[id] ; 
+    current_photon = photon[idx] ; 
 
     //assert( current_photon.flagmask & BULK_ABSORB  );   // all continuedPhoton should have BULK_ABSORB in flagmask, but not yet 
+
+    int& _slot = slot[idx] ; 
+    assert( _slot > 0 );   
+    // _slot -= 1 ;  
+    // back up the slot by one : HMM maybe not needed as pointPhoton will just be called for post steppoint
 
     current_photon.flagmask &= ~BULK_ABSORB  ; // scrub BULK_ABSORB from flagmask
     current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
@@ -255,25 +286,53 @@ SEvt::pointPhoton
 Invoked from U4Recorder::UserSteppingAction_Optical to cause the 
 current photon to be recorded into record vector. 
 
-HMM: need to know the record "bounce" slot to use ?
+TODO: truncation : bounce < max_bounce 
 
 **/
 
 void SEvt::pointPhoton(const spho& sp)
 {
     assert( sp.isSameLineage(current_pho) ); 
+    unsigned idx = sp.id ; 
+    int& bounce = slot[idx] ; 
 
+    const sphoton& p = current_photon ; 
+    srec& rec = current_rec ; 
+    sseq& seq = current_seq ; 
 
+    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
+    if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
+    if( evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() );
 
+    bounce += 1 ; 
 }
 
+/**
+These methods need to do the hostside equivalent of CSGOptiX/CSGOptiX7.cu:simulate device side,
+so have setup the environment to match::
 
+    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
+    if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
+    if( evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() );
+
+    evt->photon[idx] = p ; 
+    if(evt->seq) evt->seq[idx] = seq ;
+
+As the hostside vectors keep getting resized at each genstep, the 
+evt buffer points are updated at every resize to follow them around
+as they grow and are realloced. 
+**/
 
 void SEvt::endPhoton(const spho& sp)
 {
     assert( sp.isSameLineage(current_pho) ); 
-    unsigned id = sp.id ; 
-    photon[id] = current_photon ; 
+    unsigned idx = sp.id ; 
+
+    const sphoton& p = current_photon ; 
+    sseq& seq = current_seq ; 
+    
+    if(evt->photon) evt->photon[idx] = p ; 
+    if(evt->seq)    evt->seq[idx] = seq ; 
 }
 
 /**
@@ -293,18 +352,104 @@ void SEvt::checkPhoton(const spho& sp) const
 NP* SEvt::getPho0() const { return NP::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
 NP* SEvt::getPho() const {  return NP::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
 NP* SEvt::getGS() const {   return NP::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
-NP* SEvt::getPhoton() const { return NP::Make<float>( (float*)photon.data(), int(photon.size()), 4, 4 ); } 
+
+
+NP* SEvt::getPhoton() const 
+{ 
+    if( evt->photon == nullptr ) return nullptr ; 
+    NP* p = makePhoton(); 
+    p->read2( (float*)evt->photon ); 
+    return p ; 
+} 
+NP* SEvt::getRecord() const 
+{ 
+    if( evt->record == nullptr ) return nullptr ; 
+    NP* r = makeRecord(); 
+    r->read2( (float*)evt->record ); 
+    return r ; 
+} 
+NP* SEvt::getRec() const 
+{ 
+    if( evt->rec == nullptr ) return nullptr ; 
+    NP* r = makeRec(); 
+    r->read2( (short*)evt->rec ); 
+    return r ; 
+} 
+NP* SEvt::getSeq() const 
+{ 
+    if( evt->seq == nullptr ) return nullptr ; 
+    NP* s = makeSeq(); 
+    s->read2( (unsigned long long*)evt->seq ); 
+    return s ; 
+} 
+
+
+
+NP* SEvt::makePhoton() const 
+{
+    return NP::Make<float>( evt->num_photon, 4, 4 ); 
+}
+NP* SEvt::makeRecord() const 
+{ 
+    NP* r = NP::Make<float>( evt->num_photon, evt->max_record, 4, 4 ); 
+    r->set_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false" );  // eg used by examples/UseGeometryShader
+    return r ; 
+}
+NP* SEvt::makeRec() const 
+{
+    NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 2, 4);   // stride:  sizeof(short)*2*4 = 2*2*4 = 16   
+    r->set_meta<std::string>("rpos", "4,GL_SHORT,GL_TRUE,16,0,false" );  // eg used by examples/UseGeometryShader
+    return r ; 
+}
+NP* SEvt::makeSeq() const 
+{
+    return NP::Make<unsigned long long>( evt->num_seq, 2); 
+}
+
+// SCompProvider methods
+
+std::string SEvt::getMeta() const 
+{
+    return meta ; 
+}
+
+NP* SEvt::getComponent(unsigned comp) const 
+{
+    unsigned mask = SEventConfig::CompMask(); 
+    return mask & comp ? getComponent_(comp) : nullptr ; 
+}
+NP* SEvt::getComponent_(unsigned comp) const 
+{
+    NP* a = nullptr ; 
+    switch(comp)
+    {   
+        case SCOMP_GENSTEP:   a = getGenstep()  ; break ;   
+        case SCOMP_PHOTON:    a = getPhoton()   ; break ;   
+        case SCOMP_RECORD:    a = getRecord()   ; break ;   
+        case SCOMP_REC:       a = getRec()      ; break ;   
+        case SCOMP_SEQ:       a = getSeq()      ; break ;   
+        //case SCOMP_SEED:      a = getSeed()     ; break ;   
+        //case SCOMP_HIT:       a = getHit()      ; break ;   
+        //case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   
+        case SCOMP_DOMAIN:    a = getDomain()   ; break ;   
+    }   
+    return a ; 
+}
+
+
+
+
+
+
 
 
 /**
-SEvt::savePho
+SEvt::saveLabels
 --------------
-
-TODO: this just temporary, should be using NPFold for standardized persisting 
 
 **/
 
-void SEvt::savePho(const char* dir_) const 
+void SEvt::saveLabels(const char* dir_) const 
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH );  
     LOG(info) << dir ; 
@@ -321,9 +466,10 @@ void SEvt::savePho(const char* dir_) const
     LOG(info) << " g " << ( g ? g->sstr() : "-" ) ; 
     if(g) g->save(dir, "gs.npy"); 
 
-    NP* p = getPhoton(); 
-    LOG(info) << " p " << ( p ? p->sstr() : "-" ) ; 
-    if(p) p->save(dir, "p.npy"); 
+   // NP* p = getPhoton(); 
+   // LOG(info) << " p " << ( p ? p->sstr() : "-" ) ; 
+   // if(p) p->save(dir, "p.npy"); 
+
 }
 
 
@@ -416,7 +562,7 @@ or the directory argument provided.
 
 
 const char* SEvt::FALLBACK_DIR = "$TMP" ; 
-const char* SEvt::DefaultDir()   // TODO: DOES NOT BELONG : MOVE TO SEvt 
+const char* SEvt::DefaultDir()
 {
     const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
     const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 

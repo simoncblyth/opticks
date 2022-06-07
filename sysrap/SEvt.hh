@@ -32,45 +32,54 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include <vector>
 #include <string>
 #include <sstream>
-
 #include "plog/Severity.h"
+
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "srec.h"
+#include "sseq.h"
+#include "squad.h"
 #include "sgs.h"
+#include "SComp.h"
 
 struct sphoton_selector ; 
 struct sevent ; 
 struct NP ; 
 struct NPFold ; 
-struct SCompProvider ; 
 
 #include "SYSRAP_API_EXPORT.hh"
 
-struct SYSRAP_API SEvt
+struct SYSRAP_API SEvt : public SCompProvider
 {
     sphoton_selector* selector ; 
     sevent* evt ; 
+    std::string meta ; 
 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
     std::vector<spho>  pho0 ;  // unordered push_back as they come 
     std::vector<spho>  pho ;   // spho are label structs holding 4*int 
+
+    std::vector<int>     slot ; 
     std::vector<sphoton> photon ; 
     std::vector<sphoton> record ; 
+    std::vector<srec>    rec ; 
+    std::vector<sseq>    seq ; 
 
-    //sgs  current_gs ;   NOT USEFUL AS S OFTEN TRUMPS C, NEED TO USE THE GS index in the pho label to get actual sgs genstep label 
-    spho current_pho ; 
-    sphoton current_photon ; 
+    spho    current_pho = {} ; 
+    sphoton current_photon = {} ; 
+    srec    current_rec = {} ; 
+    sseq    current_seq = {} ; 
 
     const SCompProvider*  provider ; 
-    NPFold*   fold ; 
+    NPFold*               fold ; 
 
 
     static const plog::Severity LEVEL ; 
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
-    static bool RECORD_PHOTON ; 
+    static bool RECORDING ; 
 
     static void Check(); 
     static sgs AddGenstep(const quad6& q); 
@@ -89,6 +98,8 @@ struct SYSRAP_API SEvt
     SEvt(); 
     void init(); 
     void setCompProvider(const SCompProvider* provider); 
+    void resize( unsigned numphoton ); 
+
     NP* getDomain() const ; 
 
     void clear() ; 
@@ -108,10 +119,25 @@ struct SYSRAP_API SEvt
     NP* getPho0() const ;   // unordered push_back as they come 
     NP* getPho() const ;    // resized at genstep and slotted in 
     NP* getGS() const ;   // genstep labels from std::vector<sgs>  
-    NP* getPhoton() const ;  // from std::vector<sphoton>  
+
+    NP* getPhoton() const ; 
+    NP* getRecord() const ; 
+    NP* getRec() const ; 
+    NP* getSeq() const ; 
+
+    NP* makePhoton() const ; 
+    NP* makeRecord() const ; 
+    NP* makeRec() const ; 
+    NP* makeSeq() const ; 
 
 
-    void savePho(const char* dir) const ; 
+    // SCompProvider methods
+
+    std::string getMeta() const ; 
+    NP* getComponent(unsigned comp) const ; 
+    NP* getComponent_(unsigned comp) const ; 
+
+    void saveLabels(const char* dir) const ;  // formerly savePho
 
     void saveGenstep(const char* dir) const ; 
     NP* getGenstep() const ; 

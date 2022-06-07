@@ -368,9 +368,11 @@ void QEvent::getSeq(NP* seq) const
 
 NP* QEvent::getSeq() const 
 {
-    if(!hasSeq()) LOG(fatal) << " getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
-    if(!hasSeq()) return nullptr ;  
-    NP* seq = NP::Make<unsigned long long>( evt->num_seq, 2);
+    if(!hasSeq()) LOG(fatal) << " getSeq called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasSeq()) return nullptr ;
+  
+    NP* seq = sev->makeSeq(); 
+
     getSeq(seq); 
     return seq ; 
 }
@@ -380,8 +382,7 @@ NP* QEvent::getRecord() const
     if(!hasRecord()) LOG(fatal) << " getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasRecord()) return nullptr ;  
 
-    NP* r = NP::Make<float>( evt->num_photon, evt->max_record, 4, 4);  // stride: sizeof(float)*4*4 = 4*4*4 = 64
-    r->set_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false" );  // eg used by examples/UseGeometryShader
+    NP* r = sev->makeRecord(); 
 
     LOG(info) << " evt.num_record " << evt->num_record ; 
     QU::copy_device_to_host<sphoton>( (sphoton*)r->bytes(), evt->record, evt->num_record ); 
@@ -393,8 +394,7 @@ NP* QEvent::getRec() const
     if(!hasRec()) LOG(fatal) << " getRec called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasRec()) return nullptr ;  
 
-    NP* r = NP::Make<short>( evt->num_photon, evt->max_rec, 2, 4);   // stride:  sizeof(short)*2*4 = 2*2*4 = 16   
-    r->set_meta<std::string>("rpos", "4,GL_SHORT,GL_TRUE,16,0,false" );  // eg used by examples/UseGeometryShader
+    NP* r = sev->makeRec(); 
 
     LOG(info) 
         << " evt.num_photon " << evt->num_photon 
@@ -492,19 +492,16 @@ NP* QEvent::getHit_() const
 }
 
 
-NP* QEvent::getComponent(unsigned comp) const 
-{
-    unsigned mask = SEventConfig::CompMask(); 
-    return mask & comp ? getComponent_(comp) : nullptr ; 
-}
-
 
 std::string QEvent::getMeta() const 
 {     
     return meta ; 
 }
-
-
+NP* QEvent::getComponent(unsigned comp) const 
+{
+    unsigned mask = SEventConfig::CompMask(); 
+    return mask & comp ? getComponent_(comp) : nullptr ; 
+}
 NP* QEvent::getComponent_(unsigned comp) const 
 {
     NP* a = nullptr ; 

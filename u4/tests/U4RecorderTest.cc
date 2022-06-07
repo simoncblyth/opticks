@@ -143,8 +143,10 @@ int main(int argc, char** argv)
     U4RecorderTest t(runMgr) ;  
 
     runMgr->BeamOn(1); 
-  
-    evt.savePho("$TMP/U4RecorderTest"); 
+ 
+    const char* dir = "$TMP/U4RecorderTest" ; 
+    evt.saveLabels(dir); 
+    evt.save(dir); 
 
     G4GeometryManager::GetInstance()->OpenGeometry(); 
 
