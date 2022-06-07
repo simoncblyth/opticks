@@ -531,34 +531,29 @@ directly from "friendly" photon only tests without use of gensteps.
 
 Sets evt->num_photon asserts that is within allowed *evt->max_photon* and calls *uploadEvt*
 
+
+This assumes that the number of photons for subsequent launches does not increase 
+when collecting records : that is ok as running with records is regarded as debugging. 
 **/
 
 void QEvent::setNumPhoton(unsigned num_photon )
 {
-    evt->num_photon = num_photon  ; 
-    bool num_photon_allowed = evt->num_photon <= evt->max_photon ; 
-    if(!num_photon_allowed) LOG(fatal) << " evt.num_photon " << evt->num_photon << " evt.max_photon " << evt->max_photon ; 
+    bool num_photon_allowed = int(num_photon) <= evt->max_photon ; 
+    if(!num_photon_allowed) LOG(fatal) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ; 
     assert( num_photon_allowed ); 
 
     if( evt->photon == nullptr ) 
     {
-        evt->photon = QU::device_alloc<sphoton>( evt->max_photon ) ; 
-
-        evt->num_seq = evt->max_seq > 0 ? evt->num_photon : 0 ; 
-        evt->seq     = evt->num_seq > 0 ? QU::device_alloc_zero<sseq>(  evt->num_seq  ) : nullptr ; 
-        
-        // assumes that the number of photons for subsequent launches does not increase 
-        // when collecting records : that is ok during highly controlled debugging 
-
+        // TODO: use SEvt::setNumPhoton to modify the evt->num_...  splitting alloc from changing num
+        evt->num_photon = num_photon  ; 
         evt->num_record = evt->max_record * evt->num_photon ;  
-        evt->record     = evt->num_record  > 0 ? QU::device_alloc_zero<sphoton>( evt->num_record  ) : nullptr ; 
-
-
+        evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ; 
         evt->num_rec    = evt->max_rec * evt->num_photon ;  
-        evt->rec        = evt->num_rec  > 0 ? QU::device_alloc_zero<srec>(  evt->num_rec  ) : nullptr ; 
 
-
-        // use SEventConfig code or envvars to config the maxima
+        evt->photon  = evt->num_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon ) : nullptr ; 
+        evt->record  = evt->num_record > 0 ? QU::device_alloc_zero<sphoton>( evt->num_record ) : nullptr ; 
+        evt->rec     = evt->num_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->num_rec  )   : nullptr ; 
+        evt->seq     = evt->num_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->num_seq  )   : nullptr ; 
 
         LOG(info) 
             << " device_alloc photon " 

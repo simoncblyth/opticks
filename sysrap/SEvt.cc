@@ -156,27 +156,47 @@ sgs SEvt::addGenstep(const quad6& q)
     gs.push_back(s) ; 
     genstep.push_back(q) ; 
 
-    // numphotons from all gensteps in event so far plus this one just added
-    if(RECORDING) resize(offset + q_numphoton); 
+    if(RECORDING) 
+    {
+        // numphotons from all gensteps in event so far plus this one just added
+        setNumPhoton(offset + q_numphoton); 
+        resize();  
+    }
+
     return s ; 
 }
 
-void SEvt::resize( unsigned numphoton )
+/**
+SEvt::resize
+-------------
+
+This is the CPU side equivalent of device side QEvent::setNumPhoton
+
+**/
+
+void SEvt::setNumPhoton(unsigned numphoton)
 {
-    pho.resize(  numphoton );  
-    slot.resize( numphoton ); 
-
-    if(evt->max_photon > 0) photon.resize(numphoton);
-    if(evt->max_record > 0) record.resize(evt->max_record*numphoton); 
-    if(evt->max_rec    > 0) rec.resize(evt->max_rec*numphoton); 
-    if(evt->max_seq    > 0) rec.resize(evt->max_rec*numphoton); 
-
-    if(evt->max_photon > 0) evt->photon = photon.data() ; 
-    if(evt->max_record > 0) evt->record = record.data() ; 
-    if(evt->max_rec    > 0) evt->rec = rec.data() ; 
-    if(evt->max_seq    > 0) evt->seq = seq.data() ; 
-
+    // TODO: use SEvt::setNumPhoton from QEvent::setNumPhoton to avoid the duplicity 
     evt->num_photon = numphoton ; 
+    evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ;
+    evt->num_record = evt->max_record * evt->num_photon ;
+    evt->num_rec    = evt->max_rec    * evt->num_photon ;
+}
+
+void SEvt::resize()
+{
+    if(evt->num_photon > 0) pho.resize(  evt->num_photon );  
+    if(evt->num_photon > 0) slot.resize( evt->num_photon ); 
+
+    if(evt->num_photon > 0) photon.resize(evt->num_photon);
+    if(evt->num_record > 0) record.resize(evt->num_record); 
+    if(evt->num_rec    > 0) rec.resize(evt->num_rec); 
+    if(evt->num_seq    > 0) seq.resize(evt->num_seq); 
+
+    if(evt->num_photon > 0) evt->photon = photon.data() ; 
+    if(evt->num_record > 0) evt->record = record.data() ; 
+    if(evt->num_rec    > 0) evt->rec    = rec.data() ; 
+    if(evt->num_seq    > 0) evt->seq    = seq.data() ; 
 }
 
 
@@ -498,10 +518,18 @@ void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE
 }
 
 
-std::string SEvt::desc() const 
+std::string SEvt::descGS() const 
 {
     std::stringstream ss ; 
     for(unsigned i=0 ; i < getNumGenstep() ; i++) ss << gs[i].desc() << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string SEvt::desc() const 
+{
+    std::stringstream ss ; 
+    ss << evt->desc() ; 
     std::string s = ss.str(); 
     return s ; 
 }

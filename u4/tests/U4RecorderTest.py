@@ -57,6 +57,7 @@ if __name__ == '__main__':
 
      #l = t.pho0   # push_back labels collected asis
      l = t.pho     # slotted in using spho::id
+     p = t.photon
 
      gs = l[:,0]
      ix = l[:,1]
@@ -64,10 +65,10 @@ if __name__ == '__main__':
      gn = l[:,3]
 
 
-     idx = t.p.view(np.uint32)[:,3,2] 
-     assert np.all( np.arange( len(t.p) ) == idx ) 
+     idx = p.view(np.uint32)[:,3,2] 
+     assert np.all( np.arange( len(p) ) == idx ) 
 
-     flagmask_u, flagmask_c = np.unique(t.p.view(np.uint32)[:,3,3], return_counts=True)    
+     flagmask_u, flagmask_c = np.unique(p.view(np.uint32)[:,3,3], return_counts=True)    
      print("flagmask_u:%s " % str(flagmask_u))
      print("flagmask_c:%s " % str(flagmask_c))
 

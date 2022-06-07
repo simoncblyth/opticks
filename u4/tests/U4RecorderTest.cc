@@ -128,27 +128,24 @@ int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
 
-    unsigned num_bounce = 9 ; 
-    SEventConfig::SetMaxBounce(num_bounce); 
-    SEventConfig::SetMaxRecord(num_bounce+1); 
-    SEventConfig::SetMaxRec(num_bounce+1); 
-    SEventConfig::SetMaxSeq(num_bounce+1); 
+    unsigned max_bounce = 9 ; 
+    SEventConfig::SetMaxBounce(max_bounce); 
+    SEventConfig::SetMaxRecord(max_bounce+1); 
+    SEventConfig::SetMaxRec(max_bounce+1); 
+    SEventConfig::SetMaxSeq(max_bounce+1); 
 
-    SEvt evt ;   // required for genstep collection 
+    SEvt evt ; 
 
     G4RunManager* runMgr = new G4RunManager ; 
-    U4Physics* phys = new U4Physics ;  
-    runMgr->SetUserInitialization((G4VUserPhysicsList*)phys); 
-
+    runMgr->SetUserInitialization((G4VUserPhysicsList*)new U4Physics); 
     U4RecorderTest t(runMgr) ;  
-
     runMgr->BeamOn(1); 
  
     const char* dir = "$TMP/U4RecorderTest" ; 
     evt.saveLabels(dir); 
     evt.save(dir); 
+    LOG(info) << evt.desc() ; 
 
     G4GeometryManager::GetInstance()->OpenGeometry(); 
-
     return 0 ; 
 }

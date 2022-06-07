@@ -188,12 +188,40 @@ SEVENT_METHOD std::string sevent::descBuf() const
     int w = 5 ; 
     std::stringstream ss ; 
     ss 
-        << " sevent::descBuf  " 
-        << " evt.genstep " << std::setw(w) << ( genstep ? "Y" : "N" )
-        << " evt.seed "    << std::setw(w) << ( seed    ? "Y" : "N" )  
-        << " evt.photon "  << std::setw(w) << ( photon  ? "Y" : "N" ) 
-        << " evt.simtrace "  << std::setw(w) << ( simtrace  ? "Y" : "N" ) 
-        << " evt.record "  << std::setw(w) << ( record  ? "Y" : "N" )
+        << std::setw(20) << " sevent::descBuf " 
+        << std::endl 
+        << std::setw(20) << " evt.genstep     " << std::setw(w) << ( genstep ? "Y" : "N" ) 
+        << std::setw(20) << " num_genstep "     << std::setw(7) << num_genstep 
+        << std::setw(20) << " max_genstep "     << std::setw(7) << max_genstep 
+        << std::endl 
+        << std::setw(20) << " evt.seed   "      << std::setw(w) << ( seed    ? "Y" : "N" ) 
+        << std::setw(20) << " num_seed "        << std::setw(7) << num_seed 
+        << std::setw(20) << " max_photon "      << std::setw(7) << max_photon
+        << std::endl 
+        << std::setw(20) << " evt.photon "      << std::setw(w) << ( photon  ? "Y" : "N" ) 
+        << std::setw(20) << " num_photon "      << std::setw(7) << num_photon 
+        << std::setw(20) << " max_photon "      << std::setw(7) << max_photon 
+        << std::endl 
+        << std::setw(20) << " evt.record "      << std::setw(w) << ( record  ? "Y" : "N" ) 
+        << std::setw(20) << " num_record "      << std::setw(7) << num_record 
+        << std::setw(20) << " max_record "      << std::setw(7) << max_record 
+        << std::endl 
+        << std::setw(20) << " evt.rec "         << std::setw(w) << ( record  ? "Y" : "N" ) 
+        << std::setw(20) << " num_rec "         << std::setw(7) << num_rec 
+        << std::setw(20) << " max_rec "         << std::setw(7) << max_rec 
+        << std::endl 
+        << std::setw(20) << " evt.seq "         << std::setw(w) << ( seq     ? "Y" : "N" ) 
+        << std::setw(20) << " num_seq "         << std::setw(7) << num_seq 
+        << std::setw(20) << " max_seq "         << std::setw(7) << max_seq 
+        << std::endl 
+        << std::setw(20) << " evt.hit "         << std::setw(w) << ( hit     ? "Y" : "N" ) 
+        << std::setw(20) << " num_hit "         << std::setw(7) << num_hit 
+        << std::setw(20) << " max_photon "      << std::setw(7) << max_photon
+        << std::endl 
+        << std::setw(20) << " evt.simtrace "    << std::setw(w) << ( simtrace  ? "Y" : "N" ) 
+        << std::setw(20) << " num_simtrace "    << std::setw(7) << num_simtrace 
+        << std::setw(20) << " max_simtrace "    << std::setw(7) << max_simtrace 
+        << std::endl
         ;
     std::string s = ss.str();  
     return s ; 

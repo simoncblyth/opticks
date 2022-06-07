@@ -98,7 +98,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     SEvt(); 
     void init(); 
     void setCompProvider(const SCompProvider* provider); 
-    void resize( unsigned numphoton ); 
+    void setNumPhoton(unsigned numphoton); 
+    void resize(); 
 
     NP* getDomain() const ; 
 
@@ -153,6 +154,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     void save(const char* dir); 
 
     std::string desc() const ; 
+    std::string descGS() const ; 
     std::string descFold() const ; 
     std::string descComponent() const ; 
 };
