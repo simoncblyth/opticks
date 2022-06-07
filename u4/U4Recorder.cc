@@ -27,22 +27,11 @@ U4Recorder::U4Recorder()
     INSTANCE = this ; 
 }
 
-void U4Recorder::BeginOfRunAction(const G4Run*)
-{
-    LOG(info); 
-}
-void U4Recorder::EndOfRunAction(const G4Run*)
-{
-    LOG(info); 
-}
-void U4Recorder::BeginOfEventAction(const G4Event*)
-{
-    LOG(info); 
-}
-void U4Recorder::EndOfEventAction(const G4Event*)
-{
-    LOG(info); 
-}
+void U4Recorder::BeginOfRunAction(const G4Run*){     LOG(info); }
+void U4Recorder::EndOfRunAction(const G4Run*){       LOG(info); }
+void U4Recorder::BeginOfEventAction(const G4Event*){ LOG(info); }
+void U4Recorder::EndOfEventAction(const G4Event*){   LOG(info); }
+
 void U4Recorder::PreUserTrackingAction(const G4Track* track)
 {
     if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); 
@@ -104,9 +93,9 @@ Q: What about reemission continuation ?
 A: The RE point should be at the same point as the AB that it scrubs, 
    so the continuing step zero should only record *post* 
 
-HMM: need to know the step index, actually just need to know that 
-are at the first step : can get that by counting bits in the flagmask, 
-as only the first step will have only one bit set from the genflag 
+HMM: need to know the step index, actually just need to know that are at the first step : 
+can get that by counting bits in the flagmask, as only the first step will have only 
+one bit set from the genflag. The single bit genflag gets set by SEvt::beginPhoton.
 
 **/
 
@@ -126,11 +115,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
 
     sphoton& photon = sev->current_photon ;
-
     bool single_bit = photon.flagmask_count() == 1 ; 
-    // single bit genflag gets set by SEvt::beginPhoton, so the flagmask will 
-    // only contain a single bit at the first step 
-
     if(single_bit)
     { 
         U4StepPoint::Update(photon, pre);
@@ -139,8 +124,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
 
     U4StepPoint::Update(photon, post); 
 
-    unsigned flag = 10 ; 
+    //std::cout << " pre  " << U4StepPoint::Desc(pre)  << std::endl ; 
+    std::cout << " post " << U4StepPoint::Desc(post) << std::endl ; 
 
+    unsigned flag = U4StepPoint::Flag(post) ;  // TODO: imp Flag based on cfg4 
     photon.set_flag( flag );
     sev->pointPhoton(sp); 
 }
