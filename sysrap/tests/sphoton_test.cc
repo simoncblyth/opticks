@@ -50,33 +50,69 @@ void test_sphoton_selector()
 
 #include <bitset>
 
+std::string dump_(const char* label, unsigned mask)
+{
+    std::bitset<32> bs(mask); 
+    std::stringstream ss ; 
+    ss << std::setw(25) << label << " " << bs << " " << std::setw(2) << bs.count() ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+void dump( const char* label, unsigned mask) 
+{
+    std::cout << dump_(label, mask) << std::endl ; 
+}
+
+/**
+
+                     zero 00000000000000000000000000000000  0
+              |= CERENKOV 00000000000000000000000000000001  1
+         |= SCINTILLATION 00000000000000000000000000000011  2
+                  |= MISS 00000000000000000000000000000111  3
+           |= BULK_ABSORB 00000000000000000000000000001111  4
+           |= BULK_REEMIT 00000000000000000000000000011111  5
+          |= BULK_SCATTER 00000000000000000000000000111111  6
+        |= SURFACE_DETECT 00000000000000000000000001111111  7
+        |= SURFACE_ABSORB 00000000000000000000000011111111  8
+      |= SURFACE_DREFLECT 00000000000000000000000111111111  9
+      |= SURFACE_SREFLECT 00000000000000000000001111111111 10
+      |= BOUNDARY_REFLECT 00000000000000000000011111111111 11
+     |= BOUNDARY_TRANSMIT 00000000000000000000111111111111 12
+                 |= TORCH 00000000000000000001111111111111 13
+             |= NAN_ABORT 00000000000000000011111111111111 14
+       |= EFFICIENCY_CULL 00000000000000000111111111111111 15
+    |= EFFICIENCY_COLLECT 00000000000000001111111111111111 16
+          &= ~BULK_ABSORB 00000000000000001111111111110111 15
+          &= ~BULK_REEMIT 00000000000000001111111111100111 14
+          |=  BULK_REEMIT 00000000000000001111111111110111 15
+          |=  BULK_ABSORB 00000000000000001111111111111111 16
+
+**/
+
 void test_sphoton_change_flagmask()
 {
-    unsigned flagmask = 0u ; 
-
-    flagmask |= CERENKOV ; 
-    flagmask |= SCINTILLATION ;
-    flagmask |= MISS ; 
-    flagmask |= BULK_ABSORB ; 
-    flagmask |= BULK_REEMIT ;
-    flagmask |= BULK_SCATTER ;
-    flagmask |= SURFACE_DETECT ;
-    flagmask |= SURFACE_ABSORB ;  
-    flagmask |= SURFACE_DREFLECT ; 
-    flagmask |= SURFACE_SREFLECT ;
-    flagmask |= BOUNDARY_REFLECT  ;
-    flagmask |= BOUNDARY_TRANSMIT ;
-    flagmask |= TORCH ;
-    flagmask |= NAN_ABORT ; 
-    flagmask |= EFFICIENCY_CULL ;
-    flagmask |= EFFICIENCY_COLLECT ; 
-
-    std::cout << std::setw(20) << " init " << std::bitset<32>(flagmask) << std::endl ; 
-
-    flagmask &= ~BULK_ABSORB ; std::cout << std::setw(20) << " &= ~BULK_ABSORB  " << std::bitset<32>(flagmask) << std::endl ; 
-    flagmask &= ~BULK_REEMIT ; std::cout << std::setw(20) << " &= ~BULK_REEMIT  " << std::bitset<32>(flagmask) << std::endl ; 
-    flagmask |=  BULK_REEMIT ; std::cout << std::setw(20) << " |= BULK_REEMIT  "  << std::bitset<32>(flagmask) << std::endl ; 
-    flagmask |=  BULK_ABSORB ; std::cout << std::setw(20) << " |= BULK_ABSORB  "  << std::bitset<32>(flagmask) << std::endl ; 
+    unsigned flagmask = 0u ;         dump("zero", flagmask );  
+    flagmask |= CERENKOV ;           dump("|= CERENKOV", flagmask ); 
+    flagmask |= SCINTILLATION ;      dump("|= SCINTILLATION", flagmask ); 
+    flagmask |= MISS ;               dump("|= MISS", flagmask ); 
+    flagmask |= BULK_ABSORB ;        dump("|= BULK_ABSORB", flagmask ); 
+    flagmask |= BULK_REEMIT ;        dump("|= BULK_REEMIT", flagmask ); 
+    flagmask |= BULK_SCATTER ;       dump("|= BULK_SCATTER", flagmask ); 
+    flagmask |= SURFACE_DETECT ;     dump("|= SURFACE_DETECT", flagmask ); 
+    flagmask |= SURFACE_ABSORB ;     dump("|= SURFACE_ABSORB", flagmask );   
+    flagmask |= SURFACE_DREFLECT ;   dump("|= SURFACE_DREFLECT", flagmask ); 
+    flagmask |= SURFACE_SREFLECT ;   dump("|= SURFACE_SREFLECT", flagmask ); 
+    flagmask |= BOUNDARY_REFLECT ;   dump("|= BOUNDARY_REFLECT", flagmask ); 
+    flagmask |= BOUNDARY_TRANSMIT ;  dump("|= BOUNDARY_TRANSMIT", flagmask ); 
+    flagmask |= TORCH ;              dump("|= TORCH", flagmask); 
+    flagmask |= NAN_ABORT ;          dump("|= NAN_ABORT", flagmask );  
+    flagmask |= EFFICIENCY_CULL ;    dump("|= EFFICIENCY_CULL", flagmask ); 
+    flagmask |= EFFICIENCY_COLLECT ; dump("|= EFFICIENCY_COLLECT", flagmask) ;  
+    flagmask &= ~BULK_ABSORB ;       dump("&= ~BULK_ABSORB", flagmask); 
+    flagmask &= ~BULK_REEMIT ;       dump("&= ~BULK_REEMIT", flagmask); 
+    flagmask |=  BULK_REEMIT ;       dump("|=  BULK_REEMIT", flagmask); 
+    flagmask |=  BULK_ABSORB ;       dump("|=  BULK_ABSORB", flagmask); 
 }
 
 

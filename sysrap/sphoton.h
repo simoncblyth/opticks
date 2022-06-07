@@ -113,6 +113,7 @@ struct sphoton
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+    SPHOTON_METHOD unsigned flagmask_count() const ; 
     SPHOTON_METHOD std::string desc() const ; 
     SPHOTON_METHOD void ephoton() ; 
     SPHOTON_METHOD void normalize_mom_pol(); 
@@ -134,6 +135,13 @@ SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+#include <bitset>
+
+SPHOTON_METHOD unsigned sphoton::flagmask_count() const 
+{
+    return std::bitset<32>(flagmask).count() ; 
+}
 
 SPHOTON_METHOD std::string sphoton::desc() const 
 {

@@ -72,6 +72,43 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     }
 }
 
+
+/**
+U4Recorder::UserSteppingAction_Optical
+---------------------------------------
+
+*step point recording* : each step has (pre,post) and post becomes pre of next step, 
+so there are two ways to record all points:
+
+1. post-based::
+
+   step 0: pre + post
+   step 1: post 
+   step 2: post
+   ... 
+   step n: post 
+
+2. pre-based::
+
+   step 0: pre
+   step 1: pre 
+   step 2: pre
+   ... 
+   step n: pre + post 
+
+*post-based* seems preferable as truncation from various limits will complicate 
+the tail of the recording. 
+
+Q: What about reemission continuation ? 
+A: The RE point should be at the same point as the AB that it scrubs, 
+   so the continuing step zero should only record *post* 
+
+HMM: need to know the step index, actually just need to know that 
+are at the first step : can get that by counting bits in the flagmask, 
+as only the first step will have only one bit set from the genflag 
+
+**/
+
 void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* step)
 {
     spho sp = U4Track::Label(track); 
@@ -84,13 +121,32 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     //const char* name = U4OpBoundaryProcessStatus::Name(status) ; 
     //LOG(info) << " status " << status << " name " << name ; 
 
-    //const G4StepPoint* pre_point = step->GetPreStepPoint() ; 
-    const G4StepPoint* post_point = step->GetPostStepPoint() ; 
+    const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
 
     sphoton& photon = evt->current_photon ;
-    //photon.set_flag( flag ); 
-    U4StepPoint::Update(photon, post_point); 
+
+    bool single_bit = photon.flagmask_count() == 1 ; 
+    // single bit genflag gets set by SEvt::beginPhoton, so the flagmask will 
+    // only contain a single bit at the first step 
+
+    if(single_bit)
+    { 
+        U4StepPoint::Update(photon, pre);
+        evt->pointPhoton(sp); 
+    }
+
+    U4StepPoint::Update(photon, post); 
+
+    unsigned flag = 10 ; 
+
+    photon.set_flag( flag );
+    evt->pointPhoton(sp); 
 }
+     
+
+
+
 void U4Recorder::PostUserTrackingAction_Optical(const  G4Track* track)
 {
     SEvt* evt = SEvt::Get(); 

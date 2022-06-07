@@ -94,6 +94,7 @@ struct SYSRAP_API SEvt
     void beginPhoton(const spho& sp); 
     void continuePhoton(const spho& sp); 
     void checkPhoton(const spho& sp) const ; 
+    void pointPhoton(const spho& sp); 
     void endPhoton(const spho& sp); 
 
 

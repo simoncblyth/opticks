@@ -404,4 +404,39 @@ HMM: how to scrub BULK_ABSORB and replace with BULK_REEMIT ?
 
 
 
+Thinking about step point recording U4Recorder/SEvt needs the event config limits
+-----------------------------------------------------------------------------------
+
+* this are currently held in qevent.h, BUT there is not need for that 
+  to be in QUDARap 
+
+* so to avoid duplication need to migrate QUDARap/qevent.h down to sysrap/sevent.h ?
+
+* also the compressed record domains are common to Opticks and U4Recorder/Geant4 running  
+  and those are imp in qevent.h : which is another reason to  migrate it down to sysrap
+
+
+::
+
+    epsilon:qudarap blyth$ opticks-f qevent.h 
+    ./ana/feature.py:        qudarap/qevent.h::
+    ./CSGOptiX/CSGOptiX6.cu:#include "qevent.h"
+    ./CSGOptiX/CSGOptiX7.cu:#include "qevent.h"
+    ./CSGOptiX/CSGOptiX7.cu:* CPU side params including qsim.h qevent.h pointers instanciated in CSGOptiX::CSGOptiX 
+    ./CSGOptiX/CSGOptiX.cc:HMM: get d_sim (qsim.h) now holds d_evt (qevent.h) but this is getting evt again rom QEvent ?
+    ./sysrap/srec.h:domains, see qevent.h 
+    ./qudarap/CMakeLists.txt:    qevent.h
+    ./qudarap/QEvent.cu:#include "qevent.h"
+    ./qudarap/tests/qevent_test.cc:#include "qevent.h"
+    ./qudarap/QSim.cu:#include "qevent.h"
+    ./qudarap/QU.cc:#include "qevent.h"
+    ./qudarap/QEvent.hh:    // should reside inside the qevent.h instance not up here in QEvent.hh
+    ./qudarap/qsim.h:#include "qevent.h"
+    ./qudarap/QEvent.cc:#include "qevent.h"
+    epsilon:opticks blyth$ 
+
+
+
+
+
 

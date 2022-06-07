@@ -149,7 +149,6 @@ void SEvt::beginPhoton(const spho& sp)
     const sgs& _gs = get_gs(sp);  
     int gentype = _gs.gentype ;
     unsigned genflag = OpticksGenstep_::GenstepToPhotonFlag(gentype); 
-
     assert( genflag == CERENKOV || genflag == SCINTILLATION || genflag == TORCH ); 
 
     LOG(info) << " _gs " << _gs.desc() ; 
@@ -157,6 +156,7 @@ void SEvt::beginPhoton(const spho& sp)
     current_photon.zero() ; 
     current_photon.set_idx(id); 
     current_photon.set_flag(genflag); 
+    assert( current_photon.flagmask_count() == 1 ); 
 }
 
 /**
@@ -205,6 +205,28 @@ void SEvt::continuePhoton(const spho& sp)
     current_photon.flagmask &= ~BULK_ABSORB  ; // scrub BULK_ABSORB from flagmask
     current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
 }
+
+
+/**
+SEvt::pointPhoton
+------------------
+
+Invoked from U4Recorder::UserSteppingAction_Optical to cause the 
+current photon to be recorded into record vector. 
+
+HMM: need to know the record "bounce" slot to use ?
+
+**/
+
+void SEvt::pointPhoton(const spho& sp)
+{
+    assert( sp.isSameLineage(current_pho) ); 
+
+
+
+}
+
+
 
 void SEvt::endPhoton(const spho& sp)
 {
