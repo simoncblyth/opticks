@@ -8,7 +8,13 @@ U4Recorder labelling the unlabelled
 -------------------------------------
 
 It would be better to label in PrimaryGeneratorAction, but 
-when that is not convenient can use standin labelling::
+when that is not convenient can use standin labelling
+
+Actually there are no G4Track accessible from PrimaryGeneratorAction 
+so no way to label. 
+
+
+::
 
     080 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
      81 {
@@ -146,7 +152,7 @@ torch generation within Geant4 PrimaryGeneratorAction ?
 sysrap/tests/storch_test.cc uses MOCK_CURAND to generate torch photons on CPU
 
 
-Doing similar::
+Doing similar in SGenerate.h and u4/U4VPrimaryGenerator.h::
 
     epsilon:sysrap blyth$ o
     On branch master

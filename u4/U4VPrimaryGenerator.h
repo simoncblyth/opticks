@@ -1,4 +1,14 @@
 #pragma once
+/**
+U4VPrimaryGenerator.h
+=======================
+
+Implemented header only to allow isolating use
+of MOCK_CURAND to the test executable only, and 
+not the library.
+
+
+**/
 
 struct sphoton ; 
 class G4PrimaryVertex ; 
@@ -59,6 +69,12 @@ way to annotate the tracks with *spho* labels.
 inline void U4VPrimaryGenerator::GeneratePrimaryVertex(G4Event* event)
 {
     NP* ph = SGenerate::GeneratePhotons(); 
+    if(ph == nullptr) std::cerr 
+         << "U4VPrimaryGenerator::GeneratePrimaryVertex : FATAL : NO PHOTONS " << std::endl 
+         << " compile with MOCK_CURAND to use SGenerate.h " << std::endl 
+         ; 
+    if(ph == nullptr) return ;  
+
     std::cout << " ph " << ( ph ? ph->sstr() : "-" ) << std::endl ;  
     sphoton* pp = (sphoton*)ph->bytes() ; 
 

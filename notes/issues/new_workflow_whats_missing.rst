@@ -8,13 +8,16 @@ just needs to be revisited and brought over to new environment.
 Validation Machinery : G4OpticksRecorder Needs reimplemented on top of SEvt
 -------------------------------------------------------------------------------
 
-* 1st : move event array saving from QEvent down to SEvt/NPFold, then 
+* DONE : U4Recorder, U4RecorderTest   
+
+* DONE : move event array saving from QEvent down to SEvt/NPFold, then 
   U4Recorder can depend only on sysrap, U4 (as it makes no sense for 
   it to depend on QEvent)
 
 * machinery for Opticks vs Geant4 comparison
-* Geant4 CFG4/CRecorder needs reworking to to write SEvt
-* python analysis comparison machinery needs update
+* DONE : U4Recorder CPU side running uses SEvt/NPFold persisting, as does QEvent running 
+
+* TODO: python analysis comparison machinery needs update
 
 * :doc:`reimplement-G4OpticksRecorder-CManager-for-new-workflow`
 
@@ -76,7 +79,7 @@ Generation : DONE BUT NEEDS DETAILED VALIDATION
 sgs : examples/Geant4/ScintGenStandalone 
 ---------------------------------------------
 
-* TODO: encapsulate the details of genstep collection, with higher level API
+* DONE : SEvt encapsulates the details of genstep collection, with higher level API
 
 ::
 
@@ -189,7 +192,7 @@ Engine Change : WIP "gx" G4CXOpticks
 G4Opticks Into New workflow ?
 --------------------------------
 
-* event handling is near fully reimplemented in QUDARap/QSim/QEvent 
+* event handling is near fully reimplemented in SEvt, QUDARap/QEvent supplied arrays to SEvt  
   (replacing that part of OptiXRap etc..)
  
 * geometry handling needs work to bring across 
@@ -273,7 +276,5 @@ Identity Mechanics for PMT efficiency, angular efficiency, MultiFilm
    * PMT type for MultiFilm 
 
 7. PMT angular efficiency for on device efficiency culling 
-
-
 
 
