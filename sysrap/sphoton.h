@@ -140,7 +140,7 @@ SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, 
 
 SPHOTON_METHOD unsigned sphoton::flagmask_count() const 
 {
-    return std::bitset<32>(flagmask).count() ; 
+    return std::bitset<32>(flagmask).count() ;   // NB counting bits, not nibbles with bits
 }
 
 SPHOTON_METHOD std::string sphoton::desc() const 

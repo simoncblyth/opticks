@@ -17,7 +17,7 @@ class G4Event ;
 struct U4VPrimaryGenerator
 {
     static G4PrimaryVertex* MakePrimaryVertexPhoton( const sphoton& p); 
-    static void GeneratePrimaryVertex(G4Event *evt); 
+    static void GeneratePrimaries(G4Event *event); 
 };
 
 
@@ -58,20 +58,20 @@ inline G4PrimaryVertex* U4VPrimaryGenerator::MakePrimaryVertexPhoton( const spho
 }
 
 /**
-U4VPrimaryGenerator::GeneratePrimaryVertex
--------------------------------------------
+U4VPrimaryGenerator::GeneratePrimaries
+---------------------------------------
 
 Notice that there are no G4Track in sight here, so there is no 
 way to annotate the tracks with *spho* labels.  
 
 **/
 
-inline void U4VPrimaryGenerator::GeneratePrimaryVertex(G4Event* event)
+inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
 {
     NP* ph = SGenerate::GeneratePhotons(); 
     if(ph == nullptr) std::cerr 
-         << "U4VPrimaryGenerator::GeneratePrimaryVertex : FATAL : NO PHOTONS " << std::endl 
-         << " compile with MOCK_CURAND to use SGenerate.h " << std::endl 
+         << "U4VPrimaryGenerator::GeneratePrimaries : FATAL : NO PHOTONS " << std::endl 
+         << "compile with MOCK_CURAND to use SGenerate.h curand on CPU" << std::endl 
          ; 
     if(ph == nullptr) return ;  
 

@@ -209,10 +209,10 @@ Lookup sgs genstep label corresponding to spho photon label
 
 **/
 
-const sgs& SEvt::get_gs(const spho& sp)
+const sgs& SEvt::get_gs(const spho& label)
 {
-    assert( sp.gs < int(gs.size()) ); 
-    const sgs& _gs =  gs[sp.gs] ; 
+    assert( label.gs < int(gs.size()) ); 
+    const sgs& _gs =  gs[label.gs] ; 
     return _gs ; 
 }
 
@@ -222,18 +222,18 @@ SEvt::beginPhoton
 
 
 **/
-void SEvt::beginPhoton(const spho& sp)
+void SEvt::beginPhoton(const spho& label)
 {
-    unsigned idx = sp.id ; 
+    unsigned idx = label.id ; 
     assert( idx < pho.size() );  
 
-    pho0.push_back(sp);   // push_back asis : just for initial dev, TODO: remove 
+    pho0.push_back(label);   // push_back asis : just for initial dev, TODO: remove 
 
-    pho[idx] = sp ;        // slot in the label  
+    pho[idx] = label ;        // slot in the label  
     slot[idx] = 0 ; 
-    current_pho = sp ; 
+    current_pho = label ; 
 
-    const sgs& _gs = get_gs(sp);  
+    const sgs& _gs = get_gs(label);  
     int gentype = _gs.gentype ;
     unsigned genflag = OpticksGenstep_::GenstepToPhotonFlag(gentype); 
     assert( genflag == CERENKOV || genflag == SCINTILLATION || genflag == TORCH ); 
@@ -241,6 +241,9 @@ void SEvt::beginPhoton(const spho& sp)
     LOG(info) << " _gs " << _gs.desc() ; 
 
     current_photon.zero() ; 
+    current_rec.zero() ; 
+    current_seq.zero() ; 
+
     current_photon.set_idx(idx); 
     current_photon.set_flag(genflag); 
     assert( current_photon.flagmask_count() == 1 ); 
@@ -254,8 +257,8 @@ Called from U4Recorder::PreUserTrackingAction_Optical for G4Track with
 pho label indicating a reemission generation greater than zero.
 
 Note that this will mostly be called for photons that originate from 
-scintillation gensteps BUT it will also happen for Cerenkov genstep 
-generated photons within a scintillator due to reemission of the Cerenkov photons. 
+scintillation gensteps BUT it will also happen for Cerenkov (and Torch) genstep 
+generated photons within a scintillator due to reemission. 
 
 **/
 void SEvt::continuePhoton(const spho& sp)
@@ -269,11 +272,9 @@ void SEvt::continuePhoton(const spho& sp)
     assert( sp.gn == parent_pho.gn + 1 ); 
 
     const sgs& _gs = get_gs(sp);  
-    bool sc = OpticksGenstep_::IsScintillation(_gs.gentype); 
-    bool ck = OpticksGenstep_::IsCerenkov(_gs.gentype); 
-    bool sc_xor_ck = sc ^ ck ; 
-    LOG(info) << " sc " << sc << " ck " << ck << " sc_xor_ck " << sc_xor_ck ;
-    assert(sc_xor_ck); 
+    bool expected_gentype = OpticksGenstep_::IsExpected(_gs.gentype); 
+    assert(expected_gentype);  
+    // within a scintillator the photons from any genstep type may undergo reemission  
  
     const sphoton& parent_photon = photon[idx] ; 
     unsigned parent_idx = parent_photon.idx() ; 

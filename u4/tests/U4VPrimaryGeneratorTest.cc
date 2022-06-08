@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     SEvt::AddTorchGenstep(); 
 
     G4Event* event = new G4Event ; 
-    U4VPrimaryGenerator::GeneratePrimaryVertex(event); 
+    U4VPrimaryGenerator::GeneratePrimaries(event); 
 
   
     return 0 ; 

@@ -43,7 +43,18 @@ if [ "${arg/dbg}" != "${arg}" ]; then
     echo $msg logdir $logdir
 fi 
 
-
+if [ "${arg/clean}" != "${arg}" ]; then
+   cd $FOLD 
+   pwd
+   ls -l *.npy *.txt *.log
+   read -p "$msg Enter YES to delete these : " ans
+   if [ "$ans" == "YES" ] ; then 
+       echo $msg proceeding
+       rm *.npy *.txt *.log
+   else
+       echo $msg skip 
+   fi 
+fi 
 
 if [ "${arg/ana}" != "${arg}" ]; then 
     cd $srcdir 

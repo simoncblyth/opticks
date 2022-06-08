@@ -72,9 +72,12 @@ struct OpticksGenstep_
     static const char* Name(unsigned type); 
 
     static bool IsValid(int gentype);
+
     static bool IsCerenkov(int gentype);
     static bool IsScintillation(int gentype);
     static bool IsTorchLike(int gentype);
+    static bool IsExpected(int gentype);
+
     static bool IsEmitSource(int gentype);
     static bool IsMachinery(int gentype);
     static bool IsFrame(int gentype);
@@ -169,6 +172,12 @@ inline bool OpticksGenstep_::IsTorchLike(int gentype)   // static
           gentype == OpticksGenstep_FRAME 
           ;
 } 
+
+inline bool OpticksGenstep_::IsExpected(int gentype) // static
+{  
+    return IsCerenkov(gentype) || IsScintillation(gentype) || IsTorchLike(gentype) ; 
+}
+
 inline bool OpticksGenstep_::IsEmitSource(int gentype)   // static
 {
    return gentype == OpticksGenstep_EMITSOURCE ;

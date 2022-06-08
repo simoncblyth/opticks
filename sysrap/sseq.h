@@ -69,6 +69,7 @@ SSEQ_METHOD void sseq::add_nibble(unsigned bounce, unsigned flag, unsigned bound
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
 SSEQ_METHOD std::string sseq::desc() const 
 {
     std::stringstream ss ; 

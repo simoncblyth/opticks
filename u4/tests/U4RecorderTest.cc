@@ -9,6 +9,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleTable.hh"
 #include "G4ParticleGun.hh"
+#include "G4GeometryManager.hh"
 
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
@@ -19,6 +20,7 @@
 #include "U4VolumeMaker.hh"
 #include "U4Recorder.hh"
 #include "U4Physics.hh"
+#include "U4VPrimaryGenerator.h"
 
 struct U4RecorderTest
     : 
@@ -32,7 +34,6 @@ struct U4RecorderTest
     static G4ParticleGun* InitGun(); 
 
     U4Recorder*           fRecorder ; 
-    G4RunManager*         fRunMgr ;
     G4ParticleGun*        fGun ;  
 
     G4VPhysicalVolume* Construct(); 
@@ -51,16 +52,14 @@ struct U4RecorderTest
     void UserSteppingAction(const G4Step*);
 
     U4RecorderTest(G4RunManager* runMgr); 
-    void init(); 
+    virtual ~U4RecorderTest(); 
 };
 
 G4ParticleGun* U4RecorderTest::InitGun()
 {
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* particle = particleTable->FindParticle("e+");
-
     LOG(info) << " particle " << particle ; 
-
     G4ParticleGun* gun = new G4ParticleGun(1) ;   
     gun->SetParticleDefinition(particle);
     gun->SetParticleTime(0.0*CLHEP::ns);
@@ -73,25 +72,23 @@ G4ParticleGun* U4RecorderTest::InitGun()
 U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     :
     fRecorder(new U4Recorder),
-    fRunMgr(runMgr),
     fGun(InitGun())
 {
-    init(); 
-}
-
-void U4RecorderTest::init()
-{
-    fRunMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
-    fRunMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
-    fRunMgr->SetUserAction((G4UserRunAction*)this);
-    fRunMgr->SetUserAction((G4UserEventAction*)this);
-    fRunMgr->SetUserAction((G4UserTrackingAction*)this);
-    fRunMgr->SetUserAction((G4UserSteppingAction*)this);
-    fRunMgr->Initialize(); 
+    runMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
+    runMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
+    runMgr->SetUserAction((G4UserRunAction*)this);
+    runMgr->SetUserAction((G4UserEventAction*)this);
+    runMgr->SetUserAction((G4UserTrackingAction*)this);
+    runMgr->SetUserAction((G4UserSteppingAction*)this);
+    runMgr->Initialize(); 
 }
 
 G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::WorldBoxOfScintillator( 1000. ); }
-void U4RecorderTest::GeneratePrimaries(G4Event* evt){  fGun->GeneratePrimaryVertex(evt); }
+void U4RecorderTest::GeneratePrimaries(G4Event* event)
+{ 
+    fGun->GeneratePrimaryVertex(event); 
+    //U4VPrimaryGenerator::GeneratePrimaries(event);   
+}
 
 // pass along the message to the recorder
 void U4RecorderTest::BeginOfRunAction(const G4Run* run){         fRecorder->BeginOfRunAction(run);   }
@@ -102,9 +99,21 @@ void U4RecorderTest::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreU
 void U4RecorderTest::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
 void U4RecorderTest::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction(step); }
 
+U4RecorderTest::~U4RecorderTest()
+{
+    G4GeometryManager::GetInstance()->OpenGeometry(); 
+}
 
 /**
-This below constraint forces instanciating G4RunManager first in order to hookup physics before the main instanciation::
+G4GeometryManager::OpenGeometry is needed to avoid cleanup warning::
+
+    WARNING - Attempt to delete the physical volume store while geometry closed !
+    WARNING - Attempt to delete the logical volume store while geometry closed !
+    WARNING - Attempt to delete the solid store while geometry closed !
+    WARNING - Attempt to delete the region store while geometry closed !
+
+This below constraint forces instanciating G4RunManager first in order 
+to hookup physics before the main instanciation::
 
     You are instantiating G4UserRunAction BEFORE your G4VUserPhysicsList is
     instantiated and assigned to G4RunManager.
@@ -113,16 +122,7 @@ This below constraint forces instanciating G4RunManager first in order to hookup
     set it to G4RunManager before instantiating other user action classes
     such as G4UserRunAction.
 
-G4GeometryManager::OpenGeometry is needed to avoid cleanup warning::
-
-    WARNING - Attempt to delete the physical volume store while geometry closed !
-    WARNING - Attempt to delete the logical volume store while geometry closed !
-    WARNING - Attempt to delete the solid store while geometry closed !
-    WARNING - Attempt to delete the region store while geometry closed !
-
 **/
-
-#include "G4GeometryManager.hh"
 
 int main(int argc, char** argv)
 { 
@@ -135,6 +135,8 @@ int main(int argc, char** argv)
     SEventConfig::SetMaxSeq(max_bounce+1); 
 
     SEvt evt ; 
+    //SEvt::AddTorchGenstep();  
+    //    needs to be commented when gun running, TODO: make run modes configurable 
 
     G4RunManager* runMgr = new G4RunManager ; 
     runMgr->SetUserInitialization((G4VUserPhysicsList*)new U4Physics); 
@@ -146,6 +148,5 @@ int main(int argc, char** argv)
     evt.save(dir); 
     LOG(info) << evt.desc() ; 
 
-    G4GeometryManager::GetInstance()->OpenGeometry(); 
     return 0 ; 
 }
