@@ -437,6 +437,11 @@ Thinking about step point recording U4Recorder/SEvt needs the event config limit
 
 
 
+How to support torch gensteps and input photons with U4Recorder ?
+--------------------------------------------------------------------
+
+* :doc:`torch-gensteps-with-new-workflow-U4Recorder`
+
 
 
 

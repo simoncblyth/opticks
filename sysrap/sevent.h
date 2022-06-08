@@ -321,6 +321,16 @@ SEVENT_METHOD void sevent::zero()
 #endif 
 
 
+/**
+sevent::add_rec
+----------------
+
+Populates compressed "srec& r" from "const sphoton& p" using the domains
+and copies into evt->rec array using the (idx,bounce) slot. 
+
+**/
+
+
 SEVENT_METHOD void  sevent::add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p )
 {
     r.set_position(     p.pos,  center_extent ); 

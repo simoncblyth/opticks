@@ -2,7 +2,10 @@
 
 #include "scuda.h"
 #include "squad.h"
+#include "sphoton.h"
 #include "sc4u.h"
+
+#include "SEvent.hh"
 #include "OpticksGenstep.h"
 #include "NP.hh"
 
@@ -179,4 +182,8 @@ std::string SGenstep::Desc(const NP* gs, int edgeitems) // static
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+
 

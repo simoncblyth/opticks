@@ -215,7 +215,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     {    
         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
         if(evt->rec) evt->add_rec( rec, idx, bounce, p ); 
-        if(evt->seq) seq.add_step( bounce, p.flag(), p.boundary() ); 
+        if(evt->seq) seq.add_nibble( bounce, p.flag(), p.boundary() ); 
 
         trace( 
             params.handle,
@@ -236,7 +236,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p ); 
-    if( evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() );
+    if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
 
     evt->photon[idx] = p ; 
     if(evt->seq) evt->seq[idx] = seq ;

@@ -78,7 +78,7 @@ struct qsim
     qscint*             scint ; 
             
 
-    QSIM_METHOD void    generate_photon_dummy( quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon_dummy( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
 
 
@@ -91,7 +91,7 @@ struct qsim
 
     QSIM_METHOD float4  multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi);
 
-    QSIM_METHOD void    generate_photon_carrier(    quad4&   p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon_carrier(    sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD void    generate_photon_simtrace(   quad4&   p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD void    generate_photon(            sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
 
@@ -134,8 +134,12 @@ struct qsim
 }; 
 
 
-inline QSIM_METHOD void qsim::generate_photon_dummy(quad4& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
+inline QSIM_METHOD void qsim::generate_photon_dummy(sphoton& p_, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
+
+    quad4& p = (quad4&)p_ ; 
+
+
     //printf("//qsim::generate_photon_dummy photon_id %d ", photon_id ); 
     printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n", 
        photon_id, 
@@ -1115,12 +1119,12 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
 
     while( bounce < evt->max_bounce )
     {
-         // HMM: encapsulate this step saving 
-        //  evt->step(idx, bounce,  
+        // HMM: encapsulate this step saving 
+        //  void sevent::record_point(unsigned idx, int bounce, sphoton& p, srec& rec, sseq& seq )  
 
         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
-        if(evt->rec)    evt->add_rec(rec, idx, bounce, p ); 
-        if(evt->seq)    seq.add_step( bounce, p.flag(), p.boundary() ); 
+        if(evt->rec)    evt->add_rec(rec, idx, bounce, p );   // populates compressed rec and adds to evt->rec array 
+        if(evt->seq)    seq.add_nibble( bounce, p.flag(), p.boundary() ); 
 
 
         const quad2* prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
@@ -1133,9 +1137,9 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
 
     if(evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
     if(evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p ); 
-    if(evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() ); 
+    if(evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() ); 
 
-    //TODO: evt->photon[idx] = p ; 
+    //TODO: HUH why no: evt->photon[idx] = p ; to match CSGOptiX7.cu ?
 
     if(evt->seq) evt->seq[idx] = seq ; 
 }
@@ -1346,16 +1350,15 @@ Moved non-standard center-extent gensteps to use qsim::generate_photon_simtrace 
 
 inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
-    quad4& q = (quad4&)p ; 
     const int& gencode = gs.q0.i.x ; 
 
     switch(gencode)
     {
-        case OpticksGenstep_CARRIER:         scarrier::generate(     q, rng, gs, photon_id, genstep_id)  ; break ; 
+        case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ; 
         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
         case OpticksGenstep_CERENKOV:        cerenkov->generate(     p, rng, gs, photon_id, genstep_id ) ; break ; 
         case OpticksGenstep_SCINTILLATION:   scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ; 
-        default:                             generate_photon_dummy(  q, rng, gs, photon_id, genstep_id)  ; break ; 
+        default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ; 
     }
 }
 

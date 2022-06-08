@@ -9,6 +9,7 @@
 #include "G4VParticleChange.hh"
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
+#include "G4Event.hh"
 
 #include "SEvt.hh"
 #include "scuda.h"
@@ -584,8 +585,6 @@ NP* U4::CollectOpticalSecondaries(const G4VParticleChange* pc )
     }
     return p ; 
 } 
-
-
 
 
 

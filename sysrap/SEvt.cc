@@ -322,7 +322,8 @@ void SEvt::pointPhoton(const spho& sp)
 
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
-    if( evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() );
+    if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
+
 
     bounce += 1 ; 
 }
@@ -340,7 +341,7 @@ so have setup the environment to match::
 
 As the hostside vectors keep getting resized at each genstep, the 
 evt buffer points are updated at every resize to follow them around
-as they grow and are realloced. 
+as they grow and are reallocated.
 **/
 
 void SEvt::endPhoton(const spho& sp)

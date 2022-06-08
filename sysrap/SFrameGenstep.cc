@@ -135,7 +135,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 
 /**
 SFrameGenstep::MakeCenterExtentGensteps
-----------------------------------
+-----------------------------------------
     
 Creates grid of gensteps centered at ce.xyz with the grid specified 
 by integer ranges that are used to scale the extent parameter to yield
@@ -370,7 +370,7 @@ void SFrameGenstep::StandardizeCEGS( const float4& ce, std::vector<int>& cegs, f
 
 /**
 SFrameGenstep::GetBoundingBox
------------------------
+-------------------------------
 
 Uses CE center-extent and gridscale together with the cegs grid parameters to provide 
 the float3 mn and mx bounds of the CE grid.  NB no use of any transforms here.   

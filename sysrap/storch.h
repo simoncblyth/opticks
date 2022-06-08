@@ -146,6 +146,15 @@ inline std::string storch::desc() const
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
 
+/**
+storch::generate
+-----------------
+
+Populate "sphoton& p" as parameterized by "const quad6& gs_" which casts to "const storch& gs",
+the photon_id and genstep_id inputs are informational only. 
+
+**/
+
 STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
 {
     const storch& gs = (const storch&)gs_ ;   // casting between union-ed types  
@@ -190,8 +199,6 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
         p.pol.z = 0.f ;    
         // pol.z zero in initial frame, so rotating the frame to arrange z to be in p.mom direction makes pol transverse to mom
         smath::rotateUz(p.pol, p.mom) ; 
-
-        // HMM need to rotate to make pol transverse to mom 
     }
 
     p.zero_flags(); 

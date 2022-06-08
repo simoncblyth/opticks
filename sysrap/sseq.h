@@ -40,7 +40,7 @@ struct sseq
     unsigned long long seqbnd ; 
 
     SSEQ_METHOD void zero() { seqhis = 0ull ; seqbnd = 0ull ; }
-    SSEQ_METHOD void add_step( unsigned bounce, unsigned flag, unsigned boundary ); 
+    SSEQ_METHOD void add_nibble( unsigned bounce, unsigned flag, unsigned boundary ); 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -49,15 +49,17 @@ struct sseq
 };
 
 /**
-sseq::add_step
-----------------
+sseq::add_nibble
+------------------
+
+Populates one nibble of the seqhis+seqbnd bitfields 
 
 Hmm signing the boundary for each step would eat into bits too much, perhaps 
 just collect material, as done in old workflow ?
 
 **/
 
-SSEQ_METHOD void sseq::add_step( unsigned bounce, unsigned flag, unsigned boundary )
+SSEQ_METHOD void sseq::add_nibble(unsigned bounce, unsigned flag, unsigned boundary )
 {
     seqhis |=  (( FFS(flag) & 0xfull ) << 4*bounce ); 
     seqbnd |=  (( boundary  & 0xfull ) << 4*bounce ); 

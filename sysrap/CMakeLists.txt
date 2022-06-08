@@ -212,6 +212,8 @@ set(HEADERS
     scerenkov.h
     sscint.h
     sevent.h
+
+    SGenerate.h
     
     sflow.h
     sqat4.h
