@@ -250,6 +250,12 @@ void U4::GenPhotonAncestor( const G4Track* aTrack )
     if(dump) std::cout << "U4::GenPhotonAncestor " << ancestor.desc() << std::endl ;  
 }
 
+/**
+U4::GenPhotonBegin
+-------------------
+
+**/
+
 void U4::GenPhotonBegin( int genloop_idx )
 {
     assert(genloop_idx > -1); 
@@ -268,6 +274,14 @@ void U4::GenPhotonBegin( int genloop_idx )
         ; 
 #endif
 }
+
+/**
+U4::GenPhotonEnd
+------------------
+
+Sets spho label into the secondary track using U4PhotonInfo::Set
+
+**/
 
 void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
 {

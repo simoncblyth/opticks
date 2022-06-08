@@ -46,19 +46,65 @@ void U4Recorder::UserSteppingAction(const G4Step* step)
     if(U4Track::IsOptical(track)) UserSteppingAction_Optical(track, step); 
 }
 
+
+
+/**
+U4Recorder::PreUserTrackingAction_Optical
+-------------------------------------------
+
+**Photon Labels**
+
+Optical photon G4Track arriving here from U4 instrumented Scintillation and Cerenkov processes 
+are always labelled, having the label set at the end of the generation loop by U4::GenPhotonEnd, 
+see examples::
+
+   u4/tests/DsG4Scintillation.cc
+   u4/tests/G4Cerenkov_modified.cc
+
+However primary optical photons arising from input photons or torch gensteps
+are not labelled at generation as that is probably not possible without hacking 
+GeneratePrimaries.
+
+* TODO: review how torch genstep photon generation + input photon 
+  worked within old workflow and bring that over to U4 
+  (actually might have done this at detector framework level ?)
+
+As a workaround for photon G4Track arriving at U4Recorder without labels, 
+the spho::Fabricate method is below used to creates a label based entirely 
+on a 0-based track_id with genstep index set to zero. 
+This standin for a real label is only really equivalent for events 
+with a single torch/input genstep. 
+
+**/
+
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
-    spho sp = U4Track::Label(track);  // just label, not sphoton 
-    assert( sp.isDefined() );         // all photons are expected to be labelled, TODO: torch+input photons
+    spho label = U4Track::Label(track);  // just label, not sphoton 
+
+    if( label.isDefined() == false )
+    {
+        int trackID = track->GetTrackID() - 1 ; 
+        assert( trackID >= 0 );  
+
+        spho fab = spho::Fabricate(trackID); 
+
+        G4Track* _track = const_cast<G4Track*>(track);  
+        U4PhotonInfo::Set(_track, fab );        
+        label = U4Track::Label(track); 
+
+        LOG(info) << " labelling photon " << label.desc() ; 
+    }
+
+    assert( label.isDefined() );  
     SEvt* sev = SEvt::Get(); 
 
-    if(sp.gn == 0)
+    if(label.gn == 0)
     {
-        sev->beginPhoton(sp);       
+        sev->beginPhoton(label);       
     }
-    else if( sp.gn > 0 )
+    else if( label.gn > 0 )
     {
-        sev->continuePhoton(sp); 
+        sev->continuePhoton(label); 
     }
 }
 
@@ -67,8 +113,10 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 U4Recorder::UserSteppingAction_Optical
 ---------------------------------------
 
-*step point recording* : each step has (pre,post) and post becomes pre of next step, 
-so there are two ways to record all points:
+**Step Point Recording** 
+
+Each step has (pre,post) and post becomes pre of next step, so there 
+are two ways to record all points:
 
 1. post-based::
 
@@ -93,6 +141,9 @@ Q: What about reemission continuation ?
 A: The RE point should be at the same point as the AB that it scrubs, 
    so the continuing step zero should only record *post* 
 
+
+**Detecting First Step**
+
 HMM: need to know the step index, actually just need to know that are at the first step : 
 can get that by counting bits in the flagmask, as only the first step will have only 
 one bit set from the genflag. The single bit genflag gets set by SEvt::beginPhoton.
@@ -102,14 +153,13 @@ one bit set from the genflag. The single bit genflag gets set by SEvt::beginPhot
 void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* step)
 {
     spho sp = U4Track::Label(track); 
+
+
     assert( sp.isDefined() );   // all photons are expected to be labelled, TODO: torch+input photons
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhoton(sp); 
 
-    //unsigned status = U4OpBoundaryProcess::GetStatus() ; 
-    //const char* name = U4OpBoundaryProcessStatus::Name(status) ; 
-    //LOG(info) << " status " << status << " name " << name ; 
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -125,14 +175,22 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     U4StepPoint::Update(photon, post); 
 
     //std::cout << " pre  " << U4StepPoint::Desc(pre)  << std::endl ; 
-    std::cout << " post " << U4StepPoint::Desc(post) << std::endl ; 
 
     unsigned flag = U4StepPoint::Flag(post) ;  // TODO: imp Flag based on cfg4 
+    if( flag == 0 )
+    {
+        std::cout << " ERR flag zero : post " << U4StepPoint::Desc(post) << std::endl ; 
+    }
+    assert( flag > 0 ); 
+
     photon.set_flag( flag );
     sev->pointPhoton(sp); 
 }
      
+/**
 
+
+**/
 
 
 void U4Recorder::PostUserTrackingAction_Optical(const  G4Track* track)

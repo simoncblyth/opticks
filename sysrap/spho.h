@@ -11,7 +11,6 @@ isSameLineage
 isIdentical
     requires isSameLineage and same reemission generation
 
-
 * HMM: spho lacks gentype, to get that must reference corresponding sgs struct using the gs index 
 
 **/
@@ -39,16 +38,34 @@ struct spho
     std::string desc() const ;
 };
 
+
+#include <cassert>
 #include <sstream>
 #include <iomanip>
 
-inline spho spho::MakePho(int gs_, int ix_, int id_, int gn_)
+
+
+
+inline spho spho::MakePho(int gs_, int ix_, int id_, int gn_) // static
 {
     spho ph = {gs_, ix_, id_, gn_} ; 
     return ph ;   
 }
+/**
+spho::Fabricate
+---------------
+
+*Fabricate* is not normally used, as C+S photons are always 
+labelled at generation by U4::GenPhotonEnd
+
+However as a workaround for torch/input photons that lack labels
+this method is used from U4Recorder::PreUserTrackingAction_Optical
+to provide a standin label based only on a 0-based track_id. 
+
+**/
 inline spho spho::Fabricate(int track_id) // static
 {
+    assert( track_id >= 0 ); 
     spho fab = {0, track_id, track_id, 0 };
     return fab ;
 }
