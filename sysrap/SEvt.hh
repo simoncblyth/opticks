@@ -77,6 +77,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
 
     static const plog::Severity LEVEL ; 
+    static const int GIDX ; 
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
     static bool RECORDING ; 

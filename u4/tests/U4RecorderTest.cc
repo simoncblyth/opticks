@@ -87,7 +87,7 @@ G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::WorldBoxOf
 void U4RecorderTest::GeneratePrimaries(G4Event* event)
 { 
     fGun->GeneratePrimaryVertex(event); 
-    //U4VPrimaryGenerator::GeneratePrimaries(event);   
+    //U4VPrimaryGenerator::GeneratePrimaries(event);    // eg from collected torch gensteps 
 }
 
 // pass along the message to the recorder

@@ -16,12 +16,19 @@ class G4Event ;
 class G4Track ; 
 class G4Step ; 
 
+struct spho ; 
+
+
 #include "plog/Severity.h"
 #include "U4_API_EXPORT.hh"
 
 struct U4_API U4Recorder 
 {
     static const plog::Severity LEVEL ; 
+    static const int PIDX ; 
+    static const int GIDX ; 
+    static bool Enabled(const spho& label); 
+
     static U4Recorder* INSTANCE ; 
     static U4Recorder* Get(); 
 

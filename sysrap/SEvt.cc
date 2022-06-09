@@ -6,7 +6,9 @@
 #include "sseq.h"
 #include "sevent.h"
 
+
 #include "PLOG.hh"
+#include "SSys.hh"
 #include "NP.hh"
 #include "NPFold.h"
 #include "SPath.hh"
@@ -19,6 +21,8 @@
 #include "SComp.h"
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
+const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
+
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
@@ -139,28 +143,47 @@ sgs SEvt::addGenstep(const NP* a)
 
 bool SEvt::RECORDING = true ;  // TODO: needs to be normally false
 
+/**
+SEvt::addGenstep
+------------------
+
+The GIDX envvar is used whilst debugging to restrict to collecting 
+a single genstep chosen by its index.  This is implemented by 
+always collecting all genstep labels, but only collecting 
+actual gensteps for the enabled index. 
+
+**/
+
 sgs SEvt::addGenstep(const quad6& q)
 {
-    unsigned offset = getNumPhoton() ; // number of photons in event before this genstep  (actually since last reset) 
-    unsigned q_numphoton = q.numphoton() ; 
+    unsigned offset = getNumPhoton() ;     // sum numphotons from all previously collected gensteps (since last reset) 
+    unsigned q_numphoton = q.numphoton() ; // numphotons from this genstep 
 
     sgs s = {} ;                // genstep summary struct 
+
     s.index = genstep.size() ;  // 0-based genstep index in event (actually since last reset)  
+    //s.index = gs.size() ;       // absolute indexing ? think cannot do this as would break seeding 
+
     s.photons = q_numphoton ;   // numphoton in the genstep 
     s.offset = offset ;         // event global photon offset 
     s.gentype = q.gentype() ; 
 
-    LOG(info) << " s.desc " << s.desc() ; 
+    int gidx = int(gs.size()) ; 
+    gs.push_back(s) ; 
+
 
     // gs labels and gensteps in order of collection
-    gs.push_back(s) ; 
-    genstep.push_back(q) ; 
-
-    if(RECORDING) 
+    bool enabled = GIDX == -1 || GIDX == gidx ; 
+    if(enabled)
     {
-        // numphotons from all gensteps in event so far plus this one just added
-        setNumPhoton(offset + q_numphoton); 
-        resize();  
+        LOG(info) << " s.desc " << s.desc() << " enabled " << enabled  ; 
+        genstep.push_back(q) ; 
+        if(RECORDING) 
+        {
+            // numphotons from all gensteps in event so far plus this one just added
+            setNumPhoton(offset + q_numphoton); 
+            resize();  
+        }
     }
 
     return s ; 
@@ -177,6 +200,8 @@ This is the CPU side equivalent of device side QEvent::setNumPhoton
 void SEvt::setNumPhoton(unsigned numphoton)
 {
     // TODO: use SEvt::setNumPhoton from QEvent::setNumPhoton to avoid the duplicity 
+    LOG(info) << " numphoton " << numphoton ;  
+
     evt->num_photon = numphoton ; 
     evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ;
     evt->num_record = evt->max_record * evt->num_photon ;
@@ -225,7 +250,9 @@ SEvt::beginPhoton
 void SEvt::beginPhoton(const spho& label)
 {
     unsigned idx = label.id ; 
-    assert( idx < pho.size() );  
+    bool in_range = idx < pho.size() ; 
+    if(!in_range) LOG(error) << " not in_range : pho.size  " << pho.size() << " label " << label.desc() ;  
+    assert(in_range);  
 
     pho0.push_back(label);   // push_back asis : just for initial dev, TODO: remove 
 

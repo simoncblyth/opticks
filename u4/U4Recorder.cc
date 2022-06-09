@@ -5,6 +5,7 @@
 #include "srec.h"
 #include "sevent.h"
 
+#include "SSys.hh"
 #include "SEvt.hh"
 #include "PLOG.hh"
 
@@ -14,10 +15,22 @@
 #include "U4OpBoundaryProcess.hh"
 #include "G4OpBoundaryProcess.hh"
 #include "U4OpBoundaryProcessStatus.h"
+#include "U4TrackStatus.h"
 
 
 
 const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG"); 
+const int U4Recorder::PIDX = SSys::getenvint("PIDX",-1) ; 
+const int U4Recorder::GIDX = SSys::getenvint("GIDX",-1) ; 
+bool U4Recorder::Enabled(const spho& label)
+{ 
+    return GIDX == -1 ? 
+                        ( PIDX == -1 || label.id == PIDX ) 
+                      :
+                        ( GIDX == -1 || label.gs == GIDX ) 
+                      ;
+} 
+
 
 U4Recorder* U4Recorder::INSTANCE = nullptr ; 
 U4Recorder* U4Recorder::Get(){ return INSTANCE ; }
@@ -81,6 +94,11 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
     spho label = U4Track::Label(track);  // just label, not sphoton 
 
+
+    G4TrackStatus tstat = track->GetTrackStatus(); 
+    //if(tstat != fAlive) LOG(info) << " pre.tstat " << U4TrackStatus::Name(tstat) ; 
+    assert( tstat == fAlive ); 
+
     if( label.isDefined() == false )
     {
         int trackID = track->GetTrackID() - 1 ; 
@@ -94,8 +112,12 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 
         LOG(info) << " labelling photon " << label.desc() ; 
     }
-
     assert( label.isDefined() );  
+
+    if(!Enabled(label)) return ;  
+
+
+
     SEvt* sev = SEvt::Get(); 
 
     if(label.gn == 0)
@@ -107,6 +129,28 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         sev->continuePhoton(label); 
     }
 }
+
+/**
+**/
+
+void U4Recorder::PostUserTrackingAction_Optical(const  G4Track* track)
+{
+    spho label = U4Track::Label(track);  // just label, not sphoton 
+    assert( label.isDefined() );         // all photons are expected to be labelled, TODO: input photons
+    if(!Enabled(label)) return ;  
+
+    SEvt* evt = SEvt::Get(); 
+    evt->endPhoton(label);       
+
+    G4TrackStatus tstat = track->GetTrackStatus(); 
+    if(tstat != fStopAndKill) LOG(info) << " post.tstat " << U4TrackStatus::Name(tstat) ; 
+    assert( tstat == fStopAndKill ); 
+}
+
+
+
+
+
 
 
 /**
@@ -152,13 +196,15 @@ one bit set from the genflag. The single bit genflag gets set by SEvt::beginPhot
 
 void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* step)
 {
-    spho sp = U4Track::Label(track); 
+    spho label = U4Track::Label(track); 
+    assert( label.isDefined() );   // all photons are expected to be labelled, TODO:input photons
+    if(!Enabled(label)) return ;  
 
-
-    assert( sp.isDefined() );   // all photons are expected to be labelled, TODO: torch+input photons
+    G4TrackStatus tstat = track->GetTrackStatus(); 
+    LOG(info) << " step.tstat " << U4TrackStatus::Name(tstat) ; 
 
     SEvt* sev = SEvt::Get(); 
-    sev->checkPhoton(sp); 
+    sev->checkPhoton(label); 
 
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
@@ -169,7 +215,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     if(single_bit)
     { 
         U4StepPoint::Update(photon, pre);
-        sev->pointPhoton(sp); 
+        sev->pointPhoton(label); 
     }
 
     U4StepPoint::Update(photon, post); 
@@ -184,21 +230,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     assert( flag > 0 ); 
 
     photon.set_flag( flag );
-    sev->pointPhoton(sp); 
+    sev->pointPhoton(label); 
 }
      
-/**
-
-
-**/
-
-
-void U4Recorder::PostUserTrackingAction_Optical(const  G4Track* track)
-{
-    SEvt* evt = SEvt::Get(); 
-    spho sp = U4Track::Label(track);  // just label, not sphoton 
-    assert( sp.isDefined() );         // all photons are expected to be labelled, TODO: torch photons
-    evt->endPhoton(sp);       
-}
-
 
