@@ -42,12 +42,11 @@ struct U4_API U4Recorder
 
     void PreUserTrackingAction(const G4Track*);
     void PostUserTrackingAction(const G4Track*);
-
     void UserSteppingAction(const G4Step*);
 
     void PreUserTrackingAction_Optical(const G4Track*);
     void PostUserTrackingAction_Optical(const G4Track*);
-    void UserSteppingAction_Optical(const G4Track* track, const G4Step* step); 
+    void UserSteppingAction_Optical(const G4Step*); 
 };
 
 

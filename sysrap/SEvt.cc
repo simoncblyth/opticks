@@ -82,8 +82,6 @@ NP* SEvt::getDomain() const
     return domain ;
 }
 
-
-
 SEvt* SEvt::Get(){ return INSTANCE ; }
 void SEvt::Check()
 {
@@ -108,7 +106,14 @@ NP* SEvt::GetGenstep() {  return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
 void SEvt::clear()
 {
     genstep.clear();
-    gs.clear(); 
+    gs.clear();
+    pho0.clear(); 
+    pho.clear(); 
+    slot.clear(); 
+    photon.clear(); 
+    record.clear(); 
+    rec.clear(); 
+    seq.clear(); 
 }
 
 unsigned SEvt::getNumGenstep() const 
@@ -155,36 +160,31 @@ actual gensteps for the enabled index.
 
 **/
 
-sgs SEvt::addGenstep(const quad6& q)
+sgs SEvt::addGenstep(const quad6& q_)
 {
-    unsigned offset = getNumPhoton() ;     // sum numphotons from all previously collected gensteps (since last reset) 
-    unsigned q_numphoton = q.numphoton() ; // numphotons from this genstep 
+    int gidx = int(gs.size())  ;  // 0-based genstep label index
+    bool enabled = GIDX == -1 || GIDX == gidx ; 
 
-    sgs s = {} ;                // genstep summary struct 
+    quad6& q = const_cast<quad6&>(q_);   
+    if(!enabled) q.set_numphoton(0);   
+    // simplify handling of disabled gensteps by simply setting numphoton to zero for them
 
-    s.index = genstep.size() ;  // 0-based genstep index in event (actually since last reset)  
-    //s.index = gs.size() ;       // absolute indexing ? think cannot do this as would break seeding 
-
-    s.photons = q_numphoton ;   // numphoton in the genstep 
-    s.offset = offset ;         // event global photon offset 
+    sgs s = {} ;                  // genstep summary struct 
+    s.index = genstep.size() ;    // 0-based genstep index in event (actually since last reset)  
+    s.photons = q.numphoton() ;   // numphoton in this genstep 
+    s.offset = getNumPhoton() ;   // sum numphotons from all previously collected gensteps (since last reset)
     s.gentype = q.gentype() ; 
 
-    int gidx = int(gs.size()) ; 
     gs.push_back(s) ; 
+    genstep.push_back(q) ; 
 
+    if(enabled) LOG(info) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled  ; 
 
-    // gs labels and gensteps in order of collection
-    bool enabled = GIDX == -1 || GIDX == gidx ; 
-    if(enabled)
+    int tot_photon = s.offset+s.photons ; 
+    if( tot_photon != evt->num_photon )
     {
-        LOG(info) << " s.desc " << s.desc() << " enabled " << enabled  ; 
-        genstep.push_back(q) ; 
-        if(RECORDING) 
-        {
-            // numphotons from all gensteps in event so far plus this one just added
-            setNumPhoton(offset + q_numphoton); 
-            resize();  
-        }
+        setNumPhoton(tot_photon); 
+        resize();  
     }
 
     return s ; 
@@ -202,7 +202,7 @@ TODO: use SEvt::setNumPhoton from QEvent::setNumPhoton to avoid the duplicity
 
 void SEvt::setNumPhoton(unsigned numphoton)
 {
-    LOG(LEVEL) << " numphoton " << numphoton ;  
+    LOG(info) << " numphoton " << numphoton ;  
 
     evt->num_photon = numphoton ; 
     evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ;
@@ -267,14 +267,20 @@ void SEvt::beginPhoton(const spho& label)
     unsigned idx = label.id ; 
 
     bool in_range = idx < pho.size() ; 
-    if(!in_range) LOG(error) << " not in_range : pho.size  " << pho.size() << " label " << label.desc() ;  
+    if(!in_range) LOG(error) 
+        << " not in_range " 
+        << " idx " << idx 
+        << " pho.size  " << pho.size() 
+        << " label " << label.desc() 
+        ;  
     assert(in_range);  
 
     unsigned genflag = get_genflag(label);  
 
-    pho0.push_back(label);   // push_back asis : just for initial dev, TODO: remove 
-    pho[idx] = label ;        // slot in the label  
-    slot[idx] = 0 ;           // slot/bounce is incremented only at tail of SEvt::pointPhoton
+    pho0.push_back(label);    // push_back asis for debugging
+    pho[idx] = label ;        // slot in the photon label  
+    slot[idx] = 0 ;           // slot/bounce incremented only at tail of SEvt::pointPhoton
+
     current_pho = label ; 
 
     current_photon.zero() ; 
@@ -297,6 +303,8 @@ spho label indicating a reemission generation greater than zero.
 Note that this will mostly be called for photons that originate from 
 scintillation gensteps BUT it will also happen for Cerenkov (and Torch) genstep 
 generated photons within a scintillator due to reemission. 
+
+TODO: check that positions match up across the rejoin 
 
 **/
 void SEvt::rjoinPhoton(const spho& label)
@@ -362,6 +370,7 @@ void SEvt::rjoinPhoton(const spho& label)
         rjoin_record.flagmask &= ~BULK_ABSORB ; // scrub BULK_ABSORB from flagmask  
         rjoin_record.set_flag(BULK_REEMIT) ; 
     } 
+    // TODO: rec  (compressed record)
 
 }
 
@@ -417,18 +426,18 @@ void SEvt::finalPhoton(const spho& label)
     if(evt->seq)    evt->seq[idx] = seq ; 
 }
 
-/**
-SEvt::checkPhoton
--------------------
-
-Called from  U4Recorder::UserSteppingAction
-
-**/
-
 void SEvt::checkPhoton(const spho& label) const 
 {
     assert( label.isSameLineage(current_pho) ); 
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+///////// below methods handle gathering arrays and persisting, not array content //////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
 
 
 NP* SEvt::getPho0() const { return NP::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
@@ -518,13 +527,6 @@ NP* SEvt::getComponent_(unsigned comp) const
     return a ; 
 }
 
-
-
-
-
-
-
-
 /**
 SEvt::saveLabels
 --------------
@@ -547,15 +549,7 @@ void SEvt::saveLabels(const char* dir_) const
     NP* g = getGS(); 
     LOG(info) << " g " << ( g ? g->sstr() : "-" ) ; 
     if(g) g->save(dir, "gs.npy"); 
-
-   // NP* p = getPhoton(); 
-   // LOG(info) << " p " << ( p ? p->sstr() : "-" ) ; 
-   // if(p) p->save(dir, "p.npy"); 
-
 }
-
-
-
 
 /**
 SEvt::getGenstep
@@ -570,7 +564,6 @@ by SEvt::clear
 
 NP* SEvt::getGenstep() const { return NP::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
 
-
 void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE 
 {
     NP* a = getGenstep(); 
@@ -578,7 +571,6 @@ void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE
     LOG(LEVEL) << a->sstr() << " dir " << dir ; 
     a->save(dir, "gs.npy"); 
 }
-
 
 std::string SEvt::descGS() const 
 {
@@ -638,18 +630,17 @@ This was formerly implemented up in qudarap/QEvent but it makes no
 sense for CPU only tests that need to save events to reach up to qudarap 
 to control persisting. 
 
+The component arrays are gathered by SEvt::gather_components
+into the NPFold and then saved. Which components to gather and save 
+are configured via SEventConfig::SetCompMask using the SComp enumeration. 
 
-The component arrays are downloaded from the device by SEvt::gather_components
-that are added to the NPFold and then saved. 
-
-Which components to gather and save is configured via SEventConfig::SetCompMask
-using the SComp enumeration. 
+The arrays are gathered from the SCompProvider object, which 
+may be QEvent for on device running or SEvt itself for U4Recorder 
+Geant4 tests. 
 
 SEvt::save persists NP arrays into the default directory 
 or the directory argument provided.
-
 **/
-
 
 const char* SEvt::FALLBACK_DIR = "$TMP" ; 
 const char* SEvt::DefaultDir()

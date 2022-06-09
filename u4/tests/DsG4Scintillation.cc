@@ -601,7 +601,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         bool is_opticks_genstep = NumPhoton > 0 && !flagReemission ; 
         if(is_opticks_genstep && (m_opticksMode & 1))
         {
-            NumPhoton = std::min( NumPhoton, 1 );  // for debugging purposes it helps to have less photons
+            NumPhoton = std::min( NumPhoton, 3 );  // for debugging purposes it helps to have less photons
             U4::CollectGenstep_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime); 
         }
 #endif

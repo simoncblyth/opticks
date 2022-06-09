@@ -25,6 +25,10 @@ For persisting srec arrays use::
 #define FFSLL(x) (ffsll(x))
 #endif
 
+#define rFFS(x)   ( x == 0 ? 0 : 0x1 << (x - 1) ) 
+#define rFFSLL(x) ( x == 0 ? 0 : 0x1ull << (x - 1) )   
+// use rFFSLL when values of x exceed about 31
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -75,7 +79,7 @@ SSEQ_METHOD void sseq::SetNibble(unsigned long long& seq, unsigned slot, unsigne
 SSEQ_METHOD unsigned sseq::get_flag(unsigned slot) const 
 {
     unsigned f = GetNibble(seqhis, slot) ; 
-    return  f == 0 ? 0 : 0x1 << (f - 1) ; 
+    return  f == 0 ? 0 : 0x1ull << (f - 1) ; 
 }
 SSEQ_METHOD void sseq::set_flag(unsigned slot, unsigned flag)
 {

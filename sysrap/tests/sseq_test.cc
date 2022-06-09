@@ -1,6 +1,7 @@
 // name=sseq_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I/usr/local/cuda/include -o /tmp/$name && /tmp/$name
 
 #include <iostream>
+#include <bitset>
 
 #include "scuda.h"
 #include "squad.h"
@@ -35,12 +36,26 @@ void test_FFS_1()
     for(int i=-1 ; i < 64 ; i++)
     { 
         ULL x = i == -1 ? 0ull : ( 1ull << i ) ;       
+
+        unsigned f32 = FFS(x) ;     
+        unsigned f64 = FFSLL(x) ;     
+
+        unsigned x32 = rFFS(f32) ; 
+        ULL x64 = rFFSLL(f64) ; 
+
         std::cout 
+            // << " b " << std::setw(64) << std::bitset<64>(x) 
+            << " i " << std::setw(3) << i 
             << " x " << std::setw(16) << std::hex << x << std::dec 
-            << " FFS(x)  "  << std::setw(2) << FFS(x)  
-            << " FFSLL(x) " << std::setw(2) << FFSLL(x)  
+            << " FFS(x)  "  << std::setw(2) << f32
+            << " FFSLL(x) " << std::setw(2) << f64
+            << " x32 " << std::setw(16) << std::hex << x32 << std::dec 
+            << " x64 " << std::setw(16) << std::hex << x64 << std::dec 
             << std::endl 
             ; 
+
+        if(i < 32) assert( x32 == x ); 
+        assert( x64 == x ); 
     }
 }
 
@@ -163,17 +178,17 @@ void test_get_flag_set_flag()
 
 int main()
 {
+    test_FFS_1(); 
     /*
     test_FFS_0(); 
-    test_FFS_1(); 
     test_add_nibble_0(); 
     test_add_nibble_1(); 
     test_GetNibble(); 
     test_ClearNibble(); 
     test_SetNibble(); 
+    test_get_flag_set_flag(); 
     */
 
-    test_get_flag_set_flag(); 
    
 
     return 0 ; 

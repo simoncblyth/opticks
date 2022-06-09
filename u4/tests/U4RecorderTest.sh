@@ -30,7 +30,7 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 pidx=0
 #export PIDX=${PIDX:-$pidx}
 
-gidx=0
+gidx=1
 export GIDX=${GIDX:-$gidx}
 
 

@@ -291,6 +291,7 @@ void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
 
     assert( secondary.isIdentical(pho) ); 
 
+    //std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ; 
 #ifdef DEBUG
     if(dump) std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ; 
 #endif
