@@ -119,6 +119,7 @@ struct sphoton
     SPHOTON_METHOD void normalize_mom_pol(); 
     SPHOTON_METHOD void transverse_mom_pol(); 
     SPHOTON_METHOD static sphoton make_ephoton(); 
+    SPHOTON_METHOD std::string digest(unsigned numval=16) const  ; 
 #endif 
 
 }; 
@@ -136,7 +137,10 @@ SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 
+#include <cassert>
 #include <bitset>
+#include "sdigest.h"
+#include "OpticksPhoton.hh"
 
 SPHOTON_METHOD unsigned sphoton::flagmask_count() const 
 {
@@ -162,7 +166,11 @@ SPHOTON_METHOD std::string sphoton::desc() const
         << " or " << orient()
         << " ix " << idx() 
         << " fm " << std::hex << flagmask  << std::dec 
+        << " ab " << OpticksPhoton::Abbrev( flag() )
         << std::endl 
+        << " digest(16) " << digest(16) 
+        << std::endl 
+        << " digest(12) " << digest(12) 
         ;
 
     std::string s = ss.str(); 
@@ -225,6 +233,13 @@ SPHOTON_METHOD sphoton sphoton::make_ephoton()  // static
     p.ephoton(); 
     return p ; 
 }
+
+SPHOTON_METHOD std::string sphoton::digest(unsigned numval) const  
+{
+    assert( numval <= 16 ); 
+    return sdigest::buf( (const char*)cdata() , numval*sizeof(float) );  
+} 
+
 #endif 
 
 

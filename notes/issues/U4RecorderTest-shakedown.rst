@@ -185,3 +185,40 @@ without any change to the collection machinery.  As genstep disabling is purely 
 
 
 
+Checking rjoinPhoton matching tripping some asserts
+-------------------------------------------------------
+
+
+::
+
+    u4 ; cd tests
+
+    epsilon:tests blyth$ ./U4RecorderTest.sh
+
+
+    2022-06-09 20:51:29.134 INFO  [19769941] [SEvt::rjoinPhoton@315] 
+    2022-06-09 20:51:29.134 INFO  [19769941] [SEvt::rjoinPhoton@316] spho ( gs ix id gn 117   0  33310 ) 
+    rjoinPhotonCheck : does not have BULK_ABSORB flag ? ph.idx 333 flag_AB NO flagmask_AB NO
+     pos (-1000.000,722.148,670.385)  t  46.844
+     mom (-0.814, 0.581,-0.026)  iindex 0
+     pol (-0.145,-0.159, 0.977)  wl 394.830
+     bn 0 fl 4 id 0 or 1.000 ix 333 fm 16 ab MI
+     digest(16) 1bf2798f0385a6f99531161605e3e661
+     digest(12) 62c0957fc9dbf3ed296559467aa5d5d5
+     NOT seq_flag_AB, rather   
+     rjoin_record_d12   1e80c7b62fe41f2b3cfbc743988d1787
+     current_photon_d12 62c0957fc9dbf3ed296559467aa5d5d5
+     d12_match NO
+    Assertion failed: (d12_match), function rjoinPhoton, file /Users/blyth/opticks/sysrap/SEvt.cc, line 377.
+    ./U4RecorderTest.sh: line 43: 23381 Abort trap: 6           U4RecorderTest
+    === ./U4RecorderTest.sh : logdir /tmp/blyth/opticks/U4RecorderTest
+    /Users/blyth/opticks/u4/tests
+    cfbase:/usr/local/opticks/geocache/OKX4Test_lWorld0x5780b30_PV_g4live/g4ok_gltf/5303cd587554cb16682990189831ae83/1/CSG_GGeo 
+    Fold : setting globals False globals_prefix  
+    t
+
+
+
+
+
+

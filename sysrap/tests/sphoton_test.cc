@@ -115,6 +115,19 @@ void test_sphoton_change_flagmask()
     flagmask |=  BULK_ABSORB ;       dump("|=  BULK_ABSORB", flagmask); 
 }
 
+void test_digest()
+{
+    sphoton p ; 
+    p.ephoton(); 
+
+    std::cout 
+        << " p.digest()   " << p.digest() << std::endl 
+        << " p.digest(16) " << p.digest(16) << std::endl 
+        << " p.digest(12) " << p.digest(12) << std::endl 
+        ; 
+
+}
+
 
 int main()
 {
@@ -123,8 +136,10 @@ int main()
     test_cast(); 
     test_ephoton(); 
     test_sphoton_selector(); 
-    */
     test_sphoton_change_flagmask(); 
+    */
+
+    test_digest(); 
 
     return 0 ; 
 }

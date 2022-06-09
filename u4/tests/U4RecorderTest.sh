@@ -31,7 +31,7 @@ pidx=0
 #export PIDX=${PIDX:-$pidx}
 
 gidx=1
-export GIDX=${GIDX:-$gidx}
+#export GIDX=${GIDX:-$gidx}
 
 
 if [ "${arg/run}" != "${arg}" ]; then 

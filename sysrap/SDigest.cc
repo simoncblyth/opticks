@@ -266,11 +266,6 @@ std::string SDigest::Buffer(const char *buffer, int length)
     return std::string(buf, buf + 32); 
 }
 
-
-
-
-
-
 void md5digest_str2md5_update(MD5_CTX& ctx, char* buffer, int length) 
 {
     const int blocksize = 512 ; 
@@ -396,8 +391,4 @@ std::string SDigest::digest_skipdupe( std::vector<std::string>& ss)
     }
     return dig.finalize();
 }
-
-
-
-
 

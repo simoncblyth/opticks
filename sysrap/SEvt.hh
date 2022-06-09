@@ -115,6 +115,9 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void beginPhoton(const spho& sp); 
     void rjoinPhoton(const spho& sp); 
+
+    void rjoinPhotonCheck(const sphoton& ph) const ; 
+
     void checkPhoton(const spho& sp) const ; 
     void pointPhoton(const spho& sp); 
     void finalPhoton(const spho& sp); 

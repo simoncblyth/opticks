@@ -36,27 +36,10 @@ DevNotes
 **/
 
 
+#include "sdigest.h"
 #include <string>
 #include <vector>
 #include "plog/Severity.h"
-
-
-#if defined __APPLE__
-
-#   define COMMON_DIGEST_FOR_OPENSSL
-#   include <CommonCrypto/CommonDigest.h>
-#   define SHA1 CC_SHA1
-
-#elif defined _MSC_VER
-
-#   include "md5.hh"
-
-#elif __linux
-
-#   include <openssl/md5.h>
-
-#endif
-
 #include "SYSRAP_API_EXPORT.hh"
 
 class SYSRAP_API SDigest 

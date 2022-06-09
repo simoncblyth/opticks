@@ -170,7 +170,7 @@ sgs SEvt::addGenstep(const quad6& q_)
     // simplify handling of disabled gensteps by simply setting numphoton to zero for them
 
     sgs s = {} ;                  // genstep summary struct 
-    s.index = genstep.size() ;    // 0-based genstep index in event (actually since last reset)  
+    s.index = genstep.size() ;    // 0-based genstep index since last clear  
     s.photons = q.numphoton() ;   // numphoton in this genstep 
     s.offset = getNumPhoton() ;   // sum numphotons from all previously collected gensteps (since last reset)
     s.gentype = q.gentype() ; 
@@ -186,6 +186,9 @@ sgs SEvt::addGenstep(const quad6& q_)
         setNumPhoton(tot_photon); 
         resize();  
     }
+
+    // TODO: work out what needs to NOT be done (eg resize) 
+    //       for on device running as opposed to U4Recorder running 
 
     return s ; 
 }
@@ -338,13 +341,12 @@ void SEvt::rjoinPhoton(const spho& label)
 
     if( evt->photon )
     {
-       // HMM: could directly change photon[idx] via ref ? 
-       // But are here taking a copy to current_photon
-       // and relying on copyback at SEvt::endPhoton
+        // HMM: could directly change photon[idx] via ref ? 
+        // But are here taking a copy to current_photon
+        // and relying on copyback at SEvt::endPhoton
 
         current_photon = photon[idx] ; 
-        assert( current_photon.flag() == BULK_ABSORB ); 
-        assert( current_photon.flagmask & BULK_ABSORB  );   // all continuePhoton should have BULK_ABSORB in flagmask
+        rjoinPhotonCheck(current_photon); 
 
         current_photon.flagmask &= ~BULK_ABSORB  ; // scrub BULK_ABSORB from flagmask
         current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
@@ -353,26 +355,90 @@ void SEvt::rjoinPhoton(const spho& label)
     if( evt->seq )
     {
         current_seq = seq[idx] ; 
-        unsigned seq_flag = current_seq.get_flag(prior);  
-        assert( seq_flag == BULK_ABSORB ); 
+        unsigned seq_flag = current_seq.get_flag(prior);
+        bool seq_flag_AB = seq_flag == BULK_ABSORB ;
+        if(seq_flag_AB == false) std::cout << " NOT seq_flag_AB, rather " << OpticksPhoton::Abbrev(seq_flag) << std::endl ;  
+        //assert( seq_flag_AB ); 
         current_seq.set_flag(prior, BULK_REEMIT);  
     }
 
     if( evt->record )
     {
         sphoton& rjoin_record = evt->record[evt->max_record*idx+prior]  ; 
-        unsigned rjoin_flag = rjoin_record.flag() ; 
+        std::string rjoin_record_d12 = rjoin_record.digest(12) ; 
+        std::string current_photon_d12 = current_photon.digest(12) ; 
+        bool d12_match = strcmp( rjoin_record_d12.c_str(), current_photon_d12.c_str() ) == 0 ;  
 
+        std::cout 
+            << " rjoin_record_d12   " << rjoin_record_d12  << std::endl
+            << " current_photon_d12 " << current_photon_d12 << std::endl
+            << " d12_match " << ( d12_match ? "YES" : "NO" ) << std::endl
+            ;
+        assert( d12_match ); 
+
+        std::cout 
+            << " rjoin_record " 
+            << std::endl 
+            << rjoin_record.desc()
+            << std::endl 
+            ;
+ 
+        unsigned rjoin_flag = rjoin_record.flag() ; 
         LOG(info) << " rjoin.flag "  << OpticksPhoton::Flag(rjoin_flag)  ; 
-        assert( rjoin_flag == BULK_ABSORB ); 
-        assert( rjoin_record.flagmask & BULK_ABSORB ); 
+
+        bool rjoin_flag_AB = rjoin_flag == BULK_ABSORB  ; 
+        bool rjoin_record_flagmask_AB = rjoin_record.flagmask & BULK_ABSORB ; 
+
+        if(!rjoin_flag_AB) std::cout << " NOT rjoin_flag_AB " << std::endl ; 
+        if(!rjoin_record_flagmask_AB) std::cout << " NOT rjoin_record_flagmask_AB " << std::endl ; 
+
+        //assert( rjoin_flag_AB ); 
+        //assert( rjoin_record_flagmask_AB ); 
 
         rjoin_record.flagmask &= ~BULK_ABSORB ; // scrub BULK_ABSORB from flagmask  
         rjoin_record.set_flag(BULK_REEMIT) ; 
+
+        std::cout 
+            << " current_photon "
+            << std::endl 
+            << current_photon.desc()
+            << std::endl 
+            ;
+
     } 
     // TODO: rec  (compressed record)
-
 }
+
+/**
+SEvt::rjoinPhotonCheck
+------------------------
+
+Would expect all rejoin to have BULK_ABSORB ? 
+
+What about perhaps reemission immediately after reemission  ?
+
+**/
+
+void SEvt::rjoinPhotonCheck(const sphoton& ph ) const 
+{
+    bool flag_AB     = ph.flag() == BULK_ABSORB ;  
+    bool flagmask_AB = ph.flagmask & BULK_ABSORB  ; 
+    if(!(flag_AB && flagmask_AB))
+    {
+        std::cout 
+            << "rjoinPhotonCheck : does not have BULK_ABSORB flag ?" 
+            << " ph.idx " << ph.idx() 
+            << " flag_AB " << ( flag_AB ? "YES" : "NO" )
+            << " flagmask_AB " << ( flagmask_AB ? "YES" : "NO" )
+            << std::endl
+            << ph.desc()
+            << std::endl
+            ;
+    }
+    //assert( flag_AB ); 
+    //assert( flagmask_AB  );   
+}
+
 
 
 /**

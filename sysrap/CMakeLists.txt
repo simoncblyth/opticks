@@ -131,7 +131,10 @@ set(HEADERS
     SProc.hh
     SBacktrace.hh
     SFrame.hh
+
+    ssys.h
     SSys.hh
+
     SStr.hh
     SPath.hh
     SSeq.hh
@@ -140,7 +143,10 @@ set(HEADERS
     SNameVec.hh
     SMap.hh
     SCount.hh
+
+    sdigest.h
     SDigest.hh
+
     SDigestNP.hh
     SDirect.hh
     SArrayDigest.hh
