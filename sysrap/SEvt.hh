@@ -109,13 +109,15 @@ struct SYSRAP_API SEvt : public SCompProvider
     unsigned getNumPhoton() const ; 
     sgs addGenstep(const quad6& q) ; 
     sgs addGenstep(const NP* a) ; 
-    const sgs& get_gs(const spho& sp); // lookup sgs genstep label corresponding to spho photon label  
+
+    const sgs& get_gs(const spho& label) const ; // lookup genstep label from photon label  
+    unsigned get_genflag(const spho& label) const ; 
 
     void beginPhoton(const spho& sp); 
-    void continuePhoton(const spho& sp); 
+    void rjoinPhoton(const spho& sp); 
     void checkPhoton(const spho& sp) const ; 
     void pointPhoton(const spho& sp); 
-    void endPhoton(const spho& sp); 
+    void finalPhoton(const spho& sp); 
 
 
     NP* getPho0() const ;   // unordered push_back as they come 

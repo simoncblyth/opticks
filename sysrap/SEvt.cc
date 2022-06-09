@@ -18,6 +18,7 @@
 #include "SEventConfig.hh"
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
+#include "OpticksPhoton.hh"
 #include "SComp.h"
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
@@ -195,12 +196,13 @@ SEvt::resize
 
 This is the CPU side equivalent of device side QEvent::setNumPhoton
 
+TODO: use SEvt::setNumPhoton from QEvent::setNumPhoton to avoid the duplicity 
+
 **/
 
 void SEvt::setNumPhoton(unsigned numphoton)
 {
-    // TODO: use SEvt::setNumPhoton from QEvent::setNumPhoton to avoid the duplicity 
-    LOG(info) << " numphoton " << numphoton ;  
+    LOG(LEVEL) << " numphoton " << numphoton ;  
 
     evt->num_photon = numphoton ; 
     evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ;
@@ -234,12 +236,22 @@ Lookup sgs genstep label corresponding to spho photon label
 
 **/
 
-const sgs& SEvt::get_gs(const spho& label)
+const sgs& SEvt::get_gs(const spho& label) const 
 {
     assert( label.gs < int(gs.size()) ); 
     const sgs& _gs =  gs[label.gs] ; 
     return _gs ; 
 }
+
+unsigned SEvt::get_genflag(const spho& label) const 
+{
+    const sgs& _gs = get_gs(label);  
+    int gentype = _gs.gentype ;
+    unsigned genflag = OpticksGenstep_::GenstepToPhotonFlag(gentype); 
+    assert( genflag == CERENKOV || genflag == SCINTILLATION || genflag == TORCH ); 
+    return genflag ; 
+}
+
 
 /**
 SEvt::beginPhoton
@@ -249,23 +261,21 @@ SEvt::beginPhoton
 **/
 void SEvt::beginPhoton(const spho& label)
 {
+    LOG(info) ; 
+    LOG(info) << label.desc() ; 
+
     unsigned idx = label.id ; 
+
     bool in_range = idx < pho.size() ; 
     if(!in_range) LOG(error) << " not in_range : pho.size  " << pho.size() << " label " << label.desc() ;  
     assert(in_range);  
 
+    unsigned genflag = get_genflag(label);  
+
     pho0.push_back(label);   // push_back asis : just for initial dev, TODO: remove 
-
     pho[idx] = label ;        // slot in the label  
-    slot[idx] = 0 ; 
+    slot[idx] = 0 ;           // slot/bounce is incremented only at tail of SEvt::pointPhoton
     current_pho = label ; 
-
-    const sgs& _gs = get_gs(label);  
-    int gentype = _gs.gentype ;
-    unsigned genflag = OpticksGenstep_::GenstepToPhotonFlag(gentype); 
-    assert( genflag == CERENKOV || genflag == SCINTILLATION || genflag == TORCH ); 
-
-    LOG(info) << " _gs " << _gs.desc() ; 
 
     current_photon.zero() ; 
     current_rec.zero() ; 
@@ -273,57 +283,86 @@ void SEvt::beginPhoton(const spho& label)
 
     current_photon.set_idx(idx); 
     current_photon.set_flag(genflag); 
-    assert( current_photon.flagmask_count() == 1 ); 
+
+    assert( current_photon.flagmask_count() == 1 ); // should only be a single bit in the flagmask at this juncture 
 }
 
 /**
-SEvt::continuePhoton
+SEvt::rjoinPhoton
 ----------------------
 
 Called from U4Recorder::PreUserTrackingAction_Optical for G4Track with 
-pho label indicating a reemission generation greater than zero.
+spho label indicating a reemission generation greater than zero.
 
 Note that this will mostly be called for photons that originate from 
 scintillation gensteps BUT it will also happen for Cerenkov (and Torch) genstep 
 generated photons within a scintillator due to reemission. 
 
 **/
-void SEvt::continuePhoton(const spho& sp)
+void SEvt::rjoinPhoton(const spho& label)
 {
-    unsigned idx = sp.id ; 
+    LOG(info); 
+    LOG(info) << label.desc() ; 
+
+    unsigned idx = label.id ; 
     assert( idx < pho.size() );  
 
     // check labels of parent and child are as expected
-    const spho& parent_pho = pho[idx]; 
-    assert( sp.isSameLineage( parent_pho) ); 
-    assert( sp.gn == parent_pho.gn + 1 ); 
+    const spho& parent_label = pho[idx]; 
+    assert( label.isSameLineage( parent_label) ); 
+    assert( label.gn == parent_label.gn + 1 ); 
 
-    const sgs& _gs = get_gs(sp);  
+    const sgs& _gs = get_gs(label);  
     bool expected_gentype = OpticksGenstep_::IsExpected(_gs.gentype); 
     assert(expected_gentype);  
     // within a scintillator the photons from any genstep type may undergo reemission  
- 
+
     const sphoton& parent_photon = photon[idx] ; 
     unsigned parent_idx = parent_photon.idx() ; 
     assert( parent_idx == idx ); 
 
     // replace label and current_photon
-    pho[idx] = sp ;   
-    current_pho = sp ; 
+    pho[idx] = label ;   
+    current_pho = label ; 
 
-    // HMM: could directly change photon[idx] via ref ? 
-    // But are here taking a copy to current_photon, and relying on copyback at SEvt::endPhoton
-    current_photon = photon[idx] ; 
+    int& bounce = slot[idx] ; assert( bounce > 0 );   
+    int prior = bounce - 1 ; 
 
-    //assert( current_photon.flagmask & BULK_ABSORB  );   // all continuedPhoton should have BULK_ABSORB in flagmask, but not yet 
+    if( evt->photon )
+    {
+       // HMM: could directly change photon[idx] via ref ? 
+       // But are here taking a copy to current_photon
+       // and relying on copyback at SEvt::endPhoton
 
-    int& _slot = slot[idx] ; 
-    assert( _slot > 0 );   
-    // _slot -= 1 ;  
-    // back up the slot by one : HMM maybe not needed as pointPhoton will just be called for post steppoint
+        current_photon = photon[idx] ; 
+        assert( current_photon.flag() == BULK_ABSORB ); 
+        assert( current_photon.flagmask & BULK_ABSORB  );   // all continuePhoton should have BULK_ABSORB in flagmask
 
-    current_photon.flagmask &= ~BULK_ABSORB  ; // scrub BULK_ABSORB from flagmask
-    current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
+        current_photon.flagmask &= ~BULK_ABSORB  ; // scrub BULK_ABSORB from flagmask
+        current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
+    }
+
+    if( evt->seq )
+    {
+        current_seq = seq[idx] ; 
+        unsigned seq_flag = current_seq.get_flag(prior);  
+        assert( seq_flag == BULK_ABSORB ); 
+        current_seq.set_flag(prior, BULK_REEMIT);  
+    }
+
+    if( evt->record )
+    {
+        sphoton& rjoin_record = evt->record[evt->max_record*idx+prior]  ; 
+        unsigned rjoin_flag = rjoin_record.flag() ; 
+
+        LOG(info) << " rjoin.flag "  << OpticksPhoton::Flag(rjoin_flag)  ; 
+        assert( rjoin_flag == BULK_ABSORB ); 
+        assert( rjoin_record.flagmask & BULK_ABSORB ); 
+
+        rjoin_record.flagmask &= ~BULK_ABSORB ; // scrub BULK_ABSORB from flagmask  
+        rjoin_record.set_flag(BULK_REEMIT) ; 
+    } 
+
 }
 
 
@@ -334,52 +373,46 @@ SEvt::pointPhoton
 Invoked from U4Recorder::UserSteppingAction_Optical to cause the 
 current photon to be recorded into record vector. 
 
+The pointPhoton and finalPhoton methods need to do the hostside equivalent of 
+what CSGOptiX/CSGOptiX7.cu:simulate does device side,
+so have setup the environment to match::
+
+As the hostside vectors keep getting resized at each genstep, the 
+evt buffer points are updated at every resize to follow them around
+as they grow and are reallocated.
+
 TODO: truncation : bounce < max_bounce 
 
 **/
 
-void SEvt::pointPhoton(const spho& sp)
+void SEvt::pointPhoton(const spho& label)
 {
-    assert( sp.isSameLineage(current_pho) ); 
-    unsigned idx = sp.id ; 
+    assert( label.isSameLineage(current_pho) ); 
+    unsigned idx = label.id ; 
     int& bounce = slot[idx] ; 
 
     const sphoton& p = current_photon ; 
-    srec& rec = current_rec ; 
-    sseq& seq = current_seq ; 
+    srec& rec        = current_rec ; 
+    sseq& seq        = current_seq ; 
 
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
     if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
 
+    LOG(info) << label.desc() << " seqhis: " << OpticksPhoton::FlagSequence( seq.seqhis ) ; 
 
     bounce += 1 ; 
 }
 
-/**
-These methods need to do the hostside equivalent of CSGOptiX/CSGOptiX7.cu:simulate device side,
-so have setup the environment to match::
-
-    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
-    if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
-    if( evt->seq    && bounce < evt->max_seq    ) seq.add_step(bounce, p.flag(), p.boundary() );
-
-    evt->photon[idx] = p ; 
-    if(evt->seq) evt->seq[idx] = seq ;
-
-As the hostside vectors keep getting resized at each genstep, the 
-evt buffer points are updated at every resize to follow them around
-as they grow and are reallocated.
-**/
-
-void SEvt::endPhoton(const spho& sp)
+void SEvt::finalPhoton(const spho& label)
 {
-    assert( sp.isSameLineage(current_pho) ); 
-    unsigned idx = sp.id ; 
+    LOG(info) << label.desc() ; 
+    assert( label.isSameLineage(current_pho) ); 
+    unsigned idx = label.id ; 
 
     const sphoton& p = current_photon ; 
-    sseq& seq = current_seq ; 
-    
+    sseq& seq        = current_seq ; 
+
     if(evt->photon) evt->photon[idx] = p ; 
     if(evt->seq)    evt->seq[idx] = seq ; 
 }
@@ -392,9 +425,9 @@ Called from  U4Recorder::UserSteppingAction
 
 **/
 
-void SEvt::checkPhoton(const spho& sp) const 
+void SEvt::checkPhoton(const spho& label) const 
 {
-    assert( sp.isSameLineage(current_pho) ); 
+    assert( label.isSameLineage(current_pho) ); 
 }
 
 

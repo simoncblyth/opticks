@@ -36,17 +36,54 @@ For persisting srec arrays use::
 
 struct sseq
 {
-    unsigned long long seqhis ; 
-    unsigned long long seqbnd ; 
+    typedef unsigned long long ULL ; 
+    static SSEQ_METHOD unsigned GetNibble(const ULL& seq, unsigned slot) ;  
+    static SSEQ_METHOD void     ClearNibble(    ULL& seq, unsigned slot) ;  
+    static SSEQ_METHOD void     SetNibble(      ULL& seq, unsigned slot, unsigned value ) ;  
+
+    ULL seqhis ; 
+    ULL seqbnd ; 
 
     SSEQ_METHOD void zero() { seqhis = 0ull ; seqbnd = 0ull ; }
-    SSEQ_METHOD void add_nibble( unsigned bounce, unsigned flag, unsigned boundary ); 
+    SSEQ_METHOD void add_nibble( unsigned slot, unsigned flag, unsigned boundary ); 
+
+    SSEQ_METHOD unsigned get_flag(unsigned slot) const ;
+    SSEQ_METHOD void     set_flag(unsigned slot, unsigned flag) ;
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     SSEQ_METHOD std::string desc() const ; 
 #endif
 };
+
+
+SSEQ_METHOD unsigned sseq::GetNibble(const unsigned long long& seq, unsigned slot)
+{ 
+    return ( seq >> 4*slot ) & 0xfull ; 
+}
+
+SSEQ_METHOD void sseq::ClearNibble(unsigned long long& seq, unsigned slot)
+{
+    seq &= ~( 0xfull << 4*slot ) ; 
+}
+
+SSEQ_METHOD void sseq::SetNibble(unsigned long long& seq, unsigned slot, unsigned value)
+{ 
+    seq =  ( seq & ~( 0xfull << 4*slot )) | ( (value & 0xfull) << 4*slot ) ;   
+}
+
+SSEQ_METHOD unsigned sseq::get_flag(unsigned slot) const 
+{
+    unsigned f = GetNibble(seqhis, slot) ; 
+    return  f == 0 ? 0 : 0x1 << (f - 1) ; 
+}
+SSEQ_METHOD void sseq::set_flag(unsigned slot, unsigned flag)
+{
+    SetNibble(seqhis, slot, FFS(flag)) ; 
+}
+
+
+
 
 /**
 sseq::add_nibble
@@ -59,10 +96,10 @@ just collect material, as done in old workflow ?
 
 **/
 
-SSEQ_METHOD void sseq::add_nibble(unsigned bounce, unsigned flag, unsigned boundary )
+SSEQ_METHOD void sseq::add_nibble(unsigned slot, unsigned flag, unsigned boundary )
 {
-    seqhis |=  (( FFS(flag) & 0xfull ) << 4*bounce ); 
-    seqbnd |=  (( boundary  & 0xfull ) << 4*bounce ); 
+    seqhis |=  (( FFS(flag) & 0xfull ) << 4*slot ); 
+    seqbnd |=  (( boundary  & 0xfull ) << 4*slot ); 
     // 0xfull is needed to avoid all bits above 32 getting set
     // NB: nibble restriction of each "slot" means there is absolute no need for FFSLL
 }

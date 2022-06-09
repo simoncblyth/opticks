@@ -80,6 +80,42 @@ seqhis::
 
 
 
+Implement GIDX control for debug running with single genstep.::
+
+    bflagdesc_(r[0,j])
+     idx(     0) prd(  0    0     0 0 ii:    0)  CK               CK  
+     idx(     0) prd(  0    0     0 0 ii:    0)  AB            AB|CK  
+     idx(     0) prd(  0    0     0 0 ii:    0)  AB         RE|AB|CK  
+
+
+* clear discrepancy between the flag+seqhis and the flagmask 
+
+The current_photon flag gets seq.add_nibble by SEvt::pointPhoton::
+
+    342 void SEvt::pointPhoton(const spho& label)
+    343 {   
+    344     assert( label.isSameLineage(current_pho) );
+    345     unsigned idx = label.id ;
+    346     int& bounce = slot[idx] ;
+    347     
+    348     const sphoton& p = current_photon ;
+    349     srec& rec = current_rec ;
+    350     sseq& seq = current_seq ;
+    351     
+    352     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;
+    353     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
+    354     if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
+    355     
+    356     bounce += 1 ;
+    357 }
+
+
+
+
+
+
+
+
 
 
 

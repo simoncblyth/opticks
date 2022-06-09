@@ -44,7 +44,7 @@ void test_FFS_1()
     }
 }
 
-void test_add_step_0()
+void test_add_nibble_0()
 {
     sseq seq ; 
     seq.zero(); 
@@ -53,7 +53,7 @@ void test_add_step_0()
     {
         unsigned flag = 0x1 << bounce ; 
         unsigned boundary = bounce ; 
-        seq.add_step( bounce, flag, boundary ); 
+        seq.add_nibble( bounce, flag, boundary ); 
         std::cout
             << " flag.dec " << std::setw(5) << std::dec << flag << std::dec 
             << " flag.hex " << std::setw(5) << std::hex << flag << std::dec 
@@ -69,7 +69,7 @@ void test_add_step_0()
 }
 
 
-void test_add_step_1()
+void test_add_nibble_1()
 {
     for(unsigned i=0 ; i < 16 ; i++)
     {
@@ -81,18 +81,100 @@ void test_add_step_1()
              << std::endl
              ; 
     }
-
 }
 
+void test_GetNibble()
+{
+    typedef unsigned long long ULL ; 
+    ULL x = 0x0123456789abcdefull ; 
+
+    for(unsigned i=0 ; i < 16 ; i++) 
+    {
+        unsigned nib = sseq::GetNibble(x, i); 
+        std::cout << std::setw(3) << i << " nib " << std::hex << nib << std::dec << std::endl ; 
+    }
+}
+
+void test_ClearNibble()
+{
+    typedef unsigned long long ULL ; 
+    ULL x = 0xa123456789abcdefull ; 
+
+    for(int i=-1 ; i < 16 ; i++) 
+    {
+        if( i > -1 ) sseq::ClearNibble(x, i); 
+        std::cout << std::setw(3) << i << " x " << std::setw(16) << std::setfill('0') << std::hex << x << std::dec << std::endl ; 
+    }
+}
+
+void test_SetNibble()
+{
+    typedef unsigned long long ULL ; 
+    ULL x = 0xa123456789abcdefull ; 
+
+    for(int i=-1 ; i < 16 ; i++) 
+    {
+        if( i > -1 ) sseq::SetNibble(x, i, 0xf); 
+        std::cout << std::setw(3) << i << " x " << std::setw(16) << std::setfill('0') << std::hex << x << std::dec << std::endl ; 
+    }
+}
+
+void test_get_flag_set_flag()
+{
+    sseq seq ; 
+    seq.zero(); 
+
+    std::vector<unsigned> history = { 
+       CERENKOV, 
+       BOUNDARY_TRANSMIT, 
+       BOUNDARY_TRANSMIT, 
+       BULK_SCATTER, 
+       BULK_REEMIT, 
+       BOUNDARY_TRANSMIT, 
+       SURFACE_DETECT,
+       BULK_ABSORB,
+       SCINTILLATION,
+       TORCH
+     } ; 
+
+    for(unsigned i=0 ; i < history.size() ; i++) seq.add_nibble(i, history[i], 0) ; 
+
+    std::cout << OpticksPhoton::FlagSequence(seq.seqhis) << std::endl ; 
+
+    for(unsigned i=0 ; i < history.size() ; i++) 
+    {
+        unsigned flag = seq.get_flag(i) ; 
+        assert( flag == history[i] ); 
+        std::cout << OpticksPhoton::Flag(flag) << std::endl ; 
+    }
+
+    std::cout << OpticksPhoton::FlagSequence(seq.seqhis) << std::endl ; 
+
+    for(unsigned i=0 ; i < history.size() ; i++) 
+    {
+        unsigned flag = seq.get_flag(i) ; 
+        if(flag == BULK_ABSORB) seq.set_flag(i, BULK_REEMIT) ; 
+    }
+
+    std::cout << OpticksPhoton::FlagSequence(seq.seqhis) << std::endl ; 
+}
 
 
 
 int main()
 {
+    /*
     test_FFS_0(); 
     test_FFS_1(); 
-    test_add_step_0(); 
-    test_add_step_1(); 
+    test_add_nibble_0(); 
+    test_add_nibble_1(); 
+    test_GetNibble(); 
+    test_ClearNibble(); 
+    test_SetNibble(); 
+    */
+
+    test_get_flag_set_flag(); 
+   
 
     return 0 ; 
 }

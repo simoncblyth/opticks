@@ -1,9 +1,18 @@
 #pragma once
+/**
+OpticksPhoton.hh
+=================
 
+The STANDALONE subset of methods can be used header only. 
+
+**/
+
+#include <cassert>
 #include <vector>
 #include <map>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 #ifdef WITH_PLOG
 #include "plog/Severity.h"
@@ -40,7 +49,7 @@ struct SYSRAP_API OpticksPhoton
     static constexpr const char* EFFICIENCY_COLLECT_ = "EFFICIENCY_COLLECT" ;
     static constexpr const char* BAD_FLAG_ = "BAD_FLAG" ;
 
-    static constexpr const char* _ZERO              = "ZE" ;
+    static constexpr const char* _ZERO              = "  " ;
     static constexpr const char* _CERENKOV          = "CK" ;
     static constexpr const char* _SCINTILLATION     = "SI" ; 
     static constexpr const char* _TORCH             = "TO" ; 
@@ -62,6 +71,7 @@ struct SYSRAP_API OpticksPhoton
     static const char* Flag(  const unsigned flag);
     static const char* Abbrev(const unsigned flag);
     static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
+    static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1); 
 
 #ifdef STANDALONE
 #else
@@ -79,7 +89,6 @@ struct SYSRAP_API OpticksPhoton
     static unsigned PointVal1( const unsigned long long& seqval , unsigned bitpos );
     static unsigned PointFlag( const unsigned long long& seqhis , unsigned bitpos );
     static const char* PointAbbrev( const unsigned long long& seqhis , unsigned bitpos );
-    static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1);
     static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
 #endif
 };
@@ -177,6 +186,29 @@ inline void OpticksPhoton::FlagAbbrevPairs( std::vector<std::pair<const char*, c
 
     // HMM: no _BAD_FLAG abbrev ?
 }
+
+
+inline std::string OpticksPhoton::FlagSequence(const unsigned long long seqhis, bool abbrev, int highlight)
+{
+    std::stringstream ss ;
+    assert(sizeof(unsigned long long)*8 == 16*4);
+
+    unsigned hi = highlight < 0 ? 16 : highlight ; 
+
+    for(unsigned int i=0 ; i < 16 ; i++)
+    {
+        unsigned long long f = (seqhis >> i*4) & 0xF ; 
+        unsigned int flg = f == 0 ? 0 : 0x1 << (f - 1) ; 
+        if(i == hi) ss << "[" ;  
+        ss << ( abbrev ? Abbrev(flg) : Flag(flg) ) ;
+        if(i == hi) ss << "]" ;  
+        ss << " " ; 
+    }
+    return ss.str();
+}
+
+
+
 
 
 

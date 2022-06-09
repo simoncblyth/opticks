@@ -12,6 +12,8 @@ struct U4Track
     static bool IsOptical(const G4Track* track); 
     static std::string Desc(const G4Track* track); 
     static spho Label(const G4Track* track);   // returns placeholders when track has no label  
+    static void SetFabricatedLabel(const G4Track* track); 
+
 };
 
 
@@ -50,6 +52,18 @@ spho U4Track::Label(const G4Track* track)  // returns placeholders when track ha
 {
     return U4PhotonInfo::Get(track) ;
 }
+
+void U4Track::SetFabricatedLabel(const G4Track* track)
+{
+    int trackID = Id(track) ; 
+    assert( trackID >= 0 );  
+    spho fab = spho::Fabricate(trackID); 
+    G4Track* _track = const_cast<G4Track*>(track);  
+    U4PhotonInfo::Set(_track, fab );        
+}
+
+
+
 
 std::string U4Track::Desc(const G4Track* track)
 {

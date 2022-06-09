@@ -86,37 +86,26 @@ As a workaround for photon G4Track arriving at U4Recorder without labels,
 the spho::Fabricate method is below used to creates a label based entirely 
 on a 0-based track_id with genstep index set to zero. 
 This standin for a real label is only really equivalent for events 
-with a single torch/input genstep. 
+with a single torch/input genstep. But torch gensteps are typically 
+used for debugging so this restriction is ok.  
 
 **/
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
-    spho label = U4Track::Label(track);  // just label, not sphoton 
-
+    spho label = U4Track::Label(track); 
 
     G4TrackStatus tstat = track->GetTrackStatus(); 
-    //if(tstat != fAlive) LOG(info) << " pre.tstat " << U4TrackStatus::Name(tstat) ; 
     assert( tstat == fAlive ); 
 
-    if( label.isDefined() == false )
+    if( label.isDefined() == false ) // happens with torch gensteps 
     {
-        int trackID = track->GetTrackID() - 1 ; 
-        assert( trackID >= 0 );  
-
-        spho fab = spho::Fabricate(trackID); 
-
-        G4Track* _track = const_cast<G4Track*>(track);  
-        U4PhotonInfo::Set(_track, fab );        
+        U4Track::SetFabricatedLabel(track); 
         label = U4Track::Label(track); 
-
         LOG(info) << " labelling photon " << label.desc() ; 
     }
     assert( label.isDefined() );  
-
     if(!Enabled(label)) return ;  
-
-
 
     SEvt* sev = SEvt::Get(); 
 
@@ -126,30 +115,23 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     }
     else if( label.gn > 0 )
     {
-        sev->continuePhoton(label); 
+        sev->rjoinPhoton(label); 
     }
 }
 
-/**
-**/
-
-void U4Recorder::PostUserTrackingAction_Optical(const  G4Track* track)
+void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 {
     spho label = U4Track::Label(track);  // just label, not sphoton 
     assert( label.isDefined() );         // all photons are expected to be labelled, TODO: input photons
     if(!Enabled(label)) return ;  
 
     SEvt* evt = SEvt::Get(); 
-    evt->endPhoton(label);       
+    evt->finalPhoton(label);       
 
     G4TrackStatus tstat = track->GetTrackStatus(); 
     if(tstat != fStopAndKill) LOG(info) << " post.tstat " << U4TrackStatus::Name(tstat) ; 
     assert( tstat == fStopAndKill ); 
 }
-
-
-
-
 
 
 
@@ -201,11 +183,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     if(!Enabled(label)) return ;  
 
     G4TrackStatus tstat = track->GetTrackStatus(); 
-    LOG(info) << " step.tstat " << U4TrackStatus::Name(tstat) ; 
+    LOG(LEVEL) << " step.tstat " << U4TrackStatus::Name(tstat) ; 
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhoton(label); 
-
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -215,18 +196,13 @@ void U4Recorder::UserSteppingAction_Optical(const G4Track* track, const G4Step* 
     if(single_bit)
     { 
         U4StepPoint::Update(photon, pre);
-        sev->pointPhoton(label); 
+        sev->pointPhoton(label);  // uses genflag set in beginPhoton
     }
 
     U4StepPoint::Update(photon, post); 
-
     //std::cout << " pre  " << U4StepPoint::Desc(pre)  << std::endl ; 
-
-    unsigned flag = U4StepPoint::Flag(post) ;  // TODO: imp Flag based on cfg4 
-    if( flag == 0 )
-    {
-        std::cout << " ERR flag zero : post " << U4StepPoint::Desc(post) << std::endl ; 
-    }
+    unsigned flag = U4StepPoint::Flag(post) ; 
+    if( flag == 0 ) std::cout << " ERR flag zero : post " << U4StepPoint::Desc(post) << std::endl ; 
     assert( flag > 0 ); 
 
     photon.set_flag( flag );
