@@ -44,6 +44,7 @@ int main(int argc, char** argv)
     SEvt evt ; 
 
     SEvt::SetIndex(-214); 
+    SEvt::UnsetIndex(); 
 
     quad6 gs ; 
     gs.set_numphoton(1) ; 

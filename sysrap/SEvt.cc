@@ -107,6 +107,7 @@ void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir)
 void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
 
 void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
+void SEvt::UnsetIndex(){        assert(INSTANCE) ; INSTANCE->unsetIndex() ;  }
 int SEvt::GetIndex(){     return INSTANCE ? INSTANCE->getIndex()     :  0 ; }
 
 int SEvt::GetNumPhoton(){ return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
@@ -132,15 +133,11 @@ unsigned SEvt::getNumGenstep() const
     return genstep.size() ; 
 }
 
+void SEvt::setIndex(int index_){ index = index_ ; }
+void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
+int SEvt::getIndex() const { return index ; }
 
-void SEvt::setIndex(int index_) 
-{
-    index = index_ ; 
-}
-int SEvt::getIndex() const 
-{
-    return index ; 
-}
+
 unsigned SEvt::getNumPhoton() const 
 {
     unsigned tot = 0 ; 
@@ -790,6 +787,7 @@ SEvt::save
 ------------
 
 If an index has been set with SEvt::setIndex SEvt::SetIndex 
+and not unset with SEvt::UnsetIndex SEvt::unsetIndex
 then the directory is suffixed with the index::
 
     /some/directory/n001

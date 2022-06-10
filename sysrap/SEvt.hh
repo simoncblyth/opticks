@@ -97,6 +97,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void Save(const char* base, const char* reldir ); 
     static void Save(const char* dir); 
     static void SetIndex(int index); 
+    static void UnsetIndex(); 
     static int  GetIndex(); 
     static int GetNumPhoton(); 
     static NP* GetGenstep(); 
@@ -114,6 +115,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     unsigned getNumGenstep() const ; 
 
     void setIndex(int index_) ;  
+    void unsetIndex() ;  
     int getIndex() const ; 
 
     unsigned getNumPhoton() const ; 
