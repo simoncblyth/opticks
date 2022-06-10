@@ -10,9 +10,9 @@
 int main(int argc, char** argv)
 {
     typedef unsigned long long ULL ; 
-    static const int N = 18 ; 
+    static const int N = 21 ; 
     ULL xx[N] ;
-    ULL nn[N] ;
+    int nn[N] ;
  
     xx[ 0] = 0x0123456789abcdefull ; nn[ 0] = 15 ; 
     xx[ 1] = 0x0023456789abcdefull ; nn[ 1] = 14 ; 
@@ -32,11 +32,14 @@ int main(int argc, char** argv)
     xx[15] = 0x0000000000000000ull ; nn[15] =  0 ; 
     xx[16] = 0x0000d00e000a000dull ; nn[16] =  4 ; 
     xx[17] = 0x0000100000000000ull ; nn[17] =  1 ; 
+    xx[18] = 0xa123456789abcdefull ; nn[18] = 16 ; 
+    xx[19] = 0x1111111111111111ull ; nn[19] = 16 ; 
+    xx[20] = 0x0000000000000000ull ; nn[20] =  0 ; 
 
     for(int i=0 ; i < N ; i++)
     {
         ULL x = xx[i] ; 
-        ULL n = smath::count_nibbles(x) ; 
+        int n = smath::count_nibbles(x) ; 
         std::cout 
             << " i " << std::setw(3)  << i  
             << " x " << std::setw(16) << std::hex << x  << std::dec

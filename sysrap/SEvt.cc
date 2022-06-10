@@ -5,6 +5,7 @@
 #include "srec.h"
 #include "sseq.h"
 #include "sevent.h"
+#include "sdebug.h"
 
 
 #include "PLOG.hh"
@@ -31,6 +32,7 @@ SEvt::SEvt()
     :
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
+    dbg(new sdebug),
     fold(new NPFold)
 { 
     init(); 
@@ -57,6 +59,7 @@ void SEvt::init()
 {
     INSTANCE = this ; 
     evt->init(); 
+    dbg->zero(); 
 
     setCompProvider(this); // overridden for device running from QEvent::init 
     LOG(fatal) << evt->desc() ;
@@ -162,6 +165,7 @@ actual gensteps for the enabled index.
 
 sgs SEvt::addGenstep(const quad6& q_)
 {
+    dbg->addGenstep++ ; 
     int gidx = int(gs.size())  ;  // 0-based genstep label index
     bool enabled = GIDX == -1 || GIDX == gidx ; 
 
@@ -264,6 +268,7 @@ SEvt::beginPhoton
 **/
 void SEvt::beginPhoton(const spho& label)
 {
+    dbg->beginPhoton++ ; 
     LOG(info) ; 
     LOG(info) << label.desc() ; 
 
@@ -312,6 +317,7 @@ TODO: check that positions match up across the rejoin
 **/
 void SEvt::rjoinPhoton(const spho& label)
 {
+    dbg->rjoinPhoton++ ; 
     LOG(info); 
     LOG(info) << label.desc() ; 
 
@@ -367,14 +373,16 @@ void SEvt::rjoinPhoton(const spho& label)
         sphoton& rjoin_record = evt->record[evt->max_record*idx+prior]  ; 
         std::string rjoin_record_d12 = rjoin_record.digest(12) ; 
         std::string current_photon_d12 = current_photon.digest(12) ; 
-        bool d12_match = strcmp( rjoin_record_d12.c_str(), current_photon_d12.c_str() ) == 0 ;  
+        bool d12match = strcmp( rjoin_record_d12.c_str(), current_photon_d12.c_str() ) == 0 ;  
+
+        if(d12match == false) dbg->d12match_fail++ ; 
 
         std::cout 
             << " rjoin_record_d12   " << rjoin_record_d12  << std::endl
             << " current_photon_d12 " << current_photon_d12 << std::endl
-            << " d12_match " << ( d12_match ? "YES" : "NO" ) << std::endl
+            << " d12match " << ( d12match ? "YES" : "NO" ) << std::endl
             ;
-        assert( d12_match ); 
+        //assert( d12match ); 
 
         std::cout 
             << " rjoin_record " 
@@ -462,6 +470,8 @@ TODO: truncation : bounce < max_bounce
 
 void SEvt::pointPhoton(const spho& label)
 {
+    dbg->pointPhoton++ ; 
+
     assert( label.isSameLineage(current_pho) ); 
     unsigned idx = label.id ; 
     int& bounce = slot[idx] ; 
@@ -474,13 +484,14 @@ void SEvt::pointPhoton(const spho& label)
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
     if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
 
-    LOG(info) << label.desc() << " seqhis: " << OpticksPhoton::FlagSequence( seq.seqhis ) ; 
+    LOG(info) << label.desc() << " " << seq.desc_seqhis() ; 
 
     bounce += 1 ; 
 }
 
 void SEvt::finalPhoton(const spho& label)
 {
+    dbg->finalPhoton++ ; 
     LOG(info) << label.desc() ; 
     assert( label.isSameLineage(current_pho) ); 
     unsigned idx = label.id ; 
@@ -649,7 +660,10 @@ std::string SEvt::descGS() const
 std::string SEvt::desc() const 
 {
     std::stringstream ss ; 
-    ss << evt->desc() ; 
+    ss << evt->desc()
+       << std::endl
+       << dbg->desc()
+       ; 
     std::string s = ss.str(); 
     return s ; 
 }

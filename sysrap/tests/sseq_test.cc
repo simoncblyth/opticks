@@ -154,16 +154,19 @@ void test_get_flag_set_flag()
 
     for(unsigned i=0 ; i < history.size() ; i++) seq.add_nibble(i, history[i], 0) ; 
 
-    std::cout << OpticksPhoton::FlagSequence(seq.seqhis) << std::endl ; 
+    //std::cout << OpticksPhoton::FlagSequence(seq.seqhis) << std::endl ; 
+    std::cout << seq.desc_seqhis() << std::endl ;  
 
     for(unsigned i=0 ; i < history.size() ; i++) 
     {
         unsigned flag = seq.get_flag(i) ; 
         assert( flag == history[i] ); 
         std::cout << OpticksPhoton::Flag(flag) << std::endl ; 
+        std::cout << seq.desc_seqhis() << std::endl ;  
     }
 
-    std::cout << OpticksPhoton::FlagSequence(seq.seqhis) << std::endl ; 
+    //std::cout << OpticksPhoton::FlagSequence(seq.seqhis) << std::endl ; 
+    std::cout << seq.desc_seqhis() << std::endl ;  
 
     for(unsigned i=0 ; i < history.size() ; i++) 
     {
@@ -171,16 +174,54 @@ void test_get_flag_set_flag()
         if(flag == BULK_ABSORB) seq.set_flag(i, BULK_REEMIT) ; 
     }
 
-    std::cout << OpticksPhoton::FlagSequence(seq.seqhis) << std::endl ; 
+    //std::cout << OpticksPhoton::FlagSequence(seq.seqhis) << std::endl ; 
+    std::cout << seq.desc_seqhis() << std::endl ;  
+
+
+}
+
+void test_desc_seqhis()
+{
+    sseq seq ; 
+    seq.zero(); 
+
+    std::vector<unsigned> history = { 
+       CERENKOV, 
+       BOUNDARY_TRANSMIT, 
+       BOUNDARY_TRANSMIT, 
+       BULK_SCATTER, 
+       BULK_REEMIT, 
+       BOUNDARY_TRANSMIT, 
+       SURFACE_DETECT,
+       BULK_ABSORB,
+       SCINTILLATION,
+       TORCH,
+       BOUNDARY_TRANSMIT, 
+       BOUNDARY_TRANSMIT, 
+       BULK_SCATTER, 
+       BULK_REEMIT, 
+       BOUNDARY_TRANSMIT, 
+       SURFACE_DETECT,
+       BULK_ABSORB,
+       SCINTILLATION
+     } ; 
+
+     for(int bounce=0 ; bounce < history.size() ; bounce++)
+     {
+        unsigned flag = history[bounce] ; 
+        unsigned boundary = 0 ;  
+        seq.add_nibble( bounce, flag, boundary ); 
+        std::cout << seq.desc_seqhis() << " : " << OpticksPhoton::Flag(flag) << std::endl ; 
+     }
 }
 
 
 
 int main()
 {
-    test_FFS_1(); 
     /*
     test_FFS_0(); 
+    test_FFS_1(); 
     test_add_nibble_0(); 
     test_add_nibble_1(); 
     test_GetNibble(); 
@@ -189,7 +230,7 @@ int main()
     test_get_flag_set_flag(); 
     */
 
-   
+    test_desc_seqhis();    
 
     return 0 ; 
 }

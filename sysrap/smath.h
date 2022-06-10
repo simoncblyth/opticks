@@ -12,7 +12,7 @@ struct smath
 {
     static constexpr float hc_eVnm = 1239.8418754200f ; // G4: h_Planck*c_light/(eV*nm) 
     SMATH_METHOD static void rotateUz(float3& d, const float3& u ); 
-    SMATH_METHOD static unsigned long long count_nibbles( unsigned long long ); 
+    SMATH_METHOD static int count_nibbles( unsigned long long ); 
 }; 
 
 
@@ -99,7 +99,7 @@ smath::count_nibbles
 Refer to SBit::count_nibbles for explanation. 
 
 **/
-inline SMATH_METHOD unsigned long long smath::count_nibbles( unsigned long long x)
+inline SMATH_METHOD int smath::count_nibbles(unsigned long long x)
 {
     x |= x >> 1 ; 
     x |= x >> 2 ; 

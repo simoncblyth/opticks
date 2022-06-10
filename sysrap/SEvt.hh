@@ -45,6 +45,7 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 
 struct sphoton_selector ; 
 struct sevent ; 
+struct sdebug ; 
 struct NP ; 
 struct NPFold ; 
 
@@ -54,6 +55,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 {
     sphoton_selector* selector ; 
     sevent* evt ; 
+    sdebug* dbg ; 
     std::string meta ; 
 
     std::vector<quad6> genstep ; 
