@@ -135,7 +135,9 @@ set(HEADERS
     ssys.h
     SSys.hh
 
+    sstr.h
     SStr.hh
+
     SPath.hh
     SSeq.hh
     STranche.hh

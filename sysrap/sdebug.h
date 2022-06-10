@@ -1,47 +1,73 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 struct sdebug
 {
-    int addGenstep ; 
-    int beginPhoton ; 
-    int rjoinPhoton ; 
-    int pointPhoton ; 
-    int finalPhoton ; 
-    int d12match_fail ; 
+    static constexpr const char* PREFIX = "    int " ; 
+    static constexpr const char* SUFFIX = " ;" ; 
+    static constexpr const char* LABELS = R"LITERAL(
+    int addGenstep ;
+    int beginPhoton ;
+    int rjoinPhoton ;
+    int pointPhoton ;
+    int finalPhoton ;
+    int d12match_fail ;
+    int rjoinPhotonCheck ;
+    int rjoinPhotonCheck_flag_AB ;
+    int rjoinPhotonCheck_flag_MI ;
+    int rjoinPhotonCheck_flag_xor ;
+    int rjoinPhotonCheck_flagmask_AB ;
+    int rjoinPhotonCheck_flagmask_MI ;
+    int rjoinPhotonCheck_flagmask_or ;
+    int rjoinSeqCheck ;
+    int rjoinSeqCheck_flag_AB ;
+    int rjoinSeqCheck_flag_MI ;
+    int rjoinSeqCheck_flag_xor ;
+)LITERAL";
+
+    int addGenstep ;
+    int beginPhoton ;
+    int rjoinPhoton ;
+    int pointPhoton ;
+    int finalPhoton ;
+    int d12match_fail ;
+    int rjoinPhotonCheck ;
+    int rjoinPhotonCheck_flag_AB ;
+    int rjoinPhotonCheck_flag_MI ;
+    int rjoinPhotonCheck_flag_xor ;
+    int rjoinPhotonCheck_flagmask_AB ;
+    int rjoinPhotonCheck_flagmask_MI ;
+    int rjoinPhotonCheck_flagmask_or ;
+    int rjoinSeqCheck ;
+    int rjoinSeqCheck_flag_AB ;
+    int rjoinSeqCheck_flag_MI ;
+    int rjoinSeqCheck_flag_xor ;
 
     void zero(); 
     std::string desc() const ; 
 };
 
-inline void sdebug::zero()
-{
-    addGenstep = 0 ; 
-    beginPhoton = 0 ; 
-    rjoinPhoton = 0 ; 
-    pointPhoton = 0 ; 
-    finalPhoton = 0 ; 
-    d12match_fail = 0 ; 
-}
+inline void sdebug::zero(){ *this = {} ; }
 
+#include <cassert>
 #include <string>
 #include <sstream>
 #include <iomanip>
 
 inline std::string sdebug::desc() const 
 {
+    std::vector<std::string> vars ; 
+    sstr::PrefixSuffixParse(vars, PREFIX, SUFFIX, LABELS ); 
+    bool expected_size = sizeof(sdebug) == sizeof(int)*vars.size();
+    assert( expected_size ); 
+    //const int* first = &addGenstep ;
+    const int* first = (int*)this ;
     std::stringstream ss ; 
-    ss << "sdebug::desc" << std::endl 
-       << std::setw(20) << " addGenstep "     << " : " << std::setw(10) <<  addGenstep << std::endl 
-       << std::setw(20) << " beginPhoton "    << " : " << std::setw(10) <<  beginPhoton << std::endl 
-       << std::setw(20) << " rjoinPhoton "    << " : " << std::setw(10) <<  rjoinPhoton << std::endl 
-       << std::setw(20) << " pointPhoton "    << " : " << std::setw(10) <<  pointPhoton << std::endl 
-       << std::setw(20) << " finalPhoton "    << " : " << std::setw(10) <<  finalPhoton << std::endl 
-       << std::setw(20) << " d12match_fail "  << " : " << std::setw(10) <<  d12match_fail << std::endl 
-       ;
+    ss << "sdebug::desc" << std::endl ; 
+    for(int i=0 ; i < int(vars.size()) ; i++) ss << std::setw(40) << vars[i] << " : " << std::setw(10) << *(first+i) << std::endl; 
     std::string s = ss.str(); 
     return s ; 
 }
-
-
-
 

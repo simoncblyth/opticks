@@ -43,6 +43,8 @@ int main(int argc, char** argv)
 
     SEvt evt ; 
 
+    SEvt::SetIndex(-214); 
+
     quad6 gs ; 
     gs.set_numphoton(1) ; 
     gs.set_gentype(OpticksGenstep_TORCH); 
@@ -73,6 +75,15 @@ int main(int argc, char** argv)
        BOUNDARY_TRANSMIT, 
        BOUNDARY_TRANSMIT, 
        BULK_SCATTER, 
+       BULK_SCATTER, 
+       BULK_SCATTER, 
+       BULK_SCATTER, 
+       BULK_SCATTER, 
+       BULK_SCATTER, 
+       BULK_SCATTER, 
+       BULK_SCATTER, 
+       BULK_SCATTER, 
+       BULK_SCATTER, 
        BULK_REEMIT, 
        BOUNDARY_TRANSMIT, 
        SURFACE_DETECT
@@ -98,12 +109,7 @@ int main(int argc, char** argv)
 
     evt.finalPhoton(label); 
 
-
-
-
-    const char* dir = "$TMP/SEvtTest" ;
-    evt.saveLabels(dir);
-    evt.save(dir);
+    evt.save("$TMP/SEvtTest");
     LOG(info) << evt.desc() ;
 
     return 0 ; 

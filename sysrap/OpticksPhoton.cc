@@ -201,32 +201,4 @@ const char* OpticksPhoton::PointAbbrev( const unsigned long long& seqhis , unsig
 }
 
 
-/**
-OpticksPhoton::FlagMask
------------------------
-
-A string labelling the bits set in the mskhis is returned.
-
-**/
-
-std::string OpticksPhoton::FlagMask(const unsigned mskhis, bool abbrev)
-{
-    std::vector<const char*> labels ; 
-
-    assert( __MACHINERY == 0x1 << 17 );
-    unsigned lastBit = SBit::ffs(__MACHINERY) - 1 ;  
-    assert(lastBit == 17 ); 
- 
-    for(unsigned n=0 ; n <= lastBit ; n++ )
-    {
-        unsigned flag = 0x1 << n ; 
-        if(mskhis & flag) labels.push_back( abbrev ? Abbrev(flag) : Flag(flag) );
-    }
-    unsigned nlab = labels.size() ; 
-
-    std::stringstream ss ;
-    for(unsigned i=0 ; i < nlab ; i++ ) ss << labels[i] << ( i < nlab - 1 ? "|" : ""  ) ; 
-    return ss.str();
-}
-
 

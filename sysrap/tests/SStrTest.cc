@@ -100,6 +100,32 @@ void test_FormatInt()
 
 
 
+
+
+void test_FormatInt_2()
+{
+    const char* fmt = "%d"   ; 
+    LOG(info) << fmt ; 
+    for(int i=-10 ; i < 10 ; i++ )
+    {
+        const char* result = SStr::FormatInt<8>(fmt, i );
+        std::cout << result << std::endl ;   
+    }
+}
+
+
+void test_FormatIndex()
+{
+    for(int i=-10 ; i <= 10 ; i++ )
+    {
+        const char* result = SStr::FormatIndex(i);
+        std::cout << "[" << result << "]" << std::endl ;   
+    }
+}
+
+
+
+
 void test_Contains()
 {
     const char* s = "/hello/there/Cathode/World" ; 
@@ -783,8 +809,11 @@ int main(int argc , char** argv )
     test_FormatInt(); 
     test_LoadList(); 
     test_Format_Ellipsis(); 
-    */
     test_StartsWithLetterAZaz(); 
+    test_FormatInt_2(); 
+    */
+    test_FormatIndex(); 
+
 
     return 0  ; 
 }

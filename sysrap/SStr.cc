@@ -183,7 +183,20 @@ const char* SStr::FormatInt( const char* fmt, int value )
     return strdup(buf);
 }
 
+template const char* SStr::FormatInt<8>( const char* , int  );
 template const char* SStr::FormatInt<64>( const char* , int  );
+
+
+const char* SStr::FormatIndex( int idx )
+{
+    std::stringstream ss ;  
+    ss << ( idx == 0 ? "z" : ( idx < 0 ? "n" : "p" ) )
+       << std::setfill('0') << std::setw(3) << std::abs(idx) 
+       ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
+
 
 
 

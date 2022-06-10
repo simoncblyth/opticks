@@ -185,9 +185,24 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     current_photon.set_flag( flag );
     sev->pointPhoton(label); 
 
-
     G4TrackStatus tstat = track->GetTrackStatus(); 
-    LOG(info) << " step.tstat " << U4TrackStatus::Name(tstat) << " " << OpticksPhoton::Flag(flag)  ; 
+
+    if( tstat == fAlive )
+    {
+        bool is_live_flag = OpticksPhoton::IsLiveFlag(flag);  
+        assert( is_live_flag );  
+    }
+    else if( tstat == fStopAndKill )
+    { 
+        bool is_terminal_flag = OpticksPhoton::IsTerminalFlag(flag);  
+        assert( is_terminal_flag );  
+    }
+    else
+    {
+        LOG(fatal) << " unexpected trackstatus " ; 
+    }
+
+    LOG(LEVEL) << " step.tstat " << U4TrackStatus::Name(tstat) << " " << OpticksPhoton::Flag(flag)  ; 
 
     //G4Track* track_ = const_cast<G4Track*>(track); 
     //track_->SetTrackStatus(fStopAndKill);

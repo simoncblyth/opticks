@@ -53,6 +53,7 @@ struct NPFold ;
 
 struct SYSRAP_API SEvt : public SCompProvider
 {
+    int index ; 
     sphoton_selector* selector ; 
     sevent* evt ; 
     sdebug* dbg ; 
@@ -80,6 +81,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static const plog::Severity LEVEL ; 
     static const int GIDX ; 
+    static const int MISSING_INDEX ; 
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
     static bool RECORDING ; 
@@ -94,6 +96,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void Save() ; 
     static void Save(const char* base, const char* reldir ); 
     static void Save(const char* dir); 
+    static void SetIndex(int index); 
+    static int  GetIndex(); 
     static int GetNumPhoton(); 
     static NP* GetGenstep(); 
 
@@ -108,6 +112,10 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void clear() ; 
     unsigned getNumGenstep() const ; 
+
+    void setIndex(int index_) ;  
+    int getIndex() const ; 
+
     unsigned getNumPhoton() const ; 
     sgs addGenstep(const quad6& q) ; 
     sgs addGenstep(const NP* a) ; 
@@ -118,7 +126,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     void beginPhoton(const spho& sp); 
     void rjoinPhoton(const spho& sp); 
 
+    void rjoinRecordCheck(const sphoton& rj, const sphoton& ph  ) const ; 
+    static void ComparePhotonDump(const sphoton& a, const sphoton& b ); 
     void rjoinPhotonCheck(const sphoton& ph) const ; 
+    void rjoinSeqCheck(unsigned seq_flag) const ; 
 
     void checkPhoton(const spho& sp) const ; 
     void pointPhoton(const spho& sp); 

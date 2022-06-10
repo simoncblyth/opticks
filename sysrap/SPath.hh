@@ -31,29 +31,34 @@ SPath
 
 enum { NOOP, FILEPATH, DIRPATH } ;
 
-class SYSRAP_API SPath {
-  public:
-      static const plog::Severity LEVEL ; 
-      static const char* Stem( const char* name );
-      static bool IsReadable(const char* base, const char* name);
-      static bool IsReadable(const char* path);
-      static const char* GetHomePath(const char* rel); 
-      static const char* Dirname(const char* path); 
-      static const char* Basename(const char* path); 
-      static const char* ChangeName(const char* srcpath, const char* name) ;
+struct SYSRAP_API SPath 
+{
+    static const plog::Severity LEVEL ; 
+    static const char* Stem( const char* name );
+    static bool IsReadable(const char* base, const char* name);
+    static bool IsReadable(const char* path);
+    static const char* GetHomePath(const char* rel); 
+    static const char* Dirname(const char* path); 
+    static const char* Basename(const char* path); 
+    static const char* ChangeName(const char* srcpath, const char* name) ;
 
-      static int mtime(const char* path); 
+    static int mtime(const char* path); 
       
 
 
-      static const char* UserTmpDir(const char* pfx="/tmp", const char* user_envvar="USER", const char* sub="opticks", char sep='/'  );
+    static const char* UserTmpDir(const char* pfx="/tmp", const char* user_envvar="USER", const char* sub="opticks", char sep='/'  );
 
-      // create_dirs:(0 do nothing, 1:assume file path, 2:assume dir path)
-      static const char* Resolve(const char* path, int create_dirs); 
-      static const char* Resolve(const char* dir, const char* name, int create_dirs);
-      static const char* Resolve(const char* dir, const char* reldir, const char* name, int create_dirs);
-      static const char* Resolve(const char* dir, const char* reldir, const char* rel2dir, const char* name, int create_dirs);
-      static const char* Resolve(const char* dir, const char* reldir, const char* rel2dir, const char* rel3dir, const char* name, int create_dirs);
+    // create_dirs:(0 do nothing, 1:assume file path, 2:assume dir path)
+    static const char* Resolve(const char* path, int create_dirs); 
+    static const char* Resolve(const char* dir, const char* name, int create_dirs);
+    static const char* Resolve(const char* dir, const char* reldir, const char* name, int create_dirs);
+    static const char* Resolve(const char* dir, const char* reldir, const char* rel2dir, const char* name, int create_dirs);
+    static const char* Resolve(const char* dir, const char* reldir, const char* rel2dir, const char* rel3dir, const char* name, int create_dirs);
+
+
+    static const char* Resolve(const char* dir, int idx, int create_dirs); 
+    static const char* Resolve(const char* dir, const char* name, int idx, int create_dirs); 
+    static const char* Resolve(const char* dir, const char* reldir, const char* name, int idx, int create_dirs); 
 
 
 

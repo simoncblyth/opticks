@@ -27,11 +27,11 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 #export G4Cerenkov_DISABLE=1
 #export DsG4Scintillation_DISABLE=1
 
-pidx=0
+#pidx=0
 #export PIDX=${PIDX:-$pidx}
 
-gidx=117
-export GIDX=${GIDX:-$gidx}
+#gidx=117
+#export GIDX=${GIDX:-$gidx}
 
 
 if [ "${arg/run}" != "${arg}" ]; then 

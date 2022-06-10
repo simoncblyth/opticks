@@ -212,6 +212,9 @@ std::string OpStatus::OpBoundaryString(const G4OpBoundaryProcessStatus status)
 #endif
 
 
+
+
+
 bool OpStatus::IsTerminalFlag(unsigned flag)
 {
     return (flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;

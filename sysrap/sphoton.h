@@ -121,6 +121,7 @@ struct sphoton
     SPHOTON_METHOD void transverse_mom_pol(); 
     SPHOTON_METHOD static sphoton make_ephoton(); 
     SPHOTON_METHOD std::string digest(unsigned numval=16) const  ; 
+    SPHOTON_METHOD static bool digest_match( const sphoton& a, const sphoton& b, unsigned numval=16 ) ; 
 #endif 
 
 }; 
@@ -253,6 +254,15 @@ SPHOTON_METHOD std::string sphoton::digest(unsigned numval) const
     assert( numval <= 16 ); 
     return sdigest::buf( (const char*)cdata() , numval*sizeof(float) );  
 } 
+
+SPHOTON_METHOD bool sphoton::digest_match( const sphoton& a, const sphoton& b, unsigned numval )  // static
+{
+    std::string adig = a.digest(numval); 
+    std::string bdig = b.digest(numval); 
+    return strcmp( adig.c_str(), bdig.c_str() ) == 0 ;
+} 
+
+
 
 #endif 
 

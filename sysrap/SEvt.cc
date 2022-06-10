@@ -1,4 +1,6 @@
 
+#include <limits>
+
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
@@ -24,12 +26,13 @@
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
-
+const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
 SEvt::SEvt()
     :
+    index(MISSING_INDEX),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
     dbg(new sdebug),
@@ -103,7 +106,11 @@ void SEvt::Save(){  Check() ; INSTANCE->save(); }
 void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir); }
 void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir, rel ); }
 
+void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
+int SEvt::GetIndex(){     return INSTANCE ? INSTANCE->getIndex()     :  0 ; }
+
 int SEvt::GetNumPhoton(){ return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
+
 NP* SEvt::GetGenstep() {  return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
 
 void SEvt::clear()
@@ -125,6 +132,15 @@ unsigned SEvt::getNumGenstep() const
     return genstep.size() ; 
 }
 
+
+void SEvt::setIndex(int index_) 
+{
+    index = index_ ; 
+}
+int SEvt::getIndex() const 
+{
+    return index ; 
+}
 unsigned SEvt::getNumPhoton() const 
 {
     unsigned tot = 0 ; 
@@ -182,9 +198,10 @@ sgs SEvt::addGenstep(const quad6& q_)
     gs.push_back(s) ; 
     genstep.push_back(q) ; 
 
-    if(enabled) LOG(info) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled  ; 
-
     int tot_photon = s.offset+s.photons ; 
+
+    if(enabled) LOG(LEVEL) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled << " tot_photon " << tot_photon ; 
+
     if( tot_photon != evt->num_photon )
     {
         setNumPhoton(tot_photon); 
@@ -209,8 +226,7 @@ TODO: use SEvt::setNumPhoton from QEvent::setNumPhoton to avoid the duplicity
 
 void SEvt::setNumPhoton(unsigned numphoton)
 {
-    LOG(info) << " numphoton " << numphoton ;  
-
+    LOG(LEVEL) << " numphoton " << numphoton ;  
     evt->num_photon = numphoton ; 
     evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ;
     evt->num_record = evt->max_record * evt->num_photon ;
@@ -269,8 +285,8 @@ SEvt::beginPhoton
 void SEvt::beginPhoton(const spho& label)
 {
     dbg->beginPhoton++ ; 
-    LOG(info) ; 
-    LOG(info) << label.desc() ; 
+    LOG(LEVEL) ; 
+    LOG(LEVEL) << label.desc() ; 
 
     unsigned idx = label.id ; 
 
@@ -314,12 +330,17 @@ generated photons within a scintillator due to reemission.
 
 TODO: check that positions match up across the rejoin 
 
+
+HMM: could directly change photon[idx] via ref ? 
+But are here taking a copy to current_photon
+and relying on copyback at SEvt::endPhoton
+
 **/
 void SEvt::rjoinPhoton(const spho& label)
 {
     dbg->rjoinPhoton++ ; 
-    LOG(info); 
-    LOG(info) << label.desc() ; 
+    LOG(LEVEL); 
+    LOG(LEVEL) << label.desc() ; 
 
     unsigned idx = label.id ; 
     assert( idx < pho.size() );  
@@ -347,112 +368,140 @@ void SEvt::rjoinPhoton(const spho& label)
 
     if( evt->photon )
     {
-        // HMM: could directly change photon[idx] via ref ? 
-        // But are here taking a copy to current_photon
-        // and relying on copyback at SEvt::endPhoton
-
         current_photon = photon[idx] ; 
         rjoinPhotonCheck(current_photon); 
-
         current_photon.flagmask &= ~BULK_ABSORB  ; // scrub BULK_ABSORB from flagmask
         current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
     }
 
-    if( evt->seq )
+    // at truncation point and beyond cannot compare or do rejoin fixup
+    if( evt->seq && prior < evt->max_seq )
     {
         current_seq = seq[idx] ; 
         unsigned seq_flag = current_seq.get_flag(prior);
-        bool seq_flag_AB = seq_flag == BULK_ABSORB ;
-        if(seq_flag_AB == false) std::cout << " NOT seq_flag_AB, rather " << OpticksPhoton::Abbrev(seq_flag) << std::endl ;  
-        //assert( seq_flag_AB ); 
+        rjoinSeqCheck(seq_flag); 
         current_seq.set_flag(prior, BULK_REEMIT);  
     }
 
-
-    if( evt->record )
+    // at truncation point and beyond cannot compare or do rejoin fixup
+    if( evt->record && prior < evt->max_record )  
     {
         sphoton& rjoin_record = evt->record[evt->max_record*idx+prior]  ; 
-        std::string rjoin_record_d12 = rjoin_record.digest(12) ; 
-        std::string current_photon_d12 = current_photon.digest(12) ; 
-        bool d12match = strcmp( rjoin_record_d12.c_str(), current_photon_d12.c_str() ) == 0 ;  
-
-        if(d12match == false) dbg->d12match_fail++ ; 
-
-        std::cout 
-            << " idx " << idx
-            << " bounce " << bounce
-            << " prior " << prior
-            << " evt.max_record " << evt->max_record 
-            << " rjoin_record_d12   " << rjoin_record_d12  << std::endl
-            << " current_photon_d12 " << current_photon_d12 << std::endl
-            << " d12match " << ( d12match ? "YES" : "NO" ) << std::endl
-            ;
-        //assert( d12match ); 
-
-        std::cout 
-            << " rjoin_record " 
-            << std::endl 
-            << rjoin_record.desc()
-            << std::endl 
-            ;
- 
-        unsigned rjoin_flag = rjoin_record.flag() ; 
-        LOG(info) << " rjoin.flag "  << OpticksPhoton::Flag(rjoin_flag)  ; 
-
-        bool rjoin_flag_AB = rjoin_flag == BULK_ABSORB  ; 
-        bool rjoin_record_flagmask_AB = rjoin_record.flagmask & BULK_ABSORB ; 
-
-        if(!rjoin_flag_AB) std::cout << " NOT rjoin_flag_AB " << std::endl ; 
-        if(!rjoin_record_flagmask_AB) std::cout << " NOT rjoin_record_flagmask_AB " << std::endl ; 
-
-        //assert( rjoin_flag_AB ); 
-        //assert( rjoin_record_flagmask_AB ); 
-
+        rjoinRecordCheck(rjoin_record, current_photon); 
         rjoin_record.flagmask &= ~BULK_ABSORB ; // scrub BULK_ABSORB from flagmask  
         rjoin_record.set_flag(BULK_REEMIT) ; 
-
-        std::cout 
-            << " current_photon "
-            << std::endl 
-            << current_photon.desc()
-            << std::endl 
-            ;
-
     } 
     // TODO: rec  (compressed record)
 }
+
+
+void SEvt::rjoinRecordCheck(const sphoton& rj, const sphoton& ph  ) const
+{
+    assert( rj.idx() == ph.idx() );
+    unsigned idx = rj.idx();  
+    bool d12match = sphoton::digest_match( rj, ph, 12 ); 
+    if(!d12match) dbg->d12match_fail++ ; 
+    if(!d12match) ComparePhotonDump(rj, ph) ; 
+    if(!d12match) std::cout 
+        << " idx " << idx
+        << " slot[idx] " << slot[idx]
+        << " evt.max_record " << evt->max_record 
+        << " d12match " << ( d12match ? "YES" : "NO" ) << std::endl
+        ;
+    assert( d12match ); 
+}
+
+void SEvt::ComparePhotonDump(const sphoton& a, const sphoton& b )  // static
+{
+    unsigned a_flag = a.flag() ; 
+    unsigned b_flag = a.flag() ; 
+    std::cout 
+        << " a.flag "  << OpticksPhoton::Flag(a_flag)  
+        << std::endl 
+        << a.desc()
+        << std::endl 
+        << " b.flag "  << OpticksPhoton::Flag(b_flag)   
+        << std::endl 
+        << b.desc()
+        << std::endl 
+        ;
+}
+
+
 
 /**
 SEvt::rjoinPhotonCheck
 ------------------------
 
-Would expect all rejoin to have BULK_ABSORB ? 
+Would expect all rejoin to have BULK_ABSORB, but with 
+very artifical single volume of Scintillator geometry keep getting photons 
+hitting world boundary giving MISS. 
 
-What about perhaps reemission immediately after reemission  ?
+What about perhaps reemission immediately after reemission ? Nope, I think 
+a new point would always be minted so the current_photon flag should 
+never be BULK_REEMIT when rjoin runs. 
 
 **/
 
 void SEvt::rjoinPhotonCheck(const sphoton& ph ) const 
 {
+    dbg->rjoinPhotonCheck++ ; 
+
     unsigned flag = ph.flag();
     unsigned flagmask = ph.flagmask ; 
 
-    bool flag_AB     = flag == BULK_ABSORB ;  
-    bool flagmask_AB = flagmask & BULK_ABSORB  ; 
+    bool flag_AB = flag == BULK_ABSORB ;  
+    bool flag_MI = flag == MISS ;  
+    bool flag_xor = flag_AB ^ flag_MI ;  
 
-    if(!(flag_AB && flagmask_AB))
-    {
-        std::cout 
-            << "rjoinPhotonCheck : does not have BULK_ABSORB flag ?" 
-            << ph.descFlag()
-            << std::endl
-            << ph.desc()
-            << std::endl
-            ;
-    }
-    //assert( flag_AB ); 
-    //assert( flagmask_AB  );   
+    if(flag_AB) dbg->rjoinPhotonCheck_flag_AB++ ; 
+    if(flag_MI) dbg->rjoinPhotonCheck_flag_MI++ ; 
+    if(flag_xor) dbg->rjoinPhotonCheck_flag_xor++ ; 
+
+    bool flagmask_AB = flagmask & BULK_ABSORB  ; 
+    bool flagmask_MI = flagmask & MISS ; 
+    bool flagmask_or = flagmask_AB | flagmask_MI ; 
+
+    if(flagmask_AB) dbg->rjoinPhotonCheck_flagmask_AB++ ; 
+    if(flagmask_MI) dbg->rjoinPhotonCheck_flagmask_MI++ ; 
+    if(flagmask_or) dbg->rjoinPhotonCheck_flagmask_or++ ; 
+    
+    bool expect = flag_xor && flagmask_or ; 
+    if(!expect) LOG(fatal)
+        << "rjoinPhotonCheck : unexpected flag/flagmask" 
+        << " flag_AB " << flag_AB
+        << " flag_MI " << flag_MI
+        << " flag_xor " << flag_xor
+        << " flagmask_AB " << flagmask_AB
+        << " flagmask_MI " << flagmask_MI
+        << " flagmask_or " << flagmask_or
+        << ph.descFlag()
+        << std::endl
+        << ph.desc()
+        << std::endl
+        ;
+    assert(expect); 
+
 }
+
+void SEvt::rjoinSeqCheck(unsigned seq_flag) const 
+{
+    dbg->rjoinSeqCheck++ ; 
+
+    bool flag_AB = seq_flag == BULK_ABSORB ;
+    bool flag_MI = seq_flag == MISS ;
+    bool flag_xor = flag_AB ^ flag_MI ;          
+
+    if(flag_AB)  dbg->rjoinSeqCheck_flag_AB++ ; 
+    if(flag_MI)  dbg->rjoinSeqCheck_flag_MI++ ; 
+    if(flag_xor) dbg->rjoinSeqCheck_flag_xor++ ; 
+
+    if(!flag_xor) LOG(fatal) << " flag_xor FAIL " << OpticksPhoton::Abbrev(seq_flag) << std::endl ;  
+    assert( flag_xor ); 
+}
+
+
+
 
 
 
@@ -487,7 +536,7 @@ void SEvt::pointPhoton(const spho& label)
     srec& rec        = current_rec ; 
     sseq& seq        = current_seq ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " idx " << idx 
         << " bounce " << bounce 
         << " evt.max_record " << evt->max_record
@@ -500,10 +549,9 @@ void SEvt::pointPhoton(const spho& label)
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
     if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
 
-    LOG(info) << label.desc() << " " << seq.desc_seqhis() ; 
+    LOG(LEVEL) << label.desc() << " " << seq.desc_seqhis() ; 
 
     bounce += 1 ; 
-
     // at truncation the above stop writing anything but bounce keeps incrementing 
 
 }
@@ -511,7 +559,7 @@ void SEvt::pointPhoton(const spho& label)
 void SEvt::finalPhoton(const spho& label)
 {
     dbg->finalPhoton++ ; 
-    LOG(info) << label.desc() ; 
+    LOG(LEVEL) << label.desc() ; 
     assert( label.isSameLineage(current_pho) ); 
     unsigned idx = label.id ; 
 
@@ -621,30 +669,6 @@ NP* SEvt::getComponent_(unsigned comp) const
         case SCOMP_DOMAIN:    a = getDomain()   ; break ;   
     }   
     return a ; 
-}
-
-/**
-SEvt::saveLabels
---------------
-
-**/
-
-void SEvt::saveLabels(const char* dir_) const 
-{
-    const char* dir = SPath::Resolve(dir_, DIRPATH );  
-    LOG(info) << dir ; 
-
-    NP* a0 = getPho0();  
-    LOG(info) << " a0 " << ( a0 ? a0->sstr() : "-" ) ; 
-    if(a0) a0->save(dir, "pho0.npy"); 
-
-    NP* a = getPho();  
-    LOG(info) << " a " << ( a ? a->sstr() : "-" ) ; 
-    if(a) a->save(dir, "pho.npy"); 
-
-    NP* g = getGS(); 
-    LOG(info) << " g " << ( g ? g->sstr() : "-" ) ; 
-    if(g) g->save(dir, "gs.npy"); 
 }
 
 /**
@@ -760,9 +784,23 @@ void SEvt::save(const char* base, const char* reldir )
     const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
     save(dir); 
 }
+
+/**
+SEvt::save
+------------
+
+If an index has been set with SEvt::setIndex SEvt::SetIndex 
+then the directory is suffixed with the index::
+
+    /some/directory/n001
+    /some/directory/z000
+    /some/directory/p001
+   
+**/
+
 void SEvt::save(const char* dir_) 
 {
-    const char* dir = SPath::Resolve(dir_, DIRPATH); 
+    const char* dir = index == MISSING_INDEX ? SPath::Resolve(dir_, DIRPATH) : SPath::Resolve(dir_, index, DIRPATH ) ; 
     LOG(info) << " dir " << dir ; 
 
     gather_components(); 
@@ -771,7 +809,38 @@ void SEvt::save(const char* dir_)
     LOG(info) << descFold() ; 
 
     fold->save(dir); 
+
+    saveLabels(dir); 
 }
+
+
+/**
+SEvt::saveLabels
+--------------
+
+**/
+
+void SEvt::saveLabels(const char* dir_) const 
+{
+    const char* dir = SPath::Resolve(dir_, DIRPATH );  
+    LOG(info) << dir ; 
+
+    NP* a0 = getPho0();  
+    LOG(info) << " a0 " << ( a0 ? a0->sstr() : "-" ) ; 
+    if(a0) a0->save(dir, "pho0.npy"); 
+
+    NP* a = getPho();  
+    LOG(info) << " a " << ( a ? a->sstr() : "-" ) ; 
+    if(a) a->save(dir, "pho.npy"); 
+
+    NP* g = getGS(); 
+    LOG(info) << " g " << ( g ? g->sstr() : "-" ) ; 
+    if(g) g->save(dir, "gs.npy"); 
+}
+
+
+
+
 
 
 std::string SEvt::descComponent() const 

@@ -68,10 +68,13 @@ struct SYSRAP_API OpticksPhoton
     static constexpr const char* _EFFICIENCY_CULL    = "EX" ;
     static constexpr const char* _BAD_FLAG           = "XX" ;
 
+    static bool IsTerminalFlag(const unsigned flag); 
+    static bool IsLiveFlag(const unsigned flag); 
     static const char* Flag(  const unsigned flag);
     static const char* Abbrev(const unsigned flag);
     static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
     static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1); 
+    static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
 
 #ifdef STANDALONE
 #else
@@ -89,9 +92,22 @@ struct SYSRAP_API OpticksPhoton
     static unsigned PointVal1( const unsigned long long& seqval , unsigned bitpos );
     static unsigned PointFlag( const unsigned long long& seqhis , unsigned bitpos );
     static const char* PointAbbrev( const unsigned long long& seqhis , unsigned bitpos );
-    static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
 #endif
 };
+
+
+
+inline bool OpticksPhoton::IsTerminalFlag(const unsigned flag) // static
+{
+    return (flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
+}
+
+inline bool OpticksPhoton::IsLiveFlag(const unsigned flag) // static
+{
+    return (flag & (BULK_SCATTER | BOUNDARY_TRANSMIT | BOUNDARY_REFLECT | SURFACE_DREFLECT | SURFACE_SREFLECT | BULK_REEMIT )) != 0 ;
+}
+
+
 
 
 
@@ -100,6 +116,7 @@ OpticksPhoton::Flag
 --------------------
 
 **/
+
 
 inline const char* OpticksPhoton::Flag(const unsigned int flag)
 {
@@ -207,6 +224,32 @@ inline std::string OpticksPhoton::FlagSequence(const unsigned long long seqhis, 
     return ss.str();
 }
 
+
+/**
+OpticksPhoton::FlagMask
+-----------------------
+
+A string labelling the bits set in the mskhis is returned.
+
+**/
+
+inline std::string OpticksPhoton::FlagMask(const unsigned mskhis, bool abbrev)
+{
+    std::vector<const char*> labels ; 
+    unsigned lastBit = 17 ; 
+    assert( __MACHINERY == 0x1 << lastBit );
+ 
+    for(unsigned n=0 ; n <= lastBit ; n++ )
+    {
+        unsigned flag = 0x1 << n ; 
+        if(mskhis & flag) labels.push_back( abbrev ? Abbrev(flag) : Flag(flag) );
+    }
+    unsigned nlab = labels.size() ; 
+
+    std::stringstream ss ;
+    for(unsigned i=0 ; i < nlab ; i++ ) ss << labels[i] << ( i < nlab - 1 ? "|" : ""  ) ; 
+    return ss.str();
+}
 
 
 

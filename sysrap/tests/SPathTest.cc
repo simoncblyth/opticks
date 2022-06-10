@@ -154,6 +154,39 @@ void test_UserTmpDir()
     std::cout << tmp << std::endl ; 
 }
 
+void test_Resolve_With_Index()
+{
+    LOG(info); 
+    const char* lines = R"LIT(
+$TMP
+$OPTICKS_TMP
+$OPTICKS_EVENT_BASE
+$HOME/hello
+$NON_EXISTING_EVAR/elsewhere
+)LIT";
+    std::stringstream ss(lines); 
+    std::string line ;
+    while (std::getline(ss, line, '\n'))
+    {
+        if(line.empty()) continue ; 
+
+        for(int idx=-2 ; idx <= 2 ; idx++)
+        {
+            const char* path = SPath::Resolve(line.c_str(), idx, NOOP); 
+            std::cout 
+                << " idx " 
+                << std::setw(3) << idx
+                << " line " 
+                << std::setw(60) << line
+                << " : "
+                << std::setw(60) << path
+                << std::endl 
+                ; 
+        }
+
+    }
+}
+
 void test_Resolve()
 {
     LOG(info); 
@@ -308,8 +341,9 @@ int main(int argc , char** argv )
     test_IsReadable();  
     test_IsReadable_path();  
     test_Basename_2(); 
-*/
     test_Resolve(); 
+*/
+    test_Resolve_With_Index();  
 
 /*
     test_Basename(); 

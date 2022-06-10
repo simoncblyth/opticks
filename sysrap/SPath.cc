@@ -228,7 +228,6 @@ void SPath::CreateDirs(const char* path, int mode)  // static
 
 
 
-
 const char* SPath::Resolve(const char* dir, const char* name, int create_dirs)
 {
     LOG(LEVEL) 
@@ -308,6 +307,27 @@ const char* SPath::Resolve(const char* dir, const char* reldir, const char* rel2
     std::string s = ss.str(); 
     return Resolve(s.c_str(), create_dirs); 
 }
+
+
+
+const char* SPath::Resolve(const char* dir, int idx, int create_dirs)
+{
+    return SPath::Resolve(dir, SStr::FormatIndex(idx), create_dirs); 
+}
+const char* SPath::Resolve(const char* dir, const char* name, int idx, int create_dirs)
+{
+    return SPath::Resolve(dir, name, SStr::FormatIndex(idx), create_dirs); 
+}
+const char* SPath::Resolve(const char* dir, const char* reldir, const char* name, int idx, int create_dirs)
+{
+    return SPath::Resolve(dir, reldir, name, SStr::FormatIndex(idx), create_dirs); 
+}
+
+
+
+
+
+
 
 
 

@@ -143,9 +143,7 @@ int main(int argc, char** argv)
     U4RecorderTest t(runMgr) ;  
     runMgr->BeamOn(1); 
  
-    const char* dir = "$TMP/U4RecorderTest" ; 
-    evt.saveLabels(dir); 
-    evt.save(dir); 
+    evt.save("$TMP/U4RecorderTest"); 
     LOG(info) << evt.desc() ; 
 
     return 0 ; 
