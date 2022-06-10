@@ -855,7 +855,18 @@ GPropertyMap<double>* GPropertyLib::getRawOriginal(const char* shortname) const
 }
 
 
-void GPropertyLib::SelectPropertyMapsWithProperties(std::vector<GPropertyMap<double>*>& dst, const char* props, char delim, const std::vector<GPropertyMap<double>*>& src) 
+/**
+GPropertyLib::SelectPropertyMapsWithProperties
+------------------------------------------------
+
+**/
+
+void GPropertyLib::SelectPropertyMapsWithProperties(
+    std::vector<GPropertyMap<double>*>& dst, 
+    const char* props, 
+    char delim, 
+    const std::vector<GPropertyMap<double>*>& src
+    ) 
 {
     std::vector<std::string> elem ;
     BStr::split(elem, props, delim);

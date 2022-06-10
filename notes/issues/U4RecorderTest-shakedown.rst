@@ -1,6 +1,156 @@
 U4RecorderTest-shakedown
 ===========================
 
+What Next ?
+-------------
+
+
+* need more featureful geometry to test/develop things like microstep skipping 
+
+  * before full geometry prep a local simple Raindrop geometry 
+  * need water and air 
+
+
+
+Geant4 originals : expand from just LS_ori to all materials 
+--------------------------------------------------------------
+
+::
+
+    0805 void GPropertyLib::addRawOriginal(GPropertyMap<double>* pmap)
+     806 {
+     807     m_raw_original.push_back(pmap);
+     808 }
+     ...
+     845 GPropertyMap<double>* GPropertyLib::getRawOriginal(const char* shortname) const
+     846 {
+     847     unsigned num_raw_original = m_raw_original.size();
+     848     for(unsigned i=0 ; i < num_raw_original ; i++)
+     849     { 
+     850         GPropertyMap<double>* pmap = m_raw_original[i];
+     851         const char* name = pmap->getShortName();
+     852         if(strcmp(shortname, name) == 0) return pmap ;
+     853     }
+     854     return NULL ;
+     855 }
+
+    epsilon:ggeo blyth$ opticks-f addRawOriginal
+    ./extg4/X4PhysicalVolume.cc:        m_sclib->addRawOriginal(pmap);      
+    ./extg4/X4MaterialTable.cc:        m_mlib->addRawOriginal(pmap_rawmat_en) ;  // down to GPropertyLib
+    ./ggeo/GPropertyLib.cc:void GPropertyLib::addRawOriginal(GPropertyMap<double>* pmap)
+    ./ggeo/GPropertyLib.hh:        void                  addRawOriginal(GPropertyMap<double>* pmap);
+    epsilon:opticks blyth$ 
+
+
+     342 void X4PhysicalVolume::collectScintillatorMaterials()
+     343 {
+     ...
+     348     typedef GPropertyMap<double> PMAP ;
+     349     std::vector<PMAP*> raw_energy_pmaps ;
+     350     m_mlib->findRawOriginalMapsWithProperties( raw_energy_pmaps, SCINTILLATOR_PROPERTIES, ',' );
+     ...
+     378     // original energy domain 
+     379     for(unsigned i=0 ; i < num_scint ; i++)
+     380     {
+     381         PMAP* pmap = raw_energy_pmaps[i] ;
+     382         m_sclib->addRawOriginal(pmap);
+     383     }
+
+    105 void X4MaterialTable::init()
+    106 {
+    107     unsigned num_input_materials = m_input_materials.size() ;
+    ...
+    111     for(unsigned i=0 ; i < num_input_materials ; i++)
+    112     {
+    ...
+    136         char mode_asis_en = 'E' ;
+    137         GMaterial* rawmat_en = X4Material::Convert( material, mode_asis_en );
+    138         GPropertyMap<double>* pmap_rawmat_en = dynamic_cast<GPropertyMap<double>*>(rawmat_en) ;
+    139         m_mlib->addRawOriginal(pmap_rawmat_en) ;  // down to GPropertyLib
+
+    0887 void GPropertyLib::findRawOriginalMapsWithProperties( std::vector<GPropertyMap<double>*>& dst, const char* props, char delim )
+     888 {
+     889     SelectPropertyMapsWithProperties(dst, props, delim, m_raw_original );
+     890 }
+
+    0982 void GPropertyLib::saveRawOriginal()
+     983 {
+     984     std::string dir = getCacheDir();
+     985     unsigned num_raw_original = m_raw_original.size();
+     986     LOG(LEVEL) << "[ " << dir << " num_raw_original " << num_raw_original ;
+     987     for(unsigned i=0 ; i < num_raw_original ; i++)
+     988     {
+     989         GPropertyMap<double>* pmap = m_raw_original[i] ;
+     990         pmap->save(dir.c_str());
+     991     }
+     992     LOG(LEVEL) << "]" ;
+     993 }
+
+    001 #include "SConstant.hh"
+      2 
+      3 const char* SConstant::ORIGINAL_DOMAIN_SUFFIX = "_ori" ;
+      4 
+
+    1076 template <typename T>
+    1077 void GPropertyMap<T>::save(const char* dir)
+    1078 {
+    1079     std::string shortname = m_shortname ;
+    1080     if(m_original_domain) shortname += SConstant::ORIGINAL_DOMAIN_SUFFIX ;
+    1081 
+    1082     LOG(LEVEL) << " save shortname (+_ori?) [" << shortname << "] m_original_domain " << m_original_domain  ;
+    1083 
+    1084     for(std::vector<std::string>::iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
+    1085     {
+    1086         std::string key = *it ;
+    1087         std::string propname(key) ;
+    1088         propname += ".npy" ;
+    1089 
+    1090         GProperty<T>* prop = m_prop[key] ;
+    1091         prop->save(dir, shortname.c_str(), propname.c_str());  // dir, reldir, name
+    1092     }
+    1093 }
+
+
+geocache-create uses okg4/tests/OKX4Test.cc::
+
+    112     
+    113     m_ggeo->postDirectTranslation();   // closing libs, finding repeat instances, merging meshes, saving 
+    114     
+
+    0584 /**
+     585 GGeo::postDirectTranslation
+     586 -------------------------------
+     587 
+     588 Invoked from G4Opticks::translateGeometry after the X4PhysicalVolume conversion
+     589 for live running or from okg4/tests/OKX4Test.cc main for geocache-create.
+     590 
+     591 **/
+     592 
+     593 
+     594 void GGeo::postDirectTranslation()
+     595 {
+     596     LOG(LEVEL) << "[" ;
+     597 
+     598     prepare();     // instances are formed here     
+     599 
+     600     LOG(LEVEL) << "( GBndLib::fillMaterialLineMap " ;
+     601     GBndLib* blib = getBndLib();
+     602     blib->fillMaterialLineMap();
+     603     LOG(LEVEL) << ") GBndLib::fillMaterialLineMap " ;
+     604 
+     605     LOG(LEVEL) << "( GGeo::save " ;
+     606     save();
+     607     LOG(LEVEL) << ") GGeo::save " ;
+     608 
+     609 
+     610     deferred();
+     611 
+     612     postDirectTranslationDump();
+     613 
+     614     LOG(LEVEL) << "]" ;
+     615 }
+
+
 With Gun : First 100 label id are zero ? FIXED 
 ------------------------------------------------
 
@@ -185,8 +335,8 @@ without any change to the collection machinery.  As genstep disabling is purely 
 
 
 
-Checking rjoinPhoton matching tripping some asserts
--------------------------------------------------------
+FIXED : Checking rjoinPhoton matching tripping some asserts
+---------------------------------------------------------------
 
 
 ::
@@ -219,7 +369,7 @@ Checking rjoinPhoton matching tripping some asserts
 
 
 
-Smoking gun is getting impossible rjoin.flag of SCINTILLATION are clearly 
+FIXED : Smoking gun is getting impossible rjoin.flag of SCINTILLATION are clearly 
 wandering over to another photons records::
 
     2022-06-10 11:56:09.859 INFO  [19958285] [SEvt::rjoinPhoton@321] 
@@ -259,7 +409,7 @@ wandering over to another photons records::
 
 Must review how evt->max_record truncation is handled, as apparently not working.
 
-
+* FIXED : the problem was just with the rjoin checking not applying the truncation
 
 
 

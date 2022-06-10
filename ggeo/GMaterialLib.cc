@@ -93,6 +93,7 @@ void GMaterialLib::save()
 {
     LOG(LEVEL) << "[" ; 
     saveToCache();
+    saveRawOriginal(); 
     LOG(LEVEL) << "]" ; 
 }
 
