@@ -163,9 +163,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     assert( label.isDefined() );   // all photons are expected to be labelled, TODO:input photons
     if(!Enabled(label)) return ;  
 
-    G4TrackStatus tstat = track->GetTrackStatus(); 
-    LOG(LEVEL) << " step.tstat " << U4TrackStatus::Name(tstat) ; 
-
     SEvt* sev = SEvt::Get(); 
     sev->checkPhoton(label); 
 
@@ -187,5 +184,14 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     current_photon.set_flag( flag );
     sev->pointPhoton(label); 
+
+
+    G4TrackStatus tstat = track->GetTrackStatus(); 
+    LOG(info) << " step.tstat " << U4TrackStatus::Name(tstat) << " " << OpticksPhoton::Flag(flag)  ; 
+
+    //G4Track* track_ = const_cast<G4Track*>(track); 
+    //track_->SetTrackStatus(fStopAndKill);
+
+
 }
 

@@ -115,6 +115,7 @@ struct sphoton
 #else
     SPHOTON_METHOD unsigned flagmask_count() const ; 
     SPHOTON_METHOD std::string desc() const ; 
+    SPHOTON_METHOD std::string descFlag() const ; 
     SPHOTON_METHOD void ephoton() ; 
     SPHOTON_METHOD void normalize_mom_pol(); 
     SPHOTON_METHOD void transverse_mom_pol(); 
@@ -176,6 +177,19 @@ SPHOTON_METHOD std::string sphoton::desc() const
     std::string s = ss.str(); 
     return s ; 
 } 
+
+SPHOTON_METHOD std::string sphoton::descFlag() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << " sphoton idx " << idx() 
+       << " flag " << OpticksPhoton::Flag(flag())
+       << " flagmask " << OpticksPhoton::FlagMask(flagmask)
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 /**
 sphoton::ephoton

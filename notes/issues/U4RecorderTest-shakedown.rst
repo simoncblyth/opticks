@@ -219,6 +219,51 @@ Checking rjoinPhoton matching tripping some asserts
 
 
 
+Smoking gun is getting impossible rjoin.flag of SCINTILLATION are clearly 
+wandering over to another photons records::
+
+    2022-06-10 11:56:09.859 INFO  [19958285] [SEvt::rjoinPhoton@321] 
+    2022-06-10 11:56:09.859 INFO  [19958285] [SEvt::rjoinPhoton@322] spho (gs:ix:id:gn 117   0    0 10)
+    rjoinPhotonCheck : does not have BULK_ABSORB flag ? sphoton idx 0 flag MISS flagmask SI|MI|RE
+     pos (-1000.000,722.148,670.385)  t  46.844
+     mom (-0.814, 0.581,-0.026)  iindex 0
+     pol (-0.145,-0.159, 0.977)  wl 394.830
+     bn 0 fl 4 id 0 or 1.000 ix 0 fm 16 ab MI
+     digest(16) 7706526a21ed79f8fb759805c75c798b
+     digest(12) 62c0957fc9dbf3ed296559467aa5d5d5
+     NOT seq_flag_AB, rather   
+     idx 0 bounce 11 prior 10 evt.max_record 10 rjoin_record_d12   1e80c7b62fe41f2b3cfbc743988d1787
+     current_photon_d12 62c0957fc9dbf3ed296559467aa5d5d5
+     d12match NO
+     rjoin_record 
+     pos (-9.399,42.455,114.610)  t  7.007
+     mom ( 0.802, 0.597, 0.017)  iindex 0
+     pol ( 0.559,-0.739,-0.377)  wl 466.605
+     bn 0 fl 2 id 0 or 1.000 ix 1 fm 2 ab SI
+     digest(16) 07cb368115014bb1c643bd028d48c1e0
+     digest(12) 1e80c7b62fe41f2b3cfbc743988d1787
+    2022-06-10 11:56:09.860 INFO  [19958285] [SEvt::rjoinPhoton@400]  rjoin.flag SCINTILLATION
+     NOT rjoin_flag_AB 
+     NOT rjoin_record_flagmask_AB 
+     current_photon 
+     pos (-1000.000,722.148,670.385)  t  46.844
+     mom (-0.814, 0.581,-0.026)  iindex 0
+     pol (-0.145,-0.159, 0.977)  wl 394.830
+     bn 0 fl 10 id 0 or 1.000 ix 0 fm 16 ab RE
+     digest(16) 829c294403eff470277c9cdb81f983a6
+     digest(12) 62c0957fc9dbf3ed296559467aa5d5d5
+    2022-06-10 11:56:09.860 INFO  [19958285] [SEvt::pointPhoton@494] spho (gs:ix:id:gn 117   0    0 10)  seqhis      55555555552 nib 11 SI RE RE RE RE RE RE RE RE RE RE                
+    2022-06-10 11:56:09.860 INFO  [19958285] [U4Recorder::UserSteppingAction_Optical@190]  step.tstat fStopAndKill MISS
+
+
+
+Must review how evt->max_record truncation is handled, as apparently not working.
+
+
+
+
+
+
 
 
 

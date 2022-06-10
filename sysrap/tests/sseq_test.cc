@@ -1,6 +1,7 @@
 // name=sseq_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I/usr/local/cuda/include -o /tmp/$name && /tmp/$name
 
 #include <iostream>
+#include <iomanip>
 #include <bitset>
 
 #include "scuda.h"
@@ -211,7 +212,12 @@ void test_desc_seqhis()
         unsigned flag = history[bounce] ; 
         unsigned boundary = 0 ;  
         seq.add_nibble( bounce, flag, boundary ); 
-        std::cout << seq.desc_seqhis() << " : " << OpticksPhoton::Flag(flag) << std::endl ; 
+
+        std::cout 
+            << std::setw(20) << OpticksPhoton::Flag(flag) 
+            << " : " <<  seq.desc_seqhis() 
+            << std::endl 
+            ; 
      }
 }
 

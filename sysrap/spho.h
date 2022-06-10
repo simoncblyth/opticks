@@ -85,12 +85,12 @@ inline std::string spho::desc() const
     std::stringstream ss ;
     ss << "spho" ;
     if(isPlaceholder())  ss << " isPlaceholder " ; 
-    else ss << " ( gs ix id gn " 
+    else ss << " (gs:ix:id:gn " 
             << std::setw(3) << gs 
             << std::setw(4) << ix 
             << std::setw(5) << id 
-            << std::setw(2) << gn
-            << " ) "
+            << std::setw(3) << gn
+            << ")"
             ;
     std::string s = ss.str();
     return s ;

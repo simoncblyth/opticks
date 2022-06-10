@@ -368,6 +368,7 @@ void SEvt::rjoinPhoton(const spho& label)
         current_seq.set_flag(prior, BULK_REEMIT);  
     }
 
+
     if( evt->record )
     {
         sphoton& rjoin_record = evt->record[evt->max_record*idx+prior]  ; 
@@ -378,6 +379,10 @@ void SEvt::rjoinPhoton(const spho& label)
         if(d12match == false) dbg->d12match_fail++ ; 
 
         std::cout 
+            << " idx " << idx
+            << " bounce " << bounce
+            << " prior " << prior
+            << " evt.max_record " << evt->max_record 
             << " rjoin_record_d12   " << rjoin_record_d12  << std::endl
             << " current_photon_d12 " << current_photon_d12 << std::endl
             << " d12match " << ( d12match ? "YES" : "NO" ) << std::endl
@@ -429,15 +434,17 @@ What about perhaps reemission immediately after reemission  ?
 
 void SEvt::rjoinPhotonCheck(const sphoton& ph ) const 
 {
-    bool flag_AB     = ph.flag() == BULK_ABSORB ;  
-    bool flagmask_AB = ph.flagmask & BULK_ABSORB  ; 
+    unsigned flag = ph.flag();
+    unsigned flagmask = ph.flagmask ; 
+
+    bool flag_AB     = flag == BULK_ABSORB ;  
+    bool flagmask_AB = flagmask & BULK_ABSORB  ; 
+
     if(!(flag_AB && flagmask_AB))
     {
         std::cout 
             << "rjoinPhotonCheck : does not have BULK_ABSORB flag ?" 
-            << " ph.idx " << ph.idx() 
-            << " flag_AB " << ( flag_AB ? "YES" : "NO" )
-            << " flagmask_AB " << ( flagmask_AB ? "YES" : "NO" )
+            << ph.descFlag()
             << std::endl
             << ph.desc()
             << std::endl
@@ -480,6 +487,15 @@ void SEvt::pointPhoton(const spho& label)
     srec& rec        = current_rec ; 
     sseq& seq        = current_seq ; 
 
+    LOG(info) 
+        << " idx " << idx 
+        << " bounce " << bounce 
+        << " evt.max_record " << evt->max_record
+        << " evt.max_rec    " << evt->max_rec
+        << " evt.max_seq    " << evt->max_seq
+        ;
+
+
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
     if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
@@ -487,6 +503,9 @@ void SEvt::pointPhoton(const spho& label)
     LOG(info) << label.desc() << " " << seq.desc_seqhis() ; 
 
     bounce += 1 ; 
+
+    // at truncation the above stop writing anything but bounce keeps incrementing 
+
 }
 
 void SEvt::finalPhoton(const spho& label)

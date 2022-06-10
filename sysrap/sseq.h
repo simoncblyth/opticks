@@ -38,6 +38,7 @@ For persisting srec arrays use::
 #include <sstream>
 #include "smath.h"
 #include "OpticksPhoton.hh"
+#include "sstr.h"
 #endif
 
 struct sseq
@@ -136,11 +137,13 @@ SSEQ_METHOD std::string sseq::desc() const
 
 SSEQ_METHOD std::string sseq::desc_seqhis() const 
 {
+    std::string fseq = OpticksPhoton::FlagSequence(seqhis) ; 
+
     std::stringstream ss ; 
     ss 
          << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec 
          << " nib " << std::setw(2) << seqhis_nibbles() 
-         << " " << OpticksPhoton::FlagSequence(seqhis)
+         << " " << sstr::TrimTrailing(fseq.c_str()) 
          ;
     std::string s = ss.str(); 
     return s ; 
