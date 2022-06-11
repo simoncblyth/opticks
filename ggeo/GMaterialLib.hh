@@ -98,6 +98,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        static const char* ORDER_BY_PREFERENCE_ ; 
        const char* getMaterialOrdering() const ;
    public:
+       static const bool GMaterialLib_saveRawOriginal ; // set via envvar: GMaterialLib_saveRawOriginal 
        void save();
        static GMaterialLib* load(Opticks* cache);
    public:

@@ -13,14 +13,15 @@ class G4MaterialPropertiesTable ;
 struct U4_API U4Material
 {
     static const plog::Severity LEVEL ; 
+
+    static std::string DescMaterialTable(); 
+    static void GetMaterialNames( std::vector<std::string>& names); 
+
     static G4Material* Get(const char* name);
     static G4Material* Get_(const char* name);
     static G4Material* Vacuum(const char* name);
+    static G4MaterialPropertyVector* GetProperty(const G4Material* mat, const char* name); 
 
-
-
-    static G4Material* MakeMaterial(const char* name, const char* reldir, const char* props ); 
-    static G4Material* MakeMaterial(const char* name, const char* reldir); 
 
 
     static G4MaterialPropertiesTable* MakeMaterialPropertiesTable(const char* reldir); 
@@ -29,8 +30,6 @@ struct U4_API U4Material
     static G4MaterialPropertyVector* MakeProperty(const NP* a); 
     static char Classify(const NP* a); 
     static std::string Desc(const char* key, const NP* a ); 
-
-
 
     static G4MaterialPropertiesTable*  MakeMaterialPropertiesTable_FromProp(
          const char* a_key=nullptr, const G4MaterialPropertyVector* a_prop=nullptr,
@@ -41,15 +40,17 @@ struct U4_API U4Material
 
 
     static G4Material* MakeWater(const char* name="Water"); 
+
     static G4Material* MakeMaterial(const G4MaterialPropertyVector* rindex, const char* name="Water") ;
+    static G4Material* MakeMaterial(const char* name, const char* reldir, const char* props ); 
+    static G4Material* MakeMaterial(const char* name, const char* reldir); 
 
-    static G4Material* MakeScintillatorOld(); 
     static G4Material* MakeScintillator(); 
-    static G4MaterialPropertyVector* GetProperty(const G4Material* mat, const char* name); 
 
 
-
-
-
+    static constexpr const char* LIBDIR = "$IDPath/GMaterialLib" ;  
+    static G4Material* LoadOri(const char* name); 
+    static void ListOri(std::vector<std::string>& names); 
+    static void LoadOri(); 
 
 }; 

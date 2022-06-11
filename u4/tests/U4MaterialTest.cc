@@ -1,9 +1,18 @@
-#include "U4Material.hh"
+
+
 #include "SOpticksResource.hh"
+#include "SSys.hh"
+#include "SPath.hh"
+#include "NP.hh"
+#include "sdigest.h"
+
+
+#include "U4Material.hh"
 #include "G4Material.hh"
 #include "Randomize.hh"
 
 #include "OPTICKS_LOG.hh"
+
 
 void test_MakeMaterial()
 {
@@ -99,6 +108,37 @@ void test_NumVec()
 
 
 
+void test_Load_0()
+{
+    const NP* a = SOpticksResource::IDLoad("GScintillatorLib/LS_ori/RINDEX.npy"); 
+    const NP* b = NP::Load(SPath::Resolve("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy", NOOP)); 
+
+    std::cout << " a " << a->sstr() << " digest " << sdigest::item(a) << std::endl ; 
+    std::cout << " b " << b->sstr() << " digest " << sdigest::item(b) << std::endl ; 
+
+    a->dump(); 
+
+}
+
+
+
+void test_LoadOri_name()
+{
+    G4Material* mat = U4Material::LoadOri("Water"); 
+    LOG(info) << " mat " << mat ;  
+}
+
+void test_ListOri()
+{
+    std::vector<std::string> names ; 
+    U4Material::ListOri(names); 
+}
+
+void test_LoadOri()
+{
+    U4Material::LoadOri(); 
+    std::cout << U4Material::DescMaterialTable() ; 
+}
 
 
 int main(int argc, char** argv)
@@ -108,10 +148,15 @@ int main(int argc, char** argv)
     /*
     test_MakeMaterial(); 
     test_MakeMaterialPropertiesTable(); 
-    test_MakeScintillator(); 
     test_GetProperty(); 
-    */
     test_NumVec(); 
+    test_MakeScintillator(); 
+    test_Load_0(); 
+    test_LoadOri_name(); 
+    test_ListOri(); 
+    */
+
+    test_LoadOri(); 
 
      
     return 0 ; 

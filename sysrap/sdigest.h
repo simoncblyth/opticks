@@ -25,11 +25,25 @@ Header-only hexdigest
 
 #endif
 
+struct NP ; 
+
 
 struct sdigest
 {
     static std::string buf(const char* buffer, int length); 
+    static std::string item(const NP* a, int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1); 
 }; 
+
+#include "NP.hh"
+   
+inline std::string sdigest::item( const NP* a, int i, int j, int k, int l, int m, int o ) // static  
+{
+    const char* start = nullptr ; 
+    unsigned num_bytes = 0 ; 
+    a->itembytes_(&start, num_bytes, i, j, k, l, m, o ); 
+    assert( start && num_bytes > 0 ); 
+    return buf( start, num_bytes ); 
+}
 
 inline std::string sdigest::buf(const char* buffer, int length)
 {

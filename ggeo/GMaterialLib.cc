@@ -22,6 +22,7 @@
 #include <csignal>
 
 #include "SPath.hh"
+#include "SSys.hh"
 
 #include "BStr.hh"
 #include "BMeta.hh"
@@ -89,11 +90,24 @@ m_keys = size=8 {
 **/
 
 
+const  bool GMaterialLib::GMaterialLib_saveRawOriginal = SSys::getenvbool("GMaterialLib_saveRawOriginal") ; 
+
 void GMaterialLib::save()
 {
     LOG(LEVEL) << "[" ; 
     saveToCache();
-    saveRawOriginal(); 
+
+    if(GMaterialLib_saveRawOriginal)
+    {
+        LOG(fatal) << "[ non-standard GMaterialLib_saveRawOriginal " ; 
+        saveRawOriginal(); 
+        LOG(fatal) << "] non-standard GMaterialLib_saveRawOriginal " ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " NOT doing GMaterialLib_saveRawOriginal " ; 
+    }
+
     LOG(LEVEL) << "]" ; 
 }
 

@@ -134,18 +134,23 @@ const char* SPath::UserTmpDir(const char* pfx, const char* user_envvar, const ch
 SPath::Resolve
 ---------------
 
-Resolves tokenized paths such as "$PREFIX/name.ext" where PREFIX must 
-be an existing envvar. Special handling if "$TMP" is provided that defaults 
-the TMP envvar to "/tmp/username/opticks" 
+Resolves tokenized paths such as "$TOKEN/name.ext" or "$TOKEN" 
+where the TOKEN string is passed to SOpticksResource::Get("TOKEN") 
+for resolution. TOKEN strings matching standard keys : IDPath, CFBase, ... 
+yield the standard directories that are derived from the OPTICKS_KEY.  
+However these defaults may be overridden by setting envvars with keys 
+matching the standard keys. 
 
-HUH: the special handling like it only works for "$TMP" not eg for "$TMP/some/thing.txt"
-
-Hmm need to distinguish when the path is a folder or a file for create_dirs ?
+When the SOpticksResource resolution does not yield a value a 
+default of the standard $TMP dir of form "/tmp/username/opticks" 
+is used for the prefix directory. 
 
 **/
 
 const char* SPath::Resolve(const char* spec_, int create_dirs)
 {
+    assert( create_dirs == NOOP || create_dirs == DIRPATH || create_dirs == FILEPATH ); 
+
     LOG(LEVEL) 
         << " spec_ [" << spec_ << "]"
         << " create_dirs [" << create_dirs << "]"
@@ -155,7 +160,7 @@ const char* SPath::Resolve(const char* spec_, int create_dirs)
 
     char* spec = strdup(spec_);            // copy to allow modifications 
     char sep = '/' ; 
-    char* spec_sep = strchr(spec, sep);    // pointer to first separator : so its the string starting from the first sep 
+    char* spec_sep = strchr(spec, sep);    // pointer to first separator : so spec_sep is string starting from the first sep 
     char* spec_end = strchr(spec, '\0') ;  // pointer to null terminator
 
     LOG(LEVEL) 

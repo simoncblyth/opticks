@@ -591,6 +591,10 @@ const char* SSys::hostname()
 }
 #endif
 
+int SSys::unsetenv( const char* ekey )
+{
+    return ::unsetenv(ekey); 
+}
 
 /**
 SSys::setenvvar

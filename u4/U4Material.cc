@@ -1,21 +1,39 @@
-#include "G4Material.hh"
-#include "U4Material.hh"
-
-
 #include <string>
 #include <vector>
 #include <sstream>
-#include "SOpticksResource.hh"
+
 #include "SPath.hh"
 #include "SDir.h"
 #include "SStr.hh"
 #include "NP.hh"
-
 #include "PLOG.hh"
 
+#include "G4Material.hh"
+#include "U4Material.hh"
 
 const plog::Severity U4Material::LEVEL = PLOG::EnvLevel("U4Material", "DEBUG"); 
 
+std::string U4Material::DescMaterialTable()
+{
+    std::vector<std::string> names ; 
+    GetMaterialNames(names);  
+    std::stringstream ss ; 
+    ss << "U4Material::DescMaterialTable " << names.size() << std::endl ; 
+    for(int i=0 ; i < int(names.size()) ; i++) ss << names[i] << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+void U4Material::GetMaterialNames( std::vector<std::string>& names)
+{
+    G4MaterialTable* tab =  G4Material::GetMaterialTable(); 
+    for(int i=0 ; i < int(tab->size()) ; i++)
+    {
+        G4Material* mat = (*tab)[i] ; 
+        const G4String& name = mat->GetName(); 
+        names.push_back(name); 
+    }
+}
 
 
 G4Material* U4Material::Get(const char* name)
@@ -43,49 +61,44 @@ G4Material* U4Material::Vacuum(const char* name)
     return material ;
 }
 
-
-
-
-
-
-G4Material* U4Material::MakeMaterial(const char* name, const char* reldir, const char* props )
+G4MaterialPropertyVector* U4Material::GetProperty(const G4Material* mat, const char* name)
 {
-    G4Material* mat = MakeWater(name); 
-    G4MaterialPropertiesTable* mpt = MakeMaterialPropertiesTable(reldir, props, ','); 
-    mat->SetMaterialPropertiesTable(mpt) ;
-    return mat ;
-}
-
-G4Material* U4Material::MakeMaterial(const char* name, const char* reldir)
-{
-    G4Material* mat = MakeWater(name); 
-    G4MaterialPropertiesTable* mpt = MakeMaterialPropertiesTable(reldir); 
-    mat->SetMaterialPropertiesTable(mpt) ;
-    return mat ;
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    return mpt->GetProperty(name) ; 
 }
 
 
 
 
-G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* reldir )
+
+/**
+U4Material::MakeMaterialPropertiesTable
+-----------------------------------------
+
+The matdir may use the standard tokens eg::
+
+   $IDPath/GScintillatorLib/LS_ori
+   $IDPath/GMaterialLib/Water_ori
+
+**/
+
+G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* matdir_ )
 {
-    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
-
-    const char* idpath = SOpticksResource::IDPath(); 
-    const char* matdir = SPath::Resolve(idpath, reldir, NOOP); 
-
+    const char* matdir = SPath::Resolve(matdir_, NOOP); 
     std::vector<std::string> names ; 
     SDir::List(names, matdir, ".npy" ); 
 
+    G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
+
     std::stringstream ss ; 
-    ss << "reldir " << reldir << " names " << names.size() << std::endl ; 
+    ss << "matdir " << matdir << " names " << names.size() << std::endl ; 
 
     for(unsigned i=0 ; i < names.size() ; i++)
     {
         const char* name = names[i].c_str(); 
         const char* key = SStr::HeadFirst(name, '.'); 
 
-        NP* a = NP::Load(idpath, reldir, name  );         
+        NP* a = NP::Load(matdir, name  );         
 
         char type = Classify(a); 
         double* values = a->values<double>() ; 
@@ -102,7 +115,7 @@ G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* r
     std::string s = ss.str(); 
     
     LOG(LEVEL) << s ; 
-    std::cout << s << std::endl ; 
+    //std::cout << s << std::endl ; 
     
     return mpt ; 
 } 
@@ -112,16 +125,21 @@ G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* r
 U4Material::MakeMaterialPropertiesTable
 ----------------------------------------
 
-Loads from $IDPath/reldir the material properties listed in *delim* delimited *keys_*. 
+The matdir may use the standard tokens eg::
+
+   $IDPath/GScintillatorLib/LS_ori
+   $IDPath/GMaterialLib/Water_ori
+
+Constructs the properties table by loading the  properties listed in *delim* delimited *keys_*. 
 
 **/
 
-G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* reldir, const char* keys_, char delim )
+G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* matdir_, const char* keys_, char delim )
 {
+    const char* matdir = SPath::Resolve(matdir_, NOOP); 
+
     std::vector<std::string> keys ; 
     SStr::Split( keys_, delim, keys ); 
-
-    const char* idpath = SOpticksResource::IDPath(); 
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     for(unsigned i=0 ; i < keys.size() ; i++)
@@ -129,13 +147,12 @@ G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* r
         const std::string& key_ = keys[i]; 
         const char* key = key_.c_str(); 
         const char* name = SStr::Format("%s.npy", key );   
-        NP* a = NP::Load(idpath, reldir, name );         
+        NP* a = NP::Load(matdir, name );         
         assert(a); 
 
-        std::cout 
+        LOG(info)
              << " key " << std::setw(15) << key 
              << " a.desc " << a->desc() 
-             << std::endl 
              ; 
 
         G4MaterialPropertyVector* v = MakeProperty(a); 
@@ -152,9 +169,7 @@ G4MaterialPropertyVector* U4Material::MakeProperty(const NP* a)  // static
     std::vector<double> d, v ; 
     a->psplit<double>(d,v);   // split array into domain and values 
     assert(d.size() == v.size());
-
     //assert(d.size() > 1 );  // OpticalCONSTANT (scint time fraction property misusage) breaks this  
-
     G4MaterialPropertyVector* mpv = new G4MaterialPropertyVector(d.data(), v.data(), d.size() );  
     return mpv ; 
 }
@@ -261,6 +276,7 @@ G4Material* U4Material::MakeWater(const char* name)  // static
     return mat ; 
 }
 
+
 G4Material* U4Material::MakeMaterial(const G4MaterialPropertyVector* rindex, const char* name)  // static
 {
     G4Material* mat = MakeWater(name); 
@@ -269,14 +285,35 @@ G4Material* U4Material::MakeMaterial(const G4MaterialPropertyVector* rindex, con
     return mat ;
 }
 
+/**
+U4Material::MakeMaterial
+--------------------------
 
-G4Material* U4Material::MakeScintillatorOld()
+::
+
+    G4Material* mat = MakeMaterial("LS", "$IDPath/GScintillatorLib/LS_ori", "RINDEX,FASTCOMPONENT,SLOWCOMPONENT,REEMISSIONPROB,GammaCONSTANT,OpticalCONSTANT");  
+
+**/
+
+
+G4Material* U4Material::MakeMaterial(const char* name, const char* matdir, const char* props )
 {
-    G4Material* mat = MakeMaterial("LS", "GScintillatorLib/LS_ori", "RINDEX,FASTCOMPONENT,SLOWCOMPONENT,REEMISSIONPROB,GammaCONSTANT,OpticalCONSTANT");  
-    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable(); 
-    mpt->AddConstProperty("SCINTILLATIONYIELD", 1000.f );   // ACTUALLY BETTER TO LOAD THIS LIKE THE REST 
-    return mat ; 
+    G4Material* mat = MakeWater(name); 
+    G4MaterialPropertiesTable* mpt = MakeMaterialPropertiesTable(matdir, props, ','); 
+    mat->SetMaterialPropertiesTable(mpt) ;
+    return mat ;
 }
+
+G4Material* U4Material::MakeMaterial(const char* name, const char* matdir)
+{
+    G4Material* mat = MakeWater(name); 
+    G4MaterialPropertiesTable* mpt = MakeMaterialPropertiesTable(matdir); 
+    mat->SetMaterialPropertiesTable(mpt) ;
+    return mat ;
+}
+
+
+
 
 /**
 U4Material::MakeScintillator
@@ -288,16 +325,61 @@ Creates material with Water G4Element and density and then loads the properties 
 
 G4Material* U4Material::MakeScintillator()
 {
-    G4Material* mat = MakeMaterial("LS", "GScintillatorLib/LS_ori");  
+    G4Material* mat = MakeMaterial("LS", "$IDPath/GScintillatorLib/LS_ori");  
     return mat ; 
 }
 
 
-G4MaterialPropertyVector* U4Material::GetProperty(const G4Material* mat, const char* name)
+/**
+U4Material::LoadOri
+---------------------
+
+Currently original material properties are not standardly persisted, 
+so typically will have to override the IDPath envvar for this to 
+succeed to load. 
+
+**/
+
+G4Material* U4Material::LoadOri(const char* name)
 {
-    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
-    return mpt->GetProperty(name) ; 
+    const char* matdir = SStr::Format("%s/%s_ori", LIBDIR, name );   
+    G4Material* mat = MakeMaterial(name, matdir );  
+    return mat ; 
 }
 
+void U4Material::ListOri(std::vector<std::string>& names)
+{
+    const char* libdir = SPath::Resolve(LIBDIR, NOOP ); 
+    const char* ext = "_ori" ; 
+    SDir::List(names, libdir, ext ); 
+    SDir::Trim(names, ext); 
+    LOG(LEVEL) 
+        << " libdir " << libdir
+        << " ext " << ext 
+        << " names.size " << names.size() 
+        ; 
+}
+
+void U4Material::LoadOri()
+{
+    size_t num_mat[2] ; 
+    num_mat[0] = G4Material::GetNumberOfMaterials(); 
+    std::vector<std::string> names ; 
+    ListOri(names);  
+
+    for(int i=0 ; i < int(names.size()) ; i++)
+    {
+        const std::string& name = names[i] ; 
+        const char* n = name.c_str(); 
+        LOG(LEVEL) << n ; 
+        G4Material* mat = LoadOri(n); 
+        const G4String& name_ = mat->GetName(); 
+        assert( strcmp(name_.c_str(), n ) == 0 ); 
+
+    }
+    num_mat[1] = G4Material::GetNumberOfMaterials(); 
+    LOG(info) << "Increased G4Material::GetNumberOfMaterials from " << num_mat[0] << " to " << num_mat[1] ;  
+
+}
 
 

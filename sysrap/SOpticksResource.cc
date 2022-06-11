@@ -235,6 +235,32 @@ const char* SOpticksResource::CFBaseFromGEOM()
 
 
 const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir" ; 
+
+/**
+SOpticksResource::Get
+-----------------------
+
+The below keys have default values derived from the OPTICKS_KEY envvars, however
+envvars with the same keys can be used to override these defaults. 
+
++-------------------------+-----------------------------------------------------+
+| key                     |  notes                                              |
++=========================+=====================================================+
+|   IDPath                |                                                     |
++-------------------------+-----------------------------------------------------+
+|   CFBase                |                                                     |
++-------------------------+-----------------------------------------------------+
+|   CFBaseAlt             |                                                     |
++-------------------------+-----------------------------------------------------+
+|   GeocacheDir           |                                                     |
++-------------------------+-----------------------------------------------------+
+|   RuncacheDir           |                                                     |
++-------------------------+-----------------------------------------------------+
+|   RNGDir                |                                                     |
++-------------------------+-----------------------------------------------------+
+
+
+**/
 const char* SOpticksResource::Get(const char* key) // static
 {
     const char* tok = getenv(key) ; 
@@ -271,14 +297,29 @@ std::string SOpticksResource::Desc()
     }
 
 
+    
+
     const char* gdml_key = "$IDPath/origin_GDMLKludge.gdml" ; 
-    const char* gdml_path = SPath::Resolve(gdml_key, NOOP );
-    ss 
-        << std::setw(70) << gdml_key 
-        << " : "
-        << ( gdml_path ? gdml_path : "-" )
-        << std::endl 
-        ;
+
+    for(int pass=0 ; pass < 5 ; pass++)
+    {
+        switch(pass)
+        {
+           case 1: SSys::setenvvar("IDPath", "/some/override/IDPath/via/envvar", true );  break ; 
+           case 2: SSys::unsetenv("IDPath") ; break ; 
+           case 3: SSys::setenvvar("IDPath", "/another/override/IDPath/via/envvar", true );  break ; 
+           case 4: SSys::unsetenv("IDPath") ; break ; 
+        }
+        const char* gdml_path = SPath::Resolve(gdml_key, NOOP );
+        ss 
+            << std::setw(70) << gdml_key 
+            << " : "
+            << ( gdml_path ? gdml_path : "-" )
+            << std::endl 
+            ;
+    }
+
+
 
     std::string s = ss.str(); 
     return s ; 
