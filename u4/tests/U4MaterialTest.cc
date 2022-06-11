@@ -1,4 +1,4 @@
-#include "U4.hh"
+#include "U4Material.hh"
 #include "SOpticksResource.hh"
 #include "G4Material.hh"
 #include "Randomize.hh"
@@ -8,8 +8,8 @@
 void test_MakeMaterial()
 {
     const NP* a = SOpticksResource::IDLoad("GScintillatorLib/LS_ori/RINDEX.npy"); 
-    G4MaterialPropertyVector* v = U4::MakeProperty(a) ;  
-    G4Material* mat = U4::MakeMaterial(v) ;  
+    G4MaterialPropertyVector* v = U4Material::MakeProperty(a) ;  
+    G4Material* mat = U4Material::MakeMaterial(v) ;  
 
     LOG(info) << "mat " << mat ; 
     G4cout << "mat " << *mat << std::endl ; 
@@ -17,26 +17,26 @@ void test_MakeMaterial()
 
 void test_MakeMaterialPropertiesTable()
 {
-    G4MaterialPropertiesTable* mpt = U4::MakeMaterialPropertiesTable("GScintillatorLib/LS_ori", "FASTCOMPONENT,SLOWCOMPONENT,REEMISSIONPROB", ',' ) ; 
+    G4MaterialPropertiesTable* mpt = U4Material::MakeMaterialPropertiesTable("GScintillatorLib/LS_ori", "FASTCOMPONENT,SLOWCOMPONENT,REEMISSIONPROB", ',' ) ; 
     std::cout << " mpt " << mpt << std::endl ; 
 }
 
 void test_MakeScintillator()
 {
-    G4Material* mat = U4::MakeScintillator(); 
+    G4Material* mat = U4Material::MakeScintillator(); 
     G4cout << "mat " << *mat << std::endl ; 
 }
 
 void test_GetProperty()
 {
-    G4Material* mat = U4::MakeScintillator(); 
+    G4Material* mat = U4Material::MakeScintillator(); 
 
     std::vector<std::string> names = {"GammaCONSTANT", "AlphaCONSTANT", "NeutronCONSTANT", "OpticalCONSTANT" } ; 
 
     for(unsigned i=0 ; i < names.size() ; i++)
     {
         const char* name = names[i].c_str() ;
-        G4MaterialPropertyVector* prop = U4::GetProperty(mat, name) ; 
+        G4MaterialPropertyVector* prop = U4Material::GetProperty(mat, name) ; 
         if(prop == nullptr) continue ; 
 
         size_t len = prop->GetVectorLength();      
@@ -48,7 +48,7 @@ void test_GetProperty()
 
 void test_NumVec()
 {
-    G4MaterialPropertyVector* prop = U4::GetProperty(U4::MakeScintillator(), "GammaCONSTANT") ; 
+    G4MaterialPropertyVector* prop = U4Material::GetProperty(U4Material::MakeScintillator(), "GammaCONSTANT") ; 
     if(prop == nullptr) return ; 
 
     G4int NumTracks = 1000000 ;

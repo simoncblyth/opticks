@@ -218,7 +218,7 @@ G4VPhysicalVolume* U4VolumeMaker::WorldBox( double halfside, G4Material* materia
 
 G4VPhysicalVolume* U4VolumeMaker::WorldBoxOfScintillator( double halfside )
 {
-    G4Material* mat = U4::MakeScintillator() ; 
+    G4Material* mat = U4Material::MakeScintillator() ; 
     return WorldBox(halfside, mat);
 }
 
