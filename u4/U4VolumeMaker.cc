@@ -5,8 +5,10 @@
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4Box.hh"
+#include "G4Orb.hh"
 
 #include "SStr.hh"
+#include "SSys.hh"
 #include "PLOG.hh"
 
 #include "U4.hh"
@@ -20,21 +22,29 @@
 
 const plog::Severity U4VolumeMaker::LEVEL = PLOG::EnvLevel("U4VolumeMaker", "DEBUG"); 
 
+G4VPhysicalVolume* U4VolumeMaker::Make(){ return Make(SSys::getenvvar("GEOM", "BoxOfScintillator")); }
 G4VPhysicalVolume* U4VolumeMaker::Make(const char* name)
 {
     G4VPhysicalVolume* pv = nullptr ; 
-    
 #ifdef WITH_PMTSIM
-    if(PMTSim::HasManagerPrefix(name))
-    {
-        G4LogicalVolume* lv = PMTSim::GetLV(name); 
-        double halfside = 5000. ;  
-        pv = Wrap(lv, halfside) ;          
-    }
+    if(PMTSim::HasManagerPrefix(name)) pv = Wrap( PMTSim::GetLV(name), 5000. ) ;          
 #endif
-    if( pv == nullptr) pv = MakePhysical(name) ; 
+    if(pv == nullptr) pv = Make_(name); 
+    if(pv == nullptr) pv = MakePhysical(name) ; 
+    LOG(info) << " name " << name << " pv " << pv ; 
     return pv ; 
 }
+
+G4VPhysicalVolume* U4VolumeMaker::Make_(const char* name)
+{
+    G4VPhysicalVolume* pv = nullptr ; 
+    if(strcmp(name,"BoxOfScintillator" ) == 0)     pv = BoxOfScintillator(1000.);   
+    if(strcmp(name,"RaindropRockAirWater" ) == 0)  pv = RaindropRockAirWater(100.);   
+    return pv ; 
+}
+
+
+
 
 G4LogicalVolume*  U4VolumeMaker::MakeLogical(const char* name)
 {
@@ -216,12 +226,46 @@ G4VPhysicalVolume* U4VolumeMaker::WorldBox( double halfside, G4Material* materia
     return pv ; 
 }
 
-G4VPhysicalVolume* U4VolumeMaker::WorldBoxOfScintillator( double halfside )
+G4VPhysicalVolume* U4VolumeMaker::BoxOfScintillator( double halfside )
 {
     G4Material* mat = U4Material::MakeScintillator() ; 
     return WorldBox(halfside, mat);
 }
+/**
+U4VolumeMaker::WorldBoxRaindrop
+---------------------------------
 
+cf CSG/CSGMaker.cc CSGMaker::makeBoxedSphere
+
+**/
+G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater( double halfside )
+{
+    float water_radius = halfside/2. ; 
+    float air_halfside = halfside ; 
+    float rock_halfside = 2.*halfside ; 
+
+    G4Material* water_material  = G4Material::GetMaterial("Water");   assert(water_material); 
+    G4Material* air_material  = G4Material::GetMaterial("Air");   assert(air_material); 
+    G4Material* rock_material = G4Material::GetMaterial("Rock");  assert(rock_material); 
+
+    G4Orb* water_solid = new G4Orb("water_solid", water_radius ); 
+    G4Box* air_solid = new G4Box("air_solid", air_halfside, air_halfside, air_halfside );
+    G4Box* rock_solid = new G4Box("rock_solid", rock_halfside, rock_halfside, rock_halfside );
+
+    G4LogicalVolume* water_lv = new G4LogicalVolume( water_solid, water_material, "water_lv"); 
+    G4LogicalVolume* air_lv = new G4LogicalVolume( air_solid, air_material, "air_lv"); 
+    G4LogicalVolume* rock_lv = new G4LogicalVolume( rock_solid, rock_material, "rock_lv" ); 
+
+    G4VPhysicalVolume* water_pv = new G4PVPlacement(0,G4ThreeVector(), water_lv ,"water_pv", air_lv,false,0);
+    G4VPhysicalVolume* air_pv = new G4PVPlacement(0,G4ThreeVector(),   air_lv ,  "air_pv",  rock_lv,false,0);
+    G4VPhysicalVolume* rock_pv = new G4PVPlacement(0,G4ThreeVector(),  rock_lv ,  "rock_pv", nullptr,false,0);
+
+    assert( water_pv ); 
+    assert( air_pv ); 
+    assert( rock_pv ); 
+
+    return rock_pv ; 
+}
 
 
 

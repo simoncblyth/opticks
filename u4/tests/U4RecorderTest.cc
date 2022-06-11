@@ -17,6 +17,7 @@
 #include "SEventConfig.hh"
 #include "NP.hh"
 
+#include "U4Material.hh"
 #include "U4VolumeMaker.hh"
 #include "U4Recorder.hh"
 #include "U4Physics.hh"
@@ -83,7 +84,7 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     runMgr->Initialize(); 
 }
 
-G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::WorldBoxOfScintillator( 1000. ); }
+G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::Make(); } // sensitive to GEOM envvar 
 void U4RecorderTest::GeneratePrimaries(G4Event* event)
 { 
     fGun->GeneratePrimaryVertex(event); 
@@ -127,6 +128,8 @@ to hookup physics before the main instanciation::
 int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
+
+    U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
 
     unsigned max_bounce = 9 ; 
     SEventConfig::SetMaxBounce(max_bounce); 

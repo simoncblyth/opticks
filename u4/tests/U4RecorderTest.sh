@@ -34,6 +34,14 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 #export GIDX=${GIDX:-$gidx}
 
 
+
+source ./IDPath_override.sh   ## non-standard IDPath to allow U4Material::LoadOri to find material properties 
+
+#geom=BoxOfScintillator
+geom=RaindropRockAirWater
+export GEOM=${GEOM:-$geom}
+
+
 if [ "${arg/run}" != "${arg}" ]; then 
     cd $logdir 
     #export BP=DsG4Scintillation::PostStepDoIt

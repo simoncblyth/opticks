@@ -14,7 +14,9 @@ struct U4_API U4VolumeMaker
 {
     static const plog::Severity LEVEL ; 
     
+    static G4VPhysicalVolume* Make(); // sensitive to GEOM envvar 
     static G4VPhysicalVolume* Make(const char* name); 
+    static G4VPhysicalVolume* Make_(const char* name); 
 
     static G4VPhysicalVolume* MakePhysical(const char* name); 
     static G4VPhysicalVolume* MakePhysicalList_(const char* name); 
@@ -32,7 +34,10 @@ struct U4_API U4VolumeMaker
     static G4VPhysicalVolume* WrapLVGrid( G4LogicalVolume* lv, int nx, int ny, int nz  ); 
     static G4VPhysicalVolume* WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  ); 
 
-    static G4VPhysicalVolume* WorldBoxOfScintillator( double halfside ); 
+    static G4VPhysicalVolume* BoxOfScintillator( double halfside ); 
+    static G4VPhysicalVolume* RaindropRockAirWater( double halfside ); 
+
+
     static G4VPhysicalVolume* WorldBox( double halfside, G4Material* material  ); 
     static G4VPhysicalVolume* WorldBox( double halfside, const char* mat="Vacuum" ); 
     static G4VPhysicalVolume* Wrap( G4LogicalVolume* lv, double halfside  ); 

@@ -7,6 +7,7 @@
 #include "G4PhysicalConstants.hh"
 #include "G4OpBoundaryProcess.hh"
 
+#include "PLOG.hh"
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "scuda.h"
@@ -17,6 +18,10 @@
 #include "U4OpBoundaryProcess.hh"
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4StepPoint.hh"
+
+
+const plog::Severity U4StepPoint::LEVEL = PLOG::EnvLevel("U4StepPoint", "DEBUG"); 
+
 
 /**
 U4StepPoint::Update
@@ -111,6 +116,12 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point)
     {
         unsigned bstat = U4OpBoundaryProcess::GetStatus(); 
         flag = BoundaryFlag(bstat) ;   
+        if( flag == NAN_ABORT ) 
+            LOG(error) 
+                << " fGeomBoundary " 
+                << " U4OpBoundaryProcessStatus::Name " << U4OpBoundaryProcessStatus::Name(bstat)
+                << " flag " << OpticksPhoton::Flag(flag)
+                ;
     }
     else if( status == fWorldBoundary && proc == U4StepPoint_Transportation )
     {

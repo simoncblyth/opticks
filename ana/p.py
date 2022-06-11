@@ -98,8 +98,13 @@ hit__      = lambda p,msk:p[np.where( ( flagmask__(p) & msk ) == msk)]
 from opticks.CSG.CSGFoundry import CSGFoundry 
 cf = CSGFoundry.Load()
 
-cf_bnd_  = lambda p:cf.sim.bndnamedict[boundary_(p)]
-cf_prim_ = lambda p:cf.primIdx_meshname_dict[prim_(p)]
+if not cf is None:
+    cf_bnd_  = lambda p:cf.sim.bndnamedict[boundary_(p)]
+    cf_prim_ = lambda p:cf.primIdx_meshname_dict[prim_(p)]
+else:
+    cf_bnd_  = lambda p:"no_cf"
+    cf_prim_  = lambda p:"no_cf"
+pass
 
 bflagdesc_ = lambda p:"%s : %60s : %s : %s " % ( flagdesc_(p), cf_prim_(p) , digest_(p[:3])[:8], cf_bnd_(p) )
 

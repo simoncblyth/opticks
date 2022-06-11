@@ -177,8 +177,11 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         sev->pointPhoton(label);  // first point flag is the genflag set in beginPhoton
     }
 
-    U4StepPoint::Update(current_photon, post); 
     unsigned flag = U4StepPoint::Flag(post) ; 
+    if(flag == NAN_ABORT) return ;    // try trivial way of skipping StepTooSmall 
+
+    U4StepPoint::Update(current_photon, post); 
+
     if( flag == 0 ) std::cout << " ERR flag zero : post " << U4StepPoint::Desc(post) << std::endl ; 
     assert( flag > 0 ); 
 
@@ -187,26 +190,41 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     G4TrackStatus tstat = track->GetTrackStatus(); 
 
+    LOG(LEVEL) << " step.tstat " << U4TrackStatus::Name(tstat) << " " << OpticksPhoton::Flag(flag)  ; 
+    //G4Track* track_ = const_cast<G4Track*>(track); 
+    //track_->SetTrackStatus(fStopAndKill);
+
     if( tstat == fAlive )
     {
         bool is_live_flag = OpticksPhoton::IsLiveFlag(flag);  
+        if(!is_live_flag)  LOG(error) 
+            << " is_live_flag " << is_live_flag 
+            << " unexpected trackStatus/flag  " 
+            << " trackStatus " << U4TrackStatus::Name(tstat) 
+            << " flag " << OpticksPhoton::Flag(flag) 
+            ;     
+
         assert( is_live_flag );  
     }
     else if( tstat == fStopAndKill )
     { 
         bool is_terminal_flag = OpticksPhoton::IsTerminalFlag(flag);  
+        if(!is_terminal_flag)  LOG(error) 
+            << " is_terminal_flag " << is_terminal_flag 
+            << " unexpected trackStatus/flag  " 
+            << " trackStatus " << U4TrackStatus::Name(tstat) 
+            << " flag " << OpticksPhoton::Flag(flag) 
+            ;     
         assert( is_terminal_flag );  
     }
     else
     {
-        LOG(fatal) << " unexpected trackstatus " ; 
+        LOG(fatal) 
+            << " unexpected trackstatus "
+            << " trackStatus " << U4TrackStatus::Name(tstat) 
+            << " flag " << OpticksPhoton::Flag(flag) 
+            ; 
     }
-
-    LOG(LEVEL) << " step.tstat " << U4TrackStatus::Name(tstat) << " " << OpticksPhoton::Flag(flag)  ; 
-
-    //G4Track* track_ = const_cast<G4Track*>(track); 
-    //track_->SetTrackStatus(fStopAndKill);
-
 
 }
 
