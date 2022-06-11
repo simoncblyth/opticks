@@ -67,6 +67,71 @@ G4MaterialPropertyVector* U4Material::GetProperty(const G4Material* mat, const c
     return mpt->GetProperty(name) ; 
 }
 
+void U4Material::RemoveProperty( const char* key, G4Material* mat )
+{
+    if(mat == nullptr) return ; 
+    const G4String& name = mat->GetName(); 
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    G4MaterialPropertyVector* prop = mpt->GetProperty(key); 
+
+    if( prop == nullptr)
+    {
+         LOG(info) << " material " << name << " does not have property " << key ; 
+    }
+    else
+    {
+         LOG(info) << " material " << name << " removing property " << key ; 
+         mpt->RemoveProperty(key);
+         prop = mpt->GetProperty(key); 
+         assert( prop == nullptr ); 
+    }
+}
+
+
+std::string U4Material::DescPropertyNames( const G4Material* mat )
+{
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    const G4MaterialPropertiesTable* mpt_ = mat->GetMaterialPropertiesTable();
+    std::vector<G4String> pnames = mpt_->GetMaterialPropertyNames();
+    std::vector<G4String> cnames = mpt_->GetMaterialConstPropertyNames();
+    std::stringstream ss ; 
+    ss << "U4Material::DescPropertyNames " << mat->GetName() << std::endl ; 
+
+    /*
+    ss << " MaterialPropertyNames.size " << pnames.size() << std::endl ; 
+    for(int i=0 ; i < int(pnames.size()) ; i++) ss << pnames[i] << std::endl ; 
+
+    ss << " MaterialConstPropertyNames.size " << cnames.size() << std::endl ; 
+    for(int i=0 ; i < int(cnames.size()) ; i++) ss << cnames[i] << std::endl ; 
+    */
+
+    /*
+    ss << " GetPropertiesMap " << std::endl ; 
+    typedef std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MSV ; 
+    MSV* msv = mpt->GetPropertiesMap() ; 
+    for(MSV::const_iterator it=msv->begin() ; it != msv->end() ; it++ ) ss << it->first << std::endl ; 
+
+    ss << " GetPropertiesCMap " << std::endl ; 
+    typedef std::map< G4String, G4double, std::less<G4String> > MSC ;
+    MSC* msc = mpt->GetPropertiesCMap();
+    for(MSC::const_iterator it=msc->begin() ; it != msc->end() ; it++ ) ss << it->first << std::endl ; 
+    */
+
+    ss << " GetPropertyMap " << std::endl ; 
+    typedef std::map<G4int, G4MaterialPropertyVector*, std::less<G4int> > MIV ; 
+    const MIV* miv =  mpt->GetPropertyMap(); 
+    for(MIV::const_iterator it=miv->begin() ; it != miv->end() ; it++ ) ss << pnames[it->first] << std::endl ; 
+
+    ss << " GetConstPropertyMap " << std::endl ; 
+    typedef std::map<G4int, G4double, std::less<G4int> > MIC ; 
+    const MIC* mic =  mpt->GetConstPropertyMap(); 
+    for(MIC::const_iterator it=mic->begin() ; it != mic->end() ; it++ ) ss << cnames[it->first] << std::endl ; 
+
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 
 

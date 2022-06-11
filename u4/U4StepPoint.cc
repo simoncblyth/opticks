@@ -160,7 +160,8 @@ unsigned U4StepPoint::BoundaryFlag(unsigned status)
                                flag=SURFACE_DREFLECT ; 
                                break;
         case NoRINDEX:
-                               flag=NAN_ABORT;
+                               flag=SURFACE_ABSORB ;
+                               //flag=NAN_ABORT;
                                break;
         case Undefined:
         case BackScattering:

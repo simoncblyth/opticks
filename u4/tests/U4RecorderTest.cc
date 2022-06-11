@@ -13,6 +13,7 @@
 
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
+#include "SSys.hh"
 #include "SPath.hh"
 #include "SEventConfig.hh"
 #include "NP.hh"
@@ -22,6 +23,8 @@
 #include "U4Recorder.hh"
 #include "U4Physics.hh"
 #include "U4VPrimaryGenerator.h"
+
+
 
 struct U4RecorderTest
     : 
@@ -39,6 +42,7 @@ struct U4RecorderTest
 
     G4VPhysicalVolume* Construct(); 
 
+    static char PrimaryMode(); 
     void GeneratePrimaries(G4Event* evt); 
 
     void BeginOfRunAction(const G4Run*);
@@ -55,6 +59,9 @@ struct U4RecorderTest
     U4RecorderTest(G4RunManager* runMgr); 
     virtual ~U4RecorderTest(); 
 };
+
+
+
 
 G4ParticleGun* U4RecorderTest::InitGun()
 {
@@ -84,11 +91,28 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     runMgr->Initialize(); 
 }
 
+
+
 G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::Make(); } // sensitive to GEOM envvar 
+
+char U4RecorderTest::PrimaryMode()
+{
+    const char* mode_ = SSys::getenvvar("U4RecorderTest__PRIMARY_MODE", "gun" ); 
+    char mode = '?' ; 
+    if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
+    if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
+    return mode ;   
+}
 void U4RecorderTest::GeneratePrimaries(G4Event* event)
-{ 
-    fGun->GeneratePrimaryVertex(event); 
-    //U4VPrimaryGenerator::GeneratePrimaries(event);    // eg from collected torch gensteps 
+{   
+    char mode = PrimaryMode(); 
+    LOG(info) << " mode " << mode  ; 
+    switch(mode)
+    {
+        case 'G': fGun->GeneratePrimaryVertex(event)              ; break ; 
+        case 'T': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;   // eg from collected torch gensteps 
+        default:  assert(0) ; break ; 
+    }
 }
 
 // pass along the message to the recorder
@@ -130,6 +154,9 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
+    U4Material::RemoveProperty( "RINDEX", G4Material::GetMaterial("Rock") ); 
+    // removing Rock RINDEX is a trick that makes photons immediately get absorbed on reaching the Rock
+    // somewhat artifically that gives SURFACE_ABSORB as  U4StepPoint::BoundaryFlag(NoRINDEX) kludges to give SURFACE_ABSORB 
 
     unsigned max_bounce = 9 ; 
     SEventConfig::SetMaxBounce(max_bounce); 
@@ -138,8 +165,9 @@ int main(int argc, char** argv)
     SEventConfig::SetMaxSeq(max_bounce+1); 
 
     SEvt evt ; 
-    //SEvt::AddTorchGenstep();  
-    //    needs to be commented when gun running, TODO: make run modes configurable 
+
+    char mode = U4RecorderTest::PrimaryMode() ; 
+    if(mode == 'T') SEvt::AddTorchGenstep();  
 
     G4RunManager* runMgr = new G4RunManager ; 
     runMgr->SetUserInitialization((G4VUserPhysicsList*)new U4Physics); 

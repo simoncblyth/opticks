@@ -140,6 +140,25 @@ void test_LoadOri()
     std::cout << U4Material::DescMaterialTable() ; 
 }
 
+void test_LoadOri_remove_material_property()
+{
+    U4Material::LoadOri(); 
+    std::cout << U4Material::DescMaterialTable() ; 
+
+    G4Material* mat = G4Material::GetMaterial("Rock"); 
+
+    LOG(info) << "before removal " << std::endl << U4Material::DescPropertyNames( mat ) ; 
+
+    U4Material::RemoveProperty( "RINDEX", mat );  
+    U4Material::RemoveProperty( "RINDEX", mat );  
+    U4Material::RemoveProperty( "RINDEX", mat );  
+
+    LOG(info) << "after removal " << std::endl << U4Material::DescPropertyNames( mat ) ; 
+}
+
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -154,9 +173,10 @@ int main(int argc, char** argv)
     test_Load_0(); 
     test_LoadOri_name(); 
     test_ListOri(); 
+    test_LoadOri(); 
     */
 
-    test_LoadOri(); 
+    test_LoadOri_remove_material_property(); 
 
      
     return 0 ; 

@@ -33,6 +33,12 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 #gidx=117
 #export GIDX=${GIDX:-$gidx}
 
+export U4Material=INFO
+
+
+#mode=gun
+mode=torch
+export U4RecorderTest__PRIMARY_MODE=$mode
 
 
 source ./IDPath_override.sh   ## non-standard IDPath to allow U4Material::LoadOri to find material properties 

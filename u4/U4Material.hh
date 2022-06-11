@@ -21,7 +21,9 @@ struct U4_API U4Material
     static G4Material* Get_(const char* name);
     static G4Material* Vacuum(const char* name);
     static G4MaterialPropertyVector* GetProperty(const G4Material* mat, const char* name); 
+    static void RemoveProperty( const char* key, G4Material* mat ); 
 
+    static std::string DescPropertyNames( const G4Material* mat ); 
 
 
     static G4MaterialPropertiesTable* MakeMaterialPropertiesTable(const char* reldir); 
