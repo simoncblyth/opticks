@@ -4,6 +4,175 @@ U4RecorderTest-shakedown
 What Next ?
 -------------
 
+* input photons : details below 
+* input random numbers
+* basic ab.py like comparisons of SEvt
+* gx level with geometry translation starting from Geant4
+  rather than the above adhoc use of same geometry 
+
+
+TODO: input photons
+-----------------------
+
+* input photons in both contexts : U4RecorderTest + CXRaindropTest
+
+  * input NP array in common at SEvt level used from both contexts 
+
+    * SEvt::SetInputPhotons rather than SEvt::AddTorchGensteps
+
+  * usage level needs different treatment 
+
+    1. qsim: uploading photons and getting qsim::generate_photon to use them 
+       (perhaps using placeholder input photon gensteps for consistency ?)
+
+    2. U4Recorder needs to GeneratePrimaries using the input photon NP array  
+
+
+cx/CSGOptiX7.cu::
+
+    192 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
+    193 {
+    194     sevent* evt      = params.evt ;
+    195     if (launch_idx.x >= evt->num_photon) return;
+    196 
+    197     unsigned idx = launch_idx.x ;  // aka photon_id
+    198     unsigned genstep_id = evt->seed[idx] ;
+    199     const quad6& gs     = evt->genstep[genstep_id] ;
+    200 
+    201     qsim* sim = params.sim ;
+    202     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
+    203 
+    204     sphoton p = {} ;
+    205 
+    206     sim->generate_photon(p, rng, gs, idx, genstep_id );
+    207 
+
+* seeding relates a photon slot with its corresponding genstep, just requiring the genstep 
+  to have the photon count 
+* better not to change the pattern just for input photons, even though input photon running 
+  has no need for seeding (or gensteps for that matter).  
+* to keep the pattern use placeholder "input photon gensteps"
+
+::
+
+    1351 inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+    1352 {
+    1353     const int& gencode = gs.q0.i.x ;
+    1354 
+    1355     switch(gencode)
+    1356     {
+    1357         case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ;
+    1358         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ;
+    1359         case OpticksGenstep_CERENKOV:        cerenkov->generate(     p, rng, gs, photon_id, genstep_id ) ; break ;
+    1360         case OpticksGenstep_SCINTILLATION:   scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ;
+    1361         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ;
+    1362     }
+    1363 }
+
+    
+* DONE: Added OpticksGenstep_INPUT_PHOTON 
+
+::
+
+    0231 double QSim::simulate()
+     232 {
+     233    int rc = event->setGenstep();
+     234    double dt = rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
+     235    return dt ;
+     236 }
+
+    143 int QEvent::setGenstep()
+    144 {
+    145     NP* gs = SEvt::GetGenstep();
+    146     SEvt::Clear();   // clear the quad6 vector, ready to collect more genstep
+    147     if(gs == nullptr) LOG(fatal) << "Must SEvt::AddGenstep before calling QEvent::setGenstep " ;
+    148     return gs == nullptr ? -1 : setGenstep(gs) ;
+    149 }
+
+    151 int QEvent::setGenstep(NP* gs_)
+    152 {
+    153     gs = gs_ ;
+    154     SGenstep::Check(gs);
+    155     evt->num_genstep = gs->shape[0] ;
+    156 
+    157     if( evt->genstep == nullptr && evt->seed == nullptr )
+    158     {
+    159         LOG(info) << " device_alloc genstep and seed " ;
+    160         evt->genstep = QU::device_alloc<quad6>( evt->max_genstep ) ;
+    161         evt->seed    = QU::device_alloc<int>(   evt->max_photon )  ;
+    162     }
+    163 
+    164     LOG(LEVEL) << SGenstep::Desc(gs, 10) ;
+    165 
+    166     bool num_gs_allowed = evt->num_genstep <= evt->max_genstep ;
+    167     if(!num_gs_allowed) LOG(fatal) << " evt.num_genstep " << evt->num_genstep << " evt.max_genstep " << evt->max_genstep ;
+    168     assert( num_gs_allowed );
+    169 
+    170     QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)gs->bytes(), evt->num_genstep );
+    171 
+    172     QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
+    173 
+    174     //count_genstep_photons();   // sets evt->num_seed
+    175     //fill_seed_buffer() ;       // populates seed buffer
+    176     count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
+    177 
+    178 
+    179     int gencode0 = SGenstep::GetGencode(gs, 0); // gencode of first genstep   
+    180 
+    181     if(OpticksGenstep_::IsFrame(gencode0))
+    182     {
+    183         setNumSimtrace( evt->num_seed );
+    184     }
+    185     else
+    186     {
+    187         setNumPhoton( evt->num_seed );  // photon, rec, record may be allocated here depending on SEventConfig
+    188     }
+
+
+* HMM: in spirit of not breaking the pattern for input photons, calling SEvt::SetInputPhotons(NP*) 
+  needs to Add INPUT_PHOTON genstep : then the above can proceed unchanged for input photons
+
+
+::
+
+    258 /**
+    259 QEvent::setPhoton
+    260 -------------------
+    261 
+    262 This is only used with non-standard input photon running, 
+    263 eg the photon mutatating QSimTest use this.  
+    264 The normal mode of operation is to start from gensteps using QEvent::setGenstep
+    265 and seed and generate photons on device.
+    266 
+    267 HMM: this is problematic as it breaks the pattern of normal genstep running 
+    268 
+    269 **/
+    270 
+    271 void QEvent::setPhoton(const NP* p_)
+    272 {
+    273     p = p_ ;
+    274     
+    275     int num_photon = p->shape[0] ;
+    276     
+    277     LOG(info) << "[ " <<  p->sstr() << " num_photon " << num_photon  ;
+    278     
+    279     assert( p->has_shape( -1, 4, 4) );
+    280     
+    281     setNumPhoton( num_photon );
+    282     
+    283     QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)p->bytes(), num_photon );
+    284     
+    285     LOG(info) << "] " <<  p->sstr() << " num_photon " << num_photon  ;
+    286 }   
+
+
+
+
+
+
+
+DONE : More featureful geometry, in u4/tests/U4RecorderTest.cc GEOM RaindropRockAirWater
+------------------------------------------------------------------------------------------
 
 * need more featureful geometry to test/develop things like microstep skipping 
 

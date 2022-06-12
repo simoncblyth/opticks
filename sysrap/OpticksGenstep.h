@@ -37,7 +37,8 @@ enum
     OpticksGenstep_SCINTILLATION            = 16,
     OpticksGenstep_FRAME                    = 17,
     OpticksGenstep_G4Cerenkov_modified      = 18,
-    OpticksGenstep_NumType                  = 19
+    OpticksGenstep_INPUT_PHOTON             = 19,
+    OpticksGenstep_NumType                  = 20
 };
     
 
@@ -67,6 +68,7 @@ struct OpticksGenstep_
     static constexpr const char* SCINTILLATION_           = "SCINTILLATION" ;
     static constexpr const char* FRAME_                   = "FRAME" ;
     static constexpr const char* G4Cerenkov_modified_     = "G4Cerenkov_modified" ;
+    static constexpr const char* INPUT_PHOTON_            = "INPUT_PHOTON" ;
 
     static unsigned Type(const char* name); 
     static const char* Name(unsigned type); 
@@ -76,6 +78,7 @@ struct OpticksGenstep_
     static bool IsCerenkov(int gentype);
     static bool IsScintillation(int gentype);
     static bool IsTorchLike(int gentype);
+    static bool IsInputPhoton(int gentype);
     static bool IsExpected(int gentype);
 
     static bool IsEmitSource(int gentype);
@@ -107,6 +110,7 @@ inline unsigned OpticksGenstep_::Type(const char* name)
     if(strcmp(name,CERENKOV_)==0)                 type = OpticksGenstep_CERENKOV ;
     if(strcmp(name,SCINTILLATION_)==0)            type = OpticksGenstep_SCINTILLATION ;
     if(strcmp(name,FRAME_)==0)                    type = OpticksGenstep_FRAME ;
+    if(strcmp(name,INPUT_PHOTON_)==0)             type = OpticksGenstep_INPUT_PHOTON ;
     return type ; 
 }
 
@@ -134,6 +138,7 @@ inline const char* OpticksGenstep_::Name(unsigned type)
         case OpticksGenstep_CERENKOV:                n = CERENKOV_                ; break ; 
         case OpticksGenstep_SCINTILLATION:           n = SCINTILLATION_           ; break ; 
         case OpticksGenstep_FRAME:                   n = FRAME_                   ; break ; 
+        case OpticksGenstep_INPUT_PHOTON:            n = INPUT_PHOTON_            ; break ; 
         case OpticksGenstep_NumType:                 n = INVALID_                 ; break ; 
         default:                                     n = INVALID_                 ; break ; 
     }   
@@ -169,9 +174,16 @@ inline bool OpticksGenstep_::IsTorchLike(int gentype)   // static
    return gentype == OpticksGenstep_TORCH || 
           gentype == OpticksGenstep_FABRICATED || 
           gentype == OpticksGenstep_EMITSOURCE ||
-          gentype == OpticksGenstep_FRAME 
+          gentype == OpticksGenstep_FRAME     ||
+          gentype == OpticksGenstep_INPUT_PHOTON
           ;
 } 
+
+inline bool OpticksGenstep_::IsInputPhoton(int gentype)   // static
+{
+    return gentype == OpticksGenstep_INPUT_PHOTON ;  
+}
+
 
 inline bool OpticksGenstep_::IsExpected(int gentype) // static
 {  

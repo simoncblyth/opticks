@@ -264,6 +264,8 @@ eg the photon mutatating QSimTest use this.
 The normal mode of operation is to start from gensteps using QEvent::setGenstep
 and seed and generate photons on device.
 
+HMM: this is problematic as it breaks the pattern of normal genstep running 
+
 **/
 
 void QEvent::setPhoton(const NP* p_)
@@ -562,6 +564,9 @@ void QEvent::setNumPhoton(unsigned num_photon )
             << " evt.num_record " << evt->num_record 
             << " evt.num_rec    " << evt->num_rec 
             ;
+
+        // TODO: with input photons need to upload them here 
+
     }
 
     uploadEvt(); 

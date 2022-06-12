@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     SCVD::ConfigureVisibleDevices(); 
     SEventConfig::SetRGMode("simulate"); 
 
-    SEvt evt ; // though about instanciating this with SSim, but thats confusing as can be multiple SSim 
+    SEvt evt ; 
 
     const char* Rock_Air = "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air" ; 
     const char* Air_Water = "Air///Water" ; 

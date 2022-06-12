@@ -132,6 +132,13 @@ const char* CSGOptiX::desc() const
     return strdup(s.c_str()); 
 }
 
+/**
+CSGOptiX::InitGeo
+-------------------
+
+CSGFoundry not const as upload sets device pointers
+
+**/
 
 void CSGOptiX::InitGeo(  CSGFoundry* fd )
 {
@@ -170,11 +177,11 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     QSim* qs = QSim::Get() ; 
 
     qs->setLauncher(cx); 
+
     QEvent* event = qs->event ; 
     event->setMeta( fd->meta.c_str() );
 
-    // TODO: setup QEvent as SProvider of NP arrays to SEvt so SEvt can control QEvent download
-
+    // DONE: setup QEvent as SCompProvider of NP arrays allowing SEvt to drive QEvent download
     return cx ; 
 }
 

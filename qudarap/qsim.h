@@ -1068,6 +1068,7 @@ test of qsim propagation machinery.
 TODO
 ~~~~~
 
+* compare with cx/CSGOptiX7.cu::simulate and find users of this to see if it could be made more similar to cx::simulate 
 * can qstate be slimmed : seems not very easily 
 * simplify qstate persisting (quad6?quad5?)
 * compressed step *seq* recording  
@@ -1087,11 +1088,11 @@ Stages within bounce loop
 
   * note that photons that SAIL to boundary are mutated twice within the while loop (by propagate_to_boundary and propagate_at_boundary/surface) 
 
+Thoughts
+~~~~~~~~~~~
 
-TODO: record and record_max should come from sevent ?
+NB: the four different collection streams (photon, record, rec, seq) must stay independent : so can switch the off at will 
 
-
-HMM: seqhis/seqmat should not depend on rec collection, and it must be optional 
 
 **/
 
@@ -1358,6 +1359,7 @@ inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng
         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
         case OpticksGenstep_CERENKOV:        cerenkov->generate(     p, rng, gs, photon_id, genstep_id ) ; break ; 
         case OpticksGenstep_SCINTILLATION:   scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ; 
+        case OpticksGenstep_INPUT_PHOTON:    p = evt->photon[photon_id]                                  ; break ;        
         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ; 
     }
 }
