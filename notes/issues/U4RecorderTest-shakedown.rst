@@ -18,6 +18,51 @@ TODO : bring OpticksRandom over into U4
 TODO : debug input photon running with CXRaindropTest 
 -------------------------------------------------------
 
+SMOKING GUN, the SEvt should not be self provider when using QEvent::
+
+    2022-06-14 03:38:25.978 INFO  [327404] [SEvt::LoadInputPhoton@122]  SEventConfig::InputPhoton RandomSpherical10.npy path /home/blyth/.opticks/InputPhotons/RandomSpherical10.npy a.sstr (10, 4, 4, )
+    2022-06-14 03:38:25.978 INFO  [327404] [SEvt::addGenstep@286]  s.desc sgs: idx   0 pho    10 off      0 typ INPUT_PHOTON gidx 0 enabled 1 tot_photon 10
+    2022-06-14 03:38:25.978 INFO  [327404] [SEvt::setNumPhoton@315]  numphoton 10
+    2022-06-14 03:38:25.978 INFO  [327404] [SEvt::resize@349]  is_self_provider 1
+    sevent::descMax  evt.max_genstep 1000000 evt.max_photon  3000000 evt.max_simtrace  3000000 evt.max_bounce      9 evt.max_record     10 evt.max_rec      0
+        sevent::descBuf 
+        evt.genstep         N                    0        num_genstep       0        max_genstep 1000000
+             evt.seed       N                    0           num_seed       0         max_photon 3000000
+             evt.photon     Y            0x233f8f0         num_photon      10         max_photon 3000000
+             evt.record     Y            0x233fb80         num_record     100         max_record      10
+                evt.rec     N                    0            num_rec       0            max_rec       0
+                evt.seq     N                    0            num_seq       0            max_seq       0
+                evt.hit     N                    0            num_hit       0         max_photon 3000000
+           evt.simtrace     N                    0       num_simtrace       0       max_simtrace 3000000
+
+     sevent::descNum   evt.num_genstep     0 evt.num_seed     0 evt.num_photon    10 evt.num_simtrace     0 evt.num_record   100
+
+    ...
+    2022-06-14 03:38:28.379 INFO  [327404] [QEvent::setGenstep@160]  device_alloc genstep and seed 
+    2022-06-14 03:38:28.380 INFO  [327404] [QEvent::setGenstep@165] SGenstep::DescGensteps gs.shape[0] 1 (10 ) total 10
+    2022-06-14 03:38:28.380 ERROR [327404] [QEvent::setNumPhoton@577]  evt.photon is not nullptr : evt.photon : 0x233f8f0
+    2022-06-14 03:38:28.380 INFO  [327404] [QEvent::uploadEvt@627] 
+    sevent::descMax  evt.max_genstep 1000000 evt.max_photon  3000000 evt.max_simtrace  3000000 evt.max_bounce      9 evt.max_record     10 evt.max_rec      0
+        sevent::descBuf 
+        evt.genstep         Y       0x7f50cc000000        num_genstep       1        max_genstep 1000000
+             evt.seed       Y       0x7f50fc600000           num_seed      10         max_photon 3000000
+             evt.photon     Y            0x233f8f0         num_photon      10         max_photon 3000000
+             evt.record     Y            0x233fb80         num_record     100         max_record      10
+                evt.rec     N                    0            num_rec       0            max_rec       0
+                evt.seq     N                    0            num_seq       0            max_seq       0
+                evt.hit     N                    0            num_hit       0         max_photon 3000000
+           evt.simtrace     N                    0       num_simtrace       0       max_simtrace 3000000
+
+     sevent::descNum   evt.num_genstep     1 evt.num_seed    10 evt.num_photon    10 evt.num_simtrace     0 evt.num_record   100
+
+    terminate called after throwing an instance of 'QUDA_Exception'
+      what():  CUDA call (cudaMemcpy(reinterpret_cast<void*>( d ), h , size, cudaMemcpyHostToDevice ) ) failed with error: 'invalid argument' (/data/blyth/junotop/opticks/qudarap/QU.cc:344)
+
+    ./cxs_raindrop.sh: line 111: 327404 Aborted                 (core dumped) $bin
+
+
+
+
 ::
 
     2022-06-14 02:46:59.099 INFO  [294307] [SBT::createGeom@109] ]

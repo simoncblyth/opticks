@@ -88,6 +88,7 @@ void QEvent::init()
     assert(evt); 
     assert(selector); 
 
+    LOG(LEVEL) << " QEvent::init calling SEvt::setCompProvider " ; 
     sev->setCompProvider(this);  
 }
 

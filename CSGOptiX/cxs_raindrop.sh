@@ -57,6 +57,8 @@ fi
 
 export SEvt=INFO
 export QEvent=INFO
+export QSim=INFO
+
 
 path=RandomSpherical10.npy
 if [ -n "$path" ]; then 

@@ -34,7 +34,7 @@
 
 #include "QSim.hh"
 
-const plog::Severity QSim::LEVEL = PLOG::EnvLevel("QSim", "INFO"); 
+const plog::Severity QSim::LEVEL = PLOG::EnvLevel("QSim", "DEBUG"); 
 
 QSim* QSim::INSTANCE = nullptr ; 
 QSim* QSim::Get(){ return INSTANCE ; }
@@ -169,6 +169,7 @@ QSim::QSim()
     d_dbg(debug_ ? debug_->d_dbg : nullptr),
     cx(nullptr)
 {
+    LOG(LEVEL) << " QSim::QSim instanciating QEvent " ; 
     init(); 
 }
 
