@@ -330,7 +330,8 @@ addresses for QEvent running and CPU side addresses for SEvt based running.
 
 void SEvt::resize()
 {
-    assert( isSelfProvider() ); 
+    bool is_self_provider = isSelfProvider() ; 
+    assert( is_self_provider ); 
 
     if(evt->num_photon > 0) pho.resize(  evt->num_photon );  
     if(evt->num_photon > 0) slot.resize( evt->num_photon ); 
@@ -344,6 +345,12 @@ void SEvt::resize()
     if(evt->num_record > 0) evt->record = record.data() ; 
     if(evt->num_rec    > 0) evt->rec    = rec.data() ; 
     if(evt->num_seq    > 0) evt->seq    = seq.data() ; 
+
+    LOG(LEVEL) 
+        << " is_self_provider " << is_self_provider 
+        << std::endl 
+        << evt->desc() 
+        ; 
 }
 
 
