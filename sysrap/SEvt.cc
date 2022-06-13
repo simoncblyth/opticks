@@ -249,6 +249,20 @@ actual gensteps for the enabled index.
 sgs SEvt::addGenstep(const quad6& q_)
 {
     dbg->addGenstep++ ; 
+
+
+    unsigned gentype = q_.gentype(); 
+    bool input_photon_with_normal_genstep = input_photon && OpticksGenstep_::IsInputPhoton(gentype) == false  ; 
+    if(input_photon_with_normal_genstep)
+    {
+        LOG(fatal)
+            << "input_photon_with_normal_genstep " << input_photon_with_normal_genstep
+            << " MIXING input photons with ordinary gensteps is not allowed "
+            ; 
+    }
+    assert( input_photon_with_normal_genstep  == false ); 
+
+
     int gidx = int(gs.size())  ;  // 0-based genstep label index
     bool enabled = GIDX == -1 || GIDX == gidx ; 
 

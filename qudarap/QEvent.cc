@@ -195,6 +195,13 @@ int QEvent::setGenstep(NP* gs_)
     return 0 ; 
 }
 
+/**
+QEvent::setInputPhoton
+------------------------
+
+This is a private method invoked only from QEvent::setGenstep
+
+**/
 
 void QEvent::setInputPhoton()
 {

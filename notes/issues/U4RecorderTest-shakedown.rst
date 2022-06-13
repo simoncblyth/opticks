@@ -4,14 +4,24 @@ U4RecorderTest-shakedown
 What Next ?
 -------------
 
-* input photons : details below 
 * input random numbers
 * basic ab.py like comparisons of SEvt
 * gx level with geometry translation starting from Geant4
-  rather than the above adhoc use of same geometry 
+  rather than adhoc use of same geometry 
 
 
-TODO: input photons
+
+TODO : bring OpticksRandom over into U4
+-----------------------------------------
+
+
+TODO : test input photon running with CXRaindropTest 
+-------------------------------------------------------
+
+
+
+
+DONE : input photons
 -----------------------
 
 * input photons in both contexts : U4RecorderTest + CXRaindropTest
@@ -23,10 +33,15 @@ TODO: input photons
   * usage level needs different treatment 
 
     1. qsim: uploading photons and getting qsim::generate_photon to use them 
-       (perhaps using placeholder input photon gensteps for consistency ?)
+ 
+       * DID this using placeholder input photon genstep
+       * branch to handle input photon done in QEvent::setGenstep
+         which invokes private method QEvent::setInputPhoton 
 
     2. U4Recorder needs to GeneratePrimaries using the input photon NP array  
 
+       * input photon branch in SGenerate::GeneratePhotons that is called from U4VPrimaryGenerator::GeneratePrimaries
+        
 
 cx/CSGOptiX7.cu::
 
@@ -169,8 +184,8 @@ cx/CSGOptiX7.cu::
 
 
 
-input photon mock_propagate getNumHit assert
------------------------------------------------
+input photon mock_propagate getNumHit assert : ASSUMED TO BE COLLATERAL DAMAGE FROM PRD SIZE INCONSISTENCY
+------------------------------------------------------------------------------------------------------------
 
 
 ::
