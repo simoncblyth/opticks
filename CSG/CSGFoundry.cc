@@ -2059,6 +2059,11 @@ different geometries.
 CSG/CSGMakerTest.sh 
     CSG level creation of simple test CSGFoundry 
 
+    NB somewhat misleadinging this writes to directories such as::
+
+        /tmp/$USER/opticks/GeoChain/BoxedSphere/CSGFoundry/
+
+
 GeoChain/translate.sh
     translation of Geant4 defined test geometry 
 

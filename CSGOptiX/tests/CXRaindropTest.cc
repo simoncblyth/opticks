@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 
     QSim* qs = cx->sim ; 
 
-    SEvt::AddTorchGenstep();      
+    if(!SEvt::HasInputPhoton()) SEvt::AddTorchGenstep();      
 
     qs->simulate();  
 

@@ -107,6 +107,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static int GetNumPhoton(); 
     static NP* GetGenstep(); 
     static NP* GetInputPhoton(); 
+    static bool HasInputPhoton(); 
 
     bool isSelfProvider() const ; 
  
@@ -173,6 +174,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     void saveGenstep(const char* dir) const ; 
     NP* getGenstep() const ; 
     NP* getInputPhoton() const ; 
+    bool hasInputPhoton() const ; 
     void setInputPhoton(NP* p); 
 
     void gather_components() ; 

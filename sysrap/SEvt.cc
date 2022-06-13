@@ -183,6 +183,8 @@ int SEvt::GetNumPhoton(){ return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
 
 NP* SEvt::GetGenstep() {      return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
 NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
+bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : false ; }
+
 
 void SEvt::clear()
 {
@@ -780,6 +782,8 @@ by SEvt::clear
 
 NP* SEvt::getGenstep() const { return NP::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
 NP* SEvt::getInputPhoton() const { return input_photon ; }
+bool SEvt::hasInputPhoton() const { return input_photon != nullptr ; }
+
 
 /**
 SEvt::setInputPhoton
