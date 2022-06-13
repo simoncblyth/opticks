@@ -36,7 +36,17 @@ struct SGenerate
 NP* SGenerate::GeneratePhotons()
 {
     NP* gs = SEvt::GetGenstep();  // user code needs to instanciate SEvt and AddGenstep 
-    return GeneratePhotons(gs);  
+    NP* ph = nullptr ; 
+    if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
+    {
+        ph = SEvt::GetInputPhoton(); 
+    }
+    else
+    {
+        ph = GeneratePhotons(gs);
+    }
+    std::cout << " ph " << ( ph ? ph->sstr() : "-" ) << std::endl ; 
+    return ph ;  
 }
 NP* SGenerate::GeneratePhotons(const NP* gs_)
 {
@@ -68,11 +78,10 @@ NP* SGenerate::GeneratePhotons(const NP* gs_)
         {    
             case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ; 
             case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
+            case OpticksGenstep_INPUT_PHOTON:    assert(0)  ; break ; 
         }    
     }
-    std::cout << " ph " << ( ph ? ph->sstr() : "-" ) << std::endl ; 
 #endif
-
     return ph ; 
 }
 

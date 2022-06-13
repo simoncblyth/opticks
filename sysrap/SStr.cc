@@ -317,6 +317,16 @@ bool SStr::Contains( const char* s_ , const char* q_ )
     return s.find(q) != std::string::npos ;
 }
 
+/**
+SStr::EndsWith
+---------------
+
+eg::
+
+    SStr::EndsWith("name.npy", ".npy") == true 
+
+
+**/
 bool SStr::EndsWith( const char* s, const char* q)
 {
     int pos = strlen(s) - strlen(q) ;

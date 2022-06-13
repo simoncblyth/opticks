@@ -36,9 +36,17 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 export U4Material=INFO
 
 
+
 #mode=gun
-mode=torch
+#mode=torch
+mode=iphoton
+
 export U4RecorderTest__PRIMARY_MODE=$mode
+
+if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
+    export OPTICKS_INPUT_PHOTON=RandomSpherical10.npy
+fi 
+
 
 
 source ./IDPath_override.sh   ## non-standard IDPath to allow U4Material::LoadOri to find material properties 

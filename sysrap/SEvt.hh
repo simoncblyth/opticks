@@ -83,6 +83,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const plog::Severity LEVEL ; 
     static const int GIDX ; 
     static const int MISSING_INDEX ; 
+
+    static const char* INPUT_PHOTON_DIR ; 
+    static NP* LoadInputPhoton(const char* ip); 
+
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
     static bool RECORDING ; 
@@ -108,6 +112,8 @@ struct SYSRAP_API SEvt : public SCompProvider
  
     SEvt(); 
     void init(); 
+    void initInputPhoton(); 
+
     void setCompProvider(const SCompProvider* provider); 
     void setNumPhoton(unsigned numphoton); 
     void resize(); 

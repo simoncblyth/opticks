@@ -97,10 +97,11 @@ G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::Make(); } 
 
 char U4RecorderTest::PrimaryMode()
 {
-    const char* mode_ = SSys::getenvvar("U4RecorderTest__PRIMARY_MODE", "gun" ); 
     char mode = '?' ; 
+    const char* mode_ = SSys::getenvvar("U4RecorderTest__PRIMARY_MODE", "gun" ); 
     if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
     if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
+    if(strcmp(mode_, "iphoton") == 0) mode = 'I' ; 
     return mode ;   
 }
 void U4RecorderTest::GeneratePrimaries(G4Event* event)
@@ -111,6 +112,7 @@ void U4RecorderTest::GeneratePrimaries(G4Event* event)
     {
         case 'G': fGun->GeneratePrimaryVertex(event)              ; break ; 
         case 'T': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;   // eg from collected torch gensteps 
+        case 'I': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;   
         default:  assert(0) ; break ; 
     }
 }

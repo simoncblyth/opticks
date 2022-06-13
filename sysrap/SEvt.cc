@@ -12,6 +12,7 @@
 
 #include "PLOG.hh"
 #include "SSys.hh"
+#include "SStr.hh"
 #include "NP.hh"
 #include "NPFold.h"
 #include "SPath.hh"
@@ -69,7 +70,72 @@ void SEvt::init()
     evt->init(); 
     dbg->zero(); 
     LOG(fatal) << evt->desc() ;
+
+    initInputPhoton(); 
 }
+
+
+const char* SEvt::INPUT_PHOTON_DIR = SSys::getenvvar("SEvt_INPUT_PHOTON_DIR", "$HOME/.opticks/InputPhotons") ; 
+
+/**
+SEvt::LoadInputPhoton
+----------------------
+
+The default "SEventConfig::InputPhoton()" is nullptr meaning no input photons.
+This can be changed by setting an envvar in the script that runs the executable, eg::
+
+   export OPTICKS_INPUT_PHOTON=CubeCorners.npy
+   export OPTICKS_INPUT_PHOTON=$HOME/reldir/path/to/inphoton.npy
+ 
+Or within the code of the executable, typically in the main prior to SEvt instanciation, 
+using eg::
+
+   SEventConfig::SetInputPhoton("CubeCorners.npy")
+   SEventConfig::SetInputPhoton("$HOME/reldir/path/to/inphoton.npy")
+
+When non-null it is resolved into a path and the array loaded at SEvt instanciation.
+Resolving the input string to a path is done in one of two ways:
+
+1. if the string starts with a letter A-Za-z eg "inphoton.npy" or "RandomSpherical10.npy" 
+   it is assumed to be the name of a .npy file within the default SEvt_INPUT_PHOTON_DIR 
+   of $HOME/.opticks/InputPhotons. 
+
+   Create such files with ana/input_photons.py  
+
+2. if the string does not start with a letter eg /path/to/some/dir/file.npy or $TOKEN/path/to/file.npy 
+   it is passed unchanged to  SPath::Resolve
+
+**/
+
+NP* SEvt::LoadInputPhoton(const char* ip) // static 
+{
+    assert(strlen(ip) > 0 && SStr::EndsWith(ip, ".npy") ); 
+    const char* path = SStr::StartsWithLetterAZaz(ip) ?  SPath::Resolve(INPUT_PHOTON_DIR, ip, NOOP) : SPath::Resolve( ip, NOOP ) ; 
+
+    NP* a = NP::Load(path); 
+    if( a == nullptr ) LOG(fatal) << " FAILED to load input photon from path " << path << " SEventConfig::InputPhoton " << ip ; 
+
+    assert( a ) ; 
+    assert( a->has_shape(-1,4,4) ); 
+    assert( a->shape[0] > 0 );  
+
+    LOG(info) 
+        << " SEventConfig::InputPhoton " << ip
+        << " path " << path 
+        << " a.sstr " << a->sstr()
+        ;
+
+    return a ; 
+}
+
+void SEvt::initInputPhoton()
+{
+    const char* ip = SEventConfig::InputPhoton(); 
+    if( ip == nullptr ) return ; 
+    NP* a = LoadInputPhoton(ip) ; 
+    setInputPhoton(a);    // this adds placeholder genstep of gentype OpticksGenstep_INPUT_PHOTON
+}
+
 
 void SEvt::setCompProvider(const SCompProvider* provider_)
 {
