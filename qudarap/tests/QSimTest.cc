@@ -39,7 +39,7 @@ QSimTest.cc
 struct QSimTest
 {
     static const char* FOLD ; 
-    static void  PreInit(unsigned type); 
+    static void  EventConfig(unsigned type);  // must be run after SEvt is instanciated
     static unsigned Num(int argc, char** argv); 
 
     QSim qs ; 
@@ -432,7 +432,7 @@ void QSimTest::photon_launch_generate()
 QSimTest::mock_propagate
 ----------------------------------------
 
-NB QSimTest::PreInit does MOCK_PROPAGATE specific SEventConfig setup of event maxima 
+NB QSimTest::EventConfig does MOCK_PROPAGATE specific SEventConfig setup of event maxima 
 
 **/
 
@@ -448,6 +448,8 @@ void QSimTest::mock_propagate()
     SEvt::Get()->setInputPhoton(p);  // also adds placeholder genstep 
 
     int bounce_max = SEventConfig::MaxBounce(); 
+    LOG(info) << " bounce_max " << bounce_max ; 
+
     NP* prd = qs.prd->duplicate_prd(num, bounce_max);  
     prd->save(dir, "prd.npy"); 
 
@@ -458,7 +460,6 @@ void QSimTest::mock_propagate()
     //LOG(info) << " num_hit " << num_hit ;
 
     SEvt::Save(dir); 
-
 
     LOG(info) << "]" ; 
 }
@@ -517,16 +518,21 @@ void QSimTest::photon_launch_mutate()
 }
 
 /**
-QSimTest::PreInit
-------------------
+QSimTest::EventConfig
+-----------------------
 
 SEventConfig settings to configure the QEvent GPU buffers
 must be done prior to QEvent::init which happens when QSim is instanciated.
 
 **/
 
-void QSimTest::PreInit(unsigned type )  // static
+void QSimTest::EventConfig(unsigned type )  // static
 {
+    SEvt* sev = SEvt::Get();
+    if(sev != nullptr)
+    LOG(fatal) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for mock_propagate bounce consistency " ;  
+    assert(sev == nullptr); 
+
     LOG(info) << "[ " <<  QSimLaunch::Name(type) ; 
     if( type == MOCK_PROPAGATE )
     {
@@ -535,7 +541,7 @@ void QSimTest::PreInit(unsigned type )  // static
         int num_bounce = prd->getNumBounce(); 
  
         // NB better not to hide this inside QPrd
-        SEventConfig::SetMaxGenstep(0);        // MOCK_PROPAGATE starts from input photons do no gensteps needed
+        SEventConfig::SetMaxGenstep(1);        // MOCK_PROPAGATE starts from input photons but uses a single placeholder genstep 
         SEventConfig::SetMaxPhoton(1000000);   // used for QEvent buffer sizing 
         SEventConfig::SetMaxBounce(num_bounce); 
         SEventConfig::SetMaxRecord(num_bounce+1); 
@@ -646,14 +652,14 @@ int main(int argc, char** argv)
 
     const char* testname = SSys::getenvvar("TEST", "hemisphere_s_polarized"); 
     int type = QSimLaunch::Type(testname); 
-
-    SEvt evt ; 
+    unsigned num = QSimTest::Num(argc, argv); 
 
     SSim* ssim = SSim::Load(); 
-    QSim::UploadComponents(ssim); 
+    QSim::UploadComponents(ssim);   // instanciates things like QBnd
 
-    QSimTest::PreInit(type)  ; 
-    unsigned num = QSimTest::Num(argc, argv); 
+    QSimTest::EventConfig(type)  ;  // must be after QBnd instanciation and before SEvt instanciation
+
+    SEvt evt ; 
 
     QSimTest qst(type, num)  ; 
     qst.main(); 

@@ -36,6 +36,10 @@ std::string QPrd::desc() const
     return s ; 
 }
 
+
+//std::string QPrd::Fallback(
+
+
 void QPrd::init()
 {
     const char* bnd_fallback = "Acrylic///LS,Water///Acrylic,Water///Pyrex,Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum" ;  
@@ -51,7 +55,7 @@ void QPrd::init()
 
     LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ; 
 
-    prd.resize(num_prd); 
+    prd.resize(num_prd);  // vector of quad2
     for(unsigned i=0 ; i < num_prd ; i++)
     {
         quad2& pr = prd[i] ; 
@@ -84,6 +88,12 @@ NP* QPrd::duplicate_prd(unsigned num_photon, unsigned num_bounce) const
     unsigned num_prd = prd.size(); 
     unsigned ni = num_photon ; 
     unsigned nj = num_bounce ; 
+    LOG(error) 
+        << " ni:num_photon " << num_photon
+        << " nj:num_bounce " << num_bounce
+        << " num_prd " << num_prd 
+        ;
+
 
     NP* a_prd = NP::Make<float>(ni, nj, 2, 4 ); 
 

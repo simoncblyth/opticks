@@ -250,6 +250,86 @@ After commenting the above QSimTest getNumHit find the standard SEvt getHit succ
 Is there a problem with calling getNumHit twice ?
 
 
+Is s.optical being filled ?::
+
+    //_QSim_mock_propagate idx 7 evt.num_photon 8 evt.max_record 0  
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.propagate idx 0 bounce 0 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 1 bounce 0 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 2 bounce 0 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 3 bounce 0 command 3 flag 0 s.optical.x 2 
+    //qsim.propagate idx 4 bounce 0 command 3 flag 0 s.optical.x 716983765 
+    //qsim.propagate idx 5 bounce 0 command 3 flag 0 s.optical.x -268435473 
+    //qsim.propagate idx 6 bounce 0 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate idx 7 bounce 0 command 3 flag 0 s.optical.x 0 
+    //qsim.mock_propagate idx 0 bounce 1 evt.max_bounce 9 command 2 
+    //qsim.mock_propagate idx 1 bounce 1 evt.max_bounce 9 command 2 
+    //qsim.mock_propagate idx 2 bounce 1 evt.max_bounce 9 command 2 
+
+
+
+Non-sensical prd from idx 4::
+
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.mock_propagate idx 0 prd.q0.f.xyzw (    0.0000     0.0000     1.0000   100.0000) 
+    //qsim.mock_propagate idx 1 prd.q0.f.xyzw (    0.0000     0.0000     1.0000   200.0000) 
+    //qsim.mock_propagate idx 2 prd.q0.f.xyzw (    0.0000     0.0000     1.0000   300.0000) 
+    //qsim.mock_propagate idx 3 prd.q0.f.xyzw (    0.0000     0.0000     1.0000   400.0000) 
+    //qsim.mock_propagate idx 4 prd.q0.f.xyzw (       nan -2658455674657181688750263746384887808.0000    -2.0000        nan) 
+    //qsim.mock_propagate idx 5 prd.q0.f.xyzw (       nan        nan        nan        nan) 
+    //qsim.mock_propagate idx 6 prd.q0.f.xyzw (    0.0000     0.0000     0.0000     0.0000) 
+    //qsim.mock_propagate idx 7 prd.q0.f.xyzw (    0.0000     0.0000     0.0000     0.0000) 
+
+* FIXED THIS : IT WAS DUE TO SEventConfig inconsistency in QSimTest initializtion, 
+  had to change order of instanciation 
+
+Huh looks like prd using a different max_bounce to propagation::
+
+      : t.prd                                              :         (8, 4, 2, 4) : 0:01:21.105138 
+
+
+FIXED : Discrepant max bounce::
+
+    epsilon:tests blyth$ grep SetMaxBounce *.*
+    QSimTest.cc:        SEventConfig::SetMaxBounce(num_bounce); 
+
+
+::
+
+    In [2]: t.prd                                                                                                                                                               
+    Out[2]: 
+    array([[[[  0.,   0.,   1., 100.],
+             [  0.,   0.,   0.,   0.]],
+
+            [[  0.,   0.,   1., 200.],
+             [  0.,   0.,   0.,   0.]],
+
+            [[  0.,   0.,   1., 300.],
+             [  0.,   0.,   0.,   0.]],
+
+            [[  0.,   0.,   1., 400.],
+             [  0.,   0.,   0.,   0.]]],
+
+
+           [[[  0.,   0.,   1., 100.],
+             [  0.,   0.,   0.,   0.]],
+
+            [[  0.,   0.,   1., 200.],
+             [  0.,   0.,   0.,   0.]],
+
+            [[  0.,   0.,   1., 300.],
+             [  0.,   0.,   0.,   0.]],
+
+            [[  0.,   0.,   1., 400.],
+             [  0.,   0.,   0.,   0.]]],
+
 
 
 

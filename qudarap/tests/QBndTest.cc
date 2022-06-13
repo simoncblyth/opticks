@@ -126,7 +126,7 @@ void test_lookup_technical(QBnd& qb)
 }
 
 
-void test_getBoundaryIndices(const QBnd& qb)
+void test_getBoundaryIndices_0(const QBnd& qb)
 {
     const char* bnd_fallback = "Acrylic///LS,Water///Acrylic,Water///Pyrex,Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum" ;  
     const char* bnd_sequence = SSys::getenvvar("BND_SEQUENCE", bnd_fallback );  
@@ -136,6 +136,28 @@ void test_getBoundaryIndices(const QBnd& qb)
     qb.getBoundaryIndices( bnd_idx, bnd_sequence, ',' ); 
     LOG(info) << "qb.descBoundaryIndices" << std::endl << qb.descBoundaryIndices( bnd_idx ); 
 }
+
+void test_getBoundaryIndices_1(const QBnd& qb)
+{
+const char* bnd_fallback = R"LITERAL(
+Acrylic///LS
+Water///Acrylic
+Water///Pyrex
+Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum
+)LITERAL" ; 
+
+    const char* bnd_sequence = SSys::getenvvar("BND_SEQUENCE", bnd_fallback );  
+    LOG(info) << " bnd_sequence " << bnd_sequence ; 
+
+    std::vector<unsigned> bnd_idx ; 
+    qb.getBoundaryIndices( bnd_idx, bnd_sequence, '\n' ); 
+    LOG(info) << "qb.descBoundaryIndices" << std::endl << qb.descBoundaryIndices( bnd_idx ); 
+}
+
+
+
+
+
 
 
 void test_DescDigest(const QBnd& qb )
@@ -154,14 +176,15 @@ int main(int argc, char** argv)
 
     QBnd qb(bnd) ; 
 
-    test_descBoundary(qb); 
+    test_getBoundaryIndices_0(qb); 
+    test_getBoundaryIndices_1(qb); 
 
 /*
+    test_descBoundary(qb); 
     test_getBoundaryLine(qb); 
     test_getMaterialLine(qb); 
     test_lookup_technical(qb); 
     test_getBoundarySpec(qb); 
-    test_getBoundaryIndices(qb); 
     test_DescDigest(qb); 
 */
     return 0 ; 

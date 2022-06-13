@@ -61,6 +61,7 @@ QEvent::QEvent()
     evt(sev ? sev->evt : nullptr),
     d_evt(QU::device_alloc<sevent>(1)),
     gs(nullptr),
+    input_photon(nullptr),
     upload_count(0),
     meta()
 {
@@ -184,7 +185,7 @@ int QEvent::setGenstep(NP* gs_)
     }
     else if(OpticksGenstep_::IsInputPhoton(gencode0))
     {
-        uploadInputPhoton(); 
+        setInputPhoton(); 
     }
     else
     {
@@ -195,21 +196,21 @@ int QEvent::setGenstep(NP* gs_)
 }
 
 
-void QEvent::uploadInputPhoton()
+void QEvent::setInputPhoton()
 {
-    const NP* p = SEvt::GetInputPhoton(); 
-    if( p == nullptr ) 
+    input_photon = SEvt::GetInputPhoton(); 
+    if( input_photon == nullptr ) 
         LOG(fatal) 
             << " INCONSISTENT : OpticksGenstep_INPUT_PHOTON by no input photon array " 
             ; 
 
-    assert(p);  
-    assert(p->has_shape( -1, 4, 4) ); 
-    int num_photon = p->shape[0] ; 
+    assert(input_photon);  
+    assert(input_photon->has_shape( -1, 4, 4) ); 
+    int num_photon = input_photon->shape[0] ; 
     assert( evt->num_seed == num_photon ); 
 
     setNumPhoton( num_photon ); 
-    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)p->bytes(), num_photon ); 
+    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)input_photon->bytes(), num_photon ); 
 }
 
 
@@ -282,6 +283,14 @@ NP* QEvent::getGenstep() const
 {
     return gs ; 
 }
+
+NP* QEvent::getInputPhoton() const 
+{
+    return input_photon ; 
+}
+
+
+
 
 /**
 QEvent::getGenstepFromDevice
@@ -508,6 +517,7 @@ NP* QEvent::getComponent_(unsigned comp) const
         case SCOMP_HIT:       a = getHit()      ; break ;   
         case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   
         case SCOMP_DOMAIN:    a = getDomain()   ; break ;   
+        case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;   
     }   
     return a ; 
 }
@@ -554,8 +564,6 @@ void QEvent::setNumPhoton(unsigned num_photon )
             << " evt.num_record " << evt->num_record 
             << " evt.num_rec    " << evt->num_rec 
             ;
-
-        // TODO: with input photons need to upload them here 
 
     } 
     else

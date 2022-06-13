@@ -538,7 +538,7 @@ __global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
 
     sim->mock_propagate( p, prd, rng, idx );  
 
-    evt->photon[idx] = p ; 
+   //  evt->photon[idx] = p ;   moved into mock_propagate
 }
 
 

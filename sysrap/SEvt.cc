@@ -116,7 +116,7 @@ int SEvt::GetIndex(){     return INSTANCE ? INSTANCE->getIndex()     :  0 ; }
 int SEvt::GetNumPhoton(){ return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
 
 NP* SEvt::GetGenstep() {      return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
-const NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
+NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
 
 void SEvt::clear()
 {
@@ -674,6 +674,7 @@ NP* SEvt::getComponent_(unsigned comp) const
     switch(comp)
     {   
         case SCOMP_GENSTEP:   a = getGenstep()  ; break ;   
+        case SCOMP_INPHOTON:  a = getInputPhoton()   ; break ;   
         case SCOMP_PHOTON:    a = getPhoton()   ; break ;   
         case SCOMP_RECORD:    a = getRecord()   ; break ;   
         case SCOMP_REC:       a = getRec()      ; break ;   
@@ -698,7 +699,7 @@ by SEvt::clear
 **/
 
 NP* SEvt::getGenstep() const { return NP::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
-const NP* SEvt::getInputPhoton() const { return input_photon ; }
+NP* SEvt::getInputPhoton() const { return input_photon ; }
 
 /**
 SEvt::setInputPhoton
@@ -708,7 +709,7 @@ Also adds placeholder genstep of gentype OpticksGenstep_INPUT_PHOTON
 
 **/
 
-void SEvt::setInputPhoton(const NP* p) 
+void SEvt::setInputPhoton(NP* p) 
 { 
     input_photon = p ; 
     assert( input_photon->has_shape(-1,4,4) ); 

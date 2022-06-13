@@ -68,6 +68,7 @@ private:
     sevent*           evt ; 
     sevent*           d_evt ; 
     NP*               gs ;  
+    NP*               input_photon ; 
 public:
     int               upload_count ; 
     std::string       meta ; 
@@ -75,8 +76,8 @@ public:
 public:
     int setGenstep();
 private:
-    int setGenstep(NP* gs);
-    void uploadInputPhoton(); 
+    int  setGenstep(NP* gs);
+    void setInputPhoton(); 
     int setGenstep(quad6* gs, unsigned num_gs ); 
     unsigned count_genstep_photons(); 
     void     fill_seed_buffer(); 
@@ -98,6 +99,7 @@ public:
     NP*      getComponent(unsigned comp) const ; 
 public:
     NP*      getGenstep() const ; 
+    NP*      getInputPhoton() const ; 
     NP*      getGenstepFromDevice() const ; 
     NP*      getSeed() const ; 
     NP*      getPhoton() const ; 

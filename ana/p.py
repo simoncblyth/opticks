@@ -99,8 +99,8 @@ from opticks.CSG.CSGFoundry import CSGFoundry
 cf = CSGFoundry.Load()
 
 if not cf is None:
-    cf_bnd_  = lambda p:cf.sim.bndnamedict[boundary_(p)]
-    cf_prim_ = lambda p:cf.primIdx_meshname_dict[prim_(p)]
+    cf_bnd_  = lambda p:cf.sim.bndnamedict.get(boundary_(p),"cf_bnd_ERR")
+    cf_prim_ = lambda p:cf.primIdx_meshname_dict.get(prim_(p),"cf_prim_ERR")
 else:
     cf_bnd_  = lambda p:"no_cf"
     cf_prim_  = lambda p:"no_cf"

@@ -139,18 +139,22 @@ unsigned QBnd::getBoundaryIndex(const char* spec) const
 
 void QBnd::getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char* bnd_sequence, char delim ) const 
 {
+    assert( bnd_idx.size() == 0 ); 
+
     std::vector<std::string> bnd ; 
     SStr::Split(bnd_sequence,delim, bnd ); 
 
-    bnd_idx.resize( bnd.size() ); 
     for(unsigned i=0 ; i < bnd.size() ; i++)
     {
         const char* spec = bnd[i].c_str(); 
+        if(strlen(spec) == 0) continue ;  
         unsigned bidx = getBoundaryIndex(spec); 
-        if( bidx == MISSING ) LOG(fatal) << " invalid spec " << spec ;      
+        if( bidx == MISSING ) LOG(fatal) << " i " << i << " invalid spec [" << spec << "]"  ;      
         assert( bidx != MISSING ); 
-        bnd_idx[i] = bidx ; 
+
+        bnd_idx.push_back(bidx) ; 
     }
+    LOG(info) << " bnd.size " << bnd.size() << " bnd_idx.size " << bnd_idx.size()  ; 
 }
 
 std::string QBnd::descBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const 

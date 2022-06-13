@@ -25,7 +25,8 @@ enum {
     SCOMP_HIT       = 0x1 <<  6,
     SCOMP_SIMTRACE  = 0x1 <<  7,
     SCOMP_SEQ       = 0x1 <<  8,
-    SCOMP_DOMAIN    = 0x1 <<  9
+    SCOMP_DOMAIN    = 0x1 <<  9,
+    SCOMP_INPHOTON  = 0x1 << 10
 };
 
 struct SYSRAP_API SCompProvider
@@ -36,7 +37,7 @@ struct SYSRAP_API SCompProvider
 
 struct SYSRAP_API SComp
 {
-    static constexpr const char* ALL_ = "genstep,photon,record,rec,seq,seed,hit,simtrace,domain" ; 
+    static constexpr const char* ALL_ = "genstep,photon,record,rec,seq,seed,hit,simtrace,domain,inphoton" ; 
     static constexpr const char* UNDEFINED_ = "undefined" ; 
     static constexpr const char* GENSTEP_   = "genstep" ; 
     static constexpr const char* PHOTON_    = "photon" ; 
@@ -47,6 +48,7 @@ struct SYSRAP_API SComp
     static constexpr const char* HIT_       = "hit" ; 
     static constexpr const char* SIMTRACE_  = "simtrace" ; 
     static constexpr const char* DOMAIN_    = "domain" ; 
+    static constexpr const char* INPHOTON_  = "inphoton" ; 
 
     static bool Match(const char* q, const char* n ); 
     static unsigned    Comp(const char* name); 
@@ -65,6 +67,7 @@ struct SYSRAP_API SComp
     static bool IsSimtrace(unsigned mask){ return mask & SCOMP_SIMTRACE ; }
     static bool IsSeq(     unsigned mask){ return mask & SCOMP_SEQ ; }
     static bool IsDomain(  unsigned mask){ return mask & SCOMP_DOMAIN ; }
+    static bool IsInphoton(unsigned mask){ return mask & SCOMP_INPHOTON ; }
 };
 
 inline bool SComp::Match(const char* q, const char* n )
@@ -84,6 +87,7 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, HIT_))      comp = SCOMP_HIT ; 
     if(Match(name, SIMTRACE_)) comp = SCOMP_SIMTRACE ; 
     if(Match(name, DOMAIN_))   comp = SCOMP_DOMAIN ; 
+    if(Match(name, INPHOTON_)) comp = SCOMP_INPHOTON ; 
     return comp ; 
 }
 inline const char* SComp::Name(unsigned comp)
@@ -101,12 +105,13 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_HIT:       s = HIT_        ; break ;  
         case SCOMP_SIMTRACE:  s = SIMTRACE_   ; break ;  
         case SCOMP_DOMAIN:    s = DOMAIN_     ; break ;  
+        case SCOMP_INPHOTON:  s = INPHOTON_   ; break ;  
     }
     return s ; 
 }
 inline std::string SComp::Desc(unsigned mask)
 {
-    // curious using vector of const char* gives undefined symbol link errors
+    // curious using vector of const char* gives undefined symbol link errors : something funny with "static constexpr const char*" ?
     std::vector<std::string> names ;   
     if( mask & SCOMP_GENSTEP )  names.push_back(GENSTEP_) ;   
     if( mask & SCOMP_PHOTON )   names.push_back(PHOTON_) ; 
@@ -117,6 +122,7 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_HIT )      names.push_back(HIT_) ; 
     if( mask & SCOMP_SIMTRACE ) names.push_back(SIMTRACE_) ; 
     if( mask & SCOMP_DOMAIN )   names.push_back(DOMAIN_) ; 
+    if( mask & SCOMP_INPHOTON ) names.push_back(INPHOTON_) ; 
 
     std::stringstream ss ; 
     for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << ( i < names.size() - 1 ? "," : "" ); 

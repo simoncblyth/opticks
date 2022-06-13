@@ -40,31 +40,32 @@ if __name__ == '__main__':
     pyhit = hit__(p, hitmask)  # hits selected in python 
     assert np.all( pyhit == h ) 
 
-    r_post = r[:,:,0]
+    if not r is None:
+        r_post = r[:,:,0]
+        r_pos = r[:,:,0,:3].reshape(-1,3)   
+        r_mom = r[:,:,1,:3].reshape(-1,3) 
+        r_pol = r[:,:,2,:3].reshape(-1,3) 
+        r_flag = flag__(r.reshape(-1,4,4))  
 
-    r_pos = r[:,:,0,:3].reshape(-1,3)   
-    r_mom = r[:,:,1,:3].reshape(-1,3) 
-    r_pol = r[:,:,2,:3].reshape(-1,3) 
-    r_flag = flag__(r.reshape(-1,4,4))  
+        r_flag_label = hm.label( r_flag )
 
-    r_flag_label = hm.label( r_flag )
+        r_cells = make_record_cells( r ) 
 
-    r_cells = make_record_cells( r ) 
+        r_poly = pv.PolyData() 
+        r_poly.points = r_pos
+        r_poly.lines = r_cells 
+        r_poly["flag_label"] = r_flag_label
 
-    r_poly = pv.PolyData() 
-    r_poly.points = r_pos
-    r_poly.lines = r_cells 
-    r_poly["flag_label"] = r_flag_label
+        r_tube = r_poly.tube(radius=1) 
 
-    r_tube = r_poly.tube(radius=1) 
-
-    PLOT = "PLOT" in os.environ
-    if PLOT:
-        pl = pvplt_plotter()
-        pl.add_mesh( r_tube )
-        pvplt_polarized( pl, r_pos, r_mom, r_pol, factor=60 )
-        pl.add_point_labels(r_poly, "flag_label", point_size=20, font_size=36)
-        pl.show() 
+        PLOT = "PLOT" in os.environ
+        if PLOT:
+            pl = pvplt_plotter()
+            pl.add_mesh( r_tube )
+            pvplt_polarized( pl, r_pos, r_mom, r_pol, factor=60 )
+            pl.add_point_labels(r_poly, "flag_label", point_size=20, font_size=36)
+            pl.show() 
+        pass
     pass
 
 
@@ -74,11 +75,14 @@ if __name__ == '__main__':
     for i in range(len(a)):
         if not (PIDX == -1 or PIDX == i): continue 
         if PIDX > -1: print("PIDX %d " % PIDX) 
-        print("r[i,:,:3]")
-        print(r[i,:,:3]) 
-        print("\n\nbflagdesc_(r[i,j])")
-        for j in range(len(r[i])):
-            print(bflagdesc_(r[i,j])  ) 
+
+        if not r is None:
+            print("r[i,:,:3]")
+            print(r[i,:,:3]) 
+            print("\n\nbflagdesc_(r[i,j])")
+            for j in range(len(r[i])):
+                print(bflagdesc_(r[i,j])  ) 
+            pass
         pass
 
         print("\n") 
@@ -86,8 +90,12 @@ if __name__ == '__main__':
         print("\n".join(a[i]))
         print(bflagdesc_(p[i])) 
         print("\n") 
-        print(seqhis_(seq[i,0])) 
-        print("\n") 
+
+        if not seq is None:
+            print(seqhis_(seq[i,0])) 
+            print("\n") 
+        pass
+
 
         print("\n\n") 
     pass

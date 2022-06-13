@@ -1100,9 +1100,8 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
 {
     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
 
-
-    printf("//qsim.mock_propagate evt.max_bounce %d evt.max_record %d evt.record %p evt.num_record %d evt.num_rec %d \n", 
-                                  evt->max_bounce, evt->max_record, evt->record, evt->num_record, evt->num_rec ); 
+    //printf("//qsim.mock_propagate evt.max_bounce %d evt.max_record %d evt.record %p evt.num_record %d evt.num_rec %d \n", 
+    //                              evt->max_bounce, evt->max_record, evt->record, evt->num_record, evt->num_rec ); 
 
     int bounce = 0 ; 
     int command = START ; 
@@ -1127,12 +1126,14 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
         if(evt->rec)    evt->add_rec(rec, idx, bounce, p );   // populates compressed rec and adds to evt->rec array 
         if(evt->seq)    seq.add_nibble( bounce, p.flag(), p.boundary() ); 
 
-
         const quad2* prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
+        printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d prd.q0.f.xyzw (%10.4f %10.4f %10.4f %10.4f) \n", 
+             idx, bounce, evt->max_bounce, prd->q0.f.x, prd->q0.f.y, prd->q0.f.z, prd->q0.f.w );  
 
         command = propagate(bounce, p, state, prd, rng, idx ); 
         bounce++;        
 
+        //printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d command %d \n", idx, bounce, evt->max_bounce, command ); 
         if(command == BREAK) break ;    
     }
 
@@ -1140,8 +1141,7 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
     if(evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p ); 
     if(evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() ); 
 
-    //TODO: HUH why no: evt->photon[idx] = p ; to match CSGOptiX7.cu ?
-
+    if(evt->photon) evt->photon[idx] = p ;  
     if(evt->seq) evt->seq[idx] = seq ; 
 }
 
@@ -1176,7 +1176,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, qstate& s, 
 
     int command = propagate_to_boundary( flag, p, prd, s, rng, idx ); 
     //if( idx == 0 ) 
-    //printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", idx, bounce, command, flag, s.optical.x  );   
+    printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", idx, bounce, command, flag, s.optical.x  );   
 
     if( command == BOUNDARY )
     {

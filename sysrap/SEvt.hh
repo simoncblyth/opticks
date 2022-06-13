@@ -58,7 +58,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     sevent* evt ; 
     sdebug* dbg ; 
     std::string meta ; 
-    const NP* input_photon ; 
+    NP* input_photon ; 
     const SCompProvider*  provider ; 
     NPFold*               fold ; 
 
@@ -102,7 +102,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static int  GetIndex(); 
     static int GetNumPhoton(); 
     static NP* GetGenstep(); 
-    static const NP* GetInputPhoton(); 
+    static NP* GetInputPhoton(); 
 
     bool isSelfProvider() const ; 
  
@@ -166,8 +166,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void saveGenstep(const char* dir) const ; 
     NP* getGenstep() const ; 
-    const NP* getInputPhoton() const ; 
-    void setInputPhoton(const NP* p); 
+    NP* getInputPhoton() const ; 
+    void setInputPhoton(NP* p); 
 
     void gather_components() ; 
 
