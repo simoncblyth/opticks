@@ -2045,13 +2045,38 @@ CSGFoundry::load
 
 **/
 
+
+const char* CSGFoundry::LOAD_FAIL_NOTES = R"LITERAL(
+CSGFoundry::LOAD_FAIL_NOTES
+==============================
+
+The CSGFoundry directory does not exist. To create it you probably need to 
+run one of several CSGFoundry creating scripts. Which one to use depends on 
+what the geometry is that you want to create. Some of the scripts require 
+setting the GEOM name within $HOME/.opticks/GEOM.txt to pick between 
+different geometries. 
+
+CSG/CSGMakerTest.sh 
+    CSG level creation of simple test CSGFoundry 
+
+GeoChain/translate.sh
+    translation of Geant4 defined test geometry 
+
+CSG_GGeo/run.sh 
+    translation of OPTICKS_KEY identified GGeo geometry into CSGFoundry
+
+
+)LITERAL" ; 
+
+
 void CSGFoundry::load( const char* dir_ )
 {
     const char* dir = SPath::Resolve(dir_, NOOP ); 
     bool readable = SPath::IsReadable(dir); 
     if( readable == false )
     {
-        LOG(fatal) << " dir is not readable " << dir ; 
+        LOG(fatal) << " dir is not readable [" << dir << "]" ;
+        std::cout << LOAD_FAIL_NOTES << std::endl ; 
         return ; 
     } 
 

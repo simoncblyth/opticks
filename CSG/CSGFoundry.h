@@ -280,6 +280,7 @@ struct CSG_API CSGFoundry
     const char* getCFBase() const ; 
     const char* getOriginCFBase() const ; 
 
+    static const char* LOAD_FAIL_NOTES ; 
     void load( const char* dir ) ; 
 
     template<typename T> void loadArray( std::vector<T>& vec, const char* dir, const char* name, bool optional=false ); 
