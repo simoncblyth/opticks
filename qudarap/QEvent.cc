@@ -540,7 +540,6 @@ directly from "friendly" photon only tests without use of gensteps.
 
 Sets evt->num_photon asserts that is within allowed *evt->max_photon* and calls *uploadEvt*
 
-
 This assumes that the number of photons for subsequent launches does not increase 
 when collecting records : that is ok as running with records is regarded as debugging. 
 **/
@@ -575,7 +574,7 @@ void QEvent::setNumPhoton(unsigned num_photon )
     } 
     else
     {
-         LOG(error) << " evt.photon is not nullptr " ; 
+         LOG(error) << " evt.photon is not nullptr : evt.photon : " << evt->photon ; 
     }
 
 
@@ -625,6 +624,7 @@ Note that the evt->genstep and evt->photon pointers are not updated, so the same
 
 void QEvent::uploadEvt()
 {
+    LOG(LEVEL) << std::endl << evt->desc() ; 
     QU::copy_host_to_device<sevent>(d_evt, evt, 1 );  
 }
 

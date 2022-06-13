@@ -55,6 +55,9 @@ else
 fi 
 
 
+export SEvt=INFO
+export QEvent=INFO
+
 path=RandomSpherical10.npy
 if [ -n "$path" ]; then 
     export OPTICKS_INPUT_PHOTON=$path
@@ -87,13 +90,13 @@ fi
 unset GEOM                     # MUST unset GEOM for CSGFoundry::Load_ to load OPTICKS_KEY basis geometry 
 export OPTICKS_MAX_RECORD=10   # change from default of 0, see sysrap/SEventConfig.cc
 
-if [ "${arg/run}" != "$arg" -o "${arg/dru}" != "$arg" ]; then 
+if [ "${arg/run}" != "$arg" -o "${arg/dru}" != "$arg" -o "$arg" == "dbg" ]; then 
     logdir=/tmp/$USER/opticks/$bin
     mkdir -p $logdir
     iwd=$PWD
     cd $logdir
 
-    if [ -n "$DEBUG" ]; then 
+    if [ -n "$DEBUG" -o "$arg" == "dbg" ]; then 
         case $(uname) in
            Darwin) lldb__  $bin  ;;
            Linux)  gdb $bin ;;

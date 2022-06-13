@@ -15,9 +15,64 @@ TODO : bring OpticksRandom over into U4
 -----------------------------------------
 
 
-TODO : test input photon running with CXRaindropTest 
+TODO : debug input photon running with CXRaindropTest 
 -------------------------------------------------------
 
+::
+
+    2022-06-14 02:46:59.099 INFO  [294307] [SBT::createGeom@109] ]
+    2022-06-14 02:46:59.099 INFO  [294307] [SBT::getAS@584]  spec i0 c i idx 0
+    2022-06-14 02:46:59.099 INFO  [294307] [QEvent::setGenstep@160]  device_alloc genstep and seed 
+    2022-06-14 02:46:59.101 ERROR [294307] [QEvent::setNumPhoton@578]  evt.photon is not nullptr 
+    terminate called after throwing an instance of 'QUDA_Exception'
+      what():  CUDA call (cudaMemcpy(reinterpret_cast<void*>( d ), h , size, cudaMemcpyHostToDevice ) ) failed with error: 'invalid argument' (/data/blyth/junotop/opticks/qudarap/QU.cc:344)
+
+
+    Program received signal SIGABRT, Aborted.
+    0x00007ffff3969387 in raise () from /lib64/libc.so.6
+    Missing separate debuginfos, use: debuginfo-install glibc-2.17-307.el7.1.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libcom_err-1.42.9-13.el7.x86_64 libicu-50.2-4.el7_7.x86_64 libselinux-2.5-14.1.el7.x86_64 openssl-libs-1.0.2k-24.el7_9.x86_64 pcre-8.32-17.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007ffff3969387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff396aa78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff42a6cb3 in __gnu_cxx::__verbose_terminate_handler ()
+        at /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc830/contrib/gcc/8.3.0/download/gcc-8.3.0/libstdc++-v3/libsupc++/vterminate.cc:95
+    #3  0x00007ffff42ace26 in __cxxabiv1::__terminate(void (*)()) ()
+        at /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc830/contrib/gcc/8.3.0/download/gcc-8.3.0/libstdc++-v3/libsupc++/eh_terminate.cc:47
+    #4  0x00007ffff42ace61 in std::terminate () at /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc830/contrib/gcc/8.3.0/download/gcc-8.3.0/libstdc++-v3/libsupc++/eh_terminate.cc:57
+    #5  0x00007ffff42ad094 in __cxxabiv1::__cxa_throw (obj=<optimized out>, tinfo=0x7ffff5d12440 <typeinfo for QUDA_Exception>, dest=
+        0x7ffff5927a0a <QUDA_Exception::~QUDA_Exception()>)
+        at /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc830/contrib/gcc/8.3.0/download/gcc-8.3.0/libstdc++-v3/libsupc++/eh_throw.cc:95
+    #6  0x00007ffff59440bd in QU::copy_host_to_device<sphoton> (d=0x6c64e0, h=0x6c8730, num_items=10) at /data/blyth/junotop/opticks/qudarap/QU.cc:344
+    #7  0x00007ffff591f4db in QEvent::setInputPhoton (this=0xf182f0) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:220
+    #8  0x00007ffff591f230 in QEvent::setGenstep (this=0xf182f0, gs_=0x1a3c680) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:188
+    #9  0x00007ffff591ed7c in QEvent::setGenstep (this=0xf182f0) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:149
+    #10 0x00007ffff590feb0 in QSim::simulate (this=0xf1bbf0) at /data/blyth/junotop/opticks/qudarap/QSim.cc:234
+    #11 0x000000000040d0b4 in main (argc=1, argv=0x7fffffff6458) at /data/blyth/junotop/opticks/CSGOptiX/tests/CXRaindropTest.cc:53
+    (gdb) 
+
+
+    (gdb) f 10
+    #10 0x00007ffff590feb0 in QSim::simulate (this=0xf1bbf0) at /data/blyth/junotop/opticks/qudarap/QSim.cc:234
+    234	   int rc = event->setGenstep(); 
+    (gdb) f 9
+    #9  0x00007ffff591ed7c in QEvent::setGenstep (this=0xf182f0) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:149
+    149	    return gs == nullptr ? -1 : setGenstep(gs) ; 
+    (gdb) f 8
+    #8  0x00007ffff591f230 in QEvent::setGenstep (this=0xf182f0, gs_=0x1a3c680) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:188
+    188	        setInputPhoton(); 
+    (gdb) f 7
+    #7  0x00007ffff591f4db in QEvent::setInputPhoton (this=0xf182f0) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:220
+    220	    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)input_photon->bytes(), num_photon ); 
+    (gdb) p evt->photon
+    $1 = (sphoton *) 0x6c64e0
+    (gdb) p input_photon
+    $2 = (NP *) 0x6c6040
+    (gdb) 
+
+
+Looks like evt->photon address is on CPU, not on GPU as it should be. 
+This is because it looks so similar to input_photons address which is highly unlikely for 
+two pointers from two different address spaces. 
 
 
 
