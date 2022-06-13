@@ -21,7 +21,6 @@ TODO: split off debug functions from actually used functions
 #include "sevent.h"
 
 
-//#include "qgs.h"
 #include "qprop.h"
 #include "qstate.h"
 #include "qbnd.h"
@@ -528,7 +527,7 @@ TODO: compare performance using reference or pointer into global mem here rather
 __global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
 {
     sevent* evt = sim->evt ; 
-    unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
+    int idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= evt->num_photon ) return;
 
     printf("//_QSim_mock_propagate idx %d evt.num_photon %d evt.max_record %d  \n", idx, evt->num_photon, evt->max_record ); 

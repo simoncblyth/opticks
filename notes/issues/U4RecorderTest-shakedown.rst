@@ -169,6 +169,88 @@ cx/CSGOptiX7.cu::
 
 
 
+input photon mock_propagate getNumHit assert
+-----------------------------------------------
+
+
+::
+
+    0  407 	    assert( evt->photon ); 
+       408 	    assert( evt->num_photon ); 
+       409 	
+    -> 410 	    evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );    
+       411 	
+       412 	    LOG(info) << " evt.photon " << evt->photon << " evt.num_photon " << evt->num_photon << " evt.num_hit " << evt->num_hit ;  
+       413 	    return evt->num_hit ; 
+    (lldb) p evt->photon
+    (sphoton *) $0 = 0x000000070a240000
+    (lldb) p evt->num_photon
+    (int) $1 = 8
+    (lldb) f 11
+    frame #11: 0x0000000100646ecc libSysRap.dylib`SU::count_if_sphoton(sphoton const*, unsigned int, sphoton_selector const&) + 44
+    libSysRap.dylib`SU::count_if_sphoton:
+        0x100646ecc <+44>: addq   $0x10, %rsp
+        0x100646ed0 <+48>: popq   %rbp
+        0x100646ed1 <+49>: retq   
+        0x100646ed2 <+50>: nopw   %cs:(%rax,%rax)
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff72d94b66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff72f5f080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff72cf01ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff70beaf8f libc++abi.dylib`abort_message + 245
+        frame #4: 0x00007fff70beb113 libc++abi.dylib`default_terminate_handler() + 241
+        frame #5: 0x00007fff7202ceab libobjc.A.dylib`_objc_terminate() + 105
+        frame #6: 0x00007fff70c067c9 libc++abi.dylib`std::__terminate(void (*)()) + 8
+        frame #7: 0x00007fff70c0626f libc++abi.dylib`__cxa_throw + 121
+        frame #8: 0x000000010064a5b6 libSysRap.dylib`void thrust::cuda_cub::free<thrust::cuda_cub::tag, thrust::pointer<long, thrust::cuda_cub::tag, thrust::use_default, thrust::use_default> >(thrust::cuda_cub::execution_policy<thrust::cuda_cub::tag>&, thrust::pointer<long, thrust::cuda_cub::tag, thrust::use_default, thrust::use_default>) + 166
+        frame #9: 0x0000000100649508 libSysRap.dylib`thrust::detail::temporary_allocator<long, thrust::cuda_cub::tag>::allocate(unsigned long) + 72
+        frame #10: 0x000000010064c9c3 libSysRap.dylib`long thrust::cuda_cub::reduce_n<thrust::cuda_cub::tag, thrust::cuda_cub::transform_input_iterator_t<long, thrust::device_ptr<sphoton const>, sphoton_selector>, long, long, thrust::plus<long> >(thrust::cuda_cub::execution_policy<thrust::cuda_cub::tag>&, thrust::cuda_cub::transform_input_iterator_t<long, thrust::device_ptr<sphoton const>, sphoton_selector>, long, long, thrust::plus<long>) + 67
+      * frame #11: 0x0000000100646ecc libSysRap.dylib`SU::count_if_sphoton(sphoton const*, unsigned int, sphoton_selector const&) + 44
+        frame #12: 0x00000001001acd01 libQUDARap.dylib`QEvent::getNumHit(this=0x0000000100991d10) const at QEvent.cc:410
+        frame #13: 0x000000010001a606 QSimTest`QSimTest::mock_propagate(this=0x00007ffeefbfe3c8) at QSimTest.cc:457
+        frame #14: 0x000000010001c379 QSimTest`QSimTest::main(this=0x00007ffeefbfe3c8) at QSimTest.cc:634
+        frame #15: 0x000000010001d24b QSimTest`main(argc=1, argv=0x00007ffeefbfe6a8) at QSimTest.cc:659
+        frame #16: 0x00007fff72c44015 libdyld.dylib`start + 1
+        frame #17: 0x00007fff72c44015 libdyld.dylib`start + 1
+    (lldb) f 13
+    frame #13: 0x000000010001a606 QSimTest`QSimTest::mock_propagate(this=0x00007ffeefbfe3c8) at QSimTest.cc:457
+       454 	    qs.mock_propagate( prd, type ); 
+       455 	
+       456 	    const QEvent* event = qs.event ; 
+    -> 457 	    unsigned num_hit = event->getNumHit(); 
+       458 	    LOG(info) << " num_hit " << num_hit ;
+       459 	
+       460 	    SEvt::Save(dir); 
+    (lldb) 
+
+
+
+After commenting the above QSimTest getNumHit find the standard SEvt getHit succeeds::
+
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    //qsim.mock_propagate evt.max_bounce 9 evt.max_record 0 evt.record 0x0 evt.num_record 0 evt.num_rec 0 
+    2022-06-13 13:14:23.314 INFO  [22054730] [QSim::mock_propagate@823] ]
+    2022-06-13 13:14:23.314 INFO  [22054730] [SEvt::save@847]  dir /tmp/blyth/opticks/QSimTest/mock_propagate
+    2022-06-13 13:14:23.314 FATAL [22054730] [QEvent::getPhoton@320] [ evt.num_photon 8 p.sstr (8, 4, 4, ) evt.photon 0x70a240000
+    2022-06-13 13:14:23.314 FATAL [22054730] [QEvent::getPhoton@323] ] evt.num_photon 8
+    2022-06-13 13:14:23.314 FATAL [22054730] [*QEvent::getRecord@374]  getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid 
+    2022-06-13 13:14:23.314 FATAL [22054730] [*QEvent::getRec@386]  getRec called when there is no such array, use SEventConfig::SetCompMask to avoid 
+    2022-06-13 13:14:23.314 FATAL [22054730] [*QEvent::getSeq@363]  getSeq called when there is no such array, use SEventConfig::SetCompMask to avoid 
+    2022-06-13 13:14:23.316 INFO  [22054730] [*QEvent::getHit@454]  evt.photon 0x70a240000 evt.num_photon 8 evt.num_hit 4 selector.hitmask 64 SEventConfig::HitMask 64 SEventConfig::HitMaskLabel SD
+    2022-06-13 13:14:23.316 INFO  [22054730] [*QEvent::getHit_@481]  hit.sstr (4, 4, 4, )
+    2022-06-13 13:14:23.316 FATAL [22054730] [*QEvent::getSimtrace@345]  getSimtrace called when there is no such array, use SEventConfig::SetCompMask to avoid 
+    2022-06-13 13:14:23.316 INFO  [22054730] [SEvt::save@851] SEvt::descComponent
+     SEventConfig::CompMaskLabel genstep,photon,record,rec,seq,seed,hit,simtrace,domain
+                     hit          (4, 4, 4, ) 
+                    seed                (8, ) 
+                 genstep          (1, 6, 4, )       SEventConfig::MaxGenstep                   0
+
+
+Is there a problem with calling getNumHit twice ?
+
+
+
 
 
 DONE : More featureful geometry, in u4/tests/U4RecorderTest.cc GEOM RaindropRockAirWater

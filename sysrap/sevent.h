@@ -96,6 +96,7 @@ struct sevent
 
 
     // not including prd here as that is clearly for debugging only 
+    // yes but quite a few of above are also debug only ... add prd here if seems easier
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else

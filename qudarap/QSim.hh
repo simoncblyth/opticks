@@ -142,7 +142,7 @@ struct QUDARAP_API QSim
 
     void photon_launch_mutate(   sphoton* photon, unsigned num_photon, unsigned type ); 
 
-    void mock_propagate( NP* photon, const NP* prd, unsigned type ); 
+    void mock_propagate(const NP* prd, unsigned type ); 
 
     unsigned getBoundaryTexWidth() const ;
     unsigned getBoundaryTexHeight() const ;

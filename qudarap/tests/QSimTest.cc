@@ -445,15 +445,17 @@ void QSimTest::mock_propagate()
 
     NP* p   = qs.duplicate_dbg_ephoton(num); 
 
+    SEvt::Get()->setInputPhoton(p);  // also adds placeholder genstep 
+
     int bounce_max = SEventConfig::MaxBounce(); 
     NP* prd = qs.prd->duplicate_prd(num, bounce_max);  
     prd->save(dir, "prd.npy"); 
 
-    qs.mock_propagate( p, prd, type ); 
+    qs.mock_propagate( prd, type ); 
 
-    const QEvent* event = qs.event ; 
-    unsigned num_hit = event->getNumHit(); 
-    LOG(info) << " num_hit " << num_hit ;
+    //const QEvent* event = qs.event ; 
+    //unsigned num_hit = event->getNumHit(); 
+    //LOG(info) << " num_hit " << num_hit ;
 
     SEvt::Save(dir); 
 
@@ -644,6 +646,8 @@ int main(int argc, char** argv)
 
     const char* testname = SSys::getenvvar("TEST", "hemisphere_s_polarized"); 
     int type = QSimLaunch::Type(testname); 
+
+    SEvt evt ; 
 
     SSim* ssim = SSim::Load(); 
     QSim::UploadComponents(ssim); 

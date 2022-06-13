@@ -58,6 +58,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     sevent* evt ; 
     sdebug* dbg ; 
     std::string meta ; 
+    const NP* input_photon ; 
+    const SCompProvider*  provider ; 
+    NPFold*               fold ; 
+
 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
@@ -74,9 +78,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     sphoton current_photon = {} ; 
     srec    current_rec = {} ; 
     sseq    current_seq = {} ; 
-
-    const SCompProvider*  provider ; 
-    NPFold*               fold ; 
 
 
     static const plog::Severity LEVEL ; 
@@ -101,8 +102,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     static int  GetIndex(); 
     static int GetNumPhoton(); 
     static NP* GetGenstep(); 
+    static const NP* GetInputPhoton(); 
 
-
+    bool isSelfProvider() const ; 
+ 
     SEvt(); 
     void init(); 
     void setCompProvider(const SCompProvider* provider); 
@@ -163,6 +166,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void saveGenstep(const char* dir) const ; 
     NP* getGenstep() const ; 
+    const NP* getInputPhoton() const ; 
+    void setInputPhoton(const NP* p); 
 
     void gather_components() ; 
 

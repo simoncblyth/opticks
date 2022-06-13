@@ -61,7 +61,7 @@ QEvent::QEvent()
     evt(sev ? sev->evt : nullptr),
     d_evt(QU::device_alloc<sevent>(1)),
     gs(nullptr),
-    p(nullptr),
+    upload_count(0),
     meta()
 {
     INSTANCE = this ; 
@@ -140,7 +140,7 @@ HMM: what about simtrace ? ce-gensteps are very different to ordinary gs
 
 **/
 
-int QEvent::setGenstep()
+int QEvent::setGenstep()  // onto device
 {
     NP* gs = SEvt::GetGenstep(); 
     SEvt::Clear();   // clear the quad6 vector, ready to collect more genstep
@@ -182,15 +182,35 @@ int QEvent::setGenstep(NP* gs_)
     {
         setNumSimtrace( evt->num_seed ); 
     }
+    else if(OpticksGenstep_::IsInputPhoton(gencode0))
+    {
+        uploadInputPhoton(); 
+    }
     else
     {
         setNumPhoton( evt->num_seed );  // photon, rec, record may be allocated here depending on SEventConfig
     }
+    upload_count += 1 ; 
     return 0 ; 
 }
 
 
+void QEvent::uploadInputPhoton()
+{
+    const NP* p = SEvt::GetInputPhoton(); 
+    if( p == nullptr ) 
+        LOG(fatal) 
+            << " INCONSISTENT : OpticksGenstep_INPUT_PHOTON by no input photon array " 
+            ; 
 
+    assert(p);  
+    assert(p->has_shape( -1, 4, 4) ); 
+    int num_photon = p->shape[0] ; 
+    assert( evt->num_seed == num_photon ); 
+
+    setNumPhoton( num_photon ); 
+    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)p->bytes(), num_photon ); 
+}
 
 
 
@@ -254,36 +274,6 @@ void QEvent::count_genstep_photons_and_fill_seed_buffer()
     QEvent_count_genstep_photons_and_fill_seed_buffer( evt ); 
 }
 
-
-/**
-QEvent::setPhoton
--------------------
-
-This is only used with non-standard input photon running, 
-eg the photon mutatating QSimTest use this.  
-The normal mode of operation is to start from gensteps using QEvent::setGenstep
-and seed and generate photons on device.
-
-HMM: this is problematic as it breaks the pattern of normal genstep running 
-
-**/
-
-void QEvent::setPhoton(const NP* p_)
-{
-    p = p_ ; 
-
-    int num_photon = p->shape[0] ; 
-    
-    LOG(info) << "[ " <<  p->sstr() << " num_photon " << num_photon  ; 
-
-    assert( p->has_shape( -1, 4, 4) ); 
-
-    setNumPhoton( num_photon ); 
-
-    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)p->bytes(), num_photon ); 
-
-    LOG(info) << "] " <<  p->sstr() << " num_photon " << num_photon  ; 
-}
 
 
 
@@ -567,7 +557,12 @@ void QEvent::setNumPhoton(unsigned num_photon )
 
         // TODO: with input photons need to upload them here 
 
+    } 
+    else
+    {
+         LOG(error) << " evt.photon is not nullptr " ; 
     }
+
 
     uploadEvt(); 
 }

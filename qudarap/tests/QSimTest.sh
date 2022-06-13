@@ -29,7 +29,7 @@ msg="=== $BASH_SOURCE :"
 #test=wavelength_scintillation
 #test=wavelength_cerenkov
 
-test=scint_generate
+#test=scint_generate
 #test=cerenkov_generate
 
 #test=fill_state_0
@@ -56,7 +56,7 @@ test=scint_generate
 #test=reflect_specular
 #test=propagate_at_surface
 
-#test=mock_propagate
+test=mock_propagate
 #test=gentorch
 
 M1=1000000

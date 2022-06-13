@@ -30,16 +30,21 @@ const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ;
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
+bool SEvt::isSelfProvider() const {   return provider == this ; }
+
 SEvt::SEvt()
     :
     index(MISSING_INDEX),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
     dbg(new sdebug),
+    input_photon(nullptr),
+    provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
     fold(new NPFold)
 { 
     init(); 
 }
+
 
 /**
 SEvt::init
@@ -63,8 +68,6 @@ void SEvt::init()
     INSTANCE = this ; 
     evt->init(); 
     dbg->zero(); 
-
-    setCompProvider(this); // overridden for device running from QEvent::init 
     LOG(fatal) << evt->desc() ;
 }
 
@@ -112,7 +115,8 @@ int SEvt::GetIndex(){     return INSTANCE ? INSTANCE->getIndex()     :  0 ; }
 
 int SEvt::GetNumPhoton(){ return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
 
-NP* SEvt::GetGenstep() {  return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
+NP* SEvt::GetGenstep() {      return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
+const NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
 
 void SEvt::clear()
 {
@@ -202,7 +206,10 @@ sgs SEvt::addGenstep(const quad6& q_)
     if( tot_photon != evt->num_photon )
     {
         setNumPhoton(tot_photon); 
-        resize();  
+        if(isSelfProvider() )
+        {
+            resize();  
+        }
     }
 
     // TODO: work out what needs to NOT be done (eg resize) 
@@ -230,8 +237,19 @@ void SEvt::setNumPhoton(unsigned numphoton)
     evt->num_rec    = evt->max_rec    * evt->num_photon ;
 }
 
+/**
+SEvt::resize
+---------------
+
+NB evt->photon, evt->record, ...  pointers are used to hold device side 
+addresses for QEvent running and CPU side addresses for SEvt based running.
+
+**/
+
 void SEvt::resize()
 {
+    assert( isSelfProvider() ); 
+
     if(evt->num_photon > 0) pho.resize(  evt->num_photon );  
     if(evt->num_photon > 0) slot.resize( evt->num_photon ); 
 
@@ -680,6 +698,33 @@ by SEvt::clear
 **/
 
 NP* SEvt::getGenstep() const { return NP::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
+const NP* SEvt::getInputPhoton() const { return input_photon ; }
+
+/**
+SEvt::setInputPhoton
+---------------------
+
+Also adds placeholder genstep of gentype OpticksGenstep_INPUT_PHOTON
+
+**/
+
+void SEvt::setInputPhoton(const NP* p) 
+{ 
+    input_photon = p ; 
+    assert( input_photon->has_shape(-1,4,4) ); 
+    int numphoton = input_photon->shape[0] ; 
+    assert( numphoton > 0 ); 
+
+    assert( genstep.size() == 0 ) ; // cannot mix input photon running with genstep running  
+
+    quad6 ipgs ; 
+    ipgs.zero(); 
+    ipgs.set_gentype( OpticksGenstep_INPUT_PHOTON ); 
+    ipgs.set_numphoton( numphoton ); 
+
+    addGenstep(ipgs); 
+}
+
 
 void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE 
 {

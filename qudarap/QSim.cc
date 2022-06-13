@@ -1,5 +1,6 @@
 #include "PLOG.hh"
 #include "SSys.hh"
+#include "SEvt.hh"
 #include "SSim.hh"
 #include "SPath.hh"
 #include "scuda.h"
@@ -775,27 +776,40 @@ QSim::mock_propagate_launch_mutate
 Aiming to replace the above with a simpler and less duplicitous version by 
 using common QEvent functionality 
 
+TODO: move non-CUDA needing stuff down to SEvt? 
+
 **/
 
-void QSim::mock_propagate( NP* p, const NP* prd, unsigned type )
+void QSim::mock_propagate( const NP* prd, unsigned type )
 {
+    const NP* p = SEvt::GetInputPhoton(); 
+    assert(p); 
+
     int num_p = p->shape[0] ; 
 
+    assert( num_p > 0 ); 
     assert( prd->has_shape( num_p, -1, 2, 4 ) );    // TODO: evt->max_record checking 
     assert( prd->shape.size() == 4 && prd->shape[2] == 2 && prd->shape[3] == 4 ); 
 
     int num_prd = prd->shape[0]*prd->shape[1] ;  
 
-    LOG(info) << "[ num_prd " << num_prd << " prd " << prd->sstr()  ;
- 
-    event->setPhoton(p); 
+    LOG(info) 
+         << "["
+         << " num_p " << num_p
+         << " num_prd " << num_prd 
+         << " prd " << prd->sstr() 
+         ;
 
-    //int num_photon = event->evt->num_photon ; 
     int num_photon = event->getNumPhoton(); 
     assert( num_photon == num_p ); 
 
     quad2* d_prd = QU::UploadArray<quad2>( (quad2*)prd->bytes(), num_prd );  
     // prd non-standard so appropriate to upload here 
+
+    int rc = event->setGenstep(); 
+    assert( rc == 0 ); 
+
+    assert( event->upload_count > 0 ); 
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
@@ -804,7 +818,8 @@ void QSim::mock_propagate( NP* p, const NP* prd, unsigned type )
 
     cudaDeviceSynchronize();
 
-    event->getPhoton(p); 
+    // event->getPhoton(p);   this should be automated by SEvt::gather_components 
+
     LOG(info) << "]" ; 
 }
 

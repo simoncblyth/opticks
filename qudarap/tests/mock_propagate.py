@@ -5,7 +5,6 @@ from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
 from opticks.ana.p import * 
 from opticks.ana.r import * 
-from opticks.ana.s import * 
 
 
 if __name__ == '__main__':
@@ -16,8 +15,7 @@ if __name__ == '__main__':
     domain = t.domain
     post_center, post_extent, polw_center, polw_extent = domain[0]  
 
-    domain_meta = t.domain_meta
-    hitmask = np.uint32(domain_meta.find("hitmask:"))  
+    hitmask = int(t.domain_meta.d["hitmask"])  
 
     p = t.photon
     r = t.record
@@ -28,14 +26,15 @@ if __name__ == '__main__':
 
     c = t.rec
 
+    if not c is None:
+        # domain compression means these should fit into -1:1 
+        c_post_ = c[:,:,0].astype(np.float32)/32767.0
+        c_polw_ = c[:,:,1,0:2].copy().view(np.int8).astype(np.float32)/127.
 
-    # domain compression means these should fit into -1:1 
-    c_post_ = c[:,:,0].astype(np.float32)/32767.0
-    c_polw_ = c[:,:,1,0:2].copy().view(np.int8).astype(np.float32)/127.
-
-    # then scale that back to originals that should be close to full step records 
-    c_post = c_post_*post_extent + post_center   
-    c_polw = c_polw_*polw_extent + polw_center 
+        # then scale that back to originals that should be close to full step records 
+        c_post = c_post_*post_extent + post_center   
+        c_polw = c_polw_*polw_extent + polw_center 
+    pass
 
     ## HMM:makes more sense to put this meta data on the domain, for when no hits
     pyhit = hit__(p, hitmask)  # hits selected in python 
