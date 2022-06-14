@@ -9,11 +9,342 @@ Doing simple A-B comparisons with::
     ./U4RecorderTest_ab.sh 
 
 
+normal incidence b polz unchanging, a does a bit
+---------------------------------------------------
+
+::
+
+    In [4]: a.record[0,:4]                                                                                                                                                        
+    Out[4]: 
+    array([[[  -0.774,   -0.245,    0.583,    0.1  ],
+            [  -0.774,   -0.245,    0.583,    1.   ],
+            [  -0.602,    0.   ,   -0.799,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -38.712,  -12.26 ,   29.173,    0.326],
+            [  -0.774,   -0.245,    0.583,    0.   ],
+            [  -0.544,    0.009,   -0.839,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[-100.   ,  -31.67 ,   75.357,    0.59 ],
+            [  -0.774,   -0.245,    0.583,    0.   ],
+            [  -0.544,    0.009,   -0.839,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+    In [5]: b.record[0,:4]                                                                                                                                                        
+    Out[5]: 
+    array([[[  -0.774,   -0.245,    0.583,    0.1  ],
+            [  -0.774,   -0.245,    0.583,    0.   ],
+            [  -0.602,    0.   ,   -0.799,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -38.712,  -12.26 ,   29.173,    0.325],
+            [  -0.774,   -0.245,    0.583,    0.   ],
+            [  -0.602,    0.   ,   -0.799,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[-100.   ,  -31.67 ,   75.357,    0.689],
+            [  -0.774,   -0.245,    0.583,    0.   ],
+            [  -0.602,    0.   ,   -0.799,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+    In [6]:                                                            
 
 
 
-cx 2/10 with nan polz
--------------------------
+Pos and mom are close, apart from one BR bouncer
+--------------------------------------------------
+
+::
+
+    In [5]: a.photon[:,0]                                                                                                                                                         
+    Out[5]: 
+    array([[-100.   ,  -31.67 ,   75.357,    0.59 ],
+           [ -22.228, -100.   ,    5.93 ,    0.602],
+           [-100.   ,  -75.341,   17.199,    0.781],
+           [ -59.225,  -17.159,  100.   ,    0.851],
+           [ -53.126,   27.637, -100.   ,    0.948],
+           [  41.563,   54.208,  100.   ,    1.525],
+           [ -27.109,   11.211, -100.   ,    1.107],
+           [  87.27 ,  -70.573,  100.   ,    1.361],
+           [ 100.   ,  -23.237,   68.731,    1.372],
+           [ -67.583,   60.769,  100.   ,    1.51 ]], dtype=float32)
+
+    In [6]: b.photon[:,0]                                                                                                                                                         
+    Out[6]: 
+    array([[-100.   ,  -31.67 ,   75.357,    0.689],
+           [ -22.228, -100.   ,    5.93 ,    0.667],
+           [-100.   ,  -75.341,   17.199,    0.876],
+           [ -59.225,  -17.159,  100.   ,    0.935],
+           [ -53.126,   27.637, -100.   ,    1.031],
+           [ -41.563,  -54.208, -100.   ,    1.152],
+           [ -27.109,   11.211, -100.   ,    1.174],
+           [  87.27 ,  -70.573,  100.   ,    1.486],
+           [ 100.   ,  -23.237,   68.731,    1.463],
+           [ -67.583,   60.769,  100.   ,    1.616]], dtype=float32)
+
+    In [7]: a.photon[:,1]                                                                                                                                                         
+    Out[7]: 
+    array([[-0.774, -0.245,  0.583,  0.   ],
+           [-0.217, -0.975,  0.058,  0.   ],
+           [-0.791, -0.596,  0.136,  0.   ],
+           [-0.504, -0.146,  0.851,  0.   ],
+           [-0.456,  0.237, -0.858,  0.   ],
+           [ 0.343,  0.448,  0.826,  0.   ],
+           [-0.26 ,  0.108, -0.96 ,  0.   ],
+           [ 0.581, -0.469,  0.665,  0.   ],
+           [ 0.809, -0.188,  0.556,  0.   ],
+           [-0.5  ,  0.45 ,  0.74 ,  0.   ]], dtype=float32)
+
+    In [8]: b.photon[:,1]                                                                                                                                                         
+    Out[8]: 
+    array([[-0.774, -0.245,  0.583,  0.   ],
+           [-0.217, -0.975,  0.058,  0.   ],
+           [-0.791, -0.596,  0.136,  0.   ],
+           [-0.504, -0.146,  0.851,  0.   ],
+           [-0.456,  0.237, -0.858,  0.   ],
+           [-0.343, -0.448, -0.826,  0.   ],
+           [-0.26 ,  0.108, -0.96 ,  0.   ],
+           [ 0.581, -0.469,  0.665,  0.   ],
+           [ 0.809, -0.188,  0.556,  0.   ],
+           [-0.5  ,  0.45 ,  0.74 ,  0.   ]], dtype=float32)
+
+
+polz very different::
+
+    In [12]: a.photon[:,2]                                                                                                                                                        
+    Out[12]: 
+    array([[ -0.544,   0.009,  -0.839, 440.   ],
+           [ -0.258,   0.   ,  -0.966, 440.   ],
+           [  0.179,  -0.457,  -0.871, 440.   ],
+           [  0.757,   0.404,   0.513, 440.   ],
+           [  0.883,   0.   ,  -0.469, 440.   ],
+           [  0.878,  -0.42 ,   0.228, 440.   ],
+           [  0.969,  -0.02 ,  -0.245, 440.   ],
+           [ -0.753,   0.   ,   0.658, 440.   ],
+           [ -0.566,   0.   ,   0.824, 440.   ],
+           [ -0.256,  -0.948,   0.19 , 440.   ]], dtype=float32)
+
+    In [13]: b.photon[:,2]                                                                                                                                                        
+    Out[13]: 
+    array([[ -0.774,  -0.245,   0.583, 440.   ],
+           [ -0.217,  -0.975,   0.058, 440.   ],
+           [ -0.791,  -0.596,   0.136, 440.   ],
+           [ -0.504,  -0.146,   0.851, 440.   ],
+           [ -0.456,   0.237,  -0.858, 440.   ],
+           [ -0.343,  -0.448,  -0.826, 440.   ],
+           [ -0.26 ,   0.108,  -0.96 , 440.   ],
+           [  0.581,  -0.469,   0.665, 440.   ],
+           [  0.809,  -0.188,   0.556, 440.   ],
+           [ -0.5  ,   0.45 ,   0.74 , 440.   ]], dtype=float32)
+
+
+Huh geant4 giving mom and pol the same, maybe trivial recording bug:: 
+
+    In [17]: a.record[1,:4]                                                                                                                                                       
+    Out[17]: 
+    array([[[  -0.217,   -0.975,    0.058,    0.2  ],
+            [  -0.217,   -0.975,    0.058,    1.   ],
+            [  -0.258,    0.   ,   -0.966,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -10.831,  -48.727,    2.889,    0.426],
+            [  -0.217,   -0.975,    0.058,    0.   ],
+            [  -0.258,    0.   ,   -0.966,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -22.228, -100.   ,    5.93 ,    0.602],
+            [  -0.217,   -0.975,    0.058,    0.   ],
+            [  -0.258,    0.   ,   -0.966,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+    In [18]: b.record[1,:4]                                                                                                                                                       
+    Out[18]: 
+    array([[[  -0.217,   -0.975,    0.058,    0.2  ],
+            [  -0.217,   -0.975,    0.058,    0.   ],
+            [  -0.217,   -0.975,    0.058,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -10.831,  -48.727,    2.889,    0.425],
+            [  -0.217,   -0.975,    0.058,    0.   ],
+            [  -0.217,   -0.975,    0.058,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -22.228, -100.   ,    5.93 ,    0.667],
+            [  -0.217,   -0.975,    0.058,    0.   ],
+            [  -0.217,   -0.975,    0.058,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+    In [19]:                                                                
+
+
+Does not look like a trivial issue. So perhaps normal incidence handling difference?::
+
+     34 void U4StepPoint::Update(sphoton& photon, const G4StepPoint* point)  // static
+     35 {   
+     36     const G4ThreeVector& pos = point->GetPosition();
+     37     const G4ThreeVector& mom = point->GetMomentumDirection();
+     38     const G4ThreeVector& pol = point->GetPolarization();
+     39     
+     40     G4double time = point->GetGlobalTime();
+     41     G4double energy = point->GetKineticEnergy();
+     42     G4double wavelength = h_Planck*c_light/energy ;
+     43     
+     44     photon.pos.x = pos.x();
+     45     photon.pos.y = pos.y();
+     46     photon.pos.z = pos.z(); 
+     47     photon.time  = time/ns ;
+     48     
+     49     photon.mom.x = mom.x();
+     50     photon.mom.y = mom.y();
+     51     photon.mom.z = mom.z();
+     52     //photon.iindex = 0u ; 
+     53     
+     54     photon.pol.x = pol.x();
+     55     photon.pol.y = pol.y();
+     56     photon.pol.z = pol.z(); 
+     57     photon.wavelength = wavelength/nm ;
+     58 }
+
+
+FIXED Trivial polz input_photon bug on input, not output recording::
+
+     49 template<typename P>
+     50 inline void U4VPrimaryGenerator::GetPhotonParam(
+     51      G4ThreeVector& position_mm, G4double& time_ns,
+     52      G4ThreeVector& direction,  G4double& wavelength_nm,
+     53      G4ThreeVector& polarization, const P& p )
+     54 {    
+     55      position_mm.set(p.pos.x, p.pos.y, p.pos.z);
+     56      time_ns = p.time ;
+     57      
+     58      direction.set(p.mom.x, p.mom.y, p.mom.z ); 
+     59      polarization.set(p.mom.x, p.mom.y, p.mom.z );
+       ^^^^^^^^^^^ OOPS ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     60      wavelength_nm = p.wavelength ;
+     61 }
+     62 
+
+
+
+TODO: debug deep dive Geant4 at normal incidence to understand the polz are getting
+--------------------------------------------------------------------------------------
+
+::
+
+    cd ~/opticks/u4/tests
+    BP=G4OpBoundaryProcess::DielectricDielectric ./U4RecorderTest.sh dbg 
+
+
+g4-cls G4OpBoundaryProcess
+
+
+::
+
+    1140               if (sint1 > 0.0) {
+    1141                  A_trans = OldMomentum.cross(theFacetNormal);
+    1142                  A_trans = A_trans.unit();
+    1143                  E1_perp = OldPolarization * A_trans;
+    1144                  E1pp    = E1_perp * A_trans;
+    1145                  E1pl    = OldPolarization - E1pp;
+    1146                  E1_parl = E1pl.mag();
+    1147               }
+    1148               else {
+    1149                  A_trans  = OldPolarization;
+    1150                  // Here we Follow Jackson's conventions and we set the
+    1151                  // parallel component = 1 in case of a ray perpendicular
+    1152                  // to the surface
+    1153                  E1_perp  = 0.0;
+    1154                  E1_parl  = 1.0;
+    1155               }
+    1156 
+    1157               s1 = Rindex1*cost1;
+    1158               E2_perp = 2.*s1*E1_perp/(Rindex1*cost1+Rindex2*cost2);
+    1159               E2_parl = 2.*s1*E1_parl/(Rindex2*cost1+Rindex1*cost2);
+    1160               E2_total = E2_perp*E2_perp + E2_parl*E2_parl;
+    1161               s2 = Rindex2*cost2*E2_total;
+    1162 
+
+
+
+
+FIXED : cx 2/10 with nan polz
+--------------------------------
+::
+
+     670 inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
+     671 {
+     672     const float& n1 = s.material1.x ;
+     673     const float& n2 = s.material2.x ;
+     674     const float eta = n1/n2 ;
+     675 
+     676     const float3* normal = (float3*)&prd->q0.f.x ;
+     677 
+     678     const float _c1 = -dot(p.mom, *normal );
+     679     const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ;
+     680     const float3 trans = cross(p.mom, oriented_normal) ;
+     681     const float trans_length = length(trans) ;
+     682     const float c1 = fabs(_c1) ;
+     683     const bool normal_incidence = trans_length == 0.f  ;
+     684 
+     685     /**
+     686     **Normal Incidence**
+     687  
+     688     Judging normal_incidence based on absolete dot product being exactly unity "c1 == 1.f" is problematic 
+     689     as when very near to normal incidence there are vectors for which the absolute dot product 
+     690     is not quite 1.f but the cross product does give an exactly zero vector which gives 
+     691     A_trans (nan, nan, nan) from the normalize doing : (zero,zero,zero)/zero.   
+     692 
+     693     Solution is to judge normal incidence based on trans_length as that is what the 
+     694     calulation actually needs to be non-zero in order to be able to calculate A_trans.
+     695     Hence should be able to guarantee that A_trans will be well defined. 
+     696     **/
+     697 
+
+
+
+
+After fix::
+
+    N[blyth@localhost CSGOptiX]$ PIDX=1 ./cxs_raindrop.sh 
+    ..
+
+    //qsim.propagate idx 1 bnc 0 cosTheta     1.0000 dir (   -0.2166    -0.9745     0.0578) nrm (   -0.2166    -0.9745     0.0578) 
+    //qsim.propagate idx 1 bounce 0 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate_at_boundary idx 1 nrm   (    0.2166     0.9745    -0.0578) 
+    //qsim.propagate_at_boundary idx 1 mom_0 (   -0.2166    -0.9745     0.0578) 
+    //qsim.propagate_at_boundary idx 1 pol_0 (   -0.2578     0.0000    -0.9662) 
+    //qsim.propagate_at_boundary idx 1 c1     1.0000 normal_incidence 1 
+    //qsim.propagate_at_boundary idx 1 normal_incidence 1 p.pol (   -0.2578,    0.0000,   -0.9662) p.mom (   -0.2166,   -0.9745,    0.0578) o_normal (    0.2166,    0.9745,   -0.0578)
+    //qsim.propagate_at_boundary idx 1 TransCoeff     0.9775 n1c1     1.3530 n2c2     1.0003 E2_t (    0.0000,    1.1499) A_trans (   -0.2578,    0.0000,   -0.9662) 
+    //qsim.propagate_at_boundary idx 1 reflect 0 tir 0 TransCoeff     0.9775 u_reflect     0.3725 
+    //qsim.propagate_at_boundary idx 1 mom_1 (   -0.2166    -0.9745     0.0578) 
+    //qsim.propagate_at_boundary idx 1 pol_1 (   -0.2578     0.0000    -0.9662) 
+    //qsim.propagate idx 1 bnc 1 cosTheta     0.9745 dir (   -0.2166    -0.9745     0.0578) nrm (    0.0000    -1.0000     0.0000) 
+    //qsim.propagate idx 1 bounce 1 command 3 flag 0 s.optical.x 99 
+    2022-06-15 03:19:39.793 INFO  [432148] [SEvt::save@944] DefaultDir /tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
+    2022-06-15 03:19:39.793 INFO  [432148] [SEvt::save@970]  dir /tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
+    2022-06-15 03:19:39.793 INFO  [432148] [QEvent::getPhoton@345] [ evt.num_photon 10 p.sstr (10, 4, 4, ) evt.photon 0x7f88d8000000
 
 
 PIDX dumping::
@@ -53,6 +384,11 @@ Issue is from cross product with very close to normal incidence but not quite::
      542   return make_float3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
      543 }
 
+     552 SUTIL_INLINE SUTIL_HOSTDEVICE float3 normalize(const float3& v)
+     553 {
+     554   float invLen = 1.0f / sqrtf(dot(v, v));
+     555   return v * invLen;
+     556 }
 
 
 

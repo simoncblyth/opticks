@@ -56,7 +56,7 @@ inline void U4VPrimaryGenerator::GetPhotonParam(
      time_ns = p.time ; 
 
      direction.set(p.mom.x, p.mom.y, p.mom.z ); 
-     polarization.set(p.mom.x, p.mom.y, p.mom.z ); 
+     polarization.set(p.pol.x, p.pol.y, p.pol.z ); 
      wavelength_nm = p.wavelength ;   
 }
 
