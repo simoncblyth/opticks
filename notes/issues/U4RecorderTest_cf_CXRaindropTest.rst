@@ -16,6 +16,49 @@ cx 2/10 with nan polz
 -------------------------
 
 
+PIDX dumping::
+
+    N[blyth@localhost CSGOptiX]$ PIDX=1 ./cxs_raindrop.sh 
+
+    //qsim.propagate idx 1 bnc 0 cosTheta     1.0000 dir (   -0.2166    -0.9745     0.0578) nrm (   -0.2166    -0.9745     0.0578) 
+    //qsim.propagate idx 1 bounce 0 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate_at_boundary idx 1 nrm   (    0.2166     0.9745    -0.0578) 
+    //qsim.propagate_at_boundary idx 1 mom_0 (   -0.2166    -0.9745     0.0578) 
+    //qsim.propagate_at_boundary idx 1 pol_0 (   -0.2578     0.0000    -0.9662) 
+    //qsim.propagate_at_boundary idx 1 c1     1.0000 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 1 reflect 0 tir 0 TransCoeff        nan u_reflect     0.3725 
+    //qsim.propagate_at_boundary idx 1 mom_1 (   -0.2166    -0.9745     0.0578) 
+    //qsim.propagate_at_boundary idx 1 pol_1 (       nan        nan        nan) 
+    //qsim.propagate idx 1 bnc 1 cosTheta     0.9745 dir (   -0.2166    -0.9745     0.0578) nrm (    0.0000    -1.0000     0.0000) 
+    //qsim.propagate idx 1 bounce 1 command 3 flag 0 s.optical.x 99 
+    2022-06-15 02:08:59.420 INFO  [426728] [SEvt::save@944] DefaultDir /tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
+    2022-06-15 02:08:59.420 INFO  [426728] [SEvt::save@970]  dir /tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
+    2022-06-15 02:08:59.420 INFO  [426728] [QEvent::getPhoton@345] [ evt.num_photon 10 p.sstr (10, 4, 4, ) evt.photon 0x7f8ef8000000
+
+
+Issue is from cross product with very close to normal incidence but not quite::
+
+    //qsim.propagate_at_boundary idx 1 pol_0 (   -0.2578     0.0000    -0.9662) 
+    //qsim.propagate_at_boundary idx 1 c1     1.0000 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 1 normal_incidence 0 p.pol (   -0.2578,    0.0000,   -0.9662) p.mom (   -0.2166,   -0.9745,    0.0578) o_normal (    0.2166,    0.9745,   -0.0578)
+    //qsim.propagate_at_boundary idx 1 TransCoeff        nan n1c1     1.3530 n2c2     1.0003 E2_t (       nan,       nan) A_trans (       nan,       nan,       nan) 
+    //qsim.propagate_at_boundary idx 1 reflect 0 tir 0 TransCoeff        nan u_reflect     0.3725 
+
+
+::
+
+    539 /** cross product */
+     540 SUTIL_INLINE SUTIL_HOSTDEVICE float3 cross(const float3& a, const float3& b)
+     541 {
+     542   return make_float3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
+     543 }
+
+
+
+
+
+
+
 ana/input_photons.py
 
     214     @classmethod

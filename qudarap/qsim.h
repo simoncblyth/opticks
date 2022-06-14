@@ -677,9 +677,25 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
 
     const float _c1 = -dot(p.mom, *normal ); 
     const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ; 
+    const float3 trans = cross(p.mom, oriented_normal) ; 
+    const float trans_length = length(trans) ; 
     const float c1 = fabs(_c1) ; 
-    const bool normal_incidence = c1 == 1.f ; 
+    const bool normal_incidence = trans_length == 0.f  ; 
+ 
+    /**
+    **Normal Incidence**
+ 
+    Judging normal_incidence based on absolete dot product being exactly unity "c1 == 1.f" is problematic 
+    as when very near to normal incidence there are vectors for which the absolute dot product 
+    is not quite 1.f but the cross product does give an exactly zero vector which gives 
+    A_trans (nan, nan, nan) from the normalize doing : (zero,zero,zero)/zero.   
 
+    Solution is to judge normal incidence based on trans_length as that is what the 
+    calulation actually needs to be non-zero in order to be able to calculate A_trans.
+    Hence should be able to guarantee that A_trans will be well defined. 
+    **/
+
+#ifdef DEBUG_PIDX
     if(idx == base->pidx)
     {
     printf("//qsim.propagate_at_boundary idx %d nrm   (%10.4f %10.4f %10.4f) \n", idx, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
@@ -687,6 +703,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     printf("//qsim.propagate_at_boundary idx %d pol_0 (%10.4f %10.4f %10.4f) \n", idx, p.pol.x, p.pol.y, p.pol.z ); 
     printf("//qsim.propagate_at_boundary idx %d c1 %10.4f normal_incidence %d \n", idx, c1, normal_incidence ); 
     }
+#endif
 
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
     bool tir = c2c2 < 0.f ; 
@@ -696,7 +713,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     const float n2c2 = n2*c2 ; 
     const float n2c1 = n2*c1 ; 
     const float n1c2 = n1*c2 ; 
-    const float3 A_trans = normal_incidence ? p.pol : normalize(cross(p.mom, oriented_normal)) ; // perpendicular to plane of incidence
+    const float3 A_trans = normal_incidence ? p.pol : trans/trans_length ; // perpendicular to plane of incidence
     const float E1_perp = dot(p.pol, A_trans);     //  E vector component perpendicular to plane of incidence, ie S polarization
     const float2 E1   = normal_incidence ? make_float2( 0.f, 1.f) : make_float2( E1_perp , length( p.pol - (E1_perp*A_trans) ) ); 
     const float2 E2_t = make_float2(  2.f*n1c1*E1.x/(n1c1+n2c2), 2.f*n1c1*E1.y/(n2c1+n1c2) ) ;  // ( S:perp, P:parl )  
@@ -704,6 +721,18 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     const float2 RR = normalize(E2_r) ; 
     const float2 TT = normalize(E2_t) ; 
     const float TransCoeff = tir || n1c1 == 0.f ? 0.f : n2c2*dot(E2_t,E2_t)/n1c1 ; 
+
+#ifdef DEBUG_PIDX
+    if(idx == base->pidx)
+    {
+    printf("//qsim.propagate_at_boundary idx %d normal_incidence %d p.pol (%10.4f,%10.4f,%10.4f) p.mom (%10.4f,%10.4f,%10.4f) o_normal (%10.4f,%10.4f,%10.4f)\n", 
+              idx, normal_incidence, p.pol.x, p.pol.y, p.pol.z, p.mom.x, p.mom.y, p.mom.z, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
+
+    printf("//qsim.propagate_at_boundary idx %d TransCoeff %10.4f n1c1 %10.4f n2c2 %10.4f E2_t (%10.4f,%10.4f) A_trans (%10.4f,%10.4f,%10.4f) \n", 
+            idx, TransCoeff, n1c1, n2c2, E2_t.x, E2_t.y, A_trans.x, A_trans.y, A_trans.z ); 
+    }
+#endif
+
 
     const float u_boundary_burn = curand_uniform(&rng) ;  // needed for random consumption alignment with Geant4 G4OpBoundaryProcess::PostStepDoIt
     const float u_reflect = curand_uniform(&rng) ;
@@ -751,12 +780,14 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
                                                    )
                                       ;
 
+#ifdef DEBUG_PIDX
     if(idx == base->pidx)
     {
-    printf("//qsim.propagate_at_boundary idx %d reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", idx, reflect, tir, TransCoeff, u_reflect );  
-    printf("//qsim.propagate_at_boundary idx %d mom_1 (%10.4f %10.4f %10.4f) \n", idx, p.mom.x, p.mom.y, p.mom.z ); 
-    printf("//qsim.propagate_at_boundary idx %d pol_1 (%10.4f %10.4f %10.4f) \n", idx, p.pol.x, p.pol.y, p.pol.z ); 
+        printf("//qsim.propagate_at_boundary idx %d reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", idx, reflect, tir, TransCoeff, u_reflect );  
+        printf("//qsim.propagate_at_boundary idx %d mom_1 (%10.4f %10.4f %10.4f) \n", idx, p.mom.x, p.mom.y, p.mom.z ); 
+        printf("//qsim.propagate_at_boundary idx %d pol_1 (%10.4f %10.4f %10.4f) \n", idx, p.pol.x, p.pol.y, p.pol.z ); 
     }
+#endif
 
     /*
     if(idx == 251959)
