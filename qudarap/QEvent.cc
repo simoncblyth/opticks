@@ -201,6 +201,10 @@ QEvent::setInputPhoton
 ------------------------
 
 This is a private method invoked only from QEvent::setGenstep
+which gets the input photon array from SEvt and uploads 
+it to the device. 
+When the input_photon array is in double precision it is 
+narrowed here prior to upload. 
 
 **/
 
@@ -214,11 +218,15 @@ void QEvent::setInputPhoton()
 
     assert(input_photon);  
     assert(input_photon->has_shape( -1, 4, 4) ); 
+    assert(input_photon->ebyte == 4 || input_photon->ebyte == 8); 
+
     int num_photon = input_photon->shape[0] ; 
     assert( evt->num_seed == num_photon ); 
 
+    NP* narrow_input_photon = input_photon->ebyte == 8 ? NP::MakeNarrow(input_photon) : input_photon ; 
+
     setNumPhoton( num_photon ); 
-    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)input_photon->bytes(), num_photon ); 
+    QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)narrow_input_photon->bytes(), num_photon ); 
 }
 
 

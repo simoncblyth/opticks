@@ -160,7 +160,7 @@ DsG4Scintillation::DsG4Scintillation(G4int opticksMode, const G4String& processN
         const char* fallback = "0" ;  
         int level =  std::atoi(level_ ? level_ : fallback) ;
         SetVerboseLevel(level); 
-        std::cout << " level " << level << " verboseLevel " << verboseLevel << std::endl ;  
+        std::cout << "DsG4Scintillation::DsG4Scintillation level " << level << " verboseLevel " << verboseLevel << std::endl ;  
     }
 #endif
 

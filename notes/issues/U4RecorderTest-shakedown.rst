@@ -16,8 +16,8 @@ TODO : bring OpticksRandom over into U4
 
 
 
-Units issue with input photons ?
------------------------------------
+FIXED : Geant4 warnings re mom unit vectors of input photons can be eliminated using double precision input photons
+---------------------------------------------------------------------------------------------------------------------
 
 NOPE : it Looks like need double precision input photons to avoid Geant4 momentum warning. 
 

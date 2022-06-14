@@ -33,7 +33,7 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 #gidx=117
 #export GIDX=${GIDX:-$gidx}
 
-export U4Material=INFO
+#export U4Material=INFO
 
 
 
