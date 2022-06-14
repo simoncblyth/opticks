@@ -12,8 +12,8 @@ Run on remote::
 Grab from remote to laptop::
 
     cx
-    ./tmp_grab.sh   ## grabs CSGFoundry, SSim inputs and output photons etc.. 
-
+    ./cxs_raindrop.sh grab    ## currently just grabbing outputs in tmp dirs  
+    ## TODO: move outputs into CSGFoundry dirs and grab geometry together with outputs  
 
 Analysis of outputs::
 

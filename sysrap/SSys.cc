@@ -394,6 +394,11 @@ char SSys::getenvchar( const char* envkey, char fallback )
     return c ; 
 }
 
+unsigned SSys::getenvunsigned_fallback_max( const char* envkey)
+{
+    return SSys::getenvunsigned(envkey, std::numeric_limits<unsigned>::max() ); 
+}
+
 unsigned SSys::getenvunsigned( const char* envkey, unsigned fallback )
 {
     char* val = getenv(envkey);

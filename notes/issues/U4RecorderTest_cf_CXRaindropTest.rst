@@ -3,15 +3,206 @@ U4RecorderTest_cf_CXRaindropTest : low stat non-aligned comparisons of U4Recorde
 
 * from :doc:`U4RecorderTest-shakedown`
 
-Doing this with::
+Doing simple A-B comparisons with::
 
     cd ~/opticks/u4/tests
     ./U4RecorderTest_ab.sh 
 
 
 
-cx missing seq 
-------------------
+
+
+cx 2/10 with nan polz
+-------------------------
+
+
+ana/input_photons.py
+
+    214     @classmethod
+    215     def GenerateRandomSpherical(cls, n):
+    216         """
+    217         spherical distribs not carefully checked  
+    218 
+    219         The start position is offset by the direction vector for easy identification purposes
+    220         so that means the rays will start on a virtual unit sphere and travel radially 
+    221         outwards from there.
+    222 
+    223         """
+
+Dumping normals, looks as expected. cosTheta 1 means the rays all exit the sphere in radial direction.::
+
+    //qsim.propagate idx 0 bnc 0 cosTheta     1.0000 dir (   -0.7742    -0.2452     0.5835) nrm (   -0.7742    -0.2452     0.5835) 
+    //qsim.propagate idx 1 bnc 0 cosTheta     1.0000 dir (   -0.2166    -0.9745     0.0578) nrm (   -0.2166    -0.9745     0.0578) 
+    //qsim.propagate idx 2 bnc 0 cosTheta     1.0000 dir (   -0.7913    -0.5961     0.1361) nrm (   -0.7913    -0.5961     0.1361) 
+    //qsim.propagate idx 3 bnc 0 cosTheta     1.0000 dir (   -0.5041    -0.1461     0.8512) nrm (   -0.5041    -0.1461     0.8512) 
+    //qsim.propagate idx 4 bnc 0 cosTheta     1.0000 dir (   -0.4558     0.2371    -0.8579) nrm (   -0.4558     0.2371    -0.8579) 
+    //qsim.propagate idx 5 bnc 0 cosTheta     1.0000 dir (   -0.3432    -0.4476    -0.8257) nrm (   -0.3432    -0.4476    -0.8257) 
+    //qsim.propagate idx 6 bnc 0 cosTheta     1.0000 dir (   -0.2601     0.1076    -0.9596) nrm (   -0.2601     0.1076    -0.9596) 
+    //qsim.propagate idx 7 bnc 0 cosTheta     1.0000 dir (    0.5806    -0.4695     0.6652) nrm (    0.5806    -0.4695     0.6652) 
+    //qsim.propagate idx 8 bnc 0 cosTheta     1.0000 dir (    0.8094    -0.1881     0.5563) nrm (    0.8094    -0.1881     0.5563) 
+    //qsim.propagate idx 9 bnc 0 cosTheta     1.0000 dir (   -0.5001     0.4497     0.7400) nrm (   -0.5001     0.4497     0.7400) 
+    //qsim.propagate idx 0 bnc 1 cosTheta     0.7742 dir (   -0.7742    -0.2452     0.5835) nrm (   -1.0000     0.0000     0.0000) 
+    //qsim.propagate idx 1 bnc 1 cosTheta     0.9745 dir (   -0.2166    -0.9745     0.0578) nrm (    0.0000    -1.0000     0.0000) 
+    //qsim.propagate idx 2 bnc 1 cosTheta     0.7913 dir (   -0.7913    -0.5961     0.1361) nrm (   -1.0000     0.0000     0.0000) 
+    //qsim.propagate idx 3 bnc 1 cosTheta     0.8512 dir (   -0.5041    -0.1461     0.8512) nrm (    0.0000     0.0000     1.0000) 
+    //qsim.propagate idx 4 bnc 1 cosTheta     0.8579 dir (   -0.4558     0.2371    -0.8579) nrm (    0.0000     0.0000    -1.0000) 
+
+    //qsim.propagate idx 5 bnc 1 cosTheta     1.0000 dir (    0.3432     0.4476     0.8257) nrm (    0.3432     0.4476     0.8257) 
+    HMM:  TO BR BT SA
+
+    //qsim.propagate idx 6 bnc 1 cosTheta     0.9596 dir (   -0.2601     0.1076    -0.9596) nrm (    0.0000     0.0000    -1.0000) 
+    //qsim.propagate idx 7 bnc 1 cosTheta     0.6652 dir (    0.5806    -0.4695     0.6652) nrm (    0.0000     0.0000     1.0000) 
+    //qsim.propagate idx 8 bnc 1 cosTheta     0.8094 dir (    0.8094    -0.1881     0.5563) nrm (    1.0000     0.0000     0.0000) 
+    //qsim.propagate idx 9 bnc 1 cosTheta     0.7400 dir (   -0.5001     0.4497     0.7400) nrm (    0.0000     0.0000     1.0000) 
+    //qsim.propagate idx 5 bnc 2 cosTheta     0.8257 dir (    0.3432     0.4476     0.8257) nrm (    0.0000     0.0000     1.0000) 
+
+
+
+
+::
+
+    In [59]: a.photon[:,2]                                                                                                                                                      
+    Out[59]: 
+    array([[ -0.544,   0.009,  -0.839, 440.   ],
+           [    nan,     nan,     nan, 440.   ],
+           [  0.179,  -0.457,  -0.871, 440.   ],
+           [  0.757,   0.404,   0.513, 440.   ],
+           [    nan,     nan,     nan, 440.   ],
+           [  0.923,  -0.337,   0.183, 440.   ],
+           [  0.965,   0.   ,  -0.262, 440.   ],
+           [ -0.753,   0.   ,   0.658, 440.   ],
+           [ -0.566,   0.   ,   0.824, 440.   ],
+           [ -0.256,  -0.948,   0.19 , 440.   ]], dtype=float32)
+
+
+
+
+    In [43]: a.record[1,:4]                                                                                                                                                     
+    Out[43]: 
+    array([[[  -0.217,   -0.975,    0.058,    0.2  ],
+            [  -0.217,   -0.975,    0.058,    1.   ],
+            [  -0.258,    0.   ,   -0.966,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -10.831,  -48.727,    2.889,    0.426],
+            [  -0.217,   -0.975,    0.058,    0.   ],
+            [     nan,      nan,      nan,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -22.228, -100.   ,    5.93 ,    0.602],
+            [  -0.217,   -0.975,    0.058,    0.   ],
+            [     nan,      nan,      nan,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+    In [58]: a.record[4,:4]                                                                                                                                                     
+    Out[58]: 
+    array([[[  -0.456,    0.237,   -0.858,    0.5  ],
+            [  -0.456,    0.237,   -0.858,    1.   ],
+            [   0.883,    0.   ,   -0.469,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -22.789,   11.855,  -42.896,    0.726],
+            [  -0.456,    0.237,   -0.858,    0.   ],
+            [     nan,      nan,      nan,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -53.126,   27.637, -100.   ,    0.948],
+            [  -0.456,    0.237,   -0.858,    0.   ],
+            [     nan,      nan,      nan,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+
+
+
+
+FIXED : cx genflag zeros : in qsim.h::generate_photon
+-----------------------------------------------------------
+
+* input photons need to get givenTORCH genflag 
+* correct place to do in qsim::generate_photon
+
+::
+
+    192 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
+    193 {
+    194     sevent* evt      = params.evt ;
+    195     if (launch_idx.x >= evt->num_photon) return;
+    196 
+    197     unsigned idx = launch_idx.x ;  // aka photon_id
+    198     unsigned genstep_id = evt->seed[idx] ;
+    199     const quad6& gs     = evt->genstep[genstep_id] ;
+    200 
+    201     qsim* sim = params.sim ;
+    202     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
+    203 
+    204     sphoton p = {} ;
+    205 
+    206     sim->generate_photon(p, rng, gs, idx, genstep_id );
+    207 
+
+
+::
+
+    In [1]: seqhis_(a.seq[:,0])                                                                                                                                                 
+    Out[1]: 
+    ['TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BR BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA']
+
+
+
+
+::
+
+    In [10]: seqhis_(a.seq[:,0])                                                                                                                                                
+    Out[10]: 
+    ['?0? BT SA',
+     '?0? BT SA',
+     '?0? BT SA',
+     '?0? BT SA',
+     '?0? BT SA',
+     '?0? BR BT SA',
+     '?0? BT SA',
+     '?0? BT SA',
+     '?0? BT SA',
+     '?0? BT SA']
+
+    In [11]: seqhis_(b.seq[:,0])                                                                                                                                                
+    Out[11]: 
+    ['TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA']
+
+
+
+
+
+FIXED : cx missing seq : by using SEventConfig::SetStandardFullDebug
+------------------------------------------------------------------------
 
 ::
 
@@ -104,75 +295,6 @@ Consolidate to make it easier for debug executables to use same config settings:
         SEventConfig::SetMaxRec(max_bounce+1); 
         SEventConfig::SetMaxSeq(max_bounce+1); 
     }
-
-
-
-
-
-cx 2/10 with nan polz
--------------------------
-
-::
-
-    In [59]: a.photon[:,2]                                                                                                                                                      
-    Out[59]: 
-    array([[ -0.544,   0.009,  -0.839, 440.   ],
-           [    nan,     nan,     nan, 440.   ],
-           [  0.179,  -0.457,  -0.871, 440.   ],
-           [  0.757,   0.404,   0.513, 440.   ],
-           [    nan,     nan,     nan, 440.   ],
-           [  0.923,  -0.337,   0.183, 440.   ],
-           [  0.965,   0.   ,  -0.262, 440.   ],
-           [ -0.753,   0.   ,   0.658, 440.   ],
-           [ -0.566,   0.   ,   0.824, 440.   ],
-           [ -0.256,  -0.948,   0.19 , 440.   ]], dtype=float32)
-
-
-
-
-    In [43]: a.record[1,:4]                                                                                                                                                     
-    Out[43]: 
-    array([[[  -0.217,   -0.975,    0.058,    0.2  ],
-            [  -0.217,   -0.975,    0.058,    1.   ],
-            [  -0.258,    0.   ,   -0.966,  440.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ]],
-
-           [[ -10.831,  -48.727,    2.889,    0.426],
-            [  -0.217,   -0.975,    0.058,    0.   ],
-            [     nan,      nan,      nan,  440.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ]],
-
-           [[ -22.228, -100.   ,    5.93 ,    0.602],
-            [  -0.217,   -0.975,    0.058,    0.   ],
-            [     nan,      nan,      nan,  440.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ]],
-
-           [[   0.   ,    0.   ,    0.   ,    0.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
-
-    In [58]: a.record[4,:4]                                                                                                                                                     
-    Out[58]: 
-    array([[[  -0.456,    0.237,   -0.858,    0.5  ],
-            [  -0.456,    0.237,   -0.858,    1.   ],
-            [   0.883,    0.   ,   -0.469,  440.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ]],
-
-           [[ -22.789,   11.855,  -42.896,    0.726],
-            [  -0.456,    0.237,   -0.858,    0.   ],
-            [     nan,      nan,      nan,  440.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ]],
-
-           [[ -53.126,   27.637, -100.   ,    0.948],
-            [  -0.456,    0.237,   -0.858,    0.   ],
-            [     nan,      nan,      nan,  440.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ]],
-
-           [[   0.   ,    0.   ,    0.   ,    0.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ],
-            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
 
 
 

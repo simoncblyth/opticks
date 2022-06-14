@@ -1,4 +1,5 @@
 #include <sstream>
+#include <limits>
 
 #include "SSys.hh"
 #include "PLOG.hh"
@@ -11,10 +12,13 @@ const plog::Severity QBase::LEVEL = PLOG::EnvLevel("QBase", "DEBUG");
 const QBase* QBase::INSTANCE = nullptr ; 
 const QBase* QBase::Get(){ return INSTANCE ; }
 
+
+
+
 qbase* QBase::MakeInstance() // static 
 {
     qbase* base = new qbase ; 
-    base->pidx = SSys::getenvint("PIDX", -1) ; 
+    base->pidx = SSys::getenvunsigned_fallback_max("PIDX") ; 
     return base ; 
 }
 

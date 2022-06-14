@@ -480,11 +480,11 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
     float absorption_distance = -absorption_length*logf(u_absorption);
 
 #ifdef DEBUG_TIME
-    if( idx == pidx ) printf("//qsim.propagate_to_boundary[ idx %d post (%10.4f %10.4f %10.4f %10.4f) \n", idx, p.pos.x, p.pos.y, p.pos.z, p.time );  
+    if( idx == base->pidx ) printf("//qsim.propagate_to_boundary[ idx %d post (%10.4f %10.4f %10.4f %10.4f) \n", idx, p.pos.x, p.pos.y, p.pos.z, p.time );  
 #endif
 
 #ifdef DEBUG_HIST
-    if(idx == pidx ) printf("//qsim.propagate_to_boundary idx %d distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f u_scattering %10.4f u_absorption %10.4f \n", 
+    if(idx == base->pidx ) printf("//qsim.propagate_to_boundary idx %d distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f u_scattering %10.4f u_absorption %10.4f \n", 
              idx, distance_to_boundary, absorption_distance, scattering_distance, u_scattering, u_absorption  ); 
 #endif
   
@@ -498,7 +498,7 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
 
 #ifdef DEBUG_TIME
             float absorb_time_delta = absorption_distance/group_velocity ; 
-            if( idx == pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) absorb_time_delta %10.4f   \n", 
+            if( idx == base->pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) absorb_time_delta %10.4f   \n", 
                          idx, p.pos.x, p.pos.y, p.pos.z, p.time, absorb_time_delta  );  
 #endif
 
@@ -544,7 +544,7 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
 
 #ifdef DEBUG_TIME
     float sail_time_delta = distance_to_boundary/group_velocity ; 
-    if( idx == pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) sail_time_delta %10.4f   \n", 
+    if( idx == base->pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) sail_time_delta %10.4f   \n", 
           idx, p.pos.x, p.pos.y, p.pos.z, p.time, sail_time_delta  );  
 #endif
 
@@ -680,12 +680,13 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     const float c1 = fabs(_c1) ; 
     const bool normal_incidence = c1 == 1.f ; 
 
-    /* 
+    if(idx == base->pidx)
+    {
     printf("//qsim.propagate_at_boundary idx %d nrm   (%10.4f %10.4f %10.4f) \n", idx, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
     printf("//qsim.propagate_at_boundary idx %d mom_0 (%10.4f %10.4f %10.4f) \n", idx, p.mom.x, p.mom.y, p.mom.z ); 
     printf("//qsim.propagate_at_boundary idx %d pol_0 (%10.4f %10.4f %10.4f) \n", idx, p.pol.x, p.pol.y, p.pol.z ); 
     printf("//qsim.propagate_at_boundary idx %d c1 %10.4f normal_incidence %d \n", idx, c1, normal_incidence ); 
-    */
+    }
 
     const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
     bool tir = c2c2 < 0.f ; 
@@ -715,16 +716,17 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     //p.q0.f.w = u_reflect ;   // non-standard 
     //p.q1.f.w = TransCoeff ;  // non-standard replace "weight"
 
+
     /*
-    if(idx == 251959)
+    if(idx == 1u)
     {
         printf("//qsim.propagate_at_boundary idx %d \n", idx); 
         printf("//qsim.propagate_at_boundary oriented_normal (%10.4f, %10.4f, %10.4f) \n", oriented_normal.x, oriented_normal.y, oriented_normal.z );  
-        printf("//qsim.propagate_at_boundary direction (%10.4f, %10.4f, %10.4f) \n", direction->x, direction->y, direction->z );  
+        //printf("//qsim.propagate_at_boundary direction (%10.4f, %10.4f, %10.4f) \n", direction->x, direction->y, direction->z );  
         printf("//qsim.propagate_at_boundary polarization (%10.4f, %10.4f, %10.4f) \n", polarization->x, polarization->y, polarization->z );  
         printf("//qsim.propagate_at_boundary c1 %10.4f normal_incidence %d \n", c1, normal_incidence ); 
     }
-   */
+    */
 
 
     p.mom = reflect
@@ -749,11 +751,12 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
                                                    )
                                       ;
 
-    /*
+    if(idx == base->pidx)
+    {
     printf("//qsim.propagate_at_boundary idx %d reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", idx, reflect, tir, TransCoeff, u_reflect );  
     printf("//qsim.propagate_at_boundary idx %d mom_1 (%10.4f %10.4f %10.4f) \n", idx, p.mom.x, p.mom.y, p.mom.z ); 
     printf("//qsim.propagate_at_boundary idx %d pol_1 (%10.4f %10.4f %10.4f) \n", idx, p.pol.x, p.pol.y, p.pol.z ); 
-    */
+    }
 
     /*
     if(idx == 251959)
@@ -1127,8 +1130,12 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
         if(evt->seq)    seq.add_nibble( bounce, p.flag(), p.boundary() ); 
 
         const quad2* prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
+
+#ifdef DEBUG_PIDX
+        if(idx == base->pidx) 
         printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d prd.q0.f.xyzw (%10.4f %10.4f %10.4f %10.4f) \n", 
              idx, bounce, evt->max_bounce, prd->q0.f.x, prd->q0.f.y, prd->q0.f.z, prd->q0.f.w );  
+#endif
 
         command = propagate(bounce, p, state, prd, rng, idx ); 
         bounce++;        
@@ -1163,10 +1170,12 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, qstate& s, 
     const float3* normal = prd->normal(); 
     float cosTheta = dot(p.mom, *normal ) ;    
 
-#ifdef DEBUG_COSTHETA
-    if( idx == pidx ) printf("//qsim.propagate idx %d bnc %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n", 
+#ifdef DEBUG_PIDX
+    if( idx == base->pidx ) 
+    printf("//qsim.propagate idx %d bnc %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n", 
                  idx, bounce, cosTheta, p.mom.x, p.mom.y, p.mom.z, normal->x, normal->y, normal->z ); 
 #endif
+
 
     p.set_prd(boundary, identity, cosTheta, iindex ); 
 
@@ -1175,8 +1184,10 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, qstate& s, 
     unsigned flag = 0 ;  
 
     int command = propagate_to_boundary( flag, p, prd, s, rng, idx ); 
-    //if( idx == 0 ) 
+#ifdef DEBUG_PIDX
+    if( idx == base->pidx ) 
     printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", idx, bounce, command, flag, s.optical.x  );   
+#endif
 
     if( command == BOUNDARY )
     {
@@ -1359,7 +1370,7 @@ inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng
         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
         case OpticksGenstep_CERENKOV:        cerenkov->generate(     p, rng, gs, photon_id, genstep_id ) ; break ; 
         case OpticksGenstep_SCINTILLATION:   scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ; 
-        case OpticksGenstep_INPUT_PHOTON:    p = evt->photon[photon_id]                                  ; break ;        
+        case OpticksGenstep_INPUT_PHOTON:    { p = evt->photon[photon_id] ; p.set_flag(TORCH) ; }        ; break ;        
         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ; 
     }
 }

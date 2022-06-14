@@ -215,13 +215,18 @@ class InputPhotons(object):
     def GenerateRandomSpherical(cls, n):
         """
         spherical distribs not carefully checked  
+
+        The start position is offset by the direction vector for easy identification purposes
+        so that means the rays will start on a virtual unit sphere and travel radially 
+        outwards from there.
+
         """
         spherical = sample_trig(n).T
         direction = spherical
         polarization = vnorm(np.cross(direction,cls.Y))
 
         p = np.zeros( (n, 4, 4), dtype=cls.DTYPE )
-        p[:,0,:3] = cls.POSITION + direction  # offset start position by direction vector for easy identification purposes
+        p[:,0,:3] = cls.POSITION + direction 
         p[:,0, 3] = cls.TIME*(1. + np.arange(n))  
         p[:,1,:3] = direction 
         p[:,1, 3] = cls.WEIGHT 

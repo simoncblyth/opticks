@@ -19,6 +19,7 @@
 
 #include <sstream>
 #include <string>
+#include <limits>
 #include "SSys.hh"
 
 #include "OPTICKS_LOG.hh"
@@ -266,6 +267,12 @@ void test_getenvfloatvec()
 }
 
 
+void test_getenvunsigned_fallback_max()
+{
+    unsigned pidx = SSys::getenvunsigned_fallback_max("PIDX"); 
+    LOG(info) << " pidx " << pidx << " 0x" << std::hex << pidx << std::dec; 
+}
+
 
 
 int main(int argc , char** argv )
@@ -295,9 +302,11 @@ int main(int argc , char** argv )
     test_atof(); 
     test_RunPythonScript(); 
     test_OS(); 
+    test_getenvfloatvec(); 
     **/
 
-    test_getenvfloatvec(); 
+    test_getenvunsigned_fallback_max(); 
+
 
 
     return rc  ; 

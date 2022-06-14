@@ -202,12 +202,12 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
 
     sphoton p = {} ;   
+    srec rec = {} ; 
+    sseq seq = {} ;  // seqhis..
 
     sim->generate_photon(p, rng, gs, idx, genstep_id );  
 
     qstate state = {} ; 
-    srec rec = {} ; 
-    sseq seq = {} ;  // seqhis..
 
     int command = START ; 
     int bounce = 0 ;  
@@ -224,7 +224,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
             params.tmin,
             params.tmax,
             prd
-        );        // populate prd with intersect info 
+        );        // trace populates prd with geometry info : intersect normal, distance, identity
 
         //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 

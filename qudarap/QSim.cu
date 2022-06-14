@@ -26,8 +26,7 @@ TODO: split off debug functions from actually used functions
 #include "qbnd.h"
 #include "qsim.h"
 #include "qcerenkov.h"
-
-
+#include "qbase.h"
 #include "qdebug.h"
 
 #include "QSimLaunch.hh"
@@ -530,7 +529,12 @@ __global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
     int idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= evt->num_photon ) return;
 
+    qbase* base = sim->base ;  
+
+#ifdef DEBUG_PIDX
+    if( idx == base->pidx )
     printf("//_QSim_mock_propagate idx %d evt.num_photon %d evt.max_record %d  \n", idx, evt->num_photon, evt->max_record ); 
+#endif
 
     curandState rng = sim->rngstate[idx] ; 
     sphoton p = evt->photon[idx] ;   
@@ -538,7 +542,6 @@ __global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
 
     sim->mock_propagate( p, prd, rng, idx );  
 
-   //  evt->photon[idx] = p ;   moved into mock_propagate
 }
 
 

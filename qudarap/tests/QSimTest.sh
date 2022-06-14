@@ -125,7 +125,7 @@ setloglevels()
     export SEvt=INFO
     export QEvent=INFO
 }
-setloglevels
+#setloglevels
 
 
 
