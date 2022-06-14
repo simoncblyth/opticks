@@ -161,11 +161,7 @@ int main(int argc, char** argv)
     // removing Rock RINDEX is a trick that makes photons immediately get absorbed on reaching the Rock
     // somewhat artifically that gives SURFACE_ABSORB as  U4StepPoint::BoundaryFlag(NoRINDEX) kludges to give SURFACE_ABSORB 
 
-    unsigned max_bounce = 9 ; 
-    SEventConfig::SetMaxBounce(max_bounce); 
-    SEventConfig::SetMaxRecord(max_bounce+1); 
-    SEventConfig::SetMaxRec(max_bounce+1); 
-    SEventConfig::SetMaxSeq(max_bounce+1); 
+    SEventConfig::SetStandardFullDebug(); 
 
     SEvt evt ; 
 

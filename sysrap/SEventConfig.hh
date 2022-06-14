@@ -108,6 +108,10 @@ struct SYSRAP_API SEventConfig
     static void SetInputPhoton(const char* input_photon); 
 
 
+    static void SetStandardFullDebug(); 
+    static void SetMode(const char* mode); 
+
+
     static int _MaxGenstepDefault ; 
     static int _MaxPhotonDefault ; 
     static int _MaxSimtraceDefault ; 

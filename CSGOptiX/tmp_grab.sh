@@ -1,4 +1,14 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+tmp_grab.sh
+=============
+
+This has become too organic, so moving to tmpgrab.sh 
+
+EOU
+}
+
+
 
 source $PWD/../bin/GEOM.sh trim   ## sets GEOM envvar based on GEOM.txt file 
 

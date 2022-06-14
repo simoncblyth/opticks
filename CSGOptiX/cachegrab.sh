@@ -31,6 +31,8 @@ if [ "${grab_arg}"  == "help" ]; then
    exit 0
 fi 
 
+
+
 executable=CSGOptiXSimTest
 EXECUTABLE=${EXECUTABLE:-$executable}
 CGREL=${CGREL:-CSG_GGeo}

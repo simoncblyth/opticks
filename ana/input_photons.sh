@@ -18,8 +18,9 @@ EOU
 }
 
 export DTYPE=np.float32
-#export DTYPE=np.float64
+${IPYTHON:-ipython} --pdb input_photons.py -- $*
 
+export DTYPE=np.float64
 ${IPYTHON:-ipython} --pdb input_photons.py -- $*
 
 ls -alst ~/.opticks/InputPhotons

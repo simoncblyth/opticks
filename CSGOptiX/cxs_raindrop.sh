@@ -43,16 +43,19 @@ if [ "$(uname)" == "Darwin" ]; then
     if [ "$arg" == "dru" -o "$arg" == "dan" ]; then  
         echo $msg dru or dan mode is local Darwin running and analysis 
         export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain_Darwin/$GEOM
-        export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
+        #export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
     else
         echo $msg run or ana mode handles Linux generated results grabbed from remote 
         export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain/$GEOM
-        export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/SCVD0/70000
+        #export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/SCVD0/70000
     fi 
 else
     export CFBASE_LOCAL=/tmp/$USER/opticks/GeoChain/$GEOM
-    export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
+    #export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
 fi 
+
+export FOLD=$CFBASE_LOCAL
+
 
 
 export SEvt=INFO
@@ -60,7 +63,7 @@ export QEvent=INFO
 export QSim=INFO
 
 
-path=RandomSpherical10.npy
+path=RandomSpherical10_f8.npy
 if [ -n "$path" ]; then 
     export OPTICKS_INPUT_PHOTON=$path
     if [ "${path:0:1}" == "/" -o "${path:0:1}" == "$" ]; then 
@@ -69,16 +72,12 @@ if [ -n "$path" ]; then
         abspath=$HOME/.opticks/InputPhotons/$path
     fi
     if [ ! -f "$abspath" ]; then 
-        echo $msg path $path abspath $abspath DOES NOT EXIST
+        echo $msg path $path abspath $abspath DOES NOT EXIST : create it by cd ~/opticks/ana ./input_photons.sh 
         exit 1 
     else
         echo $msg path $path abspath $abspath exists 
     fi 
 fi 
-
-
-
-
 
 
 vars="arg bin GEOM CFBASE_LOCAL OPTICKS_OUT_FOLD FOLD"
@@ -90,7 +89,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi  
 
 unset GEOM                     # MUST unset GEOM for CSGFoundry::Load_ to load OPTICKS_KEY basis geometry 
-export OPTICKS_MAX_RECORD=10   # change from default of 0, see sysrap/SEventConfig.cc
+
 
 if [ "${arg/run}" != "$arg" -o "${arg/dru}" != "$arg" -o "$arg" == "dbg" ]; then 
     logdir=/tmp/$USER/opticks/$bin
@@ -114,9 +113,13 @@ fi
 
 if [ "${arg/ana}" != "$arg" -o "${arg/dan}" != "$arg" ]; then 
 
-    export FOLD=$OPTICKS_OUT_FOLD
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py  
 fi 
+
+if [ "$arg" == "grab" ]; then
+    EXECUTABLE=$bin  source tmpgrab.sh grab
+fi 
+
 
 dumpvars 
 exit 0 

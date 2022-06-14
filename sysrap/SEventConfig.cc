@@ -192,4 +192,21 @@ const char* SEventConfig::OutPath( const char* reldir, const char* stem, int ind
 
 
 
+void SEventConfig::SetStandardFullDebug(){  SetMode("StandardFullDebug") ; }
+void SEventConfig::SetMode(const char* mode) // static
+{
+    if(strcmp(mode, "StandardFullDebug") == 0 )
+    {
+        unsigned max_bounce = 9 ; 
+        SEventConfig::SetMaxBounce(max_bounce); 
+        SEventConfig::SetMaxRecord(max_bounce+1); 
+        SEventConfig::SetMaxRec(max_bounce+1); 
+        SEventConfig::SetMaxSeq(max_bounce+1); 
+    }
+    else
+    {
+        std::cout << "SEventConfig::SetMode [" << mode << "] IS NOT RECOGNIZED " << std::endl ;         
+    }
+}
+
 

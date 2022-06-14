@@ -19,7 +19,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     SCVD::ConfigureVisibleDevices(); 
+
     SEventConfig::SetRGMode("simulate"); 
+    SEventConfig::SetStandardFullDebug(); 
 
     SEvt evt ; 
 

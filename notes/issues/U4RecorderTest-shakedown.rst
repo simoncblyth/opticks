@@ -15,6 +15,11 @@ TODO : bring OpticksRandom over into U4
 -----------------------------------------
 
 
+TODO : low stat non-aligned comparisons of U4RecorderTest and CXRaindropTest : finding big issues
+-----------------------------------------------------------------------------------------------------
+
+* :doc:`U4RecorderTest_cf_CXRaindropTest`
+
 
 FIXED : Geant4 warnings re mom unit vectors of input photons can be eliminated using double precision input photons
 ---------------------------------------------------------------------------------------------------------------------
