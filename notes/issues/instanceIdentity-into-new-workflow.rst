@@ -1,6 +1,32 @@
 instanceIdentity-into-new-workflow
 ====================================
 
+
+
+OptiX 7 Limits
+---------------
+
+::
+
+    2022-06-14 19:10:50.195 ERROR [367071] [SGeo::SetLastUploadCFBase@30]  cfbase /tmp/blyth/opticks/GeoChain/BoxedSphere
+    [ 4][       KNOBS]: All knobs on default.
+
+    [ 4][  DISK CACHE]: Opened database: "/var/tmp/OptixCache_blyth/cache7.db"
+    [ 4][  DISK CACHE]:     Cache data size: "70.4 MiB"
+    Properties::dump
+                          limitMaxTraceDepth :         31
+               limitMaxTraversableGraphDepth :         16
+                    limitMaxPrimitivesPerGas :  536870912  20000000
+                     limitMaxInstancesPerIas :   16777216   1000000
+                               rtcoreVersion :          0
+                          limitMaxInstanceId :   16777215    ffffff
+          limitNumBitsInstanceVisibilityMask :          8
+                    limitMaxSbtRecordsPerGas :   16777216   1000000
+                           limitMaxSbtOffset :   16777215    ffffff
+    2022-06-14 19:10:50.258 INFO  [367071] [PIP::ExceptionFlags@136]  options STACK_OVERFLOW exceptionFlags 1
+
+
+
 Idea for better way in new workflow : U4InstanceIdentifier.h
 ----------------------------------------------------------------
 

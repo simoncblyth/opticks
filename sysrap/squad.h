@@ -46,7 +46,6 @@ struct hquad2
 }; 
 
 
-
 inline unsigned int_as_unsigned( int value )
 {
    UIF uif ; 

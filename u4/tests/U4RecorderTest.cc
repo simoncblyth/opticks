@@ -107,7 +107,7 @@ char U4RecorderTest::PrimaryMode()
 void U4RecorderTest::GeneratePrimaries(G4Event* event)
 {   
     char mode = PrimaryMode(); 
-    LOG(info) << " mode " << mode  ; 
+    LOG(info) << "[ mode " << mode  ; 
     switch(mode)
     {
         case 'G': fGun->GeneratePrimaryVertex(event)              ; break ; 
@@ -115,6 +115,7 @@ void U4RecorderTest::GeneratePrimaries(G4Event* event)
         case 'I': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;   
         default:  assert(0) ; break ; 
     }
+    LOG(info) << "]" ; 
 }
 
 // pass along the message to the recorder

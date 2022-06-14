@@ -44,7 +44,7 @@ mode=iphoton
 export U4RecorderTest__PRIMARY_MODE=$mode
 
 if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
-    export OPTICKS_INPUT_PHOTON=RandomSpherical10.npy
+    export OPTICKS_INPUT_PHOTON=RandomSpherical10_f8.npy
 fi 
 
 

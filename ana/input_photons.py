@@ -18,8 +18,7 @@ def vnorm(v):
 
 class InputPhotons(object):
     DEFAULT_BASE = os.path.expanduser("~/.opticks/InputPhotons")
-
-    DTYPE = np.float32
+    DTYPE = np.float64 if os.environ.get("DTYPE","np.float32") == "np.float64" else np.float32
 
     X = np.array( [1., 0., 0.], dtype=DTYPE ) 
     Y = np.array( [0., 1., 0.], dtype=DTYPE ) 
@@ -32,7 +31,10 @@ class InputPhotons(object):
 
     @classmethod
     def Path(cls, name, ext=".npy"):
-        return os.path.join(cls.DEFAULT_BASE, "%s%s" % (name, ext))
+        prec = None
+        if cls.DTYPE == np.float32: prec = "_f4" 
+        if cls.DTYPE == np.float64: prec = "_f8" 
+        return os.path.join(cls.DEFAULT_BASE, "%s%s%s" % (name, prec, ext))
 
     @classmethod
     def CubeCorners(cls):

@@ -275,6 +275,23 @@ struct sphoton_selector
 };
 
 
+struct sphotond
+{
+    double3 pos ; 
+    double  time ; 
+
+    double3 mom ; 
+    unsigned long long iindex ;  // formerly float weight, but have never used that  
+
+    double3 pol ; 
+    double  wavelength ;   
+
+    unsigned long long boundary_flag ;   
+    unsigned long long identity ; 
+    unsigned long long orient_idx ;   
+    unsigned long long flagmask ; 
+};
+
 
 
 

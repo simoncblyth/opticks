@@ -128,6 +128,17 @@ void test_digest()
 
 }
 
+void test_sphotond()
+{
+    sphoton  f ; 
+    sphotond d ; 
+
+    assert( sizeof(d) == 2*sizeof(f) ); 
+    assert( sizeof(f) == 16*sizeof(float) ); 
+    assert( sizeof(d) == 16*sizeof(double) ); 
+}
+
+
 
 int main()
 {
@@ -137,9 +148,11 @@ int main()
     test_ephoton(); 
     test_sphoton_selector(); 
     test_sphoton_change_flagmask(); 
+    test_digest(); 
     */
 
-    test_digest(); 
+    test_sphotond(); 
+
 
     return 0 ; 
 }

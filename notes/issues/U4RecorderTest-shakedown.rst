@@ -15,17 +15,164 @@ TODO : bring OpticksRandom over into U4
 -----------------------------------------
 
 
-TODO : debug input photon running with CXRaindropTest 
+
+Units issue with input photons ?
+-----------------------------------
+
+NOPE : it Looks like need double precision input photons to avoid Geant4 momentum warning. 
+
+
+
+::
+
+    2022-06-14 12:36:24.525 INFO  [22729764] [U4Recorder::BeginOfEventAction@38] 
+    2022-06-14 12:36:24.525 INFO  [22729764] [U4Recorder::PreUserTrackingAction_Optical@89]  labelling photon spho (gs:ix:id:gn   0   9    9  0)
+      G4ParticleChange::CheckIt  : the Momentum Change is not unit vector !!  Difference:  6.84263e-08
+    opticalphoton E=2.81782e-06 pos=-0.00050013, 0.000449704, 0.000740024
+          -----------------------------------------------
+            G4ParticleChange Information  
+          -----------------------------------------------
+            # of 2ndaries       :                    0
+          -----------------------------------------------
+            Energy Deposit (MeV):                    0
+            Non-ionizing Energy Deposit (MeV):                    0
+            Track Status        :                Alive
+            True Path Length (mm) :                   49
+            Stepping Control      :                    0
+            Mass (GeV)   :                    0
+            Charge (eplus)   :                    0
+            MagneticMoment   :                    0
+                    :  =                    0*[e hbar]/[2 m]
+            Position - x (mm)   :                  -25
+            Position - y (mm)   :                 22.5
+            Position - z (mm)   :                   37
+            Time (ns)           :                0.225
+            Proper Time (ns)    :                    0
+            Momentum Direct - x :                 -0.5
+            Momentum Direct - y :                 0.45
+            Momentum Direct - z :                 0.74
+            Kinetic Energy (MeV):             2.82e-06
+            Velocity  (/c):                    1
+            Polarization - x    :               -0.829
+            Polarization - y    :                    0
+            Polarization - z    :                -0.56
+            Touchable (pointer) :                  0x0
+    2022-06-14 12:36:24.526 INFO  [22729764] [U4Recorder::PreUserTrackingAction_Optical@89]  labelling photon spho (gs:ix:id:gn   
+
+
+
+
+
+
+::
+
+    epsilon:InputPhotons blyth$ i
+
+    In [1]: a = np.load("RandomSpherical10.npy")                                                                                                                                
+
+      fPosition = (dx = -0.50013023614883423, dy = 0.44970408082008362, dz = 0.74002426862716675)
+      fGlobalTime = 1
+
+    In [7]: np.set_printoptions(precision=20)                                                                                                                                   
+
+    In [8]: a[-1]                                                                                                                                                               
+    Out[8]: 
+    array([[ -0.50013024,   0.44970408,   0.74002427,   1.        ],
+           [ -0.50013024,   0.44970408,   0.74002427,   1.        ],
+           [ -0.82852983,   0.        ,  -0.5599449 , 440.        ],
+           [  0.        ,   0.        ,   0.        ,   0.        ]], dtype=float32)
+
+    In [9]: pos,mom,pol = a[:,0,:3],a[:,1,:3],a[:,2,:3]   
+
+    In [13]: np.sum( mom*pol, axis=1 )                                                                                                                                          
+    Out[13]: 
+    array([ 0.               ,  0.               ,  0.               ,  0.               ,  0.               ,  0.               , -0.000000029802322,  0.               ,  0.               ,
+            0.               ], dtype=float32)
+
+
+    In [16]: np.sum( mom*mom, axis=1 ) - 1.                                                                                                                                     
+    Out[16]: 
+    array([-0.000000059604645,  0.00000011920929 ,  0.               , -0.00000011920929 ,  0.               ,  0.               ,  0.               ,  0.               ,  0.               ,
+           -0.000000059604645], dtype=float32)
+
+
+
+::
+
+    (lldb) c
+    Process 67491 resuming
+    Process 67491 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 2.1
+        frame #0: 0x0000000104f466c2 libG4track.dylib`G4ParticleChange::CheckIt(this=0x00000001093477c0, aTrack=0x0000000106db05e0) at G4ParticleChange.cc:525
+       522 	    if (accuracy > accuracyForWarning) {
+       523 	      itsOKforMomentum = false;
+       524 	      nError += 1;
+    -> 525 	      exitWithError = exitWithError || (accuracy > accuracyForException);
+       526 	#ifdef G4VERBOSE
+       527 	      if (nError < maxError) {
+       528 		G4cout << "  G4ParticleChange::CheckIt  : ";
+    Target 0: (U4RecorderTest) stopped.
+    (lldb) p accuracy
+    (G4double) $0 = 0.000000068426301957913438
+    (lldb) p accuracyForException
+    (G4double) $1 = 0.001
+    (lldb) p accuracyForWarning
+    (G4double) $2 = 0.0000000010000000000000001
+    (lldb) 
+
+
+
+
+
+
+::
+
+    BP=G4ParticleChange::CheckIt ./U4RecorderTest.sh dbg
+
+
+    Process 67085 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+        frame #0: 0x0000000104f465f0 libG4track.dylib`G4ParticleChange::CheckIt(this=0x0000000109a5c740, aTrack=0x0000000106b5ae60) at G4ParticleChange.cc:508
+       505 	
+       506 	G4bool G4ParticleChange::CheckIt(const G4Track& aTrack)
+       507 	{
+    -> 508 	  G4bool    exitWithError = false;
+       509 	  G4double  accuracy;
+       510 	  static G4ThreadLocal G4int nError = 0;
+       511 	#ifdef G4VERBOSE
+    Target 0: (U4RecorderTest) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x0000000104f465f0 libG4track.dylib`G4ParticleChange::CheckIt(this=0x0000000109a5c740, aTrack=0x0000000106b5ae60) at G4ParticleChange.cc:508
+        frame #1: 0x0000000104f4ead4 libG4track.dylib`G4ParticleChangeForTransport::UpdateStepForAlongStep(this=0x0000000109a5c740, pStep=0x0000000109a19860) at G4ParticleChangeForTransport.cc:202
+        frame #2: 0x0000000101ee8ed8 libG4tracking.dylib`G4SteppingManager::InvokeAlongStepDoItProcs(this=0x0000000109a196d0) at G4SteppingManager2.cc:424
+        frame #3: 0x0000000101ee4c91 libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000109a196d0) at G4SteppingManager.cc:191
+        frame #4: 0x0000000101efb86f libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000109a19690, apValueG4Track=0x0000000106b5ae60) at G4TrackingManager.cc:126
+        frame #5: 0x0000000101dc171a libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000109a19600, anEvent=0x0000000106b589f0) at G4EventManager.cc:185
+        frame #6: 0x0000000101dc2c2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x0000000109a19600, anEvent=0x0000000106b589f0) at G4EventManager.cc:338
+        frame #7: 0x0000000101cce9e5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000106b1cd20, i_event=0) at G4RunManager.cc:399
+        frame #8: 0x0000000101cce815 libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000106b1cd20, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #9: 0x0000000101ccccd1 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000106b1cd20, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #10: 0x0000000100020758 U4RecorderTest`main(argc=1, argv=0x00007ffeefbfe610) at U4RecorderTest.cc:177
+        frame #11: 0x00007fff72c44015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+
+
+
+DONE : debug input photon running with CXRaindropTest 
 -------------------------------------------------------
+
+FIXED issue of QEvent SEvt instanciation order sensitivity by deferring the SEvt::hostside_running_resize until the last 
+possible moment in SEvt::beginPhoton which is never called for deviceside running. 
+
 
 Q: Why does QSimTest work but CXRaindropTest fail ?
 A: The reason QSimTest works is that the adding of the genstep happens after QEvent is instanciated
     because it is not using the automated input photons which calls addGenstep very early, 
     but rather it manually sets input photons in mock_propagate which is after QSim/QEvent is instanciated. 
-
-
-Try avoiding QEvent SEvt instanciation order sensitivity by deferring the SEvt::hostside_running_resize until the last 
-possible moment SEvt::beginPhoton which is never called for deviceside running. 
 
 
 ::

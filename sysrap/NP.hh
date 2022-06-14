@@ -228,6 +228,7 @@ struct NP
     void save_jsonhdr(const char* dir, const char* name) const ;   
 
     std::string desc() const ; 
+    std::string brief() const ; 
     std::string sstr() const ; 
 
 
@@ -2450,6 +2451,20 @@ inline std::string NP::desc() const
        ;
     return ss.str(); 
 }
+
+inline std::string NP::brief() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << " " << dtype
+       << NPS::desc(shape) 
+       ;
+    return ss.str(); 
+}
+
+
+
+
 
 inline void NP::set_meta( const std::vector<std::string>& lines, char delim )
 {

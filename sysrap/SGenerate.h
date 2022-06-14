@@ -45,7 +45,7 @@ NP* SGenerate::GeneratePhotons()
     {
         ph = GeneratePhotons(gs);
     }
-    std::cout << " ph " << ( ph ? ph->sstr() : "-" ) << std::endl ; 
+    std::cout << "SGenerate::GeneratePhotons ph " << ( ph ? ph->brief() : "-" ) << std::endl ; 
     return ph ;  
 }
 NP* SGenerate::GeneratePhotons(const NP* gs_)

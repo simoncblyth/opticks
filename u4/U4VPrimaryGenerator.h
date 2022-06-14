@@ -16,7 +16,15 @@ class G4Event ;
 
 struct U4VPrimaryGenerator
 {
-    static G4PrimaryVertex* MakePrimaryVertexPhoton( const sphoton& p); 
+    template<typename P> 
+    static void GetPhotonParam( 
+         G4ThreeVector& position_mm, G4double& time_ns, 
+         G4ThreeVector& direction,  G4double& wavelength_nm,
+         G4ThreeVector& polarization, const P& p ); 
+    
+    template<typename P> 
+    static G4PrimaryVertex* MakePrimaryVertexPhoton( const P& p); 
+
     static void GeneratePrimaries(G4Event *event); 
 };
 
@@ -38,16 +46,34 @@ struct U4VPrimaryGenerator
 #include "NP.hh"
 
 
-inline G4PrimaryVertex* U4VPrimaryGenerator::MakePrimaryVertexPhoton( const sphoton& p)
+template<typename P>
+inline void U4VPrimaryGenerator::GetPhotonParam( 
+     G4ThreeVector& position_mm, G4double& time_ns, 
+     G4ThreeVector& direction,  G4double& wavelength_nm,
+     G4ThreeVector& polarization, const P& p )
 {
-    G4ThreeVector position(p.pos.x, p.pos.y, p.pos.z); 
-    G4double time(p.time) ; 
-    G4PrimaryVertex* vertex = new G4PrimaryVertex(position, time);
+     position_mm.set(p.pos.x, p.pos.y, p.pos.z);
+     time_ns = p.time ; 
 
-    G4ThreeVector direction( p.mom.x, p.mom.y, p.mom.z);   
-    G4double kineticEnergy = h_Planck*c_light/(p.wavelength*nm) ; 
-    G4ThreeVector polarization( p.pol.x, p.pol.y, p.pol.z );  
+     direction.set(p.mom.x, p.mom.y, p.mom.z ); 
+     polarization.set(p.mom.x, p.mom.y, p.mom.z ); 
+     wavelength_nm = p.wavelength ;   
+}
 
+
+template<typename P>
+inline G4PrimaryVertex* U4VPrimaryGenerator::MakePrimaryVertexPhoton( const P& p)
+{
+    G4ThreeVector position_mm ; 
+    G4double time_ns  ; 
+    G4ThreeVector direction ;   
+    G4double wavelength_nm ; 
+    G4ThreeVector polarization;   
+
+    GetPhotonParam( position_mm, time_ns, direction, wavelength_nm, polarization, p ); 
+
+    G4PrimaryVertex* vertex = new G4PrimaryVertex(position_mm, time_ns);
+    G4double kineticEnergy = h_Planck*c_light/(wavelength_nm*nm) ; 
     G4PrimaryParticle* particle = new G4PrimaryParticle(G4OpticalPhoton::Definition());
     particle->SetKineticEnergy( kineticEnergy );
     particle->SetMomentumDirection( direction ); 
@@ -75,17 +101,29 @@ inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
          ; 
     if(ph == nullptr) return ;  
 
-    std::cout << " ph " << ( ph ? ph->sstr() : "-" ) << std::endl ;  
-    sphoton* pp = (sphoton*)ph->bytes() ; 
+    //std::cout << "U4VPrimaryGenerator::GeneratePrimaries" << " ph " << ( ph ? ph->brief() : "-" ) << std::endl ;  
 
-    for(int i=0 ; i < ph->shape[0] ; i++)
+    if( ph->ebyte == 4 )
     {
-        const sphoton& p = pp[i]; 
-        if(i < 10) std::cout << p.desc() << std::endl ; 
-
-        G4PrimaryVertex* vertex = MakePrimaryVertexPhoton( p ); 
-        event->AddPrimaryVertex(vertex);
-    } 
+        sphoton* pp = (sphoton*)ph->bytes() ; 
+        for(int i=0 ; i < ph->shape[0] ; i++)
+        {
+            const sphoton& p = pp[i]; 
+            if(i < 10) std::cout << p.desc() << std::endl ; 
+            G4PrimaryVertex* vertex = MakePrimaryVertexPhoton<sphoton>( p ); 
+            event->AddPrimaryVertex(vertex);
+        } 
+    }
+    else if( ph->ebyte == 8 )
+    {
+        sphotond* pp = (sphotond*)ph->bytes() ; 
+        for(int i=0 ; i < ph->shape[0] ; i++)
+        {
+            const sphotond& p = pp[i]; 
+            G4PrimaryVertex* vertex = MakePrimaryVertexPhoton<sphotond>( p ); 
+            event->AddPrimaryVertex(vertex);
+        } 
+    }
 }
 
 
