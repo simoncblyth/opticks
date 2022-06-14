@@ -31,7 +31,6 @@ const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ;
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
-bool SEvt::isSelfProvider() const {   return provider == this ; }
 
 SEvt::SEvt()
     :
@@ -41,7 +40,8 @@ SEvt::SEvt()
     dbg(new sdebug),
     input_photon(nullptr),
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
-    fold(new NPFold)
+    fold(new NPFold),
+    hostside_running_resize_done(false)
 { 
     init(); 
 }
@@ -69,7 +69,7 @@ void SEvt::init()
     INSTANCE = this ; 
     evt->init(); 
     dbg->zero(); 
-    LOG(fatal) << evt->desc() ;
+    LOG(LEVEL) << evt->desc() ;
 
     initInputPhoton(); 
 }
@@ -119,7 +119,7 @@ NP* SEvt::LoadInputPhoton(const char* ip) // static
     assert( a->has_shape(-1,4,4) ); 
     assert( a->shape[0] > 0 );  
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " SEventConfig::InputPhoton " << ip
         << " path " << path 
         << " a.sstr " << a->sstr()
@@ -140,6 +140,18 @@ void SEvt::initInputPhoton()
 void SEvt::setCompProvider(const SCompProvider* provider_)
 {
     provider = provider_ ; 
+    LOG(LEVEL) << descProvider() ; 
+}
+
+bool SEvt::isSelfProvider() const {   return provider == this ; }
+
+std::string SEvt::descProvider() const 
+{
+    bool is_self_provider = isSelfProvider() ; 
+    std::stringstream ss ; 
+    ss << "SEvt::descProvider provider: " << provider << " that address is: " << ( is_self_provider ? "SELF" : "another object" ) ; 
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 
@@ -210,7 +222,18 @@ void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
 int SEvt::getIndex() const { return index ; }
 
 
+/**
+SEvt::getNumPhotonFromGenstep
+----------------------------------
+
+
+**/
 unsigned SEvt::getNumPhoton() const 
+{
+   return getNumPhotonFromGenstep() ; 
+}
+
+unsigned SEvt::getNumPhotonFromGenstep() const 
 {
     unsigned tot = 0 ; 
     for(unsigned i=0 ; i < genstep.size() ; i++) tot += genstep[i].numphoton() ; 
@@ -288,15 +311,8 @@ sgs SEvt::addGenstep(const quad6& q_)
     if( tot_photon != evt->num_photon )
     {
         setNumPhoton(tot_photon); 
-        if(isSelfProvider() )
-        {
-            resize();  
-        }
+
     }
-
-    // TODO: work out what needs to NOT be done (eg resize) 
-    //       for on device running as opposed to U4Recorder running 
-
     return s ; 
 }
 
@@ -317,21 +333,34 @@ void SEvt::setNumPhoton(unsigned numphoton)
     evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ;
     evt->num_record = evt->max_record * evt->num_photon ;
     evt->num_rec    = evt->max_rec    * evt->num_photon ;
+
+    hostside_running_resize_done = false ; 
 }
 
 /**
-SEvt::resize
----------------
+SEvt::hostside_running_resize
+-------------------------------
 
 NB evt->photon, evt->record, ...  pointers are used to hold device side 
 addresses for QEvent running and CPU side addresses for SEvt based running.
 
+This makes it necessary to defer resizing, to give QEvent 
+time to be instanciated and declare itself as the comp provider 
+
 **/
 
-void SEvt::resize()
+void SEvt::hostside_running_resize()
 {
     bool is_self_provider = isSelfProvider() ; 
+    LOG(LEVEL) 
+        << " is_self_provider " << is_self_provider 
+        << " hostside_running_resize_done " << hostside_running_resize_done
+        ;
+
+    assert( hostside_running_resize_done == false ); 
     assert( is_self_provider ); 
+    hostside_running_resize_done = true ; 
+
 
     if(evt->num_photon > 0) pho.resize(  evt->num_photon );  
     if(evt->num_photon > 0) slot.resize( evt->num_photon ); 
@@ -388,6 +417,8 @@ SEvt::beginPhoton
 **/
 void SEvt::beginPhoton(const spho& label)
 {
+    if(!hostside_running_resize_done) hostside_running_resize(); 
+
     dbg->beginPhoton++ ; 
     LOG(LEVEL) ; 
     LOG(LEVEL) << label.desc() ; 
@@ -936,12 +967,12 @@ then the directory is suffixed with the index::
 void SEvt::save(const char* dir_) 
 {
     const char* dir = index == MISSING_INDEX ? SPath::Resolve(dir_, DIRPATH) : SPath::Resolve(dir_, index, DIRPATH ) ; 
-    LOG(info) << " dir " << dir ; 
+    LOG(LEVEL) << " dir " << dir ; 
 
     gather_components(); 
 
-    LOG(info) << descComponent() ; 
-    LOG(info) << descFold() ; 
+    LOG(LEVEL) << descComponent() ; 
+    LOG(LEVEL) << descFold() ; 
 
     fold->save(dir); 
 
@@ -958,18 +989,18 @@ SEvt::saveLabels
 void SEvt::saveLabels(const char* dir_) const 
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH );  
-    LOG(info) << dir ; 
+    LOG(LEVEL) << dir ; 
 
     NP* a0 = getPho0();  
-    LOG(info) << " a0 " << ( a0 ? a0->sstr() : "-" ) ; 
+    LOG(LEVEL) << " a0 " << ( a0 ? a0->sstr() : "-" ) ; 
     if(a0) a0->save(dir, "pho0.npy"); 
 
     NP* a = getPho();  
-    LOG(info) << " a " << ( a ? a->sstr() : "-" ) ; 
+    LOG(LEVEL) << " a " << ( a ? a->sstr() : "-" ) ; 
     if(a) a->save(dir, "pho.npy"); 
 
     NP* g = getGS(); 
-    LOG(info) << " g " << ( g ? g->sstr() : "-" ) ; 
+    LOG(LEVEL) << " g " << ( g ? g->sstr() : "-" ) ; 
     if(g) g->save(dir, "gs.npy"); 
 }
 

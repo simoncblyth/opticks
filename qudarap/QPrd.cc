@@ -10,6 +10,9 @@
 #include "QBnd.hh"
 #include "QPrd.hh"
 
+
+const plog::Severity QPrd::LEVEL = PLOG::EnvLevel("QPrd", "DEBUG") ; 
+
 const QPrd* QPrd::INSTANCE = nullptr ; 
 const QPrd* QPrd::Get(){ return INSTANCE ; }
 
@@ -44,7 +47,7 @@ void QPrd::init()
 {
     const char* bnd_fallback = "Acrylic///LS,Water///Acrylic,Water///Pyrex,Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum" ;  
     const char* bnd_sequence = SSys::getenvvar("QPRD_BND", bnd_fallback );  
-    LOG(info) << " QPRD_BND " << bnd_sequence ; 
+    LOG(LEVEL) << " QPRD_BND " << bnd_sequence ; 
     bnd->getBoundaryIndices( bnd_idx, bnd_sequence, ',' ); 
 
     const char* nrmt_fallback = "0,0,1,100 0,0,1,200 0,0,1,300 0,0,1,400" ; 
@@ -53,7 +56,7 @@ void QPrd::init()
     unsigned num_prd = bnd_idx.size() ; 
     assert( num_prd == nrmt.size() ); 
 
-    LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ; 
+    LOG(LEVEL) << " SEventConfig::Desc " << SEventConfig::Desc() ; 
 
     prd.resize(num_prd);  // vector of quad2
     for(unsigned i=0 ; i < num_prd ; i++)
@@ -88,7 +91,7 @@ NP* QPrd::duplicate_prd(unsigned num_photon, unsigned num_bounce) const
     unsigned num_prd = prd.size(); 
     unsigned ni = num_photon ; 
     unsigned nj = num_bounce ; 
-    LOG(error) 
+    LOG(LEVEL) 
         << " ni:num_photon " << num_photon
         << " nj:num_bounce " << num_bounce
         << " num_prd " << num_prd 

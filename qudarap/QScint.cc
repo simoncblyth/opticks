@@ -18,7 +18,7 @@
 #include "qscint.h"
 
 
-const plog::Severity QScint::LEVEL = PLOG::EnvLevel("QScint", "INFO"); 
+const plog::Severity QScint::LEVEL = PLOG::EnvLevel("QScint", "DEBUG"); 
 
 const QScint* QScint::INSTANCE = nullptr ; 
 const QScint* QScint::Get(){ return INSTANCE ;  }

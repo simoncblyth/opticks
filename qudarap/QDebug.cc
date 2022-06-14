@@ -73,7 +73,7 @@ QDebug::QDebug()
     d_dbg(QU::UploadArray<qdebug>(dbg, 1 ))
 {
     INSTANCE = this ; 
-    LOG(info) << desc() ; 
+    LOG(LEVEL) << desc() ; 
 }
 
 qdebug* QDebug::getDevicePtr() const

@@ -13,7 +13,7 @@
 
 
 template<typename T>
-const plog::Severity QProp<T>::LEVEL = PLOG::EnvLevel("QProp", "INFO"); 
+const plog::Severity QProp<T>::LEVEL = PLOG::EnvLevel("QProp", "DEBUG"); 
 
 template<typename T>
 const QProp<T>* QProp<T>::INSTANCE = nullptr ; 

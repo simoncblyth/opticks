@@ -88,21 +88,21 @@ void QSim::UploadComponents( const SSim* ssim  )
     {
        // TODO: combine the below as optical and bnd MUST travel together 
         QOptical* qopt = new QOptical(optical); 
-        LOG(fatal) << qopt->desc(); 
+        LOG(LEVEL) << qopt->desc(); 
         QBnd* qbnd = new QBnd(bnd); // boundary texture with standard domain, used for standard fast property lookup 
         LOG(LEVEL) << qbnd->desc(); 
     }
 
     QDebug* debug_ = new QDebug ; 
-    LOG(info) << debug_->desc() ; 
+    LOG(LEVEL) << debug_->desc() ; 
 
     const NP* propcom = ssim->get(SSim::PROPCOM); 
     if( propcom )
     {
-        LOG(error) << "[ QProp " ; 
+        LOG(LEVEL) << "[ QProp " ; 
         QProp<float>* prop = new QProp<float>(propcom) ;  
         // property interpolation with per-property domains, eg used for Cerenkov RINDEX sampling 
-        LOG(error) << "] QProp " ; 
+        LOG(LEVEL) << "] QProp " ; 
         LOG(LEVEL) << prop->desc(); 
     }
 
@@ -110,7 +110,7 @@ void QSim::UploadComponents( const SSim* ssim  )
     const NP* icdf = ssim->get(SSim::ICDF); 
     if( icdf == nullptr )
     {
-        LOG(warning) << " icdf null " ; 
+        LOG(LEVEL) << " icdf null " ; 
     }
     else
     {
@@ -127,7 +127,7 @@ void QSim::UploadComponents( const SSim* ssim  )
     const NP* multifilm = ssim->get(SSim::MULTIFILM); 
     if(multifilm == nullptr)
     {
-        LOG(warning) << " multifilm null ";
+        LOG(LEVEL) << " multifilm null ";
     }
     else
     {
@@ -209,7 +209,7 @@ void QSim::init()
 
     INSTANCE = this ; 
     LOG(LEVEL) << desc() ; 
-    LOG(info) << checkComponents() ; 
+    LOG(LEVEL) << checkComponents() ; 
 }
 
 /**
@@ -794,7 +794,7 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
 
     int num_prd = prd->shape[0]*prd->shape[1] ;  
 
-    LOG(info) 
+    LOG(LEVEL) 
          << "["
          << " num_p " << num_p
          << " num_prd " << num_prd 
@@ -819,9 +819,8 @@ void QSim::mock_propagate( const NP* prd, unsigned type )
 
     cudaDeviceSynchronize();
 
-    // event->getPhoton(p);   this should be automated by SEvt::gather_components 
 
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 

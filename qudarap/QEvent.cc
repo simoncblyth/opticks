@@ -158,7 +158,7 @@ int QEvent::setGenstep(NP* gs_)
 
     if( evt->genstep == nullptr && evt->seed == nullptr ) 
     {
-        LOG(info) << " device_alloc genstep and seed " ; 
+        LOG(LEVEL) << " device_alloc genstep and seed " ; 
         evt->genstep = QU::device_alloc<quad6>( evt->max_genstep ) ; 
         evt->seed    = QU::device_alloc<int>(   evt->max_photon )  ;
     }
@@ -334,10 +334,10 @@ QEvent::getPhoton(NP* p) :  mutating API
 
 void QEvent::getPhoton(NP* p) const 
 {
-    LOG(fatal) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ; 
+    LOG(LEVEL) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ; 
     assert( p->has_shape(evt->num_photon, 4, 4) ); 
     QU::copy_device_to_host<sphoton>( (sphoton*)p->bytes(), evt->photon, evt->num_photon ); 
-    LOG(fatal) << "] evt.num_photon " << evt->num_photon  ; 
+    LOG(LEVEL) << "] evt.num_photon " << evt->num_photon  ; 
 }
 
 NP* QEvent::getPhoton() const 
@@ -352,14 +352,14 @@ NP* QEvent::getPhoton() const
 
 void QEvent::getSimtrace(NP* t) const 
 {
-    LOG(fatal) << "[ evt.num_simtrace " << evt->num_simtrace << " t.sstr " << t->sstr() << " evt.simtrace " << evt->simtrace ; 
+    LOG(LEVEL) << "[ evt.num_simtrace " << evt->num_simtrace << " t.sstr " << t->sstr() << " evt.simtrace " << evt->simtrace ; 
     assert( t->has_shape(evt->num_simtrace, 4, 4) ); 
     QU::copy_device_to_host<quad4>( (quad4*)t->bytes(), evt->simtrace, evt->num_simtrace ); 
-    LOG(fatal) << "] evt.num_simtrace " << evt->num_simtrace  ; 
+    LOG(LEVEL) << "] evt.num_simtrace " << evt->num_simtrace  ; 
 }
 NP* QEvent::getSimtrace() const 
 {
-    if(!hasSimtrace()) LOG(fatal) << " getSimtrace called when there is no such array, use SEventConfig::SetCompMask to avoid " ;
+    if(!hasSimtrace()) LOG(LEVEL) << " getSimtrace called when there is no such array, use SEventConfig::SetCompMask to avoid " ;
     if(!hasSimtrace()) return nullptr ;  
     NP* t = NP::Make<float>( evt->num_simtrace, 4, 4);
     getSimtrace(t); 
@@ -369,15 +369,15 @@ NP* QEvent::getSimtrace() const
 void QEvent::getSeq(NP* seq) const 
 {
     if(!hasSeq()) return ; 
-    LOG(fatal) << "[ evt.num_seq " << evt->num_seq << " seq.sstr " << seq->sstr() << " evt.seq " << evt->seq ; 
+    LOG(LEVEL) << "[ evt.num_seq " << evt->num_seq << " seq.sstr " << seq->sstr() << " evt.seq " << evt->seq ; 
     assert( seq->has_shape(evt->num_seq, 2) ); 
     QU::copy_device_to_host<sseq>( (sseq*)seq->bytes(), evt->seq, evt->num_seq ); 
-    LOG(fatal) << "] evt.num_seq " << evt->num_seq  ; 
+    LOG(LEVEL) << "] evt.num_seq " << evt->num_seq  ; 
 }
 
 NP* QEvent::getSeq() const 
 {
-    if(!hasSeq()) LOG(fatal) << " getSeq called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasSeq()) LOG(LEVEL) << " getSeq called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasSeq()) return nullptr ;
   
     NP* seq = sev->makeSeq(); 
@@ -388,24 +388,24 @@ NP* QEvent::getSeq() const
 
 NP* QEvent::getRecord() const 
 {
-    if(!hasRecord()) LOG(fatal) << " getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasRecord()) LOG(LEVEL) << " getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasRecord()) return nullptr ;  
 
     NP* r = sev->makeRecord(); 
 
-    LOG(info) << " evt.num_record " << evt->num_record ; 
+    LOG(LEVEL) << " evt.num_record " << evt->num_record ; 
     QU::copy_device_to_host<sphoton>( (sphoton*)r->bytes(), evt->record, evt->num_record ); 
     return r ; 
 }
 
 NP* QEvent::getRec() const 
 {
-    if(!hasRec()) LOG(fatal) << " getRec called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasRec()) LOG(LEVEL) << " getRec called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasRec()) return nullptr ;  
 
     NP* r = sev->makeRec(); 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " evt.num_photon " << evt->num_photon 
         << " evt.max_rec " << evt->max_rec 
         << " evt.num_rec " << evt->num_rec  
@@ -426,7 +426,7 @@ unsigned QEvent::getNumHit() const
 
     evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );    
 
-    LOG(info) << " evt.photon " << evt->photon << " evt.num_photon " << evt->num_photon << " evt.num_hit " << evt->num_hit ;  
+    LOG(LEVEL) << " evt.photon " << evt->photon << " evt.num_photon " << evt->num_photon << " evt.num_hit " << evt->num_hit ;  
     return evt->num_hit ; 
 }
 
@@ -461,14 +461,14 @@ NP* QEvent::getHit() const
 {
     // hasHit at this juncture is misleadingly always false, 
     // because the hits array is derived by *getHit_* which  selects from the photons 
-    if(!hasPhoton()) LOG(fatal) << " getHit called when there is no photon array " ; 
+    if(!hasPhoton()) LOG(LEVEL) << " getHit called when there is no photon array " ; 
     if(!hasPhoton()) return nullptr ; 
 
     assert( evt->photon ); 
     assert( evt->num_photon ); 
     evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );    
 
-    LOG(info) 
+    LOG(LEVEL) 
          << " evt.photon " << evt->photon 
          << " evt.num_photon " << evt->num_photon 
          << " evt.num_hit " << evt->num_hit
@@ -495,7 +495,7 @@ NP* QEvent::getHit_() const
     QU::device_free<sphoton>( evt->hit ); 
 
     evt->hit = nullptr ; 
-    LOG(info) << " hit.sstr " << hit->sstr() ; 
+    LOG(LEVEL) << " hit.sstr " << hit->sstr() ; 
 
     return hit ; 
 }
@@ -564,7 +564,7 @@ void QEvent::setNumPhoton(unsigned num_photon )
         evt->rec     = evt->num_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->num_rec  )   : nullptr ; 
         evt->seq     = evt->num_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->num_seq  )   : nullptr ; 
 
-        LOG(info) 
+        LOG(LEVEL) 
             << " device_alloc photon " 
             << " evt.num_photon " << evt->num_photon 
             << " evt.max_photon " << evt->max_photon

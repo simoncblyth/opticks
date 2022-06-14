@@ -117,8 +117,17 @@ esac
 export NUM=${NUM:-$num}
 export NRM=${NRM:-$nrm}
 
-#export QBnd=INFO
-#export SEvent=INFO
+setloglevels()
+{
+    #export QBnd=INFO
+    #export SEvent=INFO
+    export QSim=INFO
+    export SEvt=INFO
+    export QEvent=INFO
+}
+setloglevels
+
+
 
 source fill_state.sh 
 source ephoton.sh         # branching on TEST inside ephoton.sh 

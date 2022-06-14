@@ -28,6 +28,8 @@ Just copy into your project and ``#include "NP.hh"`` to use.
 
 struct NP
 {
+    static const bool VERBOSE = false ; 
+
     union UIF32
     {
         std::uint32_t u ;
@@ -329,7 +331,7 @@ inline std::istream& operator>>(std::istream& is, NP& a)
     unsigned arr_bytes_nh = a.prefix_size(1); 
     unsigned meta_bytes_nh = a.prefix_size(2);  
 
-    std::cout 
+    if(NP::VERBOSE) std::cout 
         << " hdr_bytes_nh " << hdr_bytes_nh 
         << " arr_bytes_nh " << arr_bytes_nh 
         << " meta_bytes_nh " << meta_bytes_nh 
@@ -453,7 +455,7 @@ inline bool NP::decode_prefix()
     unsigned arr_bytes_nh = prefix_size(1); 
     unsigned meta_bytes_nh = prefix_size(2);  
 
-    std::cout 
+    if(VERBOSE) std::cout 
         << "NP::decode_prefix"
         << " hdr_bytes_nh " << hdr_bytes_nh
         << " arr_bytes_nh " << arr_bytes_nh
@@ -525,7 +527,7 @@ inline void NP::set_dtype(const char* dtype_)
     int  ebyte_ = NPU::_dtype_ebyte(dtype_) ; 
     assert( ebyte_ == 1 || ebyte_ == 2 || ebyte_ == 4 || ebyte_ == 8 ); 
 
-    std::cout 
+    if(VERBOSE) std::cout 
         << "changing dtype/uifc/ebyte from: " 
         << dtype << "/" << uifc << "/" << ebyte 
         << " to: "
@@ -913,7 +915,7 @@ inline NP* NP::MakeNarrow(const NP* a) // static
         }
     }
 
-    std::cout 
+    if(VERBOSE) std::cout 
         << "NP::MakeNarrow"
         << " a.dtype " << a->dtype
         << " b.dtype " << b->dtype
@@ -944,7 +946,7 @@ inline NP* NP::MakeWide(const NP* a) // static
         }
     }
 
-    std::cout 
+    if(VERBOSE) std::cout 
         << "NP::MakeWide"
         << " a.dtype " << a->dtype
         << " b.dtype " << b->dtype
@@ -3105,7 +3107,7 @@ inline void NP::save_string_(const char* path, const char* ext, const std::strin
 {
     if(str.empty()) return ; 
     std::string str_path = U::ChangeExt(path, ".npy", ext ); 
-    std::cout << "NP::save_string_ str_path [" << str_path  << "]" << std::endl ; 
+    if(VERBOSE) std::cout << "NP::save_string_ str_path [" << str_path  << "]" << std::endl ; 
     std::ofstream fps(str_path.c_str(), std::ios::out);
     fps << str ;  
 }
@@ -3114,7 +3116,7 @@ inline void NP::save_strings_(const char* path, const char* ext, const std::vect
 {
     if(vstr.size() == 0) return ; 
     std::string vstr_path = U::ChangeExt(path, ".npy", ext ); 
-    std::cout << "NP::save_strings_ vstr_path [" << vstr_path  << "]" << std::endl ; 
+    if(VERBOSE) std::cout << "NP::save_strings_ vstr_path [" << vstr_path  << "]" << std::endl ; 
 
     char delim = '\n' ; 
     std::ofstream fps(vstr_path.c_str(), std::ios::out);

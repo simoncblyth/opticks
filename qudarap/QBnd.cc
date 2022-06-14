@@ -22,7 +22,7 @@
 #include "SDigestNP.hh"
 #include "PLOG.hh"
 
-const plog::Severity QBnd::LEVEL = PLOG::EnvLevel("QBnd", "INFO"); 
+const plog::Severity QBnd::LEVEL = PLOG::EnvLevel("QBnd", "DEBUG"); 
 const unsigned QBnd::MISSING = ~0u ; 
 const QBnd* QBnd::INSTANCE = nullptr ; 
 const QBnd* QBnd::Get(){ return INSTANCE ; }
@@ -154,7 +154,7 @@ void QBnd::getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char* bnd_s
 
         bnd_idx.push_back(bidx) ; 
     }
-    LOG(info) << " bnd.size " << bnd.size() << " bnd_idx.size " << bnd_idx.size()  ; 
+    LOG(LEVEL) << " bnd.size " << bnd.size() << " bnd_idx.size " << bnd_idx.size()  ; 
 }
 
 std::string QBnd::descBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const 

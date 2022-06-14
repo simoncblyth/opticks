@@ -8,7 +8,7 @@
 
 #include "QUDA_CHECK.h"
 
-const plog::Severity QRng::LEVEL = PLOG::EnvLevel("QRng", "INFO"); 
+const plog::Severity QRng::LEVEL = PLOG::EnvLevel("QRng", "DEBUG"); 
 const QRng* QRng::INSTANCE = nullptr ; 
 const QRng* QRng::Get(){ return INSTANCE ;  }
 

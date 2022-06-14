@@ -3,6 +3,8 @@
 #include "QUDARAP_API_EXPORT.hh"
 #include <vector>
 #include <string>
+#include "plog/Severity.h"
+
 struct float4 ; 
 struct quad2 ; 
 struct QBnd ; 
@@ -21,6 +23,7 @@ of propagation using QSimTest MOCK_PROPAGATE
 
 struct QUDARAP_API QPrd
 {
+    static const plog::Severity LEVEL ;
     static const QPrd* INSTANCE  ; 
     static const QPrd* Get() ; 
 

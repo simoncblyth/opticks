@@ -15,7 +15,7 @@
 
 #include "PLOG.hh"
 
-const plog::Severity QOptical::LEVEL = PLOG::EnvLevel("QOptical", "INFO");   // set to "DEBUG" when want to quieten
+const plog::Severity QOptical::LEVEL = PLOG::EnvLevel("QOptical", "DEBUG");
 
 const QOptical* QOptical::INSTANCE = nullptr ; 
 const QOptical* QOptical::Get(){ return INSTANCE ; }

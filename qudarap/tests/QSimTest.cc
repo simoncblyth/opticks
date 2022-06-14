@@ -39,6 +39,7 @@ QSimTest.cc
 struct QSimTest
 {
     static const char* FOLD ; 
+    static const plog::Severity LEVEL ; 
     static void  EventConfig(unsigned type);  // must be run after SEvt is instanciated
     static unsigned Num(int argc, char** argv); 
 
@@ -79,6 +80,16 @@ struct QSimTest
     void quad_launch_generate(); 
 
 }; 
+
+/**
+QSimTest::LEVEL
+----------------
+
+Inhibiting logging  within executables does not work ... 
+
+**/
+
+const plog::Severity QSimTest::LEVEL = PLOG::EnvLevel("QSimTest", "INFO"); 
 
 const char* QSimTest::FOLD = SPath::Resolve("$TMP/QSimTest", DIRPATH) ;  // 2:dirpath create 
 
@@ -533,11 +544,11 @@ void QSimTest::EventConfig(unsigned type )  // static
     LOG(fatal) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for mock_propagate bounce consistency " ;  
     assert(sev == nullptr); 
 
-    LOG(info) << "[ " <<  QSimLaunch::Name(type) ; 
+    LOG(LEVEL) << "[ " <<  QSimLaunch::Name(type) ; 
     if( type == MOCK_PROPAGATE )
     {
         QPrd* prd = new QPrd ; 
-        LOG(info) << prd->desc() ;  
+        LOG(LEVEL) << prd->desc() ;  
         int num_bounce = prd->getNumBounce(); 
  
         // NB better not to hide this inside QPrd
@@ -549,9 +560,9 @@ void QSimTest::EventConfig(unsigned type )  // static
         SEventConfig::SetMaxSeq(num_bounce+1); 
         //SEventConfig::SetHitMask("SD,SC", ',');  // change hitmask to check what happens when no hits 
 
-        LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
+        LOG(LEVEL) << " SEventConfig::Desc " << SEventConfig::Desc() ;
     }
-    LOG(info) << "] " <<  QSimLaunch::Name(type) ; 
+    LOG(LEVEL) << "] " <<  QSimLaunch::Name(type) ; 
 }
 
 

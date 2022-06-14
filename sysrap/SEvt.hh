@@ -61,6 +61,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* input_photon ; 
     const SCompProvider*  provider ; 
     NPFold*               fold ; 
+    bool                  hostside_running_resize_done ; // only ever becomes true for non-GPU running 
 
 
     std::vector<quad6> genstep ; 
@@ -109,15 +110,18 @@ struct SYSRAP_API SEvt : public SCompProvider
     static NP* GetInputPhoton(); 
     static bool HasInputPhoton(); 
 
-    bool isSelfProvider() const ; 
  
     SEvt(); 
     void init(); 
     void initInputPhoton(); 
 
     void setCompProvider(const SCompProvider* provider); 
+    bool isSelfProvider() const ; 
+    std::string descProvider() const ; 
+
+
     void setNumPhoton(unsigned numphoton); 
-    void resize(); 
+    void hostside_running_resize(); 
 
     NP* getDomain() const ; 
 
@@ -129,6 +133,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     int getIndex() const ; 
 
     unsigned getNumPhoton() const ; 
+    unsigned getNumPhotonFromGenstep() const ; 
     sgs addGenstep(const quad6& q) ; 
     sgs addGenstep(const NP* a) ; 
 

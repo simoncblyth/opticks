@@ -18,6 +18,33 @@ TODO : bring OpticksRandom over into U4
 TODO : debug input photon running with CXRaindropTest 
 -------------------------------------------------------
 
+Q: Why does QSimTest work but CXRaindropTest fail ?
+A: The reason QSimTest works is that the adding of the genstep happens after QEvent is instanciated
+    because it is not using the automated input photons which calls addGenstep very early, 
+    but rather it manually sets input photons in mock_propagate which is after QSim/QEvent is instanciated. 
+
+
+Try avoiding QEvent SEvt instanciation order sensitivity by deferring the SEvt::hostside_running_resize until the last 
+possible moment SEvt::beginPhoton which is never called for deviceside running. 
+
+
+::
+
+    451 void QSimTest::mock_propagate()
+    452 {
+    453     assert( QSimLaunch::IsMutate(type)==true );
+    454     LOG(info) << "[" ;
+    455     LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
+    456 
+    457     NP* p   = qs.duplicate_dbg_ephoton(num);
+    458 
+    459     SEvt::Get()->setInputPhoton(p);  // also adds placeholder genstep 
+    460 
+
+
+
+
+
 SMOKING GUN, the SEvt should not be self provider when using QEvent::
 
     2022-06-14 03:38:25.978 INFO  [327404] [SEvt::LoadInputPhoton@122]  SEventConfig::InputPhoton RandomSpherical10.npy path /home/blyth/.opticks/InputPhotons/RandomSpherical10.npy a.sstr (10, 4, 4, )
