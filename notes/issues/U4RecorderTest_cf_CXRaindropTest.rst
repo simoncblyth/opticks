@@ -28,6 +28,272 @@ TODO: Arrange for same material props used in A and B
   but did not yet use that instead using some other CFBASE of material props
 
 
+DONE : InstrumentedG4OpBoundaryProcess
+-----------------------------------------
+
+::
+
+    PIDX=-1 ./U4RecorderTest.sh run
+
+    2022-06-15 19:45:40.105 INFO  [23999045] [U4RecorderTest::GeneratePrimaries@118] ]
+    2022-06-15 19:45:40.105 INFO  [23999045] [U4Recorder::BeginOfEventAction@39] 
+    DiDi.pidx    9 PIDX   -1 OldMomentum (   -0.50013    0.44970    0.74002) OldPolarization (   -0.82853    0.00000   -0.55994) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    DiDi.pidx    8 PIDX   -1 OldMomentum (    0.80941   -0.18808    0.55631) OldPolarization (   -0.56642    0.00000    0.82412) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    DiDi.pidx    7 PIDX   -1 OldMomentum (    0.58055   -0.46948    0.66524) OldPolarization (   -0.75344    0.00000    0.65752) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    DiDi.pidx    6 PIDX   -1 OldMomentum (   -0.26012    0.10758   -0.95956) OldPolarization (    0.96516    0.00000   -0.26164) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    DiDi.pidx    5 PIDX   -1 OldMomentum (   -0.34320   -0.44762   -0.82574) OldPolarization (    0.92342    0.00000   -0.38380) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    DiDi.pidx    4 PIDX   -1 OldMomentum (   -0.45578    0.23711   -0.85793) OldPolarization (    0.88311    0.00000   -0.46916) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    DiDi.pidx    3 PIDX   -1 OldMomentum (   -0.50412   -0.14606    0.85119) OldPolarization (   -0.86042    0.00000   -0.50958) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    DiDi.pidx    2 PIDX   -1 OldMomentum (   -0.79126   -0.59614    0.13609) OldPolarization (   -0.16950    0.00000   -0.98553) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    DiDi.pidx    1 PIDX   -1 OldMomentum (   -0.21662   -0.97454    0.05779) OldPolarization (   -0.25777    0.00000   -0.96621) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    DiDi.pidx    0 PIDX   -1 OldMomentum (   -0.77425   -0.24520    0.58345) OldPolarization (   -0.60182    0.00000   -0.79863) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    2022-06-15 19:45:40.106 INFO  [23999045] [U4Recorder::EndOfEventAction@40] 
+    2022-06-15 19:45:40.106 INFO  [23999045] [U4Recorder::EndOfRunAction@38] 
+
+Geant4 treats all 10 as normal incidence::
+
+    2022-06-15 20:07:16.787 INFO  [24023145] [U4RecorderTest::GeneratePrimaries@118] ]
+    2022-06-15 20:07:16.787 INFO  [24023145] [U4Recorder::BeginOfEventAction@39] 
+    DiDi.pidx    9 PIDX   -1 OldMomentum (   -0.50013    0.44970    0.74002) OldPolarization (   -0.82853    0.00000   -0.55994) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    9 TRANSMIT NewMom (   -0.5001     0.4497     0.7400) NewPol (   -0.8285     0.0000    -0.5599) 
+    DiDi.pidx    8 PIDX   -1 OldMomentum (    0.80941   -0.18808    0.55631) OldPolarization (   -0.56642    0.00000    0.82412) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    8 TRANSMIT NewMom (    0.8094    -0.1881     0.5563) NewPol (   -0.5664     0.0000     0.8241) 
+    DiDi.pidx    7 PIDX   -1 OldMomentum (    0.58055   -0.46948    0.66524) OldPolarization (   -0.75344    0.00000    0.65752) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    7 TRANSMIT NewMom (    0.5806    -0.4695     0.6652) NewPol (   -0.7534     0.0000     0.6575) 
+    DiDi.pidx    6 PIDX   -1 OldMomentum (   -0.26012    0.10758   -0.95956) OldPolarization (    0.96516    0.00000   -0.26164) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    6 TRANSMIT NewMom (   -0.2601     0.1076    -0.9596) NewPol (    0.9652     0.0000    -0.2616) 
+    DiDi.pidx    5 PIDX   -1 OldMomentum (   -0.34320   -0.44762   -0.82574) OldPolarization (    0.92342    0.00000   -0.38380) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    5 TRANSMIT NewMom (   -0.3432    -0.4476    -0.8257) NewPol (    0.9234     0.0000    -0.3838) 
+    DiDi.pidx    4 PIDX   -1 OldMomentum (   -0.45578    0.23711   -0.85793) OldPolarization (    0.88311    0.00000   -0.46916) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    4 TRANSMIT NewMom (   -0.4558     0.2371    -0.8579) NewPol (    0.8831     0.0000    -0.4692) 
+    DiDi.pidx    3 PIDX   -1 OldMomentum (   -0.50412   -0.14606    0.85119) OldPolarization (   -0.86042    0.00000   -0.50958) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    3 TRANSMIT NewMom (   -0.5041    -0.1461     0.8512) NewPol (   -0.8604     0.0000    -0.5096) 
+    DiDi.pidx    2 PIDX   -1 OldMomentum (   -0.79126   -0.59614    0.13609) OldPolarization (   -0.16950    0.00000   -0.98553) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    2 TRANSMIT NewMom (   -0.7913    -0.5961     0.1361) NewPol (   -0.1695     0.0000    -0.9855) 
+    DiDi.pidx    1 PIDX   -1 OldMomentum (   -0.21662   -0.97454    0.05779) OldPolarization (   -0.25777    0.00000   -0.96621) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    1 TRANSMIT NewMom (   -0.2166    -0.9745     0.0578) NewPol (   -0.2578     0.0000    -0.9662) 
+    DiDi.pidx    0 PIDX   -1 OldMomentum (   -0.77425   -0.24520    0.58345) OldPolarization (   -0.60182    0.00000   -0.79863) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi TRANSMIT 
+    //DiDi pidx    0 TRANSMIT NewMom (   -0.7742    -0.2452     0.5835) NewPol (   -0.6018     0.0000    -0.7986) 
+    2022-06-15 20:07:16.788 INFO  [24023145] [U4Recorder::EndOfEventAction@40] 
+    2022-06-15 20:07:16.788 INFO  [24023145] [U4Recorder::EndOfRunAction@38] 
+
+
+
+::
+
+    In [8]: b.record[0,:4]                                                                                                                                                                                                                   
+    Out[8]: 
+    array([[[  -0.774,   -0.245,    0.583,    0.1  ],
+            [  -0.774,   -0.245,    0.583,    0.   ],
+            [  -0.602,    0.   ,   -0.799,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -38.712,  -12.26 ,   29.173,    0.325],
+            [  -0.774,   -0.245,    0.583,    0.   ],
+            [  -0.602,    0.   ,   -0.799,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[-100.   ,  -31.67 ,   75.357,    0.589],
+            [  -0.774,   -0.245,    0.583,    0.   ],
+            [  -0.602,    0.   ,   -0.799,  440.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
+
+
+
+
+
+CX : the ones classified as normal incidence match : otherwise not
+--------------------------------------------------------------------
+
+So perhaps the mismatch can be solved by OR-ing the normal incidence
+judgement based on both the abs dot product being one  and the cross product
+being zero.  
+
+::
+
+    PIDX=0 ./cxs_raindrop.sh
+    PIDX=1 ./cxs_raindrop.sh
+    ...
+    PIDX=9 ./cxs_raindrop.sh
+
+
+    //qsim.propagate_at_boundary idx 0 c1     1.0000 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 1 c1     1.0000 normal_incidence 1 
+    //qsim.propagate_at_boundary idx 2 c1     1.0000 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 3 c1     1.0000 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 4 c1     1.0000 normal_incidence 1 
+    //qsim.propagate_at_boundary idx 5 c1     1.0000 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 6 c1     1.0000 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 7 c1     1.0000 normal_incidence 1 
+    //qsim.propagate_at_boundary idx 8 c1     1.0000 normal_incidence 1 
+    //qsim.propagate_at_boundary idx 9 c1     1.0000 normal_incidence 0
+
+final photon polz : 1,4,7,8 very close :  0,2,3,5,6,9 not so close
+
+
+::
+
+
+    In [7]: a.record[:,:4,2]                                                                                                                                                                                                                 
+    Out[7]: 
+    array([[[ -0.602,   0.   ,  -0.799, 440.   ],
+            [ -0.544,   0.009,  -0.839, 440.   ],
+            [ -0.544,   0.009,  -0.839, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.258,   0.   ,  -0.966, 440.   ],      ## 1 
+            [ -0.258,   0.   ,  -0.966, 440.   ],
+            [ -0.258,   0.   ,  -0.966, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.17 ,   0.   ,  -0.986, 440.   ],
+            [  0.179,  -0.457,  -0.871, 440.   ],
+            [  0.179,  -0.457,  -0.871, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.86 ,   0.   ,  -0.51 , 440.   ],
+            [  0.757,   0.404,   0.513, 440.   ],
+            [  0.757,   0.404,   0.513, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[  0.883,   0.   ,  -0.469, 440.   ],      ## 4
+            [  0.883,   0.   ,  -0.469, 440.   ],
+            [  0.883,   0.   ,  -0.469, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[  0.923,   0.   ,  -0.384, 440.   ],
+            [  0.878,   0.062,  -0.474, 440.   ],
+            [  0.878,  -0.42 ,   0.228, 440.   ],
+            [  0.878,  -0.42 ,   0.228, 440.   ]],
+
+           [[  0.965,   0.   ,  -0.262, 440.   ],
+            [  0.969,  -0.02 ,  -0.245, 440.   ],
+            [  0.969,  -0.02 ,  -0.245, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.753,   0.   ,   0.658, 440.   ],     ## 7 
+            [ -0.753,   0.   ,   0.658, 440.   ],
+            [ -0.753,   0.   ,   0.658, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.566,   0.   ,   0.824, 440.   ],     ## 8  
+            [ -0.566,   0.   ,   0.824, 440.   ],
+            [ -0.566,   0.   ,   0.824, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.829,   0.   ,  -0.56 , 440.   ],
+            [ -0.256,  -0.948,   0.19 , 440.   ],
+            [ -0.256,  -0.948,   0.19 , 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]]], dtype=float32)
+
+    In [8]:                                                                  
+
+
+
+
+
+
+Geant4 normal incidence : polz does not change
+------------------------------------------------
+
+::
+
+    1305                 }
+    1306                 else {                  // incident ray perpendicular
+    1307 
+    1308                    NewMomentum = OldMomentum;
+    1309                    NewPolarization = OldPolarization;
+    1310 
+    1311                 }
+
+
+
+
+
+
+
+::
+
+    In [6]: b.record[:,:4,2]                                                                                                                                                                                                                 
+    Out[6]: 
+    array([[[ -0.602,   0.   ,  -0.799, 440.   ],
+            [ -0.602,   0.   ,  -0.799, 440.   ],
+            [ -0.602,   0.   ,  -0.799, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.258,   0.   ,  -0.966, 440.   ],
+            [ -0.258,   0.   ,  -0.966, 440.   ],
+            [ -0.258,   0.   ,  -0.966, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.17 ,   0.   ,  -0.986, 440.   ],
+            [ -0.17 ,   0.   ,  -0.986, 440.   ],
+            [ -0.17 ,   0.   ,  -0.986, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.86 ,   0.   ,  -0.51 , 440.   ],
+            [ -0.86 ,   0.   ,  -0.51 , 440.   ],
+            [ -0.86 ,   0.   ,  -0.51 , 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[  0.883,   0.   ,  -0.469, 440.   ],
+            [  0.883,   0.   ,  -0.469, 440.   ],
+            [  0.883,   0.   ,  -0.469, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[  0.923,   0.   ,  -0.384, 440.   ],
+            [  0.923,   0.   ,  -0.384, 440.   ],
+            [  0.923,   0.   ,  -0.384, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[  0.965,   0.   ,  -0.262, 440.   ],
+            [  0.965,   0.   ,  -0.262, 440.   ],
+            [  0.965,   0.   ,  -0.262, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.753,   0.   ,   0.658, 440.   ],
+            [ -0.753,   0.   ,   0.658, 440.   ],
+            [ -0.753,   0.   ,   0.658, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.566,   0.   ,   0.824, 440.   ],
+            [ -0.566,   0.   ,   0.824, 440.   ],
+            [ -0.566,   0.   ,   0.824, 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.829,   0.   ,  -0.56 , 440.   ],
+            [ -0.829,   0.   ,  -0.56 , 440.   ],
+            [ -0.829,   0.   ,  -0.56 , 440.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]]], dtype=float32)
+
+
+
+
 final photon polz : 1,4,7,8 very close :  0,2,3,5,6,9 not so close
 ---------------------------------------------------------------------
 

@@ -135,7 +135,11 @@ enum G4OpBoundaryProcessStatus {  Undefined,
 #include "U4_API_EXPORT.hh"
 class U4_API InstrumentedG4OpBoundaryProcess : public G4VDiscreteProcess
 {
-
+#ifdef DEBUG_PIDX
+        static const int PIDX ; 
+        int pidx ; 
+        bool pidx_dump ; 
+#endif
 public:
 
         ////////////////////////////////

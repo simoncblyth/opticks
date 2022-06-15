@@ -86,6 +86,14 @@
 
 #include "G4SystemOfUnits.hh"
 
+
+
+#ifdef DEBUG_PIDX
+#include "SSys.hh"
+#include "U4PhotonInfo.h"
+const int InstrumentedG4OpBoundaryProcess::PIDX = SSys::getenvint("PIDX", -1) ; 
+#endif
+
 /////////////////////////
 // Class Implementation
 /////////////////////////
@@ -169,6 +177,23 @@ InstrumentedG4OpBoundaryProcess::~InstrumentedG4OpBoundaryProcess(){}
 G4VParticleChange*
 InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
+#ifdef DEBUG_PIDX
+        // U4PhotonInfo::GetIndex is picking up the index from the label set 
+        // in U4Recorder::PreUserTrackingAction_Optical for initially unlabelled input photons
+        pidx = U4PhotonInfo::GetIndex(&aTrack);   
+        pidx_dump = pidx == PIDX || PIDX == -1 ; 
+        // HUH: observed this happening twice for each pidx with what looks like same step ?
+       /*
+        std::cout 
+            << "InstrumentedG4OpBoundaryProcess::PostStepDoIt"
+            << " pidx " << std::setw(4) << pidx
+            << " PIDX " << std::setw(4) << PIDX
+            << " pidx_dump " << std::setw(4) << pidx_dump
+            << " aStep " << &aStep
+            << std::endl 
+            ;
+        */
+#endif
         theStatus = Undefined;
 
         aParticleChange.Initialize(aTrack);
@@ -1041,11 +1066,6 @@ void InstrumentedG4OpBoundaryProcess::DielectricDichroic()
 void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
 {
 
-#ifdef DEBUG_PIDX
-      std::cout << "DEBUG_PIDX InstrumentedG4OpBoundaryProcess::DielectricDielectric " << std::endl ;  
-#endif
-
-
         G4bool Inside = false;
         G4bool Swap = false;
 
@@ -1102,6 +1122,29 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
               sint2 = 0.0;
            }
 
+#ifdef DEBUG_PIDX
+          if(pidx_dump) std::cout 
+              << "DiDi.pidx " << std::setw(4) << pidx  
+              << " PIDX " << std::setw(4) << PIDX
+              << " OldMomentum (" 
+              << " " << std::setw(10) << std::fixed << std::setprecision(5) << OldMomentum.x()
+              << " " << std::setw(10) << std::fixed << std::setprecision(5) << OldMomentum.y()
+              << " " << std::setw(10) << std::fixed << std::setprecision(5) << OldMomentum.z()
+              << ")" 
+              << " OldPolarization (" 
+              << " " << std::setw(10) << std::fixed << std::setprecision(5) << OldPolarization.x()
+              << " " << std::setw(10) << std::fixed << std::setprecision(5) << OldPolarization.y()
+              << " " << std::setw(10) << std::fixed << std::setprecision(5) << OldPolarization.z()
+              << ")" 
+              << " cost1 " << std::setw(10) << std::fixed << std::setprecision(5) << cost1
+              << " Rindex1 " << std::setw(10) << std::fixed << std::setprecision(5) << Rindex1
+              << " Rindex2 " << std::setw(10) << std::fixed << std::setprecision(5) << Rindex2
+              << " sint1 " << std::setw(10) << std::fixed << std::setprecision(5) << sint1 
+              << " sint2 " << std::setw(10) << std::fixed << std::setprecision(5) << sint2 
+              << std::endl
+              ;    
+#endif
+
            if (sint2 >= 1.0) {
 
               // Simulate total internal reflection
@@ -1144,6 +1187,10 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
               }
 
               if (sint1 > 0.0) {
+#ifdef DEBUG_PIDX
+                 if(pidx_dump) printf("//DiDi sint1 > 0 \n" );  
+#endif
+
                  A_trans = OldMomentum.cross(theFacetNormal);
                  A_trans = A_trans.unit();
                  E1_perp = OldPolarization * A_trans;
@@ -1152,6 +1199,11 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
                  E1_parl = E1pl.mag();
               }
               else {
+
+#ifdef DEBUG_PIDX
+                 if(pidx_dump) printf("//DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  \n" );  
+#endif
+
                  A_trans  = OldPolarization;
                  // Here we Follow Jackson's conventions and we set the
                  // parallel component = 1 in case of a ray perpendicular
@@ -1227,6 +1279,11 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
 
                 // Simulate transmission/refraction
 
+#ifdef DEBUG_PIDX
+                if(pidx_dump) printf("//DiDi TRANSMIT \n"); 
+#endif
+
+
                 Inside = !Inside;
                 Through = true;
                 theStatus = FresnelRefraction;
@@ -1252,6 +1309,17 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
                    NewPolarization = OldPolarization;
 
                 }
+
+#ifdef DEBUG_PIDX
+                if(pidx_dump) printf("//DiDi pidx %4d TRANSMIT NewMom (%10.4f %10.4f %10.4f) NewPol (%10.4f %10.4f %10.4f) \n",
+                           pidx, 
+                           NewMomentum.x(), NewMomentum.y(), NewMomentum.z(),
+                           NewPolarization.x(), NewPolarization.y(), NewPolarization.z()
+                      ); 
+#endif
+
+
+
               }
            }
 

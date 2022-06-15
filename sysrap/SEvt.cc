@@ -452,6 +452,9 @@ void SEvt::beginPhoton(const spho& label)
     assert( current_photon.flagmask_count() == 1 ); // should only be a single bit in the flagmask at this juncture 
 }
 
+unsigned SEvt::getCurrentPhotonIdx() const { return current_pho.id ; }
+
+
 /**
 SEvt::rjoinPhoton
 ----------------------

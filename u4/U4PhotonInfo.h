@@ -12,6 +12,7 @@ struct U4PhotonInfo : public G4VUserTrackInformation
     std::string desc() const ; 
 
     static spho Get(const G4Track* track); 
+    static int GetIndex(const  G4Track* track);
     static void Set(G4Track* track, const spho& pho_ ); 
 };
 
@@ -36,6 +37,13 @@ inline spho U4PhotonInfo::Get(const G4Track* track)
     U4PhotonInfo* pin = ui ? dynamic_cast<U4PhotonInfo*>(ui) : nullptr ;
     return pin ? pin->pho : spho::Placeholder() ; 
 }
+
+inline int U4PhotonInfo::GetIndex(const G4Track* track)
+{
+    spho label = Get(track); 
+    return label.id ;  
+}
+
 
 inline void U4PhotonInfo::Set(G4Track* track, const spho& pho_ )
 {

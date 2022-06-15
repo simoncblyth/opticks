@@ -142,6 +142,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void beginPhoton(const spho& sp); 
     void rjoinPhoton(const spho& sp); 
+    unsigned getCurrentPhotonIdx() const ; 
 
     void rjoinRecordCheck(const sphoton& rj, const sphoton& ph  ) const ; 
     static void ComparePhotonDump(const sphoton& a, const sphoton& b ); 

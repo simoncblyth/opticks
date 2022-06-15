@@ -89,7 +89,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     {
         U4Track::SetFabricatedLabel(track); 
         label = U4Track::Label(track); 
-        LOG(info) << " labelling photon " << label.desc() ; 
+        LOG(LEVEL) << " labelling photon " << label.desc() ; 
     }
     assert( label.isDefined() );  
     if(!Enabled(label)) return ;  
