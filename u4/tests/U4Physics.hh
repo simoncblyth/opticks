@@ -14,7 +14,9 @@ class G4Cerenkov_modified ;
 class DsG4Scintillation ; 
 class G4OpAbsorption ;
 class G4OpRayleigh ;
-class G4OpBoundaryProcess ; 
+
+//class G4OpBoundaryProcess ; 
+class InstrumentedG4OpBoundaryProcess ; 
 
 
 struct U4Physics : public G4VUserPhysicsList
@@ -25,7 +27,7 @@ struct U4Physics : public G4VUserPhysicsList
     DsG4Scintillation*    fScintillation ; 
     G4OpAbsorption*       fAbsorption ;
     G4OpRayleigh*         fRayleigh ;
-    G4OpBoundaryProcess*  fBoundary ;
+    InstrumentedG4OpBoundaryProcess*  fBoundary ;
 
     U4Physics(); 
 
@@ -154,7 +156,7 @@ inline void U4Physics::ConstructEM()
 #include "DsG4Scintillation.h"
 #include "G4OpAbsorption.hh"
 #include "G4OpRayleigh.hh"
-#include "G4OpBoundaryProcess.hh"
+#include "InstrumentedG4OpBoundaryProcess.hh"
 
 
 
@@ -185,7 +187,7 @@ inline void U4Physics::ConstructOp()
 
     fAbsorption = new G4OpAbsorption();
     fRayleigh = new G4OpRayleigh();
-    fBoundary = new G4OpBoundaryProcess();
+    fBoundary = new InstrumentedG4OpBoundaryProcess();
 
 
   auto particleIterator=GetParticleIterator();

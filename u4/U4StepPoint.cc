@@ -5,7 +5,8 @@
 #include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
-#include "G4OpBoundaryProcess.hh"
+//#include "G4OpBoundaryProcess.hh"
+#include "InstrumentedG4OpBoundaryProcess.hh"
 
 #include "PLOG.hh"
 #include "OpticksPhoton.h"
@@ -15,7 +16,7 @@
 #include "sphoton.h"
 
 #include "U4StepStatus.h"
-#include "U4OpBoundaryProcess.hh"
+#include "U4OpBoundaryProcess.h"
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4StepPoint.hh"
 
@@ -114,7 +115,9 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point)
     }
     else if( status == fGeomBoundary && proc == U4StepPoint_Transportation )
     {
-        unsigned bstat = U4OpBoundaryProcess::GetStatus(); 
+        //unsigned bstat = U4OpBoundaryProcess::GetStatus<G4OpBoundaryProcess>(); 
+        unsigned bstat = U4OpBoundaryProcess::GetStatus<InstrumentedG4OpBoundaryProcess>(); 
+
         flag = BoundaryFlag(bstat) ;   
         if( flag == NAN_ABORT ) 
             LOG(error) 
@@ -207,7 +210,7 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
     unsigned proc = ProcessDefinedStepType(point); 
     const char* procName = ProcessDefinedStepTypeName(proc); 
 
-    unsigned bstat = U4OpBoundaryProcess::GetStatus(); 
+    unsigned bstat = U4OpBoundaryProcess::GetStatus<InstrumentedG4OpBoundaryProcess>(); 
     const char* bstatName = U4OpBoundaryProcessStatus::Name(bstat); 
 
     unsigned flag = Flag(point); 

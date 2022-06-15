@@ -61,6 +61,8 @@ if [ "${arg/run}" != "${arg}" ]; then
     #export BP=DsG4Scintillation::PostStepDoIt
     #lldb__ U4RecorderTest
     U4RecorderTest
+    [ $? -ne 0 ] && echo $msg run error && exit 1 
+
     echo $msg logdir $logdir
 fi 
 

@@ -12,8 +12,9 @@
 #include "U4Recorder.hh"
 #include "U4Track.h"
 #include "U4StepPoint.hh"
-#include "U4OpBoundaryProcess.hh"
-#include "G4OpBoundaryProcess.hh"
+#include "U4OpBoundaryProcess.h"
+//#include "G4OpBoundaryProcess.hh"
+#include "InstrumentedG4OpBoundaryProcess.hh"
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4TrackStatus.h"
 

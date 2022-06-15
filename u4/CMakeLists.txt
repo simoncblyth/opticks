@@ -29,8 +29,8 @@ set(SOURCES
     U4Material.cc
     U4VolumeMaker.cc
     U4Recorder.cc
-    U4OpBoundaryProcess.cc
     U4StepPoint.cc
+    InstrumentedG4OpBoundaryProcess.cc
 ) 
 
 set(HEADERS
@@ -45,8 +45,10 @@ set(HEADERS
     U4Material.hh
     U4VolumeMaker.hh
     U4Recorder.hh
-    U4OpBoundaryProcess.hh
+    U4OpBoundaryProcess.h
     U4StepPoint.hh
+    InstrumentedG4OpBoundaryProcess.hh
+
 )
 
 
@@ -66,6 +68,7 @@ target_include_directories( ${name} PUBLIC
 target_compile_definitions( ${name} PUBLIC OPTICKS_U4 )
 target_compile_definitions( ${name} PUBLIC G4USE_STD11 ) 
 target_compile_definitions( ${name} PUBLIC STANDALONE ) 
+target_compile_definitions( ${name} PRIVATE DEBUG_PIDX ) 
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
