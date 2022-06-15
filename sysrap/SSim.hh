@@ -1,7 +1,7 @@
 #pragma once
 /**
-SSim.hh : Manages input arrays for QUDARap/QSim
-===================================================
+SSim.hh : Manages input arrays for QUDARap/QSim : Using Single NPFold Member
+==================================================================================
 
 Canonically instanciated by CSGFoundry::CSGFoundry 
 and populated by GGeo::convertSim which is for example invoked 
@@ -65,6 +65,7 @@ struct SYSRAP_API SSim
 
     void add(const char* k, const NP* a ); 
     const NP* get(const char* k) const ; 
+    const NP* get_bnd() const ; 
 
     void load(const char* base); 
     void load(const char* base, const char* rel) ; 

@@ -95,6 +95,14 @@ void test_addFake_ellipsis()
 
 }
 
+void test_get_bnd()
+{
+    SSim* sim = SSim::Load(); 
+    const NP* bnd = sim->get_bnd(); 
+    LOG(info) << bnd->desc() ;  
+
+}
+
 
 
 int main(int argc, char** argv)
@@ -105,8 +113,10 @@ int main(int argc, char** argv)
     test_Load(); 
     test_findName(); 
     test_addFake();     
-    */
     test_addFake_ellipsis();     
+    */
+
+    test_get_bnd(); 
 
 
     return 0 ; 

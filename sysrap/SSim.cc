@@ -67,6 +67,8 @@ void SSim::add(const char* k, const NP* a )
     fold->add(k,a);  
 }
 const NP* SSim::get(const char* k) const { return fold->get(k);  }
+const NP* SSim::get_bnd() const { return get(BND);  }
+
 
 void SSim::load(const char* base){ fold->load(base) ; }
 void SSim::load(const char* base, const char* rel){ fold->load(base, rel);  }
@@ -83,6 +85,15 @@ void SSim::save(const char* base_, const char* rel) const
 }
 
 std::string SSim::desc() const { return fold->desc() ; }
+
+/**
+SSim::getBndName
+-------------------
+
+Return the bnd name for boundary index bidx using the 
+metadata names list associated with the bnd.npy array.  
+
+**/
 
 const char* SSim::getBndName(unsigned bidx) const 
 {
@@ -402,6 +413,15 @@ const NP* SSim::NarrowIfWide(const NP* buf )  // static
 /**
 SSim::findName
 ----------------
+
+Returns the first (i,j)=(bidx,species) with element name 
+matching query name *qname*. 
+
+bidx 
+    0-based boundary index 
+
+species
+    0,1,2,3 for omat/osur/isur/imat
 
 **/
 

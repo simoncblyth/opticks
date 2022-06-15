@@ -20,6 +20,185 @@ Doing simple A-B comparisons with::
 
 
 
+
+TODO: Arrange for same material props used in A and B 
+---------------------------------------------------------
+
+* recall I started adding full Ori material dumping in the translation
+  but did not yet use that instead using some other CFBASE of material props
+
+
+final photon polz : 1,4,7,8 very close :  0,2,3,5,6,9 not so close
+---------------------------------------------------------------------
+
+Could be getting match where A and B agrees to special case as normal incidence and disagreement otherwise
+(or vice-versa). 
+
+TODO: instrument B to see when Geant4 treats as normal incidence
+
+::
+
+
+    In [16]: a.photon[:,2] - b.photon[:,2]
+    Out[16]: 
+    array([[ 0.057,  0.009, -0.04 ,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ],   # 1 
+           [ 0.349, -0.457,  0.114,  0.   ],
+           [ 1.618,  0.404,  1.023,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ],   # 4
+           [-0.045, -0.42 ,  0.612,  0.   ],
+           [ 0.004, -0.02 ,  0.017,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ],   # 7
+           [ 0.   ,  0.   ,  0.   ,  0.   ],   # 8
+           [ 0.573, -0.948,  0.75 ,  0.   ]], dtype=float32)
+
+
+    In [14]: a.photon[:,2]
+    Out[14]: 
+    array([[ -0.544,   0.009,  -0.839, 440.   ],
+           [ -0.258,   0.   ,  -0.966, 440.   ],
+           [  0.179,  -0.457,  -0.871, 440.   ],
+           [  0.757,   0.404,   0.513, 440.   ],
+           [  0.883,   0.   ,  -0.469, 440.   ],
+           [  0.878,  -0.42 ,   0.228, 440.   ],
+           [  0.969,  -0.02 ,  -0.245, 440.   ],
+           [ -0.753,   0.   ,   0.658, 440.   ],
+           [ -0.566,   0.   ,   0.824, 440.   ],
+           [ -0.256,  -0.948,   0.19 , 440.   ]], dtype=float32)
+
+    In [15]: b.photon[:,2]
+    Out[15]: 
+    array([[ -0.602,   0.   ,  -0.799, 440.   ],
+           [ -0.258,   0.   ,  -0.966, 440.   ],
+           [ -0.17 ,   0.   ,  -0.986, 440.   ],
+           [ -0.86 ,   0.   ,  -0.51 , 440.   ],
+           [  0.883,   0.   ,  -0.469, 440.   ],
+           [  0.923,   0.   ,  -0.384, 440.   ],
+           [  0.965,   0.   ,  -0.262, 440.   ],
+           [ -0.753,   0.   ,   0.658, 440.   ],
+           [ -0.566,   0.   ,   0.824, 440.   ],
+           [ -0.829,   0.   ,  -0.56 , 440.   ]], dtype=float32)
+
+
+
+Positions and directions close
+---------------------------------
+
+* time difference looks to be from Water GROUPVEL difference
+
+::
+
+    In [17]: a.photon[:,0] - b.photon[:,0]                                                                                                                                        
+    Out[17]: 
+    array([[  0.   ,  -0.   ,   0.   ,   0.001],
+           [ -0.   ,   0.   ,   0.   ,   0.001],
+           [  0.   ,   0.   ,  -0.   ,   0.001],
+           [  0.   ,   0.   ,   0.   ,   0.001],
+           [  0.   ,   0.   ,   0.   ,   0.001],
+           [ 83.125, 108.417, 200.   ,   0.463],
+           [  0.   ,   0.   ,   0.   ,   0.001],
+           [  0.   ,   0.   ,   0.   ,   0.001],
+           [  0.   ,   0.   ,   0.   ,   0.001],
+           [  0.   ,   0.   ,   0.   ,   0.001]], dtype=float32)
+
+    In [18]: a.photon[:,1] - b.photon[:,1]                                                                                                                                        
+    Out[18]: 
+    array([[ 0.   , -0.   ,  0.   ,  0.   ],
+           [-0.   , -0.   ,  0.   ,  0.   ],
+           [ 0.   ,  0.   , -0.   ,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ],
+           [-0.   ,  0.   , -0.   ,  0.   ],
+           [ 0.686,  0.895,  1.651,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.   ]], dtype=float32)
+
+
+
+
+Check Again Using New Lambda Funcs : after UseGivenVelocity gets the timing close but not matched
+--------------------------------------------------------------------------------------------------
+
+Small GROUPVEL discrepancy
+
+u4/tests/U4RecorderTest_ab.py::
+
+    if __name__ == '__main__':
+        a = Fold.Load("$A_FOLD", symbol="a")
+        b = Fold.Load("$B_FOLD", symbol="b")
+        assert (a.inphoton - b.inphoton).max() < 1e-10 
+
+        ddist_ = lambda a,i:np.sqrt(np.sum( (a.record[:,i+1,0,:3]-a.record[:,i,0,:3])*(a.record[:,i+1,0,:3]-a.record[:,i,0,:3]) , axis=1 ))
+        dtime_ = lambda a,i:a.record[:,i+1,0,3] - a.record[:,i,0,3]  
+        dspeed_ = lambda a,i:ddist_(a,i)/dtime_(a,i)
+
+::
+
+    In [11]: dspeed_(a,0)
+    Out[11]: array([216.601, 216.601, 216.601, 216.601, 216.601, 216.601, 216.601, 216.601, 216.601, 216.601], dtype=float32)
+
+    In [12]: dspeed_(b,0)
+    Out[12]: array([217.658, 217.658, 217.658, 217.658, 217.658, 217.658, 217.658, 217.658, 217.658, 217.658], dtype=float32)
+
+
+    In [13]: dspeed_(a,1)
+    Out[13]: array([299.712, 299.712, 299.711, 299.712, 299.712, 216.601, 299.711, 299.712, 299.712, 299.712], dtype=float32)
+
+    In [14]: dspeed_(b,1)
+    Out[14]: array([299.712, 299.712, 299.712, 299.712, 299.712, 299.712, 299.712, 299.712, 299.712, 299.712], dtype=float32)
+
+
+Following back where B gets the GROUPVEL 217.658::
+
+    ./U4MaterialPropertyVectorTest.sh
+
+    In [5]: hc_eVnm = 1239.8418754200 ; np.interp( hc_eVnm/440./1e6, Water.GROUPVEL[:,0], Water.GROUPVEL[:,1] )
+    Out[5]: 217.6580064664511
+
+A cxs_raindrop.sh CSGOptiX/tests/CXRaindropTest.cc is combining the standard OPTICKS_KEY SSim with the test geometry::
+
+     28     const char* Rock_Air = "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air" ;
+     29     const char* Air_Water = "Air///Water" ;
+     30     SSim* ssim = SSim::Load();
+     31     ssim->addFake(Rock_Air, Air_Water);
+     32     LOG(info) << std::endl << ssim->descOptical()  ;
+     33 
+     34     CSGFoundry* fdl = CSGFoundry::Load("$CFBASE_LOCAL", "CSGFoundry") ;
+     35 
+     36     fdl->setOverrideSim(ssim);
+     37 
+
+Using SSimTest.sh to see where A gets Water GROUPVEL of 216.601 from::
+
+    cd ~/opticks/sysrap/tests
+    ./SSimTest.sh
+
+    In [1]: t.bnd_names.lines[19]   # find the index for Water 
+    Out[1]: 'Water///Acrylic'
+
+    In [2]: t.bnd.shape
+    Out[2]: (44, 4, 2, 761, 4)
+
+    In [7]: t.bnd[19,0,1,:,0].shape
+    Out[7]: (761,)
+
+    In [6]: t.bnd[19,0,1,:,0]                                                                                                                                                     
+    Out[6]: 
+    array([225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408,
+           225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408, 225.408,
+
+
+    In [11]: wdom = np.arange(60., 820.1, 1. )
+    In [12]: wdom.shape
+    Out[12]: (761,)
+
+    In [13]: np.interp( 440, wdom, t.bnd[19,0,1,:,0] )
+    Out[13]: 216.60074401749915
+
+
+
+
 Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction
 ------------------------------------------------------------------------
 
