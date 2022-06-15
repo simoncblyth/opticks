@@ -49,7 +49,7 @@ struct sevent
     static constexpr unsigned genstep_itemsize = 6*4 ; 
     static constexpr unsigned genstep_numphoton_offset = 3 ; 
     static constexpr float w_lo = 80.f ; 
-    static constexpr float w_hi = 800.f ; 
+    static constexpr float w_hi = 800.f ;  // HMM: those are different to Opticks::DOMAIN_LOW 60.f  Opticks::DOMAIN_HIGH 820.f
     static constexpr float w_center = (w_lo+w_hi)/2.f ; // convert wavelength range into center-extent form 
     static constexpr float w_extent = (w_hi-w_lo)/2.f ; 
 
@@ -65,6 +65,7 @@ struct sevent
     int      max_record  ; // eg:           10  full step record 
     int      max_rec     ; // eg:           10  compressed step record
     int      max_seq     ; // eg:           16  seqhis/seqbnd
+    int      max_prd     ;  
 
     int      num_genstep ; 
     quad6*   genstep ; 
@@ -89,6 +90,9 @@ struct sevent
 
     int      num_simtrace ; 
     quad4*   simtrace ; 
+
+    int      num_prd ; 
+    quad2*   prd ; 
 
 
     SEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
@@ -128,6 +132,7 @@ SEVENT_METHOD void sevent::init()
     max_record   = SEventConfig::MaxRecord()  ;  // full step record
     max_rec      = SEventConfig::MaxRec()  ;     // compressed step record 
     max_seq      = SEventConfig::MaxSeq()  ;     // seqhis 
+    max_prd      = SEventConfig::MaxPrd()  ;  
 
     zero(); 
 
@@ -162,6 +167,8 @@ SEVENT_METHOD std::string sevent::descMax() const
         << " evt.max_bounce  "   << std::setw(w) << max_bounce 
         << " evt.max_record  "   << std::setw(w) << max_record 
         << " evt.max_rec  "      << std::setw(w) << max_rec
+        << " evt.max_seq  "      << std::setw(w) << max_seq
+        << " evt.max_prd  "      << std::setw(w) << max_prd
         ;
 
     std::string s = ss.str();  
@@ -179,6 +186,7 @@ SEVENT_METHOD std::string sevent::descNum() const
         << " evt.num_photon "  << std::setw(w) << num_photon
         << " evt.num_simtrace "  << std::setw(w) << num_simtrace
         << " evt.num_record "  << std::setw(w) << num_record
+        << " evt.num_prd "  << std::setw(w) << num_prd
         ;
     std::string s = ss.str();  
     return s ; 
@@ -222,6 +230,10 @@ SEVENT_METHOD std::string sevent::descBuf() const
         << std::setw(20) << " evt.simtrace "    << std::setw(w) << ( simtrace  ? "Y" : "N" ) << " " << std::setw(20) << simtrace
         << std::setw(20) << " num_simtrace "    << std::setw(7) << num_simtrace 
         << std::setw(20) << " max_simtrace "    << std::setw(7) << max_simtrace 
+        << std::endl
+        << std::setw(20) << " evt.prd "         << std::setw(w) << ( prd  ? "Y" : "N" ) << " " << std::setw(20) << prd
+        << std::setw(20) << " num_prd "         << std::setw(7) << num_prd 
+        << std::setw(20) << " max_prd "         << std::setw(7) << max_prd 
         << std::endl
         ;
     std::string s = ss.str();  
@@ -308,6 +320,7 @@ SEVENT_METHOD void sevent::zero()
     num_seq = 0 ; 
     num_hit = 0 ; 
     num_simtrace = 0 ; 
+    num_prd = 0 ; 
 
     genstep = nullptr ; 
     seed = nullptr ; 
@@ -317,6 +330,7 @@ SEVENT_METHOD void sevent::zero()
     seq = nullptr ; 
     hit = nullptr ; 
     simtrace = nullptr ; 
+    prd = nullptr ; 
     
 }
 #endif 
