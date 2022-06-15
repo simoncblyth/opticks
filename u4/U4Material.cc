@@ -5,11 +5,13 @@
 #include "SPath.hh"
 #include "SDir.h"
 #include "SStr.hh"
+#include "NPFold.h"
 #include "NP.hh"
 #include "PLOG.hh"
 
 #include "G4Material.hh"
 #include "U4Material.hh"
+#include "U4MaterialPropertyVector.h"
 
 const plog::Severity U4Material::LEVEL = PLOG::EnvLevel("U4Material", "DEBUG"); 
 
@@ -86,6 +88,69 @@ void U4Material::RemoveProperty( const char* key, G4Material* mat )
          assert( prop == nullptr ); 
     }
 }
+
+
+void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Material* mat )
+{
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    const G4MaterialPropertiesTable* mpt_ = mat->GetMaterialPropertiesTable();
+
+    std::vector<G4String> pnames = mpt_->GetMaterialPropertyNames();
+
+    typedef std::map<G4int, G4MaterialPropertyVector*, std::less<G4int> > MIV ; 
+    const MIV* miv =  mpt->GetPropertyMap(); 
+    for(MIV::const_iterator it=miv->begin() ; it != miv->end() ; it++ )
+    {
+         G4String name = pnames[it->first] ;  
+         names.push_back(name.c_str()) ; 
+    }
+}
+
+
+NPFold* U4Material::GetPropertyFold()
+{
+    NPFold* fold = new NPFold ; 
+
+    std::vector<std::string> matnames ; 
+    GetMaterialNames(matnames); 
+    for(unsigned i=0 ; i < matnames.size() ; i++)
+    { 
+        const char* material = matnames[i].c_str(); 
+        const G4Material* mat = G4Material::GetMaterial(material) ; 
+
+        std::vector<std::string> propnames ; 
+        GetPropertyNames( propnames, mat ); 
+
+        for(unsigned j=0 ; j < propnames.size() ; j++)
+        {
+            const char* propname = propnames[j].c_str() ; 
+            G4MaterialPropertyVector* prop = GetProperty(mat, propname );  
+            NP* a = U4MaterialPropertyVector::ConvertToArray(prop); 
+            fold->add( SStr::Format("%s/%s", material, propname), a ); 
+        }
+    }  
+    return fold ; 
+}
+
+
+NPFold* U4Material::GetPropertyFold(const G4Material* mat )
+{
+    NPFold* fold = new NPFold ; 
+    std::vector<std::string> propnames ; 
+    GetPropertyNames( propnames, mat ); 
+    for(unsigned i=0 ; i < propnames.size() ; i++)
+    {
+        const char* propname = propnames[i].c_str() ; 
+        G4MaterialPropertyVector* prop = GetProperty(mat, propname );  
+        NP* a = U4MaterialPropertyVector::ConvertToArray(prop); 
+        fold->add( propname, a ); 
+    }
+    return fold ; 
+}
+
+ 
+
+
 
 
 std::string U4Material::DescPropertyNames( const G4Material* mat )

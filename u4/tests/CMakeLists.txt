@@ -20,6 +20,7 @@ install(TARGETS ${TGT} DESTINATION lib)
 
 set(TEST_SOURCES
    U4MaterialTest.cc
+   U4MaterialPropertyVectorTest.cc
    U4PhotonInfoTest.cc
    U4GDMLTest.cc
 )

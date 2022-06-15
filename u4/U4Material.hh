@@ -1,9 +1,11 @@
 #pragma once
 
+#include <vector>
 #include <string>
 #include "plog/Severity.h"
 
 struct NP ; 
+struct NPFold ; 
 
 class G4Material ; 
 class G4MaterialPropertiesTable ;
@@ -23,6 +25,9 @@ struct U4_API U4Material
     static G4MaterialPropertyVector* GetProperty(const G4Material* mat, const char* name); 
     static void RemoveProperty( const char* key, G4Material* mat ); 
 
+    static void GetPropertyNames( std::vector<std::string>& names, const G4Material* mat ) ; 
+    static NPFold* GetPropertyFold(const G4Material* mat ); 
+    static NPFold* GetPropertyFold(); 
     static std::string DescPropertyNames( const G4Material* mat ); 
 
 

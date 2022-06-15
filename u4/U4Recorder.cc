@@ -77,6 +77,8 @@ not torch ones so needs some experimentation to see what approach to take.
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
+    const_cast<G4Track*>(track)->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
+
     spho label = U4Track::Label(track); 
 
     G4TrackStatus tstat = track->GetTrackStatus(); 

@@ -159,7 +159,6 @@ void test_LoadOri_remove_material_property()
 
 
 
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -177,6 +176,7 @@ int main(int argc, char** argv)
     */
 
     test_LoadOri_remove_material_property(); 
+
 
      
     return 0 ; 
