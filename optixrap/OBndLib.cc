@@ -18,6 +18,7 @@
  */
 
 
+#include "sdomain.h"
 #include "NPY.hpp"
 #include "GLMFormat.hpp"
 
@@ -175,7 +176,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     assert(nj == GPropertyLib::NUM_MATSUR);
 
     assert(nk == GPropertyLib::NUM_FLOAT4); 
-    assert(nl == Opticks::DOMAIN_LENGTH || nl == Opticks::FINE_DOMAIN_LENGTH); 
+    assert(nl == sdomain::DOMAIN_LENGTH || nl == sdomain::FINE_DOMAIN_LENGTH); 
     assert(nm == 4); 
 
     unsigned int nx = nl ;           // wavelength samples
@@ -229,9 +230,9 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
               << " w " << bounds.w 
               ;
 
-    bool fine = nl == Opticks::FINE_DOMAIN_LENGTH ;
-    glm::vec4 dom = Opticks::getDomainSpec(fine) ;
-    glm::vec4 rdom = Opticks::getDomainReciprocalSpec(fine) ;
+    bool fine = nl == sdomain::FINE_DOMAIN_LENGTH ;
+    glm::vec4 dom = fine ? Opticks::GetFineDomainSpec() : Opticks::GetCoarseDomainSpec() ;
+    glm::vec4 rdom = fine ? Opticks::GetFineDomainReciprocalSpec() : Opticks::GetCoarseDomainReciprocalSpec() ;
 
     m_context["boundary_texture"]->setTextureSampler(tex);
     m_context["boundary_texture_dim"]->setUint(texDim);

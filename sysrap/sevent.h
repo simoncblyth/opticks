@@ -48,8 +48,8 @@ struct sevent
 {
     static constexpr unsigned genstep_itemsize = 6*4 ; 
     static constexpr unsigned genstep_numphoton_offset = 3 ; 
-    static constexpr float w_lo = 80.f ; 
-    static constexpr float w_hi = 800.f ;  // HMM: those are different to Opticks::DOMAIN_LOW 60.f  Opticks::DOMAIN_HIGH 820.f
+    static constexpr float w_lo = 60.f ; 
+    static constexpr float w_hi = 820.f ;  // these need to match sdomain.h 
     static constexpr float w_center = (w_lo+w_hi)/2.f ; // convert wavelength range into center-extent form 
     static constexpr float w_extent = (w_hi-w_lo)/2.f ; 
 

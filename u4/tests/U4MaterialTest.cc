@@ -157,13 +157,9 @@ void test_LoadOri_remove_material_property()
     LOG(info) << "after removal " << std::endl << U4Material::DescPropertyNames( mat ) ; 
 }
 
-void test_ssim_boot()
+void test_LoadBnd()
 {
-    SSim* sim = SSim::Load(); 
-    const NP* bnd = sim->get_bnd();
-    LOG(info) << bnd->brief() ; 
-
-
+    U4Material::LoadBnd(); 
 }
 
 
@@ -184,7 +180,7 @@ int main(int argc, char** argv)
     test_LoadOri_remove_material_property(); 
     */
 
-    test_ssim_boot(); 
+    test_LoadBnd(); 
 
 
      

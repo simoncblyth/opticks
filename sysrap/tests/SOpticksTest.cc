@@ -1,3 +1,4 @@
+// om- ; TEST=SOpticksTest om-t
 
 #include "OPTICKS_LOG.hh"
 #include "SOpticks.hh"
@@ -8,8 +9,10 @@ int main(int argc, char** argv)
 
     const char* argforced = nullptr ; 
     SOpticks ok(argc, argv, argforced ); 
-
     LOG(info) << " ok.hasArg(\"--hello\") " << ok.hasArg("--hello") ;  
+
+
 
     return 0 ; 
 }
+// om- ; TEST=SOpticksTest om-t

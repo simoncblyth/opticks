@@ -31,6 +31,8 @@
 #include "SConstant.hh"
 #include "SAbbrev.hh"
 #include "NP.hh"
+#include "sdomain.h"
+
 
 // brap-
 #include "BMeta.hh"
@@ -352,7 +354,7 @@ void GPropertyLib::init()
         m_standard_domain = GDomain<double>::GetDefaultDomain(); 
 
         unsigned len = getStandardDomainLength() ;
-        unsigned len2 =  Opticks::DomainLength() ;
+        unsigned len2 =  sdomain::DomainLength() ;
         if(len != len2)
         { 
             m_standard_domain->Summary("GPropertyLib::m_standard_domain");

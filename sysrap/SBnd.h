@@ -13,13 +13,30 @@ Principal user QBnd.hh
 #include <cassert>
 #include <string>
 #include <vector>
+#include <array>
 #include <sstream>
 
 #include "plog/Severity.h"
 #include "NP.hh"
 #include "SSim.hh"
 #include "SStr.hh"
-//#include "PLOG.hh"
+
+
+struct SBndProp
+{
+    int  k ; 
+    int  l ;  
+    char name[16] ; 
+    std::string desc() const ; 
+}; 
+
+inline std::string SBndProp::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "(" << k << "," << l << ") " << name ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 struct SBnd
@@ -33,6 +50,20 @@ struct SBnd
 
     static constexpr const unsigned MISSING = ~0u ;
     const std::vector<std::string>& bnames ; 
+
+    static constexpr std::array<SBndProp, 8> MaterialProp = 
+    {{
+        { 0,0,"RINDEX" },
+        { 0,1,"ABSLENGTH" },
+        { 0,2,"RAYLEIGH" },
+        { 0,3,"REEMISSIONPROB" },
+        { 1,0,"GROUPVEL" },
+        { 1,1,"SPARE11"  },
+        { 1,2,"SPARE12"  },
+        { 1,3,"SPARE13"  },
+    }};
+    static std::string DescMaterialProp(); 
+
 
     SBnd(const NP* src_); 
 
@@ -62,9 +93,16 @@ struct SBnd
     static bool FindName( int& i, int& j, const char* qname, const std::vector<std::string>& names ) ; 
 
     NP* getPropertyGroup(const char* qname, int k=-1) const ;  
-
-
 };
+
+
+inline std::string SBnd::DescMaterialProp() // static 
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < MaterialProp.size() ; i++)  ss << MaterialProp[i].desc() << std::endl; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 // this gives duplicate symbols headeronly as cannot inline static constants in C++11
@@ -290,12 +328,12 @@ species
 
 **/
 
-bool SBnd::findName( int& i, int& j, const char* qname ) const 
+inline bool SBnd::findName( int& i, int& j, const char* qname ) const 
 {
     return FindName(i, j, qname, bnames ) ; 
 }
 
-bool SBnd::FindName( int& i, int& j, const char* qname, const std::vector<std::string>& names ) 
+inline bool SBnd::FindName( int& i, int& j, const char* qname, const std::vector<std::string>& names ) 
 {
     i = -1 ; 
     j = -1 ; 
@@ -322,8 +360,9 @@ bool SBnd::FindName( int& i, int& j, const char* qname, const std::vector<std::s
 SBnd::getPropertyGroup
 ------------------------
 
-For example for bnd array of shape  (44, 4, 2, 761, 4, )
-the expected spawned item array shape depends on the value of k:
+Returns an array of material or surface properties selected by `*qname* eg "Water".
+For example with a source bnd array of shape  (44, 4, 2, 761, 4, )
+the expected spawned property group  array shape depends on the value of k:
 
 k=-1
      (2, 761, 4,)   eight property vaulues across wavelength domain
@@ -341,7 +380,6 @@ inline NP* SBnd::getPropertyGroup(const char* qname, int k) const
     assert(found); 
     return src->spawn_item(i,j,k);  
 }
-
 
 
 

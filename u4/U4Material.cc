@@ -5,6 +5,9 @@
 #include "SPath.hh"
 #include "SDir.h"
 #include "SStr.hh"
+#include "SSim.hh"
+#include "SBnd.h"
+#include "sdomain.h"
 #include "NPFold.h"
 #include "NP.hh"
 #include "PLOG.hh"
@@ -510,6 +513,70 @@ void U4Material::LoadOri()
     num_mat[1] = G4Material::GetNumberOfMaterials(); 
     LOG(info) << "Increased G4Material::GetNumberOfMaterials from " << num_mat[0] << " to " << num_mat[1] ;  
 
+}
+
+
+
+/**
+U4Material::LoadBnd
+--------------------
+
+HMM: if the material exists already then need to change its 
+properties, not scrub the pre-existing material. 
+Thats needed for scintillators as the standard bnd properties
+do not include all the needed scint props. 
+
+Load the material properties from the SSim::get_bnd array using SBnd::getPropertyGroup 
+for each material. 
+
+**/
+
+void U4Material::LoadBnd()
+{
+    SSim* sim = SSim::Load(); 
+    const SBnd* sb = sim->get_sbnd(); 
+
+    std::vector<std::string> names ; 
+    sb->getMaterialNames(names );
+
+    for(unsigned mat=0 ; mat < names.size() ; mat++) 
+    {
+        const char* name = names[mat].c_str() ; 
+        G4Material* prior = G4Material::GetMaterial(name);  
+        if(prior != nullptr) std::cout << "prior material " << name << std::endl ; 
+
+        NP* pg = sb->getPropertyGroup(name,-1); 
+
+        int ni = 2 ;                              // groups of quad props
+        int nj = sdomain::FINE_DOMAIN_LENGTH ;    // wavelength domain
+        int nk = 4 ;                              // 4 props
+
+        assert( pg->has_shape(ni, nj, nk));  
+        std::cout << pg->desc() << std::endl ; 
+        assert( pg->ebyte == 8 );  // HUH ? 
+
+        double* vv = pg->values<double>(); 
+        for(int i=0 ; i < ni ; i++)  
+        {
+            for(int j=0 ; j < nj ; j++)
+            {
+                for(int k=0 ; k < 4 ; k++)
+                {
+                    int idx = nk*nj*i+nk*j+k ; 
+                    double v = vv[idx] ; 
+                    
+                    if( i == 1 && k == 0 ) std::cout 
+                        << std::setw(6) << idx 
+                        << " : " 
+                        << std::setw(10) << std::fixed << std::setprecision(5) << v 
+                        << std::endl ; 
+
+                }
+            }
+        }
+
+
+    }
 }
 
 

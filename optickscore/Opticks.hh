@@ -133,7 +133,9 @@ class OKCORE_API Opticks {
        static const char* Material(const unsigned int mat);
        static std::string MaterialSequence(const unsigned long long seqmat);
    public:
-       // wavelength domain
+      /*
+       // wavelength domain MOVED TO SOpticks constexpr statics
+
        static unsigned     DomainLength() ; 
        static const char   DOMAIN_TYPE ; // 'F' or 'C' 
        static unsigned     DOMAIN_LENGTH ; 
@@ -142,11 +144,13 @@ class OKCORE_API Opticks {
        static float        DOMAIN_HIGH ; 
        static float        DOMAIN_STEP ; 
        static float        FINE_DOMAIN_STEP ; 
-       static glm::vec4    getDefaultDomainSpec();
-       static glm::vec4    getDefaultDomainReciprocalSpec();
+      */
 
-       static glm::vec4    getDomainSpec(bool fine=false);
-       static glm::vec4    getDomainReciprocalSpec(bool fine=false);
+       static glm::vec4    GetCoarseDomainSpec();
+       static glm::vec4    GetCoarseDomainReciprocalSpec();
+       static glm::vec4    GetFineDomainSpec();
+       static glm::vec4    GetFineDomainReciprocalSpec();
+
    public:
        static SOpticksKey* GetKey();
        static bool         SetKey(const char* keyspec);

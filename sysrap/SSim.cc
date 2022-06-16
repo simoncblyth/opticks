@@ -69,10 +69,16 @@ void SSim::add(const char* k, const NP* a )
 }
 const NP* SSim::get(const char* k) const { return fold->get(k);  }
 const NP* SSim::get_bnd() const { return get(BND);  }
+const SBnd* SSim::get_sbnd() const 
+{ 
+    const NP* bnd = get_bnd(); 
+    return bnd ? new SBnd(bnd) : nullptr  ;  
+}
 
 
-void SSim::load(const char* base){ fold->load(base) ; }
-void SSim::load(const char* base, const char* rel){ fold->load(base, rel);  }
+void SSim::load(const char* base){ fold->load(base) ;   }
+void SSim::load(const char* base, const char* rel){ fold->load(base, rel) ;   }
+
 
 void SSim::save(const char* base_) const 
 { 

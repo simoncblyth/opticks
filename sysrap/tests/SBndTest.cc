@@ -155,6 +155,12 @@ void test_getPropertyGroup(const SBnd& sb)
 }
 
 
+void test_DescMaterialProp()
+{
+    std::cout << SBnd::DescMaterialProp() << std::endl ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -174,8 +180,9 @@ int main(int argc, char** argv)
     test_getBoundaryIndices_1(sb);
     test_desc(sb);
     test_getMaterialNames(sb);
-    */
     test_getPropertyGroup(sb);
+    */
+    test_DescMaterialProp();
 
     return 0 ; 
 }

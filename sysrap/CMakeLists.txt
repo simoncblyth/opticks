@@ -241,6 +241,8 @@ set(HEADERS
 
 
     SOpticks.hh
+    sdomain.h
+
     SOpticksResource.hh
 
     SGLM.h

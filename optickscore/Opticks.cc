@@ -44,6 +44,7 @@
 #include "STime.hh"
 #include "SRngSpec.hh"
 #include "SOpticks.hh"
+#include "sdomain.h"
 
 
 // brap-
@@ -143,12 +144,14 @@ BPropNames* Opticks::G_MATERIAL_NAMES = NULL ;
 
 const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
 
-// formerly of GPropertyLib, now booted upstairs
+/**
+// These statics formerly of GPropertyLib have now been migrated to sdomain.h constexpr statics 
+
+
 float        Opticks::DOMAIN_LOW  = 60.f ;
 float        Opticks::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
 float        Opticks::DOMAIN_STEP = 20.f ; 
 unsigned     Opticks::DOMAIN_LENGTH = 39  ;
-
 
 //const char   Opticks::DOMAIN_TYPE = 'C' ; 
 const char   Opticks::DOMAIN_TYPE = 'F' ; 
@@ -158,85 +161,50 @@ unsigned     Opticks::FINE_DOMAIN_LENGTH = 761  ;
 unsigned     Opticks::DomainLength(){ return DOMAIN_TYPE == 'F' ? FINE_DOMAIN_LENGTH : DOMAIN_LENGTH ; }
 
 
-/*
-
-In [12]: np.linspace(60,820,39)
-Out[12]: 
-array([  60.,   80.,  100.,  120.,  140.,  160.,  180.,  200.,  220.,
-        240.,  260.,  280.,  300.,  320.,  340.,  360.,  380.,  400.,
-        420.,  440.,  460.,  480.,  500.,  520.,  540.,  560.,  580.,
-        600.,  620.,  640.,  660.,  680.,  700.,  720.,  740.,  760.,
-        780.,  800.,  820.])
-
-In [13]: np.linspace(60,820,39).shape
-Out[13]: (39,)
-
-
-In [10]: np.arange(60., 820.1, 20. )
-Out[10]: 
-array([  60.,   80.,  100.,  120.,  140.,  160.,  180.,  200.,  220.,
-        240.,  260.,  280.,  300.,  320.,  340.,  360.,  380.,  400.,
-        420.,  440.,  460.,  480.,  500.,  520.,  540.,  560.,  580.,
-        600.,  620.,  640.,  660.,  680.,  700.,  720.,  740.,  760.,
-        780.,  800.,  820.])
-
-In [17]: np.arange(60., 820.1, 20. ).shape
-Out[17]: (39,)
-
-In [18]: np.arange(60., 820.1, 1. ).shape
-Out[18]: (761,)
-
-
-
 */
 
 
-glm::vec4 Opticks::getDefaultDomainSpec()
+glm::vec4 Opticks::GetCoarseDomainSpec()   // formerly getDefaultDomainSpec 
 {
     glm::vec4 bd ;
 
-    bd.x = DOMAIN_LOW ;
-    bd.y = DOMAIN_HIGH ;
-    bd.z = DOMAIN_STEP ;
-    bd.w = DOMAIN_HIGH - DOMAIN_LOW ;
+    bd.x = sdomain::DOMAIN_LOW ;
+    bd.y = sdomain::DOMAIN_HIGH ;
+    bd.z = sdomain::DOMAIN_STEP ;
+    bd.w = sdomain::DOMAIN_HIGH - sdomain::DOMAIN_LOW ;
 
     return bd ; 
 }
 
-glm::vec4 Opticks::getDomainSpec(bool fine)
+glm::vec4 Opticks::GetFineDomainSpec()
 {
     glm::vec4 bd ;
 
-    bd.x = DOMAIN_LOW ;
-    bd.y = DOMAIN_HIGH ;
-    bd.z = fine ? FINE_DOMAIN_STEP : DOMAIN_STEP ;
-    bd.w = DOMAIN_HIGH - DOMAIN_LOW ;
+    bd.x = sdomain::DOMAIN_LOW ;
+    bd.y = sdomain::DOMAIN_HIGH ;
+    bd.z = sdomain::FINE_DOMAIN_STEP  ;
+    bd.w = sdomain::DOMAIN_HIGH - sdomain::DOMAIN_LOW ;
 
     return bd ; 
 }
 
 
-
-
-
-
-glm::vec4 Opticks::getDefaultDomainReciprocalSpec()
+glm::vec4 Opticks::GetCoarseDomainReciprocalSpec()
 {
     glm::vec4 rd ;
-    rd.x = 1.f/DOMAIN_LOW ;
-    rd.y = 1.f/DOMAIN_HIGH ;
+    rd.x = 1.f/sdomain::DOMAIN_LOW ;
+    rd.y = 1.f/sdomain::DOMAIN_HIGH ;
     rd.z = 0.f ;
     rd.w = 0.f ;
     // not flipping order, only endpoints used for sampling, not the step 
-
     return rd ; 
 }
 
-glm::vec4 Opticks::getDomainReciprocalSpec(bool /*fine*/)
+glm::vec4 Opticks::GetFineDomainReciprocalSpec()
 {
     glm::vec4 rd ;
-    rd.x = 1.f/DOMAIN_LOW ;
-    rd.y = 1.f/DOMAIN_HIGH ;
+    rd.x = 1.f/sdomain::DOMAIN_LOW ;
+    rd.y = 1.f/sdomain::DOMAIN_HIGH ;
     rd.z = 0.f ;
     rd.w = 0.f ;
     // not flipping order, only endpoints used for sampling, not the step 
@@ -3824,7 +3792,9 @@ void Opticks::configureDomains()
 {
    m_domains_configured = true ; 
 
-   m_wavelength_domain = getDefaultDomainSpec() ;  
+   //m_wavelength_domain = getCoarseDomainSpec() ;  
+   m_wavelength_domain = GetFineDomainSpec() ;  
+
 
    int e_rng_max = SSys::getenvint("CUDAWRAP_RNG_MAX",-1); 
 

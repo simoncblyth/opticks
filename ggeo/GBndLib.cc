@@ -33,6 +33,8 @@
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "Opticks.hh"
+#include "sdomain.h"
+
 
 #include "GVector.hh"
 #include "GItemList.hh"
@@ -99,7 +101,7 @@ GBndLib* GBndLib::load(Opticks* ok, bool constituents)
         GSurfaceLib* slib = GSurfaceLib::load(ok);
         GDomain<double>* finedom = ok->hasOpt("finebndtex") 
                             ?
-                                mlib->getStandardDomain()->makeInterpolationDomain(Opticks::FINE_DOMAIN_STEP) 
+                                mlib->getStandardDomain()->makeInterpolationDomain(sdomain::FINE_DOMAIN_STEP) 
                             :
                                 NULL 
                             ;
@@ -1076,9 +1078,9 @@ NPY<double>* GBndLib::createBufferForTex2d()
     unsigned int nm = 4 ; 
 
 
-    assert( nl == Opticks::DOMAIN_LENGTH || nl == Opticks::FINE_DOMAIN_LENGTH ) ;
-    bool fine = nl == Opticks::FINE_DOMAIN_LENGTH ;
-    glm::vec4 dom = Opticks::getDomainSpec(fine) ;
+    assert( nl == sdomain::DOMAIN_LENGTH || nl == sdomain::FINE_DOMAIN_LENGTH ) ;
+    bool fine = nl == sdomain::FINE_DOMAIN_LENGTH ;
+    glm::vec4 dom = fine ? Opticks::GetFineDomainSpec() : Opticks::GetCoarseDomainSpec()  ;
 
 
 

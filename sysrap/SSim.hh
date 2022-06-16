@@ -17,6 +17,7 @@ which does the uploading to the device.
 
 struct NP ; 
 struct NPFold ; 
+struct SBnd ; 
 
 #include <vector>
 #include <string>
@@ -64,6 +65,7 @@ struct SYSRAP_API SSim
     void add(const char* k, const NP* a ); 
     const NP* get(const char* k) const ; 
     const NP* get_bnd() const ; 
+    const SBnd* get_sbnd() const ; 
 
     void load(const char* base); 
     void load(const char* base, const char* rel) ; 

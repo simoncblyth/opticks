@@ -22,6 +22,7 @@
 
 #include "CFG4_BODY.hh"
 #include "OPTICKS_LOG.hh"
+#include "sdomain.h"
 
 // npy-
 #include "NPY.hpp"
@@ -88,7 +89,7 @@ int main(int argc, char** argv)
 
     bool interpolate = ok.hasOpt("nointerpol") ? false : true ; 
 
-    unsigned nl_interpolate = unsigned(Opticks::DOMAIN_HIGH) - unsigned(Opticks::DOMAIN_LOW) + 1u ; 
+    unsigned nl_interpolate = unsigned(sdomain::DOMAIN_HIGH) - unsigned(sdomain::DOMAIN_LOW) + 1u ; 
 
 
     // PROBABLY NOT NEEDED ANYMORE : DONE IN GBndLib::load 
@@ -127,7 +128,7 @@ int main(int argc, char** argv)
     assert( ni == nb );
     assert( nj == 4 && nm == 4);
 
-    glm::vec4 boundary_domain = Opticks::getDefaultDomainSpec() ;
+    glm::vec4 boundary_domain = Opticks::GetFineDomainSpec() ;
 
     double wlow = boundary_domain.x ; 
     double wstep = interpolate ? 1.0f : boundary_domain.z ;   // 1.0f OR 20.0f  (nanometer)

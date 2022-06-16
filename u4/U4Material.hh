@@ -60,4 +60,8 @@ struct U4_API U4Material
     static void ListOri(std::vector<std::string>& names); 
     static void LoadOri(); 
 
+
+    static void LoadBnd(); 
+
+
 }; 

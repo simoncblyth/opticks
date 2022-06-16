@@ -27,6 +27,7 @@
 
 #include "GDomain.hh"
 #include "Opticks.hh"
+#include "sdomain.h"
 
 #include "PLOG.hh"
 
@@ -48,7 +49,7 @@ template <typename T>
 GDomain<T>* GDomain<T>::MakeDefaultDomain()  // static
 {
     GDomain<T>* domain = nullptr ; 
-    switch(Opticks::DOMAIN_TYPE)
+    switch(sdomain::DOMAIN_TYPE)
     {
         case 'F': domain = MakeFineDomain() ; break ; 
         case 'C': domain = MakeCoarseDomain() ; break ; 
@@ -59,13 +60,13 @@ GDomain<T>* GDomain<T>::MakeDefaultDomain()  // static
 template <typename T>
 GDomain<T>* GDomain<T>::MakeCoarseDomain()  // static
 {
-    return  new GDomain<T>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
+    return  new GDomain<T>(sdomain::DOMAIN_LOW, sdomain::DOMAIN_HIGH, sdomain::DOMAIN_STEP ); 
 }
 
 template <typename T>
 GDomain<T>* GDomain<T>::MakeFineDomain()  // static
 {
-    return new GDomain<T>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::FINE_DOMAIN_STEP ); 
+    return new GDomain<T>(sdomain::DOMAIN_LOW, sdomain::DOMAIN_HIGH, sdomain::FINE_DOMAIN_STEP ); 
 }
 
 

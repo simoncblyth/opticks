@@ -10,6 +10,19 @@ a really minimal install excluding : brap, NPY, optickscore
 The major difficulty with that is Composition which brings in a large number of classes. 
 TODO: review Composition and dependents and see how difficult to relocate to sysrap 
 
+
+Wavelength Domain
+-------------------
+
+::
+
+    In [17]: np.arange(60., 820.1, 20. ).shape
+    Out[17]: (39,)
+
+    In [18]: np.arange(60., 820.1, 1. ).shape
+    Out[18]: (761,)
+
+
 **/
 
 #include <vector>
