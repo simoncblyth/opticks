@@ -47,13 +47,11 @@ struct SYSRAP_API SSim
     static NP*  AddOptical( const NP* optical, const std::vector<std::string>& bnames, const std::vector<std::string>& specs ) ; 
     static NP*  AddBoundary( const NP* src, const std::vector<std::string>& specs ); 
     static const NP* NarrowIfWide(const NP* buf ); 
-    static bool FindName( unsigned& i, unsigned& j, const char* qname, const std::vector<std::string>& names ); 
-    bool   findName( unsigned& i, unsigned& j, const char* qname ) const ; 
     static void GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned nl, unsigned nm, const char* name ); 
     static std::string DescOptical(const NP* optical, const NP* bnd ); 
     static std::string DescDigest(const NP* bnd, int w=16) ; 
     static std::string GetItemDigest( const NP* bnd, int i, int j, int w ); 
-
+    bool   findName( int& i, int& j, const char* qname ) const ; 
 
     template<typename ... Args>
     void addFake( Args ... args ); 

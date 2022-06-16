@@ -2,6 +2,7 @@
 
 #include "SOpticksResource.hh"
 #include "SSys.hh"
+#include "SSim.hh"
 #include "SPath.hh"
 #include "NP.hh"
 #include "sdigest.h"
@@ -156,7 +157,14 @@ void test_LoadOri_remove_material_property()
     LOG(info) << "after removal " << std::endl << U4Material::DescPropertyNames( mat ) ; 
 }
 
+void test_ssim_boot()
+{
+    SSim* sim = SSim::Load(); 
+    const NP* bnd = sim->get_bnd();
+    LOG(info) << bnd->brief() ; 
 
+
+}
 
 
 int main(int argc, char** argv)
@@ -173,9 +181,10 @@ int main(int argc, char** argv)
     test_LoadOri_name(); 
     test_ListOri(); 
     test_LoadOri(); 
+    test_LoadOri_remove_material_property(); 
     */
 
-    test_LoadOri_remove_material_property(); 
+    test_ssim_boot(); 
 
 
      

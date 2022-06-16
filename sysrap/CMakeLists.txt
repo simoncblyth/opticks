@@ -138,6 +138,8 @@ set(HEADERS
     sstr.h
     SStr.hh
 
+    SBnd.h
+
     SPath.hh
     SSeq.hh
     STranche.hh

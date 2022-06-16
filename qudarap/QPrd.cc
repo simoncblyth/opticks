@@ -10,6 +10,8 @@
 #include "QBnd.hh"
 #include "QPrd.hh"
 
+#include "SBnd.h"
+
 
 const plog::Severity QPrd::LEVEL = PLOG::EnvLevel("QPrd", "DEBUG") ; 
 
@@ -18,7 +20,8 @@ const QPrd* QPrd::Get(){ return INSTANCE ; }
 
 QPrd::QPrd()
     :
-    bnd(QBnd::Get())
+    bnd(QBnd::Get()),
+    sbn(bnd->sbn)
 {
     if( bnd == nullptr )  LOG(fatal) << "QPrd must be instanciated after QBnd " ; 
     assert(bnd); 
@@ -29,8 +32,8 @@ QPrd::QPrd()
 std::string QPrd::desc() const 
 {
     std::stringstream ss ; 
-    ss << "QPrd.bnd.descBoundaryIndices" << std::endl ; 
-    ss << bnd->descBoundaryIndices( bnd_idx ); 
+    ss << "QPrd.sbn.descBoundaryIndices" << std::endl ; 
+    ss << sbn->descBoundaryIndices( bnd_idx ); 
     ss << "QPrd.nrmt" << std::endl ;  
     for(unsigned i=0 ; i < nrmt.size() ; i++ ) ss << nrmt[i] << std::endl ;  
     ss << "QPrd.prd" << std::endl ;  
@@ -40,15 +43,12 @@ std::string QPrd::desc() const
 }
 
 
-//std::string QPrd::Fallback(
-
-
 void QPrd::init()
 {
     const char* bnd_fallback = "Acrylic///LS,Water///Acrylic,Water///Pyrex,Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum" ;  
     const char* bnd_sequence = SSys::getenvvar("QPRD_BND", bnd_fallback );  
     LOG(LEVEL) << " QPRD_BND " << bnd_sequence ; 
-    bnd->getBoundaryIndices( bnd_idx, bnd_sequence, ',' ); 
+    sbn->getBoundaryIndices( bnd_idx, bnd_sequence, ',' ); 
 
     const char* nrmt_fallback = "0,0,1,100 0,0,1,200 0,0,1,300 0,0,1,400" ; 
     qvals( nrmt, "QPRD_NRMT", nrmt_fallback, true ); 

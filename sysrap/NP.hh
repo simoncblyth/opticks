@@ -990,7 +990,7 @@ inline NP* NP::MakeItemCopy(  const NP* src, int i, int j, int k, int l, int m, 
     src->item_shape(sub_shape, i, j, k, l, m, o ); 
     unsigned idx = src->index0(i, j, k, l, m, o ); 
 
-    std::cout 
+    if(NP::VERBOSE) std::cout 
         << "NP::MakeItemCopy"
         << " i " << i 
         << " j " << j 
@@ -3335,7 +3335,7 @@ template <typename T> void NP::read(const T* src)
 template <typename T> void NP::read2(const T* src) 
 {
     bool consistent = sizeof(T) == ebyte ; 
-    if(!consistent) std::cout << "NP::read2 FAIL not consistent sizeof(T): " << sizeof(T) << " and ebyte: " << ebyte ;  
+    if(!consistent) std::cout << "NP::read2 FAIL not consistent sizeof(T): " << sizeof(T) << " and ebyte: " << ebyte << std::endl ;  
     assert( consistent ); 
     memcpy( bytes(), src, arr_bytes() );    
 }

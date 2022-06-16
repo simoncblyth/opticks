@@ -105,6 +105,7 @@ set(TEST_SOURCES
 
    SEvtTest.cc
    SSimTest.cc
+   SBndTest.cc
    SPropTest.cc
    SNameTest.cc
 )

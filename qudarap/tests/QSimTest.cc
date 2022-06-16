@@ -16,6 +16,7 @@ QSimTest.cc
 #include "SSys.hh"
 #include "SPath.hh"
 #include "SSim.hh"
+#include "SBnd.h"
 #include "SEvt.hh"
 #include "NP.hh"
 
@@ -159,7 +160,7 @@ void QSimTest::boundary_lookup_line(const char* material, float x0 , float x1, u
 {
     LOG(info); 
 
-    unsigned line = qs.bnd->getMaterialLine(material); 
+    unsigned line = qs.bnd->sbn->getMaterialLine(material); 
     if( line == ~0u )
     {
         LOG(fatal) << " material not in boundary tex " << material ; 
@@ -391,7 +392,7 @@ void QSimTest::fill_state(unsigned version)
 {
     LOG(info) << "[" ; 
 
-    unsigned num_state = qs.bnd->getNumBoundary() ; 
+    unsigned num_state = qs.bnd->sbn->getNumBoundary() ; 
 
     if( version == 0 )
     {
@@ -427,7 +428,7 @@ void QSimTest::getStateNames(std::vector<std::string>& names, unsigned num_state
 {
     unsigned* idx = new unsigned[num_state] ; 
     for(unsigned i=0 ; i < num_state ; i++) idx[i] = i ; 
-    qs.bnd->getBoundarySpec(names, idx, num_state ); 
+    qs.bnd->sbn->getBoundarySpec(names, idx, num_state ); 
     delete [] idx ; 
 }
 

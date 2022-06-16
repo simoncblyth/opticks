@@ -20,12 +20,172 @@ Doing simple A-B comparisons with::
 
 
 
+TODO : test with non-normal incidence input photons 
+------------------------------------------------------------
 
-TODO: Arrange for same material props used in A and B 
+* also arrange exact same input_photon arrays on local and remote 
+  rather than separate generation that only matches to 1e-10 level 
+
+
+WIP: Arrange for same material props used in A and B 
 ---------------------------------------------------------
 
 * recall I started adding full Ori material dumping in the translation
   but did not yet use that instead using some other CFBASE of material props
+
+  * this approach could only ever work partially due to different domains etc.. 
+
+* "back conversion" from Opticks bnd arrays to give Geant4 material props
+  while somewhat contrived is the surest way to use as close as possible the 
+  same material props in both simulations 
+
+  * so this means Geant4 material props are booted from the bnd array 
+  * DONE: pulled SBnd.h out of QBnd so bnd related functionality is accessible from U4
+  * DONE: SBnd::getPropertyGroup pulls the property group of a material(or surface) 
+    with up to eight sets of properties across the wavelength domain
+
+    * TODO: convert an NP property group into a set of material properties within
+      a material.  HMM where to access the domain "officially" without prior knowledge ?
+
+
+
+Photon Match status after switch to "bool normal_indicence = trans_length < 1e-6f"
+-------------------------------------------------------------------------------------
+
+GROUPVEL needs to match to avoid the small 0.001 ns time difference::
+
+    In [9]: a.photon - b.photon                                                                                                                                                                               
+    Out[9]: 
+    array([[[  0.   ,  -0.   ,   0.   ,   0.001],
+            [  0.   ,  -0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[ -0.   ,   0.   ,   0.   ,   0.001],
+            [ -0.   ,  -0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,  -0.   ,   0.001],
+            [  0.   ,   0.   ,  -0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,   0.   ,   0.001],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,   0.   ,   0.001],
+            [ -0.   ,   0.   ,  -0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]],
+
+           [[ 83.125, 108.417, 200.   ,   0.463],
+            [  0.686,   0.895,   1.651,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,   0.   ,   0.001],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,   0.   ,   0.001],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,   0.   ,   0.001],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,   0.   ,   0.001],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]]], dtype=float32)
+
+
+
+
+
+DONE : Using trans_length cutoff makes all 10 get special cased as normal incidence and matches polz
+---------------------------------------------------------------------------------------------------------
+
+::
+
+        
+     670 **Normal Incidence Special Case**
+     671  
+     672 Judging normal_incidence based on absolete dot product being exactly unity "c1 == 1.f" is problematic 
+     673 as when very near to normal incidence there are vectors for which the absolute dot product 
+     674 is not quite 1.f but the cross product does give an exactly zero vector which gives 
+     675 A_trans (nan, nan, nan) from the normalize doing : (zero,zero,zero)/zero.   
+     676 
+     677 Solution is to judge normal incidence based on trans_length as that is what the 
+     678 calulation actually needs to be non-zero in order to be able to normalize trans to give A_trans.
+     679 
+     680 However using "bool normal_incidence = trans_length == 0.f" also problematic
+     681 as it means would be using very small trans vectors to define A_trans and this
+     682 would cause a difference with double precision Geant4 and float precision Opticks. 
+     683 So try using a cutoff "trans_length < 1e-6f" below which to special case a normal 
+     684 incidence. 
+     685 
+     686 **/
+     687 
+     688 inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
+     689 {
+     690     const float& n1 = s.material1.x ;
+     691     const float& n2 = s.material2.x ;
+     692     const float eta = n1/n2 ;
+     693 
+     694     const float3* normal = (float3*)&prd->q0.f.x ;
+     695 
+     696     const float _c1 = -dot(p.mom, *normal );
+     697     const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ;
+     698     const float3 trans = cross(p.mom, oriented_normal) ;
+     699     const float trans_length = length(trans) ;
+     700     const float c1 = fabs(_c1) ;
+     701     const bool normal_incidence = trans_length < 1e-6f  ;
+     702 
+
+
+
+
+
+::
+
+    In [3]: a.photon[:,2]
+    Out[3]: 
+    array([[ -0.602,   0.   ,  -0.799, 440.   ],
+           [ -0.258,   0.   ,  -0.966, 440.   ],
+           [ -0.17 ,   0.   ,  -0.986, 440.   ],
+           [ -0.86 ,   0.   ,  -0.51 , 440.   ],
+           [  0.883,   0.   ,  -0.469, 440.   ],
+           [  0.923,   0.   ,  -0.384, 440.   ],
+           [  0.965,   0.   ,  -0.262, 440.   ],
+           [ -0.753,   0.   ,   0.658, 440.   ],
+           [ -0.566,   0.   ,   0.824, 440.   ],
+           [ -0.829,   0.   ,  -0.56 , 440.   ]], dtype=float32)
+
+    In [4]: b.photon[:,2]
+    Out[4]: 
+    array([[ -0.602,   0.   ,  -0.799, 440.   ],
+           [ -0.258,   0.   ,  -0.966, 440.   ],
+           [ -0.17 ,   0.   ,  -0.986, 440.   ],
+           [ -0.86 ,   0.   ,  -0.51 , 440.   ],
+           [  0.883,   0.   ,  -0.469, 440.   ],
+           [  0.923,   0.   ,  -0.384, 440.   ],
+           [  0.965,   0.   ,  -0.262, 440.   ],
+           [ -0.753,   0.   ,   0.658, 440.   ],
+           [ -0.566,   0.   ,   0.824, 440.   ],
+           [ -0.829,   0.   ,  -0.56 , 440.   ]], dtype=float32)
+
+    In [5]: np.all( a.photon[:,2] == b.photon[:,2] )                                                                                                                                                          
+    Out[5]: True
+
+
 
 
 DONE : InstrumentedG4OpBoundaryProcess

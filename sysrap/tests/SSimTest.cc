@@ -44,7 +44,7 @@ void test_findName()
     for(unsigned a=0 ; a < names.size() ; a++ )
     {
          const std::string& n = names[a] ; 
-         unsigned i, j ; 
+         int i, j ; 
          bool found = sim->findName(i,j,n.c_str() ); 
 
          std::cout << std::setw(30) << n << " " ; 

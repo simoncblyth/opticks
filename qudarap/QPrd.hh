@@ -8,6 +8,7 @@
 struct float4 ; 
 struct quad2 ; 
 struct QBnd ; 
+struct SBnd ; 
 struct NP ; 
 
 /**
@@ -28,6 +29,7 @@ struct QUDARAP_API QPrd
     static const QPrd* Get() ; 
 
     const QBnd* bnd ; 
+    const SBnd* sbn ; 
 
     std::vector<unsigned> bnd_idx ; 
     std::vector<float4> nrmt ; 

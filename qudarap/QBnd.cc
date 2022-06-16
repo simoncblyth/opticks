@@ -5,6 +5,7 @@
 
 #include "SStr.hh"
 #include "SSim.hh"
+#include "SBnd.h"
 #include "NP.hh"
 
 #include "scuda.h"
@@ -16,6 +17,7 @@
 #include "QTex.hh"
 #include "QOptical.hh"
 #include "QBnd.hh"
+#include "SBnd.h"
 
 #include "qbnd.h"
 
@@ -23,19 +25,9 @@
 #include "PLOG.hh"
 
 const plog::Severity QBnd::LEVEL = PLOG::EnvLevel("QBnd", "DEBUG"); 
-const unsigned QBnd::MISSING = ~0u ; 
 const QBnd* QBnd::INSTANCE = nullptr ; 
 const QBnd* QBnd::Get(){ return INSTANCE ; }
 
-
-void QBnd::GetSpecsFromString( std::vector<std::string>& specs , const char* specs_, char delim )
-{
-    std::stringstream ss;
-    ss.str(specs_)  ;
-    std::string s;
-    while (std::getline(ss, s, delim)) if(!SStr::Blank(s.c_str())) specs.push_back(s) ;
-    LOG(info) << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
-}
 
 qbnd* QBnd::MakeInstance(const QTex<float4>* tex, const std::vector<std::string>& names )
 {
@@ -43,8 +35,8 @@ qbnd* QBnd::MakeInstance(const QTex<float4>* tex, const std::vector<std::string>
 
     bnd->boundary_tex = tex->texObj ; 
     bnd->boundary_meta = tex->d_meta ; 
-    bnd->boundary_tex_MaterialLine_Water = GetMaterialLine("Water", names) ; 
-    bnd->boundary_tex_MaterialLine_LS    = GetMaterialLine("LS", names) ; 
+    bnd->boundary_tex_MaterialLine_Water = SBnd::GetMaterialLine("Water", names) ; 
+    bnd->boundary_tex_MaterialLine_LS    = SBnd::GetMaterialLine("LS", names) ; 
 
     const QOptical* optical = QOptical::Get() ; 
     //assert( optical ); 
@@ -69,175 +61,13 @@ QBnd::QBnd(const NP* buf)
     :
     dsrc(buf->ebyte == 8 ? buf : nullptr),
     src(SSim::NarrowIfWide(buf)),
+    sbn(new SBnd(src)),
     tex(MakeBoundaryTex(src)),
     bnd(MakeInstance(tex, buf->names)),
     d_bnd(QU::UploadArray<qbnd>(bnd,1))
 {
-    buf->get_names(bnames) ;  // vector of string from NP metadata
-    assert( bnames.size() > 0 ); 
     INSTANCE = this ; 
 } 
-
-std::string QBnd::getItemDigest( int i, int j, int w ) const 
-{
-    return SSim::GetItemDigest(src, i, j, w ); 
-}
-
-std::string QBnd::descBoundary() const
-{
-    std::stringstream ss ; 
-    for(unsigned i=0 ; i < bnames.size() ; i++) 
-       ss << std::setw(2) << i << " " << bnames[i] << std::endl ; 
-    std::string s = ss.str(); 
-    return s ; 
-} 
-
-unsigned QBnd::getNumBoundary() const
-{
-    return bnames.size(); 
-}
-
-const char* QBnd::getBoundarySpec(unsigned idx) const 
-{
-    assert( idx < bnames.size() ); 
-    const std::string& s = bnames[idx]; 
-    return s.c_str(); 
-}
-
-void QBnd::getBoundarySpec(std::vector<std::string>& names, const unsigned* idx , unsigned num_idx ) const 
-{
-    for(unsigned i=0 ; i < num_idx ; i++)
-    {   
-        unsigned index = idx[i] ;  
-        const char* spec = getBoundarySpec(index);   // 0-based 
-        names.push_back(spec); 
-    }   
-} 
-
-
-/**
-QBnd::getBoundaryIndex
-------------------------
-
-returns the index of the first boundary matching *spec*
-
-**/
-
-unsigned QBnd::getBoundaryIndex(const char* spec) const 
-{
-    unsigned idx = MISSING ; 
-    for(unsigned i=0 ; i < bnames.size() ; i++) 
-    {
-        if(spec && strcmp(bnames[i].c_str(), spec) == 0) 
-        {
-            idx = i ; 
-            break ; 
-        }
-    }
-    return idx ;  
-}
-
-void QBnd::getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char* bnd_sequence, char delim ) const 
-{
-    assert( bnd_idx.size() == 0 ); 
-
-    std::vector<std::string> bnd ; 
-    SStr::Split(bnd_sequence,delim, bnd ); 
-
-    for(unsigned i=0 ; i < bnd.size() ; i++)
-    {
-        const char* spec = bnd[i].c_str(); 
-        if(strlen(spec) == 0) continue ;  
-        unsigned bidx = getBoundaryIndex(spec); 
-        if( bidx == MISSING ) LOG(fatal) << " i " << i << " invalid spec [" << spec << "]"  ;      
-        assert( bidx != MISSING ); 
-
-        bnd_idx.push_back(bidx) ; 
-    }
-    LOG(LEVEL) << " bnd.size " << bnd.size() << " bnd_idx.size " << bnd_idx.size()  ; 
-}
-
-std::string QBnd::descBoundaryIndices( const std::vector<unsigned>& bnd_idx ) const 
-{
-    std::stringstream ss ; 
-    for(unsigned i=0 ; i < bnd_idx.size() ; i++)
-    {
-        unsigned bidx = bnd_idx[i] ;  
-        const char* spec = getBoundarySpec(bidx); 
-        ss
-            << " i " << std::setw(3) << i 
-            << " bidx " << std::setw(3) << bidx
-            << " spec " << spec
-            << std::endl 
-            ;
-    }
-    std::string s = ss.str(); 
-    return s ; 
-}
-
-unsigned QBnd::getBoundaryLine(const char* spec, unsigned j) const 
-{
-    unsigned idx = getBoundaryIndex(spec); 
-    bool is_missing = idx == MISSING ; 
-    bool is_valid = !is_missing && idx < bnames.size() ;
-
-    if(!is_valid) 
-    {
-        LOG(error) 
-            << " not is_valid " 
-            << " spec " << spec
-            << " idx " << idx
-            << " is_missing " << is_missing 
-            << " bnames.size " << bnames.size() 
-            ;  
-    }
-
-    assert( is_valid ); 
-    unsigned line = 4*idx + j ;    
-    return line ;  
-}
-
-
-
-
-unsigned QBnd::GetMaterialLine( const char* material, const std::vector<std::string>& specs ) // static
-{
-    unsigned line = MISSING ; 
-    for(unsigned i=0 ; i < specs.size() ; i++) 
-    {
-        std::vector<std::string> elem ; 
-        SStr::Split(specs[i].c_str(), '/', elem );  
-        const char* omat = elem[0].c_str(); 
-        const char* imat = elem[3].c_str(); 
-
-        if(strcmp( material, omat ) == 0 )
-        {
-            line = i*4 + 0 ; 
-            break ; 
-        }
-        if(strcmp( material, imat ) == 0 )
-        {
-            line = i*4 + 3 ; 
-            break ; 
-        }
-    }
-    return line ; 
-}
-
-
-/**
-QBnd::getMaterialLine
------------------------
-
-Searches the bname spec for the *material* name in omat or imat slots, 
-returning the first found.  
-
-**/
-
-unsigned QBnd::getMaterialLine( const char* material ) const 
-{
-    return GetMaterialLine(material, bnames); 
-}
 
 
 

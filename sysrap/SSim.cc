@@ -11,6 +11,7 @@
 
 #include "SPath.hh"
 #include "SSim.hh"
+#include "SBnd.h"
 
 
 const plog::Severity SSim::LEVEL = PLOG::EnvLevel("SSim", "DEBUG"); 
@@ -183,7 +184,7 @@ void SSim::Add( NP** opticalplus, NP** bndplus, const NP* optical, const NP* bnd
 SSim::AddOptical
 ------------------
 
-Used from QBnd::Add in coordination with QBnd::AddBoundary.
+Used from SSim::Add in coordination with SSim::AddBoundary.
 Using this alone would break optical:bnd consistency. 
 
 optical buffer has 4 uint for each species and 4 species for each boundary
@@ -239,8 +240,10 @@ NP* SSim::AddOptical( const NP* optical, const std::vector<std::string>& bnames,
         for(unsigned s=0 ; s < 4 ; s++ )
         {
             const char* qname = elem[s].c_str(); 
-            unsigned i, j ; 
-            bool found = FindName(i, j, qname, bnames ); 
+            int i, j ; 
+            bool found = SBnd::FindName(i, j, qname, bnames ); 
+            assert(found)  ; 
+
             unsigned idx = i*4 + j ; 
 
             const char* ibytes = nullptr ; 
@@ -360,8 +363,8 @@ NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) /
         for(unsigned s=0 ; s < 4 ; s++ )
         {
             const char* qname = elem[s].c_str(); 
-            unsigned i, j ; 
-            bool found = FindName(i, j, qname, names ); 
+            int i, j ; 
+            bool found = SBnd::FindName(i, j, qname, names ); 
             
             const char* ibytes = nullptr ; 
             unsigned num_bytes = 0 ; 
@@ -410,49 +413,6 @@ const NP* SSim::NarrowIfWide(const NP* buf )  // static
 
 
 
-/**
-SSim::findName
-----------------
-
-Returns the first (i,j)=(bidx,species) with element name 
-matching query name *qname*. 
-
-bidx 
-    0-based boundary index 
-
-species
-    0,1,2,3 for omat/osur/isur/imat
-
-**/
-
-bool SSim::findName( unsigned& i, unsigned& j, const char* qname ) const 
-{
-    const NP* bnd = fold->get(BND); 
-    return bnd ? FindName(i, j, qname, bnd->names) : false ; 
-}
-
-bool SSim::FindName( unsigned& i, unsigned& j, const char* qname, const std::vector<std::string>& names ) 
-{
-    i = MISSING ; 
-    j = MISSING ; 
-    for(unsigned b=0 ; b < names.size() ; b++) 
-    {
-        std::vector<std::string> elem ; 
-        SStr::Split(names[b].c_str(), '/', elem );  
-
-        for(unsigned s=0 ; s < 4 ; s++)
-        {
-            const char* name = elem[s].c_str(); 
-            if(strcmp(name, qname) == 0 )
-            {
-                i = b ; 
-                j = s ; 
-                return true ; 
-            }
-        }
-    }
-    return false ;  
-}
 
 
 /**
@@ -653,6 +613,11 @@ std::string SSim::GetItemDigest( const NP* bnd, int i, int j, int w )
     return sdig ; 
 }
 
+bool SSim::findName( int& i, int& j, const char* qname ) const 
+{
+    const NP* bnd = get_bnd(); 
+    return bnd ? SBnd::FindName(i, j, qname, bnd->names) : false ; 
+}
 
 
 
