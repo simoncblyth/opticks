@@ -74,6 +74,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<sphoton> record ; 
     std::vector<srec>    rec ; 
     std::vector<sseq>    seq ; 
+    std::vector<quad2>   prd ; 
 
     spho    current_pho = {} ; 
     sphoton current_photon = {} ; 
@@ -120,7 +121,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::string descProvider() const ; 
 
 
-    void setNumPhoton(unsigned numphoton); 
+    void setNumPhoton(unsigned num_photon); 
+    void setNumSimtrace(unsigned num_simtrace);
+
+
     void hostside_running_resize(); 
 
     NP* getDomain() const ; 
@@ -162,11 +166,13 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* getRecord() const ; 
     NP* getRec() const ; 
     NP* getSeq() const ; 
+    NP* getPrd() const ; 
 
     NP* makePhoton() const ; 
     NP* makeRecord() const ; 
     NP* makeRec() const ; 
     NP* makeSeq() const ; 
+    NP* makePrd() const ; 
 
 
     // SCompProvider methods

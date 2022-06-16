@@ -326,16 +326,32 @@ TODO: use SEvt::setNumPhoton from QEvent::setNumPhoton to avoid the duplicity
 
 **/
 
-void SEvt::setNumPhoton(unsigned numphoton)
+void SEvt::setNumPhoton(unsigned num_photon)
 {
-    LOG(LEVEL) << " numphoton " << numphoton ;  
-    evt->num_photon = numphoton ; 
+    bool num_photon_allowed = int(num_photon) <= evt->max_photon ; 
+    if(!num_photon_allowed) LOG(fatal) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ;
+    assert( num_photon_allowed );
+    LOG(LEVEL) << " num_photon " << num_photon ;  
+
+    evt->num_photon = num_photon ; 
     evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ;
     evt->num_record = evt->max_record * evt->num_photon ;
     evt->num_rec    = evt->max_rec    * evt->num_photon ;
+    evt->num_prd    = evt->max_prd    * evt->num_photon ;
 
     hostside_running_resize_done = false ; 
 }
+
+void SEvt::setNumSimtrace(unsigned num_simtrace)
+{
+    bool num_simtrace_allowed = int(num_simtrace) <= evt->max_simtrace ;
+    if(!num_simtrace_allowed) LOG(fatal) << " num_simtrace " << num_simtrace << " evt.max_simtrace " << evt->max_simtrace ;
+    assert( num_simtrace_allowed );
+    LOG(LEVEL) << " num_simtrace " << num_simtrace ;  
+
+    evt->num_simtrace = num_simtrace ;
+}
+
 
 /**
 SEvt::hostside_running_resize
@@ -374,6 +390,7 @@ void SEvt::hostside_running_resize()
     if(evt->num_record > 0) evt->record = record.data() ; 
     if(evt->num_rec    > 0) evt->rec    = rec.data() ; 
     if(evt->num_seq    > 0) evt->seq    = seq.data() ; 
+    if(evt->num_prd    > 0) evt->prd    = prd.data() ; 
 
     LOG(LEVEL) 
         << " is_self_provider " << is_self_provider 
@@ -755,6 +772,13 @@ NP* SEvt::getSeq() const
     s->read2( (unsigned long long*)evt->seq ); 
     return s ; 
 } 
+NP* SEvt::getPrd() const 
+{ 
+    if( evt->prd == nullptr ) return nullptr ; 
+    NP* p = makePrd(); 
+    p->read2( (quad2*)evt->prd ); 
+    return p ; 
+} 
 
 
 
@@ -778,6 +802,14 @@ NP* SEvt::makeSeq() const
 {
     return NP::Make<unsigned long long>( evt->num_seq, 2); 
 }
+NP* SEvt::makePrd() const 
+{
+    return NP::Make<float>( evt->num_photon, evt->max_prd, 2, 4); 
+}
+
+
+
+
 
 // SCompProvider methods
 
@@ -802,6 +834,7 @@ NP* SEvt::getComponent_(unsigned comp) const
         case SCOMP_RECORD:    a = getRecord()   ; break ;   
         case SCOMP_REC:       a = getRec()      ; break ;   
         case SCOMP_SEQ:       a = getSeq()      ; break ;   
+        case SCOMP_PRD:       a = getPrd()      ; break ;   
         //case SCOMP_SEED:      a = getSeed()     ; break ;   
         //case SCOMP_HIT:       a = getHit()      ; break ;   
         //case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   

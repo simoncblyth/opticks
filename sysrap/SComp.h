@@ -21,12 +21,13 @@ enum {
     SCOMP_PHOTON    = 0x1 <<  2,
     SCOMP_RECORD    = 0x1 <<  3, 
     SCOMP_REC       = 0x1 <<  4,
-    SCOMP_SEED      = 0x1 <<  5,
-    SCOMP_HIT       = 0x1 <<  6,
-    SCOMP_SIMTRACE  = 0x1 <<  7,
-    SCOMP_SEQ       = 0x1 <<  8,
-    SCOMP_DOMAIN    = 0x1 <<  9,
-    SCOMP_INPHOTON  = 0x1 << 10
+    SCOMP_SEQ       = 0x1 <<  5,
+    SCOMP_PRD       = 0x1 <<  6,
+    SCOMP_SEED      = 0x1 <<  7,
+    SCOMP_HIT       = 0x1 <<  8,
+    SCOMP_SIMTRACE  = 0x1 <<  9,
+    SCOMP_DOMAIN    = 0x1 << 10,
+    SCOMP_INPHOTON  = 0x1 << 11
 };
 
 struct SYSRAP_API SCompProvider
@@ -37,13 +38,14 @@ struct SYSRAP_API SCompProvider
 
 struct SYSRAP_API SComp
 {
-    static constexpr const char* ALL_ = "genstep,photon,record,rec,seq,seed,hit,simtrace,domain,inphoton" ; 
+    static constexpr const char* ALL_ = "genstep,photon,record,rec,seq,prd,seed,hit,simtrace,domain,inphoton" ; 
     static constexpr const char* UNDEFINED_ = "undefined" ; 
     static constexpr const char* GENSTEP_   = "genstep" ; 
     static constexpr const char* PHOTON_    = "photon" ; 
     static constexpr const char* RECORD_    = "record" ; 
     static constexpr const char* REC_       = "rec" ; 
     static constexpr const char* SEQ_       = "seq" ; 
+    static constexpr const char* PRD_       = "prd" ; 
     static constexpr const char* SEED_      = "seed" ; 
     static constexpr const char* HIT_       = "hit" ; 
     static constexpr const char* SIMTRACE_  = "simtrace" ; 
@@ -62,10 +64,11 @@ struct SYSRAP_API SComp
     static bool IsPhoton(  unsigned mask){ return mask & SCOMP_PHOTON ; }
     static bool IsRecord(  unsigned mask){ return mask & SCOMP_RECORD ; }
     static bool IsRec(     unsigned mask){ return mask & SCOMP_REC ; }
+    static bool IsSeq(     unsigned mask){ return mask & SCOMP_SEQ ; }
+    static bool IsPrd(     unsigned mask){ return mask & SCOMP_PRD ; }
     static bool IsSeed(    unsigned mask){ return mask & SCOMP_SEED ; }
     static bool IsHit(     unsigned mask){ return mask & SCOMP_HIT ; }
     static bool IsSimtrace(unsigned mask){ return mask & SCOMP_SIMTRACE ; }
-    static bool IsSeq(     unsigned mask){ return mask & SCOMP_SEQ ; }
     static bool IsDomain(  unsigned mask){ return mask & SCOMP_DOMAIN ; }
     static bool IsInphoton(unsigned mask){ return mask & SCOMP_INPHOTON ; }
 };
@@ -83,6 +86,7 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, RECORD_))   comp = SCOMP_RECORD ; 
     if(Match(name, REC_))      comp = SCOMP_REC ; 
     if(Match(name, SEQ_))      comp = SCOMP_SEQ ; 
+    if(Match(name, PRD_))      comp = SCOMP_PRD ; 
     if(Match(name, SEED_))     comp = SCOMP_SEED ; 
     if(Match(name, HIT_))      comp = SCOMP_HIT ; 
     if(Match(name, SIMTRACE_)) comp = SCOMP_SIMTRACE ; 
@@ -101,6 +105,7 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_RECORD:    s = RECORD_     ; break ;  
         case SCOMP_REC:       s = REC_        ; break ;  
         case SCOMP_SEQ:       s = SEQ_        ; break ;  
+        case SCOMP_PRD:       s = PRD_        ; break ;  
         case SCOMP_SEED:      s = SEED_       ; break ;  
         case SCOMP_HIT:       s = HIT_        ; break ;  
         case SCOMP_SIMTRACE:  s = SIMTRACE_   ; break ;  
@@ -118,6 +123,7 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_RECORD )   names.push_back(RECORD_) ; 
     if( mask & SCOMP_REC )      names.push_back(REC_)  ; 
     if( mask & SCOMP_SEQ )      names.push_back(SEQ_) ;  
+    if( mask & SCOMP_PRD )      names.push_back(PRD_) ;  
     if( mask & SCOMP_SEED )     names.push_back(SEED_) ; 
     if( mask & SCOMP_HIT )      names.push_back(HIT_) ; 
     if( mask & SCOMP_SIMTRACE ) names.push_back(SIMTRACE_) ; 

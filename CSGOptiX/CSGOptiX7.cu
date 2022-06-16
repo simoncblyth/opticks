@@ -213,10 +213,6 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     int bounce = 0 ;  
     while( bounce < evt->max_bounce )
     {    
-        if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
-        if(evt->rec) evt->add_rec( rec, idx, bounce, p ); 
-        if(evt->seq) seq.add_nibble( bounce, p.flag(), p.boundary() ); 
-
         trace( 
             params.handle,
             p.pos,
@@ -225,6 +221,12 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
             params.tmax,
             prd
         );        // trace populates prd with geometry info : intersect normal, distance, identity
+
+        if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
+        if(evt->rec) evt->add_rec( rec, idx, bounce, p ); 
+        if(evt->seq) seq.add_nibble( bounce, p.flag(), p.boundary() ); 
+        if(evt->prd) evt->prd[evt->max_prd*idx+bounce] = *prd ; 
+
 
         //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 

@@ -230,6 +230,7 @@ T* QU::device_alloc_zero(unsigned num_items )
 template QUDARAP_API sphoton*   QU::device_alloc_zero<sphoton>(unsigned num_items) ;
 template QUDARAP_API srec*      QU::device_alloc_zero<srec>(unsigned num_items) ;
 template QUDARAP_API sseq*      QU::device_alloc_zero<sseq>(unsigned num_items) ;
+template QUDARAP_API quad2*     QU::device_alloc_zero<quad2>(unsigned num_items) ;
 
 
 

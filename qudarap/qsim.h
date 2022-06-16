@@ -1153,14 +1153,16 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
 
     while( bounce < evt->max_bounce )
     {
+        const quad2* prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
+
         // HMM: encapsulate this step saving 
         //  void sevent::record_point(unsigned idx, int bounce, sphoton& p, srec& rec, sseq& seq )  
 
         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
         if(evt->rec)    evt->add_rec(rec, idx, bounce, p );   // populates compressed rec and adds to evt->rec array 
         if(evt->seq)    seq.add_nibble( bounce, p.flag(), p.boundary() ); 
-
-        const quad2* prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
+        if(evt->prd)    evt->prd[evt->max_prd*idx+bounce] = *prd ; 
+        // HMM: unlike others no point in tail recording the prd, as propagate will not be changing it ?
 
 #ifdef DEBUG_PIDX
         if(idx == base->pidx) 

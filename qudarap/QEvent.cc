@@ -247,6 +247,7 @@ bool QEvent::hasPhoton() const {  return evt->photon != nullptr ; }
 bool QEvent::hasRecord() const { return evt->record != nullptr ; }
 bool QEvent::hasRec() const    { return evt->rec != nullptr ; }
 bool QEvent::hasSeq() const    { return evt->seq != nullptr ; }
+bool QEvent::hasPrd() const    { return evt->prd != nullptr ; }
 bool QEvent::hasHit() const    { return evt->hit != nullptr ; }
 bool QEvent::hasSimtrace() const  { return evt->simtrace != nullptr ; }
 
@@ -394,6 +395,17 @@ NP* QEvent::getSeq() const
     return seq ; 
 }
 
+NP* QEvent::getPrd() const 
+{
+    if(!hasPrd()) LOG(LEVEL) << " getPrd called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasPrd()) return nullptr ;
+  
+    NP* prd = sev->makePrd(); 
+    LOG(LEVEL) << " evt.num_prd " << evt->num_prd ; 
+    QU::copy_device_to_host<quad2>( (quad2*)prd->bytes(), evt->prd, evt->num_prd ); 
+    return prd ; 
+}
+
 NP* QEvent::getRecord() const 
 {
     if(!hasRecord()) LOG(LEVEL) << " getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
@@ -529,6 +541,7 @@ NP* QEvent::getComponent_(unsigned comp) const
         case SCOMP_RECORD:    a = getRecord()   ; break ;   
         case SCOMP_REC:       a = getRec()      ; break ;   
         case SCOMP_SEQ:       a = getSeq()      ; break ;   
+        case SCOMP_PRD:       a = getPrd()      ; break ;   
         case SCOMP_SEED:      a = getSeed()     ; break ;   
         case SCOMP_HIT:       a = getHit()      ; break ;   
         case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   
@@ -555,29 +568,22 @@ when collecting records : that is ok as running with records is regarded as debu
 
 void QEvent::setNumPhoton(unsigned num_photon )
 {
-    bool num_photon_allowed = int(num_photon) <= evt->max_photon ; 
-    if(!num_photon_allowed) LOG(fatal) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ; 
-    assert( num_photon_allowed ); 
-
+    sev->setNumPhoton(num_photon); 
     if( evt->photon == nullptr ) 
     {
-        // TODO: use SEvt::setNumPhoton to modify the evt->num_...  splitting alloc from changing num
-        evt->num_photon = num_photon  ; 
-        evt->num_record = evt->max_record * evt->num_photon ;  
-        evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ; 
-        evt->num_rec    = evt->max_rec * evt->num_photon ;  
-
         evt->photon  = evt->num_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon ) : nullptr ; 
         evt->record  = evt->num_record > 0 ? QU::device_alloc_zero<sphoton>( evt->num_record ) : nullptr ; 
         evt->rec     = evt->num_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->num_rec  )   : nullptr ; 
         evt->seq     = evt->num_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->num_seq  )   : nullptr ; 
+        evt->prd     = evt->num_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->num_prd  )   : nullptr ; 
 
         LOG(LEVEL) 
             << " device_alloc photon " 
             << " evt.num_photon " << evt->num_photon 
-            << " evt.max_photon " << evt->max_photon
             << " evt.num_record " << evt->num_record 
             << " evt.num_rec    " << evt->num_rec 
+            << " evt.num_seq    " << evt->num_seq
+            << " evt.num_prd    " << evt->num_prd
             ;
 
     } 
@@ -586,17 +592,12 @@ void QEvent::setNumPhoton(unsigned num_photon )
          LOG(error) << " evt.photon is not nullptr : evt.photon : " << evt->photon ; 
     }
 
-
     uploadEvt(); 
 }
 
 void QEvent::setNumSimtrace(unsigned num_simtrace)
 {
-    evt->num_simtrace = num_simtrace ; 
-    bool num_simtrace_allowed = evt->num_simtrace <= evt->max_simtrace ; 
-    if(!num_simtrace_allowed) LOG(fatal) << " evt.num_simtrace " << evt->num_simtrace << " evt.max_simtrace " << evt->max_simtrace ; 
-    assert( num_simtrace_allowed ); 
-
+    sev->setNumSimtrace(num_simtrace); 
     if( evt->simtrace == nullptr ) 
     {
         evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace ) ; 
