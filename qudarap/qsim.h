@@ -665,6 +665,24 @@ random aligned matching with examples/Geant/BoundaryStandalone
 
 * see notes/issues/QSimTest_propagate_at_boundary_vs_BoundaryStandalone_G4OpBoundaryProcessTest.rst
 
+
+
+**Normal Incidence Special Case**
+ 
+Judging normal_incidence based on absolete dot product being exactly unity "c1 == 1.f" is problematic 
+as when very near to normal incidence there are vectors for which the absolute dot product 
+is not quite 1.f but the cross product does give an exactly zero vector which gives 
+A_trans (nan, nan, nan) from the normalize doing : (zero,zero,zero)/zero.   
+
+Solution is to judge normal incidence based on trans_length as that is what the 
+calulation actually needs to be non-zero in order to be able to normalize trans to give A_trans.
+
+However using "bool normal_incidence = trans_length == 0.f" also problematic
+as it means would be using very small trans vectors to define A_trans and this
+would cause a difference with double precision Geant4 and float precision Opticks. 
+So try using a cutoff "trans_length < 1e-6f" below which to special case a normal 
+incidence. 
+
 **/
 
 inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx)
@@ -680,20 +698,8 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     const float3 trans = cross(p.mom, oriented_normal) ; 
     const float trans_length = length(trans) ; 
     const float c1 = fabs(_c1) ; 
-    const bool normal_incidence = trans_length == 0.f  ; 
+    const bool normal_incidence = trans_length < 1e-6f  ; 
  
-    /**
-    **Normal Incidence**
- 
-    Judging normal_incidence based on absolete dot product being exactly unity "c1 == 1.f" is problematic 
-    as when very near to normal incidence there are vectors for which the absolute dot product 
-    is not quite 1.f but the cross product does give an exactly zero vector which gives 
-    A_trans (nan, nan, nan) from the normalize doing : (zero,zero,zero)/zero.   
-
-    Solution is to judge normal incidence based on trans_length as that is what the 
-    calulation actually needs to be non-zero in order to be able to calculate A_trans.
-    Hence should be able to guarantee that A_trans will be well defined. 
-    **/
 
 #ifdef DEBUG_PIDX
     if(idx == base->pidx)
