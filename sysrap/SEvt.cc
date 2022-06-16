@@ -385,6 +385,7 @@ void SEvt::hostside_running_resize()
     if(evt->num_record > 0) record.resize(evt->num_record); 
     if(evt->num_rec    > 0) rec.resize(evt->num_rec); 
     if(evt->num_seq    > 0) seq.resize(evt->num_seq); 
+    if(evt->num_prd    > 0) prd.resize(evt->num_prd); 
 
     if(evt->num_photon > 0) evt->photon = photon.data() ; 
     if(evt->num_record > 0) evt->record = record.data() ; 
@@ -462,6 +463,7 @@ void SEvt::beginPhoton(const spho& label)
     current_photon.zero() ; 
     current_rec.zero() ; 
     current_seq.zero() ; 
+    current_prd.zero() ; 
 
     current_photon.set_idx(idx); 
     current_photon.set_flag(genflag); 
@@ -655,11 +657,6 @@ void SEvt::rjoinSeqCheck(unsigned seq_flag) const
     assert( flag_xor ); 
 }
 
-
-
-
-
-
 /**
 SEvt::pointPhoton
 ------------------
@@ -690,6 +687,7 @@ void SEvt::pointPhoton(const spho& label)
     const sphoton& p = current_photon ; 
     srec& rec        = current_rec ; 
     sseq& seq        = current_seq ; 
+    quad2& prd       = current_prd ; 
 
     LOG(LEVEL) 
         << " idx " << idx 
@@ -697,12 +695,18 @@ void SEvt::pointPhoton(const spho& label)
         << " evt.max_record " << evt->max_record
         << " evt.max_rec    " << evt->max_rec
         << " evt.max_seq    " << evt->max_seq
+        << " evt.max_prd    " << evt->max_prd
         ;
 
+
+    // The below looks like are populating sevent arrays, but actually are also populating 
+    // the vectors thanks to setting of the sevent pointers in SEvt::hostside_running_resize
+    // so that the pointers follow around the vectors as they get reallocated. 
 
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
     if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
+    if( evt->prd    && bounce < evt->max_prd   )  evt->prd[evt->max_prd*idx+bounce] = prd ; 
 
     LOG(LEVEL) << label.desc() << " " << seq.desc_seqhis() ; 
 
@@ -776,7 +780,7 @@ NP* SEvt::getPrd() const
 { 
     if( evt->prd == nullptr ) return nullptr ; 
     NP* p = makePrd(); 
-    p->read2( (quad2*)evt->prd ); 
+    p->read2( (float*)evt->prd ); 
     return p ; 
 } 
 

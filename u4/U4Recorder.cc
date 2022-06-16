@@ -148,14 +148,16 @@ the tail of the recording.
    step n: pre + post 
 
 Q: What about reemission continuation ? 
-A: The RE point should be at the same point as the AB that it scrubs,  (TODO: check this)
+A: The RE point should be at the same point as the AB that it scrubs,
    so the continuing step zero should only record *post* 
 
 **Detecting First Step**
 
-HMM: need to know the step index, actually just need to know that are at the first step : 
-can get that by counting bits in the flagmask, as only the first step will have only 
-one bit set from the genflag. The single bit genflag gets set by SEvt::beginPhoton.
+HMM: need to know the step index, actually just need to know that are at the first step.
+Can get that by counting bits in the flagmask, as only the first step will have only 
+one bit set from the genflag. The single bit genflag gets set by SEvt::beginPhoton
+so only the first call to UserSteppingAction_Optical after PreUserTrackingAction_Optical
+will fulfil *single_bit*.
 
 **/
 
@@ -174,10 +176,12 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     sphoton& current_photon = sev->current_photon ;
     bool single_bit = current_photon.flagmask_count() == 1 ; 
+    // first point single bit flag is the genflag set in beginPhoton
     if(single_bit)
     { 
         U4StepPoint::Update(current_photon, pre);
-        sev->pointPhoton(label);  // first point flag is the genflag set in beginPhoton
+        sev->pointPhoton(label);  
+        // SEvt::pointPhoton saves SEvt::current_photon,current_rec,current_seq,current_prd into sevent 
     }
 
     unsigned flag = U4StepPoint::Flag(post) ; 
@@ -189,7 +193,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     assert( flag > 0 ); 
 
     current_photon.set_flag( flag );
-    sev->pointPhoton(label); 
+    sev->pointPhoton(label);   
+    // SEvt::pointPhoton saves SEvt::current_photon,current_rec,current_seq,current_prd into sevent 
 
     G4TrackStatus tstat = track->GetTrackStatus(); 
 

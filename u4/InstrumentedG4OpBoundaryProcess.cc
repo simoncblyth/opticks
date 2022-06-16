@@ -89,6 +89,10 @@
 
 
 #ifdef DEBUG_PIDX
+
+#include "scuda.h"
+#include "squad.h"
+#include "SEvt.hh"
 #include "SSys.hh"
 #include "U4PhotonInfo.h"
 const int InstrumentedG4OpBoundaryProcess::PIDX = SSys::getenvint("PIDX", -1) ; 
@@ -263,6 +267,21 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
                                          GetActiveNavigatorsIterator();
         theGlobalNormal =
                    (iNav[hNavId])->GetGlobalExitNormal(theGlobalPoint,&valid);
+#ifdef DEBUG_PIDX
+        {
+            quad2& prd = SEvt::Get()->current_prd ; 
+            prd.q0.f.x = theGlobalNormal.x() ; 
+            prd.q0.f.y = theGlobalNormal.y() ; 
+            prd.q0.f.z = theGlobalNormal.z() ; 
+
+            // TRY USING PRE->POST POSITION CHANGE TO GET THE PRD DISTANCE ? 
+            G4ThreeVector theGlobalPoint_pre = pStep->GetPreStepPoint()->GetPosition();
+            G4ThreeVector theGlobalPoint_delta = theGlobalPoint - theGlobalPoint_pre  ;  
+            prd.q0.f.w = theGlobalPoint_delta.mag() ; 
+
+           // HMM: PRD intersect identity ? how to mimic what Opticks does ? 
+       }
+#endif
 
         if (valid) {
           theGlobalNormal = -theGlobalNormal;

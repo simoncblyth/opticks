@@ -76,10 +76,12 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<sseq>    seq ; 
     std::vector<quad2>   prd ; 
 
+    // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
     sphoton current_photon = {} ; 
     srec    current_rec = {} ; 
     sseq    current_seq = {} ; 
+    quad2   current_prd = {} ; 
 
 
     static const plog::Severity LEVEL ; 
