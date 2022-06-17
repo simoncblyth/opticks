@@ -34,6 +34,7 @@ finding most frequent photon histories.
 #include "CBufSlice.hh"
 #include "THRAP_PUSH.hh"
 #include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 #include "THRAP_POP.hh"
 
 
