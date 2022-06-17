@@ -126,7 +126,7 @@ struct NP
     unsigned  index(  int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0) const ; 
     unsigned  index0( int i,  int j=-1,  int k=-1,  int l=-1, int m=-1, int o=-1) const ; 
 
-    unsigned dimprod(unsigned q) const ;    // product of dimensions to the right of dimension q
+    unsigned dimprod(unsigned q) const ;    // product of dimensions starting from dimension q
 
     template<typename... Args> 
     unsigned index_(Args ... idxx ) const ; 
@@ -823,7 +823,7 @@ NP::slice "slice_ellipsis"
 
 **/
 
-template<typename T, typename... Args> void NP::slice(std::vector<T>& out, Args ... idxx_ ) const 
+template<typename T, typename... Args> inline void NP::slice(std::vector<T>& out, Args ... idxx_ ) const 
 {
    std::vector<int> idxx = {idxx_...};
    slice_(out, idxx); 
@@ -831,7 +831,7 @@ template<typename T, typename... Args> void NP::slice(std::vector<T>& out, Args 
 
 
 
-template<typename T> void NP::slice_(std::vector<T>& out, const std::vector<int>& idxx ) const 
+template<typename T> inline void NP::slice_(std::vector<T>& out, const std::vector<int>& idxx ) const 
 {
     bool all_dim =  idxx.size() == shape.size() ; 
     if(!all_dim) std::cerr << " idxx.size " << idxx.size() << " shape.size " << shape.size() << " all_dim " << all_dim << std::endl ; 
@@ -860,7 +860,7 @@ template<typename T> void NP::slice_(std::vector<T>& out, const std::vector<int>
 }
 
 
-template<typename T> std::string NP::DescSlice(const std::vector<T>& out, unsigned edge )  // static
+template<typename T> inline std::string NP::DescSlice(const std::vector<T>& out, unsigned edge )  // static
 {
     std::stringstream ss ; 
     for(unsigned i=0 ; i < out.size() ; i++ ) 
@@ -875,7 +875,7 @@ template<typename T> std::string NP::DescSlice(const std::vector<T>& out, unsign
 }
 
 
-std::string NP::DescIdx(const std::vector<int>& idxx ) // static
+inline std::string NP::DescIdx(const std::vector<int>& idxx ) // static
 {
     std::stringstream ss ;  
     for(int d=0 ; d < int(idxx.size()) ; d++) ss << idxx[d] << " " ; 

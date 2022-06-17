@@ -536,47 +536,86 @@ void U4Material::LoadBnd()
     SSim* sim = SSim::Load(); 
     const SBnd* sb = sim->get_sbnd(); 
 
-    std::vector<std::string> names ; 
-    sb->getMaterialNames(names );
+    std::vector<std::string> mnames ; 
+    sb->getMaterialNames(mnames );
 
-    for(unsigned mat=0 ; mat < names.size() ; mat++) 
+    std::vector<std::string> pnames ; 
+    SBnd::GetMaterialPropNames(pnames); 
+
+    for(unsigned m=0 ; m < mnames.size() ; m++) 
     {
-        const char* name = names[mat].c_str() ; 
-        G4Material* prior = G4Material::GetMaterial(name);  
-        if(prior != nullptr) std::cout << "prior material " << name << std::endl ; 
+        const char* mname = mnames[m].c_str() ; 
+        G4Material* prior = G4Material::GetMaterial(mname);  
+        if(prior != nullptr) std::cout << "prior material " << mname << std::endl ; 
 
-        NP* pg = sb->getPropertyGroup(name,-1); 
+        G4Material* mat = prior ? prior : MakeWater(mname) ; 
 
-        int ni = 2 ;                              // groups of quad props
-        int nj = sdomain::FINE_DOMAIN_LENGTH ;    // wavelength domain
-        int nk = 4 ;                              // 4 props
+        G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable()  ; 
+        if(mpt == nullptr) mpt = new G4MaterialPropertiesTable ; 
+        mat->SetMaterialPropertiesTable(mpt);
 
-        assert( pg->has_shape(ni, nj, nk));  
-        std::cout << pg->desc() << std::endl ; 
-        assert( pg->ebyte == 8 );  // HUH ? 
-
-        double* vv = pg->values<double>(); 
-        for(int i=0 ; i < ni ; i++)  
+        for(unsigned p=0 ; p < pnames.size() ; p++) 
         {
-            for(int j=0 ; j < nj ; j++)
-            {
-                for(int k=0 ; k < 4 ; k++)
-                {
-                    int idx = nk*nj*i+nk*j+k ; 
-                    double v = vv[idx] ; 
-                    
-                    if( i == 1 && k == 0 ) std::cout 
-                        << std::setw(6) << idx 
-                        << " : " 
-                        << std::setw(10) << std::fixed << std::setprecision(5) << v 
-                        << std::endl ; 
+            const char* pname = pnames[p].c_str() ; 
 
-                }
-            }
+            std::vector<double> val ; 
+            sb->getProperty(val, mname, pname); 
+
+            std::vector<double> dom(val) ;  // TODO: get the dom
+
+            bool reverse = true ; 
+            AddProperty(mpt, pname, dom, val, reverse ); 
+
         }
-
-
     }
 }
+
+
+
+
+int U4Material::GetIndex(const std::vector<G4String>& nn, const char* key ) // static
+{
+    G4String k(key);
+    typedef std::vector<G4String> VS ;
+    typedef VS::const_iterator   VSI ;
+    VSI b = nn.begin() ;
+    VSI e = nn.end() ;
+    VSI p = std::find(b, e, k );
+    return p == e ? -1 : std::distance(b, p) ;
+}
+
+int U4Material::GetPropertyIndex( const G4MaterialPropertiesTable* mpt, const char* key ) // static
+{
+    const std::vector<G4String> names = mpt->GetMaterialPropertyNames() ;
+    return GetIndex(names, key); 
+}
+
+G4MaterialPropertyVector* U4Material::AddProperty( G4MaterialPropertiesTable* mpt, const char* key, const std::vector<double>& dom, const std::vector<double>& val , bool reverse )
+{
+     std::vector<double> ldom(dom); 
+     std::vector<double> lval(val); 
+     assert( ldom.size() == lval.size() ); 
+     if(reverse)
+     {
+         std::reverse(ldom.begin(), ldom.end()); 
+         std::reverse(lval.begin(), lval.end()); 
+     }
+     unsigned numval = ldom.size(); 
+     double* ldom_v = ldom.data() ; 
+     double* lval_v = lval.data() ; 
+
+#if G4VERSION_NUMBER < 1100
+    G4MaterialPropertyVector* mpv = mpt->AddProperty(key, ldom_v, lval_v, numval );
+#else
+    int keyIdx = GetPropertyIndex(mpt, key);
+    G4bool createNewKey = keyIdx == -1  ;
+    G4MaterialPropertyVector* mpv = mpt->AddProperty(key, ldom_v, lval_v, numval, createNewKey );
+#endif
+    return mpv ; 
+}
+
+
+
+
 
 

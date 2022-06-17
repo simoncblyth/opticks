@@ -61,7 +61,11 @@ struct U4_API U4Material
     static void LoadOri(); 
 
 
-    static void LoadBnd(); 
 
+    static int GetIndex(const std::vector<G4String>& nn, const char* key ); 
+    static int GetPropertyIndex( const G4MaterialPropertiesTable* mpt, const char* key ); 
+    static G4MaterialPropertyVector* AddProperty( G4MaterialPropertiesTable* mpt, const char* key, const std::vector<double>& dom, const std::vector<double>& val , bool reverse ); 
+
+    static void LoadBnd(); 
 
 }; 

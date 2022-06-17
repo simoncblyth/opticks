@@ -24,8 +24,8 @@ Principal user QBnd.hh
 
 struct SBndProp
 {
-    int  k ; 
-    int  l ;  
+    int  group ; 
+    int  prop ;  
     char name[16] ; 
     std::string desc() const ; 
 }; 
@@ -33,7 +33,7 @@ struct SBndProp
 inline std::string SBndProp::desc() const 
 {
     std::stringstream ss ; 
-    ss << "(" << k << "," << l << ") " << name ; 
+    ss << "(" << group << "," << prop << ") " << name ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -63,6 +63,8 @@ struct SBnd
         { 1,3,"SPARE13"  },
     }};
     static std::string DescMaterialProp(); 
+    static void GetMaterialPropNames(std::vector<std::string>& pnames, const char* skip_prefix="SPARE"); 
+    static const SBndProp* FindMaterialProp(const char* pname); 
 
 
     SBnd(const NP* src_); 
@@ -93,6 +95,10 @@ struct SBnd
     static bool FindName( int& i, int& j, const char* qname, const std::vector<std::string>& names ) ; 
 
     NP* getPropertyGroup(const char* qname, int k=-1) const ;  
+
+    template<typename T>
+    void getProperty(std::vector<T>& out, const char* qname, const char* propname ) const ; 
+
 };
 
 
@@ -103,6 +109,25 @@ inline std::string SBnd::DescMaterialProp() // static
     std::string s = ss.str(); 
     return s ; 
 }
+
+inline void SBnd::GetMaterialPropNames(std::vector<std::string>& pnames, const char* skip_prefix ) // static
+{
+    for(unsigned i=0 ; i < MaterialProp.size() ; i++) 
+    {
+        const char* name = MaterialProp[i].name ; 
+        if(SStr::StartsWith(name, skip_prefix) == false ) pnames.push_back(name) ; 
+    }
+}
+
+
+inline const SBndProp* SBnd::FindMaterialProp(const char* pname) // static
+{
+    const SBndProp* prop = nullptr ; 
+    for(unsigned i=0 ; i < MaterialProp.size() ; i++) if(strcmp(MaterialProp[i].name, pname)==0) prop = &MaterialProp[i] ; 
+    return prop ; 
+}
+
+
 
 
 // this gives duplicate symbols headeronly as cannot inline static constants in C++11
@@ -360,7 +385,7 @@ inline bool SBnd::FindName( int& i, int& j, const char* qname, const std::vector
 SBnd::getPropertyGroup
 ------------------------
 
-Returns an array of material or surface properties selected by `*qname* eg "Water".
+Returns an array of material or surface properties selected by *qname* eg "Water".
 For example with a source bnd array of shape  (44, 4, 2, 761, 4, )
 the expected spawned property group  array shape depends on the value of k:
 
@@ -380,6 +405,41 @@ inline NP* SBnd::getPropertyGroup(const char* qname, int k) const
     assert(found); 
     return src->spawn_item(i,j,k);  
 }
+
+/**
+SBnd::getProperty
+------------------
+
+::
+
+    // <f8(44, 4, 2, 761, 4, )
+    int species = 0 ; 
+    int group = 1 ; 
+    int wavelength = -1 ; 
+    int prop = 0 ; 
+
+**/
+
+template<typename T>
+inline void SBnd::getProperty(std::vector<T>& out, const char* qname, const char* propname ) const 
+{
+    assert( sizeof(T) == src->ebyte ); 
+
+    int boundary, species ; 
+    bool found_qname = findName(boundary, species, qname); 
+    assert(found_qname); 
+ 
+    const SBndProp* bp = FindMaterialProp(propname); 
+    assert(bp); 
+
+    int group = bp->group ; 
+    int prop = bp->prop  ; 
+    int wavelength = -1 ;   // slice dimension 
+
+    src->slice(out, boundary, species, group, wavelength, prop );  
+}
+
+
 
 
 

@@ -160,6 +160,66 @@ void test_DescMaterialProp()
     std::cout << SBnd::DescMaterialProp() << std::endl ; 
 }
 
+/**
+test_getProperty_Q
+-------------------
+
+::
+
+     Q=Air/GROUPVEL SBndTest 
+     Q=Air/RINDEX SBndTest 
+     Q=Water/RINDEX SBndTest 
+
+**/
+
+void test_getProperty_Q(const SBnd& sb)
+{
+    const char* q = SSys::getenvvar("Q", "Water/GROUPVEL"); 
+
+    std::vector<std::string> elem ; 
+    SStr::Split(q, '/' , elem); 
+    assert( elem.size() ==  2); 
+    const char* qname = elem[0].c_str(); 
+    const char* pname = elem[1].c_str(); 
+
+    std::vector<double> out ; 
+    sb.getProperty(out, qname, pname ); 
+
+    std::cout 
+        <<  " Q " << q << std::endl 
+        << NP::DescSlice(out, 5) 
+        ; 
+}
+
+
+void test_getProperty(const SBnd& sb)
+{
+    std::vector<std::string> pnames ; 
+    SBnd::GetMaterialPropNames(pnames); 
+    //for(unsigned i=0 ; i < pnames.size() ; i++) std::cout << pnames[i] << std::endl ; 
+
+    std::vector<std::string> mnames ; 
+    sb.getMaterialNames(mnames);     
+    //for(unsigned i=0 ; i < mnames.size() ; i++) std::cout << mnames[i] << std::endl ; 
+
+    for(unsigned i=0 ; i < mnames.size() ; i++)
+    {
+        const char* mname = mnames[i].c_str(); 
+        for(unsigned j=0 ; j < pnames.size() ; j++)
+        {
+            const char* pname = pnames[j].c_str(); 
+
+            std::vector<double> out ; 
+            sb.getProperty(out, mname, pname);  
+
+            std::cout 
+                <<  " Q " << mname << "/" << pname << std::endl 
+                << NP::DescSlice(out, 5) 
+                ; 
+
+        }
+    }
+}
 
 
 int main(int argc, char** argv)
@@ -181,8 +241,10 @@ int main(int argc, char** argv)
     test_desc(sb);
     test_getMaterialNames(sb);
     test_getPropertyGroup(sb);
-    */
     test_DescMaterialProp();
+    test_getProperty_Q(sb);
+    */
+    test_getProperty(sb);
 
     return 0 ; 
 }
