@@ -134,6 +134,10 @@ struct NP
     template<typename... Args> 
     unsigned stride_(Args ... idxx ) const ; 
 
+    template<typename... Args> 
+    unsigned offset_(Args ... idxx ) const ; 
+
+
     template<typename T, typename... Args> 
     void slice(std::vector<T>& out, Args ... idxx ) const ;  // slice_ellipsis
 
@@ -143,12 +147,18 @@ struct NP
     template<typename T> 
     static std::string DescSlice(const std::vector<T>& out, unsigned edge ); 
 
+    template<typename T> 
+    static std::string DescSliceBrief(const std::vector<T>& out); 
+
+
     static std::string DescIdx(const std::vector<int>& idxx ); 
 
 
-    unsigned index__( const std::vector<int>& idxx) const ; 
     int pickdim__(    const std::vector<int>& idxx) const ; 
+
+    unsigned index__( const std::vector<int>& idxx) const ; 
     unsigned stride__(const std::vector<int>& idxx) const ; 
+    unsigned offset__(const std::vector<int>& idxx) const ; 
 
 
 
@@ -816,6 +826,16 @@ inline unsigned NP::stride_(Args ... idxx_) const
     return stride__(idxx); 
 }
 
+template<typename... Args>
+inline unsigned NP::offset_(Args ... idxx_) const 
+{
+    std::vector<int> idxx = {idxx_...};
+    return offset__(idxx); 
+}
+
+
+
+
 
 /**
 NP::slice "slice_ellipsis"
@@ -842,6 +862,7 @@ template<typename T> inline void NP::slice_(std::vector<T>& out, const std::vect
 
     unsigned start = index__(idxx) ; 
     unsigned stride = stride__(idxx) ; 
+    unsigned offset = offset__(idxx) ; 
     unsigned numval = shape[slicedim] ; 
 
     if(NP::VERBOSE) 
@@ -850,13 +871,14 @@ template<typename T> inline void NP::slice_(std::vector<T>& out, const std::vect
         << " slicedim " << slicedim 
         << " start " << start 
         << " stride " << stride 
+        << " offset " << offset 
         << " numval " << numval 
         << std::endl
         ; 
 
     const T* vv = cvalues<T>(); 
     out.resize(numval); 
-    for(unsigned i=0 ; i < numval ; i++) out[i] = vv[start+i*stride] ; 
+    for(unsigned i=0 ; i < numval ; i++) out[i] = vv[start+i*stride+offset] ; 
 }
 
 
@@ -866,7 +888,7 @@ template<typename T> inline std::string NP::DescSlice(const std::vector<T>& out,
     for(unsigned i=0 ; i < out.size() ; i++ ) 
     {   
          if( i < edge || i > (out.size() - edge) ) 
-            ss << std::setw(4) << i << std::setw(10) << std::setprecision(5) << std::fixed << out[i] << std::endl ; 
+            ss << std::setw(4) << i << std::setw(15) << std::setprecision(5) << std::fixed << out[i] << std::endl ; 
          else if( i == edge )
             ss << "..." << std::endl; 
     }   
@@ -874,6 +896,24 @@ template<typename T> inline std::string NP::DescSlice(const std::vector<T>& out,
     return s ; 
 }
 
+
+template<typename T> inline std::string NP::DescSliceBrief(const std::vector<T>& out )  // static
+{
+    T mn = std::numeric_limits<T>::max();  
+    T mx = std::numeric_limits<T>::min();  
+
+    for(unsigned i=0 ; i < out.size() ; i++ ) 
+    {
+        T v = out[i] ; 
+        if( mn > v ) mn = v ; 
+        if( mx < v ) mx = v ; 
+    }
+    std::stringstream ss ; 
+    ss << " mn " << std::setw(15) << std::setprecision(5) << std::fixed << mn ; 
+    ss << " mx " << std::setw(15) << std::setprecision(5) << std::fixed << mx ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 inline std::string NP::DescIdx(const std::vector<int>& idxx ) // static
 {
@@ -884,6 +924,25 @@ inline std::string NP::DescIdx(const std::vector<int>& idxx ) // static
 }
 
 
+
+
+
+inline int NP::pickdim__(const std::vector<int>& idxx) const
+{
+    int pd = -1 ; 
+    unsigned num = 0 ; 
+    for(unsigned d=0 ; d < shape.size() ; d++)  
+    {
+        int dd = (d < idxx.size() ? idxx[d] : 1) ; 
+        if( dd == -1 )
+        { 
+            if(num == 0) pd = d ; 
+            num += 1 ;  
+        }
+    }
+    assert( num == 0 || num == 1 ); 
+    return pd ; 
+}
 
 
 /**
@@ -910,29 +969,26 @@ inline unsigned NP::index__(const std::vector<int>& idxx) const
 }
 
 
-inline int NP::pickdim__(const std::vector<int>& idxx) const
-{
-    int pd = -1 ; 
-    unsigned num = 0 ; 
-    for(unsigned d=0 ; d < shape.size() ; d++)  
-    {
-        int dd = (d < idxx.size() ? idxx[d] : 1) ; 
-        if( dd == -1 )
-        { 
-            if(num == 0) pd = d ; 
-            num += 1 ;  
-        }
-    }
-    assert( num == 0 || num == 1 ); 
-    return pd ; 
-}
-
 inline unsigned NP::stride__(const std::vector<int>& idxx) const 
 {
     int pd = pickdim__(idxx);  
     assert( pd > -1 ); 
     unsigned stride = dimprod(pd+1) ; 
     return stride ; 
+}
+
+inline unsigned NP::offset__(const std::vector<int>& idxx) const 
+{
+    int pd = pickdim__(idxx);  
+    assert( pd > -1 ); 
+
+    unsigned offset = 0 ; 
+    for(unsigned d=pd+1 ; d < shape.size() ; d++)  
+    {
+        int dd = (d < idxx.size() ? idxx[d] : 1) ; 
+        offset += dd*dimprod(d+1) ;  
+    }
+    return offset ; 
 }
 
 
