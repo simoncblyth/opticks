@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <limits>
 
 #include "SPath.hh"
 #include "SDir.h"
@@ -13,6 +14,7 @@
 #include "PLOG.hh"
 
 #include "G4Material.hh"
+#include "G4SystemOfUnits.hh"
 #include "U4Material.hh"
 #include "U4MaterialPropertyVector.h"
 
@@ -66,11 +68,94 @@ G4Material* U4Material::Vacuum(const char* name)
     return material ;
 }
 
-G4MaterialPropertyVector* U4Material::GetProperty(const G4Material* mat, const char* name)
+G4MaterialPropertyVector* U4Material::GetProperty(const G4Material* mat, const char* pname)
 {
     G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
-    return mpt->GetProperty(name) ; 
+    return mpt->GetProperty(pname) ; 
 }
+
+void U4Material::GetMinMaxValue( double& mn , double& mx, const G4MaterialPropertyVector* prop )
+{
+    size_t len = prop->GetVectorLength() ; 
+    mn = std::numeric_limits<double>::max(); 
+    mx = std::numeric_limits<double>::min(); 
+    for(unsigned i=0 ; i < len ; i++)
+    {
+        double v = (*prop)[i] ; 
+        if( mx < v ) mx = v ; 
+        if( mn > v ) mn = v ; 
+    }
+}
+
+std::string U4Material::DescProperty(const G4MaterialPropertyVector* prop)
+{
+    std::stringstream ss ; 
+    if( prop == nullptr )
+    {
+        ss << " prop null " ; 
+    }
+    else
+    {
+        G4MaterialPropertyVector* prop_ = const_cast<G4MaterialPropertyVector*>(prop); 
+        double mn, mx ; 
+        GetMinMaxValue(mn, mx, prop); 
+        ss 
+           << std::setw(16) << "GetVectorLength" << std::setw(5) << prop->GetVectorLength()
+           << std::setw(5) << "mn" << std::fixed << std::setw(10) << std::setprecision(5) << mn
+           << std::setw(5) << "mx" << std::fixed << std::setw(10) << std::setprecision(5) << mx
+           << std::setw(12) << "GetMaxValue" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMaxValue()
+           << std::setw(12) << "GetMinValue" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMinValue()
+           << std::setw(23) << "GetMinLowEdgeEnergy/eV" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMinLowEdgeEnergy()/eV
+           << std::setw(23) << "GetMaxLowEdgeEnergy/eV" << std::fixed << std::setw(10) << std::setprecision(5) << prop_->GetMaxLowEdgeEnergy()/eV
+           ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string U4Material::DescProperty(const char* mname, const char* pname)
+{
+    const G4MaterialPropertyVector* prop = GetProperty(mname, pname); 
+    std::stringstream ss ; 
+    ss << std::setw(20) << mname << std::setw(20) << pname ; 
+    ss << DescProperty(prop) ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string U4Material::DescProperty(const char* mname)
+{
+    G4Material* mat = G4Material::GetMaterial(mname, false); 
+    std::vector<std::string> pnames ; 
+    GetPropertyNames(pnames, mat);  
+
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < pnames.size() ; i++)  ss << DescProperty(mname, pnames[i].c_str() ) << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string U4Material::DescProperty()
+{
+    std::vector<std::string> mnames ; 
+    GetMaterialNames(mnames);  
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < mnames.size() ; i++)  ss << DescProperty(mnames[i].c_str()) << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+
+
+G4MaterialPropertyVector* U4Material::GetProperty(const char* mname, const char* pname)
+{
+    bool warning = false ; 
+    const G4Material* mat = G4Material::GetMaterial(mname, warning);  
+    return mat ? GetProperty(mat, pname) : nullptr ; 
+}
+
 
 void U4Material::RemoveProperty( const char* key, G4Material* mat )
 {
@@ -542,35 +627,38 @@ void U4Material::LoadBnd()
     std::vector<std::string> pnames ; 
     SBnd::GetMaterialPropNames(pnames); 
 
+    sdomain sdom ;  
+    std::vector<double> dom(sdom.energy_eV, sdom.energy_eV+sdom.length) ; 
+    for(unsigned i=0 ; i < dom.size() ; i++)  dom[i] *= eV ; 
+
+
     for(unsigned m=0 ; m < mnames.size() ; m++) 
     {
         const char* mname = mnames[m].c_str() ; 
-        G4Material* prior = G4Material::GetMaterial(mname);  
+        bool warning = false ; 
+        G4Material* prior = G4Material::GetMaterial(mname, warning);  
         if(prior != nullptr) std::cout << "prior material " << mname << std::endl ; 
 
         G4Material* mat = prior ? prior : MakeWater(mname) ; 
-
         G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable()  ; 
-        if(mpt == nullptr) mpt = new G4MaterialPropertiesTable ; 
-        mat->SetMaterialPropertiesTable(mpt);
+        if(mpt == nullptr) 
+        {
+            mpt = new G4MaterialPropertiesTable ; 
+            mat->SetMaterialPropertiesTable(mpt);
+        }
 
         for(unsigned p=0 ; p < pnames.size() ; p++) 
         {
             const char* pname = pnames[p].c_str() ; 
-
             std::vector<double> val ; 
             sb->getProperty(val, mname, pname); 
-
-            std::vector<double> dom(val) ;  // TODO: get the dom
+            assert( val.size() == dom.size() ); 
 
             bool reverse = true ; 
             AddProperty(mpt, pname, dom, val, reverse ); 
-
         }
     }
 }
-
-
 
 
 int U4Material::GetIndex(const std::vector<G4String>& nn, const char* key ) // static

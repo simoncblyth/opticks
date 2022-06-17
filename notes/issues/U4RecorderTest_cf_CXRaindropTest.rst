@@ -27,7 +27,13 @@ TODO : test with non-normal incidence input photons
   rather than separate generation that only matches to 1e-10 level 
 
 
-WIP: Arrange for same material props used in A and B 
+NEXT : match randoms to avoid history difference
+---------------------------------------------------
+
+* need to brink OpticksRandom from ckm over to U4 and use it from U4Recorder
+
+
+DONE : Arrange for same material props used in A and B 
 ---------------------------------------------------------
 
 * recall I started adding full Ori material dumping in the translation
@@ -44,8 +50,62 @@ WIP: Arrange for same material props used in A and B
   * DONE: SBnd::getPropertyGroup pulls the property group of a material(or surface) 
     with up to eight sets of properties across the wavelength domain
 
-    * TODO: convert an NP property group into a set of material properties within
-      a material.  HMM where to access the domain "officially" without prior knowledge ?
+    * NOPE: convert an NP property group into a set of material properties within a material. 
+    * DID not use property group creating sub-NP arrays : instead added NP::slice allowing direct access to properties 
+      as a function of wavelength from the bnd.npy array without needing to create lots of sub arrays
+ 
+    * DONE : relocated wavelength domain down to constexpr sdomain.h for access from everywhere  
+    * DONE : U4Material::LoadBnd() loading material props from the bnd.npy
+
+
+Confirmed to align times, with A-B time difference down to level of the float precision::
+
+    In [6]: 1e6*(a.photon[:,0,3] - b.photon[:,0,3])                                                                                                                                                           
+    Out[6]: array([     0.06 ,      0.06 ,      0.119,      0.06 ,      0.06 , 461679.1  ,      0.119,      0.   ,     -0.119,      0.119], dtype=float32)
+
+
+    In [2]: a.photon[:,0]                                                                                                                                                                                     
+    Out[2]: 
+    array([[-100.   ,  -31.67 ,   75.357,    0.59 ],
+           [ -22.228, -100.   ,    5.93 ,    0.602],
+           [-100.   ,  -75.341,   17.199,    0.781],
+           [ -59.225,  -17.159,  100.   ,    0.851],
+           [ -53.126,   27.637, -100.   ,    0.948],
+           [  41.563,   54.208,  100.   ,    1.525],
+           [ -27.109,   11.211, -100.   ,    1.107],
+           [  87.27 ,  -70.573,  100.   ,    1.361],
+           [ 100.   ,  -23.237,   68.731,    1.372],
+           [ -67.583,   60.769,  100.   ,    1.51 ]], dtype=float32)
+
+    In [3]: b.photon[:,0]                                                                                                                                                                                     
+    Out[3]: 
+    array([[-100.   ,  -31.67 ,   75.357,    0.59 ],
+           [ -22.228, -100.   ,    5.93 ,    0.602],
+           [-100.   ,  -75.341,   17.199,    0.781],
+           [ -59.225,  -17.159,  100.   ,    0.851],
+           [ -53.126,   27.637, -100.   ,    0.948],
+           [ -41.563,  -54.208, -100.   ,    1.063],
+           [ -27.109,   11.211, -100.   ,    1.107],
+           [  87.27 ,  -70.573,  100.   ,    1.361],
+           [ 100.   ,  -23.237,   68.731,    1.372],
+           [ -67.583,   60.769,  100.   ,    1.51 ]], dtype=float32)
+
+    In [4]: a.photon[:,0] - b.photon[:,0]                                                                                                                                                                     
+    Out[4]: 
+    array([[  0.   ,  -0.   ,   0.   ,   0.   ],
+           [ -0.   ,   0.   ,   0.   ,   0.   ],
+           [  0.   ,   0.   ,  -0.   ,   0.   ],
+           [  0.   ,   0.   ,   0.   ,   0.   ],
+           [  0.   ,   0.   ,   0.   ,   0.   ],
+           [ 83.125, 108.417, 200.   ,   0.462],
+           [  0.   ,   0.   ,   0.   ,   0.   ],
+           [  0.   ,   0.   ,   0.   ,   0.   ],
+           [  0.   ,   0.   ,   0.   ,  -0.   ],
+           [  0.   ,   0.   ,   0.   ,   0.   ]], dtype=float32)
+
+    In [5]:                                                                           
+
+
 
 
 

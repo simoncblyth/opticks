@@ -156,7 +156,10 @@ int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
 
-    U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
+    //U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
+    U4Material::LoadBnd();   // "back" creation of G4 material properties from the Opticks bnd.npy obtained from SSim::Load 
+
+
     U4Material::RemoveProperty( "RINDEX", G4Material::GetMaterial("Rock") ); 
     // removing Rock RINDEX is a trick that makes photons immediately get absorbed on reaching the Rock
     // somewhat artifically that gives SURFACE_ABSORB as  U4StepPoint::BoundaryFlag(NoRINDEX) kludges to give SURFACE_ABSORB 

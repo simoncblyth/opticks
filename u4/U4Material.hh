@@ -23,6 +23,15 @@ struct U4_API U4Material
     static G4Material* Get_(const char* name);
     static G4Material* Vacuum(const char* name);
     static G4MaterialPropertyVector* GetProperty(const G4Material* mat, const char* name); 
+    static G4MaterialPropertyVector* GetProperty(const char* mname, const char* pname); 
+
+    static void GetMinMaxValue( double& mn , double& mx, const G4MaterialPropertyVector* prop ); 
+    static std::string DescProperty(const G4MaterialPropertyVector* prop); 
+    static std::string DescProperty( const char* mname, const char* pname);  
+    static std::string DescProperty(const char* mname); 
+    static std::string DescProperty(); 
+
+
     static void RemoveProperty( const char* key, G4Material* mat ); 
 
     static void GetPropertyNames( std::vector<std::string>& names, const G4Material* mat ) ; 

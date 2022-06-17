@@ -23,6 +23,7 @@ set(TEST_SOURCES
    U4MaterialPropertyVectorTest.cc
    U4PhotonInfoTest.cc
    U4GDMLTest.cc
+   U4PhysicalConstantsTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

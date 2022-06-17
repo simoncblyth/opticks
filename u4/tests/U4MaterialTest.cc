@@ -160,6 +160,12 @@ void test_LoadOri_remove_material_property()
 void test_LoadBnd()
 {
     U4Material::LoadBnd(); 
+
+    //std::cout << U4Material::DescProperty("Water", "GROUPVEL") << std::endl ;  
+    //std::cout << U4Material::DescProperty("Air", "GROUPVEL") << std::endl ;  
+
+    //std::cout << U4Material::DescProperty("Water") << std::endl ; 
+    std::cout << U4Material::DescProperty() << std::endl ; 
 }
 
 
