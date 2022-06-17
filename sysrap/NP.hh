@@ -28,6 +28,7 @@ Just copy into your project and ``#include "NP.hh"`` to use.
 
 struct NP
 {
+    static constexpr const char* EXT = ".npy" ; 
     static const bool VERBOSE = false ; 
 
     union UIF32
@@ -82,6 +83,7 @@ struct NP
 
     // load array asis 
     static NP* Load(const char* path); 
+    static NP* Load_(const char* path); 
     static NP* Load(const char* dir, const char* name); 
     static NP* Load(const char* dir, const char* reldir, const char* name); 
 
@@ -3229,6 +3231,30 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate)  // stat
 }
 
 inline NP* NP::Load(const char* path)
+{
+    bool npy_ext = U::EndsWith(path, EXT) ; 
+    NP* a = nullptr ; 
+    if(npy_ext)
+    {
+        a  = NP::Load_(path);
+    }  
+    else
+    {
+        std::vector<std::string> names ;
+        U::DirList(names, path, EXT);
+        std::cout
+            << "NP::Load"
+            << " path " << path
+            << " contains names.size " << names.size()
+            << " EXT " << EXT
+            << std::endl
+            ;
+        a = NP::Concatenate(path, names);
+    }
+    return a ;
+}
+
+inline NP* NP::Load_(const char* path)
 {
     NP* a = new NP() ; 
     int rc = a->load(path) ; 

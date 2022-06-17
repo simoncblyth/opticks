@@ -22,7 +22,7 @@ struct OpticksUtil
     static void qvals( std::vector<float>& vals, const char* key, const char* fallback, int num_expect ); 
 
     static NP* LoadArray(const char* kdpath);
-    static NP* LoadConcat(const char* concat_path);  // formerly LoadRandom
+    // static NP* LoadConcat(const char* concat_path);  // formerly LoadRandom , FUNCTIONALITY MOVED TO NP::Load
 
     static G4MaterialPropertyVector* MakeProperty(const NP* a);
     static G4MaterialPropertiesTable*  MakeMaterialPropertiesTable( 

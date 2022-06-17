@@ -151,11 +151,9 @@ void OpticksUtil::ListDir(std::vector<std::string>& names,  const char* path, co
 }
 
 
-
-
 /**
-OpticksUtil::LoadConcat
--------------------------
+Functionality of former OpticksUtil::LoadConcat now provided by NP::Load
+----------------------------------------------------------------------------
 
 If *concat_path* ends with ".npy" simply loads it into seq array
 otherwise *concat_path* is assumed to be a directory containing multiple ".npy"
@@ -163,39 +161,5 @@ to be concatenated.  The names of the paths in the directory are obtained using
 OpticksUtil::ListDir 
 
 **/
-
-NP* OpticksUtil::LoadConcat(const char* concat_path)
-{
-    NP* seq = nullptr ; 
-    if(concat_path && ExistsPath(concat_path))
-    {   
-        if(strlen(concat_path) > 4 && strcmp(concat_path+strlen(concat_path)-4, ".npy") == 0)
-        {
-            seq = NP::Load(concat_path);  
-        }   
-        else
-        {
-            std::vector<std::string> names ; 
-            ListDir(names, concat_path, ".npy");   
-            std::cout 
-                << "OpticksUtil::LoadRandom" 
-                << " directory " << concat_path 
-                << " contains names.size " << names.size() 
-                << " .npy" 
-                << std::endl
-                ;  
-            seq = NP::Concatenate(concat_path, names); 
-        }
-    }
-    else
-    {
-        std::cout 
-            << "OpticksUtil::LoadRandom"
-            << " non-existing concat_path " << ( concat_path ? concat_path : "-" ) 
-            << std::endl
-            ;   
-    }
-    return seq ; 
-}
 
 

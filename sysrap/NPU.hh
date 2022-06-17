@@ -379,6 +379,9 @@ struct U
 
     static int MakeDirs( const char* dirpath, int mode=0 ); 
     static int MakeDirsForFile( const char* filepath, int mode=0); 
+    static void DirList(std::vector<std::string>& names, const char* path, const char* ext); 
+    static void Trim(std::vector<std::string>& names, const char* ext); 
+    static std::string Desc(const std::vector<std::string>& names); 
 
 };
 
@@ -450,6 +453,7 @@ inline std::string U::FormName( const char* prefix, const char* body, const char
 #include <cstdio> 
 #include <sys/stat.h> 
 #include <errno.h> 
+#include "dirent.h"
 
 inline int U::MakeDirs( const char* dirpath_, int mode_ )
 {
@@ -480,6 +484,52 @@ inline int U::MakeDirsForFile( const char* filepath, int mode_ )
     return MakeDirs(dirpath.c_str(), mode_ );  
 }
 
+
+inline void U::DirList(std::vector<std::string>& names, const char* path, const char* ext)
+{
+    DIR* dir = opendir(path) ;
+    if(!dir) std::cout << "U::DirList FAILED TO OPEN DIR " << ( path ? path : "-" ) << std::endl ; 
+    if(!dir) return ; 
+    struct dirent* entry ;
+    while ((entry = readdir(dir)) != nullptr) 
+    {   
+        const char* name = entry->d_name ; 
+        if(strlen(name) > strlen(ext) && strcmp(name + strlen(name) - strlen(ext), ext)==0)
+        {   
+            names.push_back(name); 
+        }   
+    }   
+    closedir (dir);
+    std::sort( names.begin(), names.end() );  
+
+    if(names.size() == 0 ) std::cout 
+        << "U::DirList" 
+        << " path " << ( path ? path : "-" ) 
+        << " ext " << ( ext ? ext : "-" ) 
+        << " NO ENTRIES FOUND "
+        << std::endl
+        ;   
+}
+
+inline void U::Trim(std::vector<std::string>& names, const char* ext)
+{
+    for(int i=0 ; i < int(names.size()) ; i++)
+    {   
+        std::string& name = names[i]; 
+        const char* n = name.c_str();
+        bool ends_with_ext =  strlen(n) > strlen(ext)  && strncmp(n + strlen(n) - strlen(ext), ext, strlen(ext) ) == 0 ;
+        assert( ends_with_ext );
+        name = name.substr(0, strlen(n) - strlen(ext));
+    }
+}
+
+inline std::string U::Desc(const std::vector<std::string>& names)
+{
+    std::stringstream ss ;
+    for(unsigned i=0 ; i < names.size() ; i++) ss << "[" << names[i] << "]" << std::endl ;
+    std::string s = ss.str();
+    return s ;
+}
 
 
 

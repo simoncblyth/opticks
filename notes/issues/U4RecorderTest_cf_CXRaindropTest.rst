@@ -8,16 +8,14 @@ Doing simple A-B comparisons with::
     cx
     ./cxs_raindrop.sh       # on workstation 
 
-    u4
-    cd tests
-    ./U4RecorderTest.sh     # on laptop
-
     cx 
     ./cxs_raindrop.sh grab  # on laptop
-    
-    cd ~/opticks/u4/tests 
-    ./U4RecorderTest_ab.sh  # on laptop
 
+    u4t
+    ./U4RecorderTest.sh     # on laptop
+
+    u4t
+    ./U4RecorderTest_ab.sh  # on laptop
 
 
 TODO : test with non-normal incidence input photons 
@@ -27,10 +25,21 @@ TODO : test with non-normal incidence input photons
   rather than separate generation that only matches to 1e-10 level 
 
 
-NEXT : match randoms to avoid history difference
+WIP : match randoms to avoid history difference
 ---------------------------------------------------
 
-* need to brink OpticksRandom from ckm over to U4 and use it from U4Recorder
+* bringing OpticksRandom from cks over to U4Random and use it from U4Recorder
+
+::
+
+    epsilon:opticks blyth$ find . -name OpticksRandom.*
+    ./examples/Geant4/CerenkovStandalone/OpticksRandom.cc
+    ./examples/Geant4/CerenkovStandalone/OpticksRandom.hh
+
+* DONE : repositioned OpticksUtil::LoadConcat directory of .npy into NP::Load 
+* DONE : u4/U4Random 
+* TODO : move the directory for precooked randoms to somewhere not in /tmp so do not loose them so often 
+* TODO : find way to integrate U4Random with U4RecorderTest 
 
 
 DONE : Arrange for same material props used in A and B 
@@ -39,7 +48,8 @@ DONE : Arrange for same material props used in A and B
 * recall I started adding full Ori material dumping in the translation
   but did not yet use that instead using some other CFBASE of material props
 
-  * this approach could only ever work partially due to different domains etc.. 
+  * saving the Ori can be done simply by setting an envvar during the translation : 
+    BUT have not pursued as this approach could only ever work partially due to different domains etc.. 
 
 * "back conversion" from Opticks bnd arrays to give Geant4 material props
   while somewhat contrived is the surest way to use as close as possible the 

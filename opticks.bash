@@ -2498,7 +2498,9 @@ c(){  cd $(opticks-home)/CSG ; pwd ; }
 cg(){ cd $(opticks-home)/CSG_GGeo ; pwd ; }
 gc(){ cd $(opticks-home)/GeoChain ; pwd ; }
 cx(){ cd $(opticks-home)/CSGOptiX ; pwd ; }
+cxt(){ cd $(opticks-home)/CSGOptiX/tests ; pwd ; }
 u4(){ cd $(opticks-home)/u4 ; pwd ; }
+u4t(){ cd $(opticks-home)/u4/tests ; pwd ; }
 gx(){ cd $(opticks-home)/g4cx ; pwd ; }
 gd(){ cd $(opticks-home)/gdxml ; pwd ; }
 

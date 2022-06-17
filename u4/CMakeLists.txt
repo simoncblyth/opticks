@@ -31,6 +31,7 @@ set(SOURCES
     U4Recorder.cc
     U4StepPoint.cc
     InstrumentedG4OpBoundaryProcess.cc
+    U4Random.cc
 ) 
 
 set(HEADERS
@@ -48,7 +49,7 @@ set(HEADERS
     U4OpBoundaryProcess.h
     U4StepPoint.hh
     InstrumentedG4OpBoundaryProcess.hh
-
+    U4Random.hh
 )
 
 
