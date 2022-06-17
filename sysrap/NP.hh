@@ -51,6 +51,7 @@ struct NP
     
     template<typename T, typename... Args> static NP*  Make(const T* src, Args ... shape );  // Make_ellipsis
 
+
     template<typename T> static NP*  Make( T d0, T v0, T d1, T v1 ); 
     template<typename T> static T To( const char* a ); 
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
@@ -124,6 +125,33 @@ struct NP
 
     unsigned  index(  int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0) const ; 
     unsigned  index0( int i,  int j=-1,  int k=-1,  int l=-1, int m=-1, int o=-1) const ; 
+
+    unsigned dimprod(unsigned q) const ;    // product of dimensions to the right of dimension q
+
+    template<typename... Args> 
+    unsigned index_(Args ... idxx ) const ; 
+
+    template<typename... Args> 
+    unsigned stride_(Args ... idxx ) const ; 
+
+    template<typename T, typename... Args> 
+    void slice(std::vector<T>& out, Args ... idxx ) const ;  // slice_ellipsis
+
+    template<typename T> 
+    void slice_(std::vector<T>& out, const std::vector<int>& idxx ) const ; 
+
+    template<typename T> 
+    static std::string DescSlice(const std::vector<T>& out, unsigned edge ); 
+
+    static std::string DescIdx(const std::vector<int>& idxx ); 
+
+
+    unsigned index__( const std::vector<int>& idxx) const ; 
+    int pickdim__(    const std::vector<int>& idxx) const ; 
+    unsigned stride__(const std::vector<int>& idxx) const ; 
+
+
+
     unsigned  itemsize_(int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1) const ; 
     void      itembytes_(const char** start,  unsigned& num_bytes, int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1 ) const  ; 
 
@@ -690,6 +718,15 @@ inline void NP::change_shape(int ni, int nj, int nk, int nl, int nm, int no)
 template<typename T> inline const T*  NP::cvalues() const { return (T*)data.data() ;  } 
 template<typename T> inline T*        NP::values() { return (T*)data.data() ;  } 
 
+/**
+NP::index
+-----------
+
+Provides the flat value index from a set of integer dimension indices. 
+Negative dimension indices are interpreted to count from the back, ie -1 is the last element 
+in a dimension. 
+
+**/
 
 inline unsigned NP::index( int i,  int j,  int k,  int l, int m, int o ) const 
 {
@@ -714,11 +751,15 @@ inline unsigned NP::index( int i,  int j,  int k,  int l, int m, int o ) const
 /**
 NP::index0 : Provides element offset 
 ---------------------------------------
+
+Same as NP::index but -ve "missing" indices are treated as if they were zero. 
+
 **/
 
 inline unsigned NP::index0( int i,  int j,  int k,  int l, int m, int o) const 
 {
     unsigned nd = shape.size() ; 
+
     unsigned ni = nd > 0 ? shape[0] : 1 ; 
     unsigned nj = nd > 1 ? shape[1] : 1 ; 
     unsigned nk = nd > 2 ? shape[2] : 1 ; 
@@ -740,8 +781,164 @@ inline unsigned NP::index0( int i,  int j,  int k,  int l, int m, int o) const
     assert( mm < nm ); 
     assert( oo < no ); 
 
+    /* 
+    std::cout << " ii " << ii << " nj*nk*nl*nm*no " << std::setw(10) << nj*nk*nl*nm*no << " ii*nj*nk*nl*nm*no " << ii*nj*nk*nl*nm*no << std::endl ;
+    std::cout << " jj " << jj << "    nk*nl*nm*no " << std::setw(10) <<    nk*nl*nm*no << " jj*   nk*nl*nm*no " << jj*nk*nl*nm*no    << std::endl ;
+    std::cout << " kk " << kk << "       nl*nm*no " << std::setw(10) <<       nl*nm*no << " kk*      nl*nm*no " << kk*nl*nm*no       << std::endl ;
+    std::cout << " ll " << ll << "          nm*no " << std::setw(10) <<          nm*no << " ll*         nm*no " << ll*nm*no          << std::endl ;
+    std::cout << " mm " << mm << "             no " << std::setw(10) <<             no << " mm*            no " << mm*no             << std::endl ;
+    std::cout << " oo " << oo << "              1 " << std::setw(10) <<              1 << " oo*             1 " << oo                << std::endl ;   
+    */
+
     return  ii*nj*nk*nl*nm*no + jj*nk*nl*nm*no + kk*nl*nm*no + ll*nm*no + mm*no + oo ;
+    //      i                   j                k             l          m       o 
 }
+
+inline unsigned NP::dimprod(unsigned q) const   // product of dimensions starting from dimension q
+{
+    unsigned dim = 1 ; 
+    for(unsigned d=q ; d < shape.size() ; d++) dim *= shape[d] ; 
+    return dim ;   
+} 
+
+
+template<typename... Args>
+inline unsigned NP::index_(Args ... idxx_) const 
+{
+    std::vector<int> idxx = {idxx_...};
+    return index__(idxx); 
+}
+
+template<typename... Args>
+inline unsigned NP::stride_(Args ... idxx_) const 
+{
+    std::vector<int> idxx = {idxx_...};
+    return stride__(idxx); 
+}
+
+
+/**
+NP::slice "slice_ellipsis"
+---------------------------
+
+**/
+
+template<typename T, typename... Args> void NP::slice(std::vector<T>& out, Args ... idxx_ ) const 
+{
+   std::vector<int> idxx = {idxx_...};
+   slice_(out, idxx); 
+}
+
+
+
+template<typename T> void NP::slice_(std::vector<T>& out, const std::vector<int>& idxx ) const 
+{
+    bool all_dim =  idxx.size() == shape.size() ; 
+    if(!all_dim) std::cerr << " idxx.size " << idxx.size() << " shape.size " << shape.size() << " all_dim " << all_dim << std::endl ; 
+    assert(all_dim) ; 
+
+    int slicedim = pickdim__(idxx); 
+    assert( slicedim > -1 ); 
+
+    unsigned start = index__(idxx) ; 
+    unsigned stride = stride__(idxx) ; 
+    unsigned numval = shape[slicedim] ; 
+
+    if(NP::VERBOSE) 
+    std::cout 
+        << " idxx " << DescIdx(idxx)
+        << " slicedim " << slicedim 
+        << " start " << start 
+        << " stride " << stride 
+        << " numval " << numval 
+        << std::endl
+        ; 
+
+    const T* vv = cvalues<T>(); 
+    out.resize(numval); 
+    for(unsigned i=0 ; i < numval ; i++) out[i] = vv[start+i*stride] ; 
+}
+
+
+template<typename T> std::string NP::DescSlice(const std::vector<T>& out, unsigned edge )  // static
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < out.size() ; i++ ) 
+    {   
+         if( i < edge || i > (out.size() - edge) ) 
+            ss << std::setw(4) << i << std::setw(10) << std::setprecision(5) << std::fixed << out[i] << std::endl ; 
+         else if( i == edge )
+            ss << "..." << std::endl; 
+    }   
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+std::string NP::DescIdx(const std::vector<int>& idxx ) // static
+{
+    std::stringstream ss ;  
+    for(int d=0 ; d < int(idxx.size()) ; d++) ss << idxx[d] << " " ; 
+    std::string s = ss.str(); 
+    return s ;
+}
+
+
+
+
+/**
+NP::index__
+-------------
+
+Flat value index ontained from array indices, a -ve index terminates 
+the summation over dimensions so only the dimensions to the left of the
+-1 are summed.  This is used to from NP::slice to give the start index
+of the slice where the slice dimension is marked by the -1.  
+
+**/
+
+inline unsigned NP::index__(const std::vector<int>& idxx) const 
+{
+    unsigned idx = 0 ; 
+    for(unsigned d=0 ; d < shape.size() ; d++)  
+    {
+        int dd = (d < idxx.size() ? idxx[d] : 1) ; 
+        if( dd == -1 ) break ; 
+        idx += dd*dimprod(d+1) ;  
+    }
+    return idx ; 
+}
+
+
+inline int NP::pickdim__(const std::vector<int>& idxx) const
+{
+    int pd = -1 ; 
+    unsigned num = 0 ; 
+    for(unsigned d=0 ; d < shape.size() ; d++)  
+    {
+        int dd = (d < idxx.size() ? idxx[d] : 1) ; 
+        if( dd == -1 )
+        { 
+            if(num == 0) pd = d ; 
+            num += 1 ;  
+        }
+    }
+    assert( num == 0 || num == 1 ); 
+    return pd ; 
+}
+
+inline unsigned NP::stride__(const std::vector<int>& idxx) const 
+{
+    int pd = pickdim__(idxx);  
+    assert( pd > -1 ); 
+    unsigned stride = dimprod(pd+1) ; 
+    return stride ; 
+}
+
+
+
+
+
 
 inline unsigned NP::itemsize_(int i, int j, int k, int l, int m, int o) const
 {
@@ -3566,6 +3763,8 @@ template<typename T, typename... Args> NP* NP::Make(const T* src, Args ... args 
     a->read2(src);  
     return a ; 
 }
+
+
 
 
 template <typename T> void NP::Write(const char* dir, const char* reldir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
