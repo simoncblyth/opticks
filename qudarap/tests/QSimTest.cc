@@ -54,6 +54,7 @@ struct QSimTest
     QSimTest(unsigned type, unsigned num ); 
     void main(); 
 
+    static const bool rng_sequence_PRECOOKED ; 
     void rng_sequence(unsigned ni, int ni_tranche_size); 
 
     void boundary_lookup_all();
@@ -113,14 +114,30 @@ QSimTest::rng_sequence
 Default ni and ni_tranche_size_ are 1M and 100k which corresponds to 10 tranche launches
 to generate the 256M randoms.  
 
+Default dir is $TMP/QSimTest/rng_sequence leading to npy paths like::
+
+    /tmp/blyth/opticks/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy
+
 **/
+
+
+const bool QSimTest::rng_sequence_PRECOOKED = SSys::getenvbool("QSimTest__rng_sequence_PRECOOKED") ; 
 
 void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
 {
     unsigned nj = 16 ; 
     unsigned nk = 16 ; 
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
-    qs.rng_sequence<float>(dir, ni, nj, nk, ni_tranche_size ); 
+
+    const char* udir = rng_sequence_PRECOOKED ? SPath::Resolve("$PrecookedDir/QSimTest/rng_sequence", DIRPATH) : dir ; 
+    if( rng_sequence_PRECOOKED ) 
+        LOG(error) 
+            << " QSimTest__rng_sequence_PRECOOKED envvar triggers directory override " << std::endl 
+            << " default  [" << dir << "] " << std::endl 
+            << " override [" << udir << "]"  
+            ; 
+
+    qs.rng_sequence<float>(udir, ni, nj, nk, ni_tranche_size ); 
 }
 
 

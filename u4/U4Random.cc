@@ -7,18 +7,41 @@
 #include "G4Types.hh"
 #include "U4Random.hh"
 #include "NP.hh"
+#include "SPath.hh"
+#include "SSys.hh"
+#include "PLOG.hh"
+
+const plog::Severity U4Random::LEVEL = PLOG::EnvLevel("U4Random", "DEBUG") ; 
 
 U4Random* U4Random::INSTANCE = nullptr ; 
 U4Random* U4Random::Get(){ return INSTANCE ; }
 
 const char* U4Random::NAME = "U4Random" ;  
-const char* U4Random::OPTICKS_RANDOM_SEQPATH = "OPTICKS_RANDOM_SEQPATH" ; 
 
 bool U4Random::Enabled()
 {
     const char* seq = getenv(OPTICKS_RANDOM_SEQPATH) ; 
     return seq != nullptr ; 
 }
+
+void U4Random::SetSequenceIndex(int index)
+{
+    if(U4Random::Get() == nullptr) return ; 
+
+    U4Random* rnd = U4Random::Get();  
+    if(rnd->isReady() == false) 
+    {
+        LOG(LEVEL) << " index " << index << " NOT READY " ; 
+        return ; 
+    }
+    rnd->setSequenceIndex(index);  
+}
+
+
+
+const char* U4Random::SeqPath(){ return SSys::getenvvar(OPTICKS_RANDOM_SEQPATH, DEFAULT_SEQPATH ) ; } // static  
+
+
 
 /**
 U4Random::U4Random
@@ -39,9 +62,11 @@ are concatenated using NP::Load/NP::Concatenate.
 
 **/
 
+
+
 U4Random::U4Random(const char* seq, const char* seqmask)
     :
-    m_seqpath( seq ? seq : getenv(OPTICKS_RANDOM_SEQPATH) ), 
+    m_seqpath(SPath::Resolve( seq ? seq : SeqPath(), NOOP)), 
     m_seq(m_seqpath ? NP::Load(m_seqpath) : nullptr),
     m_seq_values(m_seq ? m_seq->cvalues<float>() : nullptr ),
     m_seq_ni(m_seq ? m_seq->shape[0] : 0 ),                        // num items
@@ -57,22 +82,39 @@ U4Random::U4Random(const char* seq, const char* seqmask)
     m_seqmask_ni( m_seqmask ? m_seqmask->shape[0] : 0 ),
     m_seqmask_values(m_seqmask ? m_seqmask->cvalues<size_t>() : nullptr),
     m_flat_debug(false),
-    m_flat_prior(0.)
+    m_flat_prior(0.),
+    m_ready(false)
+{
+    init(); 
+}
+
+
+void U4Random::init()
 {
     INSTANCE = this ; 
-    bool has_seq = m_seq != nullptr ; 
-    if(has_seq == false)
-        std::cerr 
-            << "U4Random::U4Random"
-            << " FATAL : FAILED TO LOAD SINGLE .npy OR DIRECTORY OF .npy FROM " 
-            << " m_seqpath " << ( m_seqpath ? m_seqpath : "-" )  
-            << " ekey OPTICKS_RANDOM_SEQPATH "
-            << " generate the precooked randoms with cd ~/opticks/qudarap/tests ; ./rng_sequence.sh run "
+    m_ready = m_seq != nullptr ; 
+    if(m_ready == false) 
+        LOG(error)
+            << desc()
+            << std::endl 
+            << NOTES
             << std::endl 
             ;
- 
-    std::cout << detail() ; 
-    assert(has_seq); 
+}
+
+bool U4Random::isReady() const { return m_ready ; }
+
+std::string U4Random::desc() const
+{
+    std::stringstream ss ; 
+    ss 
+         << "U4Random::desc"
+         << " U4Random::isReady() " << ( m_ready ? "YES" : "NO" )
+         << " m_seqpath " << ( m_seqpath ? m_seqpath : "-" )
+         << " m_seq_ni " << m_seq_ni 
+         << " m_seq_nv " << m_seq_nv 
+         ; 
+    return ss.str();
 }
 
 std::string U4Random::detail() const 
@@ -178,14 +220,6 @@ void U4Random::setSequenceIndex(int index_)
         m_seq_index = idx ; 
         enable();
     }   
-}
-
-
-std::string U4Random::desc() const
-{
-    std::stringstream ss ; 
-    ss << " m_seq_ni " << m_seq_ni << " m_seq_nv " << m_seq_nv ; 
-    return ss.str();
 }
 
 

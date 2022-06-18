@@ -37,6 +37,7 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 
 
 export SEvt=INFO
+export U4Random=INFO
 
 
 

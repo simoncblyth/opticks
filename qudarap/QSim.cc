@@ -426,6 +426,10 @@ As separate CPU and GPU memory allocations, launches and output files are made
 for each tranche the total generated size may exceed the total available memory of the GPU.  
 Splitting the output files also eases management by avoiding huge files. 
 
+Default *dir* is $TMP/QSimTest/rng_sequence leading to npy paths like::
+
+    /tmp/blyth/opticks/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy
+
 **/
 
 template <typename T>
@@ -472,9 +476,7 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
 
         rng_sequence( values, ni_tranche_size, nv, id_offset );  
          
-        int create_dirs = 1 ;  // 1:filepath
-        const char* path = SPath::Resolve(dir, reldir.c_str(), name.c_str(), create_dirs ); 
-
+        const char* path = SPath::Resolve(dir, reldir.c_str(), name.c_str(), FILEPATH ); 
         seq->save(path); 
     }
 }

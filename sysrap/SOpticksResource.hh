@@ -13,11 +13,13 @@ struct SYSRAP_API SOpticksResource
     static const char* GEOCACHE_PREFIX_KEY  ; 
     static const char* RNGCACHE_PREFIX_KEY  ; 
     static const char* USERCACHE_PREFIX_KEY  ; 
+    static const char* PRECOOKED_PREFIX_KEY  ; 
 
     static const char* ResolveUserPrefix(const char* envkey, bool envset); 
     static const char* ResolveGeoCachePrefix();
     static const char* ResolveRngCachePrefix();
     static const char* ResolveUserCachePrefix();
+    static const char* ResolvePrecookedPrefix();
 
     static const char* GeocacheDir();
     static const char* GeocacheScriptPath(); 
@@ -25,6 +27,7 @@ struct SYSRAP_API SOpticksResource
     static const char* RNGCacheDir();
     static const char* RNGDir();
     static const char* RuncacheDir();
+    static const char* PrecookedDir();
 
     // setkey:true means OPTICKS_KEY envvar gets used 
     static const char* IDPath(bool setkey=true);

@@ -21,6 +21,7 @@
 #include "U4Material.hh"
 #include "U4VolumeMaker.hh"
 #include "U4Recorder.hh"
+#include "U4Random.hh"
 #include "U4Physics.hh"
 #include "U4VPrimaryGenerator.h"
 
@@ -158,6 +159,9 @@ int main(int argc, char** argv)
 
     //U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
     U4Material::LoadBnd();   // "back" creation of G4 material properties from the Opticks bnd.npy obtained from SSim::Load 
+
+    U4Random rnd ; 
+    LOG(info) << rnd.desc() ; 
 
 
     U4Material::RemoveProperty( "RINDEX", G4Material::GetMaterial("Rock") ); 

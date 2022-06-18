@@ -25,6 +25,195 @@ TODO : test with non-normal incidence input photons
   rather than separate generation that only matches to 1e-10 level 
 
 
+Look for more appropriate random alignment examples
+----------------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ opticks-fl CLHEP::HepRandomEngine
+    ./tools/evaluate.py
+    ./cfg4/CAlignEngine.cc
+    ./cfg4/tests/G4UniformRandTest.cc
+    ./cfg4/tests/CMixMaxRngTest.cc
+    ./cfg4/CAlignEngine.hh
+    ./cfg4/CRandomEngine.hh
+    ./u4/U4Random.cc
+    ./u4/U4Random.hh
+    ./examples/Geant4/CerenkovStandalone/G4Cerenkov_modifiedTest.cc
+    ./examples/Geant4/CerenkovStandalone/OpticksRandom.cc
+    ./examples/Geant4/CerenkovStandalone/OpticksRandom.hh
+    ./examples/UseCLHEP/UseCLHEP.cc
+    epsilon:opticks blyth$ 
+
+
+::
+
+     29 /**
+     30 CAlignEngine
+     31 ==============
+     32 
+     33 * TODO: move all use of CAlignEngine to CRandomEngine ?
+     34   which uses dynamuic TCURAND approach
+     35 
+
+::
+
+    epsilon:opticks blyth$ opticks-fl CAlignEngine
+    ./cfg4/CAlignEngine.cc
+    ./cfg4/CMakeLists.txt
+    ./cfg4/tests/CMakeLists.txt
+    ./cfg4/tests/CAlignEngineTest.cc
+    ./cfg4/tests/CCerenkovGeneratorTest.cc
+    ./cfg4/CAlignEngine.hh
+    ./cfg4/CCerenkovGenerator.hh
+    ./cfg4/CCerenkovGenerator.cc
+    ./bin/ckm.bash
+    ./g4ok/G4Opticks.cc
+    ./u4/U4Random.hh
+    ./examples/Geant4/CerenkovStandalone/OpticksRandom.hh
+    epsilon:opticks blyth$ 
+
+::
+
+    1082 void G4Opticks::setAlignIndex(int align_idx) const
+    1083 {
+    1084     CAlignEngine::SetSequenceIndex(align_idx);
+    1085 }
+
+    epsilon:g4ok blyth$ opticks-fl setAlignIndex
+    ./cfg4/CAlignEngine.hh
+    ./g4ok/G4Opticks.cc
+    ./g4ok/G4Opticks.hh
+    ./u4/tests/DsG4Scintillation.cc
+    ./examples/Geant4/ScintGenStandalone/DsG4Scintillation.cc
+    ./examples/Geant4/CerenkovMinimal/src/Ctx.cc
+    ./examples/Geant4/CerenkovMinimal/src/L4Cerenkov.cc
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ 
+
+
+
+Ahha this is the way to go::
+
+    152 void Ctx::setTrackOptical(const G4Track* track)
+    153 {
+    154     const_cast<G4Track*>(track)->UseGivenVelocity(true);
+    155 
+    156 #ifdef WITH_OPTICKS
+    157     CTrackInfo* tkinfo=dynamic_cast<CTrackInfo*>(track->GetUserInformation());
+    158     assert(tkinfo) ;
+    159     _record_id = tkinfo->trk.photon_id() ;
+    160     char tk_gentype = tkinfo->trk.gentype() ;
+    161     LOG(info) << " _record_id " << _record_id << " tk_gentype " << tk_gentype ;
+    162     G4Opticks::Get()->setAlignIndex(_record_id);
+    163 #endif
+    164 }
+    165 
+    166 void Ctx::postTrackOptical(const G4Track* track)
+    167 {
+    168 #ifdef WITH_OPTICKS
+    169     CTrackInfo* tkinfo=dynamic_cast<CTrackInfo*>(track->GetUserInformation());
+    170     assert(tkinfo) ;
+    171     LOG(info) << " _record_id " << _record_id << " tk_gentype " << tkinfo->trk.gentype() ;
+    172     assert( _record_id == int(tkinfo->trk.photon_id()) ) ;
+    173     G4Opticks::Get()->setAlignIndex(-1);
+    174 #endif
+    175 }
+
+
+
+
+
+
+::
+
+    epsilon:opticks blyth$ opticks-fl CRandomEngine
+    ./ana/evt.py
+    ./ana/g4lldb_old.py
+    ./ana/profile_.py
+    ./ana/g4lldb.py
+    ./ana/ucf.py
+    ./tools/autobreakpoint.py
+    ./tools/evaluate.py
+    ./cfg4/CMakeLists.txt
+    ./cfg4/CManager.hh
+    ./cfg4/CManager.cc
+    ./cfg4/tests/CMakeLists.txt
+    ./cfg4/tests/CAlignEngineTest.cc
+    ./cfg4/tests/CRandomEngineTest.sh
+    ./cfg4/tests/CRandomEngineTest.cc
+    ./cfg4/CAlignEngine.hh
+    ./cfg4/CRandomEngine.cc
+    ./cfg4/DsG4OpBoundaryProcess.h
+    ./cfg4/CG4.hh
+    ./cfg4/CG4.cc
+    ./cfg4/CRandomEngine.hh
+    ./optickscore/OpticksCfg.cc
+    ./boostrap/BLog.cc
+    ./boostrap/BLocSeq.cc
+    ./boostrap/BLog.hh
+    epsilon:opticks blyth$ 
+
+
+
+
+NOPE : Review how cks ./examples/Geant4/CerenkovStandalone used OpticksRandom and do the same with U4RecorderTest
+-------------------------------------------------------------------------------------------------------------------
+
+NOPE : cks is actually not an appropriate example, 
+
+* cks is doing random alignment within the Cerenkov generation loop : so its aligning generation
+
+  * actually its even more specific that that : cks is just aligning randoms of the energy rejection sampling 
+
+* U4RecorderTest is aiming to use input photons so can restrict to aligning the propagation :
+  so get seqhis histories to match up 
+
+
+G4Cerenkov_modifiedTest.cc::
+
+     57 template <typename T>
+     58 G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, long seed_ )
+     59     :
+     60     a(OpticksUtil::LoadArray(rindex_path)),
+     61     rindex( a ? OpticksUtil::MakeProperty(a) : nullptr),
+     62     material( rindex ? OpticksUtil::MakeMaterial(rindex) : nullptr),
+     63     proc(new G4Cerenkov_modified()),
+     64     par(new OpticksDebug<T>(8,"Params")),
+     65     gen(new OpticksDebug<T>(8,"GenWavelength")),
+     66     rnd(OpticksRandom::Enabled() ? new OpticksRandom : nullptr ), // enabled by envvar being defined : OPTICKS_RANDOM_SEQPATH
+     67     seed(seed_)
+     68 {
+     ...
+     84     proc->rnd = rnd ;
+        
+G4Cerenkov_modified.cc::
+
+    177 G4VParticleChange* G4Cerenkov_modified::PostStepDoIt
+
+     354   for (G4int i = 0; i < fNumPhotons; i++) {
+     ...
+     367 #ifdef INSTRUMENTED
+     372       int seqidx = -1 ;
+     373       if(rnd)
+     374       {
+     375           rnd->setSequenceIndex(i);
+     376           seqidx = rnd->getSequenceIndex();
+     ...
+     388       }
+     389 #endif
+
+     460 #ifdef INSTRUMENTED
+     461         G4double sampledEnergy_eV = sampledEnergy/eV ;
+     462         G4double sampledWavelength_nm = h_Planck*c_light/sampledEnergy/nm ;
+     ...
+     474         if(rnd)
+     475         {
+     476            rnd->setSequenceIndex(-1);
+     477         }
+     478 #endif
+
+
 WIP : match randoms to avoid history difference
 ---------------------------------------------------
 
@@ -38,8 +227,79 @@ WIP : match randoms to avoid history difference
 
 * DONE : repositioned OpticksUtil::LoadConcat directory of .npy into NP::Load 
 * DONE : u4/U4Random 
-* TODO : move the directory for precooked randoms to somewhere not in /tmp so do not loose them so often 
-* TODO : find way to integrate U4Random with U4RecorderTest 
+* DONE  : find way to integrate U4Random with U4RecorderTest 
+
+BUT : not getting history alignment yet .. need to dump some randoms in both contexts to check whats happening
+
+::
+
+    In [1]: a.photon[:,0] - b.photon[:,0]                                                                                                                                                               
+    Out[1]: 
+    array([[  0.   ,  -0.   ,   0.   ,   0.   ],
+           [ -0.   ,   0.   ,   0.   ,   0.   ],
+           [  0.   ,   0.   ,  -0.   ,   0.   ],
+           [  0.   ,   0.   ,   0.   ,   0.   ],
+           [  0.   ,   0.   ,   0.   ,   0.   ],
+           [ 83.125, 108.417, 200.   ,   0.462],
+           [  0.   ,   0.   ,   0.   ,   0.   ],
+           [  0.   ,   0.   ,   0.   ,   0.   ],
+           [  0.   ,   0.   ,   0.   ,  -0.   ],
+           [  0.   ,   0.   ,   0.   ,   0.   ]], dtype=float32)
+
+
+Using the same randoms in B does not make it "TO BR BT SA" index 5::
+
+    In [4]: seqhis_(a.seq[:,0])                                                                                                                                                                         
+    Out[4]: 
+    ['TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BR BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA']
+
+    In [5]: seqhis_(b.seq[:,0])                                                                                                                                                                         
+    Out[5]: 
+    ['TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA',
+     'TO BT SA']
+
+
+
+
+DONE : standardize directory for precooked randoms eg ~/.opticks/precooked
+-------------------------------------------------------------------------------
+
+* motivation is to move the directory to somewhere not in /tmp so do not loose them so often 
+
+::
+
+    epsilon:opticks blyth$ SOpticksResourceTest 
+    2022-06-18 15:13:12.333 INFO  [26244595] [main@34] 
+    GEOCACHE_PREFIX_KEY                        OPTICKS_GEOCACHE_PREFIX
+    RNGCACHE_PREFIX_KEY                        OPTICKS_RNGCACHE_PREFIX
+    USERCACHE_PREFIX_KEY                       OPTICKS_USERCACHE_PREFIX
+    SOpticksResource::ResolveGeoCachePrefix()  /usr/local/opticks
+    SOpticksResource::ResolveRngCachePrefix()  /Users/blyth/.opticks
+    SOpticksResource::ResolveUserCachePrefix() /Users/blyth/.opticks
+    SOpticksResource::GeocacheDir()            /usr/local/opticks/geocache
+    SOpticksResource::GeocacheScriptPath()     /usr/local/opticks/geocache/geocache.sh
+
+::
+
+    SPath::Resolve("$PrecookedDir", NOOP) /Users/blyth/.opticks/precooked
+
 
 
 DONE : Arrange for same material props used in A and B 

@@ -17,6 +17,9 @@ EOU
 
 arg=${1:-ana}
 
+## defining the below envvar changes the output directory to be within ~/.opticks/precooked
+export QSimTest__rng_sequence_PRECOOKED=1    
+
 TEST=rng_sequence ./QSimTest.sh $arg
 
 

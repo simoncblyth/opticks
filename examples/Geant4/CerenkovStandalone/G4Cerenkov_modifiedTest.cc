@@ -63,7 +63,7 @@ G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, lo
     proc(new G4Cerenkov_modified()),
     par(new OpticksDebug<T>(8,"Params")),
     gen(new OpticksDebug<T>(8,"GenWavelength")),
-    rnd(OpticksRandom::Enabled() ? new OpticksRandom : nullptr ),
+    rnd(OpticksRandom::Enabled() ? new OpticksRandom : nullptr ), // enabled by envvar being defined : OPTICKS_RANDOM_SEQPATH
     seed(seed_)
 {
     std::cout 
@@ -102,7 +102,9 @@ G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, lo
             << std::endl 
             ; 
  
-        OpticksRandom::SetSeed(seed);  
+        OpticksRandom::SetSeed(seed); 
+        // HMM: this is a little confusing as its setting the seed of the standard CLHEP::HepRandomEngine 
+        // not the OpticksRandom standin 
     }
 }
 
@@ -239,7 +241,7 @@ void G4Cerenkov_modifiedTest<T>::PSDI(double BetaInverse, double step_length_, i
 {
     if(rnd)
     {
-        size_t num_indices = rnd->getNumIndices() ;
+        size_t num_indices = rnd->getNumIndices() ; // when not mask running this will be a large number eg 1M 
         override_fNumPhotons = num_indices ; 
 
         std::cout 

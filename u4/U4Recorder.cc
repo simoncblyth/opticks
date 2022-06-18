@@ -13,14 +13,25 @@
 #include "U4Track.h"
 #include "U4StepPoint.hh"
 #include "U4OpBoundaryProcess.h"
-//#include "G4OpBoundaryProcess.hh"
 #include "InstrumentedG4OpBoundaryProcess.hh"
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4TrackStatus.h"
+#include "U4Random.hh"
+
 
 const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG"); 
 const int U4Recorder::PIDX = SSys::getenvint("PIDX",-1) ; 
 const int U4Recorder::GIDX = SSys::getenvint("GIDX",-1) ; 
+
+/**
+U4Recorder::Enabled
+---------------------
+
+This is used during debugging to restrict to the photons from a 
+single genstep with GIDX or a single photon in the event with PIDX
+
+**/
+
 bool U4Recorder::Enabled(const spho& label)
 { 
     return GIDX == -1 ? 
@@ -85,7 +96,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     G4TrackStatus tstat = track->GetTrackStatus(); 
     assert( tstat == fAlive ); 
 
-    if( label.isDefined() == false ) // happens with torch gensteps 
+    if( label.isDefined() == false ) // happens with torch gensteps and input photons 
     {
         U4Track::SetFabricatedLabel(track); 
         label = U4Track::Label(track); 
@@ -93,6 +104,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     }
     assert( label.isDefined() );  
     if(!Enabled(label)) return ;  
+    U4Random::SetSequenceIndex(label.id); 
 
     SEvt* sev = SEvt::Get(); 
 
@@ -109,8 +121,9 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 {
     spho label = U4Track::Label(track); 
-    assert( label.isDefined() );  // all photons are expected to be labelled, TODO: input photons
+    assert( label.isDefined() );  // all photons are expected to be labelled
     if(!Enabled(label)) return ;  
+    U4Random::SetSequenceIndex(-1); 
 
     SEvt* sev = SEvt::Get(); 
     sev->finalPhoton(label);       

@@ -18,6 +18,7 @@ This was developed from examples/Geant4/CerenkovStandalone/OpticksRandom.hh
 
 **/
 
+#include "plog/Severity.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "U4_API_EXPORT.hh"
 struct NP ; 
@@ -25,10 +26,44 @@ struct NP ;
 struct U4_API U4Random : public CLHEP::HepRandomEngine
 {
     friend struct U4RandomTest ; 
+    static const plog::Severity LEVEL ; 
+
+    //static constexpr const char* DEFAULT_SEQPATH = "$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ;  
+    static constexpr const char* DEFAULT_SEQPATH = "$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy" ; 
+
+    static constexpr const char* OPTICKS_RANDOM_SEQPATH = "OPTICKS_RANDOM_SEQPATH" ; 
+    static const char* SeqPath(); 
+
+    static constexpr const char* NOTES = R"LITERAL(
+U4Random::init : NOT READY ERROR
+=================================
+
+Instanciation of U4Random failed to load precooked randoms
+either from a single .npy or a directory of multiple .npy 
+for concatenation on loading. 
+
+Steps to fix:
+
+1. Check the value of envvar OPTICKS_RANDOM_SEQPATH points to precooked 
+   randoms : either a single .npy or a directory containing one or more .npy
+
+2. Generate the precooked randoms with::
+
+   cd ~/opticks/qudarap/tests 
+   ./rng_sequence.sh run 
+
+3. run with envvar U4Random set to increase logging::
+
+   export U4Random=INFO
+
+)LITERAL";
+
+
     static const char* NAME ; 
     static U4Random* INSTANCE ; 
     static U4Random* Get(); 
-    static bool           Enabled(); 
+    static bool      Enabled(); 
+    static void      SetSequenceIndex(int index); 
 
     const char*              m_seqpath ; 
     const NP*                m_seq;  
@@ -51,12 +86,16 @@ struct U4_API U4Random : public CLHEP::HepRandomEngine
  
     bool                     m_flat_debug ; 
     double                   m_flat_prior ; 
+    bool                     m_ready ; 
 
 
     static void SetSeed(long seed) ;  // non-zero seed required 
 
-    static const char* OPTICKS_RANDOM_SEQPATH ; 
+
     U4Random(const char* seq_path=nullptr, const char* seqmask_path=nullptr); 
+    void init() ; 
+    bool isReady() const ; 
+    std::string desc() const ; 
     std::string detail() const ; 
 
     virtual ~U4Random(); 
@@ -82,7 +121,6 @@ struct U4_API U4Random : public CLHEP::HepRandomEngine
     void dump(unsigned n=10); 
     // internals
     private:
-        std::string desc() const ; 
         void enable(); 
         void disable(); 
 

@@ -17,11 +17,11 @@ const plog::Severity SOpticksResource::LEVEL = PLOG::EnvLevel("SOpticksResource"
 const char* SOpticksResource::GEOCACHE_PREFIX_KEY = "OPTICKS_GEOCACHE_PREFIX" ; 
 const char* SOpticksResource::RNGCACHE_PREFIX_KEY = "OPTICKS_RNGCACHE_PREFIX" ; 
 const char* SOpticksResource::USERCACHE_PREFIX_KEY = "OPTICKS_USERCACHE_PREFIX" ; 
+const char* SOpticksResource::PRECOOKED_PREFIX_KEY = "OPTICKS_PRECOOKED_PREFIX" ; 
 
 const char* SOpticksResource::MakeUserDir(const char* sub) 
 {
-    int createdirs = 2 ; // 2:dirpath 
-    return SPath::Resolve("$HOME", sub, createdirs) ; 
+    return SPath::Resolve("$HOME", sub, DIRPATH) ; 
 }
 
 
@@ -29,7 +29,7 @@ const char* SOpticksResource::MakeUserDir(const char* sub)
 SOpticksResource::ResolveUserPrefix
 ----------------------------------------
 
-1. sensitive to envvars :  OPTICKS_GEOCACHE_PREFIX OPTICKS_RNGCACHE_PREFIX OPTICKS_USERCACHE_PREFIX 
+1. sensitive to envvars :  OPTICKS_GEOCACHE_PREFIX OPTICKS_RNGCACHE_PREFIX OPTICKS_USERCACHE_PREFIX OPTICKS_PRECOOKED_PREFIX
 2. if envvar not defined defaults to $HOME/.opticks 
 3. the envvar is subsequently internally set for consistency 
 
@@ -63,13 +63,15 @@ const char* SOpticksResource::ResolveUserPrefix(const char* envkey, bool envset)
 const char* SOpticksResource::ResolveGeoCachePrefix() { return ResolveUserPrefix(GEOCACHE_PREFIX_KEY, true) ; }
 const char* SOpticksResource::ResolveRngCachePrefix() { return ResolveUserPrefix(RNGCACHE_PREFIX_KEY, true) ; }
 const char* SOpticksResource::ResolveUserCachePrefix(){ return ResolveUserPrefix(USERCACHE_PREFIX_KEY, true) ; }
+const char* SOpticksResource::ResolvePrecookedPrefix(){ return ResolveUserPrefix(PRECOOKED_PREFIX_KEY, true) ; }
 
-const char* SOpticksResource::GeocacheDir(){        return SPath::Resolve(ResolveGeoCachePrefix(), "geocache", 0); }
-const char* SOpticksResource::GeocacheScriptPath(){ return SPath::Resolve(GeocacheDir(), "geocache.sh", 0); }
+const char* SOpticksResource::GeocacheDir(){        return SPath::Resolve(ResolveGeoCachePrefix(), "geocache", NOOP); }
+const char* SOpticksResource::GeocacheScriptPath(){ return SPath::Resolve(GeocacheDir(), "geocache.sh", NOOP); }
 
-const char* SOpticksResource::RNGCacheDir(){    return SPath::Resolve(ResolveRngCachePrefix(), "rngcache", 0); }
-const char* SOpticksResource::RNGDir(){         return SPath::Resolve(RNGCacheDir(), "RNG", 0); }
-const char* SOpticksResource::RuncacheDir(){    return SPath::Resolve(ResolveUserCachePrefix(), "runcache", 0); }
+const char* SOpticksResource::RNGCacheDir(){    return SPath::Resolve(ResolveRngCachePrefix(), "rngcache", NOOP); }
+const char* SOpticksResource::RNGDir(){         return SPath::Resolve(RNGCacheDir(), "RNG", NOOP); }
+const char* SOpticksResource::RuncacheDir(){    return SPath::Resolve(ResolveUserCachePrefix(), "runcache", NOOP); }
+const char* SOpticksResource::PrecookedDir(){   return SPath::Resolve(ResolvePrecookedPrefix(), "precooked", NOOP); }
 
 
 
@@ -79,10 +81,12 @@ std::string SOpticksResource::Dump()
     const char* geocache_prefix = ResolveGeoCachePrefix()  ;
     const char* rngcache_prefix = ResolveRngCachePrefix() ; 
     const char* usercache_prefix = ResolveUserCachePrefix() ;
+    const char* precooked_prefix = ResolvePrecookedPrefix() ;
     const char* geocache_dir = GeocacheDir() ; 
     const char* geocache_scriptpath = GeocacheScriptPath() ; 
     const char* rngcache_dir = RNGCacheDir() ; 
     const char* rng_dir = RNGDir() ; 
+    const char* precooked_dir = PrecookedDir() ; 
     const char* runcache_dir = RuncacheDir() ; 
 
     bool setkey = true ; 
@@ -102,10 +106,12 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::ResolveGeoCachePrefix()  " << ( geocache_prefix ? geocache_prefix : "-" ) << std::endl 
         << "SOpticksResource::ResolveRngCachePrefix()  " << ( rngcache_prefix ? rngcache_prefix : "-" )  << std::endl 
         << "SOpticksResource::ResolveUserCachePrefix() " << ( usercache_prefix ? usercache_prefix : "-" )  << std::endl 
+        << "SOpticksResource::ResolvePrecookedPrefix() " << ( precooked_prefix ? precooked_prefix : "-" )  << std::endl 
         << "SOpticksResource::GeocacheDir()            " << ( geocache_dir  ? geocache_dir : "-" ) << std::endl 
         << "SOpticksResource::GeocacheScriptPath()     " << ( geocache_scriptpath ? geocache_scriptpath : "-" ) << std::endl 
         << "SOpticksResource::RNGCacheDir()            " << ( rngcache_dir  ? rngcache_dir : "-" )  << std::endl 
         << "SOpticksResource::RNGDir()                 " << ( rng_dir ? rng_dir : "-" )  << std::endl 
+        << "SOpticksResource::PrecookedDir()           " << ( precooked_dir ? precooked_dir : "-" )  << std::endl 
         << "SOpticksResource::RuncacheDir()            " << ( runcache_dir ? runcache_dir : "-" )  << std::endl 
         << "SOpticksResource::IDPath(true)             " << ( idpath ? idpath : "-" ) << std::endl  
         << "SOpticksResource::CGDir(true)              " << ( cgdir ? cgdir : "-" )  << std::endl 
@@ -234,7 +240,7 @@ const char* SOpticksResource::CFBaseFromGEOM()
 }
 
 
-const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir" ; 
+const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir" ; 
 
 /**
 SOpticksResource::Get
@@ -272,6 +278,7 @@ const char* SOpticksResource::Get(const char* key) // static
     else if( strcmp(key, "GeocacheDir")==0) tok = SOpticksResource::GeocacheDir(); 
     else if( strcmp(key, "RuncacheDir")==0) tok = SOpticksResource::RuncacheDir(); 
     else if( strcmp(key, "RNGDir")==0)      tok = SOpticksResource::RNGDir(); 
+    else if( strcmp(key, "PrecookedDir")==0) tok = SOpticksResource::PrecookedDir(); 
     return tok ;  
 }
 

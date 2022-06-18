@@ -19,6 +19,7 @@ Thus avoid emitting anything extra when the --cfbase --key  and --keydir argumen
 #include "OPTICKS_LOG.hh"
 #include "SOpticksResource.hh"
 #include "SOpticksKey.hh"
+#include "SPath.hh"
 #include "SStr.hh"
 
 
@@ -46,6 +47,11 @@ int main(int argc, char** argv)
     {
         std::cout << SOpticksResource::IDPath(true) << std::endl ; 
     }
+    else if( strcmp(arg, "--resolve") == 0 )
+    {
+        const char* path = SPath::Resolve("$PrecookedDir", NOOP) ; 
+        std::cout << "SPath::Resolve(\"$PrecookedDir\", NOOP) " << path  << std::endl ; 
+    }
     else
     {
         LOG(error) << " arg [" << arg << "] is not handled " ; 
@@ -54,3 +60,6 @@ int main(int argc, char** argv)
  
     return 0 ; 
 }
+// om- ; TEST=SOpticksResourceTest om-t
+
+
