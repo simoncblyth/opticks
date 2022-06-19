@@ -18,6 +18,7 @@ This was developed from examples/Geant4/CerenkovStandalone/OpticksRandom.hh
 
 **/
 
+#include <vector>
 #include "plog/Severity.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "U4_API_EXPORT.hh"
@@ -52,9 +53,10 @@ Steps to fix:
    cd ~/opticks/qudarap/tests 
    ./rng_sequence.sh run 
 
-3. run with envvar U4Random set to increase logging::
+3. run with envvars set to increase logging::
 
    export U4Random=INFO
+   export U4Random_flat_debug=1
 
 )LITERAL";
 
@@ -62,8 +64,9 @@ Steps to fix:
     static const char* NAME ; 
     static U4Random* INSTANCE ; 
     static U4Random* Get(); 
-    static bool      Enabled(); 
+
     static void      SetSequenceIndex(int index); 
+    static int       GetSequenceIndex(); 
 
     const char*              m_seqpath ; 
     const NP*                m_seq;  
@@ -87,7 +90,10 @@ Steps to fix:
     bool                     m_flat_debug ; 
     double                   m_flat_prior ; 
     bool                     m_ready ; 
+    std::vector<int>*        m_select ; 
 
+    bool isSelect(int photon_idx, int flat_cursor) const ; 
+    std::string descSelect(int photon_idx, int flat_cursor ) const; 
 
     static void SetSeed(long seed) ;  // non-zero seed required 
 

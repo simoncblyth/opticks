@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+#include <csignal>
 
 #include "Randomize.hh"
 #include "G4Types.hh"
@@ -18,11 +19,6 @@ U4Random* U4Random::Get(){ return INSTANCE ; }
 
 const char* U4Random::NAME = "U4Random" ;  
 
-bool U4Random::Enabled()
-{
-    const char* seq = getenv(OPTICKS_RANDOM_SEQPATH) ; 
-    return seq != nullptr ; 
-}
 
 void U4Random::SetSequenceIndex(int index)
 {
@@ -37,6 +33,14 @@ void U4Random::SetSequenceIndex(int index)
     rnd->setSequenceIndex(index);  
 }
 
+int U4Random::GetSequenceIndex()
+{
+    if(U4Random::Get() == nullptr) return -1 ; 
+    U4Random* rnd = U4Random::Get();  
+    return rnd->isReady() ? rnd->getSequenceIndex() : -1 ; 
+}
+
+
 
 
 const char* U4Random::SeqPath(){ return SSys::getenvvar(OPTICKS_RANDOM_SEQPATH, DEFAULT_SEQPATH ) ; } // static  
@@ -50,8 +54,8 @@ U4Random::U4Random
 When no seq path argument is provided the envvar OPTICKS_RANDOM_SEQPATH
 to consulted to provide the path. 
 
-The optional seqmask (a list of indices) allows working with 
-sub-selections of the full set of streams of randoms. 
+The optional seqmask (a list of size_t or "unsigned long long" indices) 
+allows working with sub-selections of the full set of streams of randoms. 
 This allows reproducible running within photon selections
 by arranging the same random stream to be consumed in 
 full-sample and sub-sample running. 
@@ -60,8 +64,10 @@ Not that *seq* can either be the path to an .npy file
 or the path to a directory containing .npy files which 
 are concatenated using NP::Load/NP::Concatenate.
 
-**/
+TODO: when next need to use seqmask, change the interface to enabling it 
+to be envvar OR SEventConfig based and eliminate the U4Random arguments 
 
+**/
 
 
 U4Random::U4Random(const char* seq, const char* seqmask)
@@ -81,12 +87,63 @@ U4Random::U4Random(const char* seq, const char* seqmask)
     m_seqmask(seqmask ? NP::Load(seqmask) : nullptr),
     m_seqmask_ni( m_seqmask ? m_seqmask->shape[0] : 0 ),
     m_seqmask_values(m_seqmask ? m_seqmask->cvalues<size_t>() : nullptr),
-    m_flat_debug(false),
+    m_flat_debug(SSys::getenvbool("U4Random_flat_debug")),
     m_flat_prior(0.),
-    m_ready(false)
+    m_ready(false),
+    m_select(SSys::getenvintvec("U4Random_select"))
 {
     init(); 
 }
+
+/**
+U4Random::isSelect
+---------------------
+
+Returns true when the (photon index, random index "flat cursor") tuple
+provided in the arguments matches one of the pairs provided in the 
+comma delimited U4Random_select envvar.
+
+This allows selection of one or more U4Random::flat calls.
+For example std::raise(SIGINT) could be called when a random draw of 
+interest is done in order to example the call stack for that random 
+consumption before resuming processing. 
+
+**/
+
+bool U4Random::isSelect(int photon_idx, int flat_cursor) const 
+{
+   if(m_select == nullptr) return false ; 
+   assert( m_select->size() % 2 == 0 );  
+   for(unsigned p=0 ; p < m_select->size()/2 ; p++)
+   {
+       int _pidx   = (*m_select)[p*2+0] ; 
+       int _cursor = (*m_select)[p*2+1] ; 
+       if( _pidx == photon_idx && _cursor == flat_cursor ) return true ; 
+   }
+   return false ; 
+}
+
+std::string U4Random::descSelect(int photon_idx, int flat_cursor ) const
+{
+    std::stringstream ss ; 
+    ss << "U4Random_select " << SSys::getenvvar("U4Random_select", "-") 
+       << " m_select->size " << ( m_select ? m_select->size() : 0 )   
+       ;
+
+    if(m_select) 
+    {
+        for(unsigned p=0 ; p < m_select->size()/2 ; p++)
+        {
+           int _pidx   = (*m_select)[p*2+0] ; 
+           int _cursor = (*m_select)[p*2+1] ; 
+           bool match = ( _pidx == photon_idx && _cursor == flat_cursor ) ; 
+           ss << " (" << _pidx << "," << _cursor << ") " << ( match ? "YES" : "NO" )  << " " ; 
+        }
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 
 void U4Random::init()
@@ -152,6 +209,8 @@ U4Random::SetSeed
 static control of the seed, NB calling this while enabled will assert 
 as there is no role for a seed with pre-cooked randoms
 
+TODO: THIS IS RATHER OUT OF PLACE AS NOT MUCH RELATED TO ALIGNED RUNNING, SO RELOCATE TO SEPARATE STRUCT "U4HepRandomEngine::SetSeed" ?
+
 **/
 
 void U4Random::SetSeed(long seed)  // static
@@ -167,6 +226,9 @@ U4Random::getMaskedIndex
 
 When no seqmask is active this just returns the argument.
 When a seqmask selection is active indices from the mask are returned.
+
+Masked running allows to reproduce running on subsets of photons from 
+a larger sample. 
 
 **/
 
@@ -198,6 +260,8 @@ A negative index disables the control of the Geant4 random engine.
 
 void U4Random::setSequenceIndex(int index_)
 {
+    LOG(LEVEL) << " index " << index_ ; 
+
     if( index_ < 0 )
     {
         m_seq_index = index_ ; 
@@ -322,6 +386,8 @@ double U4Random::flat()
         }
     }
 
+
+
     int idx = m_seq_index*m_seq_nv + cursor ;
 
     float  f = m_seq_values[idx] ;
@@ -331,18 +397,24 @@ double U4Random::flat()
 
     if( m_flat_debug )
     {
-        std::cout 
-            << "U4Random::flat "
+        LOG(LEVEL)
             << " m_seq_index " << std::setw(4) << m_seq_index
             << " m_seq_nv " << std::setw(4) << m_seq_nv
             << " cursor " << std::setw(4) << cursor 
             << " idx " << std::setw(4) << idx 
             << " d " <<  std::setw(10 ) << std::fixed << std::setprecision(5) << d 
-            << std::endl 
             ;
     }
 
     m_flat_prior = d ; 
+
+    bool select = isSelect(m_seq_index, cursor ); 
+    if( select ) 
+    {
+        LOG(info) << descSelect(m_seq_index, cursor) ; 
+        std::raise(SIGINT) ; 
+    }
+
     return d ; 
 }
 

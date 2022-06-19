@@ -283,7 +283,14 @@ G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand(const G4double prob) const
 {
   /* Returns a random boolean variable with the specified probability */
 
+#ifdef DEBUG_PIDX
+  G4double u = G4UniformRand() ; 
+  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
+  return u < prob  ; 
+#else
   return (G4UniformRand() < prob);
+#endif
+
 }
 
 inline

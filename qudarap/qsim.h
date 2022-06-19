@@ -744,6 +744,16 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     const float u_reflect = curand_uniform(&rng) ;
     bool reflect = u_reflect > TransCoeff  ;
 
+#ifdef DEBUG_PIDX
+    if(idx == base->pidx)
+    {
+    printf("//qsim.propagate_at_boundary idx %d u_boundary_burn %10.4f u_reflect %10.4f TransCoeff %10.4f reflect %d \n", 
+              idx,  u_boundary_burn, u_reflect, TransCoeff, reflect  ); 
+    }
+#endif 
+
+
+
     //printf("//qsim.propagate_at_boundary n2c2 %10.4f n1c1 %10.4f u_reflect %10.4f TransCoeff %10.4f (n2c2.E2_total_t/n1c1)  reflect %d \n", 
     //                                          n2c2,  n1c1, u_reflect, TransCoeff, reflect ); 
 

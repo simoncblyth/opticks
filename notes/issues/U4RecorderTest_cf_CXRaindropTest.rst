@@ -214,6 +214,368 @@ G4Cerenkov_modified.cc::
      478 #endif
 
 
+
+TODO : random "zipper" meshing 
+---------------------------------
+
+::
+
+   BP=U4Random::flat ./U4RecorderTest.sh dbg 
+
+
+    First four flat calls are from G4VProcess::ResetNumberOfInteractionLengthLeft in each process
+
+    * HMM : vaguely recall some trick related to this 
+
+    TODO: check which are the four processes 
+
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x00000001001ec049 libU4.dylib`U4Random::flat(this=0x00007ffeefbfe4f0) at U4Random.cc:290
+        frame #1: 0x00000001036bc6da libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x0000000108a00000) at G4VProcess.cc:98
+        frame #2: 0x00000001036bed0b libG4processes.dylib`G4VRestDiscreteProcess::PostStepGetPhysicalInteractionLength(this=0x0000000108a00000, track=0x0000000106b979b0, previousStepSize=0, condition=0x0000000108906528) at G4VRestDiscreteProcess.cc:78
+        frame #3: 0x0000000101f1aff0 libG4tracking.dylib`G4VProcess::PostStepGPIL(this=0x0000000108a00000, track=0x0000000106b979b0, previousStepSize=0, condition=0x0000000108906528) at G4VProcess.hh:506
+        frame #4: 0x0000000101f1aa1a libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x00000001089063a0) at G4SteppingManager2.cc:173
+        frame #5: 0x0000000101f17c3a libG4tracking.dylib`G4SteppingManager::Stepping(this=0x00000001089063a0) at G4SteppingManager.cc:180
+        frame #6: 0x0000000101f2e86f libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000108906360, apValueG4Track=0x0000000106b979b0) at G4TrackingManager.cc:126
+        frame #7: 0x0000000101df471a libG4event.dylib`G4EventManager::DoProcessing(this=0x00000001089062d0, anEvent=0x0000000106b95640) at G4EventManager.cc:185
+        frame #8: 0x0000000101df5c2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x00000001089062d0, anEvent=0x0000000106b95640) at G4EventManager.cc:338
+        frame #9: 0x0000000101d019e5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000106d1bad0, i_event=0) at G4RunManager.cc:399
+        frame #10: 0x0000000101d01815 libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000106d1bad0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #11: 0x0000000101cffcd1 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000106d1bad0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #12: 0x000000010002104a U4RecorderTest`main(argc=1, argv=0x00007ffeefbfe5e8) at U4RecorderTest.cc:181
+        frame #13: 0x00007fff72c44015 libdyld.dylib`start + 1
+        frame #14: 0x00007fff72c44015 libdyld.dylib`start + 1
+    (lldb) 
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x00000001001ec049 libU4.dylib`U4Random::flat(this=0x00007ffeefbfe4f0) at U4Random.cc:290
+        frame #1: 0x00000001036bc6da libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x0000000108a02c40) at G4VProcess.cc:98
+        frame #2: 0x00000001036bbf5b libG4processes.dylib`G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(this=0x0000000108a02c40, track=0x0000000106b979b0, previousStepSize=0, condition=0x0000000108906528) at G4VDiscreteProcess.cc:79
+        frame #3: 0x0000000101f1aff0 libG4tracking.dylib`G4VProcess::PostStepGPIL(this=0x0000000108a02c40, track=0x0000000106b979b0, previousStepSize=0, condition=0x0000000108906528) at G4VProcess.hh:506
+        frame #4: 0x0000000101f1aa1a libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x00000001089063a0) at G4SteppingManager2.cc:173
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x00000001001ec049 libU4.dylib`U4Random::flat(this=0x00007ffeefbfe4f0) at U4Random.cc:290
+        frame #1: 0x00000001036bc6da libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x0000000108a02ab0) at G4VProcess.cc:98
+        frame #2: 0x00000001036bbf5b libG4processes.dylib`G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(this=0x0000000108a02ab0, track=0x0000000106b979b0, previousStepSize=0, condition=0x0000000108906528) at G4VDiscreteProcess.cc:79
+        frame #3: 0x0000000101f1aff0 libG4tracking.dylib`G4VProcess::PostStepGPIL(this=0x0000000108a02ab0, track=0x0000000106b979b0, previousStepSize=0, condition=0x0000000108906528) at G4VProcess.hh:506
+        frame #4: 0x0000000101f1aa1a libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x00000001089063a0) at G4SteppingManager2.cc:173
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x00000001001ec049 libU4.dylib`U4Random::flat(this=0x00007ffeefbfe4f0) at U4Random.cc:290
+        frame #1: 0x00000001036bc6da libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x0000000108a02930) at G4VProcess.cc:98
+        frame #2: 0x00000001036bbf5b libG4processes.dylib`G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(this=0x0000000108a02930, track=0x0000000106b979b0, previousStepSize=0, condition=0x0000000108906528) at G4VDiscreteProcess.cc:79
+        frame #3: 0x0000000101f1aff0 libG4tracking.dylib`G4VProcess::PostStepGPIL(this=0x0000000108a02930, track=0x0000000106b979b0, previousStepSize=0, condition=0x0000000108906528) at G4VProcess.hh:506
+        frame #4: 0x0000000101f1aa1a libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x00000001089063a0) at G4SteppingManager2.cc:173
+
+
+
+    flat 5 is the reflection decision 
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x00000001001ec049 libU4.dylib`U4Random::flat(this=0x00007ffeefbfe4f0) at U4Random.cc:290
+        frame #1: 0x00000001001dbfdb libU4.dylib`InstrumentedG4OpBoundaryProcess::PostStepDoIt(this=0x0000000108a02c40, aTrack=0x0000000106b979b0, aStep=0x0000000108906530) at InstrumentedG4OpBoundaryProcess.cc:543
+        frame #2: 0x0000000101f1c7db libG4tracking.dylib`G4SteppingManager::InvokePSDIP(this=0x00000001089063a0, np=3) at G4SteppingManager2.cc:538
+        frame #3: 0x0000000101f1c64d libG4tracking.dylib`G4SteppingManager::InvokePostStepDoItProcs(this=0x00000001089063a0) at G4SteppingManager2.cc:510
+        frame #4: 0x0000000101f17daa libG4tracking.dylib`G4SteppingManager::Stepping(this=0x00000001089063a0) at G4SteppingManager.cc:209
+        frame #5: 0x0000000101f2e86f libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000108906360, apValueG4Track=0x0000000106b979b0) at G4TrackingManager.cc:126
+        frame #6: 0x0000000101df471a libG4event.dylib`G4EventManager::DoProcessing(this=0x00000001089062d0, anEvent=0x0000000106b95640) at G4EventManager.cc:185
+        frame #7: 0x0000000101df5c2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x00000001089062d0, anEvent=0x0000000106b95640) at G4EventManager.cc:338
+        frame #8: 0x0000000101d019e5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000106d1bad0, i_event=0) at G4RunManager.cc:399
+        frame #9: 0x0000000101d01815 libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000106d1bad0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #10: 0x0000000101cffcd1 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000106d1bad0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #11: 0x000000010002104a U4RecorderTest`main(argc=1, argv=0x00007ffeefbfe5e8) at U4RecorderTest.cc:181
+        frame #12: 0x00007fff72c44015 libdyld.dylib`start + 1
+        frame #13: 0x00007fff72c44015 libdyld.dylib`start + 1
+    (lldb) 
+
+    (lldb) f 1
+    frame #1: 0x00000001001dbfdb libU4.dylib`InstrumentedG4OpBoundaryProcess::PostStepDoIt(this=0x0000000108a02c40, aTrack=0x0000000106b979b0, aStep=0x0000000108906530) at InstrumentedG4OpBoundaryProcess.cc:543
+       540 	             DielectricDielectric();
+       541 	          }
+       542 	          else {
+    -> 543 	             G4double rand = G4UniformRand();
+       544 	             if ( rand > theReflectivity ) {
+       545 	                if (rand > theReflectivity + theTransmittance) {
+       546 	                   DoAbsorption();
+    (lldb) 
+
+    (lldb) p theReflectivity    ## hmm maybe not flat5 as this looks like a default of 1 
+    (G4double) $0 = 1
+
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x00000001001ec049 libU4.dylib`U4Random::flat(this=0x00007ffeefbfe4f0) at U4Random.cc:290
+        frame #1: 0x00000001001e5477 libU4.dylib`InstrumentedG4OpBoundaryProcess::G4BooleanRand(this=0x0000000108a02c40, prob=0.97753619094183685) const at InstrumentedG4OpBoundaryProcess.hh:286
+        frame #2: 0x00000001001e308b libU4.dylib`InstrumentedG4OpBoundaryProcess::DielectricDielectric(this=0x0000000108a02c40) at InstrumentedG4OpBoundaryProcess.cc:1244
+        frame #3: 0x00000001001dc139 libU4.dylib`InstrumentedG4OpBoundaryProcess::PostStepDoIt(this=0x0000000108a02c40, aTrack=0x0000000106b979b0, aStep=0x0000000108906530) at InstrumentedG4OpBoundaryProcess.cc:562
+        frame #4: 0x0000000101f1c7db libG4tracking.dylib`G4SteppingManager::InvokePSDIP(this=0x00000001089063a0, np=3) at G4SteppingManager2.cc:538
+        frame #5: 0x0000000101f1c64d libG4tracking.dylib`G4SteppingManager::InvokePostStepDoItProcs(this=0x00000001089063a0) at G4SteppingManager2.cc:510
+        frame #6: 0x0000000101f17daa libG4tracking.dylib`G4SteppingManager::Stepping(this=0x00000001089063a0) at G4SteppingManager.cc:209
+        frame #7: 0x0000000101f2e86f libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000108906360, apValueG4Track=0x0000000106b979b0) at G4TrackingManager.cc:126
+        frame #8: 0x0000000101df471a libG4event.dylib`G4EventManager::DoProcessing(this=0x00000001089062d0, anEvent=0x0000000106b95640) at G4EventManager.cc:185
+        frame #9: 0x0000000101df5c2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x00000001089062d0, anEvent=0x0000000106b95640) at G4EventManager.cc:338
+        frame #10: 0x0000000101d019e5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000106d1bad0, i_event=0) at G4RunManager.cc:399
+        frame #11: 0x0000000101d01815 libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000106d1bad0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #12: 0x0000000101cffcd1 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000106d1bad0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #13: 0x000000010002104a U4RecorderTest`main(argc=1, argv=0x00007ffeefbfe5e8) at U4RecorderTest.cc:181
+        frame #14: 0x00007fff72c44015 libdyld.dylib`start + 1
+        frame #15: 0x00007fff72c44015 libdyld.dylib`start + 1
+    (lldb) 
+
+
+    Probably flat 6 : comparing with TransCoeff is the one  
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x00000001001ec049 libU4.dylib`U4Random::flat(this=0x00007ffeefbfe4f0) at U4Random.cc:290
+        frame #1: 0x00000001001e5477 libU4.dylib`InstrumentedG4OpBoundaryProcess::G4BooleanRand(this=0x0000000108a02c40, prob=0.97753619094183685) const at InstrumentedG4OpBoundaryProcess.hh:286
+        frame #2: 0x00000001001e308b libU4.dylib`InstrumentedG4OpBoundaryProcess::DielectricDielectric(this=0x0000000108a02c40) at InstrumentedG4OpBoundaryProcess.cc:1244
+        frame #3: 0x00000001001dc139 libU4.dylib`InstrumentedG4OpBoundaryProcess::PostStepDoIt(this=0x0000000108a02c40, aTrack=0x0000000106b979b0, aStep=0x0000000108906530) at InstrumentedG4OpBoundaryProcess.cc:562
+        frame #4: 0x0000000101f1c7db libG4tracking.dylib`G4SteppingManager::InvokePSDIP(this=0x00000001089063a0, np=3) at G4SteppingManager2.cc:538
+        frame #5: 0x0000000101f1c64d libG4tracking.dylib`G4SteppingManager::InvokePostStepDoItProcs(this=0x00000001089063a0) at G4SteppingManager2.cc:510
+        frame #6: 0x0000000101f17daa libG4tracking.dylib`G4SteppingManager::Stepping(this=0x00000001089063a0) at G4SteppingManager.cc:209
+        frame #7: 0x0000000101f2e86f libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000108906360, apValueG4Track=0x0000000106b979b0) at G4TrackingManager.cc:126
+        frame #8: 0x0000000101df471a libG4event.dylib`G4EventManager::DoProcessing(this=0x00000001089062d0, anEvent=0x0000000106b95640) at G4EventManager.cc:185
+        frame #9: 0x0000000101df5c2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x00000001089062d0, anEvent=0x0000000106b95640) at G4EventManager.cc:338
+        frame #10: 0x0000000101d019e5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000106d1bad0, i_event=0) at G4RunManager.cc:399
+        frame #11: 0x0000000101d01815 libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000106d1bad0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #12: 0x0000000101cffcd1 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000106d1bad0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #13: 0x000000010002104a U4RecorderTest`main(argc=1, argv=0x00007ffeefbfe5e8) at U4RecorderTest.cc:181
+        frame #14: 0x00007fff72c44015 libdyld.dylib`start + 1
+        frame #15: 0x00007fff72c44015 libdyld.dylib`start + 1
+    (lldb) f 1
+    frame #1: 0x00000001001e5477 libU4.dylib`InstrumentedG4OpBoundaryProcess::G4BooleanRand(this=0x0000000108a02c40, prob=0.97753619094183685) const at InstrumentedG4OpBoundaryProcess.hh:286
+       283 	{
+       284 	  /* Returns a random boolean variable with the specified probability */
+       285 	
+    -> 286 	  return (G4UniformRand() < prob);
+       287 	}
+       288 	
+       289 	inline
+    (lldb) p prob
+    (G4double) $1 = 0.97753619094183685
+    (lldb) f 2
+    frame #2: 0x00000001001e308b libU4.dylib`InstrumentedG4OpBoundaryProcess::DielectricDielectric(this=0x0000000108a02c40) at InstrumentedG4OpBoundaryProcess.cc:1244
+       1241	              else if (cost1 != 0.0) TransCoeff = s2/s1;
+       1242	              else TransCoeff = 0.0;
+       1243	
+    -> 1244	              if ( !G4BooleanRand(TransCoeff) ) {
+       1245	
+       1246	                 // Simulate reflection
+       1247	
+    (lldb) p TransCoeff
+    (G4double) $2 = 0.97753619094183685
+    (lldb) 
+
+
+
+U4Random_select SIGINT at U4Random::flat call
+-------------------------------------------------
+
+::
+
+   U4Random_select=0,6 ./U4RecorderTest.sh dbg
+
+   U4Random_select=0,6,0,7 ./U4RecorderTest.sh dbg
+
+
+
+::
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGINT
+      * frame #0: 0x00007fff72d94b66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff72f5f080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff72ca26fe libsystem_c.dylib`raise + 26
+        frame #3: 0x00000001001ed58f libU4.dylib`U4Random::flat(this=0x00007ffeefbfe4e8) at U4Random.cc:415
+        frame #4: 0x00000001036bd6da libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x000000010ea0e220) at G4VProcess.cc:98
+        frame #5: 0x00000001036bfd0b libG4processes.dylib`G4VRestDiscreteProcess::PostStepGetPhysicalInteractionLength(this=0x000000010ea0e220, track=0x0000000106f34d40, previousStepSize=49, condition=0x0000000106c941a8) at G4VRestDiscreteProcess.cc:78
+        frame #6: 0x0000000101f1bff0 libG4tracking.dylib`G4VProcess::PostStepGPIL(this=0x000000010ea0e220, track=0x0000000106f34d40, previousStepSize=49, condition=0x0000000106c941a8) at G4VProcess.hh:506
+        frame #7: 0x0000000101f1ba1a libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000106c94020) at G4SteppingManager2.cc:173
+        frame #8: 0x0000000101f18c3a libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000106c94020) at G4SteppingManager.cc:180
+        frame #9: 0x0000000101f2f86f libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000106c93fe0, apValueG4Track=0x0000000106f34d40) at G4TrackingManager.cc:126
+        frame #10: 0x0000000101df571a libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000106c93f50, anEvent=0x0000000106f33990) at G4EventManager.cc:185
+        frame #11: 0x0000000101df6c2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x0000000106c93f50, anEvent=0x0000000106f33990) at G4EventManager.cc:338
+        frame #12: 0x0000000101d029e5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000106e007c0, i_event=0) at G4RunManager.cc:399
+        frame #13: 0x0000000101d02815 libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000106e007c0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #14: 0x0000000101d00cd1 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000106e007c0, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #15: 0x000000010002104a U4RecorderTest`main(argc=1, argv=0x00007ffeefbfe5e8) at U4RecorderTest.cc:181
+        frame #16: 0x00007fff72c44015 libdyld.dylib`start + 1
+        frame #17: 0x00007fff72c44015 libdyld.dylib`start + 1
+    (lldb) 
+
+    (lldb) f 8
+    frame #8: 0x0000000101f18c3a libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000106c94020) at G4SteppingManager.cc:180
+       177 	
+       178 	   else{
+       179 	     // Find minimum Step length demanded by active disc./cont. processes
+    -> 180 	     DefinePhysicalStepLength();
+       181 	
+       182 	     // Store the Step length (geometrical length) to G4Step and G4Track
+       183 	     fStep->SetStepLength( PhysicalStep );
+    (lldb) 
+
+
+Surprised scintillation involved here::
+
+    (lldb) f 7 
+    frame #7: 0x0000000101f1ba1a libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000106c94020) at G4SteppingManager2.cc:173
+       170 	     }   // NULL means the process is inactivated by a user on fly.
+       171 	
+       172 	     physIntLength = fCurrentProcess->
+    -> 173 	                     PostStepGPIL( *fTrack,
+       174 	                                                 fPreviousStepSize,
+       175 	                                                      &fCondition );
+       176 	#ifdef G4VERBOSE
+    (lldb) p fCurrentProcess
+    (DsG4Scintillation *) $0 = 0x000000010ea0e220
+    (lldb) 
+
+    (lldb) f 5
+    frame #5: 0x00000001036bfd0b libG4processes.dylib`G4VRestDiscreteProcess::PostStepGetPhysicalInteractionLength(this=0x000000010ea0e220, track=0x0000000106f34d40, previousStepSize=49, condition=0x0000000106c941a8) at G4VRestDiscreteProcess.cc:78
+       75  	{
+       76  	  if ( (previousStepSize < 0.0) || (theNumberOfInteractionLengthLeft<=0.0)) {
+       77  	    // beggining of tracking (or just after DoIt of this process)
+    -> 78  	    ResetNumberOfInteractionLengthLeft();
+       79  	  } else if ( previousStepSize > 0.0) {
+       80  	    // subtract NumberOfInteractionLengthLeft 
+       81  	    SubtractNumberOfInteractionLengthLeft(previousStepSize);
+    (lldb) 
+
+    (lldb) f 4
+    frame #4: 0x00000001036bd6da libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x000000010ea0e220) at G4VProcess.cc:98
+       95  	
+       96  	void G4VProcess::ResetNumberOfInteractionLengthLeft()
+       97  	{
+    -> 98  	  theNumberOfInteractionLengthLeft =  -1.*G4Log( G4UniformRand() );
+       99  	  theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft; 
+       100 	}
+       101 	
+    (lldb) 
+
+
+Two consumptions poststep for scint and boundary::
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGINT
+      * frame #0: 0x00007fff72d94b66 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff72f5f080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff72ca26fe libsystem_c.dylib`raise + 26
+        frame #3: 0x00000001001ed58f libU4.dylib`U4Random::flat(this=0x00007ffeefbfe4e8) at U4Random.cc:415
+        frame #4: 0x00000001036bd6da libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x0000000108b02560) at G4VProcess.cc:98
+        frame #5: 0x00000001036bcf5b libG4processes.dylib`G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(this=0x0000000108b02560, track=0x0000000106ba2720, previousStepSize=49, condition=0x0000000106cdf958) at G4VDiscreteProcess.cc:79
+        frame #6: 0x0000000101f1bff0 libG4tracking.dylib`G4VProcess::PostStepGPIL(this=0x0000000108b02560, track=0x0000000106ba2720, previousStepSize=49, condition=0x0000000106cdf958) at G4VProcess.hh:506
+        frame #7: 0x0000000101f1ba1a libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000106cdf7d0) at G4SteppingManager2.cc:173
+        frame #8: 0x0000000101f18c3a libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000106cdf7d0) at G4SteppingManager.cc:180
+        frame #9: 0x0000000101f2f86f libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x0000000106cdf790, apValueG4Track=0x0000000106ba2720) at G4TrackingManager.cc:126
+        frame #10: 0x0000000101df571a libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000106cdf700, anEvent=0x0000000106ba1370) at G4EventManager.cc:185
+        frame #11: 0x0000000101df6c2f libG4event.dylib`G4EventManager::ProcessOneEvent(this=0x0000000106cdf700, anEvent=0x0000000106ba1370) at G4EventManager.cc:338
+        frame #12: 0x0000000101d029e5 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000106c01890, i_event=0) at G4RunManager.cc:399
+        frame #13: 0x0000000101d02815 libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000106c01890, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:367
+        frame #14: 0x0000000101d00cd1 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000106c01890, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #15: 0x000000010002104a U4RecorderTest`main(argc=1, argv=0x00007ffeefbfe5e8) at U4RecorderTest.cc:181
+        frame #16: 0x00007fff72c44015 libdyld.dylib`start + 1
+        frame #17: 0x00007fff72c44015 libdyld.dylib`start + 1
+    (lldb) f 7
+    frame #7: 0x0000000101f1ba1a libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000106cdf7d0) at G4SteppingManager2.cc:173
+       170 	     }   // NULL means the process is inactivated by a user on fly.
+       171 	
+       172 	     physIntLength = fCurrentProcess->
+    -> 173 	                     PostStepGPIL( *fTrack,
+       174 	                                                 fPreviousStepSize,
+       175 	                                                      &fCondition );
+       176 	#ifdef G4VERBOSE
+    (lldb) p fCurrentProcess
+    (InstrumentedG4OpBoundaryProcess *) $1 = 0x0000000108b02560
+    (lldb) 
+
+
+
+
+
+
+::
+
+    epsilon:sysrap blyth$ opticks-f ResetNumberOfInteractionLengthLeft
+    ./ana/g4lldb_old.py:def G4VProcess_ResetNumberOfInteractionLengthLeft(frame, bp_loc, sess):
+    ./cfg4/CManager.cc:This forces G4VProcess::ResetNumberOfInteractionLengthLeft for every step, 
+    ./cfg4/CProcessManager.cc:CProcessManager::ResetNumberOfInteractionLengthLeft
+    ./cfg4/CProcessManager.cc:G4VProcess::ResetNumberOfInteractionLengthLeft explicity invokes G4UniformRand
+    ./cfg4/CProcessManager.cc:    304       virtual void      ResetNumberOfInteractionLengthLeft();
+    ./cfg4/CProcessManager.cc:    095 void G4VProcess::ResetNumberOfInteractionLengthLeft()
+    ./cfg4/CProcessManager.cc:void CProcessManager::ResetNumberOfInteractionLengthLeft(G4ProcessManager* proMgr)
+    ./cfg4/CProcessManager.cc:        p->ResetNumberOfInteractionLengthLeft();
+    ./cfg4/CProcessManager.hh:    static void ResetNumberOfInteractionLengthLeft(G4ProcessManager* proMgr);
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ 
+
+
+* CSteppingAction::prepareForNextStep
+
+
+::
+
+    118 /**
+    119 CProcessManager::ClearNumberOfInteractionLengthLeft
+    120 -----------------------------------------------------
+    121 
+    122 This simply clears the interaction length left for OpAbsorption and OpRayleigh 
+    123 with no use of G4UniformRand.
+    124 
+    125 This provides a devious way to invoke the protected ClearNumberOfInteractionLengthLeft 
+    126 via the public G4VDiscreteProcess::PostStepDoIt
+    127 
+    128 g4-;g4-cls G4VDiscreteProcess::
+    129 
+    130     112 G4VParticleChange* G4VDiscreteProcess::PostStepDoIt(
+    131     113                             const G4Track& ,
+    132     114                             const G4Step&
+    133     115                             )
+    134     116 { 
+    135     117 //  clear NumberOfInteractionLengthLeft
+    136     118     ClearNumberOfInteractionLengthLeft();
+    137     119 
+    138     120     return pParticleChange;
+    139     121 }
+    140 
+    141 **/
+    142 
+    143 void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep)
+    144 {
+    145     G4ProcessVector* pl = proMgr->GetProcessList() ;
+    146     G4int n = pl->entries() ;
+    147 
+    148     for(int i=0 ; i < n ; i++)
+    149     {
+    150         G4VProcess* p = (*pl)[i] ;
+    151         const G4String& name = p->GetProcessName() ;
+    152         bool is_ab = name.compare("OpAbsorption") == 0 ;
+    153         bool is_sc = name.compare("OpRayleigh") == 0 ;
+    154         //bool is_bd = name.compare("OpBoundary") == 0 ;
+    155         if( is_ab || is_sc )
+    156         {
+    157             G4VDiscreteProcess* dp = dynamic_cast<G4VDiscreteProcess*>(p) ;
+    158             assert(dp);   // Transportation not discrete
+    159             dp->G4VDiscreteProcess::PostStepDoIt( aTrack, aStep );
+    160         }
+    161     }
+    162 }
+
+
+
+
+
+
+
+
 WIP : match randoms to avoid history difference
 ---------------------------------------------------
 
@@ -261,6 +623,58 @@ Using the same randoms in B does not make it "TO BR BT SA" index 5::
      'TO BT SA',
      'TO BT SA',
      'TO BT SA']
+
+
+From qu rng_sequence.sh ana::
+
+    In [4]: seq[5]                 Looks like the large value of the 3rd flat could be the one causing BR
+    Out[4]:                      ______
+    array([[0.446, 0.338, 0.207, 0.985, 0.403, 0.178, 0.46 , 0.16 , 0.361, 0.62 , 0.45 , 0.306, 0.503, 0.456, 0.552, 0.848],
+           [0.368, 0.928, 0.192, 0.082, 0.155, 0.647, 0.954, 0.474, 0.027, 0.304, 0.832, 0.406, 0.244, 0.261, 0.292, 0.593],
+           [0.155, 0.196, 0.527, 0.938, 0.252, 0.292, 0.073, 0.436, 0.559, 0.582, 0.012, 0.925, 0.317, 0.167, 0.774, 0.254],
+           [0.506, 0.648, 0.778, 0.087, 0.665, 0.517, 0.62 , 0.773, 0.638, 0.804, 0.6  , 0.203, 0.895, 0.766, 0.622, 0.026],
+           [0.642, 0.431, 0.861, 0.184, 0.282, 0.223, 0.379, 0.039, 0.175, 0.302, 0.42 , 0.699, 0.987, 0.009, 0.112, 0.815],
+           [0.236, 0.035, 0.408, 0.996, 0.559, 0.493, 0.633, 0.659, 0.759, 0.439, 0.892, 0.64 , 0.812, 0.44 , 0.708, 0.855],
+           [0.128, 0.494, 0.911, 0.7  , 0.605, 0.047, 0.055, 0.443, 0.087, 0.063, 0.09 , 0.286, 0.305, 0.448, 0.626, 0.392],
+
+::
+
+    In [14]: seq[:10,0,:10]                                                                                                                                                                             
+    Out[14]: 
+    array([[0.74 , 0.438, 0.517,  0.157 , 0.071, 0.463, 0.228, 0.329, 0.144, 0.188],
+           [0.921, 0.46 , 0.333,  0.373 , 0.49 , 0.567, 0.08 , 0.233, 0.509, 0.089],
+           [0.039, 0.25 , 0.184,  0.962 , 0.521, 0.94 , 0.831, 0.41 , 0.082, 0.807],
+           [0.969, 0.495, 0.673,  0.563 , 0.12 , 0.976, 0.136, 0.589, 0.491, 0.328],
+           [0.925, 0.053, 0.163,  0.89  , 0.567, 0.241, 0.494, 0.321, 0.079, 0.148],
+           [0.446, 0.338, 0.207, *0.985*, 0.403, 0.178, 0.46 , 0.16 , 0.361, 0.62 ],      #5
+           [0.667, 0.397, 0.158,  0.542 , 0.706, 0.126, 0.154, 0.653, 0.38 , 0.855],
+           [0.11 , 0.874, 0.981,  0.967 , 0.162, 0.428, 0.931, 0.01 , 0.846, 0.38 ],
+           [0.47 , 0.482, 0.428,  0.442 , 0.78 , 0.859, 0.614, 0.802, 0.659, 0.592],
+           [0.513, 0.043, 0.952,  0.926 , 0.26 , 0.913, 0.393, 0.833, 0.275, 0.752]], dtype=float32)
+
+    In [15]:                                                                                                  
+
+
+
+::
+
+     742 
+     743     const float u_boundary_burn = curand_uniform(&rng) ;  // needed for random consumption alignment with Geant4 G4OpBoundaryProcess::PostStepDoIt
+     744     const float u_reflect = curand_uniform(&rng) ;
+     745     bool reflect = u_reflect > TransCoeff  ;
+     746 
+     747 #ifdef DEBUG_PIDX
+     748     if(idx == base->pidx)
+     749     {
+     750     printf("//qsim.propagate_at_boundary idx %d u_boundary_burn %10.4f u_reflect %10.4f TransCoeff %10.4f reflect %d \n",  
+     751               idx,  u_boundary_burn, u_reflect, TransCoeff, reflect  );                                                                               
+     752     }         
+     753 #endif
+
+
+
+
+
 
     In [5]: seqhis_(b.seq[:,0])                                                                                                                                                                         
     Out[5]: 

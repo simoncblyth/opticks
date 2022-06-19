@@ -541,6 +541,22 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
           }
           else {
              G4double rand = G4UniformRand();
+
+#ifdef DEBUG_PIDX
+             if(pidx_dump)
+             {
+                  std::cout 
+                      << " DiDi0 " 
+                      << " pidx " << std::setw(6) << pidx 
+                      << " rand " << std::setw(10) << std::fixed << std::setprecision(5) << rand  
+                      << " theReflectivity " << std::setw(10) << std::fixed << std::setprecision(4) << theReflectivity
+                      << " rand > theReflectivity  " << (rand > theReflectivity )
+                      << std::endl 
+                      ;
+             }
+
+#endif
+
              if ( rand > theReflectivity ) {
                 if (rand > theReflectivity + theTransmittance) {
                    DoAbsorption();
@@ -1207,7 +1223,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
 
               if (sint1 > 0.0) {
 #ifdef DEBUG_PIDX
-                 if(pidx_dump) printf("//DiDi sint1 > 0 \n" );  
+                 if(pidx_dump) printf("//DiDi pidx %6d : sint1 > 0 \n", pidx );  
 #endif
 
                  A_trans = OldMomentum.cross(theFacetNormal);
@@ -1220,7 +1236,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
               else {
 
 #ifdef DEBUG_PIDX
-                 if(pidx_dump) printf("//DiDi NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  \n" );  
+                 if(pidx_dump) printf("//DiDi pidx %6d : NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  \n", pidx );  
 #endif
 
                  A_trans  = OldPolarization;
@@ -1240,6 +1256,11 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
               if (theTransmittance > 0) TransCoeff = theTransmittance;
               else if (cost1 != 0.0) TransCoeff = s2/s1;
               else TransCoeff = 0.0;
+
+
+#ifdef DEBUG_PIDX
+              if(pidx_dump) printf("//DiDi pidx %6d : TransCoeff %10.4f \n", pidx, TransCoeff ); 
+#endif
 
               if ( !G4BooleanRand(TransCoeff) ) {
 
@@ -1299,7 +1320,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
                 // Simulate transmission/refraction
 
 #ifdef DEBUG_PIDX
-                if(pidx_dump) printf("//DiDi TRANSMIT \n"); 
+                if(pidx_dump) printf("//DiDi pidx %6d : TRANSMIT \n", pidx ); 
 #endif
 
 
@@ -1330,7 +1351,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
                 }
 
 #ifdef DEBUG_PIDX
-                if(pidx_dump) printf("//DiDi pidx %4d TRANSMIT NewMom (%10.4f %10.4f %10.4f) NewPol (%10.4f %10.4f %10.4f) \n",
+                if(pidx_dump) printf("//DiDi pidx %4d : TRANSMIT NewMom (%10.4f %10.4f %10.4f) NewPol (%10.4f %10.4f %10.4f) \n",
                            pidx, 
                            NewMomentum.x(), NewMomentum.y(), NewMomentum.z(),
                            NewPolarization.x(), NewPolarization.y(), NewPolarization.z()
