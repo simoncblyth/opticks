@@ -91,6 +91,8 @@ Steps to fix:
     double                   m_flat_prior ; 
     bool                     m_ready ; 
     std::vector<int>*        m_select ; 
+    unsigned                 m_select_action ; 
+
 
     bool isSelect(int photon_idx, int flat_cursor) const ; 
     std::string descSelect(int photon_idx, int flat_cursor ) const; 

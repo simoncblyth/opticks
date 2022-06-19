@@ -10,6 +10,10 @@
 #include "NP.hh"
 #include "SPath.hh"
 #include "SSys.hh"
+
+#include "SBacktrace.hh"
+#include "SDBG.h"
+
 #include "PLOG.hh"
 
 const plog::Severity U4Random::LEVEL = PLOG::EnvLevel("U4Random", "DEBUG") ; 
@@ -70,6 +74,8 @@ to be envvar OR SEventConfig based and eliminate the U4Random arguments
 **/
 
 
+
+
 U4Random::U4Random(const char* seq, const char* seqmask)
     :
     m_seqpath(SPath::Resolve( seq ? seq : SeqPath(), NOOP)), 
@@ -90,7 +96,8 @@ U4Random::U4Random(const char* seq, const char* seqmask)
     m_flat_debug(SSys::getenvbool("U4Random_flat_debug")),
     m_flat_prior(0.),
     m_ready(false),
-    m_select(SSys::getenvintvec("U4Random_select"))
+    m_select(SSys::getenvintvec("U4Random_select")),
+    m_select_action(SDBG::Action(SSys::getenvvar("U4Random_select_action", "backtrace")))   // "backtrace" "caller" "interrupt"
 {
     init(); 
 }
@@ -102,6 +109,14 @@ U4Random::isSelect
 Returns true when the (photon index, random index "flat cursor") tuple
 provided in the arguments matches one of the pairs provided in the 
 comma delimited U4Random_select envvar.
+
+An U4Random_select envvar of (-1,-1) is special cased to always match, 
+and hence may generate very large amounts of output dumping. 
+A single -1 corresponds to a wildcard:
+
+* (0,-1) will match all cursors for photon idx 0 
+* (-1,0) will match all cursor 0 for all photon idx 
+
 
 This allows selection of one or more U4Random::flat calls.
 For example std::raise(SIGINT) could be called when a random draw of 
@@ -118,7 +133,8 @@ bool U4Random::isSelect(int photon_idx, int flat_cursor) const
    {
        int _pidx   = (*m_select)[p*2+0] ; 
        int _cursor = (*m_select)[p*2+1] ; 
-       if( _pidx == photon_idx && _cursor == flat_cursor ) return true ; 
+       bool match = (( _pidx == photon_idx || _pidx == -1)  && (_cursor == flat_cursor || _cursor == -1)) ;
+       if(match) return true ;  
    }
    return false ; 
 }
@@ -136,7 +152,7 @@ std::string U4Random::descSelect(int photon_idx, int flat_cursor ) const
         {
            int _pidx   = (*m_select)[p*2+0] ; 
            int _cursor = (*m_select)[p*2+1] ; 
-           bool match = ( _pidx == photon_idx && _cursor == flat_cursor ) ; 
+           bool match = ( ( _pidx == photon_idx || _pidx == -1)  && (_cursor == flat_cursor || _cursor == -1) ) ; 
            ss << " (" << _pidx << "," << _cursor << ") " << ( match ? "YES" : "NO" )  << " " ; 
         }
     }
@@ -412,7 +428,12 @@ double U4Random::flat()
     if( select ) 
     {
         LOG(info) << descSelect(m_seq_index, cursor) ; 
-        std::raise(SIGINT) ; 
+        switch(m_select_action)
+        {
+            case SDBG::INTERRUPT: std::raise(SIGINT)       ; break ; 
+            case SDBG::BACKTRACE: SBacktrace::Dump()       ; break ; 
+            case SDBG::CALLER:    SBacktrace::DumpCaller() ; break ; 
+        }
     }
 
     return d ; 

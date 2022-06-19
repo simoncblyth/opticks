@@ -48,6 +48,15 @@ void SBacktrace::Dump()
     std::ostream& out = std::cout ;
     Dump(out);  
 }
+void SBacktrace::DumpCaller() 
+{
+    std::ostream& out = std::cout ;
+    DumpCaller(out);  
+}
+
+
+
+
 
 void SBacktrace::Dump(std::ostream& out) 
 {
@@ -82,6 +91,14 @@ void SBacktrace::Dump(std::ostream& out)
 
    free(symbollist);
 }
+
+
+void SBacktrace::DumpCaller(std::ostream& out)
+{
+    const char* caller = CallSite("::flat") ; 
+    out << "SBacktrace::DumpCaller " << caller << std::endl ;  
+} 
+
 
 
 /**

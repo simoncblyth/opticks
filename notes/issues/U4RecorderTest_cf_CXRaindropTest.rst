@@ -215,6 +215,25 @@ G4Cerenkov_modified.cc::
 
 
 
+HMM : I recall machinery to query stack frames from the process itself ?
+----------------------------------------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ opticks-f stacktrace
+    ./sysrap/SBacktrace.cc:https://panthema.net/2008/0901-stacktrace-demangled/cxa_demangle.html
+    epsilon:opticks blyth$ 
+
+::
+
+    U4Random_select=0,0,5,0 U4Random_select_action=backtrace ./U4RecorderTest.sh run
+    U4Random_select=0,0,5,0 U4Random_select_action=caller    ./U4RecorderTest.sh run
+    U4Random_select=0,0,5,0 U4Random_select_action=interrupt    ./U4RecorderTest.sh dbg
+
+    U4Random_select=-1,0 U4Random_select_action=backtrace ./U4RecorderTest.sh run
+
+
+
 TODO : random "zipper" meshing 
 ---------------------------------
 
@@ -227,7 +246,33 @@ TODO : random "zipper" meshing
 
     * HMM : vaguely recall some trick related to this 
 
-    TODO: check which are the four processes 
+    DONE : checked the four processes from "f 4" are :  scint, boundary, rayleigh, absorption 
+
+    * this is picking between RE/sail-to-boundary/SC/AB and sail usually wins
+
+
+    (lldb) f 4
+    frame #4: 0x0000000101f1ba1a libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000106ea87a0) at G4SteppingManager2.cc:173
+       170 	     }   // NULL means the process is inactivated by a user on fly.
+       171 	
+       172 	     physIntLength = fCurrentProcess->
+    -> 173 	                     PostStepGPIL( *fTrack,
+       174 	                                                 fPreviousStepSize,
+       175 	                                                      &fCondition );
+       176 	#ifdef G4VERBOSE
+
+    (lldb) p fCurrentProcess
+    (DsG4Scintillation *) $0 = 0x0000000108a22aa0
+
+    lldb) p fCurrentProcess
+    (InstrumentedG4OpBoundaryProcess *) $1 = 0x0000000108a256b0
+
+    (lldb) p fCurrentProcess
+    (G4OpRayleigh *) $2 = 0x0000000108a25520
+
+    (lldb) p fCurrentProcess
+    (G4OpAbsorption *) $3 = 0x0000000108a253a0
+
 
 
     (lldb) bt
