@@ -232,6 +232,16 @@ HMM : I recall machinery to query stack frames from the process itself ?
 
     U4Random_select=-1,0 U4Random_select_action=backtrace ./U4RecorderTest.sh run
 
+        dump the backtrace for the first random consumption "cursor 0" of all photons pidx:"-1" 
+
+
+    U4Random_select=-1,0,-1,1 U4Random_select_action=backtrace ./U4RecorderTest.sh run
+
+        dump the backtrace for the first and second random consumption "cursor 0 and 1" of all photons pidx:"-1" 
+
+
+* :doc:`ideas_on_random_alignment_in_new_workflow`
+
 
 
 TODO : random "zipper" meshing 

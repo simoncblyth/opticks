@@ -25,6 +25,27 @@ SBacktrace
 
 Utilities for dumping process backtraces.
 
+Using the addresses in the debugger::
+
+
+    (lldb) source list -a 0x0000000101f1be26
+    /usr/local/opticks_externals/g4_1042/lib/libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength() + 1334 at /usr/local/opticks_externals/g4_1042.build/geant4.10.04.p02/source/tracking/src/G4SteppingManager2.cc:251
+       246 	                                    &fGPILSelection );
+       247 	#ifdef G4VERBOSE
+       248 	                         // !!!!! Verbose
+       249 	     if(verboseLevel>0) fVerbose->DPSLAlongStep();
+       250 	#endif
+    -> 251 	     if(physIntLength < PhysicalStep){
+       252 	       PhysicalStep = physIntLength;
+       253 	
+       254 	       // Check if the process wants to be the GPIL winner. For example,
+       255 	       // multi-scattering proposes Step limit, but won't be the winner.
+       256 	       if(fGPILSelection==CandidateForSelection){
+    (lldb) 
+
+
+
+
 **/
 
 
