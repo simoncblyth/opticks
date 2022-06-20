@@ -34,6 +34,7 @@ struct quad4 ;
 struct quad6 ; 
 struct srec ; 
 struct sseq ; 
+struct stag ; 
 struct sphoton ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -66,6 +67,7 @@ struct sevent
     int      max_rec     ; // eg:           10  compressed step record
     int      max_seq     ; // eg:           16  seqhis/seqbnd
     int      max_prd     ;  
+    int      max_tag     ;     // stag.h random consumption tag 
 
     int      num_genstep ; 
     quad6*   genstep ; 
@@ -93,6 +95,9 @@ struct sevent
 
     int      num_prd ; 
     quad2*   prd ; 
+
+    int      num_tag ; 
+    stag*    tag ; 
 
 
     SEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
@@ -133,6 +138,7 @@ SEVENT_METHOD void sevent::init()
     max_rec      = SEventConfig::MaxRec()  ;     // compressed step record 
     max_seq      = SEventConfig::MaxSeq()  ;     // seqhis 
     max_prd      = SEventConfig::MaxPrd()  ;  
+    max_tag      = SEventConfig::MaxTag()  ;  
 
     zero(); 
 
@@ -169,6 +175,7 @@ SEVENT_METHOD std::string sevent::descMax() const
         << " evt.max_rec  "      << std::setw(w) << max_rec
         << " evt.max_seq  "      << std::setw(w) << max_seq
         << " evt.max_prd  "      << std::setw(w) << max_prd
+        << " evt.max_tag  "      << std::setw(w) << max_tag
         ;
 
     std::string s = ss.str();  
@@ -187,6 +194,7 @@ SEVENT_METHOD std::string sevent::descNum() const
         << " evt.num_simtrace "  << std::setw(w) << num_simtrace
         << " evt.num_record "  << std::setw(w) << num_record
         << " evt.num_prd "  << std::setw(w) << num_prd
+        << " evt.num_tag "  << std::setw(w) << num_tag
         ;
     std::string s = ss.str();  
     return s ; 
@@ -234,6 +242,10 @@ SEVENT_METHOD std::string sevent::descBuf() const
         << std::setw(20) << " evt.prd "         << std::setw(w) << ( prd  ? "Y" : "N" ) << " " << std::setw(20) << prd
         << std::setw(20) << " num_prd "         << std::setw(7) << num_prd 
         << std::setw(20) << " max_prd "         << std::setw(7) << max_prd 
+        << std::endl
+        << std::setw(20) << " evt.tag "         << std::setw(w) << ( tag  ? "Y" : "N" ) << " " << std::setw(20) << tag
+        << std::setw(20) << " num_tag "         << std::setw(7) << num_tag 
+        << std::setw(20) << " max_tag "         << std::setw(7) << max_tag 
         << std::endl
         ;
     std::string s = ss.str();  
@@ -321,6 +333,7 @@ SEVENT_METHOD void sevent::zero()
     num_hit = 0 ; 
     num_simtrace = 0 ; 
     num_prd = 0 ; 
+    num_tag = 0 ; 
 
     genstep = nullptr ; 
     seed = nullptr ; 
@@ -331,6 +344,7 @@ SEVENT_METHOD void sevent::zero()
     hit = nullptr ; 
     simtrace = nullptr ; 
     prd = nullptr ; 
+    tag = nullptr ; 
     
 }
 #endif 

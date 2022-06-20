@@ -56,6 +56,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxRec     = "OPTICKS_MAX_REC" ; 
     static constexpr const char* kMaxSeq     = "OPTICKS_MAX_SEQ" ; 
     static constexpr const char* kMaxPrd     = "OPTICKS_MAX_PRD" ; 
+    static constexpr const char* kMaxTag     = "OPTICKS_MAX_TAG" ; 
     static constexpr const char* kMaxExtent  = "OPTICKS_MAX_EXTENT" ; 
     static constexpr const char* kMaxTime    = "OPTICKS_MAX_TIME" ; 
     static constexpr const char* kOutFold    = "OPTICKS_OUT_FOLD" ; 
@@ -74,6 +75,7 @@ struct SYSRAP_API SEventConfig
     static int MaxRec();     // compressed photon step record
     static int MaxSeq();     // seqhis slots
     static int MaxPrd();    
+    static int MaxTag();    
     static float MaxExtent() ; 
     static float MaxTime() ; 
     static const char* OutFold(); 
@@ -100,6 +102,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxRec(    int max_rec); 
     static void SetMaxSeq(    int max_seq); 
     static void SetMaxPrd(    int max_prd); 
+    static void SetMaxTag(    int max_tag); 
     static void SetMaxExtent( float max_extent); 
     static void SetMaxTime(   float max_time ); 
     static void SetOutFold( const char* out_fold); 
@@ -123,6 +126,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxRecDefault ; 
     static int _MaxSeqDefault ; 
     static int _MaxPrdDefault ; 
+    static int _MaxTagDefault ; 
     static float _MaxExtentDefault ; 
     static float _MaxTimeDefault  ; 
     static const char* _OutFoldDefault ; 
@@ -142,6 +146,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxRec ; 
     static int _MaxSeq ; 
     static int _MaxPrd ; 
+    static int _MaxTag ; 
     static float _MaxExtent ; 
     static float _MaxTime  ; 
     static const char* _OutFold ; 

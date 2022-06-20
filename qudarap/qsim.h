@@ -84,6 +84,7 @@ struct qsim
 
 #ifdef DEBUG_TAG
     stag                tag = {} ;  
+    unsigned            tag_slot = 0 ; 
 #endif
             
 
@@ -108,7 +109,7 @@ struct qsim
     QSIM_METHOD static void lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, unsigned idx  ); 
     QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng, unsigned idx); 
 
-    QSIM_METHOD static void rayleigh_scatter(sphoton& p, curandStateXORWOW& rng ); 
+    QSIM_METHOD void rayleigh_scatter(sphoton& p, curandStateXORWOW& rng ); 
 
 
     QSIM_METHOD void    mock_propagate( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx ); 
@@ -392,7 +393,7 @@ Transverse wave nature means::
       
 **/
 
-inline QSIM_METHOD void qsim::rayleigh_scatter(sphoton& p, curandStateXORWOW& rng )
+inline QSIM_METHOD void qsim::rayleigh_scatter(sphoton& p, curandStateXORWOW& rng ) 
 {
     float3* p_direction = &p.mom ; 
     float3* p_polarization = &p.pol ;
@@ -411,11 +412,11 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(sphoton& p, curandStateXORWOW& rn
         float u4 = curand_uniform(&rng) ;    
 
 #ifdef DEBUG_TAG
-        tag.add(stag_sc_u0, u0); 
-        tag.add(stag_sc_u1, u1); 
-        tag.add(stag_sc_u2, u2); 
-        tag.add(stag_sc_u3, u3); 
-        tag.add(stag_sc_u4, u4); 
+        tag.add(tag_slot, stag_sc_u0, u0); 
+        tag.add(tag_slot, stag_sc_u1, u1); 
+        tag.add(tag_slot, stag_sc_u2, u2); 
+        tag.add(tag_slot, stag_sc_u3, u3); 
+        tag.add(tag_slot, stag_sc_u4, u4); 
 #endif
 
         float cosTheta = u0 ;
@@ -503,8 +504,8 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
     float u_absorption = curand_uniform(&rng) ;
 
 #ifdef DEBUG_TAG
-    tag.add(stag_to_sc, u_scattering); 
-    tag.add(stag_to_ab, u_absorption); 
+    tag.add(tag_slot, stag_to_sc, u_scattering); 
+    tag.add(tag_slot, stag_to_ab, u_absorption); 
 #endif
 
 
@@ -537,7 +538,7 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
             float u_reemit = reemission_prob == 0.f ? 2.f : curand_uniform(&rng);  // avoid consumption at absorption when not scintillator
 
 #ifdef DEBUG_TAG
-            if( u_reemit != 2.f ) tag.add(stag_to_re, u_reemit) ; 
+            if( u_reemit != 2.f ) tag.add(tag_slot, stag_to_re, u_reemit) ; 
 #endif
 
 
@@ -554,11 +555,11 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
                 p.pol = normalize(cross(uniform_sphere(u_re_pol_ph, u_re_pol_ct), p.mom));
 
 #ifdef DEBUG_TAG
-                tag.add(stag_re_wl, u_re_wavelength); 
-                tag.add(stag_re_mom_ph, u_re_mom_ph); 
-                tag.add(stag_re_mom_ct, u_re_mom_ct); 
-                tag.add(stag_re_pol_ph, u_re_pol_ph); 
-                tag.add(stag_re_pol_ct, u_re_pol_ct); 
+                tag.add(tag_slot, stag_re_wl, u_re_wavelength); 
+                tag.add(tag_slot, stag_re_mom_ph, u_re_mom_ph); 
+                tag.add(tag_slot, stag_re_mom_ct, u_re_mom_ct); 
+                tag.add(tag_slot, stag_re_pol_ph, u_re_pol_ph); 
+                tag.add(tag_slot, stag_re_pol_ct, u_re_pol_ct); 
 #endif
 
                 flag = BULK_REEMIT ;
@@ -795,8 +796,8 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     const float u_reflect = curand_uniform(&rng) ;
 
 #ifdef DEBUG_TAG
-    tag.add(stag_at_bo, u_boundary_burn); 
-    tag.add(stag_at_rf, u_reflect); 
+    tag.add(tag_slot, stag_at_bo, u_boundary_burn); 
+    tag.add(tag_slot, stag_at_rf, u_reflect); 
 #endif
 
     bool reflect = u_reflect > TransCoeff  ;
@@ -1075,8 +1076,8 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, co
     float u_surface_burn = curand_uniform(&rng);
 
 #ifdef DEBUG_TAG
-    tag.add(stag_sf_sd, u_surface); 
-    tag.add(stag_sf_sb, u_surface_burn); 
+    tag.add(tag_slot, stag_sf_sd, u_surface); 
+    tag.add(tag_slot, stag_sf_bu, u_surface_burn); 
 #endif
 
 
@@ -1265,6 +1266,12 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
 
     if(evt->photon) evt->photon[idx] = p ;  
     if(evt->seq) evt->seq[idx] = seq ; 
+
+#ifdef DEBUG_TAG
+    if(evt->tag) evt->tag[idx] = tag ; 
+#endif
+
+
 }
 
 /**

@@ -18,6 +18,7 @@ int SEventConfig::_MaxRecordDefault = 0 ;
 int SEventConfig::_MaxRecDefault = 0 ; 
 int SEventConfig::_MaxSeqDefault = 0 ; 
 int SEventConfig::_MaxPrdDefault = 0 ; 
+int SEventConfig::_MaxTagDefault = 0 ; 
 float SEventConfig::_MaxExtentDefault = 1000.f ;  // mm  : domain compression used by *rec*
 float SEventConfig::_MaxTimeDefault = 10.f ; // ns 
 const char* SEventConfig::_OutFoldDefault = "$TMP" ; 
@@ -47,6 +48,7 @@ int SEventConfig::_MaxRecord    = SSys::getenvint(kMaxRecord, _MaxRecordDefault 
 int SEventConfig::_MaxRec       = SSys::getenvint(kMaxRec, _MaxRecDefault ) ;   
 int SEventConfig::_MaxSeq       = SSys::getenvint(kMaxSeq,  _MaxSeqDefault ) ;  
 int SEventConfig::_MaxPrd       = SSys::getenvint(kMaxPrd,  _MaxPrdDefault ) ;  
+int SEventConfig::_MaxTag       = SSys::getenvint(kMaxTag,  _MaxTagDefault ) ;  
 float SEventConfig::_MaxExtent  = SSys::getenvfloat(kMaxExtent, _MaxExtentDefault );  
 float SEventConfig::_MaxTime    = SSys::getenvfloat(kMaxTime,   _MaxTimeDefault );    // ns
 const char* SEventConfig::_OutFold = SSys::getenvvar(kOutFold, _OutFoldDefault ); 
@@ -66,6 +68,7 @@ int SEventConfig::MaxRecord(){   return _MaxRecord ; }
 int SEventConfig::MaxRec(){      return _MaxRec ; }
 int SEventConfig::MaxSeq(){      return _MaxSeq ; }
 int SEventConfig::MaxPrd(){      return _MaxPrd ; }
+int SEventConfig::MaxTag(){      return _MaxTag ; }
 float SEventConfig::MaxExtent(){ return _MaxExtent ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
@@ -86,6 +89,7 @@ void SEventConfig::SetMaxRecord( int max_record){  _MaxRecord  = max_record  ; C
 void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; Check() ; }
 void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; Check() ; }
 void SEventConfig::SetMaxPrd(    int max_prd){     _MaxPrd     = max_prd     ; Check() ; }
+void SEventConfig::SetMaxTag(    int max_tag){     _MaxTag     = max_tag     ; Check() ; }
 void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; Check() ; }
 void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; Check() ; }
 void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? strdup(outfold) : nullptr ; Check() ; }
@@ -114,6 +118,7 @@ void SEventConfig::Check()
    assert( _MaxRec    >= 0 && _MaxRec    <= 16 ) ; 
    assert( _MaxSeq    >= 0 && _MaxSeq    <= 16 ) ; 
    assert( _MaxPrd    >= 0 && _MaxPrd    <= 16 ) ; 
+   assert( _MaxTag    >= 0 && _MaxTag    <= 24 ) ; 
 }
 
 
@@ -150,6 +155,8 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " MaxSeq " << " : " << MaxSeq() << std::endl 
        << std::setw(25) << kMaxPrd
        << std::setw(20) << " MaxPrd " << " : " << MaxPrd() << std::endl 
+       << std::setw(25) << kMaxTag
+       << std::setw(20) << " MaxTag " << " : " << MaxTag() << std::endl 
        << std::setw(25) << kHitMask
        << std::setw(20) << " HitMask " << " : " << HitMask() << std::endl 
        << std::setw(25) << ""
@@ -214,6 +221,7 @@ void SEventConfig::SetMode(const char* mode) // static
         SEventConfig::SetMaxRec(max_bounce+1); 
         SEventConfig::SetMaxSeq(max_bounce+1); 
         SEventConfig::SetMaxPrd(max_bounce+1); 
+        SEventConfig::SetMaxTag(24);    // 2*(64//5) = 2*12 = 24
     }
     else
     {

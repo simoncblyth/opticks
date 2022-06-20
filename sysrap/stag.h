@@ -4,9 +4,6 @@ stag.h : random consumption tags for simulation alignment purposes
 =====================================================================
 
 
-
-
-
 **/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -53,11 +50,12 @@ struct stag
     static constexpr const unsigned long long MASK = ( 0x1ull << BITS ) - 1ull ;   
     static constexpr const unsigned SLOTMAX = 64/BITS ;  // 64//5 = 12 so can fit 12 tags into each seqtag 64 bits, with NSEQ 2 that allows 24 tags  
 
-    int slot = 0 ; 
+    // int slot = 0 ;  having the slot inside the struct is inconvenient for purpose of persisting into a stag array eg: evt->tag[idx] = tag 
+    // HMM could operate slotless by slotting into first with no bits set ?
     unsigned long long seqtag[NSEQ] ;
  
     STAG_METHOD void zero(); 
-    STAG_METHOD void add(unsigned tag, float u=0.f );   // passing the random only needed during dev to check are tagging all consumption 
+    STAG_METHOD void add(unsigned& slot, unsigned tag, float u=0.f );   // passing the random only needed during dev to check are tagging all consumption 
     STAG_METHOD unsigned get(unsigned slot_) const ; 
 
 
@@ -136,11 +134,10 @@ struct stag
 
 STAG_METHOD void stag::zero()
 {
-    slot = 0 ; 
     for(unsigned i=0 ; i < NSEQ ; i++) seqtag[i] = 0ull ; 
 }
 
-STAG_METHOD void stag::add(unsigned tag, float u)
+STAG_METHOD void stag::add(unsigned& slot, unsigned tag, float u)
 {
     unsigned iseq = slot/SLOTMAX ; 
     if(iseq < NSEQ) seqtag[iseq] |=  (( tag & MASK ) << BITS*(slot - iseq*SLOTMAX) );
@@ -220,7 +217,7 @@ STAG_METHOD const char* stag::Note(unsigned tag)
 STAG_METHOD std::string stag::desc() const 
 {
     std::stringstream ss ;
-    ss << std::setw(5) << slot << " : " << std::hex << std::setw(16) << seqtag << std::dec << " : " ; 
+    ss << std::hex << std::setw(16) << seqtag << std::dec << " : " ; 
     ss << std::endl ; 
     for(int i=0 ; i < SLOTMAX*NSEQ ; i++) 
     {

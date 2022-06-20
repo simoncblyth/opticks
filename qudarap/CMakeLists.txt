@@ -157,6 +157,7 @@ target_link_libraries( ${name} ${LIBS})
 #target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP FLIP_RANDOM )
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
 target_compile_definitions( ${name} PUBLIC DEBUG_PIDX )
+target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
 #target_compile_definitions( ${name} PRIVATE DEBUG_TIME )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 

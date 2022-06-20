@@ -24,6 +24,12 @@ How to do that.
    to get the consumption to line up 
 
 
+WIP : sysrap/stag.h for tagging all random consumption
+---------------------------------------------------------
+
+
+
+
 GPU side simstream
 ---------------------
 
