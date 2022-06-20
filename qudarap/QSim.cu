@@ -78,7 +78,8 @@ __global__ void _QSim_scint_wavelength(qsim* sim, float* wavelength, unsigned nu
 
     curandState rng = sim->rngstate[id]; 
 
-    float wl = sim->scint->wavelength(rng) ; 
+    float u_wl = curand_uniform(&rng); 
+    float wl = sim->scint->wavelength(u_wl) ; 
  
     if(id % 100000 == 0) printf("//_QSim_scint_wavelength id %d  wl %10.4f    \n", id, wl  ); 
 

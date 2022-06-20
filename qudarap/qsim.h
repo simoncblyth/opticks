@@ -53,6 +53,11 @@ TODO:
 #include "scurand.h"
 #include "sevent.h"
 
+#ifdef DEBUG_TAG
+#include "stag.h"
+#endif
+
+
 #include "qbase.h"
 #include "qprop.h"
 #include "qmultifilm.h"
@@ -76,6 +81,10 @@ struct qsim
     qmultifilm*         multifilm;
     qcerenkov*          cerenkov ; 
     qscint*             scint ; 
+
+#ifdef DEBUG_TAG
+    stag                tag = {} ;  
+#endif
             
 
     QSIM_METHOD void    generate_photon_dummy( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
@@ -161,6 +170,14 @@ inline QSIM_METHOD void qsim::generate_photon_dummy(sphoton& p_, curandStateXORW
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+
+/**
+qsim::uniform_sphere
+---------------------
+
+
+**/
+
 
 inline QSIM_METHOD float3 qsim::uniform_sphere(curandStateXORWOW& rng)
 {
@@ -393,6 +410,14 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(sphoton& p, curandStateXORWOW& rn
         float u3 = curand_uniform(&rng) ;    
         float u4 = curand_uniform(&rng) ;    
 
+#ifdef DEBUG_TAG
+        tag.add(stag_sc_u0, u0); 
+        tag.add(stag_sc_u1, u1); 
+        tag.add(stag_sc_u2, u2); 
+        tag.add(stag_sc_u3, u3); 
+        tag.add(stag_sc_u4, u4); 
+#endif
+
         float cosTheta = u0 ;
         float sinTheta = sqrtf(1.0f-u0*u0);
         if(u1 < 0.5f ) cosTheta = -cosTheta ; 
@@ -476,6 +501,13 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
 
     float u_scattering = curand_uniform(&rng) ;
     float u_absorption = curand_uniform(&rng) ;
+
+#ifdef DEBUG_TAG
+    tag.add(stag_to_sc, u_scattering); 
+    tag.add(stag_to_ab, u_absorption); 
+#endif
+
+
     float scattering_distance = -scattering_length*logf(u_scattering);   
     float absorption_distance = -absorption_length*logf(u_absorption);
 
@@ -504,11 +536,30 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
 
             float u_reemit = reemission_prob == 0.f ? 2.f : curand_uniform(&rng);  // avoid consumption at absorption when not scintillator
 
+#ifdef DEBUG_TAG
+            if( u_reemit != 2.f ) tag.add(stag_to_re, u_reemit) ; 
+#endif
+
+
             if (u_reemit < reemission_prob)    
-            {   
-                p.wavelength = scint->wavelength(rng);
-                p.mom = uniform_sphere(rng);
-                p.pol = normalize(cross(uniform_sphere(rng), p.mom));
+            {  
+                float u_re_wavelength = curand_uniform(&rng);  
+                float u_re_mom_ph = curand_uniform(&rng); 
+                float u_re_mom_ct = curand_uniform(&rng); 
+                float u_re_pol_ph = curand_uniform(&rng); 
+                float u_re_pol_ct = curand_uniform(&rng); 
+
+                p.wavelength = scint->wavelength(u_re_wavelength);
+                p.mom = uniform_sphere(u_re_mom_ph, u_re_mom_ct);
+                p.pol = normalize(cross(uniform_sphere(u_re_pol_ph, u_re_pol_ct), p.mom));
+
+#ifdef DEBUG_TAG
+                tag.add(stag_re_wl, u_re_wavelength); 
+                tag.add(stag_re_mom_ph, u_re_mom_ph); 
+                tag.add(stag_re_mom_ct, u_re_mom_ct); 
+                tag.add(stag_re_pol_ph, u_re_pol_ph); 
+                tag.add(stag_re_pol_ct, u_re_pol_ct); 
+#endif
 
                 flag = BULK_REEMIT ;
                 return CONTINUE;
@@ -742,6 +793,12 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
 
     const float u_boundary_burn = curand_uniform(&rng) ;  // needed for random consumption alignment with Geant4 G4OpBoundaryProcess::PostStepDoIt
     const float u_reflect = curand_uniform(&rng) ;
+
+#ifdef DEBUG_TAG
+    tag.add(stag_at_bo, u_boundary_burn); 
+    tag.add(stag_at_rf, u_reflect); 
+#endif
+
     bool reflect = u_reflect > TransCoeff  ;
 
 #ifdef DEBUG_PIDX
@@ -1017,6 +1074,12 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, co
     float u_surface = curand_uniform(&rng);
     float u_surface_burn = curand_uniform(&rng);
 
+#ifdef DEBUG_TAG
+    tag.add(stag_sf_sd, u_surface); 
+    tag.add(stag_sf_sb, u_surface_burn); 
+#endif
+
+
     int action = u_surface < absorb + detect ? BREAK : CONTINUE  ; 
 
     if( action == BREAK )
@@ -1180,6 +1243,9 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
         if(evt->prd)    evt->prd[evt->max_prd*idx+bounce] = *prd ; 
         // HMM: unlike others no point in tail recording the prd, as propagate will not be changing it ?
 
+
+
+
 #ifdef DEBUG_PIDX
         if(idx == base->pidx) 
         printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d prd.q0.f.xyzw (%10.4f %10.4f %10.4f %10.4f) \n", 
@@ -1300,8 +1366,15 @@ inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bo
 
     //printf("//qsim.hemisphere_polarized polz %d normal (%10.4f, %10.4f, %10.4f) \n", polz, normal->x, normal->y, normal->z );  
 
-    float phi = curand_uniform(&rng)*2.f*M_PIf;  // 0->2pi
+    float u_hemipol_phi = curand_uniform(&rng) ; 
+    float phi = u_hemipol_phi*2.f*M_PIf;  // 0->2pi
     float cosTheta = curand_uniform(&rng) ;      // 0->1
+
+#ifdef DEBUG_TAG
+    tag.add(stag_hp_ph, u_hemipol_phi ); 
+    tag.add(stag_hp_ct, cosTheta ); 
+#endif
+
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
 
     p.mom.x = cosf(phi)*sinTheta ; 

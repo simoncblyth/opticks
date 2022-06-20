@@ -232,6 +232,8 @@ set(HEADERS
     ssincos.h
     sxyz.h
     sc4u.h
+    stag.h 
+
     sbit_.h
     sbibit.h
 

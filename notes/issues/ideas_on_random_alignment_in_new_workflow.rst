@@ -48,6 +48,8 @@ GPU side simstream
      to_boundary_AB
      to_boundary_SC 
 
+* hmm: can use same machinery that sseq does if less than 16 
+
 
 
 CPU side simstream : many consumptions from G4 internals : so have to use SBacktrace for a complete picture

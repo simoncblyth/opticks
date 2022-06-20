@@ -31,10 +31,10 @@ struct qscint
     QSCINT_METHOD void    momw_polw(sphoton& p, curandStateXORWOW& rng) const ; 
     // sets direction, polarization and wavelength as needed by both generate and reemit
 
-    QSCINT_METHOD float   wavelength(     curandStateXORWOW& rng) const ; 
-    QSCINT_METHOD float   wavelength_hd0( curandStateXORWOW& rng) const ;  
-    QSCINT_METHOD float   wavelength_hd10(curandStateXORWOW& rng) const ;
-    QSCINT_METHOD float   wavelength_hd20(curandStateXORWOW& rng) const ;
+    QSCINT_METHOD float   wavelength(     const float& u0) const ; 
+    QSCINT_METHOD float   wavelength_hd0( const float& u0) const ;  
+    QSCINT_METHOD float   wavelength_hd10(const float& u0) const ;
+    QSCINT_METHOD float   wavelength_hd20(const float& u0) const ;
 
 #endif
 
@@ -111,6 +111,7 @@ inline QSCINT_METHOD void qscint::momw_polw(sphoton& p, curandStateXORWOW& rng) 
     float u0 = curand_uniform(&rng); 
     float u1 = curand_uniform(&rng); 
     float u2 = curand_uniform(&rng); 
+    float u3 = curand_uniform(&rng); 
 
     float cost = 1.f - 2.f*u0;
     float sint = sqrt((1.f-cost)*(1.f+cost));
@@ -134,19 +135,19 @@ inline QSCINT_METHOD void qscint::momw_polw(sphoton& p, curandStateXORWOW& rng) 
     cosp = cos(phi); 
 
     p.pol = normalize( cosp*p.pol + sinp*cross(p.mom, p.pol) ) ;   
-    p.wavelength = wavelength(rng);
+    p.wavelength = wavelength(u3);
 }
 
 
 
-inline QSCINT_METHOD float qscint::wavelength(curandStateXORWOW& rng) const 
+inline QSCINT_METHOD float qscint::wavelength(const float& u0) const 
 {
     float wl ;  
     switch(hd_factor)
     {   
-        case 0:  wl = wavelength_hd0(rng)  ; break ; 
-        case 10: wl = wavelength_hd10(rng) ; break ; 
-        case 20: wl = wavelength_hd20(rng) ; break ; 
+        case 0:  wl = wavelength_hd0(u0)  ; break ; 
+        case 10: wl = wavelength_hd10(u0) ; break ; 
+        case 20: wl = wavelength_hd20(u0) ; break ; 
         default: wl = 0.f ; 
     }   
     //printf("//qscint::wavelength wl %10.4f hd %d \n", wl, hd_factor ); 
@@ -154,10 +155,9 @@ inline QSCINT_METHOD float qscint::wavelength(curandStateXORWOW& rng) const
 }
 
 
-inline QSCINT_METHOD float qscint::wavelength_hd0(curandStateXORWOW& rng) const 
+inline QSCINT_METHOD float qscint::wavelength_hd0(const float& u0) const 
 {
     constexpr float y0 = 0.5f/3.f ; 
-    float u0 = curand_uniform(&rng); 
     return tex2D<float>(scint_tex, u0, y0 ); 
 }
 
@@ -173,9 +173,8 @@ icdf texture can share some of teh implementation
 
 **/
 
-inline QSCINT_METHOD float qscint::wavelength_hd10(curandStateXORWOW& rng) const 
+inline QSCINT_METHOD float qscint::wavelength_hd10(const float& u0) const 
 {
-    float u0 = curand_uniform(&rng); 
     float wl ; 
 
     constexpr float y0 = 0.5f/3.f ; 
@@ -199,9 +198,8 @@ inline QSCINT_METHOD float qscint::wavelength_hd10(curandStateXORWOW& rng) const
 
 
 
-inline QSCINT_METHOD float qscint::wavelength_hd20(curandStateXORWOW& rng) const 
+inline QSCINT_METHOD float qscint::wavelength_hd20(const float& u0) const 
 {
-    float u0 = curand_uniform(&rng); 
     float wl ; 
 
     constexpr float y0 = 0.5f/3.f ; 
