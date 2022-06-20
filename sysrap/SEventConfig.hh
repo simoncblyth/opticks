@@ -115,7 +115,7 @@ struct SYSRAP_API SEventConfig
 
 
     static void SetStandardFullDebug(); 
-    static void SetMode(const char* mode); 
+    static void SetMode(const char* mode, unsigned max_bounce); 
 
 
     static int _MaxGenstepDefault ; 

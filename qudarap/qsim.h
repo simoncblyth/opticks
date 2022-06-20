@@ -1378,8 +1378,8 @@ inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bo
     float cosTheta = curand_uniform(&rng) ;      // 0->1
 
 #ifdef DEBUG_TAG
-    tag.add(stag_hp_ph, u_hemipol_phi ); 
-    tag.add(stag_hp_ct, cosTheta ); 
+    tag.add(tag_slot, stag_hp_ph, u_hemipol_phi ); 
+    tag.add(tag_slot, stag_hp_ct, cosTheta ); 
 #endif
 
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta);

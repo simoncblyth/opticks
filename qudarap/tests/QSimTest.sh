@@ -120,12 +120,12 @@ export NRM=${NRM:-$nrm}
 setloglevels()
 {
     #export QBnd=INFO
-    #export SEvent=INFO
+    export SEvent=INFO
     export QSim=INFO
     export SEvt=INFO
     export QEvent=INFO
 }
-#setloglevels
+setloglevels
 
 
 

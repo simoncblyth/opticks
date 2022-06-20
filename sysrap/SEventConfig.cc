@@ -209,24 +209,26 @@ const char* SEventConfig::OutPath( const char* reldir, const char* stem, int ind
 }
 
 
-
-void SEventConfig::SetStandardFullDebug(){  SetMode("StandardFullDebug") ; }
-void SEventConfig::SetMode(const char* mode) // static
+void SEventConfig::SetStandardFullDebug(){  SetMode("StandardFullDebug", 9) ; }
+void SEventConfig::SetMode(const char* mode, unsigned max_bounce ) // static
 {
     if(strcmp(mode, "StandardFullDebug") == 0 )
     {
-        unsigned max_bounce = 9 ; 
         SEventConfig::SetMaxBounce(max_bounce); 
         SEventConfig::SetMaxRecord(max_bounce+1); 
         SEventConfig::SetMaxRec(max_bounce+1); 
         SEventConfig::SetMaxSeq(max_bounce+1); 
         SEventConfig::SetMaxPrd(max_bounce+1); 
-        SEventConfig::SetMaxTag(24);    // 2*(64//5) = 2*12 = 24
+        SEventConfig::SetMaxTag(24);             // stag::NSEQ*(64/stag::BITS) = 2*12 = 24
     }
     else
     {
         std::cout << "SEventConfig::SetMode [" << mode << "] IS NOT RECOGNIZED " << std::endl ;         
     }
 }
+
+
+
+
 
 

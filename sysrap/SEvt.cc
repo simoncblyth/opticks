@@ -205,6 +205,7 @@ void SEvt::clear()
     pho0.clear(); 
     pho.clear(); 
     slot.clear(); 
+    tag_slot.clear(); 
     photon.clear(); 
     record.clear(); 
     rec.clear(); 
@@ -335,6 +336,8 @@ void SEvt::setNumPhoton(unsigned num_photon)
 
     evt->num_photon = num_photon ; 
     evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ;
+    evt->num_tag    = evt->max_tag > 0 ? evt->num_photon : 0 ;
+
     evt->num_record = evt->max_record * evt->num_photon ;
     evt->num_rec    = evt->max_rec    * evt->num_photon ;
     evt->num_prd    = evt->max_prd    * evt->num_photon ;
@@ -380,6 +383,7 @@ void SEvt::hostside_running_resize()
 
     if(evt->num_photon > 0) pho.resize(  evt->num_photon );  
     if(evt->num_photon > 0) slot.resize( evt->num_photon ); 
+    if(evt->num_photon > 0) tag_slot.resize( evt->num_photon ); 
 
     if(evt->num_photon > 0) photon.resize(evt->num_photon);
     if(evt->num_record > 0) record.resize(evt->num_record); 
@@ -392,6 +396,7 @@ void SEvt::hostside_running_resize()
     if(evt->num_rec    > 0) evt->rec    = rec.data() ; 
     if(evt->num_seq    > 0) evt->seq    = seq.data() ; 
     if(evt->num_prd    > 0) evt->prd    = prd.data() ; 
+    if(evt->num_tag    > 0) evt->tag    = tag.data() ; 
 
     LOG(LEVEL) 
         << " is_self_provider " << is_self_provider 
@@ -464,6 +469,7 @@ void SEvt::beginPhoton(const spho& label)
     current_rec.zero() ; 
     current_seq.zero() ; 
     current_prd.zero() ; 
+    current_tag.zero() ; 
 
     current_photon.set_idx(idx); 
     current_photon.set_flag(genflag); 
@@ -696,6 +702,7 @@ void SEvt::pointPhoton(const spho& label)
         << " evt.max_rec    " << evt->max_rec
         << " evt.max_seq    " << evt->max_seq
         << " evt.max_prd    " << evt->max_prd
+        << " evt.max_tag    " << evt->max_tag
         ;
 
 
@@ -706,14 +713,25 @@ void SEvt::pointPhoton(const spho& label)
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
     if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
-    if( evt->prd    && bounce < evt->max_prd   )  evt->prd[evt->max_prd*idx+bounce] = prd ; 
+    if( evt->prd    && bounce < evt->max_prd    ) evt->prd[evt->max_prd*idx+bounce] = prd ; 
 
     LOG(LEVEL) << label.desc() << " " << seq.desc_seqhis() ; 
 
     bounce += 1 ; 
     // at truncation the above stop writing anything but bounce keeps incrementing 
-
 }
+
+void SEvt::addTag(unsigned tag, float u)
+{
+    if(evt->tag == nullptr) return  ; 
+
+    unsigned idx = current_pho.id ; 
+    unsigned& tag_slot_ = tag_slot[idx] ; 
+    stag&  ctag       = current_tag ; 
+
+    if(int(tag_slot_) < evt->max_tag) ctag.add(tag_slot_,tag,u)  ; 
+}
+
 
 void SEvt::finalPhoton(const spho& label)
 {
@@ -727,6 +745,7 @@ void SEvt::finalPhoton(const spho& label)
 
     if(evt->photon) evt->photon[idx] = p ; 
     if(evt->seq)    evt->seq[idx] = seq ; 
+    if(evt->photon) evt->photon[idx] = p ; 
 }
 
 void SEvt::checkPhoton(const spho& label) const 
@@ -783,7 +802,13 @@ NP* SEvt::getPrd() const
     p->read2( (float*)evt->prd ); 
     return p ; 
 } 
-
+NP* SEvt::getTag() const 
+{ 
+    if( evt->tag == nullptr ) return nullptr ; 
+    NP* p = makeTag(); 
+    p->read2( (unsigned long long*)evt->tag ); 
+    return p ; 
+} 
 
 
 NP* SEvt::makePhoton() const 
@@ -810,6 +835,24 @@ NP* SEvt::makePrd() const
 {
     return NP::Make<float>( evt->num_photon, evt->max_prd, 2, 4); 
 }
+
+/**
+SEvt::makeTag
+---------------
+
+The evt->max_tag are packed into the stag::NSEQ of each *stag* struct 
+
+For example with stag::NSEQ = 2 there are two 64 bit "unsigned long long" 
+in the *stag* struct which with 5 bits per tag is room for 2*12 = 24 tags  
+
+**/
+
+NP* SEvt::makeTag() const 
+{
+    return NP::Make<unsigned long long>( evt->num_photon, stag::NSEQ);   // 
+}
+
+
 
 
 
@@ -839,6 +882,7 @@ NP* SEvt::getComponent_(unsigned comp) const
         case SCOMP_REC:       a = getRec()      ; break ;   
         case SCOMP_SEQ:       a = getSeq()      ; break ;   
         case SCOMP_PRD:       a = getPrd()      ; break ;   
+        case SCOMP_TAG:       a = getTag()      ; break ;   
         //case SCOMP_SEED:      a = getSeed()     ; break ;   
         //case SCOMP_HIT:       a = getHit()      ; break ;   
         //case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   
@@ -933,10 +977,13 @@ void SEvt::gather_components()
     for(unsigned i=0 ; i < comps.size() ; i++)
     {
         unsigned comp = comps[i] ;   
-        if((comp & mask) == 0) continue ; 
-        NP* a = provider->getComponent(comp); 
-        if(a == nullptr) continue ;  
         const char* k = SComp::Name(comp);    
+        bool comp_skip = (comp & mask) == 0 ; 
+        LOG(LEVEL) << " comp " << comp << " k " << k << " comp_skip " << comp_skip ; 
+        if(comp_skip) continue ; 
+        NP* a = provider->getComponent(comp); 
+        LOG(LEVEL) << " a " << ( a ? a->brief() : "-" ) ; 
+        if(a == nullptr) continue ;  
         fold->add(k, a); 
     }
     fold->meta = provider->getMeta();  

@@ -21,26 +21,26 @@ stag.h : random consumption tags for simulation alignment purposes
 
 
 enum {
-   stag_undef,
-   stag_to_sc, 
-   stag_to_ab,
-   stag_to_re,
-   stag_re_wl,
-   stag_re_mom_ph,
-   stag_re_mom_ct,
-   stag_re_pol_ph,
-   stag_re_pol_ct,
-   stag_at_bo,
-   stag_at_rf,
-   stag_sf_sd,
-   stag_sf_bu,
-   stag_hp_ph,
-   stag_hp_ct,
-   stag_sc_u0,
-   stag_sc_u1,
-   stag_sc_u2,
-   stag_sc_u3,
-   stag_sc_u4
+   stag_undef     =  0,
+   stag_to_sc     =  1, 
+   stag_to_ab     =  2,
+   stag_to_re     =  3,
+   stag_re_wl     =  4,
+   stag_re_mom_ph =  5,
+   stag_re_mom_ct =  6,
+   stag_re_pol_ph =  7,
+   stag_re_pol_ct =  8,
+   stag_at_bo     =  9,
+   stag_at_rf     = 10,
+   stag_sf_sd     = 11,
+   stag_sf_bu     = 12,
+   stag_hp_ph     = 13,
+   stag_hp_ct     = 14,
+   stag_sc_u0     = 15,
+   stag_sc_u1     = 16,
+   stag_sc_u2     = 17,
+   stag_sc_u3     = 18,
+   stag_sc_u4     = 19
 }; 
 
 struct stag
@@ -219,7 +219,7 @@ STAG_METHOD std::string stag::desc() const
     std::stringstream ss ;
     ss << std::hex << std::setw(16) << seqtag << std::dec << " : " ; 
     ss << std::endl ; 
-    for(int i=0 ; i < SLOTMAX*NSEQ ; i++) 
+    for(unsigned i=0 ; i < SLOTMAX*NSEQ ; i++) 
     {
         unsigned tag = get(i); 
         const char* name = Name(tag) ; 
@@ -250,7 +250,7 @@ STAG_METHOD std::string stag::Desc()
        << std::endl 
        ;  
 
-    for(int i=0 ; i <= MASK ; i++) 
+    for(unsigned i=0 ; i <= MASK ; i++) 
     {
         unsigned tag = i ; 
         const char* name = Name(tag) ; 

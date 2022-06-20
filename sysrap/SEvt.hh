@@ -39,6 +39,7 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "sphoton.h"
 #include "srec.h"
 #include "sseq.h"
+#include "stag.h"
 #include "squad.h"
 #include "sgs.h"
 #include "SComp.h"
@@ -69,12 +70,14 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<spho>  pho0 ;  // unordered push_back as they come 
     std::vector<spho>  pho ;   // spho are label structs holding 4*int 
 
-    std::vector<int>     slot ; 
+    std::vector<int>      slot ; 
+    std::vector<unsigned> tag_slot ; 
     std::vector<sphoton> photon ; 
     std::vector<sphoton> record ; 
     std::vector<srec>    rec ; 
     std::vector<sseq>    seq ; 
     std::vector<quad2>   prd ; 
+    std::vector<stag>    tag ; 
 
     // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
@@ -82,6 +85,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     srec    current_rec = {} ; 
     sseq    current_seq = {} ; 
     quad2   current_prd = {} ; 
+    stag    current_tag = {} ; 
 
 
     static const plog::Severity LEVEL ; 
@@ -159,6 +163,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     void pointPhoton(const spho& sp); 
     void finalPhoton(const spho& sp); 
 
+    void addTag(unsigned tag, float u); 
+
 
     NP* getPho0() const ;   // unordered push_back as they come 
     NP* getPho() const ;    // resized at genstep and slotted in 
@@ -169,12 +175,14 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* getRec() const ; 
     NP* getSeq() const ; 
     NP* getPrd() const ; 
+    NP* getTag() const ; 
 
     NP* makePhoton() const ; 
     NP* makeRecord() const ; 
     NP* makeRec() const ; 
     NP* makeSeq() const ; 
     NP* makePrd() const ; 
+    NP* makeTag() const ; 
 
 
     // SCompProvider methods

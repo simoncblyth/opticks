@@ -27,6 +27,75 @@ How to do that.
 WIP : sysrap/stag.h for tagging all random consumption
 ---------------------------------------------------------
 
+::
+
+    In [7]: t.tag[:,0] & 0x1f                                                                                                                                
+    Out[7]: array([1, 1, 1, 1, 1, 1, 1, 1], dtype=uint64)      to_sc
+
+    In [8]: ( t.tag[:,0] >> 5 ) & 0x1f                                                                                                                       
+    Out[8]: array([2, 2, 2, 2, 2, 2, 2, 2], dtype=uint64)      to_ab
+
+    In [9]: ( t.tag[:,0] >> 2*5 ) & 0x1f                                                                                                                     
+    Out[9]: array([9, 9, 9, 9, 9, 9, 9, 9], dtype=uint64)      at_bo
+
+    In [10]: ( t.tag[:,0] >> 3*5 ) & 0x1f                                                                                                                    
+    Out[10]: array([10, 10, 10, 10, 10, 10, 10, 10], dtype=uint64)   at_rf
+
+
+
+    In [11]: ( t.tag[:,0] >> 4*5 ) & 0x1f                                                                                                                    
+    Out[11]: array([1, 1, 1, 1, 1, 1, 1, 1], dtype=uint64)       
+
+    In [12]: ( t.tag[:,0] >> 5*5 ) & 0x1f                                                                                                                    
+    Out[12]: array([2, 2, 2, 2, 2, 2, 2, 2], dtype=uint64)
+
+    In [13]: ( t.tag[:,0] >> 6*5 ) & 0x1f                                                                                                                    
+    Out[13]: array([9, 9, 9, 9, 9, 9, 9, 9], dtype=uint64)
+
+    In [14]: ( t.tag[:,0] >> 7*5 ) & 0x1f                                                                                                                    
+    Out[14]: array([10, 10, 10, 10, 10, 10, 10, 10], dtype=uint64)
+
+
+
+
+    In [15]: ( t.tag[:,0] >> 8*5 ) & 0x1f                                                                                                                    
+    Out[15]: array([1, 1, 1, 1, 1, 1, 1, 1], dtype=uint64)
+
+    In [16]: ( t.tag[:,0] >> 9*5 ) & 0x1f                                                                                                                    
+    Out[16]: array([2, 2, 2, 2, 2, 2, 2, 2], dtype=uint64)
+
+    In [17]: ( t.tag[:,0] >> 10*5 ) & 0x1f                                                                                                                   
+    Out[17]: array([9, 9, 9, 9, 9, 9, 9, 9], dtype=uint64)
+
+    In [18]: ( t.tag[:,0] >> 11*5 ) & 0x1f                                                                                                                   
+    Out[18]: array([10, 10, 10, 10, 10, 10, 10, 10], dtype=uint64)
+
+
+
+    In [19]: ( t.tag[:,0] >> 12*5 ) & 0x1f                                                                                                                    
+    Out[19]: array([0, 0, 0, 0, 0, 0, 0, 0], dtype=uint64)    ## HMM : AM I SKIPPING THE TOP SLOT ?
+
+    In [20]: 12*5                                                                                                                                            
+    Out[20]: 60
+
+    In [21]: ( t.tag[:,1] >> 1*5 ) & 0x1f                                                                                                                    
+    Out[21]: array([2, 2, 2, 2, 2, 2, 2, 2], dtype=uint64)
+
+    In [22]: ( t.tag[:,1] >> 0*5 ) & 0x1f                                                                                                                    
+    Out[22]: array([1, 1, 1, 1, 1, 1, 1, 1], dtype=uint64)
+
+    In [23]: ( t.tag[:,1] >> 1*5 ) & 0x1f                                                                                                                    
+    Out[23]: array([2, 2, 2, 2, 2, 2, 2, 2], dtype=uint64)
+
+    In [24]: ( t.tag[:,1] >> 2*5 ) & 0x1f                                                                                                                    
+    Out[24]: array([11, 11, 11, 11, 11, 11, 11, 11], dtype=uint64)
+
+    In [25]: ( t.tag[:,1] >> 3*5 ) & 0x1f                                                                                                                    
+    Out[25]: array([12, 12, 12, 12, 12, 12, 12, 12], dtype=uint64)
+
+    In [26]: ( t.tag[:,1] >> 4*5 ) & 0x1f                                                                                                                    
+    Out[26]: array([0, 0, 0, 0, 0, 0, 0, 0], dtype=uint64)
+
 
 
 

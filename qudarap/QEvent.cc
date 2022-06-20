@@ -10,6 +10,7 @@
 #include "sphoton.h"
 #include "srec.h"
 #include "sseq.h"
+#include "stag.h"
 #include "sevent.h"
 
 #include "sqat4.h"
@@ -248,6 +249,7 @@ bool QEvent::hasRecord() const { return evt->record != nullptr ; }
 bool QEvent::hasRec() const    { return evt->rec != nullptr ; }
 bool QEvent::hasSeq() const    { return evt->seq != nullptr ; }
 bool QEvent::hasPrd() const    { return evt->prd != nullptr ; }
+bool QEvent::hasTag() const    { return evt->tag != nullptr ; }
 bool QEvent::hasHit() const    { return evt->hit != nullptr ; }
 bool QEvent::hasSimtrace() const  { return evt->simtrace != nullptr ; }
 
@@ -406,6 +408,18 @@ NP* QEvent::getPrd() const
     return prd ; 
 }
 
+NP* QEvent::getTag() const 
+{
+    if(!hasTag()) LOG(LEVEL) << " getTag called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasTag()) return nullptr ;
+  
+    NP* tag = sev->makeTag(); 
+    LOG(LEVEL) << " evt.num_tag " << evt->num_tag << " tag.desc " << tag->desc() ; 
+    QU::copy_device_to_host<stag>( (stag*)tag->bytes(), evt->tag, evt->num_tag ); 
+    return tag ; 
+}
+
+
 NP* QEvent::getRecord() const 
 {
     if(!hasRecord()) LOG(LEVEL) << " getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
@@ -547,6 +561,7 @@ NP* QEvent::getComponent_(unsigned comp) const
         case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   
         case SCOMP_DOMAIN:    a = getDomain()   ; break ;   
         case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;   
+        case SCOMP_TAG:       a = getTag()         ; break ;   
     }   
     return a ; 
 }
@@ -576,6 +591,7 @@ void QEvent::setNumPhoton(unsigned num_photon )
         evt->rec     = evt->num_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->num_rec  )   : nullptr ; 
         evt->seq     = evt->num_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->num_seq  )   : nullptr ; 
         evt->prd     = evt->num_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->num_prd  )   : nullptr ; 
+        evt->tag     = evt->num_tag    > 0 ? QU::device_alloc_zero<stag>(    evt->num_tag  )   : nullptr ; 
 
         LOG(LEVEL) 
             << " device_alloc photon " 
@@ -584,8 +600,8 @@ void QEvent::setNumPhoton(unsigned num_photon )
             << " evt.num_rec    " << evt->num_rec 
             << " evt.num_seq    " << evt->num_seq
             << " evt.num_prd    " << evt->num_prd
+            << " evt.num_tag    " << evt->num_tag
             ;
-
     } 
     else
     {
