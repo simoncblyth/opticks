@@ -114,6 +114,7 @@ Steps to fix:
     int  getSequenceIndex() const ;
 
     double getFlatPrior() const ; 
+    unsigned getConsumerTag() ; 
 
 
     // mandatory CLHEP::HepRandomEngine methods

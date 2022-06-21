@@ -25,7 +25,7 @@
 #include "BFile.hh"
 #include "PLOG.hh"
 #include "NPY.hpp"
-#include "SBacktrace.hh"
+#include "SBacktrace.h"
 #include "CAlignEngine.hh"
 
 

@@ -35,8 +35,6 @@ set(WITH_PLOG YES)
 set(SOURCES
     SYSRAP_LOG.cc 
     PLOG.cc 
-    SBacktrace.cc
-    SFrame.cc
     SProc.cc
     SSys.cc
     SStr.cc
@@ -129,8 +127,8 @@ set(HEADERS
     PLOG_INIT.hh  
 
     SProc.hh
-    SBacktrace.hh
-    SFrame.hh
+    SBacktrace.h
+    SStackFrame.h
 
     ssys.h
     SSys.hh

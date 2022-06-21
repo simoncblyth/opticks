@@ -9,9 +9,10 @@
 #include "U4Random.hh"
 #include "NP.hh"
 #include "SPath.hh"
+#include "SEvt.hh"
 #include "SSys.hh"
 
-#include "SBacktrace.hh"
+#include "SBacktrace.h"
 #include "SDBG.h"
 
 #include "PLOG.hh"
@@ -436,6 +437,11 @@ double U4Random::flat()
         }
     }
 
+
+    SEvt* sev = SEvt::Get(); 
+    assert(sev); 
+    sev->addTag(getConsumerTag(), f );  
+
     return d ; 
 }
 
@@ -444,6 +450,32 @@ double U4Random::getFlatPrior() const
 {
     return m_flat_prior ; 
 }
+
+
+/**
+U4Random::getConsumerTag
+----------------------------
+
+By examination of the SBacktrace and Geant4 process state etc.. 
+need to determine what is the random consumer and assign this consumption 
+of a random number with a standardized tag enumeration from stag.h   
+to facilitate random alignment with the GPU simulation. 
+
+::
+
+   u4t ; U4Random_select=-1,0 U4Random_select_action=backtrace ./U4RecorderTest.sh run
+
+
+
+
+**/
+
+unsigned U4Random::getConsumerTag() 
+{
+    return 0 ; 
+}
+
+
 
 
 /**

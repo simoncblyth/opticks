@@ -22,7 +22,7 @@
 #include "SPath.hh"
 #include "Randomize.hh"
 #include "CMixMaxRng.hh"
-#include "SBacktrace.hh"
+#include "SBacktrace.h"
 #include "PLOG.hh"
 
 

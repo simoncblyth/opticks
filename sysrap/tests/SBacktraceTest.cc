@@ -18,7 +18,7 @@
  */
 
 
-#include "SBacktrace.hh"
+#include "SBacktrace.h"
 #include "OPTICKS_LOG.hh"
 
 

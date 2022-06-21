@@ -1,27 +1,8 @@
-/*
- * Copyright (c) 2019 Opticks Team. All Rights Reserved.
- *
- * This file is part of Opticks
- * (see https://bitbucket.org/simoncblyth/opticks).
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License.  
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
- * See the License for the specific language governing permissions and 
- * limitations under the License.
- */
-
-// TEST=SFrameTest om-t 
+// name=SStackFrame_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
 
 #include <string>
-#include "OPTICKS_LOG.hh"
-#include "SFrame.hh"
+#include <sstream>
+#include "SStackFrame.h"
 
 std::string macOS = R"(
 4   libG4processes.dylib                0x00000001090baee5 _ZN12G4VEmProcess36PostStepGetPhysicalInteractionLengthERK7G4TrackdP16G4ForceCondition + 661
@@ -66,15 +47,16 @@ std::string Linux = R"(
 
 int main(int  argc, char** argv )
 {
-    OPTICKS_LOG(argc, argv); 
 
 #ifdef __APPLE__
     const char* lines = macOS.c_str(); 
 #else
     const char* lines = Linux.c_str(); 
 #endif
-    LOG(info) << std::endl << lines  ; 
+    std::cout << " raw lines " << std::endl << lines << std::endl ; 
 
+
+    std::cout << " SStackFrame.dump for each line " << std::endl ; 
 
     std::istringstream iss(lines);
     std::string line ;
@@ -84,7 +66,7 @@ int main(int  argc, char** argv )
 
         //std::cout << "[" << line << "]" << std::endl ; 
 
-        SFrame f((char*)line.c_str());
+        SStackFrame f((char*)line.c_str());
         f.dump(); 
     }   
 

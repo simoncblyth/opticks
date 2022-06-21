@@ -724,6 +724,14 @@ void SEvt::pointPhoton(const spho& label)
     // at truncation the above stop writing anything but bounce keeps incrementing 
 }
 
+/**
+SEvt::addTag
+-------------
+
+HMM: this needs to be called at every random consumption ... see U4Random::flat 
+
+**/
+
 void SEvt::addTag(unsigned tag, float flat)
 {
     if(evt->tag == nullptr) return  ; 

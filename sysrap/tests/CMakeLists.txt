@@ -55,7 +55,7 @@ set(TEST_SOURCES
 
    ArrayTest.cc
    SBacktraceTest.cc
-   SFrameTest.cc
+   SStackFrameTest.cc
    SGDMLTest.cc
 
    SSetTest.cc
