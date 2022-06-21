@@ -427,7 +427,7 @@ double U4Random::flat()
             << " cursor " << std::setw(4) << cursor 
             << " idx " << std::setw(4) << idx 
             << " d " <<  std::setw(10 ) << std::fixed << std::setprecision(5) << d 
-            << " stack " << U4Stack::Name(stack)
+            << " stack " << std::setw(2) << stack << " " << U4Stack::Name(stack)
             ;
 
        if(!U4Stack::IsClassified(stack)) LOG(error) << std::endl << summary ; 

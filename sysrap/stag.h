@@ -248,7 +248,7 @@ struct stagr
 
 STAG_METHOD void stagr::add(unsigned tag_, float flat_)
 {
-    printf("//stagr::add slot %d tag %2d flat %10.4f SLOTS %d \n", slot, tag_, flat_, SLOTS ); 
+    //printf("//stagr::add slot %d tag %2d flat %10.4f SLOTS %d \n", slot, tag_, flat_, SLOTS ); 
 
     if(slot < SLOTS)
     {

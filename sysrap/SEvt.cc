@@ -331,7 +331,9 @@ void SEvt::setNumPhoton(unsigned num_photon)
     bool num_photon_allowed = int(num_photon) <= evt->max_photon ; 
     if(!num_photon_allowed) LOG(fatal) << " num_photon " << num_photon << " evt.max_photon " << evt->max_photon ;
     assert( num_photon_allowed );
-    LOG(LEVEL) << " num_photon " << num_photon ;  
+    LOG(LEVEL) 
+        << " num_photon " << num_photon 
+        ;  
 
     evt->num_photon = num_photon ; 
     evt->num_seq    = evt->max_seq  > 0 ? evt->num_photon : 0 ;
@@ -341,6 +343,12 @@ void SEvt::setNumPhoton(unsigned num_photon)
     evt->num_record = evt->max_record * evt->num_photon ;
     evt->num_rec    = evt->max_rec    * evt->num_photon ;
     evt->num_prd    = evt->max_prd    * evt->num_photon ;
+
+    LOG(LEVEL)
+        << " evt->num_photon " << evt->num_photon
+        << " evt->num_tag " << evt->num_tag
+        << " evt->num_flat " << evt->num_flat
+        ;
 
     hostside_running_resize_done = false ; 
 }
@@ -386,19 +394,41 @@ void SEvt::hostside_running_resize()
 
      // HMM: what about tag_slot 
 
-    if(evt->num_photon > 0) photon.resize(evt->num_photon);
-    if(evt->num_record > 0) record.resize(evt->num_record); 
-    if(evt->num_rec    > 0) rec.resize(evt->num_rec); 
-    if(evt->num_seq    > 0) seq.resize(evt->num_seq); 
-    if(evt->num_prd    > 0) prd.resize(evt->num_prd); 
-
-    if(evt->num_photon > 0) evt->photon = photon.data() ; 
-    if(evt->num_record > 0) evt->record = record.data() ; 
-    if(evt->num_rec    > 0) evt->rec    = rec.data() ; 
-    if(evt->num_seq    > 0) evt->seq    = seq.data() ; 
-    if(evt->num_prd    > 0) evt->prd    = prd.data() ; 
-    if(evt->num_tag    > 0) evt->tag    = tag.data() ; 
-    if(evt->num_flat   > 0) evt->flat   = flat.data() ; 
+    if(evt->num_photon > 0) 
+    { 
+        photon.resize(evt->num_photon);
+        evt->photon = photon.data() ; 
+    }
+    if(evt->num_record > 0) 
+    {
+        record.resize(evt->num_record); 
+        evt->record = record.data() ; 
+    }
+    if(evt->num_rec > 0) 
+    {
+        rec.resize(evt->num_rec); 
+        evt->rec = rec.data() ; 
+    }
+    if(evt->num_seq > 0) 
+    {
+        seq.resize(evt->num_seq); 
+        evt->seq = seq.data() ; 
+    }
+    if(evt->num_prd > 0) 
+    {
+        prd.resize(evt->num_prd); 
+        evt->prd = prd.data() ; 
+    }
+    if(evt->num_tag > 0) 
+    {
+        tag.resize(evt->num_tag); 
+        evt->tag = tag.data() ; 
+    }
+    if(evt->num_flat > 0) 
+    {
+        flat.resize(evt->num_flat); 
+        evt->flat = flat.data() ; 
+    }
 
     LOG(LEVEL) 
         << " is_self_provider " << is_self_provider 

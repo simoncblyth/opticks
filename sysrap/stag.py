@@ -1,11 +1,32 @@
 #!/usr/bin/env python 
 
+import numpy as np
 import os, re
 from collections import OrderedDict as odict 
 
 class stag(object):
+    """
+    # the below NSEQ, BITS, ... param need to correspond to stag.h static constexpr 
+    """
     lptn = re.compile("^\s*(\w+)\s*=\s*(.*?),*\s*?$")
     PATH = "$OPTICKS_PREFIX/include/sysrap/stag.h" 
+
+    NSEQ = 2
+    BITS = 5 
+    MASK = ( 0x1 << BITS ) - 1 
+    SLOTMAX = 64//BITS
+    SLOTS = SLOTMAX*NSEQ
+
+    @classmethod
+    def Split(cls, tag):
+        st = np.zeros( (len(tag), cls.SLOTS), dtype=np.uint8 )   
+        for i in range(cls.NSEQ):
+            for j in range(cls.SLOTMAX):
+                st[:,i*cls.SLOTMAX+j] = (tag[:,i] >> (cls.BITS*j)) & cls.MASK
+            pass
+        pass
+        return st 
+
     def __init__(self, path=PATH):
         path = os.path.expandvars(path)
         lines = open(path, "r").read().splitlines()

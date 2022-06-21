@@ -29,8 +29,11 @@ SBacktrace.h U4Stack.h classifying U4Random::flat backtraces to follow every ran
 
 * TODO: LOOK INTO THE TAIL BURNS, ARE THEY ACTUALLY DOING ANYTHING ?
 * TODO: investigate Geant4 process ordering to allow the stack enumeration to be translated into the stag.h enumeration  
-* TODO: collect the stack tags and flat in G4 side using SEvt machinery 
+
+* DONE: collect the stack tags and flat in G4 side using SEvt machinery 
   (even prior to enumeration translation), so can script the array alignment comparison
+
+
 
 ::
 
@@ -91,7 +94,7 @@ SBacktrace.h U4Stack.h classifying U4Random::flat backtraces to follow every ran
     2022-06-21 16:31:54.888 INFO  [28350265] [U4Recorder::EndOfEventAction@51] 
 
 
-HMM: the qsim.h is consuming 16 (but g4 only 7) (this is probably why I previously used some extra reset to make the consumption more regular for each step point)::
+HMM: the qsim.h is consuming 16 (but g4 only 8) (this is probably why I previously used some extra reset to make the consumption more regular for each step point)::
 
     In [3]: t.flat[:,:17]                                                                                                                                                       
     Out[3]: 
@@ -104,7 +107,58 @@ HMM: the qsim.h is consuming 16 (but g4 only 7) (this is probably why I previous
            [0.667, 0.397, 0.158, 0.542, 0.706, 0.126, 0.154, 0.653, 0.38 , 0.855, 0.208, 0.09 , 0.701, 0.434, 0.106, 0.082, 0.   ],
            [0.11 , 0.874, 0.981, 0.967, 0.162, 0.428, 0.931, 0.01 , 0.846, 0.38 , 0.812, 0.152, 0.273, 0.413, 0.786, 0.087, 0.   ]], dtype=float32)
 
+U4RecorderTest.sh G4 consuming only 8::
 
+    In [4]: t.flat[:,:10]
+    Out[4]: 
+    array([[0.74 , 0.438, 0.517, 0.157, 0.071, 0.463, 0.228, 0.329, 0.   , 0.   ],
+           [0.921, 0.46 , 0.333, 0.373, 0.49 , 0.567, 0.08 , 0.233, 0.   , 0.   ],
+           [0.039, 0.25 , 0.184, 0.962, 0.521, 0.94 , 0.831, 0.41 , 0.   , 0.   ],
+           [0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.136, 0.589, 0.   , 0.   ],
+           [0.925, 0.053, 0.163, 0.89 , 0.567, 0.241, 0.494, 0.321, 0.   , 0.   ],
+           [0.446, 0.338, 0.207, 0.985, 0.403, 0.178, 0.46 , 0.16 , 0.   , 0.   ],
+           [0.667, 0.397, 0.158, 0.542, 0.706, 0.126, 0.154, 0.653, 0.   , 0.   ],
+           [0.11 , 0.874, 0.981, 0.967, 0.162, 0.428, 0.931, 0.01 , 0.   , 0.   ],
+           [0.47 , 0.482, 0.428, 0.442, 0.78 , 0.859, 0.614, 0.802, 0.   , 0.   ],
+           [0.513, 0.043, 0.952, 0.926, 0.26 , 0.913, 0.393, 0.833, 0.   , 0.   ]], dtype=float32)
+
+    In [3]: st[:,:10]   ## these are currently the U4Stack::Classify enumeration (not the stag.h ones)
+    Out[3]: 
+    array([[1, 2, 2, 2, 4, 3, 1, 2, 0, 0],
+           [1, 2, 2, 2, 4, 3, 1, 2, 0, 0],
+           [1, 2, 2, 2, 4, 3, 1, 2, 0, 0],
+           [1, 2, 2, 2, 4, 3, 1, 2, 0, 0],
+           [1, 2, 2, 2, 4, 3, 1, 2, 0, 0],
+           [1, 2, 2, 2, 4, 3, 1, 2, 0, 0],
+           [1, 2, 2, 2, 4, 3, 1, 2, 0, 0],
+           [1, 2, 2, 2, 4, 3, 1, 2, 0, 0],
+           [1, 2, 2, 2, 4, 3, 1, 2, 0, 0],
+           [1, 2, 2, 2, 4, 3, 1, 2, 0, 0]], dtype=uint8)
+
+::
+
+     07 class stag(object):
+      8     """
+      9     # the below NSEQ, BITS, ... param need to correspond to stag.h static constexpr 
+     10     """
+     11     lptn = re.compile("^\s*(\w+)\s*=\s*(.*?),*\s*?$")
+     12     PATH = "$OPTICKS_PREFIX/include/sysrap/stag.h" 
+     13     
+     14     NSEQ = 2
+     15     BITS = 5
+     16     MASK = ( 0x1 << BITS ) - 1
+     17     SLOTMAX = 64//BITS
+     18     SLOTS = SLOTMAX*NSEQ
+     19     
+     20     @classmethod
+     21     def Split(cls, tag):
+     22         st = np.zeros( (len(tag), cls.SLOTS), dtype=np.uint8 )
+     23         for i in range(cls.NSEQ): 
+     24             for j in range(cls.SLOTMAX):
+     25                 st[:,i*cls.SLOTMAX+j] = (tag[:,i] >> (cls.BITS*j)) & cls.MASK
+     26             pass
+     27         pass
+     28         return st
 
 
 
