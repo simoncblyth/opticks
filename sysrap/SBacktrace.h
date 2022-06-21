@@ -1,22 +1,3 @@
-/*
- * Copyright (c) 2019 Opticks Team. All Rights Reserved.
- *
- * This file is part of Opticks
- * (see https://bitbucket.org/simoncblyth/opticks).
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License.  
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
- * See the License for the specific language governing permissions and 
- * limitations under the License.
- */
-
 #pragma once
 
 /**
@@ -31,8 +12,6 @@ https://panthema.net/2008/0901-stacktrace-demangled/cxa_demangle.html
 https://eli.thegreenplace.net/2015/programmatic-access-to-the-call-stack-in-c/
 
    suggests libunwind
-
-
 
 
 Utilities for dumping process backtraces.
@@ -68,9 +47,14 @@ struct SYSRAP_API SBacktrace
 {
     static void Dump(); 
     static void DumpCaller(); 
+    static void DumpSummary(); 
 
     static void Dump(std::ostream& out) ;
     static void DumpCaller(std::ostream& out) ;
+    static void DumpSummary(std::ostream& out) ;
+
+    static bool SummaryMatch(const char* x_summary); 
+    static char* Summary(); 
 
     static const char* CallSite(const char* call="::flat()" , bool addr=true );  
 };
@@ -83,6 +67,7 @@ struct SYSRAP_API SBacktrace
 #include <string.h>
 #include <ostream>
 #include <iostream>
+#include <sstream>
 
 #include "SStackFrame.h"
 
@@ -99,6 +84,12 @@ inline void SBacktrace::DumpCaller()
     std::ostream& out = std::cout ;
     DumpCaller(out);  
 }
+inline void SBacktrace::DumpSummary() 
+{
+    std::ostream& out = std::cout ;
+    DumpSummary(out);  
+}
+
 
 
 
@@ -138,6 +129,61 @@ inline void SBacktrace::Dump(std::ostream& out)
    free(symbollist);
 }
 
+
+/**
+SBacktrace::SummaryMatch
+--------------------------
+
+String matching with SBacktrace::Summary
+NB a complete match is not required it is only 
+necessary for the *q_summary* to appear inside the 
+backtrace summary. NB as the *q_summary* will normally 
+contain newlines to delimit different levels of 
+the callstack it is necessary to remove all trailing 
+blanks. Use "set list" in vim to check the literal 
+test *q_summary* strings.
+
+**/
+
+inline bool SBacktrace::SummaryMatch(const char* q_summary)
+{
+    char* summary = Summary(); 
+    return strstr( summary, q_summary ) != nullptr ; 
+}
+
+/**
+SBacktrace::Summary
+--------------------
+
+For ease of use the Summary chops the arguments from stack frame signatures 
+by terminating the signatire at the first '(' 
+
+**/
+
+inline char* SBacktrace::Summary()
+{
+   unsigned max_frames = 63 ; 
+   void* addrlist[max_frames+1];
+   unsigned addrlen = backtrace( addrlist, sizeof(addrlist)/sizeof(void*));
+   if(addrlen == 0) return nullptr ; 
+
+   std::stringstream ss ; 
+   char** symbollist = backtrace_symbols( addrlist, addrlen );
+   for ( unsigned i = 0 ; i < addrlen; i++ )
+   {
+       SStackFrame f(symbollist[i]) ; 
+       if(f.smry) ss << f.smry << std::endl ;  
+   }
+   free(symbollist);
+   std::string s = ss.str(); 
+   return strdup(s.c_str());
+}
+
+inline void SBacktrace::DumpSummary(std::ostream& out)
+{
+    char* summary = Summary(); 
+    out << summary << std::endl ;  
+} 
 
 inline void SBacktrace::DumpCaller(std::ostream& out)
 {

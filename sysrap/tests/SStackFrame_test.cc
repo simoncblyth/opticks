@@ -1,10 +1,13 @@
 // name=SStackFrame_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
 
+#include <cstring>
 #include <string>
 #include <sstream>
+#include <cassert>
+
 #include "SStackFrame.h"
 
-std::string macOS = R"(
+const char* macOS = R"(
 4   libG4processes.dylib                0x00000001090baee5 _ZN12G4VEmProcess36PostStepGetPhysicalInteractionLengthERK7G4TrackdP16G4ForceCondition + 661
 5   libG4tracking.dylib                 0x00000001088ffff0 _ZN10G4VProcess12PostStepGPILERK7G4TrackdP16G4ForceCondition + 80
 6   libG4tracking.dylib                 0x00000001088ffa1a _ZN17G4SteppingManager24DefinePhysicalStepLengthEv + 298
@@ -23,7 +26,7 @@ std::string macOS = R"(
 19  ???                                 0x0000000000000005 0x0 + 5
 )" ; 
 
-std::string Linux = R"(
+const char* Linux = R"(
 /home/blyth/local/opticks/lib64/libSysRap.so(+0x10495) [0x7fffe54cf495] 
 /home/blyth/local/opticks/lib64/libSysRap.so(_ZN10SBacktrace4DumpEv+0x1b) [0x7fffe54cf823] 
 /home/blyth/local/opticks/lib64/libCFG4.so(_ZN10CMixMaxRng4flatEv+0x138) [0x7ffff7955f84] 
@@ -45,31 +48,66 @@ std::string Linux = R"(
 )" ; 
 
 
-int main(int  argc, char** argv )
-{
 
+
+void test_SStackFrame_dump()
+{
 #ifdef __APPLE__
-    const char* lines = macOS.c_str(); 
+    const char* lines = macOS ; 
 #else
-    const char* lines = Linux.c_str(); 
+    const char* lines = Linux ; 
 #endif
     std::cout << " raw lines " << std::endl << lines << std::endl ; 
-
-
     std::cout << " SStackFrame.dump for each line " << std::endl ; 
-
     std::istringstream iss(lines);
     std::string line ;
     while (getline(iss, line, '\n'))
     {   
         if(line.empty()) continue ; 
-
         //std::cout << "[" << line << "]" << std::endl ; 
-
         SStackFrame f((char*)line.c_str());
-        f.dump(); 
-    }   
+        //f.dump(); 
+
+        std::cout << "[" << ( f.func ? f.func : "func-null" )  << "]" << std::endl ; 
+        std::cout << "[" << ( f.smry ? f.smry : "smry-null" )  << "]" << std::endl ; 
+    }  
+}
+
+const char* colors =  R"(
+red
+green
+blue
+cyan
+magenta
+yellow
+black
+)" ; 
+
+const char* colors_sub_0 =  R"(
+green
+blue
+cyan
+)" ; 
+
+
+void test_strstr_across_newline()
+{
+    assert( strstr( colors, colors_sub_0 ) != nullptr );   
+    // CAUTION: regards trailing spaces : use "set list" to check 
+}
+
+
+
+
+int main(int  argc, char** argv )
+{
+    /*
+    test_strstr_across_newline();
+    */
+    
+    test_SStackFrame_dump();
 
     return 0 ; 
 }
+// name=SStackFrame_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
 

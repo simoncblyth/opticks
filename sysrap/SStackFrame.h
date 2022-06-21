@@ -14,6 +14,8 @@ Used for stack frame introspection based on *cxxabi.h*
 
 struct SYSRAP_API SStackFrame
 {
+    static char* TrimArgs(const char* signature); 
+
     SStackFrame( char* line ) ;
     ~SStackFrame();
 
@@ -27,7 +29,8 @@ struct SYSRAP_API SStackFrame
     char* offset ;
     char* end_offset ;
  
-    char* func ;    // only func is "owned"
+    char* func ;    // only func and smry are "owned"
+    char* smry ; 
 };
 
 
@@ -39,17 +42,20 @@ struct SYSRAP_API SStackFrame
 inline SStackFrame::SStackFrame(char* line_)
     :
     line(line_),
-    name(NULL),
-    offset(NULL),
-    end_offset(NULL),
-    func(NULL)
+    name(nullptr),
+    offset(nullptr),
+    end_offset(nullptr),
+    func(nullptr),
+    smry(nullptr)
 {
     parse(); 
+    if(func) smry = TrimArgs(func); 
 } 
 
 inline SStackFrame::~SStackFrame()
 {
     free(func);  
+    free(smry);  
 }
 
 inline void SStackFrame::dump()
@@ -58,6 +64,22 @@ inline void SStackFrame::dump()
     dump(out);    
 }
 
+/**
+SStackFrame::TrimArgs
+-----------------------
+
+G4VEmProcess::PostStepGetPhysicalInteractionLength(G4Track const&, double, G4ForceCondition*)
+-> 
+G4VEmProcess::PostStepGetPhysicalInteractionLength
+
+**/
+
+inline char* SStackFrame::TrimArgs(const char* signature)
+{
+    char* smry = strdup(signature) ; 
+    for( char* p = smry ; *p ; ++p ) if( *p == '(' ) *p = '\0' ; 
+    return smry ; 
+}
 
 
 #ifdef __APPLE__
@@ -78,6 +100,7 @@ inline void SStackFrame::parse()
         *offset++ = '\0';  // plant terminator into name  
         func = demangle(); 
     }  
+
 }
 
 

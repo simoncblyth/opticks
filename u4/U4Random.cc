@@ -7,6 +7,8 @@
 #include "Randomize.hh"
 #include "G4Types.hh"
 #include "U4Random.hh"
+#include "U4Stack.h"
+
 #include "NP.hh"
 #include "SPath.hh"
 #include "SEvt.hh"
@@ -98,7 +100,7 @@ U4Random::U4Random(const char* seq, const char* seqmask)
     m_flat_prior(0.),
     m_ready(false),
     m_select(SSys::getenvintvec("U4Random_select")),
-    m_select_action(SDBG::Action(SSys::getenvvar("U4Random_select_action", "backtrace")))   // "backtrace" "caller" "interrupt"
+    m_select_action(SDBG::Action(SSys::getenvvar("U4Random_select_action", "backtrace")))   // "backtrace" "caller" "interrupt" "summary"
 {
     init(); 
 }
@@ -412,15 +414,24 @@ double U4Random::flat()
 
     *(m_cur_values + m_seq_index) += 1 ;          // increment the cursor in the array, for the next generation 
 
+    unsigned stack = 0 ; 
+
     if( m_flat_debug )
     {
+        char* summary = SBacktrace::Summary(); 
+        stack = U4Stack::Classify(summary); 
+
         LOG(LEVEL)
             << " m_seq_index " << std::setw(4) << m_seq_index
             << " m_seq_nv " << std::setw(4) << m_seq_nv
             << " cursor " << std::setw(4) << cursor 
             << " idx " << std::setw(4) << idx 
             << " d " <<  std::setw(10 ) << std::fixed << std::setprecision(5) << d 
+            << " stack " << U4Stack::Name(stack)
             ;
+
+       if(!U4Stack::IsClassified(stack)) LOG(error) << std::endl << summary ; 
+
     }
 
     m_flat_prior = d ; 
@@ -431,29 +442,24 @@ double U4Random::flat()
         LOG(info) << descSelect(m_seq_index, cursor) ; 
         switch(m_select_action)
         {
-            case SDBG::INTERRUPT: std::raise(SIGINT)       ; break ; 
-            case SDBG::BACKTRACE: SBacktrace::Dump()       ; break ; 
-            case SDBG::CALLER:    SBacktrace::DumpCaller() ; break ; 
+            case SDBG::INTERRUPT: std::raise(SIGINT)        ; break ; 
+            case SDBG::BACKTRACE: SBacktrace::Dump()        ; break ; 
+            case SDBG::CALLER:    SBacktrace::DumpCaller()  ; break ; 
+            case SDBG::SUMMARY:   SBacktrace::DumpSummary() ; break ; 
         }
     }
 
 
     SEvt* sev = SEvt::Get(); 
     assert(sev); 
-    sev->addTag(getConsumerTag(), f );  
+    sev->addTag(stack, f );  
 
     return d ; 
 }
 
 
-double U4Random::getFlatPrior() const 
-{
-    return m_flat_prior ; 
-}
-
-
 /**
-U4Random::getConsumerTag
+U4Random::getFlatTag
 ----------------------------
 
 By examination of the SBacktrace and Geant4 process state etc.. 
@@ -464,18 +470,28 @@ to facilitate random alignment with the GPU simulation.
 ::
 
    u4t ; U4Random_select=-1,0 U4Random_select_action=backtrace ./U4RecorderTest.sh run
+       dump full backtraces for first flat consumption of all photons 
+
+   u4t ; U4Random_select=-1,0 U4Random_select_action=summary ./U4RecorderTest.sh run
+       dump summary backtraces for first flat consumption of all photons 
 
 
-
-
+unsigned U4Random::getFlatTag() 
+{
+    char* summary = SBacktrace::Summary(); 
+    unsigned stk = U4Stack::Classify(summary); 
+    LOG(info) << " stk " << std::setw(2) << stk << " U4Stack::Name(stk) " << U4Stack::Name(stk) ;  
+    if(!U4Stack::IsClassified(stk)) LOG(error) << std::endl << summary ; 
+    return stk  ; // stk needs translation into the stag.h enumeration 
+}
 **/
 
-unsigned U4Random::getConsumerTag() 
+
+
+double U4Random::getFlatPrior() const 
 {
-    return 0 ; 
+    return m_flat_prior ; 
 }
-
-
 
 
 /**

@@ -24,6 +24,89 @@ How to do that.
    to get the consumption to line up 
 
 
+SBacktrace.h U4Stack.h classifying U4Random::flat backtraces to follow every random consumption
+---------------------------------------------------------------------------------------------------
+
+* TODO: LOOK INTO THE TAIL BURNS, ARE THEY ACTUALLY DOING ANYTHING ?
+* TODO: investigate Geant4 process ordering to allow the stack enumeration to be translated into the stag.h enumeration  
+* TODO: collect the stack tags and flat in G4 side using SEvt machinery 
+  (even prior to enumeration translation), so can script the array alignment comparison
+
+::
+
+    2022-06-21 16:31:54.832 INFO  [28350265] [U4RecorderTest::GeneratePrimaries@111] [ mode I
+    SGenerate::GeneratePhotons ph  <f8(10, 4, 4, )
+    2022-06-21 16:31:54.832 INFO  [28350265] [U4RecorderTest::GeneratePrimaries@119] ]
+    2022-06-21 16:31:54.832 INFO  [28350265] [U4Recorder::BeginOfEventAction@50] 
+    2022-06-21 16:31:54.832 INFO  [28350265] [U4Random::setSequenceIndex@282]  index 9
+    2022-06-21 16:31:54.835 INFO  [28350265] [U4Random::flat@423]  m_seq_index    9 m_seq_nv  256 cursor    0 idx 2304 d    0.51319 stack RestDiscreteReset
+    2022-06-21 16:31:54.836 INFO  [28350265] [U4Random::flat@423]  m_seq_index    9 m_seq_nv  256 cursor    1 idx 2305 d    0.04284 stack DiscreteReset
+    2022-06-21 16:31:54.837 INFO  [28350265] [U4Random::flat@423]  m_seq_index    9 m_seq_nv  256 cursor    2 idx 2306 d    0.95184 stack DiscreteReset
+    2022-06-21 16:31:54.838 INFO  [28350265] [U4Random::flat@423]  m_seq_index    9 m_seq_nv  256 cursor    3 idx 2307 d    0.92588 stack DiscreteReset
+    2022-06-21 16:31:54.838 INFO  [28350265] [U4Random::flat@423]  m_seq_index    9 m_seq_nv  256 cursor    4 idx 2308 d    0.25979 stack BoundaryBurn
+     DiDi0  pidx      9 rand    0.25979 theReflectivity     1.0000 rand > theReflectivity  0
+    DiDi.pidx    9 PIDX   -1 OldMomentum (   -0.50013    0.44970    0.74002) OldPolarization (   -0.82853    0.00000   -0.55994) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi pidx      9 : NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi pidx      9 : TransCoeff     0.9775 
+    2022-06-21 16:31:54.838 INFO  [28350265] [U4Random::flat@423]  m_seq_index    9 m_seq_nv  256 cursor    5 idx 2309 d    0.91341 stack BoundaryDiDi
+    //InstrumentedG4OpBoundaryProcess::G4BooleanRand pidx      9 prob    0.97754 u    0.91341 u < prob 1 
+    //DiDi pidx      9 : TRANSMIT 
+    //DiDi pidx    9 : TRANSMIT NewMom (   -0.5001     0.4497     0.7400) NewPol (   -0.8285     0.0000    -0.5599) 
+    2022-06-21 16:31:54.839 INFO  [28350265] [U4Random::flat@423]  m_seq_index    9 m_seq_nv  256 cursor    6 idx 2310 d    0.39325 stack RestDiscreteReset
+    2022-06-21 16:31:54.840 INFO  [28350265] [U4Random::flat@423]  m_seq_index    9 m_seq_nv  256 cursor    7 idx 2311 d    0.83318 stack DiscreteReset
+    2022-06-21 16:31:54.840 INFO  [28350265] [U4Random::setSequenceIndex@282]  index -1
+    2022-06-21 16:31:54.840 INFO  [28350265] [U4Random::setSequenceIndex@282]  index 8
+    2022-06-21 16:31:54.841 INFO  [28350265] [U4Random::flat@423]  m_seq_index    8 m_seq_nv  256 cursor    0 idx 2048 d    0.47022 stack RestDiscreteReset
+    2022-06-21 16:31:54.842 INFO  [28350265] [U4Random::flat@423]  m_seq_index    8 m_seq_nv  256 cursor    1 idx 2049 d    0.48217 stack DiscreteReset
+    2022-06-21 16:31:54.843 INFO  [28350265] [U4Random::flat@423]  m_seq_index    8 m_seq_nv  256 cursor    2 idx 2050 d    0.42791 stack DiscreteReset
+    2022-06-21 16:31:54.844 INFO  [28350265] [U4Random::flat@423]  m_seq_index    8 m_seq_nv  256 cursor    3 idx 2051 d    0.44174 stack DiscreteReset
+    2022-06-21 16:31:54.844 INFO  [28350265] [U4Random::flat@423]  m_seq_index    8 m_seq_nv  256 cursor    4 idx 2052 d    0.78041 stack BoundaryBurn
+     DiDi0  pidx      8 rand    0.78041 theReflectivity     1.0000 rand > theReflectivity  0
+    DiDi.pidx    8 PIDX   -1 OldMomentum (    0.80941   -0.18808    0.55631) OldPolarization (   -0.56642    0.00000    0.82412) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi pidx      8 : NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi pidx      8 : TransCoeff     0.9775 
+    2022-06-21 16:31:54.844 INFO  [28350265] [U4Random::flat@423]  m_seq_index    8 m_seq_nv  256 cursor    5 id
+
+
+
+::
+
+    2022-06-21 16:31:54.883 INFO  [28350265] [U4Random::setSequenceIndex@282]  index 0
+    2022-06-21 16:31:54.884 INFO  [28350265] [U4Random::flat@423]  m_seq_index    0 m_seq_nv  256 cursor    0 idx    0 d    0.74022 stack RestDiscreteReset
+    2022-06-21 16:31:54.884 INFO  [28350265] [U4Random::flat@423]  m_seq_index    0 m_seq_nv  256 cursor    1 idx    1 d    0.43845 stack DiscreteReset
+    2022-06-21 16:31:54.885 INFO  [28350265] [U4Random::flat@423]  m_seq_index    0 m_seq_nv  256 cursor    2 idx    2 d    0.51701 stack DiscreteReset
+    2022-06-21 16:31:54.886 INFO  [28350265] [U4Random::flat@423]  m_seq_index    0 m_seq_nv  256 cursor    3 idx    3 d    0.15699 stack DiscreteReset
+    2022-06-21 16:31:54.886 INFO  [28350265] [U4Random::flat@423]  m_seq_index    0 m_seq_nv  256 cursor    4 idx    4 d    0.07137 stack BoundaryBurn
+     DiDi0  pidx      0 rand    0.07137 theReflectivity     1.0000 rand > theReflectivity  0
+    DiDi.pidx    0 PIDX   -1 OldMomentum (   -0.77425   -0.24520    0.58345) OldPolarization (   -0.60182    0.00000   -0.79863) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi pidx      0 : NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi pidx      0 : TransCoeff     0.9775 
+    2022-06-21 16:31:54.886 INFO  [28350265] [U4Random::flat@423]  m_seq_index    0 m_seq_nv  256 cursor    5 idx    5 d    0.46251 stack BoundaryDiDi
+    //InstrumentedG4OpBoundaryProcess::G4BooleanRand pidx      0 prob    0.97754 u    0.46251 u < prob 1 
+    //DiDi pidx      0 : TRANSMIT 
+    //DiDi pidx    0 : TRANSMIT NewMom (   -0.7742    -0.2452     0.5835) NewPol (   -0.6018     0.0000    -0.7986) 
+    2022-06-21 16:31:54.887 INFO  [28350265] [U4Random::flat@423]  m_seq_index    0 m_seq_nv  256 cursor    6 idx    6 d    0.22764 stack RestDiscreteReset
+    2022-06-21 16:31:54.888 INFO  [28350265] [U4Random::flat@423]  m_seq_index    0 m_seq_nv  256 cursor    7 idx    7 d    0.32936 stack DiscreteReset
+    2022-06-21 16:31:54.888 INFO  [28350265] [U4Random::setSequenceIndex@282]  index -1
+    2022-06-21 16:31:54.888 INFO  [28350265] [U4Recorder::EndOfEventAction@51] 
+
+
+HMM: the qsim.h is consuming 16 (but g4 only 7) (this is probably why I previously used some extra reset to make the consumption more regular for each step point)::
+
+    In [3]: t.flat[:,:17]                                                                                                                                                       
+    Out[3]: 
+    array([[0.74 , 0.438, 0.517, 0.157, 0.071, 0.463, 0.228, 0.329, 0.144, 0.188, 0.915, 0.54 , 0.975, 0.547, 0.653, 0.23 , 0.   ],
+           [0.921, 0.46 , 0.333, 0.373, 0.49 , 0.567, 0.08 , 0.233, 0.509, 0.089, 0.007, 0.954, 0.547, 0.825, 0.527, 0.93 , 0.   ],
+           [0.039, 0.25 , 0.184, 0.962, 0.521, 0.94 , 0.831, 0.41 , 0.082, 0.807, 0.695, 0.618, 0.256, 0.214, 0.342, 0.224, 0.   ],
+           [0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.136, 0.589, 0.491, 0.328, 0.911, 0.191, 0.964, 0.898, 0.624, 0.71 , 0.   ],
+           [0.925, 0.053, 0.163, 0.89 , 0.567, 0.241, 0.494, 0.321, 0.079, 0.148, 0.599, 0.426, 0.243, 0.489, 0.41 , 0.668, 0.   ],
+           [0.446, 0.338, 0.207, 0.985, 0.403, 0.178, 0.46 , 0.16 , 0.361, 0.62 , 0.45 , 0.306, 0.503, 0.456, 0.552, 0.848, 0.   ],
+           [0.667, 0.397, 0.158, 0.542, 0.706, 0.126, 0.154, 0.653, 0.38 , 0.855, 0.208, 0.09 , 0.701, 0.434, 0.106, 0.082, 0.   ],
+           [0.11 , 0.874, 0.981, 0.967, 0.162, 0.428, 0.931, 0.01 , 0.846, 0.38 , 0.812, 0.152, 0.273, 0.413, 0.786, 0.087, 0.   ]], dtype=float32)
+
+
+
+
 
 FIXED : NOT getting expected flat with mock_propagate
 --------------------------------------------------------

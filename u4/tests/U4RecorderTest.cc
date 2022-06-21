@@ -156,7 +156,6 @@ to hookup physics before the main instanciation::
 int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
-
     //U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
     U4Material::LoadBnd();   // "back" creation of G4 material properties from the Opticks bnd.npy obtained from SSim::Load 
 
