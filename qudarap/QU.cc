@@ -231,6 +231,7 @@ template QUDARAP_API sphoton*   QU::device_alloc_zero<sphoton>(unsigned num_item
 template QUDARAP_API srec*      QU::device_alloc_zero<srec>(unsigned num_items) ;
 template QUDARAP_API sseq*      QU::device_alloc_zero<sseq>(unsigned num_items) ;
 template QUDARAP_API stag*      QU::device_alloc_zero<stag>(unsigned num_items) ;
+template QUDARAP_API sflat*     QU::device_alloc_zero<sflat>(unsigned num_items) ;
 template QUDARAP_API quad2*     QU::device_alloc_zero<quad2>(unsigned num_items) ;
 
 
@@ -291,6 +292,7 @@ template void QU::copy_device_to_host<qstate>( qstate* h, qstate* d,  unsigned n
 template void QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_items);
 template void QU::copy_device_to_host<sseq>( sseq* h, sseq* d,  unsigned num_items);
 template void QU::copy_device_to_host<stag>( stag* h, stag* d,  unsigned num_items);
+template void QU::copy_device_to_host<sflat>( sflat* h, sflat* d,  unsigned num_items);
 
 
 /**

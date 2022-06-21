@@ -35,6 +35,7 @@ struct quad6 ;
 struct srec ; 
 struct sseq ; 
 struct stag ; 
+struct sflat ; 
 struct sphoton ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -68,6 +69,7 @@ struct sevent
     int      max_seq     ; // eg:           16  seqhis/seqbnd
     int      max_prd     ;  
     int      max_tag     ;     // stag.h random consumption tag 
+    int      max_flat    ; 
 
     int      num_genstep ; 
     quad6*   genstep ; 
@@ -98,6 +100,9 @@ struct sevent
 
     int      num_tag ; 
     stag*    tag ; 
+
+    int      num_flat ; 
+    sflat*   flat ; 
 
 
     SEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
@@ -139,6 +144,7 @@ SEVENT_METHOD void sevent::init()
     max_seq      = SEventConfig::MaxSeq()  ;     // seqhis 
     max_prd      = SEventConfig::MaxPrd()  ;  
     max_tag      = SEventConfig::MaxTag()  ;  
+    max_flat     = SEventConfig::MaxFlat()  ;  
 
     zero(); 
 
@@ -176,6 +182,7 @@ SEVENT_METHOD std::string sevent::descMax() const
         << " evt.max_seq  "      << std::setw(w) << max_seq
         << " evt.max_prd  "      << std::setw(w) << max_prd
         << " evt.max_tag  "      << std::setw(w) << max_tag
+        << " evt.max_flat  "     << std::setw(w) << max_flat
         ;
 
     std::string s = ss.str();  
@@ -195,6 +202,7 @@ SEVENT_METHOD std::string sevent::descNum() const
         << " evt.num_record "  << std::setw(w) << num_record
         << " evt.num_prd "  << std::setw(w) << num_prd
         << " evt.num_tag "  << std::setw(w) << num_tag
+        << " evt.num_flat "  << std::setw(w) << num_flat
         ;
     std::string s = ss.str();  
     return s ; 
@@ -246,6 +254,10 @@ SEVENT_METHOD std::string sevent::descBuf() const
         << std::setw(20) << " evt.tag "         << std::setw(w) << ( tag  ? "Y" : "N" ) << " " << std::setw(20) << tag
         << std::setw(20) << " num_tag "         << std::setw(7) << num_tag 
         << std::setw(20) << " max_tag "         << std::setw(7) << max_tag 
+        << std::endl
+        << std::setw(20) << " evt.flat "         << std::setw(w) << ( flat  ? "Y" : "N" ) << " " << std::setw(20) << flat
+        << std::setw(20) << " num_flat "         << std::setw(7) << num_flat 
+        << std::setw(20) << " max_flat "         << std::setw(7) << max_flat 
         << std::endl
         ;
     std::string s = ss.str();  
@@ -334,6 +346,7 @@ SEVENT_METHOD void sevent::zero()
     num_simtrace = 0 ; 
     num_prd = 0 ; 
     num_tag = 0 ; 
+    num_flat = 0 ; 
 
     genstep = nullptr ; 
     seed = nullptr ; 
@@ -345,6 +358,7 @@ SEVENT_METHOD void sevent::zero()
     simtrace = nullptr ; 
     prd = nullptr ; 
     tag = nullptr ; 
+    flat = nullptr ; 
     
 }
 #endif 

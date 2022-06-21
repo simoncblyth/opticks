@@ -71,13 +71,13 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<spho>  pho ;   // spho are label structs holding 4*int 
 
     std::vector<int>      slot ; 
-    std::vector<unsigned> tag_slot ; 
     std::vector<sphoton> photon ; 
     std::vector<sphoton> record ; 
     std::vector<srec>    rec ; 
     std::vector<sseq>    seq ; 
     std::vector<quad2>   prd ; 
     std::vector<stag>    tag ; 
+    std::vector<sflat>   flat ; 
 
     // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
@@ -85,7 +85,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     srec    current_rec = {} ; 
     sseq    current_seq = {} ; 
     quad2   current_prd = {} ; 
-    stag    current_tag = {} ; 
+    stagr   current_tagr = {} ; 
 
 
     static const plog::Severity LEVEL ; 
@@ -176,6 +176,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* getSeq() const ; 
     NP* getPrd() const ; 
     NP* getTag() const ; 
+    NP* getFlat() const ; 
 
     NP* makePhoton() const ; 
     NP* makeRecord() const ; 
@@ -183,6 +184,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* makeSeq() const ; 
     NP* makePrd() const ; 
     NP* makeTag() const ; 
+    NP* makeFlat() const ; 
 
 
     // SCompProvider methods

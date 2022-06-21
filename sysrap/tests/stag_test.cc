@@ -6,23 +6,26 @@
 
 int main()
 {
-    stag t = {} ; 
+    stagr r = {} ; 
 
-
-    unsigned stag_slot = 0 ; 
-
-    std::cout << stag::Desc() << std::endl ; 
+    std::cout << stagc::Desc() << std::endl ; 
 
     for(int i=0 ; i < 24 ; i++ )  
     {
-        t.add(stag_slot, i); 
-        std::cout << t.desc() << std::endl ; 
+        float u = float(i)/float(24) ; 
+        r.add(i, u); 
+        std::cout << r.desc() << std::endl ; 
     }
 
-    std::cout << " sizeof(stag)               " << sizeof(stag) << std::endl ; 
-    std::cout << " sizeof(t)                  " << sizeof(t) << std::endl ; 
-    std::cout << " sizeof(unsigned long long) " << sizeof(unsigned long long) << std::endl << std::endl ; 
-    assert( sizeof(stag) == 2*sizeof(unsigned long long) ); 
+    std::cout << " sizeof(stag)                           " << sizeof(stag) << std::endl ; 
+    std::cout << " sizeof(r.tag)                          " << sizeof(r.tag) << std::endl ; 
+    std::cout << " sizeof(unsigned long long)*stag::NSEQ  " << sizeof(unsigned long long)*stag::NSEQ << std::endl << std::endl ; 
+    assert( sizeof(stag) == sizeof(unsigned long long)*stag::NSEQ ); 
+
+    std::cout << " sizeof(r.flat)             " << sizeof(r.flat) << std::endl ; 
+    std::cout << " sizeof(float)*stag::SLOTS  " << sizeof(float)*stag::SLOTS << std::endl ; 
+    assert( sizeof(r.flat) == sizeof(float)*stag::SLOTS ); 
+
 
     return 0 ; 
 }

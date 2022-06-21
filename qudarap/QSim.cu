@@ -247,7 +247,9 @@ __global__ void _QSim_rayleigh_scatter_align( qsim* sim, sphoton* photon,  unsig
     sphoton p = dbg->p ;    // need local copy of photon otherwise would have write interference between threads
     curandState rng = sim->rngstate[idx] ; 
 
-    sim->rayleigh_scatter(p, rng);  
+    stagr tagr = {} ; 
+
+    sim->rayleigh_scatter(p, rng, tagr);  
 
     photon[idx] = p ; 
 }
@@ -265,8 +267,10 @@ __global__ void _QSim_propagate_to_boundary( qsim* sim, sphoton* photon, unsigne
 
     curandState rng = sim->rngstate[idx] ; 
 
+    stagr tagr = {} ; 
+
     unsigned flag = 0u ;  
-    sim->propagate_to_boundary( flag, p, prd, s, rng, idx );  
+    sim->propagate_to_boundary( flag, p, prd, s, rng, idx, tagr );  
     p.set_flag(flag); 
 
     photon[idx] = p ; 
@@ -293,11 +297,14 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim* sim, sphoton* photon
 
     curandState rng = sim->rngstate[idx] ; 
 
+    stagr tagr ; 
+
+
     q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
     q.q3.f = q.q2.f ; 
 
     unsigned flag = 0 ; 
-    sim->propagate_at_boundary( flag, p, prd, s, rng, idx );  
+    sim->propagate_at_boundary( flag, p, prd, s, rng, idx, tagr );  
 
     q.q3.u.w = flag ;  // non-standard
 
@@ -320,11 +327,14 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
 
     curandState rng = sim->rngstate[idx] ; 
 
+    stagr tagr = {} ; 
+
+
     q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
     q.q3.f = q.q2.f ;
  
     unsigned flag = 0 ; 
-    sim->propagate_at_boundary( flag, p, prd, s, rng, idx );  
+    sim->propagate_at_boundary( flag, p, prd, s, rng, idx, tagr );  
 
     q.q3.u.w = flag ;  // non-standard
 
@@ -348,6 +358,7 @@ __global__ void _QSim_propagate_at_multifilm_mutate( qsim* sim, sphoton* photon,
     sphoton p  = photon[idx] ; 
     quad4&  q  = (quad4&)p ; 
     curandState rng = sim->rngstate[idx] ; 
+    stagr tagr = {} ; 
 
 
     unsigned long long jump = 1000;
@@ -358,7 +369,7 @@ __global__ void _QSim_propagate_at_multifilm_mutate( qsim* sim, sphoton* photon,
 
 
     unsigned flag = 0u ; 
-    sim->propagate_at_multifilm(flag, p, prd, s, rng, idx);  
+    sim->propagate_at_multifilm(flag, p, prd, s, rng, idx, tagr );  
     //printf("//_QSim_propagate_at_multifilm_mutate : Thread index: idx = %d  flag = %d", idx, flag );    
 
     q.q3.u.w = flag ;  // non-standard
@@ -379,9 +390,11 @@ __global__ void _QSim_hemisphere_polarized( qsim* sim, sphoton* photon, unsigned
     curandState rng = sim->rngstate[idx] ; 
     const quad2* prd = &dbg->prd ;  
     sphoton p        = dbg->p ;   
+    stagr tagr = {} ; 
+
     bool inwards = true ; 
 
-    sim->hemisphere_polarized( p, polz, inwards,  prd, rng );  
+    sim->hemisphere_polarized( p, polz, inwards,  prd, rng, tagr );  
 
 
     photon[idx] = p ; 
@@ -395,6 +408,8 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
     if (idx >= num_photon) return;
 
     curandState rng = sim->rngstate[idx] ; 
+    stagr tagr = {} ; 
+
     const quad2* prd = &dbg->prd ;  
 
     sphoton p = dbg->p ;   
@@ -408,7 +423,7 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
 
     switch(type)
     {
-        case REFLECT_DIFFUSE:   sim->reflect_diffuse(  p, prd, rng, idx) ;  break ;  
+        case REFLECT_DIFFUSE:   sim->reflect_diffuse(  p, prd, rng, idx, tagr) ;  break ;  
         case REFLECT_SPECULAR:  sim->reflect_specular( p, prd, rng, idx) ;  break ;  
     }
     photon[idx] = p ; 
@@ -433,9 +448,11 @@ __global__ void _QSim_random_direction_marsaglia( qsim* sim, quad* q, unsigned n
     if (idx >= num_quad ) return;
 
     curandState rng = sim->rngstate[idx] ; 
+    stagr tagr = {} ; 
+
 
     float3* dir = (float3*)&q[idx].f.x ;  
-    sim->random_direction_marsaglia( dir, rng, idx );  
+    sim->random_direction_marsaglia( dir, rng, idx, tagr );  
     q[idx].u.w = idx ; 
 }
 
@@ -445,11 +462,12 @@ __global__ void _QSim_lambertian_direction( qsim* sim, quad* q, unsigned num_qua
     if (idx >= num_quad ) return;
 
     curandState rng = sim->rngstate[idx] ; 
+    stagr tagr = {} ; 
 
     float3* dir = (float3*)&q[idx].f.x ;  
     const float orient = -1.f ; 
 
-    sim->lambertian_direction( dir, &dbg->normal, orient, rng, idx );  
+    sim->lambertian_direction( dir, &dbg->normal, orient, rng, idx, tagr );  
 
     q[idx].u.w = idx ; 
 }

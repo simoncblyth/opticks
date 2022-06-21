@@ -28,7 +28,9 @@ enum {
     SCOMP_SIMTRACE  = 0x1 <<  9,
     SCOMP_DOMAIN    = 0x1 << 10,
     SCOMP_INPHOTON  = 0x1 << 11,
-    SCOMP_TAG       = 0x1 << 12
+    SCOMP_TAG       = 0x1 << 12,
+    SCOMP_FLAT      = 0x1 << 13
+
 
 };
 
@@ -40,7 +42,7 @@ struct SYSRAP_API SCompProvider
 
 struct SYSRAP_API SComp
 {
-    static constexpr const char* ALL_ = "genstep,photon,record,rec,seq,prd,seed,hit,simtrace,domain,inphoton,tag" ; 
+    static constexpr const char* ALL_ = "genstep,photon,record,rec,seq,prd,seed,hit,simtrace,domain,inphoton,tag,flat" ; 
     static constexpr const char* UNDEFINED_ = "undefined" ; 
     static constexpr const char* GENSTEP_   = "genstep" ; 
     static constexpr const char* PHOTON_    = "photon" ; 
@@ -54,6 +56,7 @@ struct SYSRAP_API SComp
     static constexpr const char* DOMAIN_    = "domain" ; 
     static constexpr const char* INPHOTON_  = "inphoton" ; 
     static constexpr const char* TAG_       = "tag" ; 
+    static constexpr const char* FLAT_      = "flat" ; 
 
     static bool Match(const char* q, const char* n ); 
     static unsigned    Comp(const char* name); 
@@ -75,6 +78,7 @@ struct SYSRAP_API SComp
     static bool IsDomain(  unsigned mask){ return mask & SCOMP_DOMAIN ; }
     static bool IsInphoton(unsigned mask){ return mask & SCOMP_INPHOTON ; }
     static bool IsTag(     unsigned mask){ return mask & SCOMP_TAG ; }
+    static bool IsFlat(    unsigned mask){ return mask & SCOMP_FLAT ; }
 };
 
 inline bool SComp::Match(const char* q, const char* n )
@@ -97,6 +101,7 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, DOMAIN_))   comp = SCOMP_DOMAIN ; 
     if(Match(name, INPHOTON_)) comp = SCOMP_INPHOTON ; 
     if(Match(name, TAG_))      comp = SCOMP_TAG ; 
+    if(Match(name, FLAT_))     comp = SCOMP_FLAT ; 
     return comp ; 
 }
 inline const char* SComp::Name(unsigned comp)
@@ -116,7 +121,8 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_SIMTRACE:  s = SIMTRACE_   ; break ;  
         case SCOMP_DOMAIN:    s = DOMAIN_     ; break ;  
         case SCOMP_INPHOTON:  s = INPHOTON_   ; break ;  
-        case SCOMP_TAG:       s = TAG_   ; break ;  
+        case SCOMP_TAG:       s = TAG_        ; break ;  
+        case SCOMP_FLAT:      s = FLAT_       ; break ;  
     }
     return s ; 
 }
@@ -136,6 +142,7 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_DOMAIN )   names.push_back(DOMAIN_) ; 
     if( mask & SCOMP_INPHOTON ) names.push_back(INPHOTON_) ; 
     if( mask & SCOMP_TAG )      names.push_back(TAG_) ; 
+    if( mask & SCOMP_FLAT )     names.push_back(FLAT_) ; 
 
     std::stringstream ss ; 
     for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << ( i < names.size() - 1 ? "," : "" ); 

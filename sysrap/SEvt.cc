@@ -205,7 +205,6 @@ void SEvt::clear()
     pho0.clear(); 
     pho.clear(); 
     slot.clear(); 
-    tag_slot.clear(); 
     photon.clear(); 
     record.clear(); 
     rec.clear(); 
@@ -335,8 +334,9 @@ void SEvt::setNumPhoton(unsigned num_photon)
     LOG(LEVEL) << " num_photon " << num_photon ;  
 
     evt->num_photon = num_photon ; 
-    evt->num_seq    = evt->max_seq > 0 ? evt->num_photon : 0 ;
-    evt->num_tag    = evt->max_tag > 0 ? evt->num_photon : 0 ;
+    evt->num_seq    = evt->max_seq  > 0 ? evt->num_photon : 0 ;
+    evt->num_tag    = evt->max_tag  > 0 ? evt->num_photon : 0 ;
+    evt->num_flat   = evt->max_flat > 0 ? evt->num_photon : 0 ;
 
     evt->num_record = evt->max_record * evt->num_photon ;
     evt->num_rec    = evt->max_rec    * evt->num_photon ;
@@ -383,7 +383,8 @@ void SEvt::hostside_running_resize()
 
     if(evt->num_photon > 0) pho.resize(  evt->num_photon );  
     if(evt->num_photon > 0) slot.resize( evt->num_photon ); 
-    if(evt->num_photon > 0) tag_slot.resize( evt->num_photon ); 
+
+     // HMM: what about tag_slot 
 
     if(evt->num_photon > 0) photon.resize(evt->num_photon);
     if(evt->num_record > 0) record.resize(evt->num_record); 
@@ -397,6 +398,7 @@ void SEvt::hostside_running_resize()
     if(evt->num_seq    > 0) evt->seq    = seq.data() ; 
     if(evt->num_prd    > 0) evt->prd    = prd.data() ; 
     if(evt->num_tag    > 0) evt->tag    = tag.data() ; 
+    if(evt->num_flat   > 0) evt->flat   = flat.data() ; 
 
     LOG(LEVEL) 
         << " is_self_provider " << is_self_provider 
@@ -469,7 +471,7 @@ void SEvt::beginPhoton(const spho& label)
     current_rec.zero() ; 
     current_seq.zero() ; 
     current_prd.zero() ; 
-    current_tag.zero() ; 
+    current_tagr.zero() ; 
 
     current_photon.set_idx(idx); 
     current_photon.set_flag(genflag); 
@@ -703,6 +705,7 @@ void SEvt::pointPhoton(const spho& label)
         << " evt.max_seq    " << evt->max_seq
         << " evt.max_prd    " << evt->max_prd
         << " evt.max_tag    " << evt->max_tag
+        << " evt.max_flat    " << evt->max_flat
         ;
 
 
@@ -721,15 +724,11 @@ void SEvt::pointPhoton(const spho& label)
     // at truncation the above stop writing anything but bounce keeps incrementing 
 }
 
-void SEvt::addTag(unsigned tag, float u)
+void SEvt::addTag(unsigned tag, float flat)
 {
     if(evt->tag == nullptr) return  ; 
-
-    unsigned idx = current_pho.id ; 
-    unsigned& tag_slot_ = tag_slot[idx] ; 
-    stag&  ctag       = current_tag ; 
-
-    if(int(tag_slot_) < evt->max_tag) ctag.add(tag_slot_,tag,u)  ; 
+    stagr&   tagr = current_tagr ; 
+    tagr.add(tag,flat)  ; 
 }
 
 
@@ -742,10 +741,15 @@ void SEvt::finalPhoton(const spho& label)
 
     const sphoton& p = current_photon ; 
     sseq& seq        = current_seq ; 
+    stagr& tagr      = current_tagr ; 
 
     if(evt->photon) evt->photon[idx] = p ; 
     if(evt->seq)    evt->seq[idx] = seq ; 
     if(evt->photon) evt->photon[idx] = p ; 
+
+    if(evt->tag)   evt->tag[idx]  = tagr.tag ; 
+    if(evt->flat)  evt->flat[idx] = tagr.flat ; 
+
 }
 
 void SEvt::checkPhoton(const spho& label) const 
@@ -810,6 +814,14 @@ NP* SEvt::getTag() const
     return p ; 
 } 
 
+NP* SEvt::getFlat() const 
+{ 
+    if( evt->flat == nullptr ) return nullptr ; 
+    NP* p = makeFlat(); 
+    p->read2( (float*)evt->flat ); 
+    return p ; 
+} 
+
 
 NP* SEvt::makePhoton() const 
 {
@@ -851,6 +863,11 @@ NP* SEvt::makeTag() const
 {
     return NP::Make<unsigned long long>( evt->num_photon, stag::NSEQ);   // 
 }
+NP* SEvt::makeFlat() const 
+{
+    return NP::Make<float>( evt->num_photon, sflat::SLOTS );   // 
+}
+
 
 
 
@@ -883,6 +900,7 @@ NP* SEvt::getComponent_(unsigned comp) const
         case SCOMP_SEQ:       a = getSeq()      ; break ;   
         case SCOMP_PRD:       a = getPrd()      ; break ;   
         case SCOMP_TAG:       a = getTag()      ; break ;   
+        case SCOMP_FLAT:      a = getFlat()     ; break ;   
         //case SCOMP_SEED:      a = getSeed()     ; break ;   
         //case SCOMP_HIT:       a = getHit()      ; break ;   
         //case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   

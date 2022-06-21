@@ -3,20 +3,12 @@
 stag.h : random consumption tags for simulation alignment purposes
 =====================================================================
 
-
 **/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #    define STAG_METHOD __device__ __forceinline__
 #else
 #    define STAG_METHOD inline 
-#endif
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
-#include <string>
-#include <sstream>
-#include <iomanip>
 #endif
 
 
@@ -43,24 +35,21 @@ enum {
    stag_sc_u4     = 19
 }; 
 
-struct stag
-{
-    static constexpr const unsigned NSEQ = 2 ;  
-    static constexpr const unsigned BITS = 5 ;   // (0x1 << 5)-1 = 31  : up to 32 enumerations in 5 bits per slot   
-    static constexpr const unsigned long long MASK = ( 0x1ull << BITS ) - 1ull ;   
-    static constexpr const unsigned SLOTMAX = 64/BITS ;  // 64//5 = 12 so can fit 12 tags into each seqtag 64 bits, with NSEQ 2 that allows 24 tags  
-
-    // int slot = 0 ;  having the slot inside the struct is inconvenient for purpose of persisting into a stag array eg: evt->tag[idx] = tag 
-    // HMM could operate slotless by slotting into first with no bits set ?
-    unsigned long long seqtag[NSEQ] ;
- 
-    STAG_METHOD void zero(); 
-    STAG_METHOD void add(unsigned& slot, unsigned tag, float u=0.f );   // passing the random only needed during dev to check are tagging all consumption 
-    STAG_METHOD unsigned get(unsigned slot_) const ; 
-
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <bitset>
+
+struct stagc
+{
+    static const char* Name(unsigned tag);     
+    static const char* Note(unsigned tag);     
+    static std::string Desc() ; 
+
     static constexpr const char* undef_ = "_" ; 
     static constexpr const char* undef_note = "undef" ; 
 
@@ -120,42 +109,9 @@ struct stag
 
     static constexpr const char* sc_u4_ = "sc_u4" ; 
     static constexpr const char* sc_u4_note = "qsim::rayleigh_scatter u4" ;
-
-
-    static const char* Name(unsigned tag);     
-    static const char* Note(unsigned tag);     
-
-    std::string desc() const ; 
-    static std::string Desc() ; 
-#endif
 };
 
-
-
-STAG_METHOD void stag::zero()
-{
-    for(unsigned i=0 ; i < NSEQ ; i++) seqtag[i] = 0ull ; 
-}
-
-STAG_METHOD void stag::add(unsigned& slot, unsigned tag, float u)
-{
-    unsigned iseq = slot/SLOTMAX ; 
-    if(iseq < NSEQ) seqtag[iseq] |=  (( tag & MASK ) << BITS*(slot - iseq*SLOTMAX) );
-    slot += 1 ; 
-}
-
-STAG_METHOD unsigned stag::get(unsigned slot_) const 
-{
-    unsigned iseq = slot_/SLOTMAX ; 
-    return iseq < NSEQ ? ( seqtag[iseq] >> BITS*(slot_ - iseq*SLOTMAX) ) & MASK : 0  ; 
-}
-
-
-
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
-STAG_METHOD const char* stag::Name(unsigned tag)
+STAG_METHOD const char* stagc::Name(unsigned tag)
 {
     const char* s = nullptr ; 
     switch(tag)
@@ -183,7 +139,7 @@ STAG_METHOD const char* stag::Name(unsigned tag)
     }
     return s ; 
 }
-STAG_METHOD const char* stag::Note(unsigned tag)
+STAG_METHOD const char* stagc::Note(unsigned tag)
 {
     const char* s = nullptr ; 
     switch(tag)
@@ -212,45 +168,10 @@ STAG_METHOD const char* stag::Note(unsigned tag)
     return s ; 
 }
 
-
-
-STAG_METHOD std::string stag::desc() const 
+STAG_METHOD std::string stagc::Desc() 
 {
     std::stringstream ss ;
-    ss << std::hex << std::setw(16) << seqtag << std::dec << " : " ; 
-    ss << std::endl ; 
-    for(unsigned i=0 ; i < SLOTMAX*NSEQ ; i++) 
-    {
-        unsigned tag = get(i); 
-        const char* name = Name(tag) ; 
-        const char* note = Note(tag) ; 
-        ss 
-             << " i " << std::setw(2) << i 
-             << " tag " << std::setw(2) << tag
-             << " name " << std::setw(15) << ( name ? name : "-" )  
-             << " note " << ( note ? note : "-" ) 
-             << std::endl
-             ; 
-    }
-    std::string s = ss.str(); 
-    return s ; 
-}
-
-STAG_METHOD std::string stag::Desc() 
-{
-    std::stringstream ss ;
-
-    ss << "stag::Desc " 
-       << " BITS " << BITS 
-       << " MASK " << MASK
-       << " MASK 0x" << std::hex << MASK << std::dec
-       << " MASK 0b" << std::bitset<64>(MASK) 
-       << " 64/BITS " << 64/BITS
-       << " SLOTMAX " << SLOTMAX
-       << std::endl 
-       ;  
-
-    for(unsigned i=0 ; i <= MASK ; i++) 
+    for(unsigned i=0 ; i <= 31 ; i++) 
     {
         unsigned tag = i ; 
         const char* name = Name(tag) ; 
@@ -265,8 +186,161 @@ STAG_METHOD std::string stag::Desc()
     }
     std::string s = ss.str(); 
     return s ; 
+}
 
+#endif
+
+/**
+
+Having slot inside the stag struct is inconvenient for purpose of persisting 
+into a stag array eg: evt->tag[idx] = tag 
+
+// HMM could operate slotless by slotting into first with no bits set ?
+
+**/
+
+struct stag
+{
+    static constexpr const unsigned NSEQ = 2 ;  
+    static constexpr const unsigned BITS = 5 ;   // (0x1 << 5)-1 = 31  : up to 32 enumerations in 5 bits per slot   
+    static constexpr const unsigned long long MASK = ( 0x1ull << BITS ) - 1ull ;   
+    static constexpr const unsigned SLOTMAX = 64/BITS ;     // eg 64//5 = 12 so can fit 12 tags into each seqtag 64 bits
+    static constexpr const unsigned SLOTS = SLOTMAX*NSEQ ;  // eg 24 for BITS = 5 with NSEQ = 2 
+
+    unsigned long long seqtag[NSEQ] ;
+ 
+    STAG_METHOD void zero(); 
+    STAG_METHOD void set(unsigned slot, unsigned tag );
+    STAG_METHOD unsigned get(unsigned slot_) const ; 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    static std::string Desc() ; 
+    std::string desc(unsigned slot) const ; 
+    std::string desc() const ; 
+#endif
+
+};
+
+struct sflat
+{
+    static constexpr const unsigned SLOTS = stag::SLOTS ; 
+    float flat[SLOTS] ; 
+}; 
+
+struct stagr
+{
+    static constexpr const unsigned SLOTS = stag::SLOTS ; 
+
+    unsigned slot = 0 ; 
+    stag  tag = {} ;  
+    sflat flat = {} ; 
+
+    STAG_METHOD void add(unsigned tag_, float flat_ );  
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    STAG_METHOD void zero();  
+    STAG_METHOD std::string desc(unsigned slot_) const ; 
+    STAG_METHOD std::string desc() const ; 
+#endif
+};
+
+STAG_METHOD void stagr::add(unsigned tag_, float flat_)
+{
+    printf("//stagr::add slot %d tag %2d flat %10.4f SLOTS %d \n", slot, tag_, flat_, SLOTS ); 
+
+    if(slot < SLOTS)
+    {
+        tag.set(slot, tag_); 
+        flat.flat[slot] = flat_ ; 
+    }
+    slot += 1 ; 
+}
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+STAG_METHOD void stagr::zero(){ *this = {} ; }
+STAG_METHOD std::string stagr::desc(unsigned slot_) const 
+{
+    std::stringstream ss ;
+    ss << std::setw(10) << std::fixed << std::setprecision(5) << flat.flat[slot_] << " : " << tag.desc(slot_) ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+STAG_METHOD std::string stagr::desc() const 
+{
+    std::stringstream ss ;
+    ss << "stagr::desc " << std::endl ; 
+    for(unsigned i=0 ; i < SLOTS ; i++) ss << desc(i) << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
 }
 #endif
+
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+STAG_METHOD std::string stag::Desc() 
+{
+    std::stringstream ss ;
+    ss << "stag::Desc " 
+       << " BITS " << BITS 
+       << " MASK " << MASK
+       << " MASK 0x" << std::hex << MASK << std::dec
+       << " MASK 0b" << std::bitset<64>(MASK) 
+       << " 64/BITS " << 64/BITS
+       << " SLOTMAX " << SLOTMAX
+       << std::endl 
+       ;  
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+STAG_METHOD std::string stag::desc(unsigned slot) const 
+{
+    unsigned tag = get(slot); 
+    const char* name = stagc::Name(tag) ; 
+    const char* note = stagc::Note(tag) ; 
+    std::stringstream ss ;
+    ss 
+         << " slot " << std::setw(2) << slot
+         << " tag " << std::setw(2) << tag
+         << " name " << std::setw(15) << ( name ? name : "-" )  
+         << " note " << ( note ? note : "-" ) 
+         ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+STAG_METHOD std::string stag::desc() const 
+{
+    std::stringstream ss ;
+    ss << "stag::desc " << std::endl ; 
+    for(unsigned i=0 ; i < NSEQ ; i++) ss << std::hex << std::setw(16) << seqtag[i] << std::dec << " : " << std::endl ; 
+    for(unsigned i=0 ; i < SLOTS ; i++) ss << desc(i) << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+#endif
+
+
+STAG_METHOD void stag::zero()
+{
+    for(unsigned i=0 ; i < NSEQ ; i++) seqtag[i] = 0ull ; 
+}
+STAG_METHOD void stag::set(unsigned slot, unsigned tag) 
+{
+    unsigned iseq = slot/SLOTMAX ; 
+    if(iseq < NSEQ) seqtag[iseq] |=  (( tag & MASK ) << BITS*(slot - iseq*SLOTMAX) );
+}
+STAG_METHOD unsigned stag::get(unsigned slot) const 
+{
+    unsigned iseq = slot/SLOTMAX ; 
+    return iseq < NSEQ ? ( seqtag[iseq] >> BITS*(slot - iseq*SLOTMAX) ) & MASK : 0  ; 
+}
+
 
 

@@ -93,6 +93,7 @@ public:
     bool hasSeq() const ; 
     bool hasPrd() const ; 
     bool hasTag() const ; 
+    bool hasFlat() const ; 
     bool hasHit() const ; 
     bool hasSimtrace() const ; 
 public:
@@ -109,6 +110,7 @@ public:
     NP*      getSeq() const ;       // seqhis..
     NP*      getPrd() const ;  
     NP*      getTag() const ;  
+    NP*      getFlat() const ;  
     NP*      getRecord() const ;    // full step records
     NP*      getRec() const  ;      // compressed step record
     NP*      getDomain() const ; 

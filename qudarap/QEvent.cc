@@ -250,6 +250,7 @@ bool QEvent::hasRec() const    { return evt->rec != nullptr ; }
 bool QEvent::hasSeq() const    { return evt->seq != nullptr ; }
 bool QEvent::hasPrd() const    { return evt->prd != nullptr ; }
 bool QEvent::hasTag() const    { return evt->tag != nullptr ; }
+bool QEvent::hasFlat() const   { return evt->flat != nullptr ; }
 bool QEvent::hasHit() const    { return evt->hit != nullptr ; }
 bool QEvent::hasSimtrace() const  { return evt->simtrace != nullptr ; }
 
@@ -419,6 +420,22 @@ NP* QEvent::getTag() const
     return tag ; 
 }
 
+NP* QEvent::getFlat() const 
+{
+    if(!hasFlat()) LOG(LEVEL) << " getFlat called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasFlat()) return nullptr ;
+  
+    NP* flat = sev->makeFlat(); 
+    LOG(LEVEL) << " evt.num_flat " << evt->num_flat << " flat.desc " << flat->desc() ; 
+    QU::copy_device_to_host<sflat>( (sflat*)flat->bytes(), evt->flat, evt->num_flat ); 
+    return flat ; 
+}
+
+
+
+
+
+
 
 NP* QEvent::getRecord() const 
 {
@@ -562,6 +579,7 @@ NP* QEvent::getComponent_(unsigned comp) const
         case SCOMP_DOMAIN:    a = getDomain()   ; break ;   
         case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;   
         case SCOMP_TAG:       a = getTag()         ; break ;   
+        case SCOMP_FLAT:      a = getFlat()        ; break ;   
     }   
     return a ; 
 }
@@ -592,6 +610,7 @@ void QEvent::setNumPhoton(unsigned num_photon )
         evt->seq     = evt->num_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->num_seq  )   : nullptr ; 
         evt->prd     = evt->num_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->num_prd  )   : nullptr ; 
         evt->tag     = evt->num_tag    > 0 ? QU::device_alloc_zero<stag>(    evt->num_tag  )   : nullptr ; 
+        evt->flat    = evt->num_flat   > 0 ? QU::device_alloc_zero<sflat>(   evt->num_flat  )   : nullptr ; 
 
         LOG(LEVEL) 
             << " device_alloc photon " 
@@ -601,6 +620,7 @@ void QEvent::setNumPhoton(unsigned num_photon )
             << " evt.num_seq    " << evt->num_seq
             << " evt.num_prd    " << evt->num_prd
             << " evt.num_tag    " << evt->num_tag
+            << " evt.num_flat    " << evt->num_flat
             ;
     } 
     else
