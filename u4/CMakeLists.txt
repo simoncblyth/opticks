@@ -39,6 +39,7 @@ set(HEADERS
     U4_API_EXPORT.hh
     U4.hh
     U4Track.h
+    U4Stack.h
     U4PhotonInfo.h
     U4GDML.h
     U4SolidMaker.hh

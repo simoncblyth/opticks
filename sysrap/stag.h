@@ -190,15 +190,6 @@ STAG_METHOD std::string stagc::Desc()
 
 #endif
 
-/**
-
-Having slot inside the stag struct is inconvenient for purpose of persisting 
-into a stag array eg: evt->tag[idx] = tag 
-
-// HMM could operate slotless by slotting into first with no bits set ?
-
-**/
-
 struct stag
 {
     static constexpr const unsigned NSEQ = 2 ;  
@@ -228,6 +219,7 @@ struct sflat
     float flat[SLOTS] ; 
 }; 
 
+
 struct stagr
 {
     static constexpr const unsigned SLOTS = stag::SLOTS ; 
@@ -248,7 +240,7 @@ struct stagr
 
 STAG_METHOD void stagr::add(unsigned tag_, float flat_)
 {
-    //printf("//stagr::add slot %d tag %2d flat %10.4f SLOTS %d \n", slot, tag_, flat_, SLOTS ); 
+    printf("//stagr::add slot %d tag %2d flat %10.4f SLOTS %d \n", slot, tag_, flat_, SLOTS ); 
 
     if(slot < SLOTS)
     {
@@ -341,6 +333,5 @@ STAG_METHOD unsigned stag::get(unsigned slot) const
     unsigned iseq = slot/SLOTMAX ; 
     return iseq < NSEQ ? ( seqtag[iseq] >> BITS*(slot - iseq*SLOTMAX) ) & MASK : 0  ; 
 }
-
 
 

@@ -8,12 +8,18 @@ from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 from opticks.ana.r import * 
 
+from opticks.sysrap.stag import stag
+tag = stag()
+
+
 PIDX = int(os.environ.get("PIDX","-1"))
 
 if __name__ == '__main__':
     t = Fold.Load(os.path.expandvars("$FOLD/CXRaindropTest"))
     r = t.record if hasattr(t,'record') else None
     p = t.photon if hasattr(t,'photon') else None
+
+    st = stag.Split(t.tag) if hasattr(t,"tag") else None
 
     if p is None:
         print("FATAL : no photon loaded from t.base %s " % t.base ) 
@@ -34,8 +40,7 @@ if __name__ == '__main__':
     r_poly["flag_label"] = r_flag_label
 
     r_tube = r_poly.tube(radius=1)
-
-    PLOT = not "NOPLOT" in os.environ
+    PLOT = "PLOT" in os.environ
     if PLOT:
         pl = pvplt_plotter()
         #pl.add_mesh( r_tube )

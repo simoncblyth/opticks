@@ -25,9 +25,18 @@ How to do that.
 
 
 
+FIXED : GPU side CXRaindropTest tag and flat collection
+--------------------------------------------------------------------------------------------
 
-WIP : Getting CXRaindropTest to run again with tag and flat collection
--------------------------------------------------------------------------
+Initially got zeros for tag and flat due to below omitted from CSGOptiX7.cu::simulate
+
+    249 #ifdef DEBUG_TAG
+    250     if(evt->tag)  evt->tag[idx]  = tagr.tag ;
+    251     if(evt->flat) evt->flat[idx] = tagr.flat ;
+    252 #endif
+    253 
+
+* TODO: avoid the need to duplicate this by some more cross context encapsulation shared as widely as possible 
 
 
 
@@ -60,7 +69,7 @@ U4RecorderTest
     2022-06-22 14:26:06.246 INFO  [28940848] [SEvt::pointPhoton@751] spho (gs:ix:id:gn   0   0    0  0)  seqhis              8cd nib  3 TO BT SA
 
 
-What are the 8 doing for "TO BT SA":
+B : What are the 8 doing for "TO BT SA"::
 
     2022-06-22 14:26:06.241 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    0 idx    0 d    0.74022 stack  2 ScintDiscreteReset
     2022-06-22 14:26:06.242 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    1 idx    1 d    0.43845 stack  6 BoundaryDiscreteReset
@@ -77,12 +86,108 @@ What are the 8 doing for "TO BT SA":
     # deciding on winner of step 1->2 : ends by getting killed by NoRindex on the Rock 
 
 
-Hmm, how does Opticks side use 16, for this ?
+A stag.h enum::
+
+    In [16]: list(map(tag_label_, st[0,:10]))                           ## G4 EQUIV 
+    Out[16]: 
+    ['to_sc',   qsim::propagate_to_boundary : u_scattering
+     'to_ab',   qsim::propagate_to_boundary : u_absorption  
+
+     'at_bo',   qsim::propagate_at_boundary : u_boundary_burn           BoundaryBurn         
+     'at_rf',   qsim::propagate_at_boundary : u_reflect                 BoundaryDiDi
+
+     'to_sc',   qsim::propagate_to_boundary : u_scattering
+     'to_ab',   qsim::propagate_to_boundary : u_absorption 
+
+     'sf_sd',   qsim::propagate_at_surface  : u_surface
+     'sf_bu',   qsim::propagate_at_surface  : u_surface_burn
+     'undef',
+     'undef']
+
+
+* notice no scint consumption for Opticks, this is because reemission is handled as a fraction of absorption 
+* hmm need to compare some more varieties of histories to see the patterns of consumption 
+  before deciding how to align 
+
+* DONE : scripted some of tag/flat comparison in U4Stack.py stag.py 
+
+
+A,B consuming same 8, BUT using them in non-aligned manner::
+
+    In [1]: print(tag.label(st[0,:10]))
+     0 :  1 :      to_sc : qsim::propagate_to_boundary u_scattering 
+     1 :  2 :      to_ab : qsim::propagate_to_boundary u_absorption 
+     2 :  9 :      at_bo : boundary burn 
+     3 : 10 :      at_rf : u_reflect > TransCoeff 
+     4 :  1 :      to_sc : qsim::propagate_to_boundary u_scattering 
+     5 :  2 :      to_ab : qsim::propagate_to_boundary u_absorption 
+     6 : 11 :      sf_sd : qsim::propagate_at_surface ab/sd 
+     7 : 12 :      sf_bu : qsim::propagate_at_surface burn 
+     8 :  0 :      undef : undef 
+     9 :  0 :      undef : undef 
+
+    In [3]: print(stack.label(st[0,:10]))
+     0 :  2 : ScintDiscreteReset :  
+     1 :  6 : BoundaryDiscreteReset :  
+     2 :  4 : RayleighDiscreteReset :  
+     3 :  3 : AbsorptionDiscreteReset :  
+     4 :  8 : BoundaryBurn :  
+     5 :  7 : BoundaryDiDi :  
+     6 :  2 : ScintDiscreteReset :  
+     7 :  6 : BoundaryDiscreteReset :  
+     8 :  0 : Unclassified :  
+     9 :  0 : Unclassified :  
 
 
 
-Distinguising the processes from the backtraces ?
---------------------------------------------------
+A::
+
+    In [4]: t.flat[:,:15]
+    Out[4]: 
+    array([[0.74 , 0.438, 0.517, 0.157, 0.071, 0.463, 0.228, 0.329, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.921, 0.46 , 0.333, 0.373, 0.49 , 0.567, 0.08 , 0.233, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.039, 0.25 , 0.184, 0.962, 0.521, 0.94 , 0.831, 0.41 , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.136, 0.589, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.925, 0.053, 0.163, 0.89 , 0.567, 0.241, 0.494, 0.321, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.446, 0.338, 0.207, 0.985, 0.403, 0.178, 0.46 , 0.16 , 0.361, 0.62 , 0.45 , 0.306, 0.   , 0.   , 0.   ],
+           [0.667, 0.397, 0.158, 0.542, 0.706, 0.126, 0.154, 0.653, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.11 , 0.874, 0.981, 0.967, 0.162, 0.428, 0.931, 0.01 , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.47 , 0.482, 0.428, 0.442, 0.78 , 0.859, 0.614, 0.802, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.513, 0.043, 0.952, 0.926, 0.26 , 0.913, 0.393, 0.833, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+    In [12]: st
+    Out[12]: 
+    array([[ 1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=uint8)
+
+
+
+B::
+
+    In [2]: t.flat[:,:10]
+    Out[2]: 
+    array([[0.74 , 0.438, 0.517, 0.157, 0.071, 0.463, 0.228, 0.329, 0.   , 0.   ],
+           [0.921, 0.46 , 0.333, 0.373, 0.49 , 0.567, 0.08 , 0.233, 0.   , 0.   ],
+           [0.039, 0.25 , 0.184, 0.962, 0.521, 0.94 , 0.831, 0.41 , 0.   , 0.   ],
+           [0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.136, 0.589, 0.   , 0.   ],
+           [0.925, 0.053, 0.163, 0.89 , 0.567, 0.241, 0.494, 0.321, 0.   , 0.   ],
+           [0.446, 0.338, 0.207, 0.985, 0.403, 0.178, 0.46 , 0.16 , 0.   , 0.   ],
+           [0.667, 0.397, 0.158, 0.542, 0.706, 0.126, 0.154, 0.653, 0.   , 0.   ],
+           [0.11 , 0.874, 0.981, 0.967, 0.162, 0.428, 0.931, 0.01 , 0.   , 0.   ],
+           [0.47 , 0.482, 0.428, 0.442, 0.78 , 0.859, 0.614, 0.802, 0.   , 0.   ],
+           [0.513, 0.043, 0.952, 0.926, 0.26 , 0.913, 0.393, 0.833, 0.   , 0.   ]], dtype=float32)
+
+
+DONE : Distinguised the processes from the backtraces, using Shim methods to make SBacktrace.h recognisable
+--------------------------------------------------------------------------------------------------------------
 
 RestDiscreteReset
     must be scintillation as thats the only RestDiscrete process around

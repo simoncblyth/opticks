@@ -18,6 +18,8 @@ import numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
 from opticks.sysrap.stag import stag  
+from opticks.u4.U4Stack import U4Stack
+stack = U4Stack()
 
 
 def check_pho_labels(l):
