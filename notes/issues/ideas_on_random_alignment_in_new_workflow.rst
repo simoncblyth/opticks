@@ -24,6 +24,124 @@ How to do that.
    to get the consumption to line up 
 
 
+
+Distinguising the processes from the backtraces ?
+--------------------------------------------------
+
+RestDiscreteReset
+    must be scintillation as thats the only RestDiscrete process around
+
+DiscreteReset
+    one of three : G4OpAbsoption G4OpRayleigh InstrumentedG4OpBoundaryProcess
+
+    U4Random::flat
+    G4VProcess::ResetNumberOfInteractionLengthLeft
+    G4VDiscreteProcess::PostStepGetPhysicalInteractionLength
+    G4VProcess::PostStepGPIL
+    G4SteppingManager::DefinePhysicalStepLength
+    G4SteppingManager::Stepping
+
+
+
+Can I shim G4VProcess::ResetNumberOfInteractionLengthLeft to get the process name to appear in the backtrace ?::
+
+    class U4_API InstrumentedG4OpBoundaryProcess : public G4VDiscreteProcess
+
+    class G4VDiscreteProcess : public G4VProcess
+
+
+YES, adding shim works to make the backtrace easy to U4Stack::Classify::
+
+    111 class DsG4Scintillation : public G4VRestDiscreteProcess, public G4UImessenger
+    ...
+    119 public:
+    120 #ifdef DEBUG_TAG
+    121      // Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4Stack::Classify
+    122      void ResetNumberOfInteractionLengthLeft(){  G4VProcess::ResetNumberOfInteractionLengthLeft() ; }
+    123 #endif
+    124 
+
+    136 class U4_API InstrumentedG4OpBoundaryProcess : public G4VDiscreteProcess
+    137 {
+    ...
+    144 public:
+    145 #ifdef DEBUG_TAG
+    146         // Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4Stack::Classify
+    147         void ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
+    148 #endif
+    149 
+
+HMM: but still cannot distinguish G4OpAbsorption from G4OpRayleigh
+
+
+
+g4-cls G4VProcess::
+
+    303  public: // with description
+    304       virtual void      ResetNumberOfInteractionLengthLeft();
+    305      // reset (determine the value of)NumberOfInteractionLengthLeft
+    306 
+    307       G4double GetNumberOfInteractionLengthLeft() const;
+    308      // get NumberOfInteractionLengthLeft
+    309 
+    310       G4double GetTotalNumberOfInteractionLengthTraversed() const;
+    311      // get NumberOfInteractionLength 
+    312      //   after  ResetNumberOfInteractionLengthLeft is invoked
+    313 
+    314  protected:  // with description
+    315      void      SubtractNumberOfInteractionLengthLeft(
+    316                   G4double previousStepSize
+    317                                 );
+    318      // subtract NumberOfInteractionLengthLeft by the value corresponding to 
+    319      // previousStepSize      
+    320 
+    321      void      ClearNumberOfInteractionLengthLeft();
+    322      // clear NumberOfInteractionLengthLeft 
+    323      // !!! This method should be at the end of PostStepDoIt()
+    324      // !!! and AtRestDoIt
+    325 
+
+    096 void G4VProcess::ResetNumberOfInteractionLengthLeft()
+     97 {
+     98   theNumberOfInteractionLengthLeft =  -1.*G4Log( G4UniformRand() );
+     99   theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft;
+    100 }
+
+
+
+
+::
+
+    2022-06-22 11:20:34.253 INFO  [28802444] [SEvt::beginPhoton@479] spho (gs:ix:id:gn   0   0    0  0)
+    2022-06-22 11:20:34.254 INFO  [28802444] [U4Random::flat@424]  m_seq_index    0 m_seq_nv  256 cursor    0 idx    0 d    0.74022 stack  1 RestDiscreteReset
+    2022-06-22 11:20:34.255 INFO  [28802444] [U4Random::flat@424]  m_seq_index    0 m_seq_nv  256 cursor    1 idx    1 d    0.43845 stack  2 DiscreteReset
+    2022-06-22 11:20:34.255 INFO  [28802444] [U4Random::flat@424]  m_seq_index    0 m_seq_nv  256 cursor    2 idx    2 d    0.51701 stack  2 DiscreteReset
+    2022-06-22 11:20:34.256 INFO  [28802444] [U4Random::flat@424]  m_seq_index    0 m_seq_nv  256 cursor    3 idx    3 d    0.15699 stack  2 DiscreteReset
+    2022-06-22 11:20:34.256 INFO  [28802444] [U4Random::flat@424]  m_seq_index    0 m_seq_nv  256 cursor    4 idx    4 d    0.07137 stack  4 BoundaryBurn
+     DiDi0  pidx      0 rand    0.07137 theReflectivity     1.0000 rand > theReflectivity  0
+    DiDi.pidx    0 PIDX   -1 OldMomentum (   -0.77425   -0.24520    0.58345) OldPolarization (   -0.60182    0.00000   -0.79863) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi pidx      0 : NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi pidx      0 : TransCoeff     0.9775 
+    2022-06-22 11:20:34.256 INFO  [28802444] [U4Random::flat@424]  m_seq_index    0 m_seq_nv  256 cursor    5 idx    5 d    0.46251 stack  3 BoundaryDiDi
+    //InstrumentedG4OpBoundaryProcess::G4BooleanRand pidx      0 prob    0.97754 u    0.46251 u < prob 1 
+    //DiDi pidx      0 : TRANSMIT 
+    //DiDi pidx    0 : TRANSMIT NewMom (   -0.7742    -0.2452     0.5835) NewPol (   -0.6018     0.0000    -0.7986) 
+    2022-06-22 11:20:34.257 INFO  [28802444] [SEvt::pointPhoton@730]  idx 0 bounce 0 evt.max_record 10 evt.max_rec    10 evt.max_seq    10 evt.max_prd    10 evt.max_tag    24 evt.max_flat    24
+    2022-06-22 11:20:34.257 INFO  [28802444] [SEvt::pointPhoton@751] spho (gs:ix:id:gn   0   0    0  0)  seqhis                d nib  1 TO
+    2022-06-22 11:20:34.257 INFO  [28802444] [SEvt::pointPhoton@730]  idx 0 bounce 1 evt.max_record 10 evt.max_rec    10 evt.max_seq    10 evt.max_prd    10 evt.max_tag    24 evt.max_flat    24
+    2022-06-22 11:20:34.257 INFO  [28802444] [SEvt::pointPhoton@751] spho (gs:ix:id:gn   0   0    0  0)  seqhis               cd nib  2 TO BT
+    2022-06-22 11:20:34.257 INFO  [28802444] [U4Random::flat@424]  m_seq_index    0 m_seq_nv  256 cursor    6 idx    6 d    0.22764 stack  1 RestDiscreteReset
+    2022-06-22 11:20:34.258 INFO  [28802444] [U4Random::flat@424]  m_seq_index    0 m_seq_nv  256 cursor    7 idx    7 d    0.32936 stack  2 DiscreteReset
+    2022-06-22 11:20:34.258 INFO  [28802444] [SEvt::pointPhoton@730]  idx 0 bounce 2 evt.max_record 10 evt.max_rec    10 evt.max_seq    10 evt.max_prd    10 evt.max_tag    24 evt.max_flat    24
+    2022-06-22 11:20:34.258 INFO  [28802444] [SEvt::pointPhoton@751] spho (gs:ix:id:gn   0   0    0  0)  seqhis              8cd nib  3 TO BT SA
+    2022-06-22 11:20:34.258 INFO  [28802444] [U4Random::setSequenceIndex@282]  index -1
+    2022-06-22 11:20:34.258 INFO  [28802444] [SEvt::finalPhoton@776] spho (gs:ix:id:gn   0   0    0  0)
+    2022-06-22 11:20:34.258 INFO  [28802444] [U4Recorder::EndOfEventAction@51] 
+
+
+
+
+
 SBacktrace.h U4Stack.h classifying U4Random::flat backtraces to follow every random consumption
 ---------------------------------------------------------------------------------------------------
 

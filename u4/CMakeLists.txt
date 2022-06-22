@@ -70,6 +70,7 @@ target_compile_definitions( ${name} PUBLIC OPTICKS_U4 )
 target_compile_definitions( ${name} PUBLIC G4USE_STD11 ) 
 target_compile_definitions( ${name} PUBLIC STANDALONE ) 
 target_compile_definitions( ${name} PRIVATE DEBUG_PIDX ) 
+target_compile_definitions( ${name} PUBLIC DEBUG_TAG ) 
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)

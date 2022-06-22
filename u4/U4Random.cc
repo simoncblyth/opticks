@@ -420,6 +420,7 @@ double U4Random::flat()
     {
         char* summary = SBacktrace::Summary(); 
         stack = U4Stack::Classify(summary); 
+        bool is_classified = U4Stack::IsClassified(stack) ; 
 
         LOG(LEVEL)
             << " m_seq_index " << std::setw(4) << m_seq_index
@@ -430,8 +431,7 @@ double U4Random::flat()
             << " stack " << std::setw(2) << stack << " " << U4Stack::Name(stack)
             ;
 
-       if(!U4Stack::IsClassified(stack)) LOG(error) << std::endl << summary ; 
-
+       if(is_classified == false) LOG(error) << std::endl << summary ; 
     }
 
     m_flat_prior = d ; 

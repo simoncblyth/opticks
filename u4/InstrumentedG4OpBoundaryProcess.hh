@@ -140,7 +140,13 @@ class U4_API InstrumentedG4OpBoundaryProcess : public G4VDiscreteProcess
         int pidx ; 
         bool pidx_dump ; 
 #endif
+
 public:
+#ifdef DEBUG_TAG
+        // Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4Stack::Classify
+        void ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); } 
+#endif
+
 
         ////////////////////////////////
         // Constructors and Destructor
