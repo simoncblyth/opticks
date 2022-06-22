@@ -25,6 +25,54 @@ How to do that.
 
 
 
+8 randoms from "TO BT SA"::
+
+    2022-06-22 14:26:06.240 INFO  [28940848] [SEvt::beginPhoton@479] spho (gs:ix:id:gn   0   0    0  0)
+    2022-06-22 14:26:06.241 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    0 idx    0 d    0.74022 stack  2 ScintDiscreteReset
+    2022-06-22 14:26:06.242 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    1 idx    1 d    0.43845 stack  6 BoundaryDiscreteReset
+    2022-06-22 14:26:06.243 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    2 idx    2 d    0.51701 stack  4 RayleighDiscreteReset
+    2022-06-22 14:26:06.244 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    3 idx    3 d    0.15699 stack  3 AbsorptionDiscreteReset
+    2022-06-22 14:26:06.244 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    4 idx    4 d    0.07137 stack  8 BoundaryBurn
+     DiDi0  pidx      0 rand    0.07137 theReflectivity     1.0000 rand > theReflectivity  0
+    DiDi.pidx    0 PIDX   -1 OldMomentum (   -0.77425   -0.24520    0.58345) OldPolarization (   -0.60182    0.00000   -0.79863) cost1    1.00000 Rindex1    1.35297 Rindex2    1.00027 sint1    0.00000 sint2    0.00000
+    //DiDi pidx      0 : NOT:sint1 > 0 : JACKSON NORMAL INCIDENCE  
+    //DiDi pidx      0 : TransCoeff     0.9775 
+    2022-06-22 14:26:06.244 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    5 idx    5 d    0.46251 stack  7 BoundaryDiDi
+    //InstrumentedG4OpBoundaryProcess::G4BooleanRand pidx      0 prob    0.97754 u    0.46251 u < prob 1 
+    //DiDi pidx      0 : TRANSMIT 
+    //DiDi pidx    0 : TRANSMIT NewMom (   -0.7742    -0.2452     0.5835) NewPol (   -0.6018     0.0000    -0.7986) 
+    2022-06-22 14:26:06.244 INFO  [28940848] [SEvt::pointPhoton@730]  idx 0 bounce 0 evt.max_record 10 evt.max_rec    10 evt.max_seq    10 evt.max_prd    10 evt.max_tag    24 evt.max_flat    24
+    2022-06-22 14:26:06.244 INFO  [28940848] [SEvt::pointPhoton@751] spho (gs:ix:id:gn   0   0    0  0)  seqhis                d nib  1 TO
+    2022-06-22 14:26:06.244 INFO  [28940848] [SEvt::pointPhoton@730]  idx 0 bounce 1 evt.max_record 10 evt.max_rec    10 evt.max_seq    10 evt.max_prd    10 evt.max_tag    24 evt.max_flat    24
+    2022-06-22 14:26:06.244 INFO  [28940848] [SEvt::pointPhoton@751] spho (gs:ix:id:gn   0   0    0  0)  seqhis               cd nib  2 TO BT
+    2022-06-22 14:26:06.245 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    6 idx    6 d    0.22764 stack  2 ScintDiscreteReset
+    2022-06-22 14:26:06.246 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    7 idx    7 d    0.32936 stack  6 BoundaryDiscreteReset
+    2022-06-22 14:26:06.246 INFO  [28940848] [SEvt::pointPhoton@730]  idx 0 bounce 2 evt.max_record 10 evt.max_rec    10 evt.max_seq    10 evt.max_prd    10 evt.max_tag    24 evt.max_flat    24
+    2022-06-22 14:26:06.246 INFO  [28940848] [SEvt::pointPhoton@751] spho (gs:ix:id:gn   0   0    0  0)  seqhis              8cd nib  3 TO BT SA
+
+
+What are the 8 doing for "TO BT SA":
+
+    2022-06-22 14:26:06.241 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    0 idx    0 d    0.74022 stack  2 ScintDiscreteReset
+    2022-06-22 14:26:06.242 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    1 idx    1 d    0.43845 stack  6 BoundaryDiscreteReset
+    2022-06-22 14:26:06.243 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    2 idx    2 d    0.51701 stack  4 RayleighDiscreteReset
+    2022-06-22 14:26:06.244 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    3 idx    3 d    0.15699 stack  3 AbsorptionDiscreteReset
+    # decide which process wins step 0->1 : its boundary 
+
+    2022-06-22 14:26:06.244 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    4 idx    4 d    0.07137 stack  8 BoundaryBurn
+    2022-06-22 14:26:06.244 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    5 idx    5 d    0.46251 stack  7 BoundaryDiDi
+    # proceed with the boundary process : 2 randoms to decide between BT/BR 
+
+    2022-06-22 14:26:06.245 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    6 idx    6 d    0.22764 stack  2 ScintDiscreteReset
+    2022-06-22 14:26:06.246 INFO  [28940848] [U4Random::flat@425]  m_seq_index    0 m_seq_nv  256 cursor    7 idx    7 d    0.32936 stack  6 BoundaryDiscreteReset
+    # deciding on winner of step 1->2 : ends by getting killed by NoRindex on the Rock 
+
+
+Hmm, how does Opticks side use 16, for this ?
+
+
+
+
 Distinguising the processes from the backtraces ?
 --------------------------------------------------
 
@@ -71,7 +119,7 @@ YES, adding shim works to make the backtrace easy to U4Stack::Classify::
     148 #endif
     149 
 
-HMM: but still cannot distinguish G4OpAbsorption from G4OpRayleigh
+DONE: addes Shims to distinguish G4OpAbsorption from G4OpRayleigh
 
 
 

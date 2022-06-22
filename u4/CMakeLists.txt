@@ -50,6 +50,9 @@ set(HEADERS
     U4StepPoint.hh
     InstrumentedG4OpBoundaryProcess.hh
     U4Random.hh
+
+    ShimG4OpRayleigh.h
+    ShimG4OpAbsorption.h
 )
 
 
