@@ -212,8 +212,8 @@ class CSGFoundry(object):
     def Load(cls):
         cfbase = cls.CFBase()
         print("cfbase:%s " % cfbase)
-        if cfbase is None or not os.path.exists(cfbase):
-            print("ERROR CSGFoundry.CFBase returned None OR non-existing dir cannot CSGFoundry.Load" )
+        if cfbase is None or not os.path.exists(os.path.join(cfbase, "CSGFoundry")):
+            print("ERROR CSGFoundry.CFBase returned None OR non-existing CSGFoundry dir so cannot CSGFoundry.Load" )
             return None
         pass 
         assert not cfbase is None

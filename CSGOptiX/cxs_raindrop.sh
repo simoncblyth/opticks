@@ -54,8 +54,7 @@ else
     #export OPTICKS_OUT_FOLD=$CFBASE_LOCAL/$bin/$(SCVDLabel)/$(CSGOptiXVersion)
 fi 
 
-export FOLD=$CFBASE_LOCAL
-
+export FOLD=$CFBASE_LOCAL   ## grab fails when add the bin dir here 
 
 
 export SEvt=INFO

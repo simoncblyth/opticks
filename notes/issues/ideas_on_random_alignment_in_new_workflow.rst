@@ -25,6 +25,15 @@ How to do that.
 
 
 
+
+WIP : Getting CXRaindropTest to run again with tag and flat collection
+-------------------------------------------------------------------------
+
+
+
+U4RecorderTest
+-----------------
+
 8 randoms from "TO BT SA"::
 
     2022-06-22 14:26:06.240 INFO  [28940848] [SEvt::beginPhoton@479] spho (gs:ix:id:gn   0   0    0  0)
@@ -69,7 +78,6 @@ What are the 8 doing for "TO BT SA":
 
 
 Hmm, how does Opticks side use 16, for this ?
-
 
 
 

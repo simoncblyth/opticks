@@ -248,7 +248,6 @@ NP* SSim::AddOptical( const NP* optical, const std::vector<std::string>& bnames,
             const char* qname = elem[s].c_str(); 
             int i, j ; 
             bool found = SBnd::FindName(i, j, qname, bnames ); 
-            assert(found)  ; 
 
             unsigned idx = i*4 + j ; 
 
@@ -282,7 +281,8 @@ NP* SSim::AddOptical( const NP* optical, const std::vector<std::string>& bnames,
             }
             else
             {
-                LOG(fatal) << " FAILED to find qname " << qname ;  
+                LOG(error) << "SBin::FindName failed to find qname [" << qname << "] from within the bnames.size " << bnames.size() ; 
+                for(unsigned z=0 ; z < bnames.size() ; z++) LOG(error) << " z " << z << " bnames[z] " << bnames[z] ; 
                 assert( 0 ); 
             }
             assert( ibytes != nullptr ); 

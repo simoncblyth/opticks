@@ -16,6 +16,7 @@ and more easily tested.
 #include "squad.h"
 #include "sqat4.h"
 #include "sphoton.h"
+#include "stag.h"
 #include "scerenkov.h"
 
 // simulation 
@@ -204,6 +205,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     sphoton p = {} ;   
     srec rec = {} ; 
     sseq seq = {} ;  // seqhis..
+    stagr tagr = {} ; 
+
 
     sim->generate_photon(p, rng, gs, idx, genstep_id );  
 
@@ -231,7 +234,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
         //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
 
-        command = sim->propagate(bounce, p, state, prd, rng, idx ); 
+        command = sim->propagate(bounce, p, state, prd, rng, idx, tagr ); 
         bounce++;     
         if(command == BREAK) break ;    
     }    

@@ -21,6 +21,7 @@ other projects together with NP.hh
 #include <fstream>
 #include <cstdlib>
 #include <cstdint>
+#include <algorithm>
 
 /**
 desc : type codes and sizes used by descr_
