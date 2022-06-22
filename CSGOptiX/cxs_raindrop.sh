@@ -62,7 +62,10 @@ export QEvent=INFO
 export QSim=INFO
 
 
-path=RandomSpherical10_f8.npy
+path=/tmp/storch_test/ph.npy
+#path=RandomSpherical10_f8.npy
+
+
 if [ -n "$path" ]; then 
     export OPTICKS_INPUT_PHOTON=$path
     if [ "${path:0:1}" == "/" -o "${path:0:1}" == "$" ]; then 

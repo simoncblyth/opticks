@@ -7,9 +7,12 @@ https://stackoverflow.com/questions/33976911/generate-a-random-sample-of-points-
 import numpy as np
 
 
-def sample_trig(npoints):
-    theta = 2*np.pi*np.random.rand(npoints)
-    phi = np.arccos(2*np.random.rand(npoints)-1)
+def sample_trig(n):
+    """
+    :param n: number of points 
+    """
+    theta = 2*np.pi*np.random.rand(n)
+    phi = np.arccos(2*np.random.rand(n)-1)
     x = np.cos(theta) * np.sin(phi)
     y = np.sin(theta) * np.sin(phi)
     z = np.cos(phi)

@@ -36,9 +36,9 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 #export U4Material=INFO
 
 
-export SEvt=INFO
-export U4Random=INFO
-export U4Random_flat_debug=1
+#export SEvt=INFO
+#export U4Random=INFO
+#export U4Random_flat_debug=1
 
 
 
@@ -49,7 +49,8 @@ mode=iphoton
 export U4RecorderTest__PRIMARY_MODE=$mode
 
 if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
-    export OPTICKS_INPUT_PHOTON=RandomSpherical10_f8.npy
+    #export OPTICKS_INPUT_PHOTON=RandomSpherical10_f8.npy
+    export OPTICKS_INPUT_PHOTON=/tmp/storch_test/ph.npy
 fi 
 
 

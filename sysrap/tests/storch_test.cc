@@ -66,28 +66,21 @@ void test_union_cast()
         qtorch qt ; 
         qt.q.zero() ; 
         qt.q.q0.u.x = 101 ; 
-
         storch& t = qt.t ;  // when going down from union type to subtype can just use the union member without casting
         std::cout <<  t.desc() << std::endl ; 
     }
-
     {
         quad6 gs ; 
         gs.zero(); 
         gs.q0.u.x = 202 ; 
-
         storch& t = (storch&)gs ;   // bolshy : simply cast across from one of the union-ed types to the other 
-
         std::cout <<  "t.gentype " << t.gentype << std::endl ; 
     }
-
     {
         quad6 gs ; 
         gs.zero(); 
         gs.q0.u.x = 303 ; 
-
         storch& t = (storch&)gs ;   // simply casting between union types
-
         std::cout <<  t.desc() << std::endl ; 
     }
 }

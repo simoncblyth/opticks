@@ -364,6 +364,13 @@ def pvplt_check_transverse( mom, pol, assert_transverse=True ):
 
 def pvplt_polarized( pl, pos, mom, pol, factor=0.15, assert_transverse=True ):
     """
+    :param pl:
+    :param pos: shape (n,3)
+    :param mom: shape (n,3)
+    :param pol: shape (n,3)
+    :param factor: scale factor, needs experimentation for visibility
+
+
     https://docs.pyvista.org/examples/00-load/create-point-cloud.html
     https://docs.pyvista.org/examples/01-filter/glyphs.html
 

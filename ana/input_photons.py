@@ -30,11 +30,19 @@ class InputPhotons(object):
     WAVELENGTH  = 440. 
 
     @classmethod
+    def BasePath(cls, name=None):
+        if name is None:
+            name = os.environ.get("OPTICKS_INPUT_PHOTON", "RandomSpherical100_f4.npy")
+        pass
+        return os.path.join(cls.DEFAULT_BASE, name)
+
+    @classmethod
     def Path(cls, name, ext=".npy"):
         prec = None
         if cls.DTYPE == np.float32: prec = "_f4" 
         if cls.DTYPE == np.float64: prec = "_f8" 
         return os.path.join(cls.DEFAULT_BASE, "%s%s%s" % (name, prec, ext))
+
 
     @classmethod
     def CubeCorners(cls):
@@ -214,6 +222,8 @@ class InputPhotons(object):
     @classmethod
     def GenerateRandomSpherical(cls, n):
         """
+        :param n: number of photons to generate
+
         spherical distribs not carefully checked  
 
         The start position is offset by the direction vector for easy identification purposes
@@ -222,6 +232,8 @@ class InputPhotons(object):
 
         """
         spherical = sample_trig(n).T
+        assert spherical.shape == (n,3)
+
         direction = spherical
         polarization = vnorm(np.cross(direction,cls.Y))
 
@@ -231,6 +243,23 @@ class InputPhotons(object):
         p[:,1,:3] = direction 
         p[:,1, 3] = cls.WEIGHT 
         p[:,2,:3] = polarization
+        p[:,2, 3] = cls.WAVELENGTH  
+        return p 
+
+    @classmethod
+    def GenerateRandomDisc(cls, n):
+        spherical = sample_trig(n).T
+        disc_offset = spherical.copy() 
+        disc_offset[:,0] *= 100. 
+        disc_offset[:,1] *= 100. 
+        disc_offset[:,2] = 0. 
+
+        p = np.zeros( (n, 4, 4), dtype=cls.DTYPE )
+        p[:,0,:3] = cls.POSITION + disc_offset
+        p[:,0, 3] = cls.TIME*(1. + np.arange(n))  
+        p[:,1,:3] = cls.Z
+        p[:,1, 3] = cls.WEIGHT 
+        p[:,2,:3] = cls.X
         p[:,2, 3] = cls.WAVELENGTH  
         return p 
 
@@ -251,7 +280,8 @@ class InputPhotons(object):
     CC = "CubeCorners" 
     ICC = "InwardsCubeCorners" 
     RS = "RandomSpherical" 
-    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", ICC+"17699", ICC+"1"]
+    RD = "RandomDisc" 
+    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100" ]
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -263,6 +293,9 @@ class InputPhotons(object):
         if name.startswith(self.RS):  
             num = int(name[len(self.RS):])
             p = self.GenerateRandomSpherical(num)    
+        elif name.startswith(self.RD):  
+            num = int(name[len(self.RD):])
+            p = self.GenerateRandomDisc(num)    
         elif name == self.CC:
             p = self.GenerateCubeCorners()    
         elif name.startswith(self.CC):
