@@ -2,6 +2,7 @@ ideas_on_random_alignment_in_new_workflow
 ===========================================
 
 * from :doc:`U4RecorderTest_cf_CXRaindropTest`
+* next :doc:`U4RecorderTest_U4Stack_stag_enum_random_alignment`
 
 Aligning the simulations requires:
 

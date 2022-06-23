@@ -9,6 +9,7 @@ Standalone compile and run with::
 **/
 #include <numeric>
 #include <vector>
+#include <cstdlib>
 
 #include "scuda.h"
 #include "squad.h"
@@ -20,7 +21,7 @@ Standalone compile and run with::
 
 #include "NP.hh"
 
-const char* FOLD = "/tmp/storch_test" ; 
+const char* FOLD = getenv("FOLD") ; 
 
 NP* make_torch_photon( const NP* gs, const NP* se )
 {
@@ -53,6 +54,12 @@ void test_generate()
     NP* gs = SEvent::MakeTorchGensteps(); 
     NP* se = SEvent::MakeSeed(gs) ; 
     NP* ph = make_torch_photon(gs, se); 
+
+    if(FOLD == nullptr) 
+    {
+        printf(" must set FOLD envvar to save \n"); 
+        return ; 
+    }
 
     printf("save to %s\n", FOLD );
     gs->save(FOLD, "gs.npy"); 

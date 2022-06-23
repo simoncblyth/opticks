@@ -184,8 +184,10 @@ STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const q
 
         float r = gs.radius*u_zenith ;
 
-        float sinPhi, cosPhi;
-        __sincosf(2.f*M_PIf*u_azimuth,&sinPhi,&cosPhi);   // HMM: think thats an apple extension 
+        float phi = 2.f*M_PIf*u_azimuth ; 
+        float sinPhi = sinf(phi); 
+        float cosPhi = cosf(phi);
+        // __sincosf(phi,&sinPhi,&cosPhi);   // HMM: think thats an apple extension 
 
         p.pos.x = r*cosPhi ;
         p.pos.y = r*sinPhi ; 

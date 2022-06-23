@@ -111,7 +111,10 @@ bflagdesc_ = lambda p:"%s : %60s : %s : %s " % ( flagdesc_(p), cf_prim_(p) , dig
 
 ridiff_ = lambda ri:ri[1:,:3] - ri[:-1,:3]     
 
-
+# rdist_(a,i)/rtime_(a,i)/rspeed_(a,i) : distance/time/speed between record point i and i+1 
+rdist_ = lambda a,i:np.sqrt(np.sum( (a.record[:,i+1,0,:3]-a.record[:,i,0,:3])*(a.record[:,i+1,0,:3]-a.record[:,i,0,:3]) , axis=1 ))
+rtime_ = lambda a,i:a.record[:,i+1,0,3] - a.record[:,i,0,3]  
+rspeed_ = lambda a,i:rdist_(a,i)/rtime_(a,i)
 
 
 

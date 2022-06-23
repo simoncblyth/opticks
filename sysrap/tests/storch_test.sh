@@ -15,45 +15,74 @@ EOU
 
 msg="=== $BASH_SOURCE :"
 name=storch_test 
-fold=/tmp/$name
+bdir=/tmp/$name/build
+mkdir -p $bdir
+
+odir=/tmp/$name/out
+fold=$odir/$(uname)
+a_fold=$odir/Darwin
+b_fold=$odir/Linux
 mkdir -p $fold
 
-arg=${1:-build_run_ana}
+export FOLD=$fold
+echo $msg FOLD $FOLD odir $odir
+
+
+case $(uname) in 
+   Darwin) defarg=build_run_ana ;; 
+   Linux)  defarg=build_run ;; 
+esac
+
+arg=${1:-$defarg}
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -std=c++11 -lstdc++ \
+
+    case $(uname) in 
+        Darwin) libline="-L$OPTICKS_PREFIX/lib" ;;
+        Linux) libline="-L$OPTICKS_PREFIX/lib64 -lm -lssl -lcrypto" ;; 
+    esac
+
+    gcc $name.cc \
+        -o $bdir/$name  \
+        -std=c++11 -lstdc++ \
         -DMOCK_CURAND \
         -I.. \
         -I/usr/local/cuda/include \
         -I$OPTICKS_PREFIX/externals/plog/include \
-        -L$OPTICKS_PREFIX/lib \
-        -lSysRap \
-        -o $fold/$name 
+        $libline \
+        -lSysRap 
 
     [ $? -ne 0 ] && echo $msg build error && exit 1 
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
-    $fold/$name
+    $bdir/$name
     [ $? -ne 0 ] && echo $msg run error && exit 2 
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    export FOLD=$fold
-    echo $msg FOLD $FOLD
     ${IPYTHON:-ipython} --pdb -i $name.py 
     [ $? -ne 0 ] && echo $msg ana error && exit 3 
 fi
 
+if [ "${arg/cf}" != "$arg" ]; then 
+
+    export A_FOLD=$a_fold
+    export B_FOLD=$b_fold
+
+    ${IPYTHON:-ipython} --pdb -i ${name}_cf.py 
+    [ $? -ne 0 ] && echo $msg cf error && exit 4
+fi
+
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    echo $msg fold $fold
+    echo $msg odir $odir
 
-    xdir=$fold/       ## require trailing slash to avoid rsync duplicating path element 
+    xdir=$odir/       ## require trailing slash to avoid rsync duplicating path element 
     from=P:$xdir
     to=$xdir
 
-    vars="fold xdir from to"
+    vars="xdir from to"
     dumpvars(){ for var in $vars ; do printf "%-30s : %s \n" $var "${!var}" ; done ; } 
     dumpvars
     read -p "$msg Enter YES to proceed with rsync between from and to " ans 
@@ -61,8 +90,11 @@ if [ "${arg/grab}" != "$arg" ]; then
         echo $msg proceeding 
         mkdir -p $to 
         rsync -zarv --progress --include="*/" --include="*.txt" --include="*.npy" --include="*.jpg" --include="*.mp4" --include "*.json" --exclude="*" "$from" "$to"
-        ls -1rt `find ${to%/} -name '*.json' -o -name '*.txt' `
-        ls -1rt `find ${to%/} -name '*.jpg' -o -name '*.mp4' -o -name '*.npy'  `
+        tto=${to%/}  # trim the trailing slash 
+        echo ls.0 tto $tto json and txt
+        find $tto -name '*.json' -o -name '*.txt' -print0 | xargs -0 ls -1rt 
+        echo ls.1 tto $tto jpg mp4 npy 
+        find $tto -name '*.jpg' -o -name '*.mp4' -o -name '*.npy' -print0 | xargs -0 ls -1rt
     else
        echo $msg skipping
     fi  
