@@ -122,6 +122,14 @@ CProcessManager::ClearNumberOfInteractionLengthLeft
 This simply clears the interaction length left for OpAbsorption and OpRayleigh 
 with no use of G4UniformRand.
 
+Canonically called from tail of CManager::UserSteppingAction/CManager::prepareForNextStep
+when track is not terminating (ie not track status fStopAndKill so there is another step).
+
+The effect of this is to make the Geant4 random consumption more regular which 
+makes it easier to align with Opticks random consumption. 
+
+
+
 This provides a devious way to invoke the protected ClearNumberOfInteractionLengthLeft 
 via the public G4VDiscreteProcess::PostStepDoIt
 

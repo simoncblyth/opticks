@@ -18,6 +18,8 @@
 #include "U4TrackStatus.h"
 #include "U4Random.hh"
 
+#include "U4Process.h"
+
 
 const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG"); 
 const int U4Recorder::PIDX = SSys::getenvint("PIDX",-1) ; 
@@ -90,6 +92,9 @@ not torch ones so needs some experimentation to see what approach to take.
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
     const_cast<G4Track*>(track)->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
+
+    //std::cout << "U4Recorder::PreUserTrackingAction_Optical " << U4Process::Desc() << std::endl ; 
+    //std::cout << U4Process::Desc() << std::endl ; 
 
     spho label = U4Track::Label(track); 
 
@@ -176,6 +181,9 @@ will fulfil *single_bit*.
 
 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
+    std::cout << U4Process::Desc() << std::endl ; 
+
+
     const G4Track* track = step->GetTrack(); 
     spho label = U4Track::Label(track); 
     assert( label.isDefined() );   // all photons are expected to be labelled, TODO:input photons
@@ -246,6 +254,12 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             << " flag " << OpticksPhoton::Flag(flag) 
             ; 
     }
+
+    //if( tstat == fAlive )
+    {
+        U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
+    }
+
 
 }
 
