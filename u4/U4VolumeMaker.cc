@@ -13,6 +13,7 @@
 
 #include "U4.hh"
 #include "U4Material.hh"
+#include "U4Surface.h"
 #include "U4SolidMaker.hh"
 #include "U4VolumeMaker.hh"
 
@@ -232,8 +233,8 @@ G4VPhysicalVolume* U4VolumeMaker::BoxOfScintillator( double halfside )
     return WorldBox(halfside, mat);
 }
 /**
-U4VolumeMaker::WorldBoxRaindrop
----------------------------------
+U4VolumeMaker::RaindropRockAirWater
+-------------------------------------
 
 cf CSG/CSGMaker.cc CSGMaker::makeBoxedSphere
 
@@ -263,6 +264,9 @@ G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater( double halfside )
     assert( water_pv ); 
     assert( air_pv ); 
     assert( rock_pv ); 
+
+    G4LogicalBorderSurface* air_rock_bs = U4Surface::MakePerfectAbsorberSurface("air_rock_bs", air_pv, rock_pv );  
+    assert( air_rock_bs ); 
 
     return rock_pv ; 
 }

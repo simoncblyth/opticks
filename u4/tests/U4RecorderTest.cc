@@ -163,9 +163,13 @@ int main(int argc, char** argv)
     LOG(info) << rnd.desc() ; 
 
 
-    U4Material::RemoveProperty( "RINDEX", G4Material::GetMaterial("Rock") ); 
+    // U4Material::RemoveProperty( "RINDEX", G4Material::GetMaterial("Rock") ); 
     // removing Rock RINDEX is a trick that makes photons immediately get absorbed on reaching the Rock
     // somewhat artifically that gives SURFACE_ABSORB as  U4StepPoint::BoundaryFlag(NoRINDEX) kludges to give SURFACE_ABSORB 
+    //
+    //  In order for the tail random consumption to be amenable to aligning with Opticks
+    //  try using U4Surface::MakePerfectAbsorberSurface in U4VolumeMaker::RaindropRockAirWater
+
 
     SEventConfig::SetStandardFullDebug(); 
 

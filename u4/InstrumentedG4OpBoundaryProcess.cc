@@ -87,7 +87,7 @@
 #include "G4SystemOfUnits.hh"
 
 
-
+#include <csignal>
 #ifdef DEBUG_PIDX
 
 #include "scuda.h"
@@ -364,6 +364,12 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
 
         Surface = G4LogicalBorderSurface::GetSurface(thePrePV, thePostPV);
 
+//#ifdef DEBUG_PIDX
+        std::cout << "Surface " << ( Surface ? "Y" : "N" ) << std::endl ; 
+        //if(Surface) std::raise(SIGINT) ; 
+//#endif
+
+
         if (Surface == NULL){
           G4bool enteredDaughter= (thePostPV->GetMotherLogical() ==
                                    thePrePV ->GetLogicalVolume());
@@ -558,8 +564,13 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
 
 #endif
 
-             if ( rand > theReflectivity ) {
-                if (rand > theReflectivity + theTransmittance) {
+             // SCB default theReflectivity is 1., default theReflectivity + theTransmittance is 1.  
+             //     so at defaults always go to the else. 
+             //     Unless a surface is associated which can make Absorption or Transmission  happen   
+             //
+
+             if ( rand > theReflectivity ) {   
+                if (rand > theReflectivity + theTransmittance) { 
                    DoAbsorption();
                 } else {
                    theStatus = Transmission;

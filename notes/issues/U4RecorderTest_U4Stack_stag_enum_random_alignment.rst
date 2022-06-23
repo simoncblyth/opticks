@@ -217,7 +217,6 @@ A: Assuming just technical change, because the chances of SC/AB etc..
            [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 2, 6, 0, 0, 0, 0, 0, 0, 0, 0],
            [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 0, 0, 0, 0]], dtype=uint8)
 
-
     In [2]: print(stack.label(bt[0,:20]))
      0 :  2 : ScintDiscreteReset :  
      1 :  6 : BoundaryDiscreteReset :  
@@ -242,6 +241,49 @@ A: Assuming just technical change, because the chances of SC/AB etc..
     17 :  0 : Unclassified :  
     18 :  0 : Unclassified :  
     19 :  0 : Unclassified :  
+
+
+
+
+
+    ## After remove the NoRINDEX kludge and add the G4OpticalSurface
+    ## get additional tail of 8,9 
+
+    In [2]: bt[:5,:20]
+    Out[2]: 
+    array([[2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 9, 0, 0],
+           [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 9, 0, 0],
+           [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 9, 0, 0],
+           [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 2, 6, 8, 9, 0, 0, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 9, 0, 0]], dtype=uint8)
+
+    In [3]: print(stack.label(bt[0,:20]))
+     0 :  2 : ScintDiscreteReset :  
+     1 :  6 : BoundaryDiscreteReset :  
+     2 :  4 : RayleighDiscreteReset :  
+     3 :  3 : AbsorptionDiscreteReset :  
+     4 :  8 : BoundaryBurn :  
+     5 :  7 : BoundaryDiDi :  
+
+     6 :  2 : ScintDiscreteReset :  
+     7 :  6 : BoundaryDiscreteReset :  
+     8 :  4 : RayleighDiscreteReset :  
+     9 :  3 : AbsorptionDiscreteReset :  
+    10 :  8 : BoundaryBurn :  
+    11 :  7 : BoundaryDiDi :  
+
+    12 :  2 : ScintDiscreteReset :  
+    13 :  6 : BoundaryDiscreteReset :  
+    14 :  4 : RayleighDiscreteReset :  
+    15 :  3 : AbsorptionDiscreteReset :  
+    16 :  8 : BoundaryBurn :  
+    17 :  9 : AbsorptionEffDetect :  
+
+    18 :  0 : Unclassified :  
+    19 :  0 : Unclassified :  
+
+
+
 
     In [4]: at[:5,:20]
     Out[4]: 

@@ -392,6 +392,28 @@ G4MaterialPropertyVector* U4Material::MakeProperty(const NP* a)  // static
     return mpv ; 
 }
 
+G4MaterialPropertyVector* U4Material::MakeProperty( double value )
+{
+    NP* a = MakePropertyArray(value); 
+    return MakeProperty(a); 
+}
+
+NP* U4Material::MakePropertyArray( double value )
+{
+    sdomain sdom ;  
+    std::vector<double> dom(sdom.energy_eV, sdom.energy_eV+sdom.length) ; 
+    for(unsigned i=0 ; i < dom.size() ; i++)  dom[i] *= eV ; 
+    std::reverse( dom.begin(), dom.end() ); 
+
+    NP* a = NP::Make<double>(sdom.length, 2); 
+    double* vv = a->values<double>(); 
+    for(unsigned i=0 ; i < sdom.length ; i++)
+    {
+        vv[i*2+0] = dom[i] ; 
+        vv[i*2+1] = value  ; 
+    }
+    return a ; 
+}
 
 
 

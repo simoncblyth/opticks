@@ -144,6 +144,28 @@ g4-;g4-cls G4VDiscreteProcess::
     120     return pParticleChange;
     121 }
 
+
+Noticed that returns from::
+
+     InstrumentedG4OpBoundaryProcess::PostStepDoIt
+     G4OpAbsorption::PostStepDoIt
+     G4OpRayleigh::PostStepDoIt
+
+All do G4VDiscreteProcess::PostStepDoIt, eg::
+
+     182 G4VParticleChange*
+     183 InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+     184 {
+     ...
+     623         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+     624 }
+
+
+Q: Why the artificial call when the PostStepDoIt returns do it anyhow ?
+A: Because only the winning process PostStepDoIt runs, and that changes 
+   with the history : so you get a complicated consumption history 
+   that would be difficult to align with.  
+
 **/
 
 void U4Process::ClearNumberOfInteractionLengthLeft(const G4Track& aTrack, const G4Step& aStep)
