@@ -23,8 +23,58 @@ in order to decide how best to align.
 
 
 
-TODO : apply consumption enum collection machinery with storch_test.sh input photons
+WIP : apply consumption enum collection machinery with storch_test.sh input photons
 -----------------------------------------------------------------------------------------
+
+::
+
+    cx
+    ./cxs_raindrop.sh       # remote 
+    ./cxs_raindrop.sh grab  # local 
+
+    u4t
+    ./U4RecorderTest.sh     # local 
+
+    ## NB without the below envvar U4RecorderTest does not fill the stack tags, leaving them all zero
+    ##  export U4Random_flat_debug=1  
+
+    u4t
+    ./U4RecorderTest_ab.sh     # local 
+     
+
+
+
+
+::
+
+    In [23]: seqhis_(a.seq[:10,0])
+    Out[23]: 
+    ['TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BR SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA']
+
+    In [24]: seqhis_(b.seq[:10,0])
+    Out[24]: 
+    ['TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BR SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA']
+
+
+
 
 
 
@@ -43,8 +93,5 @@ Confirmed perfect match with input photons generated on Linux workstation and Ap
     ./storch_test.sh       # local  
     ./storch_test.sh grab  # local  
     ./storch_test.sh cf  # local using sysrap/tests/storch_test_cf.py    
-
-
-
 
 

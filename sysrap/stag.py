@@ -35,7 +35,20 @@ class stag(object):
     SLOTS = SLOTMAX*NSEQ
 
     @classmethod
-    def Split(cls, tag):
+    def Unpack(cls, tag):
+        """
+        :param tag: (n, NSEQ) array of bitpacked tag enumerations
+        :return tg: (n, SLOTS) array of unpacked tag enumerations
+
+        Usage::
+
+            # apply stag.Unpack to both as same stag.h bitpacking is used
+            at = stag.Unpack(a.tag) if hasattr(a,"tag") else None
+            bt = stag.Unpack(b.tag) if hasattr(b,"tag") else None
+
+        """
+        assert tag.shape == (len(tag), cls.NSEQ)
+
         st = np.zeros( (len(tag), cls.SLOTS), dtype=np.uint8 )   
         for i in range(cls.NSEQ):
             for j in range(cls.SLOTMAX):

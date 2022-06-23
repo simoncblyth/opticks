@@ -39,6 +39,7 @@ NP* SGenerate::GeneratePhotons()
     NP* ph = nullptr ; 
     if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
     {
+        std::cout << "SGenerate::GeneratePhotons SEvt::GetInputPhoton " << std::endl ; 
         ph = SEvt::GetInputPhoton(); 
     }
     else
@@ -50,10 +51,11 @@ NP* SGenerate::GeneratePhotons()
 }
 NP* SGenerate::GeneratePhotons(const NP* gs_)
 {
+    std::cout << "SGenerate::GeneratePhotons gs_ " <<  ( gs_ ? gs_->sstr() : "-" ) << std::endl ; 
+
     NP* ph = nullptr ; 
 
 #if defined(MOCK_CURAND)
-    std::cout << " gs " << ( gs_ ? gs_->sstr() : "-" ) << std::endl ; 
     const quad6* gg = (quad6*)gs_->bytes() ; 
 
     NP* se = SEvent::MakeSeed(gs_) ;

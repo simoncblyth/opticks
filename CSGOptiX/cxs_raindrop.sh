@@ -62,7 +62,7 @@ export QEvent=INFO
 export QSim=INFO
 
 
-path=/tmp/storch_test/ph.npy
+path=/tmp/storch_test/out/$(uname)/ph.npy
 #path=RandomSpherical10_f8.npy
 
 
@@ -74,7 +74,7 @@ if [ -n "$path" ]; then
         abspath=$HOME/.opticks/InputPhotons/$path
     fi
     if [ ! -f "$abspath" ]; then 
-        echo $msg path $path abspath $abspath DOES NOT EXIST : create it by cd ~/opticks/ana ./input_photons.sh 
+        echo $msg path $path abspath $abspath DOES NOT EXIST : create with ana/input_photons.sh OR sysrap/tests/storch_test.sh 
         exit 1 
     else
         echo $msg path $path abspath $abspath exists 

@@ -170,6 +170,7 @@ struct NP
     template<typename T> T           get( int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0) const ; 
     template<typename T> void        set( T val, int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0 ) ; 
 
+    template<typename T> bool is_allzero() const ; 
     template<typename T> void fill(T value); 
     template<typename T> void _fillIndexFlat(T offset=0); 
     template<typename T> void _dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ;   
@@ -1030,6 +1031,17 @@ template<typename T> inline void NP::set( T val, int i,  int j,  int k,  int l, 
 }
 
 
+
+template<typename T> inline bool NP::is_allzero() const 
+{
+    T zero = T(0) ; 
+    const T* vv = cvalues<T>(); 
+    int num = 0 ; 
+    for(int i=0 ; i < size ; i++) if(vv[i] == zero) num += 1 ; 
+    bool allzero = num == size ; 
+    return allzero ; 
+}
+
 template<typename T> inline void NP::fill(T value)
 {
     T* vv = values<T>(); 
@@ -1041,6 +1053,10 @@ template<typename T> inline void NP::_fillIndexFlat(T offset)
     T* vv = values<T>(); 
     for(int i=0 ; i < size ; i++) *(vv+i) = T(i) + offset ; 
 }
+
+
+
+
 
 
 
@@ -1709,9 +1725,6 @@ inline NP* NP::LoadNarrow(const char* path)
 
     return b ; 
 }
-
-
-
 
 
 

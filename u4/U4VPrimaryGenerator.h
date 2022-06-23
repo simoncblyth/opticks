@@ -109,7 +109,7 @@ inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
         for(int i=0 ; i < ph->shape[0] ; i++)
         {
             const sphoton& p = pp[i]; 
-            if(i < 10) std::cout << p.desc() << std::endl ; 
+            //if(i < 10) std::cout << "U4VPrimaryGenerator::GeneratePrimaries p.desc " << p.desc() << std::endl ; 
             G4PrimaryVertex* vertex = MakePrimaryVertexPhoton<sphoton>( p ); 
             event->AddPrimaryVertex(vertex);
         } 

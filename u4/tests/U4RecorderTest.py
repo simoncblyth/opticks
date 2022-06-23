@@ -17,6 +17,7 @@ U4RecorderTest.py
 import numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
+
 from opticks.sysrap.stag import stag  
 from opticks.u4.U4Stack import U4Stack
 stack = U4Stack()
@@ -62,7 +63,7 @@ if __name__ == '__main__':
 
     gs, ix, id_, gn = l[:,0], l[:,1], l[:,2], l[:,3] 
 
-    st = stag.Split(t.tag) if hasattr(t,"tag") else None
+    st = stag.Unpack(t.tag) if hasattr(t,"tag") else None
 
     p = t.photon if hasattr(t, "photon") else None
     r = t.record if hasattr(t, "record") else None

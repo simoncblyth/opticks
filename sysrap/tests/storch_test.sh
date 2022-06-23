@@ -91,7 +91,6 @@ if [ "${arg/grab}" != "$arg" ]; then
         mkdir -p $to 
         rsync -zarv --progress --include="*/" --include="*.txt" --include="*.npy" --include="*.jpg" --include="*.mp4" --include "*.json" --exclude="*" "$from" "$to"
         tto=${to%/}  # trim the trailing slash 
-        echo ls.0 tto $tto json and txt
         find $tto -name '*.json' -o -name '*.txt' -print0 | xargs -0 ls -1rt 
         echo ls.1 tto $tto jpg mp4 npy 
         find $tto -name '*.jpg' -o -name '*.mp4' -o -name '*.npy' -print0 | xargs -0 ls -1rt
@@ -100,6 +99,13 @@ if [ "${arg/grab}" != "$arg" ]; then
     fi  
 
 fi
+
+if [ "${arg/ls}" != "$arg" ]; then
+   tto=$odir
+   find $tto -name '*.json' -o -name '*.txt' -print0 | xargs -0 ls -1rt 
+   find $tto -name '*.jpg' -o -name '*.mp4' -o -name '*.npy' -print0 | xargs -0 ls -1rt
+fi 
+
 
 
 exit 0 
