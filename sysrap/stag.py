@@ -38,12 +38,24 @@ class stag(object):
     SLOTMAX = 64//BITS
     SLOTS = SLOTMAX*NSEQ
 
+
     @classmethod
-    def StepSplit(cls, tg, step_slot=10):
+    def NumStarts(cls, tg):
+        ns = np.zeros( (len(tg)), dtype=np.uint8 ) 
+        for i in range(len(tg)):
+            starts = np.where( tg[i] == tg[0,0] )[0] 
+            ns[i] = len(starts)
+        pass
+        return ns 
+ 
+
+    @classmethod
+    def StepSplit(cls, tg, fl=None,  step_slot=10):
         """
         :param tg: unpacked tag array of shape (n, SLOTS)
+        :param fl: None or flat array of shape (n, SLOTS)
         :param step_slot: max random throws per step  
-        :param tgs: step split tag array of shape (n, max_step, step_slot) 
+        :return tgs OR (tgs,fls): step split arrays of shape (n, max_starts, step_slot) 
 
         In [4]: at[0]
         Out[4]: array([ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0], dtype=uint8)
@@ -56,6 +68,9 @@ class stag(object):
                [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=uint8)
 
         """
+        if not fl is None:
+            assert fl.shape == tg.shape 
+        pass
 
         max_starts = 0 
         for i in range(len(tg)):
@@ -64,17 +79,23 @@ class stag(object):
         pass
 
         tgs = np.zeros((len(tg), max_starts, step_slot), dtype=np.uint8)
+        fls = np.zeros((len(tg), max_starts, step_slot), dtype=np.float32) if not fl is None else None
+
         for i in range(len(tg)):
             starts = np.where( tg[i] == tg[0,0] )[0] 
             ends = np.where( tg[i] == 0 )[0] 
-            end = ends[0] if len(ends) > 0 else len(tg[i])   ## handle when dont get zero due to truncation
+            end = ends[0] if len(ends) > 0 else len(tg[i])  
+            ## above handles when the tags do not get to zero due to collection truncation
             for j in range(len(starts)):
                 st = starts[j]
                 en = starts[j+1] if j+1 < len(starts) else end
                 tgs[i, j,0:en-st] = tg[i,st:en] 
+                if not fls is None:
+                    fls[i, j,0:en-st] = fl[i,st:en] 
+                pass
             pass
         pass
-        return tgs         
+        return tgs if fls is None else tgs,fls         
 
 
     @classmethod

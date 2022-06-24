@@ -29,7 +29,8 @@ if __name__ == '__main__':
     if "A_FOLD" in os.environ:
         a = Fold.Load("$A_FOLD", symbol="a")
         at = stag.Unpack(a.tag) if hasattr(a,"tag") else None
-        ats = stag.StepSplit(at) if not at is None else None
+        an = stag.NumStarts(at) if not at is None else None
+        ats,afs = stag.StepSplit(at,a.flat) if not at is None else None
     else:
         a = None 
     pass
@@ -37,7 +38,8 @@ if __name__ == '__main__':
     if "B_FOLD" in os.environ:
         b = Fold.Load("$B_FOLD", symbol="b")
         bt = stag.Unpack(b.tag) if hasattr(b,"tag") else None  # apply stag.Unpack to both as same stag.h bitpacking is used
-        bts = stag.StepSplit(bt) if not bt is None else None
+        bn = stag.NumStarts(bt) if not bt is None else None
+        bts,bfs = stag.StepSplit(bt,b.flat) if not bt is None else None
     else:
         b = None
     pass

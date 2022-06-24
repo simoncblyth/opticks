@@ -889,6 +889,23 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     */
 
     flag = reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ; 
+
+
+#ifdef DEBUG_TAG
+    if( flag ==  BOUNDARY_REFLECT )
+    {
+        const float u_br_align_0 = curand_uniform(&rng) ;  
+        const float u_br_align_1 = curand_uniform(&rng) ;
+        const float u_br_align_2 = curand_uniform(&rng) ;
+        const float u_br_align_3 = curand_uniform(&rng) ;
+
+        tagr.add( stag_br_align_0, u_br_align_0 ); 
+        tagr.add( stag_br_align_1, u_br_align_1 ); 
+        tagr.add( stag_br_align_2, u_br_align_2 ); 
+        tagr.add( stag_br_align_3, u_br_align_3 ); 
+    }
+#endif
+
     return CONTINUE ; 
 }
 

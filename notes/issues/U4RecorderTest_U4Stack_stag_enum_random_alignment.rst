@@ -42,12 +42,323 @@ WIP : apply consumption enum collection machinery with storch_test.sh input phot
     ./U4RecorderTest_ab.sh     # local 
      
 
+
+
+TODO : observe with bigger geometry so can see AB and SC in the history 
+--------------------------------------------------------------------------
+
+
+
+TODO : investigate impact of U4Process::ClearNumberOfInteractionLengthLeft 
+-----------------------------------------------------------------------------
+
+Q: U4Process::ClearNumberOfInteractionLengthLeft will inevitably change the simulation because are using 
+   different randoms, but does it change the correctness of the simulation ?
+
+A: Assuming just technical change, because the chances of SC/AB etc..
+   are surely independent of what happened before ? 
+
+To verify the assumption need high stats statistical comparison of history frequencies 
+with and without this trick being applied. 
+This will require getting the statistical comparison python machinery into new workflow
+using the new SEvt arrays.  
+
+
+
 TODO : scripted tabulation of the A:tags and B:stacks with U4RecorderTest_ab.py to use while effecting the alignment
 -----------------------------------------------------------------------------------------------------------------------
 
 
-Try for alignment
-------------------
+DONE : check max_starts difference : tis caused by the B:StepTooSmall handling  
+---------------------------------------------------------------------------------
+
+stag.py::
+
+     42     @classmethod
+     43     def NumStarts(cls, tg):
+     44         ns = np.zeros( (len(tg)), dtype=np.uint8 )
+     45         for i in range(len(tg)):
+     46             starts = np.where( tg[i] == tg[0,0] )[0]
+     47             ns[i] = len(starts)
+     48         pass
+     49         return ns
+
+    In [1]: an
+    Out[1]: 
+    array([3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+           4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], dtype=uint8)
+
+    In [2]: bn
+    Out[2]: 
+    array([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 7, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+           5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], dtype=uint8)
+
+    In [3]: np.where( an != bn )
+    Out[3]: (array([ 3, 15, 21, 25, 36, 53, 54, 64]),)
+
+
+    In [7]: an[an != bn]
+    Out[7]: array([2, 2, 2, 2, 4, 4, 4, 4], dtype=uint8)
+
+    In [8]: bn[an != bn]
+    Out[8]: array([3, 3, 3, 3, 5, 5, 7, 5], dtype=uint8)
+
+    ## NORMALLY ONE EXTRA LINE, BAD APPLE 54 WITH 3 EXTRA LINES 
+
+    In [4]: w8 = np.where( an != bn )[0]
+
+    In [5]: seqhis_(a.seq[w8,0])
+    Out[5]: 
+    ['TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BT BR BT SA',
+     'TO BT BR BT SA',
+     'TO BT BR BT SA',
+     'TO BT BR BT SA']
+
+    In [6]: seqhis_(b.seq[w8,0])
+    Out[6]: 
+    ['TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BT BR BT SA',
+     'TO BT BR BT SA',
+     'TO BT BR BR BT SA',
+     'TO BT BR BT SA']
+
+
+
+
+DONE : investigate misaligned idx 54, check flat alignment : some alignment may be by chance
+----------------------------------------------------------------------------------------------
+
+::
+
+    In [15]: seqhis_(a.seq[54,0])
+    Out[15]: 'TO BT BR BT SA'
+
+    In [16]: seqhis_(b.seq[54,0])
+    Out[16]: 'TO BT BR BR BT SA'
+
+
+    In [13]: ats[54]
+    Out[13]: 
+    array([[1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 7, 8, 0, 0, 0, 0]], dtype=uint8)
+
+    In [14]: bts[54]
+    Out[14]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 9, 0, 0, 0, 0]], dtype=uint8)
+
+    In [4]: afs[54]
+    Out[4]: 
+    array([[0.708, 0.08 , 0.197, 0.401, 0.378, 0.744, 0.   , 0.   , 0.   , 0.   ],
+           [0.035, 0.371, 0.329, 0.114, 0.224, 0.987, 0.   , 0.   , 0.   , 0.   ],
+           [0.673, 0.133, 0.965, 0.555, 0.654, 0.516, 0.   , 0.   , 0.   , 0.   ],
+           [0.715, 0.407, 0.549, 0.993, 0.355, 0.348, 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+    In [5]: bfs[54]
+    Out[5]: 
+    array([[0.708, 0.08 , 0.197, 0.401, 0.378, 0.744, 0.   , 0.   , 0.   , 0.   ],
+           [0.035, 0.371, 0.329, 0.114, 0.224, 0.987, 0.   , 0.   , 0.   , 0.   ],
+           [0.673, 0.133, 0.965, 0.555, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.654, 0.516, 0.715, 0.407, 0.549, 0.993, 0.   , 0.   , 0.   , 0.   ],
+           [0.355, 0.348, 0.821, 0.422, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.569, 0.602, 0.088, 0.955, 0.828, 0.806, 0.   , 0.   , 0.   , 0.   ],
+           [0.245, 0.504, 0.179, 0.8  , 0.333, 0.717, 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+
+
+WIP : try artificially consuming 4 in A after every BR to see if it can kick back into line 
+-----------------------------------------------------------------------------------------------
+
+
+DONE : check a BR that does not show up as discrepant : thats just by chance
+--------------------------------------------------------------------------------
+
+Below shows that not appearing as discrepant for this BR (and presumably all BR) 
+is by chance only as the flats are out of step due to B:StepTooSmall consuming 4 
+with no corresponding consumption from A 
+
+::
+
+    In [7]: seqhis_(a.seq[:6,0])
+    Out[7]: 
+    ['TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BR SA',
+     'TO BT BT SA',
+     'TO BT BT SA']
+
+    In [8]: seqhis_(b.seq[:6,0])
+    Out[8]: 
+    ['TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BR SA',      # 3
+     'TO BT BT SA',
+     'TO BT BT SA']
+
+    In [13]: ats[3], afs[3]
+    Out[13]: 
+    (array([[1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+            [1, 2, 3, 4, 7, 8, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8),
+     array([[0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.   , 0.   , 0.   , 0.   ],
+            [0.136, 0.589, 0.491, 0.328, 0.911, 0.191, 0.   , 0.   , 0.   , 0.   ],
+            [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+            [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32))
+
+    In [14]: bts[3], bfs[3]
+    Out[14]: 
+    (array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+            [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+            [2, 6, 4, 3, 8, 9, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8),
+     array([[0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.   , 0.   , 0.   , 0.   ],
+            [0.136, 0.589, 0.491, 0.328, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+            [0.911, 0.191, 0.964, 0.898, 0.624, 0.71 , 0.   , 0.   , 0.   , 0.   ],
+            [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+            [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+            [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+            [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32))
+
+
+
+DONE : checking flat consumption per step in stag.StepSplit
+---------------------------------------------------------------
+
+::
+
+    In [1]: bfs.shape                                                                                                                                               
+    Out[1]: (100, 7, 10)
+
+    In [2]: bfs[0]    
+    ## suspect all the extra zeros in B are coming from the StepTooSmall BR 
+    ## from max_starts inconsistency ?
+    Out[2]: 
+    array([[0.74 , 0.438, 0.517, 0.157, 0.071, 0.463, 0.   , 0.   , 0.   , 0.   ],
+           [0.228, 0.329, 0.144, 0.188, 0.915, 0.54 , 0.   , 0.   , 0.   , 0.   ],
+           [0.975, 0.547, 0.653, 0.23 , 0.339, 0.761, 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+    In [3]: afs[0]
+    Out[3]: 
+    array([[0.74 , 0.438, 0.517, 0.157, 0.071, 0.463, 0.   , 0.   , 0.   , 0.   ],
+           [0.228, 0.329, 0.144, 0.188, 0.915, 0.54 , 0.   , 0.   , 0.   , 0.   ],
+           [0.975, 0.547, 0.653, 0.23 , 0.339, 0.761, 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+    In [4]:                                                                      
+
+
+
+DONE : First Try for alignment : gives seqhis match for 99/100
+-------------------------------------------------------------------
+
+**after : seqhis aligns for 99/100**
+
+::
+
+    epsilon:opticks blyth$ git commit -m "reorganize stag.h enum with additions for preamble consumption alignment, use from qsim.h when DEBUG_TAG active"  
+    [master b81a3f85b] reorganize stag.h enum with additions for preamble consumption alignment, use from qsim.h when DEBUG_TAG active
+     6 files changed, 221 insertions(+), 99 deletions(-)
+    epsilon:opticks blyth$ git push 
+    Counting objects: 14, done.
+
+
+    In [12]: np.where( a.seq[:,0] != b.seq[:,0] )
+    Out[12]: (array([54]),)
+
+
+    In [3]: ats[0]
+    Out[3]: 
+    array([[1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 7, 8, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+    In [4]: bts[0]    ## huh what all the zeros ?
+    Out[4]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 9, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+    In [6]: print(tag.label(at[0,:20]))
+     0 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn  
+     1 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn  
+     2 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering  
+     3 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption  
+     4 :  5 :    at_burn : boundary burn  
+     5 :  6 :     at_ref : u_reflect > TransCoeff  
+
+     6 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn  
+     7 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn  
+     8 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering  
+     9 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption  
+    10 :  5 :    at_burn : boundary burn  
+    11 :  6 :     at_ref : u_reflect > TransCoeff  
+
+    12 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn  
+    13 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn  
+    14 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering  
+    15 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption  
+    16 :  7 :      sf_sd : qsim::propagate_at_surface ab/sd  
+    17 :  8 :    sf_burn : qsim::propagate_at_surface burn  
+    18 :  0 :      undef : undef  
+    19 :  0 :      undef : undef  
+
+
+    In [7]: print(stack.label(bt[0,:20]))
+     0 :  2 : ScintDiscreteReset :   
+     1 :  6 : BoundaryDiscreteReset :   
+     2 :  4 : RayleighDiscreteReset :   
+     3 :  3 : AbsorptionDiscreteReset :   
+     4 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+     5 :  7 : BoundaryDiDiTransCoeff :   
+
+     6 :  2 : ScintDiscreteReset :   
+     7 :  6 : BoundaryDiscreteReset :   
+     8 :  4 : RayleighDiscreteReset :   
+     9 :  3 : AbsorptionDiscreteReset :   
+    10 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    11 :  7 : BoundaryDiDiTransCoeff :   
+
+    12 :  2 : ScintDiscreteReset :   
+    13 :  6 : BoundaryDiscreteReset :   
+    14 :  4 : RayleighDiscreteReset :   
+    15 :  3 : AbsorptionDiscreteReset :   
+    16 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    17 :  9 : AbsorptionEffDetect :   
+    18 :  0 : Unclassified :   
+    19 :  0 : Unclassified :   
+
+
+
+**before : chance seqhis alignment only**
 
 ::
 
@@ -646,22 +957,6 @@ Unaligned initial small geometry
     13 :  0 : Unclassified :  
 
 
-
-TODO : investigate impact of U4Process::ClearNumberOfInteractionLengthLeft 
------------------------------------------------------------------------------
-
-Q: U4Process::ClearNumberOfInteractionLengthLeft will inevitably change the simulation because are using 
-   different randoms, but does it change the correctness of the simulation ?
-
-A: Assuming just technical change, because the chances of SC/AB etc..
-   are surely independent of what happened before ? 
-
-To verify the assumption need high stats statistical comparison of history frequencies 
-with and without this trick being applied. 
-This will require getting the statistical comparison python machinery into new workflow
-using the new SEvt arrays.  
-
-
 DONE : observe how consumption changes when use U4Process::ClearNumberOfInteractionLengthLeft 
 --------------------------------------------------------------------------------------------------
 
@@ -837,8 +1132,6 @@ Seems no difference, presumably all fAlive ?::
 
 
 
-TODO : observe with bigger geometry so can see AB and SC in the history 
---------------------------------------------------------------------------
 
 
 

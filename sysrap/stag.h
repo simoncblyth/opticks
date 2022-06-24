@@ -37,7 +37,11 @@ enum {
    stag_sc_u1      =  18,
    stag_sc_u2      =  19,
    stag_sc_u3      =  20,
-   stag_sc_u4      =  21
+   stag_sc_u4      =  21,
+   stag_br_align_0  = 22,
+   stag_br_align_1  = 23,
+   stag_br_align_2  = 24,
+   stag_br_align_3  = 25
 }; 
 
 
@@ -120,6 +124,20 @@ struct stagc
 
     static constexpr const char* sc_u4_ = "sc_u4" ; // 21
     static constexpr const char* sc_u4_note = "qsim::rayleigh_scatter u4" ;
+
+    static constexpr const char* br_align_0_ = "br_align_0" ; // 22
+    static constexpr const char* br_align_0_note = "qsim::propagate_at_boundary tail u_br_align_0  " ; 
+
+    static constexpr const char* br_align_1_ = "br_align_1" ; // 23
+    static constexpr const char* br_align_1_note = "qsim::propagate_at_boundary tail u_br_align_1  " ; 
+
+    static constexpr const char* br_align_2_ = "br_align_2" ; // 24
+    static constexpr const char* br_align_2_note = "qsim::propagate_at_boundary tail u_br_align_2  " ;
+
+    static constexpr const char* br_align_3_ = "br_align_3" ; // 25
+    static constexpr const char* br_align_3_note = "qsim::propagate_at_boundary tail u_br_align_3  " ;
+
+
 };
 
 STAG_METHOD const char* stagc::Name(unsigned tag)
@@ -149,6 +167,10 @@ STAG_METHOD const char* stagc::Name(unsigned tag)
         case stag_sc_u2:     s = sc_u2_     ; break ;  // 19
         case stag_sc_u3:     s = sc_u3_     ; break ;  // 20
         case stag_sc_u4:     s = sc_u4_     ; break ;  // 21
+        case stag_br_align_0: s = br_align_0_ ; break ;  // 22
+        case stag_br_align_1: s = br_align_1_ ; break ;  // 23
+        case stag_br_align_2: s = br_align_2_ ; break ;  // 24
+        case stag_br_align_3: s = br_align_3_ ; break ;  // 25
     }
     return s ; 
 }
@@ -179,6 +201,10 @@ STAG_METHOD const char* stagc::Note(unsigned tag)
         case stag_sc_u2:     s = sc_u2_note ; break ;     // 19
         case stag_sc_u3:     s = sc_u3_note ; break ;     // 20
         case stag_sc_u4:     s = sc_u4_note ; break ;     // 21
+        case stag_br_align_0: s = br_align_0_note ; break ;   // 22
+        case stag_br_align_1: s = br_align_1_note ; break ;   // 23
+        case stag_br_align_2: s = br_align_2_note ; break ;   // 24
+        case stag_br_align_3: s = br_align_3_note ; break ;   // 25
     }
     return s ; 
 }
