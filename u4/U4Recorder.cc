@@ -181,48 +181,55 @@ will fulfil *single_bit*.
 
 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
+    const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
     const G4Track* track = step->GetTrack(); 
+
     spho label = U4Track::Label(track); 
-    assert( label.isDefined() );   // all photons are expected to be labelled, TODO:input photons
-    if(!Enabled(label)) return ;  
+    assert( label.isDefined() );  
+    if(!Enabled(label)) return ;  // early debug  
 
     //LOG(info) << " label.id " << label.id << " " << U4Process::Desc() ; 
 
-
     SEvt* sev = SEvt::Get(); 
-    sev->checkPhoton(label); 
-
-    const G4StepPoint* pre = step->GetPreStepPoint() ; 
-    const G4StepPoint* post = step->GetPostStepPoint() ; 
-
+    sev->checkPhotonLineage(label); 
     sphoton& current_photon = sev->current_photon ;
-    bool single_bit = current_photon.flagmask_count() == 1 ; 
-    // first point single bit flag is the genflag set in beginPhoton
-    if(single_bit)
+
+    bool first_point = current_photon.flagmask_count() == 1 ;  // first_point when single bit in the flag from genflag set in beginPhoton
+    if(first_point)
     { 
         U4StepPoint::Update(current_photon, pre);
-        sev->pointPhoton(label);  
-        // SEvt::pointPhoton saves SEvt::current_photon,current_rec,current_seq,current_prd into sevent 
+        sev->pointPhoton(label);  // saves SEvt::current_photon/rec/record/prd into sevent 
     }
 
     unsigned flag = U4StepPoint::Flag(post) ; 
-    if(flag == NAN_ABORT) LOG(error) << " skipping StepTooSmall label.id " << label.id  ;  
-    if(flag == NAN_ABORT) return ;    // try trivial way of skipping StepTooSmall 
-
-    U4StepPoint::Update(current_photon, post); 
-
-    if( flag == 0 ) std::cout << " ERR flag zero : post " << U4StepPoint::Desc(post) << std::endl ; 
+    if( flag == 0 ) LOG(error) << " ERR flag zero : post " << U4StepPoint::Desc(post) ; 
     assert( flag > 0 ); 
 
-    current_photon.set_flag( flag );
-    sev->pointPhoton(label);   
-    // SEvt::pointPhoton saves SEvt::current_photon,current_rec,current_seq,current_prd into sevent 
+    if( flag == NAN_ABORT )
+    {
+        LOG(error) << " skip post saving for StepTooSmall label.id " << label.id  ;  
+    }
+    else
+    {
+        G4TrackStatus tstat = track->GetTrackStatus(); 
+        Check_TrackStatus_Flag(tstat, flag); 
 
-    G4TrackStatus tstat = track->GetTrackStatus(); 
+        U4StepPoint::Update(current_photon, post); 
+        current_photon.set_flag( flag );
+        sev->pointPhoton(label);         // save SEvt::current_photon/rec/seq/prd into sevent 
+    }
+    U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
+}
 
+/**
+//U4Track::SetStopAndKill(track); 
+In CFG4 did StopAndKill but so far seems no reason to do that. Probably that was for aligning truncation.
+**/
+
+void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
+{
     LOG(LEVEL) << " step.tstat " << U4TrackStatus::Name(tstat) << " " << OpticksPhoton::Flag(flag)  ; 
-    //G4Track* track_ = const_cast<G4Track*>(track); 
-    //track_->SetTrackStatus(fStopAndKill);
 
     if( tstat == fAlive )
     {
@@ -255,12 +262,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             << " flag " << OpticksPhoton::Flag(flag) 
             ; 
     }
-
-    //if( tstat == fAlive )
-    {
-        U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
-    }
-
-
 }
+
 

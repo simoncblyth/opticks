@@ -98,6 +98,8 @@ U4StepPoint::Flag
 
 Adapted from cfg4/OpStatus.cc:OpStatus::OpPointFlag
 
+HMM: no BULK_REEMIT ? 
+
 **/
 unsigned U4StepPoint::Flag(const G4StepPoint* point)
 {
@@ -115,12 +117,11 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point)
     }
     else if( status == fGeomBoundary && proc == U4StepPoint_Transportation )
     {
-        //unsigned bstat = U4OpBoundaryProcess::GetStatus<G4OpBoundaryProcess>(); 
         unsigned bstat = U4OpBoundaryProcess::GetStatus<InstrumentedG4OpBoundaryProcess>(); 
 
         flag = BoundaryFlag(bstat) ;   
         if( flag == NAN_ABORT ) 
-            LOG(error) 
+            LOG(LEVEL) 
                 << " fGeomBoundary " 
                 << " U4OpBoundaryProcessStatus::Name " << U4OpBoundaryProcessStatus::Name(bstat)
                 << " flag " << OpticksPhoton::Flag(flag)

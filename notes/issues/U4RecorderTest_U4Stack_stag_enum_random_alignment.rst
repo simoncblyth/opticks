@@ -46,10 +46,158 @@ TODO : scripted tabulation of the A:tags and B:stacks with U4RecorderTest_ab.py 
 -----------------------------------------------------------------------------------------------------------------------
 
 
-TODO : adjust how StepTooSmall is handled to avoid messing up the consumption regularity 
+DONE : adjust how StepTooSmall is handled to avoid messing up the consumption regularity 
 ---------------------------------------------------------------------------------------------
 
 * HMM in CFG4 I recall doing some jump backs to stay aligned. Was that for StepTooSmall ?
+* better to avoid such complications : better to add burns on other side
+* goal is a *regular* easy to follow pattern of consumption that can be aligned with 
+
+**setup**
+
+::
+
+    u4t
+    ./U4RecorderTest_ab.sh 
+
+
+**after : change to always call U4Process::ClearNumberOfInteractionLengthLeft even when StepTooSmall/NAN_ABORT**
+
+::
+
+    182 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
+    183 {   
+    ...
+    197 
+    198     bool first_point = current_photon.flagmask_count() == 1 ;  // first_point when single bit in the flag from genflag set in beginPhoton
+    199     if(first_point)
+    200     {
+    201         U4StepPoint::Update(current_photon, pre);
+    202         sev->pointPhoton(label);  // saves SEvt::current_photon/rec/record/prd into sevent 
+    203     }
+    204 
+    205     unsigned flag = U4StepPoint::Flag(post) ;
+    206     if( flag == 0 ) LOG(error) << " ERR flag zero : post " << U4StepPoint::Desc(post) ;
+    207     assert( flag > 0 );
+    208 
+    209     if( flag == NAN_ABORT )
+    210     {
+    211         LOG(error) << " skip post saving for StepTooSmall label.id " << label.id  ;
+    212     }
+    213     else
+    214     {
+    215         G4TrackStatus tstat = track->GetTrackStatus();
+    216         Check_TrackStatus_Flag(tstat, flag);
+    217 
+    218         U4StepPoint::Update(current_photon, post);
+    219         current_photon.set_flag( flag );
+    220         sev->pointPhoton(label);         // save SEvt::current_photon/rec/seq/prd into sevent 
+    221     }
+    222     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step);
+    223 }
+
+
+::
+
+    In [4]: bts.shape
+    Out[4]: (100, 7, 10)
+
+    In [5]: bts[0]
+    Out[5]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 9, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+::
+
+    In [10]: np.all(np.logical_or(bts[:,:,0] == 2, bts[:,:,0] == 0))
+    Out[10]: True
+
+    In [11]: np.all(np.logical_or(bts[:,:,1] == 6, bts[:,:,1] == 0))
+    Out[11]: True
+
+    In [12]: np.all(np.logical_or(bts[:,:,2] == 4, bts[:,:,2] == 0))
+    Out[12]: True
+
+    In [13]: np.all(np.logical_or(bts[:,:,3] == 3, bts[:,:,3] == 0))
+    Out[13]: True
+
+    In [14]: np.all(np.logical_or(bts[:,:,4] == 8, bts[:,:,4] == 0))
+    Out[14]: True
+
+    ## SO WHEN NOT ZERO : ALL STEPS START THE SAME : (2,6,4,3,8) 
+
+    In [16]: print(stack.label(bt[0,:20]))
+     0 :  2 : ScintDiscreteReset :   
+     1 :  6 : BoundaryDiscreteReset :   
+     2 :  4 : RayleighDiscreteReset :   
+     3 :  3 : AbsorptionDiscreteReset :   
+     4 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+     5 :  7 : BoundaryDiDiTransCoeff :   
+
+     6 :  2 : ScintDiscreteReset :   
+     7 :  6 : BoundaryDiscreteReset :   
+     8 :  4 : RayleighDiscreteReset :   
+     9 :  3 : AbsorptionDiscreteReset :   
+    10 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    11 :  7 : BoundaryDiDiTransCoeff :   
+
+    12 :  2 : ScintDiscreteReset :   
+    13 :  6 : BoundaryDiscreteReset :   
+    14 :  4 : RayleighDiscreteReset :   
+    15 :  3 : AbsorptionDiscreteReset :   
+    16 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    17 :  9 : AbsorptionEffDetect :   
+    18 :  0 : Unclassified :   
+    19 :  0 : Unclassified :   
+
+
+
+
+**before**
+
+::
+
+    In [1]: w8 = np.where(bts[:,:,2] == 8 )
+    In [2]: w8
+    Out[2]: (array([ 3, 15, 21, 25, 36, 53, 54, 64]), array([2, 2, 2, 2, 3, 3, 3, 3]))
+
+    In [3]: w8 = np.where(bts[:,:,2] == 8 )[0]
+
+    In [5]: b.seq[w8,0]
+    Out[5]: array([  2237,   2237,   2237,   2237, 576461, 576461, 576461, 576461], dtype=uint64)
+
+    In [6]: seqhis_(b.seq[w8,0])
+    Out[6]: 
+    ['TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BT BR BT SA',
+     'TO BT BR BT SA',
+     'TO BT BR BT SA',
+     'TO BT BR BT SA']
+
+    In [15]: sh = seqhis_(b.seq[:,0])
+    In [17]: for i in range(len(sh)): 
+        ...:     if sh[i].find("BR")>-1: print(i) 
+        ...:
+    3
+    15
+    21
+    25
+    36
+    53
+    54
+    64
+
+All 8 BR in 100 have same problem, seems to be the step after the BR that has messed up consumption
+
+
 
 
 DONE : folding A:tags and B:stacks arrays for clarity and easier querying using stag.StepSplit 

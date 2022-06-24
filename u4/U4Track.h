@@ -14,6 +14,7 @@ struct U4Track
     static spho Label(const G4Track* track);   // returns placeholders when track has no label  
     static void SetFabricatedLabel(const G4Track* track); 
 
+    static void SetStopAndKill(const G4Track* track); 
 };
 
 
@@ -80,6 +81,12 @@ std::string U4Track::Desc(const G4Track* track)
     return s ; 
 }
 
+
+void U4Track::SetStopAndKill(const G4Track* track)
+{
+    G4Track* track_ = const_cast<G4Track*>(track); 
+    track_->SetTrackStatus(fStopAndKill);
+}
 
 
 

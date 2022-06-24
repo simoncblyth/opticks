@@ -790,7 +790,7 @@ void SEvt::finalPhoton(const spho& label)
 
 }
 
-void SEvt::checkPhoton(const spho& label) const 
+void SEvt::checkPhotonLineage(const spho& label) const 
 {
     assert( label.isSameLineage(current_pho) ); 
 }

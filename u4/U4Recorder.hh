@@ -20,6 +20,7 @@ struct spho ;
 
 
 #include "plog/Severity.h"
+#include "G4TrackStatus.hh"
 #include "U4_API_EXPORT.hh"
 
 struct U4_API U4Recorder 
@@ -47,6 +48,9 @@ struct U4_API U4Recorder
     void PreUserTrackingAction_Optical(const G4Track*);
     void PostUserTrackingAction_Optical(const G4Track*);
     void UserSteppingAction_Optical(const G4Step*); 
+
+    void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag); 
+
 };
 
 
