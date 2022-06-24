@@ -87,7 +87,7 @@ std::string U4Process::Desc()
     ss << "U4Process::Desc" ;
     G4ProcessVector* procv = mgr->GetProcessList() ;
     G4int n = procv->entries() ;
-    ss << " n:[" << n << "]" ;   
+    ss << " n:[" << n << "]" << std::endl ;   
     for(int i=0 ; i < n ; i++)
     {   
         G4VProcess* proc = (*procv)[i] ; 

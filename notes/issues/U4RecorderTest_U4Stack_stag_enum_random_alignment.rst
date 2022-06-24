@@ -42,6 +42,259 @@ WIP : apply consumption enum collection machinery with storch_test.sh input phot
     ./U4RecorderTest_ab.sh     # local 
      
 
+TODO : scripted tabulation of the A:tags and B:stacks with U4RecorderTest_ab.py to use while effecting the alignment
+-----------------------------------------------------------------------------------------------------------------------
+
+
+TODO : adjust how StepTooSmall is handled to avoid messing up the consumption regularity 
+---------------------------------------------------------------------------------------------
+
+* HMM in CFG4 I recall doing some jump backs to stay aligned. Was that for StepTooSmall ?
+
+
+DONE : folding A:tags and B:stacks arrays for clarity and easier querying using stag.StepSplit 
+---------------------------------------------------------------------------------------------------
+::
+
+    In [3]: seqhis_(a.seq[:5,0])
+    Out[3]: ['TO BT BT SA', 'TO BT BT SA', 'TO BT BT SA', 'TO BT BT SA', 'TO BT BT SA']
+
+    In [4]: seqhis_(b.seq[:5,0])
+    Out[4]: ['TO BT BT SA', 'TO BT BT SA', 'TO BT BT SA', 'TO BR SA', 'TO BT BT SA']
+
+
+Consumption pattern expected to always have same start to each steppoint from the stack Reset deciding
+on what process will win the step.  So rearranging array into those steps makes it easier to follow and query::
+
+    In [8]: at[:5,:20]   # A:tags
+    Out[8]: 
+    array([[ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=uint8)
+
+    In [9]: bt[:5,:20]   # B:stacks
+    Out[9]: 
+    array([[2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 9, 0, 0],
+           [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 9, 0, 0],
+           [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 9, 0, 0],
+           [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 2, 6, 8, 9, 0, 0, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 9, 0, 0]], dtype=uint8)
+
+::
+
+    In [10]: at[0]
+    Out[10]: array([ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], dtype=uint8)
+
+::
+
+    In [18]: starts = np.where( at[0] == 1 )[0] ; starts
+    Out[18]: array([0, 4, 8])
+
+    ends = np.where( at[0] == 0 )   
+    end = ends[0][0] 
+
+    In [21]: at[0,0:4]
+    Out[21]: array([ 1,  2,  9, 10], dtype=uint8)
+
+    In [22]: at[0,4:8]
+    Out[22]: array([ 1,  2,  9, 10], dtype=uint8)
+
+    In [56]: at[0,8:end]
+    Out[56]: array([ 1,  2, 11, 12], dtype=uint8)
+
+    ats = np.zeros( (5, 10), dtype=np.uint8 ) 
+    ats[0,0:4] = at[0,0:4]  
+    ats[1,0:4] = at[0,4:8]  
+    ats[2,0:4] = at[0,8:end]   
+
+
+stag.py::
+
+     41     @classmethod
+     42     def StepSplit(cls, tg, step_slot=10):
+     43         """
+     44         :param tg: unpacked tag array of shape (n, SLOTS)
+     45         :param step_slot: max random throws per step  
+     46         :param tgs: step split tag array of shape (n, max_step, step_slot) 
+     47 
+     48         In [4]: at[0]
+     49         Out[4]: array([ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0], dtype=uint8)
+     50 
+     51         In [8]: ats[0]
+     52         Out[8]: 
+     53         array([[ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+     54                [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+     55                [ 1,  2, 11, 12,  0,  0,  0,  0,  0,  0],
+     56                [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=uint8)
+     57 
+     58         """
+     59 
+     60         max_starts = 0
+     61         for i in range(len(tg)):
+     62             starts = np.where( tg[i] == tg[0,0] )[0]
+     63             if len(starts) > max_starts: max_starts = len(starts)
+     64         pass
+     65         
+     66         tgs = np.zeros((len(tg), max_starts, step_slot), dtype=np.uint8)
+     67         for i in range(len(tg)): 
+     68             starts = np.where( tg[i] == tg[0,0] )[0]
+     69             ends = np.where( tg[i] == 0 )[0] 
+     70             end = ends[0] if len(ends) > 0 else len(tg[i])   ## handle when dont get zero due to truncation
+     71             for j in range(len(starts)):
+     72                 st = starts[j]
+     73                 en = starts[j+1] if j+1 < len(starts) else end
+     74                 tgs[i, j,0:en-st] = tg[i,st:en] 
+     75             pass
+     76         pass
+     77         return tgs
+
+
+
+Difficult to interpret whats happening when have truncation::
+
+    In [2]: ats[53]
+    Out[2]: 
+    array([[ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+           [ 1,  2, 11, 12,  0,  0,  0,  0,  0,  0]], dtype=uint8)
+
+    In [3]: bts[53]
+    Out[3]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+           [2, 6, 8, 7, 0, 0, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+    In [4]: seqhis_(a.seq[53,0])
+    Out[4]: 'TO BT BR BR BR BT SA'
+
+    In [5]: seqhis_(b.seq[53,0])
+    Out[5]: 'TO BT BR BT SA'
+
+    In [6]: at[53]
+    Out[6]: array([ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2,  9, 10,  1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12], dtype=uint8)
+
+    In [7]: bt[53]
+    Out[7]: array([2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 2, 6, 8, 7, 2, 6, 4, 3], dtype=uint8)
+
+
+    In [1]: print(stack.label(bt[53]))
+     0 :  2 : ScintDiscreteReset :   
+     1 :  6 : BoundaryDiscreteReset :   
+     2 :  4 : RayleighDiscreteReset :   
+     3 :  3 : AbsorptionDiscreteReset :   
+     4 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+     5 :  7 : BoundaryDiDiTransCoeff :   
+
+     6 :  2 : ScintDiscreteReset :   
+     7 :  6 : BoundaryDiscreteReset :   
+     8 :  4 : RayleighDiscreteReset :   
+     9 :  3 : AbsorptionDiscreteReset :   
+    10 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    11 :  7 : BoundaryDiDiTransCoeff :   
+
+    12 :  2 : ScintDiscreteReset :   
+    13 :  6 : BoundaryDiscreteReset :   
+    14 :  4 : RayleighDiscreteReset :   
+    15 :  3 : AbsorptionDiscreteReset :   
+
+    16 :  2 : ScintDiscreteReset :   
+    17 :  6 : BoundaryDiscreteReset :   
+    18 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    19 :  7 : BoundaryDiDiTransCoeff :   
+    ##  HMM: ONLY 2 RESET, NOT NORMAL GANG OF 4 ?
+
+    20 :  2 : ScintDiscreteReset :   
+    21 :  6 : BoundaryDiscreteReset :   
+    22 :  4 : RayleighDiscreteReset :   
+    23 :  3 : AbsorptionDiscreteReset :   
+
+How often ? 8/100::
+
+    In [9]: np.where(bts[:,:,2] == 8 )
+    Out[9]: (array([ 3, 15, 21, 25, 36, 53, 54, 64]), array([2, 2, 2, 2, 3, 3, 3, 3]))
+
+    In [10]: bts[3]
+    Out[10]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+           [2, 6, 8, 9, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+    In [11]: bts[15]
+    Out[11]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+           [2, 6, 8, 9, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+
+Whats special about those 8 ? All have StepTooSmall skip outs::
+
+    2022-06-24 12:20:06.817 INFO  [30005984] [U4RecorderTest::GeneratePrimaries@119] ]
+    2022-06-24 12:20:06.817 INFO  [30005984] [U4Recorder::BeginOfEventAction@52] 
+    2022-06-24 12:20:07.123 ERROR [30005984] [U4StepPoint::Flag@123]  fGeomBoundary  U4OpBoundaryProcessStatus::Name StepTooSmall flag NAN_ABORT
+    2022-06-24 12:20:07.124 ERROR [30005984] [U4Recorder::UserSteppingAction_Optical@209]  skipping StepTooSmall label.id 64
+    2022-06-24 12:20:07.214 ERROR [30005984] [U4StepPoint::Flag@123]  fGeomBoundary  U4OpBoundaryProcessStatus::Name StepTooSmall flag NAN_ABORT
+    2022-06-24 12:20:07.214 ERROR [30005984] [U4Recorder::UserSteppingAction_Optical@209]  skipping StepTooSmall label.id 54
+    2022-06-24 12:20:07.227 ERROR [30005984] [U4StepPoint::Flag@123]  fGeomBoundary  U4OpBoundaryProcessStatus::Name StepTooSmall flag NAN_ABORT
+    2022-06-24 12:20:07.227 ERROR [30005984] [U4Recorder::UserSteppingAction_Optical@209]  skipping StepTooSmall label.id 53
+    2022-06-24 12:20:07.379 ERROR [30005984] [U4StepPoint::Flag@123]  fGeomBoundary  U4OpBoundaryProcessStatus::Name StepTooSmall flag NAN_ABORT
+    2022-06-24 12:20:07.379 ERROR [30005984] [U4Recorder::UserSteppingAction_Optical@209]  skipping StepTooSmall label.id 36
+    2022-06-24 12:20:07.476 ERROR [30005984] [U4StepPoint::Flag@123]  fGeomBoundary  U4OpBoundaryProcessStatus::Name StepTooSmall flag NAN_ABORT
+    2022-06-24 12:20:07.476 ERROR [30005984] [U4Recorder::UserSteppingAction_Optical@209]  skipping StepTooSmall label.id 25
+    2022-06-24 12:20:07.509 ERROR [30005984] [U4StepPoint::Flag@123]  fGeomBoundary  U4OpBoundaryProcessStatus::Name StepTooSmall flag NAN_ABORT
+    2022-06-24 12:20:07.509 ERROR [30005984] [U4Recorder::UserSteppingAction_Optical@209]  skipping StepTooSmall label.id 21
+    2022-06-24 12:20:07.561 ERROR [30005984] [U4StepPoint::Flag@123]  fGeomBoundary  U4OpBoundaryProcessStatus::Name StepTooSmall flag NAN_ABORT
+    2022-06-24 12:20:07.561 ERROR [30005984] [U4Recorder::UserSteppingAction_Optical@209]  skipping StepTooSmall label.id 15
+    2022-06-24 12:20:07.666 ERROR [30005984] [U4StepPoint::Flag@123]  fGeomBoundary  U4OpBoundaryProcessStatus::Name StepTooSmall flag NAN_ABORT
+    2022-06-24 12:20:07.666 ERROR [30005984] [U4Recorder::UserSteppingAction_Optical@209]  skipping StepTooSmall label.id 3
+    2022-06-24 12:20:07.693 INFO  [30005984] [U4Recorder::EndOfEventAction@53] 
+    2022-06-24 12:20:07.693 INFO  [30005984] [U4Recorder::EndOfRunAction@51] 
+
+
+Increase stag.h/stag.py:NSEQ to 4 increases SLOTS to 48, avoiding truncation::
+
+    In [3]: print(stack.label(bt[53,:27]))
+     0 :  2 : ScintDiscreteReset :   
+     1 :  6 : BoundaryDiscreteReset :   
+     2 :  4 : RayleighDiscreteReset :   
+     3 :  3 : AbsorptionDiscreteReset :   
+     4 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+     5 :  7 : BoundaryDiDiTransCoeff :   
+
+     6 :  2 : ScintDiscreteReset :   
+     7 :  6 : BoundaryDiscreteReset :   
+     8 :  4 : RayleighDiscreteReset :   
+     9 :  3 : AbsorptionDiscreteReset :   
+    10 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    11 :  7 : BoundaryDiDiTransCoeff :   
+
+    12 :  2 : ScintDiscreteReset :   
+    13 :  6 : BoundaryDiscreteReset :   
+    14 :  4 : RayleighDiscreteReset :   
+    15 :  3 : AbsorptionDiscreteReset :   
+
+    16 :  2 : ScintDiscreteReset :   
+    17 :  6 : BoundaryDiscreteReset :   
+    18 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    19 :  7 : BoundaryDiDiTransCoeff :   
+
+    20 :  2 : ScintDiscreteReset :   
+    21 :  6 : BoundaryDiscreteReset :   
+    22 :  4 : RayleighDiscreteReset :   
+    23 :  3 : AbsorptionDiscreteReset :   
+    24 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    25 :  9 : AbsorptionEffDetect :   
+    26 :  0 : Unclassified :   
 
 
 
@@ -145,6 +398,7 @@ Unaligned initial small geometry
 
     # step preamble deciding on winner process is 2,6,4,3 
     # BUT that does not fully re-run for each step getting only 2,6 for subsequent
+
 
 
     In [19]: print(stack.label(bt[0,:14]))
@@ -331,14 +585,7 @@ DONE : observe how consumption changes when use U4Process::ClearNumberOfInteract
 * adding two burns at step front to A would bring them into line 
 * at_surface difference at the end due to the NoRINDEX Rock trick probably ?
 
-  * TODO: ADD A GEANT4 SURFACE TO THE TEST GEOMETRY TO GET THE TAIL TO ALIGN
-
-
-
-
-
-
-
+  * DONE : ADD A GEANT4 SURFACE TO THE TEST GEOMETRY TO MAKE THE TAIL POSSIBLE TO ALIGN WITH
 
 
 Try with::
@@ -363,11 +610,6 @@ Seems no difference, presumably all fAlive ?::
            [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 0, 0, 0, 0],
            [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 2, 6, 0, 0, 0, 0, 0, 0, 0, 0],
            [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 0, 0, 0, 0]], dtype=uint8)
-
-
-
-
-
 
 
 

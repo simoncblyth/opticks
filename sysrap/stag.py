@@ -6,6 +6,10 @@ log = logging.getLogger(__name__)
 from collections import OrderedDict as odict 
 
 
+
+
+
+
 class stag_item(object):
     @classmethod
     def Placeholder(cls):
@@ -28,11 +32,50 @@ class stag(object):
 
     PATH = "$OPTICKS_PREFIX/include/sysrap/stag.h" 
 
-    NSEQ = 2
+    NSEQ = 4   ## must match stag.h:NSEQ 
     BITS = 5 
     MASK = ( 0x1 << BITS ) - 1 
     SLOTMAX = 64//BITS
     SLOTS = SLOTMAX*NSEQ
+
+    @classmethod
+    def StepSplit(cls, tg, step_slot=10):
+        """
+        :param tg: unpacked tag array of shape (n, SLOTS)
+        :param step_slot: max random throws per step  
+        :param tgs: step split tag array of shape (n, max_step, step_slot) 
+
+        In [4]: at[0]
+        Out[4]: array([ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0], dtype=uint8)
+
+        In [8]: ats[0]
+        Out[8]: 
+        array([[ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+               [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+               [ 1,  2, 11, 12,  0,  0,  0,  0,  0,  0],
+               [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=uint8)
+
+        """
+
+        max_starts = 0 
+        for i in range(len(tg)):
+            starts = np.where( tg[i] == tg[0,0] )[0] 
+            if len(starts) > max_starts: max_starts = len(starts)
+        pass
+
+        tgs = np.zeros((len(tg), max_starts, step_slot), dtype=np.uint8)
+        for i in range(len(tg)):
+            starts = np.where( tg[i] == tg[0,0] )[0] 
+            ends = np.where( tg[i] == 0 )[0] 
+            end = ends[0] if len(ends) > 0 else len(tg[i])   ## handle when dont get zero due to truncation
+            for j in range(len(starts)):
+                st = starts[j]
+                en = starts[j+1] if j+1 < len(starts) else end
+                tgs[i, j,0:en-st] = tg[i,st:en] 
+            pass
+        pass
+        return tgs         
+
 
     @classmethod
     def Unpack(cls, tag):
@@ -112,8 +155,7 @@ class stag(object):
 
 
 
-if __name__ == '__main__':
-   logging.basicConfig(level=logging.INFO)
+def test_label():
    tag = stag()
    #print(tag) 
    print(repr(tag))
@@ -125,6 +167,47 @@ if __name__ == '__main__':
    print(tag.label(st[0,:10]))
 
 
-   
+def test_StepSplit():
+    from numpy import array, uint8
+    at = array(
+      [[ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0],
+       [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0],
+       [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0]], dtype=uint8)
+
+    x_ats = array(
+      [[[ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+        [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+        [ 1,  2, 11, 12,  0,  0,  0,  0,  0,  0],
+        [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]],
+
+       [[ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+        [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+        [ 1,  2, 11, 12,  0,  0,  0,  0,  0,  0],
+        [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]],
+
+       [[ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+        [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+        [ 1,  2, 11, 12,  0,  0,  0,  0,  0,  0],
+        [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]]], dtype=uint8)
+
+    ats = stag.StepSplit(at)
+    assert np.all( ats == x_ats )
+
+
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+  
+    #test_label()
+    test_StepSplit()
+
+    #at = np.array([[ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0],
+    #               [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0],
+    #               [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0]], dtype=np.uint8)
+    #
+    #ats = stag.StepSplit(at)
+
+
 
          

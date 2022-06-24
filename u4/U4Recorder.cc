@@ -181,13 +181,13 @@ will fulfil *single_bit*.
 
 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
-    std::cout << U4Process::Desc() << std::endl ; 
-
-
     const G4Track* track = step->GetTrack(); 
     spho label = U4Track::Label(track); 
     assert( label.isDefined() );   // all photons are expected to be labelled, TODO:input photons
     if(!Enabled(label)) return ;  
+
+    //LOG(info) << " label.id " << label.id << " " << U4Process::Desc() ; 
+
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhoton(label); 
@@ -206,6 +206,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     }
 
     unsigned flag = U4StepPoint::Flag(post) ; 
+    if(flag == NAN_ABORT) LOG(error) << " skipping StepTooSmall label.id " << label.id  ;  
     if(flag == NAN_ABORT) return ;    // try trivial way of skipping StepTooSmall 
 
     U4StepPoint::Update(current_photon, post); 

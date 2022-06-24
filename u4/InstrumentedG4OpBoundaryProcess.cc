@@ -172,7 +172,7 @@ InstrumentedG4OpBoundaryProcess::InstrumentedG4OpBoundaryProcess(const G4String&
 InstrumentedG4OpBoundaryProcess::~InstrumentedG4OpBoundaryProcess(){}
 
         ////////////
-        // Methods
+        //// Methods
         ////////////
 
 // PostStepDoIt
@@ -365,7 +365,7 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
         Surface = G4LogicalBorderSurface::GetSurface(thePrePV, thePostPV);
 
 //#ifdef DEBUG_PIDX
-        std::cout << "Surface " << ( Surface ? "Y" : "N" ) << std::endl ; 
+        //std::cout << "InstrumentedG4OpBoundaryProcess::PostStepDoIt Surface " << ( Surface ? "Y" : "N" ) << std::endl ; 
         //if(Surface) std::raise(SIGINT) ; 
 //#endif
 

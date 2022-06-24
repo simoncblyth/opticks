@@ -192,7 +192,7 @@ STAG_METHOD std::string stagc::Desc()
 
 struct stag
 {
-    static constexpr const unsigned NSEQ = 2 ;  
+    static constexpr const unsigned NSEQ = 4 ;   // NB MUST MATCH stag.py:NSEQ
     static constexpr const unsigned BITS = 5 ;   // (0x1 << 5)-1 = 31  : up to 32 enumerations in 5 bits per slot   
     static constexpr const unsigned long long MASK = ( 0x1ull << BITS ) - 1ull ;   
     static constexpr const unsigned SLOTMAX = 64/BITS ;     // eg 64//5 = 12 so can fit 12 tags into each seqtag 64 bits
@@ -240,7 +240,7 @@ struct stagr
 
 STAG_METHOD void stagr::add(unsigned tag_, float flat_)
 {
-    printf("//stagr::add slot %2d tag %2d flat %10.4f SLOTS %d \n", slot, tag_, flat_, SLOTS ); 
+    //printf("//stagr::add slot %2d tag %2d flat %10.4f SLOTS %d \n", slot, tag_, flat_, SLOTS ); 
 
     if(slot < SLOTS)
     {

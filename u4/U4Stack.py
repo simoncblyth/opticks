@@ -53,10 +53,52 @@ class U4Stack(object):
         return d
 
     def label(self, st):
-        d = self.d
-        label_ = lambda _:repr(d.get(_,U4Stack_item.Placeholder()))
-        ilabel_ = lambda _:"%2d : %s" % ( _, label_(st[_])) 
-        return "\n".join(map(ilabel_, range(len(st))))
+        """
+        In [8]: print(stack.label(bt[53])) 
+         0 :  2 : ScintDiscreteReset :  
+         1 :  6 : BoundaryDiscreteReset :  
+         2 :  4 : RayleighDiscreteReset :  
+         3 :  3 : AbsorptionDiscreteReset :  
+         4 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :  
+         5 :  7 : BoundaryDiDiTransCoeff :  
+
+         6 :  2 : ScintDiscreteReset :  
+         7 :  6 : BoundaryDiscreteReset :  
+         8 :  4 : RayleighDiscreteReset :  
+         9 :  3 : AbsorptionDiscreteReset :  
+        10 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :  
+        11 :  7 : BoundaryDiDiTransCoeff :  
+
+        12 :  2 : ScintDiscreteReset :  
+        13 :  6 : BoundaryDiscreteReset :  
+        14 :  4 : RayleighDiscreteReset :  
+        15 :  3 : AbsorptionDiscreteReset :  
+
+        16 :  2 : ScintDiscreteReset :  
+        17 :  6 : BoundaryDiscreteReset :  
+        18 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :  
+        19 :  7 : BoundaryDiDiTransCoeff :  
+        ## HUH: ONLY 2 RESET NOT NORMAL 4 ? WHY ? 
+        ## COULD BE PRECEEDING ZERO STEP OR SMTH LIKE THAT 
+
+        20 :  2 : ScintDiscreteReset :  
+        21 :  6 : BoundaryDiscreteReset :  
+        22 :  4 : RayleighDiscreteReset :  
+        23 :  3 : AbsorptionDiscreteReset :  
+        """
+        lines = [] 
+        for i in range(len(st)):
+            item = self(st[i])
+            if item.code == st[0] and i > 0:
+                lines.append("")   
+            pass
+            label = "%2d : %s " % (i, repr(item)) 
+            lines.append(label)
+        pass
+        return "\n".join(lines)
+
+    def __call__(self, code):
+        return self.d.get(code,U4Stack_item.Placeholder())
  
     def __str__(self):
         return "\n".join(self.lines)
