@@ -69,6 +69,285 @@ TODO : scripted tabulation of the A:tags and B:stacks with U4RecorderTest_ab.py 
 -----------------------------------------------------------------------------------------------------------------------
 
 
+
+TODO : see if a 1-to-1 mapping from stack to tag can work (or vv) 
+---------------------------------------------------------------------
+
+The A:tag and B:stack do not match of course : they are different enumerations. 
+
+A:tag
+    are very specific corresponding to a curand_uniform call followed by tagr.add
+B:stack
+    correspond to backtraces 
+
+Going from more specific to less A:tag->B:stack is the only possible mapping direction.
+
+Is is possible to find a 1-to-1 mapping between the A:tag and B:stack::
+
+    In [10]: ats[0]
+    Out[10]: 
+    array([[1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 7, 8, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+    In [11]: bts[0]
+    Out[11]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 9, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+
+Where mapping values::
+
+    In [22]: ats0 = ats[0].copy() ; ats0 
+    Out[22]: 
+    array([[1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 7, 8, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+    In [24]: np.where( ats0 == 1 )                                                                                                                                    
+    Out[24]: (array([0, 1, 2]), array([0, 0, 0]))
+
+    In [26]: ats0[np.where( ats0 == 1 )] = 10 ; ats0
+    Out[26]: 
+    array([[10,  2,  3,  4,  5,  6,  0,  0,  0,  0],
+           [10,  2,  3,  4,  5,  6,  0,  0,  0,  0],
+           [10,  2,  3,  4,  7,  8,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=uint8)
+
+
+See U4Stack.py::
+
+    In [4]: stack.tag2stack
+    Out[4]: 
+    OrderedDict([(0, 0),
+                 (1, 2),
+                 (2, 6),
+                 (3, 4),
+                 (4, 3),
+                 (5, 8),
+                 (6, 7),
+                 (7, 8),
+                 (8, 9),
+                 (9, 0),
+                 (10, 0),
+                 (11, 0),
+                 (12, 0),
+                 (13, 0),
+                 (14, 0),
+                 (15, 0),
+                 (16, 0),
+                 (17, 0),
+                 (18, 0),
+                 (19, 0),
+                 (20, 0),
+                 (21, 0),
+                 (22, 0),
+                 (23, 6),
+                 (24, 4),
+                 (25, 3)])
+
+    In [5]: stack.stack2tag
+    Out[5]: 
+    OrderedDict([(0, 22),
+                 (2, 1),
+                 (6, 23),
+                 (4, 24),
+                 (3, 25),
+                 (8, 7),
+                 (7, 6),
+                 (9, 8)])
+
+
+* HMM: the above looks like argument to get rid of the 22,23,24,25 for the post-BR/StepTooSmall burns
+  as they introduce complication of breaking 1-to-1
+
+
+
+DONE : try artificially consuming 4 in A after every BR to see if it can kick back into line 
+-----------------------------------------------------------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ git add . 
+    epsilon:opticks blyth$ git commit -m "try artificially consuming 4 in A after every BR to see if it can kick back into line "
+    [master 4f1ca23a2] try artificially consuming 4 in A after every BR to see if it can kick back into line
+     5 files changed, 386 insertions(+), 27 deletions(-)
+
+
+
+qsim.h tail of propagate_to_boundary::
+
+     890 
+     891     flag = reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ;
+     892 
+     893 
+     894 #ifdef DEBUG_TAG
+     895     if( flag ==  BOUNDARY_REFLECT )
+     896     {
+     897         const float u_br_align_0 = curand_uniform(&rng) ;
+     898         const float u_br_align_1 = curand_uniform(&rng) ;
+     899         const float u_br_align_2 = curand_uniform(&rng) ;
+     900         const float u_br_align_3 = curand_uniform(&rng) ;
+     901 
+     902         tagr.add( stag_to_sci    , u_br_align_0 );  // switch to stag_to_sci so stag.StepSplit will split it 
+     903         tagr.add( stag_br_align_1, u_br_align_1 );
+     904         tagr.add( stag_br_align_2, u_br_align_2 );
+     905         tagr.add( stag_br_align_3, u_br_align_3 );
+     906     }
+     907 #endif
+     908 
+     909     return CONTINUE ;
+     910 }
+     911 
+
+**after**
+
+After using stag_to_sci for the first burn after BR the internals match too::
+
+    In [3]: np.where( a.seq[:,0] != b.seq[:,0] )
+    Out[3]: (array([], dtype=int64),)
+
+    In [4]: np.where( a.flat != b.flat )
+    Out[4]: (array([], dtype=int64), array([], dtype=int64))
+
+    In [5]: np.where( an != bn )
+    Out[5]: (array([], dtype=int64),)
+
+    In [9]: np.where(afs != bfs )
+    Out[9]: (array([], dtype=int64), array([], dtype=int64), array([], dtype=int64))
+
+
+**before**
+
+Succeeds to match histories of the 100, but the splitting of tags and flat 
+is not matching, due to using stag_br_align_0 rather than stag_to_sci.::
+
+    u4t
+    ./U4RecorderTest.sh ab 
+
+    In [3]: np.where( a.seq[:,0] != b.seq[:,0] )
+    Out[3]: (array([], dtype=int64),)
+
+    In [7]: np.where( a.flat != b.flat )
+    Out[7]: (array([], dtype=int64), array([], dtype=int64))
+
+    In [12]: np.where( an != bn )
+    Out[12]: (array([ 3, 15, 21, 25, 36, 53, 54, 64]),)
+
+    In [14]: an[an != bn],bn[an != bn]
+    Out[14]: 
+    (array([2, 2, 2, 2, 4, 4, 5, 4], dtype=uint8),
+     array([3, 3, 3, 3, 5, 5, 7, 5], dtype=uint8))
+
+    In [15]: afs[3]
+    Out[15]: 
+    array([[0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.136, 0.589, 0.491, 0.328],
+           [0.911, 0.191, 0.964, 0.898, 0.624, 0.71 , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+    In [16]: bfs[3]
+    Out[16]: 
+    array([[0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.   , 0.   , 0.   , 0.   ],
+           [0.136, 0.589, 0.491, 0.328, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.911, 0.191, 0.964, 0.898, 0.624, 0.71 , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+    ## HMM : as 22 not 1 : it doesnt get folded
+
+    In [17]: ats[3]
+    Out[17]: 
+    array([[ 1,  2,  3,  4,  5,  6, 22, 23, 24, 25],
+           [ 1,  2,  3,  4,  7,  8,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=uint8)
+
+    In [18]: bts[3]
+    Out[18]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 9, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+
+    In [19]: afs[54]
+    Out[19]: 
+    array([[0.708, 0.08 , 0.197, 0.401, 0.378, 0.744, 0.   , 0.   , 0.   , 0.   ],
+           [0.035, 0.371, 0.329, 0.114, 0.224, 0.987, 0.673, 0.133, 0.965, 0.555],
+           [0.654, 0.516, 0.715, 0.407, 0.549, 0.993, 0.355, 0.348, 0.821, 0.422],
+           [0.569, 0.602, 0.088, 0.955, 0.828, 0.806, 0.   , 0.   , 0.   , 0.   ],
+           [0.245, 0.504, 0.179, 0.8  , 0.333, 0.717, 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+    In [20]: bfs[54]
+    Out[20]: 
+    array([[0.708, 0.08 , 0.197, 0.401, 0.378, 0.744, 0.   , 0.   , 0.   , 0.   ],
+           [0.035, 0.371, 0.329, 0.114, 0.224, 0.987, 0.   , 0.   , 0.   , 0.   ],
+           [0.673, 0.133, 0.965, 0.555, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.654, 0.516, 0.715, 0.407, 0.549, 0.993, 0.   , 0.   , 0.   , 0.   ],
+           [0.355, 0.348, 0.821, 0.422, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.569, 0.602, 0.088, 0.955, 0.828, 0.806, 0.   , 0.   , 0.   , 0.   ],
+           [0.245, 0.504, 0.179, 0.8  , 0.333, 0.717, 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+    In [21]: ats[54]
+    Out[21]: 
+    array([[ 1,  2,  3,  4,  5,  6,  0,  0,  0,  0],
+           [ 1,  2,  3,  4,  5,  6, 22, 23, 24, 25],
+           [ 1,  2,  3,  4,  5,  6, 22, 23, 24, 25],
+           [ 1,  2,  3,  4,  5,  6,  0,  0,  0,  0],
+           [ 1,  2,  3,  4,  7,  8,  0,  0,  0,  0]], dtype=uint8)
+
+    In [23]: print(tag.label(ats[54,1]))
+     0 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn  
+     1 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn  
+     2 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering  
+     3 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption  
+     4 :  5 :    at_burn : boundary burn  
+     5 :  6 :     at_ref : u_reflect > TransCoeff  
+     6 : 22 : br_align_0 : qsim::propagate_at_boundary tail u_br_align_0    
+     7 : 23 : br_align_1 : qsim::propagate_at_boundary tail u_br_align_1    
+     8 : 24 : br_align_2 : qsim::propagate_at_boundary tail u_br_align_2    
+     9 : 25 : br_align_3 : qsim::propagate_at_boundary tail u_br_align_3    
+
+
+    In [22]: bts[54]
+    Out[22]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 8, 9, 0, 0, 0, 0]], dtype=uint8)
+
+
+
+
+
+
 DONE : check max_starts difference : tis caused by the B:StepTooSmall handling  
 ---------------------------------------------------------------------------------
 
@@ -177,159 +456,6 @@ DONE : investigate misaligned idx 54, check flat alignment : some alignment may 
            [0.355, 0.348, 0.821, 0.422, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
            [0.569, 0.602, 0.088, 0.955, 0.828, 0.806, 0.   , 0.   , 0.   , 0.   ],
            [0.245, 0.504, 0.179, 0.8  , 0.333, 0.717, 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
-
-
-
-DONE : try artificially consuming 4 in A after every BR to see if it can kick back into line 
------------------------------------------------------------------------------------------------
-
-::
-
-    epsilon:opticks blyth$ git add . 
-    epsilon:opticks blyth$ git commit -m "try artificially consuming 4 in A after every BR to see if it can kick back into line "
-    [master 4f1ca23a2] try artificially consuming 4 in A after every BR to see if it can kick back into line
-     5 files changed, 386 insertions(+), 27 deletions(-)
-
-
-
-qsim.h tail of propagate_to_boundary::
-
-     890 
-     891     flag = reflect ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ;
-     892 
-     893 
-     894 #ifdef DEBUG_TAG
-     895     if( flag ==  BOUNDARY_REFLECT )
-     896     {
-     897         const float u_br_align_0 = curand_uniform(&rng) ;
-     898         const float u_br_align_1 = curand_uniform(&rng) ;
-     899         const float u_br_align_2 = curand_uniform(&rng) ;
-     900         const float u_br_align_3 = curand_uniform(&rng) ;
-     901 
-     902         tagr.add( stag_to_sci    , u_br_align_0 );  // switch to stag_to_sci so stag.StepSplit will split it 
-     903         tagr.add( stag_br_align_1, u_br_align_1 );
-     904         tagr.add( stag_br_align_2, u_br_align_2 );
-     905         tagr.add( stag_br_align_3, u_br_align_3 );
-     906     }
-     907 #endif
-     908 
-     909     return CONTINUE ;
-     910 }
-     911 
-
-
-Succeeds to match histories of the 100, but the splitting of tags and flat 
-is not matching, due to using stag_br_align_0 rather than stag_to_sci.::
-
-    u4t
-    ./U4RecorderTest.sh ab 
-
-    In [3]: np.where( a.seq[:,0] != b.seq[:,0] )
-    Out[3]: (array([], dtype=int64),)
-
-    In [7]: np.where( a.flat != b.flat )
-    Out[7]: (array([], dtype=int64), array([], dtype=int64))
-
-    In [12]: np.where( an != bn )
-    Out[12]: (array([ 3, 15, 21, 25, 36, 53, 54, 64]),)
-
-    In [14]: an[an != bn],bn[an != bn]
-    Out[14]: 
-    (array([2, 2, 2, 2, 4, 4, 5, 4], dtype=uint8),
-     array([3, 3, 3, 3, 5, 5, 7, 5], dtype=uint8))
-
-    In [15]: afs[3]
-    Out[15]: 
-    array([[0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.136, 0.589, 0.491, 0.328],
-           [0.911, 0.191, 0.964, 0.898, 0.624, 0.71 , 0.   , 0.   , 0.   , 0.   ],
-           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
-           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
-           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
-
-    In [16]: bfs[3]
-    Out[16]: 
-    array([[0.969, 0.495, 0.673, 0.563, 0.12 , 0.976, 0.   , 0.   , 0.   , 0.   ],
-           [0.136, 0.589, 0.491, 0.328, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
-           [0.911, 0.191, 0.964, 0.898, 0.624, 0.71 , 0.   , 0.   , 0.   , 0.   ],
-           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
-           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
-           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
-           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
-
-    ## HMM : as 22 not 1 : it doesnt get folded
-
-    In [17]: ats[3]
-    Out[17]: 
-    array([[ 1,  2,  3,  4,  5,  6, 22, 23, 24, 25],
-           [ 1,  2,  3,  4,  7,  8,  0,  0,  0,  0],
-           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
-           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
-           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=uint8)
-
-    In [18]: bts[3]
-    Out[18]: 
-    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
-           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
-           [2, 6, 4, 3, 8, 9, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
-
-
-    In [19]: afs[54]
-    Out[19]: 
-    array([[0.708, 0.08 , 0.197, 0.401, 0.378, 0.744, 0.   , 0.   , 0.   , 0.   ],
-           [0.035, 0.371, 0.329, 0.114, 0.224, 0.987, 0.673, 0.133, 0.965, 0.555],
-           [0.654, 0.516, 0.715, 0.407, 0.549, 0.993, 0.355, 0.348, 0.821, 0.422],
-           [0.569, 0.602, 0.088, 0.955, 0.828, 0.806, 0.   , 0.   , 0.   , 0.   ],
-           [0.245, 0.504, 0.179, 0.8  , 0.333, 0.717, 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
-
-    In [20]: bfs[54]
-    Out[20]: 
-    array([[0.708, 0.08 , 0.197, 0.401, 0.378, 0.744, 0.   , 0.   , 0.   , 0.   ],
-           [0.035, 0.371, 0.329, 0.114, 0.224, 0.987, 0.   , 0.   , 0.   , 0.   ],
-           [0.673, 0.133, 0.965, 0.555, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
-           [0.654, 0.516, 0.715, 0.407, 0.549, 0.993, 0.   , 0.   , 0.   , 0.   ],
-           [0.355, 0.348, 0.821, 0.422, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
-           [0.569, 0.602, 0.088, 0.955, 0.828, 0.806, 0.   , 0.   , 0.   , 0.   ],
-           [0.245, 0.504, 0.179, 0.8  , 0.333, 0.717, 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
-
-    In [21]: ats[54]
-    Out[21]: 
-    array([[ 1,  2,  3,  4,  5,  6,  0,  0,  0,  0],
-           [ 1,  2,  3,  4,  5,  6, 22, 23, 24, 25],
-           [ 1,  2,  3,  4,  5,  6, 22, 23, 24, 25],
-           [ 1,  2,  3,  4,  5,  6,  0,  0,  0,  0],
-           [ 1,  2,  3,  4,  7,  8,  0,  0,  0,  0]], dtype=uint8)
-
-    In [23]: print(tag.label(ats[54,1]))
-     0 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn  
-     1 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn  
-     2 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering  
-     3 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption  
-     4 :  5 :    at_burn : boundary burn  
-     5 :  6 :     at_ref : u_reflect > TransCoeff  
-     6 : 22 : br_align_0 : qsim::propagate_at_boundary tail u_br_align_0    
-     7 : 23 : br_align_1 : qsim::propagate_at_boundary tail u_br_align_1    
-     8 : 24 : br_align_2 : qsim::propagate_at_boundary tail u_br_align_2    
-     9 : 25 : br_align_3 : qsim::propagate_at_boundary tail u_br_align_3    
-
-
-
-
-
-    In [22]: bts[54]
-    Out[22]: 
-    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
-           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
-           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
-           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
-           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
-           [2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
-           [2, 6, 4, 3, 8, 9, 0, 0, 0, 0]], dtype=uint8)
-
-
 
 
 

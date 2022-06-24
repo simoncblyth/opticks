@@ -16,6 +16,7 @@ easily prevent matches. Use "set list" in vim to check.
 **/
 
 #include <cassert>
+#include "stag.h"
 
 enum 
 {
@@ -37,6 +38,7 @@ struct U4Stack
     static bool IsClassified(unsigned stack); 
     static const char* Name(unsigned stack); 
     static unsigned Code(const char* name); 
+    static unsigned TagToStack(unsigned tag); 
 
     static constexpr const char* Unclassified_      = "Unclassified" ; 
     static constexpr const char* RestDiscreteReset_ = "RestDiscreteReset" ;   // must be Scintillation, as only RestDiscrete process around 
@@ -202,6 +204,49 @@ inline unsigned U4Stack::Code(const char* name)
     if(strcmp(name, BoundaryDiDiTransCoeff_) == 0)         stack = U4Stack_BoundaryDiDiTransCoeff ; 
     if(strcmp(name, BoundaryBurn_SurfaceReflectTransmitAbsorb_) == 0)  stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; 
     if(strcmp(name, AbsorptionEffDetect_) == 0)            stack = U4Stack_AbsorptionEffDetect ; 
+    return stack ; 
+}
+
+/**
+U4Stack::TagToStack
+--------------------
+
+Attempt at mapping from A:tag to B:stack 
+
+**/
+
+inline unsigned U4Stack::TagToStack(unsigned tag)
+{
+    unsigned stack = U4Stack_Unclassified ;
+    switch(tag)
+    {
+        case stag_undef:      stack = U4Stack_Unclassified                              ; break ;  // 0 -> 0
+        case stag_to_sci:     stack = U4Stack_ScintDiscreteReset                        ; break ;  // 1 -> 2
+        case stag_to_bnd:     stack = U4Stack_BoundaryDiscreteReset                     ; break ;  // 2 -> 6 
+        case stag_to_sca:     stack = U4Stack_RayleighDiscreteReset                     ; break ;  // 3 -> 4 
+        case stag_to_abs:     stack = U4Stack_AbsorptionDiscreteReset                   ; break ;  // 4 -> 3 
+        case stag_at_burn:    stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; break ;  // 5 -> 8 
+        case stag_at_ref:     stack = U4Stack_BoundaryDiDiTransCoeff                    ; break ;  // 6 -> 7 
+        case stag_sf_sd:      stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; break ;  // 7 -> 8 
+        case stag_sf_burn:    stack = U4Stack_AbsorptionEffDetect                       ; break ;  // 8 -> 9
+        case stag_to_ree:     stack = U4Stack_Unclassified ; break ;  // 9
+        case stag_re_wl:      stack = U4Stack_Unclassified ; break ;  // 10
+        case stag_re_mom_ph:  stack = U4Stack_Unclassified ; break ;  // 11
+        case stag_re_mom_ct:  stack = U4Stack_Unclassified ; break ;  // 12
+        case stag_re_pol_ph:  stack = U4Stack_Unclassified ; break ;  // 13
+        case stag_re_pol_ct:  stack = U4Stack_Unclassified ; break ;  // 14
+        case stag_hp_ph:      stack = U4Stack_Unclassified ; break ;  // 15
+        case stag_hp_ct:      stack = U4Stack_Unclassified ; break ;  // 16 
+        case stag_sc_u0:      stack = U4Stack_Unclassified ; break ;  // 17
+        case stag_sc_u1:      stack = U4Stack_Unclassified ; break ;  // 18
+        case stag_sc_u2:      stack = U4Stack_Unclassified ; break ;  // 19
+        case stag_sc_u3:      stack = U4Stack_Unclassified ; break ;  // 20
+        case stag_sc_u4:      stack = U4Stack_Unclassified ; break ;  // 21
+        case stag_br_align_0: stack = U4Stack_Unclassified ; break ;  // 22
+        case stag_br_align_1: stack = U4Stack_BoundaryDiscreteReset    ; break ;  // 23 -> 6
+        case stag_br_align_2: stack = U4Stack_RayleighDiscreteReset    ; break ;  // 24 -> 4 
+        case stag_br_align_3: stack = U4Stack_AbsorptionDiscreteReset  ; break ;  // 25 -> 3
+    }
     return stack ; 
 }
 

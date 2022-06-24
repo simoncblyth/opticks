@@ -127,7 +127,7 @@ class stag(object):
         self.path = path 
         self.lines = lines 
         self.items = []
-        self.d = self.parse()
+        self.parse()
 
     def find_item(self, name):
         for item in self.items:
@@ -136,7 +136,8 @@ class stag(object):
         return None 
 
     def parse(self):
-        d=odict()
+        self.code2item = odict()
+        self.name2item = odict()
         for line in self.lines:
             enum_match = self.enum_ptn.match(line)
             note_match = self.note_ptn.match(line)
@@ -148,7 +149,8 @@ class stag(object):
                 code = int(val)
                 item = stag_item(code, sname, "") 
                 self.items.append(item)
-                d[code] = item
+                self.code2item[code] = item
+                self.name2item[sname] = item
                 log.debug("%40s : name:%20s  sname:%10s val:%10s code:%d " % (line,name,sname,val, code) )
             elif note_match:
                 name, note = note_match.groups()
@@ -159,7 +161,6 @@ class stag(object):
             pass
             pass
         pass
-        return d
 
     def old_label(self, st):
         d = self.d
@@ -169,7 +170,7 @@ class stag(object):
 
 
     def __call__(self, code):
-        return self.d.get(code,stag_item.Placeholder())
+        return self.code2item.get(code,stag_item.Placeholder())
  
     def label(self, st):
         lines = [] 
@@ -183,9 +184,6 @@ class stag(object):
         pass
         return "\n".join(lines)
 
-
-
- 
     def __str__(self):
         return "\n".join(self.lines)
 

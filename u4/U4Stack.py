@@ -4,6 +4,8 @@ import numpy as np
 import os, re, logging
 log = logging.getLogger(__name__)
 from collections import OrderedDict as odict 
+from opticks.sysrap.stag import stag 
+tag = stag()
 
 class U4Stack_item(object):
     @classmethod
@@ -21,6 +23,7 @@ class U4Stack_item(object):
 class U4Stack(object):
     PATH = "$OPTICKS_PREFIX/include/u4/U4Stack.h" 
     enum_ptn = re.compile("^\s*(\w+)\s*=\s*(.*?),*\s*?$")
+    ttos_ptn = re.compile("^\s*case stag_(\w+):\s*stack = U4Stack_(\w+)\s*.*$")
 
     def __init__(self, path=PATH):
         path = os.path.expandvars(path)
@@ -28,12 +31,17 @@ class U4Stack(object):
         self.path = path
         self.lines = lines
         self.items = []
-        self.d = self.parse()
+        self.parse()
 
     def parse(self):
-        d=odict()
+        self.code2item = odict()
+        self.name2item = odict()
+        self.tag2stack = odict()
+        self.stack2tag = odict()
+ 
         for line in self.lines:
             enum_match = self.enum_ptn.match(line)
+            ttos_match = self.ttos_ptn.match(line)
             if enum_match:
                 name, val = enum_match.groups()
                 pfx = "U4Stack_"
@@ -43,14 +51,28 @@ class U4Stack(object):
 
                 item = U4Stack_item(code, sname, "")
                 self.items.append(item)
-                d[code] = item
+                self.code2item[code] = item
+                self.name2item[sname] = item
                 log.debug(" name %20s sname %10s val %5s code %2d " % (name, sname, val, code))     
+
+            elif ttos_match:
+                tag_name, stack_name = ttos_match.groups()
+
+                stack_item = self.name2item.get(stack_name, None)
+                tag_item = tag.name2item.get(tag_name, None)
+
+                stack_code = stack_item.code if not stack_item is None else -1
+                tag_code = tag_item.code if not tag_item is None else -1
+
+                self.tag2stack[tag_code] = stack_code
+                self.stack2tag[stack_code] = tag_code
+
+                log.info(" tag_name %15s stack_name %50s stack_item %r tag_item %r" % (tag_name, stack_name, stack_item, tag_item ))  
             else:
                 pass
                 log.debug(" skip :  %s " % line )
             pass 
         pass
-        return d
 
     def label(self, st):
         """
@@ -98,7 +120,7 @@ class U4Stack(object):
         return "\n".join(lines)
 
     def __call__(self, code):
-        return self.d.get(code,U4Stack_item.Placeholder())
+        return self.code2item.get(code,U4Stack_item.Placeholder())
  
     def __str__(self):
         return "\n".join(self.lines)

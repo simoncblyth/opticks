@@ -1,5 +1,5 @@
 #!/bin/bash -l 
 
-${IPYTHON:-ipython} --pdb U4Stack.py 
+${IPYTHON:-ipython} -i --pdb U4Stack.py 
 
 
