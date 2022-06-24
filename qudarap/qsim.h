@@ -508,12 +508,18 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
     const float& group_velocity = s.m1group2.x ; 
     const float& distance_to_boundary = prd->q0.f.w ; 
 
+#ifdef DEBUG_TAG
+    float u_to_sci = curand_uniform(&rng) ;  // purely for alignment with G4 
+    float u_to_bnd = curand_uniform(&rng) ;  // purely for alignment with G4 
+#endif
     float u_scattering = curand_uniform(&rng) ;
     float u_absorption = curand_uniform(&rng) ;
 
 #ifdef DEBUG_TAG
-    tagr.add( stag_to_sc, u_scattering); 
-    tagr.add( stag_to_ab, u_absorption); 
+    tagr.add( stag_to_sci, u_to_sci); 
+    tagr.add( stag_to_bnd, u_to_bnd); 
+    tagr.add( stag_to_sca, u_scattering); 
+    tagr.add( stag_to_abs, u_absorption); 
 #endif
 
 
@@ -546,7 +552,7 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
             float u_reemit = reemission_prob == 0.f ? 2.f : curand_uniform(&rng);  // avoid consumption at absorption when not scintillator
 
 #ifdef DEBUG_TAG
-            if( u_reemit != 2.f ) tagr.add( stag_to_re, u_reemit) ; 
+            if( u_reemit != 2.f ) tagr.add( stag_to_ree, u_reemit) ; 
 #endif
 
 
@@ -804,8 +810,8 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     const float u_reflect = curand_uniform(&rng) ;
 
 #ifdef DEBUG_TAG
-    tagr.add( stag_at_bo, u_boundary_burn); 
-    tagr.add( stag_at_rf, u_reflect); 
+    tagr.add( stag_at_burn, u_boundary_burn); 
+    tagr.add( stag_at_ref,  u_reflect); 
 #endif
 
     bool reflect = u_reflect > TransCoeff  ;
@@ -1085,7 +1091,7 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, co
 
 #ifdef DEBUG_TAG
     tagr.add( stag_sf_sd, u_surface); 
-    tagr.add( stag_sf_bu, u_surface_burn); 
+    tagr.add( stag_sf_burn, u_surface_burn); 
 #endif
 
 

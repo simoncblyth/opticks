@@ -46,6 +46,82 @@ TODO : scripted tabulation of the A:tags and B:stacks with U4RecorderTest_ab.py 
 -----------------------------------------------------------------------------------------------------------------------
 
 
+Try for alignment
+------------------
+
+::
+
+    In [8]: seqhis_(a.seq[0,0])
+    Out[8]: 'TO BT BT SA'
+
+    In [9]: seqhis_(b.seq[0,0])
+    Out[9]: 'TO BT BT SA'
+
+    In [11]: ats[0]
+    Out[11]: 
+    array([[ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+           [ 1,  2,  9, 10,  0,  0,  0,  0,  0,  0],
+           [ 1,  2, 11, 12,  0,  0,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+           [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0]], dtype=uint8)
+
+    In [12]: bts[0]
+    Out[12]: 
+    array([[2, 6, {4, 3, 8, 7}, 0, 0, 0, 0],
+           [2, 6, {4, 3, 8, 7}, 0, 0, 0, 0],
+           [2, 6, {4, 3, 8, 9}, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+    In [13]: print(tag.label(at[0,:14]))
+     0 :  1 :      to_sc : qsim::propagate_to_boundary u_scattering  
+     1 :  2 :      to_ab : qsim::propagate_to_boundary u_absorption  
+     2 :  9 :      at_bo : boundary burn  
+     3 : 10 :      at_rf : u_reflect > TransCoeff  
+
+     4 :  1 :      to_sc : qsim::propagate_to_boundary u_scattering  
+     5 :  2 :      to_ab : qsim::propagate_to_boundary u_absorption  
+     6 :  9 :      at_bo : boundary burn  
+     7 : 10 :      at_rf : u_reflect > TransCoeff  
+
+     8 :  1 :      to_sc : qsim::propagate_to_boundary u_scattering  
+     9 :  2 :      to_ab : qsim::propagate_to_boundary u_absorption  
+    10 : 11 :      sf_sd : qsim::propagate_at_surface ab/sd  
+    11 : 12 :      sf_bu : qsim::propagate_at_surface burn  
+    12 :  0 :      undef : undef  
+    13 :  0 :      undef : undef  
+
+    In [14]: print(stack.label(bt[0,:20]))
+     0 :  2 : ScintDiscreteReset :   
+     1 :  6 : BoundaryDiscreteReset :   
+     2 :  4 : RayleighDiscreteReset :                        ## stack:4 equiv tag:1 
+     3 :  3 : AbsorptionDiscreteReset :                      ## stack:3 equiv tag:2
+     4 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :    ## stack:8 here equiv to tag:9 (also maps to tag:11) 
+     5 :  7 : BoundaryDiDiTransCoeff :                       ## stack:7 equiv tag:10
+
+     6 :  2 : ScintDiscreteReset :   
+     7 :  6 : BoundaryDiscreteReset :   
+     8 :  4 : RayleighDiscreteReset :   
+     9 :  3 : AbsorptionDiscreteReset :   
+    10 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   
+    11 :  7 : BoundaryDiDiTransCoeff :   
+
+    12 :  2 : ScintDiscreteReset :   
+    13 :  6 : BoundaryDiscreteReset :   
+    14 :  4 : RayleighDiscreteReset :   
+    15 :  3 : AbsorptionDiscreteReset :   
+    16 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :   ## stack:8 here maps to tag:11  (it also maps to tag:9)
+    17 :  9 : AbsorptionEffDetect :                         ## stack:9 maps to tag:12  
+    18 :  0 : Unclassified :   
+    19 :  0 : Unclassified :   
+
+
+
+
+
 DONE : adjust how StepTooSmall is handled to avoid messing up the consumption regularity 
 ---------------------------------------------------------------------------------------------
 

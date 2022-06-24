@@ -103,4 +103,10 @@ if [ "${arg/ana}" != "${arg}" ]; then
     ${IPYTHON:-ipython} --pdb -i U4RecorderTest.py 
 fi 
 
+if [ "${arg/ab}" != "${arg}" ]; then 
+    cd $srcdir 
+    pwd
+    ./U4RecorderTest_ab.sh
+fi 
+
 

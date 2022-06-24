@@ -140,11 +140,30 @@ class stag(object):
         pass
         return d
 
-    def label(self, st):
+    def old_label(self, st):
         d = self.d
         label_ = lambda _:repr(d.get(_,stag_item.Placeholder()))
         ilabel_ = lambda _:"%2d : %s" % ( _, label_(st[_])) 
         return "\n".join(map(ilabel_, range(len(st))))
+
+
+    def __call__(self, code):
+        return self.d.get(code,stag_item.Placeholder())
+ 
+    def label(self, st):
+        lines = [] 
+        for i in range(len(st)):
+            item = self(st[i])
+            if item.code == st[0] and i > 0:
+                lines.append("")   
+            pass
+            label = "%2d : %s " % (i, repr(item)) 
+            lines.append(label)
+        pass
+        return "\n".join(lines)
+
+
+
  
     def __str__(self):
         return "\n".join(self.lines)
