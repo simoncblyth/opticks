@@ -27,7 +27,7 @@ enum
     U4Stack_DiscreteReset           = 5, 
     U4Stack_BoundaryDiscreteReset   = 6,
     U4Stack_BoundaryDiDiTransCoeff  = 7,
-    U4Stack_BoundaryReflectTransmitAbsorb = 8,
+    U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb = 8,
     U4Stack_AbsorptionEffDetect     = 9
 };
 
@@ -114,14 +114,28 @@ G4SteppingManager::InvokePostStepDoItProcs
 G4SteppingManager::Stepping
 )" ; 
 
-    static constexpr const char* BoundaryReflectTransmitAbsorb_ = "BoundaryReflectTransmitAbsorb" ; 
-    static constexpr const char* BoundaryReflectTransmitAbsorb = R"(
+    static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb_ = "BoundaryBurn_SurfaceReflectTransmitAbsorb" ; 
+    static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb = R"(
 U4Random::flat
 InstrumentedG4OpBoundaryProcess::PostStepDoIt
 G4SteppingManager::InvokePSDIP
 G4SteppingManager::InvokePostStepDoItProcs
 G4SteppingManager::Stepping
 )" ; 
+
+    static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb_note = R"(
+BoundaryBurn_SurfaceReflectTransmitAbsorb : Chameleon Rand 
+------------------------------------------------------------
+
+BoundaryBurn
+    when no surface is associated to a boundary this random does nothing : always a burn 
+
+SurfaceReflectTransmitAbsorb
+    when a surface with reflectivity less than 1. is associated this rand comes alive 
+    and determines the reflect/absorb/transmit decision  
+
+)" ; 
+
 
     static constexpr const char* AbsorptionEffDetect_ = "AbsorptionEffDetect" ; 
     static constexpr const char* AbsorptionEffDetect = R"(
@@ -146,7 +160,7 @@ inline unsigned U4Stack::Classify(const char* summary)
     if(strstr(summary, DiscreteReset))                 stack = U4Stack_DiscreteReset ; 
     if(strstr(summary, BoundaryDiscreteReset))         stack = U4Stack_BoundaryDiscreteReset ; 
     if(strstr(summary, BoundaryDiDiTransCoeff))        stack = U4Stack_BoundaryDiDiTransCoeff ; 
-    if(strstr(summary, BoundaryReflectTransmitAbsorb)) stack = U4Stack_BoundaryReflectTransmitAbsorb ; 
+    if(strstr(summary, BoundaryBurn_SurfaceReflectTransmitAbsorb)) stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; 
     if(strstr(summary, AbsorptionEffDetect))           stack = U4Stack_AbsorptionEffDetect ; 
     return stack ; 
 }
@@ -168,7 +182,7 @@ inline const char* U4Stack::Name(unsigned stack)
         case U4Stack_DiscreteReset:                 s = DiscreteReset_           ; break ; 
         case U4Stack_BoundaryDiscreteReset:         s = BoundaryDiscreteReset_   ; break ; 
         case U4Stack_BoundaryDiDiTransCoeff:        s = BoundaryDiDiTransCoeff_  ; break ; 
-        case U4Stack_BoundaryReflectTransmitAbsorb: s = BoundaryReflectTransmitAbsorb_  ; break ; 
+        case U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb: s = BoundaryBurn_SurfaceReflectTransmitAbsorb_  ; break ; 
         case U4Stack_AbsorptionEffDetect:           s = AbsorptionEffDetect_            ; break ; 
     }
     if(s) assert( Code(s) == stack ) ; 
@@ -186,7 +200,7 @@ inline unsigned U4Stack::Code(const char* name)
     if(strcmp(name, DiscreteReset_) == 0)                  stack = U4Stack_DiscreteReset ; 
     if(strcmp(name, BoundaryDiscreteReset_) == 0)          stack = U4Stack_BoundaryDiscreteReset ; 
     if(strcmp(name, BoundaryDiDiTransCoeff_) == 0)         stack = U4Stack_BoundaryDiDiTransCoeff ; 
-    if(strcmp(name, BoundaryReflectTransmitAbsorb_) == 0)  stack = U4Stack_BoundaryReflectTransmitAbsorb ; 
+    if(strcmp(name, BoundaryBurn_SurfaceReflectTransmitAbsorb_) == 0)  stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; 
     if(strcmp(name, AbsorptionEffDetect_) == 0)            stack = U4Stack_AbsorptionEffDetect ; 
     return stack ; 
 }

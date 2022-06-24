@@ -169,6 +169,21 @@ Unaligned initial small geometry
 
 
 
+TODO : investigate impact of U4Process::ClearNumberOfInteractionLengthLeft 
+-----------------------------------------------------------------------------
+
+Q: U4Process::ClearNumberOfInteractionLengthLeft will inevitably change the simulation because are using 
+   different randoms, but does it change the correctness of the simulation ?
+
+A: Assuming just technical change, because the chances of SC/AB etc..
+   are surely independent of what happened before ? 
+
+To verify the assumption need high stats statistical comparison of history frequencies 
+with and without this trick being applied. 
+This will require getting the statistical comparison python machinery into new workflow
+using the new SEvt arrays.  
+
+
 DONE : observe how consumption changes when use U4Process::ClearNumberOfInteractionLengthLeft 
 --------------------------------------------------------------------------------------------------
 
@@ -186,17 +201,10 @@ DONE : observe how consumption changes when use U4Process::ClearNumberOfInteract
     262 
 
 
-Q: This will inevitably change the simulation because are using 
-   different randoms, but does it change the correctness of the simulation ?
-
-A: Assuming just technical change, because the chances of SC/AB etc..
-   are surely independent of what happened before ? 
-
-
 * with this the step point preamble now 2,6,4,3 with all 4 process reset for every step point
 * the advantage of this is its simplicity and similarity of each step point 
 
-* the preamble consumption can be regarded as the arrows between flag points, 
+* the preamble consumption can loosely be regarded as the arrows between flag points, 
   that act to decide what the next history flag will be::
 
   TO->BT->BT->SA 
@@ -204,7 +212,8 @@ A: Assuming just technical change, because the chances of SC/AB etc..
 * where does SA fit into this ? B:G4 is getting NoRINDEX truncated ?
   but A actually finds perfectAbsorbSurface boundary
 
-* TODO:Geant4 surface equivalent on the Rock///Air boundary  
+* DONE: added Geant4 surface equivalent on the Rock///Air boundary  
+  which succeeds to avoid the dirty NoRINDEX truncation 
 
 
 ::
@@ -243,9 +252,6 @@ A: Assuming just technical change, because the chances of SC/AB etc..
     19 :  0 : Unclassified :  
 
 
-
-
-
     ## After remove the NoRINDEX kludge and add the G4OpticalSurface
     ## get additional tail of 8,9 
 
@@ -257,32 +263,31 @@ A: Assuming just technical change, because the chances of SC/AB etc..
            [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 2, 6, 8, 9, 0, 0, 0, 0, 0, 0],
            [2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 7, 2, 6, 4, 3, 8, 9, 0, 0]], dtype=uint8)
 
-    In [3]: print(stack.label(bt[0,:20]))
+
+    In [1]: print(stack.label(bt[0,:20]))
      0 :  2 : ScintDiscreteReset :  
      1 :  6 : BoundaryDiscreteReset :  
      2 :  4 : RayleighDiscreteReset :  
      3 :  3 : AbsorptionDiscreteReset :  
-     4 :  8 : BoundaryBurn :  
-     5 :  7 : BoundaryDiDi :  
+     4 :  8 : BoundaryReflectTransmitAbsorb :  
+     5 :  7 : BoundaryDiDiTransCoeff : 
 
      6 :  2 : ScintDiscreteReset :  
      7 :  6 : BoundaryDiscreteReset :  
      8 :  4 : RayleighDiscreteReset :  
      9 :  3 : AbsorptionDiscreteReset :  
-    10 :  8 : BoundaryBurn :  
-    11 :  7 : BoundaryDiDi :  
+    10 :  8 : BoundaryReflectTransmitAbsorb :  
+    11 :  7 : BoundaryDiDiTransCoeff :  
 
     12 :  2 : ScintDiscreteReset :  
     13 :  6 : BoundaryDiscreteReset :  
     14 :  4 : RayleighDiscreteReset :  
     15 :  3 : AbsorptionDiscreteReset :  
-    16 :  8 : BoundaryBurn :  
+    16 :  8 : BoundaryReflectTransmitAbsorb :  
     17 :  9 : AbsorptionEffDetect :  
 
     18 :  0 : Unclassified :  
     19 :  0 : Unclassified :  
-
-
 
 
     In [4]: at[:5,:20]

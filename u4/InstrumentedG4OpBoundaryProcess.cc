@@ -550,6 +550,11 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
              G4double rand = G4UniformRand();
 
 #ifdef DEBUG_PIDX
+             // SCB theReflectivity default is 1. so  "rand > theReflectivity" always false
+             //     meaning that "rand" is always a burn doing nothing.  
+             //     Unless a surface is associated which changes theReflectivity to be less than 1. 
+             //     which can make the "rand" actually control the Reflect-OR-Absorb-OR-Transmit decision.  
+             //
              if(pidx_dump)
              {
                   std::cout 
@@ -561,14 +566,7 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
                       << std::endl 
                       ;
              }
-
 #endif
-
-             // SCB default theReflectivity is 1., default theReflectivity + theTransmittance is 1.  
-             //     so at defaults always go to the else. 
-             //     Unless a surface is associated which can make Absorption or Transmission  happen   
-             //
-
              if ( rand > theReflectivity ) {   
                 if (rand > theReflectivity + theTransmittance) { 
                    DoAbsorption();
