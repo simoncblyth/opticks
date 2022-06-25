@@ -899,10 +899,11 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
         const float u_br_align_2 = curand_uniform(&rng) ;
         const float u_br_align_3 = curand_uniform(&rng) ;
 
-        tagr.add( stag_to_sci    , u_br_align_0 );  // switch to stag_to_sci so stag.StepSplit will split it 
-        tagr.add( stag_br_align_1, u_br_align_1 ); 
-        tagr.add( stag_br_align_2, u_br_align_2 ); 
-        tagr.add( stag_br_align_3, u_br_align_3 ); 
+        // switched below standard tags from stag_br_align_0/1/2/3 to simplify A:tag to B:stack mapping 
+        tagr.add( stag_to_sci, u_br_align_0 );
+        tagr.add( stag_to_bnd, u_br_align_1 ); 
+        tagr.add( stag_to_sca, u_br_align_2 ); 
+        tagr.add( stag_to_abs, u_br_align_3 ); 
     }
 #endif
 

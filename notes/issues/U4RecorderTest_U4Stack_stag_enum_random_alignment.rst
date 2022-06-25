@@ -357,6 +357,36 @@ See U4Stack.py::
 * HMM: the above looks like argument to get rid of the 22,23,24,25 for the post-BR/StepTooSmall burns
   as they introduce complication of breaking 1-to-1
 
+::
+
+
+    210 /**
+    211 U4Stack::TagToStack
+    212 --------------------
+    213 
+    214 Attempt at mapping from A:tag to B:stack 
+    215 
+    216 * where to use this mapping anyhow ? unkeen to do this at C++ level as it feels like a complication 
+    217   and potential info loss that is only not-info loss when are in an aligned state 
+    218 
+    219 * but inevitably when generalize will get out of alignment and will need to use the A:tag  
+    220   and B:stack to regain alignment 
+    221 
+    222 * hence the right place to use the mapping is in python 
+    223 
+    224 **/
+    225 
+    226 inline unsigned U4Stack::TagToStack(unsigned tag)
+    227 {
+    228     unsigned stack = U4Stack_Unclassified ;
+    229     switch(tag)
+    230     {
+    231         case stag_undef:      stack = U4Stack_Unclassified                              ; break ;  // 0 -> 0
+    232         case stag_to_sci:     stack = U4Stack_ScintDiscreteReset                        ; break ;  // 1 -> 2
+    233         case stag_to_bnd:     stack = U4Stack_BoundaryDiscreteReset                     ; break ;  // 2 -> 6 
+    234         case stag_to_sca:     stack = U4Stack_RayleighDiscreteReset                     ; break ;  // 3 -> 4 
+
+
 
 
 DONE : try artificially consuming 4 in A after every BR to see if it can kick back into line 

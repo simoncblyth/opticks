@@ -213,6 +213,14 @@ U4Stack::TagToStack
 
 Attempt at mapping from A:tag to B:stack 
 
+* where to use this mapping anyhow ? unkeen to do this at C++ level as it feels like a complication 
+  and potential info loss that is only not-info loss when are in an aligned state 
+
+* but inevitably when generalize will get out of alignment and will need to use the A:tag  
+  and B:stack to regain alignment 
+
+* hence the right place to use the mapping is in python 
+
 **/
 
 inline unsigned U4Stack::TagToStack(unsigned tag)
@@ -242,10 +250,6 @@ inline unsigned U4Stack::TagToStack(unsigned tag)
         case stag_sc_u2:      stack = U4Stack_Unclassified ; break ;  // 19
         case stag_sc_u3:      stack = U4Stack_Unclassified ; break ;  // 20
         case stag_sc_u4:      stack = U4Stack_Unclassified ; break ;  // 21
-        case stag_br_align_0: stack = U4Stack_Unclassified ; break ;  // 22
-        case stag_br_align_1: stack = U4Stack_BoundaryDiscreteReset    ; break ;  // 23 -> 6
-        case stag_br_align_2: stack = U4Stack_RayleighDiscreteReset    ; break ;  // 24 -> 4 
-        case stag_br_align_3: stack = U4Stack_AbsorptionDiscreteReset  ; break ;  // 25 -> 3
     }
     return stack ; 
 }
