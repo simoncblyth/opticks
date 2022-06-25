@@ -13,6 +13,8 @@ import numpy as np
 
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
+
+from opticks.sysrap.xfold import XFold
 from opticks.sysrap.stag import stag  
 from opticks.u4.U4Stack import U4Stack
 
@@ -28,18 +30,20 @@ if __name__ == '__main__':
 
     if "A_FOLD" in os.environ:
         a = Fold.Load("$A_FOLD", symbol="a")
-        at = stag.Unpack(a.tag) if hasattr(a,"tag") else None
-        an = stag.NumStarts(at) if not at is None else None
-        ats,afs = stag.StepSplit(at,a.flat) if not at is None else None
+        A = XFold(a, symbol="A")
+        at = A.t
+        an = A.n
+        ats,afs = A.ts, A.fs
     else:
         a = None 
     pass
 
     if "B_FOLD" in os.environ:
         b = Fold.Load("$B_FOLD", symbol="b")
-        bt = stag.Unpack(b.tag) if hasattr(b,"tag") else None  # apply stag.Unpack to both as same stag.h bitpacking is used
-        bn = stag.NumStarts(bt) if not bt is None else None
-        bts,bfs = stag.StepSplit(bt,b.flat) if not bt is None else None
+        B = XFold(b, symbol="B")
+        bt = B.t
+        bn = B.n
+        bts,bfs = B.ts, B.fs
     else:
         b = None
     pass

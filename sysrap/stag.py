@@ -6,10 +6,6 @@ log = logging.getLogger(__name__)
 from collections import OrderedDict as odict 
 
 
-
-
-
-
 class stag_item(object):
     @classmethod
     def Placeholder(cls):
@@ -98,6 +94,7 @@ class stag(object):
         return tgs if fls is None else tgs,fls         
 
 
+
     @classmethod
     def Unpack(cls, tag):
         """
@@ -172,15 +169,33 @@ class stag(object):
     def __call__(self, code):
         return self.code2item.get(code,stag_item.Placeholder())
  
-    def label(self, st):
+    def label(self, st, fl=None):
+        """
+        :param st: array of stag enumeration codes
+        :param fl: None or array of flat uniform rands of shape shape as st 
+        """
+        if not fl is None:
+            assert st.shape == fl.shape
+        pass
+
         lines = [] 
+        num_zero = 0 
+
         for i in range(len(st)):
-            item = self(st[i])
-            if item.code == st[0] and i > 0:
+            code = st[i]
+            flat = fl[i] if not fl is None else None
+            item = self(code)
+            it = repr(item)
+            assert item.code == code
+            if code == st[0] and i > 0:
                 lines.append("")   
             pass
-            label = "%2d : %s " % (i, repr(item)) 
+            label = "%2d : %s " % (i, it) if fl is None else "%2d : %10.4f : %s" % (i, flat, it)
             lines.append(label)
+            if code == 0:
+                num_zero += 1 
+                if num_zero == 2: break 
+            pass 
         pass
         return "\n".join(lines)
 
@@ -234,18 +249,15 @@ def test_StepSplit():
 
 
 
+
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
   
     #test_label()
-    test_StepSplit()
+    #test_StepSplit()
 
-    #at = np.array([[ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0],
-    #               [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0],
-    #               [ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0]], dtype=np.uint8)
-    #
-    #ats = stag.StepSplit(at)
-
-
+    #test_PFold()
 
          

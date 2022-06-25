@@ -64,9 +64,189 @@ This will require getting the statistical comparison python machinery into new w
 using the new SEvt arrays.  
 
 
+DONE : direct photon + record step point comparison  
+------------------------------------------------------
 
-TODO : scripted tabulation of the A:tags and B:stacks with U4RecorderTest_ab.py to use while effecting the alignment
------------------------------------------------------------------------------------------------------------------------
+::
+
+    In [7]: ab_photon = np.abs(a.photon - b.photon)
+
+    In [10]: ab_photon.max()
+    Out[10]: 0.0018196106
+
+    In [16]: ab_record = np.abs(a.record - b.record)
+    In [17]: ab_record.max()
+    Out[17]: 0.0018196106
+
+    In [8]: np.where(ab_photon > 1e-5)
+    Out[8]: 
+    (array([ 3,  3, 15, 18, 18, 20, 25, 26, 33, 36, 38, 42, 49, 51, 54, 54, 55, 63, 66, 69, 69, 72, 72, 75, 75, 75, 78, 87, 94, 98]),
+     array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+     array([0, 1, 2, 0, 1, 1, 2, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 2, 0, 0, 0, 0]))
+
+    In [18]: np.where(ab_record > 1e-5)
+    Out[18]: 
+    (array([ 0,  3,  3, 12, 13, 15, 18, 18, 20, 25, 26, 30, 33, 36, 36, 38, 42, 44, 49, 51, 53, 54, 54, 54, 54, 55, 57, 63, 66, 69, 69, 70, 72, 72, 75, 75, 75, 78, 84, 87, 90, 94, 95, 98]),
+     array([2, 2, 2, 2, 2, 2, 3, 3, 3, 2, 3, 2, 3, 3, 4, 3, 3, 2, 3, 3, 3, 3, 4, 5, 5, 3, 2, 3, 3, 3, 3, 2, 3, 3, 2, 2, 2, 3, 2, 3, 2, 3, 2, 3]),
+     array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+     array([2, 0, 1, 2, 2, 2, 0, 1, 1, 2, 1, 2, 0, 2, 0, 0, 0, 2, 1, 0, 2, 0, 2, 0, 1, 1, 2, 0, 1, 0, 1, 2, 0, 1, 0, 1, 2, 0, 2, 0, 2, 0, 2, 0]))
+
+    ## the biggest differences are in the positions of step points 2 or 3 : thats probably the endpoint 
+
+
+    In [13]: ab_photon[ab_photon > 1e-5]*1000.
+    Out[13]: 
+    array([0.053, 0.023, 0.045, 0.021, 0.023, 0.011, 0.023, 0.01 , 0.015, 0.031, 0.012, 0.01 , 0.017, 0.017, 0.046, 0.027, 0.01 , 0.011, 0.012, 0.015, 0.015, 0.021, 0.034, 0.233, 0.259, 1.82 , 0.013,
+           0.01 , 0.013, 0.01 ], dtype=float32)
+
+    In [21]:  ab_photon[ab_photon > 1e-4]*1000.
+    Out[21]: array([0.233, 0.259, 1.82 ], dtype=float32)
+
+    In [22]: np.where(ab_photon > 1e-4)
+    Out[22]: (array([75, 75, 75]), array([0, 0, 0]), array([0, 1, 2]))
+
+    In [23]: np.where(ab_record > 1e-4)
+    Out[23]: (array([75, 75, 75]), array([2, 2, 2]), array([0, 0, 0]), array([0, 1, 2]))
+
+
+    In [26]: a.record[75,:4]
+    Out[26]: 
+    array([[[-20.457,  22.904, -90.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.746,   0.666,   0.   , 501.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[-20.457,  22.904, -39.458,   0.169],
+            [  0.125,  -0.14 ,   0.982,   0.   ],
+            [  0.746,   0.666,  -0.   , 501.   ],
+            [  0.   ,   0.   ,  -0.   ,   0.   ]],
+
+           [[-16.643,  18.634,  -9.458,   0.31 ],
+            [  0.125,  -0.14 ,   0.982,   0.   ],
+            [  0.746,   0.666,  -0.   , 501.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]]], dtype=float32)
+
+    In [27]: b.record[75,:4]
+    Out[27]: 
+    array([[[-20.457,  22.904, -90.   ,   0.   ],
+            [  0.   ,   0.   ,   1.   ,   0.   ],
+            [  0.746,   0.666,   0.   , 501.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[-20.457,  22.904, -39.458,   0.169],
+            [  0.125,  -0.14 ,   0.982,   0.   ],
+            [  0.746,   0.666,  -0.   , 501.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[-16.643,  18.634,  -9.456,   0.31 ],
+            [  0.125,  -0.14 ,   0.982,   0.   ],
+            [  0.746,   0.666,  -0.   , 501.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]],
+
+           [[  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ],
+            [  0.   ,   0.   ,   0.   ,   0.   ]]], dtype=float32)
+
+    In [28]: seqhis_(a.seq[75,0])
+    Out[28]: 'TO BT AB'
+
+    In [29]: seqhis_(b.seq[75,0])
+    Out[29]: 'TO BT AB'
+
+    In [31]: np.where(a.seq[:,0] == 1229)
+    Out[31]: (array([75]),)
+
+    In [32]: np.where(b.seq[:,0] == 1229)
+    Out[32]: (array([75]),)
+
+
+* largest difference from the position of the only AB:BULK_ABSORB photon in the 100
+
+::
+
+    In [33]: ats[75]
+    Out[33]: 
+    array([[1, 2, 3, 4, 5, 6, 0, 0, 0, 0],
+           [1, 2, 3, 4, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+    In [34]: bts[75]
+    Out[34]: 
+    array([[2, 6, 4, 3, 8, 7, 0, 0, 0, 0],
+           [2, 6, 4, 3, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
+
+    In [35]: afs[75]
+    Out[35]: 
+    array([[0.373, 0.854, 0.038, 0.268, 0.974, 0.59 , 0.   , 0.   , 0.   , 0.   ],
+           [0.297, 0.226, 0.922, 0.999, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+    In [36]: bfs[75]
+    Out[36]: 
+    array([[0.373, 0.854, 0.038, 0.268, 0.974, 0.59 , 0.   , 0.   , 0.   , 0.   ],
+           [0.297, 0.226, 0.922, 0.999, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ],
+           [0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   ]], dtype=float32)
+
+
+sysrap/xfold.sh simplify enum label dumping using opticks.sysrap.xfold::
+
+    In [2]: B(75)
+    Out[2]: 
+    B(75) : TO BT AB
+     0 :     0.3727 :  2 : ScintDiscreteReset :  
+     1 :     0.8539 :  6 : BoundaryDiscreteReset :  
+     2 :     0.0380 :  4 : RayleighDiscreteReset :  
+     3 :     0.2685 :  3 : AbsorptionDiscreteReset :  
+     4 :     0.9740 :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :  
+     5 :     0.5896 :  7 : BoundaryDiDiTransCoeff :  
+
+     6 :     0.2975 :  2 : ScintDiscreteReset :  
+     7 :     0.2261 :  6 : BoundaryDiscreteReset :  
+     8 :     0.9222 :  4 : RayleighDiscreteReset :  
+     9 :     0.9992 :  3 : AbsorptionDiscreteReset :  
+    10 :     0.0000 :  0 : Unclassified :  
+    11 :     0.0000 :  0 : Unclassified :  
+
+    In [3]: A(75)
+    Out[3]: 
+    A(75) : TO BT AB
+     0 :     0.3727 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+     1 :     0.8539 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+     2 :     0.0380 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+     3 :     0.2685 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+     4 :     0.9740 :  5 :    at_burn : boundary burn 
+     5 :     0.5896 :  6 :     at_ref : u_reflect > TransCoeff 
+
+     6 :     0.2975 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+     7 :     0.2261 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+     8 :     0.9222 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+     9 :     0.9992 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+    10 :     0.0000 :  0 :      undef : undef 
+    11 :     0.0000 :  0 :      undef : undef 
+
 
 
 
@@ -80,7 +260,7 @@ A:tag
 B:stack
     correspond to backtraces 
 
-Going from more specific to less A:tag->B:stack is the only possible mapping direction.
+Going from more specific to less A:tag->B:stack is the easier mapping direction.
 
 Is is possible to find a 1-to-1 mapping between the A:tag and B:stack::
 
@@ -117,7 +297,7 @@ Where mapping values::
            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
 
-    In [24]: np.where( ats0 == 1 )                                                                                                                                    
+    In [24]: np.where( ats0 == 1 )
     Out[24]: (array([0, 1, 2]), array([0, 0, 0]))
 
     In [26]: ats0[np.where( ats0 == 1 )] = 10 ; ats0

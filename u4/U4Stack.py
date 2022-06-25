@@ -74,7 +74,7 @@ class U4Stack(object):
             pass 
         pass
 
-    def label(self, st):
+    def label(self, st, fl=None):
         """
         In [8]: print(stack.label(bt[53])) 
          0 :  2 : ScintDiscreteReset :  
@@ -108,14 +108,26 @@ class U4Stack(object):
         22 :  4 : RayleighDiscreteReset :  
         23 :  3 : AbsorptionDiscreteReset :  
         """
+        if not fl is None:
+            assert st.shape == fl.shape
+        pass
         lines = [] 
+        num_zero = 0 
         for i in range(len(st)):
-            item = self(st[i])
-            if item.code == st[0] and i > 0:
+            code = st[i]
+            flat = fl[i] if not fl is None else None
+            item = self(code)
+            it = repr(item)
+            assert code == item.code
+            if code == st[0] and i > 0:
                 lines.append("")   
             pass
-            label = "%2d : %s " % (i, repr(item)) 
+            label = "%2d : %s " % (i, it) if fl is None else "%2d : %10.4f : %s" % (i, flat, it) 
             lines.append(label)
+            if item.code == 0:
+                num_zero += 1 
+            pass
+            if num_zero == 2: break  
         pass
         return "\n".join(lines)
 
