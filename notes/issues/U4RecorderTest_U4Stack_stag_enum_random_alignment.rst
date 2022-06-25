@@ -357,6 +357,67 @@ See U4Stack.py::
 * HMM: the above looks like argument to get rid of the 22,23,24,25 for the post-BR/StepTooSmall burns
   as they introduce complication of breaking 1-to-1
 
+* done this, but still not 1-to-1 because of BoundaryBurn_SurfaceReflectTransmitAbsorb
+
+::
+
+    U4Stack.py:dump_tag2stack
+     1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn                      :  2 : ScintDiscreteReset :                                                        
+     2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn                      :  6 : BoundaryDiscreteReset :                                                     
+     3 :     to_sca : qsim::propagate_to_boundary u_scattering                       :  4 : RayleighDiscreteReset :                                                     
+     4 :     to_abs : qsim::propagate_to_boundary u_absorption                       :  3 : AbsorptionDiscreteReset :                                                   
+
+     5 :    at_burn : boundary burn                                                  :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :                                 
+     6 :     at_ref : u_reflect > TransCoeff                                         :  7 : BoundaryDiDiTransCoeff :                                                    
+     7 :      sf_sd : qsim::propagate_at_surface ab/sd                               :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :                                 
+     8 :    sf_burn : qsim::propagate_at_surface burn                                :  9 : AbsorptionEffDetect :                                                       
+
+    U4Stack.py:dump_stack2tag
+     2 : ScintDiscreteReset :                                                        :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn                      
+     6 : BoundaryDiscreteReset :                                                     :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn                      
+     4 : RayleighDiscreteReset :                                                     :  3 :     to_sca : qsim::propagate_to_boundary u_scattering                       
+     3 : AbsorptionDiscreteReset :                                                   :  4 :     to_abs : qsim::propagate_to_boundary u_absorption                       
+
+     8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :                                 :  7 :      sf_sd : qsim::propagate_at_surface ab/sd                               
+     7 : BoundaryDiDiTransCoeff :                                                    :  6 :     at_ref : u_reflect > TransCoeff                                         
+     9 : AbsorptionEffDetect :                                                       :  8 :    sf_burn : qsim::propagate_at_surface burn                                
+
+
+Still not 1-to-1 as both stag_at_burn+stag_sf_sd map to BoundaryBurn_SurfaceReflectTransmitAbsorb
+
+* this reflects that separate methods handle surface and boundary in Opticks but one method does that in Geant4 
+* TODO: use a common stag for these 
+
+* DONE: reorder U4Stack to make the mapping simpler BUT offset to make it clear they are different enum 
+ 
+
+U4Stack.py:dump_tag2stack::
+
+    00 :      undef : undef                                                          :  0 : Unclassified :                                                              
+     1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn                      :  2 : ScintDiscreteReset :                                                        
+     2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn                      :  6 : BoundaryDiscreteReset :                                                     
+     3 :     to_sca : qsim::propagate_to_boundary u_scattering                       :  4 : RayleighDiscreteReset :                                                     
+     4 :     to_abs : qsim::propagate_to_boundary u_absorption                       :  3 : AbsorptionDiscreteReset :                                                   
+     5 :    at_burn : boundary burn                                                  :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :                                 
+     6 :     at_ref : u_reflect > TransCoeff                                         :  7 : BoundaryDiDiTransCoeff :                                                    
+     7 :      sf_sd : qsim::propagate_at_surface ab/sd                               :  8 : BoundaryBurn_SurfaceReflectTransmitAbsorb :                                 
+     8 :    sf_burn : qsim::propagate_at_surface burn                                :  9 : AbsorptionEffDetect :                                                       
+     9 :     to_ree : qsim::propagate_to_boundary u_reemit                           :  0 : Unclassified :                                                              
+    10 :      re_wl : qsim::propagate_to_boundary u_wavelength                       :  0 : Unclassified :                                                              
+    11 :  re_mom_ph : qsim::propagate_to_boundary re mom uniform_sphere ph           :  0 : Unclassified :                                                              
+    12 :  re_mom_ct : qsim::propagate_to_boundary re mom uniform_sphere ct           :  0 : Unclassified :                                                              
+    13 :  re_pol_ph : qsim::propagate_to_boundary re pol uniform_sphere ph           :  0 : Unclassified :                                                              
+    14 :  re_pol_ct : qsim::propagate_to_boundary re pol uniform_sphere ct           :  0 : Unclassified :                                                              
+    15 :      hp_ph : qsim::hemisphere_polarized u_hemipol_phi                       :  0 : Unclassified :                                                              
+    16 :      hp_ct : qsim::hemisphere_polarized cosTheta                            :  0 : Unclassified :                                                              
+    17 :      sc_u0 : qsim::rayleigh_scatter u0                                      :  0 : Unclassified :                                                              
+    18 :      sc_u1 : qsim::rayleigh_scatter u1                                      :  0 : Unclassified :                                                              
+    19 :      sc_u2 : qsim::rayleigh_scatter u2                                      :  0 : Unclassified :                                                              
+    20 :      sc_u3 : qsim::rayleigh_scatter u3                                      :  0 : Unclassified :                                                              
+    21 :      sc_u4 : qsim::rayleigh_scatter u4                                      :  0 : Unclassified :                                   
+
+
+
 ::
 
 

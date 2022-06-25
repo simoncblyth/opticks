@@ -64,9 +64,10 @@ class U4Stack(object):
                 stack_code = stack_item.code if not stack_item is None else -1
                 tag_code = tag_item.code if not tag_item is None else -1
 
-                self.tag2stack[tag_code] = stack_code
-                self.stack2tag[stack_code] = tag_code
-
+                if stack_code > 0 and tag_code > 0:
+                    self.tag2stack[tag_code] = stack_code
+                    self.stack2tag[stack_code] = tag_code
+                pass
                 log.info(" tag_name %15s stack_name %50s stack_item %r tag_item %r" % (tag_name, stack_name, stack_item, tag_item ))  
             else:
                 pass
@@ -140,6 +141,25 @@ class U4Stack(object):
     def __repr__(self):
         return "\n".join(list(map(repr,self.items)))
 
+    def dump_tag2stack(self):
+        lines = [] 
+        lines.append("U4Stack.py:dump_tag2stack")
+        for t,s in self.tag2stack.items():
+            line = "%-80r : %-80r " % (tag(t), self(s)) 
+            lines.append(line)
+        pass   
+        return "\n".join(lines)
+
+    def dump_stack2tag(self):
+        lines = [] 
+        lines.append("U4Stack.py:dump_stack2tag")
+        for s,t in self.stack2tag.items():
+            line = "%-80r : %-80r " % (self(s), tag(t)) 
+            lines.append(line)
+        pass   
+        return "\n".join(lines)
+
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -152,6 +172,12 @@ if __name__ == '__main__':
                    [2, 6, 4, 3, 8, 7, 2, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]], dtype=np.uint8)
 
     print(stack.label(st[0,:10]))
+
+    print(stack.dump_tag2stack())
+    print(stack.dump_stack2tag())
+
+
+
     
 
 

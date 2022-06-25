@@ -21,23 +21,22 @@ enum {
    stag_to_bnd     =   2, 
    stag_to_sca     =   3, 
    stag_to_abs     =   4,
-   stag_at_burn    =   5,
+   stag_at_burn_sf_sd = 5,
    stag_at_ref     =   6,
-   stag_sf_sd      =   7,
-   stag_sf_burn    =   8,
-   stag_to_ree     =   9,
-   stag_re_wl      =  10,
-   stag_re_mom_ph  =  11,
-   stag_re_mom_ct  =  12,
-   stag_re_pol_ph  =  13,
-   stag_re_pol_ct  =  14,
-   stag_hp_ph      =  15,
-   stag_hp_ct      =  16,
-   stag_sc_u0      =  17,
-   stag_sc_u1      =  18,
-   stag_sc_u2      =  19,
-   stag_sc_u3      =  20,
-   stag_sc_u4      =  21
+   stag_sf_burn    =   7,
+   stag_to_ree     =   8,
+   stag_re_wl      =   9,
+   stag_re_mom_ph  =  10,
+   stag_re_mom_ct  =  11,
+   stag_re_pol_ph  =  12,
+   stag_re_pol_ct  =  13,
+   stag_hp_ph      =  14,
+   stag_hp_ct      =  15,
+   stag_sc_u0      =  16,
+   stag_sc_u1      =  17,
+   stag_sc_u2      =  18,
+   stag_sc_u3      =  19,
+   stag_sc_u4      =  20
 }; 
 
 
@@ -70,55 +69,52 @@ struct stagc
     static constexpr const char* to_abs_ = "to_abs" ;   // 4 
     static constexpr const char* to_abs_note = "qsim::propagate_to_boundary u_absorption" ; 
 
-    static constexpr const char* at_burn_ = "at_burn" ;  // 5
-    static constexpr const char* at_burn_note = "boundary burn" ; 
+    static constexpr const char* at_burn_sf_sd_ = "at_burn_sf_sd" ;  // 5
+    static constexpr const char* at_burn_sf_sd_note = "at_boundary_burn at_surface ab/sd " ; 
 
     static constexpr const char* at_ref_ = "at_ref" ;    // 6 
     static constexpr const char* at_ref_note = "u_reflect > TransCoeff" ; 
 
-    static constexpr const char* sf_sd_ = "sf_sd" ;      // 7
-    static constexpr const char* sf_sd_note = "qsim::propagate_at_surface ab/sd" ; 
-
-    static constexpr const char* sf_burn_ = "sf_burn" ;  // 8 
+    static constexpr const char* sf_burn_ = "sf_burn" ;  // 7 
     static constexpr const char* sf_burn_note = "qsim::propagate_at_surface burn" ; 
 
-    static constexpr const char* to_ree_ = "to_ree" ;   // 9 
+    static constexpr const char* to_ree_ = "to_ree" ;   // 8 
     static constexpr const char* to_ree_note = "qsim::propagate_to_boundary u_reemit" ; 
 
-    static constexpr const char* re_wl_ = "re_wl" ;     // 10
+    static constexpr const char* re_wl_ = "re_wl" ;     // 9
     static constexpr const char* re_wl_note = "qsim::propagate_to_boundary u_wavelength " ; 
 
-    static constexpr const char* re_mom_ph_ = "re_mom_ph" ;  // 11
+    static constexpr const char* re_mom_ph_ = "re_mom_ph" ;  // 10
     static constexpr const char* re_mom_ph_note = "qsim::propagate_to_boundary re mom uniform_sphere ph " ; 
 
-    static constexpr const char* re_mom_ct_ = "re_mom_ct" ;  // 12
+    static constexpr const char* re_mom_ct_ = "re_mom_ct" ;  // 11
     static constexpr const char* re_mom_ct_note = "qsim::propagate_to_boundary re mom uniform_sphere ct " ;
 
-    static constexpr const char* re_pol_ph_ = "re_pol_ph" ;  // 13
+    static constexpr const char* re_pol_ph_ = "re_pol_ph" ;  // 12
     static constexpr const char* re_pol_ph_note = "qsim::propagate_to_boundary re pol uniform_sphere ph " ; 
 
-    static constexpr const char* re_pol_ct_ = "re_pol_ct" ;  // 14
+    static constexpr const char* re_pol_ct_ = "re_pol_ct" ;  // 13
     static constexpr const char* re_pol_ct_note = "qsim::propagate_to_boundary re pol uniform_sphere ct " ;
 
-    static constexpr const char* hp_ph_ = "hp_ph" ;  // 15
+    static constexpr const char* hp_ph_ = "hp_ph" ;  // 14
     static constexpr const char* hp_ph_note = "qsim::hemisphere_polarized u_hemipol_phi" ; 
 
-    static constexpr const char* hp_ct_ = "hp_ct" ;  // 16 
+    static constexpr const char* hp_ct_ = "hp_ct" ;  // 15 
     static constexpr const char* hp_ct_note = "qsim::hemisphere_polarized cosTheta" ; 
 
-    static constexpr const char* sc_u0_ = "sc_u0" ; // 17
+    static constexpr const char* sc_u0_ = "sc_u0" ; // 16
     static constexpr const char* sc_u0_note = "qsim::rayleigh_scatter u0" ;
 
-    static constexpr const char* sc_u1_ = "sc_u1" ; // 18
+    static constexpr const char* sc_u1_ = "sc_u1" ; // 17
     static constexpr const char* sc_u1_note = "qsim::rayleigh_scatter u1" ;
 
-    static constexpr const char* sc_u2_ = "sc_u2" ; // 19
+    static constexpr const char* sc_u2_ = "sc_u2" ; // 18
     static constexpr const char* sc_u2_note = "qsim::rayleigh_scatter u2" ;
 
-    static constexpr const char* sc_u3_ = "sc_u3" ; // 20 
+    static constexpr const char* sc_u3_ = "sc_u3" ; // 19 
     static constexpr const char* sc_u3_note = "qsim::rayleigh_scatter u3" ;
 
-    static constexpr const char* sc_u4_ = "sc_u4" ; // 21
+    static constexpr const char* sc_u4_ = "sc_u4" ; // 20
     static constexpr const char* sc_u4_note = "qsim::rayleigh_scatter u4" ;
 
 };
@@ -133,23 +129,22 @@ STAG_METHOD const char* stagc::Name(unsigned tag)
         case stag_to_bnd:    s = to_bnd_    ; break ;  // 2 
         case stag_to_sca:    s = to_sca_    ; break ;  // 3 
         case stag_to_abs:    s = to_abs_    ; break ;  // 4 
-        case stag_at_burn:   s = at_burn_   ; break ;  // 5 
+        case stag_at_burn_sf_sd:   s = at_burn_sf_sd_   ; break ;  // 5 
         case stag_at_ref:    s = at_ref_    ; break ;  // 6 
-        case stag_sf_sd:     s = sf_sd_     ; break ;  // 7
-        case stag_sf_burn:   s = sf_burn_   ; break ;  // 8
-        case stag_to_ree:    s = to_ree_    ; break ;  // 9 
-        case stag_re_wl:     s = re_wl_     ; break ;  // 10
-        case stag_re_mom_ph: s = re_mom_ph_ ; break ;  // 11
-        case stag_re_mom_ct: s = re_mom_ct_ ; break ;  // 12 
-        case stag_re_pol_ph: s = re_pol_ph_ ; break ;  // 13
-        case stag_re_pol_ct: s = re_pol_ct_ ; break ;  // 14
-        case stag_hp_ph:     s = hp_ph_     ; break ;  // 15 
-        case stag_hp_ct:     s = hp_ct_     ; break ;  // 16
-        case stag_sc_u0:     s = sc_u0_     ; break ;  // 17
-        case stag_sc_u1:     s = sc_u1_     ; break ;  // 18
-        case stag_sc_u2:     s = sc_u2_     ; break ;  // 19
-        case stag_sc_u3:     s = sc_u3_     ; break ;  // 20
-        case stag_sc_u4:     s = sc_u4_     ; break ;  // 21
+        case stag_sf_burn:   s = sf_burn_   ; break ;  // 7
+        case stag_to_ree:    s = to_ree_    ; break ;  // 8 
+        case stag_re_wl:     s = re_wl_     ; break ;  // 9
+        case stag_re_mom_ph: s = re_mom_ph_ ; break ;  // 10
+        case stag_re_mom_ct: s = re_mom_ct_ ; break ;  // 11 
+        case stag_re_pol_ph: s = re_pol_ph_ ; break ;  // 12
+        case stag_re_pol_ct: s = re_pol_ct_ ; break ;  // 13
+        case stag_hp_ph:     s = hp_ph_     ; break ;  // 14 
+        case stag_hp_ct:     s = hp_ct_     ; break ;  // 15
+        case stag_sc_u0:     s = sc_u0_     ; break ;  // 16
+        case stag_sc_u1:     s = sc_u1_     ; break ;  // 17
+        case stag_sc_u2:     s = sc_u2_     ; break ;  // 18
+        case stag_sc_u3:     s = sc_u3_     ; break ;  // 19
+        case stag_sc_u4:     s = sc_u4_     ; break ;  // 20
     }
     return s ; 
 }
@@ -163,23 +158,22 @@ STAG_METHOD const char* stagc::Note(unsigned tag)
         case stag_to_bnd:    s = to_bnd_note ; break ;  // 2
         case stag_to_sca:    s = to_sca_note ; break ;  // 3 
         case stag_to_abs:    s = to_abs_note ; break ;  // 4
-        case stag_at_burn:   s = at_burn_note ; break ; // 5 
+        case stag_at_burn_sf_sd:   s = at_burn_sf_sd_note ; break ; // 5 
         case stag_at_ref:    s = at_ref_note ; break ;  // 6
-        case stag_sf_sd:     s = sf_sd_note ; break ;   // 7 
-        case stag_sf_burn:   s = sf_burn_note ; break ;  // 8
-        case stag_to_ree:    s = to_ree_note ; break ;   // 9
-        case stag_re_wl:     s = re_wl_note ; break ;    // 10
-        case stag_re_mom_ph: s = re_mom_ph_note ; break ; // 11
-        case stag_re_mom_ct: s = re_mom_ct_note ; break ;  // 12
-        case stag_re_pol_ph: s = re_pol_ph_note ; break ;  // 13
-        case stag_re_pol_ct: s = re_pol_ct_note ; break ;  // 14
-        case stag_hp_ph:     s = hp_ph_note ; break ;     // 15
-        case stag_hp_ct:     s = hp_ct_note ; break ;     // 16 
-        case stag_sc_u0:     s = sc_u0_note ; break ;     // 17
-        case stag_sc_u1:     s = sc_u1_note ; break ;     // 18
-        case stag_sc_u2:     s = sc_u2_note ; break ;     // 19
-        case stag_sc_u3:     s = sc_u3_note ; break ;     // 20
-        case stag_sc_u4:     s = sc_u4_note ; break ;     // 21
+        case stag_sf_burn:   s = sf_burn_note ; break ;  // 7
+        case stag_to_ree:    s = to_ree_note ; break ;   // 8
+        case stag_re_wl:     s = re_wl_note ; break ;    // 9
+        case stag_re_mom_ph: s = re_mom_ph_note ; break ; // 10
+        case stag_re_mom_ct: s = re_mom_ct_note ; break ;  // 11
+        case stag_re_pol_ph: s = re_pol_ph_note ; break ;  // 12
+        case stag_re_pol_ct: s = re_pol_ct_note ; break ;  // 13
+        case stag_hp_ph:     s = hp_ph_note ; break ;     // 14
+        case stag_hp_ct:     s = hp_ct_note ; break ;     // 15 
+        case stag_sc_u0:     s = sc_u0_note ; break ;     // 16
+        case stag_sc_u1:     s = sc_u1_note ; break ;     // 17
+        case stag_sc_u2:     s = sc_u2_note ; break ;     // 18
+        case stag_sc_u3:     s = sc_u3_note ; break ;     // 19
+        case stag_sc_u4:     s = sc_u4_note ; break ;     // 20
     }
     return s ; 
 }

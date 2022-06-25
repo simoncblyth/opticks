@@ -806,15 +806,16 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
 #endif
 
 
+#ifdef DEBUG_TAG
     const float u_boundary_burn = curand_uniform(&rng) ;  // needed for random consumption alignment with Geant4 G4OpBoundaryProcess::PostStepDoIt
+#endif
     const float u_reflect = curand_uniform(&rng) ;
+    bool reflect = u_reflect > TransCoeff  ;
 
 #ifdef DEBUG_TAG
-    tagr.add( stag_at_burn, u_boundary_burn); 
+    tagr.add( stag_at_burn_sf_sd, u_boundary_burn); 
     tagr.add( stag_at_ref,  u_reflect); 
 #endif
-
-    bool reflect = u_reflect > TransCoeff  ;
 
 #ifdef DEBUG_PIDX
     if(idx == base->pidx)
@@ -823,28 +824,6 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
               idx,  u_boundary_burn, u_reflect, TransCoeff, reflect  ); 
     }
 #endif 
-
-
-
-    //printf("//qsim.propagate_at_boundary n2c2 %10.4f n1c1 %10.4f u_reflect %10.4f TransCoeff %10.4f (n2c2.E2_total_t/n1c1)  reflect %d \n", 
-    //                                          n2c2,  n1c1, u_reflect, TransCoeff, reflect ); 
-
-    // dirty debug stomping on 
-    //p.q0.f.w = u_reflect ;   // non-standard 
-    //p.q1.f.w = TransCoeff ;  // non-standard replace "weight"
-
-
-    /*
-    if(idx == 1u)
-    {
-        printf("//qsim.propagate_at_boundary idx %d \n", idx); 
-        printf("//qsim.propagate_at_boundary oriented_normal (%10.4f, %10.4f, %10.4f) \n", oriented_normal.x, oriented_normal.y, oriented_normal.z );  
-        //printf("//qsim.propagate_at_boundary direction (%10.4f, %10.4f, %10.4f) \n", direction->x, direction->y, direction->z );  
-        printf("//qsim.propagate_at_boundary polarization (%10.4f, %10.4f, %10.4f) \n", polarization->x, polarization->y, polarization->z );  
-        printf("//qsim.propagate_at_boundary c1 %10.4f normal_incidence %d \n", c1, normal_incidence ); 
-    }
-    */
-
 
     p.mom = reflect
                     ?
@@ -1105,10 +1084,11 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, co
     const float& reflect_diffuse_  = s.surface.w ; 
 
     float u_surface = curand_uniform(&rng);
-    float u_surface_burn = curand_uniform(&rng);
 
 #ifdef DEBUG_TAG
-    tagr.add( stag_sf_sd, u_surface); 
+    float u_surface_burn = curand_uniform(&rng);
+
+    tagr.add( stag_at_burn_sf_sd, u_surface); 
     tagr.add( stag_sf_burn, u_surface_burn); 
 #endif
 
