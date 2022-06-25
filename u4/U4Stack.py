@@ -141,6 +141,32 @@ class U4Stack(object):
     def __repr__(self):
         return "\n".join(list(map(repr,self.items)))
 
+    def is_one2one_mapping(self):
+        """
+        In [5]: stack.tag2stack
+        Out[5]: OrderedDict([(1, 3), (2, 4), (3, 5), (4, 6), (5, 7), (6, 8), (7, 9)])
+
+        In [6]: stack.stack2tag
+        Out[6]: OrderedDict([(3, 1), (4, 2), (5, 3), (6, 4), (7, 5), (8, 6), (9, 7)])
+        """ 
+        t2s = self.tag2stack
+        s2t = self.stack2tag
+        if len(t2s) != len(s2t): return False 
+
+        for t in t2s.keys():
+            s = t2s[t]
+            t1 = s2t[s]
+            print(" t2s : t %2d s %2d t1 %2d " % (t,s,t1)) 
+            assert t == t1 
+        pass
+        for s in s2t.keys():
+            t = s2t[s]
+            s1 = t2s[t]
+            print(" s2t : s %2d t %2d s1 %2d " % (s,t,s1)) 
+            assert s == s1 
+        pass
+        return True   
+             
     def dump_tag2stack(self):
         lines = [] 
         lines.append("U4Stack.py:dump_tag2stack")
@@ -159,6 +185,26 @@ class U4Stack(object):
         pass   
         return "\n".join(lines)
 
+    def make_stack2tag_mapped(self, arr):
+        """
+        :param arr: array assumed to contain stack enum integers
+        :return arr_s2t: array with all B:stack enum integers mapped into A:tag enum integers
+        """
+        s2t = self.stack2tag 
+        arr_s2t = arr.copy()
+        for s in s2t.keys():arr_s2t[np.where(arr==s)] = s2t[s]
+        return arr_s2t
+
+    def make_tag2stack_mapped(self, arr):
+        """
+        :param arr: array assumed to containing tag enum integers
+        :return arr_t2s: array with all A:tag enum integers mapped into B:stack enum integers
+        """
+        t2s = self.tag2stack 
+        arr_t2s = arr.copy()
+        for t in t2s.keys():arr_t2s[np.where(arr==t)] = t2s[t]  
+        return arr_t2s
+
 
 
 if __name__ == '__main__':
@@ -176,7 +222,7 @@ if __name__ == '__main__':
     print(stack.dump_tag2stack())
     print(stack.dump_stack2tag())
 
-
+    assert stack.is_one2one_mapping() == True 
 
     
 
