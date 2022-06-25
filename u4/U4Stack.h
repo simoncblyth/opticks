@@ -22,13 +22,13 @@ enum
 {
     U4Stack_Unclassified            = 0,
     U4Stack_RestDiscreteReset       = 1,
-    U4Stack_ScintDiscreteReset      = 2,
-    U4Stack_BoundaryDiscreteReset   = 3,
-    U4Stack_RayleighDiscreteReset   = 4,
-    U4Stack_AbsorptionDiscreteReset = 5,
-    U4Stack_DiscreteReset           = 6, 
-    U4Stack_BoundaryDiDiTransCoeff  = 7,
-    U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb = 8,
+    U4Stack_DiscreteReset           = 2, 
+    U4Stack_ScintDiscreteReset      = 3,
+    U4Stack_BoundaryDiscreteReset   = 4,
+    U4Stack_RayleighDiscreteReset   = 5,
+    U4Stack_AbsorptionDiscreteReset = 6,
+    U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb = 7,
+    U4Stack_BoundaryDiDiTransCoeff  = 8,
     U4Stack_AbsorptionEffDetect     = 9
 };
 
@@ -55,8 +55,18 @@ G4SteppingManager::Stepping
 must be Scintillation, as only RestDiscrete process around
 )" ; 
 
-    
-    static constexpr const char* ScintDiscreteReset_ = "ScintDiscreteReset" ;  // 2
+
+    static constexpr const char* DiscreteReset_ = "DiscreteReset" ; // 2    : G4OpAbsoption G4OpRayleigh but now use Shims to identify 
+    static constexpr const char* DiscreteReset = R"(
+U4Random::flat
+G4VProcess::ResetNumberOfInteractionLengthLeft
+G4VDiscreteProcess::PostStepGetPhysicalInteractionLength
+G4VProcess::PostStepGPIL
+G4SteppingManager::DefinePhysicalStepLength
+G4SteppingManager::Stepping
+)" ; 
+
+    static constexpr const char* ScintDiscreteReset_ = "ScintDiscreteReset" ;  // 3
     static constexpr const char* ScintDiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -67,7 +77,7 @@ G4SteppingManager::DefinePhysicalStepLength
 G4SteppingManager::Stepping
 )" ; 
 
-    static constexpr const char* BoundaryDiscreteReset_ = "BoundaryDiscreteReset" ; // 3 
+    static constexpr const char* BoundaryDiscreteReset_ = "BoundaryDiscreteReset" ; // 4
     static constexpr const char* BoundaryDiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -78,7 +88,7 @@ G4SteppingManager::DefinePhysicalStepLength
 G4SteppingManager::Stepping
 )" ; 
 
-    static constexpr const char* RayleighDiscreteReset_ = "RayleighDiscreteReset" ;  // 4
+    static constexpr const char* RayleighDiscreteReset_ = "RayleighDiscreteReset" ;  // 5
     static constexpr const char* RayleighDiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -89,7 +99,7 @@ G4SteppingManager::DefinePhysicalStepLength
 G4SteppingManager::Stepping
 )" ; 
 
-    static constexpr const char* AbsorptionDiscreteReset_ = "AbsorptionDiscreteReset" ; // 5
+    static constexpr const char* AbsorptionDiscreteReset_ = "AbsorptionDiscreteReset" ; // 6
     static constexpr const char* AbsorptionDiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -99,28 +109,9 @@ G4VProcess::PostStepGPIL
 G4SteppingManager::DefinePhysicalStepLength
 G4SteppingManager::Stepping
 )" ; 
-    static constexpr const char* DiscreteReset_ = "DiscreteReset" ; // 6    : G4OpAbsoption G4OpRayleigh but now use Shims to identify 
-    static constexpr const char* DiscreteReset = R"(
-U4Random::flat
-G4VProcess::ResetNumberOfInteractionLengthLeft
-G4VDiscreteProcess::PostStepGetPhysicalInteractionLength
-G4VProcess::PostStepGPIL
-G4SteppingManager::DefinePhysicalStepLength
-G4SteppingManager::Stepping
-)" ; 
 
-    static constexpr const char* BoundaryDiDiTransCoeff_ = "BoundaryDiDiTransCoeff" ;  // 7 
-    static constexpr const char* BoundaryDiDiTransCoeff = R"(
-U4Random::flat
-InstrumentedG4OpBoundaryProcess::G4BooleanRand
-InstrumentedG4OpBoundaryProcess::DielectricDielectric
-InstrumentedG4OpBoundaryProcess::PostStepDoIt
-G4SteppingManager::InvokePSDIP
-G4SteppingManager::InvokePostStepDoItProcs
-G4SteppingManager::Stepping
-)" ; 
 
-    static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb_ = "BoundaryBurn_SurfaceReflectTransmitAbsorb" ;  // 8 
+    static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb_ = "BoundaryBurn_SurfaceReflectTransmitAbsorb" ;  // 7
     static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb = R"(
 U4Random::flat
 InstrumentedG4OpBoundaryProcess::PostStepDoIt
@@ -143,6 +134,17 @@ SurfaceReflectTransmitAbsorb
 )" ; 
 
 
+    static constexpr const char* BoundaryDiDiTransCoeff_ = "BoundaryDiDiTransCoeff" ;  // 8 
+    static constexpr const char* BoundaryDiDiTransCoeff = R"(
+U4Random::flat
+InstrumentedG4OpBoundaryProcess::G4BooleanRand
+InstrumentedG4OpBoundaryProcess::DielectricDielectric
+InstrumentedG4OpBoundaryProcess::PostStepDoIt
+G4SteppingManager::InvokePSDIP
+G4SteppingManager::InvokePostStepDoItProcs
+G4SteppingManager::Stepping
+)" ; 
+
     static constexpr const char* AbsorptionEffDetect_ = "AbsorptionEffDetect" ;   // 9 
     static constexpr const char* AbsorptionEffDetect = R"(
 U4Random::flat
@@ -160,13 +162,13 @@ inline unsigned U4Stack::Classify(const char* summary)
 {
     unsigned stack = U4Stack_Unclassified ; 
     if(strstr(summary, RestDiscreteReset))             stack = U4Stack_RestDiscreteReset ; 
+    if(strstr(summary, DiscreteReset))                 stack = U4Stack_DiscreteReset ; 
     if(strstr(summary, ScintDiscreteReset))            stack = U4Stack_ScintDiscreteReset ; 
     if(strstr(summary, BoundaryDiscreteReset))         stack = U4Stack_BoundaryDiscreteReset ; 
     if(strstr(summary, RayleighDiscreteReset))         stack = U4Stack_RayleighDiscreteReset ; 
     if(strstr(summary, AbsorptionDiscreteReset))       stack = U4Stack_AbsorptionDiscreteReset ; 
-    if(strstr(summary, DiscreteReset))                 stack = U4Stack_DiscreteReset ; 
-    if(strstr(summary, BoundaryDiDiTransCoeff))        stack = U4Stack_BoundaryDiDiTransCoeff ; 
     if(strstr(summary, BoundaryBurn_SurfaceReflectTransmitAbsorb)) stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; 
+    if(strstr(summary, BoundaryDiDiTransCoeff))        stack = U4Stack_BoundaryDiDiTransCoeff ; 
     if(strstr(summary, AbsorptionEffDetect))           stack = U4Stack_AbsorptionEffDetect ; 
     return stack ; 
 }
@@ -182,13 +184,13 @@ inline const char* U4Stack::Name(unsigned stack)
     {
         case U4Stack_Unclassified:                  s = Unclassified_            ; break ; 
         case U4Stack_RestDiscreteReset:             s = RestDiscreteReset_       ; break ; 
+        case U4Stack_DiscreteReset:                 s = DiscreteReset_           ; break ; 
         case U4Stack_ScintDiscreteReset:            s = ScintDiscreteReset_      ; break ; 
         case U4Stack_BoundaryDiscreteReset:         s = BoundaryDiscreteReset_   ; break ; 
         case U4Stack_RayleighDiscreteReset:         s = RayleighDiscreteReset_   ; break ; 
         case U4Stack_AbsorptionDiscreteReset:       s = AbsorptionDiscreteReset_ ; break ; 
-        case U4Stack_DiscreteReset:                 s = DiscreteReset_           ; break ; 
-        case U4Stack_BoundaryDiDiTransCoeff:        s = BoundaryDiDiTransCoeff_  ; break ; 
         case U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb: s = BoundaryBurn_SurfaceReflectTransmitAbsorb_  ; break ; 
+        case U4Stack_BoundaryDiDiTransCoeff:        s = BoundaryDiDiTransCoeff_  ; break ; 
         case U4Stack_AbsorptionEffDetect:           s = AbsorptionEffDetect_            ; break ; 
     }
     if(s) assert( Code(s) == stack ) ; 
@@ -200,13 +202,13 @@ inline unsigned U4Stack::Code(const char* name)
     unsigned stack = U4Stack_Unclassified ; 
     if(strcmp(name, Unclassified_) == 0 )                  stack = U4Stack_Unclassified  ; 
     if(strcmp(name, RestDiscreteReset_) == 0 )             stack = U4Stack_RestDiscreteReset  ;
+    if(strcmp(name, DiscreteReset_) == 0)                  stack = U4Stack_DiscreteReset ; 
     if(strcmp(name, ScintDiscreteReset_) == 0 )            stack = U4Stack_ScintDiscreteReset  ;
     if(strcmp(name, BoundaryDiscreteReset_) == 0)          stack = U4Stack_BoundaryDiscreteReset ; 
     if(strcmp(name, RayleighDiscreteReset_) == 0 )         stack = U4Stack_RayleighDiscreteReset  ;
     if(strcmp(name, AbsorptionDiscreteReset_) == 0 )       stack = U4Stack_AbsorptionDiscreteReset  ;
-    if(strcmp(name, DiscreteReset_) == 0)                  stack = U4Stack_DiscreteReset ; 
-    if(strcmp(name, BoundaryDiDiTransCoeff_) == 0)         stack = U4Stack_BoundaryDiDiTransCoeff ; 
     if(strcmp(name, BoundaryBurn_SurfaceReflectTransmitAbsorb_) == 0)  stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; 
+    if(strcmp(name, BoundaryDiDiTransCoeff_) == 0)         stack = U4Stack_BoundaryDiDiTransCoeff ; 
     if(strcmp(name, AbsorptionEffDetect_) == 0)            stack = U4Stack_AbsorptionEffDetect ; 
     return stack ; 
 }
@@ -233,14 +235,13 @@ inline unsigned U4Stack::TagToStack(unsigned tag)
     switch(tag)
     {
         case stag_undef:      stack = U4Stack_Unclassified                              ; break ;  // 0 -> 0
-        case stag_to_sci:     stack = U4Stack_ScintDiscreteReset                        ; break ;  // 1 -> 2
-        case stag_to_bnd:     stack = U4Stack_BoundaryDiscreteReset                     ; break ;  // 2 -> 3 
-        case stag_to_sca:     stack = U4Stack_RayleighDiscreteReset                     ; break ;  // 3 -> 4 
-        case stag_to_abs:     stack = U4Stack_AbsorptionDiscreteReset                   ; break ;  // 4 -> 5 
-        case stag_at_burn:    stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; break ;  // 5 -> 8 
-        case stag_at_ref:     stack = U4Stack_BoundaryDiDiTransCoeff                    ; break ;  // 6 -> 7 
-        case stag_sf_sd:      stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; break ;  // 7 -> 8 
-        case stag_sf_burn:    stack = U4Stack_AbsorptionEffDetect                       ; break ;  // 8 -> 9
+        case stag_to_sci:     stack = U4Stack_ScintDiscreteReset                        ; break ;  // 1 -> 3
+        case stag_to_bnd:     stack = U4Stack_BoundaryDiscreteReset                     ; break ;  // 2 -> 4 
+        case stag_to_sca:     stack = U4Stack_RayleighDiscreteReset                     ; break ;  // 3 -> 5 
+        case stag_to_abs:     stack = U4Stack_AbsorptionDiscreteReset                   ; break ;  // 4 -> 6 
+        case stag_at_burn_sf_sd:    stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; break ;  // 5 -> 7 
+        case stag_at_ref:     stack = U4Stack_BoundaryDiDiTransCoeff                    ; break ;  // 6 -> 8 
+        case stag_sf_burn:    stack = U4Stack_AbsorptionEffDetect                       ; break ;  // 8 -> 10
         case stag_to_ree:     stack = U4Stack_Unclassified ; break ;  // 9
         case stag_re_wl:      stack = U4Stack_Unclassified ; break ;  // 10
         case stag_re_mom_ph:  stack = U4Stack_Unclassified ; break ;  // 11
