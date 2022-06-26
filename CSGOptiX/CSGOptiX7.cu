@@ -16,16 +16,22 @@ and more easily tested.
 #include "squad.h"
 #include "sqat4.h"
 #include "sphoton.h"
-#include "stag.h"
 #include "scerenkov.h"
+#include "sstate.h"
+
+#ifndef PRODUCTION
+#include "stag.h"
+#include "sseq.h"
+#include "srec.h"
+#endif
+
+#include "sevent.h"
 #include "sctx.h"
 
 // simulation 
 #include <curand_kernel.h>
 
-#include "sstate.h"
 #include "qsim.h"
-#include "sevent.h"
 
 #include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
@@ -200,82 +206,34 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     if (launch_idx.x >= evt->num_photon) return;
 
     unsigned idx = launch_idx.x ;  // aka photon_id
-    unsigned genstep_id = evt->seed[idx] ; 
-    const quad6& gs     = evt->genstep[genstep_id] ; 
+    unsigned genstep_idx = evt->seed[idx] ; 
+    const quad6& gs     = evt->genstep[genstep_idx] ; 
      
     qsim* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
-
-/*
-    sphoton p = {} ;   
-    sstate state = {} ; 
-    srec rec = {} ; 
-    sseq seq = {} ;  // seqhis..
-    stagr tagr = {} ; 
-    // TODO: use sctx.h to avoid this optionals using resources in production
-*/
 
     sctx ctx = {} ; 
     ctx.evt = evt ; 
     ctx.prd = prd ; 
     ctx.idx = idx ; 
 
-
-    sim->generate_photon(ctx.p, rng, gs, idx, genstep_id );  
-
+    sim->generate_photon(ctx.p, rng, gs, idx, genstep_idx );  
 
     int command = START ; 
     int bounce = 0 ;  
     while( bounce < evt->max_bounce )
     {    
-        trace( 
-            params.handle,
-            ctx.p.pos,
-            ctx.p.mom,
-            params.tmin,
-            params.tmax,
-            prd
-        );        // trace populates prd with geometry info : intersect normal, distance, identity
-
-
-/*
-        if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
-        if(evt->rec) evt->add_rec( rec, idx, bounce, p ); 
-        if(evt->seq) seq.add_nibble( bounce, p.flag(), p.boundary() ); 
-        if(evt->prd) evt->prd[evt->max_prd*idx+bounce] = *prd ; 
-*/
+        trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd);  // geo query filling prd      
 #ifndef PRODUCTION
         ctx.point(bounce);  
 #endif
-
-
-        //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
 
-        command = sim->propagate(bounce, ctx.p, ctx.state, ctx.prd, rng, ctx.idx, ctx.tagr ); 
+        command = sim->propagate(bounce, ctx.p, ctx.s, ctx.prd, rng, ctx.idx, ctx.tagr ); 
         bounce++;     
         if(command == BREAK) break ;    
     }    
-
-
-/*
-    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
-    if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p ); 
-    if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
-    // no prd in the tail : as that is unchanged by propagation
-
-    evt->photon[idx] = p ; 
-    if(evt->seq) evt->seq[idx] = seq ;
-
-#ifdef DEBUG_TAG
-    if(evt->tag)  evt->tag[idx]  = tagr.tag ; 
-    if(evt->flat) evt->flat[idx] = tagr.flat ; 
-#endif
-*/
     ctx.end(bounce); 
-
-
-
 }
 
 /**

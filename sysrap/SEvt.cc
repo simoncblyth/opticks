@@ -707,7 +707,7 @@ what CSGOptiX/CSGOptiX7.cu:simulate does device side,
 so have setup the environment to match::
 
 As the hostside vectors keep getting resized at each genstep, the 
-evt buffer points are updated at every resize to follow them around
+evt buffer pointers are updated at every resize to follow them around
 as they grow and are reallocated.
 
 TODO: truncation : bounce < max_bounce 
@@ -722,11 +722,6 @@ void SEvt::pointPhoton(const spho& label)
     unsigned idx = label.id ; 
     int& bounce = slot[idx] ; 
 
-    const sphoton& p = current_photon ; 
-    srec& rec        = current_rec ; 
-    sseq& seq        = current_seq ; 
-    quad2& prd       = current_prd ; 
-
     LOG(LEVEL) 
         << " idx " << idx 
         << " bounce " << bounce 
@@ -738,10 +733,16 @@ void SEvt::pointPhoton(const spho& label)
         << " evt.max_flat    " << evt->max_flat
         ;
 
-
     // The below looks like are populating sevent arrays, but actually are also populating 
     // the vectors thanks to setting of the sevent pointers in SEvt::hostside_running_resize
     // so that the pointers follow around the vectors as they get reallocated. 
+    //
+    // TODO: try to replace the below to with sctx.h encapsulated sctx::point 
+
+    const sphoton& p = current_photon ; 
+    srec& rec        = current_rec ; 
+    sseq& seq        = current_seq ; 
+    quad2& prd       = current_prd ; 
 
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
@@ -776,6 +777,9 @@ void SEvt::finalPhoton(const spho& label)
     LOG(LEVEL) << label.desc() ; 
     assert( label.isSameLineage(current_pho) ); 
     unsigned idx = label.id ; 
+
+
+    // TODO: try to replace the below with sctx.h encapsulation sctx::end 
 
     const sphoton& p = current_photon ; 
     sseq& seq        = current_seq ; 

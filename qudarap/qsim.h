@@ -58,6 +58,8 @@ TODO:
 #include "stag.h"
 #endif
 
+#include "sctx.h"
+
 
 #include "qbase.h"
 #include "qprop.h"
@@ -1195,10 +1197,11 @@ TODO
 ~~~~~
 
 * compare with cx/CSGOptiX7.cu::simulate and find users of this to see if it could be made more similar to cx::simulate 
+* adopt sctx.h and make this more like simulate  
+
 * can sstate be slimmed : seems not very easily 
 * simplify sstate persisting (quad6?quad5?)
 * compressed step *seq* recording  
-
 
 Stages within bounce loop
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1217,7 +1220,8 @@ Stages within bounce loop
 Thoughts
 ~~~~~~~~~~~
 
-NB: the four different collection streams (photon, record, rec, seq) must stay independent : so can switch the off at will 
+NB: the different collection streams (photon, record, rec, seq) must stay independent 
+so can switch them off easily in production running 
 
 
 **/
@@ -1225,70 +1229,36 @@ NB: the four different collection streams (photon, record, rec, seq) must stay i
 inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx )
 {
     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
-
     //printf("//qsim.mock_propagate evt.max_bounce %d evt.max_record %d evt.record %p evt.num_record %d evt.num_rec %d \n", 
     //                              evt->max_bounce, evt->max_record, evt->record, evt->num_record, evt->num_rec ); 
+
+    sctx ctx = {} ; 
+    ctx.p = p ;     // Q: Why is this different from CSGOptiX7.cu:simulate ? A: Presumably due to input photon. 
+    ctx.evt = evt ; 
+    ctx.idx = idx ; 
 
     int bounce = 0 ; 
     int command = START ; 
 
-    sstate state = {} ; 
-    srec rec = {} ;    // compressed step record 
-    sseq seq = {} ;  // seqhis..
-
-#if DEBUG_TAG
-    stagr tagr = {} ;  
-#endif
-
-    // should this state live in evt ? NO, this state must be "thread" local, 
-    // the evt instance is shared by all threads and always saves into (idx, bounce) 
-    // slotted locations   
-    //
-    // want the ability to easily eliminate parts of the state that are not needed 
-    // via macros : so this current structure manages that simply  
-
     while( bounce < evt->max_bounce )
     {
-        const quad2* prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
-
-        // HMM: encapsulate this step saving 
-        //  void sevent::record_point(unsigned idx, int bounce, sphoton& p, srec& rec, sseq& seq )  
-
-        if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
-        if(evt->rec)    evt->add_rec(rec, idx, bounce, p );   // populates compressed rec and adds to evt->rec array 
-        if(evt->seq)    seq.add_nibble( bounce, p.flag(), p.boundary() ); 
-        if(evt->prd)    evt->prd[evt->max_prd*idx+bounce] = *prd ; 
-        // HMM: unlike others no point in tail recording the prd, as propagate will not be changing it ?
-
-
-
+        ctx.prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
+#ifndef PRODUCTION
+        ctx.point(bounce); 
+#endif
 
 #ifdef DEBUG_PIDX
         if(idx == base->pidx) 
         printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d prd.q0.f.xyzw (%10.4f %10.4f %10.4f %10.4f) \n", 
-             idx, bounce, evt->max_bounce, prd->q0.f.x, prd->q0.f.y, prd->q0.f.z, prd->q0.f.w );  
+             idx, bounce, evt->max_bounce, ctx.prd->q0.f.x, ctx.prd->q0.f.y, ctx.prd->q0.f.z, ctx.prd->q0.f.w );  
 #endif
 
-        command = propagate(bounce, p, state, prd, rng, idx, tagr ); 
+        command = propagate(bounce, ctx.p, ctx.s, ctx.prd, rng, ctx.idx, ctx.tagr ); 
         bounce++;        
-
         //printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d command %d \n", idx, bounce, evt->max_bounce, command ); 
         if(command == BREAK) break ;    
     }
-
-    if(evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
-    if(evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p ); 
-    if(evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() ); 
-
-    if(evt->photon) evt->photon[idx] = p ;  
-    if(evt->seq) evt->seq[idx] = seq ; 
-
-#ifdef DEBUG_TAG
-    if(evt->tag)  evt->tag[idx]  = tagr.tag ; 
-    if(evt->flat) evt->flat[idx] = tagr.flat ; 
-#endif
-
-
+    ctx.end(bounce);   
 }
 
 /**

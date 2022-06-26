@@ -105,7 +105,9 @@ struct sevent
     sflat*   flat ; 
 
 
+#ifndef PRODUCTION
     SEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
+#endif
     SEVENT_METHOD void add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin ); 
 
 
@@ -374,6 +376,7 @@ and copies into evt->rec array using the (idx,bounce) slot.
 **/
 
 
+#ifndef PRODUCTION
 SEVENT_METHOD void  sevent::add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p )
 {
     r.set_position(     p.pos,  center_extent ); 
@@ -384,6 +387,7 @@ SEVENT_METHOD void  sevent::add_rec( srec& r, unsigned idx, unsigned bounce, con
 
     rec[max_rec*idx+bounce] = r ;      
 }
+#endif
 
 /**
 sevent::add_simtrace
