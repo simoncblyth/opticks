@@ -1,5 +1,5 @@
-reimplement-G4OpticksRecorder-CManager-for-new-workflow
-==========================================================
+DONE : U4Recorder, reimplementing-G4OpticksRecorder-CManager-for-new-workflow 
+==================================================================================
 
 Overview
 ---------
@@ -15,7 +15,7 @@ Task
 -----
 
 * machinery for Opticks vs Geant4 comparison
-* Geant4 CFG4/CRecorder needs reworking to to write SEvt
+* Geant4 CFG4/CRecorder needs reworking to to write SEvt, DONE with U4Recorder
 * python analysis comparison machinery will need update for new arrays and NPFold layout
 
 Preliminaries : DONE
@@ -41,9 +41,9 @@ How to proceed
    * better to keep saving very separate, handled by SEvt/NPFold 
    * also better to keep random engine control separate 
    * genstep signally should use the new SEvt::AddGenstep machinery 
-   * TODO: SEvt::SetIndex(int idx) for 1,2,3,-1,-2,-3 event tags for saving 
+   * DONE: SEvt::SetIndex(int idx) for 1,2,3,-1,-2,-3 event tags for saving 
 
-   * TODO: contrast with qsim.h to see what can be shared : sphoton.h srec.h    
+   * DONE: moved lots of QEvent down to SEvt to allow sharing by both contexts : sphoton.h srec.h    
    * recall that U4 genstep collection holds state in translation-unit-local static variables
 
    * NB: for now are not collecting Cerenkov gensteps 
@@ -72,11 +72,11 @@ cfg4/CCtx.hh::
   * pho0: simple push_back
   * pho: using resize at each genstep and slotting in using spho.id 
 
-* TODO: check that works with both C+S gensteps and when reemission enabled 
+* DONE: check that works with both C+S gensteps and when reemission enabled 
   
   * with reemission, the appropriate thing to do is replace the spho with the reemission one in same slot    
 
-* TODO: exapnd to collecting records and rec 
+* DONE: exapnd to collecting records and rec 
  
 
 3. check that can follow reemission lineage, reusing the functionality 

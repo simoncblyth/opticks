@@ -5,6 +5,7 @@
 #include "stran.h"
 #include "OpticksCSG.h"
 
+#include "SSys.hh"
 #include "PLOG.hh"
 
 #include "CSGNode.h"
@@ -268,12 +269,28 @@ CSGMaker::makeBoxedSphere
 Add CSGSolid to CSGFoundry that is comprised of two CSGPrim, 
 each with a single CSGNode.  
 
+   
+     +--------------+
+     |              | 
+     |              | 
+     |              | 
+     |              | 
+     |              | 
+     |              | 
+     +--------------+
+
+
+
 **/
 
 CSGSolid* CSGMaker::makeBoxedSphere(const char* label)
 {
-    float halfside = 100.f ; 
+    float halfside = SSys::getenvfloat("HALFSIDE", 100.f); 
+    float factor   = SSys::getenvfloat("FACTOR", 1.f); 
+
     float radius   = halfside/2.f ; 
+    float box_halfside = halfside*factor ; 
+
 
     unsigned numPrim = 2 ; 
     CSGSolid* so = fd->addSolid(numPrim, label); 
@@ -285,7 +302,7 @@ CSGSolid* CSGMaker::makeBoxedSphere(const char* label)
         CSGNode* nd = nullptr ; 
         switch(i)
         {
-            case 0: nd = fd->addNode(CSGNode::Box3(2.f*halfside)) ;  break ;   
+            case 0: nd = fd->addNode(CSGNode::Box3(2.f*box_halfside)) ;  break ;   
             case 1: nd = fd->addNode(CSGNode::Sphere(radius))     ;  break ;   
         } 
         pr->setAABB( nd->AABB() ); 

@@ -18,7 +18,12 @@ Doing simple A-B comparisons with::
     ./U4RecorderTest_ab.sh  # on laptop
 
 
-TODO : test with non-normal incidence input photons 
+
+
+
+
+
+DONE : test with non-normal incidence input photons 
 ------------------------------------------------------------
 
 * also arrange exact same input_photon arrays on local and remote 
@@ -244,8 +249,8 @@ HMM : I recall machinery to query stack frames from the process itself ?
 
 
 
-TODO : random "zipper" meshing 
----------------------------------
+DONE : random "zipper" meshing : using U4Random::flat SBacktrace.h and stag.h 
+------------------------------------------------------------------------------
 
 ::
 
@@ -631,8 +636,8 @@ Two consumptions poststep for scint and boundary::
 
 
 
-WIP : match randoms to avoid history difference
----------------------------------------------------
+DONE (so far only low stats) : match randoms to avoid history difference
+--------------------------------------------------------------------------
 
 * bringing OpticksRandom from cks over to U4Random and use it from U4Recorder
 
@@ -1865,8 +1870,11 @@ FIXED Trivial polz input_photon bug on input, not output recording::
 
 
 
-TODO: debug deep dive Geant4 at normal incidence to understand the polz are getting
+DONE : debug deep dive Geant4 at normal incidence to understand the polz are getting
 --------------------------------------------------------------------------------------
+
+* the issue was due to the handling of near normal incidence not matching well across float/double 
+
 
 ::
 

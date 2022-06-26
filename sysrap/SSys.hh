@@ -70,6 +70,7 @@ class SYSRAP_API SSys {
 
 
      static float getenvfloat( const char* envkey, float fallback=-1.f );
+     static double getenvdouble( const char* envkey, double fallback=-1.f );
      static bool getenvbool( const char* envkey );
 
      static std::vector<float>* getenvfloatvec(const char* envkey, const char* fallback="0,0,0", char delim=',' );
@@ -82,6 +83,7 @@ class SYSRAP_API SSys {
 
      static int   atoi_( const char* a );
      static float atof_( const char* a );
+     static double atod_( const char* a );
 
      static void split(std::vector<std::string>& elem, const char* str, char delim );
 

@@ -35,8 +35,9 @@ struct U4_API U4VolumeMaker
     static G4VPhysicalVolume* WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  ); 
 
     static G4VPhysicalVolume* BoxOfScintillator( double halfside ); 
-    static G4VPhysicalVolume* RaindropRockAirWater( double halfside ); 
 
+    static G4VPhysicalVolume* RaindropRockAirWater();  
+    static G4VPhysicalVolume* RaindropRockAirWater( double halfside, double factor ); 
 
     static G4VPhysicalVolume* WorldBox( double halfside, G4Material* material  ); 
     static G4VPhysicalVolume* WorldBox( double halfside, const char* mat="Vacuum" ); 

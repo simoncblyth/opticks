@@ -508,7 +508,7 @@ the expected flat collection::
 
 
 
-WIP : sysrap/stag.h for tagging all random consumption
+DONE : sysrap/stag.h for tagging all random consumption
 ---------------------------------------------------------
 
 ::

@@ -40,7 +40,7 @@ G4VPhysicalVolume* U4VolumeMaker::Make_(const char* name)
 {
     G4VPhysicalVolume* pv = nullptr ; 
     if(strcmp(name,"BoxOfScintillator" ) == 0)     pv = BoxOfScintillator(1000.);   
-    if(strcmp(name,"RaindropRockAirWater" ) == 0)  pv = RaindropRockAirWater(100.);   
+    if(strcmp(name,"RaindropRockAirWater" ) == 0)  pv = RaindropRockAirWater();   
     return pv ; 
 }
 
@@ -238,12 +238,43 @@ U4VolumeMaker::RaindropRockAirWater
 
 cf CSG/CSGMaker.cc CSGMaker::makeBoxedSphere
 
+
+   +------------------------+ 
+   | Rock                   |
+   |    +-----------+       |
+   |    | Air       |       |    
+   |    |    . .    |       |    
+   |    |   . Wa.   |       |    
+   |    |    . .    |       |    
+   |    |           |       |    
+   |    +-----|-----+       |
+   |                        |
+   +----------|--rock_halfs-+ 
+                   
+
+Defaults::
+
+    HALFSIDE: 100. 
+    FACTOR: 1. 
+   
+    water_radius   :  halfside/2.      : 50. 
+    air_halfside   :  halfside*factor  : 100.
+    rock_halfside  :  2.*halfside*factor : 200. 
+
 **/
-G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater( double halfside )
+
+G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater()
+{
+    double halfside = SSys::getenvdouble("HALFSIDE", 100.); 
+    double factor   = SSys::getenvdouble("FACTOR",   1.); 
+    return RaindropRockAirWater(halfside, factor); 
+}
+
+G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater( double halfside, double factor )
 {
     float water_radius = halfside/2. ; 
-    float air_halfside = halfside ; 
-    float rock_halfside = 2.*halfside ; 
+    float air_halfside = halfside*factor ; 
+    float rock_halfside = 2.*halfside*factor ; 
 
     G4Material* water_material  = G4Material::GetMaterial("Water");   assert(water_material); 
     G4Material* air_material  = G4Material::GetMaterial("Air");   assert(air_material); 

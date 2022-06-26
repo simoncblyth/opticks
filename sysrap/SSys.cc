@@ -413,6 +413,12 @@ float SSys::getenvfloat( const char* envkey, float fallback )
     return fval ; 
 }
 
+double SSys::getenvdouble( const char* envkey, double fallback )
+{
+    char* val = getenv(envkey);
+    double fval = val ? atod_(val) : fallback ;
+    return fval ; 
+}
 
 bool SSys::getenvbool( const char* envkey )
 {
@@ -505,6 +511,19 @@ float SSys::atof_( const char* a )
     iss >> f ; 
     return f ;
 }
+
+double SSys::atod_( const char* a )
+{
+    std::string s(a);
+    std::istringstream iss(s);
+    double f ;
+    iss >> f ; 
+    return f ;
+}
+
+
+
+
 
 void SSys::split(std::vector<std::string>& elem, const char* str, char delim )
 {

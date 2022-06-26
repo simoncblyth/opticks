@@ -250,7 +250,7 @@ sysrap/xfold.sh simplify enum label dumping using opticks.sysrap.xfold::
 
 
 
-TODO : see if a 1-to-1 mapping from stack to tag can work (or vv) 
+DONE : see if a 1-to-1 mapping from stack to tag can work (or vv) 
 ---------------------------------------------------------------------
 
 The A:tag and B:stack do not match of course : they are different enumerations. 
@@ -386,7 +386,7 @@ See U4Stack.py::
 Still not 1-to-1 as both stag_at_burn+stag_sf_sd map to BoundaryBurn_SurfaceReflectTransmitAbsorb
 
 * this reflects that separate methods handle surface and boundary in Opticks but one method does that in Geant4 
-* TODO: use a common stag for these 
+* DONE : use a common stag for these, making the mapping 1-to-1  
 
 * DONE: reorder U4Stack to make the mapping simpler BUT offset to make it clear they are different enum 
  

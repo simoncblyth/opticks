@@ -67,8 +67,7 @@ returns identity+sensor info from a G4PVPlacement.
      26 };
 
 
-
-In detector framework code implement this protocol 
+In detector framework code needs to implement this protocol 
 and pass the pointer to the object that fulfils the 
 protocol to the Opticks setGeometry translation, 
 or nullptr if not needed. 

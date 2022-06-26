@@ -159,7 +159,7 @@ int main(int argc, char** argv)
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(sglfw.program);
 
-        Param.w += Param.z ; if( Param.w > Param.y ) Param.w = Param.x ; 
+        Param.w += Param.z ; if( Param.w > Param.y ) Param.w = Param.x ;  // cycling time : Param.w from .x to .y with .z steps
 
         glUniformMatrix4fv(ModelViewProjection_location, 1, GL_FALSE, mvp );
         glUniform4fv(      Param_location,               1, glm::value_ptr(Param) );
