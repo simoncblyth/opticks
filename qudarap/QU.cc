@@ -208,7 +208,7 @@ template QUDARAP_API quad4*     QU::device_alloc<quad4>(unsigned num_items) ;
 template QUDARAP_API quad6*     QU::device_alloc<quad6>(unsigned num_items) ;
 template QUDARAP_API sevent*    QU::device_alloc<sevent>(unsigned num_items) ;
 template QUDARAP_API qdebug*    QU::device_alloc<qdebug>(unsigned num_items) ;
-template QUDARAP_API qstate*    QU::device_alloc<qstate>(unsigned num_items) ;
+template QUDARAP_API sstate*    QU::device_alloc<sstate>(unsigned num_items) ;
 template QUDARAP_API srec*      QU::device_alloc<srec>(unsigned num_items) ;
 template QUDARAP_API sseq*      QU::device_alloc<sseq>(unsigned num_items) ;
 template QUDARAP_API sphoton*   QU::device_alloc<sphoton>(unsigned num_items) ;
@@ -288,7 +288,7 @@ template void QU::copy_device_to_host<quad2>( quad2* h, quad2* d,  unsigned num_
 template void QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_items);
 template void QU::copy_device_to_host<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
 template void QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
-template void QU::copy_device_to_host<qstate>( qstate* h, qstate* d,  unsigned num_items);
+template void QU::copy_device_to_host<sstate>( sstate* h, sstate* d,  unsigned num_items);
 template void QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_items);
 template void QU::copy_device_to_host<sseq>( sseq* h, sseq* d,  unsigned num_items);
 template void QU::copy_device_to_host<stag>( stag* h, stag* d,  unsigned num_items);
@@ -329,7 +329,7 @@ template void QU::copy_device_to_host_and_free<quad2>( quad2* h, quad2* d,  unsi
 template void QU::copy_device_to_host_and_free<quad4>( quad4* h, quad4* d,  unsigned num_items);
 template void QU::copy_device_to_host_and_free<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
 template void QU::copy_device_to_host_and_free<quad6>( quad6* h, quad6* d,  unsigned num_items);
-template void QU::copy_device_to_host_and_free<qstate>( qstate* h, qstate* d,  unsigned num_items);
+template void QU::copy_device_to_host_and_free<sstate>( sstate* h, sstate* d,  unsigned num_items);
 
 
 

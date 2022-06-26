@@ -18,8 +18,9 @@ TODO: COMBINE GEOM INTO HERE TO MAKE 6 MORE LIKE 7
 #include "sqat4.h"
 #include "sphoton.h"
 #include "scerenkov.h"
+#include "sstate.h"
 
-#include "qstate.h"
+
 #include "qbnd.h"
 #include "qcerenkov.h"
 #include "qsim.h"

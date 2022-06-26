@@ -52,6 +52,7 @@ TODO:
 #include "sseq.h"
 #include "scurand.h"
 #include "sevent.h"
+#include "sstate.h"
 
 #ifdef DEBUG_TAG
 #include "stag.h"
@@ -62,7 +63,6 @@ TODO:
 #include "qprop.h"
 #include "qmultifilm.h"
 #include "qbnd.h"
-#include "qstate.h"
 
 #include "qscint.h"
 #include "qcerenkov.h"
@@ -122,11 +122,11 @@ struct qsim
 
     QSIM_METHOD void    mock_propagate( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx ); 
 
-    QSIM_METHOD int     propagate(const int bounce, sphoton& p, qstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ); 
-    QSIM_METHOD int     propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
-    QSIM_METHOD int     propagate_at_surface( unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
-    QSIM_METHOD int     propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
-    QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr);
+    QSIM_METHOD int     propagate(const int bounce, sphoton& p, sstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ); 
+    QSIM_METHOD int     propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
+    QSIM_METHOD int     propagate_at_surface( unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
+    QSIM_METHOD int     propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
+    QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr);
 
     QSIM_METHOD void    reflect_diffuse(  sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr );
     QSIM_METHOD void    reflect_specular( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx );
@@ -500,7 +500,7 @@ TODO: whilst in measurement iteration try changing to a single return, not loads
 
 **/
 
-inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
 {
     const float& absorption_length = s.material1.y ; 
     const float& scattering_length = s.material1.z ; 
@@ -751,7 +751,7 @@ incidence.
 
 **/
 
-inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
 {
     const float& n1 = s.material1.x ;
     const float& n2 = s.material2.x ;   
@@ -977,7 +977,7 @@ transmit
 
 
 
-inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr){ 
+inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr){ 
  
    
     const float& n1 = s.material1.x ; 
@@ -1076,7 +1076,7 @@ qsim::propagate_at_surface
 
 **/
 
-inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, const quad2* prd, const qstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
 {
     const float& detect = s.surface.x ;
     const float& absorb = s.surface.y ;
@@ -1195,8 +1195,8 @@ TODO
 ~~~~~
 
 * compare with cx/CSGOptiX7.cu::simulate and find users of this to see if it could be made more similar to cx::simulate 
-* can qstate be slimmed : seems not very easily 
-* simplify qstate persisting (quad6?quad5?)
+* can sstate be slimmed : seems not very easily 
+* simplify sstate persisting (quad6?quad5?)
 * compressed step *seq* recording  
 
 
@@ -1232,7 +1232,7 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
     int bounce = 0 ; 
     int command = START ; 
 
-    qstate state = {} ; 
+    sstate state = {} ; 
     srec rec = {} ;    // compressed step record 
     sseq seq = {} ;  // seqhis..
 
@@ -1301,7 +1301,7 @@ TODO: missing needs to return BREAK
 
 **/
 
-inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, qstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ) 
+inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, sstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ) 
 {
     const unsigned boundary = prd->boundary() ; 
     const unsigned identity = prd->identity() ; 

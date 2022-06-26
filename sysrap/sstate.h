@@ -1,14 +1,17 @@
 #pragma once
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-   #define QSTATE_METHOD __device__
+   #define SSTATE_METHOD __device__
 #else
-   #define QSTATE_METHOD 
+   #define SSTATE_METHOD 
 #endif 
 
 /**
-qstate.h
+sstate.h
 =========
+
+This was formerly qstate.h but as no CUDA specifics it 
+belongs down in sysrap not up in QUDARap. 
 
 Populated by qsim::fill_state from texture and buffer lookups 
 using photon wavelength and the boundary obtained from geometry 
@@ -19,7 +22,7 @@ BUT seems no point doing that, can just directly use them from PRD.
 
 **/
 
-struct qstate
+struct sstate
 {
     float4 material1 ;    // refractive_index/absorption_length/scattering_length/reemission_prob
     float4 m1group2 ;     // group_velocity/spare1/spare2/spare3
@@ -45,7 +48,7 @@ struct qstate
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 #include "NP.hh"
-inline void qstate::save(const char* dir) const 
+inline void sstate::save(const char* dir) const 
 {
     NP* st = NP::Make<float>(1, 6, 4 ); 
     st->read2( (float*)&material1.x  ); 

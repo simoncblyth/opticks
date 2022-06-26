@@ -220,6 +220,8 @@ set(HEADERS
     scerenkov.h
     sscint.h
     sevent.h
+    sstate.h 
+    sctx.h
 
     SGenerate.h
     

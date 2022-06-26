@@ -19,6 +19,7 @@ QSimTest.cc
 #include "SBnd.h"
 #include "SEvt.hh"
 #include "NP.hh"
+#include "sstate.h"
 
 #include "QRng.hh"
 #include "QBnd.hh"
@@ -30,7 +31,6 @@ QSimTest.cc
 #include "QDebug.hh"
 #include "QState.hh"
 
-#include "qstate.h"
 #include "qdebug.h"
 
 #include "SEvent.hh"
@@ -419,7 +419,7 @@ void QSimTest::fill_state(unsigned version)
     }
     else if( version == 1 )
     {
-        std::vector<qstate> s(num_state) ; 
+        std::vector<sstate> s(num_state) ; 
         qs.fill_state_1( s.data(), s.size() ); 
         save_state("fill_state_1", (float*)s.data(), num_state );
     }

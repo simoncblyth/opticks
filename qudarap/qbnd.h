@@ -24,7 +24,7 @@ enum {
 #endif 
 
 struct quad4 ; 
-struct qstate ; 
+struct sstate ; 
 
 
 struct qbnd
@@ -40,7 +40,7 @@ struct qbnd
 #if defined(__CUDACC__) || defined(__CUDABE__)
     QBND_METHOD float4  boundary_lookup( unsigned ix, unsigned iy ); 
     QBND_METHOD float4  boundary_lookup( float nm, unsigned line, unsigned k ); 
-    QBND_METHOD void    fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx ); 
+    QBND_METHOD void    fill_state(sstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx ); 
 #endif
 
 }; 
@@ -174,7 +174,7 @@ s.optical.x
 
 **/
 
-inline QBND_METHOD void qbnd::fill_state(qstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx  )
+inline QBND_METHOD void qbnd::fill_state(sstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx  )
 {
     const int line = boundary*_BOUNDARY_NUM_MATSUR ;      // now that are not signing boundary use 0-based
 

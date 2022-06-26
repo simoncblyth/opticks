@@ -43,7 +43,7 @@ struct QEvent ;
 struct QDebug ; 
 
 struct qdebug ; 
-struct qstate ; 
+struct sstate ; 
 
 struct quad4 ; 
 struct quad2 ; 
@@ -134,7 +134,7 @@ struct QUDARAP_API QSim
 
     void generate_photon(); 
     void fill_state_0(quad6*  state, unsigned num_state); 
-    void fill_state_1(qstate* state, unsigned num_state); 
+    void fill_state_1(sstate* state, unsigned num_state); 
 
     NP* quad_launch_generate(unsigned num_quad, unsigned type ); 
     NP* photon_launch_generate(unsigned num_photon, unsigned type ); 

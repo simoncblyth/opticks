@@ -19,10 +19,10 @@ TODO: split off debug functions from actually used functions
 #include "srec.h"
 #include "scerenkov.h"
 #include "sevent.h"
+#include "sstate.h"
 
 
 #include "qprop.h"
-#include "qstate.h"
 #include "qbnd.h"
 #include "qsim.h"
 #include "qcerenkov.h"
@@ -177,7 +177,7 @@ __global__ void _QSim_fill_state_0(qsim* sim, quad6* state,  unsigned num_state,
 
     if (state_id >= num_state) return;
 
-    qstate s ; 
+    sstate s ; 
 
     float wavelength = dbg->wavelength ; 
     float cosTheta = dbg->cosTheta ;  
@@ -206,7 +206,7 @@ extern void QSim_fill_state_0(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, q
 
 
 
-__global__ void _QSim_fill_state_1( qsim* sim, qstate* state,  unsigned num_state, qdebug* dbg )
+__global__ void _QSim_fill_state_1( qsim* sim, sstate* state,  unsigned num_state, qdebug* dbg )
 {
     unsigned state_id = blockIdx.x*blockDim.x + threadIdx.x;
     printf("//_QSim_fill_state_1 blockIdx.x %d blockDim.x %d threadIdx.x %d state_id %d num_state %d \n", blockIdx.x, blockDim.x, threadIdx.x, state_id, num_state ); 
@@ -220,7 +220,7 @@ __global__ void _QSim_fill_state_1( qsim* sim, qstate* state,  unsigned num_stat
 
     printf("//_QSim_fill_state_1 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );  
 
-    qstate s ; 
+    sstate s ; 
     sim->bnd->fill_state(s, boundary, wavelength, cosTheta, state_id ); 
 
     state[state_id] = s ; 
@@ -228,7 +228,7 @@ __global__ void _QSim_fill_state_1( qsim* sim, qstate* state,  unsigned num_stat
     //printf("//_QSim_fill_state_1 s.material1 %10.4f %10.4f %10.4f %10.4f \n", s.material1.x, s.material1.y, s.material1.z, s.material1.w ); 
 }
 
-extern void QSim_fill_state_1(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qstate* state, unsigned num_state, qdebug* dbg )
+extern void QSim_fill_state_1(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, sstate* state, unsigned num_state, qdebug* dbg )
 {
     printf("//QSim_fill_state_1 sim %p state %p num_state %d dbg %p \n", sim, state, num_state, dbg ); 
     _QSim_fill_state_1<<<numBlocks,threadsPerBlock>>>( sim, state, num_state, dbg  );
@@ -262,7 +262,7 @@ __global__ void _QSim_propagate_to_boundary( qsim* sim, sphoton* photon, unsigne
     if (idx >= num_photon) return;
 
     const quad2* prd = &dbg->prd ;  // no need for local copy when readonly   
-    const qstate& s  = dbg->s ;     
+    const sstate& s  = dbg->s ;     
     sphoton p        = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
 
     curandState rng = sim->rngstate[idx] ; 
@@ -290,7 +290,7 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim* sim, sphoton* photon
     if (idx >= num_photon) return;
 
     const quad2* prd = &dbg->prd ;  // no need for local copy when readonly   
-    const qstate& s = dbg->s ;     
+    const sstate& s = dbg->s ;     
 
     sphoton p = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
     quad4& q = (quad4&)p ; 
@@ -320,7 +320,7 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
     if (idx >= num_photon) return;
 
     const quad2* prd = &dbg->prd ; 
-    const qstate& s = dbg->s ;     
+    const sstate& s = dbg->s ;     
 
     sphoton p  = photon[idx] ; 
     quad4&  q  = (quad4&)p ; 
@@ -352,7 +352,7 @@ __global__ void _QSim_propagate_at_multifilm_mutate( qsim* sim, sphoton* photon,
     if (idx >= num_photon) return;
 
     const quad2* prd = &dbg->prd ; 
-    const qstate& s = dbg->s ; 
+    const sstate& s = dbg->s ; 
     
     
     sphoton p  = photon[idx] ; 

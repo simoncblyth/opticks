@@ -3,7 +3,7 @@
 qdebug.h
 ==========
 
-Instanciation managed from QSim
+Instanciation managed from QSim  : HMM no reason for this to be in QUDARap, could be down in sysrap
 
 **/
 
@@ -13,7 +13,7 @@ Instanciation managed from QSim
 #include "sscint.h"
 #include "scerenkov.h"
 
-#include "qstate.h"
+#include "sstate.h"
 #include "qprd.h"
 
 
@@ -31,7 +31,7 @@ struct qdebug
     float cosTheta ; 
     float3 normal ; 
 
-    qstate s ; 
+    sstate s ; 
     quad2  prd ; 
     sphoton  p ; 
     sscint    scint_gs ; 

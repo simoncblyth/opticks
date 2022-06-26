@@ -632,14 +632,14 @@ void QSim::fill_state_0(quad6* state, unsigned num_state)
 }
 
 
-extern void QSim_fill_state_1(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qstate* state, unsigned num_state, qdebug* dbg ); 
+extern void QSim_fill_state_1(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, sstate* state, unsigned num_state, qdebug* dbg ); 
 
-void QSim::fill_state_1(qstate* state, unsigned num_state)
+void QSim::fill_state_1(sstate* state, unsigned num_state)
 {
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    qstate* d_state = QU::device_alloc<qstate>(num_state) ; 
+    sstate* d_state = QU::device_alloc<sstate>(num_state) ; 
 
     unsigned threads_per_block = 64 ;  
     configureLaunch1D( num_state, threads_per_block ); 
@@ -652,7 +652,7 @@ void QSim::fill_state_1(qstate* state, unsigned num_state)
 
     QSim_fill_state_1(numBlocks, threadsPerBlock, d_sim, d_state, num_state, d_dbg );  
 
-    QU::copy_device_to_host_and_free<qstate>( state, d_state, num_state ); 
+    QU::copy_device_to_host_and_free<sstate>( state, d_state, num_state ); 
 }
 
 

@@ -18,11 +18,12 @@ and more easily tested.
 #include "sphoton.h"
 #include "stag.h"
 #include "scerenkov.h"
+#include "sctx.h"
 
 // simulation 
 #include <curand_kernel.h>
 
-#include "qstate.h"
+#include "sstate.h"
 #include "qsim.h"
 #include "sevent.h"
 
@@ -188,8 +189,8 @@ Params
 
 COMPARE WITH qsim::mock_propagate
 
-TODO: sctx/qctx encapsulation of most of the below to avoid duplicity 
-      and to flexibly reduce context for production 
+TODO: sctx encapsulation of thread local context to avoid duplicity and to flexibly reduce 
+      resource usage for production 
 
 **/
 
@@ -205,17 +206,23 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     qsim* sim = params.sim ; 
     curandState rng = sim->rngstate[idx] ;    // TODO: skipahead using an event_id 
 
+/*
     sphoton p = {} ;   
-
-    // optionals for debugging  (TODO: avoid these using resources in production)
+    sstate state = {} ; 
     srec rec = {} ; 
     sseq seq = {} ;  // seqhis..
     stagr tagr = {} ; 
+    // TODO: use sctx.h to avoid this optionals using resources in production
+*/
+
+    sctx ctx = {} ; 
+    ctx.evt = evt ; 
+    ctx.prd = prd ; 
+    ctx.idx = idx ; 
 
 
-    sim->generate_photon(p, rng, gs, idx, genstep_id );  
+    sim->generate_photon(ctx.p, rng, gs, idx, genstep_id );  
 
-    qstate state = {} ; 
 
     int command = START ; 
     int bounce = 0 ;  
@@ -223,33 +230,39 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     {    
         trace( 
             params.handle,
-            p.pos,
-            p.mom,
+            ctx.p.pos,
+            ctx.p.mom,
             params.tmin,
             params.tmax,
             prd
         );        // trace populates prd with geometry info : intersect normal, distance, identity
 
 
+/*
         if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;  
         if(evt->rec) evt->add_rec( rec, idx, bounce, p ); 
         if(evt->seq) seq.add_nibble( bounce, p.flag(), p.boundary() ); 
         if(evt->prd) evt->prd[evt->max_prd*idx+bounce] = *prd ; 
+*/
+#ifndef PRODUCTION
+        ctx.point(bounce);  
+#endif
 
 
         //printf("//OptiX7Test.cu:simulate idx %d bounce %d boundary %d \n", idx, bounce, prd->boundary() ); 
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
 
-        command = sim->propagate(bounce, p, state, prd, rng, idx, tagr ); 
+        command = sim->propagate(bounce, ctx.p, ctx.state, ctx.prd, rng, ctx.idx, ctx.tagr ); 
         bounce++;     
         if(command == BREAK) break ;    
     }    
 
+
+/*
     if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;  
     if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p ); 
     if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
     // no prd in the tail : as that is unchanged by propagation
-
 
     evt->photon[idx] = p ; 
     if(evt->seq) evt->seq[idx] = seq ;
@@ -258,6 +271,9 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     if(evt->tag)  evt->tag[idx]  = tagr.tag ; 
     if(evt->flat) evt->flat[idx] = tagr.flat ; 
 #endif
+*/
+    ctx.end(bounce); 
+
 
 
 }

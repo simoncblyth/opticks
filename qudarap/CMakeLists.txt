@@ -107,7 +107,6 @@ SET(HEADERS
     QTexLookup.hh
 
     QState.hh
-    qstate.h
 
     qmultifilm.h 
 
