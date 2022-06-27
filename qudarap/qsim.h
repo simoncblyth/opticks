@@ -116,24 +116,29 @@ struct qsim
     QSIM_METHOD void    generate_photon(            sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
 
 
-    QSIM_METHOD static void lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, unsigned idx , stagr& tagr ); 
-    QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng, unsigned idx, stagr& tagr ); 
-
-    QSIM_METHOD void rayleigh_scatter(sphoton& p, curandStateXORWOW& rng, stagr& tagr ); 
+    QSIM_METHOD static void lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, sctx& ctx ); 
+    QSIM_METHOD static void random_direction_marsaglia(float3* dir, curandStateXORWOW& rng, sctx& ctx ); 
+    QSIM_METHOD void rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx ); 
 
 
     QSIM_METHOD void    mock_propagate( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx ); 
 
-    QSIM_METHOD int     propagate(const int bounce, sphoton& p, sstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ); 
-    QSIM_METHOD int     propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
-    QSIM_METHOD int     propagate_at_surface( unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
-    QSIM_METHOD int     propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
-    QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr);
+    //QSIM_METHOD int     propagate(const int bounce, sphoton& p, sstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ); 
+    //QSIM_METHOD int     propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
+    //QSIM_METHOD int     propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
+    //QSIM_METHOD int     propagate_at_surface( unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
+    //QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr);
+    //QSIM_METHOD void    reflect_diffuse(  sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr );
+    //QSIM_METHOD void    hemisphere_polarized( sphoton& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng, stagr& tagr); 
 
-    QSIM_METHOD void    reflect_diffuse(  sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr );
-    QSIM_METHOD void    reflect_specular( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx );
-
-    QSIM_METHOD void    hemisphere_polarized( sphoton& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng, stagr& tagr); 
+    QSIM_METHOD int     propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx ); 
+    QSIM_METHOD int     propagate_to_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
+    QSIM_METHOD int     propagate_at_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
+    QSIM_METHOD int     propagate_at_surface(  unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
+    QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx );
+    QSIM_METHOD void    reflect_diffuse(  curandStateXORWOW& rng, sctx& ctx );
+    QSIM_METHOD void    reflect_specular( curandStateXORWOW& rng, sctx& ctx );
+    QSIM_METHOD void    hemisphere_polarized( unsigned polz, bool inwards, curandStateXORWOW& rng, sctx& ctx ); 
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -267,7 +272,7 @@ as opposed to local stack float3 : as this keeps changing the dir before
 arriving at the final one
 
 **/
-inline  QSIM_METHOD void qsim::lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, unsigned idx, stagr& tagr )
+inline  QSIM_METHOD void qsim::lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, sctx& ctx )
 {
     float ndotv ; 
     int count = 0 ; 
@@ -275,7 +280,7 @@ inline  QSIM_METHOD void qsim::lambertian_direction(float3* dir, const float3* n
     do
     {
         count++ ; 
-        random_direction_marsaglia(dir, rng, idx, tagr ); 
+        random_direction_marsaglia(dir, rng, ctx); 
         ndotv = dot( *dir, *normal )*orient ; 
         if( ndotv < 0.f )
         {
@@ -284,7 +289,7 @@ inline  QSIM_METHOD void qsim::lambertian_direction(float3* dir, const float3* n
         } 
         u = curand_uniform(&rng) ; 
 
-        //if( idx == 0u) printf("//qsim.lambertian_direction idx %d count %d  u %10.4f \n", idx, count, u ); 
+        //if( ctx.idx == 0u) printf("//qsim.lambertian_direction idx %d count %d  u %10.4f \n", ctx.idx, count, u ); 
 
     } 
     while (!(u < ndotv) && (count < 1024)) ;  
@@ -352,8 +357,10 @@ Checking normalization, it reduces to 1::
 **/
 
 
-inline QSIM_METHOD void qsim::random_direction_marsaglia(float3* dir,  curandStateXORWOW& rng, unsigned idx, stagr& tagr  )
+inline QSIM_METHOD void qsim::random_direction_marsaglia(float3* dir,  curandStateXORWOW& rng, sctx& ctx  )
 {
+    // NB: no use of ctx.tagr so this had not been random aligned 
+
     float u0, u1 ; 
 
     float u, v, b, a  ; 
@@ -361,7 +368,7 @@ inline QSIM_METHOD void qsim::random_direction_marsaglia(float3* dir,  curandSta
     {
         u0 = curand_uniform(&rng);
         u1 = curand_uniform(&rng);
-        //if( idx == 0u ) printf("//qsim.random_direction_marsaglia idx %d u0 %10.4f u1 %10.4f \n", idx, u0, u1 ); 
+        //if( idx == 0u ) printf("//qsim.random_direction_marsaglia idx %d u0 %10.4f u1 %10.4f \n", ctx.idx, u0, u1 ); 
 
         u = 2.f*u0 - 1.f ; 
         v = 2.f*u1 - 1.f ; 
@@ -403,12 +410,9 @@ Transverse wave nature means::
       
 **/
 
-inline QSIM_METHOD void qsim::rayleigh_scatter(sphoton& p, curandStateXORWOW& rng, stagr& tagr ) 
+inline QSIM_METHOD void qsim::rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx ) 
 {
-    float3* p_direction = &p.mom ; 
-    float3* p_polarization = &p.pol ;
-
- 
+    sphoton& p = ctx.p ; 
     float3 direction ; 
     float3 polarization ; 
 
@@ -422,6 +426,7 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(sphoton& p, curandStateXORWOW& rn
         float u4 = curand_uniform(&rng) ;    
 
 #ifdef DEBUG_TAG
+        stagr& tagr = ctx.tagr ; 
         tagr.add(stag_sc_u0, u0); 
         tagr.add(stag_sc_u1, u1); 
         tagr.add(stag_sc_u2, u2); 
@@ -442,13 +447,13 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(sphoton& p, curandStateXORWOW& rn
         direction.y = sinTheta * sinPhi;
         direction.z = cosTheta ;
 
-        smath::rotateUz(direction, *p_direction );
+        smath::rotateUz(direction, p.mom );
 
-        float constant = -dot(direction,*p_polarization); 
+        float constant = -dot(direction, p.pol ); 
 
-        polarization.x = p_polarization->x + constant*direction.x ;
-        polarization.y = p_polarization->y + constant*direction.y ;
-        polarization.z = p_polarization->z + constant*direction.z ;
+        polarization.x = p.pol.x + constant*direction.x ;
+        polarization.y = p.pol.y + constant*direction.y ;
+        polarization.z = p.pol.z + constant*direction.z ;
 
         if(dot(polarization, polarization) == 0.f )
         {
@@ -470,14 +475,14 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(sphoton& p, curandStateXORWOW& rn
 
         // simulate according to the distribution cos^2(theta)
         // where theta is the angle between old and new polarizations
-        float doCosTheta = dot(polarization,*p_polarization) ;
+        float doCosTheta = dot(polarization, p.pol ) ;
         float doCosTheta2 = doCosTheta*doCosTheta ;
         looping = doCosTheta2 < u4 ;
 
     } while ( looping ) ;
 
-    *p_direction = direction ;
-    *p_polarization = polarization ;
+    p.mom = direction ;
+    p.pol = polarization ;
 }
 
 
@@ -502,13 +507,18 @@ TODO: whilst in measurement iteration try changing to a single return, not loads
 
 **/
 
-inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+//inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXORWOW& rng, sctx& ctx)
 {
+    sphoton& p = ctx.p ; 
+    const sstate& s = ctx.s ; 
+
     const float& absorption_length = s.material1.y ; 
     const float& scattering_length = s.material1.z ; 
     const float& reemission_prob = s.material1.w ; 
     const float& group_velocity = s.m1group2.x ; 
-    const float& distance_to_boundary = prd->q0.f.w ; 
+    const float& distance_to_boundary = ctx.prd->q0.f.w ; 
+
 
 #ifdef DEBUG_TAG
     float u_to_sci = curand_uniform(&rng) ;  // purely for alignment with G4 
@@ -518,23 +528,23 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
     float u_absorption = curand_uniform(&rng) ;
 
 #ifdef DEBUG_TAG
+    stagr& tagr = ctx.tagr ; 
     tagr.add( stag_to_sci, u_to_sci); 
     tagr.add( stag_to_bnd, u_to_bnd); 
     tagr.add( stag_to_sca, u_scattering); 
     tagr.add( stag_to_abs, u_absorption); 
 #endif
 
-
     float scattering_distance = -scattering_length*logf(u_scattering);   
     float absorption_distance = -absorption_length*logf(u_absorption);
 
 #ifdef DEBUG_TIME
-    if( idx == base->pidx ) printf("//qsim.propagate_to_boundary[ idx %d post (%10.4f %10.4f %10.4f %10.4f) \n", idx, p.pos.x, p.pos.y, p.pos.z, p.time );  
+    if( ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary[ idx %d post (%10.4f %10.4f %10.4f %10.4f) \n", ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time );  
 #endif
 
 #ifdef DEBUG_HIST
-    if(idx == base->pidx ) printf("//qsim.propagate_to_boundary idx %d distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f u_scattering %10.4f u_absorption %10.4f \n", 
-             idx, distance_to_boundary, absorption_distance, scattering_distance, u_scattering, u_absorption  ); 
+    if(ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary idx %d distance_to_boundary %10.4f absorption_distance %10.4f scattering_distance %10.4f u_scattering %10.4f u_absorption %10.4f \n", 
+             ctx.idx, distance_to_boundary, absorption_distance, scattering_distance, u_scattering, u_absorption  ); 
 #endif
   
 
@@ -547,8 +557,8 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
 
 #ifdef DEBUG_TIME
             float absorb_time_delta = absorption_distance/group_velocity ; 
-            if( idx == base->pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) absorb_time_delta %10.4f   \n", 
-                         idx, p.pos.x, p.pos.y, p.pos.z, p.time, absorb_time_delta  );  
+            if( ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) absorb_time_delta %10.4f   \n", 
+                         ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time, absorb_time_delta  );  
 #endif
 
             float u_reemit = reemission_prob == 0.f ? 2.f : curand_uniform(&rng);  // avoid consumption at absorption when not scintillator
@@ -596,7 +606,7 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
             p.time += scattering_distance/group_velocity ;
             p.pos  += scattering_distance*(p.mom) ;
 
-            rayleigh_scatter(p, rng, tagr); // changes dir and pol, consumes 5u at each turn of rejection sampling loop
+            rayleigh_scatter(rng, ctx);  // changes dir and pol, consumes 5u at each turn of rejection sampling loop
 
             flag = BULK_SCATTER;
 
@@ -612,8 +622,8 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, c
 
 #ifdef DEBUG_TIME
     float sail_time_delta = distance_to_boundary/group_velocity ; 
-    if( idx == base->pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) sail_time_delta %10.4f   \n", 
-          idx, p.pos.x, p.pos.y, p.pos.z, p.time, sail_time_delta  );  
+    if( ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary] idx %d post (%10.4f %10.4f %10.4f %10.4f) sail_time_delta %10.4f   \n", 
+          ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time, sail_time_delta  );  
 #endif
 
     return BOUNDARY ;
@@ -753,13 +763,17 @@ incidence.
 
 **/
 
-inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+//inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXORWOW& rng, sctx& ctx )
 {
+    sphoton& p = ctx.p ; 
+    const sstate& s = ctx.s ; 
+
     const float& n1 = s.material1.x ;
     const float& n2 = s.material2.x ;   
     const float eta = n1/n2 ; 
 
-    const float3* normal = (float3*)&prd->q0.f.x ; 
+    const float3* normal = (float3*)&ctx.prd->q0.f.x ; 
 
     const float _c1 = -dot(p.mom, *normal ); 
     const float3 oriented_normal = _c1 < 0.f ? -(*normal) : (*normal) ; 
@@ -770,12 +784,12 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
  
 
 #ifdef DEBUG_PIDX
-    if(idx == base->pidx)
+    if(ctx.idx == base->pidx)
     {
-    printf("//qsim.propagate_at_boundary idx %d nrm   (%10.4f %10.4f %10.4f) \n", idx, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
-    printf("//qsim.propagate_at_boundary idx %d mom_0 (%10.4f %10.4f %10.4f) \n", idx, p.mom.x, p.mom.y, p.mom.z ); 
-    printf("//qsim.propagate_at_boundary idx %d pol_0 (%10.4f %10.4f %10.4f) \n", idx, p.pol.x, p.pol.y, p.pol.z ); 
-    printf("//qsim.propagate_at_boundary idx %d c1 %10.4f normal_incidence %d \n", idx, c1, normal_incidence ); 
+    printf("//qsim.propagate_at_boundary idx %d nrm   (%10.4f %10.4f %10.4f) \n", ctx.idx, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
+    printf("//qsim.propagate_at_boundary idx %d mom_0 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.mom.x, p.mom.y, p.mom.z ); 
+    printf("//qsim.propagate_at_boundary idx %d pol_0 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.pol.x, p.pol.y, p.pol.z ); 
+    printf("//qsim.propagate_at_boundary idx %d c1 %10.4f normal_incidence %d \n", ctx.idx, c1, normal_incidence ); 
     }
 #endif
 
@@ -797,13 +811,13 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     const float TransCoeff = tir || n1c1 == 0.f ? 0.f : n2c2*dot(E2_t,E2_t)/n1c1 ; 
 
 #ifdef DEBUG_PIDX
-    if(idx == base->pidx)
+    if(ctx.idx == base->pidx)
     {
     printf("//qsim.propagate_at_boundary idx %d normal_incidence %d p.pol (%10.4f,%10.4f,%10.4f) p.mom (%10.4f,%10.4f,%10.4f) o_normal (%10.4f,%10.4f,%10.4f)\n", 
-              idx, normal_incidence, p.pol.x, p.pol.y, p.pol.z, p.mom.x, p.mom.y, p.mom.z, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
+              ctx.idx, normal_incidence, p.pol.x, p.pol.y, p.pol.z, p.mom.x, p.mom.y, p.mom.z, oriented_normal.x, oriented_normal.y, oriented_normal.z ); 
 
     printf("//qsim.propagate_at_boundary idx %d TransCoeff %10.4f n1c1 %10.4f n2c2 %10.4f E2_t (%10.4f,%10.4f) A_trans (%10.4f,%10.4f,%10.4f) \n", 
-            idx, TransCoeff, n1c1, n2c2, E2_t.x, E2_t.y, A_trans.x, A_trans.y, A_trans.z ); 
+            ctx.idx, TransCoeff, n1c1, n2c2, E2_t.x, E2_t.y, A_trans.x, A_trans.y, A_trans.z ); 
     }
 #endif
 
@@ -815,15 +829,16 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
     bool reflect = u_reflect > TransCoeff  ;
 
 #ifdef DEBUG_TAG
+    stagr& tagr = ctx.tagr ; 
     tagr.add( stag_at_burn_sf_sd, u_boundary_burn); 
     tagr.add( stag_at_ref,  u_reflect); 
 #endif
 
 #ifdef DEBUG_PIDX
-    if(idx == base->pidx)
+    if(ctx.idx == base->pidx)
     {
     printf("//qsim.propagate_at_boundary idx %d u_boundary_burn %10.4f u_reflect %10.4f TransCoeff %10.4f reflect %d \n", 
-              idx,  u_boundary_burn, u_reflect, TransCoeff, reflect  ); 
+              ctx.idx,  u_boundary_burn, u_reflect, TransCoeff, reflect  ); 
     }
 #endif 
 
@@ -850,16 +865,16 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, c
                                       ;
 
 #ifdef DEBUG_PIDX
-    if(idx == base->pidx)
+    if(ctx.idx == base->pidx)
     {
-        printf("//qsim.propagate_at_boundary idx %d reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", idx, reflect, tir, TransCoeff, u_reflect );  
-        printf("//qsim.propagate_at_boundary idx %d mom_1 (%10.4f %10.4f %10.4f) \n", idx, p.mom.x, p.mom.y, p.mom.z ); 
-        printf("//qsim.propagate_at_boundary idx %d pol_1 (%10.4f %10.4f %10.4f) \n", idx, p.pol.x, p.pol.y, p.pol.z ); 
+        printf("//qsim.propagate_at_boundary idx %d reflect %d tir %d TransCoeff %10.4f u_reflect %10.4f \n", ctx.idx, reflect, tir, TransCoeff, u_reflect );  
+        printf("//qsim.propagate_at_boundary idx %d mom_1 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.mom.x, p.mom.y, p.mom.z ); 
+        printf("//qsim.propagate_at_boundary idx %d pol_1 (%10.4f %10.4f %10.4f) \n", ctx.idx, p.pol.x, p.pol.y, p.pol.z ); 
     }
 #endif
 
     /*
-    if(idx == 251959)
+    if(ctx.idx == 251959)
     {
         printf("//qsim.propagate_at_boundary RR.x %10.4f A_trans (%10.4f %10.4f %10.4f )  RR.y %10.4f  A_paral (%10.4f %10.4f %10.4f ) \n", 
               RR.x, A_trans.x, A_trans.y, A_trans.z,
@@ -979,14 +994,17 @@ transmit
 
 
 
-inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr){ 
- 
-   
+//inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx )
+{ 
+    sphoton& p = ctx.p ; 
+    sstate& s = ctx.s ;  
+
     const float& n1 = s.material1.x ; 
     const float& n2 = s.material2.x ;    
     const float eta = n1/n2 ;  
 
-    const float3* normal = prd->normal() ;
+    const float3* normal = ctx.prd->normal() ;
     const float _c1 = dot(p.mom,(*normal));
     const float3 oriented_normal = _c1 < 0.f ? (*normal) : -(*normal) ;
 
@@ -1078,8 +1096,10 @@ qsim::propagate_at_surface
 
 **/
 
-inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+//inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
+inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXORWOW& rng, sctx& ctx)
 {
+    const sstate& s = ctx.s ; 
     const float& detect = s.surface.x ;
     const float& absorb = s.surface.y ;
     //const float& reflect_specular_ = s.surface.z ; 
@@ -1088,10 +1108,10 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, co
     float u_surface = curand_uniform(&rng);
 
 #ifdef DEBUG_TAG
+    stagr& tagr = ctx.tagr ; 
     float u_surface_burn = curand_uniform(&rng);
-
     tagr.add( stag_at_burn_sf_sd, u_surface); 
-    tagr.add( stag_sf_burn, u_surface_burn); 
+    tagr.add( stag_sf_burn,       u_surface_burn); 
 #endif
 
 
@@ -1106,8 +1126,8 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, co
         flag = u_surface < absorb + detect + reflect_diffuse_ ?  SURFACE_DREFLECT : SURFACE_SREFLECT ;  
         switch(flag)
         {
-            case SURFACE_DREFLECT: reflect_diffuse( p, prd, rng, idx, tagr)  ; break ; 
-            case SURFACE_SREFLECT: reflect_specular(p, prd, rng, idx)        ; break ;  // stagr only needed where these is random consumption 
+            case SURFACE_DREFLECT: reflect_diffuse( rng, ctx)  ; break ; 
+            case SURFACE_SREFLECT: reflect_specular(rng, ctx)  ; break ;
         }
     }
     return action ; 
@@ -1158,22 +1178,27 @@ qsim::reflect_diffuse cf G4OpBoundaryProcess::DoReflection
 
 **/
 
-inline QSIM_METHOD void qsim::reflect_diffuse( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr )
+//inline QSIM_METHOD void qsim::reflect_diffuse( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr )
+inline QSIM_METHOD void qsim::reflect_diffuse( curandStateXORWOW& rng, sctx& ctx )
 {
+    sphoton& p = ctx.p ;  
+
     float3 old_mom = p.mom ; 
 
-    const float3* normal = prd->normal()  ;  
+    const float3* normal = ctx.prd->normal()  ;  
     const float orient = -1.f ;     // equivalent to G4OpBoundaryProcess::PostStepDoIt early flip  of theGlobalNormal ?
-    lambertian_direction( &p.mom, normal, orient, rng, idx, tagr );
+    lambertian_direction( &p.mom, normal, orient, rng, ctx );
 
     float3 facet_normal = normalize( p.mom - old_mom ); 
     const float EdotN = dot( p.pol, facet_normal ); 
     p.pol = -1.f*(p.pol) + 2.f*EdotN*facet_normal ; 
 }
 
-inline QSIM_METHOD void qsim::reflect_specular( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
+//inline QSIM_METHOD void qsim::reflect_specular( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
+inline QSIM_METHOD void qsim::reflect_specular( curandStateXORWOW& rng, sctx& ctx )
 {
-    const float3* normal = prd->normal() ;      
+    sphoton& p = ctx.p ;  
+    const float3* normal = ctx.prd->normal() ;      
     const float orient = -1.f ;     // equivalent to G4OpBoundaryProcess::PostStepDoIt early flip of theGlobalNormal ?
 
     const float PdotN = dot( p.mom, *normal )*orient ; 
@@ -1229,8 +1254,6 @@ so can switch them off easily in production running
 inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx )
 {
     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
-    //printf("//qsim.mock_propagate evt.max_bounce %d evt.max_record %d evt.record %p evt.num_record %d evt.num_rec %d \n", 
-    //                              evt->max_bounce, evt->max_record, evt->record, evt->num_record, evt->num_rec ); 
 
     sctx ctx = {} ; 
     ctx.p = p ;     // Q: Why is this different from CSGOptiX7.cu:simulate ? A: Presumably due to input photon. 
@@ -1256,7 +1279,8 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
              idx, bounce, evt->max_bounce, ctx.prd->q0.f.x, ctx.prd->q0.f.y, ctx.prd->q0.f.z, ctx.prd->q0.f.w );  
 #endif
 
-        command = propagate(bounce, ctx.p, ctx.s, ctx.prd, rng, ctx.idx, ctx.tagr ); 
+        //command = propagate(bounce, ctx.p, ctx.s, ctx.prd, rng, ctx.idx, ctx.tagr ); 
+        command = propagate(bounce, rng, ctx ); 
         bounce++;        
 #ifndef PRODUCTION
         ctx.point(bounce); 
@@ -1281,43 +1305,48 @@ TODO: missing needs to return BREAK
 
 **/
 
-inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, sstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ) 
+//inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, sstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ) 
+inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx ) 
 {
-    const unsigned boundary = prd->boundary() ; 
-    const unsigned identity = prd->identity() ; 
-    const unsigned iindex = prd->iindex() ; 
-    const float3* normal = prd->normal(); 
-    float cosTheta = dot(p.mom, *normal ) ;    
+    const unsigned boundary = ctx.prd->boundary() ; 
+    const unsigned identity = ctx.prd->identity() ; 
+    const unsigned iindex = ctx.prd->iindex() ; 
+    const float3* normal = ctx.prd->normal(); 
+    float cosTheta = dot(ctx.p.mom, *normal ) ;    
 
 #ifdef DEBUG_PIDX
-    if( idx == base->pidx ) 
+    if( ctx.idx == base->pidx ) 
     printf("//qsim.propagate idx %d bnc %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n", 
-                 idx, bounce, cosTheta, p.mom.x, p.mom.y, p.mom.z, normal->x, normal->y, normal->z ); 
+                 ctx.idx, bounce, cosTheta, ctx.p.mom.x, ctx.p.mom.y, ctx.p.mom.z, normal->x, normal->y, normal->z ); 
 #endif
 
+    ctx.p.set_prd(boundary, identity, cosTheta, iindex ); 
 
-    p.set_prd(boundary, identity, cosTheta, iindex ); 
-
-    bnd->fill_state(s, boundary, p.wavelength, cosTheta, idx ); 
+    bnd->fill_state(ctx.s, boundary, ctx.p.wavelength, cosTheta, ctx.idx ); 
 
     unsigned flag = 0 ;  
 
-    int command = propagate_to_boundary( flag, p, prd, s, rng, idx, tagr ); 
+    //int command = propagate_to_boundary( flag, ctx.p, ctx.prd, ctx.s, rng, ctx.idx, ctx.tagr ); 
+    int command = propagate_to_boundary( flag, rng, ctx ); 
 #ifdef DEBUG_PIDX
-    if( idx == base->pidx ) 
-    printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", idx, bounce, command, flag, s.optical.x  );   
+    if( ctx.idx == base->pidx ) 
+    printf("//qsim.propagate idx %d bounce %d command %d flag %d s.optical.x %d \n", ctx.idx, bounce, command, flag, ctx.s.optical.x  );   
 #endif
 
     if( command == BOUNDARY )
     {
-        command = s.optical.x > 0 ? 
-                                      propagate_at_surface( flag, p, prd, s, rng, idx, tagr ) 
+        command = ctx.s.optical.x > 0 ? 
+                                      propagate_at_surface( flag, rng, ctx ) 
                                   : 
-                                      propagate_at_boundary( flag, p, prd, s, rng, idx, tagr ) 
+                                      propagate_at_boundary( flag, rng, ctx ) 
                                   ;  
+
+                                      //propagate_at_surface( flag, ctx.p, ctx.prd, ctx.s, rng, ctx.idx, ctx.tagr ) 
+                                      //propagate_at_boundary( flag, ctx.p, ctx.prd, ctx.s, rng, ctx.idx, ctx.tagr ) 
+              
     }
 
-    p.set_flag(flag);    // hmm could hide this ?
+    ctx.p.set_flag(flag);    // hmm could hide this ?
 
     return command ; 
 }
@@ -1364,9 +1393,11 @@ inwards.
  
 **/
 
-inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng, stagr& tagr )
+//inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng, stagr& tagr )
+inline QSIM_METHOD void qsim::hemisphere_polarized( unsigned polz, bool inwards, curandStateXORWOW& rng, sctx& ctx )
 {
-    const float3* normal = prd->normal() ; 
+    sphoton& p = ctx.p ; 
+    const float3* normal = ctx.prd->normal() ; 
 
     //printf("//qsim.hemisphere_polarized polz %d normal (%10.4f, %10.4f, %10.4f) \n", polz, normal->x, normal->y, normal->z );  
 
@@ -1375,6 +1406,7 @@ inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bo
     float cosTheta = curand_uniform(&rng) ;      // 0->1
 
 #ifdef DEBUG_TAG
+    stagr& tagr = ctx.tagr ; 
     tagr.add( stag_hp_ph, u_hemipol_phi ); 
     tagr.add( stag_hp_ct, cosTheta ); 
 #endif

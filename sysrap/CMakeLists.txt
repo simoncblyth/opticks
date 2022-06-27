@@ -432,6 +432,10 @@ target_include_directories( ${name} PUBLIC
    ${OPTICKS_PREFIX}/externals/glm/glm
 )
 target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
+target_compile_definitions( ${name} PRIVATE DEBUG_TAG )    
+## DEBUG_TAG is needed for random aligned running in multiple pkgs: sysrap, qudarap, u4
+## however making this PUBLIC makes rebuilding real heavy 
+## so must rely on making coordinated switches when doing random aligned running  
 
 if(WITH_STTF)
 target_compile_definitions( ${name} PUBLIC WITH_STTF)

@@ -64,6 +64,25 @@ This will require getting the statistical comparison python machinery into new w
 using the new SEvt arrays.  
 
 
+DONE : check again after sctx rejig
+-------------------------------------------------
+
+
+::
+
+    In [4]: ab_photon = np.abs(a.photon - b.photon)
+
+    In [5]: ab_photon.max()
+    Out[5]: 0.0018196106
+
+    In [6]: ab_record = np.abs(a.record - b.record)
+    In [7]: ab_record.max()
+    Out[7]: 0.0018196106
+
+
+TODO: formalize such comparisons with expr output 
+
+
 DONE : direct photon + record step point comparison  
 ------------------------------------------------------
 

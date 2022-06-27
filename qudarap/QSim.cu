@@ -244,14 +244,15 @@ __global__ void _QSim_rayleigh_scatter_align( qsim* sim, sphoton* photon,  unsig
 
     if (idx >= num_photon) return;
 
-    sphoton p = dbg->p ;    // need local copy of photon otherwise would have write interference between threads
     curandState rng = sim->rngstate[idx] ; 
 
-    stagr tagr = {} ; 
+    sctx ctx = {} ; 
+    ctx.idx = idx ; 
+    ctx.p = dbg->p ;    // need local copy of photon otherwise would have write interference between threads  
 
-    sim->rayleigh_scatter(p, rng, tagr);  
+    sim->rayleigh_scatter(rng, ctx);  
 
-    photon[idx] = p ; 
+    photon[idx] = ctx.p ; 
 }
 
 __global__ void _QSim_propagate_to_boundary( qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg )
@@ -261,17 +262,20 @@ __global__ void _QSim_propagate_to_boundary( qsim* sim, sphoton* photon, unsigne
 
     if (idx >= num_photon) return;
 
-    const quad2* prd = &dbg->prd ;  // no need for local copy when readonly   
-    const sstate& s  = dbg->s ;     
-    sphoton p        = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
-
     curandState rng = sim->rngstate[idx] ; 
 
-    stagr tagr = {} ; 
+    sctx ctx = {} ; 
+    ctx.idx = idx ;  
+    ctx.prd = &dbg->prd ;  // no need for local copy when readonly  
+    ctx.s = dbg->s ;
+    ctx.p = dbg->p ;      // need local copy of photon otherwise will have write interference between threads 
 
     unsigned flag = 0u ;  
-    sim->propagate_to_boundary( flag, p, prd, s, rng, idx, tagr );  
-    p.set_flag(flag); 
+    //sim->propagate_to_boundary( flag, p, prd, s, rng, idx, tagr );  
+    sim->propagate_to_boundary( flag, rng, ctx );  
+    ctx.p.set_flag(flag); 
+
+    sphoton& p = ctx.p ; 
 
     photon[idx] = p ; 
 
@@ -289,26 +293,25 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim* sim, sphoton* photon
 
     if (idx >= num_photon) return;
 
-    const quad2* prd = &dbg->prd ;  // no need for local copy when readonly   
-    const sstate& s = dbg->s ;     
-
-    sphoton p = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
-    quad4& q = (quad4&)p ; 
-
     curandState rng = sim->rngstate[idx] ; 
 
-    stagr tagr ; 
+    sctx ctx = {} ; 
+    ctx.idx = idx ;  
+    ctx.prd = &dbg->prd ;  // no need for local copy when readonly   
+    ctx.s = dbg->s ; 
+    ctx.p = dbg->p ;    // need local copy of photon otherwise will have write interference between threads 
 
-
+    quad4& q = (quad4&)ctx.p ; 
     q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
     q.q3.f = q.q2.f ; 
 
     unsigned flag = 0 ; 
-    sim->propagate_at_boundary( flag, p, prd, s, rng, idx, tagr );  
+    //sim->propagate_at_boundary( flag, p, prd, s, rng, idx, tagr );  
+    sim->propagate_at_boundary( flag, rng, ctx );  
 
-    q.q3.u.w = flag ;  // non-standard
+    q.q3.u.w = flag ;          // non-standard
 
-    photon[idx] = p ; 
+    photon[idx] = ctx.p ; 
 }
 
 
@@ -319,26 +322,25 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
 
     if (idx >= num_photon) return;
 
-    const quad2* prd = &dbg->prd ; 
-    const sstate& s = dbg->s ;     
-
-    sphoton p  = photon[idx] ; 
-    quad4&  q  = (quad4&)p ; 
-
     curandState rng = sim->rngstate[idx] ; 
 
-    stagr tagr = {} ; 
+    sctx ctx = {} ; 
+    ctx.idx = idx ; 
+    ctx.p = photon[idx] ;
+    ctx.s = dbg->s ;   
+    ctx.prd = &dbg->prd ;
 
-
+    quad4&  q  = (quad4&)ctx.p ; 
     q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
     q.q3.f = q.q2.f ;
  
     unsigned flag = 0 ; 
-    sim->propagate_at_boundary( flag, p, prd, s, rng, idx, tagr );  
+    //sim->propagate_at_boundary( flag, p, prd, s, rng, idx, tagr );  
+    sim->propagate_at_boundary( flag, rng, ctx );  
 
     q.q3.u.w = flag ;  // non-standard
 
-    photon[idx] = p ; 
+    photon[idx] = ctx.p ; 
 
     //printf("//_QSim_propagate_at_boundary_mutate idx %d ", idx); 
 }
@@ -351,29 +353,28 @@ __global__ void _QSim_propagate_at_multifilm_mutate( qsim* sim, sphoton* photon,
 
     if (idx >= num_photon) return;
 
-    const quad2* prd = &dbg->prd ; 
-    const sstate& s = dbg->s ; 
-    
-    
-    sphoton p  = photon[idx] ; 
-    quad4&  q  = (quad4&)p ; 
     curandState rng = sim->rngstate[idx] ; 
-    stagr tagr = {} ; 
 
+    sctx ctx = {} ; 
+    ctx.idx = idx ; 
+    ctx.p = photon[idx] ;
+    ctx.s = dbg->s ; 
+    ctx.prd = &dbg->prd ; 
+
+    quad4&  q  = (quad4&)ctx.p ; 
 
     unsigned long long jump = 1000;
     skipahead(jump, &rng);    
     q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
     q.q3.f = q.q2.f ;
-   
-
 
     unsigned flag = 0u ; 
-    sim->propagate_at_multifilm(flag, p, prd, s, rng, idx, tagr );  
+    //sim->propagate_at_multifilm(flag, p, prd, s, rng, idx, tagr );  
+    sim->propagate_at_multifilm(flag, rng, ctx );  
     //printf("//_QSim_propagate_at_multifilm_mutate : Thread index: idx = %d  flag = %d", idx, flag );    
 
     q.q3.u.w = flag ;  // non-standard
-    photon[idx] = p ; 
+    photon[idx] = ctx.p ; 
 }
 
 
@@ -388,16 +389,18 @@ __global__ void _QSim_hemisphere_polarized( qsim* sim, sphoton* photon, unsigned
     //printf("//_QSim_hemisphere_polarized idx %d num_photon %d polz %d \n", idx, num_photon, polz ); 
 
     curandState rng = sim->rngstate[idx] ; 
-    const quad2* prd = &dbg->prd ;  
-    sphoton p        = dbg->p ;   
-    stagr tagr = {} ; 
+
+    sctx ctx = {} ; 
+    ctx.idx = idx ; 
+    ctx.p = dbg->p ;  
+    ctx.prd = &dbg->prd ; 
 
     bool inwards = true ; 
 
-    sim->hemisphere_polarized( p, polz, inwards,  prd, rng, tagr );  
+    //sim->hemisphere_polarized( p, polz, inwards,  prd, rng, tagr );  
+    sim->hemisphere_polarized( polz, inwards, rng, ctx );  
 
-
-    photon[idx] = p ; 
+    photon[idx] = ctx.p ; 
 }
 
 
@@ -408,13 +411,13 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
     if (idx >= num_photon) return;
 
     curandState rng = sim->rngstate[idx] ; 
-    stagr tagr = {} ; 
+    sctx ctx = {} ; 
 
-    const quad2* prd = &dbg->prd ;  
+    ctx.idx = idx ; 
+    ctx.prd = &dbg->prd ;  
+    ctx.p = dbg->p ;   
 
-    sphoton p = dbg->p ;   
-    quad4& q = (quad4&)p ; 
-
+    quad4& q = (quad4&)ctx.p ; 
     q.q0.f = q.q1.f ;   // non-standard record initial mom into p0 and initial pol into q3
     q.q3.f = q.q2.f ; 
 
@@ -423,10 +426,12 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
 
     switch(type)
     {
-        case REFLECT_DIFFUSE:   sim->reflect_diffuse(  p, prd, rng, idx, tagr) ;  break ;  
-        case REFLECT_SPECULAR:  sim->reflect_specular( p, prd, rng, idx) ;  break ;  
+        //case REFLECT_DIFFUSE:   sim->reflect_diffuse(  p, prd, rng, idx, tagr) ;  break ;  
+        //case REFLECT_SPECULAR:  sim->reflect_specular( p, prd, rng, idx) ;  break ;  
+        case REFLECT_DIFFUSE:   sim->reflect_diffuse(  rng, ctx) ;  break ;  
+        case REFLECT_SPECULAR:  sim->reflect_specular( rng, ctx) ;  break ;  
     }
-    photon[idx] = p ; 
+    photon[idx] = ctx.p ; 
 }
 
 
@@ -448,11 +453,12 @@ __global__ void _QSim_random_direction_marsaglia( qsim* sim, quad* q, unsigned n
     if (idx >= num_quad ) return;
 
     curandState rng = sim->rngstate[idx] ; 
-    stagr tagr = {} ; 
-
+    sctx ctx = {} ; 
+    ctx.idx = idx ;  
 
     float3* dir = (float3*)&q[idx].f.x ;  
-    sim->random_direction_marsaglia( dir, rng, idx, tagr );  
+    sim->random_direction_marsaglia( dir, rng, ctx );  
+
     q[idx].u.w = idx ; 
 }
 
@@ -462,12 +468,14 @@ __global__ void _QSim_lambertian_direction( qsim* sim, quad* q, unsigned num_qua
     if (idx >= num_quad ) return;
 
     curandState rng = sim->rngstate[idx] ; 
-    stagr tagr = {} ; 
+
+    sctx ctx = {} ; 
+    ctx.idx = idx ; 
 
     float3* dir = (float3*)&q[idx].f.x ;  
     const float orient = -1.f ; 
 
-    sim->lambertian_direction( dir, &dbg->normal, orient, rng, idx, tagr );  
+    sim->lambertian_direction( dir, &dbg->normal, orient, rng, ctx );  
 
     q[idx].u.w = idx ; 
 }

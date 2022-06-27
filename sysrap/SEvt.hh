@@ -67,13 +67,12 @@ struct SYSRAP_API SEvt : public SCompProvider
     NPFold*               fold ; 
     bool                  hostside_running_resize_done ; // only ever becomes true for non-GPU running 
 
-
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
     std::vector<spho>  pho0 ;  // unordered push_back as they come 
     std::vector<spho>  pho ;   // spho are label structs holding 4*int 
 
-    std::vector<int>      slot ; 
+    std::vector<int>     slot ; 
     std::vector<sphoton> photon ; 
     std::vector<sphoton> record ; 
     std::vector<srec>    rec ; 
@@ -85,15 +84,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
     quad2   current_prd = {} ; 
-
-    /*
-    sphoton current_photon = {} ; 
-    srec    current_rec = {} ; 
-    sseq    current_seq = {} ; 
-    stagr   current_tagr = {} ; 
-    */ 
     sctx    current_ctx = {};  
-
 
     static const plog::Severity LEVEL ; 
     static const int GIDX ; 

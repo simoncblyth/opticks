@@ -504,15 +504,6 @@ void SEvt::beginPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     ctx.zero(); 
 
-    /*
-    current_photon.zero() ; 
-    current_rec.zero() ; 
-    current_seq.zero() ; 
-    current_tagr.zero() ; 
-    current_photon.set_idx(idx); 
-    current_photon.set_flag(genflag); 
-    */
-
     ctx.idx = idx ;  
     ctx.evt = evt ; 
     ctx.prd = &current_prd ;   // current_prd is populated by InstrumentedG4OpBoundaryProcess::PostStepDoIt 
@@ -521,7 +512,6 @@ void SEvt::beginPhoton(const spho& label)
     ctx.p.set_flag(genflag); 
 
     assert( ctx.p.flagmask_count() == 1 ); // should only be a single bit in the flagmask at this juncture 
-    //assert( current_photon.flagmask_count() == 1 ); // should only be a single bit in the flagmask at this juncture 
 }
 
 unsigned SEvt::getCurrentPhotonIdx() const { return current_pho.id ; }
@@ -775,6 +765,7 @@ HMM: this needs to be called at every random consumption ... see U4Random::flat
 
 void SEvt::addTag(unsigned tag, float flat)
 {
+    //LOG(info) << " tag " << tag << " flat " << flat << " evt.tag " << evt->tag ; 
     if(evt->tag == nullptr) return  ; 
     stagr& tagr = current_ctx.tagr ; 
     tagr.add(tag,flat)  ; 
@@ -794,9 +785,9 @@ void SEvt::finalPhoton(const spho& label)
     LOG(LEVEL) << label.desc() ; 
     assert( label.isSameLineage(current_pho) ); 
     unsigned idx = label.id ; 
-
     sctx& ctx = current_ctx ; 
     assert( ctx.idx == idx ); 
+
     ctx.end(); 
     evt->photon[idx] = ctx.p ;
 }
