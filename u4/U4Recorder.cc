@@ -193,7 +193,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(label); 
-    sphoton& current_photon = sev->current_photon ;
+    sphoton& current_photon = sev->current_ctx.p ;
 
     bool first_point = current_photon.flagmask_count() == 1 ;  // first_point when single bit in the flag from genflag set in beginPhoton
     if(first_point)

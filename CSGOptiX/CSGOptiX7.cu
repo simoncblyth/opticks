@@ -221,19 +221,29 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
     int command = START ; 
     int bounce = 0 ;  
+#ifndef PRODUCTION
+    ctx.point(bounce);  
+#endif
+
     while( bounce < evt->max_bounce )
     {    
         trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd);  // geo query filling prd      
 #ifndef PRODUCTION
-        ctx.point(bounce);  
+        ctx.trace(bounce);  
 #endif
         if( prd->boundary() == 0xffffu ) break ;   // propagate can do nothing meaningful without a boundary 
-
         command = sim->propagate(bounce, ctx.p, ctx.s, ctx.prd, rng, ctx.idx, ctx.tagr ); 
         bounce++;     
+#ifndef PRODUCTION
+        ctx.point(bounce) ; 
+#endif
         if(command == BREAK) break ;    
     }    
-    ctx.end(bounce); 
+
+#ifndef PRODUCTION
+    ctx.end(); 
+#endif
+    evt->photon[idx] = ctx.p ;
 }
 
 /**

@@ -1237,14 +1237,17 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
     ctx.evt = evt ; 
     ctx.idx = idx ; 
 
-    int bounce = 0 ; 
     int command = START ; 
+    int bounce = 0 ; 
+#ifndef PRODUCTION
+    ctx.point(bounce);  
+#endif
 
     while( bounce < evt->max_bounce )
     {
         ctx.prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
 #ifndef PRODUCTION
-        ctx.point(bounce); 
+        ctx.trace(bounce);  
 #endif
 
 #ifdef DEBUG_PIDX
@@ -1255,10 +1258,17 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
 
         command = propagate(bounce, ctx.p, ctx.s, ctx.prd, rng, ctx.idx, ctx.tagr ); 
         bounce++;        
+#ifndef PRODUCTION
+        ctx.point(bounce); 
+#endif
         //printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d command %d \n", idx, bounce, evt->max_bounce, command ); 
         if(command == BREAK) break ;    
     }
-    ctx.end(bounce);   
+#ifndef PRODUCTION
+    ctx.end();   
+#endif
+    evt->photon[idx] = ctx.p ;
+
 }
 
 /**

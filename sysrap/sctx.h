@@ -47,46 +47,58 @@ struct sctx
     stagr tagr ; 
 #endif
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    SCTX_METHOD void zero(); 
+#endif
 
 #ifndef PRODUCTION
     SCTX_METHOD void point(int bounce); 
+    SCTX_METHOD void trace(int bounce); 
+    SCTX_METHOD void end(); 
 #endif
-    SCTX_METHOD void end(int bounce); 
 }; 
 
 
-#ifndef PRODUCTION
-SCTX_METHOD void sctx::point(int bounce)
-{ 
-    if(evt->record) evt->record[evt->max_record*idx+bounce] = p ;   
-    if(evt->rec) evt->add_rec( rec, idx, bounce, p );  
-    if(evt->seq) seq.add_nibble( bounce, p.flag(), p.boundary() );  
-    if(evt->prd) evt->prd[evt->max_prd*idx+bounce] = *prd ; 
-}
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+SCTX_METHOD void sctx::zero(){ *this = {} ; }
 #endif
 
-/**
-sctx::end
-------------
 
-Note no prd saving here as that is unchanged by propagation
+#ifndef PRODUCTION
+/**
+sctx::point : record current sphoton p into record/rec/seq 
+---------------------------------------------------------------
+
+As *prd* is updated by *trace* rather than *propagate* it is handled separately. 
+Consider a history::
+
+   TO->BT->BT->SC->AB
+
+The *prd* corresponds to the arrows and corresponding trace that happens to get 
+between the points. 
 
 **/
 
-SCTX_METHOD void sctx::end(int bounce)
+SCTX_METHOD void sctx::point(int bounce)
+{ 
+    if(evt->record && bounce < evt->max_record) evt->record[evt->max_record*idx+bounce] = p ;   
+    if(evt->rec    && bounce < evt->max_rec)    evt->add_rec( rec, idx, bounce, p );    // this copies into evt->rec array 
+    if(evt->seq    && bounce < evt->max_seq)    seq.add_nibble( bounce, p.flag(), p.boundary() );  
+}
+SCTX_METHOD void sctx::trace(int bounce)
 {
-#ifndef PRODUCTION
-    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;
-    if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );
-    if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
-
-    if( evt->seq) evt->seq[idx] = seq ;
+    if(evt->prd) evt->prd[evt->max_prd*idx+bounce] = *prd ; 
+}
+SCTX_METHOD void sctx::end()
+{
+    if( evt->seq) evt->seq[idx] = seq ; // Q: did I forget rec ? A: No. rec+record are added to evt->rec+record in sctx::point 
 #ifdef DEBUG_TAG
     if(evt->tag)  evt->tag[idx]  = tagr.tag ;
     if(evt->flat) evt->flat[idx] = tagr.flat ;
 #endif
-#endif
-    evt->photon[idx] = p ;
 }
 
+#endif
 

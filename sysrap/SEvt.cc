@@ -6,7 +6,10 @@
 #include "sphoton.h"
 #include "srec.h"
 #include "sseq.h"
+#include "sstate.h"
+#include "stag.h"
 #include "sevent.h"
+#include "sctx.h"
 #include "sdebug.h"
 
 
@@ -496,17 +499,29 @@ void SEvt::beginPhoton(const spho& label)
     slot[idx] = 0 ;           // slot/bounce incremented only at tail of SEvt::pointPhoton
 
     current_pho = label ; 
+    current_prd.zero() ;   
 
+    sctx& ctx = current_ctx ; 
+    ctx.zero(); 
+
+    /*
     current_photon.zero() ; 
     current_rec.zero() ; 
     current_seq.zero() ; 
-    current_prd.zero() ; 
     current_tagr.zero() ; 
-
     current_photon.set_idx(idx); 
     current_photon.set_flag(genflag); 
+    */
 
-    assert( current_photon.flagmask_count() == 1 ); // should only be a single bit in the flagmask at this juncture 
+    ctx.idx = idx ;  
+    ctx.evt = evt ; 
+    ctx.prd = &current_prd ;   // current_prd is populated by InstrumentedG4OpBoundaryProcess::PostStepDoIt 
+
+    ctx.p.set_idx(idx); 
+    ctx.p.set_flag(genflag); 
+
+    assert( ctx.p.flagmask_count() == 1 ); // should only be a single bit in the flagmask at this juncture 
+    //assert( current_photon.flagmask_count() == 1 ); // should only be a single bit in the flagmask at this juncture 
 }
 
 unsigned SEvt::getCurrentPhotonIdx() const { return current_pho.id ; }
@@ -522,9 +537,6 @@ spho label indicating a reemission generation greater than zero.
 Note that this will mostly be called for photons that originate from 
 scintillation gensteps BUT it will also happen for Cerenkov (and Torch) genstep 
 generated photons within a scintillator due to reemission. 
-
-TODO: check that positions match up across the rejoin 
-
 
 HMM: could directly change photon[idx] via ref ? 
 But are here taking a copy to current_photon
@@ -563,7 +575,10 @@ void SEvt::rjoinPhoton(const spho& label)
 
     if( evt->photon )
     {
-        current_photon = photon[idx] ; 
+        //current_photon = photon[idx] ; 
+        current_ctx.p = photon[idx] ; 
+        sphoton& current_photon = current_ctx.p ; 
+
         rjoinPhotonCheck(current_photon); 
         current_photon.flagmask &= ~BULK_ABSORB  ; // scrub BULK_ABSORB from flagmask
         current_photon.set_flag(BULK_REEMIT) ;     // gets OR-ed into flagmask 
@@ -572,7 +587,10 @@ void SEvt::rjoinPhoton(const spho& label)
     // at truncation point and beyond cannot compare or do rejoin fixup
     if( evt->seq && prior < evt->max_seq )
     {
-        current_seq = seq[idx] ; 
+        //current_seq = seq[idx] ; 
+        current_ctx.seq = seq[idx] ; 
+        sseq& current_seq = current_ctx.seq ; 
+
         unsigned seq_flag = current_seq.get_flag(prior);
         rjoinSeqCheck(seq_flag); 
         current_seq.set_flag(prior, BULK_REEMIT);  
@@ -582,7 +600,7 @@ void SEvt::rjoinPhoton(const spho& label)
     if( evt->record && prior < evt->max_record )  
     {
         sphoton& rjoin_record = evt->record[evt->max_record*idx+prior]  ; 
-        rjoinRecordCheck(rjoin_record, current_photon); 
+        rjoinRecordCheck(rjoin_record, current_ctx.p); 
         rjoin_record.flagmask &= ~BULK_ABSORB ; // scrub BULK_ABSORB from flagmask  
         rjoin_record.set_flag(BULK_REEMIT) ; 
     } 
@@ -706,12 +724,12 @@ The pointPhoton and finalPhoton methods need to do the hostside equivalent of
 what CSGOptiX/CSGOptiX7.cu:simulate does device side,
 so have setup the environment to match::
 
-As the hostside vectors keep getting resized at each genstep, the 
-evt buffer pointers are updated at every resize to follow them around
-as they grow and are reallocated.
+ctx.point looks like it is populating sevent arrays, but actually are also populating 
+the vectors thanks to setting of the sevent pointers in SEvt::hostside_running_resize
+so that the pointers follow around the vectors as they get reallocated. 
 
 TODO: truncation : bounce < max_bounce 
-
+at truncation ctx.point/ctx.trace stop writing anything but bounce keeps incrementing 
 **/
 
 void SEvt::pointPhoton(const spho& label)
@@ -720,39 +738,31 @@ void SEvt::pointPhoton(const spho& label)
 
     assert( label.isSameLineage(current_pho) ); 
     unsigned idx = label.id ; 
+    sctx& ctx = current_ctx ; 
+    assert( ctx.idx == idx ); 
+    bool first_point = ctx.p.flagmask_count() == 1 ; 
     int& bounce = slot[idx] ; 
+
+    if(first_point == false) ctx.trace(bounce); 
+    ctx.point(bounce); 
+
+    sseq& seq = ctx.seq ;  
 
     LOG(LEVEL) 
         << " idx " << idx 
         << " bounce " << bounce 
+        << " first_point " << first_point 
         << " evt.max_record " << evt->max_record
         << " evt.max_rec    " << evt->max_rec
         << " evt.max_seq    " << evt->max_seq
         << " evt.max_prd    " << evt->max_prd
         << " evt.max_tag    " << evt->max_tag
         << " evt.max_flat    " << evt->max_flat
+        << " label.desc " << label.desc() 
+        << " seq.desc_seqhis " << seq.desc_seqhis() ; 
         ;
 
-    // The below looks like are populating sevent arrays, but actually are also populating 
-    // the vectors thanks to setting of the sevent pointers in SEvt::hostside_running_resize
-    // so that the pointers follow around the vectors as they get reallocated. 
-    //
-    // TODO: try to replace the below to with sctx.h encapsulated sctx::point 
-
-    const sphoton& p = current_photon ; 
-    srec& rec        = current_rec ; 
-    sseq& seq        = current_seq ; 
-    quad2& prd       = current_prd ; 
-
-    if( evt->record && bounce < evt->max_record ) evt->record[evt->max_record*idx+bounce] = p ;   
-    if( evt->rec    && bounce < evt->max_rec    ) evt->add_rec(rec, idx, bounce, p );  
-    if( evt->seq    && bounce < evt->max_seq    ) seq.add_nibble(bounce, p.flag(), p.boundary() );
-    if( evt->prd    && bounce < evt->max_prd    ) evt->prd[evt->max_prd*idx+bounce] = prd ; 
-
-    LOG(LEVEL) << label.desc() << " " << seq.desc_seqhis() ; 
-
     bounce += 1 ; 
-    // at truncation the above stop writing anything but bounce keeps incrementing 
 }
 
 /**
@@ -766,10 +776,17 @@ HMM: this needs to be called at every random consumption ... see U4Random::flat
 void SEvt::addTag(unsigned tag, float flat)
 {
     if(evt->tag == nullptr) return  ; 
-    stagr&   tagr = current_tagr ; 
+    stagr& tagr = current_ctx.tagr ; 
     tagr.add(tag,flat)  ; 
 }
 
+/**
+SEvt::finalPhoton
+--------------------
+
+Canonically called from U4Recorder::PostUserTrackingAction_Optical
+
+**/
 
 void SEvt::finalPhoton(const spho& label)
 {
@@ -778,20 +795,10 @@ void SEvt::finalPhoton(const spho& label)
     assert( label.isSameLineage(current_pho) ); 
     unsigned idx = label.id ; 
 
-
-    // TODO: try to replace the below with sctx.h encapsulation sctx::end 
-
-    const sphoton& p = current_photon ; 
-    sseq& seq        = current_seq ; 
-    stagr& tagr      = current_tagr ; 
-
-    if(evt->photon) evt->photon[idx] = p ; 
-    if(evt->seq)    evt->seq[idx] = seq ; 
-    if(evt->photon) evt->photon[idx] = p ; 
-
-    if(evt->tag)   evt->tag[idx]  = tagr.tag ; 
-    if(evt->flat)  evt->flat[idx] = tagr.flat ; 
-
+    sctx& ctx = current_ctx ; 
+    assert( ctx.idx == idx ); 
+    ctx.end(); 
+    evt->photon[idx] = ctx.p ;
 }
 
 void SEvt::checkPhotonLineage(const spho& label) const 

@@ -37,15 +37,18 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "sstate.h"
 #include "srec.h"
 #include "sseq.h"
 #include "stag.h"
+#include "sevent.h"
+#include "sctx.h"
+
 #include "squad.h"
 #include "sgs.h"
 #include "SComp.h"
 
 struct sphoton_selector ; 
-struct sevent ; 
 struct sdebug ; 
 struct NP ; 
 struct NPFold ; 
@@ -81,11 +84,15 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     // current_* are saved into the vectors on calling SEvt::pointPhoton 
     spho    current_pho = {} ; 
+    quad2   current_prd = {} ; 
+
+    /*
     sphoton current_photon = {} ; 
     srec    current_rec = {} ; 
     sseq    current_seq = {} ; 
-    quad2   current_prd = {} ; 
     stagr   current_tagr = {} ; 
+    */ 
+    sctx    current_ctx = {};  
 
 
     static const plog::Severity LEVEL ; 

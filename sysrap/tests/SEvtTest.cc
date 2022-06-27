@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     SEventConfig::SetMaxRec(max_bounce+1); 
     SEventConfig::SetMaxSeq(max_bounce+1); 
 
-    SEvt evt ; 
+    SEvt sev ; 
 
     SEvt::SetIndex(-214); 
     SEvt::UnsetIndex(); 
@@ -50,24 +50,24 @@ int main(int argc, char** argv)
     gs.set_numphoton(1) ; 
     gs.set_gentype(OpticksGenstep_TORCH); 
 
-    evt.addGenstep(gs);  
+    sev.addGenstep(gs);  
 
     spho label = {0,0,0,0} ; 
 
-    evt.beginPhoton(label); 
+    sev.beginPhoton(label); 
 
     int bounce0 = 0 ; 
     int bounce1 = 0 ; 
 
-    bounce0 = evt.slot[label.id] ;  
-    evt.pointPhoton(label);  
-    bounce1 = evt.slot[label.id] ;  
+    bounce0 = sev.slot[label.id] ;  
+    sev.pointPhoton(label);  
+    bounce1 = sev.slot[label.id] ;  
     assert( bounce1 == bounce0 + 1 ); 
 
     std::cout 
          << " i " << std::setw(3) << -1
          << " bounce0 " << std::setw(3) << bounce0 
-         << " : " << evt.current_photon.descFlag() 
+         << " : " << sev.current_ctx.p.descFlag() 
          << std::endl
          ; 
 
@@ -93,25 +93,25 @@ int main(int argc, char** argv)
     for(int i=0 ; i < int(history.size()) ; i++)
     {   
         unsigned flag = history[i] ; 
-        evt.current_photon.set_flag(flag); 
+        sev.current_ctx.p.set_flag(flag); 
 
-        bounce0 = evt.slot[label.id] ;  
-        evt.pointPhoton(label);  
-        bounce1 = evt.slot[label.id] ;  
+        bounce0 = sev.slot[label.id] ;  
+        sev.pointPhoton(label);  
+        bounce1 = sev.slot[label.id] ;  
         assert( bounce1 == bounce0 + 1 ); 
 
         std::cout 
              << " i " << std::setw(3) << i 
              << " bounce0 " << std::setw(3) << bounce0 
-             << " : " << evt.current_photon.descFlag() 
+             << " : " << sev.current_ctx.p.descFlag() 
              << std::endl
              ; 
     }
 
-    evt.finalPhoton(label); 
+    sev.finalPhoton(label); 
 
-    evt.save("$TMP/SEvtTest");
-    LOG(info) << evt.desc() ;
+    sev.save("$TMP/SEvtTest");
+    LOG(info) << sev.desc() ;
 
     return 0 ; 
 }
