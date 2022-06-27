@@ -22,6 +22,46 @@ propagation histories to observe the consumption patterns
 in order to decide how best to align. 
 
 
+Summary
+---------
+
+Progress continues steadily.  
+
+To develop+test the new workflow validation machinery I have been doing
+random aligned comparisons with very simple geometry and input photons. 
+Using input photons avoids having to random align the generation as both 
+contexts can run from the same input photons.  
+
+Boundary reflect/transmit histories are matching in low statistics checks. 
+The next step is to increase the statistics and increase the size of the 
+simple geometry in order to get absorption and scattering aligned
+and then to run input photon validations in more complex geometries building 
+up to the full geometry.  
+
+Because of the very different ways of implementing reemission (and hence 
+very different pattern of random consumption) I expect aligning reemission will 
+be a lot more difficult than boundary/absorption/scattering.
+
+Nevertheless I will have a quick attempt at aligning reemission 
+to see in detail what the difficulties are.
+
+Getting the simulations to run aligned is a significant effort, but
+is has a huge advantage of then making validation and geometry issue finding 
+very easy as direct comparisons unclouded by statistics are then possible. 
+ 
+Of course input photon tests can be setup starting within the water 
+which do not need reemission to be aligned, so aligning reemission while convenient
+is not essential. 
+
+If it looks to be too time consuming to align reemission I will proceed with 
+bringing the statistical level comparison python machinery over to work 
+with the new workflow event arrays. 
+
+The statistical comparison machinery is needed anyhow as random aligned 
+running beyond ~1M will find very rare issues that are not significant 
+to real running. 
+
+
 
 WIP : apply consumption enum collection machinery with storch_test.sh input photons
 -----------------------------------------------------------------------------------------
@@ -67,7 +107,6 @@ using the new SEvt arrays.
 DONE : check again after sctx rejig
 -------------------------------------------------
 
-
 ::
 
     In [4]: ab_photon = np.abs(a.photon - b.photon)
@@ -80,7 +119,7 @@ DONE : check again after sctx rejig
     Out[7]: 0.0018196106
 
 
-TODO: formalize such comparisons with expr output 
+DONE : formalized such comparisons using eprint/epr 
 
 
 DONE : direct photon + record step point comparison  

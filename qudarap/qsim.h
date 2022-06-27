@@ -3,32 +3,25 @@
 qsim.h : GPU side struct prepared CPU side by QSim.hh
 ========================================================
 
+qsim.h replaces the OptiX 6 context in a CUDA-centric way.
 Canonical use is from CSGOptiX/OptiX7Test.cu:simulate 
 
-The qsim.h instance is uploaded once only at CSGOptiX instanciation 
-as this encompasses the physics not the event-by-event info.
-
-
-This is aiming to replace the OptiX 6 context in a CUDA-centric way.
+* qsim.h instance is uploaded once only at CSGOptiX instanciation 
+  as this encompasses the physics not the event-by-event info.
 
 * qsim encompasses global info relevant to to all photons, meaning that any changes
-  make to the qsim instance from single photon threads must be into thread-owned slots 
-  to avoid interference 
+  made to the qsim instance from single photon threads must be into thread-owned "idx" 
+  slots into arrays to avoid interference 
  
-* temporary working state local to each photon is currently being passed by reference args, 
-  would be cleaner to use a collective state struct to hold this local structs 
+* temporary working state local to each photon is held in sctx and passed around using 
+  reference arguments
 
 TODO:
 
-0. many of the below methods could be static (or const)
-1. some methods have too many parameters that could be avoided using 
-   some carefully chosen members, eg print_id/pidx
-2. get more methods to work on CPU as well as GPU for easier testing 
+1. get more of the below to work on CPU with mocked curand (and in future mocked tex2D and cudaTextureObject_t )
    NB must move decl and implementation to do this 
-3. more encapsulation of sub-concerns eg boundary 
 
 **/
-
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
    #define QSIM_METHOD __device__
@@ -47,28 +40,26 @@ TODO:
 
 #include "storch.h"
 #include "scarrier.h"
-
-#include "srec.h"
-#include "sseq.h"
 #include "scurand.h"
 #include "sevent.h"
 #include "sstate.h"
 
+#ifndef PRODUCTION
+#include "srec.h"
+#include "sseq.h"
 #ifdef DEBUG_TAG
 #include "stag.h"
 #endif
+#endif
 
 #include "sctx.h"
-
 
 #include "qbase.h"
 #include "qprop.h"
 #include "qmultifilm.h"
 #include "qbnd.h"
-
 #include "qscint.h"
 #include "qcerenkov.h"
-
 #include "tcomplex.h"
 
 struct curandStateXORWOW ; 
@@ -84,36 +75,15 @@ struct qsim
     qcerenkov*          cerenkov ; 
     qscint*             scint ; 
 
-            
-
     QSIM_METHOD void    generate_photon_dummy( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1); 
-
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
     QSIM_METHOD static float3 uniform_sphere(curandStateXORWOW& rng); 
 #endif
 
-
 #if defined(__CUDACC__) || defined(__CUDABE__)
-
     QSIM_METHOD float4  multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi);
-
-    /**
-     HMM: lots of repeated arguments for thread local state ... 
-
-          sphoton p
-          curandStateXORWOW rng 
-          stagr tagr
-
-     consolidating the usual set of struct reference arguments into an "sctx" 
-     would make it easier to vary what is included in the context without changing all the method signatures
-     AS WHEN DEBUGGING NEED MUCH MORE STUFF THAN IN PRODUCTION  
-    **/ 
-
-    QSIM_METHOD void    generate_photon_carrier(    sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-    QSIM_METHOD void    generate_photon_simtrace(   quad4&   p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
-    QSIM_METHOD void    generate_photon(            sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
 
 
     QSIM_METHOD static void lambertian_direction(float3* dir, const float3* normal, float orient, curandStateXORWOW& rng, sctx& ctx ); 
@@ -121,24 +91,25 @@ struct qsim
     QSIM_METHOD void rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx ); 
 
 
-    QSIM_METHOD void    mock_propagate( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx ); 
-
-    //QSIM_METHOD int     propagate(const int bounce, sphoton& p, sstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ); 
-    //QSIM_METHOD int     propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
-    //QSIM_METHOD int     propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
-    //QSIM_METHOD int     propagate_at_surface( unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr); 
-    //QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr);
-    //QSIM_METHOD void    reflect_diffuse(  sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr );
-    //QSIM_METHOD void    hemisphere_polarized( sphoton& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng, stagr& tagr); 
-
-    QSIM_METHOD int     propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD int     propagate_to_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD int     propagate_at_boundary( unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
-    QSIM_METHOD int     propagate_at_surface(  unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
     QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx );
-    QSIM_METHOD void    reflect_diffuse(  curandStateXORWOW& rng, sctx& ctx );
-    QSIM_METHOD void    reflect_specular( curandStateXORWOW& rng, sctx& ctx );
+    QSIM_METHOD int     propagate_at_surface(  unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
+
+    QSIM_METHOD void    reflect_diffuse(                       curandStateXORWOW& rng, sctx& ctx );
+    QSIM_METHOD void    reflect_specular(                                  curandStateXORWOW& rng, sctx& ctx );
+
+    QSIM_METHOD void    mock_propagate( sphoton& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx ); 
+    QSIM_METHOD int     propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx ); 
+
     QSIM_METHOD void    hemisphere_polarized( unsigned polz, bool inwards, curandStateXORWOW& rng, sctx& ctx ); 
+
+
+    QSIM_METHOD void    generate_photon_simtrace(   quad4&   p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+    QSIM_METHOD void    generate_photon(            sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ; 
+
+
+
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -155,17 +126,12 @@ struct qsim
     {
     }
 #endif
-
 }; 
-
 
 inline QSIM_METHOD void qsim::generate_photon_dummy(sphoton& p_, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
-
     quad4& p = (quad4&)p_ ; 
-
-
-    //printf("//qsim::generate_photon_dummy photon_id %d ", photon_id ); 
+#ifndef PRODUCTION
     printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n", 
        photon_id, 
        genstep_id, 
@@ -174,7 +140,7 @@ inline QSIM_METHOD void qsim::generate_photon_dummy(sphoton& p_, curandStateXORW
        gs.q0.i.z, 
        gs.q0.i.w
       );  
-
+#endif
     p.q0.i.x = 1 ; p.q0.i.y = 2 ; p.q0.i.z = 3 ; p.q0.i.w = 4 ; 
     p.q1.i.x = 1 ; p.q1.i.y = 2 ; p.q1.i.z = 3 ; p.q1.i.w = 4 ; 
     p.q2.i.x = 1 ; p.q2.i.y = 2 ; p.q2.i.z = 3 ; p.q2.i.w = 4 ; 
@@ -182,29 +148,6 @@ inline QSIM_METHOD void qsim::generate_photon_dummy(sphoton& p_, curandStateXORW
 
     p.set_flag(TORCH); 
 }
-
-
-
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
-
-/**
-qsim::uniform_sphere
----------------------
-
-
-**/
-
-
-inline QSIM_METHOD float3 qsim::uniform_sphere(curandStateXORWOW& rng)
-{
-    float phi = curand_uniform(&rng)*2.f*M_PIf;
-    float cosTheta = 2.f*curand_uniform(&rng) - 1.f ; // -1.f -> 1.f 
-    float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
-    return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
-}
-
-#endif
-
 
 inline QSIM_METHOD float3 qsim::uniform_sphere(const float u0, const float u1)
 {
@@ -215,26 +158,33 @@ inline QSIM_METHOD float3 qsim::uniform_sphere(const float u0, const float u1)
 }
 
 
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )
+/**
+qsim::uniform_sphere
+---------------------
 
-// TODO: get more of the below to work on CPU with mocked curand (and in future mocked tex2D and cudaTextureObject_t )
+**/
+inline QSIM_METHOD float3 qsim::uniform_sphere(curandStateXORWOW& rng)
+{
+    float phi = curand_uniform(&rng)*2.f*M_PIf;
+    float cosTheta = 2.f*curand_uniform(&rng) - 1.f ; // -1.f -> 1.f 
+    float sinTheta = sqrtf(1.f-cosTheta*cosTheta);
+    return make_float3(cosf(phi)*sinTheta, sinf(phi)*sinTheta, cosTheta); 
+}
+#endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-
-
 /*
- qsim::multifilm_lookup
--------------------
+qsim::multifilm_lookup
+-----------------------
  
 */
 
-inline QSIM_METHOD float4 qsim::multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi){
-
+inline QSIM_METHOD float4 qsim::multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi)
+{
     float4 value = multifilm->lookup(pmtType, boundary, nm, aoi);
     return value;
 }
-
-
-
 
 /**
 qsim::lambertian_direction following G4LambertianRand 
@@ -288,13 +238,10 @@ inline  QSIM_METHOD void qsim::lambertian_direction(float3* dir, const float3* n
             ndotv = -1.f*ndotv ; 
         } 
         u = curand_uniform(&rng) ; 
-
         //if( ctx.idx == 0u) printf("//qsim.lambertian_direction idx %d count %d  u %10.4f \n", ctx.idx, count, u ); 
-
     } 
     while (!(u < ndotv) && (count < 1024)) ;  
 }
-
 
 /**
 qsim::random_direction_marsaglia following G4RandomDirection
@@ -306,8 +253,8 @@ Marsaglia (1972) derived an elegant method that consists of picking u and v from
 uniform distributions on (-1,1) and rejecting points for which uu+vv >=1. 
 From the remaining points,
 
-    x=2 u sqrt(1-(uu+vv))	
-    y=2 v sqrt(1-(uu+vv))	
+    x=2*u*sqrt(1-(uu+vv))	
+    y=2*v*sqrt(1-(uu+vv))	
     z=1-2(uu+vv)
 
 Checking normalization, it reduces to 1::
@@ -359,17 +306,14 @@ Checking normalization, it reduces to 1::
 
 inline QSIM_METHOD void qsim::random_direction_marsaglia(float3* dir,  curandStateXORWOW& rng, sctx& ctx  )
 {
-    // NB: no use of ctx.tagr so this had not been random aligned 
-
+    // NB: no use of ctx.tagr so this has not been random aligned 
     float u0, u1 ; 
-
     float u, v, b, a  ; 
     do 
     {
         u0 = curand_uniform(&rng);
         u1 = curand_uniform(&rng);
         //if( idx == 0u ) printf("//qsim.random_direction_marsaglia idx %d u0 %10.4f u1 %10.4f \n", ctx.idx, u0, u1 ); 
-
         u = 2.f*u0 - 1.f ; 
         v = 2.f*u1 - 1.f ; 
         b = u*u + v*v ; 
@@ -426,18 +370,17 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx
         float u4 = curand_uniform(&rng) ;    
 
 #ifdef DEBUG_TAG
-        stagr& tagr = ctx.tagr ; 
+        stagr& tagr = ctx.tagr ;  // UNTESTED
         tagr.add(stag_sc_u0, u0); 
         tagr.add(stag_sc_u1, u1); 
         tagr.add(stag_sc_u2, u2); 
         tagr.add(stag_sc_u3, u3); 
         tagr.add(stag_sc_u4, u4); 
 #endif
-
         float cosTheta = u0 ;
         float sinTheta = sqrtf(1.0f-u0*u0);
         if(u1 < 0.5f ) cosTheta = -cosTheta ; 
-        // could use uniform_sphere here : but not doing so to closesly follow G4OpRayleigh
+        // could use uniform_sphere here : but not doing so to follow G4OpRayleigh more closely 
 
         float sinPhi ; 
         float cosPhi ; 
@@ -507,7 +450,6 @@ TODO: whilst in measurement iteration try changing to a single return, not loads
 
 **/
 
-//inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
 inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXORWOW& rng, sctx& ctx)
 {
     sphoton& p = ctx.p ; 
@@ -763,7 +705,6 @@ incidence.
 
 **/
 
-//inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
 inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, curandStateXORWOW& rng, sctx& ctx )
 {
     sphoton& p = ctx.p ; 
@@ -984,17 +925,13 @@ transmit
  Rp: p-component reflect probability
  Tp: p-component reflect probability
 
- TODO:
+TODO:
    access the qe
    access the multifilm catagory
    optical photon polarization
 
-
 */
 
-
-
-//inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
 inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx )
 { 
     sphoton& p = ctx.p ; 
@@ -1096,7 +1033,6 @@ qsim::propagate_at_surface
 
 **/
 
-//inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, sphoton& p, const quad2* prd, const sstate& s, curandStateXORWOW& rng, unsigned idx, stagr& tagr)
 inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, curandStateXORWOW& rng, sctx& ctx)
 {
     const sstate& s = ctx.s ; 
@@ -1178,7 +1114,6 @@ qsim::reflect_diffuse cf G4OpBoundaryProcess::DoReflection
 
 **/
 
-//inline QSIM_METHOD void qsim::reflect_diffuse( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr )
 inline QSIM_METHOD void qsim::reflect_diffuse( curandStateXORWOW& rng, sctx& ctx )
 {
     sphoton& p = ctx.p ;  
@@ -1194,7 +1129,6 @@ inline QSIM_METHOD void qsim::reflect_diffuse( curandStateXORWOW& rng, sctx& ctx
     p.pol = -1.f*(p.pol) + 2.f*EdotN*facet_normal ; 
 }
 
-//inline QSIM_METHOD void qsim::reflect_specular( sphoton& p, const quad2* prd, curandStateXORWOW& rng, unsigned idx )
 inline QSIM_METHOD void qsim::reflect_specular( curandStateXORWOW& rng, sctx& ctx )
 {
     sphoton& p = ctx.p ;  
@@ -1209,24 +1143,20 @@ inline QSIM_METHOD void qsim::reflect_specular( curandStateXORWOW& rng, sctx& ct
 }
 
 /**
-qsim::mock_propagate
-----------------------
+qsim::mock_propagate TODO: rename to mock_simulate 
+------------------------------------------------------
 
 This uses mock input prd (quad2) to provide a CUDA only (no OptiX, no geometry) 
 test of qsim propagation machinery. 
 
 * NB: qsim::mock_propagate is intended to be very similar to CSGOptiX/CSGOptiX7.cu::simulate 
 
-
 TODO
 ~~~~~
 
 * compare with cx/CSGOptiX7.cu::simulate and find users of this to see if it could be made more similar to cx::simulate 
-* adopt sctx.h and make this more like simulate  
-
 * can sstate be slimmed : seems not very easily 
 * simplify sstate persisting (quad6?quad5?)
-* compressed step *seq* recording  
 
 Stages within bounce loop
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1255,6 +1185,8 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
 {
     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
 
+    qsim* sim = this ; 
+
     sctx ctx = {} ; 
     ctx.p = p ;     // Q: Why is this different from CSGOptiX7.cu:simulate ? A: Presumably due to input photon. 
     ctx.evt = evt ; 
@@ -1269,6 +1201,7 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
     while( bounce < evt->max_bounce )
     {
         ctx.prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
+        if( ctx.prd->boundary() == 0xffffu ) break ;   // SHOULD NEVER HAPPEN : propagate can do nothing meaningful without a boundary 
 #ifndef PRODUCTION
         ctx.trace(bounce);  
 #endif
@@ -1278,21 +1211,17 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
         printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d prd.q0.f.xyzw (%10.4f %10.4f %10.4f %10.4f) \n", 
              idx, bounce, evt->max_bounce, ctx.prd->q0.f.x, ctx.prd->q0.f.y, ctx.prd->q0.f.z, ctx.prd->q0.f.w );  
 #endif
-
-        //command = propagate(bounce, ctx.p, ctx.s, ctx.prd, rng, ctx.idx, ctx.tagr ); 
-        command = propagate(bounce, rng, ctx ); 
+        command = sim->propagate(bounce, rng, ctx ); 
         bounce++;        
 #ifndef PRODUCTION
         ctx.point(bounce); 
 #endif
-        //printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d command %d \n", idx, bounce, evt->max_bounce, command ); 
         if(command == BREAK) break ;    
     }
 #ifndef PRODUCTION
     ctx.end();   
 #endif
     evt->photon[idx] = ctx.p ;
-
 }
 
 /**
@@ -1305,7 +1234,6 @@ TODO: missing needs to return BREAK
 
 **/
 
-//inline QSIM_METHOD int qsim::propagate(const int bounce, sphoton& p, sstate& s, const quad2* prd, curandStateXORWOW& rng, unsigned idx, stagr& tagr ) 
 inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx ) 
 {
     const unsigned boundary = ctx.prd->boundary() ; 
@@ -1357,7 +1285,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
 
 
 /**
-qsim::hemisphere_s_polarized
+qsim::hemisphere_polarized
 ------------------------------
 
 
@@ -1393,7 +1321,6 @@ inwards.
  
 **/
 
-//inline QSIM_METHOD void qsim::hemisphere_polarized(sphoton& p, unsigned polz, bool inwards, const quad2* prd, curandStateXORWOW& rng, stagr& tagr )
 inline QSIM_METHOD void qsim::hemisphere_polarized( unsigned polz, bool inwards, curandStateXORWOW& rng, sctx& ctx )
 {
     sphoton& p = ctx.p ; 
@@ -1432,8 +1359,6 @@ inline QSIM_METHOD void qsim::hemisphere_polarized( unsigned polz, bool inwards,
         case 2: p.pol = normalize( 0.5f*transverse + (1.f-0.5f)*within )  ; break ;  // equal admixture
     }
 }
-
-
 
 
 
@@ -1505,23 +1430,19 @@ inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, curandStateXORW
     unsigned char ucj = (photon_id < 255 ? photon_id : 255 ) ;
     gsid.c4.w = ucj ; 
     p.q3.u.w = gsid.u ;
-
 } 
-
-
 
 /**
 qsim::generate_photon
 ----------------------
 
-Moved non-standard center-extent gensteps to use qsim::generate_photon_simtrace not this 
+Moved non-standard center-extent (aka frame) gensteps to use qsim::generate_photon_simtrace not this 
 
 **/
 
 inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const 
 {
     const int& gencode = gs.q0.i.x ; 
-
     switch(gencode)
     {
         case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ; 
@@ -1532,7 +1453,5 @@ inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng
         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ; 
     }
 }
-
-
 #endif
 

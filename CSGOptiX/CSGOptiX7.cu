@@ -205,7 +205,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     sevent* evt      = params.evt ; 
     if (launch_idx.x >= evt->num_photon) return;
 
-    unsigned idx = launch_idx.x ;  // aka photon_id
+    unsigned idx = launch_idx.x ;  // aka photon_idx
     unsigned genstep_idx = evt->seed[idx] ; 
     const quad6& gs     = evt->genstep[genstep_idx] ; 
      
@@ -224,16 +224,13 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #ifndef PRODUCTION
     ctx.point(bounce);  
 #endif
-
     while( bounce < evt->max_bounce )
     {    
         trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd);  // geo query filling prd      
         if( prd->boundary() == 0xffffu ) break ;   // SHOULD NEVER HAPPEN : propagate can do nothing meaningful without a boundary 
-
 #ifndef PRODUCTION
         ctx.trace(bounce);  
 #endif
-        //command = sim->propagate(bounce, ctx.p, ctx.s, ctx.prd, rng, ctx.idx, ctx.tagr ); 
         command = sim->propagate(bounce, rng, ctx); 
         bounce++;     
 #ifndef PRODUCTION
@@ -241,7 +238,6 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #endif
         if(command == BREAK) break ;    
     }    
-
 #ifndef PRODUCTION
     ctx.end(); 
 #endif

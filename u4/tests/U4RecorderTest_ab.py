@@ -13,6 +13,7 @@ import numpy as np
 
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
+from opticks.ana.eprint import eprint, epr
 
 from opticks.sysrap.xfold import XFold
 from opticks.sysrap.stag import stag  
@@ -40,10 +41,21 @@ if __name__ == '__main__':
     pass
     ab = (not a is None) and (not b is None)
     if ab: 
+        im = epr("im = np.abs(a.inphoton - b.inphoton).max()", globals(), locals() )  
+        pm = epr("pm = np.abs(a.photon - b.photon).max()",     globals(), locals() )  
+        rm = epr("rm = np.abs(a.record - b.record).max()",     globals(), locals() )  
+        sm = epr("sm = np.all( a.seq[:,0] == b.seq[:,0] )",    globals(), locals() )  
+
+        eprint("np.all( A.ts == B.ts2 )", globals(), locals() )
+        eprint("np.all( A.ts2 == B.ts )", globals(), locals() )
+
         assert (a.inphoton - b.inphoton).max() < 1e-10 
         assert np.all( A.ts == B.ts2 ) 
         assert np.all( A.ts2 == B.ts )  
     pass
+
+
+
 
 
 

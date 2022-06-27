@@ -95,11 +95,11 @@ SCTX_METHOD void sctx::end()
 {
     if( evt->seq) evt->seq[idx] = seq ; // Q: did I forget rec ? A: No. rec+record are added to evt->rec+record in sctx::point 
 #ifdef DEBUG_TAG
-    printf("//sctx::end DEBUG_TAG idx %d \n", idx ) ; 
+    //printf("//sctx::end DEBUG_TAG idx %d \n", idx ) ; 
     if(evt->tag)  evt->tag[idx]  = tagr.tag ;
     if(evt->flat) evt->flat[idx] = tagr.flat ;
 #else
-    printf("//sctx::end not-DEBUG_TAG idx %d \n", idx ) ; 
+    //printf("//sctx::end not-DEBUG_TAG idx %d \n", idx ) ; 
 #endif
 }
 

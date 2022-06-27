@@ -9,9 +9,14 @@ into these functions.
 
 For example::
 
-    from opticks.ana.eprint import eprint 
+    from opticks.ana.eprint import eprint, epr
     ...
     eprint("np.all( t.boundary_lookup_all == t.boundary_lookup_all_src )", globals(), locals() )
+
+    # OR returning the evaluation with epr:
+    bm = epr("bm = np.all( t.boundary_lookup_all == t.boundary_lookup_all_src )", globals(), locals() ) 
+
+TODO: annotated check asserts
 
 """
 
@@ -38,6 +43,10 @@ def eprint( expr, g, l, lprefix="", rprefix="", tail="" ):
 
 def epr(arg, g, l, **kwa):
     """
+    Slightly higher level variant of expression printing that invokes eprint 
+    with lprefix and expr obtained by parsing the *arg* to find the symbol 
+    and expression on either side of equal sign. 
+
     :param arg: 
     :param g: globals() from calling scope
     :param l: locals() from calling scope
@@ -53,7 +62,5 @@ def epr(arg, g, l, **kwa):
         lprefix, expr = "", arg 
     pass
     return eprint(expr, g, l,  lprefix=lprefix,  **kwa)
-
-
 
 

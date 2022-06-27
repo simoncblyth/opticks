@@ -21,8 +21,10 @@
 """
 Copied from env/doc/make_rst_table.py 
 
-
 http://stackoverflow.com/questions/11347505/what-are-some-approaches-to-outputting-a-python-data-structure-to-restructuredte
+
+NOTE THAT ana/rsttable.py is a much more capable approach to the same problem 
+
 
 """
 import os, logging, numpy as np

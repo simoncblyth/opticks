@@ -18,26 +18,39 @@ and create an RST table presenting this.
     Pkg : 262 : /Users/blyth/opticks/cfg4 : {'.cc': 117, '.h': 9, '.hh': 117, '.py': 3, '.rst': 7, '.sh': 4, '.txt': 2, '.bash': 1, '': 1, '.old': 1}
 
 """
-import os 
+import os, numpy as np
+from opticks.ana.rsttable import RSTTable
 
 
 class Pkg(object):
+    EXCLUDE = ".pyc .log .swp .txt .rst .in .old .sh .bash .cfg".split()
+    EXTS = ".hh .h .hpp .cc .cpp .cu .py".split()
     def __init__(self, fold):
         names = os.listdir(fold)
+        pkg = os.path.basename(fold)
 
         exts = {}
         for name in names:
             stem, ext = os.path.splitext(name)
+            if ext == "" or ext in self.EXCLUDE: continue
+            if not ext in self.EXTS: print("unexpected ext %s " % ext )
             if not ext in exts: exts[ext] = 0
             exts[ext]+=1   
         pass
+        stats = np.zeros( (1+len(self.EXTS),), dtype=np.object )
+
+        stats[0] = pkg
+        for i, ext in enumerate(self.EXTS): 
+            stats[1+i] = exts.get(ext, 0)
+        pass
         self.fold = fold
+        self.pkg = pkg
         self.names = names
         self.exts = exts  
-
+        self.stats = stats 
 
     def __repr__(self):
-        return "Pkg : %3d : %s : %s " % (len(self.names), self.fold, repr(self.exts)) 
+        return "Pkg : %3d : %15s : %s " % (len(self.names), self.pkg, repr(self.exts)) 
  
 
 class Stats(object):
@@ -51,8 +64,17 @@ class Stats(object):
                 pkgs.append(pkg)
             pass 
         pass
+        stats = np.zeros( ( len(pkgs), 1+len(Pkg.EXTS) ), dtype=np.object )
+        for i, pkg in enumerate(pkgs):
+            stats[i] = pkg.stats
+        pass
+
         self.pkgs = pkgs
+        self.stats = stats
     pass
+    def __str__(self):
+        labels = ["pkg"]+Pkg.EXTS ;   
+        return RSTTable.Rdr(self.stats, labels, rfm="%10d", left_wid=15, left_rfm="%15s", left_hfm="%15s" )
     def __repr__(self):
         return "\n".join(list(map(repr, self.pkgs)))
     pass

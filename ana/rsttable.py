@@ -32,7 +32,7 @@ class RSTTable(object):
          return str(tab)
 
      @classmethod
-     def Rdr(cls, t, labels, wid=10, hfm="%10s", rfm="%10.4f", pre_="", post_=""  ):
+     def Rdr(cls, t, labels, wid=10, hfm="%10s", rfm="%10.4f", pre_="", post_="", left_wid=None, left_rfm=None, left_hfm=None  ):
          """
          :param t: 2D array "table" of np.object items to populate the RST table
          :param labels: list of labels
@@ -52,6 +52,16 @@ class RSTTable(object):
          rfmt = np.repeat( rfm, nlab )
          pre  = np.repeat( pre_, nlab )
          post  = np.repeat( post_, nlab )
+
+         if not left_wid is None:
+             wids[0] = left_wid
+         pass
+         if not left_rfm is None:
+             rfmt[0] = left_rfm 
+         pass 
+         if not left_hfm is None:
+             hfmt[0] = left_hfm 
+         pass 
 
          rst = cls.Render(t, labels, wids, hfmt, rfmt, pre, post )
          return rst 
@@ -125,10 +135,22 @@ def test_Rdr3x3():
      print(rst)
 
 
+def test_Rdr3x4():
+     log.info("test_Rdr3x4")
+     t = np.zeros( [3,4], dtype=np.object )
+     t[0] = [ "one", 1.1 , 1.2 , 1.3 ]
+     t[1] = [ "two", 2.2 , 3.1 , 4.1 ]
+     t[2] = [ "three", 3.2 , 4.1 , 5.1 ]
+     labels = ["key", "A", "B", "C" ] 
+     rst = RSTTable.Rdr(t, labels, left_wid=15, left_rfm="%15s", left_hfm="%15s" )
+     print(rst)
+
+
 if __name__ == '__main__':
      logging.basicConfig(level=logging.INFO)
      test_Render()
      test_Rdr2x2()
      test_Rdr3x3()
+     test_Rdr3x4()
 
 
