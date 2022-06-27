@@ -108,5 +108,14 @@ if __name__ == '__main__':
     for i in range(min(100,len(t.seq))):
         print("%4d : %s " % (i, seqhis_(t.seq[i,0])))
     pass
+
+    seq_u, seq_c = np.unique(seq[:,0], return_counts=True)  
+    for i in range(len(seq_u)):
+        print("%4d : %4d : %20s  " % (i, seq_c[i], seqhis_(seq_u[i]) ))
+    pass
+
+
+
+
 pass
 

@@ -99,6 +99,8 @@ if [ "${arg/run}" != "$arg" -o "${arg/dru}" != "$arg" -o "$arg" == "dbg" ]; then
     iwd=$PWD
     cd $logdir
 
+    export CSGMaker_makeBoxedSphere_FACTOR=10
+
     if [ -n "$DEBUG" -o "$arg" == "dbg" ]; then 
         case $(uname) in
            Darwin) lldb__  $bin  ;;

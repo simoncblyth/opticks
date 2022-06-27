@@ -42,8 +42,6 @@ NP* SEvent::MakeDemoGensteps(const char* config)
     return gs ; 
 }
 
-
-
 NP* SEvent::MakeTorchGensteps(){    return MakeGensteps( OpticksGenstep_TORCH ) ; }
 NP* SEvent::MakeCerenkovGensteps(){ return MakeGensteps( OpticksGenstep_CERENKOV ) ; }
 NP* SEvent::MakeScintGensteps(){    return MakeGensteps( OpticksGenstep_SCINTILLATION ) ; }
@@ -51,14 +49,15 @@ NP* SEvent::MakeCarrierGensteps(){  return MakeGensteps( OpticksGenstep_CARRIER 
 
 NP* SEvent::MakeGensteps( int gentype )
 {
+    unsigned num_ph = SSys::getenvunsigned("SEvent_MakeGensteps_num_ph", 100 ); 
     unsigned num_gs = 1 ; 
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
     switch(gentype)
     {
-        case  OpticksGenstep_TORCH:         FillGensteps<storch>(   gs, 100) ; break ; 
-        case  OpticksGenstep_CERENKOV:      FillGensteps<scerenkov>(gs, 100) ; break ; 
-        case  OpticksGenstep_SCINTILLATION: FillGensteps<sscint>(   gs, 100) ; break ; 
-        case  OpticksGenstep_CARRIER:       FillGensteps<scarrier>( gs, 10)  ; break ; 
+        case  OpticksGenstep_TORCH:         FillGensteps<storch>(   gs, num_ph) ; break ; 
+        case  OpticksGenstep_CERENKOV:      FillGensteps<scerenkov>(gs, num_ph) ; break ; 
+        case  OpticksGenstep_SCINTILLATION: FillGensteps<sscint>(   gs, num_ph) ; break ; 
+        case  OpticksGenstep_CARRIER:       FillGensteps<scarrier>( gs, num_ph) ; break ; 
     }
     return gs ; 
 }

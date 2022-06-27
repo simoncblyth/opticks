@@ -9,12 +9,12 @@ Canonical use is from CSGOptiX/OptiX7Test.cu:simulate
 * qsim.h instance is uploaded once only at CSGOptiX instanciation 
   as this encompasses the physics not the event-by-event info.
 
-* qsim encompasses global info relevant to to all photons, meaning that any changes
+* qsim encompasses global info relevant to all photons, meaning that any changes
   made to the qsim instance from single photon threads must be into thread-owned "idx" 
   slots into arrays to avoid interference 
  
-* temporary working state local to each photon is held in sctx and passed around using 
-  reference arguments
+* temporary working state local to each photon is held in *sctx* 
+  and passed around using reference arguments
 
 TODO:
 
@@ -371,11 +371,11 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(curandStateXORWOW& rng, sctx& ctx
 
 #ifdef DEBUG_TAG
         stagr& tagr = ctx.tagr ;  // UNTESTED
-        tagr.add(stag_sc_u0, u0); 
-        tagr.add(stag_sc_u1, u1); 
-        tagr.add(stag_sc_u2, u2); 
-        tagr.add(stag_sc_u3, u3); 
-        tagr.add(stag_sc_u4, u4); 
+        tagr.add(stag_sc, u0); 
+        tagr.add(stag_sc, u1); 
+        tagr.add(stag_sc, u2); 
+        tagr.add(stag_sc, u3); 
+        tagr.add(stag_sc, u4); 
 #endif
         float cosTheta = u0 ;
         float sinTheta = sqrtf(1.0f-u0*u0);

@@ -29,7 +29,8 @@ enum
     U4Stack_AbsorptionDiscreteReset = 6,
     U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb = 7,
     U4Stack_BoundaryDiDiTransCoeff  = 8,
-    U4Stack_AbsorptionEffDetect     = 9
+    U4Stack_AbsorptionEffDetect     = 9,
+    U4Stack_RayleighScatter         = 10
 };
 
 struct U4Stack 
@@ -156,6 +157,16 @@ G4SteppingManager::InvokePostStepDoItProcs
 G4SteppingManager::Stepping
 )" ; 
 
+    static constexpr const char* RayleighScatter_ = "RayleighScatter" ;  // 10 
+    static constexpr const char* RayleighScatter = R"(
+U4Random::flat
+G4OpRayleigh::PostStepDoIt
+G4SteppingManager::InvokePSDIP
+G4SteppingManager::InvokePostStepDoItProcs
+G4SteppingManager::Stepping
+)" ; 
+
+
 }; 
 
 inline unsigned U4Stack::Classify(const char* summary)
@@ -170,6 +181,7 @@ inline unsigned U4Stack::Classify(const char* summary)
     if(strstr(summary, BoundaryBurn_SurfaceReflectTransmitAbsorb)) stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; 
     if(strstr(summary, BoundaryDiDiTransCoeff))        stack = U4Stack_BoundaryDiDiTransCoeff ; 
     if(strstr(summary, AbsorptionEffDetect))           stack = U4Stack_AbsorptionEffDetect ; 
+    if(strstr(summary, RayleighScatter))               stack = U4Stack_RayleighScatter ; 
     return stack ; 
 }
 inline bool U4Stack::IsClassified(unsigned stack)
@@ -191,7 +203,8 @@ inline const char* U4Stack::Name(unsigned stack)
         case U4Stack_AbsorptionDiscreteReset:       s = AbsorptionDiscreteReset_ ; break ; 
         case U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb: s = BoundaryBurn_SurfaceReflectTransmitAbsorb_  ; break ; 
         case U4Stack_BoundaryDiDiTransCoeff:        s = BoundaryDiDiTransCoeff_  ; break ; 
-        case U4Stack_AbsorptionEffDetect:           s = AbsorptionEffDetect_            ; break ; 
+        case U4Stack_AbsorptionEffDetect:           s = AbsorptionEffDetect_     ; break ; 
+        case U4Stack_RayleighScatter:               s = RayleighScatter_         ; break ; 
     }
     if(s) assert( Code(s) == stack ) ; 
     return s ; 
@@ -210,6 +223,7 @@ inline unsigned U4Stack::Code(const char* name)
     if(strcmp(name, BoundaryBurn_SurfaceReflectTransmitAbsorb_) == 0)  stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; 
     if(strcmp(name, BoundaryDiDiTransCoeff_) == 0)         stack = U4Stack_BoundaryDiDiTransCoeff ; 
     if(strcmp(name, AbsorptionEffDetect_) == 0)            stack = U4Stack_AbsorptionEffDetect ; 
+    if(strcmp(name, RayleighScatter_) == 0 )               stack = U4Stack_RayleighScatter  ;
     return stack ; 
 }
 
@@ -234,14 +248,15 @@ inline unsigned U4Stack::TagToStack(unsigned tag)
     unsigned stack = U4Stack_Unclassified ;
     switch(tag)
     {
-        case stag_undef:      stack = U4Stack_Unclassified                              ; break ;  // 0 -> 0
-        case stag_to_sci:     stack = U4Stack_ScintDiscreteReset                        ; break ;  // 1 -> 3
-        case stag_to_bnd:     stack = U4Stack_BoundaryDiscreteReset                     ; break ;  // 2 -> 4 
-        case stag_to_sca:     stack = U4Stack_RayleighDiscreteReset                     ; break ;  // 3 -> 5 
-        case stag_to_abs:     stack = U4Stack_AbsorptionDiscreteReset                   ; break ;  // 4 -> 6 
+        case stag_undef:      stack = U4Stack_Unclassified                              ; break ;        // 0 -> 0
+        case stag_to_sci:     stack = U4Stack_ScintDiscreteReset                        ; break ;        // 1 -> 3
+        case stag_to_bnd:     stack = U4Stack_BoundaryDiscreteReset                     ; break ;        // 2 -> 4 
+        case stag_to_sca:     stack = U4Stack_RayleighDiscreteReset                     ; break ;        // 3 -> 5 
+        case stag_to_abs:     stack = U4Stack_AbsorptionDiscreteReset                   ; break ;        // 4 -> 6 
         case stag_at_burn_sf_sd:    stack = U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb ; break ;  // 5 -> 7 
-        case stag_at_ref:     stack = U4Stack_BoundaryDiDiTransCoeff                    ; break ;  // 6 -> 8 
-        case stag_sf_burn:    stack = U4Stack_AbsorptionEffDetect                       ; break ;  // 8 -> 10
+        case stag_at_ref:     stack = U4Stack_BoundaryDiDiTransCoeff                    ; break ;        // 6 -> 8 
+        case stag_sf_burn:    stack = U4Stack_AbsorptionEffDetect                       ; break ;        // 7 -> 9
+        case stag_sc:         stack = U4Stack_RayleighScatter                           ; break ;        // 8 -> 10
         case stag_to_ree:     stack = U4Stack_Unclassified ; break ;  // 9
         case stag_re_wl:      stack = U4Stack_Unclassified ; break ;  // 10
         case stag_re_mom_ph:  stack = U4Stack_Unclassified ; break ;  // 11
@@ -250,11 +265,6 @@ inline unsigned U4Stack::TagToStack(unsigned tag)
         case stag_re_pol_ct:  stack = U4Stack_Unclassified ; break ;  // 14
         case stag_hp_ph:      stack = U4Stack_Unclassified ; break ;  // 15
         case stag_hp_ct:      stack = U4Stack_Unclassified ; break ;  // 16 
-        case stag_sc_u0:      stack = U4Stack_Unclassified ; break ;  // 17
-        case stag_sc_u1:      stack = U4Stack_Unclassified ; break ;  // 18
-        case stag_sc_u2:      stack = U4Stack_Unclassified ; break ;  // 19
-        case stag_sc_u3:      stack = U4Stack_Unclassified ; break ;  // 20
-        case stag_sc_u4:      stack = U4Stack_Unclassified ; break ;  // 21
     }
     return stack ; 
 }

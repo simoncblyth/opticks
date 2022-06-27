@@ -285,8 +285,10 @@ each with a single CSGNode.
 
 CSGSolid* CSGMaker::makeBoxedSphere(const char* label)
 {
-    float halfside = SSys::getenvfloat("HALFSIDE", 100.f); 
-    float factor   = SSys::getenvfloat("FACTOR", 1.f); 
+    float halfside = SSys::getenvfloat("CSGMaker_makeBoxedSphere_HALFSIDE", 100.f); 
+    float factor   = SSys::getenvfloat("CSGMaker_makeBoxedSphere_FACTOR", 1.f); 
+    LOG(info) << "CSGMaker_makeBoxedSphere_HALFSIDE " << halfside  ; 
+    LOG(info) << "CSGMaker_makeBoxedSphere_FACTOR   " << factor ; 
 
     float radius   = halfside/2.f ; 
     float box_halfside = halfside*factor ; 

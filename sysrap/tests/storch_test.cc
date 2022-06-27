@@ -16,9 +16,7 @@ Standalone compile and run with::
 #include "scurand.h"    // this brings in s_mock_curand.h for CPU when MOCK_CURAND macro is defined 
 #include "sphoton.h"
 #include "storch.h"
-
 #include "SEvent.hh"
-
 #include "NP.hh"
 
 const char* FOLD = getenv("FOLD") ; 
@@ -44,7 +42,7 @@ NP* make_torch_photon( const NP* gs, const NP* se )
         
         storch::generate(p, rng, g, photon_id, genstep_id ); 
 
-        std::cout << p.desc() << std::endl;  
+        std::cout << p.descBase() << std::endl;  
     }
     return ph ; 
 }

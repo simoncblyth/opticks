@@ -115,6 +115,8 @@ struct sphoton
 #else
     SPHOTON_METHOD unsigned flagmask_count() const ; 
     SPHOTON_METHOD std::string desc() const ; 
+    SPHOTON_METHOD std::string descBase() const ; 
+    SPHOTON_METHOD std::string descDetail() const ; 
     SPHOTON_METHOD std::string descFlag() const ; 
     SPHOTON_METHOD void ephoton() ; 
     SPHOTON_METHOD void normalize_mom_pol(); 
@@ -152,16 +154,31 @@ SPHOTON_METHOD unsigned sphoton::flagmask_count() const
 SPHOTON_METHOD std::string sphoton::desc() const 
 {
     std::stringstream ss ; 
+    ss << descBase() << descDetail() ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+SPHOTON_METHOD std::string sphoton::descBase() const 
+{
+    std::stringstream ss ; 
     ss 
         << " pos " << pos 
-        << " t  " << time 
-        << std::endl
+        << " t  " << std::setw(8) << time 
+        << " " 
         << " mom " << mom 
-        << " iindex " << iindex 
-        << std::endl
+        << " iindex " << std::setw(4) << iindex 
+        << " "
         << " pol " << pol 
-        << " wl " << wavelength 
-        << std::endl
+        << " wl " << std::setw(8) << wavelength 
+        << " "
+        ;
+    std::string s = ss.str(); 
+    return s ; 
+} 
+SPHOTON_METHOD std::string sphoton::descDetail() const 
+{
+    std::stringstream ss ; 
+    ss 
         << " bn " << boundary() 
         << " fl " << std::hex << flag() << std::dec
         << " id " << identity 
@@ -169,16 +186,14 @@ SPHOTON_METHOD std::string sphoton::desc() const
         << " ix " << idx() 
         << " fm " << std::hex << flagmask  << std::dec 
         << " ab " << OpticksPhoton::Abbrev( flag() )
-        << std::endl 
+        << " "
         << " digest(16) " << digest(16) 
-        << std::endl 
+        << " "
         << " digest(12) " << digest(12) 
         ;
-
     std::string s = ss.str(); 
     return s ; 
 } 
-
 SPHOTON_METHOD std::string sphoton::descFlag() const 
 {
     std::stringstream ss ; 

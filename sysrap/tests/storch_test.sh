@@ -56,6 +56,10 @@ if [ "${arg/build}" != "$arg" ]; then
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
+
+    export storch_FillGenstep_pos=0,0,-990
+    export SEvent_MakeGensteps_num_ph=10000
+
     $bdir/$name
     [ $? -ne 0 ] && echo $msg run error && exit 2 
 fi
@@ -97,7 +101,6 @@ if [ "${arg/grab}" != "$arg" ]; then
     else
        echo $msg skipping
     fi  
-
 fi
 
 if [ "${arg/ls}" != "$arg" ]; then
@@ -105,7 +108,6 @@ if [ "${arg/ls}" != "$arg" ]; then
    find $tto -name '*.json' -o -name '*.txt' -print0 | xargs -0 ls -1rt 
    find $tto -name '*.jpg' -o -name '*.mp4' -o -name '*.npy' -print0 | xargs -0 ls -1rt
 fi 
-
 
 
 exit 0 

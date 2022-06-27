@@ -263,10 +263,17 @@ Defaults::
 
 **/
 
+
+
+
 G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater()
 {
-    double halfside = SSys::getenvdouble("HALFSIDE", 100.); 
-    double factor   = SSys::getenvdouble("FACTOR",   1.); 
+    double halfside = SSys::getenvdouble(U4VolumeMaker_RaindropRockAirWater_HALFSIDE, 100.); 
+    double factor   = SSys::getenvdouble(U4VolumeMaker_RaindropRockAirWater_FACTOR,   1.); 
+
+    LOG(info) << U4VolumeMaker_RaindropRockAirWater_HALFSIDE << " " << halfside ; 
+    LOG(info) << U4VolumeMaker_RaindropRockAirWater_FACTOR   << " " << factor ; 
+
     return RaindropRockAirWater(halfside, factor); 
 }
 

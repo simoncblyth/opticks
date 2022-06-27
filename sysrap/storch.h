@@ -103,6 +103,8 @@ struct storch
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    float* cdata() const {  return (float*)&gentype ; }
+   static constexpr const char* storch_FillGenstep_mom = "storch_FillGenstep_mom" ; 
+   static constexpr const char* storch_FillGenstep_pos = "storch_FillGenstep_pos" ; 
    static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
    std::string desc() const ; 
 #endif
@@ -114,19 +116,24 @@ struct storch
 #else
 inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep )
 {
-    float3 mom = make_float3( 0.f, 0.f, 1.f );  
-
     gs.gentype = OpticksGenstep_TORCH ; 
-    gs.wavelength = 501.f ; 
-    gs.mom = normalize(mom); 
-    gs.radius = 50.f ; 
-    gs.pos = make_float3( 0.f, 0.f, -90.f );  
+    gs.numphoton = numphoton_per_genstep  ;   
+
+    qvals( gs.pos , storch_FillGenstep_pos , "0,0,-90" );    
     gs.time = 0.f ; 
+    printf("//storch::FillGenstep storch_FillGenstep_pos gs.pos (%10.4f %10.4f %10.4f) \n", gs.pos.x, gs.pos.y, gs.pos.z ); 
+
+    qvals( gs.mom , storch_FillGenstep_mom , "0,0,1" );    
+    gs.mom = normalize(gs.mom); 
+    printf("//storch::FillGenstep storch_FillGenstep_mom gs.mom (%10.4f %10.4f %10.4f) \n", gs.mom.x, gs.mom.y, gs.mom.z ); 
+
+    gs.wavelength = 501.f ; 
     gs.zenith = make_float2( 0.f, 1.f );  
     gs.azimuth = make_float2( 0.f, 1.f );  
+
+    gs.radius = 50.f ; 
     gs.type = storchtype::Type("disc");  
     gs.mode = 255 ;    //torchmode::Type("...");  
-    gs.numphoton = numphoton_per_genstep  ;   
 }
 
 

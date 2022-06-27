@@ -36,6 +36,9 @@ struct U4_API U4VolumeMaker
 
     static G4VPhysicalVolume* BoxOfScintillator( double halfside ); 
 
+
+    static constexpr const char* U4VolumeMaker_RaindropRockAirWater_HALFSIDE = "U4VolumeMaker_RaindropRockAirWater_HALFSIDE" ; 
+    static constexpr const char* U4VolumeMaker_RaindropRockAirWater_FACTOR   = "U4VolumeMaker_RaindropRockAirWater_FACTOR" ; 
     static G4VPhysicalVolume* RaindropRockAirWater();  
     static G4VPhysicalVolume* RaindropRockAirWater( double halfside, double factor ); 
 
