@@ -31,6 +31,13 @@ Changing the geometry::
     ./CSGMakerTest.sh 
 
 
+For A-B comparison with U4RecorderTest. Manually arrange same geometry and then::
+
+    u4t
+    ./U4RecorderTest.sh run
+    ./U4RecorderTest.sh ab    # after grabbing the corresponding cxs_rainbow.sh outputs
+
+
 EOU
 }
 
@@ -105,7 +112,8 @@ if [ "${arg/run}" != "$arg" -o "${arg/dru}" != "$arg" -o "$arg" == "dbg" ]; then
     iwd=$PWD
     cd $logdir
 
-    export CSGMaker_makeBoxedSphere_FACTOR=10
+    ## Useless setting this here, must be set when run c:CSGMakerTest.sh 
+    ##export CSGMaker_makeBoxedSphere_FACTOR=10
 
     if [ -n "$DEBUG" -o "$arg" == "dbg" ]; then 
         case $(uname) in

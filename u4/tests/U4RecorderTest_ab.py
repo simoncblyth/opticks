@@ -26,19 +26,12 @@ stack = U4Stack()
 
 if __name__ == '__main__':
 
-    if "A_FOLD" in os.environ:
-        a = Fold.Load("$A_FOLD", symbol="a")
-        A = XFold(a, symbol="A")
-    else:
-        a = None 
-    pass
+    a = Fold.Load("$A_FOLD", symbol="a") if "A_FOLD" in os.environ else None
+    b = Fold.Load("$B_FOLD", symbol="b") if "B_FOLD" in os.environ else None
 
-    if "B_FOLD" in os.environ:
-        b = Fold.Load("$B_FOLD", symbol="b")
-        B = XFold(b, symbol="B")
-    else:
-        b = None
-    pass
+    A = XFold(a, symbol="A") if not a is None else None
+    B = XFold(b, symbol="B") if not b is None else None
+
     ab = (not a is None) and (not b is None)
     if ab: 
         im = epr("im = np.abs(a.inphoton - b.inphoton).max()", globals(), locals() )  

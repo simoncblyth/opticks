@@ -23,6 +23,9 @@ EOU
 }
 
 source ../bin/GEOM.sh trim 
+
+export CSGMaker_makeBoxedSphere_FACTOR=10
+
 bin=CSGMakerTest 
 
 echo === $BASH_SOURCE :  GEOM $GEOM bin $bin which $(which $bin)

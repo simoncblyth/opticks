@@ -46,12 +46,13 @@ class stag(object):
  
 
     @classmethod
-    def StepSplit(cls, tg, fl=None,  step_slot=10):
+    def StepSplit(cls, tg, fl=None):
         """
+        Hmm maybe StepFold is clearer name 
+
         :param tg: unpacked tag array of shape (n, SLOTS)
         :param fl: None or flat array of shape (n, SLOTS)
-        :param step_slot: max random throws per step  
-        :return tgs OR (tgs,fls): step split arrays of shape (n, max_starts, step_slot) 
+        :return tgs OR (tgs,fls): step split arrays of shape (n, max_starts, max_slots) 
 
         In [4]: at[0]
         Out[4]: array([ 1,  2,  9, 10,  1,  2,  9, 10,  1,  2, 11, 12,  0,  0,  0,  0], dtype=uint8)
@@ -68,20 +69,28 @@ class stag(object):
             assert fl.shape == tg.shape 
         pass
 
-        max_starts = 0 
+        max_starts = 0   ## corresponds to the maximum number of steps of all photons 
+        max_slots = 0 
         for i in range(len(tg)):
-            starts = np.where( tg[i] == tg[0,0] )[0] 
+            starts = np.where( tg[i] == tg[0,0] )[0] # indices of where the very first tag appears in this photons tags 
             if len(starts) > max_starts: max_starts = len(starts)
+            ends = np.where( tg[i] == 0 )[0] 
+            end = ends[0] if len(ends) > 0 else len(tg[i])  
+            mkr = np.concatenate( (starts, np.array((end,))) )
+            mkr_slots = np.diff(mkr).max()  
+            if mkr_slots > max_slots: max_slots = mkr_slots  
         pass
+        print("max_starts:%s max_slots:%d" % (max_starts, max_slots))
 
-        tgs = np.zeros((len(tg), max_starts, step_slot), dtype=np.uint8)
-        fls = np.zeros((len(tg), max_starts, step_slot), dtype=np.float32) if not fl is None else None
+        tgs = np.zeros((len(tg), max_starts, max_slots), dtype=np.uint8)
+        fls = np.zeros((len(tg), max_starts, max_slots), dtype=np.float32) if not fl is None else None
 
         for i in range(len(tg)):
             starts = np.where( tg[i] == tg[0,0] )[0] 
             ends = np.where( tg[i] == 0 )[0] 
             end = ends[0] if len(ends) > 0 else len(tg[i])  
             ## above handles when the tags do not get to zero due to collection truncation
+
             for j in range(len(starts)):
                 st = starts[j]
                 en = starts[j+1] if j+1 < len(starts) else end
