@@ -24,6 +24,12 @@ np.set_printoptions(edgeitems=16)
 tag = stag()
 stack = U4Stack()
 
+
+
+
+
+
+
 if __name__ == '__main__':
 
     a = Fold.Load("$A_FOLD", symbol="a") if "A_FOLD" in os.environ else None
@@ -42,7 +48,7 @@ if __name__ == '__main__':
         eprint("np.all( A.ts == B.ts2 )", globals(), locals() )
         eprint("np.all( A.ts2 == B.ts )", globals(), locals() )
 
-        assert (a.inphoton - b.inphoton).max() < 1e-10 
+        assert (a.inphoton - b.inphoton).max() < 1e-5 
         assert np.all( A.ts == B.ts2 ) 
         assert np.all( A.ts2 == B.ts )  
     pass

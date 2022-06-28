@@ -21,8 +21,73 @@ Overview : what is the purpose of random aligned comparison
   using double rather than float which is to be avoided if at all possible
 
 
-Pumped up the volume to 10,000 with raindrop geometry using box factor 10. 
-----------------------------------------------------------------------------
+
+TODO : change geometry/input photon shape to reduce edge skimmers, which look to be the largest single cause of deviation   
+---------------------------------------------------------------------------------------------------------------------------
+
+
+DONE : systematic presentation of deviation level : opticks.sysrap.dv using opticks.ana.array_repr_mixin and sysrap/dv.sh
+----------------------------------------------------------------------------------------------------------------------------
+
+::
+
+    A_FOLD : /tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest 
+    B_FOLD : /tmp/blyth/opticks/U4RecorderTest 
+    ./dv.sh   # cd ~/opticks/sysrap
+
+                     pdv :         1e-06 1e-05  0.0001 0.001  0.01   0.1    1      10     100    1000    
+
+                     pos : array([[   47,   117,  1732,  4412,  2710,   965,    16,     1,     0,     0],
+                    time :        [ 2746,  5430,  1724,    96,     4,     0,     0,     0,     0,     0],
+                     mom :        [ 6404,  2937,   647,    11,     1,     0,     0,     0,     0,     0],
+                     pol :        [ 9995,     1,     1,     3,     0,     0,     0,     0,     0,     0],
+                      wl :        [10000,     0,     0,     0,     0,     0,     0,     0,     0,     0]], dtype=uint32)
+
+                     rdv :         1e-06 1e-05  0.0001 0.001  0.01   0.1    1      10     100    1000    
+
+                     pos : array([[    4,    25,  1124,  5155,  2710,   965,    16,     1,     0,     0],
+                    time :        [ 2732,  5441,  1719,   104,     4,     0,     0,     0,     0,     0],
+                     mom :        [ 6388,  2953,   647,    11,     1,     0,     0,     0,     0,     0],
+                     pol :        [ 9995,     1,     1,     3,     0,     0,     0,     0,     0,     0],
+                      wl :        [10000,     0,     0,     0,     0,     0,     0,     0,     0,     0]], dtype=uint32)
+
+
+
+* review what was done in old workflow ab.py and cherrypick 
+* ana/ab.py not easy to cherry pick from : until have a specific need which can go hunt for, like amax::
+
+    1286     def rpost_dv_where(self, cut):
+    1287         """
+    1288         :return photon indices with item deviations exceeding the cut: 
+    1289         """
+    1290         av = self.a.rpost()
+    1291         bv = self.b.rpost()
+    1292         dv = np.abs( av - bv )
+    1293         return self.a.where[np.where(dv.max(axis=(1,2)) > cut) ]
+    1294 
+
+* in redoing : focus on generic handling, so can do more with less code more systematically 
+
+A general requirement is to know the deviation profile of various quantities::
+
+    wseq = np.where( a.seq[:,0] == b.seq[:,0] )     
+    abp = np.abs( a.photon[wseq] - b.photon[wseq] )  ## for deviations to be meaningful needs to be same history  
+
+    abp_pos  = np.amax( abp[:,0,:3], axis=1 )        ## amax of the 3 position deviations, so can operate at photon position level, not x,y,z level 
+    abp_time = abp[:,0,3]
+    abp_mom  = np.amax( abp[:,1,:3], axis=1 )
+    abp_pol  = np.amax( abp[:,2,:3], axis=1 )
+
+    assert abp_pos.shape == abp_time.shape == abp_mom.shape == abp_pol.shape
+
+So it comes down to histogramming bin count frequencies of an array with lots of small values.::
+
+   bins = np.array( [0.,1e-6,1e-5,1e-4,1e-3, 1e-2, 1e-1, 1, 10, 100, 1000], dtype=np.float32 )  
+   prof, bins2 = np.histogram( abp_pos, bins=bins )
+   
+
+DONE : Pumped up the volume to 10,000 with raindrop geometry using box factor 10. 
+------------------------------------------------------------------------------------
 
 Surprised to find the 10k are fully history aligned without any more work when including scatter from the higher stats::
 
@@ -213,7 +278,7 @@ Huh BR that ends up at top ? Edge skimmer ?::
             [   0.   ,    0.   ,    0.   ,    0.   ]]], dtype=float32)
 
 
-radius of 50 shows its a tangent edge skimmer::
+radius of 50 does not shows its a tangent edge skimmer, just shows sphere intersect, see below need to check xy::
 
     In [38]: np.sqrt(np.sum(xpos*xpos,axis=1))
     Out[38]: array([ 991.261,   50.   , 1003.455], dtype=float32)
@@ -283,6 +348,34 @@ radius of 50 shows its a tangent edge skimmer::
     Out[71]: array([50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50.], dtype=float32)
 
 
+Actually the 50. does not say its an edge skimmer, any hit on the sphere will give that, need to look at xy::
+
+    In [100]: xy = a.record[ww,1,0,:2]
+    In [101]: xy
+    Out[101]: 
+    array([[  1.403, -49.872],
+           [ 43.282, -24.992],
+           [-38.393,  31.995],
+           [-38.393,  31.995],
+           [-22.29 ,  44.614],
+           [-49.146,  -8.528],
+           [ 15.008, -47.688],
+           [ 15.008, -47.688],
+           [ -0.671, -49.849],
+           [-47.523, -15.129],
+           [ -0.895,  49.92 ],
+           [ 19.233,  46.065],
+           [ 46.313, -17.856]], dtype=float32)
+
+    In [102]: np.sqrt(np.sum(xy*xy,axis=1))
+    Out[102]: array([49.892, 49.979, 49.977, 49.977, 49.872, 49.881, 49.993, 49.993, 49.853, 49.873, 49.928, 49.919, 49.636], dtype=float32)
+
+
+Looking at the xy radius shows that these are photons hitting the sphere within around 0.1mm of its projected edge. 
+
+
+TO SC BR SA
+--------------
 
 ::
 
