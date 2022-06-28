@@ -438,6 +438,14 @@ int SPath::Remove(const char* path_)
     return remove(path);  
 }
 
+/**
+SPath::mtime
+--------------
+
+This is used by STime::mtime which provides formatted time stamp strings. 
+
+**/
+
 int SPath::mtime(const char* path)
 {
      struct stat st;

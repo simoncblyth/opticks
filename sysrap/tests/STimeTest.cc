@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    //test_EpochSeconds(); 
+    test_EpochSeconds(); 
     test_mtime(); 
 
     return 0 ; 

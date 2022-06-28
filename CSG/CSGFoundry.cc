@@ -17,6 +17,7 @@
 #include "SProc.hh"
 #include "SStr.hh"
 #include "SPath.hh"
+#include "STime.hh"
 #include "SBitSet.hh"
 #include "SEventConfig.hh"
 #include "SGeoConfig.hh"
@@ -75,6 +76,7 @@ CSGFoundry::CSGFoundry()
     last_added_solid(nullptr),
     last_added_prim(nullptr),
     sim(SSim::Create()),
+    mtime(STime::EpochSeconds()),
     meta(),
     fold(nullptr),
     cfbase(nullptr),
@@ -115,6 +117,8 @@ std::string CSGFoundry::desc() const
        << " ias " << ias.size()
        << " meshname " << meshname.size()
        << " mmlabel " << mmlabel.size()
+       << " mtime " << mtime
+       << " mtimestamp " << STime::Format(mtime)
        ;
     return ss.str(); 
 }
@@ -171,6 +175,7 @@ unsigned CSGFoundry::getNumSolidLabel() const
 void CSGFoundry::CopyNames( CSGFoundry* dst, const CSGFoundry* src ) // static
 {
     CopyMeshName( dst, src ); 
+    dst->mtime = src->mtime ; 
 }
 
 void CSGFoundry::CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ) // static 
@@ -2111,8 +2116,27 @@ void CSGFoundry::load( const char* dir_ )
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
     sim = NP::Exists(dir, "SSim") ? SSim::Load(dir, "SSim") : nullptr ; 
-
+    mtime = MTime(dir, "solid.npy"); 
 }
+
+
+/**
+CSGFoundry::MTime
+-------------------
+
+Use STime::Format(mtime) to convert the int into a timestamp string
+
+**/
+int CSGFoundry::MTime(const char* dir, const char* fname_) // static
+{
+    const char* fname = fname_ ? fname_ : "solid.npy" ; 
+    const char* path = SPath::Resolve(dir, fname, NOOP); 
+    return SPath::mtime(path); 
+} 
+
+
+
+
 
 void CSGFoundry::setGeom(const char* geom_)
 {

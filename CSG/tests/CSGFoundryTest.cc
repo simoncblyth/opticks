@@ -6,6 +6,7 @@
 #include "scuda.h"
 #include "sqat4.h"
 #include "OPTICKS_LOG.hh"
+#include "SPath.hh"
 
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
@@ -77,9 +78,11 @@ void test_Load()
 {
     CSGFoundry fd ; 
     fd.maker->makeDemoSolids(); 
+    fd.addInstancePlaceholder() ;  // Loading fails when no inst 
 
-    const char* dir = "/tmp" ; 
-    const char* rel = "CSGFoundryTestLoad" ; 
+
+    const char* dir = SPath::Resolve("$TMP/CSGFoundryTest/test_Load", DIRPATH) ; 
+    const char* rel = "CSGFoundry" ; 
     fd.write(dir, rel ); 
  
     CSGFoundry* fdl = CSGFoundry::Load(dir, rel); 
@@ -87,6 +90,10 @@ void test_Load()
 
     int cmp = CSGFoundry::Compare(&fd, fdl); 
     std::cout << "test_Load " << cmp << std::endl ; 
+
+    std::cout << "fd.desc()  " << fd.desc() << std::endl ; 
+    std::cout << "fdl->desc() " << fdl->desc() << std::endl ; 
+
 }
 
 void test_Compare()
@@ -218,9 +225,10 @@ int main(int argc, char** argv)
     test_getInstanceTransformsGAS() ;
     test_getInstanceGAS() ;
     test_setMeta_getMeta(); 
+    test_setPrimBoundary(); 
     */
 
-    test_setPrimBoundary(); 
+    test_Load(); 
 
     return 0 ; 
 }

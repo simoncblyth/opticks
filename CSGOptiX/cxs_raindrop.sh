@@ -25,6 +25,12 @@ Photon step record OpenGL animation::
     cd ~/opticks/examples/UseGeometryShader
     ./go.sh 
 
+Changing the geometry::
+
+    c
+    ./CSGMakerTest.sh 
+
+
 EOU
 }
 

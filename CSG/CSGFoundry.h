@@ -283,6 +283,9 @@ struct CSG_API CSGFoundry
     static const char* LOAD_FAIL_NOTES ; 
     void load( const char* dir ) ; 
 
+    static int MTime(const char* dir, const char* fname_); 
+
+
     template<typename T> void loadArray( std::vector<T>& vec, const char* dir, const char* name, bool optional=false ); 
 
     void upload();
@@ -376,6 +379,7 @@ struct CSG_API CSGFoundry
 
     void setPrimBoundary(unsigned primIdx, const char* bname) ; 
     const SSim* sim ; 
+    int  mtime ; 
 
     std::string meta ; 
     const char* fold ; 
