@@ -19,7 +19,7 @@
 #
 
 import numpy as np
-import os, logging
+import os, logging, builtins
 import itertools
 
 try: 
@@ -157,6 +157,21 @@ def array_digest(a):
     file digest includes the header, not just the data : so will not match this 
     """
     return np_digest(a)
+
+
+def cus(s):
+    """
+    :param s: array of shape (n,)
+    :return cus: count unique sorted array of shape (num_unique, 2)
+    """
+    u,c = np.unique(s, return_counts=True) 
+    o = np.argsort(c)[::-1]
+    cu = np.zeros( (len(u),2), dtype=np.uint64 )
+    cu[:,0] = u[o]
+    cu[:,1] = c[o]
+    return cu 
+
+
 
 
 def count_unique_sorted(vals):

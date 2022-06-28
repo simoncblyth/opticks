@@ -39,10 +39,11 @@ NB locations and packing used here must match sysrap/sphoton.h::
 
 """
 import numpy as np
-import hashlib
+import hashlib, builtins
 from opticks.ana.hismask import HisMask   
 from opticks.ana.histype import HisType  
 from opticks.ana.nibble import count_nibbles 
+from opticks.ana.nbase import cus
 
 
 hm = HisMask()
@@ -52,6 +53,43 @@ seqhis_ = lambda s:ht.label(s)
 seqnib_ = lambda s:count_nibbles(s)
 
 #seqdesc_ = lambda s:"seqdesc_ %20s " % 
+
+
+def ocus(w,s):
+    """
+    :param w: np.unique.np.where array of indices of a sub-selection eg deviants 
+    :param s: array of seqhis with same shape as w
+    :return o,cu:
+
+    This aims to make it easier to investigate seqhis sub-selections of deviants 
+    CAUTION: using this auto-populates via builtins the calling scope with np.where arrays
+
+          w0, w1, w2, ... 
+
+    ::
+
+        w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])
+        s = a.seq[w,0]  
+        o, cu = ocus(w,s)
+        print(o)
+        print(w1)
+    
+    """
+    assert w.shape == s.shape
+    cu = cus(s)   ## count unique sorted 
+    o = np.zeros( (cu.shape[0], cu.shape[1]+2), dtype=np.object )
+    o[:,0] = list(map(lambda _:"w%d" % _ , list(range(len(cu))) )) 
+    o[:,1] = list(map(lambda _:"%30s" % _, seqhis_(cu[:,0]) ))  
+    o[:,2] = list(map(lambda _:"%16s" % _, cu[:,0] ))
+    o[:,3] = list(map(lambda _:"%16s" % _, cu[:,1] ))
+    if not w is None:
+        for i in range(len(cu)):
+            setattr( builtins, "w%d"%i, w[s == cu[i,0]] )
+        pass
+    pass
+    return o, cu
+
+
 
 
 digest_ = lambda a:hashlib.md5(a.data.tobytes()).hexdigest()  

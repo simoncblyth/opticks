@@ -136,6 +136,106 @@ Substantial deviation::
      'TO BT SC BT SA']
 
 
+more systematic handling of the 0.1 mm deviants
+-------------------------------------------------
+
+::
+
+     58 def ocus(w,s):
+     59     """
+     60     :param w: np.unique.np.where array of indices of a sub-selection eg deviants 
+     61     :param s: array of seqhis with same shape as w
+     62 
+     63     CAUTION: this populates the builtins calling scope with w0, w1, w2, ... np.where arrays 
+     64     ::
+     65 
+     66         w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])
+     67         s = a.seq[w,0]  
+     68         o, cu = ocus(w,s)
+     69         print(o)
+     70         print(w1)
+     71     
+     72     """
+     73     assert w.shape == s.shape
+     74     cu = cus(s)
+     75     o = np.zeros( (cu.shape[0], cu.shape[1]+2), dtype=np.object )
+     76     o[:,0] = list(map(lambda _:"w%d" % _ , list(range(len(cu))) ))
+     77     o[:,1] = list(map(lambda _:"%30s" % _, seqhis_(cu[:,0]) ))
+     78     o[:,2] = list(map(lambda _:"%16s" % _, cu[:,0] ))
+     79     o[:,3] = list(map(lambda _:"%16s" % _, cu[:,1] ))
+     80     if not w is None:
+     81         for i in range(len(cu)):
+     82             setattr( builtins, "w%d"%i, w[s == cu[i,0]] )
+     83         pass
+     84     pass
+     85     return o, cu
+     86 
+
+::
+
+    In [12]: o
+    Out[12]: 
+    array([['w0', '                      TO BR SA', '            2237', '              11'],
+           ['w1', '                   TO BT BT AB', '           19661', '               2'],
+           ['w2', '       TO BT BR BR BR BR BT SA', '      2361113549', '               1'],
+           ['w3', '                TO BT SC BT SA', '          575181', '               1'],
+           ['w4', '                   TO SC BR SA', '           35693', '               1'],
+           ['w5', '                      TO SC SA', '            2157', '               1']], dtype=object)
+
+
+
+
+TO BT BT AB : deviation all in the absorption position : known log(u_float) vs log(u_double) issue 
+-----------------------------------------------------------------------------------------------------
+
+::
+
+    In [9]: a.record[w1,:4] - b.record[w1,:4]
+    Out[9]: 
+    array([[[[ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[ 0.   ,  0.   ,  0.   ,  0.   ],
+             [-0.   ,  0.   , -0.   ,  0.   ],
+             [-0.   ,  0.   , -0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[-0.   ,  0.   ,  0.   , -0.   ],
+             [-0.   ,  0.   , -0.   ,  0.   ],
+             [ 0.   , -0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[ 0.159, -0.053, -0.417, -0.001],
+             [-0.   ,  0.   , -0.   ,  0.   ],
+             [ 0.   , -0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]]],
+
+
+           [[[ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[ 0.   ,  0.   , -0.   , -0.   ],
+             [-0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[-0.   ,  0.   , -0.   , -0.   ],
+             [-0.   ,  0.   ,  0.   ,  0.   ],
+             [-0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[-0.187,  0.102, -0.422, -0.002],
+             [-0.   ,  0.   ,  0.   ,  0.   ],
+             [-0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]]]], dtype=float32)
+
+
+
+
 0.5 mm deviants
 --------------------
 
@@ -145,6 +245,18 @@ Substantial deviation::
     Out[18]: array([2436, 5156, 9964]
     In [20]: seqhis_(a.seq[w,0]) 
     Out[20]: ['TO BR SA', 'TO SC BR SA', 'TO BT SC BT SA']
+
+
+
+Look at 2/10k "TO BT BT AB"
+-----------------------------
+
+::
+
+
+
+
+
 
 
 Take a look at the "TO SC BR SA" : a 1/10k > 0.1 mm deviant : small scatter position diff gets lever armed into big diff

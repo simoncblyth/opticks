@@ -53,7 +53,11 @@ if __name__ == '__main__':
         assert np.all( A.ts2 == B.ts )  
     pass
 
-
+    w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])
+    s = a.seq[w,0]  
+    o,cu = ocus(w,s)
+    print(o)
+    print(w1)
 
 
 
