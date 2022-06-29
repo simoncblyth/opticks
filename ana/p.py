@@ -55,39 +55,49 @@ seqnib_ = lambda s:count_nibbles(s)
 #seqdesc_ = lambda s:"seqdesc_ %20s " % 
 
 
-def ocus(w,s):
-    """
-    :param w: np.unique.np.where array of indices of a sub-selection eg deviants 
-    :param s: array of seqhis with same shape as w
-    :return o,cu:
 
-    This aims to make it easier to investigate seqhis sub-selections of deviants 
+class CUSS(np.ndarray): pass
+
+def cuss(s,w=None):
+    """
+    CountUniqueSubSelections 
+
+    :param s: seqhis array with same shape as w that provides the histories of the selection 
+    :param w: None OR array of indices expressing a selection of eg deviant photons created for example using np.unique np.where
+    :return o: CUSS instance view of cus count-unique-sorted array listing unique seqhis 
+               and their counts in descending frequency order 
+
+    This aims to make it easier to investigate seqhis sub-selections of selections (eg deviants)
     CAUTION: using this auto-populates via builtins the calling scope with np.where arrays
+    for each of the sub-selections::
 
           w0, w1, w2, ... 
 
-    ::
+    Usage example::
 
-        w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])
-        s = a.seq[w,0]  
-        o, cu = ocus(w,s)
+        w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])  ## unique indices selection 
+        s = a.seq[w,0]     # seqhis histories of the selection 
+        o = cuss(s,w)    
         print(o)
         print(w1)
     
     """
+    if w is None:
+        w = np.arange(len(s))    
+    pass
     assert w.shape == s.shape
     cu = cus(s)   ## count unique sorted 
+    for i in range(len(cu)): setattr( builtins, "w%d"%i, w[s == cu[i,0]] )
+
     o = np.zeros( (cu.shape[0], cu.shape[1]+2), dtype=np.object )
     o[:,0] = list(map(lambda _:"w%d" % _ , list(range(len(cu))) )) 
     o[:,1] = list(map(lambda _:"%30s" % _, seqhis_(cu[:,0]) ))  
     o[:,2] = list(map(lambda _:"%16s" % _, cu[:,0] ))
     o[:,3] = list(map(lambda _:"%16s" % _, cu[:,1] ))
-    if not w is None:
-        for i in range(len(cu)):
-            setattr( builtins, "w%d"%i, w[s == cu[i,0]] )
-        pass
-    pass
-    return o, cu
+
+    ret = o.view(CUSS)
+    ret.cu = cu 
+    return ret
 
 
 

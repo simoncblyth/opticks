@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])
     s = a.seq[w,0]  
-    o,cu = ocus(w,s)
+    o = cuss(s,w)
     print(o)
     print(w1)
 
