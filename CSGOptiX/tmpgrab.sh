@@ -37,8 +37,11 @@ tmpgrab_dumpvars(){ for var in $tmpgrab_vars ; do printf "%-30s : %s \n" $var "$
 tmpgrab_dumpvars
 
 
-if [ "${tmpgrab_arg}" == "grab" ]; then 
-    read -p "$tmpgrab_msg Enter YES to proceed with rsync between from and to " ans
+if [ "${tmpgrab_arg}" == "grab" -o "${tmpgrab_arg}" == "graby" ]; then
+    case ${tmpgrab_arg} in
+        grab) read -p "$tmpgrab_msg Enter YES to proceed with rsync between from and to " ans ;; 
+        graby) ans="YES" ;;
+    esac
     if [ "$ans" == "YES" ]; then 
         echo $tmpgrab_msg proceeding 
         mkdir -p $to

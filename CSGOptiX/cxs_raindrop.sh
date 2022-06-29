@@ -134,8 +134,8 @@ if [ "${arg/ana}" != "$arg" -o "${arg/dan}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py  
 fi 
 
-if [ "$arg" == "grab" ]; then
-    EXECUTABLE=$bin  source tmpgrab.sh grab
+if [ "$arg" == "grab" -o "$arg" == "graby" ]; then
+    EXECUTABLE=$bin  source tmpgrab.sh $arg
 fi 
 
 

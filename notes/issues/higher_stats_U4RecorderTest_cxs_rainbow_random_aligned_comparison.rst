@@ -21,9 +21,152 @@ Overview : what is the purpose of random aligned comparison
   using double rather than float which is to be avoided if at all possible
 
 
-
-TODO : change geometry/input photon shape to reduce edge skimmers, which look to be the largest single cause of deviation   
+DONE : change geometry/input photon shape to avoid encouraging edge skimmers
 ---------------------------------------------------------------------------------------------------------------------------
+
+Reduce the radius of the disc beam from 50 to 49 to avoid encouraging edge skimming on the sphere of radius 50. 
+Avoiding the skimmers greatly reduces deviation, with only 4/10k now > 0.1 (down from 17/10k)::
+
+    u4t
+    ./U4RecorderTest.sh ab 
+
+    In [1]: w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0]) ; s = a.seq[w,0] ; cuss(s,w)
+    Out[1]: 
+    CUSS([['w0', '                   TO BT BT AB', '           19661', '               2'],
+          ['w1', '                TO BT SC BT SA', '          575181', '               1'],
+          ['w2', '                   TO SC BR SA', '           35693', '               1'],
+          ['w3', '                      TO SC SA', '            2157', '               1']], dtype=object)
+
+* all the deviations are now due to either absorption position 
+  or scattering position that then grows
+
+
+w0 : TO BT BT AB  : deviation at the absorption position 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [6]: a.record[w0,3] - b.record[w0,3]
+    Out[6]: 
+    array([[[ 0.156, -0.051, -0.417, -0.001],
+            [-0.   ,  0.   , -0.   ,  0.   ],
+            [ 0.   , -0.   ,  0.   ,  0.   ],
+            [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+           [[-0.181,  0.099, -0.425, -0.002],
+            [-0.   ,  0.   ,  0.   ,  0.   ],
+            [-0.   ,  0.   ,  0.   ,  0.   ],
+            [ 0.   ,  0.   , -0.   ,  0.   ]]], dtype=float32)
+
+
+w1 : TO BT SC BT SA : deviation starts from scatter position and grows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [9]: a.record[w1,:5] - b.record[w1,:5]
+    Out[9]: 
+    array([[[[ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[ 0.   ,  0.   , -0.   , -0.   ],
+             [-0.   , -0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[-0.   , -0.   , -0.018, -0.   ],
+             [-0.   , -0.   , -0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[-0.   , -0.   , -0.018, -0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [-0.   , -0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[ 0.606,  0.221,  0.   ,  0.001],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [-0.   , -0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]]]], dtype=float32)
+
+
+w2 : TO SC BR SA : again deviation starting from scatter position that grows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [12]: a.record[w2,:4] - b.record[w2,:4]
+    Out[12]: 
+    array([[[[ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[ 0.   ,  0.   , -0.047, -0.   ],
+             [ 0.   , -0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[-0.018,  0.049,  0.049,  0.   ],
+             [ 0.   , -0.001,  0.003,  0.   ],
+             [-0.   ,  0.   , -0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[-0.221,  0.   ,  3.544,  0.005],
+             [ 0.   , -0.001,  0.003,  0.   ],
+             [-0.   ,  0.   , -0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]]]], dtype=float32)
+
+
+w3 : TO SC SA : yet again deviation in scatter position that grows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [14]: a.record[w3,:3] - b.record[w3,:3]
+    Out[14]: 
+    array([[[[ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[ 0.   ,  0.   , -0.048, -0.   ],
+             [-0.   , -0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[-0.316, -0.15 ,  0.   , -0.001],
+             [-0.   , -0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]]]], dtype=float32)
+
+
+
+Overall level of deviation reduced too::
+
+    A_FOLD : /tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest 
+    B_FOLD : /tmp/blyth/opticks/U4RecorderTest 
+    ./dv.sh   # cd ~/opticks/sysrap
+
+                     pdv :         1e-06 1e-05  0.0001 0.001  0.01   0.1    1      10     100    1000    
+
+                     pos : array([[   30,   125,  1778,  4518,  2751,   793,     4,     1,     0,     0],
+                    time :        [ 2892,  5445,  1576,    83,     4,     0,     0,     0,     0,     0],
+                     mom :        [ 6569,  2945,   484,     1,     1,     0,     0,     0,     0,     0],
+                     pol :        [ 9994,     3,     0,     3,     0,     0,     0,     0,     0,     0],
+                      wl :        [10000,     0,     0,     0,     0,     0,     0,     0,     0,     0]], dtype=uint32)
+
+                     rdv :         1e-06 1e-05  0.0001 0.001  0.01   0.1    1      10     100    1000    
+
+                     pos : array([[    5,    22,  1202,  5222,  2751,   793,     4,     1,     0,     0],
+                    time :        [ 2871,  5464,  1570,    91,     4,     0,     0,     0,     0,     0],
+                     mom :        [ 6555,  2959,   484,     1,     1,     0,     0,     0,     0,     0],
+                     pol :        [ 9994,     3,     0,     3,     0,     0,     0,     0,     0,     0],
+                      wl :        [10000,     0,     0,     0,     0,     0,     0,     0,     0,     0]], dtype=uint32)
+
+
 
 
 DONE : systematic presentation of deviation level : opticks.sysrap.dv using opticks.ana.array_repr_mixin and sysrap/dv.sh
