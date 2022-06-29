@@ -21,6 +21,277 @@ Overview : what is the purpose of random aligned comparison
   using double rather than float which is to be avoided if at all possible
 
 
+TODO : more complex geometry eg single Geant4 PMT grabbed from PMTSim and translated 
+----------------------------------------------------------------------------------------
+
+* :doc:`more_complex_test_geometry_using_bringing_PMTSim_to_U4`
+
+
+DONE : pump up the volume to 1M with the simple geometry
+-------------------------------------------------------------
+
+* wow thats real heavy on Geant4 side, taking several hours on laptop 
+
+  * as do not want to spend the time and energy to recreate this sample have added ~/opticks/bin/AB_FOLD_COPY.sh 
+    and used it to copy the A_FOLD B_FOLD to more permanant KEEP location
+    that ~/opticks/bin/AB_FOLD.sh returns when FOLD_MODE is set to KEEP rather 
+    than the default of TMP
+
+* tagging every random consumption via backtraces and storing all the randoms is rather intensive when push to 1M  
+* will need to exclude the indices where not enough randoms
+
+1/1M is not history aligned, BR<->BT from float/double random sitting either side of TransCoeff knife edge::
+
+    In [11]: wq = np.where( a.seq[:,0] != b.seq[:,0] )[0] ; wq
+    Out[11]: array([726637])
+
+    In [12]: seqhis_(a.seq[wq,0])
+    Out[12]: ['TO BT BR BR BT SA']
+
+    In [13]: seqhis_(b.seq[wq,0])
+    Out[13]: ['TO BT BT SA']
+
+    In [15]: A(wq[0])
+    Out[15]: 
+    A(726637) : TO BT BR BR BT SA
+           A.t : (1000000, 48) 
+           A.n : (1000000,) 
+          A.ts : (1000000, 10, 44) 
+          A.fs : (1000000, 10, 44) 
+         A.ts2 : (1000000, 10, 44) 
+     0 :     0.7496 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+     1 :     0.9443 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+     2 :     0.7756 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+     3 :     0.3336 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+     4 :     0.4643 :  5 : at_burn_sf_sd : at_boundary_burn at_surface ab/sd  
+     5 :     0.5304 :  6 :     at_ref : u_reflect > TransCoeff 
+
+     6 :     0.7131 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+     7 :     0.1302 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+     8 :     0.1077 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+     9 :     0.2754 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+    10 :     0.6640 :  5 : at_burn_sf_sd : at_boundary_burn at_surface ab/sd  
+    11 :     0.6240 :  6 :     at_ref : u_reflect > TransCoeff 
+
+    12 :     0.5618 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+    13 :     0.6591 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+    14 :     0.6729 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+    15 :     0.3685 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+
+    16 :     0.9081 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+    17 :     0.1008 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+    18 :     0.8054 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+    19 :     0.6100 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+    20 :     0.4183 :  5 : at_burn_sf_sd : at_boundary_burn at_surface ab/sd  
+    21 :     0.6362 :  6 :     at_ref : u_reflect > TransCoeff 
+
+    22 :     0.6149 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+    23 :     0.9692 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+    24 :     0.8735 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+    25 :     0.7992 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+
+    26 :     0.2129 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+    27 :     0.2093 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+    28 :     0.8324 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+    29 :     0.7697 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+    30 :     0.7639 :  5 : at_burn_sf_sd : at_boundary_burn at_surface ab/sd  
+    31 :     0.1712 :  6 :     at_ref : u_reflect > TransCoeff 
+
+    32 :     0.2939 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+    33 :     0.5738 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+    34 :     0.9891 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+    35 :     0.2023 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+    36 :     0.7197 :  5 : at_burn_sf_sd : at_boundary_burn at_surface ab/sd  
+    37 :     0.6063 :  7 :    sf_burn : qsim::propagate_at_surface burn 
+    38 :     0.0000 :  0 :      undef : undef 
+    39 :     0.0000 :  0 :      undef : undef 
+
+    In [16]: B(wq[0])
+    Out[16]: 
+    B(726637) : TO BT BT SA
+           B.t : (1000000, 48) 
+           B.n : (1000000,) 
+          B.ts : (1000000, 10, 44) 
+          B.fs : (1000000, 10, 44) 
+         B.ts2 : (1000000, 10, 44) 
+     0 :     0.7496 :  3 : ScintDiscreteReset :  
+     1 :     0.9443 :  4 : BoundaryDiscreteReset :  
+     2 :     0.7756 :  5 : RayleighDiscreteReset :  
+     3 :     0.3336 :  6 : AbsorptionDiscreteReset :  
+     4 :     0.4643 :  7 : BoundaryBurn_SurfaceReflectTransmitAbsorb :  
+     5 :     0.5304 :  8 : BoundaryDiDiTransCoeff :  
+
+     6 :     0.7131 :  3 : ScintDiscreteReset :  
+     7 :     0.1302 :  4 : BoundaryDiscreteReset :  
+     8 :     0.1077 :  5 : RayleighDiscreteReset :  
+     9 :     0.2754 :  6 : AbsorptionDiscreteReset :  
+    10 :     0.6640 :  7 : BoundaryBurn_SurfaceReflectTransmitAbsorb :  
+    11 :     0.6240 :  8 : BoundaryDiDiTransCoeff :           ######## THIS IS WHERE BR/BT HISTORY DIVERGES 
+
+    12 :     0.5618 :  3 : ScintDiscreteReset :  
+    13 :     0.6591 :  4 : BoundaryDiscreteReset :  
+    14 :     0.6729 :  5 : RayleighDiscreteReset :  
+    15 :     0.3685 :  6 : AbsorptionDiscreteReset :  
+    16 :     0.9081 :  7 : BoundaryBurn_SurfaceReflectTransmitAbsorb :  
+    17 :     0.1008 :  9 : AbsorptionEffDetect :  
+    18 :     0.0000 :  0 : Unclassified :  
+    19 :     0.0000 :  0 : Unclassified :  
+
+::
+
+    N[blyth@localhost CSGOptiX]$ PIDX=726637 ./cxs_raindrop.sh 
+    ...
+    //qsim.propagate idx 726637 bnc 0 cosTheta    -0.2235 dir (    0.0000     0.0000     1.0000) nrm (   -0.9217    -0.3169    -0.2235) 
+    //qsim.propagate idx 726637 bounce 0 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate_at_boundary idx 726637 nrm   (   -0.9217    -0.3169    -0.2235) 
+    //qsim.propagate_at_boundary idx 726637 mom_0 (    0.0000     0.0000     1.0000) 
+    //qsim.propagate_at_boundary idx 726637 pol_0 (   -0.3252     0.9457     0.0000) 
+    //qsim.propagate_at_boundary idx 726637 c1     0.2235 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 726637 normal_incidence 0 p.pol (   -0.3252,    0.9457,    0.0000) p.mom (    0.0000,    0.0000,    1.0000) o_normal (   -0.9217,   -0.3169,   -0.2235)
+    //qsim.propagate_at_boundary idx 726637 TransCoeff     0.6240 n1c1     0.2236 n2c2     0.9325 E2_t (   -0.3868,    0.0000) A_trans (    0.3252,   -0.9457,    0.0000) 
+    //qsim.propagate_at_boundary idx 726637 u_boundary_burn     0.4643 u_reflect     0.5304 TransCoeff     0.6240 reflect 0 
+    //qsim.propagate_at_boundary idx 726637 reflect 0 tir 0 TransCoeff     0.6240 u_reflect     0.5304 
+    //qsim.propagate_at_boundary idx 726637 mom_1 (    0.4843     0.1665     0.8589) 
+    //qsim.propagate_at_boundary idx 726637 pol_1 (   -0.3252     0.9457    -0.0000) 
+    //qsim.propagate idx 726637 bnc 1 cosTheta     0.6912 dir (    0.4843     0.1665     0.8589) nrm (   -0.2522    -0.0867     0.9638) 
+    //qsim.propagate idx 726637 bounce 1 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate_at_boundary idx 726637 nrm   (    0.2522     0.0867    -0.9638) 
+    //qsim.propagate_at_boundary idx 726637 mom_0 (    0.4843     0.1665     0.8589) 
+    //qsim.propagate_at_boundary idx 726637 pol_0 (   -0.3252     0.9457    -0.0000) 
+    //qsim.propagate_at_boundary idx 726637 c1     0.6912 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 726637 normal_incidence 0 p.pol (   -0.3252,    0.9457,   -0.0000) p.mom (    0.4843,    0.1665,    0.8589) o_normal (    0.2522,    0.0867,   -0.9638)
+    //qsim.propagate_at_boundary idx 726637 TransCoeff     0.6240 n1c1     0.9325 n2c2     0.2236 E2_t (    1.6132,    0.0000) A_trans (   -0.3252,    0.9457,    0.0000) 
+    //qsim.propagate_at_boundary idx 726637 u_boundary_burn     0.6640 u_reflect     0.6240 TransCoeff     0.6240 reflect 1 
+
+    ######  u_reflect is on the TransCoeff cut edge 
+
+    //qsim.propagate_at_boundary idx 726637 reflect 1 tir 0 TransCoeff     0.6240 u_reflect     0.6240 
+    //qsim.propagate_at_boundary idx 726637 mom_1 (    0.8330     0.2864    -0.4734) 
+    //qsim.propagate_at_boundary idx 726637 pol_1 (   -0.3252     0.9457     0.0000) 
+    //qsim.propagate idx 726637 bnc 2 cosTheta     0.6912 dir (    0.8330     0.2864    -0.4734) nrm (    0.8993     0.3092     0.3093) 
+    //qsim.propagate idx 726637 bounce 2 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate_at_boundary idx 726637 nrm   (   -0.8993    -0.3092    -0.3093) 
+    //qsim.propagate_at_boundary idx 726637 mom_0 (    0.8330     0.2864    -0.4734) 
+    //qsim.propagate_at_boundary idx 726637 pol_0 (   -0.3252     0.9457     0.0000) 
+    //qsim.propagate_at_boundary idx 726637 c1     0.6912 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 726637 normal_incidence 0 p.pol (   -0.3252,    0.9457,    0.0000) p.mom (    0.8330,    0.2864,   -0.4734) o_normal (   -0.8993,   -0.3092,   -0.3093)
+    //qsim.propagate_at_boundary idx 726637 TransCoeff     0.6240 n1c1     0.9325 n2c2     0.2236 E2_t (    1.6132,    0.0000) A_trans (   -0.3252,    0.9457,    0.0000) 
+    //qsim.propagate_at_boundary idx 726637 u_boundary_burn     0.4183 u_reflect     0.6362 TransCoeff     0.6240 reflect 1 
+    //qsim.propagate_at_boundary idx 726637 reflect 1 tir 0 TransCoeff     0.6240 u_reflect     0.6362 
+    //qsim.propagate_at_boundary idx 726637 mom_1 (   -0.4102    -0.1411    -0.9010) 
+    //qsim.propagate_at_boundary idx 726637 pol_1 (   -0.3252     0.9457    -0.0000) 
+    //qsim.propagate idx 726637 bnc 3 cosTheta     0.6912 dir (   -0.4102    -0.1411    -0.9010) nrm (    0.3322     0.1142    -0.9363) 
+    //qsim.propagate idx 726637 bounce 3 command 3 flag 0 s.optical.x 0 
+    //qsim.propagate_at_boundary idx 726637 nrm   (   -0.3322    -0.1142     0.9363) 
+    //qsim.propagate_at_boundary idx 726637 mom_0 (   -0.4102    -0.1411    -0.9010) 
+    //qsim.propagate_at_boundary idx 726637 pol_0 (   -0.3252     0.9457    -0.0000) 
+    //qsim.propagate_at_boundary idx 726637 c1     0.6912 normal_incidence 0 
+    //qsim.propagate_at_boundary idx 726637 normal_incidence 0 p.pol (   -0.3252,    0.9457,   -0.0000) p.mom (   -0.4102,   -0.1411,   -0.9010) o_normal (   -0.3322,   -0.1142,    0.9363)
+    //qsim.propagate_at_boundary idx 726637 TransCoeff     0.6240 n1c1     0.9325 n2c2     0.2236 E2_t (    1.6132,    0.0000) A_trans (   -0.3252,    0.9457,    0.0000) 
+    //qsim.propagate_at_boundary idx 726637 u_boundary_burn     0.7639 u_reflect     0.1712 TransCoeff     0.6240 reflect 0 
+    //qsim.propagate_at_boundary idx 726637 reflect 0 tir 0 TransCoeff     0.6240 u_reflect     0.1712 
+    //qsim.propagate_at_boundary idx 726637 mom_1 (   -0.7887    -0.2712    -0.5517) 
+    //qsim.propagate_at_boundary idx 726637 pol_1 (   -0.3252     0.9457    -0.0000) 
+    //qsim.propagate idx 726637 bnc 4 cosTheta     0.7887 dir (   -0.7887    -0.2712    -0.5517) nrm (   -1.0000     0.0000     0.0000) 
+    //qsim.propagate idx 726637 bounce 4 command 3 flag 0 s.optical.x 99 
+    2022-06-30 02:26:47.383 INFO  [147639] [SEvt::save@1089] DefaultDir /tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
+
+
+Deviants mostly have SC or AB or lots of BR or truncation::
+
+    In [3]: w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])
+    In [5]: len(w)
+    Out[5]: 503              ######### 503/1M with > 0.1 deviants 
+    In [6]: s = a.seq[w,0]
+    In [7]: o = cuss(s,w)                                                                                                                                                                                   
+    In [8]: o
+    Out[8]: 
+    CUSS([['w0', '                TO BT SC BT SA', '          575181', '             141'],
+          ['w1', '                   TO BT BT AB', '           19661', '              93'],
+          ['w2', '                         TO AB', '              77', '              82'],
+          ['w3', '                      TO SC SA', '            2157', '              37'],
+          ['w4', '                TO BT BT SC SA', '          552141', '              37'],
+          ['w5', '                TO SC BT BT SA', '          576621', '              21'],
+          ['w6', ' TO BT SC BR BR BR BR BR BR BR', '    806308525773', '              19'],
+          ['w7', '                      TO BR AB', '            1213', '              15'],
+          ['w8', '          TO BT BT SC BT BT SA', '       147614925', '              13'],
+          ['w9', '             TO BT SC BR BT SA', '         9221837', '               8'],
+          ['w10', ' TO BT BR BR BR BR BR BR BR BT', '    875028003789', '               6'],
+          ['w11', '             TO BT BR SC BT SA', '         9202637', '               6'],
+          ['w12', '                TO BT BR BT AB', '          314317', '               4'],
+          ['w13', ' TO BT BR SC BR BR BR BR BR BR', '    806308506573', '               3'],
+          ['w14', '                   TO BR SC SA', '           34493', '               3'],
+          ['w15', ' TO BT BR BR BR BR BR BR BR BR', '    806308527053', '               2'],
+          ['w16', '       TO SC BT BR BR BR BT SA', '      2361113709', '               2'],
+          ['w17', '             TO BT BR BR BT AB', '         5028813', '               1'],
+          ['w18', '       TO BT BR SC BR BR BT SA', '      2361093069', '               1'],
+          ['w19', '             TO BT BR BR BT SA', '         9223117', '               1'],
+          ['w20', '    TO BT SC BR BR BR BR BT SA', '     37777815245', '               1'],
+          ['w21', '             TO BT SC BT SC SA', '         8832717', '               1'],
+          ['w22', '                   TO SC BR SA', '           35693', '               1'],
+          ['w23', '             TO BT BT SC BR SA', '         9137357', '               1'],
+          ['w24', '    TO BT BT SC BT BR BR BT SA', '     37777861837', '               1'],
+          ['w25', ' TO BT BR SC BR BR BR BR BR BT', '    875027983309', '               1'],
+          ['w26', '          TO BT SC BR BR BT SA', '       147568333', '               1'],
+          ['w27', '             TO SC BT BR BT SA', '         9223277', '               1']], dtype=object)
+
+
+Checking in full sample can see that the most frequent categories do not have 
+SC or AB in them::
+
+    In [20]: cuss(a.seq[:,0])
+    Out[20]: 
+    CUSS([['w0', '                   TO BT BT SA', '           36045', '          883284'],
+          ['w1', '                      TO BR SA', '            2237', '           59840'],
+          ['w2', '                TO BT BR BT SA', '          576461', '           46165'],
+          ['w3', '             TO BT BR BR BT SA', '         9223117', '            4714'],
+          ['w4', '                      TO BT AB', '            1229', '            2179'],
+          ['w5', '          TO BT BR BR BR BT SA', '       147569613', '             947'],
+          ['w6', '                      TO SC SA', '            2157', '             917'],
+          ['w7', '                TO BT BT SC SA', '          552141', '             907'],
+          ['w8', '       TO BT BR BR BR BR BT SA', '      2361113549', '             218'],
+          ['w9', '                TO BT SC BT SA', '          575181', '             187'],
+          ['w10', '                   TO BT BR AB', '           19405', '             106'],
+          ['w11', '                   TO BT BT AB', '           19661', '              93'],
+          ['w12', '                         TO AB', '              77', '              82'],
+          ['w13', '    TO BT BR BR BR BR BR BT SA', '     37777816525', '              71'],
+          ['w14', '                   TO BR SC SA', '           34493', '              66'],
+          ['w15', '             TO BT BR BT SC SA', '         8833997', '              53'],
+          ['w16', '                TO SC BT BT SA', '          576621', '              25'],
+          ['w17', ' TO BT BR BR BR BR BR BR BT SA', '    604445064141', '              24'],
+          ['w18', ' TO BT SC BR BR BR BR BR BR BR', '    806308525773', '              19'],
+          ['w19', '          TO BT BT SC BT BT SA', '       147614925', '              15'],
+          ['w20', '                      TO BR AB', '            1213', '              15'],
+          ['w21', '             TO BT BR SC BT SA', '         9202637', '              12'],
+          ['w22', '                TO BT BR BR AB', '          310221', '              11'],
+          ['w23', '             TO BT SC BR BT SA', '         9221837', '               8'],
+          ['w24', ' TO BT BR BR BR BR BR BR BR BT', '    875028003789', '               6'],
+          ['w25', '          TO BT BR BR BT SC SA', '       141343693', '               5'],
+          ['w26', '                   TO SC SC SA', '           34413', '               4'],
+          ['w27', '                TO BT BR BT AB', '          314317', '               4'],
+          ['w28', '             TO BT BR BR BR AB', '         4963277', '               3'],
+          ['w29', ' TO BT BR SC BR BR BR BR BR BR', '    806308506573', '               3'],
+          ['w30', ' TO BT BR BR BR BR BR BR BR BR', '    806308527053', '               2'],
+          ['w31', '       TO SC BT BR BR BR BT SA', '      2361113709', '               2'],
+          ['w32', '             TO BT SC BT SC SA', '         8832717', '               1'],
+          ['w33', '    TO BT BT SC BT BR BR BT SA', '     37777861837', '               1'],
+          ['w34', '    TO BT SC BR BR BR BR BT SA', '     37777815245', '               1'],
+          ['w35', '    TO BT BR BR BR BR BR BR AB', '     20329511885', '               1'],
+          ['w36', '                   TO SC BR SA', '           35693', '               1'],
+          ['w37', '       TO BT BR SC BR BR BT SA', '      2361093069', '               1'],
+          ['w38', '             TO BT BR BR BT AB', '         5028813', '               1'],
+          ['w39', '          TO SC BT BR BR BT SA', '       147569773', '               1'],
+          ['w40', '             TO BT BT SC BR SA', '         9137357', '               1'],
+          ['w41', '          TO BT SC BR BR BT SA', '       147568333', '               1'],
+          ['w42', '          TO BT BR BR BR BR AB', '        79412173', '               1'],
+          ['w43', '             TO SC BT BR BT SA', '         9223277', '               1'],
+          ['w44', ' TO BT BR SC BR BR BR BR BR BT', '    875027983309', '               1']], dtype=object)
+
+
+
+
+
+
 DONE : change geometry/input photon shape to avoid encouraging edge skimmers
 ---------------------------------------------------------------------------------------------------------------------------
 

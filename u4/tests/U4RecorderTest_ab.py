@@ -25,11 +25,6 @@ tag = stag()
 stack = U4Stack()
 
 
-
-
-
-
-
 if __name__ == '__main__':
 
     a = Fold.Load("$A_FOLD", symbol="a") if "A_FOLD" in os.environ else None

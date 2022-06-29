@@ -10,9 +10,13 @@ if __name__ == '__main__':
     se = t.se 
     ph = t.ph 
 
-    pos = ph[:,0,:3]
-    mom = ph[:,1,:3]
-    pol = ph[:,2,:3]
+    lim = slice(0,1000)
+
+    print(" ph %s lim %s " % ( str(ph.shape), str(lim)) )
+
+    pos = ph[lim,0,:3]
+    mom = ph[lim,1,:3]
+    pol = ph[lim,2,:3]
 
     pl = pvplt_plotter()
     #pl.add_points(pos, point_size=20)

@@ -66,6 +66,12 @@ source ./IDPath_override.sh   ## non-standard IDPath to allow U4Material::LoadOr
 geom=RaindropRockAirWater
 export GEOM=${GEOM:-$geom}
 
+# Note that OPTICKS_RANDOM_SEQPATH uses single quotes to prevent expansion of the '$PrecookedDir' 
+# which is an SPath internal variable. Defining OPTICKS_RANDOM_SEQPATH is necessary to work with 
+# more than 100k photons as the default only loads a single 100k precooked random file whereas 
+# this will load ten of them allowing aligned running with up to 1M photons.
+export OPTICKS_RANDOM_SEQPATH='$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000'  
+
 
 if [ "${arg/run}" != "${arg}" ]; then 
     cd $logdir 

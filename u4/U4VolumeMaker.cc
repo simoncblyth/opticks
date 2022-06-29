@@ -23,7 +23,34 @@
 
 const plog::Severity U4VolumeMaker::LEVEL = PLOG::EnvLevel("U4VolumeMaker", "DEBUG"); 
 
+std::string U4VolumeMaker::Desc() // static
+{
+    std::stringstream ss ; 
+    ss << "U4VolumeMaker::Desc" ; 
+#ifdef WITH_PMTSIM
+    ss << " WITH_PMTSIM " ; 
+#else
+    ss << " not-WITH_PMTSIM " ; 
+#endif
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 G4VPhysicalVolume* U4VolumeMaker::Make(){ return Make(SSys::getenvvar("GEOM", "BoxOfScintillator")); }
+
+/**
+U4VolumeMaker::Make
+---------------------
+
+PMTSim::HasManagerPrefix 
+    returns true for names starting with one of: hama, nnvt, hmsk, nmsk, lchi
+
+PMTSim::GetLV PMTSim::GetPV
+     these methods act as go betweens to the underlying managers with prefixes
+     that identify the managers offset  
+
+**/
+
 G4VPhysicalVolume* U4VolumeMaker::Make(const char* name)
 {
     G4VPhysicalVolume* pv = nullptr ; 
@@ -35,7 +62,6 @@ G4VPhysicalVolume* U4VolumeMaker::Make(const char* name)
     LOG(info) << " name " << name << " pv " << pv ; 
     return pv ; 
 }
-
 G4VPhysicalVolume* U4VolumeMaker::Make_(const char* name)
 {
     G4VPhysicalVolume* pv = nullptr ; 

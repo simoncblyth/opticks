@@ -25,6 +25,7 @@ set(TEST_SOURCES
    U4GDMLTest.cc
    U4PhysicalConstantsTest.cc
    U4RandomTest.cc
+   U4VolumeMakerTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

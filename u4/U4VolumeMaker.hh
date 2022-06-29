@@ -13,6 +13,8 @@ class G4Material ;
 struct U4_API U4VolumeMaker
 {
     static const plog::Severity LEVEL ; 
+
+    static std::string Desc(); 
     
     static G4VPhysicalVolume* Make(); // sensitive to GEOM envvar 
     static G4VPhysicalVolume* Make(const char* name); 
