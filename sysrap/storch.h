@@ -105,6 +105,7 @@ struct storch
    float* cdata() const {  return (float*)&gentype ; }
    static constexpr const char* storch_FillGenstep_mom = "storch_FillGenstep_mom" ; 
    static constexpr const char* storch_FillGenstep_pos = "storch_FillGenstep_pos" ; 
+   static constexpr const char* storch_FillGenstep_radius = "storch_FillGenstep_radius" ; 
    static void FillGenstep( storch& gs, unsigned genstep_id, unsigned numphoton_per_genstep ) ; 
    std::string desc() const ; 
 #endif
@@ -131,7 +132,9 @@ inline void storch::FillGenstep( storch& gs, unsigned genstep_id, unsigned numph
     gs.zenith = make_float2( 0.f, 1.f );  
     gs.azimuth = make_float2( 0.f, 1.f );  
 
-    gs.radius = 50.f ; 
+    qvals( gs.radius, storch_FillGenstep_radius, "50" ); 
+    printf("//storch::FillGenstep storch_FillGenstep_radius gs.radius (%10.4f) \n", gs.radius ); 
+
     gs.type = storchtype::Type("disc");  
     gs.mode = 255 ;    //torchmode::Type("...");  
 }

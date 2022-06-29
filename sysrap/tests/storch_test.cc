@@ -41,8 +41,8 @@ NP* make_torch_photon( const NP* gs, const NP* se )
         const quad6& g = gg[genstep_id] ;  
         
         storch::generate(p, rng, g, photon_id, genstep_id ); 
-
-        std::cout << p.descBase() << std::endl;  
+         
+        if(i % 100 == 0) std::cout << std::setw(6) << i << " : " << p.descBase() << std::endl;  
     }
     return ph ; 
 }
