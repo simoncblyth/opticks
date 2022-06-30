@@ -70,7 +70,8 @@ if __name__ == '__main__':
     seq = t.seq if hasattr(t, "seq") else None
     nib = seqnib_(seq[:,0])  if not seq is None else None
 
-    for i in range(len(p)):
+    lim = min(len(p), 50)
+    for i in range(lim):
         if not (PIDX == -1 or PIDX == i): continue 
         if PIDX > -1: print("PIDX %d " % PIDX) 
         print("r[%d,:,:3]" % i)
@@ -105,7 +106,7 @@ if __name__ == '__main__':
     print("flagmask_c:%s " % str(flagmask_c))
 
     #print("\n".join(seqhis_( t.seq[:,0] ))) 
-    for i in range(min(100,len(t.seq))):
+    for i in range(lim):
         print("%4d : %s " % (i, seqhis_(t.seq[i,0])))
     pass
 
@@ -113,9 +114,6 @@ if __name__ == '__main__':
     for i in range(len(seq_u)):
         print("%4d : %4d : %20s  " % (i, seq_c[i], seqhis_(seq_u[i]) ))
     pass
-
-
-
-
+    print("t.base : %s " %  t.base)
 pass
 

@@ -162,6 +162,9 @@ int main(int argc, char** argv)
     U4Random rnd ; 
     LOG(info) << rnd.desc() ; 
 
+    std::string physDesc = U4Physics::Desc(); 
+    LOG(info) << " physDesc " << physDesc ; 
+
 
     // U4Material::RemoveProperty( "RINDEX", G4Material::GetMaterial("Rock") ); 
     // removing Rock RINDEX is a trick that makes photons immediately get absorbed on reaching the Rock
@@ -183,7 +186,8 @@ int main(int argc, char** argv)
     U4RecorderTest t(runMgr) ;  
     runMgr->BeamOn(1); 
  
-    evt.save("$TMP/U4RecorderTest"); 
+    LOG(info) << " physDesc " << physDesc ; 
+    evt.save("$TMP/U4RecorderTest",physDesc.c_str() ); 
     LOG(info) << evt.desc() ; 
 
     return 0 ; 

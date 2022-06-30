@@ -8,6 +8,8 @@ This is intended solely for use from U4RecorderTest
 **/
 
 #include <cstdlib>
+#include <string>
+#include <sstream>
 #include "G4VUserPhysicsList.hh"
 
 class G4Cerenkov_modified ; 
@@ -43,6 +45,7 @@ struct U4Physics : public G4VUserPhysicsList
 
     InstrumentedG4OpBoundaryProcess*  fBoundary ;
 
+    static std::string Desc(); 
     U4Physics(); 
 
     void ConstructParticle();
@@ -180,6 +183,19 @@ inline void U4Physics::ConstructEM()
 
 #include "InstrumentedG4OpBoundaryProcess.hh"
 
+
+
+std::string U4Physics::Desc()
+{
+    std::stringstream ss ; 
+#ifdef DEBUG_TAG
+    ss << ( ShimG4OpAbsorption_FLOAT ? "ShimG4OpAbsorption_FLOAT" : "ShimG4OpAbsorption_ORIGINAL" ) ; 
+    ss << "_" ; 
+    ss << ( ShimG4OpRayleigh_FLOAT ? "ShimG4OpRayleigh_FLOAT" : "ShimG4OpRayleigh_ORIGINAL" ) ; 
+#endif
+    std::string s = ss.str();
+    return s ; 
+}
 
 
 inline int U4Physics::EInt(const char* key, const char* fallback)  // static 

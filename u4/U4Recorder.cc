@@ -109,6 +109,9 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     }
     assert( label.isDefined() );  
     if(!Enabled(label)) return ;  
+
+    if(label.id % 1000 == 0 ) LOG(info) << " label.id " << label.id ; 
+
     U4Random::SetSequenceIndex(label.id); 
 
     SEvt* sev = SEvt::Get(); 
@@ -208,7 +211,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
     if( flag == NAN_ABORT )
     {
-        LOG(error) << " skip post saving for StepTooSmall label.id " << label.id  ;  
+        LOG(LEVEL) << " skip post saving for StepTooSmall label.id " << label.id  ;  
     }
     else
     {

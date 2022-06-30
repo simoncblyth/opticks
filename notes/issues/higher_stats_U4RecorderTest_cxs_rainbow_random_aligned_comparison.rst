@@ -27,6 +27,12 @@ TODO : more complex geometry eg single Geant4 PMT grabbed from PMTSim and transl
 * :doc:`more_complex_test_geometry_using_bringing_PMTSim_to_U4`
 
 
+HMM : how much would replacing the double G4Log(G4UniformRand()) for Scattering and Absorption align SC and AB positions ?
+----------------------------------------------------------------------------------------------------------------------------
+
+* :doc:`U4LogTest_maybe_replacing_G4Log_G4UniformRand_in_Absorption_and_Scattering_with_float_version_will_avoid_deviations`
+
+
 DONE : pump up the volume to 1M with the simple geometry
 -------------------------------------------------------------
 

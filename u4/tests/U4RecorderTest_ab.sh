@@ -13,8 +13,12 @@ U4RecorderTest_ab.sh
 EOU
 }
 
-#export FOLD_MODE=TMP
-export FOLD_MODE=KEEP
+
+#fold_mode=TMP
+#fold_mode=KEEP
+fold_mode=LOGF
+
+export FOLD_MODE=${FOLD_MODE:-$fold_mode}
 
 source ../../bin/AB_FOLD.sh 
 

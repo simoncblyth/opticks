@@ -59,8 +59,10 @@ if [ "${arg/run}" != "$arg" ]; then
 
     export storch_FillGenstep_pos=0,0,-990
     export storch_FillGenstep_radius=49
-    #export SEvent_MakeGensteps_num_ph=10000
-    export SEvent_MakeGensteps_num_ph=1000000
+
+    #export SEvent_MakeGensteps_num_ph=1000
+    export SEvent_MakeGensteps_num_ph=10000
+    #export SEvent_MakeGensteps_num_ph=1000000
 
     $bdir/$name
     [ $? -ne 0 ] && echo $msg run error && exit 2 

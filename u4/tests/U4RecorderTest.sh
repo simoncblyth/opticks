@@ -19,7 +19,9 @@ srcdir=$PWD
 logdir=/tmp/$USER/opticks/U4RecorderTest
 mkdir -p $logdir 
 
-export FOLD=/tmp/$USER/opticks/U4RecorderTest
+foldbase=/tmp/$USER/opticks/U4RecorderTest
+
+
 #export DsG4Scintillation_verboseLevel=3
 #export G4Cerenkov_verboseLevel=3
 export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 generation loop too 
@@ -39,10 +41,7 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 #export SEvt=INFO
 #export U4Random=INFO
 
-
 export U4Random_flat_debug=1  ## without this all stack tags are zero 
-
-
 
 #mode=gun
 #mode=torch
@@ -50,6 +49,24 @@ mode=iphoton
 
 export U4RecorderTest__PRIMARY_MODE=$mode
 export U4VolumeMaker_RaindropRockAirWater_FACTOR=10
+
+#export ShimG4OpAbsorption_FLOAT=1 
+#export ShimG4OpRayleigh_FLOAT=1 
+
+
+# cf U4Physics::Desc
+physdesc=""
+[ -n "ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_FLOAT" 
+[ -z "ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_ORIGINAL" 
+physdesc="${physdesc}_"
+[ -n "ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_FLOAT"
+[ -z "ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
+
+export FOLD=$foldbase/$physdesc
+
+echo $msg physdesc $physdesc
+echo $msg FOLD $FOLD
+
 
 if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
     #path=RandomSpherical10_f8.npy
@@ -70,7 +87,7 @@ export GEOM=${GEOM:-$geom}
 # which is an SPath internal variable. Defining OPTICKS_RANDOM_SEQPATH is necessary to work with 
 # more than 100k photons as the default only loads a single 100k precooked random file whereas 
 # this will load ten of them allowing aligned running with up to 1M photons.
-export OPTICKS_RANDOM_SEQPATH='$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000'  
+# export OPTICKS_RANDOM_SEQPATH='$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000'  
 
 
 if [ "${arg/run}" != "${arg}" ]; then 

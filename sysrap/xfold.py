@@ -34,7 +34,7 @@ class XFold(object):
 
     def __init__(self, x, symbol=None):
         """
-        :param x: Fold instance
+        :param x: Fold instance, eg either a or b 
         """
         t = stag.Unpack(x.tag) if hasattr(x,"tag") else None
         f = getattr(x, "flat", None)
@@ -50,7 +50,10 @@ class XFold(object):
         else:
             assert 0
         pass 
-        assert symbol == xsymbol 
+        if symbol != xsymbol:
+            log.error("using unconventional symbol %s xsymbol %s " % (symbol, xsymbol))
+        pass 
+        #assert symbol == xsymbol 
 
         self.x = x       # Fold instance, called x because it is usually "a" or "b"
         self.t = t       # (num_photon, SLOTS)  : unpacked consumption tag/stack enumeration integers

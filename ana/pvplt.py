@@ -71,6 +71,7 @@ def pvplt_photon( pl, p   ):
 
 
 def pvplt_plotter(label="pvplt_plotter"):
+    print("STARTING PVPLT_PLOTTER ... THERE COULD BE A WINDOW WAITING FOR YOU TO CLOSE")
     pl = pv.Plotter(window_size=SIZE*2 )  
     pl.show_grid()
     TEST = os.environ.get("TEST","")
