@@ -25,7 +25,8 @@ EOU
 export FOLD_MODE=${FOLD_MODE:-TMP}
 
 A_FOLD_TMP=/tmp/$USER/opticks/GeoChain/BoxedSphere/CXRaindropTest
-B_FOLD_TMP=/tmp/$USER/opticks/U4RecorderTest
+B_FOLD_TMP=/tmp/$USER/opticks/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4OpRayleigh_ORIGINAL
+#B_FOLD_TMP=/tmp/$USER/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT
 
 A_FOLD_KEEP=/usr/local/opticks/tests/GeoChain/BoxedSphere/CXRaindropTest
 B_FOLD_KEEP=/usr/local/opticks/tests/U4RecorderTest

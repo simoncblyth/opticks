@@ -189,9 +189,9 @@ std::string U4Physics::Desc()
 {
     std::stringstream ss ; 
 #ifdef DEBUG_TAG
-    ss << ( ShimG4OpAbsorption_FLOAT ? "ShimG4OpAbsorption_FLOAT" : "ShimG4OpAbsorption_ORIGINAL" ) ; 
+    ss << ( ShimG4OpAbsorption::FLOAT ? "ShimG4OpAbsorption_FLOAT" : "ShimG4OpAbsorption_ORIGINAL" ) ; 
     ss << "_" ; 
-    ss << ( ShimG4OpRayleigh_FLOAT ? "ShimG4OpRayleigh_FLOAT" : "ShimG4OpRayleigh_ORIGINAL" ) ; 
+    ss << ( ShimG4OpRayleigh::FLOAT ? "ShimG4OpRayleigh_FLOAT" : "ShimG4OpRayleigh_ORIGINAL" ) ; 
 #endif
     std::string s = ss.str();
     return s ; 

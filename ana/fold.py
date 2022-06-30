@@ -28,8 +28,10 @@ class Fold(object):
         if fold is None and quiet == False:
             log.error("failed to load from base [%s]" % base )
         pass
-        print(repr(fold))
-        print(str(fold))
+        if quiet == False:
+            print(repr(fold))
+            print(str(fold))
+        pass
         return fold
 
     def __getattr__(self, name):
@@ -42,12 +44,15 @@ class Fold(object):
     def __init__(self, base, **kwa):
         self.base = base
         self.kwa = kwa 
+        self.quiet = kwa.get("quiet", False) == True 
         self.symbol = kwa.get("symbol", "t")
         self.relbase = kwa.get("relbase")
         self.globals = kwa.get("globals", False) == True
         self.globals_prefix = kwa.get("globals_prefix", "") 
-        print("Fold : setting globals %s globals_prefix %s " % (self.globals, self.globals_prefix)) 
 
+        if self.quiet == False:
+            print("Fold : setting globals %s globals_prefix %s " % (self.globals, self.globals_prefix)) 
+        pass
         names = os.listdir(base)
 
         paths = []

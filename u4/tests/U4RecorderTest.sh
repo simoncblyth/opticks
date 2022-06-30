@@ -50,17 +50,17 @@ mode=iphoton
 export U4RecorderTest__PRIMARY_MODE=$mode
 export U4VolumeMaker_RaindropRockAirWater_FACTOR=10
 
-#export ShimG4OpAbsorption_FLOAT=1 
-#export ShimG4OpRayleigh_FLOAT=1 
+export ShimG4OpAbsorption_FLOAT=1 
+export ShimG4OpRayleigh_FLOAT=1 
 
 
 # cf U4Physics::Desc
 physdesc=""
-[ -n "ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_FLOAT" 
-[ -z "ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_ORIGINAL" 
+[ -n "$ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_FLOAT" 
+[ -z "$ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_ORIGINAL" 
 physdesc="${physdesc}_"
-[ -n "ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_FLOAT"
-[ -z "ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
+[ -n "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_FLOAT"
+[ -z "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
 
 export FOLD=$foldbase/$physdesc
 

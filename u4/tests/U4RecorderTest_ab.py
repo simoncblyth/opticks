@@ -27,11 +27,17 @@ stack = U4Stack()
 
 if __name__ == '__main__':
 
-    a = Fold.Load("$A_FOLD", symbol="a") if "A_FOLD" in os.environ else None
-    b = Fold.Load("$B_FOLD", symbol="b") if "B_FOLD" in os.environ else None
+    quiet = True 
+    a = Fold.Load("$A_FOLD", symbol="a", quiet=quiet) if "A_FOLD" in os.environ else None
+    b = Fold.Load("$B_FOLD", symbol="b", quiet=quiet) if "B_FOLD" in os.environ else None
+
+    print("-------- after Fold.Load" )
 
     A = XFold(a, symbol="A") if not a is None else None
     B = XFold(b, symbol="B") if not b is None else None
+
+    print("-------- after XFold" )
+
 
     ab = (not a is None) and (not b is None)
     if ab: 
@@ -48,11 +54,17 @@ if __name__ == '__main__':
         #assert np.all( A.ts2 == B.ts )  
     pass
 
-    w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])
-    s = a.seq[w,0]  
-    o = cuss(s,w)
-    print(o)
-    print(w1)
+    print("./U4RecorderTest_ab.sh ## u4t ")
+    w = epr("w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])", globals(), locals() )
+    s = epr("s = a.seq[w,0]", globals(), locals() )  
+    o = epr("o = cuss(s,w)", globals(), locals() , rprefix="\n")
+    epr("w1", globals(), locals() )
+
+    abw0 = epr("abw0 = a.photon[w0,:4] - b.photon[w0,:4]", globals(), locals(), rprefix="\n" ) 
+
+    epr("a.base", globals(), locals() )
+    epr("b.base", globals(), locals() )
+
 
 
 

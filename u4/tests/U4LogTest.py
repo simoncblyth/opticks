@@ -8,10 +8,11 @@ See notes/issues/U4LogTest_maybe_replacing_G4Log_G4UniformRand_in_Absorption_and
 """
 import os, numpy as np
 
+
 if __name__ == '__main__':
 
     a_path = os.path.expandvars("/tmp/logTest.npy")   
-    b_path = os.path.expandvars("/tmp/$USER/opticks/U4LogTest/a.npy")
+    b_path = os.path.expandvars("/tmp/$USER/opticks/U4LogTest/scan.npy")
 
     a = np.load(a_path) if os.path.exists(a_path) else None
     b = np.load(b_path) if os.path.exists(b_path) else None
