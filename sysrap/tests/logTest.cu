@@ -1,9 +1,13 @@
 // ./logTest.sh
 
+#include <cstdlib>
 #include <array>
 #include "NP.hh"
 
 #define KLUDGE_FASTMATH_LOGF(u) (u < 0.998f ? __logf(u) : __logf(u) - 0.46735790f*1e-7f )
+
+const char* FOLD = getenv("FOLD") ? getenv("FOLD") : "/tmp" ; 
+
 
 __global__ void test_log_(double* dd, unsigned ni, unsigned nj)
 {
@@ -62,7 +66,7 @@ void test_log_dev()
     cudaMemcpy( hh, dd, arr_bytes, cudaMemcpyDeviceToHost ) ; 
     cudaDeviceSynchronize();
 
-    h->save("/tmp/logTest.npy"); 
+    h->save(FOLD,"dev_scan.npy"); 
 }
 
 void test_log_host(double sc)

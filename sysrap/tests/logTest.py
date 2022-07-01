@@ -24,8 +24,9 @@ import os, numpy as np
 from opticks.ana.eprint import *
 
 if __name__ == '__main__':
-    path = "/tmp/logTest.npy"
+    path = os.path.expandvars("$FOLD/dev_scan.npy")
     print(path)
+
     a = np.load(path)
     print(a)
 

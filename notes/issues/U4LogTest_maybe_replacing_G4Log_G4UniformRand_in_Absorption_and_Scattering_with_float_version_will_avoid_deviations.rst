@@ -3,16 +3,61 @@ U4LogTest_maybe_replacing_G4Log_G4UniformRand_in_Absorption_and_Scattering_with_
 
 * from :doc:`higher_stats_U4RecorderTest_cxs_rainbow_random_aligned_comparison`
 
+Answer to the Title : NO
+---------------------------
+
+* NO : float/double diffs not big enough to explain the deviations in SC/AB position
+
+* deep dive reveals that CUDA fast math __logf is the source of SC/AB deviations to be 
+  a systematically offset __logf value that is substantially improved by KLUDGE_FASTMATH_LOGF.
+
+qsim.h::
+
+      53 #ifdef DEBUG_TAG
+      54 #include "stag.h"
+      55 #define KLUDGE_FASTMATH_LOGF(u) (u < 0.998f ? __logf(u) : __logf(u) - 0.46735790f*1e-7f )
+      56 #endif
+      57 #endif
+
+qsim.h:propagate_to_boundary::
+
+     470 
+     471 #ifdef DEBUG_TAG
+     472     float u_to_sci = curand_uniform(&rng) ;  // purely for alignment with G4 
+     473     float u_to_bnd = curand_uniform(&rng) ;  // purely for alignment with G4 
+     474 #endif
+     475     float u_scattering = curand_uniform(&rng) ;
+     476     float u_absorption = curand_uniform(&rng) ;
+     477 
+     478 #ifdef DEBUG_TAG
+     479     stagr& tagr = ctx.tagr ;
+     480     tagr.add( stag_to_sci, u_to_sci);
+     481     tagr.add( stag_to_bnd, u_to_bnd);
+     482     tagr.add( stag_to_sca, u_scattering);
+     483     tagr.add( stag_to_abs, u_absorption);
+     484 
+     485     // see notes/issues/U4LogTest_maybe_replacing_G4Log_G4UniformRand_in_Absorption_and_Scattering_with_float_version_will_avoid_deviations.rst
+     486     float scattering_distance = -scattering_length*KLUDGE_FASTMATH_LOGF(u_scattering);
+     487     float absorption_distance = -absorption_length*KLUDGE_FASTMATH_LOGF(u_absorption);
+     488 #else
+     489     float scattering_distance = -scattering_length*logf(u_scattering);
+     490     float absorption_distance = -absorption_length*logf(u_absorption);
+     491 #endif
+
 
 Overview
 ---------
 
-The leading cause of deviations in random aligned comparisons of:
+The leading cause of deviations in random aligned comparisons is(now WAS) the 
+position of "AB" BULK_ABSORB and "SC" BULK_SCATTER positions.
+The comparison being between:
 
 A: single precision Opticks
 B: double precision Geant4 
 
-is the position of "AB" BULK_ABSORB and "SC" BULK_SCATTER positions. 
+I had assumed for a long time that this was due to float/double precision
+in -length*logf(u) but when looking in detail I find that the difference
+from float/double is not enough to explain the observed deviations. 
 
 When SC and AB processes win the random number u is typically very close to 1, eg 0.9999 = 1 - 1e-4
 which means that -log(u) is small.  
@@ -23,20 +68,24 @@ of large and small numbers::
     -length*log(1-x)      # eg x = 1e-4             # -log(1-x) ~ x    for x small 
     ~   x*length        # 1e-4*1e7 = 1e3 
 
-
 Given that the scattering/absorption distance is the result 
 of a random throw it really does not matter if its 0.1mm OR 1 mm OR 2 mm different. 
 BUT the deviation between A and B is inconvenient as it blunts the usefulness of the 
 random aligned comparison. So perhaps can degrade the Geant4 calulation to make it match 
 the Opticks float calc ?
 
+Using KLUDGE_FASTMATH_LOGF is pragmatic way to avoid AB/SC deviations while still using -use_fast_math
 
-Partial float degradation doesnt get close to the float result : need to do whole thing in float
+
+Partial float degradation doesnt get close to the float result 
 --------------------------------------------------------------------------------------------------
 
 Thinking about how to degrade the Geant4 side to make it 
 match the purely float calculation : find that have to do whole calc in float : suggesting 
 the loss of precision is not "concentrated" in one aspect of the calc. 
+
+Also it doesnt go far enough, need to consider CUDA __logf. 
+
 
 ::
 
@@ -414,9 +463,6 @@ sysrap/tests/logTest.ch::
 
 
 
-
-
-
 Search for a better way to do : -length*log(u) in float precision : yields nothing
 ---------------------------------------------------------------------------------------
 
@@ -675,8 +721,6 @@ Fixed by rerun::
     Out[5]: True
 
 
-
-
     In [9]: w = np.unique(np.where( np.abs(a.photon - b.photon) > 1e-6 )[0]) ; w
     Out[9]: array([ 75, 230, 387, 549])
 
@@ -684,6 +728,84 @@ Fixed by rerun::
     Out[10]: ['TO BT AB', 'TO BT AB', 'TO SC SA', 'TO BT AB']
 
 
+
+AB 10k check with KLUDGE_FASTMATH_LOGF : there are no > 0.1 deviations any more !
+-------------------------------------------------------------------------------------
+
+::
+
+    im = np.abs(a.inphoton - b.inphoton).max()         : 1.9073486e-06
+    pm = np.abs(a.photon - b.photon).max()             : 0.07659912
+    rm = np.abs(a.record - b.record).max()             : 0.07659912
+    sm = np.all( a.seq[:,0] == b.seq[:,0] )            : True
+    np.all( A.ts == B.ts2 )                            : True
+    np.all( A.ts2 == B.ts )                            : True
+    ./U4RecorderTest_ab.sh ## u4t 
+    w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0]) : []
+    s = a.seq[w,0]                                     : []
+    o = cuss(s,w)                                      : 
+    []
+    a.base                                             : /tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest
+    b.base                                             : /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4OpRayleigh_ORIGINAL
+
+
+Using KLUDGE_FASTMATH_LOGF prevents AB and SC causing deviations, now largest deviant is direct reflection::
+
+    In [4]: w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.07 )[0]) ; w
+    Out[4]: array([ 544, 1884, 4179, 4850, 5102, 7401])
+
+    In [5]: w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.06 )[0]) ; w
+    Out[5]: array([ 544,  720,  911, 1250, 1884, 2465, 3293, 4179, 4850, 5102, 5509, 7286, 7366, 7401, 7752, 8004, 9516, 9658, 9884])
+
+    In [6]: seqhis_(a.seq[w,0])
+    Out[6]: 
+    ['TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+
+
+All those look like a small difference in a BR reflect position
+lever arming into a large SA position::
+
+    In [16]: a.record[w,:3] - b.record[w,:3]
+    Out[16]: 
+    array([[[[ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[ 0.   ,  0.   , -0.001, -0.   ],
+             [-0.   ,  0.   , -0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]],
+
+            [[-0.077,  0.003,  0.   ,  0.   ],
+             [-0.   ,  0.   , -0.   ,  0.   ],
+             [ 0.   ,  0.   ,  0.   ,  0.   ],
+             [ 0.   ,  0.   , -0.   ,  0.   ]]],
+
+
+
+
+
+
+AB 10k check before KLUDGE_FASTMATH_LOGF
+---------------------------------------------
 
 10k check::
 
