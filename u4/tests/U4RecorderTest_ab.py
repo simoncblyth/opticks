@@ -58,9 +58,9 @@ if __name__ == '__main__':
     w = epr("w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0])", globals(), locals() )
     s = epr("s = a.seq[w,0]", globals(), locals() )  
     o = epr("o = cuss(s,w)", globals(), locals() , rprefix="\n")
-    epr("w1", globals(), locals() )
 
-    abw0 = epr("abw0 = a.photon[w0,:4] - b.photon[w0,:4]", globals(), locals(), rprefix="\n" ) 
+    #epr("w1", globals(), locals() )
+    #abw0 = epr("abw0 = a.photon[w0,:4] - b.photon[w0,:4]", globals(), locals(), rprefix="\n" ) 
 
     epr("a.base", globals(), locals() )
     epr("b.base", globals(), locals() )

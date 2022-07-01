@@ -480,6 +480,17 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
     float scattering_distance = -scattering_length*logf(u_scattering);   
     float absorption_distance = -absorption_length*logf(u_absorption);
 
+#ifdef DEBUG_PIDX
+
+    if(ctx.idx == base->pidx)
+    {
+    printf("//qsim.propagate_to_boundary[ idx %d u_absorption %10.4f absorption_length %10.4f absorption_distance %10.4f \n", 
+        idx, u_absorption, absorption_length, absorption_distance );         
+    }
+#endif
+
+
+
 #ifdef DEBUG_TIME
     if( ctx.idx == base->pidx ) printf("//qsim.propagate_to_boundary[ idx %d post (%10.4f %10.4f %10.4f %10.4f) \n", ctx.idx, p.pos.x, p.pos.y, p.pos.z, p.time );  
 #endif

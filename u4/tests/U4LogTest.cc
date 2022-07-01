@@ -29,7 +29,7 @@ const char* U4LogTest::FOLD = SPath::Resolve("$TMP/U4LogTest", DIRPATH);
 
 U4LogTest::U4LogTest()
     :
-    ni(SSys::getenvunsigned("U4LogTest_ni", 1001))
+    ni(SSys::getenvunsigned("U4LogTest_ni", 1000001))
 {
 }
 

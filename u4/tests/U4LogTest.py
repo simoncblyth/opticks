@@ -25,7 +25,10 @@ if __name__ == '__main__':
     print(a)
     print(b)
 
-    assert np.all( a[:,U] == b[:,U] ) 
+    cf = not a is None and not b is None 
+    if cf and a.shape[0] == b.shape[0]:
+        assert np.all( a[:,U] == b[:,U] ) 
+    pass
 
 
 

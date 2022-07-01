@@ -1,7 +1,221 @@
-maybe_replacing_G4Log_G4UniformRand_in_Absorption_and_Scattering_with_float_version_will_avoid_deviations
-============================================================================================================
+U4LogTest_maybe_replacing_G4Log_G4UniformRand_in_Absorption_and_Scattering_with_float_version_will_avoid_deviations
+=====================================================================================================================
 
 * from :doc:`higher_stats_U4RecorderTest_cxs_rainbow_random_aligned_comparison`
+
+
+Overview
+---------
+
+The leading cause of deviations in random aligned comparisons of:
+
+A: single precision Opticks
+B: double precision Geant4 
+
+is the position of "AB" BULK_ABSORB and "SC" BULK_SCATTER positions. 
+
+When SC and AB processes win the random number u is typically very close to 1, eg 0.9999 = 1 - 1e-4
+which means that -log(u) is small.  
+When there are deviations the scattering and absorption lengths are usually large, eg 1e7 for 
+absorption in Air so the distance to the scatter or absoption takes the form of the product 
+of large and small numbers::
+
+    -length*log(1-x)      # eg x = 1e-4             # -log(1-x) ~ x    for x small 
+    ~   x*length        # 1e-4*1e7 = 1e3 
+
+
+Given that the scattering/absorption distance is the result 
+of a random throw it really does not matter if its 0.1mm OR 1 mm OR 2 mm different. 
+BUT the deviation between A and B is inconvenient as it blunts the usefulness of the 
+random aligned comparison. So perhaps can degrade the Geant4 calulation to make it match 
+the Opticks float calc ?
+
+
+Partial float degradation doesnt get close to the float result : need to do whole thing in float
+--------------------------------------------------------------------------------------------------
+
+Thinking about how to degrade the Geant4 side to make it 
+match the purely float calculation : find that have to do whole calc in float : suggesting 
+the loss of precision is not "concentrated" in one aspect of the calc. 
+
+::
+
+    In [16]: u = np.float64(0.9999085)
+
+    In [17]: -1e7*np.log(u)
+    Out[17]: 915.0418638039326
+
+    In [18]: -np.float32(1e7)*np.log(np.float32(u))
+    Out[18]: 914.97314
+
+    In [19]: -1e7*np.float32(np.log(u))
+    Out[19]: 915.0418918579817
+
+    In [20]: np.log(u)
+    Out[20]: -9.150418638039327e-05
+
+    In [21]: -np.float32(1e7)*np.log(u)
+    Out[21]: 915.0418638039326
+
+    In [22]: -np.float32(1e7)*np.float32(np.log(u))
+    Out[22]: 915.0419
+
+    In [23]: -np.float32(1e7)*np.float32(np.log(np.float32(u)))
+    Out[23]: 914.97314
+
+
+
+10k : Try FLOAT shimming G4VDiscreteProcess::PostStepGetPhysicalInteractionLength
+-----------------------------------------------------------------------------------
+
+* difference in AB and SC not as big as expected 
+
+::
+
+    095      if( FLOAT )
+     96      {
+     97           float fvalue = float(theNumberOfInteractionLengthLeft) * float(currentInteractionLength) ;
+     98           value = fvalue ;
+     99      }
+    100      else
+    101      {
+    102           value = theNumberOfInteractionLengthLeft * currentInteractionLength ;
+    103      }
+    104 
+
+
+
+::
+
+
+    a.base                                             : /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT
+    b.base                                             : /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4OpRayleigh_ORIGINAL
+
+    In [1]: np.where( np.abs(a.photon-b.photon) > 0.1 )
+    Out[1]: (array([], dtype=int64), array([], dtype=int64), array([], dtype=int64))
+
+    In [2]: np.where( np.abs(a.photon-b.photon) > 0.01 )
+    Out[2]: (array([], dtype=int64), array([], dtype=int64), array([], dtype=int64))
+
+    In [7]: w = np.unique(np.where( np.abs(a.photon-b.photon) > 1e-4  )[0]) ; w
+    Out[7]: array([5156, 9964])
+
+    In [8]: seqhis_(a.seq[w,0])
+    Out[8]: ['TO SC BR SA', 'TO BT SC BT SA']
+
+    In [9]: w = np.unique(np.where( np.abs(a.photon-b.photon) > 1e-6 )[0]) ; w
+    Out[9]: array([ 201,  230,  387,  549, 1292, 1338, 1475, 2263, 2515, 3276, 3771, 3846, 4097, 4468, 4524, 4573, 5156, 6555, 6797, 6907, 6925, 7203, 7554, 7604, 7791, 8235, 8393, 9654, 9964])
+
+    In [10]: seqhis_(a.seq[w,0])
+    Out[10]: 
+    ['TO BT AB',
+     'TO BT AB',
+     'TO SC SA',
+     'TO BT AB',
+     'TO BT BT SC SA',
+     'TO SC SA',
+     'TO BT AB',
+     'TO BT AB',
+     'TO BT AB',
+     'TO BR SC SA',
+     'TO BT BR BR BR BR AB',
+     'TO BT BT SC SA',
+     'TO BT AB',
+     'TO BT AB',
+     'TO BT AB',
+     'TO BT BR BT SC SA',
+     'TO SC BR SA',
+     'TO BT BT SC SA',
+     'TO BT AB',
+     'TO BT BR AB',
+     'TO BT AB',
+     'TO SC SA',
+     'TO BT AB',
+     'TO BT BT SC SA',
+     'TO SC SA',
+     'TO SC SA',
+     'TO BT BT AB',
+     'TO BT BT SC SA',
+     'TO BT SC BT SA']
+
+
+Suspect SC AB deviants may be impact of CUDA fast math ?
+--------------------------------------------------------------
+
+* float degrading the Geant4 calc does not change much at all : this makes me suspect CUDA fast math  
+
+
+2 ipython sessions with differnt B_FOLD::
+
+    In [13]: seqhis_(a.seq[w0,0])
+    Out[13]: ['TO BT BT AB', 'TO BT BT AB']
+
+    In [12]: rdist_(a,2)[w0]   ## dist from point 2->3 
+    Out[12]: array([914.525,  69.861], dtype=float32)
+
+    In [14]: rdist_(b,2)[w0]    
+    Out[14]: array([914.973,  70.334], dtype=float32)
+
+    In [16]: (a.base,b.base)
+    Out[16]: 
+    ('/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest',
+     '/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT')
+
+
+
+    In [12]: A(w0[0])
+    Out[12]: 
+    A(5208) : TO BT BT AB
+    ...
+    12 :     0.0153 :  1 :     to_sci : qsim::propagate_to_boundary u_to_sci burn 
+    13 :     0.7635 :  2 :     to_bnd : qsim::propagate_to_boundary u_to_bnd burn 
+    14 :     0.5736 :  3 :     to_sca : qsim::propagate_to_boundary u_scattering 
+    15 :     0.9999 :  4 :     to_abs : qsim::propagate_to_boundary u_absorption 
+
+
+    In [13]: a.flat[w0[0],15]
+    Out[13]: 0.9999085
+
+    In [14]: -1e7*np.log(a.flat[w0[0],15])
+    Out[14]: 914.9731340585276
+
+
+
+
+
+
+
+::
+
+    In [8]: rdist_(a,2)[w0]
+    Out[8]: array([914.525,  69.861], dtype=float32)
+
+    In [9]: rdist_(b,2)[w0]
+    Out[9]: array([914.973,  70.334], dtype=float32)
+
+    In [10]: (a.base,b.base)
+    Out[10]: 
+    ('/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest',
+     '/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4OpRayleigh_ORIGINAL')
+
+
+
+
+
+
+Search for a better way to do : -length*log(u) in float precision : yields nothing
+---------------------------------------------------------------------------------------
+
+* :google:`improving float precision logarithmic functions`
+
+* https://cme.h-its.org/exelixis/pubs/Exelixis-RRDR-2009-4.pdf
+
+* https://blog.demofox.org/2017/11/21/floating-point-precision/
+
+
+
+Check G4Log vs std::log
+-------------------------
 
 u4/tests/U4LogTest.cc::
 
@@ -67,6 +281,46 @@ u4/tests/U4LogTest.cc::
 
     In [27]: np.abs(a[1:,D4]-a[1:,F4]).max()   ## G4Log vs G4Logf
     Out[27]: 2.1071941791461768e-07
+
+
+Take look close to 1, close to 0 and in the middle::
+
+    In [7]: 1e7*(b[-100:, D0]-b[-100:, F0])
+    Out[7]: 
+    array([-0.0331814394,  0.0996417103,  0.2324748608, -0.2308739536, -0.0980207993,  0.0347695986,  0.1675699972, -0.2957388097, -0.1629184074, -0.0301607618,  0.1026796441,  0.2354572922,
+           -0.2278015057, -0.0950038529,  0.0378038004,  0.1705486959, -0.2927428537, -0.1599051953, -0.0271302948,  0.1056546072,  0.238449512 , -0.2247920305, -0.0920498833,  0.040775025 ,
+            0.173609936 , -0.2897371196, -0.1568822067, -0.024090052 ,  0.1087121053,  0.2414515033, -0.2217727855, -0.0890133847,  0.0438287781,  0.1766081816, -0.2867216209, -0.1539222148,
+           -0.0211128063,  0.1117066024,  0.2444996325, -0.2187801638, -0.0860035099,  0.0468195238,  0.1796161789, -0.2836599925, -0.1508797138, -0.0180894352,  0.1147108446,  0.2475211265,
+           -0.2157777991, -0.082983896 ,  0.0498200081,  0.1826339142, -0.2806613871, -0.14786386  , -0.0150563319,  0.1177248184,  0.2505159684, -0.2127657082, -0.0799545564,  0.0528302175,
+            0.1856249911, -0.2776530621, -0.1448382869, -0.0120498898,  0.1207485071,  0.2535205248, -0.2097439046, -0.0769518844,  0.0558501353,  0.1886439657, -0.2746350308, -0.141839388 ,
+           -0.0090337457,  0.1237455173,  0.2565529718, -0.2067305917, -0.073939517 ,  0.0588615581,  0.1916544448, -0.2716073068, -0.1388126102, -0.0060261032,  0.1267704053,  0.2595587232,
+           -0.2037075963, -0.0709174677,  0.0618735673,  0.1946655065, -0.2685971917, -0.1358034419, -0.0030178807,  0.1297776796,  0.2625695976, -0.2006931219, -0.0679039398,  0.0648861462,
+            0.1976771374, -0.2655796878, -0.1327902959,  0.          ])
+
+    In [9]: 1e7*(b[1:100, D0]-b[1:100, F0])                                                                                                                                                       
+    Out[9]: 
+    array([-1.918526209 ,  2.8688919151,  3.0481862545, -1.8804331248, -1.617818377 , -1.7011387854,  1.1288845236,  2.9069849994, -1.521844446 ,  3.1695997471,  3.4833728968,  3.0862793388,
+            4.4000469046, -3.6204405163,  3.3488940865, -1.8423400405,  2.7024350757,  3.2655736781, -2.3669288929, -1.5797252928, -3.4411461769, -1.2659521431, -1.756040362 , -1.6630457012,
+           -1.3171105628, -0.3492781353,  3.4448679997,  1.1669776079,  1.970329766 , -1.4004309534,  2.211549095 ,  2.9450781014, -1.0866578037, -2.0468899642,  1.4295923556, -1.4837513618,
+           -0.5945289949,  2.4204892313, -0.1699837959,  3.2076928314,  2.4357930251,  1.3462719473, -3.5637430784,  3.521465981 , -1.2211366318,  3.0313777621,  4.0742609109,  3.124372423 ,
+            4.1762952563,  3.4703075613, -1.8675956426,  4.4381399888, -0.1403511263, -1.3044570402,  3.7840807288, -3.5823474143,  2.5997835706, -2.7789952739, -0.9913724597,  3.3869871707,
+            1.1999945926, -2.5377759449,  1.5255662866, -1.8042469385,  4.7007547366,  3.7007603204,  0.2933258614,  2.74052816  ,  3.2106721015, -3.3197326843, -0.1518299797,  3.3036667624,
+           -0.001274767 ,  4.1928891292,  3.6496019007, -2.3288358086, -3.0059595346, -4.9193088358, -3.361897587 , -1.5416322086, -1.1251627008, -2.3135320149, -3.9132402385, -3.4030530927,
+            3.0031428899,  1.2236750457, -2.5997009523, -1.2278590411,  4.0893525899,  3.5662814923, -2.0892855268, -1.7179472778, -2.3584816233, -0.675064129 , -2.0662210609, -1.6249526169,
+           -3.2440873809, -0.5730297659,  3.8800546598])
+
+    In [10]: 1e7*(b[500000:500100, D0]-b[500000:500100, F0])                                                                                                                                      
+    Out[10]: 
+    array([-0.0190465432,  0.2465526805,  0.5121919056, -0.414221768 , -0.1485025458,  0.1172566755,  0.3830558981, -0.5431977779, -0.2773185592, -0.0113993415,  0.2545598765,  0.5205590903,
+           -0.4054945923, -0.1394153815,  0.1267038285,  0.3928630354, -0.5330306563, -0.2667914556, -0.0005122547,  0.2658069409,  0.5321661334, -0.3935275716, -0.1270883843,  0.1393907989,
+            0.4059099779, -0.5196237429, -0.2530245702,  0.0136145972,  0.2802937593,  0.5470129205, -0.3783208224, -0.111521673 ,  0.15531747  ,  0.422196611 , -0.502977151 , -0.2360180229,
+            0.0309810988,  0.2980202174,  0.5650993284, -0.3598744625, -0.0927153643,  0.1744837297,  0.441722815 , -0.4830910028, -0.2157719303,  0.0515871368,  0.3189861941,  0.5864252439,
+           -0.3381886093, -0.0706695724,  0.1968894547,  0.4644884743, -0.4599654102, -0.1922864057,  0.075432588 ,  0.343191574 ,  0.6109905526, -0.3132633752, -0.0453844162,  0.222534533 ,
+            0.4904934747, -0.43360049  , -0.16556157  ,  0.1025173413,  0.3706362439,  0.6387951335, -0.2850988823, -0.0168600123,  0.251418848 ,  0.5197376962, -0.403996363 , -0.1355975376,
+            0.1328412791,  0.4013200816,  0.6698388721, -0.2536952437,  0.0149035251,  0.2835422808,  0.5522210234, -0.3711531427, -0.1023944229,  0.1664042826,  0.4352429739,  0.7041216521,
+           -0.219052575 ,  0.049906077 ,  0.3189047149,  0.5879433418, -0.3350709432, -0.0659523469,  0.2032062363,  0.4724048064,  0.7416433589, -0.1811709971,  0.0881475259,  0.357506037 ,
+            0.6269045305, -0.2957498868, -0.0262714239,  0.2432470259])
+
 
 
 * float/double differences at 1e-7 level 
@@ -423,6 +677,7 @@ So float imprecision gets scaled up::
              f0  0.0000915      f0*sc 914.9731341 f(f0)*f(sc) 914.9731445
              d4  0.0000915      d4*sc 914.9818583 f(d4)*f(sc) 914.9818726
              f4  0.0000915      f4*sc 914.9731341 f(f4)*f(sc) 914.9731445
+
     epsilon:tests blyth$ U=0.9999085 U4LogTest 
      u   0.9999085
              d0  0.0000915      d0*sc 915.0418638 f(d0)*f(sc) 915.0418701
@@ -506,6 +761,11 @@ So float imprecision gets scaled up::
 
     In [15]: -np.log(1-1e-9)
     Out[15]: 9.999999722180686e-10
+
+
+::
+
+    -log(1-x) = x + x*x/2 
 
 
 ::
