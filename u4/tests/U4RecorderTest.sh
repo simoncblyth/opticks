@@ -82,7 +82,9 @@ fi
 
 
 
-source ./IDPath_override.sh   ## non-standard IDPath to allow U4Material::LoadOri to find material properties 
+source ./IDPath_override.sh   
+# IDPath_override.sh : non-standard IDPath to allow U4Material::LoadOri to find material properties 
+# HMM probably doing nothing now that are using U4Material::LoadBnd ?
 
 #geom=BoxOfScintillator
 geom=RaindropRockAirWater

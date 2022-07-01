@@ -286,7 +286,19 @@ template const char* SStr::Format( const char*, const char* , int, const char* )
 
 
 
+template<typename ... Args>
+const char* SStr::Name( Args ... elem_ )
+{
+    std::vector<std::string> elem = {elem_...};
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < elem.size() ; i++)  ss << elem[i] ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()) ; 
+}
 
+template const char* SStr::Name( const char* ); 
+template const char* SStr::Name( const char*, const char*  ); 
+template const char* SStr::Name( const char*, const char*, const char* ); 
 
 
 

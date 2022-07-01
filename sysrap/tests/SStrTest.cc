@@ -766,6 +766,20 @@ void test_StartsWithLetterAZaz()
     assert( SStr::StartsWithLetterAZaz("Abcd") == true ); 
 }
 
+void test_Name()
+{
+    //const char* name = SStr::Name<const char*, const char*, const char*>("red", "green", "blue" ); 
+    const char* name = SStr::Name("red", "green", "blue" ); 
+    const char* x_name = "redgreenblue" ; 
+
+    LOG(info) 
+       << " name " << name 
+       << " x_name " << x_name 
+       ;
+
+    assert( strcmp( name, x_name) == 0 ); 
+}
+// om- ; TEST=SStrTest om-t
 
 
 int main(int argc , char** argv )
@@ -811,8 +825,9 @@ int main(int argc , char** argv )
     test_Format_Ellipsis(); 
     test_StartsWithLetterAZaz(); 
     test_FormatInt_2(); 
-    */
     test_FormatIndex(); 
+    */
+    test_Name(); 
 
 
     return 0  ; 

@@ -168,7 +168,8 @@ class SYSRAP_API SStr {
       template<typename ... Args>
       static const char* Format( const char* fmt, Args ... args ); 
 
-
+      template<typename ... Args>
+      static const char* Name( Args ... args ); 
  
 };
 

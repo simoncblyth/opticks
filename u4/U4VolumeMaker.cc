@@ -36,11 +36,17 @@ std::string U4VolumeMaker::Desc() // static
     return s ; 
 }
 
+
+
 G4VPhysicalVolume* U4VolumeMaker::Make(){ return Make(SSys::getenvvar("GEOM", "BoxOfScintillator")); }
 
 /**
 U4VolumeMaker::Make
 ---------------------
+
+Hmm the input names could be of LV or PV with no consistent
+way to distinguish. 
+
 
 PMTSim::HasManagerPrefix 
     returns true for names starting with one of: hama, nnvt, hmsk, nmsk, lchi
@@ -54,8 +60,19 @@ PMTSim::GetLV PMTSim::GetPV
 G4VPhysicalVolume* U4VolumeMaker::Make(const char* name)
 {
     G4VPhysicalVolume* pv = nullptr ; 
+    G4LogicalVolume* lv = nullptr ; 
 #ifdef WITH_PMTSIM
-    if(PMTSim::HasManagerPrefix(name)) pv = Wrap( PMTSim::GetLV(name), 5000. ) ;          
+    bool has_manager_prefix = PMTSim::HasManagerPrefix(name) ;
+    LOG(info) << "WITH_PMTSIM name [" << name << "] has_manager_prefix " << has_manager_prefix ; 
+    if(has_manager_prefix) 
+    {
+        lv = PMTSim::GetLV(name) ; 
+        if( lv == nullptr ) LOG(fatal) << "PMTSim::GetLV returned nullptr for name [" << name << "]" ; 
+        assert( lv ); 
+        pv = Wrap( lv, 5000. ) ;          
+    }
+#else
+    LOG(info) << " not-WITH_PMTSIM name [" << name << "]" ; 
 #endif
     if(pv == nullptr) pv = Make_(name); 
     if(pv == nullptr) pv = MakePhysical(name) ; 
@@ -69,6 +86,36 @@ G4VPhysicalVolume* U4VolumeMaker::Make_(const char* name)
     if(strcmp(name,"RaindropRockAirWater" ) == 0)  pv = RaindropRockAirWater();   
     return pv ; 
 }
+
+
+/**
+U4VolumeMaker::Wrap
+---------------------
+
+The LV provided is placed within a WorldBox of halfside extent and the world PV is returned. 
+
+**/
+
+G4VPhysicalVolume* U4VolumeMaker::Wrap( G4LogicalVolume* lv, double halfside  )
+{
+    G4VPhysicalVolume* world_pv = WorldBox(halfside); 
+    G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 
+
+    G4String name = lv->GetName(); 
+    name += "_pv" ; 
+
+    G4ThreeVector tla(0.,0.,0.); 
+    G4VPhysicalVolume* pv_item = new G4PVPlacement(0, tla, lv ,name,world_lv,false,0);
+    assert( pv_item );
+
+    return world_pv ; 
+}
+
+
+
+
+
+
 
 
 
@@ -106,8 +153,6 @@ G4VPhysicalVolume* U4VolumeMaker::MakePhysical(const char* name)
     G4VPhysicalVolume* pv = list ? MakePhysicalList_(name) : MakePhysicalOne_(name)  ; 
     return pv ; 
 }
-
-
 G4VPhysicalVolume* U4VolumeMaker::MakePhysicalList_(const char* name)
 {
     assert( SStr::StartsWith(name, "List") ); 
@@ -249,7 +294,8 @@ G4VPhysicalVolume* U4VolumeMaker::WorldBox( double halfside, G4Material* materia
 {
     G4Box* solid = new G4Box("World_solid", halfside, halfside, halfside );  
     G4LogicalVolume* lv = new G4LogicalVolume(solid,material,"World_lv",0,0,0); 
-    G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv ,"World_pv",0,false,0);
+    G4LogicalVolume* mother_lv = nullptr ; 
+    G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv ,"World_pv",mother_lv,false,0);
     return pv ; 
 }
 
@@ -443,29 +489,6 @@ const char* U4VolumeMaker::GridName(const char* prefix, int ix, int iy, int iz, 
     ss << prefix << ix << "_" << iy << "_" << iz << suffix ; 
     std::string s = ss.str();
     return strdup(s.c_str()); 
-}
-
-/**
-U4VolumeMaker::Wrap
----------------------
-
-The LV provided is placed within a WorldBox of halfside extent and the world PV is returned. 
-
-**/
-
-G4VPhysicalVolume* U4VolumeMaker::Wrap( G4LogicalVolume* lv, double halfside  )
-{
-    G4VPhysicalVolume* world_pv = WorldBox(halfside); 
-    G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 
-
-    G4String name = lv->GetName(); 
-    name += "_pv" ; 
-
-    G4ThreeVector tla(0.,0.,0.); 
-    G4VPhysicalVolume* pv_item = new G4PVPlacement(0, tla, lv ,name,world_lv,false,0);
-    assert( pv_item );
-
-    return world_pv ; 
 }
 
 

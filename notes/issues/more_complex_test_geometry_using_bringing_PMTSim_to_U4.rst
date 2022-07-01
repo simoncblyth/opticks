@@ -10,6 +10,27 @@ more_complex_test_geometry_using_bringing_PMTSim_to_U4
 * TODO: compare PMTSim PMT and Mask Managers with the lastest ones 
 
 
+TODO : use PMTSim geometry within u4/tests/U4VolumeMaker.sh and U4RecorderTest.sh 
+------------------------------------------------------------------------------------
+
+U4RecorderTest.sh::
+
+     85 source ./IDPath_override.sh   
+     86 # IDPath_override.sh : non-standard IDPath to allow U4Material::LoadOri to find material properties 
+     87 # HMM probably doing nothing now that are using U4Material::LoadBnd ?
+     88 
+     89 #geom=BoxOfScintillator
+     90 geom=RaindropRockAirWater
+     91 export GEOM=${GEOM:-$geom}
+
+     97 G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::Make(); } // sensitive to GEOM envvar 
+
+
+* TODO: pull out bits of RaindropRockAirWater geometry setup and incorporate into a generalized U4VolumeMaker::Wrap
+  to allow putting anything inside a RockWater test box
+  
+
+
 Prior usage of PMTSim
 -----------------------
 
