@@ -117,6 +117,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
  
     SEvt(); 
+
+    const char* getSaveDir() const ; 
     void init(); 
     void initInputPhoton(); 
 
@@ -206,6 +208,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     // save methods not const as calls gather_components 
     void save() ; 
+    void save(const char* base, const char* reldir1, const char* reldir2 ); 
     void save(const char* base, const char* reldir ); 
     void save(const char* dir); 
 

@@ -51,6 +51,9 @@ struct NPFold
     std::vector<std::string> kk ; 
     std::vector<const NP*>   aa ; 
     std::string meta ; 
+    const char* savedir ; 
+
+    NPFold(); 
 
     void check() const ; 
     void add(const char* k, const NP* a); 
@@ -65,8 +68,8 @@ struct NPFold
 
     const NP* get(const char* k) const ; 
 
-    void save(const char* base) const ; 
-    void save(const char* base, const char* rel) const ; 
+    void save(const char* base) ; 
+    void save(const char* base, const char* rel) ; 
     int load(const char* base) ; 
     int load(const char* base, const char* rel) ; 
 
@@ -135,6 +138,12 @@ inline int NPFold::Compare(const NPFold* a, const NPFold* b, bool dump)
     return mismatch ; 
 }
 
+
+inline NPFold::NPFold()
+    :
+    savedir(nullptr)
+{
+}
 
 
 inline void NPFold::check() const
@@ -226,8 +235,10 @@ inline const NP* NPFold::get(const char* k) const
     return idx > -1 ? aa[idx] : nullptr ; 
 }
 
-inline void NPFold::save(const char* base) const 
+inline void NPFold::save(const char* base)  // not const as sets savedir
 {
+    savedir = strdup(base); 
+
     //std::cout << "NPFold::save " << base << std::endl ; 
     NP::WriteNames(base, INDEX, kk );  
     for(unsigned i=0 ; i < kk.size() ; i++) 
@@ -248,7 +259,7 @@ inline void NPFold::save(const char* base) const
    if(!meta.empty()) NP::WriteString(base, META, meta.c_str() );  
 }
 
-inline void NPFold::save(const char* base_, const char* rel) const 
+inline void NPFold::save(const char* base_, const char* rel) // not const as sets savedir
 {
     std::string base = NP::form_path(base_, rel); 
     save(base.c_str()); 

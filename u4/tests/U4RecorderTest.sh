@@ -87,7 +87,8 @@ source ./IDPath_override.sh
 # HMM probably doing nothing now that are using U4Material::LoadBnd ?
 
 #geom=BoxOfScintillator
-geom=RaindropRockAirWater
+#geom=RaindropRockAirWater
+geom=RaindropRockAirWater2
 export GEOM=${GEOM:-$geom}
 
 # Note that OPTICKS_RANDOM_SEQPATH uses single quotes to prevent expansion of the '$PrecookedDir' 

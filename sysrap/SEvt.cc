@@ -49,6 +49,11 @@ SEvt::SEvt()
     init(); 
 }
 
+const char* SEvt::getSaveDir() const 
+{
+   return fold->savedir ;  
+}
+
 
 /**
 SEvt::init
@@ -1009,8 +1014,12 @@ std::string SEvt::descGS() const
 
 std::string SEvt::desc() const 
 {
+    const char* savedir = getSaveDir(); 
+
     std::stringstream ss ; 
     ss << evt->desc()
+       << std::endl
+       << " savedir " << ( savedir ? savedir : "-" )
        << std::endl
        << dbg->desc()
        ; 
@@ -1094,6 +1103,14 @@ void SEvt::save(const char* base, const char* reldir )
     const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
     save(dir); 
 }
+
+void SEvt::save(const char* base, const char* reldir1, const char* reldir2 ) 
+{
+    const char* dir = SPath::Resolve(base, reldir1, reldir2,  DIRPATH); 
+    save(dir); 
+}
+
+
 
 /**
 SEvt::save

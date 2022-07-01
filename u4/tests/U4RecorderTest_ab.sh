@@ -14,9 +14,10 @@ EOU
 }
 
 
-fold_mode=TMP
+#fold_mode=TMP
 #fold_mode=KEEP
 #fold_mode=LOGF
+fold_mode=GEOM
 
 export FOLD_MODE=${FOLD_MODE:-$fold_mode}
 

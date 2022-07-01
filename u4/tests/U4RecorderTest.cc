@@ -163,7 +163,7 @@ int main(int argc, char** argv)
     LOG(info) << rnd.desc() ; 
 
     std::string physDesc = U4Physics::Desc(); 
-    LOG(info) << " physDesc " << physDesc ; 
+    LOG(info) << " physDesc " << physDesc << " U4VolumeMaker::GEOM " << U4VolumeMaker::GEOM ; 
 
 
     // U4Material::RemoveProperty( "RINDEX", G4Material::GetMaterial("Rock") ); 
@@ -186,8 +186,8 @@ int main(int argc, char** argv)
     U4RecorderTest t(runMgr) ;  
     runMgr->BeamOn(1); 
  
-    LOG(info) << " physDesc " << physDesc ; 
-    evt.save("$TMP/U4RecorderTest",physDesc.c_str() ); 
+    LOG(info) << " physDesc " << physDesc << " U4VolumeMaker::GEOM " << U4VolumeMaker::GEOM ; 
+    evt.save("$TMP/U4RecorderTest",physDesc.c_str(), U4VolumeMaker::GEOM ); 
     LOG(info) << evt.desc() ; 
 
     return 0 ; 
