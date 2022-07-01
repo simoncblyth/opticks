@@ -482,13 +482,12 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
     tagr.add( stag_to_sca, u_scattering); 
     tagr.add( stag_to_abs, u_absorption); 
 
+    // see notes/issues/U4LogTest_maybe_replacing_G4Log_G4UniformRand_in_Absorption_and_Scattering_with_float_version_will_avoid_deviations.rst
     float scattering_distance = -scattering_length*KLUDGE_FASTMATH_LOGF(u_scattering);   
     float absorption_distance = -absorption_length*KLUDGE_FASTMATH_LOGF(u_absorption);
 #else
     float scattering_distance = -scattering_length*logf(u_scattering);   
     float absorption_distance = -absorption_length*logf(u_absorption);
-
-
 #endif
 
 #ifdef DEBUG_PIDX
