@@ -53,6 +53,11 @@ export U4VolumeMaker_RaindropRockAirWater_FACTOR=10
 export ShimG4OpAbsorption_FLOAT=1 
 export ShimG4OpRayleigh_FLOAT=1 
 
+export ShimG4OpAbsorption_PIDX=5208 
+export ShimG4OpRayleigh_PIDX=5208
+
+
+
 
 # cf U4Physics::Desc
 physdesc=""

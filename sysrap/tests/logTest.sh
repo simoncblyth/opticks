@@ -1,12 +1,17 @@
 #!/bin/bash -l 
 
+msg="=== $BASH_SOURCE : "
 name=logTest 
 
 defarg="build_run_ana"
 arg=${1:-$defarg}
 
 if [ "${arg/build}" != "$arg" ]; then 
-    nvcc $name.cu -std=c++11 -I.. -I/usr/local/cuda/include -o /tmp/$name 
+
+    #opt="-use_fast_math"
+    opt="" 
+    echo $msg opt $opt
+    nvcc $name.cu -std=c++11 $opt -I.. -I/usr/local/cuda/include -o /tmp/$name 
     [ $? -ne 0 ] && echo compilation error && exit 1
 fi 
 

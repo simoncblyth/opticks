@@ -29,6 +29,9 @@ TODO:
    #define QSIM_METHOD 
 #endif 
 
+
+
+
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
@@ -49,6 +52,7 @@ TODO:
 #include "sseq.h"
 #ifdef DEBUG_TAG
 #include "stag.h"
+#define KLUDGE_FASTMATH_LOGF(u) (u < 0.998f ? __logf(u) : __logf(u) - 0.46735790f*1e-7f )
 #endif
 #endif
 
@@ -450,6 +454,8 @@ TODO: whilst in measurement iteration try changing to a single return, not loads
 
 **/
 
+
+
 inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXORWOW& rng, sctx& ctx)
 {
     sphoton& p = ctx.p ; 
@@ -475,17 +481,22 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, curandStateXO
     tagr.add( stag_to_bnd, u_to_bnd); 
     tagr.add( stag_to_sca, u_scattering); 
     tagr.add( stag_to_abs, u_absorption); 
-#endif
 
+    float scattering_distance = -scattering_length*KLUDGE_FASTMATH_LOGF(u_scattering);   
+    float absorption_distance = -absorption_length*KLUDGE_FASTMATH_LOGF(u_absorption);
+#else
     float scattering_distance = -scattering_length*logf(u_scattering);   
     float absorption_distance = -absorption_length*logf(u_absorption);
+
+
+#endif
 
 #ifdef DEBUG_PIDX
 
     if(ctx.idx == base->pidx)
     {
-    printf("//qsim.propagate_to_boundary[ idx %d u_absorption %10.4f absorption_length %10.4f absorption_distance %10.4f \n", 
-        idx, u_absorption, absorption_length, absorption_distance );         
+    printf("//qsim.propagate_to_boundary[ idx %d u_absorption %10.8f logf(u_absorption) %10.8f absorption_length %10.4f absorption_distance %10.6f \n", 
+        ctx.idx, u_absorption, logf(u_absorption), absorption_length, absorption_distance );         
     }
 #endif
 

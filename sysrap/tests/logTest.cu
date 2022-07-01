@@ -3,32 +3,52 @@
 #include <array>
 #include "NP.hh"
 
-__global__ void test_log_(double* dd)
+#define KLUDGE_FASTMATH_LOGF(u) (u < 0.998f ? __logf(u) : __logf(u) - 0.46735790f*1e-7f )
+
+__global__ void test_log_(double* dd, unsigned ni, unsigned nj)
 {
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned nx = blockDim.x ; 
 
-    double d = double(ix)/double(nx-1) ; 
+    double d = double(ix)/double(ni-1) ; 
     float  f = float(d) ;
 
-    double d0 = -1.*log( d );
-    float  f0 = -1.f*log( f );
+    double d0 = -1.*logf( d );
+    float  f0 = -1.f*logf( f );
+    float  f1 = -1.f*__logf( f );   
+    float  f1k = -1.f*KLUDGE_FASTMATH_LOGF(f) ; 
 
-    dd[ix*4+0] = d ; 
-    dd[ix*4+1] = d0 ; 
-    dd[ix*4+2] = f0 ; 
-    dd[ix*4+3] = 0. ; 
+    dd[ix*nj+0] = d ; 
+    dd[ix*nj+1] = d0 ; 
+    dd[ix*nj+2] = f0 ; 
+    dd[ix*nj+3] = f1 ; 
+    dd[ix*nj+4] = f1k ; 
 
-    //printf("//test_log  (ix,iy,nx) (%2d, %2d, %2d) \n", ix, iy, nx );
+    //printf("//test_log  (ix,iy,ni) (%2d, %2d, %2d) \n", ix, iy, ni );
 }
+
+
+void ConfigureLaunch(dim3& numBlocks, dim3& threadsPerBlock, unsigned width )
+{ 
+    threadsPerBlock.x = 512 ; 
+    threadsPerBlock.y = 1 ; 
+    threadsPerBlock.z = 1 ; 
+
+    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
+    numBlocks.y = 1 ; 
+    numBlocks.z = 1 ; 
+}
+
+
 
 void test_log_dev()
 {
-    unsigned ni = 1001 ; 
-    unsigned nj = 4 ; 
+    unsigned ni = 1000001 ; 
+    unsigned nj = 5 ; 
 
-    dim3 block(ni,1); 
-    dim3 grid(1,1);
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    ConfigureLaunch(numBlocks, threadsPerBlock, ni ); 
+
 
     NP* h = NP::Make<double>( ni, nj ) ; 
     unsigned arr_bytes = h->arr_bytes() ; 
@@ -37,7 +57,7 @@ void test_log_dev()
     double* dd = nullptr ; 
     cudaMalloc(reinterpret_cast<void**>( &dd ), arr_bytes );     
 
-    test_log_<<<grid,block>>>(dd);  
+    test_log_<<<numBlocks,threadsPerBlock>>>(dd, ni, nj );  
 
     cudaMemcpy( hh, dd, arr_bytes, cudaMemcpyDeviceToHost ) ; 
     cudaDeviceSynchronize();
@@ -93,9 +113,9 @@ void test_log_host(double sc)
 
 int main()
 {
-    //test_log_dev();
-    test_log_host(1.);
-    test_log_host(1e7);
+    test_log_dev();
+    //test_log_host(1.);
+    //test_log_host(1e7);
     return 0 ; 
 }
 

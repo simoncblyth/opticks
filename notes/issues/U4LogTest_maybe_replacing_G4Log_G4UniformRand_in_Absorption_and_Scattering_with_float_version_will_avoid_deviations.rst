@@ -139,10 +139,101 @@ the loss of precision is not "concentrated" in one aspect of the calc.
      'TO BT SC BT SA']
 
 
+
+__logf
+---------
+
+::
+
+    __device__ float __logf ( float  x )
+        Calculate the fast approximate base e logarithm of the input argument.
+    Returns
+
+    Returns an approximation to loge(x)
+
+    Note:
+    For accuracy information see the CUDA C++ Programming Guide, Mathematical Functions Appendix, Intrinsic Functions section.
+
+
+
+* https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#math-libraries
+
+The -use_fast_math compiler option of nvcc coerces every functionName() call to the equivalent __functionName() 
+
+
 Suspect SC AB deviants may be impact of CUDA fast math ?
 --------------------------------------------------------------
 
 * float degrading the Geant4 calc does not change much at all : this makes me suspect CUDA fast math  
+
+
+* https://docs.nvidia.com/cuda/cuda-math-api/group__CUDA__MATH__INTRINSIC__SINGLE.html
+* https://forums.developer.nvidia.com/t/fastmath-functions-speed-or-accuracy/8587/2
+
+MisterAnderson42
+Apr 16 '09
+
+The biggest thing to be aware of with the fastmath operations is not how
+good/bad your input data is, but rather its range! See the list of all fastmath
+functions (i.e. __cosf()) in the programming guide. They only produce valid
+results for a given range of input values. There have been a number of
+questions on the forum in the past few months about invalid values from math
+functions that turned out to be the result of passing input values outside the
+range and using the fastmath compiler option.
+
+I always compile without the fastmath option so there are no surprises and then
+directly call the fastmath intrinsic functions in the code where and when I am
+positive the input values will not be outside the defined range.
+
+
+Difference between __logf and logf is jumpy close to zero rather constant close to one::
+
+    epsilon:tests blyth$ ./logTest.sh 
+    === ./logTest.sh : opt
+    /tmp/logTest.npy
+    [[ 0.       inf    inf    inf]
+     [ 0.    13.816 13.816 13.816]
+     [ 0.    13.122 13.122 13.122]
+     ...
+     [ 1.     0.     0.     0.   ]
+     [ 1.     0.     0.     0.   ]
+     [ 1.    -0.    -0.    -0.   ]]
+
+    In [1]: (a[1:,2] - a[1:,3]).max()                                                                                                                                                             
+    Out[1]: 9.5367431640625e-07
+
+
+
+    In [3]: (a[1:100:,2] - a[1:100:,3])*1e7
+    Out[3]: 
+    array([0.   , 0.   , 0.   , 0.   , 0.   , 9.537, 9.537, 0.   , 9.537, 0.   , 9.537, 0.   , 0.   , 9.537, 0.   , 0.   , 0.   , 0.   , 9.537, 0.   , 9.537, 0.   , 9.537, 9.537, 0.   , 0.   , 0.   ,
+           0.   , 0.   , 9.537, 0.   , 0.   , 9.537, 9.537, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 9.537, 0.   , 0.   , 0.   , 0.   , 0.   , 9.537, 0.   , 0.   , 9.537, 0.   , 0.   ,
+           0.   , 9.537, 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 0.   , 9.537, 0.   , 9.537, 0.   , 0.   , 9.537, 0.   , 0.   , 9.537, 0.   , 0.   , 9.537, 9.537, 9.537, 0.   , 0.   , 9.537,
+           9.537, 0.   , 9.537, 0.   , 0.   , 9.537, 0.   , 0.   , 0.   , 0.   , 9.537, 9.537, 9.537, 9.537, 9.537, 0.   , 0.   , 0.   ])
+
+
+
+
+    In [2]:  (a[-100:,2] - a[-100:,3])*1e7 
+    Out[2]: 
+    array([0.455, 0.459, 0.463, 0.471, 0.465, 0.478, 0.463, 0.472, 0.457, 0.47 , 0.474, 0.477, 0.467, 0.48 , 0.484, 0.497, 0.478, 0.453, 0.466, 0.461, 0.474, 0.473, 0.477, 0.462, 0.475, 0.475, 0.488,
+           0.464, 0.477, 0.481, 0.49 , 0.475, 0.479, 0.483, 0.492, 0.486, 0.499, 0.475, 0.442, 0.451, 0.455, 0.468, 0.453, 0.462, 0.466, 0.48 , 0.465, 0.46 , 0.459, 0.473, 0.467, 0.481, 0.481, 0.485,
+           0.461, 0.474, 0.478, 0.487, 0.454, 0.458, 0.472, 0.453, 0.466, 0.461, 0.475, 0.47 , 0.479, 0.483, 0.478, 0.454, 0.463, 0.468, 0.481, 0.467, 0.481, 0.481, 0.494, 0.48 , 0.456, 0.465, 0.461,
+           0.474, 0.479, 0.483, 0.455, 0.469, 0.473, 0.487, 0.478, 0.473, 0.477, 0.491, 0.477, 0.486, 0.482, 0.496, 0.491, 0.5  , 0.505, 0.   ])
+
+
+
+When using "-use_fast_math" there is no difference between __logf and logf because logf uses __logf::
+
+    In [1]: (a[-100:,2] - a[-100:,3])*1e7
+    Out[1]: 
+    array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+           0., 0., 0., 0.])
+
+
+
+
 
 
 2 ipython sessions with differnt B_FOLD::
@@ -182,8 +273,93 @@ Suspect SC AB deviants may be impact of CUDA fast math ?
 
 
 
+    N[blyth@localhost CSGOptiX]$ PIDX=5208 ./cxs_raindrop.sh 
+    ...
+    //qsim.propagate_at_boundary idx 5208 mom_1 (   -0.3479     0.1151     0.9304) 
+    //qsim.propagate_at_boundary idx 5208 pol_1 (   -0.3140    -0.9494     0.0000) 
+    //qsim.propagate idx 5208 bnc 2 cosTheta     0.9304 dir (   -0.3479     0.1151     0.9304) nrm (    0.0000     0.0000     1.0000) 
+    //qsim.propagate_to_boundary[ idx 5208 u_absorption 0.99990851 logf(u_absorption) -0.00009145 absorption_length 10000000.0000 absorption_distance 914.525269 
+    //qsim.propagate idx 5208 bounce 2 command 1 flag 8 s.optical.x 99 
 
 
+    2022-07-01 14:19:04.197 INFO  [34923287] [U4Recorder::PreUserTrackingAction_Optical@113]  label.id 6000
+    ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength PIDX 5208 currentInteractionLength 1000000.0000000 theNumberOfInteractionLengthLeft  1.0320371 value 1032037.1250000
+    ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength PIDX 5208 currentInteractionLength 10000000.0000000 theNumberOfInteractionLengthLeft  1.3027622 value 13027622.0000000
+    ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength PIDX 5208 currentInteractionLength 374117.6507688 theNumberOfInteractionLengthLeft  0.2469110 value 92373.7812500
+    ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength PIDX 5208 currentInteractionLength 38563.0354202 theNumberOfInteractionLengthLeft  2.4086330 value 92884.1953125
+    ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength PIDX 5208 currentInteractionLength 1000000.0000000 theNumberOfInteractionLengthLeft  0.5557740 value 555774.0625000
+    ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength PIDX 5208 currentInteractionLength 10000000.0000000 theNumberOfInteractionLengthLeft  0.0000915 value 914.9731445
+    2022-07-01 14:19:10.289 INFO  [34923287] [U4Recorder::PreUserTrackingAction_Optical@113]  label.id 5000
+
+
+
+Use sysrap/tests/logTest.cu array to lookup the __logf::
+
+    In [19]: tr = np.where( np.abs( a[:,0] - 0.9999085 ) < 1e-5 )[0] ; tr
+    Out[19]: array([999899, 999900, 999901, 999902, 999903, 999904, 999905, 999906, 999907, 999908, 999909, 999910, 999911, 999912, 999913, 999914, 999915, 999916, 999917, 999918])
+
+    In [20]: np.set_printoptions(precision=10)
+
+    In [21]: a[tr]*1e7
+    Out[21]: 
+    array([[9998990.          ,    1009.753686958 ,    1009.753686958 ,    1009.2915908899],
+           [9999000.          ,    1000.2159251599,    1000.2159251599,     999.7455345001],
+           [9999010.          ,     990.0821896736,     990.0821896736,     989.6268602461],
+           [9999020.          ,     979.9483814277,     979.9483814277,     979.4894140214],
+           [9999030.          ,     969.8145731818,     969.8145731818,     969.3518950371],
+           [9999040.          ,     960.2769569028,     960.2769569028,     959.8058386473],
+           [9999050.          ,     950.1431486569,     950.1431486569,     949.6778511675],
+           [9999060.          ,     940.0094131706,     940.0094131706,     939.5310189575],
+           [9999070.          ,     929.8756776843,     929.8756776843,     929.4123447035],
+           [9999080.          ,     920.3380614053,     920.3380614053,     919.8662883136],
+           [9999090.          ,     910.204325919 ,     910.204325919 ,     909.7475413   ],
+           [9999100.          ,     900.0706631923,     900.0706631923,     899.6008546092],
+           [9999110.          ,     889.936927706 ,     889.936927706 ,     889.4634083845],
+           [9999120.          ,     879.8032649793,     879.8032649793,     879.3259621598],
+           [9999130.          ,     870.2656487003,     870.2656487003,     869.798604981 ],
+           [9999140.          ,     860.1319859736,     860.1319859736,     859.651772771 ],
+           [9999150.          ,     849.9983232468,     849.9983232468,     849.5143993059],
+           [9999160.          ,     839.8647332797,     839.8647332797,     839.3675670959],
+           [9999170.          ,     830.3271897603,     830.3271897603,     829.8496686621],
+           [9999180.          ,     820.1935270336,     820.1935270336,     819.7403076338]])
+
+    In [22]: tr = np.where( np.abs( a[:,0] - 0.9999085 ) < 1e-6 )[0] ; tr
+    Out[22]: array([999908, 999909])
+
+    In [23]: a[tr]*1e7
+    Out[23]: 
+    array([[9999080.          ,     920.3380614053,     920.3380614053,     919.8662883136],
+           [9999090.          ,     910.204325919 ,     910.204325919 ,     909.7475413   ]])
+
+    In [25]: np.interp( 0.9999085, a[:,0], a[:,3] )*1e7    ## interpolating the __logf result gets close 
+    Out[25]: 914.8069148073934
+
+    In [26]: np.interp( 0.9999085, a[:,0], a[:,2] )*1e7    ## interpolating the logf result 
+    Out[26]: 915.2711936627552
+
+::
+
+     06 __global__ void test_log_(double* dd, unsigned ni)
+      7 {
+      8     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
+      9 
+     10     double d = double(ix)/double(ni-1) ;
+     11     float  f = float(d) ;
+     12 
+     13     double d0 = -1.*logf( d );
+     14     float  f0 = -1.f*logf( f );
+     15     float  f1 = -1.f*__logf( f );
+     16 
+     17     dd[ix*4+0] = d ;
+     18     dd[ix*4+1] = d0 ;
+     19     dd[ix*4+2] = f0 ;
+     20     dd[ix*4+3] = f1 ;
+     21 
+     22     //printf("//test_log  (ix,iy,ni) (%2d, %2d, %2d) \n", ix, iy, ni );
+     23 }
+
+
+Looks pretty clear that the smaller Opticks distance arises due to __logf imprecision. 
 
 ::
 
@@ -197,6 +373,44 @@ Suspect SC AB deviants may be impact of CUDA fast math ?
     Out[10]: 
     ('/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest',
      '/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4OpRayleigh_ORIGINAL')
+
+
+Is the __logf difference constant enough for a kludge fix
+-------------------------------------------------------------
+
+::
+
+    #define KLUDGE_FASTMATH_LOGF(u) (u < 0.998f ? __logf(u) : __logf(u) - 0.46735790f*1e-7f )
+
+
+sysrap/tests/logTest.ch::
+
+    In [32]: d23 = (a[:,2] - a[:,3])*1e7   ## -logf - -__logf value 
+    /Users/blyth/miniconda3/bin/ipython:1: RuntimeWarning: invalid value encountered in subtract
+      #!/Users/blyth/miniconda3/bin/python
+
+    In [33]: np.c_[a[-2000:],d23[-2000:]]                                                                                                                                                          
+    Out[33]: 
+    array([[ 0.998001    ,  0.0020010213,  0.0020010213,  0.0020009747,  0.4656612873],
+           [ 0.998002    ,  0.0020000059,  0.0020000059,  0.0019999619,  0.4400499165],
+           [ 0.998003    ,  0.0019989908,  0.0019989908,  0.0019989482,  0.4260800779],
+           ...,
+           [ 0.999998    ,  0.0000020266,  0.0000020266,  0.0000019766,  0.5000629244],
+           [ 0.999999    ,  0.0000010133,  0.0000010133,  0.0000009628,  0.5047138529],
+           [ 1.          , -0.          , -0.          , -0.          ,  0.          ]])
+
+
+    In [39]: d23[-2000:-1].min()
+    Out[39]: 0.417931005358696
+
+    In [40]: d23[-2000:-1].max() 
+    Out[40]: 0.5122274160385132
+
+    In [41]: d23[-2000:-1].sum()
+    Out[41]: 934.7158072614548
+
+    In [42]: d23[-2000:-1].sum()/2000.
+    Out[42]: 0.4673579036307274
 
 
 

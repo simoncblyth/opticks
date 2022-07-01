@@ -13,6 +13,7 @@ class ShimG4OpRayleigh : public G4OpRayleigh
     public:
 #ifdef DEBUG_TAG
         static const bool FLOAT ; 
+        static const int  PIDX ; 
         void ResetNumberOfInteractionLengthLeft(); 
         G4double GetMeanFreePath(const G4Track& aTrack,
                  G4double ,
@@ -30,6 +31,7 @@ class ShimG4OpRayleigh : public G4OpRayleigh
 
 #ifdef DEBUG_TAG
 const bool ShimG4OpRayleigh::FLOAT = getenv("ShimG4OpRayleigh_FLOAT") != nullptr ;
+const int  ShimG4OpRayleigh::PIDX  = std::atoi( getenv("ShimG4OpRayleigh_PIDX") ? getenv("ShimG4OpRayleigh_PIDX") : "-1" ); 
 
 /**
 ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft
@@ -95,6 +97,21 @@ inline G4double ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength(const G4T
      {
           value = theNumberOfInteractionLengthLeft * currentInteractionLength ; 
      }                
+
+     //std::cout << "ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength " << track.GetTrackID() << std::endl ; 
+
+      if(track.GetTrackID() - 1  == PIDX)
+      {
+           std::cout 
+               << "ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength"
+               << " PIDX " << PIDX 
+               << " currentInteractionLength " << std::setw(10) << std::fixed << std::setprecision(7) << currentInteractionLength
+               << " theNumberOfInteractionLengthLeft " << std::setw(10) << std::fixed << std::setprecision(7) << theNumberOfInteractionLengthLeft
+               << " value " << std::setw(10) << std::fixed << std::setprecision(7) << value
+               << std::endl
+               ;
+      } 
+
 
   } else {       
     value = DBL_MAX;
