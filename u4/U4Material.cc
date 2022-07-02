@@ -20,6 +20,7 @@
 
 const plog::Severity U4Material::LEVEL = PLOG::EnvLevel("U4Material", "DEBUG"); 
 
+
 std::string U4Material::DescMaterialTable()
 {
     std::vector<std::string> names ; 
@@ -31,7 +32,7 @@ std::string U4Material::DescMaterialTable()
     return s ; 
 }
 
-void U4Material::GetMaterialNames( std::vector<std::string>& names)
+void U4Material::GetMaterialNames( std::vector<std::string>& names, bool extras )
 {
     G4MaterialTable* tab =  G4Material::GetMaterialTable(); 
     for(int i=0 ; i < int(tab->size()) ; i++)
@@ -40,25 +41,69 @@ void U4Material::GetMaterialNames( std::vector<std::string>& names)
         const G4String& name = mat->GetName(); 
         names.push_back(name); 
     }
+    if(extras)
+    {
+        names.push_back(U4Material::SCINTILLATOR); 
+        names.push_back(U4Material::VACUUM); 
+   }
 }
 
+/**
+U4Material::FindMaterialName
+------------------------------
+
+Look for the names of any of the materials within the volname 
+string and return the first material name found. 
+If more than one names are matched this asserts : so be careful
+to avoid unwanted material names within volume names. 
+
+**/
+
+const char* U4Material::FindMaterialName(const char* volname)
+{
+    std::vector<std::string> names ; 
+    GetMaterialNames(names, true); 
+    const char* matname = nullptr ;  
+    unsigned count = 0 ; 
+    for(unsigned i=0 ; i < names.size() ; i++)
+    {
+        const char* mat = names[i].c_str(); 
+        if(strstr(volname, mat) != nullptr )
+        {
+            if(count == 0 ) matname = strdup(mat); 
+            count+= 1 ; 
+        }
+    }
+    if( count > 1 ) LOG(fatal) << " count " << count << " volname " << volname << " matname " << matname ;  
+    assert( count < 2 ); 
+    return matname ; 
+}
+
+
+
+
+/**
+U4Material::Get
+-----------------
+
+Ordinary G4Material::GetMaterial has first chance, otherwise U4Material::Get_ 
+may provide. 
+
+**/
 
 G4Material* U4Material::Get(const char* name)
 {
    G4Material* material = G4Material::GetMaterial(name); 
-   if( material == nullptr )
-   {   
-       material = Get_(name); 
-   }   
+   if( material == nullptr ) material = Get_(name); 
    return material ;   
 }
 
-
 G4Material* U4Material::Get_(const char* name)
 {
-   G4Material* material = nullptr ; 
-   if(strcmp(name, "Vacuum")==0)  material = Vacuum(name); 
-   return material ; 
+    G4Material* material = nullptr ; 
+    if(strcmp(name, SCINTILLATOR)==0) material = MakeScintillator(); 
+    if(strcmp(name, VACUUM)==0)       material = Vacuum(name); 
+    return material ; 
 }
 
 G4Material* U4Material::Vacuum(const char* name)

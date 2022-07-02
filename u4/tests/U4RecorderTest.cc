@@ -94,7 +94,7 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
 
 
 
-G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::Make(); } // sensitive to GEOM envvar 
+G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::PV(); } // sensitive to GEOM envvar 
 
 char U4RecorderTest::PrimaryMode()
 {

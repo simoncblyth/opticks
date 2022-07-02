@@ -29,6 +29,8 @@ arg=${1:-run}
 geom=hama_body_log
 
 export GEOM=${GEOM:-$geom}
+export U4VolumeMaker=INFO
+
 
 vars="BASH_SOURCE arg GEOM"
 for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 

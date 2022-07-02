@@ -17,7 +17,11 @@ struct U4_API U4Material
     static const plog::Severity LEVEL ; 
 
     static std::string DescMaterialTable(); 
-    static void GetMaterialNames( std::vector<std::string>& names); 
+    static void GetMaterialNames( std::vector<std::string>& names, bool extras=false); 
+    static const char* FindMaterialName(const char* volname); 
+
+    static constexpr const char* SCINTILLATOR = "SCINTILLATOR" ; 
+    static constexpr const char* VACUUM = "VACUUM" ; 
 
     static G4Material* Get(const char* name);
     static G4Material* Get_(const char* name);

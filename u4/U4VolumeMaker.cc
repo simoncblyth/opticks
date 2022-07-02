@@ -38,16 +38,60 @@ std::string U4VolumeMaker::Desc() // static
     return s ; 
 }
 
+std::string U4VolumeMaker::Desc( const G4ThreeVector& tla )
+{
+    std::stringstream ss ; 
+    ss << " tla (" 
+       <<  " " << std::fixed << std::setw(10) << std::setprecision(3) << tla.x()
+       <<  " " << std::fixed << std::setw(10) << std::setprecision(3) << tla.y()
+       <<  " " << std::fixed << std::setw(10) << std::setprecision(3) << tla.z()
+       <<  ") " 
+       ;
 
-G4VPhysicalVolume* U4VolumeMaker::Make(){ return Make(GEOM); }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+
 
 /**
-U4VolumeMaker::Make
+U4VolumeMaker::PV
 ---------------------
 
-Hmm the input names could be of LV or PV with no consistent
-way to distinguish. 
+Invokes several PV getter methods the first to provide a PV wins.
 
+PVP_
+    PMTSim getter, requiring WITH_PMTSIM macro to be set meaning that PMTSim pkg was found by CMake
+PVS_
+    Specials provided locally 
+PVL_
+    For names starting with List, multiple volumes are created and arranged eg into a grid. 
+    The names to create are extracted using the name argumnent as a comma delimited list
+PV1_
+    Places single lv once or duplicates it several times depending on 
+    strings found in the name such as Grid,Cube,Xoff,Yoff,Zoff
+
+**/
+
+G4VPhysicalVolume* U4VolumeMaker::PV(){ return PV(GEOM); }
+G4VPhysicalVolume* U4VolumeMaker::PV(const char* name)
+{
+    LOG(LEVEL) << "[" << name ; 
+    G4VPhysicalVolume* pv = nullptr ; 
+    if(pv == nullptr) pv = PVP_(name); 
+    if(pv == nullptr) pv = PVS_(name); 
+    if(pv == nullptr) pv = PVL_(name); 
+    if(pv == nullptr) pv = PV1_(name); 
+    if(pv == nullptr) LOG(error) << "returning nullptr for name [" << name << "]" ; 
+    LOG(LEVEL) << "]" << name ; 
+    return pv ; 
+}
+
+/**
+U4VolumeMaker::PVP_ : Get PMTSim PV
+------------------------------------ 
 
 PMTSim::HasManagerPrefix 
     returns true for names starting with one of: hama, nnvt, hmsk, nmsk, lchi
@@ -56,31 +100,36 @@ PMTSim::GetLV PMTSim::GetPV
      these methods act as go betweens to the underlying managers with prefixes
      that identify the managers offset  
 
+
+TODO: need to generalize the wrapping  
+
 **/
 
-G4VPhysicalVolume* U4VolumeMaker::Make(const char* name)
+G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
 {
     G4VPhysicalVolume* pv = nullptr ; 
-    G4LogicalVolume* lv = nullptr ; 
 #ifdef WITH_PMTSIM
     bool has_manager_prefix = PMTSim::HasManagerPrefix(name) ;
-    LOG(info) << "WITH_PMTSIM name [" << name << "] has_manager_prefix " << has_manager_prefix ; 
+    LOG(LEVEL) << "[ WITH_PMTSIM name [" << name << "] has_manager_prefix " << has_manager_prefix ; 
     if(has_manager_prefix) 
     {
-        lv = PMTSim::GetLV(name) ; 
+        G4LogicalVolume* lv = PMTSim::GetLV(name) ; 
         if( lv == nullptr ) LOG(fatal) << "PMTSim::GetLV returned nullptr for name [" << name << "]" ; 
         assert( lv ); 
-        pv = Wrap( lv, 5000. ) ;          
+
+        //pv = WrapVacuum( lv, 5000. ) ;          
+        pv = WrapRockWater( lv, 5000. ) ;          
+
     }
+    LOG(LEVEL) << "]" ; 
 #else
     LOG(info) << " not-WITH_PMTSIM name [" << name << "]" ; 
 #endif
-    if(pv == nullptr) pv = Make_(name); 
-    if(pv == nullptr) pv = MakePhysical(name) ; 
-    LOG(info) << " name " << name << " pv " << pv ; 
     return pv ; 
 }
-G4VPhysicalVolume* U4VolumeMaker::Make_(const char* name)
+
+
+G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
 {
     G4VPhysicalVolume* pv = nullptr ; 
     if(strcmp(name,"BoxOfScintillator" ) == 0)     pv = BoxOfScintillator(1000.);   
@@ -88,54 +137,67 @@ G4VPhysicalVolume* U4VolumeMaker::Make_(const char* name)
     if(strcmp(name,"RaindropRockAirWater2" ) == 0) pv = RaindropRockAirWater2();   
     return pv ; 
 }
-
-
-/**
-U4VolumeMaker::Wrap
----------------------
-
-The LV provided is placed within a WorldBox of halfside extent and the world PV is returned. 
-
-**/
-
-G4VPhysicalVolume* U4VolumeMaker::Wrap( G4LogicalVolume* lv, double halfside  )
+G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
 {
-    G4VPhysicalVolume* world_pv = WorldBox(halfside); 
-    G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 
+    if(!SStr::StartsWith(name, "List")) return nullptr  ; 
+    std::vector<G4LogicalVolume*> lvs ; 
+    LV(lvs, name + strlen("List") ); 
+    G4VPhysicalVolume* pv = WrapLVGrid(lvs, 1, 1, 1 ); 
+    return pv ; 
+}
+G4VPhysicalVolume* U4VolumeMaker::PV1_(const char* name)
+{
+    G4VPhysicalVolume* pv = nullptr ; 
+    bool grid = strstr(name, "Grid") != nullptr ; 
+    bool cube = strstr(name, "Cube") != nullptr ; 
+    bool xoff = strstr(name, "Xoff") != nullptr ; 
+    bool yoff = strstr(name, "Yoff") != nullptr ; 
+    bool zoff = strstr(name, "Zoff") != nullptr ; 
 
-    G4String name = lv->GetName(); 
-    name += "_pv" ; 
+    G4LogicalVolume* lv = LV(name) ; 
 
-    G4ThreeVector tla(0.,0.,0.); 
-    G4VPhysicalVolume* pv_item = new G4PVPlacement(0, tla, lv ,name,world_lv,false,0);
-    assert( pv_item );
-
-    return world_pv ; 
+    if(grid)      pv =   WrapLVGrid(     lv, 1, 1, 1 ); 
+    else if(cube) pv =   WrapLVCube(     lv, 100., 100., 100. ); 
+    else if(xoff) pv =   WrapLVOffset(   lv, 200.,   0.,   0. ); 
+    else if(yoff) pv =   WrapLVOffset(   lv,   0., 200.,   0. ); 
+    else if(zoff) pv =   WrapLVOffset(   lv,   0.,   0., 200. ); 
+    else          pv =   WrapLVCube(     lv,   0.,   0.,   0. ); 
+    return pv ; 
 }
 
 
+/**
+U4VolumeMaker::LV
+---------------------------
 
+Note the generality: 
 
+* U4SolidMaker::Make can create many different solid shapes based on the start of the name
+* U4Material::FindMaterialName extracts the material name by looking for material names within *name*
 
+HMM: maybe provide PMTSim LV this way too ? Based on some prefix ? 
 
+**/
 
-
-
-
-G4LogicalVolume*  U4VolumeMaker::MakeLogical(const char* name)
+G4LogicalVolume*  U4VolumeMaker::LV(const char* name)
 {
     const G4VSolid* solid_  = U4SolidMaker::Make(name); 
     G4VSolid* solid = const_cast<G4VSolid*>(solid_); 
-
-    G4Material* material = U4Material::Get("Vacuum"); 
+    const char* matname = U4Material::FindMaterialName(name) ; 
+    G4Material* material = U4Material::Get( matname ? matname : U4Material::VACUUM ); 
     G4LogicalVolume* lv = new G4LogicalVolume( solid, material, name, 0,0,0,true ); 
     return lv ; 
 }
 
-void U4VolumeMaker::MakeLogical(std::vector<G4LogicalVolume*>& lvs , const char* names_ )
+/**
+U4VolumeMaker::LV vector interface : creates multiple LV using delimited names string 
+--------------------------------------------------------------------------------------
+**/
+
+void U4VolumeMaker::LV(std::vector<G4LogicalVolume*>& lvs , const char* names_, char delim )
 {
     std::vector<std::string> names ; 
-    SStr::Split(names_ , ',', names ); 
+    SStr::Split(names_ , delim, names ); 
     unsigned num_names = names.size(); 
     LOG(LEVEL) << " names_ " << names_ << " num_names " << num_names ;  
     assert( num_names > 1 ); 
@@ -143,74 +205,150 @@ void U4VolumeMaker::MakeLogical(std::vector<G4LogicalVolume*>& lvs , const char*
     for(unsigned i=0 ; i < num_names ; i++)
     {
         const char* name = names[i].c_str(); 
-        G4LogicalVolume* lv = MakeLogical(name) ; 
+        G4LogicalVolume* lv = LV(name) ; 
         assert(lv); 
         lvs.push_back(lv);   
     }
 }
 
-G4VPhysicalVolume* U4VolumeMaker::MakePhysical(const char* name)
+/**
+U4VolumeMaker::WrapRockWater
+-------------------------------
+
+**/
+
+G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv, double halfside  )
 {
-    bool list = strstr(name, "List") != nullptr ; 
-    G4VPhysicalVolume* pv = list ? MakePhysicalList_(name) : MakePhysicalOne_(name)  ; 
-    return pv ; 
+    LOG(LEVEL) << "["  ; 
+
+    G4LogicalVolume*  rock_lv  = Box_(2.*halfside, "Rock" );
+    G4LogicalVolume*  water_lv = Box_(1.*halfside, "Water" );
+ 
+    G4VPhysicalVolume* item_pv  = Place(item_lv,  water_lv);  assert( item_pv ); 
+    G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
+    G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  
+
+    LOG(LEVEL) << "]"  ; 
+    return rock_pv ; 
 }
-G4VPhysicalVolume* U4VolumeMaker::MakePhysicalList_(const char* name)
+
+
+/**
+U4VolumeMaker::WrapVacuum
+----------------------------
+
+The LV provided is placed within a WorldBox of halfside extent and the world PV is returned. 
+
+**/
+
+G4VPhysicalVolume* U4VolumeMaker::WrapVacuum( G4LogicalVolume* item_lv, double halfside  )
 {
-    assert( SStr::StartsWith(name, "List") ); 
+    G4LogicalVolume*   vac_lv  = Box_(halfside, "Vacuum" );
+ 
+    G4VPhysicalVolume* item_pv = Place(item_lv, vac_lv);   assert( item_pv ); 
+    G4VPhysicalVolume* vac_pv  = Place(vac_lv, nullptr );
+
+    return vac_pv ;      
+}
+
+
+
+
+
+/**
+U4VolumeMaker::WrapLVGrid
+---------------------------
+
+Returns a physical volume with the argument lv placed multiple times 
+in a grid specified by (nx,ny,nz) integers. (1,1,1) yields 3x3x3 grid.
+
+The vector argument method places the lv in a grid within a box. 
+Grid ranges::
+
+    -nx:nx+1
+    -ny:ny+1
+    -nz:nz+1
+
+Example (nx,ny,nz):
+
+1,1,1 
+     yields a grid with 3 elements on each side, for 3*3*3=27 
+0,0,0
+     yields a single element 
+
+**/
+
+G4VPhysicalVolume* U4VolumeMaker::WrapLVGrid( G4LogicalVolume* lv, int nx, int ny, int nz  )
+{
     std::vector<G4LogicalVolume*> lvs ; 
-    MakeLogical(lvs, name + strlen("List") ); 
-    G4VPhysicalVolume* pv = WrapLVGrid(lvs, 1, 1, 1 ); 
-    return pv ; 
+    lvs.push_back(lv); 
+    return WrapLVGrid(lvs, nx, ny, nz ) ; 
 }
 
-G4VPhysicalVolume* U4VolumeMaker::MakePhysicalOne_(const char* name)
+G4VPhysicalVolume* U4VolumeMaker::WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  )
 {
-    G4VPhysicalVolume* pv = nullptr ; 
+    unsigned num_lv = lvs.size(); 
 
-    bool grid = strstr(name, "Grid") != nullptr ; 
-    bool cube = strstr(name, "Cube") != nullptr ; 
-    bool xoff = strstr(name, "Xoff") != nullptr ; 
-    bool yoff = strstr(name, "Yoff") != nullptr ; 
-    bool zoff = strstr(name, "Zoff") != nullptr ; 
+    int extent = std::max(std::max(nx, ny), nz); 
+    G4double sc = 500. ; 
+    G4double halfside = sc*extent*3. ; 
 
-    G4LogicalVolume* lv = MakeLogical(name) ; 
+    LOG(LEVEL) 
+        << " num_lv " << num_lv 
+        << " (nx,ny,nz) (" << nx << "," << ny << " " << nz << ")" 
+        << " extent " << extent
+        << " halfside " << halfside
+        ;
 
-    if(grid)      pv =   WrapLVGrid(lv, 1, 1, 1 ); 
-    else if(cube) pv =   WrapLVTranslate(lv, 100., 100., 100. ); 
-    else if(xoff) pv =   WrapLVOffset(lv, 200.,   0.,   0. ); 
-    else if(yoff) pv =   WrapLVOffset(lv,   0., 200.,   0. ); 
-    else if(zoff) pv =   WrapLVOffset(lv,   0.,   0., 200. ); 
-    else          pv =   WrapLVTranslate(lv, 0., 0., 0. ); 
+    G4VPhysicalVolume* world_pv = WorldBox(halfside); 
+    G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 
 
-    return pv ; 
+    unsigned count = 0 ; 
+    for(int ix=-nx ; ix < nx+1 ; ix++)
+    for(int iy=-ny ; iy < ny+1 ; iy++)
+    for(int iz=-nz ; iz < nz+1 ; iz++)
+    {   
+        G4LogicalVolume* ulv = lvs[count%num_lv] ; 
+        count += 1 ; 
+        assert( ulv ); 
+
+         const G4String& ulv_name_ = ulv->GetName();  
+         std::string ulv_name = ulv_name_ ; 
+         ulv_name += "_plc_" ; 
+
+        const char* iname = GridName( ulv_name.c_str(), ix, iy, iz, "" );    
+        G4ThreeVector tla( sc*double(ix), sc*double(iy), sc*double(iz) );  
+
+        LOG(LEVEL) 
+           << " G4PVPlacement "
+           << " count " << std::setw(3) << count 
+           << Desc(tla)
+           <<  iname
+           ;
+        G4VPhysicalVolume* pv_n = new G4PVPlacement(0, tla, ulv ,iname,world_lv,false,0);
+        assert( pv_n );  
+    }   
+    return world_pv ; 
 }
 
 
+/**
+U4VolumeMaker::WrapLVOffset
+-----------------------------
 
-void U4VolumeMaker::AddPlacement( G4LogicalVolume* mother,  G4LogicalVolume* lv,  double tx, double ty, double tz )
-{
-    G4ThreeVector tla(tx,ty,tz); 
-    std::string name = lv->GetName(); 
-    name += "_placement" ; 
-    LOG(LEVEL) << Desc(tla) << " " << name ;  
-    G4VPhysicalVolume* pv = new G4PVPlacement(0,tla,lv,name,mother,false,0);
-    assert(pv); 
-} 
+This is used from PV1_ for Xoff Yoff Zoff names
 
+1. use maximum of tx,ty,tz to define world box halfside 
+2. places lv within world volume 
+3. adds BoxMinusOrb at origin 
 
-void U4VolumeMaker::AddPlacement( G4LogicalVolume* mother, const char* name,  double tx, double ty, double tz )
-{
-    G4LogicalVolume* lv = MakeLogical(name); 
-    AddPlacement( mother, lv, tx, ty, tz ); 
-}
+**/
 
 G4VPhysicalVolume* U4VolumeMaker::WrapLVOffset( G4LogicalVolume* lv, double tx, double ty, double tz )
 {
-    G4String name = lv->GetName(); 
-    name += "_Offset" ; 
-
     double halfside = 3.*std::max( std::max( tx, ty ), tz ); 
+    assert( halfside > 0. ); 
+
     G4VPhysicalVolume* world_pv = WorldBox(halfside); 
     G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 
 
@@ -223,10 +361,11 @@ G4VPhysicalVolume* U4VolumeMaker::WrapLVOffset( G4LogicalVolume* lv, double tx, 
 }
 
 /**
-U4VolumeMaker::WrapLVTranslate
+U4VolumeMaker::WrapLVCube
 -------------------------------
 
-Place the lv at 8 positions at the corners of a cube. 
+This if used from PV1_ for "Cube" string.  
+Places the lv at 8 positions at the corners of a cube. 
 
   ZYX
 0 000
@@ -258,7 +397,7 @@ Place the lv at 8 positions at the corners of a cube.
 
 **/
 
-G4VPhysicalVolume* U4VolumeMaker::WrapLVTranslate( G4LogicalVolume* lv, double tx, double ty, double tz )
+G4VPhysicalVolume* U4VolumeMaker::WrapLVCube( G4LogicalVolume* lv, double tx, double ty, double tz )
 {
     double halfside = 3.*std::max( std::max( tx, ty ), tz ); 
 
@@ -279,21 +418,51 @@ G4VPhysicalVolume* U4VolumeMaker::WrapLVTranslate( G4LogicalVolume* lv, double t
     return world_pv ;  
 }
 
+
+
+
+/**
+U4VolumeMaker::AddPlacement : Translation places *lv* within *mother_lv*  
+---------------------------------------------------------------------------
+
+Used from U4VolumeMaker::WrapLVOffset
+
+**/
+
+G4VPhysicalVolume* U4VolumeMaker::AddPlacement( G4LogicalVolume* mother_lv,  G4LogicalVolume* lv,  double tx, double ty, double tz )
+{
+    G4ThreeVector tla(tx,ty,tz); 
+    const char* pv_name = SStr::Name( lv->GetName().c_str(), "_placement" ); 
+    LOG(LEVEL) << Desc(tla) << " " << pv_name ;  
+    G4VPhysicalVolume* pv = new G4PVPlacement(0,tla,lv,pv_name,mother_lv,false,0);
+    return pv ; 
+} 
+G4VPhysicalVolume* U4VolumeMaker::AddPlacement( G4LogicalVolume* mother, const char* name,  double tx, double ty, double tz )
+{
+    G4LogicalVolume* lv = LV(name); 
+    return AddPlacement( mother, lv, tx, ty, tz ); 
+}
+
+const char* U4VolumeMaker::GridName(const char* prefix, int ix, int iy, int iz, const char* suffix)
+{
+    std::stringstream ss ; 
+    ss << prefix << ix << "_" << iy << "_" << iz << suffix ; 
+    std::string s = ss.str();
+    return strdup(s.c_str()); 
+}
+
+
 /**
 U4VolumeMaker::WorldBox
 --------------------------
+
+Used from U4VolumeMaker::WrapLVOffset U4VolumeMaker::WrapLVCube
 
 **/
 
 G4VPhysicalVolume* U4VolumeMaker::WorldBox( double halfside, const char* mat )
 {
-    G4Material* material= U4Material::Get(mat); 
-    return WorldBox(halfside, material); 
-}
-G4VPhysicalVolume* U4VolumeMaker::WorldBox( double halfside, G4Material* material )
-{
-    G4LogicalVolume* mother_lv = nullptr ; 
-    return Box(halfside, material, "World", mother_lv ); 
+    return Box(halfside, mat, "World", nullptr ); 
 }
 G4VPhysicalVolume* U4VolumeMaker::BoxOfScintillator( double halfside )
 {
@@ -301,18 +470,21 @@ G4VPhysicalVolume* U4VolumeMaker::BoxOfScintillator( double halfside )
 }
 G4VPhysicalVolume* U4VolumeMaker::BoxOfScintillator( double halfside, const char* prefix, G4LogicalVolume* mother_lv )
 {
-    G4Material* mat = U4Material::MakeScintillator() ; 
-    return Box(halfside, mat, "BoxOfScintillator", mother_lv);
+    return Box(halfside, U4Material::SCINTILLATOR, "BoxOfScintillator", mother_lv);
 }
-G4VPhysicalVolume* U4VolumeMaker::Box(double halfside, G4Material* material, const char* prefix, G4LogicalVolume* mother_lv )
+G4VPhysicalVolume* U4VolumeMaker::Box(double halfside, const char* mat, const char* prefix, G4LogicalVolume* mother_lv )
 {
-    G4Box* solid = new G4Box( SStr::Name(prefix, "_so"), halfside, halfside, halfside );  
-    G4LogicalVolume* lv = new G4LogicalVolume(solid,material, SStr::Name(prefix,"_lv"),0,0,0); 
-    G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv ,SStr::Name(prefix,"_pv"),mother_lv,false,0);
-    return pv ; 
+    if(prefix == nullptr) prefix = mat ; 
+    G4LogicalVolume* lv = Box_(halfside, mat, prefix); 
+    return Place(lv, mother_lv); 
 }
 
-
+G4VPhysicalVolume* U4VolumeMaker::Place( G4LogicalVolume* lv, G4LogicalVolume* mother_lv )
+{
+    const char* lv_name = lv->GetName().c_str() ; 
+    const char* pv_name = SStr::Name(lv_name, "_pv") ; 
+    return new G4PVPlacement(0,G4ThreeVector(), lv, pv_name, mother_lv, false, 0);
+}
 
 
 
@@ -397,7 +569,7 @@ U4VolumeMaker::RaindropRockAirWater2
 --------------------------------------
 
 Notice that so long as all the LV are created prior to creating the PV, 
-which need the LV for placement and mother logical, there is little need to be 
+which need the LV for placement and mother logical, there is no need to be 
 careful with creation order of the volumes. 
 
 This is suggestive of how to organize the API, instead of focussing on methods 
@@ -427,12 +599,10 @@ G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater2()
     assert( air_rock_bs ); 
     return rock_pv ; 
 }
-
-
 G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char* prefix )
 {
     if( prefix == nullptr ) prefix = mat ; 
-    G4Material* material  = G4Material::GetMaterial(mat);   assert(material); 
+    G4Material* material  = U4Material::Get(mat);   assert(material); 
     G4Orb* solid = new G4Orb( SStr::Name(prefix,"_solid"), radius ); 
     G4LogicalVolume* lv = new G4LogicalVolume( solid, material, SStr::Name(prefix,"_lv")); 
     return lv ; 
@@ -440,7 +610,7 @@ G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char
 G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const char* prefix )
 {
     if( prefix == nullptr ) prefix = mat ; 
-    G4Material* material  = G4Material::GetMaterial(mat);   assert(material); 
+    G4Material* material  = U4Material::Get(mat);   assert(material); 
     G4Box* solid = new G4Box( SStr::Name(prefix,"_solid"), halfside, halfside, halfside );
     G4LogicalVolume* lv = new G4LogicalVolume( solid, material, SStr::Name(prefix,"_lv")); 
     return lv ; 
@@ -448,100 +618,4 @@ G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const ch
 
 
 
-/**
-U4VolumeMaker::WrapLVGrid
----------------------------
-
-Returns a physical volume with the argument lv placed multiple times 
-in a grid specified by (nx,ny,nz) integers. (1,1,1) yields 3x3x3 grid.
-
-The vector argument method places the lv in a grid within a box. 
-Grid ranges::
-
-    -nx:nx+1
-    -ny:ny+1
-    -nz:nz+1
-
-Example (nx,ny,nz):
-
-1,1,1 
-     yields a grid with 3 elements on each side, for 3*3*3=27 
-0,0,0
-     yields a single element 
-
-**/
-
-G4VPhysicalVolume* U4VolumeMaker::WrapLVGrid( G4LogicalVolume* lv, int nx, int ny, int nz  )
-{
-    std::vector<G4LogicalVolume*> lvs ; 
-    lvs.push_back(lv); 
-    return WrapLVGrid(lvs, nx, ny, nz ) ; 
-}
-
-G4VPhysicalVolume* U4VolumeMaker::WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  )
-{
-    unsigned num_lv = lvs.size(); 
-
-    int extent = std::max(std::max(nx, ny), nz); 
-    G4double sc = 500. ; 
-    G4double halfside = sc*extent*3. ; 
-
-    LOG(LEVEL) 
-        << " num_lv " << num_lv 
-        << " (nx,ny,nz) (" << nx << "," << ny << " " << nz << ")" 
-        << " extent " << extent
-        << " halfside " << halfside
-        ;
-
-    G4VPhysicalVolume* world_pv = WorldBox(halfside); 
-    G4LogicalVolume* world_lv = world_pv->GetLogicalVolume(); 
-
-    unsigned count = 0 ; 
-    for(int ix=-nx ; ix < nx+1 ; ix++)
-    for(int iy=-ny ; iy < ny+1 ; iy++)
-    for(int iz=-nz ; iz < nz+1 ; iz++)
-    {   
-        G4LogicalVolume* ulv = lvs[count%num_lv] ; 
-        count += 1 ; 
-        assert( ulv ); 
-
-         const G4String& ulv_name_ = ulv->GetName();  
-         std::string ulv_name = ulv_name_ ; 
-         ulv_name += "_plc_" ; 
-
-        const char* iname = GridName( ulv_name.c_str(), ix, iy, iz, "" );    
-        G4ThreeVector tla( sc*double(ix), sc*double(iy), sc*double(iz) );  
-
-        LOG(LEVEL) 
-           << " G4PVPlacement "
-           << " count " << std::setw(3) << count 
-           << Desc(tla)
-           <<  iname
-           ;
-        G4VPhysicalVolume* pv_n = new G4PVPlacement(0, tla, ulv ,iname,world_lv,false,0);
-        assert( pv_n );  
-    }   
-    return world_pv ; 
-}
-
-const char* U4VolumeMaker::GridName(const char* prefix, int ix, int iy, int iz, const char* suffix)
-{
-    std::stringstream ss ; 
-    ss << prefix << ix << "_" << iy << "_" << iz << suffix ; 
-    std::string s = ss.str();
-    return strdup(s.c_str()); 
-}
-std::string U4VolumeMaker::Desc( const G4ThreeVector& tla )
-{
-    std::stringstream ss ; 
-    ss << " tla (" 
-       <<  " " << std::fixed << std::setw(10) << std::setprecision(3) << tla.x()
-       <<  " " << std::fixed << std::setw(10) << std::setprecision(3) << tla.y()
-       <<  " " << std::fixed << std::setw(10) << std::setprecision(3) << tla.z()
-       <<  ") " 
-       ;
-
-    std::string s = ss.str(); 
-    return s ; 
-}
 
