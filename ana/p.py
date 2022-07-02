@@ -50,6 +50,7 @@ hm = HisMask()
 ht = HisType()
 
 seqhis_ = lambda s:ht.label(s)
+cseqhis_ = lambda l:ht.code(l)
 seqnib_ = lambda s:count_nibbles(s)
 
 #seqdesc_ = lambda s:"seqdesc_ %20s " % 

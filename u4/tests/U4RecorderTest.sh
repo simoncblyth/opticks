@@ -18,8 +18,7 @@ arg=${1:-run_ana}
 srcdir=$PWD
 logdir=/tmp/$USER/opticks/U4RecorderTest
 mkdir -p $logdir 
-
-foldbase=/tmp/$USER/opticks/U4RecorderTest
+foldbase=$logdir
 
 
 #export DsG4Scintillation_verboseLevel=3
@@ -36,8 +35,6 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 #export GIDX=${GIDX:-$gidx}
 
 #export U4Material=INFO
-
-
 #export SEvt=INFO
 #export U4Random=INFO
 
@@ -49,28 +46,6 @@ mode=iphoton
 
 export U4RecorderTest__PRIMARY_MODE=$mode
 export U4VolumeMaker_RaindropRockAirWater_FACTOR=10
-
-export ShimG4OpAbsorption_FLOAT=1 
-export ShimG4OpRayleigh_FLOAT=1 
-
-export ShimG4OpAbsorption_PIDX=5208 
-export ShimG4OpRayleigh_PIDX=5208
-
-
-
-
-# cf U4Physics::Desc
-physdesc=""
-[ -n "$ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_FLOAT" 
-[ -z "$ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_ORIGINAL" 
-physdesc="${physdesc}_"
-[ -n "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_FLOAT"
-[ -z "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
-
-export FOLD=$foldbase/$physdesc
-
-echo $msg physdesc $physdesc
-echo $msg FOLD $FOLD
 
 
 if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
@@ -88,8 +63,34 @@ source ./IDPath_override.sh
 
 #geom=BoxOfScintillator
 #geom=RaindropRockAirWater
-geom=RaindropRockAirWater2
+#geom=RaindropRockAirWater2
+geom=hama_body_log
 export GEOM=${GEOM:-$geom}
+
+
+
+export ShimG4OpAbsorption_FLOAT=1 
+export ShimG4OpRayleigh_FLOAT=1 
+
+export ShimG4OpAbsorption_PIDX=5208 
+export ShimG4OpRayleigh_PIDX=5208
+
+# cf U4Physics::Desc
+physdesc=""
+[ -n "$ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_FLOAT" 
+[ -z "$ShimG4OpAbsorption_FLOAT" ] && physdesc="${physdesc}ShimG4OpAbsorption_ORIGINAL" 
+physdesc="${physdesc}_"
+[ -n "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_FLOAT"
+[ -z "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
+
+
+
+export FOLD=$foldbase/$physdesc/$GEOM
+echo $msg physdesc $physdesc
+echo $msg GEOM $GEOM
+echo $msg FOLD $FOLD
+
+
 
 # Note that OPTICKS_RANDOM_SEQPATH uses single quotes to prevent expansion of the '$PrecookedDir' 
 # which is an SPath internal variable. Defining OPTICKS_RANDOM_SEQPATH is necessary to work with 

@@ -51,11 +51,60 @@ def check_pho_labels(l):
     print(gn_c)
 
 
+def parse_slice(ekey):
+    if not ekey in os.environ: return slice(None)
+    elem = os.environ[ekey].split(":")    
+    start = None if elem[0] == "" else int(elem[0])
+    stop = None if elem[1] == "" else int(elem[1])
+    step = None if elem[2] == "" else int(elem[2])
+    return slice(start, stop, step) 
+
+
+
 if __name__ == '__main__':
 
     t = Fold.Load() 
     PIDX = int(os.environ.get("PIDX","-1"))
     print(t)
+
+    if "RECS_PLOT" in os.environ:
+        """
+        RECS_PLOT=1 ./U4RecorderTest.sh ana 
+
+
+        RECS_PLOT=1 SEQHIS="TO BT BT SA" RSLI="0::4" ./U4RecorderTest.sh ana 
+            select photons with one history and then just plot the first record step 
+
+        RECS_PLOT=1 SEQHIS="TO BT BT SA" RSLI="1::4" ./U4RecorderTest.sh ana 
+            expected to show positions of first BT
+
+            np.all(np.tile(np.arange(4),100)[slice(0,None,4)]==0)    
+            np.all(np.tile(np.arange(4),100)[slice(1,None,4)]==1)    
+            np.all(np.tile(np.arange(4),100)[slice(2,None,4)]==2)  
+            np.all(np.tile(np.arange(4),100)[slice(3,None,4)]==3)  
+
+        RECS_PLOT=1 SEQHIS="TO BT BT SA" RSLI="2::4" ./U4RecorderTest.sh ana 
+
+        RECS_PLOT=1 SEQHIS="TO BT BT SA" RSLI="3::4" ./U4RecorderTest.sh ana 
+
+
+        """
+        from opticks.ana.pvplt import * 
+        pl = pvplt_plotter(label="dump all record point positions")      
+        if "SEQHIS" in os.environ: 
+            w_sel = np.where( t.seq[:,0] == cseqhis_(os.environ["SEQHIS"]) )[0]
+        else:
+            w_sel = slice(None)
+        pass 
+
+        w_rec = np.where( t.record[w_sel,:,3,3].view(np.int32) != 0 )
+
+        recs = t.record[w_rec]   ## flattens step points to give shape eg (35152, 4, 4) where 8788*4  = 35152 
+        rsli = parse_slice("RSLI")            
+        pl.add_points( recs[rsli,0,:3] )   
+        pl.show()
+    pass
+
 
     # pho: labels are collected within U4Recorder::PreUserTrackingAction 
     l = t.pho if hasattr(t, "pho") else None      # labels slotted in using spho::id
@@ -70,7 +119,7 @@ if __name__ == '__main__':
     seq = t.seq if hasattr(t, "seq") else None
     nib = seqnib_(seq[:,0])  if not seq is None else None
 
-    lim = min(len(p), 50)
+    lim = min(len(p), 3)
     for i in range(lim):
         if not (PIDX == -1 or PIDX == i): continue 
         if PIDX > -1: print("PIDX %d " % PIDX) 

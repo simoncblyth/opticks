@@ -38,6 +38,10 @@ A_FOLD_GEOM=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpR
 B_FOLD_GEOM=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2
 
 
+
+
+
+
 case $FOLD_MODE in
   TMP)  export A_FOLD=$A_FOLD_TMP  ; export B_FOLD=$B_FOLD_TMP  ;; 
   KEEP) export A_FOLD=$A_FOLD_KEEP ; export B_FOLD=$B_FOLD_KEEP ;; 

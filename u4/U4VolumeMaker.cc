@@ -228,6 +228,9 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv, doubl
     G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
     G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  
 
+    G4LogicalBorderSurface* water_rock_bs = U4Surface::MakePerfectAbsorberSurface("water_rock_bs", water_pv, rock_pv );  
+    assert( water_rock_bs ); 
+
     LOG(LEVEL) << "]"  ; 
     return rock_pv ; 
 }
@@ -597,6 +600,7 @@ G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater2()
 
     G4LogicalBorderSurface* air_rock_bs = U4Surface::MakePerfectAbsorberSurface("air_rock_bs", air_pv, rock_pv );  
     assert( air_rock_bs ); 
+
     return rock_pv ; 
 }
 G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char* prefix )
