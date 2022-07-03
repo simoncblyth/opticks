@@ -13,6 +13,7 @@ EOU
 }
 
 source ../bin/GEOM_.sh 
+source ../bin/OPTICKS_INPUT_PHOTON.sh 
 
 defarg="run"
 arg=${1:-$defarg}

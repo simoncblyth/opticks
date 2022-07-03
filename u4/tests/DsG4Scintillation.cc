@@ -233,8 +233,8 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     G4String pname="";
     G4ThreeVector vertpos;
-    G4double vertenergy=0.0;
-    G4double reem_d=0.0;
+    //G4double vertenergy=0.0;
+    //G4double reem_d=0.0;
     G4bool flagReemission= false;
     //DsPhotonTrackInfo* reemittedTI=0;
     if (aTrack.GetDefinition() == G4OpticalPhoton::OpticalPhoton()) {
@@ -495,9 +495,9 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     G4int materialIndex = aMaterial->GetIndex();
 
-    G4PhysicsOrderedFreeVector* ReemissionIntegral = NULL;
-    ReemissionIntegral =
-        (G4PhysicsOrderedFreeVector*)((*theReemissionIntegralTable)(materialIndex));
+    //G4PhysicsOrderedFreeVector* ReemissionIntegral = NULL;
+    //ReemissionIntegral =
+    //    (G4PhysicsOrderedFreeVector*)((*theReemissionIntegralTable)(materialIndex));
 
     // Retrieve the Scintillation Integral for this material  
     // new G4PhysicsOrderedFreeVector allocated to hold CII's
@@ -702,11 +702,11 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                            -ScintillationTime * log( G4UniformRand() );
                 aSecondaryPosition= pPostStepPoint->GetPosition();
                 vertpos = aTrack.GetVertexPosition();
-                vertenergy = aTrack.GetKineticEnergy();
-                reem_d = 
-                    sqrt( pow( aSecondaryPosition.x()-vertpos.x(), 2)
-                          + pow( aSecondaryPosition.y()-vertpos.y(), 2)
-                          + pow( aSecondaryPosition.z()-vertpos.z(), 2) );
+                //vertenergy = aTrack.GetKineticEnergy();
+                //reem_d = 
+                //    sqrt( pow( aSecondaryPosition.x()-vertpos.x(), 2)
+                //          + pow( aSecondaryPosition.y()-vertpos.y(), 2)
+                //          + pow( aSecondaryPosition.z()-vertpos.z(), 2) );
             }
             else {
                 if (aParticle->GetDefinition()->GetPDGCharge() != 0) 

@@ -16,6 +16,7 @@ easily prevent matches. Use "set list" in vim to check.
 **/
 
 #include <cassert>
+#include <cstring>
 #include "stag.h"
 
 enum 

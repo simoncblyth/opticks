@@ -89,19 +89,6 @@ const char* SEvt::INPUT_PHOTON_DIR = SSys::getenvvar("SEvt_INPUT_PHOTON_DIR", "$
 SEvt::LoadInputPhoton
 ----------------------
 
-The default "SEventConfig::InputPhoton()" is nullptr meaning no input photons.
-This can be changed by setting an envvar in the script that runs the executable, eg::
-
-   export OPTICKS_INPUT_PHOTON=CubeCorners.npy
-   export OPTICKS_INPUT_PHOTON=$HOME/reldir/path/to/inphoton.npy
- 
-Or within the code of the executable, typically in the main prior to SEvt instanciation, 
-using eg::
-
-   SEventConfig::SetInputPhoton("CubeCorners.npy")
-   SEventConfig::SetInputPhoton("$HOME/reldir/path/to/inphoton.npy")
-
-When non-null it is resolved into a path and the array loaded at SEvt instanciation.
 Resolving the input string to a path is done in one of two ways:
 
 1. if the string starts with a letter A-Za-z eg "inphoton.npy" or "RandomSpherical10.npy" 
@@ -135,6 +122,28 @@ NP* SEvt::LoadInputPhoton(const char* ip) // static
 
     return a ; 
 }
+
+/**
+SEvt::initInputPhoton
+-----------------------
+
+This is invoked by SEvt::init on instanciating the SEvt instance  
+The default "SEventConfig::InputPhoton()" is nullptr meaning no input photons.
+This can be changed by setting an envvar in the script that runs the executable, eg::
+
+   export OPTICKS_INPUT_PHOTON=CubeCorners.npy
+   export OPTICKS_INPUT_PHOTON=$HOME/reldir/path/to/inphoton.npy
+ 
+Or within the code of the executable, typically in the main prior to SEvt instanciation, 
+using eg::
+
+   SEventConfig::SetInputPhoton("CubeCorners.npy")
+   SEventConfig::SetInputPhoton("$HOME/reldir/path/to/inphoton.npy")
+
+When non-null it is resolved into a path and the array loaded at SEvt instanciation
+by SEvt::LoadInputPhoton
+
+**/
 
 void SEvt::initInputPhoton()
 {

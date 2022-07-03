@@ -1,5 +1,6 @@
 #include <cuda_runtime.h>
 #include <sstream>
+#include <csignal>
 
 #include "SEvt.hh"
 #include "SGeo.hh"
@@ -148,6 +149,7 @@ int QEvent::setGenstep()  // onto device
     NP* gs = SEvt::GetGenstep(); 
     SEvt::Clear();   // clear the quad6 vector, ready to collect more genstep
     if(gs == nullptr) LOG(fatal) << "Must SEvt::AddGenstep before calling QEvent::setGenstep " ;
+    //if(gs == nullptr) std::raise(SIGINT); 
     return gs == nullptr ? -1 : setGenstep(gs) ; 
 } 
 

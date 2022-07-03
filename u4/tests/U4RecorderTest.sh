@@ -49,18 +49,12 @@ export U4VolumeMaker_RaindropRockAirWater_FACTOR=10
 
 
 if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
-    #path=RandomSpherical10_f8.npy
-    path=/tmp/storch_test/out/$(uname)/ph.npy
-    export OPTICKS_INPUT_PHOTON=$path
-    echo $msg OPTICKS_INPUT_PHOTON $OPTICKS_INPUT_PHOTON
+    source ../../bin/OPTICKS_INPUT_PHOTON.sh     
 fi 
-
-
 
 source ./IDPath_override.sh   
 # IDPath_override.sh : non-standard IDPath to allow U4Material::LoadOri to find material properties 
 # HMM probably doing nothing now that are using U4Material::LoadBnd ?
-
 
 source ../../bin/GEOM_.sh 
 

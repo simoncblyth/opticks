@@ -1,4 +1,5 @@
 #include "SEventConfig.hh"
+#include "SEvt.hh"
 #include "OPTICKS_LOG.hh"
 #include "Opticks.hh"
 #include "CSGFoundry.h"

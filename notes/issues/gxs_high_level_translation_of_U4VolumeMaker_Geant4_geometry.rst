@@ -1,12 +1,40 @@
 gxs_high_level_translation_of_U4VolumeMaker_Geant4_geometry
 =============================================================
 
-::
+Overview
+----------
+
+gx is using Opticks cx to do GPU simulation within a geometry auto-translated 
+from Geant4. 
+
+Will not be able to run the simulation on laptop, 
+but can start with getting the translation of test Geant4 geometries to work.
+
+
+
+Build and Run
+---------------
+
+NB gx and some deps are not standardly built, so build with::
+
+    o
+    oo ## build the standard set 
+    b7 ## rebuilds cx with OptiX 7
+    u4 ; om 
+    gx ; om 
+
+    jps ; om   ## when need PMTSim updated 
+
+
+run::
 
     gx ; ./gxs.sh 
     gx ; ./gxs.sh dbg 
 
 
+
+u4 and gx deps
+-----------------
 
 u4/CMakeLists.txt::
 
@@ -52,8 +80,11 @@ gx/tests/G4CXSimulateTest.cc::
      33 }
 
 
-Will not be able to run the simulation on laptop, 
-but can start with getting the translation of test Geant4 geometries to work::
+
+Shakedown Issues
+--------------------
+
+::
 
     epsilon:~ blyth$ gx
     /Users/blyth/opticks/g4cx
@@ -513,8 +544,8 @@ Avoid the bad icdf shape by returning nullptr when no scintillator::
 
 
 
-issue : QEvent instanciated before SEvt 
---------------------------------------------
+FIXED : issue : QEvent instanciated before SEvt, need to instanciate SEvt in main 
+-------------------------------------------------------------------------------------
 
 ::
 
@@ -549,4 +580,21 @@ issue : QEvent instanciated before SEvt
     (lldb) 
 
 
+
+issue : no gensteps : need to set OPTICKS_INPUT_PHOTON SEventConfig or envvar
+----------------------------------------------------------------------------------
+
+
+::
+
+    N[blyth@localhost g4cx]$ ./gxs.sh dbg
+
+    2022-07-04 03:22:42.174 INFO  [284805] [SBT::checkHitgroup@907]  num_sbt (sbt.hitgroupRecordCount) 3 num_solid 1 num_prim 3
+    2022-07-04 03:22:42.174 INFO  [284805] [SBT::createGeom@109] ]
+    2022-07-04 03:22:42.175 INFO  [284805] [SBT::getAS@584]  spec i0 c i idx 0
+    2022-07-04 03:22:42.175 FATAL [284805] [QEvent::setGenstep@151] Must SEvt::AddGenstep before calling QEvent::setGenstep 
+    2022-07-04 03:22:42.175 ERROR [284805] [QSim::simulate@228]  QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simulate 
+
+
+Need to check how cx/cxs_raindrop.sh setup input photon running. 
 

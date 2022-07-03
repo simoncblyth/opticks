@@ -9,7 +9,9 @@ SDir.h : header only directory listing paths with supplied ext
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <cstring>
 #include <string>
+#include <algorithm>
 
 #include "dirent.h"
 
