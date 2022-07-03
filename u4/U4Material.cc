@@ -770,7 +770,26 @@ G4MaterialPropertyVector* U4Material::AddProperty( G4MaterialPropertiesTable* mp
 }
 
 
+/**
+U4Material::KludgeRemoveRockRINDEX
+-----------------------------------
 
+Removing the Rock RINDEX property is a kludge that makes photons immediately get absorbed 
+on reaching the Rock. However this kludge is problematic to random aligned running as
+the random consumption does not then follow the normal pattern. 
 
+In order for the tail random consumption to be amenable to aligning with Opticks
+instead add perfect absorber surfaces to have a cleaner termination instead of the "kill"
+that happens with NoRINDEX.   
+
+For example U4VolumeMaker::RaindropRockAirWater
+adds a surface using U4Surface::MakePerfectAbsorberSurface in 
+
+**/
+
+void U4Material::KludgeRemoveRockRINDEX() // static
+{
+    RemoveProperty( "RINDEX", G4Material::GetMaterial("Rock") ); 
+}
 
 

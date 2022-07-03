@@ -1,17 +1,39 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+gxs.sh
+=======
+
+::
+
+    cd ~/opticks/g4cx   # gx
+    ./gxs.sh 
 
 
+EOU
+}
 
-if [ "$(uname)" == "Linux" ]; then
+source ../bin/GEOM_.sh 
 
-   gdb G4CXSimulateTest -ex r  
+defarg="run"
+arg=${1:-$defarg}
 
-elif [ "$(uname)" == "Darwin" ]; then 
-
-   fold=/tmp/$USER/opticks
-   mkdir -p $fold
-   cd $fold
-
-   # TODO: scp and run analysis
-
+if [ "${arg/run}" != "$arg" ]; then 
+    G4CXSimulateTest
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
 fi 
+
+if [ "${arg/dbg}" != "$arg" ]; then 
+    case $(uname) in
+        Linux) gdb G4CXSimulateTest -ex r  ;;
+        Darwin) lldb__ G4CXSimulateTest ;; 
+    esac
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
+fi
+
+if [ "${arg/ana}" != "$arg" ]; then 
+    ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest.py     
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
+fi 
+
+exit 0 
+

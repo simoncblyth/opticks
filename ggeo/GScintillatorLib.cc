@@ -146,12 +146,14 @@ which GPropertyLib::setBuffer is used.
 
 NPY<double>* GScintillatorLib::createBuffer()
 {
-    return m_g4icdf ? m_g4icdf : legacyCreateBuffer() ; 
+    //return m_g4icdf ? m_g4icdf : legacyCreateBuffer() ; 
+    return m_g4icdf ; 
 }
 
 GItemList*  GScintillatorLib::createNames()
 {
-    return m_g4icdf ? geant4ICDFCreateNames() : legacyCreateNames() ;  
+    //return m_g4icdf ? geant4ICDFCreateNames() : legacyCreateNames() ;  
+    return m_g4icdf ? geant4ICDFCreateNames() : nullptr ;  
 }
 
 

@@ -59,13 +59,6 @@ The components are managed by separate singleton instances
 that subsequent QSim instanciation collects together.
 This structure is used to allow separate testing. 
 
-TODO: Most of the component arguments come from CSGFoundry but it is not possible
-to consolidate to just CSGFoundry argument as that would add CSG dependency to QUDARap
-which is not acceptable. PERHAPS: accept single argument "std::map<std::string, const NP*>&" 
-argument with meaningful standardized keys. 
-
-BETTER: Use an SSim instance for holding onto components which is consulted by QSim::Create
-
 **/
 
 void QSim::UploadComponents( const SSim* ssim  )
@@ -75,7 +68,6 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     QRng* rng = new QRng ;  // loads and uploads curandState 
     LOG(LEVEL) << rng->desc(); 
-
 
     const NP* optical = ssim->get(SSim::OPTICAL); 
     const NP* bnd = ssim->get(SSim::BND); 

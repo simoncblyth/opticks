@@ -59,6 +59,7 @@ struct U4RecorderTest
 
     U4RecorderTest(G4RunManager* runMgr); 
     virtual ~U4RecorderTest(); 
+
 };
 
 
@@ -153,33 +154,25 @@ to hookup physics before the main instanciation::
 
 **/
 
+
+
+
+
 int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
     //U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
     U4Material::LoadBnd();   // "back" creation of G4 material properties from the Opticks bnd.npy obtained from SSim::Load 
 
-    U4Random rnd ; 
+    U4Random rnd ;             // load precooked randoms for aligned running 
     LOG(info) << rnd.desc() ; 
 
     std::string physDesc = U4Physics::Desc(); 
     LOG(info) << " physDesc " << physDesc << " U4VolumeMaker::GEOM " << U4VolumeMaker::GEOM ; 
 
-
-    // U4Material::RemoveProperty( "RINDEX", G4Material::GetMaterial("Rock") ); 
-    // removing Rock RINDEX is a trick that makes photons immediately get absorbed on reaching the Rock
-    // somewhat artifically that gives SURFACE_ABSORB as  U4StepPoint::BoundaryFlag(NoRINDEX) kludges to give SURFACE_ABSORB 
-    //
-    //  In order for the tail random consumption to be amenable to aligning with Opticks
-    //  try using U4Surface::MakePerfectAbsorberSurface in U4VolumeMaker::RaindropRockAirWater
-
-
     SEventConfig::SetStandardFullDebug(); 
-
-    SEvt evt ; 
-
-    char mode = U4RecorderTest::PrimaryMode() ; 
-    if(mode == 'T') SEvt::AddTorchGenstep();  
+    SEvt evt ;    // SEvt must be instanciated before QEvent
+    if(U4RecorderTest::PrimaryMode() == 'T') SEvt::AddTorchGenstep();  
 
     G4RunManager* runMgr = new G4RunManager ; 
     runMgr->SetUserInitialization((G4VUserPhysicsList*)new U4Physics); 

@@ -84,5 +84,7 @@ struct U4_API U4Material
     static G4MaterialPropertyVector* AddProperty( G4MaterialPropertiesTable* mpt, const char* key, const std::vector<double>& dom, const std::vector<double>& val , bool reverse ); 
 
     static void LoadBnd(); 
+    static void KludgeRemoveRockRINDEX();  // static
+
 
 }; 

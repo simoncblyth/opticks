@@ -269,6 +269,16 @@ inline int SName::findIndex(const char* starting) const
     return idx ; 
 }
 
+/**
+SName::findIndicesFromNames
+----------------------------
+
+As SGeoConfig::GeometrySpecificSetup/SName::hasNames uses SName::findIndicesFromNames 
+to identify an unknown geometry via the presence of names this must not require 
+the names to be found, as they will often not be there. 
+
+**/
+
 inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq ) const 
 {
     for(unsigned i=0 ; i < qq.size() ; i++)
@@ -276,9 +286,7 @@ inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::
         const char* q = qq[i].c_str(); 
         int idx = findIndex(q) ;  
         bool found = idx > -1 ; 
-        if(!found) std::cerr << "SName::findIndicesfromNames FAILED to find q [" << q << "]" << std::endl ; 
-        assert(found);  
-        idxs.push_back(idx) ;  
+        if(found) idxs.push_back(idx) ;  
     }
 }
 

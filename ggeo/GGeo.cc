@@ -2388,6 +2388,9 @@ void GGeo::convertSim_ScintillatorLib(SSim* sim) const
 {
     GScintillatorLib* slib = getScintillatorLib();
     NP* icdf = slib->getBuf();   // assuming 1 scintillator
+
+    LOG(error) << " icdf " << ( icdf ? icdf->sstr() : "-" ) ; 
+
     sim->add(SSim::ICDF, icdf); 
 }
 

@@ -79,7 +79,10 @@ TODO: move the hd_factor into payload instead of items for easier extension to 2
 
 QTex<float>* QScint::MakeScintTex(const NP* src, unsigned hd_factor )  // static 
 {
-    assert( src->has_shape(1,4096,1) ||  src->has_shape(3,4096,1) ); 
+    bool expected_shape = src->has_shape(1,4096,1) ||  src->has_shape(3,4096,1) ; 
+    if(!expected_shape) LOG(fatal) << " unexpected shape of src " << ( src ? src->sstr() : "-" ) ; 
+
+    assert( expected_shape ); 
     assert( src->uifc == 'f' ); 
     assert( src->ebyte == 4 );    // expecting float src array, possible narrowed from double dsrc array  
 
