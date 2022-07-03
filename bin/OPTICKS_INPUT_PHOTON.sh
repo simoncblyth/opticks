@@ -15,7 +15,21 @@ EOU
 
 #path=RandomSpherical10_f8.npy
 path=/tmp/storch_test/out/$(uname)/ph.npy
-export OPTICKS_INPUT_PHOTON=$path
 
-echo === $BASH_SOURCE :  OPTICKS_INPUT_PHOTON $OPTICKS_INPUT_PHOTON
+if [ -n "$path" ]; then 
+    export OPTICKS_INPUT_PHOTON=$path
 
+    if [ "${path:0:1}" == "/" -o "${path:0:1}" == "$" ]; then 
+        abspath=$path
+    else
+        abspath=$HOME/.opticks/InputPhotons/$path
+    fi
+    if [ ! -f "$abspath" ]; then 
+        echo $msg path $path abspath $abspath DOES NOT EXIST : create with ana/input_photons.sh OR sysrap/tests/storch_test.sh 
+        exit 1 
+    else
+        echo $msg path $path abspath $abspath exists 
+    fi 
+fi 
+
+echo === $BASH_SOURCE : OPTICKS_INPUT_PHOTON $OPTICKS_INPUT_PHOTON

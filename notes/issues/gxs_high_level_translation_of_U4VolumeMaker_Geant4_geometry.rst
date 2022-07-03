@@ -581,9 +581,8 @@ FIXED : issue : QEvent instanciated before SEvt, need to instanciate SEvt in mai
 
 
 
-issue : no gensteps : need to set OPTICKS_INPUT_PHOTON SEventConfig or envvar
-----------------------------------------------------------------------------------
-
+FIXED : issue : no gensteps : need to set OPTICKS_INPUT_PHOTON SEventConfig or envvar
+---------------------------------------------------------------------------------------
 
 ::
 
@@ -596,5 +595,51 @@ issue : no gensteps : need to set OPTICKS_INPUT_PHOTON SEventConfig or envvar
     2022-07-04 03:22:42.175 ERROR [284805] [QSim::simulate@228]  QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simulate 
 
 
-Need to check how cx/cxs_raindrop.sh setup input photon running. 
+Despite starting from a Geant4 geometry this test needs to follow  
+aspects from the cx/cxs_raindrop.sh 
+
+However the setup of input photon running is common to both contexts, being done in SEventConfig + SEvt. 
+
+
+issue : QEvent null
+---------------------
+
+::
+
+    2022-07-04 03:54:20.956 INFO  [301410] [SBT::createGeom@109] ]
+    2022-07-04 03:54:20.956 INFO  [301410] [SBT::getAS@584]  spec i0 c i idx 0
+
+    Program received signal SIGSEGV, Segmentation fault.
+    0x00007fffec5b2caa in QEvent::setGenstep (this=0x0, gs_=0x211e930) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:158
+    158	    gs = gs_ ; 
+    Missing separate debuginfos, use: debuginfo-install bzip2-libs-1.0.6-13.el7.x86_64 cyrus-sasl-lib-2.1.26-23.el7.x86_64 expat-2.1.0-10.el7_3.x86_64 freetype-2.8-12.el7_6.1.x86_64 glibc-2.17-307.el7.1.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-37.el7_6.x86_64 libICE-1.0.9-9.el7.x86_64 libSM-1.2.2-2.el7.x86_64 libX11-1.6.7-4.el7_9.x86_64 libXau-1.0.8-2.1.el7.x86_64 libXext-1.3.3-3.el7.x86_64 libcom_err-1.42.9-13.el7.x86_64 libcurl-7.29.0-59.el7_9.1.x86_64 libicu-50.2-4.el7_7.x86_64 libidn-1.28-4.el7.x86_64 libpng-1.5.13-7.el7_2.x86_64 libselinux-2.5-14.1.el7.x86_64 libssh2-1.8.0-3.el7.x86_64 libuuid-2.23.2-59.el7_6.1.x86_64 libxcb-1.13-1.el7.x86_64 nspr-4.19.0-1.el7_5.x86_64 nss-3.36.0-7.1.el7_6.x86_64 nss-softokn-freebl-3.36.0-5.el7_5.x86_64 nss-util-3.36.0-1.1.el7_6.x86_64 openldap-2.4.44-25.el7_9.x86_64 openssl-libs-1.0.2k-24.el7_9.x86_64 pcre-8.32-17.el7.x86_64 zlib-1.2.7-18.el7.x86_64
+    (gdb) bt
+    #0  0x00007fffec5b2caa in QEvent::setGenstep (this=0x0, gs_=0x211e930) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:158
+    #1  0x00007fffec5b2c52 in QEvent::setGenstep (this=0x0) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:153
+    #2  0x00007fffec5a3b50 in QSim::simulate (this=0x2156e70) at /data/blyth/junotop/opticks/qudarap/QSim.cc:227
+    #3  0x00007ffff7bb71a8 in G4CXOpticks::simulate (this=0x7fffffff5660) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:58
+    #4  0x000000000040a393 in main (argc=1, argv=0x7fffffff5b38) at /data/blyth/junotop/opticks/g4cx/tests/G4CXSimulateTest.cc:31
+    (gdb) f 4
+    #4  0x000000000040a393 in main (argc=1, argv=0x7fffffff5b38) at /data/blyth/junotop/opticks/g4cx/tests/G4CXSimulateTest.cc:31
+    31	    gx.simulate(); 
+    (gdb) f 3
+    #3  0x00007ffff7bb71a8 in G4CXOpticks::simulate (this=0x7fffffff5660) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:58
+    58	    qs->simulate(); 
+    (gdb) f 2
+    #2  0x00007fffec5a3b50 in QSim::simulate (this=0x2156e70) at /data/blyth/junotop/opticks/qudarap/QSim.cc:227
+    227	   int rc = event->setGenstep(); 
+    (gdb) f 1
+    #1  0x00007fffec5b2c52 in QEvent::setGenstep (this=0x0) at /data/blyth/junotop/opticks/qudarap/QEvent.cc:153
+    153	    return gs == nullptr ? -1 : setGenstep(gs) ; 
+    (gdb) 
+
+    (gdb) f 2
+    #2  0x00007fffec5a3b50 in QSim::simulate (this=0x2156e70) at /data/blyth/junotop/opticks/qudarap/QSim.cc:227
+    227	   int rc = event->setGenstep(); 
+    (gdb) p event
+    $1 = (QEvent *) 0x0
+    (gdb) 
+
+
+
 
