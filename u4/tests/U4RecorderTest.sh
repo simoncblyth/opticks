@@ -63,8 +63,8 @@ source ./IDPath_override.sh
 
 #geom=BoxOfScintillator
 #geom=RaindropRockAirWater
-#geom=RaindropRockAirWater2
-geom=hama_body_log
+geom=RaindropRockAirWater2
+#geom=hama_body_log
 export GEOM=${GEOM:-$geom}
 
 
@@ -82,7 +82,6 @@ physdesc=""
 physdesc="${physdesc}_"
 [ -n "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_FLOAT"
 [ -z "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
-
 
 
 export FOLD=$foldbase/$physdesc/$GEOM

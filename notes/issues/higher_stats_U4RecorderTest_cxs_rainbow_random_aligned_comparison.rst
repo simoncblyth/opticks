@@ -33,6 +33,162 @@ HMM : how much would replacing the double G4Log(G4UniformRand()) for Scattering 
 * :doc:`U4LogTest_maybe_replacing_G4Log_G4UniformRand_in_Absorption_and_Scattering_with_float_version_will_avoid_deviations`
 
 
+FIXED : trivial analysis bug that caused unexpected 10/10k first BT radii caused by mis-using sub-selection indices as if full array indices
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+::
+
+    In [3]: cuss(t.seq[:,0])
+    Out[3]: 
+    CUSS([['w0', '                   TO BT BT SA', '           36045', '            8788'],
+          ['w1', '                      TO BR SA', '            2237', '             598'],
+          ['w2', '                TO BT BR BT SA', '          576461', '             501'],
+          ['w3', '             TO BT BR BR BT SA', '         9223117', '              43'],
+          ['w4', '                      TO BT AB', '            1229', '              28'],
+          ['w5', '          TO BT BR BR BR BT SA', '       147569613', '              13'],
+          ['w6', '                      TO SC SA', '            2157', '               9'],
+          ['w7', '                TO BT BT SC SA', '          552141', '               7'],
+          ['w8', '       TO BT BR BR BR BR BT SA', '      2361113549', '               2'],
+          ['w9', '             TO BT BR BT SC SA', '         8833997', '               2'],
+          ['w10', '                TO BT SC BT SA', '          575181', '               2'],
+          ['w11', '                   TO BT BT AB', '           19661', '               2'],
+          ['w12', '                   TO BT BR AB', '           19405', '               2'],
+          ['w13', '          TO BT BR BR BR BR AB', '        79412173', '               1'],
+          ['w14', '                   TO SC BR SA', '           35693', '               1'],
+          ['w15', '                   TO BR SC SA', '           34493', '               1']], dtype=object)
+
+    In [4]: seqhis_(t.seq[w0,0])                                                                                                                                                                   
+    Out[4]: 
+    ['TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+
+
+
+    In [26]: t.base
+    Out[26]: '/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2'
+
+
+    In [5]: wr = np.where( t.record[w0,:,3,3].view(np.int32) != 0 )   
+    ##
+    ## This is trying to exclude empty records, but when selecting 
+    ## by a specific seqhis there is absolutely no need to do that. 
+    ## This is only a reasonable thing to do when trying to plot 
+    ## all points from all histories. 
+    ##
+    ## Doing a where on an array with a where already applied is dangerous
+    ## as the wr indices are only valid when applied to an array with the 
+    ## same initial where.   
+
+
+    In [6]: wr
+    Out[6]: 
+    (array([   0,    0,    0,    0,    1, ..., 8786, 8787, 8787, 8787, 8787]),
+     array([0, 1, 2, 3, 0, ..., 3, 0, 1, 2, 3]))
+
+    In [7]: wr[0]
+    Out[7]: array([   0,    0,    0,    0,    1, ..., 8786, 8787, 8787, 8787, 8787])
+
+    In [8]: wr[1]
+    Out[8]: array([0, 1, 2, 3, 0, ..., 3, 0, 1, 2, 3])
+
+    In [9]: len(wr[1])
+    Out[9]: 35152
+
+    In [10]: len(wr[1])/4
+    Out[10]: 8788.0
+
+    In [11]: np.tile(np.arange(4), 8788 )
+    Out[11]: array([0, 1, 2, 3, 0, ..., 3, 0, 1, 2, 3])
+
+    In [12]: np.all( np.tile(np.arange(4), 8788 ) == wr[1] )
+    Out[12]: True
+
+    In [19]: r1 = t.record[wr][1::4][:,0,:3]
+
+
+
+    In [20]: np.sqrt(np.sum( r1*r1, axis=1 ))
+    Out[20]: array([50., 50., 50., 50., 50., ..., 50., 50., 50., 50., 50.], dtype=float32)
+
+    In [21]: np.sqrt(np.sum( r1*r1, axis=1 )).min()
+    Out[21]: 49.999996
+
+    In [22]: np.sqrt(np.sum( r1*r1, axis=1 )).max()
+    Out[22]: 944.057
+
+    In [23]: rr = np.sqrt(np.sum( r1*r1, axis=1 )) 
+
+    In [25]: np.where( np.abs( rr - 50 ) > 0.1 )
+    Out[25]: (array([ 387, 1338, 1701, 1859, 2537, 5156, 7203, 7737, 7791, 8235]),)
+
+    In [27]: wp = np.where( np.abs( rr - 50 ) > 0.1 )[0] ; wp
+    Out[27]: array([ 387, 1338, 1701, 1859, 2537, 5156, 7203, 7737, 7791, 8235])
+
+* HMM: looks like the above is making an error and treating indices from a partial selection as full selection indices ?  
+* DONE : find the line where the error is 
+
+ The above line [19] is the error as it is applying sub-selection-indices as if 
+ they were full array indices. Should instead use the below where the w0 is used prior to the wr.
+ OR use the simpler more direct approach further below.:: 
+
+    In [44]: r11 = t.record[w0][wr][1::4][:,0,:3] ; r11
+    Out[44]: 
+    array([[  4.295,   4.959, -49.568],
+           [ 21.917,   2.912, -44.846],
+           [ 14.595,  -9.089, -46.951],
+           [-18.435, -20.972, -41.477],
+           [ -4.113,  -1.515, -49.808],
+           ...,
+           [ 16.905,  -1.706, -47.024],
+           [ 19.352, -33.879, -31.269],
+           [ 18.769,   4.342, -46.14 ],
+           [ 15.829,  -6.326, -47.004],
+           [-37.279,  -8.104, -32.32 ]], dtype=float32)
+
+    In [46]: np.sqrt(np.sum(np.power(r11,2),axis=1))
+    Out[46]: array([50., 50., 50., 50., 50., ..., 50., 50., 50., 50., 50.], dtype=float32)
+
+    In [47]: np.sqrt(np.sum(np.power(r11,2),axis=1)).min()
+    Out[47]: 49.999996
+
+    In [48]: np.sqrt(np.sum(np.power(r11,2),axis=1)).max()
+    Out[48]: 50.000004
+
+Proof of indices mixup::
+
+    In [28]: seqhis_(t.seq[wp,0])
+    Out[28]: 
+    ['TO SC SA',
+     'TO SC SA',
+     'TO SC SA',
+     'TO SC SA',
+     'TO SC SA',
+     'TO SC BR SA',
+     'TO SC SA',
+     'TO SC SA',
+     'TO SC SA',
+     'TO SC SA']
+
+YES, Using a more direct way to check point 1 and 2 BT  gives expected radii::
+
+    In [39]: r1 = np.sqrt(np.sum(np.power(t.record[w0,1,0,:3],2),axis=1)) ; r1
+    Out[39]: array([50., 50., 50., 50., 50., ..., 50., 50., 50., 50., 50.], dtype=float32)
+
+    In [40]: r1.min(), r1.max()
+    Out[40]: (49.999996, 50.000004)
+
+    In [41]: r2 = np.sqrt(np.sum(np.power(t.record[w0,2,0,:3],2),axis=1)) ; r2
+    Out[41]: array([50., 50., 50., 50., 50., ..., 50., 50., 50., 50., 50.], dtype=float32)
+
+    In [42]: r2.min(), r2.max()
+    Out[42]: (49.999996, 50.000004)
+
+
+
+
 DONE : pump up the volume to 1M with the simple geometry
 -------------------------------------------------------------
 

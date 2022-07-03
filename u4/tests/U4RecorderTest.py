@@ -87,23 +87,52 @@ if __name__ == '__main__':
 
         RECS_PLOT=1 SEQHIS="TO BT BT SA" RSLI="3::4" ./U4RecorderTest.sh ana 
 
+        RECS_PLOT=1 SEQHIS="TO BT BT SA" IREC=2 ./U4RecorderTest.sh ana 
+
+
 
         """
         from opticks.ana.pvplt import * 
         pl = pvplt_plotter(label="dump all record point positions")      
         if "SEQHIS" in os.environ: 
+            #w_sel = np.where( t.seq[:,0] == cseqhis_("TO BT BT SA") )[0]
             w_sel = np.where( t.seq[:,0] == cseqhis_(os.environ["SEQHIS"]) )[0]
         else:
             w_sel = slice(None)
         pass 
 
-        w_rec = np.where( t.record[w_sel,:,3,3].view(np.int32) != 0 )
+        if "RSLI" in os.environ:
+            ## This way of selecting record points is overly complicated, much better 
+            ## to use the more direct IREC approach. 
+            w_rec = np.where( t.record[w_sel,:,3,3].view(np.int32) != 0 )
+            #recs = t.record[w_rec]   ## flattens step points to give shape eg (35152, 4, 4) where 8788*4  = 35152 
+            ## the above would be an error as it is using w_sel sub-selection indices as if they were full array indices. 
+            recs = t.record[w_sel][w_rec]
+            ## To correctly use a where selection the base selection must be the same as that 
+            ## used to create the where selection. 
+            rsli = parse_slice("RSLI")            
+            rpos = recs[rsli,0,:3]   
+        elif "IREC" in os.environ:
+            ## using IREC is a simpler more direct way of selecting step points  
+            irec = int(os.environ["IREC"])
+            rpos = t.record[w_sel, irec, 0,:3]
+        else:
+            w_rec = np.where( t.record[w_sel,:,3,3].view(np.int32) != 0 )   
+            ## Above w_rec skips unfilled record points.  
+            ## Notice that for w_sel slice(None) for example w_rec is selecting 
+            ## different numbers of step points for each photon : so the below rpos contains 
+            ## all positions from all step points within the w_sel selection. This includes 
+            ## bulk scatter and absorption points. 
+            ## TODO: find way to do similar but select based on the flag of the step points 
+            ## so can color plots according to the flag. 
+            rpos = t.record[w_sel][w_rec][:,0,:3]
+        pass
 
-        recs = t.record[w_rec]   ## flattens step points to give shape eg (35152, 4, 4) where 8788*4  = 35152 
-        rsli = parse_slice("RSLI")            
-        pl.add_points( recs[rsli,0,:3] )   
+        pl.add_points(rpos)   
         pl.show()
     pass
+
+
 
 
     # pho: labels are collected within U4Recorder::PreUserTrackingAction 
