@@ -103,6 +103,7 @@ public:
     CSGOptiX(const CSGFoundry* foundry ); 
 
     void init(); 
+    void initCheckSim(); 
     void initStack(); 
     void initParams();
     void initGeometry();

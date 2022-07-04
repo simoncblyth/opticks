@@ -44,7 +44,7 @@ struct QSimTest
     static void  EventConfig(unsigned type);  // must be run after SEvt is instanciated
     static unsigned Num(int argc, char** argv); 
 
-    QSim qs ; 
+    QSim* qs ; 
     unsigned type ;  // QSimLaunch type 
     unsigned num ; 
     const char* subfold ; 
@@ -98,6 +98,7 @@ const char* QSimTest::FOLD = SPath::Resolve("$TMP/QSimTest", DIRPATH) ;  // 2:di
 
 QSimTest::QSimTest(unsigned type_, unsigned num_)
     :
+    qs(QSim::Create()),
     type(type_),
     num(num_),
     subfold(QSimLaunch::Name(type)),
@@ -137,7 +138,7 @@ void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
             << " override [" << udir << "]"  
             ; 
 
-    qs.rng_sequence<float>(udir, ni, nj, nk, ni_tranche_size ); 
+    qs->rng_sequence<float>(udir, ni, nj, nk, ni_tranche_size ); 
 }
 
 
@@ -152,14 +153,14 @@ Does lookups at every texel of the 2d float4 boundary texture
 void QSimTest::boundary_lookup_all()
 {
     LOG(info) << " dir [" << dir << "]" ; 
-    unsigned width = qs.getBoundaryTexWidth(); 
-    unsigned height = qs.getBoundaryTexHeight(); 
-    const NP* src = qs.getBoundaryTexSrc(); 
+    unsigned width = qs->getBoundaryTexWidth(); 
+    unsigned height = qs->getBoundaryTexHeight(); 
+    const NP* src = qs->getBoundaryTexSrc(); 
 
     assert( height % 8 == 0 ); 
     unsigned num_bnd = height/8 ;  
 
-    NP* l = qs.boundary_lookup_all( width, height ); 
+    NP* l = qs->boundary_lookup_all( width, height ); 
     assert( l->has_shape( num_bnd, 4, 2, width, 4 ) ); 
 
     l->save(dir, "lookup_all.npy" ); 
@@ -177,7 +178,7 @@ void QSimTest::boundary_lookup_line(const char* material, float x0 , float x1, u
 {
     LOG(info); 
 
-    unsigned line = qs.bnd->sbn->getMaterialLine(material); 
+    unsigned line = qs->bnd->sbn->getMaterialLine(material); 
     if( line == ~0u )
     {
         LOG(fatal) << " material not in boundary tex " << material ; 
@@ -190,7 +191,7 @@ void QSimTest::boundary_lookup_line(const char* material, float x0 , float x1, u
     NP* x = NP::Linspace<float>(x0,x1,nx); 
     float* xx = x->values<float>(); 
 
-    NP* l = qs.boundary_lookup_line( xx, nx, line, k ); 
+    NP* l = qs->boundary_lookup_line( xx, nx, line, k ); 
 
     l->save(dir, "lookup_line.npy" ); 
     NP::Write( dir, "lookup_line_wavelength.npy" ,  xx, nx ); 
@@ -210,8 +211,8 @@ Multiple launches are done by QSim::prop_lookup_onebyone
 template<typename T>
 void QSimTest::prop_lookup( int iprop, T x0, T x1, unsigned nx )
 {
-    unsigned tot_prop = qs.prop->ni ; 
-    const NP* pp = qs.prop->a ; 
+    unsigned tot_prop = qs->prop->ni ; 
+    const NP* pp = qs->prop->a ; 
 
     std::vector<unsigned> pids ; 
     if( iprop == -1 )
@@ -237,7 +238,7 @@ void QSimTest::prop_lookup( int iprop, T x0, T x1, unsigned nx )
     NP* yy = NP::Make<T>(num_prop, nx) ; 
     NP* x = NP::Linspace<T>(x0,x1,nx); 
 
-    qs.prop_lookup_onebyone( yy->values<T>(), x->cvalues<T>(), nx, pids ) ;
+    qs->prop_lookup_onebyone( yy->values<T>(), x->cvalues<T>(), nx, pids ) ;
 
     const char* reldir = sizeof(T) == 8 ? "double" : "float" ; 
 
@@ -292,7 +293,7 @@ void QSimTest::multifilm_lookup_all(){
 
    quad2 h_quad2_result[num_sample];
 
-    qs.multifilm_lookup_all(  h_quad2_sample ,  h_quad2_result ,  width,  height );
+    qs->multifilm_lookup_all(  h_quad2_sample ,  h_quad2_result ,  width,  height );
 
     assert(h_quad2_result);
     NP * result = NP::Make<float>(width*height , num_item);
@@ -329,16 +330,16 @@ void QSimTest::wavelength()
     if( type == WAVELENGTH_SCINTILLATION )
     {
         unsigned hd_factor(~0u) ; 
-        w = qs.scint_wavelength( num, hd_factor );  // hd_factor is an output argument
+        w = qs->scint_wavelength( num, hd_factor );  // hd_factor is an output argument
         assert( hd_factor == 0 || hd_factor == 10 || hd_factor == 20 ); 
         ss << "_scint_hd" << hd_factor ; 
 
-        char scintTexFilterMode = qs.getScintTexFilterMode() ; 
+        char scintTexFilterMode = qs->getScintTexFilterMode() ; 
         if(scintTexFilterMode == 'P') ss << "_cudaFilterModePoint" ; 
     }
     else if( type == WAVELENGTH_CERENKOV )
     {
-      //  w = qs.cerenkov_wavelength_rejection_sampled(num); 
+      //  w = qs->cerenkov_wavelength_rejection_sampled(num); 
         assert(0); 
         ss << "_cerenkov" ; 
     }
@@ -348,7 +349,7 @@ void QSimTest::wavelength()
     const char* name = s.c_str(); 
 
     float* ww = w->values<float>(); 
-    qs.dump_wavelength( ww, num ); 
+    qs->dump_wavelength( ww, num ); 
    
     LOG(info) << " name " << name ; 
     w->save( dir, name ); 
@@ -356,17 +357,17 @@ void QSimTest::wavelength()
 
 void QSimTest::dbg_gs_generate()
 {
-    NP* p = qs.dbg_gs_generate(num, type); 
+    NP* p = qs->dbg_gs_generate(num, type); 
 
     p->save(dir, "p.npy"); 
 
     if( type == SCINT_GENERATE )
     {
-        qs.dbg->save_scint_gs(dir);  
+        qs->dbg->save_scint_gs(dir);  
     }
     else if( type == CERENKOV_GENERATE )
     {
-        qs.dbg->save_cerenkov_gs(dir);  
+        qs->dbg->save_cerenkov_gs(dir);  
     }
     else
     {
@@ -386,9 +387,9 @@ void QSimTest::generate_photon()
     SEvt evt ; 
     SEvt::AddGenstep(gs); 
 
-    qs.generate_photon();  
+    qs->generate_photon();  
 
-    NP* p = qs.event->getPhoton(); 
+    NP* p = qs->event->getPhoton(); 
     p->save(dir, "p.npy"); 
 
     LOG(info) << "]" ; 
@@ -409,18 +410,18 @@ void QSimTest::fill_state(unsigned version)
 {
     LOG(info) << "[" ; 
 
-    unsigned num_state = qs.bnd->sbn->getNumBoundary() ; 
+    unsigned num_state = qs->bnd->sbn->getNumBoundary() ; 
 
     if( version == 0 )
     {
         std::vector<quad6> s(num_state) ; 
-        qs.fill_state_0( s.data(), s.size() ); 
+        qs->fill_state_0( s.data(), s.size() ); 
         save_state("fill_state_0", (float*)s.data(), num_state );
     }
     else if( version == 1 )
     {
         std::vector<sstate> s(num_state) ; 
-        qs.fill_state_1( s.data(), s.size() ); 
+        qs->fill_state_1( s.data(), s.size() ); 
         save_state("fill_state_1", (float*)s.data(), num_state );
     }
     LOG(info) << "]" ; 
@@ -445,16 +446,16 @@ void QSimTest::getStateNames(std::vector<std::string>& names, unsigned num_state
 {
     unsigned* idx = new unsigned[num_state] ; 
     for(unsigned i=0 ; i < num_state ; i++) idx[i] = i ; 
-    qs.bnd->sbn->getBoundarySpec(names, idx, num_state ); 
+    qs->bnd->sbn->getBoundarySpec(names, idx, num_state ); 
     delete [] idx ; 
 }
 
 void QSimTest::photon_launch_generate()
 {
     assert( QSimLaunch::IsMutate(type)==false ); 
-    NP* p = qs.photon_launch_generate(num, type ); 
+    NP* p = qs->photon_launch_generate(num, type ); 
     p->save(dir, "p.npy"); 
-    qs.dbg->save(dir); 
+    qs->dbg->save(dir); 
 }
 
 /**
@@ -472,19 +473,19 @@ void QSimTest::mock_propagate()
     LOG(info) << "[" ; 
     LOG(info) << " SEventConfig::Desc " << SEventConfig::Desc() ;
 
-    NP* p   = qs.duplicate_dbg_ephoton(num); 
+    NP* p   = qs->duplicate_dbg_ephoton(num); 
 
     SEvt::Get()->setInputPhoton(p);  // also adds placeholder genstep 
 
     int bounce_max = SEventConfig::MaxBounce(); 
     LOG(info) << " bounce_max " << bounce_max ; 
 
-    NP* prd = qs.prd->duplicate_prd(num, bounce_max);  
+    NP* prd = qs->prd->duplicate_prd(num, bounce_max);  
     prd->save(dir, "prd.npy"); 
 
-    qs.mock_propagate( prd, type ); 
+    qs->mock_propagate( prd, type ); 
 
-    //const QEvent* event = qs.event ; 
+    //const QEvent* event = qs->event ; 
     //unsigned num_hit = event->getNumHit(); 
     //LOG(info) << " num_hit " << num_hit ;
 
@@ -498,7 +499,7 @@ void QSimTest::mock_propagate()
 void QSimTest::quad_launch_generate()
 {
     assert( QSimLaunch::IsMutate(type)==false ); 
-    NP* q = qs.quad_launch_generate(num, type ); 
+    NP* q = qs->quad_launch_generate(num, type ); 
     q->save(dir, "q.npy"); 
 }
 
@@ -539,11 +540,11 @@ void QSimTest::photon_launch_mutate()
     assert( num_photon_ == num_photon ); 
 
     sphoton* photons = (sphoton*)a->bytes() ; 
-    qs.photon_launch_mutate( photons, num_photon, type ); 
+    qs->photon_launch_mutate( photons, num_photon, type ); 
 
     a->save(dir, "p.npy"); 
 
-    qs.dbg->save(dir); 
+    qs->dbg->save(dir); 
 }
 
 /**

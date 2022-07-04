@@ -148,13 +148,14 @@ void CSGOptiX::InitGeo(  CSGFoundry* fd )
 void CSGOptiX::InitSim( const SSim* ssim  )
 {
     if(SEventConfig::IsRGModeRender()) return ; 
+
     if(ssim == nullptr) LOG(fatal) << "simulate/simtrace modes require SSim/QSim setup" ;
     assert(ssim);  
 
     QSim::UploadComponents(ssim);  
 
-    QSim* sim = new QSim ; 
-    LOG(LEVEL) << sim->desc() ; 
+    QSim* qs = QSim::Create() ; 
+    LOG(LEVEL) << qs->desc() ; 
 }
 
 
@@ -250,6 +251,7 @@ void CSGOptiX::init()
     LOG(LEVEL) << " ptxpath " << ptxpath  ; 
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
+    initCheckSim(); 
     initStack(); 
     initParams(); 
     initGeometry();
@@ -258,6 +260,20 @@ void CSGOptiX::init()
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+
+void CSGOptiX::initCheckSim()
+{
+    LOG(LEVEL) << " sim " << sim << " event " << event ; 
+    if(SEventConfig::IsRGModeRender() == false)
+    {
+        if(sim == nullptr) LOG(fatal) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ; 
+        assert(sim); 
+        
+    }
+}
+
 
 void CSGOptiX::initStack()
 {
@@ -331,11 +347,6 @@ TODO: eliminate params->evt to make more use of the qsim.h encapsulation
 
 void CSGOptiX::initSimulate() 
 {
-    if(SEventConfig::IsRGModeRender() == false)
-    {
-        if(sim == nullptr) LOG(fatal) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ; 
-        assert(sim); 
-    }
 
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
     params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*

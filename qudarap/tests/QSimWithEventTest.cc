@@ -24,7 +24,9 @@ int main(int argc, char** argv)
 
     const SSim* ssim = SSim::Load(); 
     QSim::UploadComponents(ssim); 
-    QSim qs ; 
+
+    QSim* qs = QSim::Create(); 
+    QEvent* qe = qs->event ; 
 
 
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
@@ -33,19 +35,18 @@ int main(int argc, char** argv)
     SEvt::AddGenstep(gs); 
 
 
-    qs.event->setGenstep(); 
+    qe->setGenstep(); 
 
-    assert( int(qs.event->getNumPhoton()) == x_total ); 
+    assert( int(qe->getNumPhoton()) == x_total ); 
 
-    LOG(info) << qs.event->desc() ; 
+    LOG(info) << qe->desc() ; 
 
-    qs.event->checkEvt(); 
+    qe->checkEvt(); 
 
-    qs.generate_photon();  
+    qs->generate_photon();  
 
 
-
-    NP* photon = qs.event->getPhoton();  
+    NP* photon = qe->getPhoton();  
     photon->dump(); 
 
 

@@ -13,13 +13,17 @@
 #include "OPTIX_CHECK.h"
 #include "Properties.h"
 
+#include "PLOG.hh"
+
+const plog::Severity Ctx::LEVEL = PLOG::EnvLevel("Ctx", "DEBUG") ; 
+
+
 OptixDeviceContext Ctx::context = nullptr ;
 
-void Ctx::context_log_cb( unsigned int level, const char* tag, const char* message, void* /*cbdata */)  // static 
+void Ctx::log_cb( unsigned int level, const char* tag, const char* message, void* /*cbdata */)  // static 
 {
-    std::cerr 
-        << "[" << std::setw( 2 ) << level << "][" << std::setw( 12 ) << tag << "]: "
-        << message << "\n";
+    LOG(LEVEL)
+        << "[" << std::setw( 2 ) << level << "][" << std::setw( 12 ) << tag << "]: " << message ;
 }
 
 Ctx::Ctx()
@@ -31,7 +35,7 @@ Ctx::Ctx()
     CUcontext cuCtx = 0;  // zero means take the current context
     OPTIX_CHECK( optixInit() );
     OptixDeviceContextOptions options = {};
-    options.logCallbackFunction       = &Ctx::context_log_cb;
+    options.logCallbackFunction       = &Ctx::log_cb;
     options.logCallbackLevel          = 4;
     OPTIX_CHECK( optixDeviceContextCreate( cuCtx, &options, &context ) );
 

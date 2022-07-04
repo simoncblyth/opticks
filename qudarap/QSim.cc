@@ -1,3 +1,5 @@
+
+#include <csignal>
 #include "PLOG.hh"
 #include "SSys.hh"
 #include "SEvt.hh"
@@ -38,6 +40,16 @@ const plog::Severity QSim::LEVEL = PLOG::EnvLevel("QSim", "DEBUG");
 
 QSim* QSim::INSTANCE = nullptr ; 
 QSim* QSim::Get(){ return INSTANCE ; }
+
+QSim* QSim::Create(){ 
+
+    if(INSTANCE != nullptr)  LOG(fatal) << " a QSim INSTANCE already exists " ; 
+    assert( INSTANCE == nullptr ) ;  
+    return new QSim  ;  
+}
+
+
+
 
 /**
 QSim::UploadComponents
@@ -225,6 +237,7 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 double QSim::simulate()
 {
    if( event == nullptr ) LOG(error) << " event null " << desc()  ; 
+   if( event == nullptr ) std::raise(SIGINT) ; 
    if( event == nullptr ) return -1. ; 
  
    int rc = event->setGenstep() ; 

@@ -1,4 +1,5 @@
 
+#include "PLOG.hh"
 #include "SEventConfig.hh"
 #include "U4GDML.h"
 #include "X4Geo.hh"
@@ -11,6 +12,9 @@
 
 #include "G4CXOpticks.hh"
 
+const plog::Severity G4CXOpticks::LEVEL = PLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
+
+
 G4CXOpticks::G4CXOpticks()
     :
     wd(nullptr),
@@ -20,6 +24,21 @@ G4CXOpticks::G4CXOpticks()
     qs(nullptr)
 {
 }
+
+std::string G4CXOpticks::desc() const
+{
+    std::stringstream ss ; 
+    ss << "G4CXOpticks::desc"
+       << " wd " << wd
+       << " gg " << gg
+       << " fd " << fd
+       << " cx " << cx
+       << " qs " << qs
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 void G4CXOpticks::setGeometry(const char* gdmlpath)
 {
@@ -54,13 +73,18 @@ void G4CXOpticks::render()
 
 void G4CXOpticks::simulate()
 {
+    LOG(LEVEL) << desc() ; 
     assert(cx); 
+    assert(qs); 
+    assert( SEventConfig::IsRGModeSimulate() ); 
     qs->simulate(); 
 }
 
 void G4CXOpticks::simtrace()
 {
     assert(cx); 
+    assert(qs); 
+    assert( SEventConfig::IsRGModeSimtrace() ); 
     qs->simtrace(); 
 }
 

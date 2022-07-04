@@ -223,11 +223,14 @@ Names the programs to form the pipeline
 
 void PIP::init()
 {
-    std::cout << "PIP::init " << std::endl ; 
+    LOG(LEVEL)  << "[" ; 
+
     createRaygenPG("rg");
     createMissPG("ms"); 
     createHitgroupPG("is", "ch", nullptr); 
     linkPipeline(max_trace_depth);
+
+    LOG(LEVEL)  << "]" ; 
 }
 
 /**

@@ -58,6 +58,7 @@ struct QUDARAP_API QSim
     static const char* PREFIX ; 
     static QSim* INSTANCE ; 
     static QSim* Get(); 
+    static QSim* Create(); 
 
     static void UploadComponents(const SSim* ssim);   
 
@@ -85,9 +86,10 @@ struct QUDARAP_API QSim
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
 
-
+private:
     QSim();
-    void init(); 
+    void init();
+public:
     void setLauncher(SCSGOptiX* cx_ ); 
 
     double simulate();  // via cx launch 

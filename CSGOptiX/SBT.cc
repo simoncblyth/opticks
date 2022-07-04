@@ -336,7 +336,7 @@ void SBT::createIAS(unsigned ias_idx)
     assert( num_ias_inst == inst.size() ); 
 
     createIAS(inst); 
-    dumpIAS(inst); 
+    LOG(LEVEL) << descIAS(inst); 
 }
 
 /** 
@@ -441,6 +441,7 @@ std::string SBT::descIAS(const std::vector<qat4>& inst ) const
     std::stringstream ss ; 
     bool sbt_dump_ias = SSys::getenvbool("SBT_DUMP_IAS") ; 
     ss
+        << "SBT::descIAS"
         << " inst.size " << inst.size()
         << " SBT_DUMP_IAS " << sbt_dump_ias 
         << std::endl 
