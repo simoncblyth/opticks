@@ -1270,15 +1270,14 @@ GMaterial* GMaterialLib::getSensitiveMaterial(unsigned index) const
 void GMaterialLib::dumpSensitiveMaterials(const char* msg) const 
 {
     unsigned num_sensitive_materials = getNumSensitiveMaterials() ; 
-    LOG(info) << msg << " num_sensitive_materials " << num_sensitive_materials ;
+    LOG(LEVEL) << msg << " num_sensitive_materials " << num_sensitive_materials ;
     for(unsigned i=0 ; i < num_sensitive_materials ; i++)
     {
         GMaterial* mt = getSensitiveMaterial(i);
-        std::cout 
+        LOG(LEVEL)
              << std::setw(2) << i 
              << " : "
              << std::setw(30) << mt->getName()
-             << std::endl 
              ;  
     }
 }

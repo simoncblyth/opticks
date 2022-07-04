@@ -248,7 +248,7 @@ const char* GSurfaceLib::propertyName(unsigned int k)
 
 void GSurfaceLib::Summary(const char* msg)
 {
-    LOG(info) << msg  
+    LOG(LEVEL) << msg  
               << " NumSurfaces " << getNumSurfaces() 
               << " NumFloat4 " << NUM_FLOAT4
               ;
@@ -762,7 +762,7 @@ void GSurfaceLib::addImplicitBorderSurface_RINDEX_NoRINDEX( const char* pv1, con
 
 void GSurfaceLib::dumpImplicitBorderSurfaces(const char* msg, unsigned edgeitems) const 
 {
-    LOG(info) << msg << std::endl << descImplicitBorderSurfaces(edgeitems) ; 
+    LOG(LEVEL) << msg << std::endl << descImplicitBorderSurfaces(edgeitems) ; 
 }
 
 unsigned GSurfaceLib::getNumImplicitBorderSurface() const
@@ -904,7 +904,7 @@ void GSurfaceLib::collectSensorIndices()
 void GSurfaceLib::dumpSurfaces(const char* msg, unsigned edgeitems )
 {
     unsigned ni = getNumSurfaces();
-    LOG(info) << msg << " num_surfaces " << ni << " edgeitems " << edgeitems ; 
+    LOG(LEVEL) << msg << " num_surfaces " << ni << " edgeitems " << edgeitems ; 
 
     for(unsigned i=0 ; i < ni ; i++)
     {
@@ -1131,7 +1131,7 @@ void GSurfaceLib::importForTex2d()
 
     if(m_dbgsurf)
     {
-        LOG(info) << " --dbgsurf dumpMeta " ; 
+        LOG(LEVEL) << " --dbgsurf dumpMeta " ; 
         dumpMeta(); 
     }
 }
@@ -1140,7 +1140,7 @@ void GSurfaceLib::importForTex2d()
 void GSurfaceLib::dumpMeta(const char* msg) const 
 {
     unsigned num_surf = m_surfaces.size() ; 
-    LOG(info) << msg << " num_surf " << num_surf ; 
+    LOG(LEVEL) << msg << " num_surf " << num_surf ; 
     for( unsigned i=0 ; i < num_surf ; i++)
     {
          GPropertyMap<double>* surf = m_surfaces[i]; 
@@ -1211,7 +1211,7 @@ void GSurfaceLib::dump(const char* msg)
 
     unsigned int ni = getNumSurfaces() ; 
 
-    LOG(info) << " (index,type,finish,value) " ;  
+    LOG(LEVEL) << " (index,type,finish,value) " ;  
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
@@ -1280,7 +1280,7 @@ void GSurfaceLib::dump( GPropertyMap<double>* surf, const char* msg)
                             _extra_x ,  "extra_x"
                             );
     
-    LOG(info) << msg << " " 
+    LOG(LEVEL) << msg << " " 
               << surf->getName()  
               << "\n" << table 
               ; 
@@ -1567,7 +1567,7 @@ unsigned GSurfaceLib::getNumRawSkinSurfaces() const
 
 void GSurfaceLib::dumpRawSkinSurface(const char* name) const
 {
-    LOG(info) << name ; 
+    LOG(LEVEL) << name ; 
 
     GSkinSurface* ss = NULL ; 
     unsigned n = getNumRawSkinSurfaces();
@@ -1580,7 +1580,7 @@ void GSurfaceLib::dumpRawSkinSurface(const char* name) const
 
 void GSurfaceLib::dumpRawBorderSurface(const char* name) const 
 {
-    LOG(info) << name ; 
+    LOG(LEVEL) << name ; 
     GBorderSurface* bs = NULL ; 
     unsigned n = getNumRawBorderSurfaces();
     for(unsigned i = 0 ; i < n ; i++)
