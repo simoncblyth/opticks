@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     const char* Air_Water = "Air///Water" ; 
     SSim* ssim = SSim::Load();
     ssim->addFake(Rock_Air, Air_Water); 
-    LOG(info) << std::endl << ssim->descOptical()  ; 
+    //LOG(info) << ssim->descOptical()  ; 
 
     CSGFoundry* fdl = CSGFoundry::Load("$CFBASE_LOCAL", "CSGFoundry") ; 
 
@@ -37,7 +37,8 @@ int main(int argc, char** argv)
 
     fdl->setPrimBoundary( 0, Rock_Air ); 
     fdl->setPrimBoundary( 1, Air_Water );    // notice these fdl boundary changes are not persisted
-    LOG(info) << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
+
+    //LOG(info) << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
 
     ssim->save("$CFBASE_LOCAL/CSGFoundry/SSim" ); // DIRTY: FOR PYTHON CONSUMPTION
 

@@ -45,7 +45,6 @@ export U4Random_flat_debug=1  ## without this all stack tags are zero
 mode=iphoton
 
 export U4RecorderTest__PRIMARY_MODE=$mode
-export U4VolumeMaker_RaindropRockAirWater_FACTOR=10
 
 
 if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then

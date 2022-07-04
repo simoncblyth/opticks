@@ -725,8 +725,8 @@ Do not particularly want uses of CX to need to do the same setup.
 
 
 
-shakedown : issue 1 : all getting absorbed : geometry or input photon issue ?
----------------------------------------------------------------------------------
+FIXED : shakedown issue 1 : all getting absorbed : by sharing geometry setup in bin/GEOM_.sh 
+---------------------------------------------------------------------------------------------------
 
 ::
 
@@ -785,8 +785,57 @@ Looks like input photons starting in Rock and getting AB immediately::
             [   0.   ,    0.   ,   -0.   ,    0.   ]]], dtype=float32)
 
 
+Fixed by moving geom setup to common script for sourcing  GEOM_.sh 
 
 
+::
 
+    In [2]: cuss(t.seq[:,0])
+    Out[2]: 
+    CUSS([['w0', '                   TO BT BT SA', '           36045', '            8788'],
+          ['w1', '                      TO BR SA', '            2237', '             598'],
+          ['w2', '                TO BT BR BT SA', '          576461', '             501'],
+          ['w3', '             TO BT BR BR BT SA', '         9223117', '              43'],
+          ['w4', '                      TO BT AB', '            1229', '              28'],
+          ['w5', '          TO BT BR BR BR BT SA', '       147569613', '              13'],
+          ['w6', '                      TO SC SA', '            2157', '               9'],
+          ['w7', '                TO BT BT SC SA', '          552141', '               7'],
+          ['w8', '       TO BT BR BR BR BR BT SA', '      2361113549', '               2'],
+          ['w9', '             TO BT BR BT SC SA', '         8833997', '               2'],
+          ['w10', '                TO BT SC BT SA', '          575181', '               2'],
+          ['w11', '                   TO BT BT AB', '           19661', '               2'],
+          ['w12', '                   TO BT BR AB', '           19405', '               2'],
+          ['w13', '          TO BT BR BR BR BR AB', '        79412173', '               1'],
+          ['w14', '                   TO SC BR SA', '           35693', '               1'],
+          ['w15', '                   TO BR SC SA', '           34493', '               1']], dtype=object)
+
+
+::
+
+
+    In [3]: w = np.unique(np.where( np.abs(a.photon - b.photon) > 7e-2 )) ; w
+    Out[3]: array([   0,    1,    2,  544, 1884, 4179, 4850, 5102, 7401])
+
+    In [4]: seqhis_(a.seq[w,0])
+    Out[4]: 
+    ['TO BT BT SA',
+     'TO BT BT SA',
+     'TO BT BT SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA']
+
+
+    In [5]: a.base
+    Out[5]: '/tmp/blyth/opticks/G4CXSimulateTest'
+
+    In [6]: b.base
+    Out[6]: '/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2'
+
+    In [7]: np.where( a.seq[:,0] != b.seq[:,0] )
+    Out[7]: (array([], dtype=int64),)
 
 

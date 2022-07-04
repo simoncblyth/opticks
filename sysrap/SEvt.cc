@@ -1104,7 +1104,7 @@ const char* SEvt::DefaultDir()
 void SEvt::save() 
 {
     const char* dir = DefaultDir(); 
-    LOG(info) << "DefaultDir " << dir ; 
+    LOG(LEVEL) << "DefaultDir " << dir ; 
     save(dir); 
 }
 void SEvt::save(const char* base, const char* reldir ) 

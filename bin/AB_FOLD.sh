@@ -37,7 +37,8 @@ B_FOLD_LOGF=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4
 A_FOLD_GEOM=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater
 B_FOLD_GEOM=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2
 
-
+A_FOLD_GXS=/tmp/blyth/opticks/G4CXSimulateTest
+B_FOLD_GXS=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2
 
 
 
@@ -47,6 +48,7 @@ case $FOLD_MODE in
   KEEP) export A_FOLD=$A_FOLD_KEEP ; export B_FOLD=$B_FOLD_KEEP ;; 
   LOGF) export A_FOLD=$A_FOLD_LOGF ; export B_FOLD=$B_FOLD_LOGF ;; 
   GEOM) export A_FOLD=$A_FOLD_GEOM ; export B_FOLD=$B_FOLD_GEOM ;; 
+   GXS) export A_FOLD=$A_FOLD_GXS ; export B_FOLD=$B_FOLD_GXS ;; 
 esac
 
 vars="BASH_SOURCE FOLD_MODE A_FOLD B_FOLD"

@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-gxs.sh
-=======
+gxs.sh : Opticks CX GPU simulation starting from Geant4 geometry auto-translated to CSG
+==========================================================================================
 
 ::
 
@@ -19,6 +19,8 @@ source ../bin/OPTICKS_INPUT_PHOTON.sh
 loglevels()
 {
     export Dummy=INFO
+    export U4VolumeMaker=INFO
+
     #export SEvt=INFO
     #export Ctx=INFO
     #export QSim=INFO

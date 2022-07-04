@@ -20,5 +20,10 @@ geom=RaindropRockAirWater2
 
 export GEOM=${GEOM:-$geom}
 
+if [ "$GEOM" == "RaindropRockAirWater" -o "$GEOM" == "RaindropRockAirWater2" ]; then 
+    export U4VolumeMaker_RaindropRockAirWater_FACTOR=10
+fi 
+
+
 echo === $BASH_SOURCE : GEOM $GEOM 
 

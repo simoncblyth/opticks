@@ -73,7 +73,7 @@ const char* SOpticksResource::RNGCacheDir(){    return SPath::Resolve(ResolveRng
 const char* SOpticksResource::RNGDir(){         return SPath::Resolve(RNGCacheDir(), "RNG", NOOP); }
 const char* SOpticksResource::RuncacheDir(){    return SPath::Resolve(ResolveUserCachePrefix(), "runcache", NOOP); }
 const char* SOpticksResource::PrecookedDir(){   return SPath::Resolve(ResolvePrecookedPrefix(), "precooked", NOOP); }
-const char* SOpticksResource::DefaultOutputDir(){  return SPath::Resolve("$TMP", SProc::ExecutableName(), NOOP); }
+const char* SOpticksResource::DefaultOutputDir(){  return SPath::Resolve("$TMP", SProc::ExecutableName(), SSys::getenvvar("GEOM"),  NOOP); }
 
 
 std::string SOpticksResource::Dump()
