@@ -269,6 +269,13 @@ EOI
 
 
 
+om-subs--old(){ cat << EOS
+#yoctoglrap
+#assimprap
+#openmeshrap
+
+EOS
+}
 
 
 om-subs--all(){ cat << EOS
@@ -278,24 +285,21 @@ okconf
 sysrap
 boostrap
 npy
-#yoctoglrap
 optickscore
 ggeo
-#assimprap
-#openmeshrap
-opticksgeo
-cudarap
-thrustrap
-optixrap
-okop
-oglrap
-opticksgl
-ok
+#opticksgeo
+#cudarap
+#thrustrap
+#optixrap
+#okop
+#oglrap
+#opticksgl
+#ok
 extg4
-cfg4
-okg4
-g4ok
-integration
+#cfg4
+#okg4
+#g4ok
+#integration
 ana
 analytic
 bin
