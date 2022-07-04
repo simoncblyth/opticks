@@ -378,7 +378,7 @@ class OKCORE_API Opticks {
        unsigned    getGDMLAuxTargetLVNames(std::vector<std::string>& lvnames) const ;
        const char* getGDMLAuxTargetLVName() const ; // returns first name or NULL when none
    public:
-       void        dumpCacheMeta(const char* msg="Opticks::dumpCacheMeta") const ; 
+       std::string descCacheMeta() const ; 
        static std::string ExtractCacheMetaGDMLPath(const BMeta* meta) ; 
 
        const char* getRunComment() const ;

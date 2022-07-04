@@ -637,7 +637,7 @@ void GGeo::deferred()
 void GGeo::postDirectTranslationDump() const 
 {
     LOG(LEVEL) << "[" ; 
-    reportMeshUsage();
+    LOG(LEVEL) << descMeshUsage();
 
     if(m_ok->isDumpSensor())
     {
@@ -645,7 +645,7 @@ void GGeo::postDirectTranslationDump() const
     }
     else
     {
-        LOG(info) << reportSensorVolumes("GGeo::postDirectTranslationDump NOT --dumpsensor");  
+        LOG(LEVEL) << reportSensorVolumes("GGeo::postDirectTranslationDump NOT --dumpsensor");  
     }
 
     LOG(LEVEL) << "]" ; 
@@ -714,7 +714,7 @@ void GGeo::save()
     }   
 
     std::string s = m_geolib->summary("GGeo::save");
-    LOG(info) << std::endl << s ; 
+    LOG(LEVEL) << std::endl << s ; 
 
     LOG(LEVEL) << " before saves " ; 
 
@@ -762,7 +762,7 @@ void GGeo::saveCacheMeta() const
     } 
 
 
-    m_ok->dumpCacheMeta("GGeo::saveCacheMeta"); 
+    LOG(LEVEL) << m_ok->descCacheMeta(); 
     m_ok->saveCacheMeta(); 
 
     LOG(LEVEL) << "]" ; 
@@ -1057,9 +1057,9 @@ void GGeo::countMeshUsage(unsigned meshIndex, unsigned nodeIndex)
 {
     m_meshlib->countMeshUsage(meshIndex, nodeIndex); 
 }
-void GGeo::reportMeshUsage(const char* msg) const 
+std::string GGeo::descMeshUsage() const 
 {
-    m_meshlib->reportMeshUsage(msg);
+    return m_meshlib->descMeshUsage();
 }
  
 
@@ -1409,7 +1409,7 @@ void GGeo::prepareVolumes()
         m_geolib->makeMergedMesh(0, NULL, root );  // ridx:0 rbase:NULL 
     }
 
-    m_instancer->dump("GGeo::prepareVolumes") ; 
+    LOG(LEVEL) << m_instancer->desc() ; 
     LOG(LEVEL) << m_nodelib->descOriginMap() ; 
     LOG(LEVEL) << "]" ;
 }

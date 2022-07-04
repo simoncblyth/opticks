@@ -335,7 +335,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         const GMesh*       getMesh(unsigned index) const ;  
         void               add(const GMesh* mesh);
         void countMeshUsage(unsigned meshIndex, unsigned nodeIndex);
-        void reportMeshUsage(const char* msg="GGeo::reportMeshUsage") const ;
+        std::string descMeshUsage() const ;
     public:
    public:
         void traverse(const char* msg="GGeo::traverse");

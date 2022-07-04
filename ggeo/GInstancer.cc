@@ -370,31 +370,36 @@ void GInstancer::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
     sortRepeatCandidates(); 
 
     unsigned num_repcan = m_repeat_candidates.size() ; 
-    LOG(info) 
+    LOG(LEVEL) 
         << " nall " << nall 
         << " repeat_min " << repeat_min 
         << " vertex_min " << vertex_min 
         << " num_repcan " << num_repcan
         ;
 
+    std::stringstream ss ; 
     if(num_repcan > 0)
     {
         unsigned dmax = 30u ;  
-        LOG(info) 
+        ss
             << " num_all " << num_all 
             << " num_repcan " << num_repcan 
             << " dmax " << dmax
             ;
-        std::cout << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
-        std::cout << " (##) selected survive contained-repeat disqualification " << std::endl ;
+        ss << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
+        ss << " (##) selected survive contained-repeat disqualification " << std::endl ;
 
         for(unsigned i=0 ; i < std::min(num_all, dmax) ; i++)
         {
             GRepeat& cand = cands[i];
             cand.select = cand.isListed(m_repeat_candidates) ;
-            std::cout << cand.desc() << std::endl; 
+            ss << cand.desc() << std::endl; 
         }
     }
+
+    std::string s = ss.str(); 
+    LOG(LEVEL) << s ; 
+
     LOG(LEVEL) << "]" ; 
 }
 
@@ -964,22 +969,26 @@ void GInstancer::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
 
 /**
-GInstancer::dumpMeshset
+GInstancer::descMeshset
 -------------------------
 
 Dumping the unique LVs in each repeater
 
 **/
 
-void GInstancer::dumpMeshset() const 
+std::string GInstancer::descMeshset() const 
 {
     unsigned numRepeats = getNumRepeats();
     unsigned numRidx = numRepeats + 1 ; 
  
-    LOG(info) 
+    std::stringstream ss ; 
+   
+    ss  
+        << "GInstancer::descMeshset"
         << " numRepeats " << numRepeats 
         << " numRidx " << numRidx
         << " (slot 0 for global non-instanced) "
+        <<  std::endl 
         ;
 
     typedef std::set<unsigned> SU ; 
@@ -990,51 +999,52 @@ void GInstancer::dumpMeshset() const
 
         const SU& ms = m_meshset.at(ridx); 
 
-        std::cout << " ridx " << ridx 
-                  << " ms " << ms.size()
-                  << " ( " 
-                  ;
+        ss << " ridx " << ridx 
+           << " ms " << ms.size()
+           << " ( " 
+           ;
  
-        for(SU::const_iterator it=ms.begin() ; it != ms.end() ; it++ )
-              std::cout << *it << " " ;
-
-        std::cout << " ) " << std::endl ; 
-
+        for(SU::const_iterator it=ms.begin() ; it != ms.end() ; it++ ) ss << *it << " " ;
+        ss << " ) " << std::endl ; 
     }
+    std::string s = ss.str(); 
+    return s ; 
 }
 
-
-
-
-void GInstancer::dumpCSGSkips() const 
+std::string GInstancer::descCSGSkips() const 
 {
-    LOG(info) ;
+    std::stringstream ss ; 
     for( MUVU::const_iterator i = m_csgskiplv.begin() ; i != m_csgskiplv.end() ; i++ )
     {
         unsigned lvIdx = i->first ; 
         const VU& v = i->second ; 
 
-        std::cout << " lvIdx " << lvIdx 
-                  << " skip total : " << v.size()
-                  << " nodeIdx ( " 
-                  ; 
+        ss << " lvIdx " << lvIdx 
+           << " skip total : " << v.size()
+           << " nodeIdx ( " 
+           ; 
 
         unsigned nj = v.size() ; 
 
 
         //for(VU::const_iterator j=v.begin() ; j != v.end() ; j++ ) std::cout << *j << " " ;
 
-        for( unsigned j=0 ; j < std::min( nj, 20u ) ; j++ ) std::cout << v[j] << " " ;  
-        if( nj > 20u ) std::cout << " ... " ; 
-        std::cout << " ) " << std::endl ; 
+        for( unsigned j=0 ; j < std::min( nj, 20u ) ; j++ ) ss << v[j] << " " ;  
+        if( nj > 20u ) ss << " ... " ; 
+        ss << " ) " << std::endl ; 
     }  
+    std::string s = ss.str(); 
+    return s ; 
 }
 
-void GInstancer::dump(const char* msg) const 
+std::string GInstancer::desc() const 
 {
-    LOG(info) << msg ; 
-    dumpMeshset();
-    dumpCSGSkips(); 
+    std::stringstream ss ; 
+    ss << descMeshset();
+    ss << std::endl ; 
+    ss << descCSGSkips(); 
+    std::string s = ss.str(); 
+    return s; 
 }
 
 

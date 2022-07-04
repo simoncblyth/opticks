@@ -2244,9 +2244,9 @@ void Opticks::updateCacheMeta()
 }
 
 
-void Opticks::dumpCacheMeta(const char* msg) const 
+std::string Opticks::descCacheMeta() const 
 {
-    m_cachemeta->dump(msg) ;
+    return m_cachemeta->desc() ;
 }
 void Opticks::saveCacheMeta() const 
 {

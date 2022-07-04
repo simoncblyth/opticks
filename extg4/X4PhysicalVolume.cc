@@ -1208,14 +1208,20 @@ void X4PhysicalVolume::GenerateTestG4Code( const Opticks* ok, int lvIdx, const G
 
 
 
-
-
 void X4PhysicalVolume::dumpLV(unsigned edgeitems) const 
 {
-   LOG(LEVEL)
+    LOG(LEVEL) << descLV(edgeitems); 
+}
+
+std::string X4PhysicalVolume::descLV(unsigned edgeitems) const 
+{
+    std::stringstream ss ; 
+    ss
+       << "X4PhysicalVolume::descLV"
        << " m_lvidx.size() " << m_lvidx.size() 
        << " m_lvlist.size() " << m_lvlist.size()
        << " edgeitems " << edgeitems 
+       << std::endl 
        ;
 
    unsigned num_lv = m_lvlist.size() ;  
@@ -1231,7 +1237,7 @@ void X4PhysicalVolume::dumpLV(unsigned edgeitems) const
            const std::string& lvn =  lv->GetName() ; 
            assert( strcmp(lvn.c_str(), m_lvname[i].c_str() ) == 0 ); 
 
-           std::cout 
+           ss
                << " i " << std::setw(5) << i
                << " idx " << std::setw(5) << m_lvidx.at(lv)  
                << " lvname " << std::setw(50) << m_lvname[i]
@@ -1239,6 +1245,8 @@ void X4PhysicalVolume::dumpLV(unsigned edgeitems) const
                << std::endl ;  
        }
    }
+   std::string s = ss.str(); 
+   return s; 
 }
 
 void X4PhysicalVolume::dumpTorusLV() const 

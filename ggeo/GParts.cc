@@ -1366,7 +1366,7 @@ void GParts::add(GParts* other)
 
     if(m_ok && m_ok->isGPartsTransformOffset())  // --gparts_transform_offset
     { 
-        if(dump) LOG(info) 
+        if(dump) LOG(LEVEL) 
             << " --gparts_transform_offset IS ENABLED, COUNT  " << COUNT 
             << " ridx " << getRepeatIndex() 
             << " tranOffset " << tranOffset  
@@ -1381,7 +1381,7 @@ void GParts::add(GParts* other)
     }
     else
     {
-        if(dump) LOG(info) << " NOT ENABLED --gparts_transform_offset, COUNT  " << COUNT  ; 
+        if(dump) LOG(LEVEL) << " NOT ENABLED --gparts_transform_offset, COUNT  " << COUNT  ; 
     }
 
     m_idx_buffer->add(other_idx_buffer);

@@ -21,6 +21,8 @@ source ../bin/OPTICKS_INPUT_PHOTON.sh
 #export QEvent=INFO 
 #export CSGOptiX=INFO
 
+#export X4PhysicalVolume=INFO
+
 
 defarg="run"
 arg=${1:-$defarg}

@@ -143,6 +143,7 @@ class X4_API X4PhysicalVolume : public X4Named
         void convertSolids_r(const G4VPhysicalVolume* const pv, int depth);
         void convertSolid( const G4LogicalVolume* lv ); 
         void dumpLV(unsigned edgeitems=100) const ;
+        std::string descLV(unsigned edgeitems) const ; 
         void dumpTorusLV() const ;
 
     public:

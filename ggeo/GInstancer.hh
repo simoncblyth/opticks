@@ -110,10 +110,10 @@ class GGEO_API GInstancer {
         const GNode*        getLastRepeatExample(unsigned ridx); // last node that matches the ridx progeny digest
         std::vector<const GNode*> getPlacements(unsigned int ridx);  // all GNode with the ridx progeny digest
    public:
-        void dump(const char* msg) const ;
+        std::string desc() const ;
    private:
-        void dumpMeshset() const ;
-        void dumpCSGSkips() const ;
+        std::string descMeshset() const ;
+        std::string descCSGSkips() const ; 
    private:
         // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
         void           labelTree();

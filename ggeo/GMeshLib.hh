@@ -65,7 +65,7 @@ class GGEO_API GMeshLib
         void replace(unsigned index, GMesh* replacement ); 
     public:
         std::string operator()( const char* arg ) const  ;
-        void dump(const char* msg="GMeshLib::dump") const;
+        std::string detail() const;
     public:
         // methods working from the index, so work prior to loading meshes
         const char* getMeshName(unsigned aindex) const ; 
@@ -108,6 +108,8 @@ class GGEO_API GMeshLib
         std::map<unsigned,std::vector<unsigned> >& getMeshNodes();
         void countMeshUsage(unsigned meshIndex, unsigned nodeIndex);
         void reportMeshUsage(const char* msg="GMeshLib::reportMeshUsage") const ;
+        std::string descMeshUsage() const ; 
+
         void writeMeshUsage(const char* path="/tmp/GMeshLib_MeshUsageReport.txt") const ;
         void reportMeshUsage_(std::ostream& out) const ;
         void saveMeshUsage(const char* idpath) const ;

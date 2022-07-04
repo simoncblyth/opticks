@@ -343,7 +343,7 @@ GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, const GNode* base, const GN
     }
     GMergedMesh* mm = m_merged_mesh[index] ;
 
-    LOG(error) << GMergedMesh::Desc( mm ) ;  
+    LOG(LEVEL) << GMergedMesh::Desc( mm ) ;  
 
     return mm ;
 }

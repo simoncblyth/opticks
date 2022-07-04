@@ -130,7 +130,7 @@ void GMeshLib::addAltMeshes()
     std::vector<unsigned> indices_with_alt ; 
     getMeshIndicesWithAlt(indices_with_alt) ; 
  
-    LOG(info) 
+    LOG(LEVEL) 
         << " num_indices_with_alt " << indices_with_alt.size()
         ;
  
@@ -140,12 +140,12 @@ void GMeshLib::addAltMeshes()
         GMesh* mesh = getMeshSimple(index); 
         const GMesh* altmesh = mesh->getAlt() ; 
         assert(altmesh);
-        LOG(info) << " index with alt " << index ;  
+        LOG(LEVEL) << " index with alt " << index ;  
         bool alt = true ; 
         add(altmesh, alt ); 
     }
  
-    dump("addAltMeshes"); 
+    LOG(LEVEL) << detail(); 
     LOG(LEVEL) << "]" ; 
 }
 
@@ -273,13 +273,17 @@ const char* GMeshLib::getMeshName(unsigned aindex) const
     return m_meshnames->getKey(aindex); 
 }
 
-void GMeshLib::dump(const char* msg) const
+std::string GMeshLib::detail() const
 {
+    std::stringstream ss ;
+
     unsigned num_mesh = m_meshnames->getNumKeys();
-    LOG(info) << msg 
-              << " meshnames " << num_mesh 
-              << " meshes " << m_meshes.size() 
-              ; 
+    ss  
+       << "GMeshLib::detail"
+       << " meshnames:num_mesh " << num_mesh 
+       << " meshes.size " << m_meshes.size() 
+       << std::endl 
+       ; 
 
     for(unsigned i=0 ; i < num_mesh ; i++)
     {
@@ -294,7 +298,7 @@ void GMeshLib::dump(const char* msg) const
 
         assert( strcmp(mesh->getName(), name) == 0);
 
-        std::cout 
+        ss
                << " i " << std::setw(3) << i  
                << " aidx " << std::setw(3) << aidx  
                << " midx " << std::setw(3) << midx  
@@ -303,6 +307,8 @@ void GMeshLib::dump(const char* msg) const
                << std::endl 
                ;
     }
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 
@@ -726,6 +732,15 @@ void GMeshLib::reportMeshUsage(const char* msg) const
     out << msg << std::endl ; 
     reportMeshUsage_(out); 
 }
+
+std::string GMeshLib::descMeshUsage() const
+{
+    std::stringstream ss ; 
+    reportMeshUsage_(ss);
+    std::string s = ss.str();  
+    return s ; 
+}
+
 
 void GMeshLib::writeMeshUsage(const char* path) const 
 {
