@@ -90,6 +90,10 @@ if __name__ == '__main__':
         RECS_PLOT=1 SEQHIS="TO BT BT SA" IREC=2 ./U4RecorderTest.sh ana 
 
 
+        RECS_PLOT=1 SEQHIS="TO BT BT BT BT BT SA" IREC=1 ./U4RecorderTest.sh ana 
+
+        RECS_PLOT=1 SEQHIS="TO BT BT BT BT BT SA" ./U4RecorderTest.sh ana 
+             plot all step points 
 
         """
         from opticks.ana.pvplt import * 

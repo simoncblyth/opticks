@@ -74,7 +74,6 @@ struct SYSRAP_API SPath
       static void MakeEmpty(const char* path_); 
       static bool Exists(const char* path_); 
       static const char* PickFirstExisting(const char* path0, const char* path1, const char* path2=nullptr ); 
-      static const char* SomeGDMLPath(); 
 
       static int Remove(const char* path_); 
 

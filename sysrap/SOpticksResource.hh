@@ -42,9 +42,14 @@ struct SYSRAP_API SOpticksResource
     static const char* CGDir_NAME_Alt ;
     static const char* CGDirAlt(bool setkey=true);  
 
+    static const char* CFBASE_ ;
     static const char* CFBase();
     static const char* CFBaseAlt();
     static const char* CFBaseFromGEOM();
+
+    static const char* SomeGDMLPath_ ; 
+    static const char* SomeGDMLPath(); 
+
 
     static std::string Dump(); 
 

@@ -110,7 +110,12 @@ struct SYSRAP_API SEventConfig
     static void SetOutFold( const char* out_fold); 
     static void SetOutName( const char* out_name); 
     static void SetHitMask(const char* abrseq, char delim=',' ); 
+
     static void SetRGMode( const char* rg_mode) ; 
+    static void SetRGModeSimulate() ; 
+    static void SetRGModeSimtrace() ; 
+    static void SetRGModeRender() ; 
+
     static void SetCompMask(const char* names, char delim=',') ; 
     static void SetPropagateEpsilon( float eps) ; 
     static void SetInputPhoton(const char* input_photon); 

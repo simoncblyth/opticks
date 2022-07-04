@@ -180,6 +180,7 @@ Precedence order:
 1. CFBASE envvar values directly providing CFBASE directory 
 
 2. CFBASE directory derived from OPTICKS_KEY and OPTICKS_GEOCACHE_PREFIX 
+   giving "$IDBase/CSG_GGeo"
 
 When the *ekey* envvar (default CFBASE) is defined its 
 value is returned otherwise the CFDir obtained from the 
@@ -187,13 +188,14 @@ OPTICKS_KEY is returned.
 **/
 
 
+const char* SOpticksResource::CFBASE_ = "CFBASE" ; 
 const char* SOpticksResource::CFBase()
 {
-    const char* cfbase = SSys::getenvvar("CFBASE") ; 
+    const char* cfbase = SSys::getenvvar(CFBASE_) ; 
     if( cfbase == nullptr )
     {
         bool setkey = true ; 
-        cfbase = CGDir(setkey); 
+        cfbase = CGDir(setkey);    
     }
     return cfbase ; 
 }
@@ -241,6 +243,22 @@ const char* SOpticksResource::CFBaseFromGEOM()
     }
     return cfbase ;  
 }
+
+
+const char* SOpticksResource::SomeGDMLPath_ = "SomeGDMLPath" ; 
+const char* SOpticksResource::SomeGDMLPath()
+{
+    // TODO: use GDXML instead of the old CGDMLKludge 
+    const char* path0 = getenv(SomeGDMLPath_) ;   
+    const char* path1 = SPath::Resolve("$IDPath/origin_CGDMLKludge.gdml", NOOP );  
+    const char* path2 = SPath::Resolve("$OPTICKS_PREFIX/origin_CGDMLKludge_02mar2022.gdml", NOOP) ; 
+
+    const char* path = SPath::PickFirstExisting(path0, path1, path2); 
+    LOG(LEVEL)  << " path " << ( path ? path : "-" ) ;    
+    assert(path); 
+    return path ; 
+}
+
 
 
 const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir" ; 

@@ -10,7 +10,7 @@ more_complex_test_geometry_using_bringing_PMTSim_to_U4
 * TODO: compare PMTSim PMT and Mask Managers with the lastest ones 
 
 
-TODO : gx level translation and CX running of U4VolumeMaker::PV GEOM hama_body_log
+DONE : gx level translation and CX running of U4VolumeMaker::PV GEOM hama_body_log
 -------------------------------------------------------------------------------------
 
 * :doc:`gxs_high_level_translation_of_U4VolumeMaker_Geant4_geometry`
@@ -19,10 +19,8 @@ TODO : gx level translation and CX running of U4VolumeMaker::PV GEOM hama_body_l
 With the water rock border surface get simpler history as no BT into Rock and then AB 
 --------------------------------------------------------------------------------------
 
-HMM : currently 5000 mm  halfside box of water, so rather excessively big  
-
-* also beam only 49mm radius 
-* TODO: resize geometry to suit input photon starting point and PMT dimensions
+* TODO : increase beam radius from only 49mm radius 
+* DONE : resize geometry from halfsize 5000 to 1000 mm to suit input photon starting point and PMT dimensions
 
 ::
 

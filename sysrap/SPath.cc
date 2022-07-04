@@ -414,20 +414,6 @@ const char* SPath::PickFirstExisting(const char* path0, const char* path1, const
 }
 
 
-const char* SPath::SomeGDMLPath()
-{
-    // TODO: use GDXML instead of the old CGDMLKludge 
-    const char* path0 = getenv("SomeGDMLPath") ;   
-    const char* path1 = SPath::Resolve("$IDPath/origin_CGDMLKludge.gdml", NOOP );  
-    const char* path2 = SPath::Resolve("$OPTICKS_PREFIX/origin_CGDMLKludge_02mar2022.gdml", NOOP) ; 
-
-    const char* path = SPath::PickFirstExisting(path0, path1, path2); 
-    std::cout << " path " << ( path ? path : "-" ) << std::endl ;    
-    assert(path); 
-    return path ; 
-}
-
-
 int SPath::Remove(const char* path_)
 {
     const char* path = SPath::Resolve(path_, FILEPATH); 

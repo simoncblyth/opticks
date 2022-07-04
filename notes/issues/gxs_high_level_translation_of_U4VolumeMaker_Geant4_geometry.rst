@@ -5,19 +5,43 @@ Overview
 ----------
 
 gx is using Opticks cx to do GPU simulation within a geometry auto-translated from Geant4. 
-
 Will not be able to run the simulation on laptop, but can start with getting the translation 
 of test Geant4 geometries to work.
 
 
-NEXT : add u4 gx cx pkgs to the standard build set and switch to OptiX 7 as standard
+
+Run : translating Geant4 geometry to GPU geometry and running simulation
+--------------------------------------------------------------------------
+
+::
+
+    o 
+    vi bin/GEOM_.sh   # pick Geant4 geometry 
+
+    gx ; ./gxs.sh         # workstation 
+    gx ; ./gxs.sh dbg     # workstation  
+    gx ; ./gxs.sh grab    # laptop 
+
+
+
+New Build : After adding new world package to the standard set and making OptiX 7 the default
+-------------------------------------------------------------------------------------------------
+
+::
+
+    o
+    jps ; om   ## when need PMTSim updated
+    oo     ## now builds all the new world packages 
+
+
+DONE : add u4 gx cx pkgs to the standard build set and switch to OptiX 7 as standard
 --------------------------------------------------------------------------------------
 
 * :doc:`optix7_change_to_default`
 
 
-Build and Run
----------------
+Old Build 
+-----------
 
 NB gx and some deps are not standardly built, so build with::
 
@@ -29,12 +53,6 @@ NB gx and some deps are not standardly built, so build with::
     gx ; om 
 
     jps ; om   ## when need PMTSim updated 
-
-
-run::
-
-    gx ; ./gxs.sh 
-    gx ; ./gxs.sh dbg 
 
 
 u4 and gx deps
@@ -605,8 +623,8 @@ aspects from the cx/cxs_raindrop.sh
 However the setup of input photon running is common to both contexts, being done in SEventConfig + SEvt. 
 
 
-issue : QEvent null
----------------------
+FIXED : issue : QEvent null : this was a bit tricky arising from diffent OPTIX_VERSION macro in cx and gx CAUSING INCONSITENT HEADER
+-----------------------------------------------------------------------------------------------------------------------------------------
 
 ::
 
