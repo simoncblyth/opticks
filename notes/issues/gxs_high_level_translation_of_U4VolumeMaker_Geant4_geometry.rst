@@ -10,6 +10,12 @@ Will not be able to run the simulation on laptop, but can start with getting the
 of test Geant4 geometries to work.
 
 
+NEXT : add u4 gx cx pkgs to the standard build set and switch to OptiX 7 as standard
+--------------------------------------------------------------------------------------
+
+* :doc:`optix7_change_to_default`
+
+
 Build and Run
 ---------------
 
@@ -17,6 +23,7 @@ NB gx and some deps are not standardly built, so build with::
 
     o
     oo ## build the standard set 
+
     b7 ## rebuilds cx with OptiX 7
     u4 ; om 
     gx ; om 
@@ -28,7 +35,6 @@ run::
 
     gx ; ./gxs.sh 
     gx ; ./gxs.sh dbg 
-
 
 
 u4 and gx deps

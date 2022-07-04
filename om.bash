@@ -273,6 +273,7 @@ EOI
 
 om-subs--all(){ cat << EOS
 # to update this list : opticks-deps --subdirs
+# the names must be the case correct directory names 
 okconf
 sysrap
 boostrap
@@ -302,7 +303,9 @@ CSG
 CSG_GGeo
 GeoChain
 qudarap
-#CSGOptiX
+u4
+CSGOptiX
+g4cx
 EOS
 }
 

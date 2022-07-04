@@ -1,3 +1,6 @@
+
+#include <cuda_runtime.h>
+
 #include "SEventConfig.hh"
 #include "SEvt.hh"
 #include "OPTICKS_LOG.hh"

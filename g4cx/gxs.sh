@@ -19,9 +19,9 @@ source ../bin/OPTICKS_INPUT_PHOTON.sh
 loglevels()
 {
     export Dummy=INFO
-    export U4VolumeMaker=INFO
+    #export U4VolumeMaker=INFO
 
-    #export SEvt=INFO
+    export SEvt=INFO
     #export Ctx=INFO
     #export QSim=INFO
     #export QEvent=INFO 
@@ -50,7 +50,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 
-export FOLD=/tmp/$USER/opticks/G4CXSimulateTest
+export FOLD=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM   # corresponds to SPath::Resolve("$DefaultOutputDir", DIRPATH) 
 
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest.py     

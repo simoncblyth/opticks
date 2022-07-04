@@ -37,7 +37,7 @@ B_FOLD_LOGF=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4
 A_FOLD_GEOM=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater
 B_FOLD_GEOM=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2
 
-A_FOLD_GXS=/tmp/blyth/opticks/G4CXSimulateTest
+A_FOLD_GXS=/tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2
 B_FOLD_GXS=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2
 
 
