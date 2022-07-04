@@ -14,7 +14,7 @@ TODO: COMBINE GEOM INTO HERE TO MAKE 6 MORE LIKE 7
 #include "scuda.h"
 #include "squad.h"
 
-
+#include "srec.h"
 #include "sqat4.h"
 #include "sphoton.h"
 #include "scerenkov.h"

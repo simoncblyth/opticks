@@ -80,7 +80,7 @@ struct SBT
     void createIAS_Selection();
     void createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection);
     void createIAS(const std::vector<qat4>& inst );
-    void dumpIAS(const std::vector<qat4>& inst );
+    std::string descIAS(const std::vector<qat4>& inst ) const ;
 
     const IAS& getIAS(unsigned ias_idx) const ;
 

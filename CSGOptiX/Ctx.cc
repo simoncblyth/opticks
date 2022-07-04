@@ -36,7 +36,11 @@ Ctx::Ctx()
     OPTIX_CHECK( optixDeviceContextCreate( cuCtx, &options, &context ) );
 
     props = new Properties ;   // instanciation gets the properties
-    props->dump(); 
+}
+
+std::string Ctx::desc() const 
+{
+    return props->desc(); 
 }
 
 

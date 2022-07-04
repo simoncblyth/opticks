@@ -62,7 +62,7 @@ SSim::SSim()
 void SSim::add(const char* k, const NP* a )
 { 
     assert(k); 
-    if(a == nullptr) LOG(fatal) << "k:" << k  << " a null " ; 
+    if(a == nullptr) LOG(LEVEL) << "k:" << k  << " a null " ; 
     if(a == nullptr) return ; 
 
     fold->add(k,a);  

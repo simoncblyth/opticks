@@ -6,7 +6,7 @@ Properties
 
 OptiX 7.0::
 
-    Properties::dump
+    Properties::desc
                           limitMaxTraceDepth :         31
                limitMaxTraversableGraphDepth :         16
                     limitMaxPrimitivesPerGas :  536870912  20000000

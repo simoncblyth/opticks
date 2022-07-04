@@ -166,8 +166,7 @@ CSGOptiX::Create
 
 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )   
 {
-    LOG(info) << "fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
-    std::cout << "fd.descBase " << ( fd ? fd->descBase() : "-" ) << std::endl ; 
+    LOG(LEVEL) << "fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
 
     InitSim(fd->sim); 
     InitGeo(fd); 
@@ -240,6 +239,11 @@ void CSGOptiX::init()
         << " event " << event 
         ;  
 
+#if OPTIX_VERSION < 70000
+#else
+    LOG(LEVEL) << " ctx.desc " << ctx->desc() ; 
+#endif
+
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     assert( outdir && "expecting OUTDIR envvar " );
 
@@ -257,7 +261,7 @@ void CSGOptiX::init()
 
 void CSGOptiX::initStack()
 {
-    LOG(info); 
+    LOG(LEVEL); 
 #if OPTIX_VERSION < 70000
 #else
     pip->configureStack(); 

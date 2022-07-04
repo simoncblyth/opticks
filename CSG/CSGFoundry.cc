@@ -2024,7 +2024,7 @@ const char* CSGFoundry::getOriginCFBase() const
     // NOPE: that would be wrong need to save into a new cfbase 
     // for consistency between results and geometry 
 
-    LOG(error) << " CAUTION HOW YOU USE THIS : MISUSE CAN EASILY LEAD TO INCONSISTENCY BETWEEN RESULTS AND GEOMETRY " ; 
+    LOG(LEVEL) << " CAUTION HOW YOU USE THIS : MISUSE CAN EASILY LEAD TO INCONSISTENCY BETWEEN RESULTS AND GEOMETRY " ; 
     return origin ? origin->cfbase : cfbase ; 
 }
 
@@ -2444,7 +2444,7 @@ are not needed because the inverse transforms are all that is needed.
 void CSGFoundry::upload()
 {
     inst_find_unique(); 
-    LOG(info) << "[ " << desc() ; 
+    LOG(LEVEL) << "[ " << desc() ; 
     assert( tran.size() == itra.size() ); 
 
     bool is_uploaded_0 = isUploaded(); 
@@ -2457,7 +2457,7 @@ void CSGFoundry::upload()
     d_plan = plan.size() > 0 ? CU::UploadArray<float4>(plan.data(), plan.size() ) : nullptr ; 
     d_itra = itra.size() > 0 ? CU::UploadArray<qat4>(itra.data(), itra.size() ) : nullptr ; 
 
-    LOG(info) << "]"  ; 
+    LOG(LEVEL) << "]"  ; 
 
     bool is_uploaded_1 = isUploaded(); 
     if(!is_uploaded_1) LOG(fatal) << "FAILED TO UPLOAD" ; 

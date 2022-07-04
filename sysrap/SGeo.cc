@@ -23,11 +23,11 @@ void SGeo::SetLastUploadCFBase(const char* cfbase)
 {
     if(cfbase == nullptr)
     {
-        LOG(error) << " cfbase IS NULL : will not be able to save results together with geometry as cfbase not available " ; 
+        LOG(LEVEL) << " cfbase IS NULL : will not be able to save results together with geometry as cfbase not available " ; 
     }
     else
     {
-        LOG(error) << " cfbase " << cfbase ;  
+        LOG(LEVEL) << " cfbase " << cfbase ;  
     }
     LAST_UPLOAD_CFBASE = cfbase ? strdup(cfbase) : nullptr ; 
 }   

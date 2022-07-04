@@ -436,13 +436,14 @@ ins_idx flatly proceeds across the entire instanced geometry (actually the IAS b
 
 **/
 
-void SBT::dumpIAS(const std::vector<qat4>& inst )
+std::string SBT::descIAS(const std::vector<qat4>& inst ) const 
 {
+    std::stringstream ss ; 
     bool sbt_dump_ias = SSys::getenvbool("SBT_DUMP_IAS") ; 
-
-    LOG(LEVEL) 
+    ss
         << " inst.size " << inst.size()
         << " SBT_DUMP_IAS " << sbt_dump_ias 
+        << std::endl 
         ; 
 
     typedef std::map<unsigned, std::vector<unsigned>> MUV ; 
@@ -457,7 +458,7 @@ void SBT::dumpIAS(const std::vector<qat4>& inst )
         // collect ins_idx for each gas_idx 
         ins_idx_per_gas[gas_idx].push_back(ins_idx); 
 
-        if(sbt_dump_ias) std::cout 
+        if(sbt_dump_ias) ss 
            << " i "       << std::setw(10) << i 
            << " ins_idx " << std::setw(10) << ins_idx 
            << " gas_idx " << std::setw(10) << gas_idx 
@@ -480,7 +481,7 @@ void SBT::dumpIAS(const std::vector<qat4>& inst )
         SVec<unsigned>::MinMax(v, ins_idx_mn, ins_idx_mx)  ; 
         unsigned num_ins_idx2 = ins_idx_mx - ins_idx_mn + 1 ; 
 
-        std::cout 
+        ss
             << " gas_idx " << std::setw(10) <<  gas_idx 
             << " num_ins_idx " << std::setw(10) << num_ins_idx
             << " ins_idx_mn " << std::setw(10) << ins_idx_mn
@@ -491,6 +492,8 @@ void SBT::dumpIAS(const std::vector<qat4>& inst )
 
         assert( num_ins_idx == num_ins_idx2 ); 
     }
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 
