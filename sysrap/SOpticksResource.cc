@@ -261,7 +261,7 @@ const char* SOpticksResource::SomeGDMLPath()
 
 
 
-const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir" ; 
+const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath" ; 
 
 /**
 SOpticksResource::Get
@@ -289,9 +289,8 @@ envvars with the same keys can be used to override these defaults.
 +-------------------------+-----------------------------------------------------+
 |   DefaultOutputDir      |                                                     |
 +-------------------------+-----------------------------------------------------+
-
-
-
+|   SomeGDMLPath          |                                                     |
++-------------------------+-----------------------------------------------------+
 
 
 **/
@@ -308,6 +307,7 @@ const char* SOpticksResource::Get(const char* key) // static
     else if( strcmp(key, "RNGDir")==0)      tok = SOpticksResource::RNGDir(); 
     else if( strcmp(key, "PrecookedDir")==0) tok = SOpticksResource::PrecookedDir(); 
     else if( strcmp(key, "DefaultOutputDir")==0)    tok = SOpticksResource::DefaultOutputDir(); 
+    else if( strcmp(key, "SomeGDMLPath")==0)       tok = SOpticksResource::SomeGDMLPath(); 
     return tok ;  
 }
 
