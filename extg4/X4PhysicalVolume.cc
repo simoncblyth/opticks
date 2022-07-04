@@ -630,13 +630,13 @@ void X4PhysicalVolume::convertSurfaces()
     size_t num_ibs = num_surf1 - num_surf0 ; num_surf0 = num_surf1 ;  
 
 
-    m_slib->dumpImplicitBorderSurfaces("X4PhysicalVolume::convertSurfaces");  
+    //m_slib->dumpImplicitBorderSurfaces("X4PhysicalVolume::convertSurfaces");  
 
     m_slib->addPerfectSurfaces();
-    m_slib->dumpSurfaces("X4PhysicalVolume::convertSurfaces");
+    //m_slib->dumpSurfaces("X4PhysicalVolume::convertSurfaces");
 
     m_slib->collectSensorIndices(); 
-    m_slib->dumpSensorIndices("X4PhysicalVolume::convertSurfaces"); 
+    //m_slib->dumpSensorIndices("X4PhysicalVolume::convertSurfaces"); 
 
     LOG(LEVEL) 
         << "]" 

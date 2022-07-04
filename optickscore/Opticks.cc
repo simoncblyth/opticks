@@ -3332,7 +3332,7 @@ void Opticks::postconfigureSize()
     {
         glm::uvec4 sz = guvec4(ssize) ;  
         glm::uvec4 ssz = sizescale == 1.f ? sz : SizeScaleXY(sz, sizescale) ;
-        LOG(info) 
+        LOG(LEVEL) 
             << " ssize " << ssize
             << " sizescale " << sizescale
             << " sz " << glm::to_string(sz) << " ssz " << glm::to_string(ssz) 

@@ -35,6 +35,7 @@ Static string utilities.
 #include <vector>
 #include <array>
 #include <glm/fwd.hpp>
+#include "plog/Severity.h"
 
 
 #include "SYSRAP_API_EXPORT.hh"
@@ -42,7 +43,9 @@ Static string utilities.
 class SYSRAP_API SStr {
 
     typedef unsigned long long ULL ;
+       
   public:
+      static const plog::Severity LEVEL ; 
       static void Save(const char* path, const std::vector<std::string>& a, char delim='\n' );    
       static void Save(const char* path_, const char* txt, int create_dirs=1 ); // 1:filepath 
       static const char* Load(const char* path_ ); 

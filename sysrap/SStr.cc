@@ -34,6 +34,10 @@
 #include "SPath.hh"
 #include "PLOG.hh"
 
+
+const plog::Severity SStr::LEVEL = PLOG::EnvLevel("SStr", "DEBUG"); 
+
+
 /**
 
 In [15]: s = "hello"
@@ -109,7 +113,7 @@ void SStr::LoadList(const char* arg, std::vector<std::string>& lines, char delim
     else if( delim == ',' )
     {   
         SStr::Split( arg,  delim, lines );    
-        std::cout << "SStr::LoadList split " << arg << " into " << lines.size() << std::endl ; 
+        LOG(LEVEL) << "split " << arg << " into " << lines.size()  ; 
     }   
     else
     {   

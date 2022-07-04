@@ -30,6 +30,10 @@
 
 #include "GGEO_BODY.hh"
 
+#include "PLOG.hh"
+
+const plog::Severity GBorderSurface::LEVEL = PLOG::EnvLevel("GBorderSurface", "DEBUG"); 
+
 
 
 GBorderSurface::GBorderSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface ) : 
@@ -101,6 +105,7 @@ bool GBorderSurface::matches_one(const char* pv1, const char* pv2)
 
 void GBorderSurface::Summary(const char* msg, unsigned int imod)
 {
+    LOG(LEVEL) << "[" ; 
     if( m_bordersurface_pv1 && m_bordersurface_pv2 )
     { 
         //printf("%s bordersurface \n", msg  );
@@ -112,6 +117,7 @@ void GBorderSurface::Summary(const char* msg, unsigned int imod)
         printf("%s INCOMPLETE %s \n", msg, getName() );
     }
     GPropertyMap<double>::Summary(msg, imod);
+    LOG(LEVEL) << "]" ; 
 }
 
 

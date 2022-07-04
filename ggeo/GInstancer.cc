@@ -544,17 +544,18 @@ void GInstancer::sortRepeatCandidates()
     unsigned num_repcan = repcan.size() ; 
     LOG(LEVEL) << " num_repcan " << num_repcan ; 
 
-    dumpDigests(repcan, "before sort"); 
+    LOG(LEVEL) << " before sort descDigests " << descDigests(repcan); 
 
     SortOrder order(m_digest_count, m_root_) ; 
     std::sort( repcan.begin(), repcan.end(),  order ); 
 
-    dumpDigests(repcan, "after sort"); 
+    LOG(LEVEL) << " after sort descDigests " << descDigests(repcan); 
 }
 
-void GInstancer::dumpDigests(const std::vector<std::string>& digs, const char* msg)
+
+std::string GInstancer::descDigests(const std::vector<std::string>& digs ) const 
 {
-    LOG(info) << msg ; 
+    std::stringstream ss ; 
     for(unsigned i=0 ; i < digs.size() ; i++)
     {
         const std::string& pdig = digs[i] ; 
@@ -562,7 +563,7 @@ void GInstancer::dumpDigests(const std::vector<std::string>& digs, const char* m
         GNode* first = m_root_->findProgenyDigest(pdig) ; // first node that matches the progeny digest
         unsigned nidx = first->getIndex(); 
 
-        std::cout 
+        ss 
             << " i " << std::setw(10) << i 
             << " pdig " << std::setw(40) << pdig 
             << " ndig " << std::setw(10) << ndig 
@@ -571,6 +572,8 @@ void GInstancer::dumpDigests(const std::vector<std::string>& digs, const char* m
             << std::endl 
             ;
     }
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 

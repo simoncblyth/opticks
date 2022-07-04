@@ -670,7 +670,7 @@ void GGeo::prepare()
 {
     //std::raise(SIGINT); 
 
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     assert( m_instancer && "GGeo::prepare can only be done pre-cache when the full node tree is available"); 
 
     assert( m_prepared == false && "have prepared already" ); 
@@ -691,7 +691,7 @@ void GGeo::prepare()
     LOG(LEVEL) << "prepareVertexColors" ;  
     prepareVertexColors();  // writes colors into GMergedMesh mm0
 
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -1376,7 +1376,7 @@ but that remains the case typically.)
 
 void GGeo::prepareVolumes()
 {
-    LOG(info) << "[ creating merged meshes from the volume tree " ; 
+    LOG(LEVEL) << "[ creating merged meshes from the volume tree " ; 
 
     assert( m_instancer && "prepareVolumes can only be done pre-cache when the full node tree is available"); 
 
@@ -1410,8 +1410,8 @@ void GGeo::prepareVolumes()
     }
 
     m_instancer->dump("GGeo::prepareVolumes") ; 
-    LOG(info) << m_nodelib->descOriginMap() ; 
-    LOG(info) << "]" ;
+    LOG(LEVEL) << m_nodelib->descOriginMap() ; 
+    LOG(LEVEL) << "]" ;
 }
 
 

@@ -92,7 +92,7 @@ class GGEO_API GInstancer {
         void           dumpRepeatCandidates(unsigned dmax);
         void           dumpRepeatCandidate(unsigned int index, bool verbose=false);
 
-        void           dumpDigests(const std::vector<std::string>& digs, const char* msg="GInstancer::dumpDigests") ;
+        std::string    descDigests(const std::vector<std::string>& digs ) const  ;
 
 
    private: 

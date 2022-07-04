@@ -20,6 +20,8 @@
 #pragma once
 
 #include <string>
+#include "plog/Severity.h"
+
 class GOpticalSurface ; 
 #include "GPropertyMap.hh"
 #include "GGEO_API_EXPORT.hh"
@@ -36,6 +38,7 @@ GBorderSurface
 
 class GGEO_API GBorderSurface : public GPropertyMap<double> {
   public:
+      static const plog::Severity LEVEL ; 
       GBorderSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface );
       virtual ~GBorderSurface();
       void Summary(const char* msg="GBorderSurface::Summary", unsigned int imod=1);
