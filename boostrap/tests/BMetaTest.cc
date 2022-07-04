@@ -314,10 +314,10 @@ void test_hasKey()
 
 }
 
-void test_kvdump(const BMeta& m)
+void test_kvdesc(const BMeta& m)
 {
     LOG(info); 
-    m.kvdump(); 
+    LOG(info) << m.kvdesc(); 
 }
 void test_kvdump()
 {
@@ -333,7 +333,7 @@ void test_kvdump()
     m1.set<std::string>("name", "yo");
     assert( m1.size() == 5 ); 
      
-    test_kvdump(m1); 
+    test_kvdesc(m1); 
 }
 
 void test_getKV()
@@ -420,7 +420,7 @@ int main(int argc, char** argv)
     test_fillMap();  
     test_add_string_NULL(); 
     test_hasKey(); 
-    test_kvdump(); 
+    test_kvdesc(); 
     test_getKV(); 
 */
     test_query(); 

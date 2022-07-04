@@ -337,7 +337,7 @@ NP* GBndLib::getOpticalBuf() const
     assert( ni > 0 && nj == 4 && nk == 4 ); 
 
     optical->change_shape( ni*nj , nk );  
-    LOG(info) << " changed optical shape from " << shape0  << " -> " << optical->sstr() ; 
+    LOG(LEVEL) << " changed optical shape from " << shape0  << " -> " << optical->sstr() ; 
 
     return optical ;
 }

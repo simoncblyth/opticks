@@ -317,14 +317,22 @@ bool BMeta::hasKey(const char* key) const
 }
 
 
-void BMeta::kvdump() const 
+std::string BMeta::kvdesc() const 
 {
-    LOG(info) << " size " << m_js.size() ; 
+    std::stringstream ss ; 
+    ss << "BMeta::kvdesc"
+       << " size " << m_js.size()
+       << std::endl 
+       ;
+
     for (nlohmann::json::const_iterator it = m_js.begin(); it != m_js.end(); ++it) 
     {
-        std::cout << it.key() << " : " << it.value() << "\n";
+        ss << it.key() << " : " << it.value() << std::endl ;
     }
+    std::string s = ss.str(); 
+    return s ; 
 }
+
 
 
 

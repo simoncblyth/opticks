@@ -105,7 +105,7 @@ class BRAP_API BMeta {
        bool hasItem(const char* name) const ;
        bool hasKey(const char* key) const ; // same as hasItem
 
-       void kvdump() const ;
+       std::string kvdesc() const ;
 
    public:
        template <typename T> static T Get(const BMeta* meta, const char* name, const char* fallback)  ;

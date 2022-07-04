@@ -1238,7 +1238,7 @@ inline NP* NP::MakeCopy(const NP* a) // static
     memcpy( b->bytes(), a->bytes(), a->arr_bytes() );    
     unsigned nv = a->num_values(); 
 
-    std::cout 
+    if(VERBOSE) std::cout 
         << "NP::MakeCopy"
         << " a.dtype " << a->dtype
         << " b.dtype " << b->dtype
@@ -3192,7 +3192,7 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate)  // stat
     NP* c = new NP(a0->dtype, aa.size(), width, ldim0 ); 
     unsigned item_bytes = c->item_bytes(); 
 
-    std::cout 
+    if(VERBOSE) std::cout 
         << "NP::Combine"
         << " ebyte0 " << ebyte0
         << " item_bytes " << item_bytes
@@ -3223,7 +3223,7 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate)  // stat
             {
                 const NP* a = aa[i]; 
                 uif32.u = a->shape[0] ;                  
-                std::cout << " annotate " << i << " uif32.u  " << uif32.u  << std::endl ; 
+                if(VERBOSE) std::cout << "NP::Combine annotate " << i << " uif32.u  " << uif32.u  << std::endl ; 
                 *(cc + (i+1)*item_bytes/ebyte0 - 1) = uif32.f ;   
             }  
         }
@@ -3235,7 +3235,7 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate)  // stat
             {
                 const NP* a = aa[i]; 
                 uif64.u = a->shape[0] ;                  
-                std::cout << " annotate " << i << " uif64.u  " << uif64.u  << std::endl ; 
+                if(VERBOSE) std::cout << "NP::Combine annotate " << i << " uif64.u  " << uif64.u  << std::endl ; 
                 *(cc + (i+1)*item_bytes/ebyte0 - 1) = uif64.f ;   
             }  
         }

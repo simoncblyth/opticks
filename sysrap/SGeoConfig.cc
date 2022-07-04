@@ -168,7 +168,7 @@ void SGeoConfig::GeometrySpecificSetup(const SName* id)  // static
 {
     const char* JUNO_names = "HamamatsuR12860sMask0x,HamamatsuR12860_PMT_20inch,NNVTMCPPMT_PMT_20inch" ;  
     bool JUNO_detected = id->hasNames(JUNO_names); 
-    LOG(info) << " JUNO_detected " << JUNO_detected ; 
+    LOG(LEVEL) << " JUNO_detected " << JUNO_detected ; 
     if(JUNO_detected)
     {
         const char* skips = "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x" ;

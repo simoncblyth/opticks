@@ -320,10 +320,12 @@ void NPYBase::getMetaKeys( std::vector<std::string>& keys ) const
 
 void NPYBase::CopyMeta( NP* dst, const NPYBase* src ) // static 
 {
+    LOG(LEVEL) << "[" ; 
+
     BMeta* meta = src->getMeta(); 
     unsigned num_keys = meta->getNumKeys();
 
-    meta->kvdump(); 
+    LOG(LEVEL) << meta->desc(); 
 
     for(unsigned i=0 ; i < num_keys ; i++)
     {
@@ -332,6 +334,8 @@ void NPYBase::CopyMeta( NP* dst, const NPYBase* src ) // static
         LOG(LEVEL) << " k " << k << " v " << v ; 
         dst->set_meta<std::string>(k, v ); 
     } 
+
+    LOG(LEVEL) << "]" ; 
 }
 
 

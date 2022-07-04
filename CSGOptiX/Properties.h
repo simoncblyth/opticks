@@ -18,6 +18,8 @@ OptiX 7.0::
                            limitMaxSbtOffset :   16777215    ffffff
 **/
 
+#include <string>
+
 struct Properties 
 {
     unsigned rtcoreVersion ; 
@@ -31,5 +33,5 @@ struct Properties
     unsigned limitMaxSbtOffset ;   
 
     Properties(); 
-    void dump() const ; 
+    std::string desc() const ; 
 };

@@ -4,6 +4,7 @@
 #include <optix_stubs.h>
 #include "OPTIX_CHECK.h"
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 
 Properties::Properties()
@@ -19,10 +20,11 @@ Properties::Properties()
     OPTIX_CHECK( optixDeviceContextGetProperty(Ctx::context, OPTIX_DEVICE_PROPERTY_LIMIT_MAX_SBT_OFFSET                    , &limitMaxSbtOffset                  , sizeof(unsigned int)) );
 }
 
-void Properties::dump() const 
+std::string Properties::desc() const 
 {
-    std::cout 
-        << "Properties::dump" << std::endl 
+    std::stringstream ss ; 
+    ss
+        << "Properties::desc" << std::endl 
         << std::setw(40) << "limitMaxTraceDepth" 
         << " : "
         << std::setw(10) <<  limitMaxTraceDepth 
@@ -66,6 +68,9 @@ void Properties::dump() const
         << std::dec
         << std::endl 
         ;  
+
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 

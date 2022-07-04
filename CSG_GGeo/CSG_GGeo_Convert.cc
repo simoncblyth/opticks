@@ -29,11 +29,12 @@
 
 
 #include "CSG_GGeo_Convert.h"
+const plog::Severity CSG_GGeo_Convert::LEVEL = PLOG::EnvLevel("CSG_GGeo_Convert", "DEBUG"); 
 
 CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo)
 {
     CSGFoundry* fd = new CSGFoundry  ; 
-    LOG(error) << "[ convert ggeo " ; 
+    LOG(LEVEL) << "[ convert ggeo " ; 
     CSG_GGeo_Convert conv(fd, ggeo ) ; 
     conv.convert(); 
 
@@ -50,11 +51,10 @@ CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo)
     if(ksb) conv.kludgeScalePrimBBox();  
 
 
-    LOG(error) << "] convert ggeo " ; 
+    LOG(LEVEL) << "] convert ggeo " ; 
     return fd ; 
 }
 
-const plog::Severity CSG_GGeo_Convert::LEVEL = PLOG::EnvLevel("CSG_GGeo_Convert", "DEBUG"); 
 
 
 CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ ) 
@@ -89,7 +89,7 @@ void CSG_GGeo_Convert::init()
     const char* cxskiplv_idxlist = SGeoConfig::CXSkipLV_IDXList() ;  
     foundry->setMeta<std::string>("cxskiplv", cxskiplv ? cxskiplv : "-" ); 
     foundry->setMeta<std::string>("cxskiplv_idxlist", cxskiplv_idxlist ? cxskiplv_idxlist : "-" ); 
-    LOG(error) 
+    LOG(LEVEL) 
         << " cxskiplv  " << cxskiplv 
         << " cxskiplv   " << cxskiplv
         << " foundry.meshname.size " << foundry->meshname.size()
@@ -146,7 +146,7 @@ void CSG_GGeo_Convert::convertGeometry(int repeatIdx,  int primIdx, int partIdxR
     }
     else                
     { 
-        LOG(info) << "convert all solids (default)" ; 
+        LOG(LEVEL) << "convert all solids (default)" ; 
         convertAllSolid();
     }
     LOG(LEVEL) << "]" ; 
@@ -160,7 +160,7 @@ void CSG_GGeo_Convert::convertAllSolid()  // default
     {
         if(SGeoConfig::IsEnabledMergedMesh(repeatIdx))
         {
-            LOG(error) << "proceeding with convert for repeatIdx " << repeatIdx ;  
+            LOG(LEVEL) << "proceeding with convert for repeatIdx " << repeatIdx ;  
             convertSolid(reverse ? numRepeat - 1 - repeatIdx : repeatIdx ); 
         }
         else
