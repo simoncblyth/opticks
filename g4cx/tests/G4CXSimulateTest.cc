@@ -22,6 +22,9 @@ int main(int argc, char** argv)
     // TODO: avoid this by replacing with automated SOpticks instanciated by OPTICKS_LOG
     Opticks::Configure(argc, argv, "--gparts_transform_offset" );  
 
+
+    LOG(info) << "G4CXOpticks::Desc " << G4CXOpticks::Desc() ;  
+
     G4CXOpticks gx ;  
 
     //gx.setGeometry(SPath::SomeGDMLPath()); 

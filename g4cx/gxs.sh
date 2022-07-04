@@ -16,14 +16,16 @@ EOU
 source ../bin/GEOM_.sh 
 source ../bin/OPTICKS_INPUT_PHOTON.sh 
 
-
-export Ctx=INFO
-export QSim=INFO
-export QEvent=INFO 
-export CSGOptiX=INFO
-export G4CXOpticks=INFO 
-
-#export X4PhysicalVolume=INFO
+loglevels()
+{
+    export Ctx=INFO
+    export QSim=INFO
+    export QEvent=INFO 
+    export CSGOptiX=INFO
+    export G4CXOpticks=INFO 
+    #export X4PhysicalVolume=INFO
+}
+#loglevels
 
 
 

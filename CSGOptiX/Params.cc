@@ -85,10 +85,11 @@ std::string Params::desc() const
     return s ; 
 }
 
-void Params::dump(const char* msg) const 
+std::string Params::detail() const 
 {
-    std::cout 
-        << msg << std::endl 
+    std::stringstream ss ; 
+    ss 
+        << "Params::detail"
         << std::endl 
         << "(values)" << std::endl 
         << desc()
@@ -103,6 +104,8 @@ void Params::dump(const char* msg) const
         << std::setw(20) << " sim " << std::setw(10) << sim  << std::endl 
         << std::setw(20) << " evt " << std::setw(10) << evt  << std::endl 
         ;
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 

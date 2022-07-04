@@ -102,14 +102,11 @@ LONGTERM: see if can pull out the essentials into a smaller class
 #include "CSGOptiX.h"
 
 const plog::Severity CSGOptiX::LEVEL = PLOG::EnvLevel("CSGOptiX", "DEBUG" ); 
-
 CSGOptiX* CSGOptiX::INSTANCE = nullptr ; 
 CSGOptiX* CSGOptiX::Get()
 {
     return INSTANCE ; 
 }
-
-
 
 #if OPTIX_VERSION < 70000 
 const char* CSGOptiX::PTXNAME = "CSGOptiX6" ; 
@@ -119,12 +116,35 @@ const char* CSGOptiX::PTXNAME = "CSGOptiX7" ;
 const char* CSGOptiX::GEO_PTXNAME = nullptr ; 
 #endif
 
+int CSGOptiX::Version()
+{
+    int vers = 0 ; 
+#if OPTIX_VERSION < 70000
+    vers = 6 ; 
+#else
+    vers = 7 ; 
+#endif
+    return vers ; 
+}
+
+const char* CSGOptiX::Desc()
+{
+    std::stringstream ss ; 
+    ss << "CSGOptiX::Desc" 
+       << " Version " << Version() 
+       << " PTXNAME " << PTXNAME 
+       << " GEO_PTXNAME " << ( GEO_PTXNAME ? GEO_PTXNAME : "-" ) 
+       ; 
+    std::string s = ss.str(); 
+    return strdup(s.c_str()); 
+}
+
+
 const char* CSGOptiX::desc() const 
 {
     std::stringstream ss ; 
-    ss << "CSGOptiX " ; 
+    ss << Desc() ; 
 #if OPTIX_VERSION < 70000
-    ss << " Six " ; 
 #else
     ss << pip->desc() ; 
 #endif
@@ -560,18 +580,17 @@ void CSGOptiX::prepareRenderParam()
     params->setView(eye, U, V, W);
     params->setCamera(tmin, tmax, cameratype ); 
 
-    LOG(info) << std::endl << params->desc() << std::endl ; 
-
+    LOG(LEVEL) << std::endl << params->desc() ; 
 
     if(flight) return ; 
 
 #ifdef WITH_SGLM
-    LOG(info)
+    LOG(LEVEL)
         << "sglm.desc " << std::endl 
         << sglm->desc() 
         ; 
 #else
-    LOG(info)
+    LOG(LEVEL)
         << "composition.desc " << std::endl 
         << composition->desc() 
         ; 
@@ -625,7 +644,7 @@ void CSGOptiX::prepareParam()
     six->updateContext();  // Populates optix::context with values from hostside params
 #else
     params->upload();  
-    if(!flight) params->dump(" CSGOptiX::prepareParam"); 
+    if(!flight) LOG(LEVEL) << params->detail(); 
 #endif
 }
 

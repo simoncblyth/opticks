@@ -24,14 +24,15 @@ struct QSim ;
 struct G4CX_API G4CXOpticks
 {
     static const plog::Severity LEVEL ;
+    static std::string Desc();
 
     const G4VPhysicalVolume* wd ; 
     const GGeo*             gg ;
     CSGFoundry* fd ; 
-
     CSGOptiX*   cx ; 
     QSim*       qs ; 
 
+ 
     G4CXOpticks(); 
     std::string desc() const ; 
 

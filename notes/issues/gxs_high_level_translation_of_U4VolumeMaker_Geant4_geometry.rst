@@ -678,3 +678,57 @@ Two QSim, so the second lacks the event::
 
 
 
+Suspected culprit id the OPTIX_VERSION switch maybe dealing with the wrong version of CSGOptiX header 
+so cx->sim gives garbage pointer ? 
+
+Despite this::
+
+    2022-07-04 21:24:58.658 INFO  [434219] [main@26] G4CXOpticks::Desc CSGOptiX::Desc Version 7 PTXNAME CSGOptiX7 GEO_PTXNAME -
+
+The problem could maifest from a macro not being there when using the header. 
+
+Confirmed, the problem is avoided by adding the Dummy pointers in the OPTIX_VERSION macro branch::
+
+    084 
+     85 #if OPTIX_VERSION < 70000
+     86     Six* six ;
+     87     Dummy* dummy0 ;
+     88     Dummy* dummy1 ;
+     89 #else
+     90     Ctx* ctx ;
+     91     PIP* pip ;
+     92     SBT* sbt ;
+     93 #endif
+     94 
+     95     Frame* frame ;
+     96     SMeta* meta ;
+     97     double dt ;
+     98 
+     99     QSim*        sim ;
+    100     QEvent*      event ;
+    101 
+
+
+HMM: this demonstates that having version macros that change members in commonly used headers 
+should be avoided, as it then becomes necessary to ensure the same macros are defined
+for all uses of that header otherwise get mismatch and wierd bugs from trying to access
+some address as wrong pointer type. 
+
+Although CSGOptiX.h does::
+
+   #include <optix.h>
+
+But the OPTIX_VERSION resulting from that depends on the CMake environment 
+that b7 cooks up when building CX.
+
+Do not particularly want uses of CX to need to do the same setup.  
+
+
+
+
+
+
+
+
+
+

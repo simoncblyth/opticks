@@ -14,6 +14,11 @@
 
 const plog::Severity G4CXOpticks::LEVEL = PLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
 
+std::string G4CXOpticks::Desc() 
+{
+    return CSGOptiX::Desc() ; 
+}
+
 
 G4CXOpticks::G4CXOpticks()
     :
@@ -24,6 +29,7 @@ G4CXOpticks::G4CXOpticks()
     qs(nullptr)
 {
 }
+
 
 std::string G4CXOpticks::desc() const
 {
@@ -62,6 +68,7 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
     fd = fd_ ; 
     cx = CSGOptiX::Create(fd);  
     qs = cx->sim ; 
+    LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ; 
 }
 
 void G4CXOpticks::render()

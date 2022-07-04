@@ -1,9 +1,11 @@
 #pragma once
 
 #include <vector>
-#include <optix.h>
 #include <string>
 #include <glm/fwd.hpp>
+
+#include <optix.h>
+
 #include "plog/Severity.h"
 #include "sframe.h"
 
@@ -32,6 +34,7 @@ class Composition ;
 
 #if OPTIX_VERSION < 70000
 struct Six ; 
+struct Dummy ; 
 #else
 struct Ctx ; 
 struct PIP ; 
@@ -48,6 +51,8 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     static const plog::Severity LEVEL ; 
     static CSGOptiX*   INSTANCE ; 
     static CSGOptiX*   Get(); 
+    static int         Version(); 
+    static const char* Desc(); 
 
     static const char* TOP ; 
     static const char* PTXNAME ; 
@@ -77,21 +82,25 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 
     int               raygenmode ; 
     Params*           params  ; 
+
+
 #if OPTIX_VERSION < 70000
     Six* six ;  
+    Dummy* dummy0 ; 
+    Dummy* dummy1 ; 
 #else
     Ctx* ctx ; 
     PIP* pip ; 
     SBT* sbt ; 
 #endif
+
     Frame* frame ; 
     SMeta* meta ; 
     double dt ; 
 
-
     QSim*        sim ; 
     QEvent*      event ;  
- 
+
     const char* desc() const ; 
 
 private:
