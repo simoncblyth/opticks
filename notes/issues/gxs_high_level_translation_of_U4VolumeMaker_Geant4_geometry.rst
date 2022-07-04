@@ -4,12 +4,10 @@ gxs_high_level_translation_of_U4VolumeMaker_Geant4_geometry
 Overview
 ----------
 
-gx is using Opticks cx to do GPU simulation within a geometry auto-translated 
-from Geant4. 
+gx is using Opticks cx to do GPU simulation within a geometry auto-translated from Geant4. 
 
-Will not be able to run the simulation on laptop, 
-but can start with getting the translation of test Geant4 geometries to work.
-
+Will not be able to run the simulation on laptop, but can start with getting the translation 
+of test Geant4 geometries to work.
 
 
 Build and Run
@@ -640,6 +638,43 @@ issue : QEvent null
     $1 = (QEvent *) 0x0
     (gdb) 
 
+
+::
+
+    167 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
+    168 {   
+    169     LOG(info) << "fd.descBase " << ( fd ? fd->descBase() : "-" ) ;  
+    170     std::cout << "fd.descBase " << ( fd ? fd->descBase() : "-" ) << std::endl ;
+    171     
+    172     InitSim(fd->sim);
+    173     InitGeo(fd);
+    174     
+    175     CSGOptiX* cx = new CSGOptiX(fd) ;
+    176     
+    177     QSim* qs = QSim::Get() ;
+    178     
+    179     qs->setLauncher(cx);
+    180     
+    181     QEvent* event = qs->event ; 
+    182     event->setMeta( fd->meta.c_str() );
+    183     
+    184     // DONE: setup QEvent as SCompProvider of NP arrays allowing SEvt to drive QEvent download
+    185     return cx ;
+    186 }
+
+
+Hmm the QEvent was created within QSim, something is stomping on it, or have two QSim instances::
+
+    2022-07-04 16:48:23.244 INFO  [312850] [QSim::UploadComponents@122]  multifilm null 
+    2022-07-04 16:48:23.244 INFO  [312850] [QEvent::init@93]  QEvent::init calling SEvt::setCompProvider 
+    2022-07-04 16:48:23.244 INFO  [312850] [QSim::QSim@164]  QSim::QSim instanciating QEvent 
+    2022-07-04 16:48:23.244 INFO  [312850] [QSim::init@203] QSim sim->rngstate 0x7fffae000000 sim->base0x7fffbdc00000 sim->bnd 0x7fffbdc00800 sim->scint 0 sim->cerenkov 0x7fffbdc01000 sim 0x15a0580 d_sim 0x7fffbdc01400
+    2022-07-04 16:48:23.244 INFO  [312850] [QSim::init@204] 
+
+Two QSim, so the second lacks the event::
+
+    2022-07-04 17:33:20.275 INFO  [319886] [CSGOptiX::init@255] ]
+    2022-07-04 17:33:20.275 ERROR [319886] [QSim::simulate@227]  event null QSim.hh this 0x2156de0 INSTANCE 0x159fa10 QEvent.hh:event 0 qsim.h:sim 0x2156e00 qsim.h:d_sim 0x159f688 sim->rngstate 0x7fffbdc02000 sim->base 0xd80dc0 sim->bnd 0xd0 sim->scint 0x2156e00 sim->cerenkov 0x5
 
 
 

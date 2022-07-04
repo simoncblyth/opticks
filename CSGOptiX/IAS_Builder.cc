@@ -36,10 +36,13 @@ Canonically invoked during CSGOptiX instanciation, from stack::
 
 **/
 
+
+const plog::Severity IAS_Builder::LEVEL = PLOG::EnvLevel("IAS_Builder", "DEBUG"); 
+
 void IAS_Builder::Build(IAS& ias, const std::vector<qat4>& ias_inst, const SBT* sbt) // static 
 {
     unsigned num_ias_inst = ias_inst.size() ; 
-    LOG(info) << "num_ias_inst " << num_ias_inst ; 
+    LOG(LEVEL) << "num_ias_inst " << num_ias_inst ; 
     assert( num_ias_inst > 0); 
 
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
@@ -79,7 +82,7 @@ Boilerplate turning the vector of OptixInstance into an IAS.
 void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
 {
     unsigned numInstances = instances.size() ; 
-    LOG(info) << "numInstances " << numInstances ; 
+    LOG(LEVEL) << "numInstances " << numInstances ; 
 
     unsigned numBytes = sizeof( OptixInstance )*numInstances ; 
 
@@ -154,7 +157,7 @@ void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
 
         CUDA_CHECK( cudaFree( (void*)d_buffer_temp_output_as_and_compacted_size ) );
 
-        LOG(info)
+        LOG(LEVEL)
             << "(compacted is smaller) "
             << " compacted_as_size : " << compacted_as_size
             << " as_buffer_sizes.outputSizeInBytes : " << as_buffer_sizes.outputSizeInBytes
@@ -165,7 +168,7 @@ void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
     {
         ias.d_buffer = d_buffer_temp_output_as_and_compacted_size;
 
-        LOG(info) 
+        LOG(LEVEL) 
             << "(compacted not smaller) "
             << " compacted_as_size : " << compacted_as_size
             << " as_buffer_sizes.outputSizeInBytes : " << as_buffer_sizes.outputSizeInBytes

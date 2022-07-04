@@ -11,8 +11,8 @@ Aim to minimize geometry specifics in here ...
 #include <map>
 #include <string>
 #include <vector>
-
 #include <optix.h>
+#include "plog/Severity.h"
 
 #include "Binding.h"
 #include "GAS.h"
@@ -29,6 +29,8 @@ struct CSGPrim ;
 
 struct SBT 
 {
+    static const plog::Severity LEVEL ; 
+
     static bool ValidSpec(const char* spec); 
     std::vector<unsigned>  solid_selection ; 
     unsigned long long emm ; 

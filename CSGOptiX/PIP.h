@@ -9,8 +9,11 @@ This is used by CSGOptiX.cc and SBT.cc
 
 **/
 
+#include "plog/Severity.h"
+
 struct PIP
 {
+    static const plog::Severity LEVEL ; 
     static const int MAX_TRACE_DEPTH ; 
 
     unsigned max_trace_depth ; 

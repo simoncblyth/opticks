@@ -154,7 +154,7 @@ void CSGOptiX::InitSim( const SSim* ssim  )
     QSim::UploadComponents(ssim);  
 
     QSim* sim = new QSim ; 
-    LOG(info) << sim->desc() ; 
+    LOG(LEVEL) << sim->desc() ; 
 }
 
 
@@ -230,13 +230,14 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     init(); 
 }
 
-
 void CSGOptiX::init()
 {
     LOG(LEVEL) 
         << "[" 
         << " raygenmode " << raygenmode
         << " SRG::Name(raygenmode) " << SRG::Name(raygenmode)
+        << " sim " << sim 
+        << " event " << event 
         ;  
 
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );

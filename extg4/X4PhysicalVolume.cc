@@ -212,7 +212,7 @@ void X4PhysicalVolume::init()
 
 void X4PhysicalVolume::postConvert() const 
 {
-    LOG(info) 
+    LOG(LEVEL) 
         << " GGeo::getNumVolumes() " << m_ggeo->getNumVolumes() 
         << " GGeo::getNumSensorVolumes() " << m_ggeo->getNumSensorVolumes() 
         << std::endl 
@@ -222,7 +222,7 @@ void X4PhysicalVolume::postConvert() const
         ;
 
 
-    LOG(info) << m_blib->getAddBoundaryReport() ;
+    LOG(LEVEL) << m_blib->getAddBoundaryReport() ;
 
     // too soon for sensor dumping as instances not yet formed, see GGeo::postDirectTranslationDump 
     //m_ggeo->dumpSensorVolumes("X4PhysicalVolume::postConvert"); 
@@ -261,7 +261,7 @@ void X4PhysicalVolume::convertMaterials()
     int depth = 0 ;
     convertMaterials_r(pv, depth);
 
-    LOG(info) << X4Material::Desc(m_mtlist); 
+    LOG(LEVEL) << X4Material::Desc(m_mtlist); 
 
     const std::vector<G4Material*>& used_materials = m_mtlist ; 
     X4MaterialTable::Convert(m_mlib, m_material_with_efficiency, used_materials );
@@ -270,7 +270,7 @@ void X4PhysicalVolume::convertMaterials()
     m_mlib->close();   // may change order if prefs dictate
 
     LOG(verbose) << "]" ;
-    LOG(info)
+    LOG(LEVEL)
           << " used_materials.size " << used_materials.size()
           << " num_material_with_efficiency " << num_material_with_efficiency
           ; 
@@ -365,7 +365,7 @@ void X4PhysicalVolume::collectScintillatorMaterials()
         return ; 
     }   
 
-    LOG(info) << " found " << num_scint << " scintillator materials  " ; 
+    LOG(LEVEL) << " found " << num_scint << " scintillator materials  " ; 
 
     // wavelength domain 
     for(unsigned i=0 ; i < num_scint ; i++)
@@ -411,7 +411,7 @@ void X4PhysicalVolume::createScintillatorGeant4InterpolatedICDF()
 
     NPY<double>* g4icdf = xs.createGeant4InterpolatedInverseCDF(num_bins, hd_factor, material_name ) ;
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " num_scint " << num_scint
         << " slow_en " << slow_en->getShapeString()
         << " fast_en " << fast_en->getShapeString()
@@ -559,12 +559,12 @@ void X4PhysicalVolume::convertImplicitSurfaces_r(const G4VPhysicalVolume* const 
             const char* pv2 = X4::Name( parent_pv ) ; 
             GBorderSurface* bs = m_slib->findBorderSurface(pv1, pv2);  
 
-            LOG(info) 
+            LOG(LEVEL) 
                << " parent_mtName " << parent_mtName
                << " daughter_mtName " << daughter_mtName
                ;
 
-            LOG(info)
+            LOG(LEVEL)
                 << " RINDEX_NoRINDEX " << RINDEX_NoRINDEX 
                 << " NoRINDEX_RINDEX " << NoRINDEX_RINDEX
                 << " pv1 " << std::setw(30) << pv1
@@ -718,12 +718,12 @@ std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top, const 
 
     if(digestextra)
     {
-        LOG(info) << "digestextra " << digestextra ; 
+        LOG(LEVEL) << "digestextra " << digestextra ; 
         dig.update_str( digestextra );  
     }
     if(digestextra2)
     {
-        LOG(info) << "digestextra2 " << digestextra2 ; 
+        LOG(LEVEL) << "digestextra2 " << digestextra2 ; 
         dig.update_str( digestextra2 );  
     }
 
@@ -948,7 +948,7 @@ void X4PhysicalVolume::convertSolid( const G4LogicalVolume* lv )
 
     bool x4skipsolid = m_ok->isX4SkipSolidName(soname); 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " lvname " << lvname 
         << " soname " << soname 
         << " [--x4skipsolidname] " << ( x4skipsolid ? "YES" : "n" )
@@ -1188,7 +1188,7 @@ void X4PhysicalVolume::GenerateTestG4Code( const Opticks* ok, int lvIdx, const G
     X4GDMLParser::Write( solid, gdmlpath, refs ); 
     if(dbglv)
     { 
-        LOG(info) 
+        LOG(LEVEL) 
             << ( dbglv ? " --dbglv " : "" ) 
             << "[--g4codegen]"
             << " lvIdx " << lvIdx
@@ -1212,7 +1212,7 @@ void X4PhysicalVolume::GenerateTestG4Code( const Opticks* ok, int lvIdx, const G
 
 void X4PhysicalVolume::dumpLV(unsigned edgeitems) const 
 {
-   LOG(info)
+   LOG(LEVEL)
        << " m_lvidx.size() " << m_lvidx.size() 
        << " m_lvlist.size() " << m_lvlist.size()
        << " edgeitems " << edgeitems 
@@ -1249,7 +1249,7 @@ void X4PhysicalVolume::dumpTorusLV() const
     if(num_afflicted == 0) return ; 
 
 
-    LOG(info) << " num_afflicted " << num_afflicted ; 
+    LOG(LEVEL) << " num_afflicted " << num_afflicted ; 
     std::cout << " lvIdx ( " ; 
     for(unsigned i=0 ; i < num_afflicted ; i++) std::cout << m_lv_with_torus[i] << " " ; 
     std::cout << " ) " << std::endl ;  
@@ -1322,7 +1322,7 @@ const char* X4PhysicalVolume::TMPDIR = "$TMP/extg4/X4PhysicalVolume" ;
 void X4PhysicalVolume::convertStructure()
 {
     assert(m_top) ;
-    LOG(info) << "[ creating large tree of GVolume instances" ; 
+    LOG(LEVEL) << "[ creating large tree of GVolume instances" ; 
 
     const G4VPhysicalVolume* pv = m_top ; 
     GVolume* parent = NULL ; 
@@ -1351,7 +1351,7 @@ void X4PhysicalVolume::convertStructureChecks() const
 
 
 #ifdef X4_TRANSFORM
-    LOG(info) 
+    LOG(LEVEL) 
         << " m_is_identity0 " << m_is_identity0
         << std::endl 
         << " m_is_identity1 " << m_is_identity1 
@@ -1360,7 +1360,7 @@ void X4PhysicalVolume::convertStructureChecks() const
 
 
 #ifdef X4_PROFILE    
-    LOG(info) 
+    LOG(LEVEL) 
         << " m_convertNode_dt " << m_convertNode_dt 
         << std::endl 
         << " m_convertNode_boundary_dt " << m_convertNode_boundary_dt 
@@ -1741,7 +1741,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
     if(ndIdx < 10 || !(is_identity0 && is_identity1))
     {
-        LOG(info) 
+        LOG(LEVEL) 
             << " ndIdx  " << ndIdx 
             << " is_identity0 " << is_identity0
             << " is_identity1 " << is_identity1
@@ -1929,7 +1929,7 @@ GVolume* X4PhysicalVolume::MakePlaceholderNode() // static
 void X4PhysicalVolume::DumpSensorVolumes(const GGeo* gg, const char* msg)
 {
     unsigned numSensorVolumes = gg->getNumSensorVolumes();
-    LOG(info) 
+    LOG(LEVEL) 
          << msg
          << " numSensorVolumes " << numSensorVolumes 
          ; 
@@ -2009,7 +2009,7 @@ void X4PhysicalVolume::DumpSensorPlacements(const GGeo* gg, const char* msg, boo
     X4PhysicalVolume::GetSensorPlacements(gg, sensors, outer_volume);
     int num_sen = sensors.size();  
 
-    LOG(info) << msg <<  " num_sen " << num_sen ; 
+    LOG(LEVEL) << msg <<  " num_sen " << num_sen ; 
 
     int lastCopyNo = -2 ;   
     int lastTransition = -2 ; 

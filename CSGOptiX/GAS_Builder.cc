@@ -40,7 +40,7 @@ void GAS_Builder::Build( GAS& gas, const CSGPrimSpec& ps )  // static
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
     unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
 
-    LOG(info)
+    LOG(LEVEL)
         << " ps.num_prim " << std::setw(4) << ps.num_prim
         << " ps.stride_in_bytes " << ps.stride_in_bytes 
         << " ps.device " << ps.device

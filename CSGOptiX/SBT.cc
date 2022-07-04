@@ -47,6 +47,9 @@ PGs and their data.
 
 **/
 
+const plog::Severity SBT::LEVEL = PLOG::EnvLevel("SBT", "DEBUG"); 
+
+
 SBT::SBT(const PIP* pip_)
     :
     emm(SGeoConfig::EnabledMergedMesh()), 
@@ -63,7 +66,7 @@ SBT::SBT(const PIP* pip_)
 
 void SBT::init()
 {
-    LOG(info); 
+    LOG(LEVEL); 
     createRaygen();
     updateRaygen();
     createMiss();
@@ -101,12 +104,12 @@ createHitgroup
 **/
 void SBT::createGeom()
 {
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
     createGAS();    
     createIAS(); 
     createHitgroup(); 
     checkHitgroup(); 
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -119,7 +122,7 @@ NB the records have opaque header and user data
 
 void SBT::createMiss()
 {
-    LOG(info); 
+    LOG(LEVEL); 
     miss = new Miss ; 
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_miss ), sizeof(Miss) ) );
     sbt.missRecordBase = d_miss;
@@ -165,7 +168,7 @@ void SBT::createRaygen()
 
 void SBT::updateRaygen()
 {
-    LOG(info); 
+    LOG(LEVEL); 
     raygen->data = {};
     raygen->data.placeholder = 42.0f ;
 
@@ -229,7 +232,7 @@ void SBT::createGAS_Standard()
 
         if( enabled )
         {
-            LOG(info) << " emm proceed " << gas_idx ; 
+            LOG(LEVEL) << " emm proceed " << gas_idx ; 
             createGAS(gas_idx); 
         }
         else
@@ -237,7 +240,7 @@ void SBT::createGAS_Standard()
             LOG(error) << " emm skip " << gas_idx ; 
         }
     }
-    LOG(info) << descGAS() ; 
+    LOG(LEVEL) << descGAS() ; 
 }
 
 void SBT::createGAS_Selection()
@@ -326,7 +329,7 @@ void SBT::createIAS(unsigned ias_idx)
 {
     unsigned num_inst = foundry->getNumInst(); 
     unsigned num_ias_inst = foundry->getNumInstancesIAS(ias_idx, emm); 
-    LOG(info) << " ias_idx " << ias_idx << " num_inst " << num_inst ;  
+    LOG(LEVEL) << " ias_idx " << ias_idx << " num_inst " << num_inst ;  
 
     std::vector<qat4> inst ; 
     foundry->getInstanceTransformsIAS(inst, ias_idx, emm );
@@ -437,7 +440,7 @@ void SBT::dumpIAS(const std::vector<qat4>& inst )
 {
     bool sbt_dump_ias = SSys::getenvbool("SBT_DUMP_IAS") ; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " inst.size " << inst.size()
         << " SBT_DUMP_IAS " << sbt_dump_ias 
         ; 
@@ -581,7 +584,7 @@ AS* SBT::getAS(const char* spec) const
    assert( c == 'i' || c == 'g' );  
    int idx = atoi( spec + 1 );  
 
-   LOG(info) << " spec " << spec << " c " << c << " idx " << idx  ; 
+   LOG(LEVEL) << " spec " << spec << " c " << c << " idx " << idx  ; 
 
    AS* a = nullptr ; 
    if( c == 'i' )
@@ -795,7 +798,7 @@ void SBT::createHitgroup()
     //assert( num_gas == num_solid );   // not when emm active : then there are less gas than solid
     unsigned tot_rec = getTotalRec();   // corresponds to the total number of enabled Prim in all enabled solids
 
-    LOG(info)
+    LOG(LEVEL)
         << " num_solid " << num_solid 
         << " num_gas " << num_gas 
         << " tot_rec " << tot_rec 
@@ -824,7 +827,7 @@ void SBT::createHitgroup()
         int numPrim = so->numPrim ; 
         int primOffset = so->primOffset ; 
 
-        LOG(info) << "gas_idx " << gas_idx << " so.numPrim " << numPrim << " so.primOffset " << primOffset  ; 
+        LOG(LEVEL) << "gas_idx " << gas_idx << " so.numPrim " << numPrim << " so.primOffset " << primOffset  ; 
 
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
@@ -904,7 +907,7 @@ void SBT::checkHitgroup()
     unsigned num_prim = foundry->getNumPrim(); 
     unsigned num_sbt = sbt.hitgroupRecordCount ;
 
-    LOG(info)
+    LOG(LEVEL)
         << " num_sbt (sbt.hitgroupRecordCount) " << num_sbt
         << " num_solid " << num_solid
         << " num_prim " << num_prim

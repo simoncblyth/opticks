@@ -161,7 +161,7 @@ QSim::QSim()
     d_dbg(debug_ ? debug_->d_dbg : nullptr),
     cx(nullptr)
 {
-    LOG(LEVEL) << " QSim::QSim instanciating QEvent " ; 
+
     init(); 
 }
 
@@ -224,8 +224,11 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 
 double QSim::simulate()
 {
-   int rc = event->setGenstep(); 
-   if(rc != 0) LOG(error) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simulate " ; 
+   if( event == nullptr ) LOG(error) << " event null " << desc()  ; 
+   if( event == nullptr ) return -1. ; 
+ 
+   int rc = event->setGenstep() ; 
+   if(rc != 0) LOG(error) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
    double dt = rc == 0 && cx != nullptr ? cx->simulate() : -1. ;
    return dt ; 
 }
@@ -278,14 +281,17 @@ char QSim::getScintTexFilterMode() const
 std::string QSim::desc() const
 {
     std::stringstream ss ; 
-    ss << "QSim"
+    ss << "QSim.hh"
+       << " this " << this 
+       << " INSTANCE " << INSTANCE
+       << " QEvent.hh:event " << event 
+       << " qsim.h:sim " << sim 
+       << " qsim.h:d_sim " << d_sim 
        << " sim->rngstate " << sim->rngstate 
-       << " sim->base" << sim->base 
+       << " sim->base " << sim->base 
        << " sim->bnd " << sim->bnd 
        << " sim->scint " << sim->scint 
        << " sim->cerenkov " << sim->cerenkov
-       << " sim " << sim 
-       << " d_sim " << d_sim 
        ; 
     std::string s = ss.str(); 
     return s ; 

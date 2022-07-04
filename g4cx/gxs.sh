@@ -7,6 +7,7 @@ gxs.sh
 
     cd ~/opticks/g4cx   # gx
     ./gxs.sh 
+    ./gxs.sh dbg
 
 
 EOU
@@ -14,6 +15,12 @@ EOU
 
 source ../bin/GEOM_.sh 
 source ../bin/OPTICKS_INPUT_PHOTON.sh 
+
+
+#export QSim=INFO
+#export QEvent=INFO 
+#export CSGOptiX=INFO
+
 
 defarg="run"
 arg=${1:-$defarg}

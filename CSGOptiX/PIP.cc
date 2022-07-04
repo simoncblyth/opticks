@@ -21,6 +21,8 @@
 
 #include "PLOG.hh"
 
+const plog::Severity PIP::LEVEL = PLOG::EnvLevel("PIP", "DEBUG"); 
+
 
 static bool readFile( std::string& str, const char* path )
 {
@@ -43,7 +45,7 @@ OptixCompileDebugLevel PIP::DebugLevel(const char* option)  // static
     else if(strcmp(option, "LINEINFO") == 0 ) level = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO ; 
     else if(strcmp(option, "FULL") == 0 )     level = OPTIX_COMPILE_DEBUG_LEVEL_FULL ; 
     else assert(0) ; 
-    LOG(info) << " option " << option << " level " << level ;  
+    LOG(LEVEL) << " option " << option << " level " << level ;  
     return level ; 
 }
 const char * PIP::DebugLevel_( OptixCompileDebugLevel debugLevel )
@@ -72,7 +74,7 @@ OptixCompileOptimizationLevel PIP::OptimizationLevel(const char* option) // stat
     else if( strcmp(option, "DEFAULT") == 0 )  level = OPTIX_COMPILE_OPTIMIZATION_DEFAULT  ; 
     else assert(0) ; 
  
-    LOG(info) << " option " << option << " level " << level ;  
+    LOG(LEVEL) << " option " << option << " level " << level ;  
     return level ; 
 }
 const char* PIP::OptimizationLevel_( OptixCompileOptimizationLevel optLevel )
@@ -133,7 +135,7 @@ unsigned PIP::ExceptionFlags(const char* options)
         const std::string& opt = opts[i] ; 
         exceptionFlags |= ExceptionFlags_(opt.c_str()); 
     }
-    LOG(info) << " options " << options << " exceptionFlags " << exceptionFlags ; 
+    LOG(LEVEL) << " options " << options << " exceptionFlags " << exceptionFlags ; 
     return exceptionFlags ;  
 }
 
@@ -248,7 +250,7 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     OptixCompileOptimizationLevel optLevel = OptimizationLevel(CreateModule_optLevel) ; 
     OptixCompileDebugLevel  debugLevel = DebugLevel(CreateModule_debugLevel) ; 
 
-    LOG(info)
+    LOG(LEVEL)
         << " ptx_path " << ptx_path << std::endl 
         << " ptx size " << ptx.size() << std::endl 
         << " maxRegisterCount " << maxRegisterCount << std::endl 
@@ -491,7 +493,7 @@ void PIP::configureStack()
     uint32_t max_cc_depth = 0; 
     uint32_t max_dc_depth = 0; 
 
-    LOG(info) 
+    LOG(LEVEL) 
         << "(inputs to optixUtilComputeStackSizes)" 
         << std::endl 
         << " max_trace_depth " << max_trace_depth
@@ -513,7 +515,7 @@ void PIP::configureStack()
                 &continuationStackSize
                 ) ); 
 
-    LOG(info)
+    LOG(LEVEL)
         << "(outputs from optixUtilComputeStackSizes) " 
         << std::endl 
         << " directCallableStackSizeFromTraversal " << directCallableStackSizeFromTraversal
@@ -526,7 +528,7 @@ void PIP::configureStack()
 
     unsigned maxTraversableGraphDepth = 2 ;  // Opticks only using IAS->GAS
 
-    LOG(info) 
+    LOG(LEVEL) 
         << "(further inputs to optixPipelineSetStackSize)"
         << std::endl 
         << " maxTraversableGraphDepth " << maxTraversableGraphDepth

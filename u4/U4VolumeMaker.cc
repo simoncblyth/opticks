@@ -528,8 +528,8 @@ void U4VolumeMaker::RaindropRockAirWater_Configure( double& rock_halfside, doubl
     double halfside = SSys::getenvdouble(U4VolumeMaker_RaindropRockAirWater_HALFSIDE, 100.); 
     double factor   = SSys::getenvdouble(U4VolumeMaker_RaindropRockAirWater_FACTOR,   1.); 
 
-    LOG(info) << U4VolumeMaker_RaindropRockAirWater_HALFSIDE << " " << halfside ; 
-    LOG(info) << U4VolumeMaker_RaindropRockAirWater_FACTOR   << " " << factor ; 
+    LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_HALFSIDE << " " << halfside ; 
+    LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_FACTOR   << " " << factor ; 
  
     rock_halfside = 2.*halfside*factor ; 
     air_halfside = halfside*factor ; 
