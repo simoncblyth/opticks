@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 
     fdl->setPrimBoundary( 0, Rock_Air ); 
     fdl->setPrimBoundary( 1, Air_Water );    // notice these fdl boundary changes are not persisted
-    std::cout << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
+    LOG(info) << "fdl.detailPrim " << std::endl << fdl->detailPrim() ; 
 
     ssim->save("$CFBASE_LOCAL/CSGFoundry/SSim" ); // DIRTY: FOR PYTHON CONSUMPTION
 

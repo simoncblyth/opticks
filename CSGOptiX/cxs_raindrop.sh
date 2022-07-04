@@ -70,9 +70,17 @@ fi
 export FOLD=$CFBASE_LOCAL   ## grab fails when add the bin dir here 
 
 
-export SEvt=INFO
-export QEvent=INFO
-export QSim=INFO
+loglevels()
+{
+    export Dummy=INFO
+    #export SEvt=INFO
+    #export QEvent=INFO
+    #export QSim=INFO
+}
+loglevels
+
+
+
 
 source ../bin/OPTICKS_INPUT_PHOTON.sh
 

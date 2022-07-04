@@ -18,14 +18,16 @@ source ../bin/OPTICKS_INPUT_PHOTON.sh
 
 loglevels()
 {
-    export Ctx=INFO
-    export QSim=INFO
-    export QEvent=INFO 
-    export CSGOptiX=INFO
-    export G4CXOpticks=INFO 
+    export Dummy=INFO
+    #export SEvt=INFO
+    #export Ctx=INFO
+    #export QSim=INFO
+    #export QEvent=INFO 
+    #export CSGOptiX=INFO
+    #export G4CXOpticks=INFO 
     #export X4PhysicalVolume=INFO
 }
-#loglevels
+loglevels
 
 
 
@@ -45,10 +47,18 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
 fi
 
+
+export FOLD=/tmp/$USER/opticks/G4CXSimulateTest
+
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
 fi 
+
+if [ "${arg/grab}" != "$arg" ]; then 
+    source ../bin/rsync.sh $FOLD 
+fi 
+
 
 exit 0 
 

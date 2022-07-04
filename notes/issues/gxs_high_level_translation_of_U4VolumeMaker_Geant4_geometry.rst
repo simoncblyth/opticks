@@ -725,6 +725,64 @@ Do not particularly want uses of CX to need to do the same setup.
 
 
 
+shakedown : issue 1 : all getting absorbed : geometry or input photon issue ?
+---------------------------------------------------------------------------------
+
+::
+
+    In [1]: t.seq[:,0]
+    Out[1]: array([77, 77, 77, 77, 77, ..., 77, 77, 77, 77, 77], dtype=uint64)
+
+    In [2]: np.all( t.seq[:,0] == 77 )
+    Out[2]: True
+
+    In [3]: t
+    Out[3]: 
+    t
+
+    CMDLINE:/Users/blyth/opticks/g4cx/tests/G4CXSimulateTest.py
+    t.base:/tmp/blyth/opticks/G4CXSimulateTest
+
+      : t.genstep                                          :            (1, 6, 4) : 0:02:58.141744 
+      : t.seed                                             :             (10000,) : 0:02:50.119603 
+      : t.seq                                              :           (10000, 2) : 0:02:50.118744 
+      : t.record_meta                                      :                    1 : 0:02:50.120041 
+      : t.rec_meta                                         :                    1 : 0:02:51.416620 
+      : t.rec                                              :    (10000, 10, 2, 4) : 0:02:51.416961 
+      : t.NPFold_meta                                      :                    2 : 0:03:03.796718 
+      : t.record                                           :    (10000, 10, 4, 4) : 0:02:50.120325 
+      : t.domain                                           :            (2, 4, 4) : 0:03:03.796202 
+      : t.inphoton                                         :        (10000, 4, 4) : 0:02:54.312348 
+      : t.flat                                             :          (10000, 48) : 0:02:58.142259 
+      : t.NPFold_index                                     :                   11 : 0:03:03.797301 
+      : t.prd                                              :    (10000, 10, 2, 4) : 0:02:51.833685 
+      : t.photon                                           :        (10000, 4, 4) : 0:02:52.282276 
+      : t.domain_meta                                      :                    2 : 0:03:03.795836 
+      : t.tag                                              :           (10000, 4) : 0:02:50.117545 
+
+     min_stamp : 2022-07-04 15:40:05.162773 
+     max_stamp : 2022-07-04 15:40:18.842529 
+     dif_stamp : 0:00:13.679756 
+     age_stamp : 0:02:50.117545 
+
+    In [4]: seqhis_(77)
+    Out[4]: 'TO AB'
+
+
+
+Looks like input photons starting in Rock and getting AB immediately::
+
+    In [7]: t.record[0,:2]
+    Out[7]: 
+    array([[[   4.295,    4.959, -990.   ,    0.   ],
+            [   0.   ,    0.   ,    1.   ,    0.   ],
+            [   0.756,   -0.655,    0.   ,  501.   ],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[   4.295,    4.959, -989.998,    0.   ],
+            [   0.   ,    0.   ,    1.   ,    0.   ],
+            [   0.756,   -0.655,    0.   ,  501.   ],
+            [   0.   ,    0.   ,   -0.   ,    0.   ]]], dtype=float32)
 
 
 

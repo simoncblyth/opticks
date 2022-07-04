@@ -5,6 +5,7 @@
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SPath.hh"
+#include "SProc.hh"
 #include "SOpticksResource.hh"
 #include "SOpticksKey.hh"
 #include "PLOG.hh"
@@ -72,7 +73,7 @@ const char* SOpticksResource::RNGCacheDir(){    return SPath::Resolve(ResolveRng
 const char* SOpticksResource::RNGDir(){         return SPath::Resolve(RNGCacheDir(), "RNG", NOOP); }
 const char* SOpticksResource::RuncacheDir(){    return SPath::Resolve(ResolveUserCachePrefix(), "runcache", NOOP); }
 const char* SOpticksResource::PrecookedDir(){   return SPath::Resolve(ResolvePrecookedPrefix(), "precooked", NOOP); }
-
+const char* SOpticksResource::DefaultOutputDir(){  return SPath::Resolve("$TMP", SProc::ExecutableName(), NOOP); }
 
 
 std::string SOpticksResource::Dump()
@@ -87,6 +88,7 @@ std::string SOpticksResource::Dump()
     const char* rngcache_dir = RNGCacheDir() ; 
     const char* rng_dir = RNGDir() ; 
     const char* precooked_dir = PrecookedDir() ; 
+    const char* outputdir = DefaultOutputDir(); 
     const char* runcache_dir = RuncacheDir() ; 
 
     bool setkey = true ; 
@@ -112,6 +114,7 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::RNGCacheDir()            " << ( rngcache_dir  ? rngcache_dir : "-" )  << std::endl 
         << "SOpticksResource::RNGDir()                 " << ( rng_dir ? rng_dir : "-" )  << std::endl 
         << "SOpticksResource::PrecookedDir()           " << ( precooked_dir ? precooked_dir : "-" )  << std::endl 
+        << "SOpticksResource::DefaultOutputDir()       " << ( outputdir ? outputdir : "-" ) << std::endl 
         << "SOpticksResource::RuncacheDir()            " << ( runcache_dir ? runcache_dir : "-" )  << std::endl 
         << "SOpticksResource::IDPath(true)             " << ( idpath ? idpath : "-" ) << std::endl  
         << "SOpticksResource::CGDir(true)              " << ( cgdir ? cgdir : "-" )  << std::endl 
@@ -240,7 +243,7 @@ const char* SOpticksResource::CFBaseFromGEOM()
 }
 
 
-const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir" ; 
+const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir" ; 
 
 /**
 SOpticksResource::Get
@@ -264,6 +267,13 @@ envvars with the same keys can be used to override these defaults.
 +-------------------------+-----------------------------------------------------+
 |   RNGDir                |                                                     |
 +-------------------------+-----------------------------------------------------+
+|   PrecookedDir          |                                                     |
++-------------------------+-----------------------------------------------------+
+|   DefaultOutputDir      |                                                     |
++-------------------------+-----------------------------------------------------+
+
+
+
 
 
 **/
@@ -279,6 +289,7 @@ const char* SOpticksResource::Get(const char* key) // static
     else if( strcmp(key, "RuncacheDir")==0) tok = SOpticksResource::RuncacheDir(); 
     else if( strcmp(key, "RNGDir")==0)      tok = SOpticksResource::RNGDir(); 
     else if( strcmp(key, "PrecookedDir")==0) tok = SOpticksResource::PrecookedDir(); 
+    else if( strcmp(key, "DefaultOutputDir")==0)    tok = SOpticksResource::DefaultOutputDir(); 
     return tok ;  
 }
 

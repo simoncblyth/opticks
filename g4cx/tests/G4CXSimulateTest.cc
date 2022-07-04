@@ -23,8 +23,6 @@ int main(int argc, char** argv)
     Opticks::Configure(argc, argv, "--gparts_transform_offset" );  
 
 
-    LOG(info) << "G4CXOpticks::Desc " << G4CXOpticks::Desc() ;  
-
     G4CXOpticks gx ;  
 
     //gx.setGeometry(SPath::SomeGDMLPath()); 
@@ -32,6 +30,9 @@ int main(int argc, char** argv)
     gx.setGeometry( U4VolumeMaker::PV() );   // sensitive to GEOM envvar
 
     gx.simulate(); 
+
+    cudaDeviceSynchronize(); 
+    evt.save(); 
  
     return 0 ; 
 }

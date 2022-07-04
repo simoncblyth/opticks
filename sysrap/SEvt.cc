@@ -1093,7 +1093,7 @@ SEvt::save persists NP arrays into the default directory
 or the directory argument provided.
 **/
 
-const char* SEvt::FALLBACK_DIR = "$TMP" ; 
+const char* SEvt::FALLBACK_DIR = "$DefaultOutputDir" ;  // $TMP/ExecutableName
 const char* SEvt::DefaultDir()
 {
     const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 

@@ -321,7 +321,7 @@ NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) /
     unsigned nl = src->shape[3] ; 
     unsigned nm = src->shape[4] ;
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " src.ebyte " << src->ebyte  
         << " src.desc " << src->desc() 
         ; 
@@ -345,7 +345,7 @@ NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) /
     src->get_names(names); 
 
     std::vector<std::string> dst_names(names); 
-    LOG(info) 
+    LOG(LEVEL) 
         << " dst_names.size before " << dst_names.size() 
         << " specs.size " << specs.size()   
         ; 
@@ -400,14 +400,15 @@ NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) /
         }
     }
 
-    LOG(info) << " dst_names.size after " << dst_names.size() ; 
+    LOG(LEVEL) << " dst_names.size after " << dst_names.size() ; 
 
     dst->set_names( dst_names ); 
     dst->meta = src->meta ;    // need to pass along the domain metadata 
 
     std::vector<std::string> dst_names_check ; 
     dst->get_names(dst_names_check); 
-    LOG(info) << " dst_names_check.size after " << dst_names_check.size() ; 
+
+    LOG(LEVEL) << " dst_names_check.size after " << dst_names_check.size() ; 
 
     return dst ; 
 }
@@ -437,7 +438,7 @@ bnd with shape (44, 4, 2, 761, 4, )::
 
 void SSim::GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned nl, unsigned nm, const char* name ) // static 
 {
-    LOG(info) << name << " nk " << nk << " nl " << nl << " nm " << nm ; 
+    LOG(LEVEL) << name << " nk " << nk << " nl " << nl << " nm " << nm ; 
 
     assert( nk == 2 ); 
     assert( nl > 0 ); 

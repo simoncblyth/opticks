@@ -19,7 +19,6 @@ std::string G4CXOpticks::Desc()
     return CSGOptiX::Desc() ; 
 }
 
-
 G4CXOpticks::G4CXOpticks()
     :
     wd(nullptr),
@@ -28,6 +27,7 @@ G4CXOpticks::G4CXOpticks()
     cx(nullptr),
     qs(nullptr)
 {
+    LOG(LEVEL) << Desc() << std::endl << desc(); 
 }
 
 

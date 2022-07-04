@@ -28,6 +28,8 @@ struct SYSRAP_API SOpticksResource
     static const char* RNGDir();
     static const char* RuncacheDir();
     static const char* PrecookedDir();
+    static const char* DefaultOutputDir(); 
+
 
     // setkey:true means OPTICKS_KEY envvar gets used 
     static const char* IDPath(bool setkey=true);
