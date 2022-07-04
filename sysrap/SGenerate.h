@@ -39,19 +39,19 @@ NP* SGenerate::GeneratePhotons()
     NP* ph = nullptr ; 
     if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
     {
-        std::cout << "SGenerate::GeneratePhotons SEvt::GetInputPhoton " << std::endl ; 
+        //std::cout << "SGenerate::GeneratePhotons SEvt::GetInputPhoton " << std::endl ; 
         ph = SEvt::GetInputPhoton(); 
     }
     else
     {
         ph = GeneratePhotons(gs);
     }
-    std::cout << "SGenerate::GeneratePhotons ph " << ( ph ? ph->brief() : "-" ) << std::endl ; 
+    //std::cout << "SGenerate::GeneratePhotons ph " << ( ph ? ph->brief() : "-" ) << std::endl ; 
     return ph ;  
 }
 NP* SGenerate::GeneratePhotons(const NP* gs_)
 {
-    std::cout << "SGenerate::GeneratePhotons gs_ " <<  ( gs_ ? gs_->sstr() : "-" ) << std::endl ; 
+    //std::cout << "SGenerate::GeneratePhotons gs_ " <<  ( gs_ ? gs_->sstr() : "-" ) << std::endl ; 
 
     NP* ph = nullptr ; 
 
@@ -59,7 +59,7 @@ NP* SGenerate::GeneratePhotons(const NP* gs_)
     const quad6* gg = (quad6*)gs_->bytes() ; 
 
     NP* se = SEvent::MakeSeed(gs_) ;
-    std::cout << " se " << ( se ? se->sstr() : "-" ) << std::endl ; 
+    //std::cout << " se " << ( se ? se->sstr() : "-" ) << std::endl ; 
     const int*   seed = (int*)se->bytes() ;   
 
     curandStateXORWOW rng(1u); 

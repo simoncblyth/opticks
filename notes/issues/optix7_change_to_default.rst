@@ -47,7 +47,7 @@ DONE : add u4 gx cx pkgs to the standard build set
      310 }
 
 
-TODO: switch to OptiX 7 as standard
+DONE : switch to OptiX 7 as standard
 ---------------------------------------------------------------------------------------
 
 Need to change the standard OPTICKS_OPTIX_PREFIX to be the one for 7 so no longer need to b7::
@@ -316,6 +316,74 @@ To make the switch of OptiX versions need to:
     N[blyth@localhost g4cx]$ ./gxs.sh 
     G4CXSimulateTest: error while loading shared libraries: liboptix.so.6.5.0: cannot open shared object file: No such file or directory
     ./gxs.sh run error
+
+
+
+DONE : removed a bunch of old packages from the standard build list
+----------------------------------------------------------------------
+
+::
+
+    epsilon:CSGOptiX blyth$ om-subs--all
+    # to update this list : opticks-deps --subdirs
+    # the names must be the case correct directory names 
+    okconf
+    sysrap
+    boostrap
+    npy
+    optickscore
+    ggeo
+    #opticksgeo
+    #cudarap
+    #thrustrap
+    #optixrap
+    #okop
+    #oglrap
+    #opticksgl
+    #ok
+    extg4
+    #cfg4
+    #okg4
+    #g4ok
+    #integration
+    ana
+    analytic
+    bin
+    CSG
+    CSG_GGeo
+    GeoChain
+    qudarap
+    u4
+    CSGOptiX
+    g4cx
+    epsilon:CSGOptiX blyth$ 
+
+
+The remainder that I want to eliminate will be a lot harder::
+
+    boostrap
+    npy
+    optickscore
+    ggeo
+    extg4
+    CSG_GGeo
+    GeoChain
+ 
+As new develpment is needed to replace the geometry translation
+that those packages implemnent. 
+
+Long term aiming for something like::
+
+    okconf       # could be eliminated 
+    sysrap
+    new-"ggeo"
+    CSG
+    qudarap
+    u4
+    CSGOptiX
+    g4cx
+    new-"viz" 
+
 
 
 

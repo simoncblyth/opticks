@@ -1,12 +1,21 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-U4RecorderTest.sh 
-====================
+U4RecorderTest.sh : Geant4 simulation with Opticks recording every random consumption of every step of every photon
+=====================================================================================================================
 
 ::
 
-    cd ~/opticks/u4/tests
+    cd ~/opticks/u4/tests  # u4t 
     ./U4RecorderTest.sh 
+
+    BP=DsG4Scintillation::PostStepDoIt ./U4RecorderTest.sh dbg 
+
+
+    ./U4RecorderTest.sh run
+    ./U4RecorderTest.sh dbg
+    ./U4RecorderTest.sh clean
+    ./U4RecorderTest.sh ana
+    ./U4RecorderTest.sh ab
 
 
 EOU
@@ -21,31 +30,33 @@ mkdir -p $logdir
 foldbase=$logdir
 
 
-#export DsG4Scintillation_verboseLevel=3
-#export G4Cerenkov_verboseLevel=3
 export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 generation loop too 
 
-#export G4Cerenkov_DISABLE=1
+#export DsG4Scintillation_verboseLevel=3
 #export DsG4Scintillation_DISABLE=1
-
+#export G4Cerenkov_verboseLevel=3
+#export G4Cerenkov_DISABLE=1
 #pidx=0
-#export PIDX=${PIDX:-$pidx}
-
 #gidx=117
+#export PIDX=${PIDX:-$pidx}
 #export GIDX=${GIDX:-$gidx}
 
-#export U4Material=INFO
-#export SEvt=INFO
-#export U4Random=INFO
+loglevels()
+{
+    export Dummy=INFO
+    #export U4Material=INFO
+    #export SEvt=INFO
+    #export U4Random=INFO
+}
+loglevels
+
 
 export U4Random_flat_debug=1  ## without this all stack tags are zero 
 
 #mode=gun
 #mode=torch
 mode=iphoton
-
 export U4RecorderTest__PRIMARY_MODE=$mode
-
 
 if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
     source ../../bin/OPTICKS_INPUT_PHOTON.sh     
@@ -62,8 +73,8 @@ source ../../bin/GEOM_.sh
 export ShimG4OpAbsorption_FLOAT=1 
 export ShimG4OpRayleigh_FLOAT=1 
 
-export ShimG4OpAbsorption_PIDX=5208 
-export ShimG4OpRayleigh_PIDX=5208
+#export ShimG4OpAbsorption_PIDX=5208 
+#export ShimG4OpRayleigh_PIDX=5208
 
 # cf U4Physics::Desc
 physdesc=""
@@ -90,8 +101,6 @@ echo $msg FOLD $FOLD
 
 if [ "${arg/run}" != "${arg}" ]; then 
     cd $logdir 
-    #export BP=DsG4Scintillation::PostStepDoIt
-    #lldb__ U4RecorderTest
     U4RecorderTest
     [ $? -ne 0 ] && echo $msg run error && exit 1 
 
@@ -100,7 +109,6 @@ fi
 
 if [ "${arg/dbg}" != "${arg}" ]; then 
     cd $logdir 
-    #export BP=DsG4Scintillation::PostStepDoIt
     lldb__ U4RecorderTest
     echo $msg logdir $logdir
 fi 
@@ -121,7 +129,6 @@ fi
 if [ "${arg/ana}" != "${arg}" ]; then 
     cd $srcdir 
     pwd
-
     ${IPYTHON:-ipython} --pdb -i U4RecorderTest.py 
 fi 
 
@@ -130,5 +137,4 @@ if [ "${arg/ab}" != "${arg}" ]; then
     pwd
     ./U4RecorderTest_ab.sh
 fi 
-
 

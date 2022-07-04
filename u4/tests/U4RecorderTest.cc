@@ -26,7 +26,6 @@
 #include "U4VPrimaryGenerator.h"
 
 
-
 struct U4RecorderTest
     : 
     public G4UserRunAction,  
@@ -36,14 +35,16 @@ struct U4RecorderTest
     public G4VUserPrimaryGeneratorAction,
     public G4VUserDetectorConstruction
 {
+    static const plog::Severity LEVEL ; 
+    static char PrimaryMode(); 
     static G4ParticleGun* InitGun(); 
 
+    char                  fPrimaryMode ;  
     U4Recorder*           fRecorder ; 
     G4ParticleGun*        fGun ;  
 
     G4VPhysicalVolume* Construct(); 
 
-    static char PrimaryMode(); 
     void GeneratePrimaries(G4Event* evt); 
 
     void BeginOfRunAction(const G4Run*);
@@ -62,14 +63,23 @@ struct U4RecorderTest
 
 };
 
+const plog::Severity  U4RecorderTest::LEVEL = info ;   // PLOG logging level control doesnt work in the main 
 
-
+char U4RecorderTest::PrimaryMode()
+{
+    char mode = '?' ; 
+    const char* mode_ = SSys::getenvvar("U4RecorderTest__PRIMARY_MODE", "gun" ); 
+    if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
+    if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
+    if(strcmp(mode_, "iphoton") == 0) mode = 'I' ; 
+    return mode ;   
+}
 
 G4ParticleGun* U4RecorderTest::InitGun()
 {
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* particle = particleTable->FindParticle("e+");
-    LOG(info) << " particle " << particle ; 
+    LOG(LEVEL) << " particle " << particle ; 
     G4ParticleGun* gun = new G4ParticleGun(1) ;   
     gun->SetParticleDefinition(particle);
     gun->SetParticleTime(0.0*CLHEP::ns);
@@ -81,8 +91,9 @@ G4ParticleGun* U4RecorderTest::InitGun()
 
 U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     :
+    fPrimaryMode(PrimaryMode()),
     fRecorder(new U4Recorder),
-    fGun(InitGun())
+    fGun(fPrimaryMode == 'G' ? InitGun() : nullptr)
 {
     runMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
     runMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
@@ -93,31 +104,19 @@ U4RecorderTest::U4RecorderTest(G4RunManager* runMgr)
     runMgr->Initialize(); 
 }
 
-
-
 G4VPhysicalVolume* U4RecorderTest::Construct(){ return U4VolumeMaker::PV(); } // sensitive to GEOM envvar 
 
-char U4RecorderTest::PrimaryMode()
-{
-    char mode = '?' ; 
-    const char* mode_ = SSys::getenvvar("U4RecorderTest__PRIMARY_MODE", "gun" ); 
-    if(strcmp(mode_, "gun")   == 0) mode = 'G' ; 
-    if(strcmp(mode_, "torch") == 0) mode = 'T' ; 
-    if(strcmp(mode_, "iphoton") == 0) mode = 'I' ; 
-    return mode ;   
-}
 void U4RecorderTest::GeneratePrimaries(G4Event* event)
 {   
-    char mode = PrimaryMode(); 
-    LOG(info) << "[ mode " << mode  ; 
-    switch(mode)
+    LOG(LEVEL) << "[ fPrimaryMode " << fPrimaryMode  ; 
+    switch(fPrimaryMode)
     {
         case 'G': fGun->GeneratePrimaryVertex(event)              ; break ; 
         case 'T': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;   // eg from collected torch gensteps 
         case 'I': U4VPrimaryGenerator::GeneratePrimaries(event);  ; break ;   
         default:  assert(0) ; break ; 
     }
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 // pass along the message to the recorder
@@ -153,9 +152,6 @@ to hookup physics before the main instanciation::
     such as G4UserRunAction.
 
 **/
-
-
-
 
 
 int main(int argc, char** argv)

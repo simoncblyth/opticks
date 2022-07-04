@@ -9,7 +9,6 @@ gxs.sh : Opticks CX GPU simulation starting from Geant4 geometry auto-translated
     ./gxs.sh 
     ./gxs.sh dbg
 
-
 EOU
 }
 

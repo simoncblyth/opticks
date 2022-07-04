@@ -117,8 +117,7 @@ G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
         if( lv == nullptr ) LOG(fatal) << "PMTSim::GetLV returned nullptr for name [" << name << "]" ; 
         assert( lv ); 
 
-        //pv = WrapVacuum( lv, 5000. ) ;          
-        pv = WrapRockWater( lv, 5000. ) ;          
+        pv = WrapRockWater( lv ) ;          
 
     }
     LOG(LEVEL) << "]" ; 
@@ -217,11 +216,16 @@ U4VolumeMaker::WrapRockWater
 
 **/
 
-G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv, double halfside  )
+G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
 {
     LOG(LEVEL) << "["  ; 
+    double halfside = SSys::getenvdouble(U4VolumeMaker_WrapRockWater_HALFSIDE, 1000.); 
+    double factor   = SSys::getenvdouble(U4VolumeMaker_WrapRockWater_FACTOR,   2.); 
 
-    G4LogicalVolume*  rock_lv  = Box_(2.*halfside, "Rock" );
+    LOG(LEVEL) << U4VolumeMaker_WrapRockWater_HALFSIDE << " " << halfside ; 
+    LOG(LEVEL) << U4VolumeMaker_WrapRockWater_FACTOR << " " << factor ; 
+
+    G4LogicalVolume*  rock_lv  = Box_(factor*halfside, "Rock" );
     G4LogicalVolume*  water_lv = Box_(1.*halfside, "Water" );
  
     G4VPhysicalVolume* item_pv  = Place(item_lv,  water_lv);  assert( item_pv ); 
@@ -244,8 +248,11 @@ The LV provided is placed within a WorldBox of halfside extent and the world PV 
 
 **/
 
-G4VPhysicalVolume* U4VolumeMaker::WrapVacuum( G4LogicalVolume* item_lv, double halfside  )
+G4VPhysicalVolume* U4VolumeMaker::WrapVacuum( G4LogicalVolume* item_lv )
 {
+    double halfside = SSys::getenvdouble(U4VolumeMaker_WrapVacuum_HALFSIDE, 1000.); 
+    LOG(LEVEL) << U4VolumeMaker_WrapVacuum_HALFSIDE << " " << halfside ; 
+
     G4LogicalVolume*   vac_lv  = Box_(halfside, "Vacuum" );
  
     G4VPhysicalVolume* item_pv = Place(item_lv, vac_lv);   assert( item_pv ); 
