@@ -207,6 +207,9 @@ boundaries
    can access this set of names from the A side at initialization and hence derive a boundary index 
    from a live set of Geant4 pre/post points that straddle the boundary    
 
+   * can detect CFBASE envvar to know to pick where to load the bnd_names from 
+   * NP::ReadNames("$CFBASE/CSGFoundry/SSim/bnd_names.txt" 
+
 identity 
    hmm: what exactly is the A side identity : primIdx probably so that is solid/lv index ? 
    simtrace plotting uses this for the keys, see cx/tests/CSGOptiXSimtraceTest.py
@@ -214,10 +217,35 @@ identity
    * G4 accessing the volume : its like what happens with a hit. Possible but not very nice. 
    * but with simple geometries the boundary probably sufficient for debugging
 
+* DONE : start by interpreting/dumping the A boundaries+identity then work out how to reproduce them Geant4 side 
+* DONE : for this will need to save the GGeo/CSGFoundry geocache and grab it in orde to hookup the actual geometry to the python machinery 
 
-* start by interpreting/dumping the A boundaries+identity then work out how to reproduce them Geant4 side 
-* for this will need to save the GGeo/CSGFoundry geocache and grab it in order
-  to hookup the actual geometry to the python machinery 
+
+::
+
+    In [32]: boundary___(r[0])
+    Out[32]: array([0, 2, 3, 3, 3, 3, 3, 2, 1, 0], dtype=uint32)
+
+    In [36]: seqhis_(t.seq[0,0])
+    Out[36]: 'TO BT BT BT BR BT BT BT SA'
+
+
+Capture this into XFold::
+
+    In [1]: A[0]                                                                                                                    
+    Out[1]: 
+    A : /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL
+    A(0) : TO BT BT BT BR BT BT BT SA
+    - Water///Pyrex                            hama_body_solid_1_4                               
+    - Pyrex///Vacuum                           hama_inner2_solid_1_4                             
+    - Pyrex///Vacuum                           hama_inner1_solid_I                               
+    + Pyrex///Vacuum                           hama_inner1_solid_I                               
+    + Pyrex///Vacuum                           hama_inner1_solid_I                               
+    + Pyrex///Vacuum                           hama_inner2_solid_1_4                             
+    + Water///Pyrex                            hama_body_solid_1_4                               
+    + Rock//water_rock_bs/Water                Water_solid                                       
+
+    In [2]:                         
 
 
 G4CXSimulateTest.cc::

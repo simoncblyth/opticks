@@ -11,6 +11,7 @@ calling those lifecycle methods.
 
 **/
 
+#include <vector>
 #include <string>
 
 class G4Run ; 
@@ -19,7 +20,6 @@ class G4Track ;
 class G4Step ; 
 
 struct spho ; 
-
 
 #include "plog/Severity.h"
 #include "G4TrackStatus.hh"
@@ -36,7 +36,10 @@ struct U4_API U4Recorder
     static U4Recorder* INSTANCE ; 
     static U4Recorder* Get(); 
 
+    std::vector<std::string> bnd ; 
+
     U4Recorder(); 
+    void init(); 
 
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);
@@ -52,6 +55,7 @@ struct U4_API U4Recorder
     void PostUserTrackingAction_Optical(const G4Track*);
     void UserSteppingAction_Optical(const G4Step*); 
 
+    unsigned getBoundaryIndex(const G4Step* step ) const ; 
     void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag); 
 
 };

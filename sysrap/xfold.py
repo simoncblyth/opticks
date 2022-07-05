@@ -71,15 +71,53 @@ class XFold(object):
         self.symbol = symbol
         self.xsymbol = xsymbol
         self.idx = 0 
+        self.flavor = ""
 
     def __call__(self, idx):
         self.idx = idx 
+        self.flavor = "call"
+        return self
+
+    def __getitem__(self, idx):
+        self.idx = idx 
+        self.flavor = "item"
         return self
 
     def header(self):
         idx = self.idx 
         seqhis = seqhis_(self.x.seq[idx,0])
         return "%s(%d) : %s" % (self.symbol, idx, seqhis)
+
+    def rbnd__(self):
+        return boundary___(self.x.record[self.idx])
+    def rori__(self):
+        return orient___(self.x.record[self.idx]) 
+    def rpri__(self):
+        return primIdx___(self.x.record[self.idx])   
+    def rins__(self):
+        return instanceId__(self.x.record[self.idx])   
+
+
+    def rbnd_(self): 
+        bb_ = self.rbnd__()
+        oo_ = self.rori__()
+        pp_ = self.rpri__()
+        ii_ = self.rins__()
+        assert bb_.shape == oo_.shape
+        assert bb_.shape == pp_.shape
+        assert bb_.shape == ii_.shape
+
+        wp = np.where( bb_ > 0 )  # mask boundary zero to skip unsets 
+        bb = bb_[wp] 
+        oo = oo_[wp] 
+        pp = pp_[wp]
+        ii = ii_[wp]
+
+        pm = ["+","-"]
+        return [ "%s %-40s %-50s"%(pm[oo[i]],cf.sim.bndnamedict.get(bb[i]), cf.primIdx_meshname_dict.get(pp[i])) for i in range(len(bb))]
+        #return [ "%s" % cf.sim.bndnamedict.get(bb[i]) for i in range(len(bb))]
+    def rbnd(self):
+        return "\n".join(self.rbnd_())
 
     def content(self):
         lines = []
@@ -98,8 +136,23 @@ class XFold(object):
     def identification(self):
         return "%s : %s" % (self.symbol, self.x.base) 
 
-    def __repr__(self):
+    def call_repr(self):
         return "\n".join([self.header(), self.content(), self.body()]) 
+
+    def item_repr(self):
+        return "\n".join([self.identification(),self.header(), self.rbnd()])
+
+    def __repr__(self):
+        if self.flavor == "call":
+            rep = self.call_repr()
+        elif self.flavor == "item":
+            rep = self.item_repr()
+        else:
+            rep = self.call_repr()
+        pass
+        return rep 
+
+
 
 
 if __name__ == '__main__':

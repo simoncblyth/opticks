@@ -168,6 +168,12 @@ void test_LoadBnd()
     std::cout << U4Material::DescProperty() << std::endl ; 
 }
 
+void test_BndNames()
+{
+    const char* path = SPath::Resolve("$CFBASE/CSGFoundry/SSim/bnd_names.txt", NOOP);  
+    LOG(info) << " path " << path ; 
+}
+
 
 int main(int argc, char** argv)
 {
@@ -184,9 +190,10 @@ int main(int argc, char** argv)
     test_ListOri(); 
     test_LoadOri(); 
     test_LoadOri_remove_material_property(); 
+    test_LoadBnd(); 
     */
 
-    test_LoadBnd(); 
+    test_BndNames(); 
 
 
      

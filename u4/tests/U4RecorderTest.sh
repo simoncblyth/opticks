@@ -92,6 +92,12 @@ echo $msg GEOM $GEOM
 echo $msg FOLD $FOLD
 
 
+cfbase=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
+if [ -d "${cfbase}/CSGFoundry" ]; then 
+    export CFBASE=$cfbase
+    echo $msg cfbase/CSGFoundry dir exists so defined CFBASE $CFBASE
+fi 
+
 
 # Note that OPTICKS_RANDOM_SEQPATH uses single quotes to prevent expansion of the '$PrecookedDir' 
 # which is an SPath internal variable. Defining OPTICKS_RANDOM_SEQPATH is necessary to work with 

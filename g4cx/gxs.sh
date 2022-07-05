@@ -53,6 +53,8 @@ export BASE=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
 export FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
 if [ "${arg/ana}" != "$arg" ]; then 
+
+    export CFBASE=$BASE 
     ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
 fi 

@@ -5,6 +5,8 @@
 #include "srec.h"
 #include "sevent.h"
 
+#include "NP.hh"
+#include "SPath.hh"
 #include "SSys.hh"
 #include "SEvt.hh"
 #include "PLOG.hh"
@@ -62,7 +64,21 @@ bool U4Recorder::Enabled(const spho& label)
 
 U4Recorder* U4Recorder::INSTANCE = nullptr ; 
 U4Recorder* U4Recorder::Get(){ return INSTANCE ; }
-U4Recorder::U4Recorder(){ INSTANCE = this ; }
+U4Recorder::U4Recorder(){ init() ; }
+
+void U4Recorder::init()
+{
+    INSTANCE = this ; 
+
+    if(SSys::hasenvvar("CFBASE"))
+    {
+        const char* path = SPath::Resolve("$CFBASE/CSGFoundry/SSim/bnd_names.txt", NOOP);  
+        NP::ReadNames(path, bnd); 
+        LOG(info) << " path " << path << " bnd.size " << bnd.size() ;
+        for(unsigned i=0 ; i < bnd.size() ; i++)  LOG(info) << bnd[i] ;  
+    }
+}
+
 
 void U4Recorder::BeginOfRunAction(const G4Run*){     LOG(info); }
 void U4Recorder::EndOfRunAction(const G4Run*){       LOG(info); }
@@ -226,7 +242,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     if( flag == 0 ) LOG(error) << " ERR flag zero : post " << U4StepPoint::Desc(post) ; 
     assert( flag > 0 ); 
 
-    unsigned boundary = 0 ;   // TODO: rustle up these 
+    unsigned boundary = getBoundaryIndex(step) ;   // TODO: rustle up these 
     unsigned identity = 0 ; 
 
     if( flag == NAN_ABORT )
@@ -246,6 +262,29 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         sev->pointPhoton(label);         // save SEvt::current_photon/rec/seq/prd into sevent 
     }
     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
+}
+
+
+unsigned U4Recorder::getBoundaryIndex(const G4Step* step) const
+{
+    unsigned boundary = ~0u ; 
+    const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+    G4bool isOnBoundary = post->GetStepStatus() == fGeomBoundary ;
+    if(isOnBoundary)
+    {
+        const G4Material* m1 = pre->GetMaterial();
+        const G4Material* m2 = post->GetMaterial();
+
+        const G4String& n1 = m1->GetName();  
+        const G4String& n2 = m2->GetName();  
+
+        const G4VPhysicalVolume* pv1 = pre->GetPhysicalVolume();
+        const G4VPhysicalVolume* pv2 = post->GetPhysicalVolume();
+
+        LOG(info) << " n1 " << n1 << " n2 " << n2 << " pv1 " << pv1 << " pv2 " << pv2 ; ; 
+    }
+    return boundary ; 
 }
 
 /**

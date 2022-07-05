@@ -2,11 +2,15 @@
 
 import os, numpy as np
 from opticks.ana.fold import Fold
+from opticks.sysrap.xfold import XFold
 from opticks.ana.p import * 
 
 
 if __name__ == '__main__':
-    t = Fold.Load()
-    print(t)
+    a = Fold.Load(symbol="a")
+    A = XFold(a, symbol="A") 
+
+    self = A
+
 
 
