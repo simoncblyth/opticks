@@ -1356,7 +1356,7 @@ inline QSIM_METHOD void qsim::hemisphere_polarized( unsigned polz, bool inwards,
 #ifdef DEBUG_TAG
     stagr& tagr = ctx.tagr ; 
     tagr.add( stag_hp_ph, u_hemipol_phi ); 
-    tagr.add( stag_hp_ct, cosTheta ); 
+    tagr.add( stag_hp_ph, cosTheta );    // trying to reduce stag::BITS from 5 to 4, so change stag_hp_ct to stag_hp_ph 
 #endif
 
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta);

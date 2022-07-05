@@ -32,12 +32,13 @@ const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG");
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
 
-SEvt* SEvt::INSTANCE = nullptr ; 
 
+SEvt* SEvt::INSTANCE = nullptr ; 
 
 SEvt::SEvt()
     :
     index(MISSING_INDEX),
+    reldir(nullptr),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
     dbg(new sdebug),
@@ -206,7 +207,13 @@ void SEvt::Save(const char* dir, const char* rel){ Check() ; INSTANCE->save(dir,
 
 void SEvt::SetIndex(int index){ assert(INSTANCE) ; INSTANCE->setIndex(index) ; }
 void SEvt::UnsetIndex(){        assert(INSTANCE) ; INSTANCE->unsetIndex() ;  }
-int SEvt::GetIndex(){     return INSTANCE ? INSTANCE->getIndex()     :  0 ; }
+int SEvt::GetIndex(){           return INSTANCE ? INSTANCE->getIndex()  :  0 ; }
+
+
+
+// SetReldir can be used with the default SEvt::save() changing the last directory element before the index if present
+void        SEvt::SetReldir(const char* reldir){ assert(INSTANCE) ; INSTANCE->setReldir(reldir) ; }
+const char* SEvt::GetReldir(){  return INSTANCE ? INSTANCE->getReldir() : nullptr ; }
 
 int SEvt::GetNumPhoton(){ return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
 
@@ -237,6 +244,9 @@ unsigned SEvt::getNumGenstep() const
 void SEvt::setIndex(int index_){ index = index_ ; }
 void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
 int SEvt::getIndex() const { return index ; }
+
+void SEvt::setReldir(const char* reldir_){ reldir = reldir_ ? strdup(reldir_) : nullptr ; }
+const char* SEvt::getReldir() const { return reldir ; }
 
 
 /**
@@ -1093,7 +1103,7 @@ SEvt::save persists NP arrays into the default directory
 or the directory argument provided.
 **/
 
-const char* SEvt::FALLBACK_DIR = "$DefaultOutputDir" ;  // $TMP/ExecutableName
+const char* SEvt::FALLBACK_DIR = "$DefaultOutputDir" ;  // $TMP/ExecutableName/GEOM
 const char* SEvt::DefaultDir()
 {
     const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
@@ -1137,7 +1147,7 @@ then the directory is suffixed with the index::
 
 void SEvt::save(const char* dir_) 
 {
-    const char* dir = index == MISSING_INDEX ? SPath::Resolve(dir_, DIRPATH) : SPath::Resolve(dir_, index, DIRPATH ) ; 
+    const char* dir = index == MISSING_INDEX ? SPath::Resolve(dir_, reldir,  DIRPATH) : SPath::Resolve(dir_, reldir, index, DIRPATH ) ; 
     LOG(LEVEL) << " dir " << dir ; 
 
     gather_components(); 

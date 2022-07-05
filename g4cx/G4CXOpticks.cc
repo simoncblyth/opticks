@@ -66,7 +66,7 @@ void G4CXOpticks::setGeometry(const GGeo* gg_)
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
     fd = fd_ ; 
-    cx = CSGOptiX::Create(fd);  
+    cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
     qs = cx->sim ; 
     LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ; 
 }

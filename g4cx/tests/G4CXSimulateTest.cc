@@ -4,6 +4,7 @@
 #include "SOpticksResource.hh"
 #include "SSys.hh"
 #include "SEvt.hh"
+#include "SPath.hh"
 
 // GGeo creation done when starting from gdml or live G4, still needs Opticks instance,  
 // TODO: avoid this by replacing with automated SOpticks instanciated by OPTICKS_LOG
@@ -24,6 +25,7 @@ int main(int argc, char** argv)
     SEventConfig::SetRGModeSimulate();  
     SEventConfig::SetStandardFullDebug(); 
     SEvt evt ;    // SEvt must be instanciated before QEvent
+    evt.setReldir("ALL");  // follow the B side  
 
     Opticks::Configure(argc, argv, "--gparts_transform_offset" );  
 
@@ -40,6 +42,10 @@ int main(int argc, char** argv)
     else if(SSys::hasenvvar("GEOM"))
     {
         gx.setGeometry( U4VolumeMaker::PV() );   
+        assert(gx.fd); 
+
+        const char* cfdir = SPath::Resolve("$DefaultOutputDir/CSGFoundry", DIRPATH); 
+        gx.fd->write(cfdir); 
     }
     else
     {
@@ -50,7 +56,7 @@ int main(int argc, char** argv)
     gx.simulate(); 
 
     cudaDeviceSynchronize(); 
-    evt.save(); 
+    evt.save();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM 
  
     return 0 ; 
 }

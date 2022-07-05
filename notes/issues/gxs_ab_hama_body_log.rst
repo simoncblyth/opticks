@@ -205,6 +205,20 @@ TODO : ADD B:side boundary/identity
 * start by interpreting/dumping the A boundaries+identity then work out how to reproduce them Geant4 side 
 * for this will need to save the GGeo/CSGFoundry geocache and grab it 
 
+G4CXSimulateTest.cc::
+
+     41     else if(SSys::hasenvvar("GEOM"))
+     42     {
+     43         gx.setGeometry( U4VolumeMaker::PV() );
+     44         assert(gx.fd);
+     45 
+     46         const char* cfdir = SPath::Resolve("$DefaultOutputDir/CSGFoundry", DIRPATH);
+     47         gx.fd.write(cfdir);
+     48     }
+
+
+
+
 boundaries
    boundaries have names based on material and surface names so the B side
    can access this set of names from the A side at initialization and hence derive a boundary index 

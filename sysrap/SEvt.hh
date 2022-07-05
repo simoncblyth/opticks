@@ -58,6 +58,7 @@ struct NPFold ;
 struct SYSRAP_API SEvt : public SCompProvider
 {
     int index ; 
+    const char* reldir ; 
     sphoton_selector* selector ; 
     sevent* evt ; 
     sdebug* dbg ; 
@@ -110,6 +111,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void SetIndex(int index); 
     static void UnsetIndex(); 
     static int  GetIndex(); 
+
+    static void SetReldir(const char* reldir); 
+    static const char* GetReldir(); 
+
     static int GetNumPhoton(); 
     static NP* GetGenstep(); 
     static NP* GetInputPhoton(); 
@@ -141,6 +146,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     void setIndex(int index_) ;  
     void unsetIndex() ;  
     int getIndex() const ; 
+
+    void setReldir(const char* reldir_) ;  
+    const char* getReldir() const ; 
+
 
     unsigned getNumPhoton() const ; 
     unsigned getNumPhotonFromGenstep() const ; 
