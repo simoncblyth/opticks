@@ -30,9 +30,9 @@ enum {
    stag_re_mom_ct  =   12,
    stag_re_pol_ph  =   13,
    stag_re_pol_ct  =   14,
-   stag_hp_ph      =   15,
-   stag_hp_ct      =   16
-};    // HMM: squeezing down to 16 would allow to reduce from 5 bits to 4 which packs nicer
+   stag_hp_ph      =   15
+//   stag_hp_ct      =   16
+};    // HMM: squeezing to 0:15 allows reducing stag::BITS from 5 to 4 which packs nicer
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -96,8 +96,8 @@ struct stagc
     static constexpr const char* hp_ph_ = "hp_ph" ;  // 15
     static constexpr const char* hp_ph_note = "qsim::hemisphere_polarized u_hemipol_phi" ; 
 
-    static constexpr const char* hp_ct_ = "hp_ct" ;  // 16 
-    static constexpr const char* hp_ct_note = "qsim::hemisphere_polarized cosTheta" ; 
+    //static constexpr const char* hp_ct_ = "hp_ct" ;  // 16 
+    //static constexpr const char* hp_ct_note = "qsim::hemisphere_polarized cosTheta" ; 
 
 
 
@@ -124,7 +124,7 @@ STAG_METHOD const char* stagc::Name(unsigned tag)
         case stag_re_pol_ph: s = re_pol_ph_ ; break ;  // 13
         case stag_re_pol_ct: s = re_pol_ct_ ; break ;  // 14
         case stag_hp_ph:     s = hp_ph_     ; break ;  // 15 
-        case stag_hp_ct:     s = hp_ct_     ; break ;  // 16
+       //case stag_hp_ct:     s = hp_ct_     ; break ;  // 16
     }
     return s ; 
 }
@@ -149,7 +149,7 @@ STAG_METHOD const char* stagc::Note(unsigned tag)
         case stag_re_pol_ph:       s = re_pol_ph_note ; break ;  // 13
         case stag_re_pol_ct:       s = re_pol_ct_note ; break ;  // 14
         case stag_hp_ph:           s = hp_ph_note ; break ;     // 15
-        case stag_hp_ct:           s = hp_ct_note ; break ;     // 16 
+        //case stag_hp_ct:           s = hp_ct_note ; break ;     // 16 
     }
     return s ; 
 }
@@ -179,7 +179,7 @@ STAG_METHOD std::string stagc::Desc()
 struct stag
 {
     static constexpr const unsigned NSEQ = 4 ;   // NB MUST MATCH stag.py:NSEQ
-    static constexpr const unsigned BITS = 5 ;   // (0x1 << 5)-1 = 31  : up to 32 enumerations in 5 bits per slot   
+    static constexpr const unsigned BITS = 4 ;   // (0x1 << 5)-1 = 31  : up to 32 enumerations in 5 bits per slot   
     static constexpr const unsigned long long MASK = ( 0x1ull << BITS ) - 1ull ;   
     static constexpr const unsigned SLOTMAX = 64/BITS ;     // eg 64//5 = 12 so can fit 12 tags into each seqtag 64 bits
     static constexpr const unsigned SLOTS = SLOTMAX*NSEQ ;  // eg 24 for BITS = 5 with NSEQ = 2 

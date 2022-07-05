@@ -46,6 +46,19 @@ geom(){
    fi   
 }
 
+geom_(){ 
+   : opticks/opticks.bash 
+   local path=$(opticks-home)/bin/GEOM_.sh
+   if [ "$1" == "scp" ]; then 
+       scp $path P:opticks/bin/
+   else
+       vi $path ;
+   fi   
+}
+
+
+
+
 
 opticks-source(){   echo $BASH_SOURCE ; }
 opticks-ldir(){     echo $(dirname $BASH_SOURCE) ; }

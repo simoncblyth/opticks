@@ -36,6 +36,7 @@ struct U4RecorderTest
     public G4VUserDetectorConstruction
 {
     static const plog::Severity LEVEL ; 
+    static std::string Desc(); 
     static char PrimaryMode(); 
     static G4ParticleGun* InitGun(); 
 
@@ -64,6 +65,20 @@ struct U4RecorderTest
 };
 
 const plog::Severity  U4RecorderTest::LEVEL = info ;   // PLOG logging level control doesnt work in the main 
+
+
+std::string U4RecorderTest::Desc()
+{
+    std::string phy = U4Physics::Desc() ; 
+    std::string geo = U4VolumeMaker::GEOM  ; 
+    std::string rec = U4Recorder::Desc() ; 
+    std::stringstream ss ; 
+    if(!phy.empty()) ss << phy  ; 
+    if(!geo.empty()) ss << "/" << geo ; 
+    if(!rec.empty()) ss << "/" << rec ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 char U4RecorderTest::PrimaryMode()
 {
@@ -163,8 +178,8 @@ int main(int argc, char** argv)
     U4Random rnd ;             // load precooked randoms for aligned running 
     LOG(info) << rnd.desc() ; 
 
-    std::string physDesc = U4Physics::Desc(); 
-    LOG(info) << " physDesc " << physDesc << " U4VolumeMaker::GEOM " << U4VolumeMaker::GEOM ; 
+    std::string desc = U4RecorderTest::Desc(); 
+    LOG(info) << " desc " << desc ; 
 
     SEventConfig::SetStandardFullDebug(); 
     SEvt evt ;    // SEvt must be instanciated before QEvent
@@ -175,8 +190,8 @@ int main(int argc, char** argv)
     U4RecorderTest t(runMgr) ;  
     runMgr->BeamOn(1); 
  
-    LOG(info) << " physDesc " << physDesc << " U4VolumeMaker::GEOM " << U4VolumeMaker::GEOM ; 
-    evt.save("$TMP/U4RecorderTest",physDesc.c_str(), U4VolumeMaker::GEOM ); 
+    LOG(info) << " desc " << desc ; 
+    evt.save("$TMP/U4RecorderTest", desc.c_str() ); 
     LOG(info) << evt.desc() ; 
 
     return 0 ; 

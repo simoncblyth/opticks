@@ -45,7 +45,9 @@ B_FOLD_GEOM=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/
 A_FOLD_GXS=$tmp/G4CXSimulateTest/$GEOM
 B_FOLD_GXS=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/$GEOM
 
-
+GOAL_PIDX="check reproducibility of B:PIDX running"
+A_FOLD_PIDX=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log/ALL
+B_FOLD_PIDX=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log/PIDX_207_
 
 case $FOLD_MODE in
   TMP)  export A_FOLD=$A_FOLD_TMP  ; export B_FOLD=$B_FOLD_TMP  ;; 
@@ -53,6 +55,7 @@ case $FOLD_MODE in
   LOGF) export A_FOLD=$A_FOLD_LOGF ; export B_FOLD=$B_FOLD_LOGF ;; 
   GEOM) export A_FOLD=$A_FOLD_GEOM ; export B_FOLD=$B_FOLD_GEOM ;; 
    GXS) export A_FOLD=$A_FOLD_GXS ; export B_FOLD=$B_FOLD_GXS ;; 
+   PIDX) export A_FOLD=$A_FOLD_PIDX ; export B_FOLD=$B_FOLD_PIDX ;; 
 esac
 
 vars="BASH_SOURCE FOLD_MODE A_FOLD B_FOLD"

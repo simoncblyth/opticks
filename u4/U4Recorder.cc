@@ -25,12 +25,29 @@ const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG");
 const int U4Recorder::PIDX = SSys::getenvint("PIDX",-1) ; 
 const int U4Recorder::GIDX = SSys::getenvint("GIDX",-1) ; 
 
+std::string U4Recorder::Desc()
+{
+    std::stringstream ss ; 
+    if( GIDX > -1 ) ss << "GIDX_" << GIDX << "_" ; 
+    if( PIDX > -1 ) ss << "PIDX_" << PIDX << "_" ; 
+    if( GIDX == -1 && PIDX == -1 ) ss << "ALL" ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 /**
 U4Recorder::Enabled
 ---------------------
 
-This is used during debugging to restrict to the photons from a 
-single genstep with GIDX or a single photon in the event with PIDX
+This is used when PIDX and/or GIDX envvars are defined causing 
+early exits from::
+
+    U4Recorder::PreUserTrackingAction_Optical
+    U4Recorder::PostUserTrackingAction_Optical
+    U4Recorder::UserSteppingAction_Optical
+    
+Hence GIDX and PIDX provide a way to skip the expensive recording 
+of other photons whilst debugging single gensteps or photons. 
 
 **/
 
@@ -209,6 +226,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     if( flag == 0 ) LOG(error) << " ERR flag zero : post " << U4StepPoint::Desc(post) ; 
     assert( flag > 0 ); 
 
+    unsigned boundary = 0 ;   // TODO: rustle up these 
+    unsigned identity = 0 ; 
+
     if( flag == NAN_ABORT )
     {
         LOG(LEVEL) << " skip post saving for StepTooSmall label.id " << label.id  ;  
@@ -220,6 +240,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
         U4StepPoint::Update(current_photon, post); 
         current_photon.set_flag( flag );
+        current_photon.set_boundary( boundary);
+        current_photon.identity = identity ; 
+
         sev->pointPhoton(label);         // save SEvt::current_photon/rec/seq/prd into sevent 
     }
     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 

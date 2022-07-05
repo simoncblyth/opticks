@@ -69,8 +69,13 @@ class ABR(object):
         pass
         return "\n".join(lines)
 
+    def identification(self):
+        ia  = self.A.identification() if hasattr(self.A, "identification") else ""
+        ib  = self.B.identification() if hasattr(self.B, "identification") else ""
+        return "\n".join(filter(None,[ia,ib]))
+
     def __repr__(self):
-        return self.SideBySide(repr(self.A), repr(self.B)) 
+        return "\n".join([self.identification(), self.SideBySide(repr(self.A), repr(self.B))])
 
 
 if __name__ == '__main__':

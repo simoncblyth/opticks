@@ -29,7 +29,7 @@ class stag(object):
     PATH = "$OPTICKS_PREFIX/include/sysrap/stag.h" 
 
     NSEQ = 4   ## must match stag.h:NSEQ 
-    BITS = 5 
+    BITS = 4   ## must match stag.h:BITS
     MASK = ( 0x1 << BITS ) - 1 
     SLOTMAX = 64//BITS
     SLOTS = SLOTMAX*NSEQ

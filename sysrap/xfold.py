@@ -44,8 +44,10 @@ class XFold(object):
 
         xsymbol = self.BaseSymbol(x)
         if xsymbol == "B":
+            t2 = self.stack.make_stack2tag_mapped(t) 
             ts2 = self.stack.make_stack2tag_mapped(ts) 
         elif xsymbol == "A":
+            t2 = self.stack.make_tag2stack_mapped(t) 
             ts2 = self.stack.make_tag2stack_mapped(ts) 
         else:
             assert 0
@@ -59,6 +61,8 @@ class XFold(object):
         self.t = t       # (num_photon, SLOTS)  : unpacked consumption tag/stack enumeration integers
         self.f = f       # (num_photon, SLOTS)  : uniform rand 
         self.n = n       # (num_photon,)        : number of steps 
+        self.t2 = t2     # (num_photon, SLOTS)  : native enumeration mapped to the other enumeration
+
         self.ts = ts     # (num_photon, 7, 10)  : 7 is example max_steps which should match A.n.max(), 10 is example max rand per step input  
         self.fs = fs     # (num_photon, 7, 10)  : flat random values split by steps  
         self.ts2 = ts2   # (num_photon, 7, 10)  : native enumeration mapped to the other enumeration 
@@ -79,7 +83,7 @@ class XFold(object):
 
     def content(self):
         lines = []
-        members = "t n ts fs ts2".split()
+        members = "t t2 n ts fs ts2".split()
         for mem in members:
             arr = getattr(self, mem) 
             name = "%s.%s" % ( self.symbol, mem)
@@ -90,6 +94,9 @@ class XFold(object):
 
     def body(self):
         return self.ident.label(self.t[self.idx],self.f[self.idx])
+
+    def identification(self):
+        return "%s : %s" % (self.symbol, self.x.base) 
 
     def __repr__(self):
         return "\n".join([self.header(), self.content(), self.body()]) 

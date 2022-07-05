@@ -74,7 +74,7 @@ target_include_directories( ${name} PUBLIC
 target_compile_definitions( ${name} PUBLIC OPTICKS_U4 )
 target_compile_definitions( ${name} PUBLIC G4USE_STD11 ) 
 target_compile_definitions( ${name} PUBLIC STANDALONE ) 
-#target_compile_definitions( ${name} PRIVATE DEBUG_PIDX ) 
+target_compile_definitions( ${name} PRIVATE DEBUG_PIDX ) 
 target_compile_definitions( ${name} PUBLIC DEBUG_TAG ) 
 
 

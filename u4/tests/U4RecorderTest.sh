@@ -73,8 +73,9 @@ source ../../bin/GEOM_.sh
 export ShimG4OpAbsorption_FLOAT=1 
 export ShimG4OpRayleigh_FLOAT=1 
 
-#export ShimG4OpAbsorption_PIDX=5208 
-#export ShimG4OpRayleigh_PIDX=5208
+pidx=0
+export ShimG4OpAbsorption_PIDX=$pidx
+export ShimG4OpRayleigh_PIDX=$pidx
 
 # cf U4Physics::Desc
 physdesc=""

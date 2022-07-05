@@ -41,7 +41,7 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
 **/
 
 const bool ShimG4OpAbsorption::FLOAT = getenv("ShimG4OpAbsorption_FLOAT") != nullptr ;
-const int  ShimG4OpAbsorption::PIDX  = std::atoi( getenv("ShimG4OpAbsorption_PIDX") ? getenv("ShimG4OpAbsorption_PIDX") : "-1" ); 
+const int  ShimG4OpAbsorption::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" ); 
 
 //inline void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
 inline void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft()

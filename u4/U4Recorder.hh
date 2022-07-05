@@ -11,6 +11,8 @@ calling those lifecycle methods.
 
 **/
 
+#include <string>
+
 class G4Run ; 
 class G4Event ; 
 class G4Track ; 
@@ -28,6 +30,7 @@ struct U4_API U4Recorder
     static const plog::Severity LEVEL ; 
     static const int PIDX ; 
     static const int GIDX ; 
+    static std::string Desc(); 
     static bool Enabled(const spho& label); 
 
     static U4Recorder* INSTANCE ; 

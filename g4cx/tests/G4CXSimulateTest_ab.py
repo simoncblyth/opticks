@@ -39,15 +39,14 @@ if __name__ == '__main__':
     B = XFold(b, symbol="B") if not b is None else None
     AB = ABR(A,B) if ab else None 
 
-
     print("-------- after XFold" )
-
 
     if ab: 
         im = epr("im = np.abs(a.inphoton - b.inphoton).max()", globals(), locals() )  
         pm = epr("pm = np.abs(a.photon - b.photon).max()",     globals(), locals() )  
         rm = epr("rm = np.abs(a.record - b.record).max()",     globals(), locals() )  
         sm = epr("sm = np.all( a.seq[:,0] == b.seq[:,0] )",    globals(), locals() )  
+        we = epr("we = np.where( A.t.view('|S48') == B.t2.view('|S48') )[0]",  globals(), locals() )
 
         eprint("np.all( A.ts == B.ts2 )", globals(), locals() )
         eprint("np.all( A.ts2 == B.ts )", globals(), locals() )

@@ -31,7 +31,7 @@ class ShimG4OpRayleigh : public G4OpRayleigh
 
 #ifdef DEBUG_TAG
 const bool ShimG4OpRayleigh::FLOAT = getenv("ShimG4OpRayleigh_FLOAT") != nullptr ;
-const int  ShimG4OpRayleigh::PIDX  = std::atoi( getenv("ShimG4OpRayleigh_PIDX") ? getenv("ShimG4OpRayleigh_PIDX") : "-1" ); 
+const int  ShimG4OpRayleigh::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" ); 
 
 /**
 ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft
