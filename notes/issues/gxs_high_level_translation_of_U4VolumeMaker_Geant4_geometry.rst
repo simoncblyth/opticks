@@ -863,3 +863,25 @@ Fixed by moving geom setup to common script for sourcing  GEOM_.sh
     Out[7]: (array([], dtype=int64),)
 
 
+
+FIXED : PMTSim::GetLV broken
+-----------------------------
+
+Was using old version of PMTSim on workstation without the new NAME_OFFSET 1
+
+::
+
+    [ X4SolidTree::ApplyZCutTree zcut    183.225 pmt_delta      0.001 body_delta      0.000 inner_delta     -5.000 zcut+pmt_delta    183.226 zcut+body_delta    183.225 zcut+inner_delta    178.225
+    ] X4SolidTree::ApplyZCutTree zcut 183.225
+    2022-07-05 03:55:47.557 FATAL [134535] [U4VolumeMaker::PVP_@117] PMTSim::GetLV returned nullptr for name [hama_body_log]
+    G4CXSimulateTest: /data/blyth/junotop/opticks/u4/U4VolumeMaker.cc:118: static G4VPhysicalVolume* U4VolumeMaker::PVP_(const char*): Assertion `lv' failed.
+    ./gxs.sh: line 41: 134535 Aborted                 (core dumped) G4CXSimulateTest
+    ./gxs.sh run error
+    N[blyth@localhost g4cx]$ 
+
+
+T
+
+
+
+

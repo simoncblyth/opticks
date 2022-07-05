@@ -16,6 +16,7 @@ from opticks.ana.p import *
 from opticks.ana.eprint import eprint, epr
 
 from opticks.sysrap.xfold import XFold
+from opticks.sysrap.ABR import ABR 
 from opticks.sysrap.stag import stag  
 from opticks.u4.U4Stack import U4Stack
 
@@ -30,16 +31,18 @@ if __name__ == '__main__':
     quiet = True 
     a = Fold.Load("$A_FOLD", symbol="a", quiet=quiet) if "A_FOLD" in os.environ else None
     b = Fold.Load("$B_FOLD", symbol="b", quiet=quiet) if "B_FOLD" in os.environ else None
+    ab = (not a is None) and (not b is None)
 
     print("-------- after Fold.Load" )
 
     A = XFold(a, symbol="A") if not a is None else None
     B = XFold(b, symbol="B") if not b is None else None
+    AB = ABR(A,B) if ab else None 
+
 
     print("-------- after XFold" )
 
 
-    ab = (not a is None) and (not b is None)
     if ab: 
         im = epr("im = np.abs(a.inphoton - b.inphoton).max()", globals(), locals() )  
         pm = epr("pm = np.abs(a.photon - b.photon).max()",     globals(), locals() )  

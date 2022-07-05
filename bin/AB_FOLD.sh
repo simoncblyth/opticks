@@ -24,22 +24,26 @@ EOU
 
 export FOLD_MODE=${FOLD_MODE:-TMP}
 
-A_FOLD_TMP=/tmp/$USER/opticks/GeoChain/BoxedSphere/CXRaindropTest
-B_FOLD_TMP=/tmp/$USER/opticks/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4OpRayleigh_ORIGINAL
+
+tmp=/tmp/$USER/opticks
+keep=/usr/local/opticks/tests
+
+
+A_FOLD_TMP=$tmp/GeoChain/BoxedSphere/CXRaindropTest
+B_FOLD_TMP=$tmp/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4OpRayleigh_ORIGINAL
 #B_FOLD_TMP=/tmp/$USER/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT
 
-A_FOLD_KEEP=/usr/local/opticks/tests/GeoChain/BoxedSphere/CXRaindropTest
-B_FOLD_KEEP=/usr/local/opticks/tests/U4RecorderTest
+A_FOLD_KEEP=$keep/GeoChain/BoxedSphere/CXRaindropTest
+B_FOLD_KEEP=$keep/U4RecorderTest
 
-A_FOLD_LOGF=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT
-B_FOLD_LOGF=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4OpRayleigh_ORIGINAL
+A_FOLD_LOGF=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT
+B_FOLD_LOGF=$tmp/U4RecorderTest/ShimG4OpAbsorption_ORIGINAL_ShimG4OpRayleigh_ORIGINAL
 
-A_FOLD_GEOM=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater
-B_FOLD_GEOM=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2
+A_FOLD_GEOM=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/$GEOM
+B_FOLD_GEOM=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/$GEOM
 
-A_FOLD_GXS=/tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2
-B_FOLD_GXS=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2
-
+A_FOLD_GXS=$tmp/G4CXSimulateTest/$GEOM
+B_FOLD_GXS=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/$GEOM
 
 
 

@@ -11,18 +11,10 @@ gxs_ab.sh
 EOU
 }
 
+source ../bin/GEOM_.sh 
 
-#fold_mode=TMP
-#fold_mode=KEEP
-#fold_mode=LOGF
-#fold_mode=GEOM
-fold_mode=GXS
-
-export FOLD_MODE=${FOLD_MODE:-$fold_mode}
-
-source ../bin/AB_FOLD.sh 
+FOLD_MODE=GXS source ../bin/AB_FOLD.sh 
 
 ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest_ab.py $*  
-
 
 

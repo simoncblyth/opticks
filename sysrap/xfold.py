@@ -88,8 +88,11 @@ class XFold(object):
         pass
         return "\n".join(lines)
 
+    def body(self):
+        return self.ident.label(self.t[self.idx],self.f[self.idx])
+
     def __repr__(self):
-        return "\n".join([self.header(), self.content(), self.ident.label(self.t[self.idx],self.f[self.idx])]) 
+        return "\n".join([self.header(), self.content(), self.body()]) 
 
 
 if __name__ == '__main__':
