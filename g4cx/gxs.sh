@@ -49,7 +49,8 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 
-export FOLD=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM   # corresponds to SPath::Resolve("$DefaultOutputDir", DIRPATH) 
+export BASE=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
+export FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest.py     
@@ -57,7 +58,7 @@ if [ "${arg/ana}" != "$arg" ]; then
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    source ../bin/rsync.sh $FOLD 
+    source ../bin/rsync.sh $BASE 
 fi 
 
 

@@ -202,8 +202,23 @@ TODO : add boundary + identity to B:photon/record flags
 TODO : ADD B:side boundary/identity 
 -------------------------------------------
 
+boundaries
+   boundaries have names based on material and surface names so the B side
+   can access this set of names from the A side at initialization and hence derive a boundary index 
+   from a live set of Geant4 pre/post points that straddle the boundary    
+
+identity 
+   hmm: what exactly is the A side identity : primIdx probably so that is solid/lv index ? 
+   simtrace plotting uses this for the keys, see cx/tests/CSGOptiXSimtraceTest.py
+
+   * G4 accessing the volume : its like what happens with a hit. Possible but not very nice. 
+   * but with simple geometries the boundary probably sufficient for debugging
+
+
 * start by interpreting/dumping the A boundaries+identity then work out how to reproduce them Geant4 side 
-* for this will need to save the GGeo/CSGFoundry geocache and grab it 
+* for this will need to save the GGeo/CSGFoundry geocache and grab it in order
+  to hookup the actual geometry to the python machinery 
+
 
 G4CXSimulateTest.cc::
 
@@ -216,21 +231,47 @@ G4CXSimulateTest.cc::
      47         gx.fd.write(cfdir);
      48     }
 
+::
 
+    gx
+    ./gxs.sh grab 
+    ...
 
+    == ../bin/rsync.sh tto /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log jpg mp4 npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/solid.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/prim.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/node.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/tran.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/itra.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/inst.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/SSim/bnd.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/SSim/propcom.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/SSim/optical.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/photon.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/genstep.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/record.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/rec.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/seq.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/prd.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/tag.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/seed.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/inphoton.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/domain.npy
+    /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL/flat.npy
 
-boundaries
-   boundaries have names based on material and surface names so the B side
-   can access this set of names from the A side at initialization and hence derive a boundary index 
-   from a live set of Geant4 pre/post points that straddle the boundary    
+    epsilon:SSim blyth$ cat /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/SSim/bnd_names.txt
+    Rock///Rock
+    Rock//water_rock_bs/Water
+    Water///Pyrex
+    Pyrex///Vacuum
 
-identity 
-   hmm: what exactly is the A side identity : primIdx probably so that is solid/lv index ? 
-   simtrace plotting uses this for the keys, see cx/tests/CSGOptiXSimtraceTest.py
-
-   * G4 accessing the volume : its like what happens with a hit. Possible but not very nice. 
-   * but with simple geometries the boundary probably sufficient 
-
+    epsilon:SSim blyth$ cat /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/CSGFoundry/meshname.txt 
+    hama_inner1_solid_I
+    hama_inner2_solid_1_4
+    hama_body_solid_1_4
+    Water_solid
+    Rock_solid
+    epsilon:SSim blyth$ 
 
 
 The sctx::point persists the sphoton but where is p.flag/p.boundary set::

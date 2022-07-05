@@ -330,7 +330,7 @@ inline unsigned U4Stack::TagToStack(unsigned tag)
         case stag_re_pol_ph:  stack = U4Stack_Unclassified ; break ;  // 13
         case stag_re_pol_ct:  stack = U4Stack_Unclassified ; break ;  // 14
         case stag_hp_ph:      stack = U4Stack_Unclassified ; break ;  // 15
-        case stag_hp_ct:      stack = U4Stack_Unclassified ; break ;  // 16 
+        //case stag_hp_ct:      stack = U4Stack_Unclassified ; break ;  // 16 
     }
     return stack ; 
 }
