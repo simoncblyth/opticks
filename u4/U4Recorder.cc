@@ -11,6 +11,7 @@
 #include "SEvt.hh"
 #include "PLOG.hh"
 
+#include "G4LogicalBorderSurface.hh"
 #include "U4Recorder.hh"
 #include "U4Track.h"
 #include "U4StepPoint.hh"
@@ -19,6 +20,7 @@
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4TrackStatus.h"
 #include "U4Random.hh"
+#include "U4Surface.h"
 
 #include "U4Process.h"
 
@@ -242,7 +244,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     if( flag == 0 ) LOG(error) << " ERR flag zero : post " << U4StepPoint::Desc(post) ; 
     assert( flag > 0 ); 
 
-    unsigned boundary = getBoundaryIndex(step) ;   // TODO: rustle up these 
+    unsigned boundary = getBoundary(step) ; 
     unsigned identity = 0 ; 
 
     if( flag == NAN_ABORT )
@@ -264,28 +266,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
 }
 
-
-unsigned U4Recorder::getBoundaryIndex(const G4Step* step) const
-{
-    unsigned boundary = ~0u ; 
-    const G4StepPoint* pre = step->GetPreStepPoint() ; 
-    const G4StepPoint* post = step->GetPostStepPoint() ; 
-    G4bool isOnBoundary = post->GetStepStatus() == fGeomBoundary ;
-    if(isOnBoundary)
-    {
-        const G4Material* m1 = pre->GetMaterial();
-        const G4Material* m2 = post->GetMaterial();
-
-        const G4String& n1 = m1->GetName();  
-        const G4String& n2 = m2->GetName();  
-
-        const G4VPhysicalVolume* pv1 = pre->GetPhysicalVolume();
-        const G4VPhysicalVolume* pv2 = post->GetPhysicalVolume();
-
-        LOG(info) << " n1 " << n1 << " n2 " << n2 << " pv1 " << pv1 << " pv2 " << pv2 ; ; 
-    }
-    return boundary ; 
-}
 
 /**
 //U4Track::SetStopAndKill(track); 
@@ -327,6 +307,98 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
             << " flag " << OpticksPhoton::Flag(flag) 
             ; 
     }
+}
+
+unsigned U4Recorder::getBoundary(const G4Step* step) const
+{
+    unsigned boundary = ~0u ; 
+    std::string spec = getBoundarySpec(step);  
+    for(unsigned i=0 ; i < bnd.size() ; i++)
+    {
+        if(strcmp(spec.c_str(), bnd[i].c_str()) == 0 ) 
+        {
+            boundary = i ; 
+            break ; 
+        }
+    }
+
+    //LOG(info) << std::setw(4) << boundary << " : " << spec ; 
+
+    return boundary ; 
+}
+
+/**
+U4Recorder::getBoundarySpec
+-----------------------------
+
+Spec is a string composed of 4 elements delimted by 3 "/"::
+
+    omat/osur/isur/imat
+
+The osur and isur can be blank, the omat and imat cannot be blank
+
+::
+
+      class G4LogicalBorderSurface : public G4LogicalSurface
+      class G4LogicalSkinSurface   : public G4LogicalSurface
+      class G4LogicalSurface
+
+**/
+
+
+std::string U4Recorder::getBoundarySpec(const G4Step* step) const
+{
+    std::stringstream ss ; 
+    const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+    G4bool isOnBoundary = post->GetStepStatus() == fGeomBoundary ;
+    if(isOnBoundary)
+    {
+        const G4Material* m1 = pre->GetMaterial();
+        const G4Material* m2 = post->GetMaterial();
+        const char* n1 = m1->GetName().c_str() ;  
+        const char* n2 = m2->GetName().c_str() ;  
+
+        const G4VPhysicalVolume* thePrePV = pre->GetPhysicalVolume();
+        const G4VPhysicalVolume* thePostPV = post->GetPhysicalVolume();
+        G4bool enteredDaughter = thePostPV->GetMotherLogical() == thePrePV ->GetLogicalVolume();
+        // enteredDaughter
+        //     True: "inwards" photons 
+        //     False: "outwards" photons 
+      
+
+        const char* omat = enteredDaughter ? n1 : n2 ; 
+        const char* imat = enteredDaughter ? n2 : n1 ; 
+
+        const G4LogicalSurface* surf1 = U4Surface::GetLogicalSurface(thePrePV, thePostPV ); 
+        const G4LogicalSurface* surf2 = U4Surface::GetLogicalSurface(thePostPV, thePrePV ); 
+
+        const char* osur = nullptr ; 
+        const char* isur = nullptr ; 
+
+        if( enteredDaughter )
+        {
+            osur = surf1 ? surf1->GetName().c_str() : nullptr ; 
+            isur = surf2 ? surf2->GetName().c_str() : nullptr ; 
+        }
+        else
+        {
+            osur = surf2 ? surf2->GetName().c_str() : nullptr ; 
+            isur = surf1 ? surf1->GetName().c_str() : nullptr ; 
+        }
+        ss 
+           << omat 
+           << "/" 
+           << ( osur ? osur : "" ) 
+           << "/" 
+           << ( isur ? isur : "" ) 
+           << "/" 
+           << imat
+           ; 
+
+    }
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 

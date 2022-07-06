@@ -96,6 +96,8 @@ cfbase=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
 if [ -d "${cfbase}/CSGFoundry" ]; then 
     export CFBASE=$cfbase
     echo $msg cfbase/CSGFoundry dir exists so defined CFBASE $CFBASE
+else
+    echo $msg cfbase/CSGFoundry dir does not exist : NOT DEFINING CFBASE
 fi 
 
 

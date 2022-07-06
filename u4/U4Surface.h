@@ -2,10 +2,12 @@
 
 class G4LogicalBorderSurface ;
 class G4VPhysicalVolume ; 
+class G4LogicalSurface ; 
 
 struct U4Surface
 {
     static G4LogicalBorderSurface* MakePerfectAbsorberSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2 ); 
+    static G4LogicalSurface* GetLogicalSurface(const G4VPhysicalVolume* thePrePV, const G4VPhysicalVolume* thePostPV); 
 };
 
 
@@ -13,6 +15,9 @@ struct U4Surface
 #include "G4OpticalSurface.hh"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4LogicalBorderSurface.hh"
+#include "G4LogicalSkinSurface.hh"
+
+#include "U4Material.hh"
 
 /**
 U4Surface::MakePerfectAborberSurface
@@ -40,4 +45,80 @@ inline G4LogicalBorderSurface* U4Surface::MakePerfectAbsorberSurface(const char*
     G4LogicalBorderSurface* bs = new G4LogicalBorderSurface(name, pv1, pv2, os ); 
     return bs ; 
 }
+
+/**
+U4Surface::GetLogicalSurface
+-----------------------------
+
+::
+
+      +------------------------------------------+
+      | thePrePV                                 |
+      |                                          |
+      |                                          |
+      |       +------------------------+         |
+      |       | thePostPV              |         |
+      |       |                        |         |
+      |   +--->                        |         |
+      |       |                        |         |
+      |       |                        |         |
+      |       +------------------------+         |
+      |                                          |
+      |                                          |
+      |                                          |
+      +------------------------------------------+
+
+
+      enteredDaughter = thePostPV->GetMotherLogical() == thePrePV ->GetLogicalVolume() 
+
+      enteredDaughter:True 
+          "inwards" photons
+
+
+      +------------------------------------------+
+      | thePostPV                                |
+      |                                          |
+      |                                          |
+      |       +------------------------+         |
+      |       | thePrePV               |         |
+      |       |                        |         |
+      |       <---+                    |         |
+      |       |                        |         |
+      |       |                        |         |
+      |       +------------------------+         |
+      |                                          |
+      |                                          |
+      |                                          |
+      +------------------------------------------+
+
+
+      enteredDaughter = thePostPV->GetMotherLogical() == thePrePV ->GetLogicalVolume() 
+
+      enteredDaughter:False
+          "outwards" photons
+
+**/
+
+
+inline G4LogicalSurface* U4Surface::GetLogicalSurface(const G4VPhysicalVolume* thePrePV, const G4VPhysicalVolume* thePostPV)
+{
+    G4LogicalSurface* Surface = G4LogicalBorderSurface::GetSurface(thePrePV, thePostPV);
+    if (Surface == nullptr)
+    {
+        G4bool enteredDaughter = thePostPV->GetMotherLogical() == thePrePV ->GetLogicalVolume();
+
+        if(enteredDaughter)
+        {
+            Surface = G4LogicalSkinSurface::GetSurface(thePostPV->GetLogicalVolume());
+            if(Surface == nullptr) Surface = G4LogicalSkinSurface::GetSurface(thePrePV->GetLogicalVolume());
+        }    
+        else  // "leavingDaughter"
+        {
+            Surface = G4LogicalSkinSurface::GetSurface(thePrePV->GetLogicalVolume());
+            if(Surface == NULL) Surface = G4LogicalSkinSurface::GetSurface(thePostPV->GetLogicalVolume());
+        }
+    }
+    return Surface ; 
+}
+
 

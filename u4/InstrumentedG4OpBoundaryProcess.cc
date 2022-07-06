@@ -186,7 +186,7 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
         // U4PhotonInfo::GetIndex is picking up the index from the label set 
         // in U4Recorder::PreUserTrackingAction_Optical for initially unlabelled input photons
         pidx = U4PhotonInfo::GetIndex(&aTrack);   
-        pidx_dump = pidx == PIDX || PIDX == -1 ; 
+        pidx_dump = pidx == PIDX ; 
         // HUH: observed this happening twice for each pidx with what looks like same step ?
        /*
         std::cout 

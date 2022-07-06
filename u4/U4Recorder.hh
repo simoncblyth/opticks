@@ -55,8 +55,11 @@ struct U4_API U4Recorder
     void PostUserTrackingAction_Optical(const G4Track*);
     void UserSteppingAction_Optical(const G4Step*); 
 
-    unsigned getBoundaryIndex(const G4Step* step ) const ; 
     void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag); 
+
+    unsigned getBoundary(const G4Step* step ) const ; 
+    std::string getBoundarySpec(const G4Step* step ) const ; 
+
 
 };
 
