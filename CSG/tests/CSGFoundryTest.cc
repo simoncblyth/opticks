@@ -212,6 +212,17 @@ void test_setPrimBoundary()
 }
 
 
+void test_getPrimName()
+{
+    CSGFoundry* fd = CSGFoundry::Load() ; 
+    std::vector<std::string> pname ; 
+    fd->getPrimName(pname);
+
+    LOG(info) << " pname.size " << pname.size() ;    
+}
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
@@ -226,9 +237,10 @@ int main(int argc, char** argv)
     test_getInstanceGAS() ;
     test_setMeta_getMeta(); 
     test_setPrimBoundary(); 
-    */
-
     test_Load(); 
+    */
+    test_getPrimName(); 
+
 
     return 0 ; 
 }

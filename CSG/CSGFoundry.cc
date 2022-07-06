@@ -194,11 +194,41 @@ void CSGFoundry::getMeshName( std::vector<std::string>& mname ) const
     }
 }
 
+
+/**
+CSGFoundry::getPrimName
+------------------------
+
+After CSGFoundry.py:make_primIdx_meshname_dict
+see notes/issues/cxs_2d_plotting_labels_suggest_meshname_order_inconsistency.rst
+
+**/
+
+void CSGFoundry::getPrimName( std::vector<std::string>& pname ) const 
+{
+    for(unsigned i=0 ; i < prim.size() ; i++)
+    {
+        const CSGPrim& pr = prim[i] ; 
+        unsigned midx = pr.meshIdx(); 
+        const std::string& mname = getMeshName(midx); 
+        LOG(LEVEL) << " primIdx " << std::setw(4) << i << " midx " << midx << " mname " << mname  ;  
+        pname.push_back(mname);  
+    }
+}
+
+
+
+
 const std::string& CSGFoundry::getMeshName(unsigned midx) const 
 {
     assert( midx < meshname.size() ); 
     return meshname[midx] ; 
 }
+
+
+
+
+
 
 /**
 CSGFoundry::findMeshIndex
@@ -1934,6 +1964,11 @@ void CSGFoundry::write(const char* dir_) const
     LOG(info) << dir ; 
 
     if(meshname.size() > 0 ) NP::WriteNames( dir, "meshname.txt", meshname );
+
+    std::vector<std::string> primname ; 
+    getPrimName(primname); 
+    if(primname.size() > 0 ) NP::WriteNames( dir, "primname.txt", primname );
+
     if(mmlabel.size() > 0 )  NP::WriteNames( dir, "mmlabel.txt", mmlabel );
     if(hasMeta())  NP::WriteString( dir, "meta.txt", meta.c_str() ); 
               
@@ -2767,6 +2802,5 @@ void CSGFoundry::kludgeScalePrimBBox( unsigned solidIdx, float dscale )
         pr->scaleAABB_(scale); 
     } 
 }
-
 
 

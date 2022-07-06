@@ -18,6 +18,8 @@ class G4Run ;
 class G4Event ; 
 class G4Track ; 
 class G4Step ; 
+class G4VSolid ; 
+class G4StepPoint ; 
 
 struct spho ; 
 
@@ -37,9 +39,11 @@ struct U4_API U4Recorder
     static U4Recorder* Get(); 
 
     std::vector<std::string> bnd ; 
+    std::vector<std::string> msh ; 
 
     U4Recorder(); 
     void init(); 
+    void init_CFBASE(); 
 
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);
@@ -57,9 +61,14 @@ struct U4_API U4Recorder
 
     void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag); 
 
-    unsigned getBoundary(const G4Step* step ) const ; 
-    std::string getBoundarySpec(const G4Step* step ) const ; 
 
+    static bool IsOnBoundary( const G4Step* step ); 
+    static std::string BoundarySpec(const G4Step* step ); 
+    static const G4VSolid* Solid(const G4StepPoint* point ); 
+
+    static unsigned PackIdentity(unsigned prim_idx, unsigned instance_id); 
+    unsigned getPrimIdx( const char* soname) const ; 
+    unsigned getBoundary(const char* spec) const ; 
 
 };
 

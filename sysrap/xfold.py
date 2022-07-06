@@ -80,7 +80,7 @@ class XFold(object):
 
     def __getitem__(self, idx):
         self.idx = idx 
-        self.flavor = "item"
+        self.flavor = "getitem"
         return self
 
     def header(self):
@@ -114,8 +114,14 @@ class XFold(object):
         ii = ii_[wp]
 
         pm = ["+","-"]
-        return [ "%s %-40s %-50s"%(pm[oo[i]],cf.sim.bndnamedict.get(bb[i]), cf.primIdx_meshname_dict.get(pp[i])) for i in range(len(bb))]
-        #return [ "%s" % cf.sim.bndnamedict.get(bb[i]) for i in range(len(bb))]
+        lines = [ "%s %-40s %-50s"%(pm[oo[i]],cf.sim.bndnamedict.get(bb[i]), cf.primIdx_meshname_dict.get(pp[i])) for i in range(len(bb))]
+
+        lines += [""]
+        lines += ["- : against the normal (ie inwards from omat to imat)"]
+        lines += ["+ : with the normal (ie outwards from imat to omat)"] 
+        return lines 
+
+
     def rbnd(self):
         return "\n".join(self.rbnd_())
 
@@ -139,14 +145,14 @@ class XFold(object):
     def call_repr(self):
         return "\n".join([self.header(), self.content(), self.body()]) 
 
-    def item_repr(self):
-        return "\n".join([self.identification(),self.header(), self.rbnd()])
+    def getitem_repr(self):
+        return "\n".join([self.header(), self.rbnd()])
 
     def __repr__(self):
         if self.flavor == "call":
             rep = self.call_repr()
-        elif self.flavor == "item":
-            rep = self.item_repr()
+        elif self.flavor == "getitem":
+            rep = self.getitem_repr()
         else:
             rep = self.call_repr()
         pass

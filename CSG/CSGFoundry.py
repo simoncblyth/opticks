@@ -283,6 +283,10 @@ class CSGFoundry(object):
 
     def meshIdx(self, primIdx):
         """
+        Lookup the midx of primIdx prim 
+ 
+        :param primIdx:
+        :return midx:
         """
         assert primIdx < len(self.prim)
         midx = self.prim[primIdx].view(np.uint32)[1,1]

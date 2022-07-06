@@ -43,7 +43,11 @@ def check_pho_labels(l):
     np.all( np.arange( len(gs_u) ) == gs_u )       
 
     id_u, id_c = np.unique( id_, return_counts=True  )  
-    assert np.all( id_c == 1 )  
+    all_one =  np.all( id_c == 1 )  
+
+    if not all_one: print("check_pho_labels all_one FAIL")
+    #assert all_one
+
     ix_u, ix_c = np.unique( ix, return_counts=True )  
 
     gn_u, gn_c = np.unique( gn, return_counts=True )  
@@ -181,7 +185,9 @@ if __name__ == '__main__':
         print("\n\n")
     pass
     idx = p.view(np.uint32)[:,3,2] 
-    assert np.all( np.arange( len(p) ) == idx ) 
+    check_idx = np.all( np.arange( len(p) ) == idx ) 
+    if not check_idx: print("check_idx FAIL")
+    #assert check_idx
 
     flagmask_u, flagmask_c = np.unique(p.view(np.uint32)[:,3,3], return_counts=True)    
     print("flagmask_u:%s " % str(flagmask_u))

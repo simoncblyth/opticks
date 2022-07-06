@@ -145,7 +145,7 @@ orient_   = lambda p:p.view(np.uint32)[3,2] >> 31
 #3,3
 flagmask_ = lambda p:p.view(np.uint32)[3,3]
 
-flagdesc_ = lambda p:" idx(%6d) prd(%3d %4d %5d %1d ii:%5d) %3s  %15s " % ( idx_(p),  boundary_(p),primIdx_(p),instanceId_(p), orient_(p), iindex_(p), hm.label(flag_(p)),hm.label( flagmask_(p) ))
+flagdesc_ = lambda p:" idx(%6d) prd(b%3d p%4d i%5d o%1d ii:%5d) %3s  %15s " % ( idx_(p),  boundary_(p),primIdx_(p),instanceId_(p), orient_(p), iindex_(p), hm.label(flag_(p)),hm.label( flagmask_(p) ))
 
 
 flagmask__ = lambda p:p.view(np.uint32)[:,3,3]

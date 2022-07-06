@@ -56,8 +56,11 @@ geom_(){
    fi   
 }
 
-
-
+fold(){
+   : opticks/opticks.bash 
+   local path=$(opticks-home)/bin/AB_FOLD.sh
+   vi $path
+}
 
 
 opticks-source(){   echo $BASH_SOURCE ; }

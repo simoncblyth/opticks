@@ -47,7 +47,151 @@ Quite a lot aligned too::
 
 * DONE : find way to select aligned idx more stringently based on the tag/stack enumerations and/or flat 
 
-  * converted the enum seq to a "S48" string and compared that 
+  * converted the enum seq to a "S48" or "S64" depending on SLOTS string and compared that 
+
+
+Mimic the Opticks Flags with Geant4? 
+---------------------------------------
+
+::
+
+    1258 inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx )
+    1259 {
+    1260     const unsigned boundary = ctx.prd->boundary() ;
+    1261     const unsigned identity = ctx.prd->identity() ;
+    1262     const unsigned iindex = ctx.prd->iindex() ;
+    1263     const float3* normal = ctx.prd->normal();
+    1264     float cosTheta = dot(ctx.p.mom, *normal ) ;
+    1265 
+    1266 #ifdef DEBUG_PIDX
+    1267     if( ctx.idx == base->pidx )
+    1268     printf("//qsim.propagate idx %d bnc %d cosTheta %10.4f dir (%10.4f %10.4f %10.4f) nrm (%10.4f %10.4f %10.4f) \n",
+    1269                  ctx.idx, bounce, cosTheta, ctx.p.mom.x, ctx.p.mom.y, ctx.p.mom.z, normal->x, normal->y, normal->z );
+    1270 #endif
+    1271 
+    1272     ctx.p.set_prd(boundary, identity, cosTheta, iindex );
+    1273 
+
+::
+
+    130 SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, float  orient_, unsigned iindex_ )
+    131 {
+    132     set_boundary(boundary_);
+    133     identity = identity_ ;
+    134     set_orient( orient_ );
+    135     iindex = iindex_ ;
+    136 }
+
+    SPHOTON_METHOD void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } 
+    // clear orient bit and then set it 
+    //
+    // cosTheta < 0.f : photon direction is against the normal of the geometry => 0x1 => "-"
+    // cosTheta > 0.f : photon direction is with    the normal of the geometry => 0x0 => "+"  
+
+
+
+
+::
+
+    2022-07-06 17:35:47.075 INFO  [2257351] [U4Recorder::init_CFBASE@82]    0 bnd Rock///Rock
+    2022-07-06 17:35:47.075 INFO  [2257351] [U4Recorder::init_CFBASE@82]    1 bnd Rock//air_rock_bs/Air
+    2022-07-06 17:35:47.075 INFO  [2257351] [U4Recorder::init_CFBASE@82]    2 bnd Air///Water
+    2022-07-06 17:35:47.075 INFO  [2257351] [U4Recorder::init_CFBASE@86] msh_path /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2/CSGFoundry/meshname.txt msh.size 3
+    2022-07-06 17:35:47.075 INFO  [2257351] [U4Recorder::init_CFBASE@87]    0 msh Water_solid
+    2022-07-06 17:35:47.075 INFO  [2257351] [U4Recorder::init_CFBASE@87]    1 msh Air_solid
+    2022-07-06 17:35:47.075 INFO  [2257351] [U4Recorder::init_CFBASE@87]    2 msh Rock_solid
+
+
+    bflagdesc_(r[0,j])
+     idx(     0) prd(b  0 p   0 i    0 o0 ii:    0)  TO               TO  :                                                   Rock_solid : 3ee28144 : Rock///Rock 
+     idx(     0) prd(b  2 p   0 i    0 o0 ii:    0)  BT            TO|BT  :                                                   Rock_solid : 5499841d : Air///Water 
+     idx(     0) prd(b  2 p   1 i    0 o0 ii:    0)  BT            TO|BT  :                                                    Air_solid : ec91a858 : Air///Water 
+     idx(     0) prd(b  1 p   2 i    0 o0 ii:    0)  SA         TO|BT|SA  :                                                  Water_solid : 65ec719a : Rock//air_rock_bs/Air 
+
+
+
+* discrepancy in the prim naming : seems to be in reversed order 
+
+::
+
+    In [1]: cf.primIdx_meshname_dict
+    Out[1]: {0: 'Rock_solid', 1: 'Air_solid', 2: 'Water_solid'}
+
+
+AHHA it is not a meshidx although it uses mesh names, it is a primIdx
+
+::
+
+    291     def make_primIdx_meshname_dict(self):
+    292         """
+    293         See notes/issues/cxs_2d_plotting_labels_suggest_meshname_order_inconsistency.rst
+    294         this method resolved an early naming bug 
+    295 
+    296         CSG/CSGPrim.h:: 
+    297 
+    298              95     PRIM_METHOD unsigned  meshIdx() const {           return q1.u.y ; }  // aka lvIdx
+    299              96     PRIM_METHOD void   setMeshIdx(unsigned midx){     q1.u.y = midx ; }
+    300 
+    301         """
+    302         d = {}
+    303         for primIdx in range(len(self.prim)):
+    304             midx = self.meshIdx (primIdx)      # meshIdx method with contiguous primIdx argument
+    305             assert midx < len(self.meshname)
+    306             mnam = self.meshname[midx]
+    307             d[primIdx] = mnam
+    308             #print("CSGFoundry:primIdx_meshname_dict primIdx %5d midx %5d meshname %s " % (primIdx, midx, mnam))
+    309         pass
+    310         return d
+
+
+::
+
+    epsilon:tests blyth$ ./CSGFoundryTest.sh 
+    PLOG::EnvLevel adjusting loglevel by envvar   key CSGFoundry level INFO fallback DEBUG
+    2022-07-06 18:03:17.416 INFO  [2282561] [*CSGFoundry::Load_@2358]  cfbase /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2 readable 1
+    2022-07-06 18:03:17.417 INFO  [2282561] [CSGFoundry::load@2123] /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2/CSGFoundry
+    2022-07-06 18:03:17.417 INFO  [2282561] [CSGFoundry::loadArray@2448]  ni     1 nj 3 nk 4 solid.npy
+    2022-07-06 18:03:17.417 INFO  [2282561] [CSGFoundry::loadArray@2448]  ni     3 nj 4 nk 4 prim.npy
+    2022-07-06 18:03:17.417 INFO  [2282561] [CSGFoundry::loadArray@2448]  ni     3 nj 4 nk 4 node.npy
+    2022-07-06 18:03:17.418 INFO  [2282561] [CSGFoundry::loadArray@2448]  ni     3 nj 4 nk 4 tran.npy
+    2022-07-06 18:03:17.418 INFO  [2282561] [CSGFoundry::loadArray@2448]  ni     3 nj 4 nk 4 itra.npy
+    2022-07-06 18:03:17.418 INFO  [2282561] [CSGFoundry::loadArray@2448]  ni     1 nj 4 nk 4 inst.npy
+    2022-07-06 18:03:17.421 INFO  [2282561] [*CSGFoundry::ELVString@2269]  elv_selection_ (null) elv (null)
+    2022-07-06 18:03:17.421 INFO  [2282561] [CSGFoundry::getPrimName@214]  primIdx    0 midx 2 mname Rock_solid
+    2022-07-06 18:03:17.421 INFO  [2282561] [CSGFoundry::getPrimName@214]  primIdx    1 midx 1 mname Air_solid
+    2022-07-06 18:03:17.421 INFO  [2282561] [CSGFoundry::getPrimName@214]  primIdx    2 midx 0 mname Water_solid
+    2022-07-06 18:03:17.421 INFO  [2282561] [test_getPrimName@221]  pname.size 3
+    epsilon:tests blyth$ 
+
+
+
+
+
+U4Recorder::getBoundary mimic Opticks boundary in G4
+-------------------------------------------------------
+
+::
+
+    2022-07-06 14:55:21.909 INFO  [2029125] [U4Recorder::init@80] 0 : Rock///Rock
+    2022-07-06 14:55:21.909 INFO  [2029125] [U4Recorder::init@80] 1 : Rock//air_rock_bs/Air
+    2022-07-06 14:55:21.909 INFO  [2029125] [U4Recorder::init@80] 2 : Air///Water
+
+::
+
+    2022-07-06 14:56:16.672 INFO  [2030784] [U4Recorder::getBoundary@325]    2 : Air///Water
+    2022-07-06 14:56:16.674 INFO  [2030784] [U4Recorder::getBoundary@325]    2 : Air///Water
+    2022-07-06 14:56:16.676 INFO  [2030784] [U4Recorder::getBoundary@325]    1 : Rock//air_rock_bs/Air
+    2022-07-06 14:56:16.678 INFO  [2030784] [U4Recorder::getBoundary@325]    2 : Air///Water
+    2022-07-06 14:56:16.680 INFO  [2030784] [U4Recorder::getBoundary@325]    2 : Air///Water
+    2022-07-06 14:56:16.682 INFO  [2030784] [U4Recorder::getBoundary@325]    1 : Rock//air_rock_bs/Air
+    2022-07-06 14:56:16.684 INFO  [2030784] [U4Recorder::getBoundary@325]    2 : Air///Water
+    2022-07-06 14:56:16.687 INFO  [2030784] [U4Recorder::getBoundary@325]    2 : Air///Water
+    2022-07-06 14:56:16.689 INFO  [2030784] [U4Recorder::getBoundary@325]    1 : Rock//air_rock_bs/Air
+    2022-07-06 14:56:16.691 INFO  [2030784] [U4Recorder::getBoundary@325]    2 : Air///Water
+    2022-07-06 14:56:16.693 INFO  [2030784] [U4Recorder::getBoundary@325]    2 : Air///Water
+
+
+
 
 
 DONE : get fast reproducible single (or small selection) photon running of B to work, little point with A currently as its so fast anyhow

@@ -1,7 +1,7 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-gxs.sh : Opticks CX GPU simulation starting from Geant4 geometry auto-translated to CSG
-==========================================================================================
+gxs.sh : G4CXSimulateTest : Opticks CX GPU simulation starting from Geant4 geometry auto-translated to CSG
+=============================================================================================================
 
 ::
 
@@ -54,7 +54,8 @@ export FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL"
 
 if [ "${arg/ana}" != "$arg" ]; then 
 
-    export CFBASE=$BASE 
+    export CFBASE=$BASE   ## HMM: should probably do such config in AB_FOLD.sh  ? 
+
     ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
 fi 

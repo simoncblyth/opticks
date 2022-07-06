@@ -333,7 +333,7 @@ struct CSG_API CSGFoundry
     static void CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ); 
 
     void getMeshName( std::vector<std::string>& mname ) const ; 
-
+    void getPrimName( std::vector<std::string>& pname ) const ; 
 
     const std::string& getMeshName(unsigned midx) const ; 
     int findMeshIndex(const char* qname) const ; 

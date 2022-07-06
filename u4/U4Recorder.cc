@@ -71,14 +71,20 @@ U4Recorder::U4Recorder(){ init() ; }
 void U4Recorder::init()
 {
     INSTANCE = this ; 
+    if(SSys::hasenvvar("CFBASE")) init_CFBASE(); 
+}
 
-    if(SSys::hasenvvar("CFBASE"))
-    {
-        const char* path = SPath::Resolve("$CFBASE/CSGFoundry/SSim/bnd_names.txt", NOOP);  
-        NP::ReadNames(path, bnd); 
-        LOG(info) << " path " << path << " bnd.size " << bnd.size() ;
-        for(unsigned i=0 ; i < bnd.size() ; i++)  LOG(info) << bnd[i] ;  
-    }
+void U4Recorder::init_CFBASE()
+{
+    const char* bnd_path = SPath::Resolve("$CFBASE/CSGFoundry/SSim/bnd_names.txt", NOOP);  
+    NP::ReadNames(bnd_path, bnd); 
+    LOG(info) << "bnd_path " << bnd_path << " bnd.size " << bnd.size() ;
+    for(unsigned i=0 ; i < bnd.size() ; i++)  LOG(info) << std::setw(4) << i << " bnd " << bnd[i] ;  
+
+    const char* msh_path = SPath::Resolve("$CFBASE/CSGFoundry/meshname.txt", NOOP);  
+    NP::ReadNames(msh_path, msh); 
+    LOG(info) << "msh_path " << msh_path << " msh.size " << msh.size() ;
+    for(unsigned i=0 ; i < msh.size() ; i++)  LOG(info) << std::setw(4) << i << " msh " << msh[i] ;  
 }
 
 
@@ -244,9 +250,6 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     if( flag == 0 ) LOG(error) << " ERR flag zero : post " << U4StepPoint::Desc(post) ; 
     assert( flag > 0 ); 
 
-    unsigned boundary = getBoundary(step) ; 
-    unsigned identity = 0 ; 
-
     if( flag == NAN_ABORT )
     {
         LOG(LEVEL) << " skip post saving for StepTooSmall label.id " << label.id  ;  
@@ -256,15 +259,41 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         G4TrackStatus tstat = track->GetTrackStatus(); 
         Check_TrackStatus_Flag(tstat, flag); 
 
+        std::string spec = IsOnBoundary(step) ? BoundarySpec(step) : "" ;  
+        unsigned boundary = spec.empty() ? 0 : getBoundary(spec.c_str()) ; 
+
+        const G4VSolid* pre_so = Solid(pre) ;  
+        const G4VSolid* post_so = Solid(post) ;
+
+        G4String pre_soname = pre_so->GetName(); 
+        G4String post_soname = post_so->GetName(); 
+
+        unsigned pre_prim_idx = getPrimIdx(pre_soname.c_str()) ; 
+        unsigned post_prim_idx = getPrimIdx(post_soname.c_str()) ; 
+
+        LOG(info) 
+            << " pre_soname " << std::setw(20) << pre_soname 
+            << " pre_prim_idx " << std::setw(4) << pre_prim_idx 
+            << " post_soname " << std::setw(20) << post_soname 
+            << " post_prim_idx " << std::setw(4) << post_prim_idx 
+            << " spec " << spec
+            ; 
+
+
         U4StepPoint::Update(current_photon, post); 
+
         current_photon.set_flag( flag );
         current_photon.set_boundary( boundary);
-        current_photon.identity = identity ; 
+        current_photon.identity = PackIdentity(post_prim_idx, 0u) ;
 
         sev->pointPhoton(label);         // save SEvt::current_photon/rec/seq/prd into sevent 
     }
     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
 }
+
+
+ 
+
 
 
 /**
@@ -309,27 +338,17 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
     }
 }
 
-unsigned U4Recorder::getBoundary(const G4Step* step) const
+bool U4Recorder::IsOnBoundary( const G4Step* step ) // static 
 {
-    unsigned boundary = ~0u ; 
-    std::string spec = getBoundarySpec(step);  
-    for(unsigned i=0 ; i < bnd.size() ; i++)
-    {
-        if(strcmp(spec.c_str(), bnd[i].c_str()) == 0 ) 
-        {
-            boundary = i ; 
-            break ; 
-        }
-    }
-
-    //LOG(info) << std::setw(4) << boundary << " : " << spec ; 
-
-    return boundary ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+    G4bool isOnBoundary = post->GetStepStatus() == fGeomBoundary ;
+    return isOnBoundary ; 
 }
 
 /**
-U4Recorder::getBoundarySpec
------------------------------
+U4Recorder::BoundarySpec
+------------------------------
+
 
 Spec is a string composed of 4 elements delimted by 3 "/"::
 
@@ -337,68 +356,115 @@ Spec is a string composed of 4 elements delimted by 3 "/"::
 
 The osur and isur can be blank, the omat and imat cannot be blank
 
-::
 
-      class G4LogicalBorderSurface : public G4LogicalSurface
-      class G4LogicalSkinSurface   : public G4LogicalSurface
-      class G4LogicalSurface
-
+enteredDaughter
+    True:  "inwards" photons 
+    False: "outwards" photons 
+ 
 **/
 
-
-std::string U4Recorder::getBoundarySpec(const G4Step* step) const
+std::string U4Recorder::BoundarySpec(const G4Step* step) // static 
 {
-    std::stringstream ss ; 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
-    G4bool isOnBoundary = post->GetStepStatus() == fGeomBoundary ;
-    if(isOnBoundary)
+    const G4Material* m1 = pre->GetMaterial();
+    const G4Material* m2 = post->GetMaterial();
+    const char* n1 = m1->GetName().c_str() ;  
+    const char* n2 = m2->GetName().c_str() ;  
+
+    const G4VPhysicalVolume* thePrePV = pre->GetPhysicalVolume();
+    const G4VPhysicalVolume* thePostPV = post->GetPhysicalVolume();
+    G4bool enteredDaughter = thePostPV->GetMotherLogical() == thePrePV ->GetLogicalVolume();
+
+    const char* omat = enteredDaughter ? n1 : n2 ; 
+    const char* imat = enteredDaughter ? n2 : n1 ; 
+
+    const G4LogicalSurface* surf1 = U4Surface::GetLogicalSurface(thePrePV, thePostPV ); 
+    const G4LogicalSurface* surf2 = U4Surface::GetLogicalSurface(thePostPV, thePrePV ); 
+
+    const char* osur = nullptr ; 
+    const char* isur = nullptr ; 
+
+    if( enteredDaughter )
     {
-        const G4Material* m1 = pre->GetMaterial();
-        const G4Material* m2 = post->GetMaterial();
-        const char* n1 = m1->GetName().c_str() ;  
-        const char* n2 = m2->GetName().c_str() ;  
-
-        const G4VPhysicalVolume* thePrePV = pre->GetPhysicalVolume();
-        const G4VPhysicalVolume* thePostPV = post->GetPhysicalVolume();
-        G4bool enteredDaughter = thePostPV->GetMotherLogical() == thePrePV ->GetLogicalVolume();
-        // enteredDaughter
-        //     True: "inwards" photons 
-        //     False: "outwards" photons 
-      
-
-        const char* omat = enteredDaughter ? n1 : n2 ; 
-        const char* imat = enteredDaughter ? n2 : n1 ; 
-
-        const G4LogicalSurface* surf1 = U4Surface::GetLogicalSurface(thePrePV, thePostPV ); 
-        const G4LogicalSurface* surf2 = U4Surface::GetLogicalSurface(thePostPV, thePrePV ); 
-
-        const char* osur = nullptr ; 
-        const char* isur = nullptr ; 
-
-        if( enteredDaughter )
-        {
-            osur = surf1 ? surf1->GetName().c_str() : nullptr ; 
-            isur = surf2 ? surf2->GetName().c_str() : nullptr ; 
-        }
-        else
-        {
-            osur = surf2 ? surf2->GetName().c_str() : nullptr ; 
-            isur = surf1 ? surf1->GetName().c_str() : nullptr ; 
-        }
-        ss 
-           << omat 
-           << "/" 
-           << ( osur ? osur : "" ) 
-           << "/" 
-           << ( isur ? isur : "" ) 
-           << "/" 
-           << imat
-           ; 
-
+        osur = surf1 ? surf1->GetName().c_str() : nullptr ; 
+        isur = surf2 ? surf2->GetName().c_str() : nullptr ; 
     }
+    else
+    {
+        osur = surf2 ? surf2->GetName().c_str() : nullptr ; 
+        isur = surf1 ? surf1->GetName().c_str() : nullptr ; 
+    }
+
+    std::stringstream ss ; 
+    ss 
+       << omat 
+       << "/" 
+       << ( osur ? osur : "" ) 
+       << "/" 
+       << ( isur ? isur : "" ) 
+       << "/" 
+       << imat
+       ; 
+
     std::string s = ss.str(); 
     return s ; 
 }
+
+const G4VSolid* U4Recorder::Solid(const G4StepPoint* point ) // static
+{
+    const G4VPhysicalVolume* pv  = point->GetPhysicalVolume();
+    const G4LogicalVolume* lv = pv->GetLogicalVolume();
+    const G4VSolid* so = lv->GetSolid(); 
+    return so ; 
+
+}
+
+
+
+
+/**
+U4Recorder::PackIdentity
+-------------------------
+
+This only partially mimicks the Opticks identity, using the solid index as stand in for prim_idx.
+For simple geom that might even match.  
+
+cx/CSGOptiX7.cu::
+
+    406 extern "C" __global__ void __closesthit__ch()
+    407 {
+    408     unsigned iindex = optixGetInstanceIndex() ;    // 0-based index within IAS
+    409     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
+    410     unsigned prim_idx = optixGetPrimitiveIndex() ; // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+    411     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
+
+TODO: find way to fully reproduce the Opticks identity with instance index, 
+probably that would mean dealing with long lists of volume names : the difficulty
+is the factorization which means multiple volumes are within each instance so would
+have to list all volumes 
+
+**/
+
+unsigned U4Recorder::PackIdentity(unsigned prim_idx, unsigned instance_id) 
+{
+    unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
+    return identity ; 
+}
+unsigned U4Recorder::getPrimIdx(const char* soname) const
+{
+    unsigned count = 0 ; 
+    unsigned prim_idx = NP::NameIndex( soname, count, msh ); 
+    assert( count == 1 ); 
+    return prim_idx ; 
+}
+unsigned U4Recorder::getBoundary(const char* spec) const
+{
+    unsigned count = 0 ; 
+    unsigned boundary = NP::NameIndex( spec, count, bnd ); 
+    assert( count == 1 );  
+    return boundary ; 
+}
+
 
 

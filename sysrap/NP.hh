@@ -278,8 +278,10 @@ struct NP
 
     void set_names( const std::vector<std::string>& lines ) ; 
     void get_names( std::vector<std::string>& lines ) const ; 
+
     int  get_name_index( const char* qname ) const ;  
     int  get_name_index( const char* qname, unsigned& count ) const ;  
+    static int NameIndex( const char* qname, unsigned& count, const std::vector<std::string>& names ); 
 
 
     static std::string               get_meta_string_(const char* metadata, const char* key);  
@@ -2775,19 +2777,17 @@ inline void NP::get_names( std::vector<std::string>& lines ) const
 //Returns 0-based index of first matching name, or -1 if the name is not found or the name is nullptr. 
 inline int NP::get_name_index( const char* qname ) const 
 {
-    if(names.size() == 0) return -1 ; 
-    for(unsigned idx=0 ; idx < names.size() ; idx++)
-    {
-        const std::string& name = names[idx] ; 
-        if(strcmp(name.c_str(), qname) == 0) return idx ;  
-    }
-    return -1 ; 
+    unsigned count = 0 ; 
+    return NameIndex(qname, count, names); 
+}
+inline int NP::get_name_index( const char* qname, unsigned& count ) const 
+{
+    return NameIndex(qname, count, names); 
 }
 
 
-
 /**
-SName::getIndex
+NP::NameIndex
 --------------------
 
 Returns the index of the first listed name that exactly matches the query string.
@@ -2796,8 +2796,10 @@ Returns -1 if not found.
 
 **/
 
-inline int NP::get_name_index( const char* qname, unsigned& count ) const 
+inline int NP::NameIndex( const char* qname, unsigned& count, const std::vector<std::string>& names ) // static
 {
+    if(names.size() == 0) return -1 ; 
+
     int result(-1); 
     count = 0 ; 
     for(unsigned i=0 ; i < names.size() ; i++)
@@ -2811,7 +2813,6 @@ inline int NP::get_name_index( const char* qname, unsigned& count ) const
     }   
     return result ; 
 }
-
 
 
 

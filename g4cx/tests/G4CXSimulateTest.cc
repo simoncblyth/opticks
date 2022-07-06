@@ -8,6 +8,7 @@
 
 // GGeo creation done when starting from gdml or live G4, still needs Opticks instance,  
 // TODO: avoid this by replacing with automated SOpticks instanciated by OPTICKS_LOG
+// and reimplemnting geometry translation in a new "Geo" package  
 #include "Opticks.hh"   
 
 #include "CSGFoundry.h"

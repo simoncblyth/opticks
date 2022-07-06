@@ -8,13 +8,31 @@ class ABR(object):
         self.A = A
         self.B = B
         self.symbol = symbol
-        self.idx = 0 
+
+    def _get_idx(self):
+        return self.A.idx 
+    def _set_idx(self, idx):
+        self.A.idx = idx 
+        self.B.idx = idx 
+    idx = property(_get_idx, _set_idx)
+
+    def _get_flavor(self):
+        return self.A.flavor
+    def _set_flavor(self, flavor):
+        self.A.flavor = flavor 
+        self.B.flavor = flavor 
+    flavor = property(_get_flavor, _set_flavor)
+
 
     def __call__(self, idx):
         self.idx = idx
-        self.A.idx = idx 
-        self.B.idx = idx 
+        self.flavor = "call"
         return self  
+    def __getitem__(self, idx):
+        self.idx = idx
+        self.flavor = "getitem"
+        return self  
+
    
     @classmethod
     def MaxLen(cls, lines):
@@ -56,8 +74,13 @@ class ABR(object):
         nr = len(r)
         assert nl == nr
 
-        lx = cls.MaxLen(l)
-        rx = cls.MaxLen(r)
+        lx_ = cls.MaxLen(l)
+        rx_ = cls.MaxLen(r)
+        lim = 100 
+
+        lx = min(lim,lx_) 
+        rx = min(lim,rx_)
+
         pass
         fmt_ = "{:%d}{:%d}"   
         fmt = fmt_ % (lx+margin, rx+margin)
@@ -65,7 +88,7 @@ class ABR(object):
         lines = []
         for i in range(nl):
             line = fmt.format(l[i], r[i])    
-            lines.append(line)
+            lines.append(line.rstrip())
         pass
         return "\n".join(lines)
 

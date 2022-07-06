@@ -24,6 +24,8 @@ np.set_printoptions(edgeitems=16)
 
 tag = stag()
 stack = U4Stack()
+SLOTS = stag.SLOTS   
+
 
 
 if __name__ == '__main__':
@@ -45,8 +47,10 @@ if __name__ == '__main__':
         im = epr("im = np.abs(a.inphoton - b.inphoton).max()", globals(), locals() )  
         pm = epr("pm = np.abs(a.photon - b.photon).max()",     globals(), locals() )  
         rm = epr("rm = np.abs(a.record - b.record).max()",     globals(), locals() )  
-        sm = epr("sm = np.all( a.seq[:,0] == b.seq[:,0] )",    globals(), locals() )  
-        we = epr("we = np.where( A.t.view('|S48') == B.t2.view('|S48') )[0]",  globals(), locals() )
+        sm = epr("sm = np.all( a.seq[:,0] == b.seq[:,0] )",    globals(), locals() ) 
+
+        we_ = "we = np.where( A.t.view('|S%(SLOTS)s') != B.t2.view('|S%(SLOTS)s') )[0]" % locals()  # eg stag.h/stag::SLOTS = 64 
+        we = epr(we_,  globals(), locals() ) 
 
         eprint("np.all( A.ts == B.ts2 )", globals(), locals() )
         eprint("np.all( A.ts2 == B.ts )", globals(), locals() )
