@@ -73,19 +73,51 @@ void U4Recorder::init()
     INSTANCE = this ; 
     if(SSys::hasenvvar("CFBASE")) init_CFBASE(); 
 }
-
 void U4Recorder::init_CFBASE()
 {
-    const char* bnd_path = SPath::Resolve("$CFBASE/CSGFoundry/SSim/bnd_names.txt", NOOP);  
-    NP::ReadNames(bnd_path, bnd); 
-    LOG(info) << "bnd_path " << bnd_path << " bnd.size " << bnd.size() ;
-    for(unsigned i=0 ; i < bnd.size() ; i++)  LOG(info) << std::setw(4) << i << " bnd " << bnd[i] ;  
-
-    const char* msh_path = SPath::Resolve("$CFBASE/CSGFoundry/meshname.txt", NOOP);  
-    NP::ReadNames(msh_path, msh); 
-    LOG(info) << "msh_path " << msh_path << " msh.size " << msh.size() ;
-    for(unsigned i=0 ; i < msh.size() ; i++)  LOG(info) << std::setw(4) << i << " msh " << msh[i] ;  
+    ReadNames( "$CFBASE/CSGFoundry/SSim/bnd_names.txt", bnd ); 
+    ReadNames( "$CFBASE/CSGFoundry/meshname.txt", msh ); 
+    ReadNames( "$CFBASE/CSGFoundry/primname.txt", pri ); 
 }
+void U4Recorder::ReadNames(const char* path_, std::vector<std::string>& names ) // static
+{
+    const char* path = SPath::Resolve(path_, NOOP); 
+    NP::ReadNames(path, names); 
+    LOG(info) << "path " << path << " names.size " << names.size() ;
+    for(unsigned i=0 ; i < names.size() ; i++)  LOG(info) << std::setw(4) << i << " : " << names[i] ;  
+}
+
+unsigned U4Recorder::Index(const char* name, const std::vector<std::string>& names, unsigned max_count )
+{
+    unsigned count = 0 ; 
+    unsigned index = NP::NameIndex( name, count, names );
+    assert( max_count == 0 || count <= max_count );  
+    return index ; 
+}
+
+/**
+U4Recorder::getPrimIdx
+------------------------
+
+HMM: this will not match Opticks in full geometry where meshnames 
+appear repeatedly for many prim. 
+
+HMM: potentially with live running could fix this by holding origin 
+pointers to maintain the source G4VPhysicalVolume for every CSGPrim ?  
+This would require the Geant4 U4RecorderTest to do a translation to 
+CSG on the fly and use that.  Given the heavy dependencies of 
+the translation currently this solution not convenient.  
+
+**/
+
+unsigned U4Recorder::getPrimIdx( const char* soname) const { return Index(soname, pri, 0 ); }
+unsigned U4Recorder::getMeshIdx( const char* soname) const { return Index(soname, msh, 1 ); }
+unsigned U4Recorder::getBoundary(const char* spec) const {   return Index(spec,   bnd, 1 ); }
+
+
+
+
+
 
 
 void U4Recorder::BeginOfRunAction(const G4Run*){     LOG(info); }
@@ -262,14 +294,14 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         std::string spec = IsOnBoundary(step) ? BoundarySpec(step) : "" ;  
         unsigned boundary = spec.empty() ? 0 : getBoundary(spec.c_str()) ; 
 
-        const G4VSolid* pre_so = Solid(pre) ;  
         const G4VSolid* post_so = Solid(post) ;
-
-        G4String pre_soname = pre_so->GetName(); 
         G4String post_soname = post_so->GetName(); 
-
-        unsigned pre_prim_idx = getPrimIdx(pre_soname.c_str()) ; 
         unsigned post_prim_idx = getPrimIdx(post_soname.c_str()) ; 
+
+        /*
+        const G4VSolid* pre_so = Solid(pre) ;  
+        G4String pre_soname = pre_so->GetName(); 
+        unsigned pre_prim_idx = getPrimIdx(pre_soname.c_str()) ; 
 
         LOG(info) 
             << " pre_soname " << std::setw(20) << pre_soname 
@@ -278,6 +310,8 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
             << " post_prim_idx " << std::setw(4) << post_prim_idx 
             << " spec " << spec
             ; 
+
+        */
 
 
         U4StepPoint::Update(current_photon, post); 
@@ -451,20 +485,7 @@ unsigned U4Recorder::PackIdentity(unsigned prim_idx, unsigned instance_id)
     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
     return identity ; 
 }
-unsigned U4Recorder::getPrimIdx(const char* soname) const
-{
-    unsigned count = 0 ; 
-    unsigned prim_idx = NP::NameIndex( soname, count, msh ); 
-    assert( count == 1 ); 
-    return prim_idx ; 
-}
-unsigned U4Recorder::getBoundary(const char* spec) const
-{
-    unsigned count = 0 ; 
-    unsigned boundary = NP::NameIndex( spec, count, bnd ); 
-    assert( count == 1 );  
-    return boundary ; 
-}
+
 
 
 

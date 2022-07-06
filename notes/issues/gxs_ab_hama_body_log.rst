@@ -31,6 +31,10 @@ AB Analysis::
 First Look : hama_body_log : NB might well be shooting it in the back 
 ----------------------------------------------------------------------------
 
+The problem is the artificial mid-vacuum boundary in the middle of the PMT.  
+
+
+
 Lots are out of history alignment::
 
     In [6]: w = np.where( a.seq[:,0] != b.seq[:,0])[0] ; len(w)
@@ -50,8 +54,112 @@ Quite a lot aligned too::
   * converted the enum seq to a "S48" or "S64" depending on SLOTS string and compared that 
 
 
-Mimic the Opticks Flags with Geant4? 
----------------------------------------
+Mimic the Opticks Flags with Geant4? : primIdx inconsistency
+----------------------------------------------------------------
+
+B::
+
+
+    bflagdesc_(r[0,j])
+     idx(     0) prd(b  0 p   0 i    0 o0 ii:    0)  TO               TO  :                                                   Rock_solid : 3ee28144 : Rock///Rock 
+     idx(     0) prd(b  2 p   2 i    0 o0 ii:    0)  BT            TO|BT  :                                                  Water_solid : 5499841d : Air///Water 
+     idx(     0) prd(b  2 p   1 i    0 o0 ii:    0)  BT            TO|BT  :                                                    Air_solid : ec91a858 : Air///Water 
+     idx(     0) prd(b  1 p   0 i    0 o0 ii:    0)  SA         TO|BT|SA  :                                                   Rock_solid : 65ec719a : Rock//air_rock_bs/Air 
+
+
+
+::
+
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@86] path /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2/CSGFoundry/primname.txt names.size 3
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    0 : Rock_solid
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    1 : Air_solid
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    2 : Water_solid
+ 
+
+    In [17]: [primIdx_(a.record[0,_]) for _ in range(5)]
+    Out[17]: [0, 2, 2, 1, 0]     
+
+    In [18]: [primIdx_(b.record[0,_]) for _ in range(5)]
+    Out[18]: [0, 2, 1, 0, 0]
+
+    * first 0 actually a blank, TO BT BT SA 
+
+
+::
+
+     +---Rock--------------------------------+
+     |                                       |
+     |                                       |
+     |    +--------------Air----------+      |
+     |    |                           |      |
+     |    |            Water          |      |
+     |    |          /     \          |      |
+     |    |  +----->|-    >|         >|      |
+     |    |          \    /           |      |
+     |    |           ---             |      |
+     |    |                           |      |
+     |    +---------------------------+      |
+     |                                       |
+     |                                       |
+     +---------------------------------------+
+
+
+A: Opticks provides the primIdx of the hit surface, not the "post-solid" 
+B: incorrecy Geant4 mimic is providing the "post step" solid 
+
+* Opticks gives the intersected primIdx full stop without regard 
+  for the direction of the photon : because that is a characteristic
+  of the geometry that is essentially a label on the geometry
+
+  * but Opticks knows the boundary, and the orientation wrt the normal, 
+    so it knows the material but not the next prim
+  * this is boundary based geometry vs volume based geometry 
+
+* so not easy to get Opticks to follow the Geant4 post way, until do the next intersect
+* BUT easier the other way around : need the orientation of the photon wrt normal 
+  in order to tell you whether to use the pre-solid or the post-solid 
+
+* TODO: extract the orientation from Geant4 
+
+
+::
+
+    In [1]: AB[0]                                                                                                                                                                                       
+    Out[1]: 
+    A : /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2/ALL
+    B : /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2/ALL
+    A(0) : TO BT BT SA                                                                                     B(0) : TO BT BT SA
+    - Air///Water                              Water_solid                                                 + Air///Water                              Water_solid
+    + Air///Water                              Water_solid (not Air because intersect is with Water prim)  + Air///Water                              Air_solid
+    + Rock//air_rock_bs/Air                    Air_solid  (not Rock because intersect is with Air prim)    + Rock//air_rock_bs/Air                    Rock_solid 
+
+    - : against the normal (ie inwards from omat to imat)                                                  - : against the normal (ie inwards from omat to imat)
+    + : with the normal (ie outwards from imat to omat)                                                    + : with the normal (ie outwards from imat to omat)
+
+    In [2]:                         
+
+
+::
+
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@86] path /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2/CSGFoundry/SSim/bnd_names.txt names.size 3
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    0 : Rock///Rock
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    1 : Rock//air_rock_bs/Air
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    2 : Air///Water
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@86] path /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2/CSGFoundry/meshname.txt names.size 3
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    0 : Water_solid
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    1 : Air_solid
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    2 : Rock_solid
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@86] path /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2/CSGFoundry/primname.txt names.size 3
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    0 : Rock_solid
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    1 : Air_solid
+    2022-07-06 20:02:55.938 INFO  [2338520] [U4Recorder::ReadNames@87]    2 : Water_solid
+    DsG4Scintillation::DsG4Scintillation level 0 verboseLevel 0
+    2022-07-06 20:02:57.101 INFO  [2338520] [U4Recorder::BeginOfRunAction@123] 
+
+
+
+
+
 
 ::
 
@@ -163,6 +271,10 @@ AHHA it is not a meshidx although it uses mesh names, it is a primIdx
     2022-07-06 18:03:17.421 INFO  [2282561] [test_getPrimName@221]  pname.size 3
     epsilon:tests blyth$ 
 
+
+Kludge fix this by writing the primnames with CSGFoundry::write but that is not 
+really a full solution as the same meshname can of course appear multiple 
+times with different prim. It will however work with simple test geometries.  
 
 
 

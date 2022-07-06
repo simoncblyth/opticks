@@ -86,7 +86,11 @@ physdesc="${physdesc}_"
 [ -z "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
 
 
-export FOLD=$foldbase/$physdesc/$GEOM/PIDX_0_
+
+#sel=PIDX_0_
+sel=ALL
+
+export FOLD=$foldbase/$physdesc/$GEOM/$sel
 echo $msg physdesc $physdesc
 echo $msg GEOM $GEOM
 echo $msg FOLD $FOLD
