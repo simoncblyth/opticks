@@ -117,9 +117,161 @@ hama_body_log : as expected lots of problem steps across the middle
      post U4StepPoint::DescPositionTime (     -1.096     -2.160      0.000      4.339)
 
 
-
 HMM to add the sensitive surface to the test geometry need to delve into the item to get the pv 
 across the Pyrex->Vacuum border 
+
+* DONE that with U4Surface::MakeBorderSurface with pv1 pv2 name arguments
+
+The simplification from adding the SD and Z-flipping the PMT makes yields full alignment  
+
+:: 
+
+    im = np.abs(a.inphoton - b.inphoton).max()         : 1.9073486e-06
+    pm = np.abs(a.photon - b.photon).max()             : nan
+    rm = np.abs(a.record - b.record).max()             : nan
+    sm = np.all( a.seq[:,0] == b.seq[:,0] )            : True
+    we = np.where( A.t.view('|S64') != B.t2.view('|S64') )[0] : []
+    wa = np.where( np.abs(a.record - b.record ) > 0.01 )[0] : [ 159  159  159  159  159  167  167  167  167  167  353 1230 1230 1230 1230 1230 2539 2539 2539 2539 2539 2832 2832 2832 2832 2832 2953 2953 2953 3369 3369 3369 3730 3730 3730 4332 4332 4332 4608
+     4608 5272 5272 5272 6367 6367 6367 6367 6367 7473 7473 7473 7507 7507 7507 7507 7507 7822 7822 8305 8305 8732 9041 9041 9614 9614 9614 9614 9614]
+    np.all( A.ts == B.ts2 )                            : True
+    np.all( A.ts2 == B.ts )                            : True
+    ./U4RecorderTest_ab.sh ## u4t 
+    w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0]) : [ 159  167 1230 2832 2953 3730 4608 5272 6367 7473 7507 9614]
+    s = a.seq[w,0]                                     : [2237 2237 2237 2237 2237 2237 2237 2237 2237 2237 2237 2237]
+    o = cuss(s,w)                                      : 
+    [['w0' '                      TO BR SA' '            2237' '              12']]
+    a.base                                             : /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL
+    b.base                                             : /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log/ALL
+
+    In [1]: np.abs( a.photon[:,0] - b.photon[:,0] ).max()                                                                                                                                               
+    Out[1]: 2.5753937
+
+    In [2]: np.where( np.abs( a.photon[:,0] - b.photon[:,0] ) > 0.1 )                                                                                                                                   
+    Out[2]: 
+    (array([ 159,  159,  167,  167,  167, 1230, 1230, 2832, 2832, 2953, 2953, 3730, 3730, 4608, 5272, 5272, 6367, 7473, 7473, 7507, 7507, 9614]),
+     array([0, 1, 0, 1, 3, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0]))
+
+    In [3]: np.where( np.abs( a.photon[:,0] - b.photon[:,0] ) > 0.1 )[0]                                                                                                                                
+    Out[3]: array([ 159,  159,  167,  167,  167, 1230, 1230, 2832, 2832, 2953, 2953, 3730, 3730, 4608, 5272, 5272, 6367, 7473, 7473, 7507, 7507, 9614])
+
+    In [4]: w = np.unique( np.where( np.abs( a.photon[:,0] - b.photon[:,0] ) > 0.1 )[0] )                                                                                                               
+
+    In [5]: w                                                                                                                                                                                           
+    Out[5]: array([ 159,  167, 1230, 2832, 2953, 3730, 4608, 5272, 6367, 7473, 7507, 9614])
+
+    In [6]: seqhis_(a.seq[w,0] )                                                                                                                                                                        
+    Out[6]: 
+    ['TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA',
+     'TO BR SA']
+
+    In [7]:
+
+WHat is special with the big deviants 12/10k::
+
+    In [7]: a.photon[w,0]                                                                                                                                                                               
+    Out[7]: 
+    array([[  208.023,   -94.183, -1000.   ,     7.638],
+           [ -234.133,   108.468, -1000.   ,     7.692],
+           [   90.107,  -197.04 , -1000.   ,     7.619],
+           [  156.304,   121.916, -1000.   ,     7.59 ],
+           [   90.891,    70.398, -1000.   ,     7.49 ],
+           [   80.09 ,   132.808, -1000.   ,     7.532],
+           [   -2.998,   -93.149, -1000.   ,     7.473],
+           [ -125.643,    70.741, -1000.   ,     7.519],
+           [  193.468,    -8.537, -1000.   ,     7.583],
+           [  -99.731,  -113.834, -1000.   ,     7.527],
+           [  169.168,    35.808, -1000.   ,     7.554],
+           [ -173.569,     3.196, -1000.   ,     7.555]], dtype=float32)
+
+    In [8]: b.photon[w,0]                                                                                                                                                                               
+    Out[8]: 
+    array([[  206.221,   -93.367, -1000.   ,     7.558],
+           [ -231.558,   107.275, -1000.   ,     7.59 ],
+           [   89.403,  -195.501, -1000.   ,     7.547],
+           [  155.278,   121.116, -1000.   ,     7.53 ],
+           [   90.688,    70.241, -1000.   ,     7.47 ],
+           [   79.766,   132.272, -1000.   ,     7.495],
+           [   -2.994,   -93.012, -1000.   ,     7.459],
+           [ -125.204,    70.494, -1000.   ,     7.487],
+           [  192.256,    -8.484, -1000.   ,     7.526],
+           [  -99.347,  -113.396, -1000.   ,     7.492],
+           [  168.32 ,    35.629, -1000.   ,     7.508],
+           [ -172.693,     3.18 , -1000.   ,     7.509]], dtype=float32)
+
+    In [9]: a.photon[w,0] - b.photon[w,0]
+    Out[9]: 
+    array([[ 1.802, -0.816,  0.   ,  0.08 ],
+           [-2.575,  1.193,  0.   ,  0.102],
+           [ 0.704, -1.54 ,  0.   ,  0.072],
+           [ 1.025,  0.8  ,  0.   ,  0.06 ],
+           [ 0.203,  0.157,  0.   ,  0.02 ],
+           [ 0.323,  0.536,  0.   ,  0.037],
+           [-0.004, -0.137,  0.   ,  0.013],
+           [-0.439,  0.247, -0.   ,  0.032],
+           [ 1.212, -0.053,  0.   ,  0.058],
+           [-0.384, -0.438, -0.   ,  0.035],
+           [ 0.847,  0.179,  0.   ,  0.046],
+           [-0.876,  0.016,  0.   ,  0.046]], dtype=float32)
+
+
+    In [10]: a.photon[w,0,:2]
+    Out[10]: 
+    array([[ 208.023,  -94.183],
+           [-234.133,  108.468],
+           [  90.107, -197.04 ],
+           [ 156.304,  121.916],
+           [  90.891,   70.398],
+           [  80.09 ,  132.808],
+           [  -2.998,  -93.149],
+           [-125.643,   70.741],
+           [ 193.468,   -8.537],
+           [ -99.731, -113.834],
+           [ 169.168,   35.808],
+           [-173.569,    3.196]], dtype=float32)
+
+    In [11]: np.sqrt(np.sum(np.power( a.photon[w,0,:2], 2),axis=1))
+    Out[11]: array([228.35 , 258.038, 216.666, 198.228, 114.965, 155.088,  93.197, 144.189, 193.656, 151.342, 172.916, 173.598], dtype=float32)
+
+
+AHHA most of the "TO BR SA" are deviants::
+
+    In [12]: cuss( a.seq[:,0] )
+    Out[12]: 
+    CUSS([['w0', '                      TO BT SD', '            1997', '            9718'],
+          ['w1', '                         TO AB', '              77', '             209'],
+          ['w2', '                      TO BT AB', '            1229', '              31'],
+          ['w3', '                      TO BR SA', '            2237', '              20'],
+          ['w4', '                      TO SC SA', '            2157', '              17'],
+          ['w5', '                   TO SC BT SD', '           31853', '               4'],
+          ['w6', '                      TO SC AB', '            1133', '               1']], dtype=object)
+
+
+
+Boundary Identity mocking problem::
+
+    In [19]: AB[0]
+    Out[19]: 
+    A : /tmp/blyth/opticks/G4CXSimulateTest/hama_body_log/ALL
+    B : /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log/ALL
+    A(0) : TO BT SD                                                                                        B(0) : TO BT SD
+    - Water///Pyrex                            hama_body_solid_1_4                                         - Water///Pyrex                            None
+    - Pyrex/pyrex_vacuum_bs//Vacuum            hama_inner1_solid_I                                         - None                                     None
+
+    - : against the normal (ie inwards from omat to imat)                                                  - : against the normal (ie inwards from omat to imat)
+    + : with the normal (ie outwards from imat to omat)                                                    + : with the normal (ie outwards from imat to omat)
+
+
+
 
 
 
