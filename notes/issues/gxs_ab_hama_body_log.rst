@@ -30,9 +30,97 @@ AB Analysis::
 
 
 
-TODO : gxs with the Geant4 geometry with SD : will the EFFICIENCY property get thru raise Opticks SD ?
--------------------------------------------------------------------------------------------------------------
-  
+TODO : Bookkeeping inconsistency for NOT_AT_BOUNDARY from scatters
+---------------------------------------------------------------------
+
+Opticks will almost always yield a boundary for real geometry and photons starting within the geometry 
+because in the Opticks surface model the boundary is what is up ahead even when the photon 
+does not get there eg from BULK_ABSORB or BULK_SCATTER.
+
+Contrary to this Geant4 doing scatter or absorption will have its G4Step not at boundary.  
+
+* So how to reconcile this fundamental nodel difference in the point recording ? 
+* 2 bytes are dedicated to boundary, so could use 0xffff to mean not a boundary::
+
+    SPHOTON_METHOD unsigned boundary() const { return boundary_flag >> 16 ; }     // boundary___ = lambda p:p.view(np.uint32)[...,3,0] >> 16
+
+* could use that "NAB" marker instead of point recording the boundary up ahead that did not get to ? 
+
+  * not so keen : as feels like removing useful information 
+
+
+
+::
+
+    In [6]: AB[7203]
+    Out[6]: 
+    A : /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWaterSD/ALL
+    B : /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWaterSD/ALL
+    A(7203) : TO SC SA                                                                                     B(7203) : TO SC SA
+    - Air/air_water_bs//Water                  Water_solid                                                 + Rock//air_rock_bs/Air                    Air_solid
+    + Rock//air_rock_bs/Air                    Air_solid
+                                                                                                           - : against the normal (ie inwards from omat to imat)
+    - : against the normal (ie inwards from omat to imat)                                                  + : with the normal (ie outwards from imat to omat)
+    + : with the normal (ie outwards from imat to omat)
+
+
+
+
+DONE : gxs with the Geant4 geometry with SD : will the EFFICIENCY property get thru and raise Opticks SD ? YES
+----------------------------------------------------------------------------------------------------------------
+
+* perfect aligned match with SD for very simple RaindropRockAirWaterSD
+
+::
+
+    im = np.abs(a.inphoton - b.inphoton).max()         : 1.9073486e-06
+    pm = np.abs(a.photon - b.photon).max()             : 0.011444092
+    rm = np.abs(a.record - b.record).max()             : 0.011444092
+    sm = np.all( a.seq[:,0] == b.seq[:,0] )            : True
+    we = np.where( A.t.view('|S64') != B.t2.view('|S64') )[0] : []
+    wa = np.where( np.abs(a.record - b.record ) > 0.01 )[0] : [7203]
+    np.all( A.ts == B.ts2 )                            : True
+    np.all( A.ts2 == B.ts )                            : True
+    ./U4RecorderTest_ab.sh ## u4t 
+    w = np.unique(np.where( np.abs(a.photon - b.photon) > 0.1 )[0]) : []
+    s = a.seq[w,0]                                     : []
+    o = cuss(s,w)                                      : 
+    []
+    a.base                                             : /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWaterSD/ALL
+    b.base                                             : /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWaterSD/ALL
+
+    In [1]: cuss(a.seq[:,0])                                                                                                                                                                            
+    Out[1]: 
+    CUSS([['w0', '                         TO SD', '             125', '            9990'],
+          ['w1', '                      TO SC SA', '            2157', '               9'],
+          ['w2', '                      TO SC SD', '            1901', '               1']], dtype=object)
+
+
+
+
+hama_body_log : as expected lots of problem steps across the middle
+----------------------------------------------------------------------
+
+::
+
+    U4Step::MockOpticksBoundaryIdentity problem step  idx 9899 type 4 U4Step::Name CHILD_TO_CHILD cosThetaSign 0 spec Vacuum///Vacuum boundary 4294967295 kludge_prim_idx 0
+     pre  U4StepPoint::DescPositionTime (      7.970     17.144   -184.466      3.724)
+     post U4StepPoint::DescPositionTime (      9.514     20.464      0.000      4.339)
+    U4Step::MockOpticksBoundaryIdentity problem step  idx 9898 type 4 U4Step::Name CHILD_TO_CHILD cosThetaSign 0 spec Vacuum///Vacuum boundary 4294967295 kludge_prim_idx 0
+     pre  U4StepPoint::DescPositionTime (      0.346      0.369   -185.000      3.722)
+     post U4StepPoint::DescPositionTime (      0.413      0.441      0.000      4.339)
+    U4Step::MockOpticksBoundaryIdentity problem step  idx 9897 type 4 U4Step::Name CHILD_TO_CHILD cosThetaSign 0 spec Vacuum///Vacuum boundary 4294967295 kludge_prim_idx 0
+     pre  U4StepPoint::DescPositionTime (     19.419    -31.805   -182.917      3.731)
+     post U4StepPoint::DescPositionTime (     23.189    -37.980      0.000      4.342)
+    U4Step::MockOpticksBoundaryIdentity problem step  idx 9896 type 4 U4Step::Name CHILD_TO_CHILD cosThetaSign 0 spec Vacuum///Vacuum boundary 4294967295 kludge_prim_idx 0
+     pre  U4StepPoint::DescPositionTime (     -0.918     -1.810   -184.994      3.722)
+     post U4StepPoint::DescPositionTime (     -1.096     -2.160      0.000      4.339)
+
+
+
+HMM to add the sensitive surface to the test geometry need to delve into the item to get the pv 
+across the Pyrex->Vacuum border 
+
 
 
 DONE : RaindropRockAirWaterSD : Geant4 SD/SURFACE_DETECT within simple test

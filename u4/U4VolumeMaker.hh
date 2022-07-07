@@ -60,7 +60,7 @@ struct U4_API U4VolumeMaker
 
     static G4VPhysicalVolume* BoxOfScintillator( double halfside, const char* prefix, G4LogicalVolume* mother_lv ); 
     static G4VPhysicalVolume* Box(double halfside, const char* mat, const char* prefix, G4LogicalVolume* mother_lv ); 
-    static G4VPhysicalVolume* Place( G4LogicalVolume* lv, G4LogicalVolume* mother_lv ); 
+    static G4VPhysicalVolume* Place( G4LogicalVolume* lv, G4LogicalVolume* mother_lv, const char* flip_axes=nullptr ); 
 
     // specialist pv creators
 

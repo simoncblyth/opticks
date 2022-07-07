@@ -58,6 +58,25 @@ void U4StepPoint::Update(sphoton& photon, const G4StepPoint* point)  // static
     photon.wavelength = wavelength/nm ; 
 }
 
+std::string U4StepPoint::DescPositionTime(const G4StepPoint* point )
+{
+    const G4ThreeVector& pos = point->GetPosition();
+    G4double time = point->GetGlobalTime();
+    std::stringstream ss ; 
+
+    ss << "U4StepPoint::DescPositionTime (" 
+       << " " << std::setw(10) << std::fixed << std::setw(10) << std::setprecision(3) << pos.x() 
+       << " " << std::setw(10) << std::fixed << std::setw(10) << std::setprecision(3) << pos.y() 
+       << " " << std::setw(10) << std::fixed << std::setw(10) << std::setprecision(3) << pos.z() 
+       << " " << std::setw(10) << std::fixed << std::setw(10) << std::setprecision(3) << time/ns
+       << ")"
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 unsigned U4StepPoint::ProcessDefinedStepType(const G4StepPoint* point) // static
 {
     const G4VProcess* process = point->GetProcessDefinedStep() ;

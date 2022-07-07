@@ -29,7 +29,9 @@ struct U4Step
     static constexpr const char* CHILD_TO_CHILD  = "CHILD_TO_CHILD" ;  // ABOMINATION SUGGESTING BROKEN GEOMETRY 
     static constexpr const char* UNEXPECTED      = "UNEXPECTED" ; 
 
+    static const char* MockOpticksBoundaryIdentity_NOTE ; 
     static void MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step* step, unsigned idx); 
+
     static unsigned PackIdentity(unsigned prim_idx, unsigned instance_id); 
     static unsigned KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx); 
 
@@ -70,8 +72,32 @@ have to list all volumes
 
 **/
 
+const char* U4Step::MockOpticksBoundaryIdentity_NOTE = R"(
+U4Step::MockOpticksBoundaryIdentity 
+====================================
+
+Mocking Opticks requires CFBASE envvar which allows instanciation of U4CF
+This means that when changing the U4VolumeMaker geometry it is necessary to
+run the Opticks gxs.sh GPU simulation first and grab the CSGFoundry geometry 
+back to the machine running the Geant4 simulation. 
+
+eg::
+
+    gx
+    ./gxs.sh run    # workstation
+    ./gxs.sh grab   # laptop 
+
+    u4t
+    ./U4RecorderTest.sh run     # CFBASE is set by the script to pick up the CF geometry
+
+)"; 
+
+
 void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step* step, unsigned idx)  // static
 {
+    if(CF == nullptr) std::cerr << MockOpticksBoundaryIdentity_NOTE ; 
+    assert(CF); 
+
     std::string spec = BoundarySpec(step) ; // empty when not boundary   
     unsigned boundary = spec.empty() ? 0 : CF->getBoundary(spec.c_str()) ; 
     unsigned type = U4Step::Classify(step); 
@@ -99,6 +125,9 @@ void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step*
              << " kludge_prim_idx " << kludge_prim_idx
              << std::endl 
              ;  
+
+        std::cerr << " pre  " << U4StepPoint::DescPositionTime(step->GetPreStepPoint()) << std::endl ; 
+        std::cerr << " post " << U4StepPoint::DescPositionTime(step->GetPostStepPoint()) << std::endl ; 
     }
 
     // HMM: what does Opticks do for not at boundary ? 

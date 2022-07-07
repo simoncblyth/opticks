@@ -52,6 +52,8 @@ if __name__ == '__main__':
         we_ = "we = np.where( A.t.view('|S%(SLOTS)s') != B.t2.view('|S%(SLOTS)s') )[0]" % locals()  # eg stag.h/stag::SLOTS = 64 
         we = epr(we_,  globals(), locals() ) 
 
+        wa = epr("wa = np.where( np.abs(a.record - b.record ) > 0.01 )[0]", globals(), locals() ) 
+
         eprint("np.all( A.ts == B.ts2 )", globals(), locals() )
         eprint("np.all( A.ts2 == B.ts )", globals(), locals() )
 

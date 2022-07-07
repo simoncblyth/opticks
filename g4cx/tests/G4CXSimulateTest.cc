@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     gx.simulate(); 
 
     cudaDeviceSynchronize(); 
-    evt.save();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM 
+    evt.save();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM  then ALL from setRelDir
  
     return 0 ; 
 }

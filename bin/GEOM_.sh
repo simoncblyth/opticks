@@ -15,12 +15,12 @@ EOU
 
 #geom=BoxOfScintillator
 #geom=RaindropRockAirWater
-geom=RaindropRockAirWater2
-#geom=hama_body_log
+#geom=RaindropRockAirWaterSD
+geom=hama_body_log
 
 export GEOM=${GEOM:-$geom}
 
-if [ "$GEOM" == "RaindropRockAirWater" -o "$GEOM" == "RaindropRockAirWater2" ]; then 
+if [ "$GEOM" == "RaindropRockAirWater" -o "$GEOM" == "RaindropRockAirWaterSD" ]; then 
     export U4VolumeMaker_RaindropRockAirWater_FACTOR=10
 fi 
 

@@ -20,6 +20,7 @@ struct U4_API U4StepPoint
 {
     static const plog::Severity LEVEL ; 
     static void Update(sphoton& photon, const G4StepPoint* point);
+    static std::string DescPositionTime(const G4StepPoint* point ); 
 
     static constexpr const char* Undefined_      = "Undefined" ; 
     static constexpr const char* NoProc_         = "NoProc" ; 

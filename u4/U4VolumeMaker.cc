@@ -17,6 +17,8 @@
 #include "U4SolidMaker.hh"
 #include "U4VolumeMaker.hh"
 #include "U4SensitiveDetector.h"
+#include "U4RotationMatrix.h"
+#include "U4Volume.h"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -220,6 +222,9 @@ U4VolumeMaker::WrapRockWater
 G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
 {
     LOG(LEVEL) << "["  ; 
+
+
+
     double halfside = SSys::getenvdouble(U4VolumeMaker_WrapRockWater_HALFSIDE, 1000.); 
     double factor   = SSys::getenvdouble(U4VolumeMaker_WrapRockWater_FACTOR,   2.); 
 
@@ -229,7 +234,11 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
     G4LogicalVolume*  rock_lv  = Box_(factor*halfside, "Rock" );
     G4LogicalVolume*  water_lv = Box_(1.*halfside, "Water" );
  
-    G4VPhysicalVolume* item_pv  = Place(item_lv,  water_lv);  assert( item_pv ); 
+    const char* flip_axes = "Z" ; 
+    G4VPhysicalVolume* item_pv  = Place(item_lv,  water_lv, flip_axes );  assert( item_pv ); 
+
+    U4Volume::Traverse( item_pv, "item_pv" ); 
+
     G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
     G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  
 
@@ -490,12 +499,19 @@ G4VPhysicalVolume* U4VolumeMaker::Box(double halfside, const char* mat, const ch
     return Place(lv, mother_lv); 
 }
 
-G4VPhysicalVolume* U4VolumeMaker::Place( G4LogicalVolume* lv, G4LogicalVolume* mother_lv )
+
+G4VPhysicalVolume* U4VolumeMaker::Place( G4LogicalVolume* lv, G4LogicalVolume* mother_lv, const char* flip_axes )
 {
     const char* lv_name = lv->GetName().c_str() ; 
     const char* pv_name = SStr::Name(lv_name, "_pv") ; 
-    return new G4PVPlacement(0,G4ThreeVector(), lv, pv_name, mother_lv, false, 0);
+
+    U4RotationMatrix* flip = flip_axes ? U4RotationMatrix::Flip(flip_axes) : nullptr ; 
+    return new G4PVPlacement(flip,G4ThreeVector(), lv, pv_name, mother_lv, false, 0);
 }
+
+
+
+
 
 
 

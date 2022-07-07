@@ -46,7 +46,6 @@ A_FOLD_GXS=$tmp/G4CXSimulateTest/$GEOM/ALL
 B_FOLD_GXS=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/$GEOM/ALL
 CFBASE_GXS=$tmp/G4CXSimulateTest/$GEOM  # it is up to the using bash script to export it so python can use
 
-
 GOAL_PIDX="check reproducibility of B:PIDX running"
 A_FOLD_PIDX=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log/ALL
 B_FOLD_PIDX=$tmp/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log/PIDX_207_
