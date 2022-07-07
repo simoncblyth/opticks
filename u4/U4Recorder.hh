@@ -69,10 +69,6 @@ struct U4_API U4Recorder
     void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag); 
 
 
-    static bool IsOnBoundary( const G4Step* step ); 
-    static std::string BoundarySpec(const G4Step* step ); 
-    static const G4VSolid* Solid(const G4StepPoint* point ); 
-
     static unsigned PackIdentity(unsigned prim_idx, unsigned instance_id); 
 
 };

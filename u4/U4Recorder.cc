@@ -20,7 +20,9 @@
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4TrackStatus.h"
 #include "U4Random.hh"
+
 #include "U4Surface.h"
+#include "U4Step.h"
 
 #include "U4Process.h"
 
@@ -104,9 +106,16 @@ appear repeatedly for many prim.
 
 HMM: potentially with live running could fix this by holding origin 
 pointers to maintain the source G4VPhysicalVolume for every CSGPrim ?  
+
 This would require the Geant4 U4RecorderTest to do a translation to 
 CSG on the fly and use that.  Given the heavy dependencies of 
 the translation currently this solution not convenient.  
+
+This is a capability that needs to wait for the new more direct G4->CSG "Geo" impl.
+The as yet uncreated "Geo" full node tree needs to retain the connection
+to the origin physical volumes and copyNo which needs to be carried into 
+the CSG model : possibly with just the nodeindex. 
+Then in U4Recorder can reproduce the identity.    
 
 **/
 
@@ -265,7 +274,17 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     assert( label.isDefined() );  
     if(!Enabled(label)) return ;  // early debug  
 
-    //LOG(info) << " label.id " << label.id << " " << U4Process::Desc() ; 
+    unsigned type = U4Step::Classify(step); 
+    if( U4Step::IsProblem(type) )
+    {
+        LOG(error) 
+             << " problem step "
+             << " label.id " << label.id
+             << " type " << type 
+             << " U4Step::Name " << U4Step::Name(type)
+              ;  
+    }
+
 
     SEvt* sev = SEvt::Get(); 
     sev->checkPhotonLineage(label); 
@@ -291,10 +310,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         G4TrackStatus tstat = track->GetTrackStatus(); 
         Check_TrackStatus_Flag(tstat, flag); 
 
-        std::string spec = IsOnBoundary(step) ? BoundarySpec(step) : "" ;  
+        std::string spec = U4Step::BoundarySpec(step) ; // empty when not boundary   
         unsigned boundary = spec.empty() ? 0 : getBoundary(spec.c_str()) ; 
 
-        const G4VSolid* post_so = Solid(post) ;
+        const G4VSolid* post_so = U4Step::Solid(post) ;
         G4String post_soname = post_so->GetName(); 
         unsigned post_prim_idx = getPrimIdx(post_soname.c_str()) ; 
 
@@ -370,88 +389,6 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
             << " flag " << OpticksPhoton::Flag(flag) 
             ; 
     }
-}
-
-bool U4Recorder::IsOnBoundary( const G4Step* step ) // static 
-{
-    const G4StepPoint* post = step->GetPostStepPoint() ; 
-    G4bool isOnBoundary = post->GetStepStatus() == fGeomBoundary ;
-    return isOnBoundary ; 
-}
-
-/**
-U4Recorder::BoundarySpec
-------------------------------
-
-
-Spec is a string composed of 4 elements delimted by 3 "/"::
-
-    omat/osur/isur/imat
-
-The osur and isur can be blank, the omat and imat cannot be blank
-
-
-enteredDaughter
-    True:  "inwards" photons 
-    False: "outwards" photons 
- 
-**/
-
-std::string U4Recorder::BoundarySpec(const G4Step* step) // static 
-{
-    const G4StepPoint* pre = step->GetPreStepPoint() ; 
-    const G4StepPoint* post = step->GetPostStepPoint() ; 
-    const G4Material* m1 = pre->GetMaterial();
-    const G4Material* m2 = post->GetMaterial();
-    const char* n1 = m1->GetName().c_str() ;  
-    const char* n2 = m2->GetName().c_str() ;  
-
-    const G4VPhysicalVolume* thePrePV = pre->GetPhysicalVolume();
-    const G4VPhysicalVolume* thePostPV = post->GetPhysicalVolume();
-    G4bool enteredDaughter = thePostPV->GetMotherLogical() == thePrePV ->GetLogicalVolume();
-
-    const char* omat = enteredDaughter ? n1 : n2 ; 
-    const char* imat = enteredDaughter ? n2 : n1 ; 
-
-    const G4LogicalSurface* surf1 = U4Surface::GetLogicalSurface(thePrePV, thePostPV ); 
-    const G4LogicalSurface* surf2 = U4Surface::GetLogicalSurface(thePostPV, thePrePV ); 
-
-    const char* osur = nullptr ; 
-    const char* isur = nullptr ; 
-
-    if( enteredDaughter )
-    {
-        osur = surf1 ? surf1->GetName().c_str() : nullptr ; 
-        isur = surf2 ? surf2->GetName().c_str() : nullptr ; 
-    }
-    else
-    {
-        osur = surf2 ? surf2->GetName().c_str() : nullptr ; 
-        isur = surf1 ? surf1->GetName().c_str() : nullptr ; 
-    }
-
-    std::stringstream ss ; 
-    ss 
-       << omat 
-       << "/" 
-       << ( osur ? osur : "" ) 
-       << "/" 
-       << ( isur ? isur : "" ) 
-       << "/" 
-       << imat
-       ; 
-
-    std::string s = ss.str(); 
-    return s ; 
-}
-
-const G4VSolid* U4Recorder::Solid(const G4StepPoint* point ) // static
-{
-    const G4VPhysicalVolume* pv  = point->GetPhysicalVolume();
-    const G4LogicalVolume* lv = pv->GetLogicalVolume();
-    const G4VSolid* so = lv->GetSolid(); 
-    return so ; 
-
 }
 
 
