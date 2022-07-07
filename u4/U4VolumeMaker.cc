@@ -1,4 +1,5 @@
 #include <sstream>
+#include <csignal>
 
 #include "G4Material.hh"
 #include "G4ThreeVector.hh"
@@ -223,8 +224,6 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
 {
     LOG(LEVEL) << "["  ; 
 
-
-
     double halfside = SSys::getenvdouble(U4VolumeMaker_WrapRockWater_HALFSIDE, 1000.); 
     double factor   = SSys::getenvdouble(U4VolumeMaker_WrapRockWater_FACTOR,   2.); 
 
@@ -237,7 +236,23 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
     const char* flip_axes = "Z" ; 
     G4VPhysicalVolume* item_pv  = Place(item_lv,  water_lv, flip_axes );  assert( item_pv ); 
 
+
+
     U4Volume::Traverse( item_pv, "item_pv" ); 
+
+
+    const char* pv1 = "hama_body_log_pv" ; 
+    const char* pv2 = "hama_inner1_phys" ; 
+    G4LogicalBorderSurface* pyrex_vacuum_bs = U4Surface::MakePerfectDetectorBorderSurface("pyrex_vacuum_bs",  pv1, pv2, item_pv ); 
+
+    LOG(error)
+        << " attempt to add  PerfectDetectorBorderSurfac between volumes "
+        << " pv1 " << pv1 
+        << " pv2 " << pv2 
+        << " pyrex_vacuum_bs " << ( pyrex_vacuum_bs ? "YES" : "NO" )
+        ;
+
+    if(pyrex_vacuum_bs == nullptr) std::raise(SIGINT); 
 
     G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
     G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  
@@ -248,6 +263,8 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
     LOG(LEVEL) << "]"  ; 
     return rock_pv ; 
 }
+
+
 
 
 /**

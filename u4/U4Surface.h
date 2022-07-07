@@ -18,9 +18,15 @@ struct U4Surface
     static unsigned Type(const char* type_); 
 
     static G4OpticalSurface* MakeOpticalSurface( const char* name_ ); 
+
+    static G4LogicalBorderSurface* MakeBorderSurface(const char* name_, const char* type_, const char* pv1_, const char* pv2_, G4VPhysicalVolume* start_pv ); 
+    static G4LogicalBorderSurface* MakePerfectAbsorberBorderSurface(const char* name_, const char* pv1, const char* pv2, G4VPhysicalVolume* start_pv  ); 
+    static G4LogicalBorderSurface* MakePerfectDetectorBorderSurface(const char* name_, const char* pv1, const char* pv2, G4VPhysicalVolume* start_pv  ); 
+
     static G4LogicalBorderSurface* MakeBorderSurface(const char* name_, const char* type_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2 ); 
     static G4LogicalBorderSurface* MakePerfectAbsorberBorderSurface(const char* name_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2 ); 
     static G4LogicalBorderSurface* MakePerfectDetectorBorderSurface(const char* name_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2 ); 
+
 };
 
 inline unsigned U4Surface::Type(const char* type_)
@@ -38,6 +44,7 @@ inline unsigned U4Surface::Type(const char* type_)
 #include "G4LogicalSkinSurface.hh"
 
 #include "U4Material.hh"
+#include "U4Volume.h"
 
 
 
@@ -65,6 +72,25 @@ Getting G4OpBoundaryProcess to always give boundary status Detection for a surfa
 2. EFFICIENCY 1. forcing Detection 
 
 **/
+
+
+inline G4LogicalBorderSurface* U4Surface::MakeBorderSurface(const char* name_, const char* type_, const char* pv1_, const char* pv2_, G4VPhysicalVolume* start_pv )
+{
+    G4VPhysicalVolume* pv1 = U4Volume::FindPV( start_pv, pv1_ ); 
+    G4VPhysicalVolume* pv2 = U4Volume::FindPV( start_pv, pv2_ ); 
+    return ( pv1 && pv2 ) ? MakeBorderSurface(name_, type_, pv1, pv2 ) : nullptr ;  
+}
+
+inline G4LogicalBorderSurface* U4Surface::MakePerfectAbsorberBorderSurface(const char* name_, const char* pv1, const char* pv2, G4VPhysicalVolume* start_pv)
+{
+    return MakeBorderSurface(name_, PerfectAbsorber, pv1, pv2, start_pv ); 
+}
+inline G4LogicalBorderSurface* U4Surface::MakePerfectDetectorBorderSurface(const char* name_, const char* pv1, const char* pv2, G4VPhysicalVolume* start_pv)
+{
+    return MakeBorderSurface(name_, PerfectDetector, pv1, pv2, start_pv ); 
+}
+
+
 
 
 inline G4LogicalBorderSurface* U4Surface::MakeBorderSurface(const char* name_, const char* type_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2)
@@ -104,10 +130,5 @@ inline G4LogicalBorderSurface* U4Surface::MakePerfectDetectorBorderSurface(const
 {
     return MakeBorderSurface(name_, PerfectDetector, pv1, pv2 ); 
 }
-
-
-
-
-
 
 
