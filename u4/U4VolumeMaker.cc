@@ -16,6 +16,7 @@
 #include "U4Surface.h"
 #include "U4SolidMaker.hh"
 #include "U4VolumeMaker.hh"
+#include "U4SensitiveDetector.h"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -131,9 +132,9 @@ G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
 G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
 {
     G4VPhysicalVolume* pv = nullptr ; 
-    if(strcmp(name,"BoxOfScintillator" ) == 0)     pv = BoxOfScintillator(1000.);   
-    if(strcmp(name,"RaindropRockAirWater" ) == 0)  pv = RaindropRockAirWater();   
-    if(strcmp(name,"RaindropRockAirWater2" ) == 0) pv = RaindropRockAirWater2();   
+    if(strcmp(name,"BoxOfScintillator" ) == 0)      pv = BoxOfScintillator(1000.);   
+    if(strcmp(name,"RaindropRockAirWater" ) == 0)   pv = RaindropRockAirWater();   
+    if(strcmp(name,"RaindropRockAirWaterSD" ) == 0) pv = RaindropRockAirWaterSD();   
     return pv ; 
 }
 G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
@@ -232,7 +233,7 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
     G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
     G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  
 
-    G4LogicalBorderSurface* water_rock_bs = U4Surface::MakePerfectAbsorberSurface("water_rock_bs", water_pv, rock_pv );  
+    G4LogicalBorderSurface* water_rock_bs = U4Surface::MakePerfectAbsorberBorderSurface("water_rock_bs", water_pv, rock_pv );  
     assert( water_rock_bs ); 
 
     LOG(LEVEL) << "]"  ; 
@@ -568,14 +569,14 @@ G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater()
     assert( air_pv ); 
     assert( rock_pv ); 
 
-    G4LogicalBorderSurface* air_rock_bs = U4Surface::MakePerfectAbsorberSurface("air_rock_bs", air_pv, rock_pv );  
+    G4LogicalBorderSurface* air_rock_bs = U4Surface::MakePerfectAbsorberBorderSurface("air_rock_bs", air_pv, rock_pv );  
     assert( air_rock_bs ); 
 
     return rock_pv ; 
 }
 
 /**
-U4VolumeMaker::RaindropRockAirWater2
+U4VolumeMaker::RaindropRockAirWaterSD
 --------------------------------------
 
 Notice that so long as all the LV are created prior to creating the PV, 
@@ -588,7 +589,7 @@ together by the higher level methods that make less sense to generalize.
 
 **/
 
-G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater2()
+G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWaterSD()
 {
     double rock_halfside, air_halfside, water_radius ; 
     RaindropRockAirWater_Configure( rock_halfside, air_halfside, water_radius ); 
@@ -605,8 +606,14 @@ G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater2()
     assert( air_pv ); 
     assert( water_pv ); 
 
-    G4LogicalBorderSurface* air_rock_bs = U4Surface::MakePerfectAbsorberSurface("air_rock_bs", air_pv, rock_pv );  
+    G4LogicalBorderSurface* air_rock_bs = U4Surface::MakePerfectAbsorberBorderSurface("air_rock_bs", air_pv, rock_pv );  
     assert( air_rock_bs ); 
+
+    //water_lv->SetSensitiveDetector(new U4SensitiveDetector("water_sd")); 
+    // not needed, it is the below surface that is necessary 
+
+    G4LogicalBorderSurface* air_water_bs = U4Surface::MakePerfectDetectorBorderSurface("air_water_bs", air_pv, water_pv );  
+    assert( air_water_bs ); 
 
     return rock_pv ; 
 }

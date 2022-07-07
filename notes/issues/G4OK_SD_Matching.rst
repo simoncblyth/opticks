@@ -66,6 +66,14 @@ All it takes to trigger a hit is for the prestep point to be from a sensitive vo
     253 }
 
 
+    444 void G4LogicalVolume::SetSensitiveDetector(G4VSensitiveDetector* pSDetector)
+    445 {
+    446   G4MT_sdetector = pSDetector;
+    447   if(G4Threading::IsMasterThread()) fSensitiveDetector = pSDetector;
+    448 }
+
+
+
 Geant4
 --------
 

@@ -31,7 +31,7 @@ struct U4Step
 
     static void MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step* step, unsigned idx); 
     static unsigned PackIdentity(unsigned prim_idx, unsigned instance_id); 
-    static unsigned KludgePrimIdx(const G4Step* step, unsigned idx); 
+    static unsigned KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx); 
 
     static const char* Name(unsigned type); 
     static bool IsProblem(unsigned type);  
@@ -74,19 +74,35 @@ void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step*
 {
     std::string spec = BoundarySpec(step) ; // empty when not boundary   
     unsigned boundary = spec.empty() ? 0 : CF->getBoundary(spec.c_str()) ; 
-    unsigned kludge_prim_idx = KludgePrimIdx(step, idx) ; 
+    unsigned type = U4Step::Classify(step); 
+    unsigned kludge_prim_idx = KludgePrimIdx(step, type, idx) ; 
+    float cosThetaSign = 0.f ; // aka orient 
 
-    /*
-    std::cout 
-        << "U4Step::MockOpticksBoundaryIdentity"
-        << " spec " << spec 
-        << " boundary " << boundary 
-        << " kludge_prim_idx " << kludge_prim_idx
-        << std::endl 
-        ; 
-    */  
+    switch(type)
+    {
+        case U4Step_NOT_AT_BOUNDARY: cosThetaSign =  0.f ; break ;
+        case U4Step_MOTHER_TO_CHILD: cosThetaSign = -1.f ; break ;    // photon direction against the normal 
+        case U4Step_CHILD_TO_MOTHER: cosThetaSign =  1.f ; break ;    // photon direction with the normal 
+    }
 
+    if( U4Step::IsProblem(type) || type ==  U4Step_NOT_AT_BOUNDARY )
+    {
+        std::cerr
+             << "U4Step::MockOpticksBoundaryIdentity"
+             << " problem step "
+             << " idx " << idx
+             << " type " << type 
+             << " U4Step::Name " << U4Step::Name(type)
+             << " cosThetaSign " << cosThetaSign
+             << " spec " << spec 
+             << " boundary " << boundary 
+             << " kludge_prim_idx " << kludge_prim_idx
+             << std::endl 
+             ;  
+    }
 
+    // HMM: what does Opticks do for not at boundary ? 
+    current_photon.set_orient( cosThetaSign );   // sets a bit : would be 0 if not set
     current_photon.set_boundary( boundary);
     current_photon.identity = PackIdentity( kludge_prim_idx, 0u) ;
 }
@@ -95,20 +111,50 @@ unsigned U4Step::PackIdentity(unsigned prim_idx, unsigned instance_id)
     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
     return identity ; 
 }
-unsigned U4Step::KludgePrimIdx(const G4Step* step, unsigned idx)
-{
-    unsigned type = U4Step::Classify(step); 
 
-    if( U4Step::IsProblem(type) )
-    {
-        std::cerr
-             << " problem step "
-             << " idx " << idx
-             << " type " << type 
-             << " U4Step::Name " << U4Step::Name(type)
-             << std::endl 
-             ;  
-    }
+/**
+U4Step::KludgePrimIdx
+------------------------
+
+::
+
+     +---Rock--------------------------------+
+     |                                       |
+     |                                       |
+     |    +--------------Air----------+      |
+     |    |                           |      |
+     |    |            Water          |      |
+     |    |          /     \          |      |
+     |    |  +----->|-    >|         >|      |
+     |    |          \    /           |      |
+     |    |           ---             |      |
+     |    |                           |      |
+     |    +---------------------------+      |
+     |                                       |
+     |                                       |
+     +---------------------------------------+
+
+
+Opticks provides the primIdx of the hit surface, without regard 
+for the direction of the photon : because that is a characteristic
+of the geometry that is essentially a label on the geometry.
+
+* Opticks knows the boundary, and the orientation wrt the normal, 
+  so it knows the material but not the next prim until it does 
+  another intersection
+
+* this difference arises from the boundary based Opticks geometry model 
+  vs volume based Geant4 geometry model
+
+The first attempt to mimic this with Geant4 always used the "post-solid" 
+but that does not match Opticks when leaving solids. To mimic Opticks it is 
+necessary to use pre-solid or the post-solid depending on the orientation. 
+
+**/
+
+
+unsigned U4Step::KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx)
+{
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -140,7 +186,6 @@ unsigned U4Step::KludgePrimIdx(const G4Step* step, unsigned idx)
         << std::endl 
         ; 
     */ 
- 
 
     return kludge_prim_idx ; 
 }

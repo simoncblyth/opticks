@@ -68,7 +68,7 @@ struct U4_API U4VolumeMaker
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_FACTOR   = "U4VolumeMaker_RaindropRockAirWater_FACTOR" ; 
     static void RaindropRockAirWater_Configure( double& rock_halfside, double& air_halfside, double& water_radius ); 
     static G4VPhysicalVolume* RaindropRockAirWater();  
-    static G4VPhysicalVolume* RaindropRockAirWater2();
+    static G4VPhysicalVolume* RaindropRockAirWaterSD();
 
     // general lv creators 
  

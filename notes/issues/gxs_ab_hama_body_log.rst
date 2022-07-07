@@ -28,11 +28,96 @@ AB Analysis::
     ./gxs_ab.sh 
 
 
+
+
+TODO : gxs with the Geant4 geometry with SD : will the EFFICIENCY property get thru raise Opticks SD ?
+-------------------------------------------------------------------------------------------------------------
+  
+
+
+DONE : RaindropRockAirWaterSD : Geant4 SD/SURFACE_DETECT within simple test
+--------------------------------------------------------------------------------
+
+* U4Surface::MakePerfectDetectorBorderSurface succeed to pursuade Geant4 to give "TO SD" in RaindropRockAirWaterSD
+
+
+To get status Detection need EFFICIENCY::
+
+    343 void InstrumentedG4OpBoundaryProcess::DoAbsorption()
+    344 {
+    345               theStatus = Absorption;
+    346 
+    347               if ( G4BooleanRand(theEfficiency) ) {
+    348 
+    349                  // EnergyDeposited =/= 0 means: photon has been detected
+    350                  theStatus = Detection;
+    351                  aParticleChange.ProposeLocalEnergyDeposit(thePhotonMomentum);
+    352               }
+    353               else {
+    354                  aParticleChange.ProposeLocalEnergyDeposit(0.0);
+    355               }
+
+To get there need no REFLECTIVITY::
+
+     570              if ( rand > theReflectivity ) {
+     571                 if (rand > theReflectivity + theTransmittance) {
+     572                    DoAbsorption();
+     573                 } else {
+     574                    theStatus = Transmission;
+     575                    NewMomentum = OldMomentum;
+     576                    NewPolarization = OldPolarization;
+     577                 }
+
+::
+
+    1568 G4bool InstrumentedG4OpBoundaryProcess::InvokeSD(const G4Step* pStep)
+    1569 {
+    1570   G4Step aStep = *pStep;
+    1571 
+    1572   aStep.AddTotalEnergyDeposit(thePhotonMomentum);
+    1573 
+    1574   G4VSensitiveDetector* sd = aStep.GetPostStepPoint()->GetSensitiveDetector();
+    1575   if (sd) return sd->Hit(&aStep);
+    1576   else return false;
+    1577 }
+
+
+
+
+g4-clc G4SteppingManager::
+
+    116 G4StepStatus G4SteppingManager::Stepping()
+    ...
+    230 // Send G4Step information to Hit/Dig if the volume is sensitive
+    231    fCurrentVolume = fStep->GetPreStepPoint()->GetPhysicalVolume();
+    232    StepControlFlag =  fStep->GetControlFlag();
+    233    if( fCurrentVolume != 0 && StepControlFlag != AvoidHitInvocation) {
+    234       fSensitive = fStep->GetPreStepPoint()->
+    235                                    GetSensitiveDetector();
+    236       if( fSensitive != 0 ) {
+    237         fSensitive->Hit(fStep);
+    238       }
+    239    }
+
+::
+
+    230 inline
+    231  G4VSensitiveDetector* G4StepPoint::GetSensitiveDetector() const
+    232  { return fpSensitiveDetector; }
+    233 
+    234 inline
+    235  void G4StepPoint::SetSensitiveDetector(G4VSensitiveDetector* aValue)
+    236  { fpSensitiveDetector = aValue; }
+
+
+
+
+
 First Look : hama_body_log : NB might well be shooting it in the back 
 ----------------------------------------------------------------------------
 
-The problem is the artificial mid-vacuum boundary in the middle of the PMT.  
-
+The artificial mid-vacuum sibling boundary in the middle of the PMT
+looses alignment.  Issue hidden in old geometry model by photons going SD. 
 
 
 Lots are out of history alignment::
@@ -54,8 +139,31 @@ Quite a lot aligned too::
   * converted the enum seq to a "S48" or "S64" depending on SLOTS string and compared that 
 
 
-Mimic the Opticks Flags with Geant4? : primIdx inconsistency
-----------------------------------------------------------------
+DONE Sorta : Mimic the Opticks Flags with Geant4? : primIdx inconsistency
+------------------------------------------------------------------------------
+
+* approach matches for simple test geometries
+* matching in full geom needs additional efforts on geo translation maintaining associations
+
+
+::
+
+    In [3]: AB[0]
+    Out[3]: 
+    A : /tmp/blyth/opticks/G4CXSimulateTest/RaindropRockAirWater2/ALL
+    B : /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/RaindropRockAirWater2/ALL
+    A(0) : TO BT BT SA                                                                                     B(0) : TO BT BT SA
+    - Air///Water                              Water_solid                                                 - Air///Water                              Water_solid
+    + Air///Water                              Water_solid                                                 + Air///Water                              Water_solid
+    + Rock//air_rock_bs/Air                    Air_solid                                                   + Rock//air_rock_bs/Air                    Air_solid
+
+    - : against the normal (ie inwards from omat to imat)                                                  - : against the normal (ie inwards from omat to imat)
+    + : with the normal (ie outwards from imat to omat)                                                    + : with the normal (ie outwards from imat to omat)
+
+
+
+
+
 
 B::
 
@@ -193,8 +301,8 @@ B: incorrecy Geant4 mimic is providing the "post step" solid
     SPHOTON_METHOD void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } 
     // clear orient bit and then set it 
     //
-    // cosTheta < 0.f : photon direction is against the normal of the geometry => 0x1 => "-"
-    // cosTheta > 0.f : photon direction is with    the normal of the geometry => 0x0 => "+"  
+    // cosTheta < 0.f : photon direction is against the normal of the geometry => 0x1 => "-"         MOTHER_TO_CHILD
+    // cosTheta > 0.f : photon direction is with    the normal of the geometry => 0x0 => "+"         CHILD_TO_MOTHER
 
 
 
