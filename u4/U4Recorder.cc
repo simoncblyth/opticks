@@ -22,12 +22,13 @@
 #include "U4Random.hh"
 
 #include "U4Surface.h"
-#include "U4Step.h"
 
 #include "U4Process.h"
-
+#include "U4CF.h"
+#include "U4Step.h"
 
 const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG"); 
+
 const int U4Recorder::PIDX = SSys::getenvint("PIDX",-1) ; 
 const int U4Recorder::GIDX = SSys::getenvint("GIDX",-1) ; 
 
@@ -68,65 +69,7 @@ bool U4Recorder::Enabled(const spho& label)
 
 U4Recorder* U4Recorder::INSTANCE = nullptr ; 
 U4Recorder* U4Recorder::Get(){ return INSTANCE ; }
-U4Recorder::U4Recorder(){ init() ; }
-
-void U4Recorder::init()
-{
-    INSTANCE = this ; 
-    if(SSys::hasenvvar("CFBASE")) init_CFBASE(); 
-}
-void U4Recorder::init_CFBASE()
-{
-    ReadNames( "$CFBASE/CSGFoundry/SSim/bnd_names.txt", bnd ); 
-    ReadNames( "$CFBASE/CSGFoundry/meshname.txt", msh ); 
-    ReadNames( "$CFBASE/CSGFoundry/primname.txt", pri ); 
-}
-void U4Recorder::ReadNames(const char* path_, std::vector<std::string>& names ) // static
-{
-    const char* path = SPath::Resolve(path_, NOOP); 
-    NP::ReadNames(path, names); 
-    LOG(info) << "path " << path << " names.size " << names.size() ;
-    for(unsigned i=0 ; i < names.size() ; i++)  LOG(info) << std::setw(4) << i << " : " << names[i] ;  
-}
-
-unsigned U4Recorder::Index(const char* name, const std::vector<std::string>& names, unsigned max_count )
-{
-    unsigned count = 0 ; 
-    unsigned index = NP::NameIndex( name, count, names );
-    assert( max_count == 0 || count <= max_count );  
-    return index ; 
-}
-
-/**
-U4Recorder::getPrimIdx
-------------------------
-
-HMM: this will not match Opticks in full geometry where meshnames 
-appear repeatedly for many prim. 
-
-HMM: potentially with live running could fix this by holding origin 
-pointers to maintain the source G4VPhysicalVolume for every CSGPrim ?  
-
-This would require the Geant4 U4RecorderTest to do a translation to 
-CSG on the fly and use that.  Given the heavy dependencies of 
-the translation currently this solution not convenient.  
-
-This is a capability that needs to wait for the new more direct G4->CSG "Geo" impl.
-The as yet uncreated "Geo" full node tree needs to retain the connection
-to the origin physical volumes and copyNo which needs to be carried into 
-the CSG model : possibly with just the nodeindex. 
-Then in U4Recorder can reproduce the identity.    
-
-**/
-
-unsigned U4Recorder::getPrimIdx( const char* soname) const { return Index(soname, pri, 0 ); }
-unsigned U4Recorder::getMeshIdx( const char* soname) const { return Index(soname, msh, 1 ); }
-unsigned U4Recorder::getBoundary(const char* spec) const {   return Index(spec,   bnd, 1 ); }
-
-
-
-
-
+U4Recorder::U4Recorder(){ INSTANCE = this ; }
 
 
 void U4Recorder::BeginOfRunAction(const G4Run*){     LOG(info); }
@@ -266,24 +209,14 @@ will fulfil *single_bit*.
 
 void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 {
-    const G4StepPoint* pre = step->GetPreStepPoint() ; 
-    const G4StepPoint* post = step->GetPostStepPoint() ; 
     const G4Track* track = step->GetTrack(); 
-
     spho label = U4Track::Label(track); 
     assert( label.isDefined() );  
-    if(!Enabled(label)) return ;  // early debug  
+    if(!Enabled(label)) return ;  
 
-    unsigned type = U4Step::Classify(step); 
-    if( U4Step::IsProblem(type) )
-    {
-        LOG(error) 
-             << " problem step "
-             << " label.id " << label.id
-             << " type " << type 
-             << " U4Step::Name " << U4Step::Name(type)
-              ;  
-    }
+
+    const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
 
 
     SEvt* sev = SEvt::Get(); 
@@ -298,8 +231,11 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     }
 
     unsigned flag = U4StepPoint::Flag(post) ; 
+
     if( flag == 0 ) LOG(error) << " ERR flag zero : post " << U4StepPoint::Desc(post) ; 
+
     assert( flag > 0 ); 
+
 
     if( flag == NAN_ABORT )
     {
@@ -308,45 +244,21 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     else
     {
         G4TrackStatus tstat = track->GetTrackStatus(); 
+
         Check_TrackStatus_Flag(tstat, flag); 
-
-        std::string spec = U4Step::BoundarySpec(step) ; // empty when not boundary   
-        unsigned boundary = spec.empty() ? 0 : getBoundary(spec.c_str()) ; 
-
-        const G4VSolid* post_so = U4Step::Solid(post) ;
-        G4String post_soname = post_so->GetName(); 
-        unsigned post_prim_idx = getPrimIdx(post_soname.c_str()) ; 
-
-        /*
-        const G4VSolid* pre_so = Solid(pre) ;  
-        G4String pre_soname = pre_so->GetName(); 
-        unsigned pre_prim_idx = getPrimIdx(pre_soname.c_str()) ; 
-
-        LOG(info) 
-            << " pre_soname " << std::setw(20) << pre_soname 
-            << " pre_prim_idx " << std::setw(4) << pre_prim_idx 
-            << " post_soname " << std::setw(20) << post_soname 
-            << " post_prim_idx " << std::setw(4) << post_prim_idx 
-            << " spec " << spec
-            ; 
-
-        */
-
 
         U4StepPoint::Update(current_photon, post); 
 
         current_photon.set_flag( flag );
-        current_photon.set_boundary( boundary);
-        current_photon.identity = PackIdentity(post_prim_idx, 0u) ;
+
+        U4Step::MockOpticksBoundaryIdentity(current_photon, step, label.id ); 
 
         sev->pointPhoton(label);         // save SEvt::current_photon/rec/seq/prd into sevent 
     }
+
+
     U4Process::ClearNumberOfInteractionLengthLeft(*track, *step); 
 }
-
-
- 
-
 
 
 /**
@@ -390,39 +302,5 @@ void U4Recorder::Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag)
             ; 
     }
 }
-
-
-
-
-/**
-U4Recorder::PackIdentity
--------------------------
-
-This only partially mimicks the Opticks identity, using the solid index as stand in for prim_idx.
-For simple geom that might even match.  
-
-cx/CSGOptiX7.cu::
-
-    406 extern "C" __global__ void __closesthit__ch()
-    407 {
-    408     unsigned iindex = optixGetInstanceIndex() ;    // 0-based index within IAS
-    409     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
-    410     unsigned prim_idx = optixGetPrimitiveIndex() ; // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
-    411     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
-
-TODO: find way to fully reproduce the Opticks identity with instance index, 
-probably that would mean dealing with long lists of volume names : the difficulty
-is the factorization which means multiple volumes are within each instance so would
-have to list all volumes 
-
-**/
-
-unsigned U4Recorder::PackIdentity(unsigned prim_idx, unsigned instance_id) 
-{
-    unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
-    return identity ; 
-}
-
-
 
 

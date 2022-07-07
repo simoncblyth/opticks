@@ -175,6 +175,11 @@ int main(int argc, char** argv)
     //U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
     U4Material::LoadBnd();   // "back" creation of G4 material properties from the Opticks bnd.npy obtained from SSim::Load 
 
+
+    //U4CF* cf = U4CF::Create(); 
+    //LOG(info) << cf->desc(); 
+
+
     U4Random rnd ;             // load precooked randoms for aligned running 
     LOG(info) << rnd.desc() ; 
 

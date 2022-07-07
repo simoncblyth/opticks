@@ -27,6 +27,7 @@ struct spho ;
 #include "G4TrackStatus.hh"
 #include "U4_API_EXPORT.hh"
 
+
 struct U4_API U4Recorder 
 {
     static const plog::Severity LEVEL ; 
@@ -38,19 +39,7 @@ struct U4_API U4Recorder
     static U4Recorder* INSTANCE ; 
     static U4Recorder* Get(); 
 
-    std::vector<std::string> bnd ; 
-    std::vector<std::string> msh ; 
-    std::vector<std::string> pri ; 
-
     U4Recorder(); 
-    void init(); 
-    void init_CFBASE(); 
-    static void ReadNames(const char* path_, std::vector<std::string>& names ); 
-    static unsigned Index(const char* name, const std::vector<std::string>& names, unsigned max_count ); 
-    unsigned getPrimIdx( const char* soname) const ; 
-    unsigned getMeshIdx( const char* soname) const ;  
-    unsigned getBoundary(const char* spec)   const ;  
-
 
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);
@@ -67,9 +56,6 @@ struct U4_API U4Recorder
     void UserSteppingAction_Optical(const G4Step*); 
 
     void Check_TrackStatus_Flag(G4TrackStatus tstat, unsigned flag); 
-
-
-    static unsigned PackIdentity(unsigned prim_idx, unsigned instance_id); 
 
 };
 

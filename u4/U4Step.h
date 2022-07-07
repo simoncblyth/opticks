@@ -5,6 +5,9 @@ class G4StepPoint ;
 class G4LogicalSurface ; 
 class G4VPhysicalVolume ; 
 
+struct sphoton ; 
+struct U4CF ; 
+
 
 enum { 
    U4Step_UNSET, 
@@ -17,12 +20,19 @@ enum {
 
 struct U4Step
 {
+    static const U4CF* CF ; 
+
     static constexpr const char* UNSET = "UNSET" ; 
     static constexpr const char* NOT_AT_BOUNDARY = "NOT_AT_BOUNDARY" ; 
     static constexpr const char* MOTHER_TO_CHILD = "MOTHER_TO_CHILD" ; // AKA enteredDaughter
     static constexpr const char* CHILD_TO_MOTHER = "CHILD_TO_MOTHER" ; 
     static constexpr const char* CHILD_TO_CHILD  = "CHILD_TO_CHILD" ;  // ABOMINATION SUGGESTING BROKEN GEOMETRY 
     static constexpr const char* UNEXPECTED      = "UNEXPECTED" ; 
+
+    static void MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step* step, unsigned idx); 
+    static unsigned PackIdentity(unsigned prim_idx, unsigned instance_id); 
+    static unsigned KludgePrimIdx(const G4Step* step, unsigned idx); 
+
     static const char* Name(unsigned type); 
     static bool IsProblem(unsigned type);  
     static unsigned Classify(const G4Step* step); 
@@ -32,6 +42,114 @@ struct U4Step
     static const G4VSolid* Solid(const G4StepPoint* point ); 
     static G4LogicalSurface* GetLogicalSurface(const G4VPhysicalVolume* thePrePV, const G4VPhysicalVolume* thePostPV); 
 };
+
+
+const U4CF* U4Step::CF = U4CF::Create() ; 
+
+
+/**
+U4Step::MockOpticksBoundaryIdentity
+---------------------------------------
+
+This only partially mimicks the Opticks identity, using the primname index as stand in for real prim_idx.
+That should match Opticks only with simple geom without repeated prim or instances.
+
+cx/CSGOptiX7.cu::
+
+    406 extern "C" __global__ void __closesthit__ch()
+    407 {
+    408     unsigned iindex = optixGetInstanceIndex() ;    // 0-based index within IAS
+    409     unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build and InstanceId.h 
+    410     unsigned prim_idx = optixGetPrimitiveIndex() ; // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
+    411     unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
+
+TODO: find way to fully reproduce the Opticks identity with instance index, 
+probably that would mean dealing with long lists of volume names : the difficulty
+is the factorization which means multiple volumes are within each instance so would
+have to list all volumes 
+
+**/
+
+void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step* step, unsigned idx)  // static
+{
+    std::string spec = BoundarySpec(step) ; // empty when not boundary   
+    unsigned boundary = spec.empty() ? 0 : CF->getBoundary(spec.c_str()) ; 
+    unsigned kludge_prim_idx = KludgePrimIdx(step, idx) ; 
+
+    /*
+    std::cout 
+        << "U4Step::MockOpticksBoundaryIdentity"
+        << " spec " << spec 
+        << " boundary " << boundary 
+        << " kludge_prim_idx " << kludge_prim_idx
+        << std::endl 
+        ; 
+    */  
+
+
+    current_photon.set_boundary( boundary);
+    current_photon.identity = PackIdentity( kludge_prim_idx, 0u) ;
+}
+unsigned U4Step::PackIdentity(unsigned prim_idx, unsigned instance_id) 
+{
+    unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
+    return identity ; 
+}
+unsigned U4Step::KludgePrimIdx(const G4Step* step, unsigned idx)
+{
+    unsigned type = U4Step::Classify(step); 
+
+    if( U4Step::IsProblem(type) )
+    {
+        std::cerr
+             << " problem step "
+             << " idx " << idx
+             << " type " << type 
+             << " U4Step::Name " << U4Step::Name(type)
+             << std::endl 
+             ;  
+    }
+
+    const G4StepPoint* pre = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+ 
+    const G4VSolid* pre_so = U4Step::Solid(pre) ;  
+    const G4VSolid* post_so = U4Step::Solid(post) ;
+    G4String pre_so_name = pre_so->GetName(); 
+    G4String post_so_name = post_so->GetName(); 
+    unsigned pre_prim_idx = CF->getPrimIdx(pre_so_name.c_str()) ; 
+    unsigned post_prim_idx = CF->getPrimIdx(post_so_name.c_str()) ; 
+
+
+    unsigned kludge_prim_idx = 0 ;    // this will only match Opticks for very simple geometries 
+    switch(type)
+    {
+        case U4Step_MOTHER_TO_CHILD: kludge_prim_idx = post_prim_idx ; break ; 
+        case U4Step_CHILD_TO_MOTHER: kludge_prim_idx = pre_prim_idx  ; break ; 
+        default:                     kludge_prim_idx = 0             ; break ;      
+    }
+
+    /*
+    std::cout 
+        << " U4Step::Name " << U4Step::Name(type)
+        << " pre_so_name " << std::setw(20) << pre_so_name 
+        << " pre_prim_idx " << std::setw(4) << pre_prim_idx 
+        << " post_so_name " << std::setw(20) << post_so_name 
+        << " post_prim_idx " << std::setw(4) << post_prim_idx 
+        << " kludge_prim_idx " << std::setw(4) << kludge_prim_idx
+        << std::endl 
+        ; 
+    */ 
+ 
+
+    return kludge_prim_idx ; 
+}
+
+
+
+
+
+
 
 const char* U4Step::Name(unsigned type)
 {
@@ -246,5 +364,10 @@ const G4VSolid* U4Step::Solid(const G4StepPoint* point ) // static
     return so ; 
 
 }
+
+
+
+
+
 
 
