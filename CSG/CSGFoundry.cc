@@ -2656,10 +2656,14 @@ sframe CSGFoundry::getFrame() const
 CSGFoundry::getFrame
 ---------------------
 
-TODO: method to convert the flat global inst_idx into a more informative MOI mname:mord:gas_iidx
-      that is likely to last longer before changing its meaning 
-      (although there can be several CSGPrim within the GAS inst_idx could simply use the first 
-       which should be the outer one)
+frs
+    frame specification string is regarded to "looks_like_moi" when 
+    it starts with a letter or it contains ":" or it is "-1". 
+    For such strings parseMOI is used to extract midx, mord, oodx
+ 
+    Otherwise the string is assumed to be inst_idx and iidxg
+    parsed as an integer 
+
 
 **/
 
@@ -2688,7 +2692,7 @@ void CSGFoundry::getFrame(sframe& fr, int inst_idx) const
     int rc = target->getFrame( fr, inst_idx );  
     assert( rc == 0 ); 
 }
- 
+
 void CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const 
 {
     if( midx == -1 )
@@ -2702,6 +2706,17 @@ void CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const
         assert( rc == 0 ); 
     }
 }
+
+/**
+TODO CSGFoundry::flatIdxToMOI ?
+---------------------------------
+
+Method to convert the flat global inst_idx into a more informative MOI mname:mord:gas_iidx
+that is likely to last longer before changing its meaning 
+(although there can be several CSGPrim within the GAS inst_idx could simply use the first 
+which should be the outer one)
+
+**/
 
 
 /**

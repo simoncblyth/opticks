@@ -138,12 +138,15 @@ void G4CXOpticks::simtrace()
 
 
     SEvt* sev = SEvt::Get();  assert(sev); 
-    sev->fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
 
+    sev->fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
     LOG(LEVEL) << sev->fr ; 
     SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(sev->fr) );  
+    cx->setFrame(sev->fr);    
 
-    cx->setFrame(sev->fr);  
+    // where to get the frame could be implicit at this level  
+                           
+
 
     qs->simtrace(); 
 }

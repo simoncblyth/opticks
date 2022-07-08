@@ -452,12 +452,20 @@ void CSGOptiX::setFrame(const float4& ce )
     fr_.ce = ce ;      
     setFrame(fr_); 
 }
+/**
+CSGOptiX::setFrame
+--------------------
+
+TODO: eliminate, SEvt already holds sframe, it should hold sglm too ?
+
+**/
+
 void CSGOptiX::setFrame(const sframe& fr_ )
 {
-    fr = fr_ ; 
-    const float4& ce = fr.ce ; 
-    const qat4* m2w = &fr.m2w ; 
-    const qat4* w2m = &fr.w2m ; 
+    //fr = fr_ ; 
+    const float4& ce = fr_.ce ; 
+    const qat4* m2w = &fr_.m2w ; 
+    const qat4* w2m = &fr_.w2m ; 
 
     LOG(info) << "[" ; 
 

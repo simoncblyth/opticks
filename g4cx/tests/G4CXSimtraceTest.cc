@@ -25,9 +25,9 @@ int main(int argc, char** argv)
     U4Material::LoadBnd(); // create G4 materials from SSim::Load bnd.npy, used by U4VolumeMaker::PV PMTSim
 
     SEventConfig::SetRGModeSimtrace();    // HMM: maybe discern from the simulate/simtrace/render call ? is it needed ahead of that ?
-    SEventConfig::SetCompMask("genstep,simtrace"); 
+    SEventConfig::SetCompMask("genstep,simtrace"); // defaults for this should vary with the RGMode  
 
-    SOpticks::WriteOutputDirScript() ;   // still needed ?
+    SOpticks::WriteOutputDirScript() ;   // still needed ? could be done by SEvt ctor ? 
 
     SEvt evt ;    
 
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     gx.simtrace(); 
 
     cudaDeviceSynchronize(); 
-    evt.save();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM  then ALL from setRelDir
+    evt.save();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM  
  
     return 0 ; 
 }

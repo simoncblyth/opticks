@@ -63,7 +63,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     Opticks*          ok ;  
     Composition*      composition ; 
 #endif
-    sframe            fr ;   // TODO: rehome to SEvt, can use pointer elsewhere
+    //sframe            fr ;   // TODO: rehome to SEvt, can use pointer elsewhere
     SGLM*             sglm ; 
 
     const char*       moi ; 

@@ -32,7 +32,7 @@ export GEOM=${GEOM:-$geom}
 isel=
 cfbase=
 ce_offset=0,0,0   # SFrameGenstep.cc now asserts if not multiple_of_3
-ce_scale=1   
+ce_scale=1        # have changed default of this to 1 : so can remove 
 gsplot=1
 
 

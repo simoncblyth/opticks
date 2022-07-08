@@ -22,8 +22,12 @@ const plog::Severity SFrameGenstep::LEVEL = PLOG::EnvLevel("SFrameGenstep", "DEB
 SFrameGenstep::CE_OFFSET
 -------------------------
 
+Interprets the CE_OFFSET envvar converting the values from the string (default "0,0,0")
+into the ce_offset vector with one or more float3.
+
 Typically CE_OFFSET "0.,0.,0." corresponding to local frame origin.
-The string "CE" is special cased for the offset to be set at the geometry ce. 
+The string "CE" or "ce" in the envvar is special cased, causing 
+the offset to be set to the ce provided by the argument.  
 
 **/
 
@@ -90,7 +94,13 @@ std::string SFrameGenstep::Desc(const std::vector<float3>& ce_offset )
 
 /**
 SFrameGenstep::MakeCenterExtentGensteps
------------------------------------
+-----------------------------------------
+
+NOTE: changed CE_SCALE default to be 1, enabling it
+To switch off CE scaling set CE_SCALE envvar to "0" 
+
+HMM as the typical CEGS is 16:0:9:500 to conform to standard aspect 
+ratio GRIDSCALE of 0.1 is more resonable than 1 ? 
 
 **/
 
@@ -119,8 +129,8 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
         ;
 
 
-    bool ce_scale = SSys::getenvint("CE_SCALE", 0) > 0 ; // TODO: ELIMINATE AFTER RTP CHECK 
-    if(ce_scale == false) LOG(fatal) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 
+    int ce_scale = SSys::getenvint("CE_SCALE", 1) ; // TODO: ELIMINATE AFTER RTP CHECK 
+    if(ce_scale == 0) LOG(fatal) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 
  
 
     Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 ); 
@@ -132,6 +142,7 @@ NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
     gs->set_meta<int>("mord", fr.mord() );
     gs->set_meta<int>("iidx", fr.iidx() );
     gs->set_meta<float>("gridscale", fr.gridscale() );
+    gs->set_meta<int>("ce_scale", int(ce_scale) ); 
 
     return gs ; 
 }
@@ -161,13 +172,18 @@ gridscale
    To expand the area when using a finer grid increase the nx:ny:nz, however
    that will lead to a slower render. 
 
-ce_offset:float3 
+ce_offset:vector of float3 
    typically local frame origin (0.,0.,0.) 
+   the grid is repeated for each offset float3 
+   This is used for example to create intesects in multiple planes.  
 
 ce_scale:true
    grid translate offsets *local_scale* set to ce.w*gridscale 
 
    SEEMS LIKE THIS SHOULD ALWAYS BE USED ?
+   ACTUALLTY NOT : APPARENTLY SOME TYPES OF TRANSFORM INCORPORATE THE EXTENT
+   SCALE ALREADY 
+
 
 ce_scale:false
    grid translate offsets *local_scale* set to gridscale 
