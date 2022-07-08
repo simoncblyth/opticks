@@ -99,6 +99,20 @@ export ZZ=${ZZ:-$zz}
 export OPTICKS_GEOM=$GEOM 
 
 
+loglevels()
+{
+    export Dummy=INFO
+    export SEvt=INFO
+    export CSGOptiX=INFO
+}
+loglevels
+
+
+
+
+
+
+
 IFS=: read -a cegs_arr <<< "$CEGS"
 
 # quotes on the in variable due to bug fixed in bash 4.3 according to 
@@ -236,6 +250,15 @@ if [ "$(uname)" == "Linux" ]; then
         [ $? -ne 0 ] && echo $cxs_msg RUN ERROR at LINENO $LINENO && exit 1 
 
         source ${bin}_OUTPUT_DIR.sh || exit 1  
+
+    elif [ "${cxs_arg}" == "dbg" ]; then 
+
+        cd $LOGDIR 
+        gdb $bin 
+        [ $? -ne 0 ] && echo $cxs_msg RUN ERROR at LINENO $LINENO && exit 1 
+
+        source ${bin}_OUTPUT_DIR.sh || exit 1  
+
 
     elif [ "${cxs_arg}" == "ana" ]; then 
 

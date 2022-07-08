@@ -69,8 +69,8 @@ def edv(expr, g, l):
     Example comparing deviations of record point 1 intersect z position in two histories::
 
         epr("o = cuss(a.seq[:,0])",  globals(), locals(), rprefix="\n" )
-        edv("a.record[w0,1,0,2] - b.record[w0,1,0,2] # point 1 z", rprefix="\n")
-        edv("a.record[w3,1,0,2] - b.record[w3,1,0,2] # point 1 z", rprefix="\n")     
+        edv("a.record[w0,1,0,2] - b.record[w0,1,0,2] # point 1 z", globals(), locals(), rprefix="\n")
+        edv("a.record[w3,1,0,2] - b.record[w3,1,0,2] # point 1 z", globals(), locals(), rprefix="\n")     
          
     """
     dv = epr("dv = %s" % expr, g, l ) 

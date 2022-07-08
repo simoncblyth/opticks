@@ -47,7 +47,10 @@ void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce )
         std::vector<float>* fvec = SSys::getenvfloatvec(ekey, "0,0,0"); 
         unsigned num_values = fvec->size() ;  
         assert(fvec); 
-        assert( num_values % 3 == 0 ); 
+
+        bool multiple_of_3 = num_values % 3 == 0 ;
+        if(!multiple_of_3) LOG(fatal) << " not multiple_of_3 num_values " << num_values << " ekey " << ekey  ; 
+        assert(multiple_of_3); 
         unsigned num_offset = num_values/3 ; 
         for(unsigned i=0 ; i < num_offset ; i++)
         {
