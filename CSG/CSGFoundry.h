@@ -97,7 +97,7 @@ struct CSG_API CSGFoundry
     static const char* ELVString(const SName* id); 
     static const SBitSet* ELV(const SName* id); 
 
-    static bool Load_writeAlt ; 
+    static bool Load_saveAlt ; 
     static CSGFoundry* Load();
     static CSGFoundry* CopySelect(const CSGFoundry* src, const SBitSet* elv ); 
 
@@ -266,13 +266,12 @@ struct CSG_API CSGFoundry
 
     const char* getBaseDir(bool create) const ; 
 
-    void write(const char* dir) const ;
-    void write(const char* base, const char* rel) const ;
-    void writeAlt() const ; 
-
+    void save(const char* dir) const ;
+    void save(const char* base, const char* rel) const ;
+    void saveAlt() const ; 
 
     // these argumentless methods require CFBASE envvar or geom member to be set 
-    void write() const ; 
+    void save() const ; 
     void load() ; 
 
     void load( const char* base, const char* rel ) ; 

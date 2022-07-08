@@ -66,7 +66,7 @@ void CSGDemoTest::save() const
     const char* fold = SPath::Resolve(BASE, geom, create_dirs );
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );
     const char* rel = "CSGFoundry" ;
-    fd.write(cfbase, rel );  
+    fd.save(cfbase, rel );  
 
     CSGFoundry* lfd = CSGFoundry::Load(cfbase, rel);  // load foundary and check identical bytes
     assert( 0 == CSGFoundry::Compare(&fd, lfd ) );

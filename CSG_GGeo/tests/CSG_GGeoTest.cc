@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     const char* cfbase = ok.getFoundryBase("CFBASE"); 
 
     LOG(error) << "[ write foundry to CFBASE " << cfbase   ; 
-    fd0->write(cfbase, "CSGFoundry" );   
+    fd0->save(cfbase, "CSGFoundry" );   
     LOG(error) << "] write foundry " ; 
 
     LOG(error) << "[ load foundry " ; 

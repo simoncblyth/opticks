@@ -36,6 +36,7 @@ struct G4CX_API G4CXOpticks
     G4CXOpticks(); 
     std::string desc() const ; 
 
+    void setGeometry(); 
     void setGeometry(const char* gdmlpath);
     void setGeometry(const G4VPhysicalVolume* wd); 
     void setGeometry(const GGeo* gg); 

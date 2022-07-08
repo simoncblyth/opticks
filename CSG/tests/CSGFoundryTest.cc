@@ -30,7 +30,7 @@ void test_layered()
     assert( fd.getSolidIdx(s2) == 2 ); 
     assert( fd.getSolidIdx(s3) == 3 ); 
 
-    fd.write("/tmp", "FoundryTest_" ); 
+    fd.save("/tmp", "FoundryTest_" ); 
 }
 
 void test_PrimSpec()
@@ -83,7 +83,7 @@ void test_Load()
 
     const char* dir = SPath::Resolve("$TMP/CSGFoundryTest/test_Load", DIRPATH) ; 
     const char* rel = "CSGFoundry" ; 
-    fd.write(dir, rel ); 
+    fd.save(dir, rel ); 
  
     CSGFoundry* fdl = CSGFoundry::Load(dir, rel); 
     fdl->dump(); 

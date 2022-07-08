@@ -36,7 +36,7 @@ int main(int argc, char** argv)
          CSGFoundry* fd = CSGFoundry::MakeGeom( name ); 
          LOG(info) << fd->desc();    
 
-         fd->write(); 
+         fd->save(); 
 
          CSGFoundry* lfd = CSGFoundry::LoadGeom( name ); 
          int rc = CSGFoundry::Compare(fd, lfd );  

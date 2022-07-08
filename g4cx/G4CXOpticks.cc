@@ -1,5 +1,10 @@
 
 #include "PLOG.hh"
+#include "SSys.hh"
+#include "SOpticksResource.hh"
+
+#include "U4VolumeMaker.hh"
+
 #include "SEventConfig.hh"
 #include "U4GDML.h"
 #include "X4Geo.hh"
@@ -45,6 +50,36 @@ std::string G4CXOpticks::desc() const
     return s ; 
 }
 
+/**
+G4CXOpticks::setGeometry 
+---------------------------
+
+Without argument method geometry source depends on existance of envvars : SomeGDMLPath, CFBASE, GEOM
+
+**/
+
+void G4CXOpticks::setGeometry()
+{
+    if(SSys::hasenvvar(SOpticksResource::SomeGDMLPath_))
+    {
+        setGeometry(SOpticksResource::SomeGDMLPath()); 
+        fd->save(); 
+    }
+    else if(SSys::hasenvvar(SOpticksResource::CFBASE_))
+    {
+        setGeometry(CSGFoundry::Load()); 
+    }
+    else if(SSys::hasenvvar("GEOM"))
+    {
+        setGeometry( U4VolumeMaker::PV() );   
+        fd->save(); 
+    }
+    else
+    {
+        LOG(fatal) << " failed to setGeometry " ; 
+        assert(0); 
+    }
+}
 
 void G4CXOpticks::setGeometry(const char* gdmlpath)
 {

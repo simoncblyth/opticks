@@ -201,7 +201,7 @@ void GeoChain::save(const char* name, const char* base_) const
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );
     const char* rel = "CSGFoundry" ; 
 
-    fd->write(cfbase, rel );    // expects existing directory $CFBASE/CSGFoundry 
+    fd->save(cfbase, rel );    // expects existing directory $CFBASE/CSGFoundry 
 
     CSGFoundry* lfd = CSGFoundry::Load(cfbase, rel);  // load foundary and check identical bytes
     assert( 0 == CSGFoundry::Compare(fd, lfd ) );  

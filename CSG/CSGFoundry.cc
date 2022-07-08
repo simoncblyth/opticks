@@ -1880,44 +1880,51 @@ void CSGFoundry::DumpAABB(const char* msg, const float* aabb) // static
 
 
 
-
+/*
 #ifdef __APPLE__
 const char* CSGFoundry::BASE = "$TMP/GeoChain_Darwin" ;
 #else
 const char* CSGFoundry::BASE = "$TMP/GeoChain" ;
 #endif
+*/
 
+const char* CSGFoundry::BASE = "$DefaultOutputDir" ; // incorporates GEOM if defined
 const char* CSGFoundry::RELDIR = "CSGFoundry"  ;
 
 
 const char* CSGFoundry::getBaseDir(bool create) const
 {
-    const char* fold = geom ? SPath::Resolve(BASE, geom, create ? DIRPATH : NOOP ) : nullptr ;
+    //const char* fold = geom ? SPath::Resolve(BASE, geom, create ? DIRPATH : NOOP ) : nullptr ;
+    const char* fold = SPath::Resolve(BASE, create ? DIRPATH : NOOP );  //   
     const char* cfbase = SSys::getenvvar("CFBASE", fold  );  
     return cfbase ? strdup(cfbase) : nullptr ; 
 }
 
-void CSGFoundry::write() const 
+void CSGFoundry::save() const 
 {
     const char* cfbase = getBaseDir(true) ; 
     if( cfbase == nullptr )
     {
-        LOG(fatal) << "cannot write unless CFBASE envvar defined or geom has been set " ; 
+        LOG(fatal) << "cannot save unless CFBASE envvar defined or geom has been set " ; 
         return ;   
     }
-    write(cfbase, RELDIR );  
+    save(cfbase, RELDIR );  
 }
 
-void CSGFoundry::write(const char* base, const char* rel) const 
+
+const char* cfdir = SPath::Resolve("$DefaultOutputDir", DIRPATH);
+
+
+void CSGFoundry::save(const char* base, const char* rel) const 
 {
     std::stringstream ss ;   
     ss << base << "/" << rel ; 
     std::string dir = ss.str();   
-    write(dir.c_str()); 
+    save(dir.c_str()); 
 }
 
 /**
-CSGFoundry::writeAlt
+CSGFoundry::saveAlt
 -----------------------
 
 Write geometry to $CFBaseAlt/CSGFoundry currently used as workaround so 
@@ -1927,13 +1934,13 @@ the actual uploaded geometry.
 See notes/issues/primIdx-and-skips.rst
 **/
 
-void CSGFoundry::writeAlt() const 
+void CSGFoundry::saveAlt() const 
 {
     const char* cfbase_alt = SOpticksResource::CFBaseAlt(); 
     if( cfbase && cfbase_alt && strcmp(cfbase, cfbase_alt) == 0 )
     {
         LOG(fatal) 
-            << "cannot writeAlt as cfbase_alt directory matched the loaded directory "
+            << "cannot saveAlt as cfbase_alt directory matched the loaded directory "
             << " cfbase " << cfbase
             << " cfbase_alt " << cfbase_alt
             ;
@@ -1941,13 +1948,13 @@ void CSGFoundry::writeAlt() const
     else
     {
         LOG(info) << " cfbase " << cfbase << " cfbase_alt " << cfbase_alt ; 
-        write(cfbase_alt, RELDIR); 
+        save(cfbase_alt, RELDIR); 
     }
 }
 
 
 /**
-CSGFoundry::write
+CSGFoundry::save
 ------------------
 
 Have observed that whilst changing geometry this can lead to "mixed" exports 
@@ -1958,7 +1965,7 @@ TODO: find way to avoid this, by deleting the folder ahead : or asserting on con
 on loading 
  
 **/
-void CSGFoundry::write(const char* dir_) const 
+void CSGFoundry::save(const char* dir_) const 
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
     LOG(info) << dir ; 
@@ -2099,7 +2106,7 @@ different geometries.
 CSG/CSGMakerTest.sh 
     CSG level creation of simple test CSGFoundry 
 
-    NB somewhat misleadinging this writes to directories such as::
+    NB somewhat misleadinging this saves to directories such as::
 
         /tmp/$USER/opticks/GeoChain/BoxedSphere/CSGFoundry/
 
@@ -2306,7 +2313,7 @@ python analysis machinery.
 
 **/
 
-bool CSGFoundry::Load_writeAlt = SSys::getenvbool("CSGFoundry_Load_writeAlt") ; 
+bool CSGFoundry::Load_saveAlt = SSys::getenvbool("CSGFoundry_Load_saveAlt") ; 
 
 CSGFoundry* CSGFoundry::Load() // static
 {
@@ -2318,10 +2325,10 @@ CSGFoundry* CSGFoundry::Load() // static
     const SBitSet* elv = ELV(src->id); 
     CSGFoundry* dst = elv ? CSGFoundry::CopySelect(src, elv) : src  ; 
 
-    if( elv != nullptr && Load_writeAlt)
+    if( elv != nullptr && Load_saveAlt)
     {
-        LOG(error) << " non-standard dynamic selection CSGFoundry_Load_writeAlt " ; 
-        dst->writeAlt() ; 
+        LOG(error) << " non-standard dynamic selection CSGFoundry_Load_saveAlt " ; 
+        dst->saveAlt() ; 
     }
     return dst ; 
 }
