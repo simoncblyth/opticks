@@ -64,6 +64,10 @@ if [ "${arg/grab}" != "$arg" ]; then
     source ../bin/rsync.sh $BASE 
 fi 
 
+if [ "$arg" == "ab" ]; then
+    ./gxs_ab.sh 
+fi 
+
 
 exit 0 
 

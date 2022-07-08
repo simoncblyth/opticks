@@ -272,6 +272,55 @@ Boundary Identity mocking problem::
 
 
 
+DONE : Is there anything funny about BR that leads to less precision of intersect ? NO  
+-------------------------------------------------------------------------------------------------------------
+
+Looks like nothing special with the precision of BR point, its just that the lever arm 
+from the reflection means that the small BR deviation gets amplified::
+
+
+    In [20]: dz = a.record[w0,1,0,2] - b.record[w0,1,0,2]
+    In [21]: dz
+    Out[21]: 
+    array([-0.0000152588, -0.0000457764,  0.0000915527,  0.0000457764,  0.          ,  0.0000457764,  0.          , -0.0000152588,  0.0000915527,  0.0000610352, -0.0000610352, -0.0000457764,
+           -0.0000762939,  0.0000762939, -0.0000305176,  0.          , ..., -0.0000457764,  0.0000762939, -0.0001068115,  0.0000457764,  0.0000152588,  0.0000457764,  0.0000152588, -0.0000305176,
+            0.          , -0.0000152588, -0.0000762939,  0.0000610352,  0.0000915527, -0.0001220703,  0.0000915527, -0.0000457764], dtype=float32)
+
+
+
+
+
+    In [3]: epr("o = cuss(a.seq[:,0])",  globals(), locals(), rprefix="\n" )
+    o = cuss(a.seq[:,0])                               : 
+    [['w0' '                      TO BT SD' '            1997' '            9718']
+     ['w1' '                         TO AB' '              77' '             209']
+     ['w2' '                      TO BT AB' '            1229' '              31']
+     ['w3' '                      TO BR SA' '            2237' '              20']
+     ['w4' '                      TO SC SA' '            2157' '              17']
+     ['w5' '                   TO SC BT SD' '           31853' '               4']
+     ['w6' '                      TO SC AB' '            1133' '               1']]
+
+
+    In [4]: edv("a.record[w0,1,0,2] - b.record[w0,1,0,2] # point 1 z")
+    dv = a.record[w0,1,0,2] - b.record[w0,1,0,2] # point 1 z : [-0. -0.  0.  0.  0.  0.  0. -0.  0.  0. -0. -0. -0.  0. -0.  0. ... -0.  0. -0.  0.  0.  0.  0. -0.  0. -0. -0.  0.  0. -0.  0. -0.]
+    dv.shape                                           : (9718,)
+    dv.min()                                           : -0.00015258789
+    dv.max()                                           : 0.00015258789
+    len(np.where( dv < 0 )[0])                         : 3917
+    len(np.where( dv == 0 )[0])                        : 921
+    len(np.where( dv > 0 )[0])                         : 4880
+
+    In [5]: edv("a.record[w3,1,0,2] - b.record[w3,1,0,2] # point 1 z")
+    dv = a.record[w3,1,0,2] - b.record[w3,1,0,2] # point 1 z : [-0.  0.  0.  0.  0.  0.  0. -0.  0. -0.  0. -0.  0.  0.  0. -0.  0.  0.  0. -0.]
+    dv.shape                                           : (20,)
+    dv.min()                                           : -4.5776367e-05
+    dv.max()                                           : 0.00012207031
+    len(np.where( dv < 0 )[0])                         : 6
+    len(np.where( dv == 0 )[0])                        : 3
+    len(np.where( dv > 0 )[0])                         : 11
+
+
+
 
 
 

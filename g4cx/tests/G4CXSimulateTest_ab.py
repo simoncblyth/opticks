@@ -13,7 +13,7 @@ import numpy as np
 
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
-from opticks.ana.eprint import eprint, epr
+from opticks.ana.eprint import eprint, epr, edv
 
 from opticks.sysrap.xfold import XFold
 from opticks.sysrap.ABR import ABR 
@@ -25,7 +25,6 @@ np.set_printoptions(edgeitems=16)
 tag = stag()
 stack = U4Stack()
 SLOTS = stag.SLOTS   
-
 
 
 if __name__ == '__main__':
@@ -52,14 +51,17 @@ if __name__ == '__main__':
         we_ = "we = np.where( A.t.view('|S%(SLOTS)s') != B.t2.view('|S%(SLOTS)s') )[0]" % locals()  # eg stag.h/stag::SLOTS = 64 
         we = epr(we_,  globals(), locals() ) 
 
-        wa = epr("wa = np.where( np.abs(a.record - b.record ) > 0.01 )[0]", globals(), locals() ) 
+        wa = epr("wa = np.unique(np.where( np.abs(a.record - b.record ) > 0.01 )[0])", globals(), locals() ) 
 
         eprint("np.all( A.ts == B.ts2 )", globals(), locals() )
         eprint("np.all( A.ts2 == B.ts )", globals(), locals() )
 
         assert (a.inphoton - b.inphoton).max() < 1e-5 
-        #assert np.all( A.ts == B.ts2 ) 
-        #assert np.all( A.ts2 == B.ts )  
+
+
+        epr("o = cuss(a.seq[:,0])",  globals(), locals(), rprefix="\n" ) 
+        edv("a.record[w0,1,0,2] - b.record[w0,1,0,2] # point 1 z", globals(), locals())  
+        edv("a.record[w3,1,0,2] - b.record[w3,1,0,2] # point 1 z", globals(), locals())  
     pass
 
     print("./U4RecorderTest_ab.sh ## u4t ")
@@ -72,6 +74,9 @@ if __name__ == '__main__':
 
     epr("a.base", globals(), locals() )
     epr("b.base", globals(), locals() )
+
+
+
 
 
 
