@@ -32,7 +32,7 @@ void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce )
     const char* ekey = "CE_OFFSET" ; 
     const char* val = SSys::getenvvar(ekey); 
 
-    bool is_CE = strcmp(val, "CE")== 0 || strcmp(val, "ce")== 0  ; 
+    bool is_CE = val == nullptr ? false : ( strcmp(val, "CE")== 0 || strcmp(val, "ce")== 0 )  ; 
     float3 offset = make_float3(0.f, 0.f, 0.f ); 
 
     if(is_CE)   // this is not typically used anymore

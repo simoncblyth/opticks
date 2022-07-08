@@ -36,7 +36,7 @@ class FrameGensteps(object):
     Conversely there is only one overall frame transform
     which corresponds to the targetted piece of geometry.
     """
-    def __init__(self, genstep, frame, local=True):
+    def __init__(self, genstep, frame, local=True, symbol="gs"):
         """
         :param genstep: (num_gs,6,4) array with grid transforms in 2: and position in 1 
         :param frame: sframe instance (replacing former metatran array of 3 transforms and grid GridSpec instance)
@@ -99,16 +99,22 @@ class FrameGensteps(object):
         self.centers_local = centers_local
         self.ugsc = ugsc
         self.lim = lim 
+        self.symbol = symbol
         log.info(repr(self))
 
     def __repr__(self):
+
+        symbol = self.symbol
         return "\n".join([
-                   "FrameGensteps gs.gs %s " % str(self.gs.shape),
-                   "gs.numpho[0] %d " % self.numpho[0] ,
-                   "gs.totpho    %d " % self.totpho ,
-                   "gs.lim[X] %s " % str(self.lim[X]),
-                   "gs.lim[Y] %s " % str(self.lim[Y]),
-                   "gs.lim[Z] %s " % str(self.lim[Z]),
+                   "FrameGensteps",
+                   "%s.gs %s " % (symbol, str(self.gs.shape)),
+                   "%s.centers %s " % (symbol, str(self.centers.shape)),
+                   "%s.centers_local %s " % (symbol, str(self.centers_local.shape)),
+                   "%s.numpho[0] %d " % (symbol, self.numpho[0]) ,
+                   "%s.totpho    %d " % (symbol, self.totpho) ,
+                   "%s.lim[X] %s " % (symbol,str(self.lim[X])),
+                   "%s.lim[Y] %s " % (symbol,str(self.lim[Y])),
+                   "%s.lim[Z] %s " % (symbol,str(self.lim[Z])),
               ])
 
 

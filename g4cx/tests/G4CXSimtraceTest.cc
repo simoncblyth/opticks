@@ -1,10 +1,7 @@
 /**
-G4CXSimtraceTest.cc :  WIP : drawing on cx:tests/CSGOptiXSimtraceTest.cc
+G4CXSimtraceTest.cc :  based on cx:tests/CSGOptiXSimtraceTest.cc
 ==========================================================================
 
-TODO: arrange for combined G4CXTest.cc that does all three : simulate, simtrace, render
-
-* head in that direction by making the main more high level, and hence converge 
 
 **/
 

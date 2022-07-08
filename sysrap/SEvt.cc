@@ -309,7 +309,8 @@ sgs SEvt::addGenstep(const quad6& q_)
     {
         LOG(fatal)
             << "input_photon_with_normal_genstep " << input_photon_with_normal_genstep
-            << " MIXING input photons with ordinary gensteps is not allowed "
+            << " MIXING input photons with other gensteps is not allowed "
+            << " for example avoid defining OPTICKS_INPUT_PHOTON when doing simtrace"
             ; 
     }
     assert( input_photon_with_normal_genstep  == false ); 

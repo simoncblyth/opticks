@@ -27,18 +27,77 @@ class SimtracePositions(object):
         print(" num_photon: %d : landing_count : %d   %s " % (num_photon, landing_count, landing_msg) )
 
 
-    def __init__(self, p, gs, frame, local=True, mask="pos"):
+    def __init__(self, simtrace, gs, frame, local=True, mask="pos", symbol="t_pos" ):
         """
-        :param p: photons array  (TODO: rename to "simtrace" really)
+        :param simtrace: "photons" array  
         :param gs: FrameGensteps instance, used for gs.lim position masking 
         :param frame: sframe instance
         :param local:
         :param mask:
+
+       
+        The simtrace array is populated by:
+
+        1. cx/CSGOptiX7.cu:simtrace 
+        2. CPU version of this ?
+
+        271 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
+        272 {
+        ...
+        274     sevent* evt  = params.evt ;
+        280     const quad6& gs     = evt->genstep[genstep_id] ;
+        281 
+        282     qsim* sim = params.sim ;
+        283     curandState rng = sim->rngstate[idx] ;
+        284 
+        285     quad4 p ;
+        286     sim->generate_photon_simtrace(p, rng, gs, idx, genstep_id );
+        287 
+        288     const float3& pos = (const float3&)p.q0.f  ;
+        289     const float3& mom = (const float3&)p.q1.f ;
+        290 
+        291     trace(
+        292         params.handle,
+        293         pos,
+        294         mom,
+        295         params.tmin,
+        296         params.tmax,
+        297         prd
+        298     );
+        299 
+        300     evt->add_simtrace( idx, p, prd, params.tmin );
+        301 
+        302 }
+
+        410 SEVENT_METHOD void sevent::add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin )
+        411 {
+        412     float t = prd->distance() ;  // q0.f.w 
+        413     quad4 a ;  
+        414     
+        415     a.q0.f  = prd->q0.f ;
+        416     
+        417     a.q1.f.x = p.q0.f.x + t*p.q1.f.x ;
+        418     a.q1.f.y = p.q0.f.y + t*p.q1.f.y ;
+        419     a.q1.f.z = p.q0.f.z + t*p.q1.f.z ;
+        420     a.q1.i.w = 0.f ;  
+        421     
+        422     a.q2.f.x = p.q0.f.x ;
+        423     a.q2.f.y = p.q0.f.y ;
+        424     a.q2.f.z = p.q0.f.z ;
+        425     a.q2.u.w = prd->boundary() ; // was tmin, but expecting bnd from CSGOptiXSimtraceTest.py:Photons
+        426     
+        427     a.q3.f.x = p.q1.f.x ;
+        428     a.q3.f.y = p.q1.f.y ;
+        429     a.q3.f.z = p.q1.f.z ;
+        430     a.q3.u.w = prd->identity() ;  // identity from __closesthit__ch (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) 
+        431     
+        432     simtrace[idx] = a ;
+        433 }
         """
         local_extent_scale = frame.coords == "RTP"  ## KINDA KLUDGE DUE TO EXTENT HANDLING BEING DONE BY THE RTP TRANSFORM
-        isect = p[:,0]
+        isect = simtrace[:,0]
 
-        gpos = p[:,1].copy()              # global frame intersect positions
+        gpos = simtrace[:,1].copy()              # global frame intersect positions
         gpos[:,3] = 1.  
 
         lpos = np.dot( gpos, frame.w2m )   # local frame intersect positions
@@ -65,7 +124,7 @@ class SimtracePositions(object):
         self.local = local
 
         ## NB when applying the mask the below are changed  
-        self.p = p 
+        self.simtrace = simtrace 
         self.upos = upos
 
         #self.make_histogram()
@@ -77,6 +136,20 @@ class SimtracePositions(object):
         else: 
             pass
         pass
+        self.symbol = symbol
+
+
+    def __repr__(self):
+        symbol = self.symbol
+        return "\n".join([
+                   "SimtracePositions",
+                   "%s.simtrace %s " % (symbol, str(self.simtrace.shape)),
+                   "%s.isect %s " % (symbol, str(self.isect.shape)),
+                   "%s.gpos %s " % (symbol, str(self.gpos.shape)),
+                   "%s.lpos %s " % (symbol, str(self.lpos.shape)),
+                   ])
+ 
+                   
 
     def apply_mask(self, mask):
         """
@@ -84,7 +157,7 @@ class SimtracePositions(object):
         which will typically decrease their sizes
         """
         self.mask = mask
-        self.p = self.p[mask]
+        self.simtrace = self.simtrace[mask]
         self.upos = self.upos[mask]
 
 
@@ -118,7 +191,8 @@ class SimtracePositions(object):
         this excludes misses 
         """
         log.info("apply_t_mask")
-        t = self.p[:,2,2]
+        #t = self.simtrace[:,2,2]
+        t = self.simtrace[:,0,3]
         mask = t > 0. 
         self.apply_mask( mask) 
 

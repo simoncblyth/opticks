@@ -54,7 +54,7 @@ class Feature(object):
     """
     Trying to generalize feature handling 
     """
-    def __init__(self, name, val, vname={}):
+    def __init__(self, name, val, vname={}, symbol="ft" ):
         """
         :param name: string eg "bnd" or "primIdx"
         :param val: large array of integer feature values 
@@ -218,7 +218,7 @@ class SimtraceFeatures(object):
         pass
         return np.concatenate(tuple(aa))
 
-    def __init__(self, pos, cf=None, featname="pid", do_mok=False ):
+    def __init__(self, pos, cf=None, featname="pid", do_mok=False, symbol="pf" ):
         """
         :param pos: SimtracePositions instance
 
@@ -278,7 +278,7 @@ class SimtraceFeatures(object):
         suggests will need to do instance id lookup
 
         """
-        p = pos.p
+        p = pos.simtrace  ## CAUTION : changed simtrace layout might not be accomodated yet 
             
         log.info("[Photons p.ndim %d p.shape %s " % (int(p.ndim), str(p.shape)) )
         assert featname in ["pid", "bnd", "ins", "mok"]
