@@ -1,7 +1,15 @@
 
 #include "PLOG.hh"
+
+#include "scuda.h"
+#include "sqat4.h"
+#include "sframe.h"
+
+
 #include "SSys.hh"
+#include "SEvt.hh"
 #include "SOpticksResource.hh"
+#include "SFrameGenstep.hh"
 
 #include "U4VolumeMaker.hh"
 
@@ -127,6 +135,16 @@ void G4CXOpticks::simtrace()
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimtrace() ); 
+
+
+    SEvt* sev = SEvt::Get();  assert(sev); 
+    sev->fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
+
+    LOG(LEVEL) << sev->fr ; 
+    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(sev->fr) );  
+
+    cx->setFrame(sev->fr);  
+
     qs->simtrace(); 
 }
 

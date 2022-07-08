@@ -6,6 +6,7 @@ include(OpticksBuildOptions)
 set(TEST_SOURCES
    G4CXRenderTest.cc
    G4CXSimulateTest.cc
+   G4CXSimtraceTest.cc
 )
 
 

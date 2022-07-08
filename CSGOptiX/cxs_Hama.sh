@@ -1,5 +1,22 @@
 #!/bin/bash -l 
 
+usage(){ cat << EOU
+cxs_Hama.sh
+=============
+
+::
+
+    cx
+    ./cxs_Hama.sh         # workstation
+    ./cxs_Hama.sh grab    # laptop
+    ./cxs_Hama.sh ana     # laptop  : produces geometry plot 
+
+
+EOU
+}
+
+
+
 #geom=Hama_1
 geom=HamaXZ_1
 #geom=HamaYZ_1

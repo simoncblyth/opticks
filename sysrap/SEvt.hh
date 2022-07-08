@@ -45,6 +45,8 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "sctx.h"
 
 #include "squad.h"
+#include "sframe.h"
+
 #include "sgs.h"
 #include "SComp.h"
 
@@ -67,6 +69,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     const SCompProvider*  provider ; 
     NPFold*               fold ; 
     bool                  hostside_running_resize_done ; // only ever becomes true for non-GPU running 
+
+    sframe            fr ;
+
 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
@@ -203,6 +208,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* getComponent_(unsigned comp) const ; 
 
     void saveLabels(const char* dir) const ;  // formerly savePho
+    void saveFrame(const char* dir_) const ; 
 
     void saveGenstep(const char* dir) const ; 
     NP* getGenstep() const ; 

@@ -439,6 +439,7 @@ void CSGOptiX::setFrame()
 {
     setFrame(SSys::getenvvar("MOI", "-1"));  // TODO: generalize to FRS
 }
+
 void CSGOptiX::setFrame(const char* frs)
 {
     sframe fr ; 

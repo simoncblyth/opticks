@@ -56,18 +56,21 @@ int main(int argc, char** argv)
  
     CSGFoundry* fd = CSGFoundry::Load(); 
 
-    sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
+    evt.fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
 
-    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(fr) ); 
+    std::cout << "[ main evt.fr" << std::endl << evt.fr << std::endl << "] main evt.fr" << std::endl  ; 
 
-    std::cout << fr << std::endl ; 
 
+    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(evt.fr) ); 
 
     CSGOptiX* cx = CSGOptiX::Create(fd); 
     QSim* qs = cx->sim ; 
 
-    cx->setFrame(fr);  
-
+    cx->setFrame(evt.fr);    
+    // This seems funny as cx has fd which has the fr already : so could be automatic ?  
+    // But fr needed for gensteps and do not want SFrameGenstep to depend on CSG 
+    // so need the fr in this scope. 
+    //
     // TODO: the sframe should not live in CSGOptiX, it should reside in SEvt
     // making it accessible from everywhere   
 
@@ -77,7 +80,7 @@ int main(int argc, char** argv)
 
     evt.save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
 
-    cx->fr.save( SEvt::DefaultDir());  
+    // cx->fr.save( SEvt::DefaultDir());   now done by defautlt with SEvt::save
  
     return 0 ; 
 }

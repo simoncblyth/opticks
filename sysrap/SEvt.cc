@@ -1158,6 +1158,7 @@ void SEvt::save(const char* dir_)
     fold->save(dir); 
 
     saveLabels(dir); 
+    saveFrame(dir); 
 }
 
 
@@ -1186,7 +1187,10 @@ void SEvt::saveLabels(const char* dir_) const
 }
 
 
-
+void SEvt::saveFrame(const char* dir_) const 
+{
+    fr.save(dir_); 
+}
 
 
 
