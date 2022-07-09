@@ -77,9 +77,13 @@ void G4CXOpticks::setGeometry()
     {
         setGeometry(CSGFoundry::Load()); 
     }
+    else if(SOpticksResource::CFBaseFromGEOM())
+    {
+        setGeometry(CSGFoundry::Load()); 
+    }
     else if(SSys::hasenvvar("GEOM"))
     {
-        setGeometry( U4VolumeMaker::PV() );   
+        setGeometry( U4VolumeMaker::PV() );  // this may load GDML using U4VolumeMaker::PVG if "GEOM"_GDMLPath is defined   
         fd->save(); 
     }
     else

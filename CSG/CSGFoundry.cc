@@ -2349,32 +2349,48 @@ CSGFoundry* CSGFoundry::CopySelect(const CSGFoundry* src, const SBitSet* elv )
 
 
 /**
-CSGFoundry::Load_
--------------------
+CSGFoundry::ResolveCFBase
+---------------------------
 
-The geometry loaded is sensitive to envvars CFBASE, OPTICKS_KEY, OPTICKS_GEOCACHE_PREFIX 
+The cfbase path is sensitive to envvars CFBASE, OPTICKS_KEY, OPTICKS_GEOCACHE_PREFIX 
 
 Load precedence:
 
-0. when CFBASE envvar is defined the CSGFoundry directory within CFBASE dir will be loaded
-1. otherwise SOpticksResource::CFBase will invoke CGDir to obtain the CSG_GGeo directory 
+0. when GEOM and "GEOM"_CFBaseFromGEOM are defined that directory is used
+1. when CFBASE envvar is defined the CSGFoundry directory within CFBASE dir will be loaded
+2. otherwise SOpticksResource::CFBase will invoke CGDir to obtain the CSG_GGeo directory 
    corresponding to the current OPTICKS_KEY envvar 
 
 **/
 
-CSGFoundry* CSGFoundry::Load_() // static
+const char* CSGFoundry::ResolveCFBase_() // static 
 {
-    const char* cfbase = SOpticksResource::CFBase() ;  // standard or override
-    bool readable = SPath::IsReadable(cfbase, "CSGFoundry") ; 
+    const char* cfbase = nullptr ; 
+    cfbase = SOpticksResource::CFBaseFromGEOM() ;
+    if(cfbase == nullptr) cfbase = SOpticksResource::CFBase() ;  // standard or override
+    return cfbase ; 
+}
 
+const char* CSGFoundry::ResolveCFBase() // static 
+{
+    const char* cfbase = ResolveCFBase_(); 
+    bool readable = cfbase == nullptr ? false : SPath::IsReadable(cfbase, "CSGFoundry") ; 
     LOG(LEVEL) << " cfbase " << cfbase << " readable " << readable ; 
 
-    if(readable == false)
-    {
+    if(!readable)
         LOG(fatal) << " cfbase/CSGFoundy directory " << cfbase << "/CSGFoundry" << " IS NOT READABLE " ; 
-        return nullptr ; 
-    }
+   
+    return readable ? cfbase : nullptr ; 
+}
 
+/**
+CSGFoundry::Load_
+-------------------
+**/
+
+CSGFoundry* CSGFoundry::Load_() // static
+{
+    const char* cfbase = ResolveCFBase() ; 
     CSGFoundry* fd = Load(cfbase, "CSGFoundry"); 
     return fd ; 
 }

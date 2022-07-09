@@ -216,7 +216,7 @@ const char* SOpticksResource::CFBaseAlt()
 
 
 /**
-SOpticksResource::CFBaseFromGEOM
+SOpticksResource::OldCFBaseFromGEOM
 ----------------------------------
 
 Construct a CFBASE directory from GEOM envvar.
@@ -229,7 +229,7 @@ such as /tmp/$USER/opticks/GeoChain_Darwin/AltXJfixtureConstruction_FirstSuffix
 
 **/
 
-const char* SOpticksResource::CFBaseFromGEOM()
+const char* SOpticksResource::OldCFBaseFromGEOM()
 {
     const char* cfbase = nullptr ; 
     const char* geom = SSys::getenvvar("GEOM"); 
@@ -244,6 +244,13 @@ const char* SOpticksResource::CFBaseFromGEOM()
         cfbase = SPath::Resolve("$TMP", rel, gcn, NOOP  );    
     }
     return cfbase ;  
+}
+
+
+const char* SOpticksResource::CFBaseFromGEOM()
+{
+    const char* geom = SSys::getenvvar("GEOM"); 
+    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_CFBaseFromGEOM")) ; 
 }
 
 
@@ -292,7 +299,7 @@ const char* SOpticksResource::GDMLPath(const char* geom)
 
 
 
-const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath" ; 
+const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath CFBaseFromGEOM" ; 
 
 /**
 SOpticksResource::Get
@@ -322,6 +329,13 @@ envvars with the same keys can be used to override these defaults.
 +-------------------------+-----------------------------------------------------+
 |   SomeGDMLPath          |                                                     |
 +-------------------------+-----------------------------------------------------+
+|   GDMLPath              | GEOM gives Name, Name_GDMLPath gives path           |
++-------------------------+-----------------------------------------------------+
+|   CFBaseFromGeom        | GEOM gives Name, Name_CFBaseFromGeom gives path     |
++-------------------------+-----------------------------------------------------+
+
+
+
 
 
 **/
@@ -339,6 +353,8 @@ const char* SOpticksResource::Get(const char* key) // static
     else if( strcmp(key, "PrecookedDir")==0) tok = SOpticksResource::PrecookedDir(); 
     else if( strcmp(key, "DefaultOutputDir")==0)    tok = SOpticksResource::DefaultOutputDir(); 
     else if( strcmp(key, "SomeGDMLPath")==0)       tok = SOpticksResource::SomeGDMLPath(); 
+    else if( strcmp(key, "GDMLPath")==0)       tok = SOpticksResource::GDMLPath(); 
+    else if( strcmp(key, "CFBaseFromGEOM")==0) tok = SOpticksResource::CFBaseFromGEOM(); 
     return tok ;  
 }
 

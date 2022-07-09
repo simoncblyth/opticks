@@ -45,6 +45,7 @@ struct SYSRAP_API SOpticksResource
     static const char* CFBASE_ ;
     static const char* CFBase();
     static const char* CFBaseAlt();
+    static const char* OldCFBaseFromGEOM();
     static const char* CFBaseFromGEOM();
 
     static const char* SomeGDMLPath_ ; 

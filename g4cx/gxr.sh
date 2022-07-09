@@ -75,7 +75,8 @@ name=cx$MOI.jpg
 path=$FOLD/$name
 
 if [ "${arg/ls}" != "$arg" ]; then 
-   echo $msg FOLD $FOLD date $(date)
+   echo $msg FOLD $FOLD 
+   echo $msg date $(date)
    ls -alst $FOLD
 fi 
 
