@@ -194,14 +194,15 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 
     CSGOptiX* cx = new CSGOptiX(fd) ; 
 
-    QSim* qs = QSim::Get() ; 
+    bool render_mode = SEventConfig::IsRGModeRender() ; 
+    if(render_mode == false)
+    {
+        QSim* qs = QSim::Get() ; 
+        qs->setLauncher(cx); 
+        QEvent* event = qs->event ; 
+        event->setMeta( fd->meta.c_str() );
+    } 
 
-    qs->setLauncher(cx); 
-
-    QEvent* event = qs->event ; 
-    event->setMeta( fd->meta.c_str() );
-
-    // DONE: setup QEvent as SCompProvider of NP arrays allowing SEvt to drive QEvent download
     return cx ; 
 }
 

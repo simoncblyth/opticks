@@ -2,6 +2,14 @@
 G4CXSimtraceTest.cc :  based on cx:tests/CSGOptiXSimtraceTest.cc
 ==========================================================================
 
+TODO : rename "simtrace" to "trace" everywhere for clarity and abbrev convenience
+
+::
+
+    s:simulate  => gxs.sh cxs.sh
+    t:trace     => gxt.sh cxt.sh
+    r:render    => gxr.sh cxr.sh 
+
 
 **/
 
@@ -27,7 +35,9 @@ int main(int argc, char** argv)
     SEventConfig::SetRGModeSimtrace();    // HMM: maybe discern from the simulate/simtrace/render call ? is it needed ahead of that ?
     SEventConfig::SetCompMask("genstep,simtrace"); // defaults for this should vary with the RGMode  
 
-    SOpticks::WriteOutputDirScript() ;   // still needed ? could be done by SEvt ctor ? 
+    //SOpticks::WriteOutputDirScript() ;   // still needed ? could be done by SEvt ctor ? 
+    // writes g4cx/G4CXSimtraceTest_OUTPUT_DIR.sh in invoking directory containing
+    // export G4CXSimtraceTest_OUTPUT_DIR=$TMP
 
     SEvt evt ;    
 
