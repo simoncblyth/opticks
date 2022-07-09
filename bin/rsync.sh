@@ -1,11 +1,29 @@
 #!/bin/bash -l 
 
+usage(){ cat << EOU
+rsync.sh 
+==========
+
+Usage::
+
+   
+
+
+EOU
+}
+
+
 odir=$1
 if [ -n "$odir" ]; then 
 
     xdir=$odir/  ## require trailing slash to avoid rsync duplicating path element 
     from=P:$xdir
-    to=$xdir
+
+    if [ "${odir:0:1}" == "." ]; then 
+        to=$HOME/$xdir
+    else
+        to=$xdir
+    fi  
 
     vars="BASH_SOURCE xdir from to"
     for var in $vars ; do printf "%-30s : %s \n" $var "${!var}" ; done ; 

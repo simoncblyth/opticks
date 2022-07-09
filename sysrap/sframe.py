@@ -254,6 +254,7 @@ class sframe(object):
         """
         ce = self.ce 
         axes = self.axes
+        coords = self.coords
         planar = len(axes) == 2 
 
         # below default from envvars are overridden for planar data

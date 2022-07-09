@@ -7,7 +7,13 @@ gxs.sh : G4CXSimulateTest : Opticks CX GPU simulation starting from Geant4 geome
 
     cd ~/opticks/g4cx   # gx
     ./gxs.sh 
+    ./gxs.sh info
+    ./gxs.sh run
     ./gxs.sh dbg
+    ./gxs.sh ana
+    ./gxs.sh grab
+    ./gxs.sh ab
+
 
 EOU
 }
@@ -31,43 +37,64 @@ loglevels()
 loglevels
 
 
-
+bin=G4CXSimulateTest
 defarg="run"
 arg=${1:-$defarg}
 
+
+gp_=${GEOM}_GDMLPath 
+gp=${!gp_}
+cg_=${GEOM}_CFBaseFromGEOM
+cg=${!cg_}
+
+if [ -n "$cg" ]; then
+    BASE=$cg/$bin
+    UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
+    CFBASE=$cg 
+else
+    BASE=/tmp/$USER/opticks/$bin/$GEOM
+    UBASE=$BASE
+    CFBASE=$BASE
+fi
+# NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
+
+export FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
+# NB FOLD is not used by run, but it is used by ana
+
+if [ "${arg/info}" != "$arg" ]; then 
+    #vars="GEOM BASE $gp_ $cg_ od"
+    vars="GEOM BASE UBASE FOLD"
+    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+fi 
+
 if [ "${arg/run}" != "$arg" ]; then 
-    G4CXSimulateTest
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+    $bin 
+    [ $? -ne 0 ] && echo $BASH_SOURCE run $bin error && exit 1 
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
     case $(uname) in
-        Linux) gdb G4CXSimulateTest -ex r  ;;
-        Darwin) lldb__ G4CXSimulateTest ;; 
+        Linux) gdb $bin -ex r  ;;
+        Darwin) lldb__ $bin ;; 
     esac
-    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg $bin error && exit 2 
 fi
 
 
-export BASE=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
-export FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
-
 if [ "${arg/ana}" != "$arg" ]; then 
 
-    export CFBASE=$BASE   ## HMM: should probably do such config in AB_FOLD.sh  ? 
-
+    export CFBASE
     ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    source ../bin/rsync.sh $BASE 
+    source ../bin/rsync.sh $UBASE 
 fi 
 
 if [ "$arg" == "ab" ]; then
     ./gxs_ab.sh 
 fi 
-
 
 exit 0 
 

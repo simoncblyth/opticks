@@ -170,7 +170,7 @@ class Axes(object):
 
     @classmethod
     def OtherAxis(cls, axes):
-        assert len(axes) == 2
+        #assert len(axes) == 2
         if not X in axes: return X 
         if not Y in axes: return Y 
         if not Z in axes: return Z
