@@ -468,7 +468,7 @@ void CSGOptiX::setFrame(const sframe& fr_ )
     const qat4* m2w = &fr_.m2w ; 
     const qat4* w2m = &fr_.w2m ; 
 
-    LOG(info) << "[" ; 
+    LOG(LEVEL) << "[" ; 
 
     float extent = ce.w ; 
     float tmin = extent*tmin_model ;   // tmin_model from TMIN envvar with default of 0.1 (units of extent) 
@@ -480,7 +480,7 @@ void CSGOptiX::setFrame(const sframe& fr_ )
     sglm->set_near_abs(tmin) ; 
     sglm->update();  
 
-    LOG(info) << "sglm.desc:" << std::endl << sglm->desc() ; 
+    LOG(LEVEL) << "sglm.desc:" << std::endl << sglm->desc() ; 
 
 
 #ifdef WITH_SGLM
@@ -491,7 +491,7 @@ void CSGOptiX::setFrame(const sframe& fr_ )
     LOG(info) << std::endl << composition->getCameraDesc() ;  
 #endif
 
-    LOG(info) 
+    LOG(LEVEL) 
         << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
         << " tmin_model " << tmin_model
         << " tmin " << tmin 
@@ -499,10 +499,10 @@ void CSGOptiX::setFrame(const sframe& fr_ )
         << " w2m " << w2m
         ; 
 
-    if(m2w) LOG(info) << "m2w " << *m2w ; 
-    if(w2m) LOG(info) << "w2m " << *w2m ; 
+    if(m2w) LOG(LEVEL) << "m2w " << *m2w ; 
+    if(w2m) LOG(LEVEL) << "w2m " << *w2m ; 
 
-    LOG(info) << "]" ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -547,7 +547,7 @@ void CSGOptiX::prepareRenderParam()
 
     if(!flight) 
     {
-        LOG(info)
+        LOG(LEVEL)
             << std::endl 
             << std::setw(20) << " extent "     << extent << std::endl 
             << std::setw(20) << " sglm.ce.w "  << sglm->ce.w << std::endl 
@@ -578,11 +578,11 @@ void CSGOptiX::prepareRenderParam()
             << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
             ;
 
-        std::cout << "SGLM::DescEyeBasis (sglm->e,w,v,w) " << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
-        std::cout <<  "sglm.descEyeBasis " << std::endl << sglm->descEyeBasis() << std::endl ; 
-        std::cout << "Composition basis " << std::endl << SGLM::DescEyeBasis( eye, U, V, W ) << std::endl ;
-        LOG(info) << std::endl  << "sglm.descELU " << std::endl << sglm->descELU() << std::endl ; 
-        LOG(info) << std::endl << "sglm.descLog " << std::endl << sglm->descLog() << std::endl ; 
+        LOG(LEVEL) << std::endl << "SGLM::DescEyeBasis (sglm->e,w,v,w) " << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
+        LOG(LEVEL) << std::endl <<  "sglm.descEyeBasis " << std::endl << sglm->descEyeBasis() << std::endl ; 
+        LOG(LEVEL) << std::endl << "Composition basis " << std::endl << SGLM::DescEyeBasis( eye, U, V, W ) << std::endl ;
+        LOG(LEVEL) << std::endl  << "sglm.descELU " << std::endl << sglm->descELU() << std::endl ; 
+        LOG(LEVEL) << std::endl << "sglm.descLog " << std::endl << sglm->descLog() << std::endl ; 
 
     }
 

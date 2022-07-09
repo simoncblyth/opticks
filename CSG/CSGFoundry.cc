@@ -1989,12 +1989,12 @@ void CSGFoundry::save(const char* dir_) const
 
     if(sim)
     {
-        LOG(fatal) << " SSim::save " << dir ;  
+        LOG(LEVEL) << " SSim::save " << dir ;  
         sim->save(dir, "SSim");  
     }
     else
     {
-        LOG(fatal) << " CANNOT SSim::save AS sim null " ;  
+        LOG(LEVEL) << " CANNOT SSim::save AS sim null " ;  
     }
 }
 

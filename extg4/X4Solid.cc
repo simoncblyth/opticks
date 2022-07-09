@@ -1745,20 +1745,20 @@ void X4Solid::convertPolycone()
     unsigned num_R_inner = R_inner.size() ; 
     unsigned num_R_outer = R_outer.size() ; 
 
-    LOG(info)
+    LOG(LEVEL)
         << " nz " << nz
         << " zmin " << std::setw(10) << std::fixed << std::setprecision(4) << zmin
         << " zmax " << std::setw(10) << std::fixed << std::setprecision(4) << zmax
         << " do_phi_segment " << do_phi_segment 
         ;
 
-    LOG(info)
+    LOG(LEVEL)
         << " R_inner_min  " << std::setw(10) << std::fixed << std::setprecision(4) << R_inner_min
         << " R_inner_max  " << std::setw(10) << std::fixed << std::setprecision(4) << R_inner_max
         << " num_R_inner " << num_R_inner
         << " has_inner " << has_inner 
         ;
-    LOG(info)
+    LOG(LEVEL)
         << " R_outer_min  " << std::setw(10) << std::fixed << std::setprecision(4) << R_outer_min
         << " R_outer_max  " << std::setw(10) << std::fixed << std::setprecision(4) << R_outer_max
         << " num_R_outer " << num_R_outer

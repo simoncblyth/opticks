@@ -3878,7 +3878,7 @@ template <typename T> void NP::Write(const char* dir, const char* name, const T*
 template <typename T> void NP::Write(const char* path, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
 {
     std::string dtype = descr_<T>::dtype() ; 
-    std::cout 
+    if(VERBOSE) std::cout 
         << "NP::Write"
         << " dtype " << dtype
         << " ni  " << std::setw(7) << ni_

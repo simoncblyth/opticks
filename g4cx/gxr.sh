@@ -12,19 +12,6 @@ gxr.sh : G4CXRenderTest
     ./gxr.sh grab
 
 
-
-name=cx$MOI.jpg
-if [ "$(uname)" == "Linux" ]; then
-   G4CXRenderTest 
-elif [ "$(uname)" == "Darwin" ]; then 
-   fold=/tmp/$USER/opticks
-
-   mkdir -p $fold
-   cd $fold
-   scp P:$fold/$name .
-
-   open $name  
-
 fi 
 
 EOU
@@ -51,13 +38,14 @@ export MOI=${MOI:-$moi}
 loglevels()
 {
     export Dummy=INFO
-    export SEvt=INFO
-    export Ctx=INFO
+    #export SEvt=INFO
+    #export Ctx=INFO
     #export QSim=INFO
     #export QEvent=INFO 
-    export CSGOptiX=INFO
-    export G4CXOpticks=INFO 
+    #export CSGOptiX=INFO
+    #export G4CXOpticks=INFO 
     #export X4PhysicalVolume=INFO
+    #export X4Solid=INFO
     #export U4VolumeMaker=INFO
 }
 loglevels
@@ -79,19 +67,28 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 
-export BASE=/tmp/$USER/opticks/$bin/$GEOM
-export FOLD=$BASE 
+export FOLD=/tmp/$USER/opticks/$bin/$GEOM
+name=cx$MOI.jpg
+path=$FOLD/$name
 
 if [ "${arg/ana}" != "$arg" ]; then 
 
-    export CFBASE=$BASE
+    export CFBASE=$FOLD
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    source ../bin/rsync.sh $BASE 
+    source ../bin/rsync.sh $FOLD
+    open $path 
 fi 
+
+if [ "$arg" == "jpg" ]; then 
+    mkdir -p $(dirname $path)
+    scp P:$path $path 
+    open $path 
+fi 
+
 
 exit 0 
 
