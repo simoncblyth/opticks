@@ -346,7 +346,11 @@ void CSGOptiX::initRender()
 
     params->pixels = frame->d_pixel ;
     params->isect  = frame->d_isect ; 
+#ifdef WITH_FRAME_PHOTON
     params->fphoton = frame->d_photon ; 
+#else
+    params->fphoton = nullptr ; 
+#endif
 }
 
 /**
