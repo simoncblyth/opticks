@@ -108,11 +108,11 @@ ratio GRIDSCALE of 0.1 is more resonable than 1 ?
 NP* SFrameGenstep::MakeCenterExtentGensteps(sframe& fr)
 {
     const float4& ce = fr.ce ; 
-    float gridscale = SSys::getenvfloat("GRIDSCALE", 1.0 ) ; 
+    float gridscale = SSys::getenvfloat("GRIDSCALE", 0.1 ) ; 
 
     // CSGGenstep::init
     std::vector<int> cegs ; 
-    SSys::getenvintvec("CEGS", cegs, ':', "5:0:5:1000" );
+    SSys::getenvintvec("CEGS", cegs, ':', "16:0:9:1000" );
 
     StandardizeCEGS(ce, cegs, gridscale );  // ce is informational here 
     assert( cegs.size() == 7 );

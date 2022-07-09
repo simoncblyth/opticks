@@ -29,7 +29,6 @@ AB Analysis::
 
 
 
-
 TODO : Bookkeeping inconsistency for NOT_AT_BOUNDARY from scatters
 ---------------------------------------------------------------------
 
@@ -39,7 +38,7 @@ does not get there eg from BULK_ABSORB or BULK_SCATTER.
 
 Contrary to this Geant4 doing scatter or absorption will have its G4Step not at boundary.  
 
-* So how to reconcile this fundamental nodel difference in the point recording ? 
+* So how to reconcile this fundamental model difference in the point recording ? 
 * 2 bytes are dedicated to boundary, so could use 0xffff to mean not a boundary::
 
     SPHOTON_METHOD unsigned boundary() const { return boundary_flag >> 16 ; }     // boundary___ = lambda p:p.view(np.uint32)[...,3,0] >> 16
@@ -794,10 +793,10 @@ DONE : get fast reproducible single (or small selection) photon running of B to 
 
 
 
-TODO : reduce truncation
+DONE : reduce truncation
 ---------------------------
 
-TODO: as not aligning reemission can switch from 5 bits to 4 and hence up from 48 slots to 64 slots without increasing storage
+DONE: as not aligning reemission can switch from 5 bits to 4 and hence up from 48 slots to 64 slots without increasing storage
 
 AHHA some of issue could be from truncation, 48 is not enough slots for the longer histories of more complicated geom:: 
 
@@ -829,8 +828,8 @@ AHHA some of issue could be from truncation, 48 is not enough slots for the long
      'TO BT BT BT BR BT BT BT SA',
 
 
-TODO : add boundary + identity to B:photon/record flags 
----------------------------------------------------------------------
+WIP : add boundary + identity to B:photon/record flags : impl has issues from model diffs
+-------------------------------------------------------------------------------------------
 
 ::
 

@@ -18,8 +18,12 @@ After upping the SEvt logging see that is writing to::
 gxt.sh : g4cx/tests/G4CXSimtraceTest.py
 -----------------------------------------
 
-issue 1 : default genstep grid is tiny around origin : why ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+FIXED : issue 1 : default genstep grid is tiny around origin : why ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Because the default CE_SCALE was 0. 
+Now changed to 1 to do extent scaling by default. 
+
 
 ::
 
@@ -140,6 +144,35 @@ Looks like not using the real distance ?::
     Out[5]: 
     (array([-5., -4., -3., -2., -1.,  1.,  2.,  3.,  4.,  5.], dtype=float32),
      array([2403, 2736, 3071, 3530, 4154, 4136, 3466, 2963, 2698, 2349]))
+
+
+
+NOT-AN-ISSUE : issue 3 : simtrace bnd 0xffff : actually correct because some genstep positions where outside the world 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [2]: p = t_pos.simtrace
+
+    In [3]: p.ndim
+    Out[3]: 3
+
+    In [4]: p.shape
+    Out[4]: (121000, 4, 4)
+
+    In [5]: 0xffff
+    Out[5]: 65535
+
+    In [6]: bnd = p[:,2,3].view(np.int32)
+    In [7]: bnd
+    Out[7]: array([65535, 65535, 65535, 65535, 65535, ..., 65535, 65535, 65535,     0, 65535], dtype=int32)
+
+    In [8]: np.unique(bnd, return_counts=True) 
+    Out[8]: 
+    (array([    0,     1,     3,     4, 65535], dtype=int32),
+     array([ 12843,   1646,    506,    494, 105511]))
+
+
 
 
 

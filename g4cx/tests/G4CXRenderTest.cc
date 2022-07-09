@@ -5,6 +5,10 @@ G4CXRenderTest.cc
 GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance,  
 TODO: avoid this by replacing with automated SOpticks instanciated by OPTICKS_LOG
 
+
+HMM: no SEvt, saving renders could be managed by SEvt too to make the environment 
+the same in all RGNode
+
 **/
 #include "SEventConfig.hh"
 #include "OPTICKS_LOG.hh"
@@ -15,7 +19,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEventConfig::SetRGMode("render");  
+    SEventConfig::SetRGModeRender();  
 
     Opticks::Configure(argc, argv, "--gparts_transform_offset" );  
 

@@ -22,10 +22,14 @@ def shorten_surfname(name=None, cut=20):
 def shorten_bndname(name=None, cut=20):
     if name is None: name = "Pyrex/HamamatsuR12860_PMT_20inch_photocathode_logsurf2/HamamatsuR12860_PMT_20inch_photocathode_logsurf1/Vacuum"
     elem = name.split("/")
-    assert len(elem) == 4 
-    if len(elem[1]) > cut: elem[1] = shorten_surfname(elem[1], cut) 
-    if len(elem[2]) > cut: elem[2] = shorten_surfname(elem[2], cut) 
-    return "/".join(elem)
+    if len(elem) == 4:
+        if len(elem[1]) > cut: elem[1] = shorten_surfname(elem[1], cut) 
+        if len(elem[2]) > cut: elem[2] = shorten_surfname(elem[2], cut) 
+        ret = "/".join(elem)
+    else:
+        ret = name
+    pass 
+    return ret 
 
 
 def make_colors():
@@ -282,7 +286,7 @@ class SimtraceFeatures(object):
             
         log.info("[Photons p.ndim %d p.shape %s " % (int(p.ndim), str(p.shape)) )
         assert featname in ["pid", "bnd", "ins", "mok"]
-        if p.ndim == 3:
+        if p.ndim == 3:  # eg (121000, 4, 4)
             bnd = p[:,2,3].view(np.int32)
             ids = p[:,3,3].view(np.int32) 
         elif p.ndim == 4:
@@ -296,11 +300,17 @@ class SimtraceFeatures(object):
 
         log.debug("[ Photons.bndfeat ")
         bnd_namedict = {} if cf is None else cf.sim.bndnamedict 
+        bnd_namedict[0xffff] = "0xffff" 
+
+
         bndfeat = Feature("bnd", bnd, bnd_namedict)
         log.debug("] Photons.bndfeat ")
 
         log.debug("[ Photons.pidfeat ")
         pid_namedict = {} if cf is None else cf.primIdx_meshname_dict
+        pid_namedict[-1] = "-1" 
+
+
         log.info(" pid_namedict: %d  " % len(pid_namedict))
         pidfeat = Feature("pid", pid, pid_namedict)
         log.debug("] Photons.pidfeat ")
