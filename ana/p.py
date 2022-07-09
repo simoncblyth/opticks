@@ -123,6 +123,11 @@ identity_     = lambda p:p.view(np.uint32)[3,1]
 primIdx___    = lambda p:p.view(np.uint32)[...,3,1] >> 16 
 primIdx__     = lambda p:p.view(np.uint32)[:,3,1] >> 16 
 
+
+isectPrimIdx_ = lambda isect:isect.view(np.uint32)
+
+
+
 instanceId___ = lambda p:p.view(np.uint32)[...,3,1] & 0xffff  
 instanceId__  = lambda p:p.view(np.uint32)[:,3,1] & 0xffff  
 

@@ -21,8 +21,8 @@ msg="=== $BASH_SOURCE :"
 source ../bin/GEOM_.sh 
 
 case $(uname) in 
-  Darwin) defarg="ana"  ;;
-  Linux)  defarg="run"  ;;
+  Linux)  defarg="run_ls"  ;;
+  Darwin) defarg="ls_ana"  ;;
 esac
 
 arg=${1:-$defarg}
@@ -34,6 +34,7 @@ eye=-0.4,0,0
 moi=-1
 export EYE=${EYE:-$eye} 
 export MOI=${MOI:-$moi}
+
 
 loglevels()
 {
@@ -67,12 +68,18 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 
+
+# FOLD is not an input to running, but it is used by the below : ls ana grab jpg  
 export FOLD=/tmp/$USER/opticks/$bin/$GEOM
 name=cx$MOI.jpg
 path=$FOLD/$name
 
-if [ "${arg/ana}" != "$arg" ]; then 
+if [ "${arg/ls}" != "$arg" ]; then 
+   echo $msg FOLD $FOLD date $(date)
+   ls -alst $FOLD
+fi 
 
+if [ "${arg/ana}" != "$arg" ]; then 
     export CFBASE=$FOLD
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
@@ -88,7 +95,6 @@ if [ "$arg" == "jpg" ]; then
     scp P:$path $path 
     open $path 
 fi 
-
 
 exit 0 
 

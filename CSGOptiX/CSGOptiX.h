@@ -151,7 +151,10 @@ public:
     const char* getDefaultSnapPath() const ; 
     void snap(const char* path=nullptr, const char* bottom_line=nullptr, const char* top_line=nullptr, unsigned line_height=24);  // part of SRenderer protocol base
 
+
+#ifdef WITH_FRAME_PHOTON
     void writeFramePhoton(const char* dir, const char* name);
+#endif
     int  render_flightpath(); 
 
     void saveMeta(const char* jpg_path) const ;

@@ -39,9 +39,31 @@ The "frame photons" are unfilled::
 """
 import os, numpy as np
 from opticks.ana.fold import Fold
+from opticks.ana.pvplt import *
+
 
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(t)
+
+    pxpos =  t.isect[:,:,:3]
+    pxidd = t.isect.view(np.uint32)[:,:,3] >> 16 
+
+    pos = pxpos.reshape(-1,3) 
+    idd = pxidd.ravel()
+
+    pl = pvplt_plotter()
+
+    #pl.add_points( pxpos )    # curious planar position "heat" plot  
+    #pl.add_points( pos )      # 3D point cloud : odd shadow until adjust viewpoint to match that of the render 
+
+    pc = pv.PolyData(pos, eye_dome_lighting=True) 
+    pc["idd"] = idd           ## different color for each primIdx
+
+    pl.add_mesh(pc, render_points_as_spheres=True )   ## a bit clearer than simply add_points 
+
+
+    pl.show()
+
 
 

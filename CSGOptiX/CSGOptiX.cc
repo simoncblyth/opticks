@@ -842,6 +842,7 @@ void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_
     }
 }
 
+#ifdef WITH_FRAME_PHOTON
 void CSGOptiX::writeFramePhoton(const char* dir, const char* name)
 {
 #if OPTIX_VERSION < 70000
@@ -850,6 +851,7 @@ void CSGOptiX::writeFramePhoton(const char* dir, const char* name)
     frame->writePhoton(dir, name); 
 #endif
 }
+#endif
 
 
 int CSGOptiX::render_flightpath() // for making mp4 movies
