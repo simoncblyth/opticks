@@ -121,6 +121,7 @@ static __forceinline__ __device__ void trace(
 
 __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity, unsigned boundary )  // pure 
 {
+    // identity and boundary not used 
     float scale = 1.f ; 
     return make_uchar4(
             static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f )*scale ,
@@ -192,11 +193,7 @@ Params
 * CPU side params including qsim.h sevent.h pointers instanciated in CSGOptiX::CSGOptiX 
   and populated by CSGOptiX::init methods before being uploaded by CSGOptiX::prepareParam 
 
-
 COMPARE WITH qsim::mock_propagate
-
-TODO: sctx encapsulation of thread local context to avoid duplicity and to flexibly reduce 
-      resource usage for production 
 
 **/
 
@@ -227,7 +224,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     while( bounce < evt->max_bounce )
     {    
         trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd);  // geo query filling prd      
-        if( prd->boundary() == 0xffffu ) break ;   // SHOULD NEVER HAPPEN : propagate can do nothing meaningful without a boundary 
+        if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
+        // propagate can do nothing meaningful without a boundary 
 #ifndef PRODUCTION
         ctx.trace(bounce);  
 #endif

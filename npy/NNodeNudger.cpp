@@ -91,7 +91,7 @@ void NNodeNudger::init()
     if(enabled)
        uncoincide();
 
-    if( listed || nudges.size() > 0 ) LOG(error) << brief() ;  
+    if( listed || nudges.size() > 0 ) LOG(LEVEL) << brief() ;  
 
     if(NudgeBuffer) NudgeBuffer->add(root->treeidx, prim.size(), coincidence.size(), nudges.size() );   
 

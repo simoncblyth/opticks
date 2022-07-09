@@ -872,12 +872,15 @@ glm::mat4 nnode::get_root_transform() const
 
 
 
-
-
 void nnode::DumpTransform( const char* msg, const nmat4triple* transform ) // static 
 {
-    std::cout
-        << msg  
+    LOG(LEVEL) << std::endl << msg << std::endl << DescTransform(transform) ; 
+}
+
+std::string nnode::DescTransform( const nmat4triple* transform ) // static 
+{
+    std::stringstream ss ; 
+    ss 
         << std::endl  
         << gpresent("t", transform->t ) 
         << std::endl  
@@ -886,6 +889,9 @@ void nnode::DumpTransform( const char* msg, const nmat4triple* transform ) // st
         << gpresent("q", transform->q ) 
         << std::endl  
         ;    
+
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 /**

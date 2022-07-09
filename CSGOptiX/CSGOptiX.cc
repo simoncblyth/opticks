@@ -794,7 +794,7 @@ void CSGOptiX::render_snap( const char* name_ )
     std::string bottom_line = CSGOptiX::Annotation(dt, botline_ ); 
     const char* botline = bottom_line.c_str() ; 
 
-    LOG(error)  
+    LOG(LEVEL)  
           << " name " << name 
           << " outpath " << outpath 
           << " dt " << dt 
@@ -816,7 +816,7 @@ CSGOptiX::snap : Download frame pixels and write to file as jpg.
 void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_line, unsigned line_height)
 {
     const char* path = path_ ? SPath::Resolve(path_, FILEPATH ) : getDefaultSnapPath() ; 
-    LOG(info) << " path " << path ; 
+    LOG(LEVEL) << " path " << path ; 
 
 #if OPTIX_VERSION < 70000
     const char* top_extra = nullptr ;
@@ -892,7 +892,7 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     }
 
     meta->save(json_path);
-    LOG(info) << json_path ; 
+    LOG(LEVEL) << json_path ; 
 }
 
 

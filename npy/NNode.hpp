@@ -231,6 +231,9 @@ struct NPY_API nnode
 
 
     static void DumpTransform( const char* msg, const nmat4triple* transform ); 
+    static std::string DescTransform( const nmat4triple* transform ); 
+
+
     void set_transform( const glm::mat4& t, bool update_global ); 
     void set_translation( float x, float y, float z );
     void set_placement( const nmat4triple* plc );
