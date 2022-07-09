@@ -97,6 +97,7 @@ std::string SOpticksResource::Dump()
     const char* cfbase = CFBase(); 
     const char* cfbase_alt = CFBaseAlt(); 
     const char* cfbase_fg = CFBaseFromGEOM(); 
+    const char* gdmlpath = GDMLPath(); 
 
 
     std::stringstream ss ; 
@@ -121,6 +122,7 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::CFBase()                 " << ( cfbase ? cfbase : "-" ) << std::endl 
         << "SOpticksResource::CFBaseAlt()              " << ( cfbase_alt ? cfbase_alt : "-" ) << std::endl 
         << "SOpticksResource::CFBaseFromGEOM()         " << ( cfbase_fg ? cfbase_fg : "-" ) << std::endl 
+        << "SOpticksResource::GDMLPath()               " << ( gdmlpath ? gdmlpath : "-" ) << std::endl
         ;
 
     std::string s = ss.str(); 
@@ -258,6 +260,35 @@ const char* SOpticksResource::SomeGDMLPath()
     assert(path); 
     return path ; 
 }
+
+
+
+/**
+SOpticksResource::GDMLPath
+----------------------------
+
+Converts *geom* name eg "JUNOv101" into a path by reading envvar "JUNOv101_GDMLPath" if it exists, 
+returns nullptr when the envvar does not exist or if geom is nullptr. 
+
+For example exercise this with::
+
+    GEOM=hello hello_GDMLPath='$DefaultOutputDir/some/relative/path' SOpticksResourceTest 
+
+* Single quotes are needed to prevent shell expansion of the internal token DefaultOutputDir.
+* Notice how the key "hello" provides a shortname with which to refer to the long GDML path. 
+* the returned path is expected to be resolved by SPath::Resolve 
+* there is no check of the existance of the GDML path 
+
+**/
+
+const char* SOpticksResource::GDMLPath_ = "GEOM" ; 
+const char* SOpticksResource::GDMLPath(){ return GDMLPath( SSys::getenvvar(GDMLPath_)); }
+const char* SOpticksResource::GDMLPath(const char* geom)
+{
+    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPath")) ; 
+}
+
+
 
 
 

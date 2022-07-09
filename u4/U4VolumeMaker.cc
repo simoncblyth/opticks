@@ -9,6 +9,8 @@
 #include "G4Orb.hh"
 
 #include "SStr.hh"
+#include "SOpticksResource.hh"
+#include "SPath.hh"
 #include "SSys.hh"
 #include "PLOG.hh"
 
@@ -20,6 +22,7 @@
 #include "U4SensitiveDetector.h"
 #include "U4RotationMatrix.h"
 #include "U4Volume.h"
+#include "U4GDML.h"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -84,6 +87,7 @@ G4VPhysicalVolume* U4VolumeMaker::PV(const char* name)
 {
     LOG(LEVEL) << "[" << name ; 
     G4VPhysicalVolume* pv = nullptr ; 
+    if(pv == nullptr) pv = PVG_(name); 
     if(pv == nullptr) pv = PVP_(name); 
     if(pv == nullptr) pv = PVS_(name); 
     if(pv == nullptr) pv = PVL_(name); 
@@ -92,6 +96,25 @@ G4VPhysicalVolume* U4VolumeMaker::PV(const char* name)
     LOG(LEVEL) << "]" << name ; 
     return pv ; 
 }
+
+/**
+U4VolumeMaker::PVG_
+---------------------
+
+Attempts to load geometry from a gdmlpath using the SOpticksResource::GDMLPath 
+resolution method.  For example for a name of hello the gdmlpath is obtained
+from the envvar hello_GDMLPath with nullptr being returned when there is no such 
+envvar. 
+
+**/
+
+G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
+{
+    const char* gdmlpath = SOpticksResource::GDMLPath(name) ; 
+    bool exists = gdmlpath && SPath::Exists(gdmlpath) ; 
+    return exists ? U4GDML::Read(gdmlpath) : nullptr ; 
+}
+
 
 /**
 U4VolumeMaker::PVP_ : Get PMTSim PV

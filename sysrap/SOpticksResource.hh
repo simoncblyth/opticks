@@ -50,6 +50,11 @@ struct SYSRAP_API SOpticksResource
     static const char* SomeGDMLPath_ ; 
     static const char* SomeGDMLPath(); 
 
+    static const char* GDMLPath_ ; 
+    static const char* GDMLPath(); 
+    static const char* GDMLPath(const char* geom); 
+
+
 
     static std::string Dump(); 
 
