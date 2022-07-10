@@ -118,8 +118,9 @@ private:
 
 public:
 #ifdef DEBUG_TAG
-     // Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4Stack::Classify
-     void ResetNumberOfInteractionLengthLeft(){  G4VProcess::ResetNumberOfInteractionLengthLeft() ; }
+     static const bool FLOAT ; 
+     static const int  PIDX ; 
+     void ResetNumberOfInteractionLengthLeft();
 #endif
 
 
@@ -361,6 +362,9 @@ private:
 ////////////////////
 // Inline methods
 ////////////////////
+
+
+
 
 inline 
 G4bool DsG4Scintillation::IsApplicable(const G4ParticleDefinition& aParticleType)

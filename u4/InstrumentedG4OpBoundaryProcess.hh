@@ -136,15 +136,15 @@ enum G4OpBoundaryProcessStatus {  Undefined,
 class U4_API InstrumentedG4OpBoundaryProcess : public G4VDiscreteProcess
 {
 #ifdef DEBUG_PIDX
-        static const int PIDX ; 
+        static const int  PIDX ;
         int pidx ; 
         bool pidx_dump ; 
 #endif
 
 public:
 #ifdef DEBUG_TAG
-        // Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4Stack::Classify
-        void ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); } 
+        static const bool FLOAT ;  
+        void ResetNumberOfInteractionLengthLeft();
 #endif
 
 
@@ -283,6 +283,14 @@ private:
 ////////////////////
 // Inline methods
 ////////////////////
+
+
+#ifdef DEBUG_PIDX
+const int  InstrumentedG4OpBoundaryProcess::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" );  
+#endif
+
+
+
 
 inline
 G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand(const G4double prob) const

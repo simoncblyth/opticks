@@ -99,6 +99,40 @@ const int InstrumentedG4OpBoundaryProcess::PIDX = SSys::getenvint("PIDX", -1) ;
 #endif
 
 
+
+
+#ifdef DEBUG_TAG
+
+const bool InstrumentedG4OpBoundaryProcess::FLOAT  = getenv("InstrumentedG4OpBoundaryProcess_FLOAT") != nullptr ;
+
+//inline void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
+inline void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft()
+{
+    //std::cout << "InstrumentedG4OpBoundaryProcess::FLOAT " << FLOAT << std::endl ; 
+    G4double u = G4UniformRand() ; 
+    if(FLOAT)
+    {   
+        float f = -1.f*std::log( float(u) ) ;   
+        theNumberOfInteractionLengthLeft = f ; 
+    }   
+    else
+    {   
+        theNumberOfInteractionLengthLeft = -1.*G4Log(u) ;   
+    }   
+    theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft; 
+
+}
+
+
+
+#endif
+
+
+
+
+
+
+
 /////////////////////////
 // Class Implementation
 /////////////////////////

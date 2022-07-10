@@ -36,6 +36,9 @@ from opticks.ana.rsttable import RSTTable
 
 
 class Pkg(object):
+    EXTMAP = {".hh":".hh", ".h":".hh", ".hpp":".hh" , ".cc":".cc", ".cpp":".cc", ".cu":".cu", ".py":".py" }
+    EXTMAPV = ".hh .cc .cu .py".split()
+
     EXCLUDE = ".pyc .log .swp .txt .rst .in .old .sh .bash .cfg".split()
     EXTS = ".hh .h .hpp .cc .cpp .cu .py".split()
     def __init__(self, fold):
@@ -43,23 +46,44 @@ class Pkg(object):
         pkg = os.path.basename(fold)
 
         exts = {}
+        exms = {}
         for name in names:
             stem, ext = os.path.splitext(name)
             if ext == "" or ext in self.EXCLUDE: continue
             if not ext in self.EXTS: print("unexpected ext %s " % ext )
             if not ext in exts: exts[ext] = 0
             exts[ext]+=1   
-        pass
-        stats = np.zeros( (1+len(self.EXTS),), dtype=np.object )
 
-        stats[0] = pkg
-        for i, ext in enumerate(self.EXTS): 
-            stats[1+i] = exts.get(ext, 0)
+            exm = self.EXTMAP.get(ext, None)
+            assert not exm is None 
+            if not exm in exms: exms[exm] = 0
+            exms[exm]+=1   
         pass
+
+        mapped = True
+
+        if mapped == False:
+            labels = ["pkg"] + self.EXTS
+            stats = np.zeros( (1+len(self.EXTS),), dtype=np.object )
+            for i, ext in enumerate(self.EXTS): 
+                stats[1+i] = exts.get(ext, 0)
+            pass
+        else:
+            labels = ["pkg"] + self.EXTMAPV
+            stats = np.zeros( (1+len(self.EXTMAPV),), dtype=np.object )
+            for i, exm in enumerate(self.EXTMAPV): 
+                stats[1+i] = exms.get(exm, 0)
+            pass
+        pass
+        stats[0] = pkg
+
+        pass
+        self.labels = labels
         self.fold = fold
         self.pkg = pkg
         self.names = names
         self.exts = exts  
+        self.exms = exms  
         self.stats = stats 
 
     def __repr__(self):
@@ -77,17 +101,17 @@ class Stats(object):
                 pkgs.append(pkg)
             pass 
         pass
-        stats = np.zeros( ( len(pkgs), 1+len(Pkg.EXTS) ), dtype=np.object )
+        labels = pkgs[0].labels
+        stats = np.zeros( ( len(pkgs), len(labels) ), dtype=np.object )
         for i, pkg in enumerate(pkgs):
             stats[i] = pkg.stats
         pass
-
+        self.labels = labels
         self.pkgs = pkgs
         self.stats = stats
     pass
     def __str__(self):
-        labels = ["pkg"]+Pkg.EXTS ;   
-        return RSTTable.Rdr(self.stats, labels, rfm="%10d", left_wid=15, left_rfm="%15s", left_hfm="%15s" )
+        return RSTTable.Rdr(self.stats, self.labels, rfm="%10d", left_wid=15, left_rfm="%15s", left_hfm="%15s" )
     def __repr__(self):
         return "\n".join(list(map(repr, self.pkgs)))
     pass

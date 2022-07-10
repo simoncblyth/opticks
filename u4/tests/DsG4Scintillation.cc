@@ -100,6 +100,40 @@ const plog::Severity DsG4Scintillation::LEVEL = error ;
 #endif
 
 
+
+
+
+#ifdef DEBUG_TAG
+const bool DsG4Scintillation::FLOAT = getenv("DsG4Scintillation_FLOAT") != nullptr ;
+const int  DsG4Scintillation::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" );  
+
+//void DsG4Scintillation::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
+void DsG4Scintillation::ResetNumberOfInteractionLengthLeft()
+{
+    //std::cout << "DsG4Scintillation::FLOAT " << FLOAT << std::endl ; 
+    G4double u = G4UniformRand() ; 
+    if(FLOAT)
+    {   
+        float f = -1.f*std::log( float(u) ) ;   
+        theNumberOfInteractionLengthLeft = f ; 
+    }   
+    else
+    {   
+        theNumberOfInteractionLengthLeft = -1.*G4Log(u) ;   
+    }   
+    theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft; 
+
+}
+
+#endif
+
+
+
+
+
+
+
+
 //#include "DsPhotonTrackInfo.h"
 //#include "G4DataHelpers/G4CompositeTrackInfo.h"
 
