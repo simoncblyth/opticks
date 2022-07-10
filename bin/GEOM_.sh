@@ -22,9 +22,9 @@ EOU
 
 #geom=BoxOfScintillator
 #geom=RaindropRockAirWater
-geom=RaindropRockAirWaterSD
+#geom=RaindropRockAirWaterSD
 #geom=hama_body_log
-#geom=J000
+geom=J000
 
 export GEOM=${GEOM:-$geom}
 

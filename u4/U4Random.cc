@@ -428,6 +428,11 @@ double U4Random::flat()
             << " idx " << std::setw(4) << idx 
             << " d " <<  std::setw(10 ) << std::fixed << std::setprecision(5) << d 
             ;
+
+        char* summary = SBacktrace::Summary(); 
+
+        LOG(info) << std::endl << summary ; 
+
     }
 
 

@@ -182,6 +182,12 @@ Switch to manual tagging : occasionally missing a consumption
      post U4StepPoint::DescPositionTime (     11.
 
 
+::
+
+    PIDX=9920 ./U4RecorderTest.sh run
+    PIDX=9918 ./U4RecorderTest.sh run
+    PIDX=9956 ./U4RecorderTest.sh run
+
 
 
 
@@ -207,6 +213,43 @@ Switch to manual tagging : occasionally missing a consumption
     #11 0x00007ffff498853e in G4RunManager::BeamOn(int, char const*, int) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
     #12 0x0000000000413b21 in main (argc=1, argv=0x7fffffff6438) at /data/blyth/junotop/opticks/u4/tests/U4RecorderTest.cc:200
     (gdb) 
+
+
+
+
+The untagged consumption looks to be at the end of the history 
+
+::
+
+    u4t ; PIDX=9920 ./U4RecorderTest.sh run 
+
+
+    2022-07-11 02:52:24.585 INFO  [26174] [U4Random::flat@423]  SEvt::PIDX 9920 m_seq_index 9920 m_seq_nv  256 cursor   48 idx 2539568 d    0.69924
+    2022-07-11 02:52:24.585 INFO  [26174] [SEvt::addTag@804]  idx 9920 PIDX 9920 tag 4 flat 0.69924 evt.tag 0x12265820 tagr.slot 48
+    2022-07-11 02:52:24.585 INFO  [26174] [U4Random::flat@423]  SEvt::PIDX 9920 m_seq_index 9920 m_seq_nv  256 cursor   49 idx 2539569 d    0.49888
+    2022-07-11 02:52:24.585 INFO  [26174] [SEvt::addTag@804]  idx 9920 PIDX 9920 tag 5 flat 0.498883 evt.tag 0x12265820 tagr.slot 49
+    ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength PIDX 9920 currentInteractionLength 1000000.0000000 theNumberOfInteractionLengthLeft  0.6953840 value 695383.9375000
+    2022-07-11 02:52:24.585 INFO  [26174] [U4Random::flat@423]  SEvt::PIDX 9920 m_seq_index 9920 m_seq_nv  256 cursor   50 idx 2539570 d    0.95529
+    2022-07-11 02:52:24.585 INFO  [26174] [SEvt::addTag@804]  idx 9920 PIDX 9920 tag 6 flat 0.955289 evt.tag 0x12265820 tagr.slot 50
+    ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength PIDX 9920 currentInteractionLength 1987.1562558 theNumberOfInteractionLengthLeft  0.0457416 value 90.8957291
+    2022-07-11 02:52:24.585 INFO  [26174] [U4Random::flat@423]  SEvt::PIDX 9920 m_seq_index 9920 m_seq_nv  256 cursor   51 idx 2539571 d    0.51655
+    2022-07-11 02:52:24.585 INFO  [26174] [U4Random::flat@423]  SEvt::PIDX 9920 m_seq_index 9920 m_seq_nv  256 cursor   52 idx 2539572 d    0.98802
+    2022-07-11 02:52:24.585 INFO  [26174] [SEvt::addTag@804]  idx 9920 PIDX 9920 tag 9 flat 0.988018 evt.tag 0x12265820 tagr.slot 51
+    U4Step::MockOpticksBoundaryIdentity problem step  idx 9920 type 2 U4Step::Name MOTHER_TO_CHILD cosThetaSign -1 spec Pyrex/HamamatsuR12860_PMT_20inch_photocathode_logsurf2/HamamatsuR12860_PMT_20inch_photocathode_logsurf1/Vacuum boundary 32 kludge_prim_idx -1 kludge_prim_idx_ 65535
+     pre  U4StepPoint::DescPositionTime (  -9339.653   7475.979  15211.020    107.270)
+     post U4StepPoint::DescPositionTime (  -9343.542   7480.095  15216.312    107.309)
+    2022-07-11 02:52:24.585 ERROR [26174] [U4Random::check_cursor_vs_tagslot@489]  m_seq_index 9920 cursor 53 slot 52 cursor_slot_match 0
+     PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS 
+    2022-07-11 02:52:24.585 INFO  [26174] [SEvt::beginPhoton@535]  idx 9919
+
+
+     post U4StepPoint::DescPositionTime (  -3694.903  -2705.972  18808.381    109.800)
+    U4Step::MockOpticksBoundaryIdentity problem step  idx 9918 type 2 U4Step::Name MOTHER_TO_CHILD cosThetaSign -1 spec Pyrex/NNVTMCPPMT_PMT_20inch_photocathode_logsurf2/NNVTMCPPMT_PMT_20inch_photocathode_logsurf1/Vacuum boundary 35 kludge_prim_idx -1 kludge_prim_idx_ 65535
+     pre  U4StepPoint::DescPositionTime (  -3694.903  -2705.972  18808.381    109.800)
+     post U4StepPoint::DescPositionTime (  -3699.417  -2711.157  18816.101    109.852)
+    2022-07-11 02:52:24.587 ERROR [26174] [U4Random::check_cursor_vs_tagslot@489]  m_seq_index 9918 cursor 53 slot 52 cursor_slot_match 0
+     PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS 
+    2022-07-11 02:52:24.587 INFO  [26174] [SEvt::beginPhoton@535]  idx 9917
 
 
 

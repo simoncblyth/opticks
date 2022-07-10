@@ -840,6 +840,11 @@ void InstrumentedG4OpBoundaryProcess::DielectricMetal()
            n++;
 
            rand = G4UniformRand();
+#ifdef DEBUG_TAG
+           SEvt::AddTag(U4Stack_BoundaryDiMeReflectivity, rand); 
+#endif
+
+
            if ( rand > theReflectivity && n == 1 ) {
               if (rand > theReflectivity + theTransmittance) {
                 DoAbsorption();

@@ -31,7 +31,8 @@ enum
     U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb = 7,
     U4Stack_BoundaryDiDiTransCoeff  = 8,
     U4Stack_AbsorptionEffDetect     = 9,
-    U4Stack_RayleighScatter         = 10
+    U4Stack_RayleighScatter         = 10,
+    U4Stack_BoundaryDiMeReflectivity = 11
 };
 
 struct U4Stack 
@@ -44,6 +45,21 @@ struct U4Stack
 
     static constexpr const char* Unclassified_      = "Unclassified" ;        // 0
     static constexpr const char* RestDiscreteReset_ = "RestDiscreteReset" ;   // 1: not used as use Shims to idenify processes in SBacktrace
+    static constexpr const char* DiscreteReset_ = "DiscreteReset" ; // 2    : G4OpAbsoption G4OpRayleigh but now use Shims to identify 
+    static constexpr const char* ScintDiscreteReset_ = "ScintDiscreteReset" ;  // 3
+    static constexpr const char* BoundaryDiscreteReset_ = "BoundaryDiscreteReset" ; // 4
+    static constexpr const char* RayleighDiscreteReset_ = "RayleighDiscreteReset" ;  // 5
+    static constexpr const char* AbsorptionDiscreteReset_ = "AbsorptionDiscreteReset" ; // 6
+    static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb_ = "BoundaryBurn_SurfaceReflectTransmitAbsorb" ;  // 7
+    static constexpr const char* BoundaryDiDiTransCoeff_ = "BoundaryDiDiTransCoeff" ;  // 8 
+    static constexpr const char* AbsorptionEffDetect_ = "AbsorptionEffDetect" ;   // 9 
+    static constexpr const char* RayleighScatter_ = "RayleighScatter" ;  // 10 
+    static constexpr const char* BoundaryDiMeReflectivity_ = "BoundaryDiMeReflectivity" ;  // 11 
+
+
+
+
+
     static constexpr const char* RestDiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -58,7 +74,6 @@ must be Scintillation, as only RestDiscrete process around
 )" ; 
 
 
-    static constexpr const char* DiscreteReset_ = "DiscreteReset" ; // 2    : G4OpAbsoption G4OpRayleigh but now use Shims to identify 
     static constexpr const char* DiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -68,7 +83,6 @@ G4SteppingManager::DefinePhysicalStepLength
 G4SteppingManager::Stepping
 )" ; 
 
-    static constexpr const char* ScintDiscreteReset_ = "ScintDiscreteReset" ;  // 3
     static constexpr const char* ScintDiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -79,7 +93,6 @@ G4SteppingManager::DefinePhysicalStepLength
 G4SteppingManager::Stepping
 )" ; 
 
-    static constexpr const char* BoundaryDiscreteReset_ = "BoundaryDiscreteReset" ; // 4
     static constexpr const char* BoundaryDiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -100,7 +113,6 @@ G4SteppingManager::Stepping
 )" ; 
 
 
-    static constexpr const char* RayleighDiscreteReset_ = "RayleighDiscreteReset" ;  // 5
     static constexpr const char* RayleighDiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -133,12 +145,6 @@ G4SteppingManager::Stepping
 
 
 
-
-
-
-
-
-    static constexpr const char* AbsorptionDiscreteReset_ = "AbsorptionDiscreteReset" ; // 6
     static constexpr const char* AbsorptionDiscreteReset = R"(
 U4Random::flat
 G4VProcess::ResetNumberOfInteractionLengthLeft
@@ -148,7 +154,6 @@ G4VProcess::PostStepGPIL
 G4SteppingManager::DefinePhysicalStepLength
 G4SteppingManager::Stepping
 )" ; 
-
     static constexpr const char* ShimAbsorptionDiscreteReset_ = "ShimAbsorptionDiscreteReset" ; // 6
     static constexpr const char* ShimAbsorptionDiscreteReset = R"(
 U4Random::flat
@@ -170,8 +175,6 @@ G4SteppingManager::Stepping
 )" ; 
 
 
-
-    static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb_ = "BoundaryBurn_SurfaceReflectTransmitAbsorb" ;  // 7
     static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb = R"(
 U4Random::flat
 InstrumentedG4OpBoundaryProcess::PostStepDoIt
@@ -194,7 +197,6 @@ SurfaceReflectTransmitAbsorb
 )" ; 
 
 
-    static constexpr const char* BoundaryDiDiTransCoeff_ = "BoundaryDiDiTransCoeff" ;  // 8 
     static constexpr const char* BoundaryDiDiTransCoeff = R"(
 U4Random::flat
 InstrumentedG4OpBoundaryProcess::G4BooleanRand
@@ -205,7 +207,6 @@ G4SteppingManager::InvokePostStepDoItProcs
 G4SteppingManager::Stepping
 )" ; 
 
-    static constexpr const char* AbsorptionEffDetect_ = "AbsorptionEffDetect" ;   // 9 
     static constexpr const char* AbsorptionEffDetect = R"(
 U4Random::flat
 InstrumentedG4OpBoundaryProcess::G4BooleanRand
@@ -216,7 +217,6 @@ G4SteppingManager::InvokePostStepDoItProcs
 G4SteppingManager::Stepping
 )" ; 
 
-    static constexpr const char* RayleighScatter_ = "RayleighScatter" ;  // 10 
     static constexpr const char* RayleighScatter = R"(
 U4Random::flat
 G4OpRayleigh::PostStepDoIt
@@ -272,6 +272,7 @@ inline const char* U4Stack::Name(unsigned stack)
         case U4Stack_BoundaryDiDiTransCoeff:        s = BoundaryDiDiTransCoeff_  ; break ; 
         case U4Stack_AbsorptionEffDetect:           s = AbsorptionEffDetect_     ; break ; 
         case U4Stack_RayleighScatter:               s = RayleighScatter_         ; break ; 
+        case U4Stack_BoundaryDiMeReflectivity:      s = BoundaryDiMeReflectivity_ ; break ;
     }
     if(s) assert( Code(s) == stack ) ; 
     return s ; 
@@ -298,6 +299,8 @@ inline unsigned U4Stack::Code(const char* name)
     if(strcmp(name, BoundaryDiDiTransCoeff_) == 0)         stack = U4Stack_BoundaryDiDiTransCoeff ; 
     if(strcmp(name, AbsorptionEffDetect_) == 0)            stack = U4Stack_AbsorptionEffDetect ; 
     if(strcmp(name, RayleighScatter_) == 0 )               stack = U4Stack_RayleighScatter  ;
+    if(strcmp(name, BoundaryDiMeReflectivity_) == 0 )      stack = U4Stack_BoundaryDiMeReflectivity  ;
+
     return stack ; 
 }
 
