@@ -31,7 +31,12 @@ struct U4CF
 
 
 U4CF* U4CF::INSTANCE = nullptr ; 
-U4CF* U4CF::Create(){  return SSys::hasenvvar("CFBASE") ? new U4CF : nullptr ;  }
+U4CF* U4CF::Create()
+{
+    bool has_CFBASE = SSys::hasenvvar("CFBASE") ; 
+    if(!has_CFBASE) std::cerr << "U4CF::Create BUT no CFBASE envvar " << std::endl ; 
+    return has_CFBASE ? new U4CF : nullptr ;  
+}
 U4CF* U4CF::Get(){  return INSTANCE ; }
 
 std::string U4CF::desc() const

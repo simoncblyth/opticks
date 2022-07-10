@@ -41,17 +41,7 @@ export DsG4Scintillation_opticksMode=3  # 3:0b11 collect gensteps and do Geant4 
 #export PIDX=${PIDX:-$pidx}
 #export GIDX=${GIDX:-$gidx}
 
-loglevels()
-{
-    export Dummy=INFO
-    #export U4Material=INFO
-    #export SEvt=INFO
-    #export U4Random=INFO
-}
-loglevels
-
-
-export U4Random_flat_debug=1  ## without this all stack tags are zero 
+export U4Random_select_action=interrupt   ## dumps stack and breaks in debugger to check the process
 
 #mode=gun
 #mode=torch
@@ -69,13 +59,20 @@ source ./IDPath_override.sh
 source ../../bin/GEOM_.sh 
 
 
+if [ -n "$CFBASE" ]; then 
+    echo $msg CFBASE from GEOM_.sh : $CFBASE
+else 
+    CFBASE=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
+fi
+
+
+
+#sel=PIDX_0_
+sel=ALL
+
 
 export ShimG4OpAbsorption_FLOAT=1 
 export ShimG4OpRayleigh_FLOAT=1 
-
-pidx=0
-export ShimG4OpAbsorption_PIDX=$pidx
-export ShimG4OpRayleigh_PIDX=$pidx
 
 # cf U4Physics::Desc
 physdesc=""
@@ -86,23 +83,32 @@ physdesc="${physdesc}_"
 [ -z "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
 
 
-
-#sel=PIDX_0_
-sel=ALL
-
 export FOLD=$foldbase/$physdesc/$GEOM/$sel
-echo $msg physdesc $physdesc
-echo $msg GEOM $GEOM
-echo $msg FOLD $FOLD
 
 
-cfbase=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
-if [ -d "${cfbase}/CSGFoundry" ]; then 
-    export CFBASE=$cfbase
-    echo $msg cfbase/CSGFoundry dir exists so defined CFBASE $CFBASE
-else
-    echo $msg cfbase/CSGFoundry dir does not exist : NOT DEFINING CFBASE
+
+
+## CFBASE in different tree because it is kinda foreign 
+## HMM: maybe should copy it ?
+
+
+
+if [ "${arg/info}" != "${arg}" ]; then 
+    vars="GEOM FOLD foldbase physdesc sel" 
+    for var in $vars ; do printf " %30s : %s \n" $var ${!var}  ; done 
 fi 
+
+
+if [ -d "${CFBASE}/CSGFoundry" ]; then 
+    export CFBASE
+    echo $msg cfbase/CSGFoundry dir exists so exporting CFBASE $CFBASE
+else
+    echo $msg cfbase/CSGFoundry dir does not exist : NOT EXPORTING CFBASE
+    exit 1
+fi 
+
+
+
 
 
 # Note that OPTICKS_RANDOM_SEQPATH uses single quotes to prevent expansion of the '$PrecookedDir' 
@@ -110,6 +116,20 @@ fi
 # more than 100k photons as the default only loads a single 100k precooked random file whereas 
 # this will load ten of them allowing aligned running with up to 1M photons.
 # export OPTICKS_RANDOM_SEQPATH='$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000'  
+
+
+
+
+loglevels()
+{
+    export Dummy=INFO
+    #export U4Material=INFO
+    #export SEvt=INFO
+    #export U4Random=INFO
+}
+loglevels
+
+
 
 
 if [ "${arg/run}" != "${arg}" ]; then 
@@ -122,7 +142,11 @@ fi
 
 if [ "${arg/dbg}" != "${arg}" ]; then 
     cd $logdir 
-    lldb__ U4RecorderTest
+    case $(uname) in 
+       Linux)  gdb U4RecorderTest ;;
+       Darwin) lldb__ U4RecorderTest ;;
+    esac
+    [ $? -ne 0 ] && echo $msg dbg error && exit 2 
     echo $msg logdir $logdir
 fi 
 
@@ -145,9 +169,19 @@ if [ "${arg/ana}" != "${arg}" ]; then
     ${IPYTHON:-ipython} --pdb -i U4RecorderTest.py 
 fi 
 
-if [ "${arg/ab}" != "${arg}" ]; then 
+if [ "${arg/grab}" != "${arg}" ]; then 
+    echo $msg grab FOLD $FOLD
+    source ../../bin/rsync.sh $FOLD
+fi 
+
+
+if [ "${arg}" == "ab" ]; then 
     cd $srcdir 
     pwd
     ./U4RecorderTest_ab.sh
 fi 
+
+
+
+
 

@@ -6,6 +6,8 @@ rng_sequence.sh
 
 Usage::
 
+    cd ~/opticks/qudarap/tests 
+
    ./rng_sequence.sh run      # generates and persists precooked random .npy arrays
 
    ./rng_sequence.sh ana      # load the random .npy arrays 

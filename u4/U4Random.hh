@@ -53,10 +53,11 @@ Steps to fix:
    cd ~/opticks/qudarap/tests 
    ./rng_sequence.sh run 
 
-3. run with envvars set to increase logging::
+3. run with envvars set to increase logging OR take actions on unclassified or selected stacks::
 
    export U4Random=INFO
-   export U4Random_flat_debug=1
+   export U4Random_select_action=interrupt
+
 
 )LITERAL";
 
@@ -87,7 +88,7 @@ Steps to fix:
     int                      m_seqmask_ni ; 
     const size_t*            m_seqmask_values ; 
  
-    bool                     m_flat_debug ; 
+    //bool                     m_flat_debug ;   THIS HAS BECOME ESSENTIAL TO ALIGNMENT 
     double                   m_flat_prior ; 
     bool                     m_ready ; 
     std::vector<int>*        m_select ; 

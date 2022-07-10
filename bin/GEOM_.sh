@@ -45,5 +45,19 @@ case $GEOM in
 esac
 
 
-echo === $BASH_SOURCE : GEOM $GEOM 
+
+gp_=${GEOM}_GDMLPath 
+gp=${!gp_}
+cg_=${GEOM}_CFBaseFromGEOM
+cg=${!cg_}
+
+if [ -n "$cg" ]; then
+    CFBASE=$cg 
+fi
+# NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
+
+
+
+echo === $BASH_SOURCE : GEOM $GEOM CFBASE $CFBASE 
+echo === $BASH_SOURCE : CFBASE is only defined at this early juncture when using CFBaseFromGEOM and its not exported yet even when defined
 

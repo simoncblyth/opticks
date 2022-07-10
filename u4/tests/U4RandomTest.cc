@@ -21,7 +21,6 @@ void test_basics(U4Random* rnd)
 int main()
 {
     U4Random* rnd = new U4Random ; 
-    rnd->m_flat_debug = true ; 
 
     test_basics(rnd); 
 

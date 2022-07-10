@@ -18,8 +18,31 @@ gxs.sh : G4CXSimulateTest : Opticks CX GPU simulation starting from Geant4 geome
 EOU
 }
 
+bin=G4CXSimulateTest
 source ../bin/GEOM_.sh 
 source ../bin/OPTICKS_INPUT_PHOTON.sh 
+
+if [ -n "$CFBASE" ]; then
+    BASE=$CFBASE/$bin
+    UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
+else
+    BASE=/tmp/$USER/opticks/$bin/$GEOM
+    UBASE=$BASE
+    CFBASE=$BASE
+fi
+# NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
+
+export FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
+# NB FOLD is not used by run, but it is used by ana
+
+defarg="run"
+arg=${1:-$defarg}
+
+if [ "${arg/info}" != "$arg" ]; then 
+    vars="GEOM CFBASE BASE UBASE FOLD OPTICKS_INPUT_PHOTON"
+    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+fi 
+
 
 loglevels()
 {
@@ -37,36 +60,6 @@ loglevels()
 loglevels
 
 
-bin=G4CXSimulateTest
-defarg="run"
-arg=${1:-$defarg}
-
-
-gp_=${GEOM}_GDMLPath 
-gp=${!gp_}
-cg_=${GEOM}_CFBaseFromGEOM
-cg=${!cg_}
-
-if [ -n "$cg" ]; then
-    BASE=$cg/$bin
-    UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
-    CFBASE=$cg 
-else
-    BASE=/tmp/$USER/opticks/$bin/$GEOM
-    UBASE=$BASE
-    CFBASE=$BASE
-fi
-# NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
-
-export FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
-# NB FOLD is not used by run, but it is used by ana
-
-if [ "${arg/info}" != "$arg" ]; then 
-    #vars="GEOM BASE $gp_ $cg_ od"
-    vars="GEOM BASE UBASE FOLD"
-    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
-fi 
-
 if [ "${arg/run}" != "$arg" ]; then 
     $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE run $bin error && exit 1 
@@ -82,7 +75,6 @@ fi
 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-
     export CFBASE
     ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 

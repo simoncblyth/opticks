@@ -96,7 +96,7 @@ U4Random::U4Random(const char* seq, const char* seqmask)
     m_seqmask(seqmask ? NP::Load(seqmask) : nullptr),
     m_seqmask_ni( m_seqmask ? m_seqmask->shape[0] : 0 ),
     m_seqmask_values(m_seqmask ? m_seqmask->cvalues<size_t>() : nullptr),
-    m_flat_debug(SSys::getenvbool("U4Random_flat_debug")),
+    //m_flat_debug(SSys::getenvbool("U4Random_flat_debug")),
     m_flat_prior(0.),
     m_ready(false),
     m_select(SSys::getenvintvec("U4Random_select")),
@@ -414,29 +414,25 @@ double U4Random::flat()
 
     *(m_cur_values + m_seq_index) += 1 ;          // increment the cursor in the array, for the next generation 
 
-    unsigned stack = 0 ; 
 
-    if( m_flat_debug )
-    {
-        char* summary = SBacktrace::Summary(); 
-        stack = U4Stack::Classify(summary); 
-        bool is_classified = U4Stack::IsClassified(stack) ; 
+    char* summary = SBacktrace::Summary(); 
+    unsigned stack = U4Stack::Classify(summary); 
+    bool is_classified = U4Stack::IsClassified(stack) ; 
 
-        LOG(LEVEL)
-            << " m_seq_index " << std::setw(4) << m_seq_index
-            << " m_seq_nv " << std::setw(4) << m_seq_nv
-            << " cursor " << std::setw(4) << cursor 
-            << " idx " << std::setw(4) << idx 
-            << " d " <<  std::setw(10 ) << std::fixed << std::setprecision(5) << d 
-            << " stack " << std::setw(2) << stack << " " << U4Stack::Name(stack)
-            ;
+    LOG(LEVEL)
+        << " m_seq_index " << std::setw(4) << m_seq_index
+        << " m_seq_nv " << std::setw(4) << m_seq_nv
+        << " cursor " << std::setw(4) << cursor 
+        << " idx " << std::setw(4) << idx 
+        << " d " <<  std::setw(10 ) << std::fixed << std::setprecision(5) << d 
+        << " stack " << std::setw(2) << stack << " " << U4Stack::Name(stack)
+        ;
 
-       if(is_classified == false) LOG(error) << std::endl << summary ; 
-    }
+    if(is_classified == false) LOG(error) << std::endl << summary ; 
 
     m_flat_prior = d ; 
 
-    bool select = isSelect(m_seq_index, cursor ); 
+    bool select = isSelect(m_seq_index, cursor ) || is_classified == false ; 
     if( select ) 
     {
         LOG(info) << descSelect(m_seq_index, cursor) ; 
