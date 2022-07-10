@@ -13,7 +13,7 @@ struct U4CF
     static U4CF* Create(); 
     static U4CF* Get() ; 
     static void ReadNames(const char* path_, std::vector<std::string>& names ); 
-    static unsigned Index(const char* name, const std::vector<std::string>& names, unsigned max_count ); 
+    static int  Index(const char* name, const std::vector<std::string>& names, unsigned max_count ); 
 
     std::vector<std::string> bnd ; 
     std::vector<std::string> msh ; 
@@ -22,9 +22,9 @@ struct U4CF
     std::string desc() const ; 
     U4CF(); 
 
-    unsigned getPrimIdx( const char* soname) const ; 
-    unsigned getMeshIdx( const char* soname) const ;  
-    unsigned getBoundary(const char* spec)   const ;  
+    int getPrimIdx( const char* soname) const ; 
+    int getMeshIdx( const char* soname) const ;  
+    int getBoundary(const char* spec)   const ;  
 
 
 }; 
@@ -68,10 +68,10 @@ void U4CF::ReadNames(const char* path_, std::vector<std::string>& names ) // sta
     for(unsigned i=0 ; i < names.size() ; i++) std::cout << std::setw(4) << i << " : " << names[i] << std::endl ;  
 }
 
-unsigned U4CF::Index(const char* name, const std::vector<std::string>& names, unsigned max_count )
+int U4CF::Index(const char* name, const std::vector<std::string>& names, unsigned max_count )
 {
     unsigned count = 0 ; 
-    unsigned index = NP::NameIndex( name, count, names );
+    int index = NP::NameIndex( name, count, names );
     assert( max_count == 0 || count <= max_count );  
     return index ; 
 }
@@ -98,9 +98,9 @@ Then in U4CF can reproduce the identity.
 
 **/
 
-unsigned U4CF::getPrimIdx( const char* soname) const { return Index(soname, pri, 0 ); }
-unsigned U4CF::getMeshIdx( const char* soname) const { return Index(soname, msh, 1 ); }
-unsigned U4CF::getBoundary(const char* spec) const {   return Index(spec,   bnd, 1 ); }
+int U4CF::getPrimIdx( const char* soname) const { return Index(soname, pri, 0 ); }
+int U4CF::getMeshIdx( const char* soname) const { return Index(soname, msh, 1 ); }
+int U4CF::getBoundary(const char* spec) const {   return Index(spec,   bnd, 1 ); }
 
 
 

@@ -30,6 +30,7 @@
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
+const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
 
 
@@ -531,6 +532,8 @@ void SEvt::beginPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     ctx.zero(); 
 
+    LOG(info) << " idx " << idx ; 
+
     ctx.idx = idx ;  
     ctx.evt = evt ; 
     ctx.prd = &current_prd ;   // current_prd is populated by InstrumentedG4OpBoundaryProcess::PostStepDoIt 
@@ -794,7 +797,19 @@ void SEvt::addTag(unsigned tag, float flat)
 {
     if(evt->tag == nullptr) return  ; 
     stagr& tagr = current_ctx.tagr ; 
-    //LOG(info) << " tag " << tag << " flat " << flat << " evt.tag " << evt->tag << " tagr.slot " << tagr.slot ; 
+    unsigned idx = current_ctx.idx ; 
+
+    if( int(idx) == PIDX ) 
+    {
+        LOG(info) 
+             << " idx " << idx
+             << " PIDX " << PIDX
+             << " tag " << tag 
+             << " flat " << flat 
+             << " evt.tag " << evt->tag 
+             << " tagr.slot " << tagr.slot
+              ; 
+    }
     tagr.add(tag,flat)  ; 
 }
 

@@ -418,16 +418,18 @@ double U4Random::flat()
 
     *(m_cur_values + m_seq_index) += 1 ;          // increment the cursor in the array, for the next generation 
 
-    /*
-    LOG(info)
-        << " m_seq_index " << std::setw(4) << m_seq_index
-        << " m_seq_nv " << std::setw(4) << m_seq_nv
-        << " cursor " << std::setw(4) << cursor 
-        << " idx " << std::setw(4) << idx 
-        << " d " <<  std::setw(10 ) << std::fixed << std::setprecision(5) << d 
-        ;
+    if(m_seq_index == SEvt::PIDX)
+    { 
+        LOG(info)
+            << " SEvt::PIDX " << SEvt::PIDX
+            << " m_seq_index " << std::setw(4) << m_seq_index
+            << " m_seq_nv " << std::setw(4) << m_seq_nv
+            << " cursor " << std::setw(4) << cursor 
+            << " idx " << std::setw(4) << idx 
+            << " d " <<  std::setw(10 ) << std::fixed << std::setprecision(5) << d 
+            ;
+    }
 
-    */
 
     bool auto_tag = false ;   // unfortunately stack summaries lack vital lines on Linux 
 

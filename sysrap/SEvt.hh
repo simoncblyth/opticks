@@ -93,6 +93,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     sctx    current_ctx = {};  
 
     static const plog::Severity LEVEL ; 
+    static const int PIDX ; 
     static const int GIDX ; 
     static const int MISSING_INDEX ; 
 

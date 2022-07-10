@@ -33,7 +33,7 @@ struct U4Step
     static void MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step* step, unsigned idx); 
 
     static unsigned PackIdentity(unsigned prim_idx, unsigned instance_id); 
-    static unsigned KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx); 
+    static int KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx); 
 
     static const char* Name(unsigned type); 
     static bool IsProblem(unsigned type);  
@@ -101,7 +101,9 @@ void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step*
     std::string spec = BoundarySpec(step) ; // empty when not boundary   
     unsigned boundary = spec.empty() ? 0 : CF->getBoundary(spec.c_str()) ; 
     unsigned type = U4Step::Classify(step); 
-    unsigned kludge_prim_idx = KludgePrimIdx(step, type, idx) ; 
+    int kludge_prim_idx = KludgePrimIdx(step, type, idx) ; 
+    unsigned kludge_prim_idx_ = kludge_prim_idx == -1 ? 0xffff : kludge_prim_idx ; 
+
     float cosThetaSign = 0.f ; // aka orient 
 
     switch(type)
@@ -111,7 +113,7 @@ void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step*
         case U4Step_CHILD_TO_MOTHER: cosThetaSign =  1.f ; break ;    // photon direction with the normal 
     }
 
-    if( U4Step::IsProblem(type) || type ==  U4Step_NOT_AT_BOUNDARY )
+    if( U4Step::IsProblem(type) || type ==  U4Step_NOT_AT_BOUNDARY || kludge_prim_idx == -1  )
     {
         std::cerr
              << "U4Step::MockOpticksBoundaryIdentity"
@@ -123,6 +125,7 @@ void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step*
              << " spec " << spec 
              << " boundary " << boundary 
              << " kludge_prim_idx " << kludge_prim_idx
+             << " kludge_prim_idx_ " << kludge_prim_idx_
              << std::endl 
              ;  
 
@@ -133,7 +136,7 @@ void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step*
     // HMM: what does Opticks do for not at boundary ? 
     current_photon.set_orient( cosThetaSign );   // sets a bit : would be 0 if not set
     current_photon.set_boundary( boundary);
-    current_photon.identity = PackIdentity( kludge_prim_idx, 0u) ;
+    current_photon.identity = PackIdentity( kludge_prim_idx_, 0u) ;
 }
 unsigned U4Step::PackIdentity(unsigned prim_idx, unsigned instance_id) 
 {
@@ -182,7 +185,7 @@ necessary to use pre-solid or the post-solid depending on the orientation.
 **/
 
 
-unsigned U4Step::KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx)
+int U4Step::KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx)
 {
 
     const G4StepPoint* pre = step->GetPreStepPoint() ; 
@@ -190,13 +193,22 @@ unsigned U4Step::KludgePrimIdx(const G4Step* step, unsigned type, unsigned idx)
  
     const G4VSolid* pre_so = U4Step::Solid(pre) ;  
     const G4VSolid* post_so = U4Step::Solid(post) ;
-    G4String pre_so_name = pre_so->GetName(); 
-    G4String post_so_name = post_so->GetName(); 
-    unsigned pre_prim_idx = CF->getPrimIdx(pre_so_name.c_str()) ; 
-    unsigned post_prim_idx = CF->getPrimIdx(post_so_name.c_str()) ; 
+    G4String pre_so_name = pre_so ? pre_so->GetName() : "" ; 
+    G4String post_so_name = post_so ? post_so->GetName() : "" ;
 
+    if( pre_so_name.empty() || post_so_name.empty() ) 
+         std::cerr 
+             << "U4Step::KludgePrimIdx EMPTY NAME " 
+             << " pre_so_name " << pre_so_name
+             << " post_so_name " << post_so_name
+             << std::endl
+             ;
 
-    unsigned kludge_prim_idx = 0 ;    // this will only match Opticks for very simple geometries 
+ 
+    int pre_prim_idx = CF->getPrimIdx(pre_so_name.c_str()) ; 
+    int post_prim_idx = CF->getPrimIdx(post_so_name.c_str()) ; 
+
+    int kludge_prim_idx = 0 ;    // this will only match Opticks for very simple geometries 
     switch(type)
     {
         case U4Step_MOTHER_TO_CHILD: kludge_prim_idx = post_prim_idx ; break ; 
@@ -433,8 +445,8 @@ inline G4LogicalSurface* U4Step::GetLogicalSurface(const G4VPhysicalVolume* theP
 const G4VSolid* U4Step::Solid(const G4StepPoint* point ) // static
 {
     const G4VPhysicalVolume* pv  = point->GetPhysicalVolume();
-    const G4LogicalVolume* lv = pv->GetLogicalVolume();
-    const G4VSolid* so = lv->GetSolid(); 
+    const G4LogicalVolume* lv = pv ? pv->GetLogicalVolume() : nullptr ;
+    const G4VSolid* so = lv ? lv->GetSolid() : nullptr ; 
     return so ; 
 
 }

@@ -60,11 +60,14 @@ of other photons whilst debugging single gensteps or photons.
 
 bool U4Recorder::Enabled(const spho& label)
 { 
+    return GIDX == -1 ? true : ( label.gs == GIDX  ) ; 
+    /*
     return GIDX == -1 ? 
                         ( PIDX == -1 || label.id == PIDX ) 
                       :
                         ( GIDX == -1 || label.gs == GIDX ) 
                       ;
+    */
 } 
 
 U4Recorder* U4Recorder::INSTANCE = nullptr ; 
@@ -135,7 +138,15 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
         LOG(LEVEL) << " labelling photon " << label.desc() ; 
     }
     assert( label.isDefined() );  
-    if(!Enabled(label)) return ;  
+    if(!Enabled(label)) 
+    {
+       LOG(info) 
+           << "NOT-enabled" 
+           << " PIDX " << PIDX  
+           << " GIDX " << GIDX  
+           ;
+       return ;  
+    }
 
     if(label.id % 1000 == 0 ) LOG(info) << " label.id " << label.id ; 
 
