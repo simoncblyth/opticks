@@ -94,6 +94,8 @@ Steps to fix:
     std::vector<int>*        m_select ; 
     unsigned                 m_select_action ; 
 
+    std::vector<int>         m_problem_idx ; 
+
 
     bool isSelect(int photon_idx, int flat_cursor) const ; 
     std::string descSelect(int photon_idx, int flat_cursor ) const; 
@@ -115,6 +117,7 @@ Steps to fix:
 #ifdef DEBUG_TAG
     void check_cursor_vs_tagslot(); 
 #endif
+    void saveProblemIdx(const char* fold) const ; 
 
     int  getSequenceIndex() const ;
 

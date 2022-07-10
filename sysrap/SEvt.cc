@@ -532,7 +532,7 @@ void SEvt::beginPhoton(const spho& label)
     sctx& ctx = current_ctx ; 
     ctx.zero(); 
 
-    LOG(info) << " idx " << idx ; 
+    //LOG(info) << " idx " << idx ; 
 
     ctx.idx = idx ;  
     ctx.evt = evt ; 

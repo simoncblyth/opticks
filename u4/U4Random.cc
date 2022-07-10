@@ -493,21 +493,30 @@ void U4Random::check_cursor_vs_tagslot()
 
     //LOG(info) << " m_seq_index " << m_seq_index << " cursor " << cursor << " slot " << slot << " cursor_slot_match " << cursor_slot_match ; 
 
-    if(!cursor_slot_match) LOG(error) 
-        << " m_seq_index " << m_seq_index 
-        << " cursor " << cursor 
-        << " slot " << slot 
-        << " cursor_slot_match " << cursor_slot_match  
-        << std::endl 
-        << " PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS "
-        ; 
-
-
+    if(!cursor_slot_match) 
+    {
+        m_problem_idx.push_back(m_seq_index); 
+        LOG(error) 
+            << " m_seq_index " << m_seq_index 
+            << " cursor " << cursor 
+            << " slot " << slot 
+            << " cursor_slot_match " << cursor_slot_match  
+            << std::endl 
+            << " PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS "
+            ; 
+    } 
 }
 #endif
 
 
+void U4Random::saveProblemIdx(const char* fold) const 
+{
+    std::cout << "U4Random::saveProblemIdx m_problem_idx.size " << m_problem_idx.size() << " (" ; 
+    for(unsigned i=0 ; i <  m_problem_idx.size() ; i++ ) std::cout << m_problem_idx[i] << " " ; 
+    std::cout << ")" << std::endl ; 
 
+    NP::Write<int>( fold, "problem_idx.npy", m_problem_idx ); 
+}
 
 
 

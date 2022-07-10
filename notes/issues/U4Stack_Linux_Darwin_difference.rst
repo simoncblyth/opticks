@@ -252,4 +252,45 @@ The untagged consumption looks to be at the end of the history
     2022-07-11 02:52:24.587 INFO  [26174] [SEvt::beginPhoton@535]  idx 9917
 
 
+::
 
+    2022-07-11 03:07:52.416 INFO  [26866] [SEvt::addTag@804]  idx 9920 PIDX 9920 tag 6 flat 0.955289 evt.tag 0x12052820 tagr.slot 50
+    ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength PIDX 9920 currentInteractionLength 1987.1562558 theNumberOfInteractionLengthLeft  0.0457416 value 90.8957291
+    2022-07-11 03:07:52.416 INFO  [26866] [U4Random::flat@423]  SEvt::PIDX 9920 m_seq_index 9920 m_seq_nv  256 cursor   51 idx 2539571 d    0.51655
+    2022-07-11 03:07:52.416 INFO  [26866] [U4Random::flat@434] 
+    SBacktrace::Summary
+    U4Random::flat
+    InstrumentedG4OpBoundaryProcess::DielectricMetal
+    InstrumentedG4OpBoundaryProcess::PostStepDoIt
+    G4SteppingManager::InvokePSDIP
+    G4SteppingManager::InvokePostStepDoItProcs
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 03:07:52.416 INFO  [26866] [U4Random::flat@423]  SEvt::PIDX 9920 m_seq_index 9920 m_seq_nv  256 cursor   52 idx 2539572 d    0.98802
+    2022-07-11 03:07:52.416 INFO  [26866] [U4Random::flat@434] 
+    SBacktrace::Summary
+    U4Random::flat
+    InstrumentedG4OpBoundaryProcess::G4BooleanRand_theEfficiency
+    InstrumentedG4OpBoundaryProcess::DoAbsorption
+    InstrumentedG4OpBoundaryProcess::DielectricMetal
+    InstrumentedG4OpBoundaryProcess::PostStepDoIt
+    G4SteppingManager::InvokePSDIP
+    G4SteppingManager::InvokePostStepDoItProcs
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 03:07:52.416 INFO  [26866] [SEvt::addTag@804]  idx 9920 PIDX 9920 tag 9 flat 0.988018 evt.tag 0x12052820 tagr.slot 51
+    U4Step::MockOpticksBoundaryIdentity problem step  idx 9920 type 2 U4Step::Name MOTHER_TO_CHILD cosThetaSign -1 spec Pyrex/HamamatsuR12860_PMT_20inch_photocathode_logsurf2/HamamatsuR12860_PMT_20inch_photocathode_logsurf1/Vacuum boundary 32 kludge_prim_idx -1 kludge_prim_idx_ 65535
+     pre  U4StepPoint::DescPositionTime (  -9339.653   7475.979  15211.020    107.270)
+     post U4StepPoint::DescPositionTime (  -9343.542   7480.095  15216.312    107.309)
+    2022-07-11 03:07:52.417 ERROR [26866] [U4Random::check_cursor_vs_tagslot@494]  m_seq_index 9920 cursor 53 slot 52 cursor_slot_match 0
+     PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS 
+    2022-07-11 03:07:52.417 INFO  [26866] [SEvt::beginPhoton@535]  idx 9919
+    U4Step::MockOpticksBoundaryIdentity problem step  idx 9919 type 1 U4Step::Name NOT_AT_BOUNDARY cosThetaSign 0 s

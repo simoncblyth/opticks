@@ -3907,7 +3907,7 @@ template void NP::Write<unsigned>(const char*, const char*, const unsigned*,    
 
 template<typename T> void NP::Write(const char* dir, const char* name, const std::vector<T>& values )
 {
-    NP::Write(dir, name, values.data(), values.size() ); 
+    if(values.size() > 0) NP::Write(dir, name, values.data(), values.size() ); 
 }
 
 template void NP::Write<float>(   const char*, const char*, const std::vector<float>& ); 

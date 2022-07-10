@@ -180,10 +180,6 @@ int main(int argc, char** argv)
     U4Material::LoadBnd();   // "back" creation of G4 material properties from the Opticks bnd.npy obtained from SSim::Load 
 
 
-    //U4CF* cf = U4CF::Create(); 
-    //LOG(info) << cf->desc(); 
-
-
     U4Random rnd ;             // load precooked randoms for aligned running 
     LOG(info) << rnd.desc() ; 
 
@@ -199,9 +195,13 @@ int main(int argc, char** argv)
     U4RecorderTest t(runMgr) ;  
     runMgr->BeamOn(1); 
  
-    LOG(info) << " desc " << desc ; 
-    evt.save("$TMP/U4RecorderTest", desc.c_str() ); 
-    LOG(info) << evt.desc() ; 
+    const char* fold = SPath::Resolve( "$TMP/U4RecorderTest", desc.c_str(), DIRPATH ); 
+    LOG(info) << fold ; 
+
+    rnd.saveProblemIdx(fold); 
+
+    evt.save(fold); 
+    LOG(info) << fold ; 
 
     return 0 ; 
 }
