@@ -113,6 +113,7 @@ void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step*
         case U4Step_CHILD_TO_MOTHER: cosThetaSign =  1.f ; break ;    // photon direction with the normal 
     }
 
+    /*
     if( U4Step::IsProblem(type) || type ==  U4Step_NOT_AT_BOUNDARY || kludge_prim_idx == -1  )
     {
         std::cerr
@@ -132,6 +133,8 @@ void U4Step::MockOpticksBoundaryIdentity(sphoton& current_photon,  const G4Step*
         std::cerr << " pre  " << U4StepPoint::DescPositionTime(step->GetPreStepPoint()) << std::endl ; 
         std::cerr << " post " << U4StepPoint::DescPositionTime(step->GetPostStepPoint()) << std::endl ; 
     }
+    */
+ 
 
     // HMM: what does Opticks do for not at boundary ? 
     current_photon.set_orient( cosThetaSign );   // sets a bit : would be 0 if not set

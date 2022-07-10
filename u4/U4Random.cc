@@ -396,6 +396,7 @@ double U4Random::flat()
         }
         else
         {
+            /*
             std::cout 
                 << "U4Random::flat"
                 << " WARNING : not enough precooked randoms are recycling randoms " 
@@ -404,6 +405,7 @@ double U4Random::flat()
                 << " cursor " << cursor
                 << std::endl 
                 ;
+            */
             cursor = cursor % m_seq_nv ; 
         }
     }
