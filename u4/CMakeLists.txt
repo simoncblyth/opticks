@@ -31,8 +31,9 @@ set(SOURCES
     U4VolumeMaker.cc
     U4Recorder.cc
     U4StepPoint.cc
-    InstrumentedG4OpBoundaryProcess.cc
     U4Random.cc
+    InstrumentedG4OpBoundaryProcess.cc
+
 ) 
 
 set(HEADERS
@@ -50,11 +51,8 @@ set(HEADERS
     U4Recorder.hh
     U4OpBoundaryProcess.h
     U4StepPoint.hh
-    InstrumentedG4OpBoundaryProcess.hh
     U4Random.hh
-
-    ShimG4OpRayleigh.h
-    ShimG4OpAbsorption.h
+    InstrumentedG4OpBoundaryProcess.hh
 )
 
 

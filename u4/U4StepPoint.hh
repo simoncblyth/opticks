@@ -32,10 +32,16 @@ struct U4_API U4StepPoint
     static unsigned ProcessDefinedStepType(const G4StepPoint* point); 
     static unsigned ProcessDefinedStepType(const char* name); 
     static const char* ProcessDefinedStepTypeName(unsigned type); 
-    static std::string Desc(const G4StepPoint* point); 
 
     static unsigned BoundaryFlag(unsigned status) ; 
+
+    template <typename T>
     static unsigned Flag(const G4StepPoint* point); 
+
+
+    template <typename T>
+    static std::string Desc(const G4StepPoint* point); 
+
 
 }; 
 

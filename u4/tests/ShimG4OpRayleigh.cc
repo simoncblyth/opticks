@@ -1,32 +1,6 @@
-#pragma once
-/**
-ShimG4OpRayleigh 
-===================
+#include "ShimG4OpRayleigh.h"
 
-class G4OpRayleigh : public G4VDiscreteProcess
-
-**/
-
-#include "G4OpRayleigh.hh"
-class ShimG4OpRayleigh : public G4OpRayleigh 
-{
-    public:
-#ifdef DEBUG_TAG
-        static const bool FLOAT ; 
-        static const int  PIDX ; 
-        void ResetNumberOfInteractionLengthLeft(); 
-        G4double GetMeanFreePath(const G4Track& aTrack,
-                 G4double ,
-                 G4ForceCondition* );
-
-      G4double PostStepGetPhysicalInteractionLength(
-                             const G4Track& track,
-                 G4double   previousStepSize,
-                 G4ForceCondition* condition
-                );  
-
-#endif
-}; 
+#include "G4SystemOfUnits.hh"
 
 
 #ifdef DEBUG_TAG
@@ -42,8 +16,8 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
 
 **/
 
-//inline void ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
-inline void ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft()
+// void ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
+ void ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft()
 {
     G4double u = G4UniformRand() ; 
     if(FLOAT)
@@ -59,14 +33,14 @@ inline void ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft()
 }
 
 
-inline G4double ShimG4OpRayleigh::GetMeanFreePath(const G4Track& aTrack,  G4double, G4ForceCondition* )
+ G4double ShimG4OpRayleigh::GetMeanFreePath(const G4Track& aTrack,  G4double, G4ForceCondition* )
 {
      G4double len = G4OpRayleigh::GetMeanFreePath( aTrack, 0, 0 ); 
      //std::cout << "ShimG4OpRayleigh::GetMeanFreePath " << len << std::endl ; 
      return len ; 
 }
 
-inline G4double ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength(const G4Track& track, G4double   previousStepSize, G4ForceCondition* condition)
+ G4double ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength(const G4Track& track, G4double   previousStepSize, G4ForceCondition* condition)
 {
   if ( (previousStepSize < 0.0) || (theNumberOfInteractionLengthLeft<=0.0)) {
     // beggining of tracking (or just after DoIt of this process)

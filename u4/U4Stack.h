@@ -90,7 +90,14 @@ G4SteppingManager::DefinePhysicalStepLength
 G4SteppingManager::Stepping
 )" ; 
 
-
+    static constexpr const char* BoundaryDiscreteReset2_ = "BoundaryDiscreteReset2" ; // 4
+    static constexpr const char* BoundaryDiscreteReset2 = R"(
+U4Random::flat
+InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft
+G4VDiscreteProcess::PostStepGetPhysicalInteractionLength
+G4SteppingManager::DefinePhysicalStepLength
+G4SteppingManager::Stepping
+)" ; 
 
 
     static constexpr const char* RayleighDiscreteReset_ = "RayleighDiscreteReset" ;  // 5
@@ -228,6 +235,7 @@ inline unsigned U4Stack::Classify(const char* summary)
     if(strstr(summary, DiscreteReset))                 stack = U4Stack_DiscreteReset ; 
     if(strstr(summary, ScintDiscreteReset))            stack = U4Stack_ScintDiscreteReset ; 
     if(strstr(summary, BoundaryDiscreteReset))         stack = U4Stack_BoundaryDiscreteReset ; 
+    if(strstr(summary, BoundaryDiscreteReset2))        stack = U4Stack_BoundaryDiscreteReset ; 
 
     if(strstr(summary, RayleighDiscreteReset))         stack = U4Stack_RayleighDiscreteReset ; 
     if(strstr(summary, ShimRayleighDiscreteReset))     stack = U4Stack_RayleighDiscreteReset ; 

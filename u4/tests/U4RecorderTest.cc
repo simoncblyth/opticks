@@ -25,6 +25,9 @@
 #include "U4Physics.hh"
 #include "U4VPrimaryGenerator.h"
 
+#include "InstrumentedG4OpBoundaryProcess.hh"
+
+//template void U4Recorder::UserSteppingAction<InstrumentedG4OpBoundaryProcess>(const G4Step* ) ; 
 
 struct U4RecorderTest
     : 
@@ -141,7 +144,8 @@ void U4RecorderTest::BeginOfEventAction(const G4Event* evt){     fRecorder->Begi
 void U4RecorderTest::EndOfEventAction(const G4Event* evt){       fRecorder->EndOfEventAction(evt);   }
 void U4RecorderTest::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk); }
 void U4RecorderTest::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk); }
-void U4RecorderTest::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction(step); }
+
+void U4RecorderTest::UserSteppingAction(const G4Step* step){     fRecorder->UserSteppingAction<InstrumentedG4OpBoundaryProcess>(step); }
 
 U4RecorderTest::~U4RecorderTest()
 {

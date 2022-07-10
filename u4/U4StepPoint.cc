@@ -6,7 +6,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 //#include "G4OpBoundaryProcess.hh"
-#include "InstrumentedG4OpBoundaryProcess.hh"
+//#include "InstrumentedG4OpBoundaryProcess.hh"
 
 #include "PLOG.hh"
 #include "OpticksPhoton.h"
@@ -120,6 +120,8 @@ Adapted from cfg4/OpStatus.cc:OpStatus::OpPointFlag
 HMM: no BULK_REEMIT ? 
 
 **/
+
+template <typename T>
 unsigned U4StepPoint::Flag(const G4StepPoint* point)
 {
     G4StepStatus status = point->GetStepStatus()  ;
@@ -136,7 +138,7 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point)
     }
     else if( status == fGeomBoundary && proc == U4StepPoint_Transportation )
     {
-        unsigned bstat = U4OpBoundaryProcess::GetStatus<InstrumentedG4OpBoundaryProcess>(); 
+        unsigned bstat = U4OpBoundaryProcess::GetStatus<T>(); 
 
         flag = BoundaryFlag(bstat) ;   
         if( flag == NAN_ABORT ) 
@@ -152,6 +154,7 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point)
     }
     return flag ; 
 }
+
 
 unsigned U4StepPoint::BoundaryFlag(unsigned status)
 {
@@ -222,6 +225,7 @@ unsigned U4StepPoint::BoundaryFlag(unsigned status)
 }
 
 
+template <typename T>
 std::string U4StepPoint::Desc(const G4StepPoint* point)
 {
     G4StepStatus status = point->GetStepStatus()  ;
@@ -230,10 +234,10 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
     unsigned proc = ProcessDefinedStepType(point); 
     const char* procName = ProcessDefinedStepTypeName(proc); 
 
-    unsigned bstat = U4OpBoundaryProcess::GetStatus<InstrumentedG4OpBoundaryProcess>(); 
+    unsigned bstat = U4OpBoundaryProcess::GetStatus<T>(); 
     const char* bstatName = U4OpBoundaryProcessStatus::Name(bstat); 
 
-    unsigned flag = Flag(point); 
+    unsigned flag = Flag<T>(point); 
     const char* flagName = OpticksPhoton::Flag(flag); 
 
     std::stringstream ss ; 
@@ -250,4 +254,11 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+#include "InstrumentedG4OpBoundaryProcess.hh"
+template unsigned U4StepPoint::Flag<InstrumentedG4OpBoundaryProcess>(const G4StepPoint* ); 
+template std::string U4StepPoint::Desc<InstrumentedG4OpBoundaryProcess>(const G4StepPoint* point); 
+
 

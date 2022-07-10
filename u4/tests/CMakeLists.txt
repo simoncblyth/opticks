@@ -53,12 +53,16 @@ functions
 set(U4RecorderTest_SOURCES
    U4RecorderTest.cc
    DsG4Scintillation.cc
+   ShimG4OpAbsorption.cc
+   ShimG4OpRayleigh.cc
    G4Cerenkov_modified.cc
+   U4Physics.cc
 )
 
 set(TGT U4RecorderTest)
 add_executable(${TGT} ${U4RecorderTest_SOURCES})
 target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
+target_compile_definitions( ${TGT} PUBLIC DEBUG_TAG ) 
 target_link_libraries(${TGT} U4)
 install(TARGETS ${TGT} DESTINATION lib)
 

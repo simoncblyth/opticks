@@ -42,3 +42,7 @@ inline unsigned U4OpBoundaryProcess::GetStatus()
     return (unsigned)status ; 
 }
 
+
+template unsigned U4OpBoundaryProcess::GetStatus<InstrumentedG4OpBoundaryProcess>() ; 
+
+

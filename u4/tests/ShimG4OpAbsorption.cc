@@ -1,37 +1,19 @@
-#pragma once
-/**
-ShimG4OpAbsorption
-====================
-
-G4OpAbsorption : public G4VDiscreteProcess
-
-**/
-
-#include "G4OpAbsorption.hh"
+#include "G4SystemOfUnits.hh"
+#include "ShimG4OpAbsorption.h"
 #include <csignal>
 
-
-class ShimG4OpAbsorption : public G4OpAbsorption 
+ShimG4OpAbsorption::ShimG4OpAbsorption(const G4String& processName, G4ProcessType type )
+    :
+    G4OpAbsorption(processName, type)
 {
-    public:
-#ifdef DEBUG_TAG
-        static const bool FLOAT ; 
-        static const int  PIDX ; 
-        void ResetNumberOfInteractionLengthLeft(); 
-        G4double GetMeanFreePath(const G4Track& aTrack,
-                 G4double ,
-                 G4ForceCondition* );
+}
 
-      G4double PostStepGetPhysicalInteractionLength(
-                             const G4Track& track,
-                 G4double   previousStepSize,
-                 G4ForceCondition* condition
-                );  
+ShimG4OpAbsorption::~ShimG4OpAbsorption(){}
 
-#endif
-};
 
-#ifdef DEBUG_TAG
+
+
+//#ifdef DEBUG_TAG
 /**
 ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft
 --------------------------------------------------------
@@ -43,8 +25,8 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
 const bool ShimG4OpAbsorption::FLOAT = getenv("ShimG4OpAbsorption_FLOAT") != nullptr ;
 const int  ShimG4OpAbsorption::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" ); 
 
-//inline void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
-inline void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft()
+// void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft(){ G4VProcess::ResetNumberOfInteractionLengthLeft(); }
+ void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft()
 {
     //std::cout << "ShimG4OpAbsorption::FLOAT " << FLOAT << std::endl ; 
     G4double u = G4UniformRand() ; 
@@ -61,7 +43,7 @@ inline void ShimG4OpAbsorption::ResetNumberOfInteractionLengthLeft()
 
 }
 
-inline G4double ShimG4OpAbsorption::GetMeanFreePath(const G4Track& aTrack,  G4double, G4ForceCondition* )
+ G4double ShimG4OpAbsorption::GetMeanFreePath(const G4Track& aTrack,  G4double, G4ForceCondition* )
 {
      G4double len = G4OpAbsorption::GetMeanFreePath( aTrack, 0, 0 ); 
      //std::cout << "ShimG4OpAbsorption::GetMeanFreePath " << len << std::endl ; 
@@ -72,7 +54,7 @@ inline G4double ShimG4OpAbsorption::GetMeanFreePath(const G4Track& aTrack,  G4do
 }
 
 
-inline G4double ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength(const G4Track& track, G4double   previousStepSize, G4ForceCondition* condition)
+ G4double ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength(const G4Track& track, G4double   previousStepSize, G4ForceCondition* condition)
 {
   if ( (previousStepSize < 0.0) || (theNumberOfInteractionLengthLeft<=0.0)) {
     // beggining of tracking (or just after DoIt of this process)
@@ -140,5 +122,5 @@ inline G4double ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength(const G
 
 }
 
-#endif
+//#endif
  
