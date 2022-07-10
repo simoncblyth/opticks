@@ -88,6 +88,9 @@
 
 
 #include <csignal>
+
+
+
 #ifdef DEBUG_PIDX
 
 #include "scuda.h"
@@ -99,9 +102,9 @@ const int InstrumentedG4OpBoundaryProcess::PIDX = SSys::getenvint("PIDX", -1) ;
 #endif
 
 
-
-
 #ifdef DEBUG_TAG
+#include "U4Stack.h"
+#include "SEvt.hh"
 
 const bool InstrumentedG4OpBoundaryProcess::FLOAT  = getenv("InstrumentedG4OpBoundaryProcess_FLOAT") != nullptr ;
 
@@ -110,6 +113,9 @@ inline void InstrumentedG4OpBoundaryProcess::ResetNumberOfInteractionLengthLeft(
 {
     //std::cout << "InstrumentedG4OpBoundaryProcess::FLOAT " << FLOAT << std::endl ; 
     G4double u = G4UniformRand() ; 
+
+    SEvt::AddTag( U4Stack_BoundaryDiscreteReset, u );  
+
     if(FLOAT)
     {   
         float f = -1.f*std::log( float(u) ) ;   
@@ -582,6 +588,10 @@ InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Ste
           }
           else {
              G4double rand = G4UniformRand();
+#ifdef DEBUG_TAG
+             SEvt::AddTag(U4Stack_BoundaryBurn_SurfaceReflectTransmitAbsorb, rand );  
+#endif
+
 
 #ifdef DEBUG_PIDX
              // SCB theReflectivity default is 1. so  "rand > theReflectivity" always false
@@ -845,7 +855,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricMetal()
              if (PropertyPointer1 && PropertyPointer2) {
                 if ( n > 1 ) {
                    CalculateReflectivity();
-                   if ( !G4BooleanRand(theReflectivity) ) {
+                   if ( !G4BooleanRand_theReflectivity(theReflectivity) ) {
                       DoAbsorption();
                       break;
                    }
@@ -1306,7 +1316,7 @@ void InstrumentedG4OpBoundaryProcess::DielectricDielectric()
               if(pidx_dump) printf("//DiDi pidx %6d : TransCoeff %10.4f \n", pidx, TransCoeff ); 
 #endif
 
-              if ( !G4BooleanRand(TransCoeff) ) {
+              if ( !G4BooleanRand_TransCoeff(TransCoeff) ) {
 
                  // Simulate reflection
 

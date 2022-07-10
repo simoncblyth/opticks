@@ -132,6 +132,13 @@ enum G4OpBoundaryProcessStatus {  Undefined,
 
 
 
+#ifdef DEBUG_TAG
+#include "U4Stack.h"
+#include "SEvt.hh"
+#endif
+
+
+
 #include "U4_API_EXPORT.hh"
 class U4_API InstrumentedG4OpBoundaryProcess : public G4VDiscreteProcess
 {
@@ -196,6 +203,9 @@ public:
 private:
 
         G4bool G4BooleanRand(const G4double prob) const;
+        G4bool G4BooleanRand_TransCoeff(const G4double prob) const;
+        G4bool G4BooleanRand_theEfficiency(const G4double prob) const;
+        G4bool G4BooleanRand_theReflectivity(const G4double prob) const;
 
         G4ThreeVector GetFacetNormal(const G4ThreeVector& Momentum,
                                      const G4ThreeVector&  Normal) const;
@@ -292,20 +302,61 @@ const int  InstrumentedG4OpBoundaryProcess::PIDX  = std::atoi( getenv("PIDX") ? 
 
 
 
-inline
-G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand(const G4double prob) const
+inline G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand(const G4double prob) const
 {
-  /* Returns a random boolean variable with the specified probability */
+  G4double u = G4UniformRand() ; 
+#ifdef DEBUG_PIDX
+  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
+#endif
+  return u < prob  ; 
+}
+
+inline G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_TransCoeff(const G4double prob) const
+{
+  G4double u = G4UniformRand() ; 
+
+#ifdef DEBUG_TAG
+   SEvt::AddTag(U4Stack_BoundaryDiDiTransCoeff, u ); 
+#endif   
 
 #ifdef DEBUG_PIDX
-  G4double u = G4UniformRand() ; 
-  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
-  return u < prob  ; 
-#else
-  return (G4UniformRand() < prob);
+  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand_TransCoff pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
 #endif
-
+  return u < prob  ; 
 }
+
+inline G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_theEfficiency(const G4double prob) const
+{
+  G4double u = G4UniformRand() ; 
+#ifdef DEBUG_TAG
+   SEvt::AddTag(U4Stack_AbsorptionEffDetect, u ); 
+#endif   
+#ifdef DEBUG_PIDX
+  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand_theEfficiency pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
+#endif
+  return u < prob  ; 
+}
+
+
+inline G4bool InstrumentedG4OpBoundaryProcess::G4BooleanRand_theReflectivity(const G4double prob) const
+{
+  G4double u = G4UniformRand() ; 
+#ifdef DEBUG_PIDX
+  if(pidx_dump) printf("//InstrumentedG4OpBoundaryProcess::G4BooleanRand_theReflectivity pidx %6d prob %10.5f u %10.5f u < prob %d \n", pidx, prob,u, (u < prob) );  
+#endif
+  return u < prob  ; 
+}
+
+
+
+
+
+
+
+
+
+
+
 
 inline
 G4bool InstrumentedG4OpBoundaryProcess::IsApplicable(const G4ParticleDefinition& 
@@ -352,7 +403,7 @@ void InstrumentedG4OpBoundaryProcess::DoAbsorption()
 {
               theStatus = Absorption;
 
-              if ( G4BooleanRand(theEfficiency) ) {
+              if ( G4BooleanRand_theEfficiency(theEfficiency) ) {
 
                  // EnergyDeposited =/= 0 means: photon has been detected
                  theStatus = Detection;

@@ -104,6 +104,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static bool RECORDING ; 
 
     static void Check(); 
+    static void AddTag(unsigned stack, float u ); 
+    static int  GetTagSlot(); 
     static sgs AddGenstep(const quad6& q); 
     static sgs AddGenstep(const NP* a); 
     static void AddCarrierGenstep(); 
@@ -178,6 +180,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     void finalPhoton(const spho& sp); 
 
     void addTag(unsigned tag, float u); 
+    int getTagSlot() const ; 
 
 
     NP* getPho0() const ;   // unordered push_back as they come 

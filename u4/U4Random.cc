@@ -283,6 +283,9 @@ void U4Random::setSequenceIndex(int index_)
 
     if( index_ < 0 )
     {
+#ifdef DEBUG_TAG
+        check_cursor_vs_tagslot() ; 
+#endif
         m_seq_index = index_ ; 
         disable() ;
     }
@@ -411,47 +414,93 @@ double U4Random::flat()
 
     float  f = m_seq_values[idx] ;
     double d = f ;     // promote random float to double 
+    m_flat_prior = d ; 
 
     *(m_cur_values + m_seq_index) += 1 ;          // increment the cursor in the array, for the next generation 
 
-
-    char* summary = SBacktrace::Summary(); 
-    unsigned stack = U4Stack::Classify(summary); 
-    bool is_classified = U4Stack::IsClassified(stack) ; 
-
-    LOG(LEVEL)
+    /*
+    LOG(info)
         << " m_seq_index " << std::setw(4) << m_seq_index
         << " m_seq_nv " << std::setw(4) << m_seq_nv
         << " cursor " << std::setw(4) << cursor 
         << " idx " << std::setw(4) << idx 
         << " d " <<  std::setw(10 ) << std::fixed << std::setprecision(5) << d 
-        << " stack " << std::setw(2) << stack << " " << U4Stack::Name(stack)
         ;
 
-    if(is_classified == false) LOG(error) << std::endl << summary ; 
+    */
 
-    m_flat_prior = d ; 
+    bool auto_tag = false ;   // unfortunately stack summaries lack vital lines on Linux 
 
-    bool select = isSelect(m_seq_index, cursor ) || is_classified == false ; 
-    if( select ) 
+    if( auto_tag )
     {
-        LOG(info) << descSelect(m_seq_index, cursor) ; 
-        switch(m_select_action)
+        char* summary = SBacktrace::Summary(); 
+        unsigned stack = U4Stack::Classify(summary); 
+        bool is_classified = U4Stack::IsClassified(stack) ; 
+
+        //LOG(info) << " stack " << std::setw(2) << stack << " " << U4Stack::Name(stack) ; 
+
+        if(is_classified == false) LOG(error) << std::endl << summary ; 
+
+        bool select = isSelect(m_seq_index, cursor ) || is_classified == false ; 
+        if( select ) 
         {
-            case SDBG::INTERRUPT: std::raise(SIGINT)        ; break ; 
-            case SDBG::BACKTRACE: SBacktrace::Dump()        ; break ; 
-            case SDBG::CALLER:    SBacktrace::DumpCaller()  ; break ; 
-            case SDBG::SUMMARY:   SBacktrace::DumpSummary() ; break ; 
+            LOG(info) << descSelect(m_seq_index, cursor) ; 
+            switch(m_select_action)
+            {
+                case SDBG::INTERRUPT: std::raise(SIGINT)        ; break ; 
+                case SDBG::BACKTRACE: SBacktrace::Dump()        ; break ; 
+                case SDBG::CALLER:    SBacktrace::DumpCaller()  ; break ; 
+                case SDBG::SUMMARY:   SBacktrace::DumpSummary() ; break ; 
+            }
         }
+
+        SEvt::AddTag(stack, f );  
     }
 
 
-    SEvt* sev = SEvt::Get(); 
-    assert(sev); 
-    sev->addTag(stack, f );  
-
     return d ; 
 }
+
+
+#ifdef DEBUG_TAG
+/**
+U4Random::check_cursor_vs_tagslot
+----------------------------------
+
+This is called by setSequenceIndex with index -1 signalling the end 
+of the index. A comparison between the below counts is made:
+
+* number of randoms provided by U4Random::flat for the last m_seq_index as indicated by the cursor 
+* random consumption tags added with SEvt::AddTag
+
+**/
+
+void U4Random::check_cursor_vs_tagslot() 
+{
+    assert(m_seq_index > -1) ;  // must not call when disabled, use G4UniformRand to use standard engine
+    int cursor = *(m_cur_values + m_seq_index) ;  // get the cursor value to use for this generation, starting from 0 
+    int slot = SEvt::GetTagSlot(); 
+    bool cursor_slot_match = cursor == slot ;  
+
+    //LOG(info) << " m_seq_index " << m_seq_index << " cursor " << cursor << " slot " << slot << " cursor_slot_match " << cursor_slot_match ; 
+
+    if(!cursor_slot_match) LOG(error) 
+        << " m_seq_index " << m_seq_index 
+        << " cursor " << cursor 
+        << " slot " << slot 
+        << " cursor_slot_match " << cursor_slot_match  
+        << std::endl 
+        << " PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS "
+        ; 
+
+
+}
+#endif
+
+
+
+
+
 
 
 /**

@@ -1,9 +1,26 @@
 #include "ShimG4OpRayleigh.h"
 
 #include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
+
+
+ShimG4OpRayleigh::ShimG4OpRayleigh()
+    :
+    G4OpRayleigh("OpRayleigh",fOptical)
+{
+} 
+
+ShimG4OpRayleigh::~ShimG4OpRayleigh()
+{
+}
+
 
 
 #ifdef DEBUG_TAG
+
+#include "U4Stack.h"
+#include "SEvt.hh"
+
 const bool ShimG4OpRayleigh::FLOAT = getenv("ShimG4OpRayleigh_FLOAT") != nullptr ;
 const int  ShimG4OpRayleigh::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" ); 
 
@@ -20,6 +37,8 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
  void ShimG4OpRayleigh::ResetNumberOfInteractionLengthLeft()
 {
     G4double u = G4UniformRand() ; 
+    SEvt::AddTag( U4Stack_RayleighDiscreteReset, u ); 
+
     if(FLOAT)
     {
         float f =  -1.f*std::log( float(u) ) ;  
@@ -102,6 +121,134 @@ Shim makes process classname appear in SBacktrace.h enabling U4Random::flat/U4St
   return value;  
 
 }
+
+
+
+
+G4VParticleChange* ShimG4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+{
+        aParticleChange.Initialize(aTrack);
+
+        const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+
+        if (verboseLevel>0) {
+                G4cout << "Scattering Photon!" << G4endl;
+                G4cout << "Old Momentum Direction: "
+                       << aParticle->GetMomentumDirection() << G4endl;
+                G4cout << "Old Polarization: "
+                       << aParticle->GetPolarization() << G4endl;
+        }   
+
+        G4double cosTheta;
+        G4ThreeVector OldMomentumDirection, NewMomentumDirection;
+        G4ThreeVector OldPolarization, NewPolarization;
+
+        G4double rand, constant;
+        G4double CosTheta, SinTheta, SinPhi, CosPhi, unit_x, unit_y, unit_z;
+
+        G4double u ; 
+        G4double u_loopexit ; 
+
+
+        do {
+           // Try to simulate the scattered photon momentum direction
+           // w.r.t. the initial photon momentum direction
+
+           CosTheta = G4UniformRand();
+           SEvt::AddTag( U4Stack_RayleighScatter, CosTheta );   // 0
+
+           SinTheta = std::sqrt(1.-CosTheta*CosTheta);
+           // consider for the angle 90-180 degrees
+
+           u = G4UniformRand() ; 
+           SEvt::AddTag( U4Stack_RayleighScatter, u );      // 1 
+
+           if (u < 0.5) CosTheta = -CosTheta;
+
+           // simulate the phi angle
+
+           u = G4UniformRand() ; 
+           SEvt::AddTag( U4Stack_RayleighScatter, u );    // 2 
+
+           rand = twopi*u;
+           SinPhi = std::sin(rand);
+           CosPhi = std::cos(rand);
+
+           // start constructing the new momentum direction
+       unit_x = SinTheta * CosPhi; 
+       unit_y = SinTheta * SinPhi;  
+       unit_z = CosTheta; 
+       NewMomentumDirection.set (unit_x,unit_y,unit_z);
+
+           // Rotate the new momentum direction into global reference system
+           OldMomentumDirection = aParticle->GetMomentumDirection();
+           OldMomentumDirection = OldMomentumDirection.unit();
+           NewMomentumDirection.rotateUz(OldMomentumDirection);
+           NewMomentumDirection = NewMomentumDirection.unit();
+
+           // calculate the new polarization direction
+           // The new polarization needs to be in the same plane as the new
+           // momentum direction and the old polarization direction
+           OldPolarization = aParticle->GetPolarization();
+           constant = -NewMomentumDirection.dot(OldPolarization);
+
+           NewPolarization = OldPolarization + constant*NewMomentumDirection;
+           NewPolarization = NewPolarization.unit();
+
+           // There is a corner case, where the Newmomentum direction
+           // is the same as oldpolariztion direction:
+           // random generate the azimuthal angle w.r.t. Newmomentum direction
+
+           u = G4UniformRand() ; 
+           SEvt::AddTag( U4Stack_RayleighScatter, u );   // 3
+
+           if (NewPolarization.mag() == 0.) {
+              rand = u*twopi;
+              NewPolarization.set(std::cos(rand),std::sin(rand),0.);
+              NewPolarization.rotateUz(NewMomentumDirection);
+           } else {
+              // There are two directions which are perpendicular
+              // to the new momentum direction
+              if (u < 0.5) NewPolarization = -NewPolarization;
+           }
+
+       // simulate according to the distribution cos^2(theta)
+           cosTheta = NewPolarization.dot(OldPolarization);
+
+           u_loopexit = G4UniformRand() ;
+           SEvt::AddTag( U4Stack_RayleighScatter, u_loopexit );   // 4
+
+          // Loop checking, 13-Aug-2015, Peter Gumplinger
+        } while (std::pow(cosTheta,2) < u_loopexit );
+
+        aParticleChange.ProposePolarization(NewPolarization);
+        aParticleChange.ProposeMomentumDirection(NewMomentumDirection);
+
+        if (verboseLevel>0) {
+                G4cout << "New Polarization: "
+                     << NewPolarization << G4endl;
+                G4cout << "Polarization Change: "
+                     << *(aParticleChange.GetPolarization()) << G4endl;
+                G4cout << "New Momentum Direction: "
+                     << NewMomentumDirection << G4endl;
+                G4cout << "Momentum Change: "
+                     << *(aParticleChange.GetMomentumDirection()) << G4endl;
+        }
+
+        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif
 

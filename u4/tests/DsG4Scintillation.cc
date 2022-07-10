@@ -101,9 +101,10 @@ const plog::Severity DsG4Scintillation::LEVEL = error ;
 
 
 
-
-
 #ifdef DEBUG_TAG
+#include "U4Stack.h"
+#include "SEvt.hh"
+
 const bool DsG4Scintillation::FLOAT = getenv("DsG4Scintillation_FLOAT") != nullptr ;
 const int  DsG4Scintillation::PIDX  = std::atoi( getenv("PIDX") ? getenv("PIDX") : "-1" );  
 
@@ -112,6 +113,9 @@ void DsG4Scintillation::ResetNumberOfInteractionLengthLeft()
 {
     //std::cout << "DsG4Scintillation::FLOAT " << FLOAT << std::endl ; 
     G4double u = G4UniformRand() ; 
+
+    SEvt::AddTag( U4Stack_ScintDiscreteReset, u ); 
+
     if(FLOAT)
     {   
         float f = -1.f*std::log( float(u) ) ;   

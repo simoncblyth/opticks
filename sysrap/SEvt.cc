@@ -195,6 +195,8 @@ void SEvt::Check()
 }
 
 
+void SEvt::AddTag(unsigned stack, float u ){  INSTANCE->addTag(stack,u);  } 
+int  SEvt::GetTagSlot(){ return INSTANCE->getTagSlot() ; }
 sgs SEvt::AddGenstep(const quad6& q){ Check(); return INSTANCE->addGenstep(q);  }
 sgs SEvt::AddGenstep(const NP* a){    Check(); return INSTANCE->addGenstep(a); }
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
@@ -790,11 +792,19 @@ HMM: this needs to be called at every random consumption ... see U4Random::flat
 
 void SEvt::addTag(unsigned tag, float flat)
 {
-    //LOG(info) << " tag " << tag << " flat " << flat << " evt.tag " << evt->tag ; 
     if(evt->tag == nullptr) return  ; 
     stagr& tagr = current_ctx.tagr ; 
+    //LOG(info) << " tag " << tag << " flat " << flat << " evt.tag " << evt->tag << " tagr.slot " << tagr.slot ; 
     tagr.add(tag,flat)  ; 
 }
+
+int SEvt::getTagSlot() const 
+{
+    if(evt->tag == nullptr) return -1 ; 
+    const stagr& tagr = current_ctx.tagr ; 
+    return tagr.slot ; 
+}
+
 
 /**
 SEvt::finalPhoton

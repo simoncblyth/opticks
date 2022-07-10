@@ -112,6 +112,10 @@ Steps to fix:
     size_t getNumIndices() const ;
     size_t getMaskedIndex(int index_);
     void setSequenceIndex(int index_);  
+#ifdef DEBUG_TAG
+    void check_cursor_vs_tagslot(); 
+#endif
+
     int  getSequenceIndex() const ;
 
     double getFlatPrior() const ; 
