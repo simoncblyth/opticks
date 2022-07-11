@@ -108,6 +108,161 @@ PIDX running dumps all the SBacktrace::Summary so can look for unexpected bt to 
 
 
 
+SRandom.h protocol base to U4Random allows SEvt::addTag to notice untagged consumption at the next SEvt::addTag
+------------------------------------------------------------------------------------------------------------------
+
+* this avoids having to look thru large numbers of stack traces to find unexpected ones as will 
+  now assert at the addTag following untagged consumption 
+
+
+
+DiMe : ChooseReflection DoReflection
+----------------------------------------
+
+::
+
+    2022-07-11 18:24:30.668 INFO  [59788] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor   41 idx 2558249 d    0.34018
+    2022-07-11 18:24:30.668 INFO  [59788] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    G4SteppingManager::DefinePhysicalStepLength
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 18:24:30.668 INFO  [59788] [SEvt::addTag@805]  idx 9993 PIDX 9993 tag 6 flat 0.340178 evt.tag 0x10b7a820 tagr.slot 41
+    ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength PIDX 9993 currentInteractionLength 38562.9650658 theNumberOfInteractionLengthLeft  1.0782876 value 41581.9687500
+    2022-07-11 18:24:30.668 INFO  [59788] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor   42 idx 2558250 d    0.39386
+    2022-07-11 18:24:30.668 INFO  [59788] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    InstrumentedG4OpBoundaryProcess::DielectricMetal
+    InstrumentedG4OpBoundaryProcess::PostStepDoIt
+    G4SteppingManager::InvokePSDIP
+    G4SteppingManager::InvokePostStepDoItProcs
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 18:24:30.669 INFO  [59788] [SEvt::addTag@805]  idx 9993 PIDX 9993 tag 11 flat 0.393856 evt.tag 0x10b7a820 tagr.slot 42
+    2022-07-11 18:24:30.669 INFO  [59788] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor   43 idx 2558251 d    0.73080
+    2022-07-11 18:24:30.669 INFO  [59788] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    InstrumentedG4OpBoundaryProcess::ChooseReflection
+    InstrumentedG4OpBoundaryProcess::DielectricMetal
+    InstrumentedG4OpBoundaryProcess::PostStepDoIt
+    G4SteppingManager::InvokePSDIP
+    G4SteppingManager::InvokePostStepDoItProcs
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 18:24:30.669 INFO  [59788] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor   44 idx 2558252 d    0.86766
+    2022-07-11 18:24:30.669 INFO  [59788] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    InstrumentedG4OpBoundaryProcess::DoReflection
+    InstrumentedG4OpBoundaryProcess::DielectricMetal
+    InstrumentedG4OpBoundaryProcess::PostStepDoIt
+    G4SteppingManager::InvokePSDIP
+    G4SteppingManager::InvokePostStepDoItProcs
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 18:24:30.669 INFO  [59788] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor   45 idx 2558253 d    0.84256
+    2022-07-11 18:24:30.669 INFO  [59788] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    InstrumentedG4OpBoundaryProcess::DoReflection
+    InstrumentedG4OpBoundaryProcess::DielectricMetal
+    InstrumentedG4OpBoundaryProcess::PostStepDoIt
+    G4SteppingManager::InvokePSDIP
+    G4SteppingManager::InvokePostStepDoItProcs
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 18:24:30.669 INFO  [59788] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor   46 idx 2558254 d    0.63358
+    2022-07-11 18:24:30.669 INFO  [59788] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    InstrumentedG4OpBoundaryProcess::DoReflection
+    InstrumentedG4OpBoundaryProcess::DielectricMetal
+    InstrumentedG4OpBoundaryProcess::PostStepDoIt
+    G4SteppingManager::InvokePSDIP
+    G4SteppingManager::InvokePostStepDoItProcs
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 18:24:30.669 INFO  [59788] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor   47 idx 2558255 d    0.45532
+    2022-07-11 18:24:30.670 INFO  [59788] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    InstrumentedG4OpBoundaryProcess::DoReflection
+    InstrumentedG4OpBoundaryProcess::DielectricMetal
+    InstrumentedG4OpBoundaryProcess::PostStepDoIt
+    G4SteppingManager::InvokePSDIP
+    G4SteppingManager::InvokePostStepDoItProcs
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 18:24:30.670 INFO  [59788] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor   48 idx 2558256 d    0.36513
+    2022-07-11 18:24:30.670 INFO  [59788] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    InstrumentedG4OpBoundaryProcess::DoReflection
+    InstrumentedG4OpBoundaryProcess::DielectricMetal
+    InstrumentedG4OpBoundaryProcess::PostStepDoIt
+    G4SteppingManager::InvokePSDIP
+    G4SteppingManager::InvokePostStepDoItProcs
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 18:24:30.670 INFO  [59788] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor   49 idx 2558257 d    0.70390
+    2022-07-11 18:24:30.670 INFO  [59788] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    G4VRestDiscreteProcess::PostStepGetPhysicalInteractionLength
+    G4SteppingManager::DefinePhysicalStepLength
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 18:24:30.670 INFO  [59788] [SEvt::addTag@805]  idx 9993 PIDX 9993 tag 3 flat 0.703896 evt.tag 0x10b7a820 tagr.slot 43
+    2022-07-11 18:24:30.670 ERROR [59788] [SEvt::addTag@825]  idx 9993 cursor_slot_match 0 flat 0.703896 tagr.slot 44 ( from SRandom  flat_prior 0.703896 flat_cursor 50  ) 
+     MISMATCH MEANS ONE OR MORE PRIOR CONSUMPTIONS WERE NOT TAGGED 
+    U4RecorderTest: /data/blyth/junotop/opticks/sysrap/SEvt.cc:839: void SEvt::addTag(unsigned int, float): Assertion `cursor_slot_match' failed.
+    ./U4RecorderTest.sh: line 141: 59788 Aborted                 (core dumped) U4RecorderTest
+
+
+
+
+::
+
+    BP=InstrumentedG4OpBoundaryProcess::DoReflection ./U4RecorderTest.sh dbg
 
 
 

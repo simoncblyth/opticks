@@ -78,6 +78,12 @@
 #include "G4RandomTools.hh"
 #include "G4RandomDirection.hh"
 
+
+#include "U4RandomTools.hh"
+#include "U4RandomDirection.hh"
+
+
+
 #include "G4Step.hh"
 #include "G4VDiscreteProcess.hh"
 #include "G4DynamicParticle.hh"
@@ -381,6 +387,10 @@ inline
 void InstrumentedG4OpBoundaryProcess::ChooseReflection()
 {
                  G4double rand = G4UniformRand();
+#ifdef DEBUG_TAG
+                 SEvt::AddTag( U4Stack_ChooseReflection, rand ); 
+#endif
+
                  if ( rand >= 0.0 && rand < prob_ss ) {
                     theStatus = SpikeReflection;
                     theFacetNormal = theGlobalNormal;
@@ -425,7 +435,7 @@ void InstrumentedG4OpBoundaryProcess::DoReflection()
 {
         if ( theStatus == LambertianReflection ) {
 
-          NewMomentum = G4LambertianRand(theGlobalNormal);
+          NewMomentum = U4LambertianRand(theGlobalNormal);
           theFacetNormal = (NewMomentum - OldMomentum).unit();
 
         }

@@ -823,6 +823,7 @@ void SEvt::addTag(unsigned tag, float flat)
         if(!cursor_slot_match)
         {
             LOG(error)
+                << " idx " << idx
                 << " cursor_slot_match " << cursor_slot_match
                 << " flat " << flat 
                 << " tagr.slot " << tagr.slot 

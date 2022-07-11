@@ -8,6 +8,7 @@
 #include "G4Types.hh"
 #include "U4Random.hh"
 #include "U4Stack.h"
+#include "U4StackAuto.h"
 
 #include "NP.hh"
 #include "SPath.hh"
@@ -443,8 +444,8 @@ double U4Random::flat()
     if( auto_tag )
     {
         char* summary = SBacktrace::Summary(); 
-        unsigned stack = U4Stack::Classify(summary); 
-        bool is_classified = U4Stack::IsClassified(stack) ; 
+        unsigned stack = U4StackAuto::Classify(summary); 
+        bool is_classified = U4StackAuto::IsClassified(stack) ; 
 
         //LOG(info) << " stack " << std::setw(2) << stack << " " << U4Stack::Name(stack) ; 
 
