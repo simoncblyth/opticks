@@ -21,9 +21,11 @@ inline G4ThreeVector U4RandomDirection()
   do {
 
     u0 = G4UniformRand() ;
-    u1 = G4UniformRand() ;
 #ifdef DEBUG_TAG
     SEvt::AddTag(U4Stack_RandomDirection, u0 ); 
+#endif
+    u1 = G4UniformRand() ;
+#ifdef DEBUG_TAG
     SEvt::AddTag(U4Stack_RandomDirection, u1 ); 
 #endif
     u = 2.*u0 - 1.; 

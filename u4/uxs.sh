@@ -22,7 +22,11 @@ EOU
 }
 msg="=== $BASH_SOURCE :"
 
-arg=${1:-run_ana}
+case $(uname) in 
+   Linux) defarg="run" ;;
+   Darwin) defarg="run_ana" ;; 
+esac
+arg=${1:-$defarg}
 
 
 bin=U4RecorderTest

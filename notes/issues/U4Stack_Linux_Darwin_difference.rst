@@ -259,7 +259,8 @@ DiMe : ChooseReflection DoReflection
 
 ::
 
-    BP=InstrumentedG4OpBoundaryProcess::DoReflection ./U4RecorderTest.sh dbg
+    u4
+    BP=InstrumentedG4OpBoundaryProcess::DoReflection  PIDX=9993 ./uxs.sh dbg
 
 
 Auto BP is lldb only (huh there is some gdb script somewhere too?)::

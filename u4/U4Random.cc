@@ -423,6 +423,7 @@ double U4Random::flat()
 
     if(m_seq_index == SEvt::PIDX)
     { 
+        std::cout << "-------U4Random::flat" << std::endl << std::endl ; 
         LOG(info)
             << " SEvt::PIDX " << SEvt::PIDX
             << " m_seq_index " << std::setw(4) << m_seq_index
