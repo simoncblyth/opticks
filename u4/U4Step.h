@@ -87,8 +87,8 @@ eg::
     ./gxs.sh run    # workstation
     ./gxs.sh grab   # laptop 
 
-    u4t
-    ./U4RecorderTest.sh run     # CFBASE is set by the script to pick up the CF geometry
+    u4
+    ./u4s.sh run     # CFBASE is set by the script to pick up the CF geometry
 
 )"; 
 

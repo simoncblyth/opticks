@@ -35,7 +35,8 @@ enum
     U4Stack_BoundaryDiMeReflectivity = 11,
     U4Stack_ChooseReflection         = 12,
     U4Stack_RandomDirection          = 13,
-    U4Stack_LambertianRand           = 14
+    U4Stack_LambertianRand           = 14,
+    U4Stack_Reemission               = 15
 
 };
 
@@ -60,6 +61,7 @@ struct U4Stack
     static constexpr const char* ChooseReflection_ = "ChooseReflection" ; // 12
     static constexpr const char* RandomDirection_ = "RandomDirection" ; // 13
     static constexpr const char* LambertianRand_ = "LambertianRand" ; // 14
+    static constexpr const char* Reemission_ = "Reemission" ; // 14
 
 
     static constexpr const char* BoundaryBurn_SurfaceReflectTransmitAbsorb_note = R"(
@@ -99,6 +101,7 @@ inline const char* U4Stack::Name(unsigned stack)
         case U4Stack_ChooseReflection:              s = ChooseReflection_         ; break ; 
         case U4Stack_RandomDirection:               s = RandomDirection_         ; break ; 
         case U4Stack_LambertianRand:                s = LambertianRand_         ; break ; 
+        case U4Stack_Reemission:                    s = Reemission_         ; break ; 
     }
     if(s) assert( Code(s) == stack ) ; 
     return s ; 
@@ -122,6 +125,7 @@ inline unsigned U4Stack::Code(const char* name)
     if(strcmp(name, ChooseReflection_) == 0 )              stack = U4Stack_ChooseReflection ; 
     if(strcmp(name, RandomDirection_) == 0 )               stack = U4Stack_RandomDirection ; 
     if(strcmp(name, LambertianRand_) == 0 )                stack = U4Stack_LambertianRand ; 
+    if(strcmp(name, Reemission_) == 0 )                    stack = U4Stack_Reemission ; 
 
     return stack ; 
 }

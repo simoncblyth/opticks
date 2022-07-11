@@ -266,7 +266,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
         current_photon.set_flag( flag );
 
-        U4Step::MockOpticksBoundaryIdentity(current_photon, step, label.id ); 
+        if(U4Step::CF) U4Step::MockOpticksBoundaryIdentity(current_photon, step, label.id ); 
 
         sev->pointPhoton(label);         // save SEvt::current_photon/rec/seq/prd into sevent 
     }

@@ -509,6 +509,7 @@ void U4Random::check_cursor_vs_tagslot()
             << " PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS "
             ; 
     } 
+    assert( cursor_slot_match ); 
 }
 #endif
 

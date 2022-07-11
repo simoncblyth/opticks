@@ -609,7 +609,7 @@ One untagged consumption looks to be at the end of the history : was DiMe
 Huh fixing that one appears to get all consumption tagged : thats unbelievable : expecting raft of reemission issues ?
 --------------------------------------------------------------------------------------------------------------------------
 
-* unless reemission is disabled ? it isnt
+* unless reemission is disabled ? it isnt : suspect material lacks necessary props
 
 ::
 
@@ -714,7 +714,7 @@ Never getting to 370 because lack FASTCOMPONENT SLOWCOMPONENT::
      372     }
 
 
-Comment LoadBnd to use original materials::
+Comment U4Material::LoadBnd to use original materials, as the props grabbed from the bnd lack FASTCOMPONENT SLOWCOMPONENT::
 
     176 int main(int argc, char** argv)
     177 {
@@ -723,5 +723,57 @@ Comment LoadBnd to use original materials::
     180     //U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
     181     //U4Material::LoadBnd();   // "back" creation of G4 material properties from the Opticks bnd.npy obtained from SSim::Load 
     182 
+
+
+
+YEP : after using original materials from GDML get the expected assert
+-------------------------------------------------------------------------
+
+::
+
+    DsG4Scintillation::DsG4Scintillation level 0 verboseLevel 0
+    2022-07-11 22:01:58.369 INFO  [74874] [U4Recorder::BeginOfRunAction@79] 
+    2022-07-11 22:01:58.370 INFO  [74874] [U4RecorderTest::GeneratePrimaries@129] [ fPrimaryMode I
+    2022-07-11 22:01:58.373 INFO  [74874] [U4RecorderTest::GeneratePrimaries@137] ]
+    2022-07-11 22:01:58.373 INFO  [74874] [U4Recorder::BeginOfEventAction@81] 
+    2022-07-11 22:01:58.390 ERROR [74874] [U4Random::check_cursor_vs_tagslot@503]  m_seq_index 9979 cursor 9 slot 8 cursor_slot_match 0
+     PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS 
+    2022-07-11 22:01:58.390 ERROR [74874] [U4Random::check_cursor_vs_tagslot@503]  m_seq_index 9978 cursor 11 slot 4 cursor_slot_match 0
+     PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS 
+    2022-07-11 22:01:58.390 ERROR [74874] [SEvt::addTag@825]  idx 9978 cursor_slot_match 0 flat 0.0625658 tagr.slot 5 ( from SRandom  flat_prior 0.0625658 flat_cursor 12  ) 
+     MISMATCH MEANS ONE OR MORE PRIOR CONSUMPTIONS WERE NOT TAGGED 
+    U4RecorderTest: /data/blyth/junotop/opticks/sysrap/SEvt.cc:839: void SEvt::addTag(unsigned int, float): Assertion `cursor_slot_match' failed.
+    ./u4s.sh: line 161: 74874 Aborted                 (core dumped) $bin
+    === ./u4s.sh : run error
+    N[blyth@localhost u4]$ 
+
+
+
+Avoiding IDPath_override allows BoxOfScintillator to give the error on laptop
+---------------------------------------------------------------------------------
+
+
+Simple way to check all consumption and manually look at the stacks in debugger, so can add the consumption tagging::
+
+    PIDX=9999 BP=U4Random::flat ./u4s.sh dbg
+
+
+::
+
+    (lldb) f 1
+    frame #1: 0x00000001000402c7 U4RecorderTest`DsG4Scintillation::PostStepDoIt(this=0x00000001090e7170, aTrack=0x00000001105c3a30, aStep=0x000000010906c9f0) at DsG4Scintillation.cc:404
+       401 	            return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
+       402 	        G4double p_reemission=
+       403 	            Reemission_Prob->Value(aTrack.GetKineticEnergy());
+    -> 404 	        if (G4UniformRand() >= p_reemission)
+       405 	            return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
+       406 	        NumTracks= 1;
+       407 	        weight= aTrack.GetWeight();
+    (lldb) 
+
+
+
+
+
 
 

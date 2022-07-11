@@ -124,7 +124,7 @@ else
     if [ -z "$QUIET" ]; then 
         echo $msg cfbase/CSGFoundry dir does not exist : NOT EXPORTING CFBASE
     fi 
-    exit 1
+    #exit 1
 fi 
 
 

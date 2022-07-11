@@ -401,7 +401,13 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
         G4double p_reemission=
             Reemission_Prob->Value(aTrack.GetKineticEnergy());
-        if (G4UniformRand() >= p_reemission)
+
+        G4double u_reemission = G4UniformRand() ; 
+#ifdef DEBUG_TAG
+        SEvt::AddTag(U4Stack_Reemission, u_reemission); 
+#endif
+
+        if (u_reemission >= p_reemission)
             return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
         NumTracks= 1;
         weight= aTrack.GetWeight();
@@ -563,6 +569,11 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     NumVec.clear();
     for(G4int i = 0 ; i < NumTracks ; i++){
        G4double p = G4UniformRand();
+
+#ifdef DEBUG_TAG
+       SEvt::AddTag(U4Stack_Reemission, p ); 
+#endif
+
        G4double p_count = 0;
        for(G4int j = 0 ; j < nscnt; j++)
        {
@@ -668,7 +679,10 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
            G4double sampledEnergy;
            if ( !flagReemission ) {
                 // normal scintillation
-               G4double CIIvalue = G4UniformRand()*
+
+               G4double u_sampledEnergy = G4UniformRand() ;
+
+               G4double CIIvalue = u_sampledEnergy*
                     ScintillationIntegral->GetMaxValue();
                sampledEnergy=
                     ScintillationIntegral->GetEnergy(CIIvalue);
@@ -681,7 +695,13 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             }
          else {
                 // reemission, the sample method need modification
-                G4double CIIvalue = G4UniformRand()*
+
+                G4double u_sampledEnergy = G4UniformRand() ;
+#ifdef DEBUG_TAG
+                SEvt::AddTag(U4Stack_Reemission, u_sampledEnergy ); 
+#endif
+
+                G4double CIIvalue = u_sampledEnergy*
                     ScintillationIntegral->GetMaxValue();
                 if (CIIvalue == 0.0) {
                     // return unchanged particle and no secondaries 
@@ -698,10 +718,21 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
              }
         
            // Generate random photon direction
-            G4double cost = 1. - 2.*G4UniformRand();
+
+            G4double u_cost = G4UniformRand(); 
+#ifdef DEBUG_TAG
+            SEvt::AddTag(U4Stack_Reemission, u_cost ); 
+#endif
+
+            G4double cost = 1. - 2.*u_cost ;
             G4double sint = sqrt((1.-cost)*(1.+cost));
 
-            G4double phi = twopi*G4UniformRand();
+            G4double u_phi = G4UniformRand() ;
+#ifdef DEBUG_TAG
+            SEvt::AddTag(U4Stack_Reemission, u_phi ); 
+#endif
+
+            G4double phi = twopi*u_phi ;
             G4double sinp = sin(phi);
             G4double cosp = cos(phi);
 
@@ -721,7 +752,12 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
             G4ThreeVector perp = photonMomentum.cross(photonPolarization);
 
-            phi = twopi*G4UniformRand();
+            u_phi = G4UniformRand() ;  
+#ifdef DEBUG_TAG
+            SEvt::AddTag(U4Stack_Reemission, u_phi ); 
+#endif
+
+            phi = twopi*u_phi ;
             sinp = sin(phi);
             cosp = cos(phi);
 
@@ -746,8 +782,15 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             G4ThreeVector aSecondaryPosition;
             G4double deltaTime;
             if (flagReemission) {
+
+
+                G4double u_deltaTime = G4UniformRand() ;  
+#ifdef DEBUG_TAG
+                SEvt::AddTag(U4Stack_Reemission, u_deltaTime ); 
+#endif
+
                 deltaTime= pPostStepPoint->GetGlobalTime() - t0 
-                           -ScintillationTime * log( G4UniformRand() );
+                           -ScintillationTime * log( u_deltaTime );
                 aSecondaryPosition= pPostStepPoint->GetPosition();
                 vertpos = aTrack.GetVertexPosition();
                 //vertenergy = aTrack.GetKineticEnergy();
