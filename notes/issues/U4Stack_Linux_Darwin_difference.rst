@@ -619,5 +619,109 @@ Huh fixing that one appears to get all consumption tagged : thats unbelievable :
 
 
 
+As are using input photons all DsG4Scintillation::PostStepDoIt will be reemission::
+
+    BP=DsG4Scintillation::PostStepDoIt ./u4s.sh dbg
+
+
+::
+
+    (gdb) p flagReemission
+    $5 = false
+    (gdb) p aTrack.GetTrackStatus()
+    $6 = fAlive
+
+
+::
+
+     282     G4String pname="";
+     283     G4ThreeVector vertpos;
+     284     //G4double vertenergy=0.0;
+     285     //G4double reem_d=0.0;
+     286     G4bool flagReemission= false;
+     287     //DsPhotonTrackInfo* reemittedTI=0;
+     288     if (aTrack.GetDefinition() == G4OpticalPhoton::OpticalPhoton()) {
+     289         G4Track *track=aStep.GetTrack();
+     290         //G4CompositeTrackInfo* composite=dynamic_cast<G4CompositeTrackInfo*>(track->GetUserInformation());
+     291         //reemittedTI = composite?dynamic_cast<DsPhotonTrackInfo*>( composite->GetPhotonTrackInfo() ):0;
+     292 
+     293         const G4VProcess* process = track->GetCreatorProcess();
+     294         if(process) pname = process->GetProcessName();
+     295 
+     296         if (verboseLevel > 0) {
+     297           G4cout<<"Optical photon. Process name is " << pname<<G4endl;
+     298         }
+     299         if(doBothProcess) {
+     300             flagReemission= doReemission
+     301                 && aTrack.GetTrackStatus() == fStopAndKill
+     302                 && aStep.GetPostStepPoint()->GetStepStatus() != fGeomBoundary;
+     303         }
+     304         else{
+     305             flagReemission= doReemission
+     306                 && aTrack.GetTrackStatus() == fStopAndKill
+     307                 && aStep.GetPostStepPoint()->GetStepStatus() != fGeomBoundary
+     308                 && pname=="Cerenkov";
+     309         }
+     310         if(verboseLevel > 0) {
+     311             G4cout<<"flag of Reemission is "<<flagReemission<<"!!"<<G4endl;
+     312         }
+     313         if (!flagReemission) {
+     314             return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
+     315         }
+     316     }
+
+
+::
+
+    (gdb) c
+    Continuing.
+
+    Breakpoint 9, DsG4Scintillation::PostStepDoIt (this=0x1c80c00, aTrack=..., aStep=...) at /data/blyth/junotop/opticks/u4/tests/DsG4Scintillation.cc:360
+    360	    if (!Fast_Intensity && !Slow_Intensity )
+    (gdb) p Fast_Intensity
+    $15 = (const G4MaterialPropertyVector *) 0x0
+    (gdb) p Slow_Intensity
+    $16 = (const G4MaterialPropertyVector *) 0x0
+    (gdb) p Reemission_Prob
+    $17 = (const G4MaterialPropertyVector *) 0x733c80
+    (gdb) 
+
+
+Never getting to 370 because lack FASTCOMPONENT SLOWCOMPONENT::
+
+     350     const G4MaterialPropertyVector* Fast_Intensity =
+     351         aMaterialPropertiesTable->GetProperty("FASTCOMPONENT");
+     352     const G4MaterialPropertyVector* Slow_Intensity =
+     353         aMaterialPropertiesTable->GetProperty("SLOWCOMPONENT");
+     354     const G4MaterialPropertyVector* Reemission_Prob =
+     355         aMaterialPropertiesTable->GetProperty("REEMISSIONPROB");
+     356     if (verboseLevel > 0 ) {
+     357       G4cout << " MaterialPropertyVectors: Fast_Intensity " << Fast_Intensity
+     358              << " Slow_Intensity " << Slow_Intensity << " Reemission_Prob " << Reemission_Prob << G4endl;
+     359     }
+     360     if (!Fast_Intensity && !Slow_Intensity )
+     361         return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
+     362 
+     363     //-------------find the type of particle------------------------------//
+     364     /*
+     365         Find the particle type and register the scintillation time constant corresponding.
+     366         We save the yield ratio and time constant in the form of G4PhysicVector. In this kind of G4PhysicVector, we interprete Energy as scintillation time and interprete Value as the yield ratio.
+     367 
+     368     */
+     369     G4MaterialPropertyVector* Ratio_timeconstant = 0 ;
+     370     if (aParticleName == "opticalphoton") {
+     371       Ratio_timeconstant = aMaterialPropertiesTable->GetProperty("OpticalCONSTANT");
+     372     }
+
+
+Comment LoadBnd to use original materials::
+
+    176 int main(int argc, char** argv)
+    177 {
+    178     OPTICKS_LOG(argc, argv);
+    179 
+    180     //U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
+    181     //U4Material::LoadBnd();   // "back" creation of G4 material properties from the Opticks bnd.npy obtained from SSim::Load 
+    182 
 
 
