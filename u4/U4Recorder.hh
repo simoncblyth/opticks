@@ -31,7 +31,8 @@ struct spho ;
 struct U4_API U4Recorder 
 {
     static const plog::Severity LEVEL ; 
-    static const int PIDX ; 
+    static const int PIDX ;   // used to control debug printout for idx 
+    static const int EIDX ;   // used to enable U4Recorder for an idx, skipping all others
     static const int GIDX ; 
     static std::string Desc(); 
     static bool Enabled(const spho& label); 

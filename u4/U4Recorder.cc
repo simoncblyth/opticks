@@ -30,14 +30,15 @@
 const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG"); 
 
 const int U4Recorder::PIDX = SSys::getenvint("PIDX",-1) ; 
+const int U4Recorder::EIDX = SSys::getenvint("EIDX",-1) ; 
 const int U4Recorder::GIDX = SSys::getenvint("GIDX",-1) ; 
 
 std::string U4Recorder::Desc()
 {
     std::stringstream ss ; 
     if( GIDX > -1 ) ss << "GIDX_" << GIDX << "_" ; 
-    if( PIDX > -1 ) ss << "PIDX_" << PIDX << "_" ; 
-    if( GIDX == -1 && PIDX == -1 ) ss << "ALL" ; 
+    if( EIDX > -1 ) ss << "EIDX_" << EIDX << "_" ; 
+    if( GIDX == -1 && EIDX == -1 ) ss << "ALL" ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -46,28 +47,28 @@ std::string U4Recorder::Desc()
 U4Recorder::Enabled
 ---------------------
 
-This is used when PIDX and/or GIDX envvars are defined causing 
+This is used when EIDX and/or GIDX envvars are defined causing 
 early exits from::
 
     U4Recorder::PreUserTrackingAction_Optical
     U4Recorder::PostUserTrackingAction_Optical
     U4Recorder::UserSteppingAction_Optical
     
-Hence GIDX and PIDX provide a way to skip the expensive recording 
+Hence GIDX and EIDX provide a way to skip the expensive recording 
 of other photons whilst debugging single gensteps or photons. 
+
+Formerly used PIDX rather than EIDX but that was confusing because it
+is contrary to the normal use of PIDX to control debug printout for an idx. 
 
 **/
 
 bool U4Recorder::Enabled(const spho& label)
 { 
-    return GIDX == -1 ? true : ( label.gs == GIDX  ) ; 
-    /*
     return GIDX == -1 ? 
-                        ( PIDX == -1 || label.id == PIDX ) 
+                        ( EIDX == -1 || label.id == EIDX ) 
                       :
                         ( GIDX == -1 || label.gs == GIDX ) 
                       ;
-    */
 } 
 
 U4Recorder* U4Recorder::INSTANCE = nullptr ; 
@@ -142,7 +143,7 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     {
        LOG(info) 
            << "NOT-enabled" 
-           << " PIDX " << PIDX  
+           << " EIDX " << EIDX  
            << " GIDX " << GIDX  
            ;
        return ;  
