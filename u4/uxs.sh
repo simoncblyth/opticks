@@ -1,21 +1,21 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-U4RecorderTest.sh : Geant4 simulation with Opticks recording every random consumption of every step of every photon
-=====================================================================================================================
+uxs.sh : formerly U4RecorderTest.sh : Geant4 simulation with Opticks recording every random consumption of every step of every photon
+=========================================================================================================================================
 
 ::
 
-    cd ~/opticks/u4/tests  # u4t 
-    ./U4RecorderTest.sh 
+    cd ~/opticks/u4   # u4
+    ./uxs.sh 
 
-    BP=DsG4Scintillation::PostStepDoIt ./U4RecorderTest.sh dbg 
+    BP=DsG4Scintillation::PostStepDoIt ./uxs.sh dbg 
 
 
-    ./U4RecorderTest.sh run
-    ./U4RecorderTest.sh dbg
-    ./U4RecorderTest.sh clean
-    ./U4RecorderTest.sh ana
-    ./U4RecorderTest.sh ab
+    ./uxs.sh run
+    ./uxs.sh dbg
+    ./uxs.sh clean
+    ./uxs.sh ana
+    ./uxs.sh ab
 
 
 EOU
@@ -24,8 +24,10 @@ msg="=== $BASH_SOURCE :"
 
 arg=${1:-run_ana}
 
+
+bin=U4RecorderTest
 srcdir=$PWD
-logdir=/tmp/$USER/opticks/U4RecorderTest
+logdir=/tmp/$USER/opticks/$bin
 mkdir -p $logdir 
 foldbase=$logdir
 
@@ -49,14 +51,14 @@ mode=iphoton
 export U4RecorderTest__PRIMARY_MODE=$mode
 
 if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
-    source ../../bin/OPTICKS_INPUT_PHOTON.sh     
+    source ../bin/OPTICKS_INPUT_PHOTON.sh     
 fi 
 
 source ./IDPath_override.sh   
 # IDPath_override.sh : non-standard IDPath to allow U4Material::LoadOri to find material properties 
 # HMM probably doing nothing now that are using U4Material::LoadBnd ?
 
-source ../../bin/GEOM_.sh 
+source ../bin/GEOM_.sh 
 
 
 if [ -n "$CFBASE" ]; then 
@@ -134,7 +136,7 @@ loglevels
 
 if [ "${arg/run}" != "${arg}" ]; then 
     cd $logdir 
-    U4RecorderTest
+    $bin 
     [ $? -ne 0 ] && echo $msg run error && exit 1 
 
     echo $msg logdir $logdir
@@ -143,8 +145,8 @@ fi
 if [ "${arg/dbg}" != "${arg}" ]; then 
     cd $logdir 
     case $(uname) in 
-       Linux)  gdb U4RecorderTest ;;
-       Darwin) lldb__ U4RecorderTest ;;
+       Linux)  gdb_ $bin;;
+       Darwin) lldb__ $bin ;;
     esac
     [ $? -ne 0 ] && echo $msg dbg error && exit 2 
     echo $msg logdir $logdir
@@ -166,21 +168,25 @@ fi
 if [ "${arg/ana}" != "${arg}" ]; then 
     cd $srcdir 
     pwd
-    ${IPYTHON:-ipython} --pdb -i U4RecorderTest.py 
+    ${IPYTHON:-ipython} --pdb -i tests/$bin.py 
 fi 
 
 if [ "${arg/grab}" != "${arg}" ]; then 
     echo $msg grab FOLD $FOLD
-    source ../../bin/rsync.sh $FOLD
+    source ../bin/rsync.sh $FOLD
 fi 
-
 
 if [ "${arg}" == "ab" ]; then 
     cd $srcdir 
     pwd
-    ./U4RecorderTest_ab.sh
+    #fold_mode=TMP
+    #fold_mode=KEEP
+    #fold_mode=LOGF
+    fold_mode=GEOM
+    export FOLD_MODE=${FOLD_MODE:-$fold_mode}
+    source ../bin/AB_FOLD.sh 
+    ${IPYTHON:-ipython} --pdb -i tests/${bin}_ab.py $*  
 fi 
-
 
 
 

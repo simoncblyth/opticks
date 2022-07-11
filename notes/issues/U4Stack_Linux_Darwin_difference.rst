@@ -254,15 +254,77 @@ DiMe : ChooseReflection DoReflection
     2022-07-11 18:24:30.670 INFO  [59788] [SEvt::addTag@805]  idx 9993 PIDX 9993 tag 3 flat 0.703896 evt.tag 0x10b7a820 tagr.slot 43
     2022-07-11 18:24:30.670 ERROR [59788] [SEvt::addTag@825]  idx 9993 cursor_slot_match 0 flat 0.703896 tagr.slot 44 ( from SRandom  flat_prior 0.703896 flat_cursor 50  ) 
      MISMATCH MEANS ONE OR MORE PRIOR CONSUMPTIONS WERE NOT TAGGED 
-    U4RecorderTest: /data/blyth/junotop/opticks/sysrap/SEvt.cc:839: void SEvt::addTag(unsigned int, float): Assertion `cursor_slot_match' failed.
-    ./U4RecorderTest.sh: line 141: 59788 Aborted                 (core dumped) U4RecorderTest
+    U4RecorderTest: /data/blyth/junotop/opticks/sysrap/SEvt.cc:839: void SEvt::addTag(unsigned int, float): Assertion cursor_slot_match
+
+
+::
+
+    BP=InstrumentedG4OpBoundaryProcess::DoReflection ./U4RecorderTest.sh dbg
+
+
+Auto BP is lldb only (huh there is some gdb script somewhere too?)::
+
+    (gdb) b InstrumentedG4OpBoundaryProcess::DoReflection
+    Function "InstrumentedG4OpBoundaryProcess::DoReflection" not defined.
+    Make breakpoint pending on future shared library load? (y or [n]) y
+    Breakpoint 1 (InstrumentedG4OpBoundaryProcess::DoReflection) pending.
+    (gdb) r
+
+::
+
+    epsilon:issues blyth$ t gdb_
+    gdb_ () 
+    { 
+        : prepares and invokes gdb - sets up breakpoints based on BP envvar containing space delimited symbols;
+        if [ -z "$BP" ]; then
+            H="";
+            B="";
+            T="-ex r";
+        else
+            H="-ex \"set breakpoint pending on\"";
+            B="";
+            for bp in $BP;
+            do
+                B="$B -ex \"break $bp\" ";
+            done;
+            T="-ex \"info break\" -ex r";
+        fi;
+        local runline="gdb $H $B $T --args $* ";
+        echo $runline;
+        date;
+        eval $runline;
+        date
+    }
 
 
 
 
 ::
 
-    BP=InstrumentedG4OpBoundaryProcess::DoReflection ./U4RecorderTest.sh dbg
+     59 inline G4ThreeVector G4LambertianRand(const G4ThreeVector& normal)
+     60 {
+     61   G4ThreeVector vect;
+     62   G4double ndotv;
+     63   G4int count=0;
+     64   const G4int max_trials = 1024;
+     65 
+     66   do
+     67   {
+     68     ++count;
+     69     vect = G4RandomDirection();
+     70     ndotv = normal * vect;
+     71 
+     72     if (ndotv < 0.0)
+     73     {
+     74       vect = -vect;
+     75       ndotv = -ndotv;
+     76     }
+     77 
+     78   } while (!(G4UniformRand() < ndotv) && (count < max_trials));
+     79 
+     80   return vect;
+     81 }
+
 
 
 
