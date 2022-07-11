@@ -1,21 +1,21 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-uxs.sh : formerly U4RecorderTest.sh : Geant4 simulation with Opticks recording every random consumption of every step of every photon
+u4s.sh : formerly U4RecorderTest.sh : Geant4 simulation with Opticks recording every random consumption of every step of every photon
 =========================================================================================================================================
 
 ::
 
     cd ~/opticks/u4   # u4
-    ./uxs.sh 
+    ./u4s.sh 
 
-    BP=DsG4Scintillation::PostStepDoIt ./uxs.sh dbg 
+    BP=DsG4Scintillation::PostStepDoIt ./u4s.sh dbg 
 
 
-    ./uxs.sh run
-    ./uxs.sh dbg
-    ./uxs.sh clean
-    ./uxs.sh ana
-    ./uxs.sh ab
+    ./u4s.sh run
+    ./u4s.sh dbg
+    ./u4s.sh clean
+    ./u4s.sh ana
+    ./u4s.sh ab
 
 
 EOU
@@ -27,6 +27,10 @@ case $(uname) in
    Darwin) defarg="run_ana" ;; 
 esac
 arg=${1:-$defarg}
+
+case $arg in 
+  fold) QUIET=1 ;;
+esac
 
 
 bin=U4RecorderTest
@@ -66,7 +70,9 @@ source ../bin/GEOM_.sh
 
 
 if [ -n "$CFBASE" ]; then 
-    echo $msg CFBASE from GEOM_.sh : $CFBASE
+    if [ -z "$QUIET" ]; then 
+        echo $msg CFBASE from GEOM_.sh : $CFBASE
+    fi 
 else 
     CFBASE=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
 fi
@@ -97,6 +103,10 @@ export FOLD=$foldbase/$physdesc/$GEOM/$sel
 ## CFBASE in different tree because it is kinda foreign 
 ## HMM: maybe should copy it ?
 
+if [ "${arg/fold}" != "${arg}" ]; then 
+   echo $FOLD
+fi 
+
 
 
 if [ "${arg/info}" != "${arg}" ]; then 
@@ -107,9 +117,13 @@ fi
 
 if [ -d "${CFBASE}/CSGFoundry" ]; then 
     export CFBASE
-    echo $msg cfbase/CSGFoundry dir exists so exporting CFBASE $CFBASE
+    if [ -z "$QUIET" ]; then 
+        echo $msg cfbase/CSGFoundry dir exists so exporting CFBASE $CFBASE
+    fi 
 else
-    echo $msg cfbase/CSGFoundry dir does not exist : NOT EXPORTING CFBASE
+    if [ -z "$QUIET" ]; then 
+        echo $msg cfbase/CSGFoundry dir does not exist : NOT EXPORTING CFBASE
+    fi 
     exit 1
 fi 
 

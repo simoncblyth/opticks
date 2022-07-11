@@ -58,7 +58,7 @@ else
 fi
 # NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
 
-
-echo === $BASH_SOURCE : GEOM $GEOM CFBASE $CFBASE 
-#echo === $BASH_SOURCE : CFBASE is only defined at this early juncture when using CFBaseFromGEOM and its not exported yet even when defined
+if [ -z "$QUIET" ]; then 
+   echo === $BASH_SOURCE : GEOM $GEOM CFBASE $CFBASE 
+fi 
 

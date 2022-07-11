@@ -2509,21 +2509,23 @@ cudarap(){  cudarap- ; cudarap-cd $* ; }
 qudarap(){  qudarap- ; qudarap-cd $* ; }
 
 
-# optix7 expts 
-c(){  cd $(opticks-home)/CSG ; pwd ; }
-cg(){ cd $(opticks-home)/CSG_GGeo ; pwd ; }
-gc(){ cd $(opticks-home)/GeoChain ; pwd ; }
-cx(){ cd $(opticks-home)/CSGOptiX ; pwd ; }
-cxt(){ cd $(opticks-home)/CSGOptiX/tests ; pwd ; }
-u4(){ cd $(opticks-home)/u4 ; pwd ; }
-u4t(){ cd $(opticks-home)/u4/tests ; pwd ; }
-gx(){ cd $(opticks-home)/g4cx ; pwd ; }
-gd(){ cd $(opticks-home)/gdxml ; pwd ; }
+pwd_(){ [ -z "$QUIET" ] && pwd  ; }
 
-qu(){ qudarap $* ; pwd ; }
-qt(){ qudarap tests ; pwd ; }
-sy(){ sysrap $* ; pwd ; }
-st(){ sysrap tests ; pwd ; }
+# optix7 expts 
+c(){  cd $(opticks-home)/CSG ; pwd_ ; }
+cg(){ cd $(opticks-home)/CSG_GGeo ; pwd_ ; }
+gc(){ cd $(opticks-home)/GeoChain ; pwd_ ; }
+cx(){ cd $(opticks-home)/CSGOptiX ; pwd_ ; }
+cxt(){ cd $(opticks-home)/CSGOptiX/tests ; pwd_ ; }
+u4(){ cd $(opticks-home)/u4 ; pwd_ ; }
+u4t(){ cd $(opticks-home)/u4/tests ; pwd_ ; }
+gx(){ cd $(opticks-home)/g4cx ; pwd_ ; }
+gd(){ cd $(opticks-home)/gdxml ; pwd_ ; }
+
+qu(){ qudarap $* ; pwd_ ; }
+qt(){ qudarap tests ; pwd_ ; }
+sy(){ sysrap $* ; pwd_ ; }
+st(){ sysrap tests ; pwd+ ; }
 
 
 

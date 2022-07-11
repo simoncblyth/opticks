@@ -606,3 +606,18 @@ One untagged consumption looks to be at the end of the history : was DiMe
 
 
 
+Huh fixing that one appears to get all consumption tagged : thats unbelievable : expecting raft of reemission issues ?
+--------------------------------------------------------------------------------------------------------------------------
+
+* unless reemission is disabled ? it isnt
+
+::
+
+    In [6]: wq = np.where( a.seq[:,0] != b.seq[:,0] )[0]
+    In [7]: len(wq)
+    Out[7]: 4988
+
+
+
+
+

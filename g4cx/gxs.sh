@@ -18,6 +18,14 @@ gxs.sh : G4CXSimulateTest : Opticks CX GPU simulation starting from Geant4 geome
 EOU
 }
 
+defarg="run"
+arg=${1:-$defarg}
+
+case $arg in 
+  fold) QUIET=1 ;; 
+esac
+
+
 bin=G4CXSimulateTest
 source ../bin/GEOM_.sh 
 source ../bin/OPTICKS_INPUT_PHOTON.sh 
@@ -34,13 +42,13 @@ fi
 
 export FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 # NB FOLD is not used by run, but it is used by ana
-
-defarg="run"
-arg=${1:-$defarg}
-
 if [ "${arg/info}" != "$arg" ]; then 
     vars="GEOM CFBASE BASE UBASE FOLD OPTICKS_INPUT_PHOTON"
     for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+fi 
+
+if [ "$arg" == "fold" ]; then 
+    echo $FOLD 
 fi 
 
 

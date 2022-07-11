@@ -820,7 +820,7 @@ void SEvt::addTag(unsigned tag, float flat)
         assert( flat_cursor > -1 ); 
         double flat_prior = random->getFlatPrior(); 
         bool cursor_slot_match = unsigned(flat_cursor) == tagr.slot ; 
-        if(!cursor_slot_match)
+        //if(!cursor_slot_match)
         {
             LOG(error)
                 << " idx " << idx
@@ -836,7 +836,7 @@ void SEvt::addTag(unsigned tag, float flat)
                 ;
                 ; 
         }
-        assert( cursor_slot_match ); 
+        //assert( cursor_slot_match ); 
     }
 
 

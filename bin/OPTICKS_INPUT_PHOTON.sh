@@ -24,11 +24,16 @@ if [ -n "$path" ]; then
     else
         abspath=$HOME/.opticks/InputPhotons/$path
     fi
-    if [ ! -f "$abspath" ]; then 
-        echo == $BASH_SOURCE path $path abspath $abspath DOES NOT EXIST : create with ana/input_photons.sh OR sysrap/tests/storch_test.sh 
-    else
-        echo == $BASH_SOURCE path $path abspath $abspath exists 
+
+    if [ -z "$QUIET" ]; then 
+        if [ ! -f "$abspath" ]; then 
+            echo == $BASH_SOURCE path $path abspath $abspath DOES NOT EXIST : create with ana/input_photons.sh OR sysrap/tests/storch_test.sh 
+        else
+            echo == $BASH_SOURCE path $path abspath $abspath exists 
+        fi 
     fi 
 fi 
 
-echo == $BASH_SOURCE : OPTICKS_INPUT_PHOTON $OPTICKS_INPUT_PHOTON
+if [ -z "$QUIET" ]; then 
+    echo == $BASH_SOURCE : OPTICKS_INPUT_PHOTON $OPTICKS_INPUT_PHOTON
+fi
