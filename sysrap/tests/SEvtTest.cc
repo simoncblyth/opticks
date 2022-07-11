@@ -1,8 +1,12 @@
 
 #include "OPTICKS_LOG.hh"
 #include "OpticksGenstep.h"
+#include "SPath.hh"
 #include "SEventConfig.hh"
 #include "SEvt.hh"
+#include "SStr.hh"
+
+#include "stran.h"
 
 
 void test_AddGenstep()
@@ -23,17 +27,9 @@ void test_AddGenstep()
 }
 
 
-
-
-
-
-int main(int argc, char** argv)
+void test_LifeCycle()
 {
-    OPTICKS_LOG(argc, argv); 
 
-    /*
-    test_AddGenstep(); 
-    */
 
     unsigned max_bounce = 9 ; 
     SEventConfig::SetMaxBounce(max_bounce); 
@@ -112,6 +108,44 @@ int main(int argc, char** argv)
 
     sev.save("$TMP/SEvtTest");
     LOG(info) << sev.desc() ;
+}
+
+void test_InputPhoton()
+{
+    const char* ipf = SEventConfig::InputPhotonFrame();  
+    if( ipf == nullptr) return ; 
+
+    SEvt sev ; 
+    LOG(info) << sev.desc() ;
+
+    NP* ip = sev.getInputPhoton(); 
+    
+    const char* FOLD = SPath::Resolve("$TMP/SEvtTest/test_InputPhoton", DIRPATH); 
+    ip->save(FOLD, SStr::Name("ipf", ipf, ".npy") ); 
+
+    const qat4* q = SEvt::InputPhotonFrame(); 
+    Tran<double>* tr = Tran<double>::ConvertToTran(q);
+
+    NP* fr = NP::Make<float>(1,4,4); 
+    memcpy( fr->bytes(), q->cdata(), fr->arr_bytes() );  
+    fr->save(FOLD, SStr::Name("fr", ipf, ".npy" )); 
+
+    tr->save( FOLD, SStr::Name("tr",ipf, ".npy" )) ;  
+}
+
+
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG(argc, argv); 
+
+    /*
+    test_AddGenstep(); 
+    test_LifeCycle(); 
+    */
+
+    test_InputPhoton(); 
+
 
     return 0 ; 
 }

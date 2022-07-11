@@ -1,18 +1,21 @@
 #!/bin/bash -l 
 
-arg=${1:-run_ana}
-msg="=== $BASH_SOURCE :"
+source ../../bin/GEOM_.sh 
+source ../../bin/OPTICKS_INPUT_PHOTON.sh 
 
-if [ "${arg/run}" != "${arg}" ]; then 
+export OPTICKS_INPUT_PHOTON_FRAME=0 
+export CFBASE 
+
+defarg=run_ana
+arg=${1:-$defarg}
+
+if [ "${arg/run}" != "$arg" ]; then 
     SEvtTest 
-    [ $? -ne 0 ] && echo $msg run error && exit 1 
 fi 
 
-if [ "${arg/ana}" != "${arg}" ]; then 
-    export FOLD=/tmp/$USER/opticks/SEvtTest 
-    ${IPYTHON:-ipython} --pdb -i SEvtTest.py 
-    [ $? -ne 0 ] && echo $msg ana error && exit 2
-fi
+if [ "${arg/ana}" != "$arg" ]; then 
+    export FOLD=/tmp/$USER/opticks/SEvtTest/test_InputPhoton
+    ${IPYTHON:-ipython} --pdb -i SEvtTestIP.py 
+fi 
 
-exit 0
 

@@ -1,14 +1,26 @@
 U4Stack_Linux_Darwin_difference
 ==================================
 
-Linux SBacktrace::Summary missing crucial line with "DsG4Scintillation::ResetNumberOfInteractionLengthLeft"
-But scintillation is the only G4VRestDiscreteProcess in play so do not need to Shim.
 
+* Next :doc:`input_photons_in_MOI_target_frame`
+
+
+Overview : forced to switch to manual consumption tagging 
+---------------------------------------------------------------
+
+Auto tagging approach that works on Darwin cannot work eaily on Linux as the Linux SBacktrace::Summary 
+is missing crucial line with "DsG4Scintillation::ResetNumberOfInteractionLengthLeft"
+But scintillation is the only G4VRestDiscreteProcess in play so do not need to Shim.
 But same problem with other processes. 
 
 The deficient SBacktrace::Summary might arise from the inline imps.
+Changing to .cc rather than .h imps made no difference to SBacktrace::Summary.
+So was forced to switch to manual tagging. While more code is needed for 
+manual tagging it has significant speed advantage. 
 
 
+Processes
+------------
 
 ::
 
@@ -16,7 +28,6 @@ The deficient SBacktrace::Summary might arise from the inline imps.
 
     class G4VRestDiscreteProcess : public G4VProcess 
 
-    class G4VDiscreteProcess     : public G4VProcess
 
 
     class G4OpAbsorption      : public G4VDiscreteProcess
@@ -24,6 +35,9 @@ The deficient SBacktrace::Summary might arise from the inline imps.
     class G4OpRayleigh        : public G4VDiscreteProcess
 
     class G4OpBoundaryProcess : public G4VDiscreteProcess
+
+    class G4VDiscreteProcess     : public G4VProcess
+
 
 
 
@@ -729,7 +743,13 @@ Comment U4Material::LoadBnd to use original materials, as the props grabbed from
 YEP : after using original materials from GDML get the expected assert
 -------------------------------------------------------------------------
 
+     
+
 ::
+
+    u4
+    ./u4s.sh 
+
 
     DsG4Scintillation::DsG4Scintillation level 0 verboseLevel 0
     2022-07-11 22:01:58.369 INFO  [74874] [U4Recorder::BeginOfRunAction@79] 
@@ -749,13 +769,15 @@ YEP : after using original materials from GDML get the expected assert
 
 
 
-Avoiding IDPath_override allows BoxOfScintillator to give the error on laptop
----------------------------------------------------------------------------------
+Avoiding IDPath_override allows BoxOfScintillator to give the error on laptop : used this to add the reemission tagging
+--------------------------------------------------------------------------------------------------------------------------
 
 
 Simple way to check all consumption and manually look at the stacks in debugger, so can add the consumption tagging::
 
     PIDX=9999 BP=U4Random::flat ./u4s.sh dbg
+
+    BP=G4VParticleChange::SetNumberOfSecondaries 
 
 
 ::
@@ -774,6 +796,37 @@ Simple way to check all consumption and manually look at the stacks in debugger,
 
 
 
+Now looks like all consumption is tagged in GDML geometry
+-------------------------------------------------------------
+
+
+::
+
+    u4
+    ./u4s.sh 
+
+    G4GDML: Reading '/home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/origin_CGDMLKludge.gdml' done!
+    DsG4Scintillation::DsG4Scintillation level 0 verboseLevel 0
+    2022-07-11 22:47:36.523 INFO  [76254] [U4Recorder::BeginOfRunAction@79] 
+    2022-07-11 22:47:36.524 INFO  [76254] [U4RecorderTest::GeneratePrimaries@129] [ fPrimaryMode I
+    2022-07-11 22:47:36.527 INFO  [76254] [U4RecorderTest::GeneratePrimaries@137] ]
+    2022-07-11 22:47:36.527 INFO  [76254] [U4Recorder::BeginOfEventAction@81] 
+    2022-07-11 22:47:36.607 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 9000
+    2022-07-11 22:47:36.677 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 8000
+    2022-07-11 22:47:36.736 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 7000
+    2022-07-11 22:47:36.794 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 6000
+    2022-07-11 22:47:36.851 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 5000
+    2022-07-11 22:47:36.907 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 4000
+    2022-07-11 22:47:36.962 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 3000
+    2022-07-11 22:47:37.016 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 2000
+    2022-07-11 22:47:37.073 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 1000
+    2022-07-11 22:47:37.129 INFO  [76254] [U4Recorder::PreUserTrackingAction_Optical@152]  label.id 0
+    2022-07-11 22:47:37.129 INFO  [76254] [U4Recorder::EndOfEventAction@82] 
+    2022-07-11 22:47:37.129 INFO  [76254] [U4Recorder::EndOfRunAction@80] 
+    2022-07-11 22:47:37.129 INFO  [76254] [main@202] /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/J000/ALL
+    U4Random::saveProblemIdx m_problem_idx.size 0 ()
+    2022-07-11 22:47:37.187 INFO  [76254] [main@207] /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/J000/ALL
+    === ./u4s.sh : logdir /tmp/blyth/opticks/U4RecorderTest
 
 
 

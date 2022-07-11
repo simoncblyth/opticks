@@ -123,7 +123,7 @@ struct qat4
         q3.f.x = gs.q5.f.x ;  q3.f.y = gs.q5.f.y ;   q3.f.z = gs.q5.f.z ;  q3.f.w = gs.q5.f.w ;   
     } 
 
-    QAT4_METHOD void write( quad6& gs )
+    QAT4_METHOD void write( quad6& gs ) const 
     {
          gs.q2.f.x = q0.f.x ; gs.q2.f.y = q0.f.y ; gs.q2.f.z = q0.f.z ; gs.q2.f.w = q0.f.w ; 
          gs.q3.f.x = q1.f.x ; gs.q3.f.y = q1.f.y ; gs.q3.f.z = q1.f.z ; gs.q3.f.w = q1.f.w ; 
@@ -511,7 +511,7 @@ struct qat4
     }  
 
 
-    QAT4_METHOD std::string desc(char mat, unsigned wid=8, unsigned prec=3) const 
+    QAT4_METHOD std::string desc(char mat='t', unsigned wid=8, unsigned prec=3) const 
     {
         std::stringstream ss ; 
         ss << mat << ":" ; 
@@ -521,6 +521,22 @@ struct qat4
             for(int k=0 ; k < 4 ; k++ ) ss << std::setw(wid) << std::fixed << std::setprecision(prec) << element(j,k) << " " ; 
             ss << "]" ; 
         }
+        std::string s = ss.str() ; 
+        return s ; 
+    }
+
+    QAT4_METHOD std::string descId() const 
+    {
+        unsigned ins_idx,  gas_idx, ias_idx ; 
+        getIdentity(ins_idx,  gas_idx, ias_idx );  
+
+        std::stringstream ss ; 
+        ss
+            << " ins " << std::setw(7) << ins_idx  
+            << " gas " << std::setw(3) << gas_idx  
+            << " ias " << std::setw(2) << ias_idx  
+            ;
+
         std::string s = ss.str() ; 
         return s ; 
     }
@@ -557,15 +573,11 @@ QAT4_FUNCTION void qat4::dump(const std::vector<qat4>& qv)
     for(unsigned i=0 ; i < qv.size() ; i++)
     {
         const qat4& q = qv[i] ; 
-        unsigned ins_idx,  gas_idx, ias_idx ; 
-        q.getIdentity(ins_idx,  gas_idx, ias_idx );  
-
         std::cout 
             << " i " << std::setw(4) << i  
-            << " ins " << std::setw(7) << ins_idx  
-            << " gas " << std::setw(3) << gas_idx  
-            << " ias " << std::setw(2) << ias_idx  
-            << " " << q << std::endl 
+            << " " << q.descId() 
+            << " " << q.desc() 
+            << std::endl 
             ;
 
     }

@@ -72,8 +72,7 @@ void test_Convert()
 template<typename T>
 void test_write(const char* name)
 {
-    int create_dirs = 2 ; // 2:dirpath 
-    const char* fold = SPath::Resolve("$TMP/sysrap/stranTest/test_write", create_dirs); 
+    const char* fold = SPath::Resolve("$TMP/sysrap/stranTest/test_write", DIRPATH); 
 
     const Tran<T>* tr = Tran<T>::make_rotate(    0.f, 0.f, 1.f, 45.f ) ; 
 
@@ -84,6 +83,61 @@ void test_write(const char* name)
     a->save(fold, name) ; 
 }
 
+template<typename T>
+void test_apply()
+{
+    const Tran<T>* tr = Tran<T>::make_translate(0., 0., 100.) ; 
+
+    T pos[8] ; 
+    pos[0] = 0. ; 
+    pos[1] = 0. ; 
+    pos[2] = 0. ; 
+    pos[3] = 0. ;
+    pos[4] = 0. ; 
+    pos[5] = 0. ; 
+    pos[6] = 0. ; 
+    pos[7] = 0. ;
+
+    unsigned count = 2 ; 
+    unsigned stride = 4 ; 
+    unsigned offset = 0 ; 
+
+    T w = 1. ; 
+  
+    tr->apply( &pos[0], w, count, stride, offset ); 
+
+    for(int i=0 ; i < 8 ; i++) std::cout << std::setw(1) << i << " : " << pos[i] << std::endl ; 
+}
+
+template<typename T>
+void test_apply_ph()
+{
+     double data[16] = { 
+           1., 0., 0.,   0., 
+           0., 1., 0.,   0., 
+           0., 0.,-1.,   0., 
+           0., 0., 100., 1. } ; 
+
+     const Tran<T>* t = Tran<T>::ConvertFromData(&data[0]) ; 
+     //const Tran<T>* t = Tran<T>::make_translate(0., 0., 100.) ; 
+
+
+     const char* name = "RandomDisc100_f8.npy" ; 
+     const char* path = SPath::Resolve("$HOME/.opticks/InputPhotons" , name, NOOP ); 
+     NP* a = NP::Load(path); 
+     NP* b = Tran<T>::Apply(a, t); 
+ 
+     const char* FOLD = SPath::Resolve("$TMP/stranTest", DIRPATH ); 
+     std::cout << " FOLD " << FOLD << std::endl ; 
+
+     a->save(FOLD,  "a.npy"); 
+     b->save(FOLD,  "b.npy"); 
+     t->save(FOLD,  "t.npy"); 
+}
+
+
+
+
 
 int main()
 {
@@ -91,9 +145,12 @@ int main()
     test_make(); 
     test_ctor(); 
     test_Convert();
-    */
     test_write<float>("f.npy"); 
     test_write<double>("d.npy"); 
+    test_apply<double>(); 
+    */
+
+    test_apply_ph<double>(); 
 
 
     return 0 ; 

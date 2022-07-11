@@ -2662,9 +2662,9 @@ Replacing most of CSGOptiX::setComposition
 
 sframe CSGFoundry::getFrame() const 
 {
-    const char* moi = SSys::getenvvar("MOI","-1");  
+    const char* moi_or_iidx = SSys::getenvvar("MOI","-1");   // TODO: MOI->FRS perhaps ?
     sframe fr ; 
-    getFrame(fr, moi);
+    getFrame(fr, moi_or_iidx );
     return fr ; 
 }
 
@@ -2680,6 +2680,16 @@ frs
     Otherwise the string is assumed to be inst_idx and iidxg
     parsed as an integer 
 
+
+Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into inst_idx and vice versa ?
+
+* NO not for global prims : for example for all the repeated prims in the global geometry 
+  there is only one inst_idx (zero) but there are many possible MOI  
+
+* NO not for most instanced prim, where all the prim within an instance 
+  share the same inst_idx and transform
+
+* BUT but for the outer prim of an instance a correspondence is possible  
 
 **/
 

@@ -39,6 +39,7 @@ int  SEventConfig::_MaxSimtraceDefault = 3*M ;
 const char* SEventConfig::_CompMaskDefault = SComp::ALL_ ; 
 float SEventConfig::_PropagateEpsilonDefault = 0.05f ; 
 const char* SEventConfig::_InputPhotonDefault = nullptr ; 
+const char* SEventConfig::_InputPhotonFrameDefault = nullptr ; 
 
 
 
@@ -61,6 +62,7 @@ unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar(kHi
 unsigned SEventConfig::_CompMask  = SComp::Mask(SSys::getenvvar(kCompMask, _CompMaskDefault )) ;   
 float SEventConfig::_PropagateEpsilon = SSys::getenvfloat(kPropagateEpsilon, _PropagateEpsilonDefault ) ; 
 const char* SEventConfig::_InputPhoton = SSys::getenvvar(kInputPhoton, _InputPhotonDefault ); 
+const char* SEventConfig::_InputPhotonFrame = SSys::getenvvar(kInputPhotonFrame, _InputPhotonFrameDefault ); 
 
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
@@ -82,6 +84,7 @@ unsigned SEventConfig::HitMask(){     return _HitMask ; }
 unsigned SEventConfig::CompMask(){  return _CompMask; } 
 float SEventConfig::PropagateEpsilon(){ return _PropagateEpsilon ; }
 const char* SEventConfig::InputPhoton(){   return _InputPhoton ; }
+const char* SEventConfig::InputPhotonFrame(){   return _InputPhotonFrame ; }
 
 
 
@@ -108,6 +111,7 @@ void SEventConfig::SetHitMask(const char* abrseq, char delim){  _HitMask = Optic
 void SEventConfig::SetCompMask(const char* names, char delim){  _CompMask = SComp::Mask(names,delim) ; }
 void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; Check() ; }
 void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; Check() ; }
+void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip ? strdup(ip) : nullptr ; Check() ; }
 
 
 

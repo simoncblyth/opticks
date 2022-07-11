@@ -6,7 +6,7 @@ class G4LogicalSurface ;
 class G4VPhysicalVolume ; 
 
 struct sphoton ; 
-struct U4CF ; 
+struct SCF ; 
 
 
 enum { 
@@ -20,7 +20,7 @@ enum {
 
 struct U4Step
 {
-    static const U4CF* CF ; 
+    static const SCF* CF ; 
 
     static constexpr const char* UNSET = "UNSET" ; 
     static constexpr const char* NOT_AT_BOUNDARY = "NOT_AT_BOUNDARY" ; 
@@ -46,7 +46,7 @@ struct U4Step
 };
 
 
-const U4CF* U4Step::CF = U4CF::Create() ; 
+const SCF* U4Step::CF = SCF::Create() ; 
 
 
 /**
@@ -76,7 +76,7 @@ const char* U4Step::MockOpticksBoundaryIdentity_NOTE = R"(
 U4Step::MockOpticksBoundaryIdentity 
 ====================================
 
-Mocking Opticks requires CFBASE envvar which allows instanciation of U4CF
+Mocking Opticks requires CFBASE envvar which allows instanciation of SCF
 This means that when changing the U4VolumeMaker geometry it is necessary to
 run the Opticks gxs.sh GPU simulation first and grab the CSGFoundry geometry 
 back to the machine running the Geant4 simulation. 

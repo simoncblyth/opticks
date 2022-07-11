@@ -105,6 +105,9 @@ int CSGTarget::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4* 
 CSGTarget::getFrame
 ----------------------
 
+Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into inst_idx and vice versa ?
+A: see notes with CSGFoundry::getFrame
+
 **/
 
 int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const 
@@ -112,7 +115,6 @@ int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const
     fr.set_midx_mord_iidx( midx, mord, iidxg ); 
     return getCenterExtent( fr.ce, midx, mord, iidxg, &fr.m2w , &fr.w2m ); 
 }
-
 
 int CSGTarget::getFrame(sframe& fr, int inst_idx ) const 
 {

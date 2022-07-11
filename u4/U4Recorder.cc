@@ -24,7 +24,8 @@
 #include "U4Surface.h"
 
 #include "U4Process.h"
-#include "U4CF.h"
+
+#include "SCF.h"
 #include "U4Step.h"
 
 const plog::Severity U4Recorder::LEVEL = PLOG::EnvLevel("U4Recorder", "DEBUG"); 

@@ -30,6 +30,8 @@ set(TEST_SOURCES
    SDigestTest.cc
    SDigestNPTest.cc
 
+   SCFTest.cc
+
    
    PLogTest.cc 
    PLOG_Test.cc 

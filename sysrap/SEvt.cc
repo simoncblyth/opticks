@@ -11,11 +11,13 @@
 #include "sevent.h"
 #include "sctx.h"
 #include "sdebug.h"
+#include "stran.h"
 
 
 #include "PLOG.hh"
 #include "SSys.hh"
 #include "SStr.hh"
+#include "SName.h"
 #include "NP.hh"
 #include "NPFold.h"
 #include "SPath.hh"
@@ -27,12 +29,13 @@
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "SComp.h"
+#include "SCF.h"
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
 const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
-
+const SCF* SEvt::CF = SCF::Create() ;
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
@@ -105,8 +108,11 @@ Resolving the input string to a path is done in one of two ways:
 
 **/
 
-NP* SEvt::LoadInputPhoton(const char* ip) // static 
+NP* SEvt::LoadInputPhoton() // static 
 {
+    const char* ip = SEventConfig::InputPhoton(); 
+    if( ip == nullptr ) return nullptr ; 
+
     assert(strlen(ip) > 0 && SStr::EndsWith(ip, ".npy") ); 
     const char* path = SStr::StartsWithLetterAZaz(ip) ?  SPath::Resolve(INPUT_PHOTON_DIR, ip, NOOP) : SPath::Resolve( ip, NOOP ) ; 
 
@@ -125,6 +131,16 @@ NP* SEvt::LoadInputPhoton(const char* ip) // static
 
     return a ; 
 }
+
+const qat4* SEvt::InputPhotonFrame() // static 
+{
+    const char* ipf_ = SEventConfig::InputPhotonFrame(); 
+    int ipf = ipf_ ? SName::ParseIntString(ipf_, -1) : -1 ; 
+    const qat4* q = ( CF && ipf > -1 ) ? CF->getInst( ipf ) : nullptr ;
+    return q ; 
+   
+}
+
 
 /**
 SEvt::initInputPhoton
@@ -150,11 +166,47 @@ by SEvt::LoadInputPhoton
 
 void SEvt::initInputPhoton()
 {
-    const char* ip = SEventConfig::InputPhoton(); 
-    if( ip == nullptr ) return ; 
-    NP* a = LoadInputPhoton(ip) ; 
-    setInputPhoton(a);    // this adds placeholder genstep of gentype OpticksGenstep_INPUT_PHOTON
+    NP* ip0 = LoadInputPhoton() ;
+    const qat4* q = InputPhotonFrame(); 
+    Tran<double>* t = q == nullptr ? nullptr : Tran<double>::ConvertToTran(q);
+    NP* ip = t ? Tran<double>::Apply(ip0, t ) : ip0 ; 
+    
+    setInputPhoton(ip, q);    // this adds placeholder genstep of gentype OpticksGenstep_INPUT_PHOTON
 }
+
+/**
+SEvt::setInputPhoton
+---------------------
+
+Also adds placeholder genstep of gentype OpticksGenstep_INPUT_PHOTON
+
+**/
+
+void SEvt::setInputPhoton(NP* p, const qat4* q) 
+{ 
+    if(p == nullptr) return ; 
+
+    input_photon = p ; 
+    assert( input_photon->has_shape(-1,4,4) ); 
+    int numphoton = input_photon->shape[0] ; 
+    assert( numphoton > 0 ); 
+
+    assert( genstep.size() == 0 ) ; // cannot mix input photon running with genstep running  
+
+    quad6 ipgs ; 
+    ipgs.zero(); 
+    ipgs.set_gentype( OpticksGenstep_INPUT_PHOTON ); 
+    ipgs.set_numphoton( numphoton ); 
+    if(q) q->write(ipgs); // copy q into ipgs.q2,q3,q4,q5 
+
+    addGenstep(ipgs); 
+}
+
+NP* SEvt::getInputPhoton() const { return input_photon ; }
+bool SEvt::hasInputPhoton() const { return input_photon != nullptr ; }
+
+
+
 
 
 void SEvt::setCompProvider(const SCompProvider* provider_)
@@ -224,6 +276,7 @@ int SEvt::GetNumPhoton(){ return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
 NP* SEvt::GetGenstep() {      return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
 NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
 bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : false ; }
+
 
 
 void SEvt::clear()
@@ -1041,34 +1094,7 @@ by SEvt::clear
 **/
 
 NP* SEvt::getGenstep() const { return NP::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
-NP* SEvt::getInputPhoton() const { return input_photon ; }
-bool SEvt::hasInputPhoton() const { return input_photon != nullptr ; }
 
-
-/**
-SEvt::setInputPhoton
----------------------
-
-Also adds placeholder genstep of gentype OpticksGenstep_INPUT_PHOTON
-
-**/
-
-void SEvt::setInputPhoton(NP* p) 
-{ 
-    input_photon = p ; 
-    assert( input_photon->has_shape(-1,4,4) ); 
-    int numphoton = input_photon->shape[0] ; 
-    assert( numphoton > 0 ); 
-
-    assert( genstep.size() == 0 ) ; // cannot mix input photon running with genstep running  
-
-    quad6 ipgs ; 
-    ipgs.zero(); 
-    ipgs.set_gentype( OpticksGenstep_INPUT_PHOTON ); 
-    ipgs.set_numphoton( numphoton ); 
-
-    addGenstep(ipgs); 
-}
 
 
 void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE 

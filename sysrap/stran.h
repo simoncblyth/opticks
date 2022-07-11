@@ -21,6 +21,7 @@ which inevitably risks numerical issues.
 #include "sqat4.h"
 #include "NP.hh"
 #include "glm/glm.hpp"
+#include "glm/gtx/string_cast.hpp"
 
 #include <vector>
 
@@ -42,9 +43,13 @@ struct Tran
     static const Tran<T>* product(const std::vector<const Tran<T>*>& tt, bool reverse );
 
     static Tran<T>* ConvertToTran( const qat4* q, T epsilon=EPSILON ); 
+    static Tran<T>* ConvertFromData(const T* data); 
+
     static const qat4* Invert( const qat4* q, T epsilon=EPSILON ); 
     static Tran<T>* FromPair( const qat4* t, const qat4* v, T epsilon=EPSILON ); // WIDENS from float  
-    static glm::tmat4x4<T> MatFromQat(const qat4* q );
+    static glm::tmat4x4<T> MatFromQat( const qat4* q );
+    static glm::tmat4x4<T> MatFromData(const T* data );
+
     static qat4*    ConvertFrom(const glm::tmat4x4<T>& tr ); 
 
     Tran( const T* transform, const T* inverse ) ;
@@ -58,6 +63,11 @@ struct Tran
  
     void write(T* dst, unsigned num_values=3*4*4) const ; 
     void save(const char* dir, const char* name="stran.npy") const ; 
+
+    void apply( T* p0, T w, unsigned count, unsigned stride, unsigned offset ) const ; 
+    void apply_( float* p0, float w, unsigned count, unsigned stride, unsigned offset ) const ; 
+    void apply( NP* ph ) const ; 
+    static NP* Apply( const NP* ph, const Tran<T>* tr ); 
 
 
     const T* tdata() const ; 
@@ -106,6 +116,12 @@ inline std::ostream& operator<< (std::ostream& out, const Tran<T>& tr)
 
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+
+
+
+
+
 
 template<typename T>
 inline const Tran<T>* Tran<T>::make_translate( const T tx, const T ty, const T tz, const T sc)
@@ -345,6 +361,20 @@ Tran<T>* Tran<T>::ConvertToTran(const qat4* q_, T epsilon )
 }
 
 template<typename T>
+Tran<T>* Tran<T>::ConvertFromData(const T* data )
+{
+    glm::tmat4x4<T> tran = MatFromData(data) ; 
+    glm::tmat4x4<T> itra = glm::inverse(tran) ;     
+    Tran<T>* tr = new Tran<T>(tran, itra) ; 
+    tr->checkIsIdentity('i', "ConvertToTran"); 
+    return tr ; 
+}
+
+
+
+
+
+template<typename T>
 const qat4* Tran<T>::Invert( const qat4* q, T epsilon )
 {
     unsigned ins_idx, gas_idx, ias_idx ;
@@ -378,6 +408,32 @@ glm::tmat4x4<T> Tran<T>::MatFromQat(const qat4* q )  // static
     for(int i=0 ; i < 16 ; i++) tran_ptr[i] = T(q_data[i]) ; 
     return tran ; 
 }
+
+template<typename T>
+glm::tmat4x4<T> Tran<T>::MatFromData(const T* data)  // static
+{
+    glm::tmat4x4<T> tran(1.);
+    T* tran_ptr = glm::value_ptr(tran) ;
+    for(int i=0 ; i < 16 ; i++) tran_ptr[i] = data[i] ; 
+    return tran ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
 
 /**
@@ -422,6 +478,104 @@ void Tran<T>::save(const char* dir, const char* name) const
     write( a->values<T>(), num_values ) ; 
     a->save(dir, name);
 }
+
+/**
+Tran::apply
+-------------
+
+Applies the transform *count* times using 4th component w 
+(w is usually 1. for transforming as a position or 0. for transforming as a direction).
+
+**/
+
+template<typename T>
+void Tran<T>::apply( T* p0, T w, unsigned count, unsigned stride, unsigned offset ) const 
+{
+    for(unsigned i=0 ; i < count ; i++)
+    {
+        T* a_ = p0 + i*stride + offset ;
+ 
+        glm::tvec4<T> a(a_[0],a_[1],a_[2],w); 
+        glm::tvec4<T> ta = t * a ;
+        T* ta_ = glm::value_ptr( ta ) ; 
+
+        for(unsigned j=0 ; j < 3 ; j++) a_[j] = ta_[j] ; 
+
+        //std::cout << " apply: a " << glm::to_string( a ) << std::endl ; 
+        //std::cout << " apply: ta= " << glm::to_string( ta ) << std::endl ; 
+
+    }
+}
+
+/**
+HMM: the above  assumes the float/double of the array is same as the transform
+but it will often be preferable to use a double precision transform 
+and single precision array 
+**/
+
+
+template<typename T>
+void Tran<T>::apply_( float* p0, float w, unsigned count, unsigned stride, unsigned offset ) const 
+{
+    for(unsigned i=0 ; i < count ; i++)
+    {
+        float* a_ = p0 + i*stride + offset ;
+ 
+        glm::tvec4<T> a(0.,0.,0.,0.)  ;
+        T* aa = glm::value_ptr(a) ; 
+        for(unsigned j=0 ; j < 3 ; j++) aa[j] = T(a_[j]) ;  // potentially widen 
+        aa[3] = T(w) ; 
+
+
+        glm::tvec4<T> ta = t * a ;
+        T* ta_ = glm::value_ptr( ta ) ; 
+        for(unsigned j=0 ; j < 3 ; j++) a_[j] = float(ta_[j]) ;   // potentially narrow  
+
+        //std::cout << " apply_: a " << glm::to_string( a ) << std::endl ; 
+        //std::cout << " apply_: ta= " << glm::to_string( ta ) << std::endl ; 
+    }
+}
+ 
+
+
+template<typename T>
+void Tran<T>::apply( NP* ph ) const 
+{
+    T one(1.); 
+    T zero(0.); 
+
+    assert( ph->has_shape(-1,4,4) ); 
+    unsigned count  = ph->shape[0] ; 
+    unsigned stride = 4*4 ; 
+
+    if( ph->ebyte == sizeof(T) )
+    {
+        T* p0 = ph->values<T>(); 
+        apply( p0, one,  count, stride, 0 );  // transform pos as position
+        apply( p0, zero, count, stride, 4 );  // transform mom as direction
+        apply( p0, zero, count, stride, 8 );  // transform pol as direction
+    }
+    else if( ph->ebyte == 4 && sizeof(T) == 8 ) 
+    {
+        float* p0 = ph->values<float>(); 
+        apply_( p0, one,  count, stride, 0 );  // transform pos as position
+        apply_( p0, zero, count, stride, 4 );  // transform mom as direction
+        apply_( p0, zero, count, stride, 8 );  // transform pol as direction
+    }
+
+
+}
+
+
+template<typename T>
+NP* Tran<T>::Apply( const NP* ph, const Tran<T>* t ) // static 
+{
+    NP* b = ph->copy(); 
+    t->apply(b); 
+    return b ; 
+}
+
+
 
 
 

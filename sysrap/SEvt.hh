@@ -51,6 +51,7 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "SComp.h"
 #include "SRandom.h"
 
+struct SCF ; 
 struct sphoton_selector ; 
 struct sdebug ; 
 struct NP ; 
@@ -60,6 +61,8 @@ struct NPFold ;
 
 struct SYSRAP_API SEvt : public SCompProvider
 {
+    static const SCF* CF ;
+
     int index ; 
     const char* reldir ; 
     sphoton_selector* selector ; 
@@ -101,7 +104,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const int MISSING_INDEX ; 
 
     static const char* INPUT_PHOTON_DIR ; 
-    static NP* LoadInputPhoton(const char* ip); 
+    static NP* LoadInputPhoton(); 
+    static const qat4* InputPhotonFrame(); 
 
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
@@ -221,7 +225,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* getGenstep() const ; 
     NP* getInputPhoton() const ; 
     bool hasInputPhoton() const ; 
-    void setInputPhoton(NP* p); 
+    void setInputPhoton(NP* p, const qat4* q); 
 
     void gather_components() ; 
 
