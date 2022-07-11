@@ -488,6 +488,8 @@ void U4Random::check_cursor_vs_tagslot()
 {
     assert(m_seq_index > -1) ;  // must not call when disabled, use G4UniformRand to use standard engine
     int cursor = *(m_cur_values + m_seq_index) ;  // get the cursor value to use for this generation, starting from 0 
+
+
     int slot = SEvt::GetTagSlot(); 
     bool cursor_slot_match = cursor == slot ;  
 
@@ -550,6 +552,13 @@ unsigned U4Random::getFlatTag()
 **/
 
 
+
+int U4Random::getFlatCursor() const 
+{
+    if(m_seq_index < 0) return -1 ; 
+    int cursor = *(m_cur_values + m_seq_index) ;  // get the cursor value to use for this generation, starting from 0 
+    return cursor ; 
+}
 
 double U4Random::getFlatPrior() const 
 {

@@ -188,6 +188,8 @@ int main(int argc, char** argv)
 
     SEventConfig::SetStandardFullDebug(); 
     SEvt evt ;    // SEvt must be instanciated before QEvent
+    evt.random = &rnd  ;  // so can use getFlatPrior within SEvt::addTag
+
     if(U4RecorderTest::PrimaryMode() == 'T') SEvt::AddTorchGenstep();  
 
     G4RunManager* runMgr = new G4RunManager ; 

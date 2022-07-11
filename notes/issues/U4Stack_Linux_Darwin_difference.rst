@@ -27,6 +27,94 @@ The deficient SBacktrace::Summary might arise from the inline imps.
 
 
 
+More systematic way to find untagged consumption
+---------------------------------------------------
+
+::
+
+    474 #ifdef DEBUG_TAG
+    475 /**
+    476 U4Random::check_cursor_vs_tagslot
+    477 ----------------------------------
+    478 
+    479 This is called by setSequenceIndex with index -1 signalling the end 
+    480 of the index. A comparison between the below counts is made:
+    481 
+    482 * number of randoms provided by U4Random::flat for the last m_seq_index as indicated by the cursor 
+    483 * random consumption tags added with SEvt::AddTag
+    484 
+    485 **/
+    486 
+    487 void U4Random::check_cursor_vs_tagslot()
+    488 {
+    489     assert(m_seq_index > -1) ;  // must not call when disabled, use G4UniformRand to use standard engine
+    490     int cursor = *(m_cur_values + m_seq_index) ;  // get the cursor value to use for this generation, starting from 0 
+    491     int slot = SEvt::GetTagSlot();
+    492     bool cursor_slot_match = cursor == slot ;
+    493 
+    494     //LOG(info) << " m_seq_index " << m_seq_index << " cursor " << cursor << " slot " << slot << " cursor_slot_match " << cursor_slot_match ; 
+    495 
+    496     if(!cursor_slot_match)
+    497     {
+    498         m_problem_idx.push_back(m_seq_index);
+    499         LOG(error)
+    500             << " m_seq_index " << m_seq_index
+    501             << " cursor " << cursor
+    502             << " slot " << slot
+    503             << " cursor_slot_match " << cursor_slot_match
+    504             << std::endl
+    505             << " PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS "
+    506             ;
+    507     }
+    508 }
+    509 #endif
+
+
+
+Dump the idx with untagged consumptions::
+
+    2022-07-11 17:41:35.674 INFO  [54066] [U4Recorder::EndOfRunAction@79] 
+    2022-07-11 17:41:35.674 INFO  [54066] [main@199] /tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/J000/ALL
+    U4Random::saveProblemIdx m_problem_idx.size 493 (9993 9986 9973 9922 9904 9897 9867 9850 9824 9802 9799 9785 9775 9755 9751 9726 9724 9707 9696 9679 9659 9654 9584 9492 9461 9422 9419 9413 9401 9367 9321 9311 9298 9281 9272 9264 9255 9254 9225 9196 9189 9187 9175 9162 9150 9123 9084 9007 8998 8989 8987 8924 8863 8855 8813 8808 8802 8773 8766 8765 8750 8746 8735 8699 8695 8683 8675 8669 8629 8608 8589 8585 8567 8564 8543 8541 8531 8503 8451 8438 8433 8427 8413 8394 8378 8363 8344 8318 8297 8229 8222 8171 8136 8100 8092 8050 8036 8006 8002 7992 7985 7961 7948 7931 7926 7923 7917 7901 7896 7884 7868 7838 7790 7769 7762 7754 7752 7733 7719 7683 7635 7627 7623 7609 7579 7571 7568 7534 7518 7510 7505 7489 7480 7431 7378 7370 7350 7347 7322 7311 7302 7291 7279 7219 7191 7168 7069 7049 7020 6957 6907 6836 6776 6761 6755 6751 6704 6696 6648 6589 6586 6562 6550 6542 6518 6514 6512 6508 6493 6467 6426 6420 6390 6384 6369 6356 6338 6302 6266 6242 6241 6152 6150 6100 6088 6083 6021 6015 6008 5974 5958 5916 5914 5907 5868 5863 5825 5777 5773 5753 5751 5745 5708 5691 5688 5662 5649 5523 5441 5413 5408 5356 5352 5219 5126 5116 5103 5097 5081 5077 5055 5046 5036 5020 5011 4986 4944 4925 4883 4873 4798 4759 4755 4753 4747 4736 4649 4646 4623 4605 4597 4595 4547 4534 4529 4521 4519 4507 4473 4444 4415 4397 4377 4375 4368 4350 4341 4337 4310 4287 4260 4247 4163 4158 4129 4066 4040 3983 3973 3967 3966 3952 3941 3935 3932 3899 3882 3852 3824 3803 3784 3778 3766 3741 3723 3718 3713 3707 3684 3675 3667 3614 3604 3595 3594 3543 3514 3473 3390 3366 3337 3306 3268 3263 3248 3243 3240 3237 3224 3223 3214 3205 3162 3157 3043 3024 3020 3011 3008 2959 2953 2950 2944 2943 2928 2920 2910 2901 2897 2876 2848 2844 2804 2783 2782 2761 2753 2681 2669 2614 2597 2590 2482 2480 2450 2421 2404 2389 2375 2362 2303 2281 2269 2239 2235 2211 2181 2162 2138 2108 2086 2073 2069 2062 2032 2026 2025 2012 2008 1996 1993 1989 1988 1983 1980 1925 1904 1892 1878 1868 1864 1846 1833 1826 1816 1789 1784 1781 1780 1763 1739 1736 1718 1697 1682 1680 1665 1658 1644 1616 1615 1604 1592 1572 1512 1502 1420 1410 1403 1375 1358 1357 1338 1320 1308 1293 1273 1265 1244 1229 1225 1216 1205 1178 1087 1073 1061 1059 1034 1015 1011 1003 999 994 965 914 904 902 880 878 827 819 792 774 757 756 737 732 729 725 719 702 637 630 609 604 601 598 582 561 524 496 466 429 392 391 389 374 346 345 307 277 271 270 257 220 208 191 189 168 150 145 143 122 97 86 83 74 66 53 52 46 37 )
+
+
+PIDX running dumps all the SBacktrace::Summary so can look for unexpected bt to find the untagged consumption::
+
+    PIDX=9993 ./U4RecorderTest.sh run 
+
+
+* reemission will be a big source of untagged consumption, but is it the only one ?
+
+::
+
+    2022-07-11 17:47:27.997 INFO  [54262] [SEvt::addTag@804]  idx 9993 PIDX 9993 tag 5 flat 0.259223 evt.tag 0x10ac3820 tagr.slot 2
+    ShimG4OpRayleigh::PostStepGetPhysicalInteractionLength PIDX 9993 currentInteractionLength 44837.1652990 theNumberOfInteractionLengthLeft  1.3500648 value 60533.0742188
+    2022-07-11 17:47:27.997 INFO  [54262] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor    3 idx 2558211 d    0.50091
+    2022-07-11 17:47:27.997 INFO  [54262] [U4Random::flat@436] 
+    SBacktrace::Summary
+    U4Random::flat
+    G4SteppingManager::DefinePhysicalStepLength
+    G4SteppingManager::Stepping
+    G4TrackingManager::ProcessOneTrack
+    G4EventManager::DoProcessing
+    G4RunManager::DoEventLoop
+    G4RunManager::BeamOn
+
+    2022-07-11 17:47:27.997 INFO  [54262] [SEvt::addTag@804]  idx 9993 PIDX 9993 tag 6 flat 0.500906 evt.tag 0x10ac3820 tagr.slot 3
+    ShimG4OpAbsorption::PostStepGetPhysicalInteractionLength PIDX 9993 currentInteractionLength 117102.8434534 theNumberOfInteractionLengthLeft  0.6913363 value 80957.4531250
+    2022-07-11 17:47:27.997 INFO  [54262] [U4Random::flat@425]  SEvt::PIDX 9993 m_seq_index 9993 m_seq_nv  256 cursor    4 idx 2558212 d    0.76245
+    2022-07-11 17:47:27.997 INFO  [54262] [U4Random::flat@436] 
+    SBacktrace::Summary
+
+
+
+
+
+
+
+Manual Tagging will take some effort : but its faster than auto tag and deficient backtrace means have to go manual anyhow
+--------------------------------------------------------------------------------------------------------------------------------
+
 
 
 
@@ -217,7 +305,8 @@ Switch to manual tagging : occasionally missing a consumption
 
 
 
-The untagged consumption looks to be at the end of the history 
+One untagged consumption looks to be at the end of the history : was DiMe
+----------------------------------------------------------------------------
 
 ::
 
@@ -294,3 +383,8 @@ The untagged consumption looks to be at the end of the history
      PROBABLY SOME RANDOM CONSUMPTION LACKS SEvt::AddTag CALLS 
     2022-07-11 03:07:52.417 INFO  [26866] [SEvt::beginPhoton@535]  idx 9919
     U4Step::MockOpticksBoundaryIdentity problem step  idx 9919 type 1 U4Step::Name NOT_AT_BOUNDARY cosThetaSign 0 s
+
+
+
+
+

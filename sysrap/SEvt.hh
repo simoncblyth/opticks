@@ -49,6 +49,7 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 
 #include "sgs.h"
 #include "SComp.h"
+#include "SRandom.h"
 
 struct sphoton_selector ; 
 struct sdebug ; 
@@ -66,6 +67,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     sdebug* dbg ; 
     std::string meta ; 
     NP* input_photon ; 
+
+    const SRandom*        random ; 
     const SCompProvider*  provider ; 
     NPFold*               fold ; 
     bool                  hostside_running_resize_done ; // only ever becomes true for non-GPU running 

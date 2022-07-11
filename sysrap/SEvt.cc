@@ -44,6 +44,7 @@ SEvt::SEvt()
     evt(new sevent),
     dbg(new sdebug),
     input_photon(nullptr),
+    random(nullptr),
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
     fold(new NPFold),
     hostside_running_resize_done(false)
@@ -789,7 +790,7 @@ void SEvt::pointPhoton(const spho& label)
 SEvt::addTag
 -------------
 
-HMM: this needs to be called at every random consumption ... see U4Random::flat 
+HMM: this needs to be called following every random consumption ... see U4Random::flat 
 
 **/
 
@@ -811,6 +812,34 @@ void SEvt::addTag(unsigned tag, float flat)
               ; 
     }
     tagr.add(tag,flat)  ; 
+
+
+    if(random)
+    {
+        int flat_cursor = random->getFlatCursor(); 
+        assert( flat_cursor > -1 ); 
+        double flat_prior = random->getFlatPrior(); 
+        bool cursor_slot_match = unsigned(flat_cursor) == tagr.slot ; 
+        if(!cursor_slot_match)
+        {
+            LOG(error)
+                << " cursor_slot_match " << cursor_slot_match
+                << " flat " << flat 
+                << " tagr.slot " << tagr.slot 
+                << " ( from SRandom "
+                << " flat_prior " << flat_prior 
+                << " flat_cursor " << flat_cursor 
+                << "  ) " 
+                << std::endl
+                << " MISMATCH MEANS ONE OR MORE PRIOR CONSUMPTIONS WERE NOT TAGGED "
+                ;
+                ; 
+        }
+        assert( cursor_slot_match ); 
+    }
+
+
+
 }
 
 int SEvt::getTagSlot() const 

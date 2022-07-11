@@ -155,6 +155,8 @@ set(HEADERS
 
     SLauncher.hh
     SRenderer.hh
+    SRandom.h
+
     SCtrl.hh
     SGeo.hh
     SConstant.hh

@@ -21,10 +21,11 @@ This was developed from examples/Geant4/CerenkovStandalone/OpticksRandom.hh
 #include <vector>
 #include "plog/Severity.h"
 #include "CLHEP/Random/RandomEngine.h"
+#include "SRandom.h"
 #include "U4_API_EXPORT.hh"
 struct NP ; 
 
-struct U4_API U4Random : public CLHEP::HepRandomEngine
+struct U4_API U4Random : public CLHEP::HepRandomEngine, public SRandom 
 {
     friend struct U4RandomTest ; 
     static const plog::Severity LEVEL ; 
@@ -121,7 +122,9 @@ Steps to fix:
 
     int  getSequenceIndex() const ;
 
+    int    getFlatCursor() const ; 
     double getFlatPrior() const ; 
+
     //unsigned getFlatTag() ; 
 
 
