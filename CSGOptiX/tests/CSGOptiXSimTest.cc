@@ -24,6 +24,8 @@ int main(int argc, char** argv)
     SEvt evt ;  // holds gensteps and output NPFold of component arrays
     SEvt::AddCarrierGenstep();   // normally gensteps added after geometry setup, but can be before in this simple test 
 
+    // TODO: this is missing setFrame
+
     CSGFoundry* fd = CSGFoundry::Load() ;  // standard OPTICKS_KEY CFBase/CSGFoundry geometry and SSim
 
     CSGOptiX* cx = CSGOptiX::Create(fd);   // uploads geometry, instanciates QSim 

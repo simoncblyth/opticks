@@ -18,14 +18,19 @@ name=storch_test
 bdir=/tmp/$name/build
 mkdir -p $bdir
 
-odir=/tmp/$name/out
+vers=down
+
+#odir=/tmp/$name/$vers
+odir=$HOME/.opticks/InputPhotons/$name/$vers
+
 fold=$odir/$(uname)
 a_fold=$odir/Darwin
 b_fold=$odir/Linux
 mkdir -p $fold
 
-export FOLD=$fold
-echo $msg FOLD $FOLD odir $odir
+
+export FOLD=$fold   # controls where generated photons will be saved
+echo $msg FOLD $FOLD odir $odir vers $vers
 
 
 case $(uname) in 
@@ -55,10 +60,21 @@ if [ "${arg/build}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg build error && exit 1 
 fi 
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "$vers" == "up" ]; then 
 
     export storch_FillGenstep_pos=0,0,-990
+    export storch_FillGenstep_mom=0,0,1
     export storch_FillGenstep_radius=49
+
+elif [ "$vers" == "down" ]; then 
+
+    export storch_FillGenstep_pos=0,0,990
+    export storch_FillGenstep_mom=0,0,-1
+    export storch_FillGenstep_radius=49
+fi 
+
+
+if [ "${arg/run}" != "$arg" ]; then 
 
     #export SEvent_MakeGensteps_num_ph=1000
     export SEvent_MakeGensteps_num_ph=10000

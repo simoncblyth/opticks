@@ -24,6 +24,7 @@ esac
 
 arg=${1:-$defarg}
 bin=G4CXSimtraceTest
+xbin=G4CXSimulateTest
 
 echo $msg arg $arg bin $bin defarg $defarg
 
@@ -31,16 +32,25 @@ source ../bin/GEOM_.sh
 
 if [ -n "$CFBASE" ]; then
     BASE=$CFBASE/$bin
+    X_BASE=$CFBASE/$xbin    
     UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
 else
     BASE=/tmp/$USER/opticks/$bin/$GEOM
+    X_BASE=/tmp/$USER/opticks/$xbin/$GEOM
     UBASE=$BASE
     CFBASE=$BASE
 fi
 # NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
 
 FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
-MOI=Hama:0:1000    ## HMM: tie this to OPTICKS_INPUT_PHOTON_FRAME : means not exporting from bin/OPTICKS_INPUT_PHOTON.sh 
+X_FOLD=$X_BASE/ALL
+
+MOI=Hama:0:1000    
+## TODO: tie MOI to OPTICKS_INPUT_PHOTON_FRAME : this means not exporting from bin/OPTICKS_INPUT_PHOTON.sh 
+
+
+export MOI 
+
 
 
 loglevels()
@@ -59,7 +69,6 @@ loglevels
 
 
 
-export MOI 
 
 if [ "${arg/run}" != "$arg" ]; then 
     echo $msg run $bin
@@ -77,6 +86,7 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
     export FOLD
+    export X_FOLD
     export CFBASE
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 

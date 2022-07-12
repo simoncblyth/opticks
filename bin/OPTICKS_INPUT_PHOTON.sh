@@ -21,7 +21,9 @@ EOU
 }
 
 #path=RandomSpherical10_f8.npy
-path=/tmp/storch_test/out/$(uname)/ph.npy
+vers=down
+#path=/tmp/storch_test/$vers/$(uname)/ph.npy
+path=storch_test/$vers/$(uname)/ph.npy
 
 if [ -n "$path" ]; then 
     export OPTICKS_INPUT_PHOTON=$path

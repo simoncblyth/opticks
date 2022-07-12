@@ -16,7 +16,8 @@ Used from gxt.sh, eg::
        by the genstep grid points 
 
    MASK=t ./gxt.sh ana
-       curious MASK=t is unexpected making half the hama_body_log disappear ? 
+       MASK=t requires t>0 which excludes miss, but does not restrict to 
+       the genstep grid positions so can see intersects from outside the grid 
 
 
 """
@@ -29,11 +30,14 @@ from opticks.ana.framegensteps import FrameGensteps
 from opticks.ana.simtrace_positions import SimtracePositions
 from opticks.ana.simtrace_plot import SimtracePlot, pv, mp
 from opticks.ana.pvplt import *
+from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 
 
 SIMPLE = "SIMPLE" in os.environ
 MASK = os.environ.get("MASK", "pos")
 FEAT = os.environ.get("FEAT", "pid" )
+PIDX = eint_("PIDX", "0")
+
 
 def simple(pl, gs, pos):
     """ 
@@ -48,8 +52,23 @@ def simple(pl, gs, pos):
 
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
-    x = None
+    x = Fold.Load("$X_FOLD", symbol="x")
+
     print(t)
+    print(x)
+
+    if not x is None:
+        x_nib = seqnib_(x.seq[:,0])                  # valid steppoint records from seqhis count_nibbles
+        #x_gpos_ = x.record[PIDX,:x_nib[PIDX],0,:3]  # global frame photon step record positions of single PIDX photon
+        x_gpos_ = x.record[PIDX,0,0,:3]              # global frame photon step record positions of single PIDX photon
+        x_gpos  = np.ones( (len(x_gpos_), 4 ), dtype=np.float32 )
+        x_gpos[:,:3] = x_gpos_
+        x_lpos = np.dot( x_gpos, t.sframe.w2m ) 
+    else:
+        x_lpos = None
+    pass
+
+
 
     local = True 
 
@@ -72,7 +91,7 @@ if __name__ == '__main__':
 
     plt = SimtracePlot(pl, pf.feat, gs, t.sframe, t_pos, outdir=os.path.join(t.base, "figs") )
 
-    if not x is None:           
+    if not x_lpos is None:           
         plt.x_lpos = x_lpos   
     pass
     
