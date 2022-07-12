@@ -62,11 +62,17 @@ if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
     source ../bin/OPTICKS_INPUT_PHOTON.sh     
 fi 
 
-source ./IDPath_override.sh   
+#source ./IDPath_override.sh   
 # IDPath_override.sh : non-standard IDPath to allow U4Material::LoadOri to find material properties 
 # HMM probably doing nothing now that are using U4Material::LoadBnd ?
 
 source ../bin/GEOM_.sh 
+
+export A_FOLD
+
+if [ -z "$QUIET" ]; then 
+    echo $msg A_FOLD from GEOM_.sh : $A_FOLD : allows loading of sframe.npy for input photon transform
+fi 
 
 
 if [ -n "$CFBASE" ]; then 
@@ -96,7 +102,6 @@ physdesc="${physdesc}_"
 
 
 export FOLD=$foldbase/$physdesc/$GEOM/$sel
-
 
 
 

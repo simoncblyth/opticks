@@ -3,12 +3,19 @@ usage(){ cat << EOU
 OPTICKS_INPUT_PHOTON.sh Configuring SEventConfig::InputPhoton default
 =======================================================================
 
-This script sets the OPTICKS_INPUT_PHOTON envvar, it is sourced by:
+This script sets envvars that are used as SEventConfig defaults. 
 
-* u4/tests/U4RecorderTest.sh 
+OPTICKS_INPUT_PHOTON 
+   name or path of input photon .npy file, default of SEventConfig::InputPhoton 
+
+OPTICKS_INPUT_PHOTON_FRAME
+   moi_or_iidx string eg "Hama:0:1000" OR "35000", default of SEventConfig::InputPhotonFrame
+
+This script is sourced by:
+
+* u4/u4s.sh
 * gx/gxs.sh   
 
-The envvar value is used as the default of SEventConfig::InputPhoton
 
 EOU
 }
@@ -18,6 +25,7 @@ path=/tmp/storch_test/out/$(uname)/ph.npy
 
 if [ -n "$path" ]; then 
     export OPTICKS_INPUT_PHOTON=$path
+    export OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000
 
     if [ "${path:0:1}" == "/" -o "${path:0:1}" == "$" ]; then 
         abspath=$path
@@ -36,4 +44,5 @@ fi
 
 if [ -z "$QUIET" ]; then 
     echo == $BASH_SOURCE : OPTICKS_INPUT_PHOTON $OPTICKS_INPUT_PHOTON
+    echo == $BASH_SOURCE : OPTICKS_INPUT_PHOTON_FRAME $OPTICKS_INPUT_PHOTON_FRAME
 fi

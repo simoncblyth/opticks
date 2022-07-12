@@ -33,7 +33,8 @@ TODO: should be using Tran<double> for transforming
 struct sframe
 {
     static constexpr const char* NAME = "sframe.npy" ; 
-    static sframe Load(const char* dir, const char* name=NAME); 
+    static sframe Load( const char* dir, const char* name=NAME); 
+    static sframe Load_(const char* path ); 
     static constexpr const unsigned NUM_4x4 = 4 ; 
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
 
@@ -92,6 +93,8 @@ struct sframe
 
     void read( const float* src, unsigned num_values ) ; 
     void load(const char* dir, const char* name=NAME) ; 
+    void load_(const char* path ) ; 
+    void load(const NP* a) ; 
 
 
     Tran<double> get_m2w() const ; 
@@ -107,6 +110,14 @@ inline sframe sframe::Load(const char* dir, const char* name)
     fr.load(dir, name); 
     return fr ; 
 }
+inline sframe sframe::Load_(const char* path)
+{
+    sframe fr ; 
+    fr.load_(path); 
+    return fr ; 
+}
+
+
 
 inline void sframe::set_grid(const std::vector<int>& cegs, float gridscale)
 {
@@ -208,12 +219,24 @@ inline void sframe::save(const char* dir, const char* name) const
 }
 inline void sframe::load(const char* dir, const char* name) 
 {
-    NP* a = NP::Load(dir, name); 
-    read( a->values<float>() , NUM_VALUES );   
-
+    const NP* a = NP::Load(dir, name); 
+    load(a); 
+}
+inline void sframe::load_(const char* path) 
+{
+    const NP* a = NP::Load(path);
+    load(a); 
+}
+inline void sframe::load(const NP* a) 
+{
+    read( a->cvalues<float>() , NUM_VALUES );   
     std::string _frs = a->get_meta<std::string>("frs", ""); 
     if(!_frs.empty()) frs = strdup(_frs.c_str()); 
 }
+
+
+
+
 
 inline Tran<double> sframe::get_m2w() const { return Tran<double>::ConvertFromQat(&m2w); }
 inline Tran<double> sframe::get_w2m() const { return Tran<double>::ConvertFromQat(&w2m); }

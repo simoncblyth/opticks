@@ -75,7 +75,7 @@ fi
 
 if [ "${arg/dbg}" != "$arg" ]; then 
     case $(uname) in
-        Linux) gdb $bin -ex r  ;;
+        Linux) gdb_ $bin -ex r  ;;
         Darwin) lldb__ $bin ;; 
     esac
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg $bin error && exit 2 
@@ -84,8 +84,8 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
     export CFBASE
-    ${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest.py     
-    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
+    ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 

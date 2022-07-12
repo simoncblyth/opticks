@@ -53,8 +53,10 @@ cg=${!cg_}
 
 if [ -n "$cg" ]; then
     CFBASE=$cg 
+    A_FOLD=$CFBASE/G4CXSimulateTest/ALL
 else
     CFBASE=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
+    A_FOLD=$CFBASE/ALL
 fi
 # NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
 

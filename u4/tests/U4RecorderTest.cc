@@ -17,6 +17,7 @@
 #include "SPath.hh"
 #include "SEventConfig.hh"
 #include "NP.hh"
+#include "sframe.h"
 
 #include "U4Material.hh"
 #include "U4VolumeMaker.hh"
@@ -188,8 +189,16 @@ int main(int argc, char** argv)
     LOG(info) << " desc " << desc ; 
 
     SEventConfig::SetStandardFullDebug(); 
-    SEvt evt ;    // SEvt must be instanciated before QEvent
-    evt.random = &rnd  ;  // so can use getFlatPrior within SEvt::addTag
+    SEvt sev ;    // SEvt must be instanciated before QEvent
+    sev.random = &rnd  ;  // so can use getFlatPrior within SEvt::addTag
+
+    const char* frpath = SPath::Resolve("$A_FOLD", "sframe.npy", NOOP); 
+    bool fr_exists = SPath::Exists(frpath) ; 
+    if(!fr_exists) LOG(fatal) << "require sframe.npy from A_FOLD " ; 
+    assert(fr_exists); 
+
+    sframe fr = sframe::Load_(frpath);  
+    sev.setFrame(fr);   // setFrame tees up Gensteps 
 
     if(U4RecorderTest::PrimaryMode() == 'T') SEvt::AddTorchGenstep();  
 
@@ -203,7 +212,7 @@ int main(int argc, char** argv)
 
     rnd.saveProblemIdx(fold); 
 
-    evt.save(fold); 
+    sev.save(fold); 
     LOG(info) << fold ; 
 
     return 0 ; 
