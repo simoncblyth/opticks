@@ -194,6 +194,8 @@ it is necessary to call this prior to calling QSim::simulate.
 **/
 
 
+const bool SEvt::setFrame_WIDE_INPUT_PHOTON = SSys::getenvbool("SEvt_setFrame_WIDE_INPUT_PHOTON") ; 
+
 void SEvt::setFrame(const sframe& fr )
 {
     frame = fr ; 
@@ -212,9 +214,17 @@ void SEvt::setFrame(const sframe& fr )
 
         NP* ipt = frame.transform_photon_m2w( input_photon, normalize ); 
 
-        input_photon_transformed = ipt->ebyte == 8 ? NP::MakeNarrow(ipt) : ipt ;
+        if(setFrame_WIDE_INPUT_PHOTON)  // see notes/issues/G4ParticleChange_CheckIt_warnings.rst
+        {
+            input_photon_transformed = ipt ;
+        }
+        else
+        {
+            input_photon_transformed = ipt->ebyte == 8 ? NP::MakeNarrow(ipt) : ipt ;
+            // narrow here to prevent immediate A:B difference with Geant4 seeing double precision 
+            // and Opticks float precision 
+        }
 
-        // narrow here to prevent Geant4 seeing double precision and Opticks float precision 
     }   
 }
 

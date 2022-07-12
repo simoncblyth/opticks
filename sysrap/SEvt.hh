@@ -148,6 +148,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NP* getInputPhoton() const ;    // returns input_photon_transformed when exists 
     bool hasInputPhoton() const ; 
 
+    static const bool setFrame_WIDE_INPUT_PHOTON ; 
     void setFrame(const sframe& fr ); 
     static quad6 MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr ); 
 
