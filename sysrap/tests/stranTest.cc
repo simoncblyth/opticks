@@ -110,7 +110,7 @@ void test_apply()
 }
 
 template<typename T>
-void test_apply_ph()
+void test_PhotonTransform()
 {
      double data[16] = { 
            1., 0., 0.,   0., 
@@ -124,14 +124,18 @@ void test_apply_ph()
 
      const char* name = "RandomDisc100_f8.npy" ; 
      const char* path = SPath::Resolve("$HOME/.opticks/InputPhotons" , name, NOOP ); 
+
      NP* a = NP::Load(path); 
-     NP* b = Tran<T>::Apply(a, t); 
+     NP* b0 = Tran<T>::PhotonTransform(a, false, t); 
+     NP* b1 = Tran<T>::PhotonTransform(a, true, t); 
  
+
      const char* FOLD = SPath::Resolve("$TMP/stranTest", DIRPATH ); 
      std::cout << " FOLD " << FOLD << std::endl ; 
 
      a->save(FOLD,  "a.npy"); 
-     b->save(FOLD,  "b.npy"); 
+     b0->save(FOLD, "b0.npy"); 
+     b1->save(FOLD, "b1.npy"); 
      t->save(FOLD,  "t.npy"); 
 }
 
@@ -150,7 +154,7 @@ int main()
     test_apply<double>(); 
     */
 
-    test_apply_ph<double>(); 
+    test_PhotonTransform<double>(); 
 
 
     return 0 ; 

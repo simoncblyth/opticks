@@ -66,10 +66,11 @@ struct Tran
     void write(T* dst, unsigned num_values=3*4*4) const ; 
     void save(const char* dir, const char* name="stran.npy") const ; 
 
-    void apply( T* p0, T w, unsigned count, unsigned stride, unsigned offset ) const ; 
-    void apply_( float* p0, float w, unsigned count, unsigned stride, unsigned offset ) const ; 
-    void apply( NP* ph ) const ; 
-    static NP* Apply( const NP* ph, const Tran<T>* tr ); 
+    void apply( T* p0, T w, unsigned count, unsigned stride, unsigned offset, bool normalize ) const ; 
+    void apply_( float* p0, float w, unsigned count, unsigned stride, unsigned offset, bool normalize ) const ; 
+
+    void photon_transform( NP* ph, bool normalize ) const ; 
+    static NP* PhotonTransform( const NP* ph, bool normalize, const Tran<T>* tr ); 
 
 
     const T* tdata() const ; 
@@ -507,7 +508,7 @@ Applies the transform *count* times using 4th component w
 **/
 
 template<typename T>
-void Tran<T>::apply( T* p0, T w, unsigned count, unsigned stride, unsigned offset ) const 
+void Tran<T>::apply( T* p0, T w, unsigned count, unsigned stride, unsigned offset, bool normalize ) const 
 {
     for(unsigned i=0 ; i < count ; i++)
     {
@@ -515,13 +516,14 @@ void Tran<T>::apply( T* p0, T w, unsigned count, unsigned stride, unsigned offse
  
         glm::tvec4<T> a(a_[0],a_[1],a_[2],w); 
         glm::tvec4<T> ta = t * a ;
-        T* ta_ = glm::value_ptr( ta ) ; 
+        glm::tvec3<T> ta3(ta); 
+        glm::tvec3<T> nta3 = normalize ? glm::normalize(ta3) : ta3  ; 
+        T* ta_ = glm::value_ptr( nta3 ) ; 
 
         for(unsigned j=0 ; j < 3 ; j++) a_[j] = ta_[j] ; 
 
         //std::cout << " apply: a " << glm::to_string( a ) << std::endl ; 
         //std::cout << " apply: ta= " << glm::to_string( ta ) << std::endl ; 
-
     }
 }
 
@@ -533,7 +535,7 @@ and single precision array
 
 
 template<typename T>
-void Tran<T>::apply_( float* p0, float w, unsigned count, unsigned stride, unsigned offset ) const 
+void Tran<T>::apply_( float* p0, float w, unsigned count, unsigned stride, unsigned offset, bool normalize ) const 
 {
     for(unsigned i=0 ; i < count ; i++)
     {
@@ -544,9 +546,11 @@ void Tran<T>::apply_( float* p0, float w, unsigned count, unsigned stride, unsig
         for(unsigned j=0 ; j < 3 ; j++) aa[j] = T(a_[j]) ;  // potentially widen 
         aa[3] = T(w) ; 
 
-
         glm::tvec4<T> ta = t * a ;
-        T* ta_ = glm::value_ptr( ta ) ; 
+        glm::tvec3<T> ta3(ta); 
+        glm::tvec3<T> nta3 = normalize ? glm::normalize(ta3) : ta3  ; 
+        T* ta_ = glm::value_ptr( nta3 ) ; 
+
         for(unsigned j=0 ; j < 3 ; j++) a_[j] = float(ta_[j]) ;   // potentially narrow  
 
         //std::cout << " apply_: a " << glm::to_string( a ) << std::endl ; 
@@ -557,8 +561,9 @@ void Tran<T>::apply_( float* p0, float w, unsigned count, unsigned stride, unsig
 
 
 template<typename T>
-void Tran<T>::apply( NP* ph ) const 
+void Tran<T>::photon_transform( NP* ph, bool normalize ) const 
 {
+
     T one(1.); 
     T zero(0.); 
 
@@ -569,27 +574,38 @@ void Tran<T>::apply( NP* ph ) const
     if( ph->ebyte == sizeof(T) )
     {
         T* p0 = ph->values<T>(); 
-        apply( p0, one,  count, stride, 0 );  // transform pos as position
-        apply( p0, zero, count, stride, 4 );  // transform mom as direction
-        apply( p0, zero, count, stride, 8 );  // transform pol as direction
+        apply( p0, one,  count, stride, 0, false );  // transform pos as position
+        apply( p0, zero, count, stride, 4, normalize );  // transform mom as direction
+        apply( p0, zero, count, stride, 8, normalize );  // transform pol as direction
     }
     else if( ph->ebyte == 4 && sizeof(T) == 8 ) 
     {
         float* p0 = ph->values<float>(); 
-        apply_( p0, one,  count, stride, 0 );  // transform pos as position
-        apply_( p0, zero, count, stride, 4 );  // transform mom as direction
-        apply_( p0, zero, count, stride, 8 );  // transform pol as direction
+        apply_( p0, one,  count, stride, 0, false );  // transform pos as position
+        apply_( p0, zero, count, stride, 4, normalize );  // transform mom as direction
+        apply_( p0, zero, count, stride, 8, normalize );  // transform pol as direction
     }
-
-
 }
 
+/**
+Tran::PhotonTransform
+-----------------------
+
+Test::
+
+   cd ~/opticks/CSG/tests  
+   ./CSGFoundry_getFrame_Test.sh
+
+Note that the returned transformed photon array is always in double precision. 
+
+**/
 
 template<typename T>
-NP* Tran<T>::Apply( const NP* ph, const Tran<T>* t ) // static 
+NP* Tran<T>::PhotonTransform( const NP* ph, bool normalize, const Tran<T>* t ) // static 
 {
-    NP* b = ph->copy(); 
-    t->apply(b); 
+    NP* b = NP::MakeWideIfNarrow(ph) ; 
+    t->photon_transform(b, normalize); 
+    assert( b->ebyte == 8 ); 
     return b ; 
 }
 

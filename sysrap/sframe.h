@@ -99,8 +99,8 @@ struct sframe
 
     Tran<double> get_m2w() const ; 
     Tran<double> get_w2m() const ;  
-    NP* transform_photon_m2w( const NP* ph ); 
-    NP* transform_photon_w2m( const NP* ph ); 
+    NP* transform_photon_m2w( const NP* ph, bool normalize ); 
+    NP* transform_photon_w2m( const NP* ph, bool normalize ); 
 
 }; 
 
@@ -241,18 +241,34 @@ inline void sframe::load(const NP* a)
 inline Tran<double> sframe::get_m2w() const { return Tran<double>::ConvertFromQat(&m2w); }
 inline Tran<double> sframe::get_w2m() const { return Tran<double>::ConvertFromQat(&w2m); }
 
-inline NP* sframe::transform_photon_m2w( const NP* ph )
+/**
+sframe::transform_photon_m2w
+-------------------------------
+
+Canonical call from SEvt::setFrame for transforming input photons into frame 
+When normalize is true the mom and pol are normalized after the transformation. 
+
+Note that the transformed photon array is always in double precision. 
+That will be narrowed down to float prior to upload by QEvent::setInputPhoton
+
+**/
+
+inline NP* sframe::transform_photon_m2w( const NP* ph, bool normalize )
 {
     if( ph == nullptr ) return nullptr ; 
     Tran<double> t_m2w = get_m2w() ; 
-    return Tran<double>::Apply(ph, &t_m2w );
+    NP* pht = Tran<double>::PhotonTransform(ph, normalize,  &t_m2w );
+    assert( pht->ebyte == 8 ); 
+    return pht ; 
 }
 
-inline NP* sframe::transform_photon_w2m( const NP* ph )
+inline NP* sframe::transform_photon_w2m( const NP* ph, bool normalize  )
 {
     if( ph == nullptr ) return nullptr ; 
     Tran<double> t_w2m = get_w2m() ; 
-    return Tran<double>::Apply(ph, &t_w2m );
+    NP* pht = Tran<double>::PhotonTransform(ph, normalize, &t_w2m );
+    assert( pht->ebyte == 8 ); 
+    return pht ; 
 }
 
 

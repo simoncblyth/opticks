@@ -208,7 +208,9 @@ void SEvt::setFrame(const sframe& fr )
 
         addGenstep(MakeInputPhotonGenstep(input_photon, frame)); 
 
-        input_photon_transformed = frame.transform_photon_m2w( input_photon ); 
+        bool normalize = true ;  // normalize mom and pol after doing the transform 
+
+        input_photon_transformed = frame.transform_photon_m2w( input_photon, normalize ); 
     }   
 }
 
