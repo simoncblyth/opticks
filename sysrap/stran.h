@@ -43,6 +43,8 @@ struct Tran
     static const Tran<T>* product(const std::vector<const Tran<T>*>& tt, bool reverse );
 
     static Tran<T>* ConvertToTran( const qat4* q, T epsilon=EPSILON ); 
+    static Tran<T>  ConvertFromQat(const qat4* q_, T epsilon=EPSILON ); 
+
     static Tran<T>* ConvertFromData(const T* data); 
 
     static const qat4* Invert( const qat4* q, T epsilon=EPSILON ); 
@@ -359,6 +361,22 @@ Tran<T>* Tran<T>::ConvertToTran(const qat4* q_, T epsilon )
     tr->checkIsIdentity('i', "ConvertToTran"); 
     return tr ; 
 }
+
+template<typename T>
+Tran<T> Tran<T>::ConvertFromQat(const qat4* q_, T epsilon )
+{
+    qat4 q(q_->cdata()); 
+    q.clearIdentity();  
+
+    glm::tmat4x4<T> tran = MatFromQat(&q) ; 
+    glm::tmat4x4<T> itra = glm::inverse(tran) ;     
+    Tran<T> tr(tran, itra) ; 
+    tr.checkIsIdentity('i', "ConvertFromQat"); 
+    return tr ; 
+}
+
+
+
 
 template<typename T>
 Tran<T>* Tran<T>::ConvertFromData(const T* data )

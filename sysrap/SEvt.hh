@@ -70,13 +70,14 @@ struct SYSRAP_API SEvt : public SCompProvider
     sdebug* dbg ; 
     std::string meta ; 
     NP* input_photon ; 
+    NP* input_photon_transformed ; 
 
     const SRandom*        random ; 
     const SCompProvider*  provider ; 
     NPFold*               fold ; 
     bool                  hostside_running_resize_done ; // only ever becomes true for non-GPU running 
 
-    sframe            fr ;
+    sframe            frame ;
 
 
     std::vector<quad6> genstep ; 
@@ -102,10 +103,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const int PIDX ; 
     static const int GIDX ; 
     static const int MISSING_INDEX ; 
-
-    static const char* INPUT_PHOTON_DIR ; 
-    static NP* LoadInputPhoton(); 
-    static const qat4* InputPhotonFrame(); 
 
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
@@ -140,7 +137,20 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     const char* getSaveDir() const ; 
     void init(); 
+
+    static const char* INPUT_PHOTON_DIR ; 
+    static NP* LoadInputPhoton(); 
+    static NP* LoadInputPhoton(const char* ip); 
     void initInputPhoton(); 
+    void setInputPhoton(NP* p); 
+
+    NP* getInputPhoton_() const ; 
+    NP* getInputPhoton() const ;    // returns input_photon_transformed when exists 
+    bool hasInputPhoton() const ; 
+
+    void setFrame(const sframe& fr ); 
+    static quad6 MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr ); 
+
 
     void setCompProvider(const SCompProvider* provider); 
     bool isSelfProvider() const ; 
@@ -223,9 +233,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void saveGenstep(const char* dir) const ; 
     NP* getGenstep() const ; 
-    NP* getInputPhoton() const ; 
-    bool hasInputPhoton() const ; 
-    void setInputPhoton(NP* p, const qat4* q); 
+
 
     void gather_components() ; 
 

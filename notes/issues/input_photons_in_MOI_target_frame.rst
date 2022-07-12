@@ -218,6 +218,81 @@ Review Input Photons
 
 The placeholder genstep has room for the transform. 
 
+::
+
+    202 /**
+    203 QEvent::setInputPhoton
+    204 ------------------------
+    205 
+    206 This is a private method invoked only from QEvent::setGenstep
+    207 which gets the input photon array from SEvt and uploads 
+    208 it to the device. 
+    209 When the input_photon array is in double precision it is 
+    210 narrowed here prior to upload. 
+    211 
+    212 **/
+    213 
+    214 void QEvent::setInputPhoton()
+    215 {
+    216     input_photon = SEvt::GetInputPhoton();
+    217     if( input_photon == nullptr )
+    218         LOG(fatal)
+    219             << " INCONSISTENT : OpticksGenstep_INPUT_PHOTON by no input photon array "
+    220             ;
+    221 
+    222     assert(input_photon);
+    223     assert(input_photon->has_shape( -1, 4, 4) );
+    224     assert(input_photon->ebyte == 4 || input_photon->ebyte == 8);
+    225 
+    226     int num_photon = input_photon->shape[0] ;
+    227     assert( evt->num_seed == num_photon );
+    228 
+    229     NP* narrow_input_photon = input_photon->ebyte == 8 ? NP::MakeNarrow(input_photon) : input_photon ;
+    230 
+    231     setNumPhoton( num_photon );
+    232     QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)narrow_input_photon->bytes(), num_photon );
+    233 }
+
+
+
+Within the below, have the geometry. 
+
+::
+
+    128 void G4CXOpticks::simulate()
+    129 {
+    130     LOG(LEVEL) << desc() ;
+    131     assert(cx);
+    132     assert(qs);
+    133     assert( SEventConfig::IsRGModeSimulate() );
+    134     qs->simulate();
+    135 }
+    136 
+    137 void G4CXOpticks::simtrace()
+    138 {
+    139     assert(cx);
+    140     assert(qs);
+    141     assert( SEventConfig::IsRGModeSimtrace() );
+    142 
+    143 
+    144     SEvt* sev = SEvt::Get();  assert(sev);
+    145 
+    146     sev->fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
+    147     LOG(LEVEL) << sev->fr ;
+    148     SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(sev->fr) );
+    149     cx->setFrame(sev->fr);
+    150 
+    151     // where to get the frame could be implicit at this level  
+    152 
+    153 
+    154 
+    155     qs->simtrace();
+    156 }
+    157 
+
+
+
+
 
 
 B Side

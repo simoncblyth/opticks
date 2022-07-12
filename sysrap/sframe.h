@@ -16,6 +16,9 @@ but are using *frs* to indicate intension for generalization
 to frame specification using global instance index rather than MOI
 which uses the gas specific instance index. 
 
+TODO: should be using Tran<double> for transforming 
+
+
 **/
 
 #include <cassert>
@@ -23,6 +26,7 @@ which uses the gas specific instance index.
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
+#include "stran.h"
 #include "NP.hh"
 
 
@@ -47,6 +51,10 @@ struct sframe
 
     // on the edge, the above are memcpy in/out by load/save
     const char* frs = nullptr ; 
+
+
+
+
 
     void set_grid(const std::vector<int>& cegs, float gridscale); 
     int ix0() const ; 
@@ -84,6 +92,12 @@ struct sframe
 
     void read( const float* src, unsigned num_values ) ; 
     void load(const char* dir, const char* name=NAME) ; 
+
+
+    Tran<double> get_m2w() const ; 
+    Tran<double> get_w2m() const ;  
+    NP* transform_photon_m2w( const NP* ph ); 
+    NP* transform_photon_w2m( const NP* ph ); 
 
 }; 
 
@@ -201,6 +215,28 @@ inline void sframe::load(const char* dir, const char* name)
     if(!_frs.empty()) frs = strdup(_frs.c_str()); 
 }
 
+inline Tran<double> sframe::get_m2w() const { return Tran<double>::ConvertFromQat(&m2w); }
+inline Tran<double> sframe::get_w2m() const { return Tran<double>::ConvertFromQat(&w2m); }
+
+inline NP* sframe::transform_photon_m2w( const NP* ph )
+{
+    if( ph == nullptr ) return nullptr ; 
+    Tran<double> t_m2w = get_m2w() ; 
+    return Tran<double>::Apply(ph, &t_m2w );
+}
+
+inline NP* sframe::transform_photon_w2m( const NP* ph )
+{
+    if( ph == nullptr ) return nullptr ; 
+    Tran<double> t_w2m = get_w2m() ; 
+    return Tran<double>::Apply(ph, &t_w2m );
+}
+
+
+
+
+
+
 inline std::ostream& operator<<(std::ostream& os, const sframe& fr)
 {
     os 
@@ -233,5 +269,6 @@ inline std::ostream& operator<<(std::ostream& os, const sframe& fr)
 
     return os; 
 }
+
 
 

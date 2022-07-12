@@ -131,6 +131,16 @@ void G4CXOpticks::simulate()
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimulate() ); 
+
+    SEvt* sev = SEvt::Get();  assert(sev); 
+
+    if(sev->hasInputPhoton())
+    {
+        const char* ipf = SEventConfig::InputPhotonFrame();
+        sframe fr = fd->getFrame(ipf) ;  
+        sev->setFrame(fr); 
+    }
+
     qs->simulate(); 
 }
 
@@ -139,21 +149,18 @@ void G4CXOpticks::simtrace()
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimtrace() ); 
-
-
+                           
     SEvt* sev = SEvt::Get();  assert(sev); 
 
-    sev->fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
-    LOG(LEVEL) << sev->fr ; 
-    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(sev->fr) );  
-    cx->setFrame(sev->fr);    
+    sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
+    sev->setFrame(fr);   // 
 
-    // where to get the frame could be implicit at this level  
-                           
-
+    cx->setFrame(fr);    
+    // Q: why does cx need the frame ?
 
     qs->simtrace(); 
 }
+
 
 
     

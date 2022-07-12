@@ -315,6 +315,8 @@ struct CSG_API CSGFoundry
     const char* getName(unsigned midx) const ;  
 
     sframe getFrame() const ; 
+    sframe getFrame(const char* moi_or_iidx) const ; 
+
     void getFrame(sframe& fr, const char* arg) const ; 
     void getFrame(sframe& fr, int midx, int mord, int iidxg) const ; 
     void getFrame(sframe& fr, int ins_idx ) const ; 

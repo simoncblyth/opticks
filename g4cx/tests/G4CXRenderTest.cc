@@ -6,7 +6,7 @@ GGeo creation done when starting from a gdml or live G4,  still needs Opticks in
 TODO: avoid this by replacing with automated SOpticks instanciated by OPTICKS_LOG
 
 
-HMM: no SEvt, saving renders could be managed by SEvt too to make the environment 
+HMM: no SEvt, saving the frame and render files could be managed by SEvt too to make the environment 
 the same in all RGNode
 
 **/

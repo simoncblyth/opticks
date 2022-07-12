@@ -17,7 +17,6 @@
 #include "PLOG.hh"
 #include "SSys.hh"
 #include "SStr.hh"
-#include "SName.h"
 #include "NP.hh"
 #include "NPFold.h"
 #include "SPath.hh"
@@ -25,6 +24,7 @@
 #include "SEvt.hh"
 #include "SEvent.hh"
 #include "SEventConfig.hh"
+#include "SFrameGenstep.hh"
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
@@ -47,6 +47,7 @@ SEvt::SEvt()
     evt(new sevent),
     dbg(new sdebug),
     input_photon(nullptr),
+    input_photon_transformed(nullptr),
     random(nullptr),
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
     fold(new NPFold),
@@ -111,8 +112,11 @@ Resolving the input string to a path is done in one of two ways:
 NP* SEvt::LoadInputPhoton() // static 
 {
     const char* ip = SEventConfig::InputPhoton(); 
-    if( ip == nullptr ) return nullptr ; 
+    return ip ? LoadInputPhoton(ip) : nullptr ; 
+}
 
+NP* SEvt::LoadInputPhoton(const char* ip)
+{
     assert(strlen(ip) > 0 && SStr::EndsWith(ip, ".npy") ); 
     const char* path = SStr::StartsWithLetterAZaz(ip) ?  SPath::Resolve(INPUT_PHOTON_DIR, ip, NOOP) : SPath::Resolve( ip, NOOP ) ; 
 
@@ -132,14 +136,6 @@ NP* SEvt::LoadInputPhoton() // static
     return a ; 
 }
 
-const qat4* SEvt::InputPhotonFrame() // static 
-{
-    const char* ipf_ = SEventConfig::InputPhotonFrame(); 
-    int ipf = ipf_ ? SName::ParseIntString(ipf_, -1) : -1 ; 
-    const qat4* q = ( CF && ipf > -1 ) ? CF->getInst( ipf ) : nullptr ;
-    return q ; 
-   
-}
 
 
 /**
@@ -166,46 +162,66 @@ by SEvt::LoadInputPhoton
 
 void SEvt::initInputPhoton()
 {
-    NP* ip0 = LoadInputPhoton() ;
-    const qat4* q = InputPhotonFrame(); 
-    Tran<double>* t = q == nullptr ? nullptr : Tran<double>::ConvertToTran(q);
-    NP* ip = t ? Tran<double>::Apply(ip0, t ) : ip0 ; 
-    
-    setInputPhoton(ip, q);    // this adds placeholder genstep of gentype OpticksGenstep_INPUT_PHOTON
+    NP* ip = LoadInputPhoton() ;
+    setInputPhoton(ip); 
 }
 
-/**
-SEvt::setInputPhoton
----------------------
-
-Also adds placeholder genstep of gentype OpticksGenstep_INPUT_PHOTON
-
-**/
-
-void SEvt::setInputPhoton(NP* p, const qat4* q) 
-{ 
+void SEvt::setInputPhoton(NP* p)
+{
     if(p == nullptr) return ; 
-
     input_photon = p ; 
     assert( input_photon->has_shape(-1,4,4) ); 
     int numphoton = input_photon->shape[0] ; 
     assert( numphoton > 0 ); 
-
-    assert( genstep.size() == 0 ) ; // cannot mix input photon running with genstep running  
-
-    quad6 ipgs ; 
-    ipgs.zero(); 
-    ipgs.set_gentype( OpticksGenstep_INPUT_PHOTON ); 
-    ipgs.set_numphoton( numphoton ); 
-    if(q) q->write(ipgs); // copy q into ipgs.q2,q3,q4,q5 
-
-    addGenstep(ipgs); 
 }
-
-NP* SEvt::getInputPhoton() const { return input_photon ; }
+ 
+NP* SEvt::getInputPhoton_() const { return input_photon ; }
+NP* SEvt::getInputPhoton() const {  return input_photon_transformed ? input_photon_transformed : input_photon  ; }
 bool SEvt::hasInputPhoton() const { return input_photon != nullptr ; }
 
 
+
+/**
+SEvt::setFrame
+------------------
+
+As it is necessary to have the geometry to provide the frame this 
+is now split from eg initInputPhotons.  
+
+For simtrace and input photon running with or without a transform 
+it is necessary to call this prior to calling QSim::simulate.
+
+**/
+
+
+void SEvt::setFrame(const sframe& fr )
+{
+    frame = fr ; 
+
+    if(SEventConfig::IsRGModeSimtrace())
+    {   
+        addGenstep( SFrameGenstep::MakeCenterExtentGensteps(frame) );  
+    }   
+    else if(SEventConfig::IsRGModeSimulate() && hasInputPhoton())
+    {   
+        assert( genstep.size() == 0 ) ; // cannot mix input photon running with other genstep running  
+
+        addGenstep(MakeInputPhotonGenstep(input_photon, frame)); 
+
+        input_photon_transformed = frame.transform_photon_m2w( input_photon ); 
+    }   
+}
+
+
+quad6 SEvt::MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr )
+{
+    quad6 ipgs ; 
+    ipgs.zero(); 
+    ipgs.set_gentype( OpticksGenstep_INPUT_PHOTON ); 
+    ipgs.set_numphoton(  input_photon->shape[0]  ); 
+    fr.m2w.write(ipgs); // copy fr.m2w into ipgs.q2,q3,q4,q5 
+    return ipgs ; 
+}
 
 
 
@@ -1271,7 +1287,7 @@ void SEvt::saveLabels(const char* dir_) const
 
 void SEvt::saveFrame(const char* dir_) const 
 {
-    fr.save(dir_); 
+    frame.save(dir_); 
 }
 
 

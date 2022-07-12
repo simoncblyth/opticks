@@ -1,10 +1,30 @@
 #pragma once
+/**
+SCF.h : Lightweight access to CSGFoundry geometry loaded from CFBASE directory
+================================================================================
+
+Using this from the A side is distinctly dodgy as it relies on the CFBASE 
+directory geometry matching the current geometry.
+
+Use from the B side is more acceptable as B side running is a debugging 
+exercise subservient to A side running so in that situation can rely on 
+CFBASE directory and it it then up to the user to ensure in the A-B matching 
+that are using an appropriate CFBASE directory that matches. 
+
+Could also argue that might as well use the CSG/CSGFoundry geometry rather than 
+this lightweight alternative which can be loaded on the B side and it always
+created on the A side anyhow ? 
+
+**/
+
 
 #include <string>
 #include <sstream>
 #include <vector>
 #include "NP.hh"
 #include "SSys.hh"
+#include "SEventConfig.hh"
+#include "SName.h"
 
 #include "scuda.h"
 #include "squad.h"
@@ -39,7 +59,8 @@ struct SCF
     int getBoundary(const char* spec)   const ;  
 
     const qat4* getInst(unsigned instIdx) const ;
-
+    const qat4* getInputPhotonFrame(const char* ipf_) const ; 
+    const qat4* getInputPhotonFrame() const ; 
 
 }; 
 
@@ -141,7 +162,17 @@ int SCF::getBoundary(const char* spec) const {   return Index(spec,   bnd, 1 ); 
 
 const qat4* SCF::getInst(unsigned instIdx)   const { return instIdx  < inst.size()  ? inst.data()  + instIdx  : nullptr ; }
 
-
+const qat4* SCF::getInputPhotonFrame(const char* ipf_) const 
+{
+    int ipf = ipf_ ? SName::ParseIntString(ipf_, -1) : -1 ; 
+    const qat4* q = ipf > -1 ? getInst( ipf ) : nullptr ;
+    return q ; 
+}
+const qat4* SCF::getInputPhotonFrame() const 
+{
+    const char* ipf_ = SEventConfig::InputPhotonFrame(); 
+    return getInputPhotonFrame(ipf_); 
+}
 
 
 

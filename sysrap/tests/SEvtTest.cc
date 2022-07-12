@@ -5,6 +5,7 @@
 #include "SEventConfig.hh"
 #include "SEvt.hh"
 #include "SStr.hh"
+#include "SCF.h"
 
 #include "stran.h"
 
@@ -123,7 +124,7 @@ void test_InputPhoton()
     const char* FOLD = SPath::Resolve("$TMP/SEvtTest/test_InputPhoton", DIRPATH); 
     ip->save(FOLD, SStr::Name("ipf", ipf, ".npy") ); 
 
-    const qat4* q = SEvt::InputPhotonFrame(); 
+    const qat4* q = SEvt::CF->getInputPhotonFrame(); 
     Tran<double>* tr = Tran<double>::ConvertToTran(q);
 
     NP* fr = NP::Make<float>(1,4,4); 

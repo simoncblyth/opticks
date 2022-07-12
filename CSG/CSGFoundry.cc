@@ -2663,10 +2663,17 @@ Replacing most of CSGOptiX::setComposition
 sframe CSGFoundry::getFrame() const 
 {
     const char* moi_or_iidx = SSys::getenvvar("MOI","-1");   // TODO: MOI->FRS perhaps ?
+    return getFrame(moi_or_iidx); 
+}
+
+sframe CSGFoundry::getFrame(const char* moi_or_iidx) const 
+{
     sframe fr ; 
     getFrame(fr, moi_or_iidx );
     return fr ; 
 }
+
+
 
 /**
 CSGFoundry::getFrame
