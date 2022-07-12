@@ -377,3 +377,99 @@ B Side
      51 }
 
 
+
+
+
+the Momentum Change is not unit vector  : 1e-8 
+---------------------------------------------------
+
+* probably need to normalize mom after transforming the input photons
+
+::
+
+     45 const G4double G4VParticleChange::accuracyForWarning = 1.0e-9;
+     46 const G4double G4VParticleChange::accuracyForException = 0.001;
+
+
+Lots of these::
+
+    2022-07-12 21:39:55.818 INFO  [128695] [U4Recorder::BeginOfEventAction@82] 
+      G4ParticleChange::CheckIt  : the Momentum Change is not unit vector !!  Difference:  5.61912e-08
+    opticalphoton E=2.47473e-06 pos=-12.7039, 10.0346, 12.4523
+          -----------------------------------------------
+            G4ParticleChange Information  
+          -----------------------------------------------
+            # of 2ndaries       :                    0
+          -----------------------------------------------
+            Energy Deposit (MeV):                    0
+            Non-ionizing Energy Deposit (MeV):                    0
+            Track Status        :                Alive
+            True Path Length (mm) :                  793
+            Stepping Control      :                    0
+            Mass (GeV)   :                    0
+            Charge (eplus)   :                    0
+            MagneticMoment   :                    0
+                    :  =                    0*[e hbar]/[2 m]
+            Position - x (mm)   :            -1.22e+04
+            Position - y (mm)   :             9.65e+03
+            Position - z (mm)   :              1.2e+04
+            Time (ns)           :                 3.67
+            Proper Time (ns)    :                    0
+            Momentum Direct - x :                0.621
+            Momentum Direct - y :                -0.49
+            Momentum Direct - z :               -0.611
+            Kinetic Energy (MeV):             2.47e-06
+            Velocity  (/c):                    1
+            Polarization - x    :               -0.707
+            Polarization - y    :               -0.687
+            Polarization - z    :               -0.168
+            Touchable (pointer) :                    0
+      G4ParticleChange::CheckIt  : the Momentum Change is not unit vector !!  Difference:  5.61912e-08
+
+
+
+::
+
+    BP=G4ParticleChange::CheckIt ./u4s.sh dbg
+
+
+::
+
+    506 G4bool G4ParticleChange::CheckIt(const G4Track& aTrack)
+    507 {
+    508   G4bool    exitWithError = false;
+    509   G4double  accuracy;
+    510   static G4ThreadLocal G4int nError = 0;
+    511 #ifdef G4VERBOSE
+    512   const  G4int maxError = 30;
+    513 #endif
+    514 
+    515   // No check in case of "fStopAndKill" 
+    516   if (GetTrackStatus() ==   fStopAndKill )  return G4VParticleChange::CheckIt(aTrack);
+    517 
+    518   // MomentumDirection should be unit vector
+    519   G4bool itsOKforMomentum = true;
+    520   if ( theEnergyChange >0.) {
+    521     accuracy = std::fabs(theMomentumDirectionChange.mag2()-1.0);
+    522     if (accuracy > accuracyForWarning) {
+    523       itsOKforMomentum = false;
+    524       nError += 1;
+    525       exitWithError = exitWithError || (accuracy > accuracyForException);
+    526 #ifdef G4VERBOSE
+    527       if (nError < maxError) {
+    528     G4cout << "  G4ParticleChange::CheckIt  : ";
+    529     G4cout << "the Momentum Change is not unit vector !!"
+    530            << "  Difference:  " << accuracy << G4endl;
+    531     G4cout << aTrack.GetDefinition()->GetParticleName()
+    532            << " E=" << aTrack.GetKineticEnergy()/MeV
+    533            << " pos=" << aTrack.GetPosition().x()/m
+    534            << ", " << aTrack.GetPosition().y()/m
+    535            << ", " << aTrack.GetPosition().z()/m
+    536            <<G4endl;
+    537       }
+    538 #endif
+    539     }
+    540   }
+
+
+

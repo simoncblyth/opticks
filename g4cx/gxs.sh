@@ -40,8 +40,9 @@ else
 fi
 # NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
 
-export FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
+FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 # NB FOLD is not used by run, but it is used by ana
+
 if [ "${arg/info}" != "$arg" ]; then 
     vars="GEOM CFBASE BASE UBASE FOLD OPTICKS_INPUT_PHOTON"
     for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
@@ -81,8 +82,8 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg $bin error && exit 2 
 fi
 
-
 if [ "${arg/ana}" != "$arg" ]; then 
+    export FOLD 
     export CFBASE
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 

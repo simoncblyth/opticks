@@ -16,7 +16,32 @@ EOU
 }
 
 msg="=== $BASH_SOURCE :"
+
+case $(uname) in 
+  Linux)  defarg="run"  ;;
+  Darwin) defarg="ana"  ;;
+esac
+
+arg=${1:-$defarg}
+bin=G4CXSimtraceTest
+
+echo $msg arg $arg bin $bin defarg $defarg
+
 source ../bin/GEOM_.sh 
+
+if [ -n "$CFBASE" ]; then
+    BASE=$CFBASE/$bin
+    UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
+else
+    BASE=/tmp/$USER/opticks/$bin/$GEOM
+    UBASE=$BASE
+    CFBASE=$BASE
+fi
+# NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
+
+FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
+MOI=Hama:0:1000    ## HMM: tie this to OPTICKS_INPUT_PHOTON_FRAME : means not exporting from bin/OPTICKS_INPUT_PHOTON.sh 
+
 
 loglevels()
 {
@@ -33,45 +58,33 @@ loglevels()
 loglevels
 
 
-case $(uname) in 
-  Darwin) defarg="ana"  ;;
-  Linux)  defarg="run"  ;;
-esac
 
-arg=${1:-$defarg}
-bin=G4CXSimtraceTest
-
-echo $msg arg $arg bin $bin defarg $defarg
+export MOI 
 
 if [ "${arg/run}" != "$arg" ]; then 
     echo $msg run $bin
     $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+    [ $? -ne 0 ] && echo $BASH_SOURCE run $bin error && exit 1 
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
     case $(uname) in
-        Linux) gdb $bin -ex r  ;;
+        Linux) gdb_ $bin -ex r  ;;
         Darwin) lldb__ $bin ;; 
     esac
-    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg $bin error && exit 2 
 fi
 
-
-export BASE=/tmp/$USER/opticks/$bin/$GEOM
-export FOLD=$BASE 
-
 if [ "${arg/ana}" != "$arg" ]; then 
-
-    export CFBASE=$BASE
+    export FOLD
+    export CFBASE
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
-    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    source ../bin/rsync.sh $BASE 
+    source ../bin/rsync.sh $UBASE 
 fi 
-
 
 exit 0 
 

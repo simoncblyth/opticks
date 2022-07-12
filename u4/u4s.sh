@@ -24,7 +24,7 @@ msg="=== $BASH_SOURCE :"
 
 case $(uname) in 
    Linux) defarg="run" ;;
-   Darwin) defarg="run_ana" ;; 
+   Darwin) defarg="ana" ;; 
 esac
 arg=${1:-$defarg}
 
