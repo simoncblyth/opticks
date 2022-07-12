@@ -210,7 +210,11 @@ void SEvt::setFrame(const sframe& fr )
 
         bool normalize = true ;  // normalize mom and pol after doing the transform 
 
-        input_photon_transformed = frame.transform_photon_m2w( input_photon, normalize ); 
+        NP* ipt = frame.transform_photon_m2w( input_photon, normalize ); 
+
+        input_photon_transformed = ipt->ebyte == 8 ? NP::MakeNarrow(ipt) : ipt ;
+
+        // narrow here to prevent Geant4 seeing double precision and Opticks float precision 
     }   
 }
 
