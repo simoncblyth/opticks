@@ -114,10 +114,13 @@ class Stats(object):
         return RSTTable.Rdr(self.stats, self.labels, rfm="%10d", left_wid=15, left_rfm="%15s", left_hfm="%15s" )
     def __repr__(self):
         return "\n".join(list(map(repr, self.pkgs)))
+    def save(self, path):
+        np.save(path, self.stats)
     pass
 
 if __name__ == '__main__':
     st = Stats()
+    st.save("/tmp/stats.npy")
     print(st)
      
 

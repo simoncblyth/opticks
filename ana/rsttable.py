@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import logging
+import logging, re
 import numpy as np
 log = logging.getLogger(__name__)
 
@@ -9,8 +9,9 @@ class RSTTable(object):
          """+----+----------------+----------------+"""
          return "+".join([""]+list(map(lambda j:char*widths[j], range(len(widths))))+[""]) 
 
+
      @classmethod
-     def Render(cls, t, labels, wids, hfmt, rfmt, pre, post):
+     def Render_(cls, t, labels, wids, hfmt, rfmt, pre, post):
          """
          :param t:  2D array of np.object that are the content of the table 
          :param labels: list of string labels for the header
@@ -29,10 +30,15 @@ class RSTTable(object):
          tab.rfmt = [ pre[i]+rfmt[i]+post[i] for i in range(len(rfmt)) ]
          tab.wids += tab.pre 
          tab.wids += tab.post 
-         return str(tab)
+         return tab
 
      @classmethod
-     def Rdr(cls, t, labels, wid=10, hfm="%10s", rfm="%10.4f", pre_="", post_="", left_wid=None, left_rfm=None, left_hfm=None  ):
+     def Render(cls, t, labels, wids, hfmt, rfmt, pre, post):
+          tab = cls.Render_(t, labels. wids, hfmt, rfmt, pre, post)
+          return str(tab)
+
+     @classmethod
+     def Rdr_(cls, t, labels, wid=10, hfm="%10s", rfm="%10.4f", pre_="", post_="", left_wid=None, left_rfm=None, left_hfm=None  ):
          """
          :param t: 2D array "table" of np.object items to populate the RST table
          :param labels: list of labels
@@ -62,12 +68,72 @@ class RSTTable(object):
          if not left_hfm is None:
              hfmt[0] = left_hfm 
          pass 
+         return cls.Render_(t, labels, wids, hfmt, rfmt, pre, post )
 
-         rst = cls.Render(t, labels, wids, hfmt, rfmt, pre, post )
-         return rst 
+     @classmethod
+     def Rdr(cls, t, labels, wid=10, hfm="%10s", rfm="%10.4f", pre_="", post_="", left_wid=None, left_rfm=None, left_hfm=None  ):
+         tab = cls.Rdr_(t, labels, wid, hfm, rfm, pre_, post_, left_wid, left_rfm, left_hfm)
+         return str(tab)
+
 
      def __init__(self, t):
          self.t = t  
+
+     elem_ptn = re.compile("^(\s*)(.*?)(\s*)$")
+
+     def color_elem(self, elem, color):
+         """
+         :param elem: string cell of an RST table, NB relies on free space at both sides 
+         :param color: color string eg "r" "g" "b"
+         :return elem2: string of same length with prefix and suffix RST coloring codes
+         """
+         if len(elem) == 0 or color is None: return elem
+
+         elem_match = self.elem_ptn.match(elem)
+         assert not elem_match is None 
+         elem_groups = elem_match.groups()
+         assert len(elem_groups) == 3 
+
+         pre,body,post = elem_groups
+
+         lhs = ":%s:`"  % color
+         rhs = "`" 
+
+         lpre = list(pre)
+         lpost = list(post)
+
+         assert len(lpre) >= len(lhs)
+         for i in range(len(lhs)):
+             lpre[len(lpre)-len(lhs)+i] = lhs[i]   # fill in rightside chars 
+         pass
+         assert len(lpost) >= len(rhs)
+         for i in range(len(rhs)):
+             lpost[i] = rhs[i]       # fill in leftside chars
+         pass
+         pre = "".join(lpre)
+         post = "".join(lpost)
+
+         elem2 = "%s%s%s" % (pre,body,post)  
+         return elem2
+
+     def color_line(self, line, color):
+         """
+         :param line:
+         :param color: code eg "r"
+         :return line2: of same length 
+
+         |            CSG_GGeo     |             3/2/0/0     |                                          GGeo to CSG geometry translation      |
+         |        :r:`CSG_GGeo`    |         :r:`3/2/0/0`    |                                      :r:`GGeo to CSG geometry translation`     |
+         """
+         if color is None: return line
+         elems = line.split("|")
+         elems2 = []
+         for elem in elems:
+             elems2.append(self.color_elem(elem,color)) 
+         pass
+         line2 = "|".join(elems2)
+         #print(line2)    
+         return line2 
 
      def __str__(self):
          """
@@ -90,9 +156,14 @@ class RSTTable(object):
          lines.append(hfmt % tuple(self.labels))
          lines.append(self.divider(self.wids, "="))
          for i in range(nrow):
-             lines.append(rfmt % tuple(self.t[i]))
+             line = rfmt % tuple(self.t[i])
+             key = self.t[i,0].strip()
+             color = self.colormap.get(key, None)  if hasattr(self, "colormap") else None
+             lines.append(self.color_line(line, color))
              lines.append(self.divider(self.wids,"-"))   
          pass
+         self._hfmt = hfmt
+         self._rfmt = rfmt
          return "\n".join(lines)    
 
 

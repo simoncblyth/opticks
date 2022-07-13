@@ -14,6 +14,10 @@ stats.sh
 EOU
 }
 
-${IPYTHON:-ipython} --pdb -i stats.py 
+#${IPYTHON:-ipython} --pdb -i stats.py 
+
+${IPYTHON:-ipython} --pdb -i packages.py 
+
+
 
 
