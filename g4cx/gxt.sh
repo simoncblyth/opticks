@@ -24,7 +24,7 @@ esac
 
 arg=${1:-$defarg}
 bin=G4CXSimtraceTest
-xbin=G4CXSimulateTest
+#xbin=G4CXSimulateTest
 
 echo $msg arg $arg bin $bin defarg $defarg
 
@@ -32,18 +32,33 @@ source ../bin/GEOM_.sh
 
 if [ -n "$CFBASE" ]; then
     BASE=$CFBASE/$bin
-    X_BASE=$CFBASE/$xbin    
+    #X_BASE=$CFBASE/$xbin    
     UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
 else
     BASE=/tmp/$USER/opticks/$bin/$GEOM
-    X_BASE=/tmp/$USER/opticks/$xbin/$GEOM
+    #X_BASE=/tmp/$USER/opticks/$xbin/$GEOM
     UBASE=$BASE
     CFBASE=$BASE
 fi
 # NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
 
 FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
-X_FOLD=$X_BASE/ALL
+#X_FOLD=$X_BASE/ALL
+
+
+QUIET=1 gx
+A_FOLD=$(./gxs.sh fold)
+
+QUIET=1 u4
+B_FOLD=$(./u4s.sh fold)
+
+gx
+source ../bin/AB_FOLD.sh 
+export A_FOLD
+export B_FOLD
+
+
+
 
 MOI=Hama:0:1000    
 ## TODO: tie MOI to OPTICKS_INPUT_PHOTON_FRAME : this means not exporting from bin/OPTICKS_INPUT_PHOTON.sh 
@@ -88,6 +103,8 @@ if [ "${arg/ana}" != "$arg" ]; then
     export FOLD
     export X_FOLD
     export CFBASE
+    export MASK=pos
+
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 

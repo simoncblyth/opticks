@@ -50,23 +50,40 @@ def simple(pl, gs, pos):
     pvplt_simple(pl, pos.lpos[:,:3], "pos.lpos[:,:3]" )
 
 
+
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
-    x = Fold.Load("$X_FOLD", symbol="x")
+    a = Fold.Load("$A_FOLD", symbol="a")
+    b = Fold.Load("$B_FOLD", symbol="b")
+    x = a 
 
     print(t)
-    print(x)
+    print(a)
+    print(b)
 
-    if not x is None:
-        x_nib = seqnib_(x.seq[:,0])                  # valid steppoint records from seqhis count_nibbles
-        #x_gpos_ = x.record[PIDX,:x_nib[PIDX],0,:3]  # global frame photon step record positions of single PIDX photon
-        x_gpos_ = x.record[PIDX,0,0,:3]              # global frame photon step record positions of single PIDX photon
-        x_gpos  = np.ones( (len(x_gpos_), 4 ), dtype=np.float32 )
-        x_gpos[:,:3] = x_gpos_
-        x_lpos = np.dot( x_gpos, t.sframe.w2m ) 
+
+    if not a is None:
+        a_nib = seqnib_(a.seq[:,0])                  # valid steppoint records from seqhis count_nibbles
+        a_gpos_ = a.record[PIDX,:a_nib[PIDX],0,:3]  # global frame photon step record positions of single PIDX photon
+        a_gpos  = np.ones( (len(a_gpos_), 4 ) )
+        a_gpos[:,:3] = a_gpos_
+        a_lpos = np.dot( a_gpos, t.sframe.w2m ) 
     else:
-        x_lpos = None
+        a_lpos = None
     pass
+
+    if not a is None:
+        b_nib = seqnib_(b.seq[:,0])                  # valid steppoint records from seqhis count_nibbles
+        b_gpos_ = b.record[PIDX,:b_nib[PIDX],0,:3]  # global frame photon step record positions of single PIDX photon
+        b_gpos  = np.ones( (len(b_gpos_), 4 ) )
+        b_gpos[:,:3] = b_gpos_
+        b_lpos = np.dot( b_gpos, t.sframe.w2m ) 
+    else:
+        b_lpos = None
+    pass
+
+    x_lpos = a_lpos
+
 
 
 

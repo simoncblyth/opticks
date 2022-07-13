@@ -56,7 +56,7 @@ if __name__ == '__main__':
         eprint("np.all( A.ts == B.ts2 )", globals(), locals() )
         eprint("np.all( A.ts2 == B.ts )", globals(), locals() )
 
-        assert (a.inphoton - b.inphoton).max() < 1e-5 
+        assert (a.inphoton - b.inphoton).max() < 1e-3
 
 
         epr("o = cuss(a.seq[:,0])",  globals(), locals(), rprefix="\n" ) 
