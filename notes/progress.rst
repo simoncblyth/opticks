@@ -18,84 +18,114 @@ Progress
    can fit under the topics : if not add more topics or re-scope the topics
 
    * for communication purposes do not want too many topics, aim for ~8, 
-     think about how they related to each other 
+     think about how they are related to each other 
 
 
-2022 June : new workflow validation : U4Recorder, U4Random, more A-B sharing, random alignment into new workflow
--------------------------------------------------------------------------------------------------------------------
+
+2022 July : B focus, start full geom random alignment
+-------------------------------------------------------
+
+* 07/13 : A-B : investigate extra BT in B cf A : looks like U4Recorder needs microStep suppression together with random rewinds to stay aligned 
+* 07/12 : B : export A_FOLD in u4s.sh to allow U4RecorderTest.cc to load the sframe.npy from the A side so input photons can be transformed the same in A and B
+* 07/11 : A+B : SEvt machinery for transforming input photons into instance frame using OPTICKS_INPUT_PHOTON_FRAME 
+* 07/11 : B : use BoxOfScintillator for fast turnaround tagging of reemission random consumption
+* 07/11 : B : tag consumption from DielectricMetal ChooseReflection DoReflection LambertianRand
+* 07/11 : B : use SRandom.h protocol base to U4Random to allow SEvt::addTag to check cursor vs slots : enabling untagged consumption to be detected at the next SEvt::AddTag 
+* 07/10 : B : switch to manual random consumption tagging as Linux SBacktrace::Summary misses crucial frames making auto tagging problematic
+* 07/10 : B : reorganize the process Shims to not use inline imps to see if it changes the Linux SBacktrace::Summary for U4Stack::Classify
+* 07/09 : B :  U4VolumeMaker::PVG for GDML reading using SOpticksResource::GDMLPath resolution using _GDMLPath envvar trick 
+* 07/08 : A : comparing precision of intersect z position for TO BT SD and TO BR SA shows nothing special about BR, just small deviations get amplified by reflection
+* 07/08 : A : more modularization of simtrace plotting to avoid too much duplication for new g4cx/tests/G4CXSimtraceTest.py gx level simtrace plotting with gxt.sh
+* 07/07 : B : pull U4Step::MockOpticksBoundaryIdentity and U4CF out of U4Recorder
+* 07/04 : A+B : remove 12 old pkgs from standard build list om-subs--all 
+* 07/03 : A : working through initial issues with gx/tests/G4CXSimulateTest.cc
+* 07/01 : B : start on generalizing U4VolumeMaker to work with jps:PMTSim provided volumes
+* 07/01 : A : confirmed fix for AB and SC (absorb and scatter) deviations by using KLUDGE_FASTMATH_LOGF in qsim.h
+* 07/01 : A : confirmed suspicion that bulk of AB/SC position aligned deviation is not from float/double but rather from -use_fast_math logf which is __logf vs full float or double logf : try KLUDGE_FASTMATH_LOGF to reduce the deviation in the u > 0.998f region 
+
+2022 June : B + A-B focus : new workflow validation : U4Recorder, U4Random, more A+B sharing, enum based systematic random alignment in new workflow
+------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-* 06/20 : devise a systematic simstream callsite approach to doing the alignment starting with an enumeration of curand_uniform consumption callsites
-* 06/18 : arrange non-tmp directory for precooked randoms and use by default with U4Random, mechanics seem working : but so far not aligning history
-* 06/17 : start using the NP::slice to create U4 material props from the bnd array 
-* 06/16 : pull SBnd.h out of QBnd.hh to facilitate usage from U4, SBnd::getPropertyGroup to pull the standard bnd sets of 8 properties out of the bnd array 
-* 06/16 : try using trans_length cutoff for judging normal incidence in attempt to get double and float calcs to special case more consistently 
-* 06/15 : start adding prd to sevent.h to allow full quad2 isect collection for debugging the normal incidence decision issue, and other isect related issues
-* 06/15 : onfirmed the cause of polarization difference is from the Geant4 double precision normal incidence judgement only matching the Opticks float judgement something like half the time
-* 06/14 : reinstate DEBUG_PIDX to investigate polz nan 
-* 06/14 : SEventConfig::SetStandardFullDebug to make it easier for separate executables to use same config, using this for notes/issues/U4RecorderTest_cf_CXRaindropTest.rst 
-* 06/11 : use rainbow geometry with U4VolumeMaker::RaindropRockAirWater to expand checking with U4RecorderTest
-* 06/11 : simplify U4 by moving material related methods to U4Material
-* 06/09 : reemission bookkeeping : scrubbing BULK_ABSORB and setting BULK_REEMIT in SEvt::rjoinPhoton
-* 06/07 : move hostside sevent.h instance primary residence from QEvent down to SEvt for common access from Geant4 and Opticks branches
-* 06/07 : move aside the old sevent.h to sxyz.h in prep for the qudarap/qevent.h migration down to sysrap/sevent.h
-* 06/06 : basic structure of U4Recorder looking much simpler than old way, hope the full implementation with flags etc.. can stay as simple 
-* 06/03 : U4RecorderTest dumping explorations whilst reviewing the old CFG4 way and looking for simplifications 
-* 06/02 : start setup of U4RecorderTest for notes/issues/reimplement-G4OpticksRecorder-CManager-for-new-workflow.rst
-* 06/02 : prep to move event array persisting from QEvent down to SEvt using SCompProvider protocol so SEvt can invoke QEvent getComponent to do the downloads 
-* 06/01 : remove the nasty mixed CFBase kludge now that have moved the virtual Water///Water skips to translation time instead of load time
+* 06/30 : A : finding the randoms leading to SC or AB shows they are all very close to 1. which leads to float/double difference as -log(u) is small, close to 1-u but in air for example the absorbtion length is large eg 1e7
+* 06/30 : B : investigate effect of float log rather than double log in ShimG4OpAbsoption and ShimG4OpRayleigh
+* 06/29 : A-B : upped sample to 1M : only 1/1M is not history aligned : no surprises with the 500/1M with > 0.1 deviations, start prep for PMTSim test geometry from U4VolumeMaker 
+* 06/29 : A-B : use ana/p.py:cuss CountUniqueSubSelection for more systematic look at the 17/10k > 0.1 deviants : 11 of which are tangent skimmers
+* 06/28 : A-B : 10k cxs_rainbow turn out to be history aligned including scattering and absorption immediately, found explanations for all deviants investigated so far
+* 06/27 : A-B : start rayleigh scatter random align by increasing stats and geometry extents
+* 06/23 : B : U4Process::ClearNumberOfInteractionLengthLeft at tail of U4Recorder::UserSteppingAction_Optical makes Geant4 consumption regular, so most of the history should be possible to align to, but these is difference in the tail due to NoRINDEX hack termination
+* 06/20 : A+B : stag.h machinery for tagging random consumption, aiming to be usable from both simulations 
+* 06/20 : A-B : devise a systematic simstream callsite approach to doing the alignment starting with an enumeration of curand_uniform consumption callsites
+* 06/18 : B : arrange non-tmp directory for precooked randoms and use by default with U4Random, mechanics seem working : but so far not aligning history
+* 06/17 : B : start using the NP::slice to create U4 material props from the bnd array 
+* 06/16 : A+B : pull SBnd.h out of QBnd.hh to facilitate usage from U4, SBnd::getPropertyGroup to pull the standard bnd sets of 8 properties out of the bnd array 
+* 06/16 : A-B : try using trans_length cutoff for judging normal incidence in attempt to get double and float calcs to special case more consistently 
+* 06/15 : A : start adding prd to sevent.h to allow full quad2 isect collection for debugging the normal incidence decision issue, and other isect related issues
+* 06/15 : A-B :  confirmed the cause of polarization difference is from the Geant4 double precision normal incidence judgement only matching the Opticks float judgement something like half the time
+* 06/14 : A : reinstate DEBUG_PIDX to investigate polz nan 
+* 06/14 : A+B : SEventConfig::SetStandardFullDebug to make it easier for separate executables to use same config, using this for notes/issues/U4RecorderTest_cf_CXRaindropTest.rst 
+* 06/11 : B : use rainbow geometry with U4VolumeMaker::RaindropRockAirWater to expand checking with U4RecorderTest
+* 06/11 : B : simplify U4 by moving material related methods to U4Material
+* 06/09 : A+B : reemission bookkeeping : scrubbing BULK_ABSORB and setting BULK_REEMIT in SEvt::rjoinPhoton
+* 06/07 : A+B : move hostside sevent.h instance primary residence from QEvent down to SEvt for common access from Geant4 and Opticks branches
+* 06/07 : A+B : move aside the old sevent.h to sxyz.h in prep for the qudarap/qevent.h migration down to sysrap/sevent.h
+* 06/06 : B : basic structure of U4Recorder looking much simpler than old way, hope the full implementation with flags etc.. can stay as simple 
+* 06/03 : B : U4RecorderTest dumping explorations whilst reviewing the old CFG4 way and looking for simplifications 
+* 06/02 : B : start setup of U4RecorderTest for notes/issues/reimplement-G4OpticksRecorder-CManager-for-new-workflow.rst
+* 06/02 : A+B : prep to move event array persisting from QEvent down to SEvt using SCompProvider protocol so SEvt can invoke QEvent getComponent to do the downloads 
+* 06/01 : A : remove the nasty mixed CFBase kludge now that have moved the virtual Water///Water skips to translation time instead of load time
 
 
-2022 May : CUDA qsim.h continued, shallow stack, more A-B sharing, g4cx started, cherry picking as remove packages  
----------------------------------------------------------------------------------------------------------------------
+2022 May : A focus : CUDA qsim.h continued, shallow stack, more A-B sharing, g4cx started, cherry picking as remove packages  
+-------------------------------------------------------------------------------------------------------------------------------
 
-* 05/31 : ELVSelection succeeds to skip the virtual jackets as visible in simtrace plotting but observe prim mis-naming at python level, presumably because the python naming is based on the copied geocache which is unchanged by dynamic prim selection
-* 05/31 : implement notes/issues/namelist-based-elv-skip-string.rst for skipping virtual Water///Water PMT wrapper surfaces
-* 05/30 : set default PropagateEpsilon to 0.05
-* 05/28 : pyvista screenshot is proving finicky, yielding blank renders, so avoid issue using macos level mpcap.sh pvcap.sh sfcap.sh from env/bin
-* 05/27 : simtrace geometry and cxsim hits together starting to work, needs perpendicular simtrace shift to hit control plus view is finnicky
-* 05/26 : get the simtrace python analysis machinery to run with sframe instead of the old gridspec and gsmeta, simtrace shakedown of new frame genstep 
-* 05/25 : rearrange CSGOptiXSimtraceTest genstep creation and metadata persisting using sframe as the central element
-* 05/25 : incorporate Yuxiangs multifilm developments 
-* 05/23 : G4CX logging hookup, debug CSGFoundry::Load
-* 05/22 : move genstep collection entirely down to SEvt so workflow for all types of genstep can be the same
-* 05/21 : try genstep collection approach in U4 that avoids baring soul using translation unit local static functions and variables to keep Opticks types out of the U4 header
-* 05/20 : use SSim centralized input array management to simplify QSim::UploadComponents and make it more extensible plus eliminate duplicated setup code
-* 05/18 : G4CXOpticks::setGeometry methods to start from every level of geometry, check snap in SRG_RENDER mode 
-* 05/17 : migrate xercesc dependent cfg4/CGDMLKludge into new gdxml package, as JUNO GDML still needs kludging
-* 05/17 : start bringing together top level package and interface class for new workflow g4cx/G4CXOpticks prior to more direct CSGFoundry from G4 translation 
-* 05/16 : try simpler genstep collection in sysrap/SEvt.h 
-* 05/12 : SDir.h for directory listing without using boost::fs  (brap/boost avoidance)
-* 05/11 : get hemisphere_s/p/x_polarized and propagate_at_boundary_s/p/x_polarized to work again 
-* 05/10 : modularize qsim further into qbnd qbase to avoid chicken-egg dependency issue in setup of qscint and qcerenkov
-* 05/09 : pull qscint.h out of qsim.h for better encapsulation and clarity 
-* 05/06 : remove unused and hence confusing template params, pull qcerenkov out of qsim
-* 05/05 : layout for scerenkov.h following pattern of storch.h for filling out from ocu/cerenkovstep.h
-* 05/02 : prepare SGLM for comparison with Composition to see if SGLM can take over from Composition within CSGOptiX (optickscore avoidance)
-
-
-2022 April : qudarap/qsim.h bringing simulation to plain CUDA (no OptiX)
---------------------------------------------------------------------------
-
-* 04/30 : QEvent::save and QEvent standardization, with sseq.h for encapsulated seqhis recording 
-* 04/29 : merged in new PMT optical model
-* 04/29 : standardize wavelength domain compression to use center-extent form for consistency with other domains and common handling, fix uchar4/char4 bug
-* 04/26 : examples/UseGeometryShader : standalone flying point viz working, start flexible centralization of OpenGL/GLFW mechanincs into header-only-imp SGLFW.hh
-* 04/25 : CXRaindopTest now providing photon histories, need compressed recording to push to higher stats for the history table
-* 04/25 : integrating torch into QSim for on device GENTORCH QSimTest, relocate basis types storch.h scurand.d down from QUDARap to SysRap for SEvent genstep creation
-* 04/22 : mocking curand_uniform with s_mock_curand.h enables CPU testing of some qsim.h methods in qsim_test.cc, textures not so easy to mock
-* 04/21 : CSGMaker::makeBoxedSphere for raindrop geometry
-* 04/20 : QBnd::Add using NP::itembytes to extract surfaces and materials from the boundary array plus QBnd::GetPerfectValues for things like perfectAbsorbSurface
-* 04/12 : start integrating QEvent/qevent with QSim/qsim
-* 04/12 : move QSeed functionality into QEvent and SEvent for clarity of control
-* 04/08 : hit handling, encapsulating stream compation into SU.hh SU.cu tests/SUTest.cc 
-* 04/05 : mock_propagate step-by-step photon recording debug 
-* 04/05 : prepare for qsim::mock_propagate testing, switch from qprd to quad2 for easy loading of mock_prd 
-* 04/04 : qudarap reflect_diffuse reflect_specular 
+* 05/31 : A : ELVSelection succeeds to skip the virtual jackets as visible in simtrace plotting but observe prim mis-naming at python level, presumably because the python naming is based on the copied geocache which is unchanged by dynamic prim selection
+* 05/31 : A : implement notes/issues/namelist-based-elv-skip-string.rst for skipping virtual Water///Water PMT wrapper surfaces
+* 05/30 : A : set default PropagateEpsilon to 0.05
+* 05/28 : A+B : pyvista screenshot is proving finicky, yielding blank renders, so avoid issue using macos level mpcap.sh pvcap.sh sfcap.sh from env/bin
+* 05/27 : A : simtrace geometry and cxsim hits together starting to work, needs perpendicular simtrace shift to hit control plus view is finnicky
+* 05/26 : A : get the simtrace python analysis machinery to run with sframe instead of the old gridspec and gsmeta, simtrace shakedown of new frame genstep 
+* 05/25 : A : rearrange CSGOptiXSimtraceTest genstep creation and metadata persisting using sframe as the central element
+* 05/25 : A : incorporate Yuxiangs multifilm developments 
+* 05/23 : A : G4CX logging hookup, debug CSGFoundry::Load
+* 05/22 : A+B : move genstep collection entirely down to SEvt so workflow for all types of genstep can be the same
+* 05/21 : B : try genstep collection approach in U4 that avoids baring soul using translation unit local static functions and variables to keep Opticks types out of the U4 header
+* 05/20 : A : use SSim centralized input array management to simplify QSim::UploadComponents and make it more extensible plus eliminate duplicated setup code
+* 05/18 : A : G4CXOpticks::setGeometry methods to start from every level of geometry, check snap in SRG_RENDER mode 
+* 05/17 : A+B : migrate xercesc dependent cfg4/CGDMLKludge into new gdxml package, as JUNO GDML still needs kludging
+* 05/17 : A : start bringing together top level package and interface class for new workflow g4cx/G4CXOpticks prior to more direct CSGFoundry from G4 translation 
+* 05/16 : A : try simpler genstep collection in sysrap/SEvt.h 
+* 05/12 : A+B : SDir.h for directory listing without using boost::fs  (brap/boost avoidance)
+* 05/11 : A : get hemisphere_s/p/x_polarized and propagate_at_boundary_s/p/x_polarized to work again 
+* 05/10 : A : modularize qsim further into qbnd qbase to avoid chicken-egg dependency issue in setup of qscint and qcerenkov
+* 05/09 : A : pull qscint.h out of qsim.h for better encapsulation and clarity 
+* 05/06 : A : remove unused and hence confusing template params, pull qcerenkov out of qsim
+* 05/05 : A+B : layout for scerenkov.h following pattern of storch.h for filling out from ocu/cerenkovstep.h
+* 05/02 : A+B : prepare SGLM for comparison with Composition to see if SGLM can take over from Composition within CSGOptiX (optickscore avoidance)
 
 
-2022 March : AltXJfixtureConstruction, Dynamic Prim selection, QSimTest
-------------------------------------------------------------------------------
+2022 April : A focus : qudarap/qsim.h QSimTest :  bringing simulation to plain CUDA (no OptiX)
+--------------------------------------------------------------------------------------------------
+
+* 04/30 : A : QEvent::save and QEvent standardization, with sseq.h for encapsulated seqhis recording 
+* 04/29 : A : merged in new PMT optical model
+* 04/29 : A+B : standardize wavelength domain compression to use center-extent form for consistency with other domains and common handling, fix uchar4/char4 bug
+* 04/26 : A+B : examples/UseGeometryShader : standalone flying point viz working, start flexible centralization of OpenGL/GLFW mechanincs into header-only-imp SGLFW.hh
+* 04/25 : A : CXRaindopTest now providing photon histories, need compressed recording to push to higher stats for the history table
+* 04/25 : A : integrating torch into QSim for on device GENTORCH QSimTest, relocate basis types storch.h scurand.d down from QUDARap to SysRap for SEvent genstep creation
+* 04/22 : A : mocking curand_uniform with s_mock_curand.h enables CPU testing of some qsim.h methods in qsim_test.cc, textures not so easy to mock
+* 04/21 : A : CSGMaker::makeBoxedSphere for raindrop geometry
+* 04/20 : A : QBnd::Add using NP::itembytes to extract surfaces and materials from the boundary array plus QBnd::GetPerfectValues for things like perfectAbsorbSurface
+* 04/12 : A : start integrating QEvent/qevent with QSim/qsim
+* 04/12 : A : move QSeed functionality into QEvent and SEvent for clarity of control
+* 04/08 : A : hit handling, encapsulating stream compation into SU.hh SU.cu tests/SUTest.cc 
+* 04/05 : A : mock_propagate step-by-step photon recording debug 
+* 04/05 : A : prepare for qsim::mock_propagate testing, switch from qprd to quad2 for easy loading of mock_prd 
+* 04/04 : A : qudarap reflect_diffuse reflect_specular 
+
+
+2022 March : A geometry focus :  AltXJfixtureConstruction, Dynamic Prim selection, QSimTest
+-----------------------------------------------------------------------------------------------
 
 * https://simoncblyth.bitbucket.io/env/presentation/opticks_20220329_progress_towards_production.html
 * http://localhost/env/presentation/opticks_20220329_progress_towards_production.html

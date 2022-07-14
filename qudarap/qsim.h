@@ -101,7 +101,7 @@ struct qsim
     QSIM_METHOD int     propagate_at_surface(  unsigned& flag, curandStateXORWOW& rng, sctx& ctx ); 
 
     QSIM_METHOD void    reflect_diffuse(                       curandStateXORWOW& rng, sctx& ctx );
-    QSIM_METHOD void    reflect_specular(                                  curandStateXORWOW& rng, sctx& ctx );
+    QSIM_METHOD void    reflect_specular(                      curandStateXORWOW& rng, sctx& ctx );
 
     QSIM_METHOD void    mock_propagate( sphoton& p, const quad2* mock_prd, curandStateXORWOW& rng, unsigned idx ); 
     QSIM_METHOD int     propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx ); 
