@@ -21,9 +21,11 @@ Progress
      think about how they are related to each other 
 
 
-
 2022 July : B focus, start full geom random alignment
 -------------------------------------------------------
+
+**B : Fully instrumented Geant4 reached plateau, ready for A-B iteration, random alignment + comparison**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * 07/13 : A-B : investigate extra BT in B cf A : looks like U4Recorder needs microStep suppression together with random rewinds to stay aligned 
 * 07/12 : B : export A_FOLD in u4s.sh to allow U4RecorderTest.cc to load the sframe.npy from the A side so input photons can be transformed the same in A and B
@@ -43,9 +45,18 @@ Progress
 * 07/01 : A : confirmed fix for AB and SC (absorb and scatter) deviations by using KLUDGE_FASTMATH_LOGF in qsim.h
 * 07/01 : A : confirmed suspicion that bulk of AB/SC position aligned deviation is not from float/double but rather from -use_fast_math logf which is __logf vs full float or double logf : try KLUDGE_FASTMATH_LOGF to reduce the deviation in the u > 0.998f region 
 
+
 2022 June : B + A-B focus : new workflow validation : U4Recorder, U4Random, more A+B sharing, enum based systematic random alignment in new workflow
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 
+**A-B : new systematic enum approach to random aligned simulation**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**A+B : maximise shared code between A and B**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**B : Initiate U4Recorder : Geant4 simulation with full Opticks SEvt instrumentation**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * 06/30 : A : finding the randoms leading to SC or AB shows they are all very close to 1. which leads to float/double difference as -log(u) is small, close to 1-u but in air for example the absorbtion length is large eg 1e7
 * 06/30 : B : investigate effect of float log rather than double log in ShimG4OpAbsoption and ShimG4OpRayleigh
@@ -76,8 +87,12 @@ Progress
 * 06/01 : A : remove the nasty mixed CFBase kludge now that have moved the virtual Water///Water skips to translation time instead of load time
 
 
-2022 May : A focus : CUDA qsim.h continued, shallow stack, more A-B sharing, g4cx started, cherry picking as remove packages  
+2022 May : A focus : CUDA qsim.h continued, shallow stack, more A+B sharing, g4cx started, cherry picking as remove packages  
 -------------------------------------------------------------------------------------------------------------------------------
+
+**A : New worflow pure CUDA simulation, reached plateau**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 * 05/31 : A : ELVSelection succeeds to skip the virtual jackets as visible in simtrace plotting but observe prim mis-naming at python level, presumably because the python naming is based on the copied geocache which is unchanged by dynamic prim selection
 * 05/31 : A : implement notes/issues/namelist-based-elv-skip-string.rst for skipping virtual Water///Water PMT wrapper surfaces
@@ -106,6 +121,9 @@ Progress
 
 2022 April : A focus : qudarap/qsim.h QSimTest :  bringing simulation to plain CUDA (no OptiX)
 --------------------------------------------------------------------------------------------------
+
+**A : Plain CUDA simulation, OptiX use segregated**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * 04/30 : A : QEvent::save and QEvent standardization, with sseq.h for encapsulated seqhis recording 
 * 04/29 : A : merged in new PMT optical model
