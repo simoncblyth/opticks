@@ -1,18 +1,14 @@
 #!/bin/bash -l 
 
-QUIET=1 gx
-A_FOLD=$(./gxs.sh fold)
+A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
+B_FOLD=$($OPTICKS_HOME/u4/u4s.sh fold)
 
-QUIET=1 u4
-B_FOLD=$(./u4s.sh fold)
-
-gx
-source ../bin/AB_FOLD.sh 
+source $OPTICKS_HOME/bin/AB_FOLD.sh 
 
 export A_FOLD
 export B_FOLD
 
-${IPYTHON:-ipython} --pdb -i tests/G4CXSimulateTest_ab.py
+${IPYTHON:-ipython} --pdb -i $OPTICKS_HOME/g4cx/tests/G4CXSimulateTest_ab.py
 
 
 

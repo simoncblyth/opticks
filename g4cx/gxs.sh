@@ -37,6 +37,7 @@ of control of when to save ?
 EOU
 }
 
+
 defarg="run"
 arg=${1:-$defarg}
 
@@ -46,8 +47,9 @@ esac
 
 
 bin=G4CXSimulateTest
-source ../bin/GEOM_.sh   #  defines and exports : GEOM, GEOMDIR 
-source ../bin/OPTICKS_INPUT_PHOTON.sh 
+gxsdir=$(dirname $BASH_SOURCE)
+source $gxsdir/../bin/GEOM_.sh   #  defines and exports : GEOM, GEOMDIR 
+source $gxsdir/../bin/OPTICKS_INPUT_PHOTON.sh 
 
 BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE is BASE relative to HOME to handle rsync between different HOME
@@ -64,7 +66,7 @@ EON
 # NB FOLD is not used by run, but it is used by ana
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="GEOM GEOMDIR CFBASE BASE UBASE FOLD OPTICKS_INPUT_PHOTON"
+    vars="gxsdir GEOM GEOMDIR CFBASE BASE UBASE FOLD OPTICKS_INPUT_PHOTON"
     for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 fi 
 
@@ -105,15 +107,16 @@ fi
 if [ "${arg/ana}" != "$arg" ]; then 
     export FOLD 
     export CFBASE=$BASE/CSGFoundry
-    ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
+    ${IPYTHON:-ipython} --pdb -i $gxsdir/tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    source ../bin/rsync.sh $UBASE 
+    source $gxsdir/../bin/rsync.sh $UBASE 
 fi 
 
 if [ "$arg" == "ab" ]; then
+    cd $gxsdir
     ./gxs_ab.sh 
 fi 
 

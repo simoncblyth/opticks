@@ -1217,7 +1217,7 @@ SEvt::save persists NP arrays into the default directory
 or the directory argument provided.
 **/
 
-const char* SEvt::FALLBACK_DIR = "$DefaultOutputDir" ;  // $TMP/ExecutableName/GEOM
+const char* SEvt::FALLBACK_DIR = "$DefaultOutputDir" ;  // $TMP/GEOM/ExecutableName
 const char* SEvt::DefaultDir()
 {
     const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
@@ -1257,7 +1257,6 @@ const char* SEvt::getOutputDir(const char* base_) const
 {
     const char* base = base_ ? base_ : DefaultDir() ; 
     bool with_index = index != MISSING_INDEX ;  
-
     const char* dir = with_index ? 
                                 SPath::Resolve(base, reldir, index, DIRPATH ) 
                              :

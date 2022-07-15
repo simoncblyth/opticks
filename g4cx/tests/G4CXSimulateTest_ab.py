@@ -8,6 +8,46 @@ Usage::
    gx
    ./gxs_ab.sh  
 
+
+
+
+
+    In [15]: np.all( A.ts == B.ts2[:,:12,:29] )                                                                                            
+    Out[15]: False
+
+    In [17]: A.ts.shape                                                                                                                    
+    Out[17]: (10000, 12, 29)
+
+    In [18]: B.ts2.shape                                                                                                                   
+    Out[18]: (10000, 13, 29)
+
+
+Warning from comparing different shapes::
+
+    In [16]: np.all( A.ts == B.ts2 )                                                                                                       
+    /Users/blyth/miniconda3/bin/ipython:1: DeprecationWarning: elementwise comparison failed; this will raise an error in the future.
+      #!/Users/blyth/miniconda3/bin/python
+    Out[16]: False
+
+::
+
+    In [19]: np.where( A.ts != B.ts2[:,:12,:29] )                                                                                          
+    Out[19]: 
+    (array([9964, 9964, 9964, 9964, 9964, 9964]),
+     array([ 2,  4,  6,  8, 10, 11]),
+     array([5, 5, 5, 5, 5, 3]))
+
+
+Mis-aligned from truncation ?::
+
+    In [20]: seqhis_(a.seq[9964,0])                                                                                                        
+    Out[20]: 'TO BT SC BR BR BR BR BR BR BR'
+
+    In [21]: seqhis_(b.seq[9964,0])                                                                                                        
+    Out[21]: 'TO BT SC BR BR BR BR BR BR BR'
+
+
+
 """
 import numpy as np
 
@@ -51,12 +91,16 @@ if __name__ == '__main__':
         we_ = "we = np.where( A.t.view('|S%(SLOTS)s') != B.t2.view('|S%(SLOTS)s') )[0]" % locals()  # eg stag.h/stag::SLOTS = 64 
         we = epr(we_,  globals(), locals() ) 
 
-        wa = epr("wa = np.unique(np.where( np.abs(a.record - b.record ) > 0.01 )[0])", globals(), locals() ) 
+        wa = epr("wa = np.unique(np.where( np.abs(a.record - b.record ) > 0.05 )[0])", globals(), locals() ) 
 
+        print("---0---")
         eprint("np.all( A.ts == B.ts2 )", globals(), locals() )
+        print("---1---")
         eprint("np.all( A.ts2 == B.ts )", globals(), locals() )
+        print("---2---")
 
         assert (a.inphoton - b.inphoton).max() < 1e-3
+        print("---3---")
 
 
         epr("o = cuss(a.seq[:,0])",  globals(), locals(), rprefix="\n" ) 

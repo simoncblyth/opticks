@@ -74,11 +74,9 @@ const plog::Severity  U4RecorderTest::LEVEL = info ;   // PLOG logging level con
 std::string U4RecorderTest::Desc()
 {
     std::string phy = U4Physics::Desc() ; 
-    std::string geo = U4VolumeMaker::GEOM  ; 
     std::string rec = U4Recorder::Desc() ; 
     std::stringstream ss ; 
     if(!phy.empty()) ss << phy  ; 
-    if(!geo.empty()) ss << "/" << geo ; 
     if(!rec.empty()) ss << "/" << rec ; 
     std::string s = ss.str(); 
     return s ; 
@@ -206,7 +204,8 @@ int main(int argc, char** argv)
     runMgr->BeamOn(1); 
 
     const char* outdir = sev.getOutputDir(); 
-    LOG(info) << "outdir " << outdir ; 
+    LOG(info) << "outdir [" << outdir << "]" ; 
+    LOG(info) << " desc [" << desc << "]" ; 
 
     rnd.saveProblemIdx(outdir); 
 

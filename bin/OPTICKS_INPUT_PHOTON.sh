@@ -42,8 +42,9 @@ source $ScriptDir/OPTICKS_INPUT_PHOTON_.sh
 
 if [ -z "$QUIET" ]; then 
     vars="BASH_SOURCE ScriptDir OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME OPTICKS_INPUT_PHOTON_ABSPATH"
-    for var in $vars ; do printf "== %30s : %s \n" $var ${!var} ; done 
-    for var in $vars ; do printf "== %s \n" "$(declare -p $var)" ; done   # -x in output shows exported
+    for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
+    #for var in $vars ; do printf "== %s \n" "$(declare -p $var)" ; done   # -x in output shows exported
+    echo 
 fi
 
 

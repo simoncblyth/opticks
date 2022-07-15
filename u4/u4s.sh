@@ -18,13 +18,12 @@ u4s.sh : formerly U4RecorderTest.sh : Geant4 simulation with Opticks recording e
     ./u4s.sh ab
 
 
-U4RecorderTest requires some A_ envvars::
+U4RecorderTest requires A_CFBASE and A_FOLD envvars to find inputs::
 
      U4Material::LoadBnd("$A_CFBASE/CSGFoundry/SSim") ; // booting G4Material from A:bnd.npy
    
      sframe fr = sframe::Load_("$A_FOLD/sframe.npy");   // for transforming input photons  
       
-
 
 U4RecorderTest invokes "SEvt::save()" writing .npy to '$DefaultOutputDir/SEvt::reldir' eg::
 
@@ -47,7 +46,8 @@ esac
 
 
 bin=U4RecorderTest
-srcdir=$PWD
+u4sdir=$(dirname $BASH_SOURCE)
+srcdir=$u4sdir
 logdir=/tmp/$USER/opticks/$bin
 mkdir -p $logdir 
 foldbase=$logdir
@@ -72,40 +72,21 @@ mode=iphoton
 export U4RecorderTest__PRIMARY_MODE=$mode
 
 if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
-    source ../bin/OPTICKS_INPUT_PHOTON.sh     
+    source $u4sdir/../bin/OPTICKS_INPUT_PHOTON.sh     
 fi 
 
 #source ./IDPath_override.sh   
 # IDPath_override.sh : non-standard IDPath to allow U4Material::LoadOri to find material properties 
 # HMM probably doing nothing now that are using U4Material::LoadBnd ?
 
-source ../bin/GEOM_.sh 
+source $u4sdir/../bin/GEOM_.sh 
 
-
-QUIET=1 gx
-A_FOLD=$(./gxs.sh fold)
+A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
 A_CFBASE=$(dirname $A_FOLD)
-QUIET=1 u4
 
 export A_FOLD     # A_FOLD is needed for loading "$A_FOLD/sframe.npy" 
 export A_CFBASE   # A_CFBASE needed for loading  "$A_CFBASE/CSGFoundry/SSim"
 
-
-if [ -z "$QUIET" ]; then 
-    echo $msg A_FOLD from gxs.sh : $A_FOLD : allows loading of sframe.npy for input photon transform
-fi 
-
-if [ -z "$QUIET" ]; then 
-    if [ -n "$A_CFBASE" ]; then 
-        echo $msg CFBASE from GEOM_.sh : $CFBASE
-    else 
-        echo $msg ERROR : NO CFBASE from GEOM_.sh : $CFBASE
-    fi 
-fi
-
-
-#sel=PIDX_0_
-sel=ALL
 
 
 export ShimG4OpAbsorption_FLOAT=1 
@@ -119,6 +100,14 @@ physdesc="${physdesc}_"
 [ -n "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_FLOAT"
 [ -z "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
 
+#sel=PIDX_0_
+sel=ALL
+reldir=$physdesc/$sel     # SEvt::SetReldir 
+
+
+
+
+
 
 layout(){ cat << EOL
 Foldbase was formerly : /tmp/USER/opticks/U4RecorderTest making 
@@ -127,46 +116,27 @@ Foldbase was formerly : /tmp/USER/opticks/U4RecorderTest making
 
 But that is inconsistent with geocache writing where GEOM is before ExecutableName. 
 
-     TMP_CFBASE from GEOM_.sh is /tmp/$USER/opticks/$GEOM  when not operating from real CFBASE
+     GEOMDIR from GEOM_.sh is /tmp/$USER/opticks/$GEOM  when not operating from real CFBASE
 
 EOL
 }
 
-export FOLD=$CFBASE/$bin/$physdesc/$sel
 
+BASE=$GEOMDIR/$bin
+UBASE=${BASE//$HOME\/}    # UBASE is BASE relative to HOME to handle rsync between different HOME
+FOLD=$BASE/$reldir
 
-## CFBASE in different tree because it is kinda foreign 
-## HMM: maybe should copy it ?
+export FOLD
 
 if [ "${arg/fold}" != "${arg}" ]; then 
    echo $FOLD
 fi 
 
-
-
 if [ "${arg/info}" != "${arg}" ]; then 
-    vars="GEOM CFBASE A_FOLD FOLD physdesc sel" 
-    for var in $vars ; do printf " %30s : %s \n" $var ${!var}  ; done 
+    vars="BASH_SOURCE u4sdir GEOM GEOMDIR BASE UBASE CFBASE FOLD A_FOLD A_CFBASE reldir" 
+    for var in $vars ; do printf "%30s : %s \n" $var ${!var}  ; done 
+    echo 
 fi 
-
-
-if [ -d "${CFBASE}/CSGFoundry" ]; then 
-    export CFBASE
-    ## HMM: exporting CFBASE has consequences for U4Material::LoadBnd/SSim::Load 
-    ## HMM: there is kinda a double use of CFBASE thats unhealthy here 
-
-    if [ -z "$QUIET" ]; then 
-        echo $msg cfbase/CSGFoundry dir exists so exporting CFBASE $CFBASE
-    fi 
-else
-    if [ -z "$QUIET" ]; then 
-        echo $msg cfbase/CSGFoundry dir does not exist : NOT EXPORTING CFBASE
-    fi 
-    #exit 1
-fi 
-
-
-
 
 
 # Note that OPTICKS_RANDOM_SEQPATH uses single quotes to prevent expansion of the '$PrecookedDir' 
@@ -174,8 +144,6 @@ fi
 # more than 100k photons as the default only loads a single 100k precooked random file whereas 
 # this will load ten of them allowing aligned running with up to 1M photons.
 # export OPTICKS_RANDOM_SEQPATH='$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000'  
-
-
 
 
 loglevels()
@@ -224,12 +192,12 @@ fi
 if [ "${arg/ana}" != "${arg}" ]; then 
     cd $srcdir 
     pwd
-    ${IPYTHON:-ipython} --pdb -i tests/$bin.py 
+    ${IPYTHON:-ipython} --pdb -i $u4sdir/tests/$bin.py 
 fi 
 
 if [ "${arg/grab}" != "${arg}" ]; then 
     echo $msg grab FOLD $FOLD
-    source ../bin/rsync.sh $FOLD
+    source $u4sdir/../bin/rsync.sh $FOLD
 fi 
 
 if [ "${arg}" == "ab" ]; then 
@@ -240,8 +208,9 @@ if [ "${arg}" == "ab" ]; then
     #fold_mode=LOGF
     fold_mode=GEOM
     export FOLD_MODE=${FOLD_MODE:-$fold_mode}
-    source ../bin/AB_FOLD.sh 
-    ${IPYTHON:-ipython} --pdb -i tests/${bin}_ab.py $*  
+    source $u4sdir/../bin/AB_FOLD.sh 
+    ${IPYTHON:-ipython} --pdb -i $u4sdir/tests/${bin}_ab.py $*  
 fi 
+
 
 

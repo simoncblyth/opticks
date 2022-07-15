@@ -61,8 +61,9 @@ GEOMDIR=${cg:-$TMP_GEOMDIR}
 export GEOMDIR 
 
 if [ -z "$QUIET" ]; then 
-   vars="TMP_GEOMDIR GEOMDIR" 
-   for var in $vars ; do printf "== %s : %30s : %s \n" $BASH_SOURCE $var ${!var} ; done  
+   vars="BASH_SOURCE TMP_GEOMDIR GEOMDIR" 
+   for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done  
+   echo 
 fi 
 
 notes(){ cat << EON
