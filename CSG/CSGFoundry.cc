@@ -2659,17 +2659,17 @@ CSGFoundry::getFrame
 Replacing most of CSGOptiX::setComposition
 
 **/
+const char* CSGFoundry::FRS = "-1" ; 
 
 sframe CSGFoundry::getFrame() const 
 {
-    const char* moi_or_iidx = SSys::getenvvar("MOI","-1");   // TODO: MOI->FRS perhaps ?
+    const char* moi_or_iidx = SSys::getenvvar("MOI",FRS);   // TODO: MOI->FRS perhaps ?
     return getFrame(moi_or_iidx); 
 }
-
-sframe CSGFoundry::getFrame(const char* moi_or_iidx) const 
+sframe CSGFoundry::getFrame(const char* frs) const 
 {
     sframe fr ; 
-    getFrame(fr, moi_or_iidx );
+    getFrame(fr, frs ? frs : FRS );
     return fr ; 
 }
 

@@ -13,8 +13,7 @@ path=storch_test/$vers/$(uname)/ph.npy
 
 if [ -n "$path" ]; then 
     OPTICKS_INPUT_PHOTON=$path
-    OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000
-
+   
     if [ "${path:0:1}" == "/" -o "${path:0:1}" == "$" ]; then 
         abspath=$path
     else
@@ -29,6 +28,11 @@ if [ -n "$path" ]; then
     fi 
 
     OPTICKS_INPUT_PHOTON_ABSPATH=$abspath
+
+    case ${GEOM:-Dummy} in 
+       J0*) OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000 ;;
+    esac
+
 fi 
 
 

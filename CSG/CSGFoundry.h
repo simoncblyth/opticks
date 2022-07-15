@@ -314,6 +314,7 @@ struct CSG_API CSGFoundry
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ; 
     const char* getName(unsigned midx) const ;  
 
+    static const char* FRS ; 
     sframe getFrame() const ; 
     sframe getFrame(const char* moi_or_iidx) const ; 
 
