@@ -64,6 +64,10 @@ G4CXOpticks::setGeometry
 
 Without argument method geometry source depends on existance of envvars : SomeGDMLPath, CFBASE, GEOM
 
+When not loading geometry from a CFBASE directory the CSGFoundry::save() method
+is which saves the geometry to "$DefaultOutputDir/CSGFoundry" 
+for use from python for example. 
+
 **/
 
 void G4CXOpticks::setGeometry()

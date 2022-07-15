@@ -28,6 +28,7 @@ TODO: should be using Tran<double> for transforming
 #include "sqat4.h"
 #include "stran.h"
 #include "NP.hh"
+#include "SPath.hh"
 
 
 struct sframe
@@ -222,10 +223,25 @@ inline void sframe::load(const char* dir, const char* name)
     const NP* a = NP::Load(dir, name); 
     load(a); 
 }
-inline void sframe::load_(const char* path) 
+inline void sframe::load_(const char* path_)   // eg $A_FOLD/sframe.npy
 {
-    const NP* a = NP::Load(path);
-    load(a); 
+    const char* path = SPath::Resolve(path_, NOOP);
+    bool exists = SPath::Exists(path) ;
+    if(!exists) 
+        std::cerr 
+            << "sframe::load_ ERROR : non-existing" 
+            << " path_ " << path_ 
+            << " path " << path 
+            << std::endl   
+            ;
+
+    assert(exists); 
+
+    if( exists )
+    {
+        const NP* a = NP::Load(path);
+        load(a); 
+    }
 }
 inline void sframe::load(const NP* a) 
 {

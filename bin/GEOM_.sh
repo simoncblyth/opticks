@@ -55,13 +55,23 @@ cg=${!cg_}
 
 # CFBASE is the directory that contains (or will contain) the CSGFoundry geometry folder 
 
-TMP_CFBASE=/tmp/$USER/opticks/$GEOM
-CFBASE=${cg:-$TMP_CFBASE}
-A_FOLD=$CFBASE/G4CXSimulateTest/ALL
+TMP_GEOMDIR=/tmp/$USER/opticks/$GEOM
+GEOMDIR=${cg:-$TMP_GEOMDIR}
 
-# NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
+export GEOMDIR 
 
 if [ -z "$QUIET" ]; then 
-   echo === $BASH_SOURCE : GEOM $GEOM CFBASE $CFBASE 
+   vars="TMP_GEOMDIR GEOMDIR" 
+   for var in $vars ; do printf "== %s : %30s : %s \n" $BASH_SOURCE $var ${!var} ; done  
 fi 
+
+notes(){ cat << EON
+
+Formerly this set CFBASE but thats confusing 
+as sometimes an executables loads from CFBASE and sometimes
+it writes to it. 
+
+EON
+}
+
 

@@ -35,12 +35,14 @@ SSim* SSim::Create()
     return INSTANCE ;  
 }
 
-SSim* SSim::Load()
+const char* SSim::DEFAULT = "$CFBase/CSGFoundry/SSim" ; 
+
+SSim* SSim::Load(){ return Load(DEFAULT) ; }
+//return Load(SOpticksResource::CFBase(), "CSGFoundry/SSim"); 
+
+SSim* SSim::Load(const char* base_)
 {
-    return Load(SOpticksResource::CFBase(), "CSGFoundry/SSim"); 
-}
-SSim* SSim::Load(const char* base)
-{
+    const char* base = SPath::Resolve(base_ ? base_ : DEFAULT, DIRPATH); 
     SSim* sim = new SSim ; 
     sim->load(base);  
     return sim ; 

@@ -18,6 +18,19 @@ u4s.sh : formerly U4RecorderTest.sh : Geant4 simulation with Opticks recording e
     ./u4s.sh ab
 
 
+U4RecorderTest requires some A_ envvars::
+
+     U4Material::LoadBnd("$A_CFBASE/CSGFoundry/SSim") ; // booting G4Material from A:bnd.npy
+   
+     sframe fr = sframe::Load_("$A_FOLD/sframe.npy");   // for transforming input photons  
+      
+
+
+U4RecorderTest invokes "SEvt::save()" writing .npy to '$DefaultOutputDir/SEvt::reldir' eg::
+
+
+
+
 EOU
 }
 msg="=== $BASH_SOURCE :"
@@ -68,14 +81,22 @@ fi
 
 source ../bin/GEOM_.sh 
 
-export A_FOLD
+
+QUIET=1 gx
+A_FOLD=$(./gxs.sh fold)
+A_CFBASE=$(dirname $A_FOLD)
+QUIET=1 u4
+
+export A_FOLD     # A_FOLD is needed for loading "$A_FOLD/sframe.npy" 
+export A_CFBASE   # A_CFBASE needed for loading  "$A_CFBASE/CSGFoundry/SSim"
+
 
 if [ -z "$QUIET" ]; then 
-    echo $msg A_FOLD from GEOM_.sh : $A_FOLD : allows loading of sframe.npy for input photon transform
+    echo $msg A_FOLD from gxs.sh : $A_FOLD : allows loading of sframe.npy for input photon transform
 fi 
 
 if [ -z "$QUIET" ]; then 
-    if [ -n "$CFBASE" ]; then 
+    if [ -n "$A_CFBASE" ]; then 
         echo $msg CFBASE from GEOM_.sh : $CFBASE
     else 
         echo $msg ERROR : NO CFBASE from GEOM_.sh : $CFBASE
@@ -124,7 +145,7 @@ fi
 
 
 if [ "${arg/info}" != "${arg}" ]; then 
-    vars="GEOM CFBASE FOLD physdesc sel" 
+    vars="GEOM CFBASE A_FOLD FOLD physdesc sel" 
     for var in $vars ; do printf " %30s : %s \n" $var ${!var}  ; done 
 fi 
 

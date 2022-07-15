@@ -1244,6 +1244,28 @@ void SEvt::save(const char* base, const char* reldir1, const char* reldir2 )
 }
 
 
+/**
+SEvt::getOutputDir
+--------------------
+
+Returns the directory that will be used by SEvt::save so long as
+the same base_ argument is used, which may be nullptr to use the default. 
+
+**/
+
+const char* SEvt::getOutputDir(const char* base_) const 
+{
+    const char* base = base_ ? base_ : DefaultDir() ; 
+    bool with_index = index != MISSING_INDEX ;  
+
+    const char* dir = with_index ? 
+                                SPath::Resolve(base, reldir, index, DIRPATH ) 
+                             :
+                                SPath::Resolve(base, reldir,  DIRPATH) 
+                             ;
+    return dir ;  
+}
+
 
 /**
 SEvt::save
@@ -1261,7 +1283,7 @@ then the directory is suffixed with the index::
 
 void SEvt::save(const char* dir_) 
 {
-    const char* dir = index == MISSING_INDEX ? SPath::Resolve(dir_, reldir,  DIRPATH) : SPath::Resolve(dir_, reldir, index, DIRPATH ) ; 
+    const char* dir = getOutputDir(dir_); 
     LOG(LEVEL) << " dir " << dir ; 
 
     gather_components(); 

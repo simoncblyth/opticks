@@ -181,6 +181,7 @@ int main(int argc, char** argv)
     //U4Material::LoadOri();  // currently needs  "source ./IDPath_override.sh" to find _ori materials
     //U4Material::LoadBnd();   // "back" creation of G4 material properties from the Opticks bnd.npy obtained from SSim::Load 
 
+    U4Material::LoadBnd("$A_CFBASE/CSGFoundry/SSim"); 
 
     U4Random rnd ;             // load precooked randoms for aligned running 
     LOG(info) << rnd.desc() ; 
@@ -190,15 +191,12 @@ int main(int argc, char** argv)
 
     SEventConfig::SetStandardFullDebug(); 
     SEvt sev ;    // SEvt must be instanciated before QEvent
+    sev.setReldir( desc.c_str() ); 
     sev.random = &rnd  ;  // so can use getFlatPrior within SEvt::addTag
 
-    const char* frpath = SPath::Resolve("$A_FOLD", "sframe.npy", NOOP); 
-    bool fr_exists = SPath::Exists(frpath) ; 
-    if(!fr_exists) LOG(fatal) << "require sframe.npy from A_FOLD " ; 
-    assert(fr_exists); 
-
-    sframe fr = sframe::Load_(frpath);  
+    sframe fr = sframe::Load_("$A_FOLD/sframe.npy");  
     sev.setFrame(fr);   // setFrame tees up Gensteps 
+    // (perhaps just needed for transforming input photons when using  OPTICKS_INPUT_PHOTON_FRAME ?)
 
     if(U4RecorderTest::PrimaryMode() == 'T') SEvt::AddTorchGenstep();  
 
@@ -206,14 +204,14 @@ int main(int argc, char** argv)
     runMgr->SetUserInitialization((G4VUserPhysicsList*)new U4Physics); 
     U4RecorderTest t(runMgr) ;  
     runMgr->BeamOn(1); 
- 
-    const char* fold = SPath::Resolve( "$TMP/U4RecorderTest", desc.c_str(), DIRPATH ); 
-    LOG(info) << fold ; 
 
-    rnd.saveProblemIdx(fold); 
+    const char* outdir = sev.getOutputDir(); 
+    LOG(info) << "outdir " << outdir ; 
 
-    sev.save(fold); 
-    LOG(info) << fold ; 
+    rnd.saveProblemIdx(outdir); 
+
+    sev.save(); 
+    LOG(info) << "outdir " << outdir ; 
 
     return 0 ; 
 }

@@ -688,9 +688,9 @@ for each material.
 
 **/
 
-void U4Material::LoadBnd()
+void U4Material::LoadBnd(const char* ssimdir)
 {
-    SSim* sim = SSim::Load();  
+    SSim* sim = SSim::Load(ssimdir);  
     const SBnd* sb = sim->get_sbnd(); 
 
     std::vector<std::string> mnames ; 

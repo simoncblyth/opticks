@@ -38,6 +38,7 @@ struct SYSRAP_API SSim
     static SSim* INSTANCE ; 
     static SSim* Get(); 
     static SSim* Create(); 
+    static const char* DEFAULT ; 
     static SSim* Load(); 
     static SSim* Load(const char* base); 
     static SSim* Load(const char* base, const char* rel); 

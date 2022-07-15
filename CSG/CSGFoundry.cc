@@ -1879,24 +1879,22 @@ void CSGFoundry::DumpAABB(const char* msg, const float* aabb) // static
 }
 
 
-
-/*
-#ifdef __APPLE__
-const char* CSGFoundry::BASE = "$TMP/GeoChain_Darwin" ;
-#else
-const char* CSGFoundry::BASE = "$TMP/GeoChain" ;
-#endif
-*/
-
 const char* CSGFoundry::BASE = "$DefaultOutputDir" ; // incorporates GEOM if defined
 const char* CSGFoundry::RELDIR = "CSGFoundry"  ;
 
+/**
+CSGFoundry::getBaseDir
+-------------------------
+
+Returns value of CFBASE envvar if defined, otherwise resolves '$DefaultOutputDir' which 
+is for example /tmp/$USER/opticks/$GEOM/SProc::ExecutableName
+
+**/
 
 const char* CSGFoundry::getBaseDir(bool create) const
 {
-    //const char* fold = geom ? SPath::Resolve(BASE, geom, create ? DIRPATH : NOOP ) : nullptr ;
-    const char* fold = SPath::Resolve(BASE, create ? DIRPATH : NOOP );  //   
-    const char* cfbase = SSys::getenvvar("CFBASE", fold  );  
+    const char* cfbase_default = SPath::Resolve(BASE, create ? DIRPATH : NOOP );  //   
+    const char* cfbase = SSys::getenvvar("CFBASE", cfbase_default );  
     return cfbase ? strdup(cfbase) : nullptr ; 
 }
 

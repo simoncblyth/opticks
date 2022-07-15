@@ -15,6 +15,25 @@ gxs.sh : G4CXSimulateTest : Opticks CX GPU simulation starting from Geant4 geome
     ./gxs.sh ab
 
 
+G4CXSimulateTest invokes "SEvt::save()" writing .npy to '$DefaultOutputDir/ALL' eg::
+
+   /tmp/$USER/opticks/$GEOM/SProc::ExecutableName/ALL
+   /tmp/blyth/opticks/RaindropRockAirWater/G4CXSimulateTest/ALL 
+
+Also the CSGFoundry geometry is written to '$DefaultOutputDir/CSGFoundry' eg:: 
+
+   /tmp/$USER/opticks/$GEOM/SProc::ExecutableName/CSGFoundry
+   /tmp/blyth/opticks/RaindropRockAirWater/G4CXSimulateTest/CSGFoundry
+
+This assumes CFBASE is not defined. When CFBASE is defined the
+geometry is written to "$CFBASE/CSGFoundry" 
+HMM: but when CFBASE is defined the geometry would have been loaded from there, 
+hence there would be no save done ? See G4CXOpticks::setGeometry.
+
+HMM: maybe better to distinguish loading and saving CFBASE as a form 
+of control of when to save ?
+
+
 EOU
 }
 
@@ -27,17 +46,25 @@ esac
 
 
 bin=G4CXSimulateTest
-source ../bin/GEOM_.sh   # NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
+source ../bin/GEOM_.sh   #  defines and exports : GEOM, GEOMDIR 
 source ../bin/OPTICKS_INPUT_PHOTON.sh 
 
-BASE=$CFBASE/$bin
+BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE is BASE relative to HOME to handle rsync between different HOME
 FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
+
+notes(){ cat << EON
+
+* When BASE is not within $HOME eg its in /tmp then UBASE and BASE are the same.  
+
+EON
+}
+
 
 # NB FOLD is not used by run, but it is used by ana
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="GEOM CFBASE BASE UBASE FOLD OPTICKS_INPUT_PHOTON"
+    vars="GEOM GEOMDIR CFBASE BASE UBASE FOLD OPTICKS_INPUT_PHOTON"
     for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 fi 
 
@@ -77,7 +104,7 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
     export FOLD 
-    export CFBASE
+    export CFBASE=$BASE/CSGFoundry
     ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 
