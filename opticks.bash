@@ -56,6 +56,21 @@ geom_(){
    fi   
 }
 
+oip(){ 
+   : opticks/opticks.bash 
+   local path=$(opticks-home)/bin/OPTICKS_INPUT_PHOTON.sh
+   local path_=$(opticks-home)/bin/OPTICKS_INPUT_PHOTON_.sh
+   if [ "$1" == "scp" ]; then 
+       scp ${path}  P:opticks/bin/
+       scp ${path_} P:opticks/bin/
+   else
+       vi ${path_} ${path} ;
+   fi   
+}
+
+
+
+
 fold(){
    : opticks/opticks.bash 
    local path=$(opticks-home)/bin/AB_FOLD.sh

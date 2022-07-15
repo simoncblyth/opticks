@@ -30,6 +30,13 @@ echo $msg arg $arg bin $bin defarg $defarg
 
 source ../bin/GEOM_.sh 
 
+if [ "$GEOM" == "J000" ]; then 
+   source ../bin/OPTICKS_INPUT_PHOTON_.sh   ## NB sets variables without export when use the "_.sh" 
+   [ -n "$OPTICKS_INPUT_PHOTON_FRAME" ] && MOI=$OPTICKS_INPUT_PHOTON_FRAME
+   export MOI 
+fi 
+
+
 if [ -n "$CFBASE" ]; then
     BASE=$CFBASE/$bin
     #X_BASE=$CFBASE/$xbin    
@@ -56,21 +63,13 @@ gx
 source ../bin/AB_FOLD.sh 
 export A_FOLD
 export B_FOLD
-
-
-
-
-MOI=Hama:0:1000    
-## TODO: tie MOI to OPTICKS_INPUT_PHOTON_FRAME : this means not exporting from bin/OPTICKS_INPUT_PHOTON.sh 
-
-
-export MOI 
-
+# analysis plotting needs these fold for comparison with the simtrace 
 
 
 loglevels()
 {
     export Dummy=INFO
+    export SGeoConfig=INFO
     export SEvt=INFO
     export Ctx=INFO
     #export QSim=INFO

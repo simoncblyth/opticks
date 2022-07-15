@@ -1,9 +1,17 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-OPTICKS_INPUT_PHOTON.sh Configuring SEventConfig::InputPhoton default
-=======================================================================
+bin/OPTICKS_INPUT_PHOTON.sh 
+==============================
 
-This script sets envvars that are used as SEventConfig defaults. 
+Usage example::
+
+   source ../bin/OPTICKS_INPUT_PHOTON.sh
+   #source ../bin/OPTICKS_INPUT_PHOTON_.sh   # alternative without export
+
+The internally sourced script OPTICKS_INPUT_PHOTON_.sh sets the variables and this exports them.
+This separation allows bash control of access to the variables from python OR C++ level. 
+For example this could be used to only export when a file path exists. 
+The envvars when defined are used as SEventConfig defaults. 
 
 OPTICKS_INPUT_PHOTON 
    name or path of input photon .npy file, default of SEventConfig::InputPhoton 
@@ -11,40 +19,31 @@ OPTICKS_INPUT_PHOTON
 OPTICKS_INPUT_PHOTON_FRAME
    moi_or_iidx string eg "Hama:0:1000" OR "35000", default of SEventConfig::InputPhotonFrame
 
-This script is sourced by:
+Full list of scripts relevant to OPTICKS_INPUT_PHOTON::
 
-* u4/u4s.sh
-* gx/gxs.sh   
-
+    epsilon:opticks blyth$ find . -name '*.sh' -exec grep -l OPTICKS_INPUT_PHOTON {} \;
+    ./ana/input_photons_plt.sh
+    ./CSGOptiX/cxs_raindrop.sh
+    ./CSG/tests/CSGFoundry_getFrame_Test.sh
+    ./bin/GEOM_.sh
+    ./bin/OPTICKS_INPUT_PHOTON.sh
+    ./sysrap/tests/SEvtTest.sh
+    ./u4/u4s.sh
+    ./g4cx/gxs.sh
 
 EOU
 }
 
-#path=RandomSpherical10_f8.npy
-vers=down
-#path=/tmp/storch_test/$vers/$(uname)/ph.npy
-path=storch_test/$vers/$(uname)/ph.npy
+ScriptDir=$(dirname $BASH_SOURCE)
+source $ScriptDir/OPTICKS_INPUT_PHOTON_.sh    
 
-if [ -n "$path" ]; then 
-    export OPTICKS_INPUT_PHOTON=$path
-    export OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000
-
-    if [ "${path:0:1}" == "/" -o "${path:0:1}" == "$" ]; then 
-        abspath=$path
-    else
-        abspath=$HOME/.opticks/InputPhotons/$path
-    fi
-
-    if [ -z "$QUIET" ]; then 
-        if [ ! -f "$abspath" ]; then 
-            echo == $BASH_SOURCE path $path abspath $abspath DOES NOT EXIST : create with ana/input_photons.sh OR sysrap/tests/storch_test.sh 
-        else
-            echo == $BASH_SOURCE path $path abspath $abspath exists 
-        fi 
-    fi 
-fi 
+[ -n "$OPTICKS_INPUT_PHOTON" ]       && export OPTICKS_INPUT_PHOTON
+[ -n "$OPTICKS_INPUT_PHOTON_FRAME" ] && export OPTICKS_INPUT_PHOTON_FRAME
 
 if [ -z "$QUIET" ]; then 
-    echo == $BASH_SOURCE : OPTICKS_INPUT_PHOTON $OPTICKS_INPUT_PHOTON
-    echo == $BASH_SOURCE : OPTICKS_INPUT_PHOTON_FRAME $OPTICKS_INPUT_PHOTON_FRAME
+    vars="BASH_SOURCE ScriptDir OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME OPTICKS_INPUT_PHOTON_ABSPATH"
+    for var in $vars ; do printf "== %30s : %s \n" $var ${!var} ; done 
+    for var in $vars ; do printf "== %s \n" "$(declare -p $var)" ; done   # -x in output shows exported
 fi
+
+
