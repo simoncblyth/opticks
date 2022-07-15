@@ -17,6 +17,8 @@ Test with::
    exit   # the dirty shell 
 
 
+See notes with SOpticksResource::DefaultOutputDir for discussion of change to directory layout. 
+
 EOU
 }
 
@@ -51,13 +53,10 @@ gp=${!gp_}
 cg_=${GEOM}_CFBaseFromGEOM
 cg=${!cg_}
 
-if [ -n "$cg" ]; then
-    CFBASE=$cg 
-    A_FOLD=$CFBASE/G4CXSimulateTest/ALL
-else
-    CFBASE=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
-    A_FOLD=$CFBASE/ALL
-fi
+# CFBASE is the directory that contains (or will contain) the CSGFoundry geometry folder 
+CFBASE=${cg:-/tmp/$USER/opticks/$GEOM}
+A_FOLD=$CFBASE/G4CXSimulateTest/ALL
+
 # NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
 
 if [ -z "$QUIET" ]; then 

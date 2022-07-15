@@ -27,20 +27,13 @@ esac
 
 
 bin=G4CXSimulateTest
-source ../bin/GEOM_.sh 
+source ../bin/GEOM_.sh   # NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
 source ../bin/OPTICKS_INPUT_PHOTON.sh 
 
-if [ -n "$CFBASE" ]; then
-    BASE=$CFBASE/$bin
-    UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
-else
-    BASE=/tmp/$USER/opticks/$bin/$GEOM
-    UBASE=$BASE
-    CFBASE=$BASE
-fi
-# NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
+BASE=$CFBASE/$bin
+UBASE=${BASE//$HOME\/}    # UBASE is BASE relative to HOME to handle rsync between different HOME
+FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
-FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 # NB FOLD is not used by run, but it is used by ana
 
 if [ "${arg/info}" != "$arg" ]; then 

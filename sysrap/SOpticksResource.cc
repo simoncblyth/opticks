@@ -73,7 +73,30 @@ const char* SOpticksResource::RNGCacheDir(){    return SPath::Resolve(ResolveRng
 const char* SOpticksResource::RNGDir(){         return SPath::Resolve(RNGCacheDir(), "RNG", NOOP); }
 const char* SOpticksResource::RuncacheDir(){    return SPath::Resolve(ResolveUserCachePrefix(), "runcache", NOOP); }
 const char* SOpticksResource::PrecookedDir(){   return SPath::Resolve(ResolvePrecookedPrefix(), "precooked", NOOP); }
-const char* SOpticksResource::DefaultOutputDir(){  return SPath::Resolve("$TMP", SProc::ExecutableName(), SSys::getenvvar("GEOM"),  NOOP); }
+
+/**
+SOpticksResource::DefaultOutputDir
+------------------------------------
+
+Default dir used by argumentless SEvt::save is TMP/GEOM/ExecutableName eg::
+
+   /tmp/blyth/opticks/RaindropRockAirWater/G4CXSimulateTest
+
+This allows TMP/GEOM to be equated with a "temporary CFBASE" for consistent handling in scripts.::
+
+    TMP_CFBASE=/tmp/$USER/opticks/$GEOM
+
+This layout is consistent with geocache output layout CFBASE/ExecutableName eg: 
+
+   /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/G4CXSimulateTest
+
+Previously used the inconsistent flipped layout TMP/ExecutableName/GEOM which complicated scripts. 
+**/
+
+const char* SOpticksResource::DefaultOutputDir()
+{ 
+    return SPath::Resolve("$TMP", SSys::getenvvar("GEOM"), SProc::ExecutableName(), NOOP); 
+}
 
 
 std::string SOpticksResource::Dump()
