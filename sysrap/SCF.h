@@ -111,6 +111,8 @@ void SCF::LoadVec( std::vector<T>& vec, const char* dir_, const char* name )
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
     NP* a = NP::Load(dir, name);
+    if( a == nullptr ) std::cout << "SCF::LoadVec FAIL dir_ " << dir_ << " name " << name << std::endl; 
+    if( a == nullptr ) return ; 
     assert(a); 
     assert( a->shape.size()  == 3 ); 
     unsigned ni = a->shape[0] ; 

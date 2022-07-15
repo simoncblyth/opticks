@@ -197,6 +197,8 @@ $OPTICKS_EVENT_BASE
 $HOME/hello 
 $TMP/somewhere/over/the/rainbow.txt
 $NON_EXISTING_EVAR/elsewhere/sub.txt
+$CFBase/CSGFoundry/SSim
+$CFBASE/CSGFoundry/SSim
 /just/some/path.txt
 stem.ext
 /
@@ -341,9 +343,9 @@ int main(int argc , char** argv )
     test_IsReadable();  
     test_IsReadable_path();  
     test_Basename_2(); 
-    test_Resolve(); 
-*/
     test_Resolve_With_Index();  
+*/
+    test_Resolve(); 
 
 /*
     test_Basename(); 

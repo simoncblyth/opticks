@@ -74,15 +74,13 @@ if [ -z "$QUIET" ]; then
     echo $msg A_FOLD from GEOM_.sh : $A_FOLD : allows loading of sframe.npy for input photon transform
 fi 
 
-
-if [ -n "$CFBASE" ]; then 
-    if [ -z "$QUIET" ]; then 
+if [ -z "$QUIET" ]; then 
+    if [ -n "$CFBASE" ]; then 
         echo $msg CFBASE from GEOM_.sh : $CFBASE
+    else 
+        echo $msg ERROR : NO CFBASE from GEOM_.sh : $CFBASE
     fi 
-else 
-    CFBASE=/tmp/$USER/opticks/G4CXSimulateTest/$GEOM
 fi
-
 
 
 #sel=PIDX_0_
@@ -101,8 +99,19 @@ physdesc="${physdesc}_"
 [ -z "$ShimG4OpRayleigh_FLOAT" ]   && physdesc="${physdesc}ShimG4OpRayleigh_ORIGINAL"
 
 
-export FOLD=$foldbase/$physdesc/$GEOM/$sel
+layout(){ cat << EOL
+Foldbase was formerly : /tmp/USER/opticks/U4RecorderTest making 
 
+     FOLD $foldbase/$physdesc/$GEOM/$sel    /tmp/USER/opticks/U4RecorderTest/$physdesc/$GEOM/$sel 
+
+But that is inconsistent with geocache writing where GEOM is before ExecutableName. 
+
+     TMP_CFBASE from GEOM_.sh is /tmp/$USER/opticks/$GEOM  when not operating from real CFBASE
+
+EOL
+}
+
+export FOLD=$CFBASE/$bin/$physdesc/$sel
 
 
 ## CFBASE in different tree because it is kinda foreign 
@@ -115,13 +124,16 @@ fi
 
 
 if [ "${arg/info}" != "${arg}" ]; then 
-    vars="GEOM FOLD foldbase physdesc sel" 
+    vars="GEOM CFBASE FOLD physdesc sel" 
     for var in $vars ; do printf " %30s : %s \n" $var ${!var}  ; done 
 fi 
 
 
 if [ -d "${CFBASE}/CSGFoundry" ]; then 
     export CFBASE
+    ## HMM: exporting CFBASE has consequences for U4Material::LoadBnd/SSim::Load 
+    ## HMM: there is kinda a double use of CFBASE thats unhealthy here 
+
     if [ -z "$QUIET" ]; then 
         echo $msg cfbase/CSGFoundry dir exists so exporting CFBASE $CFBASE
     fi 
@@ -210,7 +222,5 @@ if [ "${arg}" == "ab" ]; then
     source ../bin/AB_FOLD.sh 
     ${IPYTHON:-ipython} --pdb -i tests/${bin}_ab.py $*  
 fi 
-
-
 
 

@@ -673,6 +673,11 @@ void U4Material::LoadOri()
 U4Material::LoadBnd
 --------------------
 
+SSim::Load loads from $CFBase/CSGFoundry/SSim where "$CFBase" is an 
+internal envvar that yield the result of SOpticksResource::CFBase()
+The OPTICKS_KEY derived CSG_GGeo directory is returned unless 
+the CFBASE envvar is defined. 
+
 HMM: if the material exists already then need to change its 
 properties, not scrub the pre-existing material. 
 Thats needed for scintillators as the standard bnd properties
@@ -685,7 +690,7 @@ for each material.
 
 void U4Material::LoadBnd()
 {
-    SSim* sim = SSim::Load(); 
+    SSim* sim = SSim::Load();  
     const SBnd* sb = sim->get_sbnd(); 
 
     std::vector<std::string> mnames ; 

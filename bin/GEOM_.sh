@@ -6,7 +6,7 @@ GEOM_.sh
 This script is sourced from the below scripts to 
 define the GEOM envvar for setup of test geometries. 
 
-u4/tests/U4RecorderTest.sh 
+u4/u4s.sh 
 gx/gxs.sh 
 
 Test with::
@@ -54,7 +54,9 @@ cg_=${GEOM}_CFBaseFromGEOM
 cg=${!cg_}
 
 # CFBASE is the directory that contains (or will contain) the CSGFoundry geometry folder 
-CFBASE=${cg:-/tmp/$USER/opticks/$GEOM}
+
+TMP_CFBASE=/tmp/$USER/opticks/$GEOM
+CFBASE=${cg:-$TMP_CFBASE}
 A_FOLD=$CFBASE/G4CXSimulateTest/ALL
 
 # NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
