@@ -18,7 +18,7 @@ name=storch_test
 bdir=/tmp/$name/build
 mkdir -p $bdir
 
-vers=down
+vers=up99
 
 #odir=/tmp/$name/$vers
 odir=$HOME/.opticks/InputPhotons/$name/$vers

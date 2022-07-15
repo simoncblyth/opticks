@@ -71,15 +71,17 @@ export U4Random_select_action=interrupt   ## dumps stack and breaks in debugger 
 mode=iphoton
 export U4RecorderTest__PRIMARY_MODE=$mode
 
-if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
-    source $u4sdir/../bin/OPTICKS_INPUT_PHOTON.sh     
-fi 
-
 #source ./IDPath_override.sh   
 # IDPath_override.sh : non-standard IDPath to allow U4Material::LoadOri to find material properties 
 # HMM probably doing nothing now that are using U4Material::LoadBnd ?
 
 source $u4sdir/../bin/GEOM_.sh 
+
+if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
+    source $u4sdir/../bin/OPTICKS_INPUT_PHOTON.sh     
+fi 
+
+
 
 A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
 A_CFBASE=$(dirname $A_FOLD)

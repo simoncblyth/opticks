@@ -161,6 +161,7 @@ G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
     if(strcmp(name,"BoxOfScintillator" ) == 0)      pv = BoxOfScintillator(1000.);   
     if(strcmp(name,"RaindropRockAirWater" ) == 0)   pv = RaindropRockAirWater();   
     if(strcmp(name,"RaindropRockAirWaterSD" ) == 0) pv = RaindropRockAirWaterSD();   
+    if(strcmp(name,"RaindropRockAirWaterSmall" ) == 0) pv = RaindropRockAirWater();   
     return pv ; 
 }
 G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)

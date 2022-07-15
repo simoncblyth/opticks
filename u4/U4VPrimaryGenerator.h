@@ -95,6 +95,8 @@ way to annotate the tracks with *spho* labels.
 inline void U4VPrimaryGenerator::GeneratePrimaries(G4Event* event)
 {
     NP* ph = SGenerate::GeneratePhotons(); 
+    std::cout << "U4VPrimaryGenerator::GeneratePrimaries ph " << ( ph ? ph->sstr() : "-" ) << std::endl ; 
+
     if(ph == nullptr) std::cerr 
          << "U4VPrimaryGenerator::GeneratePrimaries : FATAL : NO PHOTONS " << std::endl 
          << "compile with MOCK_CURAND to use SGenerate.h curand on CPU" << std::endl 
