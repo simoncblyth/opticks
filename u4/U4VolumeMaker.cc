@@ -549,13 +549,6 @@ G4VPhysicalVolume* U4VolumeMaker::Place( G4LogicalVolume* lv, G4LogicalVolume* m
     return new G4PVPlacement(flip,G4ThreeVector(), lv, pv_name, mother_lv, false, 0);
 }
 
-
-
-
-
-
-
-
 /**
 U4VolumeMaker::RaindropRockAirWater
 -------------------------------------
@@ -581,9 +574,12 @@ Defaults::
     HALFSIDE: 100. 
     FACTOR: 1. 
    
-    water_radius   :  halfside/2.      : 50. 
-    air_halfside   :  halfside*factor  : 100.
-    rock_halfside  :  2.*halfside*factor : 200. 
+    water_radius   :  halfside/2.         : 50. 
+    air_halfside   :  halfside*factor     : 100.
+    rock_halfside  :  1.1*halfside*factor : 110. 
+
+An easy way to get some scattering and absorption to happen 
+is to increase U4VolumeMaker_RaindropRockAirWater_FACTOR to 10. for example. 
 
 **/
 
@@ -595,7 +591,7 @@ void U4VolumeMaker::RaindropRockAirWater_Configure( double& rock_halfside, doubl
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_HALFSIDE << " " << halfside ; 
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_FACTOR   << " " << factor ; 
  
-    rock_halfside = 2.*halfside*factor ; 
+    rock_halfside = 1.1*halfside*factor ; 
     air_halfside = halfside*factor ; 
     water_radius = halfside/2. ; 
 }

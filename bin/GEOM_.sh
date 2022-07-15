@@ -23,8 +23,11 @@ EOU
 }
 
 #geom=BoxOfScintillator
-geom=RaindropRockAirWater
+
+#geom=RaindropRockAirWater
 #geom=RaindropRockAirWaterSD
+geom=RaindropRockAirWaterSmall
+
 #geom=hama_body_log
 #geom=J000
 
@@ -43,7 +46,9 @@ if [ "$GEOM" == "J000" ]; then
 fi 
 
 case $GEOM in 
-    RaindropRockAirWater|RaindropRockAirWaterSD) export U4VolumeMaker_RaindropRockAirWater_FACTOR=10 ;;
+ RaindropRockAirWaterSmall) export U4VolumeMaker_RaindropRockAirWater_FACTOR=1 ;;
+      RaindropRockAirWater) export U4VolumeMaker_RaindropRockAirWater_FACTOR=10 ;;
+    RaindropRockAirWaterSD) export U4VolumeMaker_RaindropRockAirWater_FACTOR=10 ;;
 esac
 
 

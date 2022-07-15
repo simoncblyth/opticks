@@ -105,23 +105,6 @@ sel=ALL
 reldir=$physdesc/$sel     # SEvt::SetReldir 
 
 
-
-
-
-
-layout(){ cat << EOL
-Foldbase was formerly : /tmp/USER/opticks/U4RecorderTest making 
-
-     FOLD $foldbase/$physdesc/$GEOM/$sel    /tmp/USER/opticks/U4RecorderTest/$physdesc/$GEOM/$sel 
-
-But that is inconsistent with geocache writing where GEOM is before ExecutableName. 
-
-     GEOMDIR from GEOM_.sh is /tmp/$USER/opticks/$GEOM  when not operating from real CFBASE
-
-EOL
-}
-
-
 BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE is BASE relative to HOME to handle rsync between different HOME
 FOLD=$BASE/$reldir

@@ -7,10 +7,18 @@ gxt.sh : G4CXSimtraceTest
 
     cd ~/opticks/g4cx   # gx
     ./gxt.sh 
+    ./gxt.sh info
+    ./gxt.sh fold
     ./gxt.sh run
     ./gxt.sh dbg
     ./gxt.sh grab
     ./gxt.sh ana
+
+As B uses A and T uses A+B the running order is:
+
+A. gx ; ./gxs.sh 
+B. u4 ; ./u4s.sh 
+T. gx ; ./gxt.sh 
 
 EOU
 }
@@ -23,47 +31,48 @@ case $(uname) in
 esac
 
 arg=${1:-$defarg}
+
+case $arg in
+  fold) QUIET=1 ;;
+esac
+
 bin=G4CXSimtraceTest
-#xbin=G4CXSimulateTest
+gxtdir=$(dirname $BASH_SOURCE)
 
-echo $msg arg $arg bin $bin defarg $defarg
-
-source ../bin/GEOM_.sh 
+source $gxtdir/../bin/GEOM_.sh   ## defines and exports GEOM GEOMDIR
 
 if [ "$GEOM" == "J000" ]; then 
-   source ../bin/OPTICKS_INPUT_PHOTON_.sh   ## NB sets variables without export when use the "_.sh" 
-   [ -n "$OPTICKS_INPUT_PHOTON_FRAME" ] && MOI=$OPTICKS_INPUT_PHOTON_FRAME
-   export MOI 
+   source $gxtdir/../bin/OPTICKS_INPUT_PHOTON_.sh   ## NB sets variables without export when use the "_.sh" 
+   if [ -n "$OPTICKS_INPUT_PHOTON_FRAME" ]; then  
+       MOI=$OPTICKS_INPUT_PHOTON_FRAME
+       export MOI 
+   fi
 fi 
 
+BASE=$GEOMDIR/$bin
+UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
+FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
-if [ -n "$CFBASE" ]; then
-    BASE=$CFBASE/$bin
-    #X_BASE=$CFBASE/$xbin    
-    UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
-else
-    BASE=/tmp/$USER/opticks/$bin/$GEOM
-    #X_BASE=/tmp/$USER/opticks/$xbin/$GEOM
-    UBASE=$BASE
-    CFBASE=$BASE
-fi
-# NB CFBASE is NOT exported here : it is exported for the python ana, not the C++ run 
+# analysis/plotting uses A_FOLD B_FOLD for comparison together with the simtrace 
 
-FOLD=$BASE/ALL      # corresponds SEvt::save() with SEvt::SetReldir("ALL")
-#X_FOLD=$X_BASE/ALL
+A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
+B_FOLD=$($OPTICKS_HOME/u4/u4s.sh fold)
+A_CFBASE=$(dirname $A_FOLD)
 
-
-QUIET=1 gx
-A_FOLD=$(./gxs.sh fold)
-
-QUIET=1 u4
-B_FOLD=$(./u4s.sh fold)
-
-gx
-source ../bin/AB_FOLD.sh 
 export A_FOLD
+export A_CFBASE
 export B_FOLD
-# analysis plotting needs these fold for comparison with the simtrace 
+
+if [ "${arg/info}" != "$arg" ]; then 
+    vars="BASH_SOURCE arg bin defarg gxtdir GEOM GEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD"
+    for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
+    source $OPTICKS_HOME/bin/AB_FOLD.sh   # just lists dir content 
+fi 
+
+if [ "$arg" == "fold" ]; then 
+    echo $FOLD 
+fi 
+
 
 
 loglevels()
@@ -100,16 +109,15 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
     export FOLD
-    export X_FOLD
-    export CFBASE
+    export CFBASE=$A_CFBASE
     export MASK=pos
 
-    ${IPYTHON:-ipython} --pdb -i tests/$bin.py     
+    ${IPYTHON:-ipython} --pdb -i $gxtdir/tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    source ../bin/rsync.sh $UBASE 
+    source $gxtdir/../bin/rsync.sh $UBASE 
 fi 
 
 exit 0 

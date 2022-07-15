@@ -66,6 +66,12 @@ if [ "$vers" == "up" ]; then
     export storch_FillGenstep_mom=0,0,1
     export storch_FillGenstep_radius=49
 
+elif [ "$vers" == "up99" ]; then 
+
+    export storch_FillGenstep_pos=0,0,-99
+    export storch_FillGenstep_mom=0,0,1
+    export storch_FillGenstep_radius=49
+
 elif [ "$vers" == "down" ]; then 
 
     export storch_FillGenstep_pos=0,0,990

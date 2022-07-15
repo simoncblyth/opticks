@@ -66,7 +66,7 @@ EON
 # NB FOLD is not used by run, but it is used by ana
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="gxsdir GEOM GEOMDIR CFBASE BASE UBASE FOLD OPTICKS_INPUT_PHOTON"
+    vars="BASH_SOURCE gxsdir GEOM GEOMDIR CFBASE BASE UBASE FOLD OPTICKS_INPUT_PHOTON"
     for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
 fi 
 
