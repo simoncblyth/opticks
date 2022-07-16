@@ -16,7 +16,8 @@ EOU
 
 #stem=RandomSpherical100
 #stem=RandomDisc100
-stem=UpXZ1000
+#stem=UpXZ1000
+stem=DownXZ1000
 
 path=${stem}_f4.npy
 

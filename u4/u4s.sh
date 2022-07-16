@@ -124,11 +124,24 @@ if [ "${arg/info}" != "${arg}" ]; then
 fi 
 
 
-# Note that OPTICKS_RANDOM_SEQPATH uses single quotes to prevent expansion of the '$PrecookedDir' 
-# which is an SPath internal variable. Defining OPTICKS_RANDOM_SEQPATH is necessary to work with 
-# more than 100k photons as the default only loads a single 100k precooked random file whereas 
-# this will load ten of them allowing aligned running with up to 1M photons.
-# export OPTICKS_RANDOM_SEQPATH='$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000'  
+OPTICKS_RANDOM_SEQPATH_NOTES(){ cat << EON
+
+The default OPTICKS_RANDOM_SEQPATH in the U4Random code is limited to up to 100k photons
+as only a single 100k precooked random file is loaded. 
+
+When simulating more than 100k up to 1M photons it is necessary to uncomment the 
+below line to force loading of 10*100k files. 
+
+Note that OPTICKS_RANDOM_SEQPATH uses single quotes to prevent expansion of the '$PrecookedDir' 
+which is an SPath internal variable. 
+
+TODO: auto detect when this is needed and do the switch without requiring setting the envvar 
+
+EON
+}
+
+export OPTICKS_RANDOM_SEQPATH='$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000'  
+
 
 
 loglevels()

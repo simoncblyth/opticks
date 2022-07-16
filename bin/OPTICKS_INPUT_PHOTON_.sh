@@ -19,6 +19,7 @@ EOU
 }
 
 case ${GEOM:-Dummy} in 
+                    J000)      label=DownXZ1000    ;; 
     RaindropRockAirWater)      label=storchdown ;;
     RaindropRockAirWaterSD)    label=storchdown  ;;
     RaindropRockAirWaterSmall) label=storchM1up99 ;;
@@ -26,13 +27,14 @@ case ${GEOM:-Dummy} in
                             *) label=RandomSpherical10  ;;
 esac
 
+case ${GEOM:-Dummy} in 
+    J000) OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000 ;;
+esac
 
 case ${label:-dummy} in 
-          storchdown) path=storch_test/down/$(uname)/ph.npy ;; 
+          storchdown) path=storch_test/down/$(uname)/ph.npy ;;   ## TODO: remove 
         storchM1up99) path=storch/M1up99/ph.npy ;; 
-            UpXZ1000) path=${label}_f8.npy ;; 
-   RandomSpherical10) path=${label}_f8.npy ;; 
-                   *) path=RandomSpherical10_f8.npy ;; 
+                   *) path=${label}_f8.npy ;; 
 esac
 
 
@@ -54,9 +56,6 @@ if [ -n "$path" ]; then
     fi 
 fi 
 
-case ${GEOM:-Dummy} in 
-    J0*) OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000 ;;
-esac
 
 if [ -z "$QUIET" ]; then 
     vars="BASH_SOURCE GEOM OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME OPTICKS_INPUT_PHOTON_ABSPATH OPTICKS_INPUT_PHOTON_LABEL"

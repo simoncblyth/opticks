@@ -70,11 +70,12 @@ if __name__ == '__main__':
     a = Fold.Load("$A_FOLD", symbol="a", quiet=quiet) if "A_FOLD" in os.environ else None
     b = Fold.Load("$B_FOLD", symbol="b", quiet=quiet) if "B_FOLD" in os.environ else None
 
-    ## huh the weight of the first record is zero on B side when using UpXZ1000 ? 
+    ## SUSPECT photon element (1,3) is starting uninitialized in input photon running
+    ## forcing the below kludge to be able to compare 
     np.all( b.record[:,0,1,3] == 0. )                                                                                                    
     np.all( a.record[:,0,1,3] == 1. )                                                                                                    
+    a.record[:,0,1,3] = 1.   # kludge
     b.record[:,0,1,3] = 1.   # kludge 
-
 
     ab = (not a is None) and (not b is None)
 
@@ -95,6 +96,10 @@ if __name__ == '__main__':
 
         we_ = "we = np.where( A.t.view('|S%(SLOTS)s') != B.t2.view('|S%(SLOTS)s') )[0]" % locals()  # eg stag.h/stag::SLOTS = 64 
         we = epr(we_,  globals(), locals() ) 
+
+        wm_ = "wm = np.where( A.t.view('|S%(SLOTS)s') == B.t2.view('|S%(SLOTS)s') )[0]" % locals()  # eg stag.h/stag::SLOTS = 64 
+        wm = epr(wm_,  globals(), locals() ) 
+
 
         wa = epr("wa = np.unique(np.where( np.abs(a.record - b.record ) > 0.05 )[0])", globals(), locals() ) 
 

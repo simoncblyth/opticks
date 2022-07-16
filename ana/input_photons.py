@@ -219,7 +219,7 @@ class InputPhotons(object):
         return pp.reshape(-1,4,4) 
 
     @classmethod
-    def GenerateUpXZ(cls, n):
+    def GenerateXZ(cls, n, mom):
         """
   
                +-----------------------------------+
@@ -250,7 +250,7 @@ class InputPhotons(object):
         p = np.zeros( (n, 4, 4), dtype=cls.DTYPE )
         p[:,0,:3] = pos
         p[:,0, 3] = cls.TIME
-        p[:,1,:3] = cls.Z         # mom 
+        p[:,1,:3] = mom           # mom : Up:self.Z or Down:-self.Z  
         p[:,1, 3] = cls.WEIGHT 
         p[:,2,:3] = cls.Y         # pol
         p[:,2, 3] = cls.WAVELENGTH  
@@ -319,7 +319,9 @@ class InputPhotons(object):
     RS = "RandomSpherical" 
     RD = "RandomDisc" 
     UXZ = "UpXZ"
-    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000" ]
+    DXZ = "DownXZ"
+
+    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -331,9 +333,19 @@ class InputPhotons(object):
         if name.startswith(self.RS):  
             num = int(name[len(self.RS):])
             p = self.GenerateRandomSpherical(num)    
-        elif name.startswith(self.UXZ):  
-            num = int(name[len(self.UXZ):])
-            p = self.GenerateUpXZ(num)    
+        elif name.startswith(self.UXZ) or name.startswith(self.DXZ):  
+            num = None
+            mom = None
+            if name.startswith(self.UXZ): 
+                num = int(name[len(self.UXZ):])
+                mom = self.Z 
+            elif name.startswith(self.DXZ): 
+                num = int(name[len(self.DXZ):])
+                mom = -self.Z 
+            else:
+                pass
+            pass
+            p = self.GenerateXZ(num, mom)    
         elif name.startswith(self.RD):  
             num = int(name[len(self.RD):])
             p = self.GenerateRandomDisc(num)    
