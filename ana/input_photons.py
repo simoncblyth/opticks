@@ -7,7 +7,7 @@ import argparse, logging, os, json
 log = logging.getLogger(__name__)
 import numpy as np
 np.set_printoptions(linewidth=200, suppress=True, precision=3)
-from opticks.ana.sample import sample_trig, sample_normals, sample_reject
+from opticks.ana.sample import sample_trig, sample_normals, sample_reject, sample_linear
 
 def vnorm(v):
     norm = np.sqrt((v*v).sum(axis=1))
@@ -218,6 +218,43 @@ class InputPhotons(object):
         pass
         return pp.reshape(-1,4,4) 
 
+    @classmethod
+    def GenerateUpXZ(cls, n):
+        """
+  
+               +-----------------------------------+
+               |                                   |
+               |                                   |
+               |                                   |
+               |                                   |
+               |                                   |
+               |                                   |
+               |                                   |
+               |                                   |
+               |                                   |
+               |                                   |
+               |                                   |         Z
+               |          ^ ^ ^ ^ ^ ^ ^            |         |  Y
+               |          | | | | | | |            |         | /
+               |          . . . . . . .            |         |/
+               +-----------------------------------+         +---> X
+             -100        -49    0     49          100               
+
+
+        """
+        pos = np.zeros((n,3), dtype=cls.DTYPE )
+        pos[:,0] = sample_linear(n, -49., 49. )
+        pos[:,1] = 0.
+        pos[:,2] = -99. 
+
+        p = np.zeros( (n, 4, 4), dtype=cls.DTYPE )
+        p[:,0,:3] = pos
+        p[:,0, 3] = cls.TIME
+        p[:,1,:3] = cls.Z         # mom 
+        p[:,1, 3] = cls.WEIGHT 
+        p[:,2,:3] = cls.Y         # pol
+        p[:,2, 3] = cls.WAVELENGTH  
+        return p  
 
     @classmethod
     def GenerateRandomSpherical(cls, n):
@@ -281,7 +318,8 @@ class InputPhotons(object):
     ICC = "InwardsCubeCorners" 
     RS = "RandomSpherical" 
     RD = "RandomDisc" 
-    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100" ]
+    UXZ = "UpXZ"
+    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000" ]
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -293,6 +331,9 @@ class InputPhotons(object):
         if name.startswith(self.RS):  
             num = int(name[len(self.RS):])
             p = self.GenerateRandomSpherical(num)    
+        elif name.startswith(self.UXZ):  
+            num = int(name[len(self.UXZ):])
+            p = self.GenerateUpXZ(num)    
         elif name.startswith(self.RD):  
             num = int(name[len(self.RD):])
             p = self.GenerateRandomDisc(num)    

@@ -21,7 +21,8 @@ EOU
 case ${GEOM:-Dummy} in 
     RaindropRockAirWater)      path=storch_test/down/$(uname)/ph.npy ;;
     RaindropRockAirWaterSD)    path=storch_test/down/$(uname)/ph.npy ;;
-    RaindropRockAirWaterSmall) path=storch_test/up99/$(uname)/ph.npy ;;
+    #RaindropRockAirWaterSmall) path=storch_test/up99/$(uname)/ph.npy ;;
+    RaindropRockAirWaterSmall) path=UpXZ1000_f8.npy ;; 
                             *) path=RandomSpherical10_f8.npy  ;;
 esac
 

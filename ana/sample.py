@@ -6,6 +6,19 @@ https://stackoverflow.com/questions/33976911/generate-a-random-sample-of-points-
 """
 import numpy as np
 
+def sample_linear(n, lo=-1., hi=1.):
+    """
+    :param n: number of values
+    :param lo: min value
+    :param hi: max value
+    :return ll: array of shape (n,) with random sample values uniformly between lo and hi
+    """
+    mi = (lo + hi)/2.
+    ex = (hi - lo)/2.
+    uu = 2.*np.random.rand(n) - 1.   # -1->1 
+    ll = mi + uu*ex      
+    return ll 
+
 
 def sample_trig(n):
     """
