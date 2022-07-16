@@ -14,6 +14,17 @@ gxt.sh : G4CXSimtraceTest
     ./gxt.sh grab
     ./gxt.sh ana
 
+To capture pyvista or matplotlib screens:: 
+
+    ./gxt.sh pvcap
+    ./gxt.sh pvpub           # check the paths used by pvpub
+    PUB=chk ./gxt.sh pvpub   # copy into /env/presentation 
+
+    ./gxt.sh mpcap
+    ./gxt.sh mppub           # check the paths used by mppub
+    PUB=chk ./gxt.sh mppub   # copy into /env/presentation 
+
+
 As B uses A and T uses A+B the running order is:
 
 A. gx ; ./gxs.sh 
@@ -40,9 +51,9 @@ bin=G4CXSimtraceTest
 gxtdir=$(dirname $BASH_SOURCE)
 
 source $gxtdir/../bin/GEOM_.sh   ## defines and exports GEOM GEOMDIR
+source $gxtdir/../bin/OPTICKS_INPUT_PHOTON_.sh   ## NB sets variables without export when use the "_.sh" 
 
 if [ "$GEOM" == "J000" ]; then 
-   source $gxtdir/../bin/OPTICKS_INPUT_PHOTON_.sh   ## NB sets variables without export when use the "_.sh" 
    if [ -n "$OPTICKS_INPUT_PHOTON_FRAME" ]; then  
        MOI=$OPTICKS_INPUT_PHOTON_FRAME
        export MOI 
@@ -119,6 +130,25 @@ fi
 if [ "${arg/grab}" != "$arg" ]; then 
     source $gxtdir/../bin/rsync.sh $UBASE 
 fi 
+
+if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
+    export CAP_BASE=$FOLD/figs
+    export CAP_REL=gxt
+    export CAP_STEM=${GEOM}_${OPTICKS_INPUT_PHOTON_LABEL}
+
+    case $arg in 
+       pvcap) source pvcap.sh cap  ;;
+       mpcap) source mpcap.sh cap  ;;
+       pvpub) source pvcap.sh env  ;;
+       mppub) source mpcap.sh env  ;;
+    esac
+
+    if [ "$arg" == "pvpub" -o "$arg" == "mppub" ]; then 
+        source epub.sh 
+    fi 
+fi 
+
+
 
 exit 0 
 

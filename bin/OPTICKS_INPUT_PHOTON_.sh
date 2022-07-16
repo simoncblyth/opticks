@@ -19,14 +19,25 @@ EOU
 }
 
 case ${GEOM:-Dummy} in 
-    RaindropRockAirWater)      path=storch_test/down/$(uname)/ph.npy ;;
-    RaindropRockAirWaterSD)    path=storch_test/down/$(uname)/ph.npy ;;
-    #RaindropRockAirWaterSmall) path=storch_test/up99/$(uname)/ph.npy ;;
-    RaindropRockAirWaterSmall) path=UpXZ1000_f8.npy ;; 
-                            *) path=RandomSpherical10_f8.npy  ;;
+    RaindropRockAirWater)      label=storchdown ;;
+    RaindropRockAirWaterSD)    label=storchdown  ;;
+    RaindropRockAirWaterSmall) label=storchM1up99 ;;
+   # RaindropRockAirWaterSmall) label=UpXZ1000    ;; 
+                            *) label=RandomSpherical10  ;;
 esac
 
+
+case ${label:-dummy} in 
+          storchdown) path=storch_test/down/$(uname)/ph.npy ;; 
+        storchM1up99) path=storch/M1up99/ph.npy ;; 
+            UpXZ1000) path=${label}_f8.npy ;; 
+   RandomSpherical10) path=${label}_f8.npy ;; 
+                   *) path=RandomSpherical10_f8.npy ;; 
+esac
+
+
 if [ -n "$path" ]; then 
+    OPTICKS_INPUT_PHOTON_LABEL=$label  
     OPTICKS_INPUT_PHOTON=$path
     if [ "${path:0:1}" == "/" -o "${path:0:1}" == "$" ]; then 
         abspath=$path
@@ -48,7 +59,7 @@ case ${GEOM:-Dummy} in
 esac
 
 if [ -z "$QUIET" ]; then 
-    vars="BASH_SOURCE GEOM OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME OPTICKS_INPUT_PHOTON_ABSPATH"
+    vars="BASH_SOURCE GEOM OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME OPTICKS_INPUT_PHOTON_ABSPATH OPTICKS_INPUT_PHOTON_LABEL"
     for var in $vars ; do printf "%30s : %s\n" $var ${!var} ; done 
 fi 
 

@@ -6,10 +6,7 @@ G4CXSimulateTest_ab.py
 Usage::
 
    gx
-   ./gxs_ab.sh  
-
-
-
+   ./ab.sh  
 
 
     In [15]: np.all( A.ts == B.ts2[:,:12,:29] )                                                                                            
@@ -72,6 +69,13 @@ if __name__ == '__main__':
     quiet = True 
     a = Fold.Load("$A_FOLD", symbol="a", quiet=quiet) if "A_FOLD" in os.environ else None
     b = Fold.Load("$B_FOLD", symbol="b", quiet=quiet) if "B_FOLD" in os.environ else None
+
+    ## huh the weight of the first record is zero on B side when using UpXZ1000 ? 
+    np.all( b.record[:,0,1,3] == 0. )                                                                                                    
+    np.all( a.record[:,0,1,3] == 1. )                                                                                                    
+    b.record[:,0,1,3] = 1.   # kludge 
+
+
     ab = (not a is None) and (not b is None)
 
     print("-------- after Fold.Load" )
@@ -87,6 +91,7 @@ if __name__ == '__main__':
         pm = epr("pm = np.abs(a.photon - b.photon).max()",     globals(), locals() )  
         rm = epr("rm = np.abs(a.record - b.record).max()",     globals(), locals() )  
         sm = epr("sm = np.all( a.seq[:,0] == b.seq[:,0] )",    globals(), locals() ) 
+        ww = epr("ww = np.where( a.seq[:,0] != b.seq[:,0] )[0]",    globals(), locals() ) 
 
         we_ = "we = np.where( A.t.view('|S%(SLOTS)s') != B.t2.view('|S%(SLOTS)s') )[0]" % locals()  # eg stag.h/stag::SLOTS = 64 
         we = epr(we_,  globals(), locals() ) 

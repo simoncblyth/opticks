@@ -60,7 +60,7 @@ U4Random::U4Random
 -------------------------------
 
 When no seq path argument is provided the envvar OPTICKS_RANDOM_SEQPATH
-to consulted to provide the path. 
+is consulted to provide the path. 
 
 The optional seqmask (a list of size_t or "unsigned long long" indices) 
 allows working with sub-selections of the full set of streams of randoms. 
@@ -124,7 +124,7 @@ A single -1 corresponds to a wildcard:
 
 This allows selection of one or more U4Random::flat calls.
 For example std::raise(SIGINT) could be called when a random draw of 
-interest is done in order to example the call stack for that random 
+interest is done in order to examine the call stack for that random 
 consumption before resuming processing. 
 
 **/

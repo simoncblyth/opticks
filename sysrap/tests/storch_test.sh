@@ -13,32 +13,62 @@ CPU test of CUDA code to generate torch photons using s_mock_curand.h::
 EOU
 }
 
+case $(uname) in 
+   Darwin) defarg=build_run_ana ;; 
+   Linux)  defarg=build_run ;; 
+esac
+arg=${1:-$defarg}
+
+
 msg="=== $BASH_SOURCE :"
 name=storch_test 
 bdir=/tmp/$name/build
 mkdir -p $bdir
 
-vers=up99
-
-#odir=/tmp/$name/$vers
-odir=$HOME/.opticks/InputPhotons/$name/$vers
-
-fold=$odir/$(uname)
-a_fold=$odir/Darwin
-b_fold=$odir/Linux
+vers=M1up99
+odir=$HOME/.opticks/InputPhotons/storch
+fold=$odir/$vers
 mkdir -p $fold
 
-
 export FOLD=$fold   # controls where generated photons will be saved
-echo $msg FOLD $FOLD odir $odir vers $vers
+echo $msg FOLD $FOLD vers $vers
 
 
-case $(uname) in 
-   Darwin) defarg=build_run_ana ;; 
-   Linux)  defarg=build_run ;; 
+if [ "$vers" == "up" ]; then 
+
+    export storch_FillGenstep_pos=0,0,-990
+    export storch_FillGenstep_mom=0,0,1
+    export storch_FillGenstep_radius=49
+
+elif [ "$vers" == "up99" -o "$vers" == "M1up99" ]; then 
+
+    export storch_FillGenstep_pos=0,0,-99
+    export storch_FillGenstep_mom=0,0,1
+    export storch_FillGenstep_radius=49
+
+elif [ "$vers" == "down" ]; then 
+
+    export storch_FillGenstep_pos=0,0,990
+    export storch_FillGenstep_mom=0,0,-1
+    export storch_FillGenstep_radius=49
+fi 
+
+
+K1=1000
+K10=10000 
+K100=100000
+M1=1000000
+
+case ${vers:-dummy} in 
+  K100*) num=$K100 ;;   ## NB must start with most specific prefix 
+  K10*)  num=$K10  ;; 
+  K1*)   num=$K1   ;; 
+  M1*)   num=$M1   ;; 
+    *)   num=$K10  ;; 
 esac
+export SEvent_MakeGensteps_num_ph=$num
 
-arg=${1:-$defarg}
+
 
 if [ "${arg/build}" != "$arg" ]; then 
 
@@ -60,32 +90,8 @@ if [ "${arg/build}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg build error && exit 1 
 fi 
 
-if [ "$vers" == "up" ]; then 
-
-    export storch_FillGenstep_pos=0,0,-990
-    export storch_FillGenstep_mom=0,0,1
-    export storch_FillGenstep_radius=49
-
-elif [ "$vers" == "up99" ]; then 
-
-    export storch_FillGenstep_pos=0,0,-99
-    export storch_FillGenstep_mom=0,0,1
-    export storch_FillGenstep_radius=49
-
-elif [ "$vers" == "down" ]; then 
-
-    export storch_FillGenstep_pos=0,0,990
-    export storch_FillGenstep_mom=0,0,-1
-    export storch_FillGenstep_radius=49
-fi 
-
 
 if [ "${arg/run}" != "$arg" ]; then 
-
-    #export SEvent_MakeGensteps_num_ph=1000
-    export SEvent_MakeGensteps_num_ph=10000
-    #export SEvent_MakeGensteps_num_ph=1000000
-
     $bdir/$name
     [ $? -ne 0 ] && echo $msg run error && exit 2 
 fi
@@ -95,14 +101,14 @@ if [ "${arg/ana}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg ana error && exit 3 
 fi
 
-if [ "${arg/cf}" != "$arg" ]; then 
-
-    export A_FOLD=$a_fold
-    export B_FOLD=$b_fold
-
-    ${IPYTHON:-ipython} --pdb -i ${name}_cf.py 
-    [ $? -ne 0 ] && echo $msg cf error && exit 4
-fi
+#if [ "${arg/cf}" != "$arg" ]; then 
+#
+#    export A_FOLD=$a_fold
+#    export B_FOLD=$b_fold
+#
+#    ${IPYTHON:-ipython} --pdb -i ${name}_cf.py 
+#    [ $? -ne 0 ] && echo $msg cf error && exit 4
+#fi
 
 
 if [ "${arg/grab}" != "$arg" ]; then 

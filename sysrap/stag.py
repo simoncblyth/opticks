@@ -15,8 +15,11 @@ class stag_item(object):
         self.code = code
         self.name = name
         self.note = note
-    def __repr__(self):
+
+    def __str__(self):
         return "%2d : %10s : %s " % (self.code, self.name, self.note)
+    def __repr__(self):
+        return "%2d : %10s" % (self.code, self.name)
 
 
 class stag(object):
