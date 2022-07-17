@@ -39,7 +39,9 @@ class XFold(object):
         t = stag.Unpack(x.tag) if hasattr(x,"tag") else None
         f = getattr(x, "flat", None)
         n = stag.NumStarts(t) if not t is None else None
+        log.info("XFold before stag.StepSplit")
         ts,fs = stag.StepSplit(t,x.flat) if not t is None else None
+        log.info("XFold after stag.StepSplit")
         ident = self.Ident(x)        
 
         xsymbol = self.BaseSymbol(x)

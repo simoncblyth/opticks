@@ -47,6 +47,8 @@ Mis-aligned from truncation ?::
 
 """
 import numpy as np
+import logging
+log = logging.getLogger(__name__)
 
 from opticks.ana.fold import Fold
 from opticks.ana.p import * 
@@ -65,7 +67,7 @@ SLOTS = stag.SLOTS
 
 
 if __name__ == '__main__':
-
+    logging.basicConfig(level=logging.INFO)
     quiet = True 
     a = Fold.Load("$A_FOLD", symbol="a", quiet=quiet) if "A_FOLD" in os.environ else None
     b = Fold.Load("$B_FOLD", symbol="b", quiet=quiet) if "B_FOLD" in os.environ else None
@@ -82,10 +84,16 @@ if __name__ == '__main__':
     print("-------- after Fold.Load" )
 
     A = XFold(a, symbol="A") if not a is None else None
+
+    print("-------- after XFold.A" )
+
     B = XFold(b, symbol="B") if not b is None else None
+
+    print("-------- after XFold.B" )
+
     AB = ABR(A,B) if ab else None 
 
-    print("-------- after XFold" )
+    print("-------- after ABR " )
 
     if ab: 
         im = epr("im = np.abs(a.inphoton - b.inphoton).max()", globals(), locals() )  

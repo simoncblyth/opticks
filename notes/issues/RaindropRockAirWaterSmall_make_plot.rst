@@ -189,4 +189,248 @@ High stats 1M : A-B
 
 
 
+Look at the 22/1M 
+----------------------
+
+All have scatters in the water::
+
+    In [7]: seqhis_(a.seq[we,0])
+    Out[7]: 
+    ['TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT BR SC BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT BR SC BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT BR SC BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR',
+     'TO BT SC BR BR BR BR BR BR BR']
+
+
+
+
+
+::
+
+    In [1]: len(wm)
+    Out[1]: 999978
+
+    In [2]: len(we)
+    Out[2]: 22
+
+    In [3]: we
+    Out[3]: array([ 41595, 114799, 125032, 158475, 174993, 243023, 244904, 301474, 345307, 394971, 424120, 467407, 564111, 575295, 745197, 753378, 757835, 828015, 853528, 865287, 895530, 914361])
+
+    In [4]: AB(we[0])
+    Out[4]: 
+    A : /tmp/blyth/opticks/RaindropRockAirWaterSmall/G4CXSimulateTest/ALL
+    B : /tmp/blyth/opticks/RaindropRockAirWaterSmall/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL
+    A(41595) : TO BT SC BR BR BR BR BR BR BR          B(41595) : TO BT SC BR BR BR BR BR BR BR
+           A.t : (1000000, 64)                               B.t : (1000000, 64)
+          A.t2 : (1000000, 64)                              B.t2 : (1000000, 64)
+           A.n : (1000000,)                                  B.n : (1000000,)
+          A.ts : (1000000, 13, 29)                          B.ts : (1000000, 13, 29)
+          A.fs : (1000000, 13, 29)                          B.fs : (1000000, 13, 29)
+         A.ts2 : (1000000, 13, 29)                         B.ts2 : (1000000, 13, 29)
+     0 :     0.6518 :  1 :     to_sci                  0 :     0.6518 :  3 : ScintDiscreteReset :
+     1 :     0.3244 :  2 :     to_bnd                  1 :     0.3244 :  4 : BoundaryDiscreteReset :
+     2 :     0.2309 :  3 :     to_sca                  2 :     0.2309 :  5 : RayleighDiscreteReset :
+     3 :     0.7327 :  4 :     to_abs                  3 :     0.7327 :  6 : AbsorptionDiscreteReset :
+     4 :     0.1133 :  5 : at_burn_sf_sd               4 :     0.1133 :  7 : BoundaryBurn_SurfaceReflectTransmitAbsorb :
+     5 :     0.6275 :  6 :     at_ref                  5 :     0.6275 :  8 : BoundaryDiDiTransCoeff :
+
+     6 :     0.4789 :  1 :     to_sci                  6 :     0.4789 :  3 : ScintDiscreteReset :
+     7 :     0.6990 :  2 :     to_bnd                  7 :     0.6990 :  4 : BoundaryDiscreteReset :
+     8 :     0.9998 :  3 :     to_sca                  8 :     0.9998 :  5 : RayleighDiscreteReset :
+     9 :     0.0067 :  4 :     to_abs                  9 :     0.0067 :  6 : AbsorptionDiscreteReset :
+    10 :     0.1797 :  8 :         sc                 10 :     0.1797 : 10 : RayleighScatter :
+    11 :     0.0088 :  8 :         sc                 11 :     0.0088 : 10 : RayleighScatter :
+    12 :     0.5316 :  8 :         sc                 12 :     0.5316 : 10 : RayleighScatter :
+    13 :     0.8436 :  8 :         sc                 13 :     0.8436 : 10 : RayleighScatter :
+    14 :     0.4477 :  8 :         sc                 14 :     0.4477 : 10 : RayleighScatter :
+
+    15 :     0.4004 :  1 :     to_sci                 15 :     0.4004 :  3 : ScintDiscreteReset :
+    16 :     0.8328 :  2 :     to_bnd                 16 :     0.8328 :  4 : BoundaryDiscreteReset :
+    17 :     0.0016 :  3 :     to_sca                 17 :     0.0016 :  5 : RayleighDiscreteReset :
+    18 :     0.2059 :  4 :     to_abs                 18 :     0.2059 :  6 : AbsorptionDiscreteReset :
+    19 :     0.5832 :  5 : at_burn_sf_sd              19 :     0.5832 :  7 : BoundaryBurn_SurfaceReflectTransmitAbsorb :
+    20 :     0.7585 :  6 :     at_ref
+                                                      20 :     0.7585 :  3 : ScintDiscreteReset :
+    21 :     0.6396 :  1 :     to_sci                 21 :     0.6396 :  4 : BoundaryDiscreteReset :
+    22 :     0.9837 :  2 :     to_bnd                 22 :     0.9837 :  5 : RayleighDiscreteReset :
+    23 :     0.9417 :  3 :     to_sca                 23 :     0.9417 :  6 : AbsorptionDiscreteReset :
+    24 :     0.2058 :  4 :     to_abs
+
+
+Loose alignement at 20: TO BT SC BR* BR BR BR BR BR BR 
+
+* expected BoundaryDiDiTransCoeff to align with at_ref 
+* TODO: run these in debugger to see why do not get the expected consumption 
+
+
+AB(we[1]) same again::
+
+    15 :     0.0663 :  1 :     to_sci                  15 :     0.0663 :  3 : ScintDiscreteReset :
+    16 :     0.2567 :  2 :     to_bnd                  16 :     0.2567 :  4 : BoundaryDiscreteReset :
+    17 :     0.3927 :  3 :     to_sca                  17 :     0.3927 :  5 : RayleighDiscreteReset :
+    18 :     0.8733 :  4 :     to_abs                  18 :     0.8733 :  6 : AbsorptionDiscreteReset :
+    19 :     0.7510 :  5 : at_burn_sf_sd               19 :     0.7510 :  7 : BoundaryBurn_SurfaceReflectTransmitAbsorb :
+    20 :     0.8006 :  6 :     at_ref
+                                                       20 :     0.8006 :  3 : ScintDiscreteReset :
+    21 :     0.7021 :  1 :     to_sci                  21 :     0.7021 :  4 : BoundaryDiscreteReset :
+    22 :     0.5178 :  2 :     to_bnd                  22 :     0.5178 :  5 : RayleighDiscreteReset :
+    23 :     0.5743 :  3 :     to_sca                  23 :     0.5743 :  6 : AbsorptionDiscreteReset :
+    24 :     0.9636 :  4 :     to_abs
+
+AB(we[2]) same, alignment lost at first BR following SC::
+
+    18 :     0.2799 :  8 :         sc                  18 :     0.2799 : 10 : RayleighScatter :
+    19 :     0.2901 :  8 :         sc                  19 :     0.2901 : 10 : RayleighScatter :
+
+    20 :     0.6490 :  1 :     to_sci                  20 :     0.6490 :  3 : ScintDiscreteReset :
+    21 :     0.8381 :  2 :     to_bnd                  21 :     0.8381 :  4 : BoundaryDiscreteReset :
+    22 :     0.0342 :  3 :     to_sca                  22 :     0.0342 :  5 : RayleighDiscreteReset :
+    23 :     0.3264 :  4 :     to_abs                  23 :     0.3264 :  6 : AbsorptionDiscreteReset :
+    24 :     0.6856 :  5 : at_burn_sf_sd               24 :     0.6856 :  7 : BoundaryBurn_SurfaceReflectTransmitAbsorb :
+    25 :     0.5878 :  6 :     at_ref
+                                                       25 :     0.5878 :  3 : ScintDiscreteReset :
+    26 :     0.5236 :  1 :     to_sci                  26 :     0.5236 :  4 : BoundaryDiscreteReset :
+    27 :     0.9741 :  2 :     to_bnd                  27 :     0.9741 :  5 : RayleighDiscreteReset :
+
+AB(we[8])::
+
+    22 :     0.2898 :  8 :         sc                  22 :     0.2898 : 10 : RayleighScatter :
+    23 :     0.9960 :  8 :         sc                  23 :     0.9960 : 10 : RayleighScatter :
+    24 :     0.1025 :  8 :         sc                  24 :     0.1025 : 10 : RayleighScatter :
+
+    25 :     0.7586 :  1 :     to_sci                  25 :     0.7586 :  3 : ScintDiscreteReset :
+    26 :     0.5196 :  2 :     to_bnd                  26 :     0.5196 :  4 : BoundaryDiscreteReset :
+    27 :     0.0803 :  3 :     to_sca                  27 :     0.0803 :  5 : RayleighDiscreteReset :
+    28 :     0.4960 :  4 :     to_abs                  28 :     0.4960 :  6 : AbsorptionDiscreteReset :
+    29 :     0.2536 :  5 : at_burn_sf_sd               29 :     0.2536 :  7 : BoundaryBurn_SurfaceReflectTransmitAbsorb :
+    30 :     0.7670 :  6 :     at_ref
+                                                       30 :     0.7670 :  3 : ScintDiscreteReset :
+    31 :     0.9490 :  1 :     to_sci                  31 :     0.9490 :  4 : BoundaryDiscreteReset :
+    32 :     0.9607 :  2 :     to_bnd                  32 :     0.9607 :  5 : RayleighDiscreteReset :
+
+
+::
+
+     787 #ifdef DEBUG_TAG
+     788     const float u_boundary_burn = curand_uniform(&rng) ;  // needed for random consumption alignment with Geant4 G4OpBoundaryProcess::PostStepDoIt
+     789 #endif
+     790     const float u_reflect = curand_uniform(&rng) ;
+     791     bool reflect = u_reflect > TransCoeff  ;
+     792 
+     793 #ifdef DEBUG_TAG
+     794     stagr& tagr = ctx.tagr ;
+     795     tagr.add( stag_at_burn_sf_sd, u_boundary_burn);
+     796     tagr.add( stag_at_ref,  u_reflect);
+     797 #endif
+     798 
+     799 #ifdef DEBUG_PIDX
+     800     if(ctx.idx == base->pidx)
+     801     {
+     802     printf("//qsim.propagate_at_boundary idx %d u_boundary_burn %10.4f u_reflect %10.4f TransCoeff %10.4f reflect %d \n",
+     803               ctx.idx,  u_boundary_burn, u_reflect, TransCoeff, reflect  );
+     804     }
+     805 #endif
+     806 
+
+
+
+
+
+
+
+::
+
+    171 void U4Process::ClearNumberOfInteractionLengthLeft(const G4Track& aTrack, const G4Step& aStep)
+    172 {
+    173     G4ProcessManager* mgr = GetManager();
+    174     G4ProcessVector* procv = mgr->GetProcessList() ;
+    175     for(int i=0 ; i < procv->entries() ; i++)
+    176     {
+    177         G4VProcess* proc = (*procv)[i] ;
+    178         unsigned type = ProcessType(Name(proc)) ;
+    179         if(IsNormalProcess(type))
+    180         {
+    181             G4VDiscreteProcess* dproc = dynamic_cast<G4VDiscreteProcess*>(proc) ;
+    182             assert(dproc);
+    183             dproc->G4VDiscreteProcess::PostStepDoIt( aTrack, aStep );
+    184         }
+    185     }
+    186 }
+
+    069 inline bool U4Process::IsNormalProcess(unsigned type)
+     70 {
+     71     return type == U4Process_OpRayleigh || type == U4Process_OpAbsorption ;
+     72 }
+
+
+
+
+rejig paths continued
+------------------------
+
+::
+
+    2022-07-17 03:46:24.152 INFO  [346371] [U4Recorder::EndOfEventAction@83] 
+    2022-07-17 03:46:24.153 INFO  [346371] [U4Recorder::EndOfRunAction@81] 
+    2022-07-17 03:46:24.156 INFO  [346371] [main@207] outdir [/tmp/blyth/opticks/J000/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL]
+    2022-07-17 03:46:24.156 INFO  [346371] [main@208]  desc [ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL]
+    U4Random::saveProblemIdx m_problem_idx.size 0 ()
+    2022-07-17 03:46:24.176 INFO  [346371] [main@213] outdir /tmp/blyth/opticks/J000/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL
+    === ./u4s.sh : logdir /tmp/blyth/opticks/U4RecorderTest
+    N[blyth@localhost u4]$ 
+    N[blyth@localhost u4]$ 
+
+
+Path inconsistency::
+
+    epsilon:u4 blyth$ ./u4s.sh grab 
+                       BASH_SOURCE : ./../bin/GEOM_.sh 
+                       TMP_GEOMDIR : /tmp/blyth/opticks/J000 
+                           GEOMDIR : /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo 
+
+                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON_.sh
+                              GEOM : J000
+              OPTICKS_INPUT_PHOTON : DownXZ1000_f8.npy
+        OPTICKS_INPUT_PHOTON_FRAME : Hama:0:1000
+      OPTICKS_INPUT_PHOTON_ABSPATH : /Users/blyth/.opticks/InputPhotons/DownXZ1000_f8.npy
+        OPTICKS_INPUT_PHOTON_LABEL : DownXZ1000
+                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON.sh 
+                         ScriptDir : ./../bin 
+              OPTICKS_INPUT_PHOTON : DownXZ1000_f8.npy 
+        OPTICKS_INPUT_PHOTON_FRAME : Hama:0:1000 
+      OPTICKS_INPUT_PHOTON_ABSPATH : /Users/blyth/.opticks/InputPhotons/DownXZ1000_f8.npy 
+
+    === ./u4s.sh : grab FOLD /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL
+    BASH_SOURCE                    : ./../bin/rsync.sh 
+    xdir                           : /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL/ 
+    from                           : P:/Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL/ 
+    to                             : /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL/ 
+    receiving incremental file list
+    rsync: change_dir "/Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL" failed: No such file or directory (2)
+
+    sent 79 bytes  received 248 bytes  43.60 bytes/sec
+    total size is 0  speedup is 0.00
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1679) [Receiver=3.1.3]
+    rsync: [Receiver] write error: Broken pipe (32)
+    == ./../bin/rsync.sh tto /Users/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/ALL jpg mp4 npy
+    epsilon:u4 blyth$ 
+
 

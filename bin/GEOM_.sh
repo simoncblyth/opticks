@@ -26,10 +26,10 @@ EOU
 
 #geom=RaindropRockAirWater
 #geom=RaindropRockAirWaterSD
-#geom=RaindropRockAirWaterSmall
+geom=RaindropRockAirWaterSmall
 
 #geom=hama_body_log
-geom=J000
+#geom=J000
 
 export GEOM=${GEOM:-$geom}
 
