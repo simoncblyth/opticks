@@ -20,6 +20,7 @@ EOU
 
 case ${GEOM:-Dummy} in 
                     J000)      label=DownXZ1000    ;; 
+           hama_body_log)      label=DownXZ1000    ;; 
     RaindropRockAirWater)      label=storchdown ;;
     RaindropRockAirWaterSD)    label=storchdown  ;;
     RaindropRockAirWaterSmall) label=storchM1up99 ;;

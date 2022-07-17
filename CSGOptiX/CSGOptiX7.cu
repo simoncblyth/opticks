@@ -237,7 +237,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
         if(command == BREAK) break ;    
     }    
 #ifndef PRODUCTION
-    ctx.end(); 
+    ctx.end();  // write seq, tag, flat 
 #endif
     evt->photon[idx] = ctx.p ;
 }

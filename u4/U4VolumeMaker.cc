@@ -257,7 +257,8 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
     G4LogicalVolume*  rock_lv  = Box_(factor*halfside, "Rock" );
     G4LogicalVolume*  water_lv = Box_(1.*halfside, "Water" );
  
-    const char* flip_axes = "Z" ; 
+    //const char* flip_axes = "Z" ; 
+    const char* flip_axes = nullptr ; 
     G4VPhysicalVolume* item_pv  = Place(item_lv,  water_lv, flip_axes );  assert( item_pv ); 
 
 
@@ -270,7 +271,7 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
     G4LogicalBorderSurface* pyrex_vacuum_bs = U4Surface::MakePerfectDetectorBorderSurface("pyrex_vacuum_bs",  pv1, pv2, item_pv ); 
 
     LOG(error)
-        << " attempt to add  PerfectDetectorBorderSurfac between volumes "
+        << " attempt to add  PerfectDetectorBorderSurface between volumes "
         << " pv1 " << pv1 
         << " pv2 " << pv2 
         << " pyrex_vacuum_bs " << ( pyrex_vacuum_bs ? "YES" : "NO" )

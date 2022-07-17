@@ -8,12 +8,16 @@ under the assumption that the histories should really be the same.
 Also geometry intersect position comparison between A and B as a check of the 
 translation.
 
+
 """
 import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.p import *       # including cf loaded from CFBASE
-
+from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 from opticks.ana.pvplt import *
+
+GEOM = os.environ.get("GEOM", None)
+BOFF = efloatlist_("BOFF", "0,0,0")
 
 
 def make_local(gpos_, w2m):
@@ -29,8 +33,15 @@ if __name__ == '__main__':
     a = Fold.Load("$A_FOLD", symbol="a")
     b = Fold.Load("$B_FOLD", symbol="b")
 
-    qa = "TO BT BT BT SD"
-    qb = "TO BT BT BT BT BT SD"
+    if GEOM == "J000":
+        qa = "TO BT BT BT SD"
+        qb = "TO BT BT BT BT BT SD"
+    elif GEOM == "hama_body_log":
+        qa = "TO BT SD" 
+        qb = "TO BT SD" 
+    else:
+        assert 0, GEOM
+    pass
 
     na = len(qa.split())
     nb = len(qb.split())
@@ -42,8 +53,6 @@ if __name__ == '__main__':
     print("qb : %20s : len(wb) %d " % (qb,len(wb))) 
     print(" len(wc) %d " % len(wc) ) 
 
-    offset = np.array([0,0,50], dtype=np.float32)
-
     # pt: point index 
     apos_ = lambda pt:a.record[wc,pt,0,:3] 
     bpos_ = lambda pt:b.record[wc,pt,0,:3] 
@@ -54,18 +63,20 @@ if __name__ == '__main__':
 
     w2m = a.sframe.w2m  
 
+
     pl = pvplt_plotter()
+    pvplt_viewpoint(pl)
 
     for pt in range(1,na):
         gpos_ = apos_(pt)
         lpos = make_local(gpos_, w2m )
-        pl.add_points( lpos )
+        pl.add_points( lpos, color="red" )
     pass
     for pt in range(1,nb):
         gpos_ = bpos_(pt)
         lpos = make_local(gpos_, w2m ) 
-        lpos += offset 
-        pl.add_points( lpos )
+        lpos += BOFF
+        pl.add_points( lpos, color="blue" )
     pass
 
     pl.show() 
