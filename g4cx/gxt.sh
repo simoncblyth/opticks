@@ -68,7 +68,16 @@ FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
 A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
 B_FOLD=$($OPTICKS_HOME/u4/u4s.sh fold)
-A_CFBASE=$(dirname $A_FOLD)
+
+upfind_cfbase(){
+    : traverse directory tree upwards 
+    local dir=$1
+    while [ ${#dir} -gt 1 -a ! -f "$dir/CSGFoundry/solid.npy" ] ; do dir=$(dirname $dir) ; done 
+    echo $dir
+}
+
+A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
+A_CFBASE=$(upfind_cfbase $A_FOLD)  
 
 export A_FOLD
 export A_CFBASE

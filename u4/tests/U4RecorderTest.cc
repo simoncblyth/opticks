@@ -190,6 +190,12 @@ int main(int argc, char** argv)
     SEventConfig::SetStandardFullDebug(); 
     SEvt sev ;    // SEvt must be instanciated before QEvent
     sev.setReldir( desc.c_str() ); 
+    const char* outdir = sev.getOutputDir(); 
+    LOG(info) << "outdir [" << outdir << "]" ; 
+    LOG(info) << " desc [" << desc << "]" ; 
+ 
+
+
     sev.random = &rnd  ;  // so can use getFlatPrior within SEvt::addTag
 
     sframe fr = sframe::Load_("$A_FOLD/sframe.npy");  
@@ -198,19 +204,24 @@ int main(int argc, char** argv)
 
     if(U4RecorderTest::PrimaryMode() == 'T') SEvt::AddTorchGenstep();  
 
+    if(SSys::getenvbool("DRYRUN"))
+    {
+        LOG(fatal) << " DRYRUN early exit " ; 
+        return 0 ; 
+    }
+
+
     G4RunManager* runMgr = new G4RunManager ; 
     runMgr->SetUserInitialization((G4VUserPhysicsList*)new U4Physics); 
     U4RecorderTest t(runMgr) ;  
     runMgr->BeamOn(1); 
 
-    const char* outdir = sev.getOutputDir(); 
-    LOG(info) << "outdir [" << outdir << "]" ; 
-    LOG(info) << " desc [" << desc << "]" ; 
 
     rnd.saveProblemIdx(outdir); 
 
     sev.save(); 
-    LOG(info) << "outdir " << outdir ; 
+    LOG(info) << "outdir [" << outdir << "]" ; 
+    LOG(info) << " desc [" << desc << "]" ; 
 
     return 0 ; 
 }

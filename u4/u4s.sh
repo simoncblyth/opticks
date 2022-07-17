@@ -10,8 +10,9 @@ u4s.sh : formerly U4RecorderTest.sh : Geant4 simulation with Opticks recording e
 
     BP=DsG4Scintillation::PostStepDoIt ./u4s.sh dbg 
 
-
     ./u4s.sh run
+    DRYRUN=1 ./u4s.sh run  ## eg to check config of input and output folders 
+
     ./u4s.sh dbg
     ./u4s.sh clean
     ./u4s.sh ana
@@ -84,8 +85,7 @@ fi
 upfind_cfbase(){
     : traverse directory tree upwards 
     local dir=$1
-    local target=CSGFoundry
-    while [ ${#dir} -gt 1 -a ! -d "$dir/$target" ] ; do dir=$(dirname $dir) ; done 
+    while [ ${#dir} -gt 1 -a ! -f "$dir/CSGFoundry/solid.npy" ] ; do dir=$(dirname $dir) ; done 
     echo $dir
 }
 
@@ -97,11 +97,8 @@ if [ -z "$A_CFBASE" ]; then
    exit 1
 fi 
 
-
 export A_FOLD     # A_FOLD is needed for loading "$A_FOLD/sframe.npy" 
 export A_CFBASE   # A_CFBASE needed for loading  "$A_CFBASE/CSGFoundry/SSim"
-
-
 
 export ShimG4OpAbsorption_FLOAT=1 
 export ShimG4OpRayleigh_FLOAT=1 
@@ -125,15 +122,22 @@ FOLD=$BASE/$reldir
 
 export FOLD
 
+# for GEOMDIR within /tmp there is no need to override the DefaultOutputDir 
+# but for GEOMDIR within geocache an override is necessary to keep A_FOLD and B_FOLD together
+case $GEOMDIR in 
+   $HOME/.opticks/geocache/*) export OPTICKS_OUT_FOLD=$BASE ;;    # SEventConfig::OutFold override SEvt $DefaultOutputDir 
+esac
+
 if [ "${arg/fold}" != "${arg}" ]; then 
    echo $FOLD
 fi 
 
 if [ "${arg/info}" != "${arg}" ]; then 
-    vars="BASH_SOURCE u4sdir GEOM GEOMDIR BASE UBASE CFBASE FOLD A_FOLD A_CFBASE reldir" 
+    vars="BASH_SOURCE u4sdir GEOM GEOMDIR BASE OPTICKS_OUT_FOLD UBASE CFBASE FOLD A_FOLD A_CFBASE reldir" 
     for var in $vars ; do printf "%30s : %s \n" $var ${!var}  ; done 
     echo 
 fi 
+
 
 
 OPTICKS_RANDOM_SEQPATH_NOTES(){ cat << EON
@@ -206,8 +210,8 @@ if [ "${arg/ana}" != "${arg}" ]; then
 fi 
 
 if [ "${arg/grab}" != "${arg}" ]; then 
-    echo $msg grab FOLD $FOLD
-    source $u4sdir/../bin/rsync.sh $FOLD
+    echo $msg grab UBASE $UBASE
+    source $u4sdir/../bin/rsync.sh $UBASE
 fi 
 
 if [ "${arg}" == "ab" ]; then 

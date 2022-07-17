@@ -219,7 +219,7 @@ class InputPhotons(object):
         return pp.reshape(-1,4,4) 
 
     @classmethod
-    def GenerateXZ(cls, n, mom):
+    def GenerateXZ(cls, n, mom, x0lim=[-49.,49.],y0=0.,z0=-99.  ):
         """
   
                +-----------------------------------+
@@ -242,10 +242,11 @@ class InputPhotons(object):
 
 
         """
+        assert len(x0lim) == 2 
         pos = np.zeros((n,3), dtype=cls.DTYPE )
-        pos[:,0] = sample_linear(n, -49., 49. )
-        pos[:,1] = 0.
-        pos[:,2] = -99. 
+        pos[:,0] = sample_linear(n, x0lim[0], x0lim[1] )
+        pos[:,1] = y0
+        pos[:,2] = z0
 
         p = np.zeros( (n, 4, 4), dtype=cls.DTYPE )
         p[:,0,:3] = pos
@@ -336,16 +337,19 @@ class InputPhotons(object):
         elif name.startswith(self.UXZ) or name.startswith(self.DXZ):  
             num = None
             mom = None
+            z0 = None
             if name.startswith(self.UXZ): 
                 num = int(name[len(self.UXZ):])
                 mom = self.Z 
+                z0 = -99. 
             elif name.startswith(self.DXZ): 
                 num = int(name[len(self.DXZ):])
-                mom = -self.Z 
+                mom = -self.Z
+                z0 = 999. 
             else:
                 pass
             pass
-            p = self.GenerateXZ(num, mom)    
+            p = self.GenerateXZ(num, mom, x0lim=[-49.,49.],y0=0,z0=z0 )    
         elif name.startswith(self.RD):  
             num = int(name[len(self.RD):])
             p = self.GenerateRandomDisc(num)    
