@@ -338,18 +338,21 @@ class InputPhotons(object):
             num = None
             mom = None
             z0 = None
+            xl = None
             if name.startswith(self.UXZ): 
                 num = int(name[len(self.UXZ):])
                 mom = self.Z 
-                z0 = -99. 
+                z0 = -99.
+                xl = 49. 
             elif name.startswith(self.DXZ): 
                 num = int(name[len(self.DXZ):])
                 mom = -self.Z
                 z0 = 999. 
+                xl = 200.
             else:
                 pass
             pass
-            p = self.GenerateXZ(num, mom, x0lim=[-49.,49.],y0=0,z0=z0 )    
+            p = self.GenerateXZ(num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )    
         elif name.startswith(self.RD):  
             num = int(name[len(self.RD):])
             p = self.GenerateRandomDisc(num)    
