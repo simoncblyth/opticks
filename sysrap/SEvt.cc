@@ -1215,9 +1215,23 @@ Geant4 tests.
 
 SEvt::save persists NP arrays into the default directory 
 or the directory argument provided.
+
+The FALLBACK_DIR which is used for the SEvt::DefaultDir is obtained from SEventConfig::OutFold 
+which is normally "$DefaultOutputDir" $TMP/GEOM/ExecutableName
+This can be overriden using SEventConfig::SetOutFold or by setting the 
+envvar OPTICKS_OUT_FOLD.
+
+It is normally much easier to use the default of "$DefaultOutputDir" as this 
+takes care of lots of the bookkeeping automatically.
+However in some circumstances such as with the B side of aligned running (U4RecorderTest) 
+it is appropriate to use the override code or envvar to locate B side outputs together 
+with the A side. 
+
 **/
 
-const char* SEvt::FALLBACK_DIR = "$DefaultOutputDir" ;  // $TMP/GEOM/ExecutableName
+//const char* SEvt::FALLBACK_DIR = "$DefaultOutputDir" ; 
+const char* SEvt::FALLBACK_DIR = SEventConfig::OutFold() ;
+
 const char* SEvt::DefaultDir()
 {
     const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 

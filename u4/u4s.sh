@@ -81,10 +81,22 @@ if [ "$U4RecorderTest__PRIMARY_MODE" == "iphoton" ]; then
     source $u4sdir/../bin/OPTICKS_INPUT_PHOTON.sh     
 fi 
 
-
+upfind_cfbase(){
+    : traverse directory tree upwards 
+    local dir=$1
+    local target=CSGFoundry
+    while [ ${#dir} -gt 1 -a ! -d "$dir/$target" ] ; do dir=$(dirname $dir) ; done 
+    echo $dir
+}
 
 A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
-A_CFBASE=$(dirname $A_FOLD)
+A_CFBASE=$(upfind_cfbase $A_FOLD)  
+
+if [ -z "$A_CFBASE" ]; then 
+   echo $msg FAILED TO FIND A_CFBASE starting from A_FOLD $A_FOLD
+   exit 1
+fi 
+
 
 export A_FOLD     # A_FOLD is needed for loading "$A_FOLD/sframe.npy" 
 export A_CFBASE   # A_CFBASE needed for loading  "$A_CFBASE/CSGFoundry/SSim"

@@ -692,6 +692,11 @@ void U4Material::LoadBnd(const char* ssimdir)
 {
     SSim* sim = SSim::Load(ssimdir);  
     const SBnd* sb = sim->get_sbnd(); 
+    if(sb == nullptr) 
+    {
+        LOG(fatal) << "failed to load bnd.npy from ssimdir " << ssimdir ; 
+        return ;  
+    }
 
     std::vector<std::string> mnames ; 
     sb->getMaterialNames(mnames );
