@@ -2315,6 +2315,7 @@ bool CSGFoundry::Load_saveAlt = SSys::getenvbool("CSGFoundry_Load_saveAlt") ;
 
 CSGFoundry* CSGFoundry::Load() // static
 {
+    LOG(LEVEL) << " argumentless " ; 
     CSGFoundry* src = CSGFoundry::Load_() ; 
     if(src == nullptr) return nullptr ; 
 
@@ -2694,7 +2695,7 @@ Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into 
 * NO not for most instanced prim, where all the prim within an instance 
   share the same inst_idx and transform
 
-* BUT but for the outer prim of an instance a correspondence is possible  
+* BUT for the outer prim of an instance a correspondence is possible  
 
 **/
 

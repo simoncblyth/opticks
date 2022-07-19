@@ -34,6 +34,11 @@ int main(int argc, char** argv)
 
     G4CXOpticks gx ;  
     gx.setGeometry(); 
+#ifdef __APPLE__
+    return 0 ; 
+#endif
+
+
     gx.simulate(); 
 
     cudaDeviceSynchronize(); 

@@ -102,17 +102,51 @@ U4VolumeMaker::PVG_
 ---------------------
 
 Attempts to load geometry from a gdmlpath using the SOpticksResource::GDMLPath 
-resolution method.  For example for a name of hello the gdmlpath is obtained
+resolution method.  For example for a GEOM name of hello the gdmlpath is obtained
 from the envvar hello_GDMLPath with nullptr being returned when there is no such 
 envvar. 
 
+Additionally using SOpticksResource::GDMLSub resolution when hello_GDMLSub 
+envvar exists the string obtained is used to select a PV from within the loaded 
+tree of volumes.  For example with GEOM of J000 the below envvar is checked::
+
+    export J000_GDMLSub=HamamatsuR12860sMask_virtual0x:0:1000
+
 **/
+
+const char* U4VolumeMaker::PVG_WriteNames = "U4VolumeMaker_PVG_WriteNames" ; 
 
 G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
 {
-    const char* gdmlpath = SOpticksResource::GDMLPath(name) ; 
+    const char* gdmlpath = SOpticksResource::GDMLPath(name) ;   
+    const char* gdmlsub = SOpticksResource::GDMLSub(name);  
     bool exists = gdmlpath && SPath::Exists(gdmlpath) ; 
-    return exists ? U4GDML::Read(gdmlpath) : nullptr ; 
+
+    G4VPhysicalVolume* loaded = exists ? U4GDML::Read(gdmlpath) : nullptr ; 
+
+    if(loaded && SSys::getenvbool(PVG_WriteNames))
+        U4Volume::WriteNames( loaded, SPath::Resolve("$TMP", PVG_WriteNames, DIRPATH));  
+    
+    G4VPhysicalVolume* pv = loaded ; 
+
+    if( loaded && gdmlsub ) 
+    { 
+        G4VPhysicalVolume* pv_sub = U4Volume::FindPVSub( loaded, gdmlsub ) ;  
+        G4LogicalVolume* lv_sub = pv_sub->GetLogicalVolume(); 
+        pv = WrapRockWater( lv_sub ) ;           // HMM: assuming the gdmlsub is in Water ?
+        LOG(LEVEL) << " WrapRockWater lv_sub " << ( lv_sub ? lv_sub->GetName() : "-" ); 
+    }
+
+    LOG(LEVEL) 
+          << " name " << name 
+          << " gdmlpath " << gdmlpath 
+          << " exists " << exists
+          << " loaded " << loaded
+          << " gdmlsub " << gdmlsub 
+          << " pv " << pv 
+          ;  
+
+    return pv ; 
 }
 
 
@@ -266,7 +300,7 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
     U4Volume::Traverse( item_pv, "item_pv" ); 
 
 
-    const char* pv1 = "hama_body_log_pv" ; 
+    const char* pv1 = "hama_body_log_pv" ;   
     const char* pv2 = "hama_inner1_phys" ; 
     G4LogicalBorderSurface* pyrex_vacuum_bs = U4Surface::MakePerfectDetectorBorderSurface("pyrex_vacuum_bs",  pv1, pv2, item_pv ); 
 
@@ -277,7 +311,7 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
         << " pyrex_vacuum_bs " << ( pyrex_vacuum_bs ? "YES" : "NO" )
         ;
 
-    if(pyrex_vacuum_bs == nullptr) std::raise(SIGINT); 
+    //if(pyrex_vacuum_bs == nullptr) std::raise(SIGINT); 
 
     G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
     G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  

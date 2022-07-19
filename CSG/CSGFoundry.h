@@ -369,7 +369,7 @@ struct CSG_API CSGFoundry
     std::vector<unsigned>  gas ; 
     std::vector<unsigned>  ias ; 
 
-    SName*    id ;   // meshname 
+    SName*    id ;   // holds the meshname vector of G4VSolid names 
 
     CSGTarget*  target ; 
     CSGMaker*   maker ; 

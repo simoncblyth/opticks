@@ -78,17 +78,21 @@ fi
 loglevels()
 {
     export Dummy=INFO
-    #export U4VolumeMaker=INFO
+    export G4CXOpticks=INFO 
+    export CSGFoundry=INFO
+    export U4VolumeMaker=INFO
 
-    export SEvt=INFO
+    #export SEvt=INFO
     #export Ctx=INFO
     #export QSim=INFO
     #export QEvent=INFO 
     #export CSGOptiX=INFO
-    #export G4CXOpticks=INFO 
     #export X4PhysicalVolume=INFO
 }
 loglevels
+
+#export U4VolumeMaker_PVG_WriteNames=1
+
 
 
 if [ "${arg/run}" != "$arg" ]; then 

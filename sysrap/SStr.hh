@@ -174,6 +174,7 @@ class SYSRAP_API SStr {
       template<typename ... Args>
       static const char* Name( Args ... args ); 
  
+      static const char* ParseStringIntInt( const char* triplet, int& y, int& z, char delim=':' ); 
 };
 
 

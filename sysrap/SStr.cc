@@ -376,7 +376,8 @@ SStr::StartsWith
 ------------------
 
 The 2nd query string must be less than or equal to the length of the first string and 
-the all the characters of the query string must match with the first string.  
+all the characters of the query string must match with the first string in order 
+to return true.
 
 **/
 
@@ -1047,4 +1048,19 @@ int SStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, co
     return err ; 
 }
 
+
+
+
+const char* SStr::ParseStringIntInt( const char* triplet, int& y, int& z, char delim )
+{
+    std::stringstream ss; 
+    ss.str(triplet)  ;
+    std::string s;
+    std::vector<std::string> elem ; 
+    while (std::getline(ss, s, delim)) elem.push_back(s) ; 
+    assert(elem.size() == 3 ); 
+    y = AsInt( elem[1].c_str() ); 
+    z = AsInt( elem[2].c_str() ); 
+    return strdup(elem[0].c_str()); 
+}
 

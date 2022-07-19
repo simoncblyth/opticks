@@ -311,18 +311,24 @@ For example exercise this with::
 
 **/
 
-const char* SOpticksResource::GDMLPath_ = "GEOM" ; 
-const char* SOpticksResource::GDMLPath(){ return GDMLPath( SSys::getenvvar(GDMLPath_)); }
+const char* SOpticksResource::GEOM = "GEOM" ; 
+
+const char* SOpticksResource::GDMLPath(){ return GDMLPath( SSys::getenvvar(GEOM)); }
 const char* SOpticksResource::GDMLPath(const char* geom)
 {
     return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPath")) ; 
 }
 
+const char* SOpticksResource::GDMLSub(){ return GDMLSub( SSys::getenvvar(GEOM)); }
+const char* SOpticksResource::GDMLSub(const char* geom)
+{
+    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLSub")) ; 
+}
 
 
 
 
-const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath CFBaseFromGEOM" ; 
+const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath GDMLSub CFBaseFromGEOM" ; 
 
 /**
 SOpticksResource::Get

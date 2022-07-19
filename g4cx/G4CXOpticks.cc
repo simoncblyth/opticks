@@ -72,23 +72,28 @@ for use from python for example.
 
 void G4CXOpticks::setGeometry()
 {
+    LOG(LEVEL) << " argumentless " ; 
     if(SSys::hasenvvar(SOpticksResource::SomeGDMLPath_))
     {
+        LOG(LEVEL) << " SomeGDMLPath " ; 
         setGeometry(SOpticksResource::SomeGDMLPath()); 
-        fd->save(); 
+        if(fd) fd->save(); 
     }
     else if(SSys::hasenvvar(SOpticksResource::CFBASE_))
     {
+        LOG(LEVEL) << " CFBASE " ; 
         setGeometry(CSGFoundry::Load()); 
     }
     else if(SOpticksResource::CFBaseFromGEOM())
     {
+        LOG(LEVEL) << " CFBASEFromGEOM " ; 
         setGeometry(CSGFoundry::Load()); 
     }
     else if(SSys::hasenvvar("GEOM"))
     {
+        LOG(LEVEL) << " GEOM/U4VolumeMaker::PV " ; 
         setGeometry( U4VolumeMaker::PV() );  // this may load GDML using U4VolumeMaker::PVG if "GEOM"_GDMLPath is defined   
-        fd->save(); 
+        if(fd) fd->save(); 
     }
     else
     {
@@ -99,23 +104,33 @@ void G4CXOpticks::setGeometry()
 
 void G4CXOpticks::setGeometry(const char* gdmlpath)
 {
+    LOG(LEVEL) << " gdmlpath " << gdmlpath ; 
     const G4VPhysicalVolume* world = U4GDML::Read(gdmlpath);
     setGeometry(world); 
 }
 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world)
 {
+    LOG(LEVEL) << " G4VPhysicalVolume world " << world ; 
     wd = world ; 
+#ifdef __APPLE__
+    return ;  
+#endif
     GGeo* gg_ = X4Geo::Translate(wd) ; 
     setGeometry(gg_); 
 }
 void G4CXOpticks::setGeometry(const GGeo* gg_)
 {
+    LOG(LEVEL); 
     gg = gg_ ; 
     CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ; 
     setGeometry(fd_); 
 }
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
+    LOG(LEVEL) << " fd_ " << fd_ ; 
+#ifdef __APPLE__
+    return ; 
+#endif
     fd = fd_ ; 
     cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
     qs = cx->sim ; 
@@ -124,6 +139,10 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 
 void G4CXOpticks::render()
 {
+#ifdef __APPLE__
+     LOG(fatal) << " APPLE skip " ; 
+     return ; 
+#endif
     assert( cx ); 
     assert( SEventConfig::IsRGModeRender() ); 
     cx->render_snap() ; 
@@ -131,6 +150,11 @@ void G4CXOpticks::render()
 
 void G4CXOpticks::simulate()
 {
+#ifdef __APPLE__
+     LOG(fatal) << " APPLE skip " ; 
+     return ; 
+#endif
+
     LOG(LEVEL) << desc() ; 
     assert(cx); 
     assert(qs); 
@@ -150,6 +174,10 @@ void G4CXOpticks::simulate()
 
 void G4CXOpticks::simtrace()
 {
+#ifdef __APPLE__
+     LOG(fatal) << " APPLE skip " ; 
+     return ; 
+#endif
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimtrace() ); 

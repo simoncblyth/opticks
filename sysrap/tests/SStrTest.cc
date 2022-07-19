@@ -779,6 +779,31 @@ void test_Name()
 
     assert( strcmp( name, x_name) == 0 ); 
 }
+
+void test_ParseStringIntInt()
+{
+    const char* x0 = "Hello" ; 
+    int y0 = 10 ; 
+    int z0 = 1000 ;  
+    std::stringstream ss ; 
+    ss << x0 << ":" << y0 << ":" << z0 ; 
+
+    std::string s = ss.str(); 
+    const char* triplet = s.c_str(); 
+
+    int y1 = 0 ; 
+    int z1 = 0 ; 
+    const char* x1 = SStr::ParseStringIntInt(triplet, y1, z1); 
+
+    assert( strcmp(x0,x1) == 0 ); 
+    assert( y0 == y1 ) ; 
+    assert( z0 == z1 ) ; 
+
+    LOG(info); 
+}
+
+
+
 // om- ; TEST=SStrTest om-t
 
 
@@ -826,8 +851,9 @@ int main(int argc , char** argv )
     test_StartsWithLetterAZaz(); 
     test_FormatInt_2(); 
     test_FormatIndex(); 
-    */
     test_Name(); 
+    */
+    test_ParseStringIntInt(); 
 
 
     return 0  ; 
