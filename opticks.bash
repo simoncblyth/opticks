@@ -51,6 +51,8 @@ geom_(){
    local path=$(opticks-home)/bin/GEOM_.sh
    if [ "$1" == "scp" ]; then 
        scp $path P:opticks/bin/
+   elif [ "$1" == "source" ]; then 
+       source $path
    else
        vi $path ;
    fi   
@@ -63,6 +65,8 @@ oip(){
    if [ "$1" == "scp" ]; then 
        scp ${path}  P:opticks/bin/
        scp ${path_} P:opticks/bin/
+   elif [ "$1" == "source" ]; then 
+       source $path
    else
        vi ${path_} ${path} ;
    fi   

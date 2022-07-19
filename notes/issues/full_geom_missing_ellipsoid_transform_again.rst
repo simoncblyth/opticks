@@ -2,114 +2,69 @@ full_geom_missing_ellipsoid_transform_again
 =============================================
 
 
-::
 
-    829 G4VPhysicalVolume* G4GDMLReadStructure::
-    830 GetPhysvol(const G4String& ref) const
-    831 {
-    832    G4VPhysicalVolume* physvolPtr =
-    833      G4PhysicalVolumeStore::GetInstance()->GetVolume(ref,false);
-    834 
-    835    if (!physvolPtr)
-    836    {
-    837      G4String error_msg = "Referenced physvol '" + ref + "' was not found!";
-    838      G4Exception("G4GDMLReadStructure::GetPhysvol()", "ReadError",
-    839                  FatalException, error_msg);
-    840    }
-    841 
-    842    return physvolPtr;
-    843 }
+Issue
+---------
+
+Upper hemisphere in full GDML running seems to miss the ellipsoid transform. 
+
+* failed to reproduce with simpler geometry hama_body_log so far 
+* also failed to reproduce with GDMLSub running with HamamatsuR12860sMask_virtual, 
+  placing a single "hatbox" + mask + PMT  
+
+* TODO: try adding some instance transforms to duplicate the grabbed 
+  GDMLSub and see if the transform troubles manifest then 
 
 
-    062 class G4PhysicalVolumeStore : public std::vector<G4VPhysicalVolume*>
+Using GDMLSub machinery
+--------------------------
 
-    160 // ***************************************************************************
-    161 // Retrieve the first volume pointer in the container having that name
-    162 // ***************************************************************************
-    163 //
-    164 G4VPhysicalVolume*
-    165 G4PhysicalVolumeStore::GetVolume(const G4String& name, G4bool verbose) const
-    166 {
-    167   for (iterator i=GetInstance()->begin(); i!=GetInstance()->end(); i++)
-    168   {
-    169     if ((*i)->GetName() == name) { return *i; }
-    170   }
-    171   if (verbose)
-    172   {
-    173      std::ostringstream message;
-    174      message << "Volume NOT found in store !" << G4endl
-    175             << "        Volume " << name << " NOT found in store !" << G4endl
-    176             << "        Returning NULL pointer.";
-    177      G4Exception("G4PhysicalVolumeStore::GetVolume()",
-    178                  "GeomMgt1001", JustWarning, message);
-    179   }
-    180   return 0;
-    181 }
+geom::
+
+     42 if [ "$GEOM" == "J000" ]; then
+     43     export J000_GDMLPath=$HOME/.opticks/geocache/$(reldir $GEOM)/origin_CGDMLKludge.gdml
+     44     export J000_GDMLSub=HamamatsuR12860sMask_virtual0x:0:1000
+
+oip::
+
+     32 if [ "$GEOM" == "J000" ]; then
+     33    if [ -z "$J000_GDMLSub" ]; then  ## need to switch off the _FRAME when using GDMLSub
+     34        OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000
+     35    fi
+     36 fi
 
 
 
+Added GDMLSub machinery for selecting volume from full GDML U4Volume::FindPVSub
+---------------------------------------------------------------------------------
+
+Develop machinery for loading full GDML and then selecting a volume::
+
+    125 G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
+    126 {   
+    127     const char* gdmlpath = SOpticksResource::GDMLPath(name) ;
+    128     const char* gdmlsub = SOpticksResource::GDMLSub(name);
+    129     bool exists = gdmlpath && SPath::Exists(gdmlpath) ;
+    130     
+    131     G4VPhysicalVolume* loaded = exists ? U4GDML::Read(gdmlpath) : nullptr ;
+    132     
+    133     if(loaded && SSys::getenvbool(PVG_WriteNames))
+    134         U4Volume::WriteNames( loaded, SPath::Resolve("$TMP", PVG_WriteNames, DIRPATH));
+    135     
+    136     G4VPhysicalVolume* pv = loaded ;
+    137     
+    138     if( loaded && gdmlsub )
+    139     {   
+    140         G4VPhysicalVolume* pv_sub = U4Volume::FindPVSub( loaded, gdmlsub ) ;
+    141         G4LogicalVolume* lv_sub = pv_sub->GetLogicalVolume(); 
+    142         pv = WrapRockWater( lv_sub ) ;           // HMM: assuming the gdmlsub is in Water ?
+    143         LOG(LEVEL) << " WrapRockWater lv_sub " << ( lv_sub ? lv_sub->GetName() : "-" );
+    144     }
+    145     
 
 
-    845 G4LogicalVolume* G4GDMLReadStructure::
-    846 GetVolume(const G4String& ref) const
-    847 {
-    848    G4LogicalVolume *volumePtr
-    849    = G4LogicalVolumeStore::GetInstance()->GetVolume(ref,false);
-    850 
-    851    if (!volumePtr)
-    852    {
-    853      G4String error_msg = "Referenced volume '" + ref + "' was not found!";
-    854      G4Exception("G4GDMLReadStructure::GetVolume()", "ReadError",
-    855                  FatalException, error_msg);
-    856    }
-    857 
-    858    return volumePtr;
-    859 }
-
-
-::
-
-   062 class G4LogicalVolumeStore : public std::vector<G4LogicalVolume*>
-
-   0155 // ***************************************************************************
-    156 // Retrieve the first volume pointer in the container having that name
-    157 // ***************************************************************************
-    158 //
-    159 G4LogicalVolume*
-    160 G4LogicalVolumeStore::GetVolume(const G4String& name, G4bool verbose) const
-    161 {
-    162   for (iterator i=GetInstance()->begin(); i!=GetInstance()->end(); i++)
-    163   {
-    164     if ((*i)->GetName() == name) { return *i; }
-    165   }
-    166   if (verbose)
-    167   {
-    168      std::ostringstream message;
-    169      message << "Volume NOT found in store !" << G4endl
-    170              << "        Volume " << name << " NOT found in store !" << G4endl
-    171              << "        Returning NULL pointer.";
-    172      G4Exception("G4LogicalVolumeStore::GetVolume()",
-    173                  "GeomMgt1001", JustWarning, message);
-    174   }
-    175   return 0;
-    176 }
-
-    182 G4LogicalVolumeStore* G4LogicalVolumeStore::GetInstance()
-    183 {
-    184   static G4LogicalVolumeStore worldStore;
-    185   if (!fgInstance)
-    186   {
-    187     fgInstance = &worldStore;
-    188   }
-    189   return fgInstance;
-    190 }
-
-
-
-
-
-
-Check PLS.txt from two runs::
+As preliminary to that added U4Volume::WriteNames. Check PLS.txt from two runs, 
+shows are getting same pointers in the names because coming from the GDML::
 
      212895 solidXJfixture0x595eb40
      212896 pLPMT_Hamamatsu_R128600x5f67fb0

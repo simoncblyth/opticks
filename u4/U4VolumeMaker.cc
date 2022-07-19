@@ -112,6 +112,12 @@ tree of volumes.  For example with GEOM of J000 the below envvar is checked::
 
     export J000_GDMLSub=HamamatsuR12860sMask_virtual0x:0:1000
 
+Note that while loading GDML and then selecting a PV from it is a useful capability 
+it is generally only useful for a first look at an issue or to isolate an issue. 
+As typically to understand what is going wrong with a geometry it is necessary 
+to iterate making changes to the geometry. In order to do that it is necessary 
+to take control of the geometry defining code for example in j/PMTSim. 
+
 **/
 
 const char* U4VolumeMaker::PVG_WriteNames = "U4VolumeMaker_PVG_WriteNames" ; 

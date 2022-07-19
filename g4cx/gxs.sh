@@ -82,7 +82,7 @@ loglevels()
     export CSGFoundry=INFO
     export U4VolumeMaker=INFO
 
-    #export SEvt=INFO
+    export SEvt=INFO
     #export Ctx=INFO
     #export QSim=INFO
     #export QEvent=INFO 

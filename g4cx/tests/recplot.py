@@ -17,6 +17,10 @@ from opticks.ana.eget import efloatlist_, elookce_, elook_epsilon_, eint_
 from opticks.ana.pvplt import *
 
 GEOM = os.environ.get("GEOM", None)
+GDMLPath = os.environ.get("%s_GDMLPath" % GEOM, None)
+GDMLSub  = os.environ.get("%s_GDMLSub"  % GEOM, None)
+
+
 BOFF = efloatlist_("BOFF", "0,0,0")
 
 
@@ -34,8 +38,13 @@ if __name__ == '__main__':
     b = Fold.Load("$B_FOLD", symbol="b")
 
     if GEOM == "J000":
-        qa = "TO BT BT BT SD"
-        qb = "TO BT BT BT BT BT SD"
+        if GDMLSub == None: 
+            qa = "TO BT BT BT SD"
+            qb = "TO BT BT BT BT BT SD"
+        else:
+            qa = "TO BT BT BT BT SD"       # GDMLSub wrap does not skip the hatbox
+            qb = "TO BT BT BT BT BT SD"
+        pass
     elif GEOM == "hama_body_log":
         qa = "TO BT SD" 
         qb = "TO BT SD" 

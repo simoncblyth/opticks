@@ -28,9 +28,12 @@ case ${GEOM:-Dummy} in
                             *) label=RandomSpherical10  ;;
 esac
 
-case ${GEOM:-Dummy} in 
-    J000) OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000 ;;
-esac
+
+if [ "$GEOM" == "J000" ]; then 
+   if [ -z "$J000_GDMLSub" ]; then 
+       OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000 
+   fi 
+fi 
 
 case ${label:-dummy} in 
           storchdown) path=storch_test/down/$(uname)/ph.npy ;;   ## TODO: remove 
