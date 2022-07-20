@@ -139,7 +139,12 @@ G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
     { 
         G4VPhysicalVolume* pv_sub = U4Volume::FindPVSub( loaded, gdmlsub ) ;  
         G4LogicalVolume* lv_sub = pv_sub->GetLogicalVolume(); 
-        pv = WrapRockWater( lv_sub ) ;           // HMM: assuming the gdmlsub is in Water ?
+
+
+        pv = WrapRockWater( lv_sub ) ;  
+        // HMM: assuming the gdmlsub is in Water ?
+        // TODO: make the type of Wrap an input 
+
         LOG(LEVEL) << " WrapRockWater lv_sub " << ( lv_sub ? lv_sub->GetName() : "-" ); 
     }
 
@@ -328,6 +333,25 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
     LOG(LEVEL) << "]"  ; 
     return rock_pv ; 
 }
+
+
+/**
+U4VolumeMaker::WrapInstanceCylinder
+-------------------------------------
+
+HMM: essentialling the task is one of transform handling, 
+could do that authoring in python so the item gets placed in the positions
+according to the transforms loaded from a .npy of transforms 
+
+
+G4VPhysicalVolume* U4VolumeMaker::WrapInstanceCylinder( G4LogicalVolume* item_lv )
+{
+
+
+
+
+}
+**/
 
 
 

@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include <array>
 
 
 /**
@@ -37,6 +38,12 @@ struct Tran
     static const Tran<T>* make_identity();
     static const Tran<T>* make_scale(     const T sx, const T sy, const T sz);
     static const Tran<T>* make_rotate(    const T ax, const T ay, const T az, const T angle_deg);
+
+    static void            MostOthogonalAxis(glm::tvec3<T>& o, const glm::tvec3<T>& a ); 
+    static glm::tmat4x4<T> MakeRotateA2B(          const glm::tvec3<T>& a, const glm::tvec3<T>& b ); 
+    static glm::tmat4x4<T> MakeRotateA2B_special(  const glm::tvec3<T>& a, const glm::tvec3<T>& b ); 
+    static const Tran<T>* make_rotate_a2b( const glm::tvec3<T>& a, const glm::tvec3<T>& b , bool special ); 
+    static const Tran<T>* make_rotate_a2b( const T ax, const T ay, const T az, const T bx, const T by, const T bz, bool special ); 
 
     static const Tran<T>* product(const Tran<T>* a, const Tran<T>* b, bool reverse);
     static const Tran<T>* product(const Tran<T>* a, const Tran<T>* b, const Tran<T>* c, bool reverse);
@@ -171,6 +178,116 @@ inline const Tran<T>* Tran<T>::make_rotate( const T ax, const T ay, const T az, 
     glm::tmat4x4<T> v = glm::rotate(glm::tmat4x4<T>(1.), -angle_rad, axis ) ;
     return new Tran<T>(t, v);    
 }
+
+
+
+/**
+Tran::MakeRotateA2B
+----------------------
+
+See ana/make_rotation_matrix.py 
+
+* http://cs.brown.edu/research/pubs/pdfs/1999/Moller-1999-EBA.pdf
+  "Efficiently Building a Matrix to Rotate One Vector To Another"
+  Tomas Moller and John F Hughes 
+
+* ~/opticks_refs/Build_Rotation_Matrix_vec2vec_Moller-1999-EBA.pdf
+
+Found this paper via thread: 
+
+* https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+
+**/
+
+template<typename T>
+inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B(const glm::tvec3<T>& a, const glm::tvec3<T>& b)
+{
+    T one(1.); 
+    T zero(0.); 
+
+    T c = glm::dot(a,b); 
+    T h = (one - c)/(one - c*c); 
+
+    glm::tvec3<T> v = glm::cross(a, b) ;  
+    T vx = v.x ; 
+    T vy = v.y ; 
+    T vz = v.z ; 
+
+    std::array<T, 16> vals = {{   
+          c + h*vx*vx  , h*vx*vy - vz ,  h*vx*vz + vy  , zero, 
+          h*vx*vy+vz   , c + h*vy*vy  ,  h*vy*vz - vx  , zero,
+          h*vx*vz - vy , h*vy*vz + vx ,  c + h*vz*vz   , zero,
+          zero         , zero         ,  zero          , one         
+    }}; 
+
+    return glm::make_mat4x4<T>( vals.data() ); 
+}
+
+
+template<typename T>
+inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_special(const glm::tvec3<T>& a, const glm::tvec3<T>& b)
+{
+    glm::tvec3<T> x(0., 0., 0.); 
+    MostOthogonalAxis(x, a); 
+
+    glm::tvec3<T> u = x - a ; 
+    glm::tvec3<T> v = x - b  ;    
+
+    std::cout << " x         " << glm::to_string(x) << std::endl ; 
+    std::cout << " u = x - a " << glm::to_string(u) << std::endl ; 
+    std::cout << " v = x - b " << glm::to_string(v) << std::endl ; 
+
+
+    T uu = glm::dot(u, u); 
+    T vv = glm::dot(v, v); 
+    T uv = glm::dot(u, v); 
+
+    std::array<T, 16> vals ; 
+    vals.fill(0.) ; 
+
+    for(int i=0 ; i < 3 ; i++) for(int j=0 ; j < 3 ; j++) 
+        vals[i*4+j] = ( i == j ? 1. : 0.)  - 2.*u[i]*u[j]/uu -2.*v[i]*v[j]/vv + 4.*uv*v[i]*u[j]/(uu*vv) ; 
+
+    vals[15] = 1. ; 
+    return glm::make_mat4x4<T>( vals.data() ); 
+}
+
+
+template<typename T>
+inline void Tran<T>::MostOthogonalAxis(glm::tvec3<T>& o, const glm::tvec3<T>& a )
+{
+    T zero(0.); 
+    T one(0.); 
+
+    o.x = zero ; 
+    o.y = zero ; 
+    o.z = zero ;
+
+    T x = std::abs(a.x);  
+    T y = std::abs(a.y);  
+    T z = std::abs(a.z);  
+
+    if(     x <= y && x <= z) o.x = one ; 
+    else if(y <= x && y <= z) o.y = one ; 
+    else if(z <= x && z <= y) o.z = one ; 
+}
+
+template<typename T>
+inline const Tran<T>* Tran<T>::make_rotate_a2b(const T ax, const T ay, const T az, const T bx, const T by, const T bz, bool special)
+{
+    glm::tvec3<T> a(ax,ay,az); 
+    glm::tvec3<T> b(bx,by,bz); 
+    return make_rotate_a2b(a,b, special); 
+}
+
+template<typename T>
+inline const Tran<T>* Tran<T>::make_rotate_a2b(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool special)
+{
+    glm::tmat4x4<T> t = special ? MakeRotateA2B_special(a,b) : MakeRotateA2B(a,b) ; 
+    glm::tmat4x4<T> v = special ? MakeRotateA2B_special(b,a) : MakeRotateA2B(b,a) ; 
+    return new Tran<T>(t, v);    
+}
+
 
 template<typename T>
 inline const Tran<T>* Tran<T>::product(const Tran<T>* a, const Tran<T>* b, bool reverse)

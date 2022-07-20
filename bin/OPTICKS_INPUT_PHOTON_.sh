@@ -30,7 +30,7 @@ esac
 
 
 if [ "$GEOM" == "J000" ]; then 
-   if [ -z "$J000_GDMLSub" ]; then 
+   if [ -z "$J000_GDMLSub" ]; then  ## need to switch off the _FRAME when using GDMLSub
        OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000 
    fi 
 fi 
