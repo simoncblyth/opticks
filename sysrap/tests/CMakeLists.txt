@@ -92,6 +92,7 @@ set(TEST_SOURCES
    SDiceTest.cc
 
    stranTest.cc
+   stranRotateTest.cc
 
    SCenterExtentGenstepTest.cc
    SEventTest.cc

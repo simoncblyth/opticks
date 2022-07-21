@@ -141,61 +141,6 @@ void test_PhotonTransform()
 
 
 
-template<typename T>
-void test_make_rotate_a2b_(const glm::tvec3<T>& a, const glm::tvec3<T>& b )
-{
-    std::cout << " a " << glm::to_string(a) << std::endl ; 
-    std::cout << " b " << glm::to_string(b) << std::endl ; 
-  
-    const Tran<T>* t0 = Tran<T>::make_rotate_a2b( a, b, false ); 
-    std::cout << *t0 << std::endl ;   
-
-    const Tran<T>* t1 = Tran<T>::make_rotate_a2b( a, b, true ); 
-    std::cout << *t1 << std::endl ;   
-}
- 
-
-template<typename T>
-void test_make_rotate_a2b_0()
-{
-    glm::tvec3<T> px(1,0,0) ; 
-    glm::tvec3<T> py(0,1,0) ; 
-    glm::tvec3<T> pz(0,0,1) ; 
-
-    glm::tvec3<T> nx(-1, 0, 0) ; 
-    glm::tvec3<T> ny( 0,-1, 0) ; 
-    glm::tvec3<T> nz( 0, 0,-1) ; 
-
-    test_make_rotate_a2b_(px, py); 
-    test_make_rotate_a2b_(pz, pz); 
-    test_make_rotate_a2b_(pz, nz); 
-
-
-
-}
-
-
-
-
-template<typename T>
-void test_make_rotate_a2b_1()
-{
-     glm::tvec3<T> a(1,0,0) ; 
-
-     for(T p=0. ; p < 2. ; p+=0.1 )
-     {
-         T phi = glm::pi<T>()*p  ;
-
-         glm::tvec3<T> b(cos(phi),sin(phi),0) ; 
-
-         std::cout << " a " << glm::to_string(a) << std::endl ; 
-         std::cout << " b " << glm::to_string(b) << std::endl ; 
- 
-         const Tran<T>* t = Tran<T>::make_rotate_a2b( a, b ); 
-
-         std::cout << *t << std::endl ;   
-     }
-}
 
 
 
@@ -208,12 +153,12 @@ int main()
     test_write<float>("f.npy"); 
     test_write<double>("d.npy"); 
     test_apply<double>(); 
-    test_PhotonTransform<double>(); 
-    test_make_rotate_a2b_0<double>(); 
     */
-
-    test_make_rotate_a2b_0<double>(); 
+    test_PhotonTransform<double>(); 
 
 
     return 0 ; 
 }
+// om- ; TEST=stranTest om-t
+
+

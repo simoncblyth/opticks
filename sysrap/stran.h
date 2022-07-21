@@ -32,6 +32,7 @@ struct Tran
     // TODO: on stack ctors 
 
     static constexpr const T EPSILON = 1e-6 ; 
+    static constexpr const bool VERBOSE = false ;  
 
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz, const T sc);
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz);
@@ -39,11 +40,16 @@ struct Tran
     static const Tran<T>* make_scale(     const T sx, const T sy, const T sz);
     static const Tran<T>* make_rotate(    const T ax, const T ay, const T az, const T angle_deg);
 
-    static void            MostOthogonalAxis(glm::tvec3<T>& o, const glm::tvec3<T>& a ); 
-    static glm::tmat4x4<T> MakeRotateA2B(          const glm::tvec3<T>& a, const glm::tvec3<T>& b ); 
-    static glm::tmat4x4<T> MakeRotateA2B_special(  const glm::tvec3<T>& a, const glm::tvec3<T>& b ); 
-    static const Tran<T>* make_rotate_a2b( const glm::tvec3<T>& a, const glm::tvec3<T>& b , bool special ); 
-    static const Tran<T>* make_rotate_a2b( const T ax, const T ay, const T az, const T bx, const T by, const T bz, bool special ); 
+
+    static glm::tvec3<T>   LeastParallelAxis(const glm::tvec3<T>& a ); 
+    static glm::tmat4x4<T> MakeRotateA2B_nonparallel( const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
+    static glm::tmat4x4<T> MakeRotateA2B_parallel(    const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
+    static glm::tmat4x4<T> MakeRotateA2B(             const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
+
+    static const Tran<T>* make_rotate_a2b( const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
+    static const Tran<T>* make_rotate_a2b( const T ax, const T ay, const T az, const T bx, const T by, const T bz, bool flip ); 
+
+
 
     static const Tran<T>* product(const Tran<T>* a, const Tran<T>* b, bool reverse);
     static const Tran<T>* product(const Tran<T>* a, const Tran<T>* b, const Tran<T>* c, bool reverse);
@@ -200,7 +206,7 @@ Found this paper via thread:
 **/
 
 template<typename T>
-inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B(const glm::tvec3<T>& a, const glm::tvec3<T>& b)
+inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_nonparallel(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip )
 {
     T one(1.); 
     T zero(0.); 
@@ -213,11 +219,34 @@ inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B(const glm::tvec3<T>& a, const glm:
     T vy = v.y ; 
     T vz = v.z ; 
 
+    if(VERBOSE) std::cout 
+        << "Tran::MakeRotateA2B_nonparallel"
+        << " a " << glm::to_string(a)
+        << " b " << glm::to_string(b)
+        << " c " << std::fixed << std::setw(10) << std::setprecision(5) << c 
+        << " h " << std::fixed << std::setw(10) << std::setprecision(5) << h
+        << " vx " << std::fixed << std::setw(10) << std::setprecision(5) << vx
+        << " vy " << std::fixed << std::setw(10) << std::setprecision(5) << vy
+        << " vz " << std::fixed << std::setw(10) << std::setprecision(5) << vz
+        << std::endl 
+        ;
+
+
+    T hxx = h*vx*vx ; 
+    T hyy = h*vy*vy ; 
+    T hzz = h*vz*vz ; 
+
+    T hxy = h*vx*vy ; 
+    T hxz = h*vx*vz ; 
+    T hyz = h*vy*vz ; 
+
+    T f = flip ? -1. : 1. ;   // flip:true is equivalent to transposing the matrix
+
     std::array<T, 16> vals = {{   
-          c + h*vx*vx  , h*vx*vy - vz ,  h*vx*vz + vy  , zero, 
-          h*vx*vy+vz   , c + h*vy*vy  ,  h*vy*vz - vx  , zero,
-          h*vx*vz - vy , h*vy*vz + vx ,  c + h*vz*vz   , zero,
-          zero         , zero         ,  zero          , one         
+          c + hxx    , hxy - f*vz   ,  hxz + f*vy  , zero, 
+          hxy + f*vz , c + hyy      ,  hyz - f*vx  , zero,
+          hxz - f*vy , hyz + f*vx   ,  c + hzz     , zero,
+          zero       , zero         ,  zero        , one         
     }}; 
 
     return glm::make_mat4x4<T>( vals.data() ); 
@@ -225,17 +254,19 @@ inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B(const glm::tvec3<T>& a, const glm:
 
 
 template<typename T>
-inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_special(const glm::tvec3<T>& a, const glm::tvec3<T>& b)
+inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_parallel(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip )
 {
-    glm::tvec3<T> x(0., 0., 0.); 
-    MostOthogonalAxis(x, a); 
-
+    glm::tvec3<T> x = LeastParallelAxis(a); 
     glm::tvec3<T> u = x - a ; 
     glm::tvec3<T> v = x - b  ;    
 
-    std::cout << " x         " << glm::to_string(x) << std::endl ; 
-    std::cout << " u = x - a " << glm::to_string(u) << std::endl ; 
-    std::cout << " v = x - b " << glm::to_string(v) << std::endl ; 
+    if(VERBOSE) std::cout 
+        << "Trab::MakeRotateA2B_parallel" 
+        << std::endl 
+        << " x         " << glm::to_string(x) << std::endl  
+        << " u = x - a " << glm::to_string(u) << std::endl  
+        << " v = x - b " << glm::to_string(v) << std::endl  
+        ;
 
 
     T uu = glm::dot(u, u); 
@@ -246,47 +277,78 @@ inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_special(const glm::tvec3<T>& a, co
     vals.fill(0.) ; 
 
     for(int i=0 ; i < 3 ; i++) for(int j=0 ; j < 3 ; j++) 
-        vals[i*4+j] = ( i == j ? 1. : 0.)  - 2.*u[i]*u[j]/uu -2.*v[i]*v[j]/vv + 4.*uv*v[i]*u[j]/(uu*vv) ; 
+    {
+        int idx = flip == false ? i*4+j : j*4 + i ;  
+        vals[idx] = ( i == j ? 1. : 0.)  - 2.*u[i]*u[j]/uu -2.*v[i]*v[j]/vv + 4.*uv*v[i]*u[j]/(uu*vv) ; 
+
+    }
 
     vals[15] = 1. ; 
+
+
     return glm::make_mat4x4<T>( vals.data() ); 
 }
 
 
 template<typename T>
-inline void Tran<T>::MostOthogonalAxis(glm::tvec3<T>& o, const glm::tvec3<T>& a )
+inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip)
 {
-    T zero(0.); 
-    T one(0.); 
+    T c = glm::dot(a,b); 
+    return std::abs(c) < 0.99 ? MakeRotateA2B_nonparallel(a,b,flip) : MakeRotateA2B_parallel(a,b,flip) ; 
+}
 
-    o.x = zero ; 
-    o.y = zero ; 
-    o.z = zero ;
 
-    T x = std::abs(a.x);  
-    T y = std::abs(a.y);  
-    T z = std::abs(a.z);  
 
-    if(     x <= y && x <= z) o.x = one ; 
-    else if(y <= x && y <= z) o.y = one ; 
-    else if(z <= x && z <= y) o.z = one ; 
+
+template<typename T>
+inline glm::tvec3<T> Tran<T>::LeastParallelAxis( const glm::tvec3<T>& a )
+{
+    glm::tvec3<T> aa( glm::abs(a) ); 
+    glm::tvec3<T> lpa(0.); 
+
+    if( aa.x <= aa.y && aa.x <= aa.z )
+    {    
+        lpa.x = 1.f ; 
+    }    
+    else if( aa.y <= aa.x && aa.y <= aa.z )
+    {    
+        lpa.y = 1.f ; 
+    }    
+    else 
+    {    
+        lpa.z = 1.f ; 
+    }    
+
+    if(VERBOSE) std::cout 
+        << "Tran::LeastParallelAxis"
+        << " a " <<  glm::to_string(a)
+        << " aa " <<  glm::to_string(aa)
+        << " lpa " << glm::to_string(lpa)
+        << std::endl 
+        ;
+
+    return lpa ; 
 }
 
 template<typename T>
-inline const Tran<T>* Tran<T>::make_rotate_a2b(const T ax, const T ay, const T az, const T bx, const T by, const T bz, bool special)
+inline const Tran<T>* Tran<T>::make_rotate_a2b(const T ax, const T ay, const T az, const T bx, const T by, const T bz, bool flip )
 {
     glm::tvec3<T> a(ax,ay,az); 
     glm::tvec3<T> b(bx,by,bz); 
-    return make_rotate_a2b(a,b, special); 
+    return make_rotate_a2b(a,b, flip); 
 }
 
 template<typename T>
-inline const Tran<T>* Tran<T>::make_rotate_a2b(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool special)
+inline const Tran<T>* Tran<T>::make_rotate_a2b(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip )
 {
-    glm::tmat4x4<T> t = special ? MakeRotateA2B_special(a,b) : MakeRotateA2B(a,b) ; 
-    glm::tmat4x4<T> v = special ? MakeRotateA2B_special(b,a) : MakeRotateA2B(b,a) ; 
+    glm::tmat4x4<T> t = MakeRotateA2B(a,b,flip) ; 
+    glm::tmat4x4<T> v = MakeRotateA2B(b,a,flip) ; 
     return new Tran<T>(t, v);    
 }
+
+
+
+
 
 
 template<typename T>
