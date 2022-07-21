@@ -66,6 +66,7 @@ def make_rotation_matrix( a, b ):
     c = np.dot(a[:3],b[:3])
 
     rot = np.zeros((4,4))
+    rot[3,3] = 1. 
 
     if np.abs(c) > 0.99:
         x = pick_most_orthogonal_axis(a)

@@ -73,7 +73,13 @@ if __name__ == '__main__':
     sc = 5 
     radius = sc
     halfheight = sc
-    trs = make_transforms_around_cylinder(radius, halfheight)
+    trs0 = make_transforms_around_cylinder(radius, halfheight)
+    trs1 = np.load("/tmp/SPlace_test/AroundCylinder1.npy")   ## with the flip
+    dt = np.abs( trs0 - trs1 ).max()  
+    assert dt < 1e-9 
+
+    trs2 = np.load("/tmp/SPlace_test/AroundSphere1.npy")  
+    trs = trs2
 
     arrows = []
     for i in range(len(trs)):

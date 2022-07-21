@@ -34,6 +34,15 @@ struct Tran
     static constexpr const T EPSILON = 1e-6 ; 
     static constexpr const bool VERBOSE = false ;  
 
+    static std::string Desc(const glm::tmat4x4<T> tr); 
+    static std::string Desc(const glm::tvec4<T> t); 
+    static std::string Desc(const glm::tvec3<T> t); 
+    static std::string Desc(const T* tt, int num); 
+
+
+    static glm::tmat4x4<T> Translate( const T tx, const T ty, const T tz, const T sc ); 
+    static glm::tmat4x4<T> Translate( const glm::tvec3<T>& tlate ); 
+
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz, const T sc);
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz);
     static const Tran<T>* make_identity();
@@ -45,6 +54,7 @@ struct Tran
     static glm::tmat4x4<T> MakeRotateA2B_nonparallel( const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
     static glm::tmat4x4<T> MakeRotateA2B_parallel(    const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
     static glm::tmat4x4<T> MakeRotateA2B(             const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
+    static glm::tmat4x4<T> Place(                     const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c, bool flip); 
 
     static const Tran<T>* make_rotate_a2b( const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
     static const Tran<T>* make_rotate_a2b( const T ax, const T ay, const T az, const T bx, const T by, const T bz, bool flip ); 
@@ -135,6 +145,56 @@ inline std::ostream& operator<< (std::ostream& out, const Tran<T>& tr)
 
 
 
+template<typename T>
+std::string Tran<T>::Desc(const glm::tmat4x4<T> tr)
+{
+    const T* tt = glm::value_ptr(tr); 
+    return Desc(tt, 16 ); 
+}
+template<typename T>
+std::string Tran<T>::Desc(const glm::tvec4<T> t)
+{
+    const T* tt = glm::value_ptr(t); 
+    return Desc(tt, 4 ); 
+}
+template<typename T>
+std::string Tran<T>::Desc(const glm::tvec3<T> t)
+{
+    const T* tt = glm::value_ptr(t); 
+    return Desc(tt, 3 ); 
+}
+template<typename T>
+std::string Tran<T>::Desc(const T* tt, int num)
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < num ; i++) 
+        ss 
+            << ( i % 4 == 0 && num > 4 ? "\n" : "" ) 
+            << " " << std::fixed << std::setw(10) << std::setprecision(4) << tt[i] 
+            << ( i == num-1 && num > 4 ? "\n" : "" ) 
+            ;
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+
+template<typename T>
+inline glm::tmat4x4<T> Tran<T>::Translate( const T tx, const T ty, const T tz, const T sc )
+{
+    glm::tvec3<T> tlate(tx*sc,ty*sc,tz*sc); 
+    return Translate(tlate) ; 
+}
+
+template<typename T>
+inline glm::tmat4x4<T> Tran<T>::Translate( const glm::tvec3<T>& tlate )
+{
+    return glm::translate(glm::tmat4x4<T>(1.), tlate ) ;
+}
+
+
 
 
 
@@ -202,6 +262,11 @@ See ana/make_rotation_matrix.py
 Found this paper via thread: 
 
 * https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+
+Another very long discussion of rotation matrices by Rebecca Brannon:
+
+* https://my.mech.utah.edu/~brannon/public/rotation.pdf
+* ~/opticks_refs/utah_brannon_opus_rotation.pdf
 
 **/
 
@@ -297,7 +362,14 @@ inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B(const glm::tvec3<T>& a, const glm:
     return std::abs(c) < 0.99 ? MakeRotateA2B_nonparallel(a,b,flip) : MakeRotateA2B_parallel(a,b,flip) ; 
 }
 
-
+template<typename T>
+inline glm::tmat4x4<T> Tran<T>::Place(const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c, bool flip )
+{
+    glm::tmat4x4<T> rot = MakeRotateA2B(a,b,flip) ; 
+    glm::tmat4x4<T> tla = Translate(c) ;  
+    glm::tmat4x4<T> tra = flip == true ? tla * rot : rot * tla ;  
+    return tra ; 
+}
 
 
 template<typename T>
