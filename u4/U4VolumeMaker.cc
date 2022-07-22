@@ -795,7 +795,7 @@ const NP* U4VolumeMaker::MakeTransforms( const char* prefix )
     if(strcmp(prefix, "AroundSphere")==0)   
     {
         double radius = 17000. ; 
-        double item_arclen = 1000. ; 
+        double item_arclen = 600. ;   // 400. has lots of overlap, 1000. too spaced 
         unsigned num_ring = 8 ; 
         trs = SPlace::AroundSphere(  opts, radius, item_arclen, num_ring );
     }

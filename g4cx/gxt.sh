@@ -138,7 +138,7 @@ fi
 if [ "${arg/ana}" != "$arg" ]; then 
     export FOLD
     export CFBASE=$A_CFBASE
-    export MASK=pos
+    export MASK=${MASK:-pos}
 
     ${IPYTHON:-ipython} --pdb -i $gxtdir/tests/$bin.py     
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 

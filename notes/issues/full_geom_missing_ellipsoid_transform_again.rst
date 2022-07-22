@@ -27,6 +27,11 @@ Added::
     U4VolumeMaker::WrapInstance
     U4VolumeMaker::MakeTransforms
     U4VolumeMaker::WrapAround
+
+
+Used for instancing a large number, but do not see any missing-ellipsoid-transform issue.
+
+ 
      
 
 ::
