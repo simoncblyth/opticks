@@ -5,20 +5,26 @@ from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
 
 TEST = os.environ["TEST"]
+OPTS = os.environ["OPTS"] 
 
 def test_AroundCylinder(t):
-    a0 = t.AroundCylinder0 
-    a1 = t.AroundCylinder1  
-    ## both these have the translate in the last row with the rotation transposed between a0 and a1
+    """
+    With OPTS 'TR,tr,R,T,r,t'
 
-    a0t = a0.transpose(0,2,1)
-    a1t = a1.transpose(0,2,1)
-  
-    # NOPE: not when both rotate and translate 
-    #assert np.all( a0t == a1 )   # leave top dimension as is, just transpose the 4x4 matrix dimensions 
-    #assert np.all( a1t == a0 )  
+        np.all( a0 == a[:,0] )  
+        np.all( a1 == a[:,1] )  
 
-    trs = a1t  ## arrows pointing outwards   ## why not inwards ?
+    """
+    vopt = OPTS.split(",")
+    
+    assert vopt[0] == "TR" 
+    assert vopt[1] == "tr" 
+
+    a = t.AroundCylinder
+    a0t = a[:,0].transpose(0,2,1)
+    a1t = a[:,1].transpose(0,2,1)
+
+    trs = a1t    ## arrows pointing inwards
     #trs = a0t   ## surpise "starfish"
 
     radius = 5. 
@@ -44,14 +50,10 @@ def test_AroundCylinder(t):
 
 
 def test_AroundSphere(t):
-    a0 = t.AroundSphere0 
-    a1 = t.AroundSphere1  # with flip
+    a = t.AroundSphere 
 
-    a0t = a0.transpose(0,2,1)
-    a1t = a1.transpose(0,2,1)
- 
-    #assert np.all( a0.transpose(0,2,1) == a1 )   # leave top dimension as is, just transpose the 4x4 matrix dimensions 
-    #assert np.all( a1.transpose(0,2,1) == a0 )  
+    a0t = a[:,0].transpose(0,2,1)
+    a1t = a[:,1].transpose(0,2,1)
 
     trs = a1t   ## arrows pointing radially inwards from sphere surface
     #trs = a0t    ## arrows pointing out from S-pole

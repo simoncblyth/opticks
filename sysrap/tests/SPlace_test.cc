@@ -4,14 +4,15 @@
 #include <cstdlib>
 #include "SPlace.h"
 
-const char* TEST = getenv("TEST"); 
 const char* FOLD = getenv("FOLD") ; 
+const char* TEST = getenv("TEST") ; 
+const char* OPTS = getenv("OPTS") ; 
 
 
-const char* Name(unsigned idx)
+const char* Name()
 {
     std::stringstream ss ; 
-    ss << TEST << idx << ".npy" ; 
+    ss << TEST << ".npy" ; 
     std::string s = ss.str(); 
     return strdup(s.c_str()) ; 
 }
@@ -23,26 +24,19 @@ void test_AroundCylinder()
     double radius = sc ; 
     double halfheight = sc ; 
 
-    for(unsigned i=0 ; i < 2 ; i++)
-    {
-        NP* tr = SPlace::AroundCylinder(radius, halfheight, bool(i) ); 
-        tr->save(FOLD, Name(i)); 
-    }
+    NP* tr = SPlace::AroundCylinder(OPTS, radius, halfheight ); 
+    tr->save(FOLD, Name()); 
 }
 
 void test_AroundSphere()
 {
     double sc = 5. ; 
     double radius = sc ; 
-    double item_arc_length = 1. ; 
+    double item_arclen = 1. ; 
     unsigned num_ring = 8 ;
 
-
-    for(unsigned i=0 ; i < 2 ; i++)
-    {
-        NP* tr = SPlace::AroundSphere(radius, item_arc_length, bool(i), num_ring ); 
-        tr->save(FOLD, Name(i)); 
-    }
+    NP* tr = SPlace::AroundSphere(OPTS, radius, item_arclen, num_ring); 
+    tr->save(FOLD, Name()); 
 }
 
 

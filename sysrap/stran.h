@@ -40,8 +40,8 @@ struct Tran
     static std::string Desc(const T* tt, int num); 
 
 
-    static glm::tmat4x4<T> Translate( const T tx, const T ty, const T tz, const T sc ); 
-    static glm::tmat4x4<T> Translate( const glm::tvec3<T>& tlate ); 
+    static glm::tmat4x4<T> Translate( const T tx, const T ty, const T tz, const T sc, bool flip=false ); 
+    static glm::tmat4x4<T> Translate( const glm::tvec3<T>& tlate, bool flip=false ); 
 
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz, const T sc);
     static const Tran<T>* make_translate( const T tx, const T ty, const T tz);
@@ -51,10 +51,10 @@ struct Tran
 
 
     static glm::tvec3<T>   LeastParallelAxis(const glm::tvec3<T>& a ); 
-    static glm::tmat4x4<T> MakeRotateA2B_nonparallel( const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
-    static glm::tmat4x4<T> MakeRotateA2B_parallel(    const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
-    static glm::tmat4x4<T> MakeRotateA2B(             const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
-    static glm::tmat4x4<T> Place(                     const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c, bool flip); 
+    static glm::tmat4x4<T> RotateA2B_nonparallel( const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
+    static glm::tmat4x4<T> RotateA2B_parallel(    const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
+    static glm::tmat4x4<T> RotateA2B(             const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
+    static glm::tmat4x4<T> Place(                 const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c, bool flip); 
 
     static const Tran<T>* make_rotate_a2b( const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
     static const Tran<T>* make_rotate_a2b( const T ax, const T ay, const T az, const T bx, const T by, const T bz, bool flip ); 
@@ -182,16 +182,17 @@ std::string Tran<T>::Desc(const T* tt, int num)
 
 
 template<typename T>
-inline glm::tmat4x4<T> Tran<T>::Translate( const T tx, const T ty, const T tz, const T sc )
+inline glm::tmat4x4<T> Tran<T>::Translate( const T tx, const T ty, const T tz, const T sc, bool flip )
 {
     glm::tvec3<T> tlate(tx*sc,ty*sc,tz*sc); 
-    return Translate(tlate) ; 
+    return Translate(tlate, flip) ; 
 }
 
 template<typename T>
-inline glm::tmat4x4<T> Tran<T>::Translate( const glm::tvec3<T>& tlate )
+inline glm::tmat4x4<T> Tran<T>::Translate( const glm::tvec3<T>& tlate, bool flip )
 {
-    return glm::translate(glm::tmat4x4<T>(1.), tlate ) ;
+    glm::tmat4x4<T> tr = glm::translate(glm::tmat4x4<T>(1.), tlate ) ;
+    return flip ? glm::transpose(tr) : tr ; 
 }
 
 
@@ -248,7 +249,7 @@ inline const Tran<T>* Tran<T>::make_rotate( const T ax, const T ay, const T az, 
 
 
 /**
-Tran::MakeRotateA2B
+Tran::RotateA2B
 ----------------------
 
 See ana/make_rotation_matrix.py 
@@ -271,7 +272,7 @@ Another very long discussion of rotation matrices by Rebecca Brannon:
 **/
 
 template<typename T>
-inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_nonparallel(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip )
+inline glm::tmat4x4<T> Tran<T>::RotateA2B_nonparallel(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip )
 {
     T one(1.); 
     T zero(0.); 
@@ -285,7 +286,7 @@ inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_nonparallel(const glm::tvec3<T>& a
     T vz = v.z ; 
 
     if(VERBOSE) std::cout 
-        << "Tran::MakeRotateA2B_nonparallel"
+        << "Tran::RotateA2B_nonparallel"
         << " a " << glm::to_string(a)
         << " b " << glm::to_string(b)
         << " c " << std::fixed << std::setw(10) << std::setprecision(5) << c 
@@ -319,14 +320,14 @@ inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_nonparallel(const glm::tvec3<T>& a
 
 
 template<typename T>
-inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_parallel(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip )
+inline glm::tmat4x4<T> Tran<T>::RotateA2B_parallel(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip )
 {
     glm::tvec3<T> x = LeastParallelAxis(a); 
     glm::tvec3<T> u = x - a ; 
     glm::tvec3<T> v = x - b  ;    
 
     if(VERBOSE) std::cout 
-        << "Trab::MakeRotateA2B_parallel" 
+        << "Trab::RotateA2B_parallel" 
         << std::endl 
         << " x         " << glm::to_string(x) << std::endl  
         << " u = x - a " << glm::to_string(u) << std::endl  
@@ -356,18 +357,31 @@ inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B_parallel(const glm::tvec3<T>& a, c
 
 
 template<typename T>
-inline glm::tmat4x4<T> Tran<T>::MakeRotateA2B(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip)
+inline glm::tmat4x4<T> Tran<T>::RotateA2B(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip)
 {
     T c = glm::dot(a,b); 
-    return std::abs(c) < 0.99 ? MakeRotateA2B_nonparallel(a,b,flip) : MakeRotateA2B_parallel(a,b,flip) ; 
+    return std::abs(c) < 0.99 ? RotateA2B_nonparallel(a,b,flip) : RotateA2B_parallel(a,b,flip) ; 
 }
+
+/**
+Tran::Place
+-------------
+
+HMM: not sure regards the "tla*rot" vs "rot*tla"  order flip : 
+it depends on whether will using the transform to right or left multiply.
+ 
+BUT what is certain is that the placement transform needs to rotate first and then translate 
+The complexity comes from different packages needing different layouts, 
+so generally have to experiment to get things to work. 
+**/
 
 template<typename T>
 inline glm::tmat4x4<T> Tran<T>::Place(const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c, bool flip )
 {
-    glm::tmat4x4<T> rot = MakeRotateA2B(a,b,flip) ; 
-    glm::tmat4x4<T> tla = Translate(c) ;  
-    glm::tmat4x4<T> tra = flip == true ? tla * rot : rot * tla ;  
+    glm::tmat4x4<T> rot = RotateA2B(a,b,flip) ; 
+    glm::tmat4x4<T> tla = Translate(c) ;              // this has the translation in last row
+    glm::tmat4x4<T> tra = flip == true ? tla * rot : rot * tla ;   
+
     return tra ; 
 }
 
@@ -413,8 +427,8 @@ inline const Tran<T>* Tran<T>::make_rotate_a2b(const T ax, const T ay, const T a
 template<typename T>
 inline const Tran<T>* Tran<T>::make_rotate_a2b(const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip )
 {
-    glm::tmat4x4<T> t = MakeRotateA2B(a,b,flip) ; 
-    glm::tmat4x4<T> v = MakeRotateA2B(b,a,flip) ; 
+    glm::tmat4x4<T> t = RotateA2B(a,b,flip) ; 
+    glm::tmat4x4<T> v = RotateA2B(b,a,flip) ; 
     return new Tran<T>(t, v);    
 }
 

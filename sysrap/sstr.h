@@ -1,16 +1,17 @@
 #pragma once
 
-struct sstr
-{
-    static const char* TrimTrailing(const char* s);
-    static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
-};
-
-
 #include <string>
 #include <vector>
 #include <cstring>
 #include <sstream>
+
+struct sstr
+{
+    static const char* TrimTrailing(const char* s);
+    static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
+    static void Split( const char* str, char delim,   std::vector<std::string>& elem ); 
+};
+
 
 inline const char* sstr::TrimTrailing(const char* s)
 {
@@ -42,4 +43,16 @@ inline void sstr::PrefixSuffixParse(std::vector<std::string>& elem, const char* 
         }
     }
 }
+
+
+inline void sstr::Split( const char* str, char delim,   std::vector<std::string>& elem )
+{
+    std::stringstream ss; 
+    ss.str(str)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) elem.push_back(s) ; 
+}
+
+
+
 

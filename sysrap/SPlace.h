@@ -2,75 +2,54 @@
 
 #include "scuda.h"
 #include "stran.h"
+#include "sstr.h"
+
 #include <glm/glm.hpp>
 #include "NP.hh"
 
 
 struct SPlace
 {
-    static NP* AroundCylinder( double radius, double halfheight , bool flip=false, unsigned num_ring=10, unsigned num_in_ring=16  ); 
-    static NP* AroundSphere(   double radius, double item_arclen, bool flip=false, unsigned num_ring=10 ); 
+    static void AddTransform( double* ttk, const char* opt, const glm::tvec3<double>& a, const glm::tvec3<double>& b, const glm::tvec3<double>& c ); 
+    static NP* AroundSphere(   const char* opts, double radius, double item_arclen, unsigned num_ring=10 ); 
+    static NP* AroundCylinder( const char* opts, double radius, double halfheight , unsigned num_ring=10, unsigned num_in_ring=16  ); 
 };
 
-/**
-SPlace::AroundCylinder
-------------------------
-
-Form placement transforms that orient local-Z axis to 
-a radial outwards direction with translation at points around the cylinder.  
-
-flip:false(default)
-    transform memory layout has last 4 of 16 elements (actually 12,13,14) 
-    holding the translation, which corresponds to the OpenGL standard
-
-flip:true
-    transform memory layout has translation in right hand column at elements 3,7,11
-    this is needed by pyvista it seems 
-    This corresponds to the transposed transform compared with flip:false
-
-**/
-
-NP* SPlace::AroundCylinder(double radius, double halfheight, bool flip, unsigned num_ring, unsigned num_in_ring )
+void SPlace::AddTransform( double* ttk, const char* opt, const glm::tvec3<double>& a, const glm::tvec3<double>& b, const glm::tvec3<double>& c )
 {
-    unsigned num_tr = num_ring*num_in_ring ; 
-
-    double zz[num_ring] ; 
-    for(unsigned i=0 ; i < num_ring ; i++) zz[i] = -halfheight + 2.*halfheight*double(i)/double(num_ring-1) ; 
-
-    double phi[num_in_ring] ; 
-    for(unsigned j=0 ; j < num_in_ring ; j++) phi[j] = glm::pi<double>()*2.*double(j)/double(num_in_ring) ; 
-    // not -1 and do not want to have both 0. and 2.pi 
-
-    NP* tr = NP::Make<double>( num_tr, 4, 4 ); 
-    double* tt = tr->values<double>(); 
-    unsigned item_values = 4*4 ; 
-
-    glm::tvec3<double> a(0.,0.,1.); 
-
-    for(unsigned j=0 ; j < num_in_ring ; j++)
+    if(strcmp(opt,"TR") == 0 || strcmp(opt,"tr") == 0 )
     {
-        glm::tvec3<double> u(cos(phi[j]),sin(phi[j]),0.); 
-        glm::tvec3<double> b = -u ; 
-        glm::tvec3<double> c = u*radius ;  
-
-        for(unsigned i=0 ; i < num_ring ; i++)
-        {
-            c.z = zz[i] ; 
-            glm::tmat4x4<double> t = Tran<double>::Place( a, b, c, flip );  
-
-            //unsigned idx = j*num_ring + i ; 
-            unsigned idx = i*num_in_ring + j ; 
- 
-            double* src = glm::value_ptr(t); 
-            double* dst = tt + item_values*idx ; 
-            memcpy( dst, src, item_values*sizeof(double) ); 
-        }
+        bool flip = strcmp(opt,"tr") == 0 ; 
+        glm::tmat4x4<double> tr = Tran<double>::Place( a, b, c, flip );  
+        double* src = glm::value_ptr(tr) ; 
+        //std::cout << Tran<double>::Desc(src, 16) << std::endl ; 
+        memcpy( ttk, src, 16*sizeof(double) ); 
     }
-    return tr ; 
+    else if(strcmp(opt,"R") == 0 || strcmp(opt,"r") == 0)
+    {
+        bool flip = strcmp(opt,"r") == 0 ; 
+        glm::tmat4x4<double> tr = Tran<double>::RotateA2B( a, b, flip );  
+        double* src = glm::value_ptr(tr) ; 
+        memcpy( ttk, src, 16*sizeof(double) ); 
+    }
+    else if(strcmp(opt,"T") == 0 || strcmp(opt,"t") == 0)
+    {
+        bool flip = strcmp(opt,"t") == 0 ; 
+        glm::tmat4x4<double> tr = Tran<double>::Translate(c, flip );  
+        double* src = glm::value_ptr(tr) ; 
+        memcpy( ttk, src, 16*sizeof(double) ); 
+    }
+    else if(strcmp(opt,"D")== 0)
+    {
+        for(int l=0 ; l < 3 ; l++) ttk[4*0+l] = a[l] ; 
+        for(int l=0 ; l < 3 ; l++) ttk[4*1+l] = b[l] ; 
+        for(int l=0 ; l < 3 ; l++) ttk[4*2+l] = c[l] ; 
+    }
+    else
+    {
+        std::cout << "SPlace::AddTransform : ERROR opt is not handled [" << opt << "]" << std::endl ; 
+    }
 }
-
-
-
 
 /**
 SPlace::AroundSphere
@@ -177,7 +156,7 @@ struct SPlaceSphere
  
     SPlaceSphere(double radius, double item_arclen, unsigned num_ring); 
     std::string desc() const ; 
-    NP* transforms(bool flip, bool dbg_=false) const ; 
+    NP* transforms(const char* opts) const ; 
 };
 
 SPlaceSphere::SPlaceSphere(double radius_, double item_arclen_, unsigned num_ring_)
@@ -215,17 +194,40 @@ std::string SPlaceSphere::desc() const
     return s ; 
 }
 
-NP* SPlaceSphere::transforms(bool flip, bool dbg_) const 
+/**
+SPlaceSphere::transforms
+---------------------------
+
+The shape of the array returned is (tot_items, num_opts, 4, 4) 
+where num_opts depends on the number of comma delimted options
+in the opts string. For example "RT,R,T,D" would hav num_opts 4.
+
+**/
+
+
+
+
+
+NP* SPlace::AroundSphere(const char* opts, double radius, double item_arclen, unsigned num_ring )
 {
-    if( tot_item == 0 ) return nullptr ; 
+    SPlaceSphere sp(radius, item_arclen, num_ring); 
+    std::cout << sp.desc() << " opts " << opts << std::endl ; 
+    return sp.transforms(opts)  ; 
+}
 
-    NP* trs = NP::Make<double>( tot_item, 4, 4 ); 
+
+
+NP* SPlaceSphere::transforms(const char* opts) const 
+{
+    if( tot_item == 0 ) return nullptr ;
+
+    std::vector<std::string> vopts ; 
+    sstr::Split(opts, ',', vopts); 
+    unsigned num_opt = vopts.size(); 
+ 
+    NP* trs = NP::Make<double>( tot_item, num_opt, 4, 4 ); 
     double* tt = trs->values<double>();     
-
-    NP* dbg = NP::Make<double>( tot_item, 4, 4 ); 
-    double* dd = dbg->values<double>();     
-
-    unsigned item_values = 4*4 ; 
+    unsigned item_values = 4*4*num_opt ; 
 
     glm::tvec3<double> a(0.,0.,1.); 
     unsigned count = 0 ; 
@@ -241,36 +243,108 @@ NP* SPlaceSphere::transforms(bool flip, bool dbg_) const
             glm::tvec3<double> c = radius*u ; 
 
             unsigned idx = count  ; 
+            count += 1 ; 
 
-            if( dbg_ )
-            {
-                for(int k=0 ; k < 3 ; k++) dd[item_values*idx+4*0+k] = u[k] ; 
-                for(int k=0 ; k < 3 ; k++) dd[item_values*idx+4*1+k] = a[k] ; 
-                for(int k=0 ; k < 3 ; k++) dd[item_values*idx+4*2+k] = b[k] ; 
-                for(int k=0 ; k < 3 ; k++) dd[item_values*idx+4*3+k] = c[k] ; 
-            }
-            else
-            {
-                glm::tmat4x4<double> t = Tran<double>::Place( a, b, c, flip );  
-                double* src = glm::value_ptr(t); 
-                double* dst = tt + item_values*idx ; 
-                memcpy( dst, src, item_values*sizeof(double) ); 
-            }
+            for(unsigned k=0 ; k < num_opt ; k++)
+            { 
+                double* ttk = tt + item_values*idx+16*k ; 
+                const char* opt = vopts[k].c_str();  
+                SPlace::AddTransform(ttk, opt, a, b, c ); 
+            }    // k:over opt
+        }        // j:over items in the ring 
+    }            // i:over rings
+ 
+    assert( count == tot_item );  
+    return trs ; 
+}
+
+
+
+
+/**
+SPlace::AroundCylinder
+------------------------
+
+Form placement transforms that orient local-Z axis to 
+a radial outwards direction with translation at points around the cylinder.  
+
+flip:false(default)
+    transform memory layout has last 4 of 16 elements (actually 12,13,14) 
+    holding the translation, which corresponds to the OpenGL standard
+
+flip:true
+    transform memory layout has translation in right hand column at elements 3,7,11
+    this is needed by pyvista it seems 
+    This corresponds to the transposed transform compared with flip:false
+
+**/
+
+NP* SPlace::AroundCylinder(const char* opts, double radius, double halfheight, unsigned num_ring, unsigned num_in_ring )
+{
+    unsigned tot_place = num_ring*num_in_ring ; 
+
+    std::vector<std::string> vopts ; 
+    sstr::Split(opts, ',', vopts); 
+    unsigned num_opt = vopts.size(); 
+    bool dump = false ; 
+ 
+ 
+    NP* trs = NP::Make<double>( tot_place, num_opt, 4, 4 ); 
+    double* tt = trs->values<double>();     
+    unsigned item_values = num_opt*4*4 ; 
+
+    
+    if(dump) std::cout 
+        << "SPlace::AroundCylinder"
+        << " tot_place " << tot_place
+        << " num_opt " << num_opt
+        << " tt " << tt
+        << " item_values " << item_values
+        << std::endl 
+        ; 
+
+
+    double zz[num_ring] ; 
+    for(unsigned i=0 ; i < num_ring ; i++) zz[i] = -halfheight + 2.*halfheight*double(i)/double(num_ring-1) ; 
+
+    double phi[num_in_ring] ; 
+    for(unsigned j=0 ; j < num_in_ring ; j++) phi[j] = glm::pi<double>()*2.*double(j)/double(num_in_ring) ; 
+    // not -1 and do not want to have both 0. and 2.pi 
+
+    glm::tvec3<double> a(0.,0.,1.); 
+
+    unsigned count = 0 ; 
+    for(unsigned j=0 ; j < num_in_ring ; j++)
+    {
+        glm::tvec3<double> u(cos(phi[j]),sin(phi[j]),0.); 
+        glm::tvec3<double> b = -u ; 
+        glm::tvec3<double> c = u*radius ;  
+
+        for(unsigned i=0 ; i < num_ring ; i++)
+        {
+            c.z = zz[i] ; 
+            //unsigned idx = count ; 
+            unsigned idx = i*num_in_ring + j ; 
 
             count += 1 ; 
+
+            for(unsigned k=0 ; k < num_opt ; k++)
+            { 
+                unsigned offset = item_values*idx+16*k ; 
+                const char* opt = vopts[k].c_str();  
+
+                if(dump) std::cout 
+                    << "SPlace::AroundCylinder" 
+                    << " opt " << opt
+                    << " offset " << offset 
+                    << std::endl 
+                    ;
+ 
+                AddTransform(tt+offset, opt, a, b, c ); 
+            }
         }
     }
-    assert( count == tot_item );  
-    return dbg_ ? dbg : trs ; 
+    assert( count == tot_place ); 
+    return trs ; 
 }
-
-
-NP* SPlace::AroundSphere( double radius, double item_arclen, bool flip, unsigned num_ring )
-{
-    SPlaceSphere sp(radius, item_arclen, num_ring); 
-    std::cout << sp.desc() << std::endl ; 
-    return sp.transforms(flip)  ; 
-}
-
-
 

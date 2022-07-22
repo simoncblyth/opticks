@@ -12,8 +12,36 @@ Upper hemisphere in full GDML running seems to miss the ellipsoid transform.
 * also failed to reproduce with GDMLSub running with HamamatsuR12860sMask_virtual, 
   placing a single "hatbox" + mask + PMT  
 
+
 * TODO: try adding some instance transforms to duplicate the grabbed 
   GDMLSub and see if the transform troubles manifest then 
+
+
+
+
+TODO : Using SPlace.h transforms with G4PVPlacement
+-----------------------------------------------------
+
+Several different ctors, might be easier to use the one which splits
+rotation from translation as the G4Transform3D arg.::
+
+     71 G4PVPlacement::G4PVPlacement( const G4Transform3D &Transform3D,
+     72                               const G4String& pName,
+     73                                     G4LogicalVolume *pLogical,
+     74                                     G4VPhysicalVolume *pMother,
+     75                                     G4bool pMany,
+     76                                     G4int pCopyNo,
+     77                                     G4bool pSurfChk )
+     78   : G4VPhysicalVolume(NewPtrRotMatrix(Transform3D.getRotation().inverse()),
+     79                       Transform3D.getTranslation(),pName,pLogical,pMother),
+     80     fmany(pMany), fcopyNo(pCopyNo)
+     81 {
+     
+
+
+
+DONE : SPlace.h creates instance transforms AroundCylinder or AroundSphere
+----------------------------------------------------------------------------
 
 
 Using GDMLSub machinery
