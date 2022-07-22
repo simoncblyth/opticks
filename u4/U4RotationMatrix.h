@@ -14,6 +14,7 @@ Subclass in order to allow use of protected ctor
 **/
 
 #include "G4RotationMatrix.hh"
+#include <iomanip>
 #include <cstring>
 
 
@@ -24,6 +25,8 @@ struct U4RotationMatrix : public G4RotationMatrix
        Y = 0x1 << 1 , 
        Z = 0x1 << 2  
     }; 
+
+     static std::string Desc(const G4RotationMatrix* rot ); 
 
      static U4RotationMatrix* Flip(unsigned mask) ;
      static U4RotationMatrix* Flip(const char* axes) ;
@@ -38,6 +41,36 @@ struct U4RotationMatrix : public G4RotationMatrix
      ); 
 };
 
+inline std::string U4RotationMatrix::Desc(const G4RotationMatrix* rot )
+{
+    int wid = 10 ; 
+    int prc = 3 ; 
+
+    std::stringstream ss ; 
+
+    ss << "U4RotationMatrix::Desc" 
+       << ( rot ? "" : " null" ) 
+       << std::endl 
+       ;
+
+    if(rot) ss
+        << " " << std::fixed << std::setw(wid) << std::setprecision(prc) << rot->xx() 
+        << " " << std::fixed << std::setw(wid) << std::setprecision(prc) << rot->xy() 
+        << " " << std::fixed << std::setw(wid) << std::setprecision(prc) << rot->xz()
+        << std::endl 
+        << " " << std::fixed << std::setw(wid) << std::setprecision(prc) << rot->yx() 
+        << " " << std::fixed << std::setw(wid) << std::setprecision(prc) << rot->yy() 
+        << " " << std::fixed << std::setw(wid) << std::setprecision(prc) << rot->yz()
+        << std::endl 
+        << " " << std::fixed << std::setw(wid) << std::setprecision(prc) << rot->zx() 
+        << " " << std::fixed << std::setw(wid) << std::setprecision(prc) << rot->zy() 
+        << " " << std::fixed << std::setw(wid) << std::setprecision(prc) << rot->zz()
+        << std::endl 
+        ;
+
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 
 /**

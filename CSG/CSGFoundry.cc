@@ -2680,6 +2680,12 @@ This writes the names for the full volume tree to eg::
    /tmp/$USER/opticks/U4VolumeMaker_PVG_WriteNames 
    /tmp/$USER/opticks/U4VolumeMaker_PVG_WriteNames_Sub 
 
+Grab these from remote with::
+
+   u4
+   ./U4VolumeMaker.sh grab 
+
+
 )" ; 
 
 

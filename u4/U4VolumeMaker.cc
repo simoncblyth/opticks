@@ -25,6 +25,7 @@
 #include "U4RotationMatrix.h"
 #include "U4Volume.h"
 #include "U4GDML.h"
+#include "U4ThreeVector.h"
 
 #ifdef WITH_PMTSIM
 #include "PMTSim.hh"
@@ -337,6 +338,16 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
     return rock_pv ; 
 }
 
+/**
+U4VolumeMaker::WrapInstance
+-----------------------------
+
+The *item_lv* is repeated many times using transforms from U4VolumeMaker::MakeTransforms
+which makes use of SPlace::AroundSphere SPlace::AroundCylinder
+
+All those repeats have a "Water" box mother volume which is contained within "Rock". 
+
+**/
 
 G4VPhysicalVolume* U4VolumeMaker::WrapInstance( G4LogicalVolume* item_lv, const char* prefix )
 {
@@ -802,22 +813,28 @@ const NP* U4VolumeMaker::MakeTransforms( const char* prefix )
 
 void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, G4LogicalVolume* lv, G4LogicalVolume* mother_lv )
 {
-    const double* tt = trs->cvalues<double>(); 
-
     unsigned num_place = trs->shape[0] ; 
     unsigned place_tr = trs->shape[1] ; 
-    assert( trs->has_shape(num_place,place_tr,4,4) );  
-
     unsigned place_values = place_tr*4*4 ; 
+
+    assert( trs->has_shape(num_place,place_tr,4,4) );  
+    const double* tt = trs->cvalues<double>(); 
+
 
     for(unsigned i=0 ; i < num_place ; i++)
     {
         const double* T = tt + place_values*i + 3*16 ;  // 3:from index of "T" in opts
         const double* R = tt + place_values*i + 2*16 ;  // 2:from index of "R" in opts
+        // TODO: get these from a single matrix, not 6 
 
         G4ThreeVector tla( T[12], T[13], T[14] ); 
 
-        U4RotationMatrix* rot = new U4RotationMatrix( R, false ); 
+        LOG(LEVEL) << " i " << std::setw(7) << " tla " << U4ThreeVector::Desc(tla) ; 
+
+        bool transpose = true ; 
+        U4RotationMatrix* rot = new U4RotationMatrix( R, transpose ); 
+
+        LOG(LEVEL) << " i " << std::setw(7) << " rot " << U4RotationMatrix::Desc(rot) ; 
 
         const char* iname = PlaceName(prefix, i, nullptr); 
 

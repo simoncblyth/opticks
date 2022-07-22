@@ -784,7 +784,17 @@ const char* CSGOptiX::getDefaultSnapPath() const
 }
 
 
+/**
+CSGOptiX::render_snap
+------------------------
 
+Currently this is producing a large isect.npy file
+which slows down the debug cycle of looking at quick renders
+whilst changing transforms. 
+
+TODO: make the isect creation and writing configurable, perhaps using SEvt ? 
+
+**/
 
 void CSGOptiX::render_snap( const char* name_ )
 {

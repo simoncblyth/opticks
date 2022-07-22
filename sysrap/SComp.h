@@ -29,9 +29,10 @@ enum {
     SCOMP_DOMAIN    = 0x1 << 10,
     SCOMP_INPHOTON  = 0x1 << 11,
     SCOMP_TAG       = 0x1 << 12,
-    SCOMP_FLAT      = 0x1 << 13
-
-
+    SCOMP_FLAT      = 0x1 << 13,
+    SCOMP_ISECT     = 0x1 << 14,
+    SCOMP_FPHOTON   = 0x1 << 15,
+    SCOMP_PIXEL     = 0x1 << 16
 };
 
 struct SYSRAP_API SCompProvider
@@ -58,6 +59,10 @@ struct SYSRAP_API SComp
     static constexpr const char* TAG_       = "tag" ; 
     static constexpr const char* FLAT_      = "flat" ; 
 
+    static constexpr const char* ISECT_     = "isect" ; 
+    static constexpr const char* FPHOTON_   = "fphoton" ; 
+    static constexpr const char* PIXEL_     = "pixel" ; 
+
     static bool Match(const char* q, const char* n ); 
     static unsigned    Comp(const char* name); 
     static const char* Name(unsigned comp); 
@@ -79,6 +84,11 @@ struct SYSRAP_API SComp
     static bool IsInphoton(unsigned mask){ return mask & SCOMP_INPHOTON ; }
     static bool IsTag(     unsigned mask){ return mask & SCOMP_TAG ; }
     static bool IsFlat(    unsigned mask){ return mask & SCOMP_FLAT ; }
+
+    static bool IsIsect(   unsigned mask){ return mask & SCOMP_ISECT ; }
+    static bool IsFphoton( unsigned mask){ return mask & SCOMP_FPHOTON ; }
+    static bool IsPixel(   unsigned mask){ return mask & SCOMP_PIXEL ; }
+
 };
 
 inline bool SComp::Match(const char* q, const char* n )
@@ -102,6 +112,9 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, INPHOTON_)) comp = SCOMP_INPHOTON ; 
     if(Match(name, TAG_))      comp = SCOMP_TAG ; 
     if(Match(name, FLAT_))     comp = SCOMP_FLAT ; 
+    if(Match(name, ISECT_))    comp = SCOMP_ISECT ; 
+    if(Match(name, FPHOTON_))  comp = SCOMP_FPHOTON ; 
+    if(Match(name, PIXEL_))    comp = SCOMP_PIXEL ; 
     return comp ; 
 }
 inline const char* SComp::Name(unsigned comp)
@@ -123,6 +136,9 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_INPHOTON:  s = INPHOTON_   ; break ;  
         case SCOMP_TAG:       s = TAG_        ; break ;  
         case SCOMP_FLAT:      s = FLAT_       ; break ;  
+        case SCOMP_ISECT:     s = ISECT_      ; break ;  
+        case SCOMP_FPHOTON:   s = FPHOTON_    ; break ;  
+        case SCOMP_PIXEL:     s = PIXEL_      ; break ;  
     }
     return s ; 
 }
@@ -143,6 +159,9 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_INPHOTON ) names.push_back(INPHOTON_) ; 
     if( mask & SCOMP_TAG )      names.push_back(TAG_) ; 
     if( mask & SCOMP_FLAT )     names.push_back(FLAT_) ; 
+    if( mask & SCOMP_ISECT )    names.push_back(ISECT_) ; 
+    if( mask & SCOMP_FPHOTON )  names.push_back(FPHOTON_) ; 
+    if( mask & SCOMP_PIXEL )    names.push_back(PIXEL_) ; 
 
     std::stringstream ss ; 
     for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << ( i < names.size() - 1 ? "," : "" ); 

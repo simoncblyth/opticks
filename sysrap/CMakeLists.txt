@@ -106,6 +106,7 @@ set(SOURCES
     SU.cu 
 
     SEventConfig.cc
+    SFrameConfig.cc
     SGeoConfig.cc
 
     SEvt.cc
@@ -293,9 +294,8 @@ set(HEADERS
     SComp.h 
 
     SEventConfig.hh
+    SFrameConfig.hh
     SGeoConfig.hh
-
-
 
     NP.hh  
     NPU.hh 

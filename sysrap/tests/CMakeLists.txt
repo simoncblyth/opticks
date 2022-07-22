@@ -103,6 +103,7 @@ set(TEST_SOURCES
    OpticksPhotonTest.cc
    SUTest.cc
    SEventConfigTest.cc
+   SFrameConfigTest.cc
    SGeoConfigTest.cc
 
    SCVDLabel.cc 

@@ -19,8 +19,51 @@ Upper hemisphere in full GDML running seems to miss the ellipsoid transform.
 
 
 
-TODO : Using SPlace.h transforms with G4PVPlacement
+DONE : Using SPlace.h transforms with G4PVPlacement
 -----------------------------------------------------
+
+Added::
+
+    U4VolumeMaker::WrapInstance
+    U4VolumeMaker::MakeTransforms
+    U4VolumeMaker::WrapAround
+     
+
+::
+
+    341 /**
+    342 U4VolumeMaker::WrapInstance
+    343 -----------------------------
+    344 
+    345 The *item_lv* is repeated many times using transforms from U4VolumeMaker::MakeTransforms
+    346 which makes use of SPlace::AroundSphere SPlace::AroundCylinder
+    347 
+    348 All those repeats have a "Water" box mother volume which is contained within "Rock". 
+    349 
+    350 **/
+    351 
+    352 G4VPhysicalVolume* U4VolumeMaker::WrapInstance( G4LogicalVolume* item_lv, const char* prefix )
+    353 {
+    354     const NP* trs = MakeTransforms(prefix) ;
+    355     
+    356     LOG(LEVEL)
+    357         << " prefix " << prefix
+    358         << " trs " << ( trs ? trs->sstr() : "-" )
+    359         ;
+    360         
+    361     G4LogicalVolume*  rock_lv  = Box_(20000., "Rock" );
+    362     G4LogicalVolume*  water_lv = Box_(19000., "Water" );
+    363     
+    364     WrapAround(prefix, trs, item_lv, water_lv );
+    365     
+    366     G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv );
+    367     G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  
+    368     
+    369     return rock_pv ;
+    370 }   
+
+
+
 
 Several different ctors, might be easier to use the one which splits
 rotation from translation as the G4Transform3D arg.::

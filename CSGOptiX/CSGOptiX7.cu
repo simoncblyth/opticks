@@ -167,8 +167,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal" 
     unsigned index = idx.y * params.width + idx.x ;
 
-    params.pixels[index] = make_color( diddled_normal, prd->identity(), prd->boundary() ); 
-    params.isect[index]  = make_float4( position.x, position.y, position.z, uint_as_float(prd->identity())) ; 
+    if(params.pixels) params.pixels[index] = make_color( diddled_normal, prd->identity(), prd->boundary() ); 
+    if(params.isect)  params.isect[index]  = make_float4( position.x, position.y, position.z, uint_as_float(prd->identity())) ; 
 }
  
 /**

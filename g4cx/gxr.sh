@@ -43,8 +43,8 @@ loglevels()
     #export Ctx=INFO
     #export QSim=INFO
     #export QEvent=INFO 
-    #export CSGOptiX=INFO
-    #export G4CXOpticks=INFO 
+    export CSGOptiX=INFO
+    export G4CXOpticks=INFO 
     #export X4PhysicalVolume=INFO
     #export X4Solid=INFO
     #export U4VolumeMaker=INFO
@@ -70,7 +70,7 @@ fi
 
 
 # FOLD is not an input to running, but it is used by the below : ls ana grab jpg  
-export FOLD=/tmp/$USER/opticks/$bin/$GEOM
+export FOLD=/tmp/$USER/opticks/$GEOM/$bin
 name=cx$MOI.jpg
 path=$FOLD/$name
 
