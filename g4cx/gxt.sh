@@ -61,8 +61,10 @@ if [ "$GEOM" == "J000" ]; then
 
    export U4VolumeMaker_PVG_WriteNames=1
    export U4VolumeMaker_PVG_WriteNames_Sub=1
-
 fi 
+
+## TODO: HMM BETTER TO CENTRALIZE SETUP LIKE THE ABOVE THAN CAN BE CENTRALIZED ? 
+
 
 BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
@@ -160,8 +162,6 @@ if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "m
         source epub.sh 
     fi 
 fi 
-
-
 
 exit 0 
 

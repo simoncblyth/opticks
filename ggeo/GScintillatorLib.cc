@@ -84,7 +84,8 @@ GScintillatorLib::GScintillatorLib( Opticks* ok, unsigned icdf_length)
     :
     GPropertyLib(ok, "GScintillatorLib", true ),
     m_mlib(nullptr),
-    m_icdf_length(icdf_length)
+    m_icdf_length(icdf_length),
+    m_g4icdf(nullptr)
 {
     init();
 }

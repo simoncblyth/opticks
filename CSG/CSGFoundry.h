@@ -311,10 +311,11 @@ struct CSG_API CSGFoundry
     const char* getName(unsigned midx) const ;  
 
     static const char* FRS ; 
+    static const char* getFrame_NOTES ; 
     sframe getFrame() const ; 
     sframe getFrame(const char* moi_or_iidx) const ; 
 
-    int getFrame(sframe& fr, const char* arg) const ; 
+    int getFrame(sframe& fr, const char* frs ) const ; 
     int getFrame(sframe& fr, int midx, int mord, int iidxg) const ; 
     int getFrame(sframe& fr, int ins_idx ) const ; 
 

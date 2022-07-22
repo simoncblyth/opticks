@@ -30,10 +30,14 @@ esac
 
 
 if [ "$GEOM" == "J000" ]; then 
-   if [ -z "$J000_GDMLSub" ]; then  ## need to switch off the _FRAME when using GDMLSub
-       OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000 
+   if [ -n "$J000_GEOMSub" ]; then  
+       OPTICKS_INPUT_PHOTON_FRAME=Hama:0:500
+   else 
+       OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000
    fi 
 fi 
+## HMM : THE SEPARATION BETWEEN GEOM AND OIP FEELS AWKWARD ?
+
 
 case ${label:-dummy} in 
           storchdown) path=storch_test/down/$(uname)/ph.npy ;;   ## TODO: remove 

@@ -2660,6 +2660,29 @@ Replacing most of CSGOptiX::setComposition
 **/
 const char* CSGFoundry::FRS = "-1" ; 
 
+const char* CSGFoundry::getFrame_NOTES = R"(
+CSGFoundry::getFrame_NOTES
+===========================
+
+When CSGFoundry::getFrame fails due to the MOI/FRS string used to target 
+a volume of the geometry failing to find the targetted volume 
+it is usually due to the spec not being appropriate for the geometry. 
+
+When using U4VolumeMaker it is sometimes possible to 
+debug the bad specification string by rerunning with the below 
+envvars set in order to dump PV/LV/SO names from the full and sub trees.::
+
+   export U4VolumeMaker_PVG_WriteNames=1
+   export U4VolumeMaker_PVG_WriteNames_Sub=1
+
+This writes the names for the full volume tree to eg::
+
+   /tmp/$USER/opticks/U4VolumeMaker_PVG_WriteNames 
+   /tmp/$USER/opticks/U4VolumeMaker_PVG_WriteNames_Sub 
+
+)" ; 
+
+
 sframe CSGFoundry::getFrame() const 
 {
     const char* moi_or_iidx = SSys::getenvvar("MOI",FRS);   // TODO: MOI->FRS perhaps ?
@@ -2669,6 +2692,7 @@ sframe CSGFoundry::getFrame(const char* frs) const
 {
     sframe fr ; 
     int rc = getFrame(fr, frs ? frs : FRS );
+    if(rc != 0) LOG(error) << " frs " << frs << std::endl << getFrame_NOTES ; 
     if(rc != 0) std::raise(SIGINT); 
     return fr ; 
 }
@@ -2700,6 +2724,8 @@ Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into 
 
 **/
 
+
+
 int CSGFoundry::getFrame(sframe& fr, const char* frs ) const 
 {
     int rc = 0 ; 
@@ -2719,9 +2745,7 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
     fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() ); 
     fr.frs = strdup(frs); 
     LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
-
     if(rc != 0) LOG(error) << "Failed to lookup frame with frs [" << frs << "] looks_like_moi " << looks_like_moi  ;   
-
     return rc ; 
 }
 

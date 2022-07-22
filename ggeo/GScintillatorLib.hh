@@ -94,7 +94,6 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
     private:
         const GMaterialLib*       m_mlib ; 
         unsigned                  m_icdf_length ; 
-        //std::vector<GMaterial*>   m_scintillators_raw ; // TODO: eliminate GPropertyLib already has vector of raw pmaps ?
         NPY<double>*              m_g4icdf ; 
 
 };
