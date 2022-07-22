@@ -1,3 +1,5 @@
+#include <csignal>
+
 #include "PLOG.hh"
 #include "scuda.h"
 #include "sqat4.h"

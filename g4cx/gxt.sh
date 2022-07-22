@@ -58,6 +58,10 @@ if [ "$GEOM" == "J000" ]; then
        MOI=$OPTICKS_INPUT_PHOTON_FRAME
        export MOI 
    fi
+
+   export U4VolumeMaker_PVG_WriteNames=1
+   export U4VolumeMaker_PVG_WriteNames_Sub=1
+
 fi 
 
 BASE=$GEOMDIR/$bin

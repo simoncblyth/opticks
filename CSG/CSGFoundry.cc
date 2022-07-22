@@ -2668,7 +2668,8 @@ sframe CSGFoundry::getFrame() const
 sframe CSGFoundry::getFrame(const char* frs) const 
 {
     sframe fr ; 
-    getFrame(fr, frs ? frs : FRS );
+    int rc = getFrame(fr, frs ? frs : FRS );
+    if(rc != 0) std::raise(SIGINT); 
     return fr ; 
 }
 
@@ -2699,34 +2700,39 @@ Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into 
 
 **/
 
-void CSGFoundry::getFrame(sframe& fr, const char* frs ) const 
+int CSGFoundry::getFrame(sframe& fr, const char* frs ) const 
 {
+    int rc = 0 ; 
     bool looks_like_moi = SStr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ; 
     if(looks_like_moi)
     {
         int midx, mord, iidx ;  // mesh-index, mesh-ordinal, gas-instance-index
         parseMOI(midx, mord, iidx,  frs );  
-        getFrame(fr, midx, mord, iidx); 
+        rc = getFrame(fr, midx, mord, iidx); 
     }
     else
     {
          int inst_idx = SName::ParseIntString(frs, 0) ; 
-         getFrame(fr, inst_idx); 
+         rc = getFrame(fr, inst_idx); 
     }
 
     fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() ); 
     fr.frs = strdup(frs); 
     LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
+
+    if(rc != 0) LOG(error) << "Failed to lookup frame with frs [" << frs << "] looks_like_moi " << looks_like_moi  ;   
+
+    return rc ; 
 }
 
-void CSGFoundry::getFrame(sframe& fr, int inst_idx) const
+int CSGFoundry::getFrame(sframe& fr, int inst_idx) const
 {
-    int rc = target->getFrame( fr, inst_idx );  
-    assert( rc == 0 ); 
+    return target->getFrame( fr, inst_idx ); 
 }
 
-void CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const 
+int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const 
 {
+    int rc = 0 ; 
     if( midx == -1 )
     { 
         unsigned long long emm = 0ull ;   // hmm instance var ?
@@ -2734,9 +2740,9 @@ void CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const
     }
     else
     {
-        int rc = target->getFrame( fr, midx, mord, iidxg );  
-        assert( rc == 0 ); 
+        rc = target->getFrame( fr, midx, mord, iidxg );  
     }
+    return rc ; 
 }
 
 /**

@@ -122,7 +122,8 @@ to take control of the geometry defining code for example in j/PMTSim.
 
 **/
 
-const char* U4VolumeMaker::PVG_WriteNames = "U4VolumeMaker_PVG_WriteNames" ; 
+const char* U4VolumeMaker::PVG_WriteNames     = "U4VolumeMaker_PVG_WriteNames" ; 
+const char* U4VolumeMaker::PVG_WriteNames_Sub = "U4VolumeMaker_PVG_WriteNames_Sub" ; 
 
 G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
 {
@@ -144,6 +145,9 @@ G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
         G4VPhysicalVolume* pv_sub = U4Volume::FindPVSub( loaded, sub ) ;  
         G4LogicalVolume* lv_sub = pv_sub->GetLogicalVolume(); 
         pv = wrap == nullptr ? WrapRockWater( lv_sub ) : WrapInstance( lv_sub, wrap );  
+
+        if(SSys::getenvbool(PVG_WriteNames_Sub))
+            U4Volume::WriteNames( pv, SPath::Resolve("$TMP", PVG_WriteNames_Sub, DIRPATH));  
     }
 
     LOG(LEVEL) 

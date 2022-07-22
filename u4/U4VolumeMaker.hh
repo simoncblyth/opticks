@@ -25,6 +25,8 @@ struct U4_API U4VolumeMaker
     static G4VPhysicalVolume* PV(  const char* name); 
 
     static const char* PVG_WriteNames ; 
+    static const char* PVG_WriteNames_Sub ; 
+
     static G4VPhysicalVolume* PVG_(const char* name); 
     static G4VPhysicalVolume* PVP_(const char* name); 
     static G4VPhysicalVolume* PVS_(const char* name); 

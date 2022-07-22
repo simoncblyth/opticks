@@ -881,6 +881,8 @@ NP* Tran<T>::PhotonTransform( const NP* ph, bool normalize, const Tran<T>* t ) /
 template<typename T>
 inline void Tran<T>::AddTransform( T* ttk, const char* opt, const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c )
 {
+    for(unsigned i=0 ; i < 16 ; i++) ttk[i] = T(0.) ; // start zeroed
+
     if(strcmp(opt,"TR") == 0 || strcmp(opt,"tr") == 0 )
     {
         bool flip = strcmp(opt,"tr") == 0 ; 

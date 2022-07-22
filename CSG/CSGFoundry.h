@@ -306,10 +306,6 @@ struct CSG_API CSGFoundry
     int       getInstanceIndex(unsigned gas_idx_ , unsigned ordinal) const ; 
     const qat4* getInstanceGAS(unsigned gas_idx_ , unsigned ordinal=0) const  ;
 
-    // target  
-    int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
-    int getTransform(   qat4& q   , int midx, int mord, int iidx=-1) const ;
-
     // id 
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ; 
     const char* getName(unsigned midx) const ;  
@@ -318,9 +314,14 @@ struct CSG_API CSGFoundry
     sframe getFrame() const ; 
     sframe getFrame(const char* moi_or_iidx) const ; 
 
-    void getFrame(sframe& fr, const char* arg) const ; 
-    void getFrame(sframe& fr, int midx, int mord, int iidxg) const ; 
-    void getFrame(sframe& fr, int ins_idx ) const ; 
+    int getFrame(sframe& fr, const char* arg) const ; 
+    int getFrame(sframe& fr, int midx, int mord, int iidxg) const ; 
+    int getFrame(sframe& fr, int ins_idx ) const ; 
+
+    // target  
+    int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
+    int getTransform(   qat4& q   , int midx, int mord, int iidx=-1) const ;
+
 
     template <typename T> void setMeta( const char* key, T value ); 
     template <typename T> T    getMeta( const char* key, T fallback); 

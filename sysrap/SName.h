@@ -449,7 +449,7 @@ inline int SName::parseArg(const char* arg, unsigned& count) const
         }
     }
 
-    if(dump) std::cout << " arg " << arg << " idx " << idx << " count " << count << " is_all " << is_all << std::endl ; 
+    if(dump || idx == fallback) std::cout << " arg " << arg << " idx " << idx << " count " << count << " is_all " << is_all << std::endl ; 
     return idx ; 
 }
 
@@ -565,6 +565,7 @@ inline void SName::parseMOI(int& midx, int& mord, int& iidx, const char* moi ) c
     midx = num_elem > 0 ? parseArg( elem[0].c_str(), count) : 0 ;  
     mord = num_elem > 1 ? ParseIntString( elem[1].c_str() ) : 0 ; 
     iidx = num_elem > 2 ? ParseIntString( elem[2].c_str() ) : 0 ; 
+
 
     if(dump) std::cout
         << " moi " << moi 
