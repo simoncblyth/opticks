@@ -50,6 +50,9 @@ struct Tran
     static const Tran<T>* make_rotate(    const T ax, const T ay, const T az, const T angle_deg);
 
 
+
+
+
     static glm::tvec3<T>   LeastParallelAxis(const glm::tvec3<T>& a ); 
     static glm::tmat4x4<T> RotateA2B_nonparallel( const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
     static glm::tmat4x4<T> RotateA2B_parallel(    const glm::tvec3<T>& a, const glm::tvec3<T>& b, bool flip ); 
@@ -94,6 +97,7 @@ struct Tran
 
     void photon_transform( NP* ph, bool normalize ) const ; 
     static NP* PhotonTransform( const NP* ph, bool normalize, const Tran<T>* tr ); 
+    static void AddTransform( T* ttk, const char* opt, const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c ); 
 
 
     const T* tdata() const ; 
@@ -874,6 +878,42 @@ NP* Tran<T>::PhotonTransform( const NP* ph, bool normalize, const Tran<T>* t ) /
     return b ; 
 }
 
+template<typename T>
+inline void Tran<T>::AddTransform( T* ttk, const char* opt, const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c )
+{
+    if(strcmp(opt,"TR") == 0 || strcmp(opt,"tr") == 0 )
+    {
+        bool flip = strcmp(opt,"tr") == 0 ; 
+        glm::tmat4x4<T> tr = Tran<T>::Place( a, b, c, flip );  
+        T* src = glm::value_ptr(tr) ; 
+        //std::cout << Desc(src, 16) << std::endl ; 
+        memcpy( ttk, src, 16*sizeof(T) ); 
+    }
+    else if(strcmp(opt,"R") == 0 || strcmp(opt,"r") == 0)
+    {
+        bool flip = strcmp(opt,"r") == 0 ; 
+        glm::tmat4x4<T> tr = Tran<T>::RotateA2B( a, b, flip );  
+        T* src = glm::value_ptr(tr) ; 
+        memcpy( ttk, src, 16*sizeof(T) ); 
+    }
+    else if(strcmp(opt,"T") == 0 || strcmp(opt,"t") == 0)
+    {
+        bool flip = strcmp(opt,"t") == 0 ; 
+        glm::tmat4x4<T> tr = Tran<T>::Translate(c, flip );  
+        T* src = glm::value_ptr(tr) ; 
+        memcpy( ttk, src, 16*sizeof(T) ); 
+    }
+    else if(strcmp(opt,"D")== 0)
+    {
+        for(int l=0 ; l < 3 ; l++) ttk[4*0+l] = a[l] ; 
+        for(int l=0 ; l < 3 ; l++) ttk[4*1+l] = b[l] ; 
+        for(int l=0 ; l < 3 ; l++) ttk[4*2+l] = c[l] ; 
+    }
+    else
+    {
+        std::cout << "Tran::AddTransform : ERROR opt is not handled [" << opt << "]" << std::endl ; 
+    }
+}
 
 
 

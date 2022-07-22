@@ -29,12 +29,45 @@ struct U4RotationMatrix : public G4RotationMatrix
      static U4RotationMatrix* Flip(const char* axes) ;
      static unsigned FlipMask(const char* axes); 
 
+     U4RotationMatrix(const double* src, bool flip); 
+
      U4RotationMatrix( 
            double xx, double xy, double xz, 
            double yx, double yy, double yz, 
            double zx, double zy, double zz  
      ); 
 };
+
+
+
+/**
+
+The input array a16 is assumed to be of 16 elements 
+The array element to rotation matrix element mapping depends on f.
+
+For f:false:: 
+ 
+    xx:00  xy:01  xz:02   -- 
+    yx:04  yy:05  yz:06   -- 
+    zx:08  zy:09  zz:10   --
+       --     --     --   --
+
+For f:true:: 
+
+    xx:00  xy:04  xz:08   -- 
+    yx:01  yy:05  yz:09   -- 
+    zx:02  zy:06  zz:10   --
+       --     --     --   --
+
+**/
+
+inline U4RotationMatrix::U4RotationMatrix(const double* a16, bool f )
+      :    
+         G4RotationMatrix( a16[0],     a16[f?4:1], a16[f?8:2], 
+                           a16[f?1:4], a16[5],     a16[f?9:6],
+                           a16[f?2:8], a16[f?6:9], a16[10]     )
+{}
+
 
 inline U4RotationMatrix::U4RotationMatrix( 
            double xx, double xy, double xz, 

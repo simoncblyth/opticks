@@ -6,6 +6,8 @@ class G4LogicalVolume ;
 class G4VPhysicalVolume ; 
 class G4Material ; 
 
+struct NP ; 
+
 #include "G4ThreeVector.hh"
 #include "U4_API_EXPORT.hh"
 #include "plog/Severity.h"
@@ -40,6 +42,8 @@ struct U4_API U4VolumeMaker
     static constexpr const char* U4VolumeMaker_WrapRockWater_HALFSIDE = "U4VolumeMaker_WrapRockWater_HALFSIDE" ; 
     static constexpr const char* U4VolumeMaker_WrapRockWater_FACTOR   = "U4VolumeMaker_WrapRockWater_FACTOR" ; 
     static G4VPhysicalVolume* WrapRockWater( G4LogicalVolume* lv ); 
+    static G4VPhysicalVolume* WrapInstance( G4LogicalVolume* item_lv, const char* prefix ); 
+
 
     static constexpr const char* U4VolumeMaker_WrapVacuum_HALFSIDE = "U4VolumeMaker_WrapVacuum_HALFSIDE" ; 
     static G4VPhysicalVolume* WrapVacuum(   G4LogicalVolume* lv ); 
@@ -52,6 +56,7 @@ struct U4_API U4VolumeMaker
     static G4VPhysicalVolume* AddPlacement( G4LogicalVolume* mother, G4LogicalVolume* lv,  double tx, double ty, double tz ); 
     static G4VPhysicalVolume* AddPlacement( G4LogicalVolume* mother, const char* name   ,  double tx, double ty, double tz ); 
     static const char* GridName(const char* prefix, int ix, int iy, int iz, const char* suffix); 
+    static const char* PlaceName(const char* prefix, int ix, const char* suffix); 
 
     // world box pv
 
@@ -76,6 +81,12 @@ struct U4_API U4VolumeMaker
  
     static G4LogicalVolume* Orb_( double radius,   const char* mat, const char* prefix=nullptr ); 
     static G4LogicalVolume* Box_( double halfside, const char* mat, const char* prefix=nullptr ); 
+
+
+    // instance wraps 
+    static const NP* MakeTransforms( const char* prefix ); 
+    static void WrapAround( const char* prefix, const NP* trs, G4LogicalVolume* lv, G4LogicalVolume* mother_lv ); 
+
 };
 
 

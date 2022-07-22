@@ -12,6 +12,8 @@
 #include "SOpticksResource.hh"
 #include "SPath.hh"
 #include "SSys.hh"
+#include "SPlace.h"
+
 #include "PLOG.hh"
 
 #include "U4.hh"
@@ -125,7 +127,9 @@ const char* U4VolumeMaker::PVG_WriteNames = "U4VolumeMaker_PVG_WriteNames" ;
 G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
 {
     const char* gdmlpath = SOpticksResource::GDMLPath(name) ;   
-    const char* gdmlsub = SOpticksResource::GDMLSub(name);  
+    const char* sub = SOpticksResource::GEOMSub(name);  
+    const char* wrap = SOpticksResource::GEOMWrap(name);  
+
     bool exists = gdmlpath && SPath::Exists(gdmlpath) ; 
 
     G4VPhysicalVolume* loaded = exists ? U4GDML::Read(gdmlpath) : nullptr ; 
@@ -135,17 +139,11 @@ G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
     
     G4VPhysicalVolume* pv = loaded ; 
 
-    if( loaded && gdmlsub ) 
+    if( loaded && sub ) 
     { 
-        G4VPhysicalVolume* pv_sub = U4Volume::FindPVSub( loaded, gdmlsub ) ;  
+        G4VPhysicalVolume* pv_sub = U4Volume::FindPVSub( loaded, sub ) ;  
         G4LogicalVolume* lv_sub = pv_sub->GetLogicalVolume(); 
-
-
-        pv = WrapRockWater( lv_sub ) ;  
-        // HMM: assuming the gdmlsub is in Water ?
-        // TODO: make the type of Wrap an input 
-
-        LOG(LEVEL) << " WrapRockWater lv_sub " << ( lv_sub ? lv_sub->GetName() : "-" ); 
+        pv = wrap == nullptr ? WrapRockWater( lv_sub ) : WrapInstance( lv_sub, wrap );  
     }
 
     LOG(LEVEL) 
@@ -153,7 +151,8 @@ G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
           << " gdmlpath " << gdmlpath 
           << " exists " << exists
           << " loaded " << loaded
-          << " gdmlsub " << gdmlsub 
+          << " sub " << ( sub ? sub : "-" ) 
+          << " wrap " << ( wrap ? wrap : "-" ) 
           << " pv " << pv 
           ;  
 
@@ -335,23 +334,26 @@ G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( G4LogicalVolume* item_lv )
 }
 
 
-/**
-U4VolumeMaker::WrapInstanceCylinder
--------------------------------------
-
-HMM: essentialling the task is one of transform handling, 
-could do that authoring in python so the item gets placed in the positions
-according to the transforms loaded from a .npy of transforms 
-
-
-G4VPhysicalVolume* U4VolumeMaker::WrapInstanceCylinder( G4LogicalVolume* item_lv )
+G4VPhysicalVolume* U4VolumeMaker::WrapInstance( G4LogicalVolume* item_lv, const char* prefix )
 {
+    const NP* trs = MakeTransforms(prefix) ; 
 
+    LOG(LEVEL) 
+        << " prefix " << prefix 
+        << " trs " << ( trs ? trs->sstr() : "-" )
+        ;
 
+    G4LogicalVolume*  rock_lv  = Box_(20000., "Rock" );
+    G4LogicalVolume*  water_lv = Box_(19000., "Water" );
+ 
+    WrapAround(prefix, trs, item_lv, water_lv ); 
 
+    G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
+    G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  
 
+    return rock_pv ; 
 }
-**/
+
 
 
 
@@ -456,6 +458,8 @@ G4VPhysicalVolume* U4VolumeMaker::WrapLVGrid( std::vector<G4LogicalVolume*>& lvs
     }   
     return world_pv ; 
 }
+
+
 
 
 /**
@@ -576,6 +580,19 @@ const char* U4VolumeMaker::GridName(const char* prefix, int ix, int iy, int iz, 
     std::string s = ss.str();
     return strdup(s.c_str()); 
 }
+
+const char* U4VolumeMaker::PlaceName(const char* prefix, int ix, const char* suffix)
+{
+    std::stringstream ss ; 
+    if(prefix) ss << prefix ; 
+    ss << ix ;
+    if(suffix) ss << suffix ; 
+    std::string s = ss.str();
+    return strdup(s.c_str()); 
+}
+
+
+
 
 
 /**
@@ -752,6 +769,58 @@ G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const ch
     return lv ; 
 }
 
+
+
+
+const NP* U4VolumeMaker::MakeTransforms( const char* prefix )
+{
+    const char* opts = "TR,tr,R,T,r,t" ; 
+    const NP* trs = nullptr ; 
+
+    if(strcmp(prefix, "AroundSphere")==0)   
+    {
+        double radius = 17000. ; 
+        double item_arclen = 1000. ; 
+        unsigned num_ring = 8 ; 
+        trs = SPlace::AroundSphere(  opts, radius, item_arclen, num_ring );
+    }
+    else if(strcmp(prefix, "AroundCylinder")==0) 
+    {
+        double radius = 17000. ; 
+        double halfheight = radius ; 
+        unsigned num_ring = 8 ; 
+        unsigned num_in_ring = 16 ; 
+        trs = SPlace::AroundCylinder(opts, radius, halfheight, num_ring, num_in_ring  );
+     }
+     return trs ; 
+}
+
+
+void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, G4LogicalVolume* lv, G4LogicalVolume* mother_lv )
+{
+    const double* tt = trs->cvalues<double>(); 
+
+    unsigned num_place = trs->shape[0] ; 
+    unsigned place_tr = trs->shape[1] ; 
+    assert( trs->has_shape(num_place,place_tr,4,4) );  
+
+    unsigned place_values = place_tr*4*4 ; 
+
+    for(unsigned i=0 ; i < num_place ; i++)
+    {
+        const double* T = tt + place_values*i + 3*16 ;  // 3:from index of "T" in opts
+        const double* R = tt + place_values*i + 2*16 ;  // 2:from index of "R" in opts
+
+        G4ThreeVector tla( T[12], T[13], T[14] ); 
+
+        U4RotationMatrix* rot = new U4RotationMatrix( R, false ); 
+
+        const char* iname = PlaceName(prefix, i, nullptr); 
+
+        G4VPhysicalVolume* pv_n = new G4PVPlacement(rot, tla, lv, iname, mother_lv,false,0);
+        assert( pv_n );  
+    }
+}
 
 
 

@@ -319,16 +319,22 @@ const char* SOpticksResource::GDMLPath(const char* geom)
     return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLPath")) ; 
 }
 
-const char* SOpticksResource::GDMLSub(){ return GDMLSub( SSys::getenvvar(GEOM)); }
-const char* SOpticksResource::GDMLSub(const char* geom)
+const char* SOpticksResource::GEOMSub(){ return GEOMSub( SSys::getenvvar(GEOM)); }
+const char* SOpticksResource::GEOMSub(const char* geom)
 {
-    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GDMLSub")) ; 
+    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GEOMSub")) ; 
+}
+
+const char* SOpticksResource::GEOMWrap(){ return GEOMWrap( SSys::getenvvar(GEOM)); }
+const char* SOpticksResource::GEOMWrap(const char* geom)
+{
+    return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_GEOMWrap")) ; 
 }
 
 
 
 
-const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath GDMLSub CFBaseFromGEOM" ; 
+const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath GEOMSub GEOMWrap CFBaseFromGEOM" ; 
 
 /**
 SOpticksResource::Get

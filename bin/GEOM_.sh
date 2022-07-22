@@ -41,7 +41,8 @@ reldir(){
 
 if [ "$GEOM" == "J000" ]; then
     export J000_GDMLPath=$HOME/.opticks/geocache/$(reldir $GEOM)/origin_CGDMLKludge.gdml 
-    export J000_GDMLSub=HamamatsuR12860sMask_virtual0x:0:1000
+    export J000_GEOMSub=HamamatsuR12860sMask_virtual0x:0:1000
+    export J000_GEOMWrap=AroundSphere 
     #export J000_CFBaseFromGEOM=$HOME/.opticks/geocache/$(reldir $GEOM)/CSG_GGeo
     ## to force translation from GDML comment the _CFBaseFromGEOM export 
 fi 

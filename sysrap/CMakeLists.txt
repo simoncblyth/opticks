@@ -232,6 +232,12 @@ set(HEADERS
     sqat4.h
     saabb.h
     stran.h
+
+    SPlace.h
+    SPlaceSphere.h
+    SPlaceRing.h
+    SPlaceCylinder.h
+
     ssincos.h
     sxyz.h
     sc4u.h

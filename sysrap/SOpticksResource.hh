@@ -55,8 +55,14 @@ struct SYSRAP_API SOpticksResource
     static const char* GDMLPath(); 
     static const char* GDMLPath(const char* geom); 
 
-    static const char* GDMLSub(); 
-    static const char* GDMLSub(const char* geom); 
+    static const char* GEOMSub(); 
+    static const char* GEOMSub(const char* geom); 
+
+    static const char* GEOMWrap(); 
+    static const char* GEOMWrap(const char* geom); 
+
+
+
 
 
 
