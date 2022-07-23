@@ -112,9 +112,8 @@ loglevels()
     export CSGOptiX=INFO
     export G4CXOpticks=INFO 
     export GInstancer=INFO
-
-    #export X4PhysicalVolume=INFO
-    #export U4VolumeMaker=INFO
+    export X4PhysicalVolume=INFO
+    export U4VolumeMaker=INFO
 }
 loglevels
 
