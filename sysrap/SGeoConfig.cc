@@ -174,6 +174,9 @@ void SGeoConfig::GeometrySpecificSetup(const SName* id)  // static
         const char* skips = "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x" ;
         SetCXSkipLV(skips); 
         SetCXSkipLV_IDXList(id); 
+    
+        // USING dynamic ELVSelection here would be inappropriate : as dynamic selection 
+        // means the persisted geometry does not match the used geometry.   
     }
 }
 

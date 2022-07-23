@@ -120,6 +120,7 @@ struct CSG_API CSGFoundry
 
     CSGFoundry();
     void init(); 
+    void setMeta(); 
 
     const char* getFold() const ;
     void setFold(const char* fold); 
@@ -322,7 +323,6 @@ struct CSG_API CSGFoundry
     // target  
     int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
     int getTransform(   qat4& q   , int midx, int mord, int iidx=-1) const ;
-
 
     template <typename T> void setMeta( const char* key, T value ); 
     template <typename T> T    getMeta( const char* key, T fallback); 

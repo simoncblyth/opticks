@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <cstring>
 
+#include "SSys.hh"
 #include "OPTICKS_LOG.hh"
 
 /**
@@ -51,6 +52,33 @@ int main(int argc, char** argv, char** envp)
         } 
         envp++ ; 
     }
+
+
+   
+    const char* vars = R"(
+HOME
+USER
+BASH_SOURCE
+SCRIPT
+PWD
+)" ; 
+ 
+    std::stringstream ss;  
+    ss.str(vars)  ;
+    std::string s;
+    while (std::getline(ss, s, '\n')) 
+    {   
+        if(s.empty()) continue ; 
+        const char* k = s.c_str(); 
+        const char* v = getenv(k) ; 
+        std::cout 
+            << std::setw(20) << k 
+            << " : " 
+            << ( v ? v : "-" )
+            << std::endl 
+            ; 
+    }
+
 
     return 0 ; 
 }

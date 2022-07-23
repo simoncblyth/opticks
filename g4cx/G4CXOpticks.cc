@@ -27,10 +27,12 @@
 
 const plog::Severity G4CXOpticks::LEVEL = PLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
 
-std::string G4CXOpticks::Desc() 
-{
-    return CSGOptiX::Desc() ; 
-}
+G4CXOpticks* G4CXOpticks::INSTANCE = nullptr ; 
+G4CXOpticks* G4CXOpticks::Get()
+{  
+    if(INSTANCE == nullptr) INSTANCE = new G4CXOpticks ; 
+    return INSTANCE ; 
+} 
 
 G4CXOpticks::G4CXOpticks()
     :
@@ -43,12 +45,16 @@ G4CXOpticks::G4CXOpticks()
     LOG(LEVEL) << Desc() << std::endl << desc(); 
 }
 
+std::string G4CXOpticks::Desc() 
+{
+    return CSGOptiX::Desc() ; 
+}
 
 std::string G4CXOpticks::desc() const
 {
     std::stringstream ss ; 
     ss << "G4CXOpticks::desc"
-       << " wd " << wd
+       << " wd " << wd 
        << " gg " << gg
        << " fd " << fd
        << " cx " << cx
@@ -192,7 +198,4 @@ void G4CXOpticks::simtrace()
 
     qs->simtrace(); 
 }
-
-
-
     

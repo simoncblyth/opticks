@@ -209,8 +209,15 @@ class CSGFoundry(object):
         return cfbase
 
     @classmethod
-    def Load(cls):
-        cfbase = cls.CFBase()
+    def Load(cls, cfbase_=None, symbol=None):
+        """
+        :param cfbase_: typically None, but available when debugging eg comparing two geometries
+        """
+        if cfbase_ is None: 
+            cfbase = cls.CFBase()
+        else:
+            cfbase = os.path.expandvars(cfbase_)
+        pass
         log.info("cfbase:%s " % cfbase)
         if cfbase is None or not os.path.exists(os.path.join(cfbase, "CSGFoundry")):
             print("ERROR CSGFoundry.CFBase returned None OR non-existing CSGFoundry dir so cannot CSGFoundry.Load" )
@@ -218,6 +225,7 @@ class CSGFoundry(object):
         pass 
         assert not cfbase is None
         cf = cls(fold=os.path.join(cfbase, "CSGFoundry"))
+        cf.symbol = symbol 
         return cf     
 
     @classmethod
@@ -265,7 +273,6 @@ class CSGFoundry(object):
         pass
         return digest 
 
-    #def __init__(self, fold=FOLD):
     def __init__(self, fold):
         self.load(fold)
         self.meshnamedict = NPFold.namelist_to_namedict(self.meshname)
@@ -331,8 +338,14 @@ class CSGFoundry(object):
         return a_txt 
   
 
+    def brief(self):
+        symbol = getattr(self, "symbol", "no-symbol")
+        return "CSGFoundry %s cfbase %s " % (symbol, self.cfbase)
+
     def load(self, fold):
-        log.info("load %s " % fold)
+        cfbase = os.path.dirname(fold)  
+        self.cfbase = cfbase
+        log.info("load : fold %s cfbase: %s  " % (fold, cfbase) )
 
         if not os.path.isdir(fold):
             log.fatal("CSGFoundry folder %s does not exist " % fold)
@@ -373,7 +386,6 @@ class CSGFoundry(object):
         self.age_stamp = age_stamp
         self.stamps = stamps
         self.fold = fold
-        self.base = fold
 
     def desc(self, stem):
         a = getattr(self, stem)

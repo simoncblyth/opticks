@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstring>
 #include <csignal>
+#include <cstdlib>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -97,6 +98,34 @@ void CSGFoundry::init()
     plan.reserve(IMAX); 
     tran.reserve(IMAX); 
     itra.reserve(IMAX); 
+
+    setMeta(); 
+}
+
+void CSGFoundry::setMeta()
+{
+    setMeta<std::string>("creator", SProc::ExecutableName() ); 
+    setMeta<int>("mtime", mtime); 
+
+    const char* vars = R"( 
+HOME
+USER
+SCRIPT
+PWD
+CMDLINE
+)" ; 
+    // BASH_SOURCE fails to export  
+    std::stringstream ss;  
+    ss.str(vars)  ;
+    std::string s;
+    while (std::getline(ss, s, '\n')) 
+    {   
+        if(s.empty()) continue ; 
+        const char* k = s.c_str(); 
+        const char* v = getenv(k) ; 
+        if(v) setMeta<std::string>(k, v); 
+        LOG(LEVEL) << std::setw(20) << k << " : " << ( v ? v : "-" ) ;   
+    }   
 }
 
 
@@ -2213,7 +2242,6 @@ CSGFoundry*  CSGFoundry::MakeGeom(const char* geom) // static
     // avoid tripping some checks 
     fd->addMeshName(geom);   
     fd->addSolidLabel(geom);  
-    fd->setMeta<std::string>("creator", SProc::ExecutableName() ); 
     fd->setMeta<std::string>("source", "CSGFoundry::MakeGeom" ); 
 
     assert( so ); 
@@ -2224,6 +2252,7 @@ CSGFoundry*  CSGFoundry::MakeGeom(const char* geom) // static
 
     return fd ; 
 }
+
 
 CSGFoundry*  CSGFoundry::MakeDemo()
 {

@@ -24,16 +24,18 @@ struct QSim ;
 struct G4CX_API G4CXOpticks
 {
     static const plog::Severity LEVEL ;
-    static std::string Desc();
+    static G4CXOpticks* INSTANCE ; 
+    static G4CXOpticks* Get(); 
 
     const G4VPhysicalVolume* wd ; 
     const GGeo*             gg ;
     CSGFoundry* fd ; 
     CSGOptiX*   cx ; 
     QSim*       qs ; 
-
  
     G4CXOpticks(); 
+
+    static std::string Desc();
     std::string desc() const ; 
 
     void setGeometry(); 
@@ -46,11 +48,5 @@ struct G4CX_API G4CXOpticks
     void simulate(); 
     void simtrace(); 
 };
-
-
-
-
-
-
 
 
