@@ -51,7 +51,7 @@
 
 const plog::Severity GInstancer::LEVEL = PLOG::EnvLevel("GInstancer", "DEBUG") ; 
 
-const int GInstancer::INSTANCE_REPEAT_MIN = SSys::getenvint("GInstancer_instance_repeat_min", 400 ); 
+const int GInstancer::INSTANCE_REPEAT_MIN = SSys::getenvint("GInstancer_instance_repeat_min", INSTANCE_REPEAT_MIN_DEFAULT ); 
 const int GInstancer::INSTANCE_VERTEX_MIN = SSys::getenvint("GInstancer_instance_vertex_min",   0 ); 
 
 GInstancer::GInstancer(Opticks* ok, GGeo* ggeo) 
@@ -74,6 +74,15 @@ GInstancer::GInstancer(Opticks* ok, GGeo* ggeo)
     m_offset_count(0), 
     m_duplicate_outernode_copynumber(true)
 {
+    //if(m_repeat_min != INSTANCE_REPEAT_MIN_DEFAULT )
+    {
+        LOG(error) 
+            << std::endl 
+            << std::setw(40) << " INSTANCE_REPEAT_MIN_DEFAULT : " << std::setw(8) << INSTANCE_REPEAT_MIN_DEFAULT << std::endl 
+            << std::setw(40) << " INSTANCE_REPEAT_MIN : "         << std::setw(8) << INSTANCE_REPEAT_MIN << std::endl 
+            << std::setw(40) << " GInstancer_instance_repeat_min : " << std::setw(8) << m_repeat_min << std::endl 
+            ;
+    }
 }
 
 unsigned GInstancer::getNumRepeats() const 

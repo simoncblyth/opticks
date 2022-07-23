@@ -61,6 +61,7 @@ This populates GGeo.m_geolib with GMergedMesh.
 class GGEO_API GInstancer {
    public:
         static const plog::Severity LEVEL ;  
+        static constexpr const int INSTANCE_REPEAT_MIN_DEFAULT = 400 ; 
         static const int INSTANCE_REPEAT_MIN ; // GInstancer_instance_repeat_min
         static const int INSTANCE_VERTEX_MIN ; // GInstancer_instance_vertex_min 
    public:

@@ -108,7 +108,9 @@ const bool           X4PhysicalVolume::DBG = true ;
 
 const G4VPhysicalVolume* const X4PhysicalVolume::Top()
 {
-    const G4VPhysicalVolume* const top = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume() ;
+    G4TransportationManager* tranMgr = G4TransportationManager::GetTransportationManager() ; 
+    G4Navigator* nav = tranMgr->GetNavigatorForTracking() ; 
+    const G4VPhysicalVolume* const top = nav->GetWorldVolume() ;
     return top ; 
 }
 
@@ -201,9 +203,9 @@ void X4PhysicalVolume::init()
     closeSurfaces();
     convertSolids();      // populate GMeshLib with GMesh converted from each G4VSolid (postorder traverse processing first occurrence of G4LogicalVolume)  
     convertStructure();   // populate GNodeLib with GVolume converted from each G4VPhysicalVolume (preorder traverse) 
-    convertCheck();
+    convertCheck();       // checking found some nodes
 
-    postConvert(); 
+    postConvert();        // just reporting 
 
     LOG(LEVEL) << "]" ; 
 }
