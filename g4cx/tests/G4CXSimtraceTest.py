@@ -21,9 +21,13 @@ Used from gxt.sh, eg::
 
 
 """
-import os, numpy as np
+import os, numpy as np, logging
+log = logging.getLogger(__name__)
+
 from opticks.ana.fold import Fold
-from opticks.ana.p import *       # including cf loaded from CFBASE
+from opticks.ana.p import *       
+# including cf loaded from CFBASE
+# HMM: kinda bad form to instanciate cf from the module load
 
 from opticks.ana.feature import SimtraceFeatures
 from opticks.ana.framegensteps import FrameGensteps
@@ -50,16 +54,22 @@ def simple(pl, gs, pos):
     pvplt_simple(pl, pos.lpos[:,:3], "pos.lpos[:,:3]" )
 
 
-
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
     t = Fold.Load(symbol="t")
     a = Fold.Load("$A_FOLD", symbol="a")
     b = Fold.Load("$B_FOLD", symbol="b")
+    print("cf.base : %s " % cf.base) 
+
+    print("---------Fold.Load.done")
     x = a 
 
-    print(t)
-    print(a)
-    print(b)
+    print(repr(t))
+    print(repr(a))
+    print(repr(b))
+
+    print("---------print.done")
 
 
     if not a is None:

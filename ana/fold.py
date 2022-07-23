@@ -13,6 +13,13 @@ log = logging.getLogger(__name__)
 np.set_printoptions(suppress=True, edgeitems=5, linewidth=200,precision=3)
 
 class Fold(object):
+
+    @classmethod
+    def IsQuiet(cls, **kwa):
+        quiet_default = True
+        quiet = kwa.get("quiet", quiet_default) 
+        return quiet 
+
     @classmethod
     def Load(cls, *args, **kwa):
         if len(args) == 0:
@@ -22,7 +29,7 @@ class Fold(object):
         kwa["relbase"] = relbase   # relbase is the dir path excluding the first element 
         base = os.path.join(*args)
         base = os.path.expandvars(base) 
-        quiet = kwa.get("quiet", False) == True 
+        quiet = cls.IsQuiet(**kwa)
 
         fold = cls(base, **kwa) if os.path.isdir(base) else None
         if fold is None and quiet == False:
@@ -41,14 +48,19 @@ class Fold(object):
 
     SFRAME = "sframe.npy"
 
+    def brief(self):
+        return "Fold : symbol %s base %s " % (self.symbol, self.base) 
+
     def __init__(self, base, **kwa):
         self.base = base
         self.kwa = kwa 
-        self.quiet = kwa.get("quiet", False) == True 
+        self.quiet = self.IsQuiet(**kwa)
         self.symbol = kwa.get("symbol", "t")
         self.relbase = kwa.get("relbase")
         self.globals = kwa.get("globals", False) == True
         self.globals_prefix = kwa.get("globals_prefix", "") 
+
+        print(self.brief())
 
         if self.quiet == False:
             print("Fold : setting globals %s globals_prefix %s " % (self.globals, self.globals_prefix)) 

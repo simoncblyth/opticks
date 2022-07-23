@@ -950,16 +950,18 @@ void X4PhysicalVolume::convertSolid( const G4LogicalVolume* lv )
 
     bool x4skipsolid = m_ok->isX4SkipSolidName(soname); 
 
+    int lvIdx = m_lvlist.size();  
+    int soIdx = lvIdx ; // when converting in postorder soIdx is the same as lvIdx
+    m_lvidx[lv] = lvIdx ;  
+    m_lvlist.push_back(lv);  
+
     LOG(LEVEL) 
+        << "[ " << std::setw(4) << lvIdx
         << " lvname " << lvname 
         << " soname " << soname 
         << " [--x4skipsolidname] " << ( x4skipsolid ? "YES" : "n" )
         ;
 
-    int lvIdx = m_lvlist.size();  
-    int soIdx = lvIdx ; // when converting in postorder soIdx is the same as lvIdx
-    m_lvidx[lv] = lvIdx ;  
-    m_lvlist.push_back(lv);  
 
     GMesh* mesh = ConvertSolid(m_ok, lvIdx, soIdx, solid, soname, lvname ); 
     mesh->setX4SkipSolid(x4skipsolid); 
@@ -977,6 +979,8 @@ void X4PhysicalVolume::convertSolid( const G4LogicalVolume* lv )
     }
 
     m_ggeo->add( mesh ) ; 
+
+    LOG(LEVEL) << "] " << std::setw(4) << lvIdx ; 
 }
 
 
@@ -1693,7 +1697,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
     int lvIdx = m_lvidx[lv] ;   // from postorder traverse in convertSolids to match GDML lvIdx : mesh identity uses lvIdx
 
-    LOG(LEVEL) 
+    LOG(debug) 
         << " copyNumber " << std::setw(8) << copyNumber
         << " boundary " << std::setw(4) << boundary 
         << " materialIdx " << std::setw(4) << materialIdx
@@ -1833,7 +1837,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     volume->setCopyNumber(copyNumber);  // NB within instances this is changed by GInstancer::labelRepeats_r when m_duplicate_outernode_copynumber is true
 
 
-    LOG(LEVEL) << " instanciate GVolume node_count  " << m_node_count ; 
+    LOG(debug) << " instanciate GVolume node_count  " << m_node_count ; 
 
 
     m_node_count += 1 ; 

@@ -64,11 +64,23 @@ class Feature(object):
         :param val: large array of integer feature values 
         :param namedict: dict relating feature integers to string names 
 
+        Canonical usage is from the below SimtraceFeatures
+
+
         The is an implicit assumption that the number of unique feature values is not enormous,
         for example boundary values or prim identity values.
+
+        If this comes up with feature names of form "ERR-3105" "ERR-32" etc.. then 
+        probably the CF geometry loaded into python does not match the geometry 
+        used by the C++ run that created the SEvt arrays.  
+
+        In which case you need to arrange for the CF geometry to be saved alongside 
+        the event arrays and transferred alongside them when grabbed and also 
+        ensure that the CFBASE envvar that controls which geometry is 
+        loaded by CSG/CSGFoundry.py matches the geometry used to create the SEvt arrays. 
+
+        TODO: automated way to check consistency via metadata matching between geometry and evt
         """
-
-
         uval, ucount = np.unique(val, return_counts=True)
 
         if len(vname) == 0:
@@ -83,7 +95,7 @@ class Feature(object):
         ouval  = [uval[j]         for j in idxdesc]
 
         # vname needs absolutes to get the names 
-        onames = [vname[uval[j]]  for j in idxdesc]
+        onames = [vname.get(uval[j], "ERR-%d" % uval[j])  for j in idxdesc]
 
         self.is_bnd = name == "bnd"
         self.name = name

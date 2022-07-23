@@ -816,7 +816,7 @@ void GInstancer::visitNode( GNode* node, unsigned ridx )
 
     if(ridx > 0)
     {
-         LOG(LEVEL)
+         LOG(debug)
              << " ridx " << std::setw(5) << ridx
              << " n " << node->getName()
              ;

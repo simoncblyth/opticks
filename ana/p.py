@@ -158,9 +158,23 @@ hit__      = lambda p,msk:p[np.where( ( flagmask__(p) & msk ) == msk)]
 
 
 
+ridiff_ = lambda ri:ri[1:,:3] - ri[:-1,:3]     
+
+# rdist_(a,i)/rtime_(a,i)/rspeed_(a,i) : distance/time/speed between record point i and i+1 
+rdist_ = lambda a,i:np.sqrt(np.sum( (a.record[:,i+1,0,:3]-a.record[:,i,0,:3])*(a.record[:,i+1,0,:3]-a.record[:,i,0,:3]) , axis=1 ))
+rtime_ = lambda a,i:a.record[:,i+1,0,3] - a.record[:,i,0,3]  
+rspeed_ = lambda a,i:rdist_(a,i)/rtime_(a,i)
+
+
+
+
 ## TO PICK THE GEOMETRY APPROPRIATE TO THE RESULT ARRAYS SET CFBASE envvar TO DIRECTORY CONTAINING CSGFoundry dir 
 from opticks.CSG.CSGFoundry import CSGFoundry 
-cf = CSGFoundry.Load()
+
+cf = CSGFoundry.Load()    
+
+## HMM: NASTY LOADING cf HERE IN THE MODULE 
+## DONE TO AVOID cf ARG FOR THE BELOW : MAYBE CURRYING CAN AVOID ?
 
 if not cf is None:
     cf_bnd_  = lambda p:cf.sim.bndnamedict.get(boundary_(p),"cf_bnd_ERR")
@@ -171,14 +185,6 @@ else:
 pass
 
 bflagdesc_ = lambda p:"%s : %60s : %s : %s " % ( flagdesc_(p), cf_prim_(p) , digest_(p[:3])[:8], cf_bnd_(p) )
-
-
-ridiff_ = lambda ri:ri[1:,:3] - ri[:-1,:3]     
-
-# rdist_(a,i)/rtime_(a,i)/rspeed_(a,i) : distance/time/speed between record point i and i+1 
-rdist_ = lambda a,i:np.sqrt(np.sum( (a.record[:,i+1,0,:3]-a.record[:,i,0,:3])*(a.record[:,i+1,0,:3]-a.record[:,i,0,:3]) , axis=1 ))
-rtime_ = lambda a,i:a.record[:,i+1,0,3] - a.record[:,i,0,3]  
-rspeed_ = lambda a,i:rdist_(a,i)/rtime_(a,i)
 
 
 

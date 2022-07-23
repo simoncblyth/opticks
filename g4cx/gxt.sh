@@ -70,27 +70,32 @@ BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
 FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
-# analysis/plotting uses A_FOLD B_FOLD for comparison together with the simtrace 
-
-A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
-B_FOLD=$($OPTICKS_HOME/u4/u4s.sh fold)
 
 upfind_cfbase(){
-    : traverse directory tree upwards 
+    : traverse directory tree upwards searching CFBase geometry dir identified by existance of CSGFoundry/solid.npy  
     local dir=$1
     while [ ${#dir} -gt 1 -a ! -f "$dir/CSGFoundry/solid.npy" ] ; do dir=$(dirname $dir) ; done 
     echo $dir
 }
 
+
+# analysis/plotting uses A_FOLD B_FOLD for comparison together with the simtrace 
+
+T_FOLD=$FOLD
 A_FOLD=$($OPTICKS_HOME/g4cx/gxs.sh fold)
+B_FOLD=$($OPTICKS_HOME/u4/u4s.sh fold)
+
+T_CFBASE=$(upfind_cfbase $T_FOLD)
 A_CFBASE=$(upfind_cfbase $A_FOLD)  
+B_CFBASE=$(upfind_cfbase $B_FOLD)  
+
 
 export A_FOLD
 export A_CFBASE
 export B_FOLD
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE arg bin defarg gxtdir GEOM GEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD"
+    vars="BASH_SOURCE arg bin defarg gxtdir GEOM GEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD B_CFBASE T_FOLD T_CFBASE"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
     source $OPTICKS_HOME/bin/AB_FOLD.sh   # just lists dir content 
 fi 
@@ -136,7 +141,7 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
     export FOLD
-    export CFBASE=$A_CFBASE
+    export CFBASE=$T_CFBASE    ## T_CFBASE would seem better otherwise assumes have rerun A with same geom at T (and B)
     export MASK=${MASK:-pos}
 
     ${IPYTHON:-ipython} --pdb -i $gxtdir/tests/$bin.py     
