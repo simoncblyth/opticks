@@ -126,3 +126,92 @@ As Opticks still needed by the translation from Geant4->GGeo
     1247 
 
 
+Commenting the setting of OPTICKS_KEY::
+
+    N[blyth@localhost g4cx]$ vi ~/.opticks_key
+    N[blyth@localhost g4cx]$ 
+    N[blyth@localhost g4cx]$ ./gxs.sh 
+                       BASH_SOURCE : ./../bin/GEOM_.sh 
+                       TMP_GEOMDIR : /tmp/blyth/opticks/J000 
+                           GEOMDIR : /home/blyth/.opticks/geocache/DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1/CSG_GGeo 
+
+                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON_.sh
+                              GEOM : J000
+              OPTICKS_INPUT_PHOTON : DownXZ1000_f8.npy
+        OPTICKS_INPUT_PHOTON_FRAME : NNVT:0:1000
+      OPTICKS_INPUT_PHOTON_ABSPATH : /home/blyth/.opticks/InputPhotons/DownXZ1000_f8.npy
+        OPTICKS_INPUT_PHOTON_LABEL : DownXZ1000
+                       BASH_SOURCE : ./../bin/OPTICKS_INPUT_PHOTON.sh 
+                         ScriptDir : ./../bin 
+              OPTICKS_INPUT_PHOTON : DownXZ1000_f8.npy 
+        OPTICKS_INPUT_PHOTON_FRAME : NNVT:0:1000 
+      OPTICKS_INPUT_PHOTON_ABSPATH : /home/blyth/.opticks/InputPhotons/DownXZ1000_f8.npy 
+
+    PLOG::EnvLevel adjusting loglevel by envvar   key SOpticksKey level INFO fallback DEBUG
+    PLOG::EnvLevel adjusting loglevel by envvar   key SEvt level INFO fallback DEBUG
+    SCF::Create BUT no CFBASE envvar 
+    PLOG::EnvLevel adjusting loglevel by envvar   key CSGFoundry level INFO fallback DEBUG
+    PLOG::EnvLevel adjusting loglevel by envvar   key U4VolumeMaker level INFO fallback DEBUG
+    SCF::Create BUT no CFBASE envvar 
+    PLOG::EnvLevel adjusting loglevel by envvar   key G4CXOpticks level INFO fallback DEBUG
+    2022-07-24 21:51:04.391 INFO  [177425] [SOpticksKey::SetKey@95] from OPTICKS_KEY envvar (null)
+    2022-07-24 21:51:04.392 INFO  [177425] [SOpticksKey::SetKey@98]  spec (null)
+    G4CXSimulateTest: /data/blyth/junotop/opticks/optickscore/Opticks.cc:340: bool Opticks::envkey(): Assertion `key_is_set == true && "valid geocache and key are required, for operation without geocache use --allownokey "' failed.
+    ./gxs.sh: line 103: 177425 Aborted                 (core dumped) $bin
+    ./gxs.sh run G4CXSimulateTest error
+    N[blyth@localhost g4cx]$ 
+
+
+
+
+
+Can "--allownokey" be argforced ? Not without tidying up U4Material::LoadBnd
+------------------------------------------------------------------------------
+
+::
+
+     19 int main(int argc, char** argv)
+     20 {
+     21     OPTICKS_LOG(argc, argv);
+     22     Opticks::Configure(argc, argv, "--gparts_transform_offset --allownokey" );
+     23 
+     24     U4Material::LoadBnd();
+     25     // TODO: relocate inside G4CXOpticks::setGeometry
+     26     // create G4 materials from SSim::Load bnd.npy, used by U4VolumeMaker::PV PMTSim
+     27     // HMM: probably dont want to do this when running from GDML
+     28 
+
+::
+
+    N[blyth@localhost g4cx]$ ./gxs.sh dbg
+    ...
+    2022-07-24 21:54:00.663 FATAL [177759] [Opticks::envkey@329]  --allownokey option prevents key checking : this is for debugging of geocache creation 
+    2022-07-24 21:54:00.670 INFO  [177759] [SOpticksKey::SetKey@95] from OPTICKS_KEY envvar (null)
+    2022-07-24 21:54:00.671 INFO  [177759] [SOpticksKey::SetKey@98]  spec (null)
+    2022-07-24 21:54:00.674 FATAL [177759] [BOpticksResource::initViaKey@711]  m_key is nullptr : early exit 
+    2022-07-24 21:54:00.681 FATAL [177759] [OpticksResource::init@122]  CAUTION : are allowing no key 
+    2022-07-24 21:54:00.681 FATAL [177759] [Opticks::initResource@1032]  idpath NULL 
+    2022-07-24 21:54:00.682 FATAL [177759] [Opticks::defineEventSpec@3075]  resource_pfx (null) config_pfx (null) pfx default_pfx cat (null) udet g4live typ TORCH tag 1
+    2022-07-24 21:54:00.683 INFO  [177759] [SOpticksKey::SetKey@95] from OPTICKS_KEY envvar (null)
+    2022-07-24 21:54:00.683 INFO  [177759] [SOpticksKey::SetKey@98]  spec (null)
+    G4CXSimulateTest: /data/blyth/junotop/opticks/sysrap/SOpticksResource.cc:186: static const char* SOpticksResource::CGDir_(bool, const char*): Assertion `idpath' failed.
+
+    Program received signal SIGABRT, Aborted.
+    0x00007fffebb10387 in raise () from /lib64/libc.so.6
+    (gdb) bt
+    #0  0x00007fffebb10387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffebb11a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffebb091a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffebb09252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffed7238b8 in SOpticksResource::CGDir_ (setkey=true, rel=0x7fffed7d8124 "CSG_GGeo") at /data/blyth/junotop/opticks/sysrap/SOpticksResource.cc:186
+    #5  0x00007fffed72386d in SOpticksResource::CGDir (setkey=true) at /data/blyth/junotop/opticks/sysrap/SOpticksResource.cc:182
+    #6  0x00007fffed723930 in SOpticksResource::CFBase () at /data/blyth/junotop/opticks/sysrap/SOpticksResource.cc:223
+    #7  0x00007fffed723d3c in SOpticksResource::Get (key=0x7713c1 "CFBase") at /data/blyth/junotop/opticks/sysrap/SOpticksResource.cc:383
+    #8  0x00007fffed6d8ef3 in SPath::Resolve (spec_=0x7fffed7dfe11 "$CFBase/CSGFoundry/SSim", create_dirs=2) at /data/blyth/junotop/opticks/sysrap/SPath.cc:179
+    #9  0x00007fffed7483ef in SSim::Load (base_=0x0) at /data/blyth/junotop/opticks/sysrap/SSim.cc:45
+    #10 0x00007ffff79325b4 in U4Material::LoadBnd (ssimdir=0x0) at /data/blyth/junotop/opticks/u4/U4Material.cc:693
+    #11 0x000000000040f4e2 in main (argc=3, argv=0x7fffffff64f8) at /data/blyth/junotop/opticks/g4cx/tests/G4CXSimulateTest.cc:24
+    (gdb) 
+
+
+

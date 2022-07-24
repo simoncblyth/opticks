@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
     SEventConfig::SetRGModeRender();  
 
-    Opticks::Configure(argc, argv, "--gparts_transform_offset" );  
+    Opticks::Configure(argc, argv, "--gparts_transform_offset --allownokey" );  
 
     G4CXOpticks gx ;  
     gx.setGeometry();  // sensitive to SomGDMLPath, GEOM, CFBASE
