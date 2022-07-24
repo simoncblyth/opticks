@@ -345,3 +345,196 @@ Can "--allownokey" be argforced ? Not without tidying up U4Material::LoadBnd
     169 
 
 
+
+::
+
+    2022-07-24 23:31:41.341 INFO  [195245] [CSGFoundry::addInstance@1522]  ins_idx 48473 gas_idx 9 ias_idx 0
+    2022-07-24 23:31:41.341 INFO  [195245] [CSGFoundry::addInstance@1522]  ins_idx 48474 gas_idx 9 ias_idx 0
+    2022-07-24 23:31:41.341 INFO  [195245] [CSGFoundry::addInstance@1522]  ins_idx 48475 gas_idx 9 ias_idx 0
+    2022-07-24 23:31:41.341 INFO  [195245] [CSGFoundry::addInstance@1522]  ins_idx 48476 gas_idx 9 ias_idx 0
+    2022-07-24 23:31:41.387 INFO  [195245] [SOpticksKey::SetKey@95] from OPTICKS_KEY envvar (null)
+    2022-07-24 23:31:41.387 INFO  [195245] [SOpticksKey::SetKey@98]  spec (null)
+    NP::load Failed to load from path /tmp/blyth/opticks/GScintillatorLib/LS_ori/RINDEX.npy
+    2022-07-24 23:31:41.387 INFO  [195245] [G4CXOpticks::setGeometry@136]  fd_ 0x14ec97700
+    G4CXSimulateTest: /data/blyth/junotop/opticks/qudarap/QCerenkov.cc:75: static qcerenkov* QCerenkov::MakeInstance(): Assertion `prop' failed.
+    ./gxs.sh: line 103: 195245 Aborted                 (core dumped) $bin
+    ./gxs.sh run G4CXSimulateTest error
+    N[blyth@localhost g4cx]$ ./gxs.sh dbg
+                       BASH_SOURCE : ./../bin/GEOM_.sh 
+                       TMP_GEOMDIR : /tmp/blyth/opticks/J001 
+
+
+::
+
+    134 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
+    135 {
+    136     LOG(LEVEL) << " fd_ " << fd_ ;
+    137 #ifdef __APPLE__
+    138     return ;
+    139 #endif
+    140     fd = fd_ ;
+    141     cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
+    142     qs = cx->sim ;
+    143     LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ;
+    144 }
+
+    188 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
+    189 {
+    190     LOG(LEVEL) << "fd.descBase " << ( fd ? fd->descBase() : "-" ) ;
+    191 
+    192     InitSim(fd->sim);
+    193     InitGeo(fd);
+    194 
+    195     CSGOptiX* cx = new CSGOptiX(fd) ;
+    196 
+    197     bool render_mode = SEventConfig::IsRGModeRender() ;
+    198     if(render_mode == false)
+    199     {
+    200         QSim* qs = QSim::Get() ;
+    201         qs->setLauncher(cx);
+    202         QEvent* event = qs->event ;
+    203         event->setMeta( fd->meta.c_str() );
+    204     }
+    205 
+    206     return cx ;
+    207 }
+
+    168 void CSGOptiX::InitSim( const SSim* ssim  )
+    169 {
+    170     if(SEventConfig::IsRGModeRender()) return ;
+    171 
+    172     if(ssim == nullptr) LOG(fatal) << "simulate/simtrace modes require SSim/QSim setup" ;
+    173     assert(ssim);
+    174 
+    175     QSim::UploadComponents(ssim);
+    176 
+    177     QSim* qs = QSim::Create() ;
+    178     LOG(LEVEL) << qs->desc() ;
+    179 }
+
+
+
+::
+
+    2022-07-24 23:34:37.499 INFO  [197744] [CSGFoundry::addInstance@1522]  ins_idx 48474 gas_idx 9 ias_idx 0
+    2022-07-24 23:34:37.499 INFO  [197744] [CSGFoundry::addInstance@1522]  ins_idx 48475 gas_idx 9 ias_idx 0
+    2022-07-24 23:34:37.499 INFO  [197744] [CSGFoundry::addInstance@1522]  ins_idx 48476 gas_idx 9 ias_idx 0
+    2022-07-24 23:34:37.545 INFO  [197744] [SOpticksKey::SetKey@95] from OPTICKS_KEY envvar (null)
+    2022-07-24 23:34:37.545 INFO  [197744] [SOpticksKey::SetKey@98]  spec (null)
+    NP::load Failed to load from path /tmp/blyth/opticks/GScintillatorLib/LS_ori/RINDEX.npy
+    2022-07-24 23:34:37.545 INFO  [197744] [G4CXOpticks::setGeometry@136]  fd_ 0x14e951700
+    Missing separate debuginfo for /lib64/libcuda.so.1
+
+    (gdb) bt
+    #0  0x00007fffebb0f387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffebb10a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffebb081a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffebb08252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffedb31587 in QCerenkov::MakeInstance () at /data/blyth/junotop/opticks/qudarap/QCerenkov.cc:75
+    #5  0x00007fffedb316c0 in QCerenkov::QCerenkov (this=0x151a58e50) at /data/blyth/junotop/opticks/qudarap/QCerenkov.cc:120
+    #6  0x00007fffedad17e6 in QSim::UploadComponents (ssim=0x32ae900) at /data/blyth/junotop/opticks/qudarap/QSim.cc:127
+    #7  0x00007fffefcc2705 in CSGOptiX::InitSim (ssim=0x32ae900) at /data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:175
+    #8  0x00007fffefcc297a in CSGOptiX::Create (fd=0x14e951700) at /data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:192
+    #9  0x00007ffff7bae8e0 in G4CXOpticks::setGeometry (this=0x7fffffff5a30, fd_=0x14e951700) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:141
+    #10 0x00007ffff7bae7c0 in G4CXOpticks::setGeometry (this=0x7fffffff5a30, gg_=0x7fc7d0) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:132
+    #11 0x00007ffff7bae6aa in G4CXOpticks::setGeometry (this=0x7fffffff5a30, world=0x7fc2d0) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:125
+    #12 0x00007ffff7bae2de in G4CXOpticks::setGeometry (this=0x7fffffff5a30) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:101
+    #13 0x000000000040f4b3 in main (argc=3, argv=0x7fffffff6068) at /data/blyth/junotop/opticks/g4cx/tests/G4CXSimulateTest.cc:36
+    (gdb) 
+
+
+    066 qcerenkov* QCerenkov::MakeInstance() // static 
+     67 {
+     68     const QBase* base = QBase::Get();
+     69     assert( base );
+     70 
+     71     const QBnd* bnd = QBnd::Get();
+     72     assert( bnd );
+     73 
+     74     const QProp<float>* prop = QProp<float>::Get();
+     75     assert(prop);
+     76 
+     77     qcerenkov* cerenkov= new qcerenkov ;
+     78     cerenkov->base = base->d_base ;
+     79     cerenkov->bnd = bnd->d_bnd ;
+     80     cerenkov->prop = prop->d_prop ;
+     81     return cerenkov ;
+     82 }
+
+
+::
+
+    pdig 4c29bcd2a52a397de5036b415af92efe ndig    504 nprog    129 placements    504 n pPanel_0_f_0x71b2850
+    2022-07-24 23:52:36.349 ERROR [199551] [GGeo::save@718] cannot save as no idpath set
+    2022-07-24 23:52:37.264 INFO  [199551] [G4CXOpticks::setGeometry@129] 
+    2022-07-24 23:52:37.266 INFO  [199551] [CSGFoundry::setMeta@127]                      : -
+    2022-07-24 23:52:37.266 INFO  [199551] [CSGFoundry::setMeta@127]                 HOME : /home/blyth
+    2022-07-24 23:52:37.266 INFO  [199551] [CSGFoundry::setMeta@127]                 USER : blyth
+    2022-07-24 23:52:37.266 INFO  [199551] [CSGFoundry::setMeta@127]               SCRIPT : -
+    2022-07-24 23:52:37.266 INFO  [199551] [CSGFoundry::setMeta@127]                  PWD : /data/blyth/junotop/opticks/g4cx
+    2022-07-24 23:52:37.266 INFO  [199551] [CSGFoundry::setMeta@127]              CMDLINE : -
+    2022-07-24 23:52:37.333 ERROR [199551] [CSG_GGeo_Convert::convertSolid@314]  cxskip 1 meshIdx 117 mname NNVTMCPPMTsMask_virtual0x5f5f0e0
+    2022-07-24 23:52:37.337 ERROR [199551] [CSG_GGeo_Convert::convertSolid@314]  cxskip 1 meshIdx 110 mname HamamatsuR12860sMask_virtual0x5f50520
+    2022-07-24 23:52:37.337 ERROR [199551] [CSG_GGeo_Convert::convertSolid@314]  cxskip 1 meshIdx 134 mname mask_PMT_20inch_vetosMask_virtual0x5f62620
+
+    Breakpoint 1, SOpticksKey::SetKey (spec=0x0) at /data/blyth/junotop/opticks/sysrap/SOpticksKey.cc:84
+    84	    if(SOpticksKey::IsSet())
+    (gdb) bt
+    #0  SOpticksKey::SetKey (spec=0x0) at /data/blyth/junotop/opticks/sysrap/SOpticksKey.cc:84
+    #1  0x00007fffed7227e3 in SOpticksResource::IDPath (setkey=true) at /data/blyth/junotop/opticks/sysrap/SOpticksResource.cc:167
+    #2  0x00007fffed722d17 in SOpticksResource::Get (key=0x2c9e661 "IDPath") at /data/blyth/junotop/opticks/sysrap/SOpticksResource.cc:382
+    #3  0x00007fffed6d7ef3 in SPath::Resolve (spec_=0x7ffff01e7920 "$IDPath/GScintillatorLib/LS_ori/RINDEX.npy", create_dirs=0) at /data/blyth/junotop/opticks/sysrap/SPath.cc:179
+    #4  0x00007fffed74dda5 in SProp::MockupCombination (path_=0x7ffff01e7920 "$IDPath/GScintillatorLib/LS_ori/RINDEX.npy") at /data/blyth/junotop/opticks/sysrap/SProp.cc:31
+    #5  0x00007ffff01b4ecc in GGeo::convertSim_Prop (this=0x7fc810, sim=0x32aa070) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:2412
+    #6  0x00007ffff01b482c in GGeo::convertSim (this=0x7fc810) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:2355
+    #7  0x00007ffff0469734 in CSG_GGeo_Convert::convertSim (this=0x7fffffff42b0) at /data/blyth/junotop/opticks/CSG_GGeo/CSG_GGeo_Convert.cc:182
+    #8  0x00007ffff0468b48 in CSG_GGeo_Convert::convert (this=0x7fffffff42b0) at /data/blyth/junotop/opticks/CSG_GGeo/CSG_GGeo_Convert.cc:105
+    #9  0x00007ffff04683b8 in CSG_GGeo_Convert::Translate (ggeo=0x7fc810) at /data/blyth/junotop/opticks/CSG_GGeo/CSG_GGeo_Convert.cc:39
+    #10 0x00007ffff7bae7a6 in G4CXOpticks::setGeometry (this=0x7fffffff57a0, gg_=0x7fc810) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:131
+    #11 0x00007ffff7bae6aa in G4CXOpticks::setGeometry (this=0x7fffffff57a0, world=0x7fc310) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:125
+    #12 0x00007ffff7bae2de in G4CXOpticks::setGeometry (this=0x7fffffff57a0) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:101
+    #13 0x000000000040f4b3 in main (argc=3, argv=0x7fffffff5dd8) at /data/blyth/junotop/opticks/g4cx/tests/G4CXSimulateTest.cc:36
+    (gdb) 
+
+
+Hmm looks like GGeo->CF is assuming a saved IDPath. 
+
+::
+
+    2347 void GGeo::convertSim() const
+    2348 {
+    2349     SSim* sim = SSim::Get();
+    2350     if(sim == nullptr) LOG(fatal) << "SSim should have been created by CSGFoundry::CSGFoundry " ;
+    2351     assert(sim);
+    2352 
+    2353     convertSim_BndLib(sim);
+    2354     convertSim_ScintillatorLib(sim);
+    2355     convertSim_Prop(sim);
+    2356     convertSim_MultiFilm(sim);
+    2357 }
+
+
+::
+
+    2418 void GGeo::convertSim_Prop(SSim* sim) const
+    2419 {
+    2420     const char* idpath = m_ok->getIdPath() ;
+    2421     const char* ri_prop = "$IDPath/GScintillatorLib/LS_ori/RINDEX.npy" ;
+    2422     if( idpath == nullptr )
+    2423     {
+    2424         LOG(error) << " SSim cannot add ri_prop as no idpath " << ri_prop ;
+    2425     }
+    2426     else
+    2427     {
+    2428         const NP* propcom = SProp::MockupCombination(ri_prop);
+    2429         sim->add(SSim::PROPCOM, propcom);
+    2430     }
+    2431 }
+
+
+
+
+
+
+
+

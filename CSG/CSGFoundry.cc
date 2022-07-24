@@ -1519,7 +1519,7 @@ void CSGFoundry::addInstance(const float* tr16, unsigned gas_idx, unsigned ias_i
 
     instance.setIdentity( ins_idx, gas_idx, ias_idx );
 
-    LOG(LEVEL) 
+    LOG(debug) 
         << " ins_idx " << ins_idx 
         << " gas_idx " << gas_idx 
         << " ias_idx " << ias_idx 

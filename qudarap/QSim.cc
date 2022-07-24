@@ -75,6 +75,8 @@ This structure is used to allow separate testing.
 
 void QSim::UploadComponents( const SSim* ssim  )
 {
+    LOG(LEVEL) << "[ ssim " << ssim ; 
+
     QBase* base = new QBase ; 
     LOG(LEVEL) << base->desc(); 
 
@@ -86,7 +88,7 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     if( optical == nullptr && bnd == nullptr )
     {
-        LOG(warning) << " optical and bnd null " ; 
+        LOG(error) << " optical and bnd null  SSim::OPTICAL " << SSim::OPTICAL << " SSim::BND " << SSim::BND  ; 
     }
     else
     {
@@ -109,12 +111,16 @@ void QSim::UploadComponents( const SSim* ssim  )
         LOG(LEVEL) << "] QProp " ; 
         LOG(LEVEL) << prop->desc(); 
     }
+    else
+    {
+        LOG(error) << "  propcom null, SSim::PROPCOM " <<  SSim::PROPCOM ;   
+    }
 
 
     const NP* icdf = ssim->get(SSim::ICDF); 
     if( icdf == nullptr )
     {
-        LOG(LEVEL) << " icdf null " ; 
+        LOG(error) << " icdf null, SSim::ICDF " << SSim::ICDF ; 
     }
     else
     {
@@ -131,13 +137,14 @@ void QSim::UploadComponents( const SSim* ssim  )
     const NP* multifilm = ssim->get(SSim::MULTIFILM); 
     if(multifilm == nullptr)
     {
-        LOG(LEVEL) << " multifilm null ";
+        LOG(LEVEL) << " multifilm null, SSim::MULTIFILM " << SSim::MULTIFILM ;
     }
     else
     {
         QMultiFilm* mul = new QMultiFilm( multifilm ); 
         LOG(LEVEL) << mul->desc();
     }
+    LOG(LEVEL) << "] ssim " << ssim ; 
 }
 
 

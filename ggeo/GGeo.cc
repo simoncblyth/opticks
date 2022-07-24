@@ -2407,10 +2407,27 @@ void GGeo::convertSim_ScintillatorLib(SSim* sim) const
     sim->add(SSim::ICDF, icdf); 
 }
 
+/**
+GGeo::convertSim_Prop
+----------------------
+
+This assumes idpath set and GGeo has been persisted. 
+
+**/
+
 void GGeo::convertSim_Prop(SSim* sim) const 
 {
-    const NP* propcom = SProp::MockupCombination("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy");
-    sim->add(SSim::PROPCOM, propcom); 
+    const char* idpath = m_ok->getIdPath() ;
+    const char* ri_prop = "$IDPath/GScintillatorLib/LS_ori/RINDEX.npy" ; 
+    if( idpath == nullptr )
+    {
+        LOG(error) << " SSim cannot add ri_prop as no idpath " << ri_prop ;  
+    }
+    else
+    {
+        const NP* propcom = SProp::MockupCombination(ri_prop);
+        sim->add(SSim::PROPCOM, propcom); 
+    }
 }
 
 

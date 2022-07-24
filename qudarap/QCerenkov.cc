@@ -63,6 +63,15 @@ QTex<float4>* QCerenkov::MakeTex(const NP* icdf, char filterMode, bool normalize
     return tex ; 
 }
 
+/**
+QCerenkov::MakeInstance
+------------------------
+
+QProp was assuming a saved GGeo and IDPath and access to "$IDPath/GScintillatorLib/LS_ori/RINDEX.npy"
+see GGeo::convertSim_Prop
+
+**/
+
 qcerenkov* QCerenkov::MakeInstance() // static 
 {
     const QBase* base = QBase::Get(); 
@@ -72,12 +81,12 @@ qcerenkov* QCerenkov::MakeInstance() // static
     assert( bnd );  
 
     const QProp<float>* prop = QProp<float>::Get(); 
-    assert(prop); 
+    // assert(prop); 
 
     qcerenkov* cerenkov= new qcerenkov ; 
     cerenkov->base = base->d_base ;  
     cerenkov->bnd = bnd->d_bnd ;  
-    cerenkov->prop = prop->d_prop ; 
+    cerenkov->prop = prop ? prop->d_prop : nullptr ; 
     return cerenkov ; 
 }
 
