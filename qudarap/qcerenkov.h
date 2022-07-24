@@ -321,6 +321,20 @@ qcerenkov::wavelength_sampled_enprop
 
 template type controls the type used for the rejection sampling, not the return type 
 
+This depends on::
+
+    GGeo::convertSim_Prop
+    QProp
+    $IDPath/GScintillatorLib/LS_ori/RINDEX.npy
+
+So its just a scintillator test currently and relies on persisted GGeo and IDPath, 
+so its kinda mixing old and new workflows. 
+
+TODO: rationalize bringing everything needed into SSim fold without 
+relying on persisted GGeo 
+
+see notes/issues/SOpticksKey_in_new_workflow.rst
+
 **/
 template<typename T>
 inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_enprop(float& f_wavelength, float& f_cosTheta, float& f_sin2Theta, curandStateXORWOW& rng, const scerenkov& gs, int idx, int gsid ) const 

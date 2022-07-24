@@ -40,6 +40,7 @@ def make_colors():
     all_colors = list(hexcolors.keys()) if not hexcolors is None else []
     easy_colors = "red green blue cyan magenta yellow pink".split()
     skip_colors = "bisque beige white aliceblue antiquewhite aqua".split()    # skip colors that look too alike 
+    skip_colors += "raw_sienna".split()   # perhaps not available in some matplotlib version or problem from underscore
 
     colors = easy_colors 
     for c in all_colors:

@@ -240,7 +240,7 @@ void CSGFoundry::getPrimName( std::vector<std::string>& pname ) const
         const CSGPrim& pr = prim[i] ; 
         unsigned midx = pr.meshIdx(); 
         const std::string& mname = getMeshName(midx); 
-        LOG(LEVEL) << " primIdx " << std::setw(4) << i << " midx " << midx << " mname " << mname  ;  
+        LOG(debug) << " primIdx " << std::setw(4) << i << " midx " << midx << " mname " << mname  ;  
         pname.push_back(mname);  
     }
 }

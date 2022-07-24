@@ -48,8 +48,8 @@ esac
 
 bin=G4CXSimulateTest
 gxsdir=$(dirname $BASH_SOURCE)
-source $gxsdir/../bin/GEOM_.sh   #  defines and exports : GEOM, GEOMDIR 
-source $gxsdir/../bin/OPTICKS_INPUT_PHOTON.sh 
+source $gxsdir/../bin/COMMON.sh 
+
 
 BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE is BASE relative to HOME to handle rsync between different HOME

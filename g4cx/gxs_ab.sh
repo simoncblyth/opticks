@@ -11,9 +11,10 @@ gxs_ab.sh
 EOU
 }
 
-source ../bin/GEOM_.sh 
 
-FOLD_MODE=GXS source ../bin/AB_FOLD.sh 
+source $(dirname $BASH_SOURCE)/../bin/COMMON.sh 
+
+FOLD_MODE=GXS source $(dirname $BASH_SOURCE)/../bin/AB_FOLD.sh 
 
 export CFBASE 
 

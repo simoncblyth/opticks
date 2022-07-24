@@ -497,7 +497,7 @@ Can "--allownokey" be argforced ? Not without tidying up U4Material::LoadBnd
     (gdb) 
 
 
-Hmm looks like GGeo->CF is assuming a saved IDPath. 
+Hmm GGeo->CF was assuming a saved IDPath for QProp. I thought that was just a test ? 
 
 ::
 
@@ -532,9 +532,30 @@ Hmm looks like GGeo->CF is assuming a saved IDPath.
     2431 }
 
 
+::
 
-
-
-
-
+    318 /**
+    319 qcerenkov::wavelength_sampled_enprop
+    320 --------------------------------------
+    321 
+    322 template type controls the type used for the rejection sampling, not the return type 
+    323 
+    324 This depends on::
+    325 
+    326     GGeo::convertSim_Prop
+    327     QProp
+    328     $IDPath/GScintillatorLib/LS_ori/RINDEX.npy
+    329 
+    330 So its just a scintillator test currently and relies on persisted GGeo and IDPath, 
+    331 so its kinda mixing old and new workflows. 
+    332 
+    333 TODO: rationalize bringing everything needed into SSim fold without 
+    334 relying on persisted GGeo 
+    335 
+    336 **/
+    337 template<typename T>
+    338 inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_enprop(float& f_wavelength, float& f_cosTheta, float& f_sin2Theta, curandStateXORWOW& rng, const scerenkov& gs, i    nt idx, int gsid ) const
+    339 {   
+    340     T u0 ; 
+    341     T u1 ; 
 

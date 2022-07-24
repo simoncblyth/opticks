@@ -49,22 +49,7 @@ esac
 
 bin=G4CXSimtraceTest
 gxtdir=$(dirname $BASH_SOURCE)
-
-source $gxtdir/../bin/GEOM_.sh   ## defines and exports GEOM GEOMDIR
-source $gxtdir/../bin/OPTICKS_INPUT_PHOTON_.sh   ## NB sets variables without export when use the "_.sh" 
-
-if [ "$GEOM" == "J000" ]; then 
-   if [ -n "$OPTICKS_INPUT_PHOTON_FRAME" ]; then  
-       MOI=$OPTICKS_INPUT_PHOTON_FRAME
-       export MOI 
-   fi
-
-   export U4VolumeMaker_PVG_WriteNames=1
-   export U4VolumeMaker_PVG_WriteNames_Sub=1
-fi 
-
-## TODO: HMM BETTER TO CENTRALIZE SETUP LIKE THE ABOVE THAN CAN BE CENTRALIZED ? 
-
+source $gxtdir/../bin/COMMON.sh 
 
 BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME

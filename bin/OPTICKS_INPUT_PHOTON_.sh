@@ -11,7 +11,6 @@ Sourcing this script defines, but does NOT export::
 
     OPTICKS_INPUT_PHOTON
     OPTICKS_INPUT_PHOTON_ABSPATH
-    OPTICKS_INPUT_PHOTON_FRAME
 
 The values depend on the GEOM variable. 
 
@@ -27,16 +26,6 @@ case ${GEOM:-Dummy} in
    # RaindropRockAirWaterSmall) label=UpXZ1000    ;; 
                             *) label=RandomSpherical10  ;;
 esac
-
-
-if [ "$GEOM" == "J000" -o "$GEOM" == "J001" -o "$GEOM" == "J002" ]; then 
-   case $GEOM in 
-     J000) OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000 ;;
-     J001) OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000 ;;
-     J002) OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000 ;;
-   esac
-fi 
-## HMM : THE SEPARATION BETWEEN GEOM AND OIP FEELS AWKWARD ?
 
 
 case ${label:-dummy} in 
@@ -66,7 +55,7 @@ fi
 
 
 if [ -z "$QUIET" ]; then 
-    vars="BASH_SOURCE GEOM OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME OPTICKS_INPUT_PHOTON_ABSPATH OPTICKS_INPUT_PHOTON_LABEL"
+    vars="BASH_SOURCE GEOM OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_ABSPATH OPTICKS_INPUT_PHOTON_LABEL"
     for var in $vars ; do printf "%30s : %s\n" $var ${!var} ; done 
 fi 
 

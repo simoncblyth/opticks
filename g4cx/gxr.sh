@@ -18,7 +18,6 @@ EOU
 }
 
 msg="=== $BASH_SOURCE :"
-source ../bin/GEOM_.sh 
 
 case $(uname) in 
   Linux)  defarg="run_ls"  ;;
@@ -26,9 +25,11 @@ case $(uname) in
 esac
 
 arg=${1:-$defarg}
-bin=G4CXRenderTest
-echo $msg arg $arg bin $bin defarg $defarg
+echo $msg arg $arg defarg $defarg
 
+bin=G4CXRenderTest
+gxrdir=$(dirname $BASH_SOURCE)
+source $gxrdir/../bin/COMMON.sh 
 
 eye=-0.4,0,0
 moi=-1
@@ -69,7 +70,7 @@ fi
 
 
 
-# FOLD is not an input to running, but it is used by the below : ls ana grab jpg  
+# FOLD is not an input to C++ running, but it is used by the below : ls ana grab jpg  
 export FOLD=/tmp/$USER/opticks/$GEOM/$bin
 name=cx$MOI.jpg
 path=$FOLD/$name

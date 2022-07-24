@@ -46,6 +46,17 @@ geom(){
    fi   
 }
 
+
+com_(){
+   : opticks/opticks.bash 
+
+   local path0=$(opticks-home)/bin/COMMON.sh
+   local path1=$(opticks-home)/bin/GEOM_.sh
+   local path2=$(opticks-home)/bin/OPTICKS_INPUT_PHOTON.sh
+   local path3=$(opticks-home)/bin/OPTICKS_INPUT_PHOTON_.sh
+   vi $path0 $path1 $path2 $path3
+}
+
 geom_(){ 
    : opticks/opticks.bash 
    local path=$(opticks-home)/bin/GEOM_.sh
@@ -57,6 +68,8 @@ geom_(){
        vi $path ;
    fi   
 }
+
+
 
 oip(){ 
    : opticks/opticks.bash 
