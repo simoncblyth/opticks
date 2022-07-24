@@ -83,6 +83,8 @@ loglevels()
     export U4VolumeMaker=INFO
 
     export SEvt=INFO
+    export SOpticksKey=INFO
+
     #export Ctx=INFO
     #export QSim=INFO
     #export QEvent=INFO 

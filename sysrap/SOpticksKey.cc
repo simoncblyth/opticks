@@ -155,7 +155,7 @@ SOpticksKey::SOpticksKey(const char* spec)
     SStr::Split(spec, '.', elem ); 
 
     bool four = elem.size() == 4  ;
-    if(!four) LOG(fatal) << " expecting 4 element spec delimited by dot " << spec ;  
+    if(!four) LOG(fatal) << " expecting 4 element spec delimited by dot [" << spec << "]" ;  
     assert( four ); 
     
     m_exename = strdup(elem[0].c_str()); 

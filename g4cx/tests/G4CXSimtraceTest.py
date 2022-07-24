@@ -60,7 +60,7 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     a = Fold.Load("$A_FOLD", symbol="a")
     b = Fold.Load("$B_FOLD", symbol="b")
-    print("cf.base : %s " % cf.base) 
+    print("cf.cfbase : %s " % cf.cfbase) 
 
     print("---------Fold.Load.done")
     x = a 

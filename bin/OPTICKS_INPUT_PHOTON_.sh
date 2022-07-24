@@ -19,7 +19,7 @@ EOU
 }
 
 case ${GEOM:-Dummy} in 
-                    J000)      label=DownXZ1000    ;; 
+                    J0*)       label=DownXZ1000    ;; 
            hama_body_log)      label=DownXZ1000    ;; 
     RaindropRockAirWater)      label=storchdown ;;
     RaindropRockAirWaterSD)    label=storchdown  ;;
@@ -29,13 +29,12 @@ case ${GEOM:-Dummy} in
 esac
 
 
-if [ "$GEOM" == "J000" ]; then 
-   if [ -n "$J000_GEOMSub" ]; then  
-       OPTICKS_INPUT_PHOTON_FRAME=Hama:0:500
-   else 
-       #OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000
-       OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000
-   fi 
+if [ "$GEOM" == "J000" -o "$GEOM" == "J001" -o "$GEOM" == "J002" ]; then 
+   case $GEOM in 
+     J000) OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000 ;;
+     J001) OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000 ;;
+     J002) OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000 ;;
+   esac
 fi 
 ## HMM : THE SEPARATION BETWEEN GEOM AND OIP FEELS AWKWARD ?
 

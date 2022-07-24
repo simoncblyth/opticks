@@ -35,7 +35,7 @@ export GEOM=${GEOM:-$geom}
 
 reldir(){
    case $1 in 
-     J000) echo DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1 ;;
+     J0*) echo DetSim0Svc_pWorld_g4live/g4ok_gltf/41c046fe05b28cb70b1fc65d0e6b7749/1 ;;
    esac
 }
 
@@ -46,16 +46,16 @@ if [ "$GEOM" == "J000" ]; then
 elif [ "$GEOM" == "J001" ]; then
 
     ## starts from GDML and does translation when no  _CFBaseFromGEOM export 
-    export J000_GDMLPath=$HOME/.opticks/geocache/$(reldir $GEOM)/origin_CGDMLKludge.gdml 
+    export J001_GDMLPath=$HOME/.opticks/geocache/$(reldir $GEOM)/origin_CGDMLKludge.gdml 
 
     #export GInstancer_instance_repeat_min=1000000  
     # default is 400, setting to very high value will make everything global 
 
 elif [ "$GEOM" == "J002" ]; then
 
-    export J000_GDMLPath=$HOME/.opticks/geocache/$(reldir $GEOM)/origin_CGDMLKludge.gdml 
-    export J000_GEOMSub=HamamatsuR12860sMask_virtual0x:0:1000
-    export J000_GEOMWrap=AroundSphere 
+    export J002_GDMLPath=$HOME/.opticks/geocache/$(reldir $GEOM)/origin_CGDMLKludge.gdml 
+    export J002_GEOMSub=HamamatsuR12860sMask_virtual0x:0:1000
+    export J002_GEOMWrap=AroundSphere 
 
 fi 
 

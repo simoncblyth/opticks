@@ -345,3 +345,23 @@ All the transform differences are x,y scale transforms, the only scale transform
 
     In [17]:                                                
 
+
+
+
+
+Checking NNVT:0:1000 shows both hemi lack the ellipsoid scaling, as expected from the above geometry comparison
+-------------------------------------------------------------------------------------------------------------------
+
+oip::
+
+     31 
+     32 if [ "$GEOM" == "J000" ]; then
+     33    if [ -n "$J000_GEOMSub" ]; then
+     34        OPTICKS_INPUT_PHOTON_FRAME=Hama:0:500
+     35    else
+     36        #OPTICKS_INPUT_PHOTON_FRAME=Hama:0:1000
+     37        OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000
+     38    fi
+     39 fi
+
+
