@@ -51,6 +51,10 @@ bin=G4CXSimtraceTest
 gxtdir=$(dirname $BASH_SOURCE)
 source $gxtdir/../bin/COMMON.sh 
 
+if [ -n "$OPTICKS_INPUT_PHOTON" ]; then 
+   unset OPTICKS_INPUT_PHOTON  ## simtrace running and input photons cannot be used together 
+fi 
+
 BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
 FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")

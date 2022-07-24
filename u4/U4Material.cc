@@ -606,6 +606,9 @@ U4Material::MakeScintillator
 
 Creates material with Water G4Element and density and then loads the properties of LS into its MPT 
 
+TODO: Use of IDPath is not acceptable in new workflow 
+
+
 **/
 
 G4Material* U4Material::MakeScintillator()
@@ -670,8 +673,8 @@ void U4Material::LoadOri()
 
 
 /**
-U4Material::LoadBnd
---------------------
+U4Material::LoadBnd from $CFBase/CSGFoundry/SSim so must have already saved it
+--------------------------------------------------------------------------------
 
 SSim::Load loads from $CFBase/CSGFoundry/SSim where "$CFBase" is an 
 internal envvar that yield the result of SOpticksResource::CFBase()

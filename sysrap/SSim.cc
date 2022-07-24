@@ -35,6 +35,13 @@ SSim* SSim::Create()
     return INSTANCE ;  
 }
 
+
+/**
+SSim::Load from $CFBase/CSGFoundry/SSim : so assumes already persisted geometry  
+---------------------------------------------------------------------------------
+ 
+**/
+
 const char* SSim::DEFAULT = "$CFBase/CSGFoundry/SSim" ; 
 
 SSim* SSim::Load(){ return Load(DEFAULT) ; }

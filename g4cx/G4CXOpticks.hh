@@ -17,6 +17,7 @@ class GGeo ;
 struct CSGFoundry ; 
 struct CSGOptiX ; 
 struct QSim ; 
+struct SEvt ; 
 
 #include "plog/Severity.h"
 #include "G4CX_API_EXPORT.hh"
@@ -32,6 +33,7 @@ struct G4CX_API G4CXOpticks
     CSGFoundry* fd ; 
     CSGOptiX*   cx ; 
     QSim*       qs ; 
+    SEvt*       se ; 
  
     G4CXOpticks(); 
 
@@ -47,6 +49,9 @@ struct G4CX_API G4CXOpticks
     void render(); 
     void simulate(); 
     void simtrace(); 
+
+    void save() const ; 
+
 };
 
 

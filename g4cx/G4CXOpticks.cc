@@ -40,7 +40,8 @@ G4CXOpticks::G4CXOpticks()
     gg(nullptr),
     fd(nullptr), 
     cx(nullptr),
-    qs(nullptr)
+    qs(nullptr),
+    se(nullptr)
 {
     LOG(LEVEL) << Desc() << std::endl << desc(); 
 }
@@ -59,6 +60,7 @@ std::string G4CXOpticks::desc() const
        << " fd " << fd
        << " cx " << cx
        << " qs " << qs
+       << " se " << se
        ;
     std::string s = ss.str(); 
     return s ; 
@@ -138,6 +140,10 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
     return ; 
 #endif
     fd = fd_ ; 
+
+    se = new SEvt ; 
+    se->setReldir("ALL"); 
+
     cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
     qs = cx->sim ; 
     LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ; 
@@ -198,4 +204,12 @@ void G4CXOpticks::simtrace()
 
     qs->simtrace(); 
 }
-    
+   
+
+
+void G4CXOpticks::save() const 
+{
+    if(se == nullptr) return ; 
+    se->save(); 
+}
+ 

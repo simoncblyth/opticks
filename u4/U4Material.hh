@@ -72,7 +72,7 @@ struct U4_API U4Material
     static G4Material* MakeScintillator(); 
 
 
-    static constexpr const char* LIBDIR = "$IDPath/GMaterialLib" ;  
+    static constexpr const char* LIBDIR = "$IDPath/GMaterialLib" ;   // TODO: USING IDPath NOT ACCEPTABLE IN NEW WORKFLOW
     static G4Material* LoadOri(const char* name); 
     static void ListOri(std::vector<std::string>& names); 
     static void LoadOri(); 

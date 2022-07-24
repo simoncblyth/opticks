@@ -1,11 +1,9 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
 COMMON.sh 
 ============
 
 Edit the common config scripts with com_ 
-
 
 EOU
 }
@@ -14,7 +12,7 @@ EOU
 bindir=$(dirname $BASH_SOURCE)
 
 source $bindir/GEOM_.sh                   # defines and exports : GEOM, GEOMDIR 
-source $bindir/OPTICKS_INPUT_PHOTON.sh    # defines and exports : OPTICKS_INPUT_PHOTON, OPTICKS_INPUT_PHOTON_FRAME 
+source $bindir/OPTICKS_INPUT_PHOTON.sh    # defines and exports : OPTICKS_INPUT_PHOTON
 
 
 if [ "$GEOM" == "J000" -o "$GEOM" == "J001" -o "$GEOM" == "J002" ]; then 
@@ -26,11 +24,7 @@ if [ "$GEOM" == "J000" -o "$GEOM" == "J001" -o "$GEOM" == "J002" ]; then
    esac
 
    [ -n "$OPTICKS_INPUT_PHOTON_FRAME" ] && export OPTICKS_INPUT_PHOTON_FRAME
-
-   if [ -n "$OPTICKS_INPUT_PHOTON_FRAME" ]; then  
-       MOI=$OPTICKS_INPUT_PHOTON_FRAME
-       export MOI 
-   fi
+   [ -n "$OPTICKS_INPUT_PHOTON_FRAME" ] && export MOI=$OPTICKS_INPUT_PHOTON_FRAME
 
    export U4VolumeMaker_PVG_WriteNames=1
    export U4VolumeMaker_PVG_WriteNames_Sub=1
