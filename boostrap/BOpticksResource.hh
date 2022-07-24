@@ -217,6 +217,8 @@ class BRAP_API  BOpticksResource {
 
         std::string getInstallPath(const char* relpath) const ;
         const char* getIdPath() const ;
+        void setIdPath(const char* idpath); 
+
         const char* getIdFold() const ;  // parent directory of idpath containing g4_00.dae
         void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
 

@@ -703,10 +703,6 @@ void GGeo::prepareOpticks()
 
 void GGeo::save()
 {
-    const char* idpath = m_ok->getIdPath() ;
-    assert( idpath ); 
-    LOG(LEVEL) << "[" << " idpath " << idpath ; 
-
     if(!m_prepared)
     {
         LOG(info) << "preparing before save " ; 
@@ -716,6 +712,22 @@ void GGeo::save()
     std::string s = m_geolib->summary("GGeo::save");
     LOG(LEVEL) << std::endl << s ; 
 
+    const char* idpath = m_ok->getIdPath() ;
+    if( idpath == nullptr ) 
+    {
+         LOG(error) << "cannot save as no idpath set" ; 
+    }
+    else
+    {
+         save_(); 
+    }
+}
+
+void GGeo::save_()
+{
+    const char* idpath = m_ok->getIdPath() ;
+    assert( idpath ); 
+    LOG(LEVEL) << "[" << " idpath " << idpath ; 
     LOG(LEVEL) << " before saves " ; 
 
     LOG(LEVEL) << " m_geolib.save " ; 
@@ -741,6 +753,7 @@ void GGeo::save()
 
     LOG(LEVEL) << "]" ;  
 }
+
 
 
 void GGeo::saveCacheMeta() const 

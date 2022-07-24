@@ -214,4 +214,134 @@ Can "--allownokey" be argforced ? Not without tidying up U4Material::LoadBnd
     (gdb) 
 
 
+::
+
+    ./gxs.sh   ## running from GDML with J001
+
+    ...
+
+    pdig 4c29bcd2a52a397de5036b415af92efe ndig    504 nprog    129 placements    504 n pPanel_0_f_0x71b2850
+    G4CXSimulateTest: /data/blyth/junotop/opticks/ggeo/GGeo.cc:707: void GGeo::save(): Assertion `idpath' failed.
+    ./gxs.sh: line 103: 181076 Aborted                 (core dumped) $bin
+    ./gxs.sh run G4CXSimulateTest error
+    N[blyth@localhost g4cx]$ 
+    N[blyth@localhost g4cx]$ 
+
+
+     pdig 4c29bcd2a52a397de5036b415af92efe ndig    504 nprog    129 placements    504 n pPanel_0_f_0x71b2850
+    G4CXSimulateTest: /data/blyth/junotop/opticks/ggeo/GGeo.cc:707: void GGeo::save(): Assertion `idpath' failed.
+
+    Program received signal SIGABRT, Aborted.
+    0x00007fffebb10387 in raise () from /lib64/libc.so.6
+    (gdb) bt
+    #0  0x00007fffebb10387 in raise () from /lib64/libc.so.6
+    #1  0x00007fffebb11a78 in abort () from /lib64/libc.so.6
+    #2  0x00007fffebb091a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffebb09252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff01abf1e in GGeo::save (this=0x7fc7d0) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:707
+    #5  0x00007ffff01ab22c in GGeo::postDirectTranslation (this=0x7fc7d0) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:606
+    #6  0x00007ffff764a7ae in X4Geo::Translate (top=0x7fc2d0) at /data/blyth/junotop/opticks/extg4/X4Geo.cc:29
+    #7  0x00007ffff7bae690 in G4CXOpticks::setGeometry (this=0x7fffffff5b60, world=0x7fc2d0) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:124
+    #8  0x00007ffff7bae2de in G4CXOpticks::setGeometry (this=0x7fffffff5b60) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:101
+    #9  0x000000000040f4b3 in main (argc=3, argv=0x7fffffff6198) at /data/blyth/junotop/opticks/g4cx/tests/G4CXSimulateTest.cc:36
+    (gdb) 
+
+    (gdb) f 9
+    #9  0x000000000040f4b3 in main (argc=3, argv=0x7fffffff6198) at /data/blyth/junotop/opticks/g4cx/tests/G4CXSimulateTest.cc:36
+    36	    gx.setGeometry(); 
+    (gdb) f 8
+    #8  0x00007ffff7bae2de in G4CXOpticks::setGeometry (this=0x7fffffff5b60) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:101
+    101	        setGeometry( U4VolumeMaker::PV() );  // this may load GDML using U4VolumeMaker::PVG if "GEOM"_GDMLPath is defined   
+    (gdb) f 7
+    #7  0x00007ffff7bae690 in G4CXOpticks::setGeometry (this=0x7fffffff5b60, world=0x7fc2d0) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:124
+    124	    GGeo* gg_ = X4Geo::Translate(wd) ; 
+    (gdb) f 6
+    #6  0x00007ffff764a7ae in X4Geo::Translate (top=0x7fc2d0) at /data/blyth/junotop/opticks/extg4/X4Geo.cc:29
+    29	    gg->postDirectTranslation();    
+    (gdb) f 5
+    #5  0x00007ffff01ab22c in GGeo::postDirectTranslation (this=0x7fc7d0) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:606
+    606	    save();
+    (gdb) f 4
+    #4  0x00007ffff01abf1e in GGeo::save (this=0x7fc7d0) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:707
+    707	    assert( idpath ); 
+    (gdb) p idpath
+    $1 = 0x0
+    (gdb) 
+
+::
+
+     594 void GGeo::postDirectTranslation()
+     595 {
+     596     LOG(LEVEL) << "[" ;
+     597 
+     598     prepare();     // instances are formed here     
+     599 
+     600     LOG(LEVEL) << "( GBndLib::fillMaterialLineMap " ;
+     601     GBndLib* blib = getBndLib();
+     602     blib->fillMaterialLineMap();
+     603     LOG(LEVEL) << ") GBndLib::fillMaterialLineMap " ;
+     604 
+     605     LOG(LEVEL) << "( GGeo::save " ;
+     606     save();
+     607     LOG(LEVEL) << ") GGeo::save " ;
+     608 
+     609 
+     610     deferred();
+     611 
+     612     postDirectTranslationDump();
+     613 
+     614     LOG(LEVEL) << "]" ;
+     615 }
+
+::
+
+    0704 void GGeo::save()
+     705 {
+     706     const char* idpath = m_ok->getIdPath() ;
+     707     assert( idpath );
+     708     LOG(LEVEL) << "[" << " idpath " << idpath ;
+     709 
+     710     if(!m_prepared)
+     711     {
+     712         LOG(info) << "preparing before save " ;
+     713         prepare();
+     714     }
+     715 
+     716     std::string s = m_geolib->summary("GGeo::save");
+     717     LOG(LEVEL) << std::endl << s ;
+     718 
+     719     LOG(LEVEL) << " before saves " ;
+     720 
+     721     LOG(LEVEL) << " m_geolib.save " ;
+     722     m_geolib->save(); // in here GGeoLib::saveConstituents invokes the save of both triangulated GMergedMesh and analytic GParts 
+     723     LOG(LEVEL) << " m_meshlib.save " ;
+     724     m_meshlib->save();
+     725     LOG(LEVEL) << " m_nodelib.save " ;
+     726     m_nodelib->save();
+     727     LOG(LEVEL) << " m_materiallib.save " ;
+     728     m_materiallib->save();
+     729     LOG(LEVEL) << " m_surfacelib.save " ;
+     730     m_surfacelib->save();
+     731     LOG(LEVEL) << " m_scintillatorlib.save " ;
+     732     m_scintillatorlib->save();
+     733     LOG(LEVEL) << " m_sourcelib.save " ;
+     734     m_sourcelib->save();
+     735     LOG(LEVEL) << " m_bndlib.save " ;
+     736     m_bndlib->save();
+     737 
+     738     LOG(LEVEL) << " after saves " ;
+     739 
+     740     saveCacheMeta();
+     741 
+     742     LOG(LEVEL) << "]" ;
+     743 }
+
+
+    164 void GGeoLib::save()
+    165 {
+    166     const char* idpath = m_ok->getIdPath() ;
+    167     saveConstituents(idpath);
+    168 }
+    169 
+
 

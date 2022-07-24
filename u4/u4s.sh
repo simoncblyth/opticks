@@ -163,6 +163,7 @@ export OPTICKS_RANDOM_SEQPATH='$PrecookedDir/QSimTest/rng_sequence/rng_sequence_
 loglevels()
 {
     export Dummy=INFO
+    export U4VolumeMaker=INFO
     #export U4Material=INFO
     #export SEvt=INFO
     #export U4Random=INFO

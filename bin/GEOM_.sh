@@ -29,7 +29,7 @@ EOU
 #geom=RaindropRockAirWaterSmall
 
 #geom=hama_body_log
-geom=J000
+geom=J001
 
 export GEOM=${GEOM:-$geom}
 
@@ -42,6 +42,7 @@ reldir(){
 if [ "$GEOM" == "J000" ]; then
 
     export J000_CFBaseFromGEOM=$HOME/.opticks/geocache/$(reldir $GEOM)/CSG_GGeo
+    ## HMM: cannot u4s.sh with this as no GDMLPath
 
 elif [ "$GEOM" == "J001" ]; then
 

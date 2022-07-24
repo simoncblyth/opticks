@@ -1220,6 +1220,14 @@ const char* BOpticksResource::getIdPath() const
 
     return m_idpath_tmp ? m_idpath_tmp : m_idpath  ;
 }
+
+
+void BOpticksResource::setIdPath(const char* idpath)
+{
+    m_idpath = idpath ? strdup(idpath) : nullptr ;  
+}
+
+
 const char* BOpticksResource::getIdFold() const 
 {
     return m_idfold ;

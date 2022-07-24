@@ -235,6 +235,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void save();
         void anaEvent(OpticksEvent* evt);
     private:
+        void save_();
     public:
         // pass thru to geolib
         GMergedMesh* makeMergedMesh(unsigned int index, const GNode* base, const GNode* root);

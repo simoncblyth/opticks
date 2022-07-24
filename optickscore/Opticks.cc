@@ -4642,6 +4642,9 @@ Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 
 const char*     Opticks::getKeyDir() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
 const char*     Opticks::getIdPath() const { return m_rsc ? m_rsc->getIdPath() : NULL ; }
+void            Opticks::setIdPath(const char* idpath) { assert(m_rsc) ; m_rsc->setIdPath(idpath) ; }
+
+
 std::string     Opticks::getCSG_GGeoDir() const { return m_rsc ? m_rsc->getCSG_GGeoDir() : "" ; }
 
 
