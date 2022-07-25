@@ -23,9 +23,25 @@ which inevitably risks numerical issues.
 #include "NP.hh"
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
-#include "sphoton.h"
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 
 #include <vector>
+
+
+
+template<typename D, typename S>
+void TranConvert(glm::tmat4x4<D>& dst, const glm::tmat4x4<S>& src )  // static
+{
+    const S* src_ptr = glm::value_ptr(src); 
+    D* dst_ptr = glm::value_ptr(dst); 
+    for(int i=0 ; i < 16 ; i++) dst_ptr[i] = D(src_ptr[i]) ; 
+}
+
+
+
+
 
 template<typename T>
 struct Tran
@@ -78,6 +94,7 @@ struct Tran
     static Tran<T>* FromPair( const qat4* t, const qat4* v, T epsilon=EPSILON ); // WIDENS from float  
     static glm::tmat4x4<T> MatFromQat( const qat4* q );
     static glm::tmat4x4<T> MatFromData(const T* data );
+    static glm::tmat4x4<T> FromData(const T* data );
 
     static qat4*    ConvertFrom(const glm::tmat4x4<T>& tr ); 
 
@@ -96,11 +113,6 @@ struct Tran
     static void Apply(        const glm::tmat4x4<T>& tr, T* p0    , T w    , unsigned count, unsigned stride, unsigned offset, bool normalize ); 
     static void ApplyToFloat( const glm::tmat4x4<T>& tr, float* p0, float w, unsigned count, unsigned stride, unsigned offset, bool normalize ); 
  
-    /**
-    void photon_transform( sphoton&  p, bool normalize ) const ; 
-    void photon_transform( sphotond& p, bool normalize ) const ; 
-    **/
-
     void photon_transform( NP* ph, bool normalize ) const ; 
 
     static NP* PhotonTransform( const NP* ph, bool normalize, const Tran<T>* tr ); 
@@ -150,9 +162,6 @@ inline std::ostream& operator<< (std::ostream& out, const Tran<T>& tr)
        ;   
     return out;
 }
-
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 
 
@@ -713,6 +722,15 @@ glm::tmat4x4<T> Tran<T>::MatFromData(const T* data)  // static
     return tran ; 
 }
 
+template<typename T>
+glm::tmat4x4<T> Tran<T>::FromData(const T* data)  // static
+{
+    glm::tmat4x4<T> tran(1.);
+    memcpy( glm::value_ptr(tran), data, 16*sizeof(T) ); 
+    return tran ; 
+}
+
+
 
 
 
@@ -845,41 +863,6 @@ void Tran<T>::ApplyToFloat( const glm::tmat4x4<T>& tr, float* p0, float w, unsig
     }
 }
 
-/*
-template<typename T>
-void Tran<T>::photon_transform( sphoton& p, bool normalize ) const 
-{
-    T one(1.); 
-    T zero(0.); 
-
-    unsigned count = 1 ; 
-    unsigned stride = 4*4 ; // effectively not used as count is 1
-
-    assert( sizeof(p) == sizeof(float)*16 ); 
-    float* p0 = (float*)&p ; 
-    ApplyToFloat( t, p0, one,  count, stride, 0, false );      // transform pos as position
-    ApplyToFloat( t, p0, zero, count, stride, 4, normalize );  // transform mom as direction
-    ApplyToFloat( t, p0, zero, count, stride, 8, normalize );  // transform pol as direction
-}
-
-template<typename T>
-void Tran<T>::photon_transform( sphotond& p, bool normalize ) const 
-{
-    T one(1.); 
-    T zero(0.); 
-
-    unsigned count = 1 ; 
-    unsigned stride = 4*4 ; // effectively not used as count is 1
-
-    assert( sizeof(p) == sizeof(float)*16 ); 
-    double* p0 = (double*)&p ;
- 
-    Apply( t, p0, one,  count, stride, 0, false );      // transform pos as position
-    Apply( t, p0, zero, count, stride, 4, normalize );  // transform mom as direction
-    Apply( t, p0, zero, count, stride, 8, normalize );  // transform pol as direction
-}
- 
-*/
 
 template<typename T>
 void Tran<T>::photon_transform( NP* ph, bool normalize ) const 

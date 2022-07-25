@@ -126,6 +126,8 @@ struct sphoton
     SPHOTON_METHOD std::string digest(unsigned numval=16) const  ; 
     SPHOTON_METHOD static bool digest_match( const sphoton& a, const sphoton& b, unsigned numval=16 ) ; 
     SPHOTON_METHOD static void Get( sphoton& p, const NP* a, unsigned idx ); 
+    SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>&  tr, bool normalize=true );  // widens transform and uses below
+    SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true ); 
 #endif 
 
 }; 
@@ -212,7 +214,7 @@ SPHOTON_METHOD std::string sphoton::descFlag() const
 
 /**
 sphoton::ephoton
----------------
+------------------
 
 *ephoton* is used from qudarap/tests/QSimTest generate tests as the initial photon, 
 which gets persisted to p0.npy 
@@ -287,6 +289,39 @@ SPHOTON_METHOD void sphoton::Get( sphoton& p, const NP* a, unsigned idx )
     memcpy( &p, a->cvalues<float>() + idx*16, sizeof(sphoton) ); 
 }
 
+/**
+sphoton::transform_float 
+--------------------------------
+
+Its better to keep transforms in double and use sphoton::transform but if 
+double precision transforms are not yet available this will widen 
+the transform and use that, which is better than using float. 
+
+**/
+
+SPHOTON_METHOD void sphoton::transform_float( const glm::tmat4x4<float>& tr, bool normalize )
+{
+    glm::tmat4x4<double> trd ; 
+    TranConvert(trd, tr); 
+    transform(trd, normalize ); 
+}
+
+SPHOTON_METHOD void sphoton::transform( const glm::tmat4x4<double>& tr, bool normalize )
+{
+    float one(1.); 
+    float zero(0.); 
+
+    unsigned count = 1 ; 
+    unsigned stride = 4*4 ; // effectively not used as count is 1
+
+    assert( sizeof(*this) == sizeof(float)*16 ); 
+    float* p0 = (float*)this ;
+ 
+    Tran<double>::ApplyToFloat( tr, p0, one,  count, stride, 0, false );      // transform pos as position
+    Tran<double>::ApplyToFloat( tr, p0, zero, count, stride, 4, normalize );  // transform mom as direction
+    Tran<double>::ApplyToFloat( tr, p0, zero, count, stride, 8, normalize );  // transform pol as direction
+}
+
 
 #endif 
 
@@ -319,6 +354,8 @@ struct sphotond
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    SPHOTON_METHOD static void Get( sphotond& p, const NP* a, unsigned idx ); 
+   SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>& tr,  bool normalize=true ); 
+   SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true ); 
 #endif 
 
 
@@ -332,7 +369,58 @@ SPHOTON_METHOD void sphotond::Get( sphotond& p, const NP* a, unsigned idx )
     assert( sizeof(sphotond) == sizeof(double)*16 ); 
     memcpy( &p, a->cvalues<double>() + idx*16, sizeof(sphotond) ); 
 }
+
+SPHOTON_METHOD void sphotond::transform_float( const glm::tmat4x4<float>& tr, bool normalize )
+{
+    glm::tmat4x4<double> trd ; 
+    TranConvert(trd, tr); 
+    transform(trd, normalize ); 
+}
+
+SPHOTON_METHOD void sphotond::transform( const glm::tmat4x4<double>& tr, bool normalize )
+{
+    double one(1.); 
+    double zero(0.); 
+
+    unsigned count = 1 ; 
+    unsigned stride = 4*4 ; // effectively not used as count is 1
+
+    assert( sizeof(*this) == sizeof(double)*16 ); 
+    double* p0 = (double*)this ;
+ 
+    Tran<double>::Apply( tr, p0, one,  count, stride, 0, false );      // transform pos as position
+    Tran<double>::Apply( tr, p0, zero, count, stride, 4, normalize );  // transform mom as direction
+    Tran<double>::Apply( tr, p0, zero, count, stride, 8, normalize );  // transform pol as direction
+}
+
 #endif 
+
+
+/*
+template<typename T>
+void Tran<T>::photon_transform( sphoton& p, bool normalize ) const 
+{
+    T one(1.); 
+    T zero(0.); 
+
+    unsigned count = 1 ; 
+    unsigned stride = 4*4 ; // effectively not used as count is 1
+
+    assert( sizeof(p) == sizeof(float)*16 ); 
+    float* p0 = (float*)&p ; 
+    ApplyToFloat( t, p0, one,  count, stride, 0, false );      // transform pos as position
+    ApplyToFloat( t, p0, zero, count, stride, 4, normalize );  // transform mom as direction
+    ApplyToFloat( t, p0, zero, count, stride, 8, normalize );  // transform pol as direction
+}
+
+template<typename T>
+void Tran<T>::photon_transform( sphotond& p, bool normalize ) const 
+{
+
+ 
+*/
+
+
 
 
 

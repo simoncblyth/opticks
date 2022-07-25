@@ -3,6 +3,8 @@
 #include "scuda.h"
 #include "sqat4.h"
 #include "stran.h"
+#include "sphoton.h"
+
 
 void test_from_string()
 {
@@ -139,30 +141,70 @@ void test_Place()
     std::cout << std::setw(20) << " a4_tr1 " << Tran<double>::Desc(a4_tr1) << std::endl ;    
 
     std::cout << std::setw(20) << " e4 = b + c  " << Tran<double>::Desc(e4) << std::endl ;    
-
 }
 
-void test_photon_transform()
+
+
+template<typename T>
+glm::tmat4x4<T> make_translate(T tx, T ty, T tz)
 {
-    sphoton p ; 
+    std::array<T, 16> aa = 
+         {{1., 0., 0., 0., 
+           0., 1., 0., 0., 
+           0., 0., 1., 0., 
+           tx, ty, tz, 1. }} ; 
+    glm::tmat4x4<T> tr = Tran<T>::FromData(aa.data()) ; 
+    return tr ; 
+}
+
+
+void init( sphoton& p )
+{
     p.pos = {0.f, 0.f, 0.f } ; 
     p.time = 0.f  ;
     p.mom = {0.f, 0.f, 1.f } ; 
     p.pol = {0.f, 1.f, 0.f } ; 
-
-
-     
- 
-
-  
-
-
-
 }
 
 
+void test_photon_transform_0() 
+{
+    double tx = 10. ; 
+    double ty = 20. ; 
+    double tz = 30. ; 
+
+    const glm::tmat4x4<double> tr = make_translate<double>(tx, ty, tz); 
+    
+    sphoton p0 ; 
+    init(p0); 
+
+    sphoton p1(p0); 
+    p1.transform(tr);  
+
+    std::cout << " p0.descBase " << p0.descBase() << std::endl ;  
+    std::cout << " p1.descBase " << p1.descBase() << std::endl ;  
+
+    assert( p1.pos.x = p0.pos.x + tx );  
+    assert( p1.pos.y = p0.pos.y + ty );  
+    assert( p1.pos.z = p0.pos.z + tz );  
+}
 
 
+void test_TranConvert()
+{
+    float tx = 10. ; 
+    float ty = 20. ; 
+    float tz = 30. ; 
+    const glm::tmat4x4<float> tr0 = make_translate<float>(tx, ty, tz); 
+
+    glm::tmat4x4<double> tr1 ;
+
+    //TranConvert<double,float>(tr1, tr0);  
+    TranConvert(tr1, tr0);  
+
+    std::cout << " tr0\n" << tr0 << std::endl ; 
+    std::cout << " tr1\n" << tr1 << std::endl ; 
+}
 
 
 int main()
@@ -172,9 +214,11 @@ int main()
     test_Translate(); 
     test_MakeRotateA2B(); 
     test_Place(); 
+    test_photon_transform_0(); 
     */
 
-    test_photon_transform(); 
+    test_TranConvert(); 
+
 
     return 0 ; 
 }

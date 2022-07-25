@@ -28,6 +28,7 @@ set(TEST_SOURCES
    U4VolumeMakerTest.cc
    U4LogTest.cc
    U4RotationMatrixTest.cc
+   U4TransformTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})
