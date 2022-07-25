@@ -27,7 +27,7 @@ struct U4RotationMatrix : public G4RotationMatrix
     }; 
 
      static std::string Desc(const G4RotationMatrix* rot ); 
-
+     static U4RotationMatrix* ZZ( double angle ); 
      static U4RotationMatrix* Flip(unsigned mask) ;
      static U4RotationMatrix* Flip(const char* axes) ;
      static unsigned FlipMask(const char* axes); 
@@ -112,6 +112,14 @@ inline U4RotationMatrix::U4RotationMatrix(
                          yx, yy, yz ,
                          zx, zy, zz )
 {}  
+
+
+inline U4RotationMatrix* U4RotationMatrix::ZZ( double phi )
+{
+    return new U4RotationMatrix( cos(phi), sin(phi), 0., 
+                                -sin(phi), cos(phi), 0.,
+                                       0.,       0., 1. ); 
+}
 
 
 inline U4RotationMatrix* U4RotationMatrix::Flip(unsigned mask )

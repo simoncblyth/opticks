@@ -93,7 +93,7 @@ may provide.
 
 G4Material* U4Material::Get(const char* name)
 {
-   G4Material* material = G4Material::GetMaterial(name); 
+   G4Material* material = G4Material::GetMaterial(name, false); 
    if( material == nullptr ) material = Get_(name); 
    return material ;   
 }
@@ -108,8 +108,14 @@ G4Material* U4Material::Get_(const char* name)
 
 G4Material* U4Material::Vacuum(const char* name)
 {
-    G4double z, a, density ;
-    G4Material* material = new G4Material(name, z=1., a=1.01*CLHEP::g/CLHEP::mole, density=CLHEP::universe_mean_density );
+    bool dump = false ; 
+    if(dump) std::cout << "[ U4Material::Vacuum " << std::endl ; 
+    G4double z = 1. ; 
+    G4double a = 1.01*CLHEP::g/CLHEP::mole ; 
+    G4double density = 1.00001*CLHEP::universe_mean_density ;  // curious setting to 1. gives a warning 
+    if(dump) std::cout << " U4Material::Vacuum density " << std::scientific << density << std::endl ; 
+    G4Material* material = new G4Material(name, z, a, density );
+    if(dump) std::cout << "] U4Material::Vacuum " << std::endl ; 
     return material ;
 }
 

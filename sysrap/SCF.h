@@ -69,7 +69,7 @@ SCF* SCF::INSTANCE = nullptr ;
 SCF* SCF::Create()
 {
     bool has_CFBASE = SSys::hasenvvar("CFBASE") ; 
-    if(!has_CFBASE) std::cerr << "SCF::Create BUT no CFBASE envvar " << std::endl ; 
+    //if(!has_CFBASE) std::cerr << "SCF::Create BUT no CFBASE envvar " << std::endl ; 
     return has_CFBASE ? new SCF : nullptr ;  
 }
 SCF* SCF::Get(){  return INSTANCE ; }

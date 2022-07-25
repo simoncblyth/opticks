@@ -48,6 +48,10 @@ NB locations and packing here need to match ana/p.py
    #include <vector>
    #include <cstring>
    #include <cassert>
+   #include <glm/glm.hpp>
+
+   #include "scuda.h"
+   #include "stran.h" 
 
    struct NP ; 
 #endif
