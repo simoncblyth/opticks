@@ -48,6 +48,8 @@ NB locations and packing here need to match ana/p.py
    #include <vector>
    #include <cstring>
    #include <cassert>
+
+   struct NP ; 
 #endif
 
 /**
@@ -123,6 +125,7 @@ struct sphoton
     SPHOTON_METHOD static sphoton make_ephoton(); 
     SPHOTON_METHOD std::string digest(unsigned numval=16) const  ; 
     SPHOTON_METHOD static bool digest_match( const sphoton& a, const sphoton& b, unsigned numval=16 ) ; 
+    SPHOTON_METHOD static void Get( sphoton& p, const NP* a, unsigned idx ); 
 #endif 
 
 }; 
@@ -144,6 +147,7 @@ SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, 
 #include <bitset>
 #include "sdigest.h"
 #include "OpticksPhoton.hh"
+#include "NP.hh"
 
 SPHOTON_METHOD unsigned sphoton::flagmask_count() const 
 {
@@ -276,6 +280,12 @@ SPHOTON_METHOD bool sphoton::digest_match( const sphoton& a, const sphoton& b, u
     return strcmp( adig.c_str(), bdig.c_str() ) == 0 ;
 } 
 
+SPHOTON_METHOD void sphoton::Get( sphoton& p, const NP* a, unsigned idx )
+{
+    assert(a && a->has_shape(-1,4,4) && a->ebyte == sizeof(float) && idx < unsigned(a->shape[0]) ); 
+    assert( sizeof(sphoton) == sizeof(float)*16 ); 
+    memcpy( &p, a->cvalues<float>() + idx*16, sizeof(sphoton) ); 
+}
 
 
 #endif 
@@ -304,7 +314,27 @@ struct sphotond
     unsigned long long identity ; 
     unsigned long long orient_idx ;   
     unsigned long long flagmask ; 
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+   SPHOTON_METHOD static void Get( sphotond& p, const NP* a, unsigned idx ); 
+#endif 
+
+
 };
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+SPHOTON_METHOD void sphotond::Get( sphotond& p, const NP* a, unsigned idx )
+{
+    assert(a && a->has_shape(-1,4,4) && a->ebyte == sizeof(double) && idx < unsigned(a->shape[0]) ); 
+    assert( sizeof(sphotond) == sizeof(double)*16 ); 
+    memcpy( &p, a->cvalues<double>() + idx*16, sizeof(sphotond) ); 
+}
+#endif 
+
+
 
 
 

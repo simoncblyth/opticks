@@ -40,6 +40,7 @@ set(HEADERS
     U4_LOG.hh
     U4_API_EXPORT.hh
     U4.hh
+    U4Hit.h 
     U4Track.h
     U4Stack.h
     U4PhotonInfo.h

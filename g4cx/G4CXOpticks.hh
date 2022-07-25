@@ -27,6 +27,7 @@ struct G4CX_API G4CXOpticks
     static const plog::Severity LEVEL ;
     static G4CXOpticks* INSTANCE ; 
     static G4CXOpticks* Get(); 
+    static void Finalize(); 
 
     const G4VPhysicalVolume* wd ; 
     const GGeo*             gg ;

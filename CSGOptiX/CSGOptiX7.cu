@@ -386,7 +386,7 @@ __closesthit__ch : pass attributes from __intersection__ into setPayload
 
 optixGetInstanceId 
     flat instance_idx over all transforms in the single IAS, 
-    JUNO maximum ~50,000 (fits with 0xffff = 65535)
+    JUNO maximum ~50,000 (fits within 0xffff = 65535)
 
 optixGetPrimitiveIndex
     local index of AABB within the GAS, 

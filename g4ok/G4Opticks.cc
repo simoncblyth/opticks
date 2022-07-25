@@ -1311,6 +1311,12 @@ of the photon.
 Hit data is provided by m_hits_wrapper (GPho) which wraps m_hits.
 
 
+TODO: an equivalent in new workflow, can use Tran<double>::PhotonTransform
+applied to sphoton or sphotond with transform passed in 
+
+
+
+
 **/
 
 void G4Opticks::getHit(unsigned i, G4OpticksHit* hit, G4OpticksHitExtra* hit_extra ) const 
@@ -1321,6 +1327,7 @@ void G4Opticks::getHit(unsigned i, G4OpticksHit* hit, G4OpticksHitExtra* hit_ext
     glm::vec4 dirw = m_hits_wrapper->getDirectionWeight(i);      
     glm::vec4 polw = m_hits_wrapper->getPolarizationWavelength(i); 
 
+    // local getters rely on GPho::getLastIntersectNodeIndex/OpticksPhotonFlags::NodeIndex to get the frame
     glm::vec4 local_post = m_hits_wrapper->getLocalPositionTime(i);      
     glm::vec4 local_dirw = m_hits_wrapper->getLocalDirectionWeight(i);      
     glm::vec4 local_polw = m_hits_wrapper->getLocalPolarizationWavelength(i);      

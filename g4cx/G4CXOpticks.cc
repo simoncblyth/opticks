@@ -34,6 +34,12 @@ G4CXOpticks* G4CXOpticks::Get()
     return INSTANCE ; 
 } 
 
+void G4CXOpticks::Finalize() // static 
+{
+    LOG(LEVEL) << "placeholder mimic G4Opticks " ; 
+}
+
+
 G4CXOpticks::G4CXOpticks()
     :
     wd(nullptr),

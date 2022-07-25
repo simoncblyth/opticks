@@ -1,6 +1,5 @@
 // ./stran_test.sh 
 
-
 #include "scuda.h"
 #include "sqat4.h"
 #include "stran.h"
@@ -55,11 +54,11 @@ void test_MakeRotateA2B()
     std::cout << " a " << Tran<double>::Desc(a) << std::endl ;    
     std::cout << " b " << Tran<double>::Desc(b) << std::endl ;    
 
-    glm::tmat4x4<double> tr0 = Tran<double>::MakeRotateA2B(a, b, false ); 
-    std::cout << " Tran<double>::MakeRotate(a,b,false) " << std::endl << Tran<double>::Desc(tr0) << std::endl ;    
+    glm::tmat4x4<double> tr0 = Tran<double>::RotateA2B(a, b, false ); 
+    std::cout << " Tran<double>::Rotate(a,b,false) " << std::endl << Tran<double>::Desc(tr0) << std::endl ;    
 
-    glm::tmat4x4<double> tr1 = Tran<double>::MakeRotateA2B(a, b, true ); 
-    std::cout << " Tran<double>::MakeRotate(a,b,true) " << std::endl << Tran<double>::Desc(tr1) << std::endl ;    
+    glm::tmat4x4<double> tr1 = Tran<double>::RotateA2B(a, b, true ); 
+    std::cout << " Tran<double>::Rotate(a,b,true) " << std::endl << Tran<double>::Desc(tr1) << std::endl ;    
 
     glm::tvec4<double> a4(a, 0.); 
     glm::tvec4<double> b4(b, 0.); 
@@ -143,7 +142,23 @@ void test_Place()
 
 }
 
+void test_photon_transform()
+{
+    sphoton p ; 
+    p.pos = {0.f, 0.f, 0.f } ; 
+    p.time = 0.f  ;
+    p.mom = {0.f, 0.f, 1.f } ; 
+    p.pol = {0.f, 1.f, 0.f } ; 
 
+
+     
+ 
+
+  
+
+
+
+}
 
 
 
@@ -156,9 +171,10 @@ int main()
     test_from_string();  
     test_Translate(); 
     test_MakeRotateA2B(); 
-    */
     test_Place(); 
+    */
 
+    test_photon_transform(); 
 
     return 0 ; 
 }

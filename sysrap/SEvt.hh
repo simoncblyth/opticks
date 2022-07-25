@@ -128,8 +128,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const char* GetReldir(); 
 
     static int GetNumPhoton(); 
+    static int GetNumGenstep(); 
     static NP* GetGenstep(); 
     static NP* GetInputPhoton(); 
+    static void SetInputPhoton(NP* ip); 
     static bool HasInputPhoton(); 
 
  

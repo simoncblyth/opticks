@@ -45,9 +45,10 @@ if(Opticks_VERBOSE)
     endforeach() 
 endif()
 
-find_package(G4OK CONFIG QUIET)
+#find_package(G4OK CONFIG QUIET)
+find_package(G4CX CONFIG QUIET)
 
-if(G4OK_FOUND)
+if(G4CX_FOUND)
     add_compile_definitions(WITH_G4OPTICKS)
 
     if(Opticks_VERBOSE)
@@ -55,7 +56,7 @@ if(G4OK_FOUND)
     endif()
     include_directories(${PLog_INCLUDE_DIR})  ## WHY NOT AUTOMATIC ? Maybe because plog is header only ?
 
-    set(Opticks_TARGET "Opticks::G4OK")   
+    set(Opticks_TARGET "Opticks::G4CX")   
     set(Opticks_FOUND "YES") 
 
 else()

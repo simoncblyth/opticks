@@ -14,6 +14,10 @@ by optixrap/cu/generate.cu
 The whole flags Quad is passed to the static functions to 
 ease future rearrangments of flags 
 
+See the "FLAGS Macro" documentation of ocu/generate.cu 
+for where the flags come from. 
+
+
 **/
 
 struct OKCORE_API OpticksPhotonFlags 

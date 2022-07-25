@@ -68,9 +68,9 @@ quad2
 ::
 
     +------------+------------+------------+---------------+
-    | normal_x   | normal_y   | normal_z   | distance      |
+    | f:normal_x | f:normal_y | f:normal_z | f:distance    |
     +------------+------------+------------+---------------+
-    | lposcost   | iindex     | identity   | boundary      |
+    | f:lposcost | u:iindex   | u:identity | u:boundary    |
     +------------+------------+------------+---------------+
 
 **/

@@ -303,10 +303,12 @@ int SEvt::GetIndex(){           return INSTANCE ? INSTANCE->getIndex()  :  0 ; }
 void        SEvt::SetReldir(const char* reldir){ assert(INSTANCE) ; INSTANCE->setReldir(reldir) ; }
 const char* SEvt::GetReldir(){  return INSTANCE ? INSTANCE->getReldir() : nullptr ; }
 
-int SEvt::GetNumPhoton(){ return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
+int SEvt::GetNumPhoton(){  return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
+int SEvt::GetNumGenstep(){ return INSTANCE ? INSTANCE->getNumGenstep() : -1 ; }
 
 NP* SEvt::GetGenstep() {      return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
 NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
+void SEvt::SetInputPhoton(NP* p) {  assert(INSTANCE) ; INSTANCE->setInputPhoton(p) ; }
 bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : false ; }
 
 
@@ -322,6 +324,9 @@ void SEvt::clear()
     record.clear(); 
     rec.clear(); 
     seq.clear(); 
+    prd.clear(); 
+    tag.clear(); 
+    flat.clear(); 
 }
 
 unsigned SEvt::getNumGenstep() const 
@@ -374,7 +379,7 @@ sgs SEvt::addGenstep(const NP* a)
     return s ; 
 }
 
-bool SEvt::RECORDING = true ;  // TODO: needs to be normally false
+bool SEvt::RECORDING = true ;  // TODO: needs to be normally false, Q:what uses this ? 
 
 /**
 SEvt::addGenstep

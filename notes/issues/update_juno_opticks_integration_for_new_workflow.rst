@@ -17,6 +17,114 @@ TODO : mimic some of the G4Opticks API to simplify the update
 
 
 
+
+Old Integration : Overview WITH_G4OPTICKS
+-------------------------------------------
+
+::
+
+    epsilon:~ blyth$ jgl WITH_G4OPTICKS
+
+    ./Simulation/GenTools/GenTools/GtOpticksTool.h
+    ./Simulation/GenTools/src/GtOpticksTool.cc
+
+    ## Does input photons, using NPY.hpp NPho.hpp glm::vec4 getPositionTime 
+    ## Opticks now has its own way of doing input photons, the advantage 
+    ## with the tool is that is can be used with 
+
+    ## DONE: added sphoton::Get to load em from NP arrays 
+    ## DONE: U4Hit.h copied from G4OpticksHit.hh
+
+    ## HMM: old one had G4OpticksRecorder : but now think 
+    ##      that B-side running can be done Opticks side only 
+    ##
+
+    ./Simulation/DetSimV2/PhysiSim/include/LocalG4Cerenkov1042.hh
+    ./Simulation/DetSimV2/PhysiSim/src/LocalG4Cerenkov1042.cc
+
+    ./Simulation/DetSimV2/PhysiSim/include/DsG4Scintillation.h
+    ./Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
+
+    ./Simulation/DetSimV2/PhysiSim/src/DsPhysConsOptical.cc
+
+    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2.hh
+    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2.cc
+
+    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2_Opticks.hh
+    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc
+
+    ## TODO: G4Opticks::getHit needs updating for new workflow  
+    ##   NEED GPho and okc/OpticksPhotonFlags equiv
+    ##   old way used nodeIndex 
+    ##   using nodeIndex is extravagant : no need to use a 0-300k number ( > 0xffff ) 
+    ##   when there are only 50k transforms (fits in 0xffff )
+    ##
+    ##   how does python find which transform to use ? 
+    ##         
+
+    ./Simulation/DetSimV2/PMTSim/include/PMTEfficiencyCheck.hh
+    ./Simulation/DetSimV2/PMTSim/src/PMTEfficiencyCheck.cc
+
+    ./Simulation/DetSimV2/PMTSim/src/PMTSDMgr.cc
+
+    ./Simulation/DetSimV2/DetSimMTUtil/src/DetFactorySvc.cc
+
+    ./Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc
+
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc
+
+    ./Simulation/DetSimV2/AnalysisCode/include/G4OpticksAnaMgr.hh
+    ./Simulation/DetSimV2/AnalysisCode/src/G4OpticksAnaMgr.cc
+
+    ./Examples/Tutorial/python/Tutorial/JUNODetSimModule.py
+
+
+Getting Local Frame
+----------------------
+
+::
+
+    In [15]: cf.inst[39216]
+    Out[15]: 
+    array([[     0.48 ,     -0.379,      0.792,      0.   ],
+           [    -0.619,     -0.785,     -0.   ,      0.   ],
+           [     0.621,     -0.49 ,     -0.611,      0.   ],
+           [-12075.873,   9528.691,  11876.771,      1.   ]], dtype=float32)
+
+    In [16]: t.sframe.m2w
+    Out[16]: 
+    array([[     0.48 ,     -0.379,      0.792,      0.   ],
+           [    -0.619,     -0.785,     -0.   ,      0.   ],
+           [     0.621,     -0.49 ,     -0.611,      0.   ],
+           [-12075.873,   9528.691,  11876.771,      1.   ]], dtype=float32)
+
+    In [17]: np.all( t.sframe.m2w  == cf.inst[39216] )
+    Out[17]: False
+
+    In [18]: np.where( t.sframe.m2w  != cf.inst[39216] )
+    Out[18]: (array([0, 1, 2]), array([3, 3, 3]))
+
+    In [19]: t.sframe.m2w - cf.inst[39216]
+    Out[19]: 
+    array([[ 0.,  0.,  0., -0.],
+           [ 0.,  0.,  0., -0.],
+           [ 0.,  0.,  0., -0.],
+           [ 0.,  0.,  0.,  0.]], dtype=float32)
+
+    In [20]: t.sframe.m2w[:,:3]
+    Out[20]: 
+    array([[     0.48 ,     -0.379,      0.792],
+           [    -0.619,     -0.785,     -0.   ],
+           [     0.621,     -0.49 ,     -0.611],
+           [-12075.873,   9528.691,  11876.771]], dtype=float32)
+
+    In [21]: np.all( t.sframe.m2w[:,:3] == cf.inst[39216,:,:3] )
+    Out[21]: True
+
+
+
+
+
 Old Integration : OPTICKS_LOG 
 ---------------------------------
 
