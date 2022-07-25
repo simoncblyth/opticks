@@ -11,6 +11,55 @@ How to simplify integration ?
   absolute minimum on the Detector Framework side
 
 
+DONE : moved SEvt into G4CXOpticks, added INSTANCE  
+
+TODO : mimic some of the G4Opticks API to simplify the update 
+
+
+
+Old Integration : OPTICKS_LOG 
+---------------------------------
+
+::
+
+    epsilon:offline blyth$ jgr OPTICKS_LOG
+    ./Simulation/DetSimV2/DetSimMTUtil/src/DetFactorySvc.cc:#include "OPTICKS_LOG.hh"
+    ./Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc:#include "OPTICKS_LOG.hh"
+
+jcv DetSim0Svc::
+
+    301 bool DetSim0Svc::initializeOpticks()
+    302 {
+    303     dumpOpticks("DetSim0Svc::initializeOpticks");
+    304     assert( m_opticksMode > 0);
+    305 
+    306 #ifdef WITH_G4OPTICKS
+    307     OPTICKS_ELOG("DetSim0Svc");
+    308 #else
+    309     LogError << " FATAL : non-zero opticksMode **NOT** WITH_G4OPTICKS " << std::endl ;
+    310     assert(0);
+    311 #endif
+    312     return true ;
+    313 }
+    314 
+    315 bool DetSim0Svc::finalizeOpticks()
+    316 {
+    317     dumpOpticks("DetSim0Svc::finalizeOpticks");
+    318     assert( m_opticksMode > 0);
+    319 
+    320 #ifdef WITH_G4OPTICKS
+    321     G4Opticks::Finalize();
+    322 #else
+    323     LogError << " FATAL : non-zero opticksMode **NOT** WITH_G4OPTICKS " << std::endl ;
+    324     assert(0);
+    325 #endif
+    326     return true;
+    327 }
+
+
+
+
+
 Old Integration : setup : done at tail of LSExpDetectorConstruction::Construct
 ---------------------------------------------------------------------------------
 
@@ -135,3 +184,32 @@ jcv junoSD_PMT_v2::
     1079 #endif
 
 jcv junoSD_PMT_v2_Opticks::
+
+    118 void junoSD_PMT_v2_Opticks::EndOfEvent(G4HCofThisEvent*)
+    119 {
+    120     if(m_pmthitmerger_opticks == nullptr)
+    121     {
+    122         m_pmthitmerger_opticks = m_jpmt->getMergerOpticks();
+    123     }
+    124 
+    125     const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent() ;
+    126     G4int eventID = event->GetEventID() ;
+    127 
+    128     G4Opticks* g4ok = G4Opticks::Get() ;
+    129 
+    130     unsigned num_gensteps = g4ok->getNumGensteps();
+    131     unsigned num_photons = g4ok->getNumPhotons();
+    132 
+    133     LOG(info)
+    134         << "["
+    135         << " eventID " << eventID
+    136         << " m_opticksMode " << m_opticksMode
+    137         << " numGensteps " << num_gensteps
+    138         << " numPhotons " << num_photons
+    139         ;
+    140 
+    141     g4ok->propagateOpticalPhotons(eventID);
+
+
+
+
