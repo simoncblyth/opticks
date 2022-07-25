@@ -25,31 +25,51 @@ could be migrated here, but probably better to re-implement
 very focussed converter classes.
 
 #]=]
-set(G4_VERBOSE ON)
+set(G4_VERBOSE OFF)
 find_package(G4         REQUIRED MODULE)
 find_package(GGeo       REQUIRED CONFIG)   
 
 # just for X4GDMLWrite
-set(OpticksXercesC_VERBOSE ON)
+set(OpticksXercesC_VERBOSE OFF)
 find_package(OpticksXercesC REQUIRED MODULE)
 
-message(STATUS "Geant4_DEFINITIONS:${Geant4_DEFINITIONS} ")
+message(STATUS "extg4/CMakeLists.txt:Geant4_DEFINITIONS:${Geant4_DEFINITIONS} ")
 
 
 find_package(CLHEP      REQUIRED CONFIG) #   Geant4 should have found it already
 
 if(CLHEP_FOUND)
-message(STATUS "CLHEP_DIR : ${CLHEP_DIR}" )
-message(STATUS "CLHEP_INCLUDE_DIRS : ${CLHEP_INCLUDE_DIRS}" )
-message(STATUS "CLHEP_LIBRARIES    : ${CLHEP_LIBRARIES}" )
+message(STATUS "extg4/CMakeLists.txt:CLHEP_DIR : ${CLHEP_DIR}" )
+message(STATUS "extg4/CMakeLists.txt:CLHEP_INCLUDE_DIRS : ${CLHEP_INCLUDE_DIRS}" )
+message(STATUS "extg4/CMakeLists.txt:CLHEP_LIBRARIES    : ${CLHEP_LIBRARIES}" )
 else()
-message(STATUS "CLHEP NOT FOUND")
+message(STATUS "extg4/CMakeLists.txt:CLHEP NOT FOUND")
 endif()
 
-
+set(PMTSim_VERBOSE ON)
 find_package(PMTSim CONFIG)
 
+if(PMTSim_VERBOSE)
+if(PMTSim_FOUND)
+   message(STATUS "extg4/CMakeLists.txt:PMTSim_FOUND")
+else()
+   message(STATUS "extg4/CMakeLists.txt:PMTSim_NOT-FOUND")
+endif()
+endif()
 
+if(TARGET Opticks::PMTSim)
+    if(PMTSim_VERBOSE)
+    message(STATUS "extg4/CMakeLists.txt: TARGET Opticks::PMTSim FOUND ")
+    get_target_property(PMTSim_IID Opticks::PMTSim INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(PMTSim_ILL Opticks::PMTSim INTERFACE_LINK_LIBRARIES)
+    message(STATUS "extg4/CMakeLists.txt:PMTSim_IID : ${PMTSim_IID}")
+    message(STATUS "extg4/CMakeLists.txt:PMTSim_ILL : ${PMTSim_ILL}")
+    endif()
+else()
+    if(PMTSim_VERBOSE)
+    message(STATUS "extg4/CMakeLists.txt: TARGET Opticks::PMTSim NOT FOUND ")
+    endif()
+endif()
 
 
 
