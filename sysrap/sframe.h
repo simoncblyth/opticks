@@ -139,23 +139,40 @@ inline void sframe::zero()
     tr_w2m = nullptr ;
 }
 
-
 inline std::string sframe::desc() const 
 {
     std::stringstream ss ; 
     ss << "sframe::desc"
-       << " iidx " << iidx()
        << " inst " << inst() 
+       << " frs " << ( frs ? frs : "-" ) << std::endl 
+       << " ce  " << ce 
        << std::endl 
-       << " m2w " << m2w.desc() 
+       << " m2w " << m2w 
        << std::endl 
-       << " w2m " << w2m.desc() 
+       << " w2m " << w2m 
        << std::endl 
-       ; 
+       << " midx " << std::setw(4) << midx()
+       << " mord " << std::setw(4) << mord()
+       << " iidx " << std::setw(4) << iidx()
+       << std::endl 
+       << " inst " << std::setw(4) << inst()
+       << std::endl 
+       << " ix0  " << std::setw(4) << ix0()
+       << " ix1  " << std::setw(4) << ix1()
+       << " iy0  " << std::setw(4) << iy0()
+       << " iy1  " << std::setw(4) << iy1()
+       << " iz0  " << std::setw(4) << iz0()
+       << " iz1  " << std::setw(4) << iz1()
+       << " num_photon " << std::setw(4) << num_photon()
+       << std::endl 
+       << " ins  " << std::setw(4) << ins()
+       << " gas  " << std::setw(4) << gas()
+       << " ias  " << std::setw(4) << ias()
+       << std::endl 
+       ;
     std::string s = ss.str(); 
     return s ; 
 }
-
 
 
 inline sframe sframe::Load(const char* dir, const char* name)
@@ -368,39 +385,10 @@ inline void sframe::transform_w2m( sphoton& p, bool normalize ) const
 }
 
 
-
 inline std::ostream& operator<<(std::ostream& os, const sframe& fr)
 {
-    os 
-       << " frs " << ( fr.frs ? fr.frs : "-" ) << std::endl 
-       << " ce  " << fr.ce 
-       << std::endl 
-       << " m2w " << fr.m2w 
-       << std::endl 
-       << " w2m " << fr.w2m 
-       << std::endl 
-       << " midx " << std::setw(4) << fr.midx()
-       << " mord " << std::setw(4) << fr.mord()
-       << " iidx " << std::setw(4) << fr.iidx()
-       << std::endl 
-       << " inst " << std::setw(4) << fr.inst()
-       << std::endl 
-       << " ix0  " << std::setw(4) << fr.ix0()
-       << " ix1  " << std::setw(4) << fr.ix1()
-       << " iy0  " << std::setw(4) << fr.iy0()
-       << " iy1  " << std::setw(4) << fr.iy1()
-       << " iz0  " << std::setw(4) << fr.iz0()
-       << " iz1  " << std::setw(4) << fr.iz1()
-       << " num_photon " << std::setw(4) << fr.num_photon()
-       << std::endl 
-       << " ins  " << std::setw(4) << fr.ins()
-       << " gas  " << std::setw(4) << fr.gas()
-       << " ias  " << std::setw(4) << fr.ias()
-       << std::endl 
-       ;
-
+    os << fr.desc() ; 
     return os; 
 }
-
 
 

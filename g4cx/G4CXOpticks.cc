@@ -218,5 +218,11 @@ void G4CXOpticks::save() const
 {
     if(se == nullptr) return ; 
     se->save(); 
+
+    LOG(LEVEL) << se->descPhoton() ; 
+    LOG(LEVEL) << se->descLocalPhoton() ; 
+    LOG(LEVEL) << se->descFramePhoton() ; 
+
+
 }
  

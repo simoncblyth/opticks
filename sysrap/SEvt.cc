@@ -1495,12 +1495,90 @@ void SEvt::getLocalHit(sphoton& lp, unsigned idx) const
 }
 void SEvt::applyLocalTransform_w2m( sphoton& lp) const 
 {
-    assert(cf); 
     sframe fr ; 
-    cf->getFrame(fr, lp.iindex); 
-    fr.prepare(); 
+    getPhotonFrame(fr, lp); 
     fr.transform_w2m(lp); 
 } 
+void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const 
+{
+    assert(cf); 
+    cf->getFrame(fr, p.iindex); 
+    fr.prepare(); 
+}
+
+
+
+std::string SEvt::descPhoton(unsigned max_print) const 
+{
+    unsigned num_fold_photon = getNumFoldPhoton(); 
+    unsigned num_print = std::min(max_print, num_fold_photon) ; 
+    std::stringstream ss ; 
+    ss << "SEvt::descPhoton" 
+       << " num_fold_photon " <<  num_fold_photon 
+       << " max_print " <<  max_print 
+       << " num_print " <<  num_print 
+       << std::endl 
+       ;
+
+    sphoton p ; 
+    for(unsigned idx=0 ; idx < num_print ; idx++)
+    {   
+        getPhoton(p, idx); 
+        ss << p.desc() << std::endl  ;   
+    }   
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+std::string SEvt::descLocalPhoton(unsigned max_print) const 
+{
+    unsigned num_fold_photon = getNumFoldPhoton(); 
+    unsigned num_print = std::min(max_print, num_fold_photon) ; 
+
+    std::stringstream ss ; 
+    ss << "SEvt::descLocalPhoton"
+       << " num_fold_photon " <<  num_fold_photon 
+       << " max_print " <<  max_print 
+       << " num_print " <<  num_print 
+       << std::endl 
+       ; 
+
+    sphoton lp ; 
+    for(unsigned idx=0 ; idx < num_print ; idx++)
+    {   
+        getLocalPhoton(lp, idx); 
+        ss << lp.desc() << std::endl  ;   
+    }   
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+std::string SEvt::descFramePhoton(unsigned max_print) const 
+{
+    unsigned num_fold_photon = getNumFoldPhoton(); 
+    unsigned num_print = std::min(max_print, num_fold_photon) ; 
+
+    std::stringstream ss ; 
+    ss << "SEvt::descFramePhoton"
+       << " num_fold_photon " <<  num_fold_photon 
+       << " max_print " <<  max_print 
+       << " num_print " <<  num_print 
+       << std::endl 
+       ; 
+
+    sphoton fp ; 
+    for(unsigned idx=0 ; idx < num_print ; idx++)
+    {   
+        getFramePhoton(fp, idx); 
+        ss << fp.desc() << std::endl  ;   
+    }   
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 /**
 SEvt::getFramePhoton SEvt::getFrameHit

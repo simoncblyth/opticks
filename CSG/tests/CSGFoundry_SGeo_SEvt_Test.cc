@@ -54,31 +54,12 @@ int main(int argc, char** argv)
         ; 
 
 
-    sphoton p ; 
-    std::cout << "SEvt::getPhoton" << std::endl ; 
-    for(unsigned idx=0 ; idx < num_print ; idx++)
-    {
-        sev.getPhoton(p, idx); 
-        std::cout <<  p.desc() << std::endl  ; 
-    }
+    std::cout << sev.descPhoton() << std::endl ; 
+    std::cout << sev.descLocalPhoton() << std::endl ; 
+    std::cout << sev.descFramePhoton() << std::endl ; 
     
-    sphoton lp ; 
-    std::cout << "SEvt::getLocalPhoton" << std::endl ; 
-    for(unsigned idx=0 ; idx < num_print ; idx++)
-    {
-        sev.getLocalPhoton(lp, idx); 
-        std::cout << lp.desc() << std::endl  ; 
-    }
 
-    sphoton fp ; 
-    std::cout << "SEvt::getFramePhoton" << std::endl ; 
-    for(unsigned idx=0 ; idx < num_print ; idx++)
-    {
-        sev.getFramePhoton(fp, idx); 
-        std::cout << fp.desc() << std::endl  ; 
-    }
-
-
+   
     return 0 ; 
 }
 

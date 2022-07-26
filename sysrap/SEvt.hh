@@ -269,16 +269,16 @@ struct SYSRAP_API SEvt : public SCompProvider
     unsigned getNumFoldPhoton() const ; 
     unsigned getNumFoldHit() const ; 
 
-
     void getLocalPhoton(sphoton& p, unsigned idx) const ; 
     void getLocalHit(   sphoton& p, unsigned idx) const ; 
     void applyLocalTransform_w2m( sphoton& lp) const ; 
+    void getPhotonFrame( sframe& fr, const sphoton& p ) const ; 
+
+    std::string descPhoton(unsigned max_print=10) const ; 
+    std::string descLocalPhoton(unsigned max_print=10) const ; 
+    std::string descFramePhoton(unsigned max_print=10) const ; 
 
     void getFramePhoton(sphoton& p, unsigned idx) const ; 
     void getFrameHit(   sphoton& p, unsigned idx) const ; 
-
-
 };
-
-
 
