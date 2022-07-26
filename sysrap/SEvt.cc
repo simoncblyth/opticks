@@ -51,6 +51,7 @@ SEvt::SEvt()
     random(nullptr),
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
     fold(new NPFold),
+    cf(nullptr),
     hostside_running_resize_done(false)
 { 
     init(); 
@@ -226,6 +227,11 @@ void SEvt::setFrame(const sframe& fr )
         }
 
     }   
+}
+
+void SEvt::setGeo(const SGeo* cf_)
+{
+    cf = cf_ ; 
 }
 
 
@@ -981,6 +987,8 @@ NP* SEvt::getPho() const {  return NP::Make<int>( (int*)pho.data(), int(pho.size
 NP* SEvt::getGS() const {   return NP::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
 
 
+// HMM: get is a bit misleading
+
 NP* SEvt::getPhoton() const 
 { 
     if( evt->photon == nullptr ) return nullptr ; 
@@ -1250,6 +1258,15 @@ void SEvt::save()
     LOG(LEVEL) << "DefaultDir " << dir ; 
     save(dir); 
 }
+void SEvt::load()
+{
+    const char* dir = DefaultDir(); 
+    LOG(LEVEL) << "DefaultDir " << dir ; 
+    load(dir); 
+}
+
+
+
 void SEvt::save(const char* base, const char* reldir ) 
 {
     const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
@@ -1261,6 +1278,8 @@ void SEvt::save(const char* base, const char* reldir1, const char* reldir2 )
     const char* dir = SPath::Resolve(base, reldir1, reldir2,  DIRPATH); 
     save(dir); 
 }
+
+
 
 
 /**
@@ -1314,6 +1333,15 @@ void SEvt::save(const char* dir_)
     saveLabels(dir); 
     saveFrame(dir); 
 }
+void SEvt::load(const char* dir_) 
+{
+    const char* dir = getOutputDir(dir_); 
+    LOG(LEVEL) << " dir " << dir ; 
+
+    fold->load(dir); 
+}
+
+
 
 
 /**
@@ -1416,4 +1444,80 @@ std::string SEvt::descComponent() const
     return s ; 
 }
 
+
+
+
+void SEvt::getPhoton(sphoton& p, unsigned idx) const 
+{
+    const NP* photon = fold->get(SComp::PHOTON_) ; 
+    sphoton::Get(p, photon, idx ); 
+}
+void SEvt::getHit(sphoton& p, unsigned idx) const 
+{
+    const NP* hit = fold->get(SComp::HIT_) ; 
+    sphoton::Get(p, hit, idx ); 
+}
+
+unsigned SEvt::getNumFoldPhoton() const 
+{
+    const NP* photon = fold->get(SComp::PHOTON_) ; 
+    return photon->shape[0] ; 
+}
+unsigned SEvt::getNumFoldHit() const 
+{
+    const NP* hit = fold->get(SComp::HIT_) ; 
+    return hit->shape[0] ; 
+}
+
+
+
+
+
+
+/**
+SEvt::getLocalPhoton SEvt::getLocalHit
+-----------------------------------------
+
+sphoton::iindex instance index used to get instance frame
+from (SGeo*)cf which is used to transform the photon  
+
+**/
+
+void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const 
+{
+    getPhoton(lp, idx); 
+    applyLocalTransform_w2m(lp); 
+}
+void SEvt::getLocalHit(sphoton& lp, unsigned idx) const 
+{
+    getHit(lp, idx); 
+    applyLocalTransform_w2m(lp); 
+}
+void SEvt::applyLocalTransform_w2m( sphoton& lp) const 
+{
+    assert(cf); 
+    sframe fr ; 
+    cf->getFrame(fr, lp.iindex); 
+    fr.prepare(); 
+    fr.transform_w2m(lp); 
+} 
+
+/**
+SEvt::getFramePhoton SEvt::getFrameHit
+---------------------------------------
+
+frame set by SEvt::setFrame is used to transform the photon 
+
+**/
+
+void SEvt::getFramePhoton(sphoton& lp, unsigned idx) const 
+{
+    getPhoton(lp, idx); 
+    frame.transform_w2m(lp); 
+}
+void SEvt::getFrameHit(sphoton& lp, unsigned idx) const 
+{
+    getHit(lp, idx); 
+    frame.transform_w2m(lp); 
+}
 

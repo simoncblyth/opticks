@@ -74,6 +74,8 @@ const char* SOpticksResource::RNGDir(){         return SPath::Resolve(RNGCacheDi
 const char* SOpticksResource::RuncacheDir(){    return SPath::Resolve(ResolveUserCachePrefix(), "runcache", NOOP); }
 const char* SOpticksResource::PrecookedDir(){   return SPath::Resolve(ResolvePrecookedPrefix(), "precooked", NOOP); }
 
+const char* SOpticksResource::ExecutableName(){  return SSys::getenvvar("SOpticksResource_ExecutableName", SProc::ExecutableName() ) ; } 
+
 /**
 SOpticksResource::DefaultOutputDir
 ------------------------------------
@@ -95,7 +97,7 @@ Previously used the inconsistent flipped layout TMP/ExecutableName/GEOM which co
 
 const char* SOpticksResource::DefaultOutputDir()
 { 
-    return SPath::Resolve("$TMP", SSys::getenvvar("GEOM"), SProc::ExecutableName(), NOOP); 
+    return SPath::Resolve("$TMP", SSys::getenvvar("GEOM"), ExecutableName(), NOOP); 
 }
 
 

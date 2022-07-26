@@ -57,6 +57,7 @@ class GGEO_API GItemList : public NSequence {
     public:
        // fulfil NSequence protocol
        const char* getKey(unsigned index) const ;
+
        unsigned getNumKeys() const ;
        unsigned getNumUniqueKeys() const ; 
     public:

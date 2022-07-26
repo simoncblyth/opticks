@@ -27,6 +27,7 @@
 #include "SStr.hh"
 #include "SLog.hh"
 #include "SSim.hh"
+#include "sframe.h"
 #include "SProp.hh"
 #include "NP.hh"
 
@@ -1032,14 +1033,19 @@ const char* GGeo::getMeshName(unsigned midx) const
 {
     return m_meshlib->getMeshName(midx); 
 }
+
+
 void GGeo::getMeshNames(std::vector<std::string>& meshNames) const 
 {
      m_meshlib->getMeshNames(meshNames); 
 }
 
 
-
-
+int GGeo::getFrame(sframe& fr, int ins_idx ) const 
+{
+    fr.zero(); 
+    assert(0); // not implemented for GGeo 
+}
 
 
 

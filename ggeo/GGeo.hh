@@ -33,6 +33,7 @@ template <typename T> class NPY ;
 #include "NConfigurable.hpp"
 
 struct SSim ; 
+struct sframe ; 
 
 class NLookup ; 
 class BMeta ;
@@ -327,6 +328,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         const char*        getMeshName(unsigned midx) const ;
         void               getMeshNames(std::vector<std::string>& meshNames) const ;
         int                getMeshIndexWithName(const char* name, bool startswith=true) const ;
+
+        int getFrame(sframe& fr, int ins_idx ) const ; 
+
+
         std::string        descMesh() const ;
 
 

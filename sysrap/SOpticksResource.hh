@@ -28,6 +28,8 @@ struct SYSRAP_API SOpticksResource
     static const char* RNGDir();
     static const char* RuncacheDir();
     static const char* PrecookedDir();
+
+    static const char* ExecutableName(); 
     static const char* DefaultOutputDir(); 
 
 

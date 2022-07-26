@@ -52,10 +52,7 @@ sframe test_getFrame_inst(const CSGFoundry* fd)
     return fr ; 
 }
 
-
-
 const char* FOLD = getenv("FOLD") ; 
-
 
 
 int main(int argc, char** argv)
@@ -73,13 +70,10 @@ int main(int argc, char** argv)
 
     sframe fr = fd->getFrame(ipf); 
 
-    Tran<double> m2w = fr.get_m2w();  
-
     std::cout << "fr" << fr << std::endl ;   
 
     fr.save(FOLD); 
-    m2w.save(FOLD, "m2w.npy"); 
-
+    fr.save_extras(FOLD); 
 
     SEventConfig::SetRGModeSimulate(); 
 

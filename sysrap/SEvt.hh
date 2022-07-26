@@ -56,12 +56,13 @@ struct sphoton_selector ;
 struct sdebug ; 
 struct NP ; 
 struct NPFold ; 
+struct SGeo ; 
 
 #include "SYSRAP_API_EXPORT.hh"
 
 struct SYSRAP_API SEvt : public SCompProvider
 {
-    static const SCF* CF ;
+    static const SCF* CF ;  // TODO: eliminate 
 
     int index ; 
     const char* reldir ; 
@@ -75,8 +76,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     const SRandom*        random ; 
     const SCompProvider*  provider ; 
     NPFold*               fold ; 
-    bool                  hostside_running_resize_done ; // only ever becomes true for non-GPU running 
+    const SGeo*           cf ; 
 
+    bool              hostside_running_resize_done ; // only ever becomes true for non-GPU running 
     sframe            frame ;
 
 
@@ -152,6 +154,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static const bool setFrame_WIDE_INPUT_PHOTON ; 
     void setFrame(const sframe& fr ); 
+    void setGeo(const SGeo* cf); 
+
     static quad6 MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr ); 
 
 
@@ -245,16 +249,35 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     // save methods not const as calls gather_components 
     void save() ; 
+    void load() ; 
     void save(const char* base, const char* reldir1, const char* reldir2 ); 
     void save(const char* base, const char* reldir ); 
 
     const char* getOutputDir(const char* base_=nullptr) const ; 
     void save(const char* dir); 
+    void load(const char* dir); 
 
     std::string desc() const ; 
     std::string descGS() const ; 
     std::string descFold() const ; 
     std::string descComponent() const ; 
+
+
+    void getPhoton(sphoton& p, unsigned idx) const ; 
+    void getHit(   sphoton& p, unsigned idx) const ; 
+
+    unsigned getNumFoldPhoton() const ; 
+    unsigned getNumFoldHit() const ; 
+
+
+    void getLocalPhoton(sphoton& p, unsigned idx) const ; 
+    void getLocalHit(   sphoton& p, unsigned idx) const ; 
+    void applyLocalTransform_w2m( sphoton& lp) const ; 
+
+    void getFramePhoton(sphoton& p, unsigned idx) const ; 
+    void getFrameHit(   sphoton& p, unsigned idx) const ; 
+
+
 };
 
 

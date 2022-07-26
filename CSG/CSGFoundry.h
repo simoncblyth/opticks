@@ -14,6 +14,7 @@ struct SSim ;
 #include "sqat4.h"
 #include "saabb.h"
 #include "stran.h"
+#include "SGeo.hh"
 
 struct sframe ; 
 struct SName ; 
@@ -81,7 +82,7 @@ plan
 **/
 
 
-struct CSG_API CSGFoundry
+struct CSG_API CSGFoundry : public SGeo
 {
     static const plog::Severity LEVEL ; 
     static const int  VERBOSE ; 
@@ -340,8 +341,14 @@ struct CSG_API CSGFoundry
     void getMeshName( std::vector<std::string>& mname ) const ; 
     void getPrimName( std::vector<std::string>& pname ) const ; 
 
-    const std::string& getMeshName(unsigned midx) const ; 
+    // SGeo protocol 
+    unsigned getNumMeshes() const ; 
+    const char* getMeshName(unsigned midx) const ; 
+    int getMeshIndexWithName(const char* name, bool startswith) const ; 
+
+
     int findMeshIndex(const char* qname) const ; 
+
     const std::string descELV(const SBitSet* elv) const ; 
 
     const std::string& getSolidLabel(unsigned sidx) const ; 

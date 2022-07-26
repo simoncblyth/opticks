@@ -12,7 +12,6 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "SGeo.hh"
 #include "SSys.hh"
 #include "SSim.hh"
 #include "SProc.hh"
@@ -24,6 +23,8 @@
 #include "SGeoConfig.hh"
 #include "SOpticksResource.hh"
 #include "NP.hh"
+
+#include "SEvt.hh"
 #include "SSim.hh"
 #include "PLOG.hh"
 
@@ -89,15 +90,23 @@ CSGFoundry::CSGFoundry()
     init(); 
 }
 
+/**
+CSGFoundry::init
+-----------------
+
+Without sufficient reserved the vectors may reallocate on any push_back invalidating prior pointers.
+Yes, but generally indices are used rather than pointers to avoid this kinda issue. 
+
+**/
 void CSGFoundry::init()
 {
-    // without sufficient reserved the vectors may reallocate on any push_back invalidating prior pointers 
     solid.reserve(IMAX); 
     prim.reserve(IMAX); 
     node.reserve(IMAX); 
     plan.reserve(IMAX); 
     tran.reserve(IMAX); 
     itra.reserve(IMAX); 
+    inst.reserve(IMAX); // inst added July 2022 
 
     setMeta(); 
 }
@@ -193,10 +202,16 @@ std::string CSGFoundry::descMeshName() const
 }
 
 
+unsigned CSGFoundry::getNumMeshes() const 
+{
+    return meshname.size() ; 
+}
 unsigned CSGFoundry::getNumMeshName() const 
 {
     return meshname.size() ; 
 }
+
+
 unsigned CSGFoundry::getNumSolidLabel() const 
 {
     return mmlabel.size() ; 
@@ -248,10 +263,10 @@ void CSGFoundry::getPrimName( std::vector<std::string>& pname ) const
 
 
 
-const std::string& CSGFoundry::getMeshName(unsigned midx) const 
+const char* CSGFoundry::getMeshName(unsigned midx) const 
 {
     assert( midx < meshname.size() ); 
-    return meshname[midx] ; 
+    return meshname[midx].c_str() ; 
 }
 
 
@@ -276,6 +291,23 @@ int CSGFoundry::findMeshIndex(const char* qname) const
     int midx = id->findIndex(qname, count, max_count); 
     return midx ; 
 }
+
+/**
+CSGFoundry::getMeshIndexWithName
+----------------------------------
+
+SGeo
+
+**/
+
+int CSGFoundry::getMeshIndexWithName(const char* qname, bool startswith) const 
+{
+    return id->findIndexWithName(qname, startswith) ; 
+}
+
+
+
+
 
 /**
 CSGFoundry::descELV
@@ -2358,6 +2390,11 @@ CSGFoundry* CSGFoundry::Load() // static
         LOG(error) << " non-standard dynamic selection CSGFoundry_Load_saveAlt " ; 
         dst->saveAlt() ; 
     }
+
+
+   
+
+
     return dst ; 
 }
 
@@ -2729,6 +2766,8 @@ sframe CSGFoundry::getFrame(const char* frs) const
     int rc = getFrame(fr, frs ? frs : FRS );
     if(rc != 0) LOG(error) << " frs " << frs << std::endl << getFrame_NOTES ; 
     if(rc != 0) std::raise(SIGINT); 
+
+    fr.prepare();  // creates Tran<double>
     return fr ; 
 }
 
@@ -2789,6 +2828,8 @@ int CSGFoundry::getFrame(sframe& fr, int inst_idx) const
     return target->getFrame( fr, inst_idx ); 
 }
 
+
+
 int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const 
 {
     int rc = 0 ; 
@@ -2803,6 +2844,12 @@ int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const
     }
     return rc ; 
 }
+
+
+
+
+
+
 
 /**
 TODO CSGFoundry::flatIdxToMOI ?

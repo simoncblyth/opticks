@@ -51,6 +51,9 @@ struct SName
     const char* getName(unsigned idx) const ;
     const char* getAbbr(unsigned idx) const ;
 
+
+    int findIndexWithName(const char* qname, bool startswith) const ; 
+
     int getIndex( const char* name    , unsigned& count) const ;
     int findIndex(const char* starting, unsigned& count, int max_count=-1) const ;
     int findIndex(const char* starting) const ;
@@ -188,7 +191,20 @@ inline const char* SName::getAbbr(unsigned idx) const
 
 
 
+/**
+SName::findIndexWithName
+--------------------------
 
+Method to assist with fulfilment of SGeo::getIndexWithName 
+
+**/
+
+inline int SName::findIndexWithName(const char* qname, bool startswith) const 
+{
+    unsigned count = 0 ; 
+    int max_count = -1 ; 
+    return startswith ? findIndex(qname, count, max_count) : getIndex( qname, count ) ; 
+}
 
 
 /**

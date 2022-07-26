@@ -1,15 +1,5 @@
 #include "CheckGeo.hh"
-
-/**
-CheckGeo::CheckGeo()
-{
-}
-
-CheckGeo::~CheckGeo()
-{
-}
-
-**/
+#include "sframe.h"
 
 
 unsigned CheckGeo::getNumMeshes() const 
@@ -24,5 +14,16 @@ int CheckGeo::getMeshIndexWithName(const char* , bool ) const
 {
    return 0 ; 
 }
+
+
+
+
+int CheckGeo::getFrame(sframe& fr, int ins_idx ) const 
+{
+    fr.zero(); 
+    return 0 ; 
+}
+
+
 
 

@@ -4,6 +4,8 @@
 sframe.h
 ===========
 
+Provided by CSGFoundry::getFrame methods 
+
 Persisted into (4,4,4) array.
 Any extension should be in quad4 blocks 
 for persisting, alignment and numpy convenience
@@ -16,17 +18,23 @@ but are using *frs* to indicate intension for generalization
 to frame specification using global instance index rather than MOI
 which uses the gas specific instance index. 
 
-TODO: should be using Tran<double> for transforming 
+TODO: should be using Tran<double> for transforming , might as well 
+      do the lot in double : double4,dquad,dqat4 
 
 
 **/
 
 #include <cassert>
 #include <vector>
+#include <string>
+
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
 #include "stran.h"
+
+#include "sphoton.h"
+
 #include "NP.hh"
 #include "SPath.hh"
 
@@ -34,10 +42,12 @@ TODO: should be using Tran<double> for transforming
 struct sframe
 {
     static constexpr const char* NAME = "sframe.npy" ; 
-    static sframe Load( const char* dir, const char* name=NAME); 
-    static sframe Load_(const char* path ); 
     static constexpr const unsigned NUM_4x4 = 4 ; 
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
+
+    static sframe Load( const char* dir, const char* name=NAME); 
+    static sframe Load_(const char* path ); 
+
 
 
     float4 ce = {} ;   // 0
@@ -45,17 +55,20 @@ struct sframe
     quad   q2 = {} ; 
     quad   q3 = {} ; 
    
-    qat4   m2w ;       // 1
-    qat4   w2m ;       // 2
+    qat4   m2w = {} ;  // 1
+    qat4   w2m = {} ;  // 2
 
     quad4  aux = {} ;  // 3
 
 
     // on the edge, the above are memcpy in/out by load/save
     const char* frs = nullptr ; 
+    Tran<double>* tr_m2w = nullptr ;
+    Tran<double>* tr_w2m = nullptr ;
 
+    void zero() ; 
 
-
+    std::string desc() const ; 
 
 
     void set_grid(const std::vector<int>& cegs, float gridscale); 
@@ -91,6 +104,8 @@ struct sframe
     void write( float* dst, unsigned num_values ) const ;
     NP* make_array() const ; 
     void save(const char* dir, const char* name=NAME) const ; 
+    void save_extras(const char* dir) ;  // not const as may *prepare*
+
 
     void read( const float* src, unsigned num_values ) ; 
     void load(const char* dir, const char* name=NAME) ; 
@@ -98,12 +113,50 @@ struct sframe
     void load(const NP* a) ; 
 
 
-    Tran<double> get_m2w() const ; 
-    Tran<double> get_w2m() const ;  
-    NP* transform_photon_m2w( const NP* ph, bool normalize ); 
-    NP* transform_photon_w2m( const NP* ph, bool normalize ); 
+    void prepare();   // below are const by asserting that *prepare* has been called
+
+    NP* transform_photon_m2w( const NP* ph, bool normalize=true ) const ; // hit OR photon (hmm could do record too)  
+    NP* transform_photon_w2m( const NP* ph, bool normalize=true ) const ; 
+
+    void transform_m2w( sphoton& p, bool normalize=true ) const ; 
+    void transform_w2m( sphoton& p, bool normalize=true ) const ;
 
 }; 
+
+
+inline void sframe::zero()
+{
+    ce = {} ;   // 0
+    q1 = {} ; 
+    q2 = {} ; 
+    q3 = {} ; 
+    m2w = {} ;  // 1
+    w2m = {} ;  // 2
+    aux = {} ;  // 3
+
+    frs = nullptr ; 
+    tr_m2w = nullptr ;
+    tr_w2m = nullptr ;
+}
+
+
+inline std::string sframe::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "sframe::desc"
+       << " iidx " << iidx()
+       << " inst " << inst() 
+       << std::endl 
+       << " m2w " << m2w.desc() 
+       << std::endl 
+       << " w2m " << w2m.desc() 
+       << std::endl 
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 
 inline sframe sframe::Load(const char* dir, const char* name)
 {
@@ -218,6 +271,14 @@ inline void sframe::save(const char* dir, const char* name) const
     if(frs) a->set_meta<std::string>("frs", frs); 
     a->save(dir, name); 
 }
+inline void sframe::save_extras(const char* dir)
+{
+    if(tr_m2w == nullptr) prepare(); 
+    tr_m2w->save(dir, "m2w.npy");
+    tr_w2m->save(dir, "w2m.npy");
+}
+
+
 inline void sframe::load(const char* dir, const char* name) 
 {
     const NP* a = NP::Load(dir, name); 
@@ -253,9 +314,12 @@ inline void sframe::load(const NP* a)
 
 
 
+inline void sframe::prepare()
+{
+    tr_m2w = Tran<double>::ConvertFromQat(&m2w) ;
+    tr_w2m = Tran<double>::ConvertFromQat(&w2m) ;
+}
 
-inline Tran<double> sframe::get_m2w() const { return Tran<double>::ConvertFromQat(&m2w); }
-inline Tran<double> sframe::get_w2m() const { return Tran<double>::ConvertFromQat(&w2m); }
 
 /**
 sframe::transform_photon_m2w
@@ -269,26 +333,39 @@ That will be narrowed down to float prior to upload by QEvent::setInputPhoton
 
 **/
 
-inline NP* sframe::transform_photon_m2w( const NP* ph, bool normalize )
+inline NP* sframe::transform_photon_m2w( const NP* ph, bool normalize ) const 
 {
     if( ph == nullptr ) return nullptr ; 
-    Tran<double> t_m2w = get_m2w() ; 
-    NP* pht = Tran<double>::PhotonTransform(ph, normalize,  &t_m2w );
+    if(!tr_m2w) std::cerr << "sframe::transform_photon_m2w MUST sframe::prepare before calling this " << std::endl; 
+    assert( tr_m2w) ; 
+    NP* pht = Tran<double>::PhotonTransform(ph, normalize,  tr_m2w );
     assert( pht->ebyte == 8 ); 
     return pht ; 
 }
 
-inline NP* sframe::transform_photon_w2m( const NP* ph, bool normalize  )
+inline NP* sframe::transform_photon_w2m( const NP* ph, bool normalize  ) const 
 {
     if( ph == nullptr ) return nullptr ; 
-    Tran<double> t_w2m = get_w2m() ; 
-    NP* pht = Tran<double>::PhotonTransform(ph, normalize, &t_w2m );
+    if(!tr_w2m) std::cerr << "sframe::transform_photon_w2m MUST sframe::prepare before calling this " << std::endl; 
+    assert( tr_w2m ) ; 
+    NP* pht = Tran<double>::PhotonTransform(ph, normalize, tr_w2m );
     assert( pht->ebyte == 8 ); 
     return pht ; 
 }
 
+inline void sframe::transform_m2w( sphoton& p, bool normalize ) const 
+{
+    if(!tr_m2w) std::cerr << "sframe::transform_m2w MUST sframe::prepare before calling this " << std::endl; 
+    assert( tr_m2w) ;
+    p.transform( tr_m2w->t, normalize ); 
+}
 
-
+inline void sframe::transform_w2m( sphoton& p, bool normalize ) const 
+{
+    if(!tr_w2m) std::cerr << "sframe::transform_w2m MUST sframe::prepare before calling this " << std::endl; 
+    assert( tr_w2m) ;
+    p.transform( tr_w2m->t, normalize ); 
+}
 
 
 

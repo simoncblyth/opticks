@@ -17,70 +17,113 @@ TODO : mimic some of the G4Opticks API to simplify the update
 
 
 
+G4Opticks::getHit : getting local photons
+--------------------------------------------
 
-Old Integration : Overview WITH_G4OPTICKS
--------------------------------------------
+Old way, using GPho hits wrapper::
+    
+    1322 void G4Opticks::getHit(unsigned i, G4OpticksHit* hit, G4OpticksHitExtra* hit_extra ) const
+    1323 {
+    1324     assert( i < m_num_hits && hit );
+    1325 
+    1326     glm::vec4 post = m_hits_wrapper->getPositionTime(i);
+    1327     glm::vec4 dirw = m_hits_wrapper->getDirectionWeight(i);
+    1328     glm::vec4 polw = m_hits_wrapper->getPolarizationWavelength(i);
+    1329 
+    1330     // local getters rely on GPho::getLastIntersectNodeIndex/OpticksPhotonFlags::NodeIndex to get the frame
+    1331     glm::vec4 local_post = m_hits_wrapper->getLocalPositionTime(i);
+    1332     glm::vec4 local_dirw = m_hits_wrapper->getLocalDirectionWeight(i);
+    1333     glm::vec4 local_polw = m_hits_wrapper->getLocalPolarizationWavelength(i);
+    1334 
+
+GPho used nodeIndex to access the transform. 
+
+* using nodeIndex is extravagant : no need to use a 0-300k number ( > 0xffff ) 
+  when there are only 50k instance transforms (fits in 0xffff 65535 )
+
+* also nodeIdx potentially problematic when the are structural transforms 
+  within the compound solid : what you want is to use one instance transform 
+  for all coords relevant to an instance not having to worry about shifts between 
+  different elements of the compound
+  
+* how does python find which transform to use ? thats using the sframe thats kinda an input, 
+  but that matches with the inst transforms : but only in float precision 
+
+
+New flatter way of accessing local photons, where to consult CF to get the transform ?
+-----------------------------------------------------------------------------------------
+
+New way, treats pos,mom,pol together with::
+
+    sphoton::Get 
+    p.iindex -> transform
+
+    sphoton::transform -> local photons 
+    sphoton::transform_float 
+    sphoton::iindex in former weight slot (1,3)
+
+Where to consult CF to get the transform ? 
+
+Obviously not up in gx(or cx) as all that is needed is access to transforms
+and SEvt NP/sphoton. 
+
+* access to transforms seems like an approriate thing for SGeo protocol base 
+
+  * CSGFoundry can follow SGeo protocol base, so SEvt can hold onto SGeo* cf, 
+    thence SEvt can coordinate access to transforms after "void SEvt::setGeo(const SGeo* cf)" 
+    has been called. Which can happen immediately after translation or loading of CF geometry 
+    as SEvt should always be instanciated then.    
+
+* so G4CXOpticks::getHit can use sphoton from SEvt::getLocalPhoton SEvt::getPhoton
+  replacing GPho in a flatter way with no use of GGeo  
+
+
+* notice that the python access to local positions eg ana/simtrace_positions.py uses
+  frame.w2m that is obtained by Invert in CSGTarget::getFrame::
+
+    103         lpos = np.dot( gpos, frame.w2m )   # local frame intersect positions
+
+
 
 ::
 
-    epsilon:~ blyth$ jgl WITH_G4OPTICKS
-
-    ./Simulation/GenTools/GenTools/GtOpticksTool.h
-    ./Simulation/GenTools/src/GtOpticksTool.cc
-
-    ## Does input photons, using NPY.hpp NPho.hpp glm::vec4 getPositionTime 
-    ## Opticks now has its own way of doing input photons, the advantage 
-    ## with the tool is that is can be used with 
-
-    ## DONE: added sphoton::Get to load em from NP arrays 
-    ## DONE: U4Hit.h copied from G4OpticksHit.hh
-
-    ## HMM: old one had G4OpticksRecorder : but now think 
-    ##      that B-side running can be done Opticks side only 
-    ##
-
-    ./Simulation/DetSimV2/PhysiSim/include/LocalG4Cerenkov1042.hh
-    ./Simulation/DetSimV2/PhysiSim/src/LocalG4Cerenkov1042.cc
-
-    ./Simulation/DetSimV2/PhysiSim/include/DsG4Scintillation.h
-    ./Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
-
-    ./Simulation/DetSimV2/PhysiSim/src/DsPhysConsOptical.cc
-
-    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2.hh
-    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2.cc
-
-    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2_Opticks.hh
-    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc
-
-    ## TODO: G4Opticks::getHit needs updating for new workflow  
-    ##   NEED GPho and okc/OpticksPhotonFlags equiv
-    ##   old way used nodeIndex 
-    ##   using nodeIndex is extravagant : no need to use a 0-300k number ( > 0xffff ) 
-    ##   when there are only 50k transforms (fits in 0xffff )
-    ##
-    ##   how does python find which transform to use ? 
-    ##         
-
-    ./Simulation/DetSimV2/PMTSim/include/PMTEfficiencyCheck.hh
-    ./Simulation/DetSimV2/PMTSim/src/PMTEfficiencyCheck.cc
-
-    ./Simulation/DetSimV2/PMTSim/src/PMTSDMgr.cc
-
-    ./Simulation/DetSimV2/DetSimMTUtil/src/DetFactorySvc.cc
-
-    ./Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc
-
-    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc
-
-    ./Simulation/DetSimV2/AnalysisCode/include/G4OpticksAnaMgr.hh
-    ./Simulation/DetSimV2/AnalysisCode/src/G4OpticksAnaMgr.cc
-
-    ./Examples/Tutorial/python/Tutorial/JUNODetSimModule.py
+    In [4]: uii, uiic = np.unique( a.photon.view(np.uint32)[:,1,3], return_counts=True ) ; uii, uiic
+    Out[4]: 
+    (array([    0, 17819, 27699, 27864, 28212, 29412, 31871, 38549, 39124, 39216, 40935, 41613], dtype=uint32),
+     array([  9,   1,   1,   1,   2,   1,   1,   1,   1, 980,   1,   1]))
 
 
-Getting Local Frame
-----------------------
+    In [9]: cf.inst[uii]
+    Out[9]: 
+    array([[[     1.   ,      0.   ,      0.   ,      0.   ],
+            [     0.   ,      1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ,      0.   ],
+            [     0.   ,      0.   ,      0.   ,      1.   ]],
+
+           [[     0.461,     -0.364,      0.809,      0.   ],
+            [    -0.619,     -0.785,     -0.   ,      0.   ],
+            [     0.635,     -0.501,     -0.587,      0.   ],
+            [-12314.685,   9717.144,  11387.06 ,      1.   ]],
+
+           [[     0.523,     -0.383,      0.762,      0.   ],
+            [    -0.591,     -0.807,     -0.   ,      0.   ],
+            [     0.615,     -0.45 ,     -0.648,      0.   ],
+            [-11946.645,   8745.829,  12588.428,      1.   ]],
+
+           [[     0.501,     -0.381,      0.777,      0.   ],
+            [    -0.605,     -0.796,     -0.   ,      0.   ],
+            [     0.619,     -0.47 ,     -0.63 ,      0.   ],
+            [-12020.483,   9137.731,  12234.794,      1.   ]],
+
+
+
+
+
+
+
+
+
+
 
 ::
 
@@ -122,6 +165,85 @@ Getting Local Frame
     Out[21]: True
 
 
+G4Opticks::getHit : okc/OpticksPhotonFlags
+-----------------------------------------------
+
+::
+
+    1335     OpticksPhotonFlags pflag = m_hits_wrapper->getOpticksPhotonFlags(i);
+    ....
+    1348     hit->boundary      = pflag.boundary ;
+    1349     hit->sensorIndex   = pflag.sensorIndex ;
+    1350     hit->nodeIndex     = pflag.nodeIndex ;
+    1351     hit->photonIndex   = pflag.photonIndex ;
+    1352     hit->flag_mask     = pflag.flagMask ;
+    1353 
+    1354     hit->is_cerenkov       = (pflag.flagMask & CERENKOV) != 0 ;
+    1355     hit->is_reemission     = (pflag.flagMask & BULK_REEMIT) != 0 ;
+    1356 
+    1357     // via m_sensorlib 
+    1358     hit->sensor_identifier = getSensorIdentifier(pflag.sensorIndex);
+
+
+
+
+Old Integration : Overview WITH_G4OPTICKS
+-------------------------------------------
+
+::
+
+    epsilon:~ blyth$ jgl WITH_G4OPTICKS
+
+    ./Simulation/GenTools/GenTools/GtOpticksTool.h
+    ./Simulation/GenTools/src/GtOpticksTool.cc
+
+    ## Does input photons, using NPY.hpp NPho.hpp glm::vec4 getPositionTime 
+    ## Opticks now has its own way of doing input photons. 
+
+    ## DONE: added sphoton::Get to load em from NP arrays 
+    ## DONE: U4Hit.h copied from G4OpticksHit.hh
+
+    ## HMM: old one had G4OpticksRecorder : but now think 
+    ##      that B-side running can be done Opticks side only 
+    ##
+
+    ./Simulation/DetSimV2/PhysiSim/include/LocalG4Cerenkov1042.hh
+    ./Simulation/DetSimV2/PhysiSim/src/LocalG4Cerenkov1042.cc
+
+    ./Simulation/DetSimV2/PhysiSim/include/DsG4Scintillation.h
+    ./Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
+
+    ./Simulation/DetSimV2/PhysiSim/src/DsPhysConsOptical.cc
+
+    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2.hh
+    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2.cc
+
+    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2_Opticks.hh
+    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc
+
+    ## TODO: G4Opticks::getHit needs updating for new workflow  
+        
+
+    ./Simulation/DetSimV2/PMTSim/include/PMTEfficiencyCheck.hh
+    ./Simulation/DetSimV2/PMTSim/src/PMTEfficiencyCheck.cc
+
+    ./Simulation/DetSimV2/PMTSim/src/PMTSDMgr.cc
+
+    ./Simulation/DetSimV2/DetSimMTUtil/src/DetFactorySvc.cc
+
+    ./Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc
+
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc
+
+    ## passing over the geometry, G4Opticks -> G4CXOpticks
+
+    ./Simulation/DetSimV2/AnalysisCode/include/G4OpticksAnaMgr.hh
+    ./Simulation/DetSimV2/AnalysisCode/src/G4OpticksAnaMgr.cc
+
+    ## HMM : this is using G4OpticksRecorder, could be updated for U4Recorder 
+    ## but Opticks alone can do this a bit doubtful of the need
+
+    ./Examples/Tutorial/python/Tutorial/JUNODetSimModule.py
 
 
 

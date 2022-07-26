@@ -122,6 +122,7 @@ struct sphoton
     SPHOTON_METHOD std::string desc() const ; 
     SPHOTON_METHOD std::string descBase() const ; 
     SPHOTON_METHOD std::string descDetail() const ; 
+    SPHOTON_METHOD std::string descDigest() const ; 
     SPHOTON_METHOD std::string descFlag() const ; 
     SPHOTON_METHOD void ephoton() ; 
     SPHOTON_METHOD void normalize_mom_pol(); 
@@ -163,7 +164,7 @@ SPHOTON_METHOD unsigned sphoton::flagmask_count() const
 SPHOTON_METHOD std::string sphoton::desc() const 
 {
     std::stringstream ss ; 
-    ss << descBase() << descDetail() ; 
+    ss << descBase() << " "<< descDetail() ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -195,6 +196,15 @@ SPHOTON_METHOD std::string sphoton::descDetail() const
         << " ix " << idx() 
         << " fm " << std::hex << flagmask  << std::dec 
         << " ab " << OpticksPhoton::Abbrev( flag() )
+        ;
+    std::string s = ss.str(); 
+    return s ; 
+} 
+
+SPHOTON_METHOD std::string sphoton::descDigest() const 
+{
+    std::stringstream ss ; 
+    ss 
         << " "
         << " digest(16) " << digest(16) 
         << " "
@@ -202,7 +212,9 @@ SPHOTON_METHOD std::string sphoton::descDetail() const
         ;
     std::string s = ss.str(); 
     return s ; 
-} 
+}
+
+
 SPHOTON_METHOD std::string sphoton::descFlag() const 
 {
     std::stringstream ss ; 
@@ -325,6 +337,7 @@ SPHOTON_METHOD void sphoton::transform( const glm::tmat4x4<double>& tr, bool nor
     Tran<double>::ApplyToFloat( tr, p0, zero, count, stride, 4, normalize );  // transform mom as direction
     Tran<double>::ApplyToFloat( tr, p0, zero, count, stride, 8, normalize );  // transform pol as direction
 }
+
 
 
 #endif 

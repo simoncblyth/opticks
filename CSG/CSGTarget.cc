@@ -110,6 +110,7 @@ CSGTarget::getFrame
 Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into inst_idx and vice versa ?
 A: see notes with CSGFoundry::getFrame
 
+
 **/
 
 int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const 
@@ -117,6 +118,18 @@ int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const
     fr.set_midx_mord_iidx( midx, mord, iidxg ); 
     return getCenterExtent( fr.ce, midx, mord, iidxg, &fr.m2w , &fr.w2m ); 
 }
+
+/**
+CSGTarget::getFrame
+---------------------
+
+Note that there are typically multiple CSGPrim within the compound CSGSolid
+and that the inst_idx corresponds to the entire compound CSGSolid (aka GMergedMesh).
+Hence the ce included with the frame is the one from the full compound CSGSolid. 
+
+TODO: avoid the Tran::Invert by keeping paired double precision transforms throughout  
+
+**/
 
 int CSGTarget::getFrame(sframe& fr, int inst_idx ) const 
 {
@@ -131,7 +144,6 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
     // HMM: these values are already there inside the matrices ? 
     fr.set_ins_gas_ias(ins_idx, gas_idx, ias_idx ) ; 
 
-
     qat4 t(_t->cdata());   // copy the instance (transform and identity info)
     const qat4* v = Tran<double>::Invert(&t);     // identity gets cleared in here 
 
@@ -140,10 +152,6 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
 
     const CSGSolid* solid = foundry->getSolid(gas_idx); 
     fr.ce = solid->center_extent ;  
-
-    // although there can be multiple CSGPrim within the CSGSolid
-    // there is not way from the inst_idx to tell which one is needed
-    // so use the CSGSolid one as that should combined the ce of all the CSGPrim
 
     return 0 ; 
 }

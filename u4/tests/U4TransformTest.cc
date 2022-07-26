@@ -1,4 +1,5 @@
 
+#include <vector>
 #include "G4PVPlacement.hh"
 
 #include "U4RotationMatrix.h"
@@ -32,17 +33,26 @@ int main(int argc, char** argv)
 {
     const G4VPhysicalVolume* pv = MakePV(); 
 
-    glm::tmat4x4<double> tr0(1.); 
-    U4Transform::WriteObjectTransform( glm::value_ptr(tr0), pv) ;
+    {
+        glm::tmat4x4<double> tr0(1.); 
+        glm::tmat4x4<double> tr1(1.); 
+        U4Transform::WriteObjectTransform( glm::value_ptr(tr0), pv) ;
+        U4Transform::WriteFrameTransform(  glm::value_ptr(tr1), pv) ;
+        std::cout << glm::to_string(tr0) << std::endl ; 
+        std::cout << glm::to_string(tr1) << std::endl ; 
+    }
 
-    NP* a = NP::Make<double>(1,4,4); 
+    {
+        NP* a = NP::Make<double>(2,4,4); 
+        U4Transform::WriteObjectTransform( a->values<double>() + 0  , pv) ;
+        U4Transform::WriteFrameTransform(  a->values<double>() + 16 , pv) ;
+        
+        std::vector<glm::tmat4x4<double>> m(2) ; 
+        memcpy(m.data(), a->cvalues<double>() ,  a->arr_bytes() ); 
 
-    U4Transform::WriteObjectTransform( a->values<double>(), pv) ;
-    std::cout << glm::to_string(tr0) << std::endl ; 
-    
-    glm::tmat4x4<double> tr1(1.); 
-    memcpy( glm::value_ptr(tr1), a->cvalues<double>() ,  16*sizeof(double) ); 
-    std::cout << glm::to_string(tr1) << std::endl ; 
+        std::cout << glm::to_string(m[0]) << std::endl ; 
+        std::cout << glm::to_string(m[1]) << std::endl ; 
+    }
 
     return 0 ; 
 }

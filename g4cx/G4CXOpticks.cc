@@ -149,6 +149,7 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 
     se = new SEvt ; 
     se->setReldir("ALL"); 
+    se->setGeo((SGeo*)fd);   // HMM: more general place for this hookup ?
 
     cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
     qs = cx->sim ; 

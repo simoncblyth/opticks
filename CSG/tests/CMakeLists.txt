@@ -20,6 +20,8 @@ set(TEST_SOURCES
     CSGTargetGlobalTest.cc
     CSGFoundry_MakeCenterExtentGensteps_Test.cc
     CSGFoundry_getFrame_Test.cc
+    CSGFoundry_SGeo_SEvt_Test.cc
+
     CSGFoundry_ResolveCFBase_Test.cc
 
     CSGScanTest.cc
