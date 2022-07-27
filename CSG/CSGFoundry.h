@@ -105,7 +105,7 @@ struct CSG_API CSGFoundry : public SGeo
     static const char* ResolveCFBase_(); 
     static const char* ResolveCFBase(); 
     static CSGFoundry* Load_();
-    static CSGFoundry* Load(const char* base, const char* rel);
+    static CSGFoundry* Load(const char* base, const char* rel=RELDIR );
 
     void setOverrideSim( const SSim* ssim ); 
     const SSim* getSim() const ; 

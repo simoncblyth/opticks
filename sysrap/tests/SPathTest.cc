@@ -328,6 +328,22 @@ void test_Remove()
         ; 
 }
 
+void test_SearchDirUpTreeWithFile()
+{
+    const char* startdir = "/tmp/blyth/opticks/J001/G4CXSimulateTest/ALL" ; 
+    const char* relf = "CSGFoundry/solid.npy" ; 
+    //const char* startdir = nullptr ; 
+    //const char* relf = nullptr ; 
+
+    const char* cfbase = SPath::SearchDirUpTreeWithFile(startdir, relf); 
+    LOG(info) 
+        << " startdir " << startdir 
+        << " relf " << relf 
+        << " cfbase " << cfbase 
+        ; 
+}
+
+
 
 
 int main(int argc , char** argv )
@@ -344,10 +360,7 @@ int main(int argc , char** argv )
     test_IsReadable_path();  
     test_Basename_2(); 
     test_Resolve_With_Index();  
-*/
     test_Resolve(); 
-
-/*
     test_Basename(); 
     test_Dirname(); 
     test_UserTmpDir(); 
@@ -362,6 +375,7 @@ int main(int argc , char** argv )
     test_MakeEmpty(); 
     test_Remove(); 
 */
+    test_SearchDirUpTreeWithFile(); 
 
     return 0  ; 
 }

@@ -61,6 +61,13 @@ const char* SEvt::getSaveDir() const
 {
    return fold->savedir ;  
 }
+const char* SEvt::getLoadDir() const 
+{
+   return fold->loaddir ;  
+}
+
+
+
 
 
 /**
@@ -1158,14 +1165,33 @@ std::string SEvt::descGS() const
     return s ; 
 }
 
-std::string SEvt::desc() const 
+std::string SEvt::descDir() const 
 {
     const char* savedir = getSaveDir(); 
+    const char* loaddir = getLoadDir(); 
+    std::stringstream ss ; 
+    ss 
+       << " savedir " << ( savedir ? savedir : "-" )
+       << std::endl
+       << " loaddir " << ( loaddir ? loaddir : "-" )
+       << std::endl
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
 
+std::string SEvt::descFold() const 
+{
+    return fold->desc(); 
+}
+
+
+std::string SEvt::desc() const 
+{
     std::stringstream ss ; 
     ss << evt->desc()
        << std::endl
-       << " savedir " << ( savedir ? savedir : "-" )
+       << descDir()
        << std::endl
        << dbg->desc()
        ; 
@@ -1201,11 +1227,6 @@ void SEvt::gather_components()
     }
     fold->meta = provider->getMeta();  
     // persisted metadata will now be in NPFold_meta.txt (previously fdmeta.txt)
-}
-
-std::string SEvt::descFold() const 
-{
-    return fold->desc(); 
 }
 
 

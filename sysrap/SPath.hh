@@ -73,6 +73,7 @@ struct SYSRAP_API SPath
 
       static void MakeEmpty(const char* path_); 
       static bool Exists(const char* path_); 
+      static bool Exists(const char* base, const char* relf); 
       static const char* PickFirstExisting(const char* path0, const char* path1, const char* path2=nullptr ); 
 
       static int Remove(const char* path_); 
@@ -84,6 +85,7 @@ struct SYSRAP_API SPath
       static const char* Make( const char* base, const char* reldir,                      const char* stem, int index, const char* ext, int create_dirs ); 
       static const char* Make( const char* base, const char* reldir, const char* reldir2, const char* stem, int index, const char* ext, int create_dirs ); 
 
+      static const char* SearchDirUpTreeWithFile( const char* startdir, const char* relf ); 
 
 };
 

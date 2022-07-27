@@ -6,6 +6,7 @@
 
 #include "SSys.hh"
 #include "SEvt.hh"
+#include "SOpticksResource.hh"
 
 #include "OPTICKS_LOG.hh"
 #include "CSGFoundry.h"
@@ -16,12 +17,30 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const CSGFoundry* fd = CSGFoundry::Load();
+
+    SEvt sev ;  
+    sev.setReldir("ALL"); 
+    sev.load(); 
+
+    std::cout << sev.descDir() << std::endl ;  
+
+    const char* loaddir = sev.getLoadDir(); 
+    const char* cfbase = SOpticksResource::SearchCFBase(loaddir) ; 
+
+    LOG(info)
+         << " SearchCFBase " 
+         << " loaddir " << loaddir 
+         << " cfbase " << cfbase  
+         ; 
+
+
+    const CSGFoundry* fd = CSGFoundry::Load(cfbase);
+    std::cout << fd->descBase() << std::endl ; 
+
 
     int ins_idx = SSys::getenvint("INS_IDX", 39216) ; 
 
     const SGeo* sg = (const SGeo*)fd ; 
-
     sframe fr ; 
     int rc = sg->getFrame(fr, ins_idx) ; 
     assert( rc == 0 ); 
@@ -32,9 +51,6 @@ int main(int argc, char** argv)
     fr.prepare(); 
  
 
-    SEvt sev ;  
-    sev.setReldir("ALL"); 
-    sev.load(); 
     sev.setFrame(fr); 
     sev.setGeo(fd); 
 
@@ -53,11 +69,11 @@ int main(int argc, char** argv)
         << std::endl 
         ; 
 
-
     std::cout << sev.descPhoton() << std::endl ; 
     std::cout << sev.descLocalPhoton() << std::endl ; 
     std::cout << sev.descFramePhoton() << std::endl ; 
     
+    std::cout << fd->descBase() << std::endl ; 
 
    
     return 0 ; 

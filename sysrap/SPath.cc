@@ -405,6 +405,17 @@ bool SPath::Exists(const char* path_) // static
     return fp.fail() ? false : true ; 
 }
 
+bool SPath::Exists(const char* base, const char* relf) // static 
+{
+    const char* path = SPath::Resolve(base, relf, FILEPATH); 
+    std::ifstream fp(path, std::ios::in|std::ios::binary);
+    return fp.fail() ? false : true ; 
+}
+
+
+
+
+
 const char* SPath::PickFirstExisting(const char* path0, const char* path1, const char* path2 )
 {
     if(SPath::Exists(path0)) return path0 ; 
@@ -538,6 +549,29 @@ const char* SPath::Make( const char* base, const char* reldir, const char* reldi
     std::string name = MakeName(stem, index, ext); 
     const char* path = SPath::Resolve(base, reldir, reldir2, name.c_str(), create_dirs ) ; 
     return path ; 
+}
+
+
+/**
+SPath::SearchDirUpTreeWithFile
+-------------------------------
+
+Search up the directory tree starting from *startdir* for 
+a directory that contains an existing relative filepath *relf*  
+
+**/
+
+const char* SPath::SearchDirUpTreeWithFile( const char* startdir, const char* relf )
+{
+    if(startdir == nullptr || relf == nullptr) return nullptr ; 
+    char* dir = strdup(startdir) ; 
+    while(dir && strlen(dir) > 1)
+    {
+        if(SPath::Exists(dir, relf)) break ; 
+        char* last = strrchr(dir, '/');    
+        *last = '\0' ; 
+    }
+    return ( dir && strlen(dir) > 1 ) ? strdup(dir) : nullptr ; 
 }
 
 

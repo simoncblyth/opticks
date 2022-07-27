@@ -140,6 +140,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     SEvt(); 
 
     const char* getSaveDir() const ; 
+    const char* getLoadDir() const ; 
     void init(); 
 
     static const char* INPUT_PHOTON_DIR ; 
@@ -259,6 +260,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     std::string desc() const ; 
     std::string descGS() const ; 
+    std::string descDir() const ; 
     std::string descFold() const ; 
     std::string descComponent() const ; 
 

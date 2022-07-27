@@ -52,6 +52,7 @@ struct NPFold
     std::vector<const NP*>   aa ; 
     std::string meta ; 
     const char* savedir ; 
+    const char* loaddir ; 
 
     NPFold(); 
 
@@ -77,8 +78,8 @@ struct NPFold
     int  load_index(const char* base) ; 
     void load_array(const char* base, const char* relp); 
 
-
     std::string desc() const ; 
+    std::string brief() const ; 
 }; 
 
 
@@ -141,7 +142,8 @@ inline int NPFold::Compare(const NPFold* a, const NPFold* b, bool dump)
 
 inline NPFold::NPFold()
     :
-    savedir(nullptr)
+    savedir(nullptr),
+    loaddir(nullptr)
 {
 }
 
@@ -325,6 +327,7 @@ inline int NPFold::load_index(const char* base)
 
 inline int NPFold::load(const char* base) 
 {
+    loaddir = strdup(base); 
     bool has_meta = NP::Exists(base, META) ; 
     if(has_meta) meta = NP::ReadString( base, META ); 
 
@@ -356,4 +359,12 @@ inline std::string NPFold::desc() const
     return s ; 
 }
 
+inline std::string NPFold::brief() const 
+{
+    std::stringstream ss ; 
+    if(loaddir) ss << " loaddir:" << loaddir ; 
+    if(savedir) ss << " savedir:" << savedir ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 

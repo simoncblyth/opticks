@@ -2136,9 +2136,9 @@ std::string CSGFoundry::descBase() const
     const char* cfb = getCFBase(); 
     const char* ocfb = getOriginCFBase(); 
     std::stringstream ss ; 
-    ss << "CSGFoundry.descBase "
-       << " CFBase " << ( cfb ? cfb : "-" )
-       << " OriginCFBase " << ( ocfb ? ocfb : "-" ) 
+    ss << "CSGFoundry.descBase " << std::endl 
+       << " CFBase       " << ( cfb ? cfb : "-" ) << std::endl 
+       << " OriginCFBase " << ( ocfb ? ocfb : "-" ) << std::endl 
        ;
     return ss.str(); 
 }
@@ -2483,6 +2483,8 @@ CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 
 CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
 {
+
+
     CSGFoundry* fd = new CSGFoundry();  
     fd->load(base, rel); 
     return fd ; 

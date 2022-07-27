@@ -1,17 +1,11 @@
 #!/bin/bash -l 
 
-source ../../bin/OPTICKS_INPUT_PHOTON.sh 
-
-export OPTICKS_INPUT_PHOTON_FRAME="Hama:0:1000"
-
 
 msg="=== $BASH_SOURCE :"
 
 bin=CSGFoundry_SGeo_SEvt_Test
 export SOpticksResource_ExecutableName=G4CXSimulateTest
-
 source $(dirname $BASH_SOURCE)/../../bin/COMMON.sh 
-
 
 #defarg="run_ana"
 defarg="run"

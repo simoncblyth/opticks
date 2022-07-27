@@ -239,7 +239,6 @@ const char* SOpticksResource::CFBaseAlt()
 }
 
 
-
 /**
 SOpticksResource::OldCFBaseFromGEOM
 ----------------------------------
@@ -277,6 +276,20 @@ const char* SOpticksResource::CFBaseFromGEOM()
     const char* geom = SSys::getenvvar("GEOM"); 
     return geom == nullptr ? nullptr : SSys::getenvvar(SStr::Name(geom, "_CFBaseFromGEOM")) ; 
 }
+
+
+/**
+SOpticksResource::SearchCFBase
+-------------------------------
+
+Traverse up the directory provided looking for a directory containing "CSGFoundry/solid.npy"
+The first such directory is returned, or nullptr if not found. 
+
+**/
+
+const char* SOpticksResource::SearchCFBase(const char* dir){ return SPath::SearchDirUpTreeWithFile(dir, SearchCFBase_RELF) ; }
+
+
 
 
 const char* SOpticksResource::SomeGDMLPath_ = "SomeGDMLPath" ; 
@@ -444,7 +457,5 @@ std::string SOpticksResource::Desc()
     std::string s = ss.str(); 
     return s ; 
 }
-
-
 
 
