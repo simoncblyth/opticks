@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 
     SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGensteps(fr) ); 
 
-    NP* gs = SEvt::GetGenstep(); 
+    NP* gs = SEvt::GatherGenstep(); 
     NP* pp = SFrameGenstep::GenerateCenterExtentGenstepsPhotons_( gs, fr.gridscale() );  
 
     std::cout << " fr " << std::endl << fr << std::endl ; 

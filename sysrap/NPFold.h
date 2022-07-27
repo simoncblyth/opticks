@@ -68,6 +68,7 @@ struct NPFold
     bool has_key(const char* k) const ; 
 
     const NP* get(const char* k) const ; 
+    int   get_num(const char* k) const ; 
 
     void save(const char* base) ; 
     void save(const char* base, const char* rel) ; 
@@ -236,6 +237,13 @@ inline const NP* NPFold::get(const char* k) const
     int idx = find(k) ; 
     return idx > -1 ? aa[idx] : nullptr ; 
 }
+
+inline int NPFold::get_num(const char* k) const 
+{
+    const NP* a = get(k) ; 
+    return a == nullptr ? -1 : a->shape[0] ;   
+}
+
 
 inline void NPFold::save(const char* base)  // not const as sets savedir
 {

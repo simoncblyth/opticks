@@ -24,6 +24,8 @@ int CheckGeo::getFrame(sframe& fr, int ins_idx ) const
     return 0 ; 
 }
 
-
-
+std::string CheckGeo::descBase() const 
+{
+    return "CheckGeo::descBase" ; 
+}
 

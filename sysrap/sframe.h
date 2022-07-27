@@ -67,6 +67,7 @@ struct sframe
     Tran<double>* tr_w2m = nullptr ;
 
     void zero() ; 
+    bool is_zero() const ; 
 
     std::string desc() const ; 
 
@@ -139,6 +140,11 @@ inline void sframe::zero()
     tr_w2m = nullptr ;
 }
 
+inline bool sframe::is_zero() const 
+{
+    return ce.x == 0. && ce.y == 0. && ce.z == 0. && ce.w == 0. ; 
+}
+
 inline std::string sframe::desc() const 
 {
     std::stringstream ss ; 
@@ -146,6 +152,7 @@ inline std::string sframe::desc() const
        << " inst " << inst() 
        << " frs " << ( frs ? frs : "-" ) << std::endl 
        << " ce  " << ce 
+       << " is_zero " << is_zero() 
        << std::endl 
        << " m2w " << m2w 
        << std::endl 

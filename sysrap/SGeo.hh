@@ -15,6 +15,7 @@ is accessible from anywhere. (HMM: an alt approach would be to set an envvar for
 **/
 
 #include "plog/Severity.h"
+#include <string>
 #include "SYSRAP_API_EXPORT.hh"
 
 struct sframe ; 
@@ -33,6 +34,7 @@ struct SYSRAP_API SGeo
         virtual const char*        getMeshName(unsigned midx) const = 0 ;
         virtual int                getMeshIndexWithName(const char* name, bool startswith) const = 0 ;
         virtual int                getFrame(sframe& fr, int ins_idx ) const = 0 ;
+        virtual std::string        descBase() const = 0 ; 
 
         virtual ~SGeo(){};
 

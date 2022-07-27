@@ -94,7 +94,7 @@ void QEvent::init()
     sev->setCompProvider(this);  
 }
 
-NP* QEvent::getDomain() const { return sev ? sev->getDomain() : nullptr ; }
+NP* QEvent::gatherDomain() const { return sev ? sev->gatherDomain() : nullptr ; }
 
 
 std::string QEvent::desc() const
@@ -146,7 +146,7 @@ HMM: what about simtrace ? ce-gensteps are very different to ordinary gs
 
 int QEvent::setGenstep()  // onto device
 {
-    NP* gs = SEvt::GetGenstep(); 
+    NP* gs = SEvt::GatherGenstep(); // TODO: review memory handling  
     SEvt::Clear();   // clear the quad6 vector, ready to collect more genstep
     if(gs == nullptr) LOG(fatal) << "Must SEvt::AddGenstep before calling QEvent::setGenstep " ;
     //if(gs == nullptr) std::raise(SIGINT); 
@@ -315,15 +315,15 @@ NP* QEvent::getInputPhoton() const
 
 
 /**
-QEvent::getGenstepFromDevice
------------------------------
+QEvent::gatherGenstepFromDevice
+---------------------------------
 
 Gensteps originate on host and are uploaded to device, so downloading
 them from device is not usually done. 
 
 **/
 
-NP* QEvent::getGenstepFromDevice() const 
+NP* QEvent::gatherGenstepFromDevice() const 
 {
     NP* a = NP::Make<float>( evt->num_genstep, 6, 4 ); 
     QU::copy_device_to_host<quad6>( (quad6*)a->bytes(), evt->genstep, evt->num_genstep ); 
@@ -331,9 +331,9 @@ NP* QEvent::getGenstepFromDevice() const
 }
 
 
-NP* QEvent::getSeed() const 
+NP* QEvent::gatherSeed() const 
 {
-    if(!hasSeed()) LOG(fatal) << " getSeed called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasSeed()) LOG(fatal) << " gatherSeed called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasSeed()) return nullptr ;  
     NP* s = NP::Make<int>( evt->num_seed ); 
     QU::copy_device_to_host<int>( (int*)s->bytes(), evt->seed, evt->num_seed ); 
@@ -342,11 +342,11 @@ NP* QEvent::getSeed() const
 
 
 /**
-QEvent::getPhoton(NP* p) :  mutating API
+QEvent::gatherPhoton(NP* p) :  mutating API
 -------------------------------------------
 **/
 
-void QEvent::getPhoton(NP* p) const 
+void QEvent::gatherPhoton(NP* p) const 
 {
     LOG(LEVEL) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ; 
     assert( p->has_shape(evt->num_photon, 4, 4) ); 
@@ -354,33 +354,33 @@ void QEvent::getPhoton(NP* p) const
     LOG(LEVEL) << "] evt.num_photon " << evt->num_photon  ; 
 }
 
-NP* QEvent::getPhoton() const 
+NP* QEvent::gatherPhoton() const 
 {
     NP* p = NP::Make<float>( evt->num_photon, 4, 4);
-    getPhoton(p); 
+    gatherPhoton(p); 
     return p ; 
 }
 
 
 
 
-void QEvent::getSimtrace(NP* t) const 
+void QEvent::gatherSimtrace(NP* t) const 
 {
     LOG(LEVEL) << "[ evt.num_simtrace " << evt->num_simtrace << " t.sstr " << t->sstr() << " evt.simtrace " << evt->simtrace ; 
     assert( t->has_shape(evt->num_simtrace, 4, 4) ); 
     QU::copy_device_to_host<quad4>( (quad4*)t->bytes(), evt->simtrace, evt->num_simtrace ); 
     LOG(LEVEL) << "] evt.num_simtrace " << evt->num_simtrace  ; 
 }
-NP* QEvent::getSimtrace() const 
+NP* QEvent::gatherSimtrace() const 
 {
     if(!hasSimtrace()) LOG(LEVEL) << " getSimtrace called when there is no such array, use SEventConfig::SetCompMask to avoid " ;
     if(!hasSimtrace()) return nullptr ;  
     NP* t = NP::Make<float>( evt->num_simtrace, 4, 4);
-    getSimtrace(t); 
+    gatherSimtrace(t); 
     return t ; 
 }
 
-void QEvent::getSeq(NP* seq) const 
+void QEvent::gatherSeq(NP* seq) const 
 {
     if(!hasSeq()) return ; 
     LOG(LEVEL) << "[ evt.num_seq " << evt->num_seq << " seq.sstr " << seq->sstr() << " evt.seq " << evt->seq ; 
@@ -389,20 +389,20 @@ void QEvent::getSeq(NP* seq) const
     LOG(LEVEL) << "] evt.num_seq " << evt->num_seq  ; 
 }
 
-NP* QEvent::getSeq() const 
+NP* QEvent::gatherSeq() const 
 {
-    if(!hasSeq()) LOG(LEVEL) << " getSeq called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasSeq()) LOG(LEVEL) << " gatherSeq called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasSeq()) return nullptr ;
   
     NP* seq = sev->makeSeq(); 
 
-    getSeq(seq); 
+    gatherSeq(seq); 
     return seq ; 
 }
 
-NP* QEvent::getPrd() const 
+NP* QEvent::gatherPrd() const 
 {
-    if(!hasPrd()) LOG(LEVEL) << " getPrd called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasPrd()) LOG(LEVEL) << " gatherPrd called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasPrd()) return nullptr ;
   
     NP* prd = sev->makePrd(); 
@@ -411,9 +411,9 @@ NP* QEvent::getPrd() const
     return prd ; 
 }
 
-NP* QEvent::getTag() const 
+NP* QEvent::gatherTag() const 
 {
-    if(!hasTag()) LOG(LEVEL) << " getTag called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasTag()) LOG(LEVEL) << " gatherTag called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasTag()) return nullptr ;
   
     NP* tag = sev->makeTag(); 
@@ -422,9 +422,9 @@ NP* QEvent::getTag() const
     return tag ; 
 }
 
-NP* QEvent::getFlat() const 
+NP* QEvent::gatherFlat() const 
 {
-    if(!hasFlat()) LOG(LEVEL) << " getFlat called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasFlat()) LOG(LEVEL) << " gatherFlat called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasFlat()) return nullptr ;
   
     NP* flat = sev->makeFlat(); 
@@ -434,14 +434,9 @@ NP* QEvent::getFlat() const
 }
 
 
-
-
-
-
-
-NP* QEvent::getRecord() const 
+NP* QEvent::gatherRecord() const 
 {
-    if(!hasRecord()) LOG(LEVEL) << " getRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasRecord()) LOG(LEVEL) << " gatherRecord called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasRecord()) return nullptr ;  
 
     NP* r = sev->makeRecord(); 
@@ -451,9 +446,9 @@ NP* QEvent::getRecord() const
     return r ; 
 }
 
-NP* QEvent::getRec() const 
+NP* QEvent::gatherRec() const 
 {
-    if(!hasRec()) LOG(LEVEL) << " getRec called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
+    if(!hasRec()) LOG(LEVEL) << " gatherRec called when there is no such array, use SEventConfig::SetCompMask to avoid " ; 
     if(!hasRec()) return nullptr ;  
 
     NP* r = sev->makeRec(); 
@@ -484,7 +479,7 @@ unsigned QEvent::getNumHit() const
 }
 
 /**
-QEvent::getHit
+QEvent::gatherHit
 ------------------
 
 1. count *evt.num_hit* passing the photon *selector* 
@@ -510,11 +505,11 @@ always be present, unlike hits.
 
 **/
 
-NP* QEvent::getHit() const 
+NP* QEvent::gatherHit() const 
 {
     // hasHit at this juncture is misleadingly always false, 
-    // because the hits array is derived by *getHit_* which  selects from the photons 
-    if(!hasPhoton()) LOG(LEVEL) << " getHit called when there is no photon array " ; 
+    // because the hits array is derived by *gatherHit_* which  selects from the photons 
+    if(!hasPhoton()) LOG(LEVEL) << " gatherHit called when there is no photon array " ; 
     if(!hasPhoton()) return nullptr ; 
 
     assert( evt->photon ); 
@@ -530,12 +525,12 @@ NP* QEvent::getHit() const
          << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
          ;  
 
-    NP* hit = evt->num_hit > 0 ? getHit_() : nullptr ; 
+    NP* hit = evt->num_hit > 0 ? gatherHit_() : nullptr ; 
 
     return hit ; 
 }
 
-NP* QEvent::getHit_() const 
+NP* QEvent::gatherHit_() const 
 {
     evt->hit = QU::device_alloc<sphoton>( evt->num_hit ); 
 
@@ -559,29 +554,31 @@ std::string QEvent::getMeta() const
 {     
     return meta ; 
 }
-NP* QEvent::getComponent(unsigned comp) const 
+NP* QEvent::gatherComponent(unsigned comp) const 
 {
     unsigned mask = SEventConfig::CompMask(); 
-    return mask & comp ? getComponent_(comp) : nullptr ; 
+    return mask & comp ? gatherComponent_(comp) : nullptr ; 
 }
-NP* QEvent::getComponent_(unsigned comp) const 
+NP* QEvent::gatherComponent_(unsigned comp) const 
 {
     NP* a = nullptr ; 
     switch(comp)
     {   
-        case SCOMP_GENSTEP:   a = getGenstep()  ; break ;   
-        case SCOMP_PHOTON:    a = getPhoton()   ; break ;   
-        case SCOMP_RECORD:    a = getRecord()   ; break ;   
-        case SCOMP_REC:       a = getRec()      ; break ;   
-        case SCOMP_SEQ:       a = getSeq()      ; break ;   
-        case SCOMP_PRD:       a = getPrd()      ; break ;   
-        case SCOMP_SEED:      a = getSeed()     ; break ;   
-        case SCOMP_HIT:       a = getHit()      ; break ;   
-        case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   
-        case SCOMP_DOMAIN:    a = getDomain()   ; break ;   
+        case SCOMP_GENSTEP:   a = getGenstep()     ; break ;   
+        case SCOMP_DOMAIN:    a = gatherDomain()      ; break ;   
         case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;   
-        case SCOMP_TAG:       a = getTag()         ; break ;   
-        case SCOMP_FLAT:      a = getFlat()        ; break ;   
+
+        case SCOMP_PHOTON:    a = gatherPhoton()   ; break ;   
+        case SCOMP_RECORD:    a = gatherRecord()   ; break ;   
+        case SCOMP_REC:       a = gatherRec()      ; break ;   
+        case SCOMP_SEQ:       a = gatherSeq()      ; break ;   
+        case SCOMP_PRD:       a = gatherPrd()      ; break ;   
+        case SCOMP_SEED:      a = gatherSeed()     ; break ;   
+        case SCOMP_HIT:       a = gatherHit()      ; break ;   
+        case SCOMP_SIMTRACE:  a = gatherSimtrace() ; break ;   
+        case SCOMP_TAG:       a = gatherTag()      ; break ;   
+        case SCOMP_FLAT:      a = gatherFlat()     ; break ;   
+        // gather downloads from device, get access from host 
     }   
     return a ; 
 }

@@ -37,7 +37,7 @@ enum {
 
 struct SYSRAP_API SCompProvider
 {
-    virtual NP* getComponent(unsigned comp) const = 0 ; 
+    virtual NP* gatherComponent(unsigned comp) const = 0 ; 
     virtual std::string getMeta() const = 0 ; 
 }; 
 
@@ -58,7 +58,6 @@ struct SYSRAP_API SComp
     static constexpr const char* INPHOTON_  = "inphoton" ; 
     static constexpr const char* TAG_       = "tag" ; 
     static constexpr const char* FLAT_      = "flat" ; 
-
     static constexpr const char* ISECT_     = "isect" ; 
     static constexpr const char* FPHOTON_   = "fphoton" ; 
     static constexpr const char* PIXEL_     = "pixel" ; 
@@ -84,7 +83,6 @@ struct SYSRAP_API SComp
     static bool IsInphoton(unsigned mask){ return mask & SCOMP_INPHOTON ; }
     static bool IsTag(     unsigned mask){ return mask & SCOMP_TAG ; }
     static bool IsFlat(    unsigned mask){ return mask & SCOMP_FLAT ; }
-
     static bool IsIsect(   unsigned mask){ return mask & SCOMP_ISECT ; }
     static bool IsFphoton( unsigned mask){ return mask & SCOMP_FPHOTON ; }
     static bool IsPixel(   unsigned mask){ return mask & SCOMP_PIXEL ; }

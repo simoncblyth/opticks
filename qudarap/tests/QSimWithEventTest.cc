@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     qs->generate_photon();  
 
 
-    NP* photon = qe->getPhoton();  
+    NP* photon = qe->gatherPhoton();  
     photon->dump(); 
 
 

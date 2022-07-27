@@ -99,30 +99,31 @@ public:
 public:
     // SCompProvider methods
     std::string getMeta() const ; 
-    NP*      getComponent(unsigned comp) const ; 
+    NP*      gatherComponent(unsigned comp) const ; 
 public:
     NP*      getGenstep() const ; 
     NP*      getInputPhoton() const ; 
-    NP*      getGenstepFromDevice() const ; 
-    NP*      getSeed() const ; 
-    NP*      getPhoton() const ; 
-    NP*      getSimtrace() const ; 
-    NP*      getSeq() const ;       // seqhis..
-    NP*      getPrd() const ;  
-    NP*      getTag() const ;  
-    NP*      getFlat() const ;  
-    NP*      getRecord() const ;    // full step records
-    NP*      getRec() const  ;      // compressed step record
-    NP*      getDomain() const ; 
-    NP*      getHit() const ; 
+
+    NP*      gatherDomain() const ; 
+    NP*      gatherGenstepFromDevice() const ; 
+    NP*      gatherSeed() const ; 
+    NP*      gatherPhoton() const ; 
+    NP*      gatherSimtrace() const ; 
+    NP*      gatherSeq() const ;       // seqhis..
+    NP*      gatherPrd() const ;  
+    NP*      gatherTag() const ;  
+    NP*      gatherFlat() const ;  
+    NP*      gatherRecord() const ;    // full step records
+    NP*      gatherRec() const  ;      // compressed step record
+    NP*      gatherHit() const ; 
 public:
     // mutating interface. TODO: Suspect only the photon mutating API actually needed for some QSimTest, remove the others
-    void     getPhoton(       NP* p ) const ;
-    void     getSimtrace(     NP* t ) const ;
-    void     getSeq(          NP* seq) const ; 
+    void     gatherPhoton(       NP* p ) const ;
+    void     gatherSimtrace(     NP* t ) const ;
+    void     gatherSeq(          NP* seq) const ; 
 private:
-    NP*      getComponent_(unsigned comp) const ; 
-    NP*      getHit_() const ; 
+    NP*      gatherComponent_(unsigned comp) const ; 
+    NP*      gatherHit_() const ; 
 public:
     unsigned getNumHit() const ; 
     unsigned getNumPhoton() const ;  

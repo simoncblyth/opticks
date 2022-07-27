@@ -11,6 +11,8 @@ class SYSRAP_API CheckGeo : public SGeo
         const char*        getMeshName(unsigned midx) const ;
         int                getMeshIndexWithName(const char* name, bool startswith) const ;
         int                getFrame(sframe& fr, int ins_idx ) const ; 
+        std::string        descBase() const ; 
+
 };
 
 

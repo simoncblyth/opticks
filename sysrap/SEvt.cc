@@ -25,6 +25,7 @@
 #include "SEvent.hh"
 #include "SEventConfig.hh"
 #include "SFrameGenstep.hh"
+#include "SOpticksResource.hh"
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
@@ -35,6 +36,7 @@ const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG");
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
 const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
+const char* SEvt::DEFAULT_RELDIR = "ALL" ; 
 const SCF* SEvt::CF = SCF::Create() ;
 
 SEvt* SEvt::INSTANCE = nullptr ; 
@@ -42,7 +44,7 @@ SEvt* SEvt::INSTANCE = nullptr ;
 SEvt::SEvt()
     :
     index(MISSING_INDEX),
-    reldir(nullptr),
+    reldir(DEFAULT_RELDIR),
     selector(new sphoton_selector(SEventConfig::HitMask())),
     evt(new sevent),
     dbg(new sdebug),
@@ -67,7 +69,26 @@ const char* SEvt::getLoadDir() const
 }
 
 
+/**
+SEvt::getSearchCFbase
+----------------------
 
+Search for CFBase geometry folder corresponding 
+to the event arrays based on the loaded/saved SEvt directories. 
+So this has no possibility of working prior to a load or save has been done. 
+As this is typically used for loaded SEvt this is not much of a limitation. 
+
+**/
+
+const char* SEvt::getSearchCFBase() const 
+{
+    const char* loaddir = getLoadDir();
+    const char* savedir = getSaveDir();
+    const char* cfbase = nullptr ; 
+    if(cfbase == nullptr && loaddir) cfbase = SOpticksResource::SearchCFBase(loaddir) ;
+    if(cfbase == nullptr && savedir) cfbase = SOpticksResource::SearchCFBase(savedir) ;
+    return cfbase ; 
+}
 
 
 /**
@@ -236,10 +257,27 @@ void SEvt::setFrame(const sframe& fr )
     }   
 }
 
+
 void SEvt::setGeo(const SGeo* cf_)
 {
     cf = cf_ ; 
 }
+
+void SEvt::setFrame(unsigned ins_idx)
+{
+    if(cf == nullptr) LOG(fatal) << "must SEvt::setGeo before being can access frames " ; 
+    assert(cf); 
+    sframe fr ; 
+    int rc = cf->getFrame(fr, ins_idx) ; 
+    assert( rc == 0 );  
+    fr.prepare();     
+
+    setFrame(fr); 
+}
+
+
+
+
 
 
 quad6 SEvt::MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr )
@@ -272,7 +310,7 @@ std::string SEvt::descProvider() const
 }
 
 
-NP* SEvt::getDomain() const
+NP* SEvt::gatherDomain() const
 {
     quad4 dom[2] ;
     evt->get_domain(dom[0]);
@@ -282,7 +320,7 @@ NP* SEvt::getDomain() const
     // actually it makes more sense to place metadata on domain than hits 
     // as domain will always be available
     domain->set_meta<unsigned>("hitmask", selector->hitmask );
-    domain->set_meta<std::string>("creator", "SEvt::getDomain" );
+    domain->set_meta<std::string>("creator", "SEvt::gatherDomain" );
     return domain ;
 }
 
@@ -301,6 +339,14 @@ sgs SEvt::AddGenstep(const NP* a){    Check(); return INSTANCE->addGenstep(a); }
 void SEvt::AddCarrierGenstep(){ AddGenstep(SEvent::MakeCarrierGensteps()); }
 void SEvt::AddTorchGenstep(){   AddGenstep(SEvent::MakeTorchGensteps());   }
 
+
+SEvt* SEvt::Load()  // static 
+{
+    SEvt* se = new SEvt ; 
+    se->load() ; 
+    return se ; 
+}
+
 void SEvt::Clear(){ Check() ; INSTANCE->clear();  }
 void SEvt::Save(){  Check() ; INSTANCE->save(); }
 void SEvt::Save(const char* dir){                  Check() ; INSTANCE->save(dir); }
@@ -316,10 +362,10 @@ int SEvt::GetIndex(){           return INSTANCE ? INSTANCE->getIndex()  :  0 ; }
 void        SEvt::SetReldir(const char* reldir){ assert(INSTANCE) ; INSTANCE->setReldir(reldir) ; }
 const char* SEvt::GetReldir(){  return INSTANCE ? INSTANCE->getReldir() : nullptr ; }
 
-int SEvt::GetNumPhoton(){  return INSTANCE ? INSTANCE->getNumPhoton() : -1 ; }
-int SEvt::GetNumGenstep(){ return INSTANCE ? INSTANCE->getNumGenstep() : -1 ; }
+int SEvt::GetNumPhotonFromGenstep(){  return INSTANCE ? INSTANCE->getNumPhotonFromGenstep() : -1 ; }
+int SEvt::GetNumGenstepFromGenstep(){ return INSTANCE ? INSTANCE->getNumGenstepFromGenstep() : -1 ; }
 
-NP* SEvt::GetGenstep() {      return INSTANCE ? INSTANCE->getGenstep() : nullptr ; }
+NP* SEvt::GatherGenstep() {   return INSTANCE ? INSTANCE->gatherGenstep() : nullptr ; }
 NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
 void SEvt::SetInputPhoton(NP* p) {  assert(INSTANCE) ; INSTANCE->setInputPhoton(p) ; }
 bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : false ; }
@@ -342,12 +388,6 @@ void SEvt::clear()
     flat.clear(); 
 }
 
-unsigned SEvt::getNumGenstep() const 
-{
-    assert( genstep.size() == gs.size() ); 
-    return genstep.size() ; 
-}
-
 void SEvt::setIndex(int index_){ index = index_ ; }
 void SEvt::unsetIndex(){         index = MISSING_INDEX ; }
 int SEvt::getIndex() const { return index ; }
@@ -356,16 +396,20 @@ void SEvt::setReldir(const char* reldir_){ reldir = reldir_ ? strdup(reldir_) : 
 const char* SEvt::getReldir() const { return reldir ; }
 
 
+
+unsigned SEvt::getNumGenstepFromGenstep() const 
+{
+    assert( genstep.size() == gs.size() ); 
+    return genstep.size() ; 
+}
+
 /**
 SEvt::getNumPhotonFromGenstep
 ----------------------------------
 
+Total photons by summation over all collected genstep 
 
 **/
-unsigned SEvt::getNumPhoton() const 
-{
-   return getNumPhotonFromGenstep() ; 
-}
 
 unsigned SEvt::getNumPhotonFromGenstep() const 
 {
@@ -373,6 +417,7 @@ unsigned SEvt::getNumPhotonFromGenstep() const
     for(unsigned i=0 ; i < genstep.size() ; i++) tot += genstep[i].numphoton() ; 
     return tot ; 
 }
+
 
 /**
 SEvt::addGenstep
@@ -433,7 +478,7 @@ sgs SEvt::addGenstep(const quad6& q_)
     sgs s = {} ;                  // genstep summary struct 
     s.index = genstep.size() ;    // 0-based genstep index since last clear  
     s.photons = q.numphoton() ;   // numphoton in this genstep 
-    s.offset = getNumPhoton() ;   // sum numphotons from all previously collected gensteps (since last reset)
+    s.offset = getNumPhotonFromGenstep() ;   // sum numphotons from all previously collected gensteps (since last reset)
     s.gentype = q.gentype() ; 
 
     gs.push_back(s) ; 
@@ -600,9 +645,8 @@ unsigned SEvt::get_genflag(const spho& label) const
 
 
 /**
-SEvt::beginPhoton
-------------------
-
+SEvt::beginPhoton : only used for hostside running eg with U4RecorderTest
+---------------------------------------------------------------------------
 
 **/
 void SEvt::beginPhoton(const spho& label)
@@ -652,8 +696,8 @@ unsigned SEvt::getCurrentPhotonIdx() const { return current_pho.id ; }
 
 
 /**
-SEvt::rjoinPhoton
-----------------------
+SEvt::rjoinPhoton : only used for hostside running
+---------------------------------------------------
 
 Called from U4Recorder::PreUserTrackingAction_Optical for G4Track with 
 spho label indicating a reemission generation greater than zero.
@@ -838,8 +882,8 @@ void SEvt::rjoinSeqCheck(unsigned seq_flag) const
 }
 
 /**
-SEvt::pointPhoton
-------------------
+SEvt::pointPhoton : only used for hostside running
+---------------------------------------------------
 
 Invoked from U4Recorder::UserSteppingAction_Optical to cause the 
 current photon to be recorded into record vector. 
@@ -955,8 +999,8 @@ int SEvt::getTagSlot() const
 
 
 /**
-SEvt::finalPhoton
---------------------
+SEvt::finalPhoton : only used for hostside running
+------------------------------------------------------
 
 Canonically called from U4Recorder::PostUserTrackingAction_Optical
 
@@ -989,49 +1033,49 @@ void SEvt::checkPhotonLineage(const spho& label) const
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-NP* SEvt::getPho0() const { return NP::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
-NP* SEvt::getPho() const {  return NP::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
-NP* SEvt::getGS() const {   return NP::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
+NP* SEvt::gatherPho0() const { return NP::Make<int>( (int*)pho0.data(), int(pho0.size()), 4 ); }
+NP* SEvt::gatherPho() const {  return NP::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
+NP* SEvt::gatherGS() const {   return NP::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
 
 
-// HMM: get is a bit misleading
+NP* SEvt::gatherGenstep() const { return NP::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
 
-NP* SEvt::getPhoton() const 
+NP* SEvt::gatherPhoton() const 
 { 
     if( evt->photon == nullptr ) return nullptr ; 
     NP* p = makePhoton(); 
     p->read2( (float*)evt->photon ); 
     return p ; 
 } 
-NP* SEvt::getRecord() const 
+NP* SEvt::gatherRecord() const 
 { 
     if( evt->record == nullptr ) return nullptr ; 
     NP* r = makeRecord(); 
     r->read2( (float*)evt->record ); 
     return r ; 
 } 
-NP* SEvt::getRec() const 
+NP* SEvt::gatherRec() const 
 { 
     if( evt->rec == nullptr ) return nullptr ; 
     NP* r = makeRec(); 
     r->read2( (short*)evt->rec ); 
     return r ; 
 } 
-NP* SEvt::getSeq() const 
+NP* SEvt::gatherSeq() const 
 { 
     if( evt->seq == nullptr ) return nullptr ; 
     NP* s = makeSeq(); 
     s->read2( (unsigned long long*)evt->seq ); 
     return s ; 
 } 
-NP* SEvt::getPrd() const 
+NP* SEvt::gatherPrd() const 
 { 
     if( evt->prd == nullptr ) return nullptr ; 
     NP* p = makePrd(); 
     p->read2( (float*)evt->prd ); 
     return p ; 
 } 
-NP* SEvt::getTag() const 
+NP* SEvt::gatherTag() const 
 { 
     if( evt->tag == nullptr ) return nullptr ; 
     NP* p = makeTag(); 
@@ -1039,7 +1083,7 @@ NP* SEvt::getTag() const
     return p ; 
 } 
 
-NP* SEvt::getFlat() const 
+NP* SEvt::gatherFlat() const 
 { 
     if( evt->flat == nullptr ) return nullptr ; 
     NP* p = makeFlat(); 
@@ -1107,35 +1151,67 @@ std::string SEvt::getMeta() const
     return meta ; 
 }
 
-NP* SEvt::getComponent(unsigned comp) const 
+NP* SEvt::gatherComponent(unsigned comp) const 
 {
     unsigned mask = SEventConfig::CompMask(); 
-    return mask & comp ? getComponent_(comp) : nullptr ; 
+    return mask & comp ? gatherComponent_(comp) : nullptr ; 
 }
-NP* SEvt::getComponent_(unsigned comp) const 
+
+/**
+SEvt::gatherComponent_
+------------------------
+**/
+
+NP* SEvt::gatherComponent_(unsigned comp) const 
 {
     NP* a = nullptr ; 
     switch(comp)
     {   
-        case SCOMP_GENSTEP:   a = getGenstep()  ; break ;   
-        case SCOMP_INPHOTON:  a = getInputPhoton()   ; break ;   
-        case SCOMP_PHOTON:    a = getPhoton()   ; break ;   
-        case SCOMP_RECORD:    a = getRecord()   ; break ;   
-        case SCOMP_REC:       a = getRec()      ; break ;   
-        case SCOMP_SEQ:       a = getSeq()      ; break ;   
-        case SCOMP_PRD:       a = getPrd()      ; break ;   
-        case SCOMP_TAG:       a = getTag()      ; break ;   
-        case SCOMP_FLAT:      a = getFlat()     ; break ;   
-        //case SCOMP_SEED:      a = getSeed()     ; break ;   
-        //case SCOMP_HIT:       a = getHit()      ; break ;   
-        //case SCOMP_SIMTRACE:  a = getSimtrace() ; break ;   
-        case SCOMP_DOMAIN:    a = getDomain()   ; break ;   
+        case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;   
+
+        case SCOMP_GENSTEP:   a = gatherGenstep()  ; break ;   
+        case SCOMP_DOMAIN:    a = gatherDomain()   ; break ;   
+        case SCOMP_PHOTON:    a = gatherPhoton()   ; break ;   
+        case SCOMP_RECORD:    a = gatherRecord()   ; break ;   
+        case SCOMP_REC:       a = gatherRec()      ; break ;   
+        case SCOMP_SEQ:       a = gatherSeq()      ; break ;   
+        case SCOMP_PRD:       a = gatherPrd()      ; break ;   
+        case SCOMP_TAG:       a = gatherTag()      ; break ;   
+        case SCOMP_FLAT:      a = gatherFlat()     ; break ;   
+
+        case SCOMP_SEED:      a = gatherSeed()     ; break ;   
+        case SCOMP_HIT:       a = gatherHit()      ; break ;   
+        case SCOMP_SIMTRACE:  a = gatherSimtrace() ; break ;   
     }   
     return a ; 
 }
 
+
+NP* SEvt::gatherSeed() const   // COULD BE IMPLEMENTED : IF NEEDED TO DEBUG  SLOT->GS ASSOCIATION 
+{ 
+    LOG(fatal) << " not implemented for hostside running : getting this error indicates CompMask mixup " ; 
+    assert(0); 
+    return nullptr ; 
+}
+NP* SEvt::gatherHit() const   // TODO: IMPLEMENT THIS 
+{ 
+    LOG(fatal) << " not yet implemented for hostside running : getting this error indicates CompMask mixup" ; 
+    assert(0); 
+    return nullptr ; 
+}
+NP* SEvt::gatherSimtrace() const  // WOULD BE NICE TO BE ABLE TO Simtrace HOSTSIDE WITH G4Navigator : but not straightforward
+{ 
+    LOG(fatal) << " not yet implemented for hostside running : getting this error indicates CompMask mixup " ; 
+    assert(0); 
+    return nullptr ; 
+}
+
+
+
+
+
 /**
-SEvt::getGenstep
+SEvt::gatherGenstep
 -----------------
 
 The returned array takes a full copy of the genstep quad6 vector
@@ -1145,13 +1221,12 @@ by SEvt::clear
 
 **/
 
-NP* SEvt::getGenstep() const { return NP::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
 
 
 
 void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE 
 {
-    NP* a = getGenstep(); 
+    NP* a = gatherGenstep(); 
     if(a == nullptr) return ; 
     LOG(LEVEL) << a->sstr() << " dir " << dir ; 
     a->save(dir, "gs.npy"); 
@@ -1160,7 +1235,7 @@ void SEvt::saveGenstep(const char* dir) const  // HMM: NOT THE STANDARD SAVE
 std::string SEvt::descGS() const 
 {
     std::stringstream ss ; 
-    for(unsigned i=0 ; i < getNumGenstep() ; i++) ss << gs[i].desc() << std::endl ; 
+    for(unsigned i=0 ; i < getNumGenstepFromGenstep() ; i++) ss << gs[i].desc() << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -1204,7 +1279,10 @@ SEvt::gather_components
 --------------------------
 
 Collects the components configured by SEventConfig::CompMask
-into NPFold by for example downloading from the QEvent provider. 
+into NPFold from the SCompProvider which can either be:
+
+* this SEvt instance for hostside running, eg U4RecorderTest
+* the qudarap/QEvent instance for deviceside running, eg G4CXSimulateTest
 
 **/
 
@@ -1220,7 +1298,7 @@ void SEvt::gather_components()
         bool comp_skip = (comp & mask) == 0 ; 
         LOG(LEVEL) << " comp " << comp << " k " << k << " comp_skip " << comp_skip ; 
         if(comp_skip) continue ; 
-        NP* a = provider->getComponent(comp); 
+        NP* a = provider->gatherComponent(comp); 
         LOG(LEVEL) << " a " << ( a ? a->brief() : "-" ) ; 
         if(a == nullptr) continue ;  
         fold->add(k, a); 
@@ -1288,15 +1366,15 @@ void SEvt::load()
 
 
 
-void SEvt::save(const char* base, const char* reldir ) 
+void SEvt::save(const char* base, const char* reld1 ) 
 {
-    const char* dir = SPath::Resolve(base, reldir, DIRPATH); 
+    const char* dir = SPath::Resolve(base, reld1, DIRPATH); 
     save(dir); 
 }
 
-void SEvt::save(const char* base, const char* reldir1, const char* reldir2 ) 
+void SEvt::save(const char* base, const char* reld1, const char* reld2 ) 
 {
-    const char* dir = SPath::Resolve(base, reldir1, reldir2,  DIRPATH); 
+    const char* dir = SPath::Resolve(base, reld1, reld2,  DIRPATH); 
     save(dir); 
 }
 
@@ -1366,8 +1444,8 @@ void SEvt::load(const char* dir_)
 
 
 /**
-SEvt::saveLabels
---------------
+SEvt::saveLabels : hostside running only 
+--------------------------------------------
 
 **/
 
@@ -1376,15 +1454,15 @@ void SEvt::saveLabels(const char* dir_) const
     const char* dir = SPath::Resolve(dir_, DIRPATH );  
     LOG(LEVEL) << dir ; 
 
-    NP* a0 = getPho0();  
+    NP* a0 = gatherPho0();  
     LOG(LEVEL) << " a0 " << ( a0 ? a0->sstr() : "-" ) ; 
     if(a0) a0->save(dir, "pho0.npy"); 
 
-    NP* a = getPho();  
+    NP* a = gatherPho();  
     LOG(LEVEL) << " a " << ( a ? a->sstr() : "-" ) ; 
     if(a) a->save(dir, "pho.npy"); 
 
-    NP* g = getGS(); 
+    NP* g = gatherGS(); 
     LOG(LEVEL) << " g " << ( g ? g->sstr() : "-" ) ; 
     if(g) g->save(dir, "gs.npy"); 
 }
@@ -1468,32 +1546,23 @@ std::string SEvt::descComponent() const
 
 
 
+
+const NP* SEvt::getPhoton() const { return fold->get(SComp::PHOTON_) ; }
+const NP* SEvt::getHit() const {    return fold->get(SComp::HIT_) ; }
+
+unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
+unsigned SEvt::getNumHit() const    { return fold->get_num(SComp::HIT_) ; }
+
 void SEvt::getPhoton(sphoton& p, unsigned idx) const 
 {
-    const NP* photon = fold->get(SComp::PHOTON_) ; 
+    const NP* photon = getPhoton(); 
     sphoton::Get(p, photon, idx ); 
 }
 void SEvt::getHit(sphoton& p, unsigned idx) const 
 {
-    const NP* hit = fold->get(SComp::HIT_) ; 
+    const NP* hit = getHit(); 
     sphoton::Get(p, hit, idx ); 
 }
-
-unsigned SEvt::getNumFoldPhoton() const 
-{
-    const NP* photon = fold->get(SComp::PHOTON_) ; 
-    return photon->shape[0] ; 
-}
-unsigned SEvt::getNumFoldHit() const 
-{
-    const NP* hit = fold->get(SComp::HIT_) ; 
-    return hit->shape[0] ; 
-}
-
-
-
-
-
 
 /**
 SEvt::getLocalPhoton SEvt::getLocalHit
@@ -1528,14 +1597,31 @@ void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const
 }
 
 
+std::string SEvt::descNum() const 
+{
+    unsigned num_photon_from_gs = getNumPhotonFromGenstep(); 
+    unsigned num_photon = getNumPhoton(); 
+    unsigned num_hit = getNumHit(); 
+    std::stringstream ss ; 
+    ss << "SEvt::descNum" 
+       << " num_photon_from_gs " <<  num_photon_from_gs 
+       << " num_photon " <<  num_photon 
+       << " num_hit " <<  num_hit 
+       << std::endl 
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 std::string SEvt::descPhoton(unsigned max_print) const 
 {
-    unsigned num_fold_photon = getNumFoldPhoton(); 
-    unsigned num_print = std::min(max_print, num_fold_photon) ; 
+    unsigned num_photon = getNumPhoton(); 
+    unsigned num_print = std::min(max_print, num_photon); 
+
     std::stringstream ss ; 
     ss << "SEvt::descPhoton" 
-       << " num_fold_photon " <<  num_fold_photon 
+       << " num_photon " <<  num_photon 
        << " max_print " <<  max_print 
        << " num_print " <<  num_print 
        << std::endl 
@@ -1547,19 +1633,31 @@ std::string SEvt::descPhoton(unsigned max_print) const
         getPhoton(p, idx); 
         ss << p.desc() << std::endl  ;   
     }   
+
     std::string s = ss.str(); 
     return s ; 
 }
 
+/**
+SEvt::descLocalPhoton SEvt::descFramePhoton
+----------------------------------------------
+
+Note that SEvt::descLocalPhoton uses the frame of the 
+instance index of each photon whereas the SEvt::descFramePhoton
+uses a single frame that is provided by SEvt::setFrame methods. 
+
+Hence caution wrt which frame is applicable for local photon. 
+
+**/
 
 std::string SEvt::descLocalPhoton(unsigned max_print) const 
 {
-    unsigned num_fold_photon = getNumFoldPhoton(); 
-    unsigned num_print = std::min(max_print, num_fold_photon) ; 
+    unsigned num_photon = getNumPhoton(); 
+    unsigned num_print = std::min(max_print, num_photon) ; 
 
     std::stringstream ss ; 
     ss << "SEvt::descLocalPhoton"
-       << " num_fold_photon " <<  num_fold_photon 
+       << " num_photon " <<  num_photon 
        << " max_print " <<  max_print 
        << " num_print " <<  num_print 
        << std::endl 
@@ -1578,26 +1676,59 @@ std::string SEvt::descLocalPhoton(unsigned max_print) const
 
 std::string SEvt::descFramePhoton(unsigned max_print) const 
 {
-    unsigned num_fold_photon = getNumFoldPhoton(); 
-    unsigned num_print = std::min(max_print, num_fold_photon) ; 
+    unsigned num_photon = getNumPhoton(); 
+    unsigned num_print = std::min(max_print, num_photon) ; 
+
+    bool zero_frame = frame.is_zero() ; 
+
 
     std::stringstream ss ; 
     ss << "SEvt::descFramePhoton"
-       << " num_fold_photon " <<  num_fold_photon 
+       << " num_photon " <<  num_photon 
        << " max_print " <<  max_print 
        << " num_print " <<  num_print 
+       << " zero_frame " << zero_frame
        << std::endl 
        ; 
 
-    sphoton fp ; 
-    for(unsigned idx=0 ; idx < num_print ; idx++)
-    {   
-        getFramePhoton(fp, idx); 
-        ss << fp.desc() << std::endl  ;   
-    }   
+    if(zero_frame) 
+    {
+        ss << "CANNOT getFramePhoton WITHOUT FRAME SET " << std::endl ; 
+    }
+    else
+    {
+        sphoton fp ; 
+        for(unsigned idx=0 ; idx < num_print ; idx++)
+        {   
+            getFramePhoton(fp, idx); 
+            ss << fp.desc() << std::endl  ;   
+        }   
+    }
+
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+std::string SEvt::descFull(unsigned max_print) const
+{
+    std::stringstream ss ; 
+    ss << "[ SEvt::descFull "  << std::endl ; 
+    ss << ( cf ? cf->descBase() : "no-cf" ) << std::endl ; 
+    ss << descDir() << std::endl ;  
+    ss << descNum() << std::endl ; 
+    ss << descComponent() << std::endl ; 
+
+    ss << descPhoton(max_print) << std::endl ; 
+    ss << descLocalPhoton(max_print) << std::endl ; 
+    ss << descFramePhoton(max_print) << std::endl ; 
+
+    ss << ( cf ? cf->descBase() : "no-cf" ) << std::endl ; 
+    ss << "] SEvt::descFull "  << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 
 
@@ -1612,11 +1743,22 @@ frame set by SEvt::setFrame is used to transform the photon
 void SEvt::getFramePhoton(sphoton& lp, unsigned idx) const 
 {
     getPhoton(lp, idx); 
+
+    bool zero_frame = frame.is_zero() ; 
+    if(zero_frame) LOG(fatal) << " must setFrame before can getFramePhoton " ; 
+    assert(!zero_frame);  
+
     frame.transform_w2m(lp); 
 }
 void SEvt::getFrameHit(sphoton& lp, unsigned idx) const 
 {
     getHit(lp, idx); 
+
+    bool zero_frame = frame.is_zero() ; 
+    if(zero_frame) LOG(fatal) << " must setFrame before can getFrameHit " ; 
+    assert(!zero_frame);  
+
     frame.transform_w2m(lp); 
 }
+
 

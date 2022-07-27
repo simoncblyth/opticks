@@ -330,6 +330,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         int                getMeshIndexWithName(const char* name, bool startswith=true) const ;
 
         int getFrame(sframe& fr, int ins_idx ) const ; 
+        std::string descBase() const ; 
+
 
 
         std::string        descMesh() const ;

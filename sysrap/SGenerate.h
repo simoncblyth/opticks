@@ -35,7 +35,7 @@ struct SGenerate
 
 NP* SGenerate::GeneratePhotons()
 {
-    NP* gs = SEvt::GetGenstep();  // user code needs to instanciate SEvt and AddGenstep 
+    NP* gs = SEvt::GatherGenstep();  // user code needs to instanciate SEvt and AddGenstep 
     NP* ph = nullptr ; 
     if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
     {

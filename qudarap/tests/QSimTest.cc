@@ -389,7 +389,7 @@ void QSimTest::generate_photon()
 
     qs->generate_photon();  
 
-    NP* p = qs->event->getPhoton(); 
+    NP* p = qs->event->gatherPhoton(); 
     p->save(dir, "p.npy"); 
 
     LOG(info) << "]" ; 

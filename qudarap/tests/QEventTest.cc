@@ -50,7 +50,7 @@ void QEventTest::test_setGenstep_one()
     assert( x_num_photon == num_photon ); 
 
 
-    NP* seed = event->getSeed(); 
+    NP* seed = event->gatherSeed(); 
     const int* seed_v = seed->values<int>(); 
     int num_seed = seed->shape[0] ; 
 
@@ -113,7 +113,7 @@ void QEventTest::test_setGenstep_many()
         assert( x_num_photon[i] == num_photon ); 
 
 
-        NP* seed_ = event->getSeed(); 
+        NP* seed_ = event->gatherSeed(); 
         const int* seed = seed_->values<int>();   
         int num_seed = seed_->shape[0] ;
 

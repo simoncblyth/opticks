@@ -1047,6 +1047,10 @@ int GGeo::getFrame(sframe& fr, int ins_idx ) const
     assert(0); // not implemented for GGeo 
 }
 
+std::string GGeo::descBase() const
+{
+    return "GGeo::descBase" ; 
+}
 
 
 int GGeo::getMeshIndexWithName(const char* name, bool startswith) const 

@@ -3,8 +3,27 @@
 SEvt.hh
 =========
 
+TODO : lifecycle leak checking 
+
+
 Q: Where is this instanciated canonically ?
-A: So far in the mains of tests
+A: So far in G4CXOpticks and in the mains of lower level tests
+
+
+Note the distinction in the names of accessors:
+
+*gather*
+   resource intensive action done few times, that likely allocates memory,
+   in the case of sibling class QEvent *gather* mostly includes downloading from device 
+   Care is needed in memory management of returned arrays to avoid leaking.  
+
+*get*
+   cheap action, done as many times as needed, returning a pointer to 
+   already allocating memory that is separately managed, eg within NPFold
+
+
+
+
 
 
 Attempting to do this header only gives duplicate symbol for the SEvt::INSTANCE.
@@ -105,6 +124,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const int PIDX ; 
     static const int GIDX ; 
     static const int MISSING_INDEX ; 
+    static const char*  DEFAULT_RELDIR ; 
 
     static SEvt* INSTANCE ; 
     static SEvt* Get() ; 
@@ -119,6 +139,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void AddTorchGenstep(); 
 
     static void Clear(); 
+    static SEvt* Load(); 
     static void Save() ; 
     static void Save(const char* base, const char* reldir ); 
     static void Save(const char* dir); 
@@ -129,9 +150,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     static void SetReldir(const char* reldir); 
     static const char* GetReldir(); 
 
-    static int GetNumPhoton(); 
-    static int GetNumGenstep(); 
-    static NP* GetGenstep(); 
+    static int GetNumPhotonFromGenstep(); 
+    static int GetNumGenstepFromGenstep(); 
+    static NP* GatherGenstep(); 
     static NP* GetInputPhoton(); 
     static void SetInputPhoton(NP* ip); 
     static bool HasInputPhoton(); 
@@ -141,6 +162,9 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     const char* getSaveDir() const ; 
     const char* getLoadDir() const ; 
+    const char* getSearchCFBase() const ; 
+
+
     void init(); 
 
     static const char* INPUT_PHOTON_DIR ; 
@@ -156,6 +180,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static const bool setFrame_WIDE_INPUT_PHOTON ; 
     void setFrame(const sframe& fr ); 
     void setGeo(const SGeo* cf); 
+    void setFrame(unsigned ins_idx); 
+
 
     static quad6 MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr ); 
 
@@ -171,10 +197,9 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void hostside_running_resize(); 
 
-    NP* getDomain() const ; 
+    NP* gatherDomain() const ; 
 
     void clear() ; 
-    unsigned getNumGenstep() const ; 
 
     void setIndex(int index_) ;  
     void unsetIndex() ;  
@@ -183,9 +208,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     void setReldir(const char* reldir_) ;  
     const char* getReldir() const ; 
 
-
-    unsigned getNumPhoton() const ; 
+    unsigned getNumGenstepFromGenstep() const ; 
     unsigned getNumPhotonFromGenstep() const ; 
+
     sgs addGenstep(const quad6& q) ; 
     sgs addGenstep(const NP* a) ; 
 
@@ -209,17 +234,23 @@ struct SYSRAP_API SEvt : public SCompProvider
     int getTagSlot() const ; 
 
 
-    NP* getPho0() const ;   // unordered push_back as they come 
-    NP* getPho() const ;    // resized at genstep and slotted in 
-    NP* getGS() const ;   // genstep labels from std::vector<sgs>  
+    NP* gatherPho0() const ;   // unordered push_back as they come 
+    NP* gatherPho() const ;    // resized at genstep and slotted in 
+    NP* gatherGS() const ;   // genstep labels from std::vector<sgs>  
 
-    NP* getPhoton() const ; 
-    NP* getRecord() const ; 
-    NP* getRec() const ; 
-    NP* getSeq() const ; 
-    NP* getPrd() const ; 
-    NP* getTag() const ; 
-    NP* getFlat() const ; 
+    NP* gatherGenstep() const ; 
+    NP* gatherPhoton() const ; 
+    NP* gatherRecord() const ; 
+    NP* gatherRec() const ; 
+    NP* gatherSeq() const ; 
+    NP* gatherPrd() const ; 
+    NP* gatherTag() const ; 
+    NP* gatherFlat() const ; 
+
+    NP* gatherSeed() const ; 
+    NP* gatherHit() const ; 
+    NP* gatherSimtrace() const ; 
+
 
     NP* makePhoton() const ; 
     NP* makeRecord() const ; 
@@ -233,14 +264,13 @@ struct SYSRAP_API SEvt : public SCompProvider
     // SCompProvider methods
 
     std::string getMeta() const ; 
-    NP* getComponent(unsigned comp) const ; 
-    NP* getComponent_(unsigned comp) const ; 
+    NP* gatherComponent(unsigned comp) const ; 
+    NP* gatherComponent_(unsigned comp) const ; 
 
     void saveLabels(const char* dir) const ;  // formerly savePho
     void saveFrame(const char* dir_) const ; 
 
     void saveGenstep(const char* dir) const ; 
-    NP* getGenstep() const ; 
 
 
     void gather_components() ; 
@@ -265,20 +295,28 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::string descComponent() const ; 
 
 
+
+
+
+    const NP* getPhoton() const ; 
+    const NP* getHit() const ; 
+
+    unsigned getNumPhoton() const ; 
+    unsigned getNumHit() const ; 
+
     void getPhoton(sphoton& p, unsigned idx) const ; 
     void getHit(   sphoton& p, unsigned idx) const ; 
-
-    unsigned getNumFoldPhoton() const ; 
-    unsigned getNumFoldHit() const ; 
 
     void getLocalPhoton(sphoton& p, unsigned idx) const ; 
     void getLocalHit(   sphoton& p, unsigned idx) const ; 
     void applyLocalTransform_w2m( sphoton& lp) const ; 
     void getPhotonFrame( sframe& fr, const sphoton& p ) const ; 
 
+    std::string descNum() const ; 
     std::string descPhoton(unsigned max_print=10) const ; 
     std::string descLocalPhoton(unsigned max_print=10) const ; 
     std::string descFramePhoton(unsigned max_print=10) const ; 
+    std::string descFull(unsigned max_print=10) const ; 
 
     void getFramePhoton(sphoton& p, unsigned idx) const ; 
     void getFrameHit(   sphoton& p, unsigned idx) const ; 
