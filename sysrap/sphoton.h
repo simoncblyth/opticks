@@ -130,7 +130,10 @@ struct sphoton
     SPHOTON_METHOD static sphoton make_ephoton(); 
     SPHOTON_METHOD std::string digest(unsigned numval=16) const  ; 
     SPHOTON_METHOD static bool digest_match( const sphoton& a, const sphoton& b, unsigned numval=16 ) ; 
+
     SPHOTON_METHOD static void Get( sphoton& p, const NP* a, unsigned idx ); 
+    SPHOTON_METHOD static void Get( std::vector<sphoton>& pp, const NP* a ); 
+
     SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>&  tr, bool normalize=true );  // widens transform and uses below
     SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true ); 
 #endif 
@@ -196,6 +199,7 @@ SPHOTON_METHOD std::string sphoton::descDetail() const
         << " ix " << idx() 
         << " fm " << std::hex << flagmask  << std::dec 
         << " ab " << OpticksPhoton::Abbrev( flag() )
+        << " ii " << iindex
         ;
     std::string s = ss.str(); 
     return s ; 
@@ -298,12 +302,27 @@ SPHOTON_METHOD bool sphoton::digest_match( const sphoton& a, const sphoton& b, u
     return strcmp( adig.c_str(), bdig.c_str() ) == 0 ;
 } 
 
+
+
+
 SPHOTON_METHOD void sphoton::Get( sphoton& p, const NP* a, unsigned idx )
 {
     assert(a && a->has_shape(-1,4,4) && a->ebyte == sizeof(float) && idx < unsigned(a->shape[0]) ); 
     assert( sizeof(sphoton) == sizeof(float)*16 ); 
     memcpy( &p, a->cvalues<float>() + idx*16, sizeof(sphoton) ); 
 }
+
+SPHOTON_METHOD void sphoton::Get( std::vector<sphoton>& pp, const NP* a )
+{
+    assert(a && a->has_shape(-1,4,4) && a->ebyte == sizeof(float) ); 
+    assert( sizeof(sphoton) == sizeof(float)*16 ); 
+    unsigned num = a->shape[0] ;
+    pp.resize(num); 
+    memcpy( pp.data(), a->cvalues<float>(), sizeof(sphoton)*num ); 
+}
+
+
+
 
 /**
 sphoton::transform_float 
@@ -370,6 +389,7 @@ struct sphotond
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+   SPHOTON_METHOD static void FromFloat( sphotond& d, const sphoton& s );  
    SPHOTON_METHOD static void Get( sphotond& p, const NP* a, unsigned idx ); 
    SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>& tr,  bool normalize=true ); 
    SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true ); 
@@ -380,6 +400,32 @@ struct sphotond
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+SPHOTON_METHOD void sphotond::FromFloat( sphotond& d, const sphoton& s )
+{
+    typedef unsigned long long ull ; 
+
+    d.pos.x = double(s.pos.x) ;  
+    d.pos.y = double(s.pos.y) ;  
+    d.pos.z = double(s.pos.z) ;
+    d.time  = double(s.time) ; 
+     
+    d.mom.x = double(s.mom.x) ;  
+    d.mom.y = double(s.mom.y) ;  
+    d.mom.z = double(s.mom.z) ;
+    d.iindex = ull(s.iindex) ;
+
+    d.pol.x = double(s.pol.x) ;  
+    d.pol.y = double(s.pol.y) ;  
+    d.pol.z = double(s.pol.z) ;
+    d.wavelength  = double(s.wavelength) ; 
+      
+    d.boundary_flag = ull(s.boundary_flag) ;  
+    d.identity      = ull(s.identity) ;  
+    d.orient_idx    = ull(s.orient_idx) ;  
+    d.flagmask      = ull(s.flagmask) ;  
+}
+
 SPHOTON_METHOD void sphotond::Get( sphotond& p, const NP* a, unsigned idx )
 {
     assert(a && a->has_shape(-1,4,4) && a->ebyte == sizeof(double) && idx < unsigned(a->shape[0]) ); 

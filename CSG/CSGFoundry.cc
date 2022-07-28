@@ -2093,9 +2093,23 @@ void CSGFoundry::load()
 
 
 
+const char* CSGFoundry::load_FAIL_base_null_NOTES = R"(
+CSGFoundry::load_FAIL_base_null_NOTES
+======================================
+
+Loading of the geometry failed as the base directory was not provided. 
+This typically means you are attempting to run an executable directly 
+when you should be running the script that sets up the needed environment
+that specifies which geometry directory to load. 
+
+Relevant envvars : CFBASE and GEOM 
+
+)" ; 
+
+
 void CSGFoundry::load(const char* base_, const char* rel) 
 {
-    if(base_ == nullptr) LOG(fatal) << " base null, missing envvar ? probably run script not executable directly " ; 
+    if(base_ == nullptr) LOG(error) << load_FAIL_base_null_NOTES ; 
     assert(base_); 
     bool conventional = strcmp( rel, RELDIR) == 0  ; 
     if(!conventional) LOG(fatal) << "Convention is for rel to be named [" << RELDIR << "] not: [" << rel << "]"  ; 

@@ -8,6 +8,11 @@ include(OpticksBuildOptions NO_POLICY_SCOPE)
 U4
 ===
 
+HMM: depending on CSG too would allow loading CSGFoundry ? 
+Yes: a possibility, but that is not needed for primary functionality currently
+although it would be useful for testing ... 
+so depend on that in specific tests not generally 
+ 
 
 #]=]
 

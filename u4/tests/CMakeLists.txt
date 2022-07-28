@@ -4,6 +4,8 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
 
+
+
 #[=[
 Unlike most executables U4VPrimaryGeneratorTest 
 needs the MOCK_CURAND macro in order to use CUDA 
@@ -66,4 +68,20 @@ target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND )
 target_compile_definitions( ${TGT} PUBLIC DEBUG_TAG ) 
 target_link_libraries(${TGT} U4)
 install(TARGETS ${TGT} DESTINATION lib)
+
+
+
+set(U4HitTest_SOURCES
+    U4HitTest.cc
+)
+
+
+find_package(CSG REQUIRED)
+set(TGT U4HitTest)
+add_executable(${TGT} ${U4HitTest_SOURCES})
+target_link_libraries(${TGT} U4 Opticks::CSG)
+install(TARGETS ${TGT} DESTINATION lib)
+
+
+
 

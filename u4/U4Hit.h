@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <sstream>
 
 #include "G4Types.hh"
 #include "G4ThreeVector.hh"
@@ -37,6 +39,7 @@ struct U4Hit
     G4ThreeVector local_polarization ; 
     G4ThreeVector global_polarization ; 
     G4double      wavelength ; 
+
     G4int         boundary ;
     G4int         sensorIndex ;
     G4int         nodeIndex ;
@@ -45,28 +48,28 @@ struct U4Hit
     G4int         sensor_identifier ; 
     G4bool        is_cerenkov ; 
     G4bool        is_reemission ; 
+
+    std::string desc() const ; 
+
 };
 
-/**2
-U4HitExtra
--------------------
 
-This extra hit information is only filled when ``Opticks::isWayEnabled`` 
-is switched on with the ``--way`` option on the embedded Opticks commandline.
+#include "U4ThreeVector.h"
 
-``boundary_pos`` ``boundary_time``
-   global frame position and time of a photon when it crosses a boundary 
-   selected by **geospecific** commandline options.
+inline std::string U4Hit::desc() const
+{
+    std::stringstream ss ; 
 
-``origin_time`` 
-   initial time of the first photon at generation from the genstep 
-   obtained some other particle. This time is obtained immediately 
-   after generation before starting the "bounce" loop 
+    ss << "U4Hit::desc" 
+       << " lpos " << U4ThreeVector::Desc(local_position) 
+       << " gpos " << U4ThreeVector::Desc(global_position) 
+       ; 
 
-``origin_trackID``
-   non-optical parent G4Track::GetTrackID recorded into genstep at ``0*4+1``
+    std::string s = ss.str(); 
+    return s ; 
+}
 
-2**/
+
 
 struct U4HitExtra
 {
@@ -77,53 +80,6 @@ struct U4HitExtra
     G4int         origin_trackID ; 
 };
 
-/**3
-JUNO geometry example, showing  possible boundary_pos (1) or (2)::
-
-
-                             |--------- 2230 ----------------|-- 120--|
-                             20050                           17820    17700
-                          / /                               /         /
-                         / /                               /         /
-                        / pInnerWater                     /         /
-                       / /                               /         /
-                      / /                  (0)          /         /
-                     pTyvek                  \         pAcylic   /
-                    / /                       \       /         /
-                   / /                         \     /         pTarget:LS
-                  / /                           \   /         /
-                 / /                             \ /         /
-                / /                              (1)        /
-               / /                               / \       /
-              / /                               /   \     /
-             / /                               /     \   /         
-            / /                               /       \ /
-           / /                          Wa   /  Ac    (2)             
-          / /                               /         / \
-         / /                               /         /   \
-        / /                               /         /     \        LS    
-
-
-Geospecific options controlling which boundary_pos and time to record::
-
-   --way --pvname pAcylic  --boundary Water///Acrylic --waymask 3    # (1): gives radius 17820
-
-   --way --pvname pTarget  --boundary Acrylic///LS --waymask 3       # (2): gives radius 17700
-
-
-Note that when running from GDML the pvname will often have address suffixes, eg::
-
-   --boundary MineralOil///Acrylic --pvname /dd/Geometry/AD/lvSST#pvOIL0xc2415100x3f0b6a0 
-
-
-Such options are used via GGeo::getSignedBoundary Opticks::getBoundary GGeo::getFirstNodeIndexForPVName Opticks::getPVName
-in OGeo::initWayControl to set **way_control** in the OptiX GPU context.
-
-For each boundary encountered in the GPU propagation in oxrap/cu/generate.cu a match with the 
-boundary and/or pvname is checked and when found results in the setting of ``boundary_pos`` ``boundary_time``.
-
-
-3**/
 
 
 

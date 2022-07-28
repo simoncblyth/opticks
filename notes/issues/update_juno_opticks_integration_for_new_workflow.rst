@@ -3,6 +3,71 @@ update_juno_opticks_integration_for_new_workflow
 
 * previous : :doc:`ellipsoid_transform_compare_two_geometries`
 
+
+
+Overview of the Integration WITH_G4OPTICKS
+---------------------------------------------------------
+
+::
+
+    epsilon:~ blyth$ jgl WITH_G4OPTICKS
+
+    ./Simulation/GenTools/GenTools/GtOpticksTool.h
+    ./Simulation/GenTools/src/GtOpticksTool.cc
+
+    ## Does input photons, using NPY.hpp NPho.hpp glm::vec4 getPositionTime 
+    ## Opticks now has its own way of doing input photons. 
+
+    ## DONE: added sphoton::Get to load em from NP arrays 
+    ## DONE: U4Hit.h copied from G4OpticksHit.hh
+
+    ## HMM: old one had G4OpticksRecorder : but now think 
+    ##      that B-side running can be done Opticks side only 
+    ##
+
+    ./Simulation/DetSimV2/PhysiSim/include/LocalG4Cerenkov1042.hh
+    ./Simulation/DetSimV2/PhysiSim/src/LocalG4Cerenkov1042.cc
+
+    ./Simulation/DetSimV2/PhysiSim/include/DsG4Scintillation.h
+    ./Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
+
+    ./Simulation/DetSimV2/PhysiSim/src/DsPhysConsOptical.cc
+
+    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2.hh
+    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2.cc
+
+    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2_Opticks.hh
+    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc
+
+    ## TODO: G4Opticks::getHit needs updating for new workflow  
+        
+
+    ./Simulation/DetSimV2/PMTSim/include/PMTEfficiencyCheck.hh
+    ./Simulation/DetSimV2/PMTSim/src/PMTEfficiencyCheck.cc
+
+    ./Simulation/DetSimV2/PMTSim/src/PMTSDMgr.cc
+
+    ./Simulation/DetSimV2/DetSimMTUtil/src/DetFactorySvc.cc
+
+    ./Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc
+
+    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc
+
+    ## passing over the geometry, G4Opticks -> G4CXOpticks
+
+    ./Simulation/DetSimV2/AnalysisCode/include/G4OpticksAnaMgr.hh
+    ./Simulation/DetSimV2/AnalysisCode/src/G4OpticksAnaMgr.cc
+
+    ## HMM : this is using G4OpticksRecorder, could be updated for U4Recorder 
+    ## but Opticks alone can do this a bit doubtful of the need
+
+    ./Examples/Tutorial/python/Tutorial/JUNODetSimModule.py
+
+
+
+
+
+
 How to simplify integration ?
 -----------------------------
 
@@ -35,6 +100,44 @@ Old way, using GPho hits wrapper::
     1332     glm::vec4 local_dirw = m_hits_wrapper->getLocalDirectionWeight(i);
     1333     glm::vec4 local_polw = m_hits_wrapper->getLocalPolarizationWavelength(i);
     1334 
+    1337     hit->global_position.set(double(post.x), double(post.y), double(post.z));
+    1338     hit->time = double(post.w) ;
+    1339     hit->global_direction.set(double(dirw.x), double(dirw.y), double(dirw.z));
+    1340     hit->weight = double(dirw.w) ;
+    1341     hit->global_polarization.set(double(polw.x), double(polw.y), double(polw.z));
+    1342     hit->wavelength = double(polw.w);
+    1343 
+    1344     hit->local_position.set(double(local_post.x), double(local_post.y), double(local_post.z));
+    1345     hit->local_direction.set(double(local_dirw.x), double(local_dirw.y), double(local_dirw.z));
+    1346     hit->local_polarization.set(double(local_polw.x), double(local_polw.y), double(local_polw.z));
+    1347 
+    1348     hit->boundary      = pflag.boundary ;
+    1349     hit->sensorIndex   = pflag.sensorIndex ;
+    1350     hit->nodeIndex     = pflag.nodeIndex ;
+    1351     hit->photonIndex   = pflag.photonIndex ;
+    1352     hit->flag_mask     = pflag.flagMask ;
+
+
+This feels like a lot of shuffling...
+
+GPho::get* 
+    shuffles values from NPY<float> into glm::vec4 
+
+G4Opticks::getHit
+    shuffles values from glm::vec4 into G4OpticksHit(aka U4Hit)/G4ThreeVector etc.. 
+
+junoSD_PMT_v2_Opticks::convertHit
+    shuffles from G4OpticksHit(aka U4Hit) into junoHit_PMT 
+
+
+Is the G4OpticksHit/U4Hit intermediary actually needed ? 
+
+* could go from sphoton -> sphotond -> junoHit_PMT. 
+
+
+
+
+
 
 GPho used nodeIndex to access the transform. 
 
@@ -53,9 +156,8 @@ GPho used nodeIndex to access the transform.
 gxs.sh Live dumping gives expected close to origin local coords
 --------------------------------------------------------------------
 
-TODO: get a grabed and loaded SEvt on laptop to reproduce the below, see CSG/tests/CSGFoundry_SGeo_SEvt_Test.sh 
+DONE: get a grabed and loaded SEvt on laptop to reproduce the below, see CSG/tests/CSGFoundry_SGeo_SEvt_Test.sh 
 
-* the exercise is one of ensuring consistent geometry 
 
 ::
 
@@ -213,15 +315,6 @@ and SEvt NP/sphoton.
             [-12020.483,   9137.731,  12234.794,      1.   ]],
 
 
-
-
-
-
-
-
-
-
-
 ::
 
     In [15]: cf.inst[39216]
@@ -281,66 +374,6 @@ G4Opticks::getHit : okc/OpticksPhotonFlags
     1357     // via m_sensorlib 
     1358     hit->sensor_identifier = getSensorIdentifier(pflag.sensorIndex);
 
-
-
-
-Old Integration : Overview WITH_G4OPTICKS
--------------------------------------------
-
-::
-
-    epsilon:~ blyth$ jgl WITH_G4OPTICKS
-
-    ./Simulation/GenTools/GenTools/GtOpticksTool.h
-    ./Simulation/GenTools/src/GtOpticksTool.cc
-
-    ## Does input photons, using NPY.hpp NPho.hpp glm::vec4 getPositionTime 
-    ## Opticks now has its own way of doing input photons. 
-
-    ## DONE: added sphoton::Get to load em from NP arrays 
-    ## DONE: U4Hit.h copied from G4OpticksHit.hh
-
-    ## HMM: old one had G4OpticksRecorder : but now think 
-    ##      that B-side running can be done Opticks side only 
-    ##
-
-    ./Simulation/DetSimV2/PhysiSim/include/LocalG4Cerenkov1042.hh
-    ./Simulation/DetSimV2/PhysiSim/src/LocalG4Cerenkov1042.cc
-
-    ./Simulation/DetSimV2/PhysiSim/include/DsG4Scintillation.h
-    ./Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
-
-    ./Simulation/DetSimV2/PhysiSim/src/DsPhysConsOptical.cc
-
-    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2.hh
-    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2.cc
-
-    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2_Opticks.hh
-    ./Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc
-
-    ## TODO: G4Opticks::getHit needs updating for new workflow  
-        
-
-    ./Simulation/DetSimV2/PMTSim/include/PMTEfficiencyCheck.hh
-    ./Simulation/DetSimV2/PMTSim/src/PMTEfficiencyCheck.cc
-
-    ./Simulation/DetSimV2/PMTSim/src/PMTSDMgr.cc
-
-    ./Simulation/DetSimV2/DetSimMTUtil/src/DetFactorySvc.cc
-
-    ./Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc
-
-    ./Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc
-
-    ## passing over the geometry, G4Opticks -> G4CXOpticks
-
-    ./Simulation/DetSimV2/AnalysisCode/include/G4OpticksAnaMgr.hh
-    ./Simulation/DetSimV2/AnalysisCode/src/G4OpticksAnaMgr.cc
-
-    ## HMM : this is using G4OpticksRecorder, could be updated for U4Recorder 
-    ## but Opticks alone can do this a bit doubtful of the need
-
-    ./Examples/Tutorial/python/Tutorial/JUNODetSimModule.py
 
 
 

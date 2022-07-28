@@ -73,10 +73,22 @@ const char* SEvt::getLoadDir() const
 SEvt::getSearchCFbase
 ----------------------
 
-Search for CFBase geometry folder corresponding 
-to the event arrays based on the loaded/saved SEvt directories. 
-So this has no possibility of working prior to a load or save has been done. 
-As this is typically used for loaded SEvt this is not much of a limitation. 
+Search for CFBase geometry folder corresponding to the event arrays based on 
+the loaded/saved SEvt directories. So this has no possibility of working prior 
+to a load or save having been done. As this is typically used for loaded SEvt 
+this is not much of a limitation. 
+
+For example use this to load an event and associate it with a geometry, 
+allowing dumping or access to the photons in any frame::
+
+    SEvt* sev = SEvt::Load() ;
+    const char* cfbase = sev->getSearchCFBase() ;
+    const CSGFoundry* fd = CSGFoundry::Load(cfbase);
+    sev->setGeo(fd);
+    sev->setFrame(39216);
+    std::cout << sev->descFull() ; 
+
+See CSG/tests/CSGFoundry_SGeo_SEvt_Test.sh
 
 **/
 
@@ -1553,7 +1565,7 @@ const NP* SEvt::getHit() const {    return fold->get(SComp::HIT_) ; }
 unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
 unsigned SEvt::getNumHit() const    { return fold->get_num(SComp::HIT_) ; }
 
-void SEvt::getPhoton(sphoton& p, unsigned idx) const 
+void SEvt::getPhoton(sphoton& p, unsigned idx) const  // global
 {
     const NP* photon = getPhoton(); 
     sphoton::Get(p, photon, idx ); 
