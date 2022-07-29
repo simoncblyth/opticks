@@ -292,7 +292,7 @@ SPHOTON_METHOD sphoton sphoton::make_ephoton()  // static
 SPHOTON_METHOD std::string sphoton::digest(unsigned numval) const  
 {
     assert( numval <= 16 ); 
-    return sdigest::buf( (const char*)cdata() , numval*sizeof(float) );  
+    return sdigest::Buf( (const char*)cdata() , numval*sizeof(float) );  
 } 
 
 SPHOTON_METHOD bool sphoton::digest_match( const sphoton& a, const sphoton& b, unsigned numval )  // static

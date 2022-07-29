@@ -31,6 +31,8 @@ set(TEST_SOURCES
    U4LogTest.cc
    U4RotationMatrixTest.cc
    U4TransformTest.cc
+   U4TraverseTest.cc
+   U4TreeTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

@@ -906,6 +906,10 @@ Note that only the nnode is different due to the balancing, however
 its simpler to keep a one-to-one relationship between these three instances
 for persistency convenience.
 
+Note that convertSolid is called for newly encountered lv
+in the postorder tail after the recursive call in order for soIdx/lvIdx
+to match Geant4. 
+
 **/
 
 void X4PhysicalVolume::convertSolids_r(const G4VPhysicalVolume* const pv, int depth)

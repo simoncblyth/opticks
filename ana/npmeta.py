@@ -60,6 +60,12 @@ class NPMeta(object):
     def __getattr__(self, k):
         return self.find(k)
 
+    def __getitem__(self, idx):
+        """
+        item access useful for simple lists of names, not metadata dicts 
+        """
+        return self.lines[idx] 
+
     def oldfind(self, k_start, fallback=None, encoding=ENCODING):
         meta = self.meta
         ii = np.flatnonzero(np.char.startswith(meta, k_start.encode(encoding)))  

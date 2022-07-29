@@ -114,8 +114,8 @@ void test_Load_0()
     const NP* a = SOpticksResource::IDLoad("GScintillatorLib/LS_ori/RINDEX.npy"); 
     const NP* b = NP::Load(SPath::Resolve("$IDPath/GScintillatorLib/LS_ori/RINDEX.npy", NOOP)); 
 
-    std::cout << " a " << a->sstr() << " digest " << sdigest::item(a) << std::endl ; 
-    std::cout << " b " << b->sstr() << " digest " << sdigest::item(b) << std::endl ; 
+    std::cout << " a " << a->sstr() << " digest " << sdigest::Item(a) << std::endl ; 
+    std::cout << " b " << b->sstr() << " digest " << sdigest::Item(b) << std::endl ; 
 
     a->dump(); 
 

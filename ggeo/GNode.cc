@@ -611,7 +611,7 @@ std::string GNode::meshDigest()
 {
     char meshidx[8];
     snprintf(meshidx, 8, "%u", m_mesh->getIndex());
-    return meshidx ; 
+    return meshidx ; // converted into a string for return before meshidx array goes out of scope 
 }
 
 
@@ -669,6 +669,14 @@ unsigned int GNode::getProgenyNumVertices()
     return m_progeny_num_vertices ; 
 }
 
+
+/**
+GNode::getProgenyDigest
+------------------------
+
+Canonical usage from GInstancer::traverse_r GInstancer::isContainedRepeat
+
+**/
 
 std::string& GNode::getProgenyDigest()
 {

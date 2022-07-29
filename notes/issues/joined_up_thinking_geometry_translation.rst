@@ -59,6 +59,44 @@ u4/U4Tree.h
 
 
 
+n-ary tree data structure
+----------------------------
+
+* https://www.enjoyalgorithms.com/blog/n-ary-tree
+
+* convert n-ary to binary tree : by links to first child and next sibling 
+
+Note every node is same size then::
+
+    struct NaryTreeNode
+    {
+        int value ; 
+        NaryTreeNode* firstChild ; 
+        NaryTreeNode* nextSibling ; 
+    };
+
+
+What about::
+
+    struct Node
+    {
+        "int value ;" 
+        int numChild ;         // siblings stored contiguosly 
+        int firstChildIndex ;  // -1 when no child 
+        int parentIndex ;      // -1 for root 
+    }; 
+  
+* keeping the "node header" to a max of 4 int32 will allow it to be squeezed into 4x4 transform spare 
+
+
+Tree background
+--------------------
+
+* https://hbfs.wordpress.com/2009/04/07/compact-tree-storage/
+
+* https://hbfs.wordpress.com/2016/09/06/serializing-trees/#1
+
+
 Serialize n-ary tree
 -----------------------
 
