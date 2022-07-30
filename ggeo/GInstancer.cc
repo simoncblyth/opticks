@@ -440,7 +440,7 @@ and is thus disallowed in favor of the ancestor that contains it.
 
 bool GInstancer::isContainedRepeat( const std::string& pdig, unsigned int levels ) const 
 {
-    GNode* node = m_root_->findProgenyDigest(pdig) ; 
+    GNode* node = m_root_->findProgenyDigest(pdig) ;  // recursively search progeny subtree for first node matching the digest
     std::vector<GNode*>& ancestors = node->getAncestors();  // ordered from root to parent 
     unsigned int asize = ancestors.size(); 
 
@@ -448,6 +448,7 @@ bool GInstancer::isContainedRepeat( const std::string& pdig, unsigned int levels
     {
         GNode* a = ancestors[asize - 1 - i] ; // from back of ancestors to start with parent
         std::string& adig = a->getProgenyDigest();
+        // hmm: this approach depends relies on definition of repeat_candidates
         if(std::find(m_repeat_candidates.begin(), m_repeat_candidates.end(), adig ) != m_repeat_candidates.end())
         { 
             return true ;

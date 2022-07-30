@@ -147,8 +147,12 @@ set(HEADERS
     SMap.hh
     SCount.hh
 
+    sfreq.h 
+
     sdigest.h
     SDigest.hh
+
+    
 
     SDigestNP.hh
     SDirect.hh

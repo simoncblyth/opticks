@@ -101,6 +101,9 @@ struct NP
     static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
 
     template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
+    //template<typename T> static void Read( const char* dir, const char* name,       T* dst ); 
+
+
     template<typename T> static void Write(const char* dir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
     template<typename T> static void Write(const char* dir, const char* reldir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
 
@@ -259,7 +262,7 @@ struct NP
 
     void save_header(const char* path);   
     void old_save(const char* path) ;  // formerly the *save* methods could not be const because of update_headers
-    void save(const char* path, bool verbose=false) const ;  // *save* methods now can be const due to dynamic creation of header
+    void save(const char* path) const ;  // *save* methods now can be const due to dynamic creation of header
 
     void save(const char* dir, const char* name) const ;   
     void save(const char* dir, const char* reldir, const char* name) const ;   
@@ -3461,10 +3464,9 @@ inline void NP::old_save(const char* path)  // non-const due to update_headers
     stream.write( bytes(), arr_bytes() );
 }
 
-inline void NP::save(const char* path, bool verbose) const 
+inline void NP::save(const char* path) const 
 {
-    if(verbose)
-    std::cout << "NP::save path [" << path  << "]" << std::endl ; 
+    if(VERBOSE) std::cout << "NP::save path [" << path  << "]" << std::endl ; 
 
     int rc = U::MakeDirsForFile(path); 
     assert( rc == 0 ); 
@@ -3480,7 +3482,7 @@ inline void NP::save(const char* path, bool verbose) const
 
 inline void NP::save(const char* dir, const char* reldir, const char* name) const 
 {
-    std::cout << "NP::save dir [" << ( dir ? dir : "-" )  << "] reldir [" << ( reldir ? reldir : "-" )  << "] name [" << name << "]" << std::endl ; 
+    if(VERBOSE) std::cout << "NP::save dir [" << ( dir ? dir : "-" )  << "] reldir [" << ( reldir ? reldir : "-" )  << "] name [" << name << "]" << std::endl ; 
     std::string path = form_path(dir, reldir, name); 
     save(path.c_str()); 
 }
@@ -3919,6 +3921,22 @@ template void NP::Write<float>(   const char*, const char*, const std::vector<fl
 template void NP::Write<double>(  const char*, const char*, const std::vector<double>&  ); 
 template void NP::Write<int>(     const char*, const char*, const std::vector<int>& ); 
 template void NP::Write<unsigned>(const char*, const char*, const std::vector<unsigned>& ); 
+
+/*
+HMM: Read not so easy to encapsulate as normally using vectors of many different types of compound types 
+
+template<typename T> void NP::Read(const char* dir, const char* name, T* dst )
+{
+    NP* a = NP::Load(dir, name); 
+    values.resize(a->shape[0])
+    memcpy( (T*)dst,    a->cvalues<T>() ,  a->arr_bytes() );
+}
+*/
+
+
+
+
+
 
 inline void NP::WriteNames(const char* dir, const char* name, const std::vector<std::string>& names, unsigned num_names_ )
 {
