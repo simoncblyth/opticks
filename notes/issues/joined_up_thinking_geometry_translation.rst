@@ -120,6 +120,49 @@ TODO : compare stree_test with GGeo
         9 : d4f5974d740cd7c78613c9d8563878c7 :   504 de:( 7  7) 1st:    15 sPanel0x71a8d90
 
 
+::
+
+    epsilon:CSGFoundry blyth$ cat mmlabel.txt 
+    3089:sWorld
+    5:PMT_3inch_pmt_solid
+    7:NNVTMCPPMTsMask_virtual
+    7:HamamatsuR12860sMask_virtual
+    6:mask_PMT_20inch_vetosMask_virtual
+    1:sStrutBallhead
+    1:uni1
+    1:base_steel
+    1:uni_acrylic1
+    130:sPanel
+    epsilon:CSGFoundry blyth$ 
+
+
+* sBar is different ? Looks like instance inside instance 
+* this is why need to check more than just the parent for contained repeat 
+
+::
+
+    snode ix:  65720 dh: 9 sx:   63 pt:  65593 nc:    1 fc:  65721 ns:     -1 lv:  9 sBar0x71a9200
+    stree::desc_ancestry nidx 17
+    snode ix:      0 dh: 0 sx:   -1 pt:     -1 nc:    2 fc:      1 ns:     -1 lv:138    92 : 429a9f424f2e67d955836ecc49249c06 :     1 sWorld0x577e4d0
+    snode ix:      1 dh: 1 sx:    0 pt:      0 nc:    2 fc:      2 ns:  65722 lv: 17    93 : 3f5a0d33e1ba4bfd47ecd77f7486f24f :     1 sTopRock0x578c0a0
+    snode ix:      5 dh: 2 sx:    1 pt:      1 nc:    1 fc:      6 ns:     -1 lv: 16    97 : 01bdaba672bbda09bbafcb22487052ef :     1 sExpRockBox0x578ce00
+    snode ix:      6 dh: 3 sx:    0 pt:      5 nc:    3 fc:      7 ns:     -1 lv: 15    98 : 7f8bfc13b2d2185223e50362e3416ba6 :     1 sExpHall0x578d4f0
+    snode ix:     12 dh: 4 sx:    2 pt:      6 nc:   63 fc:     13 ns:     -1 lv: 14   104 : 9de4752996fe00065bbe29aa024161d1 :     1 sAirTT0x71a76a0
+    snode ix:     13 dh: 5 sx:    0 pt:     12 nc:    2 fc:     14 ns:   1056 lv: 13    13 : 3d2cdc54d35c77630c06a2614d700410 :    63 sWall0x71a8b30
+    snode ix:     14 dh: 6 sx:    0 pt:     13 nc:    4 fc:     15 ns:    535 lv: 12    12 : b6315f2ea7550a1ca922a1fc1c5102c3 :   126 sPlane0x71a8bb0
+    snode ix:     15 dh: 7 sx:    0 pt:     14 nc:    1 fc:     16 ns:    145 lv: 11     9 : d4f5974d740cd7c78613c9d8563878c7 :   504 sPanel0x71a8d90
+    snode ix:     16 dh: 8 sx:    0 pt:     15 nc:   64 fc:     17 ns:     -1 lv: 10   116 : 850bf8dcd5f6b272c13a49ac3f22f87d :  -504 sPanelTape0x71a9090
+
+    snode ix:     17 dh: 9 sx:    0 pt:     16 nc:    1 fc:     18 ns:     19 lv:  9     0 : c2520d0897b02efe301aed3f8d8b41e8 : 32256 sBar0x71a9200 
+
+
+HMM : the totals "63 sWall0x71a8b30" are for entire geometry...
+
+* need to see those within a single subtree
+
+
+
+
 
 
 

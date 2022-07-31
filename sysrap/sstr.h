@@ -7,11 +7,22 @@
 
 struct sstr
 {
+    static bool Match( const char* s, const char* q, bool starting=true ); 
+    static bool StartsWith( const char* s, const char* q); 
     static const char* TrimTrailing(const char* s);
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
     static void Split( const char* str, char delim,   std::vector<std::string>& elem ); 
 };
 
+inline bool sstr::Match( const char* s, const char* q, bool starting )
+{
+    return starting ? StartsWith(s, q) : strcmp(s, q) == 0 ;
+}
+
+inline bool sstr::StartsWith( const char* s, const char* q)
+{
+    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
+}
 
 inline const char* sstr::TrimTrailing(const char* s)
 {

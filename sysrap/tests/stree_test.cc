@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <glm/gtx/string_cast.hpp>
 
 #include "ssys.h"
 #include "stree.h"
@@ -33,8 +34,47 @@ void test_get_nodes(const stree& st)
 
     std::cout << " sidx " << sidx << " k " << k  << " v " << v << " nodes.size" << nodes.size() << std::endl ; 
     std::cout << st.desc_nodes(nodes, edge) ;   
+
+
+    int nidx = nodes[0] ; 
+    std::cout << st.desc_ancestry(nidx, true) << std::endl ; 
+
+    std::vector<int> progeny ; 
+    st.get_progeny(progeny, nidx ); 
+
+    std::cout << "st.desc_nodes(progeny, 20)" << std::endl << st.desc_nodes(progeny, 20) << std::endl ; 
+
+
+    const char* qname = "sWall" ;  
+    int lvid = st.find_lvid(qname) ; 
+    std::cout << " qname " << qname << " lvid " << lvid << std::endl ; 
+
+    std::vector<int> lvid_nodes ; 
+    st.find_lvid_nodes(lvid_nodes, lvid); 
+    std::cout << "st.desc_nodes(lvid_nodes, 20)" << std::endl << st.desc_nodes(lvid_nodes, 20) << std::endl ; 
+
+    std::vector<int> progeny_lvn0 ; 
+    st.get_progeny(progeny_lvn0, lvid_nodes[0] ); 
+
+    std::cout << "st.desc_nodes(progeny_lvn0, 1000)" << std::endl << st.desc_nodes(progeny_lvn0, 1000) << std::endl ; 
 }
 
+
+void test_get_transform_product(const stree& st)
+{
+    const char* q_soname = "HamamatsuR12860sMask_virtual" ;  
+
+    for(int q_ordinal=0 ; q_ordinal < 10 ; q_ordinal++ )
+    {
+        int nidx = st.find_lvid_node(q_soname, q_ordinal ); 
+        std::cout << " q_soname " << q_soname << " q_ordinal " << q_ordinal << " nidx " << nidx << std::endl ; 
+
+        glm::tmat4x4<double> tr(1.) ; 
+        st.get_transform_product(tr, nidx); 
+
+        std::cout << "tr\n" << glm::to_string(tr) << std::endl ; 
+    }
+}
 
 
 int main(int argc, char** argv)
@@ -48,8 +88,11 @@ int main(int argc, char** argv)
     st.sortSubtrees(); 
     // TODO: these should be done at creation, not postload
 
-
     std::cout << "st.desc_sub" << std::endl << st.desc_sub() << std::endl ;
+
+    //test_get_nodes(st); 
+
+    test_get_transform_product(st); 
 
     return 0 ; 
 }

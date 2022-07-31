@@ -27,9 +27,7 @@ TODO:
 #include "snode.h"
 #include "sdigest.h"
 #include "sfreq.h"
-
-
-
+#include "sstr.h"
 
 
 
@@ -64,13 +62,25 @@ struct stree
     static std::string Digest(int lvid );
 
     void get_children(std::vector<int>& children, int nidx) const ;
-    void get_progeny_r( std::vector<int>& progeny, int nidx ) const ;
+    void get_progeny( std::vector<int>& progeny, int nidx ) const ;
+
+    sfreq* make_progeny_freq(int nidx) const ; 
+    sfreq* make_freq(const std::vector<int>& nodes ) const ; 
+
+    int find_lvid(const char* soname_, bool starting=true  ) const ; 
+    void find_lvid_nodes( std::vector<int>& nodes, const char* soname_, bool starting=true ) const ; 
+    void find_lvid_nodes( std::vector<int>& nodes, int lvid ) const ; 
+    int find_lvid_node( const char* q_soname, int ordinal ) const ; 
 
     const char* get_soname(int nidx) const ; 
     const char* get_sub(int nidx) const ; 
 
     int get_parent(int nidx) const ; 
-    void get_ancestors( std::vector<int>& ancestors, int nidx ) const ;
+    const glm::tmat4x4<double>& get_transform(int nidx) const ; 
+
+    void get_ancestors(  std::vector<int>& ancestors, int nidx ) const ;
+    void get_transform_product( glm::tmat4x4<double>& transform, int nidx ) const ; 
+
     void get_nodes(std::vector<int>& nodes, const char* sub) const ;
     void get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const ;
     int get_first( const char* sub ) const ; 
@@ -145,6 +155,7 @@ inline std::string stree::desc_vec() const
 }
 
 
+
 inline std::string stree::desc_sub() const
 {
     unsigned num = subs_freq->get_num();
@@ -159,7 +170,6 @@ inline std::string stree::desc_sub() const
     std::string s = ss.str();
     return s ;
 }
-
 
 inline std::string stree::desc_sub(const char* sub) const 
 {
@@ -220,13 +230,73 @@ inline void stree::get_children( std::vector<int>& children , int nidx ) const
     assert( int(children.size()) == nd.num_child );
 }
 
-inline void stree::get_progeny_r( std::vector<int>& progeny , int nidx ) const
+inline void stree::get_progeny( std::vector<int>& progeny , int nidx ) const
 {
     std::vector<int> children ;
     get_children(children, nidx);
     std::copy(children.begin(), children.end(), std::back_inserter(progeny));
-    for(unsigned i=0 ; i < children.size() ; i++) get_progeny_r(progeny, children[i] );
+    for(unsigned i=0 ; i < children.size() ; i++) get_progeny(progeny, children[i] );
 }
+
+
+inline sfreq* stree::make_progeny_freq(int nidx) const 
+{
+    std::vector<int> progeny ; 
+    get_progeny(progeny, nidx ); 
+    return make_freq(progeny);  
+}
+
+inline sfreq* stree::make_freq(const std::vector<int>& nodes ) const
+{
+    sfreq* sf = new sfreq ; 
+    for(unsigned i=0 ; i < nodes.size() ; i++)
+    {
+        int nidx = nodes[i]; 
+        sf->add(get_sub(nidx)); 
+    }
+    return sf ; 
+} 
+
+inline int stree::find_lvid(const char* q_soname, bool starting ) const 
+{
+    int lvid = -1 ; 
+    for(unsigned i=0 ; i < soname.size() ; i++)
+    {
+        const char* name = soname[i].c_str(); 
+        if(sstr::Match( name, q_soname, starting))
+        {
+            lvid = i ; 
+            break ; 
+        }  
+    }
+    return lvid ; 
+}
+
+inline void stree::find_lvid_nodes( std::vector<int>& nodes, const char* q_soname, bool starting ) const 
+{
+    int lvid = find_lvid(q_soname, starting); 
+    find_lvid_nodes(nodes, lvid ); 
+}
+
+inline void stree::find_lvid_nodes( std::vector<int>& nodes, int lvid ) const 
+{
+    for(unsigned i=0 ; i < nds.size() ; i++)
+    {
+        const snode& sn = nds[i] ; 
+        assert( int(i) == sn.index ); 
+        if(sn.lvid == lvid) nodes.push_back(sn.index) ; 
+    }
+}
+
+inline int stree::find_lvid_node( const char* q_soname, int ordinal ) const 
+{
+    std::vector<int> nodes ; 
+    find_lvid_nodes(nodes, q_soname ); 
+    return ordinal > -1 && ordinal < nodes.size() ? nodes[ordinal] : -1 ; 
+}
+
+
+
 
 inline const char* stree::get_soname(int nidx) const
 {
@@ -241,6 +311,12 @@ inline int stree::get_parent(int nidx) const
     return nidx > -1 ? nds[nidx].parent : -1 ; 
 }
 
+inline const glm::tmat4x4<double>& stree::get_transform(int nidx) const 
+{
+    assert( nidx > -1 && nidx < trs.size()); 
+    return trs[nidx] ; 
+}
+
 inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx ) const
 {
     int parent = get_parent(nidx) ;
@@ -251,6 +327,26 @@ inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx ) const
     }
     std::reverse( ancestors.begin(), ancestors.end() );
 }
+
+inline void stree::get_transform_product( glm::tmat4x4<double>& transform, int nidx ) const 
+{
+    std::vector<int> nodes ; 
+    get_ancestors(nodes, nidx); 
+    nodes.push_back(nidx); 
+
+    glm::tmat4x4<double> xform(1.); 
+    for(unsigned i=0 ; i < nodes.size() ; i++ ) 
+    {
+        int idx = nodes[i] ; 
+        const glm::tmat4x4<double>& t = get_transform(idx) ; 
+        xform *= t ; 
+    }
+    assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
+    memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
+}
+
+
+
 
 inline void stree::get_nodes(std::vector<int>& nodes, const char* sub) const
 {
@@ -296,8 +392,8 @@ Notice that this assumes the first node is representative.
 inline bool stree::is_contained_repeat(const char* sub) const
 {
     int n_freq = subs_freq->get_freq(sub) ; 
+    int nidx = get_first(sub);    // first node with this subtree digest  
 
-    int nidx = get_first(sub); // first node with this subtree digest  
     int parent = get_parent(nidx); 
     const char* psub = get_sub(parent) ; 
     int p_freq = subs_freq->get_freq(psub) ; 
@@ -336,7 +432,7 @@ inline void stree::disqualifyContainedRepeats()
 inline std::string stree::subtree_digest(int nidx) const
 {
     std::vector<int> progeny ;
-    get_progeny_r(progeny, nidx);
+    get_progeny(progeny, nidx);
 
     sdigest u ;
     u.add( nds[nidx].lvid );  // just lvid of subtree top, not the transform
