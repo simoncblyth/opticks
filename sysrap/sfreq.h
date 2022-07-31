@@ -12,6 +12,7 @@ Canonical usage is for geometry progeny digests
 #include <cstring>
 #include <algorithm>
 #include <sstream>
+#include <iostream>
 #include <iomanip>
 #include "NP.hh"
 
@@ -20,7 +21,7 @@ struct sfreq_matchkey
     const char* query ; 
     sfreq_matchkey(const char* query_) : query(query_) {}
 
-    bool operator()(const std::pair<std::string, unsigned>& p) const 
+    bool operator()(const std::pair<std::string, int>& p) const 
     { 
         return strcmp(query, p.first.c_str()) == 0 ;
     }
@@ -28,14 +29,15 @@ struct sfreq_matchkey
 
 struct sfreq
 {
-    typedef std::pair<std::string,unsigned> SU ;   
+    typedef std::pair<std::string,int> SU ;   
     typedef typename std::vector<SU>        VSU  ; 
     typedef typename VSU::const_iterator    IT ;   
 
     VSU vsu ; 
 
+    unsigned get_num() const ; 
     const char* get_key(unsigned idx) const ; 
-    unsigned get_freq(unsigned idx) const ; 
+    int get_freq(unsigned idx) const ; 
 
     int find_index(const char* key) const ; 
     int get_freq(const char* key) const ; 
@@ -45,6 +47,8 @@ struct sfreq
     static bool descending_freq(const SU& a, const SU& b) ; 
     void sort(bool descending=true);  
 
+    std::string desc(const char* sub) const ; 
+    std::string desc(unsigned idx) const ; 
     std::string desc() const ; 
 
     static constexpr const char* KEY = "key.npy" ; 
@@ -63,16 +67,22 @@ struct sfreq
 };
 
 
+inline unsigned sfreq::get_num() const
+{
+    return vsu.size();  
+} 
+
 inline const char* sfreq::get_key(unsigned idx) const
 {
     assert( idx < vsu.size() ); 
     return vsu[idx].first.c_str() ; 
 }
-inline unsigned sfreq::get_freq(unsigned idx) const
+inline int sfreq::get_freq(unsigned idx) const
 {
     assert( idx < vsu.size() ); 
     return vsu[idx].second ; 
 }
+
 
 inline int sfreq::find_index(const char* key) const 
 {
@@ -107,23 +117,32 @@ inline void sfreq::sort(bool descending)
     std::sort(vsu.begin(), vsu.end(), descending ? descending_freq : ascending_freq );
 }
 
+inline std::string sfreq::desc(const char* sub) const 
+{
+    int idx = find_index(sub); 
+    return idx > -1 ? desc(unsigned(idx)) : "-" ; 
+}
+
+inline std::string sfreq::desc(unsigned idx) const 
+{
+    std::stringstream ss ; 
+    const SU& su = vsu[idx] ;  
+    const std::string& k = su.first ; 
+    int v = su.second ; 
+    ss << std::setw(5) << idx 
+       << " : " 
+       << std::setw(32) << k.c_str()
+       << " : " 
+       << std::setw(5) << v
+       ;  
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 inline std::string sfreq::desc() const 
 {
     std::stringstream ss ; 
-    for(unsigned i=0 ; i < vsu.size() ; i++)
-    {
-        const SU& su = vsu[i] ;  
-        const std::string& k = su.first ; 
-        unsigned v = su.second ; 
-
-        ss << std::setw(5) << i 
-           << " : " 
-           << std::setw(32) << k.c_str()
-           << " : " 
-           << std::setw(5) << v
-           << std::endl 
-           ;  
-    }
+    for(unsigned idx=0 ; idx < vsu.size() ; idx++) ss << desc(idx) << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -152,7 +171,7 @@ inline NP* sfreq::make_key() const
 
     for(unsigned i=0 ; i < vsu.size() ; i++)
     {
-        const std::pair<std::string, unsigned> su = vsu[i] ;  
+        const std::pair<std::string, int> su = vsu[i] ;  
         const char* k = su.first.c_str() ; 
         for(unsigned j=0 ; j < strlen(k) ; j++) kdat[i*mkl+j] = k[j] ; 
     }
@@ -161,12 +180,12 @@ inline NP* sfreq::make_key() const
 
 inline NP* sfreq::make_val() const 
 {
-    NP* val = NP::Make<unsigned>( vsu.size() ) ; 
-    unsigned* vdat = val->values<unsigned>(); 
+    NP* val = NP::Make<int>( vsu.size() ) ; 
+    int* vdat = val->values<int>(); 
 
     for(unsigned i=0 ; i < vsu.size() ; i++)
     {
-        const std::pair<std::string, unsigned> su = vsu[i] ;  
+        const std::pair<std::string, int> su = vsu[i] ;  
         vdat[i] = su.second ; 
     }
     return val ;
@@ -176,7 +195,7 @@ inline void sfreq::import_key_val( const NP* key, const NP* val)
 {
     unsigned mkl = key->shape[1] ; 
     const char* kdat = key->cvalues<char>(); 
-    const unsigned* vdat = val->cvalues<unsigned>(); 
+    const int* vdat = val->cvalues<int>(); 
 
     assert( key->shape[0] == val->shape[0]) ; 
     unsigned num_kv = key->shape[0] ; 
@@ -185,8 +204,8 @@ inline void sfreq::import_key_val( const NP* key, const NP* val)
     {
         const char* kptr = kdat+i*mkl ; 
         std::string k(kptr, kptr+mkl) ; 
-        unsigned v = vdat[i] ; 
-        vsu.push_back(std::pair<std::string, unsigned>(k,v) );  
+        int v = vdat[i] ; 
+        vsu.push_back(std::pair<std::string, int>(k,v) );  
     }
 }
 

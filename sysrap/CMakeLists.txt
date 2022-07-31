@@ -148,6 +148,8 @@ set(HEADERS
     SCount.hh
 
     sfreq.h 
+    snode.h
+    stree.h 
 
     sdigest.h
     SDigest.hh
