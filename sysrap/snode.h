@@ -10,7 +10,7 @@ struct snode
 
     int index ; 
     int depth ; 
-    int sibdex ; 
+    int sibdex ;  // 0-based sibling index 
     int parent ; 
 
     int num_child ; 
@@ -26,10 +26,10 @@ inline std::string snode::desc() const
 {
     std::stringstream ss ;
     ss << "snode"
-       << " id:" << std::setw(7) << index
-       << " de:" << std::setw(2) << depth
-       << " si:" << std::setw(5) << sibdex
-       << " pa:" << std::setw(7) << parent
+       << " ix:" << std::setw(7) << index
+       << " dh:" << std::setw(2) << depth
+       << " sx:" << std::setw(5) << sibdex
+       << " pt:" << std::setw(7) << parent
        << " nc:" << std::setw(5) << num_child
        << " fc:" << std::setw(7) << first_child
        << " ns:" << std::setw(7) << next_sibling

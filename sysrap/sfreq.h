@@ -7,6 +7,7 @@ Canonical usage is for geometry progeny digests
 
 **/
 
+#include <cassert>
 #include <vector>
 #include <string>
 #include <cstring>
@@ -37,11 +38,17 @@ struct sfreq
 
     unsigned get_num() const ; 
     const char* get_key(unsigned idx) const ; 
+
     int get_freq(unsigned idx) const ; 
+    int get_freq(const char* key) const ; 
 
     int find_index(const char* key) const ; 
-    int get_freq(const char* key) const ; 
     void add(const char* key ); 
+
+    bool is_disqualify( const char* key) const ; 
+    void set_disqualify(const char* key) ; 
+    void set_disqualify(const std::vector<std::string>& disqualify) ; 
+
 
     static bool ascending_freq( const SU& a, const SU& b) ; 
     static bool descending_freq(const SU& a, const SU& b) ; 
@@ -83,6 +90,11 @@ inline int sfreq::get_freq(unsigned idx) const
     return vsu[idx].second ; 
 }
 
+inline int sfreq::get_freq(const char* key) const
+{
+    int idx = find_index(key); 
+    return idx == -1 ? -1 : int(vsu[idx].second) ; 
+}
 
 inline int sfreq::find_index(const char* key) const 
 {
@@ -91,18 +103,40 @@ inline int sfreq::find_index(const char* key) const
     return it == vsu.end() ? -1 : std::distance( vsu.begin(), it ); 
 }
 
-inline int sfreq::get_freq(const char* key) const
-{
-    int idx = find_index(key); 
-    return idx == -1 ? -1 : int(vsu[idx].second) ; 
-}
-
 inline void sfreq::add(const char* key)
 {
     int idx = find_index(key); 
     if( idx == -1 ) vsu.push_back(SU(key, 1u)) ; 
     else vsu[idx].second += 1 ;  
 }
+
+
+inline bool sfreq::is_disqualify(const char* key) const 
+{
+   int freq = get_freq(key); 
+   return freq < 0 ;    
+}
+
+inline void sfreq::set_disqualify(const char* key)
+{
+    if(is_disqualify(key)) return ; 
+    int idx = find_index(key); 
+    assert( idx > -1 && vsu[idx].second > 0 ); 
+    vsu[idx].second = -vsu[idx].second ; 
+}
+
+inline void sfreq::set_disqualify(const std::vector<std::string>& disqualify)
+{
+    for(unsigned i=0 ; i < disqualify.size() ; i++)
+    {
+        const char* sub = disqualify[i].c_str(); 
+        set_disqualify(sub); 
+    }
+}
+
+
+
+
 
 inline bool sfreq::ascending_freq(const SU& a, const SU& b)  // static
 {

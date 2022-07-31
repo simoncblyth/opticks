@@ -31,6 +31,9 @@ int main(int argc, char** argv)
     sfreq c2 ; 
     c2.load(FOLD); 
 
+    c2.set_disqualified("blue"); 
+    assert( c2.is_disqualified("blue") ); 
+
     std::cout << "c2.desc\n" << c2.desc() << std::endl ; 
 
 

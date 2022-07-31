@@ -97,8 +97,34 @@ Tree background
 * https://hbfs.wordpress.com/2016/09/06/serializing-trees/#1
 
 
-Serialize n-ary tree
------------------------
+
+TODO : compare stree_test with GGeo 
+---------------------------------------
+
+::
+
+    [ stree::disqualifyContainedRepeats 
+    ] stree::disqualifyContainedRepeats  disqualify.size 23
+    [ stree::sortSubtrees 
+    ] stree::sortSubtrees 
+    st.desc_sub
+        0 : c2520d0897b02efe301aed3f8d8b41e8 : 32256 de:( 9  9) 1st:    17 sBar0x71a9200
+        1 : 246cf1cae2a2304dad8dbafa5238934f : 25600 de:( 6  6) 1st:194249 PMT_3inch_pmt_solid0x66e59f0
+        2 : e238e3e830cc4e95eb9b167c54d155a2 : 12612 de:( 6  6) 1st: 70965 NNVTMCPPMTsMask_virtual0x5f5f900
+        3 : 881ef0f2f7f79f81479dd6e0a07a380b :  5000 de:( 6  6) 1st: 70972 HamamatsuR12860sMask_virtual0x5f50d40
+        4 : 25ed11817b62fa562aaef3daba337336 :  2400 de:( 4  4) 1st:322253 mask_PMT_20inch_vetosMask_virtual0x5f62e40
+        5 : c051c1bb98b71ccb15b0cf9c67d143ee :   590 de:( 6  6) 1st: 68493 sStrutBallhead0x5853640
+        6 : 5e01938acb3e0df0543697fc023bffb1 :   590 de:( 6  6) 1st: 69083 uni10x5832ff0
+        7 : cdc824bf721df654130ed7447fb878ac :   590 de:( 6  6) 1st: 69673 base_steel0x58d3270
+        8 : 3fd85f9ee7ca8882c8caa747d0eef0b3 :   590 de:( 6  6) 1st: 70263 uni_acrylic10x597c090
+        9 : d4f5974d740cd7c78613c9d8563878c7 :   504 de:( 7  7) 1st:    15 sPanel0x71a8d90
+
+
+
+
+
+DONE : Serialize n-ary tree
+-----------------------------
 
 * HMM by CSG list-nodes are related to this, should review them 
 
