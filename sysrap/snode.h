@@ -6,7 +6,7 @@
 
 struct snode
 {
-    static constexpr const int NV = 8 ; 
+    static constexpr const int NV = 9 ; 
 
     int index ; 
     int depth ; 
@@ -17,6 +17,9 @@ struct snode
     int first_child ; 
     int next_sibling ; 
     int lvid ;
+
+    int copyno ; 
+    // material index ... 
 
     std::string desc() const ; 
 }; 
@@ -34,6 +37,7 @@ inline std::string snode::desc() const
        << " fc:" << std::setw(7) << first_child
        << " ns:" << std::setw(7) << next_sibling
        << " lv:" << std::setw(3) << lvid
+       << " cp:" << std::setw(7) << copyno
        ;
     std::string s = ss.str();
     return s ;

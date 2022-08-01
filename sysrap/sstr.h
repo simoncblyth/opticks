@@ -12,6 +12,10 @@ struct sstr
     static const char* TrimTrailing(const char* s);
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
     static void Split( const char* str, char delim,   std::vector<std::string>& elem ); 
+
+    template<typename ... Args>
+    static std::string Format_( const char* fmt, Args ... args ); 
+
 };
 
 inline bool sstr::Match( const char* s, const char* q, bool starting )
@@ -63,6 +67,21 @@ inline void sstr::Split( const char* str, char delim,   std::vector<std::string>
     std::string s;
     while (std::getline(ss, s, delim)) elem.push_back(s) ; 
 }
+
+
+template<typename ... Args>
+inline std::string sstr::Format_( const char* fmt, Args ... args )
+{
+    // see sysrap/tests/StringFormatTest.cc
+    int sz = std::snprintf( nullptr, 0, fmt, args ... ) + 1 ; // +1 for null termination
+    assert( sz > 0 );   
+    std::vector<char> buf(sz) ;    
+    std::snprintf( buf.data(), sz, fmt, args ... );
+    return std::string( buf.begin(), buf.begin() + sz - 1 );  // exclude null termination 
+}
+
+template std::string sstr::Format_( const char*, const char*, int, int ); 
+
 
 
 

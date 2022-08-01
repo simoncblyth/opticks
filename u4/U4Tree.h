@@ -15,6 +15,7 @@ U4Tree.h : explore minimal approach to geometry translation
 
 #include <glm/glm.hpp>
 #include "G4VPhysicalVolume.hh"
+#include "G4PVPlacement.hh"
 
 #include "NP.hh"
 #include "sdigest.h"
@@ -28,6 +29,7 @@ struct U4Tree
     stree* st ; 
     const G4VPhysicalVolume* const top ; 
     std::map<const G4LogicalVolume* const, int> lvidx ;
+    std::vector<const G4VPhysicalVolume*> pvs ; 
 
     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr ); 
 
@@ -37,7 +39,14 @@ struct U4Tree
 
     void convertNodes(); 
     int  convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, snode* parent ); 
+
+    const G4VPhysicalVolume* get_pv_(int nidx) const ; 
+    const G4PVPlacement*     get_pv(int nidx) const ; 
+    int                      get_pv_copyno(int nidx) const ; 
+
+    int get_nidx(const G4VPhysicalVolume* pv) const ; 
 }; 
+
 
 
 inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_)
@@ -101,19 +110,26 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     int num_child = int(lv->GetNoDaughters()) ;  
     int lvid = lvidx[lv] ; 
 
+    const G4PVPlacement* pvp = dynamic_cast<const G4PVPlacement*>(pv) ;
+    int copyno = pvp ? pvp->GetCopyNo() : -1 ;
+
     glm::tmat4x4<double> tr ;  
     U4Transform::GetObjectTransform(tr, pv); 
     st->trs.push_back(tr);  
+    pvs.push_back(pv); 
 
     snode nd ; 
+
     nd.index = st->nds.size();
     nd.depth = depth ;   
     nd.sibdex = sibdex ; 
     nd.parent = parent ? parent->index : -1 ;  
+
     nd.num_child = num_child ; 
     nd.first_child = -1 ;     // gets changed inplace from lower recursion level 
     nd.next_sibling = -1 ; 
     nd.lvid = lvid ; 
+    nd.copyno = copyno ; 
 
     st->nds.push_back(nd); 
 
@@ -135,4 +151,37 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     }
     return nd.index ; 
 }
+
+
+inline const G4VPhysicalVolume* U4Tree::get_pv_(int nidx) const 
+{
+    return nidx > -1 && nidx < int(pvs.size()) ? pvs[nidx] : nullptr ; 
+}
+inline const G4PVPlacement* U4Tree::get_pv(int nidx) const 
+{
+    const G4VPhysicalVolume* pv_ = get_pv_(nidx); 
+    return dynamic_cast<const G4PVPlacement*>(pv_) ;
+}
+inline int U4Tree::get_pv_copyno(int nidx) const 
+{
+    const G4PVPlacement* pv = get_pv(nidx) ; 
+    return pv ? pv->GetCopyNo() : -1 ; 
+}
+
+
+inline int U4Tree::get_nidx(const G4VPhysicalVolume* pv) const 
+{
+    int nidx = std::distance( pvs.begin(), std::find( pvs.begin(), pvs.end(), pv ) ) ;  
+    return nidx < int(pvs.size()) ? nidx : -1 ;  
+}
+
+
+
+
+
+
+
+
+
+
 

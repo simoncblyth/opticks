@@ -301,6 +301,9 @@ struct qat4
         *(aabb + 5) = tma.z ; 
     }
 
+    // HMM: ias_idx is always zero as only one IAS so far, plus could also use q3.u.w (the 1.f)
+    // nidx range is not currently stored : hmm as all instance nodes counts the same makes 
+    // no sense to repeat that  
     QAT4_METHOD void getIdentity(unsigned& ins_idx, unsigned& gas_idx, unsigned& ias_idx ) const 
     {
         ins_idx = q0.u.w - 1u ; 

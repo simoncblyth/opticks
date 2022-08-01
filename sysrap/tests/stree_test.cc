@@ -60,6 +60,24 @@ void test_get_nodes(const stree& st)
 }
 
 
+
+void test_find_lvid_node(const stree& st)
+{
+    const char* q_soname = "HamamatsuR12860sMask_virtual" ;  
+    for(int q_ordinal=0 ; q_ordinal < 10 ; q_ordinal++ )
+    {
+        int nidx = st.find_lvid_node(q_soname, q_ordinal ); 
+        std::cout << " q_soname " << q_soname << " q_ordinal " << q_ordinal << " nidx " << nidx << std::endl ; 
+
+        std::string q_spec = sstr::Format_("%s:%d:%d", q_soname, 0, q_ordinal ); 
+        int nidx2 = st.find_lvid_node(q_spec.c_str()); 
+
+        std::cout << " q_spec " << q_spec << " nidx2 " << nidx2 << std::endl ; 
+
+        assert( nidx == nidx2 ); 
+    }
+}
+
 void test_get_transform_product(const stree& st)
 {
     const char* q_soname = "HamamatsuR12860sMask_virtual" ;  
@@ -92,7 +110,8 @@ int main(int argc, char** argv)
 
     //test_get_nodes(st); 
 
-    test_get_transform_product(st); 
+    test_find_lvid_node(st); 
+    //test_get_transform_product(st); 
 
     return 0 ; 
 }

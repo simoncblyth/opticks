@@ -30,33 +30,11 @@ u4/U4Tree.h
     thinking about minimal structure translation
 
     * is serialization of the intermediate tree needed ? 
-    * probably not     
+    * n-ary tree serialization turns out to be straightforward using 
+      nidx links : firstchild/next_sibling/parent 
 
-"SVolume"
-    what is needed in the "SNode/SND" 
-    HMM: actually due to old solid NNode is better to call "SVolume"
-
-    Needs to mimic the GInstancer digest 
-
-    * node_index 
-    * glm::tmat4x4<double> obj
-    * glm::tmat4x4<double> frm 
-    * copyNo 
-
-    Hmm parent and child indices easier to persist:
-
-    * SVolume* parent     
-    * std::vector<SVolume*> children 
-
-    Serializing the below usefully needs indices
-    associated with names.   
-
-    * void* pv 
-    * void* lv
-    * void* so
-    * void* mt
-
-
+sysrap/stree.h 
+sysrap/snode.h
 
 
 n-ary tree data structure
@@ -136,7 +114,7 @@ TODO : compare stree_test with GGeo
     epsilon:CSGFoundry blyth$ 
 
 
-* sBar is different ? Looks like instance inside instance 
+* sBar is different ? Looks like instance inside instance inside instance ...
 * this is why need to check more than just the parent for contained repeat 
 
 ::
@@ -158,8 +136,58 @@ TODO : compare stree_test with GGeo
 
 HMM : the totals "63 sWall0x71a8b30" are for entire geometry...
 
-* need to see those within a single subtree
+* need to examine those within single subtrees and see the extents and transforms to work out whats
+  appropriate 
+  
 
+nidx into instance transforms ?
+--------------------------------
+
+HMM: this is leading towards cutting out GGeo from the translation
+
+* seems no point in shoe-horning this into GGeo + CSG_GGeo trans
+* can do it straightforwardly with CSG_stree direct translation from stree.h model into CSGFoundry model 
+* HMM: should stree folder be persisted as sibling of CSGFoundry folder or within it ? 
+* note that CSG already depends on sysrap : so CSG package can itself do the translation 
+
+
+::
+
+    1547 void CSGFoundry::addInstance(const float* tr16, unsigned gas_idx, unsigned ias_idx )
+    1548 {
+    1549     qat4 instance(tr16) ;  // identity matrix if tr16 is nullptr 
+    1550     unsigned ins_idx = inst.size() ;
+    1551 
+    1552     instance.setIdentity( ins_idx, gas_idx, ias_idx );
+
+
+    0200 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
+     201 {
+     202     unsigned nmm = ggeo->getNumMergedMesh();
+     203     assert( repeatIdx < nmm );
+     204     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx);
+     205     unsigned num_inst = mm->getNumITransforms() ;
+     206     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer();
+     207 
+     208     LOG(LEVEL)
+     209         << " repeatIdx " << repeatIdx
+     210         << " num_inst (GMergedMesh::getNumITransforms) " << num_inst
+     211         << " iid " << ( iid ? iid->getShapeString() : "-"  )
+     212         ;
+     213 
+     214     //LOG(LEVEL) << " nmm " << nmm << " repeatIdx " << repeatIdx << " num_inst " << num_inst ; 
+     215 
+     216     for(unsigned i=0 ; i < num_inst ; i++)
+     217     {
+     218         glm::mat4 it = mm->getITransform_(i);
+     219    
+     220         const float* tr16 = glm::value_ptr(it) ;
+     221         unsigned gas_idx = repeatIdx ;
+     222         unsigned ias_idx = 0 ;
+     223 
+     224         foundry->addInstance(tr16, gas_idx, ias_idx);
+     225     }
+     226 }
 
 
 

@@ -10,10 +10,37 @@ See also u4/U4Tree.h that creates the stree from Geant4 volumes.
 TODO:
 
 * controlling the order of repeats with same freq 
-* ridx labelling the tree
+* ridx labelling the tree, srepeat summary instances (
 * maintain correspondence between source nodes and destination nodes thru the factorization
 * transform combination   
 * transform rebase
+
+
+mapping from "factorized" instances back to origin PV and vice-versa 
+-----------------------------------------------------------------------
+
+Excluding the remainder, the instances each correspond to a contiguous ranges of nidx.
+So can return back to the origin pv volumes using "U4Tree::get_pv(int nidx)" so long  
+as store the outer nidx and number of nodes within the instances. 
+Actually as all factorized instances of each type will have the same number of 
+subtree nodes it makes no sense to duplicate that info : better to store the node counts 
+in an "srepeat" instance held within stree.h and just store the first nidx within the instances. 
+The natural place for this is within the spare 4th column of the instance transforms.    
+
+TODO: modify sqat4.h::setIdentity to store this nidx and populate it 
+HMM : actually better to defer until do stree->CSGFoundry direct translation  
+
+For going in the other direction "int U4Tree::get_nidx(const G4VPhysicalVolume* pv) const" 
+provides the nidx of a pv. Then can search the factorized instances for that nidx 
+using the start nidx of each instance and number of nidx from the "srepeat".
+When the query nidx is not found within the instances it must be from the remainder. 
+
+TODO: collect the nidx of the remainder into stree.h 
+
+For the global remainder "instance" things are not so straightforward as there is only 
+one of them with an identity transform and the nodes within it are not contiguous, they 
+are what is left when all the repeated subtrees have been removed : so it will 
+start from root nidx:0 and will have lots of gaps. 
 
 **/
 
@@ -67,15 +94,19 @@ struct stree
     sfreq* make_progeny_freq(int nidx) const ; 
     sfreq* make_freq(const std::vector<int>& nodes ) const ; 
 
-    int find_lvid(const char* soname_, bool starting=true  ) const ; 
-    void find_lvid_nodes( std::vector<int>& nodes, const char* soname_, bool starting=true ) const ; 
+    int  find_lvid(const char* soname_, bool starting=true  ) const ; 
     void find_lvid_nodes( std::vector<int>& nodes, int lvid ) const ; 
-    int find_lvid_node( const char* q_soname, int ordinal ) const ; 
+    void find_lvid_nodes( std::vector<int>& nodes, const char* soname_, bool starting=true ) const ; 
+    int  find_lvid_node( const char* q_soname, int ordinal ) const ; 
+    int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
 
     const char* get_soname(int nidx) const ; 
     const char* get_sub(int nidx) const ; 
 
     int get_parent(int nidx) const ; 
+    int get_lvid(  int nidx) const ; 
+    int get_copyno(int nidx) const ; 
+
     const glm::tmat4x4<double>& get_transform(int nidx) const ; 
 
     void get_ancestors(  std::vector<int>& ancestors, int nidx ) const ;
@@ -272,11 +303,6 @@ inline int stree::find_lvid(const char* q_soname, bool starting ) const
     return lvid ; 
 }
 
-inline void stree::find_lvid_nodes( std::vector<int>& nodes, const char* q_soname, bool starting ) const 
-{
-    int lvid = find_lvid(q_soname, starting); 
-    find_lvid_nodes(nodes, lvid ); 
-}
 
 inline void stree::find_lvid_nodes( std::vector<int>& nodes, int lvid ) const 
 {
@@ -288,12 +314,48 @@ inline void stree::find_lvid_nodes( std::vector<int>& nodes, int lvid ) const
     }
 }
 
+inline void stree::find_lvid_nodes( std::vector<int>& nodes, const char* q_soname, bool starting ) const 
+{
+    int lvid = find_lvid(q_soname, starting); 
+    find_lvid_nodes(nodes, lvid ); 
+}
+
 inline int stree::find_lvid_node( const char* q_soname, int ordinal ) const 
 {
     std::vector<int> nodes ; 
     find_lvid_nodes(nodes, q_soname ); 
+    if(ordinal < 0) ordinal += nodes.size() ; // -ve ordinal counts from back 
+
     return ordinal > -1 && ordinal < nodes.size() ? nodes[ordinal] : -1 ; 
 }
+
+/**
+stree::find_lvid_node
+----------------------
+
+
+
+**/
+inline int stree::find_lvid_node( const char* q_spec ) const 
+{
+    std::vector<std::string> elem ; 
+    sstr::Split(q_spec, ':', elem );  
+
+    const char* q_soname  = elem.size() > 0 ? elem[0].c_str() : nullptr ; 
+    const char* q_middle  = elem.size() > 1 ? elem[1].c_str() : nullptr ; 
+    const char* q_ordinal = elem.size() > 2 ? elem[2].c_str() : nullptr ; 
+
+    int middle  = q_middle  ? std::atoi(q_middle)  : 0 ; 
+    int ordinal = q_ordinal ? std::atoi(q_ordinal) : 0 ; 
+
+    assert( middle == 0 ); // slated for use with global addressing (like MOI)
+
+    int nidx = find_lvid_node(q_soname, ordinal); 
+    return nidx ; 
+}
+
+
+
 
 
 
@@ -310,6 +372,18 @@ inline int stree::get_parent(int nidx) const
 { 
     return nidx > -1 ? nds[nidx].parent : -1 ; 
 }
+inline int stree::get_lvid(int nidx) const 
+{ 
+    return nidx > -1 ? nds[nidx].lvid : -1 ; 
+}
+inline int stree::get_copyno(int nidx) const 
+{ 
+    return nidx > -1 ? nds[nidx].copyno : -1 ; 
+}
+
+
+
+
 
 inline const glm::tmat4x4<double>& stree::get_transform(int nidx) const 
 {
