@@ -44,7 +44,6 @@ void test_get_nodes(const stree& st)
 
     std::cout << "st.desc_nodes(progeny, 20)" << std::endl << st.desc_nodes(progeny, 20) << std::endl ; 
 
-
     const char* qname = "sWall" ;  
     int lvid = st.find_lvid(qname) ; 
     std::cout << " qname " << qname << " lvid " << lvid << std::endl ; 
@@ -95,6 +94,16 @@ void test_get_transform_product(const stree& st)
 }
 
 
+void test_desc_progeny(const stree& st, const char* qname )
+{
+    std::vector<int> nodes ; 
+    st.find_lvid_nodes(nodes, qname); 
+    std::cout << "st.find_lvid_nodes(nodes, qname)   qname " << qname << " nodes.size " << nodes.size() << std::endl ; 
+    std::cout << "st.desc_nodes(nodes, 20)" << std::endl << st.desc_nodes(nodes, 20) << std::endl ; 
+
+    std::cout << "st.desc_progeny(nodes[0])" << std::endl << st.desc_progeny(nodes[0]) << std::endl; 
+}
+
 int main(int argc, char** argv)
 {
     stree st ; 
@@ -108,10 +117,13 @@ int main(int argc, char** argv)
 
     std::cout << "st.desc_sub" << std::endl << st.desc_sub() << std::endl ;
 
-    //test_get_nodes(st); 
-
+    /*
+    test_get_nodes(st); 
     test_find_lvid_node(st); 
-    //test_get_transform_product(st); 
+    test_get_transform_product(st); 
+    */
+    test_desc_progeny(st, "sWall"); 
+
 
     return 0 ; 
 }

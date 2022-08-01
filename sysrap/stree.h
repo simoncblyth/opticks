@@ -60,6 +60,7 @@ start from root nidx:0 and will have lots of gaps.
 
 struct stree
 {
+    static constexpr const int MAXDEPTH = 15 ; // presentational only   
     static constexpr const int FREQ_CUT = 500 ;  
     // subtree digests with less repeats than FREQ_CUT within the entire geometry 
     // are not regarded as repeats for instancing factorization purposes 
@@ -90,6 +91,8 @@ struct stree
 
     void get_children(std::vector<int>& children, int nidx) const ;
     void get_progeny( std::vector<int>& progeny, int nidx ) const ;
+    std::string desc_progeny(int nidx) const ; 
+
 
     sfreq* make_progeny_freq(int nidx) const ; 
     sfreq* make_freq(const std::vector<int>& nodes ) const ; 
@@ -101,14 +104,12 @@ struct stree
     int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
 
     const char* get_soname(int nidx) const ; 
-    const char* get_sub(int nidx) const ; 
-
-    int get_parent(int nidx) const ; 
-    int get_lvid(  int nidx) const ; 
-    int get_copyno(int nidx) const ; 
-
+    const char* get_sub(   int nidx) const ; 
+    int         get_depth( int nidx) const ; 
+    int         get_parent(int nidx) const ; 
+    int         get_lvid(  int nidx) const ; 
+    int         get_copyno(int nidx) const ; 
     const glm::tmat4x4<double>& get_transform(int nidx) const ; 
-
     void get_ancestors(  std::vector<int>& ancestors, int nidx ) const ;
     void get_transform_product( glm::tmat4x4<double>& transform, int nidx ) const ; 
 
@@ -123,8 +124,14 @@ struct stree
     bool is_contained_repeat(const char* sub) const ; 
     void disqualifyContainedRepeats();
 
+    
+
     std::string subtree_digest( int nidx ) const ;
-    std::string desc_node(int nidx, bool show_sub=false) const ;
+    std::string desc_node_(int nidx, const sfreq* sf ) const ;
+    std::string desc_node(int nidx, bool show_sub=false) const ; 
+    static std::string depth_spacer(int depth); 
+
+
     std::string desc_nodes(const std::vector<int>& vnidx, unsigned edgeitems=10) const ;
     std::string desc_ancestry(int nidx, bool show_sub=false) const ;
 
@@ -269,6 +276,37 @@ inline void stree::get_progeny( std::vector<int>& progeny , int nidx ) const
     for(unsigned i=0 ; i < children.size() ; i++) get_progeny(progeny, children[i] );
 }
 
+inline std::string stree::desc_progeny(int nidx) const 
+{
+    std::vector<int> progeny ;
+    get_progeny(progeny, nidx ); 
+    sfreq* sf = make_freq(progeny); 
+    sf->sort(); 
+
+    std::stringstream ss ; 
+    ss << "stree::desc_progeny nidx " << nidx << " progeny.size " << progeny.size() << std::endl ; 
+    ss << "sf.desc" << std::endl << sf->desc() << std::endl ; 
+    ss 
+       << " i " << std::setw(6) << -1
+       << desc_node(nidx, true ) 
+       << std::endl
+       ; 
+
+    for(unsigned i=0 ; i < progeny.size() ; i++)
+    {
+        int nix = progeny[i] ;  
+        int depth = get_depth(nix);
+        ss 
+            << " i " << std::setw(6) << i 
+            << desc_node_(nix, sf ) 
+            << std::endl
+            ; 
+    }
+
+
+    std::string s = ss.str(); 
+    return s; 
+}
 
 inline sfreq* stree::make_progeny_freq(int nidx) const 
 {
@@ -368,6 +406,10 @@ inline const char* stree::get_sub(int nidx) const
 {
     return nidx > -1 ? subs[nidx].c_str() : nullptr ; 
 }
+inline int stree::get_depth(int nidx) const 
+{ 
+    return nidx > -1 ? nds[nidx].depth : -1 ; 
+}
 inline int stree::get_parent(int nidx) const 
 { 
     return nidx > -1 ? nds[nidx].parent : -1 ; 
@@ -380,10 +422,6 @@ inline int stree::get_copyno(int nidx) const
 { 
     return nidx > -1 ? nds[nidx].copyno : -1 ; 
 }
-
-
-
-
 
 inline const glm::tmat4x4<double>& stree::get_transform(int nidx) const 
 {
@@ -459,6 +497,9 @@ parent of the first node with the supplied subtree digest
 has a subtree digest frequency equal to that of the 
 original first node. 
 
+TODO: amend this to handle repeats inside repeats etc.. which means the 
+counts will not necessarily be equal 
+
 Notice that this assumes the first node is representative. 
 
 **/
@@ -490,7 +531,9 @@ inline void stree::disqualifyContainedRepeats()
         if(is_contained_repeat(sub)) disqualify.push_back(sub) ; 
 
         // disqualification not done during the loop
-        // as that would introduce ordering dependency 
+        // as that would prevent some disqualifications 
+        // and introduce ordering dependency 
+        
     }
 
     subs_freq->set_disqualify( disqualify ); 
@@ -514,17 +557,33 @@ inline std::string stree::subtree_digest(int nidx) const
     return u.finalize() ;
 }
 
-inline std::string stree::desc_node(int nidx, bool show_sub) const
+
+
+inline std::string stree::depth_spacer(int depth) // static
+{
+    std::string spacer(MAXDEPTH, ' ');  
+    if(depth < MAXDEPTH) spacer[depth] = '+' ; 
+    return spacer ; 
+}
+
+inline std::string stree::desc_node_(int nidx, const sfreq* sf) const
 {
     const snode& nd = nds[nidx];
     const char* sub = subs[nidx].c_str();
     assert( nd.index == nidx );
+
     std::stringstream ss ;
+    ss << depth_spacer(nd.depth) ; 
     ss << nd.desc() ;
-    if(show_sub) ss << " " << subs_freq->desc(sub) ;
+    if(sf) ss << " " << sf->desc(sub) ;
     ss << " " << soname[nd.lvid]  ;
     std::string s = ss.str();
     return s ;
+}
+inline std::string stree::desc_node(int nidx, bool show_sub) const
+{
+   const sfreq* sf = show_sub ? subs_freq : nullptr ; 
+   return desc_node_(nidx, sf );  
 }
 
 inline std::string stree::desc_nodes(const std::vector<int>& vnidx, unsigned edgeitems) const
@@ -587,7 +646,6 @@ inline void stree::load( const char* fold )
 
     if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
 }
-
 
 inline int stree::Compare( const std::vector<int>& a, const std::vector<int>& b ) // static 
 {
@@ -652,8 +710,7 @@ struct stree_subs_freq_ordering
     }
 }; 
 
-
-inline void stree::sortSubtrees()
+inline void stree::sortSubtrees()  // hmm sortSubtreeDigestFreq would be more accurate 
 {
     std::cout << "[ stree::sortSubtrees " << std::endl ;
     stree_subs_freq_ordering ordering(this) ;  
@@ -663,9 +720,5 @@ inline void stree::sortSubtrees()
 
     std::cout << "] stree::sortSubtrees " << std::endl ;
 }
-
-
-
-
 
 

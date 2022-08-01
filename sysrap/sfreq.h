@@ -61,6 +61,8 @@ struct sfreq
     static constexpr const char* KEY = "key.npy" ; 
     static constexpr const char* VAL = "val.npy" ; 
     size_t get_maxkeylen() const ; 
+    int get_total() const ; 
+
 
     NP* make_key() const ; 
     NP* make_val() const ; 
@@ -175,8 +177,10 @@ inline std::string sfreq::desc(unsigned idx) const
 
 inline std::string sfreq::desc() const 
 {
+    int total = get_total(); 
     std::stringstream ss ; 
     for(unsigned idx=0 ; idx < vsu.size() ; idx++) ss << desc(idx) << std::endl ; 
+    ss << std::setw(5) << "" << " : " << std::setw(32) << "" << " : " << std::setw(5) << total << std::endl ;  
     std::string s = ss.str(); 
     return s ; 
 }
@@ -187,6 +191,16 @@ inline size_t sfreq::get_maxkeylen() const
     for(unsigned i=0 ; i < vsu.size() ; i++) mx = std::max(mx, strlen(vsu[i].first.c_str())) ; 
     return mx ;  
 }
+
+inline int sfreq::get_total() const
+{
+    int total = 0 ; 
+    for(unsigned i=0 ; i < vsu.size() ; i++) total += std::abs(vsu[i].second) ; 
+    return total ; 
+}
+
+
+
 
 /**
 In [5]: t.key.view("|S5").ravel()
