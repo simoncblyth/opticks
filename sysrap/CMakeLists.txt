@@ -150,6 +150,7 @@ set(HEADERS
     sfreq.h 
     snode.h
     stree.h 
+    strid.h 
 
     sdigest.h
     SDigest.hh

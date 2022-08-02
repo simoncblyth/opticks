@@ -1,43 +1,9 @@
 #!/usr/bin/env python
 
-import os, numpy as np
+import os, numpy as np, logging
+log = logging.getLogger(__name__)
 from opticks.ana.fold import Fold
-
-class sfreq(object):
-    def __init__(self, f, sort=True):
-        order = np.argsort(f.val)[::-1] if sort else slice(None)
-        okey = f.key[order]  
-        oval = f.val[order]
-        subs = list(map(lambda _:_.decode("utf-8"), okey.view("|S32").ravel() ))  
-        vals = list(map(int, oval)) 
-
-        self.f = f   # without the sort 
-        self.okey = okey 
-        self.oval = oval 
-        self.subs = subs
-        self.vals = vals
-        self.order = order
-
-    def find_index(self, key):
-        key = key.encode() if type(key) is str else key
-        assert type(key) is bytes
-        ii = np.where( self.okey.view("|S32") == key )[0]     ## hmm must use okey to feel the sort
-        assert len(ii) == 1
-        return int(ii[0])
-
-    def desc_key(self, key):
-        idx = self.find_index(key)
-        return self.desc_idx(idx)
-
-    def desc_idx(self, idx):
-        return " %3d : %7d : %s " % (idx, self.vals[idx], self.subs[idx]) 
-
-    def __repr__(self):
-        return "\n".join(self.desc_idx(idx) for idx in range(len(self.subs))) 
-
-    def __str__(self):
-        return str(self.f)
-
+from opticks.sysrap.sfreq import sfreq 
 
 class snode(object):
     DTYPE = [('index', '<i4'), 
@@ -65,18 +31,80 @@ class snode(object):
         :param rec:  single rec eg obtained by nds[0] 
         :return str: formatted description
         """
-        return "snode ix:%7d dh:%2d sx:%5d pt:%7d nc:%5d fc:%7d ns:%7d lv:%3d cp:%7d " % tuple(rec)
-                   
+        return "snode ix:%7d dh:%2d sx:%5d pt:%7d nc:%5d fc:%7d ns:%7d lv:%3d cp:%7d." % tuple(rec)
+
+    @classmethod
+    def Brief(cls, rec):
+        return "snode ix:%7d dh:%2s nc:%5d lv:%3d." % (rec.index, rec.depth, rec.num_child, rec.lvid)
 
 class stree(object):
+    @classmethod
+    def MakeTxtArray(cls, lines):
+        maxlen = max(list(map(len, lines)))  
+        ta = np.array( lines, dtype="|S%d" % maxlen )
+        return ta  
+
     def __init__(self, f):
         sff = Fold.Load(f.base,"subs_freq",  symbol="sf") 
         sf = sfreq(sff)
+        nds = snode.RecordsFromArrays(f.nds)
+        soname_ = self.MakeTxtArray(f.soname.lines)
 
         self.sf = sf
         self.f = f 
+        self.nds = nds 
+        self.raw_subs = None
+        self.soname_ = soname_
 
-        self.nds = snode.RecordsFromArrays(f.nds)
+    def find_lvid(self, q_soname, starting=True):
+        """
+        Pedestrian way to find the a string in a list 
+        """
+        lines = self.f.soname.lines
+        lvid = -1  
+        for i,soname in enumerate(lines):
+            match = soname.startswith(q_soname) if starting else soname == q_soname
+            if match:
+                lvid = i
+                break
+            pass
+        pass 
+        return lvid 
+
+    def find_lvid_(self, q_soname_, starting=True ):
+        """
+        find array indices starting or exactly matching q_soname
+        unlike the above this returns an array with all matching indices
+        """
+        q_soname = q_soname_.encode() if type(q_soname_) is str else q_soname_ 
+        assert type(q_soname) is bytes
+        if starting:
+            ii = np.where( np.core.defchararray.find(self.soname_, q_soname) == 0  )[0]  
+        else:
+            ii = np.where( self.soname_ == q_soname )[0]
+        pass
+        return ii 
+
+    def find_lvid_nodes(self, arg):
+        """
+        :param arg: integer lvid or string soname used to obtain lvid 
+        :return: array of indices of all nodes with the specified lvid   
+        """
+        if type(arg) in [int, np.int32, np.int64, np.uint32, np.uint64]:
+            lvid = int(arg)
+        elif type(arg) is str or type(arg) is bytes:
+            ii = self.find_lvid_(arg)
+            assert len(ii) > 0 
+            lvid = int(ii[0])
+            if len(ii) > 1:
+               log.warning("multiple lvid %s correspond to arg:%s using first %s " % (str(ii), arg, lvid))
+            pass
+        else:
+            print("arg %s unhandled %s " % (arg, type(arg)))
+            assert(0)
+        pass
+        return np.where( self.nds.lvid == lvid )[0] 
+
 
     def get_children(self, nidx):
         """
@@ -113,7 +141,7 @@ class stree(object):
     def get_progeny(self, nidx):
         progeny = []
         self.get_progeny_r(nidx, progeny)
-        return progeny  
+        return np.array(progeny)  
 
     def get_soname(self, nidx):
         lvid = self.get_lvid(nidx)
@@ -149,8 +177,47 @@ class stree(object):
     def __str__(self):
         return str(self.f)
 
+    @classmethod
+    def DepthSpacer(cls, dep, depmax=15):
+        fmt = "|S%d" % depmax
+        spc = np.zeros( (depmax,), dtype=np.int8 )
+        spc[:] = ord(" ")
+        spc[dep] = ord("+")
+        return spc.view(fmt)[0].decode()   
+
+    def desc_node(self, nidx, brief=False):
+        return self.desc_node_(nidx, self.sf, brief=brief)
+
+    def desc_nodes(self, nodes, brief=False):
+        return "\n".join([self.desc_node(nix, brief=brief) for nix in nodes])
+
+    def desc_node_(self, nidx, sf, brief=False):
+
+        nd = self.nds[nidx]
+        dep = self.get_depth(nidx)
+        spc = self.DepthSpacer(dep)
+        ndd = snode.Brief(nd) if brief else snode.Desc(nd) 
+        sub = self.get_sub(nidx)
+        sfd = "" if sf is None else sf.desc_key(sub)
+        son = self.get_soname(nidx)
+        return " ".join([spc,ndd,sfd,son])
+
+    def desc_nodes_(self, nodes, sf):
+        return "\n".join( [self.desc_node_(nix, sf) for nix in nodes])
+
+    def make_freq(self, nodes):
+        assert type(nodes) is np.ndarray 
+        if self.raw_subs is None:
+            path = os.path.join(self.f.base, "subs.txt")
+            self.raw_subs = np.loadtxt( path, dtype="|S32")
+        pass
+        ssub = self.raw_subs[nodes] 
+        ssf = sfreq.CreateFromArray(ssub) 
+        return ssf
+
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     f = Fold.Load(symbol="f")
 
     st = stree(f)
@@ -158,20 +225,42 @@ if __name__ == '__main__':
 
     nidx = os.environ.get("NIDX", 13)
 
-    progeny = st.get_progeny(nidx)
-    print(progeny) 
-  
     ancestors = st.get_ancestors(nidx)
-    print(ancestors)
+    print("NIDX %d ancestors: %s " % (nidx, repr(ancestors)) )
+    print("st.desc_nodes(ancestors)")
+    print(st.desc_nodes(ancestors))
 
-    for nix in ancestors:
-        print(snode.Desc(st.nds[nix]))
+    so = os.environ.get("SO", "sBar")  
+    lvs = st.find_lvid_(so)
+    print("SO %s lvs %s" % (so, str(lvs))) 
+    
+    for lv in lvs:
+        bb = st.find_lvid_nodes(lv)
+        b = int(bb[0])
+        print("lv:%d bb=st.find_lvid_nodes(lv)  bb:%s b:%s " % (lv, str(bb),b)) 
+
+        anc = st.get_ancestors(b)   
+        print("b:%d anc=st.get_ancestors(b) anc:%s " % (b, str(anc))) 
+
+        print("st.desc_nodes(anc, brief=True))")
+        print(st.desc_nodes(anc, brief=True))
+        print("st.desc_nodes([b], brief=True))")
+        print(st.desc_nodes([b], brief=True))
     pass
+        
 
 
+if 0:
+    progeny = st.get_progeny(nidx)
+    print("NIDX %d progeny: %s " % (nidx, repr(progeny)) )
+    #print("st.desc_nodes(progeny)")
+    #print(st.desc_nodes(progeny))
 
+    psf = st.make_freq(progeny) 
+    print("st.desc_nodes_(progeny, psf)")
+    print(st.desc_nodes_(progeny, psf))
 
+    np.set_printoptions(edgeitems=600)
 
-
-
-
+    print("st.f.trs[progeny].reshape(-1,16)")
+    print(st.f.trs[progeny].reshape(-1,16))    

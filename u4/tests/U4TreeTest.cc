@@ -263,7 +263,8 @@ int main(int argc, char** argv)
     stree st ; 
     U4Tree tree(&st, world) ;
 
-    st.classifySubtrees(); 
+    st.factorize(); 
+
     st.save(FOLD); 
 
     test_get_pv_0(tree); 

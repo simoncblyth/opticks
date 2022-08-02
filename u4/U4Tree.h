@@ -113,7 +113,7 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     const G4PVPlacement* pvp = dynamic_cast<const G4PVPlacement*>(pv) ;
     int copyno = pvp ? pvp->GetCopyNo() : -1 ;
 
-    glm::tmat4x4<double> tr ;  
+    glm::tmat4x4<double> tr(1.) ;  
     U4Transform::GetObjectTransform(tr, pv); 
     st->trs.push_back(tr);  
     pvs.push_back(pv); 

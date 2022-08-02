@@ -72,7 +72,7 @@ if __name__ == '__main__':
     print("---------print.done")
 
 
-    if not a is None:
+    if not a is None and not a.seq is None:
         a_nib = seqnib_(a.seq[:,0])                  # valid steppoint records from seqhis count_nibbles
         a_gpos_ = a.record[PIDX,:a_nib[PIDX],0,:3]  # global frame photon step record positions of single PIDX photon
         a_gpos  = np.ones( (len(a_gpos_), 4 ) )
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         a_lpos = None
     pass
 
-    if not a is None:
+    if not b is None and not b.seq is None:
         b_nib = seqnib_(b.seq[:,0])                  # valid steppoint records from seqhis count_nibbles
         b_gpos_ = b.record[PIDX,:b_nib[PIDX],0,:3]  # global frame photon step record positions of single PIDX photon
         b_gpos  = np.ones( (len(b_gpos_), 4 ) )

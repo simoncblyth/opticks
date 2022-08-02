@@ -17,8 +17,8 @@
 
 
 /**
-CSGPrim : contiguous sequence of *numNode* CSGNode starting from *nodeOffset* : complete binary tree of 1,3,7,15,... CSGNode
-===============================================================================================================================
+CSGPrim : references contiguous sequence of *numNode* CSGNode starting from *nodeOffset* : complete binary tree of 1,3,7,15,... CSGNode
+=========================================================================================================================================
 
 * although CSGPrim is uploaded to GPU by CSGFoundry::upload, instances of CSGPrim at first glance 
   appear not to be needed GPU side because the Binding.h HitGroupData carries the same information.  
@@ -56,6 +56,17 @@ CSGPrim : contiguous sequence of *numNode* CSGNode starting from *nodeOffset* : 
     |    |                |                |                |                |                                                 |
     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
 
+
+
+* as instanced CSGPrim are referenced repeatedly they are of limited use for carrying identity info, 
+  to map back to source nidx for example
+
+* but the global CSGPrim from the remainder CSGSolid 0 are not repeated, so in that case the
+  CSGPrim is the natural place to carry such mapping identity info  
+
+
+
+
 **/
 
 
@@ -74,7 +85,7 @@ struct CSG_API CSGPrim
     PRIM_METHOD void setNumNode(   int numNode){    q0.i.x = numNode ; }
     PRIM_METHOD void setNodeOffset(int nodeOffset){ q0.i.y = nodeOffset ; }
 
-    // --------- sbtIndex offset is essential for OptiX 7 SBT PrimSpec machinery, but otherwise not relevant to the geometrical meaning  
+    // --------- sbtIndexOffset is essential for OptiX 7 SBT PrimSpec machinery, but otherwise not relevant to the geometrical meaning  
 
     PRIM_METHOD unsigned  sbtIndexOffset()    const { return  q1.u.x ; }
     PRIM_METHOD void   setSbtIndexOffset(unsigned sbtIndexOffset){  q1.u.x = sbtIndexOffset ; }

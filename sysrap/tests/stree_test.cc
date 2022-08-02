@@ -100,7 +100,6 @@ void test_desc_progeny(const stree& st, const char* qname )
     st.find_lvid_nodes(nodes, qname); 
     std::cout << "st.find_lvid_nodes(nodes, qname)   qname " << qname << " nodes.size " << nodes.size() << std::endl ; 
     std::cout << "st.desc_nodes(nodes, 20)" << std::endl << st.desc_nodes(nodes, 20) << std::endl ; 
-
     std::cout << "st.desc_progeny(nodes[0])" << std::endl << st.desc_progeny(nodes[0]) << std::endl; 
 }
 
@@ -109,21 +108,19 @@ int main(int argc, char** argv)
     stree st ; 
     st.load(FOLD); 
 
-    std::cout << "st.desc_sub" << std::endl << st.desc_sub() << std::endl ;
+    std::cout << "st.desc_sub(false)" << std::endl << st.desc_sub(false) << std::endl ;
+    //std::cout << "st.desc_sub(true)"  << std::endl << st.desc_sub(true)  << std::endl ;
 
-    st.disqualifyContainedRepeats() ; 
-    st.sortSubtrees(); 
-    // TODO: these should be done at creation, not postload
-
-    std::cout << "st.desc_sub" << std::endl << st.desc_sub() << std::endl ;
 
     /*
     test_get_nodes(st); 
     test_find_lvid_node(st); 
     test_get_transform_product(st); 
-    */
     test_desc_progeny(st, "sWall"); 
+    */
 
+    st.add_inst(); 
+    st.save_inst(FOLD); 
 
     return 0 ; 
 }

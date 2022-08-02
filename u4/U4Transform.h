@@ -58,7 +58,7 @@ void U4Transform::Convert(glm::tmat4x4<T>& d,  const G4Transform3D& s ) // stati
 {
     // M44T
     T zero(0.); 
-    T one(0.); 
+    T one(1.); 
     std::array<T, 16> a = {{
              s.xx(), s.yx(), s.zx(), zero ,  
              s.xy(), s.yy(), s.zy(), zero ,

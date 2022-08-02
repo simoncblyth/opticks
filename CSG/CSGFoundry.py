@@ -193,18 +193,28 @@ class CSGFoundry(object):
         """
         if "CFBASE_LOCAL" in os.environ:
             cfbase= os.environ["CFBASE_LOCAL"]
+            note = "via CFBASE_LOCAL"
         elif "CFBASE" in os.environ:
             cfbase= os.environ["CFBASE"]
+            note = "via CFBASE"
         elif "GEOM" in os.environ:
             geom = os.environ["GEOM"]
             rel = "GeoChain_Darwin" 
             cfbase = os.path.expandvars("/tmp/$USER/opticks/%s/%s" %(rel, geom) )  # guess
+            note = "via GEOM"
         elif "OPTICKS_KEY" in os.environ:
             kd = keydir(os.environ["OPTICKS_KEY"])
             cfbase = os.path.join(kd, "CSG_GGeo")
+            note = "via OPTICKS_KEY"
             ## HMM: match against OPTICKS_KEY_* in environ to find the "tag" of this key 
         else:
             cfbase = None
+            note = "via NO envvars"
+        pass
+        if cfbase is None:
+            print("CSGFoundry.CFBase returning None, note:%s " % note )
+        else:
+            print("CSGFoundry.CFBase returning [%s], note:[%s] " % (cfbase,note) )
         pass
         return cfbase
 

@@ -47,6 +47,10 @@ Notice that the above limits are for ridx > 0 for ridx = 0 (the global geometry)
 there is only one placement as this geometry is not repeated, so the offset_index 
 is afforded 3 bytes, ie up to 0xffffff = 16777215
 
+Notice that are using the same layout for repeat_index in both cases (global and repeated)
+out of necessity, even though the ridx is always zero in global case. 
+This is because it is necessary to be able to decode the identity without additional info. 
+
 **/
 
 unsigned OpticksIdentity::Encode(unsigned repeat_index, unsigned placement_index, unsigned offset_index) // static 

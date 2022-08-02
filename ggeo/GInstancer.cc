@@ -693,7 +693,7 @@ void GInstancer::labelTree()
 GInstancer::labelRepeats_r
 ----------------------------
 
-Recursion is kicked off within GInstancer::labelTree from the outer node of each placement
+This recursion is kicked off from GInstancer::labelTree from the outer node of each placement
 of a repeated piece of geometry.
 
 ridx
@@ -751,7 +751,8 @@ GInstancer::labelGlobals_r
 -------------------------------
 
 Only recurses whilst in global territory with ridx == 0, as soon as hit a repeated 
-volume, with ridx > 0, stop recursing. 
+volume, with ridx > 0, stops recursing : so it avoids the repeated nodes just continuing 
+to traverse the non-repeated. 
 
 **/
 
