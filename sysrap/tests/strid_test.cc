@@ -5,52 +5,57 @@
 #include <glm/glm.hpp>
 #include "strid.h"
 
-void test_Encode_Decode_4()
+void test_Encode_Decode()
 {
     glm::tmat4x4<double> tr(1.); 
     assert( strid::IsClear(tr)==true );
 
-    uint64_t e03 = 0xffffffffff0fffff ; 
-    uint64_t e13 = 0xaaaaaaaafff0ffff ; 
-    uint64_t e23 = 0xbbbbbbbbffff0fff ; 
-    uint64_t e33 = 0xccccccccfffff0ff ; 
-
-    strid::Encode(tr, e03, e13, e23, e33 ); 
+    glm::tvec4<uint64_t> col3 ; 
+    col3.x = 0xffffffffff0fffff ; 
+    col3.y = 0xaaaaaaaafff0ffff ; 
+    col3.z = 0xbbbbbbbbffff0fff ; 
+    col3.w = 0xccccccccfffff0ff ; 
+  
+    strid::Encode(tr, col3 ); 
     assert( strid::IsClear(tr)==false );
     
-    uint64_t e03_, e13_, e23_, e33_ ; 
-    strid::Decode(tr, e03_, e13_, e23_, e33_ ); 
+    glm::tvec4<uint64_t> col3_ ; 
+    strid::Decode(tr, col3_ ); 
 
-    assert( e03 == e03_ ); 
-    assert( e13 == e13_ ); 
-    assert( e23 == e23_ ); 
-    assert( e33 == e33_ ); 
+    for(unsigned r=0 ; r < 4 ; r++) assert( col3[r] == col3_[r] ); 
 
-    std::cout << strid::Desc(tr) << std::endl ; 
+    std::cout << strid::Desc<double, uint64_t>(tr) << std::endl ; 
 }
 
-
-void test_Encode_Decode_1()
+void test_Narrow()
 {
-    glm::tmat4x4<double> tr(1.); 
-    assert( strid::IsClear(tr)==true );
+    glm::tmat4x4<double> src(1.); 
 
-    uint64_t e03 = 0xffffffffff0fffff ; 
-    strid::Encode(tr, e03 ); 
-    uint64_t e03_ ; 
-    strid::Decode(tr, e03_ ); 
-    assert( e03 == e03_ ); 
+    glm::tvec4<uint64_t> col3 ; 
+    col3.x = 0xffffffffff0fffff ; 
+    col3.y = 0xaaaaaaaafff0ffff ; 
+    col3.z = 0xbbbbbbbbffff0fff ; 
+    col3.w = 0xccccccccfffff0ff ; 
+    strid::Encode(src, col3 ); 
+    std::cout << "src\n" << strid::Desc<double, uint64_t>(src) << std::endl ; 
  
-    std::cout << strid::Desc(tr) << std::endl ; 
-}
 
+    glm::tmat4x4<float>  dst(1.); 
+    strid::Narrow(dst, src); 
+    std::cout << "dst\n" << strid::Desc<float,  uint32_t>(dst) << std::endl ; 
+
+}
 
 
 
 int main(int argc, char** argv)
 {
-    //test_Encode_Decode_4(); 
-    test_Encode_Decode_1(); 
+    test_Encode_Decode(); 
+    /*
+    */
+
+    test_Narrow();  
+
 
     return 0 ; 
 }

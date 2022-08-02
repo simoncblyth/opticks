@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <vector>
 #include <string>
 #include <iomanip>
 #include <sstream>
@@ -15,103 +16,129 @@ struct strid
         double    f ; 
     }; 
 
-    static constexpr const uint64_t U=~0ull ; 
-    static void Encode(       glm::tmat4x4<double>& tr, uint64_t  e03=U, uint64_t  e13=U, uint64_t  e23=U, uint64_t  e33=U ); 
+    union uif32_t {
+        uint32_t  u ; 
+        int32_t   i ; 
+        float     f ; 
+    }; 
 
-    static void Decode( const glm::tmat4x4<double>& tr, uint64_t& e03,   uint64_t& e13  , uint64_t& e23  , uint64_t& e33   ); 
-    static void Decode( const glm::tmat4x4<double>& tr, uint64_t& e03,   uint64_t& e13  , uint64_t& e23  ); 
-    static void Decode( const glm::tmat4x4<double>& tr, uint64_t& e03,   uint64_t& e13  ); 
-    static void Decode( const glm::tmat4x4<double>& tr, uint64_t& e03 ); 
-
+    static void Encode(       glm::tmat4x4<double>& tr, const glm::tvec4<uint64_t>& col3 ); 
     static void Encode(       double* ptr , uint64_t  e ); 
-    static void Decode( const double* ptr , uint64_t& e, double skip ); 
-    static void Clear(         glm::tmat4x4<double>& tr); 
-    static bool IsClear( const glm::tmat4x4<double>& tr);
-    static std::string Desc(  const glm::tmat4x4<double>& tr);
+    static void Decode( const glm::tmat4x4<double>& tr,       glm::tvec4<uint64_t>& col3 ); 
+    static void Decode( const double* ptr , uint64_t& e ); 
+
+    static void Encode(       glm::tmat4x4<float>& tr, const glm::tvec4<uint32_t>& col3 ); 
+    static void Encode(       float* ptr , uint32_t  e ); 
+    static void Decode( const glm::tmat4x4<float>& tr,       glm::tvec4<uint32_t>& col3 ); 
+    static void Decode( const float* ptr , uint32_t& e ); 
+
+
+    template<typename T>
+    static void Clear(              glm::tmat4x4<T>& tr); 
+
+    template<typename T>
+    static bool IsClear(      const glm::tmat4x4<T>& tr);
+
+
+    template<typename T, typename S>
+    static std::string Desc(  const glm::tmat4x4<T>& tr);
+
+    static void Narrow( glm::tmat4x4<float>& dst,  const glm::tmat4x4<double>& src ); 
+    static void Widen(  glm::tmat4x4<double>& dst, const glm::tmat4x4<float>&  src ); 
+
 }; 
 
-inline void strid::Encode(      glm::tmat4x4<double>& tr, uint64_t e03, uint64_t e13, uint64_t e23, uint64_t e33)
+
+inline void strid::Encode(      glm::tmat4x4<double>& tr, const glm::tvec4<uint64_t>& col3 )
 {
     double* tr00 = glm::value_ptr(tr) ; 
-    Encode( tr00+4*0+3, e03 ); 
-    Encode( tr00+4*1+3, e13 ); 
-    Encode( tr00+4*2+3, e23 ); 
-    Encode( tr00+4*3+3, e33 ); 
+    for(int r=0 ; r < 4 ; r++) Encode(  tr00+4*r+3, col3[r] ) ; 
 } 
-
-inline void strid::Decode( const glm::tmat4x4<double>& tr, uint64_t& e03, uint64_t& e13, uint64_t& e23, uint64_t& e33)
-{
-    const double* tr00 = glm::value_ptr(tr) ; 
-    Decode( tr00+4*0+3, e03, 0.) ;  
-    Decode( tr00+4*1+3, e13, 0.) ;   
-    Decode( tr00+4*2+3, e23, 0.) ;   
-    Decode( tr00+4*3+3, e33, 1.) ;   
-}
-inline void strid::Decode( const glm::tmat4x4<double>& tr, uint64_t& e03, uint64_t& e13, uint64_t& e23 )
-{
-    const double* tr00 = glm::value_ptr(tr) ; 
-    Decode( tr00+4*0+3, e03, 0.) ;  
-    Decode( tr00+4*1+3, e13, 0.) ;   
-    Decode( tr00+4*2+3, e23, 0.) ;   
-}
-inline void strid::Decode( const glm::tmat4x4<double>& tr, uint64_t& e03, uint64_t& e13 )
-{
-    const double* tr00 = glm::value_ptr(tr) ; 
-    Decode( tr00+4*0+3, e03, 0.) ;  
-    Decode( tr00+4*1+3, e13, 0.) ;   
-}
-inline void strid::Decode( const glm::tmat4x4<double>& tr, uint64_t& e03 )
-{
-    const double* tr00 = glm::value_ptr(tr) ; 
-    Decode( tr00+4*0+3, e03, 0.) ;  
-}
-
-
- 
 inline void strid::Encode( double* ptr, uint64_t e)
 {
-    if( e == U ) return ; 
     uif64_t uif ; 
     uif.u = e ; 
     *ptr = uif.f ; 
 }
-inline void strid::Decode( const double* ptr, uint64_t& e, double skip )
+inline void strid::Decode( const glm::tmat4x4<double>& tr,      glm::tvec4<uint64_t>& col3  )
+{
+    const double* tr00 = glm::value_ptr(tr) ; 
+    for(int r=0 ; r < 4 ; r++) Decode( tr00+4*r+3, col3[r] ) ;  
+}
+inline void strid::Decode( const double* ptr, uint64_t& e )
 {
     uif64_t uif ; 
     uif.f = *ptr ; 
-    e = uif.f == skip ? U : uif.u ;  
+    e = uif.u ;  
 }
-inline void strid::Clear( glm::tmat4x4<double>& tr )
+
+
+
+
+
+inline void strid::Encode(      glm::tmat4x4<float>& tr, const glm::tvec4<uint32_t>& col3 )
 {
-    double* tr00 = glm::value_ptr(tr) ; 
-    *(tr00+4*0+3) = 0. ;  
-    *(tr00+4*1+3) = 0. ;  
-    *(tr00+4*2+3) = 0. ;  
-    *(tr00+4*3+3) = 1. ;  
+    float* tr00 = glm::value_ptr(tr) ; 
+    for(int r=0 ; r < 4 ; r++) Encode(  tr00+4*r+3, col3[r] ) ; 
 } 
-inline bool strid::IsClear( const glm::tmat4x4<double>& tr )
+inline void strid::Encode( float* ptr, uint32_t e)
 {
-    const double* tr00 = glm::value_ptr(tr) ; 
-    return 
-         *(tr00+4*0+3) == 0. && 
-         *(tr00+4*1+3) == 0. && 
-         *(tr00+4*2+3) == 0. && 
-         *(tr00+4*3+3) == 1. ; 
+    uif32_t uif ; 
+    uif.u = e ; 
+    *ptr = uif.f ; 
+}
+inline void strid::Decode( const glm::tmat4x4<float>& tr,      glm::tvec4<uint32_t>& col3  )
+{
+    const float* tr00 = glm::value_ptr(tr) ; 
+    for(int r=0 ; r < 4 ; r++) Decode( tr00+4*r+3, col3[r] ) ;  
+}
+inline void strid::Decode( const float* ptr, uint32_t& e )
+{
+    uif32_t uif ; 
+    uif.f = *ptr ; 
+    e = uif.u ;  
 }
 
 
 
 
-inline std::string strid::Desc( const glm::tmat4x4<double>& tr )
+
+template<typename T>
+inline void strid::Clear( glm::tmat4x4<T>& tr )
 {
-    uint64_t e03, e13, e23, e33 ; 
-    Decode(tr, e03, e13, e23, e33 ); 
+    T* tr00 = glm::value_ptr(tr) ; 
+    *(tr00+4*0+3) = T(0.) ;  
+    *(tr00+4*1+3) = T(0.) ;  
+    *(tr00+4*2+3) = T(0.) ;  
+    *(tr00+4*3+3) = T(1.) ;  
+} 
+
+
+template<typename T>
+inline bool strid::IsClear( const glm::tmat4x4<T>& tr )
+{
+    const T* tr00 = glm::value_ptr(tr) ; 
+    return 
+         *(tr00+4*0+3) == T(0.) && 
+         *(tr00+4*1+3) == T(0.) && 
+         *(tr00+4*2+3) == T(0.) && 
+         *(tr00+4*3+3) == T(1.) ; 
+}
+
+
+
+
+template<typename T, typename S>
+inline std::string strid::Desc( const glm::tmat4x4<T>& tr )
+{
+    glm::tvec4<S> col3 ; 
+    Decode(tr, col3); 
 
     bool clear = IsClear(tr); 
 
     std::string spc(5, ' '); 
 
-    const double* tr00 = glm::value_ptr(tr) ; 
+    const T* tr00 = glm::value_ptr(tr) ; 
     std::stringstream ss ; 
     for(unsigned r=0 ; r < 4 ; r++) for(unsigned c=0 ; c < 4 ; c++)
     { 
@@ -124,19 +151,68 @@ inline std::string strid::Desc( const glm::tmat4x4<double>& tr )
         }
         else
         {
-            switch(r)
-            {
-                case 0: ss << spc << std::setw(16) << std::hex << e03 << std::dec ; break ; 
-                case 1: ss << spc << std::setw(16) << std::hex << e13 << std::dec ; break ; 
-                case 2: ss << spc << std::setw(16) << std::hex << e23 << std::dec ; break ; 
-                case 3: ss << spc << std::setw(16) << std::hex << e33 << std::dec ; break ; 
-            }
+            ss << spc << std::setw(16) << std::hex << col3[r] << std::dec ; break ; 
         }
         if( i == 15 ) ss << std::endl ; 
     }
     std::string s = ss.str(); 
     return s ; 
 }
+
+template std::string strid::Desc<double, uint64_t>(const glm::tmat4x4<double>& tr ); 
+template std::string strid::Desc<float,  uint32_t>(const glm::tmat4x4<float>& tr ); 
+
+
+
+
+
+inline void strid::Narrow( glm::tmat4x4<float>& dst_,  const glm::tmat4x4<double>& src_ )
+{
+    glm::tvec4<uint64_t> src_col3 ; 
+    Decode(src_, src_col3); 
+
+
+
+    float* dst = glm::value_ptr(dst_); 
+    const double* src = glm::value_ptr(src_); 
+
+    for(unsigned r=0 ; r < 4 ; r++) 
+    for(unsigned c=0 ; c < 4 ; c++)
+    {
+        unsigned i=r*4 + c ; 
+
+        /*
+        std::cout 
+            << " r " << std::setw(2) << r  
+            << " c " << std::setw(2) << c
+            << " i " << std::setw(2) << i 
+            << std::endl 
+            ;
+        */
+
+        dst[i] = float(src[i]); 
+    }
+
+
+    glm::tvec4<uint32_t> dst_col3 ; 
+    for(int r=0 ; r < 4 ; r++) dst_col3[r] = ( src_col3[r] & 0xffffffff ) ; 
+
+    Encode(dst_, dst_col3); 
+
+}
+inline void strid::Widen(  glm::tmat4x4<double>& dst_, const glm::tmat4x4<float>& src_ )
+{
+    double* dst = glm::value_ptr(dst_); 
+    const float* src = glm::value_ptr(src_); 
+
+    for(unsigned r=0 ; r < 4 ; r++) 
+    for(unsigned c=0 ; c < 4 ; c++)
+    {
+        unsigned i=r*4 + c ; 
+        dst[i] = double(src[i]); 
+    }
+}
+
 
 
 
