@@ -9,6 +9,15 @@ name=stree_test
 export FOLD=/tmp/$USER/opticks/U4TreeTest
 
 
+source $OPTICKS_HOME/bin/COMMON.sh 
+T_FOLD=$($OPTICKS_HOME/g4cx/gxt.sh fold)
+T_CFBASE=$(upfind_cfbase $T_FOLD)  
+
+if [ "${arg/info}" != "$arg" ]; then 
+    vars="BASH_SOURCE T_FOLD T_CFBASE"
+    for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done
+fi 
+
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc \
           -std=c++11 -lstdc++ \
@@ -24,6 +33,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
+    export CFBASE=${CFBASE:-$T_CFBASE}
     ${IPYTHON:-ipython} --pdb -i stree_test.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
 fi 

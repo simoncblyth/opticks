@@ -15,6 +15,14 @@ source $bindir/GEOM_.sh                   # defines and exports : GEOM, GEOMDIR
 source $bindir/OPTICKS_INPUT_PHOTON.sh    # defines and exports : OPTICKS_INPUT_PHOTON
 
 
+upfind_cfbase(){
+    : COMMON.sh : traverse directory tree upwards searching CFBase geometry dir identified by existance of CSGFoundry/solid.npy  
+    local dir=$1
+    while [ ${#dir} -gt 1 -a ! -f "$dir/CSGFoundry/solid.npy" ] ; do dir=$(dirname $dir) ; done 
+    echo $dir
+}
+
+
 if [ "$GEOM" == "J000" -o "$GEOM" == "J001" -o "$GEOM" == "J002" ]; then 
 
    case $GEOM in 

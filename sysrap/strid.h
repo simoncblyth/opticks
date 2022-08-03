@@ -44,8 +44,7 @@ struct strid
     static std::string Desc(  const glm::tmat4x4<T>& tr);
 
     static void Narrow( glm::tmat4x4<float>& dst,  const glm::tmat4x4<double>& src ); 
-    static void Widen(  glm::tmat4x4<double>& dst, const glm::tmat4x4<float>&  src ); 
-
+    static void Narrow( std::vector<glm::tmat4x4<float>>& dst,  const std::vector<glm::tmat4x4<double>>& src ); 
 }; 
 
 
@@ -56,6 +55,7 @@ inline void strid::Encode(      glm::tmat4x4<double>& tr, const glm::tvec4<uint6
 } 
 inline void strid::Encode( double* ptr, uint64_t e)
 {
+    if(e == 0) return ; // kludge to keep [:,3,3] 1. for simpler comparison with GGeo cf.inst  
     uif64_t uif ; 
     uif.u = e ; 
     *ptr = uif.f ; 
@@ -83,6 +83,7 @@ inline void strid::Encode(      glm::tmat4x4<float>& tr, const glm::tvec4<uint32
 } 
 inline void strid::Encode( float* ptr, uint32_t e)
 {
+    if(e == 0) return ; // kludge to keep [:,3,3] 1. for simpler comparison with GGeo cf.inst  
     uif32_t uif ; 
     uif.u = e ; 
     *ptr = uif.f ; 
@@ -200,19 +201,16 @@ inline void strid::Narrow( glm::tmat4x4<float>& dst_,  const glm::tmat4x4<double
     Encode(dst_, dst_col3); 
 
 }
-inline void strid::Widen(  glm::tmat4x4<double>& dst_, const glm::tmat4x4<float>& src_ )
-{
-    double* dst = glm::value_ptr(dst_); 
-    const float* src = glm::value_ptr(src_); 
 
-    for(unsigned r=0 ; r < 4 ; r++) 
-    for(unsigned c=0 ; c < 4 ; c++)
-    {
-        unsigned i=r*4 + c ; 
-        dst[i] = double(src[i]); 
+inline void strid::Narrow( std::vector<glm::tmat4x4<float>>& dst_,  const std::vector<glm::tmat4x4<double>>& src_ )
+{
+    dst_.resize(src_.size()); 
+    for(unsigned i=0 ; i < src_.size() ; i++)
+    {  
+        const glm::tmat4x4<double>& src = src_[i] ; 
+        glm::tmat4x4<float>& dst = dst_[i] ; 
+        Narrow(dst, src); 
     }
 }
-
-
 
 

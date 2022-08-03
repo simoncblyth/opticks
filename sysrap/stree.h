@@ -104,6 +104,7 @@ struct stree
 
 
     std::vector<glm::tmat4x4<double>> inst ; 
+    std::vector<glm::tmat4x4<float>>  inst_f4 ; 
 
 
     stree();
@@ -818,12 +819,13 @@ inline void stree::add_inst( glm::tmat4x4<double>& tr, unsigned gas_idx )
     unsigned ins_idx = inst.size();     // follow sqat4.h::setIdentity
     unsigned ias_idx = 0 ; 
 
-    uint64_t e03 = ins_idx + 1 ; 
-    uint64_t e13 = gas_idx + 1 ; 
-    uint64_t e23 = ias_idx + 1 ; 
-    uint64_t e33 = 0 ; 
+    glm::tvec4<uint64_t> col3 ; 
+    col3.x = ins_idx + 1 ; 
+    col3.y = gas_idx + 1 ; 
+    col3.z = ias_idx + 1 ; 
+    col3.w = 0 ; 
 
-    strid::Encode(tr, e03, e13, e23, e33 ); 
+    strid::Encode(tr, col3 ); 
     inst.push_back(tr);  
 }
 inline void stree::add_inst() 
@@ -862,11 +864,14 @@ inline void stree::add_inst()
             add_inst(tr, gas_idx ); 
         }
     }
+
+    strid::Narrow( inst_f4, inst ); 
 }
 
 inline void stree::save_inst(const char* fold) const 
 {
-    NP::Write(fold, "inst.npy", (double*)inst.data(), inst.size(), 4, 4 ); 
+    NP::Write(fold, "inst.npy",    (double*)inst.data(), inst.size(), 4, 4 ); 
+    NP::Write(fold, "inst_f4.npy", (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
 }
 
 

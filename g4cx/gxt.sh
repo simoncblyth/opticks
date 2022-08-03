@@ -59,15 +59,6 @@ BASE=$GEOMDIR/$bin
 UBASE=${BASE//$HOME\/}    # UBASE relative to HOME to handle rsync between different HOME
 FOLD=$BASE/ALL            # corresponds SEvt::save() with SEvt::SetReldir("ALL")
 
-
-upfind_cfbase(){
-    : traverse directory tree upwards searching CFBase geometry dir identified by existance of CSGFoundry/solid.npy  
-    local dir=$1
-    while [ ${#dir} -gt 1 -a ! -f "$dir/CSGFoundry/solid.npy" ] ; do dir=$(dirname $dir) ; done 
-    echo $dir
-}
-
-
 # analysis/plotting uses A_FOLD B_FOLD for comparison together with the simtrace 
 
 T_FOLD=$FOLD
@@ -84,7 +75,7 @@ export A_CFBASE
 export B_FOLD
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE arg bin defarg gxtdir GEOM GEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD B_CFBASE T_FOLD T_CFBASE"
+    vars="BASH_SOURCE arg bin defarg gxtdir GEOM GEOMDIR BASE UBASE FOLD A_FOLD A_CFBASE B_FOLD B_CFBASE T_FOLD T_CFBASE J001_GDMLPath"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done 
     source $OPTICKS_HOME/bin/AB_FOLD.sh   # just lists dir content 
 fi 

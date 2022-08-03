@@ -257,7 +257,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* path = SPath::Resolve("$SomeGDMLPath", NOOP ) ; 
+    const char* path = SPath::Resolve("$GDMLPath", NOOP ) ; 
+    LOG(info) << " path [" << path << "]" ; 
+    if( path == nullptr ) LOG(fatal) << " $GDMLPath null, see SOpticksResource  " ; 
+    if( path == nullptr ) return 0 ; 
+
     G4VPhysicalVolume* world = U4GDML::Read(path) ;  
 
     stree st ; 
@@ -267,9 +271,8 @@ int main(int argc, char** argv)
 
     st.save(FOLD); 
 
-    test_get_pv_0(tree); 
+    //test_get_pv_0(tree); 
     //test_get_pv_1(tree); 
-
 
     return 0 ;  
 }
