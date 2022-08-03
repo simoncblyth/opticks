@@ -348,6 +348,234 @@ Deviations all in sPanel instance XY translation::
 
 
 
+Paired m2w and w2m transforms
+--------------------------------
+
+::
+
+    i  168335
+           m2w                                               w2m                                           m2w_w2m                                        
+
+        -0.400     -0.411      0.819      0.000               -0.400      0.716      0.572      0.000                1.000      0.000      0.000      0.000 
+         0.716     -0.698     -0.000      0.000               -0.411     -0.698      0.587      0.000                0.000      1.000      0.000      0.000 
+         0.572      0.587      0.574      0.000                0.819     -0.000      0.574      0.000                0.000      0.000      1.000      0.000 
+    -11111.486 -11398.218 -11148.806      1.000            11111.486  11398.218  11148.806      1.000            -1024.932 -17380.201   4348.215      1.000 
+
+           m2w                                               w2m                                           w2m_m2w                                        
+
+        -0.400     -0.411      0.819      0.000               -0.400      0.716      0.572      0.000                1.000     -0.000      0.000      0.000 
+         0.716     -0.698     -0.000      0.000               -0.411     -0.698      0.587      0.000               -0.000      1.000      0.000      0.000 
+         0.572      0.587      0.574      0.000                0.819     -0.000      0.574      0.000                0.000      0.000      1.000      0.000 
+    -11111.486 -11398.218 -11148.806      1.000            11111.486  11398.218  11148.806      1.000            11111.480  11398.219  -8285.195      1.000 
+
+
+::
+
+    In [1]: i=168335                                                                                                                                                               
+
+    In [2]: t.m2w[i]                                                                                                                                                               
+    Out[2]: 
+    array([[    -0.4  ,     -0.411,      0.819,      0.   ],
+           [     0.716,     -0.698,     -0.   ,      0.   ],
+           [     0.572,      0.587,      0.574,      0.   ],
+           [-11111.486, -11398.218, -11148.806,      1.   ]])
+
+    In [3]: t.w2m[i]                                                                                                                                                               
+    Out[3]: 
+    array([[   -0.4  ,     0.716,     0.572,     0.   ],
+           [   -0.411,    -0.698,     0.587,     0.   ],
+           [    0.819,    -0.   ,     0.574,     0.   ],
+           [11111.486, 11398.218, 11148.806,     1.   ]])
+
+Rotation portion is transposed and translation is negated::
+
+    In [7]: m2w[:3, :3]                                                                                                                                                            
+    Out[7]: 
+    array([[-0.4  , -0.411,  0.819],
+           [ 0.716, -0.698, -0.   ],
+           [ 0.572,  0.587,  0.574]])
+
+    In [8]: w2m[:3, :3]                                                                                                                                                            
+    Out[8]: 
+    array([[-0.4  ,  0.716,  0.572],
+           [-0.411, -0.698,  0.587],
+           [ 0.819, -0.   ,  0.574]])
+
+    In [9]: np.dot(   m2w[:3, :3], w2m[:3, :3]  )                                                                                                                                  
+    Out[9]: 
+    array([[ 1., -0.,  0.],
+           [-0.,  1.,  0.],
+           [ 0.,  0.,  1.]])
+
+
+    In [16]: w2m_tra = np.eye(4)                                                                                                                                                   
+
+    In [17]: w2m_tra[3] = w2m[3]                                                                                                                                                   
+
+    In [18]: m2w_tra = np.eye(4)        
+
+    In [23]: m2w_tra[3] = m2w[3]                                                                                                                                                   
+
+
+    In [26]: np.dot( m2w_tra, w2m_tra )                                                                                                                                            
+    Out[26]: 
+    array([[1., 0., 0., 0.],
+           [0., 1., 0., 0.],
+           [0., 0., 1., 0.],
+           [0., 0., 0., 1.]])
+
+    In [27]: np.dot( m2w_rot, w2m_rot )                                                                                                                                            
+    Out[27]: 
+    array([[ 1., -0.,  0.,  0.],
+           [-0.,  1.,  0.,  0.],
+           [ 0.,  0.,  1.,  0.],
+           [ 0.,  0.,  0.,  1.]])
+
+
+* individually the rotations and translations are inverses but not together 
+
+::
+
+    In [29]: pos = np.array( [1,1,1,1])                                                                                                                                            
+
+
+    In [31]: np.dot( m2w_tra, pos )                                                                                                                                                
+    Out[31]: array([     1.  ,      1.  ,      1.  , -33657.51])
+
+    In [32]: np.dot( pos, m2w_tra )                                                                                                                                                
+    Out[32]: array([-11110.486, -11397.218, -11147.806,      1.   ])
+
+    In [33]: np.dot( pos, m2w_rot )                                                                                                                                                
+    Out[33]: array([ 0.887, -0.522,  1.393,  1.   ])
+
+    In [34]: m2w_tra                                                                                                                                                               
+    Out[34]: 
+    array([[     1.   ,      0.   ,      0.   ,      0.   ],
+           [     0.   ,      1.   ,      0.   ,      0.   ],
+           [     0.   ,      0.   ,      1.   ,      0.   ],
+           [-11111.486, -11398.218, -11148.806,      1.   ]])
+
+    In [35]: m2w                                                                                                                                                                   
+    Out[35]: 
+    array([[    -0.4  ,     -0.411,      0.819,      0.   ],
+           [     0.716,     -0.698,     -0.   ,      0.   ],
+           [     0.572,      0.587,      0.574,      0.   ],
+           [-11111.486, -11398.218, -11148.806,      1.   ]])
+
+    In [36]: np.dot( pos, m2w )                                                                                                                                                    
+    Out[36]: array([-11110.599, -11398.74 , -11147.413,      1.   ])
+
+
+* clearly the m2w is rotating (close to origin) and then translating        
+
+::
+
+    In [38]: np.dot( pos, m2w_rot )                                                                                                                                                
+    Out[38]: array([ 0.887, -0.522,  1.393,  1.   ])
+
+    In [39]: np.dot( np.dot( pos, m2w_rot ), m2w_tra )                                                                                                                             
+    Out[39]: array([-11110.599, -11398.74 , -11147.413,      1.   ])
+
+
+To bring that back to the start pos need to un-translate first and then un-rotate::
+
+    In [40]: w2m_tra                                                                                                                                                               
+    Out[40]: 
+    array([[    1.   ,     0.   ,     0.   ,     0.   ],
+           [    0.   ,     1.   ,     0.   ,     0.   ],
+           [    0.   ,     0.   ,     1.   ,     0.   ],
+           [11111.486, 11398.218, 11148.806,     1.   ]])
+
+    In [41]: np.dot( np.dot( np.dot( pos, m2w_rot ), m2w_tra ), w2m_tra )                                                                                                          
+    Out[41]: array([ 0.887, -0.522,  1.393,  1.   ])
+
+    In [42]: np.dot( np.dot( np.dot( np.dot( pos, m2w_rot ), m2w_tra ), w2m_tra ), w2m_rot )                                                                                       
+    Out[42]: array([1., 1., 1., 1.])
+
+
+Did this enmasse in U4Transform.h by using Convert_RotateThenTranslate with GetObjectTransform
+and Convert_TranslateThenRotate with GetFrameTransform::
+
+     44 void U4Transform::GetObjectTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv)
+     45 {
+     46    // preferred for interop with glm/Opticks : obj relative to mother
+     47     G4RotationMatrix rot = pv->GetObjectRotationValue() ;
+     48     G4ThreeVector    tla = pv->GetObjectTranslation() ;
+     49     G4Transform3D    tra(rot,tla);
+     50     Convert_RotateThenTranslate(tr, tra);
+     51 }
+     52 void U4Transform::GetFrameTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv)
+     53 {
+     54     const G4RotationMatrix* rotp = pv->GetFrameRotation() ;
+     55     G4ThreeVector    tla = pv->GetFrameTranslation() ;
+     56     G4Transform3D    tra(rotp ? *rotp : G4RotationMatrix(),tla);
+     57     Convert_TranslateThenRotate(tr, tra );
+     58 }
+
+
+ana/translate_rotate.py::
+
+    In [2]: run translate_rotate.py                                                                                                                                                
+
+    R
+    ⎡rxx  ryx  rzx  0⎤
+    ⎢                ⎥
+    ⎢rxy  ryy  rzy  0⎥
+    ⎢                ⎥
+    ⎢rxz  ryz  rzz  0⎥
+    ⎢                ⎥
+    ⎣ 0    0    0   1⎦
+
+    T
+    ⎡1   0   0   0⎤
+    ⎢             ⎥
+    ⎢0   1   0   0⎥
+    ⎢             ⎥
+    ⎢0   0   1   0⎥
+    ⎢             ⎥
+    ⎣tx  ty  tz  1⎦
+
+    T*R : row3 has translation and rotation mixed up : ie translation first and then rotation which depends  
+    ⎡          rxx                       ryx                       rzx             0⎤
+    ⎢                                                                               ⎥
+    ⎢          rxy                       ryy                       rzy             0⎥
+    ⎢                                                                               ⎥
+    ⎢          rxz                       ryz                       rzz             0⎥
+    ⎢                                                                               ⎥
+    ⎣rxx⋅tx + rxy⋅ty + rxz⋅tz  ryx⋅tx + ryy⋅ty + ryz⋅tz  rzx⋅tx + rzy⋅ty + rzz⋅tz  1⎦
+
+    R*T : familiar row3 as translation : that means rotate then translate 
+    ⎡rxx  ryx  rzx  0⎤
+    ⎢                ⎥
+    ⎢rxy  ryy  rzy  0⎥
+    ⎢                ⎥
+    ⎢rxz  ryz  rzz  0⎥
+    ⎢                ⎥
+    ⎣tx   ty   tz   1⎦
+
+    RT
+    ⎡rxx  ryx  rzx  0⎤
+    ⎢                ⎥
+    ⎢rxy  ryy  rzy  0⎥
+    ⎢                ⎥
+    ⎢rxz  ryz  rzz  0⎥
+    ⎢                ⎥
+    ⎣tx   ty   tz   1⎦
+
+    P1
+    [x  y  z  1]
+
+    P*RT : notice that the translation just gets added to rotated coordinates : ie rotation first and then translation
+    [rxx⋅x + rxy⋅y + rxz⋅z + tx⋅w  ryx⋅x + ryy⋅y + ryz⋅z + ty⋅w  rzx⋅x + rzy⋅y + rzz⋅z + tz⋅w  w]
+
+    P*RT.subs(v_rid) : setting rotation to identity 
+    [tx⋅w + x  ty⋅w + y  tz⋅w + z  w]
+
+    In [3]:                                                                                                                                                                        
+
+
+
+
 
 HMM: maybe factorizing at sWall would be cleanest : because its the higest repeater : but only 63
 ------------------------------------------------------------------------------------------------------

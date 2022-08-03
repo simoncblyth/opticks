@@ -113,9 +113,16 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     const G4PVPlacement* pvp = dynamic_cast<const G4PVPlacement*>(pv) ;
     int copyno = pvp ? pvp->GetCopyNo() : -1 ;
 
-    glm::tmat4x4<double> tr(1.) ;  
-    U4Transform::GetObjectTransform(tr, pv); 
-    st->trs.push_back(tr);  
+    glm::tmat4x4<double> tr_m2w(1.) ;  
+    U4Transform::GetObjectTransform(tr_m2w, pv); 
+
+    glm::tmat4x4<double> tr_w2m(1.) ;  
+    U4Transform::GetFrameTransform(tr_w2m, pv); 
+
+    // HMM: the frame is inverse to obj transform sometimes : when no rotation 
+
+    st->m2w.push_back(tr_m2w);  
+    st->w2m.push_back(tr_w2m);  
     pvs.push_back(pv); 
 
     snode nd ; 
@@ -133,7 +140,7 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
 
     st->nds.push_back(nd); 
 
-    std::string dig = stree::Digest(lvid, tr); 
+    std::string dig = stree::Digest(lvid, tr_m2w); 
     st->digs.push_back(dig); 
 
     if(sibdex == 0 && nd.parent > -1) st->nds[nd.parent].first_child = nd.index ; 

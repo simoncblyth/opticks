@@ -3,6 +3,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "ssys.h"
+#include "strid.h"
 #include "stree.h"
 
 const char* FOLD = getenv("FOLD");  
@@ -77,20 +78,125 @@ void test_find_lvid_node(const stree& st)
     }
 }
 
-void test_get_transform_product(const stree& st)
+void test_get_m2w_product_get_w2m_product(const stree& st, const char* q_soname )
 {
-    const char* q_soname = "HamamatsuR12860sMask_virtual" ;  
+    double delta_cut = 1e-10 ; 
 
-    for(int q_ordinal=0 ; q_ordinal < 10 ; q_ordinal++ )
+    std::vector<int> nodes ; 
+    st.find_lvid_nodes(nodes, q_soname); 
+    unsigned num = nodes.size(); 
+
+    glm::tmat4x4<double> m2w(1.) ; 
+    glm::tmat4x4<double> w2m(1.) ; 
+    double delta_max = 0. ; 
+    unsigned count = 0 ; 
+
+    for(unsigned i=0 ; i < num ; i++ )
     {
-        int nidx = st.find_lvid_node(q_soname, q_ordinal ); 
-        std::cout << " q_soname " << q_soname << " q_ordinal " << q_ordinal << " nidx " << nidx << std::endl ; 
+        int nidx = nodes[i] ; 
+        st.get_m2w_product(m2w, nidx, false ); 
+        st.get_w2m_product(w2m, nidx, true  ); 
 
-        glm::tmat4x4<double> tr(1.) ; 
-        st.get_transform_product(tr, nidx); 
+        glm::tmat4x4<double> m2w_w2m = m2w * w2m ; 
+        glm::tmat4x4<double> w2m_m2w = w2m * m2w ; 
 
-        std::cout << "tr\n" << glm::to_string(tr) << std::endl ; 
+        double delta0 = strid::DiffFromIdentity(m2w_w2m); 
+        double delta1 = strid::DiffFromIdentity(w2m_m2w); 
+        double delta = std::max(delta0, delta1); 
+        if( delta > delta_max ) delta_max = delta ; 
+
+        if( delta > delta_cut )
+        {
+            count += 1 ; 
+            std::cout << " i " << i << " nidx " << nidx << " delta " << std::scientific << delta << std::endl ; 
+            std::cout << strid::Desc_("m2w", "w2m", "m2w_w2m", m2w, w2m, m2w_w2m ) ; 
+        }
     }
+    std::cout 
+        << " soname " << std::setw(50) << q_soname 
+        << " num " << std::setw(7) << num
+        << " delta_max " << std::setw(10) << std::scientific << delta_max 
+        << " delta_cut " << std::setw(10) << std::scientific << delta_cut 
+        << " count " << std::setw(8) << count
+        << std::endl 
+        ; 
+}
+
+void test_get_m2w_product_get_w2m_product(const stree& st)
+{
+    std::vector<std::string> sonames ; 
+    st.get_sub_sonames(sonames) ; 
+    std::cout << "[ test_get_m2w_product_get_w2m_product sonames.size " << sonames.size() << std::endl ; 
+    std::cout << "testing that m2w and w2m product transforms for all instances are inverses of each other " << std::endl ; 
+
+    for(unsigned i=0 ; i < sonames.size() ; i++)
+    {
+        const char* soname = sonames[i].c_str(); 
+        test_get_m2w_product_get_w2m_product(st, soname ) ;  
+    }
+    std::cout << "] test_get_m2w_product_get_w2m_product sonames.size " << sonames.size() << std::endl ; 
+}
+
+void test_m2w_w2m(const stree& st)
+{
+    std::cout << "test_m2w_w2m : check that all m2w w2m pairs are effective inverses of each other " << std::endl ; 
+    std::cout << "st.m2w.size " << st.m2w.size() << std::endl ; 
+    std::cout << "st.w2m.size " << st.w2m.size() << std::endl ; 
+    assert( st.m2w.size() == st.w2m.size() ); 
+    unsigned num = st.m2w.size();
+
+    unsigned i0 = 0 ; 
+    unsigned i1 = num ;
+
+    double delta_cut = 1e-11 ;  
+    unsigned count = 0 ; 
+    unsigned max_delta_idx = 0 ; 
+    double max_delta = 0. ; 
+
+    for(unsigned i=i0 ; i < i1 ; i++)
+    {
+        assert( i < num ); 
+  
+        const glm::tmat4x4<double>& m2w = st.m2w[i] ; 
+        const glm::tmat4x4<double>& w2m = st.w2m[i] ; 
+        const glm::tmat4x4<double>  m2w_w2m = m2w*w2m ; 
+        const glm::tmat4x4<double>  w2m_m2w = w2m*m2w ; 
+
+        double delta_0 = strid::DiffFromIdentity(m2w_w2m) ; 
+        double delta_1 = strid::DiffFromIdentity(w2m_m2w) ; 
+        double delta   = std::max( delta_0, delta_1 ); 
+
+        if( delta > max_delta ) 
+        {
+            max_delta = delta ;
+            max_delta_idx = i ; 
+        }  
+
+        if( delta > delta_cut )
+        {
+            count += 1 ; 
+            std::cout 
+                << " i " << std::setw(7) << i 
+                << " delta_0 " << std::setw(10) << std::scientific << delta_0 
+                << " delta_1 " << std::setw(10) << std::scientific << delta_1
+                << " delta "   << std::setw(10) << std::scientific << delta
+                << " delta_cut "   << std::setw(10) << std::scientific << delta_cut
+                << std::endl
+                ; 
+
+            std::cout << strid::Desc_("m2w","w2m","m2w_w2m", m2w, w2m, m2w_w2m ) << std::endl ; 
+            std::cout << strid::Desc_("m2w","w2m","w2m_m2w", m2w, w2m, w2m_m2w ) << std::endl ; 
+        }
+    }
+    std::cout 
+        << " i0 " << i0 
+        << " i1 " << i1 
+        << " delta_cut " << std::scientific << delta_cut 
+        << " max_delta " << std::scientific << max_delta 
+        << " count " << count 
+        << " max_delta_idx " << max_delta_idx 
+        << std::endl
+        ; 
 }
 
 
@@ -111,11 +217,14 @@ int main(int argc, char** argv)
     std::cout << "st.desc_sub(false)" << std::endl << st.desc_sub(false) << std::endl ;
     //std::cout << "st.desc_sub(true)"  << std::endl << st.desc_sub(true)  << std::endl ;
 
+    /*
+    test_m2w_w2m(st); 
+    test_get_m2w_product_get_w2m_product(st) ;  
+    */
 
     /*
     test_get_nodes(st); 
     test_find_lvid_node(st); 
-    test_get_transform_product(st); 
     test_desc_progeny(st, "sWall"); 
     */
 

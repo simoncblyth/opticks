@@ -89,14 +89,18 @@ struct stree
     // are not regarded as repeats for instancing factorization purposes 
 
     static constexpr const char* NDS = "nds.npy" ;
-    static constexpr const char* TRS = "trs.npy" ;
+    static constexpr const char* M2W = "m2w.npy" ;
+    static constexpr const char* W2M = "w2m.npy" ;
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* DIGS = "digs.txt" ;
     static constexpr const char* SUBS = "subs.txt" ;
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
 
     std::vector<std::string> soname ;
-    std::vector<glm::tmat4x4<double>> trs ;
+
+    std::vector<glm::tmat4x4<double>> m2w ;  // formerly trs
+    std::vector<glm::tmat4x4<double>> w2m ; 
+
     std::vector<snode> nds ;
     std::vector<std::string> digs ; // single node digest  
     std::vector<std::string> subs ; // subtree digest 
@@ -105,6 +109,10 @@ struct stree
 
     std::vector<glm::tmat4x4<double>> inst ; 
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
+
+    std::vector<glm::tmat4x4<double>> iinst ; 
+    std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
+
 
 
     stree();
@@ -131,15 +139,22 @@ struct stree
     int  find_lvid_node( const char* q_soname, int ordinal ) const ; 
     int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
 
+    void get_sub_sonames( std::vector<std::string>& sonames ) const ; 
+    const char* get_sub_soname(const char* sub) const ; 
+
     const char* get_soname(int nidx) const ; 
     const char* get_sub(   int nidx) const ; 
     int         get_depth( int nidx) const ; 
     int         get_parent(int nidx) const ; 
     int         get_lvid(  int nidx) const ; 
     int         get_copyno(int nidx) const ; 
-    const glm::tmat4x4<double>& get_transform(int nidx) const ; 
+
+    const glm::tmat4x4<double>& get_m2w(int nidx) const ; 
+    const glm::tmat4x4<double>& get_w2m(int nidx) const ; 
+
     void get_ancestors(  std::vector<int>& ancestors, int nidx ) const ;
-    void get_transform_product( glm::tmat4x4<double>& transform, int nidx ) const ; 
+    void get_m2w_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const ; // expect reverse:false 
+    void get_w2m_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const ; // expect reverse:true 
 
     void get_nodes(std::vector<int>& nodes, const char* sub) const ;
     void get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const ;
@@ -168,7 +183,7 @@ struct stree
     void sortSubtrees(); 
     void factorize(); 
 
-    void add_inst( glm::tmat4x4<double>& tr, unsigned gas_idx ); 
+    void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, unsigned gas_idx ); 
     void add_inst(); 
     void save_inst(const char* fold) const ; 
 };
@@ -186,7 +201,8 @@ inline std::string stree::desc() const
     std::stringstream ss ;
     ss << "stree::desc"
        << " nds " << nds.size()
-       << " trs " << trs.size()
+       << " m2w " << m2w.size()
+       << " w2m " << w2m.size()
        << " digs " << digs.size()
        << " subs " << subs.size()
        << " soname " << soname.size()
@@ -282,6 +298,8 @@ inline std::string stree::desc_sub(const char* sub) const
     std::string s = ss.str();
     return s ; 
 }
+
+
 
 /**
 stree::Digest
@@ -447,6 +465,24 @@ inline int stree::find_lvid_node( const char* q_spec ) const
 }
 
 
+inline void stree::get_sub_sonames( std::vector<std::string>& sonames ) const 
+{
+    std::vector<std::string> subs ; 
+    subs_freq->get_keys(subs, FREQ_CUT ); 
+    for(unsigned i=0 ; i < subs.size() ; i++)
+    {
+        const char* sub = subs[i].c_str(); 
+        const char* soname_ = get_sub_soname(sub); 
+        sonames.push_back(soname_);  
+    }
+}
+
+inline const char* stree::get_sub_soname(const char* sub) const 
+{
+    int first_nidx = get_first(sub); 
+    return first_nidx == -1 ? nullptr : get_soname(first_nidx ) ; 
+}
+
 inline const char* stree::get_soname(int nidx) const
 {
     return nidx > -1 ? soname[nds[nidx].lvid].c_str() : "?" ;
@@ -472,11 +508,18 @@ inline int stree::get_copyno(int nidx) const
     return nidx > -1 ? nds[nidx].copyno : -1 ; 
 }
 
-inline const glm::tmat4x4<double>& stree::get_transform(int nidx) const 
+inline const glm::tmat4x4<double>& stree::get_m2w(int nidx) const 
 {
-    assert( nidx > -1 && nidx < trs.size()); 
-    return trs[nidx] ; 
+    assert( nidx > -1 && nidx < m2w.size()); 
+    return m2w[nidx] ; 
 }
+
+inline const glm::tmat4x4<double>& stree::get_w2m(int nidx) const 
+{
+    assert( nidx > -1 && nidx < w2m.size()); 
+    return w2m[nidx] ; 
+}
+
 
 inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx ) const
 {
@@ -489,24 +532,48 @@ inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx ) const
     std::reverse( ancestors.begin(), ancestors.end() );
 }
 
-inline void stree::get_transform_product( glm::tmat4x4<double>& transform, int nidx ) const 
+
+inline void stree::get_m2w_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const 
 {
     std::vector<int> nodes ; 
     get_ancestors(nodes, nidx); 
     nodes.push_back(nidx); 
-
+    unsigned num_nodes = nodes.size();
     glm::tmat4x4<double> xform(1.); 
-    for(unsigned i=0 ; i < nodes.size() ; i++ ) 
+
+    for(unsigned i=0 ; i < num_nodes ; i++ ) 
     {
-        int idx = nodes[i] ; 
-        const glm::tmat4x4<double>& t = get_transform(idx) ; 
+        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
+        const glm::tmat4x4<double>& t = get_m2w(idx) ; 
         xform *= t ; 
     }
     assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
     memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
 }
 
+/**
+stree::get_w2m_product
+-----------------------
 
+**/
+
+inline void stree::get_w2m_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const 
+{
+    std::vector<int> nodes ; 
+    get_ancestors(nodes, nidx); 
+    nodes.push_back(nidx); 
+    unsigned num_nodes = nodes.size();
+    glm::tmat4x4<double> xform(1.); 
+
+    for(unsigned i=0 ; i < nodes.size() ; i++ ) 
+    {
+        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
+        const glm::tmat4x4<double>& t = get_w2m(idx) ;  
+        xform *= t ; 
+    }
+    assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
+    memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
+}
 
 
 inline void stree::get_nodes(std::vector<int>& nodes, const char* sub) const
@@ -612,7 +679,8 @@ inline std::string stree::desc_ancestry(int nidx, bool show_sub) const
 inline void stree::save( const char* fold ) const 
 {
     NP::Write<int>(    fold, NDS, (int*)nds.data(),    nds.size(), snode::NV );
-    NP::Write<double>( fold, TRS, (double*)trs.data(), trs.size(), 4, 4 );
+    NP::Write<double>( fold, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
+    NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
     NP::WriteNames( fold, SONAME, soname );
     NP::WriteNames( fold, DIGS,   digs );
     NP::WriteNames( fold, SUBS,   subs );
@@ -625,9 +693,14 @@ inline void stree::load( const char* fold )
     nds.resize(a_nds->shape[0]);
     memcpy( (int*)nds.data(),    a_nds->cvalues<int>() ,    a_nds->arr_bytes() );
 
-    NP* a_trs = NP::Load(fold, TRS);
-    trs.resize(a_trs->shape[0]);
-    memcpy( (double*)trs.data(), a_trs->cvalues<double>() , a_trs->arr_bytes() );
+    NP* a_m2w = NP::Load(fold, M2W);
+    m2w.resize(a_m2w->shape[0]);
+    memcpy( (double*)m2w.data(), a_m2w->cvalues<double>() , a_m2w->arr_bytes() );
+
+    NP* a_w2m = NP::Load(fold, W2M);
+    w2m.resize(a_w2m->shape[0]);
+    memcpy( (double*)w2m.data(), a_w2m->cvalues<double>() , a_w2m->arr_bytes() );
+
 
     NP::ReadNames( fold, SONAME, soname );
     NP::ReadNames( fold, DIGS,   digs );
@@ -814,7 +887,7 @@ inline void stree::factorize()
     std::cout << "] stree::factorize " << std::endl ;
 }
 
-inline void stree::add_inst( glm::tmat4x4<double>& tr, unsigned gas_idx )
+inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, unsigned gas_idx )
 {
     unsigned ins_idx = inst.size();     // follow sqat4.h::setIdentity
     unsigned ias_idx = 0 ; 
@@ -825,15 +898,20 @@ inline void stree::add_inst( glm::tmat4x4<double>& tr, unsigned gas_idx )
     col3.z = ias_idx + 1 ; 
     col3.w = 0 ; 
 
-    strid::Encode(tr, col3 ); 
-    inst.push_back(tr);  
+    strid::Encode(tr_m2w, col3 );
+    strid::Encode(tr_w2m, col3 );
+ 
+    inst.push_back(tr_m2w);
+    iinst.push_back(tr_w2m);
+  
 }
 inline void stree::add_inst() 
 {
     const sfreq* sf = subs_freq ; 
 
-    glm::tmat4x4<double> tr(1.) ; 
-    add_inst(tr, 0u );  
+    glm::tmat4x4<double> tr_m2w(1.) ; 
+    glm::tmat4x4<double> tr_w2m(1.) ; 
+    add_inst(tr_m2w, tr_w2m, 0u );  
 
     unsigned num = sf->get_num(); 
     for(unsigned i=0 ; i < num ; i++)
@@ -860,20 +938,26 @@ inline void stree::add_inst()
         assert( int(nodes.size()) == freq );   
         for(unsigned j=0 ; j < nodes.size() ; j++)
         {
-            get_transform_product(tr, nodes[j]); 
-            add_inst(tr, gas_idx ); 
+            int nidx = nodes[j]; 
+            get_m2w_product(tr_m2w, nidx, false); 
+            get_w2m_product(tr_w2m, nidx, true ); 
+
+            add_inst(tr_m2w, tr_w2m, gas_idx ); 
         }
     }
 
-    strid::Narrow( inst_f4, inst ); 
+    strid::Narrow( inst_f4,   inst ); 
+    strid::Narrow( iinst_f4, iinst ); 
 }
 
 inline void stree::save_inst(const char* fold) const 
 {
     NP::Write(fold, "inst.npy",    (double*)inst.data(), inst.size(), 4, 4 ); 
     NP::Write(fold, "inst_f4.npy", (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
-}
 
+    NP::Write(fold, "iinst.npy",    (double*)iinst.data(), iinst.size(), 4, 4 ); 
+    NP::Write(fold, "iinst_f4.npy", (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
+}
 
 
 

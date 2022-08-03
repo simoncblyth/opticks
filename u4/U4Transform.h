@@ -16,7 +16,10 @@ struct U4Transform
     static void GetFrameTransform( glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) ; 
 
     template<typename T>
-    static void Convert(glm::tmat4x4<T>& dst,  const G4Transform3D& src ); 
+    static void Convert_RotateThenTranslate(glm::tmat4x4<T>& dst,  const G4Transform3D& src ); 
+
+    template<typename T>
+    static void Convert_TranslateThenRotate(glm::tmat4x4<T>& dst,  const G4Transform3D& src ); 
 
     template<typename T>
     static unsigned Check(const std::array<T,16>& a); 
@@ -44,19 +47,34 @@ void U4Transform::GetObjectTransform(glm::tmat4x4<double>& tr, const G4VPhysical
     G4RotationMatrix rot = pv->GetObjectRotationValue() ; 
     G4ThreeVector    tla = pv->GetObjectTranslation() ;
     G4Transform3D    tra(rot,tla);
-    Convert(tr, tra);
+    Convert_RotateThenTranslate(tr, tra);
 }
 void U4Transform::GetFrameTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) 
 {
     const G4RotationMatrix* rotp = pv->GetFrameRotation() ;
     G4ThreeVector    tla = pv->GetFrameTranslation() ;
     G4Transform3D    tra(rotp ? *rotp : G4RotationMatrix(),tla);
-    Convert(tr, tra ); 
+    Convert_TranslateThenRotate(tr, tra ); 
 }
+
+/**
+
+U4Transform::Convert_RotateThenTranslate
+-------------------------------------------
+
+The canonical form of 4x4 transform with the translation visible 
+in the last row assumes that the rotation is done first followed by 
+the translation. This ordering is appropriate for model2world "m2w" transforms
+from "GetObjectTransform". 
+
+BUT that order is not appropriate for world2model : in that case need the converse.
+Translation first followed by rotation. 
+
+**/
+
 template<typename T>
-void U4Transform::Convert(glm::tmat4x4<T>& d,  const G4Transform3D& s ) // static
+void U4Transform::Convert_RotateThenTranslate(glm::tmat4x4<T>& d,  const G4Transform3D& s ) // static
 {
-    // M44T
     T zero(0.); 
     T one(1.); 
     std::array<T, 16> a = {{
@@ -69,6 +87,63 @@ void U4Transform::Convert(glm::tmat4x4<T>& d,  const G4Transform3D& s ) // stati
     assert( n == 0);
     memcpy( glm::value_ptr(d), a.data(), sizeof(T)*16 );  
 }
+
+/**
+U4Transform::Convert_TranslateThenRotate
+-------------------------------------------
+
+See ana/translate_rotate.py for sympy demo::
+
+    rxx⋅tx + rxy⋅ty + rxz⋅tz  
+
+    ryx⋅tx + ryy⋅ty + ryz⋅tz  
+
+    rzx⋅tx + rzy⋅ty + rzz⋅tz
+
+**/
+
+template<typename T>
+void U4Transform::Convert_TranslateThenRotate(glm::tmat4x4<T>& d,  const G4Transform3D& s ) // static
+{
+    T rxx = s.xx() ; 
+    T rxy = s.xy() ; 
+    T rxz = s.xz() ; 
+
+    T ryx = s.yx() ; 
+    T ryy = s.yy() ; 
+    T ryz = s.yz() ; 
+
+    T rzx = s.zx() ; 
+    T rzy = s.zy() ; 
+    T rzz = s.zz() ; 
+     
+    T tx = s.dx() ;
+    T ty = s.dy() ; 
+    T tz = s.dz() ; 
+
+    T RTx =  rxx*tx + rxy*ty + rxz*tz  ; 
+    T RTy =  ryx*tx + ryy*ty + ryz*tz  ; 
+    T RTz =  rzx*tx + rzy*ty + rzz*tz  ; 
+
+    T zero(0.); 
+    T one(1.); 
+    std::array<T, 16> a = {{
+             rxx   , ryx  , rzx  , zero ,  
+             rxy   , ryy  , rzy  , zero ,
+             rxz   , ryz  , rzz  , zero ,    
+             RTx   , RTy  , RTz  , one   }} ; 
+
+    unsigned n = Check(a);
+    assert( n == 0);
+    memcpy( glm::value_ptr(d), a.data(), sizeof(T)*16 );  
+}
+
+
+
+
+
+
+
 
 template<typename T>
 unsigned U4Transform::Check(const std::array<T,16>& a) // static

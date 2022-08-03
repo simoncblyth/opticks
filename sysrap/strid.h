@@ -43,8 +43,22 @@ struct strid
     template<typename T, typename S>
     static std::string Desc(  const glm::tmat4x4<T>& tr);
 
+    template<typename T>
+    static std::string Desc_(  const glm::tmat4x4<T>& tr);
+
+    template<typename T>
+    static std::string Desc_(  const char* a_label, const char* b_label, const glm::tmat4x4<T>& a, const glm::tmat4x4<T>& b );
+
+    template<typename T>
+    static std::string Desc_(  const char* a_label, const char* b_label, const char* c_label, 
+                               const glm::tmat4x4<T>& a, const glm::tmat4x4<T>& b, const glm::tmat4x4<T>& c );
+
     static void Narrow( glm::tmat4x4<float>& dst,  const glm::tmat4x4<double>& src ); 
     static void Narrow( std::vector<glm::tmat4x4<float>>& dst,  const std::vector<glm::tmat4x4<double>>& src ); 
+
+    template<typename T>
+    static T DiffFromIdentity( const glm::tmat4x4<T>& tr ); 
+
 }; 
 
 
@@ -124,6 +138,100 @@ inline bool strid::IsClear( const glm::tmat4x4<T>& tr )
          *(tr00+4*1+3) == T(0.) && 
          *(tr00+4*2+3) == T(0.) && 
          *(tr00+4*3+3) == T(1.) ; 
+}
+
+
+template<typename T>
+inline std::string strid::Desc_( const glm::tmat4x4<T>& tr )
+{
+    const T* tr00 = glm::value_ptr(tr) ; 
+    std::stringstream ss ; 
+    for(unsigned r=0 ; r < 4 ; r++) for(unsigned c=0 ; c < 4 ; c++)
+    { 
+        unsigned i = r*4 + c ; 
+        if( c == 0 ) ss << std::endl ;
+        ss << std::fixed << std::setw(10) << std::setprecision(3) << tr00[i] << " " ;  
+        if( i == 15 ) ss << std::endl ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+template<typename T>
+inline std::string strid::Desc_(  const char* a_label, const char* b_label, const glm::tmat4x4<T>& a, const glm::tmat4x4<T>& b )
+{
+    const T* aa = glm::value_ptr(a) ; 
+    const T* bb = glm::value_ptr(b) ; 
+    unsigned num = 2 ; 
+
+    std::stringstream ss ; 
+
+    ss << std::setw(10) << a_label << std::setw(40) << " " << std::setw(10) << b_label << std::endl ; 
+
+    for(unsigned r=0 ; r < 4 ; r++) 
+    for(unsigned t=0 ; t < num ; t++) 
+    for(unsigned c=0 ; c < 4 ; c++)
+    { 
+        const T* vv = nullptr ; 
+        switch(t)
+        {
+           case 0: vv = aa ; break ; 
+           case 1: vv = bb ; break ; 
+        }
+        unsigned i = r*4 + c ; 
+        if( c == 0 && t == 0) ss << std::endl ;
+        ss << std::fixed << std::setw(10) << std::setprecision(3) << vv[i] << " " ;  
+        if( c == 3 && t == 0) ss << std::setw(10) << " " ; 
+        if( i == 15 && t == num - 1) ss << std::endl ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+template<typename T>
+inline std::string strid::Desc_(
+    const char* a_label, 
+    const char* b_label, 
+    const char* c_label, 
+    const glm::tmat4x4<T>& a, 
+    const glm::tmat4x4<T>& b,
+    const glm::tmat4x4<T>& c
+   )
+{
+    const T* aa = glm::value_ptr(a) ; 
+    const T* bb = glm::value_ptr(b) ; 
+    const T* cc = glm::value_ptr(c) ; 
+    unsigned num = 3 ; 
+    std::stringstream ss ; 
+    ss 
+        << std::setw(10) << a_label << std::setw(40) << " " 
+        << std::setw(10) << b_label << std::setw(40) << " " 
+        << std::setw(10) << c_label << std::setw(40) << " " 
+        << std::endl
+        ; 
+
+    for(unsigned r=0 ; r < 4 ; r++) 
+    for(unsigned t=0 ; t < num ; t++) 
+    for(unsigned c=0 ; c < 4 ; c++)
+    { 
+        unsigned i = r*4 + c ; 
+        const T* vv = nullptr ; 
+        switch(t)
+        {
+           case 0: vv = aa ; break ; 
+           case 1: vv = bb ; break ; 
+           case 2: vv = cc ; break ; 
+        }
+        if( c == 0 && t == 0) ss << std::endl ;
+        ss << std::fixed << std::setw(10) << std::setprecision(3) << vv[i] << " " ;  
+        if( c == 3 && t < num - 1 )  ss << std::setw(10) << " " ; 
+        if( i == 15 && t == num - 1) ss << std::endl ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 
@@ -213,4 +321,18 @@ inline void strid::Narrow( std::vector<glm::tmat4x4<float>>& dst_,  const std::v
     }
 }
 
+template<typename T>
+inline T strid::DiffFromIdentity(const glm::tmat4x4<T>& tr)
+{
+    const T* tt = glm::value_ptr(tr); 
+    T max_delta = T(0.) ; 
+    for(int r=0 ; r < 4 ; r++) for(int c=0 ; c < 4 ; c++)
+    {
+        int i = r*4 + c ; 
+        T id = r == c ? T(1.) : T(0.) ; 
+        T delta = std::abs( tt[i] - id ) ; 
+        if(delta > max_delta) max_delta = delta ; 
+    }
+    return max_delta ; 
+}
 

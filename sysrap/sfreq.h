@@ -37,6 +37,8 @@ struct sfreq
     VSU vsu ; 
 
     unsigned get_num() const ; 
+    void get_keys(std::vector<std::string>& keys, int freq_cut) const ; 
+
     const char* get_key(unsigned idx) const ; 
 
     int get_freq(unsigned idx) const ; 
@@ -80,6 +82,17 @@ inline unsigned sfreq::get_num() const
 {
     return vsu.size();  
 } 
+
+inline void sfreq::get_keys(std::vector<std::string>& keys, int freq_cut) const
+{
+    for(unsigned i=0 ; i < vsu.size() ; i++)
+    {
+        const char* key = get_key(i); 
+        int freq  = get_freq(i); 
+        if(freq > freq_cut) keys.push_back(key) ;  
+    }
+}
+
 
 inline const char* sfreq::get_key(unsigned idx) const
 {

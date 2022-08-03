@@ -12,6 +12,7 @@ ssys.h
 struct ssys
 {
     static std::string popen(const char* cmd, bool chomp=true, int* rc=nullptr);      
+    static const char* getenvvar(const char* ekey, const char* fallback); 
     static int getenvint(const char* ekey, int fallback);  
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);  
 }; 
@@ -38,6 +39,11 @@ inline std::string ssys::popen(const char* cmd, bool chomp, int* rc)
     return s ; 
 }
 
+inline const char* ssys::getenvvar(const char* ekey, const char* fallback)
+{
+    char* val = getenv(ekey);
+    return val ? val : fallback ; 
+}
 inline int ssys::getenvint(const char* ekey, int fallback)
 {
     char* val = getenv(ekey);
