@@ -10,10 +10,10 @@ as it has a complete geometry model in the middle::
 How to handle double precision instance transforms in CSGFoundry ?
 ----------------------------------------------------------------------
 
-* collect and persist in double precision
-* narrow to float only transiently in memory just before uploading 
+* DONE in U4Tree/stree : collect and persist in double precision
+* strid::Narrow : narrows to float only transiently in memory : to use just before uploading 
 * so the float precision transforms only actually get used on device  
-* dqat4 sibling of qat4 for use on host 
+* dqat4 sibling of qat4 for use on host : didnt do that are using strid.h  
 
 
 Explorations 
@@ -46,13 +46,88 @@ Tree background
 
 * https://hbfs.wordpress.com/2016/09/06/serializing-trees/#1
 
+As is often the case these focus on binary trees but the more general n-ary 
+trees is what is needed. 
+
+U4Tree::convertNodes_r serializes the Geant4 tree of volumes into stree.h, which
+contains a postorder array of snode.h linked by firstchild/next_sibling/parent indices. 
 
 
-TODO : compare stree_test with GGeo 
----------------------------------------
 
-* need to arrange to get the same set of repeats in same order and verify 
-  that the transforms match 
+stree_test.sh : After fixing the paired m2w w2m compare again the f.inst with f.iinst
+----------------------------------------------------------------------------------------
+
+sysrap/tests/stree_test.py::
+
+     12 def check_inverse_pair(f, a_="inst", b_="iinst" ):
+     13     """
+     14     :param f: Fold instance
+     15      
+     16     CAUTION : this clears the identity info prior to checking transforms
+     17     """
+     18     a = getattr(f, a_)
+     19     b = getattr(f, b_)
+     20     
+     21     a[:,:,3] = [0.,0.,0.,1.]
+     22     b[:,:,3] = [0.,0.,0.,1.]
+     23     
+     24     assert len(a) == len(b)
+     25     
+     26     chk = np.zeros( (len(a), 4, 4) )
+     27     for i in range(len(a)): chk[i] = np.dot( a[i], b[i] )
+     28     chk -= np.eye(4)
+     29     
+     30     print("check_inverse_pair :  %s %s " % (a_, b_))
+     31     print(chk.min(), chk.max())
+
+     35 def compare_f_with_cf(f, cf ):
+     36     print("compare_f_with_cf")
+     37     eprint("(cf.inst - f.inst_f4).max()", globals(), locals())  
+     38     eprint("(cf.inst - f.inst_f4).min()", globals(), locals())  
+
+
+::
+
+    cd ~/opticks/sysrap/tests
+    ./stree_test.sh ana 
+
+    ...
+
+    check_inverse_pair :  inst iinst 
+    -7.275957614183426e-12 7.275957614183426e-12
+
+    check_inverse_pair :  inst_f4 iinst_f4 
+    -0.00390625 0.00390625
+
+This shows the U4Tree/stree inst/iinst transforms are close to being inverse pairs at 7e-12 level.
+But the float precision f4 versions deviate from identity at 0.004 level.  
+
+Also comparing the old GGeo cf.inst with the narrowed stree f.inst_f4 matches at 1e-3 level::
+
+    compare_f_with_cf
+    (cf.inst - f.inst_f4).max()                        : 0.0009765625
+    (cf.inst - f.inst_f4).min()                        : -0.0009765625
+
+::
+
+    In [3]: (cf.inst - f.inst_f4).max()                                                                                                                         
+    Out[3]: 0.0009765625
+
+    In [4]: (cf.inst - f.inst_f4).min()                                                                                                                         
+    Out[4]: -0.0009765625
+
+
+
+
+DONE : U4Tree/stree factorization now matches the GGeo/GInstancer factorization with consistent transforms
+-------------------------------------------------------------------------------------------------------------
+
+
+Initially the sBar showed up due to a difference in instancing criteria
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* must get same set of repeats in same order and veri
+
 
 ::
 
@@ -73,9 +148,8 @@ TODO : compare stree_test with GGeo
         9 : d4f5974d740cd7c78613c9d8563878c7 :   504 de:( 7  7) 1st:    15 sPanel0x71a8d90
 
 
-
-* sBar is different ? Looks like instance inside instance inside instance ...
-* this is why need to check more than just the parent for contained repeat 
+* sBar was different ? Difficulty from the instance inside instance inside instance ... (6 levels)
+* changing stree::is_contained_repeat criteria succeded to get the factorizations to match 
 
 ::
 
@@ -96,7 +170,6 @@ TODO : compare stree_test with GGeo
 
 * note that sBar is inside sPanel 
 
-
 HMM : the totals "63 sWall0x71a8b30" are for entire geometry...
 
 * need to examine those within single subtrees and see the extents and transforms to work out whats
@@ -107,9 +180,9 @@ How to handle repeats inside repeats ? Which level to treat as the factor ?
 -------------------------------------------------------------------------------
 
 * for now : just need to duplicate what GGeo did
-* but potentially this is an area to optimize based on the extent of the different choices
+* but potentially this is an area to optimize based on the extents of the different choices
 
-  * compound solid instances must not be too large : as that prevents acceleration structure from working 
+  * compound solid instances must not be too large : as that prevents acceleration structure from accelerating
   * also presumbly should not be too small either : due to instancing overheads ?
   * where to draw the line requires performance measurement
 
@@ -189,7 +262,7 @@ DONE: the "130:sPanel" : the 130 is 1+the number of progeny of each sPanel::
 
 
 
-TODO : look at how CSG_GGeo serializes the transforms into CSG and mimic that for comparison
+DONE : look at how CSG_GGeo serializes the transforms into CSG and mimic that for comparison
 ----------------------------------------------------------------------------------------------
 
 
@@ -198,6 +271,8 @@ TODO : look at how CSG_GGeo serializes the transforms into CSG and mimic that fo
     cd ~/opticks/sysrap/tests
     ./stree_test.sh ana 
 
+
+Initial discrepancy caused by use of a different source geometry::
 
     In [22]: np.where( cf.inst.view(np.uint32)[:,:,3] != t.inst_f4.view(np.uint32)[:,:,3] )
     Out[22]: (array([38213, 38214, 38215]), array([1, 1, 1]))
@@ -244,7 +319,6 @@ TODO : look at how CSG_GGeo serializes the transforms into CSG and mimic that fo
 
 
 * this looks like a source geometry difference in PMT types 
-* TODO: redo comparison with the same source geometry 
 
 ::
 
@@ -264,8 +338,12 @@ TODO : look at how CSG_GGeo serializes the transforms into CSG and mimic that fo
 
 
 
-After ensuring common  source geometry using bin/COMMON.sh from u4/tests/U4TreeTest.sh : the inst are matching : deviations at 1e-4 level 
+stree_test.sh : comparing stree and GGeo factorizations 
 -------------------------------------------------------------------------------------------------------------------------------------------
+
+After ensuring common source geometry using bin/COMMON.sh from u4/tests/U4TreeTest.sh
+
+* the cf.inst are matching f.inst_f4 : with deviations at 1e-4 level (poor because the cf.inst are float)
 
 Are matching until get down to 1e-4 level::
 
@@ -348,8 +426,8 @@ Deviations all in sPanel instance XY translation::
 
 
 
-Paired m2w and w2m transforms
---------------------------------
+Paired m2w and w2m transforms : initially not inverses due to not using U4Transform::Convert_TranslateThenRotate
+-------------------------------------------------------------------------------------------------------------------
 
 ::
 
@@ -515,7 +593,7 @@ and Convert_TranslateThenRotate with GetFrameTransform::
 
 ana/translate_rotate.py::
 
-    In [2]: run translate_rotate.py                                                                                                                                                
+    In [2]: run translate_rotate.py
 
     R
     ⎡rxx  ryx  rzx  0⎤
@@ -535,7 +613,9 @@ ana/translate_rotate.py::
     ⎢             ⎥
     ⎣tx  ty  tz  1⎦
 
+
     T*R : row3 has translation and rotation mixed up : ie translation first and then rotation which depends  
+
     ⎡          rxx                       ryx                       rzx             0⎤
     ⎢                                                                               ⎥
     ⎢          rxy                       ryy                       rzy             0⎥
@@ -544,7 +624,10 @@ ana/translate_rotate.py::
     ⎢                                                                               ⎥
     ⎣rxx⋅tx + rxy⋅ty + rxz⋅tz  ryx⋅tx + ryy⋅ty + ryz⋅tz  rzx⋅tx + rzy⋅ty + rzz⋅tz  1⎦
 
+
+
     R*T : familiar row3 as translation : that means rotate then translate 
+
     ⎡rxx  ryx  rzx  0⎤
     ⎢                ⎥
     ⎢rxy  ryy  rzy  0⎥
@@ -572,7 +655,6 @@ ana/translate_rotate.py::
     [tx⋅w + x  ty⋅w + y  tz⋅w + z  w]
 
     In [3]:                                                                                                                                                                        
-
 
 
 

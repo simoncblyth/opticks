@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+"""
+stree.py
+==========
+
+TODO: improve stree.py repr 
+
+"""
 
 import os, numpy as np, logging
 log = logging.getLogger(__name__)
@@ -58,7 +65,7 @@ class stree(object):
 
     def find_lvid(self, q_soname, starting=True):
         """
-        Pedestrian way to find the a string in a list 
+        Pedestrian way to find string in a list 
         """
         lines = self.f.soname.lines
         lvid = -1  
@@ -88,7 +95,7 @@ class stree(object):
     def find_lvid_nodes(self, arg):
         """
         :param arg: integer lvid or string soname used to obtain lvid 
-        :return: array of indices of all nodes with the specified lvid   
+        :return: array of indices of all nodes with the specified lvid index or solid name  
         """
         if type(arg) in [int, np.int32, np.int64, np.uint32, np.uint64]:
             lvid = int(arg)
