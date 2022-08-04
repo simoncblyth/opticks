@@ -15,6 +15,7 @@
 
 #include "SEventConfig.hh"
 #include "U4GDML.h"
+#include "U4Tree.h"
 #include "X4Geo.hh"
 
 #include "CSGFoundry.h"
@@ -42,7 +43,8 @@ void G4CXOpticks::Finalize() // static
 
 G4CXOpticks::G4CXOpticks()
     :
-    id(nullptr),
+    sd(nullptr),
+    tr(nullptr),
     wd(nullptr),
     gg(nullptr),
     fd(nullptr), 
@@ -62,7 +64,8 @@ std::string G4CXOpticks::desc() const
 {
     std::stringstream ss ; 
     ss << "G4CXOpticks::desc"
-       << " se " << se 
+       << " sd " << sd 
+       << " tr " << tr 
        << " wd " << wd 
        << " gg " << gg
        << " fd " << fd
@@ -81,9 +84,9 @@ G4CXOpticks::setSensor
 
 **/
 
-void G4CXOpticks::setSensor(const U4Sensor* se_ )
+void G4CXOpticks::setSensor(const U4Sensor* sd_ )
 {
-    se = se_ ; 
+    sd = sd_ ; 
 }
 
 
@@ -137,10 +140,20 @@ void G4CXOpticks::setGeometry(const char* gdmlpath)
     const G4VPhysicalVolume* world = U4GDML::Read(gdmlpath);
     setGeometry(world); 
 }
-void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world, const U4InstanceIdentifier* identifier )
+
+/**
+G4CXOpticks::setGeometry
+-------------------------
+
+U4Tree/stree aspiring to become convertable to CSGFoundry and replace GGeo 
+
+**/
+
+void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
 {
     LOG(LEVEL) << " G4VPhysicalVolume world " << world ; 
     wd = world ; 
+    tr = U4Tree::Create(world) ;
 #ifdef __APPLE__
     return ;  
 #endif

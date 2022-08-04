@@ -9,52 +9,52 @@
 const char* FOLD = SPath::Resolve("$TMP/U4TreeTest", DIRPATH); 
 
 
-void test_saveload_get_children(const stree& tree0, const stree& tree1, int nidx )
+void test_saveload_get_children(const stree* tree0, const stree* tree1, int nidx )
 {
     std::vector<int> children0 ; 
     std::vector<int> children1 ; 
-    tree0.get_children(children0, nidx); 
-    tree1.get_children(children1, nidx); 
+    tree0->get_children(children0, nidx); 
+    tree1->get_children(children1, nidx); 
 
     if( nidx % 10000 == 0 )
     std::cout << " nidx " << nidx << " children " << stree::Desc(children0) << std::endl ; 
 
     assert( stree::Compare(children0, children1) == 0 ); 
 }
-void test_saveload_get_children(const stree& tree0, const stree& tree1)
+void test_saveload_get_children(const stree* tree0, const stree* tree1)
 {
     std::cout << "[ test_saveload_get_children " << std::endl ; 
-    assert( tree0.nds.size() == tree1.nds.size() ); 
-    for(int nidx=0 ; nidx < int(tree0.nds.size()) ; nidx++)
+    assert( tree0->nds.size() == tree1->nds.size() ); 
+    for(int nidx=0 ; nidx < int(tree0->nds.size()) ; nidx++)
         test_saveload_get_children(tree0, tree1, nidx ) ; 
     std::cout << "] test_saveload_get_children " << std::endl ; 
 }
 
-void test_saveload_get_progeny(const stree& tree0, const stree& tree1)
+void test_saveload_get_progeny(const stree* tree0, const stree* tree1)
 {
     std::cout << "test_saveload_get_progeny_r " << std::endl ; 
     int nidx = 0 ; 
     std::vector<int> progeny0 ; 
     std::vector<int> progeny1 ; 
-    tree0.get_progeny(progeny0, nidx); 
-    tree1.get_progeny(progeny1, nidx); 
+    tree0->get_progeny(progeny0, nidx); 
+    tree1->get_progeny(progeny1, nidx); 
     assert( stree::Compare(progeny0, progeny1) == 0 ); 
     std::cout << " nidx " << nidx << " progeny " << stree::Desc(progeny0) << std::endl ; 
 }
 
-void test_saveload(const stree& st0)
+void test_saveload(const stree* st0)
 {
     std::cout << "[ st0.save " << std::endl ; 
-    st0.save(FOLD); 
-    std::cout << "] st0.save  " << st0.desc() << std::endl ; 
+    st0->save(FOLD); 
+    std::cout << "] st0.save  " << st0->desc() << std::endl ; 
 
     stree st1 ; 
     std::cout << "[ st1.load " << std::endl ; 
     st1.load(FOLD);  
     std::cout << "] st1.load " << st1.desc() << std::endl ; 
 
-    test_saveload_get_children(st0, st1); 
-    test_saveload_get_progeny( st0, st1); 
+    test_saveload_get_children(st0, &st1); 
+    test_saveload_get_progeny( st0, &st1); 
 }
 
 void test_load(const char* fold)
@@ -67,10 +67,10 @@ void test_load(const char* fold)
 }
 
 
-void test_get_pv_0(const U4Tree& tree)
+void test_get_pv_0(const U4Tree* tree)
 {
     std::cout << "[ test_get_pv_0 " << std::endl ; 
-    const stree* st = tree.st ; 
+    const stree* st = tree->st ; 
 
     const char* q_spec0 = SSys::getenvvar("SPEC0", "HamamatsuR12860sMask_virtual:0:0" ); 
     const char* q_spec1 = SSys::getenvvar("SPEC1", "HamamatsuR12860sMask_virtual:0:-1" );
@@ -78,14 +78,14 @@ void test_get_pv_0(const U4Tree& tree)
     int nidx0 = st->find_lvid_node(q_spec0 );   
     int nidx1 = st->find_lvid_node(q_spec1 );   
 
-    const G4VPhysicalVolume* const pv0_ = tree.get_pv(nidx0) ;  
-    const G4VPhysicalVolume* const pv1_ = tree.get_pv(nidx1) ;  
+    const G4VPhysicalVolume* const pv0_ = tree->get_pv(nidx0) ;  
+    const G4VPhysicalVolume* const pv1_ = tree->get_pv(nidx1) ;  
 
     const G4PVPlacement* pv0 = dynamic_cast<const G4PVPlacement*>(pv0_) ; 
     const G4PVPlacement* pv1 = dynamic_cast<const G4PVPlacement*>(pv1_) ; 
 
-    int nidx0_ = tree.get_nidx(pv0) ; 
-    int nidx1_ = tree.get_nidx(pv1) ; 
+    int nidx0_ = tree->get_nidx(pv0) ; 
+    int nidx1_ = tree->get_nidx(pv1) ; 
 
     assert( nidx0_ == nidx0 ); 
     assert( nidx1_ == nidx1 ); 
@@ -93,8 +93,8 @@ void test_get_pv_0(const U4Tree& tree)
     int cp0_ = pv0 ? pv0->GetCopyNo() : -1 ; 
     int cp1_ = pv1 ? pv1->GetCopyNo() : -1 ; 
 
-    int cp0 = tree.get_pv_copyno(nidx0); 
-    int cp1 = tree.get_pv_copyno(nidx1); 
+    int cp0 = tree->get_pv_copyno(nidx0); 
+    int cp1 = tree->get_pv_copyno(nidx1); 
 
     assert( cp0_ == cp0 ); 
     assert( cp1_ == cp1 ); 
@@ -206,14 +206,14 @@ PMTs are distributed::
 
 **/
 
-void test_get_pv_1(const U4Tree& tree, const char* q_soname)
+void test_get_pv_1(const U4Tree* tree, const char* q_soname)
 {
     std::cout << "[ test_get_pv_1 " << std::endl ; 
 
     unsigned edge = SSys::getenvunsigned("EDGE", 10); 
 
     std::vector<int> nodes ; 
-    tree.st->find_lvid_nodes(nodes, q_soname );  
+    tree->st->find_lvid_nodes(nodes, q_soname );  
     std::cout << " q_soname " << q_soname << " nodes.size " << nodes.size() << std::endl ; 
 
     int copyno = -1 ; 
@@ -222,9 +222,9 @@ void test_get_pv_1(const U4Tree& tree, const char* q_soname)
     {
         int nidx = nodes[i] ; 
         prev_copyno = copyno ;  
-        copyno = tree.get_pv_copyno(nidx);  
+        copyno = tree->get_pv_copyno(nidx);  
 
-        int copyno_0 = tree.st->get_copyno(nidx); 
+        int copyno_0 = tree->st->get_copyno(nidx); 
         assert( copyno == copyno_0 ); 
 
         if( i < edge || (i > (nodes.size() - edge))) 
@@ -243,15 +243,17 @@ void test_get_pv_1(const U4Tree& tree, const char* q_soname)
     std::cout << "] test_get_pv_1 " << std::endl ; 
 }
 
-void test_get_pv_1(const U4Tree& tree)
+void test_get_pv_1(const U4Tree* tree)
 {
-    test_get_pv_1(tree, "HamamatsuR12860sMask_virtual" ); 
-    test_get_pv_1(tree, "NNVTMCPPMTsMask_virtual"  ); 
-    test_get_pv_1(tree, "mask_PMT_20inch_vetosMask_virtual" ); 
-    test_get_pv_1(tree, "PMT_3inch_pmt_solid" ); 
+    std::vector<std::string> sub_sonames ; 
+    tree->st->get_sub_sonames(sub_sonames); 
+  
+    for(unsigned i=0 ; i < sub_sonames.size() ; i++)
+    {
+        const char* soname = sub_sonames[i].c_str();  
+        test_get_pv_1(tree, soname ); 
+    }
 }
-
-
 
 int main(int argc, char** argv)
 {
@@ -263,16 +265,11 @@ int main(int argc, char** argv)
     if( path == nullptr ) return 0 ; 
 
     G4VPhysicalVolume* world = U4GDML::Read(path) ;  
-
-    stree st ; 
-    U4Tree tree(&st, world) ;
-
-    st.factorize(); 
-
-    st.save(FOLD); 
+    U4Tree* tree = U4Tree::Create(world) ; 
+    tree->st->save(FOLD); 
 
     //test_get_pv_0(tree); 
-    //test_get_pv_1(tree); 
+    test_get_pv_1(tree); 
 
     return 0 ;  
 }

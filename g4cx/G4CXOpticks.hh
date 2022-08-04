@@ -11,14 +11,15 @@ and that needs the upload of QSim components first ?
 
 **/
 
+struct U4Sensor ; 
+struct U4Tree ; 
 class G4VPhysicalVolume ;  
 
-class GGeo ; 
+class  GGeo ; 
 struct CSGFoundry ; 
 struct CSGOptiX ; 
 struct QSim ; 
 struct SEvt ; 
-struct U4InstanceIdentifier ; 
 
 #include "plog/Severity.h"
 #include "G4CX_API_EXPORT.hh"
@@ -30,10 +31,11 @@ struct G4CX_API G4CXOpticks
     static G4CXOpticks* Get(); 
     static void Finalize(); 
 
-    const U4Sensor* se ; 
+    const U4Sensor* sd ; 
+    const U4Tree*   tr ;
     const G4VPhysicalVolume* wd ; 
 
-    const GGeo*             gg ;
+    const GGeo* gg ;
     CSGFoundry* fd ; 
     CSGOptiX*   cx ; 
     QSim*       qs ; 
@@ -44,7 +46,7 @@ struct G4CX_API G4CXOpticks
     static std::string Desc();
     std::string desc() const ; 
 
-    void setSensor(const U4Sensor* se );
+    void setSensor(const U4Sensor* sd );
 
     void setGeometry(); 
     void setGeometry(const char* gdmlpath);

@@ -175,6 +175,11 @@ TODO: check this is U4TreeTest.cc::
     ./Simulation/DetSimV2/PMTSim/src/MCP20inchPMTManager.cc:    inner1_log->SetSensitiveDetector(m_detector);
 
 
+Handling GDML dropping SD
+---------------------------
+
+* could arrange for GDML sidecar with the persisted stree 
+
 
 Old way sensor_placements
 ----------------------------

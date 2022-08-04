@@ -26,8 +26,11 @@ U4Tree.h : explore minimal approach to geometry translation
 
 struct U4Tree
 {
+    static U4Tree* Create( const G4VPhysicalVolume* const top ); 
+
     stree* st ; 
     const G4VPhysicalVolume* const top ; 
+    int sensorCount ; 
     std::map<const G4LogicalVolume* const, int> lvidx ;
     std::vector<const G4VPhysicalVolume*> pvs ; 
 
@@ -48,11 +51,22 @@ struct U4Tree
 }; 
 
 
+U4Tree* U4Tree::Create( const G4VPhysicalVolume* const top ) 
+{
+    std::cout << "[ U4Tree::Create " << std::endl ; 
+    stree* st = new stree ; 
+    U4Tree* tree = new U4Tree(st, top) ;
+    st->factorize(); 
+    std::cout << "] U4Tree::Create " << std::endl ; 
+    return tree ; 
+}
+
 
 inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_)
     :
     st(st_),
-    top(top_)
+    top(top_),
+    sensorCount(0)
 {
     if(top == nullptr) return ; 
     convertSolids();
@@ -110,7 +124,6 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ;  
 
 
-
     int num_child = int(lv->GetNoDaughters()) ;  
     int lvid = lvidx[lv] ; 
 
@@ -144,6 +157,9 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     nd.next_sibling = -1 ; 
     nd.lvid = lvid ; 
     nd.copyno = copyno ; 
+    nd.sensor = sd ? sensorCount : -1 ; 
+    if(sd) sensorCount += 1 ; 
+
 
     st->nds.push_back(nd); 
 

@@ -50,6 +50,9 @@ set(HEADERS
     U4Stack.h
     U4PhotonInfo.h
     U4GDML.h
+    U4Transform.h
+    U4Tree.h
+    U4Sensor.h
     U4SolidMaker.hh
     U4SolidTree.hh
     U4Material.hh
@@ -58,6 +61,8 @@ set(HEADERS
     U4OpBoundaryProcess.h
     U4StepPoint.hh
     U4Random.hh
+     
+
     InstrumentedG4OpBoundaryProcess.hh
 )
 

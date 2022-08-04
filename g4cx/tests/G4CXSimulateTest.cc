@@ -25,6 +25,8 @@ and get the bnd.npy arrays that way.
 #include "Opticks.hh"   
 #include "G4CXOpticks.hh"
 #include "U4Sensor.h"
+#include "G4PVPlacement.hh"
+
 
 struct ExampleSensor : public U4Sensor
 {
@@ -40,7 +42,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
     Opticks::Configure(argc, argv, "--gparts_transform_offset --allownokey" );  
 
-    SEventConfig::SetRGModeSimulate();    // HMM: maybe discern from the simulate/simtrace/render call ? is it needed ahead of that ?
+    SEventConfig::SetRGModeSimulate();    
     SEventConfig::SetStandardFullDebug(); // controls which and dimensions of SEvt arrays 
 
     G4CXOpticks gx ;  
