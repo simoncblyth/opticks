@@ -24,6 +24,16 @@ and get the bnd.npy arrays that way.
 #include "SEventConfig.hh"
 #include "Opticks.hh"   
 #include "G4CXOpticks.hh"
+#include "U4Sensor.h"
+
+struct ExampleSensor : public U4Sensor
+{
+    // In reality would need ctor argument eg junoSD_PMT_v2 to lookup real values 
+    unsigned getId(           const G4PVPlacement* pv) const { return pv->GetCopyNo() ; }   
+    float getEfficiency(      const G4PVPlacement* pv) const { return 1. ; }
+    float getEfficiencyScale( const G4PVPlacement* pv) const { return 1. ; }
+}; 
+
 
 int main(int argc, char** argv)
 {

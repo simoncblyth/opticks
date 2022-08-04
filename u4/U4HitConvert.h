@@ -1,4 +1,12 @@
 #pragma once
+/**
+U4HitConvert.h
+=================
+
+See: u4/tests/U4HitTest.cc
+
+
+**/
 
 #include "scuda.h"
 #include "sphoton.h"

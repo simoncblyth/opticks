@@ -341,6 +341,20 @@ SPHOTON_METHOD void sphoton::transform_float( const glm::tmat4x4<float>& tr, boo
     transform(trd, normalize ); 
 }
 
+/**
+sphoton::transform
+--------------------
+
+Applies a double precision transform to float precision sphoton 
+with Tran<double>::ApplyToFloat by temporarily widening the sphoton 
+pos/mom/pol in order to do the matrix multiplication in double precision 
+and then save back into the sphoton in float.
+
+And alternative to this would be to widen the sphoton to sphotond
+and then use that. 
+
+**/
+
 SPHOTON_METHOD void sphoton::transform( const glm::tmat4x4<double>& tr, bool normalize )
 {
     float one(1.); 

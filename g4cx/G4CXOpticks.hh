@@ -18,6 +18,7 @@ struct CSGFoundry ;
 struct CSGOptiX ; 
 struct QSim ; 
 struct SEvt ; 
+struct U4InstanceIdentifier ; 
 
 #include "plog/Severity.h"
 #include "G4CX_API_EXPORT.hh"
@@ -29,7 +30,9 @@ struct G4CX_API G4CXOpticks
     static G4CXOpticks* Get(); 
     static void Finalize(); 
 
+    const U4Sensor* se ; 
     const G4VPhysicalVolume* wd ; 
+
     const GGeo*             gg ;
     CSGFoundry* fd ; 
     CSGOptiX*   cx ; 
@@ -41,9 +44,14 @@ struct G4CX_API G4CXOpticks
     static std::string Desc();
     std::string desc() const ; 
 
+    void setSensor(const U4Sensor* se );
+
     void setGeometry(); 
     void setGeometry(const char* gdmlpath);
-    void setGeometry(const G4VPhysicalVolume* wd); 
+    void setGeometry(const G4VPhysicalVolume* wd);  
+    // HMM: maybe add U4Sensor arg here, 
+    // if that only makes sense at this level of geometry representation ?
+
     void setGeometry(const GGeo* gg); 
     void setGeometry(CSGFoundry* fd); 
 

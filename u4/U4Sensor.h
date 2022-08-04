@@ -1,12 +1,13 @@
 #pragma once
 /**
-U4InstanceIdentifier.h
-=======================
+U4Sensor.h
+============
 
-Pure virtual protocol base used to interface Opticks geometry translation 
-with detector specific code. 
+Pure virtual protocol base used to interface detector
+specific characteristics of sensors with Opticks. 
 
-getInstanceId
+
+getId
     method is called on the outer volume of every factorized instance during geometry translation, 
     the returned unsigned value is used by IAS_Builder to set the OptixInstance .instanceId 
     Within CSGOptiX/CSGOptiX7.cu:: __closesthit__ch *optixGetInstanceId()* is used to 
@@ -70,9 +71,11 @@ HMM: how to split those 24 bits ?
 **/
 class G4PVPlacement ; 
 
-struct U4InstanceIdentifier
+struct U4Sensor
 {
-    virtual unsigned getInstanceId(const G4PVPlacement* pv) = 0 ; 
+    virtual unsigned getId(             const G4PVPlacement* pv) const = 0 ; 
+    virtual float    getEfficiency(     const G4PVPlacement* pv) const = 0 ; 
+    virtual float    getEfficiencyScale(const G4PVPlacement* pv) const = 0 ; 
 }; 
 
 

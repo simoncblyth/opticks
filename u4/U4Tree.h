@@ -107,6 +107,10 @@ recursive call.
 inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, snode* parent )
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
+    G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ;  
+
+
+
     int num_child = int(lv->GetNoDaughters()) ;  
     int lvid = lvidx[lv] ; 
 
@@ -119,15 +123,18 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     glm::tmat4x4<double> tr_w2m(1.) ;  
     U4Transform::GetFrameTransform(tr_w2m, pv); 
 
-    // HMM: the frame is inverse to obj transform sometimes : when no rotation 
 
     st->m2w.push_back(tr_m2w);  
     st->w2m.push_back(tr_w2m);  
     pvs.push_back(pv); 
 
+
+    int nidx = st->nds.size() ;
+    //std::cout << "SD " << ( sd ? "Y" : "N" )  << " nidx " << std::setw(7) << nidx << " lvid " << std::setw(3) << lvid << std::endl ;  
+
     snode nd ; 
 
-    nd.index = st->nds.size();
+    nd.index = nidx ;
     nd.depth = depth ;   
     nd.sibdex = sibdex ; 
     nd.parent = parent ? parent->index : -1 ;  

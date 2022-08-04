@@ -4,6 +4,9 @@
 sframe.h
 ===========
 
+TODO: once bring in U4Tree.h/stree.h translation up this to double precision 
+
+
 Provided by CSGFoundry::getFrame methods 
 
 Persisted into (4,4,4) array.
@@ -65,6 +68,8 @@ struct sframe
     const char* frs = nullptr ; 
     Tran<double>* tr_m2w = nullptr ;
     Tran<double>* tr_w2m = nullptr ;
+
+    // TODO: Tran is already (t,v,i) triplet : so can have just the one Tran 
 
     void zero() ; 
     bool is_zero() const ; 

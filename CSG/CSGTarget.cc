@@ -127,7 +127,12 @@ Note that there are typically multiple CSGPrim within the compound CSGSolid
 and that the inst_idx corresponds to the entire compound CSGSolid (aka GMergedMesh).
 Hence the ce included with the frame is the one from the full compound CSGSolid. 
 
-TODO: avoid the Tran::Invert by keeping paired double precision transforms throughout  
+* DONE: new minimal U4Tree.h/stree.h geo translation collects paired m2w and w2m transforms
+  and uses those to give both inst and iinst in double precision 
+
+* TODO: move the stree.h inst/iinst members and methods into CSGFoundry
+  and use them from a future "CSGFoundry::CreateFromSTree" to add 
+  paired double precision transforms, avoiding Invert
 
 **/
 

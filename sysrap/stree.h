@@ -107,12 +107,6 @@ struct stree
     sfreq* subs_freq ;
 
 
-    std::vector<glm::tmat4x4<double>> inst ; 
-    std::vector<glm::tmat4x4<float>>  inst_f4 ; 
-
-    std::vector<glm::tmat4x4<double>> iinst ; 
-    std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
-
 
 
     stree();
@@ -182,6 +176,17 @@ struct stree
     void disqualifyContainedRepeats();
     void sortSubtrees(); 
     void factorize(); 
+
+
+    // HMM: the stree.h inst members and methods are kinda out-of-place
+    //      as CSGFoundry already has inst : so the below are looking ahead 
+    //      to what will be done by a future "CSGFoundry::CreateFromSTree"  
+
+    std::vector<glm::tmat4x4<double>> inst ; 
+    std::vector<glm::tmat4x4<float>>  inst_f4 ; 
+
+    std::vector<glm::tmat4x4<double>> iinst ; 
+    std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
 
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, unsigned gas_idx ); 
     void add_inst(); 

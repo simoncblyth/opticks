@@ -2,6 +2,32 @@ update_juno_opticks_integration_for_new_workflow
 ==================================================
 
 * previous : :doc:`ellipsoid_transform_compare_two_geometries`
+* in parallel with this : :doc:`joined_up_thinking_geometry_translation`
+
+
+HMM : Lots of small changes needed : how to proceed
+------------------------------------------------------
+
+* comment most of WITH_G4OPTICKS to allow running whilst making the changes topic by topic
+
+1. translate geometry (still the old way via GGeo) but with new workflow G4CXOpticks
+2. dispense hits (still single precision transforms) but with U4Hit/sphoton controlled via SEvt 
+
+
+::
+
+    epsilon:offline blyth$ jo
+    /Users/blyth/junotop/offline
+    M       Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc
+    M       Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2_Opticks.hh
+    M       Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc
+    M       Simulation/GenTools/GenTools/GtOpticksTool.h
+    M       Simulation/GenTools/src/GtOpticksTool.cc
+    epsilon:offline blyth$ 
+
+    svn.sh 
+    svn.sh | sh 
+
 
 
 
@@ -65,6 +91,186 @@ Overview of the Integration WITH_G4OPTICKS
 
 
 
+Passing over the geometry in new workflow
+---------------------------------------------
+
+::
+
+   jcv  LSExpDetectorConstruction_Opticks
+   jcv  LSExpDetectorConstruction_Opticks_OLD
+
+
+Old way used a chatty interface of communicating sensor data::
+
+    107     const std::vector<G4PVPlacement*>& sensor_placements = g4ok->getSensorPlacements() ;
+    108     unsigned num_sensor = sensor_placements.size();
+    109 
+    110     // 2. use the placements to pass sensor data : efficiencies, categories, identifiers  
+    111 
+    112     const junoSD_PMT_v2* sd = dynamic_cast<const junoSD_PMT_v2*>(sd_) ;
+    113     assert(sd) ;
+    114 
+    115     LOG(info) << "[ setSensorData num_sensor " << num_sensor ;
+    116     for(unsigned i=0 ; i < num_sensor ; i++)
+    117     {
+    118         const G4PVPlacement* pv = sensor_placements[i] ; // i is 0-based unlike sensor_index
+    119         unsigned sensor_index = 1 + i ; // 1-based 
+    120         assert(pv);
+    121         G4int copyNo = pv->GetCopyNo();
+    122         int pmtid = copyNo ;
+    123         int pmtcat = 0 ; // sd->getPMTCategory(pmtid); 
+    124         float efficiency_1 = sd->getQuantumEfficiency(pmtid);
+    125         float efficiency_2 = sd->getEfficiencyScale() ;
+    126 
+    127         g4ok->setSensorData( sensor_index, efficiency_1, efficiency_2, pmtcat, pmtid );
+    128     }
+
+Had idea to avoid the chat...
+
+* :doc:`instanceIdentity-into-new-workflow`
+
+
+Requires some object of the detector framework to inherit from 
+the U4InstanceIdentifier protocol base and implement the method::
+
+     71 class G4PVPlacement ;
+     72 
+     73 struct U4InstanceIdentifier
+     74 {
+     75     virtual unsigned getInstanceId(const G4PVPlacement* pv) const = 0 ;
+     76 };
+
+
+This can allow Opticks to provide detector specific identifiers on itersect.
+BUT: it does not communicate the Opticks ordering of the sensors which 
+is needed to communicate efficiencies.
+
+Can add::
+
+         virtual float getEfficiency(const G4PVPlacement* pv) const = 0 
+
+Actually can add methods for that info. Then the Opticks ordering does
+not matter for users, to first order.  
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hit Handling in new workflow
+-------------------------------
+
+
+u4/tests/U4HitTest.cc::
+
+     14     SEvt* sev = SEvt::Load() ;
+     15     const char* cfbase = sev->getSearchCFBase() ; // search up dir tree starting from loaddir for dir with CSGFoundry/solid.npy
+     16     const CSGFoundry* fd = CSGFoundry::Load(cfbase);
+     17     sev->setGeo(fd);
+     18 
+     19     std::cout << sev->descFull() ;
+     20 
+     21     unsigned num_hit = sev->getNumHit();
+     22     if(num_hit == 0) return 0 ;
+     23 
+     24     unsigned idx = 0 ;
+     25     sphoton global, local  ;
+     26     sev->getHit(global, idx);
+     27     sev->getLocalHit( local,  idx);
+     28 
+     29     U4Hit hit ;
+     30     U4HitConvert::FromPhoton(hit,global,local);
+     31 
+     32     std::cout << " global " << global.desc() << std::endl ;
+     33     std::cout << " local " << local.desc() << std::endl ;
+     34     std::cout << " hit " << hit.desc() << std::endl ;
+
+
+::
+
+    1579 /**
+    1580 SEvt::getLocalPhoton SEvt::getLocalHit
+    1581 -----------------------------------------
+    1582 
+    1583 sphoton::iindex instance index used to get instance frame
+    1584 from (SGeo*)cf which is used to transform the photon  
+    1585 
+    1586 **/
+    1587 
+    1588 void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
+    1589 {
+    1590     getPhoton(lp, idx);
+    1591     applyLocalTransform_w2m(lp);
+    1592 }
+    1593 void SEvt::getLocalHit(sphoton& lp, unsigned idx) const
+    1594 {
+    1595     getHit(lp, idx);
+    1596     applyLocalTransform_w2m(lp);
+    1597 }
+
+
+The improved precision will come in with the sframe::
+
+    1598 void SEvt::applyLocalTransform_w2m( sphoton& lp) const
+    1599 {
+    1600     sframe fr ;
+    1601     getPhotonFrame(fr, lp);
+    1602     fr.transform_w2m(lp);
+    1603 }
+    1604 void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const
+    1605 {
+    1606     assert(cf);
+    1607     cf->getFrame(fr, p.iindex);
+    1608     fr.prepare();
+    1609 }
+
+::
+
+    2842 int CSGFoundry::getFrame(sframe& fr, int inst_idx) const
+    2843 {
+    2844     return target->getFrame( fr, inst_idx );
+    2845 }
+
+
+    122 /**
+    123 CSGTarget::getFrame
+    124 ---------------------
+    125 
+    126 Note that there are typically multiple CSGPrim within the compound CSGSolid
+    127 and that the inst_idx corresponds to the entire compound CSGSolid (aka GMergedMesh).
+    128 Hence the ce included with the frame is the one from the full compound CSGSolid. 
+    129 
+    130 * TODO: avoid the Tran::Invert by keeping paired double precision transforms throughout  
+    131 
+    132 * DONE: new minimal stree.h geo translation collects paired m2w and w2m transforms
+    133   and uses those to give both inst and iinst in double precision 
+    134 
+    135 * TODO: use that to improve frame precision and avoid the Invert
+    136 
+    137   * hmm : can I use somehow use stree.h transforms to CSG_GGeo to give access to 
+    138     the improved transforms before fully switching to new translation ?
+    139 
+    140   * would have to add stree persisting to GGeo to so this, 
+    141     that just adds complication for a very shortlived benefit 
+    142 
+    143 **/
+    144 
+    145 int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
+    146 {
+    147     const qat4* _t = foundry->getInst(inst_idx);
+    148     
+    149     unsigned ins_idx, gas_idx, ias_idx ;
+    150     _t->getIdentity(ins_idx, gas_idx, ias_idx )  ;
+    151     
+    152     assert( int(ins_idx) == inst_idx );
+    153     fr.set_inst(inst_idx);  
 
 
 
@@ -133,10 +339,6 @@ junoSD_PMT_v2_Opticks::convertHit
 Is the G4OpticksHit/U4Hit intermediary actually needed ? 
 
 * could go from sphoton -> sphotond -> junoHit_PMT. 
-
-
-
-
 
 
 GPho used nodeIndex to access the transform. 
@@ -355,8 +557,30 @@ and SEvt NP/sphoton.
     Out[21]: True
 
 
-G4Opticks::getHit : okc/OpticksPhotonFlags
------------------------------------------------
+
+
+New Workflow Photon Flags : mostly handled via sphoton methods ?
+---------------------------------------------------------------------------
+
+* sensorIndex needs effort, regarding identity info collection 
+
+::
+
+    093     SPHOTON_METHOD unsigned idx() const {      return orient_idx & 0x7fffffffu  ;  }
+     94     SPHOTON_METHOD float    orient() const {   return ( orient_idx & 0x80000000u ) ? -1.f : 1.f ; }
+     95 
+     96     SPHOTON_METHOD void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } // clear orient     bit and then set it 
+     97     SPHOTON_METHOD void set_idx( unsigned idx ){  orient_idx = ( orient_idx & 0x80000000u ) | ( 0x7fffffffu & idx ) ; }   // retain bit 31 asis 
+     98 
+     99     SPHOTON_METHOD unsigned flag() const {     return boundary_flag & 0xffffu ; } // flag___     = lambda p:p.view(np.uint32)[...,3,0] & 0xffff
+    100     SPHOTON_METHOD unsigned boundary() const { return boundary_flag >> 16 ; }     // boundary___ = lambda p:p.view(np.uint32)[...,3,0] >> 16
+    101 
+        
+
+
+
+Old Photon Flags G4Opticks::getHit : okc/OpticksPhotonFlags
+-----------------------------------------------------------------
 
 ::
 
@@ -373,6 +597,26 @@ G4Opticks::getHit : okc/OpticksPhotonFlags
     1356 
     1357     // via m_sensorlib 
     1358     hit->sensor_identifier = getSensorIdentifier(pflag.sensorIndex);
+
+::
+
+    255 /**
+    256 GPho::getOpticksPhotonFlags
+    257 ---------------------------
+    258 
+    259 The float flags contain the bits of unsigned and signed integers with some bit packing.  
+    260 These are decoded using OpticksPhotonFlags.
+    261 
+    262 **/
+    263 
+    264 OpticksPhotonFlags GPho::getOpticksPhotonFlags(unsigned i) const
+    265 {
+    266     glm::vec4 flgs = m_photons->getQuad_(i,3);
+    267     OpticksPhotonFlags okfl(flgs);
+    268     return okfl ;
+    269 }
+
+
 
 
 

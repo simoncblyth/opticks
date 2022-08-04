@@ -42,6 +42,7 @@ void G4CXOpticks::Finalize() // static
 
 G4CXOpticks::G4CXOpticks()
     :
+    id(nullptr),
     wd(nullptr),
     gg(nullptr),
     fd(nullptr), 
@@ -61,6 +62,7 @@ std::string G4CXOpticks::desc() const
 {
     std::stringstream ss ; 
     ss << "G4CXOpticks::desc"
+       << " se " << se 
        << " wd " << wd 
        << " gg " << gg
        << " fd " << fd
@@ -71,6 +73,19 @@ std::string G4CXOpticks::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+/**
+G4CXOpticks::setSensor
+---------------------------
+
+
+**/
+
+void G4CXOpticks::setSensor(const U4Sensor* se_ )
+{
+    se = se_ ; 
+}
+
 
 /**
 G4CXOpticks::setGeometry 
@@ -122,7 +137,7 @@ void G4CXOpticks::setGeometry(const char* gdmlpath)
     const G4VPhysicalVolume* world = U4GDML::Read(gdmlpath);
     setGeometry(world); 
 }
-void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world)
+void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world, const U4InstanceIdentifier* identifier )
 {
     LOG(LEVEL) << " G4VPhysicalVolume world " << world ; 
     wd = world ; 
