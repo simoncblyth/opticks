@@ -35,6 +35,37 @@ cmake/Modules/FindOpticks.cmake::
      53     add_compile_definitions(WITH_G4CXOPTICKS)
      54 
 
+
+Issue 1 : Lack of Opticks : 
+------------------------------
+
+* TRY FIX by doing Opticks::Configure within G4CXOpticks::setGeometry
+
+::
+
+    #0  0x00007fffd297ec4a in Opticks::getIdPath (this=0x0) at /data/blyth/junotop/opticks/optickscore/Opticks.cc:4644
+    #1  0x00007fffd34cf346 in GGeo::init (this=0x9330a40) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:361
+    #2  0x00007fffd34ced3f in GGeo::GGeo (this=0x9330a40, ok=0x0, live=true) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:188
+    #3  0x00007fffd3e1e711 in X4Geo::Translate (top=0x5725de0) at /data/blyth/junotop/opticks/extg4/X4Geo.cc:25
+    #4  0x00007fffd45c1352 in G4CXOpticks::setGeometry (this=0x6dde0f0, world=0x5725de0) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:175
+    #5  0x00007fffd45c05cf in G4CXOpticks::SetGeometry (world=0x5725de0) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:49
+    #6  0x00007fffcfae3f35 in LSExpDetectorConstruction_Opticks::Setup (world=0x5725de0, opticksMode=3)
+
+::
+
+     40 int main(int argc, char** argv)
+     41 {
+     42     OPTICKS_LOG(argc, argv);
+     43     Opticks::Configure(argc, argv, "--gparts_transform_offset --allownokey" );
+     44 
+     45     SEventConfig::SetRGModeSimulate();
+     46     SEventConfig::SetStandardFullDebug(); // controls which and dimensions of SEvt arrays 
+     47 
+     48     G4CXOpticks gx ;
+     49     gx.setGeometry();
+
+
+
 Overview of the Integration WITH_G4OPTICKS
 ---------------------------------------------------------
 

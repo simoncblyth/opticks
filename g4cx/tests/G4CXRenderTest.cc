@@ -12,7 +12,6 @@ the same in all RGNode
 **/
 #include "SEventConfig.hh"
 #include "OPTICKS_LOG.hh"
-#include "Opticks.hh"
 #include "G4CXOpticks.hh"
 
 int main(int argc, char** argv)
@@ -20,8 +19,6 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     SEventConfig::SetRGModeRender();  
-
-    Opticks::Configure(argc, argv, "--gparts_transform_offset --allownokey" );  
 
     G4CXOpticks gx ;  
     gx.setGeometry();  // sensitive to SomGDMLPath, GEOM, CFBASE

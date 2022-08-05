@@ -16,15 +16,21 @@
 #include "SEventConfig.hh"
 #include "U4GDML.h"
 #include "U4Tree.h"
-#include "X4Geo.hh"
 
 #include "CSGFoundry.h"
 #include "CSG_GGeo_Convert.h"
 #include "CSGOptiX.h"
-
 #include "QSim.hh"
 
 #include "G4CXOpticks.hh"
+
+
+
+// OLD WORLD HEADERS STILL NEEDED UNTIL REJIG TRANSLATION 
+#include "Opticks.hh"
+#include "X4Geo.hh"
+
+
 
 const plog::Severity G4CXOpticks::LEVEL = PLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
 
@@ -34,6 +40,7 @@ G4CXOpticks* G4CXOpticks::Get()
     if(INSTANCE == nullptr) INSTANCE = new G4CXOpticks ; 
     return INSTANCE ; 
 } 
+
 
 /**
 G4CXOpticks::SetGeometry
@@ -48,6 +55,7 @@ void G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
     G4CXOpticks* g4ok = new G4CXOpticks ;
     g4ok->setGeometry(world); 
 }
+
 
 void G4CXOpticks::Finalize() // static 
 {
@@ -172,6 +180,10 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
 #ifdef __APPLE__
     return ;  
 #endif
+   
+    // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
+    Opticks::Configure("--gparts_transform_offset --allownokey" );  
+
     GGeo* gg_ = X4Geo::Translate(wd) ; 
     setGeometry(gg_); 
 }

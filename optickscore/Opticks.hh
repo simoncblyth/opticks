@@ -30,7 +30,7 @@
 class SLog ; 
 class SRngSpec ; 
 struct SArgs ; 
-class SGeo ; 
+struct SGeo ; 
 class SRenderer ; 
 
 class BDynamicDefine ; 
@@ -167,7 +167,8 @@ class OKCORE_API Opticks {
    private:
        bool envkey(); 
    public:
-       static Opticks* Configure(int argc=0, char** argv=nullptr, const char* argforced=nullptr);
+       static Opticks* Configure(const char* argforced);
+       static Opticks* Configure(int argc, char** argv, const char* argforced);
        Opticks(int argc=0, char** argv=nullptr, const char* argforced=nullptr );
    private:
        void init();

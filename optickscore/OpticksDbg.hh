@@ -25,7 +25,7 @@
 #include "plog/Severity.h"
 
 class Opticks ; 
-class SGeo ; 
+struct SGeo ; 
 template <typename T> class NPY ;
 template <typename T> class OpticksCfg ;
 
