@@ -8,10 +8,34 @@ update_juno_opticks_integration_for_new_workflow
 HMM : Lots of small changes needed : how to proceed
 ------------------------------------------------------
 
-* comment most of WITH_G4OPTICKS to allow running whilst making the changes topic by topic
+* switch off WITH_G4OPTICKS 
+* switch on WITH_G4CXOPTICKS : bring over the blocks of code one at a time
 
-1. translate geometry (still the old way via GGeo) but with new workflow G4CXOpticks
-2. dispense hits (still single precision transforms) but with U4Hit/sphoton controlled via SEvt 
+Notice how this means can switch the entire integration with a single flip. 
+
+
+WITH_G4OPTICKS -> WITH_G4CXOPTICKS
+---------------------------------------
+
+As need to review the entire integration, change the preprocessor macro.
+
+cmake/Modules/FindOpticks.cmake::
+
+     48 #find_package(G4OK CONFIG QUIET)
+     49 find_package(G4CX CONFIG QUIET)
+     50 
+     51 if(G4CX_FOUND)
+     52     #add_compile_definitions(WITH_G4OPTICKS)
+     53     add_compile_definitions(WITH_G4CXOPTICKS)
+     54 
+        
+
+
+
+
+
+
+
 
 
 ::
@@ -27,8 +51,6 @@ HMM : Lots of small changes needed : how to proceed
 
     svn.sh 
     svn.sh | sh 
-
-
 
 
 Overview of the Integration WITH_G4OPTICKS
@@ -151,7 +173,6 @@ Can add::
 
 Actually can add methods for that info. Then the Opticks ordering does
 not matter for users, to first order.  
-
 
 
 

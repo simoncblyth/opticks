@@ -181,6 +181,19 @@ Handling GDML dropping SD
 * could arrange for GDML sidecar with the persisted stree 
 
 
+Ideas on sensor_placements
+----------------------------
+
+Pure Geant4 code that traverses the volume tree can easily reproduce the sensor order.
+So there is no need for Opticks API to provide that. 
+Can just provide example code depending only on Geant4 that gets the sensor volumes in 
+the same order that Opticks does.  
+
+Then the API for accepting sensor info can just accept an array with first dimension 
+the number of sensors. Hmm a higher level way would be to accept a vector of sensor struct.  
+
+
+
 Old way sensor_placements
 ----------------------------
 
