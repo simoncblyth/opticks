@@ -275,9 +275,6 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     void gather_components() ; 
 
-    static const char* FALLBACK_DIR ; 
-    static const char* DefaultDir() ; 
-
     // save methods not const as calls gather_components 
     void save() ; 
     void load() ; 

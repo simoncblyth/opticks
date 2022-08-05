@@ -5,19 +5,18 @@ update_juno_opticks_integration_for_new_workflow
 * in parallel with this : :doc:`joined_up_thinking_geometry_translation`
 
 
-HMM : Lots of small changes needed : how to proceed ?
-------------------------------------------------------
+HMM : Integration requires lots of small changes : how to proceed ?
+----------------------------------------------------------------------
 
 * switch off WITH_G4OPTICKS 
 * switch on WITH_G4CXOPTICKS : bring over the blocks of code one at a time
 
 Notice how this means can switch the entire integration with a single flip. 
 
-
 GUIDING PRINCIPALS FOR INTEGRATION 
 
 * IF IT CAN BE DONE WITHIN OPTICKS CODE : DO IT THERE (AS DEVELOPMENT IS SO MUCH EASIER THERE)
-* MINIMIZE INTEGRATION CODE IN THE FRAMEWORK  
+* MINIMIZE INTEGRATION CODE IN THE FRAMEWORK  : BECAUSE ITS SO PAINFUL TO DEVELOP WITHIN THE DETECTOR FRAMEWORK 
 
 
 WITH_G4OPTICKS -> WITH_G4CXOPTICKS
@@ -36,10 +35,8 @@ cmake/Modules/FindOpticks.cmake::
      54 
 
 
-Issue 1 : Lack of Opticks : 
-------------------------------
-
-* TRY FIX by doing Opticks::Configure within G4CXOpticks::setGeometry
+Issue 1 : Lack of Opticks : FIXED BY MOVING Opticks::Configure within G4CXOpticks::setGeometry
+-------------------------------------------------------------------------------------------------
 
 ::
 
@@ -56,13 +53,136 @@ Issue 1 : Lack of Opticks :
      40 int main(int argc, char** argv)
      41 {
      42     OPTICKS_LOG(argc, argv);
-     43     Opticks::Configure(argc, argv, "--gparts_transform_offset --allownokey" );
+     43     //Opticks::Configure(argc, argv, "--gparts_transform_offset --allownokey" );
      44 
      45     SEventConfig::SetRGModeSimulate();
      46     SEventConfig::SetStandardFullDebug(); // controls which and dimensions of SEvt arrays 
      47 
      48     G4CXOpticks gx ;
      49     gx.setGeometry();
+
+
+
+Issue 2 : Lack of idpath prevents GGeo::save : Try living without persisted GGeo
+-----------------------------------------------------------------------------------
+
+::
+
+    2022-08-05 18:53:36.861 INFO  [137375] [GInstancer::dumpRepeatCandidates@464]  num_repcan 9 dmax 20
+     pdig 159961bde1896fe286c02b4c3f05c8c9 ndig  25600 nprog      4 placements  25600 n PMT_3inch_log_phys
+     pdig b82765dbe93381d08867b5bc550ceed3 ndig  12615 nprog      6 placements  12615 n pLPMT_NNVT_MCPPMT
+     pdig 838cd73cc9dd9d9add66efd658630c12 ndig   4997 nprog      6 placements   4997 n pLPMT_Hamamatsu_R12860
+     pdig 29c21c0b8afac0824902c82e6fbe3146 ndig   2400 nprog      5 placements   2400 n mask_PMT_20inch_vetolMaskVirtual_phys
+     pdig ed3d2c21991e3bef5e069713af9fa6ca ndig    590 nprog      0 placements    590 n lSteel_phys
+     pdig ac627ab1ccbdb62ec96e702f07f6425b ndig    590 nprog      0 placements    590 n lFasteners_phys
+     pdig f899139df5e1059396431415e770c6dd ndig    590 nprog      0 placements    590 n lUpper_phys
+     pdig 38b3eff8baf56627478ec76a704e9b52 ndig    590 nprog      0 placements    590 n lAddition_phys
+     pdig 4c29bcd2a52a397de5036b415af92efe ndig    504 nprog    129 placements    504 n pPanel_0_f_
+    2022-08-05 18:53:55.585 ERROR [137375] [GGeo::save@719] cannot save as no idpath set
+
+    #1  0x00007fffd34d1ac9 in GGeo::save (this=0x938c1d0) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:720
+    #2  0x00007fffd34d0bbc in GGeo::postDirectTranslation (this=0x938c1d0) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:607
+    #3  0x00007fffd3e1e73e in X4Geo::Translate (top=0x5752710) at /data/blyth/junotop/opticks/extg4/X4Geo.cc:29
+    #4  0x00007fffd45c13be in G4CXOpticks::setGeometry (this=0x6e0a910, world=0x5752710) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:187
+    #5  0x00007fffd45c062f in G4CXOpticks::SetGeometry (world=0x5752710) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:56
+    #6  0x00007fffcfae3f35 in LSExpDetectorConstruction_Opticks::Setup (world=0x5752710, opticksMode=3)
+
+    2022-08-05 18:53:56.360 ERROR [137375] [GGeo::convertSim_Prop@2434]  SSim cannot add ri_prop as no idpath $IDPath/GScintillatorLib/LS_ori/RINDEX.npy
+    Missing separate debuginfo for /lib64/libcuda.so.1
+    Try: yum --enablerepo='*debug*' install /usr/lib/debug/.build-id/3e/1e7dd516361182d263c7713bd47eaa498bf0cd.debug
+    [New Thread 0x7fffa63d0700 (LWP 137456)]
+    [New Thread 0x7fffa5bcf700 (LWP 137457)]
+    [New Thread 0x7fffa53ce700 (LWP 137458)]
+    2022-08-05 18:53:58.667 ERROR [137375] [QSim::UploadComponents@116]   propcom null, SSim::PROPCOM propcom.npy
+    2022-08-05 18:54:06.785 INFO  [137375] [LSExpDetectorConstruction_Opticks::Setup@31] ] WITH_G4CXOPTICKS 
+    /data/blyth/junotop/offline/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc:361 completed construction of physiWorld  m_opticksMode 3
+    /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/share/Geant4-10.4.2/data/G4NDL4.5
+
+
+Issue 3 : DsPhysConsOptical : needs code to avoid assert : FIXED
+-------------------------------------------------------------------
+
+::
+
+    #3  0x00007ffff6967252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffcfdae30c in DsPhysConsOptical::ConstructProcess (this=0xb603c0)
+        at /data/blyth/junotop/offline/Simulation/DetSimV2/PhysiSim/src/DsPhysConsOptical.cc:162
+    #5  0x00007fffcfae7048 in LSExpPhysicsList::ConstructProcess (this=0x556dbe0)
+        at /data/blyth/junotop/offline/Simulation/DetSimV2/DetSimOptions/src/LSExpPhysicsList.cc:262
+    #6  0x00007fffdf9f0185 in G4RunManagerKernel::InitializePhysics() () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #7  0x00007fffdf9dfb73 in G4RunManager::Initialize() () from /data/blyth/junotop/ExternalLibs/Geant4/10.
+
+
+::
+
+    jcv DsPhysConsOptical
+
+    147 #ifdef WITH_G4CXOPTICKS
+    148             LocalG4Cerenkov1042* cerenkov = new LocalG4Cerenkov1042(m_opticksMode) ;
+    149             cerenkov->SetMaxNumPhotonsPerStep(m_cerenMaxPhotonPerStep);
+    150             cerenkov->SetTrackSecondariesFirst(m_doTrackSecondariesFirst);
+    151             cerenkov_ = cerenkov ;
+    152 #elif WITH_G4OPTICKS
+    153             LocalG4Cerenkov1042* cerenkov = new LocalG4Cerenkov1042(m_opticksMode) ;
+    154             cerenkov->SetMaxNumPhotonsPerStep(m_cerenMaxPhotonPerStep);
+    155             cerenkov->SetTrackSecondariesFirst(m_doTrackSecondariesFirst);
+    156             cerenkov_ = cerenkov ;
+    157 #else
+    158             G4cout
+    159                << __FILE__ << ":" << __LINE__
+    160                << " DsPhysConsOptical::ConstructProcess "
+    161                << " FATAL "
+    162                << " non-zero opticksMode requires compilation -DWITH_G4OPTICKS or -DWITH_G4CXOPTICKS "
+    163                << " m_useCerenkov " << m_useCerenkov
+    164                << " m_opticksMode " << m_opticksMode
+    165                << G4endl
+    166                ;
+    167             assert(0) ;
+
+
+Issue 4 : another assert : from lack of merger_opticks : Added to PMTSDMgr
+-----------------------------------------------------------------------------
+
+::
+
+    jcv PMTSDMgr
+
+
+::
+
+    epsilon:offline blyth$ jgr setMergerOpticks
+    ./Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2.hh:        void setMergerOpticks(PMTHitMerger* phm) { m_pmthitmerger_opticks=phm; }
+    ./Simulation/DetSimV2/PMTSim/src/PMTSDMgr.cc:        sd->setMergerOpticks(pmthitmerger_opticks);
+    epsilon:offline blyth$ 
+
+::
+
+    170	    {
+    171	        hitCollection_opticks = new junoHit_PMT_Collection(SensitiveDetectorName,collectionName[2]);
+    172	        HCID = -1;
+    173	        if(HCID<0) HCID = G4SDManager::GetSDMpointer()->GetCollectionID(hitCollection_opticks);
+    174	        HCE->AddHitsCollection( HCID, hitCollection_opticks );
+    175	        assert(m_pmthitmerger_opticks); 
+    176	        if (m_hit_type == 1) {
+    177	            m_pmthitmerger_opticks->init(hitCollection_opticks);
+    178	        } else {
+    179	            G4cout << "FATAL : unknown hit type [" << m_hit_type << "]" << G4endl;
+    (gdb) 
+
+
+    (gdb) bt
+    #0  0x00007ffff696e387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff696fa78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff69671a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6967252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffd3b01d17 in junoSD_PMT_v2::Initialize (this=0x5940600, HCE=0x2b8bb00)
+        at /data/blyth/junotop/offline/Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2.cc:175
+    #5  0x00007fffdd63bc25 in G4SDStructure::Initialize(G4HCofThisEvent*) [clone .localalias.79] ()
+       from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4digits_hits.so
+    #6  0x00007fffdd639b5d in G4SDManager::PrepareNewEvent() () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4digits_hits.so
+    #7  0x00007fffdf7460a6 in G4EventManager::DoProcessing(G4Event*) () from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4event.so
+    #8  0x00007fffd04a04a1 in G4SvcRunManager::SimulateEvent (this=0x910900, i_event=0)
+
 
 
 

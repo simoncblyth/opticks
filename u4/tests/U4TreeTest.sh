@@ -20,7 +20,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    export FOLD=/tmp/$USER/opticks/U4TreeTest
+    export FOLD=/tmp/$USER/opticks/U4TreeTest/stree
     ${IPYTHON:-ipython} --pdb -i $bin.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
 fi 

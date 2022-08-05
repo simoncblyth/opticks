@@ -702,6 +702,22 @@ void GGeo::prepareOpticks()
 }
 
 
+/**
+GGeo::save
+-------------
+
+Example call stack from integrated WITH_G4CXOPTICKS running::
+
+    #1  0x00007fffd34d1ac9 in GGeo::save (this=0x938c1d0) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:720
+    #2  0x00007fffd34d0bbc in GGeo::postDirectTranslation (this=0x938c1d0) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:607
+    #3  0x00007fffd3e1e73e in X4Geo::Translate (top=0x5752710) at /data/blyth/junotop/opticks/extg4/X4Geo.cc:29
+    #4  0x00007fffd45c13be in G4CXOpticks::setGeometry (this=0x6e0a910, world=0x5752710) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:187
+    #5  0x00007fffd45c062f in G4CXOpticks::SetGeometry (world=0x5752710) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:56
+    #6  0x00007fffcfae3f35 in LSExpDetectorConstruction_Opticks::Setup (world=0x5752710, opticksMode=3)
+
+**/
+
+
 void GGeo::save()
 {
     if(!m_prepared)
@@ -717,6 +733,7 @@ void GGeo::save()
     if( idpath == nullptr ) 
     {
          LOG(error) << "cannot save as no idpath set" ; 
+         //std::raise(SIGINT); 
     }
     else
     {

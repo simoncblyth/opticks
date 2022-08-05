@@ -7,13 +7,13 @@ class G4VPhysicalVolume ;
 
 struct U4Volume
 {
-    static G4VPhysicalVolume* FindPV( G4VPhysicalVolume* top,  const char* qname );
-    static void FindPV_r( G4VPhysicalVolume* pv,  const char* qname, std::vector<G4VPhysicalVolume*>& pvs, int depth ); 
+    static const G4VPhysicalVolume* FindPV( const G4VPhysicalVolume* top,  const char* qname );
+    static void FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, std::vector<const G4VPhysicalVolume*>& pvs, int depth ); 
 
 
-    static G4VPhysicalVolume* FindPVSub( G4VPhysicalVolume* top, const char* sub ); 
-    static G4VPhysicalVolume* FindPV_WithSolidName(   G4VPhysicalVolume* top, const char* q_soname, unsigned ordinal, unsigned& count  ) ; 
-    static void               FindPV_WithSolidName_r( G4VPhysicalVolume* pv,  const char* q_soname, std::vector<G4VPhysicalVolume*>& pvs, int depth ) ; 
+    static const G4VPhysicalVolume* FindPVSub( const G4VPhysicalVolume* top, const char* sub ); 
+    static const G4VPhysicalVolume* FindPV_WithSolidName(   const G4VPhysicalVolume* top, const char* q_soname, unsigned ordinal, unsigned& count  ) ; 
+    static void               FindPV_WithSolidName_r( const G4VPhysicalVolume* pv,  const char* q_soname, std::vector<const G4VPhysicalVolume*>& pvs, int depth ) ; 
 
 
     static void Traverse( const G4VPhysicalVolume* pv, const char* label ); 
@@ -39,13 +39,13 @@ struct U4Volume
 
 };
 
-inline G4VPhysicalVolume*  U4Volume::FindPV( G4VPhysicalVolume* start_pv,  const char* qname ) 
+inline const G4VPhysicalVolume*  U4Volume::FindPV( const G4VPhysicalVolume* start_pv,  const char* qname ) 
 {
-    std::vector<G4VPhysicalVolume*> pvs ; 
+    std::vector<const G4VPhysicalVolume*> pvs ; 
     FindPV_r(start_pv, qname, pvs, 0 ); 
     return pvs.size() == 1 ? pvs[0] : nullptr ; 
 }
-inline void U4Volume::FindPV_r( G4VPhysicalVolume* pv,  const char* qname, std::vector<G4VPhysicalVolume*>& pvs, int depth ) 
+inline void U4Volume::FindPV_r( const G4VPhysicalVolume* pv,  const char* qname, std::vector<const G4VPhysicalVolume*>& pvs, int depth ) 
 {
     const G4String& name = pv->GetName(); 
     if( strcmp(name.c_str(), qname) == 0 ) pvs.push_back( pv ); 
@@ -55,7 +55,7 @@ inline void U4Volume::FindPV_r( G4VPhysicalVolume* pv,  const char* qname, std::
 
 
 
-inline G4VPhysicalVolume* U4Volume::FindPVSub( G4VPhysicalVolume* top, const char* sub )
+inline const G4VPhysicalVolume* U4Volume::FindPVSub( const G4VPhysicalVolume* top, const char* sub )
 {
     int spare = -99 ; 
     int ordinal_ = -99 ; 
@@ -63,7 +63,7 @@ inline G4VPhysicalVolume* U4Volume::FindPVSub( G4VPhysicalVolume* top, const cha
     assert( spare == 0 && ordinal_ > -1 );  
     unsigned ordinal = ordinal_ ; 
     unsigned count = 0 ; 
-    G4VPhysicalVolume* pv_sub = U4Volume::FindPV_WithSolidName( top, q_soname, ordinal, count );  
+    const G4VPhysicalVolume* pv_sub = U4Volume::FindPV_WithSolidName( top, q_soname, ordinal, count );  
 
     LOG(info)
         << " sub " << sub
@@ -79,14 +79,14 @@ inline G4VPhysicalVolume* U4Volume::FindPVSub( G4VPhysicalVolume* top, const cha
 }
 
 
-inline G4VPhysicalVolume* U4Volume::FindPV_WithSolidName( G4VPhysicalVolume* top,  const char* q_soname, unsigned ordinal, unsigned& count  ) 
+inline const G4VPhysicalVolume* U4Volume::FindPV_WithSolidName( const G4VPhysicalVolume* top,  const char* q_soname, unsigned ordinal, unsigned& count  ) 
 {
-    std::vector<G4VPhysicalVolume*> pvs ; 
+    std::vector<const G4VPhysicalVolume*> pvs ; 
     FindPV_WithSolidName_r(top, q_soname, pvs, 0 ); 
     count = pvs.size();   
     return ordinal < pvs.size() ? pvs[ordinal] : nullptr ; 
 }
-inline void U4Volume::FindPV_WithSolidName_r( G4VPhysicalVolume* pv,  const char* q_soname, std::vector<G4VPhysicalVolume*>& pvs, int depth ) 
+inline void U4Volume::FindPV_WithSolidName_r( const G4VPhysicalVolume* pv,  const char* q_soname, std::vector<const G4VPhysicalVolume*>& pvs, int depth ) 
 {
     const G4LogicalVolume* lv = pv->GetLogicalVolume(); 
     const G4VSolid* so = lv->GetSolid(); 

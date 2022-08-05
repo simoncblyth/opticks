@@ -6,15 +6,15 @@ arg=${1:-$defarg}
 
 name=stree_test 
 
-export FOLD=/tmp/$USER/opticks/U4TreeTest
-
+export STBASE=/tmp/$USER/opticks/U4TreeTest
+export FOLD=$STBASE/stree
 
 source $OPTICKS_HOME/bin/COMMON.sh 
 T_FOLD=$($OPTICKS_HOME/g4cx/gxt.sh fold)
 T_CFBASE=$(upfind_cfbase $T_FOLD)  
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE GEOM T_FOLD T_CFBASE"
+    vars="BASH_SOURCE GEOM T_FOLD T_CFBASE STBASE FOLD"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done
 fi 
 

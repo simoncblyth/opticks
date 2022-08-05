@@ -21,7 +21,9 @@ class snode(object):
              ('first_child', '<i4'), 
              ('next_sibling', '<i4'), 
              ('lvid', '<i4'), 
-             ('copyno', '<i4')] 
+             ('copyno', '<i4'),
+             ('sensor', '<i4'),
+             ] 
 
     @classmethod
     def RecordsFromArrays(cls, a):
@@ -38,11 +40,11 @@ class snode(object):
         :param rec:  single rec eg obtained by nds[0] 
         :return str: formatted description
         """
-        return "snode ix:%7d dh:%2d sx:%5d pt:%7d nc:%5d fc:%7d ns:%7d lv:%3d cp:%7d." % tuple(rec)
+        return "snode ix:%7d dh:%2d sx:%5d pt:%7d nc:%5d fc:%7d ns:%7d lv:%3d cp:%7d se:%7d." % tuple(rec)
 
     @classmethod
     def Brief(cls, rec):
-        return "snode ix:%7d dh:%2s nc:%5d lv:%3d." % (rec.index, rec.depth, rec.num_child, rec.lvid)
+        return "snode ix:%7d dh:%2s nc:%5d lv:%3d se:%7d." % (rec.index, rec.depth, rec.num_child, rec.lvid, rec.sensor)
 
 class stree(object):
     @classmethod

@@ -84,10 +84,11 @@ TODO: collect the nidx of the remainder into stree.h ?
 struct stree
 {
     static constexpr const int MAXDEPTH = 15 ; // presentational only   
-    static constexpr const int FREQ_CUT = 500 ;  
+    static constexpr const int FREQ_CUT = 500 ;   // HMM GInstancer using 400   
     // subtree digests with less repeats than FREQ_CUT within the entire geometry 
     // are not regarded as repeats for instancing factorization purposes 
 
+    static constexpr const char* RELDIR = "stree" ;
     static constexpr const char* NDS = "nds.npy" ;
     static constexpr const char* M2W = "m2w.npy" ;
     static constexpr const char* W2M = "w2m.npy" ;
@@ -98,15 +99,13 @@ struct stree
 
     std::vector<std::string> soname ;
 
-    std::vector<glm::tmat4x4<double>> m2w ;  // formerly trs
+    std::vector<glm::tmat4x4<double>> m2w ;  
     std::vector<glm::tmat4x4<double>> w2m ; 
 
     std::vector<snode> nds ;
     std::vector<std::string> digs ; // single node digest  
     std::vector<std::string> subs ; // subtree digest 
     sfreq* subs_freq ;
-
-
 
 
     stree();
@@ -164,8 +163,14 @@ struct stree
     std::string desc_nodes(const std::vector<int>& vnidx, unsigned edgeitems=10) const ;
     std::string desc_ancestry(int nidx, bool show_sub=false) const ;
 
-    void save( const char* fold ) const ;
-    void load( const char* fold );
+    static std::string FormPath(const char* base, const char* rel ); 
+
+    void save_( const char* fold ) const ;
+    void save( const char* base, const char* rel=nullptr ) const ;
+
+    void load_( const char* fold );
+    void load( const char* base, const char* rel=nullptr );
+
 
     static int Compare( const std::vector<int>& a, const std::vector<int>& b ) ; 
     static std::string Desc(const std::vector<int>& a, unsigned edgeitems=10 ) ; 
@@ -190,7 +195,10 @@ struct stree
 
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, unsigned gas_idx ); 
     void add_inst(); 
-    void save_inst(const char* fold) const ; 
+
+    void save_inst(const char* base, const char* rel=nullptr) const ; 
+    void save_inst_(const char* fold) const ; 
+
 };
 
 
@@ -681,8 +689,29 @@ inline std::string stree::desc_ancestry(int nidx, bool show_sub) const
     return s ; 
 }
 
-inline void stree::save( const char* fold ) const 
+
+
+
+
+
+inline std::string stree::FormPath(const char* base, const char* rel ) // static
 {
+    if( rel == nullptr ) rel = RELDIR ; 
+    std::stringstream ss ;    
+    ss << base << "/" << rel ; 
+    std::string dir = ss.str();   
+    return dir ; 
+}
+
+inline void stree::save( const char* base, const char* rel ) const 
+{
+    std::string dir = FormPath(base, rel); 
+    save_(dir.c_str()); 
+}
+
+inline void stree::save_( const char* fold ) const 
+{
+    std::cout << "stree::save_ " << ( fold ? fold : "-" ) << std::endl ; 
     NP::Write<int>(    fold, NDS, (int*)nds.data(),    nds.size(), snode::NV );
     NP::Write<double>( fold, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
     NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
@@ -692,8 +721,30 @@ inline void stree::save( const char* fold ) const
     if(subs_freq) subs_freq->save(fold, SUBS_FREQ);
 }
 
-inline void stree::load( const char* fold )
+
+inline void stree::save_inst(const char* base, const char* rel ) const 
 {
+    std::string dir = FormPath(base, rel); 
+    save_inst_(dir.c_str()); 
+}
+inline void stree::save_inst_(const char* fold) const 
+{
+    NP::Write(fold, "inst.npy",    (double*)inst.data(), inst.size(), 4, 4 ); 
+    NP::Write(fold, "inst_f4.npy", (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
+
+    NP::Write(fold, "iinst.npy",    (double*)iinst.data(), iinst.size(), 4, 4 ); 
+    NP::Write(fold, "iinst_f4.npy", (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
+}
+
+
+inline void stree::load( const char* base, const char* rel ) 
+{
+    std::string dir = FormPath(base, rel); 
+    load_(dir.c_str()); 
+}
+inline void stree::load_( const char* fold )
+{
+    std::cout << "stree::load_ " << ( fold ? fold : "-" ) << std::endl ; 
     NP* a_nds = NP::Load(fold, NDS);
     nds.resize(a_nds->shape[0]);
     memcpy( (int*)nds.data(),    a_nds->cvalues<int>() ,    a_nds->arr_bytes() );
@@ -953,15 +1004,6 @@ inline void stree::add_inst()
 
     strid::Narrow( inst_f4,   inst ); 
     strid::Narrow( iinst_f4, iinst ); 
-}
-
-inline void stree::save_inst(const char* fold) const 
-{
-    NP::Write(fold, "inst.npy",    (double*)inst.data(), inst.size(), 4, 4 ); 
-    NP::Write(fold, "inst_f4.npy", (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
-
-    NP::Write(fold, "iinst.npy",    (double*)iinst.data(), iinst.size(), 4, 4 ); 
-    NP::Write(fold, "iinst_f4.npy", (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
 }
 
 

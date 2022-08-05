@@ -6,7 +6,7 @@
 #include "strid.h"
 #include "stree.h"
 
-const char* FOLD = getenv("FOLD");  
+const char* STBASE = getenv("STBASE");  
 
 void test_get_ancestors(const stree& st)
 {
@@ -212,7 +212,7 @@ void test_desc_progeny(const stree& st, const char* qname )
 int main(int argc, char** argv)
 {
     stree st ; 
-    st.load(FOLD); 
+    st.load(STBASE); 
 
     std::cout << "st.desc_sub(false)" << std::endl << st.desc_sub(false) << std::endl ;
     //std::cout << "st.desc_sub(true)"  << std::endl << st.desc_sub(true)  << std::endl ;
@@ -229,7 +229,7 @@ int main(int argc, char** argv)
     */
 
     st.add_inst(); 
-    st.save_inst(FOLD); 
+    st.save_inst(STBASE); 
 
     return 0 ; 
 }

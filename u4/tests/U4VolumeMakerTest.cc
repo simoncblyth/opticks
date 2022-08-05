@@ -7,7 +7,7 @@ int main(int argc, char** argv)
 
     LOG(info) << U4VolumeMaker::Desc() ; 
 
-    G4VPhysicalVolume* pv = U4VolumeMaker::PV();  
+    const G4VPhysicalVolume* pv = U4VolumeMaker::PV();  
     LOG(info) << " pv " << pv ;  
 
     return 0 ; 

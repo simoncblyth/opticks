@@ -9,7 +9,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     const char* path = SPath::Resolve("$SomeGDMLPath", FILEPATH) ; 
-    G4VPhysicalVolume* world = U4GDML::Read(path) ;  
+    const G4VPhysicalVolume* world = U4GDML::Read(path) ;  
 
     U4Traverse::Traverse(world); 
 

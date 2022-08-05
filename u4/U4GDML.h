@@ -7,21 +7,25 @@ class G4GDMLParser ;
 struct U4GDML
 {
     static plog::Severity LEVEL ; 
-    static G4VPhysicalVolume* Read();
-    static G4VPhysicalVolume* Read(const char* path);
-    static void Write(G4VPhysicalVolume* world, const char* path);
+    static const G4VPhysicalVolume* Read();
+    static const G4VPhysicalVolume* Read(const char* path);
+    static const G4VPhysicalVolume* Read(const char* base, const char* name);
+    static void Write(const G4VPhysicalVolume* world, const char* path);
+    static void Write(const G4VPhysicalVolume* world, const char* base, const char* name) ;
 
     bool read_trim ; 
     bool read_validate ; 
     bool write_refs ; 
     const char* write_schema_location ; 
 
-    U4GDML(G4VPhysicalVolume* world_=nullptr ); 
+    U4GDML(const G4VPhysicalVolume* world_=nullptr ); 
 
     G4GDMLParser*      parser ;
-    G4VPhysicalVolume* world ;  
+    const G4VPhysicalVolume* world ;  
 
+    void read( const char* base, const char* name);
     void read( const char* path);
+    void write(const char* base, const char* name);
     void write(const char* path);
 };
 
@@ -43,24 +47,37 @@ GDML fixups that allow Geant4 to parse the JUNO GDML.
 
 **/
 
-inline G4VPhysicalVolume* U4GDML::Read()
+inline const G4VPhysicalVolume* U4GDML::Read()
 {
     return Read("$IDPath/origin_GDMLKludge.gdml"); 
 }
 
-inline G4VPhysicalVolume* U4GDML::Read(const char* path)
+inline const G4VPhysicalVolume* U4GDML::Read(const char* path)
 {
     U4GDML g ; 
     g.read(path); 
     return g.world ; 
 }
-inline void U4GDML::Write(G4VPhysicalVolume* world, const char* path)
+inline const G4VPhysicalVolume* U4GDML::Read(const char* base, const char* name)
+{
+    U4GDML g ; 
+    g.read(base, name); 
+    return g.world ; 
+}
+inline void U4GDML::Write(const G4VPhysicalVolume* world, const char* path)
 {
     U4GDML g(world) ; 
     g.write(path); 
 }
+inline void U4GDML::Write(const G4VPhysicalVolume* world, const char* base, const char* name)
+{
+    U4GDML g(world) ; 
+    g.write(base, name); 
+}
 
-inline U4GDML::U4GDML(G4VPhysicalVolume* world_)
+
+
+inline U4GDML::U4GDML(const G4VPhysicalVolume* world_)
     :
     read_trim(false),
     read_validate(false),
@@ -71,6 +88,11 @@ inline U4GDML::U4GDML(G4VPhysicalVolume* world_)
 {
 }
 
+inline void U4GDML::read(const char* base, const char* name)
+{
+    const char* path = SPath::Resolve(base, name, NOOP); 
+    read(path);  
+}
 inline void U4GDML::read(const char* path_)
 {
     const char* path = SPath::Resolve(path_, NOOP); 
@@ -81,6 +103,11 @@ inline void U4GDML::read(const char* path_)
     world = parser->GetWorldVolume(setupName) ; 
 }
 
+inline void U4GDML::write(const char* base, const char* name)
+{
+    const char* path = SPath::Resolve(base, name, FILEPATH); 
+    write(path);  
+}
 inline void U4GDML::write(const char* path)
 {
     if(SPath::Exists(path)) 

@@ -269,8 +269,8 @@ struct CSG_API CSGFoundry : public SGeo
 
     const char* getBaseDir(bool create) const ; 
 
-    void save(const char* dir) const ;
-    void save(const char* base, const char* rel) const ;
+    void save_(const char* dir) const ;
+    void save(const char* base, const char* rel=nullptr ) const ;
     void saveAlt() const ; 
 
     // these argumentless methods require CFBASE envvar or geom member to be set 

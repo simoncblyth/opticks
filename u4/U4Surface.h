@@ -19,13 +19,13 @@ struct U4Surface
 
     static G4OpticalSurface* MakeOpticalSurface( const char* name_ ); 
 
-    static G4LogicalBorderSurface* MakeBorderSurface(const char* name_, const char* type_, const char* pv1_, const char* pv2_, G4VPhysicalVolume* start_pv ); 
-    static G4LogicalBorderSurface* MakePerfectAbsorberBorderSurface(const char* name_, const char* pv1, const char* pv2, G4VPhysicalVolume* start_pv  ); 
-    static G4LogicalBorderSurface* MakePerfectDetectorBorderSurface(const char* name_, const char* pv1, const char* pv2, G4VPhysicalVolume* start_pv  ); 
+    static G4LogicalBorderSurface* MakeBorderSurface(const char* name_, const char* type_, const char* pv1_, const char* pv2_, const G4VPhysicalVolume* start_pv ); 
+    static G4LogicalBorderSurface* MakePerfectAbsorberBorderSurface(const char* name_, const char* pv1, const char* pv2, const G4VPhysicalVolume* start_pv  ); 
+    static G4LogicalBorderSurface* MakePerfectDetectorBorderSurface(const char* name_, const char* pv1, const char* pv2, const G4VPhysicalVolume* start_pv  ); 
 
-    static G4LogicalBorderSurface* MakeBorderSurface(const char* name_, const char* type_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2 ); 
-    static G4LogicalBorderSurface* MakePerfectAbsorberBorderSurface(const char* name_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2 ); 
-    static G4LogicalBorderSurface* MakePerfectDetectorBorderSurface(const char* name_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2 ); 
+    static G4LogicalBorderSurface* MakeBorderSurface(const char* name_, const char* type_, const G4VPhysicalVolume* pv1, const G4VPhysicalVolume* pv2 ); 
+    static G4LogicalBorderSurface* MakePerfectAbsorberBorderSurface(const char* name_, const G4VPhysicalVolume* pv1, const G4VPhysicalVolume* pv2 ); 
+    static G4LogicalBorderSurface* MakePerfectDetectorBorderSurface(const char* name_, const G4VPhysicalVolume* pv1, const G4VPhysicalVolume* pv2 ); 
 
 };
 
@@ -74,18 +74,18 @@ Getting G4OpBoundaryProcess to always give boundary status Detection for a surfa
 **/
 
 
-inline G4LogicalBorderSurface* U4Surface::MakeBorderSurface(const char* name_, const char* type_, const char* pv1_, const char* pv2_, G4VPhysicalVolume* start_pv )
+inline G4LogicalBorderSurface* U4Surface::MakeBorderSurface(const char* name_, const char* type_, const char* pv1_, const char* pv2_, const G4VPhysicalVolume* start_pv )
 {
-    G4VPhysicalVolume* pv1 = U4Volume::FindPV( start_pv, pv1_ ); 
-    G4VPhysicalVolume* pv2 = U4Volume::FindPV( start_pv, pv2_ ); 
+    const G4VPhysicalVolume* pv1 = U4Volume::FindPV( start_pv, pv1_ ); 
+    const G4VPhysicalVolume* pv2 = U4Volume::FindPV( start_pv, pv2_ ); 
     return ( pv1 && pv2 ) ? MakeBorderSurface(name_, type_, pv1, pv2 ) : nullptr ;  
 }
 
-inline G4LogicalBorderSurface* U4Surface::MakePerfectAbsorberBorderSurface(const char* name_, const char* pv1, const char* pv2, G4VPhysicalVolume* start_pv)
+inline G4LogicalBorderSurface* U4Surface::MakePerfectAbsorberBorderSurface(const char* name_, const char* pv1, const char* pv2, const G4VPhysicalVolume* start_pv)
 {
     return MakeBorderSurface(name_, PerfectAbsorber, pv1, pv2, start_pv ); 
 }
-inline G4LogicalBorderSurface* U4Surface::MakePerfectDetectorBorderSurface(const char* name_, const char* pv1, const char* pv2, G4VPhysicalVolume* start_pv)
+inline G4LogicalBorderSurface* U4Surface::MakePerfectDetectorBorderSurface(const char* name_, const char* pv1, const char* pv2, const G4VPhysicalVolume* start_pv)
 {
     return MakeBorderSurface(name_, PerfectDetector, pv1, pv2, start_pv ); 
 }
@@ -93,7 +93,7 @@ inline G4LogicalBorderSurface* U4Surface::MakePerfectDetectorBorderSurface(const
 
 
 
-inline G4LogicalBorderSurface* U4Surface::MakeBorderSurface(const char* name_, const char* type_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2)
+inline G4LogicalBorderSurface* U4Surface::MakeBorderSurface(const char* name_, const char* type_, const G4VPhysicalVolume* pv1, const G4VPhysicalVolume* pv2)
 {
     unsigned type = Type(type_); 
 
@@ -118,15 +118,18 @@ inline G4LogicalBorderSurface* U4Surface::MakeBorderSurface(const char* name_, c
     }
 
     G4String name = name_ ; 
-    G4LogicalBorderSurface* bs = new G4LogicalBorderSurface(name, pv1, pv2, os ); 
+
+    G4VPhysicalVolume* pv1_ = const_cast<G4VPhysicalVolume*>(pv1); 
+    G4VPhysicalVolume* pv2_ = const_cast<G4VPhysicalVolume*>(pv2); 
+    G4LogicalBorderSurface* bs = new G4LogicalBorderSurface(name, pv1_, pv2_, os ); 
     return bs ; 
 }
 
-inline G4LogicalBorderSurface* U4Surface::MakePerfectAbsorberBorderSurface(const char* name_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2)
+inline G4LogicalBorderSurface* U4Surface::MakePerfectAbsorberBorderSurface(const char* name_, const G4VPhysicalVolume* pv1, const G4VPhysicalVolume* pv2)
 {
     return MakeBorderSurface(name_, PerfectAbsorber, pv1, pv2 ); 
 }
-inline G4LogicalBorderSurface* U4Surface::MakePerfectDetectorBorderSurface(const char* name_, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2)
+inline G4LogicalBorderSurface* U4Surface::MakePerfectDetectorBorderSurface(const char* name_, const G4VPhysicalVolume* pv1, const G4VPhysicalVolume* pv2)
 {
     return MakeBorderSurface(name_, PerfectDetector, pv1, pv2 ); 
 }

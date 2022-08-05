@@ -8,6 +8,7 @@
 
 #include "SSys.hh"
 #include "SEvt.hh"
+#include "SGeo.hh"
 #include "SOpticksResource.hh"
 #include "SFrameGenstep.hh"
 
@@ -46,7 +47,7 @@ G4CXOpticks* G4CXOpticks::Get()
 G4CXOpticks::SetGeometry
 --------------------------
 
-Called from Detector framework LSExpDetectorConstruction_Opticks::Setup
+Called for example from Detector framework LSExpDetectorConstruction_Opticks::Setup
 
 **/
 
@@ -55,6 +56,17 @@ void G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
     G4CXOpticks* g4ok = new G4CXOpticks ;
     g4ok->setGeometry(world); 
 }
+
+std::string G4CXOpticks::FormPath(const char* base, const char* rel )
+{
+    if( rel == nullptr ) rel = RELDIR ; 
+    std::stringstream ss ;    
+    ss << base << "/" << rel ; 
+    std::string dir = ss.str();   
+    return dir ; 
+}
+
+
 
 
 void G4CXOpticks::Finalize() // static 
@@ -169,6 +181,9 @@ G4CXOpticks::setGeometry
 
 U4Tree/stree aspiring to become convertable to CSGFoundry and replace GGeo 
 
+HMM: need a way to distingish between a de-natured world coming via GDML save/load  
+and a live original world : as need to do things a bit differently in each case.
+
 **/
 
 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
@@ -177,6 +192,7 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     assert(world); 
     wd = world ; 
     tr = U4Tree::Create(world) ;
+
 #ifdef __APPLE__
     return ;  
 #endif
@@ -193,6 +209,9 @@ void G4CXOpticks::setGeometry(const GGeo* gg_)
     gg = gg_ ; 
     CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ; 
     setGeometry(fd_); 
+
+    // SAVING HERE(AFTER GGeo->CSGFoundry) TEMPORARILY : FOR INTEGRATION DEBUGGING  
+    saveGeometry(); 
 }
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
@@ -277,7 +296,27 @@ void G4CXOpticks::save() const
     LOG(LEVEL) << se->descPhoton() ; 
     LOG(LEVEL) << se->descLocalPhoton() ; 
     LOG(LEVEL) << se->descFramePhoton() ; 
-
-
 }
+
+
+void G4CXOpticks::saveGeometry() const
+{
+    const char* def = SGeo::DefaultDir();  
+    saveGeometry(def) ; 
+}
+void G4CXOpticks::saveGeometry(const char* base, const char* rel) const
+{
+    std::string dir = FormPath(base, rel); 
+    saveGeometry_(dir.c_str()); 
+}
+void G4CXOpticks::saveGeometry_(const char* dir) const
+{
+    std::cout << "[ G4CXOpticks::saveGeometry_ " << ( dir ? dir : "-" ) << std::endl ; 
+    const stree* st = tr ? tr->st : nullptr ; 
+    if(st) st->save(dir) ;   
+    if(fd) fd->save(dir) ; 
+    if(wd) U4GDML::Write(wd, dir, "origin.gdml" ); 
+    std::cout << "] G4CXOpticks::saveGeometry_ " << ( dir ? dir : "-" ) << std::endl ; 
+}
+
  

@@ -1353,25 +1353,16 @@ with the A side.
 
 **/
 
-//const char* SEvt::FALLBACK_DIR = "$DefaultOutputDir" ; 
-const char* SEvt::FALLBACK_DIR = SEventConfig::OutFold() ;
-
-const char* SEvt::DefaultDir()
-{
-    const char* dir_ = SGeo::LastUploadCFBase_OutDir(); 
-    const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
-    return dir ; 
-}
 
 void SEvt::save() 
 {
-    const char* dir = DefaultDir(); 
+    const char* dir = SGeo::DefaultDir(); 
     LOG(LEVEL) << "DefaultDir " << dir ; 
     save(dir); 
 }
 void SEvt::load()
 {
-    const char* dir = DefaultDir(); 
+    const char* dir = SGeo::DefaultDir(); 
     LOG(LEVEL) << "DefaultDir " << dir ; 
     load(dir); 
 }
@@ -1404,7 +1395,7 @@ the same base_ argument is used, which may be nullptr to use the default.
 
 const char* SEvt::getOutputDir(const char* base_) const 
 {
-    const char* base = base_ ? base_ : DefaultDir() ; 
+    const char* base = base_ ? base_ : SGeo::DefaultDir() ; 
     bool with_index = index != MISSING_INDEX ;  
     const char* dir = with_index ? 
                                 SPath::Resolve(base, reldir, index, DIRPATH ) 

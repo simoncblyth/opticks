@@ -1976,10 +1976,11 @@ const char* cfdir = SPath::Resolve("$DefaultOutputDir", DIRPATH);
 
 void CSGFoundry::save(const char* base, const char* rel) const 
 {
+    if(rel == nullptr) rel = RELDIR ; 
     std::stringstream ss ;   
     ss << base << "/" << rel ; 
     std::string dir = ss.str();   
-    save(dir.c_str()); 
+    save_(dir.c_str()); 
 }
 
 /**
@@ -2013,7 +2014,7 @@ void CSGFoundry::saveAlt() const
 
 
 /**
-CSGFoundry::save
+CSGFoundry::save_
 ------------------
 
 Have observed that whilst changing geometry this can lead to "mixed" exports 
@@ -2024,7 +2025,7 @@ TODO: find way to avoid this, by deleting the folder ahead : or asserting on con
 on loading 
  
 **/
-void CSGFoundry::save(const char* dir_) const 
+void CSGFoundry::save_(const char* dir_) const 
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
     LOG(info) << dir ; 

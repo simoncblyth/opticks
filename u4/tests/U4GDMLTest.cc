@@ -7,7 +7,7 @@ int main(int argc, char** argv)
     const char* ipath = SOpticksResource::SomeGDMLPath(); 
     const char* opath = SPath::Resolve("$TMP/U4GDMLTest/out.gdml", FILEPATH) ; 
 
-    G4VPhysicalVolume* world = U4GDML::Read(ipath) ;  
+    const G4VPhysicalVolume* world = U4GDML::Read(ipath) ;  
 
     U4GDML::Write(world, opath ); 
 
