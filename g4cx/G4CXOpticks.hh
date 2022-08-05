@@ -29,6 +29,7 @@ struct G4CX_API G4CXOpticks
     static const plog::Severity LEVEL ;
     static G4CXOpticks* INSTANCE ; 
     static G4CXOpticks* Get(); 
+    static void SetGeometry(const G4VPhysicalVolume* world) ; 
     static void Finalize(); 
 
     const U4Sensor* sd ; 
@@ -50,7 +51,7 @@ struct G4CX_API G4CXOpticks
 
     void setGeometry(); 
     void setGeometry(const char* gdmlpath);
-    void setGeometry(const G4VPhysicalVolume* wd);  
+    void setGeometry(const G4VPhysicalVolume* world);  
     // HMM: maybe add U4Sensor arg here, 
     // if that only makes sense at this level of geometry representation ?
 

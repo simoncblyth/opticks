@@ -5,13 +5,19 @@ update_juno_opticks_integration_for_new_workflow
 * in parallel with this : :doc:`joined_up_thinking_geometry_translation`
 
 
-HMM : Lots of small changes needed : how to proceed
+HMM : Lots of small changes needed : how to proceed ?
 ------------------------------------------------------
 
 * switch off WITH_G4OPTICKS 
 * switch on WITH_G4CXOPTICKS : bring over the blocks of code one at a time
 
 Notice how this means can switch the entire integration with a single flip. 
+
+
+GUIDING PRINCIPALS FOR INTEGRATION 
+
+* IF IT CAN BE DONE WITHIN OPTICKS CODE : DO IT THERE (AS DEVELOPMENT IS SO MUCH EASIER THERE)
+* MINIMIZE INTEGRATION CODE IN THE FRAMEWORK  
 
 
 WITH_G4OPTICKS -> WITH_G4CXOPTICKS
@@ -28,30 +34,6 @@ cmake/Modules/FindOpticks.cmake::
      52     #add_compile_definitions(WITH_G4OPTICKS)
      53     add_compile_definitions(WITH_G4CXOPTICKS)
      54 
-        
-
-
-
-
-
-
-
-
-
-::
-
-    epsilon:offline blyth$ jo
-    /Users/blyth/junotop/offline
-    M       Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc
-    M       Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2_Opticks.hh
-    M       Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc
-    M       Simulation/GenTools/GenTools/GtOpticksTool.h
-    M       Simulation/GenTools/src/GtOpticksTool.cc
-    epsilon:offline blyth$ 
-
-    svn.sh 
-    svn.sh | sh 
-
 
 Overview of the Integration WITH_G4OPTICKS
 ---------------------------------------------------------

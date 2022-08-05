@@ -35,6 +35,20 @@ G4CXOpticks* G4CXOpticks::Get()
     return INSTANCE ; 
 } 
 
+/**
+G4CXOpticks::SetGeometry
+--------------------------
+
+Called from Detector framework LSExpDetectorConstruction_Opticks::Setup
+
+**/
+
+void G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
+{
+    G4CXOpticks* g4ok = new G4CXOpticks ;
+    g4ok->setGeometry(world); 
+}
+
 void G4CXOpticks::Finalize() // static 
 {
     LOG(LEVEL) << "placeholder mimic G4Opticks " ; 
@@ -152,6 +166,7 @@ U4Tree/stree aspiring to become convertable to CSGFoundry and replace GGeo
 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
 {
     LOG(LEVEL) << " G4VPhysicalVolume world " << world ; 
+    assert(world); 
     wd = world ; 
     tr = U4Tree::Create(world) ;
 #ifdef __APPLE__
