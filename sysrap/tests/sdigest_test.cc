@@ -35,6 +35,7 @@ When comparing with digests from files beware of the newline::
 
 #include "sdigest.h"
 #include "ssys.h"
+#include "sstr.h"
 
 void check(const std::vector<std::string>& dig )
 {
@@ -67,7 +68,7 @@ void test_hello()
     ss << "md5 -q -s " << m ; 
     std::string cmd = ss.str(); 
 
-    std::vector<std::string> dig(8) ; 
+    std::vector<std::string> dig(9) ; 
 
     dig[0] = sdigest::Buf( dat, 5 );         // null terminator not included 
     dig[1] = sdigest::Buf( m , strlen(m) );  // strlen does not count terminator 
@@ -86,6 +87,10 @@ void test_hello()
     dig[5] = u1.finalize();  
     dig[6] = u2.finalize();  
     dig[7] = u3.finalize();  
+
+    const char* path = "/tmp/hello.txt" ; 
+    sstr::Write(path, m ); 
+    dig[8] = sdigest::Path(path) ; 
 
     check(dig); 
 }
@@ -115,8 +120,8 @@ void test_int()
 int main(int argc, char** argv)
 {
     /*
-    test_hello(); 
-    */
     test_int(); 
+    */
+    test_hello(); 
     return 0 ;  
 }

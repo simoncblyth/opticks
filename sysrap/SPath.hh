@@ -61,31 +61,33 @@ struct SYSRAP_API SPath
     static const char* Resolve(const char* dir, const char* reldir, const char* name, int idx, int create_dirs); 
 
 
+    // mode:(0 do nothing, 1:assume file path, 2:assume dir path) 
+    static void CreateDirs(const char* path, int mode); 
+
+    static bool LooksLikePath(const char* path);
+    static int MakeDirs( const char* path, int mode=0 ) ; 
+    static void chdir(const char* path, int create_dirs=2 ); 
+    static const char* getcwd() ; 
+
+    static void MakeEmpty(const char* path_); 
+    static bool Exists(const char* path_); 
+    static bool Exists(const char* base, const char* relf); 
+    static const char* PickFirstExisting(const char* path0, const char* path1, const char* path2=nullptr ); 
+
+    static int Remove(const char* path_); 
+
+    static void Copy( const char* dst , const char* src ); 
+    static void Copy( const char* dstname, const char* srcname, const char* dir ); 
 
 
-      // mode:(0 do nothing, 1:assume file path, 2:assume dir path) 
-      static void CreateDirs(const char* path, int mode); 
-
-      static bool LooksLikePath(const char* path);
-      static int MakeDirs( const char* path, int mode=0 ) ; 
-      static void chdir(const char* path, int create_dirs=2 ); 
-      static const char* getcwd() ; 
-
-      static void MakeEmpty(const char* path_); 
-      static bool Exists(const char* path_); 
-      static bool Exists(const char* base, const char* relf); 
-      static const char* PickFirstExisting(const char* path0, const char* path1, const char* path2=nullptr ); 
-
-      static int Remove(const char* path_); 
-
-      template<typename T> static const char* MakePath( const char* prefix, const char* reldir, const T real, const char* name); 
+    template<typename T> static const char* MakePath( const char* prefix, const char* reldir, const T real, const char* name); 
 
 
-      static std::string MakeName( const char* stem, int index, const char* ext ); 
-      static const char* Make( const char* base, const char* reldir,                      const char* stem, int index, const char* ext, int create_dirs ); 
-      static const char* Make( const char* base, const char* reldir, const char* reldir2, const char* stem, int index, const char* ext, int create_dirs ); 
+    static std::string MakeName( const char* stem, int index, const char* ext ); 
+    static const char* Make( const char* base, const char* reldir,                      const char* stem, int index, const char* ext, int create_dirs ); 
+    static const char* Make( const char* base, const char* reldir, const char* reldir2, const char* stem, int index, const char* ext, int create_dirs ); 
 
-      static const char* SearchDirUpTreeWithFile( const char* startdir, const char* relf ); 
+    static const char* SearchDirUpTreeWithFile( const char* startdir, const char* relf ); 
 
 };
 

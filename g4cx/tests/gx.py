@@ -1,31 +1,10 @@
 #!/usr/bin/env python
 """
-
-    In [7]: wse = np.where(st.nds.sensor > -1 )[0]
-
-    In [8]: wse.shape
-    Out[8]: (91224,)
+gx.py : examine geometry from G4CXOpticks::saveGeometry 
+==========================================================
 
 
-    In [9]: wse 
-    Out[9]: array([ 70969,  70970,  70976,  70977,  70983, ..., 336639, 336644, 336645, 336650, 336651])
-
-    In [10]: wse.min()
-    Out[10]: 70969
-
-    In [11]: wse.max()
-    Out[11]: 336651
-
-    In [12]: np.unique( wse )
-    Out[12]: array([ 70969,  70970,  70976,  70977,  70983, ..., 336639, 336644, 336645, 336650, 336651])
-
-    In [13]: np.unique( wse ).shape
-    Out[13]: (91224,)
-
-    In [15]: se = st.nds.sensor[wse]
-
-    In [16]: se
-    Out[16]: array([    0,     1,     2,     3,     4, ..., 91219, 91220, 91221, 91222, 91223], dtype=int32)
+::
 
 
 
@@ -37,15 +16,54 @@ from opticks.ana.fold import Fold
 from opticks.sysrap.stree import stree
 from opticks.CSG.CSGFoundry import CSGFoundry
 
+
+def desc_sensor(st):
+    """
+    desc_sensor
+        nds :  lv : soname
+       4997 : 106 : HamamatsuR12860_PMT_20inch_inner1_solid_I 
+       4997 : 108 : HamamatsuR12860_PMT_20inch_body_solid_1_4 
+      12615 : 113 : NNVTMCPPMT_PMT_20inch_inner1_solid_head 
+      12615 : 115 : NNVTMCPPMT_PMT_20inch_body_solid_head 
+      25600 : 118 : PMT_3inch_inner1_solid_ell_helper 
+      25600 : 120 : PMT_3inch_body_solid_ell_ell_helper 
+       2400 : 130 : PMT_20inch_veto_inner1_solid 
+       2400 : 132 : PMT_20inch_veto_body_solid_1_2 
+
+    """
+    ws = np.where(st.nds.sensor > -1 )[0]
+    se = st.nds.sensor[ws]
+    xse = np.arange(len(se), dtype=np.int32)    
+    assert np.all( xse == se )  
+    ulv, nlv = np.unique(st.nds.lvid[ws], return_counts=True)
+
+    hfmt = "%7s : %3s : %50s : %s "
+    fmt = "%7d : %3d : %50s : %s " 
+    hdr = hfmt % ("nds", "lv", "soname", "0th" )
+
+    zths = [st.find_lvid_node(ulv[i],0) for i in range(len(ulv))]
+
+    extra = [] 
+    for zth in zths:
+        extra += ["zth:%s" % zth,]
+        extra += [st.desc_nodes( st.get_children(zth, prepend_arg=True),brief=True),]
+    pass
+   
+    head = ["desc_sensor",hdr]
+    body = [fmt % ( nlv[i], ulv[i], st.soname_[ulv[i]].decode(), zths[i] ) for i in range(len(ulv))]
+    tail = [hfmt % ( nlv.sum(), "", "", "" ),]
+    return "\n".join(head+body+tail+extra)
+
+
 if __name__ == '__main__':
     cf = CSGFoundry.Load()
     print(cf) 
 
     f = Fold.Load(symbol="f")
     st = stree(f)
-    print(repr(st))
 
-    se = np.where(st.nds.sensor > -1 )[0]  
+    print(repr(st))
+    print(desc_sensor(st))
 pass
         
 

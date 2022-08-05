@@ -7,6 +7,7 @@
 
 struct sstr
 {
+    static void Write(const char* path, const char* txt ); 
     static bool Match( const char* s, const char* q, bool starting=true ); 
     static bool StartsWith( const char* s, const char* q); 
     static const char* TrimTrailing(const char* s);
@@ -15,8 +16,13 @@ struct sstr
 
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
-
 };
+
+inline void sstr::Write(const char* path, const char* txt )
+{
+    std::ofstream fp(path);
+    fp << txt ;  
+}
 
 inline bool sstr::Match( const char* s, const char* q, bool starting )
 {

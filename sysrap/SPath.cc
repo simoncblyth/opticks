@@ -44,6 +44,9 @@
 const plog::Severity SPath::LEVEL = PLOG::EnvLevel("SPath", "DEBUG"); 
 
 
+
+
+
 const char* SPath::Stem( const char* name ) // static
 {
     std::string arg = name ;
@@ -431,6 +434,38 @@ int SPath::Remove(const char* path_)
     assert( strlen(path) > 2 ); 
     return remove(path);  
 }
+
+
+void SPath::Copy( const char* dst__, const char* src__ )
+{
+    const char* src_ = SPath::Resolve( src__, NOOP ); 
+    const char* dst_ = SPath::Resolve( dst__, FILEPATH ); 
+
+    bool same = strcmp(dst_, src_) == 0 ; 
+    assert( same == false ); 
+
+    std::ifstream  src(src_, std::ios::binary);
+    std::ofstream  dst(dst_, std::ios::binary);
+    dst << src.rdbuf();
+}
+
+void SPath::Copy( const char* dstname, const char* srcname, const char* dir )
+{
+    const char* src_ = SPath::Resolve( dir, srcname, NOOP ); 
+    const char* dst_ = SPath::Resolve( dir, dstname, FILEPATH ); 
+
+    bool same = strcmp(dst_, src_) == 0 ; 
+    assert( same == false ); 
+
+    std::ifstream  src(src_, std::ios::binary);
+    std::ofstream  dst(dst_, std::ios::binary);
+    dst << src.rdbuf();
+}
+
+
+
+
+
 
 /**
 SPath::mtime

@@ -38,10 +38,10 @@ struct sdigest
     void add( const char* buffer, int length); 
     std::string finalize() ; 
 
-
     static std::string Item(const NP* a, int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1); 
     static std::string Buf(const char* buffer, int length); 
     static std::string Int(int i); 
+    static std::string Path(const char* path, unsigned bufsize=8192 ); 
 
     static void Update( MD5_CTX& c, const std::string& str); 
     static void Update( MD5_CTX& c, const char* str ); 
@@ -90,6 +90,31 @@ inline std::string sdigest::Int(int i) // static
     Update(c, i); 
     return Finalize(c); 
 }
+
+
+inline std::string sdigest::Path(const char* path, unsigned bufsize )
+{
+    //std::cout << "sdigest::Path [" << path << "]" << std::endl ; 
+
+    FILE* fp = fopen(path, "rb");  
+    if (fp == NULL) 
+    {
+        std::cerr << "failed to open path [" << path << "]" <<  std::endl ; 
+        return "" ; 
+    }
+
+    sdigest dig ; 
+    char* data = new char[bufsize] ; 
+    int bytes ; 
+    while ((bytes = fread (data, 1, bufsize, fp)) != 0) dig.add(data, bytes);   
+    // NB must update just with the bytes read, not the bufsize
+    delete[] data ; 
+
+    std::string out = dig.finalize();
+    //std::cout << "sdigest::Path out [" << out << "]" << std::endl ; 
+    return out ; 
+}
+
 
 inline void sdigest::Update(MD5_CTX& c, const std::string& str)
 {

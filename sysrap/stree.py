@@ -114,14 +114,21 @@ class stree(object):
         pass
         return np.where( self.nds.lvid == lvid )[0] 
 
+    def find_lvid_node( self, arg, ordinal=0 ):
+        nn = self.find_lvid_nodes(arg)
+        return nn[ordinal] 
 
-    def get_children(self, nidx):
+
+    def get_children(self, nidx, prepend_arg=False):
         """
         This is a direct translation of the C++ stree::get_children 
         which will inevitably be slow in python. 
         HMM: how to do this in a more numpy way ?
         """
         children = []
+        if prepend_arg:
+            children.append(nidx)
+        pass
         nd = self.nds[nidx]
         assert nd.index == nidx
         ch = nd.first_child

@@ -3,7 +3,7 @@ usage(){ cat << EOU
 ntds3.sh
 =========
 
-Update geometry, transfer to laptop, load into python::
+Update geometry, transfer to laptop, load into ipython::
 
     ntds3       # on workstation
     ntds3       # on mac laptop : grabs persisted geometry from workstation

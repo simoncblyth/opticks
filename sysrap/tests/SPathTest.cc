@@ -27,6 +27,8 @@
 #include <fstream>
 
 #include "SPath.hh"
+#include "SStr.hh"
+#include "sdigest.h"
 
 #include "OPTICKS_LOG.hh"
 
@@ -344,6 +346,23 @@ void test_SearchDirUpTreeWithFile()
 }
 
 
+void test_Copy()
+{
+    const char* src = "/tmp/src.txt" ; 
+    const char* dst = "/tmp/dst.txt" ; 
+    const char* srcn = "src.txt" ; 
+    const char* dstn = "dst2.txt" ; 
+
+    SStr::Save(src, "SPathTest test_Copy src text\n" ); 
+    SPath::Copy(dst, src ) ; 
+    SPath::Copy(dstn, srcn, "/tmp" ) ; 
+
+    std::string ds = sdigest::Path(src) ;      
+    std::string dd = sdigest::Path(dst) ;      
+    assert( strcmp( ds.c_str(), dd.c_str()) == 0 ); 
+
+}
+
 
 
 int main(int argc , char** argv )
@@ -374,8 +393,9 @@ int main(int argc , char** argv )
     test_Make(); 
     test_MakeEmpty(); 
     test_Remove(); 
-*/
     test_SearchDirUpTreeWithFile(); 
+*/
+    test_Copy(); 
 
     return 0  ; 
 }
