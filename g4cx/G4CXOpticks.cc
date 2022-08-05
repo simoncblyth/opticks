@@ -9,6 +9,7 @@
 #include "SSys.hh"
 #include "SEvt.hh"
 #include "SGeo.hh"
+#include "SEventConfig.hh"
 #include "SOpticksResource.hh"
 #include "SFrameGenstep.hh"
 
@@ -301,7 +302,9 @@ void G4CXOpticks::save() const
 
 void G4CXOpticks::saveGeometry() const
 {
-    const char* def = SGeo::DefaultDir();  
+    //const char* def = SGeo::DefaultDir();   // huh giving null 
+    const char* def = SEventConfig::OutFold() ; 
+    std::cout << "G4CXOpticks::saveGeometry def [" << ( def ? def : "-" ) << std::endl ; 
     saveGeometry(def) ; 
 }
 void G4CXOpticks::saveGeometry(const char* base, const char* rel) const
@@ -309,8 +312,9 @@ void G4CXOpticks::saveGeometry(const char* base, const char* rel) const
     std::string dir = FormPath(base, rel); 
     saveGeometry_(dir.c_str()); 
 }
-void G4CXOpticks::saveGeometry_(const char* dir) const
+void G4CXOpticks::saveGeometry_(const char* dir_) const
 {
+    const char* dir = SPath::Resolve(dir_, DIRPATH); 
     std::cout << "[ G4CXOpticks::saveGeometry_ " << ( dir ? dir : "-" ) << std::endl ; 
     const stree* st = tr ? tr->st : nullptr ; 
     if(st) st->save(dir) ;   

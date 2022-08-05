@@ -74,7 +74,31 @@ const char* SOpticksResource::RNGDir(){         return SPath::Resolve(RNGCacheDi
 const char* SOpticksResource::RuncacheDir(){    return SPath::Resolve(ResolveUserCachePrefix(), "runcache", NOOP); }
 const char* SOpticksResource::PrecookedDir(){   return SPath::Resolve(ResolvePrecookedPrefix(), "precooked", NOOP); }
 
-const char* SOpticksResource::ExecutableName(){  return SSys::getenvvar("SOpticksResource_ExecutableName", SProc::ExecutableName() ) ; } 
+
+/**
+SOpticksResource::ExecutableName
+---------------------------------
+
+In embedded running SProc::ExecutableName returns "python3.8" 
+As that is not very informative it is replaced with the value of the 
+SCRIPT envvar if it is defined, or otherwise defaulting to "script"
+
+A good practice would be to define and export SCRIPT in the 
+invoking bash function, with the line::
+
+   export SCRIPT=$FUNCNAME 
+
+Alternatively the returned name can be controlled directly, not just when embedded, 
+using envvar SOpticksResource_ExecutableName
+
+**/
+
+const char* SOpticksResource::ExecutableName()
+{  
+    const char* exe = SProc::ExecutableName() ; 
+    if(SStr::StartsWith(exe, "python")) exe = SSys::getenvvar("SCRIPT", "script" ); 
+    return SSys::getenvvar("SOpticksResource_ExecutableName", exe ) ; 
+} 
 
 /**
 SOpticksResource::DefaultOutputDir

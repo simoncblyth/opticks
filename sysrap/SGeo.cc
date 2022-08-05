@@ -80,6 +80,7 @@ const char* SGeo::DefaultDir()
 {
     const char* dir_ = LastUploadCFBase_OutDir(); 
     const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
+    if( dir == nullptr ) std::cout << "SGeo::DefaultDir ERR null, FALLBACK_DIR  " << ( FALLBACK_DIR ? FALLBACK_DIR : "-" ) << "]" << std::endl ;  
     return dir ; 
 }
 
