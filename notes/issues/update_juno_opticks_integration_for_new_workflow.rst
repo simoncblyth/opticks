@@ -36,6 +36,33 @@ cmake/Modules/FindOpticks.cmake::
      54 
 
 
+Added G4CXOpticks::saveGeometry
+-----------------------------------
+
+::
+
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/origin.gdml
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/nds.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/m2w.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/w2m.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/subs_freq/val.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/subs_freq/key.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/solid.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/prim.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/node.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/tran.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/itra.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/inst.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/SSim/bnd.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/SSim/optical.npy
+    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/SSim/icdf.npy
+    epsilon:g4cx blyth$ 
+
+
+TODO: check GDXML::Fix running and incorporate it 
+
+
+
 Issue 1 : Lack of Opticks : FIXED BY MOVING Opticks::Configure within G4CXOpticks::setGeometry
 -------------------------------------------------------------------------------------------------
 

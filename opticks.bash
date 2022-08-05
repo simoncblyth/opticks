@@ -2552,7 +2552,9 @@ cxt(){ cd $(opticks-home)/CSGOptiX/tests ; pwd_ ; }
 u4(){ cd $(opticks-home)/u4 ; pwd_ ; }
 u4t(){ cd $(opticks-home)/u4/tests ; pwd_ ; }
 gx(){ cd $(opticks-home)/g4cx ; pwd_ ; }
+gxt(){ cd $(opticks-home)/g4cx/tests ; pwd_ ; }
 gd(){ cd $(opticks-home)/gdxml ; pwd_ ; }
+gdt(){ cd $(opticks-home)/gdxml/tests ; pwd_ ; }
 
 qu(){ qudarap $* ; pwd_ ; }
 qt(){ qudarap tests ; pwd_ ; }
