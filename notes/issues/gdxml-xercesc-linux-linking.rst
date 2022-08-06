@@ -2,6 +2,17 @@ gdxml-xercesc-linux-linking
 ==============================
 
 
+Solution
+----------
+
+Make gdxml depend in G4 at CMake level only, just so have access to G4Persistency 
+target from which to grab the consistent XercesC version. 
+
+
+Symptoms
+----------
+
+1. config fails to find the G4persistency target 
 
 ::
 
@@ -42,6 +53,9 @@ gdxml-xercesc-linux-linking
     -- Generating done
 
 
+2. linking fails with missing XercesC symbols from version shear
+
+::
 
     == opticks-setup-      nodir     append      LD_LIBRARY_PATH /home/blyth/local/opticks/externals/OptiX_700/lib
     === opticks-setup-      nodir     append      LD_LIBRARY_PATH /home/blyth/local/opticks/externals/OptiX_700/lib64

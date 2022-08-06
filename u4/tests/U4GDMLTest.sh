@@ -2,6 +2,9 @@
 
 usage(){  cat << EOU 
 
+Before using U4GDML::Write with GDXML::Fix 
+---------------------------------------------
+
 G4GDML: Reading '/tmp/blyth/opticks/ntds3/G4CXOpticks/origin.gdml'...
 G4GDML: Reading definitions...
 
@@ -33,8 +36,8 @@ if [ ! -f "$GDMLPATH" ]; then
    exit 1
 fi 
 
-#U4GDMLTest $GDMLPATH
-U4GDMLTest 
+U4GDMLTest $GDMLPATH
+#U4GDMLTest 
 
 
 

@@ -6,7 +6,7 @@ class G4GDMLParser ;
 
 struct U4GDML
 {
-    static plog::Severity LEVEL ; 
+    static constexpr const plog::Severity LEVEL = info ; 
     static const G4VPhysicalVolume* Read();
     static const G4VPhysicalVolume* Read(const char* path);
     static const G4VPhysicalVolume* Read(const char* base, const char* name);
@@ -32,9 +32,12 @@ struct U4GDML
 
 
 
-//#include "PLOG.hh"
+
+
+
 #include "SPath.hh"
 #include "SStr.hh"
+#include "SSys.hh"
 #include "G4GDMLParser.hh"
 #include "GDXML.hh"
 
@@ -52,7 +55,9 @@ GDML fixups that allow Geant4 to parse the JUNO GDML.
 
 inline const G4VPhysicalVolume* U4GDML::Read()
 {
-    return Read("$IDPath/origin_GDMLKludge.gdml"); 
+    return Read("$IDPath/origin_GDMLKludge.gdml");  
+    // HMM: hardcoded path is out of place here, especially this old path  
+    // should come via SOpticksResource with a technique to override 
 }
 
 inline const G4VPhysicalVolume* U4GDML::Read(const char* path)
@@ -112,6 +117,9 @@ inline void U4GDML::write(const char* base, const char* name)
     write(path);  
 }
 
+
+
+
 /**
 U4GDML::write
 ---------------
@@ -122,17 +130,39 @@ Example of steps taken when *path* is "/some/dir/to/example.gdml"
 2. rawpath GDML is read as XML and some issues may be fixed (using GDXML::Fix) 
 3. fixed XML is written to original *path* "/some/dir/to/example.gdml"  
 
+To disable use of GDXML::Fix define envvar::
+
+    export U4GDML_GDXML_FIX_DISABLE=1
+
 **/
 
 inline void U4GDML::write(const char* path)
 {
     assert( SStr::EndsWith(path, ".gdml") ); 
-    const char* rawpath = SStr::ReplaceEnd(path, ".gdml", "_raw.gdml" );  
-    write_(rawpath); 
-
-    const char* srcpath = rawpath ; 
     const char* dstpath = path ; 
-    GDXML::Fix( dstpath, srcpath );     
+
+    const char* ekey = "U4GDML_GDXML_FIX_DISABLE" ; 
+    bool U4GDML_GDXML_FIX_DISABLE = SSys::getenvbool(ekey) ;
+    bool U4GDML_GDXML_FIX = !U4GDML_GDXML_FIX_DISABLE  ; 
+
+    LOG(LEVEL) 
+        << " ekey " << ekey 
+        << " U4GDML_GDXML_FIX_DISABLE " << U4GDML_GDXML_FIX_DISABLE
+        << " U4GDML_GDXML_FIX " << U4GDML_GDXML_FIX 
+        ; 
+
+    if(U4GDML_GDXML_FIX)
+    {
+        const char* rawpath = SStr::ReplaceEnd(path, ".gdml", "_raw.gdml" );  
+        write_(rawpath); 
+        GDXML::Fix( dstpath, rawpath );     
+        LOG(LEVEL) << " Apply GDXML::Fix " << " rawpath " << rawpath << " dstpath " << dstpath ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " NOT Applying GDXML::Fix " << " dstpath " << dstpath ; 
+        write_(dstpath); 
+    }
 }
 
 inline void U4GDML::write_(const char* path)
