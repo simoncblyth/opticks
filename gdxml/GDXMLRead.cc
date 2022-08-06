@@ -208,7 +208,7 @@ GDXMLRead::checkDuplicatedMatrix
 int GDXMLRead::checkDuplicatedMatrix()
 {
     unsigned num_matrix =  matrix.size() ; 
-    LOG(info) << " num_matrix " << num_matrix ; 
+    LOG(LEVEL) << " num_matrix " << num_matrix ; 
     int total_duplicated_matrix = 0 ;  
 
     for(unsigned i=0 ; i < num_matrix ; i++)
@@ -232,24 +232,26 @@ int GDXMLRead::checkDuplicatedMatrix()
             }
         }
 
+        std::stringstream ss ; 
+
         if(dupes.size() > 0 )
         {
-            std::cout << std::endl << " i " << std::setw(5) << i << " : " << matrix[i].desc() << std::endl ; 
+            ss << std::endl << " i " << std::setw(5) << i << " : " << matrix[i].desc() << std::endl ; 
             for(unsigned k=0 ; k < dupes.size() ; k++)
             {
                 unsigned j = dupes[k] ; 
-                std::cout << " j " << std::setw(5) << j << " : " << matrix[j].desc() << std::endl ; 
+                ss << " j " << std::setw(5) << j << " : " << matrix[j].desc() << std::endl ; 
             }
         }
+        std::string s = ss.str(); 
+        LOG(LEVEL) <<  s ; 
 
         total_duplicated_matrix += dupes.size() ; 
     } 
 
-    std::cout
-        << "GDXMLRead::checkDuplicatedMatrix"
+    LOG(LEVEL)
         << " num_matrix " << num_matrix 
         << " total_duplicated__matrix " << total_duplicated_matrix 
-        << std::endl
         ; 
 
     return total_duplicated_matrix ; 
@@ -260,7 +262,7 @@ int GDXMLRead::pruneDuplicatedMatrix()
 {
     assert(the_defineElement);
     unsigned num_matrix =  matrix.size() ; 
-    LOG(info) << " num_matrix " << num_matrix ; 
+    LOG(LEVEL) << " num_matrix " << num_matrix ; 
 
     unsigned prune_count = 0 ;
     for(unsigned i=0 ; i < num_matrix ; i++)
@@ -268,15 +270,13 @@ int GDXMLRead::pruneDuplicatedMatrix()
         Matrix& im = matrix[i]  ;  
         if( im.repeat_index > -1 )
         {
-            std::cout << "pruning i " << std::setw(5) << i << " im.desc " << im.desc() << std::endl ; 
+            LOG(LEVEL) << "pruning i " << std::setw(5) << i << " im.desc " << im.desc() ; 
             the_defineElement->removeChild(im.matrixElement) ; 
             prune_count += 1 ; 
         }
     }
-    std::cout 
-        << "GDXMLRead::pruneDuplicatedMatrix"
+    LOG(LEVEL)
         << " prune_count " << prune_count 
-        << std::endl 
         ;
 
     return prune_count ; 

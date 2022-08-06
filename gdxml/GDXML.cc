@@ -33,7 +33,7 @@ But file organization is left to the user.
 
 void GDXML::Fix(const char* dstpath, const char* srcpath)  // static
 {
-    xercesc::XMLPlatformUtils::Initialize();
+    xercesc::XMLPlatformUtils::Initialize();  // HMM: might clash with Geant4 ? 
 
     bool same = strcmp(dstpath, srcpath) == 0 ; 
     assert( same == false ); 
@@ -78,11 +78,11 @@ std::string GDXML::desc() const
 void GDXML::write(const char* dstpath)
 {
     const char* txtpath = SStr::ReplaceEnd(dstpath, ".gdml", "_gdxml_report.txt" ); 
-    LOG(info) << "writing dstpath " << dstpath  << " txtpath " << txtpath ; 
-
+    LOG(LEVEL) << "writing .gdml dstpath " << dstpath ; 
+    LOG(LEVEL) << "writing .txt report txtpath " <<  txtpath ;
     writer->write(dstpath); 
-
     std::string rep = desc(); 
+    LOG(LEVEL) << " rep " << std::endl << rep ; 
     SStr::Save(txtpath, rep.c_str() ); 
 }
 

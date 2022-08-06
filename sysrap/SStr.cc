@@ -87,7 +87,7 @@ void SStr::Save(const char* path_, const char* txt )
     int create_dirs = in_pwd ? NOOP : FILEPATH ; 
 
     const char* path = SPath::Resolve(path_, create_dirs );  
-    LOG(info) << "SPath::Resolve " << path_ << " to " << path << " create_dirs " << create_dirs << " in_pwd " << in_pwd  ; 
+    LOG(LEVEL) << "SPath::Resolve " << path_ << " to " << path << " create_dirs " << create_dirs << " in_pwd " << in_pwd  ; 
     std::ofstream fp(path);
     fp << txt ;  
 }
@@ -96,7 +96,7 @@ const char* SStr::Load(const char* path_ )
 {
     int create_dirs = 0 ; // 0:do nothing
     const char* path = SPath::Resolve(path_, create_dirs);  // 
-    LOG(info) << "SPath::Resolve " << path_ << " to " << path ; 
+    LOG(LEVEL) << "SPath::Resolve " << path_ << " to " << path ; 
     std::ifstream fp(path);
 
     std::stringstream ss ; 
