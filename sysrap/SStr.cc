@@ -61,7 +61,8 @@ Hmm presumably base64 code might do this at a higher level ?
 
 void SStr::Save(const char* path_, const std::vector<std::string>& a, char delim )   // static
 {
-    int create_dirs = 1 ; // 1:filepath
+    bool in_pwd = strchr(path_, '/' ) == nullptr ; 
+    int create_dirs = in_pwd ? NOOP : FILEPATH ; 
     const char* path = SPath::Resolve(path_, create_dirs);  // 
     LOG(info) << "SPath::Resolve " << path_ << " to " << path ; 
     std::ofstream fp(path);
@@ -73,15 +74,20 @@ void SStr::Save(const char* path_, const std::vector<std::string>& a, char delim
 SStr::Save
 -----------
 
-When saving into PWD it is necessary to manually set create_dirs to 0 
-otherwise the file is not written but rather an directory is created. TODO: fix this
+Formerly when saving into PWD it was necessary to manually set create_dirs to 0 
+otherwise the file is not written but rather an empty directory was created and no file written.
+
+This issue has been fixed by checking for a "/" in the path and setting create_dirs accordingly.
 
 **/
 
-void SStr::Save(const char* path_, const char* txt, int create_dirs )
+void SStr::Save(const char* path_, const char* txt )
 {
-    const char* path = SPath::Resolve(path_, create_dirs);  // 
-    LOG(info) << "SPath::Resolve " << path_ << " to " << path ; 
+    bool in_pwd = strchr(path_, '/' ) == nullptr ; 
+    int create_dirs = in_pwd ? NOOP : FILEPATH ; 
+
+    const char* path = SPath::Resolve(path_, create_dirs );  
+    LOG(info) << "SPath::Resolve " << path_ << " to " << path << " create_dirs " << create_dirs << " in_pwd " << in_pwd  ; 
     std::ofstream fp(path);
     fp << txt ;  
 }
@@ -721,6 +727,9 @@ const char* SStr::ReplaceEnd( const char* s, const char* q, const char* r  )
     std::string n = ss.str(); 
     return strdup(n.c_str());
 }
+
+
+
 
 
 

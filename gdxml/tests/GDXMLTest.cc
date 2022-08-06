@@ -1,19 +1,24 @@
 #include <iostream>
-#include <xercesc/parsers/XercesDOMParser.hpp>
+
+
+/*
 #include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/sax/HandlerBase.hpp>
 #include <xercesc/util/XMLUni.hpp>
 #include <xercesc/dom/DOM.hpp>
+*/
 
 #include "OPTICKS_LOG.hh"
+#include "SPath.hh"
 #include "GDXML.hh"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    //OPTICKS_LOG_::Check();
 
     const char* srcpath = argc > 1 ? argv[1] : nullptr ; 
+    const char* dstpath = SPath::Resolve("$TMP/GDXMLTest/test.gdml", FILEPATH) ; 
 
     if(!srcpath) 
     {
@@ -22,13 +27,13 @@ int main(int argc, char** argv)
         return 0 ; 
     }
 
-    xercesc::XMLPlatformUtils::Initialize();
+    //xercesc::XMLPlatformUtils::Initialize();
 
-    const char* dstpath = GDXML::Fix(srcpath) ; 
+    GDXML::Fix(dstpath, srcpath) ; 
+
     LOG(info)
-        << "GDXML::Fix(" << srcpath << ") " 
-        << ( dstpath ? "FIXED ISSUES AND WROTE A KLUDGED GDML FILE:" : "found no issues to fix" )
-        << ( dstpath ? dstpath : " " )
+        << " srcpath " << srcpath  
+        << " dstpath " << dstpath  
         ; 
 
     return 0 ; 

@@ -18,6 +18,7 @@ so depend on that in specific tests not generally
 
 find_package(SysRap REQUIRED CONFIG)
 find_package(G4 REQUIRED MODULE)
+find_package(GDXML REQUIRED CONFIG)
 
 find_package(CLHEP  REQUIRED CONFIG) 
 # Geant4 should have found CLHEP already, but when using Randomize get 
@@ -74,6 +75,7 @@ target_link_libraries( ${name} PUBLIC
     Opticks::SysRap 
     CLHEP::CLHEP
     Opticks::OpticksXercesC
+    Opticks::GDXML
 )
 
 target_include_directories( ${name} PUBLIC 

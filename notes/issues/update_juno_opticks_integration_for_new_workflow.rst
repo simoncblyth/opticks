@@ -37,6 +37,65 @@ cmake/Modules/FindOpticks.cmake::
 
 
 
+What is the effect of having non-sensitive SD volumes ?
+----------------------------------------------------------
+
+Probably no effect, as need "theStatus == Detection" anyhow
+and to get "Detection" need an efficiency property with value 
+greater than zero and a suitable random throw. 
+
+BUT : it adds a complication for communicating efficiencies 
+
+::
+
+    411 inline
+    412 void InstrumentedG4OpBoundaryProcess::DoAbsorption()
+    413 {
+    414               theStatus = Absorption;
+    415 
+    416               if ( G4BooleanRand_theEfficiency(theEfficiency) ) {
+    417 
+    418                  // EnergyDeposited =/= 0 means: photon has been detected
+    419                  theStatus = Detection;
+    420                  aParticleChange.ProposeLocalEnergyDeposit(thePhotonMomentum);
+    421               }
+    422               else {
+    423                  aParticleChange.ProposeLocalEnergyDeposit(0.0);
+    424               }
+    425 
+    426               NewMomentum = OldMomentum;
+    427               NewPolarization = OldPolarization;
+    428 
+    429 //              aParticleChange.ProposeEnergy(0.0);
+    430               aParticleChange.ProposeTrackStatus(fStopAndKill);
+    431 }
+
+
+::
+
+    1617 G4bool InstrumentedG4OpBoundaryProcess::InvokeSD(const G4Step* pStep)
+    1618 {
+    1619   G4Step aStep = *pStep;
+    1620 
+    1621   aStep.AddTotalEnergyDeposit(thePhotonMomentum);
+    1622 
+    1623   G4VSensitiveDetector* sd = aStep.GetPostStepPoint()->GetSensitiveDetector();
+    1624   if (sd) return sd->Hit(&aStep);
+    1625   else return false;
+    1626 }
+
+
+    0222 G4VParticleChange*
+     223 InstrumentedG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+     224 {
+
+     663         if ( theStatus == Detection && fInvokeSD ) InvokeSD(pStep);
+     664 
+     665         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+     666 }
+
+
+
 
 Check Sensors : systematically 2x the number of SD than would expect ?
 ------------------------------------------------------------------------

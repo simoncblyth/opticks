@@ -22,15 +22,17 @@ struct GDXMLWrite ;
 struct GDXML_API GDXML
 {
     static const plog::Severity LEVEL ; 
-
-    static const char* Fix(const char* srcpath); 
+    static void Fix(const char* dstpath, const char* srcpath); 
 
     GDXML(const char* srcpath) ; 
+    void replaceAllConstantWithMatrix(); 
+    void write(const char* dstpath) ; 
+    std::string desc() const ; 
     virtual ~GDXML(); 
 
-    const char*             srcpath ; 
-    const char*             dstpath ; 
 
+
+    const char*             srcpath ; 
     bool                    kludge_truncated_matrix ;
     GDXMLRead*              reader ; 
     xercesc::DOMDocument*   doc  ; 
@@ -38,7 +40,6 @@ struct GDXML_API GDXML
 
     unsigned                num_duplicated_matrixElement ;  
     unsigned                num_pruned_matrixElement ;  
-
     unsigned                num_truncated_matrixElement ;  
     unsigned                num_constants ; 
 
@@ -46,7 +47,6 @@ struct GDXML_API GDXML
     bool                    issues ; 
 
 
-    void replaceAllConstantWithMatrix(); 
 };
 
 

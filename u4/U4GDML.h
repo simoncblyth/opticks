@@ -27,13 +27,16 @@ struct U4GDML
     void read( const char* path);
     void write(const char* base, const char* name);
     void write(const char* path);
+    void write_(const char* path);
 };
 
 
 
 //#include "PLOG.hh"
 #include "SPath.hh"
+#include "SStr.hh"
 #include "G4GDMLParser.hh"
+#include "GDXML.hh"
 
 
 /**
@@ -69,7 +72,7 @@ inline void U4GDML::Write(const G4VPhysicalVolume* world, const char* path)
     U4GDML g(world) ; 
     g.write(path); 
 }
-inline void U4GDML::Write(const G4VPhysicalVolume* world, const char* base, const char* name)
+inline void U4GDML::Write(const G4VPhysicalVolume* world, const char* base, const char* name )
 {
     U4GDML g(world) ; 
     g.write(base, name); 
@@ -108,12 +111,33 @@ inline void U4GDML::write(const char* base, const char* name)
     const char* path = SPath::Resolve(base, name, FILEPATH); 
     write(path);  
 }
+
+/**
+U4GDML::write
+---------------
+
+Example of steps taken when *path* is "/some/dir/to/example.gdml" 
+
+1. rawpath "/some/dir/to/example_raw.gdml" is written using Geant4 GDML parser
+2. rawpath GDML is read as XML and some issues may be fixed (using GDXML::Fix) 
+3. fixed XML is written to original *path* "/some/dir/to/example.gdml"  
+
+**/
+
 inline void U4GDML::write(const char* path)
 {
-    if(SPath::Exists(path)) 
-    {
-        SPath::Remove(path); 
-    }
+    assert( SStr::EndsWith(path, ".gdml") ); 
+    const char* rawpath = SStr::ReplaceEnd(path, ".gdml", "_raw.gdml" );  
+    write_(rawpath); 
+
+    const char* srcpath = rawpath ; 
+    const char* dstpath = path ; 
+    GDXML::Fix( dstpath, srcpath );     
+}
+
+inline void U4GDML::write_(const char* path)
+{
+    if(SPath::Exists(path)) SPath::Remove(path); 
     parser->Write(path, world, write_refs, write_schema_location); 
 }
 

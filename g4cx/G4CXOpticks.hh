@@ -70,5 +70,7 @@ struct G4CX_API G4CXOpticks
     void saveGeometry() const ;
     void saveGeometry(const char* base, const char* rel=nullptr) const; 
     void saveGeometry_(const char* dir) const ; 
+
+
 };
 

@@ -319,8 +319,9 @@ void G4CXOpticks::saveGeometry_(const char* dir_) const
     const stree* st = tr ? tr->st : nullptr ; 
     if(st) st->save(dir) ;   
     if(fd) fd->save(dir) ; 
-    if(wd) U4GDML::Write(wd, dir, "origin.gdml" ); 
+    if(wd) U4GDML::Write(wd, dir, "origin.gdml" );
     std::cout << "] G4CXOpticks::saveGeometry_ " << ( dir ? dir : "-" ) << std::endl ; 
 }
+
 
  

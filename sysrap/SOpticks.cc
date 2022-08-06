@@ -142,8 +142,7 @@ void SOpticks::WriteOutputDirScript(const char* outdir) // static
         << "]"  
         ;    
 
-    int create_dirs = 0 ;  
-    SStr::Save(sh_path, sh.c_str(), create_dirs ) ;  
+    SStr::Save(sh_path, sh.c_str()) ;  
 }
 
 

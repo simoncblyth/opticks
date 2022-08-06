@@ -141,7 +141,9 @@ What you need to do to get logging to work for a package
 #ifdef OPTICKS_CSGOPTIX
 #include "CSGOPTIX_LOG.hh"
 #endif
-
+#ifdef OPTICKS_GDXML
+#include "GDXML_LOG.hh"
+#endif
 #ifdef OPTICKS_G4CX
 #include "G4CX_LOG.hh"
 #endif
@@ -246,6 +248,11 @@ class SYSRAP_API OPTICKS_LOG_ {
 #ifdef OPTICKS_CSGOPTIX
     CSGOPTIX_LOG::Initialize(instance->prefixlevel_parse( max_level, "CSGOPTIX"), app1, NULL );
 #endif
+
+#ifdef OPTICKS_GDXML
+    GDXML_LOG::Initialize(instance->prefixlevel_parse( max_level, "GDXML"), app1, NULL );
+#endif
+
 #ifdef OPTICKS_G4CX
     G4CX_LOG::Initialize(instance->prefixlevel_parse( max_level, "G4CX"), app1, NULL );
 #endif
@@ -422,6 +429,14 @@ class SYSRAP_API OPTICKS_LOG_ {
 #else
     printf("%s\n", "!OPTICKS_CSGOPTIX" ); 
 #endif
+
+#ifdef OPTICKS_GDXML
+    printf("%s\n", "OPTICKS_GDXML" ); 
+    GDXML_LOG::Check("GDXML");
+#else
+    printf("%s\n", "!OPTICKS_GDXML" ); 
+#endif
+
 
 #ifdef OPTICKS_G4CX
     printf("%s\n", "OPTICKS_G4CX" ); 

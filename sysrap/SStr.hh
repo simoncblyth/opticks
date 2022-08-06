@@ -47,7 +47,7 @@ class SYSRAP_API SStr {
   public:
       static const plog::Severity LEVEL ; 
       static void Save(const char* path, const std::vector<std::string>& a, char delim='\n' );    
-      static void Save(const char* path_, const char* txt, int create_dirs=1 ); // 1:filepath 
+      static void Save(const char* path_, const char* txt ); 
       static const char* Load(const char* path_ ); 
       static void LoadList(const char* path, std::vector<std::string>& lines, char delim='\n' ) ; 
       static std::vector<std::string>* LoadList( const char* arg, char delim='\n' ); 

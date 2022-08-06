@@ -246,6 +246,7 @@ int GDXMLRead::checkDuplicatedMatrix()
     } 
 
     std::cout
+        << "GDXMLRead::checkDuplicatedMatrix"
         << " num_matrix " << num_matrix 
         << " total_duplicated__matrix " << total_duplicated_matrix 
         << std::endl

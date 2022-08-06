@@ -315,9 +315,7 @@ void test_Save_Load()
 void test_Save_PWD()
 {
     const char* path = "test_Save_PWD.txt" ; 
-    int create_dirs = 0 ;  // <-- manual requirement TODO:avoid need for this 
-
-    SStr::Save(path, TXT, create_dirs );  
+    SStr::Save(path, TXT );  
 }
 
 
@@ -852,8 +850,8 @@ int main(int argc , char** argv )
     test_FormatInt_2(); 
     test_FormatIndex(); 
     test_Name(); 
-    */
     test_ParseStringIntInt(); 
+    */
 
 
     return 0  ; 
