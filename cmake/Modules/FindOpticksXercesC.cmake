@@ -7,6 +7,12 @@ three approaches
    guessed to be ../include relative to this : these are the default 
    values which the below direct setting can override 
 
+   * Fishing for XercesC within the G4persistency target allows to avoid
+     linking problems from picking various different versions of XercesC. 
+
+   * note that different versions of Geant4 organize CMake targets 
+     differently : some such variation is accomodated here  
+
 2. direct setting from CMake commandline with::
 
     -DXERCESC_INCLUDE_DIR=...
@@ -30,8 +36,6 @@ endif()
 
 
 #[=[
-Fishing for XercesC within the G4persistency target allows to avoid
-problems of picking up different versions of XercesC. 
 
 ::
 
@@ -87,7 +91,7 @@ elseif(TARGET G4persistency)
 
 else()
     #message(FATAL_ERROR "G4persistency target is required" )
-    message(STATUS "FindOpticksXercesC.cmake. Did not find G4persistency target : so look for system XercesC or one provided by cmake arguments " )
+    message(STATUS "FindOpticksXercesC.cmake. WARNING : Did not find G4persistency target : so look for system XercesC or one provided by cmake arguments " )
 endif()
 
 

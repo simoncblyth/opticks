@@ -1,5 +1,13 @@
 #!/bin/bash -l 
 
+logging(){
+   export GDXML=INFO
+   export GDXMLRead=INFO
+   export GDXMLWrite=INFO
+}
+#logging 
+  
+
 default=/tmp/$USER/opticks/ntds3/G4CXOpticks/origin.gdml
 GDMLPATH=${GDMLPATH:-$default}
 
