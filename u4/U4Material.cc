@@ -234,6 +234,8 @@ void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Mate
     G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
     const G4MaterialPropertiesTable* mpt_ = mat->GetMaterialPropertiesTable();
 
+    if( mpt_ == nullptr ) return ; 
+ 
     std::vector<G4String> pnames = mpt_->GetMaterialPropertyNames();
 
     typedef std::map<G4int, G4MaterialPropertyVector*, std::less<G4int> > MIV ; 
@@ -245,8 +247,20 @@ void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Mate
     }
 }
 
+/**
+U4Material::GetPropertyFold
+----------------------------
 
-NPFold* U4Material::GetPropertyFold()
+Converts the properties of all materials into a 
+NPFold with keys of form : "materialName"/"propName" 
+
+HMM: perhaps NPFold can be made to handle sub-NPFold 
+more formally than this, as clearly sometimes want to 
+just load single materials and sometimes all materials. 
+
+**/
+
+NPFold* U4Material::GetPropertyFold_flat()
 {
     NPFold* fold = new NPFold ; 
 
@@ -270,6 +284,24 @@ NPFold* U4Material::GetPropertyFold()
     }  
     return fold ; 
 }
+
+
+NPFold* U4Material::GetPropertyFold()
+{
+    NPFold* fold = new NPFold ; 
+
+    std::vector<std::string> matnames ; 
+    GetMaterialNames(matnames); 
+    for(unsigned i=0 ; i < matnames.size() ; i++)
+    { 
+        const char* material = matnames[i].c_str(); 
+        const G4Material* mat = G4Material::GetMaterial(material) ; 
+        NPFold* matfold = GetPropertyFold(mat) ; 
+        fold->add_subfold( material, matfold ); 
+    }  
+    return fold ; 
+}
+
 
 
 NPFold* U4Material::GetPropertyFold(const G4Material* mat )

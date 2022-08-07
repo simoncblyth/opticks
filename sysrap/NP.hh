@@ -109,9 +109,9 @@ struct NP
 
     template<typename T> static void Write(const char* path                 , const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
 
-    static void WriteNames(const char* dir, const char* name,                     const std::vector<std::string>& names, unsigned num_names=0 ); 
-    static void WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names=0 ); 
-    static void WriteNames(const char* path,                                      const std::vector<std::string>& names, unsigned num_names=0 ); 
+    static void WriteNames(const char* dir, const char* name,                     const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
+    static void WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
+    static void WriteNames(const char* path,                                      const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
 
     static void ReadNames(const char* dir, const char* name, std::vector<std::string>& names ) ;
     static void ReadNames(const char* path,                  std::vector<std::string>& names ) ;
@@ -3938,31 +3938,52 @@ template<typename T> void NP::Read(const char* dir, const char* name, T* dst )
 
 
 
-inline void NP::WriteNames(const char* dir, const char* name, const std::vector<std::string>& names, unsigned num_names_ )
+inline void NP::WriteNames(const char* dir, const char* name, const std::vector<std::string>& names, unsigned num_names_, bool append )
 {
     std::stringstream ss ; 
     ss << dir << "/" << name ; 
     std::string path = ss.str() ; 
-    WriteNames(path.c_str(), names, num_names_ ); 
+    WriteNames(path.c_str(), names, num_names_, append  ); 
 }
 
 
-inline void NP::WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names_ )
+inline void NP::WriteNames(const char* dir, const char* reldir, const char* name, const std::vector<std::string>& names, unsigned num_names_, bool append )
 {
     std::string path = form_path(dir, reldir, name); 
-    WriteNames(path.c_str(), names, num_names_ ); 
+    WriteNames(path.c_str(), names, num_names_, append ); 
 }
 
-inline void NP::WriteNames(const char* path, const std::vector<std::string>& names, unsigned num_names_ )
+/**
+NP::WriteNames
+----------------
+
+https://stackoverflow.com/questions/12929378/what-is-the-difference-between-iosapp-and-iosate
+
+app : 'append' 
+    all output will be added (appended) to the end of the file. 
+    In other words you cannot write anywhere else in the file but at the end.
+
+ate : 'at end' 
+    sets the stream position at the end of the file when you open it, 
+    but you are free to move it around (seek) and write wherever it pleases you.
+
+**/
+
+inline void NP::WriteNames(const char* path, const std::vector<std::string>& names, unsigned num_names_, bool append )
 {
     int rc = U::MakeDirsForFile(path); 
     assert( rc == 0 ); 
 
     unsigned num_names = num_names_ == 0 ? names.size() : num_names_ ; 
     assert( num_names <= names.size() ); 
-    std::ofstream stream(path, std::ios::out|std::ios::binary);
+
+    std::ios_base::openmode mode = std::ios::out|std::ios::binary ; 
+    if(append) mode |= std::ios::app ;
+
+    std::ofstream stream(path, mode );
     for( unsigned i=0 ; i < num_names ; i++) stream << names[i] << std::endl ; 
     stream.close(); 
+
 }
 
 inline void NP::ReadNames(const char* dir, const char* name, std::vector<std::string>& names )
