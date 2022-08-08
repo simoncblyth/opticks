@@ -40,6 +40,8 @@ class BRAP_API BTxt {
        const char* getLine(unsigned int num) const ; 
        unsigned int getNumLines() const ;
        unsigned int getIndex(const char* line) const ; // index of line or UINT_MAX if not found
+       
+       void write(const char* dir, const char* name) const ;
        void write(const char* path=NULL) const ;
        void prepDir(const char* path=NULL) const ; 
    public:

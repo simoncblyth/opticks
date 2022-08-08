@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <sstream>
+#include <string>
 #include "STime.hh"
 #include "SPath.hh"
 #include <time.h>
@@ -47,6 +49,14 @@ std::string STime::Format(int epochseconds, const char* fmt)
 std::string STime::Stamp()
 {
     return STime::Format(0, nullptr); 
+}
+
+std::string STime::mtime(const char* base, const char* name)
+{
+    std::stringstream ss ;  
+    ss << base << "/" << name ; 
+    std::string s = ss.str(); 
+    return mtime(s.c_str());  
 }
 
 std::string STime::mtime(const char* path)

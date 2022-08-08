@@ -268,11 +268,9 @@ void test_isGPartsTransformOffset(const Opticks* ok)
 
 void test_getCacheMetaTime(const Opticks* ok)
 {
-    const char* path = ok->getCacheMetaPath(); 
     int mtime = ok->getCacheMetaTime(); 
     std::string stamp = ok->getCacheMetaStamp(); 
     LOG(info) 
-       << " path " << path 
        << " mtime " << mtime 
        << " stamp " << stamp
        ; 

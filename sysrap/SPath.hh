@@ -42,6 +42,7 @@ struct SYSRAP_API SPath
     static const char* Basename(const char* path); 
     static const char* ChangeName(const char* srcpath, const char* name) ;
 
+    static int mtime(const char* base, const char* name); 
     static int mtime(const char* path); 
       
 

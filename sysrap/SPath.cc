@@ -475,6 +475,14 @@ This is used by STime::mtime which provides formatted time stamp strings.
 
 **/
 
+int SPath::mtime(const char* base, const char* name)
+{
+    std::stringstream ss ;  
+    ss << base << "/" << name ; 
+    std::string s = ss.str(); 
+    return mtime(s.c_str()); 
+}
+
 int SPath::mtime(const char* path)
 {
      struct stat st;

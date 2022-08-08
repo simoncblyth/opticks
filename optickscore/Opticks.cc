@@ -382,7 +382,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
     m_spec(NULL),
     m_nspec(NULL),
     m_resource(NULL),
-    m_rsc(NULL),
+    m_rsc(NULL),    // BOpticksResource
     m_nogdmlpath(m_sargs->hasArg("--nogdmlpath")),
     m_origin_gdmlpath(NULL),
     m_origin_gdmlpath_kludged(NULL),
@@ -2097,9 +2097,10 @@ const char* Opticks::getOptiXCacheDirDefault() const
 
 const char* Opticks::getGLTFPath() const { return m_rsc->getGLTFPath() ; }
 const char* Opticks::getG4CodeGenDir() const { return m_rsc->getG4CodeGenDir() ; }
-const char* Opticks::getCacheMetaPath() const { return m_rsc->getCacheMetaPath() ; } 
-const char* Opticks::getGDMLAuxMetaPath() const { return m_rsc->getGDMLAuxMetaPath() ; } 
-const char* Opticks::getRunCommentPath() const { return m_rsc->getRunCommentPath() ; } 
+
+//const char* Opticks::getGDMLAuxMetaPath() const { return m_rsc->getGDMLAuxMetaPath() ; } 
+//const char* Opticks::getCacheMetaPath() const { return m_rsc->getCacheMetaPath() ; } 
+//const char* Opticks::getRunCommentPath() const { return m_rsc->getRunCommentPath() ; } 
 
 
 
@@ -2254,25 +2255,29 @@ std::string Opticks::descCacheMeta() const
 {
     return m_cachemeta->desc() ;
 }
+
 void Opticks::saveCacheMeta() const 
 {
-    const char* path = getRunCommentPath(); 
+    //const char* path = getRunCommentPath(); 
+    //const char* cachemetapath = getCacheMetaPath();
+
     assert( m_runtxt) ; 
-    m_runtxt->write(path);    
-    const char* cachemetapath = getCacheMetaPath();
-    m_cachemeta->save(cachemetapath);
+
+    const char* idpath = getIdPath(); 
+    m_runtxt->write(idpath, BOpticksResource::RUNCOMMENT );    
+    m_cachemeta->save(idpath, BOpticksResource::CACHEMETA );
 }
 
  
 int Opticks::getCacheMetaTime() const
 {
-    const char* cachemetapath = getCacheMetaPath();
-    return SPath::mtime(cachemetapath); 
+    const char* idpath = getIdPath(); 
+    return SPath::mtime(idpath, BOpticksResource::CACHEMETA ); 
 }
 std::string Opticks::getCacheMetaStamp() const
 {
-    const char* cachemetapath = getCacheMetaPath();
-    return STime::mtime(cachemetapath); 
+    const char* idpath = getIdPath(); 
+    return STime::mtime(idpath, BOpticksResource::CACHEMETA ); 
 }
 
 
@@ -2321,9 +2326,11 @@ void Opticks::loadOriginCacheMeta_()
 {
     LOG(LEVEL) << "[" ; 
 
-    const char* cachemetapath = getCacheMetaPath();
-    LOG(LEVEL) << " cachemetapath " << cachemetapath ; 
-    m_origin_cachemeta = BMeta::Load(cachemetapath); 
+    //const char* cachemetapath = getCacheMetaPath();
+    //LOG(LEVEL) << " cachemetapath " << cachemetapath ; 
+
+    const char* idpath = getIdPath(); 
+    m_origin_cachemeta = BMeta::Load(idpath, BOpticksResource::CACHEMETA ); 
     //m_origin_cachemeta->dump("Opticks::loadOriginCacheMeta_"); 
 
     const char* cachemeta_gdmlpath = getCacheMetaGDMLPath_( m_origin_cachemeta ); 

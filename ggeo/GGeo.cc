@@ -23,6 +23,8 @@
 #include <iomanip>
 #include <csignal>
 
+
+
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SLog.hh"
@@ -31,7 +33,7 @@
 #include "SProp.hh"
 #include "NP.hh"
 
-
+#include "BOpticksResource.hh"
 #include "BStr.hh"
 #include "BMap.hh"
 #include "BTxt.hh"
@@ -437,7 +439,7 @@ void GGeo::initLibs()
 
 // via Opticks
 
-const char*      GGeo::getIdPath() { return m_ok->getIdPath(); } 
+const char*      GGeo::getIdPath() const { return m_ok->getIdPath(); } 
 OpticksColors*   GGeo::getColors() { return m_ok->getColors() ; } 
 OpticksFlags*    GGeo::getFlags() { return m_ok->getFlags(); }
 OpticksAttrSeq*  GGeo::getFlagNames() { return m_ok->getFlagNames(); } 
@@ -724,17 +726,22 @@ this method should not be used when using idpath in the traditional OPTICKS_KEY 
 
 **/
 
-void GGeo::save_to_dir(const char* dir)
+void GGeo::save_to_dir(const char* base, const char* reldir)
 {
-    LOG(LEVEL) << "[ " << dir ; 
+    std::stringstream ss ; 
+    ss << base << "/" << reldir  ; 
+    std::string s = ss.str(); 
+    const char* dir = s.c_str(); 
+    LOG(LEVEL) << "[ base " << base << " dir " << dir  ; 
+
     const char* idpath = m_ok->getIdPath(); 
     assert( idpath == nullptr ); 
-
     m_ok->setIdPath(dir); 
     save(); 
     m_ok->setIdPath(nullptr); 
 
-    LOG(LEVEL) << "] " << dir ; 
+
+    LOG(LEVEL) << "] base " << base << " dir " << dir  ; 
 }
 
 
@@ -818,8 +825,9 @@ void GGeo::saveCacheMeta() const
     LOG(LEVEL) << "[" ; 
     if(m_gdmlauxmeta)
     {
-         const char* gdmlauxmetapath = m_ok->getGDMLAuxMetaPath(); 
-         m_gdmlauxmeta->save(gdmlauxmetapath); 
+         //const char* gdmlauxmetapath = m_ok->getGDMLAuxMetaPath(); 
+         const char* idpath = getIdPath(); 
+         m_gdmlauxmeta->save(idpath, BOpticksResource::GDMLAUXMETA ); 
     }
 
     if(m_lv2sd)

@@ -343,9 +343,10 @@ class OKCORE_API Opticks {
        NSceneConfig* getSceneConfig();
    public:
        const char* getG4CodeGenDir() const ;  // search for g4code
-       const char* getCacheMetaPath() const ;
-       const char* getGDMLAuxMetaPath() const ;
-       const char* getRunCommentPath() const ;
+
+       //const char* getGDMLAuxMetaPath() const ;
+       // const char* getCacheMetaPath() const ;
+       //const char* getRunCommentPath() const ;
 
        int getCacheMetaTime() const ; 
        std::string getCacheMetaStamp() const ; 

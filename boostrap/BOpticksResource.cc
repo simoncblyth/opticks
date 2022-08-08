@@ -146,9 +146,9 @@ BOpticksResource::BOpticksResource()
     m_srcgltfpath(nullptr),
     m_idmappath(nullptr),
     m_g4codegendir(nullptr),
-    m_gdmlauxmetapath(nullptr),
-    m_cachemetapath(nullptr),
-    m_runcommentpath(nullptr),
+    //m_gdmlauxmetapath(nullptr),
+    //m_cachemetapath(nullptr),
+    //m_runcommentpath(nullptr),
     m_primariespath(nullptr),
     m_directgensteppath(nullptr),
     m_directphotonspath(nullptr),
@@ -774,18 +774,16 @@ void BOpticksResource::initViaKey()
     m_g4codegendir = makeIdPathPath("g4codegen" );
     m_res->addDir("g4codegendir", m_g4codegendir ); 
 
-    m_gdmlauxmetapath = makeIdPathPath("gdmlauxmeta.json");  
+    /*
+    m_gdmlauxmetapath = makeIdPathPath(GDMLAUXMETA);  
     m_res->addPath("gdmlauxmetapath", m_gdmlauxmetapath ); 
 
-   
-
-
-    m_cachemetapath = makeIdPathPath("cachemeta.json");  
+    m_cachemetapath = makeIdPathPath(CACHEMETA);  
     m_res->addPath("cachemetapath", m_cachemetapath ); 
 
-    m_runcommentpath = makeIdPathPath("runcomment.txt");  
+    m_runcommentpath = makeIdPathPath(RUNCOMMENT);  
     m_res->addPath("runcommentpath", m_runcommentpath ); 
-
+    */
 
     m_primariespath = makeIdPathPath("primaries.npy");  
     m_res->addPath("primariespath", m_primariespath ); 
@@ -961,9 +959,13 @@ const char* BOpticksResource::getSrcGLTFName() const
 }
 
 const char* BOpticksResource::getG4CodeGenDir() const { return m_g4codegendir ; }
-const char* BOpticksResource::getCacheMetaPath() const { return m_cachemetapath ; }
-const char* BOpticksResource::getGDMLAuxMetaPath() const { return m_gdmlauxmetapath ; }
-const char* BOpticksResource::getRunCommentPath() const { return m_runcommentpath ; }
+
+
+//const char* BOpticksResource::getCacheMetaPath() const { return m_cachemetapath ; }
+//const char* BOpticksResource::getGDMLAuxMetaPath() const { return m_gdmlauxmetapath ; }
+//const char* BOpticksResource::getRunCommentPath() const { return m_runcommentpath ; }
+
+
 const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; } 
 const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; } 
 
@@ -971,9 +973,10 @@ const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; }
 
 BMeta* BOpticksResource::LoadGDMLAuxMeta() const 
 {
-    const char* gdmlauxmetapath = getGDMLAuxMetaPath();
-    LOG(LEVEL) << " gdmlauxmetapath " << gdmlauxmetapath ; 
-    BMeta* gdmlauxmeta = BMeta::Load(gdmlauxmetapath) ;
+    const char* idpath = getIdPath(); 
+    //const char* gdmlauxmetapath = getGDMLAuxMetaPath();
+    LOG(LEVEL) << " gdmlauxmetapath " << idpath << "/" << GDMLAUXMETA  ; 
+    BMeta* gdmlauxmeta = BMeta::Load(idpath, GDMLAUXMETA ) ;
     return gdmlauxmeta ; 
 }
 

@@ -120,6 +120,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         static const plog::Severity LEVEL ; 
         static GGeo* Get();  // statically provides the last instanciated GGeo instance
         static GGeo* Load(Opticks* ok); 
+        static constexpr const char* RELDIR = "GGeo" ; 
     public:
         // see GGeoCfg.hh
         static const char* PICKFACE ;   
@@ -165,7 +166,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
     public:
         GGeo(Opticks* opticks, bool live=false); 
     public:
-        const char* getIdPath();
+        const char* getIdPath() const ;
         bool isValid() const ;
         bool isLive() const ;
     public:
@@ -233,7 +234,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void init(); 
         void initLibs(); 
     public:
-        void save_to_dir(const char* dir); 
+        void save_to_dir(const char* base, const char* reldir=RELDIR ); 
         void save();
         void anaEvent(OpticksEvent* evt);
     private:

@@ -79,6 +79,10 @@ BRANCHES OF OPERATION : USING RELATIVE APPROACH
 
 class BRAP_API  BOpticksResource {
     public:
+        static constexpr const char* GDMLAUXMETA = "gdmlauxmeta.json" ;
+        static constexpr const char* CACHEMETA  = "cachemeta.json" ; 
+        static constexpr const char* RUNCOMMENT = "runcomment.txt" ; 
+
         static BOpticksResource* Get(const char* spec) ; 
         static const char* GetCachePath(const char* rela=NULL, const char* relb=NULL, const char* relc=NULL ); 
     private:
@@ -233,9 +237,11 @@ class BRAP_API  BOpticksResource {
         const char* getSrcGLTFName() const ;
     public:
         const char* getG4CodeGenDir() const ;
-        const char* getGDMLAuxMetaPath() const ;
-        const char* getCacheMetaPath() const ;
-        const char* getRunCommentPath() const ;
+    public:
+        //const char* getGDMLAuxMetaPath() const ;
+        //const char* getCacheMetaPath() const ;
+        //const char* getRunCommentPath() const ;
+    public:
         const char* getPrimariesPath() const ;
         const char* getGLTFPath() const ;     // output path 
     public:
@@ -355,9 +361,11 @@ class BRAP_API  BOpticksResource {
 
         const char* m_idmappath ;
         const char* m_g4codegendir ;
-        const char* m_gdmlauxmetapath ; 
-        const char* m_cachemetapath ; 
-        const char* m_runcommentpath ; 
+
+        //const char* m_gdmlauxmetapath ; 
+        //const char* m_cachemetapath ; 
+        //const char* m_runcommentpath ; 
+
         const char* m_primariespath ; 
         const char* m_directgensteppath ; 
         const char* m_directphotonspath ; 

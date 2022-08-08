@@ -139,6 +139,14 @@ void BTxt::prepDir(const char* path_) const
               ;
 }
 
+void BTxt::write(const char* dir, const char* name) const 
+{
+    std::stringstream ss ;
+    ss << dir << "/" << name ; 
+    std::string s = ss.str() ; 
+    write(s.c_str()); 
+}
+
 void BTxt::write(const char* path_) const 
 {
     const char* path = path_ ? path_ : m_path ; 

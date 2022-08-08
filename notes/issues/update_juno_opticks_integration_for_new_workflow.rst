@@ -243,11 +243,12 @@ Added G4CXOpticks::saveGeometry
 
 DONE : check GDXML::Fix running and incorporate it 
 
+
 Issue 5 : GGeo::save_to_dir from G4CXOpticks::saveGeometry fails
 -------------------------------------------------------------------
 
-Annoyingly the "RuntimeError" handling drops the stack, so its 
-difficult to find where the issue is. 
+Annoyingly the "RuntimeError" handling drops the stack, so its
+difficult to find where the issue is.  Forced to use logging to debug the issue.  
 
 ::
 
@@ -295,6 +296,10 @@ difficult to find where the issue is.
     2022-08-08 17:46:31.340 INFO  [291214] [GNodeLib::save@188] [ m_keydir (null) m_cachedir (null)
 
 
+FIX::
+
+    git commit -m "in GNodeLib stop assuming the idpath at instanciation is same as at GNodeLib::save, for use from GGeo::save_to_dir "
+
 
 ::
 
@@ -304,6 +309,71 @@ difficult to find where the issue is.
        export GNodeLib=INFO
     }
 
+
+
+Fortunartely this error is not caught::
+
+    2022-08-08 18:04:27.699 INFO  [293144] [GGeo::save_@798]  m_surfacelib.save 
+    2022-08-08 18:04:27.701 INFO  [293144] [GGeo::save_@800]  m_scintillatorlib.save 
+    2022-08-08 18:04:27.702 INFO  [293144] [BFile::preparePath@836] created directory /tmp/blyth/opticks/ntds3/G4CXOpticks/GScintillatorLib/LS
+    2022-08-08 18:04:27.704 INFO  [293144] [BFile::preparePath@836] created directory /tmp/blyth/opticks/ntds3/G4CXOpticks/GScintillatorLib/LS_ori
+    2022-08-08 18:04:27.705 INFO  [293144] [GGeo::save_@802]  m_sourcelib.save 
+    2022-08-08 18:04:27.705 INFO  [293144] [GGeo::save_@804]  m_bndlib.save 
+    2022-08-08 18:04:27.706 INFO  [293144] [GGeo::save_@807]  after saves 
+    2022-08-08 18:04:27.706 INFO  [293144] [GGeo::saveCacheMeta@818] [
+    2022-08-08 18:04:27.706 INFO  [293144] [GGeo::saveCacheMeta@835] {"GEOCACHE_CODE_VERSION":15,"argline":"DetSim0Svc_CXOK ","cwd":"/tmp/blyth/opticks/tds","location":"Opticks::updateCacheMeta","rundate":"20220808_180320","runfolder":"DetSim0Svc_CXOK","runlabel":"R0_cvd_","runstamp":1659953000}
+    python: /data/blyth/junotop/opticks/boostrap/BTxt.cc:146: void BTxt::write(const char*) const: Assertion `path' failed.
+
+    Program received signal SIGABRT, Aborted.
+    (gdb) bt
+    #0  0x00007ffff696e387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff696fa78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff69671a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6967252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffd1edb88b in BTxt::write (this=0x9638fe0, path_=0x0) at /data/blyth/junotop/opticks/boostrap/BTxt.cc:146
+    #5  0x00007fffd2971629 in Opticks::saveCacheMeta (this=0x9612c70) at /data/blyth/junotop/opticks/optickscore/Opticks.cc:2261
+    #6  0x00007fffd34cfb82 in GGeo::saveCacheMeta (this=0x9641a30) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:836
+    #7  0x00007fffd34cf727 in GGeo::save_ (this=0x9641a30) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:809
+    #8  0x00007fffd34cee74 in GGeo::save (this=0x9641a30) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:779
+
+
+    (gdb) f 6
+    #6  0x00007fffd34cfb82 in GGeo::saveCacheMeta (this=0x9641a30) at /data/blyth/junotop/opticks/ggeo/GGeo.cc:836
+    836	    m_ok->saveCacheMeta(); 
+    (gdb) f 5
+    #5  0x00007fffd2971629 in Opticks::saveCacheMeta (this=0x9612c70) at /data/blyth/junotop/opticks/optickscore/Opticks.cc:2261
+    2261	    m_runtxt->write(path);    
+    (gdb) p path
+    $1 = 0x0
+    (gdb) list
+    2256	}
+    2257	void Opticks::saveCacheMeta() const 
+    2258	{
+    2259	    const char* path = getRunCommentPath(); 
+    2260	    assert( m_runtxt) ; 
+    2261	    m_runtxt->write(path);    
+    2262	    const char* cachemetapath = getCacheMetaPath();
+    2263	    m_cachemeta->save(cachemetapath);
+    2264	}
+    2265	
+    (gdb) 
+
+
+Caching of paths like this is problematic when changing idpath on the fly::
+
+    2099 const char* Opticks::getG4CodeGenDir() const { return m_rsc->getG4CodeGenDir() ; }
+    2100 const char* Opticks::getCacheMetaPath() const { return m_rsc->getCacheMetaPath() ; }
+    2101 const char* Opticks::getGDMLAuxMetaPath() const { return m_rsc->getGDMLAuxMetaPath() ; }
+    2102 const char* Opticks::getRunCommentPath() const { return m_rsc->getRunCommentPath() ; }
+
+    0963 const char* BOpticksResource::getG4CodeGenDir() const { return m_g4codegendir ; }
+     964 const char* BOpticksResource::getCacheMetaPath() const { return m_cachemetapath ; }
+     965 const char* BOpticksResource::getGDMLAuxMetaPath() const { return m_gdmlauxmetapath ; }
+     966 const char* BOpticksResource::getRunCommentPath() const { return m_runcommentpath ; }
+     967 const char* BOpticksResource::getPrimariesPath() const { return m_primariespath ; }
+     968 const char* BOpticksResource::getGLTFPath() const { return m_gltfpath ; }
+
+Fixed by avoiding some of this caching. 
 
 
 
