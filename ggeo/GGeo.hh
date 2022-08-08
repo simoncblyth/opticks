@@ -233,6 +233,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void init(); 
         void initLibs(); 
     public:
+        void save_to_dir(const char* dir); 
         void save();
         void anaEvent(OpticksEvent* evt);
     private:

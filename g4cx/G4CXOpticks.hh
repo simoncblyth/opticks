@@ -38,7 +38,7 @@ struct G4CX_API G4CXOpticks
     const U4Tree*   tr ;
     const G4VPhysicalVolume* wd ; 
 
-    const GGeo* gg ;
+    GGeo*       gg ;
     CSGFoundry* fd ; 
     CSGOptiX*   cx ; 
     QSim*       qs ; 
@@ -57,7 +57,7 @@ struct G4CX_API G4CXOpticks
     // HMM: maybe add U4Sensor arg here, 
     // if that only makes sense at this level of geometry representation ?
 
-    void setGeometry(const GGeo* gg); 
+    void setGeometry(GGeo* gg); 
     void setGeometry(CSGFoundry* fd); 
 
     void render(); 

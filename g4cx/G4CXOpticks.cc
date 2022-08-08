@@ -31,6 +31,7 @@
 // OLD WORLD HEADERS STILL NEEDED UNTIL REJIG TRANSLATION 
 #include "Opticks.hh"
 #include "X4Geo.hh"
+#include "GGeo.hh"
 
 
 
@@ -204,7 +205,7 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     GGeo* gg_ = X4Geo::Translate(wd) ; 
     setGeometry(gg_); 
 }
-void G4CXOpticks::setGeometry(const GGeo* gg_)
+void G4CXOpticks::setGeometry(GGeo* gg_)
 {
     LOG(LEVEL); 
     gg = gg_ ; 
@@ -319,9 +320,9 @@ void G4CXOpticks::saveGeometry_(const char* dir_) const
     const stree* st = tr ? tr->st : nullptr ; 
     if(st) st->save(dir) ;   
     if(fd) fd->save(dir) ; 
+    if(gg) gg->save_to_dir(dir) ; 
     if(wd) U4GDML::Write(wd, dir, "origin.gdml" );
     std::cout << "] G4CXOpticks::saveGeometry_ " << ( dir ? dir : "-" ) << std::endl ; 
 }
 
 
- 

@@ -702,6 +702,41 @@ void GGeo::prepareOpticks()
 }
 
 
+
+/**
+GGeo::save_to_dir
+-------------------
+
+This is invoked from G4CXOpticks::saveGeometry_
+
+This method is a late addition to assist with the migration of geometry translation. 
+In the old workflow the argumentless GGeo::save method was used, with the directory 
+controlled by the inflexible Opticks::getIdPath and OPTICKS_KEY mechanism.  
+
+Initially I considered changing all the geometry code to isolate use of the idpath,
+to a single point. But as this GGeo code now does not have long to live that 
+would be excessive change for little benefit. 
+So kludge the flexibility by setting the idpath prior to running the ordinary save, 
+and then setting back to nullptr. 
+
+This intentionally only works when idpath starts as nullptr to indicate that  
+this method should not be used when using idpath in the traditional OPTICKS_KEY manner. 
+
+**/
+
+void GGeo::save_to_dir(const char* dir)
+{
+    const char* idpath = m_ok->getIdPath(); 
+    assert( idpath == nullptr ); 
+
+    m_ok->setIdPath(dir); 
+    save(); 
+    m_ok->setIdPath(nullptr); 
+}
+
+
+
+
 /**
 GGeo::save
 -------------
@@ -716,6 +751,7 @@ Example call stack from integrated WITH_G4CXOPTICKS running::
     #6  0x00007fffcfae3f35 in LSExpDetectorConstruction_Opticks::Setup (world=0x5752710, opticksMode=3)
 
 **/
+
 
 
 void GGeo::save()
