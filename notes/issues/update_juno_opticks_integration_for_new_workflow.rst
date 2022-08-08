@@ -11,7 +11,6 @@ GUIDING PRINCIPALS FOR INTEGRATION
 * MINIMIZE INTEGRATION CODE IN THE FRAMEWORK  : BECAUSE ITS SO PAINFUL TO DEVELOP WITHIN THE DETECTOR FRAMEWORK 
 * AVOID BEING CHATTY IN INTERFACE
 
-
 HMM : Integration requires lots of small changes : how to proceed ?
 ----------------------------------------------------------------------
 
@@ -35,7 +34,6 @@ cmake/Modules/FindOpticks.cmake::
      52     #add_compile_definitions(WITH_G4OPTICKS)
      53     add_compile_definitions(WITH_G4CXOPTICKS)
      54 
-
 
 
 What is the effect of having non-sensitive SD volumes ?
@@ -215,8 +213,34 @@ Check Sensors : systematically 2x the number of SD than would expect ?
     epsilon:offline blyth$ 
 
 
-Issue 7 : make some SVN commits
-----------------------------------
+Issue 7 : WIP : make some SVN commits : now compiling, need some basic checks prior to commit 
+-----------------------------------------------------------------------------------------------
+
+* local changes are syned to remote : "svn.sh | sh"
+
+
+::
+
+    epsilon:opticks blyth$ jo
+    /Users/blyth/junotop/offline
+    M       Simulation/DetSimV2/DetSimOptions/include/LSExpDetectorConstruction.hh
+    M       Simulation/DetSimV2/DetSimOptions/include/LSExpDetectorConstruction_Opticks.hh
+    M       Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc
+    M       Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc
+    M       Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc
+    M       Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2_Opticks.hh
+    M       Simulation/DetSimV2/PMTSim/src/PMTSDMgr.cc
+    M       Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc
+    M       Simulation/DetSimV2/PhysiSim/include/DsG4Scintillation.h
+    M       Simulation/DetSimV2/PhysiSim/include/LocalG4Cerenkov1042.hh
+    M       Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
+    M       Simulation/DetSimV2/PhysiSim/src/DsPhysConsOptical.cc
+    M       Simulation/DetSimV2/PhysiSim/src/LocalG4Cerenkov1042.cc
+    M       Simulation/GenTools/GenTools/GtOpticksTool.h
+    M       Simulation/GenTools/src/GtOpticksTool.cc
+    epsilon:offline blyth$ 
+     
+
 
 1. review changes::
 
