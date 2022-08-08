@@ -711,8 +711,8 @@ void U4Material::LoadOri()
 
 
 /**
-U4Material::LoadBnd from $CFBase/CSGFoundry/SSim so must have already saved it
---------------------------------------------------------------------------------
+U4Material::LoadBnd from $CFBase/CSGFoundry/SSim/bnd.npy so must have already saved it
+----------------------------------------------------------------------------------------
 
 SSim::Load loads from $CFBase/CSGFoundry/SSim where "$CFBase" is an 
 internal envvar that yield the result of SOpticksResource::CFBase()

@@ -376,6 +376,8 @@ const char* SEvt::GetReldir(){  return INSTANCE ? INSTANCE->getReldir() : nullpt
 
 int SEvt::GetNumPhotonFromGenstep(){  return INSTANCE ? INSTANCE->getNumPhotonFromGenstep() : -1 ; }
 int SEvt::GetNumGenstepFromGenstep(){ return INSTANCE ? INSTANCE->getNumGenstepFromGenstep() : -1 ; }
+int SEvt::GetNumHit(){  return INSTANCE ? INSTANCE->getNumHit() : -1 ; }
+
 
 NP* SEvt::GatherGenstep() {   return INSTANCE ? INSTANCE->gatherGenstep() : nullptr ; }
 NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nullptr ; }
@@ -1439,7 +1441,8 @@ void SEvt::load(const char* dir_)
 {
     const char* dir = getOutputDir(dir_); 
     LOG(LEVEL) << " dir " << dir ; 
-
+    if( dir == nullptr ) LOG(fatal) << " null dir : probably missing environment : run script, not executable directly " ;   
+    assert(dir); 
     fold->load(dir); 
 }
 

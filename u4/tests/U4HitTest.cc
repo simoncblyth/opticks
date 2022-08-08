@@ -4,7 +4,7 @@
 #include "CSGFoundry.h"
 
 #include "U4Hit.h"
-#include "U4HitConvert.h"
+#include "U4HitGet.h"
 
 int main(int argc, char** argv)
 { 
@@ -21,17 +21,23 @@ int main(int argc, char** argv)
     unsigned num_hit = sev->getNumHit(); 
     if(num_hit == 0) return 0 ; 
 
+
     unsigned idx = 0 ; 
     sphoton global, local  ; 
     sev->getHit(global, idx); 
     sev->getLocalHit( local,  idx); 
-
     U4Hit hit ; 
-    U4HitConvert::FromPhoton(hit,global,local); 
+    U4HitGet::ConvertFromPhoton(hit,global,local); 
 
     std::cout << " global " << global.desc() << std::endl ; 
     std::cout << " local " << local.desc() << std::endl ; 
     std::cout << " hit " << hit.desc() << std::endl ; 
+
+
+    U4Hit hit2 ; 
+    U4HitGet::FromEvt(hit2, idx ); 
+    std::cout << " hit2 " << hit2.desc() << std::endl ; 
+
   
     return 0 ; 
 }

@@ -152,6 +152,8 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     static int GetNumPhotonFromGenstep(); 
     static int GetNumGenstepFromGenstep(); 
+    static int GetNumHit() ; 
+
     static NP* GatherGenstep(); 
     static NP* GetInputPhoton(); 
     static void SetInputPhoton(NP* ip); 

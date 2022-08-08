@@ -21,7 +21,6 @@ HMM : Integration requires lots of small changes : how to proceed ?
 Notice how this means can switch the entire integration with a single flip. 
 
 
-
 WITH_G4OPTICKS -> WITH_G4CXOPTICKS
 ---------------------------------------
 
@@ -216,36 +215,153 @@ Check Sensors : systematically 2x the number of SD than would expect ?
     epsilon:offline blyth$ 
 
 
+Issue 7 : make some SVN commits
+----------------------------------
+
+1. review changes::
+
+    epsilon:offline blyth$ jo
+    /Users/blyth/junotop/offline
+    M       Simulation/DetSimV2/DetSimOptions/include/LSExpDetectorConstruction.hh             ## remove m_g4opticks as not used in old or new integration
+    M       Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc                 ## 
+    M       Simulation/DetSimV2/DetSimOptions/include/LSExpDetectorConstruction_Opticks.hh     ## change to "void Setup(" as the formerly returned instance not used 
+    M       Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc         ##
+    M       Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc                                ## simple logging showing the macro pattern 
+    M       Simulation/DetSimV2/PMTSim/src/PMTSDMgr.cc                                         ## hit merger for WITH_G4CXOPTICKS branch 
+
+    M       Simulation/GenTools/GenTools/GtOpticksTool.h             
+    M       Simulation/GenTools/src/GtOpticksTool.cc                                           ## different types NP, sphoton 
+
+    M       Simulation/DetSimV2/PMTSim/include/junoSD_PMT_v2_Opticks.hh                        
+    M       Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc                            ## G4OpticksHit -> U4Hit 
+
+    M       Simulation/DetSimV2/PhysiSim/include/LocalG4Cerenkov1042.hh
+    M       Simulation/DetSimV2/PhysiSim/src/LocalG4Cerenkov1042.cc
+    M       Simulation/DetSimV2/PhysiSim/src/DsG4Scintillation.cc
+    M       Simulation/DetSimV2/PhysiSim/src/DsPhysConsOptical.cc
 
 
-Added G4CXOpticks::saveGeometry
------------------------------------
+    epsilon:offline blyth$ 
+
+    N[blyth@localhost junotop]$ jo
+    /data/blyth/junotop/offline
+    M       Simulation/DetSimV2/DetSimOptions/include/LSExpDetectorConstruction.hh
+    M       Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc
+    M       Simulation/DetSimV2/DetSimOptions/include/LSExpDetectorConstruction_Opticks.hh
+    M       Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc
+    M       Simulation/DetSimV2/DetSimOptions/src/DetSim0Svc.cc
+    M       Simulation/DetSimV2/PMTSim/src/PMTSDMgr.cc
+
+    M       Simulation/DetSimV2/PhysiSim/include/LocalG4Cerenkov1042.hh
+    M       Simulation/DetSimV2/PhysiSim/src/LocalG4Cerenkov1042.cc
+    M       Simulation/DetSimV2/PhysiSim/src/DsPhysConsOptical.cc
+    N[blyth@localhost offline]$ svn up
+    Updating '.':
+    At revision 5862.
+    N[blyth@localhost offline]$ 
+
+
+
+
+Issue 6 : How to test compilation without Opticks ? 
+-----------------------------------------------------------
+
+1. vi $JUNOTOP/bashrc.sh           ## comment the opticks source line
+2. start a new terminal session
+3. get into env : jre
+4. redo the build : "jo ; ./build_Debug.sh"
+5. ntds3 will fail quickly, so test running with ntds0 
+
 
 ::
 
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/origin.gdml
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/nds.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/m2w.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/w2m.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/subs_freq/val.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/stree/subs_freq/key.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/solid.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/prim.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/node.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/tran.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/itra.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/inst.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/SSim/bnd.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/SSim/optical.npy
-    /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry/SSim/icdf.npy
-    epsilon:g4cx blyth$ 
+    epsilon:offline blyth$ find . -name CMakeLists.txt -exec grep -H Opticks {} \;
+    ./Simulation/GenTools/CMakeLists.txt:        $<$<BOOL:${Opticks_FOUND}>:${Opticks_TARGET}> 
+    ./Simulation/DetSimV2/PhysiSim/CMakeLists.txt:        $<$<BOOL:${Opticks_FOUND}>:${Opticks_TARGET}>
+    ./Simulation/DetSimV2/PMTSim/CMakeLists.txt:        $<$<BOOL:${Opticks_FOUND}>:${Opticks_TARGET}>  
+    ./Simulation/DetSimV2/DetSimOptions/CMakeLists.txt:        $<$<BOOL:${Opticks_FOUND}>:${Opticks_TARGET}>
+    ./Simulation/DetSimV2/AnalysisCode/CMakeLists.txt:        $<$<BOOL:${Opticks_FOUND}>:${Opticks_TARGET}>
+    ./Generator/GenGenie/CMakeLists.txt:        $<$<BOOL:${Opticks_FOUND}>:${Opticks_TARGET}> 
+    epsilon:offline blyth$ 
+
+    epsilon:offline blyth$ find . -name '*.cmake' -exec grep -H Opticks {} \;
+    ./cmake/JUNODependencies.cmake:## Opticks
+    ./cmake/JUNODependencies.cmake:   set(Opticks_VERBOSE YES)
+    ./cmake/JUNODependencies.cmake:   find_package(Opticks MODULE)
+    ./cmake/JUNODependencies.cmake:   message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Opticks_FOUND:${Opticks_FOUND}" )
+    epsilon:offline blyth$ 
 
 
-DONE : check GDXML::Fix running and incorporate it 
+cmake/JUNODependencies.cmake::
+
+    130 ## Opticks
+    131 if(DEFINED ENV{OPTICKS_PREFIX})
+    132    set(Opticks_VERBOSE YES)
+    133    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{JUNOTOP}/opticks/cmake/Modules")
+    134    find_package(Opticks MODULE)
+    135    message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Opticks_FOUND:${Opticks_FOUND}" )
+    136 endif()
 
 
-Issue 5 : GGeo::save_to_dir from G4CXOpticks::saveGeometry fails
--------------------------------------------------------------------
+::
+
+    N[blyth@localhost junotop]$ grep opticks $JUNOTOP/bashrc.sh
+    source /data/blyth/junotop/ExternalLibs/opticks/head/bashrc # Wed Mar 2 22:17:34 CST 2022
+
+
+Simply commenting the source line in $JUNOTOP/bashrc.sh and starting a new session
+seems like an easy way to disable the opticks environment::
+
+    N[blyth@localhost junotop]$ cat /data/blyth/junotop/ExternalLibs/opticks/head/bashrc
+
+    if [ -s "/data/blyth/junotop/ExternalLibs/opticks/head/bin/opticks-setup.sh" ]; then 
+
+        # get CMTEXTRATAGS to contain the string opticks switching on WITH_G4OPTICKS macro in offline compilation
+        if [ -z "$CMTEXTRATAGS" ]; then   # not yet defined
+            CMTEXTRATAGS="opticks"
+        elif [ "${CMTEXTRATAGS/opticks}" == "${CMTEXTRATAGS}" ]; then  # defined but without opticks
+            CMTEXTRATAGS=opticks:opticks
+        fi 
+        export CMTEXTRATAGS
+
+        if [ -n "$VERBOSE" ]; then 
+           source /data/blyth/junotop/ExternalLibs/opticks/head/bin/opticks-setup.sh 
+        else
+           source /data/blyth/junotop/ExternalLibs/opticks/head/bin/opticks-setup.sh > /dev/null
+        fi  
+
+        opticks-(){ . /data/blyth/junotop/opticks/opticks.bash && opticks-env  ; }
+
+    else
+        if [ -n "$VERBOSE" ]; then 
+            echo script /data/blyth/junotop/ExternalLibs/opticks/head/bin/opticks-setup.sh does not exist 
+        fi
+    fi 
+
+
+
+
+DONE : Added G4CXOpticks::saveGeometry to assist with translation migration
+-----------------------------------------------------------------------------
+
+::
+
+    N[blyth@localhost ~]$ l /tmp/blyth/opticks/ntds3/G4CXOpticks/
+    total 41012
+        0 drwxr-xr-x.  5 blyth blyth      122 Aug  8 20:13 .
+    20504 -rw-rw-r--.  1 blyth blyth 20992919 Aug  8 20:13 origin.gdml
+        4 -rw-rw-r--.  1 blyth blyth      196 Aug  8 20:13 origin_gdxml_report.txt
+    20504 -rw-rw-r--.  1 blyth blyth 20994471 Aug  8 20:13 origin_raw.gdml
+        0 drwxrwxr-x. 14 blyth blyth      260 Aug  8 20:13 GGeo
+        0 drwxr-xr-x.  3 blyth blyth      190 Aug  8 20:13 CSGFoundry
+        0 drwxr-xr-x.  3 blyth blyth      118 Aug  8 20:13 stree
+        0 drwxr-xr-x.  3 blyth blyth       25 Aug  8 20:13 ..
+    N[blyth@localhost ~]$ 
+
+
+
+Issue 5 : GGeo::save_to_dir from G4CXOpticks::saveGeometry fails : REQUIRED SOME DYNAMIC idpath FIXES 
+---------------------------------------------------------------------------------------------------------
 
 Annoyingly the "RuntimeError" handling drops the stack, so its
 difficult to find where the issue is.  Forced to use logging to debug the issue.  
@@ -375,6 +491,7 @@ Caching of paths like this is problematic when changing idpath on the fly::
 
 Fixed by avoiding some of this caching. 
 
+DONE : check GDXML::Fix running and incorporate it 
 
 
 

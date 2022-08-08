@@ -1,7 +1,11 @@
 #pragma once
 /**
-SBnd.h
-========
+SBnd.h : Used to fish material properties out of the boundary buffer
+=======================================================================
+
+NB: this only works with the standard set of 8 properties, it 
+does not work with scintillator properties as those are not 
+stored in the boundary buffer.  
 
 Principal user QBnd.hh
 

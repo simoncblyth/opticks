@@ -1,4 +1,5 @@
 #include <cstring>
+#include <sstream>
 #include "SPath.hh"
 #include "SProc.hh"
 #include "SGeo.hh"
@@ -66,6 +67,10 @@ is obtained from SEventConfig::OutFold which is normally "$DefaultOutputDir" $TM
 This can be overriden using SEventConfig::SetOutFold or by setting the 
 envvar OPTICKS_OUT_FOLD.
 
+Initially tried to implement FALLBACK_DIR as a static const, but the 
+problem with that is that the order of static initialization is not defined,
+so having a static const depend on another static const is not a good idea. 
+
 It is normally much easier to use the default of "$DefaultOutputDir" as this 
 takes care of lots of the bookkeeping automatically.
 However in some circumstances such as with the B side of aligned running (U4RecorderTest) 
@@ -74,15 +79,28 @@ with the A side.
 
 **/
 
-const char* SGeo::FALLBACK_DIR = SEventConfig::OutFold() ;
-
 const char* SGeo::DefaultDir()
 {
     const char* dir_ = LastUploadCFBase_OutDir(); 
-    const char* dir = dir_ ? dir_ : FALLBACK_DIR  ; 
-    if( dir == nullptr ) std::cout << "SGeo::DefaultDir ERR null, FALLBACK_DIR  " << ( FALLBACK_DIR ? FALLBACK_DIR : "-" ) << "]" << std::endl ;  
+    const char* dir = dir_ ? dir_ : SEventConfig::OutFold()  ; 
+    if( dir == nullptr ) std::cout << "SGeo::DefaultDir ERR null " << std::endl <<  Desc() ; 
+
     return dir ; 
 }
 
+std::string SGeo::Desc() 
+{
+    const char* lucfbod = LastUploadCFBase_OutDir() ; 
+    const char* outfold = SEventConfig::OutFold() ; 
+
+    std::stringstream ss ; 
+    ss << "SGeo::Desc" << std::endl 
+       << " SGeo::LastUploadCFBase_OutDir " << ( lucfbod ? lucfbod : "-" ) << std::endl
+       << " SEventConfig::OutFold() " << ( outfold ? outfold : "-" ) << std::endl 
+       ;
+
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 

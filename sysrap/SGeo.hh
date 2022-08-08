@@ -29,8 +29,8 @@ struct SYSRAP_API SGeo
         static void SetLastUploadCFBase(const char* cfbase);   
         static const char* LastUploadCFBase() ; 
         static const char* LastUploadCFBase_OutDir(); 
-        static const char* FALLBACK_DIR ; 
         static const char* DefaultDir() ; 
+        static std::string Desc() ; 
     public:
         virtual unsigned           getNumMeshes() const = 0 ; 
         virtual const char*        getMeshName(unsigned midx) const = 0 ;

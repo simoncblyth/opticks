@@ -2103,6 +2103,11 @@ This typically means you are attempting to run an executable directly
 when you should be running the script that sets up the needed environment
 that specifies which geometry directory to load. 
 
+This error can also happen when attempting to load event+geometry
+that was previously written to directories below /tmp 
+but has subsequently been "cleaned" living the directory structure
+but with all the directories emptied. 
+
 Relevant envvars : CFBASE and GEOM 
 
 )" ; 
