@@ -83,6 +83,10 @@ class GGEO_API GNodeLib
         static const char* RELDIR ; 
         static const char* CacheDir(const Opticks* ok);
         static GNodeLib* Load(Opticks* ok);
+
+        const char* getKeyDir() const ; 
+        const char* getCacheDir() const ; 
+
         GNodeLib(Opticks* ok); 
     private:
         GNodeLib(Opticks* ok, bool loading); 
@@ -163,8 +167,8 @@ class GGEO_API GNodeLib
         Opticks*                           m_ok ;  
         const char*                        m_keydir ; 
         bool                               m_loaded ; 
-        const char*                        m_cachedir ; 
         const char*                        m_reldir ; 
+        const char*                        m_cachedir ; 
     private:
         GItemList*                         m_pvlist ; 
         GItemList*                         m_lvlist ; 

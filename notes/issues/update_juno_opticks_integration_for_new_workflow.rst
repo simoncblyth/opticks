@@ -4,6 +4,13 @@ update_juno_opticks_integration_for_new_workflow
 * previous : :doc:`ellipsoid_transform_compare_two_geometries`
 * in parallel with this : :doc:`joined_up_thinking_geometry_translation`
 
+GUIDING PRINCIPALS FOR INTEGRATION 
+------------------------------------
+
+* IF IT CAN BE DONE WITHIN OPTICKS CODE : DO IT THERE (AS DEVELOPMENT IS SO MUCH EASIER THERE)
+* MINIMIZE INTEGRATION CODE IN THE FRAMEWORK  : BECAUSE ITS SO PAINFUL TO DEVELOP WITHIN THE DETECTOR FRAMEWORK 
+* AVOID BEING CHATTY IN INTERFACE
+
 
 HMM : Integration requires lots of small changes : how to proceed ?
 ----------------------------------------------------------------------
@@ -13,11 +20,6 @@ HMM : Integration requires lots of small changes : how to proceed ?
 
 Notice how this means can switch the entire integration with a single flip. 
 
-GUIDING PRINCIPALS FOR INTEGRATION 
-
-* IF IT CAN BE DONE WITHIN OPTICKS CODE : DO IT THERE (AS DEVELOPMENT IS SO MUCH EASIER THERE)
-* MINIMIZE INTEGRATION CODE IN THE FRAMEWORK  : BECAUSE ITS SO PAINFUL TO DEVELOP WITHIN THE DETECTOR FRAMEWORK 
-* AVOID BEING CHATTY IN INTERFACE
 
 
 WITH_G4OPTICKS -> WITH_G4CXOPTICKS
@@ -239,7 +241,70 @@ Added G4CXOpticks::saveGeometry
     epsilon:g4cx blyth$ 
 
 
-TODO: check GDXML::Fix running and incorporate it 
+DONE : check GDXML::Fix running and incorporate it 
+
+Issue 5 : GGeo::save_to_dir from G4CXOpticks::saveGeometry fails
+-------------------------------------------------------------------
+
+Annoyingly the "RuntimeError" handling drops the stack, so its 
+difficult to find where the issue is. 
+
+::
+
+    2022-08-08 17:25:19.686 ERROR [287581] [QSim::UploadComponents@116]   propcom null, SSim::PROPCOM propcom.npy
+    G4CXOpticks::saveGeometry def [$DefaultOutputDir
+    [ G4CXOpticks::saveGeometry_ /tmp/blyth/opticks/ntds3/G4CXOpticks
+    stree::save_ /tmp/blyth/opticks/ntds3/G4CXOpticks/stree
+    2022-08-08 17:25:30.661 INFO  [287581] [CSGFoundry::save_@2031] /tmp/blyth/opticks/ntds3/G4CXOpticks/CSGFoundry
+    2022-08-08 17:25:30.897 INFO  [287581] [BFile::preparePath@836] created directory /tmp/blyth/opticks/ntds3/G4CXOpticks/GItemList
+    Traceback (most recent call last):
+      File "/data/blyth/junotop/offline/Examples/Tutorial/share/tut_detsim.py", line 20, in <module>
+        juno_application.run()
+      File "/data/blyth/junotop/offline/InstallArea/python/Tutorial/JUNOApplication.py", line 129, in run
+        self.toptask.run()
+    RuntimeError: basic_string::_M_construct null not valid
+    junotoptask:DetSimAlg.finalize  INFO: DetSimAlg finalized successfully
+    junotoptask:DetSim0Svc.dumpOpticks  INFO: DetSim0Svc::finalizeOpticks m_opticksMode 3 WITH_G4CXOPTICKS 
+    junotoptask:PMTSimParamSvc.finalize  INFO: PMTSimParamSvc is finalizing!
+    junotoptask.finalize            INFO: events processed 0
+
+    (gdb) bt
+    No stack.
+
+
+::
+
+    2022-08-08 17:34:48.651 INFO  [287794] [GGeo::save_@784] [ idpath /tmp/blyth/opticks/ntds3/G4CXOpticks
+    2022-08-08 17:34:48.651 INFO  [287794] [GGeo::save_@785]  before saves 
+    2022-08-08 17:34:48.651 INFO  [287794] [GGeo::save_@787]  m_geolib.save 
+    2022-08-08 17:34:48.698 INFO  [287794] [GGeo::save_@789]  m_meshlib.save 
+    2022-08-08 17:34:48.854 INFO  [287794] [GGeo::save_@791]  m_nodelib.save 
+    Traceback (most recent call last):
+      File "/data/blyth/junotop/offline/Examples/Tutorial/share/tut_detsim.py", line 20, in <module>
+        juno_application.run()
+      File "/data/blyth/junotop/offline/InstallArea/python/Tutorial/JUNOApplication.py", line 129, in run
+        self.toptask.run()
+    RuntimeError: basic_string::_M_construct null not valid
+    junotoptask:DetSimAlg.finalize  INFO: DetSimAlg finalized successfully
+    junotoptask:DetSim0Svc.dumpOpticks  INFO: DetSim0Svc::finalizeOpticks m_opticksMode 3 WITH_G4CXOPTICKS 
+    2022-08-08 17:34:48.867 INFO  [287794] [G4CXOpticks::Finalize@76] placeholder mimic G4Opticks 
+
+::
+
+    2022-08-08 17:46:31.340 INFO  [291214] [GGeo::save_@794]  m_nodelib.save 
+    2022-08-08 17:46:31.340 INFO  [291214] [GNodeLib::save@188] [ m_keydir (null) m_cachedir (null)
+
+
+
+::
+
+    logging(){
+       export GGeo=INFO
+       export G4CXOpticks=INFO
+       export GNodeLib=INFO
+    }
+
+
 
 
 

@@ -726,12 +726,15 @@ this method should not be used when using idpath in the traditional OPTICKS_KEY 
 
 void GGeo::save_to_dir(const char* dir)
 {
+    LOG(LEVEL) << "[ " << dir ; 
     const char* idpath = m_ok->getIdPath(); 
     assert( idpath == nullptr ); 
 
     m_ok->setIdPath(dir); 
     save(); 
     m_ok->setIdPath(nullptr); 
+
+    LOG(LEVEL) << "] " << dir ; 
 }
 
 

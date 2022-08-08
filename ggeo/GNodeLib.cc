@@ -54,6 +54,16 @@ const char* GNodeLib::CacheDir(const Opticks* ok)  // static
     return strdup(cachedir.c_str()); 
 }
 
+
+const char* GNodeLib::getKeyDir() const 
+{
+    return m_ok->getIdPath() ; 
+}
+const char* GNodeLib::getCacheDir() const 
+{
+    return CacheDir(m_ok); 
+}
+
 GNodeLib* GNodeLib::Load(Opticks* ok)  // static
 {
     bool loading = true ; 
@@ -73,10 +83,9 @@ are subsequently populated by GNodeLib::addVolume calls.
 GNodeLib::GNodeLib(Opticks* ok)  
     :
     m_ok(ok),
-    m_keydir(ok->getIdPath()),
     m_loaded(false),
-    m_cachedir(GNodeLib::CacheDir(ok)),
     m_reldir(RELDIR),
+    m_cachedir(nullptr),
     m_pvlist(new GItemList(PV, m_reldir)),
     m_lvlist(new GItemList(LV, m_reldir)),
     m_transforms(NPY<float>::make(0,4,4)),
@@ -106,10 +115,9 @@ Content arrays all loaded from files.
 GNodeLib::GNodeLib(Opticks* ok, bool loading)
     :
     m_ok(ok),
-    m_keydir(ok->getIdPath()),
     m_loaded(loading),
-    m_cachedir(GNodeLib::CacheDir(ok)),
     m_reldir(RELDIR),
+    m_cachedir(getCacheDir()),
     m_pvlist(GItemList::Load(ok->getIdPath(), PV, m_reldir)),
     m_lvlist(GItemList::Load(ok->getIdPath(), LV, m_reldir)),
     m_transforms(NPY<float>::load(m_cachedir, TR)),
@@ -185,23 +193,40 @@ Opticks* GNodeLib::getOpticks() const
 
 void GNodeLib::save() const 
 {
-    LOG(LEVEL) << " keydir " << m_keydir ; 
-    m_pvlist->save(m_keydir);
-    m_lvlist->save(m_keydir);
+    const char* keydir = getKeyDir() ; 
+    const char* cachedir = getCacheDir() ; 
 
-    m_transforms->save(m_cachedir,  TR); 
-    m_inverse_transforms->save(m_cachedir,  IT); 
-    m_bounding_box->save(m_cachedir, BB); 
-    m_center_extent->save(m_cachedir, CE); 
-    m_identity->save(m_cachedir, ID); 
-    m_nodeinfo->save(m_cachedir, NI); 
+    LOG(LEVEL) 
+         << "["
+         << " keydir " << keydir 
+         << " cachedir " << cachedir 
+         ; 
+
+    m_pvlist->save(keydir);
+    m_lvlist->save(keydir);
+
+    m_transforms->save(cachedir,  TR); 
+    m_inverse_transforms->save(cachedir,  IT); 
+    m_bounding_box->save(cachedir, BB); 
+    m_center_extent->save(cachedir, CE); 
+    m_identity->save(cachedir, ID); 
+    m_nodeinfo->save(cachedir, NI); 
 
     if(m_treepresent)  // pre-cache only as needs the full node tree
     {
         const GNode* top = getNode(0); 
         m_treepresent->traverse(top);
-        m_treepresent->write(m_keydir, m_reldir);
+        m_treepresent->write(keydir, m_reldir);
     }
+
+    LOG(LEVEL) 
+         << "]"
+         << " keydir " << keydir 
+         << " cachedir " << cachedir 
+         ; 
+
+
+
 }
 
 std::string GNodeLib::getShapeString() const 
@@ -471,7 +496,7 @@ void GNodeLib::addVolume(const GVolume* volume)
     const void* origin = volume->getOriginNode() ; 
     int origin_copyNumber = volume->getOriginCopyNumber() ; 
  
-    LOG(LEVEL) 
+    LOG(debug) 
         << " origin " << origin
         << " origin_copyNumber " << origin_copyNumber 
         ;
