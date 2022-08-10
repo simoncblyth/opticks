@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     const char* srcpath = argc > 1 ? argv[1] : SOpticksResource::SomeGDMLPath() ; 
     const G4VPhysicalVolume* world = U4GDML::Read(srcpath) ;  
 
-    NPFold* mats = U4Material::GetPropertyFold() ; 
+    NPFold* mats = U4Material::MakePropertyFold() ; 
 
     LOG(info) 
         << " argv[0] " << argv[0] << std::endl 
@@ -20,7 +20,7 @@ int main(int argc, char** argv)
         << " world " << world << std::endl  
         ;
 
-    const char* base = "$TMP/U4Material_GetPropertyFold" ; 
+    const char* base = "$TMP/U4Material_MakePropertyFold" ; 
     const char* name = "U4Material" ; 
     const char* fold = SPath::Resolve(base, name, DIRPATH) ; 
 

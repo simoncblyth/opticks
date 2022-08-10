@@ -7,7 +7,6 @@ See also u4/U4Tree.h that creates the stree from Geant4 volumes.
 
 * this is seeking to replace lots of GGeo code, notably: GInstancer.cc GNode.cc 
 
-
 * DONE : controlling the order of repeats with same freq, using 2-level sort  
 
 
@@ -72,6 +71,7 @@ TODO: collect the nidx of the remainder into stree.h ?
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "NP.hh"
+#include "NPFold.h"
 
 #include "snode.h"
 #include "sdigest.h"
@@ -92,11 +92,14 @@ struct stree
     static constexpr const char* NDS = "nds.npy" ;
     static constexpr const char* M2W = "m2w.npy" ;
     static constexpr const char* W2M = "w2m.npy" ;
+    static constexpr const char* MTNAME = "mtname.txt" ;
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* DIGS = "digs.txt" ;
     static constexpr const char* SUBS = "subs.txt" ;
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
+    static constexpr const char* MTFOLD = "mtfold" ;
 
+    std::vector<std::string> mtname ;
     std::vector<std::string> soname ;
 
     std::vector<glm::tmat4x4<double>> m2w ;  
@@ -106,7 +109,7 @@ struct stree
     std::vector<std::string> digs ; // single node digest  
     std::vector<std::string> subs ; // subtree digest 
     sfreq* subs_freq ;
-
+    NPFold* mtfold ; 
 
     stree();
 
@@ -205,7 +208,8 @@ struct stree
 
 inline stree::stree()
     :
-    subs_freq(new sfreq)
+    subs_freq(new sfreq),
+    mtfold(new NPFold)
 {
 }
 
@@ -221,6 +225,7 @@ inline std::string stree::desc() const
        << " soname " << soname.size()
        << " subs_freq " << std::endl
        << ( subs_freq ? subs_freq->desc() : "-" )
+       << " mtfold " << ( mtfold ? mtfold->desc() : "-" )
        << std::endl
        ;
 
@@ -715,10 +720,13 @@ inline void stree::save_( const char* fold ) const
     NP::Write<int>(    fold, NDS, (int*)nds.data(),    nds.size(), snode::NV );
     NP::Write<double>( fold, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
     NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
+    NP::WriteNames( fold, MTNAME, mtname );
     NP::WriteNames( fold, SONAME, soname );
     NP::WriteNames( fold, DIGS,   digs );
     NP::WriteNames( fold, SUBS,   subs );
     if(subs_freq) subs_freq->save(fold, SUBS_FREQ);
+    if(mtfold) mtfold->save(fold, MTFOLD) ; 
+
 }
 
 
@@ -759,10 +767,12 @@ inline void stree::load_( const char* fold )
 
 
     NP::ReadNames( fold, SONAME, soname );
+    NP::ReadNames( fold, MTNAME, soname );
     NP::ReadNames( fold, DIGS,   digs );
     NP::ReadNames( fold, SUBS,   subs );
 
     if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
+    if(mtfold) mtfold->load(fold, MTFOLD) ;
 }
 
 inline int stree::Compare( const std::vector<int>& a, const std::vector<int>& b ) // static 

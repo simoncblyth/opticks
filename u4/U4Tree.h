@@ -16,6 +16,7 @@ U4Tree.h : explore minimal approach to geometry translation
 #include <glm/glm.hpp>
 #include "G4VPhysicalVolume.hh"
 #include "G4PVPlacement.hh"
+#include "G4Material.hh"
 
 #include "NP.hh"
 #include "sdigest.h"
@@ -23,6 +24,7 @@ U4Tree.h : explore minimal approach to geometry translation
 #include "stree.h"
 
 #include "U4Transform.h"
+#include "U4Material.hh"
 
 struct U4Tree
 {
@@ -33,8 +35,14 @@ struct U4Tree
     int sensorCount ; 
     std::map<const G4LogicalVolume* const, int> lvidx ;
     std::vector<const G4VPhysicalVolume*> pvs ; 
+    std::vector<const G4Material*>  materials ; 
 
     U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr ); 
+
+
+    void convertMaterials(); 
+    void convertMaterials_r(const G4VPhysicalVolume* const pv); 
+    void convertMaterial(const G4Material* const mt); 
 
     void convertSolids(); 
     void convertSolids_r(const G4VPhysicalVolume* const pv); 
@@ -69,9 +77,42 @@ inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_)
     sensorCount(0)
 {
     if(top == nullptr) return ; 
+    convertMaterials();
     convertSolids();
     convertNodes(); 
 }
+
+
+/**
+U4Tree::convertMaterials
+-----------------------------------
+
+1. recursive traverse collecting material pointers from all active LV into materials vector 
+   in postorder of first encounter.
+
+2. create NPFold mtfold holding properties of all active materials 
+
+**/
+
+inline void U4Tree::convertMaterials()
+{
+    convertMaterials_r(top); 
+    st->mtfold = U4Material::MakePropertyFold(materials); 
+}
+inline void U4Tree::convertMaterials_r(const G4VPhysicalVolume* const pv)
+{
+    const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ ) convertMaterials_r( lv->GetDaughter(i) ); 
+    G4Material* mt = lv->GetMaterial() ; 
+    if(mt && (std::find(materials.begin(), materials.end(), mt) == materials.end())) convertMaterial(mt);  
+}
+inline void U4Tree::convertMaterial(const G4Material* const mt)
+{
+    materials.push_back(mt); 
+    const G4String& mtname = mt->GetName() ;  
+    st->mtname.push_back(mtname); 
+}
+
 
 inline void U4Tree::convertSolids()
 {

@@ -248,7 +248,7 @@ void U4Material::GetPropertyNames( std::vector<std::string>& names, const G4Mate
 }
 
 /**
-U4Material::GetPropertyFold
+U4Material::MakePropertyFold
 ----------------------------
 
 Converts the properties of all materials into a 
@@ -260,7 +260,7 @@ just load single materials and sometimes all materials.
 
 **/
 
-NPFold* U4Material::GetPropertyFold_flat()
+NPFold* U4Material::MakePropertyFold_flat()
 {
     NPFold* fold = new NPFold ; 
 
@@ -286,7 +286,7 @@ NPFold* U4Material::GetPropertyFold_flat()
 }
 
 
-NPFold* U4Material::GetPropertyFold()
+NPFold* U4Material::MakePropertyFold()
 {
     NPFold* fold = new NPFold ; 
 
@@ -296,15 +296,29 @@ NPFold* U4Material::GetPropertyFold()
     { 
         const char* material = matnames[i].c_str(); 
         const G4Material* mat = G4Material::GetMaterial(material) ; 
-        NPFold* matfold = GetPropertyFold(mat) ; 
+        NPFold* matfold = MakePropertyFold(mat) ; 
         fold->add_subfold( material, matfold ); 
     }  
     return fold ; 
 }
 
 
+NPFold* U4Material::MakePropertyFold(std::vector<const G4Material*>& mats)
+{
+    NPFold* fold = new NPFold ; 
+    for(unsigned i=0 ; i < mats.size() ; i++)
+    { 
+        const G4Material* mt = mats[i]  ; 
+        const G4String& mtname = mt->GetName() ;
+        const char* mtn = mtname.c_str(); 
+        NPFold* matfold = MakePropertyFold(mt) ; 
+        fold->add_subfold( mtn, matfold ); 
+    }  
+    return fold ; 
+}
 
-NPFold* U4Material::GetPropertyFold(const G4Material* mat )
+
+NPFold* U4Material::MakePropertyFold(const G4Material* mat )
 {
     NPFold* fold = new NPFold ; 
     std::vector<std::string> propnames ; 

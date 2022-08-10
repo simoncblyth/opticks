@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* base = "$TMP/U4Material_GetPropertyFold" ; 
+    const char* base = "$TMP/U4Material_MakePropertyFold" ; 
     const char* name = "U4Material" ; 
     const char* fold = SPath::Resolve(base, name, NOOP ) ; 
 
