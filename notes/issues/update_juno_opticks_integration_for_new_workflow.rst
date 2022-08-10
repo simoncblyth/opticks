@@ -213,6 +213,63 @@ Check Sensors : systematically 2x the number of SD than would expect ?
     epsilon:offline blyth$ 
 
 
+Issue 8 : shakedown : possibly second instanciation of G4CXOpticks
+-----------------------------------------------------------------------------
+
+::
+
+    2022-08-10 19:18:11.285 INFO  [426621] [junoSD_PMT_v2_Opticks::EndOfEvent@172] [ eventID 0 m_opticksMode 3
+    2022-08-10 19:18:11.285 INFO  [426621] [G4CXOpticks::G4CXOpticks@91] CSGOptiX::Desc Version 7 PTXNAME CSGOptiX7 GEO_PTXNAME -
+    G4CXOpticks::desc sd 0 tr 0 wd 0 gg 0 fd 0 cx 0 qs 0 se 0
+    2022-08-10 19:18:11.285 INFO  [426621] [G4CXOpticks::simulate@253] G4CXOpticks::desc sd 0 tr 0 wd 0 gg 0 fd 0 cx 0 qs 0 se 0
+    python: /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:254: void G4CXOpticks::simulate(): Assertion `cx' failed.
+
+
+    #1  0x00007ffff696fa78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff69671a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6967252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffd45773c2 in G4CXOpticks::simulate (this=0x7fff45da3f80) at /data/blyth/junotop/opticks/g4cx/G4CXOpticks.cc:254
+    #5  0x00007fffd386b2ff in junoSD_PMT_v2_Opticks::EndOfEvent (this=0x5940740) at /data/blyth/junotop/offline/Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2_Opticks.cc:187
+    #6  0x00007fffd386989a in junoSD_PMT_v2::EndOfEvent (this=0x593ff40, HCE=0x2b8c1a0) at /data/blyth/junotop/offline/Simulation/DetSimV2/PMTSim/src/junoSD_PMT_v2.cc:1081
+    #7  0x00007fffdd63bc95 in G4SDStructure::Terminate(G4HCofThisEvent*) [clone .localalias.78] ()
+       from /data/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4digits_hits.so
+
+
+::
+
+    246 void G4CXOpticks::simulate()
+    247 {
+    248 #ifdef __APPLE__
+    249      LOG(fatal) << " APPLE skip " ;
+    250      return ;
+    251 #endif
+    252 
+    253     LOG(LEVEL) << desc() ;
+    254     assert(cx);
+    255     assert(qs);
+    256     assert( SEventConfig::IsRGModeSimulate() );
+    257 
+
+    218 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
+    219 {
+    220     LOG(LEVEL) << " fd_ " << fd_ ;
+    221 #ifdef __APPLE__
+    222     return ;
+    223 #endif
+    224     fd = fd_ ;
+    225 
+    226     se = new SEvt ;
+    227     se->setReldir("ALL");
+    228     se->setGeo((SGeo*)fd);   // HMM: more general place for this hookup ?
+    229 
+    230     cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
+    231     qs = cx->sim ;
+    232     LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ;
+    233 }
+
+
+
+
 Issue 7 : WIP : make some SVN commits : now compiling, need some basic checks prior to commit 
 -----------------------------------------------------------------------------------------------
 

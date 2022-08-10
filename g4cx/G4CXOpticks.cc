@@ -38,12 +38,8 @@
 const plog::Severity G4CXOpticks::LEVEL = PLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
 
 G4CXOpticks* G4CXOpticks::INSTANCE = nullptr ; 
-G4CXOpticks* G4CXOpticks::Get()
-{  
-    if(INSTANCE == nullptr) INSTANCE = new G4CXOpticks ; 
-    return INSTANCE ; 
-} 
-
+G4CXOpticks* G4CXOpticks::Get(){ return INSTANCE ; } 
+// formerly instanciated when INSTANCE nullptr, but its better to require more care with when the instanciation is done
 
 /**
 G4CXOpticks::SetGeometry
@@ -55,8 +51,8 @@ Called for example from Detector framework LSExpDetectorConstruction_Opticks::Se
 
 void G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
 {
-    G4CXOpticks* g4ok = new G4CXOpticks ;
-    g4ok->setGeometry(world); 
+    G4CXOpticks* g4cx = new G4CXOpticks ;
+    g4cx->setGeometry(world); 
 }
 
 std::string G4CXOpticks::FormPath(const char* base, const char* rel )
@@ -88,6 +84,7 @@ G4CXOpticks::G4CXOpticks()
     qs(nullptr),
     se(nullptr)
 {
+    INSTANCE = this ; 
     LOG(LEVEL) << Desc() << std::endl << desc(); 
 }
 
