@@ -34,8 +34,8 @@ void test_GetNumHit()
 
     for(int idx=0 ; idx < int(num_hit) ; idx++) std::cout << idx << std::endl ;  
     // when num_hit is UNDEF the below loop does nothing as int(UNDEF) is -1 
-
 }
+
 
 
 int main()

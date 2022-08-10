@@ -63,6 +63,8 @@ struct NP
 
     NP(const char* dtype_, const std::vector<int>& shape_ ); 
     NP(const char* dtype_="<f4", int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+    virtual ~NP(); 
+
     void init(); 
     void set_shape( int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1);  // CAUTION: DO NOT USE *set_shape* TO CHANGE SHAPE (as it calls *init*) INSTEAD USE *change_shape* 
     void set_shape( const std::vector<int>& src_shape ); 
@@ -98,6 +100,7 @@ struct NP
     static NP* LoadNarrow(const char* dir, const char* reldir, const char* name); 
 
 
+    template<typename T> static NP* MakeFlat(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
     static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
 
     template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
@@ -238,7 +241,6 @@ struct NP
     void fillIndexFlat(); 
     void dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ; 
 
-    void clear();   
 
     static bool Exists(const char* base, const char* rel, const char* name);   
     static bool Exists(const char* dir, const char* name);   
@@ -310,15 +312,14 @@ struct NP
     unsigned item_bytes() const ;   // *item* comprises all dimensions beyond the first 
     unsigned hdr_bytes() const ;  
     unsigned meta_bytes() const ;
+
+    void clear() ; 
   
     // primary data members 
     std::vector<char> data ; 
     std::vector<int>  shape ; 
     std::string       meta ; 
-
-    //std::string       names ;      // CHANGED to vector of string for convenience of reference passing, eg for CSGName
-    std::vector<std::string>  names ; 
-
+    std::vector<std::string>  names ;  // CHANGED to vector of string for convenience of reference passing, eg for CSGName
 
     // non-persisted transients, set on loading 
     std::string lpath ; 
@@ -345,6 +346,19 @@ struct NP
 
     std::string make_jsonhdr() const ;
 };
+
+inline void NP::clear()
+{
+    data.clear(); 
+    data.shrink_to_fit(); 
+    shape[0] = 0 ; 
+}
+
+inline NP::~NP()
+{
+    clear();    // HMM: expect not needed, but somehow feels safer.   TODO: large array leak checking 
+}
+
 
 /**
 operator<< NP : NOT a member function
@@ -3321,12 +3335,6 @@ inline std::string NP::form_path(const char* dir, const char* reldir, const char
 }
 
 
-inline void NP::clear()
-{
-    data.clear(); 
-    data.shrink_to_fit(); 
-    shape[0] = 0 ;  
-}
 
 inline bool NP::Exists(const char* base, const char* rel,  const char* name) // static 
 {
@@ -3834,6 +3842,19 @@ template <typename T> NP* NP::Make( int ni_, int nj_, int nk_, int nl_, int nm_,
     NP* a = new NP(dtype.c_str(), ni_,nj_,nk_,nl_,nm_, no_) ;    
     return a ; 
 }
+
+
+template<typename T> NP* NP::MakeFlat(int ni, int nj, int nk, int nl, int nm, int no )
+{
+    NP* a = NP::Make<T>(ni, nj, nk, nl, nm, no );  
+    a->fillIndexFlat(); 
+    return a ; 
+}
+
+
+
+
+
 
 /**
 NP::Make "Make_ellipsis"

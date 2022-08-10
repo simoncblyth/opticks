@@ -44,7 +44,28 @@ cmake/Modules/FindOpticks.cmake::
 Issue 11 : repeated hits, num_hit between eventID 0,1 
 -------------------------------------------------------
 
-* HMM: perhaps need NPFold::clear 
+* HMM: perhaps need NPFold::clear OR otherwise need to manage NPFold reuse within SEvt from event to event  
+
+* YES confirmed, the NPFold just keeps gathering new keys and arrays for each event::
+
+    NPFold::desc
+     subfold 0 ff 0 kk 10 aa 10
+                                 genstep.npy : (116, 6, 4, )
+                                  photon.npy : (10956, 4, 4, )
+                                    seed.npy : (10956, )
+                                     hit.npy : (3793, 4, 4, )
+                                  domain.npy : (2, 4, 4, )
+                                 genstep.npy : (102, 6, 4, )
+                                  photon.npy : (10953, 4, 4, )
+                                    seed.npy : (10953, )
+                                     hit.npy : (3825, 4, 4, )
+                                  domain.npy : (2, 4, 4, )
+
+    ] SEvt::descFull 
+
+
+
+
 
 Need to debug genstep clearing
 

@@ -90,6 +90,7 @@ struct NPFold
     void check() const ; 
     void add(const char* k, const NP* a); 
     void set(const char* k, const NP* a); 
+    void clear(); 
 
     int num_items() const ; 
     const char* get_key(unsigned idx) const ; 
@@ -188,6 +189,7 @@ inline NPFold::NPFold()
 inline void NPFold::check() const
 {
     assert( kk.size() == aa.size() ); 
+    assert( ff.size() == subfold.size() ); 
 }
 
 inline bool NPFold::IsNPY(const char* k) // key ends with EXT ".npy"
@@ -328,8 +330,32 @@ inline void NPFold::set(const char* k, const NP* a)
     }
     else
     {
-        aa[idx] = a ;  // HMM: are leaking the old one  
+        const NP* old_a = aa[idx] ; 
+        delete old_a ; 
+        aa[idx] = a ;  
     }
+}
+
+inline void NPFold::clear()
+{
+    check(); 
+
+    for(unsigned i=0 ; i < aa.size() ; i++)
+    {
+        const NP* a = aa[i]; 
+        delete a ; 
+    } 
+    aa.clear(); 
+    kk.clear(); 
+
+    for(unsigned i=0 ; i < subfold.size() ; i++)
+    {
+        NPFold* sub = const_cast<NPFold*>(subfold[i]) ; 
+        sub->clear();  
+    }
+
+    subfold.clear();
+    ff.clear(); 
 }
 
 
@@ -352,6 +378,8 @@ NPFold::find
 -------------
 
 If the key *k* does not ext with EXT ".npy" then that is added before searching.
+
+std::find returns iterator to the first match
 
 **/
 inline int NPFold::find(const char* k) const

@@ -385,10 +385,19 @@ NP* SEvt::GetInputPhoton() {  return INSTANCE ? INSTANCE->getInputPhoton() : nul
 void SEvt::SetInputPhoton(NP* p) {  assert(INSTANCE) ; INSTANCE->setInputPhoton(p) ; }
 bool SEvt::HasInputPhoton(){  return INSTANCE ? INSTANCE->hasInputPhoton() : false ; }
 
+/**
+SEvt::clear
+-------------
 
+HMM: most of the arrays are only relevant to hostside running, 
+so its kinda confusing clearing them 
+
+**/
 
 void SEvt::clear()
 {
+    LOG(LEVEL) << "[" ; 
+
     genstep.clear();
     gs.clear();
     pho0.clear(); 
@@ -401,6 +410,10 @@ void SEvt::clear()
     prd.clear(); 
     tag.clear(); 
     flat.clear(); 
+
+    if(fold) fold->clear(); 
+
+    LOG(LEVEL) << "]" ; 
 }
 
 void SEvt::setIndex(int index_){ index = index_ ; }

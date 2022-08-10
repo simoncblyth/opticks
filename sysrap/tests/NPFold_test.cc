@@ -153,6 +153,57 @@ void test_find_subfold_1()
 }
 
 
+void test_add_same_key()
+{
+    NPFold nf0 ; 
+
+    nf0.add("a", NP::MakeFlat<float>(1,4,4) ); 
+    nf0.add("a", NP::MakeFlat<float>(2,4,4) ); 
+    nf0.add("a", NP::MakeFlat<float>(3,4,4) ); 
+    nf0.add("a", NP::MakeFlat<float>(4,4,4) ); 
+
+    std::cout << "nf0.desc" << std::endl << nf0.desc()  ; 
+    std::cout << "nf0.get_num(\"a\") " << nf0.get_num("a") << " (get_num finds the first matching key) " <<  std::endl ; 
+}
+
+void test_add_same_key_clear()
+{
+    NPFold nf0 ; 
+
+    nf0.add("a", NP::MakeFlat<float>(1,4,4) ); 
+    nf0.clear(); 
+
+    nf0.add("a", NP::MakeFlat<float>(2,4,4) ); 
+    nf0.clear(); 
+
+    nf0.add("a", NP::MakeFlat<float>(3,4,4) ); 
+    nf0.clear(); 
+
+    nf0.add("a", NP::MakeFlat<float>(4,4,4) ); 
+
+    std::cout << "nf0.desc" << std::endl << nf0.desc()  ; 
+    std::cout << "nf0.get_num(\"a\") " << nf0.get_num("a") << " (get_num finds the first matching key) " <<  std::endl ; 
+}
+
+
+
+
+void test_set_same_key()
+{
+    NPFold nf0 ; 
+
+    nf0.set("a", NP::MakeFlat<float>(1,4,4) ); 
+    nf0.set("a", NP::MakeFlat<float>(2,4,4) ); 
+    nf0.set("a", NP::MakeFlat<float>(3,4,4) ); 
+    nf0.set("a", NP::MakeFlat<float>(4,4,4) ); 
+
+    std::cout << "nf0.desc" << std::endl << nf0.desc()  ; 
+    std::cout << "nf0.get_num(\"a\") " << nf0.get_num("a") << " (get_num finds the first matching key) " <<  std::endl ; 
+}
+
+
+
+
 
 int main()
 {
@@ -162,8 +213,14 @@ int main()
     test_subfold_save_load(); 
     test_desc_subfold(); 
     test_find_subfold_0(); 
-    */
     test_find_subfold_1(); 
+
+    test_add_same_key(); 
+    test_set_same_key(); 
+    */
+
+    test_add_same_key_clear(); 
+
 
     return 0 ; 
 }
