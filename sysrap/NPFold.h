@@ -45,6 +45,7 @@ index that does not end with ".npy" which gets stored into ff vector.
 
 struct NPFold 
 {
+    static constexpr const int UNDEF = -1 ; 
     static constexpr const bool VERBOSE = false ; 
     static constexpr const char* EXT = ".npy" ; 
     static constexpr const char* INDEX = "NPFold_index.txt" ; 
@@ -228,12 +229,12 @@ inline const char* NPFold::get_subfold_key(unsigned idx) const
 inline int NPFold::get_subfold_idx(const char* f) const
 {
     size_t idx = std::distance( ff.begin(), std::find( ff.begin(), ff.end(), f )) ; 
-    return idx < ff.size() ? idx : -1 ; 
+    return idx < ff.size() ? idx : UNDEF ; 
 }
 inline NPFold* NPFold::get_subfold(const char* f) const 
 {
     int idx = get_subfold_idx(f) ; 
-    return idx > -1 ? get_subfold(idx) : nullptr ; 
+    return idx == UNDEF ? nullptr : get_subfold(idx) ; 
 }
 inline NPFold* NPFold::find_subfold(const char* qpath) 
 {
@@ -321,7 +322,7 @@ inline void NPFold::add(const char* k, const NP* a)
 inline void NPFold::set(const char* k, const NP* a) 
 {
     int idx = find(k); 
-    if(idx == -1)  
+    if(idx == UNDEF)  
     {
         add(k, a); 
     }
@@ -357,19 +358,19 @@ inline int NPFold::find(const char* k) const
 {
     std::string key = FormKey(k); 
     size_t idx = std::distance( kk.begin(), std::find( kk.begin(), kk.end(), key.c_str() )) ; 
-    return idx < kk.size() ? idx : -1 ; 
+    return idx < kk.size() ? idx : UNDEF ; 
 }
 
 inline bool NPFold::has_key(const char* k) const 
 {
     int idx = find(k); 
-    return idx > -1 ; 
+    return idx != UNDEF  ; 
 }
 
 inline const NP* NPFold::get(const char* k) const 
 {
     int idx = find(k) ; 
-    return idx > -1 ? aa[idx] : nullptr ; 
+    return idx == UNDEF ? nullptr : aa[idx] ; 
 }
 /**
 NPFold::get_num
@@ -381,7 +382,7 @@ Number of items in the array with key *k* or -1 if not such key.
 inline int NPFold::get_num(const char* k) const 
 {
     const NP* a = get(k) ; 
-    return a == nullptr ? -1 : a->shape[0] ;   
+    return a == nullptr ? UNDEF : a->shape[0] ;   
 }
 
 

@@ -54,7 +54,8 @@ SEvt::SEvt()
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
     fold(new NPFold),
     cf(nullptr),
-    hostside_running_resize_done(false)
+    hostside_running_resize_done(false),
+    gather_done(false)
 { 
     init(); 
 }
@@ -374,9 +375,9 @@ int SEvt::GetIndex(){           return INSTANCE ? INSTANCE->getIndex()  :  0 ; }
 void        SEvt::SetReldir(const char* reldir){ assert(INSTANCE) ; INSTANCE->setReldir(reldir) ; }
 const char* SEvt::GetReldir(){  return INSTANCE ? INSTANCE->getReldir() : nullptr ; }
 
-int SEvt::GetNumPhotonFromGenstep(){  return INSTANCE ? INSTANCE->getNumPhotonFromGenstep() : -1 ; }
-int SEvt::GetNumGenstepFromGenstep(){ return INSTANCE ? INSTANCE->getNumGenstepFromGenstep() : -1 ; }
-int SEvt::GetNumHit(){  return INSTANCE ? INSTANCE->getNumHit() : -1 ; }
+int SEvt::GetNumPhotonFromGenstep(){  return INSTANCE ? INSTANCE->getNumPhotonFromGenstep() : UNDEF ; }
+int SEvt::GetNumGenstepFromGenstep(){ return INSTANCE ? INSTANCE->getNumGenstepFromGenstep() : UNDEF ; }
+int SEvt::GetNumHit(){  return INSTANCE ? INSTANCE->getNumHit() : UNDEF ; }
 
 
 NP* SEvt::GatherGenstep() {   return INSTANCE ? INSTANCE->gatherGenstep() : nullptr ; }
@@ -511,8 +512,8 @@ sgs SEvt::addGenstep(const quad6& q_)
 }
 
 /**
-SEvt::resize
--------------
+SEvt::setNumPhoton
+----------------------
 
 This is the CPU side equivalent of device side QEvent::setNumPhoton
 
@@ -544,7 +545,8 @@ void SEvt::setNumPhoton(unsigned num_photon)
         << " evt->num_flat " << evt->num_flat
         ;
 
-    hostside_running_resize_done = false ; 
+    hostside_running_resize_done = false ;    
+    gather_done = false ;    // hmm perhaps should be in ::clear 
 }
 
 void SEvt::setNumSimtrace(unsigned num_simtrace)
@@ -1165,16 +1167,23 @@ std::string SEvt::getMeta() const
     return meta ; 
 }
 
+
+
+/**
+SEvt::gatherComponent
+------------------------
+
+NB this is for hostside running only, for device-side running 
+the SCompProvider is the QEvent not the SEvt, so this method
+is not called
+
+**/
+
 NP* SEvt::gatherComponent(unsigned comp) const 
 {
     unsigned mask = SEventConfig::CompMask(); 
     return mask & comp ? gatherComponent_(comp) : nullptr ; 
 }
-
-/**
-SEvt::gatherComponent_
-------------------------
-**/
 
 NP* SEvt::gatherComponent_(unsigned comp) const 
 {
@@ -1289,7 +1298,7 @@ std::string SEvt::desc() const
 }
 
 /**
-SEvt::gather_components
+SEvt::gather
 --------------------------
 
 Collects the components configured by SEventConfig::CompMask
@@ -1300,8 +1309,11 @@ into NPFold from the SCompProvider which can either be:
 
 **/
 
-void SEvt::gather_components() 
+void SEvt::gather() 
 {
+    if(gather_done) return ; 
+    gather_done = true ;   // SEvt::setNumPhoton which gets called by adding gensteps resets this to false
+
     unsigned mask = SEventConfig::CompMask();
     std::vector<unsigned> comps ; 
     SComp::CompListAll(comps );
@@ -1352,6 +1364,8 @@ takes care of lots of the bookkeeping automatically.
 However in some circumstances such as with the B side of aligned running (U4RecorderTest) 
 it is appropriate to use the override code or envvar to locate B side outputs together 
 with the A side. 
+
+
 
 **/
 
@@ -1420,6 +1434,8 @@ then the directory is suffixed with the index::
     /some/directory/z000
     /some/directory/p001
    
+HMM: what about a save following a gather ? does the download happen twice ?
+
 **/
 
 void SEvt::save(const char* dir_) 
@@ -1427,7 +1443,7 @@ void SEvt::save(const char* dir_)
     const char* dir = getOutputDir(dir_); 
     LOG(LEVEL) << " dir " << dir ; 
 
-    gather_components(); 
+    gather(); 
 
     LOG(LEVEL) << descComponent() ; 
     LOG(LEVEL) << descFold() ; 

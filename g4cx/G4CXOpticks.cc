@@ -262,8 +262,8 @@ void G4CXOpticks::simulate()
         sev->setFrame(fr); 
     }
 
-    unsigned num_genstep = SEvt::GetNumGenstepFromGenstep(); 
-    unsigned num_photon  = SEvt::GetNumPhotonFromGenstep(); 
+    unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
+    unsigned num_photon  = sev->getNumPhotonFromGenstep(); 
 
     LOG(LEVEL) 
         << "[ num_genstep " << num_genstep
@@ -273,9 +273,14 @@ void G4CXOpticks::simulate()
 
     qs->simulate(); 
 
-    unsigned num_hit = SEvt::GetNumHit() ; 
+    sev->gather();   // downloads components configured by SEventConfig::CompMask 
+
+    unsigned num_hit = sev->getNumHit() ; 
+    bool is_undef = num_hit == SEvt::UNDEF ; 
+
     LOG(LEVEL) 
        << "] num_hit " << num_hit 
+       << " is_undef " << is_undef 
        ;
 
 

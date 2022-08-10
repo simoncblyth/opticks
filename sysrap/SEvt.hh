@@ -82,6 +82,7 @@ struct SGeo ;
 struct SYSRAP_API SEvt : public SCompProvider
 {
     static const SCF* CF ;  // TODO: eliminate 
+    static constexpr const unsigned UNDEF = ~0u ; 
 
     int index ; 
     const char* reldir ; 
@@ -98,6 +99,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     const SGeo*           cf ; 
 
     bool              hostside_running_resize_done ; // only ever becomes true for non-GPU running 
+    bool              gather_done ; 
+
     sframe            frame ;
 
 
@@ -275,9 +278,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     void saveGenstep(const char* dir) const ; 
 
 
-    void gather_components() ; 
+    void gather() ;  // with on device running this downloads
 
-    // save methods not const as calls gather_components 
+    // save methods not const as calls gather
     void save() ; 
     void load() ; 
     void save(const char* base, const char* reldir1, const char* reldir2 ); 
@@ -292,9 +295,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::string descDir() const ; 
     std::string descFold() const ; 
     std::string descComponent() const ; 
-
-
-
 
 
     const NP* getPhoton() const ; 

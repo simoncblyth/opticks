@@ -7,6 +7,7 @@ gcc $name.cc \
     -std=c++11 -lstdc++ \
     -I.. \
     -I$(opticks-prefix)/externals/plog/include \
+    -I$(opticks-prefix)/externals/glm/glm \
     -I/usr/local/cuda/include \
     -L$(opticks-prefix)/lib \
     -lSysRap \
