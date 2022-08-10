@@ -218,6 +218,24 @@ Issue 9 : bad gensteps ?, CUDA Sync error
 
 ::
 
+    U4::CollectGenstep_DsG4Scintillation_r4695( &aTrack, &aStep, NumPhoton, scnt, ScintillationTime);
+
+
+
+
+    136 static quad6 MakeGenstep_G4Cerenkov_modified(
+    ...
+    162     scerenkov& gs = (scerenkov&)_gs ;
+    163 
+    164     gs.gentype = OpticksGenstep_G4Cerenkov_modified ;
+    165     gs.trackid = aTrack->GetTrackID() ;
+    166     gs.matline = 0u ; //  aMaterial->GetIndex()  
+    167     gs.numphoton = numPhotons ;
+
+
+
+::
+
     1464 inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
     1465 {
     1466     const int& gencode = gs.q0.i.x ;

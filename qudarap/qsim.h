@@ -1468,8 +1468,15 @@ inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng
     {
         case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ; 
         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
-        case OpticksGenstep_CERENKOV:        cerenkov->generate(     p, rng, gs, photon_id, genstep_id ) ; break ; 
-        case OpticksGenstep_SCINTILLATION:   scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ; 
+
+        case OpticksGenstep_G4Cerenkov_modified:
+        case OpticksGenstep_CERENKOV:        
+                                              cerenkov->generate(    p, rng, gs, photon_id, genstep_id ) ; break ; 
+
+        case OpticksGenstep_DsG4Scintillation_r4695:
+        case OpticksGenstep_SCINTILLATION:   
+                                              scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ; 
+
         case OpticksGenstep_INPUT_PHOTON:    { p = evt->photon[photon_id] ; p.set_flag(TORCH) ; }        ; break ;        
         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ; 
     }
