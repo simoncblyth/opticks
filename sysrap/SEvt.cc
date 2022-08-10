@@ -1311,7 +1311,12 @@ into NPFold from the SCompProvider which can either be:
 
 void SEvt::gather() 
 {
-    if(gather_done) return ; 
+    if(gather_done) 
+    {
+        LOG(error) << "gather_done already skip gather " ; 
+        return ; 
+    }
+
     gather_done = true ;   // SEvt::setNumPhoton which gets called by adding gensteps resets this to false
 
     unsigned mask = SEventConfig::CompMask();
@@ -1621,14 +1626,12 @@ void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const
 
 std::string SEvt::descNum() const 
 {
-    unsigned num_photon_from_gs = getNumPhotonFromGenstep(); 
-    unsigned num_photon = getNumPhoton(); 
-    unsigned num_hit = getNumHit(); 
     std::stringstream ss ; 
     ss << "SEvt::descNum" 
-       << " num_photon_from_gs " <<  num_photon_from_gs 
-       << " num_photon " <<  num_photon 
-       << " num_hit " <<  num_hit 
+       << " getNumGenstepFromGenstep "  <<  getNumGenstepFromGenstep() 
+       << " getNumPhotonFromGenstep "   <<  getNumPhotonFromGenstep() 
+       << " getNumPhoton(from NPFold) " <<  getNumPhoton()
+       << " getNumHit(from NPFold) "    <<  getNumHit()
        << std::endl 
        ;
 
@@ -1746,6 +1749,7 @@ std::string SEvt::descFull(unsigned max_print) const
     ss << descFramePhoton(max_print) << std::endl ; 
 
     ss << ( cf ? cf->descBase() : "no-cf" ) << std::endl ; 
+    ss << ( fold ? fold->desc() : "no-fold" ) << std::endl ; 
     ss << "] SEvt::descFull "  << std::endl ; 
     std::string s = ss.str(); 
     return s ; 

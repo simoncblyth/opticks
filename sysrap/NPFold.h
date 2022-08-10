@@ -533,6 +533,7 @@ inline std::string NPFold::desc() const
 {
     std::stringstream ss ; 
     ss << "NPFold::desc"  << std::endl ; 
+    ss << brief() << std::endl ; 
     for(unsigned i=0 ; i < kk.size() ; i++) 
     {
         const char* k = kk[i].c_str() ; 
@@ -554,6 +555,9 @@ inline std::string NPFold::brief() const
     if(loaddir) ss << " loaddir:" << loaddir ; 
     if(savedir) ss << " savedir:" << savedir ; 
     ss <<  " subfold " << subfold.size() ; 
+    ss << " ff " << ff.size() ; 
+    ss << " kk " << kk.size() ; 
+    ss << " aa " << aa.size() ; 
     std::string s = ss.str(); 
     return s ; 
 }

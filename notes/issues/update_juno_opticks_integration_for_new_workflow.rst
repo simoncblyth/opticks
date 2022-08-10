@@ -44,6 +44,8 @@ cmake/Modules/FindOpticks.cmake::
 Issue 11 : repeated hits, num_hit between eventID 0,1 
 -------------------------------------------------------
 
+* HMM: perhaps need NPFold::clear 
+
 Need to debug genstep clearing
 
 ::
