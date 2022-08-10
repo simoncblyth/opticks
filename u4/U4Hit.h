@@ -49,12 +49,34 @@ struct U4Hit
     G4bool        is_cerenkov ; 
     G4bool        is_reemission ; 
 
+    void zero() ; 
     std::string desc() const ; 
-
 };
 
 
 #include "U4ThreeVector.h"
+
+inline void U4Hit::zero() 
+{
+    local_position.set(0.,0.,0.); 
+    global_position.set(0.,0.,0.); 
+    time = 0. ; 
+    local_direction.set(0.,0.,0.); 
+    global_direction.set(0.,0.,0.); 
+    weight = 0. ; 
+    local_polarization.set(0.,0.,0.); 
+    global_polarization.set(0.,0.,0.); 
+    wavelength = 0. ; 
+    boundary = 0 ; 
+    sensorIndex = 0 ; 
+    nodeIndex = 0 ; 
+    photonIndex = 0 ; 
+    flag_mask = 0 ; 
+    sensor_identifier = 0 ; 
+    is_cerenkov = false ; 
+    is_reemission = false ; 
+}
+
 
 inline std::string U4Hit::desc() const
 {
@@ -68,6 +90,7 @@ inline std::string U4Hit::desc() const
     std::string s = ss.str(); 
     return s ; 
 }
+
 
 
 

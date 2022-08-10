@@ -22,6 +22,8 @@ struct U4HitGet
 
 inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, const sphoton& local )
 {
+    hit.zero(); 
+
     U4ThreeVector::FromFloat3( hit.global_position,      global.pos ); 
     U4ThreeVector::FromFloat3( hit.global_direction,     global.mom ); 
     U4ThreeVector::FromFloat3( hit.global_polarization,  global.pol ); 
@@ -33,6 +35,18 @@ inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, cons
     U4ThreeVector::FromFloat3( hit.local_position,      local.pos ); 
     U4ThreeVector::FromFloat3( hit.local_direction,     local.mom ); 
     U4ThreeVector::FromFloat3( hit.local_polarization,  local.pol ); 
+
+    /*
+    // TODO : 6 int + 2 bool 
+    hit.boundary 
+    hit.sensorIndex 
+    hit.nodeIndex ;
+    hit.photonIndex ;
+    hit.flag_mask ; 
+    hit.sensor_identifier ; 
+    hit.is_cerenkov ; 
+    hit.is_reemission ; 
+    */
 }
 
 inline void U4HitGet::FromEvt(U4Hit& hit, unsigned idx )

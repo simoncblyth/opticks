@@ -41,12 +41,39 @@ cmake/Modules/FindOpticks.cmake::
 
 
 
-Issue 11 : repeated hits, num_hit between eventID 0,1 
--------------------------------------------------------
+
+Issue 12 : Hits all with Garbled flags
+------------------------------------------
+
+* is that an uninitialized value ? Add U4Hit::zero to U4HitGet::ConvertFromPhoton
+
+::
+
+    [ junoSD_PMT_v2::EndOfEvent m_opticksMode  3
+    2022-08-10 22:46:50.089 DEBUG [457131] [junoSD_PMT_v2_Opticks::EndOfEvent@166] [ eventID 0 m_opticksMode 3
+    2022-08-10 22:46:50.143 INFO  [457131] [junoSD_PMT_v2_Opticks::EndOfEvent@187]  eventID 0 num_hit 3793 way_enabled 0
+         0 gp.x   17412.67 gp.y    2617.35 gp.z    8039.29 gp.R   19356.70 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         1 gp.x     786.81 gp.y   19319.34 gp.z      22.82 gp.R   19335.37 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         2 gp.x  -19149.59 gp.y    -225.21 gp.z   -2113.11 gp.R   19267.14 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+
+::
+
+    414         << " gp.R " << std::setw(10) << std::fixed << std::setprecision(2) << hit->global_position.mag()
+    415         << " pmt "   << std::setw(7) << hit->sensor_identifier
+    416         << " " << std::setw(20) << OpticksPhoton::FlagMask(hit->flag_mask, true)
+    417         ;
+
+ 
+
+
+
+Issue 11 : repeated hits, num_hit between eventID 0,1 : FIXED with NPFold::clear
+------------------------------------------------------------------------------------
 
 * HMM: perhaps need NPFold::clear OR otherwise need to manage NPFold reuse within SEvt from event to event  
 
-* YES confirmed, the NPFold just keeps gathering new keys and arrays for each event::
+* YES confirmed, the NPFold just keeps gathering new keys and arrays for each event, but get_hit returns the 
+  number from the first matched key, so it looks like are repeating first event::
 
     NPFold::desc
      subfold 0 ff 0 kk 10 aa 10
@@ -64,10 +91,7 @@ Issue 11 : repeated hits, num_hit between eventID 0,1
     ] SEvt::descFull 
 
 
-
-
-
-Need to debug genstep clearing
+Need to debug genstep clearing. Actually first issue is lack of NPFold::clear. 
 
 ::
 
