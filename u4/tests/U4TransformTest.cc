@@ -48,7 +48,7 @@ void test_Write()
         U4Transform::WriteFrameTransform(  a->values<double>() + 16 , pv) ;
         
         std::vector<glm::tmat4x4<double>> m(2) ; 
-        memcpy(m.data(), a->cvalues<double>() ,  a->arr_bytes() ); 
+        memcpy((double*)m.data(), a->cvalues<double>() ,  a->arr_bytes() ); 
 
         std::cout << glm::to_string(m[0]) << std::endl ; 
         std::cout << glm::to_string(m[1]) << std::endl ; 
@@ -56,9 +56,7 @@ void test_Write()
 }
 
 
-
-
-int main(int argc, char** argv)
+void test_Get()
 {
     const G4VPhysicalVolume* pv = MakePV(); 
 
@@ -71,6 +69,14 @@ int main(int argc, char** argv)
     glm::tmat4x4<double> m2w_w2m = m2w * w2m ;  
 
     std::cout << strid::Desc_("m2w", "w2m", "m2w_w2m", m2w, w2m, m2w_w2m ) << std::endl ; 
+}
+
+
+
+int main(int argc, char** argv)
+{
+    //test_Get(); 
+    test_Write(); 
 
     return 0 ; 
 }
