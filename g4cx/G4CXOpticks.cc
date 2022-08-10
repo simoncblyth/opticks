@@ -283,6 +283,7 @@ void G4CXOpticks::simulate()
        << " is_undef " << is_undef 
        ;
 
+    LOG(LEVEL) << " sev.descFull " << std::endl << sev->descFull() ; 
 
 }
 

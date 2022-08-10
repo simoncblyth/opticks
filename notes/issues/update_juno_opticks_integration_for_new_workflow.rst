@@ -41,8 +41,87 @@ cmake/Modules/FindOpticks.cmake::
 
 
 
+Issue 11 : repeated hits, num_hit between eventID 0,1 
+-------------------------------------------------------
+
+Need to debug genstep clearing
+
+::
+
+    [ junoSD_PMT_v2::EndOfEvent m_opticksMode  3
+    2022-08-10 22:46:50.089 DEBUG [457131] [junoSD_PMT_v2_Opticks::EndOfEvent@166] [ eventID 0 m_opticksMode 3
+    2022-08-10 22:46:50.143 INFO  [457131] [junoSD_PMT_v2_Opticks::EndOfEvent@187]  eventID 0 num_hit 3793 way_enabled 0
+         0 gp.x   17412.67 gp.y    2617.35 gp.z    8039.29 gp.R   19356.70 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         1 gp.x     786.81 gp.y   19319.34 gp.z      22.82 gp.R   19335.37 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         2 gp.x  -19149.59 gp.y    -225.21 gp.z   -2113.11 gp.R   19267.14 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         3 gp.x   -3375.24 gp.y  -18937.39 gp.z   -1623.00 gp.R   19304.17 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         4 gp.x  -13073.55 gp.y    7722.22 gp.z  -11968.27 gp.R   19333.65 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         5 gp.x  -17010.48 gp.y    9089.52 gp.z    1732.15 gp.R   19364.30 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         6 gp.x   -1600.75 gp.y   18540.89 gp.z    5044.77 gp.R   19281.51 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         7 gp.x   16901.99 gp.y    5818.85 gp.z   -7339.26 gp.R   19323.59 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         8 gp.x  -15630.24 gp.y   -8382.87 gp.z    7747.10 gp.R   19354.44 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+         9 gp.x   14382.95 gp.y  -11262.46 gp.z    6144.60 gp.R   19273.51 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        10 gp.x  -14453.04 gp.y    6286.11 gp.z   11080.78 gp.R   19266.28 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        11 gp.x   -8930.25 gp.y    2609.81 gp.z   16956.24 gp.R   19341.00 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        12 gp.x   15875.78 gp.y   10492.09 gp.z    2980.17 gp.R   19261.51 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        13 gp.x   -6810.50 gp.y   18017.92 gp.z     159.78 gp.R   19262.76 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        14 gp.x  -10050.34 gp.y   13946.82 gp.z   -8951.06 gp.R   19381.55 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        15 gp.x    -421.58 gp.y  -18617.98 gp.z   -5014.34 gp.R   19286.02 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        16 gp.x    5027.51 gp.y   16938.40 gp.z    7942.81 gp.R   19371.97 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        17 gp.x   16452.79 gp.y   10116.41 gp.z    -165.36 gp.R   19314.85 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        18 gp.x   -1135.70 gp.y  -17112.09 gp.z   -8945.52 gp.R   19342.59 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+        19 gp.x   15908.88 gp.y    9048.97 gp.z    6199.24 gp.R   19323.74 pmt 1075248587 MI|RE|SC|SD|DR|BT|EC
+    2022-08-10 22:46:50.199 INFO  [457131] [junoSD_PMT_v2_Opticks::EndOfEvent@255] ] num_hit 3793 merged_count  0 m_merged_total 0 m_opticksMode 3
+    2022-08-10 22:46:50.200 INFO  [457131] [junoSD_PMT_v2_Opticks::TerminateEvent@300]  invoking SEvt::Clear as no U4Recorder detected 
+    ] junoSD_PMT_v2::EndOfEvent m_opticksMode  3
+    junoSD_PMT_v2::EndOfEvent m_opticksMode 3 hitCollection 5302 hitCollection_muon 0 hitCollection_opticks 0
+    junotoptask:DetSimAlg.execute   INFO: DetSimAlg Simulate An Event (1) 
+    junoSD_PMT_v2::Initialize
+    2022-08-10 22:46:50.205 DEBUG [457131] [junoSD_PMT_v2_Opticks::Initialize@117]  eventID 1 wavelength (null) tool 0 input_photons 0 input_photon_repeat 0
+    Begin of Event --> 1
+    [ junoSD_PMT_v2::EndOfEvent m_opticksMode  3
+    2022-08-10 22:46:51.088 DEBUG [457131] [junoSD_PMT_v2_Opticks::EndOfEvent@166] [ eventID 1 m_opticksMode 3
+    2022-08-10 22:46:51.089 ERROR [457131] [QEvent::setNumPhoton@627]  evt.photon is not nullptr : evt.photon : 0x7fff38000000
+    2022-08-10 22:46:51.117 INFO  [457131] [junoSD_PMT_v2_Opticks::EndOfEvent@187]  eventID 1 num_hit 3793 way_enabled 0
+         0 gp.x   17412.67 gp.y    2617.35 gp.z    8039.29 gp.R   19356.70 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+         1 gp.x     786.81 gp.y   19319.34 gp.z      22.82 gp.R   19335.37 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+         2 gp.x  -19149.59 gp.y    -225.21 gp.z   -2113.11 gp.R   19267.14 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+         3 gp.x   -3375.24 gp.y  -18937.39 gp.z   -1623.00 gp.R   19304.17 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+         4 gp.x  -13073.55 gp.y    7722.22 gp.z  -11968.27 gp.R   19333.65 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+         5 gp.x  -17010.48 gp.y    9089.52 gp.z    1732.15 gp.R   19364.30 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+         6 gp.x   -1600.75 gp.y   18540.89 gp.z    5044.77 gp.R   19281.51 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+         7 gp.x   16901.99 gp.y    5818.85 gp.z   -7339.26 gp.R   19323.59 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+         8 gp.x  -15630.24 gp.y   -8382.87 gp.z    7747.10 gp.R   19354.44 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+         9 gp.x   14382.95 gp.y  -11262.46 gp.z    6144.60 gp.R   19273.51 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        10 gp.x  -14453.04 gp.y    6286.11 gp.z   11080.78 gp.R   19266.28 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        11 gp.x   -8930.25 gp.y    2609.81 gp.z   16956.24 gp.R   19341.00 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        12 gp.x   15875.78 gp.y   10492.09 gp.z    2980.17 gp.R   19261.51 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        13 gp.x   -6810.50 gp.y   18017.92 gp.z     159.78 gp.R   19262.76 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        14 gp.x  -10050.34 gp.y   13946.82 gp.z   -8951.06 gp.R   19381.55 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        15 gp.x    -421.58 gp.y  -18617.98 gp.z   -5014.34 gp.R   19286.02 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        16 gp.x    5027.51 gp.y   16938.40 gp.z    7942.81 gp.R   19371.97 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        17 gp.x   16452.79 gp.y   10116.41 gp.z    -165.36 gp.R   19314.85 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        18 gp.x   -1135.70 gp.y  -17112.09 gp.z   -8945.52 gp.R   19342.59 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+        19 gp.x   15908.88 gp.y    9048.97 gp.z    6199.24 gp.R   19323.74 pmt 1077572196 SI|AB|RE|SC|SA|SR|TO|EC
+    2022-08-10 22:46:51.172 INFO  [457131] [junoSD_PMT_v2_Opticks::EndOfEvent@255] ] num_hit 3793 merged_count  0 m_merged_total 0 m_opticksMode 3
+    2022-08-10 22:46:51.172 INFO  [457131] [junoSD_PMT_v2_Opticks::TerminateEvent@300]  invoking SEvt::Clear as no U4Recorder detected 
+    ] junoSD_PMT_v2::EndOfEvent m_opticksMode  3
+    junoSD_PMT_v2::EndOfEvent m_opticksMode 3 hitCollection 5303 hitCollection_muon 0 hitCollection_opticks 0
+
+
+Issue 10 : SEvt::GetNumHit giving ~0u  as not gathered when not saved
+-----------------------------------------------------------------------------
+
+* added SEvt::gather to G4CXOpticks::simulate 
+
+
 Issue 9 : bad gensteps ?, CUDA Sync error
 ---------------------------------------------
+
+Fix: Add more case for the gencode being collected
+* invoke SEvt::gather from G4CX
+
+
 
 Add more case for the gencode being collected::
 
