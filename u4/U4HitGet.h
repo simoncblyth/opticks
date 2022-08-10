@@ -36,17 +36,18 @@ inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, cons
     U4ThreeVector::FromFloat3( hit.local_direction,     local.mom ); 
     U4ThreeVector::FromFloat3( hit.local_polarization,  local.pol ); 
 
-    /*
-    // TODO : 6 int + 2 bool 
-    hit.boundary 
-    hit.sensorIndex 
-    hit.nodeIndex ;
-    hit.photonIndex ;
-    hit.flag_mask ; 
-    hit.sensor_identifier ; 
-    hit.is_cerenkov ; 
-    hit.is_reemission ; 
-    */
+    // TODO: derive the below 3 from global.iindex using the stree nodes 
+    // HMM: how to access the stree ? it belong with SGeo like the transforms needed for SEvt::getLocalHit 
+    //hit.sensorIndex = ;   
+    //hit.nodeIndex = ;    
+    //hit.sensor_identifier  ; 
+
+    hit.boundary = global.boundary() ; 
+    hit.photonIndex = global.idx() ; 
+    hit.flag_mask = global.flagmask ; 
+    hit.is_cerenkov = global.is_cerenkov() ; 
+    hit.is_reemission = global.is_reemit() ; 
+    
 }
 
 inline void U4HitGet::FromEvt(U4Hit& hit, unsigned idx )

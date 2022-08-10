@@ -52,6 +52,7 @@ NB locations and packing here need to match ana/p.py
 
    #include "scuda.h"
    #include "stran.h" 
+   #include "OpticksPhoton.h"
 
    struct NP ; 
 #endif
@@ -108,6 +109,8 @@ struct sphoton
     SPHOTON_METHOD float* data() {               return &pos.x ; }
     SPHOTON_METHOD const float* cdata() const {  return &pos.x ; }
 
+
+
     SPHOTON_METHOD void zero()
     { 
        pos.x = 0.f ; pos.y = 0.f ; pos.z = 0.f ; time = 0.f ; 
@@ -118,6 +121,10 @@ struct sphoton
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+    SPHOTON_METHOD bool is_cerenkov()  const { return (flagmask & CERENKOV) != 0 ; }
+    SPHOTON_METHOD bool is_reemit() const {    return (flagmask & BULK_REEMIT) != 0 ; }
+
     SPHOTON_METHOD unsigned flagmask_count() const ; 
     SPHOTON_METHOD std::string desc() const ; 
     SPHOTON_METHOD std::string descBase() const ; 

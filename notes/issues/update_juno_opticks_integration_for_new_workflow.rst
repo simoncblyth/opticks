@@ -37,9 +37,6 @@ cmake/Modules/FindOpticks.cmake::
      51 if(G4CX_FOUND)
      52     #add_compile_definitions(WITH_G4OPTICKS)
      53     add_compile_definitions(WITH_G4CXOPTICKS)
-     54 
-
-
 
 
 Issue 12 : Hits all with Garbled flags
@@ -63,7 +60,61 @@ Issue 12 : Hits all with Garbled flags
     416         << " " << std::setw(20) << OpticksPhoton::FlagMask(hit->flag_mask, true)
     417         ;
 
- 
+Need to do the equivalent of the below in U4HitGet::
+
+    1322 void G4Opticks::getHit(unsigned i, G4OpticksHit* hit, G4OpticksHitExtra* hit_extra ) const
+    1323 {
+    ....
+    1335     OpticksPhotonFlags pflag = m_hits_wrapper->getOpticksPhotonFlags(i);
+    ...
+    1348     hit->boundary      = pflag.boundary ;
+    1349     hit->sensorIndex   = pflag.sensorIndex ;
+    1350     hit->nodeIndex     = pflag.nodeIndex ;
+    1351     hit->photonIndex   = pflag.photonIndex ;
+    1352     hit->flag_mask     = pflag.flagMask ;
+    1353 
+    1354     hit->is_cerenkov       = (pflag.flagMask & CERENKOV) != 0 ;
+    1355     hit->is_reemission     = (pflag.flagMask & BULK_REEMIT) != 0 ;
+    1356 
+
+::
+
+    epsilon:opticks blyth$ find . -name OpticksPhotonFlags.hh
+    ./optickscore/OpticksPhotonFlags.hh
+
+::
+
+    023 inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, const sphoton& local )
+     24 {   
+     25     hit.zero();
+     26     
+     27     U4ThreeVector::FromFloat3( hit.global_position,      global.pos );
+     28     U4ThreeVector::FromFloat3( hit.global_direction,     global.mom );
+     29     U4ThreeVector::FromFloat3( hit.global_polarization,  global.pol );
+     30     
+     31     hit.time = double(global.time) ;
+     32     hit.weight = 1. ; 
+     33     hit.wavelength = double(global.wavelength);
+     34     
+     35     U4ThreeVector::FromFloat3( hit.local_position,      local.pos );
+     36     U4ThreeVector::FromFloat3( hit.local_direction,     local.mom );
+     37     U4ThreeVector::FromFloat3( hit.local_polarization,  local.pol );
+     38     
+     39     // TODO: derive the below 3 from global.iindex using the stree nodes 
+     40     // HMM: how to access the stree ? it belong with SGeo like the transforms needed for SEvt::getLocalHit 
+     41     //hit.sensorIndex = ;   
+     42     //hit.nodeIndex = ;    
+     43     //hit.sensor_identifier  ; 
+     44     
+     45     hit.boundary = global.boundary() ;
+     46     hit.photonIndex = global.idx() ;  
+     47     hit.flag_mask = global.flagmask ; 
+     48     hit.is_cerenkov = global.is_cerenkov() ;
+     49     hit.is_reemission = global.is_reemit() ;
+     50  
+     51 }
+
+
 
 
 
