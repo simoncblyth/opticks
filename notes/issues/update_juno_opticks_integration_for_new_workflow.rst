@@ -94,8 +94,6 @@ BUT : it adds a complication for communicating efficiencies
      666 }
 
 
-
-
 Check Sensors : systematically 2x the number of SD than would expect ?
 ------------------------------------------------------------------------
 
@@ -213,8 +211,84 @@ Check Sensors : systematically 2x the number of SD than would expect ?
     epsilon:offline blyth$ 
 
 
-Issue 8 : shakedown : possibly second instanciation of G4CXOpticks
------------------------------------------------------------------------------
+
+
+Issue 9 : bad gensteps ?, CUDA Sync error
+---------------------------------------------
+
+::
+
+    1464 inline QSIM_METHOD void qsim::generate_photon(sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+    1465 {
+    1466     const int& gencode = gs.q0.i.x ;
+    1467     switch(gencode)
+    1468     {
+    1469         case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ;
+    1470         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ;
+    1471         case OpticksGenstep_CERENKOV:        cerenkov->generate(     p, rng, gs, photon_id, genstep_id ) ; break ;
+    1472         case OpticksGenstep_SCINTILLATION:   scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ;
+    1473         case OpticksGenstep_INPUT_PHOTON:    { p = evt->photon[photon_id] ; p.set_flag(TORCH) ; }        ; break ;
+    1474         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ;
+    1475     }
+    1476 }
+
+::
+
+     135 inline QSIM_METHOD void qsim::generate_photon_dummy(sphoton& p_, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+     136 {
+     137     quad4& p = (quad4&)p_ ;
+     138 #ifndef PRODUCTION
+     139     printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n",
+     140        photon_id,
+     141        genstep_id,
+     142        gs.q0.i.x,
+     143        gs.q0.i.y,
+     144        gs.q0.i.z,
+     145        gs.q0.i.w
+     146       );
+     147 #endif
+     148     p.q0.i.x = 1 ; p.q0.i.y = 2 ; p.q0.i.z = 3 ; p.q0.i.w = 4 ;
+     149     p.q1.i.x = 1 ; p.q1.i.y = 2 ; p.q1.i.z = 3 ; p.q1.i.w = 4 ;
+     150     p.q2.i.x = 1 ; p.q2.i.y = 2 ; p.q2.i.z = 3 ; p.q2.i.w = 4 ;
+     151     p.q3.i.x = 1 ; p.q3.i.y = 2 ; p.q3.i.z = 3 ; p.q3.i.w = 4 ;
+     152 
+     153     p.set_flag(TORCH);
+     154 }
+
+::
+
+    Begin of Event --> 0
+    [ junoSD_PMT_v2::EndOfEvent m_opticksMode  3
+    2022-08-10 19:36:17.736 INFO  [427197] [junoSD_PMT_v2_Opticks::EndOfEvent@166] [ eventID 0 m_opticksMode 3
+    2022-08-10 19:36:17.736 INFO  [427197] [junoSD_PMT_v2_Opticks::EndOfEvent@172] [ eventID 0 m_opticksMode 3
+    2022-08-10 19:36:17.736 INFO  [427197] [G4CXOpticks::simulate@250] G4CXOpticks::desc sd 0 tr 0x7187ed0 wd 0x57598f0 gg 0x965b290 fd 0x15fbb4a20 cx 0x162c4a8f0 qs 0x162c18b40 se 0x1620d2720
+    //qsim::generate_photon_dummy  photon_id 7136 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7137 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7138 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7139 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7140 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7141 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7142 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7143 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7144 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7145 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7146 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7147 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    //qsim::generate_photon_dummy  photon_id 7148 genstep_id  53  gs.q0.i ( gencode:  5 9699   0  38 ) 
+    ...
+    //qsim::generate_photon_dummy  photon_id 6939 genstep_id  51  gs.q0.i ( gencode:  5 9699   0 465 ) 
+    //qsim::generate_photon_dummy  photon_id 6940 genstep_id  51  gs.q0.i ( gencode:  5 9699   0 465 ) 
+    //qsim::generate_photon_dummy  photon_id 6941 genstep_id  51  gs.q0.i ( gencode:  5 9699   0 465 ) 
+    //qsim::generate_photon_dummy  photon_id 6942 genstep_id  51  gs.q0.i ( gencode:  5 9699   0 465 ) 
+    //qsim::generate_photon_dummy  photon_id 6943 genstep_id  51  gs.q0.i ( gencode:  5 9699   0 465 ) 
+    junotoptask.execute            ERROR: CUDA error on synchronize with error 'misaligned address' (/data/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:713)
+
+
+
+
+
+Issue 8 : shakedown : second instanciation of G4CXOpticks asserts for lack of cx : fix by removing auto-instanciation in G4CXOpticks::Get
+--------------------------------------------------------------------------------------------------------------------------------------------
 
 ::
 

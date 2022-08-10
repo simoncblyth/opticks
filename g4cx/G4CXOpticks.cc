@@ -254,14 +254,31 @@ void G4CXOpticks::simulate()
 
     SEvt* sev = SEvt::Get();  assert(sev); 
 
-    if(sev->hasInputPhoton())
+    bool has_input_photon = sev->hasInputPhoton() ;
+    if(has_input_photon)
     {
         const char* ipf = SEventConfig::InputPhotonFrame();
         sframe fr = fd->getFrame(ipf) ;  
         sev->setFrame(fr); 
     }
 
+    unsigned num_genstep = SEvt::GetNumGenstepFromGenstep(); 
+    unsigned num_photon  = SEvt::GetNumPhotonFromGenstep(); 
+
+    LOG(LEVEL) 
+        << "[ num_genstep " << num_genstep
+        << " num_photon " << num_photon
+        << " has_input_photon " << has_input_photon
+        ;
+
     qs->simulate(); 
+
+    unsigned num_hit = SEvt::GetNumHit() ; 
+    LOG(LEVEL) 
+       << "] num_hit " << num_hit 
+       ;
+
+
 }
 
 void G4CXOpticks::simtrace()
