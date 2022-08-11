@@ -64,7 +64,7 @@ set(HEADERS
     U4OpBoundaryProcess.h
     U4StepPoint.hh
     U4Random.hh
-     
+    U4Touchable.h
 
     InstrumentedG4OpBoundaryProcess.hh
 )
