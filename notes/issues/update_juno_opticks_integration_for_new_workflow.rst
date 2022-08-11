@@ -39,8 +39,8 @@ cmake/Modules/FindOpticks.cmake::
      53     add_compile_definitions(WITH_G4CXOPTICKS)
 
 
-Issue 12 : Hits all with Garbled flags
-------------------------------------------
+Issue 12 : Hits all with Garbled flags : FIXED the garbling, now zero
+-------------------------------------------------------------------------
 
 * is that an uninitialized value ? Add U4Hit::zero to U4HitGet::ConvertFromPhoton
 
@@ -82,6 +82,13 @@ Need to do the equivalent of the below in U4HitGet::
     epsilon:opticks blyth$ find . -name OpticksPhotonFlags.hh
     ./optickscore/OpticksPhotonFlags.hh
 
+
+    epsilon:opticks blyth$ git commit -m "start on flags for U4HitGet, remainder probably need  stree access to convert iindex into sensor_index etc.. OR could plant them in instanceId to avoid the lookup " 
+    [master cbdb37833] start on flags for U4HitGet, remainder probably need  stree access to convert iindex into sensor_index etc.. OR could plant them in instanceId to avoid the lookup
+     3 files changed, 74 insertions(+), 15 deletions(-)
+    epsilon:opticks blyth$ 
+
+
 ::
 
     023 inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, const sphoton& local )
@@ -113,6 +120,68 @@ Need to do the equivalent of the below in U4HitGet::
      49     hit.is_reemission = global.is_reemit() ;
      50  
      51 }
+
+
+::
+
+    1616 void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
+    1617 {
+    1618     getPhoton(lp, idx);
+    1619     applyLocalTransform_w2m(lp);
+    1620 }
+    1621 void SEvt::getLocalHit(sphoton& lp, unsigned idx) const
+    1622 {
+    1623     getHit(lp, idx);
+    1624     applyLocalTransform_w2m(lp);
+    1625 }
+    1626 void SEvt::applyLocalTransform_w2m( sphoton& lp) const
+    1627 {
+    1628     sframe fr ;
+    1629     getPhotonFrame(fr, lp);
+    1630     fr.transform_w2m(lp);
+    1631 }
+
+
+Note the commonality from using p.iindex to determine the frame::
+
+    1632 void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const
+    1633 {
+    1634     assert(cf);
+    1635     cf->getFrame(fr, p.iindex);
+    1636     fr.prepare();
+    1637 }
+
+This suggests should add the sensor_index and the others 
+to the frame : then can just implement the lookup in CSGFoundry::getFrame 
+
+Maybe plant the sensor info into the instance, there is at least 2*32bit going spare (ias_idx now always 0)::
+
+    139 int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
+    140 {
+    141     const qat4* _t = foundry->getInst(inst_idx);
+    142 
+    143     unsigned ins_idx, gas_idx, ias_idx ;
+    144     _t->getIdentity(ins_idx, gas_idx, ias_idx )  ;
+    145 
+    146     assert( int(ins_idx) == inst_idx );
+    147     fr.set_inst(inst_idx);
+    148   
+    149     // HMM: these values are already there inside the matrices ? 
+    150     fr.set_ins_gas_ias(ins_idx, gas_idx, ias_idx ) ;
+    151 
+    152     qat4 t(_t->cdata());   // copy the instance (transform and identity info)
+    153     const qat4* v = Tran<double>::Invert(&t);     // identity gets cleared in here 
+    154 
+    155     qat4::copy(fr.m2w,  t);
+    156     qat4::copy(fr.w2m, *v);
+    157 
+    158     const CSGSolid* solid = foundry->getSolid(gas_idx);
+    159     fr.ce = solid->center_extent ;
+    160 
+    161     return 0 ;
+    162 }
+
+
 
 
 

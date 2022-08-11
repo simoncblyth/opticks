@@ -26,8 +26,8 @@ OptiX 7 Limits
 
 
 
-Idea for better way in new workflow : U4InstanceIdentifier.h
-----------------------------------------------------------------
+Idea for better way in new workflow : U4Sensor.h (formely U4InstanceIdentifier.h)
+------------------------------------------------------------------------------------
 
 Within Opticks U4 define pure virtual protocol API using 
 only Geant4 and standard types in interface which

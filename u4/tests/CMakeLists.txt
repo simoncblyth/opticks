@@ -35,6 +35,8 @@ set(TEST_SOURCES
    U4TreeTest.cc
    U4Material_MakePropertyFold_MakeTest.cc
    U4Material_MakePropertyFold_LoadTest.cc
+   U4TouchableTest.cc
+ 
 )
 
 foreach(SRC ${TEST_SOURCES})
