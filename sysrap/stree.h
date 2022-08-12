@@ -1035,7 +1035,7 @@ inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const
 {
     assert( idx < factors.size() ); 
     const sfactor& fac = factors[idx] ; 
-    std::string sub = fac->get_sub(); 
+    std::string sub = fac.get_sub(); 
     int freq = fac.freq ; 
 
     get_nodes(nodes, sub.c_str() );  
@@ -1078,7 +1078,7 @@ inline void stree::add_inst()
 {
     glm::tmat4x4<double> tr_m2w(1.) ; 
     glm::tmat4x4<double> tr_w2m(1.) ; 
-    add_inst(tr_m2w, tr_w2m, 0u );   // global instance with identity transforms 
+    add_inst(tr_m2w, tr_w2m, 0u, 0 );   // global instance with identity transforms 
 
     unsigned num_factor = get_num_factor(); 
     for(unsigned i=0 ; i < num_factor ; i++)

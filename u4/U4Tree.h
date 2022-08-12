@@ -41,7 +41,7 @@ struct U4Tree
     std::vector<const G4VPhysicalVolume*> pvs ; 
     std::vector<const G4Material*>  materials ; 
 
-    U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr ); 
+    U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
 
 
     void convertMaterials(); 
@@ -188,8 +188,6 @@ are really sensitive.
 inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, snode* parent )
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
-    G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ;  
-
 
     int num_child = int(lv->GetNoDaughters()) ;  
     int lvid = lvidx[lv] ; 
@@ -208,9 +206,7 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     st->w2m.push_back(tr_w2m);  
     pvs.push_back(pv); 
 
-
     int nidx = st->nds.size() ;
-    //std::cout << "SD " << ( sd ? "Y" : "N" )  << " nidx " << std::setw(7) << nidx << " lvid " << std::setw(3) << lvid << std::endl ;  
 
     snode nd ; 
 
@@ -306,7 +302,7 @@ inline void U4Tree::identifySensitiveInstances()
             int sensor_index = sensor_id > -1 ? sensor_count : -1 ; 
             if(sensor_id > -1 ) sensor_count += 1 ; 
 
-            snode& nd = nds[nidx] ; 
+            snode& nd = st->nds[nidx] ; 
             nd.sensor_id = sensor_id ; 
             nd.sensor_index = sensor_index ; 
         }

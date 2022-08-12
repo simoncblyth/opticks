@@ -6,7 +6,7 @@
 #include "U4SensorIdentifier.h"
 #include "G4PVPlacement.hh"
 
-struct U4SensorIdentifierDefault 
+struct U4SensorIdentifierDefault : public U4SensorIdentifier 
 {
     int getIdentity(const G4VPhysicalVolume* instance_outer_pv ) const ; 
     static void FindSD_r( std::vector<const G4VPhysicalVolume*>& sdpv , const G4VPhysicalVolume* pv, int depth );  
@@ -39,7 +39,7 @@ inline void U4SensorIdentifierDefault::FindSD_r( std::vector<const G4VPhysicalVo
     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
     G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ;
     if(sd) sdpv.push_back(pv); 
-    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) FindSD_r( lv->GetDaughter(i), depth+1, );
+    for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) FindSD_r( sdpv, lv->GetDaughter(i), depth+1 );
 }
 
 
