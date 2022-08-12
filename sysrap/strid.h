@@ -70,7 +70,8 @@ inline void strid::Encode(      glm::tmat4x4<double>& tr, const glm::tvec4<uint6
 } 
 inline void strid::Encode( double* ptr, uint64_t e)
 {
-    if(e == 0) return ; // kludge to keep [:,3,3] 1. for simpler comparison with GGeo cf.inst  
+    // if(e == 0) return ; // kludge to keep [:,3,3] 1. for simpler comparison with GGeo cf.inst  
+    // dont disallow zero : want to be able to encode zero 
     uif64_t uif ; 
     uif.u = e ; 
     *ptr = uif.f ; 

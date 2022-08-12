@@ -9,6 +9,13 @@ void set( glm::tvec4<uint64_t>& col3, int mode)
 {
     if( mode == 0 )
     {
+        col3.x = 0 ; 
+        col3.y = 0 ; 
+        col3.z = 0 ; 
+        col3.w = 0 ; 
+    }
+    else if(mode == 1)
+    {
         col3.x = 0xffffffffff0fffff ; 
         col3.y = 0xaaaaaaaafff0ffff ; 
         col3.z = 0xbbbbbbbbffff0fff ; 
@@ -65,11 +72,11 @@ void test_Narrow(int mode)
 
 int main(int argc, char** argv)
 {
-    test_Encode_Decode(0); 
-    test_Encode_Decode(-1); 
-
-    test_Narrow(0);  
-    test_Narrow(-1);  
+    for(int mode=-1 ; mode < 2 ; mode++)
+    {
+        test_Encode_Decode(mode); 
+        test_Narrow(mode);  
+    }
 
     return 0 ; 
 }

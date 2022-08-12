@@ -148,6 +148,11 @@ struct stree
     void get_progeny( std::vector<int>& progeny, int nidx ) const ;   // recursively get children and all their children and so on... 
     std::string desc_progeny(int nidx) const ; 
 
+    void traverse(int nidx=0) const ; 
+    void traverse_r(int nidx, int depth, int sibdex) const ; 
+
+    void orderSensors(); 
+    void orderSensors_r(int nidx, unsigned& sensor_count); 
 
     sfreq* make_progeny_freq(int nidx) const ; 
     sfreq* make_freq(const std::vector<int>& nodes ) const ; 
@@ -386,6 +391,7 @@ inline void stree::get_progeny( std::vector<int>& progeny , int nidx ) const
     for(unsigned i=0 ; i < children.size() ; i++) get_progeny(progeny, children[i] );
 }
 
+
 inline std::string stree::desc_progeny(int nidx) const 
 {
     std::vector<int> progeny ;
@@ -413,10 +419,62 @@ inline std::string stree::desc_progeny(int nidx) const
             ; 
     }
 
-
     std::string s = ss.str(); 
     return s; 
 }
+
+
+inline void stree::traverse(int nidx) const 
+{
+    traverse_r(nidx, 0, -1); 
+} 
+
+inline void stree::traverse_r(int nidx, int depth, int sibdex) const 
+{
+    std::vector<int> children ;
+    get_children(children, nidx);
+
+    const snode& nd = nds[nidx] ; 
+
+    assert( nd.index == nidx ); 
+    assert( nd.depth == depth ); 
+    assert( nd.sibdex == sibdex ); 
+    assert( nd.num_child == children.size() ); 
+
+    const char* so = get_soname(nidx); 
+
+    if(nd.sensor_id > -1 )
+    std::cout 
+        << "stree::traverse_r"
+        << " " 
+        << nd.desc() 
+        << " so " << so 
+        << std::endl 
+        ; 
+
+    for(unsigned i=0 ; i < children.size() ; i++) traverse_r(children[i], depth+1, i );
+}
+
+
+inline void stree::orderSensors()
+{
+    unsigned sensor_count = 0 ; 
+    orderSensors_r(0, sensor_count); 
+}
+inline void stree::orderSensors_r(int nidx, unsigned& sensor_count)
+{
+    snode& nd = nds[nidx] ; 
+    if( nd.sensor_id > -1 )
+    {
+        nd.sensor_index = sensor_count ; 
+        sensor_count += 1 ; 
+    }
+    std::vector<int> children ;
+    get_children(children, nidx);
+    for(unsigned i=0 ; i < children.size() ; i++) orderSensors_r(children[i], sensor_count);
+}
+
+
 
 inline sfreq* stree::make_progeny_freq(int nidx) const 
 {

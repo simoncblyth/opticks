@@ -56,6 +56,27 @@ cmake/Modules/FindOpticks.cmake::
      53     add_compile_definitions(WITH_G4CXOPTICKS)
 
 
+
+Issue 14 : Yuxiang reports array lifecycle corruption issue 
+------------------------------------------------------------
+
+* presumably NP::~NP related ?
+* need standalone SEvt lifecycle test with large arrays so can measure memory characteristics 
+  and try to reproduce issue  
+
+
+Issue 13 : sensor handling 
+-----------------------------
+
+The U4Tree/stree/inst creation and persisting of sensor info seems to be working OK, insofar as can test. 
+BUT: cannot proceed and fully test this as are still using the GGeo CSG_GGeo converted CSGFoundry geometry. 
+
+So need to add analogous sensor info via the GGeo CSG_GGeo route into CSGFoundry. 
+in order to mimic what are doing in U4Tree/stree ?  
+
+* :doc:`sensor_info_into_new_workflow`
+
+
 Issue 12 : Hits all with Garbled flags : FIXED the garbling, now zero
 -------------------------------------------------------------------------
 

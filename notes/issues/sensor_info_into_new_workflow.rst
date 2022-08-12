@@ -5,6 +5,643 @@ sensor_info_into_new_workflow
 * see also :doc:`instanceIdentity-into-new-workflow`
 
 
+
+Compare GGeo/iid with the stree/inst
+---------------------------------------
+
+* GGeo/iid orders sensors in preorder of the placements
+
+
+::
+
+    In [29]: inst.shape
+    Out[29]: (48477, 4, 4)
+
+    In [34]: np.where( inst.view(np.int64)[:,3,3] == -1 )[0].shape   ## non-sensor instances
+    Out[34]: (2865,)
+
+    In [35]: 48477 - 2865
+    Out[35]: 45612
+
+
+    In [22]: inst.view(np.int64)[:100,:,3]
+    Out[22]: 
+    array([[                  1,                   1,                  -1,                  -1],
+           [                  2,                   2,              300000, 4607182418800017408],   ## issue with 0 : was strid.h kludge skipped
+           [                  3,                   2,              300001,                   1],
+           [                  4,                   2,              300002,                   2],
+           [                  5,                   2,              300003,                   3],
+
+
+    In [3]: t.inst_f4.view(np.int32)[:,:,3]
+    Out[3]: 
+    array([[         1,          1,         -1,         -1],
+           [         2,          2,     300000, 1065353216],
+           [         3,          2,     300001,          1],
+           [         4,          2,     300002,          2],
+           [         5,          2,     300003,          3],
+           ...,
+           [     48473,         10,         -1,         -1],
+           [     48474,         10,         -1,         -1],
+           [     48475,         10,         -1,         -1],
+           [     48476,         10,         -1,         -1],
+           [     48477,         10,         -1,         -1]], dtype=int32)
+
+
+
+    In [18]: t.inst.view(np.int64)[25590:25610,2,3]
+    Out[18]: array([325589, 325590, 325591, 325592, 325593, 325594, 325595, 325596, 325597, 325598, 325599,      2,      4,      6,     21,     22,     23,     24,     25,     26])
+
+
+
+    In [28]: inst.view(np.int64)[25590:25700,:,3]
+    Out[28]: 
+    array([[ 25591,      2, 325589,  25589],
+           [ 25592,      2, 325590,  25590],
+           [ 25593,      2, 325591,  25591],
+           [ 25594,      2, 325592,  25592],
+           [ 25595,      2, 325593,  25593],
+           [ 25596,      2, 325594,  25594],
+           [ 25597,      2, 325595,  25595],
+           [ 25598,      2, 325596,  25596],
+           [ 25599,      2, 325597,  25597],
+           [ 25600,      2, 325598,  25598],
+           [ 25601,      2, 325599,  25599],
+           [ 25602,      3,      2,  25600],
+           [ 25603,      3,      4,  25601],
+           [ 25604,      3,      6,  25602],
+           [ 25605,      3,     21,  25603],
+
+
+
+G4Opticks::getHit::
+
+    1357     // via m_sensorlib 
+    1358     hit->sensor_identifier = getSensorIdentifier(pflag.sensorIndex);
+    1359 
+
+    0868 int G4Opticks::getSensorIdentifier(unsigned sensorIndex) const
+     869 {
+     870     assert( m_sensorlib );
+     871     return m_sensorlib->getSensorIdentifier(sensorIndex);
+     872 }
+
+     856 void G4Opticks::setSensorData(unsigned sensorIndex, float efficiency_1, float efficiency_2, int category, int identifier)
+     857 {
+     858     assert( m_sensorlib );
+     859     m_sensorlib->setSensorData(sensorIndex, efficiency_1, efficiency_2, category, identifier);
+     860 }
+     861 
+     862 void G4Opticks::getSensorData(unsigned sensorIndex, float& efficiency_1, float& efficiency_2, int& category, int& identifier) const
+     863 {
+     864     assert( m_sensorlib );
+     865     m_sensorlib->getSensorData(sensorIndex, efficiency_1, efficiency_2, category, identifier);
+     866 }
+     867 
+     868 int G4Opticks::getSensorIdentifier(unsigned sensorIndex) const
+     869 {
+     870     assert( m_sensorlib );
+     871     return m_sensorlib->getSensorIdentifier(sensorIndex);
+     872 }
+
+    epsilon:opticks blyth$ find . -name SensorLib.hh
+    ./optickscore/SensorLib.hh
+    epsilon:opticks blyth$ 
+
+    197 int SensorLib::getSensorIdentifier(unsigned sensorIndex) const
+    198 {
+    199     unsigned i = sensorIndex - 1 ;   // 1-based
+    200     assert( i < m_sensor_num );
+    201     assert( m_sensor_data );
+    202     return m_sensor_data->getInt( i, 3, 0, 0);
+    203 }
+
+Ordering was based on sensor_placements, jcv LSExpDetectorConstruction_Opticks::
+
+    123     const std::vector<G4PVPlacement*>& sensor_placements = g4ok->getSensorPlacements() ;
+    124     unsigned num_sensor = sensor_placements.size();
+    125 
+    126     // 2. use the placements to pass sensor data : efficiencies, categories, identifiers  
+    127 
+    128     const junoSD_PMT_v2* sd = dynamic_cast<const junoSD_PMT_v2*>(sd_) ;
+    129     assert(sd) ;
+    130 
+    131     LOG(info) << "[ setSensorData num_sensor " << num_sensor ;
+    132     for(unsigned i=0 ; i < num_sensor ; i++)
+    133     {   
+    134         const G4PVPlacement* pv = sensor_placements[i] ; // i is 0-based unlike sensor_index
+    135         unsigned sensor_index = 1 + i ; // 1-based 
+    136         assert(pv);  
+    137         G4int copyNo = pv->GetCopyNo();
+    138         int pmtid = copyNo ; 
+    139         int pmtcat = 0 ; // sd->getPMTCategory(pmtid); 
+    140         float efficiency_1 = sd->getQuantumEfficiency(pmtid);
+    141         float efficiency_2 = sd->getEfficiencyScale() ;
+    142         
+    143         g4ok->setSensorData( sensor_index, efficiency_1, efficiency_2, pmtcat, pmtid );
+    144     }
+    145     LOG(info) << "] setSensorData num_sensor " << num_sensor ;
+    146 
+
+::
+
+     763 /**
+     764 G4Opticks::getSensorPlacements (pre-cache live running only)
+     765 ---------------------------------------------------------------
+     766 
+     767 Sensor placements are the outer volumes of instance assemblies that 
+     768 contain sensor volumes.  The order of the returned vector of G4PVPlacement
+     769 is that of the Opticks sensorIndex. 
+     770 This vector allows the connection between the Opticks sensorIndex 
+     771 and detector specific handling of sensor quantities to be established.
+     772 
+     773 NB this assumes only one volume with a sensitive surface within each 
+     774 repeated geometry instance
+     775 
+     776 For example JUNO uses G4PVPlacement::GetCopyNo() as a non-contiguous PMT 
+     777 identifier, which allows lookup of efficiencies and PMT categories.
+     778 
+     779 Sensor data is assigned via calls to setSensorData with 
+     780 the 0-based contiguous Opticks sensorIndex as the first argument.   
+     781 
+     782 **/
+     783 
+     784 const std::vector<G4PVPlacement*>& G4Opticks::getSensorPlacements() const
+     785 {
+     786     return m_sensor_placements ;
+     787 }
+
+     648 void G4Opticks::setGeometry(const GGeo* ggeo)
+     649 {
+     650     bool loaded = ggeo->isLoadedFromCache() ;
+     651     unsigned num_sensor = ggeo->getNumSensorVolumes();
+     652 
+     653 
+     654     if( loaded == false )
+     655     {
+     656         if(m_placement_outer_volume) LOG(error) << "CAUTION : m_placement_outer_volume TRUE " ;
+     657         X4PhysicalVolume::GetSensorPlacements(ggeo, m_sensor_placements, m_placement_outer_volume);
+     658         assert( num_sensor == m_sensor_placements.size() ) ;
+     659     }
+     660 
+
+::
+
+    1995 /**
+    1996 X4PhysicalVolume::GetSensorPlacements
+    1997 ---------------------------------------
+    1998 
+    1999 Populates placements with the void* origins obtained from ggeo, casting them back to G4PVPlacement.
+    2000 
+    2001 
+    2002 Invoked from G4Opticks::translateGeometry, kinda feels misplaced being in X4PhysicalVolume
+    2003 as depends only on GGeo+G4, perhaps should live in G4Opticks ?
+    2004 Possibly the positioning is side effect from the difficulties of testing G4Opticks 
+    2005 due to it not being able to boot from cache.
+    2006 
+    2007 **/
+    2008 
+    2009 void X4PhysicalVolume::GetSensorPlacements(const GGeo* gg, std::vector<G4PVPlacement*>& placements, bool outer_volume ) // static
+    2010 {
+    2011     placements.clear();
+    2012 
+    2013     std::vector<void*> placements_ ;
+    2014     gg->getSensorPlacements(placements_, outer_volume);
+    2015 
+    2016     for(unsigned i=0 ; i < placements_.size() ; i++)
+    2017     {
+    2018          G4PVPlacement* p = static_cast<G4PVPlacement*>(placements_[i]);
+    2019          placements.push_back(p);
+    2020     }
+    2021 }
+
+    1235 void GGeo::getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const
+    1236 {
+    1237     m_nodelib->getSensorPlacements(placements, outer_volume);
+    1238 }
+
+    0681 void GNodeLib::getSensorPlacements(std::vector<void*>& placements, bool outer_volume) const
+     682 {
+     683     unsigned numSensorVolumes = getNumSensorVolumes();
+     684     LOG(LEVEL) << "numSensorVolumes " << numSensorVolumes ;
+     685     for(unsigned i=0 ; i < numSensorVolumes ; i++)
+     686     {
+     687         unsigned sensorIndex = 1 + i ; // 1-based
+     688         const GVolume* sensor = getSensorVolume(sensorIndex) ;
+     689         assert(sensor);
+     690 
+     691         void* origin = NULL ;
+     692 
+     693         if(outer_volume)
+     694         {
+     695             const GVolume* outer = sensor->getOuterVolume() ;
+     696             assert(outer);
+     697             origin = outer->getOriginNode() ;
+     698             assert(origin);
+     699         }
+     700         else
+     701         {
+     702             origin = sensor->getOriginNode() ;
+     703             assert(origin);
+     704         }
+     705 
+     706         placements.push_back(origin);
+     707     }
+     708 }
+
+     570 /**
+     571 GNodeLib::getSensorVolume (precache only)
+     572 -------------------------------------------
+     573 
+     574 **/
+     575 
+     576 const GVolume* GNodeLib::getSensorVolume(unsigned sensorIndex) const
+     577 {
+     578     return m_loaded ? NULL : m_sensor_volumes[sensorIndex-1];  // 1-based sensorIndex
+     579 }
+
+
+     449 void GNodeLib::addVolume(const GVolume* volume)
+     450 {
+     ...
+     486     bool is_sensor = volume->hasSensorIndex(); // volume with 1-based sensorIndex assigned
+     487     if(is_sensor)
+     488     {
+     489         m_sensor_volumes.push_back(volume);
+     490         m_sensor_identity.push_back(id);
+     491         m_num_sensors += 1 ;
+     492     }
+
+Volumes added to nodelib in preorder, so sensor ordering is preorder:: 
+
+     840 void GInstancer::collectNodes()
+     841 {
+     842     assert(m_root);
+     843     collectNodes_r(m_root, 0);
+     844 }
+     845 void GInstancer::collectNodes_r(const GNode* node, unsigned depth )
+     846 {
+     847     const GVolume* volume = dynamic_cast<const GVolume*>(node);
+     848     m_nodelib->addVolume(volume);
+     849     for(unsigned i = 0; i < node->getNumChildren(); i++) collectNodes_r(node->getChild(i), depth + 1 );
+     850 }
+
+
+
+
+::
+
+    329 bool GVolume::hasSensorIndex() const
+    330 {
+    331     return m_sensorIndex != SENSOR_UNSET ;
+    332 }
+
+    308 /**
+    309 GVolume::setSensorIndex
+    310 -------------------------
+    311 
+    312 sensorIndex is expected to be a 1-based contiguous index, with the 
+    313 default value of SENSOR_UNSET (0)  meaning no sensor.
+    314 
+    315 This is canonically invoked from X4PhysicalVolume::convertNode during GVolume creation.
+    316 
+    317 * GNode::setSensorIndices duplicates the index to all faces of m_mesh triangulated geometry
+    318 
+    319 **/
+    320 void GVolume::setSensorIndex(unsigned sensorIndex)
+    321 {
+    322     m_sensorIndex = sensorIndex ;
+    323     setSensorIndices( m_sensorIndex );
+    324 }
+
+
+    1679 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
+    1680 {
+    ....
+    1857     ///////// sensor decision for the volume happens here  ////////////////////////
+    1858     //////// TODO: encapsulate into a GBndLib::formSensorIndex ? 
+    1859 
+    1860     bool is_sensor = m_blib->isSensorBoundary(boundary) ; // this means that isurf/osurf has non-zero EFFICIENCY property 
+    1861     unsigned sensorIndex = GVolume::SENSOR_UNSET ;
+    1862     if(is_sensor)
+    1863     {
+    1864         sensorIndex = 1 + m_blib->getSensorCount() ;  // 1-based index
+    1865         m_blib->countSensorBoundary(boundary);
+    1866     }
+    1867     volume->setSensorIndex(sensorIndex);   // must set to GVolume::SENSOR_UNSET for non-sensors, for sensor_indices array  
+    1868 
+
+
+
+Arghh need parallel development on the intermediate workflow
+----------------------------------------------------------------
+
+The U4Tree/stree/inst creation and persisting of sensor info seems to be working OK, insofar as can test. 
+BUT: cannot proceed and fully test this as are still using the GGeo CSG_GGeo converted CSGFoundry geometry. 
+
+So need to add analogous sensor info via the GGeo CSG_GGeo route into CSGFoundry. 
+in order to mimic what are doing in U4Tree/stree : in the same locations in inst fourth column. 
+
+This is an interim solution until make the leap to the new geometry workflow. 
+
+* straightforward to add sensor handling to CSGFoundry::addInstance and qat4 
+* BUT: where to get sensor_id and sensor_idx in this workflow ?
+
+  * GGeo/GVolume/GNode is the old heavyweight equivalent of stree 
+
+
+HMM: probably sensor info needs to come via InstancedIdentityBuffer ?::
+
+     200 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
+     201 {   
+     202     unsigned nmm = ggeo->getNumMergedMesh();
+     203     assert( repeatIdx < nmm ); 
+     204     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx);
+     205     unsigned num_inst = mm->getNumITransforms() ;
+     206     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer();
+     207     
+     208     LOG(LEVEL) 
+     209         << " repeatIdx " << repeatIdx
+     210         << " num_inst (GMergedMesh::getNumITransforms) " << num_inst
+     211         << " iid " << ( iid ? iid->getShapeString() : "-"  )
+     212         ;
+     213     
+     214     //LOG(LEVEL) << " nmm " << nmm << " repeatIdx " << repeatIdx << " num_inst " << num_inst ; 
+     215     
+     216     for(unsigned i=0 ; i < num_inst ; i++)
+     217     {   
+     218         glm::mat4 it = mm->getITransform_(i);
+     219         
+     220         const float* tr16 = glm::value_ptr(it) ;
+     221         unsigned gas_idx = repeatIdx ;
+     222         unsigned ias_idx = 0 ;
+     223         
+     224         foundry->addInstance(tr16, gas_idx, ias_idx);
+     225     }
+     226 }
+
+
+::
+
+     609 /**
+     610 GMesh::getInstancedIdentity
+     611 -----------------------------
+     612 
+     613 All nodes of the geometry tree have a quad of identity uint.
+     614 InstancedIdentity exists to rearrange that identity information 
+     615 into a buffer that can be used for creation of the GPU instanced geometry,
+     616 which requires to access the identity with an instance index, rather 
+     617 than the node index.
+     618 
+     619 See notes/issues/identity_review.rst
+     620 
+     621 **/
+     622 
+     623 guint4 GMesh::getInstancedIdentity(unsigned int index) const
+     624 {
+     625     return m_iidentity[index] ;
+     626 }
+
+
+::
+
+    226 /**
+    227 GVolume::getIdentity
+    228 ----------------------
+    229 
+    230 The volume identity quad is available GPU side for all intersects
+    231 with geometry.
+    232 
+    233 1. node_index (3 bytes at least as JUNO needs more than 2-bytes : so little to gain from packing) 
+    234 2. triplet_identity (4 bytes, pre-packed)
+    235 3. SPack::Encode22(mesh_index, boundary_index)
+    236 
+    237    * mesh_index: 2 bytes easily enough, 0xffff = 65535
+    238    * boundary_index: 2 bytes easily enough  
+    239 
+    240 4. sensorIndex (2 bytes easily enough) 
+    241 
+    242 The sensor_identifier is detector specific so would have to allow 4-bytes 
+    243 hence exclude it from this identity, instead can use sensorIndex to 
+    244 look up sensor_identifier within G4Opticks::getHit 
+    245 
+    246 Formerly::
+    247 
+    248    guint4 id(getIndex(), getMeshIndex(),  getBoundary(), getSensorIndex()) ;
+    249 
+    250 **/
+    251 
+    252 glm::uvec4 GVolume::getIdentity() const
+    253 {
+    254     glm::uvec4 id(getIndex(), getTripletIdentity(), getShapeIdentity(), getSensorIndex()) ;
+    255     return id ;
+    256 }
+    257 
+
+
+* HMM this identity goes into GMergedMesh::m_identity
+
+::
+
+    1245 /**
+    1246 GMergedMesh::addInstancedBuffers
+    1247 -----------------------------------
+    1248 
+    1249 Canonically invoked only by GInstancer::makeMergedMeshAndInstancedBuffers
+    1250 
+    1251 
+    1252 itransforms InstanceTransformsBuffer
+    1253     (num_instances, 4, 4)
+    1254 
+    1255     collect GNode placement transforms into buffer
+    1256 
+    1257 iidentity InstanceIdentityBuffer
+    1258     From Aug 2020: (num_instances, num_volumes_per_instance, 4 )
+    1259     Before:        (num_instances*num_volumes_per_instance, 4 )
+    1260 
+    1261     collects the results of GVolume::getIdentity for all volumes within all instances. 
+    1262 
+    1263 **/
+    1264 
+    1265 void GMergedMesh::addInstancedBuffers(const std::vector<const GNode*>& placements)
+    1266 {
+    1267     LOG(LEVEL) << " placements.size() " << placements.size() ;
+    1268 
+    1269     NPY<float>* itransforms = GTree::makeInstanceTransformsBuffer(placements);
+    1270     setITransformsBuffer(itransforms);
+    1271 
+    1272     NPY<unsigned int>* iidentity  = GTree::makeInstanceIdentityBuffer(placements);
+    1273     setInstancedIdentityBuffer(iidentity);
+    1274 }
+    1275 
+
+The iid contains numPlacements*numVolumes(in the instance subtree) with getVolume being called for all vol.
+So thats a little awkward unless the sensor info was repeated across the instance progeny::
+
+    126 NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<const GNode*>& placements)  // static
+    127 {
+    ...
+    164     NPY<unsigned>* buf = NPY<unsigned>::make(0, 4);
+    165     NPY<unsigned>* buf2 = NPY<unsigned>::make(numPlacements, numVolumes, 4);
+    166     buf2->zero();
+    ...
+    206         unsigned s_count = 0 ;
+    207         for(unsigned s=0 ; s < numVolumesAll ; s++ )
+    208         {
+    209             const GNode* node = s == 0 ? base : progeny[s-1] ;
+    210             const GVolume* volume = dynamic_cast<const GVolume*>(node) ;
+    211             bool skip = node->isCSGSkip() ;
+    212             if(!skip)
+    213             {
+    214                 glm::uvec4 id = volume->getIdentity();
+    215                 buf->add(id.x, id.y, id.z, id.w );
+    216                 buf2->setQuad( id, i, s_count, 0) ;
+    217                 s_count += 1 ;
+    218             }
+    219         }      // over volumes 
+    220     }          // over placements 
+
+
+
+Looking at the arrays the sensor_index is not repeated across the subtree::
+
+    epsilon:tests blyth$ cd /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/1/
+    epsilon:1 blyth$ i
+
+    In [1]: iid = np.load("placement_iidentity.npy")
+
+    In [3]: iid.shape
+    Out[3]: (25600, 5, 4)
+
+
+    In [2]: iid
+    Out[2]: 
+    array([[[  194249, 16777216,  7995420,        0],
+            [  194250, 16777217,  7864351,        0],
+            [  194251, 16777218,  7733286,    17613],
+            [  194252, 16777219,  7798823,        0],
+            [  194253, 16777220,  7929882,        0]],
+
+           [[  194254, 16777472,  7995420,        0],
+            [  194255, 16777473,  7864351,        0],
+            [  194256, 16777474,  7733286,    17614],
+            [  194257, 16777475,  7798823,        0],
+            [  194258, 16777476,  7929882,        0]],
+
+    In [4]: iid[:,2,3]
+    Out[4]: array([17613, 17614, 17615, ..., 43210, 43211, 43212], dtype=uint32)
+
+    In [5]: iid[:,2,3].min()
+    Out[5]: 17613
+
+    In [6]: iid[:,2,3].max()
+    Out[6]: 43212
+
+
+::
+
+    epsilon:tests blyth$ ./iid.sh 
+    symbol a a         (1, 3089, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/0/placement_iidentity.npy 
+    symbol b a        (25600, 5, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/1/placement_iidentity.npy 
+    symbol c a        (12615, 7, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/2/placement_iidentity.npy 
+    symbol d a         (4997, 7, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/3/placement_iidentity.npy 
+    symbol e a         (2400, 6, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/4/placement_iidentity.npy 
+    symbol f a          (590, 1, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/5/placement_iidentity.npy 
+    symbol g a          (590, 1, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/6/placement_iidentity.npy 
+    symbol h a          (590, 1, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/7/placement_iidentity.npy 
+    symbol i a          (590, 1, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/8/placement_iidentity.npy 
+    symbol j a        (504, 130, 4) path /tmp/blyth/opticks/ntds3/G4CXOpticks/GGeo/GMergedMesh/9/placement_iidentity.npy 
+
+
+    In [1]: b[0]
+    Out[1]: 
+    array([[  194249, 16777216,  7995420,        0],
+           [  194250, 16777217,  7864351,        0],
+           [  194251, 16777218,  7733286,    17613],
+           [  194252, 16777219,  7798823,        0],
+           [  194253, 16777220,  7929882,        0]], dtype=uint32)
+
+    In [2]: (b[:,2,3].min(),b[:,2,3].max())
+    Out[2]: (17613, 43212)
+
+    In [3]: c[0]
+    Out[3]: 
+    array([[   70979, 33554432,  7667740,        0],
+           [   70980, 33554433,  7274525,        0],
+           [   70981, 33554434,  7340067,        0],
+           [   70982, 33554435,  7602207,        0],
+           [   70983, 33554436,  7536672,        0],
+           [   70984, 33554437,  7405604,        3],
+           [   70985, 33554438,  7471141,        0]], dtype=uint32)
+
+    In [4]: (c[:,5,3].min(),c[:,5,3].max())
+    Out[4]: (3, 17591)
+
+    In [5]: d[0]
+    Out[5]: 
+    array([[   70965, 50331648,  7208988,        0],
+           [   70966, 50331649,  6815773,        0],
+           [   70967, 50331650,  6881310,        0],
+           [   70968, 50331651,  7143455,        0],
+           [   70969, 50331652,  7077920,        0],
+           [   70970, 50331653,  6946849,        1],
+           [   70971, 50331654,  7012386,        0]], dtype=uint32)
+
+    In [6]: (d[:,5,3].min(), d[:,5,3].max())
+    Out[6]: (1, 17612)
+
+    In [7]: e[0]
+    Out[7]: 
+    array([[  322253, 67108864,  8781866,        0],
+           [  322254, 67108865,  8454163,        0],
+           [  322255, 67108866,  8716319,        0],
+           [  322256, 67108867,  8650784,        0],
+           [  322257, 67108868,  8519723,    43213],
+           [  322258, 67108869,  8585260,        0]], dtype=uint32)
+
+    In [8]: (e[:,4,3].min(), e[:,4,3].max()) 
+    Out[8]: (43213, 45612)
+
+
+Look to be 1-based and use different orderng convention to stree. 
+
+
+
+
+
+::
+
+    1536 /**
+    1537 CSGFoundry::addInstance
+    1538 ------------------------
+    1539 
+    1540 Used for example from 
+    1541 
+    1542 1. CSG_GGeo_Convert::addInstances when creating CSGFoundry from GGeo
+    1543 2. CSGCopy::copy/CSGCopy::copySolidInstances when copy a loaded CSGFoundry to apply a selection
+    1544 
+    1545 **/
+    1546 
+    1547 void CSGFoundry::addInstance(const float* tr16, unsigned gas_idx, unsigned ias_idx )
+    1548 {
+    1549     qat4 instance(tr16) ;  // identity matrix if tr16 is nullptr 
+    1550     unsigned ins_idx = inst.size() ;
+    1551 
+    1552     instance.setIdentity( ins_idx, gas_idx, ias_idx );
+    1553 
+    1554     LOG(debug)
+    1555         << " ins_idx " << ins_idx
+    1556         << " gas_idx " << gas_idx
+    1557         << " ias_idx " << ias_idx
+    1558         ;
+    1559 
+    1560     inst.push_back( instance );
+    1561 }
+
+
+
+
+
 Not so keen on passing efficiencies one-by-one this way
 --------------------------------------------------------
 

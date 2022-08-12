@@ -41,6 +41,7 @@ inline std::string snode::desc() const
        << " lv:" << std::setw(3) << lvid
        << " cp:" << std::setw(7) << copyno
        << " se:" << std::setw(7) << sensor_id
+       << " se:" << std::setw(7) << sensor_index
        ;
     std::string s = ss.str();
     return s ;

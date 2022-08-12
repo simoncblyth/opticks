@@ -225,6 +225,11 @@ void test_get_factor_nodes(const stree& st)
     std::cout << st.desc_factor() << std::endl ; 
 }
 
+void test_traverse(const stree& st)
+{
+    st.traverse(); 
+}
+
 
 int main(int argc, char** argv)
 {
@@ -237,18 +242,13 @@ int main(int argc, char** argv)
     /*
     test_m2w_w2m(st); 
     test_get_m2w_product_get_w2m_product(st) ;  
-    */
-
-    /*
     test_get_nodes(st); 
     test_find_lvid_node(st); 
     test_desc_progeny(st, "sWall"); 
-
-    st.add_inst(); 
-    st.save_inst(STBASE); 
+    test_get_factor_nodes(st); 
     */
 
-    test_get_factor_nodes(st); 
+    test_traverse(st); 
 
 
     return 0 ; 
