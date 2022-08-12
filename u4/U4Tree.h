@@ -83,7 +83,7 @@ inline U4Tree* U4Tree::Create( const G4VPhysicalVolume* const top, const U4Senso
     U4Tree* tree = new U4Tree(st, top, sid ) ;
     st->factorize(); 
     tree->identifySensitiveInstances(); 
-
+    std::cout << st->desc_factor() << std::endl ; 
     std::cout << "] U4Tree::Create " << std::endl ; 
     return tree ; 
 }

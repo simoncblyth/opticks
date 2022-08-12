@@ -100,7 +100,7 @@ struct stree
     static constexpr const char* SUBS = "subs.txt" ;
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
     static constexpr const char* MTFOLD = "mtfold" ;
-    static constexpr const char* FACTORS = "factors.npy" ;
+    static constexpr const char* FACTOR = "factor.npy" ;
 
     std::vector<std::string> mtname ;       // unique material names
     std::vector<std::string> soname ;       // unique solid names
@@ -110,7 +110,7 @@ struct stree
     std::vector<snode> nds ;                // snode info for all nodes
     std::vector<std::string> digs ;         // per-node digest for all nodes  
     std::vector<std::string> subs ;         // subtree digest for all nodes
-    std::vector<sfactor> factors ;          // small number of unique subtree factors, digest and freq  
+    std::vector<sfactor> factor ;          // small number of unique subtree factor, digest and freq  
 
     sfreq* subs_freq ;                      // occurence frequency of subtree digests in entire tree 
     NPFold* mtfold ;                        // material properties
@@ -194,8 +194,7 @@ struct stree
     unsigned get_num_factor() const ; 
     sfactor& get_factor(unsigned idx); 
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
-
-
+    std::string desc_factor() const ; 
 
 
     // HMM: the stree.h inst members and methods are kinda out-of-place
@@ -745,7 +744,7 @@ inline void stree::save_( const char* fold ) const
     NP::WriteNames( fold, DIGS,   digs );
     NP::WriteNames( fold, SUBS,   subs );
     if(subs_freq) subs_freq->save(fold, SUBS_FREQ);
-    NP::Write<int>(fold, FACTORS, (int*)factors.data(), factors.size(), sfactor::NV ); 
+    NP::Write<int>(fold, FACTOR, (int*)factor.data(), factor.size(), sfactor::NV ); 
     if(mtfold) mtfold->save(fold, MTFOLD) ; 
 
 }
@@ -793,9 +792,9 @@ inline void stree::load_( const char* fold )
 
     if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
 
-    NP* a_factors = NP::Load(fold, FACTORS);
-    factors.resize(a_factors->shape[0]);
-    memcpy( (int*)factors.data(),    a_factors->cvalues<int>() ,    a_factors->arr_bytes() );
+    NP* a_factor = NP::Load(fold, FACTOR);
+    factor.resize(a_factor->shape[0]);
+    memcpy( (int*)factor.data(),    a_factor->cvalues<int>() ,    a_factor->arr_bytes() );
 
     if(mtfold) mtfold->load(fold, MTFOLD) ;
 }
@@ -996,7 +995,7 @@ inline void stree::enumerateFactors()
         fac.freq = freq ; 
         fac.sensors = 0 ; // set later, from U4Tree::identifySensitiveInstances
         fac.set_sub(sub) ;    
-        factors.push_back( fac );  
+        factor.push_back( fac );  
     }
 }
 
@@ -1022,13 +1021,13 @@ inline void stree::factorize()
 
 inline unsigned stree::get_num_factor() const
 {
-    return factors.size(); 
+    return factor.size(); 
 }
 
 inline sfactor& stree::get_factor(unsigned idx) 
 {
-    assert( idx < factors.size() ); 
-    return factors[idx] ; 
+    assert( idx < factor.size() ); 
+    return factor[idx] ; 
 }
 
 /**
@@ -1041,8 +1040,8 @@ Get node indices of the *idx* factor
 
 inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const 
 {
-    assert( idx < factors.size() ); 
-    const sfactor& fac = factors[idx]; 
+    assert( idx < factor.size() ); 
+    const sfactor& fac = factor[idx]; 
     std::string sub = fac.get_sub(); 
     int freq = fac.freq ; 
 
@@ -1058,6 +1057,26 @@ inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const
             ;
 
     assert(consistent );   
+}
+
+
+std::string stree::desc_factor() const 
+{
+    unsigned num_factor = factor.size(); 
+    std::stringstream ss ; 
+    ss << "stree::desc_factor"
+       << " get_num_factor " 
+       << num_factor 
+       << std::endl 
+       ;
+
+    for(unsigned idx=0 ; idx < num_factor ; idx++) 
+    {
+        const sfactor& fac = factor[idx]; 
+        ss << fac.desc() << std::endl ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
 }
 
 

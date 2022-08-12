@@ -24,7 +24,8 @@ inline int U4SensorIdentifierDefault::getIdentity( const G4VPhysicalVolume* inst
     unsigned num_sd = sdpv.size() ; 
     int sensor_id = num_sd == 0 ? -1 : copyno ; 
 
-    bool dump = copyno < 10 ; 
+    //bool dump = copyno < 10 ; 
+    bool dump = false ; 
     if(dump) std::cout 
         << "U4SensorIdentifierDefault::getIdentity" 
         << " copyno " << copyno
