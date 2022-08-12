@@ -9,7 +9,6 @@ from opticks.ana.eprint import eprint, epr
 from opticks.sysrap.stree import stree
 
 
-
 def check_inverse_pair(f, a_="inst", b_="iinst" ):
     """
     :param f: Fold instance
@@ -38,6 +37,42 @@ def compare_f_with_cf(f, cf ):
     eprint("(cf.inst - f.inst_f4).min()", globals(), locals())  
 
 
+def check_inst(f, cf):
+
+    eprint("np.abs(cf.inst-f.inst_f4).max()", globals(), locals() ) 
+    w = epr("w = np.where( np.abs(cf.inst-f.inst_f4) > 0.0001 )",  globals(), locals() )
+
+    check_inverse_pair(f, "inst", "iinst" )
+    check_inverse_pair(f, "inst_f4", "iinst_f4" )
+    compare_f_with_cf(f, cf ) 
+
+
+def check_sensor(st):
+    """
+    dsid = np.diff(sid) 
+    np.where( dsid != 1 )    (array([17611, 43211]),)
+
+    In [40]: sid[17607:17618]
+    Out[40]: array([ 17607,  17608,  17609,  17610,  17611, 300000, 300001, 300002, 300003, 300004, 300005], dtype=int32)
+
+    In [42]: sid[43205:43220]
+    Out[42]: array([325593, 325594, 325595, 325596, 325597, 325598, 325599,  30000,  30001,  30002,  30003,  30004,  30005,  30006,  30007], dtype=int32)
+
+    """
+    ws = np.where( st.nds.sensor_id > -1 )[0]  
+
+    sidx_ = st.nds.sensor_index[ws]   
+    sidx = sidx_[np.argsort(sidx_)]  
+    x_sidx = np.arange(len(sidx), dtype=np.int32) 
+    assert np.all( sidx == x_sidx ), "check sensor_idx contiguous from 0"   
+
+    sid = st.nds.sensor_id[ws]  
+    usid = np.unique(sid)
+    assert len(usid) == len(sid), "check sensor_id are all unique"
+    
+
+
+
 if __name__ == '__main__':
 
     cf = CSGFoundry.Load()
@@ -49,13 +84,7 @@ if __name__ == '__main__':
     st = stree(f)
     print(repr(st))
 
-    eprint("np.abs(cf.inst-f.inst_f4).max()", globals(), locals() ) 
-    w = epr("w = np.where( np.abs(cf.inst-f.inst_f4) > 0.0001 )",  globals(), locals() )
+    #check_inst(f, cf)
 
-    check_inverse_pair(f, "inst", "iinst" )
-    check_inverse_pair(f, "inst_f4", "iinst_f4" )
-    compare_f_with_cf(f, cf ) 
-
-
-
+    check_sensor(st)
 

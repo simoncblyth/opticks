@@ -293,6 +293,8 @@ inline void U4Tree::identifySensitiveInstances()
     {
         std::vector<int> nodes ; 
         st->get_factor_nodes(nodes, i );     // nidx of outer volumes of instances 
+        sfactor& fac = st->get_factor(i); 
+        fac.sensors = 0  ; 
 
         for(unsigned j=0 ; j < nodes.size() ; j++)
         {
@@ -300,8 +302,11 @@ inline void U4Tree::identifySensitiveInstances()
             const G4VPhysicalVolume* pv = get_pv_(nidx) ; 
             int sensor_id = sid->getIdentity(pv) ;  
             int sensor_index = sensor_id > -1 ? sensor_count : -1 ; 
-            if(sensor_id > -1 ) sensor_count += 1 ; 
-
+            if(sensor_id > -1 ) 
+            {
+                sensor_count += 1 ;  // count over all factors  
+                fac.sensors += 1 ;   // count sensors for each factor  
+            }
             snode& nd = st->nds[nidx] ; 
             nd.sensor_id = sensor_id ; 
             nd.sensor_index = sensor_index ; 

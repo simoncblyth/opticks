@@ -9,9 +9,10 @@
 
 struct sfactor
 {
-    static constexpr const int NV = 10 ; // sub is equivalent to 8 integer fields 
+    static constexpr const int NV = 11 ; // sub is equivalent to 8 integer fields 
     unsigned index ; 
     int      freq ; 
+    int      sensors ; 
     char     sub[32] ;  // caution : no null termination 
 
     void set_sub(const char* s); 
@@ -39,6 +40,7 @@ inline std::string sfactor::desc() const
     ss << "sfactor"
        << " index " << std::setw(3) << index
        << " freq " << std::setw(6) << freq
+       << " sensors " << std::setw(6) << sensors
        << " sub [" << std::setw(32) << get_sub()  << "]" 
        ;   
     std::string s = ss.str(); 

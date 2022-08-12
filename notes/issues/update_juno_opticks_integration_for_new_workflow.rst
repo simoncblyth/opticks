@@ -15,6 +15,21 @@ GUIDING PRINCIPALS FOR INTEGRATION
 * MINIMIZE INTEGRATION CODE IN THE FRAMEWORK  : BECAUSE ITS SO PAINFUL TO DEVELOP WITHIN THE DETECTOR FRAMEWORK 
 * AVOID BEING CHATTY IN INTERFACE
 
+
+Reminder About Building the integration
+-----------------------------------------
+
+Recall that Opticks now uses quite a few header only structs, so that means to fully build:
+
+1. update Opticks and build it, "o ; git pull ; oo"
+2. update integration code locally, sync to remote "svn.sh | sh"
+3. rebuild offline "jo ; ./build_Debug.sh"  
+
+   * this is needed even when the changes are only to Opticks : due to use of header only imps 
+   * some opticks changes that do not touch headers directly included into integration code
+     does not need the offline rebuild : but its simpler to do it that to work out if need to 
+
+
 HMM : Integration requires lots of small changes : how to proceed ?
 ----------------------------------------------------------------------
 

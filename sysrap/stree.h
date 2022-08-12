@@ -192,6 +192,7 @@ struct stree
     void factorize(); 
 
     unsigned get_num_factor() const ; 
+    sfactor& get_factor(unsigned idx) ; 
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
 
 
@@ -993,6 +994,7 @@ inline void stree::enumerateFactors()
         sfactor fac ; 
         fac.index = i ; 
         fac.freq = freq ; 
+        fac.sensors = 0 ; // set later, from U4Tree::identifySensitiveInstances
         fac.set_sub(sub) ;    
         factors.push_back( fac );  
     }
@@ -1023,6 +1025,12 @@ inline unsigned stree::get_num_factor() const
     return factors.size(); 
 }
 
+inline sfactor& stree::get_factor(unsigned idx) 
+{
+    assert( idx < factors.size() ); 
+    return factors[idx] ; 
+}
+
 /**
 stree::get_factor_nodes
 --------------------------
@@ -1033,8 +1041,7 @@ Get node indices of the *idx* factor
 
 inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const 
 {
-    assert( idx < factors.size() ); 
-    const sfactor& fac = factors[idx] ; 
+    const sfactor& fac = get_factor(idx); 
     std::string sub = fac.get_sub(); 
     int freq = fac.freq ; 
 

@@ -22,7 +22,8 @@ class snode(object):
              ('next_sibling', '<i4'), 
              ('lvid', '<i4'), 
              ('copyno', '<i4'),
-             ('sensor', '<i4'),
+             ('sensor_id', '<i4'),
+             ('sensor_index', '<i4'),
              ] 
 
     @classmethod
