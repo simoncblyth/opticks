@@ -55,7 +55,10 @@ set(HEADERS
     U4GDML.h
     U4Transform.h
     U4Tree.h
-    U4Sensor.h
+
+    U4SensorIdentifier.h
+    U4SensorIdentifierDefault.h
+
     U4SolidMaker.hh
     U4SolidTree.hh
     U4Material.hh

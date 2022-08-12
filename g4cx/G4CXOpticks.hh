@@ -13,6 +13,7 @@ and that needs the upload of QSim components first ?
 
 struct U4Sensor ; 
 struct U4Tree ; 
+struct U4SensorIdentifier ; 
 class G4VPhysicalVolume ;  
 
 class  GGeo ; 
@@ -27,6 +28,9 @@ struct SEvt ;
 struct G4CX_API G4CXOpticks
 {
     static const plog::Severity LEVEL ;
+    static const U4SensorIdentifier* SensorIdentifier ; 
+    static void SetSensorIdentifier( const U4SensorIdentifier* sid ); 
+
     static G4CXOpticks* INSTANCE ; 
     static G4CXOpticks* Get(); 
     static constexpr const char* RELDIR = "G4CXOpticks" ; 

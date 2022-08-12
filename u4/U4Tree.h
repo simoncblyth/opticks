@@ -23,16 +23,20 @@ U4Tree.h : explore minimal approach to geometry translation
 #include "sfreq.h"
 #include "stree.h"
 
+#include "U4SensorIdentifier.h"
+#include "U4SensorIdentifierDefault.h"
+
 #include "U4Transform.h"
 #include "U4Material.hh"
 
 struct U4Tree
 {
-    static U4Tree* Create( const G4VPhysicalVolume* const top ); 
+    static U4Tree* Create( const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
 
     stree* st ; 
     const G4VPhysicalVolume* const top ; 
-    int sensorCount ; 
+    const U4SensorIdentifier* sid ; 
+
     std::map<const G4LogicalVolume* const, int> lvidx ;
     std::vector<const G4VPhysicalVolume*> pvs ; 
     std::vector<const G4Material*>  materials ; 
@@ -56,25 +60,40 @@ struct U4Tree
     int                      get_pv_copyno(int nidx) const ; 
 
     int get_nidx(const G4VPhysicalVolume* pv) const ; 
+
+
+
+    void identifySensitiveInstances(); 
+
+
 }; 
 
 
-U4Tree* U4Tree::Create( const G4VPhysicalVolume* const top ) 
+/**
+U4Tree::Create
+----------------
+
+Canonically invoked from G4CXOpticks::setGeometry
+
+**/
+inline U4Tree* U4Tree::Create( const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid ) 
 {
     std::cout << "[ U4Tree::Create " << std::endl ; 
     stree* st = new stree ; 
-    U4Tree* tree = new U4Tree(st, top) ;
+    U4Tree* tree = new U4Tree(st, top, sid ) ;
     st->factorize(); 
+    tree->identifySensitiveInstances(); 
+
     std::cout << "] U4Tree::Create " << std::endl ; 
     return tree ; 
 }
 
 
-inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_)
+inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4SensorIdentifier* sid_ )
     :
     st(st_),
     top(top_),
-    sensorCount(0)
+    sid(sid_ ? sid_ : new U4SensorIdentifierDefault)
 {
     if(top == nullptr) return ; 
     convertMaterials();
@@ -158,6 +177,13 @@ but sibling to sibling links are done within the
 sibling loop using the node index returned by the 
 recursive call. 
 
+Initially tried to simply use lv->GetSensitiveDetector() to 
+identify sensor nodes by that is problematic because 
+the SD is not on the volume with the copyNo and this 
+use of copyNo is detector specific.  Also not all JUNO SD
+are really sensitive. 
+
+
 **/
 inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, snode* parent )
 {
@@ -198,9 +224,9 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     nd.next_sibling = -1 ; 
     nd.lvid = lvid ; 
     nd.copyno = copyno ; 
-    nd.sensor = sd ? sensorCount : -1 ; 
-    if(sd) sensorCount += 1 ; 
 
+    nd.sensor_id = -1 ;     // changed later by U4Tree::identifySensitiveInstances
+    nd.sensor_index = -1 ; 
 
     st->nds.push_back(nd); 
 
@@ -246,13 +272,51 @@ inline int U4Tree::get_nidx(const G4VPhysicalVolume* pv) const
     return nidx < int(pvs.size()) ? nidx : -1 ;  
 }
 
+/**
+U4Tree::identifySensitiveInstances
+------------------------------------
 
+Canonically invoked from U4Tree::Create after stree factorization
+and before instance creation. 
 
+This uses stree/sfactor to get node indices of the outer
+volumes of all instances. These together with U4SensorIdentifier/sid
+allow sensor_id and sensor_index results (-1 when not sensors) 
+to be added into the stree/snode. 
 
+These values are subsequently used by instance creation and 
+are inserted into the instance transform fourth column. 
 
+**/
 
+inline void U4Tree::identifySensitiveInstances()
+{
+    unsigned num_factor = st->get_num_factor(); 
+    unsigned sensor_count = 0 ; 
+    for(unsigned i=0 ; i < num_factor ; i++)
+    {
+        std::vector<int> nodes ; 
+        st->get_factor_nodes(nodes, i );     // nidx of outer volumes of instances 
 
+        for(unsigned j=0 ; j < nodes.size() ; j++)
+        {
+            int nidx = nodes[j] ; 
+            const G4VPhysicalVolume* pv = get_pv_(nidx) ; 
+            int sensor_id = sid->getIdentity(pv) ;  
+            int sensor_index = sensor_id > -1 ? sensor_count : -1 ; 
+            if(sensor_id > -1 ) sensor_count += 1 ; 
 
+            snode& nd = nds[nidx] ; 
+            nd.sensor_id = sensor_id ; 
+            nd.sensor_index = sensor_index ; 
+        }
+    }
 
-
+    std::cout 
+        << "U4Tree::identifySensitiveInstances"
+        << " num_factor " << num_factor
+        << " sensor_count " << sensor_count 
+        << std::endl 
+        ; 
+}
 

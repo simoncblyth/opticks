@@ -37,6 +37,10 @@
 
 const plog::Severity G4CXOpticks::LEVEL = PLOG::EnvLevel("G4CXOpticks", "DEBUG"); 
 
+const U4SensorIdentifier* G4CXOpticks::SensorIdentifier = nullptr ; 
+void G4CXOpticks::SetSensorIdentifier( const U4SensorIdentifier* sid ){ SensorIdentifier = sid ; }  // static 
+
+
 G4CXOpticks* G4CXOpticks::INSTANCE = nullptr ; 
 G4CXOpticks* G4CXOpticks::Get(){ return INSTANCE ; } 
 // formerly instanciated when INSTANCE nullptr, but its better to require more care with when the instanciation is done
@@ -190,7 +194,7 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     LOG(LEVEL) << " G4VPhysicalVolume world " << world ; 
     assert(world); 
     wd = world ; 
-    tr = U4Tree::Create(world) ;
+    tr = U4Tree::Create(world, SensorIdentifier ) ;
 
 #ifdef __APPLE__
     return ;  

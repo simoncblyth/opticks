@@ -6,7 +6,8 @@ arg=${1:-$defarg}
 
 name=stree_test 
 
-export STBASE=/tmp/$USER/opticks/U4TreeTest
+#export STBASE=/tmp/$USER/opticks/U4TreeTest
+export STBASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
 export FOLD=$STBASE/stree
 
 source $OPTICKS_HOME/bin/COMMON.sh 

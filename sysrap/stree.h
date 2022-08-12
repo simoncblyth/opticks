@@ -22,9 +22,10 @@ TODO:
 mapping from "factorized" instances back to origin PV and vice-versa 
 -----------------------------------------------------------------------
 
-Excluding the remainder, the instances each correspond to a contiguous ranges of nidx.
+Excluding the remainder, the instances each correspond to contiguous ranges of nidx.
 So can return back to the origin pv volumes using "U4Tree::get_pv(int nidx)" so long  
 as store the outer nidx and number of nodes within the instances. 
+
 Actually as all factorized instances of each type will have the same number of 
 subtree nodes it makes no sense to duplicate that info : better to store the node counts 
 in an "srepeat" instance held within stree.h and just store the first nidx within the instances. 
@@ -78,6 +79,7 @@ TODO: collect the nidx of the remainder into stree.h ?
 #include "sfreq.h"
 #include "sstr.h"
 #include "strid.h"
+#include "sfactor.h"
 
 
 
@@ -98,18 +100,20 @@ struct stree
     static constexpr const char* SUBS = "subs.txt" ;
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
     static constexpr const char* MTFOLD = "mtfold" ;
+    static constexpr const char* FACTORS = "factors.npy" ;
 
-    std::vector<std::string> mtname ;
-    std::vector<std::string> soname ;
+    std::vector<std::string> mtname ;       // unique material names
+    std::vector<std::string> soname ;       // unique solid names
 
-    std::vector<glm::tmat4x4<double>> m2w ;  
-    std::vector<glm::tmat4x4<double>> w2m ; 
+    std::vector<glm::tmat4x4<double>> m2w ; // model2world transforms for all nodes
+    std::vector<glm::tmat4x4<double>> w2m ; // world2model transforms for all nodes  
+    std::vector<snode> nds ;                // snode info for all nodes
+    std::vector<std::string> digs ;         // per-node digest for all nodes  
+    std::vector<std::string> subs ;         // subtree digest for all nodes
+    std::vector<sfactor> factors ;          // small number of unique subtree factors, digest and freq  
 
-    std::vector<snode> nds ;
-    std::vector<std::string> digs ; // single node digest  
-    std::vector<std::string> subs ; // subtree digest 
-    sfreq* subs_freq ;
-    NPFold* mtfold ; 
+    sfreq* subs_freq ;                      // occurence frequency of subtree digests in entire tree 
+    NPFold* mtfold ;                        // material properties
 
     stree();
 
@@ -121,8 +125,8 @@ struct stree
     static std::string Digest(int lvid, const glm::tmat4x4<double>& tr );
     static std::string Digest(int lvid );
 
-    void get_children(std::vector<int>& children, int nidx) const ;
-    void get_progeny( std::vector<int>& progeny, int nidx ) const ;
+    void get_children(std::vector<int>& children, int nidx) const ;   // immediate children
+    void get_progeny( std::vector<int>& progeny, int nidx ) const ;   // recursively get children and all their children and so on... 
     std::string desc_progeny(int nidx) const ; 
 
 
@@ -183,7 +187,14 @@ struct stree
     bool is_contained_repeat(const char* sub) const ; 
     void disqualifyContainedRepeats();
     void sortSubtrees(); 
+    void enumerateFactors(); 
+
     void factorize(); 
+
+    unsigned get_num_factor() const ; 
+    void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
+
+
 
 
     // HMM: the stree.h inst members and methods are kinda out-of-place
@@ -196,7 +207,7 @@ struct stree
     std::vector<glm::tmat4x4<double>> iinst ; 
     std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
 
-    void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, unsigned gas_idx ); 
+    void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, unsigned gas_idx, int nidx ); 
     void add_inst(); 
 
     void save_inst(const char* base, const char* rel=nullptr) const ; 
@@ -593,6 +604,14 @@ inline void stree::get_w2m_product( glm::tmat4x4<double>& transform, int nidx, b
     memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
 }
 
+/**
+stree::get_nodes
+------------------
+
+Collects node indices of all nodes with the subtree digest provided in the argument. 
+So the "outer volume" nodes are returned. 
+
+**/
 
 inline void stree::get_nodes(std::vector<int>& nodes, const char* sub) const
 {
@@ -725,6 +744,7 @@ inline void stree::save_( const char* fold ) const
     NP::WriteNames( fold, DIGS,   digs );
     NP::WriteNames( fold, SUBS,   subs );
     if(subs_freq) subs_freq->save(fold, SUBS_FREQ);
+    NP::Write<int>(fold, FACTORS, (int*)factors.data(), factors.size(), sfactor::NV ); 
     if(mtfold) mtfold->save(fold, MTFOLD) ; 
 
 }
@@ -765,13 +785,17 @@ inline void stree::load_( const char* fold )
     w2m.resize(a_w2m->shape[0]);
     memcpy( (double*)w2m.data(), a_w2m->cvalues<double>() , a_w2m->arr_bytes() );
 
-
     NP::ReadNames( fold, SONAME, soname );
     NP::ReadNames( fold, MTNAME, soname );
     NP::ReadNames( fold, DIGS,   digs );
     NP::ReadNames( fold, SUBS,   subs );
 
     if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
+
+    NP* a_factors = NP::Load(fold, FACTORS);
+    factors.resize(a_factors->shape[0]);
+    memcpy( (int*)factors.data(),    a_factors->cvalues<int>() ,    a_factors->arr_bytes() );
+
     if(mtfold) mtfold->load(fold, MTFOLD) ;
 }
 
@@ -795,6 +819,17 @@ inline std::string stree::Desc(const std::vector<int>& a, unsigned edgeitems ) /
     std::string s = ss.str();
     return s ;
 }
+
+/**
+stree::classifySubtrees
+------------------------
+
+This is invoked by stree::factorize
+
+Traverse all nodes, computing and collecting subtree digests and adding them to subs_freq
+to find the top repeaters.  
+
+**/
 
 inline void stree::classifySubtrees()
 {
@@ -944,25 +979,93 @@ inline void stree::sortSubtrees()  // hmm sortSubtreeDigestFreq would be more ac
     std::cout << "] stree::sortSubtrees " << std::endl ;
 }
 
+
+inline void stree::enumerateFactors()
+{
+    const sfreq* sf = subs_freq ; 
+    unsigned num = sf->get_num(); 
+    for(unsigned i=0 ; i < num ; i++)
+    {
+        const char* sub = sf->get_key(i); 
+        int freq = sf->get_freq(i); 
+        if(freq < FREQ_CUT) continue ; 
+
+        sfactor fac ; 
+        fac.index = i ; 
+        fac.freq = freq ; 
+        fac.set_sub(sub) ;    
+        factors.push_back( fac );  
+    }
+}
+
+
+/**
+stree::factorize
+-------------------
+
+Canonically invoked from U4Tree::Create
+
+**/
+
 inline void stree::factorize()
 {
     std::cout << "[ stree::factorize " << std::endl ;
     classifySubtrees(); 
     disqualifyContainedRepeats();
     sortSubtrees(); 
+    enumerateFactors(); 
     std::cout << "] stree::factorize " << std::endl ;
 }
 
-inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, unsigned gas_idx )
+
+inline unsigned stree::get_num_factor() const
 {
+    return factors.size(); 
+}
+
+/**
+stree::get_factor_nodes
+--------------------------
+
+Get node indices of the *idx* factor 
+
+**/
+
+inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const 
+{
+    assert( idx < factors.size() ); 
+    const sfactor& fac = factors[idx] ; 
+    std::string sub = fac->get_sub(); 
+    int freq = fac.freq ; 
+
+    get_nodes(nodes, sub.c_str() );  
+    assert( int(nodes.size()) == freq );   
+}
+
+
+/**
+stree::add_inst
+----------------
+
+Hmm : need to do this after getting the sensor identifiers for each instance
+
+**/
+
+inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, unsigned gas_idx, int nidx )
+{
+    assert( nidx > -1 && nidx < int(nds.size()) ); 
+    const snode& nd = nds[nidx]; 
+
+
     unsigned ins_idx = inst.size();     // follow sqat4.h::setIdentity
-    unsigned ias_idx = 0 ; 
+    //unsigned ias_idx = 0 ; 
 
     glm::tvec4<uint64_t> col3 ; 
     col3.x = ins_idx + 1 ; 
     col3.y = gas_idx + 1 ; 
-    col3.z = ias_idx + 1 ; 
-    col3.w = 0 ; 
+    //col3.z = ias_idx + 1 ; 
+    col3.z = nd.sensor_id ; 
+    col3.w = nd.sensor_index ; 
 
     strid::Encode(tr_m2w, col3 );
     strid::Encode(tr_w2m, col3 );
@@ -973,42 +1076,31 @@ inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>
 }
 inline void stree::add_inst() 
 {
-    const sfreq* sf = subs_freq ; 
-
     glm::tmat4x4<double> tr_m2w(1.) ; 
     glm::tmat4x4<double> tr_w2m(1.) ; 
-    add_inst(tr_m2w, tr_w2m, 0u );  
+    add_inst(tr_m2w, tr_w2m, 0u );   // global instance with identity transforms 
 
-    unsigned num = sf->get_num(); 
-    for(unsigned i=0 ; i < num ; i++)
+    unsigned num_factor = get_num_factor(); 
+    for(unsigned i=0 ; i < num_factor ; i++)
     {
-        const char* sub = sf->get_key(i); 
-        int freq = sf->get_freq(i); 
-        if(freq < FREQ_CUT) continue ; 
-        // HMM: dont like continue within such a crucial loop
-        // better to have intermediate vector of "srepeat" objects 
-
         std::vector<int> nodes ; 
-        get_nodes(nodes, sub );  
+        get_factor_nodes(nodes, i);  
 
         unsigned gas_idx = i + 1 ; 
         std::cout 
             << " i " << std::setw(3) << i 
             << " gas_idx " << std::setw(3) << gas_idx
-            << " sub " << sub
-            << " freq " << std::setw(7) << freq
             << " nodes.size " << std::setw(7) << nodes.size()
             << std::endl 
             ;
 
-        assert( int(nodes.size()) == freq );   
         for(unsigned j=0 ; j < nodes.size() ; j++)
         {
             int nidx = nodes[j]; 
             get_m2w_product(tr_m2w, nidx, false); 
             get_w2m_product(tr_w2m, nidx, true ); 
 
-            add_inst(tr_m2w, tr_w2m, gas_idx ); 
+            add_inst(tr_m2w, tr_w2m, gas_idx, nidx ); 
         }
     }
 

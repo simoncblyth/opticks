@@ -22,11 +22,14 @@ inline std::string U4Touchable::Desc(const G4VTouchable* touch)
     for(int i=0 ; i<depth ; i++) 
     { 
         G4VPhysicalVolume* pv = touch->GetVolume(i); 
+        G4LogicalVolume* lv = pv->GetLogicalVolume();
+        G4int nd = lv->GetNoDaughters();
         G4VSolid* so = touch->GetSolid(i); 
         G4int cp = touch->GetReplicaNumber(i); 
 
         ss << " i " << std::setw(2) << i 
            << " cp " << std::setw(6)  << cp
+           << " nd " << std::setw(6)  << nd
            << " so " << std::setw(40) << so->GetName()
            << " pv " << std::setw(60) << pv->GetName()
            << std::endl ; 
@@ -34,4 +37,5 @@ inline std::string U4Touchable::Desc(const G4VTouchable* touch)
     std::string s = ss.str(); 
     return s ; 
 }
+
 

@@ -63,7 +63,6 @@ struct NP
 
     NP(const char* dtype_, const std::vector<int>& shape_ ); 
     NP(const char* dtype_="<f4", int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
-    virtual ~NP(); 
 
     void init(); 
     void set_shape( int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1);  // CAUTION: DO NOT USE *set_shape* TO CHANGE SHAPE (as it calls *init*) INSTEAD USE *change_shape* 
@@ -347,16 +346,12 @@ struct NP
     std::string make_jsonhdr() const ;
 };
 
+
 inline void NP::clear()
 {
     data.clear(); 
     data.shrink_to_fit(); 
     shape[0] = 0 ; 
-}
-
-inline NP::~NP()
-{
-    clear();    // HMM: expect not needed, but somehow feels safer.   TODO: large array leak checking 
 }
 
 

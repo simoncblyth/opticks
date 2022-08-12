@@ -5,6 +5,73 @@ sensor_info_into_new_workflow
 * see also :doc:`instanceIdentity-into-new-workflow`
 
 
+Not so keen on passing efficiencies one-by-one this way
+--------------------------------------------------------
+
+* identifiers and indices seems ok, as only one of those but 
+  the other info will tend to need to be expanded
+
+* better to establish the placement order and accept all values for
+  all sensors in single API 
+
+
+::
+
+     30 struct ExampleSensor : public U4Sensor
+     31 {
+     32     // In reality would need ctor argument eg junoSD_PMT_v2 to lookup real values 
+     33     unsigned getId(           const G4PVPlacement* pv) const { return pv->GetCopyNo() ; }
+     34     float getEfficiency(      const G4PVPlacement* pv) const { return 1. ; }
+     35     float getEfficiencyScale( const G4PVPlacement* pv) const { return 1. ; }
+     36 }; 
+
+
+Opted for::
+
+     22 struct U4SensorIdentifier
+     23 {
+     24     virtual int getIdentity(const G4VPhysicalVolume* instance_outer_pv ) const = 0 ;
+     25 };
+
+     09 struct U4SensorIdentifierDefault
+     10 {
+     11     int getIdentity(const G4VPhysicalVolume* instance_outer_pv ) const ;
+     12     static void FindSD_r( std::vector<const G4VPhysicalVolume*>& sdpv , const G4VPhysicalVolume* pv, int depth );
+     13 };
+     14 
+     15 
+     16 inline int U4SensorIdentifierDefault::getIdentity( const G4VPhysicalVolume* instance_outer_pv ) const
+     17 {
+     18     const G4PVPlacement* pvp = dynamic_cast<const G4PVPlacement*>(instance_outer_pv) ;
+     19     int copyno = pvp ? pvp->GetCopyNo() : -1 ;
+     20 
+     21     std::vector<const G4VPhysicalVolume*> sdpv ;
+     22     FindSD_r(sdpv, instance_outer_pv, 0 );
+     23 
+     24     unsigned num_sd = sdpv.size() ;
+     25     int sensor_id = num_sd == 0 ? -1 : copyno ;
+     26 
+     27     std::cout
+     28         << "U4SensorIdentifierDefault::getIdentity"
+     29         << " copyno " << copyno
+     30         << " num_sd " << num_sd
+     31         << " sensor_id " << sensor_id
+     32         ;
+     33 
+     34     return sensor_id ;
+     35 }
+     36 
+     37 inline void U4SensorIdentifierDefault::FindSD_r( std::vector<const G4VPhysicalVolume*>& sdpv , const G4VPhysicalVolume* pv, int depth )
+     38 {
+     39     const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+     40     G4VSensitiveDetector* sd = lv->GetSensitiveDetector() ;
+     41     if(sd) sdpv.push_back(pv);
+     42     for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ; i++ ) FindSD_r( lv->GetDaughter(i), depth+1, );
+     43 }
+
+
+
+
 Compare with Framework ProcessHits
 -------------------------------------
 
@@ -27,6 +94,80 @@ Compare with Framework ProcessHits
      452         }
 
 
+
+
+
+What is the Opticks equivalent of junoSD_PMT_v2::get_pmtid ?
+-------------------------------------------------------------
+
+Opticks shifts focus to geometry preparation stage, so it doesnt have to 
+be repeated for every photon.  That means:
+
+1. duplicating sensor_id and sensor_index labels to all ~5-6 nodes of the subtree of 
+   each instance within stree (formerly GGeo/GNodeLib/GNode)
+
+2. planting sensor_id and sensor_index within the CSGFoundry inst in 
+   fourth column of the transform. 
+
+But how to get sensor_id and sensor_index in first place ?
+
+sensor_index 
+   0-based index that orders the sensors as they are 
+   encountered in the standard postorder traversal of the volumes
+
+   * this means that given a way to get sensor_id of a volume 
+     can derive the sensor index within Opticks   
+
+sensor_id
+   this comes from the copyNo but that is JUNO specific so 
+   cannot assume that is the 
+
+
+How to label the subtrees ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+U4Tree::convertNodes_r 
+     too early as the instances not yet defined 
+    
+stree::add_inst
+     is the right place to label the tree and populate the inst 4th column, 
+     but need to operate without Geant4 types within stree : so need to 
+     collect sensor_id integer into the stree/snode during U4Tree::convertNodes_r 
+     using the U4Sensor object passed from the framework (or copyno) 
+
+
+
+junoSD_PMT_v2::get_pmtid
+---------------------------
+
+::
+
+    junoSD_PMT_v2::ProcessHits dumpcount 0
+    U4Touchable::Desc depth 8
+     i  0 cp      0 so HamamatsuR12860_PMT_20inch_body_solid_1_4 pv                         HamamatsuR12860_PMT_20inch_body_phys
+     i  1 cp      0 so HamamatsuR12860_PMT_20inch_pmt_solid_1_4 pv                          HamamatsuR12860_PMT_20inch_log_phys
+     i  2 cp   9744 so             HamamatsuR12860sMask_virtual pv                                       pLPMT_Hamamatsu_R12860
+     i  3 cp      0 so                              sInnerWater pv                                                  pInnerWater
+     i  4 cp      0 so                           sReflectorInCD pv                                             pCentralDetector
+     i  5 cp      0 so                          sOuterWaterPool pv                                              pOuterWaterPool
+     i  6 cp      0 so                              sPoolLining pv                                                  pPoolLining
+     i  7 cp      0 so                              sBottomRock pv                                                     pBtmRock
+
+    junoSD_PMT_v2::ProcessHits dumpcount 1
+    U4Touchable::Desc depth 8
+     i  0 cp      0 so    NNVTMCPPMT_PMT_20inch_body_solid_head pv                              NNVTMCPPMT_PMT_20inch_body_phys
+     i  1 cp      0 so     NNVTMCPPMT_PMT_20inch_pmt_solid_head pv                               NNVTMCPPMT_PMT_20inch_log_phys
+     i  2 cp   3505 so                  NNVTMCPPMTsMask_virtual pv                                            pLPMT_NNVT_MCPPMT
+     i  3 cp      0 so                              sInnerWater pv                                                  pInnerWater
+     i  4 cp      0 so                           sReflectorInCD pv                                             pCentralDetector
+     i  5 cp      0 so                          sOuterWaterPool pv                                              pOuterWaterPool
+     i  6 cp      0 so                              sPoolLining pv                                                  pPoolLining
+     i  7 cp      0 so                              sBottomRock pv                                                     pBtmRock
+
+
+
+
+
 ::
 
      477 int junoSD_PMT_v2::get_pmtid(G4Track* track) {
@@ -42,14 +183,16 @@ Compare with Framework ProcessHits
      487         for (id=0; id<nd; id++) {   
      488             if (touch->GetVolume(id)==track->GetVolume()) {
      ///
-     ///         iterate up stack of volumes : until find the one of this track 
+     ///         iterate up stack of volumes : until find the one of this track : 
+     ///         would expect that to be the first 
      ///
      489                 int idid=1;
      490                 G4VPhysicalVolume* tmp_pv=NULL;
      491                 for (idid=1; idid < (nd-id); ++idid) {
      ///
-     ///            code edited to make less obtuse 
-     ///            looks like proceeds to check 
+     ///            code edited to make less obtuse. 
+     ///            looks like proceeds up the stack until finds a volume with siblings
+     ///            in order to get the CopyNo  
      ///
      ...
      494                     G4LogicalVolume* mother_vol = touch->GetVolume(id+idid)->GetLogicalVolume();
@@ -340,6 +483,76 @@ Check Sensors : systematically 2x the number of SD than would expect ?
     ./Simulation/DetSimV2/PMTSim/src/Hamamatsu_R12860_PMTSolid.cc:    double neck_offset_z = -210. + m4_h/2 ;  // see _1_4 below
     ./Simulation/DetSimV2/PMTSim/src/Hamamatsu_R12860_PMTSolid.cc:    double c_cy = neck_offset_z -m4_h/2 ;    // -210. torus_z  (see _1_4 below)
     epsilon:offline blyth$ 
+
+
+
+
+Should sensor_id be placed into OptixInstance .instanceId ?
+------------------------------------------------------------------
+
+::
+
+    the returned unsigned value is used by IAS_Builder to set the OptixInstance .instanceId 
+    Within CSGOptiX/CSGOptiX7.cu:: __closesthit__ch *optixGetInstanceId()* is used to 
+    passes the instanceId value into "quad2* prd" (per-ray-data) which is available 
+    within qudarap/qsim.h methods. 
+    
+    The 32 bit unsigned returned by *getInstanceIdentity* may not use the top 8 bits 
+    because of an OptiX 7 limit of 24 bits, from Properties::dump::
+
+        limitMaxInstanceId :   16777215    ffffff
+
+    (that limit might well be raised in versions after 700)
+
+
+
+
+
+HMM: how to split those 24 bits ? 
+
+1. sensor id
+2. sensor category (4 cat:2 bits, 8 cat: 3 bits)
+
+::
+
+    In [14]: for i in range(32): print(" (0x1 << %2d) - 1   %16x   %16d  %16.2f  " % (i, (0x1 << i)-1, (0x1 << i)-1, float((0x1 << i)-1)/1e6 )) 
+
+     (0x1 <<  0) - 1                  0                  0              0.00  
+     (0x1 <<  1) - 1                  1                  1              0.00  
+     (0x1 <<  2) - 1                  3                  3              0.00  
+     (0x1 <<  3) - 1                  7                  7              0.00  
+     (0x1 <<  4) - 1                  f                 15              0.00  
+     (0x1 <<  5) - 1                 1f                 31              0.00  
+     (0x1 <<  6) - 1                 3f                 63              0.00  
+     (0x1 <<  7) - 1                 7f                127              0.00  
+     (0x1 <<  8) - 1                 ff                255              0.00  
+     (0x1 <<  9) - 1                1ff                511              0.00  
+     (0x1 << 10) - 1                3ff               1023              0.00  
+     (0x1 << 11) - 1                7ff               2047              0.00  
+     (0x1 << 12) - 1                fff               4095              0.00  
+     (0x1 << 13) - 1               1fff               8191              0.01  
+     (0x1 << 14) - 1               3fff              16383              0.02  
+     (0x1 << 15) - 1               7fff              32767              0.03  
+     (0x1 << 16) - 1               ffff              65535              0.07  
+     (0x1 << 17) - 1              1ffff             131071              0.13  
+     (0x1 << 18) - 1              3ffff             262143              0.26  
+     (0x1 << 19) - 1              7ffff             524287              0.52  
+     (0x1 << 20) - 1              fffff            1048575              1.05  
+     (0x1 << 21) - 1             1fffff            2097151              2.10  
+     (0x1 << 22) - 1             3fffff            4194303              4.19  
+     (0x1 << 23) - 1             7fffff            8388607              8.39  
+     (0x1 << 24) - 1             ffffff           16777215             16.78  
+     (0x1 << 25) - 1            1ffffff           33554431             33.55  
+     (0x1 << 26) - 1            3ffffff           67108863             67.11  
+     (0x1 << 27) - 1            7ffffff          134217727            134.22  
+     (0x1 << 28) - 1            fffffff          268435455            268.44  
+     (0x1 << 29) - 1           1fffffff          536870911            536.87  
+     (0x1 << 30) - 1           3fffffff         1073741823           1073.74  
+     (0x1 << 31) - 1           7fffffff         2147483647           2147.48  
+
+
+
+
 
 
 

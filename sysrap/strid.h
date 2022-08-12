@@ -24,6 +24,7 @@ struct strid
 
     static void Encode(       glm::tmat4x4<double>& tr, const glm::tvec4<uint64_t>& col3 ); 
     static void Encode(       double* ptr , uint64_t  e ); 
+
     static void Decode( const glm::tmat4x4<double>& tr,       glm::tvec4<uint64_t>& col3 ); 
     static void Decode( const double* ptr , uint64_t& e ); 
 

@@ -209,6 +209,21 @@ void test_desc_progeny(const stree& st, const char* qname )
     std::cout << "st.desc_progeny(nodes[0])" << std::endl << st.desc_progeny(nodes[0]) << std::endl; 
 }
 
+
+void test_get_factor_nodes(const stree& st)
+{
+    unsigned num_factor = st.get_num_factor(); 
+    std::cout << "test_get_factor_nodes num_factor " << num_factor << std::endl ; 
+
+    for(unsigned i=0 ; i < num_factor ; i++)
+    {
+        std::vector<int> nodes ; 
+        st.get_factor_nodes(nodes, i); 
+        std::cout << std::setw(3) << i << " nodes " << nodes.size() << std::endl ;  
+    }
+}
+
+
 int main(int argc, char** argv)
 {
     stree st ; 
@@ -226,10 +241,13 @@ int main(int argc, char** argv)
     test_get_nodes(st); 
     test_find_lvid_node(st); 
     test_desc_progeny(st, "sWall"); 
-    */
 
     st.add_inst(); 
     st.save_inst(STBASE); 
+    */
+
+    test_get_factor_nodes(st); 
+
 
     return 0 ; 
 }

@@ -151,6 +151,7 @@ set(HEADERS
     snode.h
     stree.h 
     strid.h 
+    sfactor.h
 
     sdigest.h
     SDigest.hh
