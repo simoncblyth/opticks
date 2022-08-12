@@ -192,7 +192,7 @@ struct stree
     void factorize(); 
 
     unsigned get_num_factor() const ; 
-    sfactor& get_factor(unsigned idx) ; 
+    sfactor& get_factor(unsigned idx); 
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
 
 
@@ -1041,12 +1041,23 @@ Get node indices of the *idx* factor
 
 inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const 
 {
-    const sfactor& fac = get_factor(idx); 
+    assert( idx < factors.size() ); 
+    const sfactor& fac = factors[idx]; 
     std::string sub = fac.get_sub(); 
     int freq = fac.freq ; 
 
     get_nodes(nodes, sub.c_str() );  
-    assert( int(nodes.size()) == freq );   
+
+    bool consistent = int(nodes.size()) == freq ; 
+    if(!consistent) 
+        std::cerr 
+            << "stree::get_factor_nodes INCONSISTENCY"
+            << " nodes.size " << nodes.size()
+            << " freq " << freq 
+            << std::endl 
+            ;
+
+    assert(consistent );   
 }
 
 
