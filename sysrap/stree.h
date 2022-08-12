@@ -101,6 +101,10 @@ struct stree
     static constexpr const char* SUBS_FREQ = "subs_freq" ;
     static constexpr const char* MTFOLD = "mtfold" ;
     static constexpr const char* FACTOR = "factor.npy" ;
+    static constexpr const char* INST = "inst.npy" ; 
+    static constexpr const char* IINST = "iinst.npy" ; 
+    static constexpr const char* INST_F4 = "inst_f4.npy" ; 
+    static constexpr const char* IINST_F4 = "iinst_f4.npy" ; 
 
     std::vector<std::string> mtname ;       // unique material names
     std::vector<std::string> soname ;       // unique solid names
@@ -114,6 +118,21 @@ struct stree
 
     sfreq* subs_freq ;                      // occurence frequency of subtree digests in entire tree 
     NPFold* mtfold ;                        // material properties
+
+    // HMM: the stree.h inst members and methods are kinda out-of-place
+    //      as CSGFoundry already has inst : so the below are looking ahead 
+    //      to what will be done by a future "CSGFoundry::CreateFromSTree"  
+
+    std::vector<glm::tmat4x4<double>> inst ; 
+    std::vector<glm::tmat4x4<float>>  inst_f4 ; 
+    std::vector<glm::tmat4x4<double>> iinst ; 
+    std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
+
+
+
+
+
+
 
     stree();
 
@@ -175,6 +194,9 @@ struct stree
     void save_( const char* fold ) const ;
     void save( const char* base, const char* rel=nullptr ) const ;
 
+    template<typename S, typename T>   // S:compound type T:atomic "transport" type
+    static void ImportArray( std::vector<S>& vec, const NP* a ); 
+
     void load_( const char* fold );
     void load( const char* base, const char* rel=nullptr );
 
@@ -196,22 +218,9 @@ struct stree
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
     std::string desc_factor() const ; 
 
-
-    // HMM: the stree.h inst members and methods are kinda out-of-place
-    //      as CSGFoundry already has inst : so the below are looking ahead 
-    //      to what will be done by a future "CSGFoundry::CreateFromSTree"  
-
-    std::vector<glm::tmat4x4<double>> inst ; 
-    std::vector<glm::tmat4x4<float>>  inst_f4 ; 
-
-    std::vector<glm::tmat4x4<double>> iinst ; 
-    std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
-
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, unsigned gas_idx, int nidx ); 
     void add_inst(); 
 
-    void save_inst(const char* base, const char* rel=nullptr) const ; 
-    void save_inst_(const char* fold) const ; 
 
 };
 
@@ -747,21 +756,11 @@ inline void stree::save_( const char* fold ) const
     NP::Write<int>(fold, FACTOR, (int*)factor.data(), factor.size(), sfactor::NV ); 
     if(mtfold) mtfold->save(fold, MTFOLD) ; 
 
-}
-
-
-inline void stree::save_inst(const char* base, const char* rel ) const 
-{
-    std::string dir = FormPath(base, rel); 
-    save_inst_(dir.c_str()); 
-}
-inline void stree::save_inst_(const char* fold) const 
-{
-    NP::Write(fold, "inst.npy",    (double*)inst.data(), inst.size(), 4, 4 ); 
-    NP::Write(fold, "inst_f4.npy", (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
-
-    NP::Write(fold, "iinst.npy",    (double*)iinst.data(), iinst.size(), 4, 4 ); 
-    NP::Write(fold, "iinst_f4.npy", (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
+    if(inst.size() > 0 )     NP::Write(fold,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
+    if(iinst.size() > 0 )    NP::Write(fold,  IINST,    (double*)iinst.data(), iinst.size(), 4, 4 ); 
+    // _f4 just for debug comparisons : narrowing normally only done in memory for upload  
+    if(inst_f4.size() > 0 )  NP::Write(fold,  INST_F4,  (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
+    if(iinst_f4.size() > 0 ) NP::Write(fold,  IINST_F4, (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
 }
 
 
@@ -770,20 +769,28 @@ inline void stree::load( const char* base, const char* rel )
     std::string dir = FormPath(base, rel); 
     load_(dir.c_str()); 
 }
+
+template<typename S, typename T>
+inline void stree::ImportArray( std::vector<S>& vec, const NP* a )
+{
+    if(a == nullptr) return ; 
+    vec.resize(a->shape[0]);
+    memcpy( (T*)vec.data(),    a->cvalues<T>() ,    a->arr_bytes() );
+}
+
+template void stree::ImportArray<snode, int>(std::vector<snode>& , const NP* ); 
+template void stree::ImportArray<glm::tmat4x4<double>, double>(std::vector<glm::tmat4x4<double>>& , const NP* ); 
+template void stree::ImportArray<glm::tmat4x4<float>, float>(std::vector<glm::tmat4x4<float>>& , const NP* ); 
+template void stree::ImportArray<sfactor, int>(std::vector<sfactor>& , const NP* ); 
+
+
 inline void stree::load_( const char* fold )
 {
     std::cout << "stree::load_ " << ( fold ? fold : "-" ) << std::endl ; 
-    NP* a_nds = NP::Load(fold, NDS);
-    nds.resize(a_nds->shape[0]);
-    memcpy( (int*)nds.data(),    a_nds->cvalues<int>() ,    a_nds->arr_bytes() );
 
-    NP* a_m2w = NP::Load(fold, M2W);
-    m2w.resize(a_m2w->shape[0]);
-    memcpy( (double*)m2w.data(), a_m2w->cvalues<double>() , a_m2w->arr_bytes() );
-
-    NP* a_w2m = NP::Load(fold, W2M);
-    w2m.resize(a_w2m->shape[0]);
-    memcpy( (double*)w2m.data(), a_w2m->cvalues<double>() , a_w2m->arr_bytes() );
+    ImportArray<snode, int>(                  nds, NP::Load(fold, NDS)); 
+    ImportArray<glm::tmat4x4<double>, double>(m2w, NP::Load(fold, M2W)); 
+    ImportArray<glm::tmat4x4<double>, double>(w2m, NP::Load(fold, W2M)); 
 
     NP::ReadNames( fold, SONAME, soname );
     NP::ReadNames( fold, MTNAME, soname );
@@ -791,12 +798,14 @@ inline void stree::load_( const char* fold )
     NP::ReadNames( fold, SUBS,   subs );
 
     if(subs_freq) subs_freq->load(fold, SUBS_FREQ) ;
-
-    NP* a_factor = NP::Load(fold, FACTOR);
-    factor.resize(a_factor->shape[0]);
-    memcpy( (int*)factor.data(),    a_factor->cvalues<int>() ,    a_factor->arr_bytes() );
-
+    ImportArray<sfactor, int>( factor, NP::Load(fold, FACTOR) ); 
     if(mtfold) mtfold->load(fold, MTFOLD) ;
+
+    ImportArray<glm::tmat4x4<double>, double>(inst,   NP::Load(fold, INST)); 
+    ImportArray<glm::tmat4x4<double>, double>(iinst,  NP::Load(fold, IINST)); 
+    ImportArray<glm::tmat4x4<float>, float>(inst_f4,  NP::Load(fold, INST_F4)); 
+    ImportArray<glm::tmat4x4<float>, float>(iinst_f4, NP::Load(fold, IINST_F4)); 
+
 }
 
 inline int stree::Compare( const std::vector<int>& a, const std::vector<int>& b ) // static 
@@ -1084,7 +1093,7 @@ std::string stree::desc_factor() const
 stree::add_inst
 ----------------
 
-Hmm : need to do this after getting the sensor identifiers for each instance
+Canonically invoked from U4Tree::Create 
 
 **/
 
@@ -1125,6 +1134,7 @@ inline void stree::add_inst()
 
         unsigned gas_idx = i + 1 ; 
         std::cout 
+            << "stree::add_inst"
             << " i " << std::setw(3) << i 
             << " gas_idx " << std::setw(3) << gas_idx
             << " nodes.size " << std::setw(7) << nodes.size()

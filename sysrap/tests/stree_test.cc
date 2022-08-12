@@ -221,6 +221,8 @@ void test_get_factor_nodes(const stree& st)
         st.get_factor_nodes(nodes, i); 
         std::cout << std::setw(3) << i << " nodes " << nodes.size() << std::endl ;  
     }
+
+    std::cout << st.desc_factor() << std::endl ; 
 }
 
 
