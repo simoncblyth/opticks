@@ -151,8 +151,9 @@ struct stree
     void traverse(int nidx=0) const ; 
     void traverse_r(int nidx, int depth, int sibdex) const ; 
 
-    void orderSensors(); 
-    void orderSensors_r(int nidx, unsigned& sensor_count); 
+    void reorderSensors(); 
+    void reorderSensors_r(int nidx, unsigned& sensor_count); 
+    void get_sensor_id( std::vector<int>& sensor_id ) const ; 
 
     sfreq* make_progeny_freq(int nidx) const ; 
     sfreq* make_freq(const std::vector<int>& nodes ) const ; 
@@ -225,6 +226,7 @@ struct stree
 
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, unsigned gas_idx, int nidx ); 
     void add_inst(); 
+    void clear_inst(); 
 
 
 };
@@ -456,12 +458,26 @@ inline void stree::traverse_r(int nidx, int depth, int sibdex) const
 }
 
 
-inline void stree::orderSensors()
+/**
+stree::reorderSensors : changes nd.sensor_index across entire tree
+----------------------------------------------------------------------
+
+This attempts to mimic the preorder traverse sensor order 
+used by GGeo/CSG_GGeo to facilitate comparison. 
+
+When invoked this changes the nd.sensor_index compared 
+to the initial ordering of U4Tree::identifySensitiveInstances
+
+**/
+
+inline void stree::reorderSensors()
 {
+    std::cout << "[ stree::reorderSensors" << std::endl ; 
     unsigned sensor_count = 0 ; 
-    orderSensors_r(0, sensor_count); 
+    reorderSensors_r(0, sensor_count); 
+    std::cout << "] stree::reorderSensors sensor_count " << sensor_count << std::endl ; 
 }
-inline void stree::orderSensors_r(int nidx, unsigned& sensor_count)
+inline void stree::reorderSensors_r(int nidx, unsigned& sensor_count)
 {
     snode& nd = nds[nidx] ; 
     if( nd.sensor_id > -1 )
@@ -471,9 +487,17 @@ inline void stree::orderSensors_r(int nidx, unsigned& sensor_count)
     }
     std::vector<int> children ;
     get_children(children, nidx);
-    for(unsigned i=0 ; i < children.size() ; i++) orderSensors_r(children[i], sensor_count);
+    for(unsigned i=0 ; i < children.size() ; i++) reorderSensors_r(children[i], sensor_count);
 }
 
+inline void stree::get_sensor_id( std::vector<int>& sensor_id ) const 
+{
+    for(unsigned nidx=0 ; nidx < nds.size() ; nidx++)
+    {
+        const snode& nd = nds[nidx] ; 
+        if( nd.sensor_id > -1 ) sensor_id.push_back(nd.sensor_id) ; 
+    }
+}
 
 
 inline sfreq* stree::make_progeny_freq(int nidx) const 
@@ -1178,6 +1202,7 @@ inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>
     iinst.push_back(tr_w2m);
   
 }
+
 inline void stree::add_inst() 
 {
     glm::tmat4x4<double> tr_m2w(1.) ; 
@@ -1213,5 +1238,12 @@ inline void stree::add_inst()
     strid::Narrow( iinst_f4, iinst ); 
 }
 
+inline void stree::clear_inst() 
+{
+    inst.clear(); 
+    iinst.clear(); 
+    inst_f4.clear(); 
+    iinst_f4.clear(); 
+}
 
 

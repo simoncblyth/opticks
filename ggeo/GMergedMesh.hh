@@ -165,6 +165,10 @@ private:
     GPts*        m_pts ; 
     Opticks*     m_ok ; 
 
+public:
+    static void Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<unsigned>* iid ); 
+    void getInstancedIdentityBuffer_SensorIndex(std::vector<int>& sensor_index ) const  ; 
+    std::string descInstancedIdentityBuffer_SensorIndex() const ; 
      
 };
 

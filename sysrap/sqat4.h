@@ -70,7 +70,21 @@ struct qat4
     }
 
 
-    // with *left_multiply* the .w column is used
+    /**
+    qat4::left_multiply
+    ---------------------
+
+    Note that with *left_multiply* the .w column is used. 
+    SO MUST CLEAR IDENTITY INFO.
+
+    POTENTIAL FOR SLEEPER BUG HERE AS NORMALLY THE FLOAT 
+    VIEW OF INTEGER IDENTITY COLUMNS GIVES VERY SMALL VALUES 
+    SO IT WOULD NOT BE VISIBLE
+
+    This gets used less that *right_multiply* but it is 
+    used for normals in CSG/intersect_leaf.h 
+
+    **/
     QAT4_METHOD float3 left_multiply( const float3& v, const float w ) const 
     { 
         float3 ret;
@@ -90,11 +104,20 @@ struct qat4
     }
 
     /**
-           x  y  z  w 
-      q0   0  4  8  - 
-      q1   1  5  9  -
-      q2   2  6 10  -
-      q3   3  7 11  -
+    qat4::copy_columns_3x3
+    -----------------------
+
+    Canonical usage from CSGOptiX/IAS_Builder::Build 
+    Note that the 4th column is not read, so there
+    is no need to clear any 4th ".w" column identity info.
+
+    :: 
+     
+               x  y  z  w 
+          q0   0  4  8  - 
+          q1   1  5  9  -
+          q2   2  6 10  -
+          q3   3  7 11  -
 
     **/ 
     QAT4_METHOD void copy_columns_3x4( float* dst ) const 

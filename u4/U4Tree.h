@@ -83,6 +83,8 @@ inline U4Tree* U4Tree::Create( const G4VPhysicalVolume* const top, const U4Senso
     U4Tree* tree = new U4Tree(st, top, sid ) ;
     st->factorize(); 
     tree->identifySensitiveInstances(); 
+    st->reorderSensors();  // change nd.sensor_index to facilitate comparison with GGeo
+
     std::cout << st->desc_factor() << std::endl ; 
 
     st->add_inst(); 
@@ -285,6 +287,9 @@ to be added into the stree/snode.
 
 These values are subsequently used by instance creation and 
 are inserted into the instance transform fourth column. 
+
+NOTE that the nd.sensor_index may be subsequently changed by 
+stree::reorderSensors
 
 **/
 

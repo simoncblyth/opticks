@@ -154,7 +154,7 @@ int main(int argc, char** argv)
     test_GMergedMesh_Dump(mm); 
 
     //test_GMergedMesh_MakeComposite(mm); 
-    test_GMergedMesh_MakeLODComposite(mm,2) ; 
+    //test_GMergedMesh_MakeLODComposite(mm,2) ; 
     //test_GMergedMesh_MakeLODComposite(mm,3) ; 
 
 

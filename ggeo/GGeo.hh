@@ -117,10 +117,11 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         friend struct GSceneTest ; 
         friend struct GeoChain ; 
     public:
+        static constexpr const char* RELDIR = "GGeo" ; 
         static const plog::Severity LEVEL ; 
         static GGeo* Get();  // statically provides the last instanciated GGeo instance
         static GGeo* Load(Opticks* ok); 
-        static constexpr const char* RELDIR = "GGeo" ; 
+        static GGeo* LoadFromDir(Opticks* ok, const char* base, const char* reldir=RELDIR ); 
     public:
         // see GGeoCfg.hh
         static const char* PICKFACE ;   
@@ -234,6 +235,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         void init(); 
         void initLibs(); 
     public:
+        static std::string FormDir(const char* base, const char* reldir=RELDIR); 
+
         void save_to_dir(const char* base, const char* reldir=RELDIR ); 
         void save();
         void anaEvent(OpticksEvent* evt);

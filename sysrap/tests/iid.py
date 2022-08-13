@@ -38,6 +38,18 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
 
+    i = t.inst.view(np.int64) 
+    w2 = np.where( i[:,1,3] == 2 )[0]  
+    w3 = np.where( i[:,1,3] == 3 )[0]  
+    w4 = np.where( i[:,1,3] == 4 )[0]  
+    w5 = np.where( i[:,1,3] == 5 )[0]  
+    w6 = np.where( i[:,1,3] == 6 )[0]  
+    
+
+
+
+
+
 
 
 

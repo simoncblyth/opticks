@@ -51,6 +51,52 @@ void test_Encode_Decode(int mode=0)
     std::cout << strid::Desc<double, uint64_t>(tr) << std::endl ; 
 }
 
+
+/**
+Decoding 0.,0.,0.,1. is a hazard 
+
+test_Decode_Unset<double,uint64_t>
+
+                             0 0x                              0
+                             0 0x                              0
+                             0 0x                              0
+           4607182418800017408 0x               3ff0000000000000
+
+test_Decode_Unset<float, uint32_t>
+
+                             0 0x                              0
+                             0 0x                              0
+                             0 0x                              0
+                    1065353216 0x                       3f800000
+**/
+
+
+template <typename T, typename S>   // T:double/float S:uint64_t/uint32_t  
+void test_Decode_Unset(const char* label)
+{
+    std::cout << label  << std::endl ;
+    glm::tmat4x4<T> tr(1.); 
+    assert( strid::IsClear(tr)==true );
+
+    glm::tvec4<S> col3 ; 
+    strid::Decode(tr, col3 ); 
+
+    for(unsigned r=0 ; r < 4 ; r++) 
+        std::cout 
+            << std::setw(30) << col3[r] 
+            << " 0x " << std::setw(30) << std::hex << col3[r] << std::dec 
+            << std::endl 
+            ; 
+
+    std::cout << strid::Desc<T, S>(tr) << std::endl ; 
+}
+
+
+template void test_Decode_Unset<double, uint64_t>(const char* ) ; 
+template void test_Decode_Unset<float , uint32_t>(const char* ) ; 
+
+
+
 void test_Narrow(int mode)
 {
     std::cout << "test_Narrow " << mode << std::endl ;
@@ -72,11 +118,17 @@ void test_Narrow(int mode)
 
 int main(int argc, char** argv)
 {
+
+ 
     for(int mode=-1 ; mode < 2 ; mode++)
     {
         test_Encode_Decode(mode); 
         test_Narrow(mode);  
     }
+
+    test_Decode_Unset<double,uint64_t>("test_Decode_Unset<double,uint64_t>"); 
+    test_Decode_Unset<float, uint32_t>("test_Decode_Unset<float, uint32_t>"); 
+
 
     return 0 ; 
 }

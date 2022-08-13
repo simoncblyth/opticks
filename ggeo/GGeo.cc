@@ -136,6 +136,24 @@ GGeo* GGeo::Load(Opticks* ok) // static
     return ggeo ;  
 }
 
+GGeo* GGeo::LoadFromDir(Opticks* ok, const char* base, const char* reldir)  // static
+{
+    std::string s = FormDir(base, reldir); 
+    const char* dir = s.c_str(); 
+    const char* idpath = ok->getIdPath(); 
+    LOG(LEVEL) << "[ base " << base << " dir " << dir << " idpath " << idpath  ; 
+
+    assert( idpath == nullptr ); 
+    ok->setIdPath(dir); 
+
+    GGeo* gg = Load(ok) ; 
+
+    ok->setIdPath(nullptr); 
+    return gg ; 
+}
+
+
+
 
 /**
 GGeo::GGeo
@@ -704,6 +722,14 @@ void GGeo::prepareOpticks()
 }
 
 
+std::string GGeo::FormDir(const char* base, const char* reldir) // static 
+{
+    std::stringstream ss ; 
+    ss << base << "/" << reldir  ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+ 
 
 /**
 GGeo::save_to_dir
@@ -728,10 +754,9 @@ this method should not be used when using idpath in the traditional OPTICKS_KEY 
 
 void GGeo::save_to_dir(const char* base, const char* reldir)
 {
-    std::stringstream ss ; 
-    ss << base << "/" << reldir  ; 
-    std::string s = ss.str(); 
+    std::string s = FormDir(base, reldir); 
     const char* dir = s.c_str(); 
+
     LOG(LEVEL) << "[ base " << base << " dir " << dir  ; 
 
     const char* idpath = m_ok->getIdPath(); 
@@ -1546,7 +1571,16 @@ void GGeo::deferredCreateGParts()
     unsigned nmm = m_geolib->getNumMergedMesh(); 
     const char* base = m_ok->DebugGPartsPath(); 
 
+    int GGeo_deferredCreateGParts_SKIP = SSys::getenvint("GGeo_deferredCreateGParts_SKIP", -1 ); 
     int GParts_debug = SSys::getenvint("GParts_debug", ~0u ); 
+
+
+    if(GGeo_deferredCreateGParts_SKIP != -1) 
+    {
+        LOG(fatal) << "SKIPPING due to envvar GGeo_deferredCreateGParts_SKIP " << GGeo_deferredCreateGParts_SKIP ; 
+        return ; 
+    }
+
 
     LOG(LEVEL) 
         << " geolib.nmm " << nmm 

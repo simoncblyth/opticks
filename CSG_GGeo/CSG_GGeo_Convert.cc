@@ -2,6 +2,8 @@
 #include <iomanip>
 #include <vector>
 
+#include "stree.h"
+
 #include "SStr.hh"
 #include "SSys.hh"
 #include "NP.hh"
@@ -31,11 +33,11 @@
 #include "CSG_GGeo_Convert.h"
 const plog::Severity CSG_GGeo_Convert::LEVEL = PLOG::EnvLevel("CSG_GGeo_Convert", "DEBUG"); 
 
-CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo)
+CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo, const stree* st)
 {
     CSGFoundry* fd = new CSGFoundry  ; 
     LOG(LEVEL) << "[ convert ggeo " ; 
-    CSG_GGeo_Convert conv(fd, ggeo ) ; 
+    CSG_GGeo_Convert conv(fd, ggeo, st ) ; 
     conv.convert(); 
 
     bool ops = SSys::getenvbool("ONE_PRIM_SOLID"); 
@@ -57,10 +59,11 @@ CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo)
 
 
 
-CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ ) 
+CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_, const stree* st_ ) 
     : 
     foundry(foundry_),
     ggeo(ggeo_),
+    st(st_),
     reverse(SSys::getenvbool("REVERSE")),
     dump_ridx(SSys::getenvint("DUMP_RIDX", -1)),
     meta(nullptr)
@@ -193,7 +196,7 @@ gets called for all repeatIdx, including global repeatIdx 0
 Notice the flattening effect, this is consolidating the 
 transforms from all GMergedMesh into one foundry->inst vector of qat4.
 
-TODO: put the iid somewhere 
+TODO: add the iid sensorIndex  
 
 **/
 
@@ -205,10 +208,22 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     unsigned num_inst = mm->getNumITransforms() ;
     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer(); 
 
+    std::vector<int> sensor_index ; 
+    mm->getInstancedIdentityBuffer_SensorIndex(sensor_index); 
+
+    unsigned ni = iid->getShape(0); 
+    unsigned nj = iid->getShape(1); 
+    unsigned nk = iid->getShape(2); 
+    assert( ni == sensor_index.size() ); 
+    assert( nk == 4 ); 
+    
     LOG(LEVEL) 
         << " repeatIdx " << repeatIdx
         << " num_inst (GMergedMesh::getNumITransforms) " << num_inst 
         << " iid " << ( iid ? iid->getShapeString() : "-"  )
+        << " ni " << ni 
+        << " nj " << nj 
+        << " nk " << nk 
         ;
 
     //LOG(LEVEL) << " nmm " << nmm << " repeatIdx " << repeatIdx << " num_inst " << num_inst ; 

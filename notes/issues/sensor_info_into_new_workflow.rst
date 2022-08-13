@@ -6,10 +6,224 @@ sensor_info_into_new_workflow
 
 
 
+
+
+
+Transitional issue wrt sensor_id 
+-----------------------------------
+
+The old G4Opticks workflow relied on additional calls 
+to set the sensor_id given the sensor placement vector. 
+
+New workflow does away with the need for this API for sensor_id 
+using U4SensorIdentifier and U4SensorIdentifierDefault 
+
+BUT: that poses a transitional problem as in the current WITH_G4CXOPTICKS
+the sensor placement stuff is not being done.
+
+SO: I need to provide something similar from the stree ? In order to 
+get the sensor_id into the 4th column of instances. 
+
+AHH: bit not as simple as providing API as need to add to 4th column 
+of the inst.
+
+
+::
+
+    192 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
+    193 {
+    194     LOG(LEVEL) << " G4VPhysicalVolume world " << world ;
+    195     assert(world);
+    196     wd = world ;
+    197     tr = U4Tree::Create(world, SensorIdentifier ) ;
+    198 
+    199 #ifdef __APPLE__
+    200     return ;
+    201 #endif
+    202 
+    203     // GGeo creation done when starting from a gdml or live G4,  still needs Opticks instance
+    204     Opticks::Configure("--gparts_transform_offset --allownokey" );
+    205 
+    206     GGeo* gg_ = X4Geo::Translate(wd) ;
+    207     setGeometry(gg_);
+    208 }
+
+
+
+
+After stree::reorderSensors
+------------------------------
+
+* after reordering the sensor_index they match (modulo +1)
+
+
+::
+
+    cd ~/opticks/sysrap/tests
+    ./stree_test.sh build_run
+
+    [ stree::reorderSensors
+    ] stree::reorderSensors sensor_count 45612
+    stree::add_inst i   0 gas_idx   1 nodes.size   25600
+    stree::add_inst i   1 gas_idx   2 nodes.size   12615
+    stree::add_inst i   2 gas_idx   3 nodes.size    4997
+    stree::add_inst i   3 gas_idx   4 nodes.size    2400
+    stree::add_inst i   4 gas_idx   5 nodes.size     590
+    stree::add_inst i   5 gas_idx   6 nodes.size     590
+    stree::add_inst i   6 gas_idx   7 nodes.size     590
+    stree::add_inst i   7 gas_idx   8 nodes.size     590
+    stree::add_inst i   8 gas_idx   9 nodes.size     504
+    stree::save_ /tmp/blyth/opticks/ntds3/G4CXOpticks/stree_reorderSensors
+    epsilon:tests blyth$ 
+
+::
+
+    In [4]: t.inst.view(np.int64)[:,:,3]
+    Out[4]: 
+    array([[     1,      1,     -1,     -1],
+           [     2,      2, 300000,  17612],
+           [     3,      2, 300001,  17613],
+           [     4,      2, 300002,  17614],
+           [     5,      2, 300003,  17615],
+           ...,
+           [ 48473,     10,     -1,     -1],
+           [ 48474,     10,     -1,     -1],
+           [ 48475,     10,     -1,     -1],
+           [ 48476,     10,     -1,     -1],
+           [ 48477,     10,     -1,     -1]])
+
+
+    In [11]: w = np.where( t.inst.view(np.int64)[:,3,3]  > -1 )[0]
+
+    In [12]: w
+    Out[12]: array([    1,     2,     3,     4,     5, ..., 45608, 45609, 45610, 45611, 45612])
+
+    In [13]: w.shape
+    Out[13]: (45612,)
+
+    In [14]: t.inst.view(np.int64)[w,:,3]
+    Out[14]: 
+    array([[     2,      2, 300000,  17612],
+           [     3,      2, 300001,  17613],
+           [     4,      2, 300002,  17614],
+           [     5,      2, 300003,  17615],
+           [     6,      2, 300004,  17616],
+           ...,
+           [ 45609,      5,  32395,  45607],
+           [ 45610,      5,  32396,  45608],
+           [ 45611,      5,  32397,  45609],
+           [ 45612,      5,  32398,  45610],
+           [ 45613,      5,  32399,  45611]])
+
+    In [15]: t.inst.view(np.int64)[w,:,3].shape
+    Out[15]: (45612, 4)
+
+    In [16]: t.inst.view(np.int64)[w,3,3]
+    Out[16]: array([17612, 17613, 17614, 17615, 17616, ..., 45607, 45608, 45609, 45610, 45611])
+
+    In [17]: sidx   ## created by concatenating the values extract from iid 
+    Out[17]: array([17613, 17614, 17615, 17616, 17617, ..., 45608, 45609, 45610, 45611, 45612], dtype=uint32)
+
+    In [18]: np.all( t.inst.view(np.int64)[w,3,3] + 1 == sidx  )
+    Out[18]: True
+
+
+    i = t.inst.view(np.int64) 
+
+
+    In [51]: i[:,1,3]
+    Out[51]: array([ 1,  2,  2,  2,  2, ..., 10, 10, 10, 10, 10])
+
+    In [52]: np.unique( i[:,1,3], return_counts=True )
+    Out[52]: 
+    (array([    1,     2,     3,     4,     5,     6,     7,     8,     9,    10]),
+     array([    1, 25600, 12615,  4997,  2400,   590,   590,   590,   590,   504]))
+
+
+    w2 = np.where( i[:,1,3] == 2 )[0]  
+    w3 = np.where( i[:,1,3] == 3 )[0]  
+    w4 = np.where( i[:,1,3] == 4 )[0]  
+    w5 = np.where( i[:,1,3] == 5 )[0]  
+    w6 = np.where( i[:,1,3] == 6 )[0]  
+
+
+    In [2]: i[w2,:,3]
+    Out[2]: 
+    array([[     2,      2, 300000,  17612],
+           [     3,      2, 300001,  17613],
+           [     4,      2, 300002,  17614],
+           [     5,      2, 300003,  17615],
+           [     6,      2, 300004,  17616],
+           ...,
+           [ 25597,      2, 325595,  43207],
+           [ 25598,      2, 325596,  43208],
+           [ 25599,      2, 325597,  43209],
+           [ 25600,      2, 325598,  43210],
+           [ 25601,      2, 325599,  43211]])
+
+    In [3]: i[w3,:,3]
+    Out[3]: 
+    array([[25602,     3,     2,     2],
+           [25603,     3,     4,     4],
+           [25604,     3,     6,     6],
+           [25605,     3,    21,    21],
+           [25606,     3,    22,    22],
+           ...,
+           [38212,     3, 17586, 17586],
+           [38213,     3, 17587, 17587],
+           [38214,     3, 17588, 17588],
+           [38215,     3, 17589, 17589],
+           [38216,     3, 17590, 17590]])
+
+    In [4]: i[w4,:,3]
+    Out[4]: 
+    array([[38217,     4,     0,     0],
+           [38218,     4,     1,     1],
+           [38219,     4,     3,     3],
+           [38220,     4,     5,     5],
+           [38221,     4,     7,     7],
+           ...,
+           [43209,     4, 17607, 17607],
+           [43210,     4, 17608, 17608],
+           [43211,     4, 17609, 17609],
+           [43212,     4, 17610, 17610],
+           [43213,     4, 17611, 17611]])
+
+    In [5]: i[w5,:,3]
+    Out[5]: 
+    array([[43214,     5, 30000, 43212],
+           [43215,     5, 30001, 43213],
+           [43216,     5, 30002, 43214],
+           [43217,     5, 30003, 43215],
+           [43218,     5, 30004, 43216],
+           ...,
+           [45609,     5, 32395, 45607],
+           [45610,     5, 32396, 45608],
+           [45611,     5, 32397, 45609],
+           [45612,     5, 32398, 45610],
+           [45613,     5, 32399, 45611]])
+
+    In [6]: i[w6,:,3]
+    Out[6]: 
+    array([[45614,     6,    -1,    -1],
+           [45615,     6,    -1,    -1],
+           [45616,     6,    -1,    -1],
+           [45617,     6,    -1,    -1],
+           [45618,     6,    -1,    -1],
+           ...,
+           [46199,     6,    -1,    -1],
+           [46200,     6,    -1,    -1],
+           [46201,     6,    -1,    -1],
+           [46202,     6,    -1,    -1],
+           [46203,     6,    -1,    -1]])
+
+
+
 Compare GGeo/iid with the stree/inst
 ---------------------------------------
 
 * GGeo/iid orders sensors in preorder of the placements
+* added stree::reorderSensors to duplicate this 
 
 
 ::
@@ -52,8 +266,6 @@ Compare GGeo/iid with the stree/inst
     In [18]: t.inst.view(np.int64)[25590:25610,2,3]
     Out[18]: array([325589, 325590, 325591, 325592, 325593, 325594, 325595, 325596, 325597, 325598, 325599,      2,      4,      6,     21,     22,     23,     24,     25,     26])
 
-
-
     In [28]: inst.view(np.int64)[25590:25700,:,3]
     Out[28]: 
     array([[ 25591,      2, 325589,  25589],
@@ -74,7 +286,7 @@ Compare GGeo/iid with the stree/inst
 
 
 
-G4Opticks::getHit::
+G4Opticks::getHit HMM it was a mistake to treat identifier like efficiencies, as somehow more fundamental::
 
     1357     // via m_sensorlib 
     1358     hit->sensor_identifier = getSensorIdentifier(pflag.sensorIndex);
@@ -379,6 +591,49 @@ HMM: probably sensor info needs to come via InstancedIdentityBuffer ?::
      224         foundry->addInstance(tr16, gas_idx, ias_idx);
      225     }
      226 }
+
+
+
+* HMM: threading it the sensor_id all the way thru GGeo seems like a lot of effort 
+  for just a simple mapping from sensor_index to sensor_id (especially as this 
+  code does not have long to live)
+
+* so instead can just have the sensor_id/sensor_index mapping array 
+  as an input to the CG conversion 
+
+Prep for bringing sensor_index and sensor_id to instance fourth column 
+with GMergedMesh::getInstancedIdentityBuffer_SensorIndex for use 
+from the CSG_GGeo_Convert::addInstances::
+
+     203 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
+     204 {
+     205     unsigned nmm = ggeo->getNumMergedMesh();
+     206     assert( repeatIdx < nmm );
+     207     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx);
+     208     unsigned num_inst = mm->getNumITransforms() ;
+     209     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer();
+     210 
+     211     std::vector<int> sensor_index ;
+     212     mm->getInstancedIdentityBuffer_SensorIndex(sensor_index);
+     213     
+     214     unsigned ni = iid->getShape(0); 
+     215     unsigned nj = iid->getShape(1);
+     216     unsigned nk = iid->getShape(2);
+     217     assert( ni == sensor_index.size() );
+     218     assert( nk == 4 );
+     219     
+     220     LOG(LEVEL)
+     221         << " repeatIdx " << repeatIdx
+     222         << " num_inst (GMergedMesh::getNumITransforms) " << num_inst
+     223         << " iid " << ( iid ? iid->getShapeString() : "-"  )
+     224         << " ni " << ni 
+     225         << " nj " << nj     
+     226         << " nk " << nk    
+     227         ;
+     228         
+
+     
+
 
 
 ::

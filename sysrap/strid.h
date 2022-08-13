@@ -68,10 +68,20 @@ inline void strid::Encode(      glm::tmat4x4<double>& tr, const glm::tvec4<uint6
     double* tr00 = glm::value_ptr(tr) ; 
     for(int r=0 ; r < 4 ; r++) Encode(  tr00+4*r+3, col3[r] ) ; 
 } 
+
+/**
+strid::Encode
+---------------
+
+Formerly kludge skipped e=0 for some reason. 
+
+Note that without encoding the double 0.,0.,0.,1. 
+of the fourth column 
+
+**/
+
 inline void strid::Encode( double* ptr, uint64_t e)
 {
-    // if(e == 0) return ; // kludge to keep [:,3,3] 1. for simpler comparison with GGeo cf.inst  
-    // dont disallow zero : want to be able to encode zero 
     uif64_t uif ; 
     uif.u = e ; 
     *ptr = uif.f ; 

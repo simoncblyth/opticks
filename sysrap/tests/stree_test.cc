@@ -229,6 +229,57 @@ void test_traverse(const stree& st)
 {
     st.traverse(); 
 }
+void test_reorderSensors(stree& st)
+{
+    st.reorderSensors(); 
+    st.clear_inst(); 
+    st.add_inst(); 
+
+    st.save(STBASE, "stree_reorderSensors" );  
+}
+
+void test_get_sensor_id(const stree& st)
+{
+    std::vector<int> sensor_id ; 
+    st.get_sensor_id(sensor_id); 
+    unsigned num_sensor = sensor_id.size() ; 
+    std::cout << "test_get_sensor_id  num_sensor " << num_sensor << std::endl ; 
+
+    unsigned edge = 10 ; 
+
+    int pid = -1 ; 
+    int offset = 0 ; 
+
+    for(unsigned i=0 ; i < num_sensor  ; i++)
+    {
+        int sid = sensor_id[i] ; 
+        int nid = i < num_sensor - 1 ? sensor_id[i+1] : sid ; 
+
+        bool head = i < edge ; 
+        bool tail = i > (num_sensor - edge) ; 
+        bool tran = std::abs(sid - pid) > 1 || std::abs( sid - nid ) > 1  ; 
+
+        if(tran) offset = 0 ; 
+        offset += 1 ;
+
+        bool post_tran = offset < 5 ; 
+ 
+
+        if( head || tail || tran || post_tran  ) 
+        {
+            std::cout 
+                << " i " << std::setw(7) << i 
+                << " sensor_id " << std::setw(7) << sid 
+                << std::endl ; 
+         }
+         else if ( i == edge ) 
+         {
+            std::cout  << "..." << std::endl ; 
+         }
+         pid = sid ; 
+
+    }
+}
 
 
 int main(int argc, char** argv)
@@ -246,9 +297,11 @@ int main(int argc, char** argv)
     test_find_lvid_node(st); 
     test_desc_progeny(st, "sWall"); 
     test_get_factor_nodes(st); 
+    test_traverse(st); 
+    test_reorderSensors(st); 
     */
 
-    test_traverse(st); 
+    test_get_sensor_id(st); 
 
 
     return 0 ; 

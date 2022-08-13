@@ -1594,3 +1594,71 @@ std::string GMergedMesh::Desc(const GMergedMesh* mm)
 
 
 
+
+void GMergedMesh::Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<unsigned>* iid ) // static
+{
+    unsigned ni = iid->getShape(0); 
+    unsigned nj = iid->getShape(1); 
+    unsigned nk = iid->getShape(2); 
+    assert( nk == 4 ); 
+    LOG(info) << " ni " << ni << " nj " << nj << " nk " << nk ; 
+
+    col4.resize(ni); 
+
+    for(unsigned i=0 ; i < ni ; i++ )
+    {
+        int val = -1 ; 
+        for(unsigned j=0 ; j < nj ; j++ )
+        {
+            const unsigned* vv = iid->getValuesConst(i, j); 
+            if( vv[3] > 0 ) val = vv[3] ; 
+        }
+        col4[i] = val ; 
+    }
+} 
+
+void GMergedMesh::getInstancedIdentityBuffer_SensorIndex(std::vector<int>& sensor_index ) const 
+{
+    NPY<unsigned>* iid = getInstancedIdentityBuffer();
+    Get3DFouthColumnNonZero(sensor_index, iid ); 
+}
+
+
+std::string GMergedMesh::descInstancedIdentityBuffer_SensorIndex() const 
+{
+    std::vector<int> sensor_index ; 
+    getInstancedIdentityBuffer_SensorIndex(sensor_index); 
+
+    NPY<unsigned>* iid = getInstancedIdentityBuffer();
+    unsigned ni = iid->getShape(0); 
+    unsigned nj = iid->getShape(1); 
+    unsigned nk = iid->getShape(2); 
+    assert( nk == 4 ); 
+    assert( sensor_index.size() == ni ); 
+
+    LOG(info) << " ni " << ni << " nj " << nj << " nk " << nk ; 
+
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < std::min(ni, 10u) ; i++ )
+    {
+        ss << " i " << i << " sensor_index " << sensor_index[i] << std::endl ; 
+        for(unsigned j=0 ; j < nj ; j++ )
+        {
+            const unsigned* vv = iid->getValuesConst(i, j); 
+            ss 
+               << " " << std::setw(7) << vv[0] 
+               << " " << std::setw(7) << vv[1] 
+               << " " << std::setw(7) << vv[2] 
+               << " " << std::setw(7) << vv[3] 
+               << std::endl 
+               ;
+        }
+        ss << std::endl ; 
+    }
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+

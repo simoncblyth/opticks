@@ -46,6 +46,8 @@ set(TEST_SOURCES
     GPtTest.cc
     GGeoNCSGTest.cc
 
+    GGeoLoadFromDirTest.cc 
+
 
     deferredCreateGPartsTest.cc
 

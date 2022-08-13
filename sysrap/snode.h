@@ -21,6 +21,8 @@ struct snode
     int copyno ; 
     int sensor_id ; 
     int sensor_index ; 
+
+    // repeat index 
     // material index ... 
 
     std::string desc() const ; 

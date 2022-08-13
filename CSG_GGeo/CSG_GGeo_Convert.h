@@ -5,7 +5,7 @@
 
 #include "CSG_GGEO_API_EXPORT.hh"
 
-
+struct stree ; 
 struct float4 ; 
 struct CSGFoundry ;
 struct CSGSolid ; 
@@ -17,17 +17,18 @@ class GParts ;
 
 struct CSG_GGEO_API CSG_GGeo_Convert
 {   
-    static CSGFoundry* Translate(const GGeo* ggeo); 
+    static CSGFoundry* Translate(const GGeo* ggeo, const stree* st=nullptr ); 
     static const plog::Severity LEVEL ; 
     static unsigned CountSolidPrim( const GParts* comp ); 
 
     CSGFoundry* foundry ; 
     const GGeo* ggeo ; 
+    const stree* st ; 
     bool reverse ; 
     int dump_ridx ; 
     const char* meta ; 
 
-    CSG_GGeo_Convert(CSGFoundry* foundry, const GGeo* ggeo ) ; 
+    CSG_GGeo_Convert(CSGFoundry* foundry, const GGeo* ggeo, const stree* st=nullptr ) ; 
     void init();
 
     void convert();   
