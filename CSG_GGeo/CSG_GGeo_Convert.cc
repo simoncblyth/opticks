@@ -200,6 +200,8 @@ TODO: add the iid sensorIndex
 
 **/
 
+
+
 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
 {
     unsigned nmm = ggeo->getNumMergedMesh(); 
@@ -211,10 +213,19 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     std::vector<int> sensor_index ; 
     mm->getInstancedIdentityBuffer_SensorIndex(sensor_index); 
 
+    bool one_based_index = true ;
+    std::vector<int> sensor_id ;
+    assert(st); 
+    st->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index);
+
+    LOG(LEVEL) << stree::DescSensor( sensor_id, sensor_index ) ; 
+
     unsigned ni = iid->getShape(0); 
     unsigned nj = iid->getShape(1); 
     unsigned nk = iid->getShape(2); 
     assert( ni == sensor_index.size() ); 
+    assert( num_inst == sensor_index.size() ); 
+    assert( num_inst == sensor_id.size() ); 
     assert( nk == 4 ); 
     
     LOG(LEVEL) 
@@ -230,15 +241,20 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
 
     for(unsigned i=0 ; i < num_inst ; i++)
     {
+        int s_identifier = sensor_id[i] ;  
+        int s_index = sensor_index[i] ;  
+        assert( s_index > 0 );   // 1-based index
+        assert( s_identifier > -1 ); 
+
         glm::mat4 it = mm->getITransform_(i); 
     
         const float* tr16 = glm::value_ptr(it) ; 
         unsigned gas_idx = repeatIdx ; 
-        unsigned ias_idx = 0 ; 
-
-        foundry->addInstance(tr16, gas_idx, ias_idx); 
+        foundry->addInstance(tr16, gas_idx, s_identifier, s_index ); 
     }
 }
+
+
 
 /**
 CSG_GGeo_Convert::CountSolidPrim

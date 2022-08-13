@@ -174,7 +174,6 @@ void CSGMaker::makeDemoGrid()
     float gridscale = 100.f ; 
     std::array<int,9> grid = {{ -10,11,2,  -10,11,2, -10,11,2  }} ;
 
-    unsigned ias_idx = 0 ; 
     unsigned count = 0 ; 
 
     for(int i=grid[0] ; i < grid[1] ; i+=grid[2] ){
@@ -188,8 +187,10 @@ void CSGMaker::makeDemoGrid()
         
         unsigned ins_idx = fd->inst.size() ;    
         unsigned gas_idx = count % num_solids ; 
+        unsigned sensor_identifier = 0 ;   // HMM: thats a valid identifier ? 
+        unsigned sensor_index = 0 ; 
 
-        instance.setIdentity( ins_idx, gas_idx, ias_idx );  
+        instance.setIdentity( ins_idx, gas_idx, sensor_identifier, sensor_index );  
         fd->inst.push_back( instance );  
      
         count++ ; 

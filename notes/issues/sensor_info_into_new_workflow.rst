@@ -7,6 +7,85 @@ sensor_info_into_new_workflow
 
 
 
+Get the expected id ranges when realize that the sensor_index is 1-based
+----------------------------------------------------------------------------
+
+The below is teleporting in the sensor_id::
+
+     71     NP* sensor_id = NP::Load("/tmp/blyth/opticks/ntds3/G4CXOpticks/stree_reorderSensors/sensor_id.npy") ;
+     72     const int* sid = sensor_id->cvalues<int>();
+     73     unsigned num_sid = sensor_id->shape[0] ;
+
+TODO: need to grab that from the stree. 
+
+
+::
+
+     cd ~/opticks/GGeo/tests
+     ./GGeoLoadFromDirTest.sh 
+
+     ridx   0 mm 0x7f9f8e408d00 num_inst       1 iid        1,3089,4 sensor_index       1 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   1 mm 0x7f9f8e486360 num_inst   25600 iid       25600,5,4 sensor_index   25600 idx_mn   17613 idx_mx   43212 id_mn  300000 id_mx  325599
+     ridx   2 mm 0x7f9f8e489d70 num_inst   12615 iid       12615,7,4 sensor_index   12615 idx_mn       3 idx_mx   17591 id_mn       2 id_mx   17590
+     ridx   3 mm 0x7f9f8e735360 num_inst    4997 iid        4997,7,4 sensor_index    4997 idx_mn       1 idx_mx   17612 id_mn       0 id_mx   17611
+     ridx   4 mm 0x7f9f8e739340 num_inst    2400 iid        2400,6,4 sensor_index    2400 idx_mn   43213 idx_mx   45612 id_mn   30000 id_mx   32399
+     ridx   5 mm 0x7f9f8e73cff0 num_inst     590 iid         590,1,4 sensor_index     590 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   6 mm 0x7f9f8e73fd30 num_inst     590 iid         590,1,4 sensor_index     590 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   7 mm 0x7f9f8e742af0 num_inst     590 iid         590,1,4 sensor_index     590 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   8 mm 0x7f9f8e502de0 num_inst     590 iid         590,1,4 sensor_index     590 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   9 mm 0x7f9f8e5067f0 num_inst     504 iid       504,130,4 sensor_index     504 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+    epsilon:tests blyth$ 
+
+
+
+Not the expected id ranges
+----------------------------
+
+::
+
+    2022-08-13 18:03:06.643 INFO  [27510975] [main@68]  ggeo 0x7fb3f55222b0 nmm 10 ridx -1
+     ridx   0 mm 0x7fb3f54147f0 num_inst       1 iid        1,3089,4 sensor_index       1 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   1 mm 0x7fb3f81263d0 num_inst   25600 iid       25600,5,4 sensor_index   25600 idx_mn   17613 idx_mx   43212 id_mn   30000 id_mx  325599
+     ridx   2 mm 0x7fb3f8129e00 num_inst   12615 iid       12615,7,4 sensor_index   12615 idx_mn       3 idx_mx   17591 id_mn       3 id_mx   17591
+     ridx   3 mm 0x7fb3f812db90 num_inst    4997 iid        4997,7,4 sensor_index    4997 idx_mn       1 idx_mx   17612 id_mn       1 id_mx  300000
+     ridx   4 mm 0x7fb3f5418420 num_inst    2400 iid        2400,6,4 sensor_index    2400 idx_mn   43213 idx_mx   45612 id_mn       0 id_mx   32399
+     ridx   5 mm 0x7fb3f541c0a0 num_inst     590 iid         590,1,4 sensor_index     590 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   6 mm 0x7fb3f541edb0 num_inst     590 iid         590,1,4 sensor_index     590 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   7 mm 0x7fb3f5421ba0 num_inst     590 iid         590,1,4 sensor_index     590 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   8 mm 0x7fb3f54249b0 num_inst     590 iid         590,1,4 sensor_index     590 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+     ridx   9 mm 0x7fb3f54283c0 num_inst     504 iid       504,130,4 sensor_index     504 idx_mn      -1 idx_mx      -1 id_mn      -1 id_mx      -1
+    epsilon:tests blyth$ vi GGeoLoadFromDirTest.cc
+
+::
+
+    In [1]: a = np.load("/tmp/blyth/opticks/ntds3/G4CXOpticks/stree_reorderSensors/sensor_id.npy")
+
+    In [2]: a 
+    Out[2]: array([    0,     1,     2, ..., 32397, 32398, 32399], dtype=int32)
+
+    In [3]: np.where( np.diff(a) != 1 )
+    Out[3]: (array([17611, 43211]),)
+
+    In [4]: a[0:17612]
+    Out[4]: array([    0,     1,     2, ..., 17609, 17610, 17611], dtype=int32)
+
+    In [6]: np.all( a[0:17612] == np.arange(17612) )
+    Out[6]: True
+
+    In [11]: a[17612:43212+1]
+    Out[11]: array([300000, 300001, 300002, ..., 325598, 325599,  30000], dtype=int32)
+
+    In [15]: a[43212:43212+2400]
+    Out[15]: array([30000, 30001, 30002, ..., 32397, 32398, 32399], dtype=int32)
+
+    In [16]: a[43212:43212+2400+1]
+    Out[16]: array([30000, 30001, 30002, ..., 32397, 32398, 32399], dtype=int32)
+
+
+* expected three species of identifiers
+
+
+
 
 
 Transitional issue wrt sensor_id 

@@ -317,14 +317,10 @@ void CSGCopy::copySolidInstances()
         unsigned sInstIdx = i ; 
         const qat4* ins = src->getInst(sInstIdx) ; 
 
-        unsigned ins_idx ; 
-        unsigned gas_idx ; 
-        unsigned ias_idx ;         
-
-        ins->getIdentity(ins_idx, gas_idx, ias_idx );
+        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        ins->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index ); 
 
         assert( ins_idx == sInstIdx ); 
-        assert( ias_idx == 0u ); 
         assert( gas_idx < sNumSolid ); 
 
         int sSolidIdx = gas_idx ; 
@@ -333,7 +329,7 @@ void CSGCopy::copySolidInstances()
         if( dSolidIdx > -1 )
         {
             const float* tr16 = ins->cdata(); 
-            dst->addInstance(tr16,  dSolidIdx, ias_idx ); 
+            dst->addInstance(tr16,  gas_idx, sensor_identifier, sensor_index ); 
         }
     }
 }

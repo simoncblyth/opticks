@@ -105,6 +105,7 @@ struct stree
     static constexpr const char* IINST = "iinst.npy" ; 
     static constexpr const char* INST_F4 = "inst_f4.npy" ; 
     static constexpr const char* IINST_F4 = "iinst_f4.npy" ; 
+    static constexpr const char* SENSOR_ID = "sensor_id.npy" ; 
 
     std::vector<std::string> mtname ;       // unique material names
     std::vector<std::string> soname ;       // unique solid names
@@ -115,7 +116,10 @@ struct stree
     std::vector<std::string> digs ;         // per-node digest for all nodes  
     std::vector<std::string> subs ;         // subtree digest for all nodes
     std::vector<sfactor> factor ;          // small number of unique subtree factor, digest and freq  
+    std::vector<int> sensor_id ;           // updated by reorderSensors
 
+
+    unsigned sensor_count ; 
     sfreq* subs_freq ;                      // occurence frequency of subtree digests in entire tree 
     NPFold* mtfold ;                        // material properties
 
@@ -127,10 +131,6 @@ struct stree
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
     std::vector<glm::tmat4x4<double>> iinst ; 
     std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
-
-
-
-
 
 
 
@@ -154,6 +154,10 @@ struct stree
     void reorderSensors(); 
     void reorderSensors_r(int nidx, unsigned& sensor_count); 
     void get_sensor_id( std::vector<int>& sensor_id ) const ; 
+    std::string desc_sensor_id(unsigned edge=10) const ; 
+    static std::string DescSensor( const std::vector<int>& sensor_id, const std::vector<int>& sensor_idx, unsigned edge=10 ); 
+
+    void lookup_sensor_identifier( std::vector<int>& arg_sensor_identifier, const std::vector<int>& arg_sensor_index, bool one_based_index ) const ; 
 
     sfreq* make_progeny_freq(int nidx) const ; 
     sfreq* make_freq(const std::vector<int>& nodes ) const ; 
@@ -204,8 +208,8 @@ struct stree
     static void ImportArray( std::vector<S>& vec, const NP* a ); 
 
     void load_( const char* fold );
-    void load( const char* base, const char* rel=nullptr );
-
+    void load( const char* base, const char* reldir=RELDIR );
+    static stree* Load(const char* base, const char* reldir=RELDIR ); 
 
     static int Compare( const std::vector<int>& a, const std::vector<int>& b ) ; 
     static std::string Desc(const std::vector<int>& a, unsigned edgeitems=10 ) ; 
@@ -235,6 +239,7 @@ struct stree
 
 inline stree::stree()
     :
+    sensor_count(0),
     subs_freq(new sfreq),
     mtfold(new NPFold)
 {
@@ -473,9 +478,12 @@ to the initial ordering of U4Tree::identifySensitiveInstances
 inline void stree::reorderSensors()
 {
     std::cout << "[ stree::reorderSensors" << std::endl ; 
-    unsigned sensor_count = 0 ; 
+    sensor_count = 0 ; 
     reorderSensors_r(0, sensor_count); 
     std::cout << "] stree::reorderSensors sensor_count " << sensor_count << std::endl ; 
+
+    get_sensor_id(sensor_id); 
+    assert( sensor_count == sensor_id.size() ); 
 }
 inline void stree::reorderSensors_r(int nidx, unsigned& sensor_count)
 {
@@ -490,14 +498,125 @@ inline void stree::reorderSensors_r(int nidx, unsigned& sensor_count)
     for(unsigned i=0 ; i < children.size() ; i++) reorderSensors_r(children[i], sensor_count);
 }
 
+
+/**
+stree::get_sensor_id
+----------------------
+
+List *sensor_id* obtained by iterating over all *nds* of the geometry.
+As the *nds* vector is in preorder traversal order, the order of 
+the *sensor_id* should correspond to *sensor_index* from 0 to num_sensor-1. 
+
+**/
+
 inline void stree::get_sensor_id( std::vector<int>& sensor_id ) const 
 {
+    sensor_id.clear(); 
     for(unsigned nidx=0 ; nidx < nds.size() ; nidx++)
     {
         const snode& nd = nds[nidx] ; 
         if( nd.sensor_id > -1 ) sensor_id.push_back(nd.sensor_id) ; 
     }
 }
+
+std::string stree::desc_sensor_id(unsigned edge) const 
+{
+    unsigned num_sid = sensor_id.size() ; 
+    std::stringstream ss ; 
+    ss << "stree::desc_sensor_id sensor_id.size " 
+       << num_sid 
+       << std::endl 
+       << "[" 
+       << std::endl 
+       ; 
+
+    int offset = -1 ;  
+    for(unsigned i=0 ; i < num_sid ; i++)
+    {  
+        int sid = sensor_id[i] ;  
+        int nid = i < num_sid - 1 ? sensor_id[i+1] : sid ;  
+
+        bool head = i < edge ; 
+        bool tail = (i > (num_sid - edge)) ;  
+        bool tran = std::abs(nid - sid) > 1 ; 
+
+        if(tran) offset=0 ; 
+        bool tran_post = offset > -1 && offset < 4 ; 
+
+        if(head || tail || tran || tran_post) 
+        {
+            ss << std::setw(7) << i << " sid " << std::setw(8) << sid << std::endl ; 
+        }
+        else if(i == edge) 
+        {
+            ss << "..." << std::endl ; 
+        }
+        offset += 1 ; 
+    }   
+    ss << "]" ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+std::string stree::DescSensor( const std::vector<int>& sensor_identifier, const std::vector<int>& sensor_index, unsigned edge )  // static
+{
+    assert( sensor_identifier.size() == sensor_index.size() ); 
+    unsigned num_sensor = sensor_identifier.size() ; 
+
+    std::stringstream ss ; 
+    ss << "stree::DescSensor num_sensor " << num_sensor << std::endl ;   
+    unsigned offset = 0 ; 
+    for(unsigned i=0 ; i < num_sensor ; i++)
+    {
+        int s_index      = sensor_index[i] ;  
+        int s_identifier = sensor_identifier[i] ;  
+        int n_identifier = i < num_sensor - 1 ? sensor_identifier[i+1] : s_identifier ; 
+
+        bool tran = std::abs(n_identifier - s_identifier) > 1 ;  
+        if(tran) offset = 0 ; 
+
+        if( i < edge || i > num_sensor - edge || tran ) 
+        {
+            ss
+                << " i " << std::setw(7) << i 
+                << " s_index " << std::setw(7) << s_index
+                << " s_identifier " << std::setw(7) << s_identifier
+                << std::endl 
+                ;
+        }
+        else if( i == edge || i == num_sensor - edge ) 
+        {
+            ss << "..." << std::endl ; 
+        }
+        offset += 1 ; 
+    }
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+
+
+/**
+stree::lookup_sensor_identifier
+---------------------------------
+
+The arg_sensor_identifier array is resized to match arg_sensor_index and 
+populated with sensor_id values. 
+
+**/
+
+inline void stree::lookup_sensor_identifier( std::vector<int>& arg_sensor_identifier, const std::vector<int>& arg_sensor_index, bool one_based_index ) const 
+{
+    arg_sensor_identifier.resize(arg_sensor_index.size()); 
+    for(unsigned i=0 ; i < arg_sensor_index.size() ; i++)
+    {   
+        int s_idx = one_based_index ? arg_sensor_index[i] - 1 : arg_sensor_index[i] ;  // "correct" 1-based to be 0-based 
+        arg_sensor_identifier[i] = s_idx > -1 ? sensor_id[s_idx] : -1 ; 
+    }   
+} 
 
 
 inline sfreq* stree::make_progeny_freq(int nidx) const 
@@ -838,18 +957,28 @@ inline void stree::save_( const char* fold ) const
     NP::Write<int>(fold, FACTOR, (int*)factor.data(), factor.size(), sfactor::NV ); 
     if(mtfold) mtfold->save(fold, MTFOLD) ; 
 
+
     if(inst.size() > 0 )     NP::Write(fold,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
     if(iinst.size() > 0 )    NP::Write(fold,  IINST,    (double*)iinst.data(), iinst.size(), 4, 4 ); 
     // _f4 just for debug comparisons : narrowing normally only done in memory for upload  
     if(inst_f4.size() > 0 )  NP::Write(fold,  INST_F4,  (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
     if(iinst_f4.size() > 0 ) NP::Write(fold,  IINST_F4, (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
+
+    assert( sensor_count == sensor_id.size() ); 
+    if(sensor_id.size() > 0 ) NP::Write<int>(    fold, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
 }
 
-
-inline void stree::load( const char* base, const char* rel ) 
+inline void stree::load( const char* base, const char* reldir ) 
 {
-    std::string dir = FormPath(base, rel); 
+    std::string dir = FormPath(base, reldir ); 
     load_(dir.c_str()); 
+}
+
+inline stree* stree::Load(const char* base, const char* reldir ) // static 
+{
+    stree* st = new stree ; 
+    st->load(base, reldir); 
+    return st ; 
 }
 
 template<typename S, typename T>
@@ -861,6 +990,7 @@ inline void stree::ImportArray( std::vector<S>& vec, const NP* a )
 }
 
 template void stree::ImportArray<snode, int>(std::vector<snode>& , const NP* ); 
+template void stree::ImportArray<int  , int>(std::vector<int>&   , const NP* ); 
 template void stree::ImportArray<glm::tmat4x4<double>, double>(std::vector<glm::tmat4x4<double>>& , const NP* ); 
 template void stree::ImportArray<glm::tmat4x4<float>, float>(std::vector<glm::tmat4x4<float>>& , const NP* ); 
 template void stree::ImportArray<sfactor, int>(std::vector<sfactor>& , const NP* ); 
@@ -887,6 +1017,9 @@ inline void stree::load_( const char* fold )
     ImportArray<glm::tmat4x4<double>, double>(iinst,  NP::Load(fold, IINST)); 
     ImportArray<glm::tmat4x4<float>, float>(inst_f4,  NP::Load(fold, INST_F4)); 
     ImportArray<glm::tmat4x4<float>, float>(iinst_f4, NP::Load(fold, IINST_F4)); 
+
+    ImportArray<int, int>( sensor_id, NP::Load(fold, SENSOR_ID) );
+    sensor_count = sensor_id.size(); 
 
 }
 

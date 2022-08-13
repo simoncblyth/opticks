@@ -140,14 +140,14 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
 {
     const qat4* _t = foundry->getInst(inst_idx); 
 
-    unsigned ins_idx, gas_idx, ias_idx ; 
-    _t->getIdentity(ins_idx, gas_idx, ias_idx )  ;
+    unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+    _t->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 
     assert( int(ins_idx) == inst_idx ); 
     fr.set_inst(inst_idx); 
    
     // HMM: these values are already there inside the matrices ? 
-    fr.set_ins_gas_ias(ins_idx, gas_idx, ias_idx ) ; 
+    fr.set_identity(ins_idx, gas_idx, sensor_identifier, sensor_index ) ; 
 
     qat4 t(_t->cdata());   // copy the instance (transform and identity info)
     const qat4* v = Tran<double>::Invert(&t);     // identity gets cleared in here 
@@ -260,8 +260,8 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
 
     qat4 q(t->cdata());   // copy the instance (transform and identity info)
 
-    unsigned ins_idx, gas_idx, ias_idx ; 
-    q.getIdentity(ins_idx, gas_idx, ias_idx )  ;
+    unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+    q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
     q.clearIdentity();           // clear before doing any transforming 
 
 
@@ -275,7 +275,9 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
     LOG(LEVEL) 
         << " q " << q 
         << " ins_idx " << ins_idx
-        << " ias_idx " << ias_idx
+        << " gas_idx " << gas_idx
+        << " sensor_identifier " << sensor_identifier
+        << " sensor_index " << sensor_index
         ; 
     float4 globalCE = gpr.ce(); 
     gce.x = globalCE.x ; 

@@ -348,7 +348,7 @@ void Six::createIAS_Standard()
     unsigned num_ias = foundry->getNumUniqueIAS() ; 
     for(unsigned i=0 ; i < num_ias ; i++)
     {
-        unsigned ias_idx = foundry->ias[i]; 
+        unsigned ias_idx = 0 ; 
         optix::Group ias = createIAS(ias_idx); 
         groups.push_back(ias); 
     }
@@ -405,8 +405,11 @@ optix::Group Six::createSolidSelectionIAS(unsigned ias_idx, const std::vector<un
         unsigned gas_idx = solid_selection[i] ; 
         int ii = int(i) - int(middle) ; 
 
+        unsigned sensor_identifier = 0 ; 
+        unsigned sensor_index = 0 ; 
+
         qat4 q ; 
-        q.setIdentity(ins_idx, gas_idx, ias_idx );
+        q.setIdentity(ins_idx, gas_idx, sensor_identifier, sensor_index  );
         q.q3.f.x = 2.0*mxe*float(ii) ;   
 
         inst.push_back(q); 
@@ -454,8 +457,8 @@ optix::Group Six::createIAS(const std::vector<qat4>& inst )
     {
         const qat4& qc = inst[i] ; 
 
-        unsigned ins_idx,  gas_idx, ias_idx ;
-        qc.getIdentity( ins_idx,  gas_idx, ias_idx ); 
+        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        qc.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
 
         /*
         if( ins_idx != i )
@@ -464,7 +467,6 @@ optix::Group Six::createIAS(const std::vector<qat4>& inst )
                 << " i " << i  
                 << " ins_idx " << ins_idx  
                 << " gas_idx " << gas_idx  
-                << " ias_idx " << ias_idx  
                 ;
         }        
         //assert( ins_idx == i );   when emm skipping this doesnt match, ins_idx didnt account for emm perhaps  

@@ -1601,7 +1601,7 @@ void GMergedMesh::Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<uns
     unsigned nj = iid->getShape(1); 
     unsigned nk = iid->getShape(2); 
     assert( nk == 4 ); 
-    LOG(info) << " ni " << ni << " nj " << nj << " nk " << nk ; 
+    LOG(LEVEL) << " ni " << ni << " nj " << nj << " nk " << nk ; 
 
     col4.resize(ni); 
 

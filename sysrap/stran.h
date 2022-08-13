@@ -681,13 +681,14 @@ Tran<T>* Tran<T>::ConvertFromData(const T* data )
 template<typename T>
 const qat4* Tran<T>::Invert( const qat4* q, T epsilon )
 {
-    unsigned ins_idx, gas_idx, ias_idx ;
-    q->getIdentity(ins_idx, gas_idx, ias_idx )  ;
+
+    unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
+    q->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 
     Tran<T>* tr = ConvertToTran(q) ; 
 
     qat4* v = ConvertFrom(tr->v);
-    v->setIdentity(ins_idx, gas_idx, ias_idx ) ;
+    v->setIdentity(ins_idx, gas_idx, sensor_identifier, sensor_index ) ;
 
     return v ; 
 }

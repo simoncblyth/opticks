@@ -96,10 +96,11 @@ struct sframe
     void set_inst(int inst); 
     int inst() const ; 
 
-    void set_ins_gas_ias(int ins, int gas, int ias); 
+    void set_identity(int ins, int gas, int sensor_identifier, int sensor_index );  // formerly set_ins_gas_ias
     int ins() const ; 
     int gas() const ; 
-    int ias() const ; 
+    int sensor_identifier() const ; 
+    int sensor_index() const ; 
 
     void set_propagate_epsilon(float eps); 
     float propagate_epsilon() const ; 
@@ -179,7 +180,8 @@ inline std::string sframe::desc() const
        << std::endl 
        << " ins  " << std::setw(4) << ins()
        << " gas  " << std::setw(4) << gas()
-       << " ias  " << std::setw(4) << ias()
+       << " sensor_identifier  " << std::setw(7) << sensor_identifier()
+       << " sensor_index  " << std::setw(5) << sensor_index()
        << std::endl 
        ;
     std::string s = ss.str(); 
@@ -241,11 +243,13 @@ inline int sframe::iidx() const { return q3.i.z ; }
 inline void sframe::set_inst(int inst){ q3.i.w = inst ; }
 inline int sframe::inst() const { return q3.i.w ; }
 
-inline void sframe::set_ins_gas_ias(int ins, int gas, int ias)
+inline void sframe::set_identity(int ins, int gas, int sensor_identifier, int sensor_index ) // formerly set_ins_gas_ias
 {
     aux.q0.i.x = ins ; 
     aux.q0.i.y = gas ; 
-    aux.q0.i.z = ias ; 
+    aux.q0.i.z = sensor_identifier ; 
+    aux.q0.i.w = sensor_index  ; 
+
 }
 
 inline void sframe::set_propagate_epsilon(float eps)
@@ -259,7 +263,8 @@ inline float sframe::propagate_epsilon() const
 
 inline int sframe::ins() const { return aux.q0.i.x ; }
 inline int sframe::gas() const { return aux.q0.i.y ; }
-inline int sframe::ias() const { return aux.q0.i.z ; }
+inline int sframe::sensor_identifier() const { return aux.q0.i.z ; }
+inline int sframe::sensor_index() const {      return aux.q0.i.w ; }
 
 inline const float* sframe::cdata() const 
 {

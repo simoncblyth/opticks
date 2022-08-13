@@ -197,10 +197,12 @@ void DemoGeo::init_maker(const char* name)
 
 void DemoGeo::addInstance(unsigned gas_idx, float tx, float ty, float tz)
 {
-    unsigned ias_idx = 0 ; 
     unsigned ins_idx = foundry->inst.size() ; // 0-based index within the DemoGrid
+    unsigned sensor_identifier = 0 ; 
+    unsigned sensor_index = 0 ; 
+
     qat4 q  ; 
-    q.setIdentity( ins_idx, gas_idx, ias_idx ); 
+    q.setIdentity( ins_idx, gas_idx, sensor_identifier, sensor_index ); 
 
     q.q3.f.x = tx ; 
     q.q3.f.y = ty ; 

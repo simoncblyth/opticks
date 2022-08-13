@@ -152,7 +152,8 @@ std::string CSGFoundry::desc() const
        << " num_inst " << inst.size()
        << " ins " << ins.size()
        << " gas " << gas.size()
-       << " ias " << ias.size()
+       << " sensor_identifier " << sensor_identifier.size()
+       << " sensor_index " << sensor_index.size()
        << " meshname " << meshname.size()
        << " mmlabel " << mmlabel.size()
        << " mtime " << mtime
@@ -400,7 +401,8 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
     mismatch += CompareVec( "inst" , a->inst , b->inst ); 
     mismatch += CompareVec( "ins"  , a->ins , b->ins ); 
     mismatch += CompareVec( "gas"  , a->gas , b->gas ); 
-    mismatch += CompareVec( "ias"  , a->ias , b->ias ); 
+    mismatch += CompareVec( "sensor_identifier"  , a->sensor_identifier , b->sensor_identifier ); 
+    mismatch += CompareVec( "sensor_index"       , a->sensor_index      , b->sensor_index ); 
     if( mismatch != 0 ) LOG(fatal) << " mismatch FAIL ";  
     //assert( mismatch == 0 ); 
 
@@ -522,15 +524,17 @@ std::string CSGFoundry::descInstance(unsigned idx) const
     else
     {
         const qat4& q = inst[idx] ;      
-        unsigned ins_idx, gas_idx, ias_idx ; 
-        q.getIdentity(ins_idx, gas_idx, ias_idx);
+        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
+
 
         const CSGSolid* so = getSolid(gas_idx); 
  
         ss << " idx " << std::setw(7) << idx               
            << " ins " << std::setw(5) << ins_idx                
            << " gas " << std::setw(2) << gas_idx                
-           << " ias " << std::setw(1) << ias_idx                
+           << " s_ident " << std::setw(7) << sensor_identifier
+           << " s_index " << std::setw(5) << sensor_index       
            << " so " << so->desc()
            ;
     }
@@ -546,17 +550,19 @@ std::string CSGFoundry::descInst(unsigned ias_idx_, unsigned long long emm ) con
     for(unsigned i=0 ; i < inst.size() ; i++)
     {
         const qat4& q = inst[i] ;      
-        unsigned ins_idx, gas_idx, ias_idx ; 
-        q.getIdentity(ins_idx, gas_idx, ias_idx);
+        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
+
         bool gas_enabled = emm == 0ull ? true : ( emm & (0x1ull << gas_idx)) ;  
-        if( ias_idx_ == ias_idx && gas_enabled )
+        if( gas_enabled )
         {
             const CSGSolid* so = getSolid(gas_idx); 
             ss 
                 << " i " << std::setw(5) << i               
                 << " ins " << std::setw(5) << ins_idx                
                 << " gas " << std::setw(2) << gas_idx                
-                << " ias " << std::setw(1) << ias_idx                
+                << " s_identifier " << std::setw(7) << sensor_identifier
+                << " s_index " << std::setw(5) << sensor_index
                 << " so " << so->desc()
                 << std::endl
                 ;
@@ -589,10 +595,13 @@ AABB CSGFoundry::iasBB(unsigned ias_idx_, unsigned long long emm ) const
     for(unsigned i=0 ; i < inst.size() ; i++)
     {
         const qat4& q = inst[i] ;      
-        unsigned ins_idx, gas_idx, ias_idx ; 
-        q.getIdentity(ins_idx, gas_idx, ias_idx);
+
+        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
+
+
         bool gas_enabled = emm == 0ull ? true : ( emm & (0x1ull << gas_idx)) ;  
-        if( ias_idx_ == ias_idx && gas_enabled )
+        if( gas_enabled )
         {
             const CSGSolid* so = getSolid(gas_idx); 
             corners.clear();       
@@ -1544,17 +1553,18 @@ Used for example from
 
 **/
 
-void CSGFoundry::addInstance(const float* tr16, unsigned gas_idx, unsigned ias_idx )
+void CSGFoundry::addInstance(const float* tr16, unsigned gas_idx, unsigned sensor_identifier, unsigned sensor_index )
 {
     qat4 instance(tr16) ;  // identity matrix if tr16 is nullptr 
     unsigned ins_idx = inst.size() ;
 
-    instance.setIdentity( ins_idx, gas_idx, ias_idx );
+    instance.setIdentity( ins_idx, gas_idx, sensor_identifier, sensor_index );
 
     LOG(debug) 
         << " ins_idx " << ins_idx 
         << " gas_idx " << gas_idx 
-        << " ias_idx " << ias_idx 
+        << " sensor_identifier " << sensor_identifier
+        << " sensor_index " << sensor_index
         ;
 
     inst.push_back( instance );
@@ -1564,9 +1574,10 @@ void CSGFoundry::addInstancePlaceholder()
 {
     const float* tr16 = nullptr ; 
     unsigned gas_idx = 0 ; 
-    unsigned ias_idx = 0 ; 
+    unsigned sensor_identifier = 0 ; 
+    unsigned sensor_index = 0 ;  
 
-    addInstance(tr16, gas_idx, ias_idx );  
+    addInstance(tr16, gas_idx, sensor_identifier, sensor_index );  
 }
 
 
@@ -2623,12 +2634,12 @@ bool CSGFoundry::isUploaded() const
 
 void CSGFoundry::inst_find_unique()
 {
-    qat4::find_unique( inst, ins, gas, ias ); 
+    qat4::find_unique( inst, ins, gas, sensor_identifier, sensor_index ); 
 }
 
 unsigned CSGFoundry::getNumUniqueIAS() const
 {
-    return ias.size(); 
+    return 1 ; 
 }
 unsigned CSGFoundry::getNumUniqueGAS() const
 {

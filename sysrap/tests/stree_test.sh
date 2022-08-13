@@ -9,6 +9,9 @@ name=stree_test
 #export STBASE=/tmp/$USER/opticks/U4TreeTest
 export STBASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
 
+## gets loaded from STBASE/stree
+
+
 #export FOLD=$STBASE/stree
 export FOLD=$STBASE/stree_reorderSensors
 

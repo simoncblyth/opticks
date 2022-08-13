@@ -298,10 +298,10 @@ int main(int argc, char** argv)
     test_desc_progeny(st, "sWall"); 
     test_get_factor_nodes(st); 
     test_traverse(st); 
-    test_reorderSensors(st); 
-    */
-
     test_get_sensor_id(st); 
+    */
+    test_reorderSensors(st); 
+
 
 
     return 0 ; 

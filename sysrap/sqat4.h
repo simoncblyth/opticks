@@ -324,20 +324,19 @@ struct qat4
         *(aabb + 5) = tma.z ; 
     }
 
-    // HMM: ias_idx is always zero as only one IAS so far, plus could also use q3.u.w (the 1.f)
-    // nidx range is not currently stored : hmm as all instance nodes counts the same makes 
-    // no sense to repeat that  
-    QAT4_METHOD void getIdentity(unsigned& ins_idx, unsigned& gas_idx, unsigned& ias_idx ) const 
+    QAT4_METHOD void getIdentity(unsigned& ins_idx, unsigned& gas_idx, unsigned& sensor_identifier, unsigned& sensor_index ) const 
     {
-        ins_idx = q0.u.w - 1u ; 
-        gas_idx = q1.u.w - 1u ; 
-        ias_idx = q2.u.w - 1u ; 
+        ins_idx           = q0.u.w - 1u ; 
+        gas_idx           = q1.u.w - 1u ; 
+        sensor_identifier = q2.u.w - 1u ; 
+        sensor_index      = q3.u.w - 1u ; 
     }
-    QAT4_METHOD void setIdentity(unsigned ins_idx, unsigned gas_idx, unsigned ias_idx )
+    QAT4_METHOD void setIdentity(unsigned ins_idx, unsigned gas_idx, unsigned sensor_identifier, unsigned sensor_index )
     {
         q0.u.w = ins_idx + 1u ; 
         q1.u.w = gas_idx + 1u ; 
-        q2.u.w = ias_idx + 1u ; 
+        q2.u.w = sensor_identifier + 1u ; 
+        q3.u.w = sensor_index + 1u ; 
     }
     QAT4_METHOD void clearIdentity() // prepare for matrix multiply by clearing any auxiliary info in the "spare" 4th column 
     {
@@ -348,17 +347,22 @@ struct qat4
     }
 
     // collects unique ins/gas/ias indices found in qv vector of instances
-    static QAT4_METHOD void find_unique(const std::vector<qat4>& qv, std::vector<unsigned>& ins, std::vector<unsigned>& gas, std::vector<unsigned>& ias) 
-    {
+    static QAT4_METHOD void find_unique(const std::vector<qat4>& qv, 
+              std::vector<unsigned>& ins, 
+              std::vector<unsigned>& gas, 
+              std::vector<unsigned>& s_ident, 
+              std::vector<unsigned>& s_index )
+       {
          for(unsigned i=0 ; i < qv.size() ; i++)
          {
              const qat4& q = qv[i] ; 
-             unsigned ins_idx,  gas_idx, ias_idx ; 
-             q.getIdentity(ins_idx,  gas_idx, ias_idx);  
+             unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
+             q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 
              if(std::find(ins.begin(), ins.end(), ins_idx) == ins.end() ) ins.push_back(ins_idx); 
              if(std::find(gas.begin(), gas.end(), gas_idx) == gas.end() ) gas.push_back(gas_idx); 
-             if(std::find(ias.begin(), ias.end(), ias_idx) == ias.end() ) ias.push_back(ias_idx); 
+             if(std::find(s_ident.begin(), s_ident.end(), sensor_identifier) == s_ident.end() ) s_ident.push_back(sensor_identifier); 
+             if(std::find(s_index.begin(), s_index.end(), sensor_index)      == s_index.end() ) s_index.push_back(sensor_index); 
 
          }
     } 
@@ -370,11 +374,11 @@ struct qat4
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, ias_idx ; 
-            q.getIdentity(ins_idx,  gas_idx, ias_idx);  
+            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             unsigned long long gas_idx_ull = gas_idx ; 
             bool gas_enabled = emm == 0ull ? true : emm & ( 0x1ull << gas_idx_ull ) ; 
-            if( ias_idx_ == ias_idx && gas_enabled ) count += 1 ;
+            if( gas_enabled ) count += 1 ;
         }
         return count ; 
     }
@@ -384,11 +388,11 @@ struct qat4
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, ias_idx ; 
-            q.getIdentity(ins_idx,  gas_idx, ias_idx );  
+            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             unsigned long long gas_idx_ull = gas_idx ; 
             bool gas_enabled = emm == 0ull ? true : emm & ( 0x1ull << gas_idx_ull ) ; 
-            if( ias_idx_ == ias_idx && gas_enabled ) select_qv.push_back(q) ;
+            if( gas_enabled ) select_qv.push_back(q) ;
         }
     }
 
@@ -400,8 +404,8 @@ struct qat4
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, ias_idx ; 
-            q.getIdentity(ins_idx,  gas_idx, ias_idx);  
+            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             if( gas_idx_ == gas_idx ) count += 1 ;
         }
         return count ; 
@@ -412,8 +416,8 @@ struct qat4
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, ias_idx ; 
-            q.getIdentity(ins_idx,  gas_idx, ias_idx );  
+            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             if( gas_idx_ == gas_idx ) select_qv.push_back(q) ;
         }
     }
@@ -424,8 +428,8 @@ struct qat4
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4* qi = qv.data() + i ; 
-            unsigned ins_idx,  gas_idx, ias_idx ; 
-            qi->getIdentity(ins_idx,  gas_idx, ias_idx );  
+            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            qi->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             if( gas_idx_ == gas_idx ) select_qi.push_back(qi) ;
         }
     }
@@ -438,8 +442,8 @@ struct qat4
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, ias_idx ; 
-            q.getIdentity(ins_idx,  gas_idx, ias_idx );  
+            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             if( gas_idx_ == gas_idx )
             {
                 if( count == ordinal ) index = i  ; 
@@ -553,14 +557,15 @@ struct qat4
 
     QAT4_METHOD std::string descId() const 
     {
-        unsigned ins_idx,  gas_idx, ias_idx ; 
-        getIdentity(ins_idx,  gas_idx, ias_idx );  
+        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
+        getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 
         std::stringstream ss ; 
         ss
             << " ins " << std::setw(7) << ins_idx  
             << " gas " << std::setw(3) << gas_idx  
-            << " ias " << std::setw(2) << ias_idx  
+            << " s_ident " << std::setw(7) << sensor_identifier
+            << " s_index " << std::setw(5) << sensor_index 
             ;
 
         std::string s = ss.str() ; 

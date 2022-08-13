@@ -75,8 +75,12 @@ void DemoGrid::init()
     {
         unsigned ins_idx = foundry->inst.size() ; // 0-based index within the DemoGrid
         unsigned gas_idx = solid_single[i] ;      // 0-based solid index
+        unsigned sensor_identifier = 0 ; 
+        unsigned sensor_index = 0 ; 
+
         qat4 instance  ; 
-        instance.setIdentity( ins_idx, gas_idx, ias_idx ); 
+        instance.setIdentity( ins_idx, gas_idx, sensor_identifier, sensor_index  ); 
+
         foundry->inst.push_back( instance ); 
     }
 
@@ -92,8 +96,10 @@ void DemoGrid::init()
         unsigned ins_idx = foundry->inst.size() ;     
         unsigned solid_modulo_idx = ins_idx % num_solid_modulo ; 
         unsigned gas_idx = solid_modulo[solid_modulo_idx] ; 
+        unsigned sensor_identifier = 0 ; 
+        unsigned sensor_index = 0 ; 
 
-        instance.setIdentity( ins_idx, gas_idx, ias_idx ); 
+        instance.setIdentity( ins_idx, gas_idx, sensor_identifier, sensor_index ); 
         foundry->inst.push_back( instance ); 
     }
     }

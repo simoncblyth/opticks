@@ -256,7 +256,7 @@ struct CSG_API CSGFoundry : public SGeo
     void addNodeTran(CSGNode* nd ); 
 
 
-    void     addInstance(const float* tr16, unsigned gas_idx, unsigned ias_idx ); 
+    void     addInstance(const float* tr16, unsigned gas_idx, unsigned sensor_identifier, unsigned sensor_index ); 
     void     addInstancePlaceholder(); 
 
 
@@ -377,7 +377,8 @@ struct CSG_API CSGFoundry : public SGeo
 
     std::vector<unsigned>  ins ; 
     std::vector<unsigned>  gas ; 
-    std::vector<unsigned>  ias ; 
+    std::vector<unsigned>  sensor_identifier ; 
+    std::vector<unsigned>  sensor_index ; 
 
     SName*    id ;   // holds the meshname vector of G4VSolid names 
 
