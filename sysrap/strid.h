@@ -1,5 +1,18 @@
 #pragma once
 
+/**
+strid.h
+==========
+
+strid::Encode Formerly kludge skipped e=0 for some non-valid reason 
+"kludge to keep [:,3,3] 1. for simpler comparison with GGeo cf.inst"  
+
+
+Note that without encoding the double 0.,0.,0.,1. 
+of the fourth column will yield integer values. 
+
+**/
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -22,16 +35,30 @@ struct strid
         float     f ; 
     }; 
 
+    // double, uint64_t
     static void Encode(       glm::tmat4x4<double>& tr, const glm::tvec4<uint64_t>& col3 ); 
     static void Encode(       double* ptr , uint64_t  e ); 
-
     static void Decode( const glm::tmat4x4<double>& tr,       glm::tvec4<uint64_t>& col3 ); 
     static void Decode( const double* ptr , uint64_t& e ); 
 
+    // double, int64_t
+    static void Encode(       glm::tmat4x4<double>& tr, const glm::tvec4<int64_t>& col3 ); 
+    static void Encode(       double* ptr , int64_t  e ); 
+    static void Decode( const glm::tmat4x4<double>& tr,       glm::tvec4<int64_t>& col3 ); 
+    static void Decode( const double* ptr , int64_t& e ); 
+
+    // float, uint32_t
     static void Encode(       glm::tmat4x4<float>& tr, const glm::tvec4<uint32_t>& col3 ); 
     static void Encode(       float* ptr , uint32_t  e ); 
     static void Decode( const glm::tmat4x4<float>& tr,       glm::tvec4<uint32_t>& col3 ); 
     static void Decode( const float* ptr , uint32_t& e ); 
+
+    // float, int32_t
+    static void Encode(       glm::tmat4x4<float>& tr, const glm::tvec4<int32_t>& col3 ); 
+    static void Encode(       float* ptr , int32_t  e ); 
+    static void Decode( const glm::tmat4x4<float>& tr,       glm::tvec4<int32_t>& col3 ); 
+    static void Decode( const float* ptr , int32_t& e ); 
+
 
 
     template<typename T>
@@ -63,23 +90,12 @@ struct strid
 }; 
 
 
+// double, uint64_t
 inline void strid::Encode(      glm::tmat4x4<double>& tr, const glm::tvec4<uint64_t>& col3 )
 {
     double* tr00 = glm::value_ptr(tr) ; 
     for(int r=0 ; r < 4 ; r++) Encode(  tr00+4*r+3, col3[r] ) ; 
 } 
-
-/**
-strid::Encode
----------------
-
-Formerly kludge skipped e=0 for some reason. 
-
-Note that without encoding the double 0.,0.,0.,1. 
-of the fourth column 
-
-**/
-
 inline void strid::Encode( double* ptr, uint64_t e)
 {
     uif64_t uif ; 
@@ -102,6 +118,42 @@ inline void strid::Decode( const double* ptr, uint64_t& e )
 
 
 
+// double, int64_t
+inline void strid::Encode(      glm::tmat4x4<double>& tr, const glm::tvec4<int64_t>& col3 )
+{
+    double* tr00 = glm::value_ptr(tr) ; 
+    for(int r=0 ; r < 4 ; r++) Encode(  tr00+4*r+3, col3[r] ) ; 
+} 
+inline void strid::Encode( double* ptr, int64_t e)
+{
+    uif64_t uif ; 
+    uif.i = e ; 
+    *ptr = uif.f ; 
+}
+inline void strid::Decode( const glm::tmat4x4<double>& tr,      glm::tvec4<int64_t>& col3  )
+{
+    const double* tr00 = glm::value_ptr(tr) ; 
+    for(int r=0 ; r < 4 ; r++) Decode( tr00+4*r+3, col3[r] ) ;  
+}
+inline void strid::Decode( const double* ptr, int64_t& e )
+{
+    uif64_t uif ; 
+    uif.f = *ptr ; 
+    e = uif.i ;  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// float, uint32_t
 inline void strid::Encode(      glm::tmat4x4<float>& tr, const glm::tvec4<uint32_t>& col3 )
 {
     float* tr00 = glm::value_ptr(tr) ; 
@@ -109,7 +161,6 @@ inline void strid::Encode(      glm::tmat4x4<float>& tr, const glm::tvec4<uint32
 } 
 inline void strid::Encode( float* ptr, uint32_t e)
 {
-    if(e == 0) return ; // kludge to keep [:,3,3] 1. for simpler comparison with GGeo cf.inst  
     uif32_t uif ; 
     uif.u = e ; 
     *ptr = uif.f ; 
@@ -125,6 +176,37 @@ inline void strid::Decode( const float* ptr, uint32_t& e )
     uif.f = *ptr ; 
     e = uif.u ;  
 }
+
+
+
+
+
+
+
+// float, int32_t
+inline void strid::Encode(      glm::tmat4x4<float>& tr, const glm::tvec4<int32_t>& col3 )
+{
+    float* tr00 = glm::value_ptr(tr) ; 
+    for(int r=0 ; r < 4 ; r++) Encode(  tr00+4*r+3, col3[r] ) ; 
+} 
+inline void strid::Encode( float* ptr, int32_t e)
+{
+    uif32_t uif ; 
+    uif.i = e ; 
+    *ptr = uif.f ; 
+}
+inline void strid::Decode( const glm::tmat4x4<float>& tr,      glm::tvec4<int32_t>& col3  )
+{
+    const float* tr00 = glm::value_ptr(tr) ; 
+    for(int r=0 ; r < 4 ; r++) Decode( tr00+4*r+3, col3[r] ) ;  
+}
+inline void strid::Decode( const float* ptr, int32_t& e )
+{
+    uif32_t uif ; 
+    uif.f = *ptr ; 
+    e = uif.i ;  
+}
+
 
 
 

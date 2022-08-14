@@ -228,7 +228,7 @@ struct stree
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
     std::string desc_factor() const ; 
 
-    void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, unsigned gas_idx, int nidx ); 
+    void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, intint  gas_idx, int nidx ); 
     void add_inst(); 
     void clear_inst(); 
 
@@ -1312,20 +1312,17 @@ Canonically invoked from U4Tree::Create
 
 **/
 
-inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, unsigned gas_idx, int nidx )
+inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, int gas_idx, int nidx )
 {
     assert( nidx > -1 && nidx < int(nds.size()) ); 
     const snode& nd = nds[nidx]; 
 
+    int ins_idx = int(inst.size());     // follow sqat4.h::setIdentity
 
-    unsigned ins_idx = inst.size();     // follow sqat4.h::setIdentity
-    //unsigned ias_idx = 0 ; 
-
-    glm::tvec4<uint64_t> col3 ; 
-    col3.x = ins_idx + 1 ; 
-    col3.y = gas_idx + 1 ; 
-    //col3.z = ias_idx + 1 ; 
-    col3.z = nd.sensor_id ; 
+    glm::tvec4<int64_t> col3 ;   // formerly uint64_t 
+    col3.x = ins_idx ;            // formerly  +1 
+    col3.y = gas_idx ;            // formerly  +1 
+    col3.z = nd.sensor_id ;       // formerly ias_idx + 1 (which was always 1)
     col3.w = nd.sensor_index ; 
 
     strid::Encode(tr_m2w, col3 );
@@ -1340,7 +1337,7 @@ inline void stree::add_inst()
 {
     glm::tmat4x4<double> tr_m2w(1.) ; 
     glm::tmat4x4<double> tr_w2m(1.) ; 
-    add_inst(tr_m2w, tr_w2m, 0u, 0 );   // global instance with identity transforms 
+    add_inst(tr_m2w, tr_w2m, 0, 0 );   // global instance with identity transforms 
 
     unsigned num_factor = get_num_factor(); 
     for(unsigned i=0 ; i < num_factor ; i++)

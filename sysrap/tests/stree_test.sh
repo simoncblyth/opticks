@@ -11,21 +11,12 @@ export STBASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
 
 ## gets loaded from STBASE/stree
 
-
-#export FOLD=$STBASE/stree
-export FOLD=$STBASE/stree_reorderSensors
-
-
-source $OPTICKS_HOME/bin/COMMON.sh 
-T_FOLD=$($OPTICKS_HOME/g4cx/gxt.sh fold)
-T_CFBASE=$(upfind_cfbase $T_FOLD)  
-
-## HMM ntds3 includes CSGFoundry too ... 
-
+export FOLD=$STBASE/stree
+export CFBASE=$STBASE
 
 
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE GEOM T_FOLD T_CFBASE STBASE FOLD"
+    vars="BASH_SOURCE GEOM STBASE FOLD"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done
 fi 
 
@@ -44,7 +35,6 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    export CFBASE=${CFBASE:-$T_CFBASE}
     ${IPYTHON:-ipython} --pdb -i stree_test.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
 fi 

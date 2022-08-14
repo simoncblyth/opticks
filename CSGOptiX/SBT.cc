@@ -445,13 +445,13 @@ std::string SBT::descIAS(const std::vector<qat4>& inst ) const
         << std::endl 
         ; 
 
-    typedef std::map<unsigned, std::vector<unsigned>> MUV ; 
+    typedef std::map<int, std::vector<int>> MUV ; 
     MUV ins_idx_per_gas ; 
 
     for(unsigned i=0 ; i < inst.size() ; i++)
     {
         const qat4& q = inst[i] ;   
-        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
         q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
 
         // collect ins_idx for each gas_idx 
@@ -473,13 +473,13 @@ std::string SBT::descIAS(const std::vector<qat4>& inst ) const
 
     for( i=b ; i != e ; i++)
     {
-        unsigned gas_idx = i->first ; 
-        const std::vector<unsigned>& v = i->second ; 
-        unsigned num_ins_idx = v.size() ; 
+        int gas_idx = i->first ; 
+        const std::vector<int>& v = i->second ; 
+        int num_ins_idx = int(v.size()) ; 
 
-        unsigned ins_idx_mn, ins_idx_mx ; 
-        SVec<unsigned>::MinMax(v, ins_idx_mn, ins_idx_mx)  ; 
-        unsigned num_ins_idx2 = ins_idx_mx - ins_idx_mn + 1 ; 
+        int ins_idx_mn, ins_idx_mx ; 
+        SVec<int>::MinMax(v, ins_idx_mn, ins_idx_mx)  ; 
+        int num_ins_idx2 = ins_idx_mx - ins_idx_mn + 1 ; 
 
         ss
             << " gas_idx " << std::setw(10) <<  gas_idx 

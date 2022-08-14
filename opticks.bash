@@ -35,6 +35,7 @@ yst(){ cd $(opticks-home)/examples/Geant4/RayleighStandalone ;  }
 oot(){ oo ; opticks-t ; : opticks.bash ; }
 t(){ typeset -f $*    ; : opticks.bash ; } 
 rc(){ local RC=$?; echo RC $RC; return $RC ; : opticks.bash ;  }
+eo(){ env | grep =INFO ; }
 
 geom(){ 
    : opticks/opticks.bash 

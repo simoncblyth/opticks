@@ -6,6 +6,189 @@ sensor_info_into_new_workflow
 
 
 
+Comparing cf.inst with stree f.inst_f4 using ntds3/G4CXOpticks saved geometry
+--------------------------------------------------------------------------------
+
+::
+
+    cd ~/opticks/sysrap/tests
+    ./stree_test.sh 
+
+    010 export STBASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
+     14 export FOLD=$STBASE/stree
+     15 export CFBASE=$STBASE
+
+
+::
+
+    ./stree_test.sh ana
+
+    In [6]: cf.inst.shape
+    Out[6]: (48477, 4, 4)
+
+    In [8]: f.inst_f4.shape
+    Out[8]: (48477, 4, 4)
+
+    In [7]: cf.inst.view(np.int32)[:,:,3]
+    Out[7]: 
+    array([[     0,      0,     -1,     -1],
+           [     1,      1, 300000,  17613],
+           [     2,      1, 300001,  17614],
+           [     3,      1, 300002,  17615],
+           [     4,      1, 300003,  17616],
+           ...,
+           [ 48472,      9,     -1,     -1],
+           [ 48473,      9,     -1,     -1],
+           [ 48474,      9,     -1,     -1],
+           [ 48475,      9,     -1,     -1],
+           [ 48476,      9,     -1,     -1]], dtype=int32)
+
+
+    In [9]: f.inst_f4.view(np.int32)[:,:,3]
+    Out[9]: 
+    array([[     1,      1,     -1,     -1],
+           [     2,      2, 300000,  17612],
+           [     3,      2, 300001,  17613],
+           [     4,      2, 300002,  17614],
+           [     5,      2, 300003,  17615],
+           ...,
+           [ 48473,     10,     -1,     -1],
+           [ 48474,     10,     -1,     -1],
+           [ 48475,     10,     -1,     -1],
+           [ 48476,     10,     -1,     -1],
+           [ 48477,     10,     -1,     -1]], dtype=int32)
+
+
+Column 3, Row 0,1, (inst_idx,gas_idx) are +1 in f.inst_f4/strid.h::
+
+    In [10]: f.inst_f4.view(np.int32)[:,0,3]
+    Out[10]: array([    1,     2,     3,     4,     5, ..., 48473, 48474, 48475, 48476, 48477], dtype=int32)
+
+    In [11]: cf.inst.view(np.int32)[:,0,3]
+    Out[11]: array([    0,     1,     2,     3,     4, ..., 48472, 48473, 48474, 48475, 48476], dtype=int32)
+
+    In [12]: np.all( cf.inst.view(np.int32)[:,0,3]  + 1 == f.inst_f4.view(np.int32)[:,0,3]  )
+    Out[12]: True
+
+    In [13]: f.inst_f4.view(np.int32)[:,1,3]
+    Out[13]: array([ 1,  2,  2,  2,  2, ..., 10, 10, 10, 10, 10], dtype=int32)
+
+    In [14]: cf.inst.view(np.int32)[:,1,3]
+    Out[14]: array([0, 1, 1, 1, 1, ..., 9, 9, 9, 9, 9], dtype=int32)
+
+    In [15]: np.all( cf.inst.view(np.int32)[:,1,3] + 1 == f.inst_f4.view(np.int32)[:,1,3] )
+    Out[15]: True
+
+
+HMM strid.h does not do the +1 its done in strid::add_inst::
+
+    1315 inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, unsigned gas_idx, int nidx )
+    1316 {
+    1317     assert( nidx > -1 && nidx < int(nds.size()) );
+    1318     const snode& nd = nds[nidx];
+    1319 
+    1320 
+    1321     unsigned ins_idx = inst.size();     // follow sqat4.h::setIdentity
+    1322     //unsigned ias_idx = 0 ; 
+    1323 
+    1324     glm::tvec4<uint64_t> col3 ;
+    1325     col3.x = ins_idx + 1 ;
+    1326     col3.y = gas_idx + 1 ;
+    1327     //col3.z = ias_idx + 1 ; 
+    1328     col3.z = nd.sensor_id ;
+    1329     col3.w = nd.sensor_index ;
+    1330 
+    1331     strid::Encode(tr_m2w, col3 );
+    1332     strid::Encode(tr_w2m, col3 );
+    1333 
+    1334     inst.push_back(tr_m2w);
+    1335     iinst.push_back(tr_w2m);
+    1336 
+    1337 }
+
+
+    1307 /**
+    1308 stree::add_inst
+    1309 ----------------
+    1310 
+    1311 Canonically invoked from U4Tree::Create 
+    1312 
+    1313 **/
+    1314 
+    1315 inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, int gas_idx, int nidx )
+    1316 {
+    1317     assert( nidx > -1 && nidx < int(nds.size()) );
+    1318     const snode& nd = nds[nidx];
+    1319 
+    1320     int ins_idx = int(inst.size());     // follow sqat4.h::setIdentity
+    1321 
+    1322     glm::tvec4<int64_t> col3 ;   // formerly uint64_t 
+    1323     col3.x = ins_idx ;            // formerly  +1 
+    1324     col3.y = gas_idx ;            // formerly  +1 
+    1325     col3.z = nd.sensor_id ;       // formerly ias_idx + 1 (which was always 1)
+    1326     col3.w = nd.sensor_index ;
+    1327 
+    1328     strid::Encode(tr_m2w, col3 );
+    1329     strid::Encode(tr_w2m, col3 );
+    1330 
+    1331     inst.push_back(tr_m2w);
+    1332     iinst.push_back(tr_w2m);
+    1333  
+    1334 }
+
+
+
+
+
+Column 3, Row 2 (sensor_identifier) matches::
+
+    In [16]: f.inst_f4.view(np.int32)[:,2,3]
+    Out[16]: array([    -1, 300000, 300001, 300002, 300003, ...,     -1,     -1,     -1,     -1,     -1], dtype=int32)
+
+    In [17]: cf.inst.view(np.int32)[:,2,3]
+    Out[17]: array([    -1, 300000, 300001, 300002, 300003, ...,     -1,     -1,     -1,     -1,     -1], dtype=int32)
+
+    In [18]: np.all( f.inst_f4.view(np.int32)[:,2,3]  == cf.inst.view(np.int32)[:,2,3] )
+    Out[18]: True
+
+
+Column 3, Row 3 (sensor_index) is curiously mixed up.
+
+The not-a-sensor -1 are matched::
+
+    In [19]: f.inst_f4.view(np.int32)[:,3,3]
+    Out[19]: array([   -1, 17612, 17613, 17614, 17615, ...,    -1,    -1,    -1,    -1,    -1], dtype=int32)
+
+    In [20]: cf.inst.view(np.int32)[:,3,3]
+    Out[20]: array([   -1, 17613, 17614, 17615, 17616, ...,    -1,    -1,    -1,    -1,    -1], dtype=int32)
+
+    In [21]: np.where( f.inst_f4.view(np.int32)[:,3,3] == -1 )
+    Out[21]: (array([    0, 45613, 45614, 45615, 45616, ..., 48472, 48473, 48474, 48475, 48476]),)
+
+    In [22]: np.where( cf.inst.view(np.int32)[:,3,3] == -1 )
+    Out[22]: (array([    0, 45613, 45614, 45615, 45616, ..., 48472, 48473, 48474, 48475, 48476]),)
+
+    In [23]: np.all( np.where( f.inst_f4.view(np.int32)[:,3,3] == -1 )[0] == np.where( cf.inst.view(np.int32)[:,3,3] == -1 )[0] )
+    Out[23]: True
+
+The sensor_index are off-by-1, but this time its cf.inst that is +1 unlike the above case::
+
+    In [24]: w = np.where( f.inst_f4.view(np.int32)[:,3,3] > -1 )[0]
+
+    In [25]: f.inst_f4.view(np.int32)[w,3,3]
+    Out[25]: array([17612, 17613, 17614, 17615, 17616, ..., 45607, 45608, 45609, 45610, 45611], dtype=int32)
+
+    In [26]: cf.inst.view(np.int32)[w,3,3]
+    Out[26]: array([17613, 17614, 17615, 17616, 17617, ..., 45608, 45609, 45610, 45611, 45612], dtype=int32)
+
+    In [27]: np.all( f.inst_f4.view(np.int32)[w,3,3] + 1 == cf.inst.view(np.int32)[w,3,3]  )
+    Out[27]: True
+
+
+
+
+
+
 
 Get the expected id ranges when realize that the sensor_index is 1-based
 ----------------------------------------------------------------------------
@@ -16,7 +199,7 @@ The below is teleporting in the sensor_id::
      72     const int* sid = sensor_id->cvalues<int>();
      73     unsigned num_sid = sensor_id->shape[0] ;
 
-TODO: need to grab that from the stree. 
+DONE: now grab that from the stree. 
 
 
 ::
