@@ -152,7 +152,7 @@ struct stree
     void traverse_r(int nidx, int depth, int sibdex) const ; 
 
     void reorderSensors(); 
-    void reorderSensors_r(int nidx, unsigned& sensor_count); 
+    void reorderSensors_r(int nidx); 
     void get_sensor_id( std::vector<int>& sensor_id ) const ; 
     std::string desc_sensor_id(unsigned edge=10) const ; 
     static std::string DescSensor( const std::vector<int>& sensor_id, const std::vector<int>& sensor_idx, unsigned edge=10 ); 
@@ -228,7 +228,7 @@ struct stree
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
     std::string desc_factor() const ; 
 
-    void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, intint  gas_idx, int nidx ); 
+    void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, int gas_idx, int nidx ); 
     void add_inst(); 
     void clear_inst(); 
 
@@ -473,19 +473,21 @@ used by GGeo/CSG_GGeo to facilitate comparison.
 When invoked this changes the nd.sensor_index compared 
 to the initial ordering of U4Tree::identifySensitiveInstances
 
+Note that this yields a 0-based sensor index. 
+
 **/
 
 inline void stree::reorderSensors()
 {
     std::cout << "[ stree::reorderSensors" << std::endl ; 
     sensor_count = 0 ; 
-    reorderSensors_r(0, sensor_count); 
+    reorderSensors_r(0); 
     std::cout << "] stree::reorderSensors sensor_count " << sensor_count << std::endl ; 
 
     get_sensor_id(sensor_id); 
     assert( sensor_count == sensor_id.size() ); 
 }
-inline void stree::reorderSensors_r(int nidx, unsigned& sensor_count)
+inline void stree::reorderSensors_r(int nidx)
 {
     snode& nd = nds[nidx] ; 
     if( nd.sensor_id > -1 )
@@ -495,7 +497,7 @@ inline void stree::reorderSensors_r(int nidx, unsigned& sensor_count)
     }
     std::vector<int> children ;
     get_children(children, nidx);
-    for(unsigned i=0 ; i < children.size() ; i++) reorderSensors_r(children[i], sensor_count);
+    for(unsigned i=0 ; i < children.size() ; i++) reorderSensors_r(children[i]);
 }
 
 

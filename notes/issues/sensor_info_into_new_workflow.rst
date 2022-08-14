@@ -6,8 +6,119 @@ sensor_info_into_new_workflow
 
 
 
-Comparing cf.inst with stree f.inst_f4 using ntds3/G4CXOpticks saved geometry
---------------------------------------------------------------------------------
+
+
+Remaining off-by-one in sensor_index
+----------------------------------------
+
+TODO: trace where sensor_index comes from in both cases and find and remove the +1 
+
+Old world sensor index is 1-based::
+
+    308 /**
+    309 GVolume::setSensorIndex
+    310 -------------------------
+    311 
+    312 sensorIndex is expected to be a 1-based contiguous index, with the 
+    313 default value of SENSOR_UNSET (0)  meaning no sensor.
+    314 
+    315 This is canonically invoked from X4PhysicalVolume::convertNode during GVolume creation.
+    316 
+    317 * GNode::setSensorIndices duplicates the index to all faces of m_mesh triangulated geometry
+    318 
+    319 **/
+    320 void GVolume::setSensorIndex(unsigned sensorIndex)
+    321 {
+    322     m_sensorIndex = sensorIndex ;
+    323     setSensorIndices( m_sensorIndex );
+    324 }
+    325 unsigned GVolume::getSensorIndex() const
+    326 {
+    327     return m_sensorIndex ;
+    328 }
+    329 bool GVolume::hasSensorIndex() const
+    330 {
+    331     return m_sensorIndex != SENSOR_UNSET ;
+    332 }
+
+
+Am not going to change GGeo for this... will just need to correct. 
+
+
+::
+
+     205 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
+     206 {
+     207     unsigned nmm = ggeo->getNumMergedMesh();
+     208     assert( repeatIdx < nmm );
+     209     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx);
+     210     unsigned num_inst = mm->getNumITransforms() ;
+     211     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer();
+     212 
+     213     std::vector<int> sensor_index ;
+     214     mm->getInstancedIdentityBuffer_SensorIndex(sensor_index);
+     215 
+     216     bool one_based_index = true ;
+     217     std::vector<int> sensor_id ;
+     218     assert(st);
+     219     st->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index);
+     220 
+     ...
+     243 
+     244     for(unsigned i=0 ; i < num_inst ; i++)
+     245     {
+     246         int s_identifier = sensor_id[i] ;
+     247         int s_index_1 = sensor_index[i] ;    // 1-based sensor index, 0 meaning not-a-sensor 
+     248         int s_index_0 = s_index_1 - 1 ;      // 0-based sensor index, -1 meaning not-a-sensor
+     249 
+     250         glm::mat4 it = mm->getITransform_(i);
+     251 
+     252         const float* tr16 = glm::value_ptr(it) ;
+     253         unsigned gas_idx = repeatIdx ;
+     254         foundry->addInstance(tr16, gas_idx, s_identifier, s_index_0 );
+     255     }
+     256 }
+     257 
+
+
+
+
+
+
+Hmm because sensor_count is a member this code is a little confusing, 
+but I dont think it yields wrong results : giving a 0-based sensor_index. 
+
+::
+
+     478 inline void stree::reorderSensors()
+     479 {
+     480     std::cout << "[ stree::reorderSensors" << std::endl ;
+     481     sensor_count = 0 ;
+     482     reorderSensors_r(0, sensor_count); 
+     483     std::cout << "] stree::reorderSensors sensor_count " << sensor_count << std::endl ;
+     484 
+     485     get_sensor_id(sensor_id);
+     486     assert( sensor_count == sensor_id.size() );
+     487 }
+     488 inline void stree::reorderSensors_r(int nidx, unsigned& sensor_count)
+     489 {
+     490     snode& nd = nds[nidx] ;
+     491     if( nd.sensor_id > -1 )
+     492     {
+     493         nd.sensor_index = sensor_count ;
+     494         sensor_count += 1 ;
+     495     }
+     496     std::vector<int> children ;
+     497     get_children(children, nidx);
+     498     for(unsigned i=0 ; i < children.size() ; i++) reorderSensors_r(children[i], sensor_count);
+     499 }
+     500 
+
+
+
+
+Comparing cf.inst with stree f.inst_f4 using ntds3/G4CXOpticks saved geometry : reveals some off-by-ones
+----------------------------------------------------------------------------------------------------------
 
 ::
 
@@ -80,7 +191,7 @@ Column 3, Row 0,1, (inst_idx,gas_idx) are +1 in f.inst_f4/strid.h::
     Out[15]: True
 
 
-HMM strid.h does not do the +1 its done in strid::add_inst::
+HMM strid.h does not do the +1 its done in stree::add_inst::
 
     1315 inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, unsigned gas_idx, int nidx )
     1316 {
@@ -185,6 +296,18 @@ The sensor_index are off-by-1, but this time its cf.inst that is +1 unlike the a
     Out[27]: True
 
 
+The stree sidx is the expected 0-based index coming from stree::reorderSensors::
+
+    In [31]: sidx = f.inst_f4.view(np.int32)[w,3,3]
+
+    In [32]: sidx
+    Out[32]: array([17612, 17613, 17614, 17615, 17616, ..., 45607, 45608, 45609, 45610, 45611], dtype=int32)
+
+    In [33]: sidx[np.argsort(sidx)]
+    Out[33]: array([    0,     1,     2,     3,     4, ..., 45607, 45608, 45609, 45610, 45611], dtype=int32)
+
+    In [35]: np.all( sidx[np.argsort(sidx)] == np.arange(len(sidx)) )
+    Out[35]: True
 
 
 

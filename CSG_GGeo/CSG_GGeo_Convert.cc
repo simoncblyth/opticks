@@ -210,13 +210,15 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     unsigned num_inst = mm->getNumITransforms() ;
     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer(); 
 
-    std::vector<int> sensor_index ; 
+    std::vector<int> sensor_index ;   
     mm->getInstancedIdentityBuffer_SensorIndex(sensor_index); 
+    // CAUTION : OLD WORLD 1-based sensor_index 
 
     bool one_based_index = true ;
     std::vector<int> sensor_id ;
     assert(st); 
     st->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index);
+
 
     LOG(LEVEL) << stree::DescSensor( sensor_id, sensor_index ) ; 
 
@@ -242,14 +244,14 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     for(unsigned i=0 ; i < num_inst ; i++)
     {
         int s_identifier = sensor_id[i] ;  
-        int s_index = sensor_index[i] ;  
-        // these are -1 for non-sensors        
+        int s_index_1 = sensor_index[i] ;    // 1-based sensor index, 0 meaning not-a-sensor 
+        int s_index_0 = s_index_1 - 1 ;      // 0-based sensor index, -1 meaning not-a-sensor
 
         glm::mat4 it = mm->getITransform_(i); 
     
         const float* tr16 = glm::value_ptr(it) ; 
         unsigned gas_idx = repeatIdx ; 
-        foundry->addInstance(tr16, gas_idx, s_identifier, s_index ); 
+        foundry->addInstance(tr16, gas_idx, s_identifier, s_index_0 ); 
     }
 }
 
