@@ -1593,10 +1593,25 @@ std::string GMergedMesh::Desc(const GMergedMesh* mm)
 }
 
 
+/**
+GMergedMesh::Get3DFouthColumnNonZero
+--------------------------------------
 
+one_based_index:true
+    convention is that valid indices begin at 1, with 0 meaning non-a-valid index
+    this is the convention used by GVolume::getSensorIndex
 
-void GMergedMesh::Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<unsigned>* iid ) // static
+one_based_index:false
+    implies zero based index, 
+    convention is that valid indices begin at 0, with -1 meaning non-a-valid index
+
+**/
+
+void GMergedMesh::Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<unsigned>* iid, bool one_based_index ) // static
 {
+    assert( one_based_index == true ); // that is the convention in use, see GVolume::getSensorIndex
+    int invalid_index = one_based_index ? 0 : -1 ; 
+
     unsigned ni = iid->getShape(0); 
     unsigned nj = iid->getShape(1); 
     unsigned nk = iid->getShape(2); 
@@ -1607,7 +1622,7 @@ void GMergedMesh::Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<uns
 
     for(unsigned i=0 ; i < ni ; i++ )
     {
-        int val = -1 ; 
+        int val = invalid_index ; 
         for(unsigned j=0 ; j < nj ; j++ )
         {
             const unsigned* vv = iid->getValuesConst(i, j); 
@@ -1617,17 +1632,18 @@ void GMergedMesh::Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<uns
     }
 } 
 
-void GMergedMesh::getInstancedIdentityBuffer_SensorIndex(std::vector<int>& sensor_index ) const 
+void GMergedMesh::getInstancedIdentityBuffer_SensorIndex(std::vector<int>& sensor_index, bool one_based_index ) const 
 {
     NPY<unsigned>* iid = getInstancedIdentityBuffer();
-    Get3DFouthColumnNonZero(sensor_index, iid ); 
+    Get3DFouthColumnNonZero(sensor_index, iid, one_based_index ); 
 }
 
 
 std::string GMergedMesh::descInstancedIdentityBuffer_SensorIndex() const 
 {
+    bool one_based_index = true ; 
     std::vector<int> sensor_index ; 
-    getInstancedIdentityBuffer_SensorIndex(sensor_index); 
+    getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index ); 
 
     NPY<unsigned>* iid = getInstancedIdentityBuffer();
     unsigned ni = iid->getShape(0); 
@@ -1639,6 +1655,8 @@ std::string GMergedMesh::descInstancedIdentityBuffer_SensorIndex() const
     LOG(info) << " ni " << ni << " nj " << nj << " nk " << nk ; 
 
     std::stringstream ss ; 
+    ss << "GMergedMesh::descInstancedIdentityBuffer_SensorIndex" ; 
+    ss << " one_based_index " << one_based_index << std::endl ; 
     for(unsigned i=0 ; i < std::min(ni, 10u) ; i++ )
     {
         ss << " i " << i << " sensor_index " << sensor_index[i] << std::endl ; 

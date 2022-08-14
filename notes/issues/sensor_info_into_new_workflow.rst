@@ -7,6 +7,20 @@ sensor_info_into_new_workflow
 
 
 
+Comparing Again after fixes : cf.inst with stree f.inst_f4 using ntds3/G4CXOpticks saved geometry 
+----------------------------------------------------------------------------------------------------------
+
+::
+
+    cd ~/opticks/sysrap/tests
+    ./stree_test.sh 
+
+    010 export STBASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
+     14 export FOLD=$STBASE/stree
+     15 export CFBASE=$STBASE
+
+
+
 
 Remaining off-by-one in sensor_index
 ----------------------------------------

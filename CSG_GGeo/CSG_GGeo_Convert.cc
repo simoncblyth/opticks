@@ -246,6 +246,7 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
         int s_identifier = sensor_id[i] ;  
         int s_index_1 = sensor_index[i] ;    // 1-based sensor index, 0 meaning not-a-sensor 
         int s_index_0 = s_index_1 - 1 ;      // 0-based sensor index, -1 meaning not-a-sensor
+        // this simple correction relies on consistent invalid index, see GMergedMesh::Get3DFouthColumnNonZero
 
         glm::mat4 it = mm->getITransform_(i); 
     

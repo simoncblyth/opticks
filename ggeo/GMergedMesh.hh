@@ -166,8 +166,8 @@ private:
     Opticks*     m_ok ; 
 
 public:
-    static void Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<unsigned>* iid ); 
-    void getInstancedIdentityBuffer_SensorIndex(std::vector<int>& sensor_index ) const  ; 
+    static void Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<unsigned>* iid, bool one_based_index ); 
+    void getInstancedIdentityBuffer_SensorIndex(std::vector<int>& sensor_index, bool one_based_index ) const  ; 
     std::string descInstancedIdentityBuffer_SensorIndex() const ; 
      
 };
