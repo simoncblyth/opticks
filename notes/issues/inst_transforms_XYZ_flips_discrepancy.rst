@@ -5,7 +5,7 @@ Previous :doc:`sensor_info_into_new_workflow` showed getting inst identity info 
 BUT: now getting mismatch between the transforms. 
 
 * HMM: I thought the transforms were matching previously, so recent changes may have broken them 
-
+* AHAH : could this be --gparts_transform_offset yet again ? 
 
 
 Generate the geometry and grab using ntds3::
@@ -233,7 +233,14 @@ How to debug ?
 The stree m2w w2m nds means that have all the transforms and ancestry info.
 So should be able to reproduce the stree transforms from the m2w. 
 
-Hmm but need the nidx of each instance ?   
+Hmm but need the nidx of each instance ? Added that to stree::
+
+    In [1]: f.inst_nidx
+    Out[1]: array([     0, 194249, 194254, 194259, 194264, ...,  65071,  65202,  65332,  65462,  65592], dtype=int32)
+
+    In [2]: f.inst_nidx.shape
+    Out[2]: (48477,)
+
 
 
 ::
@@ -261,9 +268,8 @@ Hmm but need the nidx of each instance ?
 
 
 
-
-Where the transforms come from
----------------------------------
+U4Tree/stree side rather simple, difficult to see anything wrong with it
+--------------------------------------------------------------------------
 
 ::
 
@@ -302,5 +308,266 @@ Where the transforms come from
     1370     strid::Narrow( iinst_f4, iinst );
     1371 }
 
+    0779 inline void stree::get_m2w_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const
+     780 {
+     781     std::vector<int> nodes ;
+     782     get_ancestors(nodes, nidx);
+     783     nodes.push_back(nidx); 
+     784     
+     785     unsigned num_nodes = nodes.size();
+     786     glm::tmat4x4<double> xform(1.);
+     787     
+     788     for(unsigned i=0 ; i < num_nodes ; i++ )
+     789     {   
+     790         int idx = nodes[reverse ? num_nodes - 1 - i : i] ;
+     791         const glm::tmat4x4<double>& t = get_m2w(idx) ;
+     792         xform *= t ;
+     793     }
+     794     assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
+     795     memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
+     796 }
+
+    0754 inline const glm::tmat4x4<double>& stree::get_m2w(int nidx) const
+     755 {
+     756     assert( nidx > -1 && nidx < m2w.size());
+     757     return m2w[nidx] ;
+     758 }
+
+
+    193 inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, snode* parent )
+    194 {
+    195     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
+    196 
+    197     int num_child = int(lv->GetNoDaughters()) ;
+    198     int lvid = lvidx[lv] ;
+    199 
+    200     const G4PVPlacement* pvp = dynamic_cast<const G4PVPlacement*>(pv) ;
+    201     int copyno = pvp ? pvp->GetCopyNo() : -1 ;
+    202 
+    203     glm::tmat4x4<double> tr_m2w(1.) ;
+    204     U4Transform::GetObjectTransform(tr_m2w, pv);
+    205 
+    206     glm::tmat4x4<double> tr_w2m(1.) ;
+    207     U4Transform::GetFrameTransform(tr_w2m, pv);
+    208 
+    209 
+    210     st->m2w.push_back(tr_m2w);
+    211     st->w2m.push_back(tr_w2m);
+    212     pvs.push_back(pv);
+    213 
+    214     int nidx = st->nds.size() ;
+    215 
+    216     snode nd ;
+    217 
+    218     nd.index = nidx ;
+    219     nd.depth = depth ;
+    220     nd.sibdex = sibdex ;
+    221     nd.parent = parent ? parent->index : -1 ;
+
+
+
+GMesh/CSG_GGeo/CSGFoundry
+-----------------------------
+
+::
+
+    1545 /**
+    1546 CSGFoundry::addInstance
+    1547 ------------------------
+    1548    
+    1549 Used for example from 
+    1550 
+    1551 1. CSG_GGeo_Convert::addInstances when creating CSGFoundry from GGeo
+    1552 2. CSGCopy::copy/CSGCopy::copySolidInstances when copy a loaded CSGFoundry to apply a selection
+    1553 
+    1554 **/
+    1555    
+    1556 void CSGFoundry::addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index )
+    1557 {
+    1558     qat4 instance(tr16) ;  // identity matrix if tr16 is nullptr 
+    1559     int ins_idx = int(inst.size()) ;
+    1560 
+    1561     instance.setIdentity( ins_idx, gas_idx, sensor_identifier, sensor_index );
+    1562    
+    1563     LOG(debug)
+    1564         << " ins_idx " << ins_idx 
+    1565         << " gas_idx " << gas_idx 
+    1566         << " sensor_identifier " << sensor_identifier
+    1567         << " sensor_index " << sensor_index
+    1568         ;
+    1569    
+    1570     inst.push_back( instance );
+    1571 }
+
+
+    0205 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
+     206 {
+     ...
+     243     for(unsigned i=0 ; i < num_inst ; i++)
+     244     {
+     245         int s_identifier = sensor_id[i] ;
+     246         int s_index_1 = sensor_index[i] ;    // 1-based sensor index, 0 meaning not-a-sensor 
+     247         int s_index_0 = s_index_1 - 1 ;      // 0-based sensor index, -1 meaning not-a-sensor
+     248         // this simple correction relies on consistent invalid index, see GMergedMesh::Get3DFouthColumnNonZero
+     249 
+     250         glm::mat4 it = mm->getITransform_(i);
+     251    
+     252         const float* tr16 = glm::value_ptr(it) ;
+     253         unsigned gas_idx = repeatIdx ;
+     254         foundry->addInstance(tr16, gas_idx, s_identifier, s_index_0 );
+     255     }
+     256 }
+
+
+::
+
+    1146 float* GMesh::getTransform(unsigned index) const
+    1147 {   
+    1148     if(index >= m_num_volumes)
+    1149     {   
+    1150         LOG(fatal) << "GMesh::getTransform out of bounds "
+    1151                      << " m_num_volumes " << m_num_volumes
+    1152                      << " index " << index
+    1153                      ;
+    1154         assert(0);
+    1155     }
+    1156     return index < m_num_volumes ? m_transforms + index*16 : NULL  ;
+    1157 }
+    1158 
+    1159 glm::mat4 GMesh::getTransform_(unsigned index) const
+    1160 {
+    1161     float* transform = getTransform(index) ;
+    1162     glm::mat4 tr = glm::make_mat4(transform) ;
+    1163     return tr ;
+    1164 }
+    1165 
+    1166 float* GMesh::getITransform(unsigned index) const
+    1167 {
+    1168     unsigned int num_itransforms = getNumITransforms();
+    1169     return index < num_itransforms ? m_itransforms + index*16 : NULL  ;
+    1170 }
+    1171 
+    1172 glm::mat4 GMesh::getITransform_(unsigned index) const
+    1173 {
+    1174     float* transform = getITransform(index) ;
+    1175     glm::mat4 tr = glm::make_mat4(transform) ;
+    1176     return tr ;
+    1177 }
+    1178 
+
+
+    1265 void GMergedMesh::addInstancedBuffers(const std::vector<const GNode*>& placements)
+    1266 {
+    1267     LOG(LEVEL) << " placements.size() " << placements.size() ;
+    1268 
+    1269     NPY<float>* itransforms = GTree::makeInstanceTransformsBuffer(placements);
+    1270     setITransformsBuffer(itransforms);
+    1271 
+    1272     NPY<unsigned int>* iidentity  = GTree::makeInstanceIdentityBuffer(placements);
+    1273     setInstancedIdentityBuffer(iidentity);
+    1274 }
+    1275 
+
+
+    032 /**
+     33 GTree::makeInstanceTransformsBuffer
+     34 -------------------------------------
+     35 
+     36 Returns transforms array of shape (num_placements, 4, 4)
+     37 
+     38 Collects transforms from GNode placement instances into a buffer.
+     39 getPlacement for ridx=0 just returns m_root (which always has identity transform)
+     40 for ridx > 0 returns all GNode subtree bases of the ridx repeats.
+     41 
+     42 Just getting transforms from one place to another, 
+     43 not multiplying them so float probably OK. 
+     44 
+     45 TODO: faster to allocate in one go and set, instead of using NPY::add
+     46 
+     47 **/
+     48 
+     49 NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<const GNode*>& placements) // static
+     50 {
+     51     LOG(LEVEL) << "[" ;
+     52     unsigned numPlacements = placements.size();
+     53     NPY<float>* buf = NPY<float>::make(0, 4, 4);
+     54     for(unsigned i=0 ; i < numPlacements ; i++)
+     55     {
+     56         const GNode* place = placements[i] ;
+     57         GMatrix<float>* t = place->getTransform();
+     58         buf->add(t->getPointer(), 4*4*sizeof(float) );
+     59     }
+     60     assert(buf->getNumItems() == numPlacements);
+     61     LOG(LEVEL) << "]" ;
+     62     return buf ;
+     63 }
+
+
+::
+
+    141 GMatrixF* GNode::getTransform() const
+    142 {
+    143    return m_transform ;
+    144 }
+
+    045 GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh)
+     46     :
+     47     m_selfdigest(true),
+     48     m_csgskip(false),
+     49     m_selected(true),
+     50     m_index(index),
+     51     m_parent(NULL),
+     52     m_description(NULL),
+     53     m_transform(transform),
+     54     m_ltransform(NULL),
+     55     m_gtriple(NULL),
+     56     m_ltriple(NULL),
+
+
+::
+
+    1679 GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
+    1680 {
+    1685     // record copynumber in GVolume, as thats one way to handle pmtid
+    1686     const G4PVPlacement* placement = dynamic_cast<const G4PVPlacement*>(pv);
+    1687     assert(placement);
+    1688     G4int copyNumber = placement->GetCopyNo() ;
+    1689 
+    1690     X4Nd* parent_nd = parent ? static_cast<X4Nd*>(parent->getParallelNode()) : NULL ;
+    1691 
+    1692     unsigned boundary = addBoundary( pv, pv_p );
+    1693     std::string boundaryName = m_blib->shortname(boundary);
+    1694     int materialIdx = m_blib->getInnerMaterial(boundary);
+    1695 
+    1696 
+    1697     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
+    1698     const std::string& lvName = lv->GetName() ;
+    1699     const std::string& pvName = pv->GetName() ;
+    1700     unsigned ndIdx = m_node_count ;       // incremented below after GVolume instanciation
+    1701 
+    1702     int lvIdx = m_lvidx[lv] ;   // from postorder traverse in convertSolids to match GDML lvIdx : mesh identity uses lvIdx
+    ....
+    1747     glm::mat4 xf_local_t = X4Transform3D::GetObjectTransform(pv);
+    ....
+    1784     const nmat4triple* ltriple = m_xform->make_triple( glm::value_ptr(xf_local_t) ) ;   // YIKES does polardecomposition + inversion and checks them 
+    1790 
+    1791     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local_t));
+    1792 
+    1797     X4Nd* nd = new X4Nd { parent_nd, ltriple } ;         // X4Nd just struct { parent, transform }
+    1798 
+    1799     const nmat4triple* gtriple = nxform<X4Nd>::make_global_transform(nd) ;  // product of transforms up the tree
+    ....
+    1805 
+    1806     glm::mat4 xf_global = gtriple->t ;
+    1807 
+    1808     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
+    ....
+    1834     G4PVPlacement* _placement = const_cast<G4PVPlacement*>(placement) ;
+    1835     void* origin_node = static_cast<void*>(_placement) ;
+    1836     int origin_copyNumber = copyNumber ;
+    1837 
+    1838 
+    1839     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node, origin_copyNumber );
+    1840     volume->setBoundary( boundary );   // must setBoundary before adding sensor volume 
 
 

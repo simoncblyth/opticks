@@ -1165,7 +1165,7 @@ glm::mat4 GMesh::getTransform_(unsigned index) const
 
 float* GMesh::getITransform(unsigned index) const 
 {
-    unsigned int num_itransforms = getNumITransforms();
+    unsigned num_itransforms = getNumITransforms();
     return index < num_itransforms ? m_itransforms + index*16 : NULL  ;
 }
 
@@ -1175,9 +1175,6 @@ glm::mat4 GMesh::getITransform_(unsigned index) const
     glm::mat4 tr = glm::make_mat4(transform) ;
     return tr ; 
 }
-
-
-
 
 
 

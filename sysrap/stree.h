@@ -781,6 +781,7 @@ inline void stree::get_m2w_product( glm::tmat4x4<double>& transform, int nidx, b
     std::vector<int> nodes ; 
     get_ancestors(nodes, nidx); 
     nodes.push_back(nidx); 
+
     unsigned num_nodes = nodes.size();
     glm::tmat4x4<double> xform(1.); 
 

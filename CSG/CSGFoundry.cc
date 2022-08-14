@@ -1553,10 +1553,10 @@ Used for example from
 
 **/
 
-void CSGFoundry::addInstance(const float* tr16, unsigned gas_idx, unsigned sensor_identifier, unsigned sensor_index )
+void CSGFoundry::addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index )
 {
     qat4 instance(tr16) ;  // identity matrix if tr16 is nullptr 
-    unsigned ins_idx = inst.size() ;
+    int ins_idx = int(inst.size()) ;
 
     instance.setIdentity( ins_idx, gas_idx, sensor_identifier, sensor_index );
 
@@ -1573,9 +1573,9 @@ void CSGFoundry::addInstance(const float* tr16, unsigned gas_idx, unsigned senso
 void CSGFoundry::addInstancePlaceholder()
 {
     const float* tr16 = nullptr ; 
-    unsigned gas_idx = 0 ; 
-    unsigned sensor_identifier = 0 ; 
-    unsigned sensor_index = 0 ;  
+    int gas_idx = -1 ; 
+    int sensor_identifier = -1 ; 
+    int sensor_index = -1 ;  
 
     addInstance(tr16, gas_idx, sensor_identifier, sensor_index );  
 }

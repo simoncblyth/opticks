@@ -256,7 +256,7 @@ struct CSG_API CSGFoundry : public SGeo
     void addNodeTran(CSGNode* nd ); 
 
 
-    void     addInstance(const float* tr16, unsigned gas_idx, unsigned sensor_identifier, unsigned sensor_index ); 
+    void     addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index ); 
     void     addInstancePlaceholder(); 
 
 
