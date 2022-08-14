@@ -210,15 +210,14 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     unsigned num_inst = mm->getNumITransforms() ;
     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer(); 
 
-    std::vector<int> sensor_index ;   
-    mm->getInstancedIdentityBuffer_SensorIndex(sensor_index); 
-    // CAUTION : OLD WORLD 1-based sensor_index 
-
-    bool one_based_index = true ;
-    std::vector<int> sensor_id ;
     assert(st); 
-    st->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index);
 
+    bool one_based_index = true ;   // CAUTION : OLD WORLD 1-based sensor_index 
+    std::vector<int> sensor_index ;   
+    mm->getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index ); 
+
+    std::vector<int> sensor_id ;
+    st->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index);
 
     LOG(LEVEL) << stree::DescSensor( sensor_id, sensor_index ) ; 
 

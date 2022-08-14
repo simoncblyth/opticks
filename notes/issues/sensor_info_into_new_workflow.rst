@@ -3,21 +3,58 @@ sensor_info_into_new_workflow
 
 * from :doc:`update_juno_opticks_integration_for_new_workflow`
 * see also :doc:`instanceIdentity-into-new-workflow`
-
-
+* next :doc:`inst_transforms_XYZ_flips_discrepancy`
 
 
 Comparing Again after fixes : cf.inst with stree f.inst_f4 using ntds3/G4CXOpticks saved geometry 
 ----------------------------------------------------------------------------------------------------------
 
+Shows the identities are matching but the transforms are not anymore. 
+
+* next :doc:`inst_transforms_XYZ_flips_discrepancy`
+
+
 ::
 
     cd ~/opticks/sysrap/tests
-    ./stree_test.sh 
+    ./stree_test.sh ana
 
     010 export STBASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
      14 export FOLD=$STBASE/stree
      15 export CFBASE=$STBASE
+
+
+    In [1]: cf.inst.view(np.int32)[:,:,3]
+    Out[1]: 
+    array([[     0,      0,     -1,     -1],
+           [     1,      1, 300000,  17612],
+           [     2,      1, 300001,  17613],
+           [     3,      1, 300002,  17614],
+           [     4,      1, 300003,  17615],
+           ...,
+           [ 48472,      9,     -1,     -1],
+           [ 48473,      9,     -1,     -1],
+           [ 48474,      9,     -1,     -1],
+           [ 48475,      9,     -1,     -1],
+           [ 48476,      9,     -1,     -1]], dtype=int32)
+
+    In [2]: f.inst_f4.view(np.int32)[:,:,3]
+    Out[2]: 
+    array([[     0,      0,     -1,     -1],
+           [     1,      1, 300000,  17612],
+           [     2,      1, 300001,  17613],
+           [     3,      1, 300002,  17614],
+           [     4,      1, 300003,  17615],
+           ...,
+           [ 48472,      9,     -1,     -1],
+           [ 48473,      9,     -1,     -1],
+           [ 48474,      9,     -1,     -1],
+           [ 48475,      9,     -1,     -1],
+           [ 48476,      9,     -1,     -1]], dtype=int32)
+
+    In [3]: np.all( cf.inst.view(np.int32)[:,:,3] == f.inst_f4.view(np.int32)[:,:,3] )
+    Out[3]: True
+
 
 
 
