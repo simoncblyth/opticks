@@ -106,6 +106,7 @@ struct stree
     static constexpr const char* INST_F4 = "inst_f4.npy" ; 
     static constexpr const char* IINST_F4 = "iinst_f4.npy" ; 
     static constexpr const char* SENSOR_ID = "sensor_id.npy" ; 
+    static constexpr const char* INST_NIDX = "inst_nidx.npy" ; 
 
     std::vector<std::string> mtname ;       // unique material names
     std::vector<std::string> soname ;       // unique solid names
@@ -132,6 +133,7 @@ struct stree
     std::vector<glm::tmat4x4<double>> iinst ; 
     std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
 
+    std::vector<int>                  inst_nidx ; 
 
 
     stree();
@@ -968,6 +970,8 @@ inline void stree::save_( const char* fold ) const
 
     assert( sensor_count == sensor_id.size() ); 
     if(sensor_id.size() > 0 ) NP::Write<int>(    fold, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
+    if(inst_nidx.size() > 0 ) NP::Write<int>(    fold, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
+
 }
 
 inline void stree::load( const char* base, const char* reldir ) 
@@ -1023,6 +1027,7 @@ inline void stree::load_( const char* fold )
     ImportArray<int, int>( sensor_id, NP::Load(fold, SENSOR_ID) );
     sensor_count = sensor_id.size(); 
 
+    ImportArray<int, int>( inst_nidx, NP::Load(fold, INST_NIDX) );
 }
 
 inline int stree::Compare( const std::vector<int>& a, const std::vector<int>& b ) // static 
@@ -1260,7 +1265,7 @@ inline sfactor& stree::get_factor(unsigned idx)
 stree::get_factor_nodes
 --------------------------
 
-Get node indices of the *idx* factor 
+Get node indices of the *idx* factor (0-based)
 
 **/
 
@@ -1312,14 +1317,35 @@ stree::add_inst
 
 Canonically invoked from U4Tree::Create 
 
+0xff:255
+0x
+In [2]: 0xffffff/1e6                                                                                                                                                            
+Out[2]: 16.777215
+
+
 **/
 
 inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, int gas_idx, int nidx )
 {
     assert( nidx > -1 && nidx < int(nds.size()) ); 
     const snode& nd = nds[nidx]; 
-
     int ins_idx = int(inst.size());     // follow sqat4.h::setIdentity
+
+    /*
+    TODO: include the nidx into the 4th column ints  OR keep it separately 
+
+    HMM: initial thinking is to squeeze identity info into 32 bits 
+    so it can survive being narrowed 
+
+    unsigned nidx_gidx = (( nidx & 0xffffff ) << 8 ) | ( gas_idx & 0xff ) ;  
+    union uif64_t {
+        uint64_t  u ; 
+        int64_t   i ; 
+        double    f ; 
+    };  
+    uif64_t uif ; 
+    uif.u = nidx_gidx ; 
+    */
 
     glm::tvec4<int64_t> col3 ;   // formerly uint64_t 
     col3.x = ins_idx ;            // formerly  +1 
@@ -1332,7 +1358,9 @@ inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>
  
     inst.push_back(tr_m2w);
     iinst.push_back(tr_w2m);
-  
+
+    inst_nidx.push_back(nidx); 
+
 }
 
 inline void stree::add_inst() 
@@ -1347,7 +1375,7 @@ inline void stree::add_inst()
         std::vector<int> nodes ; 
         get_factor_nodes(nodes, i);  
 
-        unsigned gas_idx = i + 1 ; 
+        unsigned gas_idx = i + 1 ; // 0 is the global instance, so need this + 1  
         std::cout 
             << "stree::add_inst"
             << " i " << std::setw(3) << i 

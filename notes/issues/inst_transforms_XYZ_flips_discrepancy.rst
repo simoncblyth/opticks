@@ -4,6 +4,10 @@ inst_transforms_XYZ_flips_discrepancy
 Previous :doc:`sensor_info_into_new_workflow` showed getting inst identity info to match.
 BUT: now getting mismatch between the transforms. 
 
+* HMM: I thought the transforms were matching previously, so recent changes may have broken them 
+
+
+
 Generate the geometry and grab using ntds3::
 
     cd ~/opticks/sysrap/tests
@@ -164,6 +168,9 @@ Hmm : to debug this need to see the transform stack being used in both cases.::
            [ -930.298,  -111.872, 19365.   ,     1.   ]], dtype=float32)
 
 
+::
+
+
     In [84]: np.dot( np.array([0,0,0,1], dtype=np.float32 ), a_inst[38216] )
     Out[84]: array([  930.298,   111.872, 19365.   ,     1.   ], dtype=float32)
 
@@ -187,6 +194,8 @@ Hmm : to debug this need to see the transform stack being used in both cases.::
      array([-20133.6  ,   9250.101,  26489.85 ,      1.   ], dtype=float32))
 
 
+
+::
 
     In [97]: a_inst[40000]
     Out[97]: 
@@ -218,10 +227,80 @@ Hmm : to debug this need to see the transform stack being used in both cases.::
 
 
 
+How to debug ?
+-----------------
+
+The stree m2w w2m nds means that have all the transforms and ancestry info.
+So should be able to reproduce the stree transforms from the m2w. 
+
+Hmm but need the nidx of each instance ?   
+
+
+::
+
+    f.base:/tmp/blyth/opticks/ntds3/G4CXOpticks/stree
+
+      : f.sensor_id                                        :             (45612,) : 0:59:16.217105 
+
+      : f.subs                                             :               336653 : 0:59:16.186542 
+      : f.nds                                              :         (336653, 11) : 0:59:16.218986 
+      : f.digs                                             :               336653 : 0:59:17.510443 
+      : f.m2w                                              :       (336653, 4, 4) : 0:59:16.441178 
+      : f.w2m                                              :       (336653, 4, 4) : 0:59:15.095604 
+
+      : f.inst                                             :        (48477, 4, 4) : 0:59:17.038016 
+      : f.inst_f4                                          :        (48477, 4, 4) : 0:59:17.015918 
+      : f.iinst_f4                                         :        (48477, 4, 4) : 0:59:17.054821 
+      : f.iinst                                            :        (48477, 4, 4) : 0:59:17.491596 
+
+      : f.soname                                           :                  139 : 0:59:16.216731 
+      : f.mtname                                           :                   20 : 0:59:16.436847 
+      : f.factor                                           :              (9, 11) : 0:59:17.509037 
+
+
+
+
+
+
 Where the transforms come from
 ---------------------------------
 
+::
 
+    1338 inline void stree::add_inst()
+    1339 {
+    1340     glm::tmat4x4<double> tr_m2w(1.) ;
+    1341     glm::tmat4x4<double> tr_w2m(1.) ;
+    1342     add_inst(tr_m2w, tr_w2m, 0, 0 );   // global instance with identity transforms 
+    1343 
+    1344     unsigned num_factor = get_num_factor();
+    1345     for(unsigned i=0 ; i < num_factor ; i++)
+    1346     {
+    1347         std::vector<int> nodes ;
+    1348         get_factor_nodes(nodes, i);
+    1349 
+    1350         unsigned gas_idx = i + 1 ; // 0 is the global instance, so need this + 1  
+    1351         std::cout
+    1352             << "stree::add_inst"
+    1353             << " i " << std::setw(3) << i
+    1354             << " gas_idx " << std::setw(3) << gas_idx
+    1355             << " nodes.size " << std::setw(7) << nodes.size()
+    1356             << std::endl
+    1357             ;
+    1358 
+    1359         for(unsigned j=0 ; j < nodes.size() ; j++)
+    1360         {
+    1361             int nidx = nodes[j];
+    1362             get_m2w_product(tr_m2w, nidx, false);
+    1363             get_w2m_product(tr_w2m, nidx, true );
+    1364 
+    1365             add_inst(tr_m2w, tr_w2m, gas_idx, nidx );
+    1366         }
+    1367     }
+    1368 
+    1369     strid::Narrow( inst_f4,   inst );
+    1370     strid::Narrow( iinst_f4, iinst );
+    1371 }
 
 
 
