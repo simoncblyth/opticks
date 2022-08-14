@@ -210,7 +210,9 @@ void G4CXOpticks::setGeometry(GGeo* gg_)
 {
     LOG(LEVEL); 
     gg = gg_ ; 
-    CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ; 
+    const stree* st = tr ? tr->st : nullptr ; 
+
+    CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg, st ) ; 
     setGeometry(fd_); 
 
     // SAVING HERE(AFTER GGeo->CSGFoundry) TEMPORARILY : FOR INTEGRATION DEBUGGING  

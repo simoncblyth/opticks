@@ -556,10 +556,11 @@ std::string QEvent::getMeta() const
 }
 NP* QEvent::gatherComponent(unsigned comp) const 
 {
+    LOG(LEVEL) << "[ comp " << comp ; 
     unsigned mask = SEventConfig::CompMask(); 
     bool proceed = (mask & comp) != 0 ; 
     NP* a = proceed ? gatherComponent_(comp) : nullptr ;
-    LOG(LEVEL) << " comp " << comp << " proceed " << proceed << " a " <<  a ; 
+    LOG(LEVEL) << "[ comp " << comp << " proceed " << proceed << " a " <<  a ; 
     return a ; 
 }
 NP* QEvent::gatherComponent_(unsigned comp) const 

@@ -307,11 +307,9 @@ void SBT::createIAS()
 void SBT::createIAS_Standard()
 {
     unsigned num_ias = foundry->getNumUniqueIAS() ; 
-    for(unsigned i=0 ; i < num_ias ; i++)
-    {
-        unsigned ias_idx = foundry->ias[i]; 
-        createIAS(ias_idx); 
-    }
+    assert( num_ias == 1 );  
+    unsigned ias_idx = 0 ; 
+    createIAS(ias_idx); 
 }
 
 /**
@@ -453,8 +451,8 @@ std::string SBT::descIAS(const std::vector<qat4>& inst ) const
     for(unsigned i=0 ; i < inst.size() ; i++)
     {
         const qat4& q = inst[i] ;   
-        unsigned ins_idx, gas_idx, ias_idx ;  
-        q.getIdentity(ins_idx, gas_idx, ias_idx );
+        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
 
         // collect ins_idx for each gas_idx 
         ins_idx_per_gas[gas_idx].push_back(ins_idx); 
@@ -463,7 +461,8 @@ std::string SBT::descIAS(const std::vector<qat4>& inst ) const
            << " i "       << std::setw(10) << i 
            << " ins_idx " << std::setw(10) << ins_idx 
            << " gas_idx " << std::setw(10) << gas_idx 
-           << " ias_idx " << std::setw(10) << ias_idx 
+           << " sensor_identifier " << std::setw(10) << sensor_identifier
+           << " sensor_index " << std::setw(10) << sensor_index
            << std::endl
            ; 
     }
@@ -516,11 +515,14 @@ void SBT::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>&
 
     for(unsigned i=0 ; i < num_select ; i++)
     {
-        unsigned gas_idx = solid_selection[i] ; 
         int ii = int(i) - int(middle) ; 
 
+        unsigned gas_idx = solid_selection[i] ; 
+        unsigned sensor_identifier = 0 ; 
+        unsigned sensor_index = 0 ; 
+ 
         qat4 q ; 
-        q.setIdentity(ins_idx, gas_idx, ias_idx );
+        q.setIdentity(ins_idx, gas_idx, sensor_identifier, sensor_index );
         q.q3.f.x = 2.0*mxe*float(ii) ;   
 
         inst.push_back(q); 
