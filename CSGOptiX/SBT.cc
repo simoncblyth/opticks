@@ -517,9 +517,9 @@ void SBT::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>&
     {
         int ii = int(i) - int(middle) ; 
 
-        unsigned gas_idx = solid_selection[i] ; 
-        unsigned sensor_identifier = 0 ; 
-        unsigned sensor_index = 0 ; 
+        int gas_idx = solid_selection[i] ; 
+        int sensor_identifier = -1 ; 
+        int sensor_index = -1 ; 
  
         qat4 q ; 
         q.setIdentity(ins_idx, gas_idx, sensor_identifier, sensor_index );

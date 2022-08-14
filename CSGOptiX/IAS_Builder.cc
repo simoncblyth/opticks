@@ -51,7 +51,7 @@ void IAS_Builder::Build(IAS& ias, const std::vector<qat4>& ias_inst, const SBT* 
     for(unsigned i=0 ; i < num_ias_inst ; i++)
     {
         const qat4& q = ias_inst[i] ;   
-        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
+        int ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
         q.getIdentity(ins_idx, gas_idx, sensor_identifier, sensor_index );
         unsigned prim_idx = 0u ;  // need offset for the outer prim(aka layer) of the GAS 
 

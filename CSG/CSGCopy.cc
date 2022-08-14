@@ -314,14 +314,14 @@ void CSGCopy::copySolidInstances()
     unsigned sNumInst = src->getNumInst(); 
     for(unsigned i=0 ; i < sNumInst ; i++)
     {
-        unsigned sInstIdx = i ; 
+        int sInstIdx = i ; 
         const qat4* ins = src->getInst(sInstIdx) ; 
 
-        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
         ins->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index ); 
 
         assert( ins_idx == sInstIdx ); 
-        assert( gas_idx < sNumSolid ); 
+        assert( gas_idx < int(sNumSolid) ); 
 
         int sSolidIdx = gas_idx ; 
         int dSolidIdx = solidMap[sSolidIdx] ; 

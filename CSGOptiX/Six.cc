@@ -397,16 +397,16 @@ optix::Group Six::createSolidSelectionIAS(unsigned ias_idx, const std::vector<un
 
 
     std::vector<qat4> inst ; 
-    unsigned ins_idx = 0 ; 
+    int ins_idx = 0 ; 
     unsigned middle = num_select/2 ; 
 
     for(unsigned i=0 ; i < num_select ; i++)
     {
-        unsigned gas_idx = solid_selection[i] ; 
         int ii = int(i) - int(middle) ; 
 
-        unsigned sensor_identifier = 0 ; 
-        unsigned sensor_index = 0 ; 
+        int gas_idx = solid_selection[i] ; 
+        int sensor_identifier = -1 ; 
+        int sensor_index = -1 ; 
 
         qat4 q ; 
         q.setIdentity(ins_idx, gas_idx, sensor_identifier, sensor_index  );
@@ -457,7 +457,7 @@ optix::Group Six::createIAS(const std::vector<qat4>& inst )
     {
         const qat4& qc = inst[i] ; 
 
-        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
         qc.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
 
         /*

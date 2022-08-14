@@ -324,19 +324,19 @@ struct qat4
         *(aabb + 5) = tma.z ; 
     }
 
-    QAT4_METHOD void getIdentity(unsigned& ins_idx, unsigned& gas_idx, unsigned& sensor_identifier, unsigned& sensor_index ) const 
+    QAT4_METHOD void getIdentity(int& ins_idx, int& gas_idx, int& sensor_identifier, int& sensor_index ) const 
     {
-        ins_idx           = q0.u.w - 1u ; 
-        gas_idx           = q1.u.w - 1u ; 
-        sensor_identifier = q2.u.w - 1u ; 
-        sensor_index      = q3.u.w - 1u ; 
+        ins_idx           = q0.i.w ;   // formerly used unsigbed and "- 1" 
+        gas_idx           = q1.i.w ; 
+        sensor_identifier = q2.i.w ; 
+        sensor_index      = q3.i.w  ; 
     }
-    QAT4_METHOD void setIdentity(unsigned ins_idx, unsigned gas_idx, unsigned sensor_identifier, unsigned sensor_index )
+    QAT4_METHOD void setIdentity(int ins_idx, int gas_idx, int sensor_identifier, int sensor_index )
     {
-        q0.u.w = ins_idx + 1u ; 
-        q1.u.w = gas_idx + 1u ; 
-        q2.u.w = sensor_identifier + 1u ; 
-        q3.u.w = sensor_index + 1u ; 
+        q0.i.w = ins_idx ;             // formerly unsigned and "+ 1"
+        q1.i.w = gas_idx ; 
+        q2.i.w = sensor_identifier ; 
+        q3.i.w = sensor_index ; 
     }
     QAT4_METHOD void clearIdentity() // prepare for matrix multiply by clearing any auxiliary info in the "spare" 4th column 
     {
@@ -348,15 +348,15 @@ struct qat4
 
     // collects unique ins/gas/ias indices found in qv vector of instances
     static QAT4_METHOD void find_unique(const std::vector<qat4>& qv, 
-              std::vector<unsigned>& ins, 
-              std::vector<unsigned>& gas, 
-              std::vector<unsigned>& s_ident, 
-              std::vector<unsigned>& s_index )
+              std::vector<int>& ins, 
+              std::vector<int>& gas, 
+              std::vector<int>& s_ident, 
+              std::vector<int>& s_index )
        {
          for(unsigned i=0 ; i < qv.size() ; i++)
          {
              const qat4& q = qv[i] ; 
-             unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
+             int ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
              q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 
              if(std::find(ins.begin(), ins.end(), ins_idx) == ins.end() ) ins.push_back(ins_idx); 
@@ -368,13 +368,13 @@ struct qat4
     } 
 
     // count the number of instances with the provided ias_idx, that are among the emm if that is non-zero 
-    static QAT4_METHOD unsigned count_ias( const std::vector<qat4>& qv , unsigned ias_idx_, unsigned long long emm)
+    static QAT4_METHOD unsigned count_ias( const std::vector<qat4>& qv , int /*ias_idx*/, unsigned long long emm)
     {
         unsigned count = 0 ; 
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            int ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
             q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             unsigned long long gas_idx_ull = gas_idx ; 
             bool gas_enabled = emm == 0ull ? true : emm & ( 0x1ull << gas_idx_ull ) ; 
@@ -383,12 +383,12 @@ struct qat4
         return count ; 
     }
     // select instances with the provided ias_idx, that are among the emm if that is non-zero,  ordered as they are found
-    static QAT4_METHOD void select_instances_ias(const std::vector<qat4>& qv, std::vector<qat4>& select_qv, unsigned ias_idx_, unsigned long long emm  )
+    static QAT4_METHOD void select_instances_ias(const std::vector<qat4>& qv, std::vector<qat4>& select_qv, int /*ias_idx*/, unsigned long long emm  )
     {
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            int ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
             q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             unsigned long long gas_idx_ull = gas_idx ; 
             bool gas_enabled = emm == 0ull ? true : emm & ( 0x1ull << gas_idx_ull ) ; 
@@ -398,51 +398,51 @@ struct qat4
 
 
     // count the number of instances with the provided gas_idx 
-    static QAT4_METHOD unsigned count_gas( const std::vector<qat4>& qv , unsigned gas_idx_ )
+    static QAT4_METHOD unsigned count_gas( const std::vector<qat4>& qv , int gas_idx_ )
     {
         unsigned count = 0 ; 
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            int ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
             q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             if( gas_idx_ == gas_idx ) count += 1 ;
         }
         return count ; 
     }
     // select instances with the provided gas_idx, ordered as they are found
-    static QAT4_METHOD void select_instances_gas(const std::vector<qat4>& qv, std::vector<qat4>& select_qv, unsigned gas_idx_ )
+    static QAT4_METHOD void select_instances_gas(const std::vector<qat4>& qv, std::vector<qat4>& select_qv, int gas_idx_ )
     {
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            int ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
             q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             if( gas_idx_ == gas_idx ) select_qv.push_back(q) ;
         }
     }
 
     // select instance pointers with the provided gas_idx, ordered as they are found
-    static QAT4_METHOD void select_instance_pointers_gas(const std::vector<qat4>& qv, std::vector<const qat4*>& select_qi, unsigned gas_idx_ )
+    static QAT4_METHOD void select_instance_pointers_gas(const std::vector<qat4>& qv, std::vector<const qat4*>& select_qi, int gas_idx_ )
     {
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4* qi = qv.data() + i ; 
-            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            int ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
             qi->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             if( gas_idx_ == gas_idx ) select_qi.push_back(qi) ;
         }
     }
 
     // return index of the ordinal-th instance with the provided gas_idx or -1 if not found
-    static QAT4_METHOD int find_instance_gas(const std::vector<qat4>& qv, unsigned gas_idx_, unsigned ordinal  )
+    static QAT4_METHOD int find_instance_gas(const std::vector<qat4>& qv, int gas_idx_, unsigned ordinal  )
     {
         unsigned count = 0 ;
         int index = -1 ;  
         for(unsigned i=0 ; i < qv.size() ; i++)
         {
             const qat4& q = qv[i] ; 
-            unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
+            int ins_idx,  gas_idx, sensor_identifier, sensor_index  ; 
             q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
             if( gas_idx_ == gas_idx )
             {
@@ -557,7 +557,7 @@ struct qat4
 
     QAT4_METHOD std::string descId() const 
     {
-        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
+        int ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
         getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 
         std::stringstream ss ; 

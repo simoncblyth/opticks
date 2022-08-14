@@ -524,7 +524,7 @@ std::string CSGFoundry::descInstance(unsigned idx) const
     else
     {
         const qat4& q = inst[idx] ;      
-        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
         q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
 
 
@@ -550,7 +550,7 @@ std::string CSGFoundry::descInst(unsigned ias_idx_, unsigned long long emm ) con
     for(unsigned i=0 ; i < inst.size() ; i++)
     {
         const qat4& q = inst[i] ;      
-        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
         q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
 
         bool gas_enabled = emm == 0ull ? true : ( emm & (0x1ull << gas_idx)) ;  
@@ -596,7 +596,7 @@ AABB CSGFoundry::iasBB(unsigned ias_idx_, unsigned long long emm ) const
     {
         const qat4& q = inst[i] ;      
 
-        unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+        int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
         q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
 
 
@@ -2652,27 +2652,27 @@ unsigned CSGFoundry::getNumUniqueINS() const
 
 
 
-unsigned CSGFoundry::getNumInstancesIAS(unsigned ias_idx, unsigned long long emm) const
+unsigned CSGFoundry::getNumInstancesIAS(int ias_idx, unsigned long long emm) const
 {
     return qat4::count_ias(inst, ias_idx, emm );  
 }
-void CSGFoundry::getInstanceTransformsIAS(std::vector<qat4>& select_inst, unsigned ias_idx, unsigned long long emm ) const 
+void CSGFoundry::getInstanceTransformsIAS(std::vector<qat4>& select_inst, int ias_idx, unsigned long long emm ) const 
 {
     qat4::select_instances_ias(inst, select_inst, ias_idx, emm ) ;
 }
 
 
-unsigned CSGFoundry::getNumInstancesGAS(unsigned gas_idx) const
+unsigned CSGFoundry::getNumInstancesGAS(int gas_idx) const
 {
     return qat4::count_gas(inst, gas_idx );  
 }
 
-void CSGFoundry::getInstanceTransformsGAS(std::vector<qat4>& select_qv, unsigned gas_idx ) const 
+void CSGFoundry::getInstanceTransformsGAS(std::vector<qat4>& select_qv, int gas_idx ) const 
 {
     qat4::select_instances_gas(inst, select_qv, gas_idx ) ;
 }
 
-void CSGFoundry::getInstancePointersGAS(std::vector<const qat4*>& select_qi, unsigned gas_idx ) const 
+void CSGFoundry::getInstancePointersGAS(std::vector<const qat4*>& select_qi, int gas_idx ) const 
 {
     qat4::select_instance_pointers_gas(inst, select_qi, gas_idx ) ;
 }
@@ -2687,7 +2687,7 @@ BUT that iidx is not the global instance index it is the index
 within occurences of the gas_idx_ GAS/compositeSolid
 
 **/
-int CSGFoundry::getInstanceIndex(unsigned gas_idx_ , unsigned ordinal) const 
+int CSGFoundry::getInstanceIndex(int gas_idx_ , unsigned ordinal) const 
 {
     return qat4::find_instance_gas(inst, gas_idx_, ordinal);
 }
@@ -2703,7 +2703,7 @@ from the global instance index argument.
 
 **/
 
-const qat4* CSGFoundry::getInstanceGAS(unsigned gas_idx_ , unsigned ordinal) const 
+const qat4* CSGFoundry::getInstanceGAS(int gas_idx_ , unsigned ordinal) const 
 {
     int index = getInstanceIndex(gas_idx_, ordinal); 
     return index > -1 ? &inst[index] : nullptr ; 
@@ -2715,7 +2715,7 @@ std::string CSGFoundry::descGAS() const
     ss << desc() << std::endl ; 
     for(unsigned i=0 ; i < gas.size() ; i++)
     {   
-        unsigned gas_idx = gas[i]; 
+        int gas_idx = gas[i]; 
         unsigned num_inst_gas = getNumInstancesGAS(gas_idx); 
         ss << std::setw(5) << gas_idx << ":" << std::setw(8) << num_inst_gas << std::endl ;  
     }   

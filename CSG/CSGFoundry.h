@@ -299,15 +299,15 @@ struct CSG_API CSGFoundry : public SGeo
     unsigned getNumUniqueGAS() const ;
     unsigned getNumUniqueINS() const ;
 
-    unsigned getNumInstancesIAS(unsigned ias_idx, unsigned long long emm) const ;
-    void     getInstanceTransformsIAS(std::vector<qat4>& select_inst, unsigned ias_idx, unsigned long long emm ) const ;
+    unsigned getNumInstancesIAS(int ias_idx, unsigned long long emm) const ;
+    void     getInstanceTransformsIAS(std::vector<qat4>& select_inst, int ias_idx, unsigned long long emm ) const ;
 
-    unsigned getNumInstancesGAS(unsigned gas_idx) const ;
-    void     getInstanceTransformsGAS(std::vector<qat4>&  select_qv, unsigned gas_idx ) const ;  // collecting by value : TODO eliminate, swiching to getInstancePointersGAS
-    void     getInstancePointersGAS(  std::vector<const qat4*>& select_qi, unsigned gas_idx ) const ;  // collecting pointers to the actual instances 
+    unsigned getNumInstancesGAS(int gas_idx) const ;
+    void     getInstanceTransformsGAS(std::vector<qat4>&  select_qv, int gas_idx ) const ;  // collecting by value : TODO eliminate, swiching to getInstancePointersGAS
+    void     getInstancePointersGAS(  std::vector<const qat4*>& select_qi, int gas_idx ) const ;  // collecting pointers to the actual instances 
 
-    int       getInstanceIndex(unsigned gas_idx_ , unsigned ordinal) const ; 
-    const qat4* getInstanceGAS(unsigned gas_idx_ , unsigned ordinal=0) const  ;
+    int       getInstanceIndex(int gas_idx_ , unsigned ordinal) const ; 
+    const qat4* getInstanceGAS(int gas_idx_ , unsigned ordinal=0) const  ;
 
     // id 
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ; 
@@ -375,10 +375,10 @@ struct CSG_API CSGFoundry : public SGeo
     float4*     d_plan ; 
     qat4*       d_itra ; 
 
-    std::vector<unsigned>  ins ; 
-    std::vector<unsigned>  gas ; 
-    std::vector<unsigned>  sensor_identifier ; 
-    std::vector<unsigned>  sensor_index ; 
+    std::vector<int> ins ; 
+    std::vector<int> gas ; 
+    std::vector<int> sensor_identifier ; 
+    std::vector<int> sensor_index ; 
 
     SName*    id ;   // holds the meshname vector of G4VSolid names 
 

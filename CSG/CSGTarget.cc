@@ -140,10 +140,10 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
 {
     const qat4* _t = foundry->getInst(inst_idx); 
 
-    unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+    int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
     _t->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 
-    assert( int(ins_idx) == inst_idx ); 
+    assert( ins_idx == inst_idx ); 
     fr.set_inst(inst_idx); 
    
     // HMM: these values are already there inside the matrices ? 
@@ -260,7 +260,7 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
 
     qat4 q(t->cdata());   // copy the instance (transform and identity info)
 
-    unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ;
+    int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
     q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
     q.clearIdentity();           // clear before doing any transforming 
 

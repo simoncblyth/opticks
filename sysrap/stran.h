@@ -682,7 +682,7 @@ template<typename T>
 const qat4* Tran<T>::Invert( const qat4* q, T epsilon )
 {
 
-    unsigned ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
+    int ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
     q->getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
 
     Tran<T>* tr = ConvertToTran(q) ; 

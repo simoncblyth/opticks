@@ -243,8 +243,7 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     {
         int s_identifier = sensor_id[i] ;  
         int s_index = sensor_index[i] ;  
-        assert( s_index > 0 );   // 1-based index
-        assert( s_identifier > -1 ); 
+        // these are -1 for non-sensors        
 
         glm::mat4 it = mm->getITransform_(i); 
     
