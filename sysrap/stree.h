@@ -206,7 +206,7 @@ struct stree
     static std::string FormPath(const char* base, const char* rel ); 
 
     void save_( const char* fold ) const ;
-    void save( const char* base, const char* rel=nullptr ) const ;
+    void save( const char* base, const char* reldir=RELDIR ) const ;
 
     template<typename S, typename T>   // S:compound type T:atomic "transport" type
     static void ImportArray( std::vector<S>& vec, const NP* a ); 
@@ -972,7 +972,6 @@ inline std::string stree::desc_ancestry(int nidx, bool show_sub) const
 
 inline std::string stree::FormPath(const char* base, const char* rel ) // static
 {
-    if( rel == nullptr ) rel = RELDIR ; 
     std::stringstream ss ;    
     ss << base << "/" << rel ; 
     std::string dir = ss.str();   

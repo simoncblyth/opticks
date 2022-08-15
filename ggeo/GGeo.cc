@@ -30,6 +30,7 @@
 #include "SLog.hh"
 #include "SSim.hh"
 #include "sframe.h"
+#include "stree.h"
 #include "SProp.hh"
 #include "NP.hh"
 
@@ -153,6 +154,8 @@ GGeo* GGeo::LoadFromDir(Opticks* ok, const char* base, const char* reldir)  // s
 }
 
 
+void GGeo::setTree(stree* tree){ m_tree = tree ; }
+stree* GGeo::getTree() const {  return m_tree ; }
 
 
 /**
@@ -166,6 +169,7 @@ live=true instanciation only used from G4Opticks::translateGeometry
 
 GGeo::GGeo(Opticks* ok, bool live)
   :
+   m_tree(nullptr),
    m_log(new SLog("GGeo::GGeo","",verbose)),
    m_ok(ok ? ok : Opticks::Instance() ), 
    m_enabled_legacy_g4dae(m_ok ? m_ok->isEnabledLegacyG4DAE() : false),   // --enabled_legacy_g4dae
@@ -835,6 +839,11 @@ void GGeo::save_()
     m_sourcelib->save();
     LOG(LEVEL) << " m_bndlib.save " ; 
     m_bndlib->save();  
+
+    LOG(LEVEL) << " m_tree.save " ; 
+
+    if(m_tree) m_tree->save(idpath); 
+
 
     LOG(LEVEL) << " after saves " ; 
 

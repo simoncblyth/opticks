@@ -39,6 +39,8 @@ struct nnode ;
 #include "X4Named.hh"
 
 
+struct stree ; 
+
 template <typename T> struct nxform ; 
 template <typename T> class GPropertyMap ; 
 class GBorderSurface ; 
@@ -154,7 +156,8 @@ class X4_API X4PhysicalVolume : public X4Named
         static void GenerateTestG4Code( const Opticks* ok, int lvIdx, const G4VSolid* const solid, const nnode* raw); 
     private:
         void convertSensors_r(const G4VPhysicalVolume* const pv, int depth);
-        GVolume* convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
+        GVolume* convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, int sibdex, int parent_nidx, 
+                 const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         GVolume* convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select );
         static GVolume* MakePlaceholderNode(); 
 
@@ -168,6 +171,7 @@ class X4_API X4PhysicalVolume : public X4Named
         GBorderSurface*      findBorderSurfaceOK( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b) const ; 
         GSkinSurface*        findSkinSurfaceOK( const G4LogicalVolume* const lv) const ;
     private:
+        stree*                       m_tree ; 
         GGeo*                        m_ggeo ; 
         const G4VPhysicalVolume*     m_top ;  
         Opticks*                     m_ok ; 

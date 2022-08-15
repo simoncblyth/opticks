@@ -46,6 +46,14 @@ def check_inst(f, cf):
     check_inverse_pair(f, "inst_f4", "iinst_f4" )
     compare_f_with_cf(f, cf ) 
 
+    a_inst = cf.inst.copy() 
+    b_inst = f.inst_f4.copy() 
+
+    print("a_inst[-1]")
+    print(a_inst[-1])
+    print("b_inst[-1]")
+    print(b_inst[-1])
+
 
 def check_sensor(st):
     """
@@ -84,7 +92,9 @@ if __name__ == '__main__':
     st = stree(f)
     print(repr(st))
 
-    #check_inst(f, cf)
+    check_inst(f, cf)
+    #check_sensor(st)
 
-    check_sensor(st)
+
+
 

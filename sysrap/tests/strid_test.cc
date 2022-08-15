@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <array>
 #include <glm/glm.hpp>
 #include "strid.h"
 
@@ -115,11 +116,8 @@ void test_Narrow(int mode)
 }
 
 
-
-int main(int argc, char** argv)
+void test_Encode_Decode()
 {
-
- 
     for(int mode=-1 ; mode < 2 ; mode++)
     {
         test_Encode_Decode(mode); 
@@ -128,7 +126,51 @@ int main(int argc, char** argv)
 
     test_Decode_Unset<double,uint64_t>("test_Decode_Unset<double,uint64_t>"); 
     test_Decode_Unset<float, uint32_t>("test_Decode_Unset<float, uint32_t>"); 
+}
 
+
+void test_Read_()
+{
+    std::cout << "test_Read_" << std::endl ; 
+
+    std::array<double, 16> src = {{ 
+         0.,  1.,  2.,  3.,
+         4.,  5.,  6.,  7.,
+         8.,  9., 10., 11.,
+        12., 13., 14., 15.  }} ; 
+
+    glm::tmat4x4<double> d0(1.); 
+
+    strid::Read_( d0, src.data() ); 
+    std::cout << "d0\n" << strid::Desc_(d0) << std::endl ; 
+}
+
+void test_Read()
+{
+    std::cout << "test_Read" << std::endl ; 
+
+    std::array<float, 16> src = {{ 
+         0.f,  1.f,  2.f,  3.f,
+         4.f,  5.f,  6.f,  7.f,
+         8.f,  9.f, 10.f, 11.f,
+        12.f, 13.f, 14.f, 15.f  }} ; 
+
+    glm::tmat4x4<double> d0(1.); 
+    glm::tmat4x4<double> d1(1.); 
+
+    strid::Read( d0, src.data(), false ); 
+    strid::Read( d1, src.data(), true  ); 
+
+    std::cout << "d0\n" << strid::Desc_(d0) << std::endl ; 
+    std::cout << "d1\n" << strid::Desc_(d1) << std::endl ; 
+}
+
+
+int main(int argc, char** argv)
+{
+    //test_Encode_Decode();  
+    test_Read(); 
+    test_Read_(); 
 
     return 0 ; 
 }

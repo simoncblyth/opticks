@@ -53,6 +53,8 @@ GVolume::GVolume( unsigned index, GMatrix<float>* transform, const GMesh* mesh, 
     m_pt(NULL),
     m_parallel_node(NULL), 
     m_copyNumber(-1),
+    m_nidx(-1),
+    m_lvidx(-1),
     m_origin_node(origin_node),
     m_origin_copyNumber(origin_copyNumber),
     m_outer_volume(NULL)
@@ -77,6 +79,30 @@ unsigned GVolume::getCopyNumber() const
 {
     return m_copyNumber ; 
 }
+
+void GVolume::set_nidx(int nidx)
+{
+    m_nidx = nidx ; 
+}
+int GVolume::get_nidx() const 
+{    
+   return m_nidx ;  
+}
+
+void GVolume::set_lvidx(int lvidx)
+{
+    m_lvidx = lvidx ; 
+}
+int GVolume::get_lvidx() const 
+{    
+   return m_lvidx ;  
+}
+
+
+
+
+
+
 
 void GVolume::setPVName(const char* pvname)
 {

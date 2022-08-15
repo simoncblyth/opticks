@@ -87,6 +87,17 @@ struct strid
     template<typename T>
     static T DiffFromIdentity( const glm::tmat4x4<T>& tr ); 
 
+
+
+
+
+    template<typename T>
+    static void Read_(  glm::tmat4x4<T>& dst, const T* src ); 
+
+    template<typename T, typename S>
+    static void Read(  glm::tmat4x4<T>& dst, const S* src, bool transpose ); 
+
+
 }; 
 
 
@@ -240,9 +251,9 @@ inline std::string strid::Desc_( const glm::tmat4x4<T>& tr )
 {
     const T* tr00 = glm::value_ptr(tr) ; 
     std::stringstream ss ; 
-    for(unsigned r=0 ; r < 4 ; r++) for(unsigned c=0 ; c < 4 ; c++)
+    for(int r=0 ; r < 4 ; r++) for(int c=0 ; c < 4 ; c++)
     { 
-        unsigned i = r*4 + c ; 
+        int i = r*4 + c ; 
         if( c == 0 ) ss << std::endl ;
         ss << std::fixed << std::setw(10) << std::setprecision(3) << tr00[i] << " " ;  
         if( i == 15 ) ss << std::endl ; 
@@ -429,4 +440,27 @@ inline T strid::DiffFromIdentity(const glm::tmat4x4<T>& tr)
     }
     return max_delta ; 
 }
+
+
+
+
+template<typename T>
+inline void strid::Read_(  glm::tmat4x4<T>& dst, const T* src )
+{
+    memcpy( glm::value_ptr(dst), src, sizeof(T)*16 );  
+}
+
+template<typename T, typename S>
+inline void strid::Read(  glm::tmat4x4<T>& dst, const S* src, bool transpose )
+{
+    T* d = glm::value_ptr(dst) ;   
+    for(int r=0 ; r < 4 ; r++) for(int c=0 ; c < 4 ; c++) 
+    {
+        int i = r*4+c ; 
+        int j = transpose ? c*4+r : i ; 
+
+        d[j] = T(src[i]) ;     
+    }
+}
+
 

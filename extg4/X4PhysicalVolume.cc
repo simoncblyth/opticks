@@ -21,6 +21,10 @@
 #include <sstream>
 #include <iomanip>
 
+
+#include "snode.h"
+#include "stree.h"
+
 #include "G4VPhysicalVolume.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalSurface.hh"
@@ -139,6 +143,7 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top, const char* 
 X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const top)
     :
     X4Named("X4PhysicalVolume"),
+    m_tree(nullptr),
     m_ggeo(ggeo),
     m_top(top),
     m_ok(m_ggeo->getOpticks()), 
@@ -1342,6 +1347,10 @@ void X4PhysicalVolume::convertStructure()
     assert(m_top) ;
     LOG(LEVEL) << "[ creating large tree of GVolume instances" ; 
 
+    m_tree = new stree ; 
+    m_ggeo->setTree(m_tree); 
+    
+
     const G4VPhysicalVolume* pv = m_top ; 
     GVolume* parent = NULL ; 
     const G4VPhysicalVolume* parent_pv = NULL ; 
@@ -1351,7 +1360,10 @@ void X4PhysicalVolume::convertStructure()
 
     OK_PROFILE("_X4PhysicalVolume::convertStructure");
 
-    m_root = convertStructure_r(pv, parent, depth, parent_pv, recursive_select );  // set root GVolume 
+    int parent_sibdex = -1 ; 
+    int parent_nidx = -1 ; 
+
+    m_root = convertStructure_r(pv, parent, depth, parent_sibdex, parent_nidx, parent_pv, recursive_select );  // set root GVolume 
 
     m_ggeo->setRootVolume(m_root); 
 
@@ -1418,7 +1430,9 @@ G4LogicalVolume::GetNoDaughters return type change 1042:G4int, 1062:size_t
 
 **/
 
-GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select )
+GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv, 
+        GVolume* parent, int depth, int sibdex, int parent_nidx, 
+        const G4VPhysicalVolume* const parent_pv, bool& recursive_select )
 {
 #ifdef X4_PROFILE
      float t0 = BTimeStamp::RealTime(); 
@@ -1430,13 +1444,57 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
      float t1 = BTimeStamp::RealTime() ; 
      m_convertNode_dt += t1 - t0 ; 
 #endif
-
      const G4LogicalVolume* const lv = pv->GetLogicalVolume();
+     int num_child = int(lv->GetNoDaughters());  
+
+     // follow stree aproach from U4Tree::convertNodes_r
+     int nidx = m_tree->nds.size() ;  // 0-based node index
+     volume->set_nidx(nidx); 
+
+     int copyno = volume->getCopyNumber(); 
+     int lvid = volume->get_lvidx() ; 
+
+
+
+     glm::tmat4x4<double> tr_m2w(1.) ;   
+     GMatrixF* ltransform = volume->getLevelTransform(); 
+     float* ltr = (float*)ltransform->getPointer() ; // CAUTION: THIS IS NOT MEMORY ORDER OF GMatrix 
+     strid::Read(tr_m2w, ltr, false );   // MAY BE TRANSPOSED ?
+
+
+     snode nd ;
+     nd.index = nidx ;
+     nd.depth = depth ;   
+     nd.sibdex = sibdex ; 
+     nd.parent = parent_nidx ;   
+
+     nd.num_child = num_child ; 
+     nd.first_child = -1 ;     // gets changed inplace from lower recursion level 
+     nd.next_sibling = -1 ; 
+     nd.lvid = lvid ; 
+     nd.copyno = copyno ; 
+
+     nd.sensor_id = -1 ;    
+     nd.sensor_index = -1 ; 
+    
+     m_tree->nds.push_back(nd); 
+     m_tree->m2w.push_back(tr_m2w);
+      
+     if(sibdex == 0 && nd.parent > -1) m_tree->nds[nd.parent].first_child = nd.index ;
+     // record first_child nidx into parent snode
+
+     int p_sib = -1 ;
+     int i_sib = -1 ;
   
-     for (size_t i=0 ; i < size_t(lv->GetNoDaughters()) ;i++ )
+     for (int i=0 ; i < num_child ;i++ )
      {
+         p_sib = i_sib ;  // node index of previous child 
+
          const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);
-         convertStructure_r(child_pv, volume, depth+1, pv, recursive_select );
+         GVolume* child = convertStructure_r(child_pv, volume, depth+1, i, nidx, pv, recursive_select );
+
+         int i_sib = child->get_nidx();  
+         if(p_sib > -1) m_tree->nds[p_sib].next_sibling = i_sib ;   // sib->sib linkage 
      }
 
      return volume   ; 
@@ -1839,6 +1897,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node, origin_copyNumber );
     volume->setBoundary( boundary );   // must setBoundary before adding sensor volume 
     volume->setCopyNumber(copyNumber);  // NB within instances this is changed by GInstancer::labelRepeats_r when m_duplicate_outernode_copynumber is true
+    volume->set_lvidx( lvIdx ); 
 
 
     LOG(debug) << " instanciate GVolume node_count  " << m_node_count ; 

@@ -8,6 +8,9 @@
 
 struct U4Transform
 {
+    static void Read(     const glm::tmat4x4<double>& dst, const double* src );
+    static void ReadWide( const glm::tmat4x4<double>& dst, const float*  src );
+ 
     static void WriteTransform(      double* dst, const glm::tmat4x4<double>& src ); 
     static void WriteObjectTransform(double* dst, const G4VPhysicalVolume* const pv) ;  // MOST USED BY OPTICKS
     static void WriteFrameTransform( double* dst, const G4VPhysicalVolume* const pv) ; 
@@ -25,23 +28,25 @@ struct U4Transform
     static unsigned Check(const std::array<T,16>& a); 
 };
 
-void U4Transform::WriteTransform( double* dst, const glm::tmat4x4<double>& src )
+
+// HMM: no G4 types here, this should be elsewhere
+inline void U4Transform::WriteTransform( double* dst, const glm::tmat4x4<double>& src )
 {
     memcpy( dst, glm::value_ptr(src), sizeof(double)*16 );  
 }
-void U4Transform::WriteObjectTransform(double* dst, const G4VPhysicalVolume* const pv)
+inline void U4Transform::WriteObjectTransform(double* dst, const G4VPhysicalVolume* const pv)
 {
     glm::tmat4x4<double> tr(1.); 
     GetObjectTransform(tr, pv ); 
     WriteTransform(dst, tr ); 
 }
-void U4Transform::WriteFrameTransform(double* dst, const G4VPhysicalVolume* const pv)
+inline void U4Transform::WriteFrameTransform(double* dst, const G4VPhysicalVolume* const pv)
 {
     glm::tmat4x4<double> tr(1.); 
     GetFrameTransform(tr, pv ); 
     WriteTransform(dst, tr ); 
 }
-void U4Transform::GetObjectTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) 
+inline void U4Transform::GetObjectTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) 
 {
    // preferred for interop with glm/Opticks : obj relative to mother
     G4RotationMatrix rot = pv->GetObjectRotationValue() ; 
@@ -49,7 +54,7 @@ void U4Transform::GetObjectTransform(glm::tmat4x4<double>& tr, const G4VPhysical
     G4Transform3D    tra(rot,tla);
     Convert_RotateThenTranslate(tr, tra);
 }
-void U4Transform::GetFrameTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) 
+inline void U4Transform::GetFrameTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) 
 {
     const G4RotationMatrix* rotp = pv->GetFrameRotation() ;
     G4ThreeVector    tla = pv->GetFrameTranslation() ;
@@ -73,7 +78,7 @@ Translation first followed by rotation.
 **/
 
 template<typename T>
-void U4Transform::Convert_RotateThenTranslate(glm::tmat4x4<T>& d,  const G4Transform3D& s ) // static
+inline void U4Transform::Convert_RotateThenTranslate(glm::tmat4x4<T>& d,  const G4Transform3D& s ) // static
 {
     T zero(0.); 
     T one(1.); 
@@ -103,7 +108,7 @@ See ana/translate_rotate.py for sympy demo::
 **/
 
 template<typename T>
-void U4Transform::Convert_TranslateThenRotate(glm::tmat4x4<T>& d,  const G4Transform3D& s ) // static
+inline void U4Transform::Convert_TranslateThenRotate(glm::tmat4x4<T>& d,  const G4Transform3D& s ) // static
 {
     T rxx = s.xx() ; 
     T rxy = s.xy() ; 
@@ -146,7 +151,7 @@ void U4Transform::Convert_TranslateThenRotate(glm::tmat4x4<T>& d,  const G4Trans
 
 
 template<typename T>
-unsigned U4Transform::Check(const std::array<T,16>& a) // static
+inline unsigned U4Transform::Check(const std::array<T,16>& a) // static
 {
     unsigned num_nan(0);
     unsigned num_inf(0);

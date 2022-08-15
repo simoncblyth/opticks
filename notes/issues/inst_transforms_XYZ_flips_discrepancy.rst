@@ -935,4 +935,17 @@ Current stree transforms match the CF transforms from aug5
 Hmm : given that GGeo has not long to live better to get the transform stack from Geant4 model ?
 ---------------------------------------------------------------------------------------------------
 
+BUT that is almost what stree is doing, so will probably not help.  
+
+* contrast the simple stree transform approach with the GGeo/GNode approach and 
+  add what is needed to allow easy access to stack ?
+
+
+* HMM: howabout debug discrepancy by populating an stree from X4PhysicalVolume::convertNode
+  analogously to U4Tree::convertNodes_r 
+
+
+
+
+
 

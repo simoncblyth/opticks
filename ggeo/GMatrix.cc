@@ -125,8 +125,6 @@ GMatrix<T>::GMatrix(const T* buf) :
 }
 
 
-
-
 template<typename T>
 GMatrix<T>::GMatrix(
           T _a1, T _a2, T _a3, T _a4,
@@ -141,6 +139,17 @@ GMatrix<T>::GMatrix(
       d1(_d1), d2(_d2), d3(_d3), d4(_d4) 
 {   
 }
+
+/**
+GMatrix<T>::copyTo
+--------------------
+
+CAUTION : the memory order of the instance is transposed 
+compared to that of the copyTo buffer 
+
+THATS JUST CONFUSING 
+
+**/
 
 
 template <typename T>

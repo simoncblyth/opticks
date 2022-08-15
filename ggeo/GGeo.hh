@@ -34,6 +34,7 @@ template <typename T> class NPY ;
 
 struct SSim ; 
 struct sframe ; 
+struct stree ; 
 
 class NLookup ; 
 class BMeta ;
@@ -122,6 +123,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         static GGeo* Get();  // statically provides the last instanciated GGeo instance
         static GGeo* Load(Opticks* ok); 
         static GGeo* LoadFromDir(Opticks* ok, const char* base, const char* reldir=RELDIR ); 
+    public:
+        // debugging inst transform discrepancy
+        void setTree(stree* tree) ; 
+        stree* getTree() const ; 
     public:
         // see GGeoCfg.hh
         static const char* PICKFACE ;   
@@ -448,6 +453,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
         glm::ivec4& getPickFace(); 
     private:
         static GGeo*                  fInstance ; 
+        stree*                        m_tree ; 
         SLog*                         m_log ; 
         Opticks*                      m_ok ;  
         bool                          m_enabled_legacy_g4dae ; 
