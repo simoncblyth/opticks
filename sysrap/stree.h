@@ -999,15 +999,15 @@ inline void stree::save_( const char* fold ) const
     if(mtfold) mtfold->save(fold, MTFOLD) ; 
 
 
-    if(inst.size() > 0 )     NP::Write(fold,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
-    if(iinst.size() > 0 )    NP::Write(fold,  IINST,    (double*)iinst.data(), iinst.size(), 4, 4 ); 
+    NP::Write(fold,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
+    NP::Write(fold,  IINST,    (double*)iinst.data(), iinst.size(), 4, 4 ); 
     // _f4 just for debug comparisons : narrowing normally only done in memory for upload  
-    if(inst_f4.size() > 0 )  NP::Write(fold,  INST_F4,  (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
-    if(iinst_f4.size() > 0 ) NP::Write(fold,  IINST_F4, (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
+    NP::Write(fold,  INST_F4,  (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
+    NP::Write(fold,  IINST_F4, (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
 
     assert( sensor_count == sensor_id.size() ); 
-    if(sensor_id.size() > 0 ) NP::Write<int>(    fold, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
-    if(inst_nidx.size() > 0 ) NP::Write<int>(    fold, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
+    NP::Write<int>(    fold, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
+    NP::Write<int>(    fold, INST_NIDX, (int*)inst_nidx.data(), inst_nidx.size() );
 
 }
 

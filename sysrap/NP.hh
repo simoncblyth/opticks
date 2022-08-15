@@ -3914,6 +3914,7 @@ template <typename T> void NP::Write(const char* path, const T* data, int ni_, i
         << std::endl 
         ;   
 
+    if(ni_ == 0) return ; 
     NP a(dtype.c_str(), ni_,nj_,nk_,nl_,nm_,no_) ;    
     a.read(data); 
     a.save(path); 
@@ -3987,6 +3988,7 @@ ate : 'at end'
 
 inline void NP::WriteNames(const char* path, const std::vector<std::string>& names, unsigned num_names_, bool append )
 {
+    if(names.size() == 0) return ; 
     int rc = U::MakeDirsForFile(path); 
     assert( rc == 0 ); 
 
