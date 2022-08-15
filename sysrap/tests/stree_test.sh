@@ -8,11 +8,22 @@ name=stree_test
 
 #export STBASE=/tmp/$USER/opticks/U4TreeTest
 export STBASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
+export STBASE_aug5=/tmp/$USER/opticks/ntds3_aug5/G4CXOpticks
 
 ## gets loaded from STBASE/stree
 
 export FOLD=$STBASE/stree
-export CFBASE=$STBASE
+#export CFBASE=$STBASE
+
+
+#source $OPTICKS_HOME/bin/COMMON.sh 
+#T_FOLD=$($OPTICKS_HOME/g4cx/gxt.sh fold)
+#T_CFBASE=$(upfind_cfbase $T_FOLD)  
+
+export CFBASE=$STBASE_aug5
+
+
+
 
 
 if [ "${arg/info}" != "$arg" ]; then 

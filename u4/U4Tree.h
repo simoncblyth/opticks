@@ -53,7 +53,7 @@ struct U4Tree
     void convertSolid(const G4LogicalVolume* const lv); 
 
     void convertNodes(); 
-    int  convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, snode* parent ); 
+    int  convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent ); 
 
     const G4VPhysicalVolume* get_pv_(int nidx) const ; 
     const G4PVPlacement*     get_pv(int nidx) const ; 
@@ -170,7 +170,7 @@ holding structural node info and transforms.
 
 inline void U4Tree::convertNodes()
 {
-    convertNodes_r(top, 0, -1, nullptr ); 
+    convertNodes_r(top, 0, -1, -1 ); 
 }
 
 /**
@@ -186,11 +186,10 @@ Initially tried to simply use lv->GetSensitiveDetector() to
 identify sensor nodes by that is problematic because 
 the SD is not on the volume with the copyNo and this 
 use of copyNo is detector specific.  Also not all JUNO SD
-are really sensitive. 
-
+are actually sensitive. 
 
 **/
-inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, snode* parent )
+inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent )
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
 
@@ -206,19 +205,16 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     glm::tmat4x4<double> tr_w2m(1.) ;  
     U4Transform::GetFrameTransform(tr_w2m, pv); 
 
+    std::string dig = stree::Digest(lvid, tr_m2w); 
 
-    st->m2w.push_back(tr_m2w);  
-    st->w2m.push_back(tr_w2m);  
-    pvs.push_back(pv); 
-
-    int nidx = st->nds.size() ;
+    int nidx = st->nds.size() ;  // 0-based node index
 
     snode nd ; 
 
     nd.index = nidx ;
     nd.depth = depth ;   
     nd.sibdex = sibdex ; 
-    nd.parent = parent ? parent->index : -1 ;  
+    nd.parent = parent ;  
 
     nd.num_child = num_child ; 
     nd.first_child = -1 ;     // gets changed inplace from lower recursion level 
@@ -227,26 +223,29 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     nd.copyno = copyno ; 
 
     nd.sensor_id = -1 ;     // changed later by U4Tree::identifySensitiveInstances
-    nd.sensor_index = -1 ; 
+    nd.sensor_index = -1 ;  // changed later by U4Tree::identifySensitiveInstances and stree::reorderSensors
 
+
+    pvs.push_back(pv); 
     st->nds.push_back(nd); 
-
-    std::string dig = stree::Digest(lvid, tr_m2w); 
     st->digs.push_back(dig); 
+    st->m2w.push_back(tr_m2w);  
+    st->w2m.push_back(tr_w2m);  
+
 
     if(sibdex == 0 && nd.parent > -1) st->nds[nd.parent].first_child = nd.index ; 
     // record first_child nidx into parent snode
 
     int p_sib = -1 ; 
     int i_sib = -1 ; 
-
     for (int i=0 ; i < num_child ;i++ ) 
     {
-        p_sib = i_sib ; 
-        i_sib = convertNodes_r( lv->GetDaughter(i), depth+1, i, &nd ); 
-        if(p_sib > -1) st->nds[p_sib].next_sibling = i_sib ;    
-        // sib->sib linkage, default -1 
+        p_sib = i_sib ;  // node index of previous child 
+        i_sib = convertNodes_r( lv->GetDaughter(i), depth+1, i, nd.index ); 
+        if(p_sib > -1) st->nds[p_sib].next_sibling = i_sib ; 
     }
+    // within the above loop, reach back to previous sibling snode to set the sib->sib linkage, default -1
+
     return nd.index ; 
 }
 

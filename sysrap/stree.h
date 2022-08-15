@@ -185,6 +185,8 @@ struct stree
 
     void get_ancestors(  std::vector<int>& ancestors, int nidx ) const ;
     void get_m2w_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const ; // expect reverse:false 
+    std::string desc_m2w_product(int nidx, bool reverse) const ; 
+
     void get_w2m_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const ; // expect reverse:true 
 
     void get_nodes(std::vector<int>& nodes, const char* sub) const ;
@@ -794,6 +796,41 @@ inline void stree::get_m2w_product( glm::tmat4x4<double>& transform, int nidx, b
     assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
     memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
 }
+
+
+inline std::string stree::desc_m2w_product(int nidx, bool reverse) const 
+{
+    std::vector<int> nodes ; 
+    get_ancestors(nodes, nidx); 
+    nodes.push_back(nidx); 
+    unsigned num_nodes = nodes.size();
+
+    std::stringstream ss ; 
+    ss << "stree::desc_m2w_product"
+       << " nidx " << nidx 
+       << " reverse " << reverse
+       << " num_nodes " << num_nodes 
+       << " nodes [" 
+       ; 
+    for(unsigned i=0 ; i < num_nodes ; i++ ) ss << " " << nodes[i] ; 
+    ss << "]" << std::endl ; 
+
+    glm::tmat4x4<double> xform(1.); 
+    for(unsigned i=0 ; i < num_nodes ; i++ ) 
+    {
+        int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
+        const glm::tmat4x4<double>& t = get_m2w(idx) ; 
+        xform *= t ; 
+
+        const char* so = get_soname(idx) ; 
+        ss << " i " << i << " idx " << idx << " so " << so << std::endl ; 
+        ss << strid::Desc_("t", "xform",  t, xform ) << std::endl ; 
+    }
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 /**
 stree::get_w2m_product

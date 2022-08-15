@@ -5,6 +5,9 @@ Previous :doc:`sensor_info_into_new_workflow` showed getting inst identity info 
 BUT: now getting mismatch between the transforms. 
 
 * HMM: I thought the transforms were matching previously, so recent changes may have broken them 
+
+  * see :doc:`joined_up_thinking_geometry_translation`
+
 * AHAH : could this be --gparts_transform_offset yet again ? 
 
 
@@ -569,5 +572,367 @@ GMesh/CSG_GGeo/CSGFoundry
     1838 
     1839     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, origin_node, origin_copyNumber );
     1840     volume->setBoundary( boundary );   // must setBoundary before adding sensor volume 
+
+
+
+stree::desc_m2w_product
+---------------------------
+
+Hmm its easy to access the full transform stack with stree. 
+Must less so with the old way. 
+
+
+::
+
+    284 void test_desc_m2w_product(const stree& st)
+    285 {
+    286     int ins_idx = ssys::getenvint("INS_IDX", 1 );
+    287     int num_inst = int(st.inst_nidx.size()) ; 
+    288     if(ins_idx < 0 ) ins_idx += num_inst ;
+    289     assert( ins_idx < num_inst );
+    290     
+    291     int nidx = st.inst_nidx[ins_idx] ;
+    292     std::cout
+    293          << "st.inst_nidx.size " << num_inst
+    294          << " ins_idx INS_IDX " << ins_idx
+    295          << " nidx " << nidx
+    296          << std::endl
+    297          ;
+    298 
+    299     bool reverse = false ;
+    300     std::cout << st.desc_m2w_product(nidx, reverse) << std::endl ;
+    301 }
+
+
+    epsilon:tests blyth$ INS_IDX=-1 ./stree_test.sh build_run
+    stree::load_ /tmp/blyth/opticks/ntds3/G4CXOpticks/stree
+    st.desc_sub(false)
+        0 : 1af760275cafe9ea890bfa01b0acb1d1 : 25600 de:( 6  6) 1st:194249 PMT_3inch_pmt_solid
+        1 : 0077df3ebff8aeec56c8a21518e3c887 : 12615 de:( 6  6) 1st: 70979 NNVTMCPPMTsMask_virtual
+        2 : 1e410142530e54d54db8aaaccb63b834 :  4997 de:( 6  6) 1st: 70965 HamamatsuR12860sMask_virtual
+        3 : 019f9eccb5cf94cce23ff7501c807475 :  2400 de:( 4  4) 1st:322253 mask_PMT_20inch_vetosMask_virtual
+        4 : c051c1bb98b71ccb15b0cf9c67d143ee :   590 de:( 6  6) 1st: 68493 sStrutBallhead
+        5 : 5e01938acb3e0df0543697fc023bffb1 :   590 de:( 6  6) 1st: 69083 uni1
+        6 : cdc824bf721df654130ed7447fb878ac :   590 de:( 6  6) 1st: 69673 base_steel
+        7 : 3fd85f9ee7ca8882c8caa747d0eef0b3 :   590 de:( 6  6) 1st: 70263 uni_acrylic1
+        8 : c68bd8ca598e7b6eabad75f107da5132 :   504 de:( 7  7) 1st:    15 sPanel
+
+    st.inst_nidx.size 48477 ins_idx INS_IDX 48476 nidx 65592
+    stree::desc_m2w_product nidx 65592 reverse 0 num_nodes 8 nodes [ 0 1 5 6 12 64679 65201 65592]
+     i 0 idx 0 so sWorld
+             t                                             xform
+
+         1.000      0.000      0.000      0.000                1.000      0.000      0.000      0.000 
+         0.000      1.000      0.000      0.000                0.000      1.000      0.000      0.000 
+         0.000      0.000      1.000      0.000                0.000      0.000      1.000      0.000 
+         0.000      0.000      0.000      1.000                0.000      0.000      0.000      1.000 
+
+     i 1 idx 1 so sTopRock
+             t                                             xform
+
+         1.000      0.000      0.000      0.000                1.000      0.000      0.000      0.000 
+         0.000      1.000      0.000      0.000                0.000      1.000      0.000      0.000 
+         0.000      0.000      1.000      0.000                0.000      0.000      1.000      0.000 
+      3125.000      0.000  36750.000      1.000             3125.000      0.000  36750.000      1.000 
+
+     i 2 idx 5 so sExpRockBox
+             t                                             xform
+
+         1.000      0.000      0.000      0.000                1.000      0.000      0.000      0.000 
+         0.000      1.000      0.000      0.000                0.000      1.000      0.000      0.000 
+         0.000      0.000      1.000      0.000                0.000      0.000      1.000      0.000 
+         0.000      0.000  -9500.000      1.000             3125.000      0.000  27250.000      1.000 
+
+     i 3 idx 6 so sExpHall
+             t                                             xform
+
+         1.000      0.000      0.000      0.000                1.000      0.000      0.000      0.000 
+         0.000      1.000      0.000      0.000                0.000      1.000      0.000      0.000 
+         0.000      0.000      1.000      0.000                0.000      0.000      1.000      0.000 
+     -3125.000      0.000      0.000      1.000                0.000      0.000  27250.000      1.000 
+
+     i 4 idx 12 so sAirTT
+             t                                             xform
+
+         1.000      0.000      0.000      0.000                1.000      0.000      0.000      0.000 
+         0.000      1.000      0.000      0.000                0.000      1.000      0.000      0.000 
+         0.000      0.000      1.000      0.000                0.000      0.000      1.000      0.000 
+         0.000      0.000  -1298.000      1.000                0.000      0.000  25952.000      1.000 
+
+     i 5 idx 64679 so sWall
+             t                                             xform
+
+         0.000      1.000      0.000      0.000                0.000      1.000      0.000      0.000 
+        -1.000      0.000      0.000      0.000               -1.000      0.000      0.000      0.000 
+         0.000      0.000      1.000      0.000                0.000      0.000      1.000      0.000 
+    -20133.600   6711.200    545.000      1.000           -20133.600   6711.200  26497.000      1.000 
+
+     i 6 idx 65201 so sPlane
+             t                                             xform
+
+         1.000      0.000      0.000      0.000                0.000      1.000      0.000      0.000 
+         0.000      1.000      0.000      0.000               -1.000      0.000      0.000      0.000 
+         0.000      0.000      1.000      0.000                0.000      0.000      1.000      0.000 
+         0.000      0.000      7.150      1.000           -20133.600   6711.200  26504.150      1.000 
+
+     i 7 idx 65592 so sPanel
+             t                                             xform
+
+         1.000      0.000      0.000      0.000                0.000      1.000      0.000      0.000 
+         0.000      1.000      0.000      0.000               -1.000      0.000      0.000      0.000 
+         0.000      0.000      1.000      0.000                0.000      0.000      1.000      0.000 
+         0.000   2538.900      0.000      1.000           -22672.500   6711.200  26504.150      1.000 
+
+
+
+
+
+Transform prep in old workflow
+--------------------------------
+
+::
+
+     065 
+      66 #include "NXform.hpp"  // header with the implementation
+      67 template struct nxform<X4Nd> ;
+      68 
+
+     139 X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const top)
+     140     :
+     141     X4Named("X4PhysicalVolume"),
+     142     m_ggeo(ggeo),
+     143     m_top(top),
+     144     m_ok(m_ggeo->getOpticks()),
+     145     m_lvsdname(m_ok->getLVSDName()),
+     146     m_query(m_ok->getQuery()),
+     147     m_gltfpath(m_ok->getGLTFPath()),
+     148 
+     149     m_mlib(m_ggeo->getMaterialLib()),
+     150     m_sclib(m_ggeo->getScintillatorLib()),
+     151     m_slib(m_ggeo->getSurfaceLib()),
+     152     m_blib(m_ggeo->getBndLib()),
+     153     m_hlib(m_ggeo->getMeshLib()),
+     154     //m_meshes(m_hlib->getMeshes()), 
+     155     m_xform(new nxform<X4Nd>(0,false)),
+     156     m_verbosity(m_ok->getVerbosity()),
+
+
+::
+
+    117 /**
+    118 nxform<N>::make_global_transform
+    119 -----------------------------------
+    120 
+    121 node structs that can work with this require
+    122 transform and parent members   
+    123 
+    124 1. collects nmat4triple pointers whilst following 
+    125    parent links up the tree, ie in leaf-to-root order 
+    126 
+    127 2. returns the reversed product of those 
+    128 
+    129 
+    130 **/
+    131 
+    132 template <typename N>
+    133 const nmat4triple* nxform<N>::make_global_transform(const N* n) // static
+    134 {
+    135     std::vector<const nmat4triple*> tvq ;
+    136     while(n)
+    137     {
+    138         if(n->transform) tvq.push_back(n->transform);
+    139         n = n->parent ;
+    140     }
+    141     bool reverse = true ; // as tvq in leaf-to-root order
+    142     return tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ;
+    143 }
+
+
+
+Current stree transforms match the CF transforms from aug5
+-------------------------------------------------------------
+
+* this suggests that something has broken the CF transforms since then and the stree ones are OK
+
+::
+
+    In [6]: cf 
+    Out[6]: 
+    /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry
+    min_stamp:2022-08-15 10:09:17.554576
+    max_stamp:2022-08-15 10:09:20.473688
+    age_stamp:0:07:30.637037
+             node :        (23518, 4, 4)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/node.npy 
+             itra :         (8159, 4, 4)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/itra.npy 
+         meshname :               (139,)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/meshname.txt 
+             meta :                 (7,)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/meta.txt 
+         primname :              (3248,)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/primname.txt 
+          mmlabel :                (10,)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/mmlabel.txt 
+             tran :         (8159, 4, 4)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/tran.npy 
+             inst :        (48477, 4, 4)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/inst.npy 
+            solid :           (10, 3, 4)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/solid.npy 
+             prim :         (3248, 4, 4)  : /tmp/blyth/opticks/ntds3_aug5/G4CXOpticks/CSGFoundry/prim.npy 
+
+    In [7]: a_inst[0]
+    Out[7]: 
+    array([[1., 0., 0., 0.],
+           [0., 1., 0., 0.],
+           [0., 0., 1., 0.],
+           [0., 0., 0., 1.]], dtype=float32)
+
+    In [8]: b_inst[0]
+    Out[8]: 
+    array([[ 1.,  0.,  0.,  0.],
+           [ 0.,  1.,  0.,  0.],
+           [ 0.,  0.,  1., nan],
+           [ 0.,  0.,  0., nan]], dtype=float32)
+
+    In [9]: a_inst[:,:,:3]
+    Out[9]: 
+    array([[[     1.   ,      0.   ,      0.   ],
+            [     0.   ,      1.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [     0.   ,      0.   ,      0.   ]],
+
+           [[     0.877,     -0.431,      0.215],
+            [    -0.441,     -0.897,      0.   ],
+            [     0.193,     -0.095,     -0.977],
+            [ -3734.247,   1835.066,  18932.178]],
+
+           [[     0.879,     -0.432,      0.2  ],
+            [    -0.441,     -0.897,      0.   ],
+            [     0.179,     -0.088,     -0.98 ],
+            [ -3470.825,   1705.616,  18994.307]],
+
+           [[    -0.338,      0.92 ,      0.2  ],
+            [     0.939,      0.345,      0.   ],
+            [    -0.069,      0.187,     -0.98 ],
+            [  1333.472,  -3630.097,  18994.307]],
+
+           [[    -0.337,      0.917,      0.215],
+            [     0.939,      0.345,      0.   ],
+            [    -0.074,      0.201,     -0.977],
+            [  1434.678,  -3905.607,  18932.178]],
+
+           ...,
+
+           [[     1.   ,      0.   ,      0.   ],
+            [     0.   ,      1.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-20133.6  ,   9250.1  ,  26489.85 ]],
+
+           [[     0.   ,      1.   ,      0.   ],
+            [    -1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-17594.7  ,   6711.2  ,  26504.15 ]],
+
+           [[     0.   ,      1.   ,      0.   ],
+            [    -1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-19287.299,   6711.2  ,  26504.15 ]],
+
+           [[     0.   ,      1.   ,      0.   ],
+            [    -1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-20979.9  ,   6711.2  ,  26504.15 ]],
+
+           [[     0.   ,      1.   ,      0.   ],
+            [    -1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-22672.5  ,   6711.2  ,  26504.15 ]]], dtype=float32)
+
+    In [10]: b_inst[:,:,:3]
+    Out[10]: 
+    array([[[     1.   ,      0.   ,      0.   ],
+            [     0.   ,      1.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [     0.   ,      0.   ,      0.   ]],
+
+           [[     0.877,     -0.431,      0.215],
+            [    -0.441,     -0.897,      0.   ],
+            [     0.193,     -0.095,     -0.977],
+            [ -3734.247,   1835.066,  18932.178]],
+
+           [[     0.879,     -0.432,      0.2  ],
+            [    -0.441,     -0.897,      0.   ],
+            [     0.179,     -0.088,     -0.98 ],
+            [ -3470.825,   1705.616,  18994.307]],
+
+           [[    -0.338,      0.92 ,      0.2  ],
+            [     0.939,      0.345,      0.   ],
+            [    -0.069,      0.187,     -0.98 ],
+            [  1333.472,  -3630.097,  18994.307]],
+
+           [[    -0.337,      0.917,      0.215],
+            [     0.939,      0.345,      0.   ],
+            [    -0.074,      0.201,     -0.977],
+            [  1434.678,  -3905.607,  18932.178]],
+
+           ...,
+
+           [[     1.   ,      0.   ,      0.   ],
+            [     0.   ,      1.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-20133.6  ,   9250.101,  26489.85 ]],
+
+           [[     0.   ,      1.   ,      0.   ],
+            [    -1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-17594.7  ,   6711.2  ,  26504.15 ]],
+
+           [[     0.   ,      1.   ,      0.   ],
+            [    -1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-19287.299,   6711.2  ,  26504.15 ]],
+
+           [[     0.   ,      1.   ,      0.   ],
+            [    -1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-20979.9  ,   6711.2  ,  26504.15 ]],
+
+           [[     0.   ,      1.   ,      0.   ],
+            [    -1.   ,      0.   ,      0.   ],
+            [     0.   ,      0.   ,      1.   ],
+            [-22672.5  ,   6711.2  ,  26504.15 ]]], dtype=float32)
+
+    In [11]: np.abs( a_inst[:,:,:3] - b_inst[:,:,:3] ).max()
+    Out[11]: 0.0009765625
+
+    In [12]: np.abs( a_inst[:,:,:3] - b_inst[:,:,:3] ).min()
+    Out[12]: 0.0
+
+    In [13]: f
+    Out[13]: 
+    f
+
+    CMDLINE:/Users/blyth/opticks/sysrap/tests/stree_test.py
+    f.base:/tmp/blyth/opticks/ntds3/G4CXOpticks/stree
+
+      : f.subs                                             :               336653 : 13:21:45.538088 
+      : f.sensor_id                                        :             (45612,) : 13:21:45.570969 
+      : f.soname                                           :                  139 : 13:21:45.570567 
+      : f.iinst_f4                                         :        (48477, 4, 4) : 13:21:46.834187 
+      : f.nds                                              :         (336653, 11) : 13:21:45.573755 
+      : f.digs                                             :               336653 : 13:21:47.201406 
+      : f.m2w                                              :       (336653, 4, 4) : 13:21:45.626505 
+      : f.inst                                             :        (48477, 4, 4) : 13:21:46.811051 
+      : f.inst_f4                                          :        (48477, 4, 4) : 13:21:46.606344 
+      : f.inst_nidx                                        :             (48477,) : 13:21:46.078044 
+      : f.mtname                                           :                   20 : 13:21:45.623294 
+      : f.iinst                                            :        (48477, 4, 4) : 13:21:46.848103 
+      : f.w2m                                              :       (336653, 4, 4) : 13:21:44.752833 
+      : f.factor                                           :              (9, 11) : 13:21:47.200370 
+
+     min_stamp : 2022-08-14 21:00:03.656953 
+     max_stamp : 2022-08-14 21:00:06.105526 
+     dif_stamp : 0:00:02.448573 
+     age_stamp : 13:21:44.752833 
+
+    In [14]:                                   
+
+
+
+Hmm : given that GGeo has not long to live better to get the transform stack from Geant4 model ?
+---------------------------------------------------------------------------------------------------
 
 

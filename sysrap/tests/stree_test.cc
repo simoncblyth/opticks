@@ -281,6 +281,24 @@ void test_get_sensor_id(const stree& st)
     }
 }
 
+void test_desc_m2w_product(const stree& st)
+{
+    int ins_idx = ssys::getenvint("INS_IDX", 1 ); 
+    int num_inst = int(st.inst_nidx.size()) ; 
+    if(ins_idx < 0 ) ins_idx += num_inst ; 
+    assert( ins_idx < num_inst ); 
+
+    int nidx = st.inst_nidx[ins_idx] ;  
+    std::cout 
+         << "st.inst_nidx.size " << num_inst 
+         << " ins_idx INS_IDX " << ins_idx  
+         << " nidx " << nidx 
+         << std::endl 
+         ; 
+
+    bool reverse = false ; 
+    std::cout << st.desc_m2w_product(nidx, reverse) << std::endl ;  
+} 
 
 int main(int argc, char** argv)
 {
@@ -299,9 +317,10 @@ int main(int argc, char** argv)
     test_get_factor_nodes(st); 
     test_traverse(st); 
     test_reorderSensors(st); 
+    test_get_sensor_id(st); 
     */
 
-    test_get_sensor_id(st); 
+    test_desc_m2w_product(st); 
 
 
     return 0 ; 
