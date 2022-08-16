@@ -6,7 +6,7 @@
 #include "strid.h"
 #include "stree.h"
 
-const char* STBASE = getenv("STBASE");  
+const char* BASE = getenv("BASE");  
 
 void test_get_ancestors(const stree& st)
 {
@@ -235,7 +235,7 @@ void test_reorderSensors(stree& st)
     st.clear_inst(); 
     st.add_inst(); 
 
-    st.save(STBASE, "stree_reorderSensors" );  
+    st.save(BASE, "stree_reorderSensors" );  
 }
 
 void test_get_sensor_id(const stree& st)
@@ -303,7 +303,7 @@ void test_desc_m2w_product(const stree& st)
 int main(int argc, char** argv)
 {
     stree st ; 
-    st.load(STBASE); 
+    st.load(BASE); 
 
     std::cout << "st.desc_sub(false)" << std::endl << st.desc_sub(false) << std::endl ;
     //std::cout << "st.desc_sub(true)"  << std::endl << st.desc_sub(true)  << std::endl ;

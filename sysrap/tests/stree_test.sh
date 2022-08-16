@@ -6,28 +6,23 @@ arg=${1:-$defarg}
 
 name=stree_test 
 
-#export STBASE=/tmp/$USER/opticks/U4TreeTest
-export STBASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
-export STBASE_aug5=/tmp/$USER/opticks/ntds3_aug5/G4CXOpticks
+#export BASE=/tmp/$USER/opticks/U4TreeTest
+export BASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
+export BASE_aug5=/tmp/$USER/opticks/ntds3_aug5/G4CXOpticks
 
 ## gets loaded from STBASE/stree
 
-export FOLD=$STBASE/stree
-export CFBASE=$STBASE
-#export CFBASE=$STBASE_aug5
-
+export FOLD=$BASE/stree
+export CFBASE=$BASE
+#export CFBASE=$BASE_aug5
 
 #source $OPTICKS_HOME/bin/COMMON.sh 
 #T_FOLD=$($OPTICKS_HOME/g4cx/gxt.sh fold)
 #T_CFBASE=$(upfind_cfbase $T_FOLD)  
 
 
-
-
-
-
 if [ "${arg/info}" != "$arg" ]; then 
-    vars="BASH_SOURCE GEOM STBASE FOLD"
+    vars="BASH_SOURCE GEOM BASE FOLD"
     for var in $vars ; do printf "%30s : %s \n" $var ${!var} ; done
 fi 
 
@@ -37,7 +32,7 @@ if [ "${arg/build}" != "$arg" ]; then
           -I.. \
           -I$OPTICKS_PREFIX/externals/glm/glm \
           -o /tmp/$name/$name 
-    [ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1 
+    [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
@@ -46,8 +41,8 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i stree_test.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
+    ${IPYTHON:-ipython} --pdb -i $name.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 2 
 fi 
 
 exit 0 

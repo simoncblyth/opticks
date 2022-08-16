@@ -12,11 +12,13 @@ from opticks.sysrap.stree import stree
 def check_inverse_pair(f, a_="inst", b_="iinst" ):
     """
     :param f: Fold instance
-     
-    CAUTION : this clears the identity info prior to checking transforms
+
+    * Now avoided clearing the identity by taking a copy 
+    * This demonstrates the necessity for double precision transforms
+
     """
-    a = getattr(f, a_)
-    b = getattr(f, b_)
+    a = getattr(f, a_).copy()
+    b = getattr(f, b_).copy()
 
     a[:,:,3] = [0.,0.,0.,1.]
     b[:,:,3] = [0.,0.,0.,1.]
@@ -32,15 +34,18 @@ def check_inverse_pair(f, a_="inst", b_="iinst" ):
 
 
 def compare_f_with_cf(f, cf ):
-    print("compare_f_with_cf")
-    eprint("(cf.inst - f.inst_f4).max()", globals(), locals())  
-    eprint("(cf.inst - f.inst_f4).min()", globals(), locals())  
+    print("\n[compare_f_with_cf")
+    eprint("(cf.inst[:,:,:3] - f.inst_f4[:,:,:3]).max()", globals(), locals())  
+    eprint("(cf.inst[:,:,:3] - f.inst_f4[:,:,:3]).min()", globals(), locals())  
+    eprint("np.all( cf.inst[:,:,3].view(np.int32)  == f.inst_f4[:,:,3].view(np.int32))", globals(), locals()) 
+    print("]compare_f_with_cf\n")
 
 
 def check_inst(f, cf):
+    print("\n[check_inst(f,cf) : comparing f:stree inst(from U4Tree) with cf:CSGFoundry inst (via CSG_GGeo) ")
 
-    eprint("np.abs(cf.inst-f.inst_f4).max()", globals(), locals() ) 
-    w = epr("w = np.where( np.abs(cf.inst-f.inst_f4) > 0.0001 )",  globals(), locals() )
+    eprint("np.abs(cf.inst[:,:,:3]-f.inst_f4[:,:,:3]).max()", globals(), locals() ) 
+    w = epr("w = np.where( np.abs(cf.inst[:,:,:3]-f.inst_f4[:,:,:3]) > 0.0001 )",  globals(), locals() )
 
     check_inverse_pair(f, "inst", "iinst" )
     check_inverse_pair(f, "inst_f4", "iinst_f4" )
@@ -54,6 +59,7 @@ def check_inst(f, cf):
     print("b_inst[-1]")
     print(b_inst[-1])
 
+    print("\n]check_inst(f,cf)")
 
 def check_sensor(st):
     """
@@ -89,15 +95,10 @@ if __name__ == '__main__':
     f = Fold.Load(symbol="f")
     print(repr(f))
 
-    g = Fold.Load(os.path.join(os.path.dirname(f.base), "GGeo/stree"), symbol="g")
-
+    g = Fold.Load(os.path.join(os.path.dirname(f.base), "GGeo/stree"), symbol="g") 
 
     st = stree(f)
     print(repr(st))
-
-
-
-
 
     check_inst(f, cf)
     #check_sensor(st)
