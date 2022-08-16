@@ -318,9 +318,10 @@ int main(int argc, char** argv)
     test_traverse(st); 
     test_reorderSensors(st); 
     test_get_sensor_id(st); 
+    test_desc_m2w_product(st); 
     */
 
-    test_desc_m2w_product(st); 
+    test_get_ancestors(st); 
 
 
     return 0 ; 

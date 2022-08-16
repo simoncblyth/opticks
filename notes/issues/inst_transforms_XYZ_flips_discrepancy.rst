@@ -945,7 +945,166 @@ BUT that is almost what stree is doing, so will probably not help.
   analogously to U4Tree::convertNodes_r 
 
 
+sysrap/tests/stree_test.sh::
+
+     10 export STBASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
+     15 export FOLD=$STBASE/stree
+
+sysrap/tests/stree_test.py::
+
+     89     f = Fold.Load(symbol="f")
+     90     print(repr(f))
+     91 
+     92     g = Fold.Load(os.path.join(os.path.dirname(f.base), "GGeo/stree"), symbol="g")
+     93 
+
+::
+
+    In [9]: np.abs( f.m2w - g.m2w ).max()
+    Out[9]: 0.0009731784812174737
+
+
+Collecting the base transforms into stree.h during GGeo creation shows 
+no significant diffs. 
+
+How to proceed with debug.  
+
+Bring over more of the stree recording to collection within GGeo, eg from stree::add_inst
 
 
 
+
+Check GVolume::getTransform by collection of analogous transforms into GGeo/stree and U4Tree/stree
+-----------------------------------------------------------------------------------------------------
+
+Collect all the GVolume::getTransform into GGeo/stree/gtd.npy from X4PhysicalVolume::convertStructure_r
+and do the analogous collection in U4Tree::convertNodes_r. 
+
+
+::
+
+    032 /**
+     33 GTree::makeInstanceTransformsBuffer
+     34 -------------------------------------
+     35 
+     36 Returns transforms array of shape (num_placements, 4, 4)
+     37 
+     38 Collects transforms from GNode placement instances into a buffer.
+     39 getPlacement for ridx=0 just returns m_root (which always has identity transform)
+     40 for ridx > 0 returns all GNode subtree bases of the ridx repeats.
+     41 
+     42 Just getting transforms from one place to another, 
+     43 not multiplying them so float probably OK. 
+     44 
+     45 TODO: faster to allocate in one go and set, instead of using NPY::add
+     46 
+     47 **/
+     48 
+     49 NPY<float>* GTree::makeInstanceTransformsBuffer(const std::vector<const GNode*>& placements) // static
+     50 {
+     51     LOG(LEVEL) << "[" ;
+     52     unsigned numPlacements = placements.size();
+     53     NPY<float>* buf = NPY<float>::make(0, 4, 4);
+     54     for(unsigned i=0 ; i < numPlacements ; i++)
+     55     {
+     56         const GNode* place = placements[i] ;
+     57         GMatrix<float>* t = place->getTransform();
+     58         buf->add(t->getPointer(), 4*4*sizeof(float) );
+     59     }
+     60     assert(buf->getNumItems() == numPlacements);
+     61     LOG(LEVEL) << "]" ;
+     62     return buf ;
+     63 }
+     64 
+
+    141 GMatrixF* GNode::getTransform() const
+    142 {
+    143    return m_transform ;
+    144 }
+
+    045 GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh)
+     46     :
+     47     m_selfdigest(true),
+     48     m_csgskip(false),
+     49     m_selected(true),
+     50     m_index(index),
+     51     m_parent(NULL),
+     52     m_description(NULL),
+     53     m_transform(transform),
+     54     m_ltransform(NULL),
+     55     m_gtriple(NULL),
+
+
+::
+
+    1433 GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
+    1434         GVolume* parent, int depth, int sibdex, int parent_nidx,
+    1435         const G4VPhysicalVolume* const parent_pv, bool& recursive_select )
+    1436 {
+    ....
+    1465      glm::tmat4x4<double> tr_gtd(1.) ;   // GGeo Transform Debug   
+    1466      GMatrixF* transform = volume->getTransform();
+    1467      float* tr = (float*)transform->getPointer() ;
+    1468      strid::Read(tr_gtd, tr, false );   // transpose:false the getPointer does a transpose
+    1469 
+    ....
+    1474      snode nd ;
+    1475      nd.index = nidx ;
+    1476      nd.depth = depth ;
+    1477      nd.sibdex = sibdex ;
+    1478      nd.parent = parent_nidx ;
+    1479 
+    1480      nd.num_child = num_child ;
+    1481      nd.first_child = -1 ;     // gets changed inplace from lower recursion level 
+    1482      nd.next_sibling = -1 ;
+    1483      nd.lvid = lvid ;
+    1484      nd.copyno = copyno ;
+    1485 
+    1486      nd.sensor_id = -1 ;
+    1487      nd.sensor_index = -1 ;
+    1488 
+    1489      m_tree->nds.push_back(nd);
+    1490      m_tree->m2w.push_back(tr_m2w);
+    1491      m_tree->gtd.push_back(tr_gtd);
+    1492 
+    1493      if(sibdex == 0 && nd.parent > -1) m_tree->nds[nd.parent].first_child = nd.index ;
+    1494      // record first_child nidx into parent snode
+
+
+
+    192 inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent )
+    193 {
+    ...
+    210     int nidx = st->nds.size() ;  // 0-based node index
+    211 
+    212     snode nd ;
+    213 
+    214     nd.index = nidx ;
+    215     nd.depth = depth ;
+    216     nd.sibdex = sibdex ;
+    217     nd.parent = parent ;
+    218 
+    219     nd.num_child = num_child ;
+    220     nd.first_child = -1 ;     // gets changed inplace from lower recursion level 
+    221     nd.next_sibling = -1 ;
+    222     nd.lvid = lvid ;
+    223     nd.copyno = copyno ;
+    224 
+    225     nd.sensor_id = -1 ;     // changed later by U4Tree::identifySensitiveInstances
+    226     nd.sensor_index = -1 ;  // changed later by U4Tree::identifySensitiveInstances and stree::reorderSensors
+    227 
+    228 
+    229     pvs.push_back(pv);
+    230     st->nds.push_back(nd);
+    231     st->digs.push_back(dig);
+    232     st->m2w.push_back(tr_m2w);
+    233     st->w2m.push_back(tr_w2m);
+    234 
+    235 
+    236     glm::tmat4x4<double> tr_gtd(1.) ;          // "GGeo Transform Debug" comparison
+    237     st->get_m2w_product(tr_gtd, nidx, false );  // NB this must be after push back of nd and tr_m2w
+    238     st->gtd.push_back(tr_gtd);
+    239 
+    240 
+    241 
 

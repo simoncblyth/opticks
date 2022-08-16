@@ -233,6 +233,12 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
     st->w2m.push_back(tr_w2m);  
 
 
+    glm::tmat4x4<double> tr_gtd(1.) ;          // "GGeo Transform Debug" comparison
+    st->get_m2w_product(tr_gtd, nidx, false );  // NB this must be after push back of nd and tr_m2w
+    st->gtd.push_back(tr_gtd);  
+
+
+
     if(sibdex == 0 && nd.parent > -1) st->nds[nd.parent].first_child = nd.index ; 
     // record first_child nidx into parent snode
 

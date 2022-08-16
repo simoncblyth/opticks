@@ -94,6 +94,7 @@ struct stree
     static constexpr const char* NDS = "nds.npy" ;
     static constexpr const char* M2W = "m2w.npy" ;
     static constexpr const char* W2M = "w2m.npy" ;
+    static constexpr const char* GTD = "gtd.npy" ;  // GGeo transform debug, populated in X4PhysicalVolume::convertStructure_r 
     static constexpr const char* MTNAME = "mtname.txt" ;
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* DIGS = "digs.txt" ;
@@ -113,6 +114,9 @@ struct stree
 
     std::vector<glm::tmat4x4<double>> m2w ; // model2world transforms for all nodes
     std::vector<glm::tmat4x4<double>> w2m ; // world2model transforms for all nodes  
+    std::vector<glm::tmat4x4<double>> gtd ; // GGeo Transform Debug, added from X4PhysicalVolume::convertStructure_r
+
+
     std::vector<snode> nds ;                // snode info for all nodes
     std::vector<std::string> digs ;         // per-node digest for all nodes  
     std::vector<std::string> subs ;         // subtree digest for all nodes
@@ -256,6 +260,7 @@ inline std::string stree::desc() const
        << " nds " << nds.size()
        << " m2w " << m2w.size()
        << " w2m " << w2m.size()
+       << " gtd " << gtd.size()
        << " digs " << digs.size()
        << " subs " << subs.size()
        << " soname " << soname.size()
@@ -765,10 +770,26 @@ inline const glm::tmat4x4<double>& stree::get_w2m(int nidx) const
     return w2m[nidx] ; 
 }
 
+/**
+stree::get_ancestors
+---------------------
+
+Collects parent, then parent-of-parent and so on 
+until reaching root (nidx:0) which has no parent.  
+Then reverses the list to put into root first order. 
+
+This should work even during node collection immediately 
+after the parent link has been set and the snode pushed back. 
+
+At first glance you might think this would miss root, but that 
+is not the case as it collects parents and the node prior 
+to the parent results in collecting root nidx:0. 
+
+**/
 
 inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx ) const
 {
-    int parent = get_parent(nidx) ;
+    int parent = get_parent(nidx) ;  // simple node lookup nds[nidx].parent 
     while( parent > -1 )
     {
         ancestors.push_back(parent);
@@ -777,6 +798,21 @@ inline void stree::get_ancestors( std::vector<int>& ancestors, int nidx ) const
     std::reverse( ancestors.begin(), ancestors.end() );
 }
 
+/**
+stree::get_m2w_product
+------------------------
+
+As this uses get_ancestors (which operates via parent links) and 
+get_m2w it should work during node creation immediately after 
+the snode and m2w transforms are pushed back. 
+
+
+Note that even when things appear to be working OK, 
+bugs can still lurk as lots of the transforms in the stack are identity. 
+
+So there is still potential for wrong direction of multiplication bugs. 
+
+**/
 
 inline void stree::get_m2w_product( glm::tmat4x4<double>& transform, int nidx, bool reverse ) const 
 {
@@ -791,7 +827,7 @@ inline void stree::get_m2w_product( glm::tmat4x4<double>& transform, int nidx, b
     {
         int idx = nodes[reverse ? num_nodes - 1 - i : i] ; 
         const glm::tmat4x4<double>& t = get_m2w(idx) ; 
-        xform *= t ; 
+        xform *= t ;           
     }
     assert( sizeof(glm::tmat4x4<double>) == sizeof(double)*16 ); 
     memcpy( glm::value_ptr(transform), glm::value_ptr(xform), sizeof(glm::tmat4x4<double>) );
@@ -990,6 +1026,7 @@ inline void stree::save_( const char* fold ) const
     NP::Write<int>(    fold, NDS, (int*)nds.data(),    nds.size(), snode::NV );
     NP::Write<double>( fold, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
     NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
+    NP::Write<double>( fold, GTD, (double*)gtd.data(), gtd.size(), 4, 4 );
     NP::WriteNames( fold, MTNAME, mtname );
     NP::WriteNames( fold, SONAME, soname );
     NP::WriteNames( fold, DIGS,   digs );
@@ -1046,6 +1083,7 @@ inline void stree::load_( const char* fold )
     ImportArray<snode, int>(                  nds, NP::Load(fold, NDS)); 
     ImportArray<glm::tmat4x4<double>, double>(m2w, NP::Load(fold, M2W)); 
     ImportArray<glm::tmat4x4<double>, double>(w2m, NP::Load(fold, W2M)); 
+    ImportArray<glm::tmat4x4<double>, double>(gtd, NP::Load(fold, GTD)); 
 
     NP::ReadNames( fold, SONAME, soname );
     NP::ReadNames( fold, MTNAME, soname );

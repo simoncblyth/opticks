@@ -1459,7 +1459,16 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
      glm::tmat4x4<double> tr_m2w(1.) ;   
      GMatrixF* ltransform = volume->getLevelTransform(); 
      float* ltr = (float*)ltransform->getPointer() ; // CAUTION: THIS IS NOT MEMORY ORDER OF GMatrix 
-     strid::Read(tr_m2w, ltr, false );   // MAY BE TRANSPOSED ?
+     strid::Read(tr_m2w, ltr, false );   // transpose:false the getPointer does a transpose
+
+
+     glm::tmat4x4<double> tr_gtd(1.) ;   // GGeo Transform Debug   
+     GMatrixF* transform = volume->getTransform(); 
+     float* tr = (float*)transform->getPointer() ;
+     strid::Read(tr_gtd, tr, false );   // transpose:false the getPointer does a transpose
+
+
+
 
 
      snode nd ;
@@ -1479,6 +1488,7 @@ GVolume* X4PhysicalVolume::convertStructure_r(const G4VPhysicalVolume* const pv,
     
      m_tree->nds.push_back(nd); 
      m_tree->m2w.push_back(tr_m2w);
+     m_tree->gtd.push_back(tr_gtd);
       
      if(sibdex == 0 && nd.parent > -1) m_tree->nds[nd.parent].first_child = nd.index ;
      // record first_child nidx into parent snode
