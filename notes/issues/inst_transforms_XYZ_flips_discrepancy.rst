@@ -1,8 +1,48 @@
-inst_transforms_XYZ_flips_discrepancy
-=======================================
+inst_transforms_XYZ_flips_discrepancy : resolved without smoking gun
+======================================================================
 
 Previous :doc:`sensor_info_into_new_workflow` showed getting inst identity info to match.
-BUT: now getting mismatch between the transforms. 
+BUT: was getting mismatch between the transforms : mysterious XYZ flips. 
+
+* checking now : no longer see the inst transform discrepancies. 
+
+  * unconfirmed suspicion that the problem was from parent linkage : getting the wrong ancestry 
+    could definitely explain XYZ flips as it would result in the wrong transforms being used, 
+    and axis rotations are quite common
+
+  * possibly parent linkage issue came from U4Tree::convertNodes_r communicating 
+    between the generations using snode* parent which is a high risk way of doing things 
+    relying on the snode object still being alive across a different recursion level. 
+
+  * now use an inherently bullet proof parent index passed by value.::  
+
+        192 inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth, int sibdex, int parent )
+        193 {
+        ...
+        212     snode nd ;
+        213 
+        214     nd.index = nidx ;
+        215     nd.depth = depth ;
+        216     nd.sibdex = sibdex ;
+        217     nd.parent = parent ;
+        ...
+        242     if(sibdex == 0 && nd.parent > -1) st->nds[nd.parent].first_child = nd.index ;
+        243     // record first_child nidx into parent snode
+        244 
+        245     int p_sib = -1 ;
+        246     int i_sib = -1 ;
+        247     for (int i=0 ; i < num_child ;i++ )
+        248     {
+        249         p_sib = i_sib ;  // node index of previous child 
+        250         i_sib = convertNodes_r( lv->GetDaughter(i), depth+1, i, nd.index );
+        251         if(p_sib > -1) st->nds[p_sib].next_sibling = i_sib ;
+        252     }
+        253     // within the above loop, reach back to previous sibling snode to set the sib->sib linkage, default -1
+        254 
+        255     return nd.index ;
+        256 }
+
+
 
 * HMM: I thought the transforms were matching previously, so recent changes may have broken them 
 
@@ -10,7 +50,9 @@ BUT: now getting mismatch between the transforms.
 
 * AHAH : could this be --gparts_transform_offset yet again ? 
 
-  * dont think so 
+  * dont think so : thats not for instance transforms, its for 
+
+
 
 
 Generate the geometry and grab using ntds3::

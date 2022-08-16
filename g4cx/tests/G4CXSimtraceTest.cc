@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     gx.simtrace(); 
 
     cudaDeviceSynchronize(); 
-    gx.save();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM  
+    gx.saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/SProc::ExecutableName/GEOM  
  
     return 0 ; 
 }

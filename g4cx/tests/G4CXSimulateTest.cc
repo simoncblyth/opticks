@@ -23,18 +23,6 @@ and get the bnd.npy arrays that way.
 #include "OPTICKS_LOG.hh"
 #include "SEventConfig.hh"
 #include "G4CXOpticks.hh"
-#include "U4Sensor.h"
-#include "G4PVPlacement.hh"
-
-
-struct ExampleSensor : public U4Sensor
-{
-    // In reality would need ctor argument eg junoSD_PMT_v2 to lookup real values 
-    unsigned getId(           const G4PVPlacement* pv) const { return pv->GetCopyNo() ; }   
-    float getEfficiency(      const G4PVPlacement* pv) const { return 1. ; }
-    float getEfficiencyScale( const G4PVPlacement* pv) const { return 1. ; }
-}; 
-
 
 int main(int argc, char** argv)
 {
@@ -51,7 +39,7 @@ int main(int argc, char** argv)
     gx.simulate(); 
 
     cudaDeviceSynchronize(); 
-    gx.save();    // $DefaultOutputDir   /tmp/$USER/opticks/$GEOM/SProc::ExecutableName  then ALL from setRelDir
+    gx.saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/$GEOM/SProc::ExecutableName  then ALL from setRelDir
  
     return 0 ; 
 }

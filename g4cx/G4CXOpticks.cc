@@ -79,14 +79,12 @@ void G4CXOpticks::Finalize() // static
 
 G4CXOpticks::G4CXOpticks()
     :
-    sd(nullptr),
     tr(nullptr),
     wd(nullptr),
     gg(nullptr),
     fd(nullptr), 
     cx(nullptr),
-    qs(nullptr),
-    se(nullptr)
+    qs(nullptr)
 {
     INSTANCE = this ; 
     LOG(LEVEL) << Desc() << std::endl << desc(); 
@@ -101,31 +99,16 @@ std::string G4CXOpticks::desc() const
 {
     std::stringstream ss ; 
     ss << "G4CXOpticks::desc"
-       << " sd " << sd 
        << " tr " << tr 
        << " wd " << wd 
        << " gg " << gg
        << " fd " << fd
        << " cx " << cx
        << " qs " << qs
-       << " se " << se
        ;
     std::string s = ss.str(); 
     return s ; 
 }
-
-/**
-G4CXOpticks::setSensor
----------------------------
-
-
-**/
-
-void G4CXOpticks::setSensor(const U4Sensor* sd_ )
-{
-    sd = sd_ ; 
-}
-
 
 /**
 G4CXOpticks::setGeometry 
@@ -218,6 +201,17 @@ void G4CXOpticks::setGeometry(GGeo* gg_)
     // SAVING HERE(AFTER GGeo->CSGFoundry) TEMPORARILY : FOR INTEGRATION DEBUGGING  
     saveGeometry(); 
 }
+
+/**
+G4CXOpticks::setGeometry
+---------------------------
+
+Prior to CSGOptiX::Create the SEvt instance is created. 
+
+HMM: is there a more general place for this hookup ?
+
+**/
+
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
     LOG(LEVEL) << " fd_ " << fd_ ; 
@@ -226,9 +220,9 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 #endif
     fd = fd_ ; 
 
-    se = new SEvt ; 
-    se->setReldir("ALL"); 
-    se->setGeo((SGeo*)fd);   // HMM: more general place for this hookup ?
+    SEvt* sev = new SEvt ; 
+    sev->setReldir("ALL"); 
+    sev->setGeo((SGeo*)fd);   
 
     cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
     qs = cx->sim ; 
@@ -245,6 +239,23 @@ void G4CXOpticks::render()
     assert( SEventConfig::IsRGModeRender() ); 
     cx->render_snap() ; 
 }
+
+
+/**
+G4CXOpticks::simulate
+------------------------
+
+To enable saving of SEvt for low level NumPy debugging, define the envvar::
+
+   export G4CXOpticks__simulate_saveEvent=1
+
+Note that the SEvt component arrays will overrite themselved 
+if the SEvt index is not incremented with "SEvt::SetIndex" 
+for each call to G4CXOpticks::simulate. 
+
+**/
+
+const bool G4CXOpticks::simulate_saveEvent = SSys::getenvbool("G4CXOpticks__simulate_saveEvent") ;
 
 void G4CXOpticks::simulate()
 {
@@ -284,12 +295,24 @@ void G4CXOpticks::simulate()
     unsigned num_hit = sev->getNumHit() ; 
     bool is_undef = num_hit == SEvt::UNDEF ; 
 
+
+    int sev_index = SEvt::GetIndex() ;
+
     LOG(LEVEL) 
        << "] num_hit " << num_hit 
        << " is_undef " << is_undef 
+       << " sev_index " << sev_index 
+       << " simulate_saveEvent " << simulate_saveEvent
        ;
 
     LOG(LEVEL) << " sev.descFull " << std::endl << sev->descFull() ; 
+
+    if(simulate_saveEvent)
+    {
+        LOG(LEVEL) << "[ G4CXOpticks__simulate_saveEvent" << sev_index ; 
+        saveEvent(); 
+        LOG(LEVEL) << "] G4CXOpticks__simulate_saveEvent" << sev_index ; 
+    }
 
 }
 
@@ -310,22 +333,21 @@ void G4CXOpticks::simtrace()
 
     cx->setFrame(fr);    
     // Q: why does cx need the frame ?
+    // A: rendering viewpoint is based on the frame center, extent and transforms 
 
     qs->simtrace(); 
 }
-   
 
-
-void G4CXOpticks::save() const 
+void G4CXOpticks::saveEvent() const 
 {
-    if(se == nullptr) return ; 
-    se->save(); 
+    SEvt* sev = SEvt::Get(); 
+    if(sev == nullptr) return ; 
+    sev->save(); 
 
-    LOG(LEVEL) << se->descPhoton() ; 
-    LOG(LEVEL) << se->descLocalPhoton() ; 
-    LOG(LEVEL) << se->descFramePhoton() ; 
+    LOG(LEVEL) << sev->descPhoton() ; 
+    LOG(LEVEL) << sev->descLocalPhoton() ; 
+    LOG(LEVEL) << sev->descFramePhoton() ; 
 }
-
 
 void G4CXOpticks::saveGeometry() const
 {

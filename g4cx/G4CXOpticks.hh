@@ -11,7 +11,6 @@ and that needs the upload of QSim components first ?
 
 **/
 
-struct U4Sensor ; 
 struct U4Tree ; 
 struct U4SensorIdentifier ; 
 class G4VPhysicalVolume ;  
@@ -20,7 +19,6 @@ class  GGeo ;
 struct CSGFoundry ; 
 struct CSGOptiX ; 
 struct QSim ; 
-struct SEvt ; 
 
 #include "plog/Severity.h"
 #include "G4CX_API_EXPORT.hh"
@@ -38,7 +36,6 @@ struct G4CX_API G4CXOpticks
     static void SetGeometry(const G4VPhysicalVolume* world) ; 
     static void Finalize(); 
 
-    const U4Sensor* sd ; 
     const U4Tree*   tr ;
     const G4VPhysicalVolume* wd ; 
 
@@ -46,30 +43,25 @@ struct G4CX_API G4CXOpticks
     CSGFoundry* fd ; 
     CSGOptiX*   cx ; 
     QSim*       qs ; 
-    SEvt*       se ; 
  
     G4CXOpticks(); 
 
     static std::string Desc();
     std::string desc() const ; 
 
-    void setSensor(const U4Sensor* sd );
-
     void setGeometry(); 
     void setGeometry(const char* gdmlpath);
     void setGeometry(const G4VPhysicalVolume* world);  
-    // HMM: maybe add U4Sensor arg here, 
-    // if that only makes sense at this level of geometry representation ?
-
     void setGeometry(GGeo* gg); 
     void setGeometry(CSGFoundry* fd); 
 
     void render(); 
+
+    static const bool simulate_saveEvent ; 
     void simulate(); 
     void simtrace(); 
 
-    void save() const ; 
-
+    void saveEvent() const ; 
 
     void saveGeometry() const ;
     void saveGeometry(const char* base, const char* rel=nullptr) const; 

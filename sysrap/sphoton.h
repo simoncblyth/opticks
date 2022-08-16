@@ -79,7 +79,7 @@ struct sphoton
     float  time ; 
 
     float3 mom ; 
-    unsigned iindex ;  // formerly float weight, but have never used that  
+    unsigned iindex ;  // instance index,  (formerly float weight, but have never used that)
 
     float3 pol ; 
     float  wavelength ;   
