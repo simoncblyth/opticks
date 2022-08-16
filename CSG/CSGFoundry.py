@@ -355,6 +355,7 @@ class CSGFoundry(object):
     def load(self, fold):
         cfbase = os.path.dirname(fold)  
         self.cfbase = cfbase
+        self.base = cfbase
         log.info("load : fold %s cfbase: %s  " % (fold, cfbase) )
 
         if not os.path.isdir(fold):

@@ -339,7 +339,17 @@ inline std::string strid::Desc_(
     return s ; 
 }
 
+/**
+strid::Desc
+--------------
 
+Typical usage:: 
+
+   std::cout << " trd " << strid::Desc<double, int64_t>(trd) << std::endl ; 
+   std::cout << " trf " << strid::Desc<float,  int32_t>(trf) << std::endl ; 
+
+
+**/
 
 
 template<typename T, typename S>

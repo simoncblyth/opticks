@@ -238,8 +238,9 @@ struct stree
 
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, int gas_idx, int nidx ); 
     void add_inst(); 
+    void narrow_inst(); 
     void clear_inst(); 
-
+    std::string desc_inst() const ;
 
 };
 
@@ -1036,11 +1037,11 @@ inline void stree::save_( const char* fold ) const
     if(mtfold) mtfold->save(fold, MTFOLD) ; 
 
 
-    NP::Write(fold,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
-    NP::Write(fold,  IINST,    (double*)iinst.data(), iinst.size(), 4, 4 ); 
+    NP::Write<double>(fold,  INST,     (double*)inst.data(), inst.size(), 4, 4 ); 
+    NP::Write<double>(fold,  IINST,    (double*)iinst.data(), iinst.size(), 4, 4 ); 
     // _f4 just for debug comparisons : narrowing normally only done in memory for upload  
-    NP::Write(fold,  INST_F4,  (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
-    NP::Write(fold,  IINST_F4, (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
+    NP::Write<float>(fold,  INST_F4,  (float*)inst_f4.data(), inst_f4.size(), 4, 4 ); 
+    NP::Write<float>(fold,  IINST_F4, (float*)iinst_f4.data(), iinst_f4.size(), 4, 4 ); 
 
     assert( sensor_count == sensor_id.size() ); 
     NP::Write<int>(    fold, SENSOR_ID, (int*)sensor_id.data(), sensor_id.size() );
@@ -1392,12 +1393,6 @@ stree::add_inst
 
 Canonically invoked from U4Tree::Create 
 
-0xff:255
-0x
-In [2]: 0xffffff/1e6                                                                                                                                                            
-Out[2]: 16.777215
-
-
 **/
 
 inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>& tr_w2m, int gas_idx, int nidx )
@@ -1423,6 +1418,7 @@ inline void stree::add_inst( glm::tmat4x4<double>& tr_m2w,  glm::tmat4x4<double>
     */
 
     glm::tvec4<int64_t> col3 ;   // formerly uint64_t 
+
     col3.x = ins_idx ;            // formerly  +1 
     col3.y = gas_idx ;            // formerly  +1 
     col3.z = nd.sensor_id ;       // formerly ias_idx + 1 (which was always 1)
@@ -1468,7 +1464,11 @@ inline void stree::add_inst()
             add_inst(tr_m2w, tr_w2m, gas_idx, nidx ); 
         }
     }
+    narrow_inst(); 
+}
 
+inline void stree::narrow_inst()
+{
     strid::Narrow( inst_f4,   inst ); 
     strid::Narrow( iinst_f4, iinst ); 
 }
@@ -1481,4 +1481,16 @@ inline void stree::clear_inst()
     iinst_f4.clear(); 
 }
 
+inline std::string stree::desc_inst() const 
+{
+    std::stringstream ss ; 
+    ss << "stree::desc_inst"
+       << " inst " << inst.size()
+       << " iinst " << iinst.size()
+       << " inst_f4 " << inst_f4.size()
+       << " iinst_f4 " << iinst_f4.size()
+       ;
+    std::string s = ss.str(); 
+    return s ; 
+}
 

@@ -13,14 +13,14 @@ export STBASE_aug5=/tmp/$USER/opticks/ntds3_aug5/G4CXOpticks
 ## gets loaded from STBASE/stree
 
 export FOLD=$STBASE/stree
-#export CFBASE=$STBASE
+export CFBASE=$STBASE
+#export CFBASE=$STBASE_aug5
 
 
 #source $OPTICKS_HOME/bin/COMMON.sh 
 #T_FOLD=$($OPTICKS_HOME/g4cx/gxt.sh fold)
 #T_CFBASE=$(upfind_cfbase $T_FOLD)  
 
-export CFBASE=$STBASE_aug5
 
 
 
