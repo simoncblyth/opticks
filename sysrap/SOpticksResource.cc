@@ -295,6 +295,26 @@ const char* SOpticksResource::OldCFBaseFromGEOM()
 }
 
 
+/**
+SOpticksResource::CFBaseFromGEOM
+----------------------------------
+
+Indirect config of CFBase folder via two envvars.
+
+GEOM
+   short name identifying the geometry, eg J001
+
+"$GEOM"_CFBaseFromGEOM
+   ie J001_CFBaseFromGEOM
+
+The advantage of the indirect approach is that GEOM provides
+a simple name, with the detail of the directory hidden in
+the other envvar.   
+
+Bash functions to edit config : geom_, com_. oip
+
+**/
+
 const char* SOpticksResource::CFBaseFromGEOM()
 {
     const char* geom = SSys::getenvvar("GEOM"); 

@@ -3,7 +3,14 @@ usage(){ cat << EOU
 COMMON.sh 
 ============
 
-Edit the common config scripts with com_ 
+Shortcut bash functions:
+
+com_
+    Edit the COMMON.sh config scripts
+geom_
+    Edit the GEOM_.sh config
+oip
+    Edit the OPTICKS_INPUT_PHOTON.sh config 
 
 EOU
 }

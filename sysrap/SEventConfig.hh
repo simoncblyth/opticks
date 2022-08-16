@@ -28,6 +28,14 @@ MaxTime (ns)
     only relevant to the domain compression of the compressed step records
 
 
++-------------------------------+-----------------------------------------+---------------------------------------+
+| Method                        |  Default                                | envvar                                |
++===============================+=========================================+=======================================+
+| SEventConfig::OutFold         | "$DefaultOutputDir"                     | OPTICKS_OUT_FOLD                      |
++-------------------------------+-----------------------------------------+---------------------------------------+
+| SEventConfig::GeoFold         | nullptr                                 | OPTICKS_GEO_FOLD                      |
++-------------------------------+-----------------------------------------+---------------------------------------+
+
 **/
 
 
@@ -61,6 +69,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxTime    = "OPTICKS_MAX_TIME" ; 
     static constexpr const char* kOutFold    = "OPTICKS_OUT_FOLD" ; 
     static constexpr const char* kOutName    = "OPTICKS_OUT_NAME" ; 
+    static constexpr const char* kGeoFold    = "OPTICKS_GEO_FOLD" ; 
     static constexpr const char* kHitMask    = "OPTICKS_HIT_MASK" ; 
     static constexpr const char* kRGMode     = "OPTICKS_RG_MODE" ; 
     static constexpr const char* kCompMask   = "OPTICKS_COMP_MASK" ; 
@@ -82,6 +91,7 @@ struct SYSRAP_API SEventConfig
     static float MaxTime() ; 
     static const char* OutFold(); 
     static const char* OutName(); 
+    static const char* GeoFold(); 
     static unsigned HitMask(); 
     static int RGMode(); 
     static unsigned CompMask(); 
@@ -111,6 +121,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxTime(   float max_time ); 
     static void SetOutFold( const char* out_fold); 
     static void SetOutName( const char* out_name); 
+    static void SetGeoFold( const char* geo_fold); 
     static void SetHitMask(const char* abrseq, char delim=',' ); 
 
     static void SetRGMode( const char* rg_mode) ; 
@@ -142,6 +153,7 @@ struct SYSRAP_API SEventConfig
     static float _MaxTimeDefault  ; 
     static const char* _OutFoldDefault ; 
     static const char* _OutNameDefault ; 
+    static const char* _GeoFoldDefault ; 
     static const char* _HitMaskDefault ; 
     static const char* _RGModeDefault ; 
     static const char* _CompMaskDefault ; 
@@ -164,16 +176,12 @@ struct SYSRAP_API SEventConfig
     static float _MaxTime  ; 
     static const char* _OutFold ; 
     static const char* _OutName ; 
+    static const char* _GeoFold ; 
     static unsigned _HitMask ; 
     static int _RGMode ; 
     static unsigned _CompMask ; 
     static float _PropagateEpsilon ;
     static const char* _InputPhoton ; 
     static const char* _InputPhotonFrame ; 
-
 }; 
-
-
-
-
  

@@ -58,6 +58,11 @@ elif [ "$GEOM" == "J002" ]; then
     export J002_GEOMSub=HamamatsuR12860sMask_virtual0x:0:1000
     export J002_GEOMWrap=AroundSphere 
 
+elif [ "$GEOM" == "J003" ]; then
+
+    # HMM:need more permanent directory 
+    export J003_CFBaseFromGEOM=/tmp/blyth/opticks/ntds3/G4CXOpticks
+
 fi 
 
 case $GEOM in 

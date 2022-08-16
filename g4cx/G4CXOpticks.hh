@@ -53,13 +53,13 @@ struct G4CX_API G4CXOpticks
     void setGeometry(const char* gdmlpath);
     void setGeometry(const G4VPhysicalVolume* world);  
     void setGeometry(GGeo* gg); 
+    static const bool setGeometry_saveGeometry ; 
     void setGeometry(CSGFoundry* fd); 
-
-    void render(); 
 
     static const bool simulate_saveEvent ; 
     void simulate(); 
     void simtrace(); 
+    void render(); 
 
     void saveEvent() const ; 
 

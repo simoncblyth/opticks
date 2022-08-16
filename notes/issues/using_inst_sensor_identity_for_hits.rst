@@ -1,7 +1,32 @@
 using_inst_sensor_identity_for_hits
 ======================================
 
-TODO: save SEvt arrays with G4CXOpticks::saveEvent and check identity info in photon+hit arrays
+TODO : get gxt gxs working again
+----------------------------------
+
+Need more flexibility in control of output dir for event and geometry.
+
+
+* DONE: added SEventConfig::GeoFold()
+
+TODO need to split geo and evt dirs::
+
+    1391 void SEvt::save()
+    1392 {
+    1393     const char* dir = SGeo::DefaultDir();
+    1394     LOG(LEVEL) << "DefaultDir " << dir ;
+    1395     save(dir);
+    1396 }
+    1397 void SEvt::load()
+    1398 {
+    1399     const char* dir = SGeo::DefaultDir();
+    1400     LOG(LEVEL) << "DefaultDir " << dir ;
+    1401     load(dir);
+    1402 }
+    1403 
+
+
+DONE : save SEvt arrays with G4CXOpticks::saveEvent and check identity info in photon+hit arrays
 --------------------------------------------------------------------------------------------------
 
 Added G4CXOpticks__simulate_saveEvent to switch on G4CXOpticks::saveEvent 

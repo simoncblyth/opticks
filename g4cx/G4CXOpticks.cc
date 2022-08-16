@@ -129,7 +129,6 @@ void G4CXOpticks::setGeometry()
     {
         LOG(LEVEL) << " SomeGDMLPath " ; 
         setGeometry(SOpticksResource::SomeGDMLPath()); 
-        if(fd) fd->save(); 
     }
     else if(SSys::hasenvvar(SOpticksResource::CFBASE_))
     {
@@ -145,7 +144,6 @@ void G4CXOpticks::setGeometry()
     {
         LOG(LEVEL) << " GEOM/U4VolumeMaker::PV " ; 
         setGeometry( U4VolumeMaker::PV() );  // this may load GDML using U4VolumeMaker::PVG if "GEOM"_GDMLPath is defined   
-        if(fd) fd->save(); 
     }
     else
     {
@@ -172,6 +170,7 @@ and a live original world : as need to do things a bit differently in each case.
 
 **/
 
+
 void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
 {
     LOG(LEVEL) << " G4VPhysicalVolume world " << world ; 
@@ -189,6 +188,8 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     GGeo* gg_ = X4Geo::Translate(wd) ; 
     setGeometry(gg_); 
 }
+
+
 void G4CXOpticks::setGeometry(GGeo* gg_)
 {
     LOG(LEVEL); 
@@ -197,9 +198,6 @@ void G4CXOpticks::setGeometry(GGeo* gg_)
 
     CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg, st ) ; 
     setGeometry(fd_); 
-
-    // SAVING HERE(AFTER GGeo->CSGFoundry) TEMPORARILY : FOR INTEGRATION DEBUGGING  
-    saveGeometry(); 
 }
 
 /**
@@ -211,6 +209,10 @@ Prior to CSGOptiX::Create the SEvt instance is created.
 HMM: is there a more general place for this hookup ?
 
 **/
+
+
+//const bool G4CXOpticks::setGeometry_saveGeometry = SSys::getenvbool("G4CXOpticks__setGeometry_saveGeometry") ;
+const bool G4CXOpticks::setGeometry_saveGeometry = true ;   // temporarily on by default 
 
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
@@ -227,17 +229,15 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
     cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
     qs = cx->sim ; 
     LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ; 
-}
 
-void G4CXOpticks::render()
-{
-#ifdef __APPLE__
-     LOG(fatal) << " APPLE skip " ; 
-     return ; 
-#endif
-    assert( cx ); 
-    assert( SEventConfig::IsRGModeRender() ); 
-    cx->render_snap() ; 
+
+    if( setGeometry_saveGeometry )
+    {
+        LOG(LEVEL) << "[ G4CXOpticks__setGeometry_saveGeometry " ;  
+        saveGeometry(); 
+        LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
+    }
+
 }
 
 
@@ -255,6 +255,7 @@ for each call to G4CXOpticks::simulate.
 
 **/
 
+//const bool G4CXOpticks::simulate_saveEvent = true ;
 const bool G4CXOpticks::simulate_saveEvent = SSys::getenvbool("G4CXOpticks__simulate_saveEvent") ;
 
 void G4CXOpticks::simulate()
@@ -338,8 +339,25 @@ void G4CXOpticks::simtrace()
     qs->simtrace(); 
 }
 
+void G4CXOpticks::render()
+{
+#ifdef __APPLE__
+     LOG(fatal) << " APPLE skip " ; 
+     return ; 
+#endif
+    assert( cx ); 
+    assert( SEventConfig::IsRGModeRender() ); 
+    cx->render_snap() ; 
+}
+
+
+
 void G4CXOpticks::saveEvent() const 
 {
+#ifdef __APPLE__
+     LOG(fatal) << " APPLE skip " ; 
+     return ; 
+#endif
     SEvt* sev = SEvt::Get(); 
     if(sev == nullptr) return ; 
     sev->save(); 
@@ -351,7 +369,7 @@ void G4CXOpticks::saveEvent() const
 
 void G4CXOpticks::saveGeometry() const
 {
-    //const char* def = SGeo::DefaultDir();   // huh giving null 
+    //const char* def = SGeo::DefaultDir();   // was giving null : due to static const depending on static const 
     const char* def = SEventConfig::OutFold() ; 
     std::cout << "G4CXOpticks::saveGeometry def [" << ( def ? def : "-" ) << std::endl ; 
     saveGeometry(def) ; 

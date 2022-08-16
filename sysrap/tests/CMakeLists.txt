@@ -31,6 +31,7 @@ set(TEST_SOURCES
    SDigestNPTest.cc
 
    SCFTest.cc
+   SGeoTest.cc
 
    
    PLogTest.cc 

@@ -40,12 +40,18 @@ const char* SGeo::LastUploadCFBase()
     return LAST_UPLOAD_CFBASE ; 
 }
 
+
+
+
 /**
 SGeo::LastUploadCFBase_OutDir
 ------------------------------
 
 This provides a default output directory to QEvent::save
 which is within the last uploaded CFBase/ExeName
+
+HMM: This is becoming less useful due to its fixation on CFBase 
+which is not longer the only way to start from a saved geometry. 
 
 **/
 const char* SGeo::LastUploadCFBase_OutDir()

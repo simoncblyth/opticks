@@ -24,6 +24,7 @@ float SEventConfig::_MaxExtentDefault = 1000.f ;  // mm  : domain compression us
 float SEventConfig::_MaxTimeDefault = 10.f ; // ns 
 const char* SEventConfig::_OutFoldDefault = "$DefaultOutputDir" ; 
 const char* SEventConfig::_OutNameDefault = nullptr ; 
+const char* SEventConfig::_GeoFoldDefault = nullptr ; 
 const char* SEventConfig::_RGModeDefault = "simulate" ; 
 const char* SEventConfig::_HitMaskDefault = "SD" ; 
 
@@ -56,6 +57,7 @@ float SEventConfig::_MaxExtent  = SSys::getenvfloat(kMaxExtent, _MaxExtentDefaul
 float SEventConfig::_MaxTime    = SSys::getenvfloat(kMaxTime,   _MaxTimeDefault );    // ns
 const char* SEventConfig::_OutFold = SSys::getenvvar(kOutFold, _OutFoldDefault ); 
 const char* SEventConfig::_OutName = SSys::getenvvar(kOutName, _OutNameDefault ); 
+const char* SEventConfig::_GeoFold = SSys::getenvvar(kGeoFold, _GeoFoldDefault ); 
 int SEventConfig::_RGMode = SRG::Type(SSys::getenvvar(kRGMode, _RGModeDefault)) ;    
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar(kHitMask, _HitMaskDefault )) ;   
 unsigned SEventConfig::_CompMask  = SComp::Mask(SSys::getenvvar(kCompMask, _CompMaskDefault )) ;   
@@ -78,6 +80,7 @@ float SEventConfig::MaxExtent(){ return _MaxExtent ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
+const char* SEventConfig::GeoFold(){   return _GeoFold ; }
 int SEventConfig::RGMode(){  return _RGMode ; } 
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
 unsigned SEventConfig::CompMask(){  return _CompMask; } 
@@ -101,6 +104,7 @@ void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; C
 void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; Check() ; }
 void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? strdup(outfold) : nullptr ; Check() ; }
 void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? strdup(outname) : nullptr ; Check() ; }
+void SEventConfig::SetGeoFold(   const char* geofold){   _GeoFold = geofold ? strdup(geofold) : nullptr ; Check() ; }
 void SEventConfig::SetRGMode(   const char* rg_mode){   _RGMode = SRG::Type(rg_mode) ; Check() ; }
 void SEventConfig::SetRGModeSimulate(){  SetRGMode( SRG::SIMULATE_ ); }
 void SEventConfig::SetRGModeSimtrace(){  SetRGMode( SRG::SIMTRACE_ ); }
@@ -192,6 +196,8 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " OutFold " << " : " << OutFold() << std::endl 
        << std::setw(25) << kOutName
        << std::setw(20) << " OutName " << " : " << ( OutName() ? OutName() : "-" )  << std::endl 
+       << std::setw(25) << kGeoFold
+       << std::setw(20) << " GeoFold " << " : " << GeoFold() << std::endl 
        << std::setw(25) << kPropagateEpsilon
        << std::setw(20) << " PropagateEpsilon " << " : " << std::fixed << std::setw(10) << std::setprecision(4) << PropagateEpsilon() << std::endl 
        << std::setw(25) << kInputPhoton
@@ -244,7 +250,5 @@ void SEventConfig::SetMode(const char* mode, unsigned max_bounce ) // static
         std::cout << "SEventConfig::SetMode [" << mode << "] IS NOT RECOGNIZED " << std::endl ;         
     }
 }
-
-
 
 
