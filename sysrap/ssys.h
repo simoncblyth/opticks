@@ -6,6 +6,7 @@ ssys.h
 **/
 
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <sstream>
 
