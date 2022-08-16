@@ -110,7 +110,6 @@ CSGTarget::getFrame
 Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into inst_idx and vice versa ?
 A: see notes with CSGFoundry::getFrame
 
-
 **/
 
 int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const 

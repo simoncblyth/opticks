@@ -249,7 +249,7 @@ To enable saving of SEvt for low level NumPy debugging, define the envvar::
 
    export G4CXOpticks__simulate_saveEvent=1
 
-Note that the SEvt component arrays will overrite themselved 
+Note that the SEvt component arrays will overrite themselves
 if the SEvt index is not incremented with "SEvt::SetIndex" 
 for each call to G4CXOpticks::simulate. 
 

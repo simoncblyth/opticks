@@ -56,6 +56,7 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "sphit.h"
 #include "sstate.h"
 #include "srec.h"
 #include "sseq.h"
@@ -307,8 +308,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     void getHit(   sphoton& p, unsigned idx) const ; 
 
     void getLocalPhoton(sphoton& p, unsigned idx) const ; 
-    void getLocalHit(   sphoton& p, unsigned idx) const ; 
-    void applyLocalTransform_w2m( sphoton& lp) const ; 
+    void getLocalHit(   sphit& ht, sphoton& p, unsigned idx) const ; 
     void getPhotonFrame( sframe& fr, const sphoton& p ) const ; 
 
     std::string descNum() const ; 

@@ -216,6 +216,7 @@ set(HEADERS
     squad.h
 
     sphoton.h
+    sphit.h 
     spho.h
     sgs.h 
     srec.h 

@@ -25,13 +25,18 @@ int main(int argc, char** argv)
     unsigned idx = 0 ; 
     sphoton global, local  ; 
     sev->getHit(global, idx); 
-    sev->getLocalHit( local,  idx); 
+
+    sphit ht ; 
+    sev->getLocalHit( ht, local,  idx); 
+
+
     U4Hit hit ; 
-    U4HitGet::ConvertFromPhoton(hit,global,local); 
+    U4HitGet::ConvertFromPhoton(hit,global,local, ht); 
 
     std::cout << " global " << global.desc() << std::endl ; 
     std::cout << " local " << local.desc() << std::endl ; 
     std::cout << " hit " << hit.desc() << std::endl ; 
+    std::cout << " ht " << ht.desc() << std::endl ; 
 
 
     U4Hit hit2 ; 

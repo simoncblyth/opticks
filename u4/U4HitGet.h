@@ -10,17 +10,19 @@ See: u4/tests/U4HitTest.cc
 
 #include "scuda.h"
 #include "sphoton.h"
+#include "sphit.h"
+
 #include "SEvt.hh"
 #include "U4Hit.h"
 #include "U4ThreeVector.h"
 
 struct U4HitGet
 {
-    static void ConvertFromPhoton(U4Hit& hit, const sphoton& global, const sphoton& local); 
+    static void ConvertFromPhoton(U4Hit& hit, const sphoton& global, const sphoton& local, const sphit& ht ); 
     static void FromEvt(U4Hit& hit, unsigned idx );  
 }; 
 
-inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, const sphoton& local )
+inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, const sphoton& local, const sphit& ht )
 {
     hit.zero(); 
 
@@ -36,18 +38,15 @@ inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, cons
     U4ThreeVector::FromFloat3( hit.local_direction,     local.mom ); 
     U4ThreeVector::FromFloat3( hit.local_polarization,  local.pol ); 
 
-    // TODO: derive the below 3 from global.iindex using the stree nodes 
-    // HMM: how to access the stree ? it belong with SGeo like the transforms needed for SEvt::getLocalHit 
-    //hit.sensorIndex = ;   
-    //hit.nodeIndex = ;    
-    //hit.sensor_identifier  ; 
+    hit.sensorIndex = ht.sensor_index ;   
+    hit.sensor_identifier = ht.sensor_identifier ; 
+    hit.nodeIndex = -1 ; 
 
     hit.boundary = global.boundary() ; 
     hit.photonIndex = global.idx() ; 
     hit.flag_mask = global.flagmask ; 
     hit.is_cerenkov = global.is_cerenkov() ; 
     hit.is_reemission = global.is_reemit() ; 
-    
 }
 
 inline void U4HitGet::FromEvt(U4Hit& hit, unsigned idx )
@@ -55,8 +54,11 @@ inline void U4HitGet::FromEvt(U4Hit& hit, unsigned idx )
     sphoton global, local  ;
     SEvt* sev = SEvt::Get(); 
     sev->getHit( global, idx);
-    sev->getLocalHit( local,  idx);
-    ConvertFromPhoton(hit, global, local ); 
+
+    sphit ht ; 
+    sev->getLocalHit( ht, local,  idx);
+
+    ConvertFromPhoton(hit, global, local, ht ); 
 }
 
 

@@ -1616,19 +1616,24 @@ from (SGeo*)cf which is used to transform the photon
 void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const 
 {
     getPhoton(lp, idx); 
-    applyLocalTransform_w2m(lp); 
-}
-void SEvt::getLocalHit(sphoton& lp, unsigned idx) const 
-{
-    getHit(lp, idx); 
-    applyLocalTransform_w2m(lp); 
-}
-void SEvt::applyLocalTransform_w2m( sphoton& lp) const 
-{
+
     sframe fr ; 
     getPhotonFrame(fr, lp); 
     fr.transform_w2m(lp); 
-} 
+}
+void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const 
+{
+    getHit(lp, idx); 
+
+    sframe fr ; 
+    getPhotonFrame(fr, lp); 
+    fr.transform_w2m(lp); 
+
+    ht.iindex = fr.inst() ; 
+    ht.sensor_identifier = fr.sensor_identifier(); 
+    ht.sensor_index = fr.sensor_index(); 
+}
+
 void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const 
 {
     assert(cf); 
