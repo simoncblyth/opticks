@@ -1104,8 +1104,10 @@ inline void stree::load_( const char* fold )
 
     NP::ReadNames( fold, SONAME, soname );
     NP::ReadNames( fold, MTNAME, soname );
+
     ImportArray<int, int>( mtindex, NP::Load(fold, MTINDEX) );
     ImportArray<int, int>( mtline,  NP::Load(fold, MTLINE) );
+    init_mtindex_to_mtline(); 
 
     NP::ReadNames( fold, DIGS,   digs );
     NP::ReadNames( fold, SUBS,   subs );
@@ -1596,6 +1598,9 @@ inline void stree::add_material( const char* name, unsigned g4index )
 stree::init_mtindex_to_mtline
 ------------------------------
 
+Canonically invoked from SSim::import_bnd/SBnd::FillMaterialLine following 
+live creation or from stree::load_ when loading a persisted stree.  
+
 **/
 
 inline void stree::init_mtindex_to_mtline()
@@ -1610,3 +1615,5 @@ inline int stree::lookup_mtline( int mtindex ) const
 {
     return mtindex_to_mtline.count(mtindex) == 0 ? -1 :  mtindex_to_mtline.at(mtindex) ;  
 }
+
+

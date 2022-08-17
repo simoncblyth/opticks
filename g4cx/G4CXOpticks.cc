@@ -5,9 +5,9 @@
 #include "sqat4.h"
 #include "sframe.h"
 
-
 #include "SSys.hh"
 #include "SEvt.hh"
+#include "SSim.hh"
 #include "SGeo.hh"
 #include "SEventConfig.hh"
 #include "SOpticksResource.hh"
@@ -79,6 +79,7 @@ void G4CXOpticks::Finalize() // static
 
 G4CXOpticks::G4CXOpticks()
     :
+    sim(nullptr),
     tr(nullptr),
     wd(nullptr),
     gg(nullptr),
@@ -99,6 +100,7 @@ std::string G4CXOpticks::desc() const
 {
     std::stringstream ss ; 
     ss << "G4CXOpticks::desc"
+       << " sim " << sim 
        << " tr " << tr 
        << " wd " << wd 
        << " gg " << gg
@@ -175,8 +177,11 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
 {
     LOG(LEVEL) << " G4VPhysicalVolume world " << world ; 
     assert(world); 
-    wd = world ; 
-    tr = U4Tree::Create(world, SensorIdentifier ) ;
+    wd = world ;
+
+    sim = SSim::Create();  
+    stree* st = sim->get_tree(); 
+    tr = U4Tree::Create(st, world, SensorIdentifier ) ;
 
 #ifdef __APPLE__
     return ;  
@@ -194,9 +199,7 @@ void G4CXOpticks::setGeometry(GGeo* gg_)
 {
     LOG(LEVEL); 
     gg = gg_ ; 
-    const stree* st = tr ? tr->st : nullptr ; 
-
-    CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg, st ) ; 
+    CSGFoundry* fd_ = CSG_GGeo_Convert::Translate(gg) ; 
     setGeometry(fd_); 
 }
 

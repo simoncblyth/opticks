@@ -334,14 +334,15 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable, public SGeo {
     public:
         // via meshlib
         GMeshLib*          getMeshLib();  // unplaced meshes
+    public:
+        // SGeo methods
         unsigned           getNumMeshes() const ;
         const char*        getMeshName(unsigned midx) const ;
         void               getMeshNames(std::vector<std::string>& meshNames) const ;
         int                getMeshIndexWithName(const char* name, bool startswith=true) const ;
-
         int getFrame(sframe& fr, int ins_idx ) const ; 
         std::string descBase() const ; 
-
+        int  lookup_mtline(int mtindex) const ; 
 
 
         std::string        descMesh() const ;

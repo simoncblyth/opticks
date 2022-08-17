@@ -37,7 +37,7 @@ const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
 const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
 const char* SEvt::DEFAULT_RELDIR = "ALL" ; 
-const SCF* SEvt::CF = SCF::Create() ;
+const SCF* SEvt::CF = SCF::Create() ;   // TODO: REMOVE 
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
@@ -478,12 +478,16 @@ actual gensteps for the enabled index.
 
 **/
 
+
 sgs SEvt::addGenstep(const quad6& q_)
 {
     dbg->addGenstep++ ; 
 
 
     unsigned gentype = q_.gentype(); 
+    unsigned matline_ = q_.matline(); 
+
+
     bool input_photon_with_normal_genstep = input_photon && OpticksGenstep_::IsInputPhoton(gentype) == false  ; 
     if(input_photon_with_normal_genstep)
     {
@@ -502,6 +506,20 @@ sgs SEvt::addGenstep(const quad6& q_)
     quad6& q = const_cast<quad6&>(q_);   
     if(!enabled) q.set_numphoton(0);   
     // simplify handling of disabled gensteps by simply setting numphoton to zero for them
+
+    if(matline_ >= G4_INDEX_OFFSET )
+    {
+        unsigned mtindex = matline_ - G4_INDEX_OFFSET ; 
+        int matline = cf->lookup_mtline(mtindex);
+        q.set_matline(matline); 
+
+        LOG(LEVEL) 
+            << " matline_ " << matline_ 
+            << " mtindex " << mtindex
+            << " matline " << matline
+            ;
+    }
+
 
     sgs s = {} ;                  // genstep summary struct 
     s.index = genstep.size() ;    // 0-based genstep index since last clear  

@@ -18,6 +18,7 @@ which does the uploading to the device.
 struct NP ; 
 struct NPFold ; 
 struct SBnd ; 
+struct stree ; 
 
 #include <vector>
 #include <string>
@@ -60,12 +61,17 @@ struct SYSRAP_API SSim
     void addFake_( const std::vector<std::string>& specs ); 
 
     NPFold* fold ; 
+    stree*  tree ; 
 
 
     void add(const char* k, const NP* a ); 
     const NP* get(const char* k) const ; 
     const NP* get_bnd() const ; 
     const SBnd* get_sbnd() const ; 
+    void import_bnd() ; 
+    stree* get_tree() const ; 
+    int lookup_mtline( int mtindex ) const ; 
+
 
     void load(const char* base); 
     void load(const char* base, const char* rel) ; 
@@ -82,13 +88,6 @@ struct SYSRAP_API SSim
 
 private:
     SSim(); 
-
-
 };
-
-
-
-
-
 
 

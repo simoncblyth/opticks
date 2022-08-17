@@ -18,6 +18,7 @@ class G4VPhysicalVolume ;
 class  GGeo ; 
 struct CSGFoundry ; 
 struct CSGOptiX ; 
+struct SSim ; 
 struct QSim ; 
 
 #include "plog/Severity.h"
@@ -36,6 +37,7 @@ struct G4CX_API G4CXOpticks
     static void SetGeometry(const G4VPhysicalVolume* world) ; 
     static void Finalize(); 
 
+    SSim*       sim ; 
     const U4Tree*   tr ;
     const G4VPhysicalVolume* wd ; 
 

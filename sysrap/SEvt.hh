@@ -217,6 +217,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     unsigned getNumGenstepFromGenstep() const ; 
     unsigned getNumPhotonFromGenstep() const ; 
 
+    static constexpr const unsigned G4_INDEX_OFFSET = 1000000 ; 
     sgs addGenstep(const quad6& q) ; 
     sgs addGenstep(const NP* a) ; 
 

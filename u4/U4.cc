@@ -163,7 +163,6 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
 
     const G4Material* aMaterial = aTrack->GetMaterial();
 
-
     quad6 _gs ;
     _gs.zero() ; 
     
@@ -171,7 +170,7 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
 
     gs.gentype = OpticksGenstep_G4Cerenkov_modified ;  
     gs.trackid = aTrack->GetTrackID() ;
-    gs.matline = 1000000 + aMaterial->GetIndex() ;  // gets converted from "1000000 + materialIndex" into "matline" later. Where ? 
+    gs.matline = aMaterial->GetIndex() + SEvt::G4_INDEX_OFFSET ;  // offset signals that a mapping must be done in SEvt::setGenstep
     gs.numphoton = numPhotons ;  
 
     gs.pos.x = x0.x() ; 

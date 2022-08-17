@@ -1150,6 +1150,14 @@ std::string GGeo::descBase() const
     return "GGeo::descBase" ; 
 }
 
+int GGeo::lookup_mtline(int mtindex) const 
+{
+    assert(0) ; // not implemeted for GGeo : you should be using CSGFoundry for this 
+    return -1 ; 
+}
+
+
+
 
 int GGeo::getMeshIndexWithName(const char* name, bool startswith) const 
 {

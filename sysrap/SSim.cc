@@ -3,7 +3,9 @@
 #include "NPFold.h"
 #include "scuda.h"
 #include "squad.h"
-#include "SDigestNP.hh"
+//#include "SDigestNP.hh"
+#include "sdigest.h"
+#include "stree.h"
 
 #include "PLOG.hh"
 #include "SStr.hh"
@@ -63,7 +65,8 @@ SSim* SSim::Load(const char* base, const char* rel)
 
 SSim::SSim()
     :
-    fold(new NPFold)
+    fold(new NPFold),
+    tree(new stree)
 {
     INSTANCE = this ; 
 }
@@ -75,6 +78,7 @@ void SSim::add(const char* k, const NP* a )
     if(a == nullptr) return ; 
 
     fold->add(k,a);  
+    if(strcmp(k, BND) == 0) import_bnd(); 
 }
 const NP* SSim::get(const char* k) const { return fold->get(k);  }
 const NP* SSim::get_bnd() const { return get(BND);  }
@@ -83,6 +87,55 @@ const SBnd* SSim::get_sbnd() const
     const NP* bnd = get_bnd(); 
     return bnd ? new SBnd(bnd) : nullptr  ;  
 }
+
+
+/**
+SSim::import_bnd
+------------------
+
+In old GGeo workflow SSim::add with SSim::BND key is called from GGeo::convertSim_BndLib
+
+**/
+
+void SSim::import_bnd()
+{
+    LOG(LEVEL) << "[" ;  
+
+    const NP* bnd = get_bnd(); 
+    assert(bnd) ; 
+    const std::vector<std::string>& bnames = bnd->names ; 
+    SBnd::FillMaterialLine( tree, bnames ); 
+
+    LOG(LEVEL) << tree->desc_mt() ; 
+    LOG(LEVEL) << "]" ;  
+}
+
+
+
+stree* SSim::get_tree() const 
+{
+    return tree ; 
+}
+
+/**
+SSim::lookup_mtline
+---------------------
+
+Lookup matline for bnd texture or array access 
+from an original Geant4 material creation index
+as obtained by G4Material::GetIndex  
+
+NB this original mtindex is NOT GENERALLY THE SAME 
+as the Opticks material index. 
+
+**/
+
+int SSim::lookup_mtline( int mtindex ) const
+{
+    return tree->lookup_mtline(mtindex); 
+}
+
+
 
 
 void SSim::load(const char* base){ fold->load(base) ;   }
@@ -574,7 +627,8 @@ std::string SSim::DescOptical(const NP* optical, const NP* bnd )
 
 std::string SSim::GetItemDigest( const NP* bnd, int i, int j, int w )
 {
-    std::string dig = SDigestNP::Item(bnd, i, j ) ; 
+    //std::string dig = SDigestNP::Item(bnd, i, j ) ; 
+    std::string dig = sdigest::Item(bnd, i, j ) ; 
     std::string sdig = dig.substr(0, w); 
     return sdig ; 
 }

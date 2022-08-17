@@ -528,13 +528,13 @@ inline void SBnd::FillMaterialLine( stree* st, const std::vector<std::string>& s
         st->mtline.push_back(mtline); 
         //int mtindex = st->mtindex[i] ; 
     }
+
+    st->init_mtindex_to_mtline() ;
 }
 inline void SBnd::fillMaterialLine( stree* st )
 {
     FillMaterialLine(st, bnames);    
 }
-
-
 
 
 inline void SBnd::GetSpecsFromString( std::vector<std::string>& specs , const char* specs_, char delim )

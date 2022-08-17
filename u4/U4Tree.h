@@ -31,7 +31,8 @@ U4Tree.h : explore minimal approach to geometry translation
 
 struct U4Tree
 {
-    static U4Tree* Create( const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
+    static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
+
 
     stree* st ; 
     const G4VPhysicalVolume* const top ; 
@@ -61,10 +62,7 @@ struct U4Tree
 
     int get_nidx(const G4VPhysicalVolume* pv) const ; 
 
-
-
     void identifySensitiveInstances(); 
-
 
 }; 
 
@@ -76,10 +74,9 @@ U4Tree::Create
 Canonically invoked from G4CXOpticks::setGeometry
 
 **/
-inline U4Tree* U4Tree::Create( const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid ) 
+inline U4Tree* U4Tree::Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid ) 
 {
     std::cout << "[ U4Tree::Create " << std::endl ; 
-    stree* st = new stree ; 
     U4Tree* tree = new U4Tree(st, top, sid ) ;
     st->factorize(); 
     tree->identifySensitiveInstances(); 

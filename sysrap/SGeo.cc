@@ -110,3 +110,12 @@ std::string SGeo::Desc()
 }
 
 
+SGeo* SGeo::INSTANCE = nullptr ; 
+SGeo* SGeo::Get(){ return INSTANCE ; }
+SGeo::SGeo()
+{
+    INSTANCE = this ; 
+} 
+
+
+

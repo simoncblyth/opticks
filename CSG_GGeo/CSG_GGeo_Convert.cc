@@ -6,6 +6,7 @@
 
 #include "SStr.hh"
 #include "SSys.hh"
+#include "SSim.hh"
 #include "NP.hh"
 #include "scuda.h"
 #include "sqat4.h"
@@ -41,11 +42,11 @@ The stree is used from CSG_GGeo_Convert::addInstances to lookup_sensor_identifie
 
 **/
 
-CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo, const stree* tree )
+CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo )
 {
     CSGFoundry* fd = new CSGFoundry  ; 
     LOG(LEVEL) << "[ convert ggeo " ; 
-    CSG_GGeo_Convert conv(fd, ggeo, tree ) ; 
+    CSG_GGeo_Convert conv(fd, ggeo ) ; 
     conv.convert(); 
 
     bool ops = SSys::getenvbool("ONE_PRIM_SOLID"); 
@@ -67,15 +68,18 @@ CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo, const stree* tree )
 
 
 
-CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_, const stree* tree_ ) 
+CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_ ) 
     : 
     foundry(foundry_),
     ggeo(ggeo_),
-    tree(tree_),
+    sim(SSim::Get()),
+    tree(sim ? sim->get_tree() : nullptr),
     reverse(SSys::getenvbool("REVERSE")),
     dump_ridx(SSys::getenvint("DUMP_RIDX", -1)),
     meta(nullptr)
 {
+    if(!sim) LOG(fatal) << "sim nullptr, must instanciate SSim before CSG_GGeo_Convert" ; 
+    assert(sim); 
     LOG(LEVEL) 
         << " reverse " << reverse
         << " dump_ridx (DUMP_RIDX) " << dump_ridx

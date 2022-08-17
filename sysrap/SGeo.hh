@@ -22,7 +22,10 @@ struct sframe ;
 
 struct SYSRAP_API SGeo 
 {
+    public:
+        static SGeo* Get() ; 
     private:
+        static SGeo* INSTANCE ; 
         static const char* LAST_UPLOAD_CFBASE ;
         static const plog::Severity LEVEL ; 
     public:
@@ -32,11 +35,14 @@ struct SYSRAP_API SGeo
         static const char* DefaultDir() ; 
         static std::string Desc() ; 
     public:
+        SGeo(); 
+    public:
         virtual unsigned           getNumMeshes() const = 0 ; 
         virtual const char*        getMeshName(unsigned midx) const = 0 ;
         virtual int                getMeshIndexWithName(const char* name, bool startswith) const = 0 ;
         virtual int                getFrame(sframe& fr, int ins_idx ) const = 0 ;
         virtual std::string        descBase() const = 0 ; 
+        virtual int                lookup_mtline(int mtindex) const = 0 ; 
 
         virtual ~SGeo(){};
 

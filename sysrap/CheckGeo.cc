@@ -29,3 +29,9 @@ std::string CheckGeo::descBase() const
     return "CheckGeo::descBase" ; 
 }
 
+int CheckGeo::lookup_mtline(int mtindex) const 
+{
+    return -1 ; 
+}
+
+

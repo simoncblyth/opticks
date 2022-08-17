@@ -9,6 +9,9 @@ Need to do something a bit similar in order to convert Geant4 material index int
   to be applied to the stree first which needs bnd specs
   and then stree::init_mtindex_to_mtline for fill the map. 
 
+  * see sysrap/tests/stree_material_test.cc 
+  * DONE in SSim::import_bnd
+
 * Who should hold onto stree pointer ? SSim would seem appropriate as it holds bnd. 
   Currently held inside G4CXOpticks/U4Tree : but that is too high a level for 
   the low level generality of stree  
@@ -16,8 +19,9 @@ Need to do something a bit similar in order to convert Geant4 material index int
 * this suggests that stree should live inside SSim then 
   SGeo/CSGFoundry can vend the SSim:sim/stree functionality  
 
-* TODO: look into SSim lifecycle : it should get instanciated sooner at higher level 
-  and get adopted by CSGFoundry presumably 
+* DONE : moved SSim::Create into G4CXOpticks::setGeometry to instanciated 
+  it sooner at higher level that former place in CSGFoundry::CSGFoundry
+  thence SSim::Get is used from CSGFoundry
 
 * in some sense SSim and stree need to switch places : the use of stree at highest 
   level is not really appropriate, but SSim at higest level makes sense

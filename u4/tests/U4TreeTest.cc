@@ -264,9 +264,12 @@ int main(int argc, char** argv)
     if( path == nullptr ) LOG(fatal) << " $GDMLPath null, see SOpticksResource  " ; 
     if( path == nullptr ) return 0 ; 
 
+
     const G4VPhysicalVolume* world = U4GDML::Read(path) ;  
-    U4Tree* tree = U4Tree::Create(world) ; 
-    tree->st->save(FOLD); 
+
+    stree* st = new stree ; 
+    U4Tree* tree = U4Tree::Create(st, world) ; 
+    st->save(FOLD); 
 
     //test_get_pv_0(tree); 
     test_get_pv_1(tree); 

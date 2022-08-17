@@ -77,7 +77,7 @@ CSGFoundry::CSGFoundry()
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
     last_added_prim(nullptr),
-    sim(SSim::Create()),
+    sim(SSim::Get()),
     mtime(STime::EpochSeconds()),
     meta(),
     fold(nullptr),
@@ -87,6 +87,8 @@ CSGFoundry::CSGFoundry()
     origin(nullptr),
     elv(nullptr)
 {
+    if(sim == nullptr) LOG(fatal) << "must SSim::Create before CSGFoundry::CSGFoundry " ; 
+    assert(sim); 
     init(); 
 }
 
@@ -297,7 +299,7 @@ int CSGFoundry::findMeshIndex(const char* qname) const
 CSGFoundry::getMeshIndexWithName
 ----------------------------------
 
-SGeo
+SGeo 
 
 **/
 
@@ -307,6 +309,10 @@ int CSGFoundry::getMeshIndexWithName(const char* qname, bool startswith) const
 }
 
 
+int CSGFoundry::lookup_mtline(int mtindex) const 
+{
+    return sim->lookup_mtline(mtindex) ;  
+}
 
 
 
