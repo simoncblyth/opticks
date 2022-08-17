@@ -51,7 +51,6 @@ struct SYSRAP_API SSim
     static const NP* NarrowIfWide(const NP* buf ); 
     static void GetPerfectValues( std::vector<float>& values, unsigned nk, unsigned nl, unsigned nm, const char* name ); 
     static std::string DescOptical(const NP* optical, const NP* bnd ); 
-    static std::string DescDigest(const NP* bnd, int w=16) ; 
     static std::string GetItemDigest( const NP* bnd, int i, int j, int w ); 
     bool   findName( int& i, int& j, const char* qname ) const ; 
 

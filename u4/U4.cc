@@ -3,6 +3,8 @@
 #include <cassert>
 
 #include "G4VParticleChange.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4Event.hh"
@@ -156,6 +158,12 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
 
     const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
 
+    G4double Wmin_nm = h_Planck*c_light/pmax/nm ; 
+    G4double Wmax_nm = h_Planck*c_light/pmin/nm ; 
+
+    const G4Material* aMaterial = aTrack->GetMaterial();
+
+
     quad6 _gs ;
     _gs.zero() ; 
     
@@ -163,7 +171,7 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
 
     gs.gentype = OpticksGenstep_G4Cerenkov_modified ;  
     gs.trackid = aTrack->GetTrackID() ;
-    gs.matline = 0u ; //  aMaterial->GetIndex()  
+    gs.matline = 1000000 + aMaterial->GetIndex() ;  // gets converted from "1000000 + materialIndex" into "matline" later. Where ? 
     gs.numphoton = numPhotons ;  
 
     gs.pos.x = x0.x() ; 
@@ -182,8 +190,8 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
     gs.preVelocity = pPreStepPoint->GetVelocity() ;
 
     gs.BetaInverse = betaInverse ; 
-    gs.Wmin = 0.f ;  
-    gs.Wmax= 0.f ;  
+    gs.Wmin = Wmin_nm ;  
+    gs.Wmax = Wmax_nm   ;  
     gs.maxCos = maxCos ; 
 
     gs.maxSin2 = maxSin2 ;

@@ -29,6 +29,14 @@ const QBnd* QBnd::INSTANCE = nullptr ;
 const QBnd* QBnd::Get(){ return INSTANCE ; }
 
 
+/**
+QBnd::MakeInstance
+---------------------
+
+static method used from QBnd::QBnd using the bnd array spec names
+
+**/
+
 qbnd* QBnd::MakeInstance(const QTex<float4>* tex, const std::vector<std::string>& names )
 {
     qbnd* bnd = new qbnd ; 

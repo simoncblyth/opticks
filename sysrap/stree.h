@@ -15,9 +15,7 @@ TODO:
 * ridx labelling the tree, srepeat summary instances
 * maintain correspondence between source nodes and destination nodes thru the factorization
 * triplet_identity 
-* transform combination   
 * transform rebase
-
 
 mapping from "factorized" instances back to origin PV and vice-versa 
 -----------------------------------------------------------------------
@@ -68,6 +66,7 @@ TODO: collect the nidx of the remainder into stree.h ?
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <map>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -96,6 +95,8 @@ struct stree
     static constexpr const char* W2M = "w2m.npy" ;
     static constexpr const char* GTD = "gtd.npy" ;  // GGeo transform debug, populated in X4PhysicalVolume::convertStructure_r 
     static constexpr const char* MTNAME = "mtname.txt" ;
+    static constexpr const char* MTINDEX = "mtindex.npy" ;
+    static constexpr const char* MTLINE = "mtline.npy" ;
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* DIGS = "digs.txt" ;
     static constexpr const char* SUBS = "subs.txt" ;
@@ -110,6 +111,11 @@ struct stree
     static constexpr const char* INST_NIDX = "inst_nidx.npy" ; 
 
     std::vector<std::string> mtname ;       // unique material names
+    std::vector<int>         mtindex ;      // G4Material::GetIndex 0-based creation indices 
+    std::vector<int>         mtline ;     
+    std::map<int,int>        mtindex_to_mtline ;  // not persisted, fill from mtindex and mtline with init_mtindex_to_mtline
+
+
     std::vector<std::string> soname ;       // unique solid names
 
     std::vector<glm::tmat4x4<double>> m2w ; // model2world transforms for all nodes
@@ -241,6 +247,13 @@ struct stree
     void narrow_inst(); 
     void clear_inst(); 
     std::string desc_inst() const ;
+
+    void get_mtindex_range(int& mn, int& mx ) const ; 
+    std::string desc_mt() const ; 
+
+    void add_material( const char* name, unsigned g4index ); 
+    void init_mtindex_to_mtline(); 
+    int lookup_mtline( int mtindex ) const ; 
 
 };
 
@@ -431,6 +444,7 @@ inline std::string stree::desc_progeny(int nidx) const
         int depth = get_depth(nix);
         ss 
             << " i " << std::setw(6) << i 
+            << " depth " << std::setw(2) << depth 
             << desc_node_(nix, sf ) 
             << std::endl
             ; 
@@ -456,7 +470,7 @@ inline void stree::traverse_r(int nidx, int depth, int sibdex) const
     assert( nd.index == nidx ); 
     assert( nd.depth == depth ); 
     assert( nd.sibdex == sibdex ); 
-    assert( nd.num_child == children.size() ); 
+    assert( nd.num_child == int(children.size()) ); 
 
     const char* so = get_soname(nidx); 
 
@@ -531,7 +545,7 @@ inline void stree::get_sensor_id( std::vector<int>& sensor_id ) const
     }
 }
 
-std::string stree::desc_sensor_id(unsigned edge) const 
+inline std::string stree::desc_sensor_id(unsigned edge) const 
 {
     unsigned num_sid = sensor_id.size() ; 
     std::stringstream ss ; 
@@ -570,7 +584,7 @@ std::string stree::desc_sensor_id(unsigned edge) const
     return s ; 
 }
 
-std::string stree::DescSensor( const std::vector<int>& sensor_identifier, const std::vector<int>& sensor_index, unsigned edge )  // static
+inline std::string stree::DescSensor( const std::vector<int>& sensor_identifier, const std::vector<int>& sensor_index, unsigned edge )  // static
 {
     assert( sensor_identifier.size() == sensor_index.size() ); 
     unsigned num_sensor = sensor_identifier.size() ; 
@@ -687,7 +701,7 @@ inline int stree::find_lvid_node( const char* q_soname, int ordinal ) const
     find_lvid_nodes(nodes, q_soname ); 
     if(ordinal < 0) ordinal += nodes.size() ; // -ve ordinal counts from back 
 
-    return ordinal > -1 && ordinal < nodes.size() ? nodes[ordinal] : -1 ; 
+    return ordinal > -1 && ordinal < int(nodes.size()) ? nodes[ordinal] : -1 ; 
 }
 
 /**
@@ -761,13 +775,13 @@ inline int stree::get_copyno(int nidx) const
 
 inline const glm::tmat4x4<double>& stree::get_m2w(int nidx) const 
 {
-    assert( nidx > -1 && nidx < m2w.size()); 
+    assert( nidx > -1 && nidx < int(m2w.size())); 
     return m2w[nidx] ; 
 }
 
 inline const glm::tmat4x4<double>& stree::get_w2m(int nidx) const 
 {
-    assert( nidx > -1 && nidx < w2m.size()); 
+    assert( nidx > -1 && nidx < int(w2m.size())); 
     return w2m[nidx] ; 
 }
 
@@ -1028,7 +1042,9 @@ inline void stree::save_( const char* fold ) const
     NP::Write<double>( fold, M2W, (double*)m2w.data(), m2w.size(), 4, 4 );
     NP::Write<double>( fold, W2M, (double*)w2m.data(), w2m.size(), 4, 4 );
     NP::Write<double>( fold, GTD, (double*)gtd.data(), gtd.size(), 4, 4 );
-    NP::WriteNames( fold, MTNAME, mtname );
+    NP::WriteNames(    fold, MTNAME,   mtname );
+    NP::Write<int>(    fold, MTINDEX, (int*)mtindex.data(),  mtindex.size() );
+    NP::Write<int>(    fold, MTLINE,  (int*)mtline.data(),   mtline.size() );
     NP::WriteNames( fold, SONAME, soname );
     NP::WriteNames( fold, DIGS,   digs );
     NP::WriteNames( fold, SUBS,   subs );
@@ -1088,6 +1104,9 @@ inline void stree::load_( const char* fold )
 
     NP::ReadNames( fold, SONAME, soname );
     NP::ReadNames( fold, MTNAME, soname );
+    ImportArray<int, int>( mtindex, NP::Load(fold, MTINDEX) );
+    ImportArray<int, int>( mtline,  NP::Load(fold, MTLINE) );
+
     NP::ReadNames( fold, DIGS,   digs );
     NP::ReadNames( fold, SUBS,   subs );
 
@@ -1198,7 +1217,7 @@ GGeo picked sPanel (due to repeat candidate cut of 500).
 
 inline bool stree::is_contained_repeat(const char* sub) const
 {
-    int n_freq = subs_freq->get_freq(sub) ; 
+    //int n_freq = subs_freq->get_freq(sub) ; 
     int nidx = get_first(sub);    // first node with this subtree digest  
 
     int parent = get_parent(nidx); 
@@ -1367,7 +1386,7 @@ inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const
 }
 
 
-std::string stree::desc_factor() const 
+inline std::string stree::desc_factor() const 
 {
     unsigned num_factor = factor.size(); 
     std::stringstream ss ; 
@@ -1494,3 +1513,100 @@ inline std::string stree::desc_inst() const
     return s ; 
 }
 
+/**
+stree::get_mtindex_range
+--------------------------
+
+As the 0-based G4Material index is a creation index and not all 
+created G4Material may be be in active use there can
+be gaps in the range of this origin material index. 
+
+**/
+
+inline void stree::get_mtindex_range(int& mn, int& mx ) const 
+{
+    mn = std::numeric_limits<int>::max() ; 
+    mx = 0 ; 
+    for(unsigned i=0 ; i < mtindex.size() ; i++) 
+    {
+        int mtidx = mtindex[i] ;  
+        if(mtidx > mx) mx = mtidx ; 
+        if(mtidx < mn) mn = mtidx ; 
+    }
+}
+
+inline std::string stree::desc_mt() const 
+{
+    int mn, mx ; 
+    get_mtindex_range( mn, mx);  
+    std::stringstream ss ; 
+    ss << "stree::desc_mt"
+       << " mtname " << mtname.size()
+       << " mtindex " << mtindex.size()
+       << " mtline " << mtline.size()
+       << " mtindex.mn " << mn 
+       << " mtindex.mx " << mx 
+       << std::endl 
+       ;
+
+    // populate mtline with SBnd::FillMaterialLine after have bndnames
+
+    bool with_mtline = mtline.size() > 0 ; 
+    assert( mtname.size() == mtindex.size() ); 
+    unsigned num_mt = mtname.size(); 
+
+    if(with_mtline) assert( mtline.size() == num_mt ); 
+
+    for(unsigned i=0 ; i < num_mt ; i++)
+    {
+        const char* mtn = mtname[i].c_str(); 
+        int         mtidx = mtindex[i];
+        int         mtlin = with_mtline ? mtline[i] : -1 ; 
+        ss 
+            << " i " << std::setw(3) << i  
+            << " mtindex " << std::setw(3) << mtidx  
+            << " mtline " << std::setw(3)  << mtlin  
+            << " mtname " << mtn 
+            << std::endl 
+            ;
+    }
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+
+/**
+stree::add_material
+----------------------
+
+g4index is the Geant4 creation index obtained from G4Material::GetIndex
+
+**/
+
+inline void stree::add_material( const char* name, unsigned g4index )
+{
+    mtname.push_back(name); 
+    mtindex.push_back(g4index); 
+} 
+
+
+/**
+stree::init_mtindex_to_mtline
+------------------------------
+
+**/
+
+inline void stree::init_mtindex_to_mtline()
+{
+    bool consistent = mtindex.size() == mtline.size() ;
+    if(!consistent) std::cerr << "must use SBnd::fillMaterialLine once have bnd specs" << std::endl ; 
+    assert(consistent); 
+    for(unsigned i=0 ; i < mtindex.size() ; i++) mtindex_to_mtline[mtindex[i]] = mtline[i] ;  
+}
+
+inline int stree::lookup_mtline( int mtindex ) const 
+{
+    return mtindex_to_mtline.count(mtindex) == 0 ? -1 :  mtindex_to_mtline.at(mtindex) ;  
+}

@@ -33,11 +33,19 @@
 #include "CSG_GGeo_Convert.h"
 const plog::Severity CSG_GGeo_Convert::LEVEL = PLOG::EnvLevel("CSG_GGeo_Convert", "DEBUG"); 
 
-CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo, const stree* st)
+/**
+CSG_GGeo_Convert::Translate
+------------------------------
+
+The stree is used from CSG_GGeo_Convert::addInstances to lookup_sensor_identifier
+
+**/
+
+CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo, const stree* tree )
 {
     CSGFoundry* fd = new CSGFoundry  ; 
     LOG(LEVEL) << "[ convert ggeo " ; 
-    CSG_GGeo_Convert conv(fd, ggeo, st ) ; 
+    CSG_GGeo_Convert conv(fd, ggeo, tree ) ; 
     conv.convert(); 
 
     bool ops = SSys::getenvbool("ONE_PRIM_SOLID"); 
@@ -59,11 +67,11 @@ CSGFoundry* CSG_GGeo_Convert::Translate(const GGeo* ggeo, const stree* st)
 
 
 
-CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_, const stree* st_ ) 
+CSG_GGeo_Convert::CSG_GGeo_Convert(CSGFoundry* foundry_, const GGeo* ggeo_, const stree* tree_ ) 
     : 
     foundry(foundry_),
     ggeo(ggeo_),
-    st(st_),
+    tree(tree_),
     reverse(SSys::getenvbool("REVERSE")),
     dump_ridx(SSys::getenvint("DUMP_RIDX", -1)),
     meta(nullptr)
@@ -210,14 +218,14 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     unsigned num_inst = mm->getNumITransforms() ;
     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer(); 
 
-    assert(st); 
+    assert(tree); 
 
     bool one_based_index = true ;   // CAUTION : OLD WORLD 1-based sensor_index 
     std::vector<int> sensor_index ;   
     mm->getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index ); 
 
     std::vector<int> sensor_id ;
-    st->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index);
+    tree->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index);
 
     LOG(LEVEL) << stree::DescSensor( sensor_id, sensor_index ) ; 
 

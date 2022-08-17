@@ -20,10 +20,10 @@ Principal user QBnd.hh
 #include <array>
 #include <sstream>
 
-#include "plog/Severity.h"
 #include "NP.hh"
-#include "SSim.hh"
-#include "SStr.hh"
+#include "sstr.h"
+#include "stree.h"
+#include "sdigest.h"
 
 
 struct SBndProp
@@ -46,11 +46,6 @@ inline std::string SBndProp::desc() const
 struct SBnd
 {
     const NP* src ; 
-
-    // static constexpr const plog::Severity LEVEL = PLOG::EnvLevel("SBnd", "DEBUG")  ;  
-    //     cannot constexpr LEVEL as not appropriate to define LEVEL as compile time even if could
-    //
-    // static const plog::Severity LEVEL ;  
 
     static constexpr const unsigned MISSING = ~0u ;
     const std::vector<std::string>& bnames ; 
@@ -88,6 +83,8 @@ struct SBnd
     static unsigned GetMaterialLine( const char* material, const std::vector<std::string>& specs );
     unsigned    getMaterialLine( const char* material ) const ;
 
+    static std::string DescDigest(const NP* bnd, int w=16) ; 
+
     std::string desc() const ; 
 
     void getMaterialNames( std::vector<std::string>& names ) const ; 
@@ -103,8 +100,22 @@ struct SBnd
     template<typename T>
     void getProperty(std::vector<T>& out, const char* qname, const char* propname ) const ; 
 
+
+    static void FillMaterialLine( stree* st, const std::vector<std::string>& specs ); 
+    void fillMaterialLine( stree* st ); 
+
+    static void GetSpecsFromString( std::vector<std::string>& specs , const char* specs_, char delim='\n' ); 
+
 };
 
+
+/**
+SBnd::DescMaterialProp
+-----------------------
+
+Returns string tabulating the standard properties. 
+
+**/
 
 inline std::string SBnd::DescMaterialProp() // static 
 {
@@ -119,7 +130,7 @@ inline void SBnd::GetMaterialPropNames(std::vector<std::string>& pnames, const c
     for(unsigned i=0 ; i < MaterialProp.size() ; i++) 
     {
         const char* name = MaterialProp[i].name ; 
-        if(SStr::StartsWith(name, skip_prefix) == false ) pnames.push_back(name) ; 
+        if(sstr::StartsWith(name, skip_prefix) == false ) pnames.push_back(name) ; 
     }
 }
 
@@ -132,11 +143,6 @@ inline const SBndProp* SBnd::FindMaterialProp(const char* pname) // static
 }
 
 
-
-
-// this gives duplicate symbols headeronly as cannot inline static constants in C++11
-// const plog::Severity SBnd::LEVEL = PLOG::EnvLevel("SBnd", "DEBUG"); 
-
 inline SBnd::SBnd(const NP* src_)
     :
     src(src_),
@@ -147,7 +153,7 @@ inline SBnd::SBnd(const NP* src_)
 
 inline std::string SBnd::getItemDigest( int i, int j, int w ) const 
 {
-    return SSim::GetItemDigest(src, i, j, w );  
+    return sdigest::Item(src, i, j, w );   // formerly SSim::GetItemDigest 
 }
 inline std::string SBnd::descBoundary() const
 {
@@ -199,7 +205,7 @@ inline void SBnd::getBoundaryIndices( std::vector<unsigned>& bnd_idx, const char
     assert( bnd_idx.size() == 0 ); 
 
     std::vector<std::string> bnd ; 
-    SStr::Split(bnd_sequence,delim, bnd ); 
+    sstr::Split(bnd_sequence,delim, bnd ); 
 
     for(unsigned i=0 ; i < bnd.size() ; i++)
     {
@@ -231,7 +237,14 @@ inline std::string SBnd::descBoundaryIndices( const std::vector<unsigned>& bnd_i
     return s ; 
 }
 
+/**
+SBnd::getBoundaryLine
+-----------------------
 
+The boundary spec allows to obtain the boundary index, 
+the boundary line returned is : 4*boundary_idex + j 
+
+**/
 
 inline unsigned SBnd::getBoundaryLine(const char* spec, unsigned j) const 
 {
@@ -256,6 +269,14 @@ inline unsigned SBnd::getBoundaryLine(const char* spec, unsigned j) const
     return line ;  
 }
 
+/**
+SBnd::GetMaterialLine
+----------------------
+
+The spec strings are assumed to be "/" delimited : omat/osur/isur/imat
+The first omat or imat line matching the *material* argument is returned. 
+
+**/
 
 inline unsigned SBnd::GetMaterialLine( const char* material, const std::vector<std::string>& specs ) // static
 {
@@ -263,7 +284,7 @@ inline unsigned SBnd::GetMaterialLine( const char* material, const std::vector<s
     for(unsigned i=0 ; i < specs.size() ; i++) 
     {
         std::vector<std::string> elem ; 
-        SStr::Split(specs[i].c_str(), '/', elem );  
+        sstr::Split(specs[i].c_str(), '/', elem );  
         const char* omat = elem[0].c_str(); 
         const char* imat = elem[3].c_str(); 
 
@@ -298,25 +319,62 @@ inline unsigned SBnd::getMaterialLine( const char* material ) const
 
 
 
+/**
+SBnd::DescDigest
+--------------------
+
+bnd with shape (44, 4, 2, 761, 4, )::
+
+   ni : boundaries
+   nj : 0:omat/1:osur/2:isur/3:imat  
+   nk : 0 or 1 property group
+   nl : wavelengths
+   nm : payload   
+
+::
+
+    2022-04-20 14:53:14.544 INFO  [4031964] [test_DescDigest@133] 
+    5acc01c3 79cfae67 79cfae67 5acc01c3  Galactic///Galactic
+    5acc01c3 79cfae67 79cfae67 8b22bf98  Galactic///Rock
+    8b22bf98 79cfae67 79cfae67 5acc01c3  Rock///Galactic
+    8b22bf98 79cfae67 0a5eab3f c2759ba7  Rock//Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock/Air
+    8b22bf98 79cfae67 79cfae67 8b22bf98  Rock///Rock
+    8b22bf98 79cfae67 0a5eab3f c2759ba7  Rock//Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox/Air
+    c2759ba7 79cfae67 79cfae67 8b22bf98  Air///Steel
+
+**/
+
+
+inline std::string SBnd::DescDigest(const NP* bnd, int w )  // static
+{
+    int ni = bnd->shape[0] ; 
+    int nj = bnd->shape[1] ;
+ 
+    const std::vector<std::string>& names = bnd->names ; 
+    assert( int(names.size()) == ni ); 
+
+    std::stringstream ss ; 
+    for(int i=0 ; i < ni ; i++)
+    {
+        ss << std::setw(3) << i << " " ; 
+        for(int j=0 ; j < nj ; j++) 
+        {
+            std::string dig = sdigest::Item(bnd, i, j ) ;    // formerly SDigestNP::Item
+            std::string sdig = dig.substr(0, w); 
+            ss << std::setw(w) << sdig << " " ; 
+        }
+        ss << " " << names[i] << std::endl ; 
+    }
+    std::string s = ss.str();  
+    return s ; 
+}
 
 
 inline std::string SBnd::desc() const 
 {
-    return SSim::DescDigest(src,8) ;
-    // TODO: seems funny getting this general functionality from SSim, relocate 
+    return DescDigest(src,8) ;
 }
 
-
-/**
-inline void SBnd::GetSpecsFromString( std::vector<std::string>& specs , const char* specs_, char delim )
-{
-    std::stringstream ss;
-    ss.str(specs_)  ;
-    std::string s;
-    while (std::getline(ss, s, delim)) if(!SStr::Blank(s.c_str())) specs.push_back(s) ;
-    std::cout << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
-}
-**/
 
 
 inline void SBnd::getMaterialNames( std::vector<std::string>& names ) const 
@@ -324,7 +382,7 @@ inline void SBnd::getMaterialNames( std::vector<std::string>& names ) const
     for(unsigned i=0 ; i < bnames.size() ; i++) 
     {
         std::vector<std::string> elem ; 
-        SStr::Split(bnames[i].c_str(), '/', elem );  
+        sstr::Split(bnames[i].c_str(), '/', elem );  
         const char* omat = elem[0].c_str(); 
         const char* imat = elem[3].c_str(); 
 
@@ -343,7 +401,7 @@ inline std::string SBnd::DescNames( std::vector<std::string>& names )
 
 
 /**
-SSim::findName
+SBnd::findName
 ----------------
 
 Returns the first (i,j)=(bidx,species) with element name 
@@ -369,7 +427,7 @@ inline bool SBnd::FindName( int& i, int& j, const char* qname, const std::vector
     for(int b=0 ; b < int(names.size()) ; b++) 
     {
         std::vector<std::string> elem ; 
-        SStr::Split(names[b].c_str(), '/', elem );  
+        sstr::Split(names[b].c_str(), '/', elem );  
 
         for(int s=0 ; s < 4 ; s++)
         {
@@ -444,6 +502,48 @@ inline void SBnd::getProperty(std::vector<T>& out, const char* qname, const char
 }
 
 
+/**
+SBnd::FillMaterialLine
+-----------------------
 
+Uses the "specs" boundary name list to convert 
+all the stree::mtname into st->mtline 
+
+These mtline are used to lookup material properties
+from the boundary texture array. 
+
+**/
+
+inline void SBnd::FillMaterialLine( stree* st, const std::vector<std::string>& specs )
+{
+    if(st == nullptr) return ; 
+    assert( st->mtindex.size() == st->mtname.size() );  
+    unsigned num_mt = st->mtindex.size() ; 
+
+    st->mtline.clear(); 
+    for(unsigned i=0 ; i < num_mt ; i++)
+    {
+        const char* mtname = st->mtname[i].c_str() ; 
+        int mtline = GetMaterialLine(mtname, specs) ;  // unsigned ~0u "MISSING" becomes int -1 
+        st->mtline.push_back(mtline); 
+        //int mtindex = st->mtindex[i] ; 
+    }
+}
+inline void SBnd::fillMaterialLine( stree* st )
+{
+    FillMaterialLine(st, bnames);    
+}
+
+
+
+
+inline void SBnd::GetSpecsFromString( std::vector<std::string>& specs , const char* specs_, char delim )
+{
+    std::stringstream ss;
+    ss.str(specs_)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) if(!sstr::Blank(s.c_str())) specs.push_back(s) ;
+    std::cout << " specs_ [" << specs_ << "] specs.size " << specs.size()  ;   
+}
 
 

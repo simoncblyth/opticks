@@ -572,56 +572,6 @@ std::string SSim::DescOptical(const NP* optical, const NP* bnd )
     return s ; 
 }
 
-
-/**
-SSim::DescDigest
---------------------
-
-bnd with shape (44, 4, 2, 761, 4, )::
-
-   ni : boundaries
-   nj : 0:omat/1:osur/2:isur/3:imat  
-   nk : 0 or 1 property group
-   nl : wavelengths
-   nm : payload   
-
-::
-
-    2022-04-20 14:53:14.544 INFO  [4031964] [test_DescDigest@133] 
-    5acc01c3 79cfae67 79cfae67 5acc01c3  Galactic///Galactic
-    5acc01c3 79cfae67 79cfae67 8b22bf98  Galactic///Rock
-    8b22bf98 79cfae67 79cfae67 5acc01c3  Rock///Galactic
-    8b22bf98 79cfae67 0a5eab3f c2759ba7  Rock//Implicit_RINDEX_NoRINDEX_pDomeAir_pDomeRock/Air
-    8b22bf98 79cfae67 79cfae67 8b22bf98  Rock///Rock
-    8b22bf98 79cfae67 0a5eab3f c2759ba7  Rock//Implicit_RINDEX_NoRINDEX_pExpHall_pExpRockBox/Air
-    c2759ba7 79cfae67 79cfae67 8b22bf98  Air///Steel
-
-**/
-
-std::string SSim::DescDigest(const NP* bnd, int w ) 
-{
-    int ni = bnd->shape[0] ; 
-    int nj = bnd->shape[1] ;
- 
-    const std::vector<std::string>& names = bnd->names ; 
-    assert( int(names.size()) == ni ); 
-
-    std::stringstream ss ; 
-    for(int i=0 ; i < ni ; i++)
-    {
-        ss << std::setw(3) << i << " " ; 
-        for(int j=0 ; j < nj ; j++) 
-        {
-            std::string dig = SDigestNP::Item(bnd, i, j ) ; 
-            std::string sdig = dig.substr(0, w); 
-            ss << std::setw(w) << sdig << " " ; 
-        }
-        ss << " " << names[i] << std::endl ; 
-    }
-    std::string s = ss.str();  
-    return s ; 
-}
-
 std::string SSim::GetItemDigest( const NP* bnd, int i, int j, int w )
 {
     std::string dig = SDigestNP::Item(bnd, i, j ) ; 

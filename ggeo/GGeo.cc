@@ -2461,6 +2461,15 @@ void GGeo::dryrun_convert()
 }
 
 
+/**
+GGeo::convertSim
+------------------
+
+Gets invoked from CSG_GGeo_Convert::convertSim resulting in SSim 
+collecting arrays such as "bnd" from GGeo 
+
+**/
+
 void GGeo::convertSim() const 
 {
     SSim* sim = SSim::Get();

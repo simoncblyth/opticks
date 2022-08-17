@@ -17,18 +17,18 @@ class GParts ;
 
 struct CSG_GGEO_API CSG_GGeo_Convert
 {   
-    static CSGFoundry* Translate(const GGeo* ggeo, const stree* st=nullptr ); 
+    static CSGFoundry* Translate(const GGeo* ggeo, const stree* tree=nullptr ); 
     static const plog::Severity LEVEL ; 
     static unsigned CountSolidPrim( const GParts* comp ); 
 
     CSGFoundry* foundry ; 
     const GGeo* ggeo ; 
-    const stree* st ; 
+    const stree* tree ; 
     bool reverse ; 
     int dump_ridx ; 
     const char* meta ; 
 
-    CSG_GGeo_Convert(CSGFoundry* foundry, const GGeo* ggeo, const stree* st=nullptr ) ; 
+    CSG_GGeo_Convert(CSGFoundry* foundry, const GGeo* ggeo, const stree* tree=nullptr ) ; 
     void init();
 
     void convert();   

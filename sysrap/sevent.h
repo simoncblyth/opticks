@@ -395,8 +395,6 @@ sevent::add_simtrace
 
 NB simtrace "photon" *a* is very different from real ones
 
-TODO: rename the simtrace output array from photon to simtrace for clarity
-
 
 a.q0.f
     prd.q0.f normal, distance, aka "isect" 

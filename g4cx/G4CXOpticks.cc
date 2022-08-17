@@ -212,7 +212,7 @@ HMM: is there a more general place for this hookup ?
 
 
 //const bool G4CXOpticks::setGeometry_saveGeometry = SSys::getenvbool("G4CXOpticks__setGeometry_saveGeometry") ;
-const bool G4CXOpticks::setGeometry_saveGeometry = true ;   // temporarily on by default 
+const bool G4CXOpticks::setGeometry_saveGeometry = true ;   // temporarily always ON 
 
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {

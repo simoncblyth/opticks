@@ -76,7 +76,7 @@ void test_getBoundaryLine(SBnd& sb)
 void test_getMaterialLine(SBnd& sb)
 {
     std::vector<std::string> materials ;
-    SStr::Split( SSys::getenvvar("QCTX_MATERIALS", "Water,LS,Pyrex,Acrylic,NonExisting" ), ',', materials );
+    sstr::Split( SSys::getenvvar("QCTX_MATERIALS", "Water,LS,Pyrex,Acrylic,NonExisting" ), ',', materials );
     LOG(info) << " materials.size " << materials.size() ;
 
     for(unsigned i=0 ; i < materials.size() ; i++)
@@ -177,7 +177,7 @@ void test_getProperty_Q(const SBnd& sb)
     const char* q = SSys::getenvvar("Q", "Water/GROUPVEL"); 
 
     std::vector<std::string> elem ; 
-    SStr::Split(q, '/' , elem); 
+    sstr::Split(q, '/' , elem); 
     assert( elem.size() ==  2); 
     const char* qname = elem[0].c_str(); 
     const char* pname = elem[1].c_str(); 

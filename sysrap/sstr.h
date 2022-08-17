@@ -16,6 +16,10 @@ struct sstr
 
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
+
+    static bool Blank(const char* s ); 
+    static bool All(const char* s, char q ); 
+    static unsigned Count(const char* s, char q ); 
 };
 
 inline void sstr::Write(const char* path, const char* txt )
@@ -89,6 +93,25 @@ inline std::string sstr::Format_( const char* fmt, Args ... args )
 template std::string sstr::Format_( const char*, const char*, int, int ); 
 
 
+inline bool sstr::Blank( const char* s )
+{
+   unsigned n = strlen(s) ; 
+   return n == 0 || All(s, ' ') ; 
+}
+
+inline bool sstr::All( const char* s , char q )
+{
+   unsigned n = strlen(s) ; 
+   return n > 0 && Count(s, q) == n ; 
+
+}
+inline unsigned sstr::Count( const char* s , char q )
+{
+   unsigned n = strlen(s) ; 
+   unsigned count = 0 ; 
+   for(unsigned i=0 ; i < n ; i++) if( s[i] == q ) count += 1 ; 
+   return count ;  
+}
 
 
 

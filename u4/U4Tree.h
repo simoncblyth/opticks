@@ -89,6 +89,9 @@ inline U4Tree* U4Tree::Create( const G4VPhysicalVolume* const top, const U4Senso
 
     st->add_inst(); 
 
+    // SBnd::FillMaterialLine(st, bnd_specs ); 
+    // HMM: U4Tree::Create currently called prior to bnd existing   
+
     std::cout << "] U4Tree::Create " << std::endl ; 
     return tree ; 
 }
@@ -134,7 +137,8 @@ inline void U4Tree::convertMaterial(const G4Material* const mt)
 {
     materials.push_back(mt); 
     const G4String& mtname = mt->GetName() ;  
-    st->mtname.push_back(mtname); 
+    unsigned g4index = mt->GetIndex() ;  
+    st->add_material( mtname, g4index  ); 
 }
 
 

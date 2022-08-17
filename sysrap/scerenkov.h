@@ -36,7 +36,7 @@ struct scerenkov
     // ctrl
     unsigned gentype ;   // formerly Id
     unsigned trackid ;   // formerly ParentId
-    unsigned matline ;   // formerly MaterialIndex
+    unsigned matline ;   // formerly MaterialIndex, used by qbnd::boundary_lookup 
     unsigned numphoton ; // formerly NumPhotons 
  
     float3   pos ;  // formerly x0
