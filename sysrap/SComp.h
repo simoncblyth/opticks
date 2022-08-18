@@ -11,6 +11,7 @@ NB: the old OpticksEvent analog of this is SComponent.hh
 #include <vector>
 #include <sstream>
 #include <cstring>
+#include <bitset>
 #include "SYSRAP_API_EXPORT.hh"
 
 struct NP ; 
@@ -66,9 +67,11 @@ struct SYSRAP_API SComp
     static unsigned    Comp(const char* name); 
     static const char* Name(unsigned comp); 
     static std::string Desc(unsigned mask); 
+    static std::string Desc(const std::vector<unsigned>& comps); 
     static void CompList(std::vector<unsigned>& comps, const char* names, char delim=','); 
     static unsigned    Mask(const char* names, char delim=','); 
-    static void CompListAll(std::vector<unsigned>& comps ); 
+    static void CompListAll( std::vector<unsigned>& comps ); 
+    static void CompListMask(std::vector<unsigned>& comps, unsigned mask ); 
 
     static bool IsGenstep( unsigned mask){ return mask & SCOMP_GENSTEP ; }
     static bool IsPhoton(  unsigned mask){ return mask & SCOMP_PHOTON ; }
@@ -166,6 +169,14 @@ inline std::string SComp::Desc(unsigned mask)
     std::string s = ss.str(); 
     return s ; 
 }
+inline std::string SComp::Desc(const std::vector<unsigned>& comps)
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < comps.size() ; i++) ss << Name(comps[i]) << ( i < comps.size() - 1 ? "," : "" ); 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
     
 inline void SComp::CompList(std::vector<unsigned>& comps, const char* names, char delim )
 {
@@ -178,6 +189,12 @@ inline void SComp::CompList(std::vector<unsigned>& comps, const char* names, cha
 inline void SComp::CompListAll(std::vector<unsigned>& comps )
 {
     CompList(comps, ALL_, ',' ); 
+}
+
+inline void SComp::CompListMask(std::vector<unsigned>& comps, unsigned mask )
+{
+    std::bitset<32> msk(mask); 
+    for(unsigned i=0 ; i < msk.size() ; i++) if(msk[i]) comps.push_back( 0x1 << i ) ; 
 }
 
 inline unsigned SComp::Mask(const char* names, char delim)

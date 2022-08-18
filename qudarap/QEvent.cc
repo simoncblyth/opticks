@@ -649,7 +649,6 @@ void QEvent::device_alloc_photon()
     evt->flat    = evt->num_flat   > 0 ? QU::device_alloc_zero<sflat>(   evt->num_flat  )  : nullptr ; 
     */
 
-
     LOG(LEVEL) 
         << " evt.max_photon " << evt->max_photon 
         << " evt.num_photon " << evt->num_photon 

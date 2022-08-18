@@ -135,6 +135,11 @@ void SEvt::init()
     dbg->zero(); 
     LOG(LEVEL) << evt->desc() ;
 
+    SEventConfig::CompList(comp); 
+
+    LOG(LEVEL) << " SEventConfig::CompMaskLabel "  << SEventConfig::CompMaskLabel() ; 
+    LOG(LEVEL) << descComp() ; 
+
     initInputPhoton(); 
 }
 
@@ -544,7 +549,6 @@ sgs SEvt::addGenstep(const quad6& q_)
     if( tot_photon != evt->num_photon )
     {
         setNumPhoton(tot_photon); 
-
     }
     return s ; 
 }
@@ -1361,18 +1365,12 @@ void SEvt::gather()
 
     gather_done = true ;   // SEvt::setNumPhoton which gets called by adding gensteps resets this to false
 
-    unsigned mask = SEventConfig::CompMask();
-    std::vector<unsigned> comps ; 
-    SComp::CompListAll(comps );
-    for(unsigned i=0 ; i < comps.size() ; i++)
+    for(unsigned i=0 ; i < comp.size() ; i++)
     {
-        unsigned comp = comps[i] ;   
-        const char* k = SComp::Name(comp);    
-        bool comp_skip = (comp & mask) == 0 ; 
-        LOG(LEVEL) << " comp " << comp << " k " << k << " comp_skip " << comp_skip ; 
-        if(comp_skip) continue ; 
-        NP* a = provider->gatherComponent(comp); 
-        LOG(LEVEL) << " a " << ( a ? a->brief() : "-" ) ; 
+        unsigned cmp = comp[i] ;   
+        const char* k = SComp::Name(cmp);    
+        NP* a = provider->gatherComponent(cmp); 
+        LOG(LEVEL) << " k " << std::setw(15) << k << " a " << ( a ? a->brief() : "-" ) ; 
         if(a == nullptr) continue ;  
         fold->add(k, a); 
     }
@@ -1542,7 +1540,16 @@ void SEvt::saveFrame(const char* dir_) const
     frame.save(dir_); 
 }
 
-
+std::string SEvt::descComp() const 
+{
+    std::stringstream ss ; 
+    ss << "SEvt::descComp " 
+       << " comp.size " << comp.size() 
+       << " SComp::Desc " << SComp::Desc(comp)
+       ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
 
 std::string SEvt::descComponent() const 
 {

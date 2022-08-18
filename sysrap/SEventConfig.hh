@@ -106,6 +106,7 @@ struct SYSRAP_API SEventConfig
     static const char* RGModeLabel(); 
 
     static std::string CompMaskLabel(); 
+    static void CompList( std::vector<unsigned>& comps ) ; 
 
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 

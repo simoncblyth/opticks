@@ -112,17 +112,18 @@ struct sevent
     int      max_record  ; // eg: 10  full step record 
     int      max_rec     ; // eg: 10  compressed step record
     int      max_seq     ; // eg: 16  seqhis/seqbnd
-    int      max_prd     ;  
-    int      max_tag     ;     // stag.h random consumption tag 
-    int      max_flat    ; 
+    int      max_prd     ; // eg: 16  
+    int      max_tag     ; // eg: 24   stag.h random consumption tag 
+    int      max_flat    ; // eg: 24 
 
-
-    //[ counts and pointers, are all zeroed by sevent::zero  
-    // note that most of the below are for only used for debugging 
+    //[ counts and pointers, zeroed by sevent::zero  
+    //  only first 4 are always in use, the last 7 are only relevant whilst debugging 
     //
     int      num_genstep ; 
     int      num_seed ; 
+    int      num_hit ;    // set by QEvent::gatherHit using SU::count_if_sphoton
     int      num_photon ; 
+
     int      num_record ; 
     int      num_rec ; 
     int      num_seq ; 
@@ -130,14 +131,18 @@ struct sevent
     int      num_tag ; 
     int      num_flat ; 
     int      num_simtrace ; 
-    int      num_hit ; 
 
-    // CAUTION : with QEvent device running the below are pointers to device buffers 
-    // allocated ONCE ONLY by QEvent::device_alloc_genstep/photon/simtrace
+    // With QEvent device running the below are pointers to device buffers. 
+    // Most are allocated ONCE ONLY by QEvent::device_alloc_genstep/photon/simtrace
+    // sized by configured maxima. 
+    // Only the hit buffer is allocated more dynamically depending on num_hit. 
+    // TODO: check for leaking of hit buffers  
 
     quad6*   genstep ;    //QEvent::device_alloc_genstep
     int*     seed ;     
+    sphoton* hit ;        //QEvent::gatherHit_ allocates event by event depending on num_hit
     sphoton* photon ;     //QEvent::device_alloc_photon
+
     sphoton* record ; 
     srec*    rec ; 
     sseq*    seq ; 
@@ -145,7 +150,6 @@ struct sevent
     stag*    tag ; 
     sflat*   flat ;     
     quad4*   simtrace ;   //QEvent::device_alloc_simtrace
-    sphoton* hit ; 
 
     //] counts and pointers 
 
@@ -398,7 +402,9 @@ SEVENT_METHOD void sevent::zero()
 {
     num_genstep = 0 ; 
     num_seed  = 0 ; 
+    num_hit = 0 ; 
     num_photon = 0 ; 
+
     num_record = 0 ; 
     num_rec = 0 ; 
     num_seq = 0 ; 
@@ -406,11 +412,13 @@ SEVENT_METHOD void sevent::zero()
     num_tag = 0 ; 
     num_flat = 0 ; 
     num_simtrace = 0 ; 
-    num_hit = 0 ; 
+
 
     genstep = nullptr ; 
     seed = nullptr ; 
+    hit = nullptr ; 
     photon = nullptr ; 
+
     record = nullptr ; 
     rec = nullptr ; 
     seq = nullptr ; 
@@ -418,8 +426,6 @@ SEVENT_METHOD void sevent::zero()
     tag = nullptr ; 
     flat = nullptr ; 
     simtrace = nullptr ; 
-    hit = nullptr ; 
-    
 }
 #endif     // ends host only block 
 

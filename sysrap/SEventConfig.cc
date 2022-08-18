@@ -126,6 +126,11 @@ const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
 std::string SEventConfig::CompMaskLabel(){ return SComp::Desc( _CompMask ) ; }
 
+void SEventConfig::CompList( std::vector<unsigned>& comps )
+{
+    SComp::CompListMask(comps, CompMask() ); 
+}  
+
 
 void SEventConfig::Check()
 {
@@ -138,20 +143,7 @@ void SEventConfig::Check()
    assert( _MaxFlat    >= 0 && _MaxFlat    <= 24 ) ; 
 }
 
-
-/*
-void SEventConfig::SetMax(int max_genstep_, int max_photon_, int max_bounce_, int max_record_, int max_rec_, int max_seq_ )
-{ 
-    SetMaxGenstep( max_genstep_ ); 
-    SetMaxPhoton(  max_photon_  ); 
-    SetMaxBounce(  max_bounce_  ); 
-    SetMaxRecord(  max_record_  ); 
-    SetMaxRec(     max_rec_  ); 
-    SetMaxSeq(     max_seq_  ); 
-}
-*/
-
-  
+ 
 std::string SEventConfig::Desc()
 {
     std::stringstream ss ; 

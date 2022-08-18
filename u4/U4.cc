@@ -80,7 +80,7 @@ static quad6 MakeGenstep_DsG4Scintillation_r4695(
     G4double meanVelocity = (pPreStepPoint->GetVelocity()+pPostStepPoint->GetVelocity())/2. ;
 
     const G4DynamicParticle* aParticle = aTrack->GetDynamicParticle();
-    //const G4Material* aMaterial = aTrack->GetMaterial();
+    const G4Material* aMaterial = aTrack->GetMaterial();
 
     quad6 _gs ;
     _gs.zero() ; 
@@ -89,8 +89,11 @@ static quad6 MakeGenstep_DsG4Scintillation_r4695(
 
     gs.gentype = OpticksGenstep_DsG4Scintillation_r4695 ;
     gs.trackid = aTrack->GetTrackID() ;
-    gs.matline = 0u ; //  aMaterial->GetIndex()   // not used for scintillation
+    gs.matline = aMaterial->GetIndex() + SEvt::G4_INDEX_OFFSET ;  // offset signals that a mapping must be done in SEvt::setGenstep
     gs.numphoton = numPhotons ;  
+
+    // note that gs.matline is not currently used for scintillation, 
+    // but done here as check of SEvt::addGenstep mtindex to mtline mapping 
 
     gs.pos.x = x0.x() ; 
     gs.pos.y = x0.y() ; 

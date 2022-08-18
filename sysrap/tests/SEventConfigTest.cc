@@ -1,6 +1,7 @@
 #include <iostream>
 #include "OPTICKS_LOG.hh"
 #include "SEventConfig.hh"
+#include "SComp.h"
 
 void test_Desc()
 {
@@ -17,13 +18,23 @@ void test_OutPath()
     LOG(info) << " SEventConfig::OutPath path_1 " << path_1 ; 
 }
 
+void test_CompList()
+{
+    std::vector<unsigned> comps ; 
+    SEventConfig::CompList(comps) ; 
+    std::cout << SComp::Desc(comps) << std::endl ; 
+}
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    /*
     test_OutPath(); 
     test_Desc(); 
+    */
+    test_CompList(); 
 
     return 0 ; 
 }

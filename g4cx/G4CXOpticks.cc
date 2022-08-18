@@ -170,6 +170,8 @@ U4Tree/stree aspiring to become convertable to CSGFoundry and replace GGeo
 HMM: need a way to distingish between a de-natured world coming via GDML save/load  
 and a live original world : as need to do things a bit differently in each case.
 
+* could determine this by noticing the lack of SensitiveDetectors in GDML de-natured world 
+
 **/
 
 

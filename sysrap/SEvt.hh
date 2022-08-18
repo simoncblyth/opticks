@@ -104,7 +104,7 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     sframe            frame ;
 
-
+    std::vector<unsigned> comp ; 
     std::vector<quad6> genstep ; 
     std::vector<sgs>   gs ; 
     std::vector<spho>  pho0 ;  // unordered push_back as they come 
@@ -297,6 +297,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::string descDir() const ; 
     std::string descFold() const ; 
     std::string descComponent() const ; 
+    std::string descComp() const ; 
 
 
     const NP* getPhoton() const ; 
