@@ -74,10 +74,17 @@ const char* SEvt::getLoadDir() const
 SEvt::getSearchCFbase
 ----------------------
 
-Search for CFBase geometry folder corresponding to the event arrays based on 
-the loaded/saved SEvt directories. So this has no possibility of working prior 
+Search for CFBase geometry folder corresponding to event arrays based on 
+the loaded/saved SEvt directories. SOpticksResource::SearchCFBase uses::
+
+    SPath::SearchDirUpTreeWithFile(dir, "CSGFoundry/solid.npy")
+
+As the start dirs tried are loaddir and savedir this has no possibility of working prior 
 to a load or save having been done. As this is typically used for loaded SEvt 
 this is not much of a limitation. 
+
+For this to succeed to find the geometry requires event arrays are saved 
+into folders with suitable proximity to the corresponding geometry folders. 
 
 For example use this to load an event and associate it with a geometry, 
 allowing dumping or access to the photons in any frame::
@@ -115,7 +122,7 @@ Initially SEvt is set as its own SCompProvider,
 allowing U4RecorderTest/SEvt::save to gather the component 
 arrays provided from SEvt.
 
-For device running the SCompProvider  is overridden to 
+For device running the SCompProvider is overridden to 
 become QEvent allowing SEvt::save to persist the 
 components gatherered from device buffers. 
 
@@ -546,9 +553,13 @@ sgs SEvt::addGenstep(const quad6& q_)
 SEvt::setNumPhoton
 ----------------------
 
-This is the CPU side equivalent of device side QEvent::setNumPhoton
+This is called from SEvt::addGenstep, updating evt.num_photon 
+according to the additional genstep collected and evt.num_seq/tag/flat/record/rec/prd
+depending on the configured max which when zero will keep the counts zero.  
 
-TODO: use SEvt::setNumPhoton from QEvent::setNumPhoton to avoid the duplicity 
+
+
+Also called by QEvent::setNumPhoton prior to device side allocations. 
 
 **/
 

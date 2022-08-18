@@ -3,7 +3,7 @@
 #include "sphoton.h"
 #include "spho.h"
 #include "srec.h"
-#include "sevent.h"
+//#include "sevent.h"
 
 #include "NP.hh"
 #include "SPath.hh"

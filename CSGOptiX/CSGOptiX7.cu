@@ -255,7 +255,7 @@ still needs to access different gensteps across the grid.
 TODO: Compose frames of pixels, isect and "fphoton" within the cegs window
 using the positions of the intersect "photons".
 Note that multiple threads may be writing to the same pixel 
-hat is apparently not a problem, just which does it is uncontrolled.
+that is apparently not a problem, just which does it is uncontrolled.
 
 unsigned index = iz * params.width + ix ;
 if( index > 0 )

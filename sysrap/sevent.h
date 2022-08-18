@@ -1,10 +1,9 @@
 #pragma once
-
 /**
-sevent : host/device communication instance
-=============================================
+sevent.h : host/device communication instance
+==============================================
 
-Instantiation of sevent is done by QEvent::QEvent
+Instantiation of sevent is done by SEvt::SEvt
 and the instance is subsequently uploaded to the device after 
 device buffer allocations hence the sevent instance
 provides event config and device buffer pointers 
@@ -16,9 +15,54 @@ However for clarity separate fields are used to
 distinguish photon test running that directly uses
 QEvent::setNumPhoton 
 
-In CPU only Geant4 running an sevent.h instance is 
-instanciated by U4Recorder::U4Recorder to assist with 
-Geant4 mocking of Opticks events.  
+Users of sevent.h
+-------------------
+
+qudarap/QU.cc
+    template instanciations of QU::UploadArray QU::device_alloc QU::copy_host_to_device
+
+CSGOptiX/CSGOptiX7.cu
+    simulate : reads params.evt, sets sctx.evt
+    reads evt.seed evt.genstep evt.max_bounce
+    writes evt.photon 
+
+    simtrace : reads params.evt, evt.num_simtrace, calls evt::add_simtrace
+
+sysrap/sctx.h
+    *evt* member of device context *sctx* 
+    sctx::point writes evt.record evt.rec
+    sctx::trace writes evt.prd
+    sctx::end writes evt.seq evt.tag evt.flat 
+
+sysrap/SEvt.hh sysrap/SEvt.cc
+    SEvt::SEvt instanciates hostside sevent evt member
+    SEvt::init/sevent::init sets maxima 
+
+    SEvt::addGenstep/SEvt::setNumPhoton 
+    sets evt.num_photon/seq/tag/flat/record/rec/prd depending on the evt.max
+
+qudarap/QEvent.hh qudarap/QEvent.cc
+    **fundamentally integrated with sevent.h**
+
+    QEvent::QEvent 
+
+    * gets sevent:evt pointer from SEvt
+    * allocates space on device for d_evt  
+
+    QEvent::setNumPhoton/QEvent::uploadEvt 
+    
+    * updates device d_evt by copying from evt 
+     
+
+qudarap/qsim.h
+    qsim::mock_propagate mocks the CSGOptiX7.cu:simulate 
+    qsim::generate_photon uses evt to read input photons from buffer
+
+qudarap/QSim.cu
+    used from several tests for evt.num, evt.seed, evt.genstep 
+
+qudarap/QEvent.cu
+    sevent.h used for tests of seeding and genstep photon counting    
 
 **/
 
@@ -59,60 +103,52 @@ struct sevent
     float2 time_domain ; 
     float2 wavelength_domain ; 
 
-    // values here come from SEventConfig 
-    int      max_genstep ; // eg:      100,000
-    int      max_photon  ; // eg:  100,000,000
+    // sevent::init sets these max using values from SEventConfig 
+    int      max_genstep ;  // eg:      100,000
+    int      max_photon  ;  // eg:  100,000,000
     int      max_simtrace ; // eg: 100,000,000
-    int      max_bounce  ; // eg:            9 
-    int      max_record  ; // eg:           10  full step record 
-    int      max_rec     ; // eg:           10  compressed step record
-    int      max_seq     ; // eg:           16  seqhis/seqbnd
+
+    int      max_bounce  ; // eg:  9 
+    int      max_record  ; // eg: 10  full step record 
+    int      max_rec     ; // eg: 10  compressed step record
+    int      max_seq     ; // eg: 16  seqhis/seqbnd
     int      max_prd     ;  
     int      max_tag     ;     // stag.h random consumption tag 
     int      max_flat    ; 
 
+
+    //[ counts and pointers, are all zeroed by sevent::zero  
+    // note that most of the below are for only used for debugging 
+    //
     int      num_genstep ; 
-    quad6*   genstep ; 
-
     int      num_seed ; 
-    int*     seed ;     
-
     int      num_photon ; 
-    sphoton* photon ; 
-
     int      num_record ; 
-    sphoton* record ; 
-
     int      num_rec ; 
-    srec*    rec ; 
-
     int      num_seq ; 
-    sseq*    seq ; 
-
+    int      num_prd ; 
+    int      num_tag ; 
+    int      num_flat ; 
+    int      num_simtrace ; 
     int      num_hit ; 
+
+    // CAUTION : with QEvent device running the below are pointers to device buffers 
+    // allocated ONCE ONLY by QEvent::device_alloc_genstep/photon/simtrace
+
+    quad6*   genstep ;    //QEvent::device_alloc_genstep
+    int*     seed ;     
+    sphoton* photon ;     //QEvent::device_alloc_photon
+    sphoton* record ; 
+    srec*    rec ; 
+    sseq*    seq ; 
+    quad2*   prd ; 
+    stag*    tag ; 
+    sflat*   flat ;     
+    quad4*   simtrace ;   //QEvent::device_alloc_simtrace
     sphoton* hit ; 
 
-    int      num_simtrace ; 
-    quad4*   simtrace ; 
+    //] counts and pointers 
 
-    int      num_prd ; 
-    quad2*   prd ; 
-
-    int      num_tag ; 
-    stag*    tag ; 
-
-    int      num_flat ; 
-    sflat*   flat ; 
-
-
-#ifndef PRODUCTION
-    SEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
-#endif
-    SEVENT_METHOD void add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin ); 
-
-
-    // not including prd here as that is clearly for debugging only 
-    // yes but quite a few of above are also debug only ... add prd here if seems easier
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -128,6 +164,11 @@ struct sevent
     SEVENT_METHOD void get_config(quad4& cfg) const ; 
     SEVENT_METHOD void zero(); 
 #endif 
+
+#ifndef PRODUCTION
+    SEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
+    SEVENT_METHOD void add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin ); 
+#endif
 
 }; 
 
@@ -148,13 +189,23 @@ SEVENT_METHOD void sevent::init()
     max_tag      = SEventConfig::MaxTag()  ;  
     max_flat     = SEventConfig::MaxFlat()  ;  
 
-    zero(); 
+    zero();  // pointers and counts  
 
     float extent = SEventConfig::MaxExtent() ; 
     float time_max = SEventConfig::MaxTime() ; 
 
     init_domain( extent, time_max );  
 }
+
+/**
+sevent::init_domain
+--------------------
+
+Domaina are mainly(only?) used for the compressed photon "rec", 
+but now are making more use of the full photon "record"
+as thats considerably simpler that "rec". 
+ 
+**/
 SEVENT_METHOD void sevent::init_domain(float extent, float time_max)
 {
     center_extent.x = 0.f ; 
@@ -174,17 +225,17 @@ SEVENT_METHOD std::string sevent::descMax() const
     int w = 5 ; 
     std::stringstream ss ; 
     ss 
-        << "sevent::descMax " 
-        << " evt.max_genstep "   << std::setw(w) << max_genstep  
-        << " evt.max_photon  "   << std::setw(w) << max_photon  
-        << " evt.max_simtrace  " << std::setw(w) << max_simtrace  
-        << " evt.max_bounce  "   << std::setw(w) << max_bounce 
-        << " evt.max_record  "   << std::setw(w) << max_record 
-        << " evt.max_rec  "      << std::setw(w) << max_rec
-        << " evt.max_seq  "      << std::setw(w) << max_seq
-        << " evt.max_prd  "      << std::setw(w) << max_prd
-        << " evt.max_tag  "      << std::setw(w) << max_tag
-        << " evt.max_flat  "     << std::setw(w) << max_flat
+        << "sevent::descMax    " << std::endl 
+        << " evt.max_genstep   " << std::setw(w) << max_genstep  << std::endl 
+        << " evt.max_photon    " << std::setw(w) << max_photon   << std::endl 
+        << " evt.max_simtrace  " << std::setw(w) << max_simtrace << std::endl 
+        << " evt.max_bounce    " << std::setw(w) << max_bounce   << std::endl 
+        << " evt.max_record    " << std::setw(w) << max_record   << std::endl 
+        << " evt.max_rec       " << std::setw(w) << max_rec      << std::endl 
+        << " evt.max_seq       " << std::setw(w) << max_seq      << std::endl 
+        << " evt.max_prd       " << std::setw(w) << max_prd      << std::endl 
+        << " evt.max_tag       " << std::setw(w) << max_tag      << std::endl 
+        << " evt.max_flat      " << std::setw(w) << max_flat     << std::endl 
         ;
 
     std::string s = ss.str();  
@@ -196,15 +247,18 @@ SEVENT_METHOD std::string sevent::descNum() const
     int w = 5 ; 
     std::stringstream ss ; 
     ss 
-        << " sevent::descNum  " 
-        << " evt.num_genstep " << std::setw(w) << num_genstep 
-        << " evt.num_seed "    << std::setw(w) << num_seed   
-        << " evt.num_photon "  << std::setw(w) << num_photon
-        << " evt.num_simtrace "  << std::setw(w) << num_simtrace
-        << " evt.num_record "  << std::setw(w) << num_record
-        << " evt.num_prd "  << std::setw(w) << num_prd
-        << " evt.num_tag "  << std::setw(w) << num_tag
-        << " evt.num_flat "  << std::setw(w) << num_flat
+        << " sevent::descNum  "  << std::endl 
+        << " evt.num_genstep  "  << std::setw(w) << num_genstep  << std::endl 
+        << " evt.num_seed     "  << std::setw(w) << num_seed     << std::endl 
+        << " evt.num_photon   "  << std::setw(w) << num_photon   << std::endl 
+        << " evt.num_record   "  << std::setw(w) << num_record   << std::endl 
+        << " evt.num_rec      "  << std::setw(w) << num_rec      << std::endl 
+        << " evt.num_seq      "  << std::setw(w) << num_seq      << std::endl 
+        << " evt.num_hit      "  << std::setw(w) << num_hit      << std::endl 
+        << " evt.num_simtrace "  << std::setw(w) << num_simtrace << std::endl 
+        << " evt.num_prd      "  << std::setw(w) << num_prd      << std::endl    
+        << " evt.num_tag      "  << std::setw(w) << num_tag      << std::endl 
+        << " evt.num_flat     "  << std::setw(w) << num_flat     << std::endl 
         ;
     std::string s = ss.str();  
     return s ; 
@@ -277,10 +331,6 @@ SEVENT_METHOD std::string sevent::desc() const
     return s ; 
 }
 
-
-
-
-
 /**
 sevent::get_domain
 -------------------
@@ -335,7 +385,15 @@ SEVENT_METHOD void sevent::get_config( quad4& cfg ) const
    cfg.q3.u.w = 0 ;
 }
 
+/**
+sevent::zero
+--------------
 
+CAUTION with QEvent device side running the pointers 
+are to device buffers that are allocated once based on 
+configured maxima and then reused for each launch
+
+**/
 SEVENT_METHOD void sevent::zero()
 {
     num_genstep = 0 ; 
@@ -344,11 +402,11 @@ SEVENT_METHOD void sevent::zero()
     num_record = 0 ; 
     num_rec = 0 ; 
     num_seq = 0 ; 
-    num_hit = 0 ; 
-    num_simtrace = 0 ; 
     num_prd = 0 ; 
     num_tag = 0 ; 
     num_flat = 0 ; 
+    num_simtrace = 0 ; 
+    num_hit = 0 ; 
 
     genstep = nullptr ; 
     seed = nullptr ; 
@@ -356,16 +414,17 @@ SEVENT_METHOD void sevent::zero()
     record = nullptr ; 
     rec = nullptr ; 
     seq = nullptr ; 
-    hit = nullptr ; 
-    simtrace = nullptr ; 
     prd = nullptr ; 
     tag = nullptr ; 
     flat = nullptr ; 
+    simtrace = nullptr ; 
+    hit = nullptr ; 
     
 }
-#endif 
+#endif     // ends host only block 
 
 
+#ifndef PRODUCTION
 /**
 sevent::add_rec
 ----------------
@@ -373,41 +432,34 @@ sevent::add_rec
 Populates compressed "srec& r" from "const sphoton& p" using the domains
 and copies into evt->rec array using the (idx,bounce) slot. 
 
+Note no flags. Have moved to using the full uncompressed "record" 
+for simplicity instead of this domain compressed one. 
+
 **/
-
-
-#ifndef PRODUCTION
 SEVENT_METHOD void  sevent::add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p )
 {
     r.set_position(     p.pos,  center_extent ); 
     r.set_time(         p.time, time_domain ); 
     r.set_polarization( p.pol ); 
     r.set_wavelength(   p.wavelength, wavelength_domain ); 
-    // flags ?
 
     rec[max_rec*idx+bounce] = r ;      
 }
-#endif
 
 /**
-sevent::add_simtrace
-----------------------
+sevent::add_simtrace : fills simtrace[idx] with values from p, prd  
+--------------------------------------------------------------------
 
-NB simtrace "photon" *a* is very different from real ones
-
+NB simtrace "photon" *a* is very different from real sphoton.
 
 a.q0.f
     prd.q0.f normal, distance, aka "isect" 
-
 a.q1
     intersect position from pos+t*dir, 0.
-
 a.q2
     initial pos, tmin
-
 a.q3 
     initial dir, prd.identity
-
 
 **/
 
@@ -435,7 +487,5 @@ SEVENT_METHOD void sevent::add_simtrace( unsigned idx, const quad4& p, const qua
 
     simtrace[idx] = a ;
 }
-
-
-
+#endif
 

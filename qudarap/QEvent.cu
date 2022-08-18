@@ -76,7 +76,7 @@ QEvent_count_genstep_photons
 -----------------------------
 
 Notice how using strided_range needs itemsize stride twice, 
-because are grabbing single ints from each quad6 6*4 genstep 
+because are grabbing single ints "numphoton" from each quad6 6*4 genstep 
 
 **/
 

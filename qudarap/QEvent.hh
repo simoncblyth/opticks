@@ -77,6 +77,7 @@ public:
     int setGenstep();
 private:
     int  setGenstep(NP* gs);
+    void device_alloc_genstep(); 
     void setInputPhoton(); 
     int setGenstep(quad6* gs, unsigned num_gs ); 
     unsigned count_genstep_photons(); 
@@ -126,12 +127,15 @@ private:
     NP*      gatherHit_() const ; 
 public:
     unsigned getNumHit() const ; 
-    unsigned getNumPhoton() const ;  
-    unsigned getNumSimtrace() const ;  
 private:
     void     setNumPhoton(unsigned num_photon) ;  
     void     setNumSimtrace(unsigned num_simtrace) ;  
+    void     device_alloc_photon(); 
+    void     device_alloc_simtrace(); 
     void     uploadEvt(); 
+public:
+    unsigned getNumPhoton() const ;  
+    unsigned getNumSimtrace() const ;  
 public:
     std::string desc() const ; 
 

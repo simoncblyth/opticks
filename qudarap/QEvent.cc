@@ -159,12 +159,7 @@ int QEvent::setGenstep(NP* gs_)
     SGenstep::Check(gs); 
     evt->num_genstep = gs->shape[0] ; 
 
-    if( evt->genstep == nullptr && evt->seed == nullptr ) 
-    {
-        LOG(LEVEL) << " device_alloc genstep and seed " ; 
-        evt->genstep = QU::device_alloc<quad6>( evt->max_genstep ) ; 
-        evt->seed    = QU::device_alloc<int>(   evt->max_photon )  ;
-    }
+    if( evt->genstep == nullptr && evt->seed == nullptr ) device_alloc_genstep() ; 
 
     LOG(LEVEL) << SGenstep::Desc(gs, 10) ;
  
@@ -198,6 +193,15 @@ int QEvent::setGenstep(NP* gs_)
     upload_count += 1 ; 
     return 0 ; 
 }
+
+void QEvent::device_alloc_genstep()
+{
+    LOG(LEVEL) << " device_alloc genstep and seed " ; 
+    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep ) ; 
+    evt->seed    = QU::device_alloc<int>(   evt->max_photon )  ;
+}
+
+
 
 /**
 QEvent::setInputPhoton
@@ -593,6 +597,8 @@ NP* QEvent::gatherComponent_(unsigned comp) const
 QEvent::setNumPhoton
 ---------------------
 
+At the first call when evt.photon is nullptr allocation on device is done. 
+
 Canonically invoked internally from QEvent::setGenstep but may be invoked 
 directly from "friendly" photon only tests without use of gensteps.  
 
@@ -605,60 +611,64 @@ when collecting records : that is ok as running with records is regarded as debu
 void QEvent::setNumPhoton(unsigned num_photon )
 {
     sev->setNumPhoton(num_photon); 
-    if( evt->photon == nullptr ) 
-    {
-        evt->photon  = evt->num_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon ) : nullptr ; 
-        evt->record  = evt->num_record > 0 ? QU::device_alloc_zero<sphoton>( evt->num_record ) : nullptr ; 
-        evt->rec     = evt->num_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->num_rec  )   : nullptr ; 
-        evt->seq     = evt->num_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->num_seq  )   : nullptr ; 
-        evt->prd     = evt->num_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->num_prd  )   : nullptr ; 
-        evt->tag     = evt->num_tag    > 0 ? QU::device_alloc_zero<stag>(    evt->num_tag  )   : nullptr ; 
-        evt->flat    = evt->num_flat   > 0 ? QU::device_alloc_zero<sflat>(   evt->num_flat  )   : nullptr ; 
-
-        LOG(LEVEL) 
-            << " device_alloc photon " 
-            << " evt.num_photon " << evt->num_photon 
-            << " evt.num_record " << evt->num_record 
-            << " evt.num_rec    " << evt->num_rec 
-            << " evt.num_seq    " << evt->num_seq
-            << " evt.num_prd    " << evt->num_prd
-            << " evt.num_tag    " << evt->num_tag
-            << " evt.num_flat    " << evt->num_flat
-            ;
-    } 
-    else
-    {
-         LOG(error) << " evt.photon is not nullptr : evt.photon : " << evt->photon ; 
-    }
-
+    if( evt->photon == nullptr ) device_alloc_photon();  
     uploadEvt(); 
 }
-
 void QEvent::setNumSimtrace(unsigned num_simtrace)
 {
     sev->setNumSimtrace(num_simtrace); 
-    if( evt->simtrace == nullptr ) 
-    {
-        evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace ) ; 
-    
-        LOG(info) 
-            << " device_alloc simtrace " 
-            << " evt.num_simtrace " << evt->num_simtrace 
-            << " evt.max_simtrace " << evt->max_simtrace
-            ;
-    }
+    if( evt->simtrace == nullptr ) device_alloc_simtrace(); 
     uploadEvt(); 
 }
- 
 
+/**
+QEvent::device_alloc_photon
+----------------------------
 
-unsigned QEvent::getNumPhoton() const
+HMM: record buffer should be : evt->max_record * evt->max_photon ? 
+
+**/
+
+void QEvent::device_alloc_photon()
 {
-    return evt->num_photon ; 
+    evt->photon  = evt->max_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon ) : nullptr ; 
+
+    evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon * evt->max_record ) : nullptr ; 
+    evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec    ) : nullptr ; 
+    evt->seq     = evt->max_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->max_photon * evt->max_seq    ) : nullptr ; 
+    evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_photon * evt->max_prd    ) : nullptr ; 
+    evt->tag     = evt->max_tag    > 0 ? QU::device_alloc_zero<stag>(    evt->max_photon * evt->max_tag    ) : nullptr ; 
+    evt->flat    = evt->max_flat   > 0 ? QU::device_alloc_zero<sflat>(   evt->max_photon * evt->max_flat   ) : nullptr ; 
+
+    /*
+    evt->record  = evt->num_record > 0 ? QU::device_alloc_zero<sphoton>( evt->num_record ) : nullptr ; 
+    evt->rec     = evt->num_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->num_rec  )   : nullptr ; 
+    evt->seq     = evt->num_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->num_seq  )   : nullptr ; 
+    evt->prd     = evt->num_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->num_prd  )   : nullptr ; 
+    evt->tag     = evt->num_tag    > 0 ? QU::device_alloc_zero<stag>(    evt->num_tag  )   : nullptr ; 
+    evt->flat    = evt->num_flat   > 0 ? QU::device_alloc_zero<sflat>(   evt->num_flat  )  : nullptr ; 
+    */
+
+
+    LOG(LEVEL) 
+        << " evt.max_photon " << evt->max_photon 
+        << " evt.num_photon " << evt->num_photon 
+        << " evt.num_record " << evt->num_record 
+        << " evt.num_rec    " << evt->num_rec 
+        << " evt.num_seq    " << evt->num_seq
+        << " evt.num_prd    " << evt->num_prd
+        << " evt.num_tag    " << evt->num_tag
+        << " evt.num_flat   " << evt->num_flat
+        ;
 }
-unsigned QEvent::getNumSimtrace() const
+ 
+void QEvent::device_alloc_simtrace()
 {
-    return evt->num_simtrace ; 
+    evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace ) ; 
+    LOG(LEVEL) 
+        << " evt.num_simtrace " << evt->num_simtrace 
+        << " evt.max_simtrace " << evt->max_simtrace
+        ;
 }
 
 
@@ -676,6 +686,17 @@ void QEvent::uploadEvt()
     LOG(LEVEL) << std::endl << evt->desc() ; 
     QU::copy_host_to_device<sevent>(d_evt, evt, 1 );  
 }
+
+unsigned QEvent::getNumPhoton() const
+{
+    return evt->num_photon ; 
+}
+unsigned QEvent::getNumSimtrace() const
+{
+    return evt->num_simtrace ; 
+}
+
+
 
 extern "C" void QEvent_checkEvt(dim3 numBlocks, dim3 threadsPerBlock, sevent* evt, unsigned width, unsigned height ) ; 
 
