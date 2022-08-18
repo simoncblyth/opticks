@@ -435,20 +435,20 @@ envvars with the same keys can be used to override these defaults.
 **/
 const char* SOpticksResource::Get(const char* key) // static
 {
-    const char* tok = getenv(key) ; 
+    const char* tok = getenv(key) ;   // can override via envvar, but typically below defaults are used
     if(tok) return tok ;  
 
-    if(      strcmp(key, "IDPath")==0)      tok = SOpticksResource::IDPath(); 
-    else if( strcmp(key, "CFBase")==0)      tok = SOpticksResource::CFBase(); 
-    else if( strcmp(key, "CFBaseAlt")==0)   tok = SOpticksResource::CFBaseAlt(); 
-    else if( strcmp(key, "GeocacheDir")==0) tok = SOpticksResource::GeocacheDir(); 
-    else if( strcmp(key, "RuncacheDir")==0) tok = SOpticksResource::RuncacheDir(); 
-    else if( strcmp(key, "RNGDir")==0)      tok = SOpticksResource::RNGDir(); 
-    else if( strcmp(key, "PrecookedDir")==0) tok = SOpticksResource::PrecookedDir(); 
-    else if( strcmp(key, "DefaultOutputDir")==0)    tok = SOpticksResource::DefaultOutputDir(); 
-    else if( strcmp(key, "SomeGDMLPath")==0)       tok = SOpticksResource::SomeGDMLPath(); 
-    else if( strcmp(key, "GDMLPath")==0)       tok = SOpticksResource::GDMLPath(); 
-    else if( strcmp(key, "CFBaseFromGEOM")==0) tok = SOpticksResource::CFBaseFromGEOM(); 
+    if(      strcmp(key, "IDPath")==0)           tok = SOpticksResource::IDPath(); 
+    else if( strcmp(key, "CFBase")==0)           tok = SOpticksResource::CFBase(); 
+    else if( strcmp(key, "CFBaseAlt")==0)        tok = SOpticksResource::CFBaseAlt(); 
+    else if( strcmp(key, "GeocacheDir")==0)      tok = SOpticksResource::GeocacheDir(); 
+    else if( strcmp(key, "RuncacheDir")==0)      tok = SOpticksResource::RuncacheDir(); 
+    else if( strcmp(key, "RNGDir")==0)           tok = SOpticksResource::RNGDir(); 
+    else if( strcmp(key, "PrecookedDir")==0)     tok = SOpticksResource::PrecookedDir(); 
+    else if( strcmp(key, "DefaultOutputDir")==0) tok = SOpticksResource::DefaultOutputDir(); 
+    else if( strcmp(key, "SomeGDMLPath")==0)     tok = SOpticksResource::SomeGDMLPath(); 
+    else if( strcmp(key, "GDMLPath")==0)         tok = SOpticksResource::GDMLPath(); 
+    else if( strcmp(key, "CFBaseFromGEOM")==0)   tok = SOpticksResource::CFBaseFromGEOM(); 
     return tok ;  
 }
 

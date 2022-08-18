@@ -11,7 +11,11 @@
 #include "SComp.h"
 #include "OpticksPhoton.hh"
 
+#include "PLOG.hh"
 
+const plog::Severity SEventConfig::LEVEL = PLOG::EnvLevel("SEventConfig", "DEBUG") ; 
+
+const char* SEventConfig::_EventModeDefault = "Default" ; 
 int SEventConfig::_MaxGenstepDefault = 1000*K ; 
 int SEventConfig::_MaxBounceDefault = 9 ; 
 int SEventConfig::_MaxRecordDefault = 0 ; 
@@ -24,7 +28,6 @@ float SEventConfig::_MaxExtentDefault = 1000.f ;  // mm  : domain compression us
 float SEventConfig::_MaxTimeDefault = 10.f ; // ns 
 const char* SEventConfig::_OutFoldDefault = "$DefaultOutputDir" ; 
 const char* SEventConfig::_OutNameDefault = nullptr ; 
-const char* SEventConfig::_GeoFoldDefault = nullptr ; 
 const char* SEventConfig::_RGModeDefault = "simulate" ; 
 const char* SEventConfig::_HitMaskDefault = "SD" ; 
 
@@ -43,6 +46,7 @@ const char* SEventConfig::_InputPhotonFrameDefault = nullptr ;
 
 
 
+const char* SEventConfig::_EventMode = SSys::getenvvar(kEventMode, _EventModeDefault ); 
 int SEventConfig::_MaxGenstep   = SSys::getenvint(kMaxGenstep,  _MaxGenstepDefault ) ; 
 int SEventConfig::_MaxPhoton    = SSys::getenvint(kMaxPhoton,   _MaxPhotonDefault ) ; 
 int SEventConfig::_MaxSimtrace  = SSys::getenvint(kMaxSimtrace,   _MaxSimtraceDefault ) ; 
@@ -57,7 +61,6 @@ float SEventConfig::_MaxExtent  = SSys::getenvfloat(kMaxExtent, _MaxExtentDefaul
 float SEventConfig::_MaxTime    = SSys::getenvfloat(kMaxTime,   _MaxTimeDefault );    // ns
 const char* SEventConfig::_OutFold = SSys::getenvvar(kOutFold, _OutFoldDefault ); 
 const char* SEventConfig::_OutName = SSys::getenvvar(kOutName, _OutNameDefault ); 
-const char* SEventConfig::_GeoFold = SSys::getenvvar(kGeoFold, _GeoFoldDefault ); 
 int SEventConfig::_RGMode = SRG::Type(SSys::getenvvar(kRGMode, _RGModeDefault)) ;    
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(SSys::getenvvar(kHitMask, _HitMaskDefault )) ;   
 unsigned SEventConfig::_CompMask  = SComp::Mask(SSys::getenvvar(kCompMask, _CompMaskDefault )) ;   
@@ -66,6 +69,7 @@ const char* SEventConfig::_InputPhoton = SSys::getenvvar(kInputPhoton, _InputPho
 const char* SEventConfig::_InputPhotonFrame = SSys::getenvvar(kInputPhotonFrame, _InputPhotonFrameDefault ); 
 
 
+const char* SEventConfig::EventMode(){ return _EventMode ; }
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
 int SEventConfig::MaxSimtrace(){   return _MaxSimtrace ; }
@@ -80,7 +84,6 @@ float SEventConfig::MaxExtent(){ return _MaxExtent ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
-const char* SEventConfig::GeoFold(){   return _GeoFold ; }
 int SEventConfig::RGMode(){  return _RGMode ; } 
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
 unsigned SEventConfig::CompMask(){  return _CompMask; } 
@@ -89,7 +92,15 @@ const char* SEventConfig::InputPhoton(){   return _InputPhoton ; }
 const char* SEventConfig::InputPhotonFrame(){   return _InputPhotonFrame ; }
 
 
+const char* SEventConfig::Default = "Default" ; 
+const char* SEventConfig::StandardFullDebug = "StandardFullDebug" ; 
 
+// considered calling Initialize from the below, but prefer to 
+// have a fixed position G4CXOpticks::init where SEventConfig::Initialize is called
+void SEventConfig::SetDefault(){            SetEventMode(Default)           ; } 
+void SEventConfig::SetStandardFullDebug(){  SetEventMode(StandardFullDebug) ; }
+
+void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; Check() ; }
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; Check() ; }
 void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; Check() ; }
 void SEventConfig::SetMaxSimtrace( int max_simtrace){  _MaxSimtrace  = max_simtrace  ; Check() ; }
@@ -104,17 +115,62 @@ void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; C
 void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; Check() ; }
 void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? strdup(outfold) : nullptr ; Check() ; }
 void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? strdup(outname) : nullptr ; Check() ; }
-void SEventConfig::SetGeoFold(   const char* geofold){   _GeoFold = geofold ? strdup(geofold) : nullptr ; Check() ; }
+void SEventConfig::SetHitMask(   const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
+
 void SEventConfig::SetRGMode(   const char* rg_mode){   _RGMode = SRG::Type(rg_mode) ; Check() ; }
 void SEventConfig::SetRGModeSimulate(){  SetRGMode( SRG::SIMULATE_ ); }
 void SEventConfig::SetRGModeSimtrace(){  SetRGMode( SRG::SIMTRACE_ ); }
 void SEventConfig::SetRGModeRender(){    SetRGMode( SRG::RENDER_ ); }
 
-void SEventConfig::SetHitMask(const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
-void SEventConfig::SetCompMask(const char* names, char delim){  _CompMask = SComp::Mask(names,delim) ; }
 void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; Check() ; }
 void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; Check() ; }
 void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip ? strdup(ip) : nullptr ; Check() ; }
+
+void SEventConfig::SetCompMask_(unsigned mask){ _CompMask = mask ; }
+void SEventConfig::SetCompMask(const char* names, char delim){  SetCompMask_( SComp::Mask(names,delim)) ; }
+void SEventConfig::SetCompMaskAuto(){ SetCompMask_( CompMaskAuto() ) ; }
+
+
+/**
+SEventConfig::CompMaskAuto
+---------------------------
+
+**/
+
+unsigned SEventConfig::CompMaskAuto()
+{
+    unsigned mask = 0 ;     
+    if(IsRGModeSimulate())
+    {
+        if(MaxGenstep()>0)   mask |= SCOMP_GENSTEP ; 
+        if(MaxPhoton()>0)
+        {
+            mask |= SCOMP_PHOTON ;  
+            mask |= SCOMP_HIT ; 
+            //mask |= SCOMP_SEED ;   // only needed for deep debugging 
+        }
+        if(MaxRecord()>0)    mask |= SCOMP_RECORD ; 
+        if(MaxRec()>0)       mask |= SCOMP_REC ; 
+        if(MaxSeq()>0)       mask |= SCOMP_SEQ ; 
+        if(MaxPrd()>0)       mask |= SCOMP_PRD ; 
+        if(MaxTag()>0)       mask |= SCOMP_TAG ; 
+        if(MaxFlat()>0)      mask |= SCOMP_FLAT ; 
+    }
+    else if(IsRGModeSimtrace())
+    {
+        if(MaxGenstep()>0)   mask |= SCOMP_GENSTEP ; 
+        if(MaxSimtrace()>0)  mask |= SCOMP_SIMTRACE ; 
+    } 
+    else if(IsRGModeRender())
+    {
+        mask |= SCOMP_PIXEL ; 
+    }
+    return mask ; 
+}
+
+
+
+
 
 
 
@@ -148,6 +204,8 @@ std::string SEventConfig::Desc()
 {
     std::stringstream ss ; 
     ss << "SEventConfig::Desc" << std::endl 
+       << std::setw(25) << kEventMode
+       << std::setw(20) << " EventMode " << " : " << EventMode() << std::endl 
        << std::setw(25) << kMaxGenstep 
        << std::setw(20) << " MaxGenstep " << " : " << MaxGenstep() << std::endl 
        << std::setw(25) << kMaxPhoton 
@@ -184,12 +242,11 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " CompMask " << " : " << CompMask() << std::endl 
        << std::setw(25) << ""
        << std::setw(20) << " CompMaskLabel " << " : " << CompMaskLabel() << std::endl 
+
        << std::setw(25) << kOutFold
        << std::setw(20) << " OutFold " << " : " << OutFold() << std::endl 
        << std::setw(25) << kOutName
        << std::setw(20) << " OutName " << " : " << ( OutName() ? OutName() : "-" )  << std::endl 
-       << std::setw(25) << kGeoFold
-       << std::setw(20) << " GeoFold " << " : " << GeoFold() << std::endl 
        << std::setw(25) << kPropagateEpsilon
        << std::setw(20) << " PropagateEpsilon " << " : " << std::fixed << std::setw(10) << std::setprecision(4) << PropagateEpsilon() << std::endl 
        << std::setw(25) << kInputPhoton
@@ -200,6 +257,21 @@ std::string SEventConfig::Desc()
 }
 
 
+/**
+SEventConfig::OutDir SEventConfig::OutPath
+--------------------------------------------
+
+Q: Are these methods used ? 
+A: YES by CSGOptiX::render_snap
+
+::
+
+    const char* outpath = SEventConfig::OutPath(name, -1, ".jpg" );
+
+
+TODO: rejig, it makes more sense for SEventConfig to be used from SPath via SOpticksResource::Get tokens not vice versa 
+
+**/
 
 const char* SEventConfig::OutDir()
 {
@@ -210,8 +282,6 @@ const char* SEventConfig::OutPath( const char* stem, int index, const char* ext 
      return SPath::Make( OutFold(), OutName(), stem, index, ext, FILEPATH);  // HMM: an InPath would use NOOP to not create the dir
 }
 
-
-
 const char* SEventConfig::OutDir(const char* reldir)
 {
     return SPath::Resolve( OutFold(), OutName(), reldir, DIRPATH ); 
@@ -221,25 +291,42 @@ const char* SEventConfig::OutPath( const char* reldir, const char* stem, int ind
      return SPath::Make( OutFold(), OutName(), reldir, stem, index, ext, FILEPATH ); 
 }
 
+/**
+SEventConfig::Initialize
+-------------------------
 
-void SEventConfig::SetStandardFullDebug(){  SetEventMode("StandardFullDebug", 9) ; }
-void SEventConfig::SetEventMode(const char* mode, unsigned max_bounce ) // static
+HMM: if change the max after calling this need to SEventConfig::SetCompMaskAuto() 
+
+**/
+
+
+void SEventConfig::Initialize() // static
 {
-    if(strcmp(mode, "StandardFullDebug") == 0 )
+    const char* mode = EventMode(); 
+    int maxbounce = MaxBounce(); 
+
+    if(strcmp(mode, Default) == 0 )
     {
-        SEventConfig::SetMaxBounce(max_bounce); 
-        SEventConfig::SetMaxRecord(max_bounce+1); 
-        SEventConfig::SetMaxRec(max_bounce+1); 
-        SEventConfig::SetMaxSeq(max_bounce+1); 
-        SEventConfig::SetMaxPrd(max_bounce+1); 
+        SetCompMaskAuto() ;   // comp set based on Max values   
+    }
+    else if(strcmp(mode, StandardFullDebug) == 0 )
+    {
+        SEventConfig::SetMaxRecord(maxbounce+1); 
+        SEventConfig::SetMaxRec(maxbounce+1); 
+        SEventConfig::SetMaxSeq(maxbounce+1); 
+        SEventConfig::SetMaxPrd(maxbounce+1); 
 
         unsigned slots = 24 ;  // HMM: stag::SLOTS  
         SEventConfig::SetMaxTag(slots);             // stag::NSEQ*(64/stag::BITS) = 2*12 = 24
         SEventConfig::SetMaxFlat(slots);             // stag::NSEQ*(64/stag::BITS) = 2*12 = 24
+        SetCompMaskAuto() ;   // comp set based on Max values   
     }
     else
     {
-        std::cout << "SEventConfig::SetEventMode [" << mode << "] IS NOT RECOGNIZED " << std::endl ;         
+        LOG(fatal) << "mode [" << mode << "] IS NOT RECOGNIZED "  ;         
+        LOG(fatal) << " options : " << Default << "," << StandardFullDebug ; 
+        assert(0); 
     }
 }
+
 

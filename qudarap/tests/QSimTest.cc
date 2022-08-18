@@ -568,9 +568,11 @@ void QSimTest::EventConfig(unsigned type )  // static
     {
         QPrd* prd = new QPrd ; 
         LOG(LEVEL) << prd->desc() ;  
-        int num_bounce = prd->getNumBounce(); 
- 
-        SEventConfig::SetEventMode("StandardFullDebug", num_bounce ); 
+        int maxbounce = prd->getNumBounce(); 
+
+        SEventConfig::SetMaxBounce(maxbounce); 
+        SEventConfig::SetEventMode("StandardFullDebug"); 
+        SEventConfig::Initialize(); 
         SEventConfig::SetMaxGenstep(1);        // MOCK_PROPAGATE starts from input photons but uses a single placeholder genstep 
         SEventConfig::SetMaxPhoton(1000000);   // used for QEvent buffer sizing 
 

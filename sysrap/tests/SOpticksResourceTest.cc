@@ -14,6 +14,18 @@ The output from this executable is used by the bash function : opticks-key-remot
 
 Thus avoid emitting anything extra when the --cfbase --key  and --keydir arguments are used.  
 
+
+
+::
+
+    epsilon:sysrap blyth$ SOpticksResourceTest --dod
+    SPath::Resolve("$DefaultOutputDir", NOOP) /tmp/blyth/opticks/SOpticksResourceTest
+
+    epsilon:sysrap blyth$ TMP=$HOME/.opticks SOpticksResourceTest --dod
+    SPath::Resolve("$DefaultOutputDir", NOOP) /Users/blyth/.opticks/SOpticksResourceTest
+
+
+
 **/
 
 #include "OPTICKS_LOG.hh"
@@ -51,6 +63,11 @@ int main(int argc, char** argv)
     {
         const char* path = SPath::Resolve("$PrecookedDir", NOOP) ; 
         std::cout << "SPath::Resolve(\"$PrecookedDir\", NOOP) " << path  << std::endl ; 
+    }
+    else if( strcmp(arg, "--dod") == 0 )
+    {
+        const char* path = SPath::Resolve("$DefaultOutputDir", NOOP) ; 
+        std::cout << "SPath::Resolve(\"$DefaultOutputDir\", NOOP) " << path  << std::endl ; 
     }
     else
     {

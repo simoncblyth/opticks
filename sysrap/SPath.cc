@@ -44,9 +44,6 @@
 const plog::Severity SPath::LEVEL = PLOG::EnvLevel("SPath", "DEBUG"); 
 
 
-
-
-
 const char* SPath::Stem( const char* name ) // static
 {
     std::string arg = name ;
@@ -212,7 +209,7 @@ mode:0
     do nothing 
 
 mode:1
-    create directories assuming the path argumnent is a file path by using SPath::Dirname 
+    create directories assuming the path argument is a file path by using SPath::Dirname 
     to extract the directory
 
 mode:2
@@ -613,7 +610,7 @@ const char* SPath::SearchDirUpTreeWithFile( const char* startdir, const char* re
     {
         if(SPath::Exists(dir, relf)) break ; 
         char* last = strrchr(dir, '/');    
-        *last = '\0' ; 
+        *last = '\0' ;  // move the null termination inwards from right, going up directory by directory 
     }
     return ( dir && strlen(dir) > 1 ) ? strdup(dir) : nullptr ; 
 }

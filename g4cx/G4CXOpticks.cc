@@ -87,6 +87,12 @@ G4CXOpticks::G4CXOpticks()
     cx(nullptr),
     qs(nullptr)
 {
+    init();
+}
+
+void G4CXOpticks::init()
+{
+    SEventConfig::Initialize();   // config depends on SEventConfig::SetEventMode OR OPTICKS_EVENTMODE envvar 
     INSTANCE = this ; 
     LOG(LEVEL) << Desc() << std::endl << desc(); 
 }

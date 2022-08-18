@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
 /**
@@ -34,28 +35,26 @@ MaxTime (ns)
 +===============================+=========================================+=======================================+
 | SEventConfig::OutFold         | "$DefaultOutputDir"                     | OPTICKS_OUT_FOLD                      |
 +-------------------------------+-----------------------------------------+---------------------------------------+
-| SEventConfig::GeoFold         | nullptr                                 | OPTICKS_GEO_FOLD                      |
-+-------------------------------+-----------------------------------------+---------------------------------------+
 
 **/
 
 
 struct SYSRAP_API SEventConfig
 {
+    static const plog::Severity LEVEL ;  
     static void Check(); 
     static std::string Desc(); 
     static std::string HitMaskLabel(); 
 
     static const char* OutDir( const char* reldir); 
     static const char* OutPath( const char* reldir, const char* stem, int index, const char* ext ); 
-
     static const char* OutDir(); 
     static const char* OutPath( const char* stem, int index, const char* ext ); 
-
 
     static constexpr const int M = 1000000 ; 
     static constexpr const int K = 1000 ; 
 
+    static constexpr const char* kEventMode = "OPTICKS_EVENTMODE" ; 
     static constexpr const char* kMaxGenstep = "OPTICKS_MAX_GENSTEP" ; 
     static constexpr const char* kMaxPhoton  = "OPTICKS_MAX_PHOTON" ; 
     static constexpr const char* kMaxSimtrace  = "OPTICKS_MAX_SIMTRACE" ; 
@@ -68,9 +67,9 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxFlat    = "OPTICKS_MAX_FLAT" ; 
     static constexpr const char* kMaxExtent  = "OPTICKS_MAX_EXTENT" ; 
     static constexpr const char* kMaxTime    = "OPTICKS_MAX_TIME" ; 
+    static constexpr const char* kOutPrefix  = "OPTICKS_OUT_PREFIX" ; 
     static constexpr const char* kOutFold    = "OPTICKS_OUT_FOLD" ; 
     static constexpr const char* kOutName    = "OPTICKS_OUT_NAME" ; 
-    static constexpr const char* kGeoFold    = "OPTICKS_GEO_FOLD" ; 
     static constexpr const char* kHitMask    = "OPTICKS_HIT_MASK" ; 
     static constexpr const char* kRGMode     = "OPTICKS_RG_MODE" ; 
     static constexpr const char* kCompMask   = "OPTICKS_COMP_MASK" ; 
@@ -78,6 +77,10 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kInputPhoton = "OPTICKS_INPUT_PHOTON" ; 
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ; 
 
+
+
+
+    static const char* EventMode(); 
     static int MaxGenstep(); 
     static int MaxPhoton(); 
     static int MaxSimtrace(); 
@@ -92,7 +95,6 @@ struct SYSRAP_API SEventConfig
     static float MaxTime() ; 
     static const char* OutFold(); 
     static const char* OutName(); 
-    static const char* GeoFold(); 
     static unsigned HitMask(); 
     static int RGMode(); 
     static unsigned CompMask(); 
@@ -109,6 +111,12 @@ struct SYSRAP_API SEventConfig
     static std::string CompMaskLabel(); 
     static void CompList( std::vector<unsigned>& comps ) ; 
 
+    static const char* Default ; 
+    static const char* StandardFullDebug ; 
+    static void SetDefault(); 
+    static void SetStandardFullDebug(); 
+
+    static void SetEventMode(const char* mode); 
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 
     static void SetMaxSimtrace( int max_simtrace); 
@@ -123,7 +131,6 @@ struct SYSRAP_API SEventConfig
     static void SetMaxTime(   float max_time ); 
     static void SetOutFold( const char* out_fold); 
     static void SetOutName( const char* out_name); 
-    static void SetGeoFold( const char* geo_fold); 
     static void SetHitMask(const char* abrseq, char delim=',' ); 
 
     static void SetRGMode( const char* rg_mode) ; 
@@ -131,16 +138,16 @@ struct SYSRAP_API SEventConfig
     static void SetRGModeSimtrace() ; 
     static void SetRGModeRender() ; 
 
-    static void SetCompMask(const char* names, char delim=',') ; 
     static void SetPropagateEpsilon( float eps) ; 
     static void SetInputPhoton(const char* input_photon); 
     static void SetInputPhotonFrame(const char* input_photon_frame); 
 
+    static void SetCompMask_(unsigned mask); 
+    static void SetCompMask(const char* names, char delim=',') ; 
+    static void SetCompMaskAuto(); 
+    static unsigned CompMaskAuto() ; 
 
-    static void SetStandardFullDebug(); 
-    static void SetEventMode(const char* mode, unsigned max_bounce); 
-
-
+    static const char* _EventModeDefault ; 
     static int _MaxGenstepDefault ; 
     static int _MaxPhotonDefault ; 
     static int _MaxSimtraceDefault ; 
@@ -155,7 +162,6 @@ struct SYSRAP_API SEventConfig
     static float _MaxTimeDefault  ; 
     static const char* _OutFoldDefault ; 
     static const char* _OutNameDefault ; 
-    static const char* _GeoFoldDefault ; 
     static const char* _HitMaskDefault ; 
     static const char* _RGModeDefault ; 
     static const char* _CompMaskDefault ; 
@@ -164,6 +170,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhotonFrameDefault ; 
 
 
+    static const char* _EventMode ; 
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
     static int _MaxSimtrace ; 
@@ -178,12 +185,15 @@ struct SYSRAP_API SEventConfig
     static float _MaxTime  ; 
     static const char* _OutFold ; 
     static const char* _OutName ; 
-    static const char* _GeoFold ; 
     static unsigned _HitMask ; 
     static int _RGMode ; 
     static unsigned _CompMask ; 
     static float _PropagateEpsilon ;
     static const char* _InputPhoton ; 
     static const char* _InputPhotonFrame ; 
+
+
+    static void Initialize(); 
+
 }; 
  

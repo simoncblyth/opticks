@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     SEventConfig::SetRGModeSimtrace();   
-    SEventConfig::SetCompMask("genstep,simtrace"); // defaults for this should vary with the RGMode  
+    // SEventConfig::SetCompMask("genstep,simtrace");  // should now be automatic from SEventConfig::CompMaskAuto
 
     G4CXOpticks gx ;  
     gx.setGeometry(); 

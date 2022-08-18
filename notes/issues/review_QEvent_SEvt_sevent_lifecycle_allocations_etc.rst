@@ -38,6 +38,14 @@ Note that the alloc to max was formerly only done for photon
 TODO: logging rationalize QEvent=INFO SEvt=INFO
 -------------------------------------------------
 
+Where to call the below in integrated running::
+
+   SEventConfig::SetCompMask("photon,genstep,hit"); 
+
+
+Need coordination/consistency between the max and the comps
+
+
 ::
 
 

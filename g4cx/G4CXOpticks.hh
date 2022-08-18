@@ -47,6 +47,7 @@ struct G4CX_API G4CXOpticks
     QSim*       qs ; 
  
     G4CXOpticks(); 
+    void init(); 
 
     static std::string Desc();
     std::string desc() const ; 
