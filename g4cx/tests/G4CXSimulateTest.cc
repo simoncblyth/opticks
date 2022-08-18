@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEventConfig::SetRGModeSimulate();    
+    SEventConfig::SetRGModeSimulate();    // this is default 
     SEventConfig::SetStandardFullDebug(); // controls which and dimensions of SEvt arrays 
 
     G4CXOpticks gx ;  

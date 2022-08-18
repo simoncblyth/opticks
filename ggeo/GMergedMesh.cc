@@ -1632,6 +1632,15 @@ void GMergedMesh::Get3DFouthColumnNonZero( std::vector<int>& col4, const NPY<uns
     }
 } 
 
+/**
+GMergedMesh::getInstancedIdentityBuffer_SensorIndex
+----------------------------------------------------
+
+Extracts the sensor_index for each instance (as originally provided by GVolume::getIdentity 
+GVolume::getSensorIndex) and appends to sensor_index in the order of the instances. 
+
+**/
+
 void GMergedMesh::getInstancedIdentityBuffer_SensorIndex(std::vector<int>& sensor_index, bool one_based_index ) const 
 {
     NPY<unsigned>* iid = getInstancedIdentityBuffer();

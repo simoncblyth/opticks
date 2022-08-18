@@ -208,11 +208,16 @@ gets called for all repeatIdx, including global repeatIdx 0
 Notice the flattening effect, this is consolidating the 
 transforms from all GMergedMesh into one foundry->inst vector of qat4.
 
-TODO: add the iid sensorIndex  
+This handles the mapping between sensor_index and sensor_identifier
+as passes the sensor info to CSGFoundry for inclusion into the 
+instance transforms 4th column. 
+
+GMergedMesh::getInstancedIdentityBuffer_SensorIndex
+     
+
+
 
 **/
-
-
 
 void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
 {
@@ -220,17 +225,22 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     assert( repeatIdx < nmm ); 
     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx); 
     unsigned num_inst = mm->getNumITransforms() ;
+    LOG(LEVEL) << " repeatIdx " << repeatIdx << " num_inst " << num_inst ; 
+
     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer(); 
+    LOG(LEVEL) << " iid " << ( iid ? iid->getShapeString() : "-"  ) ;  
 
     assert(tree); 
 
     bool one_based_index = true ;   // CAUTION : OLD WORLD 1-based sensor_index 
     std::vector<int> sensor_index ;   
     mm->getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index ); 
+    LOG(LEVEL) << " sensor_index.size " << sensor_index.size() ;  
 
     std::vector<int> sensor_id ;
     tree->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index);
 
+    LOG(LEVEL) << " sensor_id.size " << sensor_id.size() ;  
     LOG(LEVEL) << stree::DescSensor( sensor_id, sensor_index ) ; 
 
     unsigned ni = iid->getShape(0); 

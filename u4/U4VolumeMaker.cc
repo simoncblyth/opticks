@@ -21,7 +21,7 @@
 #include "U4Surface.h"
 #include "U4SolidMaker.hh"
 #include "U4VolumeMaker.hh"
-#include "U4SensitiveDetector.h"
+//#include "U4SensitiveDetector.h"
 #include "U4RotationMatrix.h"
 #include "U4Volume.h"
 #include "U4GDML.h"

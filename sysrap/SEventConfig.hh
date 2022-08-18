@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include "SYSRAP_API_EXPORT.hh"
 
 /**
@@ -137,7 +138,7 @@ struct SYSRAP_API SEventConfig
 
 
     static void SetStandardFullDebug(); 
-    static void SetMode(const char* mode, unsigned max_bounce); 
+    static void SetEventMode(const char* mode, unsigned max_bounce); 
 
 
     static int _MaxGenstepDefault ; 
