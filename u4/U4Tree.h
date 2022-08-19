@@ -63,7 +63,9 @@ struct U4Tree
 
     int get_nidx(const G4VPhysicalVolume* pv) const ; 
 
+    void identifySensitive(); 
     void identifySensitiveInstances(); 
+    void identifySensitiveGlobals(); 
 
 }; 
 
@@ -82,15 +84,10 @@ inline U4Tree* U4Tree::Create( stree* st, const G4VPhysicalVolume* const top, co
     if(VERBOSE) std::cout << "[ U4Tree::Create " << std::endl ; 
     U4Tree* tree = new U4Tree(st, top, sid ) ;
     st->factorize(); 
-    tree->identifySensitiveInstances(); 
-    st->reorderSensors();  // change nd.sensor_index to facilitate comparison with GGeo
-
     std::cout << st->desc_factor() << std::endl ; 
 
+    tree->identifySensitive(); 
     st->add_inst(); 
-
-    // SBnd::FillMaterialLine(st, bnd_specs ); 
-    // HMM: U4Tree::Create currently called prior to bnd existing   
 
     if(VERBOSE) std::cout << "] U4Tree::Create " << std::endl ; 
     return tree ; 
@@ -282,6 +279,27 @@ inline int U4Tree::get_nidx(const G4VPhysicalVolume* pv) const
     return nidx < int(pvs.size()) ? nidx : -1 ;  
 }
 
+
+/**
+U4Tree::identifySensitive
+----------------------------
+
+**/
+
+inline void U4Tree::identifySensitive()
+{
+    if(VERBOSE) std::cerr << "[ U4Tree::identifySensitive " << std::endl ; 
+    st->sensor_count = 0 ; 
+
+    identifySensitiveInstances(); 
+    identifySensitiveGlobals(); 
+
+    st->reorderSensors();  // change nd.sensor_index to facilitate comparison with GGeo
+    if(VERBOSE) std::cerr << "] U4Tree::identifySensitive " << std::endl ; 
+}
+
+
+
 /**
 U4Tree::identifySensitiveInstances
 ------------------------------------
@@ -304,8 +322,8 @@ TODO:
 
 This is assuming a full geometry with instances found, 
 but what about a geometry where nothing got instanced and 
-everything is in the remainder. 
-OR a geometry with some sensors in remainder and some in factors
+everything is in the remainder. Or a geometry with some sensors 
+in remainder and some in factors
 
 Need a way to traverse the tree from the root and skip the 
 factored subtrees : easy way to do that is to label the tree with the ridx. 
@@ -316,25 +334,29 @@ factored subtrees : easy way to do that is to label the tree with the ridx.
 inline void U4Tree::identifySensitiveInstances()
 {
     unsigned num_factor = st->get_num_factor(); 
-    if(VERBOSE) std::cerr << "[ U4Tree::identifySensitiveInstances num_factor " << num_factor << std::endl ; 
+    if(VERBOSE) std::cerr 
+        << "[ U4Tree::identifySensitiveInstances" 
+        << " num_factor " << num_factor 
+        << " st.sensor_count " << st->sensor_count 
+        << std::endl
+        ; 
 
-    unsigned sensor_count = 0 ; 
     for(unsigned i=0 ; i < num_factor ; i++)
     {
-        std::vector<int> nodes ; 
-        st->get_factor_nodes(nodes, i );     // nidx of outer volumes of instances 
+        std::vector<int> outer ; 
+        st->get_factor_nodes(outer, i );  // nidx of outer volumes of instances 
         sfactor& fac = st->get_factor(i); 
         fac.sensors = 0  ; 
 
-        for(unsigned j=0 ; j < nodes.size() ; j++)
+        for(unsigned j=0 ; j < outer.size() ; j++)
         {
-            int nidx = nodes[j] ; 
+            int nidx = outer[j] ; 
             const G4VPhysicalVolume* pv = get_pv_(nidx) ; 
-            int sensor_id = sid->getIdentity(pv) ;  
-            int sensor_index = sensor_id > -1 ? sensor_count : -1 ; 
+            int sensor_id = sid->getInstanceIdentity(pv) ;  
+            int sensor_index = sensor_id > -1 ? st->sensor_count : -1 ; 
             if(sensor_id > -1 ) 
             {
-                sensor_count += 1 ;  // count over all factors  
+                st->sensor_count += 1 ;  // count over all factors  
                 fac.sensors += 1 ;   // count sensors for each factor  
             }
             snode& nd = st->nds[nidx] ; 
@@ -346,8 +368,54 @@ inline void U4Tree::identifySensitiveInstances()
     if(VERBOSE) std::cerr 
         << "] U4Tree::identifySensitiveInstances"
         << " num_factor " << num_factor
-        << " sensor_count " << sensor_count 
+        << " st.sensor_count " << st->sensor_count 
         << std::endl 
         ; 
 }
+
+/**
+U4Tree::identifySensitiveGlobals
+----------------------------------
+
+This remains rather untested as JUNO geometry does not have sensitive globals. 
+
+**/
+
+inline void U4Tree::identifySensitiveGlobals()
+{
+    std::vector<int> remainder ; 
+    st->get_remainder_nodes(remainder) ;   
+
+    if(VERBOSE) std::cerr 
+        << "[ U4Tree::identifySensitiveGlobals" 
+        << " st.sensor_count " << st->sensor_count 
+        << " remainder.size " << remainder.size()
+        << std::endl
+        ; 
+
+    for(unsigned i=0 ; i < remainder.size() ; i++)
+    { 
+        int nidx = remainder[i] ; 
+        const G4VPhysicalVolume* pv = get_pv_(nidx) ; 
+        int sensor_id = sid->getGlobalIdentity(pv) ;  
+        int sensor_index = sensor_id > -1 ? st->sensor_count : -1 ; 
+
+        if(sensor_id > -1 ) 
+        {
+            st->sensor_count += 1 ;  // count over all factors  
+        }
+        snode& nd = st->nds[nidx] ; 
+        nd.sensor_id = sensor_id ; 
+        nd.sensor_index = sensor_index ; 
+    }
+    if(VERBOSE) std::cerr 
+        << "] U4Tree::identifySensitiveGlobals " 
+        << " st.sensor_count " << st->sensor_count 
+        << " remainder.size " << remainder.size()
+        << std::endl 
+        ; 
+}
+
+
+
 

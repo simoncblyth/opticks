@@ -8,19 +8,26 @@
 
 struct U4SensorIdentifierDefault : public U4SensorIdentifier 
 {
-    int getIdentity(const G4VPhysicalVolume* instance_outer_pv ) const ; 
+    int getGlobalIdentity(const G4VPhysicalVolume* pv ) const ; 
+    int getInstanceIdentity(const G4VPhysicalVolume* instance_outer_pv ) const ; 
     static void FindSD_r( std::vector<const G4VPhysicalVolume*>& sdpv , const G4VPhysicalVolume* pv, int depth );  
 }; 
 
+
+inline int U4SensorIdentifierDefault::getGlobalIdentity( const G4VPhysicalVolume* ) const 
+{
+    return -1 ;  
+}
+
 /**
-U4SensorIdentifierDefault::getIdentity
----------------------------------------
+U4SensorIdentifierDefault::getInstanceIdentity
+---------------------------------------------------
 
 Canonically used from U4Tree::identifySensitiveInstances
 
 **/
 
-inline int U4SensorIdentifierDefault::getIdentity( const G4VPhysicalVolume* instance_outer_pv ) const 
+inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolume* instance_outer_pv ) const 
 {
     const G4PVPlacement* pvp = dynamic_cast<const G4PVPlacement*>(instance_outer_pv) ;
     int copyno = pvp ? pvp->GetCopyNo() : -1 ;

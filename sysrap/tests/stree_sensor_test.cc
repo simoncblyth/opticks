@@ -64,19 +64,16 @@ void test_sensor_id( const stree& st )
 }
 
 
-/*
-void test_labelFactorSubtrees( stree& st )
+
+void test_desc_repeat_nodes( const stree& st )
 {
-    st.level = 2 ; 
-    st.labelFactorSubtrees();   // not normally called other than from factorize : but just testing here  
+    std::cout << st.desc_repeat_nodes(); 
 }
-*/
-
-
 
 int main(int argc, char** argv)
 {
     stree st ; 
+    st.level = 2 ; 
     st.load(BASE); 
 
     std::cout << "st.desc_sub(false)" << std::endl << st.desc_sub(false) << std::endl ;
@@ -88,7 +85,7 @@ int main(int argc, char** argv)
     */
 
 
-    //test_labelFactorSubtrees(st); 
+    test_desc_repeat_nodes(st); 
 
     return 0 ; 
 }

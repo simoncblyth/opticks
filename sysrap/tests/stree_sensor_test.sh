@@ -3,7 +3,8 @@
 defarg="build_run"
 arg=${1:-$defarg}
 
-export BASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
+#export BASE=/tmp/$USER/opticks/ntds3/G4CXOpticks
+export BASE=$HOME/.opticks/ntds3/G4CXOpticks
 
 name=stree_sensor_test 
 mkdir -p /tmp/$name

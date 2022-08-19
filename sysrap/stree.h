@@ -246,6 +246,12 @@ struct stree
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
     std::string desc_factor() const ; 
 
+    void get_repeat_nodes(std::vector<int>& nodes, int q_repeat_index ) const ; 
+    void get_remainder_nodes(std::vector<int>& nodes ) const ; 
+    std::string desc_repeat_nodes() const ;  
+
+
+
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, int gas_idx, int nidx ); 
     void add_inst(); 
     void narrow_inst(); 
@@ -512,6 +518,9 @@ When invoked this changes the nd.sensor_index compared
 to the initial ordering of U4Tree::identifySensitiveInstances
 
 Note that this yields a 0-based sensor index. 
+
+HMM: I expect the same thing could be done by simply iterating over nds
+as the snode are collected in preorder ? 
 
 **/
 
@@ -1563,6 +1572,42 @@ inline std::string stree::desc_factor() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+inline void stree::get_repeat_nodes(std::vector<int>& nodes, int q_repeat_index ) const 
+{
+    for(int nidx=0 ; nidx < int(nds.size()) ; nidx++)
+    {
+        const snode& nd = nds[nidx] ; 
+        assert( nd.index == nidx ); 
+        if( nd.repeat_index == q_repeat_index ) nodes.push_back(nidx) ; 
+    }
+}
+inline void stree::get_remainder_nodes(std::vector<int>& nodes ) const 
+{
+    int q_repeat_index = 0 ; 
+    get_repeat_nodes(nodes, q_repeat_index); 
+}
+inline std::string stree::desc_repeat_nodes() const 
+{
+    int num_factor = factor.size(); 
+    std::stringstream ss ; 
+    ss << "stree::desc_repeat_nodes"
+       << " num_factor " << num_factor 
+       << std::endl 
+       ;  
+   
+    for(int i=0 ; i < num_factor + 1 ; i++)
+    {
+        int q_ridx = i ;  
+        std::vector<int> nodes ; 
+        get_repeat_nodes(nodes, q_ridx ); 
+        ss << " q_ridx " << std::setw(3) << q_ridx << " nodes " << std::setw(8) << nodes.size() << std::endl ; 
+    } 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
 
 
 /**

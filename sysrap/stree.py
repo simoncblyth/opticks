@@ -24,6 +24,7 @@ class snode(object):
              ('copyno', '<i4'),
              ('sensor_id', '<i4'),
              ('sensor_index', '<i4'),
+             ('repeat_index', '<i4'),
              ] 
 
     @classmethod
