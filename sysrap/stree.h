@@ -169,7 +169,10 @@ struct stree
     std::string desc_sensor_id(unsigned edge=10) const ; 
     static std::string DescSensor( const std::vector<int>& sensor_id, const std::vector<int>& sensor_idx, unsigned edge=10 ); 
 
-    void lookup_sensor_identifier( std::vector<int>& arg_sensor_identifier, const std::vector<int>& arg_sensor_index, bool one_based_index ) const ; 
+    void lookup_sensor_identifier( 
+         std::vector<int>& arg_sensor_identifier, 
+         const std::vector<int>& arg_sensor_index, 
+         bool one_based_index, bool verbose=false ) const ; 
 
     sfreq* make_progeny_freq(int nidx) const ; 
     sfreq* make_freq(const std::vector<int>& nodes ) const ; 
@@ -634,13 +637,38 @@ populated with sensor_id values.
 
 **/
 
-inline void stree::lookup_sensor_identifier( std::vector<int>& arg_sensor_identifier, const std::vector<int>& arg_sensor_index, bool one_based_index ) const 
+inline void stree::lookup_sensor_identifier( 
+       std::vector<int>& arg_sensor_identifier, 
+       const std::vector<int>& arg_sensor_index, 
+       bool one_based_index, 
+       bool verbose ) const 
 {
+    if(verbose) std::cerr 
+         << "stree::lookup_sensor_identifier.0"
+         << " arg_sensor_identifier.size " << arg_sensor_identifier.size() 
+         << " arg_sensor_index.size " << arg_sensor_index.size() 
+         << " sensor_id.size " << sensor_id.size() 
+         << std::endl 
+         ;
+
     arg_sensor_identifier.resize(arg_sensor_index.size()); 
     for(unsigned i=0 ; i < arg_sensor_index.size() ; i++)
     {   
-        int s_idx = one_based_index ? arg_sensor_index[i] - 1 : arg_sensor_index[i] ;  // "correct" 1-based to be 0-based 
-        arg_sensor_identifier[i] = s_idx > -1 ? sensor_id[s_idx] : -1 ; 
+        int s_index = one_based_index ? arg_sensor_index[i] - 1 : arg_sensor_index[i] ;  // "correct" 1-based to be 0-based 
+        bool s_index_inrange = s_index > -1 && s_index < int(sensor_id.size()) ; 
+        int s_identifier = s_index_inrange ? sensor_id[s_index] : -1 ; 
+
+        if(verbose) std::cerr 
+            << "stree::lookup_sensor_identifier.1"
+            << " i " << std::setw(3) << i  
+            << " s_index " << std::setw(7) << s_index 
+            << " s_index_inrange " << std::setw(1) << s_index_inrange 
+            << " s_identifier " << std::setw(7) << s_identifier 
+            << " sensor_id.size " << std::setw(7) << sensor_id.size()
+            << std::endl 
+            ;  
+
+        arg_sensor_identifier[i] = s_identifier ; 
     }   
 } 
 
@@ -729,7 +757,7 @@ inline int stree::find_lvid_node( const char* q_spec ) const
     return nidx ; 
 }
 
-
+// TODO: should this be using sfactor ?
 inline void stree::get_sub_sonames( std::vector<std::string>& sonames ) const 
 {
     std::vector<std::string> subs ; 

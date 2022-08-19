@@ -220,7 +220,7 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     assert( repeatIdx < nmm ); 
     const GMergedMesh* mm = ggeo->getMergedMesh(repeatIdx); 
     unsigned num_inst = mm->getNumITransforms() ;
-    LOG(LEVEL) << " repeatIdx " << repeatIdx << " num_inst " << num_inst ; 
+    LOG(LEVEL) << " repeatIdx " << repeatIdx << " num_inst " << num_inst << " nmm " << nmm  ; 
 
     NPY<unsigned>* iid = mm->getInstancedIdentityBuffer(); 
     LOG(LEVEL) << " iid " << ( iid ? iid->getShapeString() : "-"  ) ;  
@@ -232,8 +232,10 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     mm->getInstancedIdentityBuffer_SensorIndex(sensor_index, one_based_index ); 
     LOG(LEVEL) << " sensor_index.size " << sensor_index.size() ;  
 
+
+    bool lookup_verbose = true ;  
     std::vector<int> sensor_id ;
-    tree->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index);
+    tree->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index, lookup_verbose );
 
     LOG(LEVEL) << " sensor_id.size " << sensor_id.size() ;  
     LOG(LEVEL) << stree::DescSensor( sensor_id, sensor_index ) ; 
