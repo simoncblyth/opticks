@@ -64,11 +64,13 @@ void test_sensor_id( const stree& st )
 }
 
 
+/*
 void test_labelFactorSubtrees( stree& st )
 {
     st.level = 2 ; 
     st.labelFactorSubtrees();   // not normally called other than from factorize : but just testing here  
 }
+*/
 
 
 
@@ -85,11 +87,8 @@ int main(int argc, char** argv)
     test_sensor_id( st ); 
     */
 
-    test_labelFactorSubtrees(st); 
 
-
-
-
+    //test_labelFactorSubtrees(st); 
 
     return 0 ; 
 }

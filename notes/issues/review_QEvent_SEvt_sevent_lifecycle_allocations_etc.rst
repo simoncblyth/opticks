@@ -17,6 +17,23 @@ TODO : ntds3 run with TMP=$HOME/.opticks for more permanent geometry base for gx
     export TMP=$HOME/.opticks SEvt=INFO SEventConfig=INFO CSG_GGeo_Convert=INFO
     ntds3
 
+::
+
+    N[blyth@localhost opticks]$ l /home/blyth/.opticks/ntds3/G4CXOpticks/
+    total 41016
+        0 drwxr-xr-x.  5 blyth blyth      122 Aug 19 20:22 .
+    20504 -rw-rw-r--.  1 blyth blyth 20992919 Aug 19 20:22 origin.gdml
+        4 -rw-rw-r--.  1 blyth blyth      198 Aug 19 20:22 origin_gdxml_report.txt
+    20504 -rw-rw-r--.  1 blyth blyth 20994471 Aug 19 20:22 origin_raw.gdml
+        0 drwxrwxr-x. 15 blyth blyth      273 Aug 19 20:22 GGeo
+        0 drwxr-xr-x.  3 blyth blyth      190 Aug 19 20:22 CSGFoundry
+        4 drwxr-xr-x.  4 blyth blyth     4096 Aug 19 20:22 stree
+        0 drwxr-xr-x.  3 blyth blyth       25 Aug 19 20:22 ..
+    N[blyth@localhost opticks]$ 
+
+
+
+
 
 TODO : check merged counts
 ----------------------------

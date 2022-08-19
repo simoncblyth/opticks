@@ -1410,22 +1410,22 @@ inline void stree::enumerateFactors()
 stree::labelFactorSubtrees
 ------------------------------
 
-label all nodes of subtrees of all repeats with factor_index, 
-leaving remainder nodes at default of zero factor_index
+label all nodes of subtrees of all repeats with repeat_index, 
+leaving remainder nodes at default of zero repeat_index
 
 **/
 
 inline void stree::labelFactorSubtrees()
 {
-    unsigned num_factor = factor.size(); 
+    int num_factor = factor.size(); 
     if(level>0) std::cout << "[ stree::labelFactorSubtrees num_factor " << num_factor << std::endl ;
 
-    for(unsigned i=0 ; i < num_factor ; i++)
+    for(int i=0 ; i < num_factor ; i++)
     {
-        int factor_index = i ;  
-        sfactor& fac = factor[factor_index] ; 
+        int repeat_index = i + 1 ;   // leave repeat_index zero for the global remainder 
+        sfactor& fac = factor.at(repeat_index-1) ;  // .at is appropriate for small loops 
         std::string sub = fac.get_sub() ;
-        assert( fac.index == factor_index );  
+        assert( fac.index == repeat_index - 1 );  
  
         std::vector<int> outer_node ; 
         get_nodes( outer_node, sub.c_str() ); 
@@ -1453,7 +1453,7 @@ inline void stree::labelFactorSubtrees()
                 int nidx = subtree[i] ; 
                 snode& nd = nds[nidx] ; 
                 assert( nd.index == nidx ); 
-                nd.factor_index = factor_index ; 
+                nd.repeat_index = repeat_index ; 
             }
         }
         fac.subtree = fac_subtree ; 
@@ -1487,8 +1487,8 @@ enumerateFactors
    create sfactor and collect into factor vector 
 
 labelFactorSubtrees
-   label all nodes of subtrees of all repeats with factor_index, 
-   leaving remainder nodes at default of zero factor_index
+   label all nodes of subtrees of all repeats with repeat_index, 
+   leaving remainder nodes at default of zero repeat_index
 
 **/
 

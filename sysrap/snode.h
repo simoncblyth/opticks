@@ -21,7 +21,7 @@ struct snode
     int copyno ; 
     int sensor_id ; 
     int sensor_index ; 
-    int factor_index ; 
+    int repeat_index ; 
 
     // material index ... 
 
@@ -44,7 +44,7 @@ inline std::string snode::desc() const
        << " cp:" << std::setw(7) << copyno
        << " se:" << std::setw(7) << sensor_id
        << " se:" << std::setw(7) << sensor_index
-       << " fi:" << std::setw(2) << factor_index
+       << " ri:" << std::setw(2) << repeat_index
        ;
     std::string s = ss.str();
     return s ;

@@ -228,7 +228,7 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
 
     nd.sensor_id = -1 ;     // changed later by U4Tree::identifySensitiveInstances
     nd.sensor_index = -1 ;  // changed later by U4Tree::identifySensitiveInstances and stree::reorderSensors
-    nd.factor_index = 0 ;   // changed later for instance subtrees by stree::labelFactorSubtrees leaving remainder at 0 
+    nd.repeat_index = 0 ;   // changed later for instance subtrees by stree::labelFactorSubtrees leaving remainder at 0 
 
     pvs.push_back(pv); 
     st->nds.push_back(nd); 
