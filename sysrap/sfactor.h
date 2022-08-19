@@ -9,10 +9,11 @@
 
 struct sfactor
 {
-    static constexpr const int NV = 11 ; // sub is equivalent to 8 integer fields 
-    unsigned index ; 
+    static constexpr const int NV = 12 ; // sub is equivalent to 8 integer fields 
+    int      index ; 
     int      freq ; 
     int      sensors ; 
+    int      subtree ;  // counts of nodes in subtree 
     char     sub[32] ;  // caution : no null termination 
 
     void set_sub(const char* s); 
@@ -33,7 +34,6 @@ inline std::string sfactor::get_sub() const
     return sub_ ; 
 }
 
-
 inline std::string sfactor::desc() const 
 {
     std::stringstream ss ; 
@@ -41,6 +41,7 @@ inline std::string sfactor::desc() const
        << " index " << std::setw(3) << index
        << " freq " << std::setw(6) << freq
        << " sensors " << std::setw(6) << sensors
+       << " subtree " << std::setw(6) << subtree 
        << " sub [" << std::setw(32) << get_sub()  << "]" 
        ;   
     std::string s = ss.str(); 

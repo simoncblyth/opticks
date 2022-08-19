@@ -31,6 +31,7 @@ U4Tree.h : explore minimal approach to geometry translation
 
 struct U4Tree
 {
+    static constexpr const bool VERBOSE = true ; 
     static U4Tree* Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid=nullptr ); 
 
 
@@ -67,6 +68,8 @@ struct U4Tree
 }; 
 
 
+
+
 /**
 U4Tree::Create
 ----------------
@@ -76,7 +79,7 @@ Canonically invoked from G4CXOpticks::setGeometry
 **/
 inline U4Tree* U4Tree::Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid ) 
 {
-    std::cout << "[ U4Tree::Create " << std::endl ; 
+    if(VERBOSE) std::cout << "[ U4Tree::Create " << std::endl ; 
     U4Tree* tree = new U4Tree(st, top, sid ) ;
     st->factorize(); 
     tree->identifySensitiveInstances(); 
@@ -89,7 +92,7 @@ inline U4Tree* U4Tree::Create( stree* st, const G4VPhysicalVolume* const top, co
     // SBnd::FillMaterialLine(st, bnd_specs ); 
     // HMM: U4Tree::Create currently called prior to bnd existing   
 
-    std::cout << "] U4Tree::Create " << std::endl ; 
+    if(VERBOSE) std::cout << "] U4Tree::Create " << std::endl ; 
     return tree ; 
 }
 
@@ -225,7 +228,7 @@ inline int U4Tree::convertNodes_r( const G4VPhysicalVolume* const pv, int depth,
 
     nd.sensor_id = -1 ;     // changed later by U4Tree::identifySensitiveInstances
     nd.sensor_index = -1 ;  // changed later by U4Tree::identifySensitiveInstances and stree::reorderSensors
-
+    nd.factor_index = 0 ;   // changed later for instance subtrees by stree::labelFactorSubtrees leaving remainder at 0 
 
     pvs.push_back(pv); 
     st->nds.push_back(nd); 
@@ -297,11 +300,24 @@ are inserted into the instance transform fourth column.
 NOTE that the nd.sensor_index may be subsequently changed by 
 stree::reorderSensors
 
+TODO: 
+
+This is assuming a full geometry with instances found, 
+but what about a geometry where nothing got instanced and 
+everything is in the remainder. 
+OR a geometry with some sensors in remainder and some in factors
+
+Need a way to traverse the tree from the root and skip the 
+factored subtrees : easy way to do that is to label the tree with the ridx. 
+
+
 **/
 
 inline void U4Tree::identifySensitiveInstances()
 {
     unsigned num_factor = st->get_num_factor(); 
+    if(VERBOSE) std::cerr << "[ U4Tree::identifySensitiveInstances num_factor " << num_factor << std::endl ; 
+
     unsigned sensor_count = 0 ; 
     for(unsigned i=0 ; i < num_factor ; i++)
     {
@@ -327,8 +343,8 @@ inline void U4Tree::identifySensitiveInstances()
         }
     }
 
-    std::cout 
-        << "U4Tree::identifySensitiveInstances"
+    if(VERBOSE) std::cerr 
+        << "] U4Tree::identifySensitiveInstances"
         << " num_factor " << num_factor
         << " sensor_count " << sensor_count 
         << std::endl 

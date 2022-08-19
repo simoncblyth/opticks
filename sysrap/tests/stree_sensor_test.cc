@@ -23,8 +23,9 @@ void test_lookup_sensor_identifier( const stree& st )
 
     bool one_based_index = true ; 
     bool verbose = true ; 
+    unsigned edge = 50 ; 
 
-    st.lookup_sensor_identifier( s_ident, s_index, one_based_index,  verbose );  
+    st.lookup_sensor_identifier( s_ident, s_index, one_based_index,  verbose, edge );  
  
     std::cout 
         << " test_lookup_sensor_identifier " 
@@ -63,6 +64,13 @@ void test_sensor_id( const stree& st )
 }
 
 
+void test_labelFactorSubtrees( stree& st )
+{
+    st.level = 2 ; 
+    st.labelFactorSubtrees();   // not normally called other than from factorize : but just testing here  
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -72,8 +80,16 @@ int main(int argc, char** argv)
     std::cout << "st.desc_sub(false)" << std::endl << st.desc_sub(false) << std::endl ;
     std::cout << "st.desc_sensor_id()" << std::endl << st.desc_sensor_id() << std::endl ; 
 
+    /*
     test_lookup_sensor_identifier( st );  
     test_sensor_id( st ); 
+    */
+
+    test_labelFactorSubtrees(st); 
+
+
+
+
 
     return 0 ; 
 }

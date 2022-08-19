@@ -12,7 +12,7 @@ See also u4/U4Tree.h that creates the stree from Geant4 volumes.
 
 TODO:
 
-* ridx labelling the tree, srepeat summary instances
+* ridx labelling the tree
 * maintain correspondence between source nodes and destination nodes thru the factorization
 * triplet_identity 
 * transform rebase
@@ -113,7 +113,7 @@ struct stree
     std::vector<std::string> mtname ;       // unique material names
     std::vector<int>         mtindex ;      // G4Material::GetIndex 0-based creation indices 
     std::vector<int>         mtline ;     
-    std::map<int,int>        mtindex_to_mtline ;  // not persisted, fill from mtindex and mtline with init_mtindex_to_mtline
+    std::map<int,int>        mtindex_to_mtline ;  // not persisted, filled from mtindex and mtline with init_mtindex_to_mtline
 
 
     std::vector<std::string> soname ;       // unique solid names
@@ -129,7 +129,7 @@ struct stree
     std::vector<sfactor> factor ;          // small number of unique subtree factor, digest and freq  
     std::vector<int> sensor_id ;           // updated by reorderSensors
 
-
+    int level ; 
     unsigned sensor_count ; 
     sfreq* subs_freq ;                      // occurence frequency of subtree digests in entire tree 
     NPFold* mtfold ;                        // material properties
@@ -172,7 +172,7 @@ struct stree
     void lookup_sensor_identifier( 
          std::vector<int>& arg_sensor_identifier, 
          const std::vector<int>& arg_sensor_index, 
-         bool one_based_index, bool verbose=false ) const ; 
+         bool one_based_index, bool verbose=false, unsigned edge=10 ) const ; 
 
     sfreq* make_progeny_freq(int nidx) const ; 
     sfreq* make_freq(const std::vector<int>& nodes ) const ; 
@@ -237,6 +237,7 @@ struct stree
     void disqualifyContainedRepeats();
     void sortSubtrees(); 
     void enumerateFactors(); 
+    void labelFactorSubtrees(); 
 
     void factorize(); 
 
@@ -264,6 +265,7 @@ struct stree
 
 inline stree::stree()
     :
+    level(1),        // set to 0: once operational
     sensor_count(0),
     subs_freq(new sfreq),
     mtfold(new NPFold)
@@ -274,6 +276,7 @@ inline std::string stree::desc() const
 {
     std::stringstream ss ;
     ss << "stree::desc"
+       << " sensor_count " << sensor_count 
        << " nds " << nds.size()
        << " m2w " << m2w.size()
        << " w2m " << w2m.size()
@@ -291,6 +294,14 @@ inline std::string stree::desc() const
     return s ;
 }
 
+
+/**
+stree::desc_vec
+-----------------
+
+Description of subs_freq showing all subs and frequencies without any cut. 
+
+**/
 
 inline std::string stree::desc_vec() const 
 {
@@ -601,10 +612,10 @@ inline std::string stree::DescSensor( const std::vector<int>& sensor_identifier,
         int s_identifier = sensor_identifier[i] ;  
         int n_identifier = i < num_sensor - 1 ? sensor_identifier[i+1] : s_identifier ; 
 
-        bool tran = std::abs(n_identifier - s_identifier) > 1 ;  
-        if(tran) offset = 0 ; 
+        bool jump = std::abs(n_identifier - s_identifier) > 1 ; // sensor identifier transition
+        if(jump) offset = 0 ; 
 
-        if( i < edge || i > num_sensor - edge || tran ) 
+        if( i < edge || i > num_sensor - edge || offset < 5 ) 
         {
             ss
                 << " i " << std::setw(7) << i 
@@ -641,20 +652,21 @@ inline void stree::lookup_sensor_identifier(
        std::vector<int>& arg_sensor_identifier, 
        const std::vector<int>& arg_sensor_index, 
        bool one_based_index, 
-       bool verbose ) const 
+       bool verbose, 
+       unsigned edge ) const 
 {
     if(verbose) std::cerr 
          << "stree::lookup_sensor_identifier.0"
          << " arg_sensor_identifier.size " << arg_sensor_identifier.size() 
          << " arg_sensor_index.size " << arg_sensor_index.size() 
          << " sensor_id.size " << sensor_id.size() 
+         << " edge " << edge 
          << std::endl 
          ;
 
     arg_sensor_identifier.resize(arg_sensor_index.size()); 
 
     unsigned num_lookup = arg_sensor_index.size() ; 
-    unsigned edge = 50 ; 
 
     for(unsigned i=0 ; i < num_lookup ; i++)
     {   
@@ -1208,14 +1220,14 @@ to find the top repeaters.
 
 inline void stree::classifySubtrees()
 {
-    std::cout << "[ stree::classifySubtrees " << std::endl ;
+    if(level>0) std::cout << "[ stree::classifySubtrees " << std::endl ;
     for(int nidx=0 ; nidx < int(nds.size()) ; nidx++)
     {
         std::string sub = subtree_digest(nidx) ;
         subs.push_back(sub) ;
         subs_freq->add(sub.c_str());
     }
-    std::cout << "] stree::classifySubtrees " << std::endl ;
+    if(level>0) std::cout << "] stree::classifySubtrees " << std::endl ;
 }
 
 
@@ -1223,14 +1235,17 @@ inline void stree::classifySubtrees()
 stree::is_contained_repeat
 ----------------------------
 
-Original criteria for a contained repeat is that the 
-parent of the first node with the supplied subtree digest 
-has a subtree digest frequency equal to that of the 
-original first node.  
+A contained repeat *sub* digest is defined as one where the subtree 
+digest of the parent of the first node with *sub* digest passes "pfreq >= FREQ_CUT" 
 
-That fails to match GGeo due to a repeats 
-inside repeats recursively. 
+Note that this definition assumes the first node of a *sub* is representative. 
+That might not always be the case. 
 
+Initially tried changing criteria for a contained repeat to be 
+that the parent of the first node with the supplied subtree digest 
+has a subtree digest frequency equal to that of the original first node, 
+but that fails to match GGeo due to a repeats inside repeats recursively 
+which do not have the same counts.
 
 Dump ancestry of first sBar::
 
@@ -1251,8 +1266,7 @@ Dump ancestry of first sBar::
     st.desc_nodes([b], brief=True))
               +     snode ix:     18 dh:10 nc:    0 lv:  8. sf   0 :   32256 : 34f45. sBar0x71a9370
 
-This assumes the first node is representative, might not always be the case. 
-But note that the sf digest counts are for entire geometry, not the subtree of one node. 
+CAUTION : that the sf digest counts are for entire geometry, not the subtree of one node. 
 
 The deepest sBar is part of 6 potential repeated instances::
 
@@ -1266,15 +1280,11 @@ GGeo picked sPanel (due to repeat candidate cut of 500).
 
 inline bool stree::is_contained_repeat(const char* sub) const
 {
-    //int n_freq = subs_freq->get_freq(sub) ; 
-    int nidx = get_first(sub);    // first node with this subtree digest  
-
-    int parent = get_parent(nidx); 
+    int nidx = get_first(sub);            // first node with this subtree digest  
+    int parent = get_parent(nidx);        // parent of first node 
     const char* psub = get_sub(parent) ; 
     int p_freq = subs_freq->get_freq(psub) ; 
-
     return p_freq >= FREQ_CUT ; 
-    //return p_freq == n_freq ; 
 }
 
 /**
@@ -1290,7 +1300,7 @@ no longer be present.
 
 inline void stree::disqualifyContainedRepeats()
 {
-    std::cout << "[ stree::disqualifyContainedRepeats " << std::endl ;
+    if(level>0) std::cout << "[ stree::disqualifyContainedRepeats " << std::endl ;
 
     unsigned num = subs_freq->get_num(); 
     std::vector<std::string> disqualify ; 
@@ -1305,7 +1315,7 @@ inline void stree::disqualifyContainedRepeats()
 
     subs_freq->set_disqualify( disqualify ); 
 
-    std::cout 
+    if(level > 0) std::cout 
         << "] stree::disqualifyContainedRepeats " 
         << " disqualify.size " << disqualify.size()
         << std::endl 
@@ -1343,20 +1353,38 @@ struct stree_subs_freq_ordering
     }
 }; 
 
+
+/**
+stree::sortSubtrees
+---------------------
+
+Order the subs_freq (sub,freq) pairs within the vector
+
+**/
+
 inline void stree::sortSubtrees()  // hmm sortSubtreeDigestFreq would be more accurate 
 {
-    std::cout << "[ stree::sortSubtrees " << std::endl ;
-    stree_subs_freq_ordering ordering(this) ;  
+    if(level > 0) std::cout << "[ stree::sortSubtrees " << std::endl ;
 
+    stree_subs_freq_ordering ordering(this) ;  
     sfreq::VSU& vsu = subs_freq->vsu ; 
     std::sort( vsu.begin(), vsu.end(), ordering );
 
-    std::cout << "] stree::sortSubtrees " << std::endl ;
+    if(level > 0) std::cout << "] stree::sortSubtrees " << std::endl ;
 }
 
+/**
+stree::enumerateFactors
+------------------------
+
+For remaining subs that pass the "freq >= FREQ_CUT"
+create sfactor and collect into *factor* vector
+
+**/
 
 inline void stree::enumerateFactors()
 {
+    if(level > 0) std::cout << "[ stree::enumerateFactors " << std::endl ;
     const sfreq* sf = subs_freq ; 
     unsigned num = sf->get_num(); 
     for(unsigned i=0 ; i < num ; i++)
@@ -1369,11 +1397,76 @@ inline void stree::enumerateFactors()
         fac.index = i ; 
         fac.freq = freq ; 
         fac.sensors = 0 ; // set later, from U4Tree::identifySensitiveInstances
-        fac.set_sub(sub) ;    
+        fac.subtree = 0 ; // set later, by stree::labelFactorSubtrees
+        fac.set_sub(sub) ;
+    
         factor.push_back( fac );  
     }
+    if(level > 0) std::cout << "[ stree::enumerateFactors " << std::endl ;
 }
 
+
+/**
+stree::labelFactorSubtrees
+------------------------------
+
+label all nodes of subtrees of all repeats with factor_index, 
+leaving remainder nodes at default of zero factor_index
+
+**/
+
+inline void stree::labelFactorSubtrees()
+{
+    unsigned num_factor = factor.size(); 
+    if(level>0) std::cout << "[ stree::labelFactorSubtrees num_factor " << num_factor << std::endl ;
+
+    for(unsigned i=0 ; i < num_factor ; i++)
+    {
+        int factor_index = i ;  
+        sfactor& fac = factor[factor_index] ; 
+        std::string sub = fac.get_sub() ;
+        assert( fac.index == factor_index );  
+ 
+        std::vector<int> outer_node ; 
+        get_nodes( outer_node, sub.c_str() ); 
+        assert( int(outer_node.size()) ==  fac.freq ); 
+
+        int fac_subtree = -1 ; 
+        for(unsigned i=0 ; i < outer_node.size() ; i++)
+        {
+            int outer = outer_node[i] ; 
+            std::vector<int> subtree ; 
+            get_progeny(subtree, outer); 
+            subtree.push_back(outer); 
+
+            if(fac_subtree == -1) 
+            {
+                fac_subtree = subtree.size() ;  
+            }
+            else 
+            {
+                assert( int(subtree.size()) == fac_subtree ); 
+            }
+
+            for(unsigned i=0 ; i < subtree.size() ; i++)
+            {
+                int nidx = subtree[i] ; 
+                snode& nd = nds[nidx] ; 
+                assert( nd.index == nidx ); 
+                nd.factor_index = factor_index ; 
+            }
+        }
+        fac.subtree = fac_subtree ; 
+
+        if(level>0) std::cout 
+            << "stree::labelFactorSubtrees"
+            << fac.desc()
+            << " outer_node.size " << outer_node.size()
+            << std::endl 
+            ; 
+    }
+    if(level>0) std::cout << "] stree::labelFactorSubtrees " << std::endl ;
+}
 
 /**
 stree::factorize
@@ -1381,16 +1474,33 @@ stree::factorize
 
 Canonically invoked from U4Tree::Create
 
+classifySubtrees
+   compute and store stree::subtree_digest for subtrees of all nodes
+
+disqualifyContainedRepeats
+   flip freq sign in subs_freq to disqualify all contained repeats 
+
+sortSubtrees
+   order the subs_freq (sub,freq) pairs within the vector
+
+enumerateFactors
+   create sfactor and collect into factor vector 
+
+labelFactorSubtrees
+   label all nodes of subtrees of all repeats with factor_index, 
+   leaving remainder nodes at default of zero factor_index
+
 **/
 
 inline void stree::factorize()
 {
-    std::cout << "[ stree::factorize " << std::endl ;
+    if(level>0) std::cout << "[ stree::factorize " << std::endl ;
     classifySubtrees(); 
     disqualifyContainedRepeats();
     sortSubtrees(); 
     enumerateFactors(); 
-    std::cout << "] stree::factorize " << std::endl ;
+    labelFactorSubtrees(); 
+    if(level>0) std::cout << "] stree::factorize " << std::endl ;
 }
 
 

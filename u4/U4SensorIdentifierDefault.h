@@ -12,6 +12,13 @@ struct U4SensorIdentifierDefault : public U4SensorIdentifier
     static void FindSD_r( std::vector<const G4VPhysicalVolume*>& sdpv , const G4VPhysicalVolume* pv, int depth );  
 }; 
 
+/**
+U4SensorIdentifierDefault::getIdentity
+---------------------------------------
+
+Canonically used from U4Tree::identifySensitiveInstances
+
+**/
 
 inline int U4SensorIdentifierDefault::getIdentity( const G4VPhysicalVolume* instance_outer_pv ) const 
 {

@@ -242,7 +242,6 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " CompMask " << " : " << CompMask() << std::endl 
        << std::setw(25) << ""
        << std::setw(20) << " CompMaskLabel " << " : " << CompMaskLabel() << std::endl 
-
        << std::setw(25) << kOutFold
        << std::setw(20) << " OutFold " << " : " << OutFold() << std::endl 
        << std::setw(25) << kOutName
@@ -333,6 +332,8 @@ void SEventConfig::Initialize() // static
         LOG(fatal) << " options : " << Default << "," << StandardFullDebug ; 
         assert(0); 
     }
+
+    LOG(LEVEL) << Desc() ; 
 }
 
 
