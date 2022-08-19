@@ -652,21 +652,40 @@ inline void stree::lookup_sensor_identifier(
          ;
 
     arg_sensor_identifier.resize(arg_sensor_index.size()); 
-    for(unsigned i=0 ; i < arg_sensor_index.size() ; i++)
+
+    unsigned num_lookup = arg_sensor_index.size() ; 
+    unsigned edge = 50 ; 
+
+    for(unsigned i=0 ; i < num_lookup ; i++)
     {   
         int s_index = one_based_index ? arg_sensor_index[i] - 1 : arg_sensor_index[i] ;  // "correct" 1-based to be 0-based 
         bool s_index_inrange = s_index > -1 && s_index < int(sensor_id.size()) ; 
         int s_identifier = s_index_inrange ? sensor_id[s_index] : -1 ; 
 
-        if(verbose) std::cerr 
-            << "stree::lookup_sensor_identifier.1"
-            << " i " << std::setw(3) << i  
-            << " s_index " << std::setw(7) << s_index 
-            << " s_index_inrange " << std::setw(1) << s_index_inrange 
-            << " s_identifier " << std::setw(7) << s_identifier 
-            << " sensor_id.size " << std::setw(7) << sensor_id.size()
-            << std::endl 
-            ;  
+        if(verbose)
+        {
+            if( i < edge || i > num_lookup - edge) 
+            {
+                std::cerr 
+                    << "stree::lookup_sensor_identifier.1"
+                    << " i " << std::setw(3) << i  
+                    << " s_index " << std::setw(7) << s_index 
+                    << " s_index_inrange " << std::setw(1) << s_index_inrange 
+                    << " s_identifier " << std::setw(7) << s_identifier 
+                    << " sensor_id.size " << std::setw(7) << sensor_id.size()
+                    << std::endl 
+                    ;  
+            }
+            else if( i == edge )
+            {
+                std::cerr 
+                    << "stree::lookup_sensor_identifier.1"
+                    << " i " << std::setw(3) << i  
+                    << " ... "
+                    << std::endl 
+                    ;
+            }
+        }
 
         arg_sensor_identifier[i] = s_identifier ; 
     }   

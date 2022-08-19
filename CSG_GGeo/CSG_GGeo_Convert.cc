@@ -233,7 +233,7 @@ void CSG_GGeo_Convert::addInstances(unsigned repeatIdx )
     LOG(LEVEL) << " sensor_index.size " << sensor_index.size() ;  
 
 
-    bool lookup_verbose = true ;  
+    bool lookup_verbose = LEVEL == info ;  
     std::vector<int> sensor_id ;
     tree->lookup_sensor_identifier(sensor_id, sensor_index, one_based_index, lookup_verbose );
 

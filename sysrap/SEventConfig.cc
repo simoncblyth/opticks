@@ -295,7 +295,13 @@ const char* SEventConfig::OutPath( const char* reldir, const char* stem, int ind
 SEventConfig::Initialize
 -------------------------
 
+Canonically invoked from G4CXOpticks::init
+
 HMM: if change the max after calling this need to SEventConfig::SetCompMaskAuto() 
+
+HMM: currently there is some conflation between the comps to gather and comp existance
+
+* need to split these, eg photon comp is always needed but not always gathered
 
 **/
 
