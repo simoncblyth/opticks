@@ -78,7 +78,7 @@ void G4CXOpticks::Finalize() // static
 
 G4CXOpticks::G4CXOpticks()
     :
-    sim(nullptr),
+    sim(SSim::Create()),      // HMM: is there a better place to do this frm lower level ?
     tr(nullptr),
     wd(nullptr),
     gg(nullptr),
@@ -386,9 +386,12 @@ void G4CXOpticks::saveEvent() const
     if(sev == nullptr) return ; 
     sev->save(); 
 
-    LOG(LEVEL) << sev->descPhoton() ; 
-    LOG(LEVEL) << sev->descLocalPhoton() ; 
-    LOG(LEVEL) << sev->descFramePhoton() ; 
+    if( LEVEL == info && SEventConfig::IsRGModeSimulate() )
+    { 
+        LOG(LEVEL) << sev->descPhoton() ; 
+        LOG(LEVEL) << sev->descLocalPhoton() ; 
+        LOG(LEVEL) << sev->descFramePhoton() ; 
+    }
 }
 
 void G4CXOpticks::saveGeometry() const

@@ -314,7 +314,18 @@ SPHOTON_METHOD bool sphoton::digest_match( const sphoton& a, const sphoton& b, u
 
 SPHOTON_METHOD void sphoton::Get( sphoton& p, const NP* a, unsigned idx )
 {
-    assert(a && a->has_shape(-1,4,4) && a->ebyte == sizeof(float) && idx < unsigned(a->shape[0]) ); 
+    bool expected = a && a->has_shape(-1,4,4) && a->ebyte == sizeof(float) && idx < unsigned(a->shape[0]) ; 
+    if(!expected) std::cerr 
+        << "sphoton::Get not expected error " 
+        << " a " << ( a ? "Y" : "N" )
+        << " a.shape " << ( a ? a->sstr() : "-" )
+        << " a.ebyte " << ( a ? a->ebyte : -1 )
+        << " a.shape[0] " << ( a ? a->shape[0] : -1 )
+        << " idx " << idx
+        << std::endl 
+        ; 
+
+    assert( expected  ); 
     assert( sizeof(sphoton) == sizeof(float)*16 ); 
     memcpy( &p, a->cvalues<float>() + idx*16, sizeof(sphoton) ); 
 }
