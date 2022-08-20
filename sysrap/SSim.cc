@@ -3,7 +3,6 @@
 #include "NPFold.h"
 #include "scuda.h"
 #include "squad.h"
-//#include "SDigestNP.hh"
 #include "sdigest.h"
 #include "stree.h"
 

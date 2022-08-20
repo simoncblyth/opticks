@@ -9,7 +9,6 @@
 #include "SEvt.hh"
 #include "SSim.hh"
 #include "SGeo.hh"
-#include "SEventConfig.hh"
 #include "SOpticksResource.hh"
 #include "SFrameGenstep.hh"
 
@@ -92,10 +91,9 @@ G4CXOpticks::G4CXOpticks()
 
 void G4CXOpticks::init()
 {
-    SEventConfig::Initialize();   
+    // SEventConfig::Initialize();     
     // config depends on SEventConfig::SetEventMode OR OPTICKS_EVENTMODE envvar 
-    // TODO: move this to SEvt::init for better "locus", hence avoiding repetition 
-
+    // DONE: moved SEventConfig::Initialize to SEvt::SEvt for better "locus", hence avoiding repetition 
 
     INSTANCE = this ; 
     LOG(LEVEL) << Desc() << std::endl << desc(); 

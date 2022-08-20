@@ -71,7 +71,7 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "SComp.h"
 #include "SRandom.h"
 
-struct SCF ; 
+//struct SCF ; 
 struct sphoton_selector ; 
 struct sdebug ; 
 struct NP ; 
@@ -82,9 +82,10 @@ struct SGeo ;
 
 struct SYSRAP_API SEvt : public SCompProvider
 {
-    static const SCF* CF ;  // TODO: eliminate 
+    //static const SCF* CF ;  // TODO: eliminate 
     static constexpr const unsigned UNDEF = ~0u ; 
 
+    int cfgrc ; 
     int index ; 
     const char* reldir ; 
     sphoton_selector* selector ; 

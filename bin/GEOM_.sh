@@ -29,7 +29,8 @@ EOU
 #geom=RaindropRockAirWaterSmall
 
 #geom=hama_body_log
-geom=J001
+#geom=J001
+geom=J003
 
 export GEOM=${GEOM:-$geom}
 
@@ -60,8 +61,7 @@ elif [ "$GEOM" == "J002" ]; then
 
 elif [ "$GEOM" == "J003" ]; then
 
-    # HMM:need more permanent directory 
-    export J003_CFBaseFromGEOM=/tmp/blyth/opticks/ntds3/G4CXOpticks
+    export J003_CFBaseFromGEOM=$HOME/.opticks/ntds3/G4CXOpticks
 
 fi 
 

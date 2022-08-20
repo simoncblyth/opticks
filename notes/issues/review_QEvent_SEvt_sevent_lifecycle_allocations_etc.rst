@@ -28,9 +28,8 @@ TODO : try opticksMode 1
     junotoptask:PMTSimParamSvc.finalize  INFO: PMTSimParamSvc is finalizing!
 
 
-
-TODO : gxs.sh gxt.sh gxr.sh running from saved geometry with CSGFoundry/SSim/stree
-------------------------------------------------------------------------------------
+TODO : gxs.sh gxt.sh gxr.sh running from saved geometry with relocated CSGFoundry/SSim/stree
+------------------------------------------------------------------------------------------------
 
 
 DONE : ntds3 run with TMP=$HOME/.opticks for more permanent geometry base saved geom running test
@@ -42,6 +41,9 @@ DONE : ntds3 run with TMP=$HOME/.opticks for more permanent geometry base saved 
 
     export TMP=$HOME/.opticks SEvt=INFO SEventConfig=INFO CSG_GGeo_Convert=INFO
     ntds3
+
+    TMP=$HOME/.opticks ntds3   ## redo: following stree relocation to CSGFoundry/SSim/stree 
+
 
 ::
 

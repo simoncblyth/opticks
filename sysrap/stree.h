@@ -10,12 +10,47 @@ See also u4/U4Tree.h that creates the stree from Geant4 volumes.
 * DONE : controlling the order of repeats with same freq, using 2-level sort  
 
 
-TODO:
+TODO
+-----
 
-* ridx labelling the tree
 * maintain correspondence between source nodes and destination nodes thru the factorization
 * triplet_identity 
 * transform rebase
+
+
+Users of stree.h
+-------------------
+
+u4/U4Tree.h
+    heavy lifting of stree.h creation
+
+CSG_GGeo/CSG_GGeo_Convert.cc
+    stree.h/tree member obtained from "SSim::Get()->get_tree()"
+    tree used from CSG_GGeo_Convert::addInstances to lookup_sensor_identifier
+    the sensor_id and sensor_index are incorporated into the CSGFoundry instances 
+    (so this usage is "precache")
+
+ggeo/tests/GGeoLoadFromDirTest.cc
+    dev of the interim stree GGeo integration for sensor info
+
+ggeo/GGeo.cc
+    GGeo:m_tree with setTree/getTree : but treated as foreign member, only GGeo::save saves it 
+    this m_tree was used for debugging a now resolved discrepancy between X4+GGeo and U4Test 
+    transforms : that is suspected but not confirmed to have been caused by a 
+    stree parent pointer bug 
+
+extg4/X4PhysicalVolume.cc
+    X4PhysicalVolume::convertStructure creates stree.h and setTree into GGeo 
+    X4PhysicalVolume::convertStructure_r collects snode.h and transforms into the GGeo/stree 
+
+sysrap/SBnd.h
+    SBnd::FillMaterialLine uses the boundary specs to convert stree.h mtname into mtline 
+    for texture lookups and material index to line mappings needed at genstep collection
+
+
+
+
+
 
 mapping from "factorized" instances back to origin PV and vice-versa 
 -----------------------------------------------------------------------

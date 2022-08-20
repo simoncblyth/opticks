@@ -23,6 +23,7 @@ set(TEST_SOURCES
     CSGFoundry_SGeo_SEvt_Test.cc
 
     CSGFoundry_ResolveCFBase_Test.cc
+    CSGFoundryLoadTest.cc 
 
     CSGScanTest.cc
     CUTest.cc

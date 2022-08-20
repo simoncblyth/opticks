@@ -160,6 +160,7 @@ std::string CSGFoundry::desc() const
        << " mmlabel " << mmlabel.size()
        << " mtime " << mtime
        << " mtimestamp " << STime::Format(mtime)
+       << " sim " << ( sim ? "Y" : "N" )
        ;
     return ss.str(); 
 }

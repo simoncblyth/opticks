@@ -377,7 +377,9 @@ struct CSG_API CSGFoundry : public SGeo
     qat4*       d_itra ; 
 
     std::vector<int> ins ; 
-    std::vector<int> gas ; 
+    std::vector<int> gas ;
+
+    // HMM: should these come from SSim/stree ? seem only used by CSGFoundry::inst_find_unique
     std::vector<int> sensor_identifier ; 
     std::vector<int> sensor_index ; 
 

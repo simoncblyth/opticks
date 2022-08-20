@@ -305,7 +305,7 @@ HMM: currently there is some conflation between the comps to gather and comp exi
 **/
 
 
-void SEventConfig::Initialize() // static
+int SEventConfig::Initialize() // static
 {
     const char* mode = EventMode(); 
     int maxbounce = MaxBounce(); 
@@ -334,6 +334,7 @@ void SEventConfig::Initialize() // static
     }
 
     LOG(LEVEL) << Desc() ; 
+    return 0 ; 
 }
 
 

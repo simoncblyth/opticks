@@ -30,19 +30,20 @@
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "SComp.h"
-#include "SCF.h"
+//#include "SCF.h"
 
 const plog::Severity SEvt::LEVEL = PLOG::EnvLevel("SEvt", "DEBUG"); 
 const int SEvt::GIDX = SSys::getenvint("GIDX",-1) ;
 const int SEvt::PIDX = SSys::getenvint("PIDX",-1) ;
 const int SEvt::MISSING_INDEX = std::numeric_limits<int>::max() ; 
 const char* SEvt::DEFAULT_RELDIR = "ALL" ; 
-const SCF* SEvt::CF = SCF::Create() ;   // TODO: REMOVE 
+//const SCF* SEvt::CF = SCF::Create() ;   // TODO: REMOVE 
 
 SEvt* SEvt::INSTANCE = nullptr ; 
 
 SEvt::SEvt()
     :
+    cfgrc(SEventConfig::Initialize()),  // config depends on SEventConfig::SetEventMode OR OPTICKS_EVENTMODE envvar 
     index(MISSING_INDEX),
     reldir(DEFAULT_RELDIR),
     selector(new sphoton_selector(SEventConfig::HitMask())),

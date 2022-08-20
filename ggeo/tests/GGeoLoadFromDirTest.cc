@@ -69,6 +69,8 @@ int main(int argc, char** argv)
     //stree* st = stree::Load(BASE);   // after regrab can use this 
     stree* st = stree::Load(BASE, "stree_reorderSensors"); 
 
+   // TODO: stree has now been repositioned 
+
     std::cout << st->desc_sensor_id() << std::endl ;
 
     

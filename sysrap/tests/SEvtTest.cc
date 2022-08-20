@@ -124,6 +124,7 @@ void test_InputPhoton()
     const char* FOLD = SPath::Resolve("$TMP/SEvtTest/test_InputPhoton", DIRPATH); 
     ip->save(FOLD, SStr::Name("ipf", ipf, ".npy") ); 
 
+    /*
     const qat4* q = SEvt::CF->getInputPhotonFrame(); 
     Tran<double>* tr = Tran<double>::ConvertToTran(q);
 
@@ -132,6 +133,9 @@ void test_InputPhoton()
     fr->save(FOLD, SStr::Name("fr", ipf, ".npy" )); 
 
     tr->save( FOLD, SStr::Name("tr",ipf, ".npy" )) ;  
+
+    */
+
 }
 
 

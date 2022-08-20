@@ -193,7 +193,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhotonFrame ; 
 
 
-    static void Initialize(); 
+    static int Initialize(); 
 
 }; 
  
