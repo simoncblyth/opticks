@@ -140,7 +140,7 @@ extern void QRng_generate(
 template<typename T>
 void QRng::generate( T* uu, unsigned ni, unsigned nv, unsigned long long skipahead_ )
 {
-    T* d_uu = QU::device_alloc<T>(ni*nv);
+    T* d_uu = QU::device_alloc<T>(ni*nv, "QRng::generate:ni*nv");
 
     QU::ConfigureLaunch(numBlocks, threadsPerBlock, ni, 1 );  
 
@@ -167,7 +167,7 @@ extern void QRng_generate_2(dim3, dim3, qrng*, unsigned, T*, unsigned, unsigned 
 template<typename T>
 void QRng::generate_2( T* uu, unsigned ni, unsigned nv, unsigned event_idx )
 {
-    T* d_uu = QU::device_alloc<T>(ni*nv);
+    T* d_uu = QU::device_alloc<T>(ni*nv, "QRng::generate_2:ni*nv");
 
     QU::ConfigureLaunch(numBlocks, threadsPerBlock, ni, 1 );  
 

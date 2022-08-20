@@ -72,7 +72,7 @@ void QProp<T>::init()
 template<typename T>
 void QProp<T>::uploadProps()
 {
-    prop->pp = QU::device_alloc<T>(nv) ; 
+    prop->pp = QU::device_alloc<T>(nv,"QProp<T>::uploadProps:nv") ; 
     prop->height = ni ; 
     prop->width =  nj*nk ; 
 
@@ -165,10 +165,10 @@ void QProp<T>::lookup( T* lookup, const T* domain,  unsigned lookup_prop, unsign
         << " num_lookup " << num_lookup
         ; 
 
-    T* d_domain = QU::device_alloc<T>(domain_width) ; 
+    T* d_domain = QU::device_alloc<T>(domain_width, "QProp<T>::lookup:domain_width") ; 
     QU::copy_host_to_device<T>( d_domain, domain, domain_width  ); 
 
-    T* d_lookup = QU::device_alloc<T>(num_lookup) ; 
+    T* d_lookup = QU::device_alloc<T>(num_lookup,"QProp<T>::lookup:num_lookup") ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 

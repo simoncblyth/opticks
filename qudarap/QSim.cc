@@ -425,7 +425,7 @@ void QSim::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_o
 
     unsigned num_rng = ni_tranche*nv ;  
 
-    T* d_seq = QU::device_alloc<T>(num_rng); 
+    T* d_seq = QU::device_alloc<T>(num_rng, "QSim::rng_sequence:num_rng"); 
 
     QSim_rng_sequence<T>(numBlocks, threadsPerBlock, d_sim, d_seq, ni_tranche, nv, id_offset );  
 
@@ -530,7 +530,7 @@ NP* QSim::scint_wavelength(unsigned num_wavelength, unsigned& hd_factor )
 
     configureLaunch(num_wavelength, 1 ); 
 
-    float* d_wavelength = QU::device_alloc<float>(num_wavelength); 
+    float* d_wavelength = QU::device_alloc<float>(num_wavelength, "QSim::scint_wavelength/num_wavelength"); 
 
     QSim_scint_wavelength(numBlocks, threadsPerBlock, d_sim, d_wavelength, num_wavelength );  
 
@@ -573,7 +573,7 @@ NP* QSim::dbg_gs_generate(unsigned num_photon, unsigned type )
     assert( type == SCINT_GENERATE || type == CERENKOV_GENERATE ); 
 
     configureLaunch( num_photon, 1 ); 
-    sphoton* d_photon = QU::device_alloc<sphoton>(num_photon) ; 
+    sphoton* d_photon = QU::device_alloc<sphoton>(num_photon, "QSim::dbg_gs_generate:num_photon") ; 
     QU::device_memset<sphoton>(d_photon, 0, num_photon); 
 
     QSim_dbg_gs_generate(numBlocks, threadsPerBlock, d_sim, d_dbg, d_photon, num_photon, type );  
@@ -634,7 +634,7 @@ void QSim::fill_state_0(quad6* state, unsigned num_state)
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    quad6* d_state = QU::device_alloc<quad6>(num_state) ; 
+    quad6* d_state = QU::device_alloc<quad6>(num_state, "QSim::fill_state_0:num_state") ; 
 
 
     unsigned threads_per_block = 32 ;  
@@ -659,7 +659,7 @@ void QSim::fill_state_1(sstate* state, unsigned num_state)
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    sstate* d_state = QU::device_alloc<sstate>(num_state) ; 
+    sstate* d_state = QU::device_alloc<sstate>(num_state, "QSim::fill_state_1:num_state") ; 
 
     unsigned threads_per_block = 64 ;  
     configureLaunch1D( num_state, threads_per_block ); 
@@ -699,7 +699,7 @@ NP* QSim::quad_launch_generate(unsigned num_quad, unsigned type )
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    quad* d_q = QU::device_alloc<quad>(num_quad) ; 
+    quad* d_q = QU::device_alloc<quad>(num_quad, "QSim::quad_launch_generate:num_quad") ; 
 
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_quad, threads_per_block ); 
@@ -741,7 +741,7 @@ NP* QSim::photon_launch_generate(unsigned num_photon, unsigned type )
     assert( d_sim ); 
     assert( d_dbg ); 
 
-    sphoton* d_photon = QU::device_alloc<sphoton>(num_photon) ; 
+    sphoton* d_photon = QU::device_alloc<sphoton>(num_photon, "QSim::photon_launch_generate:num_photon") ; 
     QU::device_memset<sphoton>(d_photon, 0, num_photon); 
 
     unsigned threads_per_block = 512 ;  
@@ -866,7 +866,7 @@ NP* QSim::boundary_lookup_all(unsigned width, unsigned height )
 
     configureLaunch(width, height ); 
 
-    quad* d_lookup = QU::device_alloc<quad>(num_lookup) ; 
+    quad* d_lookup = QU::device_alloc<quad>(num_lookup, "QSim::boundary_lookup_all:num_lookup" ) ; 
     QSim_boundary_lookup_all(numBlocks, threadsPerBlock, d_sim, d_lookup, width, height );  
 
     assert( height % 8 == 0 );  
@@ -895,11 +895,11 @@ NP* QSim::boundary_lookup_line( float* domain, unsigned num_lookup, unsigned lin
 
     configureLaunch(num_lookup, 1  ); 
 
-    float* d_domain = QU::device_alloc<float>(num_lookup) ; 
+    float* d_domain = QU::device_alloc<float>(num_lookup, "QSim::boundary_lookup_line:num_lookup") ; 
 
     QU::copy_host_to_device<float>( d_domain, domain, num_lookup ); 
 
-    quad* d_lookup = QU::device_alloc<quad>(num_lookup) ; 
+    quad* d_lookup = QU::device_alloc<quad>(num_lookup, "QSim::boundary_lookup_line:num_lookup") ; 
 
     QSim_boundary_lookup_line(numBlocks, threadsPerBlock, d_sim, d_lookup, d_domain, num_lookup, line, k );  
 
@@ -947,9 +947,9 @@ void QSim::prop_lookup( T* lookup, const T* domain, unsigned domain_width, const
 
     configureLaunch(domain_width, num_pids  ); 
 
-    unsigned* d_pids = QU::device_alloc<unsigned>(num_pids) ; 
-    T* d_domain = QU::device_alloc<T>(domain_width) ; 
-    T* d_lookup = QU::device_alloc<T>(num_lookup) ; 
+    unsigned* d_pids = QU::device_alloc<unsigned>(num_pids, "QSim::prop_lookup:num_pids") ; 
+    T* d_domain = QU::device_alloc<T>(domain_width, "QSim::prop_lookup:domain_width") ; 
+    T* d_lookup = QU::device_alloc<T>(num_lookup  , "QSim::prop_lookup:num_lookup") ; 
 
     QU::copy_host_to_device<T>( d_domain, domain, domain_width ); 
     QU::copy_host_to_device<unsigned>( d_pids, pids.data(), num_pids ); 
@@ -1010,10 +1010,10 @@ void QSim::prop_lookup_onebyone( T* lookup, const T* domain, unsigned domain_wid
 
     configureLaunch(domain_width, 1  ); 
 
-    T* d_domain = QU::device_alloc<T>(domain_width) ; 
+    T* d_domain = QU::device_alloc<T>(domain_width, "QSim::prop_lookup_onebyone:domain_width") ; 
     QU::copy_host_to_device<T>( d_domain, domain, domain_width ); 
 
-    T* d_lookup = QU::device_alloc<T>(num_lookup) ; 
+    T* d_lookup = QU::device_alloc<T>(num_lookup, "QSim::prop_lookup_onebyone:num_lookup") ; 
 
     // separate launches for each pid
     for(unsigned ipid=0 ; ipid < num_pids ; ipid++)
@@ -1056,9 +1056,9 @@ void QSim::multifilm_lookup_all( quad2 * sample , quad2 * result ,  unsigned wid
     configureLaunch2D(width, height );
 
     //const float * c_sample = sample; 
-    quad2* d_sample = QU::device_alloc<quad2>(size) ;
+    quad2* d_sample = QU::device_alloc<quad2>(size, "QSim::multifilm_lookup_all:size" ) ;
     
-    quad2* d_result = QU::device_alloc<quad2>(size) ;
+    quad2* d_result = QU::device_alloc<quad2>(size, "QSim::multifilm_lookup_all:size") ;
     LOG(LEVEL)
        <<" copy_host_to_device<quad2>( d_sample, sample , size) before";
     QU::copy_host_to_device<quad2>( d_sample, sample , size);

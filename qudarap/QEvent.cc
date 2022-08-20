@@ -61,7 +61,7 @@ QEvent::QEvent()
     sev(SEvt::Get()),
     selector(sev ? sev->selector : nullptr),
     evt(sev ? sev->evt : nullptr),
-    d_evt(QU::device_alloc<sevent>(1)),
+    d_evt(QU::device_alloc<sevent>(1,"QEvent::QEvent/sevent")),
     gs(nullptr),
     input_photon(nullptr),
     upload_count(0),
@@ -197,8 +197,8 @@ int QEvent::setGenstep(NP* gs_)
 void QEvent::device_alloc_genstep()
 {
     LOG(LEVEL) << " device_alloc genstep and seed " ; 
-    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep ) ; 
-    evt->seed    = QU::device_alloc<int>(   evt->max_photon )  ;
+    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep, "device_alloc_genstep:quad6" ) ; 
+    evt->seed    = QU::device_alloc<int>(   evt->max_photon , "device_alloc_genstep:int seed" )  ;
 }
 
 
@@ -536,7 +536,7 @@ NP* QEvent::gatherHit() const
 
 NP* QEvent::gatherHit_() const 
 {
-    evt->hit = QU::device_alloc<sphoton>( evt->num_hit ); 
+    evt->hit = QU::device_alloc<sphoton>( evt->num_hit, "QEvent::gatherHit_:sphoton" ); 
 
     SU::copy_if_device_to_device_presized_sphoton( evt->hit, evt->photon, evt->num_photon,  *selector );
 
@@ -631,14 +631,14 @@ HMM: record buffer should be : evt->max_record * evt->max_photon ?
 
 void QEvent::device_alloc_photon()
 {
-    evt->photon  = evt->max_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon ) : nullptr ; 
+    evt->photon  = evt->max_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon, "max_photon" ) : nullptr ; 
 
-    evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon * evt->max_record ) : nullptr ; 
-    evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec    ) : nullptr ; 
-    evt->seq     = evt->max_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->max_photon * evt->max_seq    ) : nullptr ; 
-    evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_photon * evt->max_prd    ) : nullptr ; 
-    evt->tag     = evt->max_tag    > 0 ? QU::device_alloc_zero<stag>(    evt->max_photon * evt->max_tag    ) : nullptr ; 
-    evt->flat    = evt->max_flat   > 0 ? QU::device_alloc_zero<sflat>(   evt->max_photon * evt->max_flat   ) : nullptr ; 
+    evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon * evt->max_record, "max_photon*max_record" ) : nullptr ; 
+    evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec   , "max_photon*max_rec"    ) : nullptr ; 
+    evt->seq     = evt->max_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->max_photon * evt->max_seq   , "max_photon*max_seq"    ) : nullptr ; 
+    evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_photon * evt->max_prd   , "max_photon*max_prd"    ) : nullptr ; 
+    evt->tag     = evt->max_tag    > 0 ? QU::device_alloc_zero<stag>(    evt->max_photon * evt->max_tag   , "max_photon*max_tag"    ) : nullptr ; 
+    evt->flat    = evt->max_flat   > 0 ? QU::device_alloc_zero<sflat>(   evt->max_photon * evt->max_flat  , "max_photon*max_flat"   ) : nullptr ; 
 
     /*
     evt->record  = evt->num_record > 0 ? QU::device_alloc_zero<sphoton>( evt->num_record ) : nullptr ; 
@@ -663,7 +663,7 @@ void QEvent::device_alloc_photon()
  
 void QEvent::device_alloc_simtrace()
 {
-    evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace ) ; 
+    evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace, "max_simtrace" ) ; 
     LOG(LEVEL) 
         << " evt.num_simtrace " << evt->num_simtrace 
         << " evt.max_simtrace " << evt->max_simtrace

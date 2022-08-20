@@ -187,37 +187,51 @@ template QUDARAP_API void  QU::device_free_and_alloc<quad4>(quad4** dd, unsigned
 
 
 template<typename T>
-T* QU::device_alloc( unsigned num_items )
+T* QU::device_alloc( unsigned num_items, const char* label )
 {
     size_t size = num_items*sizeof(T) ; 
+
+    LOG(LEVEL) 
+        << " num_items " << std::setw(10) << num_items 
+        << " size " << std::setw(10) << size 
+        << " label " << std::setw(15) << label 
+        ; 
+
     T* d ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
 
     return d ; 
 }
 
-template QUDARAP_API float*     QU::device_alloc<float>(unsigned num_items) ;
-template QUDARAP_API double*    QU::device_alloc<double>(unsigned num_items) ;
-template QUDARAP_API unsigned*  QU::device_alloc<unsigned>(unsigned num_items) ;
-template QUDARAP_API int*       QU::device_alloc<int>(unsigned num_items) ;
-template QUDARAP_API uchar4*    QU::device_alloc<uchar4>(unsigned num_items) ;
-template QUDARAP_API float4*    QU::device_alloc<float4>(unsigned num_items) ;
-template QUDARAP_API quad*      QU::device_alloc<quad>(unsigned num_items) ;
-template QUDARAP_API quad2*     QU::device_alloc<quad2>(unsigned num_items) ;
-template QUDARAP_API quad4*     QU::device_alloc<quad4>(unsigned num_items) ;
-template QUDARAP_API quad6*     QU::device_alloc<quad6>(unsigned num_items) ;
-template QUDARAP_API sevent*    QU::device_alloc<sevent>(unsigned num_items) ;
-template QUDARAP_API qdebug*    QU::device_alloc<qdebug>(unsigned num_items) ;
-template QUDARAP_API sstate*    QU::device_alloc<sstate>(unsigned num_items) ;
-template QUDARAP_API srec*      QU::device_alloc<srec>(unsigned num_items) ;
-template QUDARAP_API sseq*      QU::device_alloc<sseq>(unsigned num_items) ;
-template QUDARAP_API sphoton*   QU::device_alloc<sphoton>(unsigned num_items) ;
+template QUDARAP_API float*     QU::device_alloc<float>(unsigned num_items, const char* label) ;
+template QUDARAP_API double*    QU::device_alloc<double>(unsigned num_items, const char* label) ;
+template QUDARAP_API unsigned*  QU::device_alloc<unsigned>(unsigned num_items, const char* label) ;
+template QUDARAP_API int*       QU::device_alloc<int>(unsigned num_items, const char* label) ;
+template QUDARAP_API uchar4*    QU::device_alloc<uchar4>(unsigned num_items, const char* label) ;
+template QUDARAP_API float4*    QU::device_alloc<float4>(unsigned num_items, const char* label) ;
+template QUDARAP_API quad*      QU::device_alloc<quad>(unsigned num_items, const char* label) ;
+template QUDARAP_API quad2*     QU::device_alloc<quad2>(unsigned num_items, const char* label) ;
+template QUDARAP_API quad4*     QU::device_alloc<quad4>(unsigned num_items, const char* label) ;
+template QUDARAP_API quad6*     QU::device_alloc<quad6>(unsigned num_items, const char* label) ;
+template QUDARAP_API sevent*    QU::device_alloc<sevent>(unsigned num_items, const char* label) ;
+template QUDARAP_API qdebug*    QU::device_alloc<qdebug>(unsigned num_items, const char* label) ;
+template QUDARAP_API sstate*    QU::device_alloc<sstate>(unsigned num_items, const char* label) ;
+template QUDARAP_API srec*      QU::device_alloc<srec>(unsigned num_items, const char* label) ;
+template QUDARAP_API sseq*      QU::device_alloc<sseq>(unsigned num_items, const char* label) ;
+template QUDARAP_API sphoton*   QU::device_alloc<sphoton>(unsigned num_items, const char* label) ;
 
 
 template<typename T>
-T* QU::device_alloc_zero(unsigned num_items )
+T* QU::device_alloc_zero(unsigned num_items, const char* label)
 {
     size_t size = num_items*sizeof(T) ; 
+
+    LOG(LEVEL) 
+        << " num_items " << std::setw(10) << num_items 
+        << " size " << std::setw(10) << size 
+        << " label " << std::setw(15) << label 
+        ; 
+
     T* d ;  
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
 
@@ -227,12 +241,12 @@ T* QU::device_alloc_zero(unsigned num_items )
     return d ; 
 }
 
-template QUDARAP_API sphoton*   QU::device_alloc_zero<sphoton>(unsigned num_items) ;
-template QUDARAP_API srec*      QU::device_alloc_zero<srec>(unsigned num_items) ;
-template QUDARAP_API sseq*      QU::device_alloc_zero<sseq>(unsigned num_items) ;
-template QUDARAP_API stag*      QU::device_alloc_zero<stag>(unsigned num_items) ;
-template QUDARAP_API sflat*     QU::device_alloc_zero<sflat>(unsigned num_items) ;
-template QUDARAP_API quad2*     QU::device_alloc_zero<quad2>(unsigned num_items) ;
+template QUDARAP_API sphoton*   QU::device_alloc_zero<sphoton>(unsigned num_items, const char* label) ;
+template QUDARAP_API srec*      QU::device_alloc_zero<srec>(   unsigned num_items, const char* label) ;
+template QUDARAP_API sseq*      QU::device_alloc_zero<sseq>(   unsigned num_items, const char* label) ;
+template QUDARAP_API stag*      QU::device_alloc_zero<stag>(   unsigned num_items, const char* label) ;
+template QUDARAP_API sflat*     QU::device_alloc_zero<sflat>(  unsigned num_items, const char* label) ;
+template QUDARAP_API quad2*     QU::device_alloc_zero<quad2>(  unsigned num_items, const char* label) ;
 
 
 

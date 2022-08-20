@@ -43,7 +43,7 @@ HMM: could use QEvent to hold the pixel, isect, photon ?
 template<typename T> 
 T* Frame::DeviceAlloc(unsigned num_pixels, bool enabled)
 {
-    return enabled ? QU::device_alloc<T>(num_pixels) : nullptr ; 
+    return enabled ? QU::device_alloc<T>(num_pixels,"Frame::DeviceAllo:num_pixels") : nullptr ; 
 }
 
 template uchar4* Frame::DeviceAlloc<uchar4>(unsigned num_pixels, bool enabled); 

@@ -228,8 +228,8 @@ A: SSim could hold the SEvt together with stree ?
 **/
 
 
-//const bool G4CXOpticks::setGeometry_saveGeometry = SSys::getenvbool("G4CXOpticks__setGeometry_saveGeometry") ;
-const bool G4CXOpticks::setGeometry_saveGeometry = true ;   // temporarily always ON 
+const bool G4CXOpticks::setGeometry_saveGeometry = SSys::getenvbool("G4CXOpticks__setGeometry_saveGeometry") ;
+//const bool G4CXOpticks::setGeometry_saveGeometry = true ;   // temporarily always ON 
 
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {

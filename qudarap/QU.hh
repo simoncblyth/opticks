@@ -29,10 +29,10 @@ struct QUDARAP_API QU
     static void Download(std::vector<T>& vec, const T* d_array, unsigned num_items) ;    
 
     template <typename T>
-    static T*   device_alloc( unsigned num_items ) ; 
+    static T*   device_alloc( unsigned num_items, const char* label ) ; 
 
     template <typename T>
-    static T*   device_alloc_zero( unsigned num_items ) ; 
+    static T*   device_alloc_zero( unsigned num_items, const char* label ) ; 
 
     template <typename T>
     static void device_memset( T* d, int value, unsigned num_items ); 
