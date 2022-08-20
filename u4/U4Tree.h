@@ -3,6 +3,7 @@
 U4Tree.h : explore minimal approach to geometry translation
 ==============================================================
 
+* note how persisting is mostly delegated to stree.h 
 * see also sysrap/stree.h sysrap/tests/stree_test.cc
 
 **/
@@ -19,6 +20,7 @@ U4Tree.h : explore minimal approach to geometry translation
 #include "G4Material.hh"
 
 #include "NP.hh"
+
 #include "sdigest.h"
 #include "sfreq.h"
 #include "stree.h"
@@ -43,8 +45,10 @@ struct U4Tree
     std::vector<const G4VPhysicalVolume*> pvs ; 
     std::vector<const G4Material*>  materials ; 
 
-    U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
 
+    // HMM: should really be SSim argument now ?
+    U4Tree(stree* st, const G4VPhysicalVolume* const top=nullptr, const U4SensorIdentifier* sid=nullptr ); 
+    void init(); 
 
     void convertMaterials(); 
     void convertMaterials_r(const G4VPhysicalVolume* const pv); 
@@ -82,15 +86,14 @@ Canonically invoked from G4CXOpticks::setGeometry
 inline U4Tree* U4Tree::Create( stree* st, const G4VPhysicalVolume* const top, const U4SensorIdentifier* sid ) 
 {
     if(VERBOSE) std::cout << "[ U4Tree::Create " << std::endl ; 
-    U4Tree* tree = new U4Tree(st, top, sid ) ;
-    st->factorize(); 
-    std::cout << st->desc_factor() << std::endl ; 
+    U4Tree* tr = new U4Tree(st, top, sid ) ;
 
-    tree->identifySensitive(); 
+    st->factorize(); 
+    tr->identifySensitive(); 
     st->add_inst(); 
 
     if(VERBOSE) std::cout << "] U4Tree::Create " << std::endl ; 
-    return tree ; 
+    return tr ; 
 }
 
 
@@ -99,6 +102,11 @@ inline U4Tree::U4Tree(stree* st_, const G4VPhysicalVolume* const top_,  const U4
     st(st_),
     top(top_),
     sid(sid_ ? sid_ : new U4SensorIdentifierDefault)
+{
+    init(); 
+}
+
+inline void U4Tree::init()
 {
     if(top == nullptr) return ; 
     convertMaterials();
@@ -114,14 +122,16 @@ U4Tree::convertMaterials
 1. recursive traverse collecting material pointers from all active LV into materials vector 
    in postorder of first encounter.
 
-2. create NPFold mtfold holding properties of all active materials 
+2. create SSim/stree/mtfold holding properties of all active materials 
+
+   TODO: relocate to SSim/mtfold, rather than SSim/stree/mtfold ? 
 
 **/
 
 inline void U4Tree::convertMaterials()
 {
     convertMaterials_r(top); 
-    st->mtfold = U4Material::MakePropertyFold(materials); 
+    st->mtfold = U4Material::MakePropertyFold(materials);  
 }
 inline void U4Tree::convertMaterials_r(const G4VPhysicalVolume* const pv)
 {

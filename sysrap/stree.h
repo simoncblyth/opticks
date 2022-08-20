@@ -1097,9 +1097,9 @@ inline std::string stree::FormPath(const char* base, const char* rel ) // static
     return dir ; 
 }
 
-inline void stree::save( const char* base, const char* rel ) const 
+inline void stree::save( const char* base, const char* reldir ) const 
 {
-    std::string dir = FormPath(base, rel); 
+    std::string dir = FormPath(base, reldir); 
     save_(dir.c_str()); 
 }
 
@@ -1509,6 +1509,8 @@ inline void stree::factorize()
     sortSubtrees(); 
     enumerateFactors(); 
     labelFactorSubtrees(); 
+
+    if(level>0) std::cout << desc_factor() << std::endl ;
     if(level>0) std::cout << "] stree::factorize " << std::endl ;
 }
 

@@ -29,6 +29,7 @@ struct SYSRAP_API SSim
 {
     static const plog::Severity LEVEL ; 
 
+    static constexpr const char* RELDIR = "SSim" ; 
     static constexpr const char* BND = "bnd.npy" ; 
     static constexpr const char* OPTICAL = "optical.npy" ;
     static constexpr const char* ICDF = "icdf.npy" ;
@@ -41,8 +42,9 @@ struct SYSRAP_API SSim
     static SSim* Create(); 
     static const char* DEFAULT ; 
     static SSim* Load(); 
-    static SSim* Load(const char* base); 
-    static SSim* Load(const char* base, const char* rel); 
+    static SSim* Load(const char* base, const char* rel=RELDIR ); 
+    static SSim* Load_(const char* dir); 
+
     static int Compare( const SSim* a , const SSim* b, bool dump=false ) ; 
 
 
@@ -73,11 +75,11 @@ struct SYSRAP_API SSim
     int lookup_mtline( int mtindex ) const ; 
 
 
-    void load(const char* base); 
-    void load(const char* base, const char* rel) ; 
+    //void load(const char* base); 
+    //void save(const char* base) const ; 
 
-    void save(const char* base) const ; 
-    void save(const char* base, const char* rel) const ; 
+    void save(const char* base, const char* reldir=RELDIR) const ; 
+    void load(const char* base, const char* reldir=RELDIR) ; 
 
     std::string desc() const ; 
     std::string descOptical() const ; 

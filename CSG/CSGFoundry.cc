@@ -2067,7 +2067,7 @@ void CSGFoundry::save_(const char* dir_) const
     if(sim)
     {
         LOG(LEVEL) << " SSim::save " << dir ;  
-        sim->save(dir, "SSim");  
+        sim->save(dir, SSim::RELDIR );  
     }
     else
     {
@@ -2253,7 +2253,7 @@ void CSGFoundry::load( const char* dir_ )
     loadArray( plan  , dir, "plan.npy" , true );  
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
-    sim = NP::Exists(dir, "SSim") ? SSim::Load(dir, "SSim") : nullptr ; 
+    sim = NP::Exists(dir, "SSim") ? SSim::Load(dir, SSim::RELDIR ) : nullptr ; 
     mtime = MTime(dir, "solid.npy"); 
 }
 

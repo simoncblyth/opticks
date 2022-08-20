@@ -46,20 +46,19 @@ SSim::Load from $CFBase/CSGFoundry/SSim : so assumes already persisted geometry
 
 const char* SSim::DEFAULT = "$CFBase/CSGFoundry/SSim" ; 
 
-SSim* SSim::Load(){ return Load(DEFAULT) ; }
-//return Load(SOpticksResource::CFBase(), "CSGFoundry/SSim"); 
+SSim* SSim::Load(){ return Load_(DEFAULT) ; }
 
-SSim* SSim::Load(const char* base_)
+SSim* SSim::Load_(const char* base_)
 {
     const char* base = SPath::Resolve(base_ ? base_ : DEFAULT, DIRPATH); 
     SSim* sim = new SSim ; 
     sim->load(base);  
     return sim ; 
 }
-SSim* SSim::Load(const char* base, const char* rel)
+SSim* SSim::Load(const char* base, const char* reldir)
 {
     SSim* sim = new SSim ; 
-    sim->load(base, rel);  
+    sim->load(base, reldir);  
     return sim ; 
 }
 
@@ -137,21 +136,40 @@ int SSim::lookup_mtline( int mtindex ) const
 
 
 
+/**
+SSim::save
+------------
 
-void SSim::load(const char* base){ fold->load(base) ;   }
-void SSim::load(const char* base, const char* rel){ fold->load(base, rel) ;   }
+Cannonical usage from CSGFoundry::save_ with:: 
 
+    sim->save(dir, SSim::RELDIR)
 
-void SSim::save(const char* base_) const 
+So: 
+
+CSGFoundry/SSim/  
+    contains SSim arrays
+
+CSGFoundry/SSim/stree/
+    contains stree arrays 
+
+**/
+
+void SSim::save(const char* base, const char* reldir) const 
 { 
-    const char* base = SPath::Resolve(base_, DIRPATH); 
-    fold->save(base); 
+    const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
+    fold->save(dir); 
+    tree->save(dir, stree::RELDIR); 
 }
-void SSim::save(const char* base_, const char* rel) const 
+
+void SSim::load(const char* base, const char* reldir)
 { 
-    const char* base = SPath::Resolve(base_, DIRPATH); 
-    fold->save(base, rel); 
+    const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
+    fold->load(dir) ;   
+    tree->load(dir, stree::RELDIR); 
 }
+
+
+
 
 std::string SSim::desc() const { return fold->desc() ; }
 

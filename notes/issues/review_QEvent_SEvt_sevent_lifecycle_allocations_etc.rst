@@ -7,7 +7,33 @@ TODO : try ntds3 with record recording and saving
 
 
 
-TODO : ntds3 run with TMP=$HOME/.opticks for more permanent geometry base for gxs.sh gxt.sh gxr.sh tests
+TODO : make the SVN commits
+-------------------------------
+
+
+
+TODO : try opticksMode 1 
+--------------------------
+
+::
+
+    2022-08-20 03:02:39.567 INFO  [229251] [junoSD_PMT_v2_Opticks::EndOfEvent@258] ] num_hit 3825 merged_count  0 savehit_count  3825 m_merged_total 0 m_savehit_total 3793 m_opticksMode 3 LEVEL 5:DEBUG
+    2022-08-20 03:02:39.567 INFO  [229251] [junoSD_PMT_v2_Opticks::TerminateEvent@307]  invoking SEvt::Clear as no U4Recorder detected 
+    2022-08-20 03:02:39.567 INFO  [229251] [SEvt::clear@411] [
+    2022-08-20 03:02:39.567 INFO  [229251] [SEvt::clear@428] ]
+    ] junoSD_PMT_v2::EndOfEvent m_opticksMode  3
+    junoSD_PMT_v2::EndOfEvent m_opticksMode 3 hitCollection 5335 hitCollection_muon 0 hitCollection_opticks 0
+    junotoptask:DetSimAlg.finalize  INFO: DetSimAlg finalized successfully
+    junotoptask:DetSim0Svc.dumpOpticks  INFO: DetSim0Svc::finalizeOpticks m_opticksMode 3 WITH_G4CXOPTICKS 
+    junotoptask:PMTSimParamSvc.finalize  INFO: PMTSimParamSvc is finalizing!
+
+
+
+TODO : gxs.sh gxt.sh gxr.sh running from saved geometry with CSGFoundry/SSim/stree
+------------------------------------------------------------------------------------
+
+
+DONE : ntds3 run with TMP=$HOME/.opticks for more permanent geometry base saved geom running test
 -----------------------------------------------------------------------------------------------------------
 
 ::

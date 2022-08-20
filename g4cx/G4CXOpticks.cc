@@ -92,7 +92,11 @@ G4CXOpticks::G4CXOpticks()
 
 void G4CXOpticks::init()
 {
-    SEventConfig::Initialize();   // config depends on SEventConfig::SetEventMode OR OPTICKS_EVENTMODE envvar 
+    SEventConfig::Initialize();   
+    // config depends on SEventConfig::SetEventMode OR OPTICKS_EVENTMODE envvar 
+    // TODO: move this to SEvt::init for better "locus", hence avoiding repetition 
+
+
     INSTANCE = this ; 
     LOG(LEVEL) << Desc() << std::endl << desc(); 
 }
@@ -171,12 +175,14 @@ void G4CXOpticks::setGeometry(const char* gdmlpath)
 G4CXOpticks::setGeometry
 -------------------------
 
-U4Tree/stree aspiring to become convertable to CSGFoundry and replace GGeo 
+U4Tree/stree+SSim aspiring to replace the GGeo+X4+.. packages 
 
-HMM: need a way to distingish between a de-natured world coming via GDML save/load  
+HMM: need a way to distingish between a re-animated world coming via GDML save/load  
 and a live original world : as need to do things a bit differently in each case.
 
-* could determine this by noticing the lack of SensitiveDetectors in GDML de-natured world 
+* could determine this by noticing the lack of SensitiveDetectors in GDML re-animated world,
+  (but thats kinda heavy way to determine one bit) OR by passing a signal along with the 
+  world to show that it has been re-animated  
 
 **/
 
@@ -189,6 +195,7 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
 
     sim = SSim::Create();  
     stree* st = sim->get_tree(); 
+    // TODO: sim argument, not st : or do SSim::Create inside U4Tree::Create 
     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
 
 #ifdef __APPLE__
@@ -217,7 +224,8 @@ G4CXOpticks::setGeometry
 
 Prior to CSGOptiX::Create the SEvt instance is created. 
 
-HMM: is there a more general place for this hookup ?
+Q: is there a more general place for SEvt hookup ?
+A: SSim could hold the SEvt together with stree ?
 
 **/
 
@@ -264,6 +272,12 @@ Note that the SEvt component arrays will overrite themselves
 if the SEvt index is not incremented with "SEvt::SetIndex" 
 for each call to G4CXOpticks::simulate. 
 
+
+HMM: note that all of G4CXOpticks::simulate could be down in an SSim::simulate, 
+      just needs protocol for QSim::simulate call 
+TODO: compare with B side to see if that makes sense when viewed from A and B directions 
+
+
 **/
 
 //const bool G4CXOpticks::simulate_saveEvent = true ;
@@ -280,6 +294,7 @@ void G4CXOpticks::simulate()
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimulate() ); 
+
 
     SEvt* sev = SEvt::Get();  assert(sev); 
 
@@ -299,6 +314,8 @@ void G4CXOpticks::simulate()
         << " num_photon " << num_photon
         << " has_input_photon " << has_input_photon
         ;
+
+    //]
 
     qs->simulate(); 
 
@@ -361,8 +378,6 @@ void G4CXOpticks::render()
     cx->render_snap() ; 
 }
 
-
-
 void G4CXOpticks::saveEvent() const 
 {
 #ifdef __APPLE__
@@ -394,11 +409,15 @@ void G4CXOpticks::saveGeometry_(const char* dir_) const
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
     std::cout << "[ G4CXOpticks::saveGeometry_ " << ( dir ? dir : "-" ) << std::endl ; 
-    const stree* st = tr ? tr->st : nullptr ; 
-    if(st) st->save(dir) ;   
+
+    // stree persisting is now moved to SSim which in turn is managed by CSGFoundry
+    //const stree* st = tr ? tr->st : nullptr ;  // U4Tree holds stree but owner is now SSim
+    //if(st) st->save(dir) ;    // TODO: st now belongs to SSim which gets saved with fd 
+
     if(fd) fd->save(dir) ; 
     if(gg) gg->save_to_dir(dir) ; 
     if(wd) U4GDML::Write(wd, dir, "origin.gdml" );
+
     std::cout << "] G4CXOpticks::saveGeometry_ " << ( dir ? dir : "-" ) << std::endl ; 
 }
 
