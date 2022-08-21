@@ -578,9 +578,9 @@ void SEvt::setNumPhoton(unsigned num_photon)
         ;  
 
     evt->num_photon = num_photon ; 
-    evt->num_seq    = evt->max_seq  > 0 ? evt->num_photon : 0 ;
-    evt->num_tag    = evt->max_tag  > 0 ? evt->num_photon : 0 ;
-    evt->num_flat   = evt->max_flat > 0 ? evt->num_photon : 0 ;
+    evt->num_seq    = evt->max_seq   > 0 ? evt->num_photon : 0 ;
+    evt->num_tag    = evt->max_tag  == 1 ? evt->num_photon : 0 ;
+    evt->num_flat   = evt->max_flat == 1 ? evt->num_photon : 0 ;
 
     evt->num_record = evt->max_record * evt->num_photon ;
     evt->num_rec    = evt->max_rec    * evt->num_photon ;

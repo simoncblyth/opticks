@@ -637,17 +637,8 @@ void QEvent::device_alloc_photon()
     evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec   , "max_photon*max_rec*sizeof(srec)"    ) : nullptr ; 
     evt->seq     = evt->max_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->max_photon * evt->max_seq   , "max_photon*max_seq*sizeof(sseq)"    ) : nullptr ; 
     evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_photon * evt->max_prd   , "max_photon*max_prd*sizeof(quad2)"    ) : nullptr ; 
-    evt->tag     = evt->max_tag    > 0 ? QU::device_alloc_zero<stag>(    evt->max_photon * evt->max_tag   , "max_photon*max_tag*sizeof(stag)"    ) : nullptr ; 
-    evt->flat    = evt->max_flat   > 0 ? QU::device_alloc_zero<sflat>(   evt->max_photon * evt->max_flat  , "max_photon*max_flat*sizeof(sflat)"   ) : nullptr ; 
-
-    /*
-    evt->record  = evt->num_record > 0 ? QU::device_alloc_zero<sphoton>( evt->num_record ) : nullptr ; 
-    evt->rec     = evt->num_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->num_rec  )   : nullptr ; 
-    evt->seq     = evt->num_seq    > 0 ? QU::device_alloc_zero<sseq>(    evt->num_seq  )   : nullptr ; 
-    evt->prd     = evt->num_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->num_prd  )   : nullptr ; 
-    evt->tag     = evt->num_tag    > 0 ? QU::device_alloc_zero<stag>(    evt->num_tag  )   : nullptr ; 
-    evt->flat    = evt->num_flat   > 0 ? QU::device_alloc_zero<sflat>(   evt->num_flat  )  : nullptr ; 
-    */
+    evt->tag     = evt->max_tag   == 1 ? QU::device_alloc_zero<stag>(    evt->max_photon                  , "max_photon*sizeof(stag)"    ) : nullptr ; 
+    evt->flat    = evt->max_flat  == 1 ? QU::device_alloc_zero<sflat>(   evt->max_photon                  , "max_photon*sizeof(sflat)"   ) : nullptr ; 
 
     LOG(LEVEL) 
         << " evt.max_photon " << evt->max_photon 

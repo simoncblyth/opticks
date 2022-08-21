@@ -113,8 +113,8 @@ struct sevent
     int      max_rec     ; // eg: 10  compressed step record
     int      max_seq     ; // eg: 16  seqhis/seqbnd
     int      max_prd     ; // eg: 16  
-    int      max_tag     ; // eg: 24   stag.h random consumption tag 
-    int      max_flat    ; // eg: 24 
+    int      max_tag     ; // 0 or 1 only 
+    int      max_flat    ; // 0 or 1 only
 
     //[ counts and pointers, zeroed by sevent::zero  
     //  only first 4 are always in use, the last 7 are only relevant whilst debugging 
