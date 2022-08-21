@@ -4,7 +4,7 @@
 
 const char* BASE = getenv("BASE"); 
 
-int main(int argc, char** argv)
+void test_save_load()
 {
     salloc a ; 
     a.add("one",   1, 0,0,0 ); 
@@ -17,6 +17,13 @@ int main(int argc, char** argv)
     salloc b  ; 
     b.load(BASE); 
     std::cout << "b.desc" << std::endl << b.desc() ;     
+}
 
+
+int main(int argc, char** argv)
+{
+    salloc a ; 
+    a.load(BASE); 
+    std::cout << "a.desc" << std::endl << a.desc() ;     
     return 0 ; 
 }

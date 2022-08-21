@@ -165,6 +165,7 @@ $OPTICKS_TMP
 $OPTICKS_EVENT_BASE
 $HOME/hello
 $NON_EXISTING_EVAR/elsewhere
+$DefaultOutputDir
 )LIT";
     std::stringstream ss(lines); 
     std::string line ;
@@ -189,11 +190,19 @@ $NON_EXISTING_EVAR/elsewhere
     }
 }
 
+void test_Resolve_Default()
+{
+    const char* dir0 = SPath::Resolve(NOOP); 
+    const char* dir1 = SPath::Resolve(DIRPATH); 
+    LOG(info) << "SPath::Resolve(NOOP) " << dir0 ; 
+    LOG(info) << "SPath::Resolve(DIRPATH) " << dir1 ; 
+}
 void test_Resolve()
 {
     LOG(info); 
     const char* lines = R"LIT(
 $TMP
+$DefaultOutputDir
 $OPTICKS_TMP
 $OPTICKS_EVENT_BASE
 $HOME/hello 
@@ -379,6 +388,9 @@ int main(int argc , char** argv )
     test_IsReadable_path();  
     test_Basename_2(); 
     test_Resolve_With_Index();  
+*/  
+    test_Resolve_Default(); 
+/*
     test_Resolve(); 
     test_Basename(); 
     test_Dirname(); 
@@ -394,9 +406,9 @@ int main(int argc , char** argv )
     test_MakeEmpty(); 
     test_Remove(); 
     test_SearchDirUpTreeWithFile(); 
-*/
     test_Copy(); 
-
+*/
+    
     return 0  ; 
 }
 // om-;TEST=SPathTest om-t 

@@ -1,7 +1,12 @@
+#include <cstdlib>
 #include <iostream>
+
+#include "salloc.h"
 #include "OPTICKS_LOG.hh"
 #include "SEventConfig.hh"
 #include "SComp.h"
+
+const char* BASE = getenv("BASE"); 
 
 void test_Desc()
 {
@@ -9,6 +14,21 @@ void test_Desc()
     //SEventConfig::SetMaxPhoton(101); 
     std::cout << SEventConfig::Desc() << std::endl ; 
 }
+
+void test_EstimateAlloc()
+{
+    LOG(info); 
+    //SEventConfig::SetMaxPhoton(101); 
+    std::cout << SEventConfig::Desc() << std::endl ; 
+
+    salloc* al = salloc::Load(BASE) ; 
+    std::cout << "al.desc" << std::endl << al->desc() ; 
+}
+
+
+
+
+
 
 /**
 
@@ -95,14 +115,18 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    SEventConfig::Initialize(); 
+
     /*
+    test_Desc(); 
     test_OutPath(); 
     test_CompList(); 
-    test_Desc(); 
     test_CompMaskAuto(); 
     test_SetCompMaskAuto(); 
-    */
     test_SetDefault(); 
+    */
+
+    test_EstimateAlloc(); 
 
     return 0 ; 
 }

@@ -189,6 +189,17 @@ void SEventConfig::CompList( std::vector<unsigned>& comps )
 }  
 
 
+/**
+SEventConfig::Check
+----------------------
+
+Since moved to compound stag/sflat in stag.h 
+MaxTag/MaxFlat must now either be 0 or 1, nothing else.
+Had a bug previously with MaxTag/MaxFlat 24 that 
+caused huge memory allocations in debug event modes. 
+
+**/
+
 void SEventConfig::Check()
 {
    assert( _MaxBounce >  0 && _MaxBounce <  16 ) ; 
@@ -196,8 +207,9 @@ void SEventConfig::Check()
    assert( _MaxRec    >= 0 && _MaxRec    <= 16 ) ; 
    assert( _MaxSeq    >= 0 && _MaxSeq    <= 16 ) ; 
    assert( _MaxPrd    >= 0 && _MaxPrd    <= 16 ) ; 
-   assert( _MaxTag    >= 0 && _MaxTag    <= 24 ) ; 
-   assert( _MaxFlat    >= 0 && _MaxFlat    <= 24 ) ; 
+
+   assert( _MaxTag    >= 0 && _MaxTag    <= 1 ) ; 
+   assert( _MaxFlat   >= 0 && _MaxFlat   <= 1 ) ; 
 }
 
  
@@ -322,9 +334,9 @@ int SEventConfig::Initialize() // static
         SEventConfig::SetMaxSeq(maxbounce+1); 
         SEventConfig::SetMaxPrd(maxbounce+1); 
 
-        unsigned slots = 24 ;  // HMM: stag::SLOTS  
-        SEventConfig::SetMaxTag(slots);             // stag::NSEQ*(64/stag::BITS) = 2*12 = 24
-        SEventConfig::SetMaxFlat(slots);             // stag::NSEQ*(64/stag::BITS) = 2*12 = 24
+        // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else  
+        SEventConfig::SetMaxTag(1);   
+        SEventConfig::SetMaxFlat(1); 
         SetCompMaskAuto() ;   // comp set based on Max values   
     }
     else

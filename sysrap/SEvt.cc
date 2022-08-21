@@ -1193,10 +1193,12 @@ in the *stag* struct which with 5 bits per tag is room for 2*12 = 24 tags
 
 NP* SEvt::makeTag() const 
 {
+    assert( sizeof(stag) == sizeof(unsigned long long)*stag::NSEQ ); 
     return NP::Make<unsigned long long>( evt->num_photon, stag::NSEQ);   // 
 }
 NP* SEvt::makeFlat() const 
 {
+    assert( sizeof(sflat) == sizeof(float)*sflat::SLOTS ); 
     return NP::Make<float>( evt->num_photon, sflat::SLOTS );   // 
 }
 

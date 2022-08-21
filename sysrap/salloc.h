@@ -16,6 +16,7 @@ struct salloc
 {
     static constexpr const char* ALLOC = "salloc.npy" ; 
     static constexpr const char* RELDIR = "salloc" ; 
+
     std::vector<std::string> label ; 
     std::vector<glm::tvec4<uint64_t>> alloc ; 
     void add(const char* label, uint64_t size, uint64_t num_items, uint64_t sizeof_item, uint64_t spare); 
@@ -25,6 +26,7 @@ struct salloc
 
     void save(const char* base, const char* reldir=RELDIR); 
     void load(const char* base, const char* reldir=RELDIR);
+    static salloc* Load(const char* base, const char* reldir=RELDIR); 
 
     std::string desc() const ; 
 }; 
@@ -64,10 +66,18 @@ inline void salloc::load(const char* base, const char* reldir )
     memcpy( alloc.data(), a->bytes(), a->arr_bytes() ); 
     a->get_names(label); 
 }
+inline salloc* salloc::Load(const char* base, const char* reldir )
+{
+    salloc* a = new salloc ; 
+    a->load(base, reldir) ; 
+    return a ; 
+}
 
 inline std::string salloc::desc() const 
 {
     uint64_t tot = get_total() ; 
+    double tot_GB = double(tot)/1e9 ; 
+
     std::stringstream ss ; 
     ss << "salloc::desc"
        << " alloc.size " << alloc.size()
@@ -75,22 +85,64 @@ inline std::string salloc::desc() const
        << std::endl
        ;
 
+    const char* spacer = "     " ;  
+    ss 
+        << std::endl
+        << spacer
+        << "[" << std::setw(15) << "size"
+        << " " << std::setw(11) << "num_items"
+        << " " << std::setw(11) << "sizeof_item"
+        << " " << std::setw(11) << "spare"
+        << "]"
+        << " " << std::setw(10) << "size_GB"
+        << " " << std::setw(10) << "percent"  
+        << " " << "label"
+        << std::endl
+        << spacer
+        << "[" << std::setw(15) << "(bytes)"
+        << " " << std::setw(11) << ""
+        << " " << std::setw(11) << ""
+        << " " << std::setw(11) << ""
+        << "]"
+        << " " << std::setw(10) << "size/1e9"
+        << " " << std::setw(10) << ""  
+        << " " << ""
+        << std::endl
+        << std::endl
+        ;
+
     assert( alloc.size() == label.size() ); 
     for(unsigned i=0 ; i < alloc.size() ; i++ )
     {
-        const char* lab = label[i].c_str() ; 
         const glm::tvec4<uint64_t>& vec = alloc[i] ;   
+        const char* lab = label[i].c_str() ; 
+
+        double size = double(vec.x) ; 
+        double size_GB  = size/1e9 ; 
+        float size_percent = 100.*size/double(tot) ; 
+
         ss 
-            << "[" << std::setw(10) << vec.x 
-            << " " << std::setw(10) << vec.y
-            << " " << std::setw(10) << vec.z 
-            << " " << std::setw(10) << vec.w
+            << spacer
+            << "[" << std::setw(15) << vec.x
+            << " " << std::setw(11) << vec.y
+            << " " << std::setw(11) << vec.z 
+            << " " << std::setw(11) << vec.w
             << "]"
+            << " " << std::setw(10) << std::fixed << std::setprecision(2) << size_GB
+            << " " << std::setw(10) << std::fixed << std::setprecision(2) << size_percent
             << " " << lab 
             << std::endl 
             ; 
     }
-    ss << " tot " << std::setw(10) << tot << std::endl ;;
+    ss << std::endl ; 
+    ss << " tot  " << std::setw(15) << tot 
+       << " " << std::setw(11) << "" 
+       << " " << std::setw(11) << "" 
+       << " " << std::setw(11) << "" 
+       << " "
+       << " " << std::setw(10) << std::fixed << std::setprecision(2) << tot_GB
+       << std::endl 
+       ;
     std::string s = ss.str(); 
     return s ; 
 }

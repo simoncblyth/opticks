@@ -5,7 +5,9 @@ arg=${1:-$defarg}
 
 name=salloc_test 
 
-export BASE=/tmp/salloc_test
+#export BASE=/tmp/salloc_test
+export BASE=/tmp/blyth/opticks/J003/G4CXSimulateTest
+
 
 mkdir -p /tmp/$name
 

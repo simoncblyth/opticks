@@ -2,6 +2,7 @@
 
 #include "NP.hh"
 #include "PLOG.hh"
+#include "SPath.hh"
 
 #include "scuda.h"
 #include "squad.h"
@@ -10,6 +11,7 @@
 #include "sphoton.h"
 #include "sevent.h"
 #include "salloc.h"
+
 
 #include "QUDA_CHECK.h"
 #include "QU.hh"
@@ -189,15 +191,22 @@ template QUDARAP_API void  QU::device_free_and_alloc<quad4>(quad4** dd, unsigned
 
 void QU::_cudaMalloc( void** p2p, size_t size, const char* label )
 {
-    cudaError_t error = cudaMalloc(p2p, size ) ;  
-    if( error != cudaSuccess ) 
+    cudaError_t err = cudaMalloc(p2p, size ) ;  
+    if( err != cudaSuccess ) 
     {                         
         std::stringstream ss; 
         ss << "CUDA call (" << label << " ) failed with error: '"    
-           << cudaGetErrorString( error )                          
+           << cudaGetErrorString( err )                          
            << "' (" __FILE__ << ":" << __LINE__ << ")\n";  
 
-        if(alloc) ss << alloc->desc() ; 
+        if(alloc) 
+        {
+            ss << alloc->desc() ; 
+            const char* out = SPath::Resolve("$DefaultOutputDir", DIRPATH) ; 
+            LOG(error) << "save salloc record to " << out ; 
+            alloc->save(out) ; 
+        }
+
         throw QUDA_Exception( ss.str().c_str() );             
     }                                                        
 }

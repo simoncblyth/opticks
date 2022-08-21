@@ -54,6 +54,112 @@ TODO : gxs.sh gxt.sh gxr.sh running from saved geometry with relocated CSGFoundr
 
 
 
+Looks like flat allocation has lost touch with actual usage ? 
+
+Suspect the switch to compound stag.h/sflat not reflected by the allocation. 
+
+::
+
+    epsilon:tests blyth$ ./SEventConfigTest.sh 
+    2022-08-21 17:16:37.252 INFO  [34597489] [test_EstimateAlloc@20] 
+    SEventConfig::Desc
+            OPTICKS_EVENTMODE          EventMode  : StandardFullDebug
+          OPTICKS_MAX_GENSTEP         MaxGenstep  : 1000000
+           OPTICKS_MAX_PHOTON          MaxPhoton  : 1000000
+         OPTICKS_MAX_SIMTRACE        MaxSimtrace  : 1000000
+           OPTICKS_MAX_BOUNCE          MaxBounce  : 9
+           OPTICKS_MAX_RECORD          MaxRecord  : 10
+              OPTICKS_MAX_REC             MaxRec  : 10
+              OPTICKS_MAX_SEQ             MaxSeq  : 10
+              OPTICKS_MAX_PRD             MaxPrd  : 10
+              OPTICKS_MAX_TAG             MaxTag  : 24
+             OPTICKS_MAX_FLAT            MaxFlat  : 24
+             OPTICKS_HIT_MASK            HitMask  : 64
+                                    HitMaskLabel  : SD
+           OPTICKS_MAX_EXTENT          MaxExtent  : 1000
+             OPTICKS_MAX_TIME            MaxTime  : 10
+              OPTICKS_RG_MODE             RGMode  : 2
+                                     RGModeLabel  : simulate
+            OPTICKS_COMP_MASK           CompMask  : 12670
+                                   CompMaskLabel  : genstep,photon,record,rec,seq,prd,hit,tag,flat
+             OPTICKS_OUT_FOLD            OutFold  : $DefaultOutputDir
+             OPTICKS_OUT_NAME            OutName  : -
+    OPTICKS_PROPAGATE_EPSILON   PropagateEpsilon  :     0.0500
+         OPTICKS_INPUT_PHOTON        InputPhoton  : -
+
+    al.desc
+    salloc::desc alloc.size 11 label.size 11
+
+         [           size   num_items sizeof_item       spare]    size_GB    percent label
+
+         [            208           1         208           0]       0.00       0.00 QEvent::QEvent/sevent
+         [        8294400     2073600           4           0]       0.01       0.03 Frame::DeviceAllo:num_pixels
+         [       96000000     1000000          96           0]       0.10       0.39 device_alloc_genstep:quad6
+         [       12000000     3000000           4           0]       0.01       0.05 device_alloc_genstep:int seed
+         [      192000000     3000000          64           0]       0.19       0.77 max_photon
+         [     1920000000    30000000          64           0]       1.92       7.72 max_photon*max_record
+         [      480000000    30000000          16           0]       0.48       1.93 max_photon*max_rec
+         [      480000000    30000000          16           0]       0.48       1.93 max_photon*max_seq
+         [      960000000    30000000          32           0]       0.96       3.86 max_photon*max_prd
+         [     2304000000    72000000          32           0]       2.30       9.26 max_photon*max_tag
+         [    18432000000    72000000         256           0]      18.43      74.07 max_photon*max_flat
+
+     tot      24884294608                                           24.88
+    epsilon:tests blyth$ 
+
+
+
+
+    epsilon:tests blyth$ ./salloc_test.sh build_run
+    a.desc
+    salloc::desc alloc.size 11 label.size 11
+
+         [           size   num_items sizeof_item       spare]    size_GB    percent label
+
+         [            208           1         208           0]       0.00       0.00 QEvent::QEvent/sevent
+         [        8294400     2073600           4           0]       0.01       0.03 Frame::DeviceAllo:num_pixels
+         [       96000000     1000000          96           0]       0.10       0.39 device_alloc_genstep:quad6
+         [       12000000     3000000           4           0]       0.01       0.05 device_alloc_genstep:int seed
+         [      192000000     3000000          64           0]       0.19       0.77 max_photon
+         [     1920000000    30000000          64           0]       1.92       7.72 max_photon*max_record
+         [      480000000    30000000          16           0]       0.48       1.93 max_photon*max_rec
+         [      480000000    30000000          16           0]       0.48       1.93 max_photon*max_seq
+         [      960000000    30000000          32           0]       0.96       3.86 max_photon*max_prd
+         [     2304000000    72000000          32           0]       2.30       9.26 max_photon*max_tag
+         [    18432000000    72000000         256           0]      18.43      74.07 max_photon*max_flat
+
+     tot      24884294608                                           24.88
+    epsilon:tests blyth$ 
+    epsilon:tests blyth$ 
+
+
+
+::
+
+    429 NP* QEvent::gatherFlat() const
+    430 {
+    431     if(!hasFlat()) LOG(LEVEL) << " gatherFlat called when there is no such array, use SEventConfig::SetCompMask to avoid " ;
+    432     if(!hasFlat()) return nullptr ;
+    433 
+    434     NP* flat = sev->makeFlat();
+    435     LOG(LEVEL) << " evt.num_flat " << evt->num_flat << " flat.desc " << flat->desc() ;
+    436     QU::copy_device_to_host<sflat>( (sflat*)flat->bytes(), evt->flat, evt->num_flat );
+    437     return flat ;
+    438 }
+
+    1198 NP* SEvt::makeFlat() const
+    1199 {
+    1200     return NP::Make<float>( evt->num_photon, sflat::SLOTS );   // 
+    1201 }
+
+
+    202 struct sflat
+    203 {
+    204     static constexpr const unsigned SLOTS = stag::SLOTS ;
+    205     float flat[SLOTS] ;    // sizeof(sflat) = 4*64 = 256 bytes with SLOTS = 64 
+    206 };
+    207 
+
 
 
 DONE : ntds3 run with TMP=$HOME/.opticks for more permanent geometry base saved geom running test

@@ -129,6 +129,11 @@ const char* SPath::UserTmpDir(const char* pfx, const char* user_envvar, const ch
     return strdup(s.c_str()); 
 }
 
+const char* SPath::Resolve(int create_dirs)
+{
+    assert( create_dirs == NOOP || create_dirs == DIRPATH ); 
+    return SPath::Resolve("$DefaultOutputDir", create_dirs); 
+}
 
 /**
 SPath::Resolve

@@ -181,10 +181,10 @@ struct stag
     static constexpr const unsigned NSEQ = 4 ;   // NB MUST MATCH stag.py:NSEQ
     static constexpr const unsigned BITS = 4 ;   // (0x1 << 5)-1 = 31  : up to 32 enumerations in 5 bits per slot   
     static constexpr const unsigned long long MASK = ( 0x1ull << BITS ) - 1ull ;   
-    static constexpr const unsigned SLOTMAX = 64/BITS ;     // eg 64//5 = 12 so can fit 12 tags into each seqtag 64 bits
-    static constexpr const unsigned SLOTS = SLOTMAX*NSEQ ;  // eg 24 for BITS = 5 with NSEQ = 2 
+    static constexpr const unsigned SLOTMAX = 64/BITS ;     // eg 64//5 = 12 [64//4 = 16] so can fit 12[16] tags into each seqtag 64 bits
+    static constexpr const unsigned SLOTS = SLOTMAX*NSEQ ;  // eg 48[64] for BITS = 5[4] with NSEQ = 4 
 
-    unsigned long long seqtag[NSEQ] ;
+    unsigned long long seqtag[NSEQ] ;   //  64*4 = 256
  
     STAG_METHOD void zero(); 
     STAG_METHOD void set(unsigned slot, unsigned tag );
@@ -202,7 +202,7 @@ struct stag
 struct sflat
 {
     static constexpr const unsigned SLOTS = stag::SLOTS ; 
-    float flat[SLOTS] ; 
+    float flat[SLOTS] ;    // sizeof(sflat) = 4*64 = 256 bytes with SLOTS = 64 
 }; 
 
 
