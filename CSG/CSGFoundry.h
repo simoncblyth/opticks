@@ -293,11 +293,13 @@ struct CSG_API CSGFoundry : public SGeo
 
     void upload();
     bool isUploaded() const ; 
-    void inst_find_unique(); 
 
-    unsigned getNumUniqueIAS() const ;
+    void inst_find_unique(); 
     unsigned getNumUniqueGAS() const ;
+    unsigned getNumUniqueIAS() const ;
+    /*
     unsigned getNumUniqueINS() const ;
+    */
 
     unsigned getNumInstancesIAS(int ias_idx, unsigned long long emm) const ;
     void     getInstanceTransformsIAS(std::vector<qat4>& select_inst, int ias_idx, unsigned long long emm ) const ;
@@ -359,7 +361,6 @@ struct CSG_API CSGFoundry : public SGeo
     void addSolidLabel(const char* label); 
 
 
-
     std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 
@@ -376,12 +377,14 @@ struct CSG_API CSGFoundry : public SGeo
     float4*     d_plan ; 
     qat4*       d_itra ; 
 
-    std::vector<int> ins ; 
-    std::vector<int> gas ;
-
     // HMM: should these come from SSim/stree ? seem only used by CSGFoundry::inst_find_unique
+    /*
+    std::vector<int> ins ; 
     std::vector<int> sensor_identifier ; 
     std::vector<int> sensor_index ; 
+    */
+    std::vector<int> gas ;
+
 
     SName*    id ;   // holds the meshname vector of G4VSolid names 
 
@@ -406,7 +409,5 @@ struct CSG_API CSGFoundry : public SGeo
 
     const CSGFoundry* origin ; 
     const SBitSet*    elv ; 
-
 };
-
 

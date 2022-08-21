@@ -131,10 +131,11 @@ components gatherered from device buffers.
 
 void SEvt::init()
 {
+    LOG(LEVEL) << "[" ; 
     INSTANCE = this ; 
     evt->init(); 
     dbg->zero(); 
-    LOG(LEVEL) << evt->desc() ;
+    LOG(LEVEL) << evt->desc() ; // mostly zeros at this juncture
 
     SEventConfig::CompList(comp); 
 
@@ -142,6 +143,7 @@ void SEvt::init()
     LOG(LEVEL) << descComp() ; 
 
     initInputPhoton(); 
+    LOG(LEVEL) << "]" ; 
 }
 
 

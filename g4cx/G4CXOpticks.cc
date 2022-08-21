@@ -233,17 +233,22 @@ const bool G4CXOpticks::setGeometry_saveGeometry = SSys::getenvbool("G4CXOpticks
 
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
-    LOG(LEVEL) << " fd_ " << fd_ ; 
 #ifdef __APPLE__
     return ; 
 #endif
     fd = fd_ ; 
+    LOG(LEVEL) << "[ fd " << fd ; 
 
+    LOG(LEVEL) << " [ new SEvt " ; 
     SEvt* sev = new SEvt ; 
+    LOG(LEVEL) << " ] new SEvt " ; 
+    
     sev->setReldir("ALL"); 
     sev->setGeo((SGeo*)fd);   
 
+    LOG(LEVEL) << "[ CSGOptiX::Create " ;  
     cx = CSGOptiX::Create(fd);   // uploads geometry to GPU 
+    LOG(LEVEL) << "] CSGOptiX::Create " ;  
     qs = cx->sim ; 
     LOG(LEVEL)  << " cx " << cx << " qs " << qs << " QSim::Get " << QSim::Get() ; 
 
@@ -255,6 +260,7 @@ void G4CXOpticks::setGeometry(CSGFoundry* fd_)
         LOG(LEVEL) << "] G4CXOpticks__setGeometry_saveGeometry " ;  
     }
 
+    LOG(LEVEL) << "] fd " << fd ; 
 }
 
 
@@ -287,7 +293,7 @@ void G4CXOpticks::simulate()
      LOG(fatal) << " APPLE skip " ; 
      return ; 
 #endif
-
+    LOG(LEVEL) << "[" ; 
     LOG(LEVEL) << desc() ; 
     assert(cx); 
     assert(qs); 
@@ -341,6 +347,7 @@ void G4CXOpticks::simulate()
         LOG(LEVEL) << "] G4CXOpticks__simulate_saveEvent" << sev_index ; 
     }
 
+    LOG(LEVEL) << "]" ; 
 }
 
 void G4CXOpticks::simtrace()
@@ -349,6 +356,7 @@ void G4CXOpticks::simtrace()
      LOG(fatal) << " APPLE skip " ; 
      return ; 
 #endif
+    LOG(LEVEL) << "[" ; 
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimtrace() ); 
@@ -363,6 +371,7 @@ void G4CXOpticks::simtrace()
     // A: rendering viewpoint is based on the frame center, extent and transforms 
 
     qs->simtrace(); 
+    LOG(LEVEL) << "]" ; 
 }
 
 void G4CXOpticks::render()
@@ -371,9 +380,11 @@ void G4CXOpticks::render()
      LOG(fatal) << " APPLE skip " ; 
      return ; 
 #endif
+    LOG(LEVEL) << "[" ; 
     assert( cx ); 
     assert( SEventConfig::IsRGModeRender() ); 
     cx->render_snap() ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 void G4CXOpticks::saveEvent() const 
@@ -382,6 +393,7 @@ void G4CXOpticks::saveEvent() const
      LOG(fatal) << " APPLE skip " ; 
      return ; 
 #endif
+    LOG(LEVEL) << "[" ; 
     SEvt* sev = SEvt::Get(); 
     if(sev == nullptr) return ; 
     sev->save(); 
@@ -392,14 +404,14 @@ void G4CXOpticks::saveEvent() const
         LOG(LEVEL) << sev->descLocalPhoton() ; 
         LOG(LEVEL) << sev->descFramePhoton() ; 
     }
+    LOG(LEVEL) << "]" ; 
 }
 
 void G4CXOpticks::saveGeometry() const
 {
-    //const char* def = SGeo::DefaultDir();   // was giving null : due to static const depending on static const 
-    const char* def = SEventConfig::OutFold() ; 
-    std::cout << "G4CXOpticks::saveGeometry def [" << ( def ? def : "-" ) << std::endl ; 
-    saveGeometry(def) ; 
+    const char* dir = SEventConfig::OutFold() ;  // SGeo::DefaultDir() was giving null : due to static const depending on static const
+    LOG(LEVEL)  << "dir [" << ( dir ? dir : "-" )  ; 
+    saveGeometry(dir) ; 
 }
 void G4CXOpticks::saveGeometry(const char* base, const char* rel) const
 {
@@ -409,17 +421,12 @@ void G4CXOpticks::saveGeometry(const char* base, const char* rel) const
 void G4CXOpticks::saveGeometry_(const char* dir_) const
 {
     const char* dir = SPath::Resolve(dir_, DIRPATH); 
-    std::cout << "[ G4CXOpticks::saveGeometry_ " << ( dir ? dir : "-" ) << std::endl ; 
-
-    // stree persisting is now moved to SSim which in turn is managed by CSGFoundry
-    //const stree* st = tr ? tr->st : nullptr ;  // U4Tree holds stree but owner is now SSim
-    //if(st) st->save(dir) ;    // TODO: st now belongs to SSim which gets saved with fd 
+    LOG(LEVEL) << "[ " << ( dir ? dir : "-" ) ; 
 
     if(fd) fd->save(dir) ; 
     if(gg) gg->save_to_dir(dir) ; 
     if(wd) U4GDML::Write(wd, dir, "origin.gdml" );
 
-    std::cout << "] G4CXOpticks::saveGeometry_ " << ( dir ? dir : "-" ) << std::endl ; 
+    LOG(LEVEL) << "] " << ( dir ? dir : "-" ) ; 
 }
-
 

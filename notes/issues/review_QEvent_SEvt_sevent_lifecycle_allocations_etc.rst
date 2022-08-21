@@ -162,6 +162,30 @@ Suspect the switch to compound stag.h/sflat not reflected by the allocation.
 
 
 
+
+CSGFoundry::inst_find_unique taking lots of time (21s) for little benefit
+------------------------------------------------------------------------------
+
+Avoid finding unique ins_index, sensor_identifier, sensor_index as those
+are not used.  Shaving 21s::
+
+    2022-08-22 03:03:32.535 INFO  [378584] [CSGFoundry::upload@2615] [ inst_find_unique 
+    2022-08-22 03:03:32.539 INFO  [378584] [CSGFoundry::upload@2617] ] inst_find_unique 
+
+
+::
+
+    2022-08-22 02:29:24.822 INFO  [364740] [CSGOptiX::InitGeo@168] [
+    2022-08-22 02:29:24.822 INFO  [364740] [CSGFoundry::upload@2610] [ inst_find_unique 
+    2022-08-22 02:29:45.208 INFO  [364740] [CSGFoundry::upload@2612] ] inst_find_unique 
+    2022-08-22 02:29:45.209 INFO  [364740] [CSGFoundry::upload@2613] CSGFoundry  num_total 10 num_solid 10 num_prim 3248 num_node 23518 num_plan 0 num_tran 8159 num_itra 8159 num_inst 48477 ins 48477 gas 10 sensor_identifier 45613 sensor_index 45613 meshname 139 mmlabel 10 mtime 1661012280 mtimestamp 20220821_001800 sim Y
+    2022-08-22 02:29:45.209 INFO  [364740] [CSGFoundry::upload@2622] [ CU::UploadArray 
+    2022-08-22 02:29:45.219 INFO  [364740] [CSGFoundry::upload@2627] ] CU::UploadArray 
+    2022-08-22 02:29:45.219 INFO  [364740] [CSGFoundry::upload@2638] ]
+    2022-08-22 02:29:45.219 INFO  [364740] [CSGOptiX::InitGeo@170] ]
+
+
+
 DONE : ntds3 run with TMP=$HOME/.opticks for more permanent geometry base saved geom running test
 -----------------------------------------------------------------------------------------------------------
 

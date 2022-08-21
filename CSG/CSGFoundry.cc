@@ -152,10 +152,12 @@ std::string CSGFoundry::desc() const
        << " num_tran " << tran.size()
        << " num_itra " << itra.size()
        << " num_inst " << inst.size()
-       << " ins " << ins.size()
        << " gas " << gas.size()
+       /*
+       << " ins " << ins.size()
        << " sensor_identifier " << sensor_identifier.size()
        << " sensor_index " << sensor_index.size()
+       */
        << " meshname " << meshname.size()
        << " mmlabel " << mmlabel.size()
        << " mtime " << mtime
@@ -406,10 +408,12 @@ int CSGFoundry::Compare( const CSGFoundry* a, const CSGFoundry* b )
     mismatch += CompareVec( "tran" , a->tran , b->tran ); 
     mismatch += CompareVec( "itra" , a->itra , b->itra ); 
     mismatch += CompareVec( "inst" , a->inst , b->inst ); 
-    mismatch += CompareVec( "ins"  , a->ins , b->ins ); 
     mismatch += CompareVec( "gas"  , a->gas , b->gas ); 
+    /* 
+    mismatch += CompareVec( "ins"  , a->ins , b->ins ); 
     mismatch += CompareVec( "sensor_identifier"  , a->sensor_identifier , b->sensor_identifier ); 
     mismatch += CompareVec( "sensor_index"       , a->sensor_index      , b->sensor_index ); 
+    */
     if( mismatch != 0 ) LOG(fatal) << " mismatch FAIL ";  
     //assert( mismatch == 0 ); 
 
@@ -2601,13 +2605,19 @@ Notice that the solid, inst and tran are not uploaded, as they are not needed on
 The reason is that the solid feeds into the GAS, the inst into the IAS and the tran 
 are not needed because the inverse transforms are all that is needed.
 
+This currently taking 20s for full JUNO, where total runtime for one event is 24s. 
 
 **/
 
 void CSGFoundry::upload()
-{
+{ 
+    
+    LOG(LEVEL) << "[ inst_find_unique " ; 
     inst_find_unique(); 
-    LOG(LEVEL) << "[ " << desc() ; 
+    LOG(LEVEL) << "] inst_find_unique " ; 
+
+    LOG(LEVEL) << desc() ; 
+
     assert( tran.size() == itra.size() ); 
 
     bool is_uploaded_0 = isUploaded(); 
@@ -2615,12 +2625,12 @@ void CSGFoundry::upload()
     assert(is_uploaded_0 == false); 
 
     // allocates and copies
+    LOG(LEVEL) << "[ CU::UploadArray "  ; 
     d_prim = prim.size() > 0 ? CU::UploadArray<CSGPrim>(prim.data(), prim.size() ) : nullptr ; 
     d_node = node.size() > 0 ? CU::UploadArray<CSGNode>(node.data(), node.size() ) : nullptr ; 
     d_plan = plan.size() > 0 ? CU::UploadArray<float4>(plan.data(), plan.size() ) : nullptr ; 
     d_itra = itra.size() > 0 ? CU::UploadArray<qat4>(itra.data(), itra.size() ) : nullptr ; 
-
-    LOG(LEVEL) << "]"  ; 
+    LOG(LEVEL) << "] CU::UploadArray "  ; 
 
     bool is_uploaded_1 = isUploaded(); 
     if(!is_uploaded_1) LOG(fatal) << "FAILED TO UPLOAD" ; 
@@ -2631,6 +2641,7 @@ void CSGFoundry::upload()
 
     const char* cfb = getCFBase(); 
     SGeo::SetLastUploadCFBase(cfb) ; 
+    LOG(LEVEL) << "]" ; 
 }
 
 bool CSGFoundry::isUploaded() const
@@ -2639,23 +2650,28 @@ bool CSGFoundry::isUploaded() const
 }
 
 
+
 void CSGFoundry::inst_find_unique()
 {
-    qat4::find_unique( inst, ins, gas, sensor_identifier, sensor_index ); 
+    qat4::find_unique_gas( inst, gas ); 
+    //qat4::find_unique( inst, ins, gas, sensor_identifier, sensor_index ); 
 }
 
-unsigned CSGFoundry::getNumUniqueIAS() const
-{
-    return 1 ; 
-}
 unsigned CSGFoundry::getNumUniqueGAS() const
 {
     return gas.size(); 
 }
+unsigned CSGFoundry::getNumUniqueIAS() const
+{
+    return 1 ; 
+}
+
+/*
 unsigned CSGFoundry::getNumUniqueINS() const
 {
     return ins.size(); 
 }
+*/
 
 
 

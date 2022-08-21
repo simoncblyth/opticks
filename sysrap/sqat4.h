@@ -352,7 +352,7 @@ struct qat4
               std::vector<int>& gas, 
               std::vector<int>& s_ident, 
               std::vector<int>& s_index )
-       {
+    {
          for(unsigned i=0 ; i < qv.size() ; i++)
          {
              const qat4& q = qv[i] ; 
@@ -366,6 +366,18 @@ struct qat4
 
          }
     } 
+
+    static QAT4_METHOD void find_unique_gas(const std::vector<qat4>& qv, std::vector<int>& gas )
+    {
+         for(unsigned i=0 ; i < qv.size() ; i++)
+         {
+             const qat4& q = qv[i] ; 
+             int ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
+             q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );  
+             if(std::find(gas.begin(), gas.end(), gas_idx) == gas.end() ) gas.push_back(gas_idx); 
+         }
+    } 
+
 
     // count the number of instances with the provided ias_idx, that are among the emm if that is non-zero 
     static QAT4_METHOD unsigned count_ias( const std::vector<qat4>& qv , int /*ias_idx*/, unsigned long long emm)

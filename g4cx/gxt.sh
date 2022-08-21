@@ -89,16 +89,17 @@ fi
 loglevels()
 {
     export Dummy=INFO
-    export SGeoConfig=INFO
-    export SEvt=INFO
-    export Ctx=INFO
-    #export QSim=INFO
+    #export SGeoConfig=INFO
+    #export SEvt=INFO
+    #export Ctx=INFO
+    export QSim=INFO
     #export QEvent=INFO 
+    export SEventConfig=INFO
     export CSGOptiX=INFO
     export G4CXOpticks=INFO 
-    export GInstancer=INFO
-    export X4PhysicalVolume=INFO
-    export U4VolumeMaker=INFO
+    #export GInstancer=INFO
+    #export X4PhysicalVolume=INFO
+    #export U4VolumeMaker=INFO
 }
 loglevels
 

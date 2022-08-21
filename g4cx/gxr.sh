@@ -44,6 +44,7 @@ loglevels()
     #export Ctx=INFO
     #export QSim=INFO
     #export QEvent=INFO 
+    export SEventConfig=INFO
     export CSGOptiX=INFO
     export G4CXOpticks=INFO 
     #export X4PhysicalVolume=INFO

@@ -33,9 +33,8 @@ int main(int argc, char** argv)
     G4CXOpticks gx ;  
     gx.setGeometry(); 
     gx.simulate(); 
-
     cudaDeviceSynchronize(); 
     gx.saveEvent();    // $DefaultOutputDir   /tmp/$USER/opticks/$GEOM/SProc::ExecutableName  then ALL from setRelDir
- 
+
     return 0 ; 
 }

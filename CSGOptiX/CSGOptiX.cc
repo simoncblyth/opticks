@@ -160,16 +160,21 @@ CSGOptiX::InitGeo
 -------------------
 
 CSGFoundry not const as upload sets device pointers
+CSGOptiX::InitGeo currently takes 20s for full JUNO geometry, 
+where the total gxs.sh running time for one event is 24s. 
 
 **/
 
 void CSGOptiX::InitGeo(  CSGFoundry* fd )
 {
+    LOG(LEVEL) << "[" ; ; 
     fd->upload(); 
+    LOG(LEVEL) << "]" ; ; 
 }
 
 void CSGOptiX::InitSim( const SSim* ssim  )
 {
+    LOG(LEVEL) << "[" ; ; 
     if(SEventConfig::IsRGModeRender()) return ; 
 
     if(ssim == nullptr) LOG(fatal) << "simulate/simtrace modes require SSim/QSim setup" ;
@@ -178,7 +183,7 @@ void CSGOptiX::InitSim( const SSim* ssim  )
     QSim::UploadComponents(ssim);  
 
     QSim* qs = QSim::Create() ; 
-    LOG(LEVEL) << qs->desc() ; 
+    LOG(LEVEL) << "]" << qs->desc() ; 
 }
 
 
@@ -190,7 +195,7 @@ CSGOptiX::Create
 
 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )   
 {
-    LOG(LEVEL) << "fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
+    LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
 
     QU::alloc = new salloc ;   // HMM: maybe this belongs better in QSim ? 
 
@@ -208,6 +213,7 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
         event->setMeta( fd->meta.c_str() );
     } 
 
+    LOG(LEVEL) << "]" ; 
     return cx ; 
 }
 
