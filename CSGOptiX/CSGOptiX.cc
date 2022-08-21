@@ -57,6 +57,8 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "scuda.h"
 #include "squad.h"
 #include "sframe.h"
+#include "salloc.h"
+
 
 #ifdef WITH_SGLM
 #else
@@ -81,6 +83,7 @@ LONGTERM: see if can pull out the essentials into a smaller class
 #include "CSGView.h"
 
 // qudarap
+#include "QU.hh"
 #include "QSim.hh"
 #include "qsim.h"
 #include "QEvent.hh"
@@ -188,6 +191,8 @@ CSGOptiX::Create
 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )   
 {
     LOG(LEVEL) << "fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
+
+    QU::alloc = new salloc ;   // HMM: maybe this belongs better in QSim ? 
 
     InitSim(fd->sim); 
     InitGeo(fd); 

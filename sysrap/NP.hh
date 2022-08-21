@@ -3263,6 +3263,8 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate)  // stat
 
 inline NP* NP::Load(const char* path)
 {
+    if(VERBOSE) std::cerr << "[ NP::Load " << path << std::endl ; 
+
     bool npy_ext = U::EndsWith(path, EXT) ; 
     NP* a = nullptr ; 
     if(npy_ext)
@@ -3271,17 +3273,18 @@ inline NP* NP::Load(const char* path)
     }  
     else
     {
-        std::vector<std::string> names ;
-        U::DirList(names, path, EXT);
+        std::vector<std::string> nms ;
+        U::DirList(nms, path, EXT);
         std::cout
             << "NP::Load"
             << " path " << path
-            << " contains names.size " << names.size()
+            << " U::DirList contains nms.size " << nms.size()
             << " EXT " << EXT
             << std::endl
             ;
-        a = NP::Concatenate(path, names);
+        a = NP::Concatenate(path, nms);
     }
+    if(VERBOSE) std::cerr << "] NP::Load " << path << std::endl ; 
     return a ;
 }
 
@@ -3367,6 +3370,8 @@ newline from the stream without returning it.
 
 inline int NP::load(const char* path)
 {
+    if(VERBOSE) std::cerr << "[ NP::load " << path << std::endl ; 
+
     lpath = path ;  // loadpath 
     lfold = U::DirName(path); 
 
@@ -3387,6 +3392,7 @@ inline int NP::load(const char* path)
     load_meta( path ); 
     load_names( path ); 
 
+    if(VERBOSE) std::cerr << "] NP::load " << path << std::endl ; 
     return 0 ; 
 }
 

@@ -31,6 +31,30 @@ TODO : try opticksMode 1
 TODO : gxs.sh gxt.sh gxr.sh running from saved geometry with relocated CSGFoundry/SSim/stree
 ------------------------------------------------------------------------------------------------
 
+::
+
+   export SEventConfig=INFO QU=INFO
+
+
+
+::
+
+    2022-08-21 04:12:43.408 INFO  [303833] [QU::device_alloc@194]  num_items    3000000 size   12000000 label device_alloc_genstep:int seed
+    2022-08-21 04:12:43.408 INFO  [303833] [SEvt::setNumPhoton@576]  num_photon 1000
+    2022-08-21 04:12:43.409 INFO  [303833] [SEvt::setNumPhoton@589]  evt->num_photon 1000 evt->num_tag 1000 evt->num_flat 1000
+    2022-08-21 04:12:43.409 INFO  [303833] [QU::device_alloc_zero@229]  num_items    3000000 size  192000000 label      max_photon
+    2022-08-21 04:12:43.409 INFO  [303833] [QU::device_alloc_zero@229]  num_items   30000000 size 1920000000 label max_photon*max_record
+    2022-08-21 04:12:43.411 INFO  [303833] [QU::device_alloc_zero@229]  num_items   30000000 size  480000000 label max_photon*max_rec
+    2022-08-21 04:12:43.412 INFO  [303833] [QU::device_alloc_zero@229]  num_items   30000000 size  480000000 label max_photon*max_seq
+    2022-08-21 04:12:43.413 INFO  [303833] [QU::device_alloc_zero@229]  num_items   30000000 size  960000000 label max_photon*max_prd
+    2022-08-21 04:12:43.414 INFO  [303833] [QU::device_alloc_zero@229]  num_items   72000000 size 2304000000 label max_photon*max_tag
+    2022-08-21 04:12:43.417 INFO  [303833] [QU::device_alloc_zero@229]  num_items   72000000 size 18432000000 label max_photon*max_flat
+    terminate called after throwing an instance of 'QUDA_Exception'
+      what():  CUDA call (cudaMalloc(reinterpret_cast<void**>( &d ), size ) ) failed with error: 'out of memory' (/data/blyth/junotop/opticks/qudarap/QU.cc:236)
+
+
+
+
 
 DONE : ntds3 run with TMP=$HOME/.opticks for more permanent geometry base saved geom running test
 -----------------------------------------------------------------------------------------------------------

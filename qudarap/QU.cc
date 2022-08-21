@@ -9,6 +9,7 @@
 #include "sseq.h"
 #include "sphoton.h"
 #include "sevent.h"
+#include "salloc.h"
 
 #include "QUDA_CHECK.h"
 #include "QU.hh"
@@ -24,9 +25,8 @@
 
 #include "qmultifilm.h"
 
-
 const plog::Severity QU::LEVEL = PLOG::EnvLevel("QU", "DEBUG") ; 
-
+salloc* QU::alloc = nullptr ;   // used to monitor allocations, instanciated in CSGOptiX::Create
 
 template <typename T> 
 char QU::typecode()
@@ -186,6 +186,23 @@ template QUDARAP_API void  QU::device_free_and_alloc<quad4>(quad4** dd, unsigned
 
 
 
+
+void QU::_cudaMalloc( void** p2p, size_t size, const char* label )
+{
+    cudaError_t error = cudaMalloc(p2p, size ) ;  
+    if( error != cudaSuccess ) 
+    {                         
+        std::stringstream ss; 
+        ss << "CUDA call (" << label << " ) failed with error: '"    
+           << cudaGetErrorString( error )                          
+           << "' (" __FILE__ << ":" << __LINE__ << ")\n";  
+
+        if(alloc) ss << alloc->desc() ; 
+        throw QUDA_Exception( ss.str().c_str() );             
+    }                                                        
+}
+
+
 template<typename T>
 T* QU::device_alloc( unsigned num_items, const char* label )
 {
@@ -197,8 +214,11 @@ T* QU::device_alloc( unsigned num_items, const char* label )
         << " label " << std::setw(15) << label 
         ; 
 
+    if(alloc) alloc->add( label, size, num_items, sizeof(T), 0 ) ; 
+
     T* d ;  
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
+   // QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
+    _cudaMalloc( reinterpret_cast<void**>( &d ), size, label ); 
 
     return d ; 
 }
@@ -232,8 +252,11 @@ T* QU::device_alloc_zero(unsigned num_items, const char* label)
         << " label " << std::setw(15) << label 
         ; 
 
+    if(alloc) alloc->add( label, size, num_items, sizeof(T), 0 ) ; 
+
     T* d ;  
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
+    //QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
+    _cudaMalloc( reinterpret_cast<void**>( &d ), size, label ); 
 
     int value = 0 ; 
     QUDA_CHECK( cudaMemset(d, value, size )); 

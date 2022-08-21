@@ -235,6 +235,7 @@ set(HEADERS
     sevent.h
     sstate.h 
     sctx.h
+    salloc.h
 
     SGenerate.h
     

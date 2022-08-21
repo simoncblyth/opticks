@@ -194,6 +194,7 @@ struct SYSRAP_API SEventConfig
 
 
     static int Initialize(); 
+    static uint64_t EstimateAlloc(); 
 
 }; 
  

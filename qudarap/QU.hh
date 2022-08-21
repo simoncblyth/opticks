@@ -5,10 +5,12 @@
 
 struct NP ; 
 struct dim3 ; 
+struct salloc ; 
 
 struct QUDARAP_API QU
 {
     static const plog::Severity LEVEL ; 
+    static salloc* alloc ; 
 
     template <typename T>
     static char typecode() ; 
@@ -27,6 +29,11 @@ struct QUDARAP_API QU
 
     template <typename T>
     static void Download(std::vector<T>& vec, const T* d_array, unsigned num_items) ;    
+
+
+
+    static void _cudaMalloc( void** p2p, size_t size, const char* label ); 
+
 
     template <typename T>
     static T*   device_alloc( unsigned num_items, const char* label ) ; 

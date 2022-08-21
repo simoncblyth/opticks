@@ -10,6 +10,7 @@
 #include "SRG.h"
 #include "SComp.h"
 #include "OpticksPhoton.hh"
+#include "salloc.h"
 
 #include "PLOG.hh"
 
@@ -337,4 +338,12 @@ int SEventConfig::Initialize() // static
     return 0 ; 
 }
 
+
+uint64_t SEventConfig::EstimateAlloc()
+{
+    salloc* estimate = new salloc ; 
+    uint64_t tot = estimate->get_total() ; 
+    delete estimate ; 
+    return tot ; 
+}
 
