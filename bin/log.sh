@@ -13,6 +13,7 @@ EOU
 
 log=/tmp/G4CXSimtraceTest.log
 export LOG=${LOG:-$log}
-${IPYTHON:-ipython} --pdb -i $(dirname $BASH_SOURCE)/log.py  
+
+${IPYTHON:-ipython} --pdb  $(dirname $BASH_SOURCE)/log.py  
 
 

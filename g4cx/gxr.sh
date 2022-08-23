@@ -48,7 +48,6 @@ case $(uname) in
 esac
 
 arg=${1:-$defarg}
-echo $msg arg $arg defarg $defarg
 
 bin=G4CXRenderTest
 log=$bin.log

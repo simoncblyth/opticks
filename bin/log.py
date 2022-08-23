@@ -36,7 +36,7 @@ from datetime import datetime
 
 class Line(object):
     FMT = '%Y-%m-%d %H:%M:%S.%f'
-    LFMT = "%26s : %15s : %15s :%s"
+    LFMT = "%26s : %16s : %16s :%s"
 
     @classmethod
     def Parse(cls, stmp):
@@ -49,7 +49,7 @@ class Line(object):
 
     @classmethod
     def FVal(cls, dt, pc_dt ):
-        return " %14s" % "" if (dt < 0 or pc_dt < 0) else " %10.4f[%2.0f]" % (dt, pc_dt) 
+        return " %15s" % "" if (dt < 0 or pc_dt < 0) else " %10.4f[%3.0f]" % (dt, pc_dt) 
 
     @classmethod
     def Format(cls, t, dts, pc_dts,  dfs, pc_dfs,  msg):
@@ -57,8 +57,8 @@ class Line(object):
         return cls.LFMT % ( stmp, cls.FVal(dts, pc_dts), cls.FVal(dfs, pc_dfs), msg )
   
     @classmethod
-    def Hdr(cls):
-        return cls.LFMT % ( "timestamp", "DTS-prev", "DFS-frst", "msg" )
+    def Hdr(cls, headline):
+        return cls.LFMT % ( "timestamp", "DTS-prev", "DFS-frst", headline )
 
     def __init__(self, line):
         t = self.Parse( line[:23] )
@@ -69,6 +69,8 @@ class Line(object):
         self.first = None
         self.total = 0.
         self.line = line 
+        self.is_first = False
+        self.is_last = False
 
     def update(self):
         t = self.t
@@ -107,15 +109,31 @@ class Log(object):
             pass
             lines.append(l)
         pass
+        self.path = path 
         self.raw = raw 
         self.lines = lines
         self.pc_cut = 0 
 
         for l in self.lines:
             l.total = self.total_seconds()
-            l.update()  
+            l.update()
         pass 
 
+        num_lines = len(self.lines) 
+        for i in range(num_lines):
+            l = self.lines[i]
+            if not l.t is None and l.is_first == False:
+                l.is_first = True 
+                break
+            pass
+        pass
+        for i in range(num_lines):
+            l = self.lines[num_lines - 1 - i]
+            if not l.t is None and l.is_last == False:
+                l.is_last = True 
+                break
+            pass
+        pass
 
     def time(self, reverse=False):
         lines = self.lines
@@ -140,30 +158,26 @@ class Log(object):
         dts = 0 if (t0 is None or t1 is None) else (t1 - t0).total_seconds() 
         return dts
 
-    def smry(self):    
-        return "\n".join([
-                          Line.Format(None,         -1,-1, -1,-1,  path      ), 
-                          Line.Format(self.start(), -1,-1, -1,-1,  "start"   ), 
-                          Line.Format(self.end(),   -1,-1, -1,-1,  "end"     ), 
-                          Line.Format(None,         -1,-1, self.total_seconds(), 100, "total seconds" ),
-                          Line.Format(None,         -1,-1, self.pc_cut, 100, "pc_cut" )
-                         ])
-
-
     def __getitem__(self, pc_cut):
         self.pc_cut = pc_cut
         return self 
 
-    def __repr__(self):    
-        return "\n".join( [Line.Hdr(), str(self), "","",self.smry()] )     
+    def __repr__(self):   
+        headline = "path:%s pc_cut:%s " % ( self.path, self.pc_cut )
+        return "\n".join( [Line.Hdr(headline), str(self) ] )     
+
     def __str__(self):    
+        return "\n".join(map(repr,filter(self.select,self.lines)))
+
+    def select(self, l):
         pc_cut = self.pc_cut
-        if pc_cut > 0:
-             select_ = lambda l:l.pc_dts is None or l.pc_dts > pc_cut 
+        if pc_cut == 0:
+            ret = True
         else:
-             select_ = lambda l:True 
+            ret = l.pc_dts is None or l.pc_dts > pc_cut or l.is_first or l.is_last
         pass
-        return "\n".join(map(repr,filter(select_,self.lines)))
+        return ret
+        
 
 
 def test_time():
@@ -176,5 +190,6 @@ def test_time():
 if __name__ == '__main__':
     path = os.environ["LOG"]
     log = Log(path)
-    print(repr(log))
+    print("repr(log[2])")
+    print(repr(log[2]))
 
