@@ -28,6 +28,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    LOG(info) << "[ cu first " ; 
+    cudaDeviceSynchronize(); 
+    LOG(info) << "] cu first " ; 
+
     SEventConfig::SetStandardFullDebug(); // controls which and dimensions of SEvt arrays 
 
     G4CXOpticks gx ;  

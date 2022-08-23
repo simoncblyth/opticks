@@ -63,7 +63,6 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     Opticks*          ok ;  
     Composition*      composition ; 
 #endif
-    //sframe            fr ;   // TODO: rehome to SEvt, can use pointer elsewhere
     SGLM*             sglm ; 
 
     const char*       moi ; 
@@ -104,25 +103,35 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     const char* desc() const ; 
 
 private:
+#ifdef WITH_SGLM
+    static Params* InitParams( int raygenmode, const SGLM* sglm  ) ; 
+#else
+    static Params* InitParams( int raygenmode, const Opticks* ok  ); 
+#endif
     static void InitGeo(  CSGFoundry* fd ); 
     static void InitSim( const SSim* ssim ); 
+
 public:
     static CSGOptiX* Create(CSGFoundry* foundry ); 
 
     CSGOptiX(const CSGFoundry* foundry ); 
 
+private:
     void init(); 
+    void initCtx(); 
+    void initPIP(); 
+    void initSBT(); 
+    void initFrame();
     void initCheckSim(); 
     void initStack(); 
     void initParams();
     void initGeometry();
     void initRender();
     void initSimulate();
-
-    static const char* Top() ; 
  private: 
     void setTop(const char* tspec); 
  public: 
+    static const char* Top() ; 
 
     void setFrame(); 
     void setFrame(const char* moi);

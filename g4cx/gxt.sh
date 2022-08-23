@@ -31,6 +31,37 @@ A. gx ; ./gxs.sh
 B. u4 ; ./u4s.sh 
 T. gx ; ./gxt.sh 
 
+
+analog timings : showing log lines taking more than 2 percent of total time
+-------------------------------------------------------------------------------
+
+::
+
+    In [1]: log[2]
+    Out[1]: 
+                     timestamp :        DTS-prev :        DFS-frst :msg
+    2022-08-23 23:46:16.288000 :      0.3370[34] :      0.3370[34] : INFO  [57430] [main@20] ] cu first 
+    2022-08-23 23:46:16.504000 :      0.1780[18] :      0.5530[56] : INFO  [57430] [QSim::UploadComponents@111] ] new QRng 
+    2022-08-23 23:46:16.613000 :      0.0800[ 8] :      0.6620[67] : INFO  [57430] [CSGOptiX::initCtx@322] ]
+    2022-08-23 23:46:16.640000 :      0.0270[ 3] :      0.6890[69] : INFO  [57430] [CSGOptiX::initPIP@333] ]
+    2022-08-23 23:46:16.740000 :      0.0360[ 4] :      0.7890[80] : INFO  [57430] [CSGFoundry::getFrame@2880]  fr sframe::desc inst 0 frs -1
+    2022-08-23 23:46:16.910000 :      0.1140[11] :      0.9590[97] : INFO  [57430] [SEvt::gather@1378]  k        simtrace a  <f4(627000, 4, 4, )
+    2022-08-23 23:46:16.942000 :      0.0320[ 3] :      0.9910[100] : INFO  [57430] [SEvt::save@1505] ] fold.save 
+
+
+                             - :                 :                 :G4CXSimtraceTest.log
+    2022-08-23 23:46:15.951000 :                 :                 :start
+    2022-08-23 23:46:16.943000 :                 :                 :end
+                             - :                 :      0.9920[100] :total seconds
+                             - :                 :      2.0000[100] :pc_cut
+
+::
+
+    CUDA_VISIBLE_DEVICES=0,1 ./gxt.sh       ## appears to give same timings as default 
+    CUDA_VISIBLE_DEVICES=0 ./gxt.sh         ## slightly reduced CUDA latency from 0.31s down to 0.25s
+    CUDA_VISIBLE_DEVICES=1 ./gxt.sh         ## slightly reduced CUDA latency from 0.31s down to 0.23s
+
+
 EOU
 }
 
@@ -48,6 +79,7 @@ case $arg in
 esac
 
 bin=G4CXSimtraceTest
+log=$bin.log
 gxtdir=$(dirname $BASH_SOURCE)
 source $gxtdir/../bin/COMMON.sh 
 
@@ -90,13 +122,18 @@ loglevels()
 {
     export Dummy=INFO
     #export SGeoConfig=INFO
-    #export SEvt=INFO
+    export SEventConfig=INFO
+    export SEvt=INFO          # lots of AddGenstep output, messing with timings
     #export Ctx=INFO
     export QSim=INFO
+    export QBase=INFO
+    export SSim=INFO
+    export SBT=INFO
+    export IAS_Builder=INFO
     #export QEvent=INFO 
-    export SEventConfig=INFO
     export CSGOptiX=INFO
     export G4CXOpticks=INFO 
+    export CSGFoundry=INFO
     #export GInstancer=INFO
     #export X4PhysicalVolume=INFO
     #export U4VolumeMaker=INFO
@@ -107,9 +144,24 @@ loglevels
 
 
 if [ "${arg/run}" != "$arg" ]; then 
-    echo $msg run $bin
+    echo $msg run $bin log $log 
+    if [ -f "$log" ]; then 
+       rm $log 
+    fi 
+
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run $bin error && exit 1 
+fi 
+
+if [ "grablog" == "$arg" ]; then
+    scp P:opticks/g4cx/$log .
+fi 
+
+if [ "analog" == "$arg" ]; then 
+    echo $msg analog log $log 
+    if [ -f "$log" ]; then 
+        LOG=$log $gxtdir/../bin/log.sh 
+    fi 
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
@@ -120,7 +172,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg $bin error && exit 2 
 fi
 
-if [ "${arg/ana}" != "$arg" ]; then 
+if [ "ana" == "$arg" ]; then 
     export FOLD
     export CFBASE=$T_CFBASE    ## T_CFBASE would seem better otherwise assumes have rerun A with same geom at T (and B)
     export MASK=${MASK:-pos}
@@ -129,9 +181,11 @@ if [ "${arg/ana}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE ana $bin error && exit 3 
 fi 
 
-if [ "${arg/grab}" != "$arg" ]; then 
+if [ "grab" == "$arg" ]; then 
     source $gxtdir/../bin/rsync.sh $UBASE 
 fi 
+
+
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$FOLD/figs

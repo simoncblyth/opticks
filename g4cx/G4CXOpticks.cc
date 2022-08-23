@@ -147,8 +147,18 @@ void G4CXOpticks::setGeometry()
     }
     else if(SOpticksResource::CFBaseFromGEOM())
     {
-        LOG(LEVEL) << " CFBASEFromGEOM " ; 
-        setGeometry(CSGFoundry::Load()); 
+        LOG(LEVEL) << "[ CFBASEFromGEOM " ; 
+        LOG(LEVEL) << "[ CSGFoundry::Load " ; 
+
+        CSGFoundry* cf = CSGFoundry::Load() ;
+
+        LOG(LEVEL) << "] CSGFoundry::Load " ; 
+        LOG(LEVEL) << "[ setGeometry(cf)  " ; 
+
+        setGeometry(cf); 
+
+        LOG(LEVEL) << "] setGeometry(cf)  " ; 
+        LOG(LEVEL) << "] CFBASEFromGEOM " ; 
     }
     else if(SSys::hasenvvar("GEOM"))
     {
@@ -396,14 +406,19 @@ void G4CXOpticks::saveEvent() const
     LOG(LEVEL) << "[" ; 
     SEvt* sev = SEvt::Get(); 
     if(sev == nullptr) return ; 
-    sev->save(); 
 
+    LOG(LEVEL) << "[ sev.save " ; 
+    sev->save(); 
+    LOG(LEVEL) << "] sev.save " ; 
+
+    /*
     if( LEVEL == info && SEventConfig::IsRGModeSimulate() )
     { 
         LOG(LEVEL) << sev->descPhoton() ; 
         LOG(LEVEL) << sev->descLocalPhoton() ; 
         LOG(LEVEL) << sev->descFramePhoton() ; 
     }
+    */
     LOG(LEVEL) << "]" ; 
 }
 

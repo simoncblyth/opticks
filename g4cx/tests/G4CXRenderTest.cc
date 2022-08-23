@@ -10,6 +10,7 @@ HMM: no SEvt, saving the frame and render files could be managed by SEvt too to 
 the same in all RGNode
 
 **/
+#include <cuda_runtime.h>
 #include "SEventConfig.hh"
 #include "OPTICKS_LOG.hh"
 #include "G4CXOpticks.hh"
@@ -17,6 +18,10 @@ the same in all RGNode
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+
+    LOG(info) << "[ cu first " ; 
+    cudaDeviceSynchronize(); 
+    LOG(info) << "] cu first " ; 
 
     SEventConfig::SetRGModeRender();  
 

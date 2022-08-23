@@ -1195,6 +1195,21 @@ template void stree::ImportArray<glm::tmat4x4<double>, double>(std::vector<glm::
 template void stree::ImportArray<glm::tmat4x4<float>, float>(std::vector<glm::tmat4x4<float>>& , const NP* ); 
 template void stree::ImportArray<sfactor, int>(std::vector<sfactor>& , const NP* ); 
 
+/**
+stree::load_
+---------------
+
+This is taking 0.46s for full JUNO : which is excessive as 
+not yet being used.
+
+TODO: work out how the time is split and consider pruning, 
+not everything here needs to be persisted eg 
+
+gtd
+inst_f4
+iinst_f4 
+
+**/
 
 inline void stree::load_( const char* fold )
 {

@@ -8,6 +8,7 @@
 
 #include "PLOG.hh"
 #include "SStr.hh"
+#include "SSys.hh"
 #include "SOpticksResource.hh"
 
 #include "SPath.hh"
@@ -160,11 +161,34 @@ void SSim::save(const char* base, const char* reldir) const
     tree->save(dir, stree::RELDIR); 
 }
 
+
+
+/**
+SSim::load
+------------
+
+tree.load taking 0.467s which is excessive as not yet in use
+
+**/
+
+const bool SSim::load_tree_load = SSys::getenvbool("SSim__load_tree_load") ;
 void SSim::load(const char* base, const char* reldir)
 { 
+    LOG(LEVEL) << "[" ; 
     const char* dir = SPath::Resolve(base, reldir, NOOP) ;  
+
+    LOG(LEVEL) << "[ fold.load " ; 
     fold->load(dir) ;   
-    tree->load(dir, stree::RELDIR); 
+    LOG(LEVEL) << "] fold.load " ; 
+
+    if(load_tree_load)
+    {
+        LOG(LEVEL) << "[ tree.load " ; 
+        tree->load(dir, stree::RELDIR); 
+        LOG(LEVEL) << "] tree.load " ; 
+    }
+
+    LOG(LEVEL) << "]" ; 
 }
 
 

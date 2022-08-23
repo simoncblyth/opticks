@@ -1,6 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <map>
 #include <optix.h>
 #include <optix_stubs.h>
 
@@ -36,39 +37,85 @@ Canonically invoked during CSGOptiX instanciation, from stack::
 
 **/
 
-
 const plog::Severity IAS_Builder::LEVEL = PLOG::EnvLevel("IAS_Builder", "DEBUG"); 
 
-void IAS_Builder::Build(IAS& ias, const std::vector<qat4>& ias_inst, const SBT* sbt) // static 
+
+/**
+IAS_Builder::CollectInstances
+-------------------------------
+
+Collecting OptixInstance was taking 0.42s for 48477 inst, 
+as SBT::getOffset was being called for every instance. Instead 
+of doing this caching the result in the gasIdx_sbtOffset brings
+the time down to zero. 
+
+HMM: Could make better use of instanceId, eg with bitpack gas_idx, ias_idx ?
+
+**/
+
+
+void IAS_Builder::CollectInstances(std::vector<OptixInstance>& instances, const std::vector<qat4>& ias_inst, const SBT* sbt ) // static 
 {
     unsigned num_ias_inst = ias_inst.size() ; 
-    LOG(LEVEL) << "num_ias_inst " << num_ias_inst ; 
-    assert( num_ias_inst > 0); 
-
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
- 
-    std::vector<OptixInstance> instances ;  
+    unsigned prim_idx = 0u ;  // need sbt offset for the outer prim(aka layer) of the GAS 
+
+    std::map<unsigned, unsigned> gasIdx_sbtOffset ;  
+
     for(unsigned i=0 ; i < num_ias_inst ; i++)
     {
         const qat4& q = ias_inst[i] ;   
-        int ins_idx,  gas_idx, sensor_identifier, sensor_index ; 
-        q.getIdentity(ins_idx, gas_idx, sensor_identifier, sensor_index );
-        unsigned prim_idx = 0u ;  // need offset for the outer prim(aka layer) of the GAS 
-
-        const GAS& gas = sbt->getGAS(gas_idx); 
+        int ins_idx,  gasIdx, sensor_identifier, sensor_index ; 
+        q.getIdentity(ins_idx, gasIdx, sensor_identifier, sensor_index );
+        const GAS& gas = sbt->getGAS(gasIdx); 
+        
+        bool found = gasIdx_sbtOffset.count(gasIdx) == 1 ; 
+        unsigned sbtOffset = found ? gasIdx_sbtOffset.at(gasIdx) : sbt->getOffset(gasIdx, prim_idx ) ;
+        if(!found) 
+        {
+            gasIdx_sbtOffset[gasIdx] = sbtOffset ; 
+            LOG(LEVEL)
+                << " i " << std::setw(7) << i 
+                << " gasIdx " << std::setw(3) << gasIdx 
+                << " sbtOffset " << std::setw(6) << sbtOffset 
+                << " gasIdx_sbtOffset.size " << std::setw(3) << gasIdx_sbtOffset.size()
+                ;
+        }
 
         OptixInstance instance = {} ; 
         q.copy_columns_3x4( instance.transform ); 
-
-        instance.instanceId = ins_idx ;  // perhaps bitpack gas_idx, ias_idx ?
-        instance.sbtOffset = sbt->getOffset(gas_idx, prim_idx );            
+        instance.instanceId = ins_idx ;  
+        instance.sbtOffset = sbtOffset ;            
         instance.visibilityMask = 255;
         instance.flags = flags ;
         instance.traversableHandle = gas.handle ; 
     
         instances.push_back(instance); 
     }
+}
+
+/**
+IAS_Builder::Build
+----------------------
+
+
+**/
+
+void IAS_Builder::Build(IAS& ias, const std::vector<qat4>& ias_inst, const SBT* sbt) // static 
+{
+    unsigned num_ias_inst = ias_inst.size() ; 
+    LOG(LEVEL) << "num_ias_inst " << num_ias_inst ; 
+    assert( num_ias_inst > 0); 
+ 
+    std::vector<OptixInstance> instances ;  
+
+    LOG(LEVEL) << "[ collect OptixInstance " ;  
+    CollectInstances( instances, ias_inst, sbt ); 
+    LOG(LEVEL) << "] collect OptixInstance " ;  
+
+    LOG(LEVEL) << "[ build ias " ;  
     Build(ias, instances); 
+    LOG(LEVEL) << "] build ias " ;  
 }
 
 /**

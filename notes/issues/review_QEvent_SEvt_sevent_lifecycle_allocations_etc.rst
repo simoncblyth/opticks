@@ -28,6 +28,61 @@ TODO : try opticksMode 1
     junotoptask:PMTSimParamSvc.finalize  INFO: PMTSimParamSvc is finalizing!
 
 
+
+DONE : gxt.sh grablog analog iteration : plucking low hanging fruit : full JUNO total runtime now under 1s 
+-------------------------------------------------------------------------------------------------------------------
+
+::
+
+    epsilon:~ blyth$ gx
+    /Users/blyth/opticks/g4cx
+    epsilon:g4cx blyth$ ./gxt.sh grablog 
+    epsilon:g4cx blyth$ ./gxt.sh analog
+
+Log lines with delta time more than 2% of total time::
+
+    In [2]: log[2]
+    Out[2]: 
+                     timestamp :        DTS-prev :        DFS-frst :msg
+    2022-08-23 22:20:40.570000 :      0.3100[31] :      0.3320[34] : INFO  [53026] [QBase::init@53] ] QU::UploadArray 
+    2022-08-23 22:20:40.749000 :      0.1790[18] :      0.5110[52] : INFO  [53026] [QSim::UploadComponents@111] ] new QRng 
+    2022-08-23 22:20:40.878000 :      0.1010[10] :      0.6400[65] : INFO  [53026] [CSGOptiX::initCtx@322] ]
+    2022-08-23 22:20:40.912000 :      0.0340[ 3] :      0.6740[68] : INFO  [53026] [CSGOptiX::initPIP@333] ]
+    2022-08-23 22:20:41.015000 :      0.0350[ 4] :      0.7770[79] : INFO  [53026] [CSGFoundry::getFrame@2880]  fr sframe::desc inst 0 frs -1
+    2022-08-23 22:20:41.189000 :      0.1140[12] :      0.9510[97] : INFO  [53026] [SEvt::gather@1378]  k        simtrace a  <f4(627000, 4, 4, )
+    2022-08-23 22:20:41.222000 :      0.0320[ 3] :      0.9840[100] : INFO  [53026] [SEvt::save@1505] ] fold.save 
+
+
+                             - :                 :                 :G4CXSimtraceTest.log
+    2022-08-23 22:20:40.238000 :                 :                 :start
+    2022-08-23 22:20:41.223000 :                 :                 :end
+                             - :                 :      0.9850[100] :total seconds
+                             - :                 :      2.0000[100] :pc_cut
+
+
+Using CUDA_VISIBLE_DEVICES=0 or 1 reduces that a little::
+
+    In [1]: log[2]
+    Out[1]: 
+                     timestamp :        DTS-prev :        DFS-frst :msg
+    2022-08-23 22:30:41.646000 :      0.2690[29] :      0.2970[32] : INFO  [53509] [QBase::init@53] ] QU::UploadArray 
+    2022-08-23 22:30:41.834000 :      0.1880[20] :      0.4850[53] : INFO  [53509] [QSim::UploadComponents@111] ] new QRng 
+    2022-08-23 22:30:41.938000 :      0.0780[ 8] :      0.5890[64] : INFO  [53509] [CSGOptiX::initCtx@322] ]
+    2022-08-23 22:30:41.964000 :      0.0260[ 3] :      0.6150[67] : INFO  [53509] [CSGOptiX::initPIP@333] ]
+    2022-08-23 22:30:42.063000 :      0.0340[ 4] :      0.7140[78] : INFO  [53509] [CSGFoundry::getFrame@2880]  fr sframe::desc inst 0 frs -1
+    2022-08-23 22:30:42.237000 :      0.1150[12] :      0.8880[96] : INFO  [53509] [SEvt::gather@1378]  k        simtrace a  <f4(627000, 4, 4, )
+    2022-08-23 22:30:42.269000 :      0.0320[ 3] :      0.9200[100] : INFO  [53509] [SEvt::save@1505] ] fold.save 
+
+
+                             - :                 :                 :G4CXSimtraceTest.log
+    2022-08-23 22:30:41.349000 :                 :                 :start
+    2022-08-23 22:30:42.270000 :                 :                 :end
+                             - :                 :      0.9210[100] :total seconds
+                             - :                 :      2.0000[100] :pc_cut
+
+
+
+
 TODO : gxs.sh gxt.sh gxr.sh running from saved geometry with relocated CSGFoundry/SSim/stree
 ------------------------------------------------------------------------------------------------
 

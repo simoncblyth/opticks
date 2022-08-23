@@ -217,6 +217,25 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     return cx ; 
 }
 
+
+#ifdef WITH_SGLM
+Params* CSGOptiX::InitParams( int raygenmode, const SGLM* sglm  ) // static
+{
+    LOG(LEVEL) << "[" ; 
+    return new Params(raygenmode, sglm->Width(), sglm->Height(), 1 ) ; 
+    LOG(LEVEL) << "]" ; 
+}
+#else
+Params* CSGOptiX::InitParams( int raygenmode, const Opticks* ok  ) // static
+{
+    LOG(LEVEL) << "[" ; 
+    return new Params(raygenmode, ok->getWidth(), ok->getHeight(), ok->getDepth() ) ; 
+    LOG(LEVEL) << "]" ; 
+}
+#endif
+
+
+
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
     :
 #ifdef WITH_SGLM
@@ -240,19 +259,19 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     tmin_model(SSys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation 
     raygenmode(SEventConfig::RGMode()),
 #ifdef WITH_SGLM
-    params(new Params(raygenmode, sglm->Width(), sglm->Height(), 1 )),
+    params(InitParams(raygenmode,sglm)),
 #else
-    params(new Params(raygenmode, ok->getWidth(), ok->getHeight(), ok->getDepth() )),
+    params(InitParams(raygenmode,ok)),
 #endif
 
 #if OPTIX_VERSION < 70000
     six(new Six(ptxpath, geoptxpath, params)),
     frame(new Frame(params->width, params->height, params->depth, six->d_pixel, six->d_isect, six->d_photon)), 
 #else
-    ctx(new Ctx),
-    pip(new PIP(ptxpath)), 
-    sbt(new SBT(pip)),
-    frame(new Frame(params->width, params->height, params->depth)), 
+    ctx(nullptr),
+    pip(nullptr), 
+    sbt(nullptr),
+    frame(nullptr), 
 #endif
     meta(new SMeta),
     dt(0.),
@@ -272,17 +291,16 @@ void CSGOptiX::init()
         << " event " << event 
         ;  
 
-#if OPTIX_VERSION < 70000
-#else
-    LOG(LEVEL) << " ctx.desc " << ctx->desc() ; 
-#endif
-
     assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     assert( outdir && "expecting OUTDIR envvar " );
 
     LOG(LEVEL) << " ptxpath " << ptxpath  ; 
     LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ; 
 
+    initCtx();
+    initPIP();
+    initSBT();
+    initFrame(); 
     initCheckSim(); 
     initStack(); 
     initParams(); 
@@ -292,6 +310,46 @@ void CSGOptiX::init()
 
     LOG(LEVEL) << "]" ; 
 }
+
+
+void CSGOptiX::initCtx()
+{
+    LOG(LEVEL) << "[" ; 
+#if OPTIX_VERSION < 70000
+#else
+    ctx = new Ctx ; 
+    LOG(LEVEL) << " ctx.desc " << ctx->desc() ; 
+#endif
+    LOG(LEVEL) << "]" ; 
+}
+
+void CSGOptiX::initPIP()
+{
+    LOG(LEVEL) << "[" ; 
+#if OPTIX_VERSION < 70000
+#else
+    pip = new PIP(ptxpath) ;  
+#endif
+    LOG(LEVEL) << "]" ; 
+}
+
+void CSGOptiX::initSBT()
+{
+    LOG(LEVEL) << "[" ; 
+#if OPTIX_VERSION < 70000
+#else
+    sbt = new SBT(pip) ; 
+#endif
+    LOG(LEVEL) << "]" ; 
+}
+
+void CSGOptiX::initFrame()
+{
+    LOG(LEVEL) << "[" ; 
+    frame = new Frame(params->width, params->height, params->depth) ; 
+    LOG(LEVEL) << "]" ; 
+}
+
 
 
 
@@ -324,6 +382,7 @@ void CSGOptiX::initParams()
 }
 void CSGOptiX::initGeometry()
 {
+    LOG(LEVEL) << "[" ; 
     params->node = foundry->d_node ; 
     params->plan = foundry->d_plan ; 
     params->tran = nullptr ; 
@@ -336,11 +395,13 @@ void CSGOptiX::initGeometry()
 #if OPTIX_VERSION < 70000
     six->setFoundry(foundry);
 #else
+    LOG(LEVEL) << "[ sbt.setFoundry " ; 
     sbt->setFoundry(foundry); 
+    LOG(LEVEL) << "] sbt.setFoundry " ; 
 #endif
-
     const char* top = Top(); 
     setTop(top); 
+    LOG(LEVEL) << "]" ; 
 }
 
 /**
@@ -853,9 +914,17 @@ void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_
     LOG(LEVEL) << " path_ [" << path_ << "]" ; 
     LOG(LEVEL) << " topline " << topline  ; 
 
+    LOG(LEVEL) << "[ frame.download " ; 
     frame->download(); 
+    LOG(LEVEL) << "] frame.download " ; 
+
+    LOG(LEVEL) << "[ frame.annotate " ; 
     frame->annotate( bottom_line, topline, line_height ); 
+    LOG(LEVEL) << "] frame.annotate " ; 
+
+    LOG(LEVEL) << "[ frame.snap " ; 
     frame->snap( path  );  
+    LOG(LEVEL) << "] frame.snap " ; 
 
     if(!flight || SStr::Contains(path,"00000"))
     {
@@ -890,6 +959,7 @@ int CSGOptiX::render_flightpath() // for making mp4 movies
 void CSGOptiX::saveMeta(const char* jpg_path) const
 {
     const char* json_path = SStr::ReplaceEnd(jpg_path, ".jpg", ".json"); 
+    LOG(LEVEL) << "[ json_path " << json_path  ; 
 
     nlohmann::json& js = meta->js ;
     js["jpg"] = jpg_path ; 
@@ -919,7 +989,7 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     }
 
     meta->save(json_path);
-    LOG(LEVEL) << json_path ; 
+    LOG(LEVEL) << "] json_path " << json_path  ; 
 }
 
 

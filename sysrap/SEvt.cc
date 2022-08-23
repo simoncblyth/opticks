@@ -1423,13 +1423,13 @@ with the A side.
 void SEvt::save() 
 {
     const char* dir = SGeo::DefaultDir(); 
-    LOG(LEVEL) << "DefaultDir " << dir ; 
+    LOG(LEVEL) << "SGeo::DefaultDir " << dir ; 
     save(dir); 
 }
 void SEvt::load()
 {
     const char* dir = SGeo::DefaultDir(); 
-    LOG(LEVEL) << "DefaultDir " << dir ; 
+    LOG(LEVEL) << "SGeo::DefaultDir " << dir ; 
     load(dir); 
 }
 
@@ -1491,14 +1491,18 @@ HMM: what about a save following a gather ? does the download happen twice ?
 void SEvt::save(const char* dir_) 
 {
     const char* dir = getOutputDir(dir_); 
-    LOG(LEVEL) << " dir " << dir ; 
+    LOG(info) << " dir " << dir ; 
 
+    LOG(LEVEL) << "[ gather " ; 
     gather(); 
-
+    LOG(LEVEL) << "] gather " ; 
+    
     LOG(LEVEL) << descComponent() ; 
     LOG(LEVEL) << descFold() ; 
 
+    LOG(LEVEL) << "[ fold.save " ; 
     fold->save(dir); 
+    LOG(LEVEL) << "] fold.save " ; 
 
     saveLabels(dir); 
     saveFrame(dir); 
@@ -1521,28 +1525,28 @@ SEvt::saveLabels : hostside running only
 
 **/
 
-void SEvt::saveLabels(const char* dir_) const 
+void SEvt::saveLabels(const char* dir) const 
 {
-    const char* dir = SPath::Resolve(dir_, DIRPATH );  
-    LOG(LEVEL) << dir ; 
+    LOG(LEVEL) << "[ dir " << dir ; 
 
     NP* a0 = gatherPho0();  
-    LOG(LEVEL) << " a0 " << ( a0 ? a0->sstr() : "-" ) ; 
     if(a0) a0->save(dir, "pho0.npy"); 
 
     NP* a = gatherPho();  
-    LOG(LEVEL) << " a " << ( a ? a->sstr() : "-" ) ; 
     if(a) a->save(dir, "pho.npy"); 
 
     NP* g = gatherGS(); 
-    LOG(LEVEL) << " g " << ( g ? g->sstr() : "-" ) ; 
     if(g) g->save(dir, "gs.npy"); 
+
+    LOG(LEVEL) << "] dir " << dir ; 
 }
 
 
-void SEvt::saveFrame(const char* dir_) const 
+void SEvt::saveFrame(const char* dir) const 
 {
-    frame.save(dir_); 
+    LOG(LEVEL) << "[ dir " << dir ; 
+    frame.save(dir); 
+    LOG(LEVEL) << "] dir " << dir ; 
 }
 
 std::string SEvt::descComp() const 

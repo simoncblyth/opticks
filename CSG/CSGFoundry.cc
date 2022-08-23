@@ -2233,8 +2233,8 @@ void CSGFoundry::load( const char* dir_ )
         return ; 
     } 
 
-    LOG(LEVEL) << dir ; 
     loaddir = strdup(dir) ; 
+    LOG(LEVEL) << "[ loaddir " << loaddir ; 
 
     NP::ReadNames( dir, "meshname.txt", meshname );  
     NP::ReadNames( dir, "mmlabel.txt", mmlabel );  
@@ -2258,8 +2258,12 @@ void CSGFoundry::load( const char* dir_ )
     loadArray( plan  , dir, "plan.npy" , true );  
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
+    LOG(LEVEL) << "[ SSim::Load " ;  
     sim = NP::Exists(dir, "SSim") ? SSim::Load(dir, SSim::RELDIR ) : nullptr ; 
+    LOG(LEVEL) << "] SSim::Load " ;  
     mtime = MTime(dir, "solid.npy"); 
+
+    LOG(LEVEL) << "] loaddir " << loaddir ; 
 }
 
 
@@ -2412,13 +2416,15 @@ and do detailed analysis of the results. In this situation it is vital to have a
 CSGFoundry geometry folder that is read by multiple executables including rendering and 
 python analysis machinery. 
 
+This is taking 0.48s for full JUNO, thats 27% of single event gxt.sh runtime  
+
 **/
 
 bool CSGFoundry::Load_saveAlt = SSys::getenvbool("CSGFoundry_Load_saveAlt") ; 
 
 CSGFoundry* CSGFoundry::Load() // static
 {
-    LOG(LEVEL) << " argumentless " ; 
+    LOG(LEVEL) << "[ argumentless " ; 
     CSGFoundry* src = CSGFoundry::Load_() ; 
     if(src == nullptr) return nullptr ; 
 
@@ -2433,15 +2439,13 @@ CSGFoundry* CSGFoundry::Load() // static
         dst->saveAlt() ; 
     }
 
-
-   
-
-
+    LOG(LEVEL) << "] argumentless " ; 
     return dst ; 
 }
 
 CSGFoundry* CSGFoundry::CopySelect(const CSGFoundry* src, const SBitSet* elv )
 {
+    LOG(LEVEL) << "[" ; 
     assert(elv);
     LOG(info) << elv->desc() << std::endl << src->descELV(elv) ; 
     CSGFoundry* dst = CSGCopy::Select(src, elv ); 
@@ -2450,6 +2454,7 @@ CSGFoundry* CSGFoundry::CopySelect(const CSGFoundry* src, const SBitSet* elv )
     dst->setOverrideSim(src->sim);   
     // pass the SSim pointer from the loaded src instance, 
     // overriding the empty dst SSim instance 
+    LOG(LEVEL) << "]" ; 
     return dst ; 
 }
 
@@ -2525,8 +2530,6 @@ CSGFoundry*  CSGFoundry::LoadGeom(const char* geom) // static
 
 CSGFoundry*  CSGFoundry::Load(const char* base, const char* rel) // static
 {
-
-
     CSGFoundry* fd = new CSGFoundry();  
     fd->load(base, rel); 
     return fd ; 

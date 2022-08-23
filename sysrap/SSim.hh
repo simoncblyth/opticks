@@ -80,6 +80,7 @@ struct SYSRAP_API SSim
 
     void save(const char* base, const char* reldir=RELDIR) const ; 
     void load(const char* base, const char* reldir=RELDIR) ; 
+    static const bool load_tree_load ;   
 
     std::string desc() const ; 
     std::string descOptical() const ; 

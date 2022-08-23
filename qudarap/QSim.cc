@@ -51,11 +51,35 @@ QSim* QSim::Create(){
 
 
 
+
+
+
+
 /**
 QSim::UploadComponents
 -----------------------
 
-This is invoked for example by CSGOptiX/tests/CSGOptiXSimtraceTest.cc 
+As the QBase instanciation done by QSim::UploadComponents 
+is typically the first connection to the GPU device 
+by an Opticks process it is prone to CUDA latency of 
+order 1.5s per GPU if nvidia-persistenced is not running.
+Start the daemon to avoid this latency following: 
+
+* https://docs.nvidia.com/deploy/driver-persistence/index.html
+
+Essentially::
+
+    N[blyth@localhost ~]$ sudo su
+    N[root@localhost blyth]$ mkdir -p /var/run/nvidia-persistenced
+    N[root@localhost blyth]$ chown blyth:blyth /var/run/nvidia-persistenced
+    N[root@localhost blyth]$ which nvidia-persistenced
+    /bin/nvidia-persistenced
+    N[root@localhost blyth]$ nvidia-persistenced --user blyth
+    N[root@localhost blyth]$ ls /var/run/nvidia-persistenced/
+    nvidia-persistenced.pid  socket
+
+
+QSim::UploadComponents is invoked for example by CSGOptiX/tests/CSGOptiXSimtraceTest.cc 
 prior to instanciating CSGOptiX 
 
 Uploading components is a once only action for a geometry, encompassing:
@@ -77,10 +101,15 @@ void QSim::UploadComponents( const SSim* ssim  )
 {
     LOG(LEVEL) << "[ ssim " << ssim ; 
 
+    LOG(LEVEL) << "[ new QBase" ;
     QBase* base = new QBase ; 
+    LOG(LEVEL) << "] new QBase : latency here of about 0.3s from first device access, if latency of >1s need to start nvidia-persistenced " ; 
     LOG(LEVEL) << base->desc(); 
 
+    LOG(LEVEL) << "[ new QRng " ;
     QRng* rng = new QRng ;  // loads and uploads curandState 
+    LOG(LEVEL) << "] new QRng " ;
+
     LOG(LEVEL) << rng->desc(); 
 
     const NP* optical = ssim->get(SSim::OPTICAL); 
@@ -146,6 +175,9 @@ void QSim::UploadComponents( const SSim* ssim  )
     }
     LOG(LEVEL) << "] ssim " << ssim ; 
 }
+
+
+
 
 
 /**

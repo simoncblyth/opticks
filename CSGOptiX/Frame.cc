@@ -148,16 +148,28 @@ void Frame::writeFPhoton( const char* dir, const char* name) const
 
 void Frame::snap( const char* path )
 {
-    writeJPG( path ); 
-    const char* fold = SPath::Dirname(path); 
+    LOG(LEVEL) << "[" ; 
 
+    LOG(LEVEL) << "[ writeJPG " ; 
+    writeJPG( path ); 
+    LOG(LEVEL) << "] writeJPG " ; 
+
+
+    LOG(LEVEL) << "[ writeIntersectData " ; 
+    const char* fold = SPath::Dirname(path); 
     float* isd = getIntersectData() ;
     if(isd) NP::Write(fold, "isect.npy", isd, height, width, 4 );
+    LOG(LEVEL) << "] writeIntersectData " ; 
+
 
 #ifdef WITH_FRAME_PHOTON
+    LOG(LEVEL) << "[ writeFPhoton " ; 
     float* fpd = getFPhotonData() ;  
     if(fpd) NP::Write(fold, "fphoton.npy", fpd, height, width, 4, 4 );
+    LOG(LEVEL) << "] writeFPhoton " ; 
 #endif
+
+    LOG(LEVEL) << "]" ; 
 }
 
 

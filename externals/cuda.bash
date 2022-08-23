@@ -36,6 +36,138 @@ See Also
 * env-;cudatex-
 
 
+
+
+CUDA Startup Latency with nvidia-persistenced is about 0.25-0.3s : how to reduce ?
+--------------------------------------------------------------------------------------
+
+njuffa August 17, 2020, 5:48am #3
+Make sure you have the persistence daemon turned on: https://docs.nvidia.com/deploy/driver-persistence/index.html
+
+Beyond that, CUDA startup includes building a unified virtual address map that
+incorporates all GPU memory and all system memory. The larger the system memory
+and the more GPUs in the system, the longer this takes, with almost all of that
+time spent in single-threaded operating system calls. A high-frequency CPU will
+help (I recommend > 3.5 GHz base frequency), and high-throughput system memory
+may help.
+
+
+* https://forums.developer.nvidia.com/t/very-long-latency-2-6s-2-6s-when-running-cuda-opencl-code-on-threadripper-linux-server/147119
+
+Its possible that the latency will be less after driver updates. 
+
+
+
+CUDA Startup Latency 1.5s : HOW TO AVOID ?
+---------------------------------------------
+
+* https://docs.nvidia.com/deploy/driver-persistence/index.html
+
+The NVIDIA kernel mode driver must be running and connected to a target GPU
+device before any user interactions with that device can take place. The driver
+behavior differs depending on the OS. Generally, if the kernel mode driver is
+not already running or connected to a target GPU, the invocation of any program
+that attempts to interact with that GPU will transparently cause the driver to
+load and/or initialize the GPU. When all GPU clients terminate the driver will
+then deinitialize the GPU. Driver load behavior is important for end users in
+two ways:
+
+Application start latency
+
+Applications that trigger GPU initilization may incur a short (order of 1-3
+second) startup cost per GPU due to ECC scrubbing behavior. If the GPU is
+already initialized this scrubbing does not take place.
+
+Preservation of driver state
+
+If the driver deinitializes a GPU some non-persistent state associated with
+that GPU will be lost and revert back to defaults the next time the GPU is
+initialized. See Data Persistence. To avoid this the GPU should be kept
+initialized.
+
+Under Linux systems where X runs by default on the target GPU the kernel mode
+driver will generally be initalized and kept alive from machine startup to
+shutdown, courtesy of the X process. On headless systems or situations where no
+long-lived X-like client maintains a handle to the target GPU, the kernel mode
+driver will initilize and deinitialize the target GPU each time a target GPU
+application starts and stops. In HPC environments this situation is quite
+common. Since it is often desireable to keep the GPU initialized in these
+cases, NVIDIA provides two options for changing driver behavior: Persistence
+Mode (Legacy) and the Persistence Daemon.
+
+
+nvidia-persistenced --help
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+  -u USERNAME, --user=USERNAME
+      Runs nvidia-persistenced with the user permissions of the user specified
+      by the USERNAME argument. This user must have write access to the
+      /var/run/nvidia-persistenced directory. If this directory does not exist,
+      nvidia-persistenced will attempt to create it prior to changing the process
+      user and group IDs. If this option is not given, nvidia-persistenced will not
+      attempt to change the process user ID.
+
+config and start the nvidia persistence daemon
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    N[blyth@localhost ~]$ sudo su
+    N[root@localhost blyth]$ mkdir -p /var/run/nvidia-persistenced
+    N[root@localhost blyth]$ chown blyth:blyth /var/run/nvidia-persistenced
+    N[root@localhost blyth]$ which nvidia-persistenced
+    /bin/nvidia-persistenced
+    N[root@localhost blyth]$ nvidia-persistenced --user blyth
+    N[root@localhost blyth]$ ls /var/run/nvidia-persistenced/
+    nvidia-persistenced.pid  socket
+    N[root@localhost blyth]$ 
+
+The above is the manual approach, so it will not survive a reboot.
+
+TODO: get system service to make this more permanent 
+
+::
+
+    N[blyth@localhost g4cx]$ sudo systemctl status nvidia-persistenced
+    [sudo] password for blyth: 
+    Unit nvidia-persistenced.service could not be found.
+    N[blyth@localhost g4cx]$ 
+
+
+
+
+check persistence mode with nvidia-smi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Succeeds to switch on Persistence-M::
+
+    N[blyth@localhost ~]$ nvidia-smi
+    Tue Aug 23 17:13:49 2022       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 435.21       Driver Version: 435.21       CUDA Version: 10.1     |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  TITAN RTX           On   | 00000000:73:00.0 Off |                  N/A |
+    | 41%   47C    P8    23W / 280W |      0MiB / 24219MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   1  TITAN V             On   | 00000000:A6:00.0 Off |                  N/A |
+    | 34%   49C    P8    N/A /  N/A |      0MiB / 12066MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                                   
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID   Type   Process name                             Usage      |
+    |=============================================================================|
+    |  No running processes found                                                 |
+    +-----------------------------------------------------------------------------+
+
+
+
+
 CUDA CMake
 -----------
 

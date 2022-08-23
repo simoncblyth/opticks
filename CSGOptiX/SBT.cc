@@ -66,11 +66,12 @@ SBT::SBT(const PIP* pip_)
 
 void SBT::init()
 {
-    LOG(LEVEL); 
+    LOG(LEVEL) << "[" ; 
     createRaygen();
     updateRaygen();
     createMiss();
     updateMiss(); 
+    LOG(LEVEL) << "]" ; 
 }
 
 
@@ -106,9 +107,13 @@ void SBT::createGeom()
 {
     LOG(LEVEL) << "[" ; 
     createGAS();    
+    LOG(LEVEL) << "] createGAS " ; 
     createIAS(); 
+    LOG(LEVEL) << "] createIAS " ; 
     createHitgroup(); 
+    LOG(LEVEL) << "] createHitGroup " ; 
     checkHitgroup(); 
+    LOG(LEVEL) << "] checkHitGroup " ; 
     LOG(LEVEL) << "]" ; 
 }
 
@@ -531,12 +536,21 @@ void SBT::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>&
     createIAS(inst); 
 }
 
+/**
+SBT::createIAS
+----------------
+
+This is taking 0.43s for 48477 inst from JUNO full geometry. 
+
+**/
 
 void SBT::createIAS(const std::vector<qat4>& inst )
 {
+    LOG(LEVEL) << "[ inst.size " << inst.size() ; 
     IAS ias = {} ;  
     IAS_Builder::Build(ias, inst, this );
     vias.push_back(ias);  
+    LOG(LEVEL) << "] inst.size " << inst.size() ; 
 }
 
 
@@ -610,6 +624,8 @@ AS* SBT::getAS(const char* spec) const
 SBT::getOffset
 ----------------
 
+Canonically invoked from IAS_Builder::CollectInstances
+
 The layer_idx_ within the shape_idx_ composite shape.
 NB layer_idx is local to the solid. 
 
@@ -646,6 +662,15 @@ at which point returns *offset_sbt*.
 This assumes(implies) that only enabled mergedmesh have 
 vgas entries.  
 
+
+
+HMM: currently this gets invoked for every instance, costing 0.42s for 48477 inst
+when only really need to traverse them all once and keep a record of 
+for subsequent lookup.  
+
+   solid_idx_ layer_idx_ offset_sbt 
+
+So that 0.42s can be made to go to zero by doing this once. 
 
 **/
 unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const 

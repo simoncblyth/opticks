@@ -15,6 +15,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    LOG(info) << "[ cu first " ; 
+    cudaDeviceSynchronize(); 
+    LOG(info) << "] cu first " ; 
+
     SEventConfig::SetRGModeSimtrace();   
 
     // SEventConfig::SetCompMask("genstep,simtrace");  // should now be automatic from SEventConfig::CompMaskAuto
