@@ -30,7 +30,7 @@ upfind_cfbase(){
 }
 
 
-if [ "$GEOM" == "J000" -o "$GEOM" == "J001" -o "$GEOM" == "J002" ]; then 
+if [ "$GEOM" == "J000" -o "$GEOM" == "J001" -o "$GEOM" == "J002" -o "$GEOM" == "J003" ]; then 
 
    case $GEOM in 
      J000) OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000 ;;
