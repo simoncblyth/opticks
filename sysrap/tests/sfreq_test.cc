@@ -6,7 +6,8 @@
 
 const char* FOLD = getenv("FOLD"); 
 
-int main(int argc, char** argv)
+
+void test_add_sort_save_load()
 {
     sfreq c ; 
 
@@ -31,11 +32,31 @@ int main(int argc, char** argv)
     sfreq c2 ; 
     c2.load(FOLD); 
 
-    c2.set_disqualified("blue"); 
-    assert( c2.is_disqualified("blue") ); 
+    c2.set_disqualify("blue"); 
+    assert( c2.is_disqualify("blue") ); 
 
     std::cout << "c2.desc\n" << c2.desc() << std::endl ; 
+}
 
+void test_empty_save_load()
+{
+    sfreq c ; 
+    std::cout << "c.desc\n" << c.desc() << std::endl ; 
+    c.save(FOLD); 
+
+    sfreq c2 ; 
+    c2.load(FOLD); 
+    std::cout << "c2.desc\n" << c2.desc() << std::endl ; 
+}
+
+
+
+int main(int argc, char** argv)
+{
+    /*
+    test_add_sort_save_load();
+    */ 
+    test_empty_save_load();
 
     return 0 ; 
 }

@@ -88,6 +88,11 @@ Hmm need to suppress this subs_freq 0,0 that is somehow happening from stree sav
     Out[3]: array(0, dtype=int32)
     In [4]: k
     Out[4]: array(0, dtype=int8)
+    In [3]: v.shape
+    Out[3]: ()
+    In [4]: k.shape
+    Out[4]: ()
+
 
 
 

@@ -226,6 +226,7 @@ Out[6]: (3, 5)
 
 inline NP* sfreq::make_key() const 
 {
+    if(vsu.size()==0) return nullptr ; 
     size_t mkl = get_maxkeylen() ; 
     NP* key = NP::Make<char>( vsu.size(), mkl ) ;
     char* kdat = key->values<char>(); 
@@ -241,6 +242,7 @@ inline NP* sfreq::make_key() const
 
 inline NP* sfreq::make_val() const 
 {
+    if(vsu.size()==0) return nullptr ; 
     NP* val = NP::Make<int>( vsu.size() ) ; 
     int* vdat = val->values<int>(); 
 
@@ -254,7 +256,10 @@ inline NP* sfreq::make_val() const
 
 inline void sfreq::import_key_val( const NP* key, const NP* val)
 {
-    unsigned mkl = key->shape[1] ; 
+    if(key == nullptr || val == nullptr) return ; 
+    assert( key->shape.size() ); 
+
+    unsigned keylen = key->shape[1] ; 
     const char* kdat = key->cvalues<char>(); 
     const int* vdat = val->cvalues<int>(); 
 
@@ -263,8 +268,8 @@ inline void sfreq::import_key_val( const NP* key, const NP* val)
  
     for(unsigned i=0 ; i < num_kv ; i++)
     {
-        const char* kptr = kdat+i*mkl ; 
-        std::string k(kptr, kptr+mkl) ; 
+        const char* kptr = kdat+i*keylen ; 
+        std::string k(kptr, kptr+keylen) ; 
         int v = vdat[i] ; 
         vsu.push_back(std::pair<std::string, int>(k,v) );  
     }
@@ -275,6 +280,7 @@ inline void sfreq::import_key_val( const NP* key, const NP* val)
 
 inline void sfreq::save(const char* dir) const 
 {
+    if(vsu.size() == 0) return ; 
     const NP* key = make_key(); 
     const NP* val = make_val(); 
     key->save( dir, KEY) ; 
@@ -283,6 +289,7 @@ inline void sfreq::save(const char* dir) const
 
 inline void sfreq::save(const char* dir, const char* reldir) const 
 {
+    if(vsu.size() == 0) return ; 
     const NP* key = make_key(); 
     const NP* val = make_val(); 
     key->save( dir, reldir, KEY) ; 
