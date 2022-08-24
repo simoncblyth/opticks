@@ -66,6 +66,7 @@ class FrameGensteps(object):
         for igs in range(len(gs)): 
             gs_pos = gs[igs,1]          ## normally origin (0,0,0,1)
             gs_tran = gs[igs,2:]        ## m2w with grid translation 
+            gs_tran[:,3] = [0,0,0,1]   ## fixup 4th column, as may contain identity info
             world_frame_centers[igs] = np.dot( gs_pos, gs_tran )    
             #   world_frame_centers = m2w * grid_translation * model_frame_positon
         pass
